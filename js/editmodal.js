@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /* ============================================================
    EDIT MODAL — édition avancée d'un PNJ sauvegardé
@@ -7,29 +7,35 @@ const EditModal = {
   currentId: null,
 
   open(id) {
-    const pnj = Shadows.data.all.find(p => p.id === id);
-    if (!pnj) { toast('PNJ introuvable.'); return; }
+    const pnj = Shadows.data.all.find((p) => p.id === id);
+    if (!pnj) {
+      toast("PNJ introuvable.");
+      return;
+    }
     this.currentId = id;
 
-    document.querySelector('.modal-title').textContent = `Édition — ${pnj.name}`;
-    const body = document.getElementById('modal-form-body');
+    document.querySelector(".modal-title").textContent =
+      `Édition — ${pnj.name}`;
+    const body = document.getElementById("modal-form-body");
     body.innerHTML = this._buildForm(pnj);
 
-    document.getElementById('edit-modal').classList.add('open');
+    document.getElementById("edit-modal").classList.add("open");
   },
 
   close() {
-    document.getElementById('edit-modal').classList.remove('open');
+    document.getElementById("edit-modal").classList.remove("open");
     this.currentId = null;
   },
 
   save() {
-    const pnj = Shadows.data.all.find(p => p.id === this.currentId);
-    if (!pnj) { this.close(); return; }
+    const pnj = Shadows.data.all.find((p) => p.id === this.currentId);
+    if (!pnj) {
+      this.close();
+      return;
+    }
 
     this._readForm(pnj);
 
-    // Recalcul des dérivés
     const edModule = App.getEditionModule(pnj.edition);
     if (edModule && edModule.recalc) edModule.recalc(pnj);
 
@@ -41,9 +47,9 @@ const EditModal = {
 
   /* ---- Construction du formulaire ---- */
   _buildForm(pnj) {
-    let html = '';
+    let html = "";
 
-    // Section : Identité
+    // ---- Section : Identité ----
     html += `<div class="modal-section">
       <div class="modal-section-title">Identité</div>
       <div class="modal-grid wide">
@@ -54,24 +60,36 @@ const EditModal = {
         <div class="form-group">
           <label>Métatype</label>
           <select id="em-meta">
-            ${['Humain','Elfe','Nain','Ork','Troll'].map(m =>
-              `<option${pnj.meta === m ? ' selected' : ''}>${m}</option>`).join('')}
+            ${["Humain", "Elfe", "Nain", "Ork", "Troll"]
+              .map(
+                (m) =>
+                  `<option${pnj.meta === m ? " selected" : ""}>${m}</option>`,
+              )
+              .join("")}
           </select>
         </div>
         <div class="form-group">
           <label>Genre</label>
           <select id="em-gender">
-            ${['M','F','NB'].map(g =>
-              `<option${pnj.gender === g ? ' selected' : ''}>${g}</option>`).join('')}
+            ${["M", "F", "NB"]
+              .map(
+                (g) =>
+                  `<option${pnj.gender === g ? " selected" : ""}>${g}</option>`,
+              )
+              .join("")}
           </select>
         </div>`;
 
-    if (pnj.edition === 'anarchy') {
+    if (pnj.edition === "anarchy") {
       html += `<div class="form-group">
         <label>Rang</label>
         <select id="em-rang">
-          ${['Figurant','Lieutenant','Boss'].map(r =>
-            `<option${pnj.rang === r ? ' selected' : ''}>${r}</option>`).join('')}
+          ${["Figurant", "Figurant d'élite", "Lieutenant", "Boss"]
+            .map(
+              (r) =>
+                `<option${pnj.rang === r ? " selected" : ""}>${r}</option>`,
+            )
+            .join("")}
         </select>
       </div>`;
     } else {
@@ -81,19 +99,25 @@ const EditModal = {
       </div>`;
     }
 
-    html += '</div></div>';
+    html += "</div></div>";
 
-    // Section : Attributs
+    // ---- Section : Attributs ----
+    const attrKeys =
+      pnj.edition === "anarchy"
+        ? ["FOR", "AGI", "VOL", "LOG", "CHA"]
+        : ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"];
+
     html += `<div class="modal-section">
       <div class="modal-section-title">Attributs</div>
       <div class="modal-grid">`;
 
-    const attrKeys = ['CON','AGI','REA','FOR','VOL','LOG','INT','CHA'];
     for (const k of attrKeys) {
-      html += `<div class="form-group">
-        <label>${k}</label>
-        <input type="number" id="em-attr-${k}" value="${pnj.attrs[k]}" min="1" max="12">
-      </div>`;
+      if (pnj.attrs[k] !== undefined) {
+        html += `<div class="form-group">
+          <label>${k}</label>
+          <input type="number" id="em-attr-${k}" value="${pnj.attrs[k]}" min="1" max="12">
+        </div>`;
+      }
     }
     if (pnj.attrs.MAG !== undefined) {
       html += `<div class="form-group">
@@ -101,40 +125,21 @@ const EditModal = {
         <input type="number" id="em-attr-MAG" value="${pnj.attrs.MAG}" min="1" max="12">
       </div>`;
     }
-    html += '</div></div>';
+    html += "</div></div>";
 
-    // Section Anarchy : Clichés
-    if (pnj.edition === 'anarchy') {
+    // ---- Section Anarchy : Atouts libres ----
+    if (pnj.edition === "anarchy" && pnj.atouts) {
       html += `<div class="modal-section">
-        <div class="modal-section-title">Clichés</div>`;
-      pnj.cliches.forEach((c, i) => {
-        html += `<div class="modal-grid wide" style="margin-bottom:0.5rem;">
-          <div class="form-group">
-            <label>Cliché ${i + 1}</label>
-            <input type="text" id="em-cliche-name-${i}" value="${CardRenderer._esc(c.name)}">
-          </div>
-          <div class="form-group">
-            <label>Dés</label>
-            <input type="number" id="em-cliche-dice-${i}" value="${c.dice}" min="1" max="20">
-          </div>
-        </div>`;
-      });
-      html += '</div>';
-    }
-
-    // Section : Équipement
-    if (pnj.equip && pnj.equip.length) {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Équipement</div>
+        <div class="modal-section-title">Atouts</div>
         <div class="form-group">
-          <label>Un élément par ligne</label>
-          <textarea id="em-equip" rows="4">${pnj.equip.join('\n')}</textarea>
+          <label>Un atout par ligne</label>
+          <textarea id="em-atouts" rows="5">${(pnj.atouts || []).join("\n")}</textarea>
         </div>
       </div>`;
     }
 
-    // Section SR5 : Compétences (édition simplifiée)
-    if ((pnj.edition === 'sr5' || pnj.edition === 'sr6') && pnj.skills) {
+    // ---- Section SR5/SR6 : Compétences ----
+    if (pnj.edition !== "anarchy" && pnj.skills && pnj.skills.length) {
       html += `<div class="modal-section">
         <div class="modal-section-title">Compétences</div>
         <div class="modal-grid">`;
@@ -144,14 +149,25 @@ const EditModal = {
           <input type="number" id="em-skill-${i}" value="${s.val}" min="1" max="12">
         </div>`;
       });
-      html += '</div></div>';
+      html += "</div></div>";
     }
 
-    // Section : Notes
+    // ---- Section : Équipement ----
+    if (pnj.equip && pnj.equip.length) {
+      html += `<div class="modal-section">
+        <div class="modal-section-title">Équipement</div>
+        <div class="form-group">
+          <label>Un élément par ligne</label>
+          <textarea id="em-equip" rows="4">${pnj.equip.join("\n")}</textarea>
+        </div>
+      </div>`;
+    }
+
+    // ---- Section : Notes ----
     html += `<div class="modal-section">
       <div class="modal-section-title">Notes</div>
       <div class="form-group">
-        <textarea id="em-notes" rows="3" placeholder="Notes libres…">${CardRenderer._esc(pnj.notes || '')}</textarea>
+        <textarea id="em-notes" rows="3" placeholder="Notes libres…">${CardRenderer._esc(pnj.notes || "")}</textarea>
       </div>
     </div>`;
 
@@ -160,41 +176,51 @@ const EditModal = {
 
   /* ---- Lecture du formulaire → mise à jour du PNJ ---- */
   _readForm(pnj) {
-    const val  = id => document.getElementById(id)?.value ?? '';
-    const num  = (id, fallback) => parseInt(val(id), 10) || fallback;
+    const val = (id) => document.getElementById(id)?.value ?? "";
+    const num = (id, fallback) => parseInt(val(id), 10) || fallback;
 
-    pnj.name   = val('em-name').trim() || pnj.name;
-    pnj.meta   = val('em-meta')   || pnj.meta;
-    pnj.gender = val('em-gender') || pnj.gender;
+    pnj.name = val("em-name").trim() || pnj.name;
+    pnj.meta = val("em-meta") || pnj.meta;
+    pnj.gender = val("em-gender") || pnj.gender;
 
-    if (pnj.edition === 'anarchy') {
-      pnj.rang = val('em-rang') || pnj.rang;
-      pnj.cliches.forEach((c, i) => {
-        const nameEl = document.getElementById(`em-cliche-name-${i}`);
-        const diceEl = document.getElementById(`em-cliche-dice-${i}`);
-        if (nameEl) c.name = nameEl.value.trim() || c.name;
-        if (diceEl) c.dice = parseInt(diceEl.value, 10) || c.dice;
-      });
+    if (pnj.edition === "anarchy") {
+      pnj.rang = val("em-rang") || pnj.rang;
+      const atoutsEl = document.getElementById("em-atouts");
+      if (atoutsEl)
+        pnj.atouts = atoutsEl.value
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean);
     } else {
-      pnj.prof = num('em-prof', pnj.prof);
+      pnj.prof = num("em-prof", pnj.prof);
     }
 
     // Attributs
-    for (const k of ['CON','AGI','REA','FOR','VOL','LOG','INT','CHA','MAG']) {
+    const allAttrKeys =
+      pnj.edition === "anarchy"
+        ? ["FOR", "AGI", "VOL", "LOG", "CHA"]
+        : ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA", "MAG"];
+    for (const k of allAttrKeys) {
       const el = document.getElementById(`em-attr-${k}`);
       if (el && pnj.attrs[k] !== undefined) {
-        pnj.attrs[k] = Utils.clamp(parseInt(el.value, 10) || pnj.attrs[k], 1, 12);
+        pnj.attrs[k] = Utils.clamp(
+          parseInt(el.value, 10) || pnj.attrs[k],
+          1,
+          12,
+        );
       }
     }
 
     // Équipement
-    const equipEl = document.getElementById('em-equip');
-    if (equipEl) {
-      pnj.equip = equipEl.value.split('\n').map(s => s.trim()).filter(Boolean);
-    }
+    const equipEl = document.getElementById("em-equip");
+    if (equipEl)
+      pnj.equip = equipEl.value
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean);
 
-    // Compétences
-    if (pnj.skills) {
+    // Compétences SR5/SR6
+    if (pnj.edition !== "anarchy" && pnj.skills) {
       pnj.skills.forEach((s, i) => {
         const el = document.getElementById(`em-skill-${i}`);
         if (el) s.val = Utils.clamp(parseInt(el.value, 10) || s.val, 1, 12);
@@ -202,7 +228,7 @@ const EditModal = {
     }
 
     // Notes
-    const notesEl = document.getElementById('em-notes');
+    const notesEl = document.getElementById("em-notes");
     if (notesEl) pnj.notes = notesEl.value;
   },
 };

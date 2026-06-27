@@ -189,58 +189,145 @@ const CardRenderer = {
     return html;
   },
 
-  /* ---- Body Anarchy ---- */
+  /* ---- Body Anarchy 2e ---- */
   _bodyAnarchy(pnj) {
-    const { attrs, cliches, init, monitor, monFilled, narcos, narcoUsed, equip } = pnj;
+    const {
+      attrs, skills, atouts, armes, equip, sorts,
+      combativite, seuilsPhys, seuils_ment, seuilsMat,
+      physFilled, mentFilled, matFilled, eveille, notes
+    } = pnj;
 
     let html = '<div class="pnj-card-body">';
 
-    const attrKeys = ['CON','AGI','REA','FOR','VOL','LOG','INT','CHA'];
-    html += `<div class="attr-grid">${attrKeys.map(k => this._attrCell(k, attrs[k])).join('')}</div>`;
-
-    html += '<div class="stats-row">';
-    html += `<span class="stat-pill accent">Init <strong>${init}+1D6</strong></span>`;
-    html += `<span class="stat-pill">Monitor <strong>${monitor}</strong></span>`;
-    html += '</div>';
-
-    // Narcos
-    const narcosDots = Array.from({ length: narcos }, (_, i) => {
-      const used = i < (narcoUsed || 0);
-      return `<span class="narco-dot ${used ? 'used' : ''}" onclick="UI.toggleNarco('${pnj.id}', ${i})"></span>`;
-    }).join(' ');
-    html += `<div class="stats-row"><span class="monitor-label" style="margin-right:6px;">Narcos</span>${narcosDots}</div>`;
-
-    // Moniteur
-    html += `<div class="card-section">
-      <div class="card-section-label">Moniteur de condition</div>
-      <div class="monitor-row">
-        <div class="monitor-boxes">${this._monitorBoxes(pnj.id, 'mon', monitor, monFilled)}</div>
-      </div>
+    // Attributs : 5 attrs Anarchy (FOR/AGI/VOL/LOG/CHA)
+    const attrKeys = ['FOR','AGI','VOL','LOG','CHA'];
+    html += `<div class="attr-grid" style="grid-template-columns:repeat(5,1fr);">
+      ${attrKeys.map(k => this._attrCell(k, attrs[k])).join('')}
     </div>`;
 
-    // Clichés
+    // Combativité + éveillé
+    html += '<div class="stats-row">';
+    const combClass = combativite === 'forte' || combativite === 'extrême' ? 'accent' : '';
+    html += `<span class="stat-pill ${combClass}">Combativité <strong>${combativite}</strong></span>`;
+    if (eveille) {
+      const evLabel = { hermétique:'Éveillé hermétique', adepte:'Adepte', chamanique:'Éveillé chaman' }[eveille] || eveille;
+      html += `<span class="stat-pill">✦ ${evLabel}</span>`;
+    }
+    html += '</div>';
+
+    // Compétences Anarchy : nom / pool composé / RR
+    if (skills && skills.length) {
+      html += `<div class="card-section">
+        <div class="card-section-label">Compétences</div>
+        <div class="anarchy-skill-list">`;
+      for (const s of skills) {
+        const pool = s.val + (attrs[s.attr] || 0);
+        const rrStr = s.rr > 0 ? ` RR${s.rr}` : '';
+        html += `<div class="anarchy-skill-row">
+          <span class="anarchy-skill-name">${this._esc(s.name)}</span>
+          <span class="anarchy-skill-pool">${s.val} (${pool}+${s.attr}${rrStr})</span>
+        </div>`;
+        // Spécialisation
+        if (s.spec && s.spec !== true && s.specVal) {
+          const specPool = s.specVal + (attrs[s.specAttr || s.attr] || 0);
+          const specRR = s.specRR > 0 ? ` RR${s.specRR}` : '';
+          html += `<div class="anarchy-skill-row anarchy-skill-spec">
+            <span class="anarchy-skill-name">◊ ${this._esc(s.spec)}</span>
+            <span class="anarchy-skill-pool">${s.specVal} (${specPool}+${s.specAttr || s.attr}${specRR})</span>
+          </div>`;
+        }
+      }
+      html += '</div></div>';
+    }
+
+    // Atouts
+    if (atouts && atouts.length) {
+      html += `<div class="card-section">
+        <div class="card-section-label">Atouts</div>
+        <div class="card-section-content">`;
+      for (const a of atouts) {
+        html += `<div class="anarchy-atout">• ${this._esc(a)}</div>`;
+      }
+      html += '</div></div>';
+    }
+
+    // Armes
+    if (armes && armes.length) {
+      html += `<div class="card-section">
+        <div class="card-section-label">Armes</div>
+        <div class="anarchy-skill-list">`;
+      for (const a of armes) {
+        html += `<div class="anarchy-skill-row">
+          <span class="anarchy-skill-name">${this._esc(a.name)}</span>
+          <span class="anarchy-skill-pool">VD ${this._esc(a.vd)} ${this._esc(a.portees)}</span>
+        </div>`;
+      }
+      html += '</div></div>';
+    }
+
+    // Sorts (éveillés)
+    if (sorts && sorts.length) {
+      html += this._listSection('Sorts', sorts);
+    }
+
+    // Équipement
+    if (equip && equip.length) {
+      html += this._tagsSection('Équipement', equip);
+    }
+
+    // Seuils de blessures — Anarchy utilise un format X/Y/Z
     html += `<div class="card-section">
-      <div class="card-section-label">Clichés</div>
-      <div class="cliche-list">`;
-    for (const c of cliches) {
-      html += `<div class="cliche-item">
-        <span class="cliche-name">${this._esc(c.name)}</span>
-        <span class="cliche-dice">${c.dice}D</span>
+      <div class="card-section-label">Seuils de blessures</div>
+      <div class="anarchy-seuils">`;
+
+    const fmtSeuils = (arr) => arr ? `${arr[0]} / ${arr[1]} / ${arr[2]}` : '—';
+
+    html += `<div class="anarchy-seuil-row">
+      <span class="anarchy-seuil-label">Physiques</span>
+      <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, 'phys', seuilsPhys, physFilled)}</div>
+    </div>`;
+    html += `<div class="anarchy-seuil-row" style="margin-top:4px;">
+      <span class="anarchy-seuil-label">Mentales</span>
+      <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, 'ment', seuils_ment, mentFilled)}</div>
+    </div>`;
+    if (seuilsMat) {
+      html += `<div class="anarchy-seuil-row" style="margin-top:4px;">
+        <span class="anarchy-seuil-label">Matricielles</span>
+        <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, 'mat', seuilsMat, matFilled)}</div>
       </div>`;
     }
     html += '</div></div>';
 
-    if (equip && equip.length) html += this._tagsSection('Équipement', equip);
-
-    if (pnj.notes) {
+    if (notes) {
       html += `<div class="card-section">
         <div class="card-section-label">Notes</div>
-        <div class="card-section-content" style="font-size:0.75rem;">${this._esc(pnj.notes)}</div>
+        <div class="card-section-content" style="font-size:0.75rem;">${this._esc(notes)}</div>
       </div>`;
     }
 
     html += '</div>';
     return html;
+  },
+
+  /**
+   * Moniteur Anarchy : les seuils sont [leger, moyen, grave].
+   * On affiche N cases correspondant au seuil grave (max),
+   * avec marquage des paliers léger et moyen.
+   */
+  _monitorBoxesAnarchy(pnjId, type, seuils, filled = 0) {
+    if (!seuils) return '—';
+    const [s1, s2, s3] = seuils;
+    return Array.from({ length: s3 }, (_, i) => {
+      const isFilled = i < filled;
+      // Paliers : case s1 = fin blessure légère, s2 = fin blessure modérée
+      const isPalier = (i + 1 === s1) || (i + 1 === s2);
+      const cls = [
+        'monitor-box',
+        isFilled ? 'filled' : '',
+        isPalier ? 'penalty' : '',
+      ].filter(Boolean).join(' ');
+      return `<div class="${cls}" onclick="UI.toggleMonitor('${pnjId}','${type}',${i})"></div>`;
+    }).join('');
   },
 
   /* ---- Helpers ---- */
@@ -322,16 +409,15 @@ const UI = {
     const pnj = this._findPNJ(pnjId);
     if (!pnj) return;
 
-    const field = type === 'phys' ? 'physFilled'
-      : type === 'stun' ? 'stunFilled'
-      : 'monFilled';
+    // Mapping type → champ du PNJ
+    const fieldMap = {
+      phys: 'physFilled', stun: 'stunFilled', mon: 'monFilled',
+      ment: 'mentFilled', mat: 'matFilled',
+    };
+    const field = fieldMap[type] || 'monFilled';
+    if (pnj[field] === undefined) pnj[field] = 0;
 
-    // Clic sur la case déjà remplie → vide jusqu'à cette case
-    if (idx < pnj[field]) {
-      pnj[field] = idx;
-    } else {
-      pnj[field] = idx + 1;
-    }
+    pnj[field] = idx < pnj[field] ? idx : idx + 1;
 
     Shadows.save();
     CardRenderer.refresh(pnj);

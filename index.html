@@ -1,209 +1,214 @@
 <!DOCTYPE html>
 <html lang="fr" data-edition="none">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shadow Herds</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/base.css">
-<link rel="stylesheet" href="css/theme-sr5.css">
-<link rel="stylesheet" href="css/theme-sr6.css">
-<link rel="stylesheet" href="css/theme-anarchy.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shadow Herds</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/theme-sr5.css">
+  <link rel="stylesheet" href="css/theme-sr6.css">
+  <link rel="stylesheet" href="css/theme-anarchy.css">
 </head>
+
 <body>
 
-<!-- ============================================================
+  <!-- ============================================================
      SÉLECTEUR D'ÉDITION
      ============================================================ -->
-<div id="edition-screen">
-  <div class="edition-title">
-    <span>Shadow Herds</span>
-    Shadowrun
+  <div id="edition-screen">
+    <div class="edition-title">
+      <span>Shadow Herds</span>
+      Shadowrun
+    </div>
+    <div class="edition-cards">
+
+      <div class="edition-card" data-ed="sr5" onclick="App.selectEdition('sr5')">
+        <span class="ed-num">5</span>
+        <span class="ed-name">Shadowrun</span>
+        <span class="ed-sub">5e édition</span>
+      </div>
+
+      <div class="edition-card" data-ed="sr6" onclick="App.selectEdition('sr6')">
+        <span class="ed-num">6</span>
+        <span class="ed-name">Shadowrun</span>
+        <span class="ed-sub">6e édition</span>
+      </div>
+
+      <div class="edition-card" data-ed="anarchy" onclick="App.selectEdition('anarchy')">
+        <span class="ed-num">∅</span>
+        <span class="ed-name">Anarchy</span>
+        <span class="ed-sub">2e édition</span>
+      </div>
+
+    </div>
   </div>
-  <div class="edition-cards">
 
-    <div class="edition-card" data-ed="sr5" onclick="App.selectEdition('sr5')">
-      <span class="ed-num">5</span>
-      <span class="ed-name">Shadowrun</span>
-      <span class="ed-sub">5e édition</span>
-    </div>
-
-    <div class="edition-card" data-ed="sr6" onclick="App.selectEdition('sr6')">
-      <span class="ed-num">6</span>
-      <span class="ed-name">Shadowrun</span>
-      <span class="ed-sub">6e édition</span>
-    </div>
-
-    <div class="edition-card" data-ed="anarchy" onclick="App.selectEdition('anarchy')">
-      <span class="ed-num">∅</span>
-      <span class="ed-name">Anarchy</span>
-      <span class="ed-sub">2e édition</span>
-      <span class="ed-wip">En développement</span>
-    </div>
-
-  </div>
-</div>
-
-<!-- ============================================================
+  <!-- ============================================================
      APPLICATION PRINCIPALE
      ============================================================ -->
-<div id="app">
+  <div id="app">
 
-  <!-- TOP BAR -->
-  <div id="topbar">
-    <span class="topbar-logo">Shadow Herds</span>
-    <span class="topbar-edition-badge" id="edition-badge">—</span>
+    <!-- TOP BAR -->
+    <div id="topbar">
+      <span class="topbar-logo">Shadow Herds</span>
+      <span class="topbar-edition-badge" id="edition-badge">—</span>
 
-    <div id="dice-roller">
-      <div class="dice-btns">
-        <button class="dice-btn active" onclick="Dice.setMode('normal', this)" title="Dés normaux">N</button>
-        <button class="dice-btn" onclick="Dice.setMode('explosive', this)" title="Dés explosifs">E</button>
+      <div id="dice-roller">
+        <div class="dice-btns">
+          <button class="dice-btn active" onclick="Dice.setMode('normal', this)" title="Dés normaux">N</button>
+          <button class="dice-btn" onclick="Dice.setMode('explosive', this)" title="Dés explosifs">E</button>
+        </div>
+        <input class="dice-count-input" type="number" id="dice-count" value="6" min="1" max="40"
+          aria-label="Nombre de dés">
+        <button class="dice-roll-btn" id="dice-roll-btn">Lancer</button>
+        <span id="dice-result" aria-live="polite"></span>
       </div>
-      <input class="dice-count-input" type="number" id="dice-count" value="6" min="1" max="40" aria-label="Nombre de dés">
-      <button class="dice-roll-btn" id="dice-roll-btn">Lancer</button>
-      <span id="dice-result" aria-live="polite"></span>
+
+      <span class="topbar-spacer"></span>
+
+      <button class="change-edition-btn" onclick="App.changeEdition()">⇄ Édition</button>
     </div>
 
-    <span class="topbar-spacer"></span>
+    <!-- CORPS -->
+    <div id="main-body">
 
-    <button class="change-edition-btn" onclick="App.changeEdition()">⇄ Édition</button>
-  </div>
+      <!-- SIDEBAR -->
+      <nav id="sidebar" aria-label="Navigation principale">
+        <span class="nav-section-label">Gestion</span>
+        <button class="nav-btn active" data-panel="welcome" onclick="App.showPanel('welcome')">
+          <span class="nav-icon">⌂</span><span class="nav-label">Accueil</span>
+        </button>
+        <button class="nav-btn" data-panel="shadows" onclick="App.showPanel('shadows')">
+          <span class="nav-icon">◈</span><span class="nav-label">Ombres portées</span>
+        </button>
+        <button class="nav-btn" data-panel="generator" onclick="App.showPanel('generator')">
+          <span class="nav-icon">⊕</span><span class="nav-label">Générateur PNJ</span>
+        </button>
 
-  <!-- CORPS -->
-  <div id="main-body">
+        <span class="nav-section-label">Outils</span>
+        <button class="nav-btn" data-panel="contacts" onclick="App.showPanel('contacts')">
+          <span class="nav-icon">◉</span><span class="nav-label">Contacts</span>
+        </button>
+        <button class="nav-btn" data-panel="run" onclick="App.showPanel('run')">
+          <span class="nav-icon">▶</span><span class="nav-label">Run</span>
+        </button>
 
-    <!-- SIDEBAR -->
-    <nav id="sidebar" aria-label="Navigation principale">
-      <span class="nav-section-label">Gestion</span>
-      <button class="nav-btn active" data-panel="welcome" onclick="App.showPanel('welcome')">
-        <span class="nav-icon">⌂</span><span class="nav-label">Accueil</span>
-      </button>
-      <button class="nav-btn" data-panel="shadows" onclick="App.showPanel('shadows')">
-        <span class="nav-icon">◈</span><span class="nav-label">Ombres portées</span>
-      </button>
-      <button class="nav-btn" data-panel="generator" onclick="App.showPanel('generator')">
-        <span class="nav-icon">⊕</span><span class="nav-label">Générateur PNJ</span>
-      </button>
+        <span class="nav-section-label">Système</span>
+        <button class="nav-btn" data-panel="settings" onclick="App.showPanel('settings')">
+          <span class="nav-icon">⚙</span><span class="nav-label">Paramètres</span>
+        </button>
+      </nav>
 
-      <span class="nav-section-label">Outils</span>
-      <button class="nav-btn" data-panel="contacts" onclick="App.showPanel('contacts')">
-        <span class="nav-icon">◉</span><span class="nav-label">Contacts</span>
-      </button>
-      <button class="nav-btn" data-panel="run" onclick="App.showPanel('run')">
-        <span class="nav-icon">▶</span><span class="nav-label">Run</span>
-      </button>
+      <!-- CONTENU PRINCIPAL -->
+      <main id="content">
 
-      <span class="nav-section-label">Système</span>
-      <button class="nav-btn" data-panel="settings" onclick="App.showPanel('settings')">
-        <span class="nav-icon">⚙</span><span class="nav-label">Paramètres</span>
-      </button>
-    </nav>
-
-    <!-- CONTENU PRINCIPAL -->
-    <main id="content">
-
-      <!-- ACCUEIL -->
-      <div class="panel active" id="panel-welcome">
-        <div class="panel-title" id="welcome-title">Bienvenue</div>
-        <div class="welcome-card" id="welcome-body"></div>
-      </div>
-
-      <!-- OMBRES PORTÉES -->
-      <div class="panel" id="panel-shadows">
-        <div class="panel-title">Ombres portées</div>
-        <div class="shadows-toolbar">
-          <div class="group-tabs" id="group-tabs"></div>
-          <button class="btn-secondary" onclick="Shadows.addGroup()">+ Groupe</button>
-        </div>
-        <div class="cards-zone" id="shadows-grid"></div>
-      </div>
-
-      <!-- GÉNÉRATEUR PNJ -->
-      <div class="panel" id="panel-generator">
-        <div class="panel-title">Générateur de PNJ</div>
-
-        <div class="tab-bar">
-          <button class="tab-btn active" onclick="Gen.showTab('single', this)">PNJ individuel</button>
-          <button class="tab-btn"        onclick="Gen.showTab('group', this)">Groupe / bande</button>
+        <!-- ACCUEIL -->
+        <div class="panel active" id="panel-welcome">
+          <div class="panel-title" id="welcome-title">Bienvenue</div>
+          <div class="welcome-card" id="welcome-body"></div>
         </div>
 
-        <!-- Onglet individuel -->
-        <div class="tab-panel active" id="gen-tab-single">
-          <div class="gen-form" id="gen-form-single"></div>
-          <div class="gen-actions">
-            <button class="btn-primary"    onclick="Gen.generateSingle()">Générer</button>
-            <button class="btn-secondary"  onclick="Gen.clearSingle()">Effacer</button>
+        <!-- OMBRES PORTÉES -->
+        <div class="panel" id="panel-shadows">
+          <div class="panel-title">Ombres portées</div>
+          <div class="shadows-toolbar">
+            <div class="group-tabs" id="group-tabs"></div>
+            <button class="btn-secondary" onclick="Shadows.addGroup()">+ Groupe</button>
           </div>
-          <div class="cards-zone" id="gen-zone-single"></div>
+          <div class="cards-zone" id="shadows-grid"></div>
         </div>
 
-        <!-- Onglet groupe -->
-        <div class="tab-panel" id="gen-tab-group">
-          <div class="gen-form" id="gen-form-group"></div>
-          <div class="gen-actions">
-            <button class="btn-primary"    onclick="Gen.generateGroup()">Générer le groupe</button>
-            <button class="btn-secondary"  onclick="Gen.clearGroup()">Effacer</button>
+        <!-- GÉNÉRATEUR PNJ -->
+        <div class="panel" id="panel-generator">
+          <div class="panel-title">Générateur de PNJ</div>
+
+          <div class="tab-bar">
+            <button class="tab-btn active" onclick="Gen.showTab('single', this)">PNJ individuel</button>
+            <button class="tab-btn" onclick="Gen.showTab('group', this)">Groupe / bande</button>
           </div>
-          <div class="cards-zone" id="gen-zone-group"></div>
+
+          <!-- Onglet individuel -->
+          <div class="tab-panel active" id="gen-tab-single">
+            <div class="gen-form" id="gen-form-single"></div>
+            <div class="gen-actions">
+              <button class="btn-primary" onclick="Gen.generateSingle()">Générer</button>
+              <button class="btn-secondary" onclick="Gen.clearSingle()">Effacer</button>
+            </div>
+            <div class="cards-zone" id="gen-zone-single"></div>
+          </div>
+
+          <!-- Onglet groupe -->
+          <div class="tab-panel" id="gen-tab-group">
+            <div class="gen-form" id="gen-form-group"></div>
+            <div class="gen-actions">
+              <button class="btn-primary" onclick="Gen.generateGroup()">Générer le groupe</button>
+              <button class="btn-secondary" onclick="Gen.clearGroup()">Effacer</button>
+            </div>
+            <div class="cards-zone" id="gen-zone-group"></div>
+          </div>
         </div>
-      </div>
 
-      <!-- CONTACTS -->
-      <div class="panel" id="panel-contacts">
-        <div class="panel-title">Générateur de contacts</div>
-        <div id="contacts-panel-content"></div>
-      </div>
+        <!-- CONTACTS -->
+        <div class="panel" id="panel-contacts">
+          <div class="panel-title">Générateur de contacts</div>
+          <div id="contacts-panel-content"></div>
+        </div>
 
-      <!-- RUN -->
-      <div class="panel" id="panel-run">
-        <div class="panel-title">Générateur de run</div>
-        <div id="run-panel-content"></div>
-      </div>
+        <!-- RUN -->
+        <div class="panel" id="panel-run">
+          <div class="panel-title">Générateur de run</div>
+          <div id="run-panel-content"></div>
+        </div>
 
-      <!-- PARAMÈTRES -->
-      <div class="panel" id="panel-settings">
-        <div class="panel-title">Paramètres</div>
-        <div id="settings-panel-content"></div>
-      </div>
+        <!-- PARAMÈTRES -->
+        <div class="panel" id="panel-settings">
+          <div class="panel-title">Paramètres</div>
+          <div id="settings-panel-content"></div>
+        </div>
 
-    </main>
-  </div>
-</div>
-
-<!-- MODAL ÉDITION AVANCÉE -->
-<div class="modal-overlay" id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-label">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title" id="modal-title-label">Édition avancée</span>
-      <button class="modal-close" onclick="EditModal.close()" aria-label="Fermer">✕</button>
-    </div>
-    <div class="modal-body">
-      <div id="modal-form-body"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="EditModal.close()">Annuler</button>
-      <button class="btn-primary"   onclick="EditModal.save()">Sauvegarder</button>
+      </main>
     </div>
   </div>
-</div>
 
-<!-- TOAST -->
-<div id="toast" role="status" aria-live="polite"></div>
+  <!-- MODAL ÉDITION AVANCÉE -->
+  <div class="modal-overlay" id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-label">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title-label">Édition avancée</span>
+        <button class="modal-close" onclick="EditModal.close()" aria-label="Fermer">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-form-body"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="EditModal.close()">Annuler</button>
+        <button class="btn-primary" onclick="EditModal.save()">Sauvegarder</button>
+      </div>
+    </div>
+  </div>
 
-<!-- SCRIPTS — ordre important : utils → storage → éditions → ui → modules → app -->
-<script src="js/utils.js"></script>
-<script src="js/storage.js"></script>
-<script src="js/editions/sr5.js"></script>
-<script src="js/editions/sr6.js"></script>
-<script src="js/editions/anarchy.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/generator.js"></script>
-<script src="js/shadows.js"></script>
-<script src="js/editmodal.js"></script>
-<script src="js/extras.js"></script>
-<script src="js/settings.js"></script>
-<script src="js/app.js"></script>
+  <!-- TOAST -->
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <!-- SCRIPTS — ordre important : utils → storage → éditions → ui → modules → app -->
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/editions/sr5.js"></script>
+  <script src="js/editions/sr6.js"></script>
+  <script src="js/editions/anarchy.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/generator.js"></script>
+  <script src="js/shadows.js"></script>
+  <script src="js/editmodal.js"></script>
+  <script src="js/extras.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/app.js"></script>
 
 </body>
+
 </html>

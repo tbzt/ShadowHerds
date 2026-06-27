@@ -8,22 +8,22 @@ const Contacts = {
     'Fixer','Médecin de rue','Receleur','Hacker','Pilote',
     'Avocat','Informateur corpo','Journaliste d\'investigation',
     'Dealer','Trafiquant d\'armes','Mage de rue','Mécanicien',
-    'Tailleur d\'identités','Dresseur de bestioles','Prêtre',
+    'Faussaire','Dresseur de créatures','Prêtre',
     'Contrebandier','Chef de gang','Technicien matriciel',
-    'Chimiste de rue','Runner à la retraite',
+    'Chimiste clandestine','Runner à la retraite','Barman',
   ],
 
   lieux: [
     'Barrens','Zone corpo','Port industriel','Downtown',
     'Sprawl industriel','Tir','Favelas','Zone franche',
     'Quartier elfe','Enclave ork','Barrens souterrains',
-    'Centre commercial corpo','Marina privée',
+    'Centre commercial corpo','Marina privée','Entrepôt',
   ],
 
   traits: [
     'Discret','Bavard','Paranoïaque','Loyal mais cher',
     'A des dettes','Travaille pour plusieurs J',
-    'Drogué fonctionnel','Ancien runner','Informateur de la KE',
+    'Drogué fonctionnel','Ancien runner','Informateur de KE',
     'Pratique le troc','Exige du cash','Curieux de tout',
   ],
 

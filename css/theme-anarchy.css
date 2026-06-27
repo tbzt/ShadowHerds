@@ -5,17 +5,17 @@
    Vibe : rapide, brutal, street-level
    ============================================================ */
 [data-edition="anarchy"] {
-  --bg:       #0c0806;
-  --bg-card:  #130c08;
-  --bg-mid:   #180f0a;
-  --accent:   #ff3c3c;
-  --accent2:  #ff8800;
-  --text:     #e8d0c0;
+  --bg: #0c0806;
+  --bg-card: #130c08;
+  --bg-mid: #180f0a;
+  --accent: #ff3c3c;
+  --accent2: #ff8800;
+  --text: #e8d0c0;
   --text-dim: #5c3828;
-  --border:   #2a1008;
-  --glow:     rgba(255, 60, 60, 0.12);
-  --badge:    #1e0800;
-  --scan:     rgba(255, 60, 60, 0.07);
+  --border: #2a1008;
+  --glow: rgba(255, 60, 60, 0.12);
+  --badge: #1e0800;
+  --scan: rgba(255, 60, 60, 0.07);
 }
 
 /* Topbar */
@@ -26,13 +26,21 @@
 /* Ambiance street */
 [data-edition="anarchy"] #content {
   background-image:
-    radial-gradient(ellipse at 90% 90%, rgba(255,136,0,0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 10% 10%, rgba(255,60,60,0.04) 0%, transparent 50%);
+    radial-gradient(
+      ellipse at 90% 90%,
+      rgba(255, 136, 0, 0.04) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 10% 10%,
+      rgba(255, 60, 60, 0.04) 0%,
+      transparent 50%
+    );
 }
 
 /* Nav active */
 [data-edition="anarchy"] .nav-btn.active {
-  background: rgba(255,60,60,0.08);
+  background: rgba(255, 60, 60, 0.08);
 }
 
 /* Rang badges couleur selon rang */
@@ -43,31 +51,126 @@
 }
 [data-edition="anarchy"] .pnj-rank-badge.rang-lieutenant {
   color: var(--accent2);
-  border-color: rgba(255,136,0,0.3);
-  background: rgba(255,136,0,0.06);
+  border-color: rgba(255, 136, 0, 0.3);
+  background: rgba(255, 136, 0, 0.06);
 }
 [data-edition="anarchy"] .pnj-rank-badge.rang-boss {
   color: var(--accent);
-  border-color: rgba(255,60,60,0.4);
-  background: rgba(255,60,60,0.08);
+  border-color: rgba(255, 60, 60, 0.4);
+  background: rgba(255, 60, 60, 0.08);
 }
 
 /* Clichés — boss en orange */
-[data-edition="anarchy"] .cliche-item.boss-cliche { border-color: rgba(255,136,0,0.2); }
-[data-edition="anarchy"] .cliche-dice { color: var(--accent); }
+[data-edition="anarchy"] .cliche-item.boss-cliche {
+  border-color: rgba(255, 136, 0, 0.2);
+}
+[data-edition="anarchy"] .cliche-dice {
+  color: var(--accent);
+}
 
 /* Moniteur Anarchy */
-[data-edition="anarchy"] .monitor-box.filled { background: #6e1800; border-color: #9e2200; }
-[data-edition="anarchy"] .monitor-box.penalty { border-color: #ff3c3c; }
+[data-edition="anarchy"] .monitor-box.filled {
+  background: #6e1800;
+  border-color: #9e2200;
+}
+[data-edition="anarchy"] .monitor-box.penalty {
+  border-color: #ff3c3c;
+}
 
 /* Narcos */
 [data-edition="anarchy"] .narco-dot {
-  width: 10px; height: 10px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: var(--bg);
   cursor: pointer;
   display: inline-block;
-  transition: background 0.1s, border-color 0.1s;
+  transition:
+    background 0.1s,
+    border-color 0.1s;
 }
-[data-edition="anarchy"] .narco-dot.used { background: var(--accent2); border-color: var(--accent2); }
+[data-edition="anarchy"] .narco-dot.used {
+  background: var(--accent2);
+  border-color: var(--accent2);
+}
+
+/* ---- Styles spécifiques Anarchy 2e ---- */
+.anarchy-skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.anarchy-skill-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--border);
+}
+.anarchy-skill-row:last-child {
+  border-bottom: none;
+}
+.anarchy-skill-spec {
+  padding-left: 0.8rem;
+  opacity: 0.85;
+}
+
+.anarchy-skill-name {
+  font-size: 0.78rem;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.anarchy-skill-spec .anarchy-skill-name {
+  color: var(--text-dim);
+  font-size: 0.73rem;
+}
+
+.anarchy-skill-pool {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.62rem;
+  color: var(--accent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.anarchy-skill-spec .anarchy-skill-pool {
+  color: var(--accent2);
+}
+
+.anarchy-atout {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-bottom: 3px;
+}
+
+.anarchy-seuils {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.anarchy-seuil-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.anarchy-seuil-label {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.56rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  width: 58px;
+  flex-shrink: 0;
+}
+
+/* Paliers de seuil dans les moniteurs Anarchy */
+[data-edition="anarchy"] .monitor-box.penalty {
+  border-right: 2px solid var(--accent2);
+}
