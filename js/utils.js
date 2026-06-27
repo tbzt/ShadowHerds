@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /* ============================================================
    UTILS
@@ -24,104 +24,435 @@ const Utils = {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   },
 
-  /** Nom aléatoire générique (prénom + surnom runner) */
+  /* ============================================================
+     TABLES DE NOMS
+     Organisées par origine culturelle pour donner de la texture.
+     Chaque runner a un prénom d'origine + un surnom de rue.
+     ============================================================ */
+  _noms: {
+    // Prénoms par bassin culturel — reflet du melting-pot du sprawl
+    japonais: [
+      "Aiko",
+      "Kenji",
+      "Yuki",
+      "Hana",
+      "Ryo",
+      "Miwa",
+      "Taro",
+      "Suki",
+      "Kazuo",
+      "Rei",
+      "Shota",
+      "Nao",
+      "Fumiko",
+      "Ren",
+      "Kei",
+    ],
+    coreen: [
+      "Tae",
+      "Joon",
+      "Soo",
+      "Min",
+      "Hyun",
+      "Bora",
+      "Dain",
+      "Jae",
+      "Seul",
+      "Yuna",
+      "Haerin",
+      "Kang",
+      "Sunhi",
+      "Daegu",
+    ],
+    chinois: [
+      "Gao",
+      "Xia",
+      "Wei",
+      "Lin",
+      "Fang",
+      "Bao",
+      "Mei",
+      "Jing",
+      "Long",
+      "Zhu",
+      "Shen",
+      "Yanli",
+      "Rui",
+      "Cheng",
+    ],
+    russe: [
+      "Dasha",
+      "Irina",
+      "Vera",
+      "Oksana",
+      "Nadia",
+      "Petra",
+      "Sven",
+      "Ivan",
+      "Dmitri",
+      "Yuri",
+      "Tova",
+      "Katja",
+      "Misha",
+      "Zoya",
+    ],
+    africain: [
+      "Fatou",
+      "Jomo",
+      "Femi",
+      "Aya",
+      "Kofi",
+      "Amara",
+      "Seun",
+      "Nia",
+      "Zola",
+      "Kemi",
+      "Dayo",
+      "Adaeze",
+      "Sade",
+      "Kwame",
+    ],
+    latino: [
+      "Carlos",
+      "Lupe",
+      "Rosa",
+      "Marco",
+      "Inez",
+      "Diego",
+      "Yara",
+      "Camilo",
+      "Pilar",
+      "Reza",
+      "Valentina",
+      "Mateo",
+      "Flor",
+    ],
+    polynesien: [
+      "Hemi",
+      "Tane",
+      "Lani",
+      "Moana",
+      "Koa",
+      "Ngata",
+      "Rangi",
+      "Aroha",
+      "Teva",
+      "Manu",
+    ],
+    euro: [
+      "Britta",
+      "Erik",
+      "Ulric",
+      "Piet",
+      "Gus",
+      "Wren",
+      "Cass",
+      "Brek",
+      "Dev",
+      "Erin",
+      "Liese",
+      "Thora",
+      "Sigrid",
+      "Dag",
+      "Ivo",
+    ],
+    arabe: [
+      "Omar",
+      "Reza",
+      "Nadia",
+      "Zara",
+      "Tariq",
+      "Layla",
+      "Bilal",
+      "Soraya",
+      "Karim",
+      "Yasmin",
+      "Farouk",
+      "Hind",
+    ],
+    amerindien: [
+      "Crow",
+      "Sky",
+      "Rio",
+      "Flint",
+      "Sage",
+      "Ash",
+      "Reed",
+      "Dawn",
+      "Fox",
+      "Storm",
+    ],
+    asiacentral: [
+      "Quin",
+      "Zed",
+      "Batu",
+      "Temur",
+      "Altai",
+      "Naran",
+      "Gol",
+      "Saran",
+    ],
+    generique: [
+      "Maya",
+      "Nick",
+      "Leo",
+      "Jade",
+      "Uma",
+      "Vito",
+      "Kira",
+      "Sam",
+      "Alex",
+      "Morgan",
+      "Reese",
+      "Quinn",
+      "Blair",
+      "Sasha",
+    ],
+  },
+
+  _surnoms: {
+    // Surnoms par registre — le runner choisit (ou hérite) du sien
+    cyber: [
+      "Chrome",
+      "Circuit",
+      "Câble",
+      "Pixel",
+      "Déclic",
+      "Interface",
+      "Patch",
+      "Firmware",
+      "Glitch",
+      "Codec",
+      "Kernel",
+      "Flux",
+      "Nœud",
+      "Lag",
+      "Buffer",
+      "Signal",
+      "Static",
+      "Overclock",
+      "Baud",
+      "Hex",
+      "Binary",
+      "Ram",
+      "Stack",
+      "Vecteur",
+      "Daemon",
+    ],
+    rue: [
+      "Lame",
+      "Poing",
+      "Griffe",
+      "Dard",
+      "Cran",
+      "Éclat",
+      "Tranche",
+      "Crochet",
+      "Rouille",
+      "Sabre",
+      "Estoc",
+      "Mandrin",
+      "Clou",
+      "Pique",
+      "Leston",
+      "Bistouri",
+    ],
+    nature: [
+      "Loup",
+      "Corbeau",
+      "Lynx",
+      "Vipère",
+      "Tigre",
+      "Renard",
+      "Faucon",
+      "Ours",
+      "Serpent",
+      "Requin",
+      "Coyote",
+      "Panthère",
+      "Vautour",
+      "Hyène",
+      "Mamba",
+    ],
+    ombre: [
+      "Fantôme",
+      "Ombre",
+      "Brume",
+      "Spectre",
+      "Néant",
+      "Fumée",
+      "Voile",
+      "Nuage",
+      "Mirage",
+      "Écho",
+      "Silence",
+      "Murmure",
+      "Nuit",
+      "Crépuscule",
+      "Cendre",
+    ],
+    element: [
+      "Tonnerre",
+      "Braise",
+      "Feu",
+      "Forge",
+      "Acier",
+      "Cobalt",
+      "Mercure",
+      "Soufre",
+      "Éclair",
+      "Givre",
+      "Marteau",
+      "Enclume",
+      "Étain",
+      "Arsenic",
+      "Titane",
+    ],
+    abstrait: [
+      "Zéro",
+      "Néon",
+      "Hex",
+      "Toxique",
+      "Calme",
+      "Frisson",
+      "Vif",
+      "Pire",
+      "Gris",
+      "Chaos",
+      "Déclin",
+      "Fracas",
+      "Vertige",
+      "Transe",
+      "Glace",
+      "Acide",
+      "Volt",
+    ],
+    surnom_complet: [
+      "Cinq-Doigts",
+      "Trois-Balles",
+      "Sans-Nom",
+      "Brise-Os",
+      "Coupe-Court",
+      "Tue-Lumière",
+      "Passe-Muraille",
+      "Casse-Tout",
+      "Mange-Fer",
+      "Vide-Coffre",
+    ],
+  },
+
+  /** Génère un nom complet : prénom culturellement cohérent + surnom de rue */
   genName() {
-    const prenoms = [
-      'Aiko','Britta','Carlos','Dasha','Erik','Fatou','Gao','Hemi','Irina',
-      'Jomo','Kenji','Lupe','Marco','Nadia','Omar','Petra','Quin','Reza',
-      'Sara','Tova','Ulric','Vera','Wren','Xia','Yara','Zed','Aya','Brek',
-      'Cass','Dev','Erin','Femi','Gus','Hana','Ivan','Jade','Kira','Leo',
-      'Maya','Nick','Oksana','Piet','Rosa','Sven','Tae','Uma','Vito','Yuki'
-    ];
-    const surnoms = [
-      'Lame','Fantôme','Tonnerre','Acier','Ombre','Braise','Spectre','Faucille',
-      'Vif','Cobalt','Poing','Dard','Griffe','Gris','Néon','Pire','Serpent',
-      'Calme','Hex','Toxique','Zéro','Brume','Forge','Marteau','Circuit','Loup',
-      'Tigre','Corbeau','Vipère','Lynx','Câble','Feu','Vent','Rouille','Pixel',
-      'Ghost','Chrome','Déclic','Frisson','Sabre'
-    ];
-    return `${this.rand(prenoms)} "${this.rand(surnoms)}"`;
+    // Choisir un bassin culturel au hasard
+    const bassins = Object.keys(this._noms);
+    const bassin = this.rand(bassins);
+    const prenom = this.rand(this._noms[bassin]);
+
+    // Surnom : registre aléatoire
+    const registres = Object.keys(this._surnoms);
+    const registre = this.rand(registres);
+    const surnom = this.rand(this._surnoms[registre]);
+
+    return `${prenom} "${surnom}"`;
+  },
+
+  /** Prénom seul, pour les contacts qui n'ont pas forcément de surnom runner */
+  genFirstName() {
+    const bassins = Object.keys(this._noms);
+    return this.rand(this._noms[this.rand(bassins)]);
+  },
+
+  /** Surnom seul */
+  genHandle() {
+    const registres = Object.keys(this._surnoms);
+    return this.rand(this._surnoms[this.rand(registres)]);
   },
 
   /** Métatype aléatoire avec pondération réaliste SR */
   randMeta() {
     const pool = [
-      'Humain','Humain','Humain','Humain','Humain',
-      'Elfe','Elfe',
-      'Ork','Ork',
-      'Nain',
-      'Troll'
+      "Humain",
+      "Humain",
+      "Humain",
+      "Humain",
+      "Humain",
+      "Elfe",
+      "Elfe",
+      "Ork",
+      "Ork",
+      "Nain",
+      "Troll",
     ];
     return this.rand(pool);
   },
 
   /** Genre aléatoire */
   randGender() {
-    return this.rand(['M','F','F','M','NB']);
-  }
+    return this.rand(["M", "F", "F", "M", "NB"]);
+  },
 };
 
 /* ============================================================
    TOAST
    ============================================================ */
 function toast(msg, duration = 2400) {
-  const el = document.getElementById('toast');
+  const el = document.getElementById("toast");
   if (!el) return;
   el.textContent = msg;
-  el.classList.add('show');
+  el.classList.add("show");
   clearTimeout(el._timer);
-  el._timer = setTimeout(() => el.classList.remove('show'), duration);
+  el._timer = setTimeout(() => el.classList.remove("show"), duration);
 }
 
 /* ============================================================
    DICE ROLLER
    ============================================================ */
 const Dice = {
-  mode: 'normal',
+  mode: "normal",
 
   init() {
-    document.getElementById('dice-roll-btn').addEventListener('click', () => this.roll());
-    document.getElementById('dice-count').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') this.roll();
+    document
+      .getElementById("dice-roll-btn")
+      .addEventListener("click", () => this.roll());
+    document.getElementById("dice-count").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") this.roll();
     });
   },
 
   setMode(mode, btn) {
     this.mode = mode;
-    document.querySelectorAll('.dice-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    document
+      .querySelectorAll(".dice-btn")
+      .forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
   },
 
   roll() {
-    const input = document.getElementById('dice-count');
+    const input = document.getElementById("dice-count");
     const n = Utils.clamp(parseInt(input.value) || 6, 1, 40);
     input.value = n;
 
-    let totalDice = n;
     let hits = 0;
     let ones = 0;
-    const allRolls = [];
 
-    // Premier jet
-    for (let i = 0; i < totalDice; i++) {
+    for (let i = 0; i < n; i++) {
       const r = Utils.randInt(1, 6);
-      allRolls.push(r);
       if (r >= 5) hits++;
       if (r === 1) ones++;
     }
 
     // Dés explosifs : on relance les succès
-    if (this.mode === 'explosive') {
+    if (this.mode === "explosive") {
       let toReroll = hits;
-      let safetyBreak = 0;
-      while (toReroll > 0 && safetyBreak < 6) {
+      let guard = 0;
+      while (toReroll > 0 && guard < 6) {
         let newHits = 0;
         for (let i = 0; i < toReroll; i++) {
           if (Utils.randInt(1, 6) >= 5) newHits++;
         }
         hits += newHits;
         toReroll = newHits;
-        safetyBreak++;
+        guard++;
       }
     }
 
@@ -129,15 +460,15 @@ const Dice = {
     const critGlitch = glitch && hits === 0;
 
     let result = `${hits} succès`;
-    if (critGlitch) result += ' — ÉCHEC CRITIQUE';
-    else if (glitch) result += ' — Bévue';
+    if (critGlitch) result += " — ÉCHEC CRITIQUE";
+    else if (glitch) result += " — Bévue";
 
-    const el = document.getElementById('dice-result');
+    const el = document.getElementById("dice-result");
     el.textContent = result;
     el.style.color = critGlitch
-      ? '#c0392b'
+      ? "#c0392b"
       : glitch
-        ? 'var(--accent2)'
-        : 'var(--accent)';
-  }
+        ? "var(--accent2)"
+        : "var(--accent)";
+  },
 };
