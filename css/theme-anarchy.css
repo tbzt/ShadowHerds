@@ -1,0 +1,73 @@
+/* ============================================================
+   THÈME SHADOWRUN ANARCHY 2E ÉDITION
+   Palette : rouge punk #ff3c3c / orange vif #ff8800
+   Fond : noir chaud #0c0806
+   Vibe : rapide, brutal, street-level
+   ============================================================ */
+[data-edition="anarchy"] {
+  --bg:       #0c0806;
+  --bg-card:  #130c08;
+  --bg-mid:   #180f0a;
+  --accent:   #ff3c3c;
+  --accent2:  #ff8800;
+  --text:     #e8d0c0;
+  --text-dim: #5c3828;
+  --border:   #2a1008;
+  --glow:     rgba(255, 60, 60, 0.12);
+  --badge:    #1e0800;
+  --scan:     rgba(255, 60, 60, 0.07);
+}
+
+/* Topbar */
+[data-edition="anarchy"] #topbar {
+  border-bottom-color: #2a1008;
+}
+
+/* Ambiance street */
+[data-edition="anarchy"] #content {
+  background-image:
+    radial-gradient(ellipse at 90% 90%, rgba(255,136,0,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 10% 10%, rgba(255,60,60,0.04) 0%, transparent 50%);
+}
+
+/* Nav active */
+[data-edition="anarchy"] .nav-btn.active {
+  background: rgba(255,60,60,0.08);
+}
+
+/* Rang badges couleur selon rang */
+[data-edition="anarchy"] .pnj-rank-badge.rang-figurant {
+  color: var(--text-dim);
+  border-color: var(--border);
+  background: transparent;
+}
+[data-edition="anarchy"] .pnj-rank-badge.rang-lieutenant {
+  color: var(--accent2);
+  border-color: rgba(255,136,0,0.3);
+  background: rgba(255,136,0,0.06);
+}
+[data-edition="anarchy"] .pnj-rank-badge.rang-boss {
+  color: var(--accent);
+  border-color: rgba(255,60,60,0.4);
+  background: rgba(255,60,60,0.08);
+}
+
+/* Clichés — boss en orange */
+[data-edition="anarchy"] .cliche-item.boss-cliche { border-color: rgba(255,136,0,0.2); }
+[data-edition="anarchy"] .cliche-dice { color: var(--accent); }
+
+/* Moniteur Anarchy */
+[data-edition="anarchy"] .monitor-box.filled { background: #6e1800; border-color: #9e2200; }
+[data-edition="anarchy"] .monitor-box.penalty { border-color: #ff3c3c; }
+
+/* Narcos */
+[data-edition="anarchy"] .narco-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer;
+  display: inline-block;
+  transition: background 0.1s, border-color 0.1s;
+}
+[data-edition="anarchy"] .narco-dot.used { background: var(--accent2); border-color: var(--accent2); }

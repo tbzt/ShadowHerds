@@ -1,0 +1,47 @@
+/* ============================================================
+   THÈME SHADOWRUN 6E ÉDITION
+   Palette : cyan électrique #00c8ff / violet #7b2fff
+   Fond : noir bleuté #060a0e
+   Vibe : interface corpo, post-Edge
+   ============================================================ */
+[data-edition="sr6"] {
+  --bg:       #060a0e;
+  --bg-card:  #090e14;
+  --bg-mid:   #0a1018;
+  --accent:   #00c8ff;
+  --accent2:  #7b2fff;
+  --text:     #bbd4e8;
+  --text-dim: #3a5268;
+  --border:   #0e2030;
+  --glow:     rgba(0, 200, 255, 0.10);
+  --badge:    #001a2e;
+  --scan:     rgba(0, 200, 255, 0.07);
+}
+
+/* Topbar */
+[data-edition="sr6"] #topbar {
+  border-bottom-color: #0e2030;
+}
+
+/* Reflet bleuté dans le contenu */
+[data-edition="sr6"] #content {
+  background-image:
+    radial-gradient(ellipse at 15% 80%, rgba(123,47,255,0.05) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 10%, rgba(0,200,255,0.05) 0%, transparent 55%);
+}
+
+/* Nav active */
+[data-edition="sr6"] .nav-btn.active {
+  background: rgba(0,200,255,0.07);
+}
+
+/* Défenses d'attribut — teinte violette */
+[data-edition="sr6"] .def-attr .attr-value { color: #7b2fff; }
+[data-edition="sr6"] .def-attr .attr-label { color: #5a2acc; }
+
+/* Moniteur unique SR6 */
+[data-edition="sr6"] .monitor-box.filled { background: #004d6e; border-color: #006e9e; }
+[data-edition="sr6"] .monitor-box.penalty { border-color: #00c8ff; }
+
+/* Section Défenses d'attribut */
+[data-edition="sr6"] .def-section .card-section-label { color: #7b2fff; }
