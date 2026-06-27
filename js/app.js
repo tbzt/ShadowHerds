@@ -12,7 +12,7 @@ const App = {
     sr5: {
       title: 'Shadowrun 5e édition',
       body: `
-        <h2>Mob Master — Shadowrun 5e</h2>
+        <h2>Shadow Herds — Shadowrun 5e</h2>
         <p>Bienvenue sur le gestionnaire de PNJ pour <strong>Shadowrun 5e édition</strong>.</p>
         <ul>
           <li><strong>Ombres portées</strong> — Votre casting de figurants, organisés par groupes.</li>
@@ -30,7 +30,7 @@ const App = {
     sr6: {
       title: 'Shadowrun 6e édition',
       body: `
-        <h2>Mob Master — Shadowrun 6e</h2>
+        <h2>Shadow Herds — Shadowrun 6e</h2>
         <p>Bienvenue sur le gestionnaire de PNJ pour <strong>Shadowrun 6e édition</strong>.</p>
         <ul>
           <li><strong>Ombres portées</strong> — Votre casting de figurants, organisés par groupes.</li>
@@ -47,7 +47,7 @@ const App = {
     anarchy: {
       title: 'Shadowrun Anarchy 2e édition',
       body: `
-        <h2>Mob Master — Anarchy 2e</h2>
+        <h2>Shadow Herds — Anarchy 2e</h2>
         <p>Bienvenue sur le gestionnaire de PNJ pour <strong>Shadowrun Anarchy 2e édition</strong>.</p>
         <ul>
           <li><strong>Ombres portées</strong> — Votre casting de figurants, organisés par groupes.</li>

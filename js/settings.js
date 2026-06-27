@@ -60,10 +60,9 @@ const Settings = {
     html += `<div class="settings-section">
       <h3>À propos</h3>
       <p>
-        <strong>Mob Master — Shadowrun PNJ Generator</strong><br>
+        <strong>Shadow Herds — Shadowrun PNJ Generator</strong><br>
         Basé sur le GM Mob Master original de <strong>Toktic</strong>,
-        traduit par <strong>Michel_Platinium</strong>,
-        adapté et refondu par <strong>tbzt</strong>.
+        traduit, adapté et reforgé par <strong>Michel_Platinium</strong>.
       </p>
       <p style="font-size:0.75rem;">
         Shadowrun est une marque de The Topps Company, Inc.
