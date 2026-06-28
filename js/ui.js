@@ -493,6 +493,104 @@ const ContactRenderer = {
     return c.edition === "anarchy" ? this._renderAnarchy(c) : this._renderSR(c);
   },
 
+  /* ---- Card persistante (ContactsBook) avec édition inline ---- */
+  renderPersistent(c, allGroups, currentGroups) {
+    const el = document.createElement("div");
+    el.className = "contact-card contact-card-saved";
+    el.dataset.id = c.id;
+
+    const isAnarchy = c.edition === "anarchy";
+    const stats = isAnarchy ? this._statsAnarchy(c) : this._statsSR(c);
+
+    const groupOpts = ["— Sans groupe —", ...allGroups]
+      .map((g) => {
+        const val = g === "— Sans groupe —" ? "all" : g;
+        const sel = currentGroups.includes(g) ? "selected" : "";
+        return `<option value="${val}" ${sel}>${g}</option>`;
+      })
+      .join("");
+    const groupSel =
+      allGroups.length > 0
+        ? `<select class="group-select-inline" title="Groupe"
+           onchange="ContactsBook.moveToGroup('${c.id}', this.value)">${groupOpts}</select>`
+        : "";
+
+    el.innerHTML = `
+      <div class="contact-card-body">
+        <div class="contact-header-row">
+          <div>
+            <div class="contact-name" contenteditable="true" spellcheck="false"
+              onblur="ContactsBook.editField('${c.id}', 'name', this.textContent.trim())"
+              >${CardRenderer._esc(c.name)}</div>
+            <div class="contact-role" contenteditable="true" spellcheck="false"
+              onblur="ContactsBook.editField('${c.id}', 'role', this.textContent.trim())"
+              >${CardRenderer._esc(c.role)}</div>
+          </div>
+          <div class="contact-header-actions">
+            ${groupSel}
+          </div>
+        </div>
+
+        <div class="contact-desc">${CardRenderer._esc(c.desc)}</div>
+
+        ${stats}
+
+        <div class="contact-trait">⚠ <span contenteditable="true" spellcheck="false"
+          onblur="ContactsBook.editField('${c.id}', 'trait', this.textContent.trim())"
+          >${CardRenderer._esc(c.trait)}</span></div>
+
+        <div class="contact-notes-row">
+          <textarea class="contact-notes" placeholder="Notes…" rows="2"
+            onchange="ContactsBook.editNote('${c.id}', this.value)"
+            >${CardRenderer._esc(c.notes || "")}</textarea>
+        </div>
+      </div>
+      <div class="pnj-card-footer">
+        <button class="card-action-btn danger" onclick="ContactsBook.remove('${c.id}')">Supprimer</button>
+      </div>`;
+    return el;
+  },
+
+  _statsAnarchy(c) {
+    const dots = Array.from(
+      { length: 6 },
+      (_, i) =>
+        `<span class="niveau-dot ${i < c.niveau ? "filled" : ""}"
+        onclick="ContactsBook.editField('${c.id}', 'niveau', ${i + 1}); ContactsBook.render()"></span>`,
+    ).join("");
+    const bonus = c.bonus
+      ? `<div class="contact-bonus">+ ${CardRenderer._esc(c.bonus)}</div>`
+      : "";
+    return `<div class="contact-anarchy-stats">
+      <div class="contact-stat-row">
+        <span class="contact-stat-label">Niveau</span>
+        <div class="niveau-dots">${dots}</div>
+        <span class="contact-stat-val">${c.niveau} (${(c.niveau * 5000).toLocaleString("fr-FR")}¥)</span>
+      </div>
+      <div class="contact-stat-row">
+        <span class="contact-stat-label">Effet</span>
+        <span class="contact-rr">RR ${c.rr} — ${CardRenderer._esc(c.domaine)}</span>
+      </div>
+      ${bonus}
+    </div>`;
+  },
+
+  _statsSR(c) {
+    return `<div class="stats-row" style="margin-top:6px;flex-wrap:wrap;gap:6px;">
+      <span class="stat-pill accent">Influence
+        <strong contenteditable="true" spellcheck="false" class="editable-num"
+          onblur="ContactsBook.editField('${c.id}', 'influence', this.textContent.trim())"
+          >${c.influence}</strong>
+      </span>
+      <span class="stat-pill">Loyauté
+        <strong contenteditable="true" spellcheck="false" class="editable-num"
+          onblur="ContactsBook.editField('${c.id}', 'loyaute', this.textContent.trim())"
+          >${c.loyaute}</strong>
+      </span>
+      ${c.lieu ? `<span style="font-size:0.68rem;color:var(--text-dim);align-self:center;">📍 ${CardRenderer._esc(c.lieu)}</span>` : ""}
+    </div>`;
+  },
+
   _renderAnarchy(c) {
     const el = document.createElement("div");
     el.className = "contact-card";

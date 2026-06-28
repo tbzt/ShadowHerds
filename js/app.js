@@ -90,6 +90,7 @@ const App = {
       badgeLabels[ed] || ed;
 
     Shadows.load();
+    ContactsBook.load();
     Gen.buildForms();
     Settings.render();
 
@@ -125,7 +126,7 @@ const App = {
         Shadows.render();
         break;
       case "contacts":
-        Contacts.initPanel();
+        ContactsBook.initPanel();
         break;
       case "run":
         RunGen.initPanel();

@@ -363,6 +363,15 @@ select option {
   display: none;
 }
 .panel.active {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+/* Les panels sans layout flex particulier reviennent à block */
+#panel-welcome.active,
+#panel-generator.active,
+#panel-run.active,
+#panel-settings.active {
   display: block;
 }
 
@@ -916,6 +925,254 @@ select option {
 /* ============================================================
    OMBRES PORTÉES
    ============================================================ */
+/* ============================================================
+   SHADOWS + CONTACTS — layout sidebar + grille
+   ============================================================ */
+.shadows-layout {
+  display: flex;
+  gap: 0;
+  height: 100%;
+  min-height: 0;
+}
+
+/* ---- Sidebar groupes ---- */
+.shadows-sidebar {
+  width: 180px;
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  border-radius: 4px 0 0 4px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.shadows-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.shadows-sidebar-title {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+#shadows-group-list,
+#contacts-group-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.3rem 0;
+}
+
+/* ---- Group items dans la sidebar ---- */
+.group-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  border-left: 2px solid transparent;
+  transition:
+    color 0.12s,
+    background 0.12s,
+    border-color 0.12s;
+  position: relative;
+}
+.group-item:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+.group-item.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: var(--glow);
+}
+.group-item-icon {
+  font-size: 0.6rem;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+.group-item.active .group-item-icon {
+  opacity: 1;
+}
+.group-item-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.group-item-count {
+  font-size: 0.7rem;
+  font-family: "Share Tech Mono", monospace;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 0 5px;
+  flex-shrink: 0;
+}
+.group-item-actions {
+  display: none;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.group-item:hover .group-item-actions {
+  display: flex;
+}
+
+/* ---- Zone principale ---- */
+.shadows-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 1rem;
+  gap: 0.75rem;
+  overflow-y: auto;
+}
+.shadows-main-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.shadows-group-label {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  flex: 1;
+}
+
+/* ---- Boutons utilitaires ---- */
+.btn-icon {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    border-color 0.12s,
+    color 0.12s;
+  flex-shrink: 0;
+}
+.btn-icon:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-icon-tiny {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  cursor: pointer;
+  padding: 1px 3px;
+  border-radius: 2px;
+  line-height: 1;
+  transition: color 0.12s;
+}
+.btn-icon-tiny:hover {
+  color: var(--text);
+}
+.btn-icon-tiny.danger:hover {
+  color: #c0392b;
+}
+
+.btn-small {
+  font-size: 0.72rem;
+  padding: 0.25rem 0.7rem;
+  height: auto;
+}
+
+/* ---- Sélecteur de groupe inline sur les cards ---- */
+.group-select-inline {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  padding: 2px 4px;
+  border-radius: 2px;
+  cursor: pointer;
+  max-width: 130px;
+  transition: border-color 0.12s;
+}
+.group-select-inline:hover,
+.group-select-inline:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* ---- Cards contacts persistantes ---- */
+.contact-card-saved {
+  border-color: var(--border);
+}
+.contact-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 4px;
+}
+.contact-header-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.editable-num {
+  min-width: 1ch;
+  display: inline-block;
+  border-bottom: 1px dashed var(--border);
+  cursor: text;
+}
+.editable-num:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+.contact-notes-row {
+  margin-top: 6px;
+}
+.contact-notes {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.65rem;
+  padding: 4px 6px;
+  resize: vertical;
+  min-height: 36px;
+  transition: border-color 0.12s;
+}
+.contact-notes:focus {
+  border-color: var(--accent);
+  outline: none;
+  color: var(--text);
+}
+.contact-notes::placeholder {
+  color: var(--text-dim);
+  opacity: 0.5;
+}
+
+/* Ancien toolbar (conservé pour compatibilité) */
 .shadows-toolbar {
   display: flex;
   gap: 0.75rem;
@@ -951,18 +1208,6 @@ select option {
   border-color: var(--accent);
   color: var(--accent);
   background: var(--glow);
-}
-.group-tab.deletable {
-  padding-right: 0.5rem;
-}
-.group-tab-del {
-  margin-left: 4px;
-  font-size: 0.7rem;
-  color: var(--text-dim);
-  transition: color 0.15s;
-}
-.group-tab:hover .group-tab-del {
-  color: #c0392b;
 }
 
 /* ============================================================

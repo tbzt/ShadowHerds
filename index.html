@@ -115,11 +115,25 @@
         <!-- OMBRES PORTÉES -->
         <div class="panel" id="panel-shadows">
           <div class="panel-title">Ombres portées</div>
-          <div class="shadows-toolbar">
-            <div class="group-tabs" id="group-tabs"></div>
-            <button class="btn-secondary" onclick="Shadows.addGroup()">+ Groupe</button>
+          <div class="shadows-layout">
+            <!-- Colonne gauche : groupes -->
+            <aside class="shadows-sidebar">
+              <div class="shadows-sidebar-header">
+                <span class="shadows-sidebar-title">Groupes</span>
+                <button class="btn-icon" onclick="Shadows.addGroup()" title="Nouveau groupe">＋</button>
+              </div>
+              <div id="shadows-group-list"></div>
+            </aside>
+            <!-- Zone principale : grille de cards -->
+            <div class="shadows-main">
+              <div class="shadows-main-toolbar">
+                <span id="shadows-group-label" class="shadows-group-label">Tous les figurants</span>
+                <button class="btn-secondary btn-small" onclick="Shadows.saveAllVisible()">Sauvegarder tout dans le
+                  groupe</button>
+              </div>
+              <div class="cards-zone" id="shadows-grid"></div>
+            </div>
           </div>
-          <div class="cards-zone" id="shadows-grid"></div>
         </div>
 
         <!-- GÉNÉRATEUR PNJ -->
@@ -154,8 +168,23 @@
 
         <!-- CONTACTS -->
         <div class="panel" id="panel-contacts">
-          <div class="panel-title">Générateur de contacts</div>
-          <div id="contacts-panel-content"></div>
+          <div class="panel-title">Contacts</div>
+          <div class="shadows-layout">
+            <aside class="shadows-sidebar">
+              <div class="shadows-sidebar-header">
+                <span class="shadows-sidebar-title">Groupes</span>
+                <button class="btn-icon" onclick="ContactsBook.addGroup()" title="Nouveau groupe">＋</button>
+              </div>
+              <div id="contacts-group-list"></div>
+            </aside>
+            <div class="shadows-main">
+              <div class="shadows-main-toolbar">
+                <span id="contacts-group-label" class="shadows-group-label">Tous les contacts</span>
+                <button class="btn-primary btn-small" onclick="ContactsBook.generate()">Générer un contact</button>
+              </div>
+              <div class="cards-zone" id="contacts-grid"></div>
+            </div>
+          </div>
         </div>
 
         <!-- RUN -->
@@ -195,18 +224,18 @@
   <div id="toast" role="status" aria-live="polite"></div>
 
   <!-- SCRIPTS — ordre important : utils → storage → éditions → ui → modules → app -->
-  <script src="js/utils.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/editions/sr5.js"></script>
-  <script src="js/editions/sr6.js"></script>
-  <script src="js/editions/anarchy.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/generator.js"></script>
-  <script src="js/shadows.js"></script>
-  <script src="js/editmodal.js"></script>
-  <script src="js/extras.js"></script>
-  <script src="js/settings.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/utils.js?v=2"></script>
+  <script src="js/storage.js?v=2"></script>
+  <script src="js/editions/sr5.js?v=2"></script>
+  <script src="js/editions/sr6.js?v=2"></script>
+  <script src="js/editions/anarchy.js?v=2"></script>
+  <script src="js/ui.js?v=2"></script>
+  <script src="js/generator.js?v=2"></script>
+  <script src="js/shadows.js?v=2"></script>
+  <script src="js/editmodal.js?v=2"></script>
+  <script src="js/extras.js?v=2"></script>
+  <script src="js/settings.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
 
 </body>
 

@@ -181,7 +181,7 @@ const Contacts = {
       ],
     },
     {
-      role: "Faussaire",
+      role: "Tailleur d'identités",
       influenceMin: 3,
       influenceMax: 6,
       desc: "Faux SINs, passeports, permis, dossiers effacés. La qualité a un prix — la qualité médiocre coûte plus cher encore.",
@@ -568,7 +568,7 @@ const Contacts = {
       desc: "Archives légales, expertise technique, couverture académique. Accès aux bibliothèques et labos.",
     },
     {
-      role: "Faussaire",
+      role: "Tailleur d'identités",
       niveau: 4,
       cout: 20000,
       rr: 2,
@@ -1116,5 +1116,214 @@ const RunGen = {
   },
   clearAll() {
     document.getElementById("run-list").innerHTML = "";
+  },
+};
+
+/* ============================================================
+   CONTACTS BOOK — contacts persistants avec groupes et notes
+   Structure miroir de Shadows, mais pour les contacts
+   ============================================================ */
+const ContactsBook = {
+  data: {
+    all: [],
+    groups: {},
+  },
+  currentGroup: "all",
+
+  load() {
+    this.data.all = Storage.get("contacts_all", []);
+    this.data.groups = Storage.get("contacts_groups", {});
+  },
+
+  save() {
+    Storage.set("contacts_all", this.data.all);
+    Storage.set("contacts_groups", this.data.groups);
+  },
+
+  /* ---- Générer et ajouter ---- */
+  generate() {
+    const c = Contacts.generate();
+    c.notes = "";
+    this.data.all.push(c);
+    // Si un groupe est sélectionné, l'y ajouter directement
+    if (this.currentGroup !== "all" && this.data.groups[this.currentGroup]) {
+      this.data.groups[this.currentGroup].push(c.id);
+    }
+    this.save();
+    this.render();
+    toast(`✓ ${c.name} ajouté aux contacts.`);
+  },
+
+  remove(id) {
+    const c = this.data.all.find((x) => x.id === id);
+    this.data.all = this.data.all.filter((x) => x.id !== id);
+    for (const g of Object.keys(this.data.groups)) {
+      this.data.groups[g] = this.data.groups[g].filter((i) => i !== id);
+    }
+    this.save();
+    this.render();
+    if (c) toast(`${c.name} supprimé.`);
+  },
+
+  /* ---- Édition inline ---- */
+  editNote(id, value) {
+    const c = this.data.all.find((x) => x.id === id);
+    if (c) {
+      c.notes = value;
+      this.save();
+    }
+  },
+
+  editField(id, field, value) {
+    const c = this.data.all.find((x) => x.id === id);
+    if (c) {
+      if (field === "influence" || field === "loyaute" || field === "niveau") {
+        c[field] = parseInt(value, 10);
+      } else {
+        c[field] = value;
+      }
+      this.save();
+    }
+  },
+
+  /* ---- Groupes ---- */
+  addGroup() {
+    const name = prompt("Nom du groupe :");
+    if (!name || !name.trim()) return;
+    const key = name.trim();
+    if (key === "all") {
+      toast("Nom réservé.");
+      return;
+    }
+    if (!this.data.groups[key]) this.data.groups[key] = [];
+    this.save();
+    this.render();
+    toast(`Groupe "${key}" créé.`);
+  },
+
+  removeGroup(key) {
+    if (!confirm(`Supprimer le groupe "${key}" ?`)) return;
+    delete this.data.groups[key];
+    if (this.currentGroup === key) this.currentGroup = "all";
+    this.save();
+    this.render();
+  },
+
+  renameGroup(key) {
+    const newName = prompt("Nouveau nom :", key);
+    if (!newName || !newName.trim() || newName.trim() === key) return;
+    const newKey = newName.trim();
+    if (this.data.groups[newKey]) {
+      toast("Ce nom existe déjà.");
+      return;
+    }
+    this.data.groups[newKey] = this.data.groups[key];
+    delete this.data.groups[key];
+    if (this.currentGroup === key) this.currentGroup = newKey;
+    this.save();
+    this.render();
+  },
+
+  moveToGroup(id, targetGroup) {
+    for (const g of Object.keys(this.data.groups)) {
+      this.data.groups[g] = this.data.groups[g].filter((i) => i !== id);
+    }
+    if (targetGroup !== "all" && this.data.groups[targetGroup]) {
+      if (!this.data.groups[targetGroup].includes(id)) {
+        this.data.groups[targetGroup].push(id);
+      }
+    }
+    this.save();
+    this.render();
+  },
+
+  groupsOf(id) {
+    return Object.keys(this.data.groups).filter((g) =>
+      this.data.groups[g].includes(id),
+    );
+  },
+
+  switchGroup(g) {
+    this.currentGroup = g;
+    this.render();
+  },
+
+  /* ---- Rendu ---- */
+  render() {
+    this._renderSidebar();
+    this._renderGrid();
+  },
+
+  initPanel() {
+    this.load();
+    this.render();
+  },
+
+  _renderSidebar() {
+    const container = document.getElementById("contacts-group-list");
+    if (!container) return;
+    const groups = Object.keys(this.data.groups);
+
+    const allActive = this.currentGroup === "all" ? "active" : "";
+    let html = `<div class="group-item ${allActive}" onclick="ContactsBook.switchGroup('all')">
+      <span class="group-item-icon">◈</span>
+      <span class="group-item-name">Tous</span>
+      <span class="group-item-count">${this.data.all.length}</span>
+    </div>`;
+
+    for (const g of groups) {
+      const count = this.data.groups[g].length;
+      const active = this.currentGroup === g ? "active" : "";
+      const gSafe = g.replace(/'/g, "\\'");
+      html += `<div class="group-item ${active}" onclick="ContactsBook.switchGroup('${gSafe}')">
+        <span class="group-item-icon">▸</span>
+        <span class="group-item-name">${g}</span>
+        <span class="group-item-count">${count}</span>
+        <span class="group-item-actions">
+          <button class="btn-icon-tiny" onclick="event.stopPropagation(); ContactsBook.renameGroup('${gSafe}')" title="Renommer">✎</button>
+          <button class="btn-icon-tiny danger" onclick="event.stopPropagation(); ContactsBook.removeGroup('${gSafe}')" title="Supprimer">✕</button>
+        </span>
+      </div>`;
+    }
+
+    container.innerHTML = html;
+
+    const label = document.getElementById("contacts-group-label");
+    if (label) {
+      label.textContent =
+        this.currentGroup === "all"
+          ? `Tous les contacts (${this.data.all.length})`
+          : `${this.currentGroup} (${(this.data.groups[this.currentGroup] || []).length})`;
+    }
+  },
+
+  _renderGrid() {
+    const grid = document.getElementById("contacts-grid");
+    if (!grid) return;
+    grid.innerHTML = "";
+
+    let list = this.data.all;
+    if (this.currentGroup !== "all") {
+      const ids = this.data.groups[this.currentGroup] || [];
+      list = this.data.all.filter((c) => ids.includes(c.id));
+    }
+
+    if (!list.length) {
+      grid.innerHTML = `<div class="empty-state">
+        <span class="empty-state-title">Aucun contact ici</span>
+        Générez des contacts avec le bouton ci-dessus.
+      </div>`;
+      return;
+    }
+
+    const allGroups = Object.keys(this.data.groups);
+    for (const c of list) {
+      const card = ContactRenderer.renderPersistent(
+        c,
+        allGroups,
+        this.groupsOf(c.id),
+      );
+      grid.appendChild(card);
+    }
   },
 };
