@@ -561,19 +561,19 @@ const ContactRenderer = {
   _renderSR(c) {
     const el = document.createElement("div");
     el.className = "contact-card";
-    const specStr = c.specialite
-      ? ` <em style="color:var(--accent2);font-size:0.6rem;">(${CardRenderer._esc(c.specialite)})</em>`
-      : "";
     el.innerHTML = `
       <div class="contact-card-body">
         <div class="contact-name">${CardRenderer._esc(c.name)}</div>
-        <div class="contact-role">${CardRenderer._esc(c.role)}${specStr}</div>
+        <div class="contact-role">${CardRenderer._esc(c.role)}</div>
         <div class="contact-desc">${CardRenderer._esc(c.desc)}</div>
         <div class="stats-row" style="margin-top:6px;">
+          <span class="stat-pill accent">Influence <strong>${c.influence}</strong></span>
           <span class="stat-pill">Loyauté <strong>${c.loyaute}</strong></span>
-          <span class="stat-pill">Connexion <strong>${c.connexion}</strong></span>
         </div>
-        <div class="contact-trait" style="margin-top:6px;">⚠ ${CardRenderer._esc(c.trait)}</div>
+        <div style="margin-top:5px;font-size:0.68rem;color:var(--text-dim);">
+          📍 ${CardRenderer._esc(c.lieu)}
+        </div>
+        <div class="contact-trait">⚠ ${CardRenderer._esc(c.trait)}</div>
       </div>
       <div class="pnj-card-footer">
         <button class="card-action-btn danger" onclick="this.closest('.contact-card').remove()">Virer</button>

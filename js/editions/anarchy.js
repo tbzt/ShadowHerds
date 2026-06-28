@@ -2,7 +2,6 @@
 
 /* ============================================================
    ÉDITION ANARCHY 2E — Shadowrun Anarchy 2e édition
-   Basé sur les profils officiels du livre de base (BBE, 2026)
 
    MÉCANIQUE CLEF :
    - 5 attributs : FOR / AGI / VOL / LOG / CHA
