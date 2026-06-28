@@ -13,54 +13,40 @@ const App = {
       title: "Shadowrun 5e édition",
       body: `
         <h2>Shadow Herds — Shadowrun 5e</h2>
-        <p>Bienvenue sur le gestionnaire de PNJ pour <strong>Shadowrun 5e édition</strong>.</p>
+        <p>Gestionnaire de PNJ pour <strong>Shadowrun 5e édition</strong>, calibré sur le LdB SR5 (p.68–396).</p>
         <ul>
-          <li><strong>Ombres portées</strong> — Votre casting de figurants, organisés par groupes.</li>
-          <li><strong>Générateur PNJ</strong> — PNJ à la volée : attributs, Limites, compétences, équipement.</li>
-          <li><strong>Contacts</strong> — Contacts avec Loyauté et Connexion.</li>
-          <li><strong>Run</strong> — Ébauche de scénario en un clic.</li>
+          <li><strong>Ombres portées</strong> — Bibliothèque de PNJ sauvegardés, organisés en groupes. Sidebar de navigation à gauche.</li>
+          <li><strong>Générateur PNJ</strong> — 48 professions, 5 métatypes, 8 attributs, Limites (Physique / Mental / Social), compétences tirées dans un pool, équipement authentique du livre.</li>
+          <li><strong>Contacts</strong> — 24 types de contacts avec Influence (1–12) et Loyauté (1–6), lieux, traits de personnalité, champ Notes et groupes.</li>
+          <li><strong>Run</strong> — Ébauche de scénario : type de mission, client, lieu, complication, objectif secondaire, paiement.</li>
         </ul>
-        <p>Les PNJ SR5 incluent les <strong>huit attributs</strong>, les <strong>Limites</strong>
-        (Physique, Mental, Social), l'Essence, et des moniteurs séparés
-        (dégâts physiques et étourdissement).</p>
-        <p>Les PNJ magiques (Mage hermétique, Chaman, Adepte) disposent de l'attribut
-        <strong>MAG</strong>, de sorts ou de pouvoirs d'adepte, et d'une
-        résistance au Drain calculée.</p>`,
+        <p>Les PNJ SR5 incluent les <strong>huit attributs</strong>, les <strong>trois Limites naturelles</strong>, l'Essence, deux moniteurs séparés (physique et étourdissement), initiative et résistance au Drain pour les Éveillés. Profils calibrés sur les six niveaux de Professionnalisme.</p>`,
     },
     sr6: {
       title: "Shadowrun 6e édition",
       body: `
         <h2>Shadow Herds — Shadowrun 6e</h2>
-        <p>Bienvenue sur le gestionnaire de PNJ pour <strong>Shadowrun 6e édition</strong>.</p>
+        <p>Gestionnaire de PNJ pour <strong>Shadowrun 6e édition</strong>, calibré sur le LdB SR6, Feu Nourri et le Compagnon du Sixième Monde (BBE).</p>
         <ul>
-          <li><strong>Ombres portées</strong> — Votre casting de figurants, organisés par groupes.</li>
-          <li><strong>Générateur PNJ</strong> — PNJ avec Défenses d'Attribut, compétences fusionnées.</li>
-          <li><strong>Contacts</strong> — Contacts avec Loyauté et Connexion.</li>
-          <li><strong>Run</strong> — Ébauche de scénario en un clic.</li>
+          <li><strong>Ombres portées</strong> — Bibliothèque de PNJ sauvegardés, organisés en groupes. Sidebar de navigation à gauche.</li>
+          <li><strong>Générateur PNJ</strong> — 50+ professions, 5 métatypes + 19 métavariantes (Compagnon), Score Défensif, Potentiel d'Actions, Moniteur d'état unique, compétences SR6 regroupées, armes avec Scores Offensifs (Feu Nourri).</li>
+          <li><strong>Contacts</strong> — 24 types de contacts avec Influence et Loyauté, lieux, traits, champ Notes et groupes.</li>
+          <li><strong>Run</strong> — Ébauche de scénario orientée SR6 : factions, lieux nommés de Seattle, complications.</li>
         </ul>
-        <p>Les PNJ SR6 utilisent les <strong>Défenses d'Attribut</strong> en lieu et place
-        des Limites, et un <strong>moniteur de condition unique</strong> par défaut
-        (configurable en séparé dans les Paramètres).</p>
-        <p>Le <strong>Professionnalisme (0–6)</strong> guide la puissance globale et
-        détermine l'équipement disponible.</p>`,
+        <p>Les PNJ SR6 utilisent le <strong>Score Défensif (SD)</strong>, le <strong>Potentiel d'Actions (PA)</strong> et un <strong>Moniteur d'état unique</strong>. Professionnalisme 0–10 calé sur les 20 PNJ de référence du livre (p.212–220). Les métavariantes couvrent Hobgobelin, Oni, Ogre, Satyre, Cyclope, Fomori, Géant, Minotaure, Nocturna, Wakyambi, Dalakitnon, Dryade, Xapiri thëpë, Nartaki, Valkyrie, Duende, Gnome, Hanuman, Koborokuru et Menehune.</p>`,
     },
     anarchy: {
       title: "Shadowrun Anarchy 2e édition",
       body: `
         <h2>Shadow Herds — Anarchy 2e</h2>
-        <p>Bienvenue sur le gestionnaire de PNJ pour <strong>Shadowrun Anarchy 2e édition</strong>.</p>
+        <p>Gestionnaire de PNJ pour <strong>Shadowrun : Anarchy 2e édition</strong>, calibré sur le LdB SRA 2.0 (p.244–257).</p>
         <ul>
-          <li><strong>Ombres portées</strong> — Votre casting de figurants, organisés par groupes.</li>
-          <li><strong>Générateur PNJ</strong> — PNJ avec Rang, Clichés et Narcos.</li>
-          <li><strong>Contacts</strong> — Contacts avec Loyauté et Connexion.</li>
-          <li><strong>Run</strong> — Ébauche de scénario en un clic.</li>
+          <li><strong>Ombres portées</strong> — Bibliothèque de PNJ sauvegardés, organisés en groupes. Sidebar de navigation à gauche.</li>
+          <li><strong>Générateur PNJ</strong> — 25 profils officiels du livre : Ganger, Ganger d'élite, Ganger éveillé, Ganger adepte, Ganger decker, Go-ganger, Agent de sécurité, Officier de sécurité, Mage / Decker / Adepte / Rigger de sécurité, versions élite, Médecin de combat, Militaire, Commando, Johnson, Employé corpo, Enquêteur, Cadre corpo, Coyote. Cinq attributs (FOR / AGI / VOL / LOG / CHA), compétences avec réserve de dès et RR, armes avec VD par métatype, atouts fixes et au choix, seuils de blessures.</li>
+          <li><strong>Contacts</strong> — 30 types de contacts, avec niveau (0–6), domaine de Réseau, coût en ¥, champ Notes et groupes.</li>
+          <li><strong>Run</strong> — Ébauche de scénario : types de missions courts, clients, lieux.</li>
         </ul>
-        <p>Les PNJ Anarchy ont un <strong>Rang</strong> (Figurant / Lieutenant / Boss),
-        des <strong>Clichés</strong> en lieu des compétences, un <strong>moniteur unique</strong>
-        et des <strong>Narcos</strong> (points de narration) attribués selon le rang.</p>
-        <p style="color:var(--accent2);font-size:0.82rem;">
-          ⚠ Certaines fonctionnalités Anarchy sont en cours de développement.
-        </p>`,
+        <p>Les PNJ Anarchy incluent les <strong>variantes métatype</strong> sur chaque attribut, arme et seuil de blessure, les <strong>atouts au choix</strong>, et la distinction <strong>Éveillé / Adepte</strong> et les sorts.</p>`,
     },
   },
 
