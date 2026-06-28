@@ -210,6 +210,198 @@ const Utils = {
     ],
   },
 
+  _noms_famille: {
+    japonais: [
+      "Tanaka",
+      "Suzuki",
+      "Watanabe",
+      "Ito",
+      "Yamamoto",
+      "Nakamura",
+      "Kobayashi",
+      "Kato",
+      "Yoshida",
+      "Yamada",
+      "Sasaki",
+      "Inoue",
+      "Kimura",
+      "Hayashi",
+      "Shimizu",
+    ],
+    coreen: [
+      "Kim",
+      "Lee",
+      "Park",
+      "Choi",
+      "Jung",
+      "Kang",
+      "Cho",
+      "Yoon",
+      "Jang",
+      "Lim",
+      "Han",
+      "Oh",
+      "Seo",
+      "Shin",
+      "Kwon",
+    ],
+    chinois: [
+      "Zhang",
+      "Wang",
+      "Li",
+      "Liu",
+      "Chen",
+      "Yang",
+      "Huang",
+      "Zhao",
+      "Wu",
+      "Zhou",
+      "Sun",
+      "Ma",
+      "Zhu",
+      "Hu",
+      "Guo",
+    ],
+    russe: [
+      "Volkov",
+      "Morozov",
+      "Petrov",
+      "Sokolov",
+      "Popov",
+      "Lebedev",
+      "Kozlov",
+      "Novikov",
+      "Mikhailov",
+      "Fedorov",
+      "Orlov",
+      "Makarov",
+      "Nikitin",
+      "Zaitsev",
+      "Belov",
+    ],
+    africain: [
+      "Diallo",
+      "Mbeki",
+      "Okonkwo",
+      "Nkosi",
+      "Traore",
+      "Mensah",
+      "Osei",
+      "Diop",
+      "Ndiaye",
+      "Bah",
+      "Keita",
+      "Camara",
+      "Coulibaly",
+      "Touré",
+      "Sy",
+    ],
+    latino: [
+      "Garcia",
+      "Rodriguez",
+      "Martinez",
+      "Hernandez",
+      "Lopez",
+      "Gonzalez",
+      "Perez",
+      "Torres",
+      "Ramirez",
+      "Flores",
+      "Rivera",
+      "Morales",
+      "Ortiz",
+      "Cruz",
+      "Reyes",
+    ],
+    polynesien: [
+      "Tama",
+      "Fetu",
+      "Aroha",
+      "Rangi",
+      "Tane",
+      "Ngata",
+      "Mako",
+      "Heke",
+      "Parata",
+      "Wiki",
+    ],
+    euro: [
+      "Mueller",
+      "Schmidt",
+      "Fischer",
+      "Weber",
+      "Larsson",
+      "Andersen",
+      "Johansson",
+      "Nielsen",
+      "Kowalski",
+      "Novak",
+      "Blanc",
+      "Petit",
+      "Dubois",
+      "Martin",
+      "Bernard",
+    ],
+    arabe: [
+      "Al-Rashid",
+      "Hassan",
+      "Ibrahim",
+      "Mansour",
+      "Khalil",
+      "Farouk",
+      "Nasser",
+      "Aziz",
+      "Hamid",
+      "Saleh",
+      "Qasim",
+      "Jaber",
+      "Amin",
+      "Samir",
+      "Faris",
+    ],
+    amerindien: [
+      "Runs-Fast",
+      "Ironcloud",
+      "Whitehorse",
+      "Manytrees",
+      "Strongbow",
+      "Clearwater",
+      "Redcloud",
+      "Blackbear",
+      "Longfeather",
+      "Twobirds",
+    ],
+    asiacentral: [
+      "Baatar",
+      "Gantulga",
+      "Munkh",
+      "Erdene",
+      "Sukhbaatar",
+      "Oyun",
+      "Dolgorsuren",
+      "Batbold",
+      "Tserenpuntsag",
+      "Ganzorig",
+    ],
+    generique: [
+      "Cross",
+      "Vale",
+      "Stone",
+      "Blake",
+      "Ward",
+      "Chase",
+      "Drake",
+      "Holt",
+      "Reed",
+      "Cole",
+      "Vance",
+      "Quinn",
+      "Marsh",
+      "Crane",
+      "Sloane",
+    ],
+  },
+
   _surnoms: {
     // Surnoms par registre — le runner choisit (ou hérite) du sien
     cyber: [
@@ -341,19 +533,29 @@ const Utils = {
     ],
   },
 
-  /** Génère un nom complet : prénom culturellement cohérent + surnom de rue */
-  genName() {
-    // Choisir un bassin culturel au hasard
-    const bassins = Object.keys(this._noms);
-    const bassin = this.rand(bassins);
-    const prenom = this.rand(this._noms[bassin]);
+  /** Liste des bassins pour le formulaire */
+  bassins() {
+    return Object.keys(this._noms);
+  },
 
-    // Surnom : registre aléatoire
-    const registres = Object.keys(this._surnoms);
-    const registre = this.rand(registres);
+  /**
+   * Génère un nom complet runner : Prénom "Surnom" Nom
+   * Si bassin est fourni, l'utilise ; sinon tirage aléatoire.
+   */
+  genName(bassin = null) {
+    const b =
+      bassin && this._noms[bassin]
+        ? bassin
+        : this.rand(Object.keys(this._noms));
+    const prenom = this.rand(this._noms[b]);
+    const famille = this._noms_famille[b]
+      ? this.rand(this._noms_famille[b])
+      : this.rand(this._noms_famille.generique);
+
+    const registre = this.rand(Object.keys(this._surnoms));
     const surnom = this.rand(this._surnoms[registre]);
 
-    return `${prenom} "${surnom}"`;
+    return `${prenom} "${surnom}" ${famille}`;
   },
 
   /** Prénom seul, pour les contacts qui n'ont pas forcément de surnom runner */

@@ -1634,7 +1634,10 @@ const EditionAnarchy = {
     return {
       id: Utils.uid(),
       edition: "anarchy",
-      name: opts.name && opts.name.trim() ? opts.name.trim() : Utils.genName(),
+      name:
+        opts.name && opts.name.trim()
+          ? opts.name.trim()
+          : Utils.genName(opts.bassin !== "Aléatoire" ? opts.bassin : null),
       meta,
       gender,
       rang,
