@@ -269,19 +269,21 @@ const CardRenderer = {
         <div class="card-section-label">Compétences</div>
         <div class="anarchy-skill-list">`;
       for (const s of skills) {
-        const pool = s.val + (attrs[s.attr] || 0);
+        const attrVal = attrs[s.attr] || 0;
+        const pool = s.val + attrVal;
         const rrStr = s.rr > 0 ? ` RR${s.rr}` : "";
         html += `<div class="anarchy-skill-row">
           <span class="anarchy-skill-name">${this._esc(s.name)}</span>
-          <span class="anarchy-skill-pool">${s.val} (${pool}+${s.attr}${rrStr})</span>
+          <span class="anarchy-skill-pool">${s.val} (${pool}${rrStr})</span>
         </div>`;
-        // Spécialisation
+        // Spécialisation ◊
         if (s.spec && s.spec !== true && s.specVal) {
-          const specPool = s.specVal + (attrs[s.specAttr || s.attr] || 0);
+          const specAttrVal = attrs[s.specAttr || s.attr] || 0;
+          const specPool = s.specVal + specAttrVal;
           const specRR = s.specRR > 0 ? ` RR${s.specRR}` : "";
           html += `<div class="anarchy-skill-row anarchy-skill-spec">
             <span class="anarchy-skill-name">◊ ${this._esc(s.spec)}</span>
-            <span class="anarchy-skill-pool">${s.specVal} (${specPool}+${s.specAttr || s.attr}${specRR})</span>
+            <span class="anarchy-skill-pool">${s.specVal} (${specPool}${specRR})</span>
           </div>`;
         }
       }
