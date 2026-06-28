@@ -1,50 +1,161 @@
 /* ============================================================
-   THÈME SHADOWRUN 5E ÉDITION
+   THÈME SHADOWRUN 5E ÉDITION — « Dossier classifié »
    Palette : ambre chaud #d4820a / rouge sang #8b1a1a
    Fond : anthracite profond #080608
-   Vibe : dossier classifié, années 2050
+   Typo : Oswald (condensée, officielle) + Share Tech Mono
+   Identité : coins biseautés, liserés sang, tampons, grain ambré
    ============================================================ */
 [data-edition="sr5"] {
-  --bg:       #080608;
-  --bg-card:  #0f0c0a;
-  --bg-mid:   #140f0a;
-  --accent:   #d4820a;
-  --accent2:  #8b1a1a;
-  --text:     #d8cfc0;
+  --bg: #080608;
+  --bg-card: #0f0c0a;
+  --bg-mid: #140f0a;
+  --accent: #d4820a;
+  --accent2: #8b1a1a;
+  --text: #d8cfc0;
   --text-dim: #6b5c48;
-  --border:   #2a1e14;
-  --glow:     rgba(212, 130, 10, 0.12);
-  --badge:    #1a0a00;
-  --scan:     rgba(212, 130, 10, 0.08);
+  --border: #2a1e14;
+  --glow: rgba(212, 130, 10, 0.12);
+  --badge: #1a0a00;
+  --scan: rgba(212, 130, 10, 0.08);
+
+  --font-display: "Oswald", sans-serif;
+  --title-transform: uppercase;
+  --title-spacing: 0.08em;
+  --name-transform: uppercase;
+  /* En-tête de carte biseauté façon dossier estampillé */
+  --hd-clip: polygon(0 0, 100% 0, 100% 100%, 14px 100%, 0 calc(100% - 10px));
 }
 
-/* Topbar — légère teinte ambrée sur la bordure basse */
+/* ---- Écran d'accueil ---- */
+[data-edition="sr5"] .edition-title {
+  color: #c0a070;
+}
+/* ---- Topbar : barre de classification ---- */
 [data-edition="sr5"] #topbar {
+  border-bottom: 2px solid #8b1a1a;
+  background: linear-gradient(180deg, #140a08 0%, #0f0c0a 100%);
+}
+[data-edition="sr5"] .topbar-logo::before {
+  content: "» ";
+  color: #8b1a1a;
+}
+[data-edition="sr5"] .topbar-logo::after {
+  content: " «";
+  color: #8b1a1a;
+}
+
+/* ---- Sidebar : onglets de classeur ---- */
+[data-edition="sr5"] #sidebar {
+  border-right: 2px solid #2a1e14;
+}
+[data-edition="sr5"] .nav-section-label {
+  color: #8b1a1a;
+  border-bottom: 1px solid #2a1e14;
+  margin: 0 0.5rem;
+  padding-left: 0.5rem;
+}
+[data-edition="sr5"] .nav-btn.active {
+  background: rgba(212, 130, 10, 0.08);
+  border-left-width: 3px;
+}
+
+/* ---- Contenu : grain ambré + filigrane ---- */
+[data-edition="sr5"] #content {
+  background-image:
+    radial-gradient(
+      ellipse at 80% 15%,
+      rgba(212, 130, 10, 0.05) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 10% 90%,
+      rgba(139, 26, 26, 0.05) 0%,
+      transparent 55%
+    );
+}
+
+/* ---- Titres de panel : chevrons de dossier ---- */
+[data-edition="sr5"] .panel-title::before {
+  width: 0;
+  height: 0;
+  background: transparent;
+  border-top: 0.6em solid transparent;
+  border-bottom: 0.6em solid transparent;
+  border-left: 0.6em solid #8b1a1a;
+  border-radius: 0;
+}
+
+/* ---- Cartes PNJ : en-tête biseauté, liseré sang ---- */
+[data-edition="sr5"] .pnj-card::before {
+  background: linear-gradient(90deg, #d4820a 0%, #8b1a1a 100%);
+  height: 3px;
+}
+[data-edition="sr5"] .pnj-card-header {
+  background: linear-gradient(180deg, #140a08 0%, transparent 100%);
+  border-bottom: 2px solid #8b1a1a;
+  clip-path: var(--hd-clip);
+}
+[data-edition="sr5"] .pnj-name {
+  color: #e8dcc8;
+  font-weight: 600;
+}
+
+/* ---- Badge de pro : tampon encadré ---- */
+[data-edition="sr5"] .pnj-rank-badge {
+  background: #1a0a00;
+  border: 1px solid #8b1a1a;
+  color: #d4820a;
+  border-radius: 0;
+}
+
+/* ---- Labels de section : rouge classifié ---- */
+[data-edition="sr5"] .card-section-label {
+  color: #b0501a;
   border-bottom-color: #2a1e14;
 }
 
-/* Sélecteur — active le grain sur le fond via pseudo-element */
-[data-edition="sr5"] #content {
-  background-image:
-    radial-gradient(ellipse at 80% 20%, rgba(212,130,10,0.04) 0%, transparent 60%);
+/* ---- Attributs : cellules anguleuses ---- */
+[data-edition="sr5"] .attr-cell {
+  border-radius: 0;
 }
-
-/* Nav active — reflet ambré */
-[data-edition="sr5"] .nav-btn.active {
-  background: rgba(212,130,10,0.08);
-}
-
-/* Attributs importants pour SR5 (CON, AGI mis en avant) */
 [data-edition="sr5"] .attr-cell.primary {
-  border-color: rgba(212,130,10,0.3);
+  border-color: rgba(212, 130, 10, 0.35);
 }
 
-/* Limites — couleur secondaire */
-[data-edition="sr5"] .limite-cell .attr-label { color: #8b1a1a; }
-[data-edition="sr5"] .limite-cell .attr-value { color: #c0392b; }
+/* ---- Limites — couleur secondaire ---- */
+[data-edition="sr5"] .limite-cell .attr-label {
+  color: #8b1a1a;
+}
+[data-edition="sr5"] .limite-cell .attr-value {
+  color: #c0392b;
+}
 
-/* Moniteurs séparés SR5 */
-[data-edition="sr5"] .monitor-phys .monitor-box.filled { background: #8b1a1a; border-color: #8b1a1a; }
-[data-edition="sr5"] .monitor-stun .monitor-box.filled { background: #5a4000; border-color: #8a6200; }
-[data-edition="sr5"] .monitor-phys .monitor-box.penalty { border-color: #d4820a; }
-[data-edition="sr5"] .monitor-stun .monitor-box.penalty { border-color: #a06000; }
+/* ---- Moniteurs séparés SR5 ---- */
+[data-edition="sr5"] .monitor-phys .monitor-box.filled {
+  background: #8b1a1a;
+  border-color: #8b1a1a;
+}
+[data-edition="sr5"] .monitor-stun .monitor-box.filled {
+  background: #5a4000;
+  border-color: #8a6200;
+}
+[data-edition="sr5"] .monitor-phys .monitor-box.penalty {
+  border-color: #d4820a;
+}
+[data-edition="sr5"] .monitor-stun .monitor-box.penalty {
+  border-color: #a06000;
+}
+
+/* ---- Boutons : anguleux et stricts ---- */
+[data-edition="sr5"] .btn-primary,
+[data-edition="sr5"] .btn-secondary {
+  border-radius: 0;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---- Métavariante en surbrillance ambrée ---- */
+[data-edition="sr5"] .pnj-metavariant {
+  color: #d4820a;
+}

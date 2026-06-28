@@ -1,8 +1,9 @@
 /* ============================================================
-   THÈME SHADOWRUN ANARCHY 2E ÉDITION
+   THÈME SHADOWRUN ANARCHY 2E ÉDITION — « Fanzine punk »
    Palette : rouge punk #ff3c3c / orange vif #ff8800
    Fond : noir chaud #0c0806
-   Vibe : rapide, brutal, street-level
+   Typo : Saira Condensed (titres) + Permanent Marker (noms) + STM
+   Identité : brut, asymétrique, bordures épaisses, autocollants
    ============================================================ */
 [data-edition="anarchy"] {
   --bg: #0c0806;
@@ -16,33 +17,129 @@
   --glow: rgba(255, 60, 60, 0.12);
   --badge: #1e0800;
   --scan: rgba(255, 60, 60, 0.07);
+
+  --font-display: "Saira Condensed", sans-serif;
+  --title-transform: uppercase;
+  --title-spacing: 0.04em;
+  --name-transform: uppercase;
 }
 
-/* Topbar */
+/* ---- Écran d'accueil ---- */
+[data-edition="anarchy"] .edition-title {
+  color: #c08050;
+}
+
+/* ---- Topbar : bandeau brut + liseré orange épais ---- */
 [data-edition="anarchy"] #topbar {
-  border-bottom-color: #2a1008;
+  border-bottom: 3px solid #ff8800;
+  background: #1a0d06;
+}
+[data-edition="anarchy"] .topbar-logo {
+  font-weight: 700;
 }
 
-/* Ambiance street */
+/* ---- Sidebar : tranchante ---- */
+[data-edition="anarchy"] #sidebar {
+  border-right: 3px solid #2a1008;
+}
+[data-edition="anarchy"] .nav-section-label {
+  color: #ff8800;
+  font-weight: 700;
+}
+[data-edition="anarchy"] .nav-btn {
+  font-weight: 600;
+}
+[data-edition="anarchy"] .nav-btn.active {
+  background: rgba(255, 60, 60, 0.08);
+  border-left-width: 4px;
+}
+
+/* ---- Contenu : éclaboussures street ---- */
 [data-edition="anarchy"] #content {
   background-image:
     radial-gradient(
-      ellipse at 90% 90%,
-      rgba(255, 136, 0, 0.04) 0%,
-      transparent 50%
+      ellipse at 88% 88%,
+      rgba(255, 136, 0, 0.05) 0%,
+      transparent 45%
     ),
     radial-gradient(
-      ellipse at 10% 10%,
-      rgba(255, 60, 60, 0.04) 0%,
-      transparent 50%
+      ellipse at 12% 10%,
+      rgba(255, 60, 60, 0.05) 0%,
+      transparent 45%
     );
 }
 
-/* Nav active */
-[data-edition="anarchy"] .nav-btn.active {
-  background: rgba(255, 60, 60, 0.08);
+/* ---- Titres de panel : bloc orange franc ---- */
+[data-edition="anarchy"] .panel-title {
+  font-weight: 700;
+  border-bottom: 2px solid #ff8800;
+}
+[data-edition="anarchy"] .panel-title::before {
+  width: 5px;
+  height: 1.1em;
+  background: #ff3c3c;
+  border-radius: 0;
 }
 
+/* ---- Cartes PNJ : bordure épaisse, liseré orange ---- */
+[data-edition="anarchy"] .pnj-card {
+  border-width: 2px;
+}
+[data-edition="anarchy"] .pnj-card::before {
+  background: #ff8800;
+  height: 3px;
+}
+[data-edition="anarchy"] .pnj-card-header {
+  background: #1e0c04;
+  border-bottom: 3px solid #ff8800;
+}
+/* Nom au feutre punk */
+[data-edition="anarchy"] .pnj-name {
+  font-family: "Permanent Marker", cursive;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: #f0d8c4;
+  text-transform: none;
+}
+
+/* ---- Badge de rang : autocollant incliné ---- */
+[data-edition="anarchy"] .pnj-rank-badge {
+  border-radius: 0;
+  font-weight: 700;
+  transform: rotate(-2deg);
+}
+
+/* ---- Labels de section : orange brut ---- */
+[data-edition="anarchy"] .card-section-label {
+  color: #ff8800;
+  font-weight: 700;
+}
+
+/* ---- Attributs : barre orange à gauche ---- */
+[data-edition="anarchy"] .attr-cell {
+  border-radius: 0;
+  border-left: 2px solid #ff8800;
+}
+
+/* ---- Boutons : brutaux ---- */
+[data-edition="anarchy"] .btn-primary,
+[data-edition="anarchy"] .btn-secondary {
+  border-radius: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---- Métavariante (Anarchy n'en a pas, mais cohérence) ---- */
+[data-edition="anarchy"] .pnj-metavariant {
+  color: #ff8800;
+}
+
+/* ============================================================
+   STYLES FONCTIONNELS ANARCHY (rangs, clichés, narcos, seuils)
+   — conservés du thème d'origine
+   ============================================================ */
 /* Rang badges couleur selon rang */
 [data-edition="anarchy"] .pnj-rank-badge.rang-figurant {
   color: var(--text-dim);

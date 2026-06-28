@@ -8,6 +8,17 @@
   margin: 0;
   padding: 0;
 }
+
+/* Variables typographiques par défaut — surchargées par thème d'édition */
+:root {
+  --font-display: "Rajdhani", sans-serif;
+  --font-mono: "Share Tech Mono", monospace;
+  --font-body: "Inter", sans-serif;
+  --title-transform: uppercase;
+  --title-spacing: 0.12em;
+  --card-clip: none;
+  --hd-clip: none;
+}
 html {
   height: 100%;
   font-size: 16px;
@@ -59,7 +70,7 @@ select optgroup {
 }
 
 .edition-title {
-  font-family: "Rajdhani", sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(1.8rem, 4vw, 3.2rem);
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -95,7 +106,7 @@ select optgroup {
     border-color 0.25s,
     background 0.25s,
     transform 0.2s;
-  font-family: "Rajdhani", sans-serif;
+  font-family: var(--font-display);
 }
 .edition-card:hover {
   transform: translateY(-4px);
@@ -124,12 +135,25 @@ select optgroup {
 }
 .edition-card[data-ed="sr5"] .ed-num {
   color: #d4820a;
+  font-family: "Oswald", sans-serif;
 }
 .edition-card[data-ed="sr6"] .ed-num {
   color: #00c8ff;
+  font-family: "Chakra Petch", sans-serif;
 }
 .edition-card[data-ed="anarchy"] .ed-num {
   color: #ff3c3c;
+  font-family: "Saira Condensed", sans-serif;
+}
+.edition-card[data-ed="sr5"] .ed-name {
+  font-family: "Oswald", sans-serif;
+}
+.edition-card[data-ed="sr6"] .ed-name {
+  font-family: "Chakra Petch", sans-serif;
+}
+.edition-card[data-ed="anarchy"] .ed-name {
+  font-family: "Saira Condensed", sans-serif;
+  font-weight: 700;
 }
 .edition-card .ed-name {
   font-size: 1.1rem;
@@ -183,7 +207,7 @@ select optgroup {
   flex-shrink: 0;
 }
 .topbar-logo {
-  font-family: "Rajdhani", sans-serif;
+  font-family: var(--font-display);
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.2em;
@@ -327,7 +351,7 @@ select optgroup {
   background: transparent;
   border: none;
   color: var(--text-dim);
-  font-family: "Rajdhani", sans-serif;
+  font-family: var(--font-display);
   font-weight: 600;
   font-size: 0.9rem;
   letter-spacing: 0.05em;
@@ -382,12 +406,12 @@ select optgroup {
 }
 
 .panel-title {
-  font-family: "Rajdhani", sans-serif;
+  font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.5rem;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--title-spacing);
   color: var(--accent);
-  text-transform: uppercase;
+  text-transform: var(--title-transform);
   margin-bottom: 1.25rem;
   padding-bottom: 0.6rem;
   border-bottom: 1px solid var(--border);
@@ -581,6 +605,7 @@ select optgroup {
   overflow: hidden;
   animation: cardIn 0.3s ease;
   transition: box-shadow 0.2s;
+  clip-path: var(--card-clip);
 }
 .pnj-card:hover {
   box-shadow: 0 0 16px var(--glow);
@@ -649,11 +674,12 @@ select optgroup {
   min-width: 0;
 }
 .pnj-name {
-  font-family: "Rajdhani", sans-serif;
+  font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.15rem;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--title-spacing);
   color: var(--text);
+  text-transform: var(--name-transform, none);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1155,7 +1181,7 @@ select optgroup {
   flex-wrap: wrap;
 }
 .shadows-group-label {
-  font-family: "Rajdhani", sans-serif;
+  font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.9rem;
   color: var(--text-dim);

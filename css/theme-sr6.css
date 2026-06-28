@@ -1,47 +1,175 @@
 /* ============================================================
-   THÈME SHADOWRUN 6E ÉDITION
+   THÈME SHADOWRUN 6E ÉDITION — « Interface corpo »
    Palette : cyan électrique #00c8ff / violet #7b2fff
    Fond : noir bleuté #060a0e
-   Vibe : interface corpo, post-Edge
+   Typo : Chakra Petch (techno, angles coupés) + Share Tech Mono
+   Identité : épuré, coins coupés nets, fines barres néon, pilules
    ============================================================ */
 [data-edition="sr6"] {
-  --bg:       #060a0e;
-  --bg-card:  #090e14;
-  --bg-mid:   #0a1018;
-  --accent:   #00c8ff;
-  --accent2:  #7b2fff;
-  --text:     #bbd4e8;
+  --bg: #060a0e;
+  --bg-card: #090e14;
+  --bg-mid: #0a1018;
+  --accent: #00c8ff;
+  --accent2: #7b2fff;
+  --text: #bbd4e8;
   --text-dim: #3a5268;
-  --border:   #0e2030;
-  --glow:     rgba(0, 200, 255, 0.10);
-  --badge:    #001a2e;
-  --scan:     rgba(0, 200, 255, 0.07);
+  --border: #0e2030;
+  --glow: rgba(0, 200, 255, 0.1);
+  --badge: #001a2e;
+  --scan: rgba(0, 200, 255, 0.07);
+
+  --font-display: "Chakra Petch", sans-serif;
+  --title-transform: uppercase;
+  --title-spacing: 0.14em;
+  --name-transform: none;
+  /* Coin supérieur droit coupé net — signature SR6 */
+  --hd-clip: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+  --card-clip: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
 }
 
-/* Topbar */
+/* ---- Écran d'accueil ---- */
+[data-edition="sr6"] .edition-title {
+  color: #7da8c8;
+}
+
+/* ---- Topbar : ligne nette + barre cyan ---- */
 [data-edition="sr6"] #topbar {
-  border-bottom-color: #0e2030;
+  border-bottom: 1px solid #0e2030;
+  position: relative;
+}
+[data-edition="sr6"] #topbar::after {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  bottom: -1px;
+  width: 90px;
+  height: 2px;
+  background: #00c8ff;
 }
 
-/* Reflet bleuté dans le contenu */
+/* ---- Sidebar : épurée, accent violet sur actif ---- */
+[data-edition="sr6"] #sidebar {
+  border-right: 1px solid #0e2030;
+}
+[data-edition="sr6"] .nav-section-label {
+  color: #7b2fff;
+}
+[data-edition="sr6"] .nav-btn.active {
+  background: rgba(0, 200, 255, 0.07);
+  border-left-color: #00c8ff;
+}
+[data-edition="sr6"] .nav-btn.active .nav-icon {
+  color: #7b2fff;
+}
+
+/* ---- Contenu : double reflet néon discret ---- */
 [data-edition="sr6"] #content {
   background-image:
-    radial-gradient(ellipse at 15% 80%, rgba(123,47,255,0.05) 0%, transparent 55%),
-    radial-gradient(ellipse at 85% 10%, rgba(0,200,255,0.05) 0%, transparent 55%);
+    radial-gradient(
+      ellipse at 15% 85%,
+      rgba(123, 47, 255, 0.06) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 88% 8%,
+      rgba(0, 200, 255, 0.06) 0%,
+      transparent 50%
+    );
 }
 
-/* Nav active */
-[data-edition="sr6"] .nav-btn.active {
-  background: rgba(0,200,255,0.07);
+/* ---- Titres de panel : fine barre cyan, pas de bloc ---- */
+[data-edition="sr6"] .panel-title {
+  border-bottom: 1px solid #0e2030;
+  position: relative;
+}
+[data-edition="sr6"] .panel-title::before {
+  width: 4px;
+  height: 1em;
+  background: #00c8ff;
+  border-radius: 0;
+}
+[data-edition="sr6"] .panel-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 56px;
+  height: 2px;
+  background: #7b2fff;
 }
 
-/* Défenses d'attribut — teinte violette */
-[data-edition="sr6"] .def-attr .attr-value { color: #7b2fff; }
-[data-edition="sr6"] .def-attr .attr-label { color: #5a2acc; }
+/* ---- Cartes PNJ : coin coupé, liseré bicolore ---- */
+[data-edition="sr6"] .pnj-card::before {
+  background: linear-gradient(90deg, #00c8ff 0%, #7b2fff 100%);
+  height: 2px;
+}
+[data-edition="sr6"] .pnj-card-header {
+  border-bottom: 1px solid #0e2030;
+  position: relative;
+}
+[data-edition="sr6"] .pnj-card-header::after {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  bottom: -1px;
+  width: 42px;
+  height: 2px;
+  background: #00c8ff;
+}
+[data-edition="sr6"] .pnj-name {
+  color: #cfe6f5;
+  font-weight: 500;
+}
 
-/* Moniteur unique SR6 */
-[data-edition="sr6"] .monitor-box.filled { background: #004d6e; border-color: #006e9e; }
-[data-edition="sr6"] .monitor-box.penalty { border-color: #00c8ff; }
+/* ---- Badge : pilule corpo ---- */
+[data-edition="sr6"] .pnj-rank-badge {
+  background: #001a2e;
+  color: #00c8ff;
+  border: 1px solid rgba(0, 200, 255, 0.3);
+  border-radius: 12px;
+  font-weight: 600;
+}
 
-/* Section Défenses d'attribut */
-[data-edition="sr6"] .def-section .card-section-label { color: #7b2fff; }
+/* ---- Labels de section : violet corpo ---- */
+[data-edition="sr6"] .card-section-label {
+  color: #8b5cff;
+  letter-spacing: 0.18em;
+}
+
+/* ---- Attributs : arrondis doux, propres ---- */
+[data-edition="sr6"] .attr-cell {
+  border-radius: 3px;
+}
+
+/* ---- Défenses d'attribut — teinte violette ---- */
+[data-edition="sr6"] .def-attr .attr-value {
+  color: #7b2fff;
+}
+[data-edition="sr6"] .def-attr .attr-label {
+  color: #5a2acc;
+}
+[data-edition="sr6"] .def-section .card-section-label {
+  color: #7b2fff;
+}
+
+/* ---- Moniteur unique SR6 ---- */
+[data-edition="sr6"] .monitor-box.filled {
+  background: #004d6e;
+  border-color: #006e9e;
+}
+[data-edition="sr6"] .monitor-box.penalty {
+  border-color: #00c8ff;
+}
+
+/* ---- Boutons : nets, légère majuscule ---- */
+[data-edition="sr6"] .btn-primary,
+[data-edition="sr6"] .btn-secondary {
+  border-radius: 3px;
+  font-family: var(--font-display);
+  letter-spacing: 0.1em;
+}
+
+/* ---- Métavariante en surbrillance cyan ---- */
+[data-edition="sr6"] .pnj-metavariant {
+  color: #00c8ff;
+}
