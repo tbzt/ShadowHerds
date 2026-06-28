@@ -2,11 +2,266 @@
 
 /* ============================================================
    CONTACTS GENERATOR
+   Deux modes selon l'édition active :
+   - SR5 / SR6 : Loyauté + Influence (1-6)
+   - Anarchy    : Atout à niveau (0-6), RR sur Réseau, coût en ¥
    ============================================================ */
 const Contacts = {
-  /* -- Professions avec description courte -- */
-  professions: [
-    // Intermédiaires & réseaux
+  /* ---- Catalogue Anarchy — tiré du livre de base ----
+     Chaque entrée = un type de contact avec ses mécaniques officielles.
+     niveau    : coût en niveaux d'atout (1 niv = 5 000¥)
+     cout      : coût en nuyen
+     rr        : Réduction de Risque fournie
+     domaine   : spécialisation(s) de Réseau couverte(s)
+     bonus     : effet supplémentaire éventuel
+  ---- */
+  catalogueAnarchy: [
+    // -- Officiels du livre de base --
+    {
+      role: "Armurier",
+      niveau: 4,
+      cout: 20000,
+      rr: 1,
+      domaine: "Réseau (la rue et ingénierie)",
+      desc: "Armes légales et illégales, munitions spéciales, modifications",
+      trait: null,
+    },
+    {
+      role: "Avocat",
+      niveau: 4,
+      cout: 20000,
+      rr: 2,
+      domaine: "Réseau (gouvernemental)",
+      desc: "Sorties de garde à vue, effacement de dossiers, procédures d'urgence",
+      trait: null,
+    },
+    {
+      role: "Cadre corporatiste",
+      niveau: 2,
+      cout: 10000,
+      rr: 1,
+      domaine: "Réseau (corporatiste)",
+      desc: "Accès interne, passes, renseignements sur les mouvements corpo",
+      trait: null,
+    },
+    {
+      role: "Consigliere de la Mafia",
+      niveau: 4,
+      cout: 20000,
+      rr: 2,
+      domaine: "Réseau (criminel)",
+      desc: "Muscle, protection, accès aux réseaux du crime organisé",
+      trait: null,
+    },
+    {
+      role: "Contrebandier",
+      niveau: 4,
+      cout: 20000,
+      rr: 1,
+      domaine: "Réseau (la rue et ingénierie)",
+      desc: "Transport discret de marchandises et personnes, routes secrètes",
+      trait: null,
+    },
+    {
+      role: "Doc des rues",
+      niveau: 2,
+      cout: 10000,
+      rr: 1,
+      domaine: "Réseau (médical)",
+      desc: "Soins discrets, implants sans dossier, patch trauma à portée",
+      trait: null,
+    },
+    {
+      role: "Flic sous couverture",
+      niveau: 2,
+      cout: 10000,
+      rr: 1,
+      domaine: "Réseau (gouvernemental)",
+      desc: "Infos sur les enquêtes en cours, plannings de patrouille",
+      trait: null,
+    },
+    {
+      role: "Ganger",
+      niveau: 2,
+      cout: 10000,
+      rr: 1,
+      domaine: "Réseau (criminel)",
+      desc: "Muscle de rue, territoire, renseignement de quartier",
+      trait: null,
+    },
+    {
+      role: "Intermédiaire (Fixer)",
+      niveau: 5,
+      cout: 25000,
+      rr: 1,
+      domaine: "Réseau (tous domaines)",
+      desc: "Arrange les runs, met en relation, connaît tout le monde",
+      trait: null,
+    },
+    {
+      role: "Journaliste",
+      niveau: 2,
+      cout: 10000,
+      rr: 1,
+      domaine: "Réseau (médiatique)",
+      desc: "Dossiers croustillants, sources protégées, pression publique",
+      trait: null,
+    },
+    {
+      role: "M. Johnson",
+      niveau: 6,
+      cout: 30000,
+      rr: 1,
+      domaine: "Réseau (la rue, criminel et corporatiste)",
+      desc: "Commandes de runs, paiement fiable, réseau étendu multi-sphères",
+      trait: null,
+    },
+    {
+      role: "Marchand de talismans",
+      niveau: 2,
+      cout: 10000,
+      rr: 1,
+      domaine: "Réseau (magique)",
+      desc: "Foci, ingrédients rituels, identification d'artefacts",
+      trait: null,
+    },
+    {
+      role: "Mécanicien",
+      niveau: 2,
+      cout: 10000,
+      rr: 1,
+      domaine: "Réseau (ingénierie)",
+      desc: "Réparations discrètes, drones, véhicules modifiés",
+      trait: null,
+    },
+    {
+      role: "Paradis numérique",
+      niveau: 4,
+      cout: 20000,
+      rr: 1,
+      domaine: "Réseau (matriciel)",
+      desc: "Serveur sécurisé, programmes, données volées",
+      bonus: "RR 1 aux tests d'Électronique (recherche matricielle)",
+      trait: null,
+    },
+    {
+      role: "Patron de bar",
+      niveau: 2,
+      cout: 10000,
+      rr: 1,
+      domaine: "Réseau (la rue)",
+      desc: "Tout entend, rien oublie, lieu de rendez-vous neutre",
+      trait: null,
+    },
+    {
+      role: "Professeur d'université",
+      niveau: 2,
+      cout: 10000,
+      rr: 1,
+      domaine: "Réseau (universitaire)",
+      desc: "Archives légales, expertise technique, couverture académique",
+      trait: null,
+    },
+    // -- Contacts supplémentaires cohérents avec la mécanique --
+    {
+      role: "Tailleur d'identités",
+      niveau: 4,
+      cout: 20000,
+      rr: 2,
+      domaine: "Réseau (gouvernemental et la rue)",
+      desc: "Faux SINs, passeports, permis de toutes sortes",
+      trait: null,
+    },
+    {
+      role: "Chaman de rue",
+      niveau: 3,
+      cout: 15000,
+      rr: 1,
+      domaine: "Réseau (magique)",
+      desc: "Esprits, protection rituelle, consultation astrale",
+      trait: null,
+    },
+    {
+      role: "Receleur",
+      niveau: 3,
+      cout: 15000,
+      rr: 1,
+      domaine: "Réseau (la rue)",
+      desc: "Rachète du matériel chaud, fournis de l'équipement sans trace",
+      trait: null,
+    },
+    {
+      role: "Chef de gang",
+      niveau: 4,
+      cout: 20000,
+      rr: 2,
+      domaine: "Réseau (criminel)",
+      desc: "Territoire, protection, muscle collectif disponible",
+      trait: null,
+    },
+    {
+      role: "Agent de sécurité véreux",
+      niveau: 3,
+      cout: 15000,
+      rr: 1,
+      domaine: "Réseau (corporatiste)",
+      desc: "Plans de sécurité, angles morts, plannings de patrouille",
+      trait: null,
+    },
+    {
+      role: "Passeur de frontière",
+      niveau: 4,
+      cout: 20000,
+      rr: 1,
+      domaine: "Réseau (la rue et gouvernemental)",
+      desc: "Routes secrètes, exfiltration internationale, documents de transit",
+      trait: null,
+    },
+    {
+      role: "Pilote discret",
+      niveau: 3,
+      cout: 15000,
+      rr: 1,
+      domaine: "Réseau (ingénierie)",
+      desc: "Exfiltration rapide, transport sans manifeste, drones de recon",
+      trait: null,
+    },
+    {
+      role: "Prêtre de quartier",
+      niveau: 2,
+      cout: 10000,
+      rr: 1,
+      domaine: "Réseau (la rue)",
+      desc: "Refuge sûr, réseau de solidarité, confessionnal du sprawl",
+      trait: null,
+    },
+  ],
+
+  /* ---- Traits pour tous modes ---- */
+  traits: [
+    "Paranoïaque — change de lieu de rendez-vous à la dernière minute",
+    "Bavard — livre toujours un peu plus qu'il ne devrait",
+    "Discret — ne laisse aucune trace numérique",
+    "Loyal mais hors de prix — exige une contrepartie proportionnelle",
+    "Pratique le troc — cash refusé, services ou marchandises",
+    "Exige du cash nuyen — pas de crédisticks traçables",
+    "Curieux de tout — veut toujours savoir pourquoi",
+    "Professionnel froid — aucun contact inutile, toujours efficace",
+    "A des dettes auprès d'un gang — pourrait entraîner les runners",
+    "Travaille pour plusieurs factions — risque de conflit d'intérêt",
+    "Sous surveillance corpo — les réunions sont risquées",
+    "En cavale — impossible à joindre via les canaux normaux",
+    "Drogué fonctionnel — fiable, mais certains jours moins que d'autres",
+    "Ancien runner reconverti — nostalgique, parfois imprudent",
+    "Ne sort jamais sans garde du corps",
+    "Communique uniquement par messages chiffrés à usage unique",
+    "Exige un coup de main non rémunéré à chaque faveur",
+    "Membre discret d'une loge magique",
+    "Uniquement disponible entre 2h et 6h du matin",
+  ],
+
+  /* ---- Professions SR5/SR6 (inchangées) ---- */
+  professionsSR: [
     { role: "Fixer", desc: "Arrange les runs, connaît tout le monde" },
     {
       role: "Receleur",
@@ -15,10 +270,6 @@ const Contacts = {
     {
       role: "Tailleur d'identités",
       desc: "Faux SINs, passeports, permis de toutes sortes",
-    },
-    {
-      role: "Rabatteur de gangs",
-      desc: "Loue des bras casseurs pour la soirée",
     },
     {
       role: "Agent de sécurité véreux",
@@ -41,22 +292,8 @@ const Contacts = {
       desc: "Sortie de garde à vue, effacement de casier",
     },
     {
-      role: "Politicien de bas étage",
-      desc: "Petite corruption, grands services occasionnels",
-    },
-
-    // Techniques & matriciel
-    {
       role: "Hacker freelance",
       desc: "Infiltration de systèmes, pas de questions",
-    },
-    {
-      role: "Technicien matriciel",
-      desc: "Répare les cyberdecks, vend des programmes",
-    },
-    {
-      role: "Ingénieur en armement",
-      desc: "Modifications illégales, munitions spéciales",
     },
     {
       role: "Mécanicien / Rigger",
@@ -68,34 +305,13 @@ const Contacts = {
       role: "Chirurgien cyberware",
       desc: "Pose des augmentations hors circuit légal",
     },
-
-    // Magie & métahumain
     {
       role: "Mage de rue",
       desc: "Services magiques, identification d'artefacts",
     },
-    { role: "Chaman urbain", desc: "Esprits, protection rituelle, visions" },
-    {
-      role: "Herboriste adepte",
-      desc: "Préparations mystiques, soins alternatifs",
-    },
-    {
-      role: "Dresseur de bestioles",
-      desc: "Critters, paraanimanix, surveillance discrète",
-    },
-
-    // Logistique & terrain
     {
       role: "Contrebandier",
       desc: "Transport de marchandises et personnes interdites",
-    },
-    {
-      role: "Pilote de location",
-      desc: "Exfiltration rapide, pas de manifeste",
-    },
-    {
-      role: "Cambrioleur à la retraite",
-      desc: "Plans de bâtiments, techniques d'intrusion",
     },
     {
       role: "Runner à la retraite",
@@ -111,12 +327,6 @@ const Contacts = {
     },
     { role: "Dealer", desc: "Jazz, Tempo, Kamikaze — et autres selon demande" },
     {
-      role: "Passeur de frontière",
-      desc: "Documents, routes secrètes, contacts à l'étranger",
-    },
-
-    // Informateurs & culture
-    {
       role: "Barman du sprawl",
       desc: "Tout entend, rien oublie, vend les rumeurs",
     },
@@ -124,17 +334,8 @@ const Contacts = {
       role: "Prêtre de quartier",
       desc: "Réfugié sûr, réseau de solidarité, confessionnal",
     },
-    {
-      role: "Tatoueuse / Artiste",
-      desc: "Voit défiler les runners, archive les secrets",
-    },
-    {
-      role: "Libraire de l'ancien monde",
-      desc: "Archives papier, livres interdits, cartes oubliées",
-    },
   ],
 
-  /* -- Lieux dans le sprawl -- */
   lieux: [
     "Barrens profonds",
     "Zone d'exclusion",
@@ -144,98 +345,86 @@ const Contacts = {
     "Tir — no man's land",
     "Favelas surélevées",
     "Zone franche neutre",
-    "Quartier elfe (Cara'Sir)",
+    "Quartier elfe",
     "Enclave ork",
     "Souterrains du sprawl",
     "Mall corpo abandonné",
     "Marina privée",
     "Aéroport clandestin",
-    "Hôpital de zone",
-    "Académie de magie de rue",
-    "Université corpo (campus fermé)",
-    "Datacenter flottant",
     "Club nocturne",
-    "Métro abandonné",
-    "Sanctuaire chamanique",
-    "Tour de guet des Barrens",
     "Marché noir couvert",
-    "Entrepôt frigorifique",
-    "Quartier général de gang",
+    "Sanctuaire chamanique",
+    "Métro abandonné",
   ],
 
-  /* -- Traits de personnalité / particularités -- */
-  traits: [
-    // Comportements
-    "Paranoïaque — change de lieu de rendez-vous à la dernière minute",
-    "Bavard — livre toujours un peu plus qu'il ne devrait",
-    "Discret — ne laisse aucune trace numérique",
-    "Loyal mais hors de prix — prix triplé si les runners sont dans la merde",
-    "Pratique le troc — cash refusé, marchandises acceptées",
-    "Exige du cash nuyen — pas de crédisticks traçables",
-    "Curieux de tout — veut toujours savoir pourquoi",
-    "Professionnel froid — aucun contact inutile",
-    // Situations
-    "A des dettes auprès d'un gang — pourrait entraîner les runners dedans",
-    "Travaille pour plusieurs Johnson — risque de conflit d'intérêt",
-    "Informateur infiltré — loyauté douteuse à long terme",
-    "Sous surveillance corpo — les réunions sont risquées",
-    "En cavale — impossible à joindre via les canaux normaux",
-    "Drogué fonctionnel — fiable, mais certains jours moins que d'autres",
-    "Vieux runner reconverti — nostalgique, parfois imprudent",
-    "Récemment brûlé — plus méfiant, conditions plus dures",
-    // Spécificités
-    "Ne sort jamais sans garde du corps",
-    "Communique uniquement par messages chiffrés",
-    "Refuse de traiter avec des corps augmentés de plus de 50%",
-    "Uniquement disponible entre 2h et 6h du matin",
-    "Exige un coup de main non rémunéré à chaque faveur",
-    "Membre discret d'une loge magique",
-    "Ancien prisonnier de Aztechnology — haine viscérale de la corpo",
-    "Fan de l'Urban Brawl — organisable via le stade",
-  ],
-
-  /* -- Spécialisations qui s'ajoutent à la profession -- */
-  specialites: [
+  specialitesSR: [
     null,
     null,
-    null, // majorité sans spécialité particulière
+    null,
     "spécialisé Renraku",
     "spécialisé Ares",
     "spécialisé Aztechnology",
     "spécialisé Saeder-Krupp",
     "spécialisé Horizon",
-    "spécialisé NeoNET",
-    "spécialisé trafic humain",
     "spécialisé extraction",
     "spécialisé contre-espionnage",
     "spécialisé magie noire",
     "spécialisé drones militaires",
   ],
 
+  /* ---- Génération selon l'édition ---- */
   generate() {
-    const prof = Utils.rand(this.professions);
-    const spec = Utils.rand(this.specialites);
     const prenom = Utils.genFirstName();
-    // Les contacts ont parfois un surnom runner, parfois juste un prénom
     const hasHandle = Utils.randBool(0.55);
     const name = hasHandle ? `${prenom} "${Utils.genHandle()}"` : prenom;
+    const trait = Utils.rand(this.traits);
 
-    return {
-      id: Utils.uid(),
-      name,
-      role: prof.role,
-      desc: prof.desc,
-      specialite: spec,
-      lieu: Utils.rand(this.lieux),
-      loyaute: Utils.randInt(1, 6),
-      connexion: Utils.randInt(1, 6),
-      trait: Utils.rand(this.traits),
-    };
+    if (App.edition === "anarchy") {
+      // Anarchy : atout à niveau avec RR mécanique
+      const cat = Utils.rand(this.catalogueAnarchy);
+      // Niveau peut varier légèrement (contact moins ou plus développé)
+      const niveauEffectif = Utils.clamp(
+        cat.niveau + Utils.rand([-1, 0, 0, 0, 1]),
+        0,
+        6,
+      );
+      const coutEffectif = niveauEffectif * 5000;
+      return {
+        id: Utils.uid(),
+        edition: "anarchy",
+        name,
+        role: cat.role,
+        desc: cat.desc,
+        niveau: niveauEffectif,
+        cout: coutEffectif,
+        rr: cat.rr,
+        domaine: cat.domaine,
+        bonus: cat.bonus || null,
+        trait,
+      };
+    } else {
+      // SR5 / SR6 : Loyauté + Influence
+      const prof = Utils.rand(this.professionsSR);
+      const spec = Utils.rand(this.specialitesSR);
+      return {
+        id: Utils.uid(),
+        edition: App.edition,
+        name,
+        role: prof.role,
+        desc: prof.desc,
+        specialite: spec,
+        lieu: Utils.rand(this.lieux),
+        loyaute: Utils.randInt(1, 6),
+        influence: Utils.randInt(1, 6),
+        trait,
+      };
+    }
   },
 
   initPanel() {
     const zone = document.getElementById("contacts-panel-content");
-    if (zone.dataset.init) return;
+    // Réinitialiser si l'édition a changé
+    delete zone.dataset.init;
     zone.dataset.init = "1";
     zone.innerHTML = `
       <div class="gen-actions">
@@ -372,7 +561,7 @@ const RunGen = {
     "Base militaire désaffectée",
     "Serveur matriciel ultra-sécurisé (présence physique requise)",
     "Parc naturel protégé — critters présents",
-    "Métroplexe en état d'urgence (couvre-feu)",
+    "Métroplex en état d'urgence (couvre-feu)",
   ],
 
   /* -- Complications -- */

@@ -510,6 +510,52 @@ const UI = {
    ============================================================ */
 const ContactRenderer = {
   render(c) {
+    return c.edition === "anarchy" ? this._renderAnarchy(c) : this._renderSR(c);
+  },
+
+  _renderAnarchy(c) {
+    const el = document.createElement("div");
+    el.className = "contact-card";
+
+    // Pastilles de niveau : cercles pleins / vides
+    const niveauDots = Array.from(
+      { length: 6 },
+      (_, i) =>
+        `<span class="niveau-dot ${i < c.niveau ? "filled" : ""}"></span>`,
+    ).join("");
+
+    const bonusHtml = c.bonus
+      ? `<div class="contact-bonus">+ ${CardRenderer._esc(c.bonus)}</div>`
+      : "";
+
+    el.innerHTML = `
+      <div class="contact-card-body">
+        <div class="contact-name">${CardRenderer._esc(c.name)}</div>
+        <div class="contact-role">${CardRenderer._esc(c.role)}</div>
+        <div class="contact-desc">${CardRenderer._esc(c.desc)}</div>
+
+        <div class="contact-anarchy-stats">
+          <div class="contact-stat-row">
+            <span class="contact-stat-label">Niveau</span>
+            <div class="niveau-dots">${niveauDots}</div>
+            <span class="contact-stat-val">${c.niveau} (${c.cout.toLocaleString("fr-FR")}¥)</span>
+          </div>
+          <div class="contact-stat-row">
+            <span class="contact-stat-label">Effet</span>
+            <span class="contact-rr">RR ${c.rr} — ${CardRenderer._esc(c.domaine)}</span>
+          </div>
+          ${bonusHtml}
+        </div>
+
+        <div class="contact-trait">⚠ ${CardRenderer._esc(c.trait)}</div>
+      </div>
+      <div class="pnj-card-footer">
+        <button class="card-action-btn danger" onclick="this.closest('.contact-card').remove()">Virer</button>
+      </div>`;
+    return el;
+  },
+
+  _renderSR(c) {
     const el = document.createElement("div");
     el.className = "contact-card";
     const specStr = c.specialite
@@ -519,17 +565,12 @@ const ContactRenderer = {
       <div class="contact-card-body">
         <div class="contact-name">${CardRenderer._esc(c.name)}</div>
         <div class="contact-role">${CardRenderer._esc(c.role)}${specStr}</div>
-        <div style="font-size:0.72rem;color:var(--text-dim);margin:4px 0 8px;line-height:1.5;font-style:italic;">
-          ${CardRenderer._esc(c.desc)}
-        </div>
-        <div class="stats-row">
+        <div class="contact-desc">${CardRenderer._esc(c.desc)}</div>
+        <div class="stats-row" style="margin-top:6px;">
           <span class="stat-pill">Loyauté <strong>${c.loyaute}</strong></span>
-          <span class="stat-pill">Connexion <strong>${c.connexion}</strong></span>
+          <span class="stat-pill">INfluence <strong>${c.influence}</strong></span>
         </div>
-        <div style="margin-top:6px;font-size:0.7rem;color:var(--text-dim);line-height:1.5;border-top:1px solid var(--border);padding-top:6px;">
-          📍 ${CardRenderer._esc(c.lieu)}<br>
-          ⚠ ${CardRenderer._esc(c.trait)}
-        </div>
+        <div class="contact-trait" style="margin-top:6px;">⚠ ${CardRenderer._esc(c.trait)}</div>
       </div>
       <div class="pnj-card-footer">
         <button class="card-action-btn danger" onclick="this.closest('.contact-card').remove()">Virer</button>

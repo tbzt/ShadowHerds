@@ -1,34 +1,59 @@
 /* ============================================================
    RESET & BASE
    ============================================================ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { height: 100%; font-size: 16px; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html {
+  height: 100%;
+  font-size: 16px;
+}
 body {
   height: 100%;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
 }
-button { cursor: pointer; border: none; font-family: inherit; }
-input, select, textarea { font-family: inherit; }
-select option { background: var(--bg-card); color: var(--text); }
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+select option {
+  background: var(--bg-card);
+  color: var(--text);
+}
 
 /* ============================================================
    EDITION SELECTOR SCREEN
    ============================================================ */
 #edition-screen {
-  position: fixed; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   background: #060608;
   z-index: 1000;
   gap: 2.5rem;
 }
-#edition-screen.hidden { display: none; }
+#edition-screen.hidden {
+  display: none;
+}
 
 .edition-title {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-size: clamp(1.8rem, 4vw, 3.2rem);
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -60,24 +85,29 @@ select option { background: var(--bg-card); color: var(--text); }
   background: #0d0d0d;
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.25s, background 0.25s, transform 0.2s;
-  font-family: 'Rajdhani', sans-serif;
+  transition:
+    border-color 0.25s,
+    background 0.25s,
+    transform 0.2s;
+  font-family: "Rajdhani", sans-serif;
 }
-.edition-card:hover { transform: translateY(-4px); }
+.edition-card:hover {
+  transform: translateY(-4px);
+}
 .edition-card[data-ed="sr5"]:hover {
   border-color: #d4820a;
   background: #100c08;
-  box-shadow: 0 0 28px rgba(212,130,10,0.22);
+  box-shadow: 0 0 28px rgba(212, 130, 10, 0.22);
 }
 .edition-card[data-ed="sr6"]:hover {
   border-color: #00c8ff;
   background: #080e14;
-  box-shadow: 0 0 28px rgba(0,200,255,0.22);
+  box-shadow: 0 0 28px rgba(0, 200, 255, 0.22);
 }
 .edition-card[data-ed="anarchy"]:hover {
   border-color: #ff3c3c;
   background: #130a06;
-  box-shadow: 0 0 28px rgba(255,60,60,0.22);
+  box-shadow: 0 0 28px rgba(255, 60, 60, 0.22);
 }
 .edition-card .ed-num {
   font-size: 2.8rem;
@@ -86,9 +116,15 @@ select option { background: var(--bg-card); color: var(--text); }
   margin-bottom: 0.4rem;
   display: block;
 }
-.edition-card[data-ed="sr5"] .ed-num  { color: #d4820a; }
-.edition-card[data-ed="sr6"] .ed-num  { color: #00c8ff; }
-.edition-card[data-ed="anarchy"] .ed-num { color: #ff3c3c; }
+.edition-card[data-ed="sr5"] .ed-num {
+  color: #d4820a;
+}
+.edition-card[data-ed="sr6"] .ed-num {
+  color: #00c8ff;
+}
+.edition-card[data-ed="anarchy"] .ed-num {
+  color: #ff3c3c;
+}
 .edition-card .ed-name {
   font-size: 1.1rem;
   font-weight: 600;
@@ -103,12 +139,12 @@ select option { background: var(--bg-card); color: var(--text); }
   color: #555;
   letter-spacing: 0.08em;
   font-weight: 400;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
 }
 .edition-card .ed-wip {
   display: inline-block;
   margin-top: 0.5rem;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.6rem;
   color: #444;
   border: 1px solid #333;
@@ -125,7 +161,9 @@ select option { background: var(--bg-card); color: var(--text); }
   height: 100vh;
   flex-direction: column;
 }
-#app.visible { display: flex; }
+#app.visible {
+  display: flex;
+}
 
 /* TOP BAR */
 #topbar {
@@ -139,7 +177,7 @@ select option { background: var(--bg-card); color: var(--text); }
   flex-shrink: 0;
 }
 .topbar-logo {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.2em;
@@ -148,7 +186,7 @@ select option { background: var(--bg-card); color: var(--text); }
   white-space: nowrap;
 }
 .topbar-edition-badge {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.65rem;
   color: var(--accent);
   background: var(--badge);
@@ -158,7 +196,9 @@ select option { background: var(--bg-card); color: var(--text); }
   letter-spacing: 0.1em;
   opacity: 0.8;
 }
-.topbar-spacer { flex: 1; }
+.topbar-spacer {
+  flex: 1;
+}
 
 /* DICE ROLLER */
 #dice-roller {
@@ -166,18 +206,25 @@ select option { background: var(--bg-card); color: var(--text); }
   align-items: center;
   gap: 0.5rem;
 }
-.dice-btns { display: flex; gap: 3px; }
+.dice-btns {
+  display: flex;
+  gap: 3px;
+}
 .dice-btn {
-  width: 28px; height: 28px;
+  width: 28px;
+  height: 28px;
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-dim);
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.65rem;
   border-radius: 3px;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
-.dice-btn:hover, .dice-btn.active {
+.dice-btn:hover,
+.dice-btn.active {
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -187,7 +234,7 @@ select option { background: var(--bg-card); color: var(--text); }
   border: 1px solid var(--border);
   color: var(--text);
   text-align: center;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.8rem;
   padding: 3px 4px;
   border-radius: 3px;
@@ -197,16 +244,18 @@ select option { background: var(--bg-card); color: var(--text); }
   padding: 0 10px;
   background: var(--accent);
   color: var(--bg);
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 700;
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   border-radius: 3px;
   transition: opacity 0.15s;
 }
-.dice-roll-btn:hover { opacity: 0.85; }
+.dice-roll-btn:hover {
+  opacity: 0.85;
+}
 #dice-result {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.75rem;
   color: var(--accent);
   min-width: 120px;
@@ -219,15 +268,20 @@ select option { background: var(--bg-card); color: var(--text); }
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-dim);
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 600;
   font-size: 0.72rem;
   letter-spacing: 0.1em;
   border-radius: 3px;
   text-transform: uppercase;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
-.change-edition-btn:hover { border-color: var(--accent); color: var(--accent); }
+.change-edition-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
 /* MAIN BODY */
 #main-body {
@@ -249,7 +303,7 @@ select option { background: var(--bg-card); color: var(--text); }
   overflow-y: auto;
 }
 .nav-section-label {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.6rem;
   color: var(--text-dim);
   letter-spacing: 0.2em;
@@ -264,17 +318,27 @@ select option { background: var(--bg-card); color: var(--text); }
   background: transparent;
   border: none;
   color: var(--text-dim);
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 600;
   font-size: 0.9rem;
   letter-spacing: 0.05em;
   text-align: left;
   width: 100%;
   border-left: 2px solid transparent;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background 0.15s;
 }
-.nav-btn .nav-icon { font-size: 0.85rem; width: 16px; text-align: center; }
-.nav-btn:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-btn .nav-icon {
+  font-size: 0.85rem;
+  width: 16px;
+  text-align: center;
+}
+.nav-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
 .nav-btn.active {
   color: var(--accent);
   border-left-color: var(--accent);
@@ -292,11 +356,15 @@ select option { background: var(--bg-card); color: var(--text); }
 /* ============================================================
    PANELS
    ============================================================ */
-.panel { display: none; }
-.panel.active { display: block; }
+.panel {
+  display: none;
+}
+.panel.active {
+  display: block;
+}
 
 .panel-title {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 700;
   font-size: 1.5rem;
   letter-spacing: 0.12em;
@@ -310,7 +378,7 @@ select option { background: var(--bg-card); color: var(--text); }
   gap: 0.6rem;
 }
 .panel-title::before {
-  content: '';
+  content: "";
   display: inline-block;
   width: 3px;
   height: 1.2em;
@@ -333,7 +401,7 @@ select option { background: var(--bg-card); color: var(--text); }
   gap: 0.3rem;
 }
 .form-group label {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.65rem;
   color: var(--text-dim);
   letter-spacing: 0.15em;
@@ -383,46 +451,62 @@ select option { background: var(--bg-card); color: var(--text); }
   padding: 0.55rem 1.4rem;
   background: var(--accent);
   color: var(--bg);
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 700;
   font-size: 0.9rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   border-radius: 3px;
-  transition: opacity 0.15s, transform 0.1s;
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
 }
-.btn-primary:hover { opacity: 0.88; }
-.btn-primary:active { transform: scale(0.97); }
+.btn-primary:hover {
+  opacity: 0.88;
+}
+.btn-primary:active {
+  transform: scale(0.97);
+}
 
 .btn-secondary {
   padding: 0.55rem 1.2rem;
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-dim);
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 600;
   font-size: 0.85rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   border-radius: 3px;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
-.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
 .danger-btn {
   padding: 0.5rem 1.2rem;
   background: transparent;
   border: 1px solid #6b1a1a;
   color: #c0392b;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 700;
   font-size: 0.85rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   border-radius: 3px;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
-.danger-btn:hover { background: rgba(139,26,26,0.15); border-color: #c0392b; }
+.danger-btn:hover {
+  background: rgba(139, 26, 26, 0.15);
+  border-color: #c0392b;
+}
 
 /* TABS */
 .tab-bar {
@@ -436,18 +520,29 @@ select option { background: var(--bg-card); color: var(--text); }
   border: none;
   border-bottom: 2px solid transparent;
   color: var(--text-dim);
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 600;
   font-size: 0.85rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
   margin-bottom: -1px;
 }
-.tab-btn:hover { color: var(--text); }
-.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
+.tab-btn:hover {
+  color: var(--text);
+}
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.tab-panel {
+  display: none;
+}
+.tab-panel.active {
+  display: block;
+}
 
 /* ============================================================
    PNJ CARD
@@ -469,36 +564,59 @@ select option { background: var(--bg-card); color: var(--text); }
   animation: cardIn 0.3s ease;
   transition: box-shadow 0.2s;
 }
-.pnj-card:hover { box-shadow: 0 0 16px var(--glow); }
+.pnj-card:hover {
+  box-shadow: 0 0 16px var(--glow);
+}
 
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* accent line top */
 .pnj-card::before {
-  content: '';
+  content: "";
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 2px;
   background: var(--accent);
 }
 
 /* Scan animation */
 .pnj-card.scanning::after {
-  content: '';
+  content: "";
   position: absolute;
-  top: 2px; left: 0; right: 0;
+  top: 2px;
+  left: 0;
+  right: 0;
   height: 3px;
-  background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent) 50%,
+    transparent 100%
+  );
   animation: scanLine 0.7s ease-out forwards;
   pointer-events: none;
   z-index: 2;
 }
 @keyframes scanLine {
-  from { top: 2px; opacity: 1; }
-  to   { top: 100%; opacity: 0; }
+  from {
+    top: 2px;
+    opacity: 1;
+  }
+  to {
+    top: 100%;
+    opacity: 0;
+  }
 }
 
 .pnj-card-header {
@@ -508,9 +626,12 @@ select option { background: var(--bg-card); color: var(--text); }
   align-items: flex-start;
   gap: 0.6rem;
 }
-.pnj-header-left { flex: 1; min-width: 0; }
+.pnj-header-left {
+  flex: 1;
+  min-width: 0;
+}
 .pnj-name {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 700;
   font-size: 1.15rem;
   letter-spacing: 0.06em;
@@ -520,14 +641,14 @@ select option { background: var(--bg-card); color: var(--text); }
   text-overflow: ellipsis;
 }
 .pnj-meta {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.62rem;
   color: var(--text-dim);
   margin-top: 2px;
   line-height: 1.5;
 }
 .pnj-rank-badge {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -541,7 +662,9 @@ select option { background: var(--bg-card); color: var(--text); }
   flex-shrink: 0;
 }
 
-.pnj-card-body { padding: 0.75rem 1rem; }
+.pnj-card-body {
+  padding: 0.75rem 1rem;
+}
 
 /* Attribut grid — 4 colonnes par défaut, 5 si ESS inclus */
 .attr-grid {
@@ -550,7 +673,9 @@ select option { background: var(--bg-card); color: var(--text); }
   gap: 4px;
   margin-bottom: 0.75rem;
 }
-.attr-grid.with-ess { grid-template-columns: repeat(3, 1fr); }
+.attr-grid.with-ess {
+  grid-template-columns: repeat(3, 1fr);
+}
 
 .attr-cell {
   background: var(--bg);
@@ -559,16 +684,18 @@ select option { background: var(--bg-card); color: var(--text); }
   padding: 5px 4px;
   text-align: center;
 }
-.attr-cell.highlight { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.attr-cell.highlight {
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
 .attr-label {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.52rem;
   color: var(--text-dim);
   letter-spacing: 0.1em;
   display: block;
 }
 .attr-value {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 1.05rem;
   color: var(--accent);
   display: block;
@@ -587,15 +714,21 @@ select option { background: var(--bg-card); color: var(--text); }
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 3px 9px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.62rem;
   color: var(--text-dim);
   white-space: nowrap;
   line-height: 1.4;
 }
-.stat-pill strong { color: var(--text); }
-.stat-pill.accent { border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
-.stat-pill.accent strong { color: var(--accent); }
+.stat-pill strong {
+  color: var(--text);
+}
+.stat-pill.accent {
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.stat-pill.accent strong {
+  color: var(--accent);
+}
 
 /* Limites SR5 */
 .limites-grid {
@@ -613,11 +746,15 @@ select option { background: var(--bg-card); color: var(--text); }
 }
 
 /* Sections dans la card */
-.card-section { margin-bottom: 0.7rem; }
-.card-section:last-child { margin-bottom: 0; }
+.card-section {
+  margin-bottom: 0.7rem;
+}
+.card-section:last-child {
+  margin-bottom: 0;
+}
 
 .card-section-label {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.58rem;
   color: var(--accent2);
   letter-spacing: 0.2em;
@@ -637,7 +774,7 @@ select option { background: var(--bg-card); color: var(--text); }
   border: 1px solid var(--border);
   border-radius: 2px;
   padding: 1px 7px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.6rem;
   color: var(--text-dim);
   margin: 2px 2px 2px 0;
@@ -645,7 +782,11 @@ select option { background: var(--bg-card); color: var(--text); }
 }
 
 /* Clichés — Anarchy */
-.cliche-list { display: flex; flex-direction: column; gap: 4px; }
+.cliche-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .cliche-item {
   display: flex;
   align-items: center;
@@ -656,40 +797,59 @@ select option { background: var(--bg-card); color: var(--text); }
   padding: 5px 9px;
 }
 .cliche-name {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 600;
   font-size: 0.85rem;
   color: var(--text);
 }
 .cliche-dice {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.9rem;
   color: var(--accent);
 }
 
 /* Moniteur de condition cliquable */
-.monitor-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.monitor-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
 .monitor-label {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.58rem;
   color: var(--text-dim);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   white-space: nowrap;
 }
-.monitor-boxes { display: flex; gap: 2px; flex-wrap: wrap; }
+.monitor-boxes {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+}
 .monitor-box {
-  width: 13px; height: 13px;
+  width: 13px;
+  height: 13px;
   border: 1px solid var(--border);
   border-radius: 2px;
   cursor: pointer;
   background: var(--bg);
-  transition: background 0.1s, border-color 0.1s;
+  transition:
+    background 0.1s,
+    border-color 0.1s;
   flex-shrink: 0;
 }
-.monitor-box:hover { border-color: var(--accent); }
-.monitor-box.filled { background: var(--accent2); border-color: var(--accent2); }
-.monitor-box.penalty { border-color: var(--accent); }
+.monitor-box:hover {
+  border-color: var(--accent);
+}
+.monitor-box.filled {
+  background: var(--accent2);
+  border-color: var(--accent2);
+}
+.monitor-box.penalty {
+  border-color: var(--accent);
+}
 
 /* Card footer */
 .pnj-card-footer {
@@ -702,34 +862,45 @@ select option { background: var(--bg-card); color: var(--text); }
 .card-action-btn {
   flex: 1;
   padding: 0.38rem 0;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 600;
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   border-radius: 2px;
-  transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    opacity 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 .card-action-btn.save {
   background: var(--accent);
   color: var(--bg);
   border: 1px solid transparent;
 }
-.card-action-btn.save:hover { opacity: 0.85; }
+.card-action-btn.save:hover {
+  opacity: 0.85;
+}
 .card-action-btn.ghost {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-dim);
 }
-.card-action-btn.ghost:hover { border-color: var(--accent); color: var(--accent); }
+.card-action-btn.ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
 .card-action-btn.danger {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-dim);
 }
-.card-action-btn.danger:hover { border-color: #c0392b; color: #c0392b; }
+.card-action-btn.danger:hover {
+  border-color: #c0392b;
+  color: #c0392b;
+}
 .card-saved-label {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.65rem;
   color: var(--accent);
   display: flex;
@@ -760,23 +931,36 @@ select option { background: var(--bg-card); color: var(--text); }
   background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text-dim);
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 600;
   font-size: 0.8rem;
   border-radius: 2px;
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
-.group-tab:hover { border-color: var(--accent); color: var(--accent); }
-.group-tab.active { border-color: var(--accent); color: var(--accent); background: var(--glow); }
-.group-tab.deletable { padding-right: 0.5rem; }
+.group-tab:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.group-tab.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--glow);
+}
+.group-tab.deletable {
+  padding-right: 0.5rem;
+}
 .group-tab-del {
   margin-left: 4px;
   font-size: 0.7rem;
   color: var(--text-dim);
   transition: color 0.15s;
 }
-.group-tab:hover .group-tab-del { color: #c0392b; }
+.group-tab:hover .group-tab-del {
+  color: #c0392b;
+}
 
 /* ============================================================
    EMPTY STATE
@@ -786,14 +970,14 @@ select option { background: var(--bg-card); color: var(--text); }
   padding: 3rem 1rem;
   text-align: center;
   color: var(--text-dim);
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.78rem;
   line-height: 2.2;
   border: 1px dashed var(--border);
   border-radius: 4px;
 }
 .empty-state-title {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-size: 1.1rem;
   color: var(--text-dim);
   font-weight: 700;
@@ -807,13 +991,16 @@ select option { background: var(--bg-card); color: var(--text); }
    ============================================================ */
 .modal-overlay {
   display: none;
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.8);
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
   z-index: 500;
   align-items: center;
   justify-content: center;
 }
-.modal-overlay.open { display: flex; }
+.modal-overlay.open {
+  display: flex;
+}
 .modal {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -835,7 +1022,7 @@ select option { background: var(--bg-card); color: var(--text); }
   z-index: 1;
 }
 .modal-title {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 700;
   font-size: 1.1rem;
   letter-spacing: 0.1em;
@@ -847,14 +1034,24 @@ select option { background: var(--bg-card); color: var(--text); }
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-dim);
-  width: 28px; height: 28px;
+  width: 28px;
+  height: 28px;
   border-radius: 2px;
   font-size: 0.9rem;
-  display: flex; align-items: center; justify-content: center;
-  transition: border-color 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
-.modal-close:hover { border-color: #c0392b; color: #c0392b; }
-.modal-body { padding: 1.25rem; }
+.modal-close:hover {
+  border-color: #c0392b;
+  color: #c0392b;
+}
+.modal-body {
+  padding: 1.25rem;
+}
 .modal-footer {
   padding: 0.75rem 1.25rem;
   border-top: 1px solid var(--border);
@@ -871,9 +1068,13 @@ select option { background: var(--bg-card); color: var(--text); }
   padding-bottom: 1.25rem;
   border-bottom: 1px solid var(--border);
 }
-.modal-section:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+.modal-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
 .modal-section-title {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.62rem;
   color: var(--accent2);
   letter-spacing: 0.2em;
@@ -885,8 +1086,12 @@ select option { background: var(--bg-card); color: var(--text); }
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 0.6rem;
 }
-.modal-grid.wide { grid-template-columns: 1fr 1fr; }
-.modal-grid .full { grid-column: 1 / -1; }
+.modal-grid.wide {
+  grid-template-columns: 1fr 1fr;
+}
+.modal-grid .full {
+  grid-column: 1 / -1;
+}
 
 /* ============================================================
    SETTINGS
@@ -900,7 +1105,7 @@ select option { background: var(--bg-card); color: var(--text); }
   max-width: 600px;
 }
 .settings-section h3 {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 700;
   font-size: 1rem;
   letter-spacing: 0.1em;
@@ -914,7 +1119,11 @@ select option { background: var(--bg-card); color: var(--text); }
   margin-bottom: 0.75rem;
   line-height: 1.7;
 }
-.radio-group { display: flex; flex-direction: column; gap: 0.4rem; }
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
 .radio-label {
   display: flex;
   align-items: center;
@@ -924,8 +1133,12 @@ select option { background: var(--bg-card); color: var(--text); }
   cursor: pointer;
   transition: color 0.15s;
 }
-.radio-label input[type=radio] { accent-color: var(--accent); }
-.radio-label:hover { color: var(--text); }
+.radio-label input[type="radio"] {
+  accent-color: var(--accent);
+}
+.radio-label:hover {
+  color: var(--text);
+}
 
 /* ============================================================
    WELCOME
@@ -938,7 +1151,7 @@ select option { background: var(--bg-card); color: var(--text); }
   max-width: 700px;
 }
 .welcome-card h2 {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 700;
   font-size: 1.2rem;
   letter-spacing: 0.1em;
@@ -961,12 +1174,14 @@ select option { background: var(--bg-card); color: var(--text); }
   margin-bottom: 0.35rem;
   line-height: 1.6;
 }
-.welcome-card strong { color: var(--text); }
+.welcome-card strong {
+  color: var(--text);
+}
 .legal-notice {
   margin-top: 1.25rem;
   padding-top: 1rem;
   border-top: 1px solid var(--border);
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.6rem;
   color: var(--text-dim);
   opacity: 0.55;
@@ -978,22 +1193,28 @@ select option { background: var(--bg-card); color: var(--text); }
    ============================================================ */
 #toast {
   position: fixed;
-  bottom: 1.5rem; right: 1.5rem;
+  bottom: 1.5rem;
+  right: 1.5rem;
   background: var(--bg-card);
   border: 1px solid var(--accent);
   border-radius: 4px;
   padding: 0.65rem 1.1rem;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.72rem;
   color: var(--accent);
   z-index: 900;
   opacity: 0;
   transform: translateY(10px);
-  transition: opacity 0.22s, transform 0.22s;
+  transition:
+    opacity 0.22s,
+    transform 0.22s;
   pointer-events: none;
   max-width: 280px;
 }
-#toast.show { opacity: 1; transform: translateY(0); }
+#toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
 
 /* ============================================================
    CONTACTS & RUN
@@ -1002,29 +1223,114 @@ select option { background: var(--bg-card); color: var(--text); }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 4px;
-  width: 260px;
+  width: 290px;
   overflow: hidden;
   animation: cardIn 0.3s ease;
 }
 .contact-card::before {
-  content: '';
+  content: "";
   display: block;
   height: 2px;
   background: var(--accent2);
 }
-.contact-card-body { padding: 0.75rem 1rem; }
+.contact-card-body {
+  padding: 0.75rem 1rem;
+}
 .contact-name {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 700;
   font-size: 1.05rem;
   color: var(--text);
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 .contact-role {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.62rem;
+  color: var(--accent2);
+  letter-spacing: 0.06em;
+  margin-bottom: 5px;
+}
+.contact-desc {
+  font-size: 0.73rem;
   color: var(--text-dim);
-  margin-bottom: 0.6rem;
+  font-style: italic;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+.contact-trait {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+  margin-top: 6px;
+}
+
+/* Anarchy : bloc stats atout contact */
+.contact-anarchy-stats {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.contact-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.contact-stat-label {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.56rem;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  width: 42px;
+  flex-shrink: 0;
+}
+.contact-stat-val {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  margin-left: auto;
+}
+.contact-rr {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.64rem;
+  color: var(--accent);
+  line-height: 1.4;
+}
+.contact-bonus {
+  font-size: 0.64rem;
+  color: var(--accent2);
+  padding-top: 3px;
+  border-top: 1px solid var(--border);
+  margin-top: 2px;
+}
+
+/* Pastilles de niveau (Anarchy) */
+.niveau-dots {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.niveau-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+  transition:
+    background 0.1s,
+    border-color 0.1s;
+}
+.niveau-dot.filled {
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 /* Run card */
@@ -1037,7 +1343,7 @@ select option { background: var(--bg-card); color: var(--text); }
   animation: cardIn 0.3s ease;
 }
 .run-card::before {
-  content: '';
+  content: "";
   display: block;
   height: 2px;
   background: var(--accent);
@@ -1050,16 +1356,20 @@ select option { background: var(--bg-card); color: var(--text); }
   gap: 0.5rem;
 }
 .run-type {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-weight: 700;
   font-size: 1.1rem;
   color: var(--text);
   flex: 1;
 }
-.run-card-body { padding: 0.75rem 1rem; }
-.run-field { margin-bottom: 0.5rem; }
+.run-card-body {
+  padding: 0.75rem 1rem;
+}
+.run-field {
+  margin-bottom: 0.5rem;
+}
 .run-field-label {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 0.55rem;
   color: var(--text-dim);
   letter-spacing: 0.15em;
@@ -1071,25 +1381,53 @@ select option { background: var(--bg-card); color: var(--text); }
   font-size: 0.8rem;
   color: var(--text);
 }
-.run-complication { color: var(--accent2) !important; }
+.run-complication {
+  color: var(--accent2) !important;
+}
 
 /* ============================================================
    SCROLLBAR
    ============================================================ */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-dim);
+}
 
 /* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 640px) {
-  #sidebar { width: 44px; }
-  .nav-btn .nav-label { display: none; }
-  .nav-btn { justify-content: center; padding: 0.55rem; }
-  .nav-section-label { display: none; }
-  .pnj-card { width: 100%; }
-  .edition-cards { flex-direction: column; align-items: center; }
-  .gen-form { grid-template-columns: 1fr 1fr; }
+  #sidebar {
+    width: 44px;
+  }
+  .nav-btn .nav-label {
+    display: none;
+  }
+  .nav-btn {
+    justify-content: center;
+    padding: 0.55rem;
+  }
+  .nav-section-label {
+    display: none;
+  }
+  .pnj-card {
+    width: 100%;
+  }
+  .edition-cards {
+    flex-direction: column;
+    align-items: center;
+  }
+  .gen-form {
+    grid-template-columns: 1fr 1fr;
+  }
 }

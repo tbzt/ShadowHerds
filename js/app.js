@@ -17,7 +17,7 @@ const App = {
         <ul>
           <li><strong>Ombres portées</strong> — Votre casting de figurants, organisés par groupes.</li>
           <li><strong>Générateur PNJ</strong> — PNJ à la volée : attributs, Limites, compétences, équipement.</li>
-          <li><strong>Contacts</strong> — Contacts avec Loyauté et Connexion.</li>
+          <li><strong>Contacts</strong> — Contacts avec Loyauté et Influence.</li>
           <li><strong>Run</strong> — Ébauche de scénario en un clic.</li>
         </ul>
         <p>Les PNJ SR5 incluent les <strong>huit attributs</strong>, les <strong>Limites</strong>
@@ -35,7 +35,7 @@ const App = {
         <ul>
           <li><strong>Ombres portées</strong> — Votre casting de figurants, organisés par groupes.</li>
           <li><strong>Générateur PNJ</strong> — PNJ avec Défenses d'Attribut, compétences fusionnées.</li>
-          <li><strong>Contacts</strong> — Contacts avec Loyauté et Connexion.</li>
+          <li><strong>Contacts</strong> — Contacts avec Loyauté et Influence.</li>
           <li><strong>Run</strong> — Ébauche de scénario en un clic.</li>
         </ul>
         <p>Les PNJ SR6 utilisent les <strong>Défenses d'Attribut</strong> en lieu et place
@@ -52,7 +52,7 @@ const App = {
         <ul>
           <li><strong>Ombres portées</strong> — Votre casting de figurants, organisés par groupes.</li>
           <li><strong>Générateur PNJ</strong> — PNJ avec Rang, Clichés et Narcos.</li>
-          <li><strong>Contacts</strong> — Contacts avec Loyauté et Connexion.</li>
+          <li><strong>Contacts</strong> — Contacts avec Loyauté et Influence.</li>
           <li><strong>Run</strong> — Ébauche de scénario en un clic.</li>
         </ul>
         <p>Les PNJ Anarchy ont un <strong>Rang</strong> (Figurant / Lieutenant / Boss),
