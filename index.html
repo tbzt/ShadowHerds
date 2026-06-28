@@ -115,10 +115,19 @@
         <!-- OMBRES PORTÉES -->
         <div class="panel" id="panel-shadows">
           <div class="panel-title">Ombres portées</div>
-          <div class="shadows-layout">
+          <div class="shadows-layout" data-sidebar="shadows">
+            <div class="sidebar-backdrop" onclick="SidebarToggle.close('shadows')"></div>
+            <!-- Rail de réouverture (visible quand repliée) -->
+            <button class="sidebar-reopen" onclick="SidebarToggle.open('shadows')" title="Afficher les groupes"
+              aria-label="Afficher les groupes">
+              <span class="sidebar-reopen-icon">›</span>
+              <span class="sidebar-reopen-label">Groupes</span>
+            </button>
             <!-- Colonne gauche : groupes -->
             <aside class="shadows-sidebar">
               <div class="shadows-sidebar-header">
+                <button class="sidebar-collapse-btn" onclick="SidebarToggle.close('shadows')" title="Replier"
+                  aria-label="Replier les groupes">‹</button>
                 <span class="shadows-sidebar-title">Groupes</span>
                 <button class="btn-icon" onclick="Shadows.addGroup()" title="Nouveau groupe">＋</button>
               </div>
@@ -169,9 +178,17 @@
         <!-- CONTACTS -->
         <div class="panel" id="panel-contacts">
           <div class="panel-title">Contacts</div>
-          <div class="shadows-layout">
+          <div class="shadows-layout" data-sidebar="contacts">
+            <div class="sidebar-backdrop" onclick="SidebarToggle.close('contacts')"></div>
+            <button class="sidebar-reopen" onclick="SidebarToggle.open('contacts')" title="Afficher les groupes"
+              aria-label="Afficher les groupes">
+              <span class="sidebar-reopen-icon">›</span>
+              <span class="sidebar-reopen-label">Groupes</span>
+            </button>
             <aside class="shadows-sidebar">
               <div class="shadows-sidebar-header">
+                <button class="sidebar-collapse-btn" onclick="SidebarToggle.close('contacts')" title="Replier"
+                  aria-label="Replier les groupes">‹</button>
                 <span class="shadows-sidebar-title">Groupes</span>
                 <button class="btn-icon" onclick="ContactsBook.addGroup()" title="Nouveau groupe">＋</button>
               </div>
@@ -230,6 +247,7 @@
   <script src="js/editions/sr6.js?v=2"></script>
   <script src="js/editions/anarchy.js?v=2"></script>
   <script src="js/ui.js?v=2"></script>
+  <script src="js/sidebartoggle.js?v=2"></script>
   <script src="js/generator.js?v=2"></script>
   <script src="js/shadows.js?v=2"></script>
   <script src="js/editmodal.js?v=2"></script>

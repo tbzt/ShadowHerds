@@ -933,6 +933,79 @@ select option {
   gap: 0;
   height: 100%;
   min-height: 0;
+  position: relative;
+}
+
+/* ---- Bouton replier (dans le header de la sidebar) ---- */
+.sidebar-collapse-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition:
+    border-color 0.12s,
+    color 0.12s;
+}
+.sidebar-collapse-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---- Rail de réouverture (caché par défaut, visible quand repliée) ---- */
+.sidebar-reopen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 30px;
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border: none;
+  border-right: 1px solid var(--border);
+  border-radius: 4px 0 0 4px;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0.7rem 0;
+  transition:
+    color 0.12s,
+    background 0.12s;
+}
+.sidebar-reopen:hover {
+  color: var(--accent);
+  background: var(--glow);
+}
+.sidebar-reopen-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+.sidebar-reopen-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* ---- État replié ---- */
+.shadows-layout.sidebar-collapsed > .shadows-sidebar {
+  width: 0;
+  min-width: 0;
+  border-right: none;
+  opacity: 0;
+  pointer-events: none;
+}
+.shadows-layout.sidebar-collapsed > .sidebar-reopen {
+  display: flex;
 }
 
 /* ---- Sidebar groupes ---- */
@@ -945,15 +1018,19 @@ select option {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition:
+    width 0.22s ease,
+    opacity 0.18s ease;
 }
 .shadows-sidebar-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.4rem;
   padding: 0.7rem 0.75rem 0.5rem;
   border-bottom: 1px solid var(--border);
 }
 .shadows-sidebar-title {
+  flex: 1;
   font-family: "Share Tech Mono", monospace;
   font-size: 0.6rem;
   letter-spacing: 0.2em;
@@ -1677,5 +1754,26 @@ select option {
   }
   .gen-form {
     grid-template-columns: 1fr 1fr;
+  }
+
+  /* ---- Sidebar groupes en overlay sur mobile ---- */
+  .shadows-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 30;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.5);
+  }
+  /* Sur mobile la sidebar est repliée par défaut : on se base sur la classe */
+  .shadows-layout:not(.sidebar-collapsed) > .sidebar-backdrop {
+    display: block;
+  }
+  .sidebar-backdrop {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    background: rgba(0, 0, 0, 0.45);
   }
 }
