@@ -11,6 +11,7 @@ const EditionSR5 = {
   id: "sr5",
   label: "Shadowrun 5e",
   badgeLabel: "SR5",
+  useMetavariants: true,
 
   /* ----
      ATTRIBUTS PAR MÉTATYPE — table officielle p.68
@@ -710,7 +711,7 @@ const EditionSR5 = {
       "Perception",
       "Pistolets",
     ],
-    "Faussaire": [
+    Faussaire: [
       "Armes à feu",
       "Combat à mains nues",
       "Contrefaçon",
@@ -1182,7 +1183,19 @@ const EditionSR5 = {
 
   /* ---- Génération principale ---- */
   generate(opts) {
-    const meta = opts.meta === "Aléatoire" ? Utils.randMeta() : opts.meta;
+    let meta = opts.meta === "Aléatoire" ? Utils.randMeta() : opts.meta;
+
+    // Résolution métavariante : une métavariante/conscience/zoocanthrope
+    // remplace les ranges de sa souche et porte ses traits raciaux.
+    const mv =
+      typeof Metavariants !== "undefined" ? Metavariants.resolve(meta) : null;
+    const souche = mv ? mv.souche : meta;
+    // Bassin de noms : si non imposé, hériter de la métavariante
+    let bassinOverride = null;
+    if (mv && mv.bassins && (!opts.bassin || opts.bassin === "Aléatoire")) {
+      bassinOverride = Utils.rand(mv.bassins);
+    }
+
     const gender =
       opts.gender === "Aléatoire" ? Utils.randGender() : opts.gender;
     const prof =
@@ -1210,13 +1223,19 @@ const EditionSR5 = {
     // Attributs de base selon professionnalisme
     const profIdx = Utils.clamp(prof, 0, 6);
     const baseAttrs = { ...this.attrByProf[profIdx] };
-    const mods = this.metaMod[meta] || {};
-    const range = this.attrRange[meta] || this.attrRange["Humain"];
+    // Les modificateurs de PNJ suivent la souche (métatype parent)
+    const mods = this.metaMod[souche] || {};
+    // Les ranges suivent la métavariante si présente, sinon la souche
+    const range = mv
+      ? mv.ranges
+      : this.attrRange[souche] || this.attrRange["Humain"];
 
     const attrs = {};
     for (const k of ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"]) {
       const raw = (baseAttrs[k] || 3) + (mods[k] || 0) + Utils.randInt(-1, 1);
-      attrs[k] = Utils.clamp(raw, range[k][0], range[k][1]);
+      const lo = range[k] ? range[k][0] : 1;
+      const hi = range[k] ? range[k][1] : 6;
+      attrs[k] = Utils.clamp(raw, lo, hi);
     }
     attrs.ESS = baseAttrs.ESS;
 
@@ -1266,14 +1285,21 @@ const EditionSR5 = {
       ? this.sortsByTradition[special].slice(0, 2 + Math.floor(prof / 2))
       : [];
 
-    return {
+    const pnj = {
       id: Utils.uid(),
       edition: "sr5",
       name:
         opts.name && opts.name.trim()
           ? opts.name.trim()
-          : Utils.genName(opts.bassin !== "Aléatoire" ? opts.bassin : null),
-      meta,
+          : Utils.genName(
+              opts.bassin && opts.bassin !== "Aléatoire"
+                ? opts.bassin
+                : bassinOverride,
+            ),
+      meta: souche,
+      metavariant: mv ? mv.name : null,
+      metaFamille: mv ? mv.famille : null,
+      metaTraits: mv ? mv.traits : [],
       gender,
       prof,
       profession,
@@ -1296,6 +1322,10 @@ const EditionSR5 = {
       sorts: sortsList,
       notes: "",
     };
+
+    // Couche d'habillage cohérente
+    if (typeof Flavor !== "undefined") Flavor.apply(pnj);
+    return pnj;
   },
 
   _buildSkills(profession, prof, special) {

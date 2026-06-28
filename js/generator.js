@@ -81,7 +81,7 @@ const Gen = {
       </select>
     </div>`;
 
-    html += this._select(prefix, "meta", "Métatype", fo.meta);
+    html += this._metaSelect(prefix, ed);
     html += this._select(prefix, "gender", "Genre", fo.gender);
 
     if (fo.rang) {
@@ -108,6 +108,57 @@ const Gen = {
       <label>${label}</label>
       <select id="${id}">${opts}</select>
     </div>`;
+  },
+
+  /**
+   * Sélecteur de métatype. Si l'édition expose des métavariantes
+   * (via Metavariants) et les active (ed.useMetavariants), on construit
+   * un <select> hiérarchique : chaque souche regroupe son métatype de
+   * base et ses métavariantes ; les métaconsciences et zoocanthropes
+   * forment deux groupes à part.
+   */
+  _metaSelect(prefix, ed) {
+    const id = `${prefix}-meta`;
+    const fo = ed.formOptions;
+
+    // Édition sans métavariantes (ex. Anarchy) → select plat classique
+    if (!ed.useMetavariants || typeof Metavariants === "undefined") {
+      return this._select(prefix, "meta", "Métatype", fo.meta);
+    }
+
+    let html = `<div class="form-group">
+      <label>Métatype</label>
+      <select id="${id}">
+        <option value="Aléatoire">Aléatoire</option>`;
+
+    // Un groupe par souche : métatype de base + ses métavariantes
+    for (const grp of Metavariants.groupedOptions()) {
+      html += `<optgroup label="${grp.souche}">`;
+      html += `<option value="${grp.souche}">${grp.souche}</option>`;
+      for (const mv of grp.metavariants) {
+        html += `<option value="${mv}">${mv}</option>`;
+      }
+      html += `</optgroup>`;
+    }
+
+    // Métaconsciences
+    const mc = Metavariants.allMetaconsciences();
+    if (mc.length) {
+      html += `<optgroup label="Métaconsciences">`;
+      html += mc.map((n) => `<option value="${n}">${n}</option>`).join("");
+      html += `</optgroup>`;
+    }
+
+    // Zoocanthropes
+    const zoo = Metavariants.allZoocanthropes();
+    if (zoo.length) {
+      html += `<optgroup label="Zoocanthropes">`;
+      html += zoo.map((n) => `<option value="${n}">${n}</option>`).join("");
+      html += `</optgroup>`;
+    }
+
+    html += `</select></div>`;
+    return html;
   },
 
   /* ---- Lecture du formulaire ---- */

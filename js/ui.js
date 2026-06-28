@@ -47,10 +47,14 @@ const CardRenderer = {
         ? ` · <em>${pnj.special}</em>`
         : "";
 
+    const metaStr = pnj.metavariant
+      ? `${pnj.meta} <span class="pnj-metavariant">(${this._esc(pnj.metavariant)})</span>`
+      : pnj.meta;
+
     return `<div class="pnj-card-header">
       <div class="pnj-header-left">
         <div class="pnj-name">${this._esc(pnj.name)}</div>
-        <div class="pnj-meta">${gIcon} ${pnj.meta} · ${pnj.profession}${specialStr}</div>
+        <div class="pnj-meta">${gIcon} ${metaStr} · ${pnj.profession}${specialStr}</div>
       </div>
       ${badge}
     </div>`;
@@ -58,16 +62,64 @@ const CardRenderer = {
 
   /* ---- Body ---- */
   _body(pnj) {
+    let core;
     switch (pnj.edition) {
       case "sr5":
-        return this._bodySR5(pnj);
+        core = this._bodySR5(pnj);
+        break;
       case "sr6":
-        return this._bodySR6(pnj);
+        core = this._bodySR6(pnj);
+        break;
       case "anarchy":
-        return this._bodyAnarchy(pnj);
+        core = this._bodyAnarchy(pnj);
+        break;
       default:
         return '<div class="pnj-card-body">—</div>';
     }
+    // Injecter traits raciaux + habillage avant la fermeture du body
+    const extra = this._metaTraitsSection(pnj) + this._flavorSection(pnj);
+    if (extra) {
+      const idx = core.lastIndexOf("</div>");
+      if (idx !== -1) {
+        core = core.slice(0, idx) + extra + core.slice(idx);
+      }
+    }
+    return core;
+  },
+
+  /* ---- Traits raciaux de métavariante ---- */
+  _metaTraitsSection(pnj) {
+    if (!pnj.metaTraits || !pnj.metaTraits.length) return "";
+    const label =
+      pnj.metaFamille === "zoocanthrope"
+        ? "Traits zoocanthropes"
+        : pnj.metaFamille === "metaconscience"
+          ? "Traits de métaconscience"
+          : "Traits de métavariante";
+    return this._tagsSection(label, pnj.metaTraits);
+  },
+
+  /* ---- Habillage (âge, signe, manie, motivation, style) ---- */
+  _flavorSection(pnj) {
+    const f = pnj.flavor;
+    if (!f) return "";
+    const rows = [
+      ["Âge", `${f.age} ans`],
+      ["Signe distinctif", f.signe],
+      ["Manie", f.manie],
+      ["Motivation", f.motivation],
+      ["Style", f.style],
+    ]
+      .filter(([, v]) => v)
+      .map(
+        ([k, v]) =>
+          `<div class="flavor-row"><span class="flavor-key">${k}</span><span class="flavor-val">${this._esc(String(v))}</span></div>`,
+      )
+      .join("");
+    return `<div class="card-section flavor-section">
+      <div class="card-section-label">Portrait</div>
+      ${rows}
+    </div>`;
   },
 
   /* ---- Body SR5 ---- */

@@ -33,6 +33,12 @@ select option {
   background: var(--bg-card);
   color: var(--text);
 }
+select optgroup {
+  background: var(--bg-card);
+  color: var(--accent);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.8rem;
+}
 
 /* ============================================================
    EDITION SELECTOR SCREEN
@@ -779,6 +785,35 @@ select option {
   font-size: 0.78rem;
   color: var(--text-dim);
   line-height: 1.6;
+}
+
+/* ---- Métavariante dans l'en-tête ---- */
+.pnj-metavariant {
+  color: var(--accent);
+  font-style: italic;
+}
+
+/* ---- Section Portrait (habillage) ---- */
+.flavor-section .flavor-row {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  padding: 1px 0;
+}
+.flavor-key {
+  flex-shrink: 0;
+  width: 92px;
+  color: var(--text-dim);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding-top: 1px;
+}
+.flavor-val {
+  flex: 1;
+  color: var(--text);
 }
 .tag {
   display: inline-block;

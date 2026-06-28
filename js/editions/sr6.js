@@ -1363,7 +1363,7 @@ const EditionSR6 = {
     // Augmentations corpo
     const augs = p >= 5 ? [Utils.rand(this.equipPools.cyberware)] : [];
 
-    return {
+    const pnj = {
       id: Utils.uid(),
       edition: "sr6",
       name:
@@ -1390,6 +1390,8 @@ const EditionSR6 = {
       physFilled: 0,
       notes: "",
     };
+    if (typeof Flavor !== "undefined") Flavor.apply(pnj);
+    return pnj;
   },
 
   recalc(pnj) {
