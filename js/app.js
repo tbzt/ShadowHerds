@@ -1,23 +1,23 @@
-'use strict';
+"use strict";
 
 /* ============================================================
    APP — Bootstrap, routing, sélecteur d'édition
    ============================================================ */
 const App = {
-  edition: 'none',
+  edition: "none",
   editionModule: null,
 
   /** Contenu des panels d'accueil par édition */
   welcomeContent: {
     sr5: {
-      title: 'Shadowrun 5e édition',
+      title: "Shadowrun 5e édition",
       body: `
         <h2>Shadow Herds — Shadowrun 5e</h2>
         <p>Bienvenue sur le gestionnaire de PNJ pour <strong>Shadowrun 5e édition</strong>.</p>
         <ul>
           <li><strong>Ombres portées</strong> — Votre casting de figurants, organisés par groupes.</li>
           <li><strong>Générateur PNJ</strong> — PNJ à la volée : attributs, Limites, compétences, équipement.</li>
-          <li><strong>Contacts</strong> — Contacts avec Loyauté et Influence.</li>
+          <li><strong>Contacts</strong> — Contacts avec Loyauté et Connexion.</li>
           <li><strong>Run</strong> — Ébauche de scénario en un clic.</li>
         </ul>
         <p>Les PNJ SR5 incluent les <strong>huit attributs</strong>, les <strong>Limites</strong>
@@ -28,14 +28,14 @@ const App = {
         résistance au Drain calculée.</p>`,
     },
     sr6: {
-      title: 'Shadowrun 6e édition',
+      title: "Shadowrun 6e édition",
       body: `
         <h2>Shadow Herds — Shadowrun 6e</h2>
         <p>Bienvenue sur le gestionnaire de PNJ pour <strong>Shadowrun 6e édition</strong>.</p>
         <ul>
           <li><strong>Ombres portées</strong> — Votre casting de figurants, organisés par groupes.</li>
           <li><strong>Générateur PNJ</strong> — PNJ avec Défenses d'Attribut, compétences fusionnées.</li>
-          <li><strong>Contacts</strong> — Contacts avec Loyauté et Influence.</li>
+          <li><strong>Contacts</strong> — Contacts avec Loyauté et Connexion.</li>
           <li><strong>Run</strong> — Ébauche de scénario en un clic.</li>
         </ul>
         <p>Les PNJ SR6 utilisent les <strong>Défenses d'Attribut</strong> en lieu et place
@@ -45,14 +45,14 @@ const App = {
         détermine l'équipement disponible.</p>`,
     },
     anarchy: {
-      title: 'Shadowrun Anarchy 2e édition',
+      title: "Shadowrun Anarchy 2e édition",
       body: `
         <h2>Shadow Herds — Anarchy 2e</h2>
         <p>Bienvenue sur le gestionnaire de PNJ pour <strong>Shadowrun Anarchy 2e édition</strong>.</p>
         <ul>
           <li><strong>Ombres portées</strong> — Votre casting de figurants, organisés par groupes.</li>
           <li><strong>Générateur PNJ</strong> — PNJ avec Rang, Clichés et Narcos.</li>
-          <li><strong>Contacts</strong> — Contacts avec Loyauté et Influence.</li>
+          <li><strong>Contacts</strong> — Contacts avec Loyauté et Connexion.</li>
           <li><strong>Run</strong> — Ébauche de scénario en un clic.</li>
         </ul>
         <p>Les PNJ Anarchy ont un <strong>Rang</strong> (Figurant / Lieutenant / Boss),
@@ -66,8 +66,8 @@ const App = {
 
   /** Registre des modules d'édition */
   _modules: {
-    sr5:     () => EditionSR5,
-    sr6:     () => EditionSR6,
+    sr5: () => EditionSR5,
+    sr6: () => EditionSR6,
     anarchy: () => EditionAnarchy,
   },
 
@@ -77,22 +77,23 @@ const App = {
 
   /* ---- Sélection d'édition ---- */
   selectEdition(ed) {
-    this.edition       = ed;
+    this.edition = ed;
     this.editionModule = this.getEditionModule(ed);
 
     // Initialiser le Storage
     Storage.init(ed);
 
     // Thème
-    document.documentElement.setAttribute('data-edition', ed);
+    document.documentElement.setAttribute("data-edition", ed);
 
     // Masquer le sélecteur, afficher l'app
-    document.getElementById('edition-screen').classList.add('hidden');
-    document.getElementById('app').classList.add('visible');
+    document.getElementById("edition-screen").classList.add("hidden");
+    document.getElementById("app").classList.add("visible");
 
     // Badge
-    const badgeLabels = { sr5: 'SR5', sr6: 'SR6', anarchy: 'ANARCHY 2E' };
-    document.getElementById('edition-badge').textContent = badgeLabels[ed] || ed;
+    const badgeLabels = { sr5: "SR5", sr6: "SR6", anarchy: "ANARCHY 2E" };
+    document.getElementById("edition-badge").textContent =
+      badgeLabels[ed] || ed;
 
     // Initialisation des modules
     Shadows.load();
@@ -100,34 +101,50 @@ const App = {
     Settings.render();
 
     // Naviguer vers l'accueil
-    this.showPanel('welcome');
+    this.showPanel("welcome");
   },
 
   /* ---- Navigation entre panels ---- */
   showPanel(name) {
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document
+      .querySelectorAll(".panel")
+      .forEach((p) => p.classList.remove("active"));
+    document
+      .querySelectorAll(".nav-btn")
+      .forEach((b) => b.classList.remove("active"));
 
     const panel = document.getElementById(`panel-${name}`);
-    if (panel) panel.classList.add('active');
+    if (panel) panel.classList.add("active");
     const navBtn = document.querySelector(`.nav-btn[data-panel="${name}"]`);
-    if (navBtn) navBtn.classList.add('active');
+    if (navBtn) navBtn.classList.add("active");
 
     // Init lazy des panels si besoin
     switch (name) {
-      case 'welcome':  this._renderWelcome(); break;
-      case 'shadows':  Shadows.render();      break;
-      case 'contacts': Contacts.initPanel();  break;
-      case 'run':      RunGen.initPanel();    break;
-      case 'settings': Settings.render();     break;
+      case "welcome":
+        this._renderWelcome();
+        break;
+      case "shadows":
+        Shadows.render();
+        break;
+      case "contacts":
+        Contacts.initPanel();
+        break;
+      case "run":
+        RunGen.initPanel();
+        break;
+      case "settings":
+        Settings.render();
+        break;
     }
   },
 
   _renderWelcome() {
     const w = this.welcomeContent[this.edition];
     if (!w) return;
-    document.getElementById('welcome-title').textContent = w.title;
-    document.getElementById('welcome-body').innerHTML = w.body + `
+    document.getElementById("welcome-title").textContent = w.title;
+    document.getElementById("welcome-body").innerHTML =
+      w.body +
+      `
       <div class="legal-notice">
         La Topps Company, Inc. détient les droits exclusifs sur Shadowrun.
         Black Book Editions détient les droits de la version française.
@@ -140,16 +157,16 @@ const App = {
   /* ---- Changer d'édition ---- */
   changeEdition() {
     // Reset UI
-    document.getElementById('app').classList.remove('visible');
-    document.getElementById('edition-screen').classList.remove('hidden');
-    document.documentElement.setAttribute('data-edition', 'none');
+    document.getElementById("app").classList.remove("visible");
+    document.getElementById("edition-screen").classList.remove("hidden");
+    document.documentElement.setAttribute("data-edition", "none");
 
     // Reset état
-    this.edition       = 'none';
+    this.edition = "none";
     this.editionModule = null;
 
-    document.getElementById('gen-zone-single').innerHTML = '';
-    document.getElementById('gen-zone-group').innerHTML  = '';
+    document.getElementById("gen-zone-single").innerHTML = "";
+    document.getElementById("gen-zone-group").innerHTML = "";
     Gen.pool = [];
   },
 };
@@ -157,16 +174,16 @@ const App = {
 /* ============================================================
    INIT au chargement du DOM
    ============================================================ */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   Dice.init();
 
   // Fermer la modal en cliquant sur l'overlay
-  document.getElementById('edit-modal').addEventListener('click', (e) => {
+  document.getElementById("edit-modal").addEventListener("click", (e) => {
     if (e.target === e.currentTarget) EditModal.close();
   });
 
   // Raccourci clavier : Échap ferme la modal
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') EditModal.close();
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") EditModal.close();
   });
 });

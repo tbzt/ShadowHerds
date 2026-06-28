@@ -56,7 +56,8 @@
     <!-- TOP BAR -->
     <div id="topbar">
       <span class="topbar-logo">Shadow Herds</span>
-      <span class="topbar-edition-badge" id="edition-badge">—</span>
+      <button class="topbar-edition-badge" id="edition-badge" onclick="App.changeEdition()"
+        title="Changer d'édition">—</button>
 
       <div id="dice-roller">
         <div class="dice-btns">
@@ -70,8 +71,6 @@
       </div>
 
       <span class="topbar-spacer"></span>
-
-      <button class="change-edition-btn" onclick="App.changeEdition()">⇄ Édition</button>
     </div>
 
     <!-- CORPS -->

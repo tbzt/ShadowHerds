@@ -195,12 +195,19 @@ select option {
   border-radius: 2px;
   letter-spacing: 0.1em;
   opacity: 0.8;
+  cursor: pointer;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
+}
+.topbar-edition-badge:hover {
+  opacity: 1;
+  background: var(--glow);
 }
 .topbar-spacer {
   flex: 1;
 }
 
-/* DICE ROLLER */
 #dice-roller {
   display: flex;
   align-items: center;
@@ -260,27 +267,6 @@ select option {
   color: var(--accent);
   min-width: 120px;
   white-space: nowrap;
-}
-
-.change-edition-btn {
-  height: 28px;
-  padding: 0 10px;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  font-family: "Rajdhani", sans-serif;
-  font-weight: 600;
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
-  border-radius: 3px;
-  text-transform: uppercase;
-  transition:
-    border-color 0.15s,
-    color 0.15s;
-}
-.change-edition-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 
 /* MAIN BODY */
