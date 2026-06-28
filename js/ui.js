@@ -144,74 +144,51 @@ const CardRenderer = {
   _bodySR6(pnj) {
     const {
       attrs,
-      defAttr,
-      init,
+      me,
+      sdBase,
+      initBase,
       initDice,
-      drainResist,
-      monitor,
-      stunMon,
-      monFilled,
-      stunFilled,
+      pa,
+      physFilled,
       skills,
       equip,
       augs,
       sorts,
-      powers,
     } = pnj;
 
     let html = '<div class="pnj-card-body">';
 
-    const attrKeys = ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"];
-    const extras = ["ESS", ...(attrs.MAG ? ["MAG"] : [])];
-    html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
+    // Attributs SR6 : CON/AGI/RÉA/FOR/VOL/LOG/INT/CHA
+    const attrKeys = ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"];
+    html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k] ?? "—")).join("")}</div>`;
+
+    // Attributs spéciaux (MAG, RES)
+    const extras = [];
+    if (attrs.MAG) extras.push("MAG");
+    if (attrs.RES) extras.push("RES");
     if (extras.length) {
       html += `<div class="attr-grid">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
     }
 
-    // Défenses d'attribut SR6
-    html += `<div class="card-section def-section">
-      <div class="card-section-label">Défenses d'attribut</div>
-      <div class="attr-grid">
-        ${this._attrCell("Déf.Phys", defAttr.physique, "def-attr")}
-        ${this._attrCell("Déf.Ment", defAttr.mental, "def-attr")}
-        ${this._attrCell("Déf.Soc", defAttr.social, "def-attr")}
-        ${defAttr.astrale !== null ? this._attrCell("Déf.Astr", defAttr.astrale, "def-attr") : ""}
+    // Stats clés SR6
+    html += '<div class="stats-row">';
+    html += `<span class="stat-pill accent">Init <strong>${initBase ?? "?"}+${initDice ?? 1}D6</strong></span>`;
+    html += `<span class="stat-pill">SD <strong>${sdBase ?? "?"}</strong></span>`;
+    html += `<span class="stat-pill">ME <strong>${me ?? "?"}</strong></span>`;
+    if (pa) html += `<span class="stat-pill">PA <strong>${pa}</strong></span>`;
+    html += "</div>";
+
+    // Moniteur d'état unique SR6
+    const monTotal = me ?? 9;
+    html += `<div class="card-section">
+      <div class="card-section-label">Moniteur d'état</div>
+      <div class="monitor-row">
+        <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "phys", monTotal, physFilled ?? 0)}</div>
       </div>
     </div>`;
 
-    html += '<div class="stats-row">';
-    html += `<span class="stat-pill accent">Init <strong>${init}+${initDice}D6</strong></span>`;
-    if (drainResist !== null) {
-      html += `<span class="stat-pill">Drain <strong>${drainResist}</strong></span>`;
-    }
-    html += "</div>";
-
-    // Moniteur(s) SR6
-    if (stunMon) {
-      html += `<div class="card-section">
-        <div class="card-section-label">Moniteurs</div>
-        <div class="monitor-row">
-          <span class="monitor-label">Phys</span>
-          <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "mon", monitor, monFilled)}</div>
-        </div>
-        <div class="monitor-row" style="margin-top:4px;">
-          <span class="monitor-label">Étoud</span>
-          <div class="monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, stunFilled)}</div>
-        </div>
-      </div>`;
-    } else {
-      html += `<div class="card-section">
-        <div class="card-section-label">Moniteur de condition</div>
-        <div class="monitor-row">
-          <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "mon", monitor, monFilled)}</div>
-        </div>
-      </div>`;
-    }
-
     html += this._skillsSection(skills);
     if (sorts && sorts.length) html += this._listSection("Sorts", sorts);
-    if (powers && powers.length)
-      html += this._listSection("Pouvoirs d'adepte", powers);
     if (augs && augs.length) html += this._listSection("Augmentations", augs);
     if (equip && equip.length) html += this._tagsSection("Équipement", equip);
 
