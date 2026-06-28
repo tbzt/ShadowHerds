@@ -126,6 +126,9 @@ const Gen = {
       return this._select(prefix, "meta", "Métatype", fo.meta);
     }
 
+    // Sélectionner le jeu de données de l'édition active
+    Metavariants.use(ed.id);
+
     let html = `<div class="form-group">
       <label>Métatype</label>
       <select id="${id}">

@@ -1183,6 +1183,7 @@ const EditionSR5 = {
 
   /* ---- Génération principale ---- */
   generate(opts) {
+    if (typeof Metavariants !== "undefined") Metavariants.use("sr5");
     let meta = opts.meta === "Aléatoire" ? Utils.randMeta() : opts.meta;
 
     // Résolution métavariante : une métavariante/conscience/zoocanthrope

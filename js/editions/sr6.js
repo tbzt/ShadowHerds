@@ -20,6 +20,7 @@ const EditionSR6 = {
   id: "sr6",
   label: "Shadowrun 6e",
   badgeLabel: "SR6",
+  useMetavariants: true,
 
   /* ----
      ATTRIBUTS PAR MÉTATYPE — table officielle p.69 LdB SR6
@@ -1259,8 +1260,19 @@ const EditionSR6 = {
 
   /* ---- Génération principale ---- */
   generate(opts) {
+    if (typeof Metavariants !== "undefined") Metavariants.use("sr6");
     const metaList = this.formOptions.meta.slice(1);
-    const meta = opts.meta === "Aléatoire" ? Utils.rand(metaList) : opts.meta;
+    let meta = opts.meta === "Aléatoire" ? Utils.rand(metaList) : opts.meta;
+
+    // Résolution métavariante SR6 (Compagnon du Sixième Monde)
+    const mv =
+      typeof Metavariants !== "undefined" ? Metavariants.resolve(meta) : null;
+    const souche = mv ? mv.souche : meta;
+    let bassinOverride = null;
+    if (mv && mv.bassins && (!opts.bassin || opts.bassin === "Aléatoire")) {
+      bassinOverride = Utils.rand(mv.bassins);
+    }
+
     const gender =
       opts.gender === "Aléatoire" ? Utils.randGender() : opts.gender;
     const prof =
@@ -1289,8 +1301,10 @@ const EditionSR6 = {
 
     const p = Utils.clamp(prof, 0, 10);
     const baseAttrs = { ...this.attrByProf[p] };
-    const mods = this.metaMod[meta] || {};
-    const range = this.attrRange[meta] || this.attrRange["Humain"];
+    const mods = this.metaMod[souche] || {};
+    const range = mv
+      ? mv.ranges
+      : this.attrRange[souche] || this.attrRange["Humain"];
 
     const attrs = {};
     for (const k of ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"]) {
@@ -1370,9 +1384,14 @@ const EditionSR6 = {
         opts.name && opts.name.trim()
           ? opts.name.trim()
           : Utils.genName(
-              opts.bassin && opts.bassin !== "Aléatoire" ? opts.bassin : null,
+              opts.bassin && opts.bassin !== "Aléatoire"
+                ? opts.bassin
+                : bassinOverride,
             ),
-      meta,
+      meta: souche,
+      metavariant: mv ? mv.name : null,
+      metaFamille: mv ? mv.famille : null,
+      metaTraits: mv ? mv.traits : [],
       gender,
       prof: p,
       profession,
