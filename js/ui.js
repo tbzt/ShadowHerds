@@ -263,7 +263,7 @@ const CardRenderer = {
     }
     html += "</div>";
 
-    // Compétences Anarchy : nom / pool composé / RR
+    // Compétences Anarchy : pool (val + attr) / RR
     if (skills && skills.length) {
       html += `<div class="card-section">
         <div class="card-section-label">Compétences</div>
@@ -274,7 +274,7 @@ const CardRenderer = {
         const rrStr = s.rr > 0 ? ` RR${s.rr}` : "";
         html += `<div class="anarchy-skill-row">
           <span class="anarchy-skill-name">${this._esc(s.name)}</span>
-          <span class="anarchy-skill-pool">${s.val} (${pool}${rrStr})</span>
+          <span class="anarchy-skill-pool">${pool} (${s.val}+${s.attr}${rrStr})</span>
         </div>`;
         // Spécialisation ◊
         if (s.spec && s.spec !== true && s.specVal) {
@@ -283,7 +283,7 @@ const CardRenderer = {
           const specRR = s.specRR > 0 ? ` RR${s.specRR}` : "";
           html += `<div class="anarchy-skill-row anarchy-skill-spec">
             <span class="anarchy-skill-name">◊ ${this._esc(s.spec)}</span>
-            <span class="anarchy-skill-pool">${s.specVal} (${specPool}${specRR})</span>
+            <span class="anarchy-skill-pool">${specPool} (${s.specVal}+${s.specAttr || s.attr}${specRR})</span>
           </div>`;
         }
       }
@@ -307,9 +307,12 @@ const CardRenderer = {
         <div class="card-section-label">Armes</div>
         <div class="anarchy-skill-list">`;
       for (const a of armes) {
+        const noteStr = a.note
+          ? ` <em style="color:var(--text-dim);font-size:0.58rem;">(${this._esc(a.note)})</em>`
+          : "";
         html += `<div class="anarchy-skill-row">
-          <span class="anarchy-skill-name">${this._esc(a.name)}</span>
-          <span class="anarchy-skill-pool">VD ${this._esc(a.vd)} ${this._esc(a.portees)}</span>
+          <span class="anarchy-skill-name">${this._esc(a.name)}${noteStr}</span>
+          <span class="anarchy-skill-pool">VD ${a.vd} ${this._esc(a.portees)}</span>
         </div>`;
       }
       html += "</div></div>";
@@ -568,7 +571,7 @@ const ContactRenderer = {
         <div class="contact-desc">${CardRenderer._esc(c.desc)}</div>
         <div class="stats-row" style="margin-top:6px;">
           <span class="stat-pill">Loyauté <strong>${c.loyaute}</strong></span>
-          <span class="stat-pill">INfluence <strong>${c.influence}</strong></span>
+          <span class="stat-pill">Connexion <strong>${c.connexion}</strong></span>
         </div>
         <div class="contact-trait" style="margin-top:6px;">⚠ ${CardRenderer._esc(c.trait)}</div>
       </div>

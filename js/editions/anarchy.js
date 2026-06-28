@@ -133,11 +133,22 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "3 (orks 4, trolls 5)",
+          vdBase: 3,
+          vdMeta: { Ork: 4, Troll: 5 },
           portees: "[OK/–/–/–]",
         },
-        { name: "Couteau", vd: "4 (orks 5, trolls 6)", portees: "[OK/–/–/–]" },
-        { name: "Pistolet léger", vd: "4", portees: "[OK/OK/Dés./–]" },
+        {
+          name: "Couteau",
+          vdBase: 4,
+          vdMeta: { Ork: 5, Troll: 6 },
+          portees: "[OK/–/–/–]",
+        },
+        {
+          name: "Pistolet léger",
+          vdBase: 4,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
       ],
       equip: ["Commlink", "Synthécuir aux couleurs du gang (Armure 1)"],
       combativite: "faible",
@@ -215,16 +226,28 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "3 (orks 4, trolls 5)",
+          vdBase: 3,
+          vdMeta: { Ork: 4, Troll: 5 },
           portees: "[OK/–/–/–]",
         },
         {
           name: "Arme longue",
-          vd: "5 (orks 6, trolls 7)",
+          vdBase: 5,
+          vdMeta: { Ork: 6, Troll: 7 },
           portees: "[OK/–/–/–]",
         },
-        { name: "Pistolet lourd", vd: "5", portees: "[OK/OK/Dés./–]" },
-        { name: "Mitraillette", vd: "5", portees: "[Dés./OK/OK/–]" },
+        {
+          name: "Pistolet lourd",
+          vdBase: 5,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
+        {
+          name: "Mitraillette",
+          vdBase: 5,
+          vdMeta: {},
+          portees: "[Dés./OK/OK/–]",
+        },
       ],
       equip: ["Commlink", "Manteau renforcé (Armure 2)"],
       combativite: "faible",
@@ -289,10 +312,16 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "2 (orks 3, trolls 4)",
+          vdBase: 2,
+          vdMeta: { Ork: 3, Troll: 4 },
           portees: "[OK/–/–/–]",
         },
-        { name: "Couteau", vd: "3 (orks 4, trolls 5)", portees: "[OK/–/–/–]" },
+        {
+          name: "Couteau",
+          vdBase: 3,
+          vdMeta: { Ork: 4, Troll: 5 },
+          portees: "[OK/–/–/–]",
+        },
       ],
       equip: ["Commlink", "Synthécuir aux couleurs du gang (Armure 1)"],
       combativite: "faible",
@@ -352,7 +381,8 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "2 (orks 3, trolls 4)",
+          vdBase: 2,
+          vdMeta: { Ork: 3, Troll: 4 },
           portees: "[OK/–/–/–]",
         },
       ],
@@ -422,12 +452,23 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "2 (orks 3, trolls 4)",
+          vdBase: 2,
+          vdMeta: { Ork: 3, Troll: 4 },
           portees: "[OK/–/–/–]",
         },
-        { name: "Couteau", vd: "3 (orks 4, trolls 5)", portees: "[OK/–/–/–]" },
-        { name: "Pistolet léger", vd: "4", portees: "[OK/OK/Dés./–]" },
-        { name: "Cybercombat", vd: "1", portees: "[matriciel]" },
+        {
+          name: "Couteau",
+          vdBase: 3,
+          vdMeta: { Ork: 4, Troll: 5 },
+          portees: "[OK/–/–/–]",
+        },
+        {
+          name: "Pistolet léger",
+          vdBase: 4,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
+        { name: "Cybercombat", vdBase: 1, vdMeta: {}, portees: "[matriciel]" },
       ],
       equip: ["Commlink", "Synthécuir aux couleurs du gang (Armure 1)"],
       combativite: "faible",
@@ -485,15 +526,22 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "3 (orks 4, trolls 5)",
+          vdBase: 3,
+          vdMeta: { Ork: 4, Troll: 5 },
           portees: "[OK/–/–/–]",
         },
         {
           name: "Électromatraque",
-          vd: "5",
+          vdBase: 5,
+          vdMeta: {},
           portees: "[OK/–/–/–], perte action",
         },
-        { name: "Pistolet léger", vd: "4", portees: "[OK/OK/Dés./–]" },
+        {
+          name: "Pistolet léger",
+          vdBase: 4,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
       ],
       equip: ["Commlink", "Gilet pare-balles (Armure 3)"],
       combativite: "faible",
@@ -555,19 +603,38 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "3 (orks 4, trolls 5)",
+          vdBase: 3,
+          vdMeta: { Ork: 4, Troll: 5 },
           portees: "[OK/–/–/–]",
         },
         {
           name: "Électromatraque",
-          vd: "5",
+          vdBase: 5,
+          vdMeta: {},
           portees: "[OK/–/–/–], perte action",
         },
-        { name: "Pistolet lourd", vd: "5", portees: "[OK/OK/Dés./–]" },
+        {
+          name: "Pistolet lourd",
+          vdBase: 5,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
         {
           name: "Mitraillette OU Shotgun",
-          vd: "5 / 8",
-          portees: "[Dés./OK/OK/–] / [Dés./OK/Dés./–]",
+          choices: [
+            {
+              name: "Mitraillette",
+              vdBase: 5,
+              vdMeta: {},
+              portees: "[Dés./OK/OK/–]",
+            },
+            {
+              name: "Shotgun",
+              vdBase: 8,
+              vdMeta: {},
+              portees: "[Dés./OK/Dés./–]",
+            },
+          ],
         },
       ],
       equip: [
@@ -656,19 +723,50 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "3 (orks 4, trolls 5)",
+          vdBase: 3,
+          vdMeta: { Ork: 4, Troll: 5 },
           portees: "[OK/–/–/–]",
         },
         {
           name: "Électromatraque",
-          vd: "5",
+          vdBase: 5,
+          vdMeta: {},
           portees: "[OK/–/–/–], perte action",
         },
-        { name: "Pistolet lourd", vd: "5", portees: "[OK/OK/Dés./–]" },
         {
-          name: "Shotgun / Fusil d'assaut / Sniper / Mitrailleuse",
-          vd: "8 / 7 / 10 / 9",
-          portees: "au choix",
+          name: "Pistolet lourd",
+          vdBase: 5,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
+        {
+          name: "Arme lourde au choix",
+          choices: [
+            {
+              name: "Shotgun",
+              vdBase: 8,
+              vdMeta: {},
+              portees: "[Dés./OK/Dés./–]",
+            },
+            {
+              name: "Fusil d'assaut",
+              vdBase: 7,
+              vdMeta: {},
+              portees: "[Dés./OK/OK/Dés.]",
+            },
+            {
+              name: "Fusil de précision",
+              vdBase: 10,
+              vdMeta: {},
+              portees: "[–/Dés./Dés./OK]",
+            },
+            {
+              name: "Mitrailleuse",
+              vdBase: 9,
+              vdMeta: {},
+              portees: "[–/OK/OK/OK]",
+            },
+          ],
         },
       ],
       equip: [
@@ -748,15 +846,22 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "2 (orks 3, trolls 4)",
+          vdBase: 2,
+          vdMeta: { Ork: 3, Troll: 4 },
           portees: "[OK/–/–/–]",
         },
         {
           name: "Électromatraque",
-          vd: "5",
+          vdBase: 5,
+          vdMeta: {},
           portees: "[OK/–/–/–], perte action",
         },
-        { name: "Pistolet léger", vd: "4", portees: "[OK/OK/Dés./–]" },
+        {
+          name: "Pistolet léger",
+          vdBase: 4,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
       ],
       equip: ["Commlink", "Gilet pare-balles (Armure 3)"],
       combativite: "faible",
@@ -844,15 +949,22 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "2 (orks 3, trolls 4)",
+          vdBase: 2,
+          vdMeta: { Ork: 3, Troll: 4 },
           portees: "[OK/–/–/–]",
         },
         {
           name: "Électromatraque",
-          vd: "5",
+          vdBase: 5,
+          vdMeta: {},
           portees: "[OK/–/–/–], perte action",
         },
-        { name: "Pistolet lourd", vd: "5", portees: "[OK/OK/Dés./–]" },
+        {
+          name: "Pistolet lourd",
+          vdBase: 5,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
       ],
       equip: ["Commlink", "Armure intégrale + Casque (Armure 4)"],
       combativite: "forte",
@@ -921,10 +1033,16 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "3 (orks 4, trolls 5)",
+          vdBase: 3,
+          vdMeta: { Ork: 4, Troll: 5 },
           portees: "[OK/–/–/–]",
         },
-        { name: "Pistolet lourd", vd: "5", portees: "[OK/OK/Dés./–]" },
+        {
+          name: "Pistolet lourd",
+          vdBase: 5,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
       ],
       equip: ["Commlink", "Gilet pare-balles (Armure 3)"],
       combativite: "faible",
@@ -989,10 +1107,16 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "4 (orks 5, trolls 6)",
+          vdBase: 4,
+          vdMeta: { Ork: 5, Troll: 6 },
           portees: "[OK/–/–/–]",
         },
-        { name: "Pistolet lourd", vd: "5", portees: "[OK/OK/Dés./–]" },
+        {
+          name: "Pistolet lourd",
+          vdBase: 5,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
       ],
       equip: ["Commlink", "Armure intégrale + Casque (Armure 4)"],
       combativite: "forte",
@@ -1077,16 +1201,23 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "2 (orks 3, trolls 4)",
+          vdBase: 2,
+          vdMeta: { Ork: 3, Troll: 4 },
           portees: "[OK/–/–/–]",
         },
         {
           name: "Électromatraque",
-          vd: "5",
+          vdBase: 5,
+          vdMeta: {},
           portees: "[OK/–/–/–], perte action",
         },
-        { name: "Pistolet léger", vd: "4", portees: "[OK/OK/Dés./–]" },
-        { name: "Cybercombat", vd: "4", portees: "[matriciel]" },
+        {
+          name: "Pistolet léger",
+          vdBase: 4,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
+        { name: "Cybercombat", vdBase: 4, vdMeta: {}, portees: "[matriciel]" },
       ],
       equip: ["Commlink", "Gilet pare-balles (Armure 3)"],
       combativite: "faible",
@@ -1170,19 +1301,28 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "2 (orks 3, trolls 4)",
+          vdBase: 2,
+          vdMeta: { Ork: 3, Troll: 4 },
           portees: "[OK/–/–/–]",
         },
         {
           name: "Électromatraque",
-          vd: "5",
+          vdBase: 5,
+          vdMeta: {},
           portees: "[OK/–/–/–], perte action",
         },
-        { name: "Pistolet lourd", vd: "5", portees: "[OK/OK/Dés./–]" },
+        {
+          name: "Pistolet lourd",
+          vdBase: 5,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
         {
           name: "Cybercombat",
-          vd: "5 (+ marteau : 7)",
+          vdBase: 5,
+          vdMeta: {},
           portees: "[matriciel]",
+          note: "VD 7 avec programme Marteau",
         },
       ],
       equip: ["Commlink", "Armure intégrale + Casque (Armure 4)"],
@@ -1249,20 +1389,45 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "3 (orks 4, trolls 5)",
+          vdBase: 3,
+          vdMeta: { Ork: 4, Troll: 5 },
           portees: "[OK/–/–/–]",
         },
         {
           name: "Couteau de combat",
-          vd: "4 (orks 5, trolls 6)",
+          vdBase: 4,
+          vdMeta: { Ork: 5, Troll: 6 },
           portees: "[OK/–/–/–]",
         },
-        { name: "Pistolet lourd", vd: "5", portees: "[OK/OK/Dés./–]" },
-        { name: "Grenades", vd: "7", portees: "[OK/OK/Dés./–]" },
         {
-          name: "Fusil d'assaut / Shotgun / Mitrailleuse",
-          vd: "7 / 8 / 9",
-          portees: "au choix",
+          name: "Pistolet lourd",
+          vdBase: 5,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
+        { name: "Grenades", vdBase: 7, vdMeta: {}, portees: "[OK/OK/Dés./–]" },
+        {
+          name: "Arme principale au choix",
+          choices: [
+            {
+              name: "Shotgun",
+              vdBase: 8,
+              vdMeta: {},
+              portees: "[Dés./OK/Dés./–]",
+            },
+            {
+              name: "Fusil d'assaut",
+              vdBase: 7,
+              vdMeta: {},
+              portees: "[Dés./OK/OK/Dés.]",
+            },
+            {
+              name: "Mitrailleuse",
+              vdBase: 9,
+              vdMeta: {},
+              portees: "[–/OK/OK/OK]",
+            },
+          ],
         },
       ],
       equip: ["Commlink", "Armure militaire (Armure 5)"],
@@ -1340,17 +1505,29 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "4 (orks 5, trolls 6)",
+          vdBase: 4,
+          vdMeta: { Ork: 5, Troll: 6 },
           portees: "[OK/–/–/–]",
         },
         {
           name: "Couteau de combat",
-          vd: "5 (orks 6, trolls 7)",
+          vdBase: 5,
+          vdMeta: { Ork: 6, Troll: 7 },
           portees: "[OK/–/–/–]",
         },
-        { name: "Pistolet lourd", vd: "5", portees: "[OK/OK/Dés./–]" },
-        { name: "Fusil d'assaut", vd: "7", portees: "[Dés./OK/OK/Dés.]" },
-        { name: "Grenades", vd: "7", portees: "[OK/OK/Dés./–]" },
+        {
+          name: "Pistolet lourd",
+          vdBase: 5,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
+        {
+          name: "Fusil d'assaut",
+          vdBase: 7,
+          vdMeta: {},
+          portees: "[Dés./OK/OK/Dés.]",
+        },
+        { name: "Grenades", vdBase: 7, vdMeta: {}, portees: "[OK/OK/Dés./–]" },
       ],
       equip: ["Commlink", "Armure corporelle intégrale (Armure 4)"],
       combativite: "extrême",
@@ -1417,10 +1594,16 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "2 (orks 3, trolls 4)",
+          vdBase: 2,
+          vdMeta: { Ork: 3, Troll: 4 },
           portees: "[OK/–/–/–]",
         },
-        { name: "Pistolet lourd", vd: "5", portees: "[OK/OK/Dés./–]" },
+        {
+          name: "Pistolet lourd",
+          vdBase: 5,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
       ],
       equip: ["Commlink", "Vêtements blindés (Armure 2)"],
       combativite: "faible",
@@ -1460,10 +1643,16 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "2 (orks 3, trolls 4)",
+          vdBase: 2,
+          vdMeta: { Ork: 3, Troll: 4 },
           portees: "[OK/–/–/–]",
         },
-        { name: "Taser", vd: "5", portees: "[OK/OK/–/–], perte action" },
+        {
+          name: "Taser",
+          vdBase: 5,
+          vdMeta: {},
+          portees: "[OK/OK/–/–], perte action",
+        },
       ],
       equip: ["Commlink", "Vêtements pare-balles (Armure 1)"],
       combativite: "nulle",
@@ -1559,10 +1748,16 @@ const EditionAnarchy = {
       armes: [
         {
           name: "Mains nues",
-          vd: "2 (orks 3, trolls 4)",
+          vdBase: 2,
+          vdMeta: { Ork: 3, Troll: 4 },
           portees: "[OK/–/–/–]",
         },
-        { name: "Pistolet lourd", vd: "5", portees: "[OK/OK/Dés./–]" },
+        {
+          name: "Pistolet lourd",
+          vdBase: 5,
+          vdMeta: {},
+          portees: "[OK/OK/Dés./–]",
+        },
       ],
       equip: ["Commlink", "Manteau renforcé (Armure 2)"],
       combativite: "faible",
@@ -1644,9 +1839,35 @@ const EditionAnarchy = {
       profKey,
       profession: profil.label,
       attrs,
-      skills: profil.skills,
+      skills: profil.skills.map((s) => {
+        const copy = { ...s };
+        if (s.specMeta && s.specMeta[meta])
+          copy.val = s.specMeta[meta].val ?? s.val;
+        delete copy.specMeta;
+        return copy;
+      }),
       atouts: [...profil.atouts, ...atoutsChoisis],
-      armes: profil.armes,
+      armes: profil.armes.map((a) => {
+        // Arme à choix multiples → on en tire une au hasard
+        if (a.choices) {
+          const choix = Utils.rand(a.choices);
+          return {
+            name: choix.name,
+            vd:
+              choix.vdMeta && choix.vdMeta[meta]
+                ? choix.vdMeta[meta]
+                : choix.vdBase,
+            portees: choix.portees,
+          };
+        }
+        // Arme simple
+        return {
+          name: a.name,
+          vd: a.vdMeta && a.vdMeta[meta] ? a.vdMeta[meta] : a.vdBase,
+          portees: a.portees,
+          ...(a.note ? { note: a.note } : {}),
+        };
+      }),
       equip: profil.equip,
       combativite: profil.combativite,
       seuilsPhys,
@@ -1661,65 +1882,7 @@ const EditionAnarchy = {
     };
   },
 
-  /**
-   * Résout le VD d'une arme pour un métatype donné.
-   * Entrée: "3 (orks 4, trolls 5)" ou "5" ou "4 (orks 5, trolls 6)"
-   * Sortie: le nombre correspondant au métatype, en string.
-   */
-  _resolveVD(vdStr, meta) {
-    if (!vdStr || !vdStr.includes("(")) return vdStr;
-
-    // Valeur de base = premier nombre avant la parenthèse
-    const baseMatch = vdStr.match(/^(\d+)/);
-    if (!baseMatch) return vdStr;
-    const base = parseInt(baseMatch[1], 10);
-
-    const metaKey = {
-      Ork: "orks",
-      Troll: "trolls",
-      Nain: "nains",
-      Elfe: "elfes",
-    }[meta];
-
-    if (!metaKey) return String(base);
-
-    // Cherche "orks 4" ou "trolls 5" dans la string
-    const re = new RegExp(metaKey + "\\s+(\\d+)");
-    const m = vdStr.match(re);
-    return m ? m[1] : String(base);
-  },
-
   recalc(pnj) {
     return pnj;
   },
 };
-
-// Patch generate() : résolution VD métatype + copie skills
-(function () {
-  const _orig = EditionAnarchy.generate.bind(EditionAnarchy);
-  EditionAnarchy.generate = function (opts) {
-    const pnj = _orig(opts);
-
-    // 1. Résoudre le VD des armes selon le métatype
-    pnj.armes = pnj.armes.map((a) => ({
-      ...a,
-      vd: EditionAnarchy._resolveVD(a.vd, pnj.meta),
-    }));
-
-    // 2. Appliquer les variantes de val par métatype dans les skills
-    //    (specMeta stocké dans le profil, pas dans la copie)
-    const profil = EditionAnarchy.profils[pnj.profKey];
-    if (profil) {
-      pnj.skills = profil.skills.map((s) => {
-        const copy = { ...s };
-        if (s.specMeta && s.specMeta[pnj.meta]) {
-          copy.val = s.specMeta[pnj.meta].val ?? s.val;
-        }
-        delete copy.specMeta;
-        return copy;
-      });
-    }
-
-    return pnj;
-  };
-})();
