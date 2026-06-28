@@ -80,32 +80,26 @@ const App = {
     this.edition = ed;
     this.editionModule = this.getEditionModule(ed);
 
-    // Initialiser le Storage
     Storage.init(ed);
-
-    // Thème
     document.documentElement.setAttribute("data-edition", ed);
-
-    // Masquer le sélecteur, afficher l'app
     document.getElementById("edition-screen").classList.add("hidden");
     document.getElementById("app").classList.add("visible");
 
-    // Badge
     const badgeLabels = { sr5: "SR5", sr6: "SR6", anarchy: "ANARCHY 2E" };
     document.getElementById("edition-badge").textContent =
       badgeLabels[ed] || ed;
 
-    // Initialisation des modules
     Shadows.load();
     Gen.buildForms();
     Settings.render();
 
-    // Naviguer vers l'accueil
-    this.showPanel("welcome");
+    // Lire le panel depuis l'URL si disponible, sinon welcome
+    const hashPanel = this._panelFromHash();
+    this.showPanel(hashPanel || "welcome", { updateHash: !hashPanel });
   },
 
   /* ---- Navigation entre panels ---- */
-  showPanel(name) {
+  showPanel(name, { updateHash = true } = {}) {
     document
       .querySelectorAll(".panel")
       .forEach((p) => p.classList.remove("active"));
@@ -118,7 +112,11 @@ const App = {
     const navBtn = document.querySelector(`.nav-btn[data-panel="${name}"]`);
     if (navBtn) navBtn.classList.add("active");
 
-    // Init lazy des panels si besoin
+    // Mise à jour du hash URL
+    if (updateHash && this.edition !== "none") {
+      history.replaceState(null, "", `#${this.edition}/${name}`);
+    }
+
     switch (name) {
       case "welcome":
         this._renderWelcome();
@@ -136,6 +134,32 @@ const App = {
         Settings.render();
         break;
     }
+  },
+
+  /* ---- Lit le panel depuis le hash courant ---- */
+  _panelFromHash() {
+    const hash = window.location.hash.slice(1); // retire le #
+    const panels = [
+      "welcome",
+      "shadows",
+      "generator",
+      "contacts",
+      "run",
+      "settings",
+    ];
+    const parts = hash.split("/");
+    if (parts.length === 2 && parts[1] && panels.includes(parts[1]))
+      return parts[1];
+    return null;
+  },
+
+  /* ---- Lit l'édition depuis le hash courant ---- */
+  _editionFromHash() {
+    const hash = window.location.hash.slice(1);
+    const parts = hash.split("/");
+    const editions = ["sr5", "sr6", "anarchy"];
+    if (parts.length >= 1 && editions.includes(parts[0])) return parts[0];
+    return null;
   },
 
   _renderWelcome() {
@@ -177,13 +201,17 @@ const App = {
 document.addEventListener("DOMContentLoaded", () => {
   Dice.init();
 
-  // Fermer la modal en cliquant sur l'overlay
   document.getElementById("edit-modal").addEventListener("click", (e) => {
     if (e.target === e.currentTarget) EditModal.close();
   });
 
-  // Raccourci clavier : Échap ferme la modal
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") EditModal.close();
   });
+
+  // Restauration depuis le hash URL (F5 / partage de lien)
+  const edFromHash = App._editionFromHash();
+  if (edFromHash) {
+    App.selectEdition(edFromHash);
+  }
 });

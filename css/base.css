@@ -194,15 +194,32 @@ select option {
   padding: 2px 8px;
   border-radius: 2px;
   letter-spacing: 0.1em;
-  opacity: 0.8;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+  position: relative;
+}
+.topbar-edition-badge::after {
+  content: "⇄";
+  font-size: 0.7rem;
+  opacity: 0.5;
   transition:
     opacity 0.15s,
-    background 0.15s;
+    transform 0.2s;
 }
 .topbar-edition-badge:hover {
-  opacity: 1;
   background: var(--glow);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.topbar-edition-badge:hover::after {
+  opacity: 1;
+  transform: rotate(180deg);
 }
 .topbar-spacer {
   flex: 1;
