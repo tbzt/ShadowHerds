@@ -247,7 +247,7 @@ const EditionSR5 = {
       "Chimiste clandestin",
       "Cambrioleur professionnel",
       "Assassin freelance",
-      "Faussaire / tailleur d'identités",
+      "Faussaire",
       "Espion industriel",
       // Éveillés divers
       "Mage hermétique de rue",
@@ -710,7 +710,7 @@ const EditionSR5 = {
       "Perception",
       "Pistolets",
     ],
-    "Faussaire / tailleur d'identités": [
+    "Faussaire": [
       "Armes à feu",
       "Combat à mains nues",
       "Contrefaçon",
