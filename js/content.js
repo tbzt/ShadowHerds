@@ -513,18 +513,21 @@ const Content = {
   /* ========================================================
      ARMES
      ======================================================== */
+  /* Les armes portent un champ `stats` (VD + caractéristiques classiques),
+     pas de description : pickArme renvoie une chaîne « Nom [stats] » affichée
+     telle quelle, sans modale. */
   armes: {
     sr6: {
       legere: [
         {
           nom: "Fichetti Security 600",
-          desc: "Pistolet léger fiable et bon marché, très répandu. VD 2P. L'arme passe-partout des rues du Sixième Monde.",
+          stats: "VD 2P, SA, 30(c)",
           profMin: 0,
           pour: ["tous"],
         },
         {
           nom: "Ares Light Fire 75",
-          desc: "Pistolet léger silencieux et discret, prisé des agents d'infiltration. VD 2P, silencieux d'origine.",
+          stats: "VD 2P, SA, silencieux, 16(c)",
           profMin: 1,
           pour: ["ombre", "corpo", "crime"],
         },
@@ -532,19 +535,19 @@ const Content = {
       lourde: [
         {
           nom: "Ares Predator VI",
-          desc: "Le pistolet lourd emblématique des Ombres, smartgun intégré. VD 3P. La référence absolue du runner.",
+          stats: "VD 3P, SA, smartgun, 15(c)",
           profMin: 1,
           pour: ["combat", "ombre", "crime", "militaire", "police"],
         },
         {
           nom: "Colt Manhunter",
-          desc: "Pistolet lourd robuste et précis, standard de la sécurité corpo. VD 3P, fiable en toutes circonstances.",
+          stats: "VD 3P, SA, 16(c)",
           profMin: 1,
           pour: ["corpo", "police", "militaire"],
         },
         {
           nom: "Ruger Super Warhawk",
-          desc: "Revolver lourd dévastateur sans fioritures. VD 3P. Pour qui privilégie la puissance d'arrêt brute.",
+          stats: "VD 3P, CA, 6(cy)",
           profMin: 2,
           pour: ["combat", "crime", "gang"],
         },
@@ -552,19 +555,19 @@ const Content = {
       fusil: [
         {
           nom: "AK-97",
-          desc: "Fusil d'assaut robuste et omniprésent, increvable. VD 3P, mode rafale. L'arme de guerre la plus répandue de la planète.",
+          stats: "VD 3P, SA/RC/FA, 38(c)",
           profMin: 2,
           pour: ["militaire", "gang", "combat", "crime"],
         },
         {
           nom: "Ares Alpha",
-          desc: "Fusil d'assaut haut de gamme avec lance-grenades intégré. VD 3P. L'arme de l'élite militaire et corpo.",
+          stats: "VD 3P, SA/RC/FA, lance-grenades, 42(c)",
           profMin: 4,
           pour: ["militaire", "combat"],
         },
         {
           nom: "Ingram Smartgun X",
-          desc: "Pistolet-mitrailleur silencieux à smartlink, roi de la discrétion létale. VD 2P, longues rafales contrôlées.",
+          stats: "VD 2P, RC/FA, smartgun, 32(c)",
           profMin: 3,
           pour: ["ombre", "militaire", "crime"],
         },
@@ -572,19 +575,19 @@ const Content = {
       melee: [
         {
           nom: "Couteau de combat",
-          desc: "Lame courte, robuste et fiable, toujours utile en dernier recours. VD (FOR+1)P.",
+          stats: "VD (FOR+1)P",
           profMin: 0,
           pour: ["tous"],
         },
         {
           nom: "Katana",
-          desc: "Lame élégante et redoutable, symbole du guerrier urbain. VD (FOR+3)P, haute pénétration.",
+          stats: "VD (FOR+3)P",
           profMin: 2,
           pour: ["combat", "crime", "ombre", "militaire"],
         },
         {
           nom: "Matraque télescopique",
-          desc: "Arme contondante non létale, outil du videur et du flic. VD (FOR+2)E, se range dans la poche.",
+          stats: "VD (FOR+2)E",
           profMin: 0,
           pour: ["police", "corpo", "rue"],
         },
@@ -595,13 +598,13 @@ const Content = {
       legere: [
         {
           nom: "Fichetti Security 600",
-          desc: "Pistolet léger économique et répandu dans tous les barrens. VD 6P. L'arme de poing du quotidien.",
+          stats: "PRE 6(7), VD 7P, PA —, SA, 30(c)",
           profMin: 0,
           pour: ["tous"],
         },
         {
           nom: "Colt America L36",
-          desc: "Pistolet léger d'entrée de gamme, fiable sans plus. VD 7P. L'arme du débutant ou du civil prudent.",
+          stats: "VD 7P, PA —, SA, 11(c)",
           profMin: 0,
           pour: ["rue", "gang", "civil"],
         },
@@ -609,13 +612,13 @@ const Content = {
       lourde: [
         {
           nom: "Ares Predator V",
-          desc: "Pistolet lourd à smartgun intégré, l'arme signature du runner en SR5. VD 8P, fiable et précis.",
+          stats: "PRE 5(7), VD 8P, PA -1, SA, 15(c)",
           profMin: 1,
           pour: ["combat", "ombre", "crime", "militaire", "police"],
         },
         {
           nom: "Remington Roomsweeper",
-          desc: "Pistolet lourd à chevrotine, brutal à courte portée. VD 9P en flêchette. Pour les espaces confinés.",
+          stats: "VD 9P (flêchette), PA -1, SA, 8(m)",
           profMin: 2,
           pour: ["gang", "crime", "combat"],
         },
@@ -623,19 +626,19 @@ const Content = {
       fusil: [
         {
           nom: "AK-97",
-          desc: "Fusil d'assaut increvable et bon marché, omniprésent dans les conflits. VD 10P, rafale. L'arme du soldat de fortune.",
+          stats: "VD 10P, PA -6, SA/TR/TA, 38(c)",
           profMin: 2,
           pour: ["militaire", "gang", "combat", "crime"],
         },
         {
           nom: "Ares Alpha",
-          desc: "Fusil d'assaut d'élite avec lance-grenades sous canon. VD 11P. L'arme des professionnels du combat.",
+          stats: "PRE 5(7), VD 11P, PA -2, SA/TR/TA, 42(c)",
           profMin: 4,
           pour: ["militaire", "combat"],
         },
         {
           nom: "Ingram Smartgun X",
-          desc: "Pistolet-mitrailleur silencieux, parfait pour les éliminations discrètes. VD 8P, recul compensé.",
+          stats: "PRE 4(5), VD 8P, PA —, SA/TR, 32(c)",
           profMin: 3,
           pour: ["ombre", "militaire", "crime"],
         },
@@ -643,19 +646,19 @@ const Content = {
       melee: [
         {
           nom: "Couteau de combat",
-          desc: "Lame robuste standard, jamais superflue. VD (FOR+2)P. Le dernier recours fiable.",
+          stats: "PRE 6, Allonge —, VD (FOR+2)P, PA -2",
           profMin: 0,
           pour: ["tous"],
         },
         {
           nom: "Katana",
-          desc: "Lame de maître au fil parfait. VD (FOR+3)P, PA -3. Le choix du samouraï des rues.",
+          stats: "PRE 6, Allonge 1, VD (FOR+3)P, PA -3",
           profMin: 2,
           pour: ["combat", "crime", "ombre", "militaire"],
         },
         {
           nom: "Aiguillon",
-          desc: "Matraque à choc électrique non létale. VD 9S(e), étourdit. Idéal pour neutraliser sans tuer.",
+          stats: "VD 9S(e), PA -5, étourdissant, 10 charges",
           profMin: 1,
           pour: ["police", "corpo", "rue"],
         },
@@ -666,7 +669,7 @@ const Content = {
       legere: [
         {
           nom: "Pistolet léger",
-          desc: "Arme de poing discrète et facile à dissimuler. Dégâts légers, idéale pour le civil ou l'approche en finesse.",
+          stats: "VD 4, [OK/OK/Dés./–]",
           profMin: 0,
           pour: ["tous"],
         },
@@ -674,13 +677,13 @@ const Content = {
       lourde: [
         {
           nom: "Pistolet lourd",
-          desc: "Arme de poing à forte puissance d'arrêt, l'outil de base du runner. Bon équilibre entre discrétion et impact.",
+          stats: "VD 5, [OK/OK/Dés./–]",
           profMin: 1,
           pour: ["combat", "ombre", "crime", "militaire", "police"],
         },
         {
           nom: "Revolver lourd",
-          desc: "Six coups d'une puissance brutale, sans électronique à pirater. Pour qui aime la fiabilité mécanique.",
+          stats: "VD 5, [OK/OK/Dés./–]",
           profMin: 2,
           pour: ["combat", "crime", "gang"],
         },
@@ -688,13 +691,13 @@ const Content = {
       fusil: [
         {
           nom: "Fusil d'assaut",
-          desc: "L'arme de guerre polyvalente du Sixième Monde : rafales dévastatrices à moyenne portée. Le standard du combattant.",
+          stats: "VD 6, [Dés./OK/OK/–]",
           profMin: 2,
           pour: ["militaire", "gang", "combat", "crime"],
         },
         {
           nom: "Pistolet-mitrailleur",
-          desc: "Compact et silencieux, parfait pour les éliminations discrètes en milieu urbain dense.",
+          stats: "VD 5, [OK/OK/Dés./–]",
           profMin: 3,
           pour: ["ombre", "militaire", "crime"],
         },
@@ -702,13 +705,13 @@ const Content = {
       melee: [
         {
           nom: "Couteau",
-          desc: "Lame simple et fiable, toujours à portée de main. Discrète et silencieuse.",
+          stats: "VD 4, [OK/–/–/–]",
           profMin: 0,
           pour: ["tous"],
         },
         {
           nom: "Katana",
-          desc: "Lame de prestige du guerrier urbain : élégante, mortelle, lourde de symbole. L'arme des samouraïs des rues.",
+          stats: "VD 5, [OK/–/–/–]",
           profMin: 2,
           pour: ["combat", "crime", "ombre", "militaire"],
         },
@@ -1023,7 +1026,10 @@ const Content = {
     }
     if (!pool.length) pool = this._eligible(armes.legere || [], prof, tags);
     if (!pool.length) return null;
-    return Utils.rand(pool);
+    const arme = Utils.rand(pool);
+    // Renvoie une chaîne « Nom [stats] » affichée telle quelle dans
+    // l'Équipement (pas de modale, VD directement lisible).
+    return arme.stats ? `${arme.nom} [${arme.stats}]` : arme.nom;
   },
 
   /** Choisit des sorts cohérents pour un éveillé de l'édition. */

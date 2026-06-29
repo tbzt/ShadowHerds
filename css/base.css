@@ -1929,6 +1929,13 @@ select optgroup {
   vertical-align: middle;
 }
 
+/* Drain / Seuil affiché dans le libellé d'un sort */
+.tag-stat {
+  color: var(--text-dim);
+  font-size: 0.82em;
+  font-weight: 600;
+}
+
 /* ---- Modale de description ---- */
 .content-modal-overlay {
   position: fixed;

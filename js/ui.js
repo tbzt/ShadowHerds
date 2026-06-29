@@ -462,10 +462,18 @@ const CardRenderer = {
   },
 
   /* Rend un élément de contenu : objet {nom, desc} -> tag cliquable
-     ouvrant une modale ; chaîne simple -> tag normal. */
+     ouvrant une modale ; chaîne simple -> tag normal. Pour les sorts, un
+     champ drain (SR5/SR6) ou seuil (Anarchy) est affiché dans le libellé. */
   _contentTag(item) {
     if (item && typeof item === "object" && item.nom) {
       const nom = this._esc(item.nom);
+      // Suffixe Drain/Seuil pour les sorts, affiché dans le tag.
+      let suffix = "";
+      if (item.drain != null) {
+        suffix = ` <span class="tag-stat">(Drain ${this._esc(item.drain)})</span>`;
+      } else if (item.seuil != null) {
+        suffix = ` <span class="tag-stat">(Seuil ${this._esc(item.seuil)})</span>`;
+      }
       if (item.desc) {
         // _esc échappe " donc le contenu est sûr dans un attribut entre guillemets.
         // Pas de onclick inline : on stocke nom/desc en data-* et on délègue
@@ -475,9 +483,9 @@ const CardRenderer = {
         const t = this._esc(item.nom);
         return `<span class="tag tag-clickable" role="button" tabindex="0"
           data-content-nom="${t}" data-content-desc="${desc}"
-          >${nom}<span class="tag-info">i</span></span>`;
+          >${nom}${suffix}<span class="tag-info">i</span></span>`;
       }
-      return `<span class="tag">${nom}</span>`;
+      return `<span class="tag">${nom}${suffix}</span>`;
     }
     return `<span class="tag">${this._esc(item)}</span>`;
   },
