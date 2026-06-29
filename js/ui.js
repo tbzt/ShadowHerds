@@ -99,7 +99,7 @@ const CardRenderer = {
     return this._tagsSection(label, pnj.metaTraits);
   },
 
-  /* ---- Habillage (âge, signe, manie, motivation, style) ---- */
+  /* ---- Habillage (âge, signe, manie, motivation, style, attitude) ---- */
   _flavorSection(pnj) {
     const f = pnj.flavor;
     if (!f) return "";
@@ -109,6 +109,7 @@ const CardRenderer = {
       ["Manie", f.manie],
       ["Motivation", f.motivation],
       ["Style", f.style],
+      ["Attitude", f.attitude],
     ]
       .filter(([, v]) => v)
       .map(
@@ -622,6 +623,7 @@ const ContactRenderer = {
       f.manie ? row("Manie", "manie", f.manie) : "",
       f.motivation ? row("Motivation", "motivation", f.motivation) : "",
       f.style ? row("Style", "style", f.style) : "",
+      f.attitude ? row("Attitude", "attitude", f.attitude) : "",
     ].join("");
     return `<div class="card-section flavor-section contact-portrait">
       <div class="card-section-label">Portrait
