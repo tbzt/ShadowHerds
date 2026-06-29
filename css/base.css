@@ -2281,3 +2281,282 @@ select optgroup {
   opacity: 0.8;
   font-size: 0.56rem;
 }
+
+/* ============================================================
+   DÉS LANÇABLES — affordance sur attributs / compétences / réserves
+   ============================================================ */
+.attr-cell.rollable,
+.skill-tag.rollable,
+.gm-pool.rollable {
+  cursor: pointer;
+  transition:
+    border-color 0.12s,
+    box-shadow 0.12s,
+    transform 0.08s;
+}
+.attr-cell.rollable:hover,
+.skill-tag.rollable:hover,
+.gm-pool.rollable:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 14px var(--glow);
+}
+.attr-cell.rollable:active,
+.skill-tag.rollable:active,
+.gm-pool.rollable:active {
+  transform: scale(0.96);
+}
+/* petit dé fantôme indiquant qu'on peut lancer */
+.attr-cell.rollable .attr-value::after {
+  content: "⚄";
+  font-size: 0.6em;
+  opacity: 0;
+  margin-left: 0.25em;
+  color: var(--accent);
+  transition: opacity 0.12s;
+  vertical-align: middle;
+}
+.attr-cell.rollable:hover .attr-value::after {
+  opacity: 0.85;
+}
+
+/* ============================================================
+   OVERLAY DE LANCER DE DÉS
+   ============================================================ */
+.dice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.92) 100%);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.dice-overlay[hidden] {
+  display: none;
+}
+.dice-overlay.show {
+  opacity: 1;
+}
+
+.dice-overlay-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: min(92vw, 720px);
+  padding: 1rem;
+}
+
+/* Tapis de jeu */
+.dice-tray {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: clamp(8px, 2vw, 16px);
+  min-height: 96px;
+  width: 100%;
+  perspective: 700px;
+}
+
+/* ---- Le dé ---- */
+.die {
+  --die-size: clamp(34px, 7vw, 52px);
+  width: var(--die-size);
+  height: var(--die-size);
+  flex-shrink: 0;
+  position: relative;
+  transform-style: preserve-3d;
+}
+.die-face {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(150deg, var(--bg-mid) 0%, var(--bg-card) 100%);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--die-size) * 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 4px 10px rgba(0, 0, 0, 0.5);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 14%;
+  gap: 6%;
+}
+.die .pip {
+  border-radius: 50%;
+  background: transparent;
+}
+.die .pip.on {
+  background: var(--text-dim);
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Dé qui marque un succès (5-6) : pips en accent + halo */
+.die.hit .die-face {
+  border-color: var(--accent);
+  box-shadow:
+    inset 0 0 8px var(--glow),
+    0 0 14px var(--glow),
+    0 4px 10px rgba(0, 0, 0, 0.5);
+}
+.die.hit .pip.on {
+  background: var(--accent);
+  box-shadow: 0 0 5px var(--accent);
+}
+/* Dé qui montre un 1 : teinte d'alerte discrète */
+.die.one .die-face {
+  border-color: var(--accent2);
+}
+.die.one .pip.on {
+  background: var(--accent2);
+}
+
+/* Animation de roulement : tumble 3D puis arrêt */
+.die.rolling {
+  animation: die-tumble 0.62s cubic-bezier(0.34, 1.2, 0.5, 1) both;
+  animation-delay: var(--roll-delay, 0ms);
+}
+@keyframes die-tumble {
+  0% {
+    transform: translateY(-120px) rotateX(0deg) rotateY(0deg) scale(0.7);
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  60% {
+    transform: translateY(8px)
+      rotateX(calc(var(--tumble, 3) * 180deg))
+      rotateY(calc(var(--tumble, 3) * 140deg)) scale(1.05);
+  }
+  80% {
+    transform: translateY(-3px) rotateX(0deg) rotateY(0deg) scale(0.98);
+  }
+  100% {
+    transform: translateY(0) rotateX(0deg) rotateY(0deg) scale(1);
+    opacity: 1;
+  }
+}
+/* État figé (après animation) : léger pop sur les succès */
+.die:not(.rolling).hit {
+  animation: die-pop 0.3s ease both;
+}
+@keyframes die-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* ---- Résumé du jet ---- */
+.dice-summary {
+  min-height: 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  opacity: 0;
+  transform: translateY(8px);
+}
+.dice-summary.reveal {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s ease;
+}
+.dice-summary-label {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.dice-summary-main {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.dice-summary-hits {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 9vw, 4.2rem);
+  font-weight: 700;
+  line-height: 0.9;
+  color: var(--accent);
+  text-shadow: 0 0 22px var(--glow);
+}
+.dice-summary-hits-label {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.dice-summary-pool {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+}
+.dice-summary-tag {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.7rem;
+  border-radius: 3px;
+  border: 1px solid;
+}
+.dice-summary-tag.glitch {
+  color: var(--accent2);
+  border-color: var(--accent2);
+  background: rgba(0, 0, 0, 0.3);
+}
+.dice-summary-tag.crit {
+  color: #fff;
+  border-color: #c0392b;
+  background: #c0392b;
+  animation: crit-flash 0.5s ease;
+}
+@keyframes crit-flash {
+  0%, 100% { box-shadow: 0 0 0 rgba(192, 57, 43, 0); }
+  50% { box-shadow: 0 0 26px rgba(192, 57, 43, 0.8); }
+}
+/* Variantes de couleur du gros chiffre */
+.dice-summary.zero .dice-summary-hits {
+  color: var(--text-dim);
+  text-shadow: none;
+}
+.dice-summary.crit .dice-summary-hits {
+  color: #c0392b;
+  text-shadow: 0 0 22px rgba(192, 57, 43, 0.5);
+}
+
+.dice-hint {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  opacity: 0.6;
+}
+
+/* Accessibilité : mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+  .die.rolling {
+    animation: die-fade-in 0.2s ease both;
+    animation-delay: var(--roll-delay, 0ms);
+  }
+  .die:not(.rolling).hit {
+    animation: none;
+  }
+  @keyframes die-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}

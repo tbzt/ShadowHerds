@@ -603,10 +603,21 @@ function toast(msg, duration = 2400) {
 }
 
 /* ============================================================
-   DICE ROLLER
+   DICE ROLLER — moteur de règles + animation de lancer
+
+   - computeRoll(n, mode) : applique les règles Shadowrun
+     (5-6 = succès ; bévue si plus de la moitié des dés sont des 1 ;
+      échec critique si bévue ET zéro succès ; mode explosif relance
+      les succès tant qu'il y en a). Renvoie le détail complet.
+   - roll() : conserve le comportement du bouton « Lancer » de la
+     barre du haut (avec animation overlay).
+   - rollPool(n, opts) : lance une réserve depuis une carte (attribut,
+     compétence, réserve MJ…) avec animation plein écran : autant de
+     dés que de points dans la réserve, qui roulent puis se figent.
    ============================================================ */
 const Dice = {
   mode: "normal",
+  _animating: false,
 
   init() {
     document
@@ -615,6 +626,18 @@ const Dice = {
     document.getElementById("dice-count").addEventListener("keydown", (e) => {
       if (e.key === "Enter") this.roll();
     });
+
+    // Clic sur n'importe quelle réserve marquée [data-roll] dans une carte
+    document.addEventListener("click", (e) => {
+      const t = e.target.closest("[data-roll]");
+      if (!t) return;
+      const n = parseInt(t.getAttribute("data-roll"), 10);
+      if (!n || n < 1) return;
+      const label = t.getAttribute("data-roll-label") || "";
+      this.rollPool(n, { label });
+    });
+
+    this._ensureOverlay();
   },
 
   setMode(mode, btn) {
@@ -625,28 +648,31 @@ const Dice = {
     btn.classList.add("active");
   },
 
-  roll() {
-    const input = document.getElementById("dice-count");
-    const n = Utils.clamp(parseInt(input.value) || 6, 1, 40);
-    input.value = n;
-
+  /* ---- Moteur de règles pur (testable, sans DOM) ---- */
+  computeRoll(n, mode = "normal") {
+    n = Utils.clamp(n, 1, 60);
+    const faces = [];
     let hits = 0;
     let ones = 0;
 
     for (let i = 0; i < n; i++) {
       const r = Utils.randInt(1, 6);
+      faces.push(r);
       if (r >= 5) hits++;
       if (r === 1) ones++;
     }
 
-    // Dés explosifs : on relance les succès
-    if (this.mode === "explosive") {
+    // Dés explosifs : on relance les succès (6 d'origine → relance)
+    const extra = [];
+    if (mode === "explosive") {
       let toReroll = hits;
       let guard = 0;
-      while (toReroll > 0 && guard < 6) {
+      while (toReroll > 0 && guard < 8) {
         let newHits = 0;
         for (let i = 0; i < toReroll; i++) {
-          if (Utils.randInt(1, 6) >= 5) newHits++;
+          const r = Utils.randInt(1, 6);
+          extra.push(r);
+          if (r >= 5) newHits++;
         }
         hits += newHits;
         toReroll = newHits;
@@ -657,16 +683,162 @@ const Dice = {
     const glitch = ones > Math.floor(n / 2);
     const critGlitch = glitch && hits === 0;
 
-    let result = `${hits} succès`;
-    if (critGlitch) result += " — ÉCHEC CRITIQUE";
-    else if (glitch) result += " — Bévue";
+    return { n, faces, extra, hits, ones, glitch, critGlitch, mode };
+  },
 
+  /** Texte de résultat standard. */
+  _resultText(res) {
+    let t = `${res.hits} succès`;
+    if (res.critGlitch) t += " — ÉCHEC CRITIQUE";
+    else if (res.glitch) t += " — Bévue";
+    return t;
+  },
+
+  /* ---- Bouton « Lancer » de la barre du haut ---- */
+  roll() {
+    const input = document.getElementById("dice-count");
+    const n = Utils.clamp(parseInt(input.value) || 6, 1, 40);
+    input.value = n;
+
+    const res = this.computeRoll(n, this.mode);
+
+    // Résultat textuel dans la barre (comportement d'origine conservé)
     const el = document.getElementById("dice-result");
-    el.textContent = result;
-    el.style.color = critGlitch
+    el.textContent = this._resultText(res);
+    el.style.color = res.critGlitch
       ? "#c0392b"
-      : glitch
+      : res.glitch
         ? "var(--accent2)"
         : "var(--accent)";
+
+    // Animation plein écran
+    this._animate(res, { label: "" });
+  },
+
+  /* ---- Lancer d'une réserve depuis une carte ---- */
+  rollPool(n, opts = {}) {
+    const res = this.computeRoll(n, this.mode);
+    this._animate(res, { label: opts.label || "" });
+  },
+
+  /* ========================================================
+     ANIMATION
+     ======================================================== */
+  _ensureOverlay() {
+    if (document.getElementById("dice-overlay")) return;
+    const ov = document.createElement("div");
+    ov.id = "dice-overlay";
+    ov.className = "dice-overlay";
+    ov.setAttribute("hidden", "");
+    ov.innerHTML = `
+      <div class="dice-overlay-inner">
+        <div class="dice-tray" id="dice-tray"></div>
+        <div class="dice-summary" id="dice-summary"></div>
+        <div class="dice-hint">Cliquez pour fermer</div>
+      </div>`;
+    document.body.appendChild(ov);
+    ov.addEventListener("click", () => this._closeOverlay());
+  },
+
+  _closeOverlay() {
+    const ov = document.getElementById("dice-overlay");
+    if (!ov) return;
+    ov.classList.remove("show");
+    ov._closeTimer = setTimeout(() => ov.setAttribute("hidden", ""), 220);
+  },
+
+  /** Pip layout (positions des points) pour chaque face de dé. */
+  _pips(v) {
+    // grille 3x3, positions remplies par face
+    const map = {
+      1: [4],
+      2: [0, 8],
+      3: [0, 4, 8],
+      4: [0, 2, 6, 8],
+      5: [0, 2, 4, 6, 8],
+      6: [0, 2, 3, 5, 6, 8],
+    };
+    const on = new Set(map[v] || []);
+    let cells = "";
+    for (let i = 0; i < 9; i++) {
+      cells += `<span class="pip ${on.has(i) ? "on" : ""}"></span>`;
+    }
+    return cells;
+  },
+
+  _dieEl(value, delay) {
+    const hit = value >= 5;
+    const one = value === 1;
+    const die = document.createElement("div");
+    die.className =
+      "die rolling" + (hit ? " hit" : "") + (one ? " one" : "");
+    die.style.setProperty("--roll-delay", `${delay}ms`);
+    // tumble aléatoire pour varier l'animation
+    die.style.setProperty("--tumble", `${Utils.randInt(2, 4)}`);
+    die.innerHTML = `<div class="die-face">${this._pips(value)}</div>`;
+    return die;
+  },
+
+  _animate(res, opts = {}) {
+    this._ensureOverlay();
+    const ov = document.getElementById("dice-overlay");
+    clearTimeout(ov._closeTimer);
+    const tray = document.getElementById("dice-tray");
+    const summary = document.getElementById("dice-summary");
+    tray.innerHTML = "";
+    summary.innerHTML = "";
+    summary.className = "dice-summary";
+
+    const all = [...res.faces, ...res.extra];
+    // Bornage d'affichage : au-delà de 40 dés on agrège visuellement
+    const shown = all.slice(0, 40);
+
+    const stagger = shown.length > 24 ? 14 : 26;
+    shown.forEach((v, i) => {
+      tray.appendChild(this._dieEl(v, i * stagger));
+    });
+
+    ov.removeAttribute("hidden");
+    // force reflow puis show (transition)
+    void ov.offsetWidth;
+    ov.classList.add("show");
+
+    // Quand tous les dés se sont figés, révéler le résumé
+    const settleAt = shown.length * stagger + 760;
+    clearTimeout(ov._settleTimer);
+    ov._settleTimer = setTimeout(() => {
+      tray.querySelectorAll(".die").forEach((d) => d.classList.remove("rolling"));
+
+      const cls = res.critGlitch
+        ? "crit"
+        : res.glitch
+          ? "glitch"
+          : res.hits > 0
+            ? "good"
+            : "zero";
+      summary.classList.add("reveal", cls);
+
+      const labelHtml = opts.label
+        ? `<span class="dice-summary-label">${this._escSummary(opts.label)}</span>`
+        : "";
+      const poolHtml = `<span class="dice-summary-pool">${res.n} dé${res.n > 1 ? "s" : ""}${res.mode === "explosive" ? " · explosifs" : ""}</span>`;
+      const big = `<span class="dice-summary-hits">${res.hits}</span><span class="dice-summary-hits-label">succès</span>`;
+      let tag = "";
+      if (res.critGlitch) tag = `<span class="dice-summary-tag crit">Échec critique</span>`;
+      else if (res.glitch) tag = `<span class="dice-summary-tag glitch">Bévue</span>`;
+
+      summary.innerHTML = `
+        ${labelHtml}
+        <div class="dice-summary-main">${big}</div>
+        ${tag}
+        ${poolHtml}`;
+    }, settleAt);
+  },
+
+  _escSummary(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
   },
 };

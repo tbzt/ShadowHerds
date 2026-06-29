@@ -143,7 +143,13 @@ const CardRenderer = {
   /* ---- Réserves de dés utiles au MJ ---- */
   _gmPoolRow(label, value, title) {
     if (value == null) return "";
-    return `<span class="stat-pill gm-pool" title="${this._esc(title)}">${label}&nbsp;<strong>${value}</strong></span>`;
+    const n = Number(value);
+    const rollAttrs =
+      Number.isFinite(n) && n >= 1
+        ? ` data-roll="${n}" data-roll-label="${this._esc(label)}"`
+        : "";
+    const rollableCls = Number.isFinite(n) && n >= 1 ? " rollable" : "";
+    return `<span class="stat-pill gm-pool${rollableCls}" title="${this._esc(title)}"${rollAttrs}>${label}&nbsp;<strong>${value}</strong></span>`;
   },
 
   _gmPoolsSR5(pnj) {
@@ -251,7 +257,7 @@ const CardRenderer = {
     // Attributs principaux (8 + ESS + MAG si applicable)
     const attrKeys = ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"];
     const extras = ["ESS", ...(attrs.MAG ? ["MAG"] : [])];
-    html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
+    html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k], "", { roll: true })).join("")}</div>`;
     if (extras.length) {
       html += `<div class="attr-grid with-ess">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
     }
@@ -321,7 +327,7 @@ const CardRenderer = {
 
     // Attributs SR6 : CON/AGI/RÉA/FOR/VOL/LOG/INT/CHA
     const attrKeys = ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"];
-    html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k] ?? "—")).join("")}</div>`;
+    html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k] ?? "—", "", { roll: true })).join("")}</div>`;
 
     // Attributs spéciaux (MAG, RES)
     const extras = [];
@@ -389,7 +395,7 @@ const CardRenderer = {
     // Attributs : 5 attrs Anarchy (FOR/AGI/VOL/LOG/CHA)
     const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA"];
     html += `<div class="attr-grid">
-      ${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}
+      ${attrKeys.map((k) => this._attrCell(k, attrs[k], "", { roll: true })).join("")}
     </div>`;
 
     // Combativité + éveillé
@@ -418,11 +424,19 @@ const CardRenderer = {
         const attrVal = attrs[s.attr] || 0;
         const pool = s.val + attrVal;
         const rrStr = s.rr > 0 ? ` RR${s.rr}` : "";
-        html += `<span class="tag skill-tag" title="${this._esc(s.name)} : ${pool} (${s.val}+${s.attr}${rrStr})">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong></span>`;
+        const rollMain =
+          pool >= 1
+            ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}"`
+            : "";
+        html += `<span class="tag skill-tag${pool >= 1 ? " rollable" : ""}"${rollMain} title="${this._esc(s.name)} : ${pool} (${s.val}+${s.attr}${rrStr}) — cliquer pour lancer">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong></span>`;
         if (s.spec && s.spec !== true && s.specVal) {
           const specAttrVal = attrs[s.specAttr || s.attr] || 0;
           const specPool = s.specVal + specAttrVal;
-          html += `<span class="tag skill-tag skill-tag-spec" title="Spécialisation ${this._esc(s.spec)} : ${specPool}">◊&nbsp;${this._esc(s.spec)}&nbsp;<strong style="color:var(--text)">${specPool}</strong></span>`;
+          const rollSpec =
+            specPool >= 1
+              ? ` data-roll="${specPool}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}"`
+              : "";
+          html += `<span class="tag skill-tag skill-tag-spec${specPool >= 1 ? " rollable" : ""}"${rollSpec} title="Spécialisation ${this._esc(s.spec)} : ${specPool} — cliquer pour lancer">◊&nbsp;${this._esc(s.spec)}&nbsp;<strong style="color:var(--text)">${specPool}</strong></span>`;
         }
       }
       html += "</div></div>";
@@ -530,8 +544,14 @@ const CardRenderer = {
   },
 
   /* ---- Helpers ---- */
-  _attrCell(label, value, extraClass = "") {
-    return `<div class="attr-cell ${extraClass}">
+  _attrCell(label, value, extraClass = "", opts = {}) {
+    const n = Number(value);
+    const rollable = opts.roll && Number.isFinite(n) && n >= 1;
+    const rollAttrs = rollable
+      ? ` data-roll="${n}" data-roll-label="${this._esc(label)}" title="Lancer ${n} dés — ${this._esc(label)}"`
+      : "";
+    const cls = `attr-cell ${extraClass} ${rollable ? "rollable" : ""}`.trim();
+    return `<div class="${cls}"${rollAttrs}>
       <span class="attr-label">${label}</span>
       <span class="attr-value">${value ?? "—"}</span>
     </div>`;
@@ -552,10 +572,21 @@ const CardRenderer = {
     if (!skills || !skills.length) return "";
     const tags = skills
       .map((s) => {
-        let html = `<span class="tag skill-tag">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${s.val}</strong></span>`;
+        const n = Number(s.val);
+        const rollAttrs =
+          Number.isFinite(n) && n >= 1
+            ? ` data-roll="${n}" data-roll-label="${this._esc(s.name)}" title="Lancer ${n} dés — ${this._esc(s.name)}"`
+            : "";
+        const rollCls = Number.isFinite(n) && n >= 1 ? " rollable" : "";
+        let html = `<span class="tag skill-tag${rollCls}"${rollAttrs}>${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${s.val}</strong></span>`;
         if (s.spec && s.spec !== true) {
           // Spécialité : +2 dés sur le pool en SR5/SR6.
-          html += `<span class="tag skill-tag skill-tag-spec" title="Spécialité ${this._esc(s.spec)} : +2 dés">◊&nbsp;${this._esc(s.spec)}</span>`;
+          const specN = Number.isFinite(n) ? n + 2 : null;
+          const specRoll =
+            specN && specN >= 1
+              ? ` data-roll="${specN}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" title="Spécialité ${this._esc(s.spec)} : ${specN} dés (+2)"`
+              : ` title="Spécialité ${this._esc(s.spec)} : +2 dés"`;
+          html += `<span class="tag skill-tag skill-tag-spec${specN ? " rollable" : ""}"${specRoll}>◊&nbsp;${this._esc(s.spec)}</span>`;
         }
         return html;
       })
