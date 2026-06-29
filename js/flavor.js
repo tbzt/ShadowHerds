@@ -879,7 +879,7 @@ const Flavor = {
       "paraît distrait par des informations invisibles",
       "réfléchit plus vite qu'il ne parle",
       "considère les gens comme des systèmes",
-      "semble plus à l'aise en AR qu'en face-à-face",
+      "semble plus à l'aise en RA qu'en face-à-face",
       "passe brutalement d'un sujet à l'autre",
       "traite les problèmes comme des énigmes techniques",
       "cherche des données avant des opinions",

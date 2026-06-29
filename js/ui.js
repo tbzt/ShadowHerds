@@ -106,10 +106,10 @@ const CardRenderer = {
     const rows = [
       ["Âge", `${f.age} ans`],
       ["Signe distinctif", f.signe],
-      ["Manie", f.manie],
-      ["Motivation", f.motivation],
       ["Style", f.style],
       ["Attitude", f.attitude],
+      ["Manie", f.manie],
+      ["Motivation", f.motivation],
     ]
       .filter(([, v]) => v)
       .map(
@@ -620,10 +620,10 @@ const ContactRenderer = {
     const rows = [
       f.age != null ? row("Âge", "age", f.age) : "",
       f.signe ? row("Signe", "signe", f.signe) : "",
-      f.manie ? row("Manie", "manie", f.manie) : "",
-      f.motivation ? row("Motivation", "motivation", f.motivation) : "",
       f.style ? row("Style", "style", f.style) : "",
       f.attitude ? row("Attitude", "attitude", f.attitude) : "",
+      f.manie ? row("Manie", "manie", f.manie) : "",
+      f.motivation ? row("Motivation", "motivation", f.motivation) : "",
     ].join("");
     return `<div class="card-section flavor-section contact-portrait">
       <div class="card-section-label">Portrait
