@@ -1369,16 +1369,47 @@ const EditionSR6 = {
       }
     }
 
-    // Sorts
-    const sortsTrad =
-      this.sortsByTradition[profession] ||
-      this.sortsByTradition[special] ||
-      null;
-    const sorts = sortsTrad ? sortsTrad.slice(0, 2 + Math.floor(p / 3)) : [];
+    // Tags d'archétype pour la sélection de contenu cohérent
+    const awakened = isMagicProf || isMagicSpec;
+    const contentTags =
+      typeof Flavor !== "undefined"
+        ? Flavor.tagsFor({ profession, special })
+        : new Set(["rue"]);
+
+    // Sorts — enrichis avec descriptions cliquables.
+    // Un adepte « pur » utilise des pouvoirs, pas des sorts.
+    let sorts = [];
+    const adeptePur = special === "Adepte";
+    if (awakened && !adeptePur && typeof Content !== "undefined") {
+      sorts = Content.pickSorts(p, contentTags);
+    } else if (!adeptePur) {
+      const sortsTrad =
+        this.sortsByTradition[profession] ||
+        this.sortsByTradition[special] ||
+        null;
+      sorts = sortsTrad ? sortsTrad.slice(0, 2 + Math.floor(p / 3)) : [];
+    }
+
+    // Pouvoirs d'adepte
+    const powers =
+      special === "Adepte" && typeof Content !== "undefined"
+        ? Content.pickPouvoirs(p, p >= 4 ? 3 : 2)
+        : [];
+
+    // Trait de couleur cohérent (parfois)
+    const traits =
+      typeof Content !== "undefined" && Utils.randBool(0.5)
+        ? Content.pickTraits(contentTags, p, 1)
+        : [];
 
     // Équipement — pas de cyberware pour un Éveillé (coût en Essence)
-    const awakened = isMagicProf || isMagicSpec;
     const equip = this.equipProfile(profession, p, awakened);
+
+    // Arme supplémentaire cohérente (aléa d'arsenal)
+    if (typeof Content !== "undefined" && Utils.randBool(0.6)) {
+      const arme = Content.pickArme(contentTags, p);
+      if (arme) equip.push(arme);
+    }
 
     // Augmentations corpo — jamais pour un Éveillé
     const augs =
@@ -1411,6 +1442,8 @@ const EditionSR6 = {
       pa,
       skills,
       sorts,
+      powers,
+      traits,
       equip,
       augs,
       physFilled: 0,

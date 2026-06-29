@@ -590,17 +590,33 @@ select optgroup {
    PNJ CARD
    ============================================================ */
 .cards-zone {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   margin-top: 0.5rem;
+}
+@media (min-width: 1700px) {
+  .cards-zone {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+@media (max-width: 1280px) {
+  .cards-zone {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 900px) {
+  .cards-zone {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .pnj-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 4px;
-  width: 340px;
+  width: 100%;
+  min-width: 0;
   position: relative;
   overflow: hidden;
   animation: cardIn 0.3s ease;
@@ -1857,4 +1873,112 @@ select optgroup {
     z-index: 20;
     background: rgba(0, 0, 0, 0.45);
   }
+}
+
+/* ============================================================
+   CONTENU CLIQUABLE — tags avec description + modale
+   ============================================================ */
+.tag-clickable {
+  cursor: pointer;
+  position: relative;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.tag-clickable:hover,
+.tag-clickable:focus-visible {
+  background: var(--glow);
+  border-color: var(--accent);
+  outline: none;
+}
+.tag-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  margin-left: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 9px;
+  font-weight: 700;
+  font-style: italic;
+  font-family: Georgia, serif;
+  vertical-align: middle;
+}
+
+/* ---- Modale de description ---- */
+.content-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.5rem;
+  animation: modalFade 0.15s ease;
+}
+.content-modal-overlay.visible {
+  display: flex;
+}
+@keyframes modalFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.content-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  max-width: 420px;
+  width: 100%;
+  padding: 1.4rem 1.5rem 1.5rem;
+  position: relative;
+  box-shadow:
+    0 0 40px var(--glow),
+    0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: modalPop 0.18s ease;
+}
+@keyframes modalPop {
+  from {
+    transform: translateY(12px) scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+.content-modal-title {
+  font-family: var(--font-display);
+  color: var(--accent);
+  font-size: 1.2rem;
+  letter-spacing: var(--title-spacing);
+  text-transform: var(--title-transform);
+  margin-bottom: 0.7rem;
+  padding-right: 1.5rem;
+}
+.content-modal-desc {
+  color: var(--text);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.content-modal-close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.8rem;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 1.6rem;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.15s;
+}
+.content-modal-close:hover {
+  color: var(--accent);
 }

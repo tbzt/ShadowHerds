@@ -142,6 +142,7 @@ const CardRenderer = {
       augs,
       sorts,
       powers,
+      traits,
     } = pnj;
 
     let html = '<div class="pnj-card-body">';
@@ -186,6 +187,7 @@ const CardRenderer = {
     if (sorts && sorts.length) html += this._listSection("Sorts", sorts);
     if (powers && powers.length)
       html += this._listSection("Pouvoirs d'adepte", powers);
+    if (traits && traits.length) html += this._listSection("Traits", traits);
     if (augs && augs.length) html += this._listSection("Augmentations", augs);
     if (equip && equip.length) html += this._tagsSection("Équipement", equip);
 
@@ -207,6 +209,8 @@ const CardRenderer = {
       equip,
       augs,
       sorts,
+      powers,
+      traits,
     } = pnj;
 
     let html = '<div class="pnj-card-body">';
@@ -242,6 +246,9 @@ const CardRenderer = {
 
     html += this._skillsSection(skills);
     if (sorts && sorts.length) html += this._listSection("Sorts", sorts);
+    if (powers && powers.length)
+      html += this._listSection("Pouvoirs d'adepte", powers);
+    if (traits && traits.length) html += this._listSection("Traits", traits);
     if (augs && augs.length) html += this._listSection("Augmentations", augs);
     if (equip && equip.length) html += this._tagsSection("Équipement", equip);
 
@@ -450,9 +457,27 @@ const CardRenderer = {
     return `<div class="card-section">
       <div class="card-section-label">${label}</div>
       <div class="card-section-content">
-        ${items.map((i) => `<span class="tag">${this._esc(i)}</span>`).join("")}
+        ${items.map((i) => this._contentTag(i)).join("")}
       </div>
     </div>`;
+  },
+
+  /* Rend un élément de contenu : objet {nom, desc} -> tag cliquable
+     ouvrant une modale ; chaîne simple -> tag normal. */
+  _contentTag(item) {
+    if (item && typeof item === "object" && item.nom) {
+      const nom = this._esc(item.nom);
+      if (item.desc) {
+        const desc = this._esc(item.desc).replace(/'/g, "&#39;");
+        const t = this._esc(item.nom).replace(/'/g, "&#39;");
+        return `<span class="tag tag-clickable" role="button" tabindex="0"
+          onclick="ContentModal.show('${t}', '${desc}')"
+          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();ContentModal.show('${t}', '${desc}')}"
+          >${nom}<span class="tag-info">i</span></span>`;
+      }
+      return `<span class="tag">${nom}</span>`;
+    }
+    return `<span class="tag">${this._esc(item)}</span>`;
   },
 
   _tagsSection(label, items) {
@@ -780,5 +805,50 @@ const RunRenderer = {
         <button class="card-action-btn danger" onclick="this.closest('.run-card').remove()">Virer</button>
       </div>`;
     return el;
+  },
+};
+
+/* ============================================================
+   CONTENT MODAL — affiche la description d'un contenu en un clic
+   (arme, sort, pouvoir, trait). Modale légère, fermeture au clic
+   en dehors, sur la croix, ou avec Échap.
+   ============================================================ */
+const ContentModal = {
+  _el: null,
+
+  _ensure() {
+    if (this._el) return this._el;
+    const overlay = document.createElement("div");
+    overlay.className = "content-modal-overlay";
+    overlay.id = "content-modal-overlay";
+    overlay.innerHTML = `
+      <div class="content-modal" role="dialog" aria-modal="true">
+        <button class="content-modal-close" aria-label="Fermer">&times;</button>
+        <h3 class="content-modal-title"></h3>
+        <p class="content-modal-desc"></p>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) this.hide();
+    });
+    overlay
+      .querySelector(".content-modal-close")
+      .addEventListener("click", () => this.hide());
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") this.hide();
+    });
+    this._el = overlay;
+    return overlay;
+  },
+
+  show(nom, desc) {
+    const el = this._ensure();
+    el.querySelector(".content-modal-title").textContent = nom;
+    el.querySelector(".content-modal-desc").textContent = desc;
+    el.classList.add("visible");
+  },
+
+  hide() {
+    if (this._el) this._el.classList.remove("visible");
   },
 };

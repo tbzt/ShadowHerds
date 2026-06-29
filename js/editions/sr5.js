@@ -1316,10 +1316,43 @@ const EditionSR5 = {
       this.augsBySpecial[special] || this.augsBySpecial["Aucun"];
     const augs = awakened ? [] : augsProducer(prof);
 
-    // Sorts
-    const sortsList = this.sortsByTradition[special]
-      ? this.sortsByTradition[special].slice(0, 2 + Math.floor(prof / 2))
-      : [];
+    // Tags d'archétype pour la sélection de contenu cohérent
+    const contentTags =
+      typeof Flavor !== "undefined"
+        ? Flavor.tagsFor({ profession, special })
+        : new Set(["rue"]);
+
+    // Sorts — enrichis avec descriptions cliquables.
+    // Un adepte « pur » canalise sa magie en pouvoirs physiques, pas en
+    // sorts ; les mages/chamans lancent des sorts.
+    let sortsList = [];
+    const adeptePur = special === "Adepte";
+    if (awakened && !adeptePur && typeof Content !== "undefined") {
+      sortsList = Content.pickSorts(prof, contentTags);
+    } else if (!adeptePur && this.sortsByTradition[special]) {
+      sortsList = this.sortsByTradition[special].slice(
+        0,
+        2 + Math.floor(prof / 2),
+      );
+    }
+
+    // Pouvoirs d'adepte — seulement pour les adeptes
+    const powers =
+      special === "Adepte" && typeof Content !== "undefined"
+        ? Content.pickPouvoirs(prof, prof >= 4 ? 3 : 2)
+        : [];
+
+    // Trait de couleur cohérent (parfois)
+    const traits =
+      typeof Content !== "undefined" && Utils.randBool(0.5)
+        ? Content.pickTraits(contentTags, prof, 1)
+        : [];
+
+    // Arme supplémentaire cohérente (aléa d'arsenal)
+    if (typeof Content !== "undefined" && Utils.randBool(0.6)) {
+      const arme = Content.pickArme(contentTags, prof);
+      if (arme) equip.push(arme);
+    }
 
     const pnj = {
       id: Utils.uid(),
@@ -1356,6 +1389,8 @@ const EditionSR5 = {
       equip,
       augs,
       sorts: sortsList,
+      powers,
+      traits,
       notes: "",
     };
 
