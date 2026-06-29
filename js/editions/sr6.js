@@ -476,9 +476,9 @@ const EditionSR6 = {
       // Crime organisé
       "Soldato Mafia",
       "Collecteur Mafia",
-      "Enforcer Yakuza",
+      "Gros bras Yakuza",
       "Maître des Lames Yakuza",
-      "Courier Triade",
+      "Coursier Triade",
       "Vory v Zakone",
       "Koshari",
       // Militaire & mercenaire
@@ -768,7 +768,7 @@ const EditionSR6 = {
       "Influence",
       "Perception",
     ],
-    "Enforcer Yakuza": [
+    "Gros bras Yakuza": [
       "Armes à feu",
       "Athlétisme",
       "Combat rapproché",
@@ -786,7 +786,7 @@ const EditionSR6 = {
       "Influence",
       "Perception",
     ],
-    "Courier Triade": [
+    "Coursier Triade": [
       "Armes à feu",
       "Athlétisme",
       "Combat rapproché",

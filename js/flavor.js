@@ -66,7 +66,7 @@ const Flavor = {
         "Vory",
         "Koshari",
         "Capo",
-        "Enforcer",
+        "Gros bras",
         "Wakagashira",
         "Soldat Mafia",
       ],

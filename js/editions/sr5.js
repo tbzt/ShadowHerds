@@ -205,7 +205,7 @@ const EditionSR5 = {
       "Lieutenant de gang",
       "Ganger Halloweeners",
       "Ganger Ancients (elfe)",
-      "Ganger Ork Rights",
+      "Ganger Ork Rights Commission",
       // Sécurité corpo
       "Agent de sécurité corpo (entrée)",
       "Garde corpo (patrouille)",
@@ -225,11 +225,11 @@ const EditionSR5 = {
       // Crime organisé
       "Soldat Mafia",
       "Capo Mafia",
-      "Enforcer Yakuza",
+      "Gros bras Yakuza",
       "Wakagashira Yakuza",
-      "Courier Triade",
-      "Enforcer Triade",
-      "Vory v Zakone (muscle)",
+      "Coursier Triade",
+      "Gros bras Triade",
+      "Vory v Zakone",
       "Koshari (contrebandier amérindien)",
       // Militaire & mercenaire
       "Soldat UCAS",
@@ -535,7 +535,7 @@ const EditionSR5 = {
       "Pistolets",
       "Perception",
     ],
-    "Enforcer Yakuza": [
+    "Gros bras Yakuza": [
       "Armes tranchantes",
       "Combat à mains nues",
       "Intimidation",
@@ -551,7 +551,7 @@ const EditionSR5 = {
       "Pistolets",
       "Étiquette (Yakuza)",
     ],
-    "Courier Triade": [
+    "Coursier Triade": [
       "Armes tranchantes",
       "Combat à mains nues",
       "Discrétion",
@@ -559,7 +559,7 @@ const EditionSR5 = {
       "Perception",
       "Pistolets",
     ],
-    "Enforcer Triade": [
+    "Gros bras Triade": [
       "Armes tranchantes",
       "Combat à mains nues",
       "Intimidation",
@@ -567,7 +567,7 @@ const EditionSR5 = {
       "Arts martiaux",
       "Perception",
     ],
-    "Vory v Zakone (muscle)": [
+    "Vory v Zakone": [
       "Armes automatiques",
       "Armes tranchantes",
       "Combat à mains nues",

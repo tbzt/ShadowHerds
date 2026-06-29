@@ -352,16 +352,16 @@ const Contacts = {
       ],
     },
     {
-      role: "Spécialiste des Nations Amérindiennes (NAN)",
+      role: "Spécialiste des Nations des autochtones d'Amérique (NAA)",
       influenceMin: 3,
       influenceMax: 6,
-      desc: "Guide dans les territoires NAN, contacts avec les Wildcats Sioux, Koshari, factions tribales.",
+      desc: "Guide dans les territoires NAA, contacts avec les Wildcats Sioux, Koshari, factions tribales.",
       lieux: [
-        "frontières NAN",
+        "frontières NAA",
         "villes de passage",
         "via intermédiaire amérindien",
       ],
-      similaires: "contrebandier, chaman, officier NAN reconverti",
+      similaires: "contrebandier, chaman, officier NAA reconverti",
       traits: [
         "Méfiant envers les étrangers",
         "Connaît tous les points de passage",
@@ -375,8 +375,8 @@ const Contacts = {
       desc: "Accès intérieur à une corporation : dossiers, passes, mouvements de personnel, projets secrets.",
       lieux: [
         "hôtels de standing",
-        "réunions d'affaires neutres",
-        "via messagerie morte",
+        "réunions d'affaires",
+        "via messagerie",
       ],
       similaires: "agent de sécurité véreux, M. Johnson, avocat corpo",
       traits: [
@@ -390,7 +390,7 @@ const Contacts = {
       influenceMin: 3,
       influenceMax: 5,
       desc: "Trauma patches, chirurgie de terrain, cyberware d'urgence. Peut faire sortir quelqu'un d'une zone chaude.",
-      lieux: ["ambulances blindées", "cliniques IHR", "safe house équipée"],
+      lieux: ["ambulance blindée", "clinique", "planque équipée"],
       similaires: "doc des rues, chirurgien corpo, infirmière de combat",
       traits: [
         "Répond en 4 minutes dans sa zone",
@@ -403,7 +403,7 @@ const Contacts = {
       influenceMin: 3,
       influenceMax: 6,
       desc: "Surveillance, dossiers, filatures, antécédents. Accès aux bases de données légales et semi-légales.",
-      lieux: ["bureau discret", "cafés du secteur", "terrain de filature"],
+      lieux: ["bureau discret", "cafés du secteur", "sur le terrain"],
       similaires: "détective, flic des rues, journaliste d'investigation",
       traits: [
         "Garde une copie de tout",
@@ -419,7 +419,8 @@ const Contacts = {
       lieux: [
         "église de quartier",
         "soupe populaire",
-        "centre communautaire Barrens",
+        "centre communautaire des barrens",
+        "underground district",
       ],
       similaires: "travailleur social, chaman de rue, médecin de quartier",
       traits: [
@@ -878,7 +879,7 @@ const RunGen = {
     // Courts et nerveux
     "Course contre la montre : livraison en 2 heures ou contrat annulé",
     "Un seul bâtiment, une seule nuit : extraction d'un dossier",
-    "Passage de frontière NAN sous les radars",
+    "Passage de frontière NAA sous les radars",
   ],
 
   /* ---- Clients bifurqués par édition ---- */
@@ -925,7 +926,7 @@ const RunGen = {
     "Éveillé cherchant à récupérer un artefact volé",
     "Cadre corpo en cavale ayant besoin d'exfiltration",
     "Journaliste voulant des preuves sans se salir les mains",
-    "Famille d'un disparu dans les Barrens",
+    "Famille d'un disparu dans les barrens",
     "Chaman communautaire protégeant son quartier",
     "Hacker voulant des bras physiques pour compléter son infiltration",
     "Johnson — Ares Arms (via fixer)",
@@ -934,10 +935,10 @@ const RunGen = {
     "Johnson — Horizon (gestion d'image)",
     "Crime organisé — Mafia locale",
     "Crime organisé — Yakuza / Mitsuhama",
-    "Communauté méta (Ork Rights, NAN)",
+    "Communauté méta (Ork Rights Commission)",
     "Loge hermétique secrète",
     "Dragon ou représentant — motivations inconnues",
-    "Gouvernement NAN en sous-main",
+    "Gouvernement NAA en sous-main",
   ],
 
   /* ---- Lieux ---- */
@@ -951,7 +952,7 @@ const RunGen = {
     "Centre commercial corpo en activité (civils présents)",
     "Centre commercial corpo abandonné (gangs et squatteurs)",
     "Résidence sécurisée en banlieue riche (murs magiques)",
-    "Appartement piégé dans les Barrens",
+    "Appartement piégé dans les barrens",
     "Hôpital privé corpo (SIN requis à l'entrée)",
     "Club nocturne avec backroom secrète",
     "Entrepôt des docks (zone grise, Lone Star évite)",
@@ -966,23 +967,23 @@ const RunGen = {
     "Sous-marin cargo en eaux territoriales",
     "Zone d'exclusion nucléaire (rad-zone)",
     "Zone astrale perturbée — magie instable",
-    "Quartier ork / troll des Barrens",
+    "Quartier ork / troll des barrens",
     "Base militaire désaffectée (matériel récupérable)",
     "Forêt amérindienne protégée (magie territoriale)",
     "Seattle Metroplex en couvre-feu nocturne",
     "Paradis numérique public (hack à ciel ouvert)",
-    "Marché noir couvert (Barrens)",
+    "Marché noir couvert (barrens)",
   ],
 
   lieuxAnarchy: [
-    "District industriel de Puyallup (Barrens, gangs, toxines)",
+    "District industriel de Puyallup (barrens, gangs, toxines)",
     "Waterfront de Seattle (docks, criminalité, Triade)",
     "Complexe Renraku de Bellevue (sécurité maximale)",
     "Underground de Seattle (tunnels, comunautés cachées)",
     "Université de Washington (labos, archives, accès légal)",
     "Touristville (zone de loisirs, trafic, mélange social)",
-    "Zone NAN à la frontière — poste de passage",
-    "Squat éveillé dans les Barrens (communauté magique)",
+    "Zone NAA à la frontière — poste de passage",
+    "Squat éveillé dans les barrens (communauté magique)",
     "Bar de go-gangers sur l'autoroute I-5",
     "Clinique clandestine dans un sous-sol de Redmond",
     "Loft hackers dans Renton (matrices et serveurs)",
@@ -990,7 +991,7 @@ const RunGen = {
     "Port de Seattle sous contrôle Triade",
     "Complexe corpo en périphérie (bureau + logements)",
     "Station de métro abandonnée reconvertie",
-    "Marché couvert illégal des Barrens",
+    "Marché couvert illégal des barrens",
     "Maison de quartier communautaire (couverture)",
     "T-bird strip dans les montagnes NAN",
   ],
