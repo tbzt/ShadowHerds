@@ -1328,7 +1328,7 @@ const EditionSR5 = {
     let sortsList = [];
     const adeptePur = special === "Adepte";
     if (awakened && !adeptePur && typeof Content !== "undefined") {
-      sortsList = Content.pickSorts(prof, contentTags);
+      sortsList = Content.pickSorts("sr5", prof, contentTags);
     } else if (!adeptePur && this.sortsByTradition[special]) {
       sortsList = this.sortsByTradition[special].slice(
         0,
@@ -1339,18 +1339,18 @@ const EditionSR5 = {
     // Pouvoirs d'adepte — seulement pour les adeptes
     const powers =
       special === "Adepte" && typeof Content !== "undefined"
-        ? Content.pickPouvoirs(prof, prof >= 4 ? 3 : 2)
+        ? Content.pickPouvoirs("sr5", prof, prof >= 4 ? 3 : 2)
         : [];
 
     // Trait de couleur cohérent (parfois)
     const traits =
       typeof Content !== "undefined" && Utils.randBool(0.5)
-        ? Content.pickTraits(contentTags, prof, 1)
+        ? Content.pickTraits("sr5", contentTags, prof, 1)
         : [];
 
     // Arme supplémentaire cohérente (aléa d'arsenal)
     if (typeof Content !== "undefined" && Utils.randBool(0.6)) {
-      const arme = Content.pickArme(contentTags, prof);
+      const arme = Content.pickArme("sr5", contentTags, prof);
       if (arme) equip.push(arme);
     }
 

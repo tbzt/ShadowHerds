@@ -265,6 +265,7 @@ const CardRenderer = {
       armes,
       equip,
       sorts,
+      traits,
       combativite,
       seuilsPhys,
       seuils_ment,
@@ -300,28 +301,21 @@ const CardRenderer = {
     }
     html += "</div>";
 
-    // Compétences Anarchy : pool (val + attr) / RR
+    // Compétences Anarchy — alignées visuellement sur SR5/SR6 (tags compacts).
+    // Le pool (val + attr) reste affiché dans le tag ; la spé suit en tag ◊.
     if (skills && skills.length) {
       html += `<div class="card-section">
         <div class="card-section-label">Compétences</div>
-        <div class="anarchy-skill-list">`;
+        <div class="card-section-content">`;
       for (const s of skills) {
         const attrVal = attrs[s.attr] || 0;
         const pool = s.val + attrVal;
         const rrStr = s.rr > 0 ? ` RR${s.rr}` : "";
-        html += `<div class="anarchy-skill-row">
-          <span class="anarchy-skill-name">${this._esc(s.name)}</span>
-          <span class="anarchy-skill-pool">${pool} (${s.val}+${s.attr}${rrStr})</span>
-        </div>`;
-        // Spécialisation ◊
+        html += `<span class="tag skill-tag" title="${this._esc(s.name)} : ${pool} (${s.val}+${s.attr}${rrStr})">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong></span>`;
         if (s.spec && s.spec !== true && s.specVal) {
           const specAttrVal = attrs[s.specAttr || s.attr] || 0;
           const specPool = s.specVal + specAttrVal;
-          const specRR = s.specRR > 0 ? ` RR${s.specRR}` : "";
-          html += `<div class="anarchy-skill-row anarchy-skill-spec">
-            <span class="anarchy-skill-name">◊ ${this._esc(s.spec)}</span>
-            <span class="anarchy-skill-pool">${specPool} (${s.specVal}+${s.specAttr || s.attr}${specRR})</span>
-          </div>`;
+          html += `<span class="tag skill-tag skill-tag-spec" title="Spécialisation ${this._esc(s.spec)} : ${specPool}">◊&nbsp;${this._esc(s.spec)}&nbsp;<strong style="color:var(--text)">${specPool}</strong></span>`;
         }
       }
       html += "</div></div>";
@@ -358,6 +352,11 @@ const CardRenderer = {
     // Sorts (éveillés)
     if (sorts && sorts.length) {
       html += this._listSection("Sorts", sorts);
+    }
+
+    // Traits
+    if (traits && traits.length) {
+      html += this._listSection("Traits", traits);
     }
 
     // Équipement
@@ -447,7 +446,7 @@ const CardRenderer = {
     return `<div class="card-section">
       <div class="card-section-label">Compétences</div>
       <div class="card-section-content">
-        ${skills.map((s) => `<span class="tag">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${s.val}</strong></span>`).join("")}
+        ${skills.map((s) => `<span class="tag skill-tag">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${s.val}</strong></span>`).join("")}
       </div>
     </div>`;
   },

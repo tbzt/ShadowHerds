@@ -2647,7 +2647,36 @@ const EditionAnarchy = {
       seuils_ment,
       seuilsMat: profil.seuilsMat,
       eveille: profil.eveille,
-      sorts: profil.sorts || [],
+      sorts: (function () {
+        // Si l'archétype est éveillé, on enrichit ses sorts avec les
+        // descriptifs Anarchy cliquables ; sinon on garde l'existant.
+        if (profil.eveille && typeof Content !== "undefined") {
+          const tags =
+            typeof Flavor !== "undefined"
+              ? Flavor.tagsFor({ profession: profil.label })
+              : new Set(["magique"]);
+          tags.add("magique");
+          const profNum =
+            { Figurant: 1, "Figurant d'élite": 2, Lieutenant: 3, Boss: 4 }[
+              rang
+            ] || 2;
+          const picked = Content.pickSorts("anarchy", profNum, tags);
+          if (picked.length) return picked;
+        }
+        return profil.sorts || [];
+      })(),
+      traits: (function () {
+        if (typeof Content === "undefined" || !Utils.randBool(0.5)) return [];
+        const tags =
+          typeof Flavor !== "undefined"
+            ? Flavor.tagsFor({ profession: profil.label })
+            : new Set(["rue"]);
+        const profNum =
+          { Figurant: 1, "Figurant d'élite": 2, Lieutenant: 3, Boss: 4 }[
+            rang
+          ] || 2;
+        return Content.pickTraits("anarchy", tags, profNum, 1);
+      })(),
       physFilled: 0,
       mentFilled: 0,
       matFilled: 0,

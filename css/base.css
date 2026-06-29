@@ -835,27 +835,35 @@ select optgroup {
   font-style: italic;
 }
 
-/* ---- Section Portrait (habillage) ---- */
+/* ---- Section Portrait (habillage) ----
+   Aligné visuellement sur le reste de la carte : mêmes couleurs,
+   même typographie d'étiquette que les autres sections, séparateurs
+   discrets cohérents avec les bordures de carte. */
 .flavor-section .flavor-row {
   display: flex;
-  gap: 0.5rem;
-  font-size: 0.74rem;
-  line-height: 1.5;
-  padding: 1px 0;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+}
+.flavor-section .flavor-row:last-child {
+  border-bottom: none;
 }
 .flavor-key {
   flex-shrink: 0;
-  width: 92px;
-  color: var(--text-dim);
+  width: 84px;
+  color: var(--accent);
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.04em;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding-top: 1px;
+  padding-top: 2px;
+  opacity: 0.85;
 }
 .flavor-val {
   flex: 1;
-  color: var(--text);
+  color: var(--text-dim);
 }
 
 /* ---- Portrait éditable des contacts ---- */
@@ -1981,4 +1989,13 @@ select optgroup {
 }
 .content-modal-close:hover {
   color: var(--accent);
+}
+
+/* ---- Compétences : tags compacts unifiés sur les 3 éditions ---- */
+.skill-tag {
+  background: var(--bg-mid, var(--bg));
+}
+.skill-tag-spec {
+  opacity: 0.8;
+  font-size: 0.56rem;
 }
