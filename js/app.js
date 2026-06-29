@@ -187,6 +187,7 @@ const App = {
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   Dice.init();
+  ContentModal.bindDelegation();
 
   document.getElementById("edit-modal").addEventListener("click", (e) => {
     if (e.target === e.currentTarget) EditModal.close();

@@ -152,7 +152,7 @@ const CardRenderer = {
     const extras = ["ESS", ...(attrs.MAG ? ["MAG"] : [])];
     html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
     if (extras.length) {
-      html += `<div class="attr-grid">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
+      html += `<div class="attr-grid with-ess">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
     }
 
     // Limites
@@ -224,7 +224,7 @@ const CardRenderer = {
     if (attrs.MAG) extras.push("MAG");
     if (attrs.RES) extras.push("RES");
     if (extras.length) {
-      html += `<div class="attr-grid">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
+      html += `<div class="attr-grid with-ess">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
     }
 
     // Stats clés SR6
@@ -281,7 +281,7 @@ const CardRenderer = {
 
     // Attributs : 5 attrs Anarchy (FOR/AGI/VOL/LOG/CHA)
     const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA"];
-    html += `<div class="attr-grid" style="grid-template-columns:repeat(5,1fr);">
+    html += `<div class="attr-grid">
       ${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}
     </div>`;
 
@@ -467,11 +467,14 @@ const CardRenderer = {
     if (item && typeof item === "object" && item.nom) {
       const nom = this._esc(item.nom);
       if (item.desc) {
-        const desc = this._esc(item.desc).replace(/'/g, "&#39;");
-        const t = this._esc(item.nom).replace(/'/g, "&#39;");
+        // _esc échappe " donc le contenu est sûr dans un attribut entre guillemets.
+        // Pas de onclick inline : on stocke nom/desc en data-* et on délègue
+        // le clic/clavier (voir ContentModal.bindDelegation), ce qui évite tout
+        // problème d'apostrophes ou de guillemets dans le texte.
+        const desc = this._esc(item.desc);
+        const t = this._esc(item.nom);
         return `<span class="tag tag-clickable" role="button" tabindex="0"
-          onclick="ContentModal.show('${t}', '${desc}')"
-          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();ContentModal.show('${t}', '${desc}')}"
+          data-content-nom="${t}" data-content-desc="${desc}"
           >${nom}<span class="tag-info">i</span></span>`;
       }
       return `<span class="tag">${nom}</span>`;
@@ -814,6 +817,30 @@ const RunRenderer = {
    ============================================================ */
 const ContentModal = {
   _el: null,
+  _delegated: false,
+
+  /* Délégation globale : tout clic / touche Enter|Espace sur un
+     [data-content-nom] ouvre la modale. dataset décode automatiquement
+     les entités HTML (&#39;, &quot;…), donc le texte affiché est correct. */
+  bindDelegation() {
+    if (this._delegated) return;
+    this._delegated = true;
+    const open = (target) => {
+      const tag = target.closest("[data-content-nom]");
+      if (!tag) return false;
+      this.show(tag.dataset.contentNom, tag.dataset.contentDesc || "");
+      return true;
+    };
+    document.addEventListener("click", (e) => open(e.target));
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const tag = e.target.closest && e.target.closest("[data-content-nom]");
+      if (tag) {
+        e.preventDefault();
+        this.show(tag.dataset.contentNom, tag.dataset.contentDesc || "");
+      }
+    });
+  },
 
   _ensure() {
     if (this._el) return this._el;

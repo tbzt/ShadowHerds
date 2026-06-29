@@ -726,22 +726,34 @@ select optgroup {
   padding: 0.75rem 1rem;
 }
 
-/* Attribut grid — 4 colonnes par défaut, 5 si ESS inclus */
+/* Attribut grid — tous les attributs sur une seule ligne, quel que soit
+   leur nombre (8 pour SR5/SR6, 5 pour Anarchy). flex:1 répartit la largeur
+   à parts égales ; min-width:0 évite tout débordement. */
 .attr-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: nowrap;
   gap: 4px;
   margin-bottom: 0.75rem;
 }
+.attr-grid .attr-cell {
+  flex: 1 1 0;
+  min-width: 0;
+}
 .attr-grid.with-ess {
-  grid-template-columns: repeat(3, 1fr);
+  /* les grilles secondaires (ESS/MAG/RES) restent alignées à gauche
+     sans s'étirer sur toute la largeur */
+  flex-wrap: wrap;
+}
+.attr-grid.with-ess .attr-cell {
+  flex: 0 1 auto;
+  min-width: 56px;
 }
 
 .attr-cell {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 3px;
-  padding: 5px 4px;
+  padding: 5px 2px;
   text-align: center;
 }
 .attr-cell.highlight {
@@ -751,8 +763,9 @@ select optgroup {
   font-family: "Share Tech Mono", monospace;
   font-size: 0.52rem;
   color: var(--text-dim);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
   display: block;
+  white-space: nowrap;
 }
 .attr-value {
   font-family: "Share Tech Mono", monospace;
