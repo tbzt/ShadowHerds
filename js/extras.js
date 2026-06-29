@@ -740,7 +740,7 @@ const Contacts = {
         0,
         6,
       );
-      return {
+      const contact = {
         id: Utils.uid(),
         edition: "anarchy",
         name,
@@ -753,11 +753,13 @@ const Contacts = {
         bonus: cat.bonus || null,
         trait,
       };
+      if (typeof Flavor !== "undefined") Flavor.apply(contact);
+      return contact;
     } else {
       const cat = Utils.rand(this.catalogueSR);
       const influence = Utils.randInt(cat.influenceMin, cat.influenceMax);
       const loyaute = Utils.randInt(1, 6);
-      return {
+      const contact = {
         id: Utils.uid(),
         edition: App.edition,
         name,
@@ -769,6 +771,8 @@ const Contacts = {
         similaires: cat.similaires || null,
         trait,
       };
+      if (typeof Flavor !== "undefined") Flavor.apply(contact);
+      return contact;
     }
   },
 
@@ -1184,6 +1188,30 @@ const ContactsBook = {
       }
       this.save();
     }
+  },
+
+  /* ---- Édition du portrait (flavor) ---- */
+  editFlavor(id, field, value) {
+    const c = this.data.all.find((x) => x.id === id);
+    if (!c) return;
+    if (!c.flavor) c.flavor = {};
+    if (field === "age") {
+      const n = parseInt(value, 10);
+      if (Number.isFinite(n)) c.flavor.age = n;
+    } else {
+      c.flavor[field] = value;
+    }
+    this.save();
+  },
+
+  /* ---- Relancer tout le portrait d'un contact ---- */
+  rerollFlavor(id) {
+    const c = this.data.all.find((x) => x.id === id);
+    if (!c || typeof Flavor === "undefined") return;
+    c.flavor = null;
+    Flavor.apply(c);
+    this.save();
+    this.render();
   },
 
   /* ---- Groupes ---- */

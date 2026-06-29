@@ -1072,9 +1072,28 @@ const EditionSR5 = {
      Par profession et professionnalisme, on sélectionne un profil
      qui tire dans les pools ci-dessus.
   ---- */
-  equipProfile(profession, prof) {
+  /* ----
+     COHÉRENCE ÉVEILLÉ / ESSENCE
+     En SR, le cyberware coûte de l'Essence, qui plafonne la Magie.
+     Un Éveillé (mage, chaman, adepte, prof magique) n'a donc pas
+     d'augmentations cybernétiques. Ce détecteur centralise la règle.
+  ---- */
+  _isAwakened(profession, special) {
+    const magSpecials = [
+      "Adepte",
+      "Mage hermétique",
+      "Chaman",
+      "Mage Aztechnology",
+    ];
+    if (magSpecials.includes(special)) return true;
+    const magProf = ["Mage", "Chaman", "Adepte", "Initié", "Conjuration"];
+    return magProf.some((k) => (profession || "").includes(k));
+  },
+
+  equipProfile(profession, prof, special) {
     const p = prof;
     const pools = this.equipPools;
+    const awakened = this._isAwakened(profession, special);
 
     // Commlink selon prof
     const commlink =
@@ -1172,8 +1191,9 @@ const EditionSR5 = {
     if (p >= 4 && Utils.randBool(0.5)) result.push(Utils.rand(pools.grenades));
 
     // Cyberware : prof 3+
-    if (p >= 3) result.push(Utils.rand(pools.cyberware));
-    if (p >= 5) result.push(Utils.rand(pools.cyberware));
+    // Cyberware : prof 3+ — JAMAIS pour un Éveillé (coût en Essence)
+    if (!awakened && p >= 3) result.push(Utils.rand(pools.cyberware));
+    if (!awakened && p >= 5) result.push(Utils.rand(pools.cyberware));
 
     // Équip spécial : flics et sécu
     if (police || p >= 3) result.push(Utils.rand(pools.equipSpecial));
@@ -1184,7 +1204,12 @@ const EditionSR5 = {
   /* ---- Génération principale ---- */
   generate(opts) {
     if (typeof Metavariants !== "undefined") Metavariants.use("sr5");
-    let meta = opts.meta === "Aléatoire" ? Utils.randMeta() : opts.meta;
+    let meta =
+      opts.meta === "Aléatoire"
+        ? typeof Metavariants !== "undefined"
+          ? Metavariants.randomMeta()
+          : Utils.randMeta()
+        : opts.meta;
 
     // Résolution métavariante : une métavariante/conscience/zoocanthrope
     // remplace les ranges de sa souche et porte ses traits raciaux.
@@ -1219,6 +1244,15 @@ const EditionSR5 = {
             "Technomancien",
           ])
         : "Aucun";
+    }
+
+    // Cohérence : une profession magique implique sa tradition si aucune
+    // spécialisation n'est déjà fixée (sinon le « mage » n'aurait pas de Magie).
+    if (special === "Aucun") {
+      if (profession.includes("Chaman")) special = "Chaman";
+      else if (profession.includes("Adepte")) special = "Adepte";
+      else if (profession.includes("Mage") || profession.includes("Initié"))
+        special = "Mage hermétique";
     }
 
     // Attributs de base selon professionnalisme
@@ -1274,12 +1308,13 @@ const EditionSR5 = {
     const skills = this._buildSkills(profession, prof, special);
 
     // Équipement
-    const equip = this._buildEquip(profession, prof);
+    const equip = this._buildEquip(profession, prof, special);
 
-    // Augmentations
+    // Augmentations — supprimées pour tout Éveillé (cohérence Essence/Magie)
+    const awakened = this._isAwakened(profession, special);
     const augsProducer =
       this.augsBySpecial[special] || this.augsBySpecial["Aucun"];
-    const augs = augsProducer(prof);
+    const augs = awakened ? [] : augsProducer(prof);
 
     // Sorts
     const sortsList = this.sortsByTradition[special]
@@ -1357,8 +1392,8 @@ const EditionSR5 = {
     return skills;
   },
 
-  _buildEquip(profession, prof) {
-    return this.equipProfile(profession, prof);
+  _buildEquip(profession, prof, special) {
+    return this.equipProfile(profession, prof, special);
   },
 
   recalc(pnj) {

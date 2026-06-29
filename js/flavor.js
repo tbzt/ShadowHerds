@@ -120,13 +120,55 @@ const Flavor = {
     },
   ],
 
+  /* Mots-clés supplémentaires propres aux rôles de contacts,
+     mappés sur les tags existants. Complète _tagRules sans le réécrire. */
+  _contactRoleTags: {
+    corpo: ["Cadre", "Johnson", "corpo"],
+    crime: [
+      "Consiglieri",
+      "Receleur",
+      "Fixer",
+      "Intermédiaire",
+      "identités",
+      "Mafia",
+    ],
+    police: ["sécurité véreux", "Enquêteur", "Avocat", "Flic"],
+    militaire: ["DocWagon", "combat"],
+    rue: [
+      "Barman",
+      "bar",
+      "Pharmacien",
+      "Aumônier",
+      "Prêtre",
+      "Doc des rues",
+      "gang",
+    ],
+    ombre: ["Contrebandier", "Passeur", "retraite", "Armurier"],
+    magique: ["Mage", "Chaman", "talismans", "NAN", "Amérindiennes"],
+    matrice: ["Decker", "Hacker", "numérique", "Paradis"],
+    tech: [
+      "Mécanicien",
+      "Chirurgien",
+      "cyberware",
+      "Médecin",
+      "Professeur",
+      "Rigger",
+    ],
+    civil: ["Journaliste"],
+  },
+
   tagsFor(pnj) {
     const prof = pnj.profession || "";
     const spec = pnj.special || "";
-    const hay = `${prof} ${spec}`;
+    const role = pnj.role || "";
+    const hay = `${prof} ${spec} ${role}`;
     const tags = new Set();
     for (const rule of this._tagRules) {
       if (rule.match.some((m) => hay.includes(m))) tags.add(rule.tag);
+    }
+    // Compléter avec les mots-clés de rôles de contacts
+    for (const [tag, kws] of Object.entries(this._contactRoleTags)) {
+      if (kws.some((k) => hay.includes(k))) tags.add(tag);
     }
     if (tags.size === 0) tags.add("rue");
     return tags;

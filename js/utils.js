@@ -570,22 +570,18 @@ const Utils = {
     return this.rand(this._surnoms[this.rand(registres)]);
   },
 
-  /** Métatype aléatoire avec pondération réaliste SR */
+  /** Métatype aléatoire avec pondération démographique 2076 (Run Faster)
+      Humains 39 %, Orks 22 %, Elfes 15 %, Nains 14 %, Trolls 5 %. */
   randMeta() {
-    const pool = [
-      "Humain",
-      "Humain",
-      "Humain",
-      "Humain",
-      "Humain",
-      "Elfe",
-      "Elfe",
-      "Ork",
-      "Ork",
-      "Nain",
-      "Troll",
-    ];
-    return this.rand(pool);
+    const poids = { Humain: 39, Ork: 22, Elfe: 15, Nain: 14, Troll: 5 };
+    const entries = Object.entries(poids);
+    const total = entries.reduce((s, [, w]) => s + w, 0);
+    let r = Math.random() * total;
+    for (const [meta, w] of entries) {
+      r -= w;
+      if (r <= 0) return meta;
+    }
+    return "Humain";
   },
 
   /** Genre aléatoire */

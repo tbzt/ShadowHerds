@@ -1262,4 +1262,65 @@ const Metavariants = {
   allZoocanthropes() {
     return Object.keys(this._dataZoo());
   },
+
+  /* ============================================================
+     PONDÉRATION DÉMOGRAPHIQUE — tirage « Aléatoire » réaliste
+     Source : Run Faster, « Plus qu'une couleur de peau » (population
+     mondiale 2076) — données les plus récentes disponibles.
+       Humains 39 %, Orks 22 %, Elfes 15 %, Nains 14 %, Trolls 5 %.
+     (Les 5 % « Autres » regroupent métavariantes + consciences, gérés
+      séparément ci-dessous comme sous-population de chaque souche.)
+     ============================================================ */
+  souchePoids: { Humain: 39, Ork: 22, Elfe: 15, Nain: 14, Troll: 5 },
+
+  /* Probabilité, une fois la souche tirée, qu'il s'agisse d'une
+     métavariante plutôt que du métatype de base. Les métaconsciences
+     (Pixie, Naga, Sasquatch…) sont quasi introuvables au hasard :
+     population mondiale de l'ordre de 50 000–200 000 individus. */
+  P_METACONSCIENCE: 0.004,
+
+  /* Ajustement par souche : certaines souches ont plusieurs métavariantes
+     répandues, d'autres une seule et marginale. Humain n'a qu'une
+     métavariante exotique (Nartaki / Valkyrie) qui ne doit pas capter
+     toute la part « variante » de la population la plus nombreuse. */
+  _pMetavarianteSouche: {
+    Humain: 0.012,
+    Elfe: 0.06,
+    Nain: 0.08,
+    Ork: 0.09,
+    Troll: 0.09,
+  },
+
+  _weightedSouche() {
+    const entries = Object.entries(this.souchePoids);
+    const total = entries.reduce((s, [, w]) => s + w, 0);
+    let r = Math.random() * total;
+    for (const [souche, w] of entries) {
+      r -= w;
+      if (r <= 0) return souche;
+    }
+    return "Humain";
+  },
+
+  /**
+   * Tirage aléatoire pondéré d'un métatype pour l'édition active.
+   * Renvoie soit un métatype de base, soit (rarement) une métavariante
+   * de la souche tirée, soit (très rarement) une métaconscience.
+   * Respecte la démographie canonique du Sixième Monde.
+   */
+  randomMeta() {
+    // Métaconscience : extrêmement rare, indépendante de la souche
+    const mc = this.allMetaconsciences();
+    if (mc.length && Math.random() < this.P_METACONSCIENCE) {
+      return Utils.rand(mc);
+    }
+    // Sinon : souche pondérée, puis éventuellement une de ses métavariantes
+    const souche = this._weightedSouche();
+    const variantes = this.bySouche(souche, "metavariant");
+    const pVar = this._pMetavarianteSouche[souche] ?? 0.08;
+    if (variantes.length && Math.random() < pVar) {
+      return Utils.rand(variantes);
+    }
+    return souche;
+  },
 };

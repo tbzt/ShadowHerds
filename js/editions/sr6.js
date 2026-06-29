@@ -1169,7 +1169,7 @@ const EditionSR6 = {
     ],
   },
 
-  equipProfile(profession, prof) {
+  equipProfile(profession, prof, awakened) {
     const p = prof;
     const pools = this.equipPools;
 
@@ -1250,8 +1250,8 @@ const EditionSR6 = {
       result.push("Électromatraque [VD 5E, SO 9/-/-/-/-, perte d'action]");
 
     result.push(armure);
-    if (p >= 3) result.push(Utils.rand(pools.cyberware));
-    if (p >= 6) result.push(Utils.rand(pools.cyberware));
+    if (!awakened && p >= 3) result.push(Utils.rand(pools.cyberware));
+    if (!awakened && p >= 6) result.push(Utils.rand(pools.cyberware));
     if (p >= 4 && Utils.randBool(0.4))
       result.push(Utils.rand(pools.equipSpecial));
 
@@ -1262,7 +1262,12 @@ const EditionSR6 = {
   generate(opts) {
     if (typeof Metavariants !== "undefined") Metavariants.use("sr6");
     const metaList = this.formOptions.meta.slice(1);
-    let meta = opts.meta === "Aléatoire" ? Utils.rand(metaList) : opts.meta;
+    let meta =
+      opts.meta === "Aléatoire"
+        ? typeof Metavariants !== "undefined"
+          ? Metavariants.randomMeta()
+          : Utils.rand(metaList)
+        : opts.meta;
 
     // Résolution métavariante SR6 (Compagnon du Sixième Monde)
     const mv =
@@ -1371,11 +1376,13 @@ const EditionSR6 = {
       null;
     const sorts = sortsTrad ? sortsTrad.slice(0, 2 + Math.floor(p / 3)) : [];
 
-    // Équipement
-    const equip = this.equipProfile(profession, p);
+    // Équipement — pas de cyberware pour un Éveillé (coût en Essence)
+    const awakened = isMagicProf || isMagicSpec;
+    const equip = this.equipProfile(profession, p, awakened);
 
-    // Augmentations corpo
-    const augs = p >= 5 ? [Utils.rand(this.equipPools.cyberware)] : [];
+    // Augmentations corpo — jamais pour un Éveillé
+    const augs =
+      !awakened && p >= 5 ? [Utils.rand(this.equipPools.cyberware)] : [];
 
     const pnj = {
       id: Utils.uid(),

@@ -591,6 +591,8 @@ const ContactRenderer = {
           onblur="ContactsBook.editField('${c.id}', 'trait', this.textContent.trim())"
           >${CardRenderer._esc(c.trait)}</span></div>
 
+        ${this._portrait(c)}
+
         <div class="contact-notes-row">
           <textarea class="contact-notes" placeholder="Notes…" rows="2"
             onchange="ContactsBook.editNote('${c.id}', this.value)"
@@ -601,6 +603,33 @@ const ContactRenderer = {
         <button class="card-action-btn danger" onclick="ContactsBook.remove('${c.id}')">Supprimer</button>
       </div>`;
     return el;
+  },
+
+  /* ---- Portrait éditable (flavor) pour un contact ---- */
+  _portrait(c) {
+    const f = c.flavor;
+    if (!f) return "";
+    const row = (key, field, val) =>
+      `<div class="flavor-row">
+        <span class="flavor-key">${key}</span>
+        <span class="flavor-val" contenteditable="true" spellcheck="false"
+          onblur="ContactsBook.editFlavor('${c.id}', '${field}', this.textContent.trim())"
+          >${CardRenderer._esc(String(val))}</span>
+      </div>`;
+    const rows = [
+      f.age != null ? row("Âge", "age", f.age) : "",
+      f.signe ? row("Signe", "signe", f.signe) : "",
+      f.manie ? row("Manie", "manie", f.manie) : "",
+      f.motivation ? row("Motivation", "motivation", f.motivation) : "",
+      f.style ? row("Style", "style", f.style) : "",
+    ].join("");
+    return `<div class="card-section flavor-section contact-portrait">
+      <div class="card-section-label">Portrait
+        <button class="btn-icon-tiny" title="Relancer le portrait"
+          onclick="ContactsBook.rerollFlavor('${c.id}')">⟳</button>
+      </div>
+      ${rows}
+    </div>`;
   },
 
   _statsAnarchy(c) {

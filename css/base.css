@@ -841,6 +841,26 @@ select optgroup {
   flex: 1;
   color: var(--text);
 }
+
+/* ---- Portrait éditable des contacts ---- */
+.contact-portrait .card-section-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.contact-portrait .flavor-val[contenteditable] {
+  border-radius: 2px;
+  padding: 0 2px;
+  transition: background 0.12s;
+  cursor: text;
+}
+.contact-portrait .flavor-val[contenteditable]:hover {
+  background: var(--glow);
+}
+.contact-portrait .flavor-val[contenteditable]:focus {
+  background: var(--bg);
+  outline: 1px solid var(--accent);
+}
 .tag {
   display: inline-block;
   background: var(--bg);
