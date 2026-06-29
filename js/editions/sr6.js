@@ -1350,6 +1350,23 @@ const EditionSR6 = {
     // PA
     const pa = this.paByProf[p] || "MAJ 1, MIN 2";
 
+    // Réserves utiles au MJ (SR6, LdB)
+    const defense = attrs.RÉA + attrs.INT; // test de Défense
+    const damageResist = attrs.CON; // encaisser les dommages
+    const composure = attrs.VOL + attrs.CHA; // sang-froid
+    const judgeIntentions = attrs.INT + attrs.CHA; // jauger les intentions
+    const memory = attrs.LOG + attrs.VOL; // mémoire
+    // Résistance au Drain : Volonté + attribut de tradition (hermétique = LOG, chaman = CHA)
+    let drainResist = null;
+    if (attrs.MAG) {
+      const tradAttr = String(profession).includes("Chaman") ||
+        special === "Chaman"
+        ? attrs.CHA
+        : attrs.LOG;
+      drainResist =
+        special === "Adepte" ? null : attrs.VOL + tradAttr;
+    }
+
     // Compétences
     const pool = this.skillPools[profession] || this.skillPools["Civil"];
     const count = this.skillCount[p] || 4;
@@ -1440,6 +1457,12 @@ const EditionSR6 = {
       initBase,
       initDice: initData.dice,
       pa,
+      defense,
+      damageResist,
+      drainResist,
+      composure,
+      judgeIntentions,
+      memory,
       skills,
       sorts,
       powers,
@@ -1457,6 +1480,20 @@ const EditionSR6 = {
     const { attrs } = pnj;
     pnj.me = 8 + Math.ceil(attrs.CON / 2);
     pnj.initBase = attrs.RÉA + attrs.INT;
+    pnj.defense = attrs.RÉA + attrs.INT;
+    pnj.damageResist = attrs.CON;
+    pnj.composure = attrs.VOL + attrs.CHA;
+    pnj.judgeIntentions = attrs.INT + attrs.CHA;
+    pnj.memory = attrs.LOG + attrs.VOL;
+    if (attrs.MAG && pnj.special !== "Adepte") {
+      const tradAttr =
+        String(pnj.profession).includes("Chaman") || pnj.special === "Chaman"
+          ? attrs.CHA
+          : attrs.LOG;
+      pnj.drainResist = attrs.VOL + tradAttr;
+    } else {
+      pnj.drainResist = null;
+    }
     return pnj;
   },
 };

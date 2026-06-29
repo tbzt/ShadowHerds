@@ -1300,6 +1300,15 @@ const EditionSR5 = {
       ? attrs.VOL + attrs.LOG
       : null;
 
+    // Réserves utiles au MJ (SR5, LdB p.174 & p.189)
+    const armure = this.armureByProf[profIdx] || 0;
+    const defense = attrs.REA + attrs.INT; // test de défense
+    const damageResist = attrs.CON + armure; // résistance aux dommages phys
+    const composure = attrs.VOL + attrs.CHA; // sang-froid
+    const judgeIntentions = attrs.INT + attrs.CHA; // jauger les intentions
+    const memory = attrs.LOG + attrs.VOL; // mémoire
+    const liftCarry = attrs.FOR + attrs.CON; // soulever/porter
+
     // Moniteurs
     const physMon = 8 + Math.ceil(attrs.CON / 2);
     const stunMon = 8 + Math.ceil(attrs.VOL / 2);
@@ -1380,6 +1389,12 @@ const EditionSR5 = {
       init,
       initDice,
       drainResist,
+      defense,
+      damageResist,
+      composure,
+      judgeIntentions,
+      memory,
+      liftCarry,
       physMon,
       stunMon,
       physFilled: 0,
@@ -1442,6 +1457,13 @@ const EditionSR5 = {
     pnj.drainResist = ["Mage hermétique", "Chaman"].includes(pnj.special)
       ? attrs.VOL + attrs.LOG
       : null;
+    const armure = pnj.armure || 0;
+    pnj.defense = attrs.REA + attrs.INT;
+    pnj.damageResist = attrs.CON + armure;
+    pnj.composure = attrs.VOL + attrs.CHA;
+    pnj.judgeIntentions = attrs.INT + attrs.CHA;
+    pnj.memory = attrs.LOG + attrs.VOL;
+    pnj.liftCarry = attrs.FOR + attrs.CON;
     return pnj;
   },
 };

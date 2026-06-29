@@ -51,13 +51,30 @@ const CardRenderer = {
       ? `${pnj.meta} <span class="pnj-metavariant">(${this._esc(pnj.metavariant)})</span>`
       : pnj.meta;
 
+    const nameHtml = this._nameBlock(pnj.name);
+
     return `<div class="pnj-card-header">
       <div class="pnj-header-left">
-        <div class="pnj-name">${this._esc(pnj.name)}</div>
+        ${nameHtml}
         <div class="pnj-meta">${gIcon} ${metaStr} · ${pnj.profession}${specialStr}</div>
       </div>
       ${badge}
     </div>`;
+  },
+
+  /* Découpe « Prénom "Surnom" Famille » : le surnom devient le titre
+     mis en avant ; le nom civil (prénom + famille) passe en sous-ligne
+     discrète. Si aucun surnom n'est présent, on affiche le nom tel quel. */
+  _nameBlock(rawName) {
+    const name = String(rawName ?? "");
+    const m = name.match(/^(.*?)\s*[«"“]([^»"”]+)[»"”]\s*(.*)$/);
+    if (m) {
+      const surnom = m[2].trim();
+      const civil = `${m[1].trim()} ${m[3].trim()}`.replace(/\s+/g, " ").trim();
+      return `<div class="pnj-name" title="${this._esc(name)}">${this._esc(surnom)}</div>
+        ${civil ? `<div class="pnj-civilname">${this._esc(civil)}</div>` : ""}`;
+    }
+    return `<div class="pnj-name" title="${this._esc(name)}">${this._esc(name)}</div>`;
   },
 
   /* ---- Body ---- */
@@ -123,6 +140,90 @@ const CardRenderer = {
     </div>`;
   },
 
+  /* ---- Réserves de dés utiles au MJ ---- */
+  _gmPoolRow(label, value, title) {
+    if (value == null) return "";
+    return `<span class="stat-pill gm-pool" title="${this._esc(title)}">${label}&nbsp;<strong>${value}</strong></span>`;
+  },
+
+  _gmPoolsSR5(pnj) {
+    const cells = [
+      this._gmPoolRow(
+        "Défense",
+        pnj.defense,
+        "Test de défense : Réaction + Intuition",
+      ),
+      this._gmPoolRow(
+        "Résist. dom.",
+        pnj.damageResist,
+        "Résistance aux dommages : Constitution + Armure",
+      ),
+      this._gmPoolRow(
+        "Sang-froid",
+        pnj.composure,
+        "Sang-froid : Volonté + Charisme",
+      ),
+      this._gmPoolRow(
+        "Intentions",
+        pnj.judgeIntentions,
+        "Jauger les intentions : Intuition + Charisme",
+      ),
+      this._gmPoolRow("Mémoire", pnj.memory, "Mémoire : Logique + Volonté"),
+      this._gmPoolRow(
+        "Port",
+        pnj.liftCarry,
+        "Soulever / porter : Force + Constitution",
+      ),
+    ]
+      .filter(Boolean)
+      .join("");
+    if (!cells) return "";
+    return `<div class="card-section gm-pools-section">
+      <div class="card-section-label">Réserves MJ</div>
+      <div class="stats-row" style="flex-wrap:wrap;gap:5px;">${cells}</div>
+    </div>`;
+  },
+
+  _gmPoolsSR6(pnj) {
+    const cells = [
+      this._gmPoolRow(
+        "Défense",
+        pnj.defense,
+        "Test de Défense : Réaction + Intuition",
+      ),
+      this._gmPoolRow(
+        "Encaisse",
+        pnj.damageResist,
+        "Encaisser les dommages : Constitution",
+      ),
+      pnj.drainResist != null
+        ? this._gmPoolRow(
+            "Drain",
+            pnj.drainResist,
+            "Résistance au Drain : Volonté + attribut de tradition",
+          )
+        : "",
+      this._gmPoolRow(
+        "Sang-froid",
+        pnj.composure,
+        "Sang-froid : Volonté + Charisme",
+      ),
+      this._gmPoolRow(
+        "Intentions",
+        pnj.judgeIntentions,
+        "Jauger les intentions : Intuition + Charisme",
+      ),
+      this._gmPoolRow("Mémoire", pnj.memory, "Mémoire : Logique + Volonté"),
+    ]
+      .filter(Boolean)
+      .join("");
+    if (!cells) return "";
+    return `<div class="card-section gm-pools-section">
+      <div class="card-section-label">Réserves MJ</div>
+      <div class="stats-row" style="flex-wrap:wrap;gap:5px;">${cells}</div>
+    </div>`;
+  },
+
   /* ---- Body SR5 ---- */
   _bodySR5(pnj) {
     const {
@@ -169,6 +270,9 @@ const CardRenderer = {
       html += `<span class="stat-pill">Drain <strong>${drainResist}</strong></span>`;
     }
     html += "</div>";
+
+    // Réserves de dés utiles au MJ (SR5)
+    html += this._gmPoolsSR5(pnj);
 
     // Moniteurs SR5 (séparés)
     html += `<div class="card-section">
@@ -234,6 +338,9 @@ const CardRenderer = {
     html += `<span class="stat-pill">ME <strong>${me ?? "?"}</strong></span>`;
     if (pa) html += `<span class="stat-pill">PA <strong>${pa}</strong></span>`;
     html += "</div>";
+
+    // Réserves de dés utiles au MJ (SR6)
+    html += this._gmPoolsSR6(pnj);
 
     // Moniteur d'état unique SR6
     const monTotal = me ?? 9;
@@ -443,10 +550,20 @@ const CardRenderer = {
 
   _skillsSection(skills) {
     if (!skills || !skills.length) return "";
+    const tags = skills
+      .map((s) => {
+        let html = `<span class="tag skill-tag">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${s.val}</strong></span>`;
+        if (s.spec && s.spec !== true) {
+          // Spécialité : +2 dés sur le pool en SR5/SR6.
+          html += `<span class="tag skill-tag skill-tag-spec" title="Spécialité ${this._esc(s.spec)} : +2 dés">◊&nbsp;${this._esc(s.spec)}</span>`;
+        }
+        return html;
+      })
+      .join("");
     return `<div class="card-section">
       <div class="card-section-label">Compétences</div>
       <div class="card-section-content">
-        ${skills.map((s) => `<span class="tag skill-tag">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${s.val}</strong></span>`).join("")}
+        ${tags}
       </div>
     </div>`;
   },
