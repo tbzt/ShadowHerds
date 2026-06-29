@@ -480,6 +480,169 @@ select optgroup {
   border-color: var(--accent);
 }
 
+/* ============================================================
+   MULTI-SELECT (filtres « ajouter / enlever »)
+   Hérite des couleurs de thème via les variables : conserve
+   l'âme de chaque édition (accent, bordure, fond).
+   ============================================================ */
+.form-group.ms {
+  position: relative;
+}
+
+/* Déclencheur : ressemble à un <select> mais montre des puces */
+.ms-control {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.3rem 0.5rem;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.ms-control:focus,
+.ms.ms-open .ms-control {
+  outline: none;
+  border-color: var(--accent);
+}
+.ms-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  flex: 1;
+  min-width: 0;
+}
+.ms-empty {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  font-style: italic;
+}
+.ms-caret {
+  color: var(--accent);
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  transition: transform 0.18s;
+}
+.ms.ms-open .ms-caret {
+  transform: rotate(180deg);
+}
+
+/* Puces des valeurs retenues */
+.ms-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--glow);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  border-radius: 3px;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.74rem;
+  line-height: 1.3;
+  max-width: 100%;
+}
+.ms-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ms-chip-x {
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 0.65rem;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+.ms-chip-x:hover {
+  opacity: 1;
+}
+
+/* Menu déroulant */
+.ms-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+.ms-dropdown[hidden] {
+  display: none;
+}
+.ms-dropdown-tools {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.ms-tool {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 2px;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+.ms-tool:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.ms-dropdown-body {
+  overflow-y: auto;
+  padding: 0.3rem 0;
+}
+
+/* Options */
+.ms-opt {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.28rem 0.7rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+.ms-opt:hover {
+  background: var(--glow);
+}
+.ms-opt input {
+  accent-color: var(--accent);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.ms-opt-child {
+  padding-left: 1.6rem;
+  font-size: 0.78rem;
+}
+.ms-group-head {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  text-transform: var(--title-transform, uppercase);
+  border-top: 1px solid var(--border);
+  margin-top: 0.15rem;
+}
+.ms-group:first-child .ms-group-head {
+  border-top: none;
+  margin-top: 0;
+}
+
 .gen-actions {
   display: flex;
   gap: 0.75rem;

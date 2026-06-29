@@ -2,10 +2,22 @@
 
 /* ============================================================
    GENERATOR — formulaire + génération PNJ individuel / groupe
+
+   Filtres en multi-sélection (« ajouter / enlever des données ») :
+   chaque champ accepte plusieurs valeurs. Lors de la génération,
+   on tire au hasard parmi les valeurs cochées (sélection vide =
+   « Aléatoire / tout »). Pour un groupe, chaque PNJ re-tire dans
+   les ensembles cochés, ce qui donne une bande variée mais cadrée.
+
+   La Profession utilise un multi-select à double niveau (catégorie
+   → professions) via ProfCategories.
    ============================================================ */
 const Gen = {
   /** PNJ générés non encore sauvegardés (zone de génération) */
   pool: [],
+
+  /** correspondance label Origine -> valeur interne (rempli au build) */
+  _bassinLabelToValue: {},
 
   /** Retourne le module d'édition actif */
   get edition() {
@@ -17,8 +29,10 @@ const Gen = {
     const ed = this.edition;
     if (!ed) return;
 
+    MultiSelect.init();
     this._buildSingleForm(ed);
     this._buildGroupForm(ed);
+    MultiSelect.refresh(document.getElementById("panel-generator"));
   },
 
   _buildSingleForm(ed) {
@@ -43,9 +57,6 @@ const Gen = {
 
   /**
    * Génère le HTML du formulaire selon les options de l'édition.
-   * @param {object} ed - module d'édition
-   * @param {string} prefix - préfixe des IDs ('sg' ou 'gg')
-   * @param {object} opts
    */
   _formHTML(ed, prefix, opts = {}) {
     const fo = ed.formOptions;
@@ -58,8 +69,7 @@ const Gen = {
       </div>`;
     }
 
-    // Bassin culturel — noms de famille + prénom cohérents
-    const bassinsOpts = ["Aléatoire", ...Utils.bassins()];
+    // Bassin culturel
     const bassinsLabels = {
       japonais: "Japonais",
       coreen: "Coréen",
@@ -74,108 +84,136 @@ const Gen = {
       asiacentral: "Asie centrale",
       generique: "Générique",
     };
-    html += `<div class="form-group">
-      <label>Origine</label>
-      <select id="${prefix}-bassin">
-        ${bassinsOpts.map((b) => `<option value="${b}">${bassinsLabels[b] || b}</option>`).join("")}
-      </select>
-    </div>`;
+    const bassinValues = Utils.bassins();
+    html += MultiSelect.create({
+      id: `${prefix}-bassin`,
+      label: "Origine",
+      mode: "flat",
+      options: bassinValues.map((b) => bassinsLabels[b] || b),
+    });
+    bassinValues.forEach((b) => {
+      this._bassinLabelToValue[bassinsLabels[b] || b] = b;
+    });
 
     html += this._metaSelect(prefix, ed);
-    html += this._select(prefix, "gender", "Genre", fo.gender);
+
+    html += MultiSelect.create({
+      id: `${prefix}-gender`,
+      label: "Genre",
+      mode: "flat",
+      options: this._strip(fo.gender),
+    });
 
     if (fo.rang) {
-      html += this._select(prefix, "rang", "Rang", fo.rang);
+      html += MultiSelect.create({
+        id: `${prefix}-rang`,
+        label: "Rang",
+        mode: "flat",
+        options: this._strip(fo.rang),
+      });
     } else if (fo.prof) {
-      html += this._select(prefix, "prof", "Professionnalisme", fo.prof);
+      html += MultiSelect.create({
+        id: `${prefix}-prof`,
+        label: "Professionnalisme",
+        mode: "flat",
+        options: this._strip(fo.prof),
+      });
     }
 
-    html += this._select(prefix, "profession", "Profession", fo.profession);
+    // Profession — double niveau
+    const profItems = this._strip(fo.profession);
+    const groups = ProfCategories.forEdition(ed.id, profItems);
+    html += MultiSelect.create({
+      id: `${prefix}-profession`,
+      label: "Profession",
+      mode: "grouped",
+      groups,
+    });
 
     if (fo.special) {
-      html += this._select(prefix, "special", "Spécialisation", fo.special);
+      html += MultiSelect.create({
+        id: `${prefix}-special`,
+        label: "Spécialisation",
+        mode: "flat",
+        options: this._strip(fo.special, ["Aucun"]),
+        emptyLabel: "Aucune / aléatoire",
+      });
     }
 
     return html;
   },
 
-  _select(prefix, field, label, options) {
-    const id = `${prefix}-${field}`;
-    const opts = options
-      .map((o) => `<option value="${o}">${o}</option>`)
-      .join("");
-    return `<div class="form-group">
-      <label>${label}</label>
-      <select id="${id}">${opts}</select>
-    </div>`;
+  /** Retire les marqueurs « Aléatoire » / « Aucun » d'une liste. */
+  _strip(list, extra = []) {
+    const drop = new Set(["Aléatoire", ...extra]);
+    return (list || []).filter((o) => !drop.has(o));
   },
 
   /**
-   * Sélecteur de métatype. Si l'édition expose des métavariantes
-   * (via Metavariants) et les active (ed.useMetavariants), on construit
-   * un <select> hiérarchique : chaque souche regroupe son métatype de
-   * base et ses métavariantes ; les métaconsciences et zoocanthropes
-   * forment deux groupes à part.
+   * Sélecteur de métatype en multi-select (groupé si métavariantes).
    */
   _metaSelect(prefix, ed) {
     const id = `${prefix}-meta`;
     const fo = ed.formOptions;
 
-    // Édition sans métavariantes (ex. Anarchy) → select plat classique
     if (!ed.useMetavariants || typeof Metavariants === "undefined") {
-      return this._select(prefix, "meta", "Métatype", fo.meta);
+      return MultiSelect.create({
+        id,
+        label: "Métatype",
+        mode: "flat",
+        options: this._strip(fo.meta),
+      });
     }
 
-    // Sélectionner le jeu de données de l'édition active
     Metavariants.use(ed.id);
+    const groups = [];
 
-    let html = `<div class="form-group">
-      <label>Métatype</label>
-      <select id="${id}">
-        <option value="Aléatoire">Aléatoire</option>`;
-
-    // Un groupe par souche : métatype de base + ses métavariantes
     for (const grp of Metavariants.groupedOptions()) {
-      html += `<optgroup label="${grp.souche}">`;
-      html += `<option value="${grp.souche}">${grp.souche}</option>`;
-      for (const mv of grp.metavariants) {
-        html += `<option value="${mv}">${mv}</option>`;
-      }
-      html += `</optgroup>`;
+      groups.push({
+        cat: grp.souche,
+        items: [grp.souche, ...grp.metavariants],
+      });
     }
 
-    // Métaconsciences
     const mc = Metavariants.allMetaconsciences();
-    if (mc.length) {
-      html += `<optgroup label="Métaconsciences">`;
-      html += mc.map((n) => `<option value="${n}">${n}</option>`).join("");
-      html += `</optgroup>`;
-    }
+    if (mc.length) groups.push({ cat: "Métaconsciences", items: mc });
 
-    // Zoocanthropes
     const zoo = Metavariants.allZoocanthropes();
-    if (zoo.length) {
-      html += `<optgroup label="Zoocanthropes">`;
-      html += zoo.map((n) => `<option value="${n}">${n}</option>`).join("");
-      html += `</optgroup>`;
-    }
+    if (zoo.length) groups.push({ cat: "Zoocanthropes", items: zoo });
 
-    html += `</select></div>`;
-    return html;
+    return MultiSelect.create({
+      id,
+      label: "Métatype",
+      mode: "grouped",
+      groups,
+    });
   },
 
   /* ---- Lecture du formulaire ---- */
+  _pick(id, fallback = "Aléatoire") {
+    const sel = MultiSelect.selected(id);
+    if (!sel.length) return fallback;
+    return Utils.rand(sel);
+  },
+
   _readForm(prefix) {
-    const get = (id) => document.getElementById(id)?.value ?? "";
+    const nameEl = document.getElementById(`${prefix}-name`);
+
+    const bassinLabel = this._pick(`${prefix}-bassin`);
+    const bassin =
+      bassinLabel === "Aléatoire"
+        ? "Aléatoire"
+        : this._bassinLabelToValue[bassinLabel] || bassinLabel;
+
     return {
-      name: get(`${prefix}-name`),
-      bassin: get(`${prefix}-bassin`) || "Aléatoire",
-      meta: get(`${prefix}-meta`) || "Aléatoire",
-      gender: get(`${prefix}-gender`) || "Aléatoire",
-      prof: get(`${prefix}-prof`) || "Aléatoire",
-      rang: get(`${prefix}-rang`) || "Aléatoire",
-      profession: get(`${prefix}-profession`) || "Aléatoire",
-      special: get(`${prefix}-special`) || "Aucun",
+      name: nameEl ? nameEl.value : "",
+      bassin,
+      meta: this._pick(`${prefix}-meta`),
+      gender: this._pick(`${prefix}-gender`),
+      prof: this._pick(`${prefix}-prof`),
+      rang: this._pick(`${prefix}-rang`),
+      profession: this._pick(`${prefix}-profession`),
+      special: this._pick(`${prefix}-special`, "Aucun"),
     };
   },
 
@@ -192,7 +230,6 @@ const Gen = {
 
   /* ---- Génération de groupe ---- */
   generateGroup() {
-    const opts = this._readForm("gg");
     const countStr = document.getElementById("gg-count")?.value || "2-4";
     const [cmin, cmax] = countStr.split("-").map(Number);
     const count = Utils.randInt(cmin, cmax);
@@ -202,7 +239,9 @@ const Gen = {
 
     const newPNJs = [];
     for (let i = 0; i < count; i++) {
-      const pnj = this.edition.generate({ ...opts, name: "" });
+      const opts = this._readForm("gg"); // re-tirage par PNJ
+      opts.name = "";
+      const pnj = this.edition.generate(opts);
       this.pool.push(pnj);
       newPNJs.push(pnj);
     }
@@ -242,12 +281,10 @@ const Gen = {
     zone.innerHTML = "";
   },
 
-  /** Retrouve un PNJ dans le pool par son id */
   findInPool(id) {
     return this.pool.find((p) => p.id === id) || null;
   },
 
-  /* ---- Onglets du générateur ---- */
   showTab(tab, btn) {
     document
       .querySelectorAll("#panel-generator .tab-btn")
