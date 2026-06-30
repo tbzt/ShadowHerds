@@ -198,14 +198,27 @@ const WeaponRoll = {
     const attrVal = (pnj.attrs && pnj.attrs[attr]) || 0;
 
     const skillVal = found ? found.val : 0;
-    const pool = skillVal + attrVal;
-    if (pool < 1) return null;
+    const basePool = skillVal + attrVal;
+    if (basePool < 1) return null;
 
     let rr = 0;
     if (edition === "anarchy" && found) {
       const sObj = (pnj.skills || []).find((s) => s.name === found.matched);
       if (sObj && sObj.rr) rr = sObj.rr;
     }
+
+    // Synergie smartgun (arme) / smartlink (PNJ) — SR5 : +2 implanté / +1
+    // externe ; SR6 : +1 flat. Voir BonusEngine.detectSmartlink().
+    let smartBonus = 0;
+    if (
+      (edition === "sr5" || edition === "sr6") &&
+      pnj.smartlink &&
+      /smartgun|smartlink/i.test(String(weapon))
+    ) {
+      smartBonus =
+        edition === "sr5" ? (pnj.smartlink.implanted ? 2 : 1) : 1;
+    }
+    const pool = basePool + smartBonus;
 
     return {
       weaponName: parsed.name,
@@ -216,6 +229,7 @@ const WeaponRoll = {
       attrVal,
       skillVal,
       pool,
+      smartBonus,
       limit: edition === "sr5" ? parsed.pre : null,
       rr,
       edition,

@@ -2735,6 +2735,7 @@ const EditionAnarchy = {
     };
     // Cohérence arme <-> compétence (renomme une compétence de combat si besoin)
     if (typeof WeaponRoll !== "undefined") WeaponRoll.reconcile(pnj, "anarchy");
+    if (typeof BonusEngine !== "undefined") BonusEngine.apply(pnj, "anarchy");
     if (typeof Flavor !== "undefined") Flavor.apply(pnj);
     return pnj;
   },
