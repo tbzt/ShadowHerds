@@ -963,55 +963,53 @@ const EditionSR5 = {
       ],
     },
     pistoletsLegers: [
-      "Ares Light Fire 75 [VD 6P, PA —, SA, 16(c)]",
-      "Colt America L36 [VD 7P, PA —, SA, 11(c)]",
       "Fichetti Security 600 [PRE 6(7), VD 7P, PA —, SA, 30(c)]",
-      "Heckler & Koch 227 [VD 7P, SA/TR, 10(c)]",
-      "Ruger Super Warhawk [VD 9P, PA -2, CA, 6(c)] [bruyant]",
+      "Colt America L36 [PRE 7, VD 7P, PA —, SA, 11(c)]",
+      "Ares Light Fire 75 [PRE 6(8), VD 6P, PA —, SA, 16(c), smartgun]",
     ],
     pistoletsLourds: [
-      "Ares Predator V [PRE 5(7), VD 8P, PA -1, SA, 15(c)]",
+      "Ares Predator V [PRE 5(7), VD 8P, PA -1, SA, 15(c), smartgun]",
       "Browning Ultra-Power [PRE 5(6), VD 8P, PA -1, SA, 10(c)]",
-      "Colt Manhunter [VD 8P, PA -1, SA, 16(c)]",
-      "Ruger Super Warhawk [VD 9P, PA -2, CA, 6(c)]",
-      "Sig Sauer P232 [VD 8P, PA -1, SA, 10(c)]",
+      "Colt Government 2066 [PRE 6, VD 7P, PA -1, SA, 14(c)]",
+      "Ruger Super Warhawk [PRE 5, VD 9P, PA -2, CC, 6(b)]",
+      "Remington Roomsweeper [PRE 4, VD 7P, PA -1, SA, 8(m)]",
     ],
     mitraillettes: [
-      "Ares Sigma-3 [VD 7P, PA -1, SA/TR, 28(c)]",
-      "Ceska Black Scorpion [PRE 5(7), VD 6P, SA/TR, 35(c)]",
-      "Colt Cobra TZ-120 [PRE 4(5), VD 7P, SA/TR/TA, 32(c)]",
-      "HK MP-5 TX [VD 7P, PA -2, SA/TR, 30(c)]",
-      "Ingram Smartgun X [PRE 4(5), VD 8P, SA/TR, 32(c)]",
+      "HK-227 [PRE 5(7), VD 7P, PA —, SA/TR/TA, 28(c), smartgun, silencieux]",
+      "Ceska Black Scorpion [PRE 5, VD 6P, PA —, SA/TR, 35(c)]",
+      "Colt Cobra TZ-120 [PRE 4(5), VD 7P, PA —, SA/TR/TA, 32(c)]",
+      "HK Urban Combat [PRE 7(9), VD 8P, PA —, SA/TR/TA, 36(c)]",
+      "Ingram Smartgun X [PRE 4(6), VD 8P, PA —, TR/TA, 32(c)]",
     ],
     fusilsAssaut: [
-      "Ares Alpha [PRE 5(7), VD 11P, PA -2, SA/TR/TA, 42(c)]",
-      "AK-97 [VD 10P, PA -6, SA/TR/TA, 38(c)]",
-      "Colt M23 [VD 9P, PA -4, SA/TR, 40(c)]",
-      "FN HAR [VD 10P, PA -6, SA/TR/TA, 35(c)]",
-      "HK XM30 [VD 10P, PA -4, SA/TR, 36(c)]",
+      "Ares Alpha [PRE 5(7), VD 11P, PA -2, SA/TR/TA, 42(c), lance-grenades]",
+      "AK-97 [PRE 5, VD 10P, PA -2, SA/TR/TA, 38(c)]",
+      "Colt M23 [PRE 4, VD 9P, PA -2, SA/TR/TA, 40(c)]",
+      "FN HAR [PRE 5(6), VD 10P, PA -2, SA/TR/TA, 35(c)]",
+      "HK XM30 [PRE 6(8), VD 9P, PA -2, SA/TR/TA, 30(c)]",
     ],
     snipers: [
-      "Ares Desert Strike [VD 14P, PA -6, CA, 14(c)]",
-      "Ranger Arms SM-5 [VD 14P, PA -6, CA, 15(c)]",
-      "Remington 750 [VD 9P, PA -4, SA, 5(c)]",
-      "Walther MA-2100 [VD 10P, PA -5, CA, 10(c)]",
+      "Ares Desert Strike [PRE 7, VD 13P, PA -4, SA, 14(c)]",
+      "Ranger Arms SM-5 [PRE 8, VD 14P, PA -5, SA, 15(c), silencieux]",
+      "Remington 950 [PRE 7, VD 12P, PA -4, CC, 5(m)]",
+      "Onotari JP-K50 [PRE 7, VD 12P, PA -3, SA/TR, 25(c)]",
     ],
     meleeWeapons: [
-      "Couteau [PRE 5, Allonge —, VD 4P, PA -1]",
-      "Couteau de combat [PRE 6, Allonge —, VD 6P, PA -2]",
-      "Épée [PRE 6, Allonge 1, VD 7P, PA -2]",
-      "Katana [PRE 6, Allonge 1, VD 7P, PA -2]",
-      "Hache de combat [PRE 5, Allonge 1, VD 9P, PA -4]",
-      "Matraque [PRE 4, Allonge 1, VD 6P, PA —]",
-      "Massue [PRE 4, Allonge 1, VD 6P, PA —]",
-      "Barre de métal [PRE 4, Allonge 1, VD 5P, PA —]",
-      "Lame rétractable [cyberware, VD 7P, PA -2]",
-      "Griffes de sabre [cyberware, VD 8P, PA -4]",
+      "Couteau [PRE 5, Allonge —, VD (FOR+1)P, PA -1]",
+      "Couteau de combat [PRE 6, Allonge —, VD (FOR+2)P, PA -3]",
+      "Épée [PRE 6, Allonge 1, VD (FOR+3)P, PA -2]",
+      "Katana [PRE 7, Allonge 1, VD (FOR+3)P, PA -3]",
+      "Hache de combat [PRE 4, Allonge 2, VD (FOR+5)P, PA -4]",
+      "Matraque télescopique [PRE 5, Allonge 1, VD (FOR+2)P, PA —]",
+      "Massue [PRE 4, Allonge 1, VD (FOR+3)P, PA —]",
+      "Lame rétractable [cyberware, VD (FOR+3)P, PA -2]",
+      "Griffes [cyberware, VD (FOR+2)P, PA -2]",
     ],
     electroarmes: [
       "Électromatraque [VD 9E(e), PA -5, Allonge 1, 10 charges]",
-      "Defiance EX Shocker [Taser, VD 11E(e), PA -5, CC, 4(m)]",
-      "Shock gloves [VD 8E(e), PA -5]",
+      "Defiance EX Shocker [Taser, VD 9E(e), PA -5, CC, 4(m)]",
+      "Électro-gants [VD 8E(e), PA -5]",
+      "Bâton étourdissant Nemesis Arms Maul [PRE 6, Allonge 2, VD 9E(e), PA -5]",
     ],
     armures: {
       legere: [
@@ -1158,6 +1156,12 @@ const EditionSR5 = {
     ]);
 
     const result = [commlink, primaryWeapon];
+
+    // Arme supplémentaire cohérente (aléa d'arsenal) — tirée du même pool
+    // que l'arme principale pour ne jamais contredire ses stats.
+    if (Utils.randBool(0.6) && secondaryWeapon !== primaryWeapon) {
+      result.push(secondaryWeapon);
+    }
 
     // Arme de mêlée : gangs et pros du corps à corps
     const melee = [
@@ -1356,12 +1360,6 @@ const EditionSR5 = {
       typeof Content !== "undefined" && Utils.randBool(0.5)
         ? Content.pickTraits("sr5", contentTags, proRating, 1)
         : [];
-
-    // Arme supplémentaire cohérente (aléa d'arsenal)
-    if (typeof Content !== "undefined" && Utils.randBool(0.6)) {
-      const weapon = Content.pickWeapon("sr5", contentTags, proRating);
-      if (weapon) equip.push(weapon);
-    }
 
     const pnj = {
       id: Utils.uid(),

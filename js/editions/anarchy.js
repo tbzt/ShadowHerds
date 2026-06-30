@@ -20,6 +20,68 @@ const EditionAnarchy = {
   badgeLabel: "ANARCHY 2E",
   isWip: false,
 
+  /* ========================================================
+     CATALOGUE D'ARMES OFFICIEL (livre de base Anarchy, p.73)
+     ------------------------------------------------------
+     - Corps à corps ("melee") : VD = ⌈FOR/2⌉ + bonus (FOR = Force réelle
+       du PNJ, déjà résolue avec sa métavariante).
+     - Distance ("fixed") : VD fixe, indépendant du métatype.
+     Portées : 3 bandes officielles Courte/Intermédiaire/Longue, chacune
+     OK (aucun malus), un nombre négatif de dés, ou — (impossible).
+     resolveWeapon() fait la correspondance par nom ; si un nom ne
+     correspond à aucune catégorie officielle (ex. attaque Matrice), on
+     retombe sur les vdBase/vdMeta/ranges fournis par le statBlock.
+     ======================================================== */
+  WEAPON_CATALOG: {
+    "Mains nues": { type: "melee", bonus: 0, dmg: "E", ranges: "[OK/–/–]" },
+    Couteau: { type: "melee", bonus: 1, dmg: "P", ranges: "[OK/–/–]" },
+    "Couteau de combat": { type: "melee", bonus: 1, dmg: "P", ranges: "[OK/–/–]" },
+    Matraque: { type: "melee", bonus: 2, dmg: "P", ranges: "[OK/–/–]" },
+    "Arme longue (katana, hache, épée)": {
+      type: "melee",
+      bonus: 3,
+      dmg: "P",
+      ranges: "[OK/–/–]",
+    },
+    Électromatraque: { type: "fixed", vd: 7, dmg: "E", ranges: "[OK/–/–]" },
+    Taser: { type: "fixed", vd: 6, dmg: "E", ranges: "[OK/-4/–]" },
+    "Pistolet léger": { type: "fixed", vd: 5, dmg: "P", ranges: "[OK/-2/–]" },
+    "Pistolet lourd": { type: "fixed", vd: 6, dmg: "P", ranges: "[OK/-2/–]" },
+    "Pistolet automatique": { type: "fixed", vd: 5, dmg: "P", ranges: "[OK/-2/–]" },
+    Mitraillette: { type: "fixed", vd: 6, dmg: "P", ranges: "[OK/OK/–]" },
+    "Fusil d'assaut": { type: "fixed", vd: 8, dmg: "P", ranges: "[OK/OK/-2]" },
+    "Fusil de précision": { type: "fixed", vd: 9, dmg: "P", ranges: "[-4/-2/OK]" },
+    Shotgun: { type: "fixed", vd: 9, dmg: "P", ranges: "[OK²/-2/–]" },
+    Mitrailleuse: { type: "fixed", vd: 8, dmg: "P", ranges: "[OK/OK/OK]" },
+    Grenades: { type: "fixed", vd: 12, dmg: "P", ranges: "[OK/OK/–]" },
+  },
+
+  /** Résout une entrée d'arme (objet du statBlock) en {name, vd, ranges},
+      en cherchant son nom dans le catalogue officiel (après avoir retiré
+      un éventuel suffixe parenthésé, ex. "Mitraillette (sur Doberman)" →
+      "Mitraillette"). Si la catégorie n'existe pas (ex. Cybercombat),
+      on retombe sur les valeurs fournies par le statBlock. */
+  resolveWeapon(entry, attrs, meta) {
+    const baseName = entry.name.replace(/\s*\([^)]*\)\s*$/, "").trim();
+    const cat = this.WEAPON_CATALOG[entry.name] || this.WEAPON_CATALOG[baseName];
+    if (!cat) {
+      return {
+        name: entry.name,
+        vd: entry.vdMeta && entry.vdMeta[meta] ? entry.vdMeta[meta] : entry.vdBase,
+        ranges: entry.ranges,
+      };
+    }
+    const vd =
+      cat.type === "melee"
+        ? Math.ceil((attrs.FOR || 0) / 2) + cat.bonus
+        : cat.vd;
+    return {
+      name: entry.name,
+      vd: `${vd}${cat.dmg}`,
+      ranges: cat.ranges,
+    };
+  },
+
   /* ---- Options du formulaire ---- */
   formOptions: {
     meta: ["Aléatoire", "Humain", "Elfe", "Nain", "Ork", "Troll"],
@@ -2624,22 +2686,11 @@ const EditionAnarchy = {
         // Arme à choix multiples → on en tire une au hasard
         if (a.choices) {
           const choix = Utils.rand(a.choices);
-          return {
-            name: choix.name,
-            vd:
-              choix.vdMeta && choix.vdMeta[meta]
-                ? choix.vdMeta[meta]
-                : choix.vdBase,
-            ranges: choix.ranges,
-          };
+          return this.resolveWeapon(choix, attrs, meta);
         }
-        // Arme simple
-        return {
-          name: a.name,
-          vd: a.vdMeta && a.vdMeta[meta] ? a.vdMeta[meta] : a.vdBase,
-          ranges: a.ranges,
-          ...(a.note ? { note: a.note } : {}),
-        };
+        // Arme simple — VD/portée résolues via le catalogue officiel
+        const resolved = this.resolveWeapon(a, attrs, meta);
+        return a.note ? { ...resolved, note: a.note } : resolved;
       }),
       equip: statBlock.equip,
       threatLevel: statBlock.threatLevel,
