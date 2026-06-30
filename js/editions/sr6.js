@@ -1057,61 +1057,69 @@ const EditionSR6 = {
         "Commlink Sony CIY-720 (IA 5)",
       ],
     },
-    pistoletsLegers: [
-      "Colt Agent Special [Pistolet léger, VD 3P, SO 10/8/-/-/-, CC/SA, 8(c)]",
-      "HK P50 Tactical [Pistolet léger, VD 2P, SO 9/7/4/-, SA, 15(c), smartlink, visée laser]",
-      "Fichetti Security 600 [Pistolet léger, VD 2P, SO 11/10/7/-/-, SA, 30(c), crosse pliable]",
-      "Streetline Special [Pistolet de poche, VD 2P, SO 8/8/6/-, CC, 6(c)]",
-      "Colt Secret Agent [Pistolet de poche, VD 2P, SO 9/7/-/-/-, CC, 6(c), indétectable]",
+    pistoletsPoche: [
+      "Fichetti Tiffani Needler [Pistolet de poche, VD 3P, SO 10/6/2/-/-, CC, 4(c)]",
+      "Streetline Special [Pistolet de poche, VD 2P, SO 8/8/-/-/-, CC, 6(c)]",
+      "Walther Palm Pistol [Pistolet de poche, VD 2P, SO 12/7/-/-/-, CC/TR, 6(cb)]",
     ],
-    pistoletsLourds: [
-      "HK P60 Tactical [Pistolet lourd, VD 3P, SO 8/9/5/-, SA, 15(c), smartlink]",
-      "Cavalier Arms Marshal [Pistolet lourd, VD 3P, SO 8/10/6/-/-, CC/SA, 6(cy), smartgun]",
-      "Nemesis Arms Praetorian II [Pistolet lourd, VD 3P, SO 9/8/-/-/-, SA, 12(c), smartgun]",
-      "Ares Predator VI [Pistolet lourd, VD 3P, SO 9/8/5/-, SA, 15(c)]",
-      "Beretta 201T [Pistolet léger, VD 2P, SO 9/8/6/-, SA/TR, 21(c)]",
+    pistoletsLegers: [
+      "Ares Light Fire 70 [Pistolet léger, VD 2P, SO 9/6/5/-/-, SA, 16(c)]",
+      "Ares Light Fire 75 [Pistolet léger, VD 2P, SO 9/6/5/-/-, SA, 16(c), smartlink]",
+      "Beretta 101T [Pistolet léger, VD 2P, SO 9/8/6/-/-, SA, 21(c)]",
+      "Beretta 201T [Pistolet léger, VD 2P, SO 9/8/6/-/-, SA/TA, 21(c)]",
+      "Colt America L36 [Pistolet léger, VD 2P, SO 8/8/6/-/-, SA, 11(c)]",
+      "Fichetti Security 600 [Pistolet léger, VD 2P, SO 9/8/5/-/-, SA, 30(c), crosse pliable]",
+      "Ruger Redhawk [Pistolet léger, VD 3P, SO 7/10/7/-/-, SA/TR, 8(b)]",
     ],
     pistoletsAutomatiques: [
-      "Colt M24 [Pistolet auto, VD 3P, SO 8/9/8/-/-, SA/TR/TA, 30(c)]",
-      "Ultimax 71 [Pistolet auto, VD 2P, SO 9/7/7/-/-, TR/TA, 15(c), visée laser]",
+      "Ares Crusader II [Pistolet auto, VD 2P, SO 9/9/7/-/-, SA/TR, 40(c), smartgun]",
+      "Ceska Black Scorpion [Pistolet auto, VD 2P, SO 10/9/8/-/-, SA/TR, 35(c), crosse pliable]",
+      "Steyr TMP [Pistolet auto, VD 2P, SO 7/7/5/-/-, SA/TA, 30(c), visée laser]",
+    ],
+    pistoletsLourds: [
+      "Ares Predator VI [Pistolet lourd, VD 3P, SO 10/10/8/-/-, SA/TR, 15(c), smartgun]",
+      "Browning Ultra Power [Pistolet lourd, VD 3P, SO 9/8/5/-/-, SA, 10(c), visée laser]",
+      "Colt Government 2076/Manhunter [Pistolet lourd, VD 3P, SO 9/7/7/-/-, SA, 14(c), smartgun]",
+      "Ruger Super Warhawk [Pistolet lourd, VD 4P, SO 8/11/8/-/-, SA, 6(b)]",
     ],
     mitraillettes: [
-      "Ares Sigma [Mitraillette, VD 4P, SO 8/9/8/3, SA/TR/TA, 30(c)]",
-      "Colt Cobra TZ-120 [Mitraillette, VD 4P, SO 7/10/9/3, SA/TR/TA, 32(c)]",
-      "HK MP5-TX [Mitraillette, VD 4P, SO 8/10/8/2, SA/TR, 30(c)]",
-      "Ingram Smartgun X [Mitraillette, VD 4P, SO 8/10/9/3, SA/TR, 32(c), smartgun]",
-      "Shiawase Arms Model 71 [Mitraillette, VD 4P, SO 4/11/10/8/3, SA/TR/TA, 100(c)]",
+      "Colt Cobra TZ-120 [Mitraillette, VD 3P, SO 9/9/6/-/-, SA/TR, 32(c)]",
+      "FN P93 Praetor [Mitraillette, VD 4P, SO 8/11/6/-/-, SA/TR/TA, 50(c), silencieux]",
+      "HK-227 [Mitraillette, VD 3P, SO 10/11/8/-/-, SA/TR, 28(c), crosse rétractable, smartgun, silencieux]",
+      "Ingram Smartgun XI [Mitraillette, VD 3P, SO 11/9/8/-/-, SA/TR, 32(c), smartgun]",
+      "SCK Model 100 [Mitraillette, VD 3P, SO 10/10/7/-/-, SA/TR, 30(c), smartgun]",
+      "Uzi V [Mitraillette, VD 3P, SO 7/7/6/-/-, SA/TR/TA, 24(c), visée laser]",
     ],
     shotguns: [
-      "Colt MS-27 [Shotgun, VD 4P, SO 5/11/8/-/-, SA/TR/TA, 12(c)/32(t)]",
-      "Defiance T-285 [Shotgun, VD 4P*, SO 8/11/6/-/-, CC, 3(m)]",
-      "Franchi SPAS-25 [Shotgun, VD 5P, SO 7/10/6/-/-, SA/CC, 10(c), smartgun]",
-      "Onotari War Hound [Shotgun, VD 3P, SO 7/10/6/-/-, CC/SA, 6(c), smartgun]",
+      "Defiance T-250 [Shotgun, VD 4P, SO 7/10/6/-/-, CC/SA, 5(m)]",
+      "Mossberg CMDT [Shotgun, VD 4P, SO 3/10/8/-/-, SA/TR, 10(c), visée laser]",
+      "PJSS Model 55 [Shotgun, VD 4P, SO 3/12/8/-/-, SA/TR courte, 2(cb)]",
+      "Remington Roomsweeper [Shotgun, VD 5P, SO 9/8/4/-/-, SA, 8(m)]",
     ],
     fusils: [
-      "Onotari Arms Kali II [Fusil d'assaut, VD 4P, SO 7/11/9/4/-/-, SA/TR/TA, 32(c), renfort de mêlée]",
-      "Onotari Arms JP-K51 [Carabine, VD 5P, SO 1/7/11/7/7, SA/BF, 26(m), visée laser]",
-      "Onotari Arms War Hound [Fusil bullpup, VD 5P, SO 4/11/9/6/2, SA/TR/TA, 38(c), smartgun]",
-      "Shiawase Arms Tactical 73 [Fusil d'assaut, VD 4P, SO 4/11/10/8/3, SA/TR/TA, 100(c)]",
-      "Colt M23 [Fusil d'assaut, VD 5P, SO 7/10/10/10/3, SA/TR/TA, avec smartgun, munitions explosives]",
-      "AK-97 [Fusil d'assaut, VD 5P, SO 4/11/9/7/1]",
-      "Ares Alpha [Fusil d'assaut, VD 4P, SO 6/12/11/9/4, SA/TR/TA, avec smartgun]",
+      "AK-97 [Fusil d'assaut, VD 5P, SO 4/11/9/7/1, SA/TR/TA, 38(c)]",
+      "Ares Alpha [Fusil d'assaut, VD 4P, SO 4/10/9/7/2, SA/TR/TA, 42(c), smartgun, lance-grenades]",
+      "Colt M23 [Fusil d'assaut, VD 4P, SO 5/8/8/1, SA/TR/TA, 40(c), smartgun]",
+      "FN HAR [Fusil d'assaut, VD 5P, SO 2/10/9/5/-, SA/TR/TA, 35(c)]",
+      "Yamaha Raiden [Fusil d'assaut, VD 5P, SO 4/10/11/7/2, SA/TR/TA, 60(c), silencieux, smartgun]",
     ],
     snipersLourds: [
-      "Onotari Arms Rhino Hunter Alpha [Fusil de précision, VD 6P, SO 1/4/11/11/10, CC, 7(m)]",
-      "Shiawase Arms Tactical 69 [Fusil antimatériel, VD 8P, SO 1/2/8/11/-]",
-      "Ares Desert Strike [Fusil de précision, VD 7P, SO 1/3/9/11/9]",
-      "FN P93 Praetor [Mitraillette, VD 4P, SO 10/13/8/-, SA/TR, avec silencieux]",
+      "Ares Desert Strike [Fusil de précision, VD 5P, SO 3/10/10/10, SA, 14(c)]",
+      "Cavalier Arms Crockett EBR [Fusil de précision, VD 5P, SO 3/8/11/8, SA/TR, 20(c)]",
+      "Ranger Arms SM-6 [Fusil de précision, VD 5P, SO 3/6/9/11/2, SA, 15(c), silencieux]",
+      "Remington 900 [Fusil de précision, VD 5P, SO 2/7/10/12/11, CC, 5(m)]",
+      "Barret Model 122 [Fusil antimatériel, VD 6P, SO 1/8/11/16/14, SA, 10(c)]",
     ],
     meleeWeapons: [
-      "Couteau [VD 3P, SO 9/2*/-/-/-, portée max 20m]",
-      "Couteau de combat [VD 4P, SO 9/2*/-/-/-, portée max 20m]",
-      "Katana [VD 4P, SO 13/-/-/-/-]",
-      "Épée [VD 4P, SO 13/-/-/-/-]",
-      "Bâton télescopique [VD 4E, SO 10/-/-/-/-]",
-      "Électro-gants [VD 4E, SO 7/-/-/-/-]",
-      "Électromatraque [VD 5E, SO 9/-/-/-/-, perte d'action]",
-      "Lame rétractable [cyberware, VD 4P, SO 9/-/-/-/-]",
+      "Couteau [VD 2P, SO 6+FOR/1*/-/-/-, portée max 20m]",
+      "Couteau de combat [VD 3P, SO 8+FOR/2*/-/-/-, portée max 20m]",
+      "Épée [VD 3P, SO 9+FOR/-/-/-/-]",
+      "Katana [VD 4P, SO 10+FOR/-/-/-/-]",
+      "Hache de combat [VD 5P, SO 9+FOR/-/-/-/-]",
+      "Bâton télescopique [VD 4E, SO 8+FOR/-/-/-/-]",
+      "Électromatraque [VD 5E(e), SO 6+FOR/-/-/-/-, perte d'action]",
+      "Matraque télescopique [VD 2E, SO 5+FOR/-/-/-/-]",
+      "Électro-gants [VD 4E(e), SO 5+FOR/-/-/-/-]",
     ],
     armures: {
       legere: [
@@ -1219,14 +1227,30 @@ const EditionSR6 = {
         ...pools.shotguns,
         ...pools.fusils.slice(0, 3),
       ]);
-    } else {
+    } else if (p >= 1) {
       primaryWeapon = Utils.rand([
         ...pools.pistoletsLourds,
         ...pools.pistoletsAutomatiques,
       ]);
+    } else {
+      primaryWeapon = Utils.rand([
+        ...pools.pistoletsPoche,
+        ...pools.pistoletsLegers,
+      ]);
     }
 
     const result = [commlink, primaryWeapon];
+
+    // Arme supplémentaire cohérente (aléa d'arsenal) — tirée du même pool
+    // que l'arme principale pour ne jamais contredire ses stats.
+    const secondaryWeapon = Utils.rand([
+      ...pools.meleeWeapons,
+      ...pools.pistoletsLegers,
+      ...pools.pistoletsAutomatiques,
+    ]);
+    if (Utils.randBool(0.6) && secondaryWeapon !== primaryWeapon) {
+      result.push(secondaryWeapon);
+    }
 
     const isMelee = [
       "Yakuza",
@@ -1246,8 +1270,7 @@ const EditionSR6 = {
       "SWAT",
       "Patrouilleur",
     ].some((k) => archetype.includes(k));
-    if (isPolice)
-      result.push("Électromatraque [VD 5E, SO 9/-/-/-/-, perte d'action]");
+    if (isPolice) result.push(pools.meleeWeapons.find((w) => w.startsWith("Électromatraque")));
 
     result.push(armure);
     if (!awakened && p >= 3) result.push(Utils.rand(pools.cyberware));
@@ -1421,12 +1444,6 @@ const EditionSR6 = {
 
     // Équipement — pas de cyberware pour un Éveillé (coût en Essence)
     const equip = this.buildLoadout(archetype, p, awakened);
-
-    // Arme supplémentaire cohérente (aléa d'arsenal)
-    if (typeof Content !== "undefined" && Utils.randBool(0.6)) {
-      const weapon = Content.pickWeapon("sr6", contentTags, p);
-      if (weapon) equip.push(weapon);
-    }
 
     // Augmentations corpo — jamais pour un Éveillé
     const augs =
