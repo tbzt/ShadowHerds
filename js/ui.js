@@ -153,17 +153,9 @@ const CardRenderer = {
   },
 
   _gmPoolsSR5(pnj) {
+    // Défense et Encaissement sont remontés dans la zone Combat ;
+    // ici on ne garde que les réserves de référence.
     const cells = [
-      this._gmPoolRow(
-        "Défense",
-        pnj.defense,
-        "Test de défense : Réaction + Intuition",
-      ),
-      this._gmPoolRow(
-        "Résist. dom.",
-        pnj.damageResist,
-        "Résistance aux dommages : Constitution + Armure",
-      ),
       this._gmPoolRow(
         "Sang-froid",
         pnj.composure,
@@ -191,24 +183,8 @@ const CardRenderer = {
   },
 
   _gmPoolsSR6(pnj) {
+    // Défense, Encaissement et Drain sont dans la zone Combat.
     const cells = [
-      this._gmPoolRow(
-        "Défense",
-        pnj.defense,
-        "Test de Défense : Réaction + Intuition",
-      ),
-      this._gmPoolRow(
-        "Encaisse",
-        pnj.damageResist,
-        "Encaisser les dommages : Constitution",
-      ),
-      pnj.drainResist != null
-        ? this._gmPoolRow(
-            "Drain",
-            pnj.drainResist,
-            "Résistance au Drain : Volonté + attribut de tradition",
-          )
-        : "",
       this._gmPoolRow(
         "Sang-froid",
         pnj.composure,
@@ -231,6 +207,94 @@ const CardRenderer = {
   },
 
   /* ---- Body SR5 ---- */
+  /* ========================================================
+     REDESIGN — cartes organisées par usage de jeu
+     Zone Combat (mise en avant) / Capacités / Référence (repliable)
+     Préférences : défaut global (Réglages) + surcharge par carte
+     (état de repli mémorisé sur pnj._refOpen).
+     ======================================================== */
+
+  /** Préférences d'affichage, avec valeurs par défaut. */
+  _displayPrefs() {
+    const def = {
+      layout: "expanded", // 'expanded' (B) | 'compact' (A)
+      showGmPools: true,
+      showAttributes: true,
+      showEquipment: true,
+    };
+    if (typeof Settings === "undefined" || !Settings.getCardDisplay) return def;
+    return { ...def, ...Settings.getCardDisplay() };
+  },
+
+  /** La référence est-elle ouverte pour cette carte ? */
+  _refIsOpen(pnj) {
+    if (pnj._refOpen === true || pnj._refOpen === false) return pnj._refOpen;
+    return this._displayPrefs().layout === "expanded";
+  },
+
+  /** Pastille de réserve lançable (Défense, Encaissement…). */
+  _rollPill(label, value, title) {
+    if (value == null) return "";
+    return `<span class="stat-pill rollable combat-pill" data-roll="${value}" data-roll-label="${this._esc(label)}" title="${this._esc(title || label)}">${this._esc(label)} <strong>${value}</strong></span>`;
+  },
+
+  _zoneEyebrow(label) {
+    return `<div class="zone-eyebrow">${this._esc(label)}</div>`;
+  },
+
+  /** Sépare l'équipement : weapons (lançables) vs reste. */
+  _splitEquip(equip) {
+    const weapons = [];
+    const gear = [];
+    (equip || []).forEach((i) => {
+      if (typeof i === "string" && /\[/.test(i) && /(VD|PRE)/.test(i))
+        weapons.push(i);
+      else gear.push(i);
+    });
+    return { weapons, gear };
+  },
+
+  /** Bloc d'armes lançables, sorti dans la zone Combat. */
+  _weaponBlock(pnj, weapons, edition) {
+    if (!weapons.length) return "";
+    const rows = weapons
+      .map((w) => {
+        const r =
+          typeof WeaponRoll !== "undefined"
+            ? WeaponRoll.resolvePool(pnj, w, edition)
+            : null;
+        const parsed =
+          typeof WeaponRoll !== "undefined" ? WeaponRoll.parse(w) : { name: w };
+        const name = parsed.name || w;
+        const stat = String(w).includes("[")
+          ? String(w).split("[")[1].replace("]", "").replace(/,\s*/g, " · ")
+          : "";
+        if (!r) {
+          return `<div class="weapon-line"><div><div class="weapon-name">${this._esc(name)}</div><div class="weapon-stat">${this._esc(stat)}</div></div></div>`;
+        }
+        const approxTxt = r.approx ? " ~" : "";
+        const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill}${approxTxt})${r.limit != null ? ` · limite ${r.limit}` : ""}`;
+        const poolBadge = `<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="lim">▸${r.limit}</span>` : ""}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}</span>`;
+        const dataAttr =
+          edition === "anarchy"
+            ? `data-roll-weapon-anarchy="${this._esc(name)}"`
+            : `data-roll-weapon="${this._esc(w)}" data-roll-edition="${edition}"`;
+        return `<div class="weapon-line weapon-rollable rollable" ${dataAttr} data-roll-pnj="${pnj.id}" title="${this._esc(title)}">
+          <div><div class="weapon-name">${this._esc(name)}</div><div class="weapon-stat">${this._esc(stat)}</div></div>
+          ${poolBadge}
+        </div>`;
+      })
+      .join("");
+    return `<div class="weapon-block">${rows}</div>`;
+  },
+
+  _refToggle(pnj, summary) {
+    return `<button class="ref-toggle" data-ref-toggle="${pnj.id}">
+      <span>${this._esc(summary)}</span>
+      <span class="chev">▾</span>
+    </button>`;
+  },
+
   _bodySR5(pnj) {
     const {
       attrs,
@@ -252,54 +316,66 @@ const CardRenderer = {
       traits,
     } = pnj;
 
-    let html = '<div class="pnj-card-body">';
+    const prefs = this._displayPrefs();
+    const refOpen = this._refIsOpen(pnj);
+    const { weapons, gear } = this._splitEquip(equip);
+    let html = `<div class="pnj-card-body${refOpen ? "" : " ref-collapsed"}">`;
 
-    // Attributs principaux (8 + ESS + MAG si applicable)
-    const attrKeys = ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"];
-    const extras = ["ESS", ...(attrs.MAG ? ["MAG"] : [])];
-    html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
-    if (extras.length) {
-      html += `<div class="attr-grid with-ess">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
-    }
-
-    // Limites
-    html += `<div class="limites-grid">
-      ${this._attrCell("Lim.Phys", limPhys)}
-      ${this._attrCell("Lim.Ment", limMent)}
-      ${this._attrCell("Lim.Soc", limSoc)}
-    </div>`;
-
-    // Pills
-    html += '<div class="stats-row">';
+    // ---- ZONE COMBAT ----
+    html += '<div class="combat-zone">';
+    html += this._zoneEyebrow("Combat");
+    html += '<div class="combat-row">';
     html += this._initPill(init, initDice, pnj);
-    if (drainResist !== null) {
-      html += `<span class="stat-pill rollable" data-roll="${drainResist}" data-roll-label="Résistance au Drain" title="Lancer ${drainResist} dés — Résistance au Drain">Drain <strong>${drainResist}</strong></span>`;
-    }
+    if (drainResist != null)
+      html += this._rollPill("Drain", drainResist, "Résistance au Drain");
+    html += this._rollPill("Défense", pnj.defense, "Test de défense : Réaction + Intuition");
+    html += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure");
+    html += `<span class="stat-pill">Lim.Phys <strong>${limPhys}</strong></span>`;
     html += "</div>";
 
-    // Réserves de dés utiles au MJ (SR5)
-    html += this._gmPoolsSR5(pnj);
-
-    // Moniteurs SR5 (séparés)
-    html += `<div class="card-section">
-      <div class="card-section-label">Moniteurs</div>
+    html += `<div class="monitor-block">
       <div class="monitor-row">
         <span class="monitor-label">Phys</span>
         <div class="monitor-boxes monitor-phys">${this._monitorBoxes(pnj.id, "phys", physMon, physFilled)}</div>
       </div>
       <div class="monitor-row" style="margin-top:4px;">
-        <span class="monitor-label">Étoud</span>
+        <span class="monitor-label">Étourd</span>
         <div class="monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, stunFilled)}</div>
       </div>
     </div>`;
 
+    html += this._weaponBlock(pnj, weapons, "sr5");
+    html += "</div>"; // fin combat-zone
+
+    // ---- ZONE CAPACITÉS ----
+    html += '<div class="capacity-zone">';
     html += this._skillsSection(skills);
     if (spells && spells.length) html += this._listSection("Sorts", spells);
     if (powers && powers.length)
       html += this._listSection("Pouvoirs d'adepte", powers);
     if (traits && traits.length) html += this._listSection("Traits", traits);
+    html += "</div>";
+
+    // ---- ZONE RÉFÉRENCE (repliable) ----
+    html += this._refToggle(pnj, "Référence — attributs, réserves MJ, équipement");
+    html += '<div class="ref-zone">';
+    if (prefs.showAttributes) {
+      const attrKeys = ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"];
+      const extras = ["ESS", ...(attrs.MAG ? ["MAG"] : [])];
+      html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>`;
+      html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
+      if (extras.length)
+        html += `<div class="attr-grid with-ess">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
+      html += `<div class="limites-grid" style="margin-top:6px;">
+        ${this._attrCell("Lim.Ment", limMent)}
+        ${this._attrCell("Lim.Soc", limSoc)}
+      </div></div>`;
+    }
+    if (prefs.showGmPools) html += this._gmPoolsSR5(pnj);
+    if (prefs.showEquipment && gear.length)
+      html += this._equipSection(pnj, gear, "sr5");
     if (augs && augs.length) html += this._listSection("Augmentations", augs);
-    if (equip && equip.length) html += this._equipSection(pnj, equip, "sr5");
+    html += "</div>"; // fin ref-zone
 
     html += "</div>";
     return html;
@@ -323,47 +399,65 @@ const CardRenderer = {
       traits,
     } = pnj;
 
-    let html = '<div class="pnj-card-body">';
+    const prefs = this._displayPrefs();
+    const refOpen = this._refIsOpen(pnj);
+    const { weapons, gear } = this._splitEquip(equip);
+    let html = `<div class="pnj-card-body${refOpen ? "" : " ref-collapsed"}">`;
 
-    // Attributs SR6 : CON/AGI/RÉA/FOR/VOL/LOG/INT/CHA
-    const attrKeys = ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"];
-    html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k] ?? "—")).join("")}</div>`;
-
-    // Attributs spéciaux (MAG, RES)
-    const extras = [];
-    if (attrs.MAG) extras.push("MAG");
-    if (attrs.RES) extras.push("RES");
-    if (extras.length) {
-      html += `<div class="attr-grid with-ess">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
-    }
-
-    // Stats clés SR6
-    html += '<div class="stats-row">';
+    // ---- ZONE COMBAT ----
+    html += '<div class="combat-zone">';
+    html += this._zoneEyebrow("Combat");
+    html += '<div class="combat-row">';
     html += this._initPill(initBase ?? 0, initDice ?? 1, pnj);
-    html += `<span class="stat-pill">SD <strong>${sdBase ?? "?"}</strong></span>`;
-    html += `<span class="stat-pill">ME <strong>${me ?? "?"}</strong></span>`;
+    if (pnj.drainResist != null)
+      html += this._rollPill("Drain", pnj.drainResist, "Résistance au Drain");
+    html += this._rollPill("Défense", pnj.defense, "Test de défense");
+    html += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure");
     if (pa) html += `<span class="stat-pill">PA <strong>${pa}</strong></span>`;
     html += "</div>";
 
-    // Réserves de dés utiles au MJ (SR6)
-    html += this._gmPoolsSR6(pnj);
-
-    // Moniteur d'état unique SR6
     const monTotal = me ?? 9;
-    html += `<div class="card-section">
-      <div class="card-section-label">Moniteur d'état</div>
+    html += `<div class="monitor-block">
       <div class="monitor-row">
+        <span class="monitor-label">État</span>
         <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "phys", monTotal, physFilled ?? 0)}</div>
       </div>
     </div>`;
 
+    html += this._weaponBlock(pnj, weapons, "sr6");
+    html += "</div>"; // fin combat-zone
+
+    // ---- ZONE CAPACITÉS ----
+    html += '<div class="capacity-zone">';
     html += this._skillsSection(skills);
     if (spells && spells.length) html += this._listSection("Sorts", spells);
     if (powers && powers.length)
       html += this._listSection("Pouvoirs d'adepte", powers);
     if (traits && traits.length) html += this._listSection("Traits", traits);
+    html += "</div>";
+
+    // ---- ZONE RÉFÉRENCE ----
+    html += this._refToggle(pnj, "Référence — attributs, réserves MJ, équipement");
+    html += '<div class="ref-zone">';
+    if (prefs.showAttributes) {
+      const attrKeys = ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"];
+      const extras = [];
+      if (attrs.MAG) extras.push("MAG");
+      if (attrs.RES) extras.push("RES");
+      html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>`;
+      html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k] ?? "—")).join("")}</div>`;
+      if (extras.length)
+        html += `<div class="attr-grid with-ess">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
+      html += `<div class="limites-grid" style="margin-top:6px;">
+        ${this._attrCell("SD", sdBase ?? "?")}
+        ${this._attrCell("ME", me ?? "?")}
+      </div></div>`;
+    }
+    if (prefs.showGmPools) html += this._gmPoolsSR6(pnj);
+    if (prefs.showEquipment && gear.length)
+      html += this._equipSection(pnj, gear, "sr6");
     if (augs && augs.length) html += this._listSection("Augmentations", augs);
-    if (equip && equip.length) html += this._equipSection(pnj, equip, "sr6");
+    html += "</div>";
 
     html += "</div>";
     return html;
@@ -390,16 +484,17 @@ const CardRenderer = {
       notes,
     } = pnj;
 
-    let html = '<div class="pnj-card-body">';
+    const prefs = this._displayPrefs();
+    const refOpen = this._refIsOpen(pnj);
+    let html = `<div class="pnj-card-body${refOpen ? "" : " ref-collapsed"}">`;
 
-    // Attributs : 5 attrs Anarchy (FOR/AGI/VOL/LOG/CHA)
-    const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA"];
-    html += `<div class="attr-grid">
-      ${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}
-    </div>`;
+    const fmtThresholds = (arr) =>
+      arr ? `${arr[0]} / ${arr[1]} / ${arr[2]}` : "—";
 
-    // Combativité + éveillé
-    html += '<div class="stats-row">';
+    // ---- ZONE COMBAT ----
+    html += '<div class="combat-zone">';
+    html += this._zoneEyebrow("Combat");
+    html += '<div class="combat-row">';
     const combClass =
       threatLevel === "forte" || threatLevel === "extrême" ? "accent" : "";
     html += `<span class="stat-pill ${combClass}">Combativité <strong>${threatLevel}</strong></span>`;
@@ -414,8 +509,49 @@ const CardRenderer = {
     }
     html += "</div>";
 
-    // Compétences Anarchy — alignées visuellement sur SR5/SR6 (tags compacts).
-    // Le pool (val + attr) reste affiché dans le tag ; la spé suit en tag ◊.
+    // Moniteurs (seuils de blessures) dans la zone Combat
+    html += `<div class="monitor-block">
+      <div class="monitor-row">
+        <span class="monitor-label">Phys</span>
+        <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "phys", physMonitor, physFilled)}</div>
+      </div>
+      <div class="monitor-row" style="margin-top:4px;">
+        <span class="monitor-label">Ment</span>
+        <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "ment", mentMonitor, mentFilled)}</div>
+      </div>
+      ${matrixMonitor ? `<div class="monitor-row" style="margin-top:4px;"><span class="monitor-label">Matr</span><div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "mat", matrixMonitor, matFilled)}</div></div>` : ""}
+    </div>`;
+
+    // Armes (lançables, ouvrent le panneau de risque RR)
+    if (weapons && weapons.length) {
+      html += `<div class="weapon-block">`;
+      for (const a of weapons) {
+        const noteStr = a.note
+          ? ` <em style="color:var(--text-dim);font-size:0.58rem;">(${this._esc(a.note)})</em>`
+          : "";
+        const r =
+          typeof WeaponRoll !== "undefined"
+            ? WeaponRoll.resolvePool(pnj, a, "anarchy")
+            : null;
+        if (r) {
+          const rrTxt = r.rr ? ` RR${r.rr}` : "";
+          const title = `${r.weaponName} : ${r.pool} dés (${r.skill} ${r.skillVal}+${r.attr} ${r.attrVal}${rrTxt}) — cliquer pour lancer`;
+          html += `<div class="weapon-line weapon-rollable rollable" data-roll-weapon-anarchy="${this._esc(a.name)}" data-roll-pnj="${pnj.id}" title="${this._esc(title)}">
+            <div><div class="weapon-name">${this._esc(a.name)}${noteStr}</div><div class="weapon-stat">VD ${a.vd} · ${this._esc(a.ranges)}</div></div>
+            <span class="weapon-pool">⚄${r.pool}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}</span>
+          </div>`;
+        } else {
+          html += `<div class="weapon-line">
+            <div><div class="weapon-name">${this._esc(a.name)}${noteStr}</div><div class="weapon-stat">VD ${a.vd} · ${this._esc(a.ranges)}</div></div>
+          </div>`;
+        }
+      }
+      html += "</div>";
+    }
+    html += "</div>"; // fin combat-zone
+
+    // ---- ZONE CAPACITÉS ----
+    html += '<div class="capacity-zone">';
     if (skills && skills.length) {
       html += `<div class="card-section">
         <div class="card-section-label">Compétences</div>
@@ -443,8 +579,6 @@ const CardRenderer = {
       }
       html += "</div></div>";
     }
-
-    // Atouts
     if (edges && edges.length) {
       html += `<div class="card-section">
         <div class="card-section-label">Atouts</div>
@@ -454,82 +588,31 @@ const CardRenderer = {
       }
       html += "</div></div>";
     }
+    if (spells && spells.length) html += this._listSection("Sorts", spells);
+    if (traits && traits.length) html += this._listSection("Traits", traits);
+    html += "</div>"; // fin capacity-zone
 
-    // Armes
-    if (weapons && weapons.length) {
-      html += `<div class="card-section">
-        <div class="card-section-label">Armes</div>
-        <div class="anarchy-skill-list">`;
-      for (const a of weapons) {
-        const noteStr = a.note
-          ? ` <em style="color:var(--text-dim);font-size:0.58rem;">(${this._esc(a.note)})</em>`
-          : "";
-        const r =
-          typeof WeaponRoll !== "undefined"
-            ? WeaponRoll.resolvePool(pnj, a, "anarchy")
-            : null;
-        if (r) {
-          const rrTxt = r.rr ? ` RR${r.rr}` : "";
-          const title = `${r.weaponName} : ${r.pool} dés (${r.skill} ${r.skillVal}+${r.attr} ${r.attrVal}${rrTxt}) — cliquer pour lancer`;
-          html += `<div class="anarchy-skill-row weapon-rollable rollable" data-roll-weapon-anarchy="${this._esc(a.name)}" data-roll-pnj="${pnj.id}" title="${this._esc(title)}">
-            <span class="anarchy-skill-name">${this._esc(a.name)}${noteStr}</span>
-            <span class="anarchy-skill-pool">VD ${a.vd} ${this._esc(a.ranges)} <span class="weapon-pool">⚄${r.pool}${r.rr ? `<span class="weapon-lim">RR${r.rr}</span>` : ""}</span></span>
-          </div>`;
-        } else {
-          html += `<div class="anarchy-skill-row">
-            <span class="anarchy-skill-name">${this._esc(a.name)}${noteStr}</span>
-            <span class="anarchy-skill-pool">VD ${a.vd} ${this._esc(a.ranges)}</span>
-          </div>`;
-        }
-      }
-      html += "</div></div>";
+    // ---- ZONE RÉFÉRENCE ----
+    html += this._refToggle(pnj, "Référence — attributs, seuils, équipement");
+    html += '<div class="ref-zone">';
+    if (prefs.showAttributes) {
+      const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA"];
+      html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>
+        <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}</div></div>`;
     }
-
-    // Sorts (éveillés)
-    if (spells && spells.length) {
-      html += this._listSection("Sorts", spells);
-    }
-
-    // Traits
-    if (traits && traits.length) {
-      html += this._listSection("Traits", traits);
-    }
-
-    // Équipement
-    if (equip && equip.length) {
+    html += `<div class="ref-block"><div class="ref-lbl">Seuils de blessures</div>
+      <div class="anarchy-seuils">
+        <div class="anarchy-seuil-row"><span class="anarchy-seuil-label">Physiques</span><span class="anarchy-seuil-val">${fmtThresholds(physMonitor)}</span></div>
+        <div class="anarchy-seuil-row" style="margin-top:3px;"><span class="anarchy-seuil-label">Mentales</span><span class="anarchy-seuil-val">${fmtThresholds(mentMonitor)}</span></div>
+        ${matrixMonitor ? `<div class="anarchy-seuil-row" style="margin-top:3px;"><span class="anarchy-seuil-label">Matricielles</span><span class="anarchy-seuil-val">${fmtThresholds(matrixMonitor)}</span></div>` : ""}
+      </div></div>`;
+    if (prefs.showEquipment && equip && equip.length)
       html += this._equipSection(pnj, equip, "anarchy");
-    }
-
-    // Seuils de blessures — Anarchy utilise un format X/Y/Z
-    html += `<div class="card-section">
-      <div class="card-section-label">Seuils de blessures</div>
-      <div class="anarchy-seuils">`;
-
-    const fmtThresholds = (arr) =>
-      arr ? `${arr[0]} / ${arr[1]} / ${arr[2]}` : "—";
-
-    html += `<div class="anarchy-seuil-row">
-      <span class="anarchy-seuil-label">Physiques</span>
-      <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "phys", physMonitor, physFilled)}</div>
-    </div>`;
-    html += `<div class="anarchy-seuil-row" style="margin-top:4px;">
-      <span class="anarchy-seuil-label">Mentales</span>
-      <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "ment", mentMonitor, mentFilled)}</div>
-    </div>`;
-    if (matrixMonitor) {
-      html += `<div class="anarchy-seuil-row" style="margin-top:4px;">
-        <span class="anarchy-seuil-label">Matricielles</span>
-        <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "mat", matrixMonitor, matFilled)}</div>
-      </div>`;
-    }
-    html += "</div></div>";
-
     if (notes) {
-      html += `<div class="card-section">
-        <div class="card-section-label">Notes</div>
-        <div class="card-section-content" style="font-size:0.75rem;">${this._esc(notes)}</div>
-      </div>`;
+      html += `<div class="ref-block"><div class="ref-lbl">Notes</div>
+        <div style="font-size:0.75rem;">${this._esc(notes)}</div></div>`;
     }
+    html += "</div>"; // fin ref-zone
 
     html += "</div>";
     return html;

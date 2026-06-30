@@ -629,6 +629,21 @@ const Dice = {
 
     // Clic sur n'importe quelle réserve marquée [data-roll] dans une carte
     document.addEventListener("click", (e) => {
+      // Replier/déplier la zone Référence d'une carte
+      const refEl = e.target.closest("[data-ref-toggle]");
+      if (refEl) {
+        const pnj = this._lookupPnj(refEl.getAttribute("data-ref-toggle"));
+        if (pnj) {
+          const open =
+            typeof CardRenderer !== "undefined" && CardRenderer._refIsOpen
+              ? CardRenderer._refIsOpen(pnj)
+              : true;
+          pnj._refOpen = !open;
+          this._persistAndRefresh(pnj);
+        }
+        return;
+      }
+
       // Effacer l'initiative affichée sur un PNJ
       const clearEl = e.target.closest("[data-init-clear]");
       if (clearEl) {

@@ -3218,3 +3218,197 @@ input[type="range"]#risk-dice-slider {
   letter-spacing: 0.08em;
   margin-top: 0.1rem;
 }
+
+/* ============================================================
+   REDESIGN CARTES — zones Combat / Capacités / Référence
+   ============================================================ */
+.zone-eyebrow {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 9px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.zone-eyebrow::before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Zone Combat : mise en avant (fond accentué) */
+.combat-zone {
+  background: var(--glow);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 14px;
+}
+.combat-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+/* pastille de combat lançable : signalée comme interactive */
+.combat-pill {
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* Moniteurs dans la zone combat */
+.monitor-block {
+  margin-top: 10px;
+}
+
+/* Bloc d'armes lançables (zone combat) */
+.weapon-block {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.weapon-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+}
+.weapon-line.weapon-rollable {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  cursor: pointer;
+  transition: box-shadow 0.12s, transform 0.08s;
+}
+.weapon-line.weapon-rollable:hover {
+  box-shadow: 0 0 0 1px var(--accent), 0 0 12px var(--glow);
+}
+.weapon-line.weapon-rollable:active {
+  transform: scale(0.99);
+}
+.weapon-name {
+  font-size: 0.74rem;
+  color: var(--text);
+}
+.weapon-stat {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.58rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+.weapon-line .weapon-pool {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--glow);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.weapon-line .weapon-pool .lim {
+  font-size: 0.56rem;
+  opacity: 0.85;
+  padding-left: 3px;
+  margin-left: 2px;
+  border-left: 1px solid var(--accent);
+}
+
+/* Zone Capacités */
+.capacity-zone {
+  padding: 4px 14px 8px;
+}
+.capacity-zone .card-section {
+  border: none;
+  padding: 8px 0;
+}
+
+/* Bouton de repli Référence */
+.ref-toggle {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  transition: color 0.12s;
+}
+.ref-toggle:hover {
+  color: var(--accent);
+}
+.ref-toggle .chev {
+  transition: transform 0.2s;
+}
+.ref-collapsed .ref-toggle .chev {
+  transform: rotate(-90deg);
+}
+
+/* Zone Référence */
+.ref-zone {
+  padding: 4px 14px 10px;
+}
+.ref-collapsed .ref-zone {
+  display: none;
+}
+.ref-block {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ref-block:last-child {
+  border-bottom: none;
+}
+.ref-lbl {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.anarchy-seuil-val {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.74rem;
+  color: var(--text);
+}
+
+/* Réglages d'affichage des cartes */
+.display-prefs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.display-pref-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.7rem;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 0.78rem;
+}
+.display-pref-row label {
+  color: var(--text);
+  cursor: pointer;
+}

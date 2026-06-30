@@ -12,12 +12,88 @@ const Settings = {
     Storage.set(`settings_${key}`, value);
   },
 
+  /* ---- Préférences d'affichage des cartes (GLOBALES, hors édition) ---- */
+  _CARD_KEY: "sr_pnj_v2_global_cardDisplay",
+  _cardDefaults: {
+    layout: "expanded",
+    showAttributes: true,
+    showGmPools: true,
+    showEquipment: true,
+  },
+  getCardDisplay() {
+    try {
+      const raw = localStorage.getItem(this._CARD_KEY);
+      return { ...this._cardDefaults, ...(raw ? JSON.parse(raw) : {}) };
+    } catch {
+      return { ...this._cardDefaults };
+    }
+  },
+  setCardDisplay(patch) {
+    const next = { ...this.getCardDisplay(), ...patch };
+    try {
+      localStorage.setItem(this._CARD_KEY, JSON.stringify(next));
+    } catch {
+      /* quota */
+    }
+    return next;
+  },
+  /** Bascule un booléen d'affichage et rafraîchit les cartes visibles. */
+  toggleCardDisplay(key, value) {
+    const patch = {};
+    patch[key] = value;
+    this.setCardDisplay(patch);
+    this._refreshVisibleCards();
+  },
+  setCardLayout(layout) {
+    this.setCardDisplay({ layout });
+    this._refreshVisibleCards();
+  },
+  /** Re-rend les cartes actuellement affichées (Ombres/contacts) pour
+      refléter le changement de préférence. */
+  _refreshVisibleCards() {
+    if (typeof Shadows !== "undefined" && Shadows.render) Shadows.render();
+    if (typeof ContactsBook !== "undefined" && ContactsBook.render)
+      ContactsBook.render();
+  },
+  _radioCD(key, val, label, checked) {
+    return `<label class="radio-option">
+      <input type="radio" name="cd_${key}" value="${val}" ${checked ? "checked" : ""}
+        onchange="Settings.setCardLayout('${val}')">
+      <span>${label}</span>
+    </label>`;
+  },
+  _checkCD(key, label, checked) {
+    return `<div class="display-pref-row">
+      <label for="cd_${key}">${label}</label>
+      <input type="checkbox" id="cd_${key}" ${checked ? "checked" : ""}
+        onchange="Settings.toggleCardDisplay('${key}', this.checked)">
+    </div>`;
+  },
+
   /* ---- Rendu du panel paramètres ---- */
   render() {
     const zone = document.getElementById("settings-panel-content");
     const ed = App.edition;
 
     let html = "";
+
+    // --- Affichage des cartes (global) ---
+    {
+      const cd = this.getCardDisplay();
+      html += `<div class="settings-section">
+        <h3>Affichage des cartes</h3>
+        <p>Disposition par défaut des cartes de PNJ. La zone Combat est toujours en avant ; la Référence (attributs, réserves MJ, équipement) peut être dépliée ou repliée par défaut, et reste ajustable carte par carte.</p>
+        <div class="radio-group">
+          ${this._radioCD("layout", "expanded", "Tout afficher (référence dépliée)", cd.layout === "expanded")}
+          ${this._radioCD("layout", "compact", "Compact (référence repliée)", cd.layout === "compact")}
+        </div>
+        <div class="display-prefs">
+          ${this._checkCD("showAttributes", "Afficher les attributs", cd.showAttributes)}
+          ${this._checkCD("showGmPools", "Afficher les réserves MJ", cd.showGmPools)}
+          ${this._checkCD("showEquipment", "Afficher l'équipement", cd.showEquipment)}
+        </div>
+      </div>`;
+    }
 
     // --- Moniteurs (SR5 uniquement) ---
     if (ed === "sr5") {

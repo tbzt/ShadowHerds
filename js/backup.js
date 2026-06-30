@@ -114,8 +114,7 @@ const Backup = {
           reject(new Error("Le fichier n'est pas un JSON valide."));
         }
       };
-      reader.onerror = () =>
-        reject(new Error("Lecture du fichier impossible."));
+      reader.onerror = () => reject(new Error("Lecture du fichier impossible."));
       reader.readAsText(file);
     });
   },
@@ -217,8 +216,7 @@ const Backup = {
 
     // Groupes : fusion par clé ; les membres (tableaux d'ids) sont unifiés
     for (const groupKey of ["shadows_groups", "contacts_groups"]) {
-      if (!incoming[groupKey] || typeof incoming[groupKey] !== "object")
-        continue;
+      if (!incoming[groupKey] || typeof incoming[groupKey] !== "object") continue;
       const current = this._readRaw(edition, groupKey, {});
       for (const [gname, members] of Object.entries(incoming[groupKey])) {
         if (!current[gname]) {
@@ -311,9 +309,9 @@ const Backup = {
     d.addEventListener("click", (e) => {
       if (e.target === d) this._closeDialog();
     });
-    document
-      .getElementById("backup-close")
-      .addEventListener("click", () => this._closeDialog());
+    document.getElementById("backup-close").addEventListener("click", () =>
+      this._closeDialog(),
+    );
 
     // Fichier local
     const fileInput = document.getElementById("backup-file-input");
@@ -362,10 +360,12 @@ const Backup = {
   },
 
   _setStage(stage) {
-    document.querySelectorAll("#backup-dialog .backup-stage").forEach((el) => {
-      if (el.dataset.stage === stage) el.removeAttribute("hidden");
-      else el.setAttribute("hidden", "");
-    });
+    document
+      .querySelectorAll("#backup-dialog .backup-stage")
+      .forEach((el) => {
+        if (el.dataset.stage === stage) el.removeAttribute("hidden");
+        else el.setAttribute("hidden", "");
+      });
   },
 
   _presentConfirm(pkg) {
