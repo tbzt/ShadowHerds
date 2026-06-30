@@ -108,7 +108,7 @@ const SkillCatalog = {
     "Survie": "VOL",
   },
 
-  /* ---- Anarchy 2.0 : compétences (extraites des profils du jeu) ---- */
+  /* ---- Anarchy 2.0 : compétences (extraites des statBlocks du jeu) ---- */
   anarchy: {
     "Armes à distance": "AGI",
     "Astral": "LOG",

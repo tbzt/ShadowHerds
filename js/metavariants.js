@@ -8,11 +8,11 @@
      - zoocanthropes : 12 formes anthropes (porteurs du virus zoocanthrope)
 
    Chaque entrée porte :
-     - souche : métatype parent (pour la pondération et les fallbacks moteur)
+     - baseMetatype : métatype parent (pour la pondération et les fallbacks moteur)
      - ranges : { CON, AGI, REA, FOR, VOL, LOG, INT, CHA } — bornes officielles
                 (REA = RÉA en SR6 ; le moteur fait la correspondance)
      - traits : liste de traits raciaux (texte affiché sur la fiche)
-     - bassins : origines culturelles cohérentes (peuplement « crédible »)
+     - originPools : origines culturelles cohérentes (peuplement « crédible »)
      - mag : pour métaconsciences/zoocanthropes (êtres à nature duale)
      - init : dés d'initiative animale, le cas échéant (zoocanthropes)
 
@@ -25,7 +25,7 @@ const Metavariants = {
   metavariants: {
     // — Souche TROLL —
     Cyclope: {
-      souche: "Troll",
+      baseMetatype: "Troll",
       ranges: {
         CON: [5, 10],
         AGI: [1, 5],
@@ -42,10 +42,10 @@ const Metavariants = {
         "Vision thermographique",
         "+100 % au coût du style de vie",
       ],
-      bassins: ["euro", "arabe"],
+      originPools: ["euro", "arabe"],
     },
     Fomori: {
-      souche: "Troll",
+      baseMetatype: "Troll",
       ranges: {
         CON: [4, 9],
         AGI: [1, 5],
@@ -62,10 +62,10 @@ const Metavariants = {
         "Vision thermographique",
         "+100 % au coût du style de vie",
       ],
-      bassins: ["euro"],
+      originPools: ["euro"],
     },
     Géant: {
-      souche: "Troll",
+      baseMetatype: "Troll",
       ranges: {
         CON: [5, 10],
         AGI: [1, 5],
@@ -82,10 +82,10 @@ const Metavariants = {
         "Vision thermographique",
         "+100 % au coût du style de vie",
       ],
-      bassins: ["euro", "russe"],
+      originPools: ["euro", "russe"],
     },
     Minotaure: {
-      souche: "Troll",
+      baseMetatype: "Troll",
       ranges: {
         CON: [6, 11],
         AGI: [1, 5],
@@ -102,12 +102,12 @@ const Metavariants = {
         "Vision thermographique",
         "+100 % au coût du style de vie",
       ],
-      bassins: ["euro", "arabe"],
+      originPools: ["euro", "arabe"],
     },
 
     // — Souche ORK —
     Hobgobelin: {
-      souche: "Ork",
+      baseMetatype: "Ork",
       ranges: {
         CON: [3, 8],
         AGI: [1, 6],
@@ -124,10 +124,10 @@ const Metavariants = {
         "Problèmes de maîtrise de soi (Vindicatif)",
         "Vision nocturne",
       ],
-      bassins: ["arabe", "asiacentral"],
+      originPools: ["arabe", "asiacentral"],
     },
     Ogre: {
-      souche: "Ork",
+      baseMetatype: "Ork",
       ranges: {
         CON: [4, 9],
         AGI: [1, 6],
@@ -139,10 +139,10 @@ const Metavariants = {
         CHA: [1, 4],
       },
       traits: ["Estomac d'ogre", "Vision nocturne"],
-      bassins: ["euro", "russe"],
+      originPools: ["euro", "russe"],
     },
     Oni: {
-      souche: "Ork",
+      baseMetatype: "Ork",
       ranges: {
         CON: [3, 8],
         AGI: [2, 7],
@@ -154,10 +154,10 @@ const Metavariants = {
         CHA: [2, 7],
       },
       traits: ["Pigmentation extraordinaire", "Vision nocturne"],
-      bassins: ["japonais"],
+      originPools: ["japonais"],
     },
     Satyre: {
-      souche: "Ork",
+      baseMetatype: "Ork",
       ranges: {
         CON: [2, 7],
         AGI: [1, 6],
@@ -169,12 +169,12 @@ const Metavariants = {
         CHA: [1, 5],
       },
       traits: ["Jambes de satyre", "Vision nocturne"],
-      bassins: ["euro", "latino"],
+      originPools: ["euro", "latino"],
     },
 
     // — Souche NAIN —
     Gnome: {
-      souche: "Nain",
+      baseMetatype: "Nain",
       ranges: {
         CON: [1, 4],
         AGI: [2, 7],
@@ -191,10 +191,10 @@ const Metavariants = {
         "Vision thermographique",
         "+20 % au coût du style de vie",
       ],
-      bassins: ["euro"],
+      originPools: ["euro"],
     },
     Hanuman: {
-      souche: "Nain",
+      baseMetatype: "Nain",
       ranges: {
         CON: [1, 6],
         AGI: [2, 7],
@@ -212,10 +212,10 @@ const Metavariants = {
         "Vision thermographique",
         "+20 % au coût du style de vie",
       ],
-      bassins: ["asiacentral"],
+      originPools: ["asiacentral"],
     },
     Koborokuru: {
-      souche: "Nain",
+      baseMetatype: "Nain",
       ranges: {
         CON: [2, 7],
         AGI: [1, 6],
@@ -233,10 +233,10 @@ const Metavariants = {
         "Vision thermographique",
         "+20 % au coût du style de vie",
       ],
-      bassins: ["japonais"],
+      originPools: ["japonais"],
     },
     Menehune: {
-      souche: "Nain",
+      baseMetatype: "Nain",
       ranges: {
         CON: [2, 7],
         AGI: [2, 7],
@@ -254,12 +254,12 @@ const Metavariants = {
         "Vision thermographique",
         "+20 % au coût du style de vie",
       ],
-      bassins: ["polynesien"],
+      originPools: ["polynesien"],
     },
 
     // — Souche ELFE —
     Dryade: {
-      souche: "Elfe",
+      baseMetatype: "Elfe",
       ranges: {
         CON: [1, 6],
         AGI: [2, 7],
@@ -271,10 +271,10 @@ const Metavariants = {
         CHA: [3, 8],
       },
       traits: ["Éclat", "Symbiose", "Vision nocturne"],
-      bassins: ["euro", "latino"],
+      originPools: ["euro", "latino"],
     },
     Nocturna: {
-      souche: "Elfe",
+      baseMetatype: "Elfe",
       ranges: {
         CON: [1, 5],
         AGI: [3, 8],
@@ -292,10 +292,10 @@ const Metavariants = {
         "Pilosité étrange (fourrure colorée)",
         "Vision nocturne",
       ],
-      bassins: ["euro", "latino"],
+      originPools: ["euro", "latino"],
     },
     Wakyambi: {
-      souche: "Elfe",
+      baseMetatype: "Elfe",
       ranges: {
         CON: [1, 6],
         AGI: [2, 7],
@@ -307,10 +307,10 @@ const Metavariants = {
         CHA: [1, 6],
       },
       traits: ["Célérité", "Membres allongés", "Vision nocturne"],
-      bassins: ["africain"],
+      originPools: ["africain"],
     },
     "Xapiri thëpë": {
-      souche: "Elfe",
+      baseMetatype: "Elfe",
       ranges: {
         CON: [1, 6],
         AGI: [2, 7],
@@ -326,12 +326,12 @@ const Metavariants = {
         "Photométabolisme",
         "Vision nocturne",
       ],
-      bassins: ["latino", "amerindien"],
+      originPools: ["latino", "amerindien"],
     },
 
     // — Souche HUMAIN —
     Nartaki: {
-      souche: "Humain",
+      baseMetatype: "Humain",
       ranges: {
         CON: [1, 6],
         AGI: [1, 6],
@@ -343,14 +343,14 @@ const Metavariants = {
         CHA: [1, 6],
       },
       traits: ["Bras de Shiva", "Pigmentation extraordinaire"],
-      bassins: ["arabe", "asiacentral"],
+      originPools: ["arabe", "asiacentral"],
     },
   },
 
   /* ---- Métaconsciences (p.77) — êtres à nature duale, MAG 1 ---- */
   metaconsciences: {
     Centaure: {
-      souche: "Humain",
+      baseMetatype: "Humain",
       ranges: {
         CON: [3, 8],
         AGI: [1, 6],
@@ -370,11 +370,11 @@ const Metavariants = {
         "Vision thermographique",
         "+150 % au coût de style de vie",
       ],
-      bassins: ["euro", "asiacentral"],
+      originPools: ["euro", "asiacentral"],
       mag: 1,
     },
     Naga: {
-      souche: "Humain",
+      baseMetatype: "Humain",
       ranges: {
         CON: [3, 8],
         AGI: [1, 4],
@@ -396,11 +396,11 @@ const Metavariants = {
         "+150 % au coût de style de vie",
         "Pas de bras ni jambes",
       ],
-      bassins: ["arabe", "africain"],
+      originPools: ["arabe", "africain"],
       mag: 1,
     },
     Pixie: {
-      souche: "Elfe",
+      baseMetatype: "Elfe",
       ranges: {
         CON: [1, 2],
         AGI: [3, 8],
@@ -419,11 +419,11 @@ const Metavariants = {
         "Perception astrale",
         "+100 % au coût de style de vie",
       ],
-      bassins: ["euro", "generique"],
+      originPools: ["euro", "generique"],
       mag: 1,
     },
     Sasquatch: {
-      souche: "Troll",
+      baseMetatype: "Troll",
       ranges: {
         CON: [6, 11],
         AGI: [1, 6],
@@ -442,7 +442,7 @@ const Metavariants = {
         "Nature duale",
         "+100 % au coût de style de vie",
       ],
-      bassins: ["amerindien", "generique"],
+      originPools: ["amerindien", "generique"],
       mag: 1,
     },
   },
@@ -452,7 +452,7 @@ const Metavariants = {
      Transformation (Forme métahumaine), Vulnérabilité (Argent) */
   zoocanthropes: {
     Bovin: {
-      souche: "Humain",
+      baseMetatype: "Humain",
       ranges: {
         CON: [3, 8],
         AGI: [1, 4],
@@ -468,7 +468,7 @@ const Metavariants = {
       init: "1D6",
     },
     Canin: {
-      souche: "Humain",
+      baseMetatype: "Humain",
       ranges: {
         CON: [1, 5],
         AGI: [1, 6],
@@ -490,7 +490,7 @@ const Metavariants = {
       init: "1D6",
     },
     Équin: {
-      souche: "Humain",
+      baseMetatype: "Humain",
       ranges: {
         CON: [4, 9],
         AGI: [1, 4],
@@ -506,7 +506,7 @@ const Metavariants = {
       init: "1D6",
     },
     Falcin: {
-      souche: "Humain",
+      baseMetatype: "Humain",
       ranges: {
         CON: [1, 4],
         AGI: [2, 7],
@@ -527,7 +527,7 @@ const Metavariants = {
       init: "2D6",
     },
     Léonin: {
-      souche: "Humain",
+      baseMetatype: "Humain",
       ranges: {
         CON: [3, 8],
         AGI: [1, 6],
@@ -550,7 +550,7 @@ const Metavariants = {
       init: "2D6",
     },
     Lupin: {
-      souche: "Humain",
+      baseMetatype: "Humain",
       ranges: {
         CON: [1, 6],
         AGI: [2, 7],
@@ -573,7 +573,7 @@ const Metavariants = {
       init: "2D6",
     },
     Panthérin: {
-      souche: "Humain",
+      baseMetatype: "Humain",
       ranges: {
         CON: [2, 7],
         AGI: [2, 7],
@@ -596,7 +596,7 @@ const Metavariants = {
       init: "2D6",
     },
     Tigrin: {
-      souche: "Humain",
+      baseMetatype: "Humain",
       ranges: {
         CON: [3, 8],
         AGI: [2, 7],
@@ -619,7 +619,7 @@ const Metavariants = {
       init: "2D6",
     },
     Ursin: {
-      souche: "Humain",
+      baseMetatype: "Humain",
       ranges: {
         CON: [6, 11],
         AGI: [1, 5],
@@ -643,7 +643,7 @@ const Metavariants = {
       init: "1D6",
     },
     Vulpin: {
-      souche: "Humain",
+      baseMetatype: "Humain",
       ranges: {
         CON: [1, 4],
         AGI: [2, 7],
@@ -687,7 +687,7 @@ const Metavariants = {
     metavariants: {
       // — Souche ELFE —
       Dalakitnon: {
-        souche: "Elfe",
+        baseMetatype: "Elfe",
         ranges: {
           CON: [1, 6],
           AGI: [1, 7],
@@ -699,10 +699,10 @@ const Metavariants = {
           CHA: [1, 8],
         },
         traits: ["Allergie (épices, Moyenne)", "Vision nocturne"],
-        bassins: ["asiacentral", "latino"],
+        originPools: ["asiacentral", "latino"],
       },
       Dryade: {
-        souche: "Elfe",
+        baseMetatype: "Elfe",
         ranges: {
           CON: [1, 6],
           AGI: [1, 7],
@@ -714,10 +714,10 @@ const Metavariants = {
           CHA: [1, 8],
         },
         traits: ["Éclat", "Symbiose", "Vision nocturne"],
-        bassins: ["euro", "latino"],
+        originPools: ["euro", "latino"],
       },
       Nocturna: {
-        souche: "Elfe",
+        baseMetatype: "Elfe",
         ranges: {
           CON: [1, 5],
           AGI: [1, 8],
@@ -735,10 +735,10 @@ const Metavariants = {
           "Pilosité étrange (pelage coloré)",
           "Vision nocturne",
         ],
-        bassins: ["euro", "latino"],
+        originPools: ["euro", "latino"],
       },
       Wakyambi: {
-        souche: "Elfe",
+        baseMetatype: "Elfe",
         ranges: {
           CON: [1, 6],
           AGI: [1, 7],
@@ -750,10 +750,10 @@ const Metavariants = {
           CHA: [1, 7],
         },
         traits: ["Célérité", "Membres allongés", "Vision nocturne"],
-        bassins: ["africain"],
+        originPools: ["africain"],
       },
       "Xapiri thëpë": {
-        souche: "Elfe",
+        baseMetatype: "Elfe",
         ranges: {
           CON: [1, 6],
           AGI: [1, 7],
@@ -770,12 +770,12 @@ const Metavariants = {
           "Photométabolisme",
           "Vision nocturne",
         ],
-        bassins: ["latino", "amerindien"],
+        originPools: ["latino", "amerindien"],
       },
 
       // — Souche HUMAIN —
       Nartaki: {
-        souche: "Humain",
+        baseMetatype: "Humain",
         ranges: {
           CON: [1, 8],
           AGI: [1, 6],
@@ -787,10 +787,10 @@ const Metavariants = {
           CHA: [1, 6],
         },
         traits: ["Bras de Shiva (1 ou 2)", "Pigmentation extraordinaire"],
-        bassins: ["arabe", "asiacentral"],
+        originPools: ["arabe", "asiacentral"],
       },
       Valkyrie: {
-        souche: "Humain",
+        baseMetatype: "Humain",
         ranges: {
           CON: [1, 7],
           AGI: [1, 6],
@@ -802,12 +802,12 @@ const Metavariants = {
           CHA: [1, 6],
         },
         traits: ["Ailes fonctionnelles (Type 2)"],
-        bassins: ["euro", "russe"],
+        originPools: ["euro", "russe"],
       },
 
       // — Souche NAIN —
       Duende: {
-        souche: "Nain",
+        baseMetatype: "Nain",
         ranges: {
           CON: [1, 7],
           AGI: [1, 6],
@@ -825,10 +825,10 @@ const Metavariants = {
           "Vision nocturne",
           "Vision thermographique",
         ],
-        bassins: ["latino", "euro"],
+        originPools: ["latino", "euro"],
       },
       Gnome: {
-        souche: "Nain",
+        baseMetatype: "Nain",
         ranges: {
           CON: [1, 4],
           AGI: [1, 6],
@@ -845,10 +845,10 @@ const Metavariants = {
           "Résistance aux toxines",
           "Vision thermographique",
         ],
-        bassins: ["euro"],
+        originPools: ["euro"],
       },
       Hanuman: {
-        souche: "Nain",
+        baseMetatype: "Nain",
         ranges: {
           CON: [1, 6],
           AGI: [1, 7],
@@ -865,10 +865,10 @@ const Metavariants = {
           "Queue préhensile",
           "Résistance aux toxines",
         ],
-        bassins: ["asiacentral"],
+        originPools: ["asiacentral"],
       },
       Koborokuru: {
-        souche: "Nain",
+        baseMetatype: "Nain",
         ranges: {
           CON: [1, 7],
           AGI: [1, 6],
@@ -885,10 +885,10 @@ const Metavariants = {
           "Résistance aux toxines",
           "Vision thermographique",
         ],
-        bassins: ["japonais"],
+        originPools: ["japonais"],
       },
       Menehune: {
-        souche: "Nain",
+        baseMetatype: "Nain",
         ranges: {
           CON: [1, 7],
           AGI: [1, 7],
@@ -905,12 +905,12 @@ const Metavariants = {
           "Vision sous-marine",
           "Vision thermographique",
         ],
-        bassins: ["polynesien"],
+        originPools: ["polynesien"],
       },
 
       // — Souche ORK —
       Hobgobelin: {
-        souche: "Ork",
+        baseMetatype: "Ork",
         ranges: {
           CON: [1, 6],
           AGI: [1, 6],
@@ -922,10 +922,10 @@ const Metavariants = {
           CHA: [1, 7],
         },
         traits: ["Crocs", "Regard dément", "Vision nocturne"],
-        bassins: ["arabe", "asiacentral"],
+        originPools: ["arabe", "asiacentral"],
       },
       Ogre: {
-        souche: "Ork",
+        baseMetatype: "Ork",
         ranges: {
           CON: [1, 9],
           AGI: [1, 6],
@@ -937,10 +937,10 @@ const Metavariants = {
           CHA: [1, 6],
         },
         traits: ["Boyaux d'acier", "Vision nocturne"],
-        bassins: ["euro", "russe"],
+        originPools: ["euro", "russe"],
       },
       Oni: {
-        souche: "Ork",
+        baseMetatype: "Ork",
         ranges: {
           CON: [1, 8],
           AGI: [1, 7],
@@ -952,10 +952,10 @@ const Metavariants = {
           CHA: [1, 7],
         },
         traits: ["Pigmentation extraordinaire", "Vision nocturne"],
-        bassins: ["japonais"],
+        originPools: ["japonais"],
       },
       Satyre: {
-        souche: "Ork",
+        baseMetatype: "Ork",
         ranges: {
           CON: [1, 7],
           AGI: [1, 6],
@@ -967,12 +967,12 @@ const Metavariants = {
           CHA: [1, 6],
         },
         traits: ["Jambes de satyre", "Vision nocturne"],
-        bassins: ["euro", "latino"],
+        originPools: ["euro", "latino"],
       },
 
       // — Souche TROLL —
       Cyclope: {
-        souche: "Troll",
+        baseMetatype: "Troll",
         ranges: {
           CON: [1, 9],
           AGI: [1, 5],
@@ -984,10 +984,10 @@ const Metavariants = {
           CHA: [1, 5],
         },
         traits: ["Œil cyclopéen", "Robuste 2", "Vision thermographique"],
-        bassins: ["euro", "arabe"],
+        originPools: ["euro", "arabe"],
       },
       Fomori: {
-        souche: "Troll",
+        baseMetatype: "Troll",
         ranges: {
           CON: [1, 9],
           AGI: [1, 6],
@@ -1003,10 +1003,10 @@ const Metavariants = {
           "Robuste 2",
           "Vision thermographique",
         ],
-        bassins: ["euro"],
+        originPools: ["euro"],
       },
       Géant: {
-        souche: "Troll",
+        baseMetatype: "Troll",
         ranges: {
           CON: [1, 9],
           AGI: [1, 5],
@@ -1018,10 +1018,10 @@ const Metavariants = {
           CHA: [1, 5],
         },
         traits: ["Écorce", "Robuste 2", "Vision thermographique"],
-        bassins: ["euro", "russe"],
+        originPools: ["euro", "russe"],
       },
       Minotaure: {
-        souche: "Troll",
+        baseMetatype: "Troll",
         ranges: {
           CON: [1, 10],
           AGI: [1, 5],
@@ -1033,13 +1033,13 @@ const Metavariants = {
           CHA: [1, 5],
         },
         traits: ["Cornes perforantes", "Robuste 2", "Vision thermographique"],
-        bassins: ["euro", "arabe"],
+        originPools: ["euro", "arabe"],
       },
     },
 
     metaconsciences: {
       Centaure: {
-        souche: "Humain",
+        baseMetatype: "Humain",
         ranges: {
           CON: [1, 8],
           AGI: [1, 6],
@@ -1058,11 +1058,11 @@ const Metavariants = {
           "Vision nocturne",
           "Vision thermographique",
         ],
-        bassins: ["euro", "asiacentral"],
+        originPools: ["euro", "asiacentral"],
         mag: 1,
       },
       Naga: {
-        souche: "Humain",
+        baseMetatype: "Humain",
         ranges: {
           CON: [1, 8],
           AGI: [1, 7],
@@ -1083,11 +1083,11 @@ const Metavariants = {
           "Robuste 2",
           "Venin",
         ],
-        bassins: ["arabe", "africain"],
+        originPools: ["arabe", "africain"],
         mag: 1,
       },
       Pixie: {
-        souche: "Elfe",
+        baseMetatype: "Elfe",
         ranges: {
           CON: [1, 3],
           AGI: [1, 8],
@@ -1105,11 +1105,11 @@ const Metavariants = {
           "Dissimulation (soi)",
           "Perception astrale",
         ],
-        bassins: ["euro", "generique"],
+        originPools: ["euro", "generique"],
         mag: 1,
       },
       Sasquatch: {
-        souche: "Troll",
+        baseMetatype: "Troll",
         ranges: {
           CON: [1, 10],
           AGI: [1, 6],
@@ -1126,11 +1126,11 @@ const Metavariants = {
           "Imitation",
           "Nature duale",
         ],
-        bassins: ["amerindien", "generique"],
+        originPools: ["amerindien", "generique"],
         mag: 1,
       },
       Triton: {
-        souche: "Humain",
+        baseMetatype: "Humain",
         ranges: {
           CON: [1, 9],
           AGI: [1, 6],
@@ -1149,7 +1149,7 @@ const Metavariants = {
           "Vision nocturne",
           "Vision sous-marine",
         ],
-        bassins: ["polynesien", "africain"],
+        originPools: ["polynesien", "africain"],
         mag: 1,
       },
     },
@@ -1196,14 +1196,14 @@ const Metavariants = {
     if (this._index && this._indexEdition === this._edition) return this._index;
     const idx = {};
     for (const [name, d] of Object.entries(this._data()))
-      idx[name] = { ...d, name, famille: "metavariant" };
+      idx[name] = { ...d, name, family: "metavariant" };
     for (const [name, d] of Object.entries(this._dataMC()))
-      idx[name] = { ...d, name, famille: "metaconscience" };
+      idx[name] = { ...d, name, family: "metaconscience" };
     for (const [name, d] of Object.entries(this._dataZoo())) {
       idx[name] = {
         ...d,
         name,
-        famille: "zoocanthrope",
+        family: "zoocanthrope",
         traits: [...d.traits, ...this.zooTraitsCommuns],
       };
     }
@@ -1226,20 +1226,20 @@ const Metavariants = {
   },
 
   /** Souche (métatype parent) d'une valeur quelconque */
-  souche(meta) {
+  baseMetatype(meta) {
     const r = this.resolve(meta);
-    return r ? r.souche : meta;
+    return r ? r.baseMetatype : meta;
   },
 
   /** Toutes les entrées d'une souche donnée, par famille (édition active) */
-  bySouche(souche, famille = "metavariant") {
+  byBaseMetatype(baseMetatype, family = "metavariant") {
     const src =
-      famille === "metaconscience"
+      family === "metaconscience"
         ? this._dataMC()
-        : famille === "zoocanthrope"
+        : family === "zoocanthrope"
           ? this._dataZoo()
           : this._data();
-    return Object.keys(src).filter((n) => src[n].souche === souche);
+    return Object.keys(src).filter((n) => src[n].baseMetatype === baseMetatype);
   },
 
   /** Structure pour construire le <select> hiérarchique du formulaire */
@@ -1247,8 +1247,8 @@ const Metavariants = {
     const souches = ["Humain", "Elfe", "Nain", "Ork", "Troll"];
     return souches
       .map((s) => ({
-        souche: s,
-        metavariants: this.bySouche(s, "metavariant"),
+        baseMetatype: s,
+        metavariants: this.byBaseMetatype(s, "metavariant"),
       }))
       .filter((g) => g.metavariants.length > 0 || true);
   },
@@ -1295,9 +1295,9 @@ const Metavariants = {
     const entries = Object.entries(this.souchePoids);
     const total = entries.reduce((s, [, w]) => s + w, 0);
     let r = Math.random() * total;
-    for (const [souche, w] of entries) {
+    for (const [baseMetatype, w] of entries) {
       r -= w;
-      if (r <= 0) return souche;
+      if (r <= 0) return baseMetatype;
     }
     return "Humain";
   },
@@ -1315,12 +1315,12 @@ const Metavariants = {
       return Utils.rand(mc);
     }
     // Sinon : souche pondérée, puis éventuellement une de ses métavariantes
-    const souche = this._weightedSouche();
-    const variantes = this.bySouche(souche, "metavariant");
-    const pVar = this._pMetavarianteSouche[souche] ?? 0.08;
+    const baseMetatype = this._weightedSouche();
+    const variantes = this.byBaseMetatype(baseMetatype, "metavariant");
+    const pVar = this._pMetavarianteSouche[baseMetatype] ?? 0.08;
     if (variantes.length && Math.random() < pVar) {
       return Utils.rand(variantes);
     }
-    return souche;
+    return baseMetatype;
   },
 };

@@ -29,7 +29,7 @@ const App = {
         <p>Gestionnaire de PNJ pour <strong>Shadowrun 6e édition</strong>, calibré sur le LdB SR6, Feu Nourri et le Compagnon du Sixième Monde (BBE).</p>
         <ul>
           <li><strong>Ombres portées</strong> — Bibliothèque de PNJ sauvegardés, organisés en groupes. Sidebar de navigation à gauche.</li>
-          <li><strong>Générateur PNJ</strong> — 50+ professions, 5 métatypes + 19 métavariantes (Compagnon), Score Défensif, Potentiel d'Actions, Moniteur d'état unique, compétences SR6 regroupées, armes avec Scores Offensifs (Feu Nourri).</li>
+          <li><strong>Générateur PNJ</strong> — 50+ professions, 5 métatypes + 19 métavariantes (Compagnon), Score Défensif, Potentiel d'Actions, Moniteur d'état unique, compétences SR6 regroupées, weapons avec Scores Offensifs (Feu Nourri).</li>
           <li><strong>Contacts</strong> — 24 types de contacts avec Influence et Loyauté, lieux, traits, champ Notes et groupes.</li>
           <li><strong>Run</strong> — Ébauche de scénario orientée SR6 : factions, lieux nommés de Seattle, complications.</li>
         </ul>
@@ -42,11 +42,11 @@ const App = {
         <p>Gestionnaire de PNJ pour <strong>Shadowrun : Anarchy 2e édition</strong>, calibré sur le LdB SRA 2.0 (p.244–257).</p>
         <ul>
           <li><strong>Ombres portées</strong> — Bibliothèque de PNJ sauvegardés, organisés en groupes. Sidebar de navigation à gauche.</li>
-          <li><strong>Générateur PNJ</strong> — 25 profils officiels du livre : Ganger, Ganger d'élite, Ganger éveillé, Ganger adepte, Ganger decker, Go-ganger, Agent de sécurité, Officier de sécurité, Mage / Decker / Adepte / Rigger de sécurité, versions élite, Médecin de combat, Militaire, Commando, Johnson, Employé corpo, Enquêteur, Cadre corpo, Coyote. Cinq attributs (FOR / AGI / VOL / LOG / CHA), compétences avec réserve de dès et RR, armes avec VD par métatype, atouts fixes et au choix, seuils de blessures.</li>
-          <li><strong>Contacts</strong> — 30 types de contacts, avec niveau (0–6), domaine de Réseau, coût en ¥, champ Notes et groupes.</li>
+          <li><strong>Générateur PNJ</strong> — 25 statBlocks officiels du livre : Ganger, Ganger d'élite, Ganger éveillé, Ganger adepte, Ganger decker, Go-ganger, Agent de sécurité, Officier de sécurité, Mage / Decker / Adepte / Rigger de sécurité, versions élite, Médecin de combat, Militaire, Commando, Johnson, Employé corpo, Enquêteur, Cadre corpo, Coyote. Cinq attributs (FOR / AGI / VOL / LOG / CHA), compétences avec réserve de dès et RR, armes avec VD par métatype, atouts fixes et au choix, seuils de blessures.</li>
+          <li><strong>Contacts</strong> — 30 types de contacts, avec level (0–6), domaine de Réseau, coût en ¥, champ Notes et groupes.</li>
           <li><strong>Run</strong> — Ébauche de scénario : types de missions courts, clients, lieux.</li>
         </ul>
-        <p>Les PNJ Anarchy incluent les <strong>variantes métatype</strong> sur chaque attribut, arme et seuil de blessure, les <strong>atouts au choix</strong>, et la distinction <strong>Éveillé / Adepte</strong> et les sorts.</p>`,
+        <p>Les PNJ Anarchy incluent les <strong>variantes métatype</strong> sur chaque attribut, arme et threshold de blessure, les <strong>edges au choix</strong>, et la distinction <strong>Éveillé / Adepte</strong> et les spells.</p>`,
     },
   },
 

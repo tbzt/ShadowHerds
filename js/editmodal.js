@@ -87,7 +87,7 @@ const EditModal = {
           ${["Figurant", "Figurant d'élite", "Lieutenant", "Boss"]
             .map(
               (r) =>
-                `<option${pnj.rang === r ? " selected" : ""}>${r}</option>`,
+                `<option${pnj.tier === r ? " selected" : ""}>${r}</option>`,
             )
             .join("")}
         </select>
@@ -95,7 +95,7 @@ const EditModal = {
     } else {
       html += `<div class="form-group">
         <label>Professionnalisme</label>
-        <input type="number" id="em-prof" value="${pnj.prof}" min="0" max="6">
+        <input type="number" id="em-prof" value="${pnj.proRating}" min="0" max="6">
       </div>`;
     }
 
@@ -128,12 +128,12 @@ const EditModal = {
     html += "</div></div>";
 
     // ---- Section Anarchy : Atouts libres ----
-    if (pnj.edition === "anarchy" && pnj.atouts) {
+    if (pnj.edition === "anarchy" && pnj.edges) {
       html += `<div class="modal-section">
         <div class="modal-section-title">Atouts</div>
         <div class="form-group">
-          <label>Un atout par ligne</label>
-          <textarea id="em-atouts" rows="5">${(pnj.atouts || []).join("\n")}</textarea>
+          <label>Un edge par ligne</label>
+          <textarea id="em-atouts" rows="5">${(pnj.edges || []).join("\n")}</textarea>
         </div>
       </div>`;
     }
@@ -333,15 +333,15 @@ const EditModal = {
     pnj.gender = val("em-gender") || pnj.gender;
 
     if (pnj.edition === "anarchy") {
-      pnj.rang = val("em-rang") || pnj.rang;
-      const atoutsEl = document.getElementById("em-atouts");
-      if (atoutsEl)
-        pnj.atouts = atoutsEl.value
+      pnj.tier = val("em-rang") || pnj.tier;
+      const edgesEl = document.getElementById("em-atouts");
+      if (edgesEl)
+        pnj.edges = edgesEl.value
           .split("\n")
           .map((s) => s.trim())
           .filter(Boolean);
     } else {
-      pnj.prof = num("em-prof", pnj.prof);
+      pnj.proRating = num("em-prof", pnj.proRating);
     }
 
     // Attributs

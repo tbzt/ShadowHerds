@@ -158,10 +158,10 @@ const Flavor = {
   },
 
   tagsFor(pnj) {
-    const prof = pnj.profession || "";
+    const proRating = pnj.archetype || "";
     const spec = pnj.special || "";
     const role = pnj.role || "";
-    const hay = `${prof} ${spec} ${role}`;
+    const hay = `${proRating} ${spec} ${role}`;
     const tags = new Set();
     for (const rule of this._tagRules) {
       if (rule.match.some((m) => hay.includes(m))) tags.add(rule.tag);
@@ -181,15 +181,15 @@ const Flavor = {
   ---------------------------------------------------------- */
   _ageFor(pnj) {
     let lvl = 0.4;
-    if (typeof pnj.prof === "number") lvl = Utils.clamp(pnj.prof / 6, 0, 1);
-    else if (pnj.rang) {
+    if (typeof pnj.proRating === "number") lvl = Utils.clamp(pnj.proRating / 6, 0, 1);
+    else if (pnj.tier) {
       const map = {
         Figurant: 0.2,
         "Figurant d'élite": 0.5,
         Lieutenant: 0.7,
         Boss: 0.9,
       };
-      lvl = map[pnj.rang] ?? 0.4;
+      lvl = map[pnj.tier] ?? 0.4;
     }
     // Base 19 ans + jusqu'à ~28 ans selon expérience, ± bruit
     const base = 19 + Math.round(lvl * 26);
@@ -236,6 +236,8 @@ const Flavor = {
       "implant bon marché visible",
       "odeur de BTL ou de cram",
       "mains couvertes de cicatrices de bagarre",
+      "chrome de pacotille mal greffé",
+      "bras visiblement câblé pour la baston",
     ],
     corpo: [
       "costume impeccable",
@@ -253,8 +255,8 @@ const Flavor = {
     ],
     police: [
       "coupe réglementaire",
-      "regard qui scanne la pièce",
-      "main jamais loin du holster",
+      "regard qui balaye la pièce",
+      "main jamais loin de l'étui",
       "insigne visible",
       "carrure imposante",
       "vieille blessure qui gêne certains mouvements",
@@ -279,7 +281,7 @@ const Flavor = {
       "posture militaire",
       "cicatrices de combat",
       "tatouage d'unité",
-      "regard mille mètres",
+      "regard vide du vétéran",
       "rangers cirées",
       "cheveux coupés par habitude plutôt que par règlement",
       "vieilles prothèses militaires",
@@ -328,8 +330,8 @@ const Flavor = {
       "yeux cybernétiques scintillants",
       "tics nerveux des doigts",
       "teint blafard d'insomniaque",
-      "lunettes AR jamais retirées",
-      "cernes profondes éclairées par des interfaces AR",
+      "lunettes RA jamais retirées",
+      "cernes profondes éclairées par des interfaces RA",
       "mouvements oculaires suivant des fenêtres invisibles",
       "vêtements équipés de multiples ports et câbles",
       "brûlures de contact près des implants",
@@ -385,6 +387,9 @@ const Flavor = {
       "teste les inconnus avec des insultes amicales",
       "marque son territoire sans y penser",
       "ne supporte pas qu'on touche à sa veste",
+      "fait tourner son flingue entre ses doigts",
+      "exhibe son chrome pour intimider",
+      "appelle les flics « la Star » avec mépris",
     ],
     corpo: [
       "consulte son commlink toutes les deux minutes",
@@ -464,8 +469,11 @@ const Flavor = {
       "parle trop vite",
       "cherche un réseau avant une sortie de secours",
       "compare les gens à des logiciels",
-      "reste silencieux pendant des conversations AR",
+      "reste silencieux pendant des conversations RA",
       "perd le fil du monde réel",
+      "jauge le niveau de Bruit d'une pièce par réflexe",
+      "surnomme la glace des serveurs qu'il a forcés",
+      "garde son commlink en mode silencieux paranoïaque",
     ],
     tech: [
       "démonte un objet pour comprendre",
@@ -522,6 +530,9 @@ const Flavor = {
       "effacer une erreur de carrière",
       "échapper à une clause contractuelle",
       "faire oublier un scandale interne",
+      "monter dans une mégacorpo AAA",
+      "négocier une prime de départ confortable",
+      "éviter de finir sur une liste de liquidation",
     ],
     police: [
       "nettoyer son secteur",
@@ -542,6 +553,9 @@ const Flavor = {
       "préparer sa succession",
       "faire payer une trahison ancienne",
       "préserver les apparences",
+      "monter en grade auprès de l'oyabun",
+      "récupérer une cargaison détournée",
+      "blanchir un magot en nuyens sales",
     ],
     militaire: [
       "accomplir la mission",
@@ -552,6 +566,7 @@ const Flavor = {
       "oublier une opération qui a mal tourné",
       "racheter une erreur de commandement",
       "prouver qu'il est encore utile",
+      "décrocher un contrat de merco bien payé",
     ],
     rue: [
       "trouver un repas chaud",
@@ -562,6 +577,8 @@ const Flavor = {
       "mettre quelqu'un à l'abri",
       "trouver un endroit sûr",
       "rester invisible aux autorités",
+      "se payer un soykaf bien chaud",
+      "échapper à la Star encore une fois",
     ],
     ombre: [
       "le prochain gros coup",
@@ -572,6 +589,11 @@ const Flavor = {
       "tenir jusqu'au prochain contrat",
       "protéger une identité secrète",
       "quitter définitivement les Ombres",
+      "honorer le contrat d'un M. Johnson généreux",
+      "se constituer un magot en nuyens",
+      "se forger une vraie réputation, de la créd",
+      "réussir le run qui changera tout",
+      "trouver un intermédiaire qui paie rubis sur l'ongle",
     ],
     magique: [
       "percer un mystère astral",
@@ -582,6 +604,9 @@ const Flavor = {
       "apaiser un esprit hostile",
       "retrouver un artefact disparu",
       "éviter une catastrophe annoncée",
+      "satisfaire les exigences de son Esprit mentor",
+      "maîtriser le Drain de ses sorts les plus puissants",
+      "approfondir les secrets de sa Tradition",
     ],
     matrice: [
       "la donnée parfaite",
@@ -590,8 +615,14 @@ const Flavor = {
       "le frisson de l'intrusion",
       "publier des données interdites",
       "dévoiler un secret corporatiste",
-      "devenir une légende du Réseau",
+      "devenir une légende de la Matrice",
       "retrouver des données effacées",
+      "décrocher le butin numérique du siècle",
+      "franchir une glace réputée infranchissable",
+      "venger un ami victime d'un choc d'éjection",
+      "effacer son icône des serveurs de la Star",
+      "narguer DIEU et survivre à la Convergence",
+      "garder son Score de Surveillance au plus bas",
     ],
     tech: [
       "construire la machine parfaite",
@@ -602,6 +633,8 @@ const Flavor = {
       "ouvrir son propre atelier",
       "réparer quelque chose qu'il a détruit",
       "être reconnu pour son talent",
+      "sortir un drone unique de sa carcasse",
+      "transformer une épave en bijou de chrome",
     ],
     civil: [
       "nourrir sa famille",
@@ -630,12 +663,12 @@ const Flavor = {
     ],
 
     gang: [
-      "streetwear couvert de patchs",
+      "fringues de rue couvertes d'écussons",
       "cuir clouté",
       "couleurs criardes du gang",
-      "look post-apo des Barrens",
+      "allure d'après-guerre des Barrens",
       "mode urbaine agressive",
-      "équipement de récupération customisé",
+      "équipement de récupération bricolé",
       "style inspiré des icônes du gang",
       "mélange de vêtements volés et de trophées",
       "ostentation des augmentations",
@@ -645,7 +678,7 @@ const Flavor = {
     corpo: [
       "costume taillé sur mesure",
       "tailleur sobre et cher",
-      "tenue business augmentée AR",
+      "tenue corpo augmentée RA",
       "élégance froide",
       "luxe discret",
       "mode corporatiste de dernière génération",
@@ -659,7 +692,7 @@ const Flavor = {
       "uniforme réglementaire",
       "armure de patrouille",
       "civil mais reconnaissable",
-      "trench de détective",
+      "imperméable de détective",
       "tenue pratique et robuste",
       "ancien uniforme conservé par habitude",
       "style de flic hors service",
@@ -698,7 +731,7 @@ const Flavor = {
       "fripes superposées",
       "vêtements de récup",
       "manteau rapiécé",
-      "look crasseux fonctionnel",
+      "allure crasseuse mais fonctionnelle",
       "assemblage de dons et de trouvailles",
       "plusieurs couches contre le froid et la pluie",
       "tenue adaptée à la survie urbaine",
@@ -722,7 +755,7 @@ const Flavor = {
 
     magique: [
       "robes et fétiches",
-      "look mystique discret",
+      "allure mystique discrète",
       "vêtements ornés de symboles",
       "sobriété chargée de sens",
       "tenues traditionnelles adaptées au Sixième Monde",
@@ -734,16 +767,16 @@ const Flavor = {
     ],
 
     matrice: [
-      "sweat à capuche et lunettes AR",
-      "look hacker négligé",
+      "sweat à capuche et lunettes RA",
+      "allure de hacker négligé",
       "tenue confortable bardée de tech",
       "néo-cyberpunk",
       "vêtements saturés d'interfaces",
       "mode urbaine augmentée",
-      "look d'insomniaque professionnel",
+      "allure d'insomniaque chronique",
       "câbles, batteries et accessoires apparents",
       "minimalisme technologique",
-      "style influencé par les célébrités du Réseau",
+      "style influencé par les célébrités de la Matrice",
     ],
 
     tech: [
@@ -762,14 +795,14 @@ const Flavor = {
     civil: [
       "vêtements de tous les jours",
       "tenue de travail",
-      "look ordinaire et passe-inaperçu",
+      "allure ordinaire et passe-partout",
       "style de salarié fatigué",
       "mode achetée en grande surface",
       "vêtements choisis pour durer",
       "apparence soigneuse malgré les moyens limités",
       "allure de parent débordé",
       "sobriété économique",
-      "look sans histoire",
+      "allure sans histoire",
     ],
   },
 

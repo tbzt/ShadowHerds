@@ -17,7 +17,7 @@ const Gen = {
   pool: [],
 
   /** correspondance label Origine -> valeur interne (rempli au build) */
-  _bassinLabelToValue: {},
+  _originPoolLabelToValue: {},
 
   /** Retourne le module d'édition actif */
   get edition() {
@@ -70,7 +70,7 @@ const Gen = {
     }
 
     // Bassin culturel
-    const bassinsLabels = {
+    const originPoolLabels = {
       japonais: "Japonais",
       coreen: "Coréen",
       chinois: "Chinois",
@@ -84,15 +84,15 @@ const Gen = {
       asiacentral: "Asie centrale",
       generique: "Générique",
     };
-    const bassinValues = Utils.bassins();
+    const originPoolValues = Utils.originPools();
     html += MultiSelect.create({
       id: `${prefix}-bassin`,
       label: "Origine",
       mode: "flat",
-      options: bassinValues.map((b) => bassinsLabels[b] || b),
+      options: originPoolValues.map((b) => originPoolLabels[b] || b),
     });
-    bassinValues.forEach((b) => {
-      this._bassinLabelToValue[bassinsLabels[b] || b] = b;
+    originPoolValues.forEach((b) => {
+      this._originPoolLabelToValue[originPoolLabels[b] || b] = b;
     });
 
     html += this._metaSelect(prefix, ed);
@@ -104,25 +104,25 @@ const Gen = {
       options: this._strip(fo.gender),
     });
 
-    if (fo.rang) {
+    if (fo.tier) {
       html += MultiSelect.create({
         id: `${prefix}-rang`,
         label: "Rang",
         mode: "flat",
-        options: this._strip(fo.rang),
+        options: this._strip(fo.tier),
       });
-    } else if (fo.prof) {
+    } else if (fo.proRating) {
       html += MultiSelect.create({
         id: `${prefix}-prof`,
         label: "Professionnalisme",
         mode: "flat",
-        options: this._strip(fo.prof),
+        options: this._strip(fo.proRating),
       });
     }
 
     // Profession — double niveau
-    const profItems = this._strip(fo.profession);
-    const groups = ProfCategories.forEdition(ed.id, profItems);
+    const archetypeItems = this._strip(fo.archetype);
+    const groups = ProfCategories.forEdition(ed.id, archetypeItems);
     html += MultiSelect.create({
       id: `${prefix}-profession`,
       label: "Profession",
@@ -170,8 +170,8 @@ const Gen = {
 
     for (const grp of Metavariants.groupedOptions()) {
       groups.push({
-        cat: grp.souche,
-        items: [grp.souche, ...grp.metavariants],
+        cat: grp.baseMetatype,
+        items: [grp.baseMetatype, ...grp.metavariants],
       });
     }
 
@@ -199,20 +199,20 @@ const Gen = {
   _readForm(prefix) {
     const nameEl = document.getElementById(`${prefix}-name`);
 
-    const bassinLabel = this._pick(`${prefix}-bassin`);
-    const bassin =
-      bassinLabel === "Aléatoire"
+    const originPoolLabel = this._pick(`${prefix}-bassin`);
+    const originPool =
+      originPoolLabel === "Aléatoire"
         ? "Aléatoire"
-        : this._bassinLabelToValue[bassinLabel] || bassinLabel;
+        : this._originPoolLabelToValue[originPoolLabel] || originPoolLabel;
 
     return {
       name: nameEl ? nameEl.value : "",
-      bassin,
+      originPool,
       meta: this._pick(`${prefix}-meta`),
       gender: this._pick(`${prefix}-gender`),
-      prof: this._pick(`${prefix}-prof`),
-      rang: this._pick(`${prefix}-rang`),
-      profession: this._pick(`${prefix}-profession`),
+      proRating: this._pick(`${prefix}-prof`),
+      tier: this._pick(`${prefix}-rang`),
+      archetype: this._pick(`${prefix}-profession`),
       special: this._pick(`${prefix}-special`, "Aucun"),
     };
   },

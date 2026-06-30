@@ -441,7 +441,7 @@ const Contacts = {
     // ── Catalogue officiel p.164 ──────────────────────────────
     {
       role: "Armurier",
-      niveau: 4,
+      level: 4,
       cout: 20000,
       rr: 1,
       domaine: "Réseau (la rue et ingénierie)",
@@ -449,7 +449,7 @@ const Contacts = {
     },
     {
       role: "Avocat",
-      niveau: 4,
+      level: 4,
       cout: 20000,
       rr: 2,
       domaine: "Réseau (gouvernemental)",
@@ -457,7 +457,7 @@ const Contacts = {
     },
     {
       role: "Cadre corporatiste",
-      niveau: 2,
+      level: 2,
       cout: 10000,
       rr: 1,
       domaine: "Réseau (corporatiste)",
@@ -465,7 +465,7 @@ const Contacts = {
     },
     {
       role: "Consiglieri de la Mafia",
-      niveau: 4,
+      level: 4,
       cout: 20000,
       rr: 2,
       domaine: "Réseau (criminel)",
@@ -473,7 +473,7 @@ const Contacts = {
     },
     {
       role: "Contrebandier",
-      niveau: 4,
+      level: 4,
       cout: 20000,
       rr: 1,
       domaine: "Réseau (la rue et ingénierie)",
@@ -481,7 +481,7 @@ const Contacts = {
     },
     {
       role: "Doc des rues",
-      niveau: 2,
+      level: 2,
       cout: 10000,
       rr: 1,
       domaine: "Réseau (médical)",
@@ -489,7 +489,7 @@ const Contacts = {
     },
     {
       role: "Flic sous couverture",
-      niveau: 2,
+      level: 2,
       cout: 10000,
       rr: 1,
       domaine: "Réseau (gouvernemental)",
@@ -497,7 +497,7 @@ const Contacts = {
     },
     {
       role: "Ganger",
-      niveau: 2,
+      level: 2,
       cout: 10000,
       rr: 1,
       domaine: "Réseau (criminel)",
@@ -505,7 +505,7 @@ const Contacts = {
     },
     {
       role: "Intermédiaire (Fixer)",
-      niveau: 5,
+      level: 5,
       cout: 25000,
       rr: 1,
       domaine: "Réseau (tous domaines)",
@@ -513,7 +513,7 @@ const Contacts = {
     },
     {
       role: "Journaliste",
-      niveau: 2,
+      level: 2,
       cout: 10000,
       rr: 1,
       domaine: "Réseau (médiatique)",
@@ -521,7 +521,7 @@ const Contacts = {
     },
     {
       role: "M. Johnson",
-      niveau: 6,
+      level: 6,
       cout: 30000,
       rr: 1,
       domaine: "Réseau (la rue, criminel et corporatiste)",
@@ -529,7 +529,7 @@ const Contacts = {
     },
     {
       role: "Marchand de talismans",
-      niveau: 2,
+      level: 2,
       cout: 10000,
       rr: 1,
       domaine: "Réseau (magique)",
@@ -537,7 +537,7 @@ const Contacts = {
     },
     {
       role: "Mécanicien",
-      niveau: 2,
+      level: 2,
       cout: 10000,
       rr: 1,
       domaine: "Réseau (ingénierie)",
@@ -545,7 +545,7 @@ const Contacts = {
     },
     {
       role: "Paradis numérique",
-      niveau: 4,
+      level: 4,
       cout: 20000,
       rr: 1,
       domaine: "Réseau (matriciel)",
@@ -554,7 +554,7 @@ const Contacts = {
     },
     {
       role: "Patron de bar",
-      niveau: 2,
+      level: 2,
       cout: 10000,
       rr: 1,
       domaine: "Réseau (la rue)",
@@ -562,7 +562,7 @@ const Contacts = {
     },
     {
       role: "Professeur d'université",
-      niveau: 2,
+      level: 2,
       cout: 10000,
       rr: 1,
       domaine: "Réseau (universitaire)",
@@ -570,7 +570,7 @@ const Contacts = {
     },
     {
       role: "Tailleur d'identités",
-      niveau: 4,
+      level: 4,
       cout: 20000,
       rr: 2,
       domaine: "Réseau (gouvernemental et la rue)",
@@ -579,7 +579,7 @@ const Contacts = {
     // ── Contacts cohérents supplémentaires ───────────────────
     {
       role: "Chaman de rue",
-      niveau: 3,
+      level: 3,
       cout: 15000,
       rr: 1,
       domaine: "Réseau (magique)",
@@ -587,7 +587,7 @@ const Contacts = {
     },
     {
       role: "Receleur",
-      niveau: 3,
+      level: 3,
       cout: 15000,
       rr: 1,
       domaine: "Réseau (la rue)",
@@ -595,7 +595,7 @@ const Contacts = {
     },
     {
       role: "Chef de gang",
-      niveau: 4,
+      level: 4,
       cout: 20000,
       rr: 2,
       domaine: "Réseau (criminel)",
@@ -603,7 +603,7 @@ const Contacts = {
     },
     {
       role: "Agent de sécurité véreux",
-      niveau: 3,
+      level: 3,
       cout: 15000,
       rr: 1,
       domaine: "Réseau (corporatiste)",
@@ -611,7 +611,7 @@ const Contacts = {
     },
     {
       role: "Passeur de frontière",
-      niveau: 4,
+      level: 4,
       cout: 20000,
       rr: 1,
       domaine: "Réseau (la rue et gouvernemental)",
@@ -619,7 +619,7 @@ const Contacts = {
     },
     {
       role: "Pilote discret",
-      niveau: 3,
+      level: 3,
       cout: 15000,
       rr: 1,
       domaine: "Réseau (ingénierie)",
@@ -627,7 +627,7 @@ const Contacts = {
     },
     {
       role: "Prêtre de quartier",
-      niveau: 2,
+      level: 2,
       cout: 10000,
       rr: 1,
       domaine: "Réseau (la rue)",
@@ -635,7 +635,7 @@ const Contacts = {
     },
     {
       role: "Decker freelance",
-      niveau: 4,
+      level: 4,
       cout: 20000,
       rr: 1,
       domaine: "Réseau (matriciel)",
@@ -644,7 +644,7 @@ const Contacts = {
     },
     {
       role: "Rigger de quartier",
-      niveau: 3,
+      level: 3,
       cout: 15000,
       rr: 1,
       domaine: "Réseau (ingénierie)",
@@ -652,7 +652,7 @@ const Contacts = {
     },
     {
       role: "Médecin de combat",
-      niveau: 4,
+      level: 4,
       cout: 20000,
       rr: 1,
       domaine: "Réseau (médical)",
@@ -661,7 +661,7 @@ const Contacts = {
     },
     {
       role: "Éveillé indépendant",
-      niveau: 3,
+      level: 3,
       cout: 15000,
       rr: 1,
       domaine: "Réseau (magique)",
@@ -669,7 +669,7 @@ const Contacts = {
     },
     {
       role: "Pharmacien de rue",
-      niveau: 2,
+      level: 2,
       cout: 10000,
       rr: 1,
       domaine: "Réseau (la rue et médical)",
@@ -677,7 +677,7 @@ const Contacts = {
     },
     {
       role: "Enquêteur privé",
-      niveau: 3,
+      level: 3,
       cout: 15000,
       rr: 1,
       domaine: "Réseau (gouvernemental et la rue)",
@@ -727,72 +727,133 @@ const Contacts = {
     "Informateur pour deux factions rivales — équilibre dangereux",
   ],
 
-  /* ---- Génération ---- */
-  generate() {
-    const prenom = Utils.genFirstName();
-    const hasHandle = Utils.randBool(0.55);
-    const name = hasHandle ? `${prenom} "${Utils.genHandle()}"` : prenom;
-    const trait = Utils.rand(this.traits);
-
-    if (App.edition === "anarchy") {
-      const cat = Utils.rand(this.catalogueAnarchy);
-      const niveauEffectif = Utils.clamp(
-        cat.niveau + Utils.rand([-1, 0, 0, 0, 1]),
-        0,
-        6,
-      );
-      const contact = {
-        id: Utils.uid(),
-        edition: "anarchy",
-        name,
-        role: cat.role,
-        desc: cat.desc,
-        niveau: niveauEffectif,
-        cout: niveauEffectif * 5000,
-        rr: cat.rr,
-        domaine: cat.domaine,
-        bonus: cat.bonus || null,
-        trait,
-      };
-      if (typeof Flavor !== "undefined") Flavor.apply(contact);
-      return contact;
-    } else {
-      const cat = Utils.rand(this.catalogueSR);
-      const influence = Utils.randInt(cat.influenceMin, cat.influenceMax);
-      const loyaute = Utils.randInt(1, 6);
-      const contact = {
-        id: Utils.uid(),
-        edition: App.edition,
-        name,
-        role: cat.role,
-        desc: cat.desc,
-        influence,
-        loyaute,
-        lieu: Utils.rand(cat.lieux),
-        similaires: cat.similaires || null,
-        trait,
-      };
-      if (typeof Flavor !== "undefined") Flavor.apply(contact);
-      return contact;
-    }
-  },
+  /* ---- Génération ---- (voir generate() dirigé plus bas, qui lit le formulaire) */
 
   initPanel() {
     const zone = document.getElementById("contacts-panel-content");
     delete zone.dataset.init;
     zone.dataset.init = "1";
     zone.innerHTML = `
+      <div id="contact-gen-form"></div>
       <div class="gen-actions">
         <button class="btn-primary"   onclick="Contacts.addOne()">Générer un contact</button>
         <button class="btn-secondary" onclick="Contacts.clearAll()">Effacer tout</button>
       </div>
       <div class="cards-zone" id="contacts-list"></div>`;
+    this.renderForm();
+  },
+
+  /** Affiche le formulaire dirigé adapté à l'édition courante. */
+  renderForm() {
+    const host = document.getElementById("contact-gen-form");
+    if (!host) return;
+    host.innerHTML =
+      App.edition === "anarchy"
+        ? this._formAnarchy()
+        : this._formSR();
+    this._syncCost();
+  },
+
+  _formAnarchy() {
+    const nets = ContactGen.NETWORKS.map(
+      (n) => `<option value="${n.id}">${n.label}</option>`,
+    ).join("");
+    const metas = ContactGen.METATYPES.map(
+      (m) => `<option value="${m}">${m}</option>`,
+    ).join("");
+    return `
+      <div class="contact-form">
+        <div class="contact-form-row">
+          <label>Réseau
+            <select id="cg-network" onchange="Contacts._syncCost()">${nets}</select>
+          </label>
+          <label>Portée
+            <select id="cg-scope" onchange="Contacts._syncCost()">
+              <option value="specialisation">Spécialisation (un Réseau)</option>
+              <option value="competence">Compétence Réseau (tous)</option>
+            </select>
+          </label>
+        </div>
+        <div class="contact-form-row">
+          <label>RR (loyauté / réseau)
+            <select id="cg-rr" onchange="Contacts._syncCost()">
+              <option value="1">RR 1</option>
+              <option value="2">RR 2</option>
+              <option value="3">RR 3</option>
+            </select>
+          </label>
+          <label>Métatype
+            <select id="cg-meta">${metas}</select>
+          </label>
+        </div>
+        <div class="contact-form-cost" id="cg-cost"></div>
+        <div class="contact-form-hint" id="cg-net-desc"></div>
+      </div>`;
+  },
+
+  _formSR() {
+    const cats = [
+      `<option value="any">Tous métiers</option>`,
+      ...ContactGen.SR_CATEGORIES.map(
+        (c) => `<option value="${c.id}">${c.label}</option>`,
+      ),
+    ].join("");
+    const metas = ContactGen.METATYPES.map(
+      (m) => `<option value="${m}">${m}</option>`,
+    ).join("");
+    return `
+      <div class="contact-form">
+        <div class="contact-form-row">
+          <label>Grand métier
+            <select id="cg-category">${cats}</select>
+          </label>
+          <label>Métatype
+            <select id="cg-meta">${metas}</select>
+          </label>
+        </div>
+      </div>`;
+  },
+
+  /** Met à jour l'affichage du coût en points d'atout et la description. */
+  _syncCost() {
+    const costEl = document.getElementById("cg-cost");
+    if (!costEl) return;
+    const rr = parseInt(
+      (document.getElementById("cg-rr") || {}).value || "1",
+      10,
+    );
+    const scope =
+      (document.getElementById("cg-scope") || {}).value || "specialisation";
+    const cost = ContactGen.atoutCost(rr, scope);
+    costEl.innerHTML = `Coût de l'atout : <strong>${cost} pts</strong> <span class="cost-sub">(RR ${rr} ${scope === "competence" ? "sur la compétence Réseau, +5/niveau" : "sur une spécialisation, +2/niveau"})</span>`;
+    const descEl = document.getElementById("cg-net-desc");
+    const netId = (document.getElementById("cg-network") || {}).value;
+    if (descEl && netId) {
+      const n = ContactGen.NETWORKS.find((x) => x.id === netId);
+      descEl.textContent = n ? n.desc : "";
+    }
   },
 
   addOne() {
     document
       .getElementById("contacts-list")
       .prepend(ContactRenderer.render(this.generate()));
+  },
+
+  /** Lit le formulaire et génère un contact dirigé. */
+  generate() {
+    if (App.edition === "anarchy") {
+      return ContactGen.generateAnarchy({
+        networkId: (document.getElementById("cg-network") || {}).value,
+        rr: parseInt((document.getElementById("cg-rr") || {}).value || "1", 10),
+        scope: (document.getElementById("cg-scope") || {}).value,
+        metatype: (document.getElementById("cg-meta") || {}).value,
+      });
+    }
+    return ContactGen.generateSR(App.edition, {
+      categoryId: (document.getElementById("cg-category") || {}).value,
+      metatype: (document.getElementById("cg-meta") || {}).value,
+    });
   },
 
   clearAll() {
@@ -1286,6 +1347,9 @@ const ContactsBook = {
   initPanel() {
     this.load();
     this.render();
+    if (typeof Contacts !== "undefined" && Contacts.renderForm) {
+      Contacts.renderForm();
+    }
   },
 
   _renderSidebar() {

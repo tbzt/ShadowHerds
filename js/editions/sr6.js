@@ -358,7 +358,7 @@ const EditionSR6 = {
     Minotaure: { CON: +6, AGI: -1, FOR: +4, CHA: -1 },
   },
 
-  /* ---- Score Défensif de base par prof ---- */
+  /* ---- Score Défensif de base par proRating ---- */
   sdByProf: {
     0: 2,
     1: 4,
@@ -373,7 +373,7 @@ const EditionSR6 = {
     10: 16,
   },
 
-  /* ---- Initiative base/dés par prof ---- */
+  /* ---- Initiative base/dés par proRating ---- */
   initByProf: {
     0: { base: 4, dice: 1 },
     1: { base: 4, dice: 1 },
@@ -440,8 +440,8 @@ const EditionSR6 = {
       "Minotaure",
     ],
     gender: ["Aléatoire", "M", "F", "NB"],
-    prof: ["Aléatoire", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-    profession: [
+    proRating: ["Aléatoire", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+    archetype: [
       "Aléatoire",
       // Bas de l'échelle
       "Civil",
@@ -510,7 +510,7 @@ const EditionSR6 = {
     ],
   },
 
-  /* ---- Pools de compétences par profession ---- */
+  /* ---- Pools de compétences par archetype ---- */
   skillPools: {
     Civil: [
       "Athlétisme",
@@ -990,7 +990,7 @@ const EditionSR6 = {
     ],
   },
 
-  sortsByTradition: {
+  spellsByTradition: {
     "Mage hermétique": [
       "Barrière physique",
       "Boule étourdissante",
@@ -1103,7 +1103,7 @@ const EditionSR6 = {
       "Ares Desert Strike [Fusil de précision, VD 7P, SO 1/3/9/11/9]",
       "FN P93 Praetor [Mitraillette, VD 4P, SO 10/13/8/-, SA/TR, avec silencieux]",
     ],
-    armesMelee: [
+    meleeWeapons: [
       "Couteau [VD 3P, SO 9/2*/-/-/-, portée max 20m]",
       "Couteau de combat [VD 4P, SO 9/2*/-/-/-, portée max 20m]",
       "Katana [VD 4P, SO 13/-/-/-/-]",
@@ -1169,8 +1169,8 @@ const EditionSR6 = {
     ],
   },
 
-  equipProfile(profession, prof, awakened) {
-    const p = prof;
+  buildLoadout(archetype, proRating, awakened) {
+    const p = proRating;
     const pools = this.equipPools;
 
     const commlink =
@@ -1196,7 +1196,7 @@ const EditionSR6 = {
       "Wildcats Sioux",
       "Navy SEAL",
       "Onotari",
-    ].some((k) => profession.includes(k));
+    ].some((k) => archetype.includes(k));
     const isHeavy = [
       "Commando",
       "Marines",
@@ -1206,27 +1206,27 @@ const EditionSR6 = {
       "Samouraï rouge",
       "Mercenaire",
       "Forces",
-    ].some((k) => profession.includes(k));
+    ].some((k) => archetype.includes(k));
 
-    let armePrinc;
+    let primaryWeapon;
     if (p >= 8 || isSniper) {
-      armePrinc = Utils.rand([...pools.fusils, ...pools.snipersLourds]);
+      primaryWeapon = Utils.rand([...pools.fusils, ...pools.snipersLourds]);
     } else if (p >= 5 || isHeavy) {
-      armePrinc = Utils.rand([...pools.fusils, ...pools.mitraillettes]);
+      primaryWeapon = Utils.rand([...pools.fusils, ...pools.mitraillettes]);
     } else if (p >= 3) {
-      armePrinc = Utils.rand([
+      primaryWeapon = Utils.rand([
         ...pools.mitraillettes,
         ...pools.shotguns,
         ...pools.fusils.slice(0, 3),
       ]);
     } else {
-      armePrinc = Utils.rand([
+      primaryWeapon = Utils.rand([
         ...pools.pistoletsLourds,
         ...pools.pistoletsAutomatiques,
       ]);
     }
 
-    const result = [commlink, armePrinc];
+    const result = [commlink, primaryWeapon];
 
     const isMelee = [
       "Yakuza",
@@ -1236,16 +1236,16 @@ const EditionSR6 = {
       "Halloweeners",
       "Ancients",
       "Vory",
-    ].some((k) => profession.includes(k));
+    ].some((k) => archetype.includes(k));
     if (isMelee || Utils.randBool(0.35))
-      result.push(Utils.rand(pools.armesMelee));
+      result.push(Utils.rand(pools.meleeWeapons));
 
     const isPolice = [
       "Lone Star",
       "Knight Errant",
       "SWAT",
       "Patrouilleur",
-    ].some((k) => profession.includes(k));
+    ].some((k) => archetype.includes(k));
     if (isPolice)
       result.push("Électromatraque [VD 5E, SO 9/-/-/-/-, perte d'action]");
 
@@ -1272,22 +1272,22 @@ const EditionSR6 = {
     // Résolution métavariante SR6 (Compagnon du Sixième Monde)
     const mv =
       typeof Metavariants !== "undefined" ? Metavariants.resolve(meta) : null;
-    const souche = mv ? mv.souche : meta;
-    let bassinOverride = null;
-    if (mv && mv.bassins && (!opts.bassin || opts.bassin === "Aléatoire")) {
-      bassinOverride = Utils.rand(mv.bassins);
+    const baseMetatype = mv ? mv.baseMetatype : meta;
+    let originPoolOverride = null;
+    if (mv && mv.originPools && (!opts.originPool || opts.originPool === "Aléatoire")) {
+      originPoolOverride = Utils.rand(mv.originPools);
     }
 
     const gender =
       opts.gender === "Aléatoire" ? Utils.randGender() : opts.gender;
-    const prof =
-      opts.prof === "Aléatoire"
+    const proRating =
+      opts.proRating === "Aléatoire"
         ? Utils.randInt(0, 10)
-        : parseInt(opts.prof, 10);
+        : parseInt(opts.proRating, 10);
 
-    const profList = this.formOptions.profession.slice(1);
-    const profession =
-      opts.profession === "Aléatoire" ? Utils.rand(profList) : opts.profession;
+    const archetypeList = this.formOptions.archetype.slice(1);
+    const archetype =
+      opts.archetype === "Aléatoire" ? Utils.rand(archetypeList) : opts.archetype;
 
     let special = opts.special || "Aucun";
     if (special === "Aléatoire") {
@@ -1304,12 +1304,12 @@ const EditionSR6 = {
         : "Aucun";
     }
 
-    const p = Utils.clamp(prof, 0, 10);
+    const p = Utils.clamp(proRating, 0, 10);
     const baseAttrs = { ...this.attrByProf[p] };
-    const mods = this.metaMod[souche] || {};
+    const mods = this.metaMod[baseMetatype] || {};
     const range = mv
       ? mv.ranges
-      : this.attrRange[souche] || this.attrRange["Humain"];
+      : this.attrRange[baseMetatype] || this.attrRange["Humain"];
 
     const attrs = {};
     for (const k of ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"]) {
@@ -1318,14 +1318,14 @@ const EditionSR6 = {
     }
 
     // Attributs spéciaux — MAG/RES seulement si profession explicitement magique ou special magique
-    const profMagiques = [
+    const magicalArchetypes = [
       "Magogang (éveillé)",
       "Mage combat Lone Star",
       "Commando Aztlan",
       "Agent de sécurité Aztechnology",
       "Maître des Lames Yakuza",
     ];
-    const isMagicProf = profMagiques.some((p) => profession.includes(p));
+    const isMagicProf = magicalArchetypes.some((p) => archetype.includes(p));
     const isMagicSpec = ["Mage hermétique", "Chaman", "Adepte"].includes(
       special,
     );
@@ -1359,7 +1359,7 @@ const EditionSR6 = {
     // Résistance au Drain : Volonté + attribut de tradition (hermétique = LOG, chaman = CHA)
     let drainResist = null;
     if (attrs.MAG) {
-      const tradAttr = String(profession).includes("Chaman") ||
+      const tradAttr = String(archetype).includes("Chaman") ||
         special === "Chaman"
         ? attrs.CHA
         : attrs.LOG;
@@ -1368,7 +1368,7 @@ const EditionSR6 = {
     }
 
     // Compétences
-    const pool = this.skillPools[profession] || this.skillPools["Civil"];
+    const pool = this.skillPools[archetype] || this.skillPools["Civil"];
     const count = this.skillCount[p] || 4;
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
     const existingNames = new Set();
@@ -1390,21 +1390,21 @@ const EditionSR6 = {
     const awakened = isMagicProf || isMagicSpec;
     const contentTags =
       typeof Flavor !== "undefined"
-        ? Flavor.tagsFor({ profession, special })
+        ? Flavor.tagsFor({ archetype, special })
         : new Set(["rue"]);
 
     // Sorts — enrichis avec descriptions cliquables.
     // Un adepte « pur » utilise des pouvoirs, pas des sorts.
-    let sorts = [];
+    let spells = [];
     const adeptePur = special === "Adepte";
     if (awakened && !adeptePur && typeof Content !== "undefined") {
-      sorts = Content.pickSorts("sr6", p, contentTags);
+      spells = Content.pickSorts("sr6", p, contentTags);
     } else if (!adeptePur) {
-      const sortsTrad =
-        this.sortsByTradition[profession] ||
-        this.sortsByTradition[special] ||
+      const spellsTrad =
+        this.spellsByTradition[archetype] ||
+        this.spellsByTradition[special] ||
         null;
-      sorts = sortsTrad ? sortsTrad.slice(0, 2 + Math.floor(p / 3)) : [];
+      spells = spellsTrad ? spellsTrad.slice(0, 2 + Math.floor(p / 3)) : [];
     }
 
     // Pouvoirs d'adepte
@@ -1420,12 +1420,12 @@ const EditionSR6 = {
         : [];
 
     // Équipement — pas de cyberware pour un Éveillé (coût en Essence)
-    const equip = this.equipProfile(profession, p, awakened);
+    const equip = this.buildLoadout(archetype, p, awakened);
 
     // Arme supplémentaire cohérente (aléa d'arsenal)
     if (typeof Content !== "undefined" && Utils.randBool(0.6)) {
-      const arme = Content.pickArme("sr6", contentTags, p);
-      if (arme) equip.push(arme);
+      const weapon = Content.pickWeapon("sr6", contentTags, p);
+      if (weapon) equip.push(weapon);
     }
 
     // Augmentations corpo — jamais pour un Éveillé
@@ -1439,17 +1439,17 @@ const EditionSR6 = {
         opts.name && opts.name.trim()
           ? opts.name.trim()
           : Utils.genName(
-              opts.bassin && opts.bassin !== "Aléatoire"
-                ? opts.bassin
-                : bassinOverride,
+              opts.originPool && opts.originPool !== "Aléatoire"
+                ? opts.originPool
+                : originPoolOverride,
             ),
-      meta: souche,
+      meta: baseMetatype,
       metavariant: mv ? mv.name : null,
-      metaFamille: mv ? mv.famille : null,
+      metaFamily: mv ? mv.family : null,
       metaTraits: mv ? mv.traits : [],
       gender,
-      prof: p,
-      profession,
+      proRating: p,
+      archetype,
       special,
       attrs,
       me,
@@ -1464,7 +1464,7 @@ const EditionSR6 = {
       judgeIntentions,
       memory,
       skills,
-      sorts,
+      spells,
       powers,
       traits,
       equip,
@@ -1472,6 +1472,8 @@ const EditionSR6 = {
       physFilled: 0,
       notes: "",
     };
+    // Cohérence arme <-> compétence (renomme une compétence de combat si besoin)
+    if (typeof WeaponRoll !== "undefined") WeaponRoll.reconcile(pnj, "sr6");
     if (typeof Flavor !== "undefined") Flavor.apply(pnj);
     return pnj;
   },
@@ -1487,7 +1489,7 @@ const EditionSR6 = {
     pnj.memory = attrs.LOG + attrs.VOL;
     if (attrs.MAG && pnj.special !== "Adepte") {
       const tradAttr =
-        String(pnj.profession).includes("Chaman") || pnj.special === "Chaman"
+        String(pnj.archetype).includes("Chaman") || pnj.special === "Chaman"
           ? attrs.CHA
           : attrs.LOG;
       pnj.drainResist = attrs.VOL + tradAttr;

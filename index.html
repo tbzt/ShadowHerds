@@ -9,10 +9,10 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500&family=Oswald:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=5">
-  <link rel="stylesheet" href="css/theme-sr5.css?v=5">
-  <link rel="stylesheet" href="css/theme-sr6.css?v=5">
-  <link rel="stylesheet" href="css/theme-anarchy.css?v=5">
+  <link rel="stylesheet" href="css/base.css?v=15">
+  <link rel="stylesheet" href="css/theme-sr5.css?v=15">
+  <link rel="stylesheet" href="css/theme-sr6.css?v=15">
+  <link rel="stylesheet" href="css/theme-anarchy.css?v=15">
 </head>
 
 <body>
@@ -139,6 +139,8 @@
                 <span id="shadows-group-label" class="shadows-group-label">Tous les figurants</span>
                 <button class="btn-secondary btn-small" onclick="Shadows.saveAllVisible()">Sauvegarder tout dans le
                   groupe</button>
+                <button class="btn-secondary btn-small" onclick="Backup.export()" title="Exporter tous les PNJ et contacts (toutes éditions)">⤓ Exporter</button>
+                <button class="btn-secondary btn-small" onclick="Backup.openImportDialog()" title="Importer depuis un fichier ou une URL">⤒ Importer</button>
               </div>
               <div class="cards-zone" id="shadows-grid"></div>
             </div>
@@ -195,9 +197,12 @@
               <div id="contacts-group-list"></div>
             </aside>
             <div class="shadows-main">
-              <div class="shadows-main-toolbar">
-                <button class="btn-primary btn-small" onclick="ContactsBook.generate()">Générer un contact</button>
-                <span id="contacts-group-label" class="shadows-group-label">Tous les contacts</span>
+              <div class="contacts-gen-bar">
+                <div id="contact-gen-form"></div>
+                <div class="shadows-main-toolbar">
+                  <button class="btn-primary btn-small" onclick="ContactsBook.generate()">Générer un contact</button>
+                  <span id="contacts-group-label" class="shadows-group-label">Tous les contacts</span>
+                </div>
               </div>
               <div class="cards-zone" id="contacts-grid"></div>
             </div>
@@ -241,25 +246,28 @@
   <div id="toast" role="status" aria-live="polite"></div>
 
   <!-- SCRIPTS — ordre important : utils → storage → éditions → ui → modules → app -->
-  <script src="js/utils.js?v=5"></script>
-  <script src="js/storage.js?v=5"></script>
-  <script src="js/metavariants.js?v=5"></script>
-  <script src="js/skillcatalog.js?v=5"></script>
-  <script src="js/flavor.js?v=5"></script>
-  <script src="js/content.js?v=5"></script>
-  <script src="js/editions/sr5.js?v=5"></script>
-  <script src="js/editions/sr6.js?v=5"></script>
-  <script src="js/editions/anarchy.js?v=5"></script>
-  <script src="js/ui.js?v=5"></script>
-  <script src="js/sidebartoggle.js?v=5"></script>
-  <script src="js/profcategories.js?v=5"></script>
-  <script src="js/multiselect.js?v=5"></script>
-  <script src="js/generator.js?v=5"></script>
-  <script src="js/shadows.js?v=5"></script>
-  <script src="js/editmodal.js?v=5"></script>
-  <script src="js/extras.js?v=5"></script>
-  <script src="js/settings.js?v=5"></script>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/utils.js?v=15"></script>
+  <script src="js/storage.js?v=15"></script>
+  <script src="js/metavariants.js?v=15"></script>
+  <script src="js/skillcatalog.js?v=15"></script>
+  <script src="js/weaponroll.js?v=15"></script>
+  <script src="js/flavor.js?v=15"></script>
+  <script src="js/content.js?v=15"></script>
+  <script src="js/editions/sr5.js?v=15"></script>
+  <script src="js/editions/sr6.js?v=15"></script>
+  <script src="js/editions/anarchy.js?v=15"></script>
+  <script src="js/ui.js?v=15"></script>
+  <script src="js/sidebartoggle.js?v=15"></script>
+  <script src="js/profcategories.js?v=15"></script>
+  <script src="js/multiselect.js?v=15"></script>
+  <script src="js/generator.js?v=15"></script>
+  <script src="js/shadows.js?v=15"></script>
+  <script src="js/editmodal.js?v=15"></script>
+  <script src="js/extras.js?v=15"></script>
+  <script src="js/contactgen.js?v=15"></script>
+  <script src="js/settings.js?v=15"></script>
+  <script src="js/backup.js?v=15"></script>
+  <script src="js/app.js?v=15"></script>
 
 </body>
 

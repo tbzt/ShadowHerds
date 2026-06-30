@@ -36,10 +36,10 @@ const CardRenderer = {
     let badge = "";
 
     if (pnj.edition === "anarchy") {
-      const rangClass = `rang-${pnj.rang.toLowerCase()}`;
-      badge = `<span class="pnj-rank-badge ${rangClass}">${pnj.rang}</span>`;
+      const tierClass = `rang-${pnj.tier.toLowerCase()}`;
+      badge = `<span class="pnj-rank-badge ${tierClass}">${pnj.tier}</span>`;
     } else {
-      badge = `<span class="pnj-rank-badge">PRO&nbsp;${pnj.prof}</span>`;
+      badge = `<span class="pnj-rank-badge">PRO&nbsp;${pnj.proRating}</span>`;
     }
 
     const specialStr =
@@ -56,7 +56,7 @@ const CardRenderer = {
     return `<div class="pnj-card-header">
       <div class="pnj-header-left">
         ${nameHtml}
-        <div class="pnj-meta">${gIcon} ${metaStr} · ${pnj.profession}${specialStr}</div>
+        <div class="pnj-meta">${gIcon} ${metaStr} · ${pnj.archetype}${specialStr}</div>
       </div>
       ${badge}
     </div>`;
@@ -69,9 +69,9 @@ const CardRenderer = {
     const name = String(rawName ?? "");
     const m = name.match(/^(.*?)\s*[«"“]([^»"”]+)[»"”]\s*(.*)$/);
     if (m) {
-      const surnom = m[2].trim();
+      const alias = m[2].trim();
       const civil = `${m[1].trim()} ${m[3].trim()}`.replace(/\s+/g, " ").trim();
-      return `<div class="pnj-name" title="${this._esc(name)}">${this._esc(surnom)}</div>
+      return `<div class="pnj-name" title="${this._esc(name)}">${this._esc(alias)}</div>
         ${civil ? `<div class="pnj-civilname">${this._esc(civil)}</div>` : ""}`;
     }
     return `<div class="pnj-name" title="${this._esc(name)}">${this._esc(name)}</div>`;
@@ -108,9 +108,9 @@ const CardRenderer = {
   _metaTraitsSection(pnj) {
     if (!pnj.metaTraits || !pnj.metaTraits.length) return "";
     const label =
-      pnj.metaFamille === "zoocanthrope"
+      pnj.metaFamily === "zoocanthrope"
         ? "Traits zoocanthropes"
-        : pnj.metaFamille === "metaconscience"
+        : pnj.metaFamily === "metaconscience"
           ? "Traits de métaconscience"
           : "Traits de métavariante";
     return this._tagsSection(label, pnj.metaTraits);
@@ -247,7 +247,7 @@ const CardRenderer = {
       skills,
       equip,
       augs,
-      sorts,
+      spells,
       powers,
       traits,
     } = pnj;
@@ -257,7 +257,7 @@ const CardRenderer = {
     // Attributs principaux (8 + ESS + MAG si applicable)
     const attrKeys = ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"];
     const extras = ["ESS", ...(attrs.MAG ? ["MAG"] : [])];
-    html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k], "", { roll: true })).join("")}</div>`;
+    html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
     if (extras.length) {
       html += `<div class="attr-grid with-ess">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
     }
@@ -271,9 +271,9 @@ const CardRenderer = {
 
     // Pills
     html += '<div class="stats-row">';
-    html += `<span class="stat-pill accent">Init <strong>${init}+${initDice}D6</strong></span>`;
+    html += this._initPill(init, initDice, pnj);
     if (drainResist !== null) {
-      html += `<span class="stat-pill">Drain <strong>${drainResist}</strong></span>`;
+      html += `<span class="stat-pill rollable" data-roll="${drainResist}" data-roll-label="Résistance au Drain" title="Lancer ${drainResist} dés — Résistance au Drain">Drain <strong>${drainResist}</strong></span>`;
     }
     html += "</div>";
 
@@ -294,12 +294,12 @@ const CardRenderer = {
     </div>`;
 
     html += this._skillsSection(skills);
-    if (sorts && sorts.length) html += this._listSection("Sorts", sorts);
+    if (spells && spells.length) html += this._listSection("Sorts", spells);
     if (powers && powers.length)
       html += this._listSection("Pouvoirs d'adepte", powers);
     if (traits && traits.length) html += this._listSection("Traits", traits);
     if (augs && augs.length) html += this._listSection("Augmentations", augs);
-    if (equip && equip.length) html += this._tagsSection("Équipement", equip);
+    if (equip && equip.length) html += this._equipSection(pnj, equip, "sr5");
 
     html += "</div>";
     return html;
@@ -318,7 +318,7 @@ const CardRenderer = {
       skills,
       equip,
       augs,
-      sorts,
+      spells,
       powers,
       traits,
     } = pnj;
@@ -327,7 +327,7 @@ const CardRenderer = {
 
     // Attributs SR6 : CON/AGI/RÉA/FOR/VOL/LOG/INT/CHA
     const attrKeys = ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"];
-    html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k] ?? "—", "", { roll: true })).join("")}</div>`;
+    html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k] ?? "—")).join("")}</div>`;
 
     // Attributs spéciaux (MAG, RES)
     const extras = [];
@@ -339,7 +339,7 @@ const CardRenderer = {
 
     // Stats clés SR6
     html += '<div class="stats-row">';
-    html += `<span class="stat-pill accent">Init <strong>${initBase ?? "?"}+${initDice ?? 1}D6</strong></span>`;
+    html += this._initPill(initBase ?? 0, initDice ?? 1, pnj);
     html += `<span class="stat-pill">SD <strong>${sdBase ?? "?"}</strong></span>`;
     html += `<span class="stat-pill">ME <strong>${me ?? "?"}</strong></span>`;
     if (pa) html += `<span class="stat-pill">PA <strong>${pa}</strong></span>`;
@@ -358,12 +358,12 @@ const CardRenderer = {
     </div>`;
 
     html += this._skillsSection(skills);
-    if (sorts && sorts.length) html += this._listSection("Sorts", sorts);
+    if (spells && spells.length) html += this._listSection("Sorts", spells);
     if (powers && powers.length)
       html += this._listSection("Pouvoirs d'adepte", powers);
     if (traits && traits.length) html += this._listSection("Traits", traits);
     if (augs && augs.length) html += this._listSection("Augmentations", augs);
-    if (equip && equip.length) html += this._tagsSection("Équipement", equip);
+    if (equip && equip.length) html += this._equipSection(pnj, equip, "sr6");
 
     html += "</div>";
     return html;
@@ -374,19 +374,19 @@ const CardRenderer = {
     const {
       attrs,
       skills,
-      atouts,
-      armes,
+      edges,
+      weapons,
       equip,
-      sorts,
+      spells,
       traits,
-      combativite,
-      seuilsPhys,
-      seuils_ment,
-      seuilsMat,
+      threatLevel,
+      physMonitor,
+      mentMonitor,
+      matrixMonitor,
       physFilled,
       mentFilled,
       matFilled,
-      eveille,
+      awakened,
       notes,
     } = pnj;
 
@@ -395,21 +395,21 @@ const CardRenderer = {
     // Attributs : 5 attrs Anarchy (FOR/AGI/VOL/LOG/CHA)
     const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA"];
     html += `<div class="attr-grid">
-      ${attrKeys.map((k) => this._attrCell(k, attrs[k], "", { roll: true })).join("")}
+      ${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}
     </div>`;
 
     // Combativité + éveillé
     html += '<div class="stats-row">';
     const combClass =
-      combativite === "forte" || combativite === "extrême" ? "accent" : "";
-    html += `<span class="stat-pill ${combClass}">Combativité <strong>${combativite}</strong></span>`;
-    if (eveille) {
+      threatLevel === "forte" || threatLevel === "extrême" ? "accent" : "";
+    html += `<span class="stat-pill ${combClass}">Combativité <strong>${threatLevel}</strong></span>`;
+    if (awakened) {
       const evLabel =
         {
           hermétique: "Éveillé hermétique",
           adepte: "Adepte",
           chamanique: "Éveillé chaman",
-        }[eveille] || eveille;
+        }[awakened] || awakened;
       html += `<span class="stat-pill">✦ ${evLabel}</span>`;
     }
     html += "</div>";
@@ -426,53 +426,68 @@ const CardRenderer = {
         const rrStr = s.rr > 0 ? ` RR${s.rr}` : "";
         const rollMain =
           pool >= 1
-            ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}"`
+            ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}" data-roll-edition="anarchy" data-roll-rr="${s.rr || 0}"`
             : "";
         html += `<span class="tag skill-tag${pool >= 1 ? " rollable" : ""}"${rollMain} title="${this._esc(s.name)} : ${pool} (${s.val}+${s.attr}${rrStr}) — cliquer pour lancer">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong></span>`;
         if (s.spec && s.spec !== true && s.specVal) {
           const specAttrVal = attrs[s.specAttr || s.attr] || 0;
           const specPool = s.specVal + specAttrVal;
+          const specRr = s.specRR != null ? s.specRR : s.rr || 0;
+          const specRrStr = specRr > 0 ? ` RR${specRr}` : "";
           const rollSpec =
             specPool >= 1
-              ? ` data-roll="${specPool}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}"`
+              ? ` data-roll="${specPool}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" data-roll-edition="anarchy" data-roll-rr="${specRr}"`
               : "";
-          html += `<span class="tag skill-tag skill-tag-spec${specPool >= 1 ? " rollable" : ""}"${rollSpec} title="Spécialisation ${this._esc(s.spec)} : ${specPool} — cliquer pour lancer">◊&nbsp;${this._esc(s.spec)}&nbsp;<strong style="color:var(--text)">${specPool}</strong></span>`;
+          html += `<span class="tag skill-tag skill-tag-spec${specPool >= 1 ? " rollable" : ""}"${rollSpec} title="Spécialisation ${this._esc(s.spec)} : ${specPool}${specRrStr} — cliquer pour lancer">◊&nbsp;${this._esc(s.spec)}&nbsp;<strong style="color:var(--text)">${specPool}</strong></span>`;
         }
       }
       html += "</div></div>";
     }
 
     // Atouts
-    if (atouts && atouts.length) {
+    if (edges && edges.length) {
       html += `<div class="card-section">
         <div class="card-section-label">Atouts</div>
         <div class="card-section-content">`;
-      for (const a of atouts) {
+      for (const a of edges) {
         html += `<div class="anarchy-atout">• ${this._esc(a)}</div>`;
       }
       html += "</div></div>";
     }
 
     // Armes
-    if (armes && armes.length) {
+    if (weapons && weapons.length) {
       html += `<div class="card-section">
         <div class="card-section-label">Armes</div>
         <div class="anarchy-skill-list">`;
-      for (const a of armes) {
+      for (const a of weapons) {
         const noteStr = a.note
           ? ` <em style="color:var(--text-dim);font-size:0.58rem;">(${this._esc(a.note)})</em>`
           : "";
-        html += `<div class="anarchy-skill-row">
-          <span class="anarchy-skill-name">${this._esc(a.name)}${noteStr}</span>
-          <span class="anarchy-skill-pool">VD ${a.vd} ${this._esc(a.portees)}</span>
-        </div>`;
+        const r =
+          typeof WeaponRoll !== "undefined"
+            ? WeaponRoll.resolvePool(pnj, a, "anarchy")
+            : null;
+        if (r) {
+          const rrTxt = r.rr ? ` RR${r.rr}` : "";
+          const title = `${r.weaponName} : ${r.pool} dés (${r.skill} ${r.skillVal}+${r.attr} ${r.attrVal}${rrTxt}) — cliquer pour lancer`;
+          html += `<div class="anarchy-skill-row weapon-rollable rollable" data-roll-weapon-anarchy="${this._esc(a.name)}" data-roll-pnj="${pnj.id}" title="${this._esc(title)}">
+            <span class="anarchy-skill-name">${this._esc(a.name)}${noteStr}</span>
+            <span class="anarchy-skill-pool">VD ${a.vd} ${this._esc(a.ranges)} <span class="weapon-pool">⚄${r.pool}${r.rr ? `<span class="weapon-lim">RR${r.rr}</span>` : ""}</span></span>
+          </div>`;
+        } else {
+          html += `<div class="anarchy-skill-row">
+            <span class="anarchy-skill-name">${this._esc(a.name)}${noteStr}</span>
+            <span class="anarchy-skill-pool">VD ${a.vd} ${this._esc(a.ranges)}</span>
+          </div>`;
+        }
       }
       html += "</div></div>";
     }
 
     // Sorts (éveillés)
-    if (sorts && sorts.length) {
-      html += this._listSection("Sorts", sorts);
+    if (spells && spells.length) {
+      html += this._listSection("Sorts", spells);
     }
 
     // Traits
@@ -482,7 +497,7 @@ const CardRenderer = {
 
     // Équipement
     if (equip && equip.length) {
-      html += this._tagsSection("Équipement", equip);
+      html += this._equipSection(pnj, equip, "anarchy");
     }
 
     // Seuils de blessures — Anarchy utilise un format X/Y/Z
@@ -490,21 +505,21 @@ const CardRenderer = {
       <div class="card-section-label">Seuils de blessures</div>
       <div class="anarchy-seuils">`;
 
-    const fmtSeuils = (arr) =>
+    const fmtThresholds = (arr) =>
       arr ? `${arr[0]} / ${arr[1]} / ${arr[2]}` : "—";
 
     html += `<div class="anarchy-seuil-row">
       <span class="anarchy-seuil-label">Physiques</span>
-      <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "phys", seuilsPhys, physFilled)}</div>
+      <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "phys", physMonitor, physFilled)}</div>
     </div>`;
     html += `<div class="anarchy-seuil-row" style="margin-top:4px;">
       <span class="anarchy-seuil-label">Mentales</span>
-      <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "ment", seuils_ment, mentFilled)}</div>
+      <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "ment", mentMonitor, mentFilled)}</div>
     </div>`;
-    if (seuilsMat) {
+    if (matrixMonitor) {
       html += `<div class="anarchy-seuil-row" style="margin-top:4px;">
         <span class="anarchy-seuil-label">Matricielles</span>
-        <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "mat", seuilsMat, matFilled)}</div>
+        <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "mat", matrixMonitor, matFilled)}</div>
       </div>`;
     }
     html += "</div></div>";
@@ -525,9 +540,9 @@ const CardRenderer = {
    * On affiche N cases correspondant au seuil grave (max),
    * avec marquage des paliers léger et moyen.
    */
-  _monitorBoxesAnarchy(pnjId, type, seuils, filled = 0) {
-    if (!seuils) return "—";
-    const [s1, s2, s3] = seuils;
+  _monitorBoxesAnarchy(pnjId, type, thresholds, filled = 0) {
+    if (!thresholds) return "—";
+    const [s1, s2, s3] = thresholds;
     return Array.from({ length: s3 }, (_, i) => {
       const isFilled = i < filled;
       // Paliers : case s1 = fin blessure légère, s2 = fin blessure modérée
@@ -544,11 +559,32 @@ const CardRenderer = {
   },
 
   /* ---- Helpers ---- */
+  _initPill(base, dice, pnj) {
+    const b = Number(base) || 0;
+    const d = Number(dice) || 1;
+    const id = pnj && pnj.id ? pnj.id : "";
+    const li = pnj && pnj.lastInit ? pnj.lastInit : null;
+
+    // Résultat lancé affiché à la suite, avec bouton d'effacement.
+    let resultHtml = "";
+    if (li && Number.isFinite(li.total)) {
+      const detail = `${li.base} + [${(li.faces || []).join(", ")}]`;
+      resultHtml =
+        ` <span class="init-result" title="${this._esc(li.total + " = " + detail)}">` +
+        `→ <strong>${li.total}</strong>` +
+        `<span class="init-clear" data-init-clear="${id}" role="button" title="Effacer l'initiative">✕</span>` +
+        `</span>`;
+    }
+
+    return `<span class="stat-pill accent rollable init-pill" data-roll-init="${b}" data-roll-init-dice="${d}" data-roll-pnj="${id}" title="Lancer l'initiative : ${b} + ${d}D6">Init <strong>${b}+${d}D6</strong>${resultHtml}</span>`;
+  },
+
   _attrCell(label, value, extraClass = "", opts = {}) {
     const n = Number(value);
     const rollable = opts.roll && Number.isFinite(n) && n >= 1;
+    const edAttr = opts.edition ? ` data-roll-edition="${opts.edition}"` : "";
     const rollAttrs = rollable
-      ? ` data-roll="${n}" data-roll-label="${this._esc(label)}" title="Lancer ${n} dés — ${this._esc(label)}"`
+      ? ` data-roll="${n}" data-roll-label="${this._esc(label)}"${edAttr} data-roll-rr="0" title="Lancer ${n} dés — ${this._esc(label)}"`
       : "";
     const cls = `attr-cell ${extraClass} ${rollable ? "rollable" : ""}`.trim();
     return `<div class="${cls}"${rollAttrs}>
@@ -613,14 +649,14 @@ const CardRenderer = {
      ouvrant une modale ; chaîne simple -> tag normal. Pour les sorts, un
      champ drain (SR5/SR6) ou seuil (Anarchy) est affiché dans le libellé. */
   _contentTag(item) {
-    if (item && typeof item === "object" && item.nom) {
-      const nom = this._esc(item.nom);
+    if (item && typeof item === "object" && item.name) {
+      const name = this._esc(item.name);
       // Suffixe Drain/Seuil pour les sorts, affiché dans le tag.
       let suffix = "";
       if (item.drain != null) {
         suffix = ` <span class="tag-stat">(Drain ${this._esc(item.drain)})</span>`;
-      } else if (item.seuil != null) {
-        suffix = ` <span class="tag-stat">(Seuil ${this._esc(item.seuil)})</span>`;
+      } else if (item.threshold != null) {
+        suffix = ` <span class="tag-stat">(Seuil ${this._esc(item.threshold)})</span>`;
       }
       if (item.desc) {
         // _esc échappe " donc le contenu est sûr dans un attribut entre guillemets.
@@ -628,18 +664,43 @@ const CardRenderer = {
         // le clic/clavier (voir ContentModal.bindDelegation), ce qui évite tout
         // problème d'apostrophes ou de guillemets dans le texte.
         const desc = this._esc(item.desc);
-        const t = this._esc(item.nom);
+        const t = this._esc(item.name);
         return `<span class="tag tag-clickable" role="button" tabindex="0"
-          data-content-nom="${t}" data-content-desc="${desc}"
-          >${nom}${suffix}<span class="tag-info">i</span></span>`;
+          data-content-name="${t}" data-content-desc="${desc}"
+          >${name}${suffix}<span class="tag-info">i</span></span>`;
       }
-      return `<span class="tag">${nom}${suffix}</span>`;
+      return `<span class="tag">${name}${suffix}</span>`;
     }
     return `<span class="tag">${this._esc(item)}</span>`;
   },
 
   _tagsSection(label, items) {
     return this._listSection(label, items);
+  },
+
+  /** Section Équipement où les weapons (VD/PRE) deviennent lançables. */
+  _equipSection(pnj, items, edition) {
+    if (!items || !items.length) return "";
+    const tags = items
+      .map((i) => {
+        const isWeapon =
+          typeof i === "string" && /\[/.test(i) && /(VD|PRE)/.test(i);
+        if (!isWeapon) return this._contentTag(i);
+        const r =
+          typeof WeaponRoll !== "undefined"
+            ? WeaponRoll.resolvePool(pnj, i, edition)
+            : null;
+        if (!r) return this._contentTag(i);
+        const limTxt = r.limit != null ? ` · lim ${r.limit}` : "";
+        const approxTxt = r.approx ? " ~" : "";
+        const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill}${approxTxt} ${r.skillVal} + ${r.attr} ${r.attrVal})${limTxt} — cliquer pour lancer`;
+        return `<span class="tag weapon-rollable rollable" data-roll-weapon="${this._esc(i)}" data-roll-pnj="${pnj.id}" data-roll-edition="${edition}" title="${this._esc(title)}">${this._esc(i)}<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="weapon-lim">▸${r.limit}</span>` : ""}</span></span>`;
+      })
+      .join("");
+    return `<div class="card-section">
+      <div class="card-section-label">Équipement</div>
+      <div class="card-section-content">${tags}</div>
+    </div>`;
   },
 
   _esc(str) {
@@ -761,6 +822,7 @@ const ContactRenderer = {
             <div class="contact-role" contenteditable="true" spellcheck="false"
               onblur="ContactsBook.editField('${c.id}', 'role', this.textContent.trim())"
               >${CardRenderer._esc(c.role)}</div>
+            ${c.metatype ? `<div class="contact-meta">${CardRenderer._esc(c.metatype)}</div>` : ""}
           </div>
           <div class="contact-header-actions">
             ${groupSel}
@@ -821,7 +883,7 @@ const ContactRenderer = {
     const dots = Array.from(
       { length: 6 },
       (_, i) =>
-        `<span class="niveau-dot ${i < c.niveau ? "filled" : ""}"
+        `<span class="niveau-dot ${i < c.level ? "filled" : ""}"
         onclick="ContactsBook.editField('${c.id}', 'niveau', ${i + 1}); ContactsBook.render()"></span>`,
     ).join("");
     const bonus = c.bonus
@@ -831,12 +893,13 @@ const ContactRenderer = {
       <div class="contact-stat-row">
         <span class="contact-stat-label">Niveau</span>
         <div class="niveau-dots">${dots}</div>
-        <span class="contact-stat-val">${c.niveau} (${(c.niveau * 5000).toLocaleString("fr-FR")}¥)</span>
+        <span class="contact-stat-val">${c.level} (${(c.level * 5000).toLocaleString("fr-FR")}¥)</span>
       </div>
       <div class="contact-stat-row">
         <span class="contact-stat-label">Effet</span>
         <span class="contact-rr">RR ${c.rr} — ${CardRenderer._esc(c.domaine)}</span>
       </div>
+      ${c.atoutCost != null ? `<div class="contact-stat-row"><span class="contact-stat-label">Atout</span><span class="contact-stat-val">${c.atoutCost} pts</span></div>` : ""}
       ${bonus}
     </div>`;
   },
@@ -862,10 +925,10 @@ const ContactRenderer = {
     el.className = "contact-card";
 
     // Pastilles de niveau : cercles pleins / vides
-    const niveauDots = Array.from(
+    const levelDots = Array.from(
       { length: 6 },
       (_, i) =>
-        `<span class="niveau-dot ${i < c.niveau ? "filled" : ""}"></span>`,
+        `<span class="niveau-dot ${i < c.level ? "filled" : ""}"></span>`,
     ).join("");
 
     const bonusHtml = c.bonus
@@ -881,8 +944,8 @@ const ContactRenderer = {
         <div class="contact-anarchy-stats">
           <div class="contact-stat-row">
             <span class="contact-stat-label">Niveau</span>
-            <div class="niveau-dots">${niveauDots}</div>
-            <span class="contact-stat-val">${c.niveau} (${c.cout.toLocaleString("fr-FR")}¥)</span>
+            <div class="niveau-dots">${levelDots}</div>
+            <span class="contact-stat-val">${c.level} (${c.cout.toLocaleString("fr-FR")}¥)</span>
           </div>
           <div class="contact-stat-row">
             <span class="contact-stat-label">Effet</span>
@@ -976,24 +1039,24 @@ const ContentModal = {
   _delegated: false,
 
   /* Délégation globale : tout clic / touche Enter|Espace sur un
-     [data-content-nom] ouvre la modale. dataset décode automatiquement
+     [data-content-name] ouvre la modale. dataset décode automatiquement
      les entités HTML (&#39;, &quot;…), donc le texte affiché est correct. */
   bindDelegation() {
     if (this._delegated) return;
     this._delegated = true;
     const open = (target) => {
-      const tag = target.closest("[data-content-nom]");
+      const tag = target.closest("[data-content-name]");
       if (!tag) return false;
-      this.show(tag.dataset.contentNom, tag.dataset.contentDesc || "");
+      this.show(tag.dataset.contentName, tag.dataset.contentDesc || "");
       return true;
     };
     document.addEventListener("click", (e) => open(e.target));
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Enter" && e.key !== " ") return;
-      const tag = e.target.closest && e.target.closest("[data-content-nom]");
+      const tag = e.target.closest && e.target.closest("[data-content-name]");
       if (tag) {
         e.preventDefault();
-        this.show(tag.dataset.contentNom, tag.dataset.contentDesc || "");
+        this.show(tag.dataset.contentName, tag.dataset.contentDesc || "");
       }
     });
   },

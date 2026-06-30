@@ -171,10 +171,10 @@ const EditionSR5 = {
     Troll: { CON: +4, AGI: -1, FOR: +4, LOG: -1, INT: -1, CHA: -2 },
   },
 
-  /* ---- Armure officielle par prof ---- */
+  /* ---- Armure officielle par proRating ---- */
   armureByProf: { 0: 0, 1: 9, 2: 12, 3: 12, 4: 9, 5: 18, 6: 18 },
 
-  /* ---- Initiative par prof ---- */
+  /* ---- Initiative par proRating ---- */
   initByProf: {
     0: { base: 6, dice: 1 },
     1: { base: 6, dice: 1 },
@@ -189,8 +189,8 @@ const EditionSR5 = {
   formOptions: {
     meta: ["Aléatoire", "Humain", "Elfe", "Nain", "Ork", "Troll"],
     gender: ["Aléatoire", "M", "F", "NB"],
-    prof: ["Aléatoire", "0", "1", "2", "3", "4", "5", "6"],
-    profession: [
+    proRating: ["Aléatoire", "0", "1", "2", "3", "4", "5", "6"],
+    archetype: [
       "Aléatoire",
       // Bas de l'échelle
       "Civil ordinaire",
@@ -809,7 +809,7 @@ const EditionSR5 = {
     ],
   },
 
-  /* ---- Nombre de compétences tirées par prof ---- */
+  /* ---- Nombre de compétences tirées par proRating ---- */
   skillCount: { 0: 3, 1: 4, 2: 4, 3: 4, 4: 5, 5: 5, 6: 6 },
 
   /* ---- Compétences spéciales par spécialisation ---- */
@@ -859,7 +859,7 @@ const EditionSR5 = {
     ],
   },
 
-  sortsByTradition: {
+  spellsByTradition: {
     "Mage hermétique": [
       "Barrière physique",
       "Boule étourdissante",
@@ -902,8 +902,8 @@ const EditionSR5 = {
   },
 
   augsBySpecial: {
-    Lieutenant: (prof) =>
-      prof >= 3
+    Lieutenant: (proRating) =>
+      proRating >= 3
         ? [
             "Réflexes câblés 1",
             "Yeux cybernétiques (smartlink, vision nocturne)",
@@ -922,8 +922,8 @@ const EditionSR5 = {
     Chaman: () => [],
     Technomancien: () => ["Renfort naturel"],
     "Mage Aztechnology": () => [],
-    Aucun: (prof) =>
-      prof >= 4
+    Aucun: (proRating) =>
+      proRating >= 4
         ? [
             Utils.rand([
               "Réflexes câblés 1",
@@ -996,7 +996,7 @@ const EditionSR5 = {
       "Remington 750 [VD 9P, PA -4, SA, 5(c)]",
       "Walther MA-2100 [VD 10P, PA -5, CA, 10(c)]",
     ],
-    armesMelee: [
+    meleeWeapons: [
       "Couteau [PRE 5, Allonge —, VD 4P, PA -1]",
       "Couteau de combat [PRE 6, Allonge —, VD 6P, PA -2]",
       "Épée [PRE 6, Allonge 1, VD 7P, PA -2]",
@@ -1078,7 +1078,7 @@ const EditionSR5 = {
      Un Éveillé (mage, chaman, adepte, prof magique) n'a donc pas
      d'augmentations cybernétiques. Ce détecteur centralise la règle.
   ---- */
-  _isAwakened(profession, special) {
+  _isAwakened(archetype, special) {
     const magSpecials = [
       "Adepte",
       "Mage hermétique",
@@ -1087,13 +1087,13 @@ const EditionSR5 = {
     ];
     if (magSpecials.includes(special)) return true;
     const magProf = ["Mage", "Chaman", "Adepte", "Initié", "Conjuration"];
-    return magProf.some((k) => (profession || "").includes(k));
+    return magProf.some((k) => (archetype || "").includes(k));
   },
 
-  equipProfile(profession, prof, special) {
-    const p = prof;
+  buildLoadout(archetype, proRating, special) {
+    const p = proRating;
     const pools = this.equipPools;
-    const awakened = this._isAwakened(profession, special);
+    const awakened = this._isAwakened(archetype, special);
 
     // Commlink selon prof
     const commlink =
@@ -1128,36 +1128,36 @@ const EditionSR5 = {
       "Forces spéciales / militaire",
       "SWAT Knight Errant",
       "Rigger militaire",
-    ].some((p) => profession.includes(p.split(" ")[0]));
+    ].some((p) => archetype.includes(p.split(" ")[0]));
 
-    let armePrincipale;
+    let primaryWeapon;
     if (p >= 5 || isHeavy) {
-      armePrincipale = Utils.rand(pools.fusilsAssaut);
+      primaryWeapon = Utils.rand(pools.fusilsAssaut);
     } else if (p >= 3) {
-      armePrincipale = Utils.rand([
+      primaryWeapon = Utils.rand([
         ...pools.mitraillettes,
         ...pools.fusilsAssaut,
       ]);
     } else if (p >= 1) {
-      armePrincipale = Utils.rand([
+      primaryWeapon = Utils.rand([
         ...pools.pistoletsLourds,
         ...pools.mitraillettes,
       ]);
     } else {
-      armePrincipale = Utils.rand([
+      primaryWeapon = Utils.rand([
         ...pools.pistoletsLegers,
         ...pools.pistoletsLourds,
       ]);
     }
 
     // Arme secondaire / de mêlée
-    const armeSecondaire = Utils.rand([
-      ...pools.armesMelee,
+    const secondaryWeapon = Utils.rand([
+      ...pools.meleeWeapons,
       ...pools.pistoletsLegers,
       ...pools.pistoletsLourds,
     ]);
 
-    const result = [commlink, armePrincipale];
+    const result = [commlink, primaryWeapon];
 
     // Arme de mêlée : gangs et pros du corps à corps
     const melee = [
@@ -1170,9 +1170,9 @@ const EditionSR5 = {
       "Adepte",
       "Cambrioleur",
       "Koshari",
-    ].some((k) => profession.includes(k));
+    ].some((k) => archetype.includes(k));
     if (melee || Utils.randBool(0.4)) {
-      result.push(Utils.rand(pools.armesMelee));
+      result.push(Utils.rand(pools.meleeWeapons));
     }
 
     // Électromatraque : flics et sécu
@@ -1181,7 +1181,7 @@ const EditionSR5 = {
       "Knight Errant",
       "Lone Star",
       "Agent de sécurité",
-    ].some((k) => profession.includes(k));
+    ].some((k) => archetype.includes(k));
     if (police) result.push(Utils.rand(pools.electroarmes));
 
     // Armure
@@ -1215,21 +1215,21 @@ const EditionSR5 = {
     // remplace les ranges de sa souche et porte ses traits raciaux.
     const mv =
       typeof Metavariants !== "undefined" ? Metavariants.resolve(meta) : null;
-    const souche = mv ? mv.souche : meta;
+    const baseMetatype = mv ? mv.baseMetatype : meta;
     // Bassin de noms : si non imposé, hériter de la métavariante
-    let bassinOverride = null;
-    if (mv && mv.bassins && (!opts.bassin || opts.bassin === "Aléatoire")) {
-      bassinOverride = Utils.rand(mv.bassins);
+    let originPoolOverride = null;
+    if (mv && mv.originPools && (!opts.originPool || opts.originPool === "Aléatoire")) {
+      originPoolOverride = Utils.rand(mv.originPools);
     }
 
     const gender =
       opts.gender === "Aléatoire" ? Utils.randGender() : opts.gender;
-    const prof =
-      opts.prof === "Aléatoire" ? Utils.randInt(0, 6) : parseInt(opts.prof, 10);
-    const profession =
-      opts.profession === "Aléatoire"
-        ? Utils.rand(this.formOptions.profession.slice(1))
-        : opts.profession;
+    const proRating =
+      opts.proRating === "Aléatoire" ? Utils.randInt(0, 6) : parseInt(opts.proRating, 10);
+    const archetype =
+      opts.archetype === "Aléatoire"
+        ? Utils.rand(this.formOptions.archetype.slice(1))
+        : opts.archetype;
 
     // Spécialisation
     let special = opts.special || "Aucun";
@@ -1249,21 +1249,21 @@ const EditionSR5 = {
     // Cohérence : une profession magique implique sa tradition si aucune
     // spécialisation n'est déjà fixée (sinon le « mage » n'aurait pas de Magie).
     if (special === "Aucun") {
-      if (profession.includes("Chaman")) special = "Chaman";
-      else if (profession.includes("Adepte")) special = "Adepte";
-      else if (profession.includes("Mage") || profession.includes("Initié"))
+      if (archetype.includes("Chaman")) special = "Chaman";
+      else if (archetype.includes("Adepte")) special = "Adepte";
+      else if (archetype.includes("Mage") || archetype.includes("Initié"))
         special = "Mage hermétique";
     }
 
     // Attributs de base selon professionnalisme
-    const profIdx = Utils.clamp(prof, 0, 6);
-    const baseAttrs = { ...this.attrByProf[profIdx] };
+    const archetypeIdx = Utils.clamp(proRating, 0, 6);
+    const baseAttrs = { ...this.attrByProf[archetypeIdx] };
     // Les modificateurs de PNJ suivent la souche (métatype parent)
-    const mods = this.metaMod[souche] || {};
+    const mods = this.metaMod[baseMetatype] || {};
     // Les ranges suivent la métavariante si présente, sinon la souche
     const range = mv
       ? mv.ranges
-      : this.attrRange[souche] || this.attrRange["Humain"];
+      : this.attrRange[baseMetatype] || this.attrRange["Humain"];
 
     const attrs = {};
     for (const k of ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"]) {
@@ -1276,10 +1276,10 @@ const EditionSR5 = {
 
     // Spécialisations magiques
     if (["Mage hermétique", "Chaman", "Adepte"].includes(special)) {
-      attrs.MAG = Utils.clamp(prof + Utils.randInt(1, 2), 1, 6);
+      attrs.MAG = Utils.clamp(proRating + Utils.randInt(1, 2), 1, 6);
     }
     if (special === "Technomancien") {
-      attrs.RES = Utils.clamp(prof + Utils.randInt(1, 2), 1, 6);
+      attrs.RES = Utils.clamp(proRating + Utils.randInt(1, 2), 1, 6);
     }
     if (special === "Decker") {
       attrs.ESS = Utils.clamp(6 - Utils.randInt(1, 2), 3, 6);
@@ -1288,12 +1288,12 @@ const EditionSR5 = {
     // Limites naturelles
     const limPhys = Math.ceil((attrs.FOR * 2 + attrs.CON + attrs.REA) / 3);
     const limMent = Math.ceil((attrs.LOG * 2 + attrs.INT + attrs.VOL) / 3);
-    const limSoc = Math.ceil((attrs.CHA * 2 + attrs.VOL + (prof || 0)) / 3);
+    const limSoc = Math.ceil((attrs.CHA * 2 + attrs.VOL + (proRating || 0)) / 3);
 
     // Initiative
-    const initData = this.initByProf[profIdx];
+    const initData = this.initByProf[archetypeIdx];
     const init = attrs.REA + attrs.INT;
-    const initDice = special === "Adepte" && prof >= 3 ? 2 : initData.dice;
+    const initDice = special === "Adepte" && proRating >= 3 ? 2 : initData.dice;
 
     // Résistance au Drain
     const drainResist = ["Mage hermétique", "Chaman"].includes(special)
@@ -1301,7 +1301,7 @@ const EditionSR5 = {
       : null;
 
     // Réserves utiles au MJ (SR5, LdB p.174 & p.189)
-    const armure = this.armureByProf[profIdx] || 0;
+    const armure = this.armureByProf[archetypeIdx] || 0;
     const defense = attrs.REA + attrs.INT; // test de défense
     const damageResist = attrs.CON + armure; // résistance aux dommages phys
     const composure = attrs.VOL + attrs.CHA; // sang-froid
@@ -1314,53 +1314,53 @@ const EditionSR5 = {
     const stunMon = 8 + Math.ceil(attrs.VOL / 2);
 
     // Compétences
-    const skills = this._buildSkills(profession, prof, special);
+    const skills = this._buildSkills(archetype, proRating, special);
 
     // Équipement
-    const equip = this._buildEquip(profession, prof, special);
+    const equip = this._buildEquip(archetype, proRating, special);
 
     // Augmentations — supprimées pour tout Éveillé (cohérence Essence/Magie)
-    const awakened = this._isAwakened(profession, special);
+    const awakened = this._isAwakened(archetype, special);
     const augsProducer =
       this.augsBySpecial[special] || this.augsBySpecial["Aucun"];
-    const augs = awakened ? [] : augsProducer(prof);
+    const augs = awakened ? [] : augsProducer(proRating);
 
     // Tags d'archétype pour la sélection de contenu cohérent
     const contentTags =
       typeof Flavor !== "undefined"
-        ? Flavor.tagsFor({ profession, special })
+        ? Flavor.tagsFor({ archetype, special })
         : new Set(["rue"]);
 
     // Sorts — enrichis avec descriptions cliquables.
     // Un adepte « pur » canalise sa magie en pouvoirs physiques, pas en
     // sorts ; les mages/chamans lancent des sorts.
-    let sortsList = [];
+    let spellsList = [];
     const adeptePur = special === "Adepte";
     if (awakened && !adeptePur && typeof Content !== "undefined") {
-      sortsList = Content.pickSorts("sr5", prof, contentTags);
-    } else if (!adeptePur && this.sortsByTradition[special]) {
-      sortsList = this.sortsByTradition[special].slice(
+      spellsList = Content.pickSorts("sr5", proRating, contentTags);
+    } else if (!adeptePur && this.spellsByTradition[special]) {
+      spellsList = this.spellsByTradition[special].slice(
         0,
-        2 + Math.floor(prof / 2),
+        2 + Math.floor(proRating / 2),
       );
     }
 
     // Pouvoirs d'adepte — seulement pour les adeptes
     const powers =
       special === "Adepte" && typeof Content !== "undefined"
-        ? Content.pickPouvoirs("sr5", prof, prof >= 4 ? 3 : 2)
+        ? Content.pickPouvoirs("sr5", proRating, proRating >= 4 ? 3 : 2)
         : [];
 
     // Trait de couleur cohérent (parfois)
     const traits =
       typeof Content !== "undefined" && Utils.randBool(0.5)
-        ? Content.pickTraits("sr5", contentTags, prof, 1)
+        ? Content.pickTraits("sr5", contentTags, proRating, 1)
         : [];
 
     // Arme supplémentaire cohérente (aléa d'arsenal)
     if (typeof Content !== "undefined" && Utils.randBool(0.6)) {
-      const arme = Content.pickArme("sr5", contentTags, prof);
-      if (arme) equip.push(arme);
+      const weapon = Content.pickWeapon("sr5", contentTags, proRating);
+      if (weapon) equip.push(weapon);
     }
 
     const pnj = {
@@ -1370,17 +1370,17 @@ const EditionSR5 = {
         opts.name && opts.name.trim()
           ? opts.name.trim()
           : Utils.genName(
-              opts.bassin && opts.bassin !== "Aléatoire"
-                ? opts.bassin
-                : bassinOverride,
+              opts.originPool && opts.originPool !== "Aléatoire"
+                ? opts.originPool
+                : originPoolOverride,
             ),
-      meta: souche,
+      meta: baseMetatype,
       metavariant: mv ? mv.name : null,
-      metaFamille: mv ? mv.famille : null,
+      metaFamily: mv ? mv.family : null,
       metaTraits: mv ? mv.traits : [],
       gender,
-      prof,
-      profession,
+      proRating,
+      archetype,
       special,
       attrs,
       limPhys,
@@ -1399,25 +1399,27 @@ const EditionSR5 = {
       stunMon,
       physFilled: 0,
       stunFilled: 0,
-      armure: this.armureByProf[profIdx] || 0,
+      armure: this.armureByProf[archetypeIdx] || 0,
       skills,
       equip,
       augs,
-      sorts: sortsList,
+      spells: spellsList,
       powers,
       traits,
       notes: "",
     };
 
     // Couche d'habillage cohérente
+    // Cohérence arme <-> compétence (renomme une compétence de combat si besoin)
+    if (typeof WeaponRoll !== "undefined") WeaponRoll.reconcile(pnj, "sr5");
     if (typeof Flavor !== "undefined") Flavor.apply(pnj);
     return pnj;
   },
 
-  _buildSkills(profession, prof, special) {
-    const p = Utils.clamp(prof, 0, 6);
+  _buildSkills(archetype, proRating, special) {
+    const p = Utils.clamp(proRating, 0, 6);
     const pool =
-      this.skillPools[profession] || this.skillPools["Voyou de bas étage"];
+      this.skillPools[archetype] || this.skillPools["Voyou de bas étage"];
     const count = this.skillCount[p] || 4;
 
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
@@ -1442,15 +1444,15 @@ const EditionSR5 = {
     return skills;
   },
 
-  _buildEquip(profession, prof, special) {
-    return this.equipProfile(profession, prof, special);
+  _buildEquip(archetype, proRating, special) {
+    return this.buildLoadout(archetype, proRating, special);
   },
 
   recalc(pnj) {
-    const { attrs, prof } = pnj;
+    const { attrs, proRating } = pnj;
     pnj.limPhys = Math.ceil((attrs.FOR * 2 + attrs.CON + attrs.REA) / 3);
     pnj.limMent = Math.ceil((attrs.LOG * 2 + attrs.INT + attrs.VOL) / 3);
-    pnj.limSoc = Math.ceil((attrs.CHA * 2 + attrs.VOL + (prof || 0)) / 3);
+    pnj.limSoc = Math.ceil((attrs.CHA * 2 + attrs.VOL + (proRating || 0)) / 3);
     pnj.physMon = 8 + Math.ceil(attrs.CON / 2);
     pnj.stunMon = 8 + Math.ceil(attrs.VOL / 2);
     pnj.init = attrs.REA + attrs.INT;

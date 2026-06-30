@@ -24,8 +24,8 @@ const EditionAnarchy = {
   formOptions: {
     meta: ["Aléatoire", "Humain", "Elfe", "Nain", "Ork", "Troll"],
     gender: ["Aléatoire", "M", "F", "NB"],
-    rang: ["Aléatoire", "Figurant", "Figurant d'élite", "Lieutenant", "Boss"],
-    profession: [
+    tier: ["Aléatoire", "Figurant", "Figurant d'élite", "Lieutenant", "Boss"],
+    archetype: [
       "Aléatoire",
       "Ganger",
       "Ganger d'élite",
@@ -62,29 +62,29 @@ const EditionAnarchy = {
     Troll: { FOR: 5, AGI: 2, VOL: 3, LOG: 2, CHA: 1 },
   },
 
-  /* ---- Profils complets ----
-     Format par profil :
+  /* ---- Stat blocks complets ----
+     Format par statBlock :
      {
        label,       // nom affiché
        attrs,       // { FOR, AGI, VOL, LOG, CHA } valeurs humain de base
        attrsMeta,   // overrides par métatype { 'Ork': { FOR:4 }, ... }
        skills,      // [ { name, val, attr, rr, spec?, specVal?, specAttr?, specRR? } ]
-       atouts,      // atouts fixes (toujours présents)
-       atoutsChoix, // nb d'atouts au choix parmi atoutsOptions
-       atoutsOptions,
-       armes,       // [ { name, vd, portees } ]  portees = string '[OK/OK/...]'
+       edges,       // atouts fixes (toujours présents)
+       edgeChoices, // nb d'atouts au choix parmi edgeOptions
+       edgeOptions,
+       weapons,     // [ { name, vd, ranges } ]  ranges = string '[OK/OK/...]'
        equip,       // string[]
-       combativite, // 'nulle'|'faible'|'forte'|'extrême'
-       seuilsPhys,  // [leger, moyen, grave]  base humain
-       seuilsPhysMeta, // { 'Ork': [5,8,11], ... }
-       seuils_ment, // [leger, moyen, grave]
-       seuils_ment_meta,
-       seuilsMat,   // null ou [leger, moyen, grave]  (deckers)
-       eveille,     // null | 'hermétique' | 'adepte' | 'chamanique'
-       sorts,       // string[] (si éveillé)
+       threatLevel, // 'nulle'|'faible'|'forte'|'extrême'
+       physMonitor,  // [leger, moyen, grave]  base humain
+       physMonitorMeta, // { 'Ork': [5,8,11], ... }
+       mentMonitor, // [leger, moyen, grave]
+       mentMonitorMeta,
+       matrixMonitor,   // null ou [leger, moyen, grave]  (deckers)
+       awakened,     // null | 'hermétique' | 'adepte' | 'chamanique'
+       spells,       // string[] (si éveillé)
      }
   ---- */
-  profils: {
+  statBlocks: {
     /* ======== GANGERS (p.244-248 Anarchy V2) ======== */
 
     Ganger: {
@@ -132,43 +132,43 @@ const EditionAnarchy = {
           specRR: 0,
         },
       ],
-      atouts: [],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edges: [],
+      edgeChoices: 1,
+      edgeOptions: [
         "Substituts musculaires (cyberware) : VD +1 en combat rapproché",
         "Jazz (drogue) : +1 action par combat",
         "Bras cybernétique (cyberware) : RR 1 aux tests de Combat rapproché",
         "Zélé (trait) : Avantage pour résister à l'intimidation ou la peur ; combativité forte",
         "Armure dermique (cyberware) : Armure +1",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 3,
           vdMeta: { Ork: 4, Troll: 5 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Couteau",
           vdBase: 4,
           vdMeta: { Ork: 5, Troll: 6 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Pistolet léger",
           vdBase: 4,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
       ],
       equip: ["Commlink", "Synthécuir aux couleurs du gang (Armure 1)"],
-      combativite: "faible",
-      seuilsPhys: [4, 7, 10],
-      seuilsPhysMeta: { Ork: [5, 8, 11], Troll: [6, 9, 12] },
-      seuils_ment: [2, 5, 8],
-      seuils_ment_meta: { Nain: [3, 6, 9] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "faible",
+      physMonitor: [4, 7, 10],
+      physMonitorMeta: { Ork: [5, 8, 11], Troll: [6, 9, 12] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     "Ganger d'élite": {
@@ -217,9 +217,9 @@ const EditionAnarchy = {
           specMeta: { Elfe: { specVal: 4 } },
         },
       ],
-      atouts: [],
-      atoutsChoix: 2,
-      atoutsOptions: [
+      edges: [],
+      edgeChoices: 2,
+      edgeOptions: [
         "Substituts musculaires (cyberware) : VD +1 en combat rapproché",
         "Jazz (drogue) : +1 action par combat",
         "Bras cybernétique (cyberware) : RR 1 aux tests de Combat rapproché",
@@ -227,40 +227,40 @@ const EditionAnarchy = {
         "Armure dermique (cyberware) : Armure +1",
         "Yeux cybernétiques avec smartlink (cyberware) : RR 1 aux tests d'Armes à distance (mitraillettes), vision nocturne",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 3,
           vdMeta: { Ork: 4, Troll: 5 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Arme longue (katana, hache, épée)",
           vdBase: 5,
           vdMeta: { Ork: 6, Troll: 7 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Pistolet lourd",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
         {
           name: "Mitraillette",
           vdBase: 5,
           vdMeta: {},
-          portees: "[Dés./OK/OK/–]",
+          ranges: "[Dés./OK/OK/–]",
         },
       ],
       equip: ["Commlink", "Manteau renforcé (Armure 2)"],
-      combativite: "faible",
-      seuilsPhys: [5, 8, 11],
-      seuilsPhysMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
-      seuils_ment: [2, 5, 8],
-      seuils_ment_meta: { Nain: [3, 6, 9] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "faible",
+      physMonitor: [5, 8, 11],
+      physMonitorMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     "Ganger éveillé": {
@@ -319,37 +319,37 @@ const EditionAnarchy = {
           specRR: 0,
         },
       ],
-      atouts: [
+      edges: [
         "Éveillé (tradition au choix) : Perception & projection astrale, Sorcellerie, Conjuration",
       ],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edgeChoices: 1,
+      edgeOptions: [
         "Focus de combat (équipement) : RR 1 aux tests de Sorcellerie (Combat)",
         "Focus de feu (équipement) : RR 1 aux tests de Conjuration (esprits du feu)",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Couteau",
           vdBase: 3,
           vdMeta: { Ork: 4, Troll: 5 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
       ],
       equip: ["Commlink", "Synthécuir aux couleurs du gang (Armure 1)"],
-      combativite: "faible",
-      seuilsPhys: [3, 6, 9],
-      seuilsPhysMeta: { Ork: [4, 7, 10], Troll: [5, 8, 11] },
-      seuils_ment: [3, 6, 9],
-      seuils_ment_meta: { Nain: [4, 7, 10] },
-      seuilsMat: null,
-      eveille: "hermétique",
-      sorts: [
+      threatLevel: "faible",
+      physMonitor: [3, 6, 9],
+      physMonitorMeta: { Ork: [4, 7, 10], Troll: [5, 8, 11] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: null,
+      awakened: "hermétique",
+      spells: [
         "Armure (Manipulation, Armure +1 par 3 succès)",
         "Trait de feu (Combat indirect, VD = VOL, dommages physiques)",
         "Éclair mana (Combat direct, VD = succès, dommages mentaux)",
@@ -411,31 +411,31 @@ const EditionAnarchy = {
           specRR: 0,
         },
       ],
-      atouts: ["Éveillé : Adepte"],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edges: ["Éveillé : Adepte"],
+      edgeChoices: 1,
+      edgeOptions: [
         "Sens du combat (pouvoir d'adepte) : RR 1 aux tests d'Athlétisme (défense à distance) et Combat rapproché (défense)",
         "Frappe élémentaire électrique (pouvoir d'adepte) : VD +1 à mains nues, fait perdre une action à la cible en cas de blessure",
         "Réflexes améliorés (pouvoir d'adepte) : +1 action par combat",
         "Furtivité améliorée (pouvoir d'adepte) : RR 1 aux tests de Furtivité (discrétion physique)",
         "Combat rapproché amélioré (pouvoir d'adepte) : RR 1 aux tests de Combat rapproché (mains nues)",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
       ],
       equip: ["Commlink", "Synthécuir aux couleurs du gang (Armure 1)"],
-      combativite: "faible",
-      seuilsPhys: [3, 6, 9],
-      seuilsPhysMeta: { Ork: [4, 7, 10], Troll: [5, 8, 11] },
-      seuils_ment: [2, 5, 8],
-      seuils_ment_meta: { Nain: [3, 6, 9] },
-      seuilsMat: null,
-      eveille: "adepte",
+      threatLevel: "faible",
+      physMonitor: [3, 6, 9],
+      physMonitorMeta: { Ork: [4, 7, 10], Troll: [5, 8, 11] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: "adepte",
     },
 
     "Ganger decker": {
@@ -485,45 +485,45 @@ const EditionAnarchy = {
         },
         { name: "Cybercombat", val: 3, attr: "VOL", rr: 0 },
       ],
-      atouts: [
+      edges: [
         "Cyberdeck (Attaque 1, Firewall 2)",
         "Datajack (cyberware) : IND, RV cold-sim",
       ],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edgeChoices: 1,
+      edgeOptions: [
         "Programme Exploitation (équipement) : RR 1 aux tests de Piratage (force brute)",
         "Programme Agresseur (équipement) : RR 1 aux tests de Piratage (cybercombat)",
         "Programme Navigateur (équipement) : RR 1 aux tests d'Électronique (recherche matricielle)",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Couteau",
           vdBase: 3,
           vdMeta: { Ork: 4, Troll: 5 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Pistolet léger",
           vdBase: 4,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
-        { name: "Cybercombat", vdBase: 1, vdMeta: {}, portees: "[matriciel]" },
+        { name: "Cybercombat", vdBase: 1, vdMeta: {}, ranges: "[matriciel]" },
       ],
       equip: ["Commlink", "Synthécuir aux couleurs du gang (Armure 1)"],
-      combativite: "faible",
-      seuilsPhys: [3, 6, 9],
-      seuilsPhysMeta: { Ork: [4, 7, 10], Troll: [5, 8, 11] },
-      seuils_ment: [2, 5, 8],
-      seuils_ment_meta: { Nain: [3, 6, 9] },
-      seuilsMat: [2, 5, 8],
-      eveille: null,
+      threatLevel: "faible",
+      physMonitor: [3, 6, 9],
+      physMonitorMeta: { Ork: [4, 7, 10], Troll: [5, 8, 11] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: [2, 5, 8],
+      awakened: null,
     },
 
     "Go-ganger": {
@@ -591,9 +591,9 @@ const EditionAnarchy = {
           specRR: 0,
         },
       ],
-      atouts: [],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edges: [],
+      edgeChoices: 1,
+      edgeOptions: [
         "Moto de course (véhicule) : Autopilote 6, Structure 4, Maniabilité 2, Vitesse 6, Blindage 0",
         "Chopper (véhicule) : Autopilote 6, Structure 5, Maniabilité 2, Vitesse 5, Blindage 0",
         "Voiture sportive (véhicule) : Autopilote 6, Structure 5, Maniabilité 2, Vitesse 5, Blindage 0",
@@ -603,40 +603,40 @@ const EditionAnarchy = {
         "Zélé (trait) : Avantage pour résister à l'intimidation ou la peur ; combativité forte",
         "Armure dermique (cyberware) : Armure +1",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Couteau",
           vdBase: 3,
           vdMeta: { Ork: 4, Troll: 5 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Pistolet automatique",
           vdBase: 4,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
         {
           name: "Mitraillette (sur Doberman)",
           vdBase: 5,
           vdMeta: {},
-          portees: "[Dés./OK/OK/–]",
+          ranges: "[Dés./OK/OK/–]",
         },
       ],
       equip: ["Commlink", "Synthécuir aux couleurs du gang (Armure 1)"],
-      combativite: "faible",
-      seuilsPhys: [3, 6, 9],
-      seuilsPhysMeta: { Ork: [4, 7, 10], Troll: [5, 8, 11] },
-      seuils_ment: [2, 5, 8],
-      seuils_ment_meta: { Nain: [3, 6, 9] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "faible",
+      physMonitor: [3, 6, 9],
+      physMonitorMeta: { Ork: [4, 7, 10], Troll: [5, 8, 11] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     /* ======== SÉCURITÉ / POLICE NORMAUX (p.247-249) ======== */
@@ -693,41 +693,41 @@ const EditionAnarchy = {
           specMeta: { Elfe: { val: 4 } },
         },
       ],
-      atouts: [],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edges: [],
+      edgeChoices: 1,
+      edgeOptions: [
         "Smartlink (cyberware) : RR 1 aux tests d'Armes à distance (pistolets)",
         "Yeux cybernétiques (cyberware) : RR 1 aux tests de Perception (physique)",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 3,
           vdMeta: { Ork: 4, Troll: 5 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Électromatraque",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
           note: "perte d'une action en cas de dommages",
         },
         {
           name: "Pistolet léger",
           vdBase: 4,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
       ],
       equip: ["Commlink", "Gilet pare-balles (Armure 3)"],
-      combativite: "faible",
-      seuilsPhys: [6, 9, 12],
-      seuilsPhysMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
-      seuils_ment: [2, 5, 8],
-      seuils_ment_meta: { Nain: [3, 6, 9] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "faible",
+      physMonitor: [6, 9, 12],
+      physMonitorMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     "Officier de sécurité": {
@@ -783,35 +783,35 @@ const EditionAnarchy = {
         },
         { name: "Influence", val: 3, attr: "CHA", rr: 0 },
       ],
-      atouts: [
+      edges: [
         "Yeux cybernétiques avec identification de cibles (cyberware) : RR 1 aux tests d'Armes à distance et de Perception (physique), vision nocturne",
       ],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edgeChoices: 1,
+      edgeOptions: [
         "Réflexes câblés (cyberware) : +1 action par combat",
         "Armure dermique (cyberware) : Armure +1",
         "Smartlink (cyberware) : RR 1 aux tests d'Armes à distance (mitraillettes ou shotguns)",
         "Câblage de compétence (cyberware) : RR 1 aux tests de Combat rapproché (armes contondantes)",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 3,
           vdMeta: { Ork: 4, Troll: 5 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Électromatraque",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
           note: "perte d'une action en cas de dommages",
         },
         {
           name: "Pistolet lourd",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
         {
           name: "Arme principale au choix",
@@ -820,13 +820,13 @@ const EditionAnarchy = {
               name: "Mitraillette",
               vdBase: 5,
               vdMeta: {},
-              portees: "[Dés./OK/OK/–]",
+              ranges: "[Dés./OK/OK/–]",
             },
             {
               name: "Shotgun",
               vdBase: 8,
               vdMeta: {},
-              portees: "[Dés./OK/Dés./–]",
+              ranges: "[Dés./OK/Dés./–]",
             },
           ],
         },
@@ -835,13 +835,13 @@ const EditionAnarchy = {
         "Commlink",
         "Gilet pare-balles (Armure 3) + bouclier anti-émeutes optionnel (Armure +1)",
       ],
-      combativite: "faible",
-      seuilsPhys: [6, 9, 12],
-      seuilsPhysMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
-      seuils_ment: [2, 5, 8],
-      seuils_ment_meta: { Nain: [3, 6, 9] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "faible",
+      physMonitor: [6, 9, 12],
+      physMonitorMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     "Mage de sécurité": {
@@ -893,48 +893,48 @@ const EditionAnarchy = {
         },
         { name: "Influence", val: 3, attr: "CHA", rr: 0 },
       ],
-      atouts: [
+      edges: [
         "Éveillé (tradition hermétique) : Perception & projection astrale, Sorcellerie, Conjuration",
         "Focus de maintien : permet de maintenir 2 sorts sans malus et 4 avec un désavantage",
       ],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edgeChoices: 1,
+      edgeOptions: [
         "Focus de combat (équipement) : RR 2 aux tests de Sorcellerie (sorts de combat)",
         "Focus de détection (équipement) : RR 2 aux tests de Sorcellerie (sorts de détection)",
         "Focus d'illusion (équipement) : RR 1 aux tests de Sorcellerie (sorts d'illusion)",
         "Focus de manipulation (équipement) : RR 1 aux tests de Sorcellerie (sorts de manipulation)",
         "Focus des aînés (équipement) : RR 2 aux tests de Conjuration (esprits des aînés)",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Électromatraque",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
           note: "perte d'une action en cas de dommages",
         },
         {
           name: "Pistolet léger",
           vdBase: 4,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
       ],
       equip: ["Commlink", "Gilet pare-balles (Armure 3)"],
-      combativite: "faible",
-      seuilsPhys: [5, 8, 11],
-      seuilsPhysMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
-      seuils_ment: [3, 6, 9],
-      seuils_ment_meta: { Nain: [4, 7, 10] },
-      seuilsMat: null,
-      eveille: "hermétique",
-      sorts: [
+      threatLevel: "faible",
+      physMonitor: [5, 8, 11],
+      physMonitorMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: null,
+      awakened: "hermétique",
+      spells: [
         "Analyse de véracité (Détection, Seuil CHA+VOL)",
         "Armure (Manipulation, Armure +1 par 3 succès)",
         "Confusion (Illusion, Seuil VOL+LOG, inflige un désavantage)",
@@ -1002,48 +1002,48 @@ const EditionAnarchy = {
           specRR: 0,
         },
       ],
-      atouts: [
+      edges: [
         "Cyberdeck (Attaque 4, Firewall 4)",
         "Datajack (cyberware) : IND, RV cold-sim",
         "Cyberjack (cyberware) : remplacement du datajack ; IND, RV cold-sim, +1 action par narration en RV",
       ],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edgeChoices: 1,
+      edgeOptions: [
         "Programme Agresseur (équipement) : RR 2 aux tests de Piratage (cybercombat)",
         "Programme Exploitation (équipement) : RR 2 aux tests de Piratage (force brute)",
         "Programme Moniteur (équipement) : RR 2 aux tests d'Électronique (protection matricielle)",
         "Programme Navigateur (équipement) : RR 2 aux tests d'Électronique (recherche matricielle)",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Électromatraque",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
           note: "perte d'une action en cas de dommages",
         },
         {
           name: "Pistolet léger",
           vdBase: 4,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
-        { name: "Cybercombat", vdBase: 4, vdMeta: {}, portees: "[matriciel]" },
+        { name: "Cybercombat", vdBase: 4, vdMeta: {}, ranges: "[matriciel]" },
       ],
       equip: ["Commlink", "Gilet pare-balles (Armure 3)"],
-      combativite: "faible",
-      seuilsPhys: [5, 8, 11],
-      seuilsPhysMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
-      seuils_ment: [3, 6, 9],
-      seuils_ment_meta: { Nain: [4, 7, 10] },
-      seuilsMat: [4, 7, 10],
-      eveille: null,
+      threatLevel: "faible",
+      physMonitor: [5, 8, 11],
+      physMonitorMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: [4, 7, 10],
+      awakened: null,
     },
 
     "Adepte de sécurité": {
@@ -1097,12 +1097,12 @@ const EditionAnarchy = {
         { name: "Perception", val: 3, attr: "LOG", rr: 0 },
         { name: "Influence", val: 3, attr: "CHA", rr: 0 },
       ],
-      atouts: [
+      edges: [
         "Éveillé : Adepte",
         "Combat rapproché amélioré (pouvoir d'adepte) : RR 1 aux tests de Combat rapproché (mains nues)",
       ],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edgeChoices: 1,
+      edgeOptions: [
         "Sens du combat (pouvoir d'adepte) : RR 1 aux tests d'Athlétisme (défense à distance) et Combat rapproché (défense)",
         "Frappe élémentaire électrique (pouvoir d'adepte) : VD +2 à mains nues, fait perdre une action à la cible en cas de blessure",
         "Réflexes améliorés (pouvoir d'adepte) : +1 action par combat",
@@ -1110,35 +1110,35 @@ const EditionAnarchy = {
         "Perception améliorée (pouvoir d'adepte) : RR 2 aux tests de Perception (physique)",
         "Course sur les murs (pouvoir d'adepte) : permet de courir une courte distance sur les murs. RR 1 aux tests d'Athlétisme (course)",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 3,
           vdMeta: { Ork: 4, Troll: 5 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Frappe élémentaire électrique",
           vdBase: 5,
           vdMeta: { Ork: 6, Troll: 7 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
           note: "perte d'une action en cas de dommage",
         },
         {
           name: "Pistolet lourd",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
       ],
       equip: ["Commlink", "Gilet pare-balles (Armure 3)"],
-      combativite: "faible",
-      seuilsPhys: [6, 9, 12],
-      seuilsPhysMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
-      seuils_ment: [2, 5, 8],
-      seuils_ment_meta: { Nain: [3, 6, 9] },
-      seuilsMat: null,
-      eveille: "adepte",
+      threatLevel: "faible",
+      physMonitor: [6, 9, 12],
+      physMonitorMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: "adepte",
     },
 
     "Rigger de sécurité": {
@@ -1187,41 +1187,41 @@ const EditionAnarchy = {
           specRR: 1,
         },
       ],
-      atouts: [
+      edges: [
         "Câblage de contrôle de véhicules (cyberware) : IND, RV cold-sim, permet de plonger dans un drone",
         "Console de commande pour rigger (équipement) : mode siège du capitaine, 2 drones concurrents. RR 1 aux tests de Pilotage et d'Ingénierie (armes contrôlées à distance)",
         "Lockheed Optic-X2 (petit drone volant) : Autopilote 6, Structure 1, Maniabilité 9, Vitesse 4, Blindage 0. RR 2 aux tests de Furtivité (discrétion physique) et de Perception (physique)",
       ],
-      atoutsChoix: 0,
-      atoutsOptions: [],
-      armes: [
+      edgeChoices: 0,
+      edgeOptions: [],
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Pistolet automatique",
           vdBase: 4,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
         {
           name: "Fusil d'assaut (drones)",
           vdBase: 7,
           vdMeta: {},
-          portees: "[Dés./OK/OK/Dés.]",
+          ranges: "[Dés./OK/OK/Dés.]",
         },
       ],
       equip: ["Commlink", "Gilet pare-balles (Armure 3)"],
-      combativite: "faible",
-      seuilsPhys: [5, 8, 11],
-      seuilsPhysMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
-      seuils_ment: [2, 5, 8],
-      seuils_ment_meta: { Nain: [3, 6, 9] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "faible",
+      physMonitor: [5, 8, 11],
+      physMonitorMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     /* ======== SÉCURITÉ / POLICE ÉLITE (p.250-253) ======== */
@@ -1280,41 +1280,41 @@ const EditionAnarchy = {
           specRR: 1,
         },
       ],
-      atouts: [
+      edges: [
         "Câblage de compétence (cyberware) : RR 1 aux tests de Survie (premiers soins)",
         "Yeux cybernétiques (cyberware) : RR 1 aux tests de Perception (physique), vision thermographique",
       ],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edgeChoices: 1,
+      edgeOptions: [
         "Médikit autonome DocWagon Pro+ (drone) Autopilote 9, fixe",
         "Réflexes câblés (cyberware) : +1 action par combat",
         "Armure dermique (cyberware) : Armure +1",
         "Smartlink (cyberware) : RR 1 aux tests d'Armes à distance (mitraillettes)",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Couteau de combat",
           vdBase: 3,
           vdMeta: { Ork: 4, Troll: 5 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Pistolet lourd",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
         {
           name: "Mitraillette",
           vdBase: 5,
           vdMeta: {},
-          portees: "[Dés./OK/OK/–]",
+          ranges: "[Dés./OK/OK/–]",
         },
       ],
       equip: [
@@ -1322,13 +1322,13 @@ const EditionAnarchy = {
         "Gilet pare-balles (Armure 3)",
         "Stim patches et trauma patches",
       ],
-      combativite: "forte",
-      seuilsPhys: [5, 8, 11],
-      seuilsPhysMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
-      seuils_ment: [3, 6, 9],
-      seuils_ment_meta: { Nain: [4, 7, 10] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "forte",
+      physMonitor: [5, 8, 11],
+      physMonitorMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     "Mage d'élite": {
@@ -1382,49 +1382,49 @@ const EditionAnarchy = {
         },
         { name: "Influence", val: 3, attr: "CHA", rr: 0 },
       ],
-      atouts: [
+      edges: [
         "Éveillé (tradition hermétique) : Perception & projection astrale, Sorcellerie, Conjuration",
         "Focus de sorcellerie (équipement) : RR 1 aux tests de Sorcellerie",
         "Focus de combat (équipement) : RR 2 aux tests de Sorcellerie (sorts de combat)",
         "Focus de maintien : permet de maintenir 3 sorts sans malus et 6 avec malus",
       ],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edgeChoices: 1,
+      edgeOptions: [
         "Focus de détection (équipement) : RR 1 aux tests de Sorcellerie (sorts de détection)",
         "Focus d'illusion (équipement) : RR 1 aux tests de Sorcellerie (sorts d'illusion)",
         "Focus de manipulation (équipement) : RR 1 aux tests de Sorcellerie (sorts de manipulation)",
         "Focus des aînés (équipement) : RR 2 aux tests de Conjuration (esprits des aînés)",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Électromatraque",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
           note: "perte d'une action en cas de dommages",
         },
         {
           name: "Pistolet lourd",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
       ],
       equip: ["Commlink", "Armure intégrale + Casque (Armure 4)"],
-      combativite: "forte",
-      seuilsPhys: [6, 9, 12],
-      seuilsPhysMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
-      seuils_ment: [4, 7, 10],
-      seuils_ment_meta: { Nain: [5, 8, 11] },
-      seuilsMat: null,
-      eveille: "hermétique",
-      sorts: [
+      threatLevel: "forte",
+      physMonitor: [6, 9, 12],
+      physMonitorMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
+      mentMonitor: [4, 7, 10],
+      mentMonitorMeta: { Nain: [5, 8, 11] },
+      matrixMonitor: null,
+      awakened: "hermétique",
+      spells: [
         "Armure (Manipulation, Armure +1 par 3 succès)",
         "Augmentation de réflexes (Santé, effets selon succès 3/5/7)",
         "Barrière physique (Manipulation, Force 1 par succès, 1 succès par tranche de 3 mètres)",
@@ -1500,38 +1500,38 @@ const EditionAnarchy = {
         },
         { name: "Influence", val: 3, attr: "CHA", rr: 0 },
       ],
-      atouts: [
+      edges: [
         "Réflexes câblés (cyberware) : +1 action par narration",
         "Yeux cybernétiques avec réseau tactique (cyberware) : RR 1 aux tests d'Armes à distance et de Perception (physique), compensation anti-flash, vision nocturne",
         "Smartlink (cyberware) : RR 2 aux tests d'Armes à distance (arme principale)",
         "Câblage de compétence (cyberware) : RR 1 aux tests de Combat rapproché",
       ],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edgeChoices: 1,
+      edgeOptions: [
         "Armure dermique (cyberware) : Armure +1",
         "Combinaison caméléon (équipement) : RR 1 aux tests de Furtivité (discrétion physique)",
         "Producteur de plaquettes (bioware) : +1 blessure légère",
         "Réseau tactique avancé (amélioration de cyberware) : RR 1 aux tests d'Athlétisme (défense à distance)",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 3,
           vdMeta: { Ork: 4, Troll: 5 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Électromatraque",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
           note: "perte d'une action en cas de dommages",
         },
         {
           name: "Pistolet lourd",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
         {
           name: "Arme principale au choix",
@@ -1540,31 +1540,31 @@ const EditionAnarchy = {
               name: "Mitraillette",
               vdBase: 5,
               vdMeta: {},
-              portees: "[Dés./OK/OK/–]",
+              ranges: "[Dés./OK/OK/–]",
             },
             {
               name: "Shotgun",
               vdBase: 8,
               vdMeta: {},
-              portees: "[Dés./OK/Dés./–]",
+              ranges: "[Dés./OK/Dés./–]",
             },
             {
               name: "Fusil d'assaut",
               vdBase: 7,
               vdMeta: {},
-              portees: "[Dés./OK/OK/Dés.]",
+              ranges: "[Dés./OK/OK/Dés.]",
             },
             {
               name: "Fusil de précision",
               vdBase: 10,
               vdMeta: {},
-              portees: "[–/Dés./Dés./OK]",
+              ranges: "[–/Dés./Dés./OK]",
             },
             {
               name: "Mitrailleuse",
               vdBase: 9,
               vdMeta: {},
-              portees: "[–/OK/OK/OK]",
+              ranges: "[–/OK/OK/OK]",
             },
           ],
         },
@@ -1573,13 +1573,13 @@ const EditionAnarchy = {
         "Commlink",
         "Armure intégrale + Casque (Armure 4) + bouclier balistique optionnel (Armure +1)",
       ],
-      combativite: "forte",
-      seuilsPhys: [7, 10, 13],
-      seuilsPhysMeta: { Ork: [8, 11, 14], Troll: [9, 12, 15] },
-      seuils_ment: [3, 6, 9],
-      seuils_ment_meta: { Nain: [4, 7, 10] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "forte",
+      physMonitor: [7, 10, 13],
+      physMonitorMeta: { Ork: [8, 11, 14], Troll: [9, 12, 15] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     "Adepte d'élite": {
@@ -1633,49 +1633,49 @@ const EditionAnarchy = {
         { name: "Perception", val: 4, attr: "LOG", rr: 0 },
         { name: "Influence", val: 3, attr: "CHA", rr: 0 },
       ],
-      atouts: [
+      edges: [
         "Éveillé : Adepte",
         "Armure mystique (pouvoir d'adepte) : Armure +1 (physique et magique)",
         "Combat rapproché amélioré (pouvoir d'adepte) : RR 3 aux tests de Combat rapproché (mains nues)",
         "Sens du combat (pouvoir d'adepte) : RR 1 aux tests d'Athlétisme (défense à distance) et Combat rapproché (défense)",
       ],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edgeChoices: 1,
+      edgeOptions: [
         "Frappe élémentaire électrique (pouvoir d'adepte) : VD +2 à mains nues, fait perdre une action à la cible en cas de blessure",
         "Réflexes améliorés (pouvoir d'adepte) : +1 action par combat",
         "Furtivité améliorée (pouvoir d'adepte) : RR 2 aux tests de Furtivité (discrétion physique)",
         "Perception améliorée (pouvoir d'adepte) : RR 2 aux tests de Perception (physique)",
         "Course sur les murs (pouvoir d'adepte) : permet de courir une courte distance sur les murs",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 4,
           vdMeta: { Ork: 5, Troll: 6 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Frappe élémentaire",
           vdBase: 6,
           vdMeta: { Ork: 7, Troll: 8 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
           note: "perte d'une action en cas de dommage",
         },
         {
           name: "Pistolet lourd",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
       ],
       equip: ["Commlink", "Armure intégrale + Casque (Armure 4)"],
-      combativite: "forte",
-      seuilsPhys: [8, 11, 14],
-      seuilsPhysMeta: { Ork: [9, 12, 15], Troll: [10, 13, 16] },
-      seuils_ment: [2, 5, 8],
-      seuils_ment_meta: { Nain: [3, 6, 9] },
-      seuilsMat: null,
-      eveille: "adepte",
+      threatLevel: "forte",
+      physMonitor: [8, 11, 14],
+      physMonitorMeta: { Ork: [9, 12, 15], Troll: [10, 13, 16] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: "adepte",
     },
 
     "Rigger d'élite": {
@@ -1733,47 +1733,47 @@ const EditionAnarchy = {
           specRR: 1,
         },
       ],
-      atouts: [
+      edges: [
         "Câblage de contrôle de véhicules (cyberware) : IND, RV hot-sim, permet de plonger dans un drone, +1 action par narration en RV",
         "Console de commande pour rigger (équipement) : mode siège du capitaine, 4 drones concurrents. RR 1 aux tests de Pilotage et d'Ingénierie (armes contrôlées à distance)",
         "Lockheed Optic-X2 (petit drone volant) : Autopilote 6, Structure 1, Maniabilité 9, Vitesse 4, Blindage 0. RR 2 aux tests de Furtivité (discrétion physique) et de Perception (physique)",
       ],
-      atoutsChoix: 2,
-      atoutsOptions: [
+      edgeChoices: 2,
+      edgeOptions: [
         "2 MCT-Nissan Roto-drone (drones volants moyens) : Autopilote 6, Structure 2, Maniabilité 7, Vitesse 6, Blindage 2, avec fusil d'assaut",
         "2 GM-Nissan Doberman (drones moyens) : Autopilote 6, Structure 2, Maniabilité 7, Vitesse 3, Blindage 2, avec fusil d'assaut",
         "Voiture de patrouille (véhicule) : Autopilote 6, Structure 6, Maniabilité 2, Vitesse 4, Blindage 3",
         "Fourgon (véhicule) : Autopilote 6, Structure 8, Maniabilité 1, Vitesse 3, Blindage 4",
         "Ambulance blindée (véhicule) : Autopilote 6, Structure 7, Maniabilité 2, Vitesse 3, Blindage 5",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Pistolet lourd",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
         {
           name: "Fusil d'assaut (drones)",
           vdBase: 7,
           vdMeta: {},
-          portees: "[Dés./OK/OK/Dés.]",
+          ranges: "[Dés./OK/OK/Dés.]",
         },
       ],
       equip: ["Commlink", "Armure intégrale + Casque (Armure 4)"],
-      combativite: "faible",
-      seuilsPhys: [6, 9, 12],
-      seuilsPhysMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
-      seuils_ment: [3, 6, 9],
-      seuils_ment_meta: { Nain: [4, 7, 10] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "faible",
+      physMonitor: [6, 9, 12],
+      physMonitorMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     "Decker d'élite": {
@@ -1832,54 +1832,54 @@ const EditionAnarchy = {
           specRR: 1,
         },
       ],
-      atouts: [
+      edges: [
         "Cyberdeck (Attaque 5, Firewall 5, filtre de biofeedback: Armure +1)",
         "Cyberjack (cyberware) : IND, RV hot-sim, +1 action par narration en RV",
         "Compétences câblées (cyberware) : RR 1 aux tests d'Électronique et de Piratage",
       ],
-      atoutsChoix: 2,
-      atoutsOptions: [
+      edgeChoices: 2,
+      edgeOptions: [
         "Programme Agresseur (équipement) : RR 2 aux tests de Piratage (cybercombat)",
         "Programme Exploitation (équipement) : RR 2 aux tests de Piratage (force brute)",
         "Programme Biofeedback (équipement) : inflige des dommages de biofeedback en cybercombat",
         "Programme Marteau (équipement) : VD +2 en cybercombat",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Électromatraque",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
           note: "perte d'une action en cas de dommages",
         },
         {
           name: "Pistolet lourd",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
         {
           name: "Cybercombat",
           vdBase: 5,
           vdMeta: {},
-          portees: "[matriciel]",
+          ranges: "[matriciel]",
           note: "si marteau VD 7",
         },
       ],
       equip: ["Commlink", "Armure intégrale + Casque (Armure 4)"],
-      combativite: "forte",
-      seuilsPhys: [6, 9, 12],
-      seuilsPhysMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
-      seuils_ment: [3, 6, 9],
-      seuils_ment_meta: { Nain: [4, 7, 10] },
-      seuilsMat: [5, 8, 11],
-      eveille: null,
+      threatLevel: "forte",
+      physMonitor: [6, 9, 12],
+      physMonitorMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: [5, 8, 11],
+      awakened: null,
     },
 
     /* ======== MILITAIRES (p.252-253) ======== */
@@ -1938,33 +1938,33 @@ const EditionAnarchy = {
         { name: "Survie", val: 3, attr: "LOG", rr: 0 },
         { name: "Influence", val: 3, attr: "CHA", rr: 0 },
       ],
-      atouts: [
+      edges: [
         "Yeux cybernétiques avec réseau tactique et identification de cibles (cyberware) : RR 1 aux tests d'Armes à distance, de Perception (physique) et d'Athlétisme (défense à distance), vision nocturne",
         "Smartlink (cyberware) : RR 1 aux tests d'Armes à distance (arme principale)",
         "Câblage de compétence (cyberware) : RR 1 aux tests de Combat rapproché (lames)",
       ],
-      atoutsChoix: 0,
-      atoutsOptions: [],
-      armes: [
+      edgeChoices: 0,
+      edgeOptions: [],
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 3,
           vdMeta: { Ork: 4, Troll: 5 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Couteau de combat",
           vdBase: 4,
           vdMeta: { Ork: 5, Troll: 6 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Pistolet lourd",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
-        { name: "Grenades", vdBase: 7, vdMeta: {}, portees: "[OK/OK/Dés./–]" },
+        { name: "Grenades", vdBase: 7, vdMeta: {}, ranges: "[OK/OK/Dés./–]" },
         {
           name: "Arme principale au choix",
           choices: [
@@ -1972,31 +1972,31 @@ const EditionAnarchy = {
               name: "Shotgun",
               vdBase: 8,
               vdMeta: {},
-              portees: "[Dés./OK/Dés./–]",
+              ranges: "[Dés./OK/Dés./–]",
             },
             {
               name: "Fusil d'assaut",
               vdBase: 7,
               vdMeta: {},
-              portees: "[Dés./OK/OK/Dés.]",
+              ranges: "[Dés./OK/OK/Dés.]",
             },
             {
               name: "Mitrailleuse",
               vdBase: 9,
               vdMeta: {},
-              portees: "[–/OK/OK/OK]",
+              ranges: "[–/OK/OK/OK]",
             },
           ],
         },
       ],
       equip: ["Commlink", "Armure militaire (Armure 5)"],
-      combativite: "forte",
-      seuilsPhys: [8, 11, 14],
-      seuilsPhysMeta: { Ork: [9, 12, 15], Troll: [10, 13, 16] },
-      seuils_ment: [3, 6, 9],
-      seuils_ment_meta: { Nain: [4, 7, 10] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "forte",
+      physMonitor: [8, 11, 14],
+      physMonitorMeta: { Ork: [9, 12, 15], Troll: [10, 13, 16] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     "Commando militaire": {
@@ -2063,7 +2063,7 @@ const EditionAnarchy = {
         { name: "Survie", val: 5, attr: "LOG", rr: 1 },
         { name: "Influence", val: 3, attr: "CHA", rr: 0 },
       ],
-      atouts: [
+      edges: [
         "Yeux cybernétiques avec réseau tactique et identification de cibles (cyberware) : RR 1 aux tests d'Armes à distance, de Perception (physique) et d'Athlétisme (défense à distance), vision nocturne",
         "Smartlink (cyberware) : RR 2 aux tests d'Armes à distance (fusils)",
         "Câblage de compétence (cyberware) : RR 2 aux tests de Combat rapproché (lames)",
@@ -2071,43 +2071,43 @@ const EditionAnarchy = {
         "Armure dermique : Armure +1",
         "Kit de survie en milieu hostile (équipement) : RR 1 aux tests de Survie",
       ],
-      atoutsChoix: 0,
-      atoutsOptions: [],
-      armes: [
+      edgeChoices: 0,
+      edgeOptions: [],
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 4,
           vdMeta: { Ork: 5, Troll: 6 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Couteau de combat",
           vdBase: 5,
           vdMeta: { Ork: 6, Troll: 7 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Pistolet lourd",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
         {
           name: "Fusil d'assaut",
           vdBase: 7,
           vdMeta: {},
-          portees: "[Dés./OK/OK/Dés.]",
+          ranges: "[Dés./OK/OK/Dés.]",
         },
-        { name: "Grenades", vdBase: 7, vdMeta: {}, portees: "[OK/OK/Dés./–]" },
+        { name: "Grenades", vdBase: 7, vdMeta: {}, ranges: "[OK/OK/Dés./–]" },
       ],
       equip: ["Commlink", "Armure corporelle intégrale (Armure 4)"],
-      combativite: "extrême",
-      seuilsPhys: [9, 12, 15],
-      seuilsPhysMeta: { Ork: [10, 13, 16], Troll: [11, 14, 17] },
-      seuils_ment: [3, 6, 9],
-      seuils_ment_meta: { Nain: [4, 7, 10] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "extrême",
+      physMonitor: [9, 12, 15],
+      physMonitorMeta: { Ork: [10, 13, 16], Troll: [11, 14, 17] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     /* ======== DIVERS (p.254-255) ======== */
@@ -2183,36 +2183,36 @@ const EditionAnarchy = {
         },
         { name: "Réseau", val: 5, attr: "CHA", rr: 1 },
       ],
-      atouts: [
+      edges: [
         "Yeux cybernétiques (cyberware) : RR 1 aux tests d'Armes à distance (pistolets) et de Perception (physique), vision nocturne",
         "Très bien connecté (trait) : RR 1 aux tests de Réseau",
         "Phéromones optimisées (bioware) : RR 1 aux tests d'Influence",
         "Récepteur de phéromones (bioware) : RR 1 aux tests de Perception (sociale)",
       ],
-      atoutsChoix: 0,
-      atoutsOptions: [],
-      armes: [
+      edgeChoices: 0,
+      edgeOptions: [],
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Pistolet lourd",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
       ],
       equip: ["Commlink", "Vêtements blindés (Armure 2)"],
-      combativite: "faible",
-      seuilsPhys: [4, 7, 10],
-      seuilsPhysMeta: { Ork: [5, 8, 11], Troll: [6, 9, 12] },
-      seuils_ment: [3, 6, 9],
-      seuils_ment_meta: { Nain: [4, 7, 10] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "faible",
+      physMonitor: [4, 7, 10],
+      physMonitorMeta: { Ork: [5, 8, 11], Troll: [6, 9, 12] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     "Employé corporatiste": {
@@ -2238,38 +2238,38 @@ const EditionAnarchy = {
         { name: "Perception", val: 2, attr: "LOG", rr: 0 },
         { name: "Influence", val: 2, attr: "CHA", rr: 0 },
       ],
-      atouts: ["Datajack (cyberware) : IND, RV cold-sim"],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edges: ["Datajack (cyberware) : IND, RV cold-sim"],
+      edgeChoices: 1,
+      edgeOptions: [
         "Électronique 3 (4+L, RR 0) ◊ Recherche matricielle 4 (6+L, RR 0)",
         "Influence 3 (4+C, RR 0) ◊ Négociation 4 (6+C, RR 0)",
         "Ingénierie 3 (4+L, RR 0) ◊ Construction & Réparation au choix 4 (6+L, RR 0)",
         "Pilotage 3 (4+A, RR 0) ◊ Type de véhicule au choix 4 (6+A, RR 0)",
         "Survie 3 (4+L, RR 0) ◊ Premiers soins 4 (6+L, RR 0)",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Taser",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/–/–]",
+          ranges: "[OK/OK/–/–]",
           note: "perte d'une action en cas de dommages",
         },
       ],
       equip: ["Commlink", "Vêtements pare-balles (Armure 1)"],
-      combativite: "nulle",
-      seuilsPhys: [3, 6, 9],
-      seuilsPhysMeta: { Ork: [4, 7, 10], Troll: [5, 8, 11] },
-      seuils_ment: [2, 5, 8],
-      seuils_ment_meta: { Nain: [3, 6, 9] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "nulle",
+      physMonitor: [3, 6, 9],
+      physMonitorMeta: { Ork: [4, 7, 10], Troll: [5, 8, 11] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     Enquêteur: {
@@ -2348,35 +2348,35 @@ const EditionAnarchy = {
           specMeta: { Elfe: { specVal: 5 } },
         },
       ],
-      atouts: [
+      edges: [
         "Yeux cybernétiques (cyberware) : RR 1 aux tests de Perception (physique), vision nocturne",
         "Base de données de la Lone Star (équipement) : RR 1 aux tests d'Électronique (recherche matricielle)",
         "Smartlink (cyberware) : RR 1 aux tests d'Armes à distance (pistolets)",
       ],
-      atoutsChoix: 0,
-      atoutsOptions: [],
-      armes: [
+      edgeChoices: 0,
+      edgeOptions: [],
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Pistolet lourd",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/Dés./–]",
+          ranges: "[OK/OK/Dés./–]",
         },
       ],
       equip: ["Commlink", "Manteau renforcé (Armure 2)"],
-      combativite: "faible",
-      seuilsPhys: [4, 7, 10],
-      seuilsPhysMeta: { Ork: [5, 8, 11], Troll: [6, 9, 12] },
-      seuils_ment: [3, 6, 9],
-      seuils_ment_meta: { Nain: [4, 7, 10] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "faible",
+      physMonitor: [4, 7, 10],
+      physMonitorMeta: { Ork: [5, 8, 11], Troll: [6, 9, 12] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     "Cadre corporatiste": {
@@ -2409,29 +2409,29 @@ const EditionAnarchy = {
           specMeta: { Elfe: { val: 4 } },
         },
       ],
-      atouts: [
+      edges: [
         "Datajack (cyberware) : IND, RV cold-sim",
         "Coprocesseur cortical (cyberware) : RR 1 aux tests de la spécialisation en lien avec son métier (cadres supérieurs uniquement)",
       ],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edgeChoices: 1,
+      edgeOptions: [
         "Application navigateur (équipement) : RR 1 aux tests d'Électronique (recherche matricielle)",
         "Base de données commerciale (équipement) : RR 1 aux tests d'Influence (négociation)",
         "Base de données techniques en RA (équipement) : RR 1 aux tests d'Ingénierie (C&R au choix)",
         "Passe ses journées sur les réseaux (trait) : RR 1 aux tests de Réseau (corporatiste)",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Taser",
           vdBase: 5,
           vdMeta: {},
-          portees: "[OK/OK/–/–]",
+          ranges: "[OK/OK/–/–]",
           note: "perte d'une action en cas de dommages",
         },
       ],
@@ -2439,13 +2439,13 @@ const EditionAnarchy = {
         "Commlink",
         "Vêtements pare-balles (Armure 1) ou manteau (Armure 2)",
       ],
-      combativite: "nulle",
-      seuilsPhys: [3, 6, 9],
-      seuilsPhysMeta: { Ork: [4, 7, 10], Troll: [5, 8, 11] },
-      seuils_ment: [2, 5, 8],
-      seuils_ment_meta: { Nain: [3, 6, 9] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "nulle",
+      physMonitor: [3, 6, 9],
+      physMonitorMeta: { Ork: [4, 7, 10], Troll: [5, 8, 11] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: null,
     },
 
     Coyote: {
@@ -2502,44 +2502,44 @@ const EditionAnarchy = {
           specRR: 1,
         },
       ],
-      atouts: [
+      edges: [
         "Câblage de contrôle de véhicules (cyberware) : IND, RV cold-sim ou hot-sim ; permet de plonger dans un véhicule ; +1 action par combat en plongée ; RR 1 aux tests de Pilotage et d'Ingénierie (armes contrôlées à distance)",
         "Lockheed Optic-X2 (petit drone volant) : Autopilote 6, Structure 1, Maniabilité 9, Vitesse 4, Blindage 0. RR 1 aux tests de Furtivité (discrétion physique) et de Perception (physique)",
       ],
-      atoutsChoix: 1,
-      atoutsOptions: [
+      edgeChoices: 1,
+      edgeOptions: [
         "Voiture de sport tunée (véhicule) : Autopilote 6, Structure 5, Maniabilité 2, Vitesse 6, Blindage 3 ; RR 1 aux tests de Pilotage (voitures)",
         "Fourgon (véhicule) : Autopilote 6, Structure 8, Maniabilité 1, Vitesse 3, Blindage 4 ; RR 1 aux tests de Pilotage (voitures), avec mitrailleuse en tourelle",
         "T-bird Ares Venture (véhicule) : Autopilote 6, Vitesse 10, Blindage 4 ; RR 1 aux tests de Pilotage (véhicules volants), avec mitrailleuse en tourelle",
       ],
-      armes: [
+      weapons: [
         {
           name: "Mains nues",
           vdBase: 2,
           vdMeta: { Ork: 3, Troll: 4 },
-          portees: "[OK/–/–/–]",
+          ranges: "[OK/–/–/–]",
         },
         {
           name: "Mitraillette",
           vdBase: 5,
           vdMeta: {},
-          portees: "[Dés./OK/OK/–]",
+          ranges: "[Dés./OK/OK/–]",
         },
         {
           name: "Mitrailleuse (véhicule)",
           vdBase: 9,
           vdMeta: {},
-          portees: "[–/OK/OK/OK]",
+          ranges: "[–/OK/OK/OK]",
         },
       ],
       equip: ["Commlink", "Gilet pare-balles (Armure 3)"],
-      combativite: "faible",
-      seuilsPhys: [5, 8, 11],
-      seuilsPhysMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
-      seuils_ment: [2, 5, 8],
-      seuils_ment_meta: { Nain: [3, 6, 9] },
-      seuilsMat: null,
-      eveille: null,
+      threatLevel: "faible",
+      physMonitor: [5, 8, 11],
+      physMonitorMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: null,
     },
   },
 
@@ -2550,33 +2550,33 @@ const EditionAnarchy = {
       opts.gender === "Aléatoire" ? Utils.randGender() : opts.gender;
 
     // Sélection du profil
-    const profList = Object.keys(this.profils).filter((k) => k !== "Aléatoire");
-    let profKey =
-      opts.profession === "Aléatoire" ? Utils.rand(profList) : opts.profession;
-    if (!this.profils[profKey]) profKey = Utils.rand(profList);
+    const archetypeList = Object.keys(this.statBlocks).filter((k) => k !== "Aléatoire");
+    let statBlockKey =
+      opts.archetype === "Aléatoire" ? Utils.rand(archetypeList) : opts.archetype;
+    if (!this.statBlocks[statBlockKey]) statBlockKey = Utils.rand(archetypeList);
 
-    const profil = this.profils[profKey];
+    const statBlock = this.statBlocks[statBlockKey];
 
     // Attributs avec variantes métatype
-    const attrs = { ...profil.attrs };
-    const metaOverrides = profil.attrsMeta?.[meta] || {};
+    const attrs = { ...statBlock.attrs };
+    const metaOverrides = statBlock.attrsMeta?.[meta] || {};
     for (const k in metaOverrides) attrs[k] = metaOverrides[k];
 
     // Atouts au choix — on en tire aléatoirement
-    const atoutsChoisis = [];
-    if (profil.atoutsChoix > 0 && profil.atoutsOptions.length > 0) {
-      const shuffled = [...profil.atoutsOptions].sort(
+    const chosenEdges = [];
+    if (statBlock.edgeChoices > 0 && statBlock.edgeOptions.length > 0) {
+      const shuffled = [...statBlock.edgeOptions].sort(
         () => Math.random() - 0.5,
       );
-      atoutsChoisis.push(...shuffled.slice(0, profil.atoutsChoix));
+      chosenEdges.push(...shuffled.slice(0, statBlock.edgeChoices));
     }
 
     // Seuils de blessures avec variantes métatype
-    const seuilsPhys = profil.seuilsPhysMeta?.[meta] || profil.seuilsPhys;
-    const seuils_ment = profil.seuils_ment_meta?.[meta] || profil.seuils_ment;
+    const physMonitor = statBlock.physMonitorMeta?.[meta] || statBlock.physMonitor;
+    const mentMonitor = statBlock.mentMonitorMeta?.[meta] || statBlock.mentMonitor;
 
     // Rang selon profil
-    const rangMap = {
+    const tierMap = {
       Ganger: "Figurant",
       "Agent de sécurité": "Figurant",
       "Employé corporatiste": "Figurant",
@@ -2594,10 +2594,10 @@ const EditionAnarchy = {
       "Decker d'élite": "Lieutenant",
       "Commando militaire": "Boss",
     };
-    const rang =
-      opts.rang && opts.rang !== "Aléatoire"
-        ? opts.rang
-        : rangMap[profKey] || "Figurant";
+    const tier =
+      opts.tier && opts.tier !== "Aléatoire"
+        ? opts.tier
+        : tierMap[statBlockKey] || "Figurant";
 
     const pnj = {
       id: Utils.uid(),
@@ -2605,22 +2605,22 @@ const EditionAnarchy = {
       name:
         opts.name && opts.name.trim()
           ? opts.name.trim()
-          : Utils.genName(opts.bassin !== "Aléatoire" ? opts.bassin : null),
+          : Utils.genName(opts.originPool !== "Aléatoire" ? opts.originPool : null),
       meta,
       gender,
-      rang,
-      profKey,
-      profession: profil.label,
+      tier,
+      statBlockKey,
+      archetype: statBlock.label,
       attrs,
-      skills: profil.skills.map((s) => {
+      skills: statBlock.skills.map((s) => {
         const copy = { ...s };
         if (s.specMeta && s.specMeta[meta])
           copy.val = s.specMeta[meta].val ?? s.val;
         delete copy.specMeta;
         return copy;
       }),
-      atouts: [...profil.atouts, ...atoutsChoisis],
-      armes: profil.armes.map((a) => {
+      edges: [...statBlock.edges, ...chosenEdges],
+      weapons: statBlock.weapons.map((a) => {
         // Arme à choix multiples → on en tire une au hasard
         if (a.choices) {
           const choix = Utils.rand(a.choices);
@@ -2630,58 +2630,60 @@ const EditionAnarchy = {
               choix.vdMeta && choix.vdMeta[meta]
                 ? choix.vdMeta[meta]
                 : choix.vdBase,
-            portees: choix.portees,
+            ranges: choix.ranges,
           };
         }
         // Arme simple
         return {
           name: a.name,
           vd: a.vdMeta && a.vdMeta[meta] ? a.vdMeta[meta] : a.vdBase,
-          portees: a.portees,
+          ranges: a.ranges,
           ...(a.note ? { note: a.note } : {}),
         };
       }),
-      equip: profil.equip,
-      combativite: profil.combativite,
-      seuilsPhys,
-      seuils_ment,
-      seuilsMat: profil.seuilsMat,
-      eveille: profil.eveille,
-      sorts: (function () {
+      equip: statBlock.equip,
+      threatLevel: statBlock.threatLevel,
+      physMonitor,
+      mentMonitor,
+      matrixMonitor: statBlock.matrixMonitor,
+      awakened: statBlock.awakened,
+      spells: (function () {
         // Si l'archétype est éveillé, on enrichit ses sorts avec les
         // descriptifs Anarchy cliquables ; sinon on garde l'existant.
-        if (profil.eveille && typeof Content !== "undefined") {
+        if (statBlock.awakened && typeof Content !== "undefined") {
           const tags =
             typeof Flavor !== "undefined"
-              ? Flavor.tagsFor({ profession: profil.label })
+              ? Flavor.tagsFor({ archetype: statBlock.label })
               : new Set(["magique"]);
           tags.add("magique");
-          const profNum =
+          const proRatingNum =
             { Figurant: 1, "Figurant d'élite": 2, Lieutenant: 3, Boss: 4 }[
-              rang
+              tier
             ] || 2;
-          const picked = Content.pickSorts("anarchy", profNum, tags);
+          const picked = Content.pickSorts("anarchy", proRatingNum, tags);
           if (picked.length) return picked;
         }
-        return profil.sorts || [];
+        return statBlock.spells || [];
       })(),
       traits: (function () {
         if (typeof Content === "undefined" || !Utils.randBool(0.5)) return [];
         const tags =
           typeof Flavor !== "undefined"
-            ? Flavor.tagsFor({ profession: profil.label })
+            ? Flavor.tagsFor({ archetype: statBlock.label })
             : new Set(["rue"]);
-        const profNum =
+        const proRatingNum =
           { Figurant: 1, "Figurant d'élite": 2, Lieutenant: 3, Boss: 4 }[
-            rang
+            tier
           ] || 2;
-        return Content.pickTraits("anarchy", tags, profNum, 1);
+        return Content.pickTraits("anarchy", tags, proRatingNum, 1);
       })(),
       physFilled: 0,
       mentFilled: 0,
       matFilled: 0,
       notes: "",
     };
+    // Cohérence arme <-> compétence (renomme une compétence de combat si besoin)
+    if (typeof WeaponRoll !== "undefined") WeaponRoll.reconcile(pnj, "anarchy");
     if (typeof Flavor !== "undefined") Flavor.apply(pnj);
     return pnj;
   },
