@@ -1410,6 +1410,7 @@ const EditionSR5 = {
     // Couche d'habillage cohérente
     // Cohérence arme <-> compétence (renomme une compétence de combat si besoin)
     if (typeof WeaponRoll !== "undefined") WeaponRoll.reconcile(pnj, "sr5");
+    if (typeof BonusEngine !== "undefined") BonusEngine.apply(pnj, "sr5");
     if (typeof Flavor !== "undefined") Flavor.apply(pnj);
     return pnj;
   },

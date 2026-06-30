@@ -273,8 +273,9 @@ const CardRenderer = {
           return `<div class="weapon-line"><div><div class="weapon-name">${this._esc(name)}</div><div class="weapon-stat">${this._esc(stat)}</div></div></div>`;
         }
         const approxTxt = r.approx ? " ~" : "";
-        const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill}${approxTxt})${r.limit != null ? ` · limite ${r.limit}` : ""}`;
-        const poolBadge = `<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="lim">▸${r.limit}</span>` : ""}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}</span>`;
+        const smartTxt = r.smartBonus ? ` · +${r.smartBonus} smartlink` : "";
+        const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill}${approxTxt})${r.limit != null ? ` · limite ${r.limit}` : ""}${smartTxt}`;
+        const poolBadge = `<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="lim">▸${r.limit}</span>` : ""}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}${r.smartBonus ? `<span class="lim">SL+${r.smartBonus}</span>` : ""}</span>`;
         const dataAttr =
           edition === "anarchy"
             ? `data-roll-weapon-anarchy="${this._esc(name)}"`
@@ -731,6 +732,19 @@ const CardRenderer = {
   /* Rend un élément de contenu : objet {nom, desc} -> tag cliquable
      ouvrant une modale ; chaîne simple -> tag normal. Pour les sorts, un
      champ drain (SR5/SR6) ou seuil (Anarchy) est affiché dans le libellé. */
+  /* Libellé court d'un bonus de trait (voir BonusEngine / content.js). */
+  _bonusLabel(bonus) {
+    if (!bonus) return "";
+    if (bonus.initDice) return `+${bonus.initDice} Init`;
+    if (bonus.stat) {
+      const labels = { composure: "Sang-froid", memory: "Mémoire" };
+      return `+${bonus.val} ${labels[bonus.stat] || bonus.stat}`;
+    }
+    if (bonus.attr) return `+${bonus.val} ${bonus.attr}`;
+    if (bonus.skill) return `+${bonus.val} ${bonus.skill}`;
+    return "";
+  },
+
   _contentTag(item) {
     if (item && typeof item === "object" && item.name) {
       const name = this._esc(item.name);
@@ -740,6 +754,9 @@ const CardRenderer = {
         suffix = ` <span class="tag-stat">(Drain ${this._esc(item.drain)})</span>`;
       } else if (item.threshold != null) {
         suffix = ` <span class="tag-stat">(Seuil ${this._esc(item.threshold)})</span>`;
+      } else if (item.bonus) {
+        const label = this._bonusLabel(item.bonus);
+        if (label) suffix = ` <span class="tag-stat">(${this._esc(label)})</span>`;
       }
       if (item.desc) {
         // _esc échappe " donc le contenu est sûr dans un attribut entre guillemets.
@@ -776,7 +793,8 @@ const CardRenderer = {
         if (!r) return this._contentTag(i);
         const limTxt = r.limit != null ? ` · lim ${r.limit}` : "";
         const approxTxt = r.approx ? " ~" : "";
-        const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill}${approxTxt} ${r.skillVal} + ${r.attr} ${r.attrVal})${limTxt} — cliquer pour lancer`;
+        const smartTxt = r.smartBonus ? ` · +${r.smartBonus} smartlink` : "";
+        const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill}${approxTxt} ${r.skillVal} + ${r.attr} ${r.attrVal})${limTxt}${smartTxt} — cliquer pour lancer`;
         return `<span class="tag weapon-rollable rollable" data-roll-weapon="${this._esc(i)}" data-roll-pnj="${pnj.id}" data-roll-edition="${edition}" title="${this._esc(title)}">${this._esc(i)}<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="weapon-lim">▸${r.limit}</span>` : ""}</span></span>`;
       })
       .join("");

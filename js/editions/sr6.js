@@ -1491,6 +1491,7 @@ const EditionSR6 = {
     };
     // Cohérence arme <-> compétence (renomme une compétence de combat si besoin)
     if (typeof WeaponRoll !== "undefined") WeaponRoll.reconcile(pnj, "sr6");
+    if (typeof BonusEngine !== "undefined") BonusEngine.apply(pnj, "sr6");
     if (typeof Flavor !== "undefined") Flavor.apply(pnj);
     return pnj;
   },

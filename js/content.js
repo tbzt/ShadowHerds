@@ -626,12 +626,14 @@ const Content = {
         desc: "Réagit instantanément au danger : bonus aux tests de surprise et d'initiative. Le vétéran qui dégaine en premier.",
         proRatingMin: 2,
         forTags: ["combat", "militaire", "police", "ombre"],
+        bonus: { initDice: 1 },
       },
       {
         name: "Sang-froid",
         desc: "Garde son calme sous le feu : résiste à l'intimidation et à la peur. Rien ne le fait flancher.",
         proRatingMin: 1,
         forTags: ["tous"],
+        bonus: { stat: "composure", val: 1 },
       },
       {
         name: "Réputation des rues",
@@ -668,6 +670,7 @@ const Content = {
         desc: "Se souvient de tout avec une précision parfaite. Inestimable pour un planificateur.",
         proRatingMin: 2,
         forTags: ["matrice", "corpo", "magique"],
+        bonus: { stat: "memory", val: 1 },
       },
     ],
     sr5: [
@@ -676,12 +679,14 @@ const Content = {
         desc: "Bonus d'Initiative et de résistance à la surprise. Le réflexe du survivant aguerri.",
         proRatingMin: 2,
         forTags: ["combat", "militaire", "police", "ombre"],
+        bonus: { initDice: 1 },
       },
       {
         name: "Volonté de fer",
         desc: "Résistance accrue aux manipulations mentales et à l'intimidation. Un esprit qu'on ne plie pas.",
         proRatingMin: 1,
         forTags: ["tous"],
+        bonus: { stat: "composure", val: 2 },
       },
       {
         name: "Célébrité des rues",
@@ -718,6 +723,7 @@ const Content = {
         desc: "Aptitude remarquable à décortiquer données et situations complexes. L'atout du stratège.",
         proRatingMin: 2,
         forTags: ["matrice", "corpo", "magique"],
+        bonus: { stat: "memory", val: 2 },
       },
     ],
     anarchy: [
