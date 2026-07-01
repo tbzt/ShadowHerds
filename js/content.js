@@ -1005,21 +1005,31 @@ const Content = {
     return out;
   },
 
-  /** Choisit des spells cohérents forTags un éveillé de l'édition. */
-  pickSorts(ed, proRating, tags) {
+  /**
+   * Choisit des sorts cohérents forTags un éveillé de l'édition.
+   * `preferredCats` (optionnel) : catégories ("combat"/"sante"/"detection"/
+   * "illusion"/"manipulation") détectées sur la spécialisation du
+   * personnage ou un équipement (focus) qui lui donne RR sur une
+   * catégorie de sorts — surclasse le biais générique par tags quand
+   * fourni, pour que le tirage colle à ce que le PNJ sait réellement
+   * bien faire plutôt qu'à son seul archétype.
+   */
+  pickSorts(ed, proRating, tags, preferredCats) {
     ed = this._ed(ed);
     const list = this.spells[ed] || [];
     const eligible = list.filter((s) => proRating >= s.proRatingMin);
     if (!eligible.length) return [];
     const n = Utils.clamp(2 + Math.floor(proRating / 2), 2, 6);
-    const combat = eligible.filter((s) => s.cat === "combat");
-    const autres = eligible.filter((s) => s.cat !== "combat");
     let pool = eligible;
-    if (
-      (tags.has("combat") || tags.has("militaire") || tags.has("gang")) &&
-      combat.length
-    ) {
-      pool = combat.concat(combat, autres);
+    const preferred =
+      preferredCats && preferredCats.length
+        ? eligible.filter((s) => preferredCats.includes(s.cat))
+        : tags.has("combat") || tags.has("militaire") || tags.has("gang")
+          ? eligible.filter((s) => s.cat === "combat")
+          : [];
+    if (preferred.length) {
+      const autres = eligible.filter((s) => !preferred.includes(s));
+      pool = preferred.concat(preferred, autres);
     }
     return this._sample(pool, Math.min(n, eligible.length));
   },

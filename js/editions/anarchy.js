@@ -2605,6 +2605,45 @@ const EditionAnarchy = {
     },
   },
 
+  /**
+   * Détecte les catégories de sorts ("combat"/"sante"/"detection"/
+   * "illusion"/"manipulation") vers lesquelles le tirage de sorts doit
+   * être biaisé : la spécialisation de la compétence Sorcellerie
+   * (ex. spec: "Sorts de combat") et tout atout choisi qui donne RR sur
+   * une catégorie de sorts (ex. "Focus de soins (équipement) : RR 1 aux
+   * tests de Sorcellerie (sorts de soins)", déjà reconnu par
+   * BonusEngine.parseAnarchyRR). Sans ça, un mage avec une spé combat et
+   * un focus de soins pouvait se voir tirer des sorts d'illusion sans
+   * rapport avec ce qu'il sait faire.
+   */
+  _preferredSpellCats(skills, edgeTexts) {
+    const catFromText = (text) => {
+      if (/combat/i.test(text)) return "combat";
+      if (/soin/i.test(text)) return "sante";
+      if (/d[ée]tection/i.test(text)) return "detection";
+      if (/illusion/i.test(text)) return "illusion";
+      if (/manipulation/i.test(text)) return "manipulation";
+      return null;
+    };
+    const cats = new Set();
+    const sorc = (skills || []).find((s) => s.name === "Sorcellerie");
+    if (sorc && sorc.spec) {
+      const c = catFromText(sorc.spec);
+      if (c) cats.add(c);
+    }
+    for (const text of edgeTexts || []) {
+      const parsed =
+        typeof BonusEngine !== "undefined" ? BonusEngine.parseAnarchyRR(text) : null;
+      if (!parsed) continue;
+      for (const { name, subspec } of parsed.skills) {
+        if (name.toLowerCase() !== "sorcellerie" || !subspec) continue;
+        const c = catFromText(subspec);
+        if (c) cats.add(c);
+      }
+    }
+    return [...cats];
+  },
+
   /* ---- Génération ---- */
   generate(opts) {
     const meta = opts.meta === "Aléatoire" ? Utils.randMeta() : opts.meta;
@@ -2711,7 +2750,16 @@ const EditionAnarchy = {
             { Figurant: 1, "Figurant d'élite": 2, Lieutenant: 3, Boss: 4 }[
               tier
             ] || 2;
-          const picked = Content.pickSorts("anarchy", proRatingNum, tags);
+          const preferredCats = EditionAnarchy._preferredSpellCats(
+            statBlock.skills,
+            [...statBlock.edges, ...chosenEdges],
+          );
+          const picked = Content.pickSorts(
+            "anarchy",
+            proRatingNum,
+            tags,
+            preferredCats,
+          );
           if (picked.length) return picked;
         }
         return statBlock.spells || [];
