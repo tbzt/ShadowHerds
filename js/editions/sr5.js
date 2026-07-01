@@ -1219,7 +1219,11 @@ const EditionSR5 = {
     // remplace les ranges de sa souche et porte ses traits raciaux.
     const mv =
       typeof Metavariants !== "undefined" ? Metavariants.resolve(meta) : null;
-    const baseMetatype = mv ? mv.baseMetatype : meta;
+    // Résolution Infecté (Livre de Règles p.406-408) — remplace la
+    // résolution métavariante habituelle.
+    const infected =
+      !mv && typeof Infected !== "undefined" ? Infected.use("sr5").resolve(meta) : null;
+    const baseMetatype = mv ? mv.baseMetatype : infected ? infected.baseMetatype : meta;
     // Bassin de noms : si non imposé, hériter de la métavariante
     let originPoolOverride = null;
     if (mv && mv.originPools && (!opts.originPool || opts.originPool === "Aléatoire")) {
@@ -1278,6 +1282,15 @@ const EditionSR5 = {
     }
     attrs.ESS = baseAttrs.ESS;
 
+    // Infecté : stats absolues telles qu'imprimées dans le livre (pas de
+    // plage de chargen comme SR6), utilisées comme centre d'un léger
+    // tirage pour garder un peu de variété entre deux PNJ du même type.
+    if (infected && infected.attrFixed) {
+      for (const k of Object.keys(infected.attrFixed)) {
+        attrs[k] = Utils.clamp(infected.attrFixed[k] + Utils.randInt(-1, 1), 1, 12);
+      }
+    }
+
     // Spécialisations magiques
     if (["Mage hermétique", "Chaman", "Adepte"].includes(special)) {
       attrs.MAG = Utils.clamp(proRating + Utils.randInt(1, 2), 1, 6);
@@ -1322,6 +1335,7 @@ const EditionSR5 = {
 
     // Équipement
     const equip = this._buildEquip(archetype, proRating, special);
+    if (infected) equip.push(...infected.naturalWeapons);
 
     // Augmentations — supprimées pour tout Éveillé (cohérence Essence/Magie)
     const awakened = this._isAwakened(archetype, special);
@@ -1404,8 +1418,14 @@ const EditionSR5 = {
       spells: spellsList,
       powers,
       traits,
+      infected: infected ? infected.name : null,
+      infectedPowers: infected
+        ? [...infected.powersFixed, ...(infected.optionalPower ? [infected.optionalPower] : [])]
+        : [],
+      infectedWeaknesses: infected ? infected.weaknesses : [],
       notes: "",
     };
+    if (infected && infected.bonus) pnj._infectedBonus = infected.bonus;
 
     // Couche d'habillage cohérente
     // Cohérence arme <-> compétence (renomme une compétence de combat si besoin)

@@ -181,6 +181,11 @@ const Gen = {
     const zoo = Metavariants.allZoocanthropes();
     if (zoo.length) groups.push({ cat: "Zoocanthropes", items: zoo });
 
+    if (typeof Infected !== "undefined") {
+      Infected.use(ed.id);
+      groups.push(...Infected.groupedOptions());
+    }
+
     return MultiSelect.create({
       id,
       label: "Métatype",

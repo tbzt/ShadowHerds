@@ -48,9 +48,11 @@ const CardRenderer = {
         ? ` · <em>${pnj.special}</em>`
         : "";
 
-    const metaStr = pnj.metavariant
-      ? `${pnj.meta} <span class="pnj-metavariant">(${this._esc(pnj.metavariant)})</span>`
-      : pnj.meta;
+    const metaStr = pnj.infected
+      ? `${pnj.meta} <span class="pnj-metavariant pnj-infected">(${this._esc(pnj.infected)})</span>`
+      : pnj.metavariant
+        ? `${pnj.meta} <span class="pnj-metavariant">(${this._esc(pnj.metavariant)})</span>`
+        : pnj.meta;
 
     const nameHtml = this._nameBlock(pnj.name);
 
@@ -356,6 +358,10 @@ const CardRenderer = {
     if (powers && powers.length)
       html += this._listSection("Pouvoirs d'adepte", powers);
     if (traits && traits.length) html += this._listSection("Traits", traits);
+    if (pnj.infectedPowers && pnj.infectedPowers.length)
+      html += this._listSection("Pouvoirs (Infecté)", pnj.infectedPowers);
+    if (pnj.infectedWeaknesses && pnj.infectedWeaknesses.length)
+      html += this._listSection("Faiblesses (Infecté)", pnj.infectedWeaknesses);
     html += "</div>";
 
     // ---- ZONE RÉFÉRENCE (repliable) ----
@@ -436,6 +442,10 @@ const CardRenderer = {
     if (powers && powers.length)
       html += this._listSection("Pouvoirs d'adepte", powers);
     if (traits && traits.length) html += this._listSection("Traits", traits);
+    if (pnj.infectedPowers && pnj.infectedPowers.length)
+      html += this._listSection("Pouvoirs (Infecté)", pnj.infectedPowers);
+    if (pnj.infectedWeaknesses && pnj.infectedWeaknesses.length)
+      html += this._listSection("Faiblesses (Infecté)", pnj.infectedWeaknesses);
     html += "</div>";
 
     // ---- ZONE RÉFÉRENCE ----

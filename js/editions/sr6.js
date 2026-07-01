@@ -1295,7 +1295,14 @@ const EditionSR6 = {
     // Résolution métavariante SR6 (Compagnon du Sixième Monde)
     const mv =
       typeof Metavariants !== "undefined" ? Metavariants.resolve(meta) : null;
-    const baseMetatype = mv ? mv.baseMetatype : meta;
+    // Résolution Infecté (Compagnon du Sixième Monde, p.102-113) — remplace
+    // la résolution métavariante habituelle : un Infecté n'est pas *en
+    // plus* une métavariante aléatoire.
+    const infected =
+      !mv && typeof Infected !== "undefined"
+        ? Infected.use("sr6").resolve(meta)
+        : null;
+    const baseMetatype = mv ? mv.baseMetatype : infected ? infected.baseMetatype : meta;
     let originPoolOverride = null;
     if (mv && mv.originPools && (!opts.originPool || opts.originPool === "Aléatoire")) {
       originPoolOverride = Utils.rand(mv.originPools);
@@ -1330,9 +1337,26 @@ const EditionSR6 = {
     const p = Utils.clamp(proRating, 0, 10);
     const baseAttrs = { ...this.attrByProf[p] };
     const mods = this.metaMod[baseMetatype] || {};
-    const range = mv
+    let range = mv
       ? mv.ranges
       : this.attrRange[baseMetatype] || this.attrRange["Humain"];
+
+    // Infecté : étend le maximum de la souche/métaconscience du
+    // modificateur imprimé dans le livre (règle p.106 : "ajoute au
+    // maximum du métatype"). Sasquatch/Centaure/Naga/Triton n'ont pas
+    // d'entrée dans attrRange : on va chercher leurs bornes propres via
+    // Metavariants (métaconsciences).
+    if (infected && infected.attrMod) {
+      const mcRange =
+        typeof Metavariants !== "undefined" &&
+        Metavariants.use("sr6").resolve(infected.baseMetatype)?.ranges;
+      const src = mcRange || range;
+      const extended = {};
+      for (const k of Object.keys(src)) {
+        extended[k] = [src[k][0], src[k][1] + (infected.attrMod[k] || 0)];
+      }
+      range = extended;
+    }
 
     const attrs = {};
     for (const k of ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"]) {
@@ -1444,6 +1468,7 @@ const EditionSR6 = {
 
     // Équipement — pas de cyberware pour un Éveillé (coût en Essence)
     const equip = this.buildLoadout(archetype, p, awakened);
+    if (infected) equip.push(...infected.naturalWeapons);
 
     // Augmentations corpo — jamais pour un Éveillé
     const augs =
@@ -1486,9 +1511,15 @@ const EditionSR6 = {
       traits,
       equip,
       augs,
+      infected: infected ? infected.name : null,
+      infectedPowers: infected
+        ? [...infected.powersFixed, ...(infected.optionalPower ? [infected.optionalPower] : [])]
+        : [],
+      infectedWeaknesses: infected ? infected.weaknesses : [],
       physFilled: 0,
       notes: "",
     };
+    if (infected && infected.bonus) pnj._infectedBonus = infected.bonus;
     // Cohérence arme <-> compétence (renomme une compétence de combat si besoin)
     if (typeof WeaponRoll !== "undefined") WeaponRoll.reconcile(pnj, "sr6");
     if (typeof BonusEngine !== "undefined") BonusEngine.apply(pnj, "sr6");

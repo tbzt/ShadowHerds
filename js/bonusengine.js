@@ -103,7 +103,7 @@ const BonusEngine = {
     return attrsTouched;
   },
 
-  /** SR5/SR6 : cyberware + trait → attrs/initiative/armure, puis recalc(). */
+  /** SR5/SR6 : cyberware + trait + Infecté → attrs/initiative/armure, puis recalc(). */
   _applySR(pnj, edition, EditionModule) {
     const totals = this._collectCyberBonuses(pnj, edition);
     let attrsTouched = false;
@@ -117,6 +117,15 @@ const BonusEngine = {
     }
 
     if (this._applyTraitBonus(pnj, edition)) attrsTouched = true;
+
+    // Bonus de type Infecté (initDice/sd), déposé temporairement par
+    // generate() sur pnj._infectedBonus.
+    if (pnj._infectedBonus) {
+      if (pnj._infectedBonus.initDice)
+        pnj.initDice = (pnj.initDice || 0) + pnj._infectedBonus.initDice;
+      if (pnj._infectedBonus.sd) pnj.sdBase = (pnj.sdBase || 0) + pnj._infectedBonus.sd;
+      delete pnj._infectedBonus;
+    }
 
     if (attrsTouched && EditionModule && typeof EditionModule.recalc === "function") {
       EditionModule.recalc(pnj);
