@@ -1229,6 +1229,11 @@ const EditionSR5 = {
     if (mv && mv.originPools && (!opts.originPool || opts.originPool === "Aléatoire")) {
       originPoolOverride = Utils.rand(mv.originPools);
     }
+    // Origine effective (nom + biais tradition/esprit mentor)
+    const effectiveOrigin =
+      opts.originPool && opts.originPool !== "Aléatoire"
+        ? opts.originPool
+        : originPoolOverride;
 
     const gender =
       opts.gender === "Aléatoire" ? Utils.randGender() : opts.gender;
@@ -1332,9 +1337,20 @@ const EditionSR5 = {
     const initDice =
       zooInitDice || (special === "Adepte" && proRating >= 3 ? 2 : initData.dice);
 
-    // Résistance au Drain
-    const drainResist = ["Mage hermétique", "Chaman"].includes(special)
-      ? attrs.VOL + attrs.LOG
+    // Tradition magique & esprit mentor (corrélés à l'origine).
+    // Le mage/chaman lance des sorts (drainResist) ; l'adepte « pur » non.
+    const isAwakened = this._isAwakened(archetype, special);
+    const castsSpells = isAwakened && special !== "Adepte";
+    const tradition = castsSpells
+      ? Magic.pickTradition("sr5", effectiveOrigin, special, archetype)
+      : null;
+    const mentorSpirit = isAwakened
+      ? Magic.pickMentor("sr5", effectiveOrigin)
+      : null;
+
+    // Résistance au Drain : Volonté + attribut de la tradition.
+    const drainResist = tradition
+      ? attrs.VOL + (attrs[tradition.drainAttr] || 0)
       : null;
 
     // Réserves utiles au MJ (SR5, LdB p.174 & p.189)
@@ -1422,6 +1438,10 @@ const EditionSR5 = {
       init,
       initDice,
       drainResist,
+      tradition: tradition ? tradition.name : null,
+      traditionDrainAttr: tradition ? tradition.drainAttr : null,
+      traditionDesc: tradition ? tradition.desc : null,
+      mentorSpirit,
       defense,
       damageResist,
       composure,
@@ -1494,9 +1514,11 @@ const EditionSR5 = {
     pnj.physMon = 8 + Math.ceil(attrs.CON / 2);
     pnj.stunMon = 8 + Math.ceil(attrs.VOL / 2);
     pnj.init = attrs.REA + attrs.INT;
-    pnj.drainResist = ["Mage hermétique", "Chaman"].includes(pnj.special)
-      ? attrs.VOL + attrs.LOG
-      : null;
+    pnj.drainResist = pnj.traditionDrainAttr
+      ? attrs.VOL + (attrs[pnj.traditionDrainAttr] || 0)
+      : ["Mage hermétique", "Chaman"].includes(pnj.special)
+        ? attrs.VOL + attrs.LOG // fallback anciens PNJ sans tradition
+        : null;
     const armure = pnj.armure || 0;
     pnj.defense = attrs.REA + attrs.INT;
     pnj.damageResist = attrs.CON + armure;

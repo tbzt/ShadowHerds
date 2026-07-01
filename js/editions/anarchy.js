@@ -2737,6 +2737,13 @@ const EditionAnarchy = {
       mentMonitor,
       matrixMonitor: statBlock.matrixMonitor,
       awakened: statBlock.awakened,
+      mentorSpirit:
+        statBlock.awakened && typeof Magic !== "undefined"
+          ? Magic.pickMentor(
+              "anarchy",
+              opts.originPool !== "Aléatoire" ? opts.originPool : null,
+            )
+          : null,
       spells: (function () {
         // Si l'archétype est éveillé, on enrichit ses sorts avec les
         // descriptifs Anarchy cliquables ; sinon on garde l'existant.

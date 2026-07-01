@@ -96,8 +96,11 @@ const CardRenderer = {
       default:
         return '<div class="pnj-card-body">—</div>';
     }
-    // Injecter traits raciaux + habillage avant la fermeture du body
-    const extra = this._metaTraitsSection(pnj) + this._flavorSection(pnj);
+    // Injecter magie (tradition/esprit mentor) + traits raciaux + habillage
+    const extra =
+      this._magicSection(pnj) +
+      this._metaTraitsSection(pnj) +
+      this._flavorSection(pnj);
     if (extra) {
       const idx = core.lastIndexOf("</div>");
       if (idx !== -1) {
@@ -105,6 +108,20 @@ const CardRenderer = {
       }
     }
     return core;
+  },
+
+  /* ---- Tradition magique & esprit mentor (Éveillés) ---- */
+  _magicSection(pnj) {
+    let html = "";
+    if (pnj.tradition) {
+      html += this._listSection("Tradition", [
+        { name: pnj.tradition, desc: pnj.traditionDesc },
+      ]);
+    }
+    if (pnj.mentorSpirit) {
+      html += this._listSection("Esprit mentor", [pnj.mentorSpirit]);
+    }
+    return html;
   },
 
   /* ---- Traits raciaux de métavariante ---- */

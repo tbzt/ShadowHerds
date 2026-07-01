@@ -1307,6 +1307,10 @@ const EditionSR6 = {
     if (mv && mv.originPools && (!opts.originPool || opts.originPool === "Aléatoire")) {
       originPoolOverride = Utils.rand(mv.originPools);
     }
+    const effectiveOrigin =
+      opts.originPool && opts.originPool !== "Aléatoire"
+        ? opts.originPool
+        : originPoolOverride;
 
     const gender =
       opts.gender === "Aléatoire" ? Utils.randGender() : opts.gender;
@@ -1403,16 +1407,19 @@ const EditionSR6 = {
     const composure = attrs.VOL + attrs.CHA; // sang-froid
     const judgeIntentions = attrs.INT + attrs.CHA; // jauger les intentions
     const memory = attrs.LOG + attrs.VOL; // mémoire
-    // Résistance au Drain : Volonté + attribut de tradition (hermétique = LOG, chaman = CHA)
-    let drainResist = null;
-    if (attrs.MAG) {
-      const tradAttr = String(archetype).includes("Chaman") ||
-        special === "Chaman"
-        ? attrs.CHA
-        : attrs.LOG;
-      drainResist =
-        special === "Adepte" ? null : attrs.VOL + tradAttr;
-    }
+    // Tradition magique & esprit mentor (corrélés à l'origine).
+    const isAwakened = isMagicProf || isMagicSpec;
+    const castsSpells = isAwakened && special !== "Adepte" && !!attrs.MAG;
+    const tradition = castsSpells
+      ? Magic.pickTradition("sr6", effectiveOrigin, special, archetype)
+      : null;
+    const mentorSpirit =
+      isAwakened && attrs.MAG ? Magic.pickMentor("sr6", effectiveOrigin) : null;
+
+    // Résistance au Drain : Volonté + attribut de la tradition.
+    const drainResist = tradition
+      ? attrs.VOL + (attrs[tradition.drainAttr] || 0)
+      : null;
 
     // Compétences
     const pool = this.skillPools[archetype] || this.skillPools["Civil"];
@@ -1503,6 +1510,10 @@ const EditionSR6 = {
       defense,
       damageResist,
       drainResist,
+      tradition: tradition ? tradition.name : null,
+      traditionDrainAttr: tradition ? tradition.drainAttr : null,
+      traditionDesc: tradition ? tradition.desc : null,
+      mentorSpirit,
       composure,
       judgeIntentions,
       memory,
@@ -1535,7 +1546,10 @@ const EditionSR6 = {
     pnj.composure = attrs.VOL + attrs.CHA;
     pnj.judgeIntentions = attrs.INT + attrs.CHA;
     pnj.memory = attrs.LOG + attrs.VOL;
-    if (attrs.MAG && pnj.special !== "Adepte") {
+    if (pnj.traditionDrainAttr) {
+      pnj.drainResist = attrs.VOL + (attrs[pnj.traditionDrainAttr] || 0);
+    } else if (attrs.MAG && pnj.special !== "Adepte") {
+      // fallback anciens PNJ sans tradition
       const tradAttr =
         String(pnj.archetype).includes("Chaman") || pnj.special === "Chaman"
           ? attrs.CHA

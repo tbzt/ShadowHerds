@@ -161,6 +161,15 @@ const BonusEngine = {
     if (this._sumListBonus(pnj, edition, pnj.powers)) attrsTouched = true;
     if (this._sumListBonus(pnj, edition, pnj.metaTraits)) attrsTouched = true;
 
+    // Bonus « Tous » d'un esprit mentor (une compétence), appliqué si le
+    // PNJ possède la compétence visée.
+    if (
+      pnj.mentorSpirit &&
+      pnj.mentorSpirit.bonus &&
+      this._applyOneBonus(pnj, edition, pnj.mentorSpirit.bonus)
+    )
+      attrsTouched = true;
+
     // Bonus de type Infecté (initDice/sd/armor), déposé temporairement par
     // generate() sur pnj._infectedBonus.
     if (pnj._infectedBonus && this._applyOneBonus(pnj, edition, pnj._infectedBonus))
@@ -225,6 +234,13 @@ const BonusEngine = {
           skill.rr = (skill.rr || 0) + parsed.rr;
         }
       }
+    }
+
+    // Bonus « Tous » d'un esprit mentor (+1 dé à une compétence possédée).
+    const mb = pnj.mentorSpirit && pnj.mentorSpirit.bonus;
+    if (mb && mb.skill) {
+      const skill = this._findAnarchySkill(pnj, mb.skill);
+      if (skill) skill.val = (skill.val || 0) + mb.val;
     }
   },
 
