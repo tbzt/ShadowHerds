@@ -82,28 +82,69 @@ const BonusEngine = {
     return { implanted, external };
   },
 
-  /** Applique le bonus du trait choisi (champ `bonus` sur l'objet trait). */
-  _applyTraitBonus(pnj, edition) {
-    const trait = (pnj.traits || []).find((t) => t && t.bonus);
-    if (!trait) return false;
-    const b = trait.bonus;
+  /**
+   * Applique un seul objet bonus au pnj. Types supportés :
+   * - initDice : dés d'initiative supplémentaires
+   * - attr / attrChoice (+val) : attribut fixe ou tiré au hasard dans une liste
+   * - skill / skillChoice (+val) : compétence nommée, ou tirée au hasard
+   *   parmi celles que le PNJ possède déjà (cohérent avec la condition du
+   *   livre « doit déjà connaître la compétence » — silencieux si aucune)
+   * - armor (SR5 → pnj.armure) / sd (SR6 → pnj.sdBase)
+   * - limit: "phys"|"ment"|"soc" (+val, SR5 uniquement, Limites naturelles)
+   * - monitor (+cases au moniteur physique, SR5 physMon / SR6 me)
+   * - stat : nom de champ pnj direct (composure, memory... déjà utilisé
+   *   par les traits SR5/SR6 existants)
+   * Renvoie true si un attribut a été touché (pour déclencher recalc()).
+   */
+  _applyOneBonus(pnj, edition, b) {
+    if (!b) return false;
     let attrsTouched = false;
     if (b.initDice) pnj.initDice = (pnj.initDice || 0) + b.initDice;
     if (b.stat) pnj[b.stat] = (pnj[b.stat] || 0) + b.val;
-    if (b.attr) {
-      pnj.attrs[b.attr] = (pnj.attrs[b.attr] || 0) + b.val;
+    if (b.armor) {
+      pnj.armure = (pnj.armure || 0) + b.armor;
+      attrsTouched = true; // pour rafraîchir damageResist (SR5) via recalc()
+    }
+    if (b.sd) pnj.sdBase = (pnj.sdBase || 0) + b.sd;
+    if (b.limit) {
+      const key = { phys: "limPhys", ment: "limMent", soc: "limSoc" }[b.limit];
+      if (key) pnj[key] = (pnj[key] || 0) + b.val;
+    }
+    if (b.monitor) {
+      const key = edition === "sr6" ? "me" : "physMon";
+      pnj[key] = (pnj[key] || 0) + b.monitor;
+    }
+    const attr = b.attrChoice && b.attrChoice.length ? Utils.rand(b.attrChoice) : b.attr;
+    if (attr) {
+      pnj.attrs[attr] = (pnj.attrs[attr] || 0) + b.val;
       attrsTouched = true;
     }
-    if (b.skill) {
+    const skillName =
+      b.skillChoice && pnj.skills && pnj.skills.length
+        ? Utils.rand(pnj.skills).name
+        : b.skill;
+    if (skillName) {
       const s = (pnj.skills || []).find(
-        (sk) => sk.name.toLowerCase() === b.skill.toLowerCase(),
+        (sk) => sk.name.toLowerCase() === skillName.toLowerCase(),
       );
       if (s) s.val += b.val;
     }
     return attrsTouched;
   },
 
-  /** SR5/SR6 : cyberware + trait + Infecté → attrs/initiative/armure, puis recalc(). */
+  /** Somme les bonus d'une liste d'objets {bonus} — traits, pouvoirs
+      d'adepte, traits de métatype. */
+  _sumListBonus(pnj, edition, list) {
+    let attrsTouched = false;
+    for (const item of list || []) {
+      if (item && item.bonus && this._applyOneBonus(pnj, edition, item.bonus))
+        attrsTouched = true;
+    }
+    return attrsTouched;
+  },
+
+  /** SR5/SR6 : cyberware + traits + pouvoirs d'adepte + métatype + Infecté
+      → attrs/initiative/armure/limites/moniteur, puis recalc(). */
   _applySR(pnj, edition, EditionModule) {
     const totals = this._collectCyberBonuses(pnj, edition);
     let attrsTouched = false;
@@ -116,20 +157,15 @@ const BonusEngine = {
       attrsTouched = true;
     }
 
-    if (this._applyTraitBonus(pnj, edition)) attrsTouched = true;
+    if (this._sumListBonus(pnj, edition, pnj.traits)) attrsTouched = true;
+    if (this._sumListBonus(pnj, edition, pnj.powers)) attrsTouched = true;
+    if (this._sumListBonus(pnj, edition, pnj.metaTraits)) attrsTouched = true;
 
     // Bonus de type Infecté (initDice/sd/armor), déposé temporairement par
     // generate() sur pnj._infectedBonus.
-    if (pnj._infectedBonus) {
-      if (pnj._infectedBonus.initDice)
-        pnj.initDice = (pnj.initDice || 0) + pnj._infectedBonus.initDice;
-      if (pnj._infectedBonus.sd) pnj.sdBase = (pnj.sdBase || 0) + pnj._infectedBonus.sd;
-      if (pnj._infectedBonus.armor) {
-        pnj.armure = (pnj.armure || 0) + pnj._infectedBonus.armor;
-        attrsTouched = true; // pour rafraîchir damageResist (SR5) via recalc()
-      }
-      delete pnj._infectedBonus;
-    }
+    if (pnj._infectedBonus && this._applyOneBonus(pnj, edition, pnj._infectedBonus))
+      attrsTouched = true;
+    delete pnj._infectedBonus;
 
     if (attrsTouched && EditionModule && typeof EditionModule.recalc === "function") {
       EditionModule.recalc(pnj);

@@ -1326,7 +1326,11 @@ const EditionSR5 = {
     // Initiative
     const initData = this.initByProf[archetypeIdx];
     const init = attrs.REA + attrs.INT;
-    const initDice = special === "Adepte" && proRating >= 3 ? 2 : initData.dice;
+    // Zoocanthrope : dés d'initiative animale propres (ex. "2D6"), priment
+    // sur le calcul standard par proRating.
+    const zooInitDice = mv && mv.init ? parseInt(mv.init, 10) : null;
+    const initDice =
+      zooInitDice || (special === "Adepte" && proRating >= 3 ? 2 : initData.dice);
 
     // Résistance au Drain
     const drainResist = ["Mage hermétique", "Chaman"].includes(special)
@@ -1352,6 +1356,7 @@ const EditionSR5 = {
     // Équipement
     const equip = this._buildEquip(archetype, proRating, special);
     if (infected) equip.push(...infected.naturalWeapons);
+    if (mv && mv.naturalWeapons) equip.push(...mv.naturalWeapons);
 
     // Augmentations — supprimées pour tout Éveillé (cohérence Essence/Magie)
     const awakened = this._isAwakened(archetype, special);
@@ -1435,9 +1440,7 @@ const EditionSR5 = {
       powers,
       traits,
       infected: infected ? infected.name : null,
-      infectedPowers: infected
-        ? [...infected.powersFixed, ...(infected.optionalPower ? [infected.optionalPower] : [])]
-        : [],
+      infectedPowers: infected ? infected.powersFixed : [],
       infectedWeaknesses: infected ? infected.weaknesses : [],
       notes: "",
     };

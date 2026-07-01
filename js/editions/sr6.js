@@ -1469,6 +1469,7 @@ const EditionSR6 = {
     // Équipement — pas de cyberware pour un Éveillé (coût en Essence)
     const equip = this.buildLoadout(archetype, p, awakened);
     if (infected) equip.push(...infected.naturalWeapons);
+    if (mv && mv.naturalWeapons) equip.push(...mv.naturalWeapons);
 
     // Augmentations corpo — jamais pour un Éveillé
     const augs =
@@ -1512,9 +1513,7 @@ const EditionSR6 = {
       equip,
       augs,
       infected: infected ? infected.name : null,
-      infectedPowers: infected
-        ? [...infected.powersFixed, ...(infected.optionalPower ? [infected.optionalPower] : [])]
-        : [],
+      infectedPowers: infected ? infected.powersFixed : [],
       infectedWeaknesses: infected ? infected.weaknesses : [],
       physFilled: 0,
       notes: "",
