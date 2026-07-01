@@ -2742,6 +2742,9 @@ const EditionAnarchy = {
           ? Magic.pickMentor(
               "anarchy",
               opts.originPool !== "Aléatoire" ? opts.originPool : null,
+              { chamanique: "shamanic", hermétique: "hermetic", adepte: "adept" }[
+                statBlock.awakened
+              ] || null,
             )
           : null,
       spells: (function () {

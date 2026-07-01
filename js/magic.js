@@ -537,9 +537,23 @@ const Magic = {
     return this._biasedPick(list, originPool);
   },
 
-  /** Esprit mentor (ou null dans ~1-chance des cas — optionnel en canon). */
-  pickMentor(ed, originPool, chance = 0.5) {
+  /** Esprit mentor (ou null — optionnel en canon). La probabilité dépend de
+      la sensibilité de la tradition : les esprits mentors sont surtout le
+      fait des traditions chamaniques/de foi, rarement des hermétiques.
+      `kind` : "shamanic" (foi) | "hermetic" | "adept" | null. */
+  MENTOR_CHANCE: { shamanic: 0.65, hermetic: 0.12, adept: 0.35 },
+
+  pickMentor(ed, originPool, kind) {
+    const chance = this.MENTOR_CHANCE[kind] ?? 0.4;
     if (!Utils.randBool(chance)) return null;
     return this._biasedPick(this.mentorSpirits[ed] || [], originPool);
+  },
+
+  /** Sensibilité aux esprits mentors d'une tradition (par attribut de Drain :
+      LOG = hermétique/scientifique, CHA/INT = foi/chamanique). */
+  mentorKind(tradition, special) {
+    if (tradition) return tradition.drainAttr === "LOG" ? "hermetic" : "shamanic";
+    if (String(special || "").toLowerCase().includes("adepte")) return "adept";
+    return null;
   },
 };

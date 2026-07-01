@@ -1345,7 +1345,11 @@ const EditionSR5 = {
       ? Magic.pickTradition("sr5", effectiveOrigin, special, archetype)
       : null;
     const mentorSpirit = isAwakened
-      ? Magic.pickMentor("sr5", effectiveOrigin)
+      ? Magic.pickMentor(
+          "sr5",
+          effectiveOrigin,
+          Magic.mentorKind(tradition, special),
+        )
       : null;
 
     // Résistance au Drain : Volonté + attribut de la tradition.
