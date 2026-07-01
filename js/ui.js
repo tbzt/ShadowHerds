@@ -36,8 +36,9 @@ const CardRenderer = {
     let badge = "";
 
     if (pnj.edition === "anarchy") {
-      const tierClass = `rang-${pnj.tier.toLowerCase()}`;
-      badge = `<span class="pnj-rank-badge ${tierClass}">${pnj.tier}</span>`;
+      const tier = pnj.tier || "Figurant";
+      const tierClass = `rang-${tier.toLowerCase()}`;
+      badge = `<span class="pnj-rank-badge ${tierClass}">${tier}</span>`;
     } else {
       badge = `<span class="pnj-rank-badge">PRO&nbsp;${pnj.proRating}</span>`;
     }
