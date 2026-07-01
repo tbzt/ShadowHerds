@@ -742,7 +742,7 @@ const CardRenderer = {
 
   /* Rend un élément de contenu : objet {nom, desc} -> tag cliquable
      ouvrant une modale ; chaîne simple -> tag normal. Pour les sorts, un
-     champ drain (SR5/SR6) ou seuil (Anarchy) est affiché dans le libellé. */
+     champ drain (SR5/SR6) ou niveau (Anarchy) est affiché dans le libellé. */
   /* Libellé court d'un bonus de trait (voir BonusEngine / content.js). */
   _bonusLabel(bonus) {
     if (!bonus) return "";
@@ -759,10 +759,12 @@ const CardRenderer = {
   _contentTag(item) {
     if (item && typeof item === "object" && item.name) {
       const name = this._esc(item.name);
-      // Suffixe Drain/Seuil pour les sorts, affiché dans le tag.
+      // Suffixe Drain/Niveau pour les sorts, affiché dans le tag.
       let suffix = "";
       if (item.drain != null) {
         suffix = ` <span class="tag-stat">(Drain ${this._esc(item.drain)})</span>`;
+      } else if (item.level != null) {
+        suffix = ` <span class="tag-stat">(Niveau ${this._esc(item.level)})</span>`;
       } else if (item.threshold != null) {
         suffix = ` <span class="tag-stat">(Seuil ${this._esc(item.threshold)})</span>`;
       } else if (item.bonus) {
