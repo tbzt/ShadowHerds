@@ -4,30 +4,34 @@
    INFECTÉS (goules, vampires, etc.) — sélectionnables comme un
    métatype/une métavariante.
 
-   Sources vérifiées :
+   Sources vérifiées (voir aussi /home/thomas/Claude/Projects/ShadowHerds/
+   INDEX-DONNEES-VERIFIEES.md) :
    - SR6 : Compagnon du Sixième Monde (BBE, fr), chapitre « Personnages
      infectés », p.102-113. 18 types, modificateurs d'attributs (deltas
      ajoutés au maximum du métatype/de la métaconscience de base — voir
      js/metavariants.js pour Centaure/Naga/Sasquatch/Triton).
-   - SR5 : Livre de Règles (BBE, fr), p.406-408 — Goule et Vampire y sont
-     décrits comme des PNJ prêts à l'emploi (stats absolues, pas des
-     deltas), contrairement à SR6. Les autres types couverts par Howling
-     Shadows (CAT27008, anglais, sans traduction française officielle)
-     ne sont pas repris ici pour l'instant (hors-scope de ce chantier,
-     cf. plan) : Bandersnatch/Banshee/Gobelin/Grendel/Rongeur/Harvester/
-     Mutaqua/Nosferatu/Wendigo/Dzoo-noo-qua/Fomóraig/Loup-garou côté SR5.
+   - SR5 : Run Faster (BBE, fr), table « Attributs des métatypes Infectés »
+     p.105 + fiches p.106-111. 4 types (Goule, Loup-garou, Vampire,
+     Wendigo). Le livre imprime des plages absolues par métatype hôte, pas
+     des deltas explicites : les modificateurs ci-dessous sont dérivés en
+     comparant ces plages à `EditionSR5.attrRange` — vérifiés cohérents sur
+     les 5 métatypes standard (même delta quel que soit l'hôte, seul le
+     minimum reste celui du métatype de base). Les autres types couverts
+     uniquement par Howling Shadows (CAT27008, anglais, sans traduction
+     française officielle, fiches à stats absolues plutôt que deltas) ne
+     sont pas repris ici : Bandersnatch/Banshee/Gobelin/Grendel/Rongeur/
+     Harvester/Mutaqua/Nosferatu/Dzoo-noo-qua/Fomóraig.
    - Anarchy : aucune règle Infecté dans les livres disponibles — non
      couvert.
 
    Schéma par type :
    - baseMetatypes : métatype(s) ou métaconscience(s) hôte(s) possibles
      (un seul tiré au hasard si plusieurs, ex. Goule = tous)
-   - attrMod : deltas ajoutés au maximum de la souche (style SR6)
-   - attrFixed : stats absolues du PNJ tel qu'imprimé (style SR5,
-     utilisées comme centre d'un tirage ±1, pas une plage)
+   - attrMod : deltas ajoutés au maximum de la souche/métaconscience hôte
    - bonus : effet mécanique simple, appliqué comme un bonus de trait
-     (voir BonusEngine) — {initDice} et/ou {sd} (Armure naturelle → SD
-     en SR6) uniquement, le reste des pouvoirs reste descriptif
+     (voir BonusEngine) — {initDice}, {armor} (SR5, → pnj.armure) et/ou
+     {sd} (SR6, → pnj.sdBase) uniquement, le reste des pouvoirs reste
+     descriptif
    - powersFixed / powersOptional (1 tiré au hasard) / weaknesses :
      texte affiché tel quel
    - naturalWeapons : chaînes au format arme déjà utilisé par l'édition
@@ -236,27 +240,179 @@ const Infected = {
     },
   },
 
-  /* SR5 — Livre de Règles p.406-408. Stats absolues (pas de deltas) pour
-     un hôte humain moyen, telles qu'imprimées ; le livre indique que
-     d'autres métatypes sont possibles via la table de modificateurs
-     standard (p.68) mais ne fournit pas de fiche dédiée — hors scope ici. */
+  /* SR5 — deux sources :
+     1) Run Faster (BBE, fr) p.105-111, table « Attributs des métatypes
+        Infectés » p.105 + fiches p.106-111 : Goule, Loup-garou, Vampire,
+        Wendigo. Le livre imprime des plages absolues par métatype hôte,
+        pas des deltas explicites : les modificateurs (`attrMod`) sont
+        dérivés en comparant ces plages à `attrRange` (table p.68) —
+        vérifiés indépendamment sur les 5 métatypes standard, cohérents à
+        chaque fois (même delta quel que soit l'hôte, seul le minimum
+        reste celui du métatype de base, jamais modifié).
+     2) Howling Shadows (CAT27008, anglais, pas de traduction française
+        officielle) p.81-90 : Bandersnatch, Banshee, Gobelin (VO Goblin),
+        Grendel, Rongeur (VO Gnawer, pas de nom officiel connu — même
+        traduction non-officielle que le Rongeur SR6, créature distincte),
+        Moissonneur (VO Harvester, pas de nom officiel connu), Mutaqua,
+        Nosferatu, Dzoo-noo-qua, Fomóraig. Ce livre donne des **fiches PNJ
+        à stats absolues** (`attrFixed`), pas des deltas de chargen —
+        Howling Shadows n'a pas de fiche pour Goule/Vampire (renvoie vers
+        le Livre de Règles) ni pour Loup-garou/Wendigo dans ce format
+        (couverts par Run Faster à la place). Les VD d'armes naturelles
+        sont imprimées, la Précision (PRE) ne l'est pas dans ce livre —
+        fixée à 6 par cohérence avec les autres armes naturelles SR5 du
+        projet (valeur de la Goule/Vampire imprimée au Livre de Règles). */
   sr5: {
     Goule: {
+      baseMetatypes: ["Humain", "Elfe", "Nain", "Ork", "Troll", "Sasquatch"],
+      attrMod: { CON: 4, AGI: 0, REA: 2, FOR: 3, VOL: 2, LOG: -1, INT: 1, CHA: -2 },
+      bonus: { armor: 1 },
+      powersFixed: ["Arme naturelle (Crocs)", "Arme naturelle (Griffes)", "Nature duale", "Sens accrus (Ouïe, Odorat)"],
+      powersOptional: ["Armure +1"],
+      weaknesses: ["Allergie (Soleil, Modérée)", "Exigence alimentaire (Chair métahumaine)", "Sens réduit (Aveugle)", "Logique -1", "Charisme -1"],
+      naturalWeapons: [
+        "Crocs [PRE 6, Allonge -1, VD (FOR+1)P, PA -1]",
+        "Griffes [PRE 6, Allonge —, VD (FOR+1)P, PA -1]",
+      ],
+    },
+    "Loup-garou": {
       baseMetatypes: ["Humain"],
-      attrFixed: { CON: 7, AGI: 3, REA: 5, FOR: 6, VOL: 5, LOG: 2, INT: 4, CHA: 1, CHC: 3 },
-      powersFixed: ["Armes naturelles (Griffes)", "Armure 1", "Conscience", "Nature duale", "Sens accrus (Odorat, Ouïe)"],
+      attrMod: { CON: 1, AGI: 0, REA: 2, FOR: 4, VOL: 1, LOG: -1, INT: 2, CHA: -2 },
+      bonus: { initDice: 1, armor: 2 },
+      powersFixed: ["Arme naturelle (Crocs)", "Arme naturelle (Griffes)", "Armure 2", "Nature duale", "Sens accrus (Ouïe, Vision nocturne, Odorat, Vision thermographique)", "+1 à la vitesse de déplacement de base"],
       powersOptional: [],
-      weaknesses: ["Allergie (Lumière solaire, Modérée)", "Exigence alimentaire (Chair métahumaine)", "Sens réduits (Aveugle)"],
-      naturalWeapons: ["Griffes [PRE 6, Allonge —, VD (FOR+1)P, PA -1]"],
+      weaknesses: ["Allergie (Aconit, Modérée)", "Allergie (Soleil, Grave)", "Exigence alimentaire (Chair métahumaine)", "Logique -1", "Charisme -1"],
+      naturalWeapons: [
+        "Crocs [PRE 6, Allonge -1, VD (FOR+2)P, PA -2]",
+        "Griffes [PRE 6, Allonge —, VD (FOR+3)P, PA -2]",
+      ],
     },
     Vampire: {
       baseMetatypes: ["Humain"],
-      attrFixed: { CON: 4, AGI: 3, REA: 5, FOR: 4, VOL: 4, LOG: 3, INT: 4, CHA: 5, CHC: 3 },
+      attrMod: { CON: 1, AGI: 0, REA: 2, FOR: 1, VOL: 1, LOG: 0, INT: 1, CHA: 2 },
       bonus: { initDice: 1 },
-      powersFixed: ["Arme naturelle (Crocs)", "Conscience", "Drain d'Essence", "Forme brumeuse", "Immunité (Âge, Pathogènes, Toxines)", "Infection", "Nature duale", "Régénération", "Sens accrus (Odorat, Ouïe, Vision thermographique)"],
-      powersOptional: [],
-      weaknesses: ["Allergie (Bois, Grave)", "Allergie (Lumière solaire, Grave)", "Exigence alimentaire (Sang métahumain)", "Perte d'Essence", "Sommeil induit (Manque d'air)"],
+      powersFixed: ["Arme naturelle (Crocs)", "Drain d'Essence", "Immunité (Âge)", "Infection", "Nature duale", "+1 à la vitesse de déplacement de base"],
+      powersOptional: ["Forme brumeuse", "Immunité (Pathogènes, Toxines)", "Régénération", "Sens accrus (Ouïe, Odorat, Vision thermographique)"],
+      weaknesses: ["Allergie (Soleil, Grave)", "Allergie (Bois, Grave)", "Exigence alimentaire (Sang métahumain)", "Perte d'Essence", "Sommeil induit (manque d'air)"],
       naturalWeapons: ["Crocs [PRE 6, Allonge -1, VD (FOR+1)P, PA -1]"],
+    },
+    Wendigo: {
+      baseMetatypes: ["Ork"],
+      attrMod: { CON: 2, AGI: 0, REA: 2, FOR: 1, VOL: 1, LOG: 1, INT: 1, CHA: 2 },
+      bonus: { initDice: 1 },
+      powersFixed: ["Arme naturelle (Crocs)", "Arme naturelle (Griffes)", "Drain d'Essence", "Immunité (Âge)", "Infection", "Nature duale", "+1 à la vitesse de déplacement de base"],
+      powersOptional: ["Immunité (Pathogènes, Toxines)", "Influence", "Peur", "Régénération", "Sens accrus (Ouïe, Odorat, Acuité visuelle)"],
+      weaknesses: ["Allergie (Métaux ferreux, Modérée)", "Allergie (Soleil, Grave)", "Exigence alimentaire (Chair métahumaine)", "Perte d'Essence"],
+      naturalWeapons: [
+        "Crocs [PRE 6, Allonge -1, VD (FOR+1)P, PA -1]",
+        "Griffes [PRE 6, Allonge —, VD (FOR+2)P, PA -1]",
+      ],
+    },
+    Bandersnatch: {
+      baseMetatypes: ["Sasquatch"],
+      attrFixed: { CON: 9, AGI: 3, REA: 5, FOR: 9, VOL: 5, LOG: 2, INT: 6, CHA: 1 },
+      powersFixed: ["Coloration adaptative", "Nature duale", "Mimétisme", "Sapience", "Arme naturelle (Morsure)", "Arme naturelle (Griffes)"],
+      powersOptional: [],
+      weaknesses: ["Allergie (Soleil, Légère)", "Exigence alimentaire (Chair métahumaine)"],
+      naturalWeapons: [
+        "Morsure [PRE 6, Allonge -1, VD (FOR+1)P, PA -1]",
+        "Griffes [PRE 6, Allonge —, VD (FOR+2)P, PA -1]",
+      ],
+    },
+    Banshee: {
+      baseMetatypes: ["Elfe"],
+      attrFixed: { CON: 4, AGI: 4, REA: 5, FOR: 4, VOL: 4, LOG: 3, INT: 4, CHA: 6 },
+      powersFixed: ["Nature duale", "Sens accrus (Ouïe, Vision basse lumière, Odorat)", "Drain d'Essence", "Peur", "Immunité (Âge, Pathogènes, Toxines)", "Infection", "Forme brumeuse", "Régénération", "Sapience", "Arme naturelle (Morsure)"],
+      powersOptional: ["Hurlement paralysant"],
+      weaknesses: ["Allergie (Soleil, Sévère)", "Exigence alimentaire (Sang métahumain)", "Perte d'Essence", "Vulnérabilité (Argent)", "Vulnérabilité (Bois)"],
+      naturalWeapons: ["Morsure [PRE 6, Allonge -1, VD (FOR+1)P, PA -1]"],
+    },
+    Gobelin: {
+      baseMetatypes: ["Nain"],
+      attrFixed: { CON: 6, AGI: 3, REA: 4, FOR: 6, VOL: 5, LOG: 2, INT: 5, CHA: 2 },
+      powersFixed: ["Nature duale", "Sens accrus (Odorat, Goût, Vision thermique)", "Drain d'Essence", "Immunité (Âge, Feu, Toxines)", "Infection", "Régénération", "Sapience", "Arme naturelle (Morsure)", "Arme naturelle (Griffes)"],
+      powersOptional: [],
+      weaknesses: ["Allergie (Soleil, Modérée)", "Exigence alimentaire (Chair métahumaine)", "Perte d'Essence", "Vulnérabilité (Fer)"],
+      naturalWeapons: [
+        "Morsure [PRE 6, Allonge -1, VD (FOR+1)P, PA -1]",
+        "Griffes [PRE 6, Allonge —, VD (FOR+2)P, PA -1]",
+      ],
+    },
+    Grendel: {
+      baseMetatypes: ["Ork"],
+      attrFixed: { CON: 8, AGI: 3, REA: 4, FOR: 8, VOL: 4, LOG: 1, INT: 4, CHA: 1 },
+      powersFixed: ["Contrôle animal (Vermine)", "Nature duale", "Sens accrus (Vision basse lumière, Odorat, Vision thermique)", "Dissimulation (personnelle uniquement)", "Toucher paralysant", "Sapience", "Arme naturelle (Morsure)", "Arme naturelle (Griffes)"],
+      powersOptional: [],
+      weaknesses: ["Allergie (Soleil, Modérée)", "Exigence alimentaire (Chair métahumaine)"],
+      naturalWeapons: [
+        "Morsure [PRE 6, Allonge -1, VD (FOR+1)P, PA -1]",
+        "Griffes [PRE 6, Allonge —, VD (FOR+1)P, PA -1]",
+      ],
+    },
+    Rongeur: {
+      baseMetatypes: ["Nain"],
+      attrFixed: { CON: 6, AGI: 3, REA: 4, FOR: 7, VOL: 5, LOG: 2, INT: 5, CHA: 2 },
+      bonus: { armor: 2 },
+      powersFixed: ["Contrôle animal (Vermine)", "Armure 2", "Nature duale", "Sens accru (Vision thermique)", "Immunité (Toxines)", "Souffle nocif", "Toucher paralysant", "Sapience", "Arme naturelle (Morsure)"],
+      powersOptional: [],
+      weaknesses: ["Allergie (Soleil, Modérée)", "Exigence alimentaire (Os métahumains)"],
+      naturalWeapons: ["Morsure [PRE 6, Allonge -1, VD (FOR+2)P, PA —]"],
+    },
+    Moissonneur: {
+      baseMetatypes: ["Elfe"],
+      attrFixed: { CON: 5, AGI: 4, REA: 6, FOR: 6, VOL: 4, LOG: 1, INT: 5, CHA: 1 },
+      bonus: { armor: 2 },
+      powersFixed: ["Armure 2", "Nature duale", "Sens accrus (Vision basse lumière, Vision thermique)", "Mouvement (personnel uniquement)", "Sapience", "Arme naturelle (Morsure)", "Arme naturelle (Griffes)"],
+      powersOptional: [],
+      weaknesses: ["Allergie (Argent, Modérée)", "Allergie (Soleil, Modérée)"],
+      naturalWeapons: [
+        "Morsure [PRE 6, Allonge -1, VD (FOR+1)P, PA -1]",
+        "Griffes [PRE 6, Allonge —, VD (FOR+3)P, PA -3]",
+      ],
+    },
+    Mutaqua: {
+      baseMetatypes: ["Troll"],
+      attrFixed: { CON: 9, AGI: 3, REA: 5, FOR: 10, VOL: 5, LOG: 2, INT: 4, CHA: 1 },
+      bonus: { armor: 5 },
+      powersFixed: ["Armure 5", "Nature duale", "Sens accrus (Ouïe, Vision basse lumière, Vision thermique)", "Drain d'Essence", "Peur", "Immunité (Âge, Toxines)", "Infection", "Garde magique (personnelle uniquement)", "Régénération", "Sapience", "Arme naturelle (Morsure)", "Arme naturelle (Griffes)"],
+      powersOptional: [],
+      weaknesses: ["Allergie (Soleil, Extrême)", "Allergie (Bois, Sévère)", "Exigence alimentaire (Chair métahumaine)", "Perte d'Essence", "Vulnérabilité (Feu)"],
+      naturalWeapons: [
+        "Morsure [PRE 6, Allonge -1, VD (FOR+1)P, PA -1]",
+        "Griffes [PRE 6, Allonge —, VD (FOR+2)P, PA -1]",
+      ],
+    },
+    Nosferatu: {
+      baseMetatypes: ["Humain"],
+      attrFixed: { CON: 4, AGI: 4, REA: 4, FOR: 4, VOL: 5, LOG: 5, INT: 5, CHA: 5 },
+      powersFixed: ["Compulsion", "Nature duale", "Sens accrus (Ouïe, Vision basse lumière, Vision thermique)", "Drain d'Essence", "Peur", "Immunité (Âge, Pathogènes, Toxines)", "Infection", "Influence", "Régénération", "Sapience", "Arme naturelle (Morsure)"],
+      powersOptional: [],
+      weaknesses: ["Allergie (Soleil, Extrême)", "Allergie (Bois, Sévère)", "Exigence alimentaire (Sang métahumain)", "Perte d'Essence", "Dormance induite (manque d'air)"],
+      naturalWeapons: ["Morsure [PRE 6, Allonge -1, VD (FOR+1)P, PA -1]"],
+    },
+    "Dzoo-noo-qua": {
+      baseMetatypes: ["Troll"],
+      attrFixed: { CON: 9, AGI: 2, REA: 5, FOR: 9, VOL: 4, LOG: 2, INT: 4, CHA: 1 },
+      bonus: { armor: 4 },
+      powersFixed: ["Armure 4", "Nature duale", "Sens accrus (Ouïe, Vision thermique)", "Drain d'Essence", "Immunité (Âge, Toxines)", "Infection", "Garde magique (personnelle uniquement)", "Régénération", "Sapience", "Arme naturelle (Morsure)", "Arme naturelle (Griffes)"],
+      powersOptional: [],
+      weaknesses: ["Allergie (Soleil, Modérée)", "Exigence alimentaire (Chair métahumaine)", "Perte d'Essence"],
+      naturalWeapons: [
+        "Morsure [PRE 6, Allonge -1, VD (FOR+1)P, PA -1]",
+        "Griffes [PRE 6, Allonge —, VD (FOR+2)P, PA -1]",
+      ],
+    },
+    Fomóraig: {
+      baseMetatypes: ["Troll"],
+      attrFixed: { CON: 10, AGI: 2, REA: 4, FOR: 10, VOL: 4, LOG: 1, INT: 3, CHA: 1 },
+      bonus: { armor: 3 },
+      powersFixed: ["Armure 3", "Sécrétions corrosives", "Nature duale", "Garde magique (personnelle uniquement)", "Sapience", "Arme naturelle (Morsure)", "Arme naturelle (Griffes)"],
+      powersOptional: [],
+      weaknesses: ["Allergie (Pollution atmosphérique, Modérée)", "Allergie (Soleil, Modérée)", "Exigence alimentaire (Chair métahumaine)"],
+      naturalWeapons: [
+        "Morsure [PRE 6, Allonge -1, VD (FOR+1)P, PA -1]",
+        "Griffes [PRE 6, Allonge —, VD (FOR+2)P, PA -1]",
+      ],
     },
   },
 

@@ -1269,9 +1269,25 @@ const EditionSR5 = {
     // Les modificateurs de PNJ suivent la souche (métatype parent)
     const mods = this.metaMod[baseMetatype] || {};
     // Les ranges suivent la métavariante si présente, sinon la souche
-    const range = mv
+    let range = mv
       ? mv.ranges
       : this.attrRange[baseMetatype] || this.attrRange["Humain"];
+
+    // Infecté (Run Faster p.105-111) : étend le maximum de la
+    // souche/métaconscience hôte du modificateur imprimé dans le livre.
+    // Sasquatch n'a pas d'entrée dans attrRange : bornes propres via
+    // Metavariants (métaconsciences SR5).
+    if (infected && infected.attrMod) {
+      const mcRange =
+        typeof Metavariants !== "undefined" &&
+        Metavariants.use("sr5").resolve(infected.baseMetatype)?.ranges;
+      const src = mcRange || range;
+      const extended = {};
+      for (const k of Object.keys(src)) {
+        extended[k] = [src[k][0], src[k][1] + (infected.attrMod[k] || 0)];
+      }
+      range = extended;
+    }
 
     const attrs = {};
     for (const k of ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"]) {
@@ -1282,12 +1298,12 @@ const EditionSR5 = {
     }
     attrs.ESS = baseAttrs.ESS;
 
-    // Infecté : stats absolues telles qu'imprimées dans le livre (pas de
-    // plage de chargen comme SR6), utilisées comme centre d'un léger
-    // tirage pour garder un peu de variété entre deux PNJ du même type.
+    // Infecté (Howling Shadows, anglais) : certains types n'ont que des
+    // fiches PNJ à stats absolues (pas de plage de chargen comme Run
+    // Faster/SR6) — utilisées comme centre d'un léger tirage.
     if (infected && infected.attrFixed) {
       for (const k of Object.keys(infected.attrFixed)) {
-        attrs[k] = Utils.clamp(infected.attrFixed[k] + Utils.randInt(-1, 1), 1, 12);
+        attrs[k] = Utils.clamp(infected.attrFixed[k] + Utils.randInt(-1, 1), 1, 15);
       }
     }
 

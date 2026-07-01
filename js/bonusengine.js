@@ -118,12 +118,16 @@ const BonusEngine = {
 
     if (this._applyTraitBonus(pnj, edition)) attrsTouched = true;
 
-    // Bonus de type Infecté (initDice/sd), déposé temporairement par
+    // Bonus de type Infecté (initDice/sd/armor), déposé temporairement par
     // generate() sur pnj._infectedBonus.
     if (pnj._infectedBonus) {
       if (pnj._infectedBonus.initDice)
         pnj.initDice = (pnj.initDice || 0) + pnj._infectedBonus.initDice;
       if (pnj._infectedBonus.sd) pnj.sdBase = (pnj.sdBase || 0) + pnj._infectedBonus.sd;
+      if (pnj._infectedBonus.armor) {
+        pnj.armure = (pnj.armure || 0) + pnj._infectedBonus.armor;
+        attrsTouched = true; // pour rafraîchir damageResist (SR5) via recalc()
+      }
       delete pnj._infectedBonus;
     }
 
