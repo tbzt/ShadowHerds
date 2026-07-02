@@ -342,15 +342,17 @@ const CardRenderer = {
     const { weapons, gear } = this._splitEquip(equip);
     let html = `<div class="pnj-card-body${refOpen ? "" : " ref-collapsed"}">`;
 
+    const malus5 = Utils.woundMalus(pnj, "sr5");
+
     // ---- ZONE COMBAT ----
     html += '<div class="combat-zone">';
     html += this._zoneEyebrow("Combat");
     html += '<div class="combat-row">';
     html += this._initPill(init, initDice, pnj);
     if (drainResist != null)
-      html += this._rollPill("Drain", drainResist, "Résistance au Drain");
-    html += this._rollPill("Défense", pnj.defense, "Test de défense : Réaction + Intuition");
-    html += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure");
+      html += this._rollPill("Drain", Math.max(0, drainResist - malus5), "Résistance au Drain");
+    html += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus5), "Test de défense : Réaction + Intuition");
+    html += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure (non affectée par le malus de blessure)");
     html += "</div>";
 
     html += `<div class="monitor-block">
@@ -369,7 +371,7 @@ const CardRenderer = {
 
     // ---- ZONE CAPACITÉS ----
     html += '<div class="capacity-zone">';
-    html += this._skillsSection(skills);
+    html += this._skillsSection(skills, malus5);
     if (spells && spells.length) html += this._listSection("Sorts", spells);
     if (powers && powers.length)
       html += this._listSection("Pouvoirs d'adepte", powers);
@@ -429,15 +431,17 @@ const CardRenderer = {
     const { weapons, gear } = this._splitEquip(equip);
     let html = `<div class="pnj-card-body${refOpen ? "" : " ref-collapsed"}">`;
 
+    const malus6 = Utils.woundMalus(pnj, "sr6");
+
     // ---- ZONE COMBAT ----
     html += '<div class="combat-zone">';
     html += this._zoneEyebrow("Combat");
     html += '<div class="combat-row">';
     html += this._initPill(initBase ?? 0, initDice ?? 1, pnj);
     if (pnj.drainResist != null)
-      html += this._rollPill("Drain", pnj.drainResist, "Résistance au Drain");
-    html += this._rollPill("Défense", pnj.defense, "Test de défense");
-    html += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure");
+      html += this._rollPill("Drain", Math.max(0, pnj.drainResist - malus6), "Résistance au Drain");
+    html += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus6), "Test de défense");
+    html += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure (non affectée par le malus de blessure)");
     html += `<span class="stat-pill" title="Score Défensif">SD <strong>${sdBase ?? "?"}</strong></span>`;
     if (pa) html += `<span class="stat-pill">PA <strong>${pa}</strong></span>`;
     html += "</div>";
@@ -455,7 +459,7 @@ const CardRenderer = {
 
     // ---- ZONE CAPACITÉS ----
     html += '<div class="capacity-zone">';
-    html += this._skillsSection(skills);
+    html += this._skillsSection(skills, malus6);
     if (spells && spells.length) html += this._listSection("Sorts", spells);
     if (powers && powers.length)
       html += this._listSection("Pouvoirs d'adepte", powers);
@@ -593,7 +597,7 @@ const CardRenderer = {
           pool >= 1
             ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}" data-roll-edition="anarchy" data-roll-rr="${s.rr || 0}"`
             : "";
-        html += `<span class="tag skill-tag${pool >= 1 ? " rollable" : ""}"${rollMain} title="${this._esc(s.name)} : ${pool} (${s.val}+${s.attr}${rrStr}) — cliquer pour lancer">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong></span>`;
+        html += `<span class="tag skill-tag${pool >= 1 ? " rollable" : ""}"${rollMain} title="${this._esc(s.name)} : ${pool} (${s.val}+${s.attr}${rrStr}) — cliquer pour lancer">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong>${s.rr > 0 ? `<span class="lim">RR${s.rr}</span>` : ""}</span>`;
         if (s.spec && s.spec !== true && s.specVal) {
           const specAttrVal = attrs[s.specAttr || s.attr] || 0;
           const specPool = s.specVal + specAttrVal;
@@ -603,7 +607,7 @@ const CardRenderer = {
             specPool >= 1
               ? ` data-roll="${specPool}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" data-roll-edition="anarchy" data-roll-rr="${specRr}"`
               : "";
-          html += `<span class="tag skill-tag skill-tag-spec${specPool >= 1 ? " rollable" : ""}"${rollSpec} title="Spécialisation ${this._esc(s.spec)} : ${specPool}${specRrStr} — cliquer pour lancer">◊&nbsp;${this._esc(s.spec)}&nbsp;<strong style="color:var(--text)">${specPool}</strong></span>`;
+          html += `<span class="tag skill-tag skill-tag-spec${specPool >= 1 ? " rollable" : ""}"${rollSpec} title="Spécialisation ${this._esc(s.spec)} : ${specPool}${specRrStr} — cliquer pour lancer">◊&nbsp;${this._esc(s.spec)}&nbsp;<strong style="color:var(--text)">${specPool}</strong>${specRr > 0 ? `<span class="lim">RR${specRr}</span>` : ""}</span>`;
         }
       }
       html += "</div></div>";
@@ -716,31 +720,33 @@ const CardRenderer = {
     }).join("");
   },
 
-  _skillsSection(skills) {
+  _skillsSection(skills, malus = 0) {
     if (!skills || !skills.length) return "";
+    const malusTxt = malus > 0 ? ` (malus blessure −${malus})` : "";
     const tags = skills
       .map((s) => {
         const n = Number(s.val);
+        const eff = Number.isFinite(n) ? Math.max(0, n - malus) : n;
         const rollAttrs =
-          Number.isFinite(n) && n >= 1
-            ? ` data-roll="${n}" data-roll-label="${this._esc(s.name)}" title="Lancer ${n} dés — ${this._esc(s.name)}"`
+          Number.isFinite(eff) && eff >= 1
+            ? ` data-roll="${eff}" data-roll-label="${this._esc(s.name)}" title="Lancer ${eff} dés — ${this._esc(s.name)}${malusTxt}"`
             : "";
-        const rollCls = Number.isFinite(n) && n >= 1 ? " rollable" : "";
-        let html = `<span class="tag skill-tag${rollCls}"${rollAttrs}>${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${s.val}</strong></span>`;
+        const rollCls = Number.isFinite(eff) && eff >= 1 ? " rollable" : "";
+        let html = `<span class="tag skill-tag${rollCls}"${rollAttrs}>${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${eff}</strong></span>`;
         if (s.spec && s.spec !== true) {
           // Spécialité : +2 dés sur le pool en SR5/SR6.
-          const specN = Number.isFinite(n) ? n + 2 : null;
+          const specN = Number.isFinite(n) ? Math.max(0, n + 2 - malus) : null;
           const specRoll =
             specN && specN >= 1
-              ? ` data-roll="${specN}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" title="Spécialité ${this._esc(s.spec)} : ${specN} dés (+2)"`
-              : ` title="Spécialité ${this._esc(s.spec)} : +2 dés"`;
+              ? ` data-roll="${specN}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" title="Spécialité ${this._esc(s.spec)} : ${specN} dés (+2)${malusTxt}"`
+              : ` title="Spécialité ${this._esc(s.spec)} : +2 dés${malusTxt}"`;
           html += `<span class="tag skill-tag skill-tag-spec${specN ? " rollable" : ""}"${specRoll}>◊&nbsp;${this._esc(s.spec)}</span>`;
         }
         return html;
       })
       .join("");
     return `<div class="card-section">
-      <div class="card-section-label">Compétences</div>
+      <div class="card-section-label">Compétences${malus > 0 ? ` <span class="wound-malus-badge" title="Malus de blessure automatique">−${malus}D</span>` : ""}</div>
       <div class="card-section-content">
         ${tags}
       </div>

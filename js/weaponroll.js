@@ -218,7 +218,9 @@ const WeaponRoll = {
       smartBonus =
         edition === "sr5" ? (pnj.smartlink.implanted ? 2 : 1) : 1;
     }
-    const pool = basePool + smartBonus;
+    const malus =
+      typeof Utils !== "undefined" ? Utils.woundMalus(pnj, edition) : 0;
+    const pool = Math.max(0, basePool + smartBonus - malus);
 
     return {
       weaponName: parsed.name,

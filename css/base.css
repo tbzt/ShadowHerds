@@ -261,51 +261,6 @@ select optgroup {
   gap: 0.6rem;
 }
 
-/* ---- Mode : contrôle segmenté clair (Normaux / Explosifs) ---- */
-.dice-mode-group {
-  display: flex;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-}
-.dice-mode-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  height: 28px;
-  padding: 0 10px;
-  background: transparent;
-  border: none;
-  border-right: 1px solid var(--border);
-  color: var(--text-dim);
-  font-family: "Rajdhani", sans-serif;
-  font-weight: 600;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  transition:
-    background 0.15s,
-    color 0.15s;
-}
-.dice-mode-btn:last-child {
-  border-right: none;
-}
-.dice-mode-icon {
-  font-size: 0.85rem;
-  line-height: 1;
-  opacity: 0.85;
-}
-.dice-mode-btn:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
-}
-.dice-mode-btn.active {
-  background: var(--accent);
-  color: var(--bg);
-}
-.dice-mode-btn.active .dice-mode-icon {
-  opacity: 1;
-}
-
 /* ---- Réserve : stepper + champ ---- */
 .dice-count-group {
   display: flex;
@@ -1072,6 +1027,15 @@ select optgroup {
   font-size: 0.78rem;
   color: var(--text-dim);
   line-height: 1.6;
+}
+.wound-malus-badge {
+  color: #c0392b;
+  border: 1px solid #c0392b;
+  border-radius: 3px;
+  padding: 0 4px;
+  margin-left: 4px;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 /* ---- Métavariante dans l'en-tête ---- */
@@ -2677,32 +2641,6 @@ select optgroup {
   background: var(--border);
   margin: 0 auto 0.2rem;
 }
-.dice-sheet-modes {
-  display: flex;
-  gap: 0.6rem;
-}
-.dice-sheet-mode {
-  flex: 1;
-  min-height: 44px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text-dim);
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 0.9rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  transition:
-    border-color 0.15s,
-    color 0.15s,
-    background 0.15s;
-}
-.dice-sheet-mode.active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--glow);
-}
 .dice-sheet-counter {
   display: flex;
   align-items: center;
@@ -3068,14 +3006,6 @@ select optgroup {
   }
 
   /* ---- Lanceur topbar utilisable au doigt (iPad) ---- */
-  .dice-mode-btn {
-    height: 38px;
-    padding: 0 12px;
-    font-size: 0.78rem;
-  }
-  .dice-mode-icon {
-    font-size: 1rem;
-  }
   .dice-count-step {
     width: 34px;
     height: 38px;
@@ -3302,6 +3232,14 @@ select optgroup {
 .skill-tag-spec {
   opacity: 0.8;
   font-size: 0.56rem;
+}
+.skill-tag .lim {
+  font-size: 0.56rem;
+  opacity: 0.85;
+  padding-left: 4px;
+  margin-left: 3px;
+  border-left: 1px solid var(--accent, currentColor);
+  color: var(--accent);
 }
 
 /* ============================================================
@@ -3864,6 +3802,61 @@ input[type="range"]#risk-dice-slider {
   border-color: var(--accent);
   background: var(--glow);
   color: var(--accent);
+}
+
+/* Avantage / Désavantage (p.67) */
+.risk-adv-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.risk-adv-label {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.risk-adv-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+.risk-adv-btn {
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem 0.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  align-items: center;
+  transition:
+    border-color 0.14s,
+    background 0.14s;
+}
+.risk-adv-btn:hover {
+  border-color: var(--accent2);
+}
+.risk-adv-btn.active {
+  border-color: var(--accent);
+  background: var(--glow);
+}
+.risk-adv-name {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.risk-adv-sub {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.02em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  text-align: center;
 }
 
 .risk-forecast {

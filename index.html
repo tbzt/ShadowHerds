@@ -60,16 +60,6 @@
         title="Changer d'édition">—</button>
 
       <div id="dice-roller">
-        <div class="dice-mode-group" role="group" aria-label="Mode de dés">
-          <button class="dice-mode-btn active" data-dice-topbar-mode="normal"
-            onclick="Dice.setMode('normal', this)" title="Dés normaux — aucune relance">
-            <span class="dice-mode-icon">⚀</span><span class="dice-mode-text">Normaux</span>
-          </button>
-          <button class="dice-mode-btn" data-dice-topbar-mode="explosive"
-            onclick="Dice.setMode('explosive', this)" title="Dés explosifs — les 6 relancent">
-            <span class="dice-mode-icon">⚅</span><span class="dice-mode-text">Explosifs</span>
-          </button>
-        </div>
         <div class="dice-count-group">
           <button class="dice-count-step" data-dice-topbar-step="-1" tabindex="-1"
             aria-label="Moins de dés">−</button>
@@ -267,12 +257,6 @@
     <div id="dice-sheet-overlay" role="dialog" aria-modal="true" aria-label="Lanceur de dés">
       <div id="dice-sheet">
         <div class="dice-sheet-handle"></div>
-        <div class="dice-sheet-modes">
-          <button class="dice-sheet-mode active" data-dice-mode="normal"
-            onclick="DicePanel.setMode('normal')">Normaux</button>
-          <button class="dice-sheet-mode" data-dice-mode="explosive"
-            onclick="DicePanel.setMode('explosive')">Explosifs</button>
-        </div>
         <div class="dice-sheet-counter">
           <button class="dice-sheet-step" data-dice-step="-1" aria-label="Moins de dés">−</button>
           <span id="dice-sheet-count" aria-live="polite">6</span>

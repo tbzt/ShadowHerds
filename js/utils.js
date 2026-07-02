@@ -32,6 +32,27 @@ const Utils = {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   },
 
+  /** Malus de dés lié aux cases de moniteur remplies (SR5/SR6).
+      SR5 : −1D par tranche de `woundMod` cases (physique + étourdissement
+      cumulés), réglage par défaut 3, désactivable (0).
+      SR6 : −1D par tranche de 3 cases du moniteur d'état. */
+  woundMalus(pnj, edition) {
+    if (!pnj) return 0;
+    if (edition === "sr5") {
+      const div = parseInt(
+        (typeof Settings !== "undefined" && Settings.get("woundMod", 3)) ?? 3,
+        10,
+      );
+      if (!div) return 0;
+      const total = (pnj.physFilled || 0) + (pnj.stunFilled || 0);
+      return Math.floor(total / div);
+    }
+    if (edition === "sr6") {
+      return Math.floor((pnj.physFilled || 0) / 3);
+    }
+    return 0;
+  },
+
   /* ============================================================
      TABLES DE NOMS
      Organisées par origine culturelle pour donner de la texture.
@@ -613,10 +634,9 @@ function toast(msg, duration = 2400) {
 /* ============================================================
    DICE ROLLER — moteur de règles + animation de lancer
 
-   - computeRoll(n, mode) : applique les règles Shadowrun
+   - computeRoll(n) : applique les règles Shadowrun
      (5-6 = succès ; bévue si plus de la moitié des dés sont des 1 ;
-      échec critique si bévue ET zéro succès ; mode explosif relance
-      les succès tant qu'il y en a). Renvoie le détail complet.
+      échec critique si bévue ET zéro succès). Renvoie le détail complet.
    - roll() : conserve le comportement du bouton « Lancer » de la
      barre du haut (avec animation overlay).
    - rollPool(n, opts) : lance une réserve depuis une carte (attribut,
@@ -624,7 +644,6 @@ function toast(msg, duration = 2400) {
      dés que de points dans la réserve, qui roulent puis se figent.
    ============================================================ */
 const Dice = {
-  mode: "normal",
   _animating: false,
 
   /* ---- Journal des jets (session, plus récent en premier) ---- */
@@ -768,7 +787,7 @@ const Dice = {
     if (typeof WeaponRoll === "undefined") return;
     const r = WeaponRoll.resolvePool(pnj, weapon, edition);
     if (!r) return;
-    const res = this.computeRoll(r.pool, this.mode);
+    const res = this.computeRoll(r.pool);
     // Plafonnement à la Précision (SR5) : la limite mord si hits > limite
     if (r.limit != null && res.hits > r.limit) {
       res.cappedFrom = res.hits;
@@ -782,17 +801,6 @@ const Dice = {
     });
   },
 
-  setMode(mode, btn) {
-    this.mode = mode;
-    document
-      .querySelectorAll(".dice-mode-btn")
-      .forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-    // Synchronise la feuille de dés mobile si elle existe
-    if (typeof DicePanel !== "undefined" && DicePanel._syncMode)
-      DicePanel._syncMode();
-  },
-
   /** Stepper −/＋ du compteur de dés topbar. */
   stepCount(delta) {
     const input = document.getElementById("dice-count");
@@ -802,7 +810,7 @@ const Dice = {
   },
 
   /* ---- Moteur de règles pur (testable, sans DOM) ---- */
-  computeRoll(n, mode = "normal") {
+  computeRoll(n) {
     n = Utils.clamp(n, 1, 60);
     const faces = [];
     let hits = 0;
@@ -815,28 +823,10 @@ const Dice = {
       if (r === 1) ones++;
     }
 
-    // Dés explosifs : on relance les succès (6 d'origine → relance)
-    const extra = [];
-    if (mode === "explosive") {
-      let toReroll = hits;
-      let guard = 0;
-      while (toReroll > 0 && guard < 8) {
-        let newHits = 0;
-        for (let i = 0; i < toReroll; i++) {
-          const r = Utils.randInt(1, 6);
-          extra.push(r);
-          if (r >= 5) newHits++;
-        }
-        hits += newHits;
-        toReroll = newHits;
-        guard++;
-      }
-    }
-
     const glitch = ones > Math.floor(n / 2);
     const critGlitch = glitch && hits === 0;
 
-    return { n, faces, extra, hits, ones, glitch, critGlitch, mode };
+    return { n, faces, extra: [], hits, ones, glitch, critGlitch };
   },
 
   /* ========================================================
@@ -886,12 +876,15 @@ const Dice = {
    * @param {number} pool - taille totale de la réserve
    * @param {number} riskDice - dés de risque (0..pool)
    * @param {number} rr - réduction de risque (0..3)
-   * @param {string} mode - 'normal' | 'explosive'
+   * @param {number} adv - avantage/désavantage net (p.67) : -1 = désavantage
+   *   (seul 6 est un succès), 0 = normal (5-6), +1 = avantage (4-6).
    */
-  computeAnarchyRoll(pool, riskDice, rr = 0, mode = "normal") {
+  computeAnarchyRoll(pool, riskDice, rr = 0, adv = 0) {
     pool = Utils.clamp(pool, 1, 60);
     riskDice = Utils.clamp(riskDice, 0, pool);
     rr = Utils.clamp(rr, 0, 3);
+    adv = Utils.clamp(adv, -1, 1);
+    const threshold = adv === 1 ? 4 : adv === -1 ? 6 : 5;
 
     const normalCount = pool - riskDice;
     const faces = []; // { v, risk: bool }
@@ -902,41 +895,13 @@ const Dice = {
     for (let i = 0; i < normalCount; i++) {
       const v = Utils.randInt(1, 6);
       faces.push({ v, risk: false });
-      if (v >= 5) normalHits++;
+      if (v >= threshold) normalHits++;
     }
     for (let i = 0; i < riskDice; i++) {
       const v = Utils.randInt(1, 6);
       faces.push({ v, risk: true });
-      if (v >= 5) riskHits++;
+      if (v >= threshold) riskHits++;
       if (v === 1) riskOnes++;
-    }
-
-    // Dés explosifs : relance des succès (les relances de risque comptent ×2)
-    const extra = []; // { v, risk }
-    if (mode === "explosive") {
-      let pendNormal = normalHits;
-      let pendRisk = riskHits;
-      let guard = 0;
-      while ((pendNormal > 0 || pendRisk > 0) && guard < 8) {
-        let nN = 0;
-        let nR = 0;
-        for (let i = 0; i < pendNormal; i++) {
-          const v = Utils.randInt(1, 6);
-          extra.push({ v, risk: false });
-          if (v >= 5) nN++;
-        }
-        for (let i = 0; i < pendRisk; i++) {
-          const v = Utils.randInt(1, 6);
-          extra.push({ v, risk: true });
-          if (v >= 5) nR++;
-          if (v === 1) riskOnes++; // un 1 en relance de risque compte aussi
-        }
-        normalHits += nN;
-        riskHits += nR;
-        pendNormal = nN;
-        pendRisk = nR;
-        guard++;
-      }
     }
 
     // Succès : risque compte double
@@ -954,9 +919,10 @@ const Dice = {
       pool,
       riskDice,
       rr,
-      mode,
+      adv,
+      threshold,
       faces,
-      extra,
+      extra: [],
       normalHits,
       riskHits,
       riskOnes,
@@ -980,7 +946,13 @@ const Dice = {
     const n = Utils.clamp(parseInt(input.value) || 6, 1, 40);
     input.value = n;
 
-    const res = this.computeRoll(n, this.mode);
+    // Anarchy 2.0 : ce lanceur passe par le panneau de prise de risque
+    if (typeof App !== "undefined" && App.edition === "anarchy") {
+      this.openRiskPanel(n, { label: "" });
+      return;
+    }
+
+    const res = this.computeRoll(n);
 
     // Résultat textuel dans la barre (comportement d'origine conservé)
     const el = document.getElementById("dice-result");
@@ -997,7 +969,7 @@ const Dice = {
 
   /* ---- Lancer d'une réserve depuis une carte ---- */
   rollPool(n, opts = {}) {
-    const res = this.computeRoll(n, this.mode);
+    const res = this.computeRoll(n);
     this._animate(res, { label: opts.label || "" });
   },
 
@@ -1052,7 +1024,13 @@ const Dice = {
   /* ========================================================
      PANNEAU DE PRISE DE RISQUE (Anarchy 2.0)
      ======================================================== */
-  _risk: { pool: 0, riskDice: 0, rr: 0, level: "normal", label: "" },
+  _risk: { pool: 0, riskDice: 0, rr: 0, adv: 0, level: "normal", label: "" },
+
+  ADV_LEVELS: [
+    { key: -1, label: "Désavantage", sub: "Seul 6 = succès" },
+    { key: 0, label: "Normal", sub: "5-6 = succès" },
+    { key: 1, label: "Avantage", sub: "4-6 = succès" },
+  ],
 
   _ensureRiskPanel() {
     if (document.getElementById("risk-panel")) return;
@@ -1078,6 +1056,10 @@ const Dice = {
         <div class="risk-rr-row">
           <span class="risk-rr-label">Réduction de risque (RR)</span>
           <div class="risk-rr-steps" id="risk-rr-steps"></div>
+        </div>
+        <div class="risk-adv-row">
+          <span class="risk-adv-label">Avantage / Désavantage</span>
+          <div class="risk-adv-steps" id="risk-adv-steps"></div>
         </div>
         <div class="risk-forecast" id="risk-forecast"></div>
         <button class="risk-roll-btn" id="risk-roll-btn">Lancer</button>
@@ -1140,11 +1122,27 @@ const Dice = {
       this._syncRiskPanel();
     });
 
+    // Avantage / Désavantage (p.67 : net, un seul palier)
+    const adv = document.getElementById("risk-adv-steps");
+    adv.innerHTML = this.ADV_LEVELS.map(
+      (l) =>
+        `<button class="risk-adv-btn" data-adv="${l.key}">
+           <span class="risk-adv-name">${l.label}</span>
+           <span class="risk-adv-sub">${l.sub}</span>
+         </button>`,
+    ).join("");
+    adv.addEventListener("click", (e) => {
+      const b = e.target.closest(".risk-adv-btn");
+      if (!b) return;
+      this._risk.adv = parseInt(b.dataset.adv, 10);
+      this._syncRiskPanel();
+    });
+
     // Lancer
     document.getElementById("risk-roll-btn").addEventListener("click", () => {
-      const { pool, riskDice, rr, label } = this._risk;
+      const { pool, riskDice, rr, adv, label } = this._risk;
       this._closeRiskPanel();
-      const res = this.computeAnarchyRoll(pool, riskDice, rr, this.mode);
+      const res = this.computeAnarchyRoll(pool, riskDice, rr, adv);
       this._animate(res, { label });
     });
 
@@ -1164,6 +1162,7 @@ const Dice = {
     this._risk = {
       pool,
       rr: Utils.clamp(opts.rr || 0, 0, 3),
+      adv: 0,
       level: "normal",
       label: opts.label || "",
       riskDice: 0,
@@ -1194,7 +1193,7 @@ const Dice = {
   },
 
   _syncRiskPanel() {
-    const { pool, riskDice, rr, level } = this._risk;
+    const { pool, riskDice, rr, adv, level } = this._risk;
     document.getElementById("risk-dice-val").textContent = riskDice;
     document.getElementById("risk-pool-total").textContent = pool;
     const slider = document.getElementById("risk-dice-slider");
@@ -1208,14 +1207,24 @@ const Dice = {
     document.querySelectorAll(".risk-rr-btn").forEach((b) => {
       b.classList.toggle("active", parseInt(b.dataset.rr, 10) === rr);
     });
+    document.querySelectorAll(".risk-adv-btn").forEach((b) => {
+      b.classList.toggle("active", parseInt(b.dataset.adv, 10) === adv);
+    });
 
     // Prévision lisible
     const normalDice = pool - riskDice;
+    const threshold = adv === 1 ? 4 : adv === -1 ? 6 : 5;
     const fc = document.getElementById("risk-forecast");
     const rrTxt = rr > 0 ? ` · RR ${rr} annule ${rr} « 1 »` : "";
+    const advTxt =
+      adv === 1
+        ? " · Avantage : 4-6 = succès"
+        : adv === -1
+          ? " · Désavantage : seul 6 = succès"
+          : "";
     fc.innerHTML =
       `<span>${normalDice} norm${normalDice > 1 ? "aux" : "al"} + ${riskDice} de risque</span>` +
-      `<span class="risk-forecast-note">Succès de risque ×2${rrTxt}</span>`;
+      `<span class="risk-forecast-note">Succès de risque ×2 (seuil ${threshold}+)${rrTxt}${advTxt}</span>`;
   },
 
   /* ========================================================
@@ -1263,8 +1272,8 @@ const Dice = {
     return cells;
   },
 
-  _dieEl(value, delay, isRisk = false, isInit = false) {
-    const hit = !isInit && value >= 5;
+  _dieEl(value, delay, isRisk = false, isInit = false, threshold = 5) {
+    const hit = !isInit && value >= threshold;
     const one = !isInit && value === 1;
     const die = document.createElement("div");
     die.className =
@@ -1305,7 +1314,8 @@ const Dice = {
     } else if (res.anarchy) {
       e.main = String(res.hits);
       e.unit = `succès`;
-      e.sub = `${res.pool} dés · ${res.riskDice} de risque${res.mode === "explosive" ? " · explosifs" : ""}`;
+      const advSuf = res.adv === 1 ? " · avantage" : res.adv === -1 ? " · désavantage" : "";
+      e.sub = `${res.pool} dés · ${res.riskDice} de risque${advSuf}`;
       const compLabel = {
         minor: "Complication mineure",
         critical: "Complication critique",
@@ -1323,7 +1333,7 @@ const Dice = {
     } else {
       e.main = String(res.hits);
       e.unit = `succès`;
-      e.sub = `${res.n} dés${res.mode === "explosive" ? " · explosifs" : ""}`;
+      e.sub = `${res.n} dés`;
       e.tag = res.critGlitch
         ? "Échec critique"
         : res.glitch
@@ -1401,9 +1411,12 @@ const Dice = {
       shown = [...faces, ...extra].slice(0, 40);
     }
 
+    const threshold = res.anarchy ? res.threshold || 5 : 5;
     const stagger = shown.length > 24 ? 14 : 26;
     shown.forEach((f, i) => {
-      tray.appendChild(this._dieEl(f.v, i * stagger, f.risk, f.init));
+      tray.appendChild(
+        this._dieEl(f.v, i * stagger, f.risk, f.init, threshold),
+      );
     });
 
     ov.removeAttribute("hidden");
@@ -1447,7 +1460,7 @@ const Dice = {
     const labelHtml = opts.label
       ? `<span class="dice-summary-label">${this._escSummary(opts.label)}</span>`
       : "";
-    const poolHtml = `<span class="dice-summary-pool">${res.n} dé${res.n > 1 ? "s" : ""}${res.mode === "explosive" ? " · explosifs" : ""}</span>`;
+    const poolHtml = `<span class="dice-summary-pool">${res.n} dé${res.n > 1 ? "s" : ""}</span>`;
     const big = `<span class="dice-summary-hits">${res.hits}</span><span class="dice-summary-hits-label">succès</span>`;
     let tag = "";
     if (res.critGlitch)
@@ -1511,12 +1524,20 @@ const Dice = {
       tag = `<span class="dice-summary-tag safe">RR absorbe ${res.riskOnes} « 1 »</span>`;
     }
 
-    const poolHtml = `<span class="dice-summary-pool">${res.pool} dés · ${res.riskDice} de risque${res.mode === "explosive" ? " · explosifs" : ""}</span>`;
+    // Avantage / désavantage : affichage clair (p.67)
+    let advTag = "";
+    if (res.adv === 1)
+      advTag = `<span class="dice-summary-tag safe">Avantage — 4-6 = succès</span>`;
+    else if (res.adv === -1)
+      advTag = `<span class="dice-summary-tag glitch">Désavantage — seul 6 = succès</span>`;
+
+    const poolHtml = `<span class="dice-summary-pool">${res.pool} dés · ${res.riskDice} de risque</span>`;
 
     summary.innerHTML = `
       ${labelHtml}
       <div class="dice-summary-main">${big}</div>
       ${breakdown}
+      ${advTag}
       ${tag}
       ${poolHtml}`;
   },

@@ -2,9 +2,9 @@
 
 /* ============================================================
    DICE PANEL — lanceur de dés mobile (FAB + bottom sheet)
-   S'appuie sur le moteur Dice (utils.js) : Dice.mode est la
-   source de vérité du mode, le résultat passe par l'animation
-   plein écran existante (Dice.rollPool → _animate).
+   S'appuie sur le moteur Dice (utils.js) : le résultat passe par
+   l'animation plein écran existante (Dice.rollPool → _animate),
+   ou par le panneau de prise de risque en Anarchy 2.0.
    ============================================================ */
 const DicePanel = {
   count: 6,
@@ -81,7 +81,6 @@ const DicePanel = {
   open() {
     const overlay = document.getElementById("dice-sheet-overlay");
     if (!overlay) return;
-    this._syncMode();
     this._renderCount();
     overlay.classList.add("open");
     // double rAF pour laisser display:flex s'appliquer avant la transition
@@ -98,28 +97,6 @@ const DicePanel = {
     setTimeout(() => overlay.classList.remove("open"), 220);
   },
 
-  /* ---- Mode normal / explosif : Dice.mode reste la référence ---- */
-  setMode(mode) {
-    Dice.mode = mode;
-    this._syncMode();
-    // Synchronise aussi le contrôle segmenté de la topbar (desktop/iPad)
-    document.querySelectorAll("#dice-roller .dice-mode-btn").forEach((b) => {
-      b.classList.toggle(
-        "active",
-        b.getAttribute("data-dice-topbar-mode") === mode,
-      );
-    });
-  },
-
-  _syncMode() {
-    document.querySelectorAll("[data-dice-mode]").forEach((b) => {
-      b.classList.toggle(
-        "active",
-        b.getAttribute("data-dice-mode") === Dice.mode,
-      );
-    });
-  },
-
   step(delta) {
     this.count = Utils.clamp(this.count + delta, 1, 40);
     this._renderCount();
@@ -132,6 +109,11 @@ const DicePanel = {
 
   roll() {
     this.close();
+    // Anarchy 2.0 : ce lanceur passe par le panneau de prise de risque
+    if (typeof App !== "undefined" && App.edition === "anarchy") {
+      Dice.openRiskPanel(this.count, { label: "" });
+      return;
+    }
     // L'animation plein écran existante affiche le résultat
     Dice.rollPool(this.count);
   },
