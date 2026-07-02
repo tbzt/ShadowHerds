@@ -447,97 +447,48 @@ const Magic = {
       },
     ],
 
-    // ----- Anarchy 2.0 (p.173-175) : 8 esprits mentors -----
-    // Mécanique V2 : chaque mentor accorde une Relance (RR 1) au choix parmi
-    // une liste (on en tire `pick`), plus un Comportement imposé. Résolu par
-    // Magic._resolveRrMentor() qui fixe les relances tirées (`chosen`) et
-    // construit la description. Les relances sont appliquées par BonusEngine.
+    // ----- Anarchy (livre de base p.70-72, 8 esprits mentors) : +1 dé -----
     anarchy: [
       {
+        name: "Aigle",
+        bonus: { skill: "Perception", val: 1 },
+        desc: "Tous : +1 dé Perception. + relance 1 échec sur les tests de Conjuration.",
+      },
+      {
         name: "Chat",
-        behavior: "Cruel",
-        pick: 2,
-        rrOptions: [
-          { skill: "Athlétisme", subspec: "parkour" },
-          { skill: "Furtivité", subspec: "discrétion physique" },
-          { skill: "Sorcellerie", subspec: "sorts d'illusion" },
-        ],
+        bonus: { skill: "Furtivité", val: 1 },
+        desc: "Tous : +1 dé Athlétisme ou Furtivité. + relance 1 échec sur les sorts d'effet.",
       },
       {
         name: "Chien",
-        behavior: "Loyal",
-        pick: 2,
-        rrOptions: [
-          { skill: "Perception", subspec: "physique" },
-          { skill: "Survie", subspec: "orientation" },
-          { skill: "Sorcellerie", subspec: "sorts de détection" },
-        ],
+        bonus: { skill: "Survie", val: 1 },
+        desc: "Tous : +1 dé Survie. + 1x/Scène, S'interposer sans coût d'Anarchy.",
+      },
+      {
+        name: "Corbeau",
+        bonus: { skill: "Comédie", val: 1 },
+        desc: "Tous : +1 dé Comédie. + 1x/Scène, Prise de risque sans coût d'Anarchy.",
       },
       {
         name: "Coyote",
-        behavior: "Malicieux",
-        pick: 2,
+        bonus: { skill: "Étiquette", val: 1 },
         originPools: ["amerindien"],
-        rrOptions: [
-          { skill: "Influence", subspec: "imposture" },
-          { skill: "Influence", subspec: "étiquette" },
-          { skill: "Sorcellerie", subspec: "sorts de manipulation" },
-        ],
+        desc: "Tous : +1 dé Étiquette. + relance 1 échec sur les sorts d'effet.",
       },
       {
         name: "Loup",
-        behavior: "Acharné",
-        pick: 2,
-        originPools: ["euro", "amerindien"],
-        rrOptions: [
-          { skill: "Survie", subspec: "orientation" },
-          { skill: "Combat rapproché", subspec: "mains nues" },
-          { skill: "Combat rapproché", subspec: "lames" },
-          { skill: "Sorcellerie", subspec: "sorts de combat" },
-        ],
-      },
-      {
-        name: "Oiseau-tonnerre",
-        behavior: "Susceptible",
-        pick: 2,
-        originPools: ["amerindien"],
-        rrOptions: [
-          { skill: "Influence", subspec: "intimidation" },
-          { skill: "Combat rapproché", subspec: "mains nues" },
-          { skill: "Conjuration", subspec: "esprits de l'air" },
-        ],
+        bonus: { skill: "Pistage", val: 1 },
+        desc: "Tous : +1 dé Pistage. + relance 1 échec sur les sorts de combat.",
       },
       {
         name: "Ours",
-        behavior: "Rage",
-        pick: 2,
-        rrOptions: [
-          { skill: "Survie", subspec: "premiers soins" },
-          { skill: "Combat rapproché", subspec: "mains nues" },
-          { skill: "Sorcellerie", subspec: "sorts de santé" },
-        ],
+        bonus: null,
+        desc: "Tous : +1 dommage au corps à corps. + 1x/Scène, Premiers secours sans coût d'Anarchy.",
       },
       {
-        name: "Raton laveur",
-        behavior: "Curieux",
-        pick: 2,
-        originPools: ["amerindien"],
-        rrOptions: [
-          { skill: "Furtivité", subspec: "escamotage" },
-          { skill: "Influence", subspec: "bluff" },
-          { skill: "Sorcellerie", subspec: "sorts de manipulation" },
-        ],
-      },
-      {
-        name: "Tueur de dragons",
-        behavior: "Honneur",
-        pick: 2,
-        originPools: ["euro"],
-        rrOptions: [
-          { skill: "Influence", subspec: "intimidation" },
-          { skill: "Combat rapproché", subspec: "spécialisation au choix" },
-          { skill: "Sorcellerie", subspec: "sorts de combat" },
-        ],
+        name: "Rat",
+        bonus: { skill: "Furtivité", val: 1 },
+        desc: "Tous : +1 dé Furtivité. + relance 1 échec sur les sorts d'effet.",
       },
     ],
   },
@@ -595,28 +546,7 @@ const Magic = {
   pickMentor(ed, originPool, kind) {
     const chance = this.MENTOR_CHANCE[kind] ?? 0.4;
     if (!Utils.randBool(chance)) return null;
-    const base = this._biasedPick(this.mentorSpirits[ed] || [], originPool);
-    if (!base) return null;
-    // Anarchy 2.0 : mentor à relances au choix → résoudre les 2 tirées.
-    return base.rrOptions ? this._resolveRrMentor(base) : base;
-  },
-
-  /** Résout un esprit mentor Anarchy 2.0 : tire `pick` relances parmi
-      `rrOptions`, et renvoie un clone {name, behavior, chosen, desc} sans
-      muter la donnée partagée. */
-  _resolveRrMentor(base) {
-    const pool = [...base.rrOptions];
-    const chosen = [];
-    const n = Math.min(base.pick || 2, pool.length);
-    for (let i = 0; i < n; i++) {
-      chosen.push(pool.splice(Utils.randInt(0, pool.length - 1), 1)[0]);
-    }
-    const fmt = (o) => `${o.skill}${o.subspec ? ` (${o.subspec})` : ""}`;
-    const desc =
-      `Comportement : ${base.behavior}. ` +
-      `Relances (RR 1) : ${chosen.map(fmt).join(", ")}. ` +
-      `(Au choix parmi : ${base.rrOptions.map(fmt).join(" ; ")}.)`;
-    return { name: base.name, behavior: base.behavior, chosen, desc };
+    return this._biasedPick(this.mentorSpirits[ed] || [], originPool);
   },
 
   /** Sensibilité aux esprits mentors d'une tradition (par attribut de Drain :

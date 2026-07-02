@@ -258,27 +258,77 @@ select optgroup {
 #dice-roller {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
-.dice-btns {
+
+/* ---- Mode : contrôle segmenté clair (Normaux / Explosifs) ---- */
+.dice-mode-group {
   display: flex;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.dice-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.dice-mode-btn:last-child {
+  border-right: none;
+}
+.dice-mode-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+  opacity: 0.85;
+}
+.dice-mode-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+.dice-mode-btn.active {
+  background: var(--accent);
+  color: var(--bg);
+}
+.dice-mode-btn.active .dice-mode-icon {
+  opacity: 1;
+}
+
+/* ---- Réserve : stepper + champ ---- */
+.dice-count-group {
+  display: flex;
+  align-items: center;
   gap: 3px;
 }
-.dice-btn {
-  width: 28px;
+.dice-count-step {
+  width: 24px;
   height: 28px;
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-dim);
-  font-family: "Share Tech Mono", monospace;
-  font-size: 0.65rem;
+  font-size: 0.95rem;
+  line-height: 1;
   border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition:
     border-color 0.15s,
     color 0.15s;
 }
-.dice-btn:hover,
-.dice-btn.active {
+.dice-count-step:hover {
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -294,8 +344,11 @@ select optgroup {
   border-radius: 3px;
 }
 .dice-roll-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   height: 28px;
-  padding: 0 10px;
+  padding: 0 12px;
   background: var(--accent);
   color: var(--bg);
   font-family: "Rajdhani", sans-serif;
@@ -304,6 +357,10 @@ select optgroup {
   letter-spacing: 0.1em;
   border-radius: 3px;
   transition: opacity 0.15s;
+}
+.dice-roll-icon {
+  font-size: 0.9rem;
+  line-height: 1;
 }
 .dice-roll-btn:hover {
   opacity: 0.85;
@@ -980,19 +1037,17 @@ select optgroup {
   cursor: help;
 }
 
-/* Limites SR5 */
+/* Limites SR5 (Phys/Ment/Soc) et référence SR6 (ME) — cellules à leur
+   taille naturelle, pas d'étirement quel que soit le nombre d'items. */
 .limites-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   margin-bottom: 0.75rem;
 }
-.limite-cell {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 4px 6px;
-  text-align: center;
+.limites-grid .attr-cell {
+  flex: 0 1 auto;
+  min-width: 64px;
 }
 
 /* Sections dans la card */
@@ -1487,6 +1542,133 @@ select optgroup {
 .group-select-inline:focus {
   border-color: var(--accent);
   outline: none;
+}
+
+/* ---- Déclencheur multi-groupes sur les cards contact ---- */
+.group-picker-trigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  padding: 3px 7px;
+  border-radius: 10px;
+  max-width: 130px;
+  transition: border-color 0.12s, color 0.12s;
+}
+.group-picker-trigger:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.group-picker-trigger.has-groups {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  color: var(--text);
+}
+.group-picker-trigger-icon {
+  font-size: 0.7rem;
+  line-height: 1;
+  opacity: 0.8;
+}
+.group-picker-trigger-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Popover : liste de groupes à cocher (multi-appartenance) ---- */
+#group-picker-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 540;
+  background: transparent;
+}
+#group-picker-backdrop.open {
+  display: block;
+}
+#group-picker-panel {
+  position: fixed;
+  width: 240px;
+  max-height: 320px;
+  z-index: 550;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent2);
+  border-radius: 4px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+#group-picker-panel.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.group-picker-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+.group-picker-title {
+  flex: 1;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent2);
+}
+.group-picker-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.3rem 0.2rem;
+}
+.group-picker-empty {
+  padding: 0.9rem 0.7rem;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+.group-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.group-picker-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.group-picker-row input[type="checkbox"] {
+  flex-shrink: 0;
+  accent-color: var(--accent2);
+}
+.group-picker-new {
+  margin: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 600;
+  font-size: 0.78rem;
+  transition: border-color 0.12s, color 0.12s;
+}
+.group-picker-new:hover {
+  border-color: var(--accent2);
+  color: var(--accent2);
 }
 
 /* ---- Cards contacts persistantes ---- */
@@ -2109,6 +2291,347 @@ select optgroup {
 }
 
 /* ============================================================
+   FILTRE DE GRILLE — recherche instantanée Ombres / Contacts
+   ============================================================ */
+.grid-filter {
+  margin-left: auto;
+  flex: 1 1 140px;
+  max-width: 240px;
+  min-width: 120px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  padding: 0.35rem 0.9rem;
+  font-size: 0.8rem;
+  transition: border-color 0.15s;
+}
+.grid-filter:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.grid-filter::placeholder {
+  color: var(--text-dim);
+}
+
+/* ============================================================
+   JOURNAL DES JETS — bouton topbar + panneau
+   ============================================================ */
+.dice-log-toggle {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s, color 0.15s;
+}
+.dice-log-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+#dice-log-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 540;
+  background: transparent;
+}
+#dice-log-backdrop.open {
+  display: block;
+}
+#dice-log-panel {
+  position: fixed;
+  top: 58px;
+  right: 0.75rem;
+  width: min(360px, calc(100vw - 1.5rem));
+  max-height: min(60vh, 480px);
+  z-index: 550;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 4px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+#dice-log-panel.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.dice-log-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+.dice-log-title {
+  flex: 1;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.dice-log-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.3rem 0;
+}
+.dice-log-empty {
+  padding: 1.2rem 0.9rem;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+.dice-log-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.8rem;
+  border-left: 2px solid var(--border);
+  margin: 2px 0;
+}
+.dice-log-item.good {
+  border-left-color: var(--accent);
+}
+.dice-log-item.glitch {
+  border-left-color: var(--accent2);
+}
+.dice-log-item.crit {
+  border-left-color: #c0392b;
+}
+.dice-log-item.zero {
+  border-left-color: var(--text-dim);
+}
+.dice-log-time {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+.dice-log-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.dice-log-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dice-log-label.dim {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+.dice-log-sub {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  color: var(--text-dim);
+}
+.dice-log-tag {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.dice-log-tag.glitch {
+  color: var(--accent2);
+}
+.dice-log-tag.crit {
+  color: #c0392b;
+}
+.dice-log-main {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.dice-log-item.crit .dice-log-main {
+  color: #c0392b;
+}
+.dice-log-item.zero .dice-log-main {
+  color: var(--text-dim);
+}
+.dice-log-main small {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.55rem;
+  font-weight: 400;
+  color: var(--text-dim);
+  margin-left: 3px;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   LANCER RAPIDE — bandeau de résultat discret
+   ============================================================ */
+#dice-quick {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translate(-50%, 12px);
+  z-index: 560;
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  max-width: min(92vw, 520px);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 0.55rem 1rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  cursor: pointer;
+}
+#dice-quick.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+#dice-quick.dice-quick-glitch {
+  border-left-color: var(--accent2);
+}
+#dice-quick.dice-quick-crit {
+  border-left-color: #c0392b;
+}
+#dice-quick.dice-quick-zero {
+  border-left-color: var(--text-dim);
+}
+.dice-quick-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dice-quick-main {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--accent);
+}
+.dice-quick-crit .dice-quick-main {
+  color: #c0392b;
+}
+.dice-quick-zero .dice-quick-main {
+  color: var(--text-dim);
+}
+.dice-quick-unit {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+.dice-quick-tag {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent2);
+}
+.dice-quick-crit .dice-quick-tag {
+  color: #c0392b;
+}
+.dice-quick-sub {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* Réglages : champ numérique */
+.settings-number-input {
+  width: 64px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-align: center;
+  padding: 0.3rem 0.4rem;
+  border-radius: 3px;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.85rem;
+}
+.settings-number-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ============================================================
+   TABLETTE (641–1024px) — rail d'icônes libellées
+   ============================================================ */
+@media (min-width: 641px) and (max-width: 1024px) {
+  #sidebar {
+    width: 68px;
+    padding: 0.5rem 0;
+  }
+  .nav-section-label {
+    display: none;
+  }
+  .nav-btn {
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    padding: 0.6rem 0.2rem;
+    border-left: none;
+    border-right: 2px solid transparent;
+    text-align: center;
+  }
+  .nav-btn.active {
+    border-right-color: var(--accent);
+  }
+  .nav-btn .nav-icon {
+    font-size: 1.05rem;
+    width: auto;
+  }
+  .nav-btn .nav-label {
+    font-size: 0.56rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 62px;
+  }
+  /* Libellé court quand il existe (évite « Ombres po… ») */
+  .nav-btn .nav-label[data-short] {
+    font-size: 0;
+  }
+  .nav-btn .nav-label[data-short]::before {
+    content: attr(data-short);
+    font-size: 0.56rem;
+    letter-spacing: 0.04em;
+  }
+  #content {
+    padding: 1.25rem 1rem;
+  }
+}
+
+/* ============================================================
    NAVIGATION MOBILE — barre du bas + FAB dés + bottom sheet
    (masqués sur desktop, activés dans le bloc @media 640px)
    ============================================================ */
@@ -2226,12 +2749,27 @@ select optgroup {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   border-radius: 4px;
-  transition:
-    opacity 0.15s,
-    transform 0.1s;
+  transition: opacity 0.15s, transform 0.1s;
 }
 .dice-sheet-roll:active {
   transform: scale(0.98);
+}
+.dice-sheet-log {
+  min-height: 44px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.dice-sheet-log:active {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* ============================================================
@@ -2288,9 +2826,7 @@ select optgroup {
     border: none;
     border-top: 2px solid transparent;
     color: var(--text-dim);
-    transition:
-      color 0.15s,
-      border-color 0.15s;
+    transition: color 0.15s, border-color 0.15s;
   }
   .bnav-btn.active {
     color: var(--accent);
@@ -2312,11 +2848,82 @@ select optgroup {
   #dice-roller {
     display: none;
   }
+  .dice-log-toggle {
+    display: none;
+  }
   .topbar-logo {
     cursor: pointer;
   }
   .topbar-edition-badge {
     min-height: 34px;
+  }
+
+  /* ---- Journal des jets en feuille basse ---- */
+  #dice-log-backdrop.open {
+    background: rgba(0, 0, 0, 0.55);
+  }
+  #dice-log-panel {
+    top: auto;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 65dvh;
+    border-radius: 12px 12px 0 0;
+    border-left: none;
+    border-right: none;
+    transform: translateY(100%);
+    transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.6, 1), opacity 0.15s;
+  }
+  #dice-log-panel.open {
+    transform: translateY(0);
+  }
+  .dice-log-head {
+    padding: 0.8rem 1rem;
+  }
+  .dice-log-list {
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  }
+  .dice-log-item {
+    padding: 0.65rem 1rem;
+  }
+
+  /* ---- Popover groupes (contacts) en feuille basse ---- */
+  #group-picker-backdrop.open {
+    background: rgba(0, 0, 0, 0.55);
+  }
+  #group-picker-panel {
+    top: auto !important;
+    left: 0 !important;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 60dvh;
+    border-radius: 12px 12px 0 0;
+    border-left: none;
+    border-right: none;
+    transform: translateY(100%);
+    transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.6, 1), opacity 0.15s;
+  }
+  #group-picker-panel.open {
+    transform: translateY(0);
+  }
+  .group-picker-head {
+    padding: 0.8rem 1rem;
+  }
+  .group-picker-row {
+    padding: 0.6rem 0.6rem;
+    font-size: 0.9rem;
+  }
+  .group-picker-new {
+    margin: 0.5rem calc(0.5rem + env(safe-area-inset-bottom, 0px)) calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ---- Bandeau de lancer rapide au-dessus de la barre du bas ---- */
+  #dice-quick {
+    bottom: calc(132px + env(safe-area-inset-bottom, 0px));
+    flex-wrap: wrap;
+    row-gap: 0.1rem;
   }
 
   /* ---- FAB dés ---- */
@@ -2373,9 +2980,7 @@ select optgroup {
     z-index: 450;
     border-radius: 0;
     box-shadow: 4px 0 16px rgba(0, 0, 0, 0.5);
-    transition:
-      transform 0.22s ease,
-      opacity 0.18s ease;
+    transition: transform 0.22s ease, opacity 0.18s ease;
   }
   /* L'état replié se fait par translation, pas par écrasement de largeur */
   .shadows-layout.sidebar-collapsed > .shadows-sidebar {
@@ -2457,8 +3062,53 @@ select optgroup {
   .form-group textarea,
   .contact-form select,
   .contact-notes,
+  .grid-filter,
   .dice-count-input {
     font-size: 16px;
+  }
+
+  /* ---- Lanceur topbar utilisable au doigt (iPad) ---- */
+  .dice-mode-btn {
+    height: 38px;
+    padding: 0 12px;
+    font-size: 0.78rem;
+  }
+  .dice-mode-icon {
+    font-size: 1rem;
+  }
+  .dice-count-step {
+    width: 34px;
+    height: 38px;
+    font-size: 1.15rem;
+  }
+  .dice-count-input {
+    width: 54px;
+    min-height: 38px;
+  }
+  .dice-roll-btn {
+    height: 38px;
+    padding: 0 14px;
+    font-size: 0.8rem;
+  }
+  .dice-log-toggle {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+  }
+  .grid-filter {
+    min-height: 38px;
+  }
+  .group-picker-trigger {
+    min-height: 34px;
+    padding: 4px 9px;
+  }
+  .group-picker-row {
+    min-height: 40px;
+    padding: 0.55rem 0.6rem;
+  }
+  .group-picker-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
   }
 
   .monitor-box {
@@ -2670,9 +3320,7 @@ select optgroup {
 .skill-tag.rollable:hover,
 .gm-pool.rollable:hover {
   border-color: var(--accent);
-  box-shadow:
-    0 0 0 1px var(--accent),
-    0 0 14px var(--glow);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 14px var(--glow);
 }
 .attr-cell.rollable:active,
 .skill-tag.rollable:active,
@@ -2703,11 +3351,8 @@ select optgroup {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(0, 0, 0, 0.72) 0%,
-    rgba(0, 0, 0, 0.92) 100%
-  );
+  background:
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.92) 100%);
   backdrop-filter: blur(3px);
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -2807,7 +3452,8 @@ select optgroup {
     opacity: 1;
   }
   60% {
-    transform: translateY(8px) rotateX(calc(var(--tumble, 3) * 180deg))
+    transform: translateY(8px)
+      rotateX(calc(var(--tumble, 3) * 180deg))
       rotateY(calc(var(--tumble, 3) * 140deg)) scale(1.05);
   }
   80% {
@@ -2823,15 +3469,9 @@ select optgroup {
   animation: die-pop 0.3s ease both;
 }
 @keyframes die-pop {
-  0% {
-    transform: scale(1);
-  }
-  45% {
-    transform: scale(1.12);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(1); }
+  45% { transform: scale(1.12); }
+  100% { transform: scale(1); }
 }
 
 /* ---- Résumé du jet ---- */
@@ -2906,13 +3546,8 @@ select optgroup {
   animation: crit-flash 0.5s ease;
 }
 @keyframes crit-flash {
-  0%,
-  100% {
-    box-shadow: 0 0 0 rgba(192, 57, 43, 0);
-  }
-  50% {
-    box-shadow: 0 0 26px rgba(192, 57, 43, 0.8);
-  }
+  0%, 100% { box-shadow: 0 0 0 rgba(192, 57, 43, 0); }
+  50% { box-shadow: 0 0 26px rgba(192, 57, 43, 0.8); }
 }
 /* Variantes de couleur du gros chiffre */
 .dice-summary.zero .dice-summary-hits {
@@ -2943,12 +3578,8 @@ select optgroup {
     animation: none;
   }
   @keyframes die-fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 }
 
@@ -3045,7 +3676,8 @@ select optgroup {
   flex-direction: column;
   gap: 1rem;
   transform: translateY(10px) scale(0.98);
-  transition: transform 0.2s cubic-bezier(0.34, 1.3, 0.6, 1);
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.3, 0.6, 1);
 }
 .risk-panel-overlay.show .risk-panel {
   transform: translateY(0) scale(1);
@@ -3301,9 +3933,7 @@ input[type="range"]#risk-dice-slider {
 }
 .weapon-rollable:hover {
   border-color: var(--accent);
-  box-shadow:
-    0 0 0 1px var(--accent),
-    0 0 12px var(--glow);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 12px var(--glow);
 }
 .weapon-rollable:active {
   transform: scale(0.98);
@@ -3512,9 +4142,7 @@ input[type="range"]#risk-dice-slider {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   font-size: 0.82rem;
-  transition:
-    background 0.14s,
-    color 0.14s;
+  transition: background 0.14s, color 0.14s;
 }
 .btn-danger-soft:hover {
   background: #c0392b;
@@ -3678,14 +4306,10 @@ input[type="range"]#risk-dice-slider {
 .weapon-line.weapon-rollable {
   border-color: color-mix(in srgb, var(--accent) 45%, transparent);
   cursor: pointer;
-  transition:
-    box-shadow 0.12s,
-    transform 0.08s;
+  transition: box-shadow 0.12s, transform 0.08s;
 }
 .weapon-line.weapon-rollable:hover {
-  box-shadow:
-    0 0 0 1px var(--accent),
-    0 0 12px var(--glow);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 12px var(--glow);
 }
 .weapon-line.weapon-rollable:active {
   transform: scale(0.99);

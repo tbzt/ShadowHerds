@@ -12,6 +12,43 @@ const Settings = {
     Storage.set(`settings_${key}`, value);
   },
 
+  /* ---- Préférences du lanceur de dés (GLOBALES, hors édition) ---- */
+  _DICE_KEY: "sr_pnj_v2_global_dicePrefs",
+  _diceDefaults: {
+    quickRoll: false,
+    defaultCount: 6,
+  },
+  getDicePrefs() {
+    try {
+      const raw = localStorage.getItem(this._DICE_KEY);
+      return { ...this._diceDefaults, ...(raw ? JSON.parse(raw) : {}) };
+    } catch {
+      return { ...this._diceDefaults };
+    }
+  },
+  setDicePrefs(patch) {
+    const next = { ...this.getDicePrefs(), ...patch };
+    try {
+      localStorage.setItem(this._DICE_KEY, JSON.stringify(next));
+    } catch {
+      /* quota */
+    }
+    // Propager aux lanceurs (topbar + bottom sheet mobile)
+    if (typeof Dice !== "undefined" && Dice.applyPrefs) Dice.applyPrefs();
+    if (typeof DicePanel !== "undefined" && DicePanel.applyPrefs)
+      DicePanel.applyPrefs();
+    return next;
+  },
+  setDiceQuickRoll(on) {
+    this.setDicePrefs({ quickRoll: !!on });
+    toast(on ? "Lancer rapide activé." : "Lancer rapide désactivé.");
+  },
+  setDiceDefaultCount(v) {
+    const n = Utils.clamp(parseInt(v, 10) || 6, 1, 40);
+    this.setDicePrefs({ defaultCount: n });
+    toast(`Réserve par défaut : ${n} dés.`);
+  },
+
   /* ---- Préférences d'affichage des cartes (GLOBALES, hors édition) ---- */
   _CARD_KEY: "sr_pnj_v2_global_cardDisplay",
   _cardDefaults: {
@@ -76,6 +113,28 @@ const Settings = {
     const ed = App.edition;
 
     let html = "";
+
+    // --- Lanceur de dés (global) ---
+    {
+      const dp = this.getDicePrefs();
+      html += `<div class="settings-section">
+        <h3>Lanceur de dés</h3>
+        <p>Le lancer rapide affiche le résultat en bandeau discret, sans l'animation plein écran. Tous les jets restent consultables dans le journal des jets.</p>
+        <div class="display-prefs">
+          <div class="display-pref-row">
+            <label for="dp_quickRoll">Lancer rapide (sans animation)</label>
+            <input type="checkbox" id="dp_quickRoll" ${dp.quickRoll ? "checked" : ""}
+              onchange="Settings.setDiceQuickRoll(this.checked)">
+          </div>
+          <div class="display-pref-row">
+            <label for="dp_defaultCount">Réserve par défaut du lanceur</label>
+            <input type="number" id="dp_defaultCount" min="1" max="40" value="${dp.defaultCount}"
+              class="settings-number-input"
+              onchange="Settings.setDiceDefaultCount(this.value)">
+          </div>
+        </div>
+      </div>`;
+    }
 
     // --- Affichage des cartes (global) ---
     {

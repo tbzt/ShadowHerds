@@ -12,6 +12,14 @@ const Utils = {
     return min + Math.floor(Math.random() * (max - min + 1));
   },
 
+  /** Normalise une chaîne pour la recherche : minuscules, sans accents. */
+  searchNorm(s) {
+    return String(s ?? "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  },
+
   randBool(p = 0.5) {
     return Math.random() < p;
   },
@@ -619,12 +627,35 @@ const Dice = {
   mode: "normal",
   _animating: false,
 
+  /* ---- Journal des jets (session, plus récent en premier) ---- */
+  history: [],
+  HISTORY_MAX: 30,
+
+  _prefs() {
+    return typeof Settings !== "undefined" && Settings.getDicePrefs
+      ? Settings.getDicePrefs()
+      : { quickRoll: false, defaultCount: 6 };
+  },
+
+  /** Applique les préférences (réserve par défaut du lanceur topbar). */
+  applyPrefs() {
+    const input = document.getElementById("dice-count");
+    if (input) input.value = this._prefs().defaultCount;
+  },
+
   init() {
+    this.applyPrefs();
     document
       .getElementById("dice-roll-btn")
       .addEventListener("click", () => this.roll());
     document.getElementById("dice-count").addEventListener("keydown", (e) => {
       if (e.key === "Enter") this.roll();
+    });
+
+    // Stepper −/＋ du lanceur topbar
+    document.querySelectorAll("[data-dice-topbar-step]").forEach((btn) => {
+      const delta = parseInt(btn.getAttribute("data-dice-topbar-step"), 10) || 0;
+      btn.addEventListener("click", () => this.stepCount(delta));
     });
 
     // Clic sur n'importe quelle réserve marquée [data-roll] dans une carte
@@ -754,9 +785,20 @@ const Dice = {
   setMode(mode, btn) {
     this.mode = mode;
     document
-      .querySelectorAll(".dice-btn")
+      .querySelectorAll(".dice-mode-btn")
       .forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
+    // Synchronise la feuille de dés mobile si elle existe
+    if (typeof DicePanel !== "undefined" && DicePanel._syncMode)
+      DicePanel._syncMode();
+  },
+
+  /** Stepper −/＋ du compteur de dés topbar. */
+  stepCount(delta) {
+    const input = document.getElementById("dice-count");
+    if (!input) return;
+    const n = Utils.clamp((parseInt(input.value, 10) || 0) + delta, 1, 40);
+    input.value = n;
   },
 
   /* ---- Moteur de règles pur (testable, sans DOM) ---- */
@@ -1251,7 +1293,96 @@ const Dice = {
     };
   },
 
+  /* ---- Journal : enregistre chaque jet, quel que soit son origine ---- */
+  _logRoll(res, opts = {}) {
+    const e = { t: Date.now(), label: opts.label || "" };
+    if (res.init) {
+      e.label = e.label || "Initiative";
+      e.main = String(res.total);
+      e.unit = "";
+      e.sub = `${res.base} + ${res.dice}D6 [${res.faces.join(", ")}]`;
+      e.cls = "good";
+    } else if (res.anarchy) {
+      e.main = String(res.hits);
+      e.unit = `succès`;
+      e.sub = `${res.pool} dés · ${res.riskDice} de risque${res.mode === "explosive" ? " · explosifs" : ""}`;
+      const compLabel = {
+        minor: "Complication mineure",
+        critical: "Complication critique",
+        disaster: "Désastre",
+      }[res.complication];
+      e.tag = compLabel || "";
+      e.cls =
+        res.complication === "none"
+          ? res.hits > 0
+            ? "good"
+            : "zero"
+          : res.complication === "minor"
+            ? "glitch"
+            : "crit";
+    } else {
+      e.main = String(res.hits);
+      e.unit = `succès`;
+      e.sub = `${res.n} dés${res.mode === "explosive" ? " · explosifs" : ""}`;
+      e.tag = res.critGlitch
+        ? "Échec critique"
+        : res.glitch
+          ? "Bévue"
+          : res.limited
+            ? `Limité (${res.cappedFrom}→${res.limit})`
+            : "";
+      e.cls = res.critGlitch
+        ? "crit"
+        : res.glitch
+          ? "glitch"
+          : res.hits > 0
+            ? "good"
+            : "zero";
+    }
+    this.history.unshift(e);
+    if (this.history.length > this.HISTORY_MAX)
+      this.history.length = this.HISTORY_MAX;
+    if (typeof DiceLog !== "undefined" && DiceLog.refresh) DiceLog.refresh();
+  },
+
+  /* ---- Lancer rapide : bandeau discret au lieu de l'animation ---- */
+  _quickResult(res, opts = {}) {
+    let el = document.getElementById("dice-quick");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "dice-quick";
+      document.body.appendChild(el);
+      el.addEventListener("click", () => el.classList.remove("show"));
+    }
+    const last = this.history[0];
+    if (!last) return;
+    const labelHtml = last.label
+      ? `<span class="dice-quick-label">${this._escSummary(last.label)}</span>`
+      : "";
+    const tagHtml = last.tag
+      ? `<span class="dice-quick-tag">${this._escSummary(last.tag)}</span>`
+      : "";
+    el.className = `dice-quick-${last.cls}`;
+    el.innerHTML = `${labelHtml}
+      <span class="dice-quick-main">${last.main}</span>
+      <span class="dice-quick-unit">${last.unit || ""}</span>
+      ${tagHtml}
+      <span class="dice-quick-sub">${this._escSummary(last.sub)}</span>`;
+    void el.offsetWidth;
+    el.classList.add("show");
+    clearTimeout(el._hideTimer);
+    el._hideTimer = setTimeout(() => el.classList.remove("show"), 2800);
+  },
+
   _animate(res, opts = {}) {
+    this._logRoll(res, opts);
+
+    // Lancer rapide : pas d'animation plein écran
+    if (this._prefs().quickRoll) {
+      this._quickResult(res, opts);
+      return;
+    }
+
     this._ensureOverlay();
     const ov = document.getElementById("dice-overlay");
     clearTimeout(ov._closeTimer);

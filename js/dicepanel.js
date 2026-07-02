@@ -11,7 +11,19 @@ const DicePanel = {
   _holdTimer: null,
   _holdInterval: null,
 
+  /** Applique la réserve par défaut des préférences. */
+  applyPrefs() {
+    if (
+      typeof Settings !== "undefined" &&
+      Settings.getDicePrefs
+    ) {
+      this.count = Settings.getDicePrefs().defaultCount;
+      this._renderCount();
+    }
+  },
+
   init() {
+    this.applyPrefs();
     const overlay = document.getElementById("dice-sheet-overlay");
     if (!overlay) return;
 
@@ -90,10 +102,12 @@ const DicePanel = {
   setMode(mode) {
     Dice.mode = mode;
     this._syncMode();
-    // Synchronise aussi les boutons N/E de la topbar (desktop)
-    document.querySelectorAll("#dice-roller .dice-btn").forEach((b) => {
-      const isExplosive = b.textContent.trim() === "E";
-      b.classList.toggle("active", (mode === "explosive") === isExplosive);
+    // Synchronise aussi le contrôle segmenté de la topbar (desktop/iPad)
+    document.querySelectorAll("#dice-roller .dice-mode-btn").forEach((b) => {
+      b.classList.toggle(
+        "active",
+        b.getAttribute("data-dice-topbar-mode") === mode,
+      );
     });
   },
 
@@ -120,6 +134,101 @@ const DicePanel = {
     this.close();
     // L'animation plein écran existante affiche le résultat
     Dice.rollPool(this.count);
+  },
+};
+
+/* ============================================================
+   DICE LOG — journal des jets de la session
+   Alimenté par Dice._logRoll (utils.js). Un seul panneau,
+   ancré sous la topbar sur desktop, en feuille basse sur mobile.
+   ============================================================ */
+const DiceLog = {
+  _open: false,
+
+  _ensure() {
+    if (document.getElementById("dice-log-panel")) return;
+    const backdrop = document.createElement("div");
+    backdrop.id = "dice-log-backdrop";
+    backdrop.addEventListener("click", () => this.close());
+    document.body.appendChild(backdrop);
+
+    const panel = document.createElement("div");
+    panel.id = "dice-log-panel";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-label", "Journal des jets");
+    panel.innerHTML = `
+      <div class="dice-log-head">
+        <span class="dice-log-title">Journal des jets</span>
+        <button class="btn-icon-tiny" onclick="DiceLog.clear()" title="Vider le journal">⌫</button>
+        <button class="btn-icon-tiny" onclick="DiceLog.close()" title="Fermer" aria-label="Fermer">✕</button>
+      </div>
+      <div class="dice-log-list" id="dice-log-list"></div>`;
+    document.body.appendChild(panel);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") this.close();
+    });
+  },
+
+  toggle() {
+    this._open ? this.close() : this.open();
+  },
+
+  open() {
+    this._ensure();
+    // Sur mobile, le journal remplace la feuille de dés si elle est ouverte
+    if (typeof DicePanel !== "undefined") DicePanel.close();
+    this.refresh();
+    document.getElementById("dice-log-backdrop").classList.add("open");
+    document.getElementById("dice-log-panel").classList.add("open");
+    this._open = true;
+  },
+
+  close() {
+    if (!this._open) return;
+    const p = document.getElementById("dice-log-panel");
+    const b = document.getElementById("dice-log-backdrop");
+    if (p) p.classList.remove("open");
+    if (b) b.classList.remove("open");
+    this._open = false;
+  },
+
+  clear() {
+    Dice.history.length = 0;
+    this.refresh();
+  },
+
+  /** Re-rend la liste (appelé après chaque jet si le panneau existe). */
+  refresh() {
+    const list = document.getElementById("dice-log-list");
+    if (!list) return;
+    if (!Dice.history.length) {
+      list.innerHTML = `<div class="dice-log-empty">Aucun jet pour l'instant.</div>`;
+      return;
+    }
+    const fmt = (t) => {
+      const d = new Date(t);
+      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    };
+    list.innerHTML = Dice.history
+      .map((e) => {
+        const label = e.label
+          ? `<span class="dice-log-label">${Dice._escSummary(e.label)}</span>`
+          : `<span class="dice-log-label dim">Jet libre</span>`;
+        const tag = e.tag
+          ? `<span class="dice-log-tag ${e.cls}">${Dice._escSummary(e.tag)}</span>`
+          : "";
+        return `<div class="dice-log-item ${e.cls}">
+          <span class="dice-log-time">${fmt(e.t)}</span>
+          <div class="dice-log-body">
+            ${label}
+            <span class="dice-log-sub">${Dice._escSummary(e.sub)}</span>
+            ${tag}
+          </div>
+          <span class="dice-log-main">${e.main}<small>${e.unit || ""}</small></span>
+        </div>`;
+      })
+      .join("");
   },
 };
 

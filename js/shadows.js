@@ -254,6 +254,31 @@ const Shadows = {
     }
   },
 
+  /* ---- Filtre de recherche (nom, alias, archétype, métatype) ---- */
+  filterText: "",
+  setFilter(v) {
+    this.filterText = v || "";
+    this._renderGrid();
+  },
+  _matchesFilter(pnj) {
+    const q = Utils.searchNorm(this.filterText).trim();
+    if (!q) return true;
+    const hay = Utils.searchNorm(
+      [
+        pnj.name,
+        pnj.alias,
+        pnj.civilName,
+        pnj.archetype,
+        pnj.meta,
+        pnj.metavariant,
+        pnj.infected,
+      ]
+        .filter(Boolean)
+        .join(" "),
+    );
+    return q.split(/\s+/).every((word) => hay.includes(word));
+  },
+
   _renderGrid() {
     const grid = document.getElementById("shadows-grid");
     if (!grid) return;
@@ -264,12 +289,23 @@ const Shadows = {
       const ids = this.data.groups[this.currentGroup] || [];
       list = this.data.all.filter((p) => ids.includes(p.id));
     }
+    // Le plus récemment ajouté en premier (data.all reste en ordre
+    // d'insertion ; on ne réordonne que l'affichage).
+    list = list.slice().reverse();
+    const unfiltered = list.length;
+    list = list.filter((p) => this._matchesFilter(p));
 
     if (!list.length) {
-      grid.innerHTML = `<div class="empty-state">
-        <span class="empty-state-title">Aucun figurant ici</span>
-        Générez des PNJ et sauvegardez-les depuis le générateur.
-      </div>`;
+      grid.innerHTML =
+        unfiltered > 0 && this.filterText.trim()
+          ? `<div class="empty-state">
+              <span class="empty-state-title">Aucun résultat</span>
+              Aucun figurant ne correspond à « ${CardRenderer._esc(this.filterText.trim())} ».
+            </div>`
+          : `<div class="empty-state">
+              <span class="empty-state-title">Aucun figurant ici</span>
+              Générez des PNJ et sauvegardez-les depuis le générateur.
+            </div>`;
       return;
     }
 

@@ -351,7 +351,6 @@ const CardRenderer = {
       html += this._rollPill("Drain", drainResist, "Résistance au Drain");
     html += this._rollPill("Défense", pnj.defense, "Test de défense : Réaction + Intuition");
     html += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure");
-    html += `<span class="stat-pill">Lim.Phys <strong>${limPhys}</strong></span>`;
     html += "</div>";
 
     html += `<div class="monitor-block">
@@ -392,6 +391,7 @@ const CardRenderer = {
       if (extras.length)
         html += `<div class="attr-grid with-ess">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
       html += `<div class="limites-grid" style="margin-top:6px;">
+        ${this._attrCell("Lim.Phys", limPhys)}
         ${this._attrCell("Lim.Ment", limMent)}
         ${this._attrCell("Lim.Soc", limSoc)}
       </div></div>`;
@@ -438,6 +438,7 @@ const CardRenderer = {
       html += this._rollPill("Drain", pnj.drainResist, "Résistance au Drain");
     html += this._rollPill("Défense", pnj.defense, "Test de défense");
     html += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure");
+    html += `<span class="stat-pill" title="Score Défensif">SD <strong>${sdBase ?? "?"}</strong></span>`;
     if (pa) html += `<span class="stat-pill">PA <strong>${pa}</strong></span>`;
     html += "</div>";
 
@@ -478,7 +479,6 @@ const CardRenderer = {
       if (extras.length)
         html += `<div class="attr-grid with-ess">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
       html += `<div class="limites-grid" style="margin-top:6px;">
-        ${this._attrCell("SD", sdBase ?? "?")}
         ${this._attrCell("ME", me ?? "?")}
       </div></div>`;
     }
@@ -759,7 +759,7 @@ const CardRenderer = {
 
   /* Rend un élément de contenu : objet {nom, desc} -> tag cliquable
      ouvrant une modale ; chaîne simple -> tag normal. Pour les sorts, un
-     champ drain (SR5/SR6) ou seuil (Anarchy 2.0) est affiché dans le libellé. */
+     champ drain (SR5/SR6) ou niveau (Anarchy) est affiché dans le libellé. */
   /* Libellé court d'un bonus de trait (voir BonusEngine / content.js). */
   _bonusLabel(bonus) {
     if (!bonus) return "";
@@ -776,12 +776,14 @@ const CardRenderer = {
   _contentTag(item) {
     if (item && typeof item === "object" && item.name) {
       const name = this._esc(item.name);
-      // Suffixe Drain/Seuil pour les sorts, affiché dans le tag.
+      // Suffixe Drain/Niveau pour les sorts, affiché dans le tag.
       let suffix = "";
       if (item.drain != null) {
         suffix = ` <span class="tag-stat">(Drain ${this._esc(item.drain)})</span>`;
-      } else if (item.seuil != null) {
-        suffix = ` <span class="tag-stat">(Seuil ${this._esc(item.seuil)})</span>`;
+      } else if (item.level != null) {
+        suffix = ` <span class="tag-stat">(Niveau ${this._esc(item.level)})</span>`;
+      } else if (item.threshold != null) {
+        suffix = ` <span class="tag-stat">(Seuil ${this._esc(item.threshold)})</span>`;
       } else if (item.bonus) {
         const label = this._bonusLabel(item.bonus);
         if (label) suffix = ` <span class="tag-stat">(${this._esc(label)})</span>`;
@@ -928,18 +930,18 @@ const ContactRenderer = {
     const isAnarchy = c.edition === "anarchy";
     const stats = isAnarchy ? this._statsAnarchy(c) : this._statsSR(c);
 
-    const groupOpts = ["— Sans groupe —", ...allGroups]
-      .map((g) => {
-        const val = g === "— Sans groupe —" ? "all" : g;
-        const sel = currentGroups.includes(g) ? "selected" : "";
-        return `<option value="${val}" ${sel}>${g}</option>`;
-      })
-      .join("");
-    const groupSel =
-      allGroups.length > 0
-        ? `<select class="group-select-inline" title="Groupe"
-           onchange="ContactsBook.moveToGroup('${c.id}', this.value)">${groupOpts}</select>`
-        : "";
+    const gCount = currentGroups.length;
+    const gLabel =
+      gCount === 0
+        ? "Groupes"
+        : gCount === 1
+          ? currentGroups[0]
+          : `${gCount} groupes`;
+    const groupTrigger = `<button class="group-picker-trigger${gCount ? " has-groups" : ""}"
+      title="Gérer les groupes de ce contact" type="button"
+      onclick="GroupPicker.open('${c.id}', this)">
+      <span class="group-picker-trigger-icon">🏷</span><span class="group-picker-trigger-label">${CardRenderer._esc(gLabel)}</span>
+    </button>`;
 
     el.innerHTML = `
       <div class="contact-card-body">
@@ -954,7 +956,7 @@ const ContactRenderer = {
             ${c.metatype ? `<div class="contact-meta">${CardRenderer._esc(c.metatype)}</div>` : ""}
           </div>
           <div class="contact-header-actions">
-            ${groupSel}
+            ${groupTrigger}
           </div>
         </div>
 

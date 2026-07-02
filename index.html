@@ -9,7 +9,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500&family=Oswald:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=17">
+  <link rel="stylesheet" href="css/base.css?v=19">
   <link rel="stylesheet" href="css/theme-sr5.css?v=16">
   <link rel="stylesheet" href="css/theme-sr6.css?v=16">
   <link rel="stylesheet" href="css/theme-anarchy.css?v=16">
@@ -60,15 +60,30 @@
         title="Changer d'édition">—</button>
 
       <div id="dice-roller">
-        <div class="dice-btns">
-          <button class="dice-btn active" onclick="Dice.setMode('normal', this)" title="Dés normaux">N</button>
-          <button class="dice-btn" onclick="Dice.setMode('explosive', this)" title="Dés explosifs">E</button>
+        <div class="dice-mode-group" role="group" aria-label="Mode de dés">
+          <button class="dice-mode-btn active" data-dice-topbar-mode="normal"
+            onclick="Dice.setMode('normal', this)" title="Dés normaux — aucune relance">
+            <span class="dice-mode-icon">⚀</span><span class="dice-mode-text">Normaux</span>
+          </button>
+          <button class="dice-mode-btn" data-dice-topbar-mode="explosive"
+            onclick="Dice.setMode('explosive', this)" title="Dés explosifs — les 6 relancent">
+            <span class="dice-mode-icon">⚅</span><span class="dice-mode-text">Explosifs</span>
+          </button>
         </div>
-        <input class="dice-count-input" type="number" id="dice-count" value="6" min="1" max="40"
-          aria-label="Nombre de dés">
-        <button class="dice-roll-btn" id="dice-roll-btn">Lancer</button>
+        <div class="dice-count-group">
+          <button class="dice-count-step" data-dice-topbar-step="-1" tabindex="-1"
+            aria-label="Moins de dés">−</button>
+          <input class="dice-count-input" type="number" id="dice-count" value="6" min="1" max="40"
+            aria-label="Nombre de dés">
+          <button class="dice-count-step" data-dice-topbar-step="1" tabindex="-1"
+            aria-label="Plus de dés">＋</button>
+        </div>
+        <button class="dice-roll-btn" id="dice-roll-btn"><span class="dice-roll-icon">⚄</span>Lancer</button>
         <span id="dice-result" aria-live="polite"></span>
       </div>
+
+      <button class="dice-log-toggle" id="dice-log-btn" onclick="DiceLog.toggle()"
+        title="Journal des jets" aria-label="Journal des jets">≣</button>
 
       <span class="topbar-spacer"></span>
     </div>
@@ -83,10 +98,10 @@
           <span class="nav-icon">⌂</span><span class="nav-label">Accueil</span>
         </button>
         <button class="nav-btn" data-panel="shadows" onclick="App.showPanel('shadows')">
-          <span class="nav-icon">◈</span><span class="nav-label">Ombres portées</span>
+          <span class="nav-icon">◈</span><span class="nav-label" data-short="Ombres">Ombres portées</span>
         </button>
         <button class="nav-btn" data-panel="generator" onclick="App.showPanel('generator')">
-          <span class="nav-icon">⊕</span><span class="nav-label">Générateur PNJ</span>
+          <span class="nav-icon">⊕</span><span class="nav-label" data-short="PNJ">Générateur PNJ</span>
         </button>
 
         <span class="nav-section-label">Outils</span>
@@ -99,7 +114,7 @@
 
         <span class="nav-section-label">Système</span>
         <button class="nav-btn" data-panel="settings" onclick="App.showPanel('settings')">
-          <span class="nav-icon">⚙</span><span class="nav-label">Paramètres</span>
+          <span class="nav-icon">⚙</span><span class="nav-label" data-short="Réglages">Paramètres</span>
         </button>
       </nav>
 
@@ -139,10 +154,10 @@
                 <span id="shadows-group-label" class="shadows-group-label">Tous les figurants</span>
                 <button class="btn-secondary btn-small" onclick="Shadows.saveAllVisible()">Sauvegarder tout dans le
                   groupe</button>
-                <button class="btn-secondary btn-small" onclick="Backup.export()"
-                  title="Exporter tous les PNJ et contacts (toutes éditions)">⤓ Exporter</button>
-                <button class="btn-secondary btn-small" onclick="Backup.openImportDialog()"
-                  title="Importer depuis un fichier ou une URL">⤒ Importer</button>
+                <button class="btn-secondary btn-small" onclick="Backup.export()" title="Exporter tous les PNJ et contacts (toutes éditions)">⤓ Exporter</button>
+                <button class="btn-secondary btn-small" onclick="Backup.openImportDialog()" title="Importer depuis un fichier ou une URL">⤒ Importer</button>
+                <input class="grid-filter" type="search" placeholder="Filtrer…"
+                  aria-label="Filtrer les figurants" oninput="Shadows.setFilter(this.value)">
               </div>
               <div class="cards-zone" id="shadows-grid"></div>
             </div>
@@ -204,6 +219,8 @@
                 <div class="shadows-main-toolbar">
                   <button class="btn-primary btn-small" onclick="ContactsBook.generate()">Générer un contact</button>
                   <span id="contacts-group-label" class="shadows-group-label">Tous les contacts</span>
+                  <input class="grid-filter" type="search" placeholder="Filtrer…"
+                    aria-label="Filtrer les contacts" oninput="ContactsBook.setFilter(this.value)">
                 </div>
               </div>
               <div class="cards-zone" id="contacts-grid"></div>
@@ -262,6 +279,7 @@
           <button class="dice-sheet-step" data-dice-step="1" aria-label="Plus de dés">＋</button>
         </div>
         <button class="dice-sheet-roll" onclick="DicePanel.roll()">Lancer</button>
+        <button class="dice-sheet-log" onclick="DiceLog.open()">Journal des jets</button>
       </div>
     </div>
   </div>
@@ -287,7 +305,7 @@
   <div id="toast" role="status" aria-live="polite"></div>
 
   <!-- SCRIPTS — ordre important : utils → storage → éditions → ui → modules → app -->
-  <script src="js/utils.js?v=16"></script>
+  <script src="js/utils.js?v=18"></script>
   <script src="js/storage.js?v=16"></script>
   <script src="js/metavariants.js?v=17"></script>
   <script src="js/infected.js?v=21"></script>
@@ -300,17 +318,17 @@
   <script src="js/editions/sr5.js?v=23"></script>
   <script src="js/editions/sr6.js?v=21"></script>
   <script src="js/editions/anarchy.js?v=20"></script>
-  <script src="js/ui.js?v=20"></script>
-  <script src="js/dicepanel.js?v=1"></script>
+  <script src="js/ui.js?v=21"></script>
+  <script src="js/dicepanel.js?v=3"></script>
   <script src="js/sidebartoggle.js?v=16"></script>
   <script src="js/profcategories.js?v=16"></script>
   <script src="js/multiselect.js?v=16"></script>
   <script src="js/generator.js?v=18"></script>
-  <script src="js/shadows.js?v=16"></script>
+  <script src="js/shadows.js?v=18"></script>
   <script src="js/editmodal.js?v=16"></script>
-  <script src="js/extras.js?v=16"></script>
+  <script src="js/extras.js?v=18"></script>
   <script src="js/contactgen.js?v=16"></script>
-  <script src="js/settings.js?v=16"></script>
+  <script src="js/settings.js?v=17"></script>
   <script src="js/backup.js?v=16"></script>
   <script src="js/app.js?v=17"></script>
 

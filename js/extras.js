@@ -1314,17 +1314,19 @@ const ContactsBook = {
     this.render();
   },
 
-  moveToGroup(id, targetGroup) {
-    for (const g of Object.keys(this.data.groups)) {
-      this.data.groups[g] = this.data.groups[g].filter((i) => i !== id);
-    }
-    if (targetGroup !== "all" && this.data.groups[targetGroup]) {
-      if (!this.data.groups[targetGroup].includes(id)) {
-        this.data.groups[targetGroup].push(id);
-      }
-    }
+  /** Ajoute/retire un contact d'un groupe donné, sans toucher aux autres
+      (un contact peut appartenir à plusieurs groupes à la fois). */
+  toggleGroup(id, groupKey, checked) {
+    const arr = this.data.groups[groupKey];
+    if (!arr) return;
+    const has = arr.includes(id);
+    if (checked && !has) arr.push(id);
+    if (!checked && has) this.data.groups[groupKey] = arr.filter((i) => i !== id);
     this.save();
     this.render();
+    // Le panneau flottant vit hors de la grille : on le rafraîchit à part.
+    if (typeof GroupPicker !== "undefined" && GroupPicker._contactId === id)
+      GroupPicker._render();
   },
 
   groupsOf(id) {
@@ -1390,6 +1392,21 @@ const ContactsBook = {
     }
   },
 
+  /* ---- Filtre de recherche (nom, rôle, métatype) ---- */
+  filterText: "",
+  setFilter(v) {
+    this.filterText = v || "";
+    this._renderGrid();
+  },
+  _matchesFilter(c) {
+    const q = Utils.searchNorm(this.filterText).trim();
+    if (!q) return true;
+    const hay = Utils.searchNorm(
+      [c.name, c.role, c.metatype, c.desc].filter(Boolean).join(" "),
+    );
+    return q.split(/\s+/).every((word) => hay.includes(word));
+  },
+
   _renderGrid() {
     const grid = document.getElementById("contacts-grid");
     if (!grid) return;
@@ -1400,12 +1417,23 @@ const ContactsBook = {
       const ids = this.data.groups[this.currentGroup] || [];
       list = this.data.all.filter((c) => ids.includes(c.id));
     }
+    // Le plus récemment ajouté en premier (data.all reste en ordre
+    // d'insertion ; on ne réordonne que l'affichage).
+    list = list.slice().reverse();
+    const unfiltered = list.length;
+    list = list.filter((c) => this._matchesFilter(c));
 
     if (!list.length) {
-      grid.innerHTML = `<div class="empty-state">
-        <span class="empty-state-title">Aucun contact ici</span>
-        Générez des contacts avec le bouton ci-dessus.
-      </div>`;
+      grid.innerHTML =
+        unfiltered > 0 && this.filterText.trim()
+          ? `<div class="empty-state">
+              <span class="empty-state-title">Aucun résultat</span>
+              Aucun contact ne correspond à « ${CardRenderer._esc(this.filterText.trim())} ».
+            </div>`
+          : `<div class="empty-state">
+              <span class="empty-state-title">Aucun contact ici</span>
+              Générez des contacts avec le bouton ci-dessus.
+            </div>`;
       return;
     }
 
@@ -1418,5 +1446,122 @@ const ContactsBook = {
       );
       grid.appendChild(card);
     }
+  },
+};
+
+/* ============================================================
+   GROUP PICKER — popover d'appartenance multi-groupes (contacts)
+   Un contact peut appartenir à plusieurs groupes à la fois.
+   Un seul panneau flottant (hors grille), repositionné sur le
+   déclencheur cliqué ; en feuille basse sur mobile (voir CSS).
+   ============================================================ */
+const GroupPicker = {
+  _contactId: null,
+
+  _ensure() {
+    if (document.getElementById("group-picker-panel")) return;
+    const backdrop = document.createElement("div");
+    backdrop.id = "group-picker-backdrop";
+    backdrop.addEventListener("click", () => this.close());
+    document.body.appendChild(backdrop);
+
+    const panel = document.createElement("div");
+    panel.id = "group-picker-panel";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-label", "Groupes du contact");
+    document.body.appendChild(panel);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") this.close();
+    });
+    window.addEventListener("resize", () => {
+      if (this._contactId) this.close();
+    });
+  },
+
+  open(id, triggerEl) {
+    this._ensure();
+    this._contactId = id;
+    this._render();
+    document.getElementById("group-picker-backdrop").classList.add("open");
+    document.getElementById("group-picker-panel").classList.add("open");
+    this._position(triggerEl);
+  },
+
+  close() {
+    const panel = document.getElementById("group-picker-panel");
+    const backdrop = document.getElementById("group-picker-backdrop");
+    if (panel) panel.classList.remove("open");
+    if (backdrop) backdrop.classList.remove("open");
+    this._contactId = null;
+  },
+
+  /** Ancre le panneau sous le déclencheur (desktop/iPad). Sur mobile,
+      la feuille basse est positionnée entièrement en CSS. */
+  _position(triggerEl) {
+    const panel = document.getElementById("group-picker-panel");
+    if (!panel || !triggerEl || window.innerWidth <= 640) return;
+    const r = triggerEl.getBoundingClientRect();
+    const panelW = 240;
+    let left = r.right - panelW;
+    left = Math.max(8, Math.min(left, window.innerWidth - panelW - 8));
+    const estHeight = Math.min(320, panel.offsetHeight || 220);
+    let top = r.bottom + 6;
+    if (top + estHeight > window.innerHeight - 8) {
+      top = Math.max(8, r.top - estHeight - 6);
+    }
+    panel.style.left = `${left}px`;
+    panel.style.top = `${top}px`;
+  },
+
+  _render() {
+    const panel = document.getElementById("group-picker-panel");
+    if (!panel) return;
+    const id = this._contactId;
+    const groups = Object.keys(ContactsBook.data.groups);
+    const current = ContactsBook.groupsOf(id);
+
+    const rows = groups.length
+      ? groups
+          .map((g) => {
+            const checked = current.includes(g) ? "checked" : "";
+            const gEsc = CardRenderer._esc(g);
+            const gAttr = g.replace(/'/g, "\\'");
+            return `<label class="group-picker-row">
+              <input type="checkbox" ${checked}
+                onchange="ContactsBook.toggleGroup('${id}', '${gAttr}', this.checked)">
+              <span>${gEsc}</span>
+            </label>`;
+          })
+          .join("")
+      : `<div class="group-picker-empty">Aucun groupe pour l'instant.</div>`;
+
+    panel.innerHTML = `
+      <div class="group-picker-head">
+        <span class="group-picker-title">Groupes du contact</span>
+        <button class="btn-icon-tiny" onclick="GroupPicker.close()" aria-label="Fermer">✕</button>
+      </div>
+      <div class="group-picker-list">${rows}</div>
+      <button class="group-picker-new" onclick="GroupPicker.createAndAssign()">+ Nouveau groupe</button>`;
+  },
+
+  /** Crée un groupe et y assigne directement le contact courant. */
+  createAndAssign() {
+    const name = prompt("Nom du groupe :");
+    if (!name || !name.trim()) return;
+    const key = name.trim();
+    if (key === "all") {
+      toast("Nom réservé.");
+      return;
+    }
+    if (ContactsBook.data.groups[key]) {
+      toast("Ce nom existe déjà.");
+      return;
+    }
+    ContactsBook.data.groups[key] = [this._contactId];
+    ContactsBook.save();
+    ContactsBook.render();
+    this._render();
+    toast(`Groupe "${key}" créé et contact ajouté.`);
   },
 };
