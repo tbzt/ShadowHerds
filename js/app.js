@@ -91,13 +91,20 @@ const App = {
       .querySelectorAll(".panel")
       .forEach((p) => p.classList.remove("active"));
     document
-      .querySelectorAll(".nav-btn")
+      .querySelectorAll(".nav-btn, .bnav-btn")
       .forEach((b) => b.classList.remove("active"));
 
     const panel = document.getElementById(`panel-${name}`);
     if (panel) panel.classList.add("active");
-    const navBtn = document.querySelector(`.nav-btn[data-panel="${name}"]`);
-    if (navBtn) navBtn.classList.add("active");
+    document
+      .querySelectorAll(
+        `.nav-btn[data-panel="${name}"], .bnav-btn[data-panel="${name}"]`,
+      )
+      .forEach((b) => b.classList.add("active"));
+
+    // Sur mobile, chaque panel repart du haut (un seul contexte de scroll)
+    const content = document.getElementById("content");
+    if (content) content.scrollTop = 0;
 
     // Mise à jour du hash URL
     if (updateHash && this.edition !== "none") {
@@ -163,6 +170,11 @@ const App = {
         Les données sont stockées localement dans votre navigateur (localStorage),
         jamais transmises.
       </div>`;
+  },
+
+  /* ---- Retour à l'accueil (tap sur le logo, surtout mobile) ---- */
+  goHome() {
+    if (this.edition !== "none") this.showPanel("welcome");
   },
 
   /* ---- Changer d'édition ---- */

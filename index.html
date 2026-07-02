@@ -9,7 +9,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500&family=Oswald:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=16">
+  <link rel="stylesheet" href="css/base.css?v=17">
   <link rel="stylesheet" href="css/theme-sr5.css?v=16">
   <link rel="stylesheet" href="css/theme-sr6.css?v=16">
   <link rel="stylesheet" href="css/theme-anarchy.css?v=16">
@@ -55,7 +55,7 @@
 
     <!-- TOP BAR -->
     <div id="topbar">
-      <span class="topbar-logo">Shadow Herds</span>
+      <span class="topbar-logo" onclick="App.goHome()" title="Accueil">Shadow Herds</span>
       <button class="topbar-edition-badge" id="edition-badge" onclick="App.changeEdition()"
         title="Changer d'édition">—</button>
 
@@ -139,8 +139,10 @@
                 <span id="shadows-group-label" class="shadows-group-label">Tous les figurants</span>
                 <button class="btn-secondary btn-small" onclick="Shadows.saveAllVisible()">Sauvegarder tout dans le
                   groupe</button>
-                <button class="btn-secondary btn-small" onclick="Backup.export()" title="Exporter tous les PNJ et contacts (toutes éditions)">⤓ Exporter</button>
-                <button class="btn-secondary btn-small" onclick="Backup.openImportDialog()" title="Importer depuis un fichier ou une URL">⤒ Importer</button>
+                <button class="btn-secondary btn-small" onclick="Backup.export()"
+                  title="Exporter tous les PNJ et contacts (toutes éditions)">⤓ Exporter</button>
+                <button class="btn-secondary btn-small" onclick="Backup.openImportDialog()"
+                  title="Importer depuis un fichier ou une URL">⤒ Importer</button>
               </div>
               <div class="cards-zone" id="shadows-grid"></div>
             </div>
@@ -223,6 +225,45 @@
 
       </main>
     </div>
+
+    <!-- BARRE DE NAVIGATION MOBILE -->
+    <nav id="bottom-nav" aria-label="Navigation mobile">
+      <button class="bnav-btn" data-panel="shadows" onclick="App.showPanel('shadows')">
+        <span class="bnav-icon">◈</span><span class="bnav-label">Ombres</span>
+      </button>
+      <button class="bnav-btn" data-panel="generator" onclick="App.showPanel('generator')">
+        <span class="bnav-icon">⊕</span><span class="bnav-label">PNJ</span>
+      </button>
+      <button class="bnav-btn" data-panel="contacts" onclick="App.showPanel('contacts')">
+        <span class="bnav-icon">◉</span><span class="bnav-label">Contacts</span>
+      </button>
+      <button class="bnav-btn" data-panel="run" onclick="App.showPanel('run')">
+        <span class="bnav-icon">▶</span><span class="bnav-label">Run</span>
+      </button>
+      <button class="bnav-btn" data-panel="settings" onclick="App.showPanel('settings')">
+        <span class="bnav-icon">⚙</span><span class="bnav-label">Réglages</span>
+      </button>
+    </nav>
+
+    <!-- LANCEUR DE DÉS MOBILE : FAB + BOTTOM SHEET -->
+    <button id="dice-fab" onclick="DicePanel.open()" aria-label="Lancer les dés">⚄</button>
+    <div id="dice-sheet-overlay" role="dialog" aria-modal="true" aria-label="Lanceur de dés">
+      <div id="dice-sheet">
+        <div class="dice-sheet-handle"></div>
+        <div class="dice-sheet-modes">
+          <button class="dice-sheet-mode active" data-dice-mode="normal"
+            onclick="DicePanel.setMode('normal')">Normaux</button>
+          <button class="dice-sheet-mode" data-dice-mode="explosive"
+            onclick="DicePanel.setMode('explosive')">Explosifs</button>
+        </div>
+        <div class="dice-sheet-counter">
+          <button class="dice-sheet-step" data-dice-step="-1" aria-label="Moins de dés">−</button>
+          <span id="dice-sheet-count" aria-live="polite">6</span>
+          <button class="dice-sheet-step" data-dice-step="1" aria-label="Plus de dés">＋</button>
+        </div>
+        <button class="dice-sheet-roll" onclick="DicePanel.roll()">Lancer</button>
+      </div>
+    </div>
   </div>
 
   <!-- MODAL ÉDITION AVANCÉE -->
@@ -260,6 +301,7 @@
   <script src="js/editions/sr6.js?v=21"></script>
   <script src="js/editions/anarchy.js?v=20"></script>
   <script src="js/ui.js?v=20"></script>
+  <script src="js/dicepanel.js?v=1"></script>
   <script src="js/sidebartoggle.js?v=16"></script>
   <script src="js/profcategories.js?v=16"></script>
   <script src="js/multiselect.js?v=16"></script>
@@ -270,7 +312,7 @@
   <script src="js/contactgen.js?v=16"></script>
   <script src="js/settings.js?v=16"></script>
   <script src="js/backup.js?v=16"></script>
-  <script src="js/app.js?v=16"></script>
+  <script src="js/app.js?v=17"></script>
 
 </body>
 
