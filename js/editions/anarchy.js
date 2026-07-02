@@ -144,11 +144,19 @@ const EditionAnarchy = {
        weapons,     // [ { name, vd, ranges } ]  ranges = string '[OK/OK/...]'
        equip,       // string[]
        threatLevel, // 'nulle'|'faible'|'forte'|'extrême'
-       physMonitor,  // [leger, moyen, grave]  base humain
+       // Seuils de blessures (p.68) : VD > FOR/VOL/FW(+Protection) → légère,
+       // +3 → grave, +6 → incapacitante, selon le type de dommage (phys/
+       // ment/matriciel). Le personnage n'a qu'UN SEUL moniteur d'état,
+       // à cases fixes (2 légères / 1 grave / 1 incapacitante, cf. js/ui.js
+       // _monitorBoxesAnarchy()), commun à tous les types de dommages —
+       // ces seuils ne servent qu'à déterminer la gravité d'un coup, pas
+       // à définir des moniteurs séparés. Cases cochées stockées sur le
+       // PNJ sous legerFilled/graveFilled/incapFilled (pas dans ce fichier).
+       physMonitor,  // [leger, grave, incapacitante]  base humain
        physMonitorMeta, // { 'Ork': [5,8,11], ... }
-       mentMonitor, // [leger, moyen, grave]
+       mentMonitor, // [leger, grave, incapacitante]
        mentMonitorMeta,
-       matrixMonitor,   // null ou [leger, moyen, grave]  (deckers)
+       matrixMonitor,   // null ou [leger, grave, incapacitante]  (deckers)
        awakened,     // null | 'hermétique' | 'adepte' | 'chamanique'
        spells,       // string[] (si éveillé)
      }

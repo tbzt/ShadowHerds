@@ -165,12 +165,23 @@
   color: var(--accent);
 }
 
-/* Moniteur Anarchy */
-[data-edition="anarchy"] .monitor-box.filled {
+/* Moniteur Anarchy : 2 cases légères / 1 grave / 1 incapacitante (p.68) */
+[data-edition="anarchy"] .monitor-box.sev-leger.filled {
   background: #6e1800;
   border-color: #9e2200;
 }
-[data-edition="anarchy"] .monitor-box.penalty {
+[data-edition="anarchy"] .monitor-box.sev-grave {
+  border-color: #ff8800;
+}
+[data-edition="anarchy"] .monitor-box.sev-grave.filled {
+  background: #ff8800;
+  border-color: #ff8800;
+}
+[data-edition="anarchy"] .monitor-box.sev-incap {
+  border-color: #ff3c3c;
+}
+[data-edition="anarchy"] .monitor-box.sev-incap.filled {
+  background: #ff3c3c;
   border-color: #ff3c3c;
 }
 
@@ -267,7 +278,8 @@
   flex-shrink: 0;
 }
 
-/* Paliers de seuil dans les moniteurs Anarchy */
-[data-edition="anarchy"] .monitor-box.penalty {
-  border-right: 2px solid var(--accent2);
+/* Espace entre les groupes léger/grave/incapacitante du moniteur */
+[data-edition="anarchy"] .monitor-gap {
+  width: 6px;
+  flex-shrink: 0;
 }

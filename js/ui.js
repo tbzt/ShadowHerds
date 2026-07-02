@@ -510,9 +510,6 @@ const CardRenderer = {
       physMonitor,
       mentMonitor,
       matrixMonitor,
-      physFilled,
-      mentFilled,
-      matFilled,
       awakened,
       notes,
     } = pnj;
@@ -542,17 +539,16 @@ const CardRenderer = {
     }
     html += "</div>";
 
-    // Moniteurs (seuils de blessures) dans la zone Combat
+    // Moniteur d'état (p.68) : UN SEUL moniteur par personnage (2 cases
+    // légères / 1 grave / 1 incapacitante, extensible par atout), quel
+    // que soit le type de dommage. Les seuils Phys/Ment/Matr ci-dessous
+    // ne déterminent que la GRAVITÉ d'un coup reçu (via des attributs de
+    // résistance différents), pas des moniteurs séparés.
     html += `<div class="monitor-block">
       <div class="monitor-row">
-        <span class="monitor-label">Phys</span>
-        <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "phys", physMonitor, physFilled)}</div>
+        <span class="monitor-label">État</span>
+        <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj)}</div>
       </div>
-      <div class="monitor-row" style="margin-top:4px;">
-        <span class="monitor-label">Ment</span>
-        <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "ment", mentMonitor, mentFilled)}</div>
-      </div>
-      ${matrixMonitor ? `<div class="monitor-row" style="margin-top:4px;"><span class="monitor-label">Matr</span><div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj.id, "mat", matrixMonitor, matFilled)}</div></div>` : ""}
     </div>`;
 
     // Armes (lançables, ouvrent le panneau de risque RR)
@@ -652,26 +648,30 @@ const CardRenderer = {
   },
 
   /**
-   * Moniteur Anarchy : les seuils sont [leger, moyen, grave].
-   * On affiche N cases correspondant au seuil grave (max),
-   * avec marquage des paliers léger et moyen.
+   * Moniteur d'état Anarchy 2.0 (p.68) : UN SEUL moniteur par personnage,
+   * à cases fixes : 2 légères (3 avec un atout), 1 grave (2 avec un
+   * atout), 1 incapacitante. Les seuils Phys/Ment/Matr (cf. _bodyAnarchy)
+   * ne servent qu'à déterminer la gravité d'un coup selon son type, pas
+   * à définir des moniteurs séparés. `legerCapBonus`/`graveCapBonus` sur
+   * le PNJ permettent d'ajouter les cases supplémentaires d'un atout.
    */
-  _monitorBoxesAnarchy(pnjId, type, thresholds, filled = 0) {
-    if (!thresholds) return "—";
-    const [s1, s2, s3] = thresholds;
-    return Array.from({ length: s3 }, (_, i) => {
-      const isFilled = i < filled;
-      // Paliers : case s1 = fin blessure légère, s2 = fin blessure modérée
-      const isPalier = i + 1 === s1 || i + 1 === s2;
-      const cls = [
-        "monitor-box",
-        isFilled ? "filled" : "",
-        isPalier ? "penalty" : "",
-      ]
-        .filter(Boolean)
-        .join(" ");
-      return `<div class="${cls}" onclick="UI.toggleMonitor('${pnjId}','${type}',${i})"></div>`;
-    }).join("");
+  _monitorBoxesAnarchy(pnj) {
+    const CAPS = {
+      leger: 2 + (pnj.legerCapBonus || 0),
+      grave: 1 + (pnj.graveCapBonus || 0),
+      incap: 1,
+    };
+    const seg = (sev) =>
+      Array.from({ length: CAPS[sev] }, (_, i) => {
+        const field = `${sev}Filled`;
+        const filled = pnj[field] || 0;
+        const isFilled = i < filled;
+        const cls = ["monitor-box", `sev-${sev}`, isFilled ? "filled" : ""]
+          .filter(Boolean)
+          .join(" ");
+        return `<div class="${cls}" onclick="UI.toggleMonitor('${pnj.id}','${sev}',${i})"></div>`;
+      }).join("");
+    return `${seg("leger")}<span class="monitor-gap"></span>${seg("grave")}<span class="monitor-gap"></span>${seg("incap")}`;
   },
 
   /* ---- Helpers ---- */
@@ -889,6 +889,10 @@ const UI = {
       mon: "monFilled",
       ment: "mentFilled",
       mat: "matFilled",
+      // Anarchy 2.0 : moniteur d'état unique à cases fixes (léger/grave/incap)
+      leger: "legerFilled",
+      grave: "graveFilled",
+      incap: "incapFilled",
     };
     const field = fieldMap[type] || "monFilled";
     if (pnj[field] === undefined) pnj[field] = 0;
