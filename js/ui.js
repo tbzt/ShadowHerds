@@ -776,14 +776,12 @@ const CardRenderer = {
   _contentTag(item) {
     if (item && typeof item === "object" && item.name) {
       const name = this._esc(item.name);
-      // Suffixe Drain/Niveau pour les sorts, affiché dans le tag.
+      // Suffixe Drain (SR5/SR6) ou Seuil (Anarchy 2.0) pour les sorts.
       let suffix = "";
       if (item.drain != null) {
         suffix = ` <span class="tag-stat">(Drain ${this._esc(item.drain)})</span>`;
-      } else if (item.level != null) {
-        suffix = ` <span class="tag-stat">(Niveau ${this._esc(item.level)})</span>`;
-      } else if (item.threshold != null) {
-        suffix = ` <span class="tag-stat">(Seuil ${this._esc(item.threshold)})</span>`;
+      } else if (item.seuil != null) {
+        suffix = ` <span class="tag-stat">(Seuil ${this._esc(item.seuil)})</span>`;
       } else if (item.bonus) {
         const label = this._bonusLabel(item.bonus);
         if (label) suffix = ` <span class="tag-stat">(${this._esc(label)})</span>`;

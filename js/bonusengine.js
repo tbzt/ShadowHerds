@@ -236,11 +236,22 @@ const BonusEngine = {
       }
     }
 
-    // Bonus « Tous » d'un esprit mentor (+1 dé à une compétence possédée).
-    const mb = pnj.mentorSpirit && pnj.mentorSpirit.bonus;
-    if (mb && mb.skill) {
-      const skill = this._findAnarchySkill(pnj, mb.skill);
-      if (skill) skill.val = (skill.val || 0) + mb.val;
+    // Esprit mentor Anarchy 2.0 : relances (RR 1) sur les tests choisis,
+    // appliquées aux compétences que le PNJ possède (specRR si la
+    // spécialisation correspond, sinon rr au niveau de la compétence).
+    const chosen = pnj.mentorSpirit && pnj.mentorSpirit.chosen;
+    for (const { skill, subspec } of chosen || []) {
+      const s = this._findAnarchySkill(pnj, skill);
+      if (!s) continue;
+      if (
+        subspec &&
+        s.spec &&
+        s.spec.toLowerCase().includes(subspec.toLowerCase())
+      ) {
+        s.specRR = (s.specRR || 0) + 1;
+      } else {
+        s.rr = (s.rr || 0) + 1;
+      }
     }
   },
 
