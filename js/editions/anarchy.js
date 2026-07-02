@@ -3043,21 +3043,9 @@ const EditionAnarchy = {
         }
         return statBlock.spells || [];
       })(),
-      traits: (function () {
-        if (typeof Content === "undefined" || !Utils.randBool(0.5)) return [];
-        const tags =
-          typeof Flavor !== "undefined"
-            ? Flavor.tagsFor({ archetype: statBlock.label })
-            : new Set(["rue"]);
-        const proRatingNum =
-          { Figurant: 1, "Figurant d'élite": 2, Lieutenant: 3, Boss: 4 }[
-            tier
-          ] || 2;
-        return Content.pickTraits("anarchy", tags, proRatingNum, 1);
-      })(),
-      physFilled: 0,
-      mentFilled: 0,
-      matFilled: 0,
+      legerFilled: 0,
+      graveFilled: 0,
+      incapFilled: 0,
       notes: "",
     };
     // Cohérence arme <-> compétence (renomme une compétence de combat si besoin)

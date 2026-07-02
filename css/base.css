@@ -3150,6 +3150,41 @@ select optgroup {
   font-weight: 600;
 }
 
+/* ---- Tag drogue (cycle idle → effet → contrecoup → OK) ---- */
+.drug-tag {
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.drug-tag:hover,
+.drug-tag:focus-visible {
+  background: var(--glow);
+  outline: none;
+}
+.drug-next {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 4px;
+  border-radius: 2px;
+  font-size: 0.85em;
+  font-weight: 700;
+  color: var(--bg);
+  background: var(--text-dim);
+}
+.drug-tag.drug-effect {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.drug-tag.drug-effect .drug-next {
+  background: var(--accent);
+}
+.drug-tag.drug-side {
+  border-color: var(--danger, #c0392b);
+  color: var(--danger, #c0392b);
+}
+.drug-tag.drug-side .drug-next {
+  background: var(--danger, #c0392b);
+}
+
 /* ---- Modale de description ---- */
 .content-modal-overlay {
   position: fixed;
@@ -4285,6 +4320,12 @@ input[type="range"]#risk-dice-slider {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+.combat-drugs {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 .weapon-line {
   display: flex;

@@ -218,6 +218,19 @@ const BonusEngine = {
   },
 
   _applyAnarchy(pnj) {
+    // Cases de moniteur supplémentaires (p.61 : "Case de blessure légère/
+    // grave supplémentaire", max +1 chacune, cumulé toutes sources
+    // confondues — cyberware/bioware/pouvoir d'adepte/trait/drone...).
+    // Ex. : "Producteur de plaquettes (bioware) : +1 blessure légère".
+    let legerBonus = 0;
+    let graveBonus = 0;
+    for (const edgeText of pnj.edges || []) {
+      if (/\+\s*1\s+blessure\s+légère/i.test(edgeText)) legerBonus = 1;
+      if (/\+\s*1\s+blessure\s+grave/i.test(edgeText)) graveBonus = 1;
+    }
+    if (legerBonus) pnj.legerCapBonus = legerBonus;
+    if (graveBonus) pnj.graveCapBonus = graveBonus;
+
     for (const edgeText of pnj.edges || []) {
       const parsed = this.parseAnarchyRR(edgeText);
       if (!parsed) continue;

@@ -367,6 +367,7 @@ const CardRenderer = {
     </div>`;
 
     html += this._weaponBlock(pnj, weapons, "sr5");
+    html += this._drugRow(pnj, "sr5");
     html += "</div>"; // fin combat-zone
 
     // ---- ZONE CAPACITÉS ----
@@ -455,6 +456,7 @@ const CardRenderer = {
     </div>`;
 
     html += this._weaponBlock(pnj, weapons, "sr6");
+    html += this._drugRow(pnj, "sr6");
     html += "</div>"; // fin combat-zone
 
     // ---- ZONE CAPACITÉS ----
@@ -505,7 +507,6 @@ const CardRenderer = {
       weapons,
       equip,
       spells,
-      traits,
       threatLevel,
       physMonitor,
       mentMonitor,
@@ -577,6 +578,7 @@ const CardRenderer = {
       }
       html += "</div>";
     }
+    html += this._drugRow(pnj, "anarchy");
     html += "</div>"; // fin combat-zone
 
     // ---- ZONE CAPACITÉS ----
@@ -591,7 +593,7 @@ const CardRenderer = {
         const rrStr = s.rr > 0 ? ` RR${s.rr}` : "";
         const rollMain =
           pool >= 1
-            ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}" data-roll-edition="anarchy" data-roll-rr="${s.rr || 0}"`
+            ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}" data-roll-edition="anarchy" data-roll-rr="${s.rr || 0}" data-roll-pnj="${pnj.id}"`
             : "";
         html += `<span class="tag skill-tag${pool >= 1 ? " rollable" : ""}"${rollMain} title="${this._esc(s.name)} : ${pool} (${s.val}+${s.attr}${rrStr}) — cliquer pour lancer">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong>${s.rr > 0 ? `<span class="lim">RR${s.rr}</span>` : ""}</span>`;
         if (s.spec && s.spec !== true && s.specVal) {
@@ -601,7 +603,7 @@ const CardRenderer = {
           const specRrStr = specRr > 0 ? ` RR${specRr}` : "";
           const rollSpec =
             specPool >= 1
-              ? ` data-roll="${specPool}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" data-roll-edition="anarchy" data-roll-rr="${specRr}"`
+              ? ` data-roll="${specPool}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" data-roll-edition="anarchy" data-roll-rr="${specRr}" data-roll-pnj="${pnj.id}"`
               : "";
           html += `<span class="tag skill-tag skill-tag-spec${specPool >= 1 ? " rollable" : ""}"${rollSpec} title="Spécialisation ${this._esc(s.spec)} : ${specPool}${specRrStr} — cliquer pour lancer">◊&nbsp;${this._esc(s.spec)}&nbsp;<strong style="color:var(--text)">${specPool}</strong>${specRr > 0 ? `<span class="lim">RR${specRr}</span>` : ""}</span>`;
         }
@@ -612,13 +614,14 @@ const CardRenderer = {
       html += `<div class="card-section">
         <div class="card-section-label">Atouts</div>
         <div class="card-section-content">`;
+      // Les drogues sont pilotées depuis leur tag dans la zone Combat
+      // (this._drugRow) — ici, texte simple pour éviter le doublon.
       for (const a of edges) {
         html += `<div class="anarchy-atout">• ${this._esc(a)}</div>`;
       }
       html += "</div></div>";
     }
     if (spells && spells.length) html += this._listSection("Sorts", spells);
-    if (traits && traits.length) html += this._listSection("Traits", traits);
     html += "</div>"; // fin capacity-zone
 
     // ---- ZONE RÉFÉRENCE ----
@@ -812,11 +815,54 @@ const CardRenderer = {
     return this._listSection(label, items);
   },
 
+  /** Tag cliquable d'une drogue détectée : cycle à 3 clics idle → effet →
+      contrecoup → idle (OK), cf. js/drugs.js. */
+  _drugTag(pnj, edition, drug, rawLabel) {
+    const state = Drugs.state(pnj, drug.id);
+    const next = Drugs.next(state);
+    const nextLabel = { effect: "Effet", sideEffect: "Contrecoup", idle: "OK" }[next];
+    const info =
+      state === "idle"
+        ? `${drug.effect.text} → ${drug.sideEffect.text}`
+        : state === "effect"
+          ? drug.effect.text
+          : drug.sideEffect.text;
+    const stateClass =
+      state === "effect" ? " drug-effect" : state === "sideEffect" ? " drug-side" : "";
+    return `<span class="tag drug-tag${stateClass}" role="button" tabindex="0"
+      onclick="UI.cycleDrug('${pnj.id}','${edition}','${drug.id}')"
+      title="${this._esc(info)}">${this._esc(rawLabel)}<span class="drug-next">${nextLabel}</span></span>`;
+  },
+
+  /** Ligne compacte, toujours visible dans la zone Combat (pas besoin de
+      déplier la Référence), listant les drogues détectées dans
+      l'équipement (SR5/SR6) et les atouts (Anarchy). */
+  _drugRow(pnj, edition) {
+    if (typeof Drugs === "undefined") return "";
+    const found = [];
+    for (const i of pnj.equip || []) {
+      const drug = Drugs.matchItem(i, edition, "equip");
+      if (drug) found.push(this._drugTag(pnj, edition, drug, i));
+    }
+    if (edition === "anarchy") {
+      for (const a of pnj.edges || []) {
+        const drug = Drugs.matchItem(a, "anarchy", "edges");
+        if (drug) found.push(this._drugTag(pnj, edition, drug, a));
+      }
+    }
+    if (!found.length) return "";
+    return `<div class="combat-drugs">${found.join("")}</div>`;
+  },
+
   /** Section Équipement où les weapons (VD/PRE) deviennent lançables. */
   _equipSection(pnj, items, edition) {
     if (!items || !items.length) return "";
     const tags = items
       .map((i) => {
+        // Les drogues sont pilotées depuis leur tag dans la zone Combat
+        // (this._drugRow) — ici, texte simple pour éviter le doublon.
+        if (typeof Drugs !== "undefined" && Drugs.matchItem(i, edition, "equip"))
+          return this._contentTag(i);
         const isWeapon =
           typeof i === "string" && /\[/.test(i) && /(VD|PRE)/.test(i);
         if (!isWeapon) return this._contentTag(i);
@@ -912,6 +958,16 @@ const UI = {
     } else {
       pnj.narcoUsed = idx + 1;
     }
+    Shadows.save();
+    CardRenderer.refresh(pnj);
+  },
+
+  /** Clic sur le tag d'une drogue : fait avancer le cycle idle → effet →
+      contrecoup → idle (cf. js/drugs.js). */
+  cycleDrug(pnjId, edition, drugId) {
+    const pnj = this._findPNJ(pnjId);
+    if (!pnj) return;
+    Drugs.advance(pnj, edition, drugId);
     Shadows.save();
     CardRenderer.refresh(pnj);
   },

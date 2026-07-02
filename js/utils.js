@@ -742,6 +742,7 @@ const Dice = {
             this.openRiskPanel(r.pool, {
               label: `${r.weaponName} (${r.skill})`,
               rr: r.rr,
+              adv: pnj.drugAdv || 0,
             });
           }
         }
@@ -758,7 +759,8 @@ const Dice = {
 
       // Anarchy 2.0 : on passe par le panneau de prise de risque
       if (edition === "anarchy") {
-        this.openRiskPanel(n, { label, rr });
+        const rollPnj = this._lookupPnj(t.getAttribute("data-roll-pnj"));
+        this.openRiskPanel(n, { label, rr, adv: (rollPnj && rollPnj.drugAdv) || 0 });
       } else {
         this.rollPool(n, { label });
       }
@@ -1162,7 +1164,7 @@ const Dice = {
     this._risk = {
       pool,
       rr: Utils.clamp(opts.rr || 0, 0, 3),
-      adv: 0,
+      adv: Utils.clamp(opts.adv || 0, -1, 1),
       level: "normal",
       label: opts.label || "",
       riskDice: 0,

@@ -1150,44 +1150,6 @@ const Content = {
         bonus: { stat: "memory", val: 2 },
       },
     ],
-    anarchy: [
-      {
-        name: "Réflexes de tueur",
-        desc: "Toujours prêt à frapper le premier. Avantage narratif au combat et dans les situations tendues.",
-        proRatingMin: 2,
-        forTags: ["combat", "militaire", "police", "ombre"],
-      },
-      {
-        name: "Nerfs d'acier",
-        desc: "Garde la tête froide quand tout part en vrille. Résiste à la pression et à la peur.",
-        proRatingMin: 1,
-        forTags: ["tous"],
-      },
-      {
-        name: "Réputation",
-        desc: "Un nom qui résonne dans les Ombres : ouvre des portes, mais ne passe jamais inaperçu.",
-        proRatingMin: 2,
-        forTags: ["crime", "ombre", "gang", "rue"],
-      },
-      {
-        name: "Carnet d'adresses",
-        desc: "Connaît les bonnes personnes dans les bons milieux. Un atout social qui sert souvent.",
-        proRatingMin: 3,
-        forTags: ["corpo", "crime", "police"],
-      },
-      {
-        name: "Vice tenace",
-        desc: "Une dépendance qui le ronge : faille de caractère qui colore le personnage et l'expose.",
-        proRatingMin: 0,
-        forTags: ["rue", "gang", "crime"],
-      },
-      {
-        name: "Loyauté farouche",
-        desc: "Une parole donnée est sacrée. Prévisible pour ses proches, dangereux pour ceux qui le trahissent.",
-        proRatingMin: 1,
-        forTags: ["militaire", "crime", "combat"],
-      },
-    ],
   },
 
   /* ========================================================
