@@ -136,6 +136,49 @@ const WeaponRoll = {
       .trim();
   },
 
+  /* ========================================================
+     SPÉCIALISATIONS D'ARME
+     Quand une arme correspond à la spécialisation d'une compétence
+     du PNJ, c'est elle qui gouverne le jet : pool + RR de la spé en
+     Anarchy (ex. « Attaque élémentaire » des esprits), +2 dés en
+     SR5/SR6 (spécialité).
+     ======================================================== */
+
+  /* Spécialisations « catégorie » → mots-clés d'armes couverts.
+     Complète le matching direct par inclusion de noms (« Attaque
+     élémentaire de feu » ↔ « Attaque élémentaire »). Clés normalisées
+     (minuscules sans accents, cf. Utils.searchNorm). */
+  SPEC_KEYWORDS: {
+    pistolets: /pistolet|revolver|predator|colt|ruger|fichetti|beretta|taser/i,
+    lames: /couteau|katana|epee|sabre|hache|lame|machette|tranchant/i,
+    "armes contondantes": /matraque|massue|baton|gourdin|contondant/i,
+    fusils: /fusil/i,
+    mitraillettes: /mitraillette|smg/i,
+    "mitraillettes / shotguns": /mitraillette|smg|shotgun|pompe/i,
+    "mains nues": /mains? nues|poing/i,
+  },
+
+  /** L'arme `weaponName` relève-t-elle de la spécialisation `spec` ? */
+  _specMatchesWeapon(spec, weaponName) {
+    if (!spec || typeof spec !== "string") return false;
+    const s = Utils.searchNorm(spec);
+    const w = Utils.searchNorm(weaponName);
+    if (!s || !w) return false;
+    if (w.includes(s) || s.includes(w)) return true;
+    const re = this.SPEC_KEYWORDS[s];
+    return re ? re.test(w) : false;
+  },
+
+  /** Cherche une compétence du PNJ dont la spécialisation couvre
+      l'arme. Renvoie l'objet skill ou null. */
+  findSpecFor(pnj, weaponName) {
+    for (const s of pnj.skills || []) {
+      if (s.spec && s.spec !== true && this._specMatchesWeapon(s.spec, weaponName))
+        return s;
+    }
+    return null;
+  },
+
   /**
    * Cherche la valeur d'une compétence sur le PNJ (exact → partiel →
    * groupe GC → famille de combat). Renvoie { val, matched, approx } ou null.
@@ -194,18 +237,38 @@ const WeaponRoll = {
     const found = this.findSkillValue(pnj, canonical);
 
     const cat = (typeof SkillCatalog !== "undefined" && SkillCatalog[edition]) || {};
-    const attr = cat[canonical] || "AGI";
-    const attrVal = (pnj.attrs && pnj.attrs[attr]) || 0;
+    let attr = cat[canonical] || "AGI";
+    let attrVal = (pnj.attrs && pnj.attrs[attr]) || 0;
 
-    const skillVal = found ? found.val : 0;
+    // Spécialisation couvrant l'arme : c'est elle qui gouverne le jet
+    // (ex. « Attaque élémentaire » des esprits, « Lames » d'un ganger).
+    const specSkill = this.findSpecFor(pnj, parsed.name);
+
+    let skillVal = found ? found.val : 0;
+    let matchedSkill = found ? found.matched : null;
+    let rr = 0;
+    let specBonus = 0;
+
+    if (edition === "anarchy") {
+      if (specSkill && specSkill.specVal != null) {
+        skillVal = specSkill.specVal;
+        attr = specSkill.specAttr || specSkill.attr || attr;
+        attrVal = (pnj.attrs && pnj.attrs[attr]) || 0;
+        rr = specSkill.specRR || 0;
+        matchedSkill = `${specSkill.name} · ${specSkill.spec}`;
+      } else if (found) {
+        const sObj = (pnj.skills || []).find((s) => s.name === found.matched);
+        if (sObj && sObj.rr) rr = sObj.rr;
+      }
+    } else if (specSkill) {
+      // SR5/SR6 : spécialité = +2 dés sur le pool.
+      specBonus = 2;
+      if (!found && Number.isFinite(specSkill.val)) skillVal = specSkill.val;
+      matchedSkill = `${matchedSkill || specSkill.name} · ${specSkill.spec}`;
+    }
+
     const basePool = skillVal + attrVal;
     if (basePool < 1) return null;
-
-    let rr = 0;
-    if (edition === "anarchy" && found) {
-      const sObj = (pnj.skills || []).find((s) => s.name === found.matched);
-      if (sObj && sObj.rr) rr = sObj.rr;
-    }
 
     // Synergie smartgun (arme) / smartlink (PNJ) — SR5 : +2 implanté / +1
     // externe ; SR6 : +1 flat. Voir BonusEngine.detectSmartlink().
@@ -220,18 +283,20 @@ const WeaponRoll = {
     }
     const malus =
       typeof Utils !== "undefined" ? Utils.woundMalus(pnj, edition) : 0;
-    const pool = Math.max(0, basePool + smartBonus - malus);
+    const pool = Math.max(0, basePool + smartBonus + specBonus - malus);
 
     return {
       weaponName: parsed.name,
       skill: canonical,
-      matchedSkill: found ? found.matched : null,
-      approx: found ? !!found.approx : false,
+      matchedSkill,
+      approx: found && !specSkill ? !!found.approx : false,
       attr,
       attrVal,
       skillVal,
       pool,
       smartBonus,
+      specBonus,
+      spec: specSkill ? specSkill.spec : null,
       limit: edition === "sr5" ? parsed.pre : null,
       rr,
       edition,

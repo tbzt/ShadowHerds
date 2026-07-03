@@ -214,7 +214,9 @@ const ProfCategories = {
         "Ganger d'élite",
         "Ganger éveillé",
         "Ganger adepte",
+        "Ganger chaman",
         "Ganger decker",
+        "Go-ganger",
       ],
     },
     {
@@ -225,10 +227,15 @@ const ProfCategories = {
         "Officier d'élite",
         "Mage de sécurité",
         "Mage d'élite",
+        "Chaman de sécurité",
+        "Chaman d'élite",
         "Adepte de sécurité",
         "Adepte d'élite",
         "Decker de sécurité",
         "Decker d'élite",
+        "Rigger de sécurité",
+        "Rigger d'élite",
+        "Médecin de combat",
       ],
     },
     {
@@ -237,7 +244,13 @@ const ProfCategories = {
     },
     {
       cat: "Corpo & contacts",
-      items: ["Johnson", "Employé corporatiste", "Enquêteur"],
+      items: [
+        "Johnson",
+        "Employé corporatiste",
+        "Cadre corporatiste",
+        "Enquêteur",
+        "Coyote",
+      ],
     },
   ],
 

@@ -740,9 +740,10 @@ const Dice = {
               : null;
           if (r) {
             this.openRiskPanel(r.pool, {
-              label: `${r.weaponName} (${r.skill})`,
+              label: `${r.weaponName} (${r.matchedSkill || r.skill})`,
               rr: r.rr,
               adv: pnj.drugAdv || 0,
+              who: pnj.name || "",
             });
           }
         }
@@ -757,12 +758,20 @@ const Dice = {
       const edition = t.getAttribute("data-roll-edition") || "";
       const rr = parseInt(t.getAttribute("data-roll-rr"), 10) || 0;
 
+      // PNJ à l'origine du jet : attribut explicite, sinon la carte
+      // englobante (compétences SR5/SR6, réserves MJ…). Alimente le
+      // journal des jets.
+      const holder = t.closest(".pnj-card");
+      const rollPnj = this._lookupPnj(
+        t.getAttribute("data-roll-pnj") || (holder && holder.dataset.id),
+      );
+      const who = (rollPnj && rollPnj.name) || "";
+
       // Anarchy 2.0 : on passe par le panneau de prise de risque
       if (edition === "anarchy") {
-        const rollPnj = this._lookupPnj(t.getAttribute("data-roll-pnj"));
-        this.openRiskPanel(n, { label, rr, adv: (rollPnj && rollPnj.drugAdv) || 0 });
+        this.openRiskPanel(n, { label, rr, adv: (rollPnj && rollPnj.drugAdv) || 0, who });
       } else {
-        this.rollPool(n, { label });
+        this.rollPool(n, { label, who });
       }
     });
 
@@ -800,6 +809,7 @@ const Dice = {
     const approxTxt = r.approx ? " ~" : "";
     this._animate(res, {
       label: `${r.weaponName} (${r.matchedSkill || r.skill}${approxTxt})`,
+      who: pnj.name || "",
     });
   },
 
@@ -991,11 +1001,15 @@ const Dice = {
 
   rollInitiative(base, dice, pnjId) {
     const res = this.computeInitiative(base, dice);
-    this._animate(res, { label: "Initiative" });
+    const pnjForLog = pnjId ? this._lookupPnj(pnjId) : null;
+    this._animate(res, {
+      label: "Initiative",
+      who: (pnjForLog && pnjForLog.name) || "",
+    });
 
     // Mémoriser le résultat sur le PNJ pour l'afficher sur sa carte
     if (pnjId) {
-      const pnj = this._lookupPnj(pnjId);
+      const pnj = pnjForLog;
       if (pnj) {
         pnj.lastInit = {
           total: res.total,
@@ -1142,10 +1156,10 @@ const Dice = {
 
     // Lancer
     document.getElementById("risk-roll-btn").addEventListener("click", () => {
-      const { pool, riskDice, rr, adv, label } = this._risk;
+      const { pool, riskDice, rr, adv, label, who } = this._risk;
       this._closeRiskPanel();
       const res = this.computeAnarchyRoll(pool, riskDice, rr, adv);
-      this._animate(res, { label });
+      this._animate(res, { label, who });
     });
 
     // Échap ferme
@@ -1167,12 +1181,15 @@ const Dice = {
       adv: Utils.clamp(opts.adv || 0, -1, 1),
       level: "normal",
       label: opts.label || "",
+      who: opts.who || "",
       riskDice: 0,
     };
     this._risk.riskDice = this.riskDiceFor("normal", this._risk.rr, pool);
 
-    document.getElementById("risk-panel-title").textContent =
-      opts.label || "Prise de risque";
+    const title = opts.label || "Prise de risque";
+    document.getElementById("risk-panel-title").textContent = opts.who
+      ? `${opts.who} — ${title}`
+      : title;
     document.getElementById("risk-panel-pool").innerHTML =
       `Réserve : <strong>${pool}</strong> dé${pool > 1 ? "s" : ""}`;
 
@@ -1306,7 +1323,7 @@ const Dice = {
 
   /* ---- Journal : enregistre chaque jet, quel que soit son origine ---- */
   _logRoll(res, opts = {}) {
-    const e = { t: Date.now(), label: opts.label || "" };
+    const e = { t: Date.now(), label: opts.label || "", who: opts.who || "" };
     if (res.init) {
       e.label = e.label || "Initiative";
       e.main = String(res.total);
@@ -1368,8 +1385,9 @@ const Dice = {
     }
     const last = this.history[0];
     if (!last) return;
-    const labelHtml = last.label
-      ? `<span class="dice-quick-label">${this._escSummary(last.label)}</span>`
+    const fullLabel = [last.who, last.label].filter(Boolean).join(" — ");
+    const labelHtml = fullLabel
+      ? `<span class="dice-quick-label">${this._escSummary(fullLabel)}</span>`
       : "";
     const tagHtml = last.tag
       ? `<span class="dice-quick-tag">${this._escSummary(last.tag)}</span>`
@@ -1437,10 +1455,18 @@ const Dice = {
     }, settleAt);
   },
 
+  /** Ligne « qui lance » de l'overlay (nom du PNJ, si connu). */
+  _whoHtml(opts) {
+    return opts && opts.who
+      ? `<span class="dice-summary-who">${this._escSummary(opts.who)}</span>`
+      : "";
+  },
+
   _revealInitiative(res, summary, opts) {
     summary.classList.add("reveal", "good", "init");
     const detail = `${res.base} + [${res.faces.join(", ")}]`;
     summary.innerHTML = `
+      ${this._whoHtml(opts)}
       <span class="dice-summary-label">Initiative</span>
       <div class="dice-summary-main">
         <span class="dice-summary-hits">${res.total}</span>
@@ -1477,6 +1503,7 @@ const Dice = {
     }
 
     summary.innerHTML = `
+      ${this._whoHtml(opts)}
       ${labelHtml}
       <div class="dice-summary-main">${big}</div>
       ${tag}
@@ -1536,6 +1563,7 @@ const Dice = {
     const poolHtml = `<span class="dice-summary-pool">${res.pool} dés · ${res.riskDice} de risque</span>`;
 
     summary.innerHTML = `
+      ${this._whoHtml(opts)}
       ${labelHtml}
       <div class="dice-summary-main">${big}</div>
       ${breakdown}

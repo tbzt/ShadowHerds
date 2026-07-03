@@ -42,11 +42,56 @@ const Gen = {
   _buildSingleForm(ed) {
     const el = document.getElementById("gen-form-single");
     this.entityType = "meta";
-    el.innerHTML =
+    el.innerHTML = this._wrapFilters(
       this._entityTypeBar() +
-      `<div id="sg-fields-meta">${this._formHTML(ed, "sg")}</div>` +
-      `<div id="sg-fields-spirit" hidden>${this._spiritFormHTML(ed)}</div>` +
-      `<div id="sg-fields-creature" hidden>${this._creatureFormHTML(ed)}</div>`;
+        `<div id="sg-fields-meta">${this._formHTML(ed, "sg")}</div>` +
+        `<div id="sg-fields-spirit" hidden>${this._spiritFormHTML(ed)}</div>` +
+        `<div id="sg-fields-creature" hidden>${this._creatureFormHTML(ed)}</div>`,
+    );
+  },
+
+  /* ---- Repli/dépli des filtres (état global, mémorisé) ---- */
+  _FILTERS_KEY: "sh_gen_filters_collapsed",
+
+  filtersCollapsed() {
+    try {
+      return localStorage.getItem(this._FILTERS_KEY) === "1";
+    } catch {
+      return false;
+    }
+  },
+
+  /** Enrobe les champs d'un formulaire dans une zone repliable, avec sa
+      barre de bascule. `display:contents` sur .gen-filters préserve la
+      grille de .gen-form. */
+  _wrapFilters(fieldsHTML) {
+    const collapsed = this.filtersCollapsed();
+    return `<button type="button" class="filters-toggle" onclick="Gen.toggleFilters()"
+        title="Replier / déplier les filtres" aria-expanded="${!collapsed}">
+        <span>Filtres</span>
+        <span class="chev">${collapsed ? "▸" : "▾"}</span>
+      </button>
+      <div class="gen-filters${collapsed ? " collapsed" : ""}">${fieldsHTML}</div>`;
+  },
+
+  toggleFilters() {
+    const collapsed = !this.filtersCollapsed();
+    try {
+      localStorage.setItem(this._FILTERS_KEY, collapsed ? "1" : "0");
+    } catch {
+      /* noop */
+    }
+    // Bascule directe dans le DOM (sans rebuild : conserve les sélections)
+    document
+      .querySelectorAll("#panel-generator .gen-filters")
+      .forEach((el) => el.classList.toggle("collapsed", collapsed));
+    document
+      .querySelectorAll("#panel-generator .filters-toggle")
+      .forEach((btn) => {
+        btn.setAttribute("aria-expanded", String(!collapsed));
+        const chev = btn.querySelector(".chev");
+        if (chev) chev.textContent = collapsed ? "▸" : "▾";
+      });
   },
 
   /* ---- Sélecteur de type d'entité (PNJ individuel) ---- */
@@ -130,7 +175,7 @@ const Gen = {
 
   _buildGroupForm(ed) {
     const el = document.getElementById("gen-form-group");
-    el.innerHTML = `
+    el.innerHTML = this._wrapFilters(`
       <div class="form-group">
         <label>Nombre</label>
         <select id="gg-count">
@@ -140,7 +185,7 @@ const Gen = {
         </select>
       </div>
       ${this._formHTML(ed, "gg", { hideName: true })}
-    `;
+    `);
   },
 
   /**
@@ -386,7 +431,11 @@ const Gen = {
     }
     this.pool = this.pool.filter((p) => !doomed.has(p.id));
     for (const did of doomed) {
-      const card = document.querySelector(`.pnj-card[data-id="${did}"]`);
+      // Scopé au générateur : un PNJ sauvegardé a aussi une carte dans
+      // les Ombres, qu'on ne doit pas toucher ici.
+      const card = document.querySelector(
+        `#panel-generator .pnj-card[data-id="${did}"]`,
+      );
       if (card) {
         card.style.transition = "opacity 0.2s, transform 0.2s";
         card.style.opacity = "0";

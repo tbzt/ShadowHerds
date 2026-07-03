@@ -99,6 +99,7 @@ const EditionAnarchy = {
       "Ganger adepte",
       "Ganger chaman",
       "Ganger decker",
+      "Go-ganger",
       "Agent de sécurité",
       "Officier de sécurité",
       "Officier d'élite",
@@ -110,11 +111,16 @@ const EditionAnarchy = {
       "Adepte d'élite",
       "Decker de sécurité",
       "Decker d'élite",
+      "Rigger de sécurité",
+      "Rigger d'élite",
+      "Médecin de combat",
       "Militaire",
       "Commando militaire",
       "Johnson",
       "Employé corporatiste",
+      "Cadre corporatiste",
       "Enquêteur",
+      "Coyote",
     ],
   },
 
@@ -2945,6 +2951,7 @@ const EditionAnarchy = {
     // Rang selon profil
     const tierMap = {
       Ganger: "Figurant",
+      "Go-ganger": "Figurant",
       "Agent de sécurité": "Figurant",
       "Employé corporatiste": "Figurant",
       "Ganger chaman": "Figurant",
@@ -2954,14 +2961,19 @@ const EditionAnarchy = {
       "Chaman de sécurité": "Figurant d'élite",
       "Adepte de sécurité": "Figurant d'élite",
       "Decker de sécurité": "Figurant d'élite",
+      "Rigger de sécurité": "Figurant d'élite",
+      "Médecin de combat": "Figurant d'élite",
+      Coyote: "Figurant d'élite",
       Militaire: "Figurant d'élite",
       Johnson: "Lieutenant",
       Enquêteur: "Lieutenant",
+      "Cadre corporatiste": "Lieutenant",
       "Officier d'élite": "Lieutenant",
       "Mage d'élite": "Lieutenant",
       "Chaman d'élite": "Lieutenant",
       "Adepte d'élite": "Lieutenant",
       "Decker d'élite": "Lieutenant",
+      "Rigger d'élite": "Lieutenant",
       "Commando militaire": "Boss",
     };
     const tier =
@@ -2990,6 +3002,9 @@ const EditionAnarchy = {
         return copy;
       }),
       edges: [...statBlock.edges, ...chosenEdges],
+      // Trace des atouts tirés parmi edgeOptions : BonusEngine ne motorise
+      // « Armure +N » que sur ceux-là (les fixes sont déjà dans les seuils).
+      chosenEdges,
       weapons: statBlock.weapons.map((a) => {
         // Arme à choix multiples → on en tire une au hasard
         if (a.choices) {

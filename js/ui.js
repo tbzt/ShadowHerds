@@ -19,15 +19,22 @@ const CardRenderer = {
     return el;
   },
 
-  /** Met à jour le contenu d'une card existante (après édition) */
+  /** Met à jour le contenu d'une card existante (après édition).
+      Un PNJ sauvegardé peut avoir DEUX cartes (générateur + Ombres) :
+      on rafraîchit toutes les copies, chacune avec ses propres actions
+      (portées par data-saved-actions sur son footer). */
   refresh(pnj) {
-    const el = document.querySelector(`.pnj-card[data-id="${pnj.id}"]`);
-    if (!el) return;
-    const actions = el.dataset.savedActions
-      ? JSON.parse(el.dataset.savedActions)
-      : ["edit", "remove"];
-    el.innerHTML =
-      this._header(pnj) + this._body(pnj) + this._footer(pnj, actions);
+    document
+      .querySelectorAll(`.pnj-card[data-id="${pnj.id}"]`)
+      .forEach((el) => {
+        const footer = el.querySelector(".pnj-card-footer");
+        const actions =
+          footer && footer.dataset.savedActions
+            ? JSON.parse(footer.dataset.savedActions)
+            : ["edit", "remove"];
+        el.innerHTML =
+          this._header(pnj) + this._body(pnj) + this._footer(pnj, actions);
+      });
   },
 
   /* ---- Header ---- */
@@ -500,6 +507,54 @@ const CardRenderer = {
     </div>`;
   },
 
+  /** Équipements « … optionnel (Armure +N) » d'un PNJ Anarchy (bouclier
+      anti-émeutes, bouclier balistique…). L'activation est un choix
+      tactique : chaque option devient un tag cliquable qui relève les
+      seuils de blessures physiques (pnj.armorOptions[idx] = true). */
+  _armorOptions(pnj) {
+    if (pnj.edition !== "anarchy") return [];
+    const out = [];
+    (pnj.equip || []).forEach((item, idx) => {
+      if (typeof item !== "string") return;
+      const m = item.match(/([^+(]+?)\s*optionnel\s*\(Armure\s*\+(\d+)\)/i);
+      if (!m) return;
+      out.push({
+        idx,
+        label: m[1].trim(),
+        bonus: parseInt(m[2], 10),
+        on: !!(pnj.armorOptions && pnj.armorOptions[idx]),
+      });
+    });
+    return out;
+  },
+
+  /** Somme des bonus d'armure optionnels actifs. */
+  _armorOptionBonus(pnj) {
+    return this._armorOptions(pnj)
+      .filter((o) => o.on)
+      .reduce((sum, o) => sum + o.bonus, 0);
+  },
+
+  /** Tags cliquables des armures optionnelles, dans la zone Combat. */
+  _armorChipRow(pnj) {
+    const opts = this._armorOptions(pnj);
+    if (!opts.length) return "";
+    const chips = opts
+      .map((o) => {
+        const state = o.on
+          ? '<span class="vehicle-chip-state on">● actif</span>'
+          : '<span class="vehicle-chip-state">▸ activer</span>';
+        const title = o.on
+          ? `${o.label} : seuils physiques +${o.bonus} — cliquer pour ranger`
+          : `${o.label} : cliquer pour l'équiper (seuils physiques +${o.bonus})`;
+        return `<span class="tag vehicle-chip armor-chip${o.on ? " deployed" : ""}" role="button" tabindex="0"
+          onclick="UI.toggleArmorOption('${pnj.id}',${o.idx})"
+          title="${this._esc(title)}">⛨ ${this._esc(o.label)} +${o.bonus}${state}</span>`;
+      })
+      .join("");
+    return `<div class="combat-drugs armor-chips">${chips}</div>`;
+  },
+
   /** Chip « Invoquer » dans la zone Combat des conjurateurs. */
   _spiritChipRow(pnj) {
     if (typeof Spirits === "undefined" || !Spirits.canSummon(pnj)) return "";
@@ -754,6 +809,19 @@ const CardRenderer = {
       </div>
     </div>`;
 
+    // Seuils de blessures, sous la gestion des dégâts (un coup dont la VD
+    // atteint le seuil 1/2/3 inflige une blessure légère/grave/incap.).
+    // Les seuils physiques intègrent les armures optionnelles actives.
+    const armorBonus = this._armorOptionBonus(pnj);
+    const effPhys = physMonitor
+      ? physMonitor.map((v) => v + armorBonus)
+      : null;
+    html += `<div class="anarchy-seuils combat-seuils">
+      <div class="anarchy-seuil-row"><span class="anarchy-seuil-label">Seuils phys.${armorBonus ? ` <span class="armor-bonus-note">(armure +${armorBonus})</span>` : ""}</span><span class="anarchy-seuil-val">${fmtThresholds(effPhys)}</span></div>
+      <div class="anarchy-seuil-row" style="margin-top:3px;"><span class="anarchy-seuil-label">Seuils ment.</span><span class="anarchy-seuil-val">${fmtThresholds(mentMonitor)}</span></div>
+      ${matrixMonitor ? `<div class="anarchy-seuil-row" style="margin-top:3px;"><span class="anarchy-seuil-label">Seuils matr.</span><span class="anarchy-seuil-val">${fmtThresholds(matrixMonitor)}</span></div>` : ""}
+    </div>`;
+
     // Armes (lançables, ouvrent le panneau de risque RR)
     if (weapons && weapons.length) {
       html += `<div class="weapon-block">`;
@@ -767,7 +835,7 @@ const CardRenderer = {
             : null;
         if (r) {
           const rrTxt = r.rr ? ` RR${r.rr}` : "";
-          const title = `${r.weaponName} : ${r.pool} dés (${r.skill} ${r.skillVal}+${r.attr} ${r.attrVal}${rrTxt}) — cliquer pour lancer`;
+          const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill} ${r.skillVal}+${r.attr} ${r.attrVal}${rrTxt}) — cliquer pour lancer`;
           html += `<div class="weapon-line weapon-rollable rollable" data-roll-weapon-anarchy="${this._esc(a.name)}" data-roll-pnj="${pnj.id}" title="${this._esc(title)}">
             <div><div class="weapon-name">${this._esc(a.name)}${noteStr}</div><div class="weapon-stat">VD ${a.vd} · ${this._esc(a.ranges)}</div></div>
             <span class="weapon-pool">⚄${r.pool}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}</span>
@@ -781,6 +849,7 @@ const CardRenderer = {
       html += "</div>";
     }
     html += this._drugRow(pnj, "anarchy");
+    html += this._armorChipRow(pnj);
     html += this._vehicleChipRow(pnj);
     html += this._spiritChipRow(pnj);
     html += "</div>"; // fin combat-zone
@@ -829,19 +898,14 @@ const CardRenderer = {
     html += "</div>"; // fin capacity-zone
 
     // ---- ZONE RÉFÉRENCE ----
-    html += this._refToggle(pnj, "Référence — attributs, seuils, équipement");
+    // (les seuils de blessures vivent dans la zone Combat, sous le moniteur)
+    html += this._refToggle(pnj, "Référence — attributs, équipement");
     html += '<div class="ref-zone">';
     if (prefs.showAttributes) {
       const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA"];
       html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>
         <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}</div></div>`;
     }
-    html += `<div class="ref-block"><div class="ref-lbl">Seuils de blessures</div>
-      <div class="anarchy-seuils">
-        <div class="anarchy-seuil-row"><span class="anarchy-seuil-label">Physiques</span><span class="anarchy-seuil-val">${fmtThresholds(physMonitor)}</span></div>
-        <div class="anarchy-seuil-row" style="margin-top:3px;"><span class="anarchy-seuil-label">Mentales</span><span class="anarchy-seuil-val">${fmtThresholds(mentMonitor)}</span></div>
-        ${matrixMonitor ? `<div class="anarchy-seuil-row" style="margin-top:3px;"><span class="anarchy-seuil-label">Matricielles</span><span class="anarchy-seuil-val">${fmtThresholds(matrixMonitor)}</span></div>` : ""}
-      </div></div>`;
     if (prefs.showEquipment && equip && equip.length)
       html += this._equipSection(pnj, equip, "anarchy");
     if (notes) {
@@ -1113,6 +1177,10 @@ const CardRenderer = {
       </div>`;
     }
     const btns = [];
+    if (actions.includes("saved")) {
+      // Carte du générateur après sauvegarde dans les Ombres.
+      btns.push(`<span class="card-saved-label">✓ Sauvegardé</span>`);
+    }
     if (actions.includes("save")) {
       btns.push(
         `<button class="card-action-btn save" onclick="Shadows.savePNJ('${pnj.id}')">Sauvegarder</button>`,
@@ -1190,6 +1258,18 @@ const UI = {
     CardRenderer.refresh(pnj);
   },
 
+  /** Clic sur le tag d'une armure optionnelle (Anarchy) : équipe/range le
+      bouclier, ce qui relève/abaisse les seuils physiques affichés. */
+  toggleArmorOption(pnjId, idx) {
+    const pnj = this._findPNJ(pnjId);
+    if (!pnj) return;
+    pnj.armorOptions = pnj.armorOptions || {};
+    if (pnj.armorOptions[idx]) delete pnj.armorOptions[idx];
+    else pnj.armorOptions[idx] = true;
+    Shadows.save();
+    CardRenderer.refresh(pnj);
+  },
+
   /** Cherche dans les sauvegardés ET le pool du générateur, pour que
       les interactions (moniteurs, drogues, déploiements) fonctionnent
       aussi sur les cartes pas encore sauvegardées. */
@@ -1222,7 +1302,11 @@ const UI = {
     if (!spawned.length) return;
 
     const inShadows = Shadows.data.all.some((p) => p.id === ownerId);
-    const ownerCard = document.querySelector(`.pnj-card[data-id="${ownerId}"]`);
+    // Un PNJ sauvegardé peut avoir deux cartes : on ancre la fiche liée
+    // sur la carte du panneau actif (celle que l'utilisateur voit).
+    const ownerCard =
+      document.querySelector(`.panel.active .pnj-card[data-id="${ownerId}"]`) ||
+      document.querySelector(`.pnj-card[data-id="${ownerId}"]`);
     let anchor = ownerCard;
     for (const v of spawned) {
       if (inShadows) Shadows.data.all.push(v);
@@ -1249,8 +1333,9 @@ const UI = {
       Shadows.data.all = Shadows.data.all.filter((p) => p.id !== s.id);
       if (typeof Gen !== "undefined" && Gen.pool)
         Gen.pool = Gen.pool.filter((p) => p.id !== s.id);
-      const card = document.querySelector(`.pnj-card[data-id="${s.id}"]`);
-      if (card) card.remove();
+      document
+        .querySelectorAll(`.pnj-card[data-id="${s.id}"]`)
+        .forEach((card) => card.remove());
     }
     Shadows.save();
     const owner = this._findPNJ(v.ownerId);
@@ -1263,7 +1348,9 @@ const UI = {
   },
 
   _flashCard(id) {
-    const card = document.querySelector(`.pnj-card[data-id="${id}"]`);
+    const card =
+      document.querySelector(`.panel.active .pnj-card[data-id="${id}"]`) ||
+      document.querySelector(`.pnj-card[data-id="${id}"]`);
     if (!card) return;
     card.scrollIntoView({ behavior: "smooth", block: "center" });
     card.classList.add("card-flash");
@@ -1418,7 +1505,9 @@ const UI = {
     } else {
       Gen.pool.push(spirit);
     }
-    const ownerCard = document.querySelector(`.pnj-card[data-id="${owner.id}"]`);
+    const ownerCard =
+      document.querySelector(`.panel.active .pnj-card[data-id="${owner.id}"]`) ||
+      document.querySelector(`.pnj-card[data-id="${owner.id}"]`);
     if (ownerCard) {
       const card = CardRenderer.render(spirit, inShadows ? ["remove"] : ["discard"]);
       card.classList.add("vehicle-card", "spirit-card", "vehicle-deploying");
@@ -1444,8 +1533,9 @@ const UI = {
     Shadows.data.all = Shadows.data.all.filter((p) => p.id !== sp.id);
     if (typeof Gen !== "undefined" && Gen.pool)
       Gen.pool = Gen.pool.filter((p) => p.id !== sp.id);
-    const card = document.querySelector(`.pnj-card[data-id="${sp.id}"]`);
-    if (card) card.remove();
+    document
+      .querySelectorAll(`.pnj-card[data-id="${sp.id}"]`)
+      .forEach((card) => card.remove());
     Shadows.save();
     const owner = this._findPNJ(sp.ownerId);
     if (owner) CardRenderer.refresh(owner);

@@ -218,6 +218,26 @@ const BonusEngine = {
   },
 
   _applyAnarchy(pnj) {
+    // « Armure +N » d'un atout AU CHOIX (ex. Armure dermique) : relève les
+    // seuils de blessures physiques. Uniquement les atouts tirés parmi
+    // edgeOptions (pnj.chosenEdges) : les seuils imprimés des statblocks
+    // incluent déjà l'armure des atouts fixes (cf. Adepte d'élite,
+    // FOR 3 + Armure 4 + Armure mystique 1 = seuils 8/11/14). Exclusions :
+    // sorts au bonus dynamique (« +1 par 3 succès ») et équipements
+    // « optionnels » (bouclier), gérés par un tag cliquable sur la carte.
+    for (const edgeText of pnj.chosenEdges || []) {
+      const m = String(edgeText).match(/Armure\s*\+(\d+)/i);
+      if (!m) continue;
+      if (/par\s+\d+\s+succès|optionnel/i.test(edgeText)) continue;
+      const n = parseInt(m[1], 10);
+      if (/biofeedback|matriciel/i.test(edgeText)) {
+        if (pnj.matrixMonitor)
+          pnj.matrixMonitor = pnj.matrixMonitor.map((v) => v + n);
+      } else if (pnj.physMonitor) {
+        pnj.physMonitor = pnj.physMonitor.map((v) => v + n);
+      }
+    }
+
     // Cases de moniteur supplémentaires (p.61 : "Case de blessure légère/
     // grave supplémentaire", max +1 chacune, cumulé toutes sources
     // confondues — cyberware/bioware/pouvoir d'adepte/trait/drone...).

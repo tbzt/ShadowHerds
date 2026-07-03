@@ -11,6 +11,27 @@
    Chaque clic annule proprement la phase précédente avant
    d'appliquer la suivante — jamais cumulatif.
    ============================================================ */
+/** Fabrique d'entrée de drogue Anarchy standard : effet textuel, contrecoup
+    « Désavantage global » motorisé via pnj.drugAdv (consommé par les jets). */
+function Drug_anarchy(id, match, label, effectText, crashText) {
+  return {
+    id,
+    match,
+    source: "edges",
+    label,
+    effect: { text: effectText },
+    sideEffect: {
+      text: crashText,
+      apply(pnj) {
+        pnj.drugAdv = -1;
+      },
+      revert(pnj) {
+        delete pnj.drugAdv;
+      },
+    },
+  };
+}
+
 const Drugs = {
   CATALOG: {
     // Aucune drogue dans les pools d'équipement SR5 actuels — le
@@ -48,11 +69,14 @@ const Drugs = {
       },
     ],
 
+    // Anarchy 2.0 : les drogues sont des atouts d'équipement (p.150). Le
+    // catalogue reconnaît « Nom (drogue) » dans les atouts (edgeOptions
+    // des statblocks) ET dans l'équipement (ajout manuel via l'édition) —
+    // matchItem() ignore la source pour cette édition. Le contrecoup
+    // standard applique le Désavantage global (pnj.drugAdv, p.67).
     anarchy: [
       {
         id: "jazz",
-        // Le Jazz n'apparaît pas dans pnj.equip côté Anarchy : c'est un
-        // atout choisi (pnj.edges), au texte fixe généré par edgeOptions.
         match: /^Jazz\s*\(drogue\)/i,
         source: "edges",
         label: "Jazz",
@@ -69,17 +93,49 @@ const Drugs = {
           },
         },
       },
+      Drug_anarchy("bliss", /^Bliss\s*\(drogue\)/i, "Bliss",
+        "Antidouleur : ignore les effets de sa première blessure légère pendant la scène",
+        "Désavantage à tous les tests pendant la scène suivante (léthargie)"),
+      Drug_anarchy("cram", /^Cram\s*\(drogue\)/i, "Cram",
+        "+1 action par narration pendant la scène",
+        "Désavantage à tous les tests pendant la scène suivante (descente)"),
+      Drug_anarchy("deepweed", /^Deepweed\s*\(drogue\)/i, "Deepweed",
+        "Donne la perception astrale pendant la scène (Éveillés : Avantage aux tests de perception astrale)",
+        "Désavantage à tous les tests pendant la scène suivante"),
+      Drug_anarchy("kamikaze", /^Kamikaze\s*\(drogue\)/i, "Kamikaze",
+        "VD +1 en combat rapproché et Avantage aux tests de Force pendant la scène ; ne bat jamais en retraite",
+        "Désavantage à tous les tests pendant la scène suivante (épuisement)"),
+      Drug_anarchy("longhaul", /^Long\s*Haul\s*\(drogue\)/i, "Long Haul",
+        "Reste éveillé sans malus de fatigue pendant plusieurs jours",
+        "Sommeil inévitable de 8 heures au contrecoup ; Désavantage jusqu'au repos"),
+      Drug_anarchy("nitro", /^Nitro\s*\(drogue\)/i, "Nitro",
+        "VD +2 à mains nues et Avantage aux tests de Force pendant la scène",
+        "Désavantage à tous les tests pendant la scène suivante (contrecoup brutal)"),
+      Drug_anarchy("novacoke", /^Novacoke\s*\(drogue\)/i, "Novacoke",
+        "Avantage aux tests d'Influence pendant la scène",
+        "Désavantage à tous les tests pendant la scène suivante (irritabilité)"),
+      Drug_anarchy("psyche", /^Psych[eé]\s*\(drogue\)/i, "Psyché",
+        "Éveillés : Avantage aux tests de Sorcellerie et de Conjuration pendant la scène",
+        "Désavantage à tous les tests pendant la scène suivante"),
+      Drug_anarchy("zen", /^Zen\s*\(drogue\)/i, "Zen",
+        "Avantage pour résister à la peur, à l'intimidation et au stress pendant la scène",
+        "Désavantage à tous les tests pendant la scène suivante (passivité)"),
     ],
   },
 
   /** Retrouve la définition de drogue correspondant à un libellé
-      d'équipement (source "equip") ou d'atout (source "edges"). */
+      d'équipement (source "equip") ou d'atout (source "edges").
+      En Anarchy les drogues sont des atouts d'équipement : elles peuvent
+      apparaître dans les deux listes, la source n'est pas filtrée. */
   matchItem(item, edition, source) {
     if (typeof item !== "string") return null;
     const table = this.CATALOG[edition] || [];
     return (
-      table.find((d) => (d.source || "equip") === source && d.match.test(item)) ||
-      null
+      table.find(
+        (d) =>
+          (edition === "anarchy" || (d.source || "equip") === source) &&
+          d.match.test(item),
+      ) || null
     );
   },
 

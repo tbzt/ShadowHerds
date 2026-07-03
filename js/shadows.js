@@ -46,8 +46,11 @@ const Shadows = {
   },
 
   _pickGroupThenSave(pnj, groups) {
-    // Afficher un mini-picker inline
-    const card = document.querySelector(`.pnj-card[data-id="${pnj.id}"]`);
+    // Afficher un mini-picker inline (sur la carte du générateur — un PNJ
+    // déjà rendu ailleurs pourrait exister en double dans le DOM)
+    const card =
+      document.querySelector(`#panel-generator .pnj-card[data-id="${pnj.id}"]`) ||
+      document.querySelector(`.pnj-card[data-id="${pnj.id}"]`);
     if (!card) {
       this._doSave(pnj, null);
       return;
@@ -102,15 +105,18 @@ const Shadows = {
     this.render();
     toast(`✓ ${pnj.name} ajouté aux Ombres${group ? ` → ${group}` : ""}.`);
 
-    // Mettre à jour le footer de la card dans le générateur
-    const card = document.querySelector(`.pnj-card[data-id="${pnj.id}"]`);
+    // Basculer la card du générateur en mode « sauvegardé » : on change
+    // ses actions (data-saved-actions) puis on rafraîchit — refresh()
+    // met à jour TOUTES les copies (générateur + Ombres), chacune avec
+    // ses propres actions.
+    const card = document.querySelector(
+      `#panel-generator .pnj-card[data-id="${pnj.id}"]`,
+    );
     if (card) {
       const footer = card.querySelector(".pnj-card-footer");
-      if (footer) {
-        footer.innerHTML = `<span class="card-saved-label">✓ Sauvegardé</span>
-          <button class="card-action-btn ghost" onclick="EditModal.open('${pnj.id}')">Éditer</button>`;
-      }
+      if (footer) footer.dataset.savedActions = JSON.stringify(["saved", "edit"]);
     }
+    CardRenderer.refresh(pnj);
   },
 
   /* ---- Supprimer un PNJ (et ses entités liées) ---- */

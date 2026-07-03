@@ -4704,3 +4704,82 @@ input[type="range"]#risk-dice-slider {
   color: var(--text);
   cursor: pointer;
 }
+
+/* ============================================================
+   FILTRES REPLIABLES DU GÉNÉRATEUR
+   .gen-filters garde `display:contents` pour que ses champs restent
+   des items de la grille .gen-form ; replié, tout disparaît.
+   ============================================================ */
+.filters-toggle {
+  grid-column: 1 / -1;
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 7px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  transition: color 0.12s, border-color 0.12s;
+}
+.filters-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.gen-filters {
+  display: contents;
+}
+.gen-filters.collapsed {
+  display: none;
+}
+
+/* ============================================================
+   ANARCHY — seuils de blessures en zone Combat + armures optionnelles
+   ============================================================ */
+.combat-seuils {
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+.combat-seuils .anarchy-seuil-label {
+  width: auto;
+  min-width: 92px;
+}
+.armor-bonus-note {
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: normal;
+}
+.armor-chip.deployed {
+  border-color: var(--accent);
+}
+
+/* ============================================================
+   JOURNAL DES JETS — nom du PNJ à l'origine du jet
+   ============================================================ */
+.dice-log-who {
+  color: var(--accent);
+  font-weight: 600;
+}
+.dice-log-who::after {
+  content: " ·";
+  color: var(--text-dim);
+  font-weight: 400;
+}
+.dice-summary-who {
+  display: block;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 2px;
+}

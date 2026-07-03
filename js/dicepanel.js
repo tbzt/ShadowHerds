@@ -194,9 +194,14 @@ const DiceLog = {
     };
     list.innerHTML = Dice.history
       .map((e) => {
+        const who = e.who
+          ? `<span class="dice-log-who">${Dice._escSummary(e.who)}</span> `
+          : "";
         const label = e.label
-          ? `<span class="dice-log-label">${Dice._escSummary(e.label)}</span>`
-          : `<span class="dice-log-label dim">Jet libre</span>`;
+          ? `<span class="dice-log-label">${who}${Dice._escSummary(e.label)}</span>`
+          : e.who
+            ? `<span class="dice-log-label">${who}</span>`
+            : `<span class="dice-log-label dim">Jet libre</span>`;
         const tag = e.tag
           ? `<span class="dice-log-tag ${e.cls}">${Dice._escSummary(e.tag)}</span>`
           : "";
