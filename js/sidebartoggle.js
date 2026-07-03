@@ -9,7 +9,7 @@
 const SidebarToggle = {
   _key: "sr_pnj_v2_global_sidebar_collapsed",
   _mobileBreakpoint: 640,
-  state: { shadows: false, contacts: false },
+  state: { shadows: false, contacts: false, matrix: false },
 
   init() {
     // Restaurer l'état persisté
@@ -19,6 +19,8 @@ const SidebarToggle = {
         this.state.shadows = saved.shadows;
       if (typeof saved.contacts === "boolean")
         this.state.contacts = saved.contacts;
+      if (typeof saved.matrix === "boolean")
+        this.state.matrix = saved.matrix;
     } catch {
       /* noop */
     }
@@ -27,10 +29,12 @@ const SidebarToggle = {
     if (this._isMobile() && localStorage.getItem(this._key) === null) {
       this.state.shadows = true;
       this.state.contacts = true;
+      this.state.matrix = true;
     }
 
     this._apply("shadows");
     this._apply("contacts");
+    this._apply("matrix");
   },
 
   _isMobile() {

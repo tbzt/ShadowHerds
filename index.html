@@ -9,7 +9,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500&family=Oswald:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=23">
+  <link rel="stylesheet" href="css/base.css?v=24">
   <link rel="stylesheet" href="css/theme-sr5.css?v=16">
   <link rel="stylesheet" href="css/theme-sr6.css?v=16">
   <link rel="stylesheet" href="css/theme-anarchy.css?v=16">
@@ -97,6 +97,9 @@
         <span class="nav-section-label">Outils</span>
         <button class="nav-btn" data-panel="contacts" onclick="App.showPanel('contacts')">
           <span class="nav-icon">◉</span><span class="nav-label">Contacts</span>
+        </button>
+        <button class="nav-btn" data-panel="matrix" onclick="App.showPanel('matrix')">
+          <span class="nav-icon">⌗</span><span class="nav-label">Matrice</span>
         </button>
         <button class="nav-btn" data-panel="run" onclick="App.showPanel('run')">
           <span class="nav-icon">▶</span><span class="nav-label">Run</span>
@@ -218,6 +221,40 @@
           </div>
         </div>
 
+        <!-- MATRICE : SERVEURS & CI -->
+        <div class="panel" id="panel-matrix">
+          <div class="panel-title">Matrice — Serveurs & CI</div>
+          <div class="shadows-layout" data-sidebar="matrix">
+            <div class="sidebar-backdrop" onclick="SidebarToggle.close('matrix')"></div>
+            <button class="sidebar-reopen" onclick="SidebarToggle.open('matrix')" title="Afficher les groupes"
+              aria-label="Afficher les groupes">
+              <span class="sidebar-reopen-icon">›</span>
+              <span class="sidebar-reopen-label">Groupes</span>
+            </button>
+            <aside class="shadows-sidebar">
+              <div class="shadows-sidebar-header">
+                <button class="sidebar-collapse-btn" onclick="SidebarToggle.close('matrix')" title="Replier"
+                  aria-label="Replier les groupes">‹</button>
+                <span class="shadows-sidebar-title">Groupes</span>
+                <button class="btn-icon" onclick="Servers.addGroup()" title="Nouveau groupe">＋</button>
+              </div>
+              <div id="servers-group-list"></div>
+            </aside>
+            <div class="shadows-main">
+              <div class="contacts-gen-bar">
+                <div id="server-gen-form"></div>
+                <div class="shadows-main-toolbar">
+                  <button class="btn-primary btn-small" onclick="Servers.createFromForm()">Créer le serveur</button>
+                  <span id="servers-group-label" class="shadows-group-label">Tous les serveurs</span>
+                  <input class="grid-filter" type="search" placeholder="Filtrer…"
+                    aria-label="Filtrer les serveurs" oninput="Servers.setFilter(this.value)">
+                </div>
+              </div>
+              <div class="cards-zone" id="servers-grid"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- RUN -->
         <div class="panel" id="panel-run">
           <div class="panel-title">Générateur de run</div>
@@ -243,6 +280,9 @@
       </button>
       <button class="bnav-btn" data-panel="contacts" onclick="App.showPanel('contacts')">
         <span class="bnav-icon">◉</span><span class="bnav-label">Contacts</span>
+      </button>
+      <button class="bnav-btn" data-panel="matrix" onclick="App.showPanel('matrix')">
+        <span class="bnav-icon">⌗</span><span class="bnav-label">Matrice</span>
       </button>
       <button class="bnav-btn" data-panel="run" onclick="App.showPanel('run')">
         <span class="bnav-icon">▶</span><span class="bnav-label">Run</span>
@@ -289,7 +329,7 @@
   <div id="toast" role="status" aria-live="polite"></div>
 
   <!-- SCRIPTS — ordre important : utils → storage → éditions → ui → modules → app -->
-  <script src="js/utils.js?v=19"></script>
+  <script src="js/utils.js?v=20"></script>
   <script src="js/storage.js?v=16"></script>
   <script src="js/metavariants.js?v=17"></script>
   <script src="js/infected.js?v=21"></script>
@@ -306,9 +346,10 @@
   <script src="js/vehicles.js?v=2"></script>
   <script src="js/spirits.js?v=4"></script>
   <script src="js/creatures.js?v=2"></script>
+  <script src="js/servers.js?v=1"></script>
   <script src="js/ui.js?v=27"></script>
   <script src="js/dicepanel.js?v=4"></script>
-  <script src="js/sidebartoggle.js?v=16"></script>
+  <script src="js/sidebartoggle.js?v=17"></script>
   <script src="js/profcategories.js?v=17"></script>
   <script src="js/multiselect.js?v=16"></script>
   <script src="js/generator.js?v=21"></script>
@@ -317,8 +358,8 @@
   <script src="js/extras.js?v=18"></script>
   <script src="js/contactgen.js?v=16"></script>
   <script src="js/settings.js?v=17"></script>
-  <script src="js/backup.js?v=16"></script>
-  <script src="js/app.js?v=17"></script>
+  <script src="js/backup.js?v=17"></script>
+  <script src="js/app.js?v=18"></script>
 
 </body>
 

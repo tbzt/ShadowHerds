@@ -790,6 +790,11 @@ const Dice = {
       const p = Shadows.data.all.find((x) => x.id === id);
       if (p) return p;
     }
+    // Spiders liés aux serveurs (panneau Matrice)
+    if (typeof Servers !== "undefined" && Servers.findSpider) {
+      const p = Servers.findSpider(id);
+      if (p) return p;
+    }
     return null;
   },
 
@@ -1022,7 +1027,8 @@ const Dice = {
     }
   },
 
-  /** Sauvegarde (si le PNJ est dans les Ombres) et rafraîchit sa carte. */
+  /** Sauvegarde (si le PNJ est dans les Ombres ou spider d'un serveur)
+      et rafraîchit sa carte. */
   _persistAndRefresh(pnj) {
     if (
       typeof Shadows !== "undefined" &&
@@ -1031,6 +1037,9 @@ const Dice = {
       Shadows.data.all.some((p) => p.id === pnj.id)
     ) {
       Shadows.save();
+    }
+    if (typeof Servers !== "undefined" && Servers.ownsPnj && Servers.ownsPnj(pnj.id)) {
+      Servers.save();
     }
     if (typeof CardRenderer !== "undefined" && CardRenderer.refresh) {
       CardRenderer.refresh(pnj);

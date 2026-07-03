@@ -4783,3 +4783,429 @@ input[type="range"]#risk-dice-slider {
   color: var(--accent);
   margin-bottom: 2px;
 }
+
+/* ============================================================
+   MATRICE — SERVEURS & CI (panneau, cartes, tracker d'intrusion)
+   ============================================================ */
+.contact-form input[type="text"] {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem 0.5rem;
+  color: var(--text);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.74rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.contact-form input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.server-form-flags {
+  align-items: center;
+}
+.ic-choice {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.35rem !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+  cursor: pointer;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: 0.7rem !important;
+  color: var(--text) !important;
+}
+.server-ic-details summary {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.server-ic-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.9rem;
+  padding: 0.5rem 0 0.15rem;
+}
+
+/* ---- Carte serveur ---- */
+.server-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  width: 340px;
+  max-width: 100%;
+  overflow: hidden;
+  animation: cardIn 0.3s ease;
+}
+.server-card::before {
+  content: "";
+  display: block;
+  height: 2px;
+  background: var(--accent);
+}
+.server-card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem 0.15rem;
+}
+.server-name {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.02rem;
+  color: var(--text);
+  min-width: 0;
+}
+.server-badge {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.62rem;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  padding: 1px 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.server-card-body {
+  padding: 0 1rem 0.7rem;
+}
+.server-profile {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  color: var(--accent2);
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+.server-attrs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+.server-attr {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 3px 8px;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+.server-attr b {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.server-thresholds {
+  font-size: 0.66rem;
+  color: var(--text-dim);
+  line-height: 1.45;
+  margin-bottom: 6px;
+}
+.server-thresholds b {
+  color: var(--text);
+}
+.server-sculpture {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-style: italic;
+  line-height: 1.45;
+  margin-bottom: 7px;
+}
+.server-ic-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 7px;
+}
+.ic-chip {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.62rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 7px;
+  cursor: help;
+}
+.ic-chip.watch {
+  color: var(--accent2);
+  border-color: var(--accent2);
+}
+.server-notes {
+  width: 100%;
+  min-height: 34px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: "Inter", sans-serif;
+  font-size: 0.72rem;
+  padding: 5px 7px;
+  resize: vertical;
+}
+.server-notes:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.server-card-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 0.5rem 1rem 0.65rem;
+  border-top: 1px solid var(--border);
+}
+.server-card-footer .btn-secondary.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-icon.danger {
+  color: var(--danger, #d33);
+  border-color: var(--danger, #d33);
+  margin-left: auto;
+}
+
+/* ---- Tracker d'intrusion ---- */
+.intrusion-panel {
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 8px 9px;
+  margin-bottom: 8px;
+}
+.intrusion-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.intrusion-turn {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+.intrusion-turn b {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--accent);
+}
+.btn-secondary.alert-on {
+  border-color: var(--danger, #d33);
+  color: var(--danger, #d33);
+  animation: pulseAlert 1.6s ease-in-out infinite;
+}
+@keyframes pulseAlert {
+  50% { opacity: 0.55; }
+}
+.ic-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.ic-row {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 5px 7px;
+  opacity: 0.62;
+}
+.ic-row.on {
+  opacity: 1;
+  border-color: var(--accent2);
+}
+.ic-row.dead {
+  opacity: 0.8;
+  border-style: dashed;
+}
+.ic-row-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+.ic-row-name {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+.ic-status {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.56rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 3px;
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.ic-status.active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.ic-status.watch {
+  color: var(--accent2);
+  border-color: var(--accent2);
+}
+.ic-status.down {
+  color: var(--danger, #d33);
+  border-color: var(--danger, #d33);
+  text-decoration: line-through;
+}
+.ic-row-effect {
+  font-size: 0.66rem;
+  color: var(--text-dim);
+  line-height: 1.45;
+  margin-bottom: 3px;
+}
+.ic-row-effect b {
+  color: var(--text);
+}
+
+/* ---- Score de Surveillance / DIEU ---- */
+.ss-block {
+  border-top: 1px dashed var(--border);
+  padding-top: 7px;
+}
+.ss-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 4px;
+}
+.ss-value {
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+.ss-value.cool { color: var(--text); }
+.ss-value.warm { color: var(--accent2); }
+.ss-value.hot { color: var(--accent); }
+.ss-value.conv { color: var(--danger, #d33); }
+.ss-gauge {
+  height: 9px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+  /* graduations à 10 / 20 / 30 */
+  background-image: linear-gradient(
+    to right,
+    transparent calc(25% - 1px), var(--border) 25%,
+    transparent calc(25% + 1px), transparent calc(50% - 1px),
+    var(--border) 50%, transparent calc(50% + 1px),
+    transparent calc(75% - 1px), var(--border) 75%, transparent calc(75% + 1px)
+  );
+}
+.ss-fill {
+  height: 100%;
+  transition: width 0.25s ease;
+}
+.ss-fill.cool { background: var(--accent2); }
+.ss-fill.warm { background: var(--accent2); }
+.ss-fill.hot { background: var(--accent); }
+.ss-fill.conv {
+  background: var(--danger, #d33);
+  animation: pulseAlert 1.2s ease-in-out infinite;
+}
+.ss-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 5px;
+}
+.ss-actions-label {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+.ss-marks {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+.ss-marks b {
+  font-family: var(--font-display);
+  color: var(--text);
+}
+.ss-marks small {
+  font-size: 0.6rem;
+  flex-basis: 100%;
+  line-height: 1.35;
+}
+.ss-effects {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+  margin-bottom: 5px;
+}
+.ss-effects.on {
+  color: var(--text);
+}
+.ss-effects b {
+  font-family: var(--font-display);
+  color: var(--accent);
+}
+.ss-convergence {
+  border: 1px solid var(--danger, #d33);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--danger, #d33) 12%, transparent);
+  color: var(--text);
+  font-size: 0.7rem;
+  line-height: 1.45;
+  padding: 6px 8px;
+  margin-bottom: 5px;
+}
+.ss-log {
+  border-top: 1px dashed var(--border);
+  padding-top: 4px;
+  max-height: 96px;
+  overflow-y: auto;
+}
+.ss-log-item {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.ss-log-item span {
+  opacity: 0.7;
+  margin-right: 4px;
+}
+.ss-log-item b {
+  color: var(--text);
+  margin-right: 4px;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .server-card {
+    width: 100%;
+  }
+  .ss-actions .btn-small {
+    padding: 5px 9px;
+  }
+}

@@ -18,6 +18,7 @@ const App = {
           <li><strong>Ombres portées</strong> — Bibliothèque de PNJ sauvegardés, organisés en groupes. Sidebar de navigation à gauche.</li>
           <li><strong>Générateur PNJ</strong> — 48 professions, 5 métatypes, 8 attributs, Limites (Physique / Mental / Social), compétences tirées dans un pool, équipement authentique du livre.</li>
           <li><strong>Contacts</strong> — 24 types de contacts avec Influence (1–12) et Loyauté (1–6), lieux, traits de personnalité, champ Notes et groupes.</li>
+          <li><strong>Matrice</strong> — Serveurs (indice 1–12, attributs ASDF), 14 types de CI (p.248–251), tracker d'intrusion avec Score de Surveillance (+2D6/15 min, convergence à 40) et marks, spider lié.</li>
           <li><strong>Run</strong> — Ébauche de scénario : type de mission, client, lieu, complication, objectif secondaire, paiement.</li>
         </ul>
         <p>Les PNJ SR5 incluent les <strong>huit attributs</strong>, les <strong>trois Limites naturelles</strong>, l'Essence, deux moniteurs séparés (physique et étourdissement), initiative et résistance au Drain pour les Éveillés. Profils calibrés sur les six niveaux de Professionnalisme.</p>`,
@@ -31,6 +32,7 @@ const App = {
           <li><strong>Ombres portées</strong> — Bibliothèque de PNJ sauvegardés, organisés en groupes. Sidebar de navigation à gauche.</li>
           <li><strong>Générateur PNJ</strong> — 50+ professions, 5 métatypes + 19 métavariantes (Compagnon), Score Défensif, Potentiel d'Actions, Moniteur d'état unique, compétences SR6 regroupées, weapons avec Scores Offensifs (Feu Nourri).</li>
           <li><strong>Contacts</strong> — 24 types de contacts avec Influence et Loyauté, lieux, traits, champ Notes et groupes.</li>
+          <li><strong>Matrice</strong> — Serveurs (indice 1–12, attributs ASDF), 13 types de CI (p.188–189), tracker d'intrusion avec Score de Surveillance (accès illégaux maintenus +1/+3 par round, convergence à 40), spider lié.</li>
           <li><strong>Run</strong> — Ébauche de scénario orientée SR6 : factions, lieux nommés de Seattle, complications.</li>
         </ul>
         <p>Les PNJ SR6 utilisent le <strong>Score Défensif (SD)</strong>, le <strong>Potentiel d'Actions (PA)</strong> et un <strong>Moniteur d'état unique</strong>. Professionnalisme 0–10 calé sur les 20 PNJ de référence du livre (p.212–220). Les métavariantes couvrent Hobgobelin, Oni, Ogre, Satyre, Cyclope, Fomori, Géant, Minotaure, Nocturna, Wakyambi, Dalakitnon, Dryade, Xapiri thëpë, Nartaki, Valkyrie, Duende, Gnome, Hanuman, Koborokuru et Menehune.</p>`,
@@ -44,6 +46,7 @@ const App = {
           <li><strong>Ombres portées</strong> — Bibliothèque de PNJ sauvegardés, organisés en groupes. Sidebar de navigation à gauche.</li>
           <li><strong>Générateur PNJ</strong> — 25 statBlocks officiels du livre : Ganger, Ganger d'élite, Ganger éveillé, Ganger adepte, Ganger decker, Go-ganger, Agent de sécurité, Officier de sécurité, Mage / Decker / Adepte / Rigger de sécurité, versions élite, Médecin de combat, Militaire, Commando, Johnson, Employé corpo, Enquêteur, Cadre corpo, Coyote. Cinq attributs (FOR / AGI / VOL / LOG / CHA), compétences avec réserve de dès et RR, armes avec VD par métatype, atouts fixes et au choix, seuils de blessures.</li>
           <li><strong>Contacts</strong> — 30 types de contacts, avec level (0–6), domaine de Réseau, coût en ¥, champ Notes et groupes.</li>
+          <li><strong>Matrice</strong> — Serveurs (indice 2–7, +1 sécurité physique, p.222), 7 types de glaces à succès fixes (p.223), tracker d'intrusion (une glace par tour, moniteurs 2L/1G/1I), surveillance du DIEU (complications, p.218), spider lié.</li>
           <li><strong>Run</strong> — Ébauche de scénario : types de missions courts, clients, lieux.</li>
         </ul>
         <p>Les PNJ Anarchy incluent les <strong>variantes métatype</strong> sur chaque attribut, arme et threshold de blessure, les <strong>edges au choix</strong>, et la distinction <strong>Éveillé / Adepte</strong> et les spells.</p>`,
@@ -121,6 +124,9 @@ const App = {
       case "contacts":
         ContactsBook.initPanel();
         break;
+      case "matrix":
+        Servers.initPanel();
+        break;
       case "run":
         RunGen.initPanel();
         break;
@@ -138,6 +144,7 @@ const App = {
       "shadows",
       "generator",
       "contacts",
+      "matrix",
       "run",
       "settings",
     ];

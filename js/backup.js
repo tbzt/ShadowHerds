@@ -19,7 +19,14 @@ const Backup = {
   FORMAT: "shadowherds-backup",
   VERSION: 1,
   EDITIONS: ["sr5", "sr6", "anarchy"],
-  KEYS: ["shadows_all", "shadows_groups", "contacts_all", "contacts_groups"],
+  KEYS: [
+    "shadows_all",
+    "shadows_groups",
+    "contacts_all",
+    "contacts_groups",
+    "servers_all",
+    "servers_groups",
+  ],
 
   _rawKey(edition, key) {
     return `sr_pnj_v2_${edition}_${key}`;
@@ -53,17 +60,19 @@ const Backup = {
 
   /** Statistiques lisibles d'un paquet (pour confirmation). */
   stats(pkg) {
-    const out = { pnj: 0, contacts: 0, editions: [] };
+    const out = { pnj: 0, contacts: 0, servers: 0, editions: [] };
     const data = pkg && pkg.data ? pkg.data : {};
     for (const ed of this.EDITIONS) {
       const b = data[ed];
       if (!b) continue;
       const pnj = (b.shadows_all || []).length;
       const contacts = (b.contacts_all || []).length;
-      if (pnj || contacts) {
-        out.editions.push({ edition: ed, pnj, contacts });
+      const servers = (b.servers_all || []).length;
+      if (pnj || contacts || servers) {
+        out.editions.push({ edition: ed, pnj, contacts, servers });
         out.pnj += pnj;
         out.contacts += contacts;
+        out.servers += servers;
       }
     }
     return out;
@@ -73,7 +82,7 @@ const Backup = {
   export() {
     const pkg = this.build();
     const s = this.stats(pkg);
-    if (s.pnj === 0 && s.contacts === 0) {
+    if (s.pnj === 0 && s.contacts === 0 && s.servers === 0) {
       toast("Rien à exporter pour le moment.");
       return;
     }
@@ -88,7 +97,7 @@ const Backup = {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    toast(`Export : ${s.pnj} PNJ, ${s.contacts} contacts.`);
+    toast(`Export : ${s.pnj} PNJ, ${s.contacts} contacts, ${s.servers} serveurs.`);
   },
 
   /* ---- Validation d'un paquet importé ---- */
@@ -176,7 +185,7 @@ const Backup = {
     this._reloadActive();
     const s = this.stats(pkg);
     toast(
-      `Import ${mode === "replace" ? "(remplacement)" : "(fusion)"} : ${s.pnj} PNJ, ${s.contacts} contacts.`,
+      `Import ${mode === "replace" ? "(remplacement)" : "(fusion)"} : ${s.pnj} PNJ, ${s.contacts} contacts, ${s.servers} serveurs.`,
     );
     return true;
   },
@@ -201,7 +210,7 @@ const Backup = {
   /** Fusion : ajoute les éléments dont l'id est absent, fusionne les groupes. */
   _mergeEdition(edition, incoming) {
     // PNJ et contacts : fusion par id
-    for (const listKey of ["shadows_all", "contacts_all"]) {
+    for (const listKey of ["shadows_all", "contacts_all", "servers_all"]) {
       if (!Array.isArray(incoming[listKey])) continue;
       const current = this._readRaw(edition, listKey, []);
       const byId = new Set(current.map((x) => x && x.id));
@@ -215,7 +224,7 @@ const Backup = {
     }
 
     // Groupes : fusion par clé ; les membres (tableaux d'ids) sont unifiés
-    for (const groupKey of ["shadows_groups", "contacts_groups"]) {
+    for (const groupKey of ["shadows_groups", "contacts_groups", "servers_groups"]) {
       if (!incoming[groupKey] || typeof incoming[groupKey] !== "object") continue;
       const current = this._readRaw(edition, groupKey, {});
       for (const [gname, members] of Object.entries(incoming[groupKey])) {
@@ -240,6 +249,10 @@ const Backup = {
     if (typeof ContactsBook !== "undefined" && ContactsBook.load) {
       ContactsBook.load();
       if (ContactsBook.render) ContactsBook.render();
+    }
+    if (typeof Servers !== "undefined" && Servers.load) {
+      Servers.load();
+      if (Servers.render) Servers.render();
     }
   },
 
