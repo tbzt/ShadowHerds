@@ -4411,6 +4411,111 @@ input[type="range"]#risk-dice-slider {
   }
 }
 
+/* ---- Esprits invoqués ---- */
+.spirit-card {
+  border-left-color: var(--accent2);
+}
+.spirit-header .pnj-name {
+  font-size: 1rem;
+}
+.spirit-services {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-bottom: 1px dashed var(--border);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.62rem;
+  color: var(--text-dim);
+}
+.spirit-services-pips {
+  display: flex;
+  gap: 4px;
+}
+.service-pip {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--accent2);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.service-pip:hover {
+  background: var(--glow);
+}
+.service-pip.used {
+  background: var(--accent2);
+  opacity: 0.55;
+}
+.spirit-services-count {
+  margin-left: auto;
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* Panneau d'invocation (réutilise l'habillage .risk-panel) */
+.summon-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+.summon-row-label {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  min-width: 70px;
+}
+.summon-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.summon-step-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.7rem;
+  padding: 4px 9px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.summon-step-btn:hover {
+  border-color: var(--accent);
+}
+.summon-step-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+}
+.summon-types {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 12px;
+}
+.summon-type-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 9px 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.summon-type-btn:hover {
+  border-color: var(--accent2);
+  background: var(--glow);
+  color: var(--accent2);
+}
+
 /* Flash de localisation (badge « lié à », re-clic sur une chip) */
 .pnj-card.card-flash {
   animation: card-flash 1.2s ease-out;

@@ -33,6 +33,7 @@ const CardRenderer = {
   /* ---- Header ---- */
   _header(pnj) {
     if (pnj.type === "vehicle") return this._headerVehicle(pnj);
+    if (pnj.type === "spirit") return this._headerSpirit(pnj);
     const gIcon = { M: "♂", F: "♀", NB: "⚧" }[pnj.gender] || "";
     let badge = "";
 
@@ -98,9 +99,41 @@ const CardRenderer = {
     </div>`;
   },
 
+  /* ---- Header esprit invoqué ---- */
+  _headerSpirit(sp) {
+    const badge =
+      sp.edition === "anarchy"
+        ? `<span class="pnj-rank-badge vehicle-badge">${this._esc(sp.tier || "Esprit")}</span>`
+        : `<span class="pnj-rank-badge vehicle-badge">P ${sp.force}</span>`;
+    return `<div class="pnj-card-header vehicle-header spirit-header">
+      <div class="pnj-header-left">
+        <div class="pnj-name">✦ ${this._esc(sp.name)}</div>
+        <div class="pnj-meta">
+          <span class="vehicle-owner-link" role="button" tabindex="0"
+            onclick="UI.focusOwner('${sp.ownerId}')"
+            title="Retrouver ${this._esc(sp.ownerName)}">↳ invoqué par ${this._esc(sp.ownerName)}</span>
+        </div>
+      </div>
+      ${badge}
+    </div>`;
+  },
+
   /* ---- Body ---- */
   _body(pnj) {
     if (pnj.type === "vehicle") return this._bodyVehicle(pnj);
+    // Les esprits sont des objets PNJ standards : le corps d'édition les
+    // rend tel quel (jets, moniteurs, RR). Seule la barre de services est
+    // injectée en tête.
+    if (pnj.type === "spirit") {
+      let core;
+      switch (pnj.edition) {
+        case "sr5": core = this._bodySR5(pnj); break;
+        case "sr6": core = this._bodySR6(pnj); break;
+        case "anarchy": core = this._bodyAnarchy(pnj); break;
+        default: return '<div class="pnj-card-body">—</div>';
+      }
+      return this._spiritServicesBar(pnj) + core;
+    }
     let core;
     switch (pnj.edition) {
       case "sr5":
@@ -449,6 +482,35 @@ const CardRenderer = {
     return `<div class="combat-drugs vehicle-chips">${chips}</div>`;
   },
 
+  /** Barre de services d'un esprit : pips cliquables (services rendus). */
+  _spiritServicesBar(sp) {
+    const total = sp.services || 0;
+    const used = sp.servicesUsed || 0;
+    const pips = Array.from({ length: total }, (_, i) => {
+      const cls = i < used ? "service-pip used" : "service-pip";
+      return `<span class="${cls}" onclick="UI.toggleService('${sp.id}',${i})" title="Service ${i + 1}${i < used ? " (rendu)" : ""}"></span>`;
+    }).join("");
+    return `<div class="spirit-services" title="Services dus par l'esprit — cliquer pour marquer un service rendu">
+      <span class="spirit-services-label">Services</span>
+      <span class="spirit-services-pips">${pips}</span>
+      <span class="spirit-services-count">${total - used}/${total}</span>
+    </div>`;
+  },
+
+  /** Chip « Invoquer » dans la zone Combat des conjurateurs. */
+  _spiritChipRow(pnj) {
+    if (typeof Spirits === "undefined" || !Spirits.canSummon(pnj)) return "";
+    const active = Spirits.linkedTo(pnj.id).length;
+    const state = active
+      ? `<span class="vehicle-chip-state on">● ${active}</span>`
+      : '<span class="vehicle-chip-state">▸ invoquer</span>';
+    return `<div class="combat-drugs spirit-chips">
+      <span class="tag vehicle-chip spirit-chip${active ? " deployed" : ""}" role="button" tabindex="0"
+        onclick="UI.openSummonPanel('${pnj.id}')"
+        title="Invoquer un esprit lié à ce PNJ">✦ Esprit${state}</span>
+    </div>`;
+  },
+
   _bodySR5(pnj) {
     const {
       attrs,
@@ -502,6 +564,7 @@ const CardRenderer = {
     html += this._weaponBlock(pnj, weapons, "sr5");
     html += this._drugRow(pnj, "sr5");
     html += this._vehicleChipRow(pnj);
+    html += this._spiritChipRow(pnj);
     html += "</div>"; // fin combat-zone
 
     // ---- ZONE CAPACITÉS ----
@@ -592,6 +655,7 @@ const CardRenderer = {
     html += this._weaponBlock(pnj, weapons, "sr6");
     html += this._drugRow(pnj, "sr6");
     html += this._vehicleChipRow(pnj);
+    html += this._spiritChipRow(pnj);
     html += "</div>"; // fin combat-zone
 
     // ---- ZONE CAPACITÉS ----
@@ -715,6 +779,7 @@ const CardRenderer = {
     }
     html += this._drugRow(pnj, "anarchy");
     html += this._vehicleChipRow(pnj);
+    html += this._spiritChipRow(pnj);
     html += "</div>"; // fin combat-zone
 
     // ---- ZONE CAPACITÉS ----
@@ -1036,6 +1101,12 @@ const CardRenderer = {
         <button class="card-action-btn danger" onclick="UI.dismissVehicle('${pnj.id}')">Ranger</button>
       </div>`;
     }
+    if (pnj.type === "spirit") {
+      return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>
+        <button class="card-action-btn ghost" onclick="EditModal.open('${pnj.id}')">Éditer</button>
+        <button class="card-action-btn danger" onclick="UI.dismissSpirit('${pnj.id}')">Congédier</button>
+      </div>`;
+    }
     const btns = [];
     if (actions.includes("save")) {
       btns.push(
@@ -1201,6 +1272,178 @@ const UI = {
       return [];
     const src = [...(pnj.equip || []), ...(pnj.edition === "anarchy" ? pnj.edges || [] : [])];
     return src.filter((i) => Vehicles.matchItem(i, pnj.edition));
+  },
+
+  /* ========================================================
+     ESPRITS INVOQUÉS (js/spirits.js)
+     ======================================================== */
+  _summon: null, // état du panneau : { ownerId, force, tier, services }
+
+  /** Panneau d'invocation singleton (pattern du panneau de risque). */
+  _ensureSummonPanel() {
+    if (document.getElementById("summon-panel")) return;
+    const p = document.createElement("div");
+    p.id = "summon-panel";
+    p.className = "risk-panel-overlay";
+    p.setAttribute("hidden", "");
+    p.innerHTML = `
+      <div class="risk-panel" role="dialog" aria-label="Invocation d'esprit">
+        <div class="risk-panel-head">
+          <span class="risk-panel-title" id="summon-title">Invoquer un esprit</span>
+          <button class="risk-panel-close" id="summon-close" aria-label="Fermer">✕</button>
+        </div>
+        <div class="summon-row" id="summon-power-row">
+          <span class="summon-row-label" id="summon-power-label">Puissance</span>
+          <div class="summon-steps" id="summon-power-steps"></div>
+        </div>
+        <div class="summon-row">
+          <span class="summon-row-label">Services</span>
+          <div class="summon-steps" id="summon-service-steps"></div>
+        </div>
+        <div class="summon-types" id="summon-types"></div>
+      </div>`;
+    document.body.appendChild(p);
+    p.addEventListener("click", (e) => {
+      if (e.target === p) this._closeSummonPanel();
+    });
+    document.getElementById("summon-close").addEventListener("click", () =>
+      this._closeSummonPanel(),
+    );
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !p.hasAttribute("hidden")) this._closeSummonPanel();
+    });
+
+    document.getElementById("summon-power-steps").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-power]");
+      if (!b) return;
+      if (this._summon.edition === "anarchy") this._summon.tier = parseInt(b.dataset.power, 10);
+      else this._summon.force = parseInt(b.dataset.power, 10);
+      this._syncSummonPanel();
+    });
+    document.getElementById("summon-service-steps").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-services]");
+      if (!b) return;
+      this._summon.services = parseInt(b.dataset.services, 10);
+      this._syncSummonPanel();
+    });
+    document.getElementById("summon-types").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-spirit-type]");
+      if (!b) return;
+      this._doSummon(b.dataset.spiritType);
+    });
+  },
+
+  openSummonPanel(ownerId) {
+    const owner = this._findPNJ(ownerId);
+    if (!owner) return;
+    this._ensureSummonPanel();
+    this._summon = {
+      ownerId,
+      edition: owner.edition,
+      force: Utils.clamp((owner.attrs && owner.attrs.MAG) || 4, 1, 12),
+      tier: 1,
+      services: 3,
+    };
+    document.getElementById("summon-title").textContent =
+      `Invoquer — ${owner.name || "PNJ"}`;
+    document.getElementById("summon-power-label").textContent =
+      owner.edition === "anarchy" ? "Niveau" : "Puissance";
+    this._syncSummonPanel();
+    const p = document.getElementById("summon-panel");
+    p.removeAttribute("hidden");
+    void p.offsetWidth;
+    p.classList.add("show");
+  },
+
+  _closeSummonPanel() {
+    const p = document.getElementById("summon-panel");
+    if (!p) return;
+    p.classList.remove("show");
+    clearTimeout(p._t);
+    p._t = setTimeout(() => p.setAttribute("hidden", ""), 200);
+  },
+
+  _syncSummonPanel() {
+    const s = this._summon;
+    const powerEl = document.getElementById("summon-power-steps");
+    if (s.edition === "anarchy") {
+      powerEl.innerHTML = Spirits.ANARCHY_TIERS.map(
+        (label, i) =>
+          `<button class="summon-step-btn${s.tier === i ? " active" : ""}" data-power="${i}">${label}</button>`,
+      ).join("");
+    } else {
+      powerEl.innerHTML = [2, 3, 4, 5, 6, 7, 8]
+        .map(
+          (f) =>
+            `<button class="summon-step-btn${s.force === f ? " active" : ""}" data-power="${f}">${f}</button>`,
+        )
+        .join("");
+    }
+    document.getElementById("summon-service-steps").innerHTML = [1, 2, 3, 4, 5, 6]
+      .map(
+        (n) =>
+          `<button class="summon-step-btn${s.services === n ? " active" : ""}" data-services="${n}">${n}</button>`,
+      )
+      .join("");
+    const types = Spirits.typesFor(s.edition);
+    document.getElementById("summon-types").innerHTML = Object.entries(types)
+      .map(
+        ([key, t]) =>
+          `<button class="summon-type-btn" data-spirit-type="${key}">✦ ${t.label}</button>`,
+      )
+      .join("");
+  },
+
+  _doSummon(typeKey) {
+    const s = this._summon;
+    const owner = this._findPNJ(s.ownerId);
+    if (!owner) return;
+    const spirit = Spirits.spawn(owner, typeKey, {
+      force: s.force,
+      tier: s.tier,
+      services: s.services,
+    });
+    this._closeSummonPanel();
+    if (!spirit) return;
+
+    const inShadows = Shadows.data.all.some((p) => p.id === owner.id);
+    if (inShadows) {
+      Shadows.data.all.push(spirit);
+      Shadows.save();
+    } else {
+      Gen.pool.push(spirit);
+    }
+    const ownerCard = document.querySelector(`.pnj-card[data-id="${owner.id}"]`);
+    if (ownerCard) {
+      const card = CardRenderer.render(spirit, inShadows ? ["remove"] : ["discard"]);
+      card.classList.add("vehicle-card", "spirit-card", "vehicle-deploying");
+      ownerCard.insertAdjacentElement("afterend", card);
+      setTimeout(() => card.classList.remove("vehicle-deploying"), 700);
+    }
+    CardRenderer.refresh(owner);
+  },
+
+  /** Pip de service : marque les services rendus (clic = bascule). */
+  toggleService(spiritId, idx) {
+    const sp = this._findPNJ(spiritId);
+    if (!sp || sp.type !== "spirit") return;
+    sp.servicesUsed = idx < (sp.servicesUsed || 0) ? idx : idx + 1;
+    Shadows.save();
+    CardRenderer.refresh(sp);
+  },
+
+  /** Congédie un esprit : retire sa fiche. */
+  dismissSpirit(spiritId) {
+    const sp = this._findPNJ(spiritId);
+    if (!sp || sp.type !== "spirit") return;
+    Shadows.data.all = Shadows.data.all.filter((p) => p.id !== sp.id);
+    if (typeof Gen !== "undefined" && Gen.pool)
+      Gen.pool = Gen.pool.filter((p) => p.id !== sp.id);
+    const card = document.querySelector(`.pnj-card[data-id="${sp.id}"]`);
+    if (card) card.remove();
+    Shadows.save();
+    const owner = this._findPNJ(sp.ownerId);
+    if (owner) CardRenderer.refresh(owner);
   },
 };
 

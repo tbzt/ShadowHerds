@@ -62,9 +62,16 @@ const EditModal = {
 
     const edModule = App.getEditionModule(pnj.edition);
     if (edModule && edModule.recalc) edModule.recalc(pnj);
+    // Esprit SR6 : moniteur = (Puissance/2)+8 (p.224), pas la formule CON.
+    if (pnj.type === "spirit" && pnj.edition === "sr6" && pnj.force) {
+      pnj.me = Math.ceil(pnj.force / 2) + 8;
+    }
 
     Shadows.save();
-    Shadows.render();
+    if (Shadows.data.all.some((p) => p.id === pnj.id)) {
+      Shadows.render();
+    }
+    CardRenderer.refresh(pnj);
     this.close();
     toast(`${pnj.name} mis à jour.`);
   },
