@@ -32,6 +32,8 @@ const Servers = {
     groups: {},
   },
   currentGroup: "all",
+  /* Cartes en cours d'édition (état d'interface, non persisté) */
+  _editing: {},
 
   /* ========================================================
      CATALOGUES — types de CI par édition
@@ -290,19 +292,53 @@ const Servers = {
     "nœud d'archives",
     "serveur logistique",
   ],
+  /* Sculptures par gamme (sev 0/1/2), inspirées des serveurs décrits
+     dans Data Trails (VF : Métroplexe de Seattle, Saeder-Krupp,
+     Louis Vuitton, secteurs R&D…), Hacker Vaillant (G-men du DIEU,
+     royaumes de la Résonance) et Anarchistes (patrouilleuses en
+     gardes ou animaux territoriaux, icônes reflétant leur fonction). */
   SCULPTURES: [
-    "Château japonais médiéval : jardins zen, personas en kimono, glaces en armure de samouraï.",
-    "Cathédrale gothique de données, vitraux de flux lumineux, échos de chants grégoriens.",
-    "Centre commercial hypersaturé de publicités, mascottes animées et muzak inlassable.",
-    "Open-space corporatiste infini se répétant en fractale, néons blancs, odeur virtuelle de café.",
-    "Jungle luxuriante dont les lianes sont des flux de données, faune-icônes exotique.",
-    "Station orbitale chromée, baies vitrées sur une Terre virtuelle, gravité fantaisiste.",
-    "Speakeasy années 1920 : jazz feutré, fumée volumétrique, videurs en costume rayé.",
-    "Bunker militaire en béton brut, éclairage rouge, sirènes silencieuses, portes blindées.",
-    "Récif corallien bioluminescent, personas-poissons, glaces en requins blancs.",
-    "Bibliothèque infinie aux rayonnages impossibles, fichiers reliés plein cuir.",
-    "Temple aztèque monumental, glyphes de lumière, escaliers processionnels.",
-    "Arcade rétro 8-bit : sprites pixelisés, chiptunes, glaces en fantômes de Pac-Man.",
+    // sev 0 — commerces locaux, sites persos, bas de gamme
+    [
+      "Supérette virtuelle aux rayonnages criards, jingles promotionnels en boucle, caddies-icônes grinçants ; la patrouilleuse est un vigile mal payé qui traîne des pieds.",
+      "Fast-food cartoon aux couleurs saturées ; la mascotte géante suit les visiteurs du regard et note tout.",
+      "Arrière-salle de bar enfumée : néons fatigués, juke-box qui saute, fichiers étalés sur les tables poisseuses.",
+      "Salle d'arcade rétro 8-bit : sprites pixelisés, chiptunes, glaces en fantômes de Pac-Man.",
+      "Bibliothèque de quartier assoupie, poussière virtuelle, fiches cartonnées ; le silence y est une politique de sécurité.",
+      "Garage associatif : établis gras, pièces détachées suspendues, simulation d'odeur d'huile approximative.",
+      "Page perso à l'ancienne devenue lieu : gifs animés, compteur de visites, murs de photos de famille qui vous dévisagent.",
+      "Centre commercial hypersaturé de publicités, mascottes animées et muzak inlassable.",
+      "Chapelle de tôle et de lumière : vitraux pixellisés, cantiques MIDI ; les troncs acceptent les certifiés.",
+    ],
+    // sev 1 — corpos locales, universités, gouvernement
+    [
+      "Ville sculptée dans l'émeraude : structures cristallines flottantes, arêtes d'or et d'ébène, mobilier en pétales de pierre précieuse qui vole en éclats sous les intrusions (façon serveur du Métroplexe de Seattle, Data Trails).",
+      "Tour de bureaux du XXe siècle en noir et blanc purs, sans un gris ; la sécurité n'est que mouvements d'ombre en trenchcoat et Borsalino (façon serveur administratif, Data Trails).",
+      "Boutique de luxe feutrée : vitrines infinies, personnel en gants blancs, clients servis au champagne virtuel (façon serveur Louis Vuitton, Data Trails).",
+      "Commissariat de la Prohibition : G-men en costume, machines à écrire, tampons officiels ; l'autorité en décorum d'époque (façon icônes du DIEU, Hacker Vaillant).",
+      "Open-space corporatiste infini se répétant en fractale, néons blancs, odeur virtuelle de café.",
+      "Campus universitaire idéalisé : pelouses parfaites, amphithéâtres antiques, le savoir coule en fontaines lumineuses.",
+      "Hôpital immaculé : couloirs blancs sans fin, personas-soignants pressés, moniteurs qui bipent des flux de données.",
+      "Studio de trid : plateaux emboîtés, projecteurs aveuglants, câbles-serpents ; tout le monde joue un rôle, surtout la sécurité.",
+      "Jardin japonais idéal : cerisiers perpétuels, pavillons de papier, personas en kimono ; la patrouilleuse est un héron qui arpente son territoire.",
+      "Jungle luxuriante dont les lianes sont des flux de données, faune-icônes exotique ; les glaces chassent en meute.",
+      "Récif corallien bioluminescent, personas-poissons, glaces en requins blancs.",
+    ],
+    // sev 2 — AAA, militaire, clandestin
+    [
+      "Cottage scandinave au creux de fjords virtuels : cubes de chrome et de verre, géométrie escherienne à l'intérieur, glaces en rottweilers dans des couloirs aseptisés (façon Saeder-Krupp, Data Trails).",
+      "Château japonais médiéval : jardins zen, personas en kimono, glaces en armure de samouraï réparties dans des temples-fonctions.",
+      "Pyramide aztèque monumentale : glyphes de lumière, escaliers processionnels, prêtres-personas ; les connexions coupées sont des sacrifices.",
+      "Laboratoire de simulation hyperréaliste : souffleries de données, prototypes sous scellés virtuels, physique irréprochable (façon serveurs R&D, Data Trails).",
+      "Vortex de traitement : plus on approche du cœur du serveur, plus le souffle des données devient un rugissement assourdissant (façon Data Trails).",
+      "Bunker militaire en béton brut, éclairage rouge, sirènes silencieuses, portes blindées ; chaque persona est en treillis.",
+      "Cathédrale gothique de données, vitraux de flux lumineux, échos de chants grégoriens ; les glaces sont des gargouilles qui s'éveillent.",
+      "Station orbitale chromée, baies vitrées sur une Terre virtuelle, gravité à géométrie variable.",
+      "Colline sombre sous un ciel sans étoiles, couverte de pierres tombales de programmes morts ; un glas sonne à chaque erreur (façon royaumes de la Résonance, Hacker Vaillant).",
+      "Speakeasy années 1920 : jazz feutré, fumée volumétrique, videurs en costume rayé ; le mot de passe change à chaque tour.",
+      "Bibliothèque infinie aux rayonnages impossibles, fichiers reliés plein cuir ; les index vivent leur propre vie.",
+      "Noir absolu piqueté d'étoiles de données ; l'horizon virtuel n'existe pas, la sécurité si.",
+    ],
   ],
 
   /* ========================================================
@@ -322,6 +358,26 @@ const Servers = {
 
   find(id) {
     return this.data.all.find((s) => s.id === id);
+  },
+
+  /** Gamme (0/1/2) d'un serveur — stockée à la création, sinon
+      retrouvée depuis son profil (serveurs créés avant ce champ). */
+  sevOf(srv) {
+    if (Number.isFinite(srv.sev)) return Utils.clamp(srv.sev, 0, 2);
+    const p = this.profiles(srv.edition).find((x) => x.label === srv.profile);
+    return p ? p.sev : 1;
+  },
+
+  _pickSculpture(sev) {
+    return Utils.rand(this.SCULPTURES[Utils.clamp(sev, 0, 2)]);
+  },
+
+  rerollSculpture(id) {
+    const srv = this.find(id);
+    if (!srv) return;
+    srv.sculpture = this._pickSculpture(this.sevOf(srv));
+    this.save();
+    this.render();
   },
 
   /** Taille du moniteur matriciel d'une CI. */
@@ -485,10 +541,11 @@ const Servers = {
       name,
       profile: profile.label,
       indice,
+      sev: profile.sev,
       secPhys,
       attrs,
       icList,
-      sculpture: Utils.rand(this.SCULPTURES),
+      sculpture: this._pickSculpture(profile.sev),
       spider: null,
       notes: "",
       intrusion: this._newIntrusion(),
@@ -718,6 +775,45 @@ const Servers = {
     this.render();
   },
 
+  /* ---- Jets des CI (SR5/SR6 — les glaces Anarchy ont des succès
+     fixes et ne lancent jamais les dés, p.223) ----
+     SR5 p.249 : attaque = indice×2 [Attaque] ; encaissement =
+     indice + Firewall (règle des appareils p.229, attributs du
+     serveur). La VF ne détaille pas la réserve de défense : on
+     applique l'usage indice×2. SR6 p.188 : toutes les CI utilisent
+     indice×2 pour la majorité de leurs jets. */
+  rollIC(id, key, kind) {
+    const srv = this.find(id);
+    if (!srv || srv.edition === "anarchy" || typeof Dice === "undefined") return;
+    const i = srv.indice;
+    const a = srv.attrs || {};
+    const ic = this.icCatalog(srv.edition)[key];
+    const name = ic ? ic.label : key;
+
+    let pool = i * 2;
+    let limit = null;
+    let label;
+    if (kind === "atk") {
+      label = `${name} — attaque`;
+      if (srv.edition === "sr5") limit = a.ATQ ?? null;
+    } else if (kind === "def") {
+      label = `${name} — défense`;
+    } else if (kind === "soak") {
+      pool = i + (a.FW || 0);
+      label = `${name} — encaissement (indice + FW)`;
+    } else {
+      label = `${name} — perception matricielle`;
+      if (srv.edition === "sr5") limit = a.TDD ?? null;
+    }
+
+    const res = Dice.computeRoll(pool);
+    if (limit != null && res.hits > limit) {
+      res.cappedFrom = res.hits;
+      res.hits = limit;
+    }
+    Dice._animate(res, { label, who: srv.name });
+  },
+
   /* ---- Marks (SR5) ---- */
   addMarks(id, delta) {
     const srv = this._intr(id);
@@ -824,6 +920,121 @@ const Servers = {
       srv.notes = value;
       this.save();
     }
+  },
+
+  /* ========================================================
+     ÉDITION D'UN SERVEUR
+     Chaque opération sur la liste des CI valide d'abord les
+     champs saisis (_commitEdit) pour ne rien perdre au re-rendu.
+     ======================================================== */
+  toggleEdit(id) {
+    if (this._editing[id]) {
+      this._commitEdit(id);
+      delete this._editing[id];
+    } else {
+      this._editing[id] = true;
+    }
+    this.render();
+  },
+
+  /** Applique les champs du formulaire d'édition au serveur. */
+  _commitEdit(id) {
+    const srv = this.find(id);
+    if (!srv) return;
+    const val = (suffix) => document.getElementById(`se-${id}-${suffix}`);
+
+    const nameEl = val("name");
+    if (nameEl && nameEl.value.trim()) srv.name = nameEl.value.trim();
+    if (srv.spider) srv.spider.ownerName = srv.name;
+
+    const profEl = val("profile");
+    if (profEl) {
+      const p = this.profiles(srv.edition).find((x) => x.id === profEl.value);
+      if (p) {
+        srv.profile = p.label;
+        srv.sev = p.sev;
+      }
+    }
+
+    const indEl = val("indice");
+    if (indEl) {
+      const max = srv.edition === "anarchy" ? 8 : 12;
+      srv.indice = Utils.clamp(parseInt(indEl.value, 10) || srv.indice, 1, max);
+    }
+
+    const spEl = val("secphys");
+    if (spEl) srv.secPhys = spEl.checked;
+
+    if (srv.edition !== "anarchy") {
+      srv.attrs = srv.attrs || {};
+      for (const k of ["ATQ", "COR", "TDD", "FW"]) {
+        const el = val(k.toLowerCase());
+        if (el) srv.attrs[k] = Utils.clamp(parseInt(el.value, 10) || 1, 1, 15);
+      }
+    }
+
+    const scEl = val("sculpture");
+    if (scEl) srv.sculpture = scEl.value.trim();
+
+    this.save();
+  },
+
+  /** Redistribue les attributs ASDF depuis l'indice (indice à indice+3). */
+  redistributeAttrs(id) {
+    this._commitEdit(id);
+    const srv = this.find(id);
+    if (!srv || srv.edition === "anarchy") return;
+    const vals = [srv.indice, srv.indice + 1, srv.indice + 2, srv.indice + 3].sort(
+      () => Math.random() - 0.5,
+    );
+    srv.attrs = { ATQ: vals[0], COR: vals[1], TDD: vals[2], FW: vals[3] };
+    this.save();
+    this.render();
+  },
+
+  /** Relance la sculpture depuis le mode édition (gamme du serveur). */
+  rerollSculptureEdit(id) {
+    this._commitEdit(id);
+    const srv = this.find(id);
+    if (!srv) return;
+    srv.sculpture = this._pickSculpture(this.sevOf(srv));
+    this.save();
+    this.render();
+  },
+
+  /* ---- Liste ordonnée des CI (l'ordre = ordre de déploiement) ---- */
+  moveIC(id, key, dir) {
+    this._commitEdit(id);
+    const srv = this.find(id);
+    if (!srv) return;
+    const list = srv.icList;
+    const i = list.indexOf(key);
+    const j = i + dir;
+    // La Patrouilleuse (index 0) reste en tête
+    if (i < 1 || j < 1 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    this.save();
+    this.render();
+  },
+
+  dropIC(id, key) {
+    this._commitEdit(id);
+    const srv = this.find(id);
+    if (!srv || key === "patrouilleuse") return;
+    srv.icList = srv.icList.filter((k) => k !== key);
+    if (srv.intrusion && srv.intrusion.ics) delete srv.intrusion.ics[key];
+    this.save();
+    this.render();
+  },
+
+  addIC(id) {
+    this._commitEdit(id);
+    const srv = this.find(id);
+    const sel = document.getElementById(`se-${id}-addic`);
+    if (!srv || !sel || !sel.value) return;
+    if (!srv.icList.includes(sel.value)) srv.icList.push(sel.value);
+    this.save();
+    this.render();
   },
 
   /* ========================================================
@@ -1042,30 +1253,132 @@ const Servers = {
         </select>`
       : "";
 
+    const editing = !!this._editing[srv.id];
+    const body = editing
+      ? this._editHTML(srv)
+      : `
+        <div class="server-profile">${esc(srv.profile || "")}${srv.secPhys ? " · sécurité physique (+1)" : ""}</div>
+        ${statsHtml}
+        <div class="server-sculpture">${esc(srv.sculpture || "")}
+          <button class="btn-icon-tiny" onclick="Servers.rerollSculpture('${srv.id}')"
+            title="Relancer la sculpture (gamme du serveur)">🎲</button>
+        </div>
+        <div class="server-ic-row">${chips}</div>
+        ${intr.open ? this._intrusionHTML(srv) : ""}`;
+
     card.innerHTML = `
       <div class="server-card-header">
         <span class="server-name" title="${esc(srv.profile || "")}">${esc(srv.name)}</span>
         <span class="server-badge">Indice ${srv.indice}</span>
       </div>
       <div class="server-card-body">
-        <div class="server-profile">${esc(srv.profile || "")}${srv.secPhys ? " · sécurité physique (+1)" : ""}</div>
-        ${statsHtml}
-        <div class="server-sculpture">${esc(srv.sculpture || "")}</div>
-        <div class="server-ic-row">${chips}</div>
-        ${intr.open ? this._intrusionHTML(srv) : ""}
+        ${body}
         <textarea class="server-notes" placeholder="Notes…"
           onchange="Servers.editNote('${srv.id}', this.value)">${esc(srv.notes || "")}</textarea>
       </div>
       <div class="server-card-footer">
-        <button class="btn-secondary btn-small ${intr.open ? "active" : ""}"
-          onclick="Servers.toggleIntrusion('${srv.id}')">${intr.open ? "Fermer l'intrusion" : "⚡ Intrusion"}</button>
-        ${srv.spider
-          ? `<button class="btn-secondary btn-small" onclick="Servers.removeSpider('${srv.id}')" title="Retirer le spider">Spider ✕</button>`
-          : `<button class="btn-secondary btn-small" onclick="Servers.addSpider('${srv.id}')" title="Générer un decker de sécurité lié">+ Spider</button>`}
-        ${groupSel}
+        ${editing
+          ? `<button class="btn-primary btn-small" onclick="Servers.toggleEdit('${srv.id}')">✓ Terminer</button>`
+          : `<button class="btn-secondary btn-small ${intr.open ? "active" : ""}"
+              onclick="Servers.toggleIntrusion('${srv.id}')">${intr.open ? "Fermer l'intrusion" : "⚡ Intrusion"}</button>
+            <button class="btn-secondary btn-small" onclick="Servers.toggleEdit('${srv.id}')" title="Éditer le serveur">✎ Éditer</button>
+            ${srv.spider
+              ? `<button class="btn-secondary btn-small" onclick="Servers.removeSpider('${srv.id}')" title="Retirer le spider">Spider ✕</button>`
+              : `<button class="btn-secondary btn-small" onclick="Servers.addSpider('${srv.id}')" title="Générer un decker de sécurité lié">+ Spider</button>`}
+            ${groupSel}`}
         <button class="btn-icon danger" onclick="Servers.remove('${srv.id}')" title="Supprimer">✕</button>
       </div>`;
     return card;
+  },
+
+  /* ---- Formulaire d'édition (dans la carte) ---- */
+  _editHTML(srv) {
+    const esc = CardRenderer._esc.bind(CardRenderer);
+    const id = srv.id;
+    const catalog = this.icCatalog(srv.edition);
+
+    const profOpts = this.profiles(srv.edition)
+      .map(
+        (p) =>
+          `<option value="${p.id}" ${p.label === srv.profile ? "selected" : ""}>${esc(p.label)}</option>`,
+      )
+      .join("");
+
+    const range = srv.edition === "anarchy" ? [2, 8] : [1, 12];
+    const indOpts = Array.from(
+      { length: range[1] - range[0] + 1 },
+      (_, i) => range[0] + i,
+    )
+      .map((n) => `<option value="${n}" ${n === srv.indice ? "selected" : ""}>${n}</option>`)
+      .join("");
+
+    const attrsHtml =
+      srv.edition === "anarchy"
+        ? ""
+        : `<div class="server-edit-row">
+            ${["ATQ", "COR", "TDD", "FW"]
+              .map(
+                (k) => `<label class="server-edit-attr">${k}
+                  <input type="number" id="se-${id}-${k.toLowerCase()}" min="1" max="15"
+                    value="${(srv.attrs || {})[k] || srv.indice}"></label>`,
+              )
+              .join("")}
+            <button class="btn-secondary btn-small" onclick="Servers.redistributeAttrs('${id}')"
+              title="Redistribuer indice à indice+3 au hasard">↻ ASDF</button>
+          </div>`;
+
+    /* Liste ordonnée (l'ordre = ordre de déploiement, Patrouilleuse en tête) */
+    const icRows = srv.icList
+      .map((k, i) => {
+        const ic = catalog[k];
+        const label = ic ? ic.label.replace(/^CI /, "") : k;
+        if (k === "patrouilleuse") {
+          return `<div class="ic-edit-row fixed"><span>1. ${esc(label)}</span><small>toujours présente</small></div>`;
+        }
+        return `<div class="ic-edit-row">
+          <span>${i + 1}. ${esc(label)}</span>
+          <span class="ic-edit-actions">
+            <button class="btn-icon-tiny" onclick="Servers.moveIC('${id}', '${k}', -1)" title="Déployée plus tôt">↑</button>
+            <button class="btn-icon-tiny" onclick="Servers.moveIC('${id}', '${k}', 1)" title="Déployée plus tard">↓</button>
+            <button class="btn-icon-tiny danger" onclick="Servers.dropIC('${id}', '${k}')" title="Retirer">✕</button>
+          </span>
+        </div>`;
+      })
+      .join("");
+
+    const addOpts = Object.entries(catalog)
+      .filter(([k]) => k !== "patrouilleuse" && !srv.icList.includes(k))
+      .map(([k, ic]) => `<option value="${k}">${esc(ic.label.replace(/^CI /, ""))}</option>`)
+      .join("");
+
+    return `
+      <div class="server-edit">
+        <label class="server-edit-label">Nom
+          <input type="text" id="se-${id}-name" value="${esc(srv.name)}"></label>
+        <div class="server-edit-row">
+          <label class="server-edit-label">Profil
+            <select id="se-${id}-profile">${profOpts}</select></label>
+          <label class="server-edit-label narrow">Indice
+            <select id="se-${id}-indice">${indOpts}</select></label>
+        </div>
+        ${srv.edition === "anarchy"
+          ? `<label class="ic-choice"><input type="checkbox" id="se-${id}-secphys" ${srv.secPhys ? "checked" : ""}>Gère la sécurité physique</label>`
+          : ""}
+        ${attrsHtml}
+        <label class="server-edit-label">Sculpture
+          <textarea id="se-${id}-sculpture" rows="3">${esc(srv.sculpture || "")}</textarea></label>
+        <button class="btn-secondary btn-small" onclick="Servers.rerollSculptureEdit('${id}')">🎲 Relancer la sculpture</button>
+        <div class="server-edit-ics">
+          <span class="monitor-label">CI — ordre de déploiement</span>
+          ${icRows}
+          ${addOpts
+            ? `<div class="ic-edit-add">
+                <select id="se-${id}-addic">${addOpts}</select>
+                <button class="btn-secondary btn-small" onclick="Servers.addIC('${id}')">＋ Ajouter</button>
+              </div>`
+            : ""}
+        </div>
+      </div>`;
   },
 
   /* ---- Bloc intrusion (tracker) ---- */
@@ -1108,12 +1421,54 @@ const Servers = {
               ? `<span class="ic-status active">active${st.turn ? ` · t${st.turn}` : ""}</span>`
               : `<span class="ic-status idle">en réserve</span>`;
 
+        /* Jets (SR5/SR6) — les glaces Anarchy ont des succès fixes */
+        let rolls = "";
+        if (srv.edition !== "anarchy" && (ic.watch || (st.active && !st.down))) {
+          const i = srv.indice;
+          const a = srv.attrs || {};
+          const btn = (kind, txt, tip) =>
+            `<button class="btn-secondary btn-small ic-roll" title="${esc(tip)}"
+              onclick="Servers.rollIC('${srv.id}', '${k}', '${kind}')">⚄ ${txt}</button>`;
+          if (ic.watch) {
+            rolls = btn(
+              "per",
+              `Perception ${i * 2}d${srv.edition === "sr5" ? ` [TdD ${a.TDD}]` : ""}`,
+              "Perception matricielle de la Patrouilleuse : indice × 2" +
+                (srv.edition === "sr5" ? ", limitée par le Traitement de données" : ""),
+            );
+          } else {
+            rolls =
+              btn(
+                "atk",
+                `Attaque ${i * 2}d${srv.edition === "sr5" ? ` [ATQ ${a.ATQ}]` : ""}`,
+                srv.edition === "sr5"
+                  ? "Attaque de la CI : indice × 2, limitée par l'Attaque du serveur (p.249)"
+                  : "Jet d'attaque de la CI : indice × 2 (p.188)",
+              ) +
+              btn(
+                "def",
+                `Défense ${i * 2}d`,
+                srv.edition === "sr5"
+                  ? "Défense de la CI quand le decker l'attaque (indice × 2, usage — la VF ne détaille pas cette réserve)"
+                  : "Jet de défense de la CI : indice × 2 (p.188)",
+              ) +
+              (srv.edition === "sr5"
+                ? btn(
+                    "soak",
+                    `Encaisse ${i + (a.FW || 0)}d`,
+                    "Résistance aux dommages matriciels : indice + Firewall du serveur (p.229)",
+                  )
+                : "");
+          }
+        }
+
         return `<div class="ic-row ${isActive ? "on" : ""} ${st.down ? "dead" : ""}">
           <div class="ic-row-head">
             <span class="ic-row-name">${esc(label)}</span>
             ${status}
           </div>
           <div class="ic-row-effect">${ic.def ? `<b>Défense :</b> ${esc(ic.def)} — ` : ""}${esc(eff)}</div>
+          ${rolls ? `<div class="ic-row-rolls">${rolls}</div>` : ""}
           ${st.active || st.down || ic.watch ? `<div class="monitor-row"><span class="monitor-label">Moniteur${srv.edition === "anarchy" ? " (FW 1)" : ""}</span>${boxes}</div>` : ""}
         </div>`;
       })
