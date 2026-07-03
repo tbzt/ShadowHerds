@@ -83,7 +83,7 @@ const Creatures = {
         ["Armes naturelles", "Griffes : VD 7P (FOR+1), PA -1"],
         ["Conscience", null], ["Nature duale", null],
         ["Sens accrus", "Odorat, ouïe"],
-        ["Faiblesses", "Allergie (lumière solaire, modérée), Exigence alimentaire (chair métahumaine), Aveugle"],
+        ["Faiblesses", "Allergie (lumière solaire, modérée), Exigence alimentaire (chair métahumaine), Sens réduits (aveugle)"],
       ],
     },
     ratDiable: {
@@ -96,6 +96,81 @@ const Creatures = {
         ["Dissimulation", "Personnelle seulement"],
         ["Immunité", "Toxines"],
         ["Faiblesses", "Allergie (lumière solaire, modérée)"],
+      ],
+    },
+    cocatrix: {
+      label: "Cocatrix", a: [4, 5, 4, 4, 4, 2, 3, 1, 4],
+      init: 7, dice: 1, mon: [10, 10], armure: 1, lim: [6, 4, 4],
+      skills: { "Combat à mains nues": 12, Course: 11, Discrétion: 10, Perception: 6 },
+      traits: [
+        ["Armes naturelles", "Griffes : VD 4P (FOR), PA -1"],
+        ["Armure 1", null],
+        ["Immunité", "Son propre toucher"],
+        ["Toucher paralysant", "Queue"],
+      ],
+    },
+    sasquatch: {
+      label: "Sasquatch", a: [8, 3, 4, 7, 3, 3, 5, 3, 4],
+      init: 9, dice: 1, mon: [12, 10], armure: 0, lim: [9, 5, 5],
+      skills: {
+        Artisanat: 9, Athlétisme: 6, "Cris d'animaux (connaissance professionnelle)": 13,
+        Discrétion: 11, "Observation astrale": 11, Perception: 11,
+      },
+      traits: [
+        ["Conscience", null], ["Imitation", null], ["Nature duale", null],
+        ["Notes", "Allonge +1 ; peut avoir les traits Adepte, Magicien ou Adepte mystique"],
+      ],
+    },
+    dragonOccidental: {
+      label: "Dragon occidental", a: [18, 7, 8, 40, 8, 8, 8, 8, 10],
+      init: 16, dice: 2, mon: [17, 12], armure: 18, lim: [36, 11, 12],
+      skills: {
+        "Arme à distance exotique": 19, "Combat à mains nues": 19, Conjuration: 20,
+        Course: 50, "Observation astrale": 22, Perception: 20, Sorcellerie: 22, Vol: 19,
+      },
+      traits: [
+        ["Armes naturelles", "Crocs / Griffes : VD (FOR+2)P, PA -4"],
+        ["Armure mystique renforcée", "Volonté (armure mystique 8R en plus de l'armure physique)"],
+        ["Armure renforcée", "Constitution"],
+        ["Attaque élémentaire", "Feu (souffle)"],
+        ["Conscience", null], ["Draconique", null], ["Nature duale", null],
+        ["Sens accrus", "Audition à large spectre, odorat, vision nocturne, vision thermographique"],
+        ["Notes", "Trait Magicien, connaît la plupart des sorts, Allonge +2. Pouvoir individuel au choix du MJ parmi : Compulsion, Contrôle animal, Influence, Peur, Salive corrosive, Souffle nocif, Venin."],
+      ],
+    },
+    dragonOriental: {
+      label: "Dragon oriental", a: [17, 8, 8, 35, 9, 10, 8, 9, 10],
+      init: 16, dice: 2, mon: [17, 13], armure: 17, lim: [32, 13, 13],
+      skills: {
+        "Arme à distance exotique": 20, "Combat à mains nues": 20, Conjuration: 22,
+        Course: 45, "Observation astrale": 22, Perception: 20, Sorcellerie: 23, Vol: 20,
+      },
+      traits: [
+        ["Armes naturelles", "Crocs / Griffes : VD (FOR+2)P, PA -4"],
+        ["Armure mystique renforcée", "Volonté (armure mystique 9R en plus de l'armure physique)"],
+        ["Armure renforcée", "Constitution"],
+        ["Attaque élémentaire", "Feu (souffle)"],
+        ["Conscience", null], ["Draconique", null], ["Nature duale", null],
+        ["Sens accrus", "Audition à large spectre, odorat, vision nocturne, vision thermographique"],
+        ["Notes", "Trait Magicien, connaît la plupart des sorts, Allonge +2. Variante Sirrush (Asie mineure) : stats identiques. Pouvoir individuel au choix du MJ parmi : Compulsion, Contrôle animal, Influence, Peur, Salive corrosive, Souffle nocif, Venin."],
+      ],
+    },
+    serpentPlumes: {
+      label: "Serpent à plumes", a: [15, 9, 10, 30, 10, 9, 9, 8, 10],
+      init: 19, dice: 3, mon: [16, 13], armure: 15, lim: [29, 13, 12],
+      skills: {
+        "Arme à distance exotique": 21, "Combat à mains nues": 21, Conjuration: 21,
+        Course: 40, "Observation astrale": 23, Perception: 21, Sorcellerie: 24, Vol: 21,
+      },
+      traits: [
+        ["Armes naturelles", "Crocs / Griffes : VD (FOR+2)P, PA -4"],
+        ["Armure mystique renforcée", "Volonté (armure mystique 10R en plus de l'armure physique)"],
+        ["Armure renforcée", "Constitution"],
+        ["Attaque élémentaire", "Feu (souffle)"],
+        ["Conscience", null], ["Draconique", null], ["Nature duale", null],
+        ["Sens accrus", "Audition à large spectre, odorat, vision nocturne, vision thermographique"],
+        ["Venin", "Poche à venin liée à un dard caudal ou aux crocs (fréquent chez cette espèce)"],
+        ["Notes", "Trait Magicien, connaît la plupart des sorts, Allonge +2. Pouvoir individuel au choix du MJ parmi : Compulsion, Contrôle animal, Influence, Peur, Salive corrosive, Souffle nocif."],
       ],
     },
   },
@@ -150,7 +225,7 @@ const Creatures = {
         ["Arme naturelle", "Crocs : VD 4P / Griffes : VD 3P"], ["Armure 1", null],
         ["Conscience", null], ["Nature duale", null], ["Robuste 2", null],
         ["Sens accrus", "Ouïe, odorat"],
-        ["Faiblesses", "Allergie (lumière du soleil, modérée), Exigence alimentaire (chair métahumaine), Aveugle"],
+        ["Faiblesses", "Allergie (lumière du soleil, modérée), Exigence alimentaire (chair métahumaine), Sens réduit (aveugle)"],
       ],
     },
     ratDiable: {
@@ -181,11 +256,57 @@ const Creatures = {
       skills: { Athlétisme: 9, "Combat rapproché": 9, Furtivité: 9, Perception: 11 },
       traits: [
         ["Arme naturelle", "Crocs : VD 2P"],
+        ["Conscience", null],
         ["Drain d'Essence", null], ["Forme brumeuse", null],
         ["Immunité", "Vieillissement, pathogènes, toxines"],
         ["Infection", null], ["Nature duale", null], ["Régénération", null],
         ["Sens accrus", "Ouïe, odorat, vision thermographique"],
-        ["Faiblesses", "Allergie (bois, grave), Allergie (lumière du soleil, grave), Exigence alimentaire (sang métahumain), Perte d'Essence"],
+        ["Faiblesses", "Allergie (bois, grave), Allergie (lumière du soleil, grave), Exigence alimentaire (sang métahumain), Perte d'Essence, Sommeil induit (manque d'air, [Essence] minutes)"],
+      ],
+    },
+    basilic: {
+      label: "Basilic", a: [6, 2, 3, 6, 4, 1, 3, 1, 4],
+      sd: 13, init: 6, dice: 1, me: 11, atkPool: 9,
+      skills: { "Athlétisme (natation)": 7, "Combat rapproché": 8, Furtivité: 5, Perception: 7 },
+      traits: [
+        ["Arme naturelle", "Griffes / Crocs : VD 3P"], ["Armure 7", null],
+        ["Pétrification", null],
+        ["Faiblesses", "Vulnérabilité (son propre regard)"],
+      ],
+    },
+    chienEnfer: {
+      label: "Chien de l'enfer", a: [6, 4, 5, 4, 3, 2, 4, 3, 5],
+      sd: 10, init: 9, dice: 2, me: 11, atkPool: 9,
+      skills: { Astral: 9, Athlétisme: 11, "Combat rapproché": 8, Furtivité: 9, "Influence (intimidation)": 7, Perception: 7, "Plein air": 9 },
+      traits: [
+        ["Arme naturelle", "Crocs : VD 3P"], ["Armure 4", null],
+        ["Attaque élémentaire", "Feu"], ["Immunité", "Feu"],
+        ["Nature duale", null], ["Peur", null],
+        ["Sens accrus", "Ouïe, vision nocturne, odorat"],
+      ],
+    },
+    cerbere: {
+      label: "Cerbère", a: [6, 4, 5, 6, 4, 2, 6, 3, 5],
+      sd: 12, init: 11, dice: 2, me: 15, atkPool: 11,
+      skills: { Athlétisme: 10, "Combat rapproché": 13, "Influence (intimidation)": 8, Perception: 12, "Plein air": 14 },
+      traits: [
+        ["Arme naturelle", "Griffes / Crocs : VD 4P"], ["Armure 6", null],
+        ["Dissimulation", "Personnelle"], ["Immunité", "Froid, feu"],
+        ["Mouvement", "Personnelle"], ["Peur", null], ["Recherche", null],
+        ["Robuste 4", null], ["Salive corrosive", null],
+        ["Sens accrus", "Ouïe, vision nocturne, odorat, vision thermographique"],
+      ],
+    },
+    ratInfortune: {
+      label: "Rat d'infortune", a: [1, 3, 4, 0, 2, 1, 3, 2, 6],
+      sd: 1, init: 7, dice: 1, me: 9, atkPool: 4,
+      skills: { "Athlétisme (escalade)": 6, "Combat rapproché": 6, Furtivité: 6, Perception: 7 },
+      traits: [
+        ["Arme naturelle", "Crocs : VD 0P"],
+        ["Accident", null],
+        ["Contrôle animal", "Rats communs"], ["Immunité", "Toxines"],
+        ["Infortune", "Capacité unique : portée LdV (L), type M, action majeure. Test opposé de Magie + Réaction contre Atout courant ; un succès net inflige le trait Malchance pendant 1 minute par succès net."],
+        ["Faiblesses", "Allergie (lumière du soleil, faible)"],
       ],
     },
   },
@@ -202,7 +323,7 @@ const Creatures = {
         { name: "Combat rapproché", val: 3, attr: "AGI", spec: "Crocs", specVal: 4, specAttr: "AGI" },
         { name: "Furtivité", val: 3, attr: "AGI" },
         { name: "Perception", val: 3, attr: "LOG", spec: "Physique", specVal: 6, specAttr: "LOG", specRR: 2 },
-        { name: "Influence", val: 2, attr: "CHA" },
+        { name: "Influence", val: 2, attr: "CHA", spec: "Intimidation", specVal: 3, specAttr: "CHA" },
         { name: "Survie", val: 3, attr: "VOL" },
       ],
       edges: ["Sens accrus (trait) : RR 2 aux tests de Perception (physique)"],
@@ -214,6 +335,7 @@ const Creatures = {
       attrs: { FOR: 4, AGI: 3, VOL: 2, LOG: 2, CHA: 3 },
       skills: [
         { name: "Athlétisme", val: 5, attr: "FOR", spec: "Course", specVal: 5, specAttr: "FOR" },
+        { name: "Athlétisme", val: 5, attr: "FOR", spec: "Défense à distance", specVal: 4, specAttr: "AGI" },
         { name: "Combat rapproché", val: 4, attr: "AGI", spec: "Crocs", specVal: 5, specAttr: "AGI" },
         { name: "Perception", val: 4, attr: "LOG", spec: "Physique", specVal: 6, specAttr: "LOG", specRR: 2 },
         { name: "Influence", val: 3, attr: "CHA", spec: "Intimidation", specVal: 6, specAttr: "CHA", specRR: 2 },
@@ -234,6 +356,7 @@ const Creatures = {
       attrs: { FOR: 3, AGI: 3, VOL: 2, LOG: 2, CHA: 2 },
       skills: [
         { name: "Athlétisme", val: 4, attr: "FOR", spec: "Course", specVal: 5, specAttr: "FOR" },
+        { name: "Athlétisme", val: 4, attr: "FOR", spec: "Défense à distance", specVal: 4, specAttr: "AGI" },
         { name: "Armes à distance", val: 3, attr: "AGI", spec: "Souffle enflammé", specVal: 5, specAttr: "AGI", specRR: 1 },
         { name: "Combat rapproché", val: 3, attr: "AGI", spec: "Crocs", specVal: 4, specAttr: "AGI" },
         { name: "Furtivité", val: 4, attr: "AGI" },
@@ -258,7 +381,7 @@ const Creatures = {
       label: "Tigre cyber-augmenté Shiawase", tier: "Figurant d'élite", threat: "forte",
       attrs: { FOR: 5, AGI: 4, VOL: 2, LOG: 1, CHA: 2 },
       skills: [
-        { name: "Athlétisme", val: 5, attr: "FOR" },
+        { name: "Athlétisme", val: 5, attr: "FOR", spec: "Défense à distance", specVal: 4, specAttr: "AGI" },
         { name: "Combat rapproché", val: 4, attr: "AGI", spec: "Griffes et crocs", specVal: 6, specAttr: "AGI", specRR: 1 },
         { name: "Furtivité", val: 4, attr: "AGI", spec: "Discrétion physique", specVal: 7, specAttr: "AGI", specRR: 2 },
         { name: "Perception", val: 3, attr: "LOG", spec: "Physique", specVal: 5, specAttr: "LOG", specRR: 1 },
@@ -279,6 +402,7 @@ const Creatures = {
       attrs: { FOR: 4, AGI: 2, VOL: 3, LOG: 2, CHA: 1 },
       skills: [
         { name: "Athlétisme", val: 4, attr: "FOR", spec: "Natation", specVal: 5, specAttr: "FOR" },
+        { name: "Athlétisme", val: 4, attr: "FOR", spec: "Défense à distance", specVal: 3, specAttr: "AGI" },
         { name: "Combat rapproché", val: 3, attr: "AGI", spec: "Crocs", specVal: 4, specAttr: "AGI" },
         { name: "Perception", val: 4, attr: "LOG", spec: "Physique", specVal: 4, specAttr: "LOG" },
         { name: "Influence", val: 3, attr: "CHA", spec: "Pétrification", specVal: 5, specAttr: "CHA", specRR: 2 },
@@ -296,6 +420,7 @@ const Creatures = {
       attrs: { FOR: 2, AGI: 3, VOL: 2, LOG: 1, CHA: 1 },
       skills: [
         { name: "Athlétisme", val: 4, attr: "FOR", spec: "Course", specVal: 5, specAttr: "FOR" },
+        { name: "Athlétisme", val: 4, attr: "FOR", spec: "Défense à distance", specVal: 4, specAttr: "AGI" },
         { name: "Combat rapproché", val: 4, attr: "AGI", spec: "Griffes et queue", specVal: 5, specAttr: "AGI" },
         { name: "Furtivité", val: 4, attr: "AGI" },
         { name: "Perception", val: 2, attr: "LOG", spec: "Physique", specVal: 3, specAttr: "LOG" },
@@ -312,7 +437,7 @@ const Creatures = {
       label: "Goule", tier: "Figurant", threat: "forte",
       attrs: { FOR: 4, AGI: 2, VOL: 2, LOG: 1, CHA: 1 },
       skills: [
-        { name: "Athlétisme", val: 3, attr: "FOR" },
+        { name: "Athlétisme", val: 3, attr: "FOR", spec: "Défense à distance", specVal: 3, specAttr: "AGI" },
         { name: "Combat rapproché", val: 3, attr: "AGI", spec: "Mains nues", specVal: 4, specAttr: "AGI" },
         { name: "Furtivité", val: 3, attr: "AGI" },
         { name: "Perception", val: 3, attr: "LOG", spec: "Ouïe, odorat", specVal: 4, specAttr: "LOG", specRR: 1 },
@@ -333,7 +458,7 @@ const Creatures = {
       label: "Rat du diable", tier: "Figurant", threat: "forte",
       attrs: { FOR: 1, AGI: 3, VOL: 1, LOG: 1, CHA: 1 },
       skills: [
-        { name: "Athlétisme", val: 3, attr: "FOR" },
+        { name: "Athlétisme", val: 3, attr: "FOR", spec: "Défense à distance", specVal: 4, specAttr: "AGI" },
         { name: "Combat rapproché", val: 4, attr: "AGI" },
         { name: "Furtivité", val: 4, attr: "AGI", spec: "Discrétion physique", specVal: 6, specAttr: "AGI", specRR: 1 },
         { name: "Perception", val: 2, attr: "LOG", spec: "Physique", specVal: 3, specAttr: "LOG" },
@@ -349,7 +474,7 @@ const Creatures = {
       label: "Vampire", tier: "Lieutenant", threat: "forte",
       attrs: { FOR: 3, AGI: 4, VOL: 3, LOG: 3, CHA: 3 },
       skills: [
-        { name: "Athlétisme", val: 3, attr: "FOR" },
+        { name: "Athlétisme", val: 3, attr: "FOR", spec: "Défense à distance", specVal: 4, specAttr: "AGI" },
         { name: "Combat rapproché", val: 4, attr: "AGI", spec: "Mains nues", specVal: 5, specAttr: "AGI" },
         { name: "Furtivité", val: 4, attr: "AGI", spec: "Discrétion physique", specVal: 5, specAttr: "AGI" },
         { name: "Perception", val: 4, attr: "LOG", spec: "Physique", specVal: 6, specAttr: "LOG", specRR: 1 },
@@ -382,6 +507,7 @@ const Creatures = {
       skills: [
         { name: "Armes à distance", val: 6, attr: "AGI", spec: "Souffle enflammé", specVal: 8, specAttr: "AGI", specRR: 2 },
         { name: "Athlétisme", val: 7, attr: "FOR", spec: "Vol", specVal: 8, specAttr: "FOR" },
+        { name: "Athlétisme", val: 7, attr: "FOR", spec: "Défense à distance", specVal: 6, specAttr: "AGI" },
         { name: "Combat rapproché", val: 6, attr: "AGI", spec: "Griffes et crocs", specVal: 8, specAttr: "AGI", specRR: 2 },
         { name: "Combat astral", val: 6, attr: "VOL" },
         { name: "Furtivité", val: 4, attr: "AGI" },
