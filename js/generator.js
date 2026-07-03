@@ -258,13 +258,20 @@ const Gen = {
 
   /* ---- Actions ---- */
   discard(id) {
-    this.pool = this.pool.filter((p) => p.id !== id);
-    const card = document.querySelector(`.pnj-card[data-id="${id}"]`);
-    if (card) {
-      card.style.transition = "opacity 0.2s, transform 0.2s";
-      card.style.opacity = "0";
-      card.style.transform = "scale(0.94)";
-      setTimeout(() => card.remove(), 200);
+    // Cascade : les entités liées (drones/véhicules) partent avec leur maître.
+    const doomed = new Set([id]);
+    for (const p of this.pool) {
+      if (p.ownerId === id) doomed.add(p.id);
+    }
+    this.pool = this.pool.filter((p) => !doomed.has(p.id));
+    for (const did of doomed) {
+      const card = document.querySelector(`.pnj-card[data-id="${did}"]`);
+      if (card) {
+        card.style.transition = "opacity 0.2s, transform 0.2s";
+        card.style.opacity = "0";
+        card.style.transform = "scale(0.94)";
+        setTimeout(() => card.remove(), 200);
+      }
     }
   },
 

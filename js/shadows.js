@@ -88,6 +88,16 @@ const Shadows = {
     if (group && this.data.groups[group]) {
       this.data.groups[group].push(pnj.id);
     }
+    // Entités liées (drones/véhicules déployés) : suivent leur maître.
+    if (typeof Gen !== "undefined" && Gen.pool) {
+      const linked = Gen.pool.filter(
+        (e) => e.ownerId === pnj.id && !this.data.all.some((p) => p.id === e.id),
+      );
+      for (const e of linked) {
+        this.data.all.push(e);
+        Gen.pool = Gen.pool.filter((p) => p.id !== e.id);
+      }
+    }
     this.save();
     this.render();
     toast(`✓ ${pnj.name} ajouté aux Ombres${group ? ` → ${group}` : ""}.`);
@@ -103,13 +113,17 @@ const Shadows = {
     }
   },
 
-  /* ---- Supprimer un PNJ ---- */
+  /* ---- Supprimer un PNJ (et ses entités liées) ---- */
   removePNJ(id) {
     const pnj = this.data.all.find((p) => p.id === id);
     const name = pnj ? pnj.name : "Figurant";
-    this.data.all = this.data.all.filter((p) => p.id !== id);
+    const doomed = new Set([id]);
+    for (const e of this.data.all) {
+      if (e.ownerId === id) doomed.add(e.id);
+    }
+    this.data.all = this.data.all.filter((p) => !doomed.has(p.id));
     for (const g of Object.keys(this.data.groups)) {
-      this.data.groups[g] = this.data.groups[g].filter((i) => i !== id);
+      this.data.groups[g] = this.data.groups[g].filter((i) => !doomed.has(i));
     }
     this.save();
     this.render();
@@ -310,13 +324,25 @@ const Shadows = {
     }
 
     const allGroups = Object.keys(this.data.groups);
+    // Les entités liées (drones/véhicules) ne sont pas rendues dans la
+    // boucle principale : elles suivent la carte de leur propriétaire.
+    const linkedByOwner = {};
+    for (const e of this.data.all) {
+      if (e.ownerId) (linkedByOwner[e.ownerId] ||= []).push(e);
+    }
     for (const pnj of list) {
+      if (pnj.ownerId) continue; // rendue avec son maître
       const card = CardRenderer.render(pnj, ["edit", "remove"]);
       // Ajouter le sélecteur de groupe sur chaque card
       if (allGroups.length > 0) {
         this._appendGroupSelector(card, pnj.id, allGroups);
       }
       grid.appendChild(card);
+      for (const e of linkedByOwner[pnj.id] || []) {
+        const sub = CardRenderer.render(e, ["remove"]);
+        sub.classList.add("vehicle-card");
+        grid.appendChild(sub);
+      }
     }
   },
 

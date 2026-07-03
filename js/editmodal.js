@@ -7,7 +7,7 @@ const EditModal = {
   currentId: null,
 
   open(id) {
-    const pnj = Shadows.data.all.find((p) => p.id === id);
+    const pnj = this._find(id);
     if (!pnj) {
       toast("PNJ introuvable.");
       return;
@@ -17,9 +17,19 @@ const EditModal = {
     document.querySelector(".modal-title").textContent =
       `Édition — ${pnj.name}`;
     const body = document.getElementById("modal-form-body");
-    body.innerHTML = this._buildForm(pnj);
+    body.innerHTML =
+      pnj.type === "vehicle" ? this._buildFormVehicle(pnj) : this._buildForm(pnj);
 
     document.getElementById("edit-modal").classList.add("open");
+  },
+
+  /** Cherche dans les sauvegardés et le pool du générateur (les fiches
+      véhicules peuvent vivre dans les deux). */
+  _find(id) {
+    return (
+      Shadows.data.all.find((p) => p.id === id) ||
+      (typeof Gen !== "undefined" && Gen.findInPool ? Gen.findInPool(id) : null)
+    );
   },
 
   close() {
@@ -28,9 +38,23 @@ const EditModal = {
   },
 
   save() {
-    const pnj = Shadows.data.all.find((p) => p.id === this.currentId);
+    const pnj = this._find(this.currentId);
     if (!pnj) {
       this.close();
+      return;
+    }
+
+    if (pnj.type === "vehicle") {
+      this._readFormVehicle(pnj);
+      // Moniteur recalculé depuis la Structure (SR5/SR6)
+      if (pnj.edition !== "anarchy" && typeof Vehicles !== "undefined") {
+        pnj.monTotal = Vehicles._monitor(pnj.stats, pnj.edition);
+        pnj.monFilled = Math.min(pnj.monFilled || 0, pnj.monTotal);
+      }
+      Shadows.save();
+      CardRenderer.refresh(pnj);
+      this.close();
+      toast(`${pnj.name} mis à jour.`);
       return;
     }
 
@@ -43,6 +67,58 @@ const EditModal = {
     Shadows.render();
     this.close();
     toast(`${pnj.name} mis à jour.`);
+  },
+
+  /* ---- Formulaire d'une fiche véhicule/drone liée ---- */
+  _buildFormVehicle(v) {
+    const esc = CardRenderer._esc;
+    const s = v.stats || {};
+    const fields =
+      v.edition === "anarchy"
+        ? [["autopilote", "Autopilote"], ["structure", "Structure"], ["mania", "Maniabilité"], ["vitesse", "Vitesse"], ["blindage", "Blindage"]]
+        : [["mania", "Maniabilité"], ["vitesse", "Vitesse"], ["accel", "Accél"], ["structure", "Structure"], ["blindage", "Blindage"], ["pilote", "Autopilote"], ["senseurs", "Senseurs"], ["autosoft", "Autosoft"]];
+    let html = `<div class="modal-section">
+      <div class="modal-section-title">Identité</div>
+      <div class="modal-grid wide">
+        <div class="form-group full">
+          <label>Nom</label>
+          <input type="text" id="em-name" value="${esc(v.name)}">
+        </div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Caractéristiques</div>
+      <div class="modal-grid">`;
+    for (const [key, label] of fields) {
+      const cur = s[key] ?? (key === "autosoft" ? s.pilote ?? "" : 0);
+      html += `<div class="form-group">
+        <label>${label}</label>
+        <input type="number" id="em-vstat-${key}" value="${cur}" min="0" max="30">
+      </div>`;
+    }
+    html += `</div></div>
+    <div class="modal-section">
+      <div class="modal-section-title">Notes</div>
+      <div class="form-group">
+        <textarea id="em-notes" rows="3" placeholder="Notes libres…">${esc(v.notes || "")}</textarea>
+      </div>
+    </div>`;
+    return html;
+  },
+
+  _readFormVehicle(v) {
+    const nameEl = document.getElementById("em-name");
+    if (nameEl && nameEl.value.trim()) v.name = nameEl.value.trim();
+    v.stats = v.stats || {};
+    document
+      .querySelectorAll('[id^="em-vstat-"]')
+      .forEach((el) => {
+        const key = el.id.replace("em-vstat-", "");
+        const n = parseInt(el.value, 10);
+        if (Number.isFinite(n)) v.stats[key] = n;
+      });
+    const notesEl = document.getElementById("em-notes");
+    if (notesEl) v.notes = notesEl.value;
   },
 
   /* ---- Construction du formulaire ---- */

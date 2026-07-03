@@ -32,6 +32,7 @@ const CardRenderer = {
 
   /* ---- Header ---- */
   _header(pnj) {
+    if (pnj.type === "vehicle") return this._headerVehicle(pnj);
     const gIcon = { M: "♂", F: "♀", NB: "⚧" }[pnj.gender] || "";
     let badge = "";
 
@@ -80,8 +81,26 @@ const CardRenderer = {
     return `<div class="pnj-name" title="${this._esc(name)}">${this._esc(name)}</div>`;
   },
 
+  /* ---- Header véhicule/drone lié ---- */
+  _headerVehicle(v) {
+    const icon = v.kind === "drone" ? "◇" : "▣";
+    const kindLabel = v.kind === "drone" ? "Drone" : "Véhicule";
+    return `<div class="pnj-card-header vehicle-header">
+      <div class="pnj-header-left">
+        <div class="pnj-name">${icon} ${this._esc(v.name)}</div>
+        <div class="pnj-meta">
+          <span class="vehicle-owner-link" role="button" tabindex="0"
+            onclick="UI.focusOwner('${v.ownerId}')"
+            title="Retrouver ${this._esc(v.ownerName)}">↳ lié à ${this._esc(v.ownerName)}</span>
+        </div>
+      </div>
+      <span class="pnj-rank-badge vehicle-badge">${kindLabel}</span>
+    </div>`;
+  },
+
   /* ---- Body ---- */
   _body(pnj) {
+    if (pnj.type === "vehicle") return this._bodyVehicle(pnj);
     let core;
     switch (pnj.edition) {
       case "sr5":
@@ -316,6 +335,120 @@ const CardRenderer = {
     </button>`;
   },
 
+  /* ---- Body d'une fiche véhicule/drone liée ---- */
+  _bodyVehicle(v) {
+    const s = v.stats || {};
+    let html = '<div class="pnj-card-body vehicle-body">';
+    html += '<div class="combat-zone">';
+    html += this._zoneEyebrow(v.kind === "drone" ? "Drone" : "Véhicule");
+
+    // Pills de stats brutes
+    const statDefs =
+      v.edition === "anarchy"
+        ? [["Autopilote", s.autopilote], ["Structure", s.structure], ["Maniabilité", s.mania], ["Vitesse", s.vitesse], ["Blindage", s.blindage]]
+        : [["Maniabilité", s.mania], ["Vitesse", s.vitesse], ["Accél", s.accel], ["Structure", s.structure], ["Blindage", s.blindage], ["Autopilote", s.pilote], ["Senseurs", s.senseurs]];
+    html += '<div class="combat-row vehicle-stats">';
+    for (const [label, val] of statDefs) {
+      if (val == null) continue;
+      html += `<span class="stat-pill" title="${label}">${label.slice(0, 5)} <strong>${val}</strong></span>`;
+    }
+    html += "</div>";
+
+    // Réserves de dés (jets cliquables) + initiative SR5/SR6
+    const edAttr = v.edition === "anarchy" ? ' data-roll-edition="anarchy"' : "";
+    html += '<div class="combat-row">';
+    const init = Vehicles.initiative(v);
+    if (init) html += this._initPill(init.base, init.dice, v);
+    for (const p of Vehicles.pools(v)) {
+      if (p.weaponOnly && !(v.weapons || []).length) continue;
+      const roll =
+        p.pool >= 1
+          ? ` data-roll="${p.pool}" data-roll-label="${this._esc(v.name)} — ${this._esc(p.label)}"${edAttr} data-roll-rr="0" data-roll-pnj="${v.id}"`
+          : "";
+      html += `<span class="stat-pill combat-pill${p.pool >= 1 ? " rollable" : ""}"${roll} title="${this._esc(p.title)}">${this._esc(p.label)} <strong>${p.pool}</strong></span>`;
+    }
+    html += "</div>";
+
+    // Moniteur d'état
+    if (v.edition === "anarchy") {
+      const [l, g, i] = Vehicles.anarchyThresholds(v);
+      html += `<div class="monitor-block">
+        <div class="monitor-row">
+          <span class="monitor-label" title="Seuils : léger ${l} / grave ${g} / incap ${i} (Structure+Blindage ×1/×2/×3)">État</span>
+          <div class="monitor-boxes">${this._monitorBoxesAnarchy(v)}</div>
+        </div>
+        <div class="anarchy-seuil-row" style="margin-top:4px;">
+          <span class="anarchy-seuil-label">Seuils dommages</span>
+          <span class="anarchy-seuil-val">${l} / ${g} / ${i}</span>
+        </div>
+      </div>`;
+    } else {
+      html += `<div class="monitor-block">
+        <div class="monitor-row">
+          <span class="monitor-label">État</span>
+          <div class="monitor-boxes">${this._monitorBoxes(v.id, "mon", v.monTotal || 9, v.monFilled || 0)}</div>
+        </div>
+      </div>`;
+    }
+
+    // Armes embarquées
+    if ((v.weapons || []).length) {
+      const atk = Vehicles.pools(v).find((p) => p.weaponOnly || p.label === "Autonome");
+      html += '<div class="weapon-block">';
+      for (const w of v.weapons) {
+        const pool = atk ? atk.pool : 0;
+        const roll =
+          pool >= 1
+            ? ` data-roll="${pool}" data-roll-label="${this._esc(v.name)} — ${this._esc(w.name)}"${edAttr} data-roll-rr="0" data-roll-pnj="${v.id}"`
+            : "";
+        html += `<div class="weapon-line${pool >= 1 ? " weapon-rollable rollable" : ""}"${roll} title="Arme embarquée — cliquer pour lancer ${pool} dés">
+          <div><div class="weapon-name">${this._esc(w.name)}</div><div class="weapon-stat">${this._esc(w.vd || "")}</div></div>
+          ${pool >= 1 ? `<span class="weapon-pool">⚄${pool}</span>` : ""}
+        </div>`;
+      }
+      html += "</div>";
+    }
+    html += "</div>"; // fin combat-zone
+
+    // Notes RR (Anarchy) + notes libres
+    if (v.rrNotes || v.notes) {
+      html += '<div class="capacity-zone">';
+      if (v.rrNotes)
+        html += `<div class="card-section"><div class="card-section-label">Bonus</div>
+          <div class="card-section-content"><span class="tag">${this._esc(v.rrNotes)}</span></div></div>`;
+      if (v.notes)
+        html += `<div class="card-section"><div class="card-section-label">Notes</div>
+          <div style="font-size:0.75rem;">${this._esc(v.notes)}</div></div>`;
+      html += "</div>";
+    }
+
+    html += "</div>";
+    return html;
+  },
+
+  /** Rangée de chips « Drones & véhicules » dans la zone Combat du
+      propriétaire : 1 clic déploie la fiche liée, re-clic la retrouve. */
+  _vehicleChipRow(pnj) {
+    if (typeof Vehicles === "undefined" || typeof UI === "undefined") return "";
+    const items = UI._vehicleItems(pnj);
+    if (!items.length) return "";
+    const chips = items
+      .map((item, idx) => {
+        const parsed = Vehicles.matchItem(item, pnj.edition);
+        const deployed = Vehicles.linkedTo(pnj.id, item).length > 0;
+        const icon = parsed.kind === "drone" ? "◇" : "▣";
+        const label = parsed.count > 1 ? `${parsed.count}× ${parsed.name}` : parsed.name;
+        const state = deployed
+          ? '<span class="vehicle-chip-state on">● fiche</span>'
+          : '<span class="vehicle-chip-state">▸ déployer</span>';
+        return `<span class="tag vehicle-chip${deployed ? " deployed" : ""}" role="button" tabindex="0"
+          onclick="UI.deployVehicle('${pnj.id}',${idx})"
+          title="${this._esc(item)}">${icon} ${this._esc(label)}${state}</span>`;
+      })
+      .join("");
+    return `<div class="combat-drugs vehicle-chips">${chips}</div>`;
+  },
+
   _bodySR5(pnj) {
     const {
       attrs,
@@ -368,6 +501,7 @@ const CardRenderer = {
 
     html += this._weaponBlock(pnj, weapons, "sr5");
     html += this._drugRow(pnj, "sr5");
+    html += this._vehicleChipRow(pnj);
     html += "</div>"; // fin combat-zone
 
     // ---- ZONE CAPACITÉS ----
@@ -457,6 +591,7 @@ const CardRenderer = {
 
     html += this._weaponBlock(pnj, weapons, "sr6");
     html += this._drugRow(pnj, "sr6");
+    html += this._vehicleChipRow(pnj);
     html += "</div>"; // fin combat-zone
 
     // ---- ZONE CAPACITÉS ----
@@ -579,6 +714,7 @@ const CardRenderer = {
       html += "</div>";
     }
     html += this._drugRow(pnj, "anarchy");
+    html += this._vehicleChipRow(pnj);
     html += "</div>"; // fin combat-zone
 
     // ---- ZONE CAPACITÉS ----
@@ -894,6 +1030,12 @@ const CardRenderer = {
 
   /* ---- Footer ---- */
   _footer(pnj, actions) {
+    if (pnj.type === "vehicle") {
+      return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>
+        <button class="card-action-btn ghost" onclick="EditModal.open('${pnj.id}')">Éditer</button>
+        <button class="card-action-btn danger" onclick="UI.dismissVehicle('${pnj.id}')">Ranger</button>
+      </div>`;
+    }
     const btns = [];
     if (actions.includes("save")) {
       btns.push(
@@ -972,8 +1114,93 @@ const UI = {
     CardRenderer.refresh(pnj);
   },
 
+  /** Cherche dans les sauvegardés ET le pool du générateur, pour que
+      les interactions (moniteurs, drogues, déploiements) fonctionnent
+      aussi sur les cartes pas encore sauvegardées. */
   _findPNJ(id) {
-    return Shadows.data.all.find((p) => p.id === id);
+    const saved = Shadows.data.all.find((p) => p.id === id);
+    if (saved) return saved;
+    if (typeof Gen !== "undefined" && Gen.findInPool) return Gen.findInPool(id);
+    return null;
+  },
+
+  /* ========================================================
+     VÉHICULES & DRONES LIÉS (js/vehicles.js)
+     ======================================================== */
+
+  /** Clic sur une chip de la zone Combat : déploie la fiche liée,
+      ou recentre la vue dessus si elle existe déjà. */
+  deployVehicle(ownerId, srcIdx) {
+    const owner = this._findPNJ(ownerId);
+    if (!owner) return;
+    const srcItem = (this._vehicleItems(owner) || [])[srcIdx];
+    if (!srcItem) return;
+
+    const existing = Vehicles.linkedTo(ownerId, srcItem);
+    if (existing.length) {
+      this._flashCard(existing[0].id);
+      return;
+    }
+
+    const spawned = Vehicles.spawn(owner, srcItem, owner.edition);
+    if (!spawned.length) return;
+
+    const inShadows = Shadows.data.all.some((p) => p.id === ownerId);
+    const ownerCard = document.querySelector(`.pnj-card[data-id="${ownerId}"]`);
+    let anchor = ownerCard;
+    for (const v of spawned) {
+      if (inShadows) Shadows.data.all.push(v);
+      else Gen.pool.push(v);
+      if (anchor) {
+        const card = CardRenderer.render(v, inShadows ? ["remove"] : ["discard"]);
+        card.classList.add("vehicle-card", "vehicle-deploying");
+        anchor.insertAdjacentElement("afterend", card);
+        setTimeout(() => card.classList.remove("vehicle-deploying"), 700);
+        anchor = card;
+      }
+    }
+    if (inShadows) Shadows.save();
+    CardRenderer.refresh(owner); // met à jour l'état des chips
+  },
+
+  /** Bouton « Ranger » d'une fiche liée : retire la ou les fiches
+      issues du même item source. */
+  dismissVehicle(vehicleId) {
+    const v = this._findPNJ(vehicleId);
+    if (!v || v.type !== "vehicle") return;
+    const siblings = Vehicles.linkedTo(v.ownerId, v.srcItem);
+    for (const s of siblings) {
+      Shadows.data.all = Shadows.data.all.filter((p) => p.id !== s.id);
+      if (typeof Gen !== "undefined" && Gen.pool)
+        Gen.pool = Gen.pool.filter((p) => p.id !== s.id);
+      const card = document.querySelector(`.pnj-card[data-id="${s.id}"]`);
+      if (card) card.remove();
+    }
+    Shadows.save();
+    const owner = this._findPNJ(v.ownerId);
+    if (owner) CardRenderer.refresh(owner);
+  },
+
+  /** Badge « lié à » : scroll + flash de la carte du propriétaire. */
+  focusOwner(ownerId) {
+    this._flashCard(ownerId);
+  },
+
+  _flashCard(id) {
+    const card = document.querySelector(`.pnj-card[data-id="${id}"]`);
+    if (!card) return;
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
+    card.classList.add("card-flash");
+    setTimeout(() => card.classList.remove("card-flash"), 1200);
+  },
+
+  /** Items déployables d'un PNJ (équipement + atouts Anarchy),
+      dans un ordre stable — l'index sert de référence aux chips. */
+  _vehicleItems(pnj) {
+    if (typeof Vehicles === "undefined" || !pnj || pnj.type === "vehicle")
+      return [];
+    const src = [...(pnj.equip || []), ...(pnj.edition === "anarchy" ? pnj.edges || [] : [])];
+    return src.filter((i) => Vehicles.matchItem(i, pnj.edition));
   },
 };
 

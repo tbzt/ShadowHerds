@@ -1278,6 +1278,32 @@ const EditionSR6 = {
     if (p >= 4 && Utils.randBool(0.4))
       result.push(Utils.rand(pools.equipSpecial));
 
+    // Drones et véhicules : riggers (stats du catalogue js/vehicles.js)
+    if (archetype.includes("Rigger")) {
+      result.push(
+        Utils.rand([
+          "Drone Lockheed Optic-X2 (surveillance)",
+          "Drone Aztechnology Crawler",
+        ]),
+      );
+      result.push(
+        Utils.rand([
+          "Drone GM-Nissan Doberman [avec fusil d'assaut]",
+          "Drone MCT-Nissan Roto-drone [avec fusil d'assaut]",
+        ]),
+      );
+      if (p >= 4)
+        result.push(
+          Utils.rand([
+            "Drone Steel Lynx [avec mitrailleuse]",
+            "Drone Cyberspace Designs Dalmatian",
+          ]),
+        );
+      result.push(
+        Utils.rand(["Fourgon GMC Bulldog Step-Van", "Ares Roadmaster", "Toyota Gopher"]),
+      );
+    }
+
     return result;
   },
 

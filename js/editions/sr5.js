@@ -1202,6 +1202,37 @@ const EditionSR5 = {
     // Équip spécial : flics et sécu
     if (police || p >= 3) result.push(Utils.rand(pools.equipSpecial));
 
+    // Drones et véhicules : riggers (stats du catalogue js/vehicles.js)
+    const rigger = archetype.includes("Rigger") || special === "Rigger";
+    if (rigger) {
+      result.push(
+        Utils.rand([
+          "Drone Lockheed Optic-X2 (surveillance)",
+          "Drone Aztechnology Crawler",
+        ]),
+      );
+      result.push(
+        Utils.rand([
+          "Drone GM-Nissan Doberman [avec fusil d'assaut]",
+          "Drone MCT-Nissan Roto-drone [avec fusil d'assaut]",
+        ]),
+      );
+      if (p >= 4)
+        result.push(
+          Utils.rand([
+            "Drone Steel Lynx [avec mitrailleuse]",
+            "Drone Cyberspace Designs Dalmatian",
+          ]),
+        );
+      result.push(
+        Utils.rand([
+          "Fourgon GMC Bulldog",
+          "Ares Roadmaster",
+          "Toyota Gopher",
+        ]),
+      );
+    }
+
     return result;
   },
 
