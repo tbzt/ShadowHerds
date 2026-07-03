@@ -234,9 +234,12 @@ const Spirits = {
     return out;
   },
 
-  /* ---- Invocation ---- */
+  /* ---- Invocation ----
+     `owner` peut être null (esprit libre généré depuis le générateur) :
+     passer alors opts.edition ; l'esprit n'a ni lien ni services. */
   spawn(owner, typeKey, opts = {}) {
-    return owner.edition === "anarchy"
+    const edition = owner ? owner.edition : opts.edition;
+    return edition === "anarchy"
       ? this._spawnAnarchy(owner, typeKey, opts)
       : this._spawnSR(owner, typeKey, opts);
   },
@@ -244,8 +247,9 @@ const Spirits = {
   _spawnSR(owner, typeKey, opts) {
     const t = this.SR_TYPES[typeKey];
     if (!t) return null;
-    const edition = owner.edition;
-    const P = Utils.clamp(opts.force || (owner.attrs && owner.attrs.MAG) || 4, 1, 12);
+    const edition = owner ? owner.edition : opts.edition;
+    const P = Utils.clamp(
+      opts.force || (owner && owner.attrs && owner.attrs.MAG) || 4, 1, 12);
     const attrs = {};
     const keys = edition === "sr6"
       ? { CON: "CON", AGI: "AGI", REA: "RÉA", FOR: "FOR", VOL: "VOL", LOG: "LOG", INT: "INT", CHA: "CHA" }
@@ -272,17 +276,24 @@ const Spirits = {
     ];
     if (t.weakness) traits.push({ name: "Faiblesse", desc: t.weakness });
     if (t.special) traits.push({ name: "Spécial", desc: t.special });
+    if (!owner)
+      traits.push({
+        name: "Esprit libre",
+        desc: "Indépendant de tout invocateur ; possède sa propre volonté, une réserve de Chance (Puissance) et une formule secrète.",
+      });
 
+    const free = !owner;
     const spirit = {
       id: Utils.uid(),
       type: "spirit",
       edition,
       spiritType: typeKey,
-      name: t.label,
-      ownerId: owner.id,
-      ownerName: owner.name || "Invocateur",
+      free,
+      name: free ? `${t.label} libre` : t.label,
+      ownerId: owner ? owner.id : null,
+      ownerName: owner ? owner.name || "Invocateur" : null,
       force: P,
-      services: Utils.clamp(opts.services ?? 3, 1, 12),
+      services: free ? 0 : Utils.clamp(opts.services ?? 3, 1, 12),
       servicesUsed: 0,
       meta: "Esprit",
       gender: "NB",
@@ -351,18 +362,21 @@ const Spirits = {
 
     const tierLabel = this.ANARCHY_TIERS[ti];
     const seuil = (base) => [base, base + 3, base + 6];
+    const free = !owner;
 
     return {
       id: Utils.uid(),
       type: "spirit",
       edition: "anarchy",
       spiritType: typeKey,
-      name: t.label,
-      ownerId: owner.id,
-      ownerName: owner.name || "Invocateur",
+      free,
+      name: free ? `${t.label} libre` : t.label,
+      ownerId: owner ? owner.id : null,
+      ownerName: owner ? owner.name || "Invocateur" : null,
       tier: tierLabel,
       tierIndex: ti,
-      services: Utils.clamp(opts.services ?? 3, 1, 12),
+      threatLevel: "extrême", // « Combativité extrême », statblocks p.262-265
+      services: free ? 0 : Utils.clamp(opts.services ?? 3, 1, 12),
       servicesUsed: 0,
       meta: "Esprit",
       gender: "NB",
@@ -374,6 +388,9 @@ const Spirits = {
         `Immunité aux armes normales (pouvoir) : Armure ${armure} — seuils armes magiques ${seuil(attrs.FOR).join("/")}`,
         "Matérialisation (pouvoir) : créature astrale, peut se matérialiser (duale)",
         ...t.edges,
+        ...(free
+          ? ["Esprit libre : indépendant de tout invocateur, agit selon sa propre volonté"]
+          : []),
       ],
       spells: [],
       equip: [],

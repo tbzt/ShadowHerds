@@ -4411,6 +4411,36 @@ input[type="range"]#risk-dice-slider {
   }
 }
 
+/* ---- Sélecteur de type d'entité (générateur) ---- */
+.entity-type-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.entity-type-btn {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.65rem;
+  padding: 6px 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.entity-type-btn:hover {
+  border-color: var(--accent);
+}
+.entity-type-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+}
+
 /* ---- Esprits invoqués ---- */
 .spirit-card {
   border-left-color: var(--accent2);

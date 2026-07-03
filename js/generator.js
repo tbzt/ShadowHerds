@@ -16,6 +16,10 @@ const Gen = {
   /** PNJ générés non encore sauvegardés (zone de génération) */
   pool: [],
 
+  /** Type d'entité du formulaire individuel :
+      "meta" (métahumain) | "spirit" (esprit libre) | "creature" */
+  entityType: "meta",
+
   /** correspondance label Origine -> valeur interne (rempli au build) */
   _originPoolLabelToValue: {},
 
@@ -37,7 +41,91 @@ const Gen = {
 
   _buildSingleForm(ed) {
     const el = document.getElementById("gen-form-single");
-    el.innerHTML = this._formHTML(ed, "sg");
+    this.entityType = "meta";
+    el.innerHTML =
+      this._entityTypeBar() +
+      `<div id="sg-fields-meta">${this._formHTML(ed, "sg")}</div>` +
+      `<div id="sg-fields-spirit" hidden>${this._spiritFormHTML(ed)}</div>` +
+      `<div id="sg-fields-creature" hidden>${this._creatureFormHTML(ed)}</div>`;
+  },
+
+  /* ---- Sélecteur de type d'entité (PNJ individuel) ---- */
+  _entityTypeBar() {
+    const types = [
+      ["meta", "Métahumain"],
+      ["spirit", "Esprit libre"],
+      ["creature", "Créature"],
+    ];
+    return `<div class="entity-type-bar" role="tablist" aria-label="Type d'entité">
+      ${types
+        .map(
+          ([key, label]) =>
+            `<button type="button" class="entity-type-btn${key === this.entityType ? " active" : ""}"
+              data-entity-type="${key}" onclick="Gen.setEntityType('${key}')">${label}</button>`,
+        )
+        .join("")}
+    </div>`;
+  },
+
+  setEntityType(type) {
+    this.entityType = type;
+    document.querySelectorAll(".entity-type-btn").forEach((b) => {
+      b.classList.toggle("active", b.dataset.entityType === type);
+    });
+    const zones = { meta: "sg-fields-meta", spirit: "sg-fields-spirit", creature: "sg-fields-creature" };
+    for (const [key, id] of Object.entries(zones)) {
+      const el = document.getElementById(id);
+      if (el) el.hidden = key !== type;
+    }
+  },
+
+  /** Formulaire esprit libre : type + Puissance (SR5/SR6) ou palier (Anarchy). */
+  _spiritFormHTML(ed) {
+    if (typeof Spirits === "undefined") return "";
+    const types = Spirits.typesFor(ed.id);
+    const typeOpts = Object.entries(types)
+      .map(([key, t]) => `<option value="${key}">${t.label}</option>`)
+      .join("");
+    let powerField;
+    if (ed.id === "anarchy") {
+      powerField = `<div class="form-group">
+        <label>Niveau</label>
+        <select id="sg-spirit-power">
+          ${Spirits.ANARCHY_TIERS.map((l, i) => `<option value="${i}"${i === 1 ? " selected" : ""}>${l}</option>`).join("")}
+        </select>
+      </div>`;
+    } else {
+      powerField = `<div class="form-group">
+        <label>Puissance</label>
+        <select id="sg-spirit-power">
+          ${[2, 3, 4, 5, 6, 7, 8, 9, 10].map((f) => `<option value="${f}"${f === 6 ? " selected" : ""}>${f}</option>`).join("")}
+        </select>
+      </div>`;
+    }
+    return `<div class="form-group">
+      <label>Type d'esprit</label>
+      <select id="sg-spirit-type">
+        <option value="">Aléatoire</option>
+        ${typeOpts}
+      </select>
+    </div>
+    ${powerField}`;
+  },
+
+  /** Formulaire créature : sélection dans le catalogue de l'édition. */
+  _creatureFormHTML(ed) {
+    if (typeof Creatures === "undefined") return "";
+    const catalog = Creatures.catalogFor(ed.id);
+    const opts = Object.entries(catalog)
+      .map(([key, c]) => `<option value="${key}">${c.label}</option>`)
+      .join("");
+    return `<div class="form-group">
+      <label>Créature</label>
+      <select id="sg-creature-key">
+        <option value="">Aléatoire</option>
+        ${opts}
+      </select>
+    </div>`;
   },
 
   _buildGroupForm(ed) {
@@ -224,6 +312,8 @@ const Gen = {
 
   /* ---- Génération individuelle ---- */
   generateSingle() {
+    if (this.entityType === "spirit") return this._generateFreeSpirit();
+    if (this.entityType === "creature") return this._generateCreature();
     const opts = this._readForm("sg");
     const pnj = this.edition.generate(opts);
     this.pool.push(pnj);
@@ -231,6 +321,37 @@ const Gen = {
     const zone = document.getElementById("gen-zone-single");
     const card = CardRenderer.render(pnj, ["save", "discard"]);
     zone.prepend(card);
+  },
+
+  _generateFreeSpirit() {
+    const edId = this.edition.id;
+    const types = Spirits.typesFor(edId);
+    const selType = document.getElementById("sg-spirit-type")?.value;
+    const typeKey = selType || Utils.rand(Object.keys(types));
+    const power = parseInt(document.getElementById("sg-spirit-power")?.value, 10);
+    const spirit = Spirits.spawn(null, typeKey, {
+      edition: edId,
+      force: edId === "anarchy" ? undefined : power || 6,
+      tier: edId === "anarchy" ? (Number.isFinite(power) ? power : 1) : undefined,
+    });
+    if (!spirit) return;
+    this.pool.push(spirit);
+    const zone = document.getElementById("gen-zone-single");
+    const card = CardRenderer.render(spirit, ["save", "discard"]);
+    card.classList.add("spirit-card");
+    zone.prepend(card);
+  },
+
+  _generateCreature() {
+    const edId = this.edition.id;
+    const catalog = Creatures.catalogFor(edId);
+    const selKey = document.getElementById("sg-creature-key")?.value;
+    const key = selKey || Utils.rand(Object.keys(catalog));
+    const pnj = Creatures.spawn(edId, key);
+    if (!pnj) return;
+    this.pool.push(pnj);
+    const zone = document.getElementById("gen-zone-single");
+    zone.prepend(CardRenderer.render(pnj, ["save", "discard"]));
   },
 
   /* ---- Génération de groupe ---- */

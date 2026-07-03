@@ -99,20 +99,21 @@ const CardRenderer = {
     </div>`;
   },
 
-  /* ---- Header esprit invoqué ---- */
+  /* ---- Header esprit (invoqué ou libre) ---- */
   _headerSpirit(sp) {
     const badge =
       sp.edition === "anarchy"
         ? `<span class="pnj-rank-badge vehicle-badge">${this._esc(sp.tier || "Esprit")}</span>`
         : `<span class="pnj-rank-badge vehicle-badge">P ${sp.force}</span>`;
+    const metaLine = sp.ownerId
+      ? `<span class="vehicle-owner-link" role="button" tabindex="0"
+          onclick="UI.focusOwner('${sp.ownerId}')"
+          title="Retrouver ${this._esc(sp.ownerName)}">↳ invoqué par ${this._esc(sp.ownerName)}</span>`
+      : `<span>Esprit libre — indépendant</span>`;
     return `<div class="pnj-card-header vehicle-header spirit-header">
       <div class="pnj-header-left">
         <div class="pnj-name">✦ ${this._esc(sp.name)}</div>
-        <div class="pnj-meta">
-          <span class="vehicle-owner-link" role="button" tabindex="0"
-            onclick="UI.focusOwner('${sp.ownerId}')"
-            title="Retrouver ${this._esc(sp.ownerName)}">↳ invoqué par ${this._esc(sp.ownerName)}</span>
-        </div>
+        <div class="pnj-meta">${metaLine}</div>
       </div>
       ${badge}
     </div>`;
@@ -482,8 +483,10 @@ const CardRenderer = {
     return `<div class="combat-drugs vehicle-chips">${chips}</div>`;
   },
 
-  /** Barre de services d'un esprit : pips cliquables (services rendus). */
+  /** Barre de services d'un esprit : pips cliquables (services rendus).
+      Les esprits libres ne doivent aucun service — pas de barre. */
   _spiritServicesBar(sp) {
+    if (!sp.ownerId) return "";
     const total = sp.services || 0;
     const used = sp.servicesUsed || 0;
     const pips = Array.from({ length: total }, (_, i) => {
@@ -1101,7 +1104,9 @@ const CardRenderer = {
         <button class="card-action-btn danger" onclick="UI.dismissVehicle('${pnj.id}')">Ranger</button>
       </div>`;
     }
-    if (pnj.type === "spirit") {
+    // Esprit invoqué : Congédier. Esprit libre : boutons standards
+    // (sauvegarder/virer) comme tout PNJ généré.
+    if (pnj.type === "spirit" && pnj.ownerId) {
       return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>
         <button class="card-action-btn ghost" onclick="EditModal.open('${pnj.id}')">Éditer</button>
         <button class="card-action-btn danger" onclick="UI.dismissSpirit('${pnj.id}')">Congédier</button>
