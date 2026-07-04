@@ -37,7 +37,7 @@ const RunRenderer = {
         </div>
       </div>
       <div class="pnj-card-footer">
-        <button class="card-action-btn danger" onclick="this.closest('.run-card').remove()">Virer</button>
+        <button class="card-action-btn danger" data-action="discard-run">Virer</button>
       </div>`;
     return el;
   },

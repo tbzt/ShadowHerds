@@ -218,6 +218,39 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   ContentModal.bindDelegation();
   ContactRenderer.bindDelegation();
+  CardRenderer.bindDelegation();
+  SidebarToggle.bindDelegation();
+
+  document.addEventListener("click", (e) => {
+    const actionEl = e.target.closest("[data-action]");
+    if (!actionEl) return;
+    switch (actionEl.dataset.action) {
+      case "select-edition":
+        App.selectEdition(actionEl.dataset.ed);
+        break;
+      case "go-home":
+        App.goHome();
+        break;
+      case "change-edition":
+        App.changeEdition();
+        break;
+      case "show-panel":
+        App.showPanel(actionEl.dataset.panel);
+        break;
+      case "save-all-visible":
+        Shadows.saveAllVisible();
+        break;
+      case "backup-export":
+        Backup.export();
+        break;
+      case "backup-import":
+        Backup.openImportDialog();
+        break;
+      case "contact-generate":
+        ContactsBook.generate();
+        break;
+    }
+  });
 
   document.getElementById("edit-modal").addEventListener("click", (e) => {
     if (e.target === e.currentTarget) EditModal.close();

@@ -99,7 +99,7 @@ const CardRenderer = {
         <div class="pnj-name">${icon} ${this._esc(v.name)}</div>
         <div class="pnj-meta">
           <span class="vehicle-owner-link" role="button" tabindex="0"
-            onclick="UI.focusOwner('${v.ownerId}')"
+            data-action="focus-owner" data-id="${v.ownerId}"
             title="Retrouver ${this._esc(v.ownerName)}">↳ lié à ${this._esc(v.ownerName)}</span>
         </div>
       </div>
@@ -116,7 +116,7 @@ const CardRenderer = {
         : `<span class="pnj-rank-badge vehicle-badge">P ${sp[spSummonPower.field]}</span>`;
     const metaLine = sp.ownerId
       ? `<span class="vehicle-owner-link" role="button" tabindex="0"
-          onclick="UI.focusOwner('${sp.ownerId}')"
+          data-action="focus-owner" data-id="${sp.ownerId}"
           title="Retrouver ${this._esc(sp.ownerName)}">↳ invoqué par ${this._esc(sp.ownerName)}</span>`
       : `<span>Esprit libre — indépendant</span>`;
     return `<div class="pnj-card-header vehicle-header spirit-header">
@@ -485,7 +485,7 @@ const CardRenderer = {
           ? '<span class="vehicle-chip-state on">● fiche</span>'
           : '<span class="vehicle-chip-state">▸ déployer</span>';
         return `<span class="tag vehicle-chip${deployed ? " deployed" : ""}" role="button" tabindex="0"
-          onclick="UI.deployVehicle('${pnj.id}',${idx})"
+          data-action="deploy-vehicle" data-id="${pnj.id}" data-idx="${idx}"
           title="${this._esc(item)}">${icon} ${this._esc(label)}${state}</span>`;
       })
       .join("");
@@ -500,7 +500,7 @@ const CardRenderer = {
     const used = sp.servicesUsed || 0;
     const pips = Array.from({ length: total }, (_, i) => {
       const cls = i < used ? "service-pip used" : "service-pip";
-      return `<span class="${cls}" onclick="UI.toggleService('${sp.id}',${i})" title="Service ${i + 1}${i < used ? " (rendu)" : ""}"></span>`;
+      return `<span class="${cls}" data-action="toggle-service" data-id="${sp.id}" data-idx="${i}" title="Service ${i + 1}${i < used ? " (rendu)" : ""}"></span>`;
     }).join("");
     return `<div class="spirit-services" title="Services dus par l'esprit — cliquer pour marquer un service rendu">
       <span class="spirit-services-label">Services</span>
@@ -550,7 +550,7 @@ const CardRenderer = {
           ? `${o.label} : seuils physiques +${o.bonus} — cliquer pour ranger`
           : `${o.label} : cliquer pour l'équiper (seuils physiques +${o.bonus})`;
         return `<span class="tag vehicle-chip armor-chip${o.on ? " deployed" : ""}" role="button" tabindex="0"
-          onclick="UI.toggleArmorOption('${pnj.id}',${o.idx})"
+          data-action="toggle-armor" data-id="${pnj.id}" data-idx="${o.idx}"
           title="${this._esc(title)}">⛨ ${this._esc(o.label)} +${o.bonus}${state}</span>`;
       })
       .join("");
@@ -566,7 +566,7 @@ const CardRenderer = {
       : '<span class="vehicle-chip-state">▸ invoquer</span>';
     return `<div class="combat-drugs spirit-chips">
       <span class="tag vehicle-chip spirit-chip${active ? " deployed" : ""}" role="button" tabindex="0"
-        onclick="UI.openSummonPanel('${pnj.id}')"
+        data-action="open-summon" data-id="${pnj.id}"
         title="Invoquer un esprit lié à ce PNJ">✦ Esprit${state}</span>
     </div>`;
   },
@@ -942,7 +942,7 @@ const CardRenderer = {
         const cls = ["monitor-box", `sev-${sev}`, isFilled ? "filled" : ""]
           .filter(Boolean)
           .join(" ");
-        return `<div class="${cls}" onclick="UI.toggleMonitor('${pnj.id}','${sev}',${i})"></div>`;
+        return `<div class="${cls}" data-action="toggle-monitor" data-id="${pnj.id}" data-sev="${sev}" data-idx="${i}"></div>`;
       }).join("");
     return `${seg("leger")}<span class="monitor-gap"></span>${seg("grave")}<span class="monitor-gap"></span>${seg("incap")}`;
   },
@@ -989,7 +989,7 @@ const CardRenderer = {
       const isPenalty = (i + 1) % 3 === 0;
       const cls =
         `monitor-box ${isFilled ? "filled" : ""} ${isPenalty ? "penalty" : ""}`.trim();
-      return `<div class="${cls}" onclick="UI.toggleMonitor('${pnjId}','${type}',${i})"></div>`;
+      return `<div class="${cls}" data-action="toggle-monitor" data-id="${pnjId}" data-sev="${type}" data-idx="${i}"></div>`;
     }).join("");
   },
 
@@ -1100,7 +1100,7 @@ const CardRenderer = {
     const stateClass =
       state === "effect" ? " drug-effect" : state === "sideEffect" ? " drug-side" : "";
     return `<span class="tag drug-tag${stateClass}" role="button" tabindex="0"
-      onclick="UI.cycleDrug('${pnj.id}','${edition}','${drug.id}')"
+      data-action="cycle-drug" data-id="${pnj.id}" data-edition="${edition}" data-drug="${drug.id}"
       title="${this._esc(info)}">${this._esc(rawLabel)}<span class="drug-next">${nextLabel}</span></span>`;
   },
 
@@ -1166,16 +1166,16 @@ const CardRenderer = {
   _footer(pnj, actions) {
     if (pnj.type === "vehicle") {
       return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>
-        <button class="card-action-btn ghost" onclick="EditModal.open('${pnj.id}')">Éditer</button>
-        <button class="card-action-btn danger" onclick="UI.dismissVehicle('${pnj.id}')">Ranger</button>
+        <button class="card-action-btn ghost" data-action="edit-open" data-id="${pnj.id}">Éditer</button>
+        <button class="card-action-btn danger" data-action="dismiss-vehicle" data-id="${pnj.id}">Ranger</button>
       </div>`;
     }
     // Esprit invoqué : Congédier. Esprit libre : boutons standards
     // (sauvegarder/virer) comme tout PNJ généré.
     if (pnj.type === "spirit" && pnj.ownerId) {
       return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>
-        <button class="card-action-btn ghost" onclick="EditModal.open('${pnj.id}')">Éditer</button>
-        <button class="card-action-btn danger" onclick="UI.dismissSpirit('${pnj.id}')">Congédier</button>
+        <button class="card-action-btn ghost" data-action="edit-open" data-id="${pnj.id}">Éditer</button>
+        <button class="card-action-btn danger" data-action="dismiss-spirit" data-id="${pnj.id}">Congédier</button>
       </div>`;
     }
     const btns = [];
@@ -1185,24 +1185,73 @@ const CardRenderer = {
     }
     if (actions.includes("save")) {
       btns.push(
-        `<button class="card-action-btn save" onclick="Shadows.savePNJ('${pnj.id}')">Sauvegarder</button>`,
+        `<button class="card-action-btn save" data-action="save-pnj" data-id="${pnj.id}">Sauvegarder</button>`,
       );
     }
     if (actions.includes("edit")) {
       btns.push(
-        `<button class="card-action-btn ghost" onclick="EditModal.open('${pnj.id}')">Éditer</button>`,
+        `<button class="card-action-btn ghost" data-action="edit-open" data-id="${pnj.id}">Éditer</button>`,
       );
     }
     if (actions.includes("discard")) {
       btns.push(
-        `<button class="card-action-btn danger" onclick="Gen.discard('${pnj.id}')">Virer</button>`,
+        `<button class="card-action-btn danger" data-action="discard" data-id="${pnj.id}">Virer</button>`,
       );
     }
     if (actions.includes("remove")) {
       btns.push(
-        `<button class="card-action-btn danger" onclick="Shadows.removePNJ('${pnj.id}')">Supprimer</button>`,
+        `<button class="card-action-btn danger" data-action="remove-pnj" data-id="${pnj.id}">Supprimer</button>`,
       );
     }
     return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>${btns.join("")}</div>`;
+  },
+
+  _delegated: false,
+  bindDelegation() {
+    if (this._delegated) return;
+    this._delegated = true;
+    document.addEventListener("click", (e) => {
+      const actionEl = e.target.closest("[data-action]");
+      if (!actionEl) return;
+      const id = actionEl.dataset.id;
+      switch (actionEl.dataset.action) {
+        case "focus-owner":
+          UI.focusOwner(id);
+          break;
+        case "deploy-vehicle":
+          UI.deployVehicle(id, Number(actionEl.dataset.idx));
+          break;
+        case "toggle-service":
+          UI.toggleService(id, Number(actionEl.dataset.idx));
+          break;
+        case "toggle-armor":
+          UI.toggleArmorOption(id, Number(actionEl.dataset.idx));
+          break;
+        case "open-summon":
+          UI.openSummonPanel(id);
+          break;
+        case "toggle-monitor":
+          UI.toggleMonitor(id, actionEl.dataset.sev, Number(actionEl.dataset.idx));
+          break;
+        case "cycle-drug":
+          UI.cycleDrug(id, actionEl.dataset.edition, actionEl.dataset.drug);
+          break;
+        case "edit-open":
+          EditModal.open(id);
+          break;
+        case "dismiss-vehicle":
+          UI.dismissVehicle(id);
+          break;
+        case "dismiss-spirit":
+          UI.dismissSpirit(id);
+          break;
+        case "save-pnj":
+          Shadows.savePNJ(id);
+          break;
+        case "remove-pnj":
+          Shadows.removePNJ(id);
+          break;
+      }
+    });
   },
 };

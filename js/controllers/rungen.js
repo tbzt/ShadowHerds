@@ -303,15 +303,37 @@ const RunGen = {
   },
 
   initPanel() {
+    this._bindDelegation();
     const zone = document.getElementById("run-panel-content");
     delete zone.dataset.init;
     zone.dataset.init = "1";
     zone.innerHTML = `
       <div class="gen-actions">
-        <button class="btn-primary"   onclick="RunGen.addOne()">Générer une run</button>
-        <button class="btn-secondary" onclick="RunGen.clearAll()">Effacer tout</button>
+        <button class="btn-primary"   data-action="add-one">Générer une run</button>
+        <button class="btn-secondary" data-action="clear-all">Effacer tout</button>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:1rem;" id="run-list"></div>`;
+  },
+
+  _delegated: false,
+  _bindDelegation() {
+    if (this._delegated) return;
+    this._delegated = true;
+    document.getElementById("panel-run").addEventListener("click", (e) => {
+      const actionEl = e.target.closest("[data-action]");
+      if (!actionEl) return;
+      switch (actionEl.dataset.action) {
+        case "add-one":
+          this.addOne();
+          break;
+        case "clear-all":
+          this.clearAll();
+          break;
+        case "discard-run":
+          actionEl.closest(".run-card").remove();
+          break;
+      }
+    });
   },
 
   addOne() {

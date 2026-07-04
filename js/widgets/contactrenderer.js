@@ -67,10 +67,6 @@ const ContactRenderer = {
     });
   },
 
-  render(c) {
-    return c.edition === "anarchy" ? this._renderAnarchy(c) : this._renderSR(c);
-  },
-
   /* ---- Card persistante (ContactsBook) avec édition inline ----
      Le déclencheur de groupes (🏷) est ajouté après coup par le socle
      Collection (_appendGroupTrigger), commun aux trois collections. */
@@ -187,68 +183,4 @@ const ContactRenderer = {
     </div>`;
   },
 
-  _renderAnarchy(c) {
-    const el = document.createElement("div");
-    el.className = "contact-card";
-
-    // Pastilles de niveau : cercles pleins / vides
-    const levelDots = Array.from(
-      { length: 6 },
-      (_, i) =>
-        `<span class="niveau-dot ${i < c.level ? "filled" : ""}"></span>`,
-    ).join("");
-
-    const bonusHtml = c.bonus
-      ? `<div class="contact-bonus">+ ${CardRenderer._esc(c.bonus)}</div>`
-      : "";
-
-    el.innerHTML = `
-      <div class="contact-card-body">
-        <div class="contact-name">${CardRenderer._esc(c.name)}</div>
-        <div class="contact-role">${CardRenderer._esc(c.role)}</div>
-        <div class="contact-desc">${CardRenderer._esc(c.desc)}</div>
-
-        <div class="contact-anarchy-stats">
-          <div class="contact-stat-row">
-            <span class="contact-stat-label">Niveau</span>
-            <div class="niveau-dots">${levelDots}</div>
-            <span class="contact-stat-val">${c.level} (${c.cout.toLocaleString("fr-FR")}¥)</span>
-          </div>
-          <div class="contact-stat-row">
-            <span class="contact-stat-label">Effet</span>
-            <span class="contact-rr">RR ${c.rr} — ${CardRenderer._esc(c.domaine)}</span>
-          </div>
-          ${bonusHtml}
-        </div>
-
-        <div class="contact-trait">⚠ ${CardRenderer._esc(c.trait)}</div>
-      </div>
-      <div class="pnj-card-footer">
-        <button class="card-action-btn danger" onclick="this.closest('.contact-card').remove()">Virer</button>
-      </div>`;
-    return el;
-  },
-
-  _renderSR(c) {
-    const el = document.createElement("div");
-    el.className = "contact-card";
-    el.innerHTML = `
-      <div class="contact-card-body">
-        <div class="contact-name">${CardRenderer._esc(c.name)}</div>
-        <div class="contact-role">${CardRenderer._esc(c.role)}</div>
-        <div class="contact-desc">${CardRenderer._esc(c.desc)}</div>
-        <div class="stats-row" style="margin-top:6px;">
-          <span class="stat-pill accent">Influence <strong>${c.influence}</strong></span>
-          <span class="stat-pill">Loyauté <strong>${c.loyaute}</strong></span>
-        </div>
-        <div style="margin-top:5px;font-size:0.68rem;color:var(--text-dim);">
-          📍 ${CardRenderer._esc(c.lieu)}
-        </div>
-        <div class="contact-trait">⚠ ${CardRenderer._esc(c.trait)}</div>
-      </div>
-      <div class="pnj-card-footer">
-        <button class="card-action-btn danger" onclick="this.closest('.contact-card').remove()">Virer</button>
-      </div>`;
-    return el;
-  },
 };

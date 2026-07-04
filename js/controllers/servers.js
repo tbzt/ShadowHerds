@@ -619,6 +619,119 @@ const Servers = Object.assign(
       this.load();
       this.renderForm();
       this.render();
+      this._wire();
+    },
+
+    /* ---- Délégation d'événements (modèle ContentModal/Collection) ----
+       Un seul écouteur, posé une fois sur le conteneur persistant du
+       panneau (jamais recréé — seuls le formulaire et la grille sont
+       reconstruits à chaque render). */
+    _wire() {
+      if (this._wired) return;
+      this._wired = true;
+      const panel = document.getElementById("panel-matrix");
+      if (!panel) return;
+
+      panel.addEventListener("click", (e) => {
+        const el = e.target.closest("[data-action]");
+        if (!el) return;
+        const id = el.dataset.id;
+        const n = () => parseInt(el.dataset.n, 10);
+        switch (el.dataset.action) {
+          case "sidebar-close":
+            SidebarToggle.close("matrix");
+            break;
+          case "sidebar-open":
+            SidebarToggle.open("matrix");
+            break;
+          case "create-server":
+            this.createFromForm();
+            break;
+          case "reroll-sculpture":
+            this.rerollSculpture(id);
+            break;
+          case "toggle-edit":
+            this.toggleEdit(id);
+            break;
+          case "toggle-intrusion":
+            this.toggleIntrusion(id);
+            break;
+          case "remove-spider":
+            this.removeSpider(id);
+            break;
+          case "add-spider":
+            this.addSpider(id);
+            break;
+          case "remove":
+            this.remove(id);
+            break;
+          case "redistribute-attrs":
+            this.redistributeAttrs(id);
+            break;
+          case "move-ic":
+            this.moveIC(id, el.dataset.k, n());
+            break;
+          case "drop-ic":
+            this.dropIC(id, el.dataset.k);
+            break;
+          case "reroll-sculpture-edit":
+            this.rerollSculptureEdit(id);
+            break;
+          case "add-ic":
+            this.addIC(id);
+            break;
+          case "ic-box":
+            this.icBox(id, el.dataset.k, n());
+            break;
+          case "relaunch-ic":
+            this.relaunchIC(id, el.dataset.k);
+            break;
+          case "roll-ic":
+            this.rollIC(id, el.dataset.k, el.dataset.kind);
+            break;
+          case "set-alert":
+            this.setAlert(id);
+            break;
+          case "next-turn":
+            this.nextTurn(id);
+            break;
+          case "reset-intrusion":
+            this.resetIntrusion(id);
+            break;
+          case "add-ss-2d6":
+            this.addSS2D6(id);
+            break;
+          case "add-marks":
+            this.addMarks(id, n());
+            break;
+          case "add-ss":
+            this.addSS(id, n(), el.dataset.label);
+            break;
+          case "set-illegal":
+            this.setIllegal(id, el.dataset.kind, n());
+            break;
+          case "undo-ss":
+            this.undoSS(id);
+            break;
+          case "reset-ss":
+            this.resetSS(id);
+            break;
+          case "dieu":
+            this.dieu(id, el.dataset.k, n());
+            break;
+          case "disaster":
+            this.disaster(id);
+            break;
+          case "reboot-decker":
+            this.rebootDecker(id);
+            break;
+        }
+      });
+
+      panel.addEventListener("change", (e) => {
+        const el = e.target.closest('[data-action="edit-note"]');
+        if (el) this.editNote(el.dataset.id, el.value);
+      });
     },
 
     renderForm() {
@@ -730,7 +843,7 @@ const Servers = Object.assign(
         <div class="server-profile">${esc(srv.profile || "")}${srv.secPhys ? " · sécurité physique (+1)" : ""}</div>
         ${statsHtml}
         <div class="server-sculpture">${esc(srv.sculpture || "")}
-          <button class="btn-icon-tiny" onclick="Servers.rerollSculpture('${srv.id}')"
+          <button class="btn-icon-tiny" data-action="reroll-sculpture" data-id="${srv.id}"
             title="Relancer la sculpture (gamme du serveur)">🎲</button>
         </div>
         <div class="server-ic-row">${chips}</div>
@@ -744,18 +857,18 @@ const Servers = Object.assign(
       <div class="server-card-body">
         ${body}
         <textarea class="server-notes" placeholder="Notes…"
-          onchange="Servers.editNote('${srv.id}', this.value)">${esc(srv.notes || "")}</textarea>
+          data-action="edit-note" data-id="${srv.id}">${esc(srv.notes || "")}</textarea>
       </div>
       <div class="server-card-footer">
         ${editing
-          ? `<button class="btn-primary btn-small" onclick="Servers.toggleEdit('${srv.id}')">✓ Terminer</button>`
+          ? `<button class="btn-primary btn-small" data-action="toggle-edit" data-id="${srv.id}">✓ Terminer</button>`
           : `<button class="btn-secondary btn-small ${intr.open ? "active" : ""}"
-              onclick="Servers.toggleIntrusion('${srv.id}')">${intr.open ? "Fermer l'intrusion" : "⚡ Intrusion"}</button>
-            <button class="btn-secondary btn-small" onclick="Servers.toggleEdit('${srv.id}')" title="Éditer le serveur">✎ Éditer</button>
+              data-action="toggle-intrusion" data-id="${srv.id}">${intr.open ? "Fermer l'intrusion" : "⚡ Intrusion"}</button>
+            <button class="btn-secondary btn-small" data-action="toggle-edit" data-id="${srv.id}" title="Éditer le serveur">✎ Éditer</button>
             ${srv.spider
-              ? `<button class="btn-secondary btn-small" onclick="Servers.removeSpider('${srv.id}')" title="Retirer le spider">Spider ✕</button>`
-              : `<button class="btn-secondary btn-small" onclick="Servers.addSpider('${srv.id}')" title="Générer un decker de sécurité lié">+ Spider</button>`}`}
-        <button class="btn-icon danger" onclick="Servers.remove('${srv.id}')" title="Supprimer">✕</button>
+              ? `<button class="btn-secondary btn-small" data-action="remove-spider" data-id="${srv.id}" title="Retirer le spider">Spider ✕</button>`
+              : `<button class="btn-secondary btn-small" data-action="add-spider" data-id="${srv.id}" title="Générer un decker de sécurité lié">+ Spider</button>`}`}
+        <button class="btn-icon danger" data-action="remove" data-id="${srv.id}" title="Supprimer">✕</button>
       </div>`;
       return card;
     },
@@ -792,7 +905,7 @@ const Servers = Object.assign(
                     value="${(srv.attrs || {})[k] || srv.indice}"></label>`,
               )
               .join("")}
-            <button class="btn-secondary btn-small" onclick="Servers.redistributeAttrs('${id}')"
+            <button class="btn-secondary btn-small" data-action="redistribute-attrs" data-id="${id}"
               title="Redistribuer indice à indice+3 au hasard">↻ ASDF</button>
           </div>`;
 
@@ -807,9 +920,9 @@ const Servers = Object.assign(
           return `<div class="ic-edit-row">
           <span>${i + 1}. ${esc(label)}</span>
           <span class="ic-edit-actions">
-            <button class="btn-icon-tiny" onclick="Servers.moveIC('${id}', '${k}', -1)" title="Déployée plus tôt">↑</button>
-            <button class="btn-icon-tiny" onclick="Servers.moveIC('${id}', '${k}', 1)" title="Déployée plus tard">↓</button>
-            <button class="btn-icon-tiny danger" onclick="Servers.dropIC('${id}', '${k}')" title="Retirer">✕</button>
+            <button class="btn-icon-tiny" data-action="move-ic" data-id="${id}" data-k="${k}" data-n="-1" title="Déployée plus tôt">↑</button>
+            <button class="btn-icon-tiny" data-action="move-ic" data-id="${id}" data-k="${k}" data-n="1" title="Déployée plus tard">↓</button>
+            <button class="btn-icon-tiny danger" data-action="drop-ic" data-id="${id}" data-k="${k}" title="Retirer">✕</button>
           </span>
         </div>`;
         })
@@ -836,14 +949,14 @@ const Servers = Object.assign(
         ${attrsHtml}
         <label class="server-edit-label">Sculpture
           <textarea id="se-${id}-sculpture" rows="3">${esc(srv.sculpture || "")}</textarea></label>
-        <button class="btn-secondary btn-small" onclick="Servers.rerollSculptureEdit('${id}')">🎲 Relancer la sculpture</button>
+        <button class="btn-secondary btn-small" data-action="reroll-sculpture-edit" data-id="${id}">🎲 Relancer la sculpture</button>
         <div class="server-edit-ics">
           <span class="monitor-label">CI — ordre de déploiement</span>
           ${icRows}
           ${addOpts
             ? `<div class="ic-edit-add">
                 <select id="se-${id}-addic">${addOpts}</select>
-                <button class="btn-secondary btn-small" onclick="Servers.addIC('${id}')">＋ Ajouter</button>
+                <button class="btn-secondary btn-small" data-action="add-ic" data-id="${id}">＋ Ajouter</button>
               </div>`
             : ""}
         </div>
@@ -875,14 +988,14 @@ const Servers = Object.assign(
                 : "";
             return `<span class="monitor-box ${st.dmg >= n ? "filled" : ""}"${sep}
               title="${srv.edition === "anarchy" ? ["Légère", "Légère", "Grave", "Incapacitante"][i] : `Case ${n}`}"
-              onclick="Servers.icBox('${srv.id}', '${k}', ${n})"></span>`;
+              data-action="ic-box" data-id="${srv.id}" data-k="${k}" data-n="${n}"></span>`;
           }).join("")}</span>`;
 
           const status = ic.watch
             ? `<span class="ic-status watch">veille</span>`
             : st.down
               ? `<span class="ic-status down">détruite</span>
-               <button class="btn-secondary btn-small" onclick="Servers.relaunchIC('${srv.id}', '${k}')" title="Le serveur relance une copie (dès le tour suivant)">↻ relancer</button>`
+               <button class="btn-secondary btn-small" data-action="relaunch-ic" data-id="${srv.id}" data-k="${k}" title="Le serveur relance une copie (dès le tour suivant)">↻ relancer</button>`
               : st.active
                 ? `<span class="ic-status active">active${st.turn ? ` · t${st.turn}` : ""}</span>`
                 : `<span class="ic-status idle">en réserve</span>`;
@@ -893,7 +1006,7 @@ const Servers = Object.assign(
             const M = Matrix.use(srv.edition);
             const btn = (kind, txt, tip) =>
               `<button class="btn-secondary btn-small ic-roll" title="${esc(tip)}"
-              onclick="Servers.rollIC('${srv.id}', '${k}', '${kind}')">⚄ ${txt}</button>`;
+              data-action="roll-ic" data-id="${srv.id}" data-k="${k}" data-kind="${kind}">⚄ ${txt}</button>`;
             if (ic.watch) {
               const per = M.actionRoll("per", srv);
               rolls = btn("per", per.txt, per.tip);
@@ -929,11 +1042,11 @@ const Servers = Object.assign(
         <div class="intrusion-toolbar">
           <span class="intrusion-turn">Tour <b>${intr.turn}</b></span>
           <button class="btn-secondary btn-small ${intr.alerted ? "alert-on" : ""}"
-            onclick="Servers.setAlert('${srv.id}')"
+            data-action="set-alert" data-id="${srv.id}"
             title="La Patrouilleuse a repéré l'intrus : le serveur déploie une CI par tour">
             ${intr.alerted ? "⚠ Alerte en cours" : "Donner l'alerte"}</button>
-          <button class="btn-primary btn-small" onclick="Servers.nextTurn('${srv.id}')">Tour suivant ▸</button>
-          <button class="btn-icon" onclick="Servers.resetIntrusion('${srv.id}')" title="Réinitialiser l'intrusion">↺</button>
+          <button class="btn-primary btn-small" data-action="next-turn" data-id="${srv.id}">Tour suivant ▸</button>
+          <button class="btn-icon" data-action="reset-intrusion" data-id="${srv.id}" title="Réinitialiser l'intrusion">↺</button>
         </div>
         <div class="ic-rows">${rows}</div>
         ${surveillance}
@@ -962,20 +1075,20 @@ const Servers = Object.assign(
 
       const sr5Extra =
         srv.edition === "sr5"
-          ? `<button class="btn-secondary btn-small" onclick="Servers.addSS2D6('${srv.id}')"
+          ? `<button class="btn-secondary btn-small" data-action="add-ss-2d6" data-id="${srv.id}"
             title="Le SS augmente de 2D6 toutes les 15 minutes après le premier point (p.233)">
             +2D6 ⏱${intr.lastRollT ? ` ${Math.round((Date.now() - intr.lastRollT) / 60000)} min` : ""}</button>
           <span class="ss-marks">Marks du serveur :
-            <button class="btn-icon-tiny" onclick="Servers.addMarks('${srv.id}', -1)">−</button>
+            <button class="btn-icon-tiny" data-action="add-marks" data-id="${srv.id}" data-n="-1">−</button>
             <b>${intr.marks}</b>/3
-            <button class="btn-icon-tiny" onclick="Servers.addMarks('${srv.id}', 1)">＋</button>
+            <button class="btn-icon-tiny" data-action="add-marks" data-id="${srv.id}" data-n="1">＋</button>
             <small>(+2 dommages CI/mark · Traqueuse à 2+ · convergence = 3 marks posées)</small>
           </span>`
-          : `<button class="btn-secondary btn-small" onclick="Servers.addSS('${srv.id}', 1, 'programme de hacking')"
+          : `<button class="btn-secondary btn-small" data-action="add-ss" data-id="${srv.id}" data-n="1" data-label="programme de hacking"
             title="+1 SS par action matricielle modifiée par un programme de hacking (p.178)">+1 prog.</button>
           <span class="ss-marks">Accès illégaux maintenus —
-            Utilisateur <button class="btn-icon-tiny" onclick="Servers.setIllegal('${srv.id}', 'user', -1)">−</button><b>${intr.illUser}</b><button class="btn-icon-tiny" onclick="Servers.setIllegal('${srv.id}', 'user', 1)">＋</button>
-            · Admin <button class="btn-icon-tiny" onclick="Servers.setIllegal('${srv.id}', 'admin', -1)">−</button><b>${intr.illAdmin}</b><button class="btn-icon-tiny" onclick="Servers.setIllegal('${srv.id}', 'admin', 1)">＋</button>
+            Utilisateur <button class="btn-icon-tiny" data-action="set-illegal" data-id="${srv.id}" data-kind="user" data-n="-1">−</button><b>${intr.illUser}</b><button class="btn-icon-tiny" data-action="set-illegal" data-id="${srv.id}" data-kind="user" data-n="1">＋</button>
+            · Admin <button class="btn-icon-tiny" data-action="set-illegal" data-id="${srv.id}" data-kind="admin" data-n="-1">−</button><b>${intr.illAdmin}</b><button class="btn-icon-tiny" data-action="set-illegal" data-id="${srv.id}" data-kind="admin" data-n="1">＋</button>
             <small>(+1/+3 SS par round, appliqués à « Tour suivant »)</small>
           </span>`;
 
@@ -996,11 +1109,11 @@ const Servers = Object.assign(
           ${[1, 2, 3, 4, 5]
             .map(
               (n) =>
-                `<button class="btn-secondary btn-small" onclick="Servers.addSS('${srv.id}', ${n})">+${n}</button>`,
+                `<button class="btn-secondary btn-small" data-action="add-ss" data-id="${srv.id}" data-n="${n}">+${n}</button>`,
             )
             .join("")}
-          <button class="btn-icon-tiny" onclick="Servers.undoSS('${srv.id}')" title="Annuler le dernier ajout">⌫</button>
-          <button class="btn-icon-tiny" onclick="Servers.resetSS('${srv.id}')" title="Reboot du decker : SS à zéro">↺</button>
+          <button class="btn-icon-tiny" data-action="undo-ss" data-id="${srv.id}" title="Annuler le dernier ajout">⌫</button>
+          <button class="btn-icon-tiny" data-action="reset-ss" data-id="${srv.id}" title="Reboot du decker : SS à zéro">↺</button>
         </div>
         <div class="ss-actions">${sr5Extra}</div>
         ${convergence}
@@ -1016,9 +1129,9 @@ const Servers = Object.assign(
 
       const stepper = (label, key, val, tip) => `
       <span class="ss-marks" title="${tip}">${label}
-        <button class="btn-icon-tiny" onclick="Servers.dieu('${srv.id}', '${key}', -1)">−</button>
+        <button class="btn-icon-tiny" data-action="dieu" data-id="${srv.id}" data-k="${key}" data-n="-1">−</button>
         <b>${val}</b>
-        <button class="btn-icon-tiny" onclick="Servers.dieu('${srv.id}', '${key}', 1)">＋</button>
+        <button class="btn-icon-tiny" data-action="dieu" data-id="${srv.id}" data-k="${key}" data-n="1">＋</button>
       </span>`;
 
       return `
@@ -1035,9 +1148,9 @@ const Servers = Object.assign(
         </div>
         <div class="ss-actions">
           <button class="btn-secondary btn-small ${intr.converged ? "alert-on" : ""}"
-            onclick="Servers.disaster('${srv.id}')"
+            data-action="disaster" data-id="${srv.id}"
             title="Complication Désastre : le DIEU converge">${intr.converged ? "☠ Convergence !" : "Désastre…"}</button>
-          <button class="btn-secondary btn-small" onclick="Servers.rebootDecker('${srv.id}')"
+          <button class="btn-secondary btn-small" data-action="reboot-decker" data-id="${srv.id}"
             title="Seule façon d'effacer les malus : reboot du deck + 1 h hors ligne (perte de tous les accès)">Reboot + 1 h hors ligne</button>
         </div>
         ${

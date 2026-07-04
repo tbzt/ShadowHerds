@@ -62,7 +62,7 @@ const Gen = {
       grille de .gen-form. */
   _wrapFilters(fieldsHTML) {
     const collapsed = this.filtersCollapsed();
-    return `<button type="button" class="filters-toggle" onclick="Gen.toggleFilters()"
+    return `<button type="button" class="filters-toggle" data-action="toggle-filters"
         title="Replier / déplier les filtres" aria-expanded="${!collapsed}">
         <span>Filtres</span>
         <span class="chev">${collapsed ? "▸" : "▾"}</span>
@@ -98,7 +98,7 @@ const Gen = {
         .map(
           ([key, label]) =>
             `<button type="button" class="entity-type-btn${key === this.entityType ? " active" : ""}"
-              data-entity-type="${key}" onclick="Gen.setEntityType('${key}')">${label}</button>`,
+              data-action="set-entity-type" data-entity-type="${key}">${label}</button>`,
         )
         .join("")}
     </div>`;
@@ -469,4 +469,48 @@ const Gen = {
     btn.classList.add("active");
     document.getElementById(`gen-tab-${tab}`).classList.add("active");
   },
+
+  /** Délégation globale du panel (boutons statiques + cartes générées,
+      dont le contenu est reconstruit à chaque render sans jamais
+      remplacer le conteneur #panel-generator lui-même). */
+  init() {
+    const panel = document.getElementById("panel-generator");
+    if (!panel) return;
+    panel.addEventListener("click", (e) => {
+      const el = e.target.closest("[data-action]");
+      if (!el) return;
+      switch (el.dataset.action) {
+        case "show-tab":
+          this.showTab(el.dataset.tab, el);
+          break;
+        case "toggle-filters":
+          this.toggleFilters();
+          break;
+        case "set-entity-type":
+          this.setEntityType(el.dataset.entityType);
+          break;
+        case "generate-single":
+          this.generateSingle();
+          break;
+        case "clear-single":
+          this.clearSingle();
+          break;
+        case "generate-group":
+          this.generateGroup();
+          break;
+        case "clear-group":
+          this.clearGroup();
+          break;
+        case "discard":
+          this.discard(el.dataset.id);
+          break;
+      }
+    });
+  },
 };
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => Gen.init());
+} else {
+  Gen.init();
+}

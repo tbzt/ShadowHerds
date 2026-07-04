@@ -25,15 +25,28 @@ const DiceLog = {
     panel.innerHTML = `
       <div class="dice-log-head">
         <span class="dice-log-title">Journal des jets</span>
-        <button class="btn-icon-tiny" onclick="DiceLog.clear()" title="Vider le journal">⌫</button>
-        <button class="btn-icon-tiny" onclick="DiceLog.close()" title="Fermer" aria-label="Fermer">✕</button>
+        <button class="btn-icon-tiny" data-action="clear" title="Vider le journal">⌫</button>
+        <button class="btn-icon-tiny" data-action="close" title="Fermer" aria-label="Fermer">✕</button>
       </div>
       <div class="dice-log-list" id="dice-log-list"></div>`;
     document.body.appendChild(panel);
 
+    panel.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+      if (btn.dataset.action === "clear") this.clear();
+      else if (btn.dataset.action === "close") this.close();
+    });
+
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") this.close();
     });
+  },
+
+  /** Écoute du bouton d'ouverture dans la barre du haut (index.html). */
+  init() {
+    const btn = document.getElementById("dice-log-btn");
+    if (btn) btn.addEventListener("click", () => this.toggle());
   },
 
   toggle() {
@@ -155,3 +168,9 @@ const DiceLog = {
       .join("");
   },
 };
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => DiceLog.init());
+} else {
+  DiceLog.init();
+}

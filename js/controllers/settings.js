@@ -78,7 +78,7 @@ const Settings = {
   _radioCD(key, val, label, checked) {
     return `<label class="radio-option">
       <input type="radio" name="cd_${key}" value="${val}" ${checked ? "checked" : ""}
-        onchange="Settings.setCardLayout('${val}')">
+        data-action="set-card-layout">
       <span>${label}</span>
     </label>`;
   },
@@ -86,7 +86,7 @@ const Settings = {
     return `<div class="display-pref-row">
       <label for="cd_${key}">${label}</label>
       <input type="checkbox" id="cd_${key}" ${checked ? "checked" : ""}
-        onchange="Settings.toggleCardDisplay('${key}', this.checked)">
+        data-action="toggle-card-display" data-key="${key}">
     </div>`;
   },
 
@@ -107,13 +107,13 @@ const Settings = {
           <div class="display-pref-row">
             <label for="dp_quickRoll">Lancer rapide (sans animation)</label>
             <input type="checkbox" id="dp_quickRoll" ${dp.quickRoll ? "checked" : ""}
-              onchange="Settings.setDiceQuickRoll(this.checked)">
+              data-action="set-dice-quick-roll">
           </div>
           <div class="display-pref-row">
             <label for="dp_defaultCount">Réserve par défaut du lanceur</label>
             <input type="number" id="dp_defaultCount" min="1" max="40" value="${dp.defaultCount}"
               class="settings-number-input"
-              onchange="Settings.setDiceDefaultCount(this.value)">
+              data-action="set-dice-default-count">
           </div>
         </div>
       </div>`;
@@ -170,7 +170,7 @@ const Settings = {
     html += `<div class="settings-section">
       <h3>Remise à zéro</h3>
       <p>Efface tous les PNJ sauvegardés et paramètres pour cette édition. Action irréversible.</p>
-      <button class="danger-btn" onclick="Settings.atomize()">⚠ Atomiser</button>
+      <button class="danger-btn" data-action="atomize">⚠ Atomiser</button>
     </div>`;
 
     // --- À propos ---
@@ -192,6 +192,7 @@ const Settings = {
     </div>`;
 
     zone.innerHTML = html;
+    this._bindDelegation(zone);
 
     // Bind les radios
     zone.querySelectorAll("input[type=radio]").forEach((r) => {
@@ -204,6 +205,29 @@ const Settings = {
         this.set(k, v);
         toast("Paramètre enregistré.");
       });
+    });
+  },
+
+  /* Délégation globale du panel (branchée une seule fois sur le conteneur
+     persistant, qui n'est jamais recréé — seul son contenu est reconstruit
+     à chaque render()). */
+  _bindDelegation(zone) {
+    if (this._delegated) return;
+    this._delegated = true;
+    zone.addEventListener("change", (e) => {
+      const el = e.target.closest("[data-action]");
+      if (!el) return;
+      if (el.dataset.action === "set-card-layout") this.setCardLayout(el.value);
+      else if (el.dataset.action === "toggle-card-display")
+        this.toggleCardDisplay(el.dataset.key, el.checked);
+      else if (el.dataset.action === "set-dice-quick-roll")
+        this.setDiceQuickRoll(el.checked);
+      else if (el.dataset.action === "set-dice-default-count")
+        this.setDiceDefaultCount(el.value);
+    });
+    zone.addEventListener("click", (e) => {
+      const el = e.target.closest("[data-action]");
+      if (el && el.dataset.action === "atomize") this.atomize();
     });
   },
 

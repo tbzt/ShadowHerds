@@ -15,6 +15,19 @@ const Contacts = {
         ? this._formAnarchy()
         : this._formSR();
     this._syncCost();
+    this._bindDelegation();
+  },
+
+  _delegated: false,
+  _bindDelegation() {
+    if (this._delegated) return;
+    this._delegated = true;
+    document
+      .getElementById("contact-gen-form")
+      .addEventListener("change", (e) => {
+        if (e.target.closest("#cg-network, #cg-scope, #cg-rr"))
+          this._syncCost();
+      });
   },
 
   _formAnarchy() {
@@ -28,10 +41,10 @@ const Contacts = {
       <div class="contact-form">
         <div class="contact-form-row">
           <label>Réseau
-            <select id="cg-network" onchange="Contacts._syncCost()">${nets}</select>
+            <select id="cg-network">${nets}</select>
           </label>
           <label>Portée
-            <select id="cg-scope" onchange="Contacts._syncCost()">
+            <select id="cg-scope">
               <option value="specialisation">Spécialisation (un Réseau)</option>
               <option value="competence">Compétence Réseau (tous)</option>
             </select>
@@ -39,7 +52,7 @@ const Contacts = {
         </div>
         <div class="contact-form-row">
           <label>RR (loyauté / réseau)
-            <select id="cg-rr" onchange="Contacts._syncCost()">
+            <select id="cg-rr">
               <option value="1">RR 1</option>
               <option value="2">RR 2</option>
               <option value="3">RR 3</option>

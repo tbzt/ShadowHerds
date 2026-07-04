@@ -64,6 +64,19 @@ const SidebarToggle = {
   toggle(panel) {
     this.state[panel] ? this.open(panel) : this.close(panel);
   },
+
+  _delegated: false,
+  bindDelegation() {
+    if (this._delegated) return;
+    this._delegated = true;
+    document.addEventListener("click", (e) => {
+      const el = e.target.closest("[data-sidebar-action]");
+      if (!el) return;
+      const target = el.dataset.sidebarTarget;
+      if (el.dataset.sidebarAction === "open") this.open(target);
+      else if (el.dataset.sidebarAction === "close") this.close(target);
+    });
+  },
 };
 
 // Initialisation au chargement du DOM

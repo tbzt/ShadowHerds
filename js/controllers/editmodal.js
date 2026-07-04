@@ -261,7 +261,7 @@ const EditModal = {
       <input type="text" class="em-skill-spec" id="em-skill-spec-${i}"
         value="${spec}" placeholder="Spécialité (+2)" title="Spécialité — bonus de +2 dés">
       <button type="button" class="em-skill-del" title="Retirer"
-        onclick="EditModal.removeSkill(${i})">×</button>
+        data-action="remove-skill">×</button>
     </div>`;
   },
 
@@ -292,7 +292,7 @@ const EditModal = {
         ${customSpec}${specOpts}
       </select>
       <button type="button" class="em-skill-del" title="Retirer"
-        onclick="EditModal.removeSkill(${i})">×</button>
+        data-action="remove-skill">×</button>
     </div>`;
   },
 
@@ -310,7 +310,7 @@ const EditModal = {
         <option value="">+ Ajouter une compétence…</option>
         ${opts}
       </select>
-      <button type="button" class="em-add-skill-btn" onclick="EditModal.addSkill()">Ajouter</button>
+      <button type="button" class="em-add-skill-btn" data-action="add-skill">Ajouter</button>
     </div>`;
   },
 
@@ -440,4 +440,38 @@ const EditModal = {
     const notesEl = document.getElementById("em-notes");
     if (notesEl) pnj.notes = notesEl.value;
   },
+
+  /** Délégation globale du modal (le conteneur #edit-modal n'est jamais
+      recréé, seul son contenu — modal-form-body, liste de compétences —
+      est reconstruit à chaque open()/rerender). */
+  init() {
+    const modal = document.getElementById("edit-modal");
+    if (!modal) return;
+    modal.addEventListener("click", (e) => {
+      const el = e.target.closest("[data-action]");
+      if (!el) return;
+      switch (el.dataset.action) {
+        case "close":
+          this.close();
+          break;
+        case "save":
+          this.save();
+          break;
+        case "add-skill":
+          this.addSkill();
+          break;
+        case "remove-skill": {
+          const row = el.closest("[data-idx]");
+          if (row) this.removeSkill(parseInt(row.dataset.idx, 10));
+          break;
+        }
+      }
+    });
+  },
 };
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => EditModal.init());
+} else {
+  EditModal.init();
+}

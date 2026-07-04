@@ -35,6 +35,13 @@ const DicePanel = {
       if (e.key === "Escape") this.close();
     });
 
+    const fab = document.getElementById("dice-fab");
+    if (fab) fab.addEventListener("click", () => this.open());
+    const rollBtn = document.getElementById("dice-sheet-roll-btn");
+    if (rollBtn) rollBtn.addEventListener("click", () => this.roll());
+    const logBtn = document.getElementById("dice-sheet-log-btn");
+    if (logBtn) logBtn.addEventListener("click", () => DiceLog.open());
+
     // Steppers : tap simple + maintien pour répétition
     overlay.querySelectorAll("[data-dice-step]").forEach((btn) => {
       const delta = parseInt(btn.getAttribute("data-dice-step"), 10) || 0;
