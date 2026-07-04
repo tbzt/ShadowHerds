@@ -45,7 +45,7 @@ const ContactsBook = Object.assign(
     editField(id, field, value) {
       const c = this.data.all.find((x) => x.id === id);
       if (c) {
-        if (field === "influence" || field === "loyaute" || field === "niveau") {
+        if (field === "influence" || field === "loyaute" || field === "level") {
           c[field] = parseInt(value, 10);
         } else {
           c[field] = value;

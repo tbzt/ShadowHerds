@@ -217,6 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
     isAnarchy: () => App.edition === "anarchy",
   });
   ContentModal.bindDelegation();
+  ContactRenderer.bindDelegation();
 
   document.getElementById("edit-modal").addEventListener("click", (e) => {
     if (e.target === e.currentTarget) EditModal.close();

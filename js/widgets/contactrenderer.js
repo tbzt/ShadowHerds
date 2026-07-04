@@ -4,6 +4,69 @@
    CONTACT RENDERER
    ============================================================ */
 const ContactRenderer = {
+  _delegated: false,
+
+  /* Délégation globale (modèle ContentModal) : les cards persistantes
+     ne portent aucun onclick/onblur figé, seulement des data-* lus ici.
+     L'id du contact est porté par la card (.contact-card[data-id]), pas
+     répété sur chaque champ éditable. */
+  bindDelegation() {
+    if (this._delegated) return;
+    this._delegated = true;
+
+    // blur/focus ne bubblent pas : focusout si, c'est son équivalent.
+    document.addEventListener("focusout", (e) => {
+      const fieldEl = e.target.closest("[data-contact-field]");
+      if (fieldEl) {
+        const card = fieldEl.closest(".contact-card");
+        if (!card) return;
+        ContactsBook.editField(
+          card.dataset.id,
+          fieldEl.dataset.contactField,
+          fieldEl.textContent.trim(),
+        );
+        return;
+      }
+      const flavorEl = e.target.closest("[data-contact-flavor]");
+      if (!flavorEl) return;
+      const card = flavorEl.closest(".contact-card");
+      if (!card) return;
+      ContactsBook.editFlavor(
+        card.dataset.id,
+        flavorEl.dataset.contactFlavor,
+        flavorEl.textContent.trim(),
+      );
+    });
+
+    document.addEventListener("change", (e) => {
+      const notesEl = e.target.closest("[data-contact-notes]");
+      if (!notesEl) return;
+      const card = notesEl.closest(".contact-card");
+      if (!card) return;
+      ContactsBook.editNote(card.dataset.id, notesEl.value);
+    });
+
+    document.addEventListener("click", (e) => {
+      const actionEl = e.target.closest("[data-contact-action]");
+      if (!actionEl) return;
+      const card = actionEl.closest(".contact-card");
+      if (!card) return;
+      const id = card.dataset.id;
+      switch (actionEl.dataset.contactAction) {
+        case "remove":
+          ContactsBook.remove(id);
+          break;
+        case "reroll-flavor":
+          ContactsBook.rerollFlavor(id);
+          break;
+        case "set-niveau":
+          ContactsBook.editField(id, "level", actionEl.dataset.niveauValue);
+          ContactsBook.render();
+          break;
+      }
+    });
+  },
+
   render(c) {
     return c.edition === "anarchy" ? this._renderAnarchy(c) : this._renderSR(c);
   },
@@ -24,10 +87,10 @@ const ContactRenderer = {
         <div class="contact-header-row">
           <div>
             <div class="contact-name" contenteditable="true" spellcheck="false"
-              onblur="ContactsBook.editField('${c.id}', 'name', this.textContent.trim())"
+              data-contact-field="name"
               >${CardRenderer._esc(c.name)}</div>
             <div class="contact-role" contenteditable="true" spellcheck="false"
-              onblur="ContactsBook.editField('${c.id}', 'role', this.textContent.trim())"
+              data-contact-field="role"
               >${CardRenderer._esc(c.role)}</div>
             ${c.metatype ? `<div class="contact-meta">${CardRenderer._esc(c.metatype)}</div>` : ""}
           </div>
@@ -38,19 +101,19 @@ const ContactRenderer = {
         ${stats}
 
         <div class="contact-trait">⚠ <span contenteditable="true" spellcheck="false"
-          onblur="ContactsBook.editField('${c.id}', 'trait', this.textContent.trim())"
+          data-contact-field="trait"
           >${CardRenderer._esc(c.trait)}</span></div>
 
         ${this._portrait(c)}
 
         <div class="contact-notes-row">
           <textarea class="contact-notes" placeholder="Notes…" rows="2"
-            onchange="ContactsBook.editNote('${c.id}', this.value)"
+            data-contact-notes
             >${CardRenderer._esc(c.notes || "")}</textarea>
         </div>
       </div>
       <div class="pnj-card-footer">
-        <button class="card-action-btn danger" onclick="ContactsBook.remove('${c.id}')">Supprimer</button>
+        <button class="card-action-btn danger" data-contact-action="remove">Supprimer</button>
       </div>`;
     return el;
   },
@@ -63,7 +126,7 @@ const ContactRenderer = {
       `<div class="flavor-row">
         <span class="flavor-key">${key}</span>
         <span class="flavor-val" contenteditable="true" spellcheck="false"
-          onblur="ContactsBook.editFlavor('${c.id}', '${field}', this.textContent.trim())"
+          data-contact-flavor="${field}"
           >${CardRenderer._esc(String(val))}</span>
       </div>`;
     const rows = [
@@ -77,7 +140,7 @@ const ContactRenderer = {
     return `<div class="card-section flavor-section contact-portrait">
       <div class="card-section-label">Portrait
         <button class="btn-icon-tiny" title="Relancer le portrait"
-          onclick="ContactsBook.rerollFlavor('${c.id}')">⟳</button>
+          data-contact-action="reroll-flavor">⟳</button>
       </div>
       ${rows}
     </div>`;
@@ -88,7 +151,7 @@ const ContactRenderer = {
       { length: 6 },
       (_, i) =>
         `<span class="niveau-dot ${i < c.level ? "filled" : ""}"
-        onclick="ContactsBook.editField('${c.id}', 'niveau', ${i + 1}); ContactsBook.render()"></span>`,
+        data-contact-action="set-niveau" data-niveau-value="${i + 1}"></span>`,
     ).join("");
     const bonus = c.bonus
       ? `<div class="contact-bonus">+ ${CardRenderer._esc(c.bonus)}</div>`
@@ -112,12 +175,12 @@ const ContactRenderer = {
     return `<div class="stats-row" style="margin-top:6px;flex-wrap:wrap;gap:6px;">
       <span class="stat-pill accent">Influence
         <strong contenteditable="true" spellcheck="false" class="editable-num"
-          onblur="ContactsBook.editField('${c.id}', 'influence', this.textContent.trim())"
+          data-contact-field="influence"
           >${c.influence}</strong>
       </span>
       <span class="stat-pill">Loyauté
         <strong contenteditable="true" spellcheck="false" class="editable-num"
-          onblur="ContactsBook.editField('${c.id}', 'loyaute', this.textContent.trim())"
+          data-contact-field="loyaute"
           >${c.loyaute}</strong>
       </span>
       ${c.lieu ? `<span style="font-size:0.68rem;color:var(--text-dim);align-self:center;">📍 ${CardRenderer._esc(c.lieu)}</span>` : ""}
