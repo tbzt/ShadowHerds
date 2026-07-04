@@ -130,11 +130,10 @@ const Drugs = {
   matchItem(item, edition, source) {
     if (typeof item !== "string") return null;
     const table = this.CATALOG[edition] || [];
+    const matchAll = App.getEditionModule(edition).drugModel.matchAll;
     return (
       table.find(
-        (d) =>
-          (edition === "anarchy" || (d.source || "equip") === source) &&
-          d.match.test(item),
+        (d) => (matchAll || (d.source || "equip") === source) && d.match.test(item),
       ) || null
     );
   },
@@ -158,10 +157,7 @@ const Drugs = {
   },
 
   _recalcFor(edition, pnj) {
-    const EditionModule =
-      edition === "sr5" ? (typeof EditionSR5 !== "undefined" ? EditionSR5 : null)
-      : edition === "sr6" ? (typeof EditionSR6 !== "undefined" ? EditionSR6 : null)
-      : null;
+    const EditionModule = App.getEditionModule(edition);
     if (EditionModule && typeof EditionModule.recalc === "function") EditionModule.recalc(pnj);
   },
 

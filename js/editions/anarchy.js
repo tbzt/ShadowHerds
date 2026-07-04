@@ -20,6 +20,66 @@ const EditionAnarchy = {
   badgeLabel: "ANARCHY 2E",
   isWip: false,
 
+  /* ---- Contrat commun édition (résorption des branches, issue #14) ---- */
+  attributes: ["FOR", "AGI", "VOL", "LOG", "CHA"],
+  ratingBadge: {
+    field: "tier",
+    label: "Rang",
+    options: ["Figurant", "Figurant d'élite", "Lieutenant", "Boss"],
+  },
+  // steps() est lazy : spirits.js (catalogs) charge après les modules
+  // d'édition (foyer), Spirits.ANARCHY_TIERS n'existe pas encore ici.
+  summonPower: {
+    field: "tier",
+    label: "Niveau",
+    steps: () => Spirits.ANARCHY_TIERS.map((label, i) => ({ value: i, label })),
+  },
+  skillModel: { shape: "extended", valRange: [0, 6], hasGroups: false },
+  hasEdges: true,
+  /** Les drogues Anarchy 2.0 sont vendues comme « atouts d'équipement »
+      (p.150) : elles peuvent apparaître aussi bien dans les atouts que
+      dans l'équipement, la source d'origine n'est pas filtrée. */
+  drugModel: { matchAll: true },
+  /** Neutre : Anarchy 2.0 n'a pas de compétence de Conjuration jouable
+      par un PNJ généré (les esprits y sont des figurants statBlocks
+      indépendants, cf. statBlocks) ; `canSummon: false` documenté.
+      `types` reste fourni pour les esprits libres du générateur. */
+  spiritModel: { canSummon: false, types: () => Spirits.ANARCHY_TYPES },
+  /** Véhicules/drones liés (p.230) : l'Autopilote seul sert de réserve
+      en autonome, pas d'initiative autonome distincte documentée dans
+      le livre — neutre `initiative: null`. */
+  vehicleModel: {
+    pools(v) {
+      const s = v.stats || {};
+      return [
+        { label: "Autonome", pool: s.autopilote || 0, title: "Autopilote seul (véhicule autonome, p.230)" },
+        { label: "Défense", pool: s.autopilote || 0, title: "Défense autonome : Autopilote (piloté : Pilotage + AGI du pilote)" },
+      ];
+    },
+    initiative: null,
+  },
+  /** Anarchy 2.0 n'a pas de malus de dés lié aux cases remplies (le
+      moniteur fonctionne par seuils de blessure — cf. statBlocks — pas par
+      malus cumulatif). Neutre documenté : pas de champ "primary" unique
+      non plus (physMonitor/mentMonitor/matrixMonitor séparés). */
+  conditionMonitor: {
+    model: "seuils de blessure (légère/grave/incapacitante), pas de malus cumulatif",
+    fields: { primary: null },
+    woundMalus() {
+      return 0;
+    },
+  },
+  /** Résolution du jet d'arme (WeaponRoll) : pas de règle smartlink/
+      smartgun en Anarchy 2.0 (neutre `null`, doc), pas de limite de
+      précision, spécialité = Réduction de Risque (RR), armes lues dans
+      pnj.weapons (pas pnj.equip). */
+  weaponModel: {
+    smartlinkBonus: null,
+    accuracyLimit: false,
+    specMechanic: "rr",
+    source: "weapons",
+  },
+
   /* ========================================================
      CATALOGUE D'ARMES OFFICIEL (Shadowrun : Anarchy 2.0, p.141-144)
      ------------------------------------------------------
@@ -85,6 +145,16 @@ const EditionAnarchy = {
       ranges: cat.ranges,
     };
   },
+
+  /** Archétype utilisé pour un spider (decker de sécurité lié à un serveur,
+      issue #14) — le meilleur decker disponible dépend de l'indice défendu. */
+  spiderArchetype(indice) {
+    return indice >= 6 ? "Decker d'élite" : "Decker de sécurité";
+  },
+
+  /** Bonus d'indice quand le serveur gère aussi la sécurité physique
+      (Anarchy 2.0 p.222). SR5/SR6 n'ont pas cette règle : neutre `null`. */
+  secPhysBonus: 1,
 
   /* ---- Options du formulaire ---- */
   formOptions: {

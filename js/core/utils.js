@@ -32,25 +32,13 @@ const Utils = {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   },
 
-  /** Malus de dés lié aux cases de moniteur remplies (SR5/SR6).
-      SR5 : −1D par tranche de `woundMod` cases (physique + étourdissement
-      cumulés), réglage par défaut 3, désactivable (0).
-      SR6 : −1D par tranche de 3 cases du moniteur d'état. */
+  /** Malus de dés lié aux cases de moniteur remplies — formule propre à
+      chaque édition, cf. `conditionMonitor.woundMalus` (js/editions/*.js). */
   woundMalus(pnj, edition) {
     if (!pnj) return 0;
-    if (edition === "sr5") {
-      const div = parseInt(
-        (typeof Settings !== "undefined" && Settings.get("woundMod", 3)) ?? 3,
-        10,
-      );
-      if (!div) return 0;
-      const total = (pnj.physFilled || 0) + (pnj.stunFilled || 0);
-      return Math.floor(total / div);
-    }
-    if (edition === "sr6") {
-      return Math.floor((pnj.physFilled || 0) / 3);
-    }
-    return 0;
+    const editionModule =
+      typeof App !== "undefined" ? App.getEditionModule(edition) : null;
+    return editionModule ? editionModule.conditionMonitor.woundMalus(pnj) : 0;
   },
 
   /* ============================================================

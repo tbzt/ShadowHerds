@@ -22,6 +22,62 @@ const EditionSR6 = {
   badgeLabel: "SR6",
   useMetavariants: true,
 
+  /* ---- Contrat commun édition (résorption des branches, issue #14) ---- */
+  attributes: ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"],
+  ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
+  summonPower: {
+    field: "force",
+    label: "Puissance",
+    steps: () => [2, 3, 4, 5, 6, 7, 8].map((n) => ({ value: n, label: String(n) })),
+  },
+  skillModel: { shape: "simple", valRange: [1, 12], hasGroups: false },
+  hasEdges: false,
+  /** Neutre : les drogues SR6 sont des équipements, pas des atouts au
+      choix (concept propre à Anarchy 2.0 p.150). */
+  drugModel: { matchAll: false },
+  /** Invocation d'esprits (issue #14) : SR6 invoque via Conjuration,
+      types = éléments classiques (Spirits.SR_TYPES). */
+  spiritModel: { canSummon: true, types: () => Spirits.SR_TYPES },
+  /** Réserves de dés et initiative des véhicules/drones liés : pas de
+      distinction Attaque/Capteurs séparée sur l'Autopilote (Score
+      Offensif direct via autosoft + Senseurs), Encaissement = Structure
+      seule (pas de Blindage ajouté en SR6, cf. Riggers p.203-208). */
+  vehicleModel: {
+    pools(v) {
+      const s = v.stats || {};
+      const autosoft = s.autosoft || s.pilote || s.autopilote || 0;
+      return [
+        { label: "Attaque", pool: autosoft + (s.senseurs || 0), title: "Autosoft Acquisition + Senseurs", weaponOnly: true },
+        { label: "Défense", pool: (s.pilote || 0) + autosoft, title: "Autopilote + autosoft Évasion" },
+        { label: "Perception", pool: autosoft + (s.senseurs || 0), title: "Autosoft Acuité + Senseurs" },
+        { label: "Encaissement", pool: s.structure || 0, title: "Résistance aux dommages : Structure" },
+      ];
+    },
+    initiative(v) {
+      const p = (v.stats && v.stats.pilote) || 0;
+      return { base: p * 2, dice: 4 };
+    },
+  },
+  /** Malus de dés lié aux cases de moniteur remplies : −1D par tranche de
+      3 cases du moniteur d'état unique. */
+  conditionMonitor: {
+    model: "moniteur d'état unique, cases = 8 + CON/2",
+    fields: { primary: "me" },
+    woundMalus(pnj) {
+      return Math.floor((pnj.physFilled || 0) / 3);
+    },
+  },
+  /** Résolution du jet d'arme (WeaponRoll) : synergie smartgun/smartlink
+      flat +1 (pas de distinction implanté/externe en SR6), pas de limite
+      de précision (Score Offensif, pas de PRE), spécialité = +2 dés,
+      armes lues dans pnj.equip. */
+  weaponModel: {
+    smartlinkBonus: { implanted: 1, external: 1 },
+    accuracyLimit: false,
+    specMechanic: "diceBonus",
+    source: "equip",
+  },
+
   /* ----
      ATTRIBUTS PAR MÉTATYPE — table officielle p.69 LdB SR6
      Format : [min, max]
@@ -357,6 +413,16 @@ const EditionSR6 = {
     Géant: { CON: +5, AGI: -1, FOR: +5, CHA: -1 },
     Minotaure: { CON: +6, AGI: -1, FOR: +4, CHA: -1 },
   },
+
+  /** Archétype utilisé pour un spider (decker de sécurité lié à un serveur,
+      issue #14) — toujours le même en SR6. */
+  spiderArchetype() {
+    return "Decker freelance";
+  },
+
+  /** Bonus d'indice quand le serveur gère aussi la sécurité physique.
+      Neutre : SR6 n'a pas cette règle (concept propre à Anarchy 2.0). */
+  secPhysBonus: null,
 
   /* ---- Score Défensif de base par proRating ---- */
   sdByProf: {

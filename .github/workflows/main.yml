@@ -24,11 +24,9 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload site
+      - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .   # <-- TON SITE EST À LA RACINE
-
-      - name: Deploy to GitHub Pages
-        id: deployment
+          path: .
+      - name: Deploy
         uses: actions/deploy-pages@v4

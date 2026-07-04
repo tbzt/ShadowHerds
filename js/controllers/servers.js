@@ -116,9 +116,14 @@ const Servers = Object.assign(
       } else {
         indice = parseInt(indSel, 10);
       }
+      const Mod =
+        typeof App !== "undefined" && App.getEditionModule
+          ? App.getEditionModule(ed)
+          : null;
       const secPhys =
-        ed === "anarchy" && !!(document.getElementById("srv-secphys") || {}).checked;
-      if (secPhys) indice += 1;
+        !!(Mod && Mod.secPhysBonus) &&
+        !!(document.getElementById("srv-secphys") || {}).checked;
+      if (secPhys) indice += Mod.secPhysBonus;
 
       // Attributs ASDF (SR5/SR6) : indice à indice+3 répartis au hasard
       let attrs = null;
@@ -171,11 +176,17 @@ const Servers = Object.assign(
 
     /* ---- Spider (decker de sécurité lié) ---- */
     _spiderOpts(srv) {
+      const Mod =
+        typeof App !== "undefined" && App.getEditionModule
+          ? App.getEditionModule(srv.edition)
+          : null;
+      const archetype = Mod ? Mod.spiderArchetype(srv.indice) : "";
+
       if (srv.edition === "anarchy") {
         return {
           meta: "Aléatoire",
           gender: "Aléatoire",
-          archetype: srv.indice >= 6 ? "Decker d'élite" : "Decker de sécurité",
+          archetype,
           tier: "Aléatoire",
           special: "Aucun",
         };
@@ -184,8 +195,7 @@ const Servers = Object.assign(
       return {
         meta: "Aléatoire",
         gender: "Aléatoire",
-        archetype:
-          srv.edition === "sr5" ? "Spécialiste contre-mesures" : "Decker freelance",
+        archetype,
         proRating,
         tier: "Aléatoire",
         special: "Decker",
@@ -357,9 +367,10 @@ const Servers = Object.assign(
       let pool = i * 2;
       let limit = null;
       let label;
+      const M = Matrix.use(srv.edition);
       if (kind === "atk") {
         label = `${name} — attaque`;
-        if (srv.edition === "sr5") limit = a.ATQ ?? null;
+        limit = M.attrLimit("atk", srv);
       } else if (kind === "def") {
         label = `${name} — défense`;
       } else if (kind === "soak") {
@@ -367,7 +378,7 @@ const Servers = Object.assign(
         label = `${name} — encaissement (indice + FW)`;
       } else {
         label = `${name} — perception matricielle`;
-        if (srv.edition === "sr5") limit = a.TDD ?? null;
+        limit = M.attrLimit("per", srv);
       }
 
       const res = Dice.computeRoll(pool);
@@ -615,6 +626,11 @@ const Servers = Object.assign(
       if (!host) return;
       const ed = this._edition();
       const esc = CardRenderer._esc.bind(CardRenderer);
+      const secPhysBonus =
+        (typeof App !== "undefined" && App.getEditionModule
+          ? App.getEditionModule(ed)
+          : null
+        )?.secPhysBonus;
 
       const profOpts = [
         `<option value="random">Aléatoire</option>`,
@@ -654,7 +670,7 @@ const Servers = Object.assign(
           </label>
         </div>
         <div class="contact-form-row server-form-flags">
-          ${ed === "anarchy" ? `<label class="ic-choice"><input type="checkbox" id="srv-secphys">Gère la sécurité physique (+1 indice)</label>` : ""}
+          ${secPhysBonus ? `<label class="ic-choice"><input type="checkbox" id="srv-secphys">Gère la sécurité physique (+${secPhysBonus} indice)</label>` : ""}
           <label class="ic-choice"><input type="checkbox" id="srv-spider">Spider (decker de sécurité lié)</label>
         </div>
         <details class="server-ic-details">
@@ -701,7 +717,7 @@ const Servers = Object.assign(
           const ic = catalog[k];
           if (!ic) return "";
           const label = ic.label.replace(/^CI /, "");
-          const eff = typeof ic.effect === "function" ? ic.effect(srv.edition === "anarchy" ? srv.indice : srv) : "";
+          const eff = typeof ic.effect === "function" ? ic.effect(srv) : "";
           const tip = `${ic.def ? `Défense : ${ic.def} — ` : ""}${eff}`;
           return `<span class="ic-chip ${ic.watch ? "watch" : ""}" title="${esc(tip)}">${esc(label)}</span>`;
         })
@@ -814,7 +830,7 @@ const Servers = Object.assign(
           <label class="server-edit-label narrow">Indice
             <select id="se-${id}-indice">${indOpts}</select></label>
         </div>
-        ${srv.edition === "anarchy"
+        ${(typeof App !== "undefined" && App.getEditionModule ? App.getEditionModule(srv.edition) : null)?.secPhysBonus
           ? `<label class="ic-choice"><input type="checkbox" id="se-${id}-secphys" ${srv.secPhys ? "checked" : ""}>Gère la sécurité physique</label>`
           : ""}
         ${attrsHtml}
@@ -849,10 +865,7 @@ const Servers = Object.assign(
           const st = intr.ics[k] || { active: !!ic.watch, dmg: 0, down: false };
           const isActive = ic.watch || (st.active && !st.down);
           const label = ic.label.replace(/^CI /, "");
-          const eff =
-            typeof ic.effect === "function"
-              ? ic.effect(srv.edition === "anarchy" ? srv.indice : srv)
-              : "";
+          const eff = typeof ic.effect === "function" ? ic.effect(srv) : "";
 
           const boxes = `<span class="monitor-boxes">${Array.from({ length: size }, (_, i) => {
             const n = i + 1;
@@ -877,41 +890,21 @@ const Servers = Object.assign(
           /* Jets (SR5/SR6) — les glaces Anarchy ont des succès fixes */
           let rolls = "";
           if (srv.edition !== "anarchy" && (ic.watch || (st.active && !st.down))) {
-            const i = srv.indice;
-            const a = srv.attrs || {};
+            const M = Matrix.use(srv.edition);
             const btn = (kind, txt, tip) =>
               `<button class="btn-secondary btn-small ic-roll" title="${esc(tip)}"
               onclick="Servers.rollIC('${srv.id}', '${k}', '${kind}')">⚄ ${txt}</button>`;
             if (ic.watch) {
-              rolls = btn(
-                "per",
-                `Perception ${i * 2}d${srv.edition === "sr5" ? ` [TdD ${a.TDD}]` : ""}`,
-                "Perception matricielle de la Patrouilleuse : indice × 2" +
-                  (srv.edition === "sr5" ? ", limitée par le Traitement de données" : ""),
-              );
+              const per = M.actionRoll("per", srv);
+              rolls = btn("per", per.txt, per.tip);
             } else {
+              const atk = M.actionRoll("atk", srv);
+              const def = M.actionRoll("def", srv);
+              const soak = M.actionRoll("soak", srv);
               rolls =
-                btn(
-                  "atk",
-                  `Attaque ${i * 2}d${srv.edition === "sr5" ? ` [ATQ ${a.ATQ}]` : ""}`,
-                  srv.edition === "sr5"
-                    ? "Attaque de la CI : indice × 2, limitée par l'Attaque du serveur (p.249)"
-                    : "Jet d'attaque de la CI : indice × 2 (p.188)",
-                ) +
-                btn(
-                  "def",
-                  `Défense ${i * 2}d`,
-                  srv.edition === "sr5"
-                    ? "Défense de la CI quand le decker l'attaque (indice × 2, usage — la VF ne détaille pas cette réserve)"
-                    : "Jet de défense de la CI : indice × 2 (p.188)",
-                ) +
-                (srv.edition === "sr5"
-                  ? btn(
-                      "soak",
-                      `Encaisse ${i + (a.FW || 0)}d`,
-                      "Résistance aux dommages matriciels : indice + Firewall du serveur (p.229)",
-                    )
-                  : "");
+                btn("atk", atk.txt, atk.tip) +
+                btn("def", def.txt, def.tip) +
+                (soak ? btn("soak", soak.txt, soak.tip) : "");
             }
           }
 
@@ -922,7 +915,7 @@ const Servers = Object.assign(
           </div>
           <div class="ic-row-effect">${ic.def ? `<b>Défense :</b> ${esc(ic.def)} — ` : ""}${esc(eff)}</div>
           ${rolls ? `<div class="ic-row-rolls">${rolls}</div>` : ""}
-          ${st.active || st.down || ic.watch ? `<div class="monitor-row"><span class="monitor-label">Moniteur${srv.edition === "anarchy" ? " (FW 1)" : ""}</span>${boxes}</div>` : ""}
+          ${st.active || st.down || ic.watch ? `<div class="monitor-row"><span class="monitor-label">Moniteur${Matrix.use(srv.edition).firewallLabel()}</span>${boxes}</div>` : ""}
         </div>`;
         })
         .join("");
@@ -988,11 +981,7 @@ const Servers = Object.assign(
 
       const convergence =
         ss >= 40
-          ? `<div class="ss-convergence">☠ CONVERGENCE — ${
-              srv.edition === "sr5"
-                ? "VD 12 dommages matriciels, reboot forcé (perte des marks, éjection, choc en RV). Dans un serveur : 3 marks posées + déploiement de CI ; le demi-DIEU converge à la sortie (p.233, 249)."
-                : "l'appareil de la dernière action illégale est brické, éjection avec choc, localisation signalée aux autorités (p.178)."
-            }</div>`
+          ? `<div class="ss-convergence">☠ CONVERGENCE — ${Matrix.use(srv.edition).convergenceText()}</div>`
           : "";
 
       return `

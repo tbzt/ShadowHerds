@@ -111,8 +111,8 @@ const BonusEngine = {
       if (key) pnj[key] = (pnj[key] || 0) + b.val;
     }
     if (b.monitor) {
-      const key = edition === "sr6" ? "me" : "physMon";
-      pnj[key] = (pnj[key] || 0) + b.monitor;
+      const key = App.getEditionModule(edition).conditionMonitor.fields.primary;
+      if (key) pnj[key] = (pnj[key] || 0) + b.monitor;
     }
     const attr = b.attrChoice && b.attrChoice.length ? Utils.rand(b.attrChoice) : b.attr;
     if (attr) {
@@ -295,7 +295,7 @@ const BonusEngine = {
       this._applyAnarchy(pnj);
       return pnj;
     }
-    const EditionModule = edition === "sr5" ? EditionSR5 : EditionSR6;
+    const EditionModule = App.getEditionModule(edition);
     this._applySR(pnj, edition, EditionModule);
     return pnj;
   },

@@ -1215,19 +1215,23 @@ const Metavariants = {
     return this;
   },
 
+  /** Table clavée par édition active, source des trois getters ci-dessous. */
+  _tables() {
+    return {
+      sr5: { metavariants: this.metavariants, metaconsciences: this.metaconsciences, zoocanthropes: this.zoocanthropes },
+      sr6: this.sr6,
+    }[this._edition];
+  },
+
   /** Renvoie le jeu de métavariantes actif */
   _data() {
-    return this._edition === "sr6" ? this.sr6.metavariants : this.metavariants;
+    return this._tables().metavariants;
   },
   _dataMC() {
-    return this._edition === "sr6"
-      ? this.sr6.metaconsciences
-      : this.metaconsciences;
+    return this._tables().metaconsciences;
   },
   _dataZoo() {
-    return this._edition === "sr6"
-      ? this.sr6.zoocanthropes
-      : this.zoocanthropes;
+    return this._tables().zoocanthropes;
   },
 
   /** Index plat nom→entrée pour l'édition active */

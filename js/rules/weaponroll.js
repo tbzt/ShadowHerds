@@ -249,7 +249,9 @@ const WeaponRoll = {
     let rr = 0;
     let specBonus = 0;
 
-    if (edition === "anarchy") {
+    const weaponModel = App.getEditionModule(edition).weaponModel;
+
+    if (weaponModel.specMechanic === "rr") {
       if (specSkill && specSkill.specVal != null) {
         skillVal = specSkill.specVal;
         attr = specSkill.specAttr || specSkill.attr || attr;
@@ -261,7 +263,7 @@ const WeaponRoll = {
         if (sObj && sObj.rr) rr = sObj.rr;
       }
     } else if (specSkill) {
-      // SR5/SR6 : spécialité = +2 dés sur le pool.
+      // Spécialité = +2 dés sur le pool.
       specBonus = 2;
       if (!found && Number.isFinite(specSkill.val)) skillVal = specSkill.val;
       matchedSkill = `${matchedSkill || specSkill.name} · ${specSkill.spec}`;
@@ -270,16 +272,16 @@ const WeaponRoll = {
     const basePool = skillVal + attrVal;
     if (basePool < 1) return null;
 
-    // Synergie smartgun (arme) / smartlink (PNJ) — SR5 : +2 implanté / +1
-    // externe ; SR6 : +1 flat. Voir BonusEngine.detectSmartlink().
+    // Synergie smartgun (arme) / smartlink (PNJ). Voir BonusEngine.detectSmartlink().
     let smartBonus = 0;
     if (
-      (edition === "sr5" || edition === "sr6") &&
+      weaponModel.smartlinkBonus &&
       pnj.smartlink &&
       /smartgun|smartlink/i.test(String(weapon))
     ) {
-      smartBonus =
-        edition === "sr5" ? (pnj.smartlink.implanted ? 2 : 1) : 1;
+      smartBonus = pnj.smartlink.implanted
+        ? weaponModel.smartlinkBonus.implanted
+        : weaponModel.smartlinkBonus.external;
     }
     const malus =
       typeof Utils !== "undefined" ? Utils.woundMalus(pnj, edition) : 0;
@@ -297,7 +299,7 @@ const WeaponRoll = {
       smartBonus,
       specBonus,
       spec: specSkill ? specSkill.spec : null,
-      limit: edition === "sr5" ? parsed.pre : null,
+      limit: weaponModel.accuracyLimit ? parsed.pre : null,
       rr,
       edition,
     };
@@ -309,7 +311,9 @@ const WeaponRoll = {
 
   /** Liste des weapons (chaînes ou objets) portées par le PNJ. */
   _weaponsOf(pnj, edition) {
-    if (edition === "anarchy") return pnj.weapons || [];
+    if (App.getEditionModule(edition).weaponModel.source === "weapons") {
+      return pnj.weapons || [];
+    }
     return (pnj.equip || []).filter(
       (e) => typeof e === "string" && /\[/.test(e) && /(VD|PRE)/.test(e),
     );
@@ -382,8 +386,8 @@ const WeaponRoll = {
     for (const s of pnj.skills) {
       if (this._baseName(s.name).toLowerCase() === target) return true;
     }
-    // Couverture par groupe SR5
-    if (edition === "sr5") {
+    // Couverture par groupe (SR5 uniquement — cf. skillModel.hasGroups)
+    if (App.getEditionModule(edition).skillModel.hasGroups) {
       const group = this._groupCovering(canonical);
       if (group) {
         for (const s of pnj.skills) {

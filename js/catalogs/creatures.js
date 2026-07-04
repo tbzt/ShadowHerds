@@ -535,7 +535,7 @@ const Creatures = {
   },
 
   catalogFor(edition) {
-    return edition === "sr5" ? this.SR5 : edition === "sr6" ? this.SR6 : this.ANARCHY;
+    return this[edition.toUpperCase()];
   },
 
   /* ---- Génération d'une créature autonome (objet PNJ standard) ---- */
@@ -547,9 +547,9 @@ const Creatures = {
   },
 
   _spawnSR(c, key, edition) {
-    const K = edition === "sr6"
-      ? ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"]
-      : ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"];
+    // Ordre des attributs = P1 `attributes` du module d'édition (RÉA en
+    // SR6, REA sinon) ; `c.a` suit ce même ordre dans le catalogue.
+    const K = App.getEditionModule(edition).attributes;
     const attrs = {};
     K.forEach((k, i) => (attrs[k] = c.a[i]));
     if (c.a[8] != null) attrs.MAG = c.a[8];

@@ -202,7 +202,7 @@ const Spirits = {
   ANARCHY_TIERS: ["Inférieur", "Normal", "Supérieur"],
 
   typesFor(edition) {
-    return edition === "anarchy" ? this.ANARCHY_TYPES : this.SR_TYPES;
+    return App.getEditionModule(edition).spiritModel.types();
   },
 
   /** Le PNJ peut-il invoquer ? (compétence de conjuration, ou magicien
@@ -213,7 +213,7 @@ const Spirits = {
       /conjuration|invocation/i.test(s.name || ""),
     );
     if (hasConj) return true;
-    if (pnj.edition === "anarchy") return false;
+    if (!App.getEditionModule(pnj.edition).spiritModel.canSummon) return false;
     if (!pnj.attrs || !pnj.attrs.MAG) return false;
     const label = `${pnj.special || ""} ${pnj.archetype || ""}`;
     return /mage|chaman|sorcier|initié/i.test(label) && !/adepte/i.test(label);
@@ -251,9 +251,13 @@ const Spirits = {
     const P = Utils.clamp(
       opts.force || (owner && owner.attrs && owner.attrs.MAG) || 4, 1, 12);
     const attrs = {};
-    const keys = edition === "sr6"
-      ? { CON: "CON", AGI: "AGI", REA: "RÉA", FOR: "FOR", VOL: "VOL", LOG: "LOG", INT: "INT", CHA: "CHA" }
-      : { CON: "CON", AGI: "AGI", REA: "REA", FOR: "FOR", VOL: "VOL", LOG: "LOG", INT: "INT", CHA: "CHA" };
+    // `t.mods` utilise les clés canoniques SR5 (P1 `attributes`, ordre
+    // fixe) ; `keys` retrouve le nom réel de l'attribut sur le pnj
+    // (RÉA en SR6, REA sinon) en zippant avec l'ordre du module d'édition.
+    const canonical = ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"];
+    const real = App.getEditionModule(edition).attributes;
+    const keys = {};
+    canonical.forEach((k, i) => (keys[k] = real[i]));
     for (const [base, key] of Object.entries(keys)) {
       attrs[key] = Math.max(1, P + (t.mods[base] || 0));
     }
@@ -261,18 +265,18 @@ const Spirits = {
     attrs.ESS = P;
 
     // Les compétences d'esprit sont à l'indice P ; l'app stocke des
-    // réserves complètes (attr + compétence) en SR5/SR6.
-    const skills = t.skills
-      .filter(([name]) => name !== "Lancement de sorts" || edition === "sr5" || edition === "sr6")
-      .map(([name, attrBase]) => {
-        const key = keys[attrBase] || attrBase;
-        const av = attrBase === "MAG" ? P : attrs[key] || P;
-        return { name, val: av + P };
-      });
+    // réserves complètes (attr + compétence) en SR5/SR6. _spawnSR n'est
+    // jamais appelé pour Anarchy (spawn() dispatche avant), donc aucune
+    // compétence n'est filtrée ici.
+    const skills = t.skills.map(([name, attrBase]) => {
+      const key = keys[attrBase] || attrBase;
+      const av = attrBase === "MAG" ? P : attrs[key] || P;
+      return { name, val: av + P };
+    });
 
     const traits = [
       { name: "Immunité aux armes normales", desc: `Armure spéciale ${P * 2} contre les armes non magiques (Puissance × 2).` },
-      { name: "Attaque à mains nues", desc: `VD ${attrs.FOR}${edition === "sr6" ? "P" : "P"} (Force de l'esprit).` },
+      { name: "Attaque à mains nues", desc: `VD ${attrs.FOR}P (Force de l'esprit).` },
     ];
     if (t.weakness) traits.push({ name: "Faiblesse", desc: t.weakness });
     if (t.special) traits.push({ name: "Spécial", desc: t.special });
@@ -313,8 +317,7 @@ const Spirits = {
       initDice: 2,
     };
 
-    const Mod = edition === "sr6" ? (typeof EditionSR6 !== "undefined" ? EditionSR6 : null)
-      : typeof EditionSR5 !== "undefined" ? EditionSR5 : null;
+    const Mod = App.getEditionModule(edition);
     if (Mod && Mod.recalc) Mod.recalc(spirit);
     // Init d'esprit : (P×2 + mod) + 2D6 (SR5 p.305) ; SR6 idem simplifié.
     const initBase = P * 2 + (t.initMod || 0);

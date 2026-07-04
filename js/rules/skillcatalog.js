@@ -164,23 +164,13 @@ const SkillCatalog = {
 
   /* Liste des noms de compétences pour une édition donnée. */
   skillsFor(edition) {
-    const map =
-      edition === "sr5"
-        ? this.sr5
-        : edition === "sr6"
-          ? this.sr6
-          : this.anarchy;
+    const map = this[edition] || this.anarchy;
     return Object.keys(map).sort((a, b) => a.localeCompare(b, "fr"));
   },
 
   /* Attribut canonique d'une compétence (ou null). */
   attrFor(edition, skillName) {
-    const map =
-      edition === "sr5"
-        ? this.sr5
-        : edition === "sr6"
-          ? this.sr6
-          : this.anarchy;
+    const map = this[edition] || this.anarchy;
     // Tolère un suffixe de spécialisation entre parenthèses.
     const base = String(skillName).replace(/\s*\(.*\)\s*$/, "").trim();
     return map[base] || map[skillName] || null;

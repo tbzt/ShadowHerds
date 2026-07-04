@@ -203,29 +203,7 @@ const Vehicles = {
      Autosoft par défaut = indice d'Autopilote (simplification MJ,
      éditable via la modale). */
   pools(v) {
-    const s = v.stats || {};
-    const autosoft = s.autosoft || s.pilote || s.autopilote || 0;
-    if (v.edition === "sr5") {
-      return [
-        { label: "Attaque", pool: (s.pilote || 0) + autosoft, title: "Autopilote + autosoft Acquisition [Précision]", weaponOnly: true },
-        { label: "Défense", pool: (s.pilote || 0) + autosoft, title: "Autopilote + autosoft Évasion [Maniabilité]" },
-        { label: "Capteurs", pool: (s.pilote || 0) + (s.senseurs || 0), title: "Autopilote + autosoft Acuité [Senseurs]" },
-        { label: "Encaissement", pool: (s.structure || 0) + (s.blindage || 0), title: "Structure + Blindage" },
-      ];
-    }
-    if (v.edition === "sr6") {
-      return [
-        { label: "Attaque", pool: autosoft + (s.senseurs || 0), title: "Autosoft Acquisition + Senseurs", weaponOnly: true },
-        { label: "Défense", pool: (s.pilote || 0) + autosoft, title: "Autopilote + autosoft Évasion" },
-        { label: "Perception", pool: autosoft + (s.senseurs || 0), title: "Autosoft Acuité + Senseurs" },
-        { label: "Encaissement", pool: s.structure || 0, title: "Résistance aux dommages : Structure" },
-      ];
-    }
-    // Anarchy p.230 : l'Autopilote seul sert de réserve en autonome.
-    return [
-      { label: "Autonome", pool: s.autopilote || 0, title: "Autopilote seul (véhicule autonome, p.230)" },
-      { label: "Défense", pool: s.autopilote || 0, title: "Défense autonome : Autopilote (piloté : Pilotage + AGI du pilote)" },
-    ];
+    return App.getEditionModule(v.edition).vehicleModel.pools(v);
   },
 
   /** Seuils de blessures Anarchy (p.68) : léger / grave / incap. */
@@ -235,10 +213,10 @@ const Vehicles = {
     return [base, 2 * (s.structure || 0) + (s.blindage || 0), 3 * (s.structure || 0) + (s.blindage || 0)];
   },
 
-  /** Initiative autonome SR5/SR6 : Autopilote × 2 + 4D6. */
+  /** Initiative autonome SR5/SR6 : Autopilote × 2 + 4D6. Neutre `null`
+      en Anarchy (pas d'initiative autonome distincte, cf. vehicleModel). */
   initiative(v) {
-    if (v.edition === "anarchy") return null;
-    const p = (v.stats && v.stats.pilote) || 0;
-    return { base: p * 2, dice: 4 };
+    const fn = App.getEditionModule(v.edition).vehicleModel.initiative;
+    return fn ? fn(v) : null;
   },
 };

@@ -44,12 +44,13 @@ const CardRenderer = {
     const gIcon = { M: "♂", F: "♀", NB: "⚧" }[pnj.gender] || "";
     let badge = "";
 
-    if (pnj.edition === "anarchy") {
-      const tier = pnj.tier || "Figurant";
+    const ratingBadge = App.getEditionModule(pnj.edition).ratingBadge;
+    if (ratingBadge.options) {
+      const tier = pnj[ratingBadge.field] || ratingBadge.options[0];
       const tierClass = `rang-${tier.toLowerCase()}`;
       badge = `<span class="pnj-rank-badge ${tierClass}">${tier}</span>`;
     } else {
-      badge = `<span class="pnj-rank-badge">PRO&nbsp;${pnj.proRating}</span>`;
+      badge = `<span class="pnj-rank-badge">PRO&nbsp;${pnj[ratingBadge.field]}</span>`;
     }
 
     const specialStr =
@@ -108,10 +109,11 @@ const CardRenderer = {
 
   /* ---- Header esprit (invoqué ou libre) ---- */
   _headerSpirit(sp) {
+    const spSummonPower = App.getEditionModule(sp.edition).summonPower;
     const badge =
-      sp.edition === "anarchy"
-        ? `<span class="pnj-rank-badge vehicle-badge">${this._esc(sp.tier || "Esprit")}</span>`
-        : `<span class="pnj-rank-badge vehicle-badge">P ${sp.force}</span>`;
+      spSummonPower.field === "tier"
+        ? `<span class="pnj-rank-badge vehicle-badge">${this._esc(sp[spSummonPower.field] || "Esprit")}</span>`
+        : `<span class="pnj-rank-badge vehicle-badge">P ${sp[spSummonPower.field]}</span>`;
     const metaLine = sp.ownerId
       ? `<span class="vehicle-owner-link" role="button" tabindex="0"
           onclick="UI.focusOwner('${sp.ownerId}')"
@@ -1112,7 +1114,7 @@ const CardRenderer = {
       const drug = Drugs.matchItem(i, edition, "equip");
       if (drug) found.push(this._drugTag(pnj, edition, drug, i));
     }
-    if (edition === "anarchy") {
+    if (App.getEditionModule(edition).hasEdges) {
       for (const a of pnj.edges || []) {
         const drug = Drugs.matchItem(a, "anarchy", "edges");
         if (drug) found.push(this._drugTag(pnj, edition, drug, a));
@@ -1352,7 +1354,7 @@ const UI = {
   _vehicleItems(pnj) {
     if (typeof Vehicles === "undefined" || !pnj || pnj.type === "vehicle")
       return [];
-    const src = [...(pnj.equip || []), ...(pnj.edition === "anarchy" ? pnj.edges || [] : [])];
+    const src = [...(pnj.equip || []), ...(App.getEditionModule(pnj.edition).hasEdges ? pnj.edges || [] : [])];
     return src.filter((i) => Vehicles.matchItem(i, pnj.edition));
   },
 
@@ -1398,8 +1400,8 @@ const UI = {
     document.getElementById("summon-power-steps").addEventListener("click", (e) => {
       const b = e.target.closest("[data-power]");
       if (!b) return;
-      if (this._summon.edition === "anarchy") this._summon.tier = parseInt(b.dataset.power, 10);
-      else this._summon.force = parseInt(b.dataset.power, 10);
+      const summonField = App.getEditionModule(this._summon.edition).summonPower.field;
+      this._summon[summonField] = parseInt(b.dataset.power, 10);
       this._syncSummonPanel();
     });
     document.getElementById("summon-service-steps").addEventListener("click", (e) => {
@@ -1429,7 +1431,7 @@ const UI = {
     document.getElementById("summon-title").textContent =
       `Invoquer — ${owner.name || "PNJ"}`;
     document.getElementById("summon-power-label").textContent =
-      owner.edition === "anarchy" ? "Niveau" : "Puissance";
+      App.getEditionModule(owner.edition).summonPower.label;
     this._syncSummonPanel();
     const p = document.getElementById("summon-panel");
     p.removeAttribute("hidden");
@@ -1448,19 +1450,14 @@ const UI = {
   _syncSummonPanel() {
     const s = this._summon;
     const powerEl = document.getElementById("summon-power-steps");
-    if (s.edition === "anarchy") {
-      powerEl.innerHTML = Spirits.ANARCHY_TIERS.map(
-        (label, i) =>
-          `<button class="summon-step-btn${s.tier === i ? " active" : ""}" data-power="${i}">${label}</button>`,
-      ).join("");
-    } else {
-      powerEl.innerHTML = [2, 3, 4, 5, 6, 7, 8]
-        .map(
-          (f) =>
-            `<button class="summon-step-btn${s.force === f ? " active" : ""}" data-power="${f}">${f}</button>`,
-        )
-        .join("");
-    }
+    const summonPower = App.getEditionModule(s.edition).summonPower;
+    powerEl.innerHTML = summonPower
+      .steps()
+      .map(
+        ({ value, label }) =>
+          `<button class="summon-step-btn${s[summonPower.field] === value ? " active" : ""}" data-power="${value}">${label}</button>`,
+      )
+      .join("");
     document.getElementById("summon-service-steps").innerHTML = [1, 2, 3, 4, 5, 6]
       .map(
         (n) =>

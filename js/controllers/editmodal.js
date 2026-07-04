@@ -154,32 +154,30 @@ const EditModal = {
           </select>
         </div>`;
 
-    if (pnj.edition === "anarchy") {
+    const ratingBadge = App.getEditionModule(pnj.edition).ratingBadge;
+    if (ratingBadge.options) {
       html += `<div class="form-group">
-        <label>Rang</label>
+        <label>${ratingBadge.label}</label>
         <select id="em-rang">
-          ${["Figurant", "Figurant d'élite", "Lieutenant", "Boss"]
+          ${ratingBadge.options
             .map(
               (r) =>
-                `<option${pnj.tier === r ? " selected" : ""}>${r}</option>`,
+                `<option${pnj[ratingBadge.field] === r ? " selected" : ""}>${r}</option>`,
             )
             .join("")}
         </select>
       </div>`;
     } else {
       html += `<div class="form-group">
-        <label>Professionnalisme</label>
-        <input type="number" id="em-prof" value="${pnj.proRating}" min="0" max="6">
+        <label>${ratingBadge.label}</label>
+        <input type="number" id="em-prof" value="${pnj[ratingBadge.field]}" min="0" max="6">
       </div>`;
     }
 
     html += "</div></div>";
 
     // ---- Section : Attributs ----
-    const attrKeys =
-      pnj.edition === "anarchy"
-        ? ["FOR", "AGI", "VOL", "LOG", "CHA"]
-        : ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"];
+    const attrKeys = App.getEditionModule(pnj.edition).attributes;
 
     html += `<div class="modal-section">
       <div class="modal-section-title">Attributs</div>
@@ -202,7 +200,7 @@ const EditModal = {
     html += "</div></div>";
 
     // ---- Section Anarchy : Atouts libres ----
-    if (pnj.edition === "anarchy" && pnj.edges) {
+    if (App.getEditionModule(pnj.edition).hasEdges && pnj.edges) {
       html += `<div class="modal-section">
         <div class="modal-section-title">Atouts</div>
         <div class="form-group">
@@ -212,23 +210,16 @@ const EditModal = {
       </div>`;
     }
 
-    // ---- Section Anarchy : Compétences (éditables + ajout) ----
-    if (pnj.edition === "anarchy") {
+    // ---- Section : Compétences (éditables + ajout) ----
+    {
+      const rowFn =
+        App.getEditionModule(pnj.edition).skillModel.shape === "extended"
+          ? this._skillRowAnarchy.bind(this)
+          : this._skillRowSR.bind(this);
       html += `<div class="modal-section">
         <div class="modal-section-title">Compétences</div>
         <div id="em-skills-list" class="em-skills-list">
-          ${(pnj.skills || []).map((s, i) => this._skillRowAnarchy(pnj, s, i)).join("")}
-        </div>
-        ${this._addSkillControls(pnj)}
-      </div>`;
-    }
-
-    // ---- Section SR5/SR6 : Compétences (éditables + ajout) ----
-    if (pnj.edition !== "anarchy") {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Compétences</div>
-        <div id="em-skills-list" class="em-skills-list">
-          ${(pnj.skills || []).map((s, i) => this._skillRowSR(pnj, s, i)).join("")}
+          ${(pnj.skills || []).map((s, i) => rowFn(pnj, s, i)).join("")}
         </div>
         ${this._addSkillControls(pnj)}
       </div>`;
@@ -335,11 +326,11 @@ const EditModal = {
     if (!pnj.skills) pnj.skills = [];
     if (pnj.skills.some((s) => s.name === name)) return;
 
-    if (pnj.edition === "anarchy") {
+    if (App.getEditionModule(pnj.edition).skillModel.shape === "extended") {
       pnj.skills.push({
         name,
         val: 1,
-        attr: SkillCatalog.attrFor("anarchy", name) || "AGI",
+        attr: SkillCatalog.attrFor(pnj.edition, name) || "AGI",
         rr: 0,
       });
     } else {
@@ -362,7 +353,7 @@ const EditModal = {
     const list = document.getElementById("em-skills-list");
     if (!list) return;
     const rowFn =
-      pnj.edition === "anarchy"
+      App.getEditionModule(pnj.edition).skillModel.shape === "extended"
         ? this._skillRowAnarchy.bind(this)
         : this._skillRowSR.bind(this);
     list.innerHTML = (pnj.skills || [])
@@ -383,8 +374,7 @@ const EditModal = {
     pnj.skills.forEach((s, i) => {
       const v = document.getElementById(`em-skill-${i}`);
       if (v) {
-        const max = pnj.edition === "anarchy" ? 6 : 12;
-        const min = pnj.edition === "anarchy" ? 0 : 1;
+        const [min, max] = App.getEditionModule(pnj.edition).skillModel.valRange;
         s.val = Utils.clamp(parseInt(v.value, 10) || s.val, min, max);
       }
       const specEl = document.getElementById(`em-skill-spec-${i}`);
@@ -406,23 +396,24 @@ const EditModal = {
     pnj.meta = val("em-meta") || pnj.meta;
     pnj.gender = val("em-gender") || pnj.gender;
 
-    if (pnj.edition === "anarchy") {
-      pnj.tier = val("em-rang") || pnj.tier;
+    const edModuleForm = App.getEditionModule(pnj.edition);
+    const ratingBadge = edModuleForm.ratingBadge;
+    if (ratingBadge.options) {
+      pnj[ratingBadge.field] = val("em-rang") || pnj[ratingBadge.field];
+    } else {
+      pnj[ratingBadge.field] = num("em-prof", pnj[ratingBadge.field]);
+    }
+    if (edModuleForm.hasEdges) {
       const edgesEl = document.getElementById("em-atouts");
       if (edgesEl)
         pnj.edges = edgesEl.value
           .split("\n")
           .map((s) => s.trim())
           .filter(Boolean);
-    } else {
-      pnj.proRating = num("em-prof", pnj.proRating);
     }
 
     // Attributs
-    const allAttrKeys =
-      pnj.edition === "anarchy"
-        ? ["FOR", "AGI", "VOL", "LOG", "CHA"]
-        : ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA", "MAG"];
+    const allAttrKeys = [...edModuleForm.attributes, "MAG"];
     for (const k of allAttrKeys) {
       const el = document.getElementById(`em-attr-${k}`);
       if (el && pnj.attrs[k] !== undefined) {

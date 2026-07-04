@@ -13,6 +13,69 @@ const EditionSR5 = {
   badgeLabel: "SR5",
   useMetavariants: true,
 
+  /* ---- Contrat commun édition (résorption des branches, issue #14) ---- */
+  attributes: ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"],
+  ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
+  summonPower: {
+    field: "force",
+    label: "Puissance",
+    steps: () => [2, 3, 4, 5, 6, 7, 8].map((n) => ({ value: n, label: String(n) })),
+  },
+  skillModel: { shape: "simple", valRange: [1, 12], hasGroups: true },
+  hasEdges: false,
+  /** Neutre : les drogues SR5 sont des équipements, pas des atouts au
+      choix — matchItem() filtre déjà par source, pas de correspondance
+      universelle nécessaire (concept propre à Anarchy 2.0 p.150). */
+  drugModel: { matchAll: false },
+  /** Invocation d'esprits (issue #14) : SR5 invoque via Conjuration,
+      types = éléments classiques (Spirits.SR_TYPES). `types` est lazy
+      car spirits.js (catalogs) charge après les modules d'édition. */
+  spiritModel: { canSummon: true, types: () => Spirits.SR_TYPES },
+  /** Réserves de dés et initiative des véhicules/drones liés (js/catalogs/
+      vehicles.js) : Autopilote + autosoft, limite de précision inexistante
+      ici (pas de PRE sur un drone). */
+  vehicleModel: {
+    pools(v) {
+      const s = v.stats || {};
+      const autosoft = s.autosoft || s.pilote || s.autopilote || 0;
+      return [
+        { label: "Attaque", pool: (s.pilote || 0) + autosoft, title: "Autopilote + autosoft Acquisition [Précision]", weaponOnly: true },
+        { label: "Défense", pool: (s.pilote || 0) + autosoft, title: "Autopilote + autosoft Évasion [Maniabilité]" },
+        { label: "Capteurs", pool: (s.pilote || 0) + (s.senseurs || 0), title: "Autopilote + autosoft Acuité [Senseurs]" },
+        { label: "Encaissement", pool: (s.structure || 0) + (s.blindage || 0), title: "Structure + Blindage" },
+      ];
+    },
+    initiative(v) {
+      const p = (v.stats && v.stats.pilote) || 0;
+      return { base: p * 2, dice: 4 };
+    },
+  },
+  /** Malus de dés lié aux cases de moniteur remplies : −1D par tranche de
+      `woundMod` cases (physique + étourdissement cumulés), réglable en
+      Réglages (défaut 3, désactivable à 0). */
+  conditionMonitor: {
+    model: "double physique+étourdissement, cases = 8 + attribut/2",
+    fields: { primary: "physMon" },
+    woundMalus(pnj) {
+      const div = parseInt(
+        (typeof Settings !== "undefined" && Settings.get("woundMod", 3)) ?? 3,
+        10,
+      );
+      if (!div) return 0;
+      const total = (pnj.physFilled || 0) + (pnj.stunFilled || 0);
+      return Math.floor(total / div);
+    },
+  },
+  /** Résolution du jet d'arme (WeaponRoll) : synergie smartgun/smartlink
+      (+2 implanté / +1 externe), la Précision (PRE) plafonne les succès,
+      spécialité = +2 dés sur le pool, armes lues dans pnj.equip. */
+  weaponModel: {
+    smartlinkBonus: { implanted: 2, external: 1 },
+    accuracyLimit: true,
+    specMechanic: "diceBonus",
+    source: "equip",
+  },
+
   /* ----
      ATTRIBUTS PAR MÉTATYPE — table officielle p.68
      Format : { min, max } pour chaque attribut
@@ -173,6 +236,16 @@ const EditionSR5 = {
 
   /* ---- Armure officielle par proRating ---- */
   armureByProf: { 0: 0, 1: 9, 2: 12, 3: 12, 4: 9, 5: 18, 6: 18 },
+
+  /** Archétype utilisé pour un spider (decker de sécurité lié à un serveur,
+      issue #14) — toujours le même en SR5. */
+  spiderArchetype() {
+    return "Spécialiste contre-mesures";
+  },
+
+  /** Bonus d'indice quand le serveur gère aussi la sécurité physique.
+      Neutre : SR5 n'a pas cette règle (concept propre à Anarchy 2.0). */
+  secPhysBonus: null,
 
   /* ---- Initiative par proRating ---- */
   initByProf: {

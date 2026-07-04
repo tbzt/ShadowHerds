@@ -36,42 +36,42 @@ const Matrix = {
       patrouilleuse: {
         label: "Patrouilleuse",
         watch: true,
-        effect: (i) =>
-          `Perception (matricielle) : ${i} succès fixes vs Furtivité (discrétion matricielle) + LOG du decker. Donne l'alerte.`,
+        effect: (srv) =>
+          `Perception (matricielle) : ${srv.indice} succès fixes vs Furtivité (discrétion matricielle) + LOG du decker. Donne l'alerte.`,
       },
       acide: {
         label: "Acide",
-        effect: (i) =>
-          `Cybercombat : ${i} succès fixes — chaque attaque réussie réduit le Firewall de la cible de 1 (durée : la Scène, aucun dommage).`,
+        effect: (srv) =>
+          `Cybercombat : ${srv.indice} succès fixes — chaque attaque réussie réduit le Firewall de la cible de 1 (durée : la Scène, aucun dommage).`,
       },
       blaster: {
         label: "Blaster",
-        effect: (i) =>
-          `Cybercombat : ${i} succès fixes — verrouillage de connexion (1 tour) + dommages matriciels VD ${Math.ceil(i / 2)}.`,
+        effect: (srv) =>
+          `Cybercombat : ${srv.indice} succès fixes — verrouillage de connexion (1 tour) + dommages matriciels VD ${Math.ceil(srv.indice / 2)}.`,
       },
       bloqueuse: {
         label: "Bloqueuse",
-        effect: (i) =>
-          `Cybercombat : ${i} succès fixes — chaque attaque réussie réduit l'Attaque de la cible de 1 (durée : la Scène, aucun dommage).`,
+        effect: (srv) =>
+          `Cybercombat : ${srv.indice} succès fixes — chaque attaque réussie réduit l'Attaque de la cible de 1 (durée : la Scène, aucun dommage).`,
       },
       noire: {
         label: "Noire",
-        effect: (i) =>
-          `Cybercombat : ${i} succès fixes — dommages de biofeedback VD ${Math.ceil(i / 2)} (encaissés avec la Volonté en RV).`,
+        effect: (srv) =>
+          `Cybercombat : ${srv.indice} succès fixes — dommages de biofeedback VD ${Math.ceil(srv.indice / 2)} (encaissés avec la Volonté en RV).`,
       },
       potdecolle: {
         label: "Pot de colle",
-        effect: (i) =>
-          `Cybercombat : ${i} succès fixes — verrouillage de connexion (1 tour, aucun dommage).`,
+        effect: (srv) =>
+          `Cybercombat : ${srv.indice} succès fixes — verrouillage de connexion (1 tour, aucun dommage).`,
       },
       traqueuse: {
         label: "Traqueuse",
-        effect: (i) =>
-          `Cybercombat : ${i} succès fixes — découvre la localisation physique de la cible (aucun dommage).`,
+        effect: (srv) =>
+          `Cybercombat : ${srv.indice} succès fixes — découvre la localisation physique de la cible (aucun dommage).`,
       },
       tueuse: {
         label: "Tueuse",
-        effect: (i) => `Cybercombat : ${i} succès fixes — dommages matriciels VD ${i}.`,
+        effect: (srv) => `Cybercombat : ${srv.indice} succès fixes — dommages matriciels VD ${srv.indice}.`,
       },
     },
 
@@ -399,6 +399,72 @@ const Matrix = {
     return this._edition === "sr5"
       ? `attaque ${srv.indice * 2} dés [Attaque ${a.ATQ}] · moniteur ${this.icMonitorSize(srv.indice)} cases · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}`
       : `jets ${srv.indice * 2} dés · SO ${(a.ATQ || 0) + (a.COR || 0)} · moniteur ${this.icMonitorSize(srv.indice)} cases · init TdD×2+3D6 · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}`;
+  },
+
+  /** Libellé de Firewall affiché à côté du moniteur (Anarchy : FW fixe 1). */
+  firewallLabel() {
+    return this._edition === "anarchy" ? " (FW 1)" : "";
+  },
+
+  /** Texte + libellé d'un jet de CI (perception/attaque/défense/encaissement).
+      SR5/SR6 uniquement — les glaces Anarchy ont des succès fixes et ne
+      lancent jamais les dés (p.223). `soak` n'existe qu'en SR5 (pas de
+      règle d'encaissement de CI en SR6) : renvoie `null`, pas une valeur
+      neutre inventée. */
+  actionRoll(kind, srv) {
+    const i = srv.indice;
+    const a = srv.attrs || {};
+    const isSR5 = this._edition === "sr5";
+    if (kind === "per") {
+      return {
+        txt: `Perception ${i * 2}d${isSR5 ? ` [TdD ${a.TDD}]` : ""}`,
+        tip:
+          "Perception matricielle de la Patrouilleuse : indice × 2" +
+          (isSR5 ? ", limitée par le Traitement de données" : ""),
+      };
+    }
+    if (kind === "atk") {
+      return {
+        txt: `Attaque ${i * 2}d${isSR5 ? ` [ATQ ${a.ATQ}]` : ""}`,
+        tip: isSR5
+          ? "Attaque de la CI : indice × 2, limitée par l'Attaque du serveur (p.249)"
+          : "Jet d'attaque de la CI : indice × 2 (p.188)",
+      };
+    }
+    if (kind === "def") {
+      return {
+        txt: `Défense ${i * 2}d`,
+        tip: isSR5
+          ? "Défense de la CI quand le decker l'attaque (indice × 2, usage — la VF ne détaille pas cette réserve)"
+          : "Jet de défense de la CI : indice × 2 (p.188)",
+      };
+    }
+    if (kind === "soak" && isSR5) {
+      return {
+        txt: `Encaisse ${i + (a.FW || 0)}d`,
+        tip: "Résistance aux dommages matriciels : indice + Firewall du serveur (p.229)",
+      };
+    }
+    return null;
+  },
+
+  /** Texte affiché à la convergence du Score de Surveillance (SS = 40,
+      SR5/SR6 uniquement — l'Anarchy a son propre modèle DIEU). */
+  convergenceText() {
+    return this._edition === "sr5"
+      ? "VD 12 dommages matriciels, reboot forcé (perte des marks, éjection, choc en RV). Dans un serveur : 3 marks posées + déploiement de CI ; le demi-DIEU converge à la sortie (p.233, 249)."
+      : "l'appareil de la dernière action illégale est brické, éjection avec choc, localisation signalée aux autorités (p.178).";
+  },
+
+  /** Limite (cap) d'un jet de CI selon l'attribut de serveur concerné
+      (SR5 uniquement : Attaque pour l'attaque, Traitement de données
+      pour la perception — SR6 n'a pas de limite, neutre : null). */
+  attrLimit(kind, srv) {
+    if (this._edition !== "sr5") return null;
+    const a = srv.attrs || {};
+    if (kind === "atk") return a.ATQ ?? null;
+    if (kind === "per") return a.TDD ?? null;
+    return null;
   },
 
   /** Sélection aléatoire cohérente des CI (Patrouilleuse toujours). */
