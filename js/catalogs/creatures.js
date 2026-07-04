@@ -16,7 +16,7 @@
 const Creatures = {
   /* ---- SR5 : attrs [CON,AGI,REA,FOR,VOL,LOG,INT,CHA,MAG?],
      init/dice, moniteurs phys/étourd, armure, limites,
-     skills = réserves complètes, traits texte. ---- */
+     skills = réserves complètes, traits texte. ----  */
   SR5: {
     chien: {
       label: "Chien de garde", a: [4, 3, 4, 4, 3, 2, 4, 3, null],
