@@ -73,7 +73,7 @@ const Servers = Object.assign(
 
     /** Taille du moniteur matriciel d'une CI. */
     icMonitorSize(srv) {
-      return srv.edition === "anarchy" ? 4 : 8 + Math.ceil(srv.indice / 2);
+      return Matrix.use(srv.edition).icMonitorSize(srv.indice);
     },
 
     /* ========================================================
@@ -271,14 +271,16 @@ const Servers = Object.assign(
       intr.turn += 1;
 
       // SR6 : accès illégaux maintenus (+1/round Utilisateur, +3/round Admin)
-      if (srv.edition === "sr6" && (intr.illUser > 0 || intr.illAdmin > 0)) {
-        const delta = intr.illUser * 1 + intr.illAdmin * 3;
-        this._pushSS(srv, delta, `accès illégaux maintenus (${intr.illUser}U/${intr.illAdmin}A)`);
+      if (intr.illUser > 0 || intr.illAdmin > 0) {
+        const delta = Matrix.use(srv.edition).overwatchDelta(intr.illUser, intr.illAdmin);
+        if (delta > 0) {
+          this._pushSS(srv, delta, `accès illégaux maintenus (${intr.illUser}U/${intr.illAdmin}A)`);
+        }
       }
 
       // Déploiement : une CI par tour, si l'alerte est donnée
       if (intr.alerted) {
-        const maxActive = srv.edition === "anarchy" ? Infinity : srv.indice;
+        const maxActive = Matrix.use(srv.edition).maxActiveIC(srv.indice);
         const active = srv.icList.filter((k) => {
           const st = intr.ics[k];
           return st && st.active && !st.down;
@@ -520,7 +522,7 @@ const Servers = Object.assign(
 
       const indEl = val("indice");
       if (indEl) {
-        const max = srv.edition === "anarchy" ? 8 : 12;
+        const [, max] = Matrix.use(srv.edition).indiceRange();
         srv.indice = Utils.clamp(parseInt(indEl.value, 10) || srv.indice, 1, max);
       }
 
@@ -622,7 +624,7 @@ const Servers = Object.assign(
         ),
       ].join("");
 
-      const range = ed === "anarchy" ? [2, 8] : [1, 12];
+      const range = Matrix.use(ed).indiceRange();
       const indOpts = [
         `<option value="auto">Selon profil</option>`,
         ...Array.from({ length: range[1] - range[0] + 1 }, (_, i) => range[0] + i).map(
@@ -690,7 +692,7 @@ const Servers = Object.assign(
           <span class="server-attr"><b>${a.TDD}</b>TdD</span>
           <span class="server-attr"><b>${a.FW}</b>FW</span>
         </div>
-        <div class="server-thresholds">CI : ${srv.edition === "sr5" ? `attaque ${srv.indice * 2} dés [Attaque ${a.ATQ}] · moniteur ${this.icMonitorSize(srv)} cases · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}` : `jets ${srv.indice * 2} dés · SO ${(a.ATQ || 0) + (a.COR || 0)} · moniteur ${this.icMonitorSize(srv)} cases · init TdD×2+3D6 · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}`}</div>`;
+        <div class="server-thresholds">CI : ${Matrix.use(srv.edition).icThresholdsText(srv)}</div>`;
       }
 
       /* -- chips CI -- */
@@ -755,7 +757,7 @@ const Servers = Object.assign(
         )
         .join("");
 
-      const range = srv.edition === "anarchy" ? [2, 8] : [1, 12];
+      const range = Matrix.use(srv.edition).indiceRange();
       const indOpts = Array.from(
         { length: range[1] - range[0] + 1 },
         (_, i) => range[0] + i,

@@ -370,6 +370,37 @@ const Matrix = {
     return this.PROFILES[this._edition === "sr6" ? "sr5" : this._edition] || this.PROFILES.anarchy;
   },
 
+  /** Taille du moniteur matriciel d'une CI (Anarchy : fixe 4 cases). */
+  icMonitorSize(indice) {
+    return this._edition === "anarchy" ? 4 : 8 + Math.ceil(indice / 2);
+  },
+
+  /** Nombre max de CI actives simultanément (Anarchy : illimité, p.223). */
+  maxActiveIC(indice) {
+    return this._edition === "anarchy" ? Infinity : indice;
+  },
+
+  /** Plage d'indice disponible pour un serveur. */
+  indiceRange() {
+    return this._edition === "anarchy" ? [2, 8] : [1, 12];
+  },
+
+  /** Delta de Score de Surveillance dû aux accès illégaux maintenus,
+      par round (SR6 uniquement, p.178). Neutre : 0 (SR5/Anarchy n'ont
+      pas cette règle). */
+  overwatchDelta(illUser, illAdmin) {
+    return this._edition === "sr6" ? illUser * 1 + illAdmin * 3 : 0;
+  },
+
+  /** Texte des seuils/jets de CI pour l'affichage de carte (SR5/SR6 —
+      l'Anarchy a son propre bloc de seuils, hors de cette méthode). */
+  icThresholdsText(srv) {
+    const a = srv.attrs || { ATQ: "?", COR: "?", TDD: "?", FW: "?" };
+    return this._edition === "sr5"
+      ? `attaque ${srv.indice * 2} dés [Attaque ${a.ATQ}] · moniteur ${this.icMonitorSize(srv.indice)} cases · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}`
+      : `jets ${srv.indice * 2} dés · SO ${(a.ATQ || 0) + (a.COR || 0)} · moniteur ${this.icMonitorSize(srv.indice)} cases · init TdD×2+3D6 · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}`;
+  },
+
   /** Sélection aléatoire cohérente des CI (Patrouilleuse toujours). */
   pickICs(indice, sev) {
     const tiers = this.IC_POOLS[this._edition] || this.IC_POOLS.anarchy;
