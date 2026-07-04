@@ -1211,7 +1211,7 @@ const CardRenderer = {
 const UI = {
   /** Clic sur une case de moniteur */
   toggleMonitor(pnjId, type, idx) {
-    const pnj = this._findPNJ(pnjId);
+    const pnj = PnjLookup.find(pnjId);
     if (!pnj) return;
 
     // Mapping type → champ du PNJ
@@ -1237,7 +1237,7 @@ const UI = {
 
   /** Clic sur un point de narco (Anarchy) */
   toggleNarco(pnjId, idx) {
-    const pnj = this._findPNJ(pnjId);
+    const pnj = PnjLookup.find(pnjId);
     if (!pnj) return;
     if (idx < (pnj.narcoUsed || 0)) {
       pnj.narcoUsed = idx;
@@ -1251,7 +1251,7 @@ const UI = {
   /** Clic sur le tag d'une drogue : fait avancer le cycle idle → effet →
       contrecoup → idle (cf. js/drugs.js). */
   cycleDrug(pnjId, edition, drugId) {
-    const pnj = this._findPNJ(pnjId);
+    const pnj = PnjLookup.find(pnjId);
     if (!pnj) return;
     Drugs.advance(pnj, edition, drugId);
     Shadows.save();
@@ -1261,23 +1261,13 @@ const UI = {
   /** Clic sur le tag d'une armure optionnelle (Anarchy) : équipe/range le
       bouclier, ce qui relève/abaisse les seuils physiques affichés. */
   toggleArmorOption(pnjId, idx) {
-    const pnj = this._findPNJ(pnjId);
+    const pnj = PnjLookup.find(pnjId);
     if (!pnj) return;
     pnj.armorOptions = pnj.armorOptions || {};
     if (pnj.armorOptions[idx]) delete pnj.armorOptions[idx];
     else pnj.armorOptions[idx] = true;
     Shadows.save();
     CardRenderer.refresh(pnj);
-  },
-
-  /** Cherche dans les sauvegardés ET le pool du générateur, pour que
-      les interactions (moniteurs, drogues, déploiements) fonctionnent
-      aussi sur les cartes pas encore sauvegardées. */
-  _findPNJ(id) {
-    const saved = Shadows.data.all.find((p) => p.id === id);
-    if (saved) return saved;
-    if (typeof Gen !== "undefined" && Gen.findInPool) return Gen.findInPool(id);
-    return null;
   },
 
   /* ========================================================
@@ -1287,7 +1277,7 @@ const UI = {
   /** Clic sur une chip de la zone Combat : déploie la fiche liée,
       ou recentre la vue dessus si elle existe déjà. */
   deployVehicle(ownerId, srcIdx) {
-    const owner = this._findPNJ(ownerId);
+    const owner = PnjLookup.find(ownerId);
     if (!owner) return;
     const srcItem = (this._vehicleItems(owner) || [])[srcIdx];
     if (!srcItem) return;
@@ -1326,7 +1316,7 @@ const UI = {
   /** Bouton « Ranger » d'une fiche liée : retire la ou les fiches
       issues du même item source. */
   dismissVehicle(vehicleId) {
-    const v = this._findPNJ(vehicleId);
+    const v = PnjLookup.find(vehicleId);
     if (!v || v.type !== "vehicle") return;
     const siblings = Vehicles.linkedTo(v.ownerId, v.srcItem);
     for (const s of siblings) {
@@ -1338,7 +1328,7 @@ const UI = {
         .forEach((card) => card.remove());
     }
     Shadows.save();
-    const owner = this._findPNJ(v.ownerId);
+    const owner = PnjLookup.find(v.ownerId);
     if (owner) CardRenderer.refresh(owner);
   },
 
@@ -1426,7 +1416,7 @@ const UI = {
   },
 
   openSummonPanel(ownerId) {
-    const owner = this._findPNJ(ownerId);
+    const owner = PnjLookup.find(ownerId);
     if (!owner) return;
     this._ensureSummonPanel();
     this._summon = {
@@ -1488,7 +1478,7 @@ const UI = {
 
   _doSummon(typeKey) {
     const s = this._summon;
-    const owner = this._findPNJ(s.ownerId);
+    const owner = PnjLookup.find(s.ownerId);
     if (!owner) return;
     const spirit = Spirits.spawn(owner, typeKey, {
       force: s.force,
@@ -1519,7 +1509,7 @@ const UI = {
 
   /** Pip de service : marque les services rendus (clic = bascule). */
   toggleService(spiritId, idx) {
-    const sp = this._findPNJ(spiritId);
+    const sp = PnjLookup.find(spiritId);
     if (!sp || sp.type !== "spirit") return;
     sp.servicesUsed = idx < (sp.servicesUsed || 0) ? idx : idx + 1;
     Shadows.save();
@@ -1528,7 +1518,7 @@ const UI = {
 
   /** Congédie un esprit : retire sa fiche. */
   dismissSpirit(spiritId) {
-    const sp = this._findPNJ(spiritId);
+    const sp = PnjLookup.find(spiritId);
     if (!sp || sp.type !== "spirit") return;
     Shadows.data.all = Shadows.data.all.filter((p) => p.id !== sp.id);
     if (typeof Gen !== "undefined" && Gen.pool)
@@ -1537,7 +1527,7 @@ const UI = {
       .querySelectorAll(`.pnj-card[data-id="${sp.id}"]`)
       .forEach((card) => card.remove());
     Shadows.save();
-    const owner = this._findPNJ(sp.ownerId);
+    const owner = PnjLookup.find(sp.ownerId);
     if (owner) CardRenderer.refresh(owner);
   },
 };

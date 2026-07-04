@@ -28,23 +28,13 @@ const Backup = {
     "servers_groups",
   ],
 
-  _rawKey(edition, key) {
-    return `sr_pnj_v2_${edition}_${key}`;
-  },
-
   /* ---- Construction du paquet exportable ---- */
   build() {
     const data = {};
     for (const ed of this.EDITIONS) {
       const bucket = {};
       for (const key of this.KEYS) {
-        let val = null;
-        try {
-          const raw = localStorage.getItem(this._rawKey(ed, key));
-          val = raw === null ? null : JSON.parse(raw);
-        } catch {
-          val = null;
-        }
+        const val = Storage.getFromEdition(ed, key, null);
         if (val !== null) bucket[key] = val;
       }
       if (Object.keys(bucket).length) data[ed] = bucket;
@@ -191,24 +181,17 @@ const Backup = {
   },
 
   _writeRaw(edition, key, value) {
-    try {
-      localStorage.setItem(this._rawKey(edition, key), JSON.stringify(value));
-    } catch {
-      /* quota ? noop */
-    }
+    Storage.setForEdition(edition, key, value);
   },
 
   _readRaw(edition, key, fallback) {
-    try {
-      const raw = localStorage.getItem(this._rawKey(edition, key));
-      return raw === null ? fallback : JSON.parse(raw);
-    } catch {
-      return fallback;
-    }
+    return Storage.getFromEdition(edition, key, fallback);
   },
 
   /** Fusion : ajoute les éléments dont l'id est absent, fusionne les groupes. */
   _mergeEdition(edition, incoming) {
+    // TODO: reads internal structures {all, groups} of Shadows, ContactsBook, Servers
+    // This tight coupling should be addressed in sprint 3 (linked entities roadmap)
     // PNJ et contacts : fusion par id
     for (const listKey of ["shadows_all", "contacts_all", "servers_all"]) {
       if (!Array.isArray(incoming[listKey])) continue;

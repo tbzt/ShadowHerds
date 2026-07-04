@@ -51,14 +51,10 @@ const Gen = {
   },
 
   /* ---- Repli/dépli des filtres (état global, mémorisé) ---- */
-  _FILTERS_KEY: "sh_gen_filters_collapsed",
+  _FILTERS_KEY: "gen_filters_collapsed",
 
   filtersCollapsed() {
-    try {
-      return localStorage.getItem(this._FILTERS_KEY) === "1";
-    } catch {
-      return false;
-    }
+    return Storage.getGlobal(this._FILTERS_KEY, false);
   },
 
   /** Enrobe les champs d'un formulaire dans une zone repliable, avec sa
@@ -76,11 +72,7 @@ const Gen = {
 
   toggleFilters() {
     const collapsed = !this.filtersCollapsed();
-    try {
-      localStorage.setItem(this._FILTERS_KEY, collapsed ? "1" : "0");
-    } catch {
-      /* noop */
-    }
+    Storage.setGlobal(this._FILTERS_KEY, collapsed);
     // Bascule directe dans le DOM (sans rebuild : conserve les sélections)
     document
       .querySelectorAll("#panel-generator .gen-filters")

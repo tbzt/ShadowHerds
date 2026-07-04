@@ -13,28 +13,20 @@ const Settings = {
   },
 
   /* ---- Préférences du lanceur de dés (GLOBALES, hors édition) ---- */
-  _DICE_KEY: "sr_pnj_v2_global_dicePrefs",
+  _DICE_KEY: "dicePrefs",
   _diceDefaults: {
     quickRoll: false,
     defaultCount: 6,
   },
   getDicePrefs() {
-    try {
-      const raw = localStorage.getItem(this._DICE_KEY);
-      return { ...this._diceDefaults, ...(raw ? JSON.parse(raw) : {}) };
-    } catch {
-      return { ...this._diceDefaults };
-    }
+    return { ...this._diceDefaults, ...Storage.getGlobal(this._DICE_KEY, {}) };
   },
   setDicePrefs(patch) {
     const next = { ...this.getDicePrefs(), ...patch };
-    try {
-      localStorage.setItem(this._DICE_KEY, JSON.stringify(next));
-    } catch {
-      /* quota */
-    }
+    Storage.setGlobal(this._DICE_KEY, next);
     // Propager aux lanceurs (topbar + bottom sheet mobile)
-    if (typeof Dice !== "undefined" && Dice.applyPrefs) Dice.applyPrefs();
+    if (typeof DiceRoller !== "undefined" && DiceRoller.applyPrefs)
+      DiceRoller.applyPrefs();
     if (typeof DicePanel !== "undefined" && DicePanel.applyPrefs)
       DicePanel.applyPrefs();
     return next;
@@ -50,7 +42,7 @@ const Settings = {
   },
 
   /* ---- Préférences d'affichage des cartes (GLOBALES, hors édition) ---- */
-  _CARD_KEY: "sr_pnj_v2_global_cardDisplay",
+  _CARD_KEY: "cardDisplay",
   _cardDefaults: {
     layout: "expanded",
     showAttributes: true,
@@ -58,20 +50,11 @@ const Settings = {
     showEquipment: true,
   },
   getCardDisplay() {
-    try {
-      const raw = localStorage.getItem(this._CARD_KEY);
-      return { ...this._cardDefaults, ...(raw ? JSON.parse(raw) : {}) };
-    } catch {
-      return { ...this._cardDefaults };
-    }
+    return { ...this._cardDefaults, ...Storage.getGlobal(this._CARD_KEY, {}) };
   },
   setCardDisplay(patch) {
     const next = { ...this.getCardDisplay(), ...patch };
-    try {
-      localStorage.setItem(this._CARD_KEY, JSON.stringify(next));
-    } catch {
-      /* quota */
-    }
+    Storage.setGlobal(this._CARD_KEY, next);
     return next;
   },
   /** Bascule un booléen d'affichage et rafraîchit les cartes visibles. */

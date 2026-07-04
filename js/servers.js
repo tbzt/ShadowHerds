@@ -811,7 +811,7 @@ const Servers = {
       res.cappedFrom = res.hits;
       res.hits = limit;
     }
-    Dice._animate(res, { label, who: srv.name });
+    DiceRoller.show(res, { label, who: srv.name });
   },
 
   /* ---- Marks (SR5) ---- */
@@ -844,7 +844,7 @@ const Servers = {
     const srv = this._intr(id);
     if (!srv) return;
     const res = Dice.computeInitiative(0, 2);
-    Dice._animate(res, { label: "Surveillance DIEU : +2D6 SS", who: srv.name });
+    DiceRoller.show(res, { label: "Surveillance DIEU : +2D6 SS", who: srv.name });
     srv.intrusion.lastRollT = Date.now();
     this._pushSS(srv, res.total, `+2D6 (temps) : [${res.faces.join(", ")}]`);
     this.save();

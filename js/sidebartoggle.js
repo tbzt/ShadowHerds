@@ -7,26 +7,20 @@
    stockée hors du namespace Storage préfixé par édition.
    ============================================================ */
 const SidebarToggle = {
-  _key: "sr_pnj_v2_global_sidebar_collapsed",
+  _key: "sidebar_collapsed",
   _mobileBreakpoint: 640,
   state: { shadows: false, contacts: false, matrix: false },
 
   init() {
     // Restaurer l'état persisté
-    try {
-      const saved = JSON.parse(localStorage.getItem(this._key) || "{}");
-      if (typeof saved.shadows === "boolean")
-        this.state.shadows = saved.shadows;
-      if (typeof saved.contacts === "boolean")
-        this.state.contacts = saved.contacts;
-      if (typeof saved.matrix === "boolean")
-        this.state.matrix = saved.matrix;
-    } catch {
-      /* noop */
-    }
+    const saved = Storage.getGlobal(this._key, {});
+    if (typeof saved.shadows === "boolean") this.state.shadows = saved.shadows;
+    if (typeof saved.contacts === "boolean")
+      this.state.contacts = saved.contacts;
+    if (typeof saved.matrix === "boolean") this.state.matrix = saved.matrix;
 
     // Sur mobile : replier par défaut (overlay), sans écraser un choix explicite déjà stocké
-    if (this._isMobile() && localStorage.getItem(this._key) === null) {
+    if (this._isMobile() && Storage.getGlobal(this._key, null) === null) {
       this.state.shadows = true;
       this.state.contacts = true;
       this.state.matrix = true;
@@ -52,11 +46,7 @@ const SidebarToggle = {
   },
 
   _persist() {
-    try {
-      localStorage.setItem(this._key, JSON.stringify(this.state));
-    } catch {
-      /* noop */
-    }
+    Storage.setGlobal(this._key, this.state);
   },
 
   open(panel) {

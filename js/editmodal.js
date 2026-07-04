@@ -7,7 +7,7 @@ const EditModal = {
   currentId: null,
 
   open(id) {
-    const pnj = this._find(id);
+    const pnj = PnjLookup.find(id);
     if (!pnj) {
       toast("PNJ introuvable.");
       return;
@@ -23,22 +23,13 @@ const EditModal = {
     document.getElementById("edit-modal").classList.add("open");
   },
 
-  /** Cherche dans les sauvegardés et le pool du générateur (les fiches
-      véhicules peuvent vivre dans les deux). */
-  _find(id) {
-    return (
-      Shadows.data.all.find((p) => p.id === id) ||
-      (typeof Gen !== "undefined" && Gen.findInPool ? Gen.findInPool(id) : null)
-    );
-  },
-
   close() {
     document.getElementById("edit-modal").classList.remove("open");
     this.currentId = null;
   },
 
   save() {
-    const pnj = this._find(this.currentId);
+    const pnj = PnjLookup.find(this.currentId);
     if (!pnj) {
       this.close();
       return;

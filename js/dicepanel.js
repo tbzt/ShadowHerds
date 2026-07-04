@@ -2,8 +2,8 @@
 
 /* ============================================================
    DICE PANEL — lanceur de dés mobile (FAB + bottom sheet)
-   S'appuie sur le moteur Dice (utils.js) : le résultat passe par
-   l'animation plein écran existante (Dice.rollPool → _animate),
+   S'appuie sur DiceRoller (diceroller.js) : le résultat passe par
+   l'animation plein écran existante (DiceRoller.rollPool → show),
    ou par le panneau de prise de risque en Anarchy 2.0.
    ============================================================ */
 const DicePanel = {
@@ -111,111 +111,11 @@ const DicePanel = {
     this.close();
     // Anarchy 2.0 : ce lanceur passe par le panneau de prise de risque
     if (typeof App !== "undefined" && App.edition === "anarchy") {
-      Dice.openRiskPanel(this.count, { label: "" });
+      DiceRoller.openRiskPanel(this.count, { label: "" });
       return;
     }
     // L'animation plein écran existante affiche le résultat
-    Dice.rollPool(this.count);
-  },
-};
-
-/* ============================================================
-   DICE LOG — journal des jets de la session
-   Alimenté par Dice._logRoll (utils.js). Un seul panneau,
-   ancré sous la topbar sur desktop, en feuille basse sur mobile.
-   ============================================================ */
-const DiceLog = {
-  _open: false,
-
-  _ensure() {
-    if (document.getElementById("dice-log-panel")) return;
-    const backdrop = document.createElement("div");
-    backdrop.id = "dice-log-backdrop";
-    backdrop.addEventListener("click", () => this.close());
-    document.body.appendChild(backdrop);
-
-    const panel = document.createElement("div");
-    panel.id = "dice-log-panel";
-    panel.setAttribute("role", "dialog");
-    panel.setAttribute("aria-label", "Journal des jets");
-    panel.innerHTML = `
-      <div class="dice-log-head">
-        <span class="dice-log-title">Journal des jets</span>
-        <button class="btn-icon-tiny" onclick="DiceLog.clear()" title="Vider le journal">⌫</button>
-        <button class="btn-icon-tiny" onclick="DiceLog.close()" title="Fermer" aria-label="Fermer">✕</button>
-      </div>
-      <div class="dice-log-list" id="dice-log-list"></div>`;
-    document.body.appendChild(panel);
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") this.close();
-    });
-  },
-
-  toggle() {
-    this._open ? this.close() : this.open();
-  },
-
-  open() {
-    this._ensure();
-    // Sur mobile, le journal remplace la feuille de dés si elle est ouverte
-    if (typeof DicePanel !== "undefined") DicePanel.close();
-    this.refresh();
-    document.getElementById("dice-log-backdrop").classList.add("open");
-    document.getElementById("dice-log-panel").classList.add("open");
-    this._open = true;
-  },
-
-  close() {
-    if (!this._open) return;
-    const p = document.getElementById("dice-log-panel");
-    const b = document.getElementById("dice-log-backdrop");
-    if (p) p.classList.remove("open");
-    if (b) b.classList.remove("open");
-    this._open = false;
-  },
-
-  clear() {
-    Dice.history.length = 0;
-    this.refresh();
-  },
-
-  /** Re-rend la liste (appelé après chaque jet si le panneau existe). */
-  refresh() {
-    const list = document.getElementById("dice-log-list");
-    if (!list) return;
-    if (!Dice.history.length) {
-      list.innerHTML = `<div class="dice-log-empty">Aucun jet pour l'instant.</div>`;
-      return;
-    }
-    const fmt = (t) => {
-      const d = new Date(t);
-      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-    };
-    list.innerHTML = Dice.history
-      .map((e) => {
-        const who = e.who
-          ? `<span class="dice-log-who">${Dice._escSummary(e.who)}</span> `
-          : "";
-        const label = e.label
-          ? `<span class="dice-log-label">${who}${Dice._escSummary(e.label)}</span>`
-          : e.who
-            ? `<span class="dice-log-label">${who}</span>`
-            : `<span class="dice-log-label dim">Jet libre</span>`;
-        const tag = e.tag
-          ? `<span class="dice-log-tag ${e.cls}">${Dice._escSummary(e.tag)}</span>`
-          : "";
-        return `<div class="dice-log-item ${e.cls}">
-          <span class="dice-log-time">${fmt(e.t)}</span>
-          <div class="dice-log-body">
-            ${label}
-            <span class="dice-log-sub">${Dice._escSummary(e.sub)}</span>
-            ${tag}
-          </div>
-          <span class="dice-log-main">${e.main}<small>${e.unit || ""}</small></span>
-        </div>`;
-      })
-      .join("");
+    DiceRoller.rollPool(this.count);
   },
 };
 

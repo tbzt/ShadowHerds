@@ -205,7 +205,17 @@ const App = {
    INIT au chargement du DOM
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
-  Dice.init();
+  DiceRoller.init({
+    resolve: (id) => PnjLookup.find(id),
+    getPrefs: () => Settings.getDicePrefs(),
+    onPnjChanged: (pnj) => {
+      if (Shadows.data.all.some((p) => p.id === pnj.id)) Shadows.save();
+      if (Servers.ownsPnj(pnj.id)) Servers.save();
+      CardRenderer.refresh(pnj);
+    },
+    isRefOpen: (pnj) => CardRenderer._refIsOpen(pnj),
+    isAnarchy: () => App.edition === "anarchy",
+  });
   ContentModal.bindDelegation();
 
   document.getElementById("edit-modal").addEventListener("click", (e) => {
