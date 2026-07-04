@@ -3,1085 +3,642 @@
 /* ============================================================
    SERVEURS & CI — assistance aux intrusions matricielles
    (issue #14). Panneau « Matrice » : bibliothèque de serveurs
-   avec groupes (même socle que ContactsBook), génération
-   dirigée ou aléatoire, et tracker d'intrusion en direct.
-
-   Sources :
-   - Anarchy 2.0 p.220-225 : indice 2-7 (+1 sécurité physique),
-     Firewall = indice, glaces à succès fixes (= indice), FW 1,
-     moniteur 2L/1G/1I, une glace déployée par tour après
-     détection. Surveillance du DIEU p.218 : effets cumulatifs
-     sur complications (mineure : +2 dés de risque min ;
-     critique : seuil de Piratage +1 ; désastre : convergence).
-   - SR5 p.247-251 (VF « serveurs ») : indice 1-12, attributs
-     ASDF = indice à indice+3 ; CI : attaque indice×2 [Attaque],
-     moniteur 8+(indice/2), 1 CI/tour, max = indice, une copie
-     par type. SS p.233 : +succès défense par action illégale,
-     +2D6/15 min, convergence à 40.
-     NB : la table d'exemples d'indices VF p.249 est décalée
-     (ligne 3-4 manquante) — on utilise la répartition corrigée.
-   - SR6 p.187-190 : idem indices/ASDF ; CI : jets = indice×2,
-     moniteur 8+(indice/2), SO = ATQ+COR, init TdD×2+3D6.
-     SS p.178 : +succès défense, +1/programme de hacking,
-     +1/round par accès Utilisateur illégal, +3/round par accès
-     Admin illégal, convergence à 40.
+   avec groupes (socle Collection, comme Shadows/ContactsBook),
+   génération dirigée ou aléatoire, et tracker d'intrusion en
+   direct. Les catalogues de CI/profils/sculptures par édition
+   vivent dans js/matrix.js (Matrix.use(edition)) ; ce fichier ne
+   porte que le tracker d'intrusion, l'édition de carte et le rendu.
    ============================================================ */
-const Servers = {
-  data: {
-    all: [],
-    groups: {},
-  },
-  currentGroup: "all",
-  /* Cartes en cours d'édition (état d'interface, non persisté) */
-  _editing: {},
+const Servers = Object.assign(
+  Collection.create({
+    key: "servers",
+    storageKeys: { all: "servers_all", groups: "servers_groups" },
+    dom: { grid: "servers-grid", sidebar: "servers-group-list", label: "servers-group-label" },
+    footerSelector: ".server-card-footer",
+    labels: {
+      allSummary: (n) => `Tous les serveurs (${n})`,
+      emptyTitle: "Aucun serveur ici",
+      emptyBody: "Créez un serveur avec le formulaire ci-dessus, ou lancez la génération aléatoire.",
+      noMatch: (q) => `Aucun serveur ne correspond à « ${q} ».`,
+    },
+    searchFields: (s) => [s.name, s.profile, `indice ${s.indice}`],
+    // Le spider est imbriqué dans le serveur (srv.spider), pas une
+    // entité sœur dans data.all : rendu via renderTrailing, pas linked.
+    renderTrailing: (srv) => {
+      if (!srv.spider) return null;
+      const sub = CardRenderer.render(srv.spider, []);
+      sub.classList.add("vehicle-card");
+      return sub;
+    },
+    renderCard: (srv) => Servers._renderCard(srv),
+  }),
+  {
+    /* Cartes en cours d'édition (état d'interface, non persisté) */
+    _editing: {},
 
-  /* ========================================================
-     CATALOGUES — types de CI par édition
-     ======================================================== */
-  IC: {
-    // Anarchy 2.0 p.223 — succès fixes = indice, FW 1, moniteur 2L/1G/1I
-    anarchy: {
-      patrouilleuse: {
-        label: "Patrouilleuse",
-        watch: true,
-        effect: (i) =>
-          `Perception (matricielle) : ${i} succès fixes vs Furtivité (discrétion matricielle) + LOG du decker. Donne l'alerte.`,
-      },
-      acide: {
-        label: "Acide",
-        effect: (i) =>
-          `Cybercombat : ${i} succès fixes — chaque attaque réussie réduit le Firewall de la cible de 1 (durée : la Scène, aucun dommage).`,
-      },
-      blaster: {
-        label: "Blaster",
-        effect: (i) =>
-          `Cybercombat : ${i} succès fixes — verrouillage de connexion (1 tour) + dommages matriciels VD ${Math.ceil(i / 2)}.`,
-      },
-      bloqueuse: {
-        label: "Bloqueuse",
-        effect: (i) =>
-          `Cybercombat : ${i} succès fixes — chaque attaque réussie réduit l'Attaque de la cible de 1 (durée : la Scène, aucun dommage).`,
-      },
-      noire: {
-        label: "Noire",
-        effect: (i) =>
-          `Cybercombat : ${i} succès fixes — dommages de biofeedback VD ${Math.ceil(i / 2)} (encaissés avec la Volonté en RV).`,
-      },
-      potdecolle: {
-        label: "Pot de colle",
-        effect: (i) =>
-          `Cybercombat : ${i} succès fixes — verrouillage de connexion (1 tour, aucun dommage).`,
-      },
-      traqueuse: {
-        label: "Traqueuse",
-        effect: (i) =>
-          `Cybercombat : ${i} succès fixes — découvre la localisation physique de la cible (aucun dommage).`,
-      },
-      tueuse: {
-        label: "Tueuse",
-        effect: (i) => `Cybercombat : ${i} succès fixes — dommages matriciels VD ${i}.`,
-      },
+    /* ========================================================
+       ACCESSEURS — catalogues délégués à Matrix (js/matrix.js)
+       ======================================================== */
+    _edition() {
+      return typeof App !== "undefined" ? App.edition : "anarchy";
     },
 
-    // SR5 p.248-251 — attaque = indice×2 [Attaque]
-    sr5: {
-      patrouilleuse: {
-        label: "CI Patrouilleuse",
-        watch: true,
-        effect: (s) =>
-          `Perception matricielle sur toutes les icônes du serveur (active en permanence, n'attaque pas, ne subit pas de dommages sur échec).`,
-      },
-      acide: {
-        label: "CI Acide",
-        def: "Volonté + Firewall",
-        effect: (s) =>
-          `Réduit le Firewall de la cible de 1 (cumulatif, jusqu'au reboot). Firewall 0 → 1 case de dommages par succès excédentaire.`,
-      },
-      blaster: {
-        label: "CI Blaster",
-        def: "Logique + Firewall",
-        effect: (s) =>
-          `${s.attrs.ATQ} cases matricielles (+1/succès exc., +2/mark) + autant en biofeedback étourdissant. Verrouille la connexion.`,
-      },
-      bloqueuse: {
-        label: "CI Bloqueuse",
-        def: "Volonté + Attaque",
-        effect: (s) =>
-          `Réduit l'Attaque de la cible de 1 (cumulatif, jusqu'au reboot). Attaque 0 → 1 case de dommages par succès excédentaire.`,
-      },
-      brouilleuse: {
-        label: "CI Brouilleuse",
-        def: "Volonté + Firewall",
-        effect: (s) =>
-          `Si le serveur a 3 marks sur la cible : reboot immédiat de l'appareil (choc d'éjection en RV).`,
-      },
-      crash: {
-        label: "CI Crash",
-        def: "Intuition + Firewall",
-        effect: (s) =>
-          `Si le serveur a une mark sur la cible : plante un programme aléatoire (indisponible jusqu'au reboot).`,
-      },
-      fragmenteuse: {
-        label: "CI Fragmenteuse",
-        def: "Volonté + Trait. de données",
-        effect: (s) =>
-          `Réduit le Traitement de données de la cible de 1 (cumulatif, jusqu'au reboot). TdD 0 → 1 case de dommages par succès exc.`,
-      },
-      furie: {
-        label: "CI Furie",
-        def: "Intuition + Firewall",
-        effect: (s) =>
-          `« Tueuse psychopathe » : VD ${s.attrs.ATQ} matriciels (+1/succès exc., +2/mark) + autant en dommages de biofeedback.`,
-      },
-      noire: {
-        label: "CI Noire",
-        def: "Intuition + Firewall",
-        effect: (s) =>
-          `Verrouille la connexion. VD ${s.attrs.ATQ} matriciels (+1/succès exc., +2/mark) + autant en biofeedback physique.`,
-      },
-      potdecolle: {
-        label: "CI Pot de colle",
-        def: "Logique + Firewall",
-        effect: (s) =>
-          `Verrouille la connexion. Si déjà verrouillée : pose une mark (max 3).`,
-      },
-      rongeuse: {
-        label: "CI Rongeuse",
-        def: "Volonté + Corruption",
-        effect: (s) =>
-          `Réduit la Corruption de la cible de 1 (cumulatif, jusqu'au reboot). Corruption 0 → 1 case de dommages par succès exc.`,
-      },
-      sonde: {
-        label: "CI Sonde",
-        def: "Intuition + Firewall",
-        effect: (s) => `Chaque attaque réussie pose une mark sur la cible (max 3).`,
-      },
-      traqueuse: {
-        label: "CI Traqueuse",
-        def: "Volonté + Corruption",
-        effect: (s) =>
-          `Si succès exc. et ≥ 2 marks du serveur : localisation physique découverte et signalée aux autorités.`,
-      },
-      tueuse: {
-        label: "CI Tueuse",
-        def: "Intuition + Firewall",
-        effect: (s) => `VD ${s.attrs.ATQ} dommages matriciels (+1/succès exc., +2/mark).`,
-      },
+    icCatalog(edition) {
+      return Matrix.use(edition).icCatalog();
     },
 
-    // SR6 p.188-189 — jets = indice×2, SO = ATQ+COR
-    sr6: {
-      patrouilleuse: {
-        label: "CI Patrouilleuse",
-        watch: true,
-        effect: (s) =>
-          `Percevoir la Matrice à l'entrée d'un intrus, puis 1×/minute ou après chaque action illégale. Prévient la sécurité, peut déclencher une CI.`,
-      },
-      acide: {
-        label: "CI Acide",
-        def: "Volonté + Firewall",
-        effect: (s) =>
-          `Réduit le Firewall de la cible de 1 par succès net (régénère 1 pt/min après avoir quitté le serveur).`,
-      },
-      blaster: {
-        label: "CI Blaster",
-        def: "Logique + Firewall",
-        effect: (s) =>
-          `${s.indice} dommages matriciels + verrouillage de connexion.`,
-      },
-      bloqueuse: {
-        label: "CI Bloqueuse",
-        def: "Volonté + Attaque",
-        effect: (s) =>
-          `Réduit l'Attaque de la cible de 1 par succès net (à 0 : plus d'action avec cet attribut ; régén. 1 pt/min hors serveur).`,
-      },
-      brouilleuse: {
-        label: "CI Brouilleuse",
-        def: "Volonté + Firewall",
-        effect: (s) =>
-          `Force la cible à rebooter à son prochain tour, sauf si elle subit un verrouillage de connexion.`,
-      },
-      crash: {
-        label: "CI Crash",
-        def: "Intuition + Firewall",
-        effect: (s) => `Fait planter un programme au hasard (indisponible jusqu'au reboot).`,
-      },
-      fragmenteuse: {
-        label: "CI Fragmenteuse",
-        def: "Volonté + Trait. de données",
-        effect: (s) =>
-          `Réduit le Traitement de données de 1 par succès net (à 0 : plus aucune action matricielle ; régén. 1 pt/min hors serveur).`,
-      },
-      furie: {
-        label: "CI Furie",
-        def: "Intuition + Firewall",
-        effect: (s) => `${s.indice} + succès nets en dommages de biofeedback.`,
-      },
-      noire: {
-        label: "CI Noire",
-        def: "Intuition + Firewall",
-        effect: (s) =>
-          `${s.indice} + succès nets en dommages matriciels ET autant en biofeedback.`,
-      },
-      potdecolle: {
-        label: "CI Pot de colle",
-        def: "Logique + Firewall",
-        effect: (s) => `Verrouillage de connexion.`,
-      },
-      rongeuse: {
-        label: "CI Rongeuse",
-        def: "Volonté + Corruption",
-        effect: (s) =>
-          `Réduit la Corruption de 1 par succès net (à 0 : plus d'action avec cet attribut ; régén. 1 pt/min hors serveur).`,
-      },
-      traqueuse: {
-        label: "CI Traqueuse",
-        def: "Volonté + Corruption",
-        effect: (s) => `Découvre la localisation physique de la cible (aucun dommage).`,
-      },
-      tueuse: {
-        label: "CI Tueuse",
-        def: "Intuition + Firewall",
-        effect: (s) => `${s.indice} + succès nets en dommages matriciels.`,
-      },
+    profiles(edition) {
+      return Matrix.use(edition).profiles();
     },
-  },
 
-  /* ---- Profils d'indice (tables officielles) ----
-     sev : sévérité 0/1/2 pour la sélection aléatoire des CI. */
-  PROFILES: {
-    // Anarchy 2.0 p.222
-    anarchy: [
-      { id: "bricole", label: "Bricolé, très bas de gamme ou daté", indice: 2, sev: 0 },
-      { id: "basdegamme", label: "Bas de gamme (ex : Stuffer Shack)", indice: 3, sev: 0 },
-      { id: "moyen", label: "Moyen (corporation classique)", indice: 4, sev: 1 },
-      { id: "securise", label: "Sécurisé (AA / AAA, serveur critique)", indice: 5, sev: 1 },
-      { id: "hautesecu", label: "Haute sécurité (critique d'une AAA)", indice: 6, sev: 2 },
-      { id: "extreme", label: "Sécurité extrême (R&D AAA, militaire)", indice: 7, sev: 2 },
-    ],
-    // SR5 p.249 (répartition VO corrigée) / SR6 p.187
-    sr5: [
-      { id: "perso", label: "Sites personnels, archives pirates, éducation publique", min: 1, max: 2, sev: 0 },
-      { id: "commerce", label: "Petit commerce, entreprise privée, petits policlubs", min: 3, max: 4, sev: 0 },
-      { id: "pub", label: "Sites publicitaires, bibliothèques, policlubs internationaux", min: 5, max: 6, sev: 1 },
-      { id: "corpolocal", label: "Jeux matriciels, corpos locales, universités, petit gouvernement", min: 7, max: 8, sev: 1 },
-      { id: "regional", label: "Groupes influents, corpos régionales, gouvernement majeur", min: 9, max: 10, sev: 2 },
-      { id: "megacorpo", label: "QG de mégacorpo, commandement militaire, siège clandestin", min: 11, max: 12, sev: 2 },
-    ],
-    get sr6() {
-      return this.sr5;
+    find(id) {
+      return this.data.all.find((s) => s.id === id);
     },
-  },
 
-  /* ---- Génération de noms / sculptures ---- */
-  ORGS: [
-    // sev 0 : commerces et sites locaux
-    ["Stuffer Shack", "Nukit Burgers", "McHugh's", "Kong-Walmart", "Bibliothèque municipale de Touristville", "Crusher 495", "Weapons World", "Clinique de quartier", "Matchsticks", "Armadillo Business Software"],
-    // sev 1 : corpos locales et institutions
-    ["Gaeatronics", "Telestrian Industries", "Brackhaven Investments", "Federated-Boeing", "Université de Washington", "KSAF", "DocWagon Seattle", "Lone Star Seattle", "Knight Errant Seattle", "Metroplex de Seattle"],
-    // sev 2 : AAA, militaire, clandestin
-    ["Renraku", "Ares Macrotechnology", "Aztechnology", "Horizon", "Shiawase", "Mitsuhama", "Evo", "Wuxing", "Saeder-Krupp", "Spinrad Global", "Fort Lewis (UCAS)"],
-  ],
-  SUFFIXES: [
-    "serveur commercial",
-    "serveur administratif",
-    "serveur de travail",
-    "serveur de données",
-    "serveur de sécurité",
-    "serveur R&D",
-    "nœud d'archives",
-    "serveur logistique",
-  ],
-  /* Sculptures par gamme (sev 0/1/2), inspirées des serveurs décrits
-     dans Data Trails (VF : Métroplexe de Seattle, Saeder-Krupp,
-     Louis Vuitton, secteurs R&D…), Hacker Vaillant (G-men du DIEU,
-     royaumes de la Résonance) et Anarchistes (patrouilleuses en
-     gardes ou animaux territoriaux, icônes reflétant leur fonction). */
-  SCULPTURES: [
-    // sev 0 — commerces locaux, sites persos, bas de gamme
-    [
-      "Supérette virtuelle aux rayonnages criards, jingles promotionnels en boucle, caddies-icônes grinçants ; la patrouilleuse est un vigile mal payé qui traîne des pieds.",
-      "Fast-food cartoon aux couleurs saturées ; la mascotte géante suit les visiteurs du regard et note tout.",
-      "Arrière-salle de bar enfumée : néons fatigués, juke-box qui saute, fichiers étalés sur les tables poisseuses.",
-      "Salle d'arcade rétro 8-bit : sprites pixelisés, chiptunes, glaces en fantômes de Pac-Man.",
-      "Bibliothèque de quartier assoupie, poussière virtuelle, fiches cartonnées ; le silence y est une politique de sécurité.",
-      "Garage associatif : établis gras, pièces détachées suspendues, simulation d'odeur d'huile approximative.",
-      "Page perso à l'ancienne devenue lieu : gifs animés, compteur de visites, murs de photos de famille qui vous dévisagent.",
-      "Centre commercial hypersaturé de publicités, mascottes animées et muzak inlassable.",
-      "Chapelle de tôle et de lumière : vitraux pixellisés, cantiques MIDI ; les troncs acceptent les certifiés.",
-    ],
-    // sev 1 — corpos locales, universités, gouvernement
-    [
-      "Ville sculptée dans l'émeraude : structures cristallines flottantes, arêtes d'or et d'ébène, mobilier en pétales de pierre précieuse qui vole en éclats sous les intrusions (façon serveur du Métroplexe de Seattle, Data Trails).",
-      "Tour de bureaux du XXe siècle en noir et blanc purs, sans un gris ; la sécurité n'est que mouvements d'ombre en trenchcoat et Borsalino (façon serveur administratif, Data Trails).",
-      "Boutique de luxe feutrée : vitrines infinies, personnel en gants blancs, clients servis au champagne virtuel (façon serveur Louis Vuitton, Data Trails).",
-      "Commissariat de la Prohibition : G-men en costume, machines à écrire, tampons officiels ; l'autorité en décorum d'époque (façon icônes du DIEU, Hacker Vaillant).",
-      "Open-space corporatiste infini se répétant en fractale, néons blancs, odeur virtuelle de café.",
-      "Campus universitaire idéalisé : pelouses parfaites, amphithéâtres antiques, le savoir coule en fontaines lumineuses.",
-      "Hôpital immaculé : couloirs blancs sans fin, personas-soignants pressés, moniteurs qui bipent des flux de données.",
-      "Studio de trid : plateaux emboîtés, projecteurs aveuglants, câbles-serpents ; tout le monde joue un rôle, surtout la sécurité.",
-      "Jardin japonais idéal : cerisiers perpétuels, pavillons de papier, personas en kimono ; la patrouilleuse est un héron qui arpente son territoire.",
-      "Jungle luxuriante dont les lianes sont des flux de données, faune-icônes exotique ; les glaces chassent en meute.",
-      "Récif corallien bioluminescent, personas-poissons, glaces en requins blancs.",
-    ],
-    // sev 2 — AAA, militaire, clandestin
-    [
-      "Cottage scandinave au creux de fjords virtuels : cubes de chrome et de verre, géométrie escherienne à l'intérieur, glaces en rottweilers dans des couloirs aseptisés (façon Saeder-Krupp, Data Trails).",
-      "Château japonais médiéval : jardins zen, personas en kimono, glaces en armure de samouraï réparties dans des temples-fonctions.",
-      "Pyramide aztèque monumentale : glyphes de lumière, escaliers processionnels, prêtres-personas ; les connexions coupées sont des sacrifices.",
-      "Laboratoire de simulation hyperréaliste : souffleries de données, prototypes sous scellés virtuels, physique irréprochable (façon serveurs R&D, Data Trails).",
-      "Vortex de traitement : plus on approche du cœur du serveur, plus le souffle des données devient un rugissement assourdissant (façon Data Trails).",
-      "Bunker militaire en béton brut, éclairage rouge, sirènes silencieuses, portes blindées ; chaque persona est en treillis.",
-      "Cathédrale gothique de données, vitraux de flux lumineux, échos de chants grégoriens ; les glaces sont des gargouilles qui s'éveillent.",
-      "Station orbitale chromée, baies vitrées sur une Terre virtuelle, gravité à géométrie variable.",
-      "Colline sombre sous un ciel sans étoiles, couverte de pierres tombales de programmes morts ; un glas sonne à chaque erreur (façon royaumes de la Résonance, Hacker Vaillant).",
-      "Speakeasy années 1920 : jazz feutré, fumée volumétrique, videurs en costume rayé ; le mot de passe change à chaque tour.",
-      "Bibliothèque infinie aux rayonnages impossibles, fichiers reliés plein cuir ; les index vivent leur propre vie.",
-      "Noir absolu piqueté d'étoiles de données ; l'horizon virtuel n'existe pas, la sécurité si.",
-    ],
-  ],
+    /** Gamme (0/1/2) d'un serveur — stockée à la création, sinon
+        retrouvée depuis son profil (serveurs créés avant ce champ). */
+    sevOf(srv) {
+      if (Number.isFinite(srv.sev)) return Utils.clamp(srv.sev, 0, 2);
+      const p = this.profiles(srv.edition).find((x) => x.label === srv.profile);
+      return p ? p.sev : 1;
+    },
 
-  /* ========================================================
-     ACCESSEURS
-     ======================================================== */
-  _edition() {
-    return typeof App !== "undefined" ? App.edition : "anarchy";
-  },
+    rerollSculpture(id) {
+      const srv = this.find(id);
+      if (!srv) return;
+      srv.sculpture = Matrix.pickSculpture(this.sevOf(srv));
+      this.save();
+      this.render();
+    },
 
-  icCatalog(edition) {
-    return this.IC[edition] || this.IC.anarchy;
-  },
+    /** Taille du moniteur matriciel d'une CI. */
+    icMonitorSize(srv) {
+      return srv.edition === "anarchy" ? 4 : 8 + Math.ceil(srv.indice / 2);
+    },
 
-  profiles(edition) {
-    return this.PROFILES[edition === "sr6" ? "sr5" : edition] || this.PROFILES.anarchy;
-  },
+    /* ========================================================
+       GÉNÉRATION
+       ======================================================== */
+    _newIntrusion() {
+      return {
+        open: false,
+        alerted: false,
+        turn: 0,
+        ics: {},
+        marks: 0,
+        ss: 0,
+        ssLog: [],
+        lastRollT: 0,
+        illUser: 0,
+        illAdmin: 0,
+        minor: 0,
+        critical: 0,
+        converged: false,
+      };
+    },
 
-  find(id) {
-    return this.data.all.find((s) => s.id === id);
-  },
+    /** Crée un serveur depuis le formulaire du panneau. */
+    createFromForm() {
+      const ed = this._edition();
+      const profiles = this.profiles(ed);
 
-  /** Gamme (0/1/2) d'un serveur — stockée à la création, sinon
-      retrouvée depuis son profil (serveurs créés avant ce champ). */
-  sevOf(srv) {
-    if (Number.isFinite(srv.sev)) return Utils.clamp(srv.sev, 0, 2);
-    const p = this.profiles(srv.edition).find((x) => x.label === srv.profile);
-    return p ? p.sev : 1;
-  },
+      const profSel = (document.getElementById("srv-profile") || {}).value || "random";
+      const profile =
+        profSel === "random"
+          ? Utils.rand(profiles)
+          : profiles.find((p) => p.id === profSel) || Utils.rand(profiles);
 
-  _pickSculpture(sev) {
-    return Utils.rand(this.SCULPTURES[Utils.clamp(sev, 0, 2)]);
-  },
-
-  rerollSculpture(id) {
-    const srv = this.find(id);
-    if (!srv) return;
-    srv.sculpture = this._pickSculpture(this.sevOf(srv));
-    this.save();
-    this.render();
-  },
-
-  /** Taille du moniteur matriciel d'une CI. */
-  icMonitorSize(srv) {
-    return srv.edition === "anarchy" ? 4 : 8 + Math.ceil(srv.indice / 2);
-  },
-
-  /* ========================================================
-     PERSISTANCE / GROUPES (même socle que ContactsBook)
-     ======================================================== */
-  load() {
-    this.data.all = Storage.get("servers_all", []);
-    this.data.groups = Storage.get("servers_groups", {});
-  },
-
-  save() {
-    Storage.set("servers_all", this.data.all);
-    Storage.set("servers_groups", this.data.groups);
-  },
-
-  remove(id) {
-    const s = this.find(id);
-    if (s && !confirm(`Supprimer le serveur « ${s.name} » ?`)) return;
-    this.data.all = this.data.all.filter((x) => x.id !== id);
-    for (const g of Object.keys(this.data.groups)) {
-      this.data.groups[g] = this.data.groups[g].filter((i) => i !== id);
-    }
-    this.save();
-    this.render();
-    if (s) toast(`${s.name} supprimé.`);
-  },
-
-  addGroup() {
-    const name = prompt("Nom du groupe :");
-    if (!name || !name.trim()) return;
-    const key = name.trim();
-    if (key === "all") {
-      toast("Nom réservé.");
-      return;
-    }
-    if (!this.data.groups[key]) this.data.groups[key] = [];
-    this.save();
-    this.render();
-    toast(`Groupe "${key}" créé.`);
-  },
-
-  removeGroup(key) {
-    if (!confirm(`Supprimer le groupe "${key}" ?`)) return;
-    delete this.data.groups[key];
-    if (this.currentGroup === key) this.currentGroup = "all";
-    this.save();
-    this.render();
-  },
-
-  renameGroup(key) {
-    const newName = prompt("Nouveau nom :", key);
-    if (!newName || !newName.trim() || newName.trim() === key) return;
-    const newKey = newName.trim();
-    if (this.data.groups[newKey]) {
-      toast("Ce nom existe déjà.");
-      return;
-    }
-    this.data.groups[newKey] = this.data.groups[key];
-    delete this.data.groups[key];
-    if (this.currentGroup === key) this.currentGroup = newKey;
-    this.save();
-    this.render();
-  },
-
-  moveToGroup(id, targetGroup) {
-    for (const g of Object.keys(this.data.groups)) {
-      this.data.groups[g] = this.data.groups[g].filter((i) => i !== id);
-    }
-    if (targetGroup !== "all" && this.data.groups[targetGroup]) {
-      if (!this.data.groups[targetGroup].includes(id)) {
-        this.data.groups[targetGroup].push(id);
+      let indice;
+      const indSel = (document.getElementById("srv-indice") || {}).value || "auto";
+      if (indSel === "auto") {
+        indice =
+          ed === "anarchy" ? profile.indice : Utils.randInt(profile.min, profile.max);
+      } else {
+        indice = parseInt(indSel, 10);
       }
-    }
-    this.save();
-    this.render();
-  },
+      const secPhys =
+        ed === "anarchy" && !!(document.getElementById("srv-secphys") || {}).checked;
+      if (secPhys) indice += 1;
 
-  groupsOf(id) {
-    return Object.keys(this.data.groups).filter((g) =>
-      this.data.groups[g].includes(id),
-    );
-  },
+      // Attributs ASDF (SR5/SR6) : indice à indice+3 répartis au hasard
+      let attrs = null;
+      if (ed !== "anarchy") {
+        const vals = [indice, indice + 1, indice + 2, indice + 3].sort(
+          () => Math.random() - 0.5,
+        );
+        attrs = { ATQ: vals[0], COR: vals[1], TDD: vals[2], FW: vals[3] };
+      }
 
-  switchGroup(g) {
-    this.currentGroup = g;
-    this.render();
-  },
+      // Liste des CI : sélection manuelle si des cases sont cochées, sinon auto
+      const checked = Array.from(
+        document.querySelectorAll("#srv-ic-choices input:checked"),
+      ).map((el) => el.value);
+      const icList = checked.length
+        ? ["patrouilleuse", ...checked.filter((k) => k !== "patrouilleuse")]
+        : Matrix.use(ed).pickICs(indice, profile.sev);
 
-  /* ========================================================
-     GÉNÉRATION
-     ======================================================== */
-  _newIntrusion() {
-    return {
-      open: false,
-      alerted: false,
-      turn: 0,
-      ics: {},
-      marks: 0,
-      ss: 0,
-      ssLog: [],
-      lastRollT: 0,
-      illUser: 0,
-      illAdmin: 0,
-      minor: 0,
-      critical: 0,
-      converged: false,
-    };
-  },
+      const nameInput = (document.getElementById("srv-name") || {}).value || "";
+      const name = nameInput.trim() || Matrix.makeName(profile.sev);
 
-  /** Crée un serveur depuis le formulaire du panneau. */
-  createFromForm() {
-    const ed = this._edition();
-    const profiles = this.profiles(ed);
+      const srv = {
+        id: Utils.uid(),
+        edition: ed,
+        name,
+        profile: profile.label,
+        indice,
+        sev: profile.sev,
+        secPhys,
+        attrs,
+        icList,
+        sculpture: Matrix.pickSculpture(profile.sev),
+        spider: null,
+        notes: "",
+        intrusion: this._newIntrusion(),
+      };
 
-    const profSel = (document.getElementById("srv-profile") || {}).value || "random";
-    const profile =
-      profSel === "random"
-        ? Utils.rand(profiles)
-        : profiles.find((p) => p.id === profSel) || Utils.rand(profiles);
+      if ((document.getElementById("srv-spider") || {}).checked) {
+        srv.spider = this._makeSpider(srv);
+      }
 
-    let indice;
-    const indSel = (document.getElementById("srv-indice") || {}).value || "auto";
-    if (indSel === "auto") {
-      indice =
-        ed === "anarchy" ? profile.indice : Utils.randInt(profile.min, profile.max);
-    } else {
-      indice = parseInt(indSel, 10);
-    }
-    const secPhys =
-      ed === "anarchy" && !!(document.getElementById("srv-secphys") || {}).checked;
-    if (secPhys) indice += 1;
+      this.data.all.push(srv);
+      if (this.currentGroup !== "all" && this.data.groups[this.currentGroup]) {
+        this.data.groups[this.currentGroup].push(srv.id);
+      }
+      this.save();
+      this.render();
+      toast(`✓ ${srv.name} (indice ${srv.indice}) créé.`);
+    },
 
-    // Attributs ASDF (SR5/SR6) : indice à indice+3 répartis au hasard
-    let attrs = null;
-    if (ed !== "anarchy") {
-      const vals = [indice, indice + 1, indice + 2, indice + 3].sort(
-        () => Math.random() - 0.5,
-      );
-      attrs = { ATQ: vals[0], COR: vals[1], TDD: vals[2], FW: vals[3] };
-    }
-
-    // Liste des CI : sélection manuelle si des cases sont cochées, sinon auto
-    const checked = Array.from(
-      document.querySelectorAll("#srv-ic-choices input:checked"),
-    ).map((el) => el.value);
-    const icList = checked.length
-      ? ["patrouilleuse", ...checked.filter((k) => k !== "patrouilleuse")]
-      : this._pickICs(ed, indice, profile.sev);
-
-    const nameInput = (document.getElementById("srv-name") || {}).value || "";
-    const name = nameInput.trim() || this._makeName(profile.sev);
-
-    const srv = {
-      id: Utils.uid(),
-      edition: ed,
-      name,
-      profile: profile.label,
-      indice,
-      sev: profile.sev,
-      secPhys,
-      attrs,
-      icList,
-      sculpture: this._pickSculpture(profile.sev),
-      spider: null,
-      notes: "",
-      intrusion: this._newIntrusion(),
-    };
-
-    if ((document.getElementById("srv-spider") || {}).checked) {
-      srv.spider = this._makeSpider(srv);
-    }
-
-    this.data.all.push(srv);
-    if (this.currentGroup !== "all" && this.data.groups[this.currentGroup]) {
-      this.data.groups[this.currentGroup].push(srv.id);
-    }
-    this.save();
-    this.render();
-    toast(`✓ ${srv.name} (indice ${srv.indice}) créé.`);
-  },
-
-  /** Sélection aléatoire cohérente des CI (Patrouilleuse toujours). */
-  _pickICs(edition, indice, sev) {
-    const pools = {
-      anarchy: [
-        ["tueuse", "potdecolle"],
-        ["traqueuse", "blaster", "acide", "bloqueuse"],
-        ["noire"],
-      ],
-      sr5: [
-        ["tueuse", "potdecolle", "sonde", "crash", "brouilleuse"],
-        ["acide", "bloqueuse", "fragmenteuse", "rongeuse", "traqueuse", "blaster"],
-        ["furie", "noire"],
-      ],
-      sr6: [
-        ["tueuse", "potdecolle", "crash", "brouilleuse"],
-        ["acide", "bloqueuse", "fragmenteuse", "rongeuse", "traqueuse", "blaster"],
-        ["furie", "noire"],
-      ],
-    };
-    const tiers = pools[edition] || pools.anarchy;
-    const candidates = [...tiers[0]];
-    if (sev >= 1) candidates.push(...tiers[1]);
-    if (sev >= 2) candidates.push(...tiers[2]);
-
-    const n =
-      edition === "anarchy"
-        ? Utils.clamp(1 + Math.round(indice / 2) + Utils.randInt(-1, 1), 1, candidates.length)
-        : Utils.clamp(2 + Math.ceil(indice / 3) + Utils.randInt(-1, 1), 2, candidates.length);
-
-    const shuffled = candidates.sort(() => Math.random() - 0.5);
-    const chosen = shuffled.slice(0, n);
-    // Les serveurs les plus durs sortent leur signature : la Noire.
-    if (sev >= 2 && !chosen.includes("noire") && Utils.randBool(0.6)) {
-      chosen[chosen.length - 1] = "noire";
-    }
-    return ["patrouilleuse", ...chosen];
-  },
-
-  _makeName(sev) {
-    const org = Utils.rand(this.ORGS[Utils.clamp(sev, 0, 2)]);
-    return `${org} — ${Utils.rand(this.SUFFIXES)}`;
-  },
-
-  /* ---- Spider (decker de sécurité lié) ---- */
-  _spiderOpts(srv) {
-    if (srv.edition === "anarchy") {
+    /* ---- Spider (decker de sécurité lié) ---- */
+    _spiderOpts(srv) {
+      if (srv.edition === "anarchy") {
+        return {
+          meta: "Aléatoire",
+          gender: "Aléatoire",
+          archetype: srv.indice >= 6 ? "Decker d'élite" : "Decker de sécurité",
+          tier: "Aléatoire",
+          special: "Aucun",
+        };
+      }
+      const proRating = String(Utils.clamp(Math.ceil(srv.indice / 2), 2, 6));
       return {
         meta: "Aléatoire",
         gender: "Aléatoire",
-        archetype: srv.indice >= 6 ? "Decker d'élite" : "Decker de sécurité",
+        archetype:
+          srv.edition === "sr5" ? "Spécialiste contre-mesures" : "Decker freelance",
+        proRating,
         tier: "Aléatoire",
-        special: "Aucun",
+        special: "Decker",
       };
-    }
-    const proRating = String(Utils.clamp(Math.ceil(srv.indice / 2), 2, 6));
-    return {
-      meta: "Aléatoire",
-      gender: "Aléatoire",
-      archetype:
-        srv.edition === "sr5" ? "Spécialiste contre-mesures" : "Decker freelance",
-      proRating,
-      tier: "Aléatoire",
-      special: "Decker",
-    };
-  },
+    },
 
-  _makeSpider(srv) {
-    const Mod =
-      typeof App !== "undefined" && App.getEditionModule
-        ? App.getEditionModule(srv.edition)
-        : null;
-    if (!Mod || !Mod.generate) return null;
-    const pnj = Mod.generate(this._spiderOpts(srv));
-    pnj.archetype = `Spider — ${pnj.archetype}`;
-    pnj.ownerName = srv.name;
-    return pnj;
-  },
+    _makeSpider(srv) {
+      const Mod =
+        typeof App !== "undefined" && App.getEditionModule
+          ? App.getEditionModule(srv.edition)
+          : null;
+      if (!Mod || !Mod.generate) return null;
+      const pnj = Mod.generate(this._spiderOpts(srv));
+      pnj.archetype = `Spider — ${pnj.archetype}`;
+      pnj.ownerName = srv.name;
+      return pnj;
+    },
 
-  addSpider(id) {
-    const srv = this.find(id);
-    if (!srv) return;
-    srv.spider = this._makeSpider(srv);
-    this.save();
-    this.render();
-    if (srv.spider) toast(`Spider ${srv.spider.name} en poste sur ${srv.name}.`);
-  },
+    addSpider(id) {
+      const srv = this.find(id);
+      if (!srv) return;
+      srv.spider = this._makeSpider(srv);
+      this.save();
+      this.render();
+      if (srv.spider) toast(`Spider ${srv.spider.name} en poste sur ${srv.name}.`);
+    },
 
-  removeSpider(id) {
-    const srv = this.find(id);
-    if (!srv || !srv.spider) return;
-    const name = srv.spider.name;
-    srv.spider = null;
-    this.save();
-    this.render();
-    toast(`${name} relevé de son poste.`);
-  },
+    removeSpider(id) {
+      const srv = this.find(id);
+      if (!srv || !srv.spider) return;
+      const name = srv.spider.name;
+      srv.spider = null;
+      this.save();
+      this.render();
+      toast(`${name} relevé de son poste.`);
+    },
 
-  /** Recherche d'un spider par id de PNJ (intégration lancer de dés). */
-  findSpider(pnjId) {
-    for (const s of this.data.all) {
-      if (s.spider && s.spider.id === pnjId) return s.spider;
-    }
-    return null;
-  },
+    /** Recherche d'un spider par id de PNJ (intégration lancer de dés). */
+    findSpider(pnjId) {
+      for (const s of this.data.all) {
+        if (s.spider && s.spider.id === pnjId) return s.spider;
+      }
+      return null;
+    },
 
-  ownsPnj(pnjId) {
-    return !!this.findSpider(pnjId);
-  },
+    ownsPnj(pnjId) {
+      return !!this.findSpider(pnjId);
+    },
 
-  /* ========================================================
-     TRACKER D'INTRUSION
-     ======================================================== */
-  _intr(id) {
-    const srv = this.find(id);
-    if (!srv) return null;
-    if (!srv.intrusion) srv.intrusion = this._newIntrusion();
-    return srv;
-  },
+    /* ========================================================
+       TRACKER D'INTRUSION
+       ======================================================== */
+    _intr(id) {
+      const srv = this.find(id);
+      if (!srv) return null;
+      if (!srv.intrusion) srv.intrusion = this._newIntrusion();
+      return srv;
+    },
 
-  toggleIntrusion(id) {
-    const srv = this._intr(id);
-    if (!srv) return;
-    srv.intrusion.open = !srv.intrusion.open;
-    this.save();
-    this.render();
-  },
+    toggleIntrusion(id) {
+      const srv = this._intr(id);
+      if (!srv) return;
+      srv.intrusion.open = !srv.intrusion.open;
+      this.save();
+      this.render();
+    },
 
-  /** L'alerte est donnée (la Patrouilleuse a repéré l'intrus). */
-  setAlert(id) {
-    const srv = this._intr(id);
-    if (!srv) return;
-    srv.intrusion.alerted = !srv.intrusion.alerted;
-    if (srv.intrusion.alerted && srv.intrusion.turn === 0) srv.intrusion.turn = 1;
-    this.save();
-    this.render();
-  },
+    /** L'alerte est donnée (la Patrouilleuse a repéré l'intrus). */
+    setAlert(id) {
+      const srv = this._intr(id);
+      if (!srv) return;
+      srv.intrusion.alerted = !srv.intrusion.alerted;
+      if (srv.intrusion.alerted && srv.intrusion.turn === 0) srv.intrusion.turn = 1;
+      this.save();
+      this.render();
+    },
 
-  /** Tour suivant : déploie la prochaine CI (1/tour) + SS SR6. */
-  nextTurn(id) {
-    const srv = this._intr(id);
-    if (!srv) return;
-    const intr = srv.intrusion;
-    intr.turn += 1;
+    /** Tour suivant : déploie la prochaine CI (1/tour) + SS SR6. */
+    nextTurn(id) {
+      const srv = this._intr(id);
+      if (!srv) return;
+      const intr = srv.intrusion;
+      intr.turn += 1;
 
-    // SR6 : accès illégaux maintenus (+1/round Utilisateur, +3/round Admin)
-    if (srv.edition === "sr6" && (intr.illUser > 0 || intr.illAdmin > 0)) {
-      const delta = intr.illUser * 1 + intr.illAdmin * 3;
-      this._pushSS(srv, delta, `accès illégaux maintenus (${intr.illUser}U/${intr.illAdmin}A)`);
-    }
+      // SR6 : accès illégaux maintenus (+1/round Utilisateur, +3/round Admin)
+      if (srv.edition === "sr6" && (intr.illUser > 0 || intr.illAdmin > 0)) {
+        const delta = intr.illUser * 1 + intr.illAdmin * 3;
+        this._pushSS(srv, delta, `accès illégaux maintenus (${intr.illUser}U/${intr.illAdmin}A)`);
+      }
 
-    // Déploiement : une CI par tour, si l'alerte est donnée
-    if (intr.alerted) {
-      const maxActive = srv.edition === "anarchy" ? Infinity : srv.indice;
-      const active = srv.icList.filter((k) => {
-        const st = intr.ics[k];
-        return st && st.active && !st.down;
-      }).length;
-      if (active < maxActive) {
-        const next = srv.icList.find((k) => {
-          if (k === "patrouilleuse") return false;
+      // Déploiement : une CI par tour, si l'alerte est donnée
+      if (intr.alerted) {
+        const maxActive = srv.edition === "anarchy" ? Infinity : srv.indice;
+        const active = srv.icList.filter((k) => {
           const st = intr.ics[k];
-          return !st || !st.active;
-        });
-        if (next) {
-          intr.ics[next] = { active: true, dmg: 0, down: false, turn: intr.turn };
-          const label = this.icCatalog(srv.edition)[next]?.label || next;
-          toast(`Le serveur déploie : ${label}.`);
+          return st && st.active && !st.down;
+        }).length;
+        if (active < maxActive) {
+          const next = srv.icList.find((k) => {
+            if (k === "patrouilleuse") return false;
+            const st = intr.ics[k];
+            return !st || !st.active;
+          });
+          if (next) {
+            intr.ics[next] = { active: true, dmg: 0, down: false, turn: intr.turn };
+            const label = this.icCatalog(srv.edition)[next]?.label || next;
+            toast(`Le serveur déploie : ${label}.`);
+          }
         }
       }
-    }
-    this.save();
-    this.render();
-  },
-
-  resetIntrusion(id) {
-    const srv = this._intr(id);
-    if (!srv) return;
-    if (!confirm("Réinitialiser l'intrusion (tours, CI, surveillance) ?")) return;
-    const open = srv.intrusion.open;
-    srv.intrusion = this._newIntrusion();
-    srv.intrusion.open = open;
-    this.save();
-    this.render();
-  },
-
-  /** Relance une CI détruite (dès le tour suivant, au choix du serveur). */
-  relaunchIC(id, key) {
-    const srv = this._intr(id);
-    if (!srv) return;
-    srv.intrusion.ics[key] = {
-      active: true,
-      dmg: 0,
-      down: false,
-      turn: srv.intrusion.turn,
-    };
-    this.save();
-    this.render();
-  },
-
-  /** Clic sur une case du moniteur d'une CI. */
-  icBox(id, key, n) {
-    const srv = this._intr(id);
-    if (!srv) return;
-    const st = (srv.intrusion.ics[key] ||= { active: true, dmg: 0, down: false });
-    st.dmg = st.dmg === n ? n - 1 : n;
-    const size = this.icMonitorSize(srv);
-    st.down = st.dmg >= size;
-    this.save();
-    this.render();
-  },
-
-  /* ---- Jets des CI (SR5/SR6 — les glaces Anarchy ont des succès
-     fixes et ne lancent jamais les dés, p.223) ----
-     SR5 p.249 : attaque = indice×2 [Attaque] ; encaissement =
-     indice + Firewall (règle des appareils p.229, attributs du
-     serveur). La VF ne détaille pas la réserve de défense : on
-     applique l'usage indice×2. SR6 p.188 : toutes les CI utilisent
-     indice×2 pour la majorité de leurs jets. */
-  rollIC(id, key, kind) {
-    const srv = this.find(id);
-    if (!srv || srv.edition === "anarchy" || typeof Dice === "undefined") return;
-    const i = srv.indice;
-    const a = srv.attrs || {};
-    const ic = this.icCatalog(srv.edition)[key];
-    const name = ic ? ic.label : key;
-
-    let pool = i * 2;
-    let limit = null;
-    let label;
-    if (kind === "atk") {
-      label = `${name} — attaque`;
-      if (srv.edition === "sr5") limit = a.ATQ ?? null;
-    } else if (kind === "def") {
-      label = `${name} — défense`;
-    } else if (kind === "soak") {
-      pool = i + (a.FW || 0);
-      label = `${name} — encaissement (indice + FW)`;
-    } else {
-      label = `${name} — perception matricielle`;
-      if (srv.edition === "sr5") limit = a.TDD ?? null;
-    }
-
-    const res = Dice.computeRoll(pool);
-    if (limit != null && res.hits > limit) {
-      res.cappedFrom = res.hits;
-      res.hits = limit;
-    }
-    DiceRoller.show(res, { label, who: srv.name });
-  },
-
-  /* ---- Marks (SR5) ---- */
-  addMarks(id, delta) {
-    const srv = this._intr(id);
-    if (!srv) return;
-    srv.intrusion.marks = Utils.clamp(srv.intrusion.marks + delta, 0, 3);
-    this.save();
-    this.render();
-  },
-
-  /* ---- Score de Surveillance (SR5/SR6) ---- */
-  _pushSS(srv, delta, label) {
-    const intr = srv.intrusion;
-    intr.ss = Math.max(0, intr.ss + delta);
-    intr.ssLog.unshift({ t: Date.now(), d: delta, label });
-    if (intr.ssLog.length > 30) intr.ssLog.length = 30;
-  },
-
-  addSS(id, delta, label) {
-    const srv = this._intr(id);
-    if (!srv) return;
-    this._pushSS(srv, delta, label || "succès de la défense");
-    this.save();
-    this.render();
-  },
-
-  /** SR5 : +2D6 toutes les 15 minutes (jet réel, loggé au journal). */
-  addSS2D6(id) {
-    const srv = this._intr(id);
-    if (!srv) return;
-    const res = Dice.computeInitiative(0, 2);
-    DiceRoller.show(res, { label: "Surveillance DIEU : +2D6 SS", who: srv.name });
-    srv.intrusion.lastRollT = Date.now();
-    this._pushSS(srv, res.total, `+2D6 (temps) : [${res.faces.join(", ")}]`);
-    this.save();
-    this.render();
-  },
-
-  undoSS(id) {
-    const srv = this._intr(id);
-    if (!srv || !srv.intrusion.ssLog.length) return;
-    const last = srv.intrusion.ssLog.shift();
-    srv.intrusion.ss = Math.max(0, srv.intrusion.ss - last.d);
-    this.save();
-    this.render();
-  },
-
-  /** Reboot du decker : SS et marks repartent à zéro. */
-  resetSS(id) {
-    const srv = this._intr(id);
-    if (!srv) return;
-    if (!confirm("Reboot du decker : SS et marks à zéro ?")) return;
-    srv.intrusion.ss = 0;
-    srv.intrusion.ssLog = [];
-    srv.intrusion.marks = 0;
-    srv.intrusion.lastRollT = 0;
-    this.save();
-    this.render();
-    toast("SS remis à zéro (reboot : perte des marks, choc d'éjection en RV).");
-  },
-
-  /** SR6 : compteurs d'accès illégaux maintenus. */
-  setIllegal(id, kind, delta) {
-    const srv = this._intr(id);
-    if (!srv) return;
-    const k = kind === "admin" ? "illAdmin" : "illUser";
-    srv.intrusion[k] = Utils.clamp(srv.intrusion[k] + delta, 0, 9);
-    this.save();
-    this.render();
-  },
-
-  /* ---- Surveillance du DIEU (Anarchy p.218) ---- */
-  dieu(id, kind, delta) {
-    const srv = this._intr(id);
-    if (!srv) return;
-    const k = kind === "critical" ? "critical" : "minor";
-    srv.intrusion[k] = Utils.clamp(srv.intrusion[k] + delta, 0, 9);
-    this.save();
-    this.render();
-  },
-
-  disaster(id) {
-    const srv = this._intr(id);
-    if (!srv) return;
-    srv.intrusion.converged = !srv.intrusion.converged;
-    this.save();
-    this.render();
-  },
-
-  /** Anarchy : reboot + 1 h hors ligne — les malus disparaissent. */
-  rebootDecker(id) {
-    const srv = this._intr(id);
-    if (!srv) return;
-    srv.intrusion.minor = 0;
-    srv.intrusion.critical = 0;
-    srv.intrusion.converged = false;
-    this.save();
-    this.render();
-    toast("Reboot + 1 h hors ligne : malus DIEU effacés, tous les accès sont perdus.");
-  },
-
-  editNote(id, value) {
-    const srv = this.find(id);
-    if (srv) {
-      srv.notes = value;
       this.save();
-    }
-  },
+      this.render();
+    },
 
-  /* ========================================================
-     ÉDITION D'UN SERVEUR
-     Chaque opération sur la liste des CI valide d'abord les
-     champs saisis (_commitEdit) pour ne rien perdre au re-rendu.
-     ======================================================== */
-  toggleEdit(id) {
-    if (this._editing[id]) {
+    resetIntrusion(id) {
+      const srv = this._intr(id);
+      if (!srv) return;
+      if (!confirm("Réinitialiser l'intrusion (tours, CI, surveillance) ?")) return;
+      const open = srv.intrusion.open;
+      srv.intrusion = this._newIntrusion();
+      srv.intrusion.open = open;
+      this.save();
+      this.render();
+    },
+
+    /** Relance une CI détruite (dès le tour suivant, au choix du serveur). */
+    relaunchIC(id, key) {
+      const srv = this._intr(id);
+      if (!srv) return;
+      srv.intrusion.ics[key] = {
+        active: true,
+        dmg: 0,
+        down: false,
+        turn: srv.intrusion.turn,
+      };
+      this.save();
+      this.render();
+    },
+
+    /** Clic sur une case du moniteur d'une CI. */
+    icBox(id, key, n) {
+      const srv = this._intr(id);
+      if (!srv) return;
+      const st = (srv.intrusion.ics[key] ||= { active: true, dmg: 0, down: false });
+      st.dmg = st.dmg === n ? n - 1 : n;
+      const size = this.icMonitorSize(srv);
+      st.down = st.dmg >= size;
+      this.save();
+      this.render();
+    },
+
+    /* ---- Jets des CI (SR5/SR6 — les glaces Anarchy ont des succès
+       fixes et ne lancent jamais les dés, p.223) ----
+       SR5 p.249 : attaque = indice×2 [Attaque] ; encaissement =
+       indice + Firewall (règle des appareils p.229, attributs du
+       serveur). La VF ne détaille pas la réserve de défense : on
+       applique l'usage indice×2. SR6 p.188 : toutes les CI utilisent
+       indice×2 pour la majorité de leurs jets. */
+    rollIC(id, key, kind) {
+      const srv = this.find(id);
+      if (!srv || srv.edition === "anarchy" || typeof Dice === "undefined") return;
+      const i = srv.indice;
+      const a = srv.attrs || {};
+      const ic = this.icCatalog(srv.edition)[key];
+      const name = ic ? ic.label : key;
+
+      let pool = i * 2;
+      let limit = null;
+      let label;
+      if (kind === "atk") {
+        label = `${name} — attaque`;
+        if (srv.edition === "sr5") limit = a.ATQ ?? null;
+      } else if (kind === "def") {
+        label = `${name} — défense`;
+      } else if (kind === "soak") {
+        pool = i + (a.FW || 0);
+        label = `${name} — encaissement (indice + FW)`;
+      } else {
+        label = `${name} — perception matricielle`;
+        if (srv.edition === "sr5") limit = a.TDD ?? null;
+      }
+
+      const res = Dice.computeRoll(pool);
+      if (limit != null && res.hits > limit) {
+        res.cappedFrom = res.hits;
+        res.hits = limit;
+      }
+      DiceRoller.show(res, { label, who: srv.name });
+    },
+
+    /* ---- Marks (SR5) ---- */
+    addMarks(id, delta) {
+      const srv = this._intr(id);
+      if (!srv) return;
+      srv.intrusion.marks = Utils.clamp(srv.intrusion.marks + delta, 0, 3);
+      this.save();
+      this.render();
+    },
+
+    /* ---- Score de Surveillance (SR5/SR6) ---- */
+    _pushSS(srv, delta, label) {
+      const intr = srv.intrusion;
+      intr.ss = Math.max(0, intr.ss + delta);
+      intr.ssLog.unshift({ t: Date.now(), d: delta, label });
+      if (intr.ssLog.length > 30) intr.ssLog.length = 30;
+    },
+
+    addSS(id, delta, label) {
+      const srv = this._intr(id);
+      if (!srv) return;
+      this._pushSS(srv, delta, label || "succès de la défense");
+      this.save();
+      this.render();
+    },
+
+    /** SR5 : +2D6 toutes les 15 minutes (jet réel, loggé au journal). */
+    addSS2D6(id) {
+      const srv = this._intr(id);
+      if (!srv) return;
+      const res = Dice.computeInitiative(0, 2);
+      DiceRoller.show(res, { label: "Surveillance DIEU : +2D6 SS", who: srv.name });
+      srv.intrusion.lastRollT = Date.now();
+      this._pushSS(srv, res.total, `+2D6 (temps) : [${res.faces.join(", ")}]`);
+      this.save();
+      this.render();
+    },
+
+    undoSS(id) {
+      const srv = this._intr(id);
+      if (!srv || !srv.intrusion.ssLog.length) return;
+      const last = srv.intrusion.ssLog.shift();
+      srv.intrusion.ss = Math.max(0, srv.intrusion.ss - last.d);
+      this.save();
+      this.render();
+    },
+
+    /** Reboot du decker : SS et marks repartent à zéro. */
+    resetSS(id) {
+      const srv = this._intr(id);
+      if (!srv) return;
+      if (!confirm("Reboot du decker : SS et marks à zéro ?")) return;
+      srv.intrusion.ss = 0;
+      srv.intrusion.ssLog = [];
+      srv.intrusion.marks = 0;
+      srv.intrusion.lastRollT = 0;
+      this.save();
+      this.render();
+      toast("SS remis à zéro (reboot : perte des marks, choc d'éjection en RV).");
+    },
+
+    /** SR6 : compteurs d'accès illégaux maintenus. */
+    setIllegal(id, kind, delta) {
+      const srv = this._intr(id);
+      if (!srv) return;
+      const k = kind === "admin" ? "illAdmin" : "illUser";
+      srv.intrusion[k] = Utils.clamp(srv.intrusion[k] + delta, 0, 9);
+      this.save();
+      this.render();
+    },
+
+    /* ---- Surveillance du DIEU (Anarchy p.218) ---- */
+    dieu(id, kind, delta) {
+      const srv = this._intr(id);
+      if (!srv) return;
+      const k = kind === "critical" ? "critical" : "minor";
+      srv.intrusion[k] = Utils.clamp(srv.intrusion[k] + delta, 0, 9);
+      this.save();
+      this.render();
+    },
+
+    disaster(id) {
+      const srv = this._intr(id);
+      if (!srv) return;
+      srv.intrusion.converged = !srv.intrusion.converged;
+      this.save();
+      this.render();
+    },
+
+    /** Anarchy : reboot + 1 h hors ligne — les malus disparaissent. */
+    rebootDecker(id) {
+      const srv = this._intr(id);
+      if (!srv) return;
+      srv.intrusion.minor = 0;
+      srv.intrusion.critical = 0;
+      srv.intrusion.converged = false;
+      this.save();
+      this.render();
+      toast("Reboot + 1 h hors ligne : malus DIEU effacés, tous les accès sont perdus.");
+    },
+
+    editNote(id, value) {
+      const srv = this.find(id);
+      if (srv) {
+        srv.notes = value;
+        this.save();
+      }
+    },
+
+    /* ========================================================
+       ÉDITION D'UN SERVEUR
+       Chaque opération sur la liste des CI valide d'abord les
+       champs saisis (_commitEdit) pour ne rien perdre au re-rendu.
+       ======================================================== */
+    toggleEdit(id) {
+      if (this._editing[id]) {
+        this._commitEdit(id);
+        delete this._editing[id];
+      } else {
+        this._editing[id] = true;
+      }
+      this.render();
+    },
+
+    /** Applique les champs du formulaire d'édition au serveur. */
+    _commitEdit(id) {
+      const srv = this.find(id);
+      if (!srv) return;
+      const val = (suffix) => document.getElementById(`se-${id}-${suffix}`);
+
+      const nameEl = val("name");
+      if (nameEl && nameEl.value.trim()) srv.name = nameEl.value.trim();
+      if (srv.spider) srv.spider.ownerName = srv.name;
+
+      const profEl = val("profile");
+      if (profEl) {
+        const p = this.profiles(srv.edition).find((x) => x.id === profEl.value);
+        if (p) {
+          srv.profile = p.label;
+          srv.sev = p.sev;
+        }
+      }
+
+      const indEl = val("indice");
+      if (indEl) {
+        const max = srv.edition === "anarchy" ? 8 : 12;
+        srv.indice = Utils.clamp(parseInt(indEl.value, 10) || srv.indice, 1, max);
+      }
+
+      const spEl = val("secphys");
+      if (spEl) srv.secPhys = spEl.checked;
+
+      if (srv.edition !== "anarchy") {
+        srv.attrs = srv.attrs || {};
+        for (const k of ["ATQ", "COR", "TDD", "FW"]) {
+          const el = val(k.toLowerCase());
+          if (el) srv.attrs[k] = Utils.clamp(parseInt(el.value, 10) || 1, 1, 15);
+        }
+      }
+
+      const scEl = val("sculpture");
+      if (scEl) srv.sculpture = scEl.value.trim();
+
+      this.save();
+    },
+
+    /** Redistribue les attributs ASDF depuis l'indice (indice à indice+3). */
+    redistributeAttrs(id) {
       this._commitEdit(id);
-      delete this._editing[id];
-    } else {
-      this._editing[id] = true;
-    }
-    this.render();
-  },
+      const srv = this.find(id);
+      if (!srv || srv.edition === "anarchy") return;
+      const vals = [srv.indice, srv.indice + 1, srv.indice + 2, srv.indice + 3].sort(
+        () => Math.random() - 0.5,
+      );
+      srv.attrs = { ATQ: vals[0], COR: vals[1], TDD: vals[2], FW: vals[3] };
+      this.save();
+      this.render();
+    },
 
-  /** Applique les champs du formulaire d'édition au serveur. */
-  _commitEdit(id) {
-    const srv = this.find(id);
-    if (!srv) return;
-    const val = (suffix) => document.getElementById(`se-${id}-${suffix}`);
+    /** Relance la sculpture depuis le mode édition (gamme du serveur). */
+    rerollSculptureEdit(id) {
+      this._commitEdit(id);
+      const srv = this.find(id);
+      if (!srv) return;
+      srv.sculpture = Matrix.pickSculpture(this.sevOf(srv));
+      this.save();
+      this.render();
+    },
 
-    const nameEl = val("name");
-    if (nameEl && nameEl.value.trim()) srv.name = nameEl.value.trim();
-    if (srv.spider) srv.spider.ownerName = srv.name;
+    /* ---- Liste ordonnée des CI (l'ordre = ordre de déploiement) ---- */
+    moveIC(id, key, dir) {
+      this._commitEdit(id);
+      const srv = this.find(id);
+      if (!srv) return;
+      const list = srv.icList;
+      const i = list.indexOf(key);
+      const j = i + dir;
+      // La Patrouilleuse (index 0) reste en tête
+      if (i < 1 || j < 1 || j >= list.length) return;
+      [list[i], list[j]] = [list[j], list[i]];
+      this.save();
+      this.render();
+    },
 
-    const profEl = val("profile");
-    if (profEl) {
-      const p = this.profiles(srv.edition).find((x) => x.id === profEl.value);
-      if (p) {
-        srv.profile = p.label;
-        srv.sev = p.sev;
-      }
-    }
+    dropIC(id, key) {
+      this._commitEdit(id);
+      const srv = this.find(id);
+      if (!srv || key === "patrouilleuse") return;
+      srv.icList = srv.icList.filter((k) => k !== key);
+      if (srv.intrusion && srv.intrusion.ics) delete srv.intrusion.ics[key];
+      this.save();
+      this.render();
+    },
 
-    const indEl = val("indice");
-    if (indEl) {
-      const max = srv.edition === "anarchy" ? 8 : 12;
-      srv.indice = Utils.clamp(parseInt(indEl.value, 10) || srv.indice, 1, max);
-    }
+    addIC(id) {
+      this._commitEdit(id);
+      const srv = this.find(id);
+      const sel = document.getElementById(`se-${id}-addic`);
+      if (!srv || !sel || !sel.value) return;
+      if (!srv.icList.includes(sel.value)) srv.icList.push(sel.value);
+      this.save();
+      this.render();
+    },
 
-    const spEl = val("secphys");
-    if (spEl) srv.secPhys = spEl.checked;
+    /* ========================================================
+       RENDU — panneau, formulaire, cartes
+       ======================================================== */
+    initPanel() {
+      this.load();
+      this.renderForm();
+      this.render();
+    },
 
-    if (srv.edition !== "anarchy") {
-      srv.attrs = srv.attrs || {};
-      for (const k of ["ATQ", "COR", "TDD", "FW"]) {
-        const el = val(k.toLowerCase());
-        if (el) srv.attrs[k] = Utils.clamp(parseInt(el.value, 10) || 1, 1, 15);
-      }
-    }
+    renderForm() {
+      const host = document.getElementById("server-gen-form");
+      if (!host) return;
+      const ed = this._edition();
+      const esc = CardRenderer._esc.bind(CardRenderer);
 
-    const scEl = val("sculpture");
-    if (scEl) srv.sculpture = scEl.value.trim();
+      const profOpts = [
+        `<option value="random">Aléatoire</option>`,
+        ...this.profiles(ed).map(
+          (p) =>
+            `<option value="${p.id}">${esc(p.label)}${ed === "anarchy" ? ` (${p.indice})` : ` (${p.min}-${p.max})`}</option>`,
+        ),
+      ].join("");
 
-    this.save();
-  },
+      const range = ed === "anarchy" ? [2, 8] : [1, 12];
+      const indOpts = [
+        `<option value="auto">Selon profil</option>`,
+        ...Array.from({ length: range[1] - range[0] + 1 }, (_, i) => range[0] + i).map(
+          (n) => `<option value="${n}">${n}</option>`,
+        ),
+      ].join("");
 
-  /** Redistribue les attributs ASDF depuis l'indice (indice à indice+3). */
-  redistributeAttrs(id) {
-    this._commitEdit(id);
-    const srv = this.find(id);
-    if (!srv || srv.edition === "anarchy") return;
-    const vals = [srv.indice, srv.indice + 1, srv.indice + 2, srv.indice + 3].sort(
-      () => Math.random() - 0.5,
-    );
-    srv.attrs = { ATQ: vals[0], COR: vals[1], TDD: vals[2], FW: vals[3] };
-    this.save();
-    this.render();
-  },
-
-  /** Relance la sculpture depuis le mode édition (gamme du serveur). */
-  rerollSculptureEdit(id) {
-    this._commitEdit(id);
-    const srv = this.find(id);
-    if (!srv) return;
-    srv.sculpture = this._pickSculpture(this.sevOf(srv));
-    this.save();
-    this.render();
-  },
-
-  /* ---- Liste ordonnée des CI (l'ordre = ordre de déploiement) ---- */
-  moveIC(id, key, dir) {
-    this._commitEdit(id);
-    const srv = this.find(id);
-    if (!srv) return;
-    const list = srv.icList;
-    const i = list.indexOf(key);
-    const j = i + dir;
-    // La Patrouilleuse (index 0) reste en tête
-    if (i < 1 || j < 1 || j >= list.length) return;
-    [list[i], list[j]] = [list[j], list[i]];
-    this.save();
-    this.render();
-  },
-
-  dropIC(id, key) {
-    this._commitEdit(id);
-    const srv = this.find(id);
-    if (!srv || key === "patrouilleuse") return;
-    srv.icList = srv.icList.filter((k) => k !== key);
-    if (srv.intrusion && srv.intrusion.ics) delete srv.intrusion.ics[key];
-    this.save();
-    this.render();
-  },
-
-  addIC(id) {
-    this._commitEdit(id);
-    const srv = this.find(id);
-    const sel = document.getElementById(`se-${id}-addic`);
-    if (!srv || !sel || !sel.value) return;
-    if (!srv.icList.includes(sel.value)) srv.icList.push(sel.value);
-    this.save();
-    this.render();
-  },
-
-  /* ========================================================
-     RENDU — panneau, formulaire, cartes
-     ======================================================== */
-  initPanel() {
-    this.load();
-    this.renderForm();
-    this.render();
-  },
-
-  render() {
-    this._renderSidebar();
-    this._renderGrid();
-  },
-
-  renderForm() {
-    const host = document.getElementById("server-gen-form");
-    if (!host) return;
-    const ed = this._edition();
-    const esc = CardRenderer._esc.bind(CardRenderer);
-
-    const profOpts = [
-      `<option value="random">Aléatoire</option>`,
-      ...this.profiles(ed).map(
-        (p) =>
-          `<option value="${p.id}">${esc(p.label)}${ed === "anarchy" ? ` (${p.indice})` : ` (${p.min}-${p.max})`}</option>`,
-      ),
-    ].join("");
-
-    const range = ed === "anarchy" ? [2, 8] : [1, 12];
-    const indOpts = [
-      `<option value="auto">Selon profil</option>`,
-      ...Array.from({ length: range[1] - range[0] + 1 }, (_, i) => range[0] + i).map(
-        (n) => `<option value="${n}">${n}</option>`,
-      ),
-    ].join("");
-
-    const icChips = Object.entries(this.icCatalog(ed))
-      .filter(([k]) => k !== "patrouilleuse")
-      .map(
-        ([k, ic]) => `
+      const icChips = Object.entries(this.icCatalog(ed))
+        .filter(([k]) => k !== "patrouilleuse")
+        .map(
+          ([k, ic]) => `
         <label class="ic-choice"><input type="checkbox" value="${k}">${esc(ic.label.replace(/^CI /, ""))}</label>`,
-      )
-      .join("");
+        )
+        .join("");
 
-    host.innerHTML = `
+      host.innerHTML = `
       <div class="contact-form">
         <div class="contact-form-row">
           <label>Nom
@@ -1103,120 +660,29 @@ const Servers = {
           <div id="srv-ic-choices" class="server-ic-choices">${icChips}</div>
         </details>
       </div>`;
-  },
+    },
 
-  _renderSidebar() {
-    const container = document.getElementById("servers-group-list");
-    if (!container) return;
-    const groups = Object.keys(this.data.groups);
+    _renderCard(srv) {
+      const esc = CardRenderer._esc.bind(CardRenderer);
+      const card = document.createElement("div");
+      card.className = "server-card";
+      card.dataset.id = srv.id;
 
-    const allActive = this.currentGroup === "all" ? "active" : "";
-    let html = `<div class="group-item ${allActive}" onclick="Servers.switchGroup('all')">
-      <span class="group-item-icon">⌗</span>
-      <span class="group-item-name">Tous</span>
-      <span class="group-item-count">${this.data.all.length}</span>
-    </div>`;
+      const intr = srv.intrusion || this._newIntrusion();
+      const catalog = this.icCatalog(srv.edition);
 
-    for (const g of groups) {
-      const count = this.data.groups[g].length;
-      const active = this.currentGroup === g ? "active" : "";
-      const gSafe = g.replace(/'/g, "\\'");
-      html += `<div class="group-item ${active}" onclick="Servers.switchGroup('${gSafe}')">
-        <span class="group-item-icon">▸</span>
-        <span class="group-item-name">${g}</span>
-        <span class="group-item-count">${count}</span>
-        <span class="group-item-actions">
-          <button class="btn-icon-tiny" onclick="event.stopPropagation(); Servers.renameGroup('${gSafe}')" title="Renommer">✎</button>
-          <button class="btn-icon-tiny danger" onclick="event.stopPropagation(); Servers.removeGroup('${gSafe}')" title="Supprimer">✕</button>
-        </span>
-      </div>`;
-    }
-
-    container.innerHTML = html;
-
-    const label = document.getElementById("servers-group-label");
-    if (label) {
-      label.textContent =
-        this.currentGroup === "all"
-          ? `Tous les serveurs (${this.data.all.length})`
-          : `${this.currentGroup} (${(this.data.groups[this.currentGroup] || []).length})`;
-    }
-  },
-
-  filterText: "",
-  setFilter(v) {
-    this.filterText = v || "";
-    this._renderGrid();
-  },
-  _matchesFilter(s) {
-    const q = Utils.searchNorm(this.filterText).trim();
-    if (!q) return true;
-    const hay = Utils.searchNorm(
-      [s.name, s.profile, `indice ${s.indice}`].filter(Boolean).join(" "),
-    );
-    return q.split(/\s+/).every((word) => hay.includes(word));
-  },
-
-  _renderGrid() {
-    const grid = document.getElementById("servers-grid");
-    if (!grid) return;
-    grid.innerHTML = "";
-
-    let list = this.data.all;
-    if (this.currentGroup !== "all") {
-      const ids = this.data.groups[this.currentGroup] || [];
-      list = this.data.all.filter((s) => ids.includes(s.id));
-    }
-    list = list.slice().reverse();
-    const unfiltered = list.length;
-    list = list.filter((s) => this._matchesFilter(s));
-
-    if (!list.length) {
-      grid.innerHTML =
-        unfiltered > 0 && this.filterText.trim()
-          ? `<div class="empty-state">
-              <span class="empty-state-title">Aucun résultat</span>
-              Aucun serveur ne correspond à « ${CardRenderer._esc(this.filterText.trim())} ».
-            </div>`
-          : `<div class="empty-state">
-              <span class="empty-state-title">Aucun serveur ici</span>
-              Créez un serveur avec le formulaire ci-dessus, ou lancez la génération aléatoire.
-            </div>`;
-      return;
-    }
-
-    const allGroups = Object.keys(this.data.groups);
-    for (const srv of list) {
-      grid.appendChild(this._renderCard(srv, allGroups));
-      if (srv.spider) {
-        const sub = CardRenderer.render(srv.spider, []);
-        sub.classList.add("vehicle-card");
-        grid.appendChild(sub);
-      }
-    }
-  },
-
-  _renderCard(srv, allGroups) {
-    const esc = CardRenderer._esc.bind(CardRenderer);
-    const card = document.createElement("div");
-    card.className = "server-card";
-    card.dataset.id = srv.id;
-
-    const intr = srv.intrusion || this._newIntrusion();
-    const catalog = this.icCatalog(srv.edition);
-
-    /* -- header + stats -- */
-    let statsHtml;
-    if (srv.edition === "anarchy") {
-      statsHtml = `
+      /* -- header + stats -- */
+      let statsHtml;
+      if (srv.edition === "anarchy") {
+        statsHtml = `
         <div class="server-attrs">
           <span class="server-attr"><b>${srv.indice}</b>Indice</span>
           <span class="server-attr"><b>${srv.indice}</b>Firewall</span>
         </div>
         <div class="server-thresholds">Seuils de Piratage : sans élévation <b>${srv.indice}</b> · élever à Utilisateur <b>${srv.indice + 1}</b> · à Administrateur <b>${srv.indice + 2}</b> · décryptage <b>${srv.indice}</b></div>`;
-    } else {
-      const a = srv.attrs || { ATQ: "?", COR: "?", TDD: "?", FW: "?" };
-      statsHtml = `
+      } else {
+        const a = srv.attrs || { ATQ: "?", COR: "?", TDD: "?", FW: "?" };
+        statsHtml = `
         <div class="server-attrs">
           <span class="server-attr"><b>${srv.indice}</b>Indice</span>
           <span class="server-attr"><b>${a.ATQ}</b>ATQ</span>
@@ -1225,38 +691,24 @@ const Servers = {
           <span class="server-attr"><b>${a.FW}</b>FW</span>
         </div>
         <div class="server-thresholds">CI : ${srv.edition === "sr5" ? `attaque ${srv.indice * 2} dés [Attaque ${a.ATQ}] · moniteur ${this.icMonitorSize(srv)} cases · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}` : `jets ${srv.indice * 2} dés · SO ${(a.ATQ || 0) + (a.COR || 0)} · moniteur ${this.icMonitorSize(srv)} cases · init TdD×2+3D6 · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}`}</div>`;
-    }
+      }
 
-    /* -- chips CI -- */
-    const chips = (srv.icList || [])
-      .map((k) => {
-        const ic = catalog[k];
-        if (!ic) return "";
-        const label = ic.label.replace(/^CI /, "");
-        const eff = typeof ic.effect === "function" ? ic.effect(srv.edition === "anarchy" ? srv.indice : srv) : "";
-        const tip = `${ic.def ? `Défense : ${ic.def} — ` : ""}${eff}`;
-        return `<span class="ic-chip ${ic.watch ? "watch" : ""}" title="${esc(tip)}">${esc(label)}</span>`;
-      })
-      .join("");
+      /* -- chips CI -- */
+      const chips = (srv.icList || [])
+        .map((k) => {
+          const ic = catalog[k];
+          if (!ic) return "";
+          const label = ic.label.replace(/^CI /, "");
+          const eff = typeof ic.effect === "function" ? ic.effect(srv.edition === "anarchy" ? srv.indice : srv) : "";
+          const tip = `${ic.def ? `Défense : ${ic.def} — ` : ""}${eff}`;
+          return `<span class="ic-chip ${ic.watch ? "watch" : ""}" title="${esc(tip)}">${esc(label)}</span>`;
+        })
+        .join("");
 
-    /* -- footer / groupes -- */
-    const groupSel = allGroups.length
-      ? `<select class="group-select-inline" title="Déplacer vers un groupe"
-          onchange="Servers.moveToGroup('${srv.id}', this.value)">
-          ${["— Sans groupe —", ...allGroups]
-            .map((g) => {
-              const val = g === "— Sans groupe —" ? "all" : g;
-              const sel = this.groupsOf(srv.id).includes(g) ? "selected" : "";
-              return `<option value="${esc(val)}" ${sel}>${esc(g)}</option>`;
-            })
-            .join("")}
-        </select>`
-      : "";
-
-    const editing = !!this._editing[srv.id];
-    const body = editing
-      ? this._editHTML(srv)
-      : `
+      const editing = !!this._editing[srv.id];
+      const body = editing
+        ? this._editHTML(srv)
+        : `
         <div class="server-profile">${esc(srv.profile || "")}${srv.secPhys ? " · sécurité physique (+1)" : ""}</div>
         ${statsHtml}
         <div class="server-sculpture">${esc(srv.sculpture || "")}
@@ -1266,7 +718,7 @@ const Servers = {
         <div class="server-ic-row">${chips}</div>
         ${intr.open ? this._intrusionHTML(srv) : ""}`;
 
-    card.innerHTML = `
+      card.innerHTML = `
       <div class="server-card-header">
         <span class="server-name" title="${esc(srv.profile || "")}">${esc(srv.name)}</span>
         <span class="server-badge">Indice ${srv.indice}</span>
@@ -1284,38 +736,37 @@ const Servers = {
             <button class="btn-secondary btn-small" onclick="Servers.toggleEdit('${srv.id}')" title="Éditer le serveur">✎ Éditer</button>
             ${srv.spider
               ? `<button class="btn-secondary btn-small" onclick="Servers.removeSpider('${srv.id}')" title="Retirer le spider">Spider ✕</button>`
-              : `<button class="btn-secondary btn-small" onclick="Servers.addSpider('${srv.id}')" title="Générer un decker de sécurité lié">+ Spider</button>`}
-            ${groupSel}`}
+              : `<button class="btn-secondary btn-small" onclick="Servers.addSpider('${srv.id}')" title="Générer un decker de sécurité lié">+ Spider</button>`}`}
         <button class="btn-icon danger" onclick="Servers.remove('${srv.id}')" title="Supprimer">✕</button>
       </div>`;
-    return card;
-  },
+      return card;
+    },
 
-  /* ---- Formulaire d'édition (dans la carte) ---- */
-  _editHTML(srv) {
-    const esc = CardRenderer._esc.bind(CardRenderer);
-    const id = srv.id;
-    const catalog = this.icCatalog(srv.edition);
+    /* ---- Formulaire d'édition (dans la carte) ---- */
+    _editHTML(srv) {
+      const esc = CardRenderer._esc.bind(CardRenderer);
+      const id = srv.id;
+      const catalog = this.icCatalog(srv.edition);
 
-    const profOpts = this.profiles(srv.edition)
-      .map(
-        (p) =>
-          `<option value="${p.id}" ${p.label === srv.profile ? "selected" : ""}>${esc(p.label)}</option>`,
+      const profOpts = this.profiles(srv.edition)
+        .map(
+          (p) =>
+            `<option value="${p.id}" ${p.label === srv.profile ? "selected" : ""}>${esc(p.label)}</option>`,
+        )
+        .join("");
+
+      const range = srv.edition === "anarchy" ? [2, 8] : [1, 12];
+      const indOpts = Array.from(
+        { length: range[1] - range[0] + 1 },
+        (_, i) => range[0] + i,
       )
-      .join("");
+        .map((n) => `<option value="${n}" ${n === srv.indice ? "selected" : ""}>${n}</option>`)
+        .join("");
 
-    const range = srv.edition === "anarchy" ? [2, 8] : [1, 12];
-    const indOpts = Array.from(
-      { length: range[1] - range[0] + 1 },
-      (_, i) => range[0] + i,
-    )
-      .map((n) => `<option value="${n}" ${n === srv.indice ? "selected" : ""}>${n}</option>`)
-      .join("");
-
-    const attrsHtml =
-      srv.edition === "anarchy"
-        ? ""
-        : `<div class="server-edit-row">
+      const attrsHtml =
+        srv.edition === "anarchy"
+          ? ""
+          : `<div class="server-edit-row">
             ${["ATQ", "COR", "TDD", "FW"]
               .map(
                 (k) => `<label class="server-edit-attr">${k}
@@ -1327,15 +778,15 @@ const Servers = {
               title="Redistribuer indice à indice+3 au hasard">↻ ASDF</button>
           </div>`;
 
-    /* Liste ordonnée (l'ordre = ordre de déploiement, Patrouilleuse en tête) */
-    const icRows = srv.icList
-      .map((k, i) => {
-        const ic = catalog[k];
-        const label = ic ? ic.label.replace(/^CI /, "") : k;
-        if (k === "patrouilleuse") {
-          return `<div class="ic-edit-row fixed"><span>1. ${esc(label)}</span><small>toujours présente</small></div>`;
-        }
-        return `<div class="ic-edit-row">
+      /* Liste ordonnée (l'ordre = ordre de déploiement, Patrouilleuse en tête) */
+      const icRows = srv.icList
+        .map((k, i) => {
+          const ic = catalog[k];
+          const label = ic ? ic.label.replace(/^CI /, "") : k;
+          if (k === "patrouilleuse") {
+            return `<div class="ic-edit-row fixed"><span>1. ${esc(label)}</span><small>toujours présente</small></div>`;
+          }
+          return `<div class="ic-edit-row">
           <span>${i + 1}. ${esc(label)}</span>
           <span class="ic-edit-actions">
             <button class="btn-icon-tiny" onclick="Servers.moveIC('${id}', '${k}', -1)" title="Déployée plus tôt">↑</button>
@@ -1343,15 +794,15 @@ const Servers = {
             <button class="btn-icon-tiny danger" onclick="Servers.dropIC('${id}', '${k}')" title="Retirer">✕</button>
           </span>
         </div>`;
-      })
-      .join("");
+        })
+        .join("");
 
-    const addOpts = Object.entries(catalog)
-      .filter(([k]) => k !== "patrouilleuse" && !srv.icList.includes(k))
-      .map(([k, ic]) => `<option value="${k}">${esc(ic.label.replace(/^CI /, ""))}</option>`)
-      .join("");
+      const addOpts = Object.entries(catalog)
+        .filter(([k]) => k !== "patrouilleuse" && !srv.icList.includes(k))
+        .map(([k, ic]) => `<option value="${k}">${esc(ic.label.replace(/^CI /, ""))}</option>`)
+        .join("");
 
-    return `
+      return `
       <div class="server-edit">
         <label class="server-edit-label">Nom
           <input type="text" id="se-${id}-name" value="${esc(srv.name)}"></label>
@@ -1379,29 +830,29 @@ const Servers = {
             : ""}
         </div>
       </div>`;
-  },
+    },
 
-  /* ---- Bloc intrusion (tracker) ---- */
-  _intrusionHTML(srv) {
-    const esc = CardRenderer._esc.bind(CardRenderer);
-    const intr = srv.intrusion;
-    const catalog = this.icCatalog(srv.edition);
-    const size = this.icMonitorSize(srv);
+    /* ---- Bloc intrusion (tracker) ---- */
+    _intrusionHTML(srv) {
+      const esc = CardRenderer._esc.bind(CardRenderer);
+      const intr = srv.intrusion;
+      const catalog = this.icCatalog(srv.edition);
+      const size = this.icMonitorSize(srv);
 
-    /* Lignes de CI */
-    const rows = (srv.icList || [])
-      .map((k) => {
-        const ic = catalog[k];
-        if (!ic) return "";
-        const st = intr.ics[k] || { active: !!ic.watch, dmg: 0, down: false };
-        const isActive = ic.watch || (st.active && !st.down);
-        const label = ic.label.replace(/^CI /, "");
-        const eff =
-          typeof ic.effect === "function"
-            ? ic.effect(srv.edition === "anarchy" ? srv.indice : srv)
-            : "";
+      /* Lignes de CI */
+      const rows = (srv.icList || [])
+        .map((k) => {
+          const ic = catalog[k];
+          if (!ic) return "";
+          const st = intr.ics[k] || { active: !!ic.watch, dmg: 0, down: false };
+          const isActive = ic.watch || (st.active && !st.down);
+          const label = ic.label.replace(/^CI /, "");
+          const eff =
+            typeof ic.effect === "function"
+              ? ic.effect(srv.edition === "anarchy" ? srv.indice : srv)
+              : "";
 
-        const boxes = `<span class="monitor-boxes">${Array.from({ length: size }, (_, i) => {
+          const boxes = `<span class="monitor-boxes">${Array.from({ length: size }, (_, i) => {
             const n = i + 1;
             const sep =
               srv.edition === "anarchy" && (n === 3 || n === 4)
@@ -1412,57 +863,57 @@ const Servers = {
               onclick="Servers.icBox('${srv.id}', '${k}', ${n})"></span>`;
           }).join("")}</span>`;
 
-        const status = ic.watch
-          ? `<span class="ic-status watch">veille</span>`
-          : st.down
-            ? `<span class="ic-status down">détruite</span>
+          const status = ic.watch
+            ? `<span class="ic-status watch">veille</span>`
+            : st.down
+              ? `<span class="ic-status down">détruite</span>
                <button class="btn-secondary btn-small" onclick="Servers.relaunchIC('${srv.id}', '${k}')" title="Le serveur relance une copie (dès le tour suivant)">↻ relancer</button>`
-            : st.active
-              ? `<span class="ic-status active">active${st.turn ? ` · t${st.turn}` : ""}</span>`
-              : `<span class="ic-status idle">en réserve</span>`;
+              : st.active
+                ? `<span class="ic-status active">active${st.turn ? ` · t${st.turn}` : ""}</span>`
+                : `<span class="ic-status idle">en réserve</span>`;
 
-        /* Jets (SR5/SR6) — les glaces Anarchy ont des succès fixes */
-        let rolls = "";
-        if (srv.edition !== "anarchy" && (ic.watch || (st.active && !st.down))) {
-          const i = srv.indice;
-          const a = srv.attrs || {};
-          const btn = (kind, txt, tip) =>
-            `<button class="btn-secondary btn-small ic-roll" title="${esc(tip)}"
+          /* Jets (SR5/SR6) — les glaces Anarchy ont des succès fixes */
+          let rolls = "";
+          if (srv.edition !== "anarchy" && (ic.watch || (st.active && !st.down))) {
+            const i = srv.indice;
+            const a = srv.attrs || {};
+            const btn = (kind, txt, tip) =>
+              `<button class="btn-secondary btn-small ic-roll" title="${esc(tip)}"
               onclick="Servers.rollIC('${srv.id}', '${k}', '${kind}')">⚄ ${txt}</button>`;
-          if (ic.watch) {
-            rolls = btn(
-              "per",
-              `Perception ${i * 2}d${srv.edition === "sr5" ? ` [TdD ${a.TDD}]` : ""}`,
-              "Perception matricielle de la Patrouilleuse : indice × 2" +
-                (srv.edition === "sr5" ? ", limitée par le Traitement de données" : ""),
-            );
-          } else {
-            rolls =
-              btn(
-                "atk",
-                `Attaque ${i * 2}d${srv.edition === "sr5" ? ` [ATQ ${a.ATQ}]` : ""}`,
-                srv.edition === "sr5"
-                  ? "Attaque de la CI : indice × 2, limitée par l'Attaque du serveur (p.249)"
-                  : "Jet d'attaque de la CI : indice × 2 (p.188)",
-              ) +
-              btn(
-                "def",
-                `Défense ${i * 2}d`,
-                srv.edition === "sr5"
-                  ? "Défense de la CI quand le decker l'attaque (indice × 2, usage — la VF ne détaille pas cette réserve)"
-                  : "Jet de défense de la CI : indice × 2 (p.188)",
-              ) +
-              (srv.edition === "sr5"
-                ? btn(
-                    "soak",
-                    `Encaisse ${i + (a.FW || 0)}d`,
-                    "Résistance aux dommages matriciels : indice + Firewall du serveur (p.229)",
-                  )
-                : "");
+            if (ic.watch) {
+              rolls = btn(
+                "per",
+                `Perception ${i * 2}d${srv.edition === "sr5" ? ` [TdD ${a.TDD}]` : ""}`,
+                "Perception matricielle de la Patrouilleuse : indice × 2" +
+                  (srv.edition === "sr5" ? ", limitée par le Traitement de données" : ""),
+              );
+            } else {
+              rolls =
+                btn(
+                  "atk",
+                  `Attaque ${i * 2}d${srv.edition === "sr5" ? ` [ATQ ${a.ATQ}]` : ""}`,
+                  srv.edition === "sr5"
+                    ? "Attaque de la CI : indice × 2, limitée par l'Attaque du serveur (p.249)"
+                    : "Jet d'attaque de la CI : indice × 2 (p.188)",
+                ) +
+                btn(
+                  "def",
+                  `Défense ${i * 2}d`,
+                  srv.edition === "sr5"
+                    ? "Défense de la CI quand le decker l'attaque (indice × 2, usage — la VF ne détaille pas cette réserve)"
+                    : "Jet de défense de la CI : indice × 2 (p.188)",
+                ) +
+                (srv.edition === "sr5"
+                  ? btn(
+                      "soak",
+                      `Encaisse ${i + (a.FW || 0)}d`,
+                      "Résistance aux dommages matriciels : indice + Firewall du serveur (p.229)",
+                    )
+                  : "");
+            }
           }
-        }
 
-        return `<div class="ic-row ${isActive ? "on" : ""} ${st.down ? "dead" : ""}">
+          return `<div class="ic-row ${isActive ? "on" : ""} ${st.down ? "dead" : ""}">
           <div class="ic-row-head">
             <span class="ic-row-name">${esc(label)}</span>
             ${status}
@@ -1471,14 +922,14 @@ const Servers = {
           ${rolls ? `<div class="ic-row-rolls">${rolls}</div>` : ""}
           ${st.active || st.down || ic.watch ? `<div class="monitor-row"><span class="monitor-label">Moniteur${srv.edition === "anarchy" ? " (FW 1)" : ""}</span>${boxes}</div>` : ""}
         </div>`;
-      })
-      .join("");
+        })
+        .join("");
 
-    /* Bloc surveillance selon édition */
-    const surveillance =
-      srv.edition === "anarchy" ? this._dieuHTML(srv) : this._ssHTML(srv);
+      /* Bloc surveillance selon édition */
+      const surveillance =
+        srv.edition === "anarchy" ? this._dieuHTML(srv) : this._ssHTML(srv);
 
-    return `
+      return `
       <div class="intrusion-panel">
         <div class="intrusion-toolbar">
           <span class="intrusion-turn">Tour <b>${intr.turn}</b></span>
@@ -1492,31 +943,31 @@ const Servers = {
         <div class="ic-rows">${rows}</div>
         ${surveillance}
       </div>`;
-  },
+    },
 
-  /* ---- Jauge SS (SR5/SR6) ---- */
-  _ssHTML(srv) {
-    const esc = CardRenderer._esc.bind(CardRenderer);
-    const intr = srv.intrusion;
-    const ss = intr.ss;
-    const pct = Utils.clamp((ss / 40) * 100, 0, 100);
-    const zone = ss >= 40 ? "conv" : ss >= 30 ? "hot" : ss >= 20 ? "warm" : "cool";
+    /* ---- Jauge SS (SR5/SR6) ---- */
+    _ssHTML(srv) {
+      const esc = CardRenderer._esc.bind(CardRenderer);
+      const intr = srv.intrusion;
+      const ss = intr.ss;
+      const pct = Utils.clamp((ss / 40) * 100, 0, 100);
+      const zone = ss >= 40 ? "conv" : ss >= 30 ? "hot" : ss >= 20 ? "warm" : "cool";
 
-    const fmt = (t) => {
-      const d = new Date(t);
-      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-    };
-    const log = intr.ssLog
-      .slice(0, 6)
-      .map(
-        (e) =>
-          `<div class="ss-log-item"><span>${fmt(e.t)}</span> <b>${e.d >= 0 ? "+" : ""}${e.d}</b> ${esc(e.label)}</div>`,
-      )
-      .join("");
+      const fmt = (t) => {
+        const d = new Date(t);
+        return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      };
+      const log = intr.ssLog
+        .slice(0, 6)
+        .map(
+          (e) =>
+            `<div class="ss-log-item"><span>${fmt(e.t)}</span> <b>${e.d >= 0 ? "+" : ""}${e.d}</b> ${esc(e.label)}</div>`,
+        )
+        .join("");
 
-    const sr5Extra =
-      srv.edition === "sr5"
-        ? `<button class="btn-secondary btn-small" onclick="Servers.addSS2D6('${srv.id}')"
+      const sr5Extra =
+        srv.edition === "sr5"
+          ? `<button class="btn-secondary btn-small" onclick="Servers.addSS2D6('${srv.id}')"
             title="Le SS augmente de 2D6 toutes les 15 minutes après le premier point (p.233)">
             +2D6 ⏱${intr.lastRollT ? ` ${Math.round((Date.now() - intr.lastRollT) / 60000)} min` : ""}</button>
           <span class="ss-marks">Marks du serveur :
@@ -1525,7 +976,7 @@ const Servers = {
             <button class="btn-icon-tiny" onclick="Servers.addMarks('${srv.id}', 1)">＋</button>
             <small>(+2 dommages CI/mark · Traqueuse à 2+ · convergence = 3 marks posées)</small>
           </span>`
-        : `<button class="btn-secondary btn-small" onclick="Servers.addSS('${srv.id}', 1, 'programme de hacking')"
+          : `<button class="btn-secondary btn-small" onclick="Servers.addSS('${srv.id}', 1, 'programme de hacking')"
             title="+1 SS par action matricielle modifiée par un programme de hacking (p.178)">+1 prog.</button>
           <span class="ss-marks">Accès illégaux maintenus —
             Utilisateur <button class="btn-icon-tiny" onclick="Servers.setIllegal('${srv.id}', 'user', -1)">−</button><b>${intr.illUser}</b><button class="btn-icon-tiny" onclick="Servers.setIllegal('${srv.id}', 'user', 1)">＋</button>
@@ -1533,16 +984,16 @@ const Servers = {
             <small>(+1/+3 SS par round, appliqués à « Tour suivant »)</small>
           </span>`;
 
-    const convergence =
-      ss >= 40
-        ? `<div class="ss-convergence">☠ CONVERGENCE — ${
-            srv.edition === "sr5"
-              ? "VD 12 dommages matriciels, reboot forcé (perte des marks, éjection, choc en RV). Dans un serveur : 3 marks posées + déploiement de CI ; le demi-DIEU converge à la sortie (p.233, 249)."
-              : "l'appareil de la dernière action illégale est brické, éjection avec choc, localisation signalée aux autorités (p.178)."
-          }</div>`
-        : "";
+      const convergence =
+        ss >= 40
+          ? `<div class="ss-convergence">☠ CONVERGENCE — ${
+              srv.edition === "sr5"
+                ? "VD 12 dommages matriciels, reboot forcé (perte des marks, éjection, choc en RV). Dans un serveur : 3 marks posées + déploiement de CI ; le demi-DIEU converge à la sortie (p.233, 249)."
+                : "l'appareil de la dernière action illégale est brické, éjection avec choc, localisation signalée aux autorités (p.178)."
+            }</div>`
+          : "";
 
-    return `
+      return `
       <div class="ss-block">
         <div class="ss-head">
           <span class="monitor-label">Score de Surveillance</span>
@@ -1564,22 +1015,22 @@ const Servers = {
         ${convergence}
         ${log ? `<div class="ss-log">${log}</div>` : ""}
       </div>`;
-  },
+    },
 
-  /* ---- Surveillance du DIEU (Anarchy) ---- */
-  _dieuHTML(srv) {
-    const intr = srv.intrusion;
-    const riskMin = intr.minor * 2;
-    const seuil = intr.critical;
+    /* ---- Surveillance du DIEU (Anarchy) ---- */
+    _dieuHTML(srv) {
+      const intr = srv.intrusion;
+      const riskMin = intr.minor * 2;
+      const seuil = intr.critical;
 
-    const stepper = (label, key, val, tip) => `
+      const stepper = (label, key, val, tip) => `
       <span class="ss-marks" title="${tip}">${label}
         <button class="btn-icon-tiny" onclick="Servers.dieu('${srv.id}', '${key}', -1)">−</button>
         <b>${val}</b>
         <button class="btn-icon-tiny" onclick="Servers.dieu('${srv.id}', '${key}', 1)">＋</button>
       </span>`;
 
-    return `
+      return `
       <div class="ss-block">
         <div class="ss-head">
           <span class="monitor-label">Surveillance du DIEU (complications de Piratage)</span>
@@ -1604,5 +1055,6 @@ const Servers = {
             : ""
         }
       </div>`;
+    },
   },
-};
+);

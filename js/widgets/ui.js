@@ -1540,27 +1540,16 @@ const ContactRenderer = {
     return c.edition === "anarchy" ? this._renderAnarchy(c) : this._renderSR(c);
   },
 
-  /* ---- Card persistante (ContactsBook) avec édition inline ---- */
-  renderPersistent(c, allGroups, currentGroups) {
+  /* ---- Card persistante (ContactsBook) avec édition inline ----
+     Le déclencheur de groupes (🏷) est ajouté après coup par le socle
+     Collection (_appendGroupTrigger), commun aux trois collections. */
+  renderPersistent(c) {
     const el = document.createElement("div");
     el.className = "contact-card contact-card-saved";
     el.dataset.id = c.id;
 
     const isAnarchy = c.edition === "anarchy";
     const stats = isAnarchy ? this._statsAnarchy(c) : this._statsSR(c);
-
-    const gCount = currentGroups.length;
-    const gLabel =
-      gCount === 0
-        ? "Groupes"
-        : gCount === 1
-          ? currentGroups[0]
-          : `${gCount} groupes`;
-    const groupTrigger = `<button class="group-picker-trigger${gCount ? " has-groups" : ""}"
-      title="Gérer les groupes de ce contact" type="button"
-      onclick="GroupPicker.open('${c.id}', this)">
-      <span class="group-picker-trigger-icon">🏷</span><span class="group-picker-trigger-label">${CardRenderer._esc(gLabel)}</span>
-    </button>`;
 
     el.innerHTML = `
       <div class="contact-card-body">
@@ -1573,9 +1562,6 @@ const ContactRenderer = {
               onblur="ContactsBook.editField('${c.id}', 'role', this.textContent.trim())"
               >${CardRenderer._esc(c.role)}</div>
             ${c.metatype ? `<div class="contact-meta">${CardRenderer._esc(c.metatype)}</div>` : ""}
-          </div>
-          <div class="contact-header-actions">
-            ${groupTrigger}
           </div>
         </div>
 

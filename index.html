@@ -137,7 +137,7 @@
                 <button class="sidebar-collapse-btn" onclick="SidebarToggle.close('shadows')" title="Replier"
                   aria-label="Replier les groupes">‹</button>
                 <span class="shadows-sidebar-title">Groupes</span>
-                <button class="btn-icon" onclick="Shadows.addGroup()" title="Nouveau groupe">＋</button>
+                <button class="btn-icon" data-collection="shadows" data-action="add-group" title="Nouveau groupe">＋</button>
               </div>
               <div id="shadows-group-list"></div>
             </aside>
@@ -150,7 +150,7 @@
                 <button class="btn-secondary btn-small" onclick="Backup.export()" title="Exporter tous les PNJ et contacts (toutes éditions)">⤓ Exporter</button>
                 <button class="btn-secondary btn-small" onclick="Backup.openImportDialog()" title="Importer depuis un fichier ou une URL">⤒ Importer</button>
                 <input class="grid-filter" type="search" placeholder="Filtrer…"
-                  aria-label="Filtrer les figurants" oninput="Shadows.setFilter(this.value)">
+                  aria-label="Filtrer les figurants" data-collection="shadows" data-action="filter">
               </div>
               <div class="cards-zone" id="shadows-grid"></div>
             </div>
@@ -202,7 +202,7 @@
                 <button class="sidebar-collapse-btn" onclick="SidebarToggle.close('contacts')" title="Replier"
                   aria-label="Replier les groupes">‹</button>
                 <span class="shadows-sidebar-title">Groupes</span>
-                <button class="btn-icon" onclick="ContactsBook.addGroup()" title="Nouveau groupe">＋</button>
+                <button class="btn-icon" data-collection="contacts" data-action="add-group" title="Nouveau groupe">＋</button>
               </div>
               <div id="contacts-group-list"></div>
             </aside>
@@ -213,7 +213,7 @@
                   <button class="btn-primary btn-small" onclick="ContactsBook.generate()">Générer un contact</button>
                   <span id="contacts-group-label" class="shadows-group-label">Tous les contacts</span>
                   <input class="grid-filter" type="search" placeholder="Filtrer…"
-                    aria-label="Filtrer les contacts" oninput="ContactsBook.setFilter(this.value)">
+                    aria-label="Filtrer les contacts" data-collection="contacts" data-action="filter">
                 </div>
               </div>
               <div class="cards-zone" id="contacts-grid"></div>
@@ -236,7 +236,7 @@
                 <button class="sidebar-collapse-btn" onclick="SidebarToggle.close('matrix')" title="Replier"
                   aria-label="Replier les groupes">‹</button>
                 <span class="shadows-sidebar-title">Groupes</span>
-                <button class="btn-icon" onclick="Servers.addGroup()" title="Nouveau groupe">＋</button>
+                <button class="btn-icon" data-collection="servers" data-action="add-group" title="Nouveau groupe">＋</button>
               </div>
               <div id="servers-group-list"></div>
             </aside>
@@ -247,7 +247,7 @@
                   <button class="btn-primary btn-small" onclick="Servers.createFromForm()">Créer le serveur</button>
                   <span id="servers-group-label" class="shadows-group-label">Tous les serveurs</span>
                   <input class="grid-filter" type="search" placeholder="Filtrer…"
-                    aria-label="Filtrer les serveurs" oninput="Servers.setFilter(this.value)">
+                    aria-label="Filtrer les serveurs" data-collection="servers" data-action="filter">
                 </div>
               </div>
               <div class="cards-zone" id="servers-grid"></div>
@@ -328,41 +328,46 @@
   <!-- TOAST -->
   <div id="toast" role="status" aria-live="polite"></div>
 
-  <!-- SCRIPTS — ordre important : utils → storage → éditions → ui → modules → app -->
-  <script src="js/utils.js?v=22"></script>
-  <script src="js/storage.js?v=16"></script>
-  <script src="js/dice.js?v=3"></script>
-  <script src="js/metavariants.js?v=17"></script>
-  <script src="js/infected.js?v=21"></script>
-  <script src="js/skillcatalog.js?v=16"></script>
-  <script src="js/weaponroll.js?v=19"></script>
-  <script src="js/bonusengine.js?v=23"></script>
-  <script src="js/flavor.js?v=16"></script>
-  <script src="js/content.js?v=20"></script>
-  <script src="js/magic.js?v=5"></script>
+  <!-- SCRIPTS — ordre important : couches CONTRIBUTING.md § « Les dépendances
+       vont dans un seul sens » (core → rules → editions → catalogs → widgets
+       → controllers → app) -->
+  <script src="js/core/utils.js?v=22"></script>
+  <script src="js/core/storage.js?v=16"></script>
+  <script src="js/rules/dice.js?v=3"></script>
+  <script src="js/rules/metavariants.js?v=17"></script>
+  <script src="js/rules/infected.js?v=21"></script>
+  <script src="js/rules/matrix.js?v=1"></script>
+  <script src="js/rules/skillcatalog.js?v=16"></script>
+  <script src="js/rules/weaponroll.js?v=19"></script>
+  <script src="js/rules/bonusengine.js?v=23"></script>
+  <script src="js/rules/flavor.js?v=16"></script>
+  <script src="js/rules/content.js?v=20"></script>
+  <script src="js/rules/magic.js?v=5"></script>
   <script src="js/editions/sr5.js?v=24"></script>
   <script src="js/editions/sr6.js?v=22"></script>
   <script src="js/editions/anarchy.js?v=22"></script>
-  <script src="js/drugs.js?v=2"></script>
-  <script src="js/vehicles.js?v=2"></script>
-  <script src="js/spirits.js?v=4"></script>
-  <script src="js/creatures.js?v=2"></script>
-  <script src="js/servers.js?v=3"></script>
-  <script src="js/ui.js?v=28"></script>
-  <script src="js/dicelog.js?v=1"></script>
-  <script src="js/diceroller.js?v=2"></script>
-  <script src="js/dicepanel.js?v=6"></script>
-  <script src="js/sidebartoggle.js?v=17"></script>
-  <script src="js/profcategories.js?v=17"></script>
-  <script src="js/multiselect.js?v=16"></script>
-  <script src="js/generator.js?v=21"></script>
-  <script src="js/shadows.js?v=20"></script>
-  <script src="js/pnjlookup.js?v=1"></script>
-  <script src="js/editmodal.js?v=19"></script>
-  <script src="js/extras.js?v=18"></script>
-  <script src="js/contactgen.js?v=16"></script>
-  <script src="js/settings.js?v=18"></script>
-  <script src="js/backup.js?v=17"></script>
+  <script src="js/catalogs/drugs.js?v=2"></script>
+  <script src="js/catalogs/vehicles.js?v=2"></script>
+  <script src="js/catalogs/spirits.js?v=4"></script>
+  <script src="js/catalogs/creatures.js?v=2"></script>
+  <script src="js/widgets/ui.js?v=30"></script>
+  <script src="js/widgets/grouppicker.js?v=1"></script>
+  <script src="js/widgets/collection.js?v=2"></script>
+  <script src="js/controllers/servers.js?v=4"></script>
+  <script src="js/widgets/dicelog.js?v=1"></script>
+  <script src="js/widgets/diceroller.js?v=2"></script>
+  <script src="js/widgets/dicepanel.js?v=6"></script>
+  <script src="js/widgets/sidebartoggle.js?v=17"></script>
+  <script src="js/widgets/profcategories.js?v=17"></script>
+  <script src="js/widgets/multiselect.js?v=16"></script>
+  <script src="js/controllers/generator.js?v=21"></script>
+  <script src="js/controllers/shadows.js?v=21"></script>
+  <script src="js/controllers/pnjlookup.js?v=1"></script>
+  <script src="js/controllers/editmodal.js?v=19"></script>
+  <script src="js/controllers/extras.js?v=21"></script>
+  <script src="js/controllers/contactgen.js?v=16"></script>
+  <script src="js/controllers/settings.js?v=18"></script>
+  <script src="js/controllers/backup.js?v=17"></script>
   <script src="js/app.js?v=20"></script>
 
 </body>

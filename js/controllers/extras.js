@@ -729,20 +729,6 @@ const Contacts = {
 
   /* ---- Génération ---- (voir generate() dirigé plus bas, qui lit le formulaire) */
 
-  initPanel() {
-    const zone = document.getElementById("contacts-panel-content");
-    delete zone.dataset.init;
-    zone.dataset.init = "1";
-    zone.innerHTML = `
-      <div id="contact-gen-form"></div>
-      <div class="gen-actions">
-        <button class="btn-primary"   onclick="Contacts.addOne()">Générer un contact</button>
-        <button class="btn-secondary" onclick="Contacts.clearAll()">Effacer tout</button>
-      </div>
-      <div class="cards-zone" id="contacts-list"></div>`;
-    this.renderForm();
-  },
-
   /** Affiche le formulaire dirigé adapté à l'édition courante. */
   renderForm() {
     const host = document.getElementById("contact-gen-form");
@@ -834,12 +820,6 @@ const Contacts = {
     }
   },
 
-  addOne() {
-    document
-      .getElementById("contacts-list")
-      .prepend(ContactRenderer.render(this.generate()));
-  },
-
   /** Lit le formulaire et génère un contact dirigé. */
   generate() {
     if (App.edition === "anarchy") {
@@ -854,10 +834,6 @@ const Contacts = {
       categoryId: (document.getElementById("cg-category") || {}).value,
       metatype: (document.getElementById("cg-meta") || {}).value,
     });
-  },
-
-  clearAll() {
-    document.getElementById("contacts-list").innerHTML = "";
   },
 };
 
@@ -1189,379 +1165,86 @@ const RunGen = {
    CONTACTS BOOK — contacts persistants avec groupes et notes
    Structure miroir de Shadows, mais pour les contacts
    ============================================================ */
-const ContactsBook = {
-  data: {
-    all: [],
-    groups: {},
-  },
-  currentGroup: "all",
-
-  load() {
-    this.data.all = Storage.get("contacts_all", []);
-    this.data.groups = Storage.get("contacts_groups", {});
-  },
-
-  save() {
-    Storage.set("contacts_all", this.data.all);
-    Storage.set("contacts_groups", this.data.groups);
-  },
-
-  /* ---- Générer et ajouter ---- */
-  generate() {
-    const c = Contacts.generate();
-    c.notes = "";
-    this.data.all.push(c);
-    // Si un groupe est sélectionné, l'y ajouter directement
-    if (this.currentGroup !== "all" && this.data.groups[this.currentGroup]) {
-      this.data.groups[this.currentGroup].push(c.id);
-    }
-    this.save();
-    this.render();
-    toast(`✓ ${c.name} ajouté aux contacts.`);
-  },
-
-  remove(id) {
-    const c = this.data.all.find((x) => x.id === id);
-    this.data.all = this.data.all.filter((x) => x.id !== id);
-    for (const g of Object.keys(this.data.groups)) {
-      this.data.groups[g] = this.data.groups[g].filter((i) => i !== id);
-    }
-    this.save();
-    this.render();
-    if (c) toast(`${c.name} supprimé.`);
-  },
-
-  /* ---- Édition inline ---- */
-  editNote(id, value) {
-    const c = this.data.all.find((x) => x.id === id);
-    if (c) {
-      c.notes = value;
-      this.save();
-    }
-  },
-
-  editField(id, field, value) {
-    const c = this.data.all.find((x) => x.id === id);
-    if (c) {
-      if (field === "influence" || field === "loyaute" || field === "niveau") {
-        c[field] = parseInt(value, 10);
-      } else {
-        c[field] = value;
+const ContactsBook = Object.assign(
+  Collection.create({
+    key: "contacts",
+    storageKeys: { all: "contacts_all", groups: "contacts_groups" },
+    dom: { grid: "contacts-grid", sidebar: "contacts-group-list", label: "contacts-group-label" },
+    labels: {
+      allSummary: (n) => `Tous les contacts (${n})`,
+      emptyTitle: "Aucun contact ici",
+      emptyBody: "Générez des contacts avec le bouton ci-dessus.",
+      noMatch: (q) => `Aucun contact ne correspond à « ${q} ».`,
+    },
+    searchFields: (c) => [c.name, c.role, c.metatype, c.desc],
+    renderCard: (c) => ContactRenderer.renderPersistent(c),
+  }),
+  {
+    /* ---- Générer et ajouter ---- */
+    generate() {
+      const c = Contacts.generate();
+      c.notes = "";
+      this.data.all.push(c);
+      // Si un groupe est sélectionné, l'y ajouter directement
+      if (this.currentGroup !== "all" && this.data.groups[this.currentGroup]) {
+        this.data.groups[this.currentGroup].push(c.id);
       }
       this.save();
-    }
+      this.render();
+      toast(`✓ ${c.name} ajouté aux contacts.`);
+    },
+
+    /* ---- Édition inline ---- */
+    editNote(id, value) {
+      const c = this.data.all.find((x) => x.id === id);
+      if (c) {
+        c.notes = value;
+        this.save();
+      }
+    },
+
+    editField(id, field, value) {
+      const c = this.data.all.find((x) => x.id === id);
+      if (c) {
+        if (field === "influence" || field === "loyaute" || field === "niveau") {
+          c[field] = parseInt(value, 10);
+        } else {
+          c[field] = value;
+        }
+        this.save();
+      }
+    },
+
+    /* ---- Édition du portrait (flavor) ---- */
+    editFlavor(id, field, value) {
+      const c = this.data.all.find((x) => x.id === id);
+      if (!c) return;
+      if (!c.flavor) c.flavor = {};
+      if (field === "age") {
+        const n = parseInt(value, 10);
+        if (Number.isFinite(n)) c.flavor.age = n;
+      } else {
+        c.flavor[field] = value;
+      }
+      this.save();
+    },
+
+    /* ---- Relancer tout le portrait d'un contact ---- */
+    rerollFlavor(id) {
+      const c = this.data.all.find((x) => x.id === id);
+      if (!c || typeof Flavor === "undefined") return;
+      c.flavor = null;
+      Flavor.apply(c);
+      this.save();
+      this.render();
+    },
+
+    initPanel() {
+      this.load();
+      this.render();
+      if (typeof Contacts !== "undefined" && Contacts.renderForm) {
+        Contacts.renderForm();
+      }
+    },
   },
-
-  /* ---- Édition du portrait (flavor) ---- */
-  editFlavor(id, field, value) {
-    const c = this.data.all.find((x) => x.id === id);
-    if (!c) return;
-    if (!c.flavor) c.flavor = {};
-    if (field === "age") {
-      const n = parseInt(value, 10);
-      if (Number.isFinite(n)) c.flavor.age = n;
-    } else {
-      c.flavor[field] = value;
-    }
-    this.save();
-  },
-
-  /* ---- Relancer tout le portrait d'un contact ---- */
-  rerollFlavor(id) {
-    const c = this.data.all.find((x) => x.id === id);
-    if (!c || typeof Flavor === "undefined") return;
-    c.flavor = null;
-    Flavor.apply(c);
-    this.save();
-    this.render();
-  },
-
-  /* ---- Groupes ---- */
-  addGroup() {
-    const name = prompt("Nom du groupe :");
-    if (!name || !name.trim()) return;
-    const key = name.trim();
-    if (key === "all") {
-      toast("Nom réservé.");
-      return;
-    }
-    if (!this.data.groups[key]) this.data.groups[key] = [];
-    this.save();
-    this.render();
-    toast(`Groupe "${key}" créé.`);
-  },
-
-  removeGroup(key) {
-    if (!confirm(`Supprimer le groupe "${key}" ?`)) return;
-    delete this.data.groups[key];
-    if (this.currentGroup === key) this.currentGroup = "all";
-    this.save();
-    this.render();
-  },
-
-  renameGroup(key) {
-    const newName = prompt("Nouveau nom :", key);
-    if (!newName || !newName.trim() || newName.trim() === key) return;
-    const newKey = newName.trim();
-    if (this.data.groups[newKey]) {
-      toast("Ce nom existe déjà.");
-      return;
-    }
-    this.data.groups[newKey] = this.data.groups[key];
-    delete this.data.groups[key];
-    if (this.currentGroup === key) this.currentGroup = newKey;
-    this.save();
-    this.render();
-  },
-
-  /** Ajoute/retire un contact d'un groupe donné, sans toucher aux autres
-      (un contact peut appartenir à plusieurs groupes à la fois). */
-  toggleGroup(id, groupKey, checked) {
-    const arr = this.data.groups[groupKey];
-    if (!arr) return;
-    const has = arr.includes(id);
-    if (checked && !has) arr.push(id);
-    if (!checked && has) this.data.groups[groupKey] = arr.filter((i) => i !== id);
-    this.save();
-    this.render();
-    // Le panneau flottant vit hors de la grille : on le rafraîchit à part.
-    if (typeof GroupPicker !== "undefined" && GroupPicker._contactId === id)
-      GroupPicker._render();
-  },
-
-  groupsOf(id) {
-    return Object.keys(this.data.groups).filter((g) =>
-      this.data.groups[g].includes(id),
-    );
-  },
-
-  switchGroup(g) {
-    this.currentGroup = g;
-    this.render();
-  },
-
-  /* ---- Rendu ---- */
-  render() {
-    this._renderSidebar();
-    this._renderGrid();
-  },
-
-  initPanel() {
-    this.load();
-    this.render();
-    if (typeof Contacts !== "undefined" && Contacts.renderForm) {
-      Contacts.renderForm();
-    }
-  },
-
-  _renderSidebar() {
-    const container = document.getElementById("contacts-group-list");
-    if (!container) return;
-    const groups = Object.keys(this.data.groups);
-
-    const allActive = this.currentGroup === "all" ? "active" : "";
-    let html = `<div class="group-item ${allActive}" onclick="ContactsBook.switchGroup('all')">
-      <span class="group-item-icon">◈</span>
-      <span class="group-item-name">Tous</span>
-      <span class="group-item-count">${this.data.all.length}</span>
-    </div>`;
-
-    for (const g of groups) {
-      const count = this.data.groups[g].length;
-      const active = this.currentGroup === g ? "active" : "";
-      const gSafe = g.replace(/'/g, "\\'");
-      html += `<div class="group-item ${active}" onclick="ContactsBook.switchGroup('${gSafe}')">
-        <span class="group-item-icon">▸</span>
-        <span class="group-item-name">${g}</span>
-        <span class="group-item-count">${count}</span>
-        <span class="group-item-actions">
-          <button class="btn-icon-tiny" onclick="event.stopPropagation(); ContactsBook.renameGroup('${gSafe}')" title="Renommer">✎</button>
-          <button class="btn-icon-tiny danger" onclick="event.stopPropagation(); ContactsBook.removeGroup('${gSafe}')" title="Supprimer">✕</button>
-        </span>
-      </div>`;
-    }
-
-    container.innerHTML = html;
-
-    const label = document.getElementById("contacts-group-label");
-    if (label) {
-      label.textContent =
-        this.currentGroup === "all"
-          ? `Tous les contacts (${this.data.all.length})`
-          : `${this.currentGroup} (${(this.data.groups[this.currentGroup] || []).length})`;
-    }
-  },
-
-  /* ---- Filtre de recherche (nom, rôle, métatype) ---- */
-  filterText: "",
-  setFilter(v) {
-    this.filterText = v || "";
-    this._renderGrid();
-  },
-  _matchesFilter(c) {
-    const q = Utils.searchNorm(this.filterText).trim();
-    if (!q) return true;
-    const hay = Utils.searchNorm(
-      [c.name, c.role, c.metatype, c.desc].filter(Boolean).join(" "),
-    );
-    return q.split(/\s+/).every((word) => hay.includes(word));
-  },
-
-  _renderGrid() {
-    const grid = document.getElementById("contacts-grid");
-    if (!grid) return;
-    grid.innerHTML = "";
-
-    let list = this.data.all;
-    if (this.currentGroup !== "all") {
-      const ids = this.data.groups[this.currentGroup] || [];
-      list = this.data.all.filter((c) => ids.includes(c.id));
-    }
-    // Le plus récemment ajouté en premier (data.all reste en ordre
-    // d'insertion ; on ne réordonne que l'affichage).
-    list = list.slice().reverse();
-    const unfiltered = list.length;
-    list = list.filter((c) => this._matchesFilter(c));
-
-    if (!list.length) {
-      grid.innerHTML =
-        unfiltered > 0 && this.filterText.trim()
-          ? `<div class="empty-state">
-              <span class="empty-state-title">Aucun résultat</span>
-              Aucun contact ne correspond à « ${CardRenderer._esc(this.filterText.trim())} ».
-            </div>`
-          : `<div class="empty-state">
-              <span class="empty-state-title">Aucun contact ici</span>
-              Générez des contacts avec le bouton ci-dessus.
-            </div>`;
-      return;
-    }
-
-    const allGroups = Object.keys(this.data.groups);
-    for (const c of list) {
-      const card = ContactRenderer.renderPersistent(
-        c,
-        allGroups,
-        this.groupsOf(c.id),
-      );
-      grid.appendChild(card);
-    }
-  },
-};
-
-/* ============================================================
-   GROUP PICKER — popover d'appartenance multi-groupes (contacts)
-   Un contact peut appartenir à plusieurs groupes à la fois.
-   Un seul panneau flottant (hors grille), repositionné sur le
-   déclencheur cliqué ; en feuille basse sur mobile (voir CSS).
-   ============================================================ */
-const GroupPicker = {
-  _contactId: null,
-
-  _ensure() {
-    if (document.getElementById("group-picker-panel")) return;
-    const backdrop = document.createElement("div");
-    backdrop.id = "group-picker-backdrop";
-    backdrop.addEventListener("click", () => this.close());
-    document.body.appendChild(backdrop);
-
-    const panel = document.createElement("div");
-    panel.id = "group-picker-panel";
-    panel.setAttribute("role", "dialog");
-    panel.setAttribute("aria-label", "Groupes du contact");
-    document.body.appendChild(panel);
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") this.close();
-    });
-    window.addEventListener("resize", () => {
-      if (this._contactId) this.close();
-    });
-  },
-
-  open(id, triggerEl) {
-    this._ensure();
-    this._contactId = id;
-    this._render();
-    document.getElementById("group-picker-backdrop").classList.add("open");
-    document.getElementById("group-picker-panel").classList.add("open");
-    this._position(triggerEl);
-  },
-
-  close() {
-    const panel = document.getElementById("group-picker-panel");
-    const backdrop = document.getElementById("group-picker-backdrop");
-    if (panel) panel.classList.remove("open");
-    if (backdrop) backdrop.classList.remove("open");
-    this._contactId = null;
-  },
-
-  /** Ancre le panneau sous le déclencheur (desktop/iPad). Sur mobile,
-      la feuille basse est positionnée entièrement en CSS. */
-  _position(triggerEl) {
-    const panel = document.getElementById("group-picker-panel");
-    if (!panel || !triggerEl || window.innerWidth <= 640) return;
-    const r = triggerEl.getBoundingClientRect();
-    const panelW = 240;
-    let left = r.right - panelW;
-    left = Math.max(8, Math.min(left, window.innerWidth - panelW - 8));
-    const estHeight = Math.min(320, panel.offsetHeight || 220);
-    let top = r.bottom + 6;
-    if (top + estHeight > window.innerHeight - 8) {
-      top = Math.max(8, r.top - estHeight - 6);
-    }
-    panel.style.left = `${left}px`;
-    panel.style.top = `${top}px`;
-  },
-
-  _render() {
-    const panel = document.getElementById("group-picker-panel");
-    if (!panel) return;
-    const id = this._contactId;
-    const groups = Object.keys(ContactsBook.data.groups);
-    const current = ContactsBook.groupsOf(id);
-
-    const rows = groups.length
-      ? groups
-          .map((g) => {
-            const checked = current.includes(g) ? "checked" : "";
-            const gEsc = CardRenderer._esc(g);
-            const gAttr = g.replace(/'/g, "\\'");
-            return `<label class="group-picker-row">
-              <input type="checkbox" ${checked}
-                onchange="ContactsBook.toggleGroup('${id}', '${gAttr}', this.checked)">
-              <span>${gEsc}</span>
-            </label>`;
-          })
-          .join("")
-      : `<div class="group-picker-empty">Aucun groupe pour l'instant.</div>`;
-
-    panel.innerHTML = `
-      <div class="group-picker-head">
-        <span class="group-picker-title">Groupes du contact</span>
-        <button class="btn-icon-tiny" onclick="GroupPicker.close()" aria-label="Fermer">✕</button>
-      </div>
-      <div class="group-picker-list">${rows}</div>
-      <button class="group-picker-new" onclick="GroupPicker.createAndAssign()">+ Nouveau groupe</button>`;
-  },
-
-  /** Crée un groupe et y assigne directement le contact courant. */
-  createAndAssign() {
-    const name = prompt("Nom du groupe :");
-    if (!name || !name.trim()) return;
-    const key = name.trim();
-    if (key === "all") {
-      toast("Nom réservé.");
-      return;
-    }
-    if (ContactsBook.data.groups[key]) {
-      toast("Ce nom existe déjà.");
-      return;
-    }
-    ContactsBook.data.groups[key] = [this._contactId];
-    ContactsBook.save();
-    ContactsBook.render();
-    this._render();
-    toast(`Groupe "${key}" créé et contact ajouté.`);
-  },
-};
+);
