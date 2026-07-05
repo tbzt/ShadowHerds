@@ -59,7 +59,7 @@ const Shadows = Object.assign(
 
       this.data.all.push(pnj);
       // Entités liées (drones/véhicules déployés) : suivent leur maître.
-      if (typeof Gen !== "undefined" && Gen.pool) {
+      if (Gen.pool) {
         const linked = Gen.pool.filter(
           (e) => e.ownerId === pnj.id && !this.data.all.some((p) => p.id === e.id),
         );

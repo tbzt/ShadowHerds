@@ -225,15 +225,15 @@ const Backup = {
 
   /** Recharge Shadows et Contacts en mémoire pour refléter l'import. */
   _reloadActive() {
-    if (typeof Shadows !== "undefined" && Shadows.load) {
+    if (Shadows.load) {
       Shadows.load();
       if (Shadows.render) Shadows.render();
     }
-    if (typeof ContactsBook !== "undefined" && ContactsBook.load) {
+    if (ContactsBook.load) {
       ContactsBook.load();
       if (ContactsBook.render) ContactsBook.render();
     }
-    if (typeof Servers !== "undefined" && Servers.load) {
+    if (Servers.load) {
       Servers.load();
       if (Servers.render) Servers.render();
     }

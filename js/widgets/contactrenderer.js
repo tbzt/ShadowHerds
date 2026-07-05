@@ -75,6 +75,8 @@ const ContactRenderer = {
     el.className = "contact-card contact-card-saved";
     el.dataset.id = c.id;
 
+    // Dispatch structurel accepté (issue #14) : deux blocs de stats
+    // complets (atout+RR vs Influence/Loyauté), pas une valeur scalaire.
     const isAnarchy = c.edition === "anarchy";
     const stats = isAnarchy ? this._statsAnarchy(c) : this._statsSR(c);
 

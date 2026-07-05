@@ -236,7 +236,7 @@ const WeaponRoll = {
     const canonical = this.skillFor(parsed.name, edition);
     const found = this.findSkillValue(pnj, canonical);
 
-    const cat = (typeof SkillCatalog !== "undefined" && SkillCatalog[edition]) || {};
+    const cat = SkillCatalog[edition] || {};
     let attr = cat[canonical] || "AGI";
     let attrVal = (pnj.attrs && pnj.attrs[attr]) || 0;
 
@@ -283,8 +283,7 @@ const WeaponRoll = {
         ? weaponModel.smartlinkBonus.implanted
         : weaponModel.smartlinkBonus.external;
     }
-    const malus =
-      typeof Utils !== "undefined" ? Utils.woundMalus(pnj, edition) : 0;
+    const malus = Utils.woundMalus(pnj, edition);
     const pool = Math.max(0, basePool + smartBonus + specBonus - malus);
 
     return {
@@ -371,7 +370,7 @@ const WeaponRoll = {
     if (!exists) {
       toRename.name = renameTo;
       // Conserver l'attribut lié si le modèle le stocke (Anarchy)
-      if (toRename.attr && typeof SkillCatalog !== "undefined") {
+      if (toRename.attr) {
         const cat = SkillCatalog[edition] || {};
         if (cat[canonical]) toRename.attr = cat[canonical];
       }

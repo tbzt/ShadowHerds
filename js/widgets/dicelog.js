@@ -56,7 +56,7 @@ const DiceLog = {
   open() {
     this._ensure();
     // Sur mobile, le journal remplace la feuille de dés si elle est ouverte
-    if (typeof DicePanel !== "undefined") DicePanel.close();
+    DicePanel.close();
     this.refresh();
     document.getElementById("dice-log-backdrop").classList.add("open");
     document.getElementById("dice-log-panel").classList.add("open");

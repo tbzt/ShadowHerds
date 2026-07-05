@@ -24,6 +24,9 @@ const EditionSR6 = {
 
   /* ---- Contrat commun édition (résorption des branches, issue #14) ---- */
   attributes: ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"],
+  /** Neutre : SR6 utilise le lanceur de dés classique, pas le panneau
+      de prise de risque (propre à Anarchy 2.0). */
+  usesRiskPanel: false,
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
   summonPower: {
     field: "force",
@@ -43,6 +46,15 @@ const EditionSR6 = {
       Offensif direct via autosoft + Senseurs), Encaissement = Structure
       seule (pas de Blindage ajouté en SR6, cf. Riggers p.203-208). */
   vehicleModel: {
+    /** Champs de stats affichés en pills (card) et édités (modal). */
+    statFields: [
+      ["mania", "Maniabilité"], ["vitesse", "Vitesse"], ["accel", "Accél"],
+      ["structure", "Structure"], ["blindage", "Blindage"],
+      ["pilote", "Autopilote"], ["senseurs", "Senseurs"],
+    ],
+    /** Champ supplémentaire édité (pas affiché en pill) : autosoft
+        d'attaque autonome, distinct de l'autopilote (Riggers p.203-208). */
+    formExtraFields: [["autosoft", "Autosoft"]],
     pools(v) {
       const s = v.stats || {};
       const autosoft = s.autosoft || s.pilote || s.autopilote || 0;
@@ -66,6 +78,15 @@ const EditionSR6 = {
     woundMalus(pnj) {
       return Math.floor((pnj.physFilled || 0) / 3);
     },
+    /** Moniteur d'un esprit invoqué : (Puissance/2)+8, p.224 — distinct
+        de la formule PNJ (basée sur CON) puisqu'un esprit n'a pas de
+        CON à proprement parler. */
+    spiritMonitor(force) {
+      return Math.ceil((force || 0) / 2) + 8;
+    },
+    /** Forme du moniteur d'un véhicule/drone lié : "total" (monTotal/
+        monFilled, ⌈Structure/2⌉+8) en SR5/SR6, cf. vehicles.js:_monitor. */
+    vehicleFields: "total",
   },
   /** Résolution du jet d'arme (WeaponRoll) : synergie smartgun/smartlink
       flat +1 (pas de distinction implanté/externe en SR6), pas de limite
@@ -419,6 +440,8 @@ const EditionSR6 = {
   spiderArchetype() {
     return "Decker freelance";
   },
+  /** Valeur du champ "special" du générateur PNJ pour un spider. */
+  spiderSpecial: "Decker",
 
   /** Bonus d'indice quand le serveur gère aussi la sécurité physique.
       Neutre : SR6 n'a pas cette règle (concept propre à Anarchy 2.0). */
@@ -1375,25 +1398,15 @@ const EditionSR6 = {
 
   /* ---- Génération principale ---- */
   generate(opts) {
-    if (typeof Metavariants !== "undefined") Metavariants.use("sr6");
-    const metaList = this.formOptions.meta.slice(1);
-    let meta =
-      opts.meta === "Aléatoire"
-        ? typeof Metavariants !== "undefined"
-          ? Metavariants.randomMeta()
-          : Utils.rand(metaList)
-        : opts.meta;
+    Metavariants.use("sr6");
+    let meta = opts.meta === "Aléatoire" ? Metavariants.randomMeta() : opts.meta;
 
     // Résolution métavariante SR6 (Compagnon du Sixième Monde)
-    const mv =
-      typeof Metavariants !== "undefined" ? Metavariants.resolve(meta) : null;
+    const mv = Metavariants.resolve(meta);
     // Résolution Infecté (Compagnon du Sixième Monde, p.102-113) — remplace
     // la résolution métavariante habituelle : un Infecté n'est pas *en
     // plus* une métavariante aléatoire.
-    const infected =
-      !mv && typeof Infected !== "undefined"
-        ? Infected.use("sr6").resolve(meta)
-        : null;
+    const infected = !mv ? Infected.use("sr6").resolve(meta) : null;
     const baseMetatype = mv ? mv.baseMetatype : infected ? infected.baseMetatype : meta;
     let originPoolOverride = null;
     if (mv && mv.originPools && (!opts.originPool || opts.originPool === "Aléatoire")) {
@@ -1443,9 +1456,9 @@ const EditionSR6 = {
     // d'entrée dans attrRange : on va chercher leurs bornes propres via
     // Metavariants (métaconsciences).
     if (infected && infected.attrMod) {
-      const mcRange =
-        typeof Metavariants !== "undefined" &&
-        Metavariants.use("sr6").resolve(infected.baseMetatype)?.ranges;
+      const mcRange = Metavariants.use("sr6").resolve(
+        infected.baseMetatype,
+      )?.ranges;
       const src = mcRange || range;
       const extended = {};
       for (const k of Object.keys(src)) {
@@ -1540,16 +1553,13 @@ const EditionSR6 = {
 
     // Tags d'archétype pour la sélection de contenu cohérent
     const awakened = isMagicProf || isMagicSpec;
-    const contentTags =
-      typeof Flavor !== "undefined"
-        ? Flavor.tagsFor({ archetype, special })
-        : new Set(["rue"]);
+    const contentTags = Flavor.tagsFor({ archetype, special });
 
     // Sorts — enrichis avec descriptions cliquables.
     // Un adepte « pur » utilise des pouvoirs, pas des sorts.
     let spells = [];
     const adeptePur = special === "Adepte";
-    if (awakened && !adeptePur && typeof Content !== "undefined") {
+    if (awakened && !adeptePur) {
       spells = Content.pickSorts("sr6", p, contentTags);
     } else if (!adeptePur) {
       const spellsTrad =
@@ -1561,15 +1571,14 @@ const EditionSR6 = {
 
     // Pouvoirs d'adepte
     const powers =
-      special === "Adepte" && typeof Content !== "undefined"
+      special === "Adepte"
         ? Content.pickPouvoirs("sr6", p, p >= 4 ? 3 : 2)
         : [];
 
     // Trait de couleur cohérent (parfois)
-    const traits =
-      typeof Content !== "undefined" && Utils.randBool(0.5)
-        ? Content.pickTraits("sr6", contentTags, p, 1)
-        : [];
+    const traits = Utils.randBool(0.5)
+      ? Content.pickTraits("sr6", contentTags, p, 1)
+      : [];
 
     // Équipement — pas de cyberware pour un Éveillé (coût en Essence)
     const equip = this.buildLoadout(archetype, p, awakened);
@@ -1629,9 +1638,9 @@ const EditionSR6 = {
     };
     if (infected && infected.bonus) pnj._infectedBonus = infected.bonus;
     // Cohérence arme <-> compétence (renomme une compétence de combat si besoin)
-    if (typeof WeaponRoll !== "undefined") WeaponRoll.reconcile(pnj, "sr6");
-    if (typeof BonusEngine !== "undefined") BonusEngine.apply(pnj, "sr6");
-    if (typeof Flavor !== "undefined") Flavor.apply(pnj);
+    WeaponRoll.reconcile(pnj, "sr6");
+    BonusEngine.apply(pnj, "sr6");
+    Flavor.apply(pnj);
     return pnj;
   },
 

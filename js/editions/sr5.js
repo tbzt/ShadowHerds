@@ -15,6 +15,9 @@ const EditionSR5 = {
 
   /* ---- Contrat commun édition (résorption des branches, issue #14) ---- */
   attributes: ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"],
+  /** Neutre : SR5 utilise le lanceur de dés classique, pas le panneau
+      de prise de risque (propre à Anarchy 2.0). */
+  usesRiskPanel: false,
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
   summonPower: {
     field: "force",
@@ -35,6 +38,15 @@ const EditionSR5 = {
       vehicles.js) : Autopilote + autosoft, limite de précision inexistante
       ici (pas de PRE sur un drone). */
   vehicleModel: {
+    /** Champs de stats affichés en pills (card) et édités (modal). */
+    statFields: [
+      ["mania", "Maniabilité"], ["vitesse", "Vitesse"], ["accel", "Accél"],
+      ["structure", "Structure"], ["blindage", "Blindage"],
+      ["pilote", "Autopilote"], ["senseurs", "Senseurs"],
+    ],
+    /** Champ supplémentaire édité (pas affiché en pill) : autosoft
+        d'attaque autonome, distinct de l'autopilote (Riggers p.265-272). */
+    formExtraFields: [["autosoft", "Autosoft"]],
     pools(v) {
       const s = v.stats || {};
       const autosoft = s.autosoft || s.pilote || s.autopilote || 0;
@@ -57,14 +69,17 @@ const EditionSR5 = {
     model: "double physique+étourdissement, cases = 8 + attribut/2",
     fields: { primary: "physMon" },
     woundMalus(pnj) {
-      const div = parseInt(
-        (typeof Settings !== "undefined" && Settings.get("woundMod", 3)) ?? 3,
-        10,
-      );
+      const div = parseInt(Settings.get("woundMod", 3), 10);
       if (!div) return 0;
       const total = (pnj.physFilled || 0) + (pnj.stunFilled || 0);
       return Math.floor(total / div);
     },
+    /** Neutre : les esprits SR5 utilisent le moniteur générique basé sur
+        CON (cf. spawn), pas de formule dédiée comme en SR6. */
+    spiritMonitor: null,
+    /** Forme du moniteur d'un véhicule/drone lié : "total" (monTotal/
+        monFilled, ⌈Structure/2⌉+8) en SR5/SR6, cf. vehicles.js:_monitor. */
+    vehicleFields: "total",
   },
   /** Résolution du jet d'arme (WeaponRoll) : synergie smartgun/smartlink
       (+2 implanté / +1 externe), la Précision (PRE) plafonne les succès,
@@ -242,6 +257,8 @@ const EditionSR5 = {
   spiderArchetype() {
     return "Spécialiste contre-mesures";
   },
+  /** Valeur du champ "special" du générateur PNJ pour un spider. */
+  spiderSpecial: "Decker",
 
   /** Bonus d'indice quand le serveur gère aussi la sécurité physique.
       Neutre : SR5 n'a pas cette règle (concept propre à Anarchy 2.0). */
@@ -1311,22 +1328,15 @@ const EditionSR5 = {
 
   /* ---- Génération principale ---- */
   generate(opts) {
-    if (typeof Metavariants !== "undefined") Metavariants.use("sr5");
-    let meta =
-      opts.meta === "Aléatoire"
-        ? typeof Metavariants !== "undefined"
-          ? Metavariants.randomMeta()
-          : Utils.randMeta()
-        : opts.meta;
+    Metavariants.use("sr5");
+    let meta = opts.meta === "Aléatoire" ? Metavariants.randomMeta() : opts.meta;
 
     // Résolution métavariante : une métavariante/conscience/zoocanthrope
     // remplace les ranges de sa souche et porte ses traits raciaux.
-    const mv =
-      typeof Metavariants !== "undefined" ? Metavariants.resolve(meta) : null;
+    const mv = Metavariants.resolve(meta);
     // Résolution Infecté (Livre de Règles p.406-408) — remplace la
     // résolution métavariante habituelle.
-    const infected =
-      !mv && typeof Infected !== "undefined" ? Infected.use("sr5").resolve(meta) : null;
+    const infected = !mv ? Infected.use("sr5").resolve(meta) : null;
     const baseMetatype = mv ? mv.baseMetatype : infected ? infected.baseMetatype : meta;
     // Bassin de noms : si non imposé, hériter de la métavariante
     let originPoolOverride = null;
@@ -1387,9 +1397,9 @@ const EditionSR5 = {
     // Sasquatch n'a pas d'entrée dans attrRange : bornes propres via
     // Metavariants (métaconsciences SR5).
     if (infected && infected.attrMod) {
-      const mcRange =
-        typeof Metavariants !== "undefined" &&
-        Metavariants.use("sr5").resolve(infected.baseMetatype)?.ranges;
+      const mcRange = Metavariants.use("sr5").resolve(
+        infected.baseMetatype,
+      )?.ranges;
       const src = mcRange || range;
       const extended = {};
       for (const k of Object.keys(src)) {
@@ -1489,17 +1499,14 @@ const EditionSR5 = {
     const augs = awakened ? [] : augsProducer(proRating);
 
     // Tags d'archétype pour la sélection de contenu cohérent
-    const contentTags =
-      typeof Flavor !== "undefined"
-        ? Flavor.tagsFor({ archetype, special })
-        : new Set(["rue"]);
+    const contentTags = Flavor.tagsFor({ archetype, special });
 
     // Sorts — enrichis avec descriptions cliquables.
     // Un adepte « pur » canalise sa magie en pouvoirs physiques, pas en
     // sorts ; les mages/chamans lancent des sorts.
     let spellsList = [];
     const adeptePur = special === "Adepte";
-    if (awakened && !adeptePur && typeof Content !== "undefined") {
+    if (awakened && !adeptePur) {
       spellsList = Content.pickSorts("sr5", proRating, contentTags);
     } else if (!adeptePur && this.spellsByTradition[special]) {
       spellsList = this.spellsByTradition[special].slice(
@@ -1510,15 +1517,14 @@ const EditionSR5 = {
 
     // Pouvoirs d'adepte — seulement pour les adeptes
     const powers =
-      special === "Adepte" && typeof Content !== "undefined"
+      special === "Adepte"
         ? Content.pickPouvoirs("sr5", proRating, proRating >= 4 ? 3 : 2)
         : [];
 
     // Trait de couleur cohérent (parfois)
-    const traits =
-      typeof Content !== "undefined" && Utils.randBool(0.5)
-        ? Content.pickTraits("sr5", contentTags, proRating, 1)
-        : [];
+    const traits = Utils.randBool(0.5)
+      ? Content.pickTraits("sr5", contentTags, proRating, 1)
+      : [];
 
     const pnj = {
       id: Utils.uid(),
@@ -1576,9 +1582,9 @@ const EditionSR5 = {
 
     // Couche d'habillage cohérente
     // Cohérence arme <-> compétence (renomme une compétence de combat si besoin)
-    if (typeof WeaponRoll !== "undefined") WeaponRoll.reconcile(pnj, "sr5");
-    if (typeof BonusEngine !== "undefined") BonusEngine.apply(pnj, "sr5");
-    if (typeof Flavor !== "undefined") Flavor.apply(pnj);
+    WeaponRoll.reconcile(pnj, "sr5");
+    BonusEngine.apply(pnj, "sr5");
+    Flavor.apply(pnj);
     return pnj;
   },
 

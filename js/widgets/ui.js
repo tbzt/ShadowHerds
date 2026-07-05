@@ -117,8 +117,7 @@ const UI = {
     const siblings = Vehicles.linkedTo(v.ownerId, v.srcItem);
     for (const s of siblings) {
       Shadows.data.all = Shadows.data.all.filter((p) => p.id !== s.id);
-      if (typeof Gen !== "undefined" && Gen.pool)
-        Gen.pool = Gen.pool.filter((p) => p.id !== s.id);
+      if (Gen.pool) Gen.pool = Gen.pool.filter((p) => p.id !== s.id);
       document
         .querySelectorAll(`.pnj-card[data-id="${s.id}"]`)
         .forEach((card) => card.remove());
@@ -312,8 +311,7 @@ const UI = {
     const sp = PnjLookup.find(spiritId);
     if (!sp || sp.type !== "spirit") return;
     Shadows.data.all = Shadows.data.all.filter((p) => p.id !== sp.id);
-    if (typeof Gen !== "undefined" && Gen.pool)
-      Gen.pool = Gen.pool.filter((p) => p.id !== sp.id);
+    if (Gen.pool) Gen.pool = Gen.pool.filter((p) => p.id !== sp.id);
     document
       .querySelectorAll(`.pnj-card[data-id="${sp.id}"]`)
       .forEach((card) => card.remove());

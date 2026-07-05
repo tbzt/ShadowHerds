@@ -13,10 +13,7 @@ const DicePanel = {
 
   /** Applique la réserve par défaut des préférences. */
   applyPrefs() {
-    if (
-      typeof Settings !== "undefined" &&
-      Settings.getDicePrefs
-    ) {
+    if (Settings.getDicePrefs) {
       this.count = Settings.getDicePrefs().defaultCount;
       this._renderCount();
     }
@@ -117,7 +114,7 @@ const DicePanel = {
   roll() {
     this.close();
     // Anarchy 2.0 : ce lanceur passe par le panneau de prise de risque
-    if (typeof App !== "undefined" && App.edition === "anarchy") {
+    if (App.editionModule && App.editionModule.usesRiskPanel) {
       DiceRoller.openRiskPanel(this.count, { label: "" });
       return;
     }

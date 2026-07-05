@@ -22,6 +22,9 @@ const EditionAnarchy = {
 
   /* ---- Contrat commun édition (résorption des branches, issue #14) ---- */
   attributes: ["FOR", "AGI", "VOL", "LOG", "CHA"],
+  /** Anarchy 2.0 : tout jet de dés passe par le panneau de prise de
+      risque (dés de risque, RR) plutôt que le lanceur classique. */
+  usesRiskPanel: true,
   ratingBadge: {
     field: "tier",
     label: "Rang",
@@ -49,6 +52,15 @@ const EditionAnarchy = {
       en autonome, pas d'initiative autonome distincte documentée dans
       le livre — neutre `initiative: null`. */
   vehicleModel: {
+    /** Champs de stats affichés en pills (card) et édités (modal) :
+        libellés d'équipement Anarchy auto-descriptifs, pas de
+        pilote/senseurs/accel distincts (cf. commentaire de fichier). */
+    statFields: [
+      ["autopilote", "Autopilote"], ["structure", "Structure"],
+      ["mania", "Maniabilité"], ["vitesse", "Vitesse"], ["blindage", "Blindage"],
+    ],
+    /** Neutre : pas d'autosoft distinct de l'autopilote en Anarchy 2.0. */
+    formExtraFields: [],
     pools(v) {
       const s = v.stats || {};
       return [
@@ -68,6 +80,12 @@ const EditionAnarchy = {
     woundMalus() {
       return 0;
     },
+    /** Neutre : les esprits Anarchy 2.0 sont des figurants statBlocks
+        (seuils de blessure), pas de moniteur numérique dédié. */
+    spiritMonitor: null,
+    /** Forme du moniteur d'un véhicule/drone lié : "thresholds" (2 légères
+        / 1 grave / 1 incapacitante, p.68 & 230), pas de total cumulatif. */
+    vehicleFields: "thresholds",
   },
   /** Résolution du jet d'arme (WeaponRoll) : pas de règle smartlink/
       smartgun en Anarchy 2.0 (neutre `null`, doc), pas de limite de
@@ -151,6 +169,9 @@ const EditionAnarchy = {
   spiderArchetype(indice) {
     return indice >= 6 ? "Decker d'élite" : "Decker de sécurité";
   },
+  /** Neutre : Anarchy 2.0 n'a pas de catégorie "special" dédiée aux
+      deckers/spiders (pas de distinction implanté/externe type SR). */
+  spiderSpecial: "Aucun",
 
   /** Bonus d'indice quand le serveur gère aussi la sécurité physique
       (Anarchy 2.0 p.222). SR5/SR6 n'ont pas cette règle : neutre `null`. */
@@ -2974,8 +2995,7 @@ const EditionAnarchy = {
       if (c) cats.add(c);
     }
     for (const text of edgeTexts || []) {
-      const parsed =
-        typeof BonusEngine !== "undefined" ? BonusEngine.parseAnarchyRR(text) : null;
+      const parsed = BonusEngine.parseAnarchyRR(text);
       if (!parsed) continue;
       for (const { name, subspec } of parsed.skills) {
         if (name.toLowerCase() !== "sorcellerie" || !subspec) continue;
@@ -3092,7 +3112,7 @@ const EditionAnarchy = {
       matrixMonitor: statBlock.matrixMonitor,
       awakened: statBlock.awakened,
       mentorSpirit:
-        statBlock.awakened && typeof Magic !== "undefined"
+        statBlock.awakened
           ? Magic.pickMentor(
               "anarchy",
               opts.originPool !== "Aléatoire" ? opts.originPool : null,
@@ -3104,11 +3124,8 @@ const EditionAnarchy = {
       spells: (function () {
         // Si l'archétype est éveillé, on enrichit ses sorts avec les
         // descriptifs Anarchy cliquables ; sinon on garde l'existant.
-        if (statBlock.awakened && typeof Content !== "undefined") {
-          const tags =
-            typeof Flavor !== "undefined"
-              ? Flavor.tagsFor({ archetype: statBlock.label })
-              : new Set(["magique"]);
+        if (statBlock.awakened) {
+          const tags = Flavor.tagsFor({ archetype: statBlock.label });
           tags.add("magique");
           const proRatingNum =
             { Figurant: 1, "Figurant d'élite": 2, Lieutenant: 3, Boss: 4 }[
@@ -3134,9 +3151,9 @@ const EditionAnarchy = {
       notes: "",
     };
     // Cohérence arme <-> compétence (renomme une compétence de combat si besoin)
-    if (typeof WeaponRoll !== "undefined") WeaponRoll.reconcile(pnj, "anarchy");
-    if (typeof BonusEngine !== "undefined") BonusEngine.apply(pnj, "anarchy");
-    if (typeof Flavor !== "undefined") Flavor.apply(pnj);
+    WeaponRoll.reconcile(pnj, "anarchy");
+    BonusEngine.apply(pnj, "anarchy");
+    Flavor.apply(pnj);
     return pnj;
   },
 

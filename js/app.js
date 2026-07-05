@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
       CardRenderer.refresh(pnj);
     },
     isRefOpen: (pnj) => CardRenderer._refIsOpen(pnj),
-    isAnarchy: () => App.edition === "anarchy",
+    isAnarchy: () => !!(App.editionModule && App.editionModule.usesRiskPanel),
   });
   ContentModal.bindDelegation();
   ContactRenderer.bindDelegation();

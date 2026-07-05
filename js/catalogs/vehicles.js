@@ -168,7 +168,7 @@ const Vehicles = {
         rrNotes: parsed.rrNotes,
         notes: "",
       };
-      if (edition === "anarchy") {
+      if (App.getEditionModule(edition).conditionMonitor.vehicleFields === "thresholds") {
         v.legerFilled = 0;
         v.graveFilled = 0;
         v.incapFilled = 0;
@@ -183,10 +183,7 @@ const Vehicles = {
 
   /** Entités liées à un item source précis d'un propriétaire. */
   linkedTo(ownerId, srcItem) {
-    const pools = [
-      typeof Gen !== "undefined" && Gen.pool ? Gen.pool : [],
-      typeof Shadows !== "undefined" && Shadows.data ? Shadows.data.all : [],
-    ];
+    const pools = [Gen.pool || [], Shadows.data ? Shadows.data.all : []];
     const out = [];
     for (const pool of pools) {
       for (const e of pool) {

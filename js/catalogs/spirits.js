@@ -221,10 +221,7 @@ const Spirits = {
 
   /** Esprits actuellement liés à un invocateur. */
   linkedTo(ownerId) {
-    const pools = [
-      typeof Gen !== "undefined" && Gen.pool ? Gen.pool : [],
-      typeof Shadows !== "undefined" && Shadows.data ? Shadows.data.all : [],
-    ];
+    const pools = [Gen.pool || [], Shadows.data ? Shadows.data.all : []];
     const out = [];
     for (const pool of pools) {
       for (const e of pool) {
@@ -323,7 +320,7 @@ const Spirits = {
     const initBase = P * 2 + (t.initMod || 0);
     if (edition === "sr6") {
       spirit.initBase = initBase;
-      spirit.me = Math.ceil(P / 2) + 8; // moniteur (P/2)+8, SR6 p.224
+      spirit.me = Mod.conditionMonitor.spiritMonitor(P); // (P/2)+8, SR6 p.224
       spirit.sdBase = P;
       spirit.pa = null;
     } else {

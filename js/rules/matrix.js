@@ -93,7 +93,7 @@ const Matrix = {
         label: "CI Blaster",
         def: "Logique + Firewall",
         effect: (s) =>
-          `${s.attrs.ATQ} cases matricielles (+1/succès exc., +2/mark) + autant en biofeedback étourdissant. Verrouille la connexion.`,
+          `${s.attrs.attack} cases matricielles (+1/succès exc., +2/mark) + autant en biofeedback étourdissant. Verrouille la connexion.`,
       },
       bloqueuse: {
         label: "CI Bloqueuse",
@@ -123,13 +123,13 @@ const Matrix = {
         label: "CI Furie",
         def: "Intuition + Firewall",
         effect: (s) =>
-          `« Tueuse psychopathe » : VD ${s.attrs.ATQ} matriciels (+1/succès exc., +2/mark) + autant en dommages de biofeedback.`,
+          `« Tueuse psychopathe » : VD ${s.attrs.attack} matriciels (+1/succès exc., +2/mark) + autant en dommages de biofeedback.`,
       },
       noire: {
         label: "CI Noire",
         def: "Intuition + Firewall",
         effect: (s) =>
-          `Verrouille la connexion. VD ${s.attrs.ATQ} matriciels (+1/succès exc., +2/mark) + autant en biofeedback physique.`,
+          `Verrouille la connexion. VD ${s.attrs.attack} matriciels (+1/succès exc., +2/mark) + autant en biofeedback physique.`,
       },
       potdecolle: {
         label: "CI Pot de colle",
@@ -157,7 +157,7 @@ const Matrix = {
       tueuse: {
         label: "CI Tueuse",
         def: "Intuition + Firewall",
-        effect: (s) => `VD ${s.attrs.ATQ} dommages matriciels (+1/succès exc., +2/mark).`,
+        effect: (s) => `VD ${s.attrs.attack} dommages matriciels (+1/succès exc., +2/mark).`,
       },
     },
 
@@ -359,6 +359,8 @@ const Matrix = {
 
   use(edition) {
     this._edition = this.IC[edition] ? edition : "anarchy";
+    if (this._edition !== edition)
+      Debug.warn("matrix", "édition inconnue, repli sur anarchy", { requested: edition });
     return this;
   },
 
@@ -368,6 +370,13 @@ const Matrix = {
 
   profiles() {
     return this.PROFILES[this._edition === "sr6" ? "sr5" : this._edition] || this.PROFILES.anarchy;
+  },
+
+  /** Texte d'indice affiché à côté d'un profil (Anarchy : valeur fixe,
+      SR5/SR6 : plage min-max — formes de données différentes en amont
+      dans PROFILES). */
+  profileRangeText(p) {
+    return this._edition === "anarchy" ? ` (${p.indice})` : ` (${p.min}-${p.max})`;
   },
 
   /** Taille du moniteur matriciel d'une CI (Anarchy : fixe 4 cases). */
@@ -385,6 +394,40 @@ const Matrix = {
     return this._edition === "anarchy" ? [2, 8] : [1, 12];
   },
 
+  /** Anarchy 2.0 n'a pas d'attributs ASDF ni de jets de dés pour les CI
+      (succès fixes, p.223) : les consommateurs testent ce flag plutôt
+      que de comparer l'édition eux-mêmes. */
+  hasAttrs() {
+    return this._edition !== "anarchy";
+  },
+
+  /** Attributs matriciels ASDF (SR5/SR6), dans l'ordre d'affichage.
+      Clé = nom de donnée (attrs.<key>), badge = libellé compact (carte),
+      label = libellé complet (descriptions, tooltips). Source unique
+      consommée par servers.js et serverrenderer.js. */
+  ATTR_KEYS: [
+    { key: "attack", badge: "A", label: "Attaque" },
+    { key: "sleaze", badge: "C", label: "Corruption" },
+    { key: "dataProcessing", badge: "T", label: "Traitement de données" },
+    { key: "firewall", badge: "F", label: "Firewall" },
+  ],
+
+  /** Libellé d'une case de moniteur de CI (Anarchy : seuils de blessure
+      nommés, SR5/SR6 : numéro de case générique). */
+  monitorBoxLabel(n) {
+    return this._edition === "anarchy"
+      ? ["Légère", "Légère", "Grave", "Incapacitante"][n - 1]
+      : `Case ${n}`;
+  },
+
+  /** Séparateur visuel entre les cases de moniteur (Anarchy : regroupe
+      les seuils légère/grave/incap par paquets de 2/1/1). */
+  monitorBoxSep(n) {
+    return this._edition === "anarchy" && (n === 3 || n === 4)
+      ? ' style="margin-left:3px;"'
+      : "";
+  },
+
   /** Delta de Score de Surveillance dû aux accès illégaux maintenus,
       par round (SR6 uniquement, p.178). Neutre : 0 (SR5/Anarchy n'ont
       pas cette règle). */
@@ -395,15 +438,15 @@ const Matrix = {
   /** Texte des seuils/jets de CI pour l'affichage de carte (SR5/SR6 —
       l'Anarchy a son propre bloc de seuils, hors de cette méthode). */
   icThresholdsText(srv) {
-    const a = srv.attrs || { ATQ: "?", COR: "?", TDD: "?", FW: "?" };
+    const a = srv.attrs || { attack: "?", sleaze: "?", dataProcessing: "?", firewall: "?" };
     return this._edition === "sr5"
-      ? `attaque ${srv.indice * 2} dés [Attaque ${a.ATQ}] · moniteur ${this.icMonitorSize(srv.indice)} cases · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}`
-      : `jets ${srv.indice * 2} dés · SO ${(a.ATQ || 0) + (a.COR || 0)} · moniteur ${this.icMonitorSize(srv.indice)} cases · init TdD×2+3D6 · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}`;
+      ? `attaque ${srv.indice * 2} dés [Attaque ${a.attack}] · moniteur ${this.icMonitorSize(srv.indice)} cases · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}`
+      : `jets ${srv.indice * 2} dés · SO ${(a.attack || 0) + (a.sleaze || 0)} · moniteur ${this.icMonitorSize(srv.indice)} cases · init TdD×2+3D6 · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}`;
   },
 
-  /** Libellé de Firewall affiché à côté du moniteur (Anarchy : FW fixe 1). */
+  /** Libellé de Firewall affiché à côté du moniteur (Anarchy : Firewall fixe 1). */
   firewallLabel() {
-    return this._edition === "anarchy" ? " (FW 1)" : "";
+    return this._edition === "anarchy" ? " (Firewall 1)" : "";
   },
 
   /** Texte + libellé d'un jet de CI (perception/attaque/défense/encaissement).
@@ -417,7 +460,7 @@ const Matrix = {
     const isSR5 = this._edition === "sr5";
     if (kind === "per") {
       return {
-        txt: `Perception ${i * 2}d${isSR5 ? ` [TdD ${a.TDD}]` : ""}`,
+        txt: `Perception ${i * 2}d${isSR5 ? ` [T ${a.dataProcessing}]` : ""}`,
         tip:
           "Perception matricielle de la Patrouilleuse : indice × 2" +
           (isSR5 ? ", limitée par le Traitement de données" : ""),
@@ -425,7 +468,7 @@ const Matrix = {
     }
     if (kind === "atk") {
       return {
-        txt: `Attaque ${i * 2}d${isSR5 ? ` [ATQ ${a.ATQ}]` : ""}`,
+        txt: `Attaque ${i * 2}d${isSR5 ? ` [A ${a.attack}]` : ""}`,
         tip: isSR5
           ? "Attaque de la CI : indice × 2, limitée par l'Attaque du serveur (p.249)"
           : "Jet d'attaque de la CI : indice × 2 (p.188)",
@@ -441,7 +484,7 @@ const Matrix = {
     }
     if (kind === "soak" && isSR5) {
       return {
-        txt: `Encaisse ${i + (a.FW || 0)}d`,
+        txt: `Encaisse ${i + (a.firewall || 0)}d`,
         tip: "Résistance aux dommages matriciels : indice + Firewall du serveur (p.229)",
       };
     }
@@ -462,8 +505,8 @@ const Matrix = {
   attrLimit(kind, srv) {
     if (this._edition !== "sr5") return null;
     const a = srv.attrs || {};
-    if (kind === "atk") return a.ATQ ?? null;
-    if (kind === "per") return a.TDD ?? null;
+    if (kind === "atk") return a.attack ?? null;
+    if (kind === "per") return a.dataProcessing ?? null;
     return null;
   },
 
@@ -485,7 +528,9 @@ const Matrix = {
     if (sev >= 2 && !chosen.includes("noire") && Utils.randBool(0.6)) {
       chosen[chosen.length - 1] = "noire";
     }
-    return ["patrouilleuse", ...chosen];
+    const result = ["patrouilleuse", ...chosen];
+    Debug.log("matrix", "pickICs", { edition: this._edition, indice, sev, n, ics: result });
+    return result;
   },
 
   pickSculpture(sev) {

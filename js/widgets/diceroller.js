@@ -132,7 +132,7 @@ const DiceRoller = {
       const who = (rollPnj && rollPnj.name) || "";
 
       // Anarchy 2.0 : on passe par le panneau de prise de risque
-      if (edition === "anarchy") {
+      if (App.getEditionModule(edition)?.usesRiskPanel) {
         this.openRiskPanel(n, { label, rr, adv: (rollPnj && rollPnj.drugAdv) || 0, who });
       } else {
         this.rollPool(n, { label, who });

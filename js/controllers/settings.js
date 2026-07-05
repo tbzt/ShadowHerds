@@ -25,10 +25,8 @@ const Settings = {
     const next = { ...this.getDicePrefs(), ...patch };
     Storage.setGlobal(this._DICE_KEY, next);
     // Propager aux lanceurs (topbar + bottom sheet mobile)
-    if (typeof DiceRoller !== "undefined" && DiceRoller.applyPrefs)
-      DiceRoller.applyPrefs();
-    if (typeof DicePanel !== "undefined" && DicePanel.applyPrefs)
-      DicePanel.applyPrefs();
+    if (DiceRoller.applyPrefs) DiceRoller.applyPrefs();
+    if (DicePanel.applyPrefs) DicePanel.applyPrefs();
     return next;
   },
   setDiceQuickRoll(on) {
@@ -71,9 +69,8 @@ const Settings = {
   /** Re-rend les cartes actuellement affichées (Ombres/contacts) pour
       refléter le changement de préférence. */
   _refreshVisibleCards() {
-    if (typeof Shadows !== "undefined" && Shadows.render) Shadows.render();
-    if (typeof ContactsBook !== "undefined" && ContactsBook.render)
-      ContactsBook.render();
+    if (Shadows.render) Shadows.render();
+    if (ContactsBook.render) ContactsBook.render();
   },
   _radioCD(key, val, label, checked) {
     return `<label class="radio-option">

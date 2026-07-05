@@ -38,7 +38,7 @@ const EditModal = {
     if (pnj.type === "vehicle") {
       this._readFormVehicle(pnj);
       // Moniteur recalculé depuis la Structure (SR5/SR6)
-      if (pnj.edition !== "anarchy" && typeof Vehicles !== "undefined") {
+      if (pnj.edition !== "anarchy") {
         pnj.monTotal = Vehicles._monitor(pnj.stats, pnj.edition);
         pnj.monFilled = Math.min(pnj.monFilled || 0, pnj.monTotal);
       }
@@ -53,9 +53,10 @@ const EditModal = {
 
     const edModule = App.getEditionModule(pnj.edition);
     if (edModule && edModule.recalc) edModule.recalc(pnj);
-    // Esprit SR6 : moniteur = (Puissance/2)+8 (p.224), pas la formule CON.
-    if (pnj.type === "spirit" && pnj.edition === "sr6" && pnj.force) {
-      pnj.me = Math.ceil(pnj.force / 2) + 8;
+    // Esprit : moniteur dédié si l'édition en expose un (SR6 p.224),
+    // neutre (null) en SR5/Anarchy — cf. conditionMonitor.spiritMonitor.
+    if (pnj.type === "spirit" && pnj.force && edModule.conditionMonitor.spiritMonitor) {
+      pnj.me = edModule.conditionMonitor.spiritMonitor(pnj.force);
     }
 
     Shadows.save();
@@ -71,10 +72,8 @@ const EditModal = {
   _buildFormVehicle(v) {
     const esc = CardRenderer._esc;
     const s = v.stats || {};
-    const fields =
-      v.edition === "anarchy"
-        ? [["autopilote", "Autopilote"], ["structure", "Structure"], ["mania", "Maniabilité"], ["vitesse", "Vitesse"], ["blindage", "Blindage"]]
-        : [["mania", "Maniabilité"], ["vitesse", "Vitesse"], ["accel", "Accél"], ["structure", "Structure"], ["blindage", "Blindage"], ["pilote", "Autopilote"], ["senseurs", "Senseurs"], ["autosoft", "Autosoft"]];
+    const vm = App.getEditionModule(v.edition).vehicleModel;
+    const fields = [...vm.statFields, ...vm.formExtraFields];
     let html = `<div class="modal-section">
       <div class="modal-section-title">Identité</div>
       <div class="modal-grid wide">
@@ -270,10 +269,7 @@ const EditModal = {
     const esc = CardRenderer._esc;
     const specOpts = ['<option value="">— Aucune —</option>']
       .concat(
-        (typeof SkillCatalog !== "undefined"
-          ? SkillCatalog.anarchySpecs
-          : []
-        ).map(
+        SkillCatalog.anarchySpecs.map(
           (sp) =>
             `<option value="${esc(sp)}"${s.spec === sp ? " selected" : ""}>${esc(sp)}</option>`,
         ),
