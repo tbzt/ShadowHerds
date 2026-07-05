@@ -116,6 +116,7 @@ Object.assign(CardRenderer, {
         "ESS",
         ...(attrs.MAG ? ["MAG"] : []),
         ...(attrs.RES ? ["RES"] : []),
+        ...(attrs.EDG != null ? ["EDG"] : []),
       ];
       html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>`;
       html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;

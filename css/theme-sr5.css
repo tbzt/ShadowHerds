@@ -51,8 +51,8 @@
 [data-edition="sr5"] .nav-section-label {
   color: #8b1a1a;
   border-bottom: 1px solid #2a1e14;
-  margin: 0 0.5rem;
-  padding-left: 0.5rem;
+  margin: 0 var(--sp-2);
+  padding-left: var(--sp-2);
 }
 [data-edition="sr5"] .nav-btn.active {
   background: rgba(212, 130, 10, 0.08);
@@ -158,4 +158,62 @@
 /* ---- Métavariante en surbrillance ambrée ---- */
 [data-edition="sr5"] .pnj-metavariant {
   color: #d4820a;
+}
+
+/* ---- Empty state : dossier vide, coin biseauté façon tampon ---- */
+[data-edition="sr5"] .empty-state {
+  border: 1px solid #2a1e14;
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 18px 100%, 0 calc(100% - 14px));
+  position: relative;
+}
+[data-edition="sr5"] .empty-state::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #d4820a 0%, #8b1a1a 100%);
+}
+[data-edition="sr5"] .empty-state-title {
+  color: #b0501a;
+}
+
+/* ---- Modale : en-tête biseauté façon dossier, coins droits ---- */
+[data-edition="sr5"] .modal {
+  border-radius: 0;
+  border-top: 2px solid #8b1a1a;
+}
+[data-edition="sr5"] .modal-header {
+  clip-path: var(--hd-clip);
+  background: linear-gradient(180deg, #140a08 0%, transparent 100%);
+}
+[data-edition="sr5"] .modal-title {
+  font-family: var(--font-display);
+  color: #d4820a;
+}
+[data-edition="sr5"] .modal-close:hover {
+  border-color: #8b1a1a;
+  color: #8b1a1a;
+}
+
+/* ---- Formulaires : champs anguleux façon fiche administrative ---- */
+[data-edition="sr5"] .form-group label {
+  color: #8b6a4a;
+}
+[data-edition="sr5"] .form-group input,
+[data-edition="sr5"] .form-group select,
+[data-edition="sr5"] .form-group textarea {
+  border-radius: 0;
+}
+[data-edition="sr5"] .form-group input:focus,
+[data-edition="sr5"] .form-group select:focus,
+[data-edition="sr5"] .form-group textarea:focus {
+  border-color: #d4820a;
+}
+
+/* ---- Sidebar : survol ambré ---- */
+[data-edition="sr5"] .nav-btn:hover {
+  background: rgba(212, 130, 10, 0.05);
 }

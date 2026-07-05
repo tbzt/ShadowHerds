@@ -122,6 +122,62 @@ const Dice = {
     };
   },
 
+  /* ========================================================
+     RELANCES (« Seconde chance » SR5/SR6, « Relancer tous les
+     dés » Anarchy). Fonctions pures : reçoivent un résultat déjà
+     lancé, en produisent un nouveau marqué `rerolled`.
+     ======================================================== */
+
+  /**
+   * Relance les dés qui n'ont pas fait de succès (faces < 5) et
+   * recompte succès / bévue / échec critique — règle SR5 (p.58) et
+   * SR6 (p.50-51). Les dés déjà réussis sont conservés tels quels.
+   * Préserve le plafond de Précision SR5 si `res.limit` est défini.
+   */
+  rerollMisses(res) {
+    const faces = res.faces.map((v) => (v < 5 ? Utils.randInt(1, 6) : v));
+    let hits = 0;
+    let ones = 0;
+    for (const v of faces) {
+      if (v >= 5) hits++;
+      if (v === 1) ones++;
+    }
+    const n = faces.length;
+    const glitch = ones > Math.floor(n / 2);
+    const critGlitch = glitch && hits === 0;
+    const out = {
+      n,
+      faces,
+      extra: [],
+      hits,
+      ones,
+      glitch,
+      critGlitch,
+      rerolled: true,
+    };
+    // Plafond de Précision (SR5) : la limite mord si hits > limite.
+    if (res.limit != null && hits > res.limit) {
+      out.cappedFrom = hits;
+      out.hits = res.limit;
+      out.limited = true;
+      out.limit = res.limit;
+    }
+    return out;
+  },
+
+  /**
+   * Relance intégrale d'un jet Anarchy (p.77) : même réserve, mêmes
+   * dés de risque, même avantage/désavantage. La complication du
+   * premier jet est FIGÉE — une relance ne peut ni la créer ni
+   * l'effacer.
+   */
+  rerollAnarchyAll(res) {
+    const out = this.computeAnarchyRoll(res.pool, res.riskDice, res.rr, res.adv);
+    out.complication = res.complication;
+    out.rerolled = true;
+    return out;
+  },
+
   /* ---- Initiative : base + N D6, en SOMME (pas de succès) ---- */
   computeInitiative(base, dice) {
     base = Math.max(0, base | 0);

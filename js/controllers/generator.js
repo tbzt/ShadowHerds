@@ -232,14 +232,16 @@ const Gen = {
   _buildGroupForm(ed) {
     const el = document.getElementById("gen-form-group");
     el.innerHTML = this._wrapFilters(`
-      <div class="form-group">
-        <label>Nombre</label>
-        <select id="gg-count">
-          <option value="2-4">2 – 4</option>
-          <option value="3-6">3 – 6</option>
-          <option value="4-10">4 – 10</option>
-        </select>
-      </div>
+      ${SingleSelect.create({
+        id: "gg-count",
+        label: "Nombre",
+        options: [
+          { value: "2-4", label: "2 – 4" },
+          { value: "3-6", label: "3 – 6" },
+          { value: "4-10", label: "4 – 10" },
+        ],
+        value: "2-4",
+      })}
       ${this._formHTML(ed, "gg", { hideName: true })}
     `);
   },
@@ -442,7 +444,7 @@ const Gen = {
     const milieu = milieuLabel === "Aléatoire" ? null : this._milieuLabelToValue[milieuLabel];
 
     let archetype = this._pick(`${prefix}-profession`);
-    if (archetype === "Aléatoire" && (role || milieu)) {
+    if (archetype === "Aléatoire") {
       archetype = this._pickCoherentArchetype(role, milieu);
     }
 
@@ -459,16 +461,15 @@ const Gen = {
   },
 
   /** Tire, parmi les professions nommées de l'édition active, une dont le
-      tuple résolu correspond au rôle et/ou milieu choisis en composition
-      libre. Retombe sur "Aléatoire" (tirage habituel) si rien ne correspond. */
+      tuple résolu correspond au rôle et/ou milieu choisis (tirage pondéré par
+      milieu + relâchement gracieux : cf. Coherence.pickArchetype). Sans
+      rôle/milieu, produit un « Aléatoire » réparti sur les divers milieux au
+      lieu du tirage plat noyé par la catégorie la plus fournie. Retombe sur
+      "Aléatoire" (tirage de l'édition) seulement si le pool est vide. */
   _pickCoherentArchetype(role, milieu) {
     const ed = this.edition;
     const all = this._strip(ed.formOptions.archetype);
-    const matches = all.filter((name) => {
-      const t = Coherence.resolveTuple(ed.id, name);
-      return (!role || t.role === role) && (!milieu || t.milieu === milieu);
-    });
-    return matches.length ? Utils.rand(matches) : "Aléatoire";
+    return Coherence.pickArchetype(ed.id, all, { role, milieu }) || "Aléatoire";
   },
 
   /** Raccourci clavier « g » : génère sur l'onglet actif (individuel ou

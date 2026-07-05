@@ -265,12 +265,12 @@
 .anarchy-seuils {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 .anarchy-seuil-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--sp-2);
 }
 .anarchy-seuil-label {
   font-family: "Share Tech Mono", monospace;
@@ -286,4 +286,60 @@
 [data-edition="anarchy"] .monitor-gap {
   width: 6px;
   flex-shrink: 0;
+}
+
+/* ---- Empty state : bordure brute asymétrique, façon fanzine ---- */
+[data-edition="anarchy"] .empty-state {
+  border: 2px dashed #ff8800;
+  border-left-width: 4px;
+  border-radius: 0;
+}
+[data-edition="anarchy"] .empty-state-title {
+  font-family: var(--font-display);
+  color: #ff3c3c;
+  transform: rotate(-1deg);
+  display: inline-block;
+}
+
+/* ---- Modale : bordure brute épaisse ---- */
+[data-edition="anarchy"] .modal {
+  border-radius: 0;
+  border: 2px solid #2a1008;
+  border-top: 3px solid #ff8800;
+}
+[data-edition="anarchy"] .modal-header {
+  border-bottom: 2px solid #ff8800;
+  background: #1a0d06;
+}
+[data-edition="anarchy"] .modal-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #ff8800;
+}
+[data-edition="anarchy"] .modal-close:hover {
+  border-color: #ff3c3c;
+  color: #ff3c3c;
+}
+
+/* ---- Formulaires : champs brutaux ---- */
+[data-edition="anarchy"] .form-group label {
+  color: #c07850;
+  font-weight: 700;
+}
+[data-edition="anarchy"] .form-group input,
+[data-edition="anarchy"] .form-group select,
+[data-edition="anarchy"] .form-group textarea {
+  border-radius: 0;
+  border-width: 2px;
+}
+[data-edition="anarchy"] .form-group input:focus,
+[data-edition="anarchy"] .form-group select:focus,
+[data-edition="anarchy"] .form-group textarea:focus {
+  border-color: #ff8800;
+}
+
+/* ---- Sidebar : survol rouge punk ---- */
+[data-edition="anarchy"] .nav-btn:hover {
+  background: rgba(255, 60, 60, 0.05);
 }

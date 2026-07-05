@@ -81,6 +81,7 @@ const App = {
     Shadows.load();
     ContactsBook.load();
     Encounter.load();
+    DiceRoller.loadThreat();
     Gen.buildForms();
     Settings.render();
 
@@ -273,6 +274,9 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
       case "encounter-open":
         Encounter.open();
+        break;
+      case "sidebar-next-turn":
+        Encounter.nextTurn();
         break;
       case "toggle-shortcuts":
         App.toggleCheatsheet();

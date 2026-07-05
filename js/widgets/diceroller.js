@@ -10,6 +10,18 @@
 const DiceRoller = {
   _animating: false,
 
+  /** Dernier résultat brut affiché (res + opts), source des relances
+      « Seconde chance » / « Relancer tous les dés ». Le journal (DiceLog)
+      ne stocke qu'une entrée formatée, pas le res exploitable. */
+  _lastRoll: null,
+
+  /** Réserve de menace Anarchy 2.0 (p.138) : compteur MJ global de
+      scénario, ressource de relance des PNJ. Persistée édition-scopée via
+      Storage (jamais localStorage direct). SR5/SR6 n'y touchent pas (leur
+      ressource est l'Edge porté par chaque PNJ). */
+  _threat: 0,
+  _THREAT_DEFAULT: 4,
+
   /** Hooks injectés par App au démarrage (couche 6, seule à connaître
       tous les contrôleurs) : resolve, getPrefs, onPnjChanged, isRefOpen,
       isAnarchy. Voir init(). */
@@ -23,6 +35,28 @@ const DiceRoller = {
   applyPrefs() {
     const input = document.getElementById("dice-count");
     if (input) input.value = this._prefs().defaultCount;
+  },
+
+  /* ========================================================
+     RÉSERVE DE MENACE (Anarchy 2.0, p.138)
+     ======================================================== */
+
+  /** Recharge la réserve depuis Storage (appelée à chaque changement
+      d'édition par App.selectEdition) et rafraîchit le badge. */
+  loadThreat() {
+    this._threat = Storage.get("threat_reserve", this._THREAT_DEFAULT);
+    this._renderThreat();
+  },
+
+  _setThreat(n) {
+    this._threat = Utils.clamp(n | 0, 0, 99);
+    Storage.set("threat_reserve", this._threat);
+    this._renderThreat();
+  },
+
+  _renderThreat() {
+    const el = document.getElementById("threat-reserve-val");
+    if (el) el.textContent = this._threat;
   },
 
   /** hooks: { resolve(id), getPrefs(), onPnjChanged(pnj), isRefOpen(pnj), isAnarchy() }. */
@@ -46,6 +80,18 @@ const DiceRoller = {
       const delta = parseInt(btn.getAttribute("data-dice-topbar-step"), 10) || 0;
       btn.addEventListener("click", () => this.stepCount(delta));
     });
+
+    // Badge Réserve de menace (Anarchy) : −/＋/reset, délégation data-action.
+    const threatEl = document.getElementById("threat-reserve");
+    if (threatEl) {
+      threatEl.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-threat]");
+        if (!b) return;
+        const act = b.getAttribute("data-threat");
+        if (act === "reset") this._setThreat(this._THREAT_DEFAULT);
+        else this._setThreat(this._threat + (parseInt(act, 10) || 0));
+      });
+    }
 
     // Clic sur n'importe quelle réserve marquée [data-roll] dans une carte
     document.addEventListener("click", (e) => {
@@ -127,18 +173,17 @@ const DiceRoller = {
 
       // PNJ à l'origine du jet : attribut explicite, sinon la carte
       // englobante (compétences SR5/SR6, réserves MJ…). Alimente le
-      // journal des jets.
+      // journal des jets et la relance (débit d'Edge du bon PNJ).
       const holder = t.closest(".pnj-card");
-      const rollPnj = this._hooks.resolve(
-        t.getAttribute("data-roll-pnj") || (holder && holder.dataset.id),
-      );
+      const pnjId = t.getAttribute("data-roll-pnj") || (holder && holder.dataset.id) || "";
+      const rollPnj = this._hooks.resolve(pnjId);
       const who = (rollPnj && rollPnj.name) || "";
 
       // Anarchy 2.0 : on passe par le panneau de prise de risque
       if (App.getEditionModule(edition)?.usesRiskPanel) {
-        this.openRiskPanel(n, { label, detail, rr, adv: (rollPnj && rollPnj.drugAdv) || 0, who });
+        this.openRiskPanel(n, { label, detail, rr, adv: (rollPnj && rollPnj.drugAdv) || 0, who, pnjId });
       } else {
-        this.rollPool(n, { label, detail, who });
+        this.rollPool(n, { label, detail, who, pnjId });
       }
     });
 
@@ -163,6 +208,7 @@ const DiceRoller = {
       label: `${r.weaponName} (${r.matchedSkill || r.skill}${approxTxt})`,
       detail: `${Utils.attrFullName(r.attr)} ${r.attrVal} + ${r.matchedSkill || r.skill} ${r.skillVal}`,
       who: pnj.name || "",
+      pnjId: pnj.id || "",
     });
   },
 
@@ -216,17 +262,28 @@ const DiceRoller = {
   /* ---- Lancer d'une réserve depuis une carte ---- */
   rollPool(n, opts = {}) {
     const res = Dice.computeRoll(n);
-    this.show(res, { label: opts.label || "", detail: opts.detail || "" });
+    this.show(res, {
+      label: opts.label || "",
+      detail: opts.detail || "",
+      who: opts.who || "",
+      pnjId: opts.pnjId || "",
+    });
   },
 
-  rollInitiative(base, dice, pnjId, detail = "") {
+  /** opts.silent : calcule et mémorise l'initiative sans ouvrir l'overlay de
+      tirage. Utilisé par le suivi de combat pour un lancer groupé (« Lancer
+      l'initiative » / round suivant), où N overlays successifs s'écraseraient
+      les uns les autres — les scores s'affichent directement dans la liste. */
+  rollInitiative(base, dice, pnjId, detail = "", opts = {}) {
     const res = Dice.computeInitiative(base, dice);
     const pnjForLog = pnjId ? this._hooks.resolve(pnjId) : null;
-    this.show(res, {
-      label: "Initiative",
-      detail,
-      who: (pnjForLog && pnjForLog.name) || "",
-    });
+    if (!opts.silent) {
+      this.show(res, {
+        label: "Initiative",
+        detail,
+        who: (pnjForLog && pnjForLog.name) || "",
+      });
+    }
 
     // Mémoriser le résultat sur le PNJ pour l'afficher sur sa carte
     if (pnjForLog) {
@@ -473,7 +530,15 @@ const DiceRoller = {
         <div class="dice-hint">Cliquez pour fermer</div>
       </div>`;
     document.body.appendChild(ov);
-    ov.addEventListener("click", () => this._closeOverlay());
+    ov.addEventListener("click", (e) => {
+      // Le bouton de relance ne doit pas fermer l'overlay.
+      if (e.target.closest('[data-action="reroll"]')) {
+        e.stopPropagation();
+        this._doReroll();
+        return;
+      }
+      this._closeOverlay();
+    });
   },
 
   _closeOverlay() {
@@ -539,7 +604,15 @@ const DiceRoller = {
       el = document.createElement("div");
       el.id = "dice-quick";
       document.body.appendChild(el);
-      el.addEventListener("click", () => el.classList.remove("show"));
+      el.addEventListener("click", (e) => {
+        // Le bouton de relance ne doit pas masquer le bandeau.
+        if (e.target.closest('[data-action="reroll"]')) {
+          e.stopPropagation();
+          this._doReroll();
+          return;
+        }
+        el.classList.remove("show");
+      });
     }
     const last = DiceLog.history[0];
     if (!last) return;
@@ -550,20 +623,28 @@ const DiceRoller = {
     const tagHtml = last.tag
       ? `<span class="dice-quick-tag">${Utils.escHtml(last.tag)}</span>`
       : "";
+    const rerollHtml = this._rerollBtnHtml();
     el.className = `dice-quick-${last.cls}`;
     el.innerHTML = `${labelHtml}
       <span class="dice-quick-main">${last.main}</span>
       <span class="dice-quick-unit">${last.unit || ""}</span>
       ${tagHtml}
-      <span class="dice-quick-sub">${Utils.escHtml(last.sub)}</span>`;
+      <span class="dice-quick-sub">${Utils.escHtml(last.sub)}</span>
+      ${rerollHtml}`;
     void el.offsetWidth;
     el.classList.add("show");
     clearTimeout(el._hideTimer);
-    el._hideTimer = setTimeout(() => el.classList.remove("show"), 2800);
+    // Laisser le temps de cliquer « Relancer » : bandeau plus long si présent.
+    el._hideTimer = setTimeout(
+      () => el.classList.remove("show"),
+      rerollHtml ? 6000 : 2800,
+    );
   },
 
   show(res, opts = {}) {
     DiceLog.record(res, opts);
+    // Source de la relance : dernier résultat brut + son contexte.
+    this._lastRoll = { res, opts };
 
     // Lancer rapide : pas d'animation plein écran
     if (this._prefs().quickRoll) {
@@ -620,6 +701,77 @@ const DiceRoller = {
       : "";
   },
 
+  /* ========================================================
+     RELANCE (« Seconde chance » / « Relancer tous les dés »)
+     ======================================================== */
+
+  /** Résout la ressource de relance pour le dernier jet, selon l'édition
+      active (contrat rerollAction, jamais de branche d'édition ici).
+      Renvoie null si la relance ne s'applique pas (jet déjà relancé,
+      d'initiative, ou bloqué par bévue/échec critique). Sinon :
+      { action, mode, label, available, hint, pnj }. */
+  _rerollState() {
+    const last = this._lastRoll;
+    if (!last) return null;
+    const { res, opts } = last;
+    if (res.rerolled || res.init) return null;
+    const mod = App.editionModule;
+    const action = mod && mod.rerollAction;
+    if (!action) return null;
+    if (action.blockedBy && res[action.blockedBy]) return null;
+
+    let available = true;
+    let hint = "";
+    let pnj = null;
+    if (mod.usesThreatReserve) {
+      available = this._threat > 0;
+      hint = `Menace ${this._threat}`;
+    } else if (action.costAttr) {
+      pnj = opts.pnjId ? this._hooks.resolve(opts.pnjId) : null;
+      const val = pnj && pnj.attrs ? pnj.attrs[action.costAttr] : null;
+      if (val != null) {
+        available = val > 0;
+        hint = `${action.costAttr} ${val}`;
+      } else {
+        // Jet sans PNJ (lancer libre) : relance gratuite, jamais bloquée.
+        hint = "gratuit";
+      }
+    }
+    return { action, mode: action.mode, label: action.label, available, hint, pnj };
+  },
+
+  /** Bouton de relance pour l'overlay/bandeau (chaîne HTML ou ""). */
+  _rerollBtnHtml() {
+    const st = this._rerollState();
+    if (!st) return "";
+    const dis = st.available ? "" : " disabled";
+    const hint = st.hint
+      ? `<span class="dice-reroll-hint">${Utils.escHtml(st.hint)}</span>`
+      : "";
+    return `<button class="dice-reroll-btn" data-action="reroll"${dis}>↻ ${Utils.escHtml(st.label)}${hint}</button>`;
+  },
+
+  /** Exécute la relance du dernier jet : débite la ressource puis réaffiche
+      via show() (qui relogue et repose _lastRoll). */
+  _doReroll() {
+    const st = this._rerollState();
+    if (!st || !st.available) return;
+    const { res, opts } = this._lastRoll;
+    const mod = App.editionModule;
+
+    if (mod.usesThreatReserve) {
+      this._setThreat(this._threat - 1);
+    } else if (st.pnj && st.action.costAttr) {
+      st.pnj.attrs[st.action.costAttr] -= 1;
+      this._hooks.onPnjChanged(st.pnj); // re-render la carte (Edge à jour)
+    }
+    // Jet sans PNJ en SR5/SR6 : relance gratuite, aucune ressource débitée.
+
+    const newRes =
+      st.mode === "all" ? Dice.rerollAnarchyAll(res) : Dice.rerollMisses(res);
+    this.show(newRes, opts);
+  },
+
   _revealInitiative(res, summary, opts) {
     summary.classList.add("reveal", "good", "init");
     const rollDetail = `${res.base} + [${res.faces.join(", ")}]`;
@@ -674,7 +826,8 @@ const DiceRoller = {
       ${breakdownHtml}
       ${tag}
       ${limitTag}
-      ${poolHtml}`;
+      ${poolHtml}
+      ${this._rerollBtnHtml()}`;
   },
 
   _revealAnarchy(res, summary, opts) {
@@ -739,6 +892,7 @@ const DiceRoller = {
       ${breakdown}
       ${advTag}
       ${tag}
-      ${poolHtml}`;
+      ${poolHtml}
+      ${this._rerollBtnHtml()}`;
   },
 };

@@ -25,6 +25,20 @@ const EditionAnarchy = {
   /** Anarchy 2.0 : tout jet de dés passe par le panneau de prise de
       risque (dés de risque, RR) plutôt que le lanceur classique. */
   usesRiskPanel: true,
+  /** Anarchy 2.0 : la ressource de relance côté MJ est la Réserve de
+      menace (p.138), un compteur global de scénario (pas une valeur par
+      PNJ) — pilote l'affichage du badge topbar via DiceRoller. */
+  usesThreatReserve: true,
+  /** Action de relance « Relancer tous les dés » (p.77) : relance
+      intégrale (mode "all"), jamais bloquée (la complication du 1er jet
+      reste figée, gérée par Dice.rerollAnarchyAll). Pas d'attribut de
+      coût par PNJ — la dépense vient de la Réserve de menace. */
+  rerollAction: {
+    label: "Relancer tous les dés",
+    mode: "all",
+    blockedBy: null,
+    costAttr: null,
+  },
   ratingBadge: {
     field: "tier",
     label: "Rang",
@@ -36,6 +50,10 @@ const EditionAnarchy = {
   initiativeFor() {
     return null;
   },
+  /** Règles de round pour le tracker de combat. Anarchy 2.0 : pas
+      d'initiative chiffrée, l'ordre est décidé/rangé à la main et conservé
+      d'un round à l'autre → pas de relance, passe unique. */
+  combatModel: { rerollEachRound: false, passDecrement: 0 },
   // steps() est lazy : spirits.js (catalogs) charge après les modules
   // d'édition (foyer), Spirits.ANARCHY_TIERS n'existe pas encore ici.
   summonPower: {
@@ -92,6 +110,12 @@ const EditionAnarchy = {
     /** Forme du moniteur d'un véhicule/drone lié : "thresholds" (2 légères
         / 1 grave / 1 incapacitante, p.68 & 230), pas de total cumulatif. */
     vehicleFields: "thresholds",
+    /** Détruit : case incapacitante pleine (case unique, cf.
+        cardrenderer.anarchy.js:_monitorBoxesAnarchy CAPS.incap). Valable
+        pour un véhicule/drone lié comme pour un esprit. */
+    isDestroyed(entity) {
+      return (entity.incapFilled || 0) >= 1;
+    },
   },
   /** Résolution du jet d'arme (WeaponRoll) : pas de règle smartlink/
       smartgun en Anarchy 2.0 (neutre `null`, doc), pas de limite de
@@ -218,6 +242,19 @@ const EditionAnarchy = {
       "Cadre corporatiste",
       "Enquêteur",
       "Coyote",
+      // Crime organisé
+      "Soldat de syndicat",
+      "Lieutenant de syndicat (capo)",
+      // Police & ordre
+      "Flic des rues",
+      "Officier de police",
+      "Détective",
+      // Bas de l'échelle / rue
+      "Civil",
+      "Voyou de rue",
+      "Technicien de rue",
+      // Ombres
+      "Ombre",
     ],
   },
 
@@ -2972,6 +3009,324 @@ const EditionAnarchy = {
       matrixMonitor: null,
       awakened: null,
     },
+
+    /* ======== CRIME ORGANISÉ (adapté des blocs « syndicat du crime » V2,
+       cf. « Ganger d'élite / Membre d'un syndicat du crime » p.244-246) ======== */
+
+    "Soldat de syndicat": {
+      label: "Soldat de syndicat (Mafia / Yakuza / Triade)",
+      attrs: { FOR: 3, AGI: 3, VOL: 2, LOG: 2, CHA: 2 },
+      attrsMeta: { Ork: { FOR: 4 }, Troll: { FOR: 5 }, Nain: { VOL: 3 }, Elfe: { CHA: 3 } },
+      skills: [
+        { name: "Athlétisme", val: 3, attr: "FOR", rr: 0, spec: "Défense à distance", specVal: 4, specAttr: "AGI", specRR: 0 },
+        { name: "Armes à distance", val: 3, attr: "AGI", rr: 0, spec: "Pistolets", specVal: 4, specAttr: "AGI", specRR: 0 },
+        { name: "Combat rapproché", val: 4, attr: "AGI", rr: 0, spec: "Lames", specVal: 4, specAttr: "AGI", specRR: 0 },
+        { name: "Furtivité", val: 3, attr: "AGI", rr: 0 },
+        { name: "Perception", val: 3, attr: "LOG", rr: 0 },
+        { name: "Influence", val: 3, attr: "CHA", rr: 0, spec: "Intimidation", specVal: 4, specAttr: "CHA", specRR: 0 },
+      ],
+      edges: [],
+      edgeChoices: 2,
+      edgeOptions: [
+        "Substituts musculaires (cyberware) : VD +1 en combat rapproché",
+        "Jazz (drogue) : +1 action par combat",
+        "Bras cybernétique (cyberware) : RR 1 aux tests de Combat rapproché",
+        "Zélé (trait) : Avantage pour résister à l'intimidation ou la peur ; combativité forte",
+        "Armure dermique (cyberware) : Armure +1",
+        "Yeux cybernétiques avec smartlink (cyberware) : RR 1 aux tests d'Armes à distance (pistolets), vision nocturne",
+      ],
+      weapons: [
+        { name: "Mains nues", vdBase: 3, vdMeta: { Ork: 4, Troll: 5 }, ranges: "[OK/–/–/–]" },
+        { name: "Arme longue (katana, batte)", vdBase: 5, vdMeta: { Ork: 6, Troll: 7 }, ranges: "[OK/–/–/–]" },
+        { name: "Pistolet lourd", vdBase: 5, vdMeta: {}, ranges: "[OK/OK/Dés./–]" },
+        { name: "Mitraillette", vdBase: 5, vdMeta: {}, ranges: "[Dés./OK/OK/–]" },
+      ],
+      equip: ["Commlink", "Costume blindé (Armure 2)"],
+      threatLevel: "faible",
+      physMonitor: [5, 8, 11],
+      physMonitorMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: null,
+    },
+
+    "Lieutenant de syndicat (capo)": {
+      label: "Lieutenant de syndicat (capo / wakagashira)",
+      attrs: { FOR: 3, AGI: 3, VOL: 3, LOG: 3, CHA: 3 },
+      attrsMeta: { Ork: { FOR: 4 }, Troll: { FOR: 5 }, Nain: { VOL: 4 }, Elfe: { CHA: 4 } },
+      skills: [
+        { name: "Athlétisme", val: 3, attr: "FOR", rr: 0 },
+        { name: "Armes à distance", val: 4, attr: "AGI", rr: 0, spec: "Pistolets", specVal: 5, specAttr: "AGI", specRR: 0 },
+        { name: "Combat rapproché", val: 3, attr: "AGI", rr: 0 },
+        { name: "Perception", val: 4, attr: "LOG", rr: 0, spec: "Physique", specVal: 4, specAttr: "LOG", specRR: 0 },
+        { name: "Influence", val: 5, attr: "CHA", rr: 0, spec: "Négociation", specVal: 5, specAttr: "CHA", specRR: 1 },
+        { name: "Intimidation", val: 4, attr: "CHA", rr: 0 },
+        { name: "Réseau", val: 4, attr: "CHA", rr: 0 },
+      ],
+      edges: [],
+      edgeChoices: 2,
+      edgeOptions: [
+        "Réflexes câblés (cyberware) : +1 action par combat",
+        "Garde du corps (allié) : soutien en combat rapproché",
+        "Smartlink (cyberware) : RR 1 aux tests d'Armes à distance (pistolets)",
+        "Réseau d'informateurs (contacts) : RR 1 aux tests de Réseau",
+      ],
+      weapons: [
+        { name: "Mains nues", vdBase: 3, vdMeta: { Ork: 4, Troll: 5 }, ranges: "[OK/–/–/–]" },
+        { name: "Lame dissimulée", vdBase: 4, vdMeta: { Ork: 5, Troll: 6 }, ranges: "[OK/–/–/–]" },
+        { name: "Pistolet lourd (dissimulé)", vdBase: 5, vdMeta: {}, ranges: "[OK/OK/Dés./–]" },
+      ],
+      equip: ["Commlink haut de gamme", "Costume blindé de luxe (Armure 3)"],
+      threatLevel: "moyen",
+      physMonitor: [6, 9, 12],
+      physMonitorMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: null,
+      awakened: null,
+    },
+
+    /* ======== POLICE & ORDRE (adapté des blocs « … de sécurité / police » V2) ======== */
+
+    "Flic des rues": {
+      label: "Flic des rues (Lone Star / Knight Errant)",
+      attrs: { FOR: 3, AGI: 2, VOL: 2, LOG: 2, CHA: 2 },
+      attrsMeta: { Ork: { FOR: 4 }, Troll: { FOR: 5 }, Nain: { VOL: 3 }, Elfe: { CHA: 3 } },
+      skills: [
+        { name: "Athlétisme", val: 3, attr: "FOR", rr: 0, spec: "Défense à distance", specVal: 3, specAttr: "AGI", specRR: 0 },
+        { name: "Armes à distance", val: 3, attr: "AGI", rr: 0, spec: "Pistolets", specVal: 3, specAttr: "AGI", specRR: 0 },
+        { name: "Combat rapproché", val: 3, attr: "AGI", rr: 0 },
+        { name: "Furtivité", val: 2, attr: "AGI", rr: 0 },
+        { name: "Perception", val: 3, attr: "LOG", rr: 0, spec: "Physique", specVal: 4, specAttr: "LOG", specRR: 0 },
+        { name: "Influence", val: 3, attr: "CHA", rr: 0 },
+        { name: "Intimidation", val: 3, attr: "CHA", rr: 0 },
+      ],
+      edges: [],
+      edgeChoices: 1,
+      edgeOptions: [
+        "Smartlink (cyberware) : RR 1 aux tests d'Armes à distance (pistolets)",
+        "Yeux cybernétiques (cyberware) : RR 1 aux tests de Perception (physique)",
+      ],
+      weapons: [
+        { name: "Mains nues", vdBase: 3, vdMeta: { Ork: 4, Troll: 5 }, ranges: "[OK/–/–/–]" },
+        { name: "Électromatraque", vdBase: 5, vdMeta: {}, ranges: "[OK/–/–/–]", note: "perte d'une action en cas de dommages" },
+        { name: "Pistolet léger", vdBase: 4, vdMeta: {}, ranges: "[OK/OK/Dés./–]" },
+      ],
+      equip: ["Commlink", "Uniforme blindé (Armure 3)"],
+      threatLevel: "faible",
+      physMonitor: [6, 9, 12],
+      physMonitorMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: null,
+    },
+
+    "Officier de police": {
+      label: "Officier de police (SWAT / brigade d'intervention)",
+      attrs: { FOR: 3, AGI: 3, VOL: 2, LOG: 2, CHA: 2 },
+      attrsMeta: { Ork: { FOR: 4 }, Troll: { FOR: 5 }, Nain: { VOL: 3 }, Elfe: { CHA: 3 } },
+      skills: [
+        { name: "Athlétisme", val: 4, attr: "FOR", rr: 0, spec: "Défense à distance", specVal: 4, specAttr: "AGI", specRR: 0 },
+        { name: "Armes à distance", val: 5, attr: "AGI", rr: 1, spec: "Mitraillettes / Shotguns", specVal: 5, specAttr: "AGI", specRR: 1 },
+        { name: "Combat rapproché", val: 4, attr: "AGI", rr: 0, spec: "Armes contondantes", specVal: 4, specAttr: "AGI", specRR: 0 },
+        { name: "Furtivité", val: 3, attr: "AGI", rr: 0 },
+        { name: "Perception", val: 3, attr: "LOG", rr: 0, spec: "Physique", specVal: 4, specAttr: "LOG", specRR: 1 },
+        { name: "Influence", val: 3, attr: "CHA", rr: 0 },
+      ],
+      edges: [
+        "Yeux cybernétiques avec identification de cibles (cyberware) : RR 1 aux tests d'Armes à distance et de Perception (physique), vision nocturne",
+      ],
+      edgeChoices: 1,
+      edgeOptions: [
+        "Réflexes câblés (cyberware) : +1 action par combat",
+        "Armure dermique (cyberware) : Armure +1",
+        "Smartlink (cyberware) : RR 1 aux tests d'Armes à distance (mitraillettes ou shotguns)",
+      ],
+      weapons: [
+        { name: "Mains nues", vdBase: 3, vdMeta: { Ork: 4, Troll: 5 }, ranges: "[OK/–/–/–]" },
+        { name: "Électromatraque", vdBase: 5, vdMeta: {}, ranges: "[OK/–/–/–]", note: "perte d'une action en cas de dommages" },
+        { name: "Mitraillette", vdBase: 5, vdMeta: {}, ranges: "[Dés./OK/OK/–]" },
+        { name: "Shotgun", vdBase: 8, vdMeta: {}, ranges: "[Dés./OK/Dés./–]" },
+      ],
+      equip: ["Commlink", "Armure d'intervention (Armure 4)"],
+      threatLevel: "faible",
+      physMonitor: [6, 9, 12],
+      physMonitorMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: null,
+    },
+
+    "Détective": {
+      label: "Détective / Enquêteur de police",
+      attrs: { FOR: 2, AGI: 2, VOL: 3, LOG: 3, CHA: 3 },
+      attrsMeta: { Ork: { FOR: 3 }, Troll: { FOR: 4 }, Nain: { VOL: 4 }, Elfe: { CHA: 4 } },
+      skills: [
+        { name: "Perception", val: 5, attr: "LOG", rr: 1, spec: "Enquête", specVal: 5, specAttr: "LOG", specRR: 1 },
+        { name: "Influence", val: 4, attr: "CHA", rr: 0, spec: "Interrogatoire", specVal: 4, specAttr: "CHA", specRR: 0 },
+        { name: "Armes à distance", val: 3, attr: "AGI", rr: 0, spec: "Pistolets", specVal: 3, specAttr: "AGI", specRR: 0 },
+        { name: "Combat rapproché", val: 2, attr: "AGI", rr: 0 },
+        { name: "Furtivité", val: 3, attr: "AGI", rr: 0 },
+        { name: "Réseau", val: 4, attr: "CHA", rr: 0 },
+        { name: "Matricielle", val: 3, attr: "LOG", rr: 0 },
+      ],
+      edges: [],
+      edgeChoices: 1,
+      edgeOptions: [
+        "Yeux cybernétiques (cyberware) : RR 1 aux tests de Perception (physique)",
+        "Datajack (cyberware) : RR 1 aux tests Matriciels d'analyse",
+      ],
+      weapons: [
+        { name: "Mains nues", vdBase: 2, vdMeta: { Ork: 3, Troll: 4 }, ranges: "[OK/–/–/–]" },
+        { name: "Pistolet léger", vdBase: 4, vdMeta: {}, ranges: "[OK/OK/Dés./–]" },
+      ],
+      equip: ["Commlink", "Manteau blindé (Armure 2)", "Kit d'analyse forensique"],
+      threatLevel: "faible",
+      physMonitor: [5, 8, 11],
+      physMonitorMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: null,
+      awakened: null,
+    },
+
+    /* ======== BAS DE L'ÉCHELLE / RUE (customs assumés, calqués sur Ganger) ======== */
+
+    Civil: {
+      label: "Civil",
+      attrs: { FOR: 2, AGI: 2, VOL: 2, LOG: 2, CHA: 3 },
+      attrsMeta: { Ork: { FOR: 3 }, Troll: { FOR: 4 }, Nain: { VOL: 3 }, Elfe: { CHA: 4 } },
+      skills: [
+        { name: "Athlétisme", val: 1, attr: "FOR", rr: 0 },
+        { name: "Combat rapproché", val: 1, attr: "AGI", rr: 0 },
+        { name: "Perception", val: 2, attr: "LOG", rr: 0 },
+        { name: "Influence", val: 3, attr: "CHA", rr: 0, spec: "Étiquette", specVal: 3, specAttr: "CHA", specRR: 0 },
+        { name: "Ingénierie", val: 2, attr: "LOG", rr: 0 },
+      ],
+      edges: [],
+      edgeChoices: 0,
+      edgeOptions: [],
+      weapons: [
+        { name: "Mains nues", vdBase: 2, vdMeta: { Ork: 3, Troll: 4 }, ranges: "[OK/–/–/–]" },
+      ],
+      equip: ["Commlink", "Vêtements civils"],
+      threatLevel: "faible",
+      physMonitor: [4, 7, 10],
+      physMonitorMeta: { Ork: [5, 8, 11], Troll: [6, 9, 12] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: null,
+      awakened: null,
+    },
+
+    "Voyou de rue": {
+      label: "Voyou de rue",
+      attrs: { FOR: 3, AGI: 2, VOL: 2, LOG: 2, CHA: 2 },
+      attrsMeta: { Ork: { FOR: 4 }, Troll: { FOR: 5 }, Nain: { VOL: 3 }, Elfe: { CHA: 3 } },
+      skills: [
+        { name: "Athlétisme", val: 3, attr: "FOR", rr: 0, spec: "Défense à distance", specVal: 3, specAttr: "AGI", specRR: 0 },
+        { name: "Armes à distance", val: 3, attr: "AGI", rr: 0 },
+        { name: "Combat rapproché", val: 3, attr: "AGI", rr: 0, spec: "Lames", specVal: 4, specAttr: "AGI", specRR: 0 },
+        { name: "Furtivité", val: 3, attr: "AGI", rr: 0 },
+        { name: "Perception", val: 3, attr: "LOG", rr: 0 },
+        { name: "Influence", val: 2, attr: "CHA", rr: 0, spec: "Intimidation", specVal: 3, specAttr: "CHA", specRR: 0 },
+      ],
+      edges: [],
+      edgeChoices: 1,
+      edgeOptions: [
+        "Jazz (drogue) : +1 action par combat",
+        "Couteau à cran (équipement) : VD +1 en combat rapproché",
+        "Zélé (trait) : Avantage pour résister à l'intimidation ou la peur",
+      ],
+      weapons: [
+        { name: "Mains nues", vdBase: 3, vdMeta: { Ork: 4, Troll: 5 }, ranges: "[OK/–/–/–]" },
+        { name: "Couteau", vdBase: 4, vdMeta: { Ork: 5, Troll: 6 }, ranges: "[OK/–/–/–]" },
+        { name: "Pistolet léger", vdBase: 4, vdMeta: {}, ranges: "[OK/OK/Dés./–]" },
+      ],
+      equip: ["Commlink d'occasion", "Veste de cuir (Armure 1)"],
+      threatLevel: "faible",
+      physMonitor: [5, 8, 11],
+      physMonitorMeta: { Ork: [6, 9, 12], Troll: [7, 10, 13] },
+      mentMonitor: [2, 5, 8],
+      mentMonitorMeta: { Nain: [3, 6, 9] },
+      matrixMonitor: null,
+      awakened: null,
+    },
+
+    "Technicien de rue": {
+      label: "Technicien / mécano de rue",
+      attrs: { FOR: 2, AGI: 2, VOL: 2, LOG: 3, CHA: 2 },
+      attrsMeta: { Ork: { FOR: 3 }, Troll: { FOR: 4 }, Nain: { VOL: 3 }, Elfe: { CHA: 3 } },
+      skills: [
+        { name: "Ingénierie", val: 4, attr: "LOG", rr: 0, spec: "Mécanique", specVal: 5, specAttr: "LOG", specRR: 1 },
+        { name: "Électronique", val: 4, attr: "LOG", rr: 0, spec: "Réparation", specVal: 4, specAttr: "LOG", specRR: 0 },
+        { name: "Matricielle", val: 3, attr: "LOG", rr: 0 },
+        { name: "Pilotage", val: 3, attr: "AGI", rr: 0 },
+        { name: "Perception", val: 3, attr: "LOG", rr: 0 },
+        { name: "Armes à distance", val: 2, attr: "AGI", rr: 0 },
+      ],
+      edges: [],
+      edgeChoices: 1,
+      edgeOptions: [
+        "Atelier portatif (équipement) : RR 1 aux tests d'Ingénierie",
+        "Datajack (cyberware) : RR 1 aux tests Matriciels",
+        "Drone utilitaire (équipement) : assistance aux réparations",
+      ],
+      weapons: [
+        { name: "Mains nues", vdBase: 2, vdMeta: { Ork: 3, Troll: 4 }, ranges: "[OK/–/–/–]" },
+        { name: "Pistolet léger", vdBase: 4, vdMeta: {}, ranges: "[OK/OK/Dés./–]" },
+      ],
+      equip: ["Commlink", "Combinaison de travail (Armure 1)", "Kit d'outils"],
+      threatLevel: "faible",
+      physMonitor: [4, 7, 10],
+      physMonitorMeta: { Ork: [5, 8, 11], Troll: [6, 9, 12] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: null,
+      awakened: null,
+    },
+
+    /* ======== OMBRES (custom assumé : professionnel calqué sur les blocs d'élite) ======== */
+
+    Ombre: {
+      label: "Ombre / Runner professionnel",
+      attrs: { FOR: 3, AGI: 3, VOL: 3, LOG: 3, CHA: 2 },
+      attrsMeta: { Ork: { FOR: 4 }, Troll: { FOR: 5 }, Nain: { VOL: 4 }, Elfe: { CHA: 3 } },
+      skills: [
+        { name: "Athlétisme", val: 4, attr: "FOR", rr: 0, spec: "Défense à distance", specVal: 4, specAttr: "AGI", specRR: 0 },
+        { name: "Armes à distance", val: 4, attr: "AGI", rr: 0, spec: "Pistolets", specVal: 4, specAttr: "AGI", specRR: 0 },
+        { name: "Combat rapproché", val: 4, attr: "AGI", rr: 0, spec: "Lames", specVal: 4, specAttr: "AGI", specRR: 0 },
+        { name: "Furtivité", val: 5, attr: "AGI", rr: 1, spec: "Infiltration", specVal: 5, specAttr: "AGI", specRR: 1 },
+        { name: "Perception", val: 4, attr: "LOG", rr: 0 },
+        { name: "Ingénierie", val: 3, attr: "LOG", rr: 0 },
+        { name: "Influence", val: 3, attr: "CHA", rr: 0 },
+      ],
+      edges: [],
+      edgeChoices: 2,
+      edgeOptions: [
+        "Réflexes câblés (cyberware) : +1 action par combat",
+        "Smartlink (cyberware) : RR 1 aux tests d'Armes à distance",
+        "Armure dermique (cyberware) : Armure +1",
+        "Camouflage thermo-optique (équipement) : RR 1 aux tests de Furtivité",
+      ],
+      weapons: [
+        { name: "Mains nues", vdBase: 3, vdMeta: { Ork: 4, Troll: 5 }, ranges: "[OK/–/–/–]" },
+        { name: "Lame monofilament", vdBase: 5, vdMeta: { Ork: 6, Troll: 7 }, ranges: "[OK/–/–/–]" },
+        { name: "Pistolet lourd silencieux", vdBase: 5, vdMeta: {}, ranges: "[OK/OK/Dés./–]" },
+        { name: "Mitraillette", vdBase: 5, vdMeta: {}, ranges: "[Dés./OK/OK/–]" },
+      ],
+      equip: ["Commlink sécurisé", "Combinaison furtive (Armure 2)", "Kit d'infiltration"],
+      threatLevel: "moyen",
+      physMonitor: [6, 9, 12],
+      physMonitorMeta: { Ork: [7, 10, 13], Troll: [8, 11, 14] },
+      mentMonitor: [3, 6, 9],
+      mentMonitorMeta: { Nain: [4, 7, 10] },
+      matrixMonitor: null,
+      awakened: null,
+    },
   },
 
   /**
@@ -3085,6 +3440,15 @@ const EditionAnarchy = {
       "Decker d'élite": "Lieutenant",
       "Rigger d'élite": "Lieutenant",
       "Commando militaire": "Boss",
+      "Soldat de syndicat": "Figurant",
+      "Lieutenant de syndicat (capo)": "Lieutenant",
+      "Flic des rues": "Figurant",
+      "Officier de police": "Figurant d'élite",
+      "Détective": "Figurant d'élite",
+      "Ombre": "Figurant d'élite",
+      "Voyou de rue": "Figurant",
+      "Technicien de rue": "Figurant",
+      "Civil": "Figurant",
     };
     const tier =
       opts.tier && opts.tier !== "Aléatoire"

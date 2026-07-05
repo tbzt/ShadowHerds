@@ -43,7 +43,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Chien dressé pour la garde de propriétés privées, entrepôts ou compounds corporatifs.",
       skills: { "Combat à mains nues": 8, Course: 9, Intimidation: 7, "Perception (odorat)": 9, Pistage: 10 },
-      traits: [["Armes naturelles", "Crocs / Griffes : VD 5P (FOR+1), PA —"], ["Sens accrus", "Odorat, ouïe"]],
+      naturalWeapons: ["Crocs [Allonge —, VD 5P (FOR+1), PA —]", "Griffes [Allonge —, VD 5P (FOR+1), PA —]"],
+      traits: [["Sens accrus", "Odorat, ouïe"]],
     },
     loup: {
       label: "Loup", a: [6, 3, 5, 5, 3, 2, 4, 3, null],
@@ -51,7 +52,8 @@ const Creatures = {
       habitat: ["forets", "montagnes"],
       desc: "Prédateur de meute, chasse en groupe dans les forêts et zones sauvages en marge des métroplex.",
       skills: { "Combat à mains nues": 10, Course: 10, Discrétion: 8, Intimidation: 7, "Perception (odorat)": 9, Pistage: 10 },
-      traits: [["Armes naturelles", "Crocs / Griffes : VD 7P (FOR+2), PA -1"], ["Sens accrus", "Odorat, ouïe"]],
+      naturalWeapons: ["Crocs [Allonge —, VD 7P (FOR+2), PA -1]", "Griffes [Allonge —, VD 7P (FOR+2), PA -1]"],
+      traits: [["Sens accrus", "Odorat, ouïe"]],
     },
     felin: {
       label: "Grand félin", a: [6, 5, 4, 5, 3, 2, 4, 3, null],
@@ -59,7 +61,8 @@ const Creatures = {
       habitat: ["jungles", "forets"],
       desc: "Grand félin solitaire (puma, jaguar, tigre selon la région), chasseur embusqué redoutable en milieu naturel.",
       skills: { "Combat à mains nues": 12, Course: 10, Discrétion: 11, Perception: 9, Pistage: 8 },
-      traits: [["Armes naturelles", "Crocs / Griffes : VD 8P (FOR+3), PA -1"]],
+      naturalWeapons: ["Crocs [Allonge —, VD 8P (FOR+3), PA -1]", "Griffes [Allonge —, VD 8P (FOR+3), PA -1]"],
+      traits: [],
     },
     requin: {
       label: "Requin", a: [5, 4, 5, 5, 3, 1, 4, 1, null],
@@ -67,7 +70,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Prédateur marin attiré par le sang et les vibrations, danger classique des zones côtières et récifs.",
       skills: { "Combat à mains nues": 12, Natation: 15, "Perception (odorat)": 10 },
-      traits: [["Armes naturelles", "Crocs : VD 7P (FOR+2), PA -2"], ["Armure 2", null]],
+      naturalWeapons: ["Crocs [Allonge —, VD 7P (FOR+2), PA -2]"],
+      traits: [["Armure 2", null]],
     },
     barghest: {
       label: "Barghest", a: [8, 5, 6, 6, 4, 2, 5, 5, 5],
@@ -75,13 +79,8 @@ const Creatures = {
       habitat: ["urbain", "forets"],
       desc: "Molosse spectral des légendes britanniques, hante ruines et friches industrielles en meutes réduites.",
       skills: { "Combat à mains nues": 13, Course: 11, Intimidation: 12, Perception: 11, Pistage: 11 },
-      traits: [
-        ["Armes naturelles", "Crocs : VD 8P (FOR+2), PA -1"],
-        ["Hurlement paralysant", "Paralyse les proies saisies de terreur"],
-        ["Immunité", "Hurlement de barghest"],
-        ["Nature duale", null], ["Peur", null],
-        ["Sens accrus", "Odorat, ouïe, sonar"],
-      ],
+      naturalWeapons: ["Crocs [Allonge —, VD 8P (FOR+2), PA -1]"],
+      traits: [["Hurlement paralysant", "Paralyse les proies saisies de terreur"], ["Immunité", "Hurlement de barghest"], ["Nature duale", null], ["Peur", null], ["Sens accrus", "Odorat, ouïe, sonar"]],
     },
     basilic: {
       label: "Basilic", a: [6, 3, 3, 7, 5, 1, 3, 1, 4],
@@ -89,11 +88,8 @@ const Creatures = {
       habitat: ["marais", "urbain"],
       desc: "Grand reptile éveillé au regard pétrifiant, se terre dans les égouts, marais et zones humides désertées.",
       skills: { "Combat à mains nues": 9, Course: 9, Discrétion: 6, Natation: 15, Perception: 7 },
-      traits: [
-        ["Armes naturelles", "Crocs : VD 15P (FOR+8), PA -2"],
-        ["Pétrification", "Son regard pétrifie ses proies"],
-        ["Vulnérabilité", "Son propre regard (-3 dés au test de résistance)"],
-      ],
+      naturalWeapons: ["Crocs [Allonge —, VD 15P (FOR+8), PA -2]"],
+      traits: [["Pétrification", "Son regard pétrifie ses proies"], ["Vulnérabilité", "Son propre regard (-3 dés au test de résistance)"]],
     },
     chienEnfer: {
       label: "Chien de l'enfer", a: [6, 4, 5, 6, 4, 2, 4, 3, 5],
@@ -101,12 +97,8 @@ const Creatures = {
       habitat: ["deserts", "urbain"],
       desc: "Canidé éveillé crachant le feu, associé aux légendes de chiens infernaux gardiens de lieux maudits.",
       skills: { "Arme à distance exotique (feu)": 8, "Combat à mains nues": 7, Course: 10, Discrétion: 9, Intimidation: 6, Perception: 7, Pistage: 9 },
-      traits: [
-        ["Armes naturelles", "Crocs : VD 7P (FOR+1), PA -1"],
-        ["Attaque élémentaire", "Feu (souffle)"],
-        ["Immunité", "Feu"], ["Nature duale", null], ["Peur", null],
-        ["Sens accrus", "Odorat, ouïe, vision nocturne"],
-      ],
+      naturalWeapons: ["Crocs [Allonge —, VD 7P (FOR+1), PA -1]"],
+      traits: [["Attaque élémentaire", "Feu (souffle)"], ["Immunité", "Feu"], ["Nature duale", null], ["Peur", null], ["Sens accrus", "Odorat, ouïe, vision nocturne"]],
     },
     goule: {
       label: "Goule", a: [7, 3, 5, 6, 5, 2, 4, 1, 1],
@@ -114,12 +106,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Infecté HMHVV nécrophage, aveugle mais vif d'oreille et d'odorat, terré dans égouts et bâtiments abandonnés.",
       skills: { "Combat à mains nues": 9, Course: 9, Discrétion: 9, "Observation astrale": 8, Perception: 9 },
-      traits: [
-        ["Armes naturelles", "Griffes : VD 7P (FOR+1), PA -1"],
-        ["Conscience", null], ["Nature duale", null],
-        ["Sens accrus", "Odorat, ouïe"],
-        ["Faiblesses", "Allergie (lumière solaire, modérée), Exigence alimentaire (chair métahumaine), Sens réduits (aveugle)"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 7P (FOR+1), PA -1]"],
+      traits: [["Conscience", null], ["Nature duale", null], ["Sens accrus", "Odorat, ouïe"], ["Faiblesses", "Allergie (lumière solaire, modérée), Exigence alimentaire (chair métahumaine), Sens réduits (aveugle)"]],
     },
     ratDiable: {
       label: "Rat du diable", a: [2, 5, 5, 1, 3, 2, 5, 5, 4],
@@ -127,13 +115,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Rat éveillé meneur de meutes de rats ordinaires, endémique des sous-sols et égouts urbains.",
       skills: { "Combat à mains nues": 10, Discrétion: 11, Escalade: 6, Perception: 9 },
-      traits: [
-        ["Armes naturelles", "Crocs : VD 2P (FOR+1), PA —, Allonge -1"],
-        ["Contrôle animal", "Rats ordinaires"],
-        ["Dissimulation", "Personnelle seulement"],
-        ["Immunité", "Toxines"],
-        ["Faiblesses", "Allergie (lumière solaire, modérée)"],
-      ],
+      naturalWeapons: ["Crocs [Allonge —, VD 2P (FOR+1), PA —, Allonge -1]"],
+      traits: [["Contrôle animal", "Rats ordinaires"], ["Dissimulation", "Personnelle seulement"], ["Immunité", "Toxines"], ["Faiblesses", "Allergie (lumière solaire, modérée)"]],
     },
     cocatrix: {
       label: "Cocatrix", a: [4, 5, 4, 4, 4, 2, 3, 1, 4],
@@ -141,12 +124,8 @@ const Creatures = {
       habitat: ["marais", "forets"],
       desc: "Petit reptile éveillé au toucher paralysant, immunisé à son propre poison, chasse à l'affût en zone humide.",
       skills: { "Combat à mains nues": 12, Course: 11, Discrétion: 10, Perception: 6 },
-      traits: [
-        ["Armes naturelles", "Griffes : VD 4P (FOR), PA -1"],
-        ["Armure 1", null],
-        ["Immunité", "Son propre toucher"],
-        ["Toucher paralysant", "Queue"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 4P (FOR), PA -1]"],
+      traits: [["Armure 1", null], ["Immunité", "Son propre toucher"], ["Toucher paralysant", "Queue"]],
     },
     sasquatch: {
       label: "Sasquatch", a: [8, 3, 4, 7, 3, 3, 5, 3, 4],
@@ -172,17 +151,8 @@ const Creatures = {
         "Arme à distance exotique": 19, "Combat à mains nues": 19, Conjuration: 20,
         Course: 50, "Observation astrale": 22, Perception: 20, Sorcellerie: 22, Vol: 19,
       },
-      traits: [
-        ["Armes naturelles", "Crocs / Griffes : VD (FOR+2)P, PA -4"],
-        ["Armure mystique renforcée", "Volonté (armure mystique 8R en plus de l'armure physique)"],
-        ["Armure renforcée", "Constitution"],
-        ["Attaque élémentaire", "Feu (souffle)"],
-        ["Conscience", null], ["Draconique", null], ["Nature duale", null],
-        ["Sens accrus", "Audition à large spectre, odorat, vision nocturne, vision thermographique"],
-        ["Magicien", "Connaît la plupart des sorts"],
-        ["Allonge", "+2"],
-        ["Pouvoir individuel (choix du MJ)", "Un pouvoir supplémentaire parmi : Compulsion, Contrôle animal, Influence, Peur, Salive corrosive, Souffle nocif, Venin"],
-      ],
+      naturalWeapons: ["Crocs [Allonge —, VD (FOR+2)P, PA -4]", "Griffes [Allonge —, VD (FOR+2)P, PA -4]"],
+      traits: [["Armure mystique renforcée", "Volonté (armure mystique 8R en plus de l'armure physique)"], ["Armure renforcée", "Constitution"], ["Attaque élémentaire", "Feu (souffle)"], ["Conscience", null], ["Draconique", null], ["Nature duale", null], ["Sens accrus", "Audition à large spectre, odorat, vision nocturne, vision thermographique"], ["Magicien", "Connaît la plupart des sorts"], ["Allonge", "+2"], ["Pouvoir individuel (choix du MJ)", "Un pouvoir supplémentaire parmi : Compulsion, Contrôle animal, Influence, Peur, Salive corrosive, Souffle nocif, Venin"]],
     },
     dragonOriental: {
       label: "Dragon oriental", a: [17, 8, 8, 35, 9, 10, 8, 9, 10],
@@ -193,17 +163,8 @@ const Creatures = {
         "Arme à distance exotique": 20, "Combat à mains nues": 20, Conjuration: 22,
         Course: 45, "Observation astrale": 22, Perception: 20, Sorcellerie: 23, Vol: 20,
       },
-      traits: [
-        ["Armes naturelles", "Crocs / Griffes : VD (FOR+2)P, PA -4"],
-        ["Armure mystique renforcée", "Volonté (armure mystique 9R en plus de l'armure physique)"],
-        ["Armure renforcée", "Constitution"],
-        ["Attaque élémentaire", "Feu (souffle)"],
-        ["Conscience", null], ["Draconique", null], ["Nature duale", null],
-        ["Sens accrus", "Audition à large spectre, odorat, vision nocturne, vision thermographique"],
-        ["Magicien", "Connaît la plupart des sorts"],
-        ["Allonge", "+2"],
-        ["Pouvoir individuel (choix du MJ)", "Un pouvoir supplémentaire parmi : Compulsion, Contrôle animal, Influence, Peur, Salive corrosive, Souffle nocif, Venin"],
-      ],
+      naturalWeapons: ["Crocs [Allonge —, VD (FOR+2)P, PA -4]", "Griffes [Allonge —, VD (FOR+2)P, PA -4]"],
+      traits: [["Armure mystique renforcée", "Volonté (armure mystique 9R en plus de l'armure physique)"], ["Armure renforcée", "Constitution"], ["Attaque élémentaire", "Feu (souffle)"], ["Conscience", null], ["Draconique", null], ["Nature duale", null], ["Sens accrus", "Audition à large spectre, odorat, vision nocturne, vision thermographique"], ["Magicien", "Connaît la plupart des sorts"], ["Allonge", "+2"], ["Pouvoir individuel (choix du MJ)", "Un pouvoir supplémentaire parmi : Compulsion, Contrôle animal, Influence, Peur, Salive corrosive, Souffle nocif, Venin"]],
     },
     serpentPlumes: {
       label: "Serpent à plumes", a: [15, 9, 10, 30, 10, 9, 9, 8, 10],
@@ -214,18 +175,8 @@ const Creatures = {
         "Arme à distance exotique": 21, "Combat à mains nues": 21, Conjuration: 21,
         Course: 40, "Observation astrale": 23, Perception: 21, Sorcellerie: 24, Vol: 21,
       },
-      traits: [
-        ["Armes naturelles", "Crocs / Griffes : VD (FOR+2)P, PA -4"],
-        ["Armure mystique renforcée", "Volonté (armure mystique 10R en plus de l'armure physique)"],
-        ["Armure renforcée", "Constitution"],
-        ["Attaque élémentaire", "Feu (souffle)"],
-        ["Conscience", null], ["Draconique", null], ["Nature duale", null],
-        ["Sens accrus", "Audition à large spectre, odorat, vision nocturne, vision thermographique"],
-        ["Venin", "Poche à venin liée à un dard caudal ou aux crocs (fréquent chez cette espèce)"],
-        ["Magicien", "Connaît la plupart des sorts"],
-        ["Allonge", "+2"],
-        ["Pouvoir individuel (choix du MJ)", "Un pouvoir supplémentaire parmi : Compulsion, Contrôle animal, Influence, Peur, Salive corrosive, Souffle nocif"],
-      ],
+      naturalWeapons: ["Crocs [Allonge —, VD (FOR+2)P, PA -4]", "Griffes [Allonge —, VD (FOR+2)P, PA -4]"],
+      traits: [["Armure mystique renforcée", "Volonté (armure mystique 10R en plus de l'armure physique)"], ["Armure renforcée", "Constitution"], ["Attaque élémentaire", "Feu (souffle)"], ["Conscience", null], ["Draconique", null], ["Nature duale", null], ["Sens accrus", "Audition à large spectre, odorat, vision nocturne, vision thermographique"], ["Venin", "Poche à venin liée à un dard caudal ou aux crocs (fréquent chez cette espèce)"], ["Magicien", "Connaît la plupart des sorts"], ["Allonge", "+2"], ["Pouvoir individuel (choix du MJ)", "Un pouvoir supplémentaire parmi : Compulsion, Contrôle animal, Influence, Peur, Salive corrosive, Souffle nocif"]],
     },
 
     /* ---- Howling Shadows p.39-51 : Mundane Critters ---- */
@@ -235,10 +186,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Grand reptile embusqué des marais et cours d'eau lents, capable d'attaques surprises.",
       skills: { Perception: 4, Discrétion: 4, Pistage: 4, "Combat à mains nues": 4 },
-      traits: [
-        ["Armure 6", null], ["Sens accrus", "Odorat"],
-        ["Arme naturelle", "Morsure : VD (FOR+2)P, PA –2"], ["Robuste 2", null],
-      ],
+      naturalWeapons: ["Morsure [Allonge —, VD (FOR+2)P, PA –2]"],
+      traits: [["Armure 6", null], ["Sens accrus", "Odorat"], ["Robuste 2", null]],
     },
     ours: {
       label: "Ours", a: [9, 4, 5, 8, 4, 1, 2, 3, null],
@@ -246,10 +195,8 @@ const Creatures = {
       habitat: ["forets", "montagnes"],
       desc: "Grand prédateur omnivore des forêts et zones montagneuses, dangereux en défense de territoire.",
       skills: { Gymnique: 3, Intimidation: 3, Perception: 4, Course: 3, Pistage: 4, "Combat à mains nues": 4 },
-      traits: [
-        ["Armure 3", null], ["Sens accrus", "Odorat"],
-        ["Arme naturelle", "Griffes/Morsure : VD (FOR+3)P, PA –1"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD (FOR+3)P, PA –1]", "Morsure [Allonge —, VD (FOR+3)P, PA –1]"],
+      traits: [["Armure 3", null], ["Sens accrus", "Odorat"]],
     },
     sanglier: {
       label: "Sanglier", a: [6, 2, 4, 5, 2, 1, 2, 2, null],
@@ -257,10 +204,8 @@ const Creatures = {
       habitat: ["forets"],
       desc: "Suidé sauvage territorial, charge sans hésiter quand acculé.",
       skills: { Perception: 3, Course: 2, Pistage: 4, "Combat à mains nues": 4 },
-      traits: [
-        ["Armure 4", null], ["Sens accrus", "Odorat"],
-        ["Arme naturelle", "Morsure/Défenses : VD (FOR+2)P, PA –1"],
-      ],
+      naturalWeapons: ["Morsure [Allonge —, VD (FOR+2)P, PA –1]", "Défenses [Allonge —, VD (FOR+2)P, PA –1]"],
+      traits: [["Armure 4", null], ["Sens accrus", "Odorat"]],
     },
     chimpanze: {
       label: "Chimpanzé", a: [4, 4, 4, 4, 3, 2, 4, 3, null],
@@ -268,7 +213,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Primate social et agile, se déplace de branche en branche dans la canopée.",
       skills: { "Groupe Athlétisme": 4, Clubs: 3, Perception: 4, "Armes de lancer": 2, "Combat à mains nues": 6 },
-      traits: [["Brachiation", null], ["Arme naturelle", "Morsure : VD (FOR+2)P, PA —"]],
+      naturalWeapons: ["Morsure [Allonge —, VD (FOR+2)P, PA —]"],
+      traits: [["Brachiation", null]],
     },
     aigle: {
       label: "Aigle", a: [3, 5, 4, 2, 3, 1, 4, 3, null],
@@ -276,9 +222,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Rapace chasseur à la vue perçante, fond en piqué sur ses proies depuis les hauteurs.",
       skills: { Vol: 3, Perception: 5, Pistage: 2, "Combat à mains nues": 3 },
-      traits: [
-        ["Arme naturelle", "Morsure/Griffes : VD (FOR+2)P, PA —"], ["Sens accrus", "Agrandissement"],
-      ],
+      naturalWeapons: ["Morsure [Allonge —, VD (FOR+2)P, PA —]", "Griffes [Allonge —, VD (FOR+2)P, PA —]"],
+      traits: [["Sens accrus", "Agrandissement"]],
     },
     elephant: {
       label: "Éléphant", a: [12, 4, 4, 16, 2, 2, 3, 3, null],
@@ -286,10 +231,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Mammifère colossal vivant en troupeau, redoutable de force lorsqu'il charge.",
       skills: { Clubs: 5, Perception: 4, Course: 4, "Combat à mains nues": 2 },
-      traits: [
-        ["Armure 6", null], ["Sens accrus", "Basse fréquence"],
-        ["Arme naturelle", "Défense : VD (FOR+2)P, PA –2"],
-      ],
+      naturalWeapons: ["Défense [Allonge —, VD (FOR+2)P, PA –2]"],
+      traits: [["Armure 6", null], ["Sens accrus", "Basse fréquence"]],
     },
     girafe: {
       label: "Girafe", a: [10, 3, 3, 8, 2, 1, 2, 2, null],
@@ -297,7 +240,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Grand herbivore des savanes, peu agressif mais capable de ruades puissantes.",
       skills: { Perception: 4, Course: 3, "Combat à mains nues": 2 },
-      traits: [["Armure 2", null], ["Arme naturelle", "Ruade : VD (FOR+1)P, PA —, Portée 2"]],
+      naturalWeapons: ["Ruade [Allonge 2, VD (FOR+1)P, PA —]"],
+      traits: [["Armure 2", null]],
     },
     serpent: {
       label: "Serpent", a: [2, 4, 2, 3, 2, 0, 2, 1, null],
@@ -305,10 +249,8 @@ const Creatures = {
       habitat: ["forets", "deserts"],
       desc: "Reptile générique couvrant l'ensemble des serpents non venimeux ordinaires.",
       skills: { Gymnique: 3, Perception: 3, Discrétion: 3, Pistage: 3, "Combat à mains nues": 5 },
-      traits: [
-        ["Sens accrus", "Thermique"], ["Arme naturelle", "Morsure : VD (FOR+2)P, PA —"],
-        ["Venin (variante)", "Les versions venimeuses disposent en plus du pouvoir Venin (Serpent), Howling Shadows p.43"],
-      ],
+      naturalWeapons: ["Morsure [Allonge —, VD (FOR+2)P, PA —]"],
+      traits: [["Sens accrus", "Thermique"], ["Venin (variante)", "Les versions venimeuses disposent en plus du pouvoir Venin (Serpent), Howling Shadows p.43"]],
     },
     barracuda: {
       label: "Barracuda", a: [2, 2, 3, 2, 2, 0, 2, 1, null],
@@ -316,9 +258,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Poisson prédateur rapide des eaux côtières, chasse en embuscade.",
       skills: { Gymnique: 3, Perception: 3, Nage: 6, "Combat à mains nues": 4 },
-      traits: [
-        ["Sens accrus", "Odorat"], ["Branchies", null], ["Arme naturelle", "Morsure : VD (FOR+1)P, PA —"],
-      ],
+      naturalWeapons: ["Morsure [Allonge —, VD (FOR+1)P, PA —]"],
+      traits: [["Sens accrus", "Odorat"], ["Branchies", null]],
     },
     dauphin: {
       label: "Dauphin", a: [8, 5, 5, 7, 4, 2, 4, 4, null],
@@ -334,7 +275,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Pinnipède agile en eau comme sur les rochers côtiers.",
       skills: { Plongée: 2, Gymnique: 3, Perception: 2, Nage: 4, "Combat à mains nues": 4 },
-      traits: [["Armure 2", null], ["Arme naturelle", "Morsure : VD (FOR+2)P, PA —"]],
+      naturalWeapons: ["Morsure [Allonge —, VD (FOR+2)P, PA —]"],
+      traits: [["Armure 2", null]],
     },
     calmar: {
       label: "Calmar", a: [4, 5, 3, 5, 2, 2, 4, 3, null],
@@ -353,9 +295,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Grand cétacé chasseur en meute, sommet de la chaîne alimentaire marine.",
       skills: { Plongée: 3, Perception: 3, Nage: 4, "Combat à mains nues": 4 },
-      traits: [
-        ["Armure 4", null], ["Sens accrus", "Sonar"], ["Arme naturelle", "Morsure : VD (FOR+2)P, PA —"],
-      ],
+      naturalWeapons: ["Morsure [Allonge —, VD (FOR+2)P, PA —]"],
+      traits: [["Armure 4", null], ["Sens accrus", "Sonar"]],
     },
     chatDomestique: {
       label: "Chat domestique", a: [2, 4, 3, 1, 2, 2, 2, 3, null],
@@ -394,9 +335,8 @@ const Creatures = {
       habitat: ["forets", "urbain"],
       desc: "Petit mustélidé vif et curieux, se glisse dans les espaces étroits.",
       skills: { Gymnique: 3, Perception: 3, Discrétion: 3, Pistage: 4, "Combat à mains nues": 3 },
-      traits: [
-        ["Arme naturelle", "Morsure : VD (FOR+1)P, PA —, Portée –1"], ["Faiblesses", "Fragile 1"],
-      ],
+      naturalWeapons: ["Morsure [Allonge –1, VD (FOR+1)P, PA —]"],
+      traits: [["Faiblesses", "Fragile 1"]],
     },
     ratonLaveur: {
       label: "Raton laveur", a: [1, 4, 3, 1, 3, 1, 4, 2, null],
@@ -404,10 +344,8 @@ const Creatures = {
       habitat: ["urbain", "forets"],
       desc: "Charognard nocturne débrouillard, fouille poubelles et décharges urbaines.",
       skills: { Gymnique: 3, Perception: 4, Palming: 3, Discrétion: 3, "Combat à mains nues": 2 },
-      traits: [
-        ["Sens accrus", "Toucher"], ["Arme naturelle", "Morsure : VD (FOR+1)P, PA —, Portée –1"],
-        ["Faiblesses", "Fragile 1"],
-      ],
+      naturalWeapons: ["Morsure [Allonge –1, VD (FOR+1)P, PA —]"],
+      traits: [["Sens accrus", "Toucher"], ["Faiblesses", "Fragile 1"]],
     },
     rat: {
       label: "Rat", a: [1, 3, 2, 0, 1, 1, 1, 1, null],
@@ -415,10 +353,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Rongeur ordinaire ultra-répandu dans les sous-sols et égouts urbains.",
       skills: { Gymnique: 3, Perception: 3, Discrétion: 3, "Combat à mains nues": 2 },
-      traits: [
-        ["Sens accrus", "Odorat"], ["Conscience gestionnaire", null],
-        ["Arme naturelle", "Morsure : VD 1P, PA —, Portée –1"], ["Faiblesses", "Fragile 3"],
-      ],
+      naturalWeapons: ["Morsure [Allonge –1, VD 1P, PA —]"],
+      traits: [["Sens accrus", "Odorat"], ["Conscience gestionnaire", null], ["Faiblesses", "Fragile 3"]],
     },
     araignee: {
       label: "Araignée", a: [1, 2, 2, 0, 1, 0, 1, 1, null],
@@ -439,11 +375,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Crustacé éveillé des eaux côtières, lié aux autres membres de sa colonie par une conscience partagée.",
       skills: { Perception: 4, Nage: 5, "Combat à mains nues": 4 },
-      traits: [
-        ["Sens accrus", "Sonar"], ["Peur", null], ["Conscience de gestalt", null], ["Branchies", null],
-        ["Armure renforcée 9", null], ["Immunité", "Toxines"],
-        ["Arme naturelle", "Griffes : VD 9P, PA –4"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 9P, PA –4]"],
+      traits: [["Sens accrus", "Sonar"], ["Peur", null], ["Conscience de gestalt", null], ["Branchies", null], ["Armure renforcée 9", null], ["Immunité", "Toxines"]],
     },
     afanc: {
       label: "Afanc", a: [10, 4, 4, 8, 4, 2, 4, 2, 4],
@@ -451,10 +384,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Grand castor éveillé des légendes galloises, hante marais et étangs profonds.",
       skills: { Intimidation: 4, Perception: 5, Course: 4, Discrétion: 4, "Combat à mains nues": 8 },
-      traits: [
-        ["Engloutissement", "Eau"], ["Sens accrus", "Vision nocturne, odorat"],
-        ["Armure renforcée 10", null], ["Arme naturelle", "Morsure : VD 8P, PA –2"], ["Recherche", null],
-      ],
+      naturalWeapons: ["Morsure [Allonge —, VD 8P, PA –2]"],
+      traits: [["Engloutissement", "Eau"], ["Sens accrus", "Vision nocturne, odorat"], ["Armure renforcée 10", null], ["Recherche", null]],
     },
     agropelter: {
       label: "Agropelter", a: [2, 3, 4, 2, 2, 4, 4, 1, null],
@@ -465,10 +396,8 @@ const Creatures = {
         Épées: 2, Massues: 3, "Navigation (Souterrain)": 3, Perception: 2, Course: 2,
         Discrétion: 5, "Armes de lancer": 3, "Combat à mains nues": 3,
       },
-      traits: [
-        ["Brachiation", null], ["Sens accrus", "Ouïe, vision nocturne, odorat"],
-        ["Arme naturelle", "Griffes : VD 3P, PA —"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 3P, PA —]"],
+      traits: [["Brachiation", null], ["Sens accrus", "Ouïe, vision nocturne, odorat"]],
     },
     banditRatonLaveur: {
       label: "Raton-laveur bandit", a: [2, 4, 3, 2, 3, 3, 5, 3, null],
@@ -484,9 +413,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Alligator géant éveillé, colosse blindé des marécages.",
       skills: { Perception: 4, Discrétion: 4, Nage: 5, "Combat à mains nues": 7 },
-      traits: [
-        ["Armure renforcée 15", null], ["Arme naturelle", "Griffes : VD 21P, PA –2"], ["Robuste 4", null],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 21P, PA –2]"],
+      traits: [["Armure renforcée 15", null], ["Robuste 4", null]],
     },
     blackAnnis: {
       label: "Black Annis", a: [8, 4, 5, 9, 3, 2, 3, 2, 4],
@@ -497,11 +425,8 @@ const Creatures = {
         Acrobatie: 4, Intimidation: 5, Perception: 5, Course: 5, Discrétion: 6,
         "Combat à mains nues": 7,
       },
-      traits: [
-        ["Armure 4", null], ["Sens accrus", "Vision nocturne"], ["Peur", null],
-        ["Arme naturelle", "Morsure/Griffes : VD 9P, PA —"], ["Robuste 3", null],
-        ["Faiblesses", "Allergie (lumière du soleil, légère)"],
-      ],
+      naturalWeapons: ["Morsure [Allonge —, VD 9P, PA —]", "Griffes [Allonge —, VD 9P, PA —]"],
+      traits: [["Armure 4", null], ["Sens accrus", "Vision nocturne"], ["Peur", null], ["Robuste 3", null], ["Faiblesses", "Allergie (lumière du soleil, légère)"]],
     },
     singeDeSang: {
       label: "Singe de sang", a: [3, 5, 3, 4, 4, 2, 2, 3, 5],
@@ -511,13 +436,8 @@ const Creatures = {
       skills: {
         Acrobatie: 8, Perception: 5, "Pistage (Odorat)": 4, "Combat à mains nues": 5,
       },
-      traits: [
-        ["Armure 2", null], ["Brachiation", null], ["Confusion", null],
-        ["Sens accrus", "Odorat (sang), vision nocturne"],
-        ["Arme naturelle", "Griffe : VD 6P, PA –2"], ["Toucher paralysant", null],
-        ["Sécrétion", "Anticoagulant"], ["Marche murale", null],
-        ["Faiblesses", "Exigence diététique (sang), Fragile 2"],
-      ],
+      naturalWeapons: ["Griffe [Allonge —, VD 6P, PA –2]"],
+      traits: [["Armure 2", null], ["Brachiation", null], ["Confusion", null], ["Sens accrus", "Odorat (sang), vision nocturne"], ["Toucher paralysant", null], ["Sécrétion", "Anticoagulant"], ["Marche murale", null], ["Faiblesses", "Exigence diététique (sang), Fragile 2"]],
     },
     centaure: {
       label: "Centaure", a: [7, 3, 3, 7, 3, 3, 3, 3, 3],
@@ -528,12 +448,8 @@ const Creatures = {
         "Groupe Combat rapproché": 4, "Étiquette (Tribal)": 4, "Groupe Extérieur": 4,
         Perception: 5, Course: 7, Discrétion: 3,
       },
-      traits: [
-        ["Armure 4", null], ["Sens accrus", "Vision nocturne, vision thermographique"],
-        ["Arme naturelle", "Coup de pied : VD 9P, PA +1, Portée +1"],
-        ["Sapience", null], ["Recherche", null], ["Sens magique", null],
-        ["Faiblesses", "Pas instruit"],
-      ],
+      naturalWeapons: ["Coup de pied [Allonge +1, VD 9P, PA +1]"],
+      traits: [["Armure 4", null], ["Sens accrus", "Vision nocturne, vision thermographique"], ["Sapience", null], ["Recherche", null], ["Sens magique", null], ["Faiblesses", "Pas instruit"]],
     },
     cerbere: {
       label: "Chien Cerbère", a: [6, 4, 5, 6, 4, 2, 6, 3, 5],
@@ -544,12 +460,8 @@ const Creatures = {
         Intimidation: 5, Perception: 8, Course: 6, Discrétion: 6, Pistage: 6,
         "Combat à mains nues": 8,
       },
-      traits: [
-        ["Armure 4", null], ["Dissimulation", "Soi"], ["Crachat corrosif", null],
-        ["Sens accrus", "Ouïe, vision nocturne, odorat, vision thermographique"], ["Peur", null],
-        ["Immunité", "Froid, feu"], ["Mouvement", "Soi"],
-        ["Arme naturelle", "Morsure : VD 6P, PA —"], ["Recherche", null], ["Robuste 6", null],
-      ],
+      naturalWeapons: ["Morsure [Allonge —, VD 6P, PA —]"],
+      traits: [["Armure 4", null], ["Dissimulation", "Soi"], ["Crachat corrosif", null], ["Sens accrus", "Ouïe, vision nocturne, odorat, vision thermographique"], ["Peur", null], ["Immunité", "Froid, feu"], ["Mouvement", "Soi"], ["Recherche", null], ["Robuste 6", null]],
     },
     deathrattle: {
       label: "Deathrattle", a: [3, 6, 8, 4, 2, 1, 5, 2, 4],
@@ -560,12 +472,8 @@ const Creatures = {
         "Arme exotique à distance (crachat de venin)": 5, Intimidation: 6, Perception: 4,
         Discrétion: 3, Nage: 3, "Combat à mains nues": 5,
       },
-      traits: [
-        ["Armure 6", null], ["Sens accrus", "Vision thermographique"],
-        ["Immunité", "Douleur, toxines"], ["Arme naturelle", "Morsure : VD 5P, PA –1"],
-        ["Venin", "Vecteur contact/injection, vitesse 1 minute, pénétration –3, puissance 10, effet agonie/désorientation/nausée/dégâts physiques"],
-        ["Portée", "–1 (petite taille)"],
-      ],
+      naturalWeapons: ["Morsure [Allonge —, VD 5P, PA –1]"],
+      traits: [["Armure 6", null], ["Sens accrus", "Vision thermographique"], ["Immunité", "Douleur, toxines"], ["Venin", "Vecteur contact/injection, vitesse 1 minute, pénétration –3, puissance 10, effet agonie/désorientation/nausée/dégâts physiques"], ["Portée", "–1 (petite taille)"]],
     },
     papillonSpiraleMortelle: {
       label: "Papillon spirale mortelle", a: [1, 4, 5, 1, 4, 2, 4, 6, 6],
@@ -573,13 +481,8 @@ const Creatures = {
       habitat: ["forets", "urbain"],
       desc: "Papillon éveillé prédateur, pond ses œufs dans ses victimes par piqûre venimeuse.",
       skills: { Vol: 3, Perception: 3, "Combat à mains nues": 3 },
-      traits: [
-        ["Sens accrus", "Odorat"], ["Arme naturelle", "Proboscis : VD 2P, PA –4"],
-        ["Venin", "Vecteur injection, vitesse instantanée, pénétration –4, puissance 2, effet dégâts physiques + implantation d'œufs (1D6)"],
-        ["Faiblesses", "Fragile 7"],
-        ["Portée", "–1 (petite taille)"],
-        ["Éclosion", "Œufs implantés : test quotidien de résistance 6S (Constitution) ; après une semaine, éclosion pour 1P non résisté puis 2P de dégâts normaux"],
-      ],
+      naturalWeapons: ["Proboscis [Allonge —, VD 2P, PA –4]"],
+      traits: [["Sens accrus", "Odorat"], ["Venin", "Vecteur injection, vitesse instantanée, pénétration –4, puissance 2, effet dégâts physiques + implantation d'œufs (1D6)"], ["Faiblesses", "Fragile 7"], ["Portée", "–1 (petite taille)"], ["Éclosion", "Œufs implantés : test quotidien de résistance 6S (Constitution) ; après une semaine, éclosion pour 1P non résisté puis 2P de dégâts normaux"]],
     },
     ratDemon: {
       label: "Rat démon", a: [5, 5, 5, 4, 4, 4, 5, 5, 6],
@@ -590,14 +493,8 @@ const Creatures = {
         "Arme exotique à distance (crachat corrosif)": 5, Acrobatie: 5, Perception: 5,
         Course: 3, "Combat à mains nues": 5,
       },
-      traits: [
-        ["Contrôle animal", "Rats démoniaques, rats"], ["Armure 2", null], ["Dissimulation", null],
-        ["Crachat corrosif", null], ["Sens accrus", "Vision nocturne"], ["Conscience de gestalt", null],
-        ["Immunité", "Agents pathogènes, toxines"], ["Arme naturelle", "Griffes : VD 5P, PA +1"],
-        ["Faiblesses", "Allergie (lumière du soleil, modérée)"],
-        ["Portée", "–1 (petite taille)"],
-        ["Variantes", "Variante bêta : + Pestilence ; variante gamma : + Régénération ; variante epsilon : Attaque élémentaire (électricité)"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 5P, PA +1]"],
+      traits: [["Contrôle animal", "Rats démoniaques, rats"], ["Armure 2", null], ["Dissimulation", null], ["Crachat corrosif", null], ["Sens accrus", "Vision nocturne"], ["Conscience de gestalt", null], ["Immunité", "Agents pathogènes, toxines"], ["Faiblesses", "Allergie (lumière du soleil, modérée)"], ["Portée", "–1 (petite taille)"], ["Variantes", "Variante bêta : + Pestilence ; variante gamma : + Régénération ; variante epsilon : Attaque élémentaire (électricité)"]],
     },
     lepisosteeDiamant: {
       label: "Lépisostée diamant", a: [5, 4, 5, 5, 2, 1, 3, 2, 4],
@@ -605,7 +502,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Poisson-alligator géant éveillé des fleuves d'eau douce, cuirassé d'écailles blindées.",
       skills: { Perception: 5, Nage: 6, "Combat à mains nues": 5 },
-      traits: [["Armure 10", null], ["Arme naturelle", "Morsure : VD 5P, PA –2"]],
+      naturalWeapons: ["Morsure [Allonge —, VD 5P, PA –2]"],
+      traits: [["Armure 10", null]],
     },
     koalaTombeur: {
       label: "Koala tombeur", a: [3, 3, 3, 5, 5, 2, 4, 1, 3],
@@ -613,12 +511,8 @@ const Creatures = {
       habitat: ["forets"],
       desc: "Koala éveillé et porteur de HMHVV, se laisse tomber des arbres en embuscade sur ses proies.",
       skills: { Acrobatie: 4, Perception: 5, Discrétion: 5, "Combat à mains nues": 4 },
-      traits: [
-        ["Coloration adaptative", null], ["Armure 2", null],
-        ["Porteur", "HMHVV-II"], ["Immunité", "Agents pathogènes, toxines"],
-        ["Arme naturelle", "Griffe/Morsure : VD 5P, PA –1"],
-        ["Faiblesses", "Exigence diététique (eucalyptus)"], ["Portée", "–1 (petite taille)"],
-      ],
+      naturalWeapons: ["Griffe [Allonge —, VD 5P, PA –1]", "Morsure [Allonge —, VD 5P, PA –1]"],
+      traits: [["Coloration adaptative", null], ["Armure 2", null], ["Porteur", "HMHVV-II"], ["Immunité", "Agents pathogènes, toxines"], ["Faiblesses", "Exigence diététique (eucalyptus)"], ["Portée", "–1 (petite taille)"]],
     },
     loupFenrir: {
       label: "Loup Fenrir", a: [7, 5, 4, 8, 5, 2, 5, 2, 5],
@@ -630,10 +524,8 @@ const Creatures = {
         Annulation: 5, Intimidation: 4, Perception: 5, Course: 5, Discrétion: 5, Pistage: 5,
         "Combat à mains nues": 6,
       },
-      traits: [
-        ["Armure 6", null], ["Sens accrus", "Ouïe, vision nocturne, odorat"], ["Peur", null],
-        ["Garde magique", "Soi"], ["Arme naturelle", "Morsure/Griffes : VD 10P, PA —"],
-      ],
+      naturalWeapons: ["Morsure [Allonge —, VD 10P, PA —]", "Griffes [Allonge —, VD 10P, PA —]"],
+      traits: [["Armure 6", null], ["Sens accrus", "Ouïe, vision nocturne, odorat"], ["Peur", null], ["Garde magique", "Soi"]],
     },
     gargouille: {
       label: "Gargouille", a: [10, 4, 5, 10, 4, 2, 4, 1, 5],
@@ -641,12 +533,8 @@ const Creatures = {
       habitat: ["montagnes", "urbain"],
       desc: "Créature ailée à la peau de pierre, niche sur les corniches montagneuses et les toits urbains.",
       skills: { Vol: 5, Perception: 5, Discrétion: 6, "Combat à mains nues": 5 },
-      traits: [
-        ["Armure 15", null], ["Dissimulation", "Soi"], ["Sens accrus", "Vision nocturne"],
-        ["Arme naturelle", "Morsure/Griffes : VD 10P, PA –2"], ["Souffle toxique", null],
-        ["Robuste 3", null],
-        ["Faiblesses", "Allergie (lumière du soleil, légère), Vulnérabilité (fer)"],
-      ],
+      naturalWeapons: ["Morsure [Allonge —, VD 10P, PA –2]", "Griffes [Allonge —, VD 10P, PA –2]"],
+      traits: [["Armure 15", null], ["Dissimulation", "Soi"], ["Sens accrus", "Vision nocturne"], ["Souffle toxique", null], ["Robuste 3", null], ["Faiblesses", "Allergie (lumière du soleil, légère), Vulnérabilité (fer)"]],
     },
     gomatia: {
       label: "Gomatia", a: [6, 3, 1, 6, 3, 2, 6, 1, 3],
@@ -654,12 +542,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Petit reptile éveillé caméléonesque de la jungle, capture ses proies à la langue.",
       skills: { Acrobatie: 4, Perception: 4, Discrétion: 6, "Combat à mains nues": 5 },
-      traits: [
-        ["Coloration adaptative", null], ["Armure 3", null], ["Liaison", null],
-        ["Sens accrus", "Toucher, vision à 360°"], ["Immunité", "Toxines"],
-        ["Arme naturelle", "Langue : VD 3S, PA —"], ["Arme naturelle", "Morsure : VD 12P, PA –2"],
-        ["Faiblesses", "Sens réduits (ouïe, odorat)"],
-      ],
+      naturalWeapons: ["Langue [Allonge —, VD 3S, PA —]", "Morsure [Allonge —, VD 12P, PA –2]"],
+      traits: [["Coloration adaptative", null], ["Armure 3", null], ["Liaison", null], ["Sens accrus", "Toucher, vision à 360°"], ["Immunité", "Toxines"], ["Faiblesses", "Sens réduits (ouïe, odorat)"]],
     },
     harpie: {
       label: "Harpie", a: [4, 5, 4, 4, 2, 2, 3, 1, 4],
@@ -667,11 +551,8 @@ const Creatures = {
       habitat: ["forets", "urbain"],
       desc: "Femme-oiseau éveillée de la mythologie grecque, porteuse d'une peste caractéristique (VITAS-3).",
       skills: { Vol: 4, Perception: 3, "Combat à mains nues": 3 },
-      traits: [
-        ["Armure 2", null], ["Sens accrus", "Vision nocturne"], ["Immunité", "Agents pathogènes"],
-        ["Arme naturelle", "Griffes : VD 6P, PA –1"], ["Peste", "VITAS-3"],
-        ["Faiblesses", "Fragile 1"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 6P, PA –1]"],
+      traits: [["Armure 2", null], ["Sens accrus", "Vision nocturne"], ["Immunité", "Agents pathogènes"], ["Peste", "VITAS-3"], ["Faiblesses", "Fragile 1"]],
     },
 
     /* ---- Howling Shadows p.64-77 : Paranormal Animals (Horned Bear-Wolverine) ---- */
@@ -684,11 +565,8 @@ const Creatures = {
         "Combat astral": 5, Gymnique: 3, Intimidation: 6, Perception: 4, Course: 3, Pistage: 4,
         "Combat à mains nues": 6,
       },
-      traits: [
-        ["Armure 10", null], ["Nature duale", null], ["Sens accrus", "Odorat"], ["Influence", null],
-        ["Arme naturelle", "Griffes/Morsure : VD 13P ou 13S, PA –2"], ["Robuste 3", null],
-        ["Faiblesses", "Sens réduits (vue)"], ["Portée", "+2 (grande taille)"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 13P ou 13S, PA –2]", "Morsure [Allonge —, VD 13P ou 13S, PA –2]"],
+      traits: [["Armure 10", null], ["Nature duale", null], ["Sens accrus", "Odorat"], ["Influence", null], ["Robuste 3", null], ["Faiblesses", "Sens réduits (vue)"], ["Portée", "+2 (grande taille)"]],
     },
     juggernaut: {
       label: "Juggernaut", a: [20, 6, 5, 42, 9, 1, 3, 1, 6],
@@ -696,12 +574,8 @@ const Creatures = {
       habitat: ["forets", "plaines", "deserts"],
       desc: "Titan éveillé aux dimensions monstrueuses, écrase tout sur son passage.",
       skills: { Perception: 4, Course: 7, "Combat à mains nues": 4 },
-      traits: [
-        ["Sens accrus", "Ouïe, odorat, détection de mouvement"], ["Peur", null],
-        ["Armure renforcée 18", null], ["Immunité", "Froid, feu, agents pathogènes, toxines"],
-        ["Arme naturelle", "Griffes : VD 42P, PA –4"], ["Robuste 12", null],
-        ["Faiblesses", "Sens réduits (vue)"], ["Portée", "+4 (taille gigantesque)"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 42P, PA –4]"],
+      traits: [["Sens accrus", "Ouïe, odorat, détection de mouvement"], ["Peur", null], ["Armure renforcée 18", null], ["Immunité", "Froid, feu, agents pathogènes, toxines"], ["Robuste 12", null], ["Faiblesses", "Sens réduits (vue)"], ["Portée", "+4 (taille gigantesque)"]],
     },
     martichoras: {
       label: "Martichoras", a: [7, 5, 5, 6, 3, 2, 4, 1, 6],
@@ -709,12 +583,8 @@ const Creatures = {
       habitat: ["forets"],
       desc: "Créature ailée légendaire à queue venimeuse, chasse en forêt en planant silencieusement.",
       skills: { Vol: 4, Gymnique: 5, Perception: 5, Discrétion: 5, Pistage: 5, "Combat à mains nues": 7 },
-      traits: [
-        ["Armure 6", null], ["Sens accrus", "Vision nocturne"],
-        ["Arme naturelle", "Morsure/Griffes : VD 8P, PA –2"],
-        ["Venin", "Vecteur injection, vitesse 1 tour de combat, pénétration –2, puissance 9, effet désorientation/dégâts physiques/nausée"],
-        ["Faiblesses", "Allergie (pollution, légère)"], ["Portée", "+1"],
-      ],
+      naturalWeapons: ["Morsure [Allonge —, VD 8P, PA –2]", "Griffes [Allonge —, VD 8P, PA –2]"],
+      traits: [["Armure 6", null], ["Sens accrus", "Vision nocturne"], ["Venin", "Vecteur injection, vitesse 1 tour de combat, pénétration –2, puissance 9, effet désorientation/dégâts physiques/nausée"], ["Faiblesses", "Allergie (pollution, légère)"], ["Portée", "+1"]],
     },
     chantreMaitre: {
       label: "Chantre maître", a: [20, 5, 4, 30, 8, 3, 4, 5, 6],
@@ -722,14 +592,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Cétacé éveillé sapient de taille colossale, chante pour contrôler les créatures marines environnantes.",
       skills: { "Arme à distance exotique (projection sonique)": 6, Perception: 7, Nage: 6, "Combat à mains nues": 4 },
-      traits: [
-        ["Contrôle animal", "Poissons, mammifères aquatiques"], ["Armure 20", null],
-        ["Compulsion", null], ["Engloutissement", "Eau"], ["Sens accrus", "Sonar"], ["Peur", null],
-        ["Immunité", "Armes normales"], ["Influence", null], ["Sens magique", null],
-        ["Lien mental", null], ["Arme naturelle", "Percée : VD 30P, PA +4"], ["Sapience", null],
-        ["Recherche", null], ["Projection sonique", null], ["Robuste 10", null],
-        ["Faiblesses", "Pas instruit"],
-      ],
+      naturalWeapons: ["Percée [Allonge —, VD 30P, PA +4]"],
+      traits: [["Contrôle animal", "Poissons, mammifères aquatiques"], ["Armure 20", null], ["Compulsion", null], ["Engloutissement", "Eau"], ["Sens accrus", "Sonar"], ["Peur", null], ["Immunité", "Armes normales"], ["Influence", null], ["Sens magique", null], ["Lien mental", null], ["Sapience", null], ["Recherche", null], ["Projection sonique", null], ["Robuste 10", null], ["Faiblesses", "Pas instruit"]],
     },
     merrow: {
       label: "Merrow", a: [5, 3, 5, 5, 3, 3, 3, 3, 3],
@@ -748,12 +612,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Grand serpent sapient des traditions d'Asie du Sud, gardien de temples et de lieux sacrés ; certains individus sont également Éveillés.",
       skills: { "Observation astrale": 4, Gymnique: 3, Perception: 7, "Combat à mains nues": 4 },
-      traits: [
-        ["Sang-froid", null], ["Armure 8", null], ["Nature duale", null], ["Garde", null],
-        ["Arme naturelle", "Morsure : VD (FOR+1)P, PA –2, Portée –1"], ["Sapience", null],
-        ["Venin", "Vecteur injection, instantané, pénétration —, puissance 8, effet dégâts physiques"],
-        ["Faiblesses", "Pas instruit"],
-      ],
+      naturalWeapons: ["Morsure [Allonge –1, VD (FOR+1)P, PA –2]"],
+      traits: [["Sang-froid", null], ["Armure 8", null], ["Nature duale", null], ["Garde", null], ["Sapience", null], ["Venin", "Vecteur injection, instantané, pénétration —, puissance 8, effet dégâts physiques"], ["Faiblesses", "Pas instruit"]],
     },
     scorpionNova: {
       label: "Scorpion nova", a: [4, 4, 4, 3, 3, 2, 5, 1, 3],
@@ -761,11 +621,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Scorpion éveillé de belle taille, chasse la nuit en embuscade dans le sable.",
       skills: { Perception: 5, Discrétion: 6, "Combat à mains nues": 4 },
-      traits: [
-        ["Armure 6", null], ["Dissimulation", "Soi"],
-        ["Arme naturelle", "Griffes : VD 6P, PA –4 ; Dard : VD 2P, PA –1"],
-        ["Venin", "Vecteur injection, vitesse 1 heure, pénétration –2, puissance 12, effet nausée/dégâts physiques"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 6P, PA –4]", "Dard [Allonge —, VD 2P, PA –1]"],
+      traits: [["Armure 6", null], ["Dissimulation", "Soi"], ["Venin", "Vecteur injection, vitesse 1 heure, pénétration –2, puissance 12, effet nausée/dégâts physiques"]],
     },
     babouinOzien: {
       label: "Babouin ozien", a: [5, 5, 4, 4, 2, 2, 5, 4, 4],
@@ -776,10 +633,8 @@ const Creatures = {
         Gymnique: 5, Vol: 8, Intimidation: 6, Perception: 6, Discrétion: 3, Sorcellerie: 4,
         Pistage: 4, "Combat à mains nues": 4,
       },
-      traits: [
-        ["Armure 2", null], ["Sens accrus", "Vision nocturne, odorat"], ["Sort inné", "Lévitation"],
-        ["Arme naturelle", "Griffes : VD 6P, PA –2"], ["Faiblesses", "Fragile 2"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 6P, PA –2]"],
+      traits: [["Armure 2", null], ["Sens accrus", "Vision nocturne, odorat"], ["Sort inné", "Lévitation"], ["Faiblesses", "Fragile 2"]],
     },
     oiseauxPheniciens: {
       label: "Oiseaux phéniciens", a: [3, 5, 4, 4, 2, 2, 4, 1, 5],
@@ -787,12 +642,8 @@ const Creatures = {
       habitat: ["jungles", "forets", "plaines", "urbain"],
       desc: "Famille d'oiseaux éveillés liés au feu (cardinal, ara, oiseau de paradis, sécrétaire, rollier d'Europe) ; la variante ara ajoute une sécrétion d'huiles inflammables.",
       skills: { Vol: 5, Perception: 4, "Combat à mains nues": 5 },
-      traits: [
-        ["Attaque élémentaire", "Feu"], ["Aura énergétique", "Feu"], ["Engloutissement", "Feu"],
-        ["Sens accrus", "Vision améliorée"], ["Immunité", "Feu"],
-        ["Arme naturelle", "Griffes : VD 5P, PA –2"],
-        ["Faiblesses", "Fragile 2 ; l'ara phénicien ajoute Sécrétion (huiles inflammables)"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 5P, PA –2]"],
+      traits: [["Attaque élémentaire", "Feu"], ["Aura énergétique", "Feu"], ["Engloutissement", "Feu"], ["Sens accrus", "Vision améliorée"], ["Immunité", "Feu"], ["Faiblesses", "Fragile 2 ; l'ara phénicien ajoute Sécrétion (huiles inflammables)"]],
     },
     pegase: {
       label: "Pégase", a: [8, 5, 6, 7, 3, 2, 4, 2, 4],
@@ -800,12 +651,8 @@ const Creatures = {
       habitat: ["plaines"],
       desc: "Cheval ailé légendaire des grandes plaines, aussi véloce au sol qu'en vol.",
       skills: { Vol: 6, Perception: 5, Course: 5, "Combat à mains nues": 5 },
-      traits: [
-        ["Armure 4", null],
-        ["Arme naturelle", "Battement d'ailes : VD 7S, PA –2, Renversement 4"],
-        ["Arme naturelle", "Ruade : VD 10S, PA —"],
-        ["Faiblesses", "Exigence diététique (fruits), Fragile 2"], ["Portée", "+1"],
-      ],
+      naturalWeapons: ["Battement d'ailes [Allonge —, VD 7S, PA –2, Renversement 4]", "Ruade [Allonge —, VD 10S, PA —]"],
+      traits: [["Armure 4", null], ["Faiblesses", "Exigence diététique (fruits), Fragile 2"], ["Portée", "+1"]],
     },
     peryton: {
       label: "Péryton", a: [8, 5, 5, 7, 4, 2, 4, 2, 4],
@@ -813,11 +660,8 @@ const Creatures = {
       habitat: ["forets", "plaines"],
       desc: "Cerf ailé prédateur porte-malheur, associé à des accidents frappant ceux qui l'approchent.",
       skills: { Vol: 5, Perception: 8, Course: 5, "Combat à mains nues": 6 },
-      traits: [
-        ["Accident", null], ["Armure 4", null], ["Sens accrus", "Vision grossissante"],
-        ["Arme naturelle", "Bois : VD 8P, PA –2"], ["Arme naturelle", "Ruade : VD 10S, PA —"],
-        ["Silence", null], ["Faiblesses", "Fragile 2"], ["Portée", "+1"],
-      ],
+      naturalWeapons: ["Bois [Allonge —, VD 8P, PA –2]", "Ruade [Allonge —, VD 10S, PA —]"],
+      traits: [["Accident", null], ["Armure 4", null], ["Sens accrus", "Vision grossissante"], ["Silence", null], ["Faiblesses", "Fragile 2"], ["Portée", "+1"]],
     },
     piasma: {
       label: "Piasma", a: [12, 5, 5, 12, 4, 2, 4, 1, 6],
@@ -825,13 +669,8 @@ const Creatures = {
       habitat: ["forets"],
       desc: "Grand prédateur forestier cuirassé, certains individus développent en plus Peur ou Hurlement paralysant (pouvoirs optionnels au choix du MJ).",
       skills: { Intimidation: 8, Perception: 4, Discrétion: 4, Pistage: 5, "Combat à mains nues": 7 },
-      traits: [
-        ["Armure 12", null], ["Sens accrus", "Vision thermographique, audition à large spectre"],
-        ["Arme naturelle", "Griffes/Morsure : VD 12P, PA –2"], ["Robuste 3", null],
-        ["Faiblesses", "Allergie (lumière du soleil, légère)"],
-        ["Portée", "+1"],
-        ["Pouvoirs optionnels (choix du MJ)", "Peur, Hurlement paralysant"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 12P, PA –2]", "Morsure [Allonge —, VD 12P, PA –2]"],
+      traits: [["Armure 12", null], ["Sens accrus", "Vision thermographique, audition à large spectre"], ["Robuste 3", null], ["Faiblesses", "Allergie (lumière du soleil, légère)"], ["Portée", "+1"], ["Pouvoirs optionnels (choix du MJ)", "Peur, Hurlement paralysant"]],
     },
     rocMineur: {
       label: "Roc mineur", a: [4, 5, 4, 4, 2, 2, 4, 1, 3],
@@ -839,11 +678,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Grand rapace des régions côtières, chasseur nocturne fondant en piqué sur les navires et embarcations.",
       skills: { Vol: 7, Perception: 5, "Combat à mains nues": 6 },
-      traits: [
-        ["Attaque en piqué", null], ["Sens accrus", "Vision nocturne, vision grossissante"],
-        ["Immunité", "Agents pathogènes, toxines"], ["Arme naturelle", "Griffes : VD 4P, PA –2"],
-        ["Faiblesses", "Fragile 2"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 4P, PA –2]"],
+      traits: [["Attaque en piqué", null], ["Sens accrus", "Vision nocturne, vision grossissante"], ["Immunité", "Agents pathogènes, toxines"], ["Faiblesses", "Fragile 2"]],
     },
     chienDesOmbres: {
       label: "Chien des ombres", a: [4, 4, 4, 5, 3, 2, 4, 1, 4],
@@ -851,11 +687,8 @@ const Creatures = {
       habitat: ["forets", "urbain"],
       desc: "Canidé éveillé nocturne se dissimulant dans les ombres, chasse en silence dans les friches urbaines et forestières.",
       skills: { Perception: 5, Discrétion: 7, Pistage: 5, "Combat à mains nues": 6 },
-      traits: [
-        ["Armure 2", null], ["Sens accrus", "Vision nocturne"],
-        ["Arme naturelle", "Griffes : VD 7P, PA —"], ["Cape d'ombre", null], ["Silence", null],
-        ["Faiblesses", "Allergie (lumière du soleil, grave)"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 7P, PA —]"],
+      traits: [["Armure 2", null], ["Sens accrus", "Vision nocturne"], ["Cape d'ombre", null], ["Silence", null], ["Faiblesses", "Allergie (lumière du soleil, grave)"]],
     },
     serpentDesNeiges: {
       label: "Serpent des neiges", a: [2, 7, 5, 2, 2, 1, 4, 1, 3],
@@ -863,12 +696,8 @@ const Creatures = {
       habitat: ["forets", "polaire", "urbain"],
       desc: "Serpent éveillé adapté au grand froid, vulnérable au feu.",
       skills: { Perception: 4, Discrétion: 5, Pistage: 4, "Combat à mains nues": 5 },
-      traits: [
-        ["Sens accrus", "Vision nocturne, odorat, vision thermographique"], ["Immunité", "Froid"],
-        ["Arme naturelle", "Morsure : VD 3P, PA +1"],
-        ["Venin", "Vecteur injection, vitesse 1 minute, pénétration –1, puissance 8, effet désorientation/nausée/dégâts physiques"],
-        ["Faiblesses", "Vulnérabilité (feu)"],
-      ],
+      naturalWeapons: ["Morsure [Allonge —, VD 3P, PA +1]"],
+      traits: [["Sens accrus", "Vision nocturne, odorat, vision thermographique"], ["Immunité", "Froid"], ["Venin", "Vecteur injection, vitesse 1 minute, pénétration –1, puissance 8, effet désorientation/nausée/dégâts physiques"], ["Faiblesses", "Vulnérabilité (feu)"]],
     },
     beteAraignee: {
       label: "Bête-araignée", a: [2, 4, 4, 2, 3, 1, 3, 1, 6],
@@ -876,12 +705,8 @@ const Creatures = {
       habitat: ["jungles", "forets"],
       desc: "Araignée éveillée de belle taille tissant des toiles de soie solide, escalade murs et frondaisons.",
       skills: { Gymnique: 4, Perception: 3, Discrétion: 6, "Combat à mains nues": 3 },
-      traits: [
-        ["Armure 4", null], ["Sens accrus", "Tactile"], ["Arme naturelle", "Griffes : VD 3P, PA —"],
-        ["Extrusion de substance", "Soie d'araignée"],
-        ["Venin", "Vecteur injection, instantané, pénétration –4, puissance 6, effet désorientation/dégâts physiques/nausée/paralysie"],
-        ["Marche murale", null],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 3P, PA —]"],
+      traits: [["Armure 4", null], ["Sens accrus", "Tactile"], ["Extrusion de substance", "Soie d'araignée"], ["Venin", "Vecteur injection, instantané, pénétration –4, puissance 6, effet désorientation/dégâts physiques/nausée/paralysie"], ["Marche murale", null]],
     },
     oiseauTonnerreMajeur: {
       label: "Oiseau-tonnerre majeur", a: [4, 3, 7, 8, 3, 2, 4, 1, 6],
@@ -892,11 +717,8 @@ const Creatures = {
         "Combat astral": 5, "Arme à distance exotique (foudre)": 5, Vol: 5, Perception: 6,
         "Combat à mains nues": 5,
       },
-      traits: [
-        ["Nature duale", null], ["Attaque élémentaire", "Électricité"], ["Sens accrus", "Vision nocturne"],
-        ["Arme naturelle", "Griffes : VD 10P, PA –4"], ["Contrôle météorologique", "Orages électriques"],
-        ["Faiblesses", "Fragile 1"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 10P, PA –4]"],
+      traits: [["Nature duale", null], ["Attaque élémentaire", "Électricité"], ["Sens accrus", "Vision nocturne"], ["Contrôle météorologique", "Orages électriques"], ["Faiblesses", "Fragile 1"]],
     },
     troglodyte: {
       label: "Troglodyte", a: [3, 3, 4, 2, 3, 2, 3, 2, 2],
@@ -915,11 +737,8 @@ const Creatures = {
       habitat: ["plaines", "forets"],
       desc: "Cheval éveillé à la corne mystique, symbole de pureté errant dans plaines et lisières boisées.",
       skills: { "Contre-sort": 8, Perception: 6, Course: 6, "Combat à mains nues": 5 },
-      traits: [
-        ["Armure 4", null], ["Immunité", "Agents pathogènes"], ["Garde magique", null],
-        ["Arme naturelle", "Corne : VD 7P, PA –4"], ["Arme naturelle", "Ruade : VD 10S, PA —"],
-        ["Faiblesses", "Allergie (polluants, grave)"], ["Portée", "+1"],
-      ],
+      naturalWeapons: ["Corne [Allonge —, VD 7P, PA –4]", "Ruade [Allonge —, VD 10S, PA —]"],
+      traits: [["Armure 4", null], ["Immunité", "Agents pathogènes"], ["Garde magique", null], ["Faiblesses", "Allergie (polluants, grave)"], ["Portée", "+1"]],
     },
     porcsEpicsVolants: {
       label: "Porcs-épics volants", a: [2, 4, 2, 2, 3, 1, 3, 2, 4],
@@ -927,14 +746,8 @@ const Creatures = {
       habitat: ["forets"],
       desc: "Porc-épic éveillé capable de projeter ses piquants, actif la nuit en forêt.",
       skills: { Gymnique: 5, Perception: 5, Discrétion: 5, "Combat à mains nues": 4 },
-      traits: [
-        ["Armure 1", null], ["Sens accrus", "Vision nocturne"],
-        ["Arme naturelle à distance", "Piquants : VD 3P, PA –2"],
-        ["Arme naturelle", "Morsure : VD 2P, PA —"], ["Souffle nauséabond", null],
-        ["Faiblesses", "Exigence diététique (sel)"],
-        ["Piquants barbelés", "Les retirer inflige 3P non résisté ou nécessite un test Logique + Premiers secours (4)"],
-        ["Piquants sales (variante)", "Certains individus ajoutent Venin (vecteur injection, vitesse 1 heure, pénétration –2, effet désorientation/nausée/dégâts d'étourdissement)"],
-      ],
+      naturalWeapons: ["Piquants [Allonge —, VD 3P, PA –2]", "Morsure [Allonge —, VD 2P, PA —]"],
+      traits: [["Armure 1", null], ["Sens accrus", "Vision nocturne"], ["Souffle nauséabond", null], ["Faiblesses", "Exigence diététique (sel)"], ["Piquants barbelés", "Les retirer inflige 3P non résisté ou nécessite un test Logique + Premiers secours (4)"], ["Piquants sales (variante)", "Certains individus ajoutent Venin (vecteur injection, vitesse 1 heure, pénétration –2, effet désorientation/nausée/dégâts d'étourdissement)"]],
     },
     glouton: {
       label: "Glouton", a: [7, 6, 5, 5, 4, 2, 4, 1, 6],
@@ -942,10 +755,8 @@ const Creatures = {
       habitat: ["forets"],
       desc: "Grand glouton éveillé, meneur redouté de meutes de gloutons et blaireaux, chasse avec une intelligence tactique inhabituelle (discrétion, embuscades, diversions, pièges).",
       skills: { Perception: 5, Discrétion: 4, Pistage: 6, "Combat à mains nues": 8 },
-      traits: [
-        ["Contrôle animal", "Gloutons, blaireaux"], ["Sens accrus", "Odorat"], ["Armure 6", null],
-        ["Arme naturelle", "Griffes : VD 8P, PA —"], ["Faiblesses", "Sens réduits (vue)"],
-      ],
+      naturalWeapons: ["Griffes [Allonge —, VD 8P, PA —]"],
+      traits: [["Contrôle animal", "Gloutons, blaireaux"], ["Sens accrus", "Odorat"], ["Armure 6", null], ["Faiblesses", "Sens réduits (vue)"]],
     },
   },
 
@@ -959,7 +770,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Chien dressé pour la garde de propriétés privées, entrepôts ou compounds corporatifs.",
       skills: { Athlétisme: 7, "Combat rapproché": 6, "Influence (intimidation)": 5, "Perception (olfactive)": 8, "Plein air": 9 },
-      traits: [["Arme naturelle", "Griffes / Crocs : VD 2P"], ["Armure 1", null], ["Sens accrus", "Ouïe, odorat"]],
+      naturalWeapons: ["Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]", "Crocs [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 1", null], ["Sens accrus", "Ouïe, odorat"]],
     },
     felin: {
       label: "Grand félin", a: [5, 5, 4, 4, 1, 1, 4, 3, null],
@@ -967,7 +779,8 @@ const Creatures = {
       habitat: ["jungles", "forets"],
       desc: "Grand félin solitaire, chasseur embusqué redoutable en milieu naturel.",
       skills: { Athlétisme: 11, "Combat rapproché": 12, Furtivité: 11, "Influence (intimidation)": 7, "Perception (visuelle)": 9, "Plein air": 8 },
-      traits: [["Arme naturelle", "Griffes / Crocs : VD 3P"], ["Armure 2", null], ["Sens accrus", "Vision nocturne, odorat"]],
+      naturalWeapons: ["Griffes [VD 3P, SO FOR+RÉA/–/–/–/–]", "Crocs [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null], ["Sens accrus", "Vision nocturne, odorat"]],
     },
     requin: {
       label: "Requin", a: [5, 3, 5, 5, 2, 1, 4, 1, null],
@@ -975,7 +788,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Prédateur marin attiré par le sang et les vibrations, danger classique des zones côtières.",
       skills: { "Athlétisme (natation)": 9, "Combat rapproché": 11, "Influence (intimidation)": 6, "Perception (olfactive)": 10 },
-      traits: [["Arme naturelle", "Crocs : VD 4P"], ["Armure renforcée 6", null], ["Sens accrus", "Odorat"]],
+      naturalWeapons: ["Crocs [VD 4P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure renforcée 6", null], ["Sens accrus", "Odorat"]],
     },
     barghest: {
       label: "Barghest", a: [7, 4, 5, 5, 3, 2, 5, 5, 5],
@@ -983,12 +797,8 @@ const Creatures = {
       habitat: ["urbain", "forets"],
       desc: "Molosse spectral des légendes britanniques, hante ruines et friches industrielles en meutes réduites.",
       skills: { Astral: 9, Athlétisme: 9, "Combat rapproché": 12, "Influence (intimidation)": 10, Perception: 11, "Plein air": 11 },
-      traits: [
-        ["Arme naturelle", "Griffes / Crocs : VD 3P"], ["Armure 4", null],
-        ["Hurlement paralysant", null], ["Immunité", "Hurlement du barghest"],
-        ["Nature duale", null], ["Peur", null],
-        ["Sens accrus", "Ouïe, odorat, sonar"],
-      ],
+      naturalWeapons: ["Griffes [VD 3P, SO FOR+RÉA/–/–/–/–]", "Crocs [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Hurlement paralysant", null], ["Immunité", "Hurlement du barghest"], ["Nature duale", null], ["Peur", null], ["Sens accrus", "Ouïe, odorat, sonar"]],
     },
     cocatrix: {
       label: "Cocatrix", a: [3, 4, 3, 3, 3, 1, 2, 1, 5],
@@ -996,10 +806,8 @@ const Creatures = {
       habitat: ["marais", "forets"],
       desc: "Petit reptile éveillé au toucher paralysant, immunisé à son propre poison.",
       skills: { Athlétisme: 11, "Combat rapproché": 11, Furtivité: 9, Perception: 5 },
-      traits: [
-        ["Arme naturelle", "Griffes : VD 2P"], ["Armure 1", null],
-        ["Toucher paralysant", "Queue"], ["Immunité", "Son propre toucher"],
-      ],
+      naturalWeapons: ["Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 1", null], ["Toucher paralysant", "Queue"], ["Immunité", "Son propre toucher"]],
     },
     goule: {
       label: "Goule", a: [6, 2, 4, 5, 4, 1, 3, 1, 1],
@@ -1007,12 +815,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Infecté HMHVV nécrophage, aveugle mais vif d'oreille et d'odorat, terré dans égouts et bâtiments abandonnés.",
       skills: { Astral: 8, Athlétisme: 6, "Combat rapproché": 9, Furtivité: 8, Perception: 8 },
-      traits: [
-        ["Arme naturelle", "Crocs : VD 4P / Griffes : VD 3P"], ["Armure 1", null],
-        ["Conscience", null], ["Nature duale", null], ["Robuste 2", null],
-        ["Sens accrus", "Ouïe, odorat"],
-        ["Faiblesses", "Allergie (lumière du soleil, modérée), Exigence alimentaire (chair métahumaine), Sens réduit (aveugle)"],
-      ],
+      naturalWeapons: ["Crocs [VD 4P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 1", null], ["Conscience", null], ["Nature duale", null], ["Robuste 2", null], ["Sens accrus", "Ouïe, odorat"], ["Faiblesses", "Allergie (lumière du soleil, modérée), Exigence alimentaire (chair métahumaine), Sens réduit (aveugle)"]],
     },
     ratDiable: {
       label: "Rat du diable", a: [1, 4, 5, 1, 2, 1, 5, 4, 4],
@@ -1020,12 +824,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Rat éveillé meneur de meutes de rats ordinaires, endémique des sous-sols et égouts urbains.",
       skills: { "Athlétisme (escalade)": 7, "Combat rapproché": 9, Furtivité: 10, Perception: 9 },
-      traits: [
-        ["Arme naturelle", "Crocs : VD 1P"],
-        ["Contrôle animal", "Rats communs"], ["Dissimulation", "Personnelle"],
-        ["Immunité", "Toxines"],
-        ["Faiblesses", "Allergie (lumière du soleil, faible)"],
-      ],
+      naturalWeapons: ["Crocs [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Contrôle animal", "Rats communs"], ["Dissimulation", "Personnelle"], ["Immunité", "Toxines"], ["Faiblesses", "Allergie (lumière du soleil, faible)"]],
     },
     ratDemon: {
       label: "Rat démon", a: [3, 4, 5, 3, 3, 2, 5, 5, 6],
@@ -1033,12 +833,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Rat éveillé venimeux, meneur de meutes urbaines regroupant plusieurs espèces de rats.",
       skills: { "Athlétisme (escalade)": 7, "Combat rapproché": 10, Furtivité: 11, Perception: 10 },
-      traits: [
-        ["Arme naturelle", "Crocs : VD 2P"], ["Armure 2", null],
-        ["Contrôle animal", "Rats communs, rats du diable, rats d'infortune"],
-        ["Dissimulation", "Personnelle"], ["Immunité", "Toxines"], ["Venin", null],
-        ["Faiblesses", "Allergie (lumière du soleil, grave)"],
-      ],
+      naturalWeapons: ["Crocs [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null], ["Contrôle animal", "Rats communs, rats du diable, rats d'infortune"], ["Dissimulation", "Personnelle"], ["Immunité", "Toxines"], ["Venin", null], ["Faiblesses", "Allergie (lumière du soleil, grave)"]],
     },
     vampire: {
       label: "Vampire", a: [3, 2, 4, 3, 3, 2, 3, 4, 5],
@@ -1046,15 +842,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Infecté HMHVV hématophage se fondant parmi les métahumains la nuit venue, drainant l'Essence de ses victimes.",
       skills: { Athlétisme: 9, "Combat rapproché": 9, Furtivité: 9, Perception: 11 },
-      traits: [
-        ["Arme naturelle", "Crocs : VD 2P"],
-        ["Conscience", null],
-        ["Drain d'Essence", null], ["Forme brumeuse", null],
-        ["Immunité", "Vieillissement, pathogènes, toxines"],
-        ["Infection", null], ["Nature duale", null], ["Régénération", null],
-        ["Sens accrus", "Ouïe, odorat, vision thermographique"],
-        ["Faiblesses", "Allergie (bois, grave), Allergie (lumière du soleil, grave), Exigence alimentaire (sang métahumain), Perte d'Essence, Sommeil induit (manque d'air, [Essence] minutes)"],
-      ],
+      naturalWeapons: ["Crocs [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Conscience", null], ["Drain d'Essence", null], ["Forme brumeuse", null], ["Immunité", "Vieillissement, pathogènes, toxines"], ["Infection", null], ["Nature duale", null], ["Régénération", null], ["Sens accrus", "Ouïe, odorat, vision thermographique"], ["Faiblesses", "Allergie (bois, grave), Allergie (lumière du soleil, grave), Exigence alimentaire (sang métahumain), Perte d'Essence, Sommeil induit (manque d'air, [Essence] minutes)"]],
     },
     basilic: {
       label: "Basilic", a: [6, 2, 3, 6, 4, 1, 3, 1, 4],
@@ -1062,11 +851,8 @@ const Creatures = {
       habitat: ["marais", "urbain"],
       desc: "Grand reptile éveillé au regard pétrifiant, se terre dans les égouts et zones humides désertées.",
       skills: { "Athlétisme (natation)": 7, "Combat rapproché": 8, Furtivité: 5, Perception: 7 },
-      traits: [
-        ["Arme naturelle", "Griffes / Crocs : VD 3P"], ["Armure 7", null],
-        ["Pétrification", null],
-        ["Faiblesses", "Vulnérabilité (son propre regard)"],
-      ],
+      naturalWeapons: ["Griffes [VD 3P, SO FOR+RÉA/–/–/–/–]", "Crocs [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 7", null], ["Pétrification", null], ["Faiblesses", "Vulnérabilité (son propre regard)"]],
     },
     chienEnfer: {
       label: "Chien de l'enfer", a: [6, 4, 5, 4, 3, 2, 4, 3, 5],
@@ -1074,12 +860,8 @@ const Creatures = {
       habitat: ["deserts", "urbain"],
       desc: "Canidé éveillé crachant le feu, associé aux légendes de chiens infernaux gardiens de lieux maudits.",
       skills: { Astral: 9, Athlétisme: 11, "Combat rapproché": 8, Furtivité: 9, "Influence (intimidation)": 7, Perception: 7, "Plein air": 9 },
-      traits: [
-        ["Arme naturelle", "Crocs : VD 3P"], ["Armure 4", null],
-        ["Attaque élémentaire", "Feu"], ["Immunité", "Feu"],
-        ["Nature duale", null], ["Peur", null],
-        ["Sens accrus", "Ouïe, vision nocturne, odorat"],
-      ],
+      naturalWeapons: ["Crocs [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Attaque élémentaire", "Feu"], ["Immunité", "Feu"], ["Nature duale", null], ["Peur", null], ["Sens accrus", "Ouïe, vision nocturne, odorat"]],
     },
     cerbere: {
       label: "Cerbère", a: [6, 4, 5, 6, 4, 2, 6, 3, 5],
@@ -1087,13 +869,8 @@ const Creatures = {
       habitat: ["forets", "montagnes"],
       desc: "Molosse tricéphale mythique, gardien redouté des lieux sacrés en forêt et montagne.",
       skills: { Athlétisme: 10, "Combat rapproché": 13, "Influence (intimidation)": 8, Perception: 12, "Plein air": 14 },
-      traits: [
-        ["Arme naturelle", "Griffes / Crocs : VD 4P"], ["Armure 6", null],
-        ["Dissimulation", "Personnelle"], ["Immunité", "Froid, feu"],
-        ["Mouvement", "Personnelle"], ["Peur", null], ["Recherche", null],
-        ["Robuste 4", null], ["Salive corrosive", null],
-        ["Sens accrus", "Ouïe, vision nocturne, odorat, vision thermographique"],
-      ],
+      naturalWeapons: ["Griffes [VD 4P, SO FOR+RÉA/–/–/–/–]", "Crocs [VD 4P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 6", null], ["Dissimulation", "Personnelle"], ["Immunité", "Froid, feu"], ["Mouvement", "Personnelle"], ["Peur", null], ["Recherche", null], ["Robuste 4", null], ["Salive corrosive", null], ["Sens accrus", "Ouïe, vision nocturne, odorat, vision thermographique"]],
     },
     ratInfortune: {
       label: "Rat d'infortune", a: [1, 3, 4, 0, 2, 1, 3, 2, 6],
@@ -1101,13 +878,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Petit rat éveillé porte-malheur, capable d'infliger la malchance à distance à ses cibles.",
       skills: { "Athlétisme (escalade)": 6, "Combat rapproché": 6, Furtivité: 6, Perception: 7 },
-      traits: [
-        ["Arme naturelle", "Crocs : VD 0P"],
-        ["Accident", null],
-        ["Contrôle animal", "Rats communs"], ["Immunité", "Toxines"],
-        ["Infortune", "Capacité unique : portée LdV (L), type M, action majeure. Test opposé de Magie + Réaction contre Atout courant ; un succès net inflige le trait Malchance pendant 1 minute par succès net."],
-        ["Faiblesses", "Allergie (lumière du soleil, faible)"],
-      ],
+      naturalWeapons: ["Crocs [VD 0P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Accident", null], ["Contrôle animal", "Rats communs"], ["Immunité", "Toxines"], ["Infortune", "Capacité unique : portée LdV (L), type M, action majeure. Test opposé de Magie + Réaction contre Atout courant ; un succès net inflige le trait Malchance pendant 1 minute par succès net."], ["Faiblesses", "Allergie (lumière du soleil, faible)"]],
     },
 
     /* ---- Wild Life p.20-51 : Grasslands+Plains + Mountains ---- */
@@ -1117,14 +889,8 @@ const Creatures = {
       habitat: ["deserts", "plaines"],
       desc: "Ver géant éveillé adapté à la contamination des sols, environ 4 mètres de long, sensible à la lumière solaire.",
       skills: { Athlétisme: 4, "Combat rapproché": 7, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 2", null], ["Nature duale", null],
-        ["Sens accrus", "Sens des vibrations"], ["Immunité", "Pathogènes, toxines"],
-        ["Arme naturelle", "Morsure : VD 2P"],
-        ["Arme naturelle à distance", "Crachats corrosifs : VD 3P (chimique)"],
-        ["Régénération", null],
-        ["Faiblesses", "Vulnérabilité (lumière du soleil, faible)"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]", "Crachats corrosifs [VD 3P (chimique), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null], ["Nature duale", null], ["Sens accrus", "Sens des vibrations"], ["Immunité", "Pathogènes, toxines"], ["Régénération", null], ["Faiblesses", "Vulnérabilité (lumière du soleil, faible)"]],
     },
     mortMongolBehemoth: {
       label: "Ver de la mort mongol (béhémoth)", a: [18, 4, 6, 10, 3, 1, 3, 1, 6],
@@ -1132,15 +898,8 @@ const Creatures = {
       habitat: ["deserts", "plaines"],
       desc: "Spécimen adulte du ver de la mort mongol, pouvant atteindre 23 mètres de long, chargé d'une aura électrique.",
       skills: { Athlétisme: 4, "Combat rapproché": 7, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 6", null], ["Nature duale", null],
-        ["Attaque élémentaire", "Aura électrique"],
-        ["Sens accrus", "Sens des vibrations"], ["Immunité", "Pathogènes, toxines"],
-        ["Arme naturelle", "Morsure : VD 2P"],
-        ["Arme naturelle à distance", "Crachats corrosifs : VD 4P (chimique)"],
-        ["Régénération", null],
-        ["Faiblesses", "Vulnérabilité (lumière du soleil, faible)"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]", "Crachats corrosifs [VD 4P (chimique), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 6", null], ["Nature duale", null], ["Attaque élémentaire", "Aura électrique"], ["Sens accrus", "Sens des vibrations"], ["Immunité", "Pathogènes, toxines"], ["Régénération", null], ["Faiblesses", "Vulnérabilité (lumière du soleil, faible)"]],
     },
     oiseauTerreur: {
       label: "Oiseau terreur", a: [5, 5, 4, 6, 3, 3, 3, 1, null],
@@ -1148,13 +907,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Grand oiseau terrestre créé génétiquement par Shiawase Biotech, tête proche du T-Rex sur un corps de cocatrix.",
       skills: { Athlétisme: 5, "Combat rapproché": 6, "Plein air": 1, Perception: 4 },
-      traits: [
-        ["Armure 3", null], ["Nature duale", null],
-        ["Sens accrus", "Vision thermographique"], ["Immunité", "Son propre toucher"],
-        ["Arme naturelle", "Morsure : VD 3P / Griffes bondissantes : VD 2P"],
-        ["Toucher paralysant", "Queue"],
-        ["Faiblesses", "Sens réduit (odorat), Exigence alimentaire (aliments de marque Ocean Farming)"],
-      ],
+      naturalWeapons: ["Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]", "Griffes bondissantes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 3", null], ["Nature duale", null], ["Sens accrus", "Vision thermographique"], ["Immunité", "Son propre toucher"], ["Toucher paralysant", "Queue"], ["Faiblesses", "Sens réduit (odorat), Exigence alimentaire (aliments de marque Ocean Farming)"]],
     },
     dentSabreTigre: {
       label: "Tigre à dents de sabre", a: [7, 5, 4, 7, 3, 2, 4, 3, null],
@@ -1162,11 +916,8 @@ const Creatures = {
       habitat: ["plaines", "montagnes"],
       desc: "Grand félin éveillé des prairies et Rocheuses, vit en groupes familiaux et peut changer sa coloration à la chasse.",
       skills: { Athlétisme: 6, "Combat rapproché": 7, "Plein air": 4, Perception: 5, Furtivité: 7 },
-      traits: [
-        ["Sens accrus", "Vision en basse lumière, vision thermographique"],
-        ["Arme naturelle", "Morsure : VD 4P / Griffes : VD 2P"],
-        ["Coloration adaptative", "Dynamique : change de coloration à la chasse"],
-      ],
+      naturalWeapons: ["Morsure [VD 4P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Sens accrus", "Vision en basse lumière, vision thermographique"], ["Coloration adaptative", "Dynamique : change de coloration à la chasse"]],
     },
     dentSabreJaguar: {
       label: "Jaguar à dents de sabre", a: [7, 5, 4, 7, 3, 2, 4, 3, null],
@@ -1174,11 +925,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Variante jaguar du félin à dents de sabre, chasseur furtif des zones tropicales.",
       skills: { Athlétisme: 7, "Combat rapproché": 6, "Plein air": 4, Perception: 5, Furtivité: 6 },
-      traits: [
-        ["Sens accrus", "Vision en basse lumière, vision thermographique"],
-        ["Arme naturelle", "Morsure : VD 3P / Griffes : VD 2P"],
-        ["Coloration adaptative", "Basique"],
-      ],
+      naturalWeapons: ["Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Sens accrus", "Vision en basse lumière, vision thermographique"], ["Coloration adaptative", "Basique"]],
     },
     dentSabreLion: {
       label: "Lion à dents de sabre", a: [5, 5, 4, 5, 2, 2, 4, 3, null],
@@ -1186,10 +934,8 @@ const Creatures = {
       habitat: ["plaines"],
       desc: "Variante lion du félin à dents de sabre, chasseur en groupe des grandes plaines.",
       skills: { Athlétisme: 5, "Combat rapproché": 5, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Sens accrus", "Vision en basse lumière, vision thermographique"],
-        ["Arme naturelle", "Morsure : VD 3P / Griffes : VD 2P"],
-      ],
+      naturalWeapons: ["Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Sens accrus", "Vision en basse lumière, vision thermographique"]],
     },
     furetCentenaire: {
       label: "Furet centenaire", a: [1, 2, 3, 1, 1, 2, 2, 1, 2],
@@ -1197,11 +943,8 @@ const Creatures = {
       habitat: ["plaines"],
       desc: "Furet éveillé de grande taille (jusqu'à 2 m), chasseur solitaire très sensible à la magie ambiante.",
       skills: { Athlétisme: 3, "Combat rapproché": 3, "Plein air": 3, Perception: 3, Furtivité: 4 },
-      traits: [
-        ["Sens accrus", "Manasensible"],
-        ["Arme naturelle", "Morsure : VD 2P"],
-        ["Faiblesses", "Allergie (magie, faible)"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Sens accrus", "Manasensible"], ["Faiblesses", "Allergie (magie, faible)"]],
     },
     fauconCetan: {
       label: "Faucon Cetan", a: [1, 6, 3, 2, 3, 1, 3, 3, 4],
@@ -1209,14 +952,8 @@ const Creatures = {
       habitat: ["plaines"],
       desc: "Rapace éveillé des prairies nord-américaines, capable de suivre ses proies sur près de 3 km en vol.",
       skills: { Athlétisme: 4, "Combat rapproché": 4, "Plein air": 4, Perception: 5, Furtivité: 3 },
-      traits: [
-        ["Nature duale", null],
-        ["Sens accrus", "Amélioration et magnification visuelles"],
-        ["Influence", "Engloutir (air, terre)"],
-        ["Arme naturelle", "Bec : VD 2P / Serres : VD 2P"],
-        ["Faiblesses", "Robuste -2 (fragile)"],
-        ["Mouvement", "Vol 20/60/+5"],
-      ],
+      naturalWeapons: ["Bec [VD 2P, SO FOR+RÉA/–/–/–/–]", "Serres [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Sens accrus", "Amélioration et magnification visuelles"], ["Influence", "Engloutir (air, terre)"], ["Faiblesses", "Robuste -2 (fragile)"], ["Mouvement", "Vol 20/60/+5"]],
     },
     canardDemoniaque: {
       label: "Canard démoniaque", a: [6, 4, 3, 7, 2, 1, 3, 2, null],
@@ -1224,10 +961,8 @@ const Creatures = {
       habitat: ["plaines"],
       desc: "Canard éveillé agressif des prairies australiennes, aux serres tranchantes et au bec puissant.",
       skills: { Athlétisme: 2, "Combat rapproché": 3, "Plein air": 3, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Arme naturelle", "Serres tranchantes : VD 3P / Coup de bec : VD 5S"],
-        ["Faiblesses", "Vulnérabilité (feu)"],
-      ],
+      naturalWeapons: ["Serres tranchantes [VD 3P, SO FOR+RÉA/–/–/–/–]", "Coup de bec [VD 5S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Faiblesses", "Vulnérabilité (feu)"]],
     },
     vacheInfernale: {
       label: "Vache infernale", a: [8, 2, 3, 7, 2, 1, 2, 1, 3],
@@ -1235,12 +970,8 @@ const Creatures = {
       habitat: ["plaines"],
       desc: "Bovidé éveillé des prairies indiennes protégées, à l'estomac assez robuste pour digérer bois et métal.",
       skills: { Athlétisme: 3, "Combat rapproché": 4, "Plein air": 2, Perception: 2 },
-      traits: [
-        ["Armure 5", null],
-        ["Arme naturelle à distance", "Crachats corrosifs : VD 7P (chimique)"],
-        ["Arme naturelle", "Morsure : VD 2P"],
-        ["Faiblesses", "Sens réduit (odorat)"],
-      ],
+      naturalWeapons: ["Crachats corrosifs [VD 7P (chimique), SO FOR+RÉA/–/–/–/–]", "Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 5", null], ["Faiblesses", "Sens réduit (odorat)"]],
     },
     renardFimbulwinter: {
       label: "Renard de Fimbulwinter", a: [1, 3, 3, 2, 2, 2, 2, 1, 2],
@@ -1256,13 +987,8 @@ const Creatures = {
       habitat: ["polaire"],
       desc: "Créature techno-critter des régions arctiques du Yukon, généralement pacifique mais capable d'attaques matricielles actives.",
       skills: { Athlétisme: 4, "Combat rapproché": 2, Cracking: 4, Électronique: 3, "Plein air": 3, Perception: 5, Furtivité: 2 },
-      traits: [
-        ["Arme naturelle", "Morsure : VD 2S"],
-        ["Résonance (créature techno-critter)", "Attribut 9 = Résonance, non Magie"],
-        ["Formes complexes", "Infusion (Attaque), Infusion (Discrétion), Pulse Storm"],
-        ["Morsure numérique", "[Cracking, DV 2, RA 6]"],
-        ["Persona Matrice", "DR 4, AC 6/4, CM 10"],
-      ],
+      naturalWeapons: ["Morsure [VD 2S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Résonance (créature techno-critter)", "Attribut 9 = Résonance, non Magie"], ["Formes complexes", "Infusion (Attaque), Infusion (Discrétion), Pulse Storm"], ["Morsure numérique", "[Cracking, DV 2, RA 6]"], ["Persona Matrice", "DR 4, AC 6/4, CM 10"]],
     },
     gashadokuro: {
       label: "Gashadokuro", a: [8, 6, 8, 4, 6, 6, 7, 6, 6],
@@ -1271,13 +997,8 @@ const Creatures = {
       // Stats basées sur une Force fixée à 6 (créature de type esprit, formules B=F+2, R=F+2, S=F-2, I=F+1, reste=F) ; à ajuster si le MJ veut un individu plus ou moins puissant.
       desc: "Squelette géant sapient de la mythologie japonaise, né sur d'anciens champs de bataille, actif uniquement la nuit.",
       skills: { Astral: 6, "Combat rapproché": 12, Perception: 8 },
-      traits: [
-        ["Forme astrale", null], ["Peur", null], ["Sapience", null],
-        ["Arme naturelle", "Griffes/Morsure : VD 3P"],
-        ["Toucher paralysant", null],
-        ["Immunité", "Armes ordinaires (matérialisation)"],
-        ["Faiblesses", "Vulnérabilité (lumière du soleil, grave)"],
-      ],
+      naturalWeapons: ["Griffes [VD 3P, SO FOR+RÉA/–/–/–/–]", "Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Forme astrale", null], ["Peur", null], ["Sapience", null], ["Toucher paralysant", null], ["Immunité", "Armes ordinaires (matérialisation)"], ["Faiblesses", "Vulnérabilité (lumière du soleil, grave)"]],
     },
     loupTerres: {
       label: "Loup des terres", a: [3, 4, 4, 5, 2, 2, 3, 1, 4],
@@ -1285,11 +1006,8 @@ const Creatures = {
       habitat: ["plaines"],
       desc: "Loup éveillé du centre de l'UCAS, capable de s'engloutir dans le sol pour surgir sur ses proies.",
       skills: { Athlétisme: 4, "Combat rapproché": 7, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Nature duale", null], ["Sens accrus", "Sens des vibrations"],
-        ["Arme naturelle", "Engloutir (terre) : VD 6P / Morsure : VD 4P / Griffes : VD 2P"],
-        ["Faiblesses", "Vulnérabilité (feu)"],
-      ],
+      naturalWeapons: ["Engloutir (terre) [VD 6P, SO FOR+RÉA/–/–/–/–]", "Morsure [VD 4P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Sens accrus", "Sens des vibrations"], ["Faiblesses", "Vulnérabilité (feu)"]],
     },
     jackalope: {
       label: "Jackalope", a: [1, 3, 3, 1, 2, 2, 3, 3, null],
@@ -1297,10 +1015,8 @@ const Creatures = {
       habitat: ["plaines"],
       desc: "Petit lièvre éveillé aux bois perçants, reproducteur prolifique des prairies du CAS.",
       skills: { Athlétisme: 4, "Combat rapproché": 3, "Plein air": 3, Perception: 3, Furtivité: 2 },
-      traits: [
-        ["Arme naturelle", "Bois perçants : VD 2P"],
-        ["Faiblesses", "Robuste -3 (fragile)"],
-      ],
+      naturalWeapons: ["Bois perçants [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Faiblesses", "Robuste -3 (fragile)"]],
     },
     miniwashitu: {
       label: "Miniwashitu", a: [3, 3, 3, 3, 1, 1, 2, 2, 3],
@@ -1308,9 +1024,8 @@ const Creatures = {
       habitat: ["plaines"],
       desc: "Bovidé éveillé des prairies portant une rangée d'épines de 30 cm le long de la colonne vertébrale.",
       skills: {},
-      traits: [
-        ["Arme naturelle", "Charge : VD 3S"],
-      ],
+      naturalWeapons: ["Charge [VD 3S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [],
     },
     pegase: {
       label: "Pégase", a: [4, 4, 4, 4, 2, 2, 3, 1, 3],
@@ -1334,14 +1049,8 @@ const Creatures = {
       habitat: ["deserts", "montagnes"],
       desc: "Créature ailée gardienne des steppes d'Asie et régions riches en minéraux, attirée par l'or et les bijoux.",
       skills: { Athlétisme: 4, "Combat rapproché": 5, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 3", null], ["Nature duale", null],
-        ["Sens accrus", "Vision en basse lumière, odorat"],
-        ["Arme naturelle", "Morsure : VD 4P / Bois : VD 2P"],
-        ["Peur", "Hurlement paralysant"],
-        ["Garde", "Protection ; vitesse au sol 10/20/+3"],
-        ["Faiblesses", "Exigence alimentaire (traces d'or, d'argent ou de bijoux)"],
-      ],
+      naturalWeapons: ["Morsure [VD 4P, SO FOR+RÉA/–/–/–/–]", "Bois [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 3", null], ["Nature duale", null], ["Sens accrus", "Vision en basse lumière, odorat"], ["Peur", "Hurlement paralysant"], ["Garde", "Protection ; vitesse au sol 10/20/+3"], ["Faiblesses", "Exigence alimentaire (traces d'or, d'argent ou de bijoux)"]],
     },
     licorne: {
       label: "Licorne (SR6)", a: [7, 5, 5, 7, 4, 2, 4, 4, 5],
@@ -1349,12 +1058,8 @@ const Creatures = {
       habitat: ["plaines"],
       desc: "Cheval éveillé à la corne mystique, symbole de pureté errant dans les prairies.",
       skills: { Athlétisme: 4, "Combat rapproché": 4, "Plein air": 4, Perception: 5, Sorcellerie: 4 },
-      traits: [
-        ["Immunité", "Pathogènes"], ["Garde magique", null],
-        ["Arme naturelle", "Sabots : VD 2S / Bois : VD 4P"],
-        ["Contre-sort", "+2"],
-        ["Faiblesses", "Allergie (polluants, grave)"],
-      ],
+      naturalWeapons: ["Sabots [VD 2S, SO FOR+RÉA/–/–/–/–]", "Bois [VD 4P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Immunité", "Pathogènes"], ["Garde magique", null], ["Contre-sort", "+2"], ["Faiblesses", "Allergie (polluants, grave)"]],
     },
     licorneSuperieure: {
       label: "Licorne supérieure", a: [9, 5, 4, 9, 4, 2, 4, 3, 6],
@@ -1362,13 +1067,8 @@ const Creatures = {
       habitat: ["plaines", "montagnes"],
       desc: "Licorne d'un rang supérieur, plus puissante et plus rare, présente en altitude dans les mêmes prairies.",
       skills: { Athlétisme: 4, "Combat rapproché": 4, "Plein air": 4, Perception: 5, Sorcellerie: 4 },
-      traits: [
-        ["Arrêteur d'arcane", null], ["Recherche", null],
-        ["Immunité", "Pathogènes, poisons"], ["Garde magique", null],
-        ["Arme naturelle", "Sabots : VD 2S / Bois : VD 4P"],
-        ["Empathie", null], ["Contre-sort", "+2"],
-        ["Faiblesses", "Allergie (polluants, grave)"],
-      ],
+      naturalWeapons: ["Sabots [VD 2S, SO FOR+RÉA/–/–/–/–]", "Bois [VD 4P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Arrêteur d'arcane", null], ["Recherche", null], ["Immunité", "Pathogènes, poisons"], ["Garde magique", null], ["Empathie", null], ["Contre-sort", "+2"], ["Faiblesses", "Allergie (polluants, grave)"]],
     },
     bisonBlanc: {
       label: "Bison blanc", a: [6, 3, 3, 5, 2, 1, 2, 1, 3],
@@ -1392,12 +1092,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Ver éveillé des zones volcaniques, cavité orale maintenue à 1200°C, creuse des tunnels dans les poches de magma.",
       skills: { Astral: 3, "Combat rapproché": 3, "Plein air": 2, Perception: 4, Furtivité: 2 },
-      traits: [
-        ["Nature duale", null], ["Attaque élémentaire", "Feu"],
-        ["Sens accrus", null], ["Immunité", "Feu"],
-        ["Arme naturelle", "Morsure : VD 6P (feu)"],
-        ["Faiblesses", "Vulnérabilité (froid)"],
-      ],
+      naturalWeapons: ["Morsure [VD 6P (feu), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Attaque élémentaire", "Feu"], ["Sens accrus", null], ["Immunité", "Feu"], ["Faiblesses", "Vulnérabilité (froid)"]],
     },
     rockwormExterne: {
       label: "Ver externe (Exoworm)", a: [4, 2, 2, 4, 2, 1, 3, 3, 6],
@@ -1405,13 +1101,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Variante de ver des roches des zones géothermales, son excrétion refroidie forme des dépôts minéraux précieux dans les tunnels.",
       skills: { Astral: 3, "Combat rapproché": 3, "Plein air": 2, Perception: 4, Furtivité: 2 },
-      traits: [
-        ["Nature duale", null], ["Attaque élémentaire", "Feu"],
-        ["Sens accrus", null], ["Immunité", "Feu"],
-        ["Arme naturelle", "Morsure : VD 6P (feu)"],
-        ["Faiblesses", "Vulnérabilité (froid)"],
-        ["Filon précieux", "Extraction possible : test Magie + Edge, succès x1¥/mètre de tunnel"],
-      ],
+      naturalWeapons: ["Morsure [VD 6P (feu), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Attaque élémentaire", "Feu"], ["Sens accrus", null], ["Immunité", "Feu"], ["Faiblesses", "Vulnérabilité (froid)"], ["Filon précieux", "Extraction possible : test Magie + Edge, succès x1¥/mètre de tunnel"]],
     },
     rockwormSable: {
       label: "Ver de sable (Sandworm)", a: [6, 1, 2, 4, 2, 1, 3, 1, 6],
@@ -1419,11 +1110,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Variante de ver des roches des zones désertiques, connecté au méta-plan de l'eau et laissant des traînées de sable mouvant.",
       skills: { Astral: 3, "Combat rapproché": 3, "Plein air": 2, Perception: 4, Furtivité: 3 },
-      traits: [
-        ["Nature duale", null], ["Sens accrus", null],
-        ["Arme naturelle", "Morsure : VD 4P (feu)"],
-        ["Faiblesses", "Vulnérabilité (feu)"],
-      ],
+      naturalWeapons: ["Morsure [VD 4P (feu), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Sens accrus", null], ["Faiblesses", "Vulnérabilité (feu)"]],
     },
     rockwormMangeur: {
       label: "Mangeur de montagne (Mountain Eater)", a: [22, 3, 2, 20, 2, 2, 2, 4, 6],
@@ -1431,10 +1119,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Le plus grand des vers des roches, peut dépasser 100 mètres de long et creuser des réseaux de cavernes entiers, causant parfois des effondrements.",
       skills: { Astral: 3, "Combat rapproché": 6, "Plein air": 3, Perception: 4 },
-      traits: [
-        ["Nature duale", null], ["Sens accrus", null],
-        ["Arme naturelle", "Morsure : VD 20P"],
-      ],
+      naturalWeapons: ["Morsure [VD 20P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Sens accrus", null]],
     },
     verGlamour: {
       label: "Ver de glamour (Glamourworm)", a: [2, 3, 4, 2, 3, 1, 3, 5, 6],
@@ -1442,12 +1128,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Petit ver éveillé des régions riches en minéraux, porte un anneau de kératine servant d'écrin à des pierres précieuses.",
       skills: { Astral: 4, Athlétisme: 2, "Combat rapproché": 3, "Plein air": 1, Perception: 3, Furtivité: 2 },
-      traits: [
-        ["Nature duale", null], ["Sens accrus", null],
-        ["Sort inné", "Phantasme"],
-        ["Arme naturelle", "Morsure : VD 2P"],
-        ["Anneau précieux", "Anneau de kératine dépositaire de pierres précieuses : test Corps + Magie + Edge, 5 000¥/succès"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Sens accrus", null], ["Sort inné", "Phantasme"], ["Anneau précieux", "Anneau de kératine dépositaire de pierres précieuses : test Corps + Magie + Edge, 5 000¥/succès"]],
     },
     chatRedflower: {
       label: "Chat de Redflower", a: [4, 5, 5, 3, 3, 2, 5, 4, 6],
@@ -1455,12 +1137,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Chat éveillé sapient de la région de Red Mountain, doué de télépathie basique et d'un lien empathique avec ses proches.",
       skills: { Astral: 4, Athlétisme: 5, "Combat rapproché": 6, "Plein air": 6, Perception: 8, Sorcellerie: 4, Furtivité: 6 },
-      traits: [
-        ["Armure 2", null], ["Nature duale", null], ["Sapience", null], ["Sens accrus", null],
-        ["Arme naturelle", "Morsure/Griffes : VD 5P"],
-        ["Sorts innés (liste indicative)", "Lévitation, Lien mental, Phantasme, Silence"],
-        ["Lien empathique", "Télépathie basique ; peut percevoir/apprendre les sorts lancés par d'autres"],
-      ],
+      naturalWeapons: ["Morsure [VD 5P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 5P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null], ["Nature duale", null], ["Sapience", null], ["Sens accrus", null], ["Sorts innés (liste indicative)", "Lévitation, Lien mental, Phantasme, Silence"], ["Lien empathique", "Télépathie basique ; peut percevoir/apprendre les sorts lancés par d'autres"]],
     },
     aigleImperialAlchaeran: {
       label: "Aigle impérial alchaeran", a: [5, 6, 5, 7, 4, 2, 5, 5, 8],
@@ -1468,10 +1146,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Grand aigle éveillé du Caucase, se nourrit des habitants d'alchéra ; ses ailes semblent couler et ses yeux s'enflamment près des limites arcanes.",
       skills: { Astral: 5, Athlétisme: 5, "Combat rapproché": 6, "Plein air": 6, Perception: 6, Furtivité: 2 },
-      traits: [
-        ["Nature duale", null], ["Sens accrus", "Magnification visuelle"],
-        ["Arme naturelle", "Bec/serres : VD 7P"],
-      ],
+      naturalWeapons: ["Bec [VD 7P, SO FOR+RÉA/–/–/–/–]", "serres [VD 7P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Sens accrus", "Magnification visuelle"]],
     },
     gorilleArcanus: {
       label: "Gorille Arcanus", a: [10, 4, 4, 12, 4, 3, 4, 5, 6],
@@ -1479,11 +1155,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Gorille éveillé des Rocheuses, capable d'invoquer des esprits et de diriger une troupe de gorilles ordinaires.",
       skills: { Astral: 4, Athlétisme: 4, "Combat rapproché": 6, Conjuration: 4, "Plein air": 4, Perception: 3, Sorcellerie: 5, Furtivité: 4 },
-      traits: [
-        ["Nature duale", null], ["Sens accrus", "Vision en basse lumière"],
-        ["Arme naturelle", "Poings : VD 10S"],
-        ["Conjuration", "Peut invoquer des esprits ; sortilèges au choix du MJ"],
-      ],
+      naturalWeapons: ["Poings [VD 10S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Sens accrus", "Vision en basse lumière"], ["Conjuration", "Peut invoquer des esprits ; sortilèges au choix du MJ"]],
     },
     leopardMort: {
       label: "Léopard de la mort", a: [4, 5, 5, 4, 4, 2, 6, 2, 6],
@@ -1491,12 +1164,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Espèce éveillée du léopard des neiges d'Asie centrale, attaque en imposant un silence soudain et un souffle d'air froid avant de bondir, parfois pour précipiter ses proies du haut des falaises.",
       skills: { Astral: 5, Athlétisme: 6, "Combat rapproché": 8, "Plein air": 7, Perception: 8, Furtivité: 8 },
-      traits: [
-        ["Armure 2", null], ["Nature duale", null],
-        ["Dissimulation", "Personnelle"], ["Mouvement", "Personnelle"],
-        ["Sens accrus", null], ["Cape d'ombres", null],
-        ["Arme naturelle", "Griffes : VD 6P"],
-      ],
+      naturalWeapons: ["Griffes [VD 6P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null], ["Nature duale", null], ["Dissimulation", "Personnelle"], ["Mouvement", "Personnelle"], ["Sens accrus", null], ["Cape d'ombres", null]],
     },
     griffon: {
       label: "Griffon", a: [8, 6, 4, 8, 4, 3, 5, 1, 6],
@@ -1504,11 +1173,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Créature ailée mi-lion mi-aigle des massifs montagneux, rapide au sol comme en vol.",
       skills: { Athlétisme: 4, "Combat rapproché": 6, Vol: 4, Perception: 5 },
-      traits: [
-        ["Armure 4", null], ["Sens accrus", "Magnification visuelle"],
-        ["Arme naturelle", "Serres : VD 8P"],
-        ["Mouvement", "10/20/+2 au sol, 20/40/+4 en vol"],
-      ],
+      naturalWeapons: ["Serres [VD 8P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Sens accrus", "Magnification visuelle"], ["Mouvement", "10/20/+2 au sol, 20/40/+4 en vol"]],
     },
     griffonAsiatique: {
       label: "Griffon asiatique", a: [9, 5, 4, 8, 4, 2, 5, 2, 6],
@@ -1516,11 +1182,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Variante asiatique du griffon au torse plus reptilien, vit en petits groupes familiaux dans les montagnes d'Asie.",
       skills: { Athlétisme: 4, "Combat rapproché": 6, Vol: 4, Perception: 5 },
-      traits: [
-        ["Armure 6", null], ["Sens accrus", "Magnification visuelle"],
-        ["Arme naturelle", "Griffes : VD 8P"],
-        ["Mouvement", "10/20/+2 au sol, 20/30/+4 en vol"],
-      ],
+      naturalWeapons: ["Griffes [VD 8P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 6", null], ["Sens accrus", "Magnification visuelle"], ["Mouvement", "10/20/+2 au sol, 20/30/+4 en vol"]],
     },
     pinsDouleur: {
       label: "Pins de la douleur", a: [14, 4, 4, 8, 1, 1, 4, 1, 6],
@@ -1528,12 +1191,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Arbre éveillé immobile des falaises montagneuses, vit en groupes aux systèmes racinaires partagés et projette des cônes explosifs toxiques jusqu'à 100 m.",
       skills: { Astral: 2, "Combat rapproché": 3, "Arme exotique (branche)": 4, Perception: 3 },
-      traits: [
-        ["Armure 7", null], ["Nature duale", null],
-        ["Arme naturelle", "Branche : VD 6S / Aiguilles : VD 4P"],
-        ["Venin", "Injecté par les aiguilles noires : paralysant + nécrose cutanée locale"],
-        ["Immobile", "Mouvement 0"],
-      ],
+      naturalWeapons: ["Branche [VD 6S, SO FOR+RÉA/–/–/–/–]", "Aiguilles [VD 4P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 7", null], ["Nature duale", null], ["Venin", "Injecté par les aiguilles noires : paralysant + nécrose cutanée locale"], ["Immobile", "Mouvement 0"]],
     },
     yakOmbres: {
       label: "Yak des ombres", a: [10, 1, 2, 12, 2, 1, 2, 1, 6],
@@ -1551,10 +1210,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Renard éveillé de l'Himalaya, décide par instinct ou caprice de porter chance ou malchance aux métahumains proches (Accident et Garde).",
       skills: { Astral: 4, Athlétisme: 5, "Combat rapproché": 3, "Plein air": 4, Perception: 7, Furtivité: 5 },
-      traits: [
-        ["Nature duale", null], ["Sens accrus", null], ["Accident", null], ["Garde", null],
-        ["Arme naturelle", "Morsure : VD 2P"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Sens accrus", null], ["Accident", null], ["Garde", null]],
     },
     oiseauTonnerreMajeur: {
       label: "Oiseau-tonnerre majeur (SR6)", a: [4, 3, 7, 8, 3, 2, 4, 1, 6],
@@ -1562,14 +1219,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Grand rapace mythique des régions d'orage, provoque des tempêtes électriques ; les jeunes ressemblent à des oiseaux ordinaires.",
       skills: { Astral: 5, Athlétisme: 4, "Combat rapproché": 5, "Arme exotique": 5, "Plein air": 5, Perception: 6 },
-      traits: [
-        ["Nature duale", null], ["Attaque élémentaire", "Électricité"],
-        ["Sens accrus", "Vision en basse lumière"],
-        ["Arme naturelle", "Serres : VD 8P"],
-        ["Contrôle météorologique", "Tempêtes électriques"],
-        ["Faiblesses", "Robuste -1 (fragile)"],
-        ["Mouvement", "20/40/+3 en vol, 1/5/+1 au sol"],
-      ],
+      naturalWeapons: ["Serres [VD 8P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Attaque élémentaire", "Électricité"], ["Sens accrus", "Vision en basse lumière"], ["Contrôle météorologique", "Tempêtes électriques"], ["Faiblesses", "Robuste -1 (fragile)"], ["Mouvement", "20/40/+3 en vol, 1/5/+1 au sol"]],
     },
     troglodyte: {
       label: "Troglodyte (SR6)", a: [3, 3, 4, 2, 3, 2, 3, 2, 2],
@@ -1607,11 +1258,8 @@ const Creatures = {
       habitat: ["montagnes", "urbain"],
       desc: "Grand reptile ailé éveillé présent en zones montagneuses et urbaines, agile en vol comme au sol.",
       skills: { Astral: 3, Athlétisme: 4, "Combat rapproché": 6, "Plein air": 6, Perception: 5, Furtivité: 3 },
-      traits: [
-        ["Armure 6", null], ["Nature duale", null], ["Sens accrus", null],
-        ["Arme naturelle", "Griffes : VD 12P"], ["Venin", "Queue : VD 8P"],
-        ["Mouvement", "20/30/+4 en vol, 5/10/+2 au sol"],
-      ],
+      naturalWeapons: ["Griffes [VD 12P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 6", null], ["Nature duale", null], ["Sens accrus", null], ["Venin", "Queue : VD 8P"], ["Mouvement", "20/30/+4 en vol, 5/10/+2 au sol"]],
     },
     wyverneEmergee: {
       label: "Wyverne émergée", a: [7, 4, 4, 12, 5, 5, 5, 4, 6],
@@ -1619,12 +1267,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Wyverne partiellement émergée (créature techno-critter), présente notamment à St. Louis, cohabite avec les wyvernes baseline et éveillées.",
       skills: { Athlétisme: 4, "Combat rapproché": 6, Cracking: 4, "Plein air": 3, Perception: 4, Furtivité: 2, Tasking: 4 },
-      traits: [
-        ["Armure 4", null], ["Sens accrus", null],
-        ["Arme naturelle", "Griffes : VD 8P"], ["Venin", "Queue : VD 6P"],
-        ["Résonance (créature partiellement émergée)", "Attribut 9 = Résonance, non Magie"],
-        ["Sabotage numérique", "Peut modifier flux vidéo et données cartographiques pour créer des pièges"],
-      ],
+      naturalWeapons: ["Griffes [VD 8P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Sens accrus", null], ["Venin", "Queue : VD 6P"], ["Résonance (créature partiellement émergée)", "Attribut 9 = Résonance, non Magie"], ["Sabotage numérique", "Peut modifier flux vidéo et données cartographiques pour créer des pièges"]],
     },
     wyverneAsiatique: {
       label: "Wyverne asiatique (renard à neuf queues)", a: [6, 5, 4, 10, 4, 3, 5, 6, 6],
@@ -1632,11 +1276,8 @@ const Creatures = {
       habitat: ["montagnes"],
       desc: "Wyverne des montagnes asiatiques, change-forme puissant apparaissant en belle femme ou jeune fille pour attirer des métahumains mâles vers les nids d'autres wyvernes.",
       skills: { Astral: 4, Athlétisme: 5, "Combat rapproché": 4, "Plein air": 4, Perception: 5, Furtivité: 6 },
-      traits: [
-        ["Armure 4", null], ["Nature duale", null], ["Sens accrus", null],
-        ["Sort inné", "Phantasme"],
-        ["Arme naturelle", "Griffes : VD 10P"], ["Venin", "Queue : VD 7P"],
-      ],
+      naturalWeapons: ["Griffes [VD 10P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Nature duale", null], ["Sens accrus", null], ["Sort inné", "Phantasme"], ["Venin", "Queue : VD 7P"]],
     },
     wyverneArctique: {
       label: "Wyverne arctique (Isitoq)", a: [14, 3, 3, 18, 3, 3, 5, 2, 6],
@@ -1644,11 +1285,8 @@ const Creatures = {
       habitat: ["polaire"],
       desc: "Wyverne arctique liée à la mythologie Isitoq des nations tribales nordiques, plus robuste que ses cousines grâce à une épaisse couche de graisse.",
       skills: { Astral: 4, Athlétisme: 5, "Combat rapproché": 4, "Arme exotique": 5, "Plein air": 4, Perception: 5, Furtivité: 6 },
-      traits: [
-        ["Armure 6", null], ["Nature duale", null],
-        ["Attaque élémentaire", "Froid"], ["Sens accrus", null], ["Immunité", "Froid"],
-        ["Arme naturelle", "Griffes : VD 14P"], ["Venin", "Queue : VD 8P"],
-      ],
+      naturalWeapons: ["Griffes [VD 14P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 6", null], ["Nature duale", null], ["Attaque élémentaire", "Froid"], ["Sens accrus", null], ["Immunité", "Froid"], ["Venin", "Queue : VD 8P"]],
     },
     wyverneAfricaine: {
       label: "Wyverne africaine (Kongamato)", a: [10, 5, 4, 14, 4, 4, 6, 3, 6],
@@ -1656,10 +1294,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Wyverne des rivières et lacs africains, prédateur focalisé sur les métahumains, plonge de haut pour renverser les embarcations.",
       skills: { Astral: 3, Athlétisme: 6, "Combat rapproché": 6, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 4", null], ["Nature duale", null], ["Sens accrus", null],
-        ["Arme naturelle", "Griffes : VD 10P"], ["Venin", "Queue : VD 8P"],
-      ],
+      naturalWeapons: ["Griffes [VD 10P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Nature duale", null], ["Sens accrus", null], ["Venin", "Queue : VD 8P"]],
     },
 
     /* ---- Wild Life p.52-84 : Forests + Swamps ---- */
@@ -1669,11 +1305,8 @@ const Creatures = {
       habitat: ["forets", "urbain"],
       desc: "Loup éveillé né des forêts ravagées par les incendies, s'aventurant parfois en zones urbaines et périurbaines.",
       skills: { Astral: 5, Athlétisme: 5, "Combat rapproché": 6, "Plein air": 6, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 3", null], ["Nature duale", null], ["Attaque élémentaire", "Feu"],
-        ["Sens accrus", null], ["Immunité", "Feu"],
-        ["Arme naturelle", "Morsure/Griffes : VD 6P"],
-      ],
+      naturalWeapons: ["Morsure [VD 6P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 6P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 3", null], ["Nature duale", null], ["Attaque élémentaire", "Feu"], ["Sens accrus", null], ["Immunité", "Feu"]],
     },
     lapinAmortisseur: {
       label: "Lapin amortisseur", a: [1, 6, 4, 1, 3, 2, 7, 5, 6],
@@ -1705,11 +1338,8 @@ const Creatures = {
       habitat: ["forets"],
       desc: "Gargouille éveillée des forêts sombres tempérées d'Europe et d'Amérique du Nord.",
       skills: { Astral: 4, Athlétisme: 4, "Combat rapproché": 5, "Plein air": 4, Perception: 5, Furtivité: 5 },
-      traits: [
-        ["Coloration adaptative", null], ["Armure 4", null], ["Nature duale", null],
-        ["Sens accrus", "Vision en pénombre"], ["Armure durcie 2", null],
-        ["Arme naturelle", "Griffes : VD 8P"], ["Silence", null],
-      ],
+      naturalWeapons: ["Griffes [VD 8P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Coloration adaptative", null], ["Armure 4", null], ["Nature duale", null], ["Sens accrus", "Vision en pénombre"], ["Armure durcie 2", null], ["Silence", null]],
     },
     oursChuteur: {
       label: "Ours chuteur", a: [3, 3, 3, 5, 5, 2, 4, 1, 3],
@@ -1717,11 +1347,8 @@ const Creatures = {
       habitat: ["forets"],
       desc: "Petit ours éveillé des forêts australiennes, retombe sans dommage depuis les hauteurs pour surprendre ses proies en embuscade.",
       skills: { Athlétisme: 4, "Combat rapproché": 4, "Plein air": 3, Perception: 3, Furtivité: 3 },
-      traits: [
-        ["Armure 1", null], ["Chute amortie", "Retombe sans dommage depuis les hauteurs, souvent en embuscade"],
-        ["Sens accrus", "Odorat"],
-        ["Arme naturelle", "Griffes : VD 4P / Morsure : VD 3S"],
-      ],
+      naturalWeapons: ["Griffes [VD 4P, SO FOR+RÉA/–/–/–/–]", "Morsure [VD 3S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 1", null], ["Chute amortie", "Retombe sans dommage depuis les hauteurs, souvent en embuscade"], ["Sens accrus", "Odorat"]],
     },
     oursCorne: {
       label: "Ours cornu (SR6)", a: [5, 2, 3, 4, 4, 2, 4, 2, 6],
@@ -1729,11 +1356,8 @@ const Creatures = {
       habitat: ["forets"],
       desc: "Ours éveillé des forêts boréales et tempérées, aux bois massifs.",
       skills: { Athlétisme: 4, "Combat rapproché": 4, "Plein air": 4, Perception: 4, Furtivité: 2 },
-      traits: [
-        ["Armure 1", null], ["Charge", null],
-        ["Sens accrus", "Odorat"],
-        ["Arme naturelle", "Cornes : VD 4P / Griffes : VD 4P / Morsure : VD 3S"],
-      ],
+      naturalWeapons: ["Cornes [VD 4P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 4P, SO FOR+RÉA/–/–/–/–]", "Morsure [VD 3S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 1", null], ["Charge", null], ["Sens accrus", "Odorat"]],
     },
     gloutonMajeur: {
       label: "Glouton majeur", a: [4, 4, 3, 3, 2, 3, 4, 3, 4],
@@ -1741,11 +1365,8 @@ const Creatures = {
       habitat: ["forets"],
       desc: "Glouton éveillé des régions boréales et tempérées, ne recule jamais et harcèle des proies bien plus grosses que lui.",
       skills: { Athlétisme: 5, "Combat rapproché": 5, "Plein air": 4, Perception: 4, Furtivité: 3 },
-      traits: [
-        ["Armure 1", null], ["Combat farouche", "Ne recule jamais, harcèle des proies bien plus grosses que lui"],
-        ["Sens accrus", "Odorat"],
-        ["Arme naturelle", "Griffes : VD 4P / Morsure : VD 3S"],
-      ],
+      naturalWeapons: ["Griffes [VD 4P, SO FOR+RÉA/–/–/–/–]", "Morsure [VD 3S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 1", null], ["Combat farouche", "Ne recule jamais, harcèle des proies bien plus grosses que lui"], ["Sens accrus", "Odorat"]],
     },
     fauconMerlin: {
       label: "Faucon merlin", a: [2, 5, 4, 2, 3, 2, 5, 4, 6],
@@ -1753,10 +1374,8 @@ const Creatures = {
       habitat: ["forets", "montagnes"],
       desc: "Petit rapace éveillé des forêts côtières et montagneuses tempérées.",
       skills: { Athlétisme: 4, "Combat rapproché": 2, "Plein air": 3, Perception: 5, Furtivité: 3 },
-      traits: [
-        ["Armure 1", null], ["Sens accrus", "Vision"],
-        ["Arme naturelle", "Serre/Bec : VD 2P"],
-      ],
+      naturalWeapons: ["Serre [VD 2P, SO FOR+RÉA/–/–/–/–]", "Bec [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 1", null], ["Sens accrus", "Vision"]],
     },
     serpentMimetique: {
       label: "Serpent mimétique", a: [2, 4, 4, 2, 1, 2, 3, 1, 6],
@@ -1764,12 +1383,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Serpent éveillé des forêts tropicales, imite magiquement l'apparence d'autres créatures ou objets.",
       skills: { Athlétisme: 2, "Combat rapproché": 3, "Plein air": 2, Perception: 3, Furtivité: 4 },
-      traits: [
-        ["Mimétisme magique", "Imite l'apparence d'autres créatures ou objets"],
-        ["Sens accrus", "Odorat"],
-        ["Arme naturelle", "Morsure (venimeuse) : VD 2S"], ["Venin", null],
-        ["Faiblesses", "Aucune résistance aux poisons"],
-      ],
+      naturalWeapons: ["Morsure (venimeuse) [VD 2S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Mimétisme magique", "Imite l'apparence d'autres créatures ou objets"], ["Sens accrus", "Odorat"], ["Venin", null], ["Faiblesses", "Aucune résistance aux poisons"]],
     },
     mycofundi: {
       label: "Mycofundi", a: [2, 1, 2, 2, 4, 1, 2, 3, 6],
@@ -1789,10 +1404,8 @@ const Creatures = {
       habitat: ["forets"],
       desc: "Panda éveillé vivant surtout dans les bambouseraies d'Asie.",
       skills: { Athlétisme: 4, "Combat rapproché": 4, "Plein air": 4, Perception: 3, Furtivité: 3 },
-      traits: [
-        ["Armure 1", null], ["Attaque élémentaire", "Électricité"], ["Sens accrus", "Odorat"],
-        ["Arme naturelle", "Griffes : VD 4P / Morsure : VD 3S"],
-      ],
+      naturalWeapons: ["Griffes [VD 4P, SO FOR+RÉA/–/–/–/–]", "Morsure [VD 3S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 1", null], ["Attaque élémentaire", "Électricité"], ["Sens accrus", "Odorat"]],
     },
     porcEpicVolant: {
       label: "Porc-épic volant (Wild Life)", a: [2, 4, 3, 2, 2, 2, 4, 2, 6],
@@ -1800,11 +1413,8 @@ const Creatures = {
       habitat: ["forets"],
       desc: "Porc-épic éveillé des forêts, surtout africaines, capable de projeter ses piquants.",
       skills: { Athlétisme: 4, "Combat rapproché": 3, "Plein air": 3, Perception: 3, Furtivité: 3 },
-      traits: [
-        ["Armure 2", "Piquants"],
-        ["Arme naturelle", "Morsure : VD 2S"],
-        ["Arme naturelle à distance", "Piquants volants : VD 2P"],
-      ],
+      naturalWeapons: ["Morsure [VD 2S, SO FOR+RÉA/–/–/–/–]", "Piquants volants [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", "Piquants"]],
     },
     araigneeFeuFollet: {
       label: "Araignée-feu follet", a: [2, 4, 3, 1, 2, 2, 4, 2, 6],
@@ -1812,11 +1422,8 @@ const Creatures = {
       habitat: ["forets", "marais"],
       desc: "Araignée éveillée des forêts humides et marais, très venimeuse ; à ne pas confondre avec les feux follets normaux.",
       skills: { Astral: 2, Athlétisme: 2, "Combat rapproché": 2, "Plein air": 2, Perception: 4, Furtivité: 4 },
-      traits: [
-        ["Nature duale", null], ["Sens accrus", "Vision"],
-        ["Arme naturelle à distance", "Filet (immobilisation à distance)"],
-        ["Arme naturelle", "Morsure (venimeuse) : VD 2S"], ["Venin", null],
-      ],
+      naturalWeapons: ["Morsure (venimeuse) [VD 2S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Sens accrus", "Vision"], ["Venin", null], ["Arme naturelle à distance", "Filet (immobilisation à distance)"]],
     },
     martichoras: {
       label: "Martichoras (SR6)", a: [7, 5, 5, 6, 3, 2, 4, 1, 6],
@@ -1825,11 +1432,8 @@ const Creatures = {
       // Compétence Perception non trouvée dans la source (donnée tronquée dans l'extraction, Wild Life p.60 à vérifier).
       desc: "Créature ailée à queue venimeuse des zones montagneuses et forestières tropicales et subtropicales.",
       skills: { Athlétisme: 2, "Combat rapproché": 5, "Plein air": 3 },
-      traits: [
-        ["Armure 2", null], ["Sens accrus", "Odorat, audition"],
-        ["Arme naturelle", "Griffes : VD 4P / Morsure : VD 3S"],
-        ["Arme naturelle à distance", "Piquants de queue (venin) : VD 2P"], ["Venin", null],
-      ],
+      naturalWeapons: ["Griffes [VD 4P, SO FOR+RÉA/–/–/–/–]", "Morsure [VD 3S, SO FOR+RÉA/–/–/–/–]", "Piquants de queue (venin) [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null], ["Sens accrus", "Odorat, audition"], ["Venin", null]],
     },
     piasma: {
       label: "Piasma (SR6)", a: [4, 2, 2, 3, 3, 2, 3, 2, 6],
@@ -1837,10 +1441,8 @@ const Creatures = {
       habitat: ["marais", "forets"],
       desc: "Grand prédateur éveillé des marais et forêts humides.",
       skills: { Athlétisme: 3, "Combat rapproché": 3, "Plein air": 3, Perception: 3, Furtivité: 2 },
-      traits: [
-        ["Armure 2", null], ["Régénération", null], ["Sens accrus", "Odorat"],
-        ["Arme naturelle", "Griffes : VD 4P / Morsure : VD 3S"],
-      ],
+      naturalWeapons: ["Griffes [VD 4P, SO FOR+RÉA/–/–/–/–]", "Morsure [VD 3S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null], ["Régénération", null], ["Sens accrus", "Odorat"]],
     },
     hydreRoyale: {
       label: "Hydre royale", a: [11, 7, 8, 10, 4, 2, 4, 3, 7],
@@ -1848,15 +1450,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Grande hydre éveillée des zones humides d'Asie du Sud-Est, gagne une action mineure supplémentaire par tête.",
       skills: { Astral: 4, Athlétisme: 4, "Combat rapproché": 7, "Plein air": 2, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 7", null], ["Compulsion", null],
-        ["Arme naturelle à distance", "Crachement corrosif : VD 7P (chimique)"],
-        ["Nature duale", null], ["Sens accrus", "Odorat, vision thermographique"],
-        ["Régénération", null],
-        ["Venin", "Injection, vitesse 1 tour, Pouvoir 7"],
-        ["Arme naturelle", "Morsure : VD 2P (Étourdie + Empoisonnée 7P)"],
-        ["Faiblesses", "Vulnérabilité (feu)"],
-      ],
+      naturalWeapons: ["Crachement corrosif [VD 7P (chimique), SO FOR+RÉA/–/–/–/–]", "Morsure [VD 2P (Étourdie + Empoisonnée 7P), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 7", null], ["Compulsion", null], ["Nature duale", null], ["Sens accrus", "Odorat, vision thermographique"], ["Régénération", null], ["Venin", "Injection, vitesse 1 tour, Pouvoir 7"], ["Faiblesses", "Vulnérabilité (feu)"]],
     },
     vodyanoy: {
       label: "Vodyanoy", a: [2, 4, 4, 1, 4, 2, 5, 3, null],
@@ -1864,15 +1459,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Créature techno-critter des marais de Pripet (Biélorussie, Russie, Yakoutie).",
       skills: { Athlétisme: 2, "Combat rapproché": 2, Cracking: 3, Électronique: 3, "Plein air": 2, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Camouflage", "Basique"],
-        ["Langue de grenouille", "Pouvoir p.124, 6WC"],
-        ["Persona Matrice", "DR 5, AC A1/I5, CM 10"],
-        ["Morsure numérique", "[Cybercombat, DV 2S, RA 8]"],
-        ["Formes complexes", "Diffusion (Firewall), Éditeur, Pulse Storm"],
-        ["Venin", "Contact, immédiat, Pouvoir 4, Étourdie"],
-        ["Arme naturelle", "Attaque à mains nues : VD 2S"],
-      ],
+      naturalWeapons: ["Attaque à mains nues [VD 2S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Camouflage", "Basique"], ["Langue de grenouille", "Pouvoir p.124, 6WC"], ["Persona Matrice", "DR 5, AC A1/I5, CM 10"], ["Morsure numérique", "[Cybercombat, DV 2S, RA 8]"], ["Formes complexes", "Diffusion (Firewall), Éditeur, Pulse Storm"], ["Venin", "Contact, immédiat, Pouvoir 4, Étourdie"]],
     },
     bunyip: {
       label: "Bunyip", a: [11, 4, 4, 10, 4, 2, 4, 2, null],
@@ -1880,11 +1468,16 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Créature aquatique éveillée des zones humides, rivières et billabongs d'Australie, capable d'imiter d'autres formes.",
       skills: { Athlétisme: 4, "Combat rapproché": 8, "Plein air": 4, Perception: 5, Furtivité: 4 },
+      naturalWeapons: [
+        "Dents [VD 6S, SO FOR+RÉA/–/–/–/–]",
+        "Queue hérissée — Engloutissement [VD 6S, SO FOR+RÉA/–/–/–/–]",
+        "Morsure [VD 6S, SO FOR+RÉA/–/–/–/–]",
+        "Coup de queue [VD 3P, SO FOR+RÉA/–/–/–/–]",
+      ],
       traits: [
         ["Armure 6", null], ["Camouflage", "Dynamique"],
         ["Sens accrus", "Vision thermographique"], ["Immunité", "Toxines et poisons"],
         ["Mimétisme", null],
-        ["Arme naturelle", "Dents / Queue hérissée — Engloutissement : VD 6S, Morsure : VD 6S, Coup de queue : VD 3P"],
       ],
     },
     afanc: {
@@ -1893,10 +1486,14 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Grand castor éveillé des zones humides tropicales (Carib League, Aztlan).",
       skills: { Astral: 3, Athlétisme: 4, "Combat rapproché": 8, "Plein air": 4, Perception: 5, Furtivité: 4 },
+      naturalWeapons: [
+        "Engloutissement [VD 6S, SO FOR+RÉA/–/–/–/–]",
+        "Morsure [VD 6P, SO FOR+RÉA/–/–/–/–]",
+        "Coup de queue [VD 2S, SO FOR+RÉA/–/–/–/–]",
+      ],
       traits: [
         ["Nature duale", null], ["Engloutissement", "Eau"],
         ["Sens accrus", "Vision en pénombre, odorat"], ["Armure durcie 4", null], ["Recherche", null],
-        ["Arme naturelle", "Engloutissement : VD 6S, Morsure : VD 6P, Coup de queue : VD 2S"],
       ],
     },
     behemothMarecage: {
@@ -1905,10 +1502,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Alligator géant éveillé des zones humides s'étendant des Caraïbes au CAS et à Aztlan.",
       skills: { Athlétisme: 5, "Combat rapproché": 8, "Plein air": 4, Perception: 4, Furtivité: 4 },
-      traits: [
-        ["Armure 6", null],
-        ["Arme naturelle", "Morsure : VD 5P / Coup de patte : VD 2S"],
-      ],
+      naturalWeapons: ["Morsure [VD 5P, SO FOR+RÉA/–/–/–/–]", "Coup de patte [VD 2S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 6", null]],
     },
     boobrie: {
       label: "Boobrie", a: [3, 6, 5, 3, 3, 1, 6, 2, null],
@@ -1916,10 +1511,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Grand oiseau éveillé des zones humides d'Amérique du Nord, notamment le Mississippi, porteur de la peste VITAS-III.",
       skills: { Athlétisme: 4, "Combat rapproché": 8, "Plein air": 3, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Infection", "VITAS-III"],
-        ["Arme naturelle", "Bec : VD 2P"],
-      ],
+      naturalWeapons: ["Bec [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Infection", "VITAS-III"]],
     },
     feuFolletCadaverique: {
       label: "Feu follet cadavérique", a: [3, 8, 8, 1, 5, 2, 5, 3, 6],
@@ -1928,13 +1521,8 @@ const Creatures = {
       // ESS de base 2D6 (aléatoire) ; considéré avoir une Force égale à son Essence actuelle pour la Matérialisation. Stats astrales : DR 6, I/ID 11/3.
       desc: "Feu follet des zones humides, esprit errant se nourrissant d'Essence par contact.",
       skills: { Astral: 6, "Combat rapproché": 6, Influence: 2, Perception: 6, Sorcellerie: 4, Furtivité: 6 },
-      traits: [
-        ["Forme astrale", null], ["Drain d'Essence", null],
-        ["Euphoria", "Pouvoir non listé dans le vocabulaire existant, effet au choix du MJ"],
-        ["Matérialisation", null], ["Mouvement", "Soi"], ["Psychokinésie", null], ["Régénération", null],
-        ["Arme naturelle", "Frappe : VD 2P (élémentaire)"],
-        ["Faiblesses", "Allergie (sel), Perte d'Essence"],
-      ],
+      naturalWeapons: ["Frappe [VD 2P (élémentaire), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Forme astrale", null], ["Drain d'Essence", null], ["Euphoria", "Pouvoir non listé dans le vocabulaire existant, effet au choix du MJ"], ["Matérialisation", null], ["Mouvement", "Soi"], ["Psychokinésie", null], ["Régénération", null], ["Faiblesses", "Allergie (sel), Perte d'Essence"]],
     },
     porcInfernal: {
       label: "Porc infernal", a: [7, 5, 4, 5, 3, 2, 4, 1, 4],
@@ -1942,12 +1530,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Sanglier éveillé très agressif et territorial des marais pollués, peut s'envelopper de flammes.",
       skills: { Astral: 3, Athlétisme: 4, "Combat rapproché": 5, "Plein air": 2, Perception: 4, Furtivité: 3 },
-      traits: [
-        ["Nature duale", null], ["Attaque élémentaire", "Radiation"],
-        ["Engloutissement", "Radiation"],
-        ["Immunité", "Agents pathogènes, toxines"],
-        ["Arme naturelle", "Défenses : VD 4P"],
-      ],
+      naturalWeapons: ["Défenses [VD 4P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Attaque élémentaire", "Radiation"], ["Engloutissement", "Radiation"], ["Immunité", "Agents pathogènes, toxines"]],
     },
     moucheGhedeFemelle: {
       label: "Mouche Ghede (femelle)", a: [1, 4, 4, 1, 3, 2, 2, 1, 4],
@@ -1955,13 +1539,8 @@ const Creatures = {
       habitat: ["marais", "oceans"],
       desc: "Mouche éveillée des Caraïbes et de Méditerranée, se nourrit exclusivement de sang métahumain pour produire ses œufs.",
       skills: { Astral: 2, Athlétisme: 4, "Combat rapproché": 4, Perception: 2, Furtivité: 4 },
-      traits: [
-        ["Armure 1", null], ["Nature duale", null],
-        ["Drain d'Essence", null], ["Immunité", "Agents pathogènes"],
-        ["Pestilence", null],
-        ["Arme naturelle", "Morsure : VD 1P"],
-        ["Faiblesses", "Fragile (7)"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 1", null], ["Nature duale", null], ["Drain d'Essence", null], ["Immunité", "Agents pathogènes"], ["Pestilence", null], ["Faiblesses", "Fragile (7)"]],
     },
     moucheGhedeMale: {
       label: "Mouche Ghede (mâle)", a: [1, 5, 5, 1, 2, 1, 1, 1, 4],
@@ -1969,12 +1548,8 @@ const Creatures = {
       habitat: ["marais", "oceans"],
       desc: "Forme mâle de la mouche Ghede, moins vorace que la femelle mais tout aussi présente sur les côtes caribéennes et méditerranéennes.",
       skills: { Astral: 2, Athlétisme: 4, "Combat rapproché": 4, "Plein air": 2, Perception: 2, Furtivité: 4 },
-      traits: [
-        ["Armure 1", null], ["Confusion", null], ["Nature duale", null],
-        ["Sens accrus", "Odorat, sonar, vision thermographique"], ["Immunité", "Agents pathogènes"],
-        ["Arme naturelle", "Morsure : VD 1P"],
-        ["Faiblesses", "Fragile (8)"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 1", null], ["Confusion", null], ["Nature duale", null], ["Sens accrus", "Odorat, sonar, vision thermographique"], ["Immunité", "Agents pathogènes"], ["Faiblesses", "Fragile (8)"]],
     },
     heqetAdulte: {
       label: "Heqet (adulte)", a: [1, 3, 4, 1, 2, 1, 2, 1, 3],
@@ -1982,10 +1557,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Grenouille éveillée des zones humides du Nil, capture ses proies d'un jet de langue corrosif.",
       skills: { Astral: 3, Athlétisme: 4, "Combat rapproché": 1, "Plein air": 3, Perception: 4, Furtivité: 3 },
-      traits: [
-        ["Camouflage", null], ["Nature duale", null], ["Drain d'Essence", "Magie"],
-        ["Arme naturelle à distance", "Langue collante : VD 2P (corrosive)"],
-      ],
+      naturalWeapons: ["Langue collante [VD 2P (corrosive), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Camouflage", null], ["Nature duale", null], ["Drain d'Essence", "Magie"]],
     },
     heqetTetard: {
       label: "Heqet (têtard)", a: [1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -2004,12 +1577,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Parent distant des dragons chinois des zones humides d'Afrique de l'Ouest, corps de 21 mètres, chasseur embusqué travaillant en paires.",
       skills: { Athlétisme: 2, "Combat rapproché": 7, "Plein air": 6, Perception: 7, Furtivité: 5 },
-      traits: [
-        ["Sens accrus", "Biosonar, vision sous-marine"],
-        ["Altérations dermiques", "Dragon"], ["Coloration adaptative", null],
-        ["Armure 10", null], ["Confusion", null],
-        ["Arme naturelle", "Morsure foudroyante : VD 4P"],
-      ],
+      naturalWeapons: ["Morsure foudroyante [VD 4P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Sens accrus", "Biosonar, vision sous-marine"], ["Altérations dermiques", "Dragon"], ["Coloration adaptative", null], ["Armure 10", null], ["Confusion", null]],
     },
     apeMouffette: {
       label: "Ape mouffette", a: [4, 5, 5, 3, 3, 1, 3, 2, 3],
@@ -2017,11 +1586,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Primate omnivore éveillé des marais de Floride, parenté éloignée du Sasquatch, vit en groupes familiaux de 20 à 30 individus.",
       skills: { Astral: 3, Athlétisme: 4, "Combat rapproché": 5, "Plein air": 3, Perception: 5, Furtivité: 5 },
-      traits: [
-        ["Robuste 1", null], ["Nature duale", null], ["Mouvement", "Soi"],
-        ["Arme naturelle", "Griffes : VD 3P"],
-        ["Souffle nauséabond", "Inhalation, immédiat, Pouvoir 6, Étourdi/Étourdie/Nauséeux"],
-      ],
+      naturalWeapons: ["Griffes [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Robuste 1", null], ["Nature duale", null], ["Mouvement", "Soi"], ["Souffle nauséabond", "Inhalation, immédiat, Pouvoir 6, Étourdi/Étourdie/Nauséeux"]],
     },
     dragonClaqueur: {
       label: "Petit dragon claqueur", a: [11, 4, 4, 14, 4, 1, 3, 1, 5],
@@ -2029,11 +1595,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Tortue géante éveillée de 12 mètres de diamètre à coquille durcie et cou extensible, des marécages nord-américains.",
       skills: { Athlétisme: 2, "Combat rapproché": 5, "Plein air": 5, Perception: 3, Furtivité: 7 },
-      traits: [
-        ["Liaison", "LdV, eau"], ["Allonge", "Longue (cou extensible de 5 m)"],
-        ["Armure durcie 5", null],
-        ["Arme naturelle", "Mâchoires écrasantes : VD 6P / Engloutissement : VD 2S"],
-      ],
+      naturalWeapons: ["Mâchoires écrasantes [VD 6P, SO FOR+RÉA/–/–/–/–]", "Engloutissement [VD 2S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Liaison", "LdV, eau"], ["Allonge", "Longue (cou extensible de 5 m)"], ["Armure durcie 5", null]],
     },
     stymphalien: {
       label: "Stymphalien", a: [3, 4, 4, 2, 4, 1, 4, 2, 4],
@@ -2041,13 +1604,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Oiseau éveillé de la mythologie grecque, présent dans les marais méditerranéens, très sensible au bruit (seuil de douleur ~100 dB).",
       skills: { Athlétisme: 4, "Combat rapproché": 5, "Arme exotique (plume)": 5, "Plein air": 5, Perception: 4 },
-      traits: [
-        ["Sens accrus", "Audition améliorée, odorat"],
-        ["Arme naturelle", "Bec : VD 4P"],
-        ["Arme naturelle à distance", "Plumes flèches : VD 3P, PA 0"],
-        ["Souffle nauséabond", null],
-        ["Faiblesses", "Vulnérabilité (son)"],
-      ],
+      naturalWeapons: ["Bec [VD 4P, SO FOR+RÉA/–/–/–/–]", "Plumes flèches [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Sens accrus", "Audition améliorée, odorat"], ["Souffle nauséabond", null], ["Faiblesses", "Vulnérabilité (son)"]],
     },
     titanoboa: {
       label: "Titanoboa", a: [7, 3, 3, 6, 3, 1, 3, 2, null],
@@ -2055,11 +1613,8 @@ const Creatures = {
       habitat: ["oceans", "jungles"],
       desc: "Le plus grand serpent connu (14 m, plus d'une tonne) des régions côtières d'Aztlan et d'Amazonie, prédateur attentiste qui se gave puis sommeille.",
       skills: { Athlétisme: 4, "Combat rapproché": 5, "Plein air": 4, Perception: 4 },
-      traits: [
-        ["Armure 4", null], ["Sens accrus", "Odorat"],
-        ["Arme naturelle", "Crocs : VD 2P / Constriction (frappe à mains nues) : VD 2S"],
-        ["Faiblesses", "Vulnérabilité (froid)"],
-      ],
+      naturalWeapons: ["Crocs [VD 2P, SO FOR+RÉA/–/–/–/–]", "Constriction (frappe à mains nues) [VD 2S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Sens accrus", "Odorat"], ["Faiblesses", "Vulnérabilité (froid)"]],
     },
     wangliang: {
       label: "Wangliang", a: [2, 2, 2, 2, 4, 1, 2, 2, 5],
@@ -2067,10 +1622,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Petite tortue éveillée d'Asie du Sud-Est considérée comme un mauvais présage, porteuse de maladie, apparentée à la tortue étang jaune et à la Lo Shu.",
       skills: { Astral: 2, Athlétisme: 2, "Combat rapproché": 1, "Plein air": 2, Perception: 2, Furtivité: 2 },
-      traits: [
-        ["Compulsion", null], ["Armure durcie 2", null],
-        ["Arme naturelle", "Toucher infecté : VD 2S"],
-      ],
+      naturalWeapons: ["Toucher infecté [VD 2S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Compulsion", null], ["Armure durcie 2", null]],
     },
     coloColo: {
       label: "Colo Colo", a: [2, 4, 4, 1, 4, 2, 5, 3, 5],
@@ -2078,12 +1631,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Rongeur émergent des zones humides, cousin distant de la nutria, mord les hardlines et broute électroniquement les données.",
       skills: { Athlétisme: 2, "Combat rapproché": 2, Cracking: 3, Électronique: 3, "Plein air": 3, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Arme naturelle", "Morsure : VD 1P"],
-        ["Persona Matrice", "DR 6, AC A1/I5, CM 10"],
-        ["Morsure numérique", "[Cybercombat, DV 2S, RA 8]"],
-        ["Formes complexes", "Diffusion (Firewall), Éditeur, Pulse Storm"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Persona Matrice", "DR 6, AC A1/I5, CM 10"], ["Morsure numérique", "[Cybercombat, DV 2S, RA 8]"], ["Formes complexes", "Diffusion (Firewall), Éditeur, Pulse Storm"]],
     },
     tortueLoShu: {
       label: "Tortue Lo Shu", a: [2, 2, 2, 2, 4, 1, 2, 3, 6],
@@ -2091,11 +1640,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Tortue éveillée d'Asie du Sud-Est considérée comme porte-bonheur, jamais reproduite en captivité, génère son propre puits de mana taoïste (grille magique 3x3).",
       skills: { Astral: 2, Athlétisme: 2, "Combat rapproché": 1, "Plein air": 1, Perception: 2, Furtivité: 2 },
-      traits: [
-        ["Compulsion", null], ["Nature duale", null],
-        ["Garde", null], ["Armure durcie 2", null],
-        ["Arme naturelle", "Morsure : VD 2S"],
-      ],
+      naturalWeapons: ["Morsure [VD 2S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Compulsion", null], ["Nature duale", null], ["Garde", null], ["Armure durcie 2", null]],
     },
     tortueEtangJaune: {
       label: "Tortue étang jaune", a: [2, 1, 1, 1, 4, 1, 1, 2, null],
@@ -2103,10 +1649,8 @@ const Creatures = {
       habitat: ["marais"],
       desc: "Petite tortue d'Asie du Sud-Est à la rayure jaune caractéristique de l'œil au cou, parente naturelle de la Lo Shu et du Wangliang, rarement Éveillée.",
       skills: { Athlétisme: 1, "Combat rapproché": 1, "Plein air": 1, Perception: 1, Furtivité: 1 },
-      traits: [
-        ["Armure 2", null],
-        ["Arme naturelle", "Morsure : VD 2S"],
-      ],
+      naturalWeapons: ["Morsure [VD 2S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null]],
     },
 
     /* ---- Wild Life p.86-114 : Jungles + Savannas ---- */
@@ -2116,11 +1660,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Grand félin éveillé des profondeurs de la jungle amazonienne, associé aux sources et cours d'eau.",
       skills: { Athlétisme: 5, "Combat rapproché": 5, "Plein air": 4, Perception: 5, Furtivité: 7 },
-      traits: [
-        ["Armure 2", null], ["Engloutissement", "Eau"], ["Passage métaplanaire", "Connexion eau/air"],
-        ["Sens accrus", "Odorat, vision en basse lumière"],
-        ["Arme naturelle", "Morsure : VD 3P / Griffes : VD 2P"],
-      ],
+      naturalWeapons: ["Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null], ["Engloutissement", "Eau"], ["Passage métaplanaire", "Connexion eau/air"], ["Sens accrus", "Odorat, vision en basse lumière"]],
     },
     singeSang: {
       label: "Singe de sang", a: [3, 5, 3, 4, 4, 2, 2, 3, 5],
@@ -2128,13 +1669,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Petit primate éveillé hématophage de la canopée, vivant en groupes pouvant compter jusqu'à 40 individus.",
       skills: { Athlétisme: 8, "Combat rapproché": 5, "Plein air": 6, Perception: 5, Furtivité: 3 },
-      traits: [
-        ["Armure 2", null], ["Brachiation", "Déplacement dans la canopée"], ["Escalade murale", null],
-        ["Sécrétion", "Anticoagulant"],
-        ["Confusion", null], ["Sens accrus", "Odorat (sang), vision en basse lumière"],
-        ["Arme naturelle", "Morsure : VD 3P / Poings : VD 2S"], ["Toucher paralysant", null],
-        ["Faiblesses", "Exigence alimentaire (sang), Fragile (2)"],
-      ],
+      naturalWeapons: ["Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]", "Poings [VD 2S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null], ["Brachiation", "Déplacement dans la canopée"], ["Escalade murale", null], ["Sécrétion", "Anticoagulant"], ["Confusion", null], ["Sens accrus", "Odorat (sang), vision en basse lumière"], ["Toucher paralysant", null], ["Faiblesses", "Exigence alimentaire (sang), Fragile (2)"]],
     },
     novaraptor: {
       label: "Novaraptor", a: [5, 4, 4, 4, 2, 1, 4, 2, 6],
@@ -2142,11 +1678,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Petit raptor éveillé pyrique de la jungle amazonienne.",
       skills: { Athlétisme: 5, "Combat rapproché": 6, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 4", null], ["Attaque élémentaire", "Feu"], ["Sens accrus", "Vision en basse lumière"],
-        ["Immunité", "Feu"],
-        ["Arme naturelle", "Morsure : VD 3P / Griffes : VD 2P"],
-      ],
+      naturalWeapons: ["Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Attaque élémentaire", "Feu"], ["Sens accrus", "Vision en basse lumière"], ["Immunité", "Feu"]],
     },
     angeAmazonien: {
       label: "Ange amazonien", a: [2, 5, 5, 2, 3, 2, 4, 1, 6],
@@ -2154,10 +1687,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Méduse aérienne éveillée flottant dans les nuages et brumes de la jungle amazonienne.",
       skills: { Athlétisme: 4, "Combat rapproché": 3, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Arme naturelle", "Tentacules : VD 2P"],
-        ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Immobilisé/Empoisonné"],
-      ],
+      naturalWeapons: ["Tentacules [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Immobilisé/Empoisonné"]],
     },
     arangUtan: {
       label: "Arang-Utan", a: [6, 3, 3, 6, 6, 3, 6, 5, 6],
@@ -2165,12 +1696,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Orang-outan éveillé arboricole des forêts tropicales indonésiennes, lecteur d'auras capable de créer des préparations magiques sans drain.",
       skills: { Astral: 8, Athlétisme: 3, "Combat rapproché": 4, Enchantement: 6, "Plein air": 4, Perception: 6, Furtivité: 2 },
-      traits: [
-        ["Armure 3", null], ["Sens accrus", "Vision en basse lumière"], ["Sapience", null],
-        ["Arme naturelle", "Morsure : VD 3P / Poings : VD 3S"],
-        ["Observation astrale", "Lecture d'aura"],
-        ["Préparations magiques", "Peut créer des préparations magiques (Combat, Illusion ou Manipulation) sans drain"],
-      ],
+      naturalWeapons: ["Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]", "Poings [VD 3S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 3", null], ["Sens accrus", "Vision en basse lumière"], ["Sapience", null], ["Observation astrale", "Lecture d'aura"], ["Préparations magiques", "Peut créer des préparations magiques (Combat, Illusion ou Manipulation) sans drain"]],
     },
     paresseuxClignotant: {
       label: "Paresseux clignotant", a: [6, 8, 11, 5, 4, 1, 5, 4, 6],
@@ -2179,12 +1706,8 @@ const Creatures = {
       // Normalement très lent, le mouvement listé (2(50*)/4/—) ne s'applique que lorsqu'il attaque.
       desc: "Paresseux éveillé arboricole d'une lenteur trompeuse, capable d'exploser en vitesse foudroyante au moment de l'attaque.",
       skills: { Athlétisme: 5, "Combat rapproché": 8, "Plein air": 2, Perception: 6, Furtivité: 4 },
-      traits: [
-        ["Armure 4", null], ["Brachiation", null],
-        ["Sens accrus", "Ouïe, odorat"], ["Immunité", "Toxines"],
-        ["Arme naturelle", "Griffes : VD 5P"],
-        ["Faiblesses", "Sens réduit (vue)"],
-      ],
+      naturalWeapons: ["Griffes [VD 5P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Brachiation", null], ["Sens accrus", "Ouïe, odorat"], ["Immunité", "Toxines"], ["Faiblesses", "Sens réduit (vue)"]],
     },
     gorilleNartaki: {
       label: "Gorille Nartaki", a: [8, 3, 4, 9, 2, 2, 4, 2, 6],
@@ -2192,11 +1715,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Gorille éveillé des jungles, redoutable au combat rapproché.",
       skills: { Athlétisme: 5, "Combat rapproché": 8, "Plein air": 3, Perception: 5, Furtivité: 3 },
-      traits: [
-        ["Armure 4", null], ["Sens accrus", "Vision en basse lumière"],
-        ["Arme naturelle", "Morsure : VD 5P / Poings : VD 5S"],
-        ["Frappes multiples", "Ne divise pas sa réserve de dés lors d'attaques multiples en mêlée"],
-      ],
+      naturalWeapons: ["Morsure [VD 5P, SO FOR+RÉA/–/–/–/–]", "Poings [VD 5S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Sens accrus", "Vision en basse lumière"], ["Frappes multiples", "Ne divise pas sa réserve de dés lors d'attaques multiples en mêlée"]],
     },
     grenouilleFlecettePlanaire: {
       label: "Grenouille fléchette planaire", a: [1, 3, 3, 1, 4, 1, 3, 1, 8],
@@ -2215,13 +1735,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Petit reptile éveillé caméléonesque de la jungle, souvent utilisé comme créature de sécurité par les corporations.",
       skills: { Athlétisme: 4, "Combat rapproché": 5, "Plein air": 2, Perception: 4, Furtivité: 6 },
-      traits: [
-        ["Coloration adaptative", null], ["Armure 3", null],
-        ["Liaison", "Binding"],
-        ["Sens accrus", "Toucher, vision à 360°"], ["Immunité", "Toxines"],
-        ["Arme naturelle", "Langue : VD 3S / Morsure : VD 4P"],
-        ["Faiblesses", "Sens réduit (ouïe, odorat)"],
-      ],
+      naturalWeapons: ["Langue [VD 3S, SO FOR+RÉA/–/–/–/–]", "Morsure [VD 4P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Coloration adaptative", null], ["Armure 3", null], ["Liaison", "Binding"], ["Sens accrus", "Toucher, vision à 360°"], ["Immunité", "Toxines"], ["Faiblesses", "Sens réduit (ouïe, odorat)"]],
     },
     beteAraignee: {
       label: "Bête-araignée (SR6)", a: [2, 4, 3, 2, 3, 1, 3, 1, 6],
@@ -2229,13 +1744,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Araignée éveillée chasseuse de la canopée, tisse des toiles pour piéger ses proies.",
       skills: { Athlétisme: 4, "Combat rapproché": 3, "Plein air": 2, Perception: 3, Furtivité: 6 },
-      traits: [
-        ["Armure 4", null], ["Sens accrus", "Tactile"],
-        ["Extrusion de substance", "Soie d'araignée"], ["Escalade murale", null],
-        ["Arme naturelle", "Morsure/Griffes : VD 1P (plus venin)"],
-        ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Immobilisé/Nauséeux/Empoisonné"],
-        ["Faiblesses", "Fragile (4)"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P (plus venin), SO FOR+RÉA/–/–/–/–]", "Griffes [VD 1P (plus venin), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Sens accrus", "Tactile"], ["Extrusion de substance", "Soie d'araignée"], ["Escalade murale", null], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Immobilisé/Nauséeux/Empoisonné"], ["Faiblesses", "Fragile (4)"]],
     },
     chatTalisGuepard: {
       label: "Chat Talis (forme guépard)", a: [5, 5, 4, 4, 3, 3, 2, 3, 6],
@@ -2243,11 +1753,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Félin éveillé social des confins savane/jungle asiatiques, capable de changer de forme entre guépard et chat domestique.",
       skills: { Athlétisme: 2, "Combat rapproché": 3, "Plein air": 2, Perception: 2, Furtivité: 2 },
-      traits: [
-        ["Armure 3", null], ["Masque astral", null], ["Métamorphose", "Shift : possède deux formes, guépard et chat domestique"],
-        ["Sens accrus", "Vision en basse lumière"], ["Mouvement", "Soi"],
-        ["Arme naturelle", "Morsure/Griffes : VD 2P"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 3", null], ["Masque astral", null], ["Métamorphose", "Shift : possède deux formes, guépard et chat domestique"], ["Sens accrus", "Vision en basse lumière"], ["Mouvement", "Soi"]],
     },
     chatTalisDomestique: {
       label: "Chat Talis (forme domestique)", a: [2, 6, 4, 1, 3, 3, 2, 3, 6],
@@ -2268,11 +1775,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Prédateur nocturne éveillé de la jungle péruvienne.",
       skills: { Athlétisme: 3, "Combat rapproché": 5, "Plein air": 4, Perception: 5, Furtivité: 6 },
-      traits: [
-        ["Armure 2", null], ["Compulsion", null],
-        ["Sens accrus", "Odorat, vision en basse lumière"], ["Peur", null], ["Mimétisme", null],
-        ["Arme naturelle", "Morsure : VD 3P / Griffes : VD 2P"],
-      ],
+      naturalWeapons: ["Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null], ["Compulsion", null], ["Sens accrus", "Odorat, vision en basse lumière"], ["Peur", null], ["Mimétisme", null]],
     },
     guepeVide: {
       label: "Guêpe du vide", a: [1, 8, 11, 1, 1, 1, 5, 5, 6],
@@ -2280,14 +1784,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Guêpe éveillée nichant en essaim dans les arbres Sangre del Diablo de l'Amazonie, crée un vide de mana autour de son nid.",
       skills: { Astral: 3, Athlétisme: 5, "Combat rapproché": 6, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Amortissement arcanique", "Crée un vide de mana autour de son nid"],
-        ["Nature duale", null], ["Drain d'Essence", "Magie"],
-        ["Sens accrus", "Détection de mouvement, odorat, vision thermographique"], ["Peur", null],
-        ["Arme naturelle", "Dard : VD 1S"],
-        ["Venin", "Injection, vitesse 1 tour, Pouvoir 10, effet Étourdi/Empoisonné"],
-        ["Faiblesses", "Fragile (8)"],
-      ],
+      naturalWeapons: ["Dard [VD 1S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Amortissement arcanique", "Crée un vide de mana autour de son nid"], ["Nature duale", null], ["Drain d'Essence", "Magie"], ["Sens accrus", "Détection de mouvement, odorat, vision thermographique"], ["Peur", null], ["Venin", "Injection, vitesse 1 tour, Pouvoir 10, effet Étourdi/Empoisonné"], ["Faiblesses", "Fragile (8)"]],
     },
     guepardConway: {
       label: "Guépard de Conway", a: [7, 8, 6, 6, 5, 2, 6, 4, 6],
@@ -2295,12 +1793,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Guépard éveillé à six pattes des savanes africaines, très social et vivant en coalitions.",
       skills: { Astral: 5, Athlétisme: 8, "Combat rapproché": 8, "Plein air": 5, Perception: 7, Furtivité: 5 },
-      traits: [
-        ["Armure 6", null], ["Nature duale", null],
-        ["Sens accrus", "Ouïe, odorat, détection de mouvement"], ["Immunité", "Radiation, toxines"],
-        ["Mouvement", "Soi"], ["Arme naturelle", "Morsure : VD 8P"],
-        ["Bond", "Doit courir avant d'attaquer, une attaque réussie provoque une chute (Knockdown)"],
-      ],
+      naturalWeapons: ["Morsure [VD 8P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 6", null], ["Nature duale", null], ["Sens accrus", "Ouïe, odorat, détection de mouvement"], ["Immunité", "Radiation, toxines"], ["Mouvement", "Soi"], ["Bond", "Doit courir avant d'attaquer, une attaque réussie provoque une chute (Knockdown)"]],
     },
     lionFeu: {
       label: "Lion de feu", a: [12, 4, 4, 10, 3, 2, 6, 4, 6],
@@ -2308,11 +1802,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Lion éveillé chasseur en groupe des savanes africaines, sécrète des huiles inflammables.",
       skills: { Athlétisme: 5, "Combat rapproché": 8, "Plein air": 6, Perception: 6, Furtivité: 5 },
-      traits: [
-        ["Armure 6", null], ["Attaque élémentaire", "Feu"], ["Sécrétion", "Huiles inflammables"],
-        ["Sens accrus", "Vision en basse lumière, odorat"], ["Immunité", "Feu"],
-        ["Arme naturelle", "Griffes : VD 10P"],
-      ],
+      naturalWeapons: ["Griffes [VD 10P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 6", null], ["Attaque élémentaire", "Feu"], ["Sécrétion", "Huiles inflammables"], ["Sens accrus", "Vision en basse lumière, odorat"], ["Immunité", "Feu"]],
     },
     elephantBlinde: {
       label: "Éléphant blindé", a: [18, 3, 3, 30, 4, 2, 8, 6, 6],
@@ -2320,10 +1811,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Éléphant éveillé cuirassé des savanes africaines, protecteur du troupeau.",
       skills: { Athlétisme: 7, "Combat rapproché": 8, Influence: 6, "Plein air": 7, Perception: 8 },
-      traits: [
-        ["Armure 8", null], ["Sens accrus", "Vision en basse lumière"], ["Armure durcie 6", null],
-        ["Arme naturelle", "Défenses : VD 18P"],
-      ],
+      naturalWeapons: ["Défenses [VD 18P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 8", null], ["Sens accrus", "Vision en basse lumière"], ["Armure durcie 6", null]],
     },
     autrucheAerienne: {
       label: "Autruche aérienne", a: [2, 4, 2, 1, 1, 1, 4, 2, 6],
@@ -2331,11 +1820,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Autruche éveillée volante nichant en savane, circumnavigue le globe tous les 2 ans pour se reproduire.",
       skills: { Athlétisme: 4, "Combat rapproché": 3, "Plein air": 3, Perception: 4 },
-      traits: [
-        ["Sens accrus", "Vision en basse lumière"], ["Sort inné", "Lévitation"],
-        ["Arme naturelle", "Morsure : VD 2P"],
-        ["Faiblesses", "Fragile (4)"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Sens accrus", "Vision en basse lumière"], ["Sort inné", "Lévitation"], ["Faiblesses", "Fragile (4)"]],
     },
     leopardOmniscient: {
       label: "Léopard omniscient", a: [5, 6, 6, 4, 6, 4, 5, 4, 6],
@@ -2343,12 +1829,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Léopard éveillé sapient et solitaire des savanes africaines, doté de connexions métaplanaires.",
       skills: { Astral: 5, Athlétisme: 4, "Combat rapproché": 5, "Arme exotique": 5, "Plein air": 5, Perception: 6 },
-      traits: [
-        ["Armure 3", null], ["Nature duale", null],
-        ["Sens accrus", "Ouïe, vision en basse lumière, odorat"], ["Passage métaplanaire", null],
-        ["Mouvement", "Soi"], ["Sapience", null],
-        ["Arme naturelle", "Griffes : VD 5P"],
-      ],
+      naturalWeapons: ["Griffes [VD 5P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 3", null], ["Nature duale", null], ["Sens accrus", "Ouïe, vision en basse lumière, odorat"], ["Passage métaplanaire", null], ["Mouvement", "Soi"], ["Sapience", null]],
     },
     rhinocerosApocalypse: {
       label: "Rhinocéros de l'apocalypse", a: [10, 3, 3, 10, 1, 1, 3, 1, 6],
@@ -2356,12 +1838,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Rhinocéros éveillé des savanes africaines, associé à une mine de radium désaffectée.",
       skills: { Athlétisme: 5, "Combat rapproché": 6, "Plein air": 4, Perception: 5 },
-      traits: [
-        ["Armure 6", null], ["Sens accrus", "Vision en basse lumière"], ["Peur", null],
-        ["Armure durcie 2", null],
-        ["Porteur", null], ["Secousse", "Quake"], ["Tempête", "Storm"],
-        ["Arme naturelle", "Cornes : VD 8P"], ["Pétrification", null],
-      ],
+      naturalWeapons: ["Cornes [VD 8P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 6", null], ["Sens accrus", "Vision en basse lumière"], ["Peur", null], ["Armure durcie 2", null], ["Porteur", null], ["Secousse", "Quake"], ["Tempête", "Storm"], ["Pétrification", null]],
     },
     termitesOsseux: {
       label: "Termites osseux", a: [1, 1, 1, 1, 1, 1, 2, 1, 2],
@@ -2369,11 +1847,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Colonie de termites éveillés habitant cimetières, ossuaires et sites de massacre.",
       skills: { "Combat rapproché": 2, "Plein air": 2, Perception: 2 },
-      traits: [
-        ["Sens accrus", "Vision en basse lumière"],
-        ["Arme naturelle", "Morsure : VD 1P"],
-        ["Faiblesses", "Fragile (8)"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Sens accrus", "Vision en basse lumière"], ["Faiblesses", "Fragile (8)"]],
     },
     ebranleurTerre: {
       label: "Ébranleur de terre", a: [12, 2, 3, 12, 1, 1, 3, 1, 6],
@@ -2381,10 +1856,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Grand bovidé éveillé des savanes africaines, utilisé comme monture de guerre par certaines tribus.",
       skills: { Athlétisme: 4, "Combat rapproché": 4, "Plein air": 4, Perception: 4 },
-      traits: [
-        ["Armure 8", null], ["Sens accrus", "Vision en basse lumière"], ["Armure durcie 4", null],
-        ["Arme naturelle", "Cornes : VD 10P"],
-      ],
+      naturalWeapons: ["Cornes [VD 10P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 8", null], ["Sens accrus", "Vision en basse lumière"], ["Armure durcie 4", null]],
     },
     fourmisBoulesFeu: {
       label: "Fourmis boules de feu", a: [1, 1, 1, 1, 1, 1, 2, 1, 2],
@@ -2415,10 +1888,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Éléphant éveillé chasseur solitaire des savanes africaines.",
       skills: { Athlétisme: 4, "Combat rapproché": 8, "Plein air": 4, Perception: 6 },
-      traits: [
-        ["Armure 6", null], ["Sens accrus", "Vision en basse lumière"], ["Armure durcie 4", null],
-        ["Arme naturelle", "Défenses : VD 18P"],
-      ],
+      naturalWeapons: ["Défenses [VD 18P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 6", null], ["Sens accrus", "Vision en basse lumière"], ["Armure durcie 4", null]],
     },
     suricateMetaplanaire: {
       label: "Suricate métaplanaire", a: [1, 5, 4, 1, 2, 2, 5, 2, 4],
@@ -2426,11 +1897,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Suricate éveillé des savanes africaines, vit en groupes sociaux mêlés à des suricates ordinaires.",
       skills: { Athlétisme: 4, "Combat rapproché": 2, "Plein air": 3, Perception: 4 },
-      traits: [
-        ["Sens accrus", "Vision en basse lumière"], ["Passage métaplanaire", null],
-        ["Arme naturelle", "Morsure : VD 1P"],
-        ["Faiblesses", "Fragile (4)"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Sens accrus", "Vision en basse lumière"], ["Passage métaplanaire", null], ["Faiblesses", "Fragile (4)"]],
     },
     babouinOzien: {
       label: "Babouin d'Oz (SR6)", a: [5, 5, 4, 4, 2, 2, 5, 4, 4],
@@ -2438,11 +1906,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Babouin éveillé ailé des savanes africaines, prédateur aérien.",
       skills: { Athlétisme: 6, "Combat rapproché": 4, Influence: 4, "Plein air": 5, Perception: 6, Sorcellerie: 4 },
-      traits: [
-        ["Armure 2", null], ["Sens accrus", "Vision en basse lumière, odorat"],
-        ["Sort inné", "Lévitation"], ["Arme naturelle", "Morsure : VD 5P"],
-        ["Faiblesses", "Fragile (2)"],
-      ],
+      naturalWeapons: ["Morsure [VD 5P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null], ["Sens accrus", "Vision en basse lumière, odorat"], ["Sort inné", "Lévitation"], ["Faiblesses", "Fragile (2)"]],
     },
     fourmisResonance: {
       label: "Fourmis de résonance", a: [1, 1, 1, 1, 1, 1, 2, 1, null],
@@ -2462,11 +1927,8 @@ const Creatures = {
       habitat: ["jungles"],
       desc: "Crocodile éveillé prédateur des savanes africaines, capable d'amortir la magie ambiante.",
       skills: { Athlétisme: 4, "Combat rapproché": 4, "Plein air": 2, Perception: 4 },
-      traits: [
-        ["Amortissement arcanique", null], ["Armure 4", null],
-        ["Sens accrus", "Vision en basse lumière"], ["Armure durcie 2", null],
-        ["Arme naturelle", "Morsure : VD 6P"],
-      ],
+      naturalWeapons: ["Morsure [VD 6P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Amortissement arcanique", null], ["Armure 4", null], ["Sens accrus", "Vision en basse lumière"], ["Armure durcie 2", null]],
     },
 
     /* ---- Wild Life p.116-142 : Deserts + Polar Regions ---- */
@@ -2476,12 +1938,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Wombat éveillé cuirassé des régions désertiques australiennes.",
       skills: { Astral: 3, Athlétisme: 3, "Combat rapproché": 5, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 8", null], ["Nature duale", null],
-        ["Sens accrus", "Odorat, vision en basse lumière"], ["Armure durcie 2", null],
-        ["Arme naturelle", "Morsure : VD 3P / Griffes : VD 2P"],
-        ["Bond", "Doit courir avant d'attaquer, une attaque réussie provoque une chute"],
-      ],
+      naturalWeapons: ["Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 8", null], ["Nature duale", null], ["Sens accrus", "Odorat, vision en basse lumière"], ["Armure durcie 2", null], ["Bond", "Doit courir avant d'attaquer, une attaque réussie provoque une chute"]],
     },
     juggernaut: {
       label: "Juggernaut (Wild Life)", a: [20, 6, 5, 42, 9, 1, 3, 1, null],
@@ -2489,13 +1947,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Tatou géant éveillé des régions désertiques pouvant atteindre 20 mètres, respire par symbiose bactérienne anaérobie.",
       skills: { Athlétisme: 5, "Combat rapproché": 5, "Plein air": 4, Perception: 4, Furtivité: 2 },
-      traits: [
-        ["Armure 8", null], ["Robuste 12", null],
-        ["Sens accrus", "Ouïe, odorat, détection de mouvement"], ["Peur", null], ["Armure durcie 12", null],
-        ["Immunité", "Froid, feu, pathogènes, toxines"],
-        ["Arme naturelle", "Morsure : VD 21P / Griffes : VD 12P"],
-        ["Faiblesses", "Sens réduit (vue)"],
-      ],
+      naturalWeapons: ["Morsure [VD 21P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 12P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 8", null], ["Robuste 12", null], ["Sens accrus", "Ouïe, odorat, détection de mouvement"], ["Peur", null], ["Armure durcie 12", null], ["Immunité", "Froid, feu, pathogènes, toxines"], ["Faiblesses", "Sens réduit (vue)"]],
     },
     dardAile: {
       label: "Dard-ailé", a: [2, 5, 5, 2, 3, 2, 4, 1, null],
@@ -2503,11 +1956,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Petite créature ailée venimeuse des zones désertiques, nichant volontiers dans les cactus.",
       skills: { Athlétisme: 5, "Combat rapproché": 5, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 4", null], ["Sens accrus", "Odorat, vision en basse lumière"],
-        ["Arme naturelle", "Queue : VD 1P / Griffes : VD 2P"],
-        ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Empoisonné"],
-      ],
+      naturalWeapons: ["Queue [VD 1P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Sens accrus", "Odorat, vision en basse lumière"], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Empoisonné"]],
     },
     loupFouisseur: {
       label: "Loup fouisseur", a: [3, 4, 5, 3, 2, 2, 4, 2, null],
@@ -2515,12 +1965,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Petit canidé éveillé des déserts d'Amérique du Nord (PCC, Cal Free, Aztlan), se dissimule facilement.",
       skills: { Astral: 3, Athlétisme: 3, "Combat rapproché": 5, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 2", null], ["Dissimulation", "Personnelle"], ["Nature duale", null],
-        ["Sens accrus", "Odorat, vision en basse lumière"],
-        ["Arme naturelle", "Morsure : VD 2P"],
-        ["Faiblesses", "Allergie (polluants, faible)"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null], ["Dissimulation", "Personnelle"], ["Nature duale", null], ["Sens accrus", "Odorat, vision en basse lumière"], ["Faiblesses", "Allergie (polluants, faible)"]],
     },
     cactusTonnerre: {
       label: "Cactus tonnerre", a: [6, 1, 4, 3, 1, 1, 4, 1, null],
@@ -2528,12 +1974,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Cactus éveillé immobile des régions désertiques, tire ses aiguilles venimeuses sur ses assaillants.",
       skills: { Astral: 3, "Arme exotique (aiguilles)": 4, Perception: 5 },
-      traits: [
-        ["Armure 8", null], ["Nature duale", null], ["Robuste 10", null], ["Armure durcie 3", null],
-        ["Arme naturelle à distance", "Aiguilles : VD 2P (plus venin)"],
-        ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Immobilisé/Empoisonné"],
-        ["Immobile", "Mouvement 0"],
-      ],
+      naturalWeapons: ["Aiguilles [VD 2P (plus venin), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 8", null], ["Nature duale", null], ["Robuste 10", null], ["Armure durcie 3", null], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Immobilisé/Empoisonné"], ["Immobile", "Mouvement 0"]],
     },
     chimere: {
       label: "Chimère (Wild Life)", a: [5, 6, 5, 5, 4, 2, 3, 4, null],
@@ -2541,14 +1983,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Grand lézard éveillé de 3,5 mètres des régions désertiques, ressemblant à un jeune dragon sans ailes.",
       skills: { Astral: 4, Athlétisme: 3, "Combat rapproché": 4, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 6", null], ["Dissimulation", "Personnelle"], ["Nature duale", null],
-        ["Immunité", "Poisons, toxines"],
-        ["Arme naturelle", "Morsure : VD 2P (plus venin) / Griffes : VD 3P"],
-        ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Confusion/Étourdi/Empoisonné"],
-        ["Faiblesses", "Vulnérabilité (métaux ferreux)"],
-        ["Pouvoir optionnel (choix du MJ)", "Attaque élémentaire (Feu)"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P (plus venin), SO FOR+RÉA/–/–/–/–]", "Griffes [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 6", null], ["Dissimulation", "Personnelle"], ["Nature duale", null], ["Immunité", "Poisons, toxines"], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Confusion/Étourdi/Empoisonné"], ["Faiblesses", "Vulnérabilité (métaux ferreux)"], ["Pouvoir optionnel (choix du MJ)", "Attaque élémentaire (Feu)"]],
     },
     deathrattle: {
       label: "Deathrattle (SR6)", a: [3, 6, 8, 4, 2, 1, 5, 2, null],
@@ -2556,12 +1992,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Serpent éveillé du désert, chasseur nocturne crachant un venin dévastateur à distance.",
       skills: { Athlétisme: 3, "Combat rapproché": 5, "Arme exotique (crachat)": 5, Influence: 4, "Plein air": 4, Perception: 4, Furtivité: 3 },
-      traits: [
-        ["Armure 6", null], ["Sens accrus", "Vision thermographique"],
-        ["Immunité", "Douleur, toxines"],
-        ["Arme naturelle", "Morsure : VD 2P (plus venin)"],
-        ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Empoisonné"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P (plus venin), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 6", null], ["Sens accrus", "Vision thermographique"], ["Immunité", "Douleur, toxines"], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Empoisonné"]],
     },
     millePattesEthere: {
       label: "Mille-pattes éthéré", a: [1, 2, 2, 1, 1, 1, 3, 1, null],
@@ -2569,12 +2001,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Petit mille-pattes éveillé des zones désertiques, son venin force une perception astrale non désirée.",
       skills: { Astral: 2, "Combat rapproché": 2, "Plein air": 2, Perception: 2, Furtivité: 4 },
-      traits: [
-        ["Nature duale", null], ["Sens accrus", "Odorat"],
-        ["Arme naturelle", "Morsure : VD 1P (plus venin)"],
-        ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Confusion/Étourdi/Empoisonné/Perception astrale forcée"],
-        ["Faiblesses", "Fragile (8)"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P (plus venin), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Sens accrus", "Odorat"], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Confusion/Étourdi/Empoisonné/Perception astrale forcée"], ["Faiblesses", "Fragile (8)"]],
     },
     demonGila: {
       label: "Démon Gila", a: [4, 4, 3, 4, 3, 2, 6, 2, null],
@@ -2582,11 +2010,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Lézard éveillé venimeux des régions désertiques, apparenté au monstre de Gila.",
       skills: { Athlétisme: 3, "Combat rapproché": 5, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 4", null], ["Sens accrus", "Odorat, vision en basse lumière"],
-        ["Arme naturelle", "Morsure : VD 2P (plus venin) / Griffes : VD 3P"],
-        ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Nauséeux/Empoisonné"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P (plus venin), SO FOR+RÉA/–/–/–/–]", "Griffes [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Sens accrus", "Odorat, vision en basse lumière"], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Nauséeux/Empoisonné"]],
     },
     tatouMajeur: {
       label: "Tatou majeur", a: [6, 4, 3, 4, 3, 2, 4, 2, null],
@@ -2594,12 +2019,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Tatou éveillé cuirassé des régions désertiques, très stupide et imprévisible, se roule en boule défensive.",
       skills: { Astral: 3, Athlétisme: 3, "Combat rapproché": 5, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 8", null], ["Nature duale", null],
-        ["Sens accrus", "Odorat, vision en basse lumière"], ["Armure durcie 2", null],
-        ["Arme naturelle", "Griffes : VD 2P"],
-        ["Bond", null],
-      ],
+      naturalWeapons: ["Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 8", null], ["Nature duale", null], ["Sens accrus", "Odorat, vision en basse lumière"], ["Armure durcie 2", null], ["Bond", null]],
     },
     grandeDameBlancheDansante: {
       label: "Grande dame blanche dansante", a: [1, 4, 4, 1, 3, 1, 3, 1, null],
@@ -2607,12 +2028,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Araignée-trappe éveillée des dunes du Namib (12-30 cm), vivant en communautés de jusqu'à 24 individus.",
       skills: { Athlétisme: 3, "Combat rapproché": 2, "Plein air": 2, Perception: 2, Furtivité: 4 },
-      traits: [
-        ["Sens accrus", "Sens des vibrations"], ["Mouvement", "Soi"], ["Escalade murale", null],
-        ["Arme naturelle", "Morsure : VD 1P (plus venin)"], ["Toucher paralysant", null],
-        ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Saignement/Étourdi/Immobilisé/Empoisonné"],
-        ["Faiblesses", "Fragile (5)"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P (plus venin), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Sens accrus", "Sens des vibrations"], ["Mouvement", "Soi"], ["Escalade murale", null], ["Toucher paralysant", null], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Saignement/Étourdi/Immobilisé/Empoisonné"], ["Faiblesses", "Fragile (5)"]],
     },
     scorpionNova: {
       label: "Scorpion nova (SR6)", a: [4, 4, 4, 3, 3, 2, 5, 1, null],
@@ -2620,11 +2037,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Scorpion éveillé des régions désertiques, chasse la nuit en embuscade dans le sable.",
       skills: { Athlétisme: 3, "Combat rapproché": 4, "Plein air": 4, Perception: 5, Furtivité: 6 },
-      traits: [
-        ["Armure 4", null], ["Dissimulation", "Personnelle"], ["Nature duale", null],
-        ["Arme naturelle", "Queue : VD 2P / Griffes : VD 3P"],
-        ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Empoisonné"],
-      ],
+      naturalWeapons: ["Queue [VD 2P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Dissimulation", "Personnelle"], ["Nature duale", null], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Empoisonné"]],
     },
     lezardRoches: {
       label: "Lézard des roches", a: [3, 3, 3, 4, 3, 1, 3, 1, null],
@@ -2632,11 +2046,8 @@ const Creatures = {
       habitat: ["deserts"],
       desc: "Lézard éveillé des rochers désertiques, à la langue préhensile fourchue, escalade les parois avec aisance.",
       skills: { Athlétisme: 3, "Combat rapproché": 5, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Immunité", "Poisons"], ["Escalade murale", null],
-        ["Arme naturelle", "Morsure : VD 2P (plus venin)"],
-        ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Immobilisé/Nauséeux/Empoisonné"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P (plus venin), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Immunité", "Poisons"], ["Escalade murale", null], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Immobilisé/Nauséeux/Empoisonné"]],
     },
     oursFantome: {
       label: "Ours fantôme", a: [10, 4, 4, 16, 3, 2, 6, 8, 6],
@@ -2644,11 +2055,8 @@ const Creatures = {
       habitat: ["polaire"],
       desc: "Ours émergent des régions arctiques, invisible et perturbant la technologie environnante.",
       skills: { Athlétisme: 5, "Combat rapproché": 8, "Plein air": 5, Perception: 7, Furtivité: 6 },
-      traits: [
-        ["Armure 3", null], ["Dissimulation", "Émergent : invisible et perturbe la technologie environnante"],
-        ["Sens accrus", "Ouïe, vision en basse lumière, odorat"], ["Immunité", "Froid"],
-        ["Arme naturelle", "Morsure : VD 8P"],
-      ],
+      naturalWeapons: ["Morsure [VD 8P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 3", null], ["Dissimulation", "Émergent : invisible et perturbe la technologie environnante"], ["Sens accrus", "Ouïe, vision en basse lumière, odorat"], ["Immunité", "Froid"]],
     },
     renneRegne: {
       label: "Renne-règne", a: [8, 4, 4, 8, 2, 2, 4, 2, 6],
@@ -2656,10 +2064,8 @@ const Creatures = {
       habitat: ["polaire"],
       desc: "Renne ailé prédateur éveillé du Svalbard, influence les enfants avant de les précipiter au sol depuis les airs.",
       skills: { Astral: 3, Athlétisme: 4, "Combat rapproché": 4, "Plein air": 4, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 2", null], ["Nature duale", null], ["Sens accrus", "Vision en basse lumière"],
-        ["Influence", null], ["Arme naturelle", "Morsure : VD 4P"],
-      ],
+      naturalWeapons: ["Morsure [VD 4P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null], ["Nature duale", null], ["Sens accrus", "Vision en basse lumière"], ["Influence", null]],
     },
     renardMalade: {
       label: "Renard malade", a: [3, 5, 5, 3, 2, 1, 5, 3, 6],
@@ -2667,10 +2073,8 @@ const Creatures = {
       habitat: ["polaire"],
       desc: "Renard éveillé arctique corrompu par la pollution des anciennes mines (teinte cuivrée-verte).",
       skills: { Astral: 4, Athlétisme: 4, "Combat rapproché": 3, "Plein air": 4, Perception: 5, Furtivité: 6 },
-      traits: [
-        ["Nature duale", null], ["Sens accrus", "Ouïe, vision en basse lumière, odorat"],
-        ["Immunité", "Radiation, toxines"], ["Arme naturelle", "Morsure : VD 2P"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Sens accrus", "Ouïe, vision en basse lumière, odorat"], ["Immunité", "Radiation, toxines"]],
     },
     sculpteursAntarctiques: {
       label: "Sculpteurs antarctiques", a: [4, 4, 2, 1, 2, 1, 4, 1, 6],
@@ -2689,12 +2093,8 @@ const Creatures = {
       habitat: ["polaire"],
       desc: "Grand lézard éveillé polaire ressemblant à un jeune dragon sans ailes, dégage une aura froide (-100°C).",
       skills: { Astral: 6, Athlétisme: 8, "Combat rapproché": 8, "Plein air": 5, Perception: 7, Furtivité: 5 },
-      traits: [
-        ["Armure 2", null], ["Nature duale", null], ["Attaque élémentaire", "Froid"],
-        ["Sens accrus", "Odorat"], ["Armure durcie 4", null], ["Immunité", "Froid"],
-        ["Armure mystique 4", null], ["Escalade murale", null],
-        ["Arme naturelle", "Morsure/Griffes : VD 3P / Queue : VD 2S (chute si succès)"],
-      ],
+      naturalWeapons: ["Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 3P, SO FOR+RÉA/–/–/–/–]", "Queue [VD 2S (chute si succès), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 2", null], ["Nature duale", null], ["Attaque élémentaire", "Froid"], ["Sens accrus", "Odorat"], ["Armure durcie 4", null], ["Immunité", "Froid"], ["Armure mystique 4", null], ["Escalade murale", null]],
     },
     araigneeGlace: {
       label: "Araignée des glaces", a: [3, 4, 4, 2, 1, 1, 4, 1, 4],
@@ -2702,11 +2102,8 @@ const Creatures = {
       habitat: ["polaire"],
       desc: "Araignée éveillée des régions polaires (arctique et antarctique).",
       skills: { Astral: 3, "Combat rapproché": 4, "Plein air": 2, Perception: 3, Furtivité: 4 },
-      traits: [
-        ["Nature duale", null], ["Immunité", "Froid"], ["Mouvement", "Soi"],
-        ["Arme naturelle", "Morsure : VD 1P (plus venin)"], ["Venin", null],
-        ["Bond", "Doit courir avant d'attaquer, une attaque réussie fait tomber la cible (Prone)"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P (plus venin), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Immunité", "Froid"], ["Mouvement", "Soi"], ["Venin", null], ["Bond", "Doit courir avant d'attaquer, une attaque réussie fait tomber la cible (Prone)"]],
     },
     lievreMatriciel: {
       label: "Lièvre matriciel", a: [2, 5, 4, 1, 3, 2, 5, 2, null],
@@ -2739,10 +2136,8 @@ const Creatures = {
       habitat: ["polaire"],
       desc: "Élan éveillé des régions polaires arctiques.",
       skills: { Astral: 3, Athlétisme: 3, "Combat rapproché": 4, "Plein air": 4, Perception: 3, Furtivité: 3 },
-      traits: [
-        ["Armure 3", null], ["Nature duale", null],
-        ["Arme naturelle", "Bois : VD 5S"], ["Silence", null],
-      ],
+      naturalWeapons: ["Bois [VD 5S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 3", null], ["Nature duale", null], ["Silence", null]],
     },
     chouetteNeiges: {
       label: "Chouette des neiges", a: [4, 3, 3, 2, 2, 2, 5, 2, 6],
@@ -2750,12 +2145,8 @@ const Creatures = {
       habitat: ["polaire", "montagnes"],
       desc: "Chouette éveillée des régions polaires et montagneuses, provoque des chutes de neige localisées.",
       skills: { Astral: 3, Athlétisme: 2, "Combat rapproché": 3, "Plein air": 3, Perception: 6, Furtivité: 4 },
-      traits: [
-        ["Nature duale", null], ["Sens accrus", "Vision en basse lumière, vision thermographique"],
-        ["Immunité", "Froid"], ["Arme naturelle", "Serres : VD 1P"],
-        ["Contrôle météorologique", "Chute de neige localisée"],
-        ["Faiblesses", "Fragile (2), Vulnérabilité (feu)"],
-      ],
+      naturalWeapons: ["Serres [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Sens accrus", "Vision en basse lumière, vision thermographique"], ["Immunité", "Froid"], ["Contrôle météorologique", "Chute de neige localisée"], ["Faiblesses", "Fragile (2), Vulnérabilité (feu)"]],
     },
     serpentDesNeiges: {
       label: "Serpent des neiges (SR6)", a: [2, 5, 4, 2, 2, 1, 4, 1, 3],
@@ -2763,11 +2154,8 @@ const Creatures = {
       habitat: ["polaire"],
       desc: "Serpent éveillé adapté au grand froid, en expansion vers le nord-ouest de l'Amérique du Nord.",
       skills: { "Combat rapproché": 3, "Plein air": 2, Perception: 3, Furtivité: 4 },
-      traits: [
-        ["Sens accrus", "Vision en basse lumière, odorat"], ["Immunité", "Froid"],
-        ["Arme naturelle", "Morsure : VD 1P (plus venin)"], ["Venin", null],
-        ["Faiblesses", "Vulnérabilité (feu)"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P (plus venin), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Sens accrus", "Vision en basse lumière, odorat"], ["Immunité", "Froid"], ["Venin", null], ["Faiblesses", "Vulnérabilité (feu)"]],
     },
     pingouinVampire: {
       label: "Pingouin vampire", a: [2, 3, 3, 1, 1, 1, 4, 2, 4],
@@ -2775,11 +2163,8 @@ const Creatures = {
       habitat: ["polaire"],
       desc: "Pingouin hématophage éveillé de l'Antarctique.",
       skills: { Astral: 3, Athlétisme: 4, "Combat rapproché": 3, "Plein air": 3, Perception: 4, Furtivité: 2 },
-      traits: [
-        ["Nature duale", null], ["Sens accrus", "Vision en basse lumière"],
-        ["Arme naturelle", "Morsure : VD 1P (saignement si succès)"],
-        ["Faiblesses", "Exigence alimentaire (sang), Fragile (5)"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P (saignement si succès), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Nature duale", null], ["Sens accrus", "Vision en basse lumière"], ["Faiblesses", "Exigence alimentaire (sang), Fragile (5)"]],
     },
     mammouthLaineux: {
       label: "Mammouth laineux", a: [12, 4, 4, 12, 4, 3, 4, 1, 4],
@@ -2787,11 +2172,8 @@ const Creatures = {
       habitat: ["polaire"],
       desc: "Mammouth éveillé sibérien réapparu en 2015, utilisé comme monture et bête de somme.",
       skills: { Astral: 3, "Combat rapproché": 2, "Plein air": 2, Perception: 4 },
-      traits: [
-        ["Armure 8", null], ["Nature duale", null], ["Sens accrus", "Vision en basse lumière"],
-        ["Immunité", "Froid"], ["Arme naturelle", "Défenses : VD 6S"],
-        ["Coloration adaptative", "Camouflage infrarouge/basse lumière et astral"],
-      ],
+      naturalWeapons: ["Défenses [VD 6S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 8", null], ["Nature duale", null], ["Sens accrus", "Vision en basse lumière"], ["Immunité", "Froid"], ["Coloration adaptative", "Camouflage infrarouge/basse lumière et astral"]],
     },
 
     /* ---- Wild Life p.144-174 : Oceans/Seas/Lakes + Urban ---- */
@@ -2801,11 +2183,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Grande baleine carnivore éveillée de 21-25 mètres, des océans et mers arctiques et tempérés.",
       skills: { Athlétisme: 6, "Combat rapproché": 9, "Plein air": 2, Perception: 5, Furtivité: 4 },
-      traits: [
-        ["Armure 12", null], ["Sens accrus", "Sonar"],
-        ["Mimétisme", "Utilisé pour les coups de queue et l'éperonnage"],
-        ["Arme naturelle", "Morsure : VD 8P"],
-      ],
+      naturalWeapons: ["Morsure [VD 8P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 12", null], ["Sens accrus", "Sonar"], ["Mimétisme", "Utilisé pour les coups de queue et l'éperonnage"]],
     },
     megalodon: {
       label: "Mégalodon", a: [15, 9, 5, 12, 4, 1, 4, 3, null],
@@ -2813,10 +2192,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Grand requin blanc éveillé de 16 mètres, des océans et mers tempérés, rarement en dessous de 750 m.",
       skills: { Athlétisme: 6, "Combat rapproché": 8, "Plein air": 3, Perception: 6, Furtivité: 4 },
-      traits: [
-        ["Sens accrus", "Odorat"], ["Armure durcie 8", null], ["Régénération", null],
-        ["Arme naturelle", "Morsure : VD 12P / Nageoire dorsale : VD 6P"],
-      ],
+      naturalWeapons: ["Morsure [VD 12P, SO FOR+RÉA/–/–/–/–]", "Nageoire dorsale [VD 6P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Sens accrus", "Odorat"], ["Armure durcie 8", null], ["Régénération", null]],
     },
     kraken: {
       label: "Kraken", a: [18, 6, 5, 24, 5, 3, 3, 1, null],
@@ -2824,12 +2201,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Céphalopode géant éveillé de plus de 25 mètres, des profondeurs océaniques près du plateau continental antarctique.",
       skills: { Athlétisme: 5, "Combat rapproché": 7, "Plein air": 4, Perception: 3, Furtivité: 6 },
-      traits: [
-        ["Coloration adaptative", null], ["Armure 11", null],
-        ["Arme naturelle", "Écrasement : VD 12P"],
-        ["Faiblesses", "Allergie (soleil, faible)"],
-        ["Allonge", "Portée maximale de 40 mètres"],
-      ],
+      naturalWeapons: ["Écrasement [VD 12P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Coloration adaptative", null], ["Armure 11", null], ["Faiblesses", "Allergie (soleil, faible)"], ["Allonge", "Portée maximale de 40 mètres"]],
     },
     homardAbrams: {
       label: "Homard Abrams (SR6)", a: [4, 3, 3, 7, 3, 4, 3, 1, null],
@@ -2837,11 +2210,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Crustacé éveillé de 1,5 mètre pesant plus de 100 kg, de la mer du Nord et des mers arctiques.",
       skills: { Athlétisme: 5, "Combat rapproché": 5, "Plein air": 2, Perception: 4, Furtivité: 1 },
-      traits: [
-        ["Sens accrus", "Sonar"], ["Conscience collective", null],
-        ["Armure durcie 6", null], ["Immunité", "Toxines"],
-        ["Arme naturelle", "Griffes : VD 6P"],
-      ],
+      naturalWeapons: ["Griffes [VD 6P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Sens accrus", "Sonar"], ["Conscience collective", null], ["Armure durcie 6", null], ["Immunité", "Toxines"]],
     },
     poissonDiable: {
       label: "Poisson-diable", a: [11, 3, 5, 8, 4, 2, 3, 2, null],
@@ -2849,11 +2219,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Raie manta éveillée de 8 mètres d'envergure, des eaux tropicales et subtropicales, solitaire ou en groupes jusqu'à 30.",
       skills: { Athlétisme: 4, "Combat rapproché": 2, "Plein air": 1, Perception: 3 },
-      traits: [
-        ["Peur", null],
-        ["Arme naturelle", "Frappe : VD 9P (Étourdi 2 tours si succès)"],
-        ["Venin", "Injection, vitesse 4 tours, Pouvoir 6, effet Nauséeux/Empoisonné"],
-      ],
+      naturalWeapons: ["Frappe [VD 9P (Étourdi 2 tours si succès), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Peur", null], ["Venin", "Injection, vitesse 4 tours, Pouvoir 6, effet Nauséeux/Empoisonné"]],
     },
     brochetDiamantDemoniaque: {
       label: "Brochet diamant démoniaque", a: [5, 5, 5, 5, 3, 1, 3, 1, null],
@@ -2861,10 +2228,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Poisson prédateur éveillé agressif de 3 mètres, du Mississippi et des eaux douces d'Amérique du Nord.",
       skills: { Athlétisme: 5, "Combat rapproché": 5, "Plein air": 2, Perception: 5, Furtivité: 6 },
-      traits: [
-        ["Armure 6", null],
-        ["Arme naturelle", "Morsure : VD 3P"],
-      ],
+      naturalWeapons: ["Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 6", null]],
     },
     requinGlouton: {
       label: "Requin glouton", a: [20, 4, 3, 16, 3, 1, 3, 2, null],
@@ -2882,11 +2247,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Narval éveillé de 8-12 mètres, se déplaçant en groupes mêlés à des narvals ordinaires dans l'océan Arctique.",
       skills: { Athlétisme: 4, "Combat rapproché": 6, "Plein air": 3, Perception: 5, Furtivité: 3 },
-      traits: [
-        ["Armure 6", null], ["Sens accrus", "Sonar"],
-        ["Arme naturelle", "Défense : VD 6P"],
-        ["Arme naturelle à distance", "Projection sonique : VD 8P"],
-      ],
+      naturalWeapons: ["Défense [VD 6P, SO FOR+RÉA/–/–/–/–]", "Projection sonique [VD 8P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 6", null], ["Sens accrus", "Sonar"]],
     },
     chantreMaitre: {
       label: "Chantre-maître (SR6)", a: [24, 5, 5, 32, 8, 3, 4, 5, null],
@@ -2894,16 +2256,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Baleine à bosse éveillée et sapiente de 26 mètres et 55 tonnes, vivant en groupes océaniques pouvant compter jusqu'à 15 individus ; sa queue est utilisée en coups de mêlée.",
       skills: { Athlétisme: 6, "Combat rapproché": 5, "Plein air": 2, Perception: 5, Furtivité: 2 },
-      traits: [
-        ["Contrôle animal", "Poissons, mammifères marins"], ["Armure 12", null], ["Compulsion", null],
-        ["Robuste 10", null], ["Engloutissement", "Eau"], ["Sens accrus", "Sonar, sens magique"], ["Peur", null],
-        ["Immunité", "Armes ordinaires"], ["Influence", null],
-        ["Télépathie", "Mindspeech"],
-        ["Arme naturelle", "Défonce : VD 16P"], ["Sapience", null], ["Recherche", null],
-        ["Arme naturelle à distance", "Projection sonique : VD 8P"],
-        ["Contrôle météorologique", null],
-        ["Faiblesses", "Inculte (Uneducated)"],
-      ],
+      naturalWeapons: ["Défonce [VD 16P, SO FOR+RÉA/–/–/–/–]", "Projection sonique [VD 8P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Contrôle animal", "Poissons, mammifères marins"], ["Armure 12", null], ["Compulsion", null], ["Robuste 10", null], ["Engloutissement", "Eau"], ["Sens accrus", "Sonar, sens magique"], ["Peur", null], ["Immunité", "Armes ordinaires"], ["Influence", null], ["Télépathie", "Mindspeech"], ["Sapience", null], ["Recherche", null], ["Contrôle météorologique", null], ["Faiblesses", "Inculte (Uneducated)"]],
     },
     tortueLuthNouvelle: {
       label: "Nouvelle tortue luth", a: [8, 3, 3, 6, 4, 2, 3, 4, null],
@@ -2911,11 +2265,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Tortue marine éveillée de plus de 3 mètres et 1000 kg, des eaux tropicales (variante en eau douce dans les Grands Lacs et le Mississippi).",
       skills: { Athlétisme: 5, "Combat rapproché": 5, "Plein air": 2, Perception: 4, Furtivité: 2, Sorcellerie: 4 },
-      traits: [
-        ["Armure 5", null], ["Compulsion", null], ["Garde magique", "Soi"], ["Mouvement", null],
-        ["Arme naturelle", "Morsure : VD 3P"],
-        ["Faiblesses", "Vulnérabilité (mercure)"],
-      ],
+      naturalWeapons: ["Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 5", null], ["Compulsion", null], ["Garde magique", "Soi"], ["Mouvement", null], ["Faiblesses", "Vulnérabilité (mercure)"]],
     },
     brochetCracheur: {
       label: "Brochet cracheur", a: [2, 5, 4, 2, 3, 1, 4, 1, null],
@@ -2924,13 +2275,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Brochet éveillé agressif des eaux douces d'Amérique du Nord, d'Europe occidentale et du Royaume-Uni, crache un jet corrosif aveuglant.",
       skills: { Athlétisme: 4, "Combat rapproché": 5, "Arme exotique (crachat)": 5, "Plein air": 2, Perception: 5, Furtivité: 2 },
-      traits: [
-        ["Arme naturelle à distance", "Crachat corrosif aveuglant"],
-        ["Engloutissement", "Eau"],
-        ["Sens accrus", "Perception de profondeur"],
-        ["Arme naturelle", "Morsure : VD 1P (plus venin)"],
-        ["Venin", "Contact, vitesse 1 tour, Pouvoir 6, effet Empoisonné/Cécité"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P (plus venin), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Engloutissement", "Eau"], ["Sens accrus", "Perception de profondeur"], ["Venin", "Contact, vitesse 1 tour, Pouvoir 6, effet Empoisonné/Cécité"], ["Arme naturelle à distance", "Crachat corrosif aveuglant"]],
     },
     dauphinTempetes: {
       label: "Dauphin des tempêtes", a: [7, 5, 5, 8, 5, 3, 4, 4, null],
@@ -2938,13 +2284,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Dauphin éveillé de 3 mètres des mers du Nord, d'Irlande et Baltique, vivant en groupes familiaux de 6 à 20 individus ; utilise sa queue en coups de mêlée.",
       skills: { Athlétisme: 3, "Combat rapproché": 2, "Plein air": 2, Perception: 4, Furtivité: 3, Sorcellerie: 2 },
-      traits: [
-        ["Engloutissement", "Eau"], ["Attaque élémentaire", "Électricité"],
-        ["Sens accrus", "Sonar, sens magique"], ["Garde magique", "Soi"],
-        ["Télépathie", "Mindspeech"], ["Sapience", null], ["Contrôle météorologique", null],
-        ["Arme naturelle à distance", "Attaque élémentaire : VD 4P (élémentaire)"],
-        ["Faiblesses", "Inculte (Uneducated)"],
-      ],
+      naturalWeapons: ["Attaque élémentaire [VD 4P (élémentaire), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Engloutissement", "Eau"], ["Attaque élémentaire", "Électricité"], ["Sens accrus", "Sonar, sens magique"], ["Garde magique", "Soi"], ["Télépathie", "Mindspeech"], ["Sapience", null], ["Contrôle météorologique", null], ["Faiblesses", "Inculte (Uneducated)"]],
     },
     requinTorpille: {
       label: "Requin torpille", a: [8, 5, 4, 9, 3, 1, 3, 1, null],
@@ -2952,10 +2293,8 @@ const Creatures = {
       habitat: ["oceans"],
       desc: "Requin bleu éveillé de 5 mètres, des eaux tropicales et subtropicales du Pacifique à moins de 150 m de profondeur.",
       skills: { Athlétisme: 4, "Combat rapproché": 4, "Plein air": 2, Perception: 5, Furtivité: 1 },
-      traits: [
-        ["Armure 5", null], ["Sens accrus", "Odorat"],
-        ["Arme naturelle", "Bourrelet frontal : VD 5P"],
-      ],
+      naturalWeapons: ["Bourrelet frontal [VD 5P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 5", null], ["Sens accrus", "Odorat"]],
     },
     neogargouilleChauveSouris: {
       label: "Néogargouille (chauve-souris)", a: [3, 2, 2, 3, 1, 2, 2, 1, null],
@@ -2964,10 +2303,8 @@ const Creatures = {
       // L'armure augmente de 1 par mois après infection (max 12 à 12 mois).
       desc: "Chauve-souris mutante infectée par un virus de calcification, nichant dans les tours et gratte-ciel urbains.",
       skills: { Athlétisme: 4, "Combat rapproché": 5, "Plein air": 2, Perception: 4, Furtivité: 4 },
-      traits: [
-        ["Armure 5", null], ["Sens accrus", "Écholocation, odorat"],
-        ["Arme naturelle", "Morsure : VD 1P / Griffes : VD 2P"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 5", null], ["Sens accrus", "Écholocation, odorat"]],
     },
     neogargouilleChat: {
       label: "Néogargouille (chat)", a: [3, 4, 2, 3, 2, 2, 2, 1, null],
@@ -2975,10 +2312,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Chat urbain muté par le même virus de calcification que les autres néogargouilles.",
       skills: { Athlétisme: 4, "Combat rapproché": 5, "Plein air": 2, Perception: 4, Furtivité: 4 },
-      traits: [
-        ["Armure 5", null], ["Sens accrus", "Odorat"],
-        ["Arme naturelle", "Morsure : VD 2P / Griffes : VD 1P"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 5", null], ["Sens accrus", "Odorat"]],
     },
     neogargouilleChien: {
       label: "Néogargouille (chien)", a: [4, 2, 2, 4, 2, 2, 2, 1, null],
@@ -2986,10 +2321,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Chien urbain muté par le virus de calcification des néogargouilles.",
       skills: { Athlétisme: 4, "Combat rapproché": 5, "Plein air": 2, Perception: 4, Furtivité: 4 },
-      traits: [
-        ["Armure 5", null], ["Sens accrus", "Odorat"],
-        ["Arme naturelle", "Morsure : VD 3P / Griffes : VD 1P"],
-      ],
+      naturalWeapons: ["Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 5", null], ["Sens accrus", "Odorat"]],
     },
     neogargouilleEcureuil: {
       label: "Néogargouille (écureuil)", a: [2, 4, 4, 2, 2, 2, 2, 1, null],
@@ -2997,10 +2330,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Écureuil urbain muté par le virus de calcification des néogargouilles.",
       skills: { Athlétisme: 4, "Combat rapproché": 5, "Plein air": 2, Perception: 4, Furtivité: 4 },
-      traits: [
-        ["Armure 5", null], ["Sens accrus", "Odorat"], ["Escalade murale", null],
-        ["Arme naturelle", "Morsure : VD 1P / Griffes : VD 1P"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 5", null], ["Sens accrus", "Odorat"], ["Escalade murale", null]],
     },
     pigeonsBruit: {
       label: "Pigeons du bruit", a: [2, 3, 3, 1, 3, 4, 5, 4, null],
@@ -3024,13 +2355,8 @@ const Creatures = {
       // Fourrure = poils électrochromiques biologiques, contrôlable comme des vêtements.
       desc: "Canidé éveillé techno-critter des stations de transit urbaines mondiales, au chant hypnotique et à la fourrure changeante.",
       skills: { Athlétisme: 5, "Combat rapproché": 4, Cracking: 3, Électronique: 3, Influence: 4, "Plein air": 4, Perception: 5, Furtivité: 3 },
-      traits: [
-        ["Résonance (créature techno-critter)", "Attribut 9 = Résonance (5), non Magie ; AR-Parallélisme"],
-        ["Armure 4", null], ["Sens accrus", "Ouïe, vision en basse lumière, odorat"],
-        ["Dissimulation holographique", null], ["Chant hypnotique", null], ["Mimétisme", null],
-        ["Arme naturelle", "Morsure/Griffes : VD 1P"],
-        ["Formes complexes", "Emulate (datasoft transit local, mapsoft zone locale, brouilleur de signal), Canal de résonance"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Résonance (créature techno-critter)", "Attribut 9 = Résonance (5), non Magie ; AR-Parallélisme"], ["Armure 4", null], ["Sens accrus", "Ouïe, vision en basse lumière, odorat"], ["Dissimulation holographique", null], ["Chant hypnotique", null], ["Mimétisme", null], ["Formes complexes", "Emulate (datasoft transit local, mapsoft zone locale, brouilleur de signal), Canal de résonance"]],
     },
     bergerEveille: {
       label: "Berger éveillé", a: [3, 2, 3, 2, 2, 3, 3, 3, 4],
@@ -3038,10 +2364,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Berger allemand éveillé des zones de sécurité urbaines, en alerte il offre un point d'Edge situationnel à quiconque tente de le remarquer.",
       skills: { Astral: 4, Athlétisme: 5, "Combat rapproché": 4, Influence: 2, "Plein air": 6, Perception: 6 },
-      traits: [
-        ["Armure 1", null], ["Nature duale", null], ["Sens accrus", "Ouïe, odorat"],
-        ["Armure mystique 1", null], ["Arme naturelle", "Morsure : VD 1P"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 1", null], ["Nature duale", null], ["Sens accrus", "Ouïe, odorat"], ["Armure mystique 1", null]],
     },
     colonisteCafard: {
       label: "Coloniste (cafard)", a: [1, 2, 3, 1, 2, 1, 2, 1, null],
@@ -3049,11 +2373,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Cafard éveillé de 0,3 mètre pesant 1 kg, membre d'une colonie urbaine à conscience collective.",
       skills: { Athlétisme: 3, "Combat rapproché": 2, Influence: 3, "Plein air": 3, Perception: 3, Furtivité: 3 },
-      traits: [
-        ["Conscience collective", null], ["Escalade murale", null],
-        ["Arme naturelle", "Morsure : VD 1P"],
-        ["Faiblesses", "Fragile (8)"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Conscience collective", null], ["Escalade murale", null], ["Faiblesses", "Fragile (8)"]],
     },
     colonisteNymphe: {
       label: "Coloniste (nymphe)", a: [2, 2, 3, 2, 2, 2, 2, 1, 4],
@@ -3061,12 +2382,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Forme jeune du coloniste, nichant dans les colonies de cafards urbaines.",
       skills: { Athlétisme: 3, Con: 2, "Combat rapproché": 3, Influence: 3, "Plein air": 4, Perception: 3, Furtivité: 4 },
-      traits: [
-        ["Contrôle animal", "Cafards"], ["Armure 3", null],
-        ["Conscience collective", "50 m"], ["Escalade murale", null],
-        ["Pouvoir optionnel (choix du MJ)", "Engloutissement (air)"],
-        ["Arme naturelle", "Morsure/Griffes : VD 1P"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Contrôle animal", "Cafards"], ["Armure 3", null], ["Conscience collective", "50 m"], ["Escalade murale", null], ["Pouvoir optionnel (choix du MJ)", "Engloutissement (air)"]],
     },
     colonisteAdulte: {
       label: "Coloniste (adulte)", a: [2, 4, 5, 3, 2, 2, 2, 1, 5],
@@ -3074,12 +2391,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Forme adulte du coloniste, meneur de nids de cafards urbains ; en construct de cafard, gagne Armure durcie 2.",
       skills: { Athlétisme: 3, Con: 3, "Combat rapproché": 4, Influence: 4, "Plein air": 4, Perception: 3, Furtivité: 5 },
-      traits: [
-        ["Robuste 3", null], ["Contrôle animal", "Cafards et nymphes colonistes"], ["Armure 8", null],
-        ["Conscience collective", "100 m"], ["Escalade murale", null],
-        ["Pouvoir optionnel (choix du MJ)", "Engloutissement (air)"],
-        ["Arme naturelle", "Morsure/Griffes : VD 2P"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Robuste 3", null], ["Contrôle animal", "Cafards et nymphes colonistes"], ["Armure 8", null], ["Conscience collective", "100 m"], ["Escalade murale", null], ["Pouvoir optionnel (choix du MJ)", "Engloutissement (air)"]],
     },
     chatImitateur: {
       label: "Chat imitateur", a: [2, 4, 3, 1, 1, 1, 4, 3, 3],
@@ -3087,14 +2400,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Chat éveillé des réseaux souterrains urbains, doté d'une conscience collective (le MJ peut augmenter sa Logique de +1 selon la taille de la ruche).",
       skills: { Athlétisme: 3, "Combat rapproché": 2, Con: 2, Influence: 2, "Plein air": 4, Perception: 3, Furtivité: 4 },
-      traits: [
-        ["Pouvoir adepte", "Kinesics, Maîtrise Kinesics (chats)"],
-        ["Sens accrus", "Ouïe, vision en basse lumière"],
-        ["Conscience collective", "100 m"],
-        ["Pouvoir optionnel (choix du MJ)", "Sapience"],
-        ["Arme naturelle", "Morsure/Griffes : VD 1P"],
-        ["Faiblesses", "Fragile (7)"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Pouvoir adepte", "Kinesics, Maîtrise Kinesics (chats)"], ["Sens accrus", "Ouïe, vision en basse lumière"], ["Conscience collective", "100 m"], ["Pouvoir optionnel (choix du MJ)", "Sapience"], ["Faiblesses", "Fragile (7)"]],
     },
     semeurPeur: {
       label: "Semeur de peur", a: [8, 5, 4, 8, 4, 3, 4, 3, 5],
@@ -3102,15 +2409,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Créature anthropomorphe éveillée aux traits animaux, hante les endroits sombres ou traumatisants des zones urbaines.",
       skills: { Athlétisme: 5, "Combat rapproché": 4, Con: 2, "Arme exotique (piquants)": 4, Influence: 4, "Plein air": 4, Perception: 4, Furtivité: 7 },
-      traits: [
-        ["Armure 4", null], ["Porteur", "HMHVV-II"], ["Allonge", "Longue"],
-        ["Sens accrus", "Ouïe, vision en basse lumière"], ["Peur", null], ["Souffle nauséabond", null],
-        ["Armure mystique 4", null], ["Toucher paralysant", null],
-        ["Arme naturelle", "Morsure : VD 4P (plus HMHVV-II) / Griffes : VD 6P"],
-        ["Arme naturelle à distance", "Piquants : VD 3P (les piques augmentent le DR de +2 en mêlée, résister VD 2P lors d'une prise)"],
-        ["Faiblesses", "Exigence alimentaire (peur), Allergie (soleil, grave)"],
-        ["Pouvoir optionnel (choix du MJ)", "Sort inné"],
-      ],
+      naturalWeapons: ["Morsure [VD 4P (plus HMHVV-II), SO FOR+RÉA/–/–/–/–]", "Griffes [VD 6P, SO FOR+RÉA/–/–/–/–]", "Piquants [VD 3P (les piques augmentent le DR de +2 en mêlée, résister VD 2P lors d'une prise), SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 4", null], ["Porteur", "HMHVV-II"], ["Allonge", "Longue"], ["Sens accrus", "Ouïe, vision en basse lumière"], ["Peur", null], ["Souffle nauséabond", null], ["Armure mystique 4", null], ["Toucher paralysant", null], ["Faiblesses", "Exigence alimentaire (peur), Allergie (soleil, grave)"], ["Pouvoir optionnel (choix du MJ)", "Sort inné"]],
     },
     gargouilleAfricaine: {
       label: "Gargouille africaine", a: [9, 5, 5, 9, 4, 3, 4, 3, 3],
@@ -3118,14 +2418,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Créature ailée éveillée de 2,5 m des zones urbaines africaines, ressemblant aux dieux égyptiens, capable de se changer en sable.",
       skills: { Athlétisme: 5, "Combat rapproché": 6, Influence: 3, "Plein air": 5, Perception: 5, Furtivité: 6 },
-      traits: [
-        ["Pouvoir adepte", "Fureur berserk 3"],
-        ["Armure 10", null], ["Dissimulation", "Personnelle"], ["Sens accrus", "Vision en basse lumière"],
-        ["Forme de sable", null],
-        ["Arme naturelle", "Morsure/Griffes : VD 5P"],
-        ["Arme naturelle à distance", "Attaque en piqué : VD 7P"],
-        ["Faiblesses", "Allergie (soleil, faible), Vulnérabilité (fer)"],
-      ],
+      naturalWeapons: ["Morsure [VD 5P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 5P, SO FOR+RÉA/–/–/–/–]", "Attaque en piqué [VD 7P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Pouvoir adepte", "Fureur berserk 3"], ["Armure 10", null], ["Dissimulation", "Personnelle"], ["Sens accrus", "Vision en basse lumière"], ["Forme de sable", null], ["Faiblesses", "Allergie (soleil, faible), Vulnérabilité (fer)"]],
     },
     gargouilleAsiatique: {
       label: "Gargouille asiatique", a: [8, 8, 5, 6, 4, 3, 4, 2, 4],
@@ -3133,15 +2427,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Créature ailée éveillée de 1,25 m des zones urbaines asiatiques, tête de lion ou d'oni.",
       skills: { Astral: 4, Athlétisme: 7, "Combat rapproché": 6, Influence: 3, "Plein air": 5, Perception: 5, Furtivité: 6 },
-      traits: [
-        ["Pouvoirs adeptes", "Perception astrale, Réflexes améliorés 3, Assistance vitale, Voile de sorts 5, Marche sans trace"],
-        ["Armure 10", null], ["Dissimulation", "Personnelle"], ["Sens accrus", "Vision en basse lumière"],
-        ["Robuste 1", null],
-        ["Arme naturelle", "Morsure : VD 3P (plus venin) / Griffes : VD 3P"],
-        ["Arme naturelle à distance", "Attaque en piqué : VD 7P"],
-        ["Venin", "Injection, vitesse 1 tour, Pouvoir 4, effet Étourdi/Empoisonné"],
-        ["Faiblesses", "Allergie (soleil, modérée), Vulnérabilité (fer)"],
-      ],
+      naturalWeapons: ["Morsure [VD 3P (plus venin), SO FOR+RÉA/–/–/–/–]", "Griffes [VD 3P, SO FOR+RÉA/–/–/–/–]", "Attaque en piqué [VD 7P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Pouvoirs adeptes", "Perception astrale, Réflexes améliorés 3, Assistance vitale, Voile de sorts 5, Marche sans trace"], ["Armure 10", null], ["Dissimulation", "Personnelle"], ["Sens accrus", "Vision en basse lumière"], ["Robuste 1", null], ["Venin", "Injection, vitesse 1 tour, Pouvoir 4, effet Étourdi/Empoisonné"], ["Faiblesses", "Allergie (soleil, modérée), Vulnérabilité (fer)"]],
     },
     gargouilleEuropeenne: {
       label: "Gargouille européenne", a: [10, 4, 5, 11, 4, 2, 4, 1, 3],
@@ -3149,12 +2436,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Créature trapue et agressive de 1,5 m des zones urbaines européennes, peau grise comme la pierre.",
       skills: { Athlétisme: 7, "Combat rapproché": 6, Influence: 3, "Plein air": 5, Perception: 5, Furtivité: 6 },
-      traits: [
-        ["Armure 15", null], ["Dissimulation", "Personnelle"], ["Sens accrus", "Vision en basse lumière"],
-        ["Arme naturelle", "Morsure : VD 6P (plus venin) / Griffes : VD 6P"],
-        ["Arme naturelle à distance", "Attaque en piqué : VD 8P"],
-        ["Faiblesses", "Allergie (soleil, grave), Vulnérabilité (fer)"],
-      ],
+      naturalWeapons: ["Morsure [VD 6P (plus venin), SO FOR+RÉA/–/–/–/–]", "Griffes [VD 6P, SO FOR+RÉA/–/–/–/–]", "Attaque en piqué [VD 8P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 15", null], ["Dissimulation", "Personnelle"], ["Sens accrus", "Vision en basse lumière"], ["Faiblesses", "Allergie (soleil, grave), Vulnérabilité (fer)"]],
     },
     gargouilleNordAmericaine: {
       label: "Gargouille nord-américaine", a: [10, 4, 5, 10, 4, 2, 4, 1, 6],
@@ -3162,12 +2445,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Créature de 2 m pesant 200 kg à la peau marbrée, des zones urbaines nord et sud-américaines.",
       skills: { Athlétisme: 5, "Combat rapproché": 5, Influence: 3, "Plein air": 5, Perception: 5, Sorcellerie: 4, Furtivité: 6 },
-      traits: [
-        ["Armure 15", null], ["Dissimulation", "Personnelle"], ["Sens accrus", "Vision en basse lumière"],
-        ["Arme naturelle", "Morsure : VD 5P (plus venin) / Griffes : VD 5P"],
-        ["Arme naturelle à distance", "Attaque en piqué : VD 7P"],
-        ["Faiblesses", "Allergie (soleil, grave), Vulnérabilité (fer)"],
-      ],
+      naturalWeapons: ["Morsure [VD 5P (plus venin), SO FOR+RÉA/–/–/–/–]", "Griffes [VD 5P, SO FOR+RÉA/–/–/–/–]", "Attaque en piqué [VD 7P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 15", null], ["Dissimulation", "Personnelle"], ["Sens accrus", "Vision en basse lumière"], ["Faiblesses", "Allergie (soleil, grave), Vulnérabilité (fer)"]],
     },
     grot: {
       label: "GROT", a: [2, 5, 4, 3, 3, 2, 4, 2, 5],
@@ -3175,13 +2454,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Opossum éveillé de 0,6 m et 5 kg d'Amérique du Nord/Centre/Sud et d'Australie, porteur de VITAS-IIII, à l'estomac robuste et à la queue préhensile fonctionnelle.",
       skills: { Athlétisme: 5, "Combat rapproché": 3, Influence: 3, Perception: 4, "Plein air": 4, Furtivité: 3 },
-      traits: [
-        ["Armure 5", null], ["Porteur", "VITAS-IIII"],
-        ["Sens accrus", "Ouïe, vision en basse lumière, odorat"],
-        ["Arme naturelle", "Morsure : VD 2P"],
-        ["Faiblesses", "Fragile (6)"],
-        ["Faire le mort", "Action d'Edge gratuite, gagne 2 points d'Edge situationnel"],
-      ],
+      naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Armure 5", null], ["Porteur", "VITAS-IIII"], ["Sens accrus", "Ouïe, vision en basse lumière, odorat"], ["Faiblesses", "Fragile (6)"], ["Faire le mort", "Action d'Edge gratuite, gagne 2 points d'Edge situationnel"]],
     },
     incube: {
       label: "Incube", a: [6, 3, 4, 9, 4, 3, 4, 3, 5],
@@ -3189,13 +2463,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Créature de 1 mètre ressemblant à une pieuvre, hante égouts et tunnels urbains.",
       skills: { Athlétisme: 5, "Combat rapproché": 4, "Plein air": 4, Perception: 5, Furtivité: 7 },
-      traits: [
-        ["Allonge", "Longue"], ["Coloration adaptative", null],
-        ["Reflet du désir", "Ne peut pas bénéficier d'Edge"],
-        ["Sens accrus", "Vision en basse lumière, amélioration visuelle"],
-        ["Arme naturelle", "Morsure : VD 5P / Tentacules : VD 5P"],
-        ["Faiblesses", "Allergie (soleil, modérée)"],
-      ],
+      naturalWeapons: ["Morsure [VD 5P, SO FOR+RÉA/–/–/–/–]", "Tentacules [VD 5P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Allonge", "Longue"], ["Coloration adaptative", null], ["Reflet du désir", "Ne peut pas bénéficier d'Edge"], ["Sens accrus", "Vision en basse lumière, amélioration visuelle"], ["Faiblesses", "Allergie (soleil, modérée)"]],
     },
     incubeAdulte: {
       label: "Incube adulte", a: [10, 5, 5, 10, 5, 4, 5, 3, 6],
@@ -3203,13 +2472,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Version adulte de l'incube, plus grande et plus puissante, des réseaux souterrains urbains.",
       skills: { Athlétisme: 6, "Combat rapproché": 6, "Plein air": 5, Perception: 6, Furtivité: 7 },
-      traits: [
-        ["Allonge", "Longue"], ["Coloration adaptative", null],
-        ["Reflet du désir", "Ne peut pas bénéficier d'Edge"],
-        ["Sens accrus", "Vision en basse lumière, amélioration visuelle"],
-        ["Arme naturelle", "Morsure : VD 5P / Tentacules : VD 5P"],
-        ["Faiblesses", "Allergie (soleil, faible)"],
-      ],
+      naturalWeapons: ["Morsure [VD 5P, SO FOR+RÉA/–/–/–/–]", "Tentacules [VD 5P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Allonge", "Longue"], ["Coloration adaptative", null], ["Reflet du désir", "Ne peut pas bénéficier d'Edge"], ["Sens accrus", "Vision en basse lumière, amélioration visuelle"], ["Faiblesses", "Allergie (soleil, faible)"]],
     },
     protee: {
       label: "Protée", a: [2, 3, 3, 2, 3, 3, 5, 1, 5],
@@ -3217,13 +2481,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Amibe éveillée urbaine porteuse du virus Boltzmann-Schneider, immobile et difficile à repérer (seuil de perception 6).",
       skills: { Athlétisme: 5, "Combat rapproché": 5, "Plein air": 4, Perception: 4, Furtivité: 5 },
-      traits: [
-        ["Coloration adaptative", null], ["Sécrétion", "Corrosive"], ["Engloutissement", "Eau : VD 7S (Mouillé et Fatigué I)"],
-        ["Immunité", "Armes ordinaires"],
-        ["Arme naturelle", "Tentacule : VD 2S"],
-        ["Immobile", "Seuil de perception 6 pour être remarqué"],
-        ["Faiblesses", "Vulnérabilité (produits alcalins, feu)"],
-      ],
+      naturalWeapons: ["Tentacule [VD 2S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Coloration adaptative", null], ["Sécrétion", "Corrosive"], ["Engloutissement", "Eau : VD 7S (Mouillé et Fatigué I)"], ["Immunité", "Armes ordinaires"], ["Immobile", "Seuil de perception 6 pour être remarqué"], ["Faiblesses", "Vulnérabilité (produits alcalins, feu)"]],
     },
     proteeCorrompue: {
       label: "Protée corrompue", a: [2, 3, 3, 2, 3, 3, 5, 1, 5],
@@ -3231,13 +2490,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Variante du protée exposée à une magie corrompue, des zones urbaines souterraines.",
       skills: { Athlétisme: 5, "Combat rapproché": 5, "Plein air": 4, Perception: 5, Sorcellerie: 4, Furtivité: 5 },
-      traits: [
-        ["Coloration adaptative", null], ["Sécrétion", "Corrosive"], ["Engloutissement", "Eau : VD 5P (Brûlure)"],
-        ["Immunité", "Armes ordinaires"],
-        ["Arme naturelle", "Tentacule : VD 2S"],
-        ["Pouvoir optionnel (choix du MJ)", "Sort inné"],
-        ["Faiblesses", "Vulnérabilité (produits alcalins)"],
-      ],
+      naturalWeapons: ["Tentacule [VD 2S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Coloration adaptative", null], ["Sécrétion", "Corrosive"], ["Engloutissement", "Eau : VD 5P (Brûlure)"], ["Immunité", "Armes ordinaires"], ["Pouvoir optionnel (choix du MJ)", "Sort inné"], ["Faiblesses", "Vulnérabilité (produits alcalins)"]],
     },
     proteeToxique: {
       label: "Protée toxique", a: [4, 3, 3, 4, 3, 3, 5, 1, 5],
@@ -3245,13 +2499,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Variante du protée exposée à la pollution radioactive des zones urbaines.",
       skills: { Athlétisme: 5, "Combat rapproché": 5, "Plein air": 4, Perception: 5, Furtivité: 5 },
-      traits: [
-        ["Coloration adaptative", null], ["Sécrétion", "Corrosive"],
-        ["Engloutissement", "Radiation : VD 5P (Irradié) ; le MJ peut ajouter jusqu'à +10 Corps/Force pour des tailles plus grandes"],
-        ["Immunité", "Armes ordinaires"],
-        ["Arme naturelle", "Tentacule : VD 2S"],
-        ["Faiblesses", "Vulnérabilité (feu)"],
-      ],
+      naturalWeapons: ["Tentacule [VD 2S, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Coloration adaptative", null], ["Sécrétion", "Corrosive"], ["Engloutissement", "Radiation : VD 5P (Irradié) ; le MJ peut ajouter jusqu'à +10 Corps/Force pour des tailles plus grandes"], ["Immunité", "Armes ordinaires"], ["Faiblesses", "Vulnérabilité (feu)"]],
     },
     tanuki: {
       label: "Tanuki (SR6)", a: [3, 2, 3, 2, 4, 2, 4, 5, 4],
@@ -3259,11 +2508,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Canidé éveillé farceur des bars et restaurants du monde entier, toujours chanceux (2 points d'Edge situationnel en défense).",
       skills: { Athlétisme: 5, "Combat rapproché": 2, Con: 4, Influence: 4, "Plein air": 3, Perception: 3, Furtivité: 4 },
-      traits: [
-        ["Accident", null], ["Empathie", null], ["Sens accrus", "Odorat"], ["Influence", null],
-        ["Mimétisme", null], ["Pouvoir optionnel (choix du MJ)", "Reflet du désir"],
-        ["Arme naturelle", "Morsure : VD 1P"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Accident", null], ["Empathie", null], ["Sens accrus", "Odorat"], ["Influence", null], ["Mimétisme", null], ["Pouvoir optionnel (choix du MJ)", "Reflet du désir"]],
     },
     feeDents: {
       label: "Fée des dents", a: [1, 5, 2, 1, 1, 1, 1, 1, 3],
@@ -3271,13 +2517,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Moustique éveillé de 10 cm et 200 g des parcs urbains mondiaux, capable de forme humanoïde à quatre bras.",
       skills: { Athlétisme: 5, "Combat rapproché": 3, "Plein air": 3, Perception: 3, Furtivité: 4 },
-      traits: [
-        ["Pouvoir adepte", "Réflexes améliorés 2"],
-        ["Armure 1", null], ["Sens accrus", "Odorat"], ["Drain d'Essence", null], ["Immunité", "Toxines"],
-        ["Conscience collective", "10 m"],
-        ["Arme naturelle", "Morsure : VD 1P / Griffes : VD 2P"],
-        ["Faiblesses", "Exigence alimentaire (sang/chair de mammifère), Fragile (7), Vulnérabilité (feu)"],
-      ],
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Pouvoir adepte", "Réflexes améliorés 2"], ["Armure 1", null], ["Sens accrus", "Odorat"], ["Drain d'Essence", null], ["Immunité", "Toxines"], ["Conscience collective", "10 m"], ["Faiblesses", "Exigence alimentaire (sang/chair de mammifère), Fragile (7), Vulnérabilité (feu)"]],
     },
     pouletPoubelles: {
       label: "Poulet des poubelles", a: [2, 2, 2, 1, 3, 4, 4, 3, null],
@@ -3285,15 +2526,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Ibis blanc éveillé de 0,75 m et 1,2 kg des parcs et poubelles urbaines australiennes, techno-critter connecté à la Résonance.",
       skills: { Athlétisme: 5, "Combat rapproché": 4, Cracking: 3, Électronique: 3, Influence: 4, "Plein air": 4, Perception: 5, Furtivité: 3 },
-      traits: [
-        ["Résonance (créature techno-critter)", "Attribut 9 = Résonance (5), non Magie ; Ouvre-porte (Hold the Door), AR-Parallélisme"],
-        ["Immunité", "Toxines"],
-        ["Mimétisme", null], ["Nourriture de Résonance", null],
-        ["Arme naturelle", "Bec : VD 1P"],
-        ["Faiblesses", "Fragile (7)"],
-        ["Formes complexes", "Éditeur, Déchiffrement"],
-        ["Persona Matrice", "DR 7, I/ID 8/4, CM 10"],
-      ],
+      naturalWeapons: ["Bec [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Résonance (créature techno-critter)", "Attribut 9 = Résonance (5), non Magie ; Ouvre-porte (Hold the Door), AR-Parallélisme"], ["Immunité", "Toxines"], ["Mimétisme", null], ["Nourriture de Résonance", null], ["Faiblesses", "Fragile (7)"], ["Formes complexes", "Éditeur, Déchiffrement"], ["Persona Matrice", "DR 7, I/ID 8/4, CM 10"]],
     },
     traptor: {
       label: "Traptor", a: [4, 7, 6, 3, 2, 2, 7, 4, 5],
@@ -3301,12 +2535,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Araignée-trappe éveillée de 1,8 m et 12,5 kg du sud-ouest nord-américain, d'Afrique, d'Australie orientale et d'Asie ; quiconque approche à moins de 10 m d'un terrier doit réussir Furtivité + Agilité (3) ou être détecté.",
       skills: { Athlétisme: 5, "Combat rapproché": 6, "Plein air": 5, Perception: 5, Furtivité: 8 },
-      traits: [
-        ["Pouvoir adepte", "Frappe rapide"],
-        ["Armure 5", null], ["Liaison", "Toucher"],
-        ["Arme naturelle", "Morsure : VD 3P"],
-        ["Hurlement paralysant", null], ["Escalade murale", null],
-      ],
+      naturalWeapons: ["Morsure [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Pouvoir adepte", "Frappe rapide"], ["Armure 5", null], ["Liaison", "Toucher"], ["Hurlement paralysant", null], ["Escalade murale", null]],
     },
     traptorToxique: {
       label: "Traptor toxique", a: [6, 7, 7, 5, 3, 3, 7, 2, 5],
@@ -3314,13 +2544,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Variante toxique et plus agressive du Traptor, en zone urbaine polluée ; les piques augmentent le DR de +2 en mêlée et résistent VD 2P lors d'une prise.",
       skills: { Athlétisme: 5, "Combat rapproché": 6, "Arme exotique (piquants)": 4, "Plein air": 5, Perception: 5, Furtivité: 6 },
-      traits: [
-        ["Pouvoir adepte", "Frappe rapide"],
-        ["Armure 5", null], ["Liaison", "Toucher"], ["Dissimulation", "Personnelle"],
-        ["Arme naturelle", "Morsure : VD 5P"],
-        ["Arme naturelle à distance", "Piquants : VD 3P"],
-        ["Hurlement paralysant", null], ["Escalade murale", null],
-      ],
+      naturalWeapons: ["Morsure [VD 5P, SO FOR+RÉA/–/–/–/–]", "Piquants [VD 3P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Pouvoir adepte", "Frappe rapide"], ["Armure 5", null], ["Liaison", "Toucher"], ["Dissimulation", "Personnelle"], ["Hurlement paralysant", null], ["Escalade murale", null]],
     },
     wampus: {
       label: "Wampus", a: [3, 5, 5, 3, 4, 3, 4, 3, 5],
@@ -3328,12 +2553,8 @@ const Creatures = {
       habitat: ["urbain"],
       desc: "Chat sauvage éveillé (lynx/caracal) d'Amérique du Nord pouvant prendre forme humanoïde et rester bipède 4 à 6 heures par jour.",
       skills: { Athlétisme: 5, "Combat rapproché": 5, Con: 5, "Plein air": 4, Perception: 4, Furtivité: 5 },
-      traits: [
-        ["Pouvoirs adeptes", "Contrôle cosmétique 2, Chute libre 3, Réflexes améliorés 2, Pas de côté 1"],
-        ["Sens accrus", "Ouïe, vision en basse lumière, odorat"], ["Influence", null],
-        ["Mimétisme", null],
-        ["Arme naturelle", "Griffes rétractiles : VD 2P"],
-      ],
+      naturalWeapons: ["Griffes rétractiles [VD 2P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Pouvoirs adeptes", "Contrôle cosmétique 2, Chute libre 3, Réflexes améliorés 2, Pas de côté 1"], ["Sens accrus", "Ouïe, vision en basse lumière, odorat"], ["Influence", null], ["Mimétisme", null]],
     },
   },
 
@@ -3622,7 +2843,7 @@ const Creatures = {
       proRating: 3,
       attrs,
       skills,
-      equip: [],
+      equip: c.naturalWeapons ? [...c.naturalWeapons] : [],
       augs: [],
       spells: [],
       powers: [],

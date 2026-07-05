@@ -9,10 +9,10 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500&family=Oswald:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=32">
-  <link rel="stylesheet" href="css/theme-sr5.css?v=16">
-  <link rel="stylesheet" href="css/theme-sr6.css?v=16">
-  <link rel="stylesheet" href="css/theme-anarchy.css?v=17">
+  <link rel="stylesheet" href="css/base.css?v=39">
+  <link rel="stylesheet" href="css/theme-sr5.css?v=18">
+  <link rel="stylesheet" href="css/theme-sr6.css?v=17">
+  <link rel="stylesheet" href="css/theme-anarchy.css?v=19">
 </head>
 
 <body>
@@ -78,6 +78,19 @@
       <button class="dice-log-toggle" data-action="encounter-open"
         title="Suivi de combat" aria-label="Suivi de combat">⚔</button>
 
+      <!-- Réserve de menace (Anarchy 2.0, p.138) : visibilité pilotée par
+           CSS [data-edition="anarchy"], jamais par du JS. -->
+      <div id="threat-reserve" title="Réserve de menace (relance des PNJ)">
+        <span class="threat-reserve-lbl">Menace</span>
+        <button class="threat-reserve-step" data-threat="-1" tabindex="-1"
+          aria-label="Diminuer la réserve de menace">−</button>
+        <span id="threat-reserve-val" aria-live="polite">0</span>
+        <button class="threat-reserve-step" data-threat="1" tabindex="-1"
+          aria-label="Augmenter la réserve de menace">＋</button>
+        <button class="threat-reserve-reset" data-threat="reset" tabindex="-1"
+          title="Réinitialiser" aria-label="Réinitialiser la réserve de menace">↺</button>
+      </div>
+
       <button class="dice-log-toggle" data-action="toggle-shortcuts"
         title="Raccourcis clavier (?)" aria-label="Raccourcis clavier">?</button>
 
@@ -89,6 +102,16 @@
 
       <!-- SIDEBAR -->
       <nav id="sidebar" aria-label="Navigation principale">
+        <!-- Suivi de combat actif : masqué tant qu'aucune scène n'est en cours (cf. EncounterRenderer.renderSidebar). -->
+        <div id="sidebar-encounter" class="sidebar-encounter" hidden>
+          <span class="nav-section-label" id="sidebar-encounter-round">Round 1</span>
+          <button class="sidebar-encounter-turn" data-action="encounter-open" title="Ouvrir le suivi de combat">
+            <span class="encounter-kind" id="sidebar-encounter-kind"></span>
+            <span class="sidebar-encounter-name" id="sidebar-encounter-name">—</span>
+          </button>
+          <button class="btn-secondary btn-small" data-action="sidebar-next-turn">Tour suivant ▶</button>
+        </div>
+
         <span class="nav-section-label">Gestion</span>
         <button class="nav-btn active" data-panel="welcome" data-action="show-panel">
           <span class="nav-icon">⌂</span><span class="nav-label">Accueil</span>
@@ -336,18 +359,24 @@
   <div class="modal-overlay" id="encounter-overlay" role="dialog" aria-modal="true" aria-labelledby="encounter-title">
     <div class="modal encounter-modal">
       <div class="modal-header">
-        <span class="modal-title" id="encounter-title">Suivi de combat — Round <span id="encounter-round">1</span></span>
+        <span class="modal-title" id="encounter-title">Suivi de combat — Round <span id="encounter-round">1</span><span id="encounter-pass"></span></span>
         <button class="modal-close" data-action="encounter-close" aria-label="Fermer">✕</button>
       </div>
-      <div class="modal-body">
-        <div class="encounter-toolbar">
-          <button class="btn-secondary btn-small" data-action="roll-all-init">⚄ Lancer l'initiative</button>
-          <button class="btn-secondary btn-small" data-action="sort-init" title="Trier par initiative (décroissant)">↓ Trier par init</button>
-          <button class="btn-primary btn-small" data-action="next-turn">Tour suivant</button>
-          <button class="btn-secondary btn-small" data-action="next-round">Round suivant</button>
-          <button class="danger-btn btn-small" data-action="clear-encounter">Vider la scène</button>
+      <div class="modal-body encounter-body">
+        <div class="encounter-main-col">
+          <div class="encounter-toolbar">
+            <button class="btn-secondary btn-small" data-action="toggle-add-picker" title="Ajouter un combattant">➕ Ajouter</button>
+            <button class="btn-secondary btn-small" data-action="roll-all-init">⚄ Lancer l'initiative</button>
+            <button class="btn-secondary btn-small" data-action="sort-init" title="Trier par initiative (décroissant)">↓ Trier par init</button>
+            <button class="btn-primary btn-small" data-action="next-turn">Tour suivant</button>
+            <button class="btn-secondary btn-small" data-action="next-round">Round suivant</button>
+            <button class="danger-btn btn-small" data-action="clear-encounter">Vider la scène</button>
+          </div>
+          <div id="encounter-add-panel" class="encounter-add-panel" hidden></div>
+          <div id="encounter-list" class="encounter-list"></div>
         </div>
-        <div id="encounter-list" class="encounter-list"></div>
+        <!-- Fiche du combattant actif (cf. EncounterRenderer.renderActiveCard) : masquée pour un PJ ad-hoc ou une scène vide. -->
+        <div id="encounter-active-card" class="encounter-active-card" hidden></div>
       </div>
     </div>
   </div>
@@ -381,7 +410,7 @@
   <script src="js/core/utils.js?v=24"></script>
   <script src="js/core/debug.js?v=2"></script>
   <script src="js/core/storage.js?v=17"></script>
-  <script src="js/rules/dice.js?v=3"></script>
+  <script src="js/rules/dice.js?v=4"></script>
   <script src="js/rules/metavariants.js?v=17"></script>
   <script src="js/rules/infected.js?v=21"></script>
   <script src="js/rules/matrix.js?v=3"></script>
@@ -393,16 +422,16 @@
   <script src="js/rules/content.js?v=20"></script>
   <script src="js/rules/magic.js?v=5"></script>
   <script src="js/rules/coherence.js?v=3"></script>
-  <script src="js/editions/sr5.js?v=32"></script>
-  <script src="js/editions/sr6.js?v=28"></script>
-  <script src="js/editions/anarchy.js?v=28"></script>
+  <script src="js/editions/sr5.js?v=34"></script>
+  <script src="js/editions/sr6.js?v=30"></script>
+  <script src="js/editions/anarchy.js?v=30"></script>
   <script src="js/catalogs/drugs.js?v=2"></script>
   <script src="js/catalogs/vehicles.js?v=3"></script>
   <script src="js/catalogs/spirits.js?v=5"></script>
   <script src="js/catalogs/creatures.js?v=3"></script>
   <script src="js/widgets/cardrenderer.js?v=7"></script>
-  <script src="js/widgets/cardrenderer.sr5.js?v=4"></script>
-  <script src="js/widgets/cardrenderer.sr6.js?v=2"></script>
+  <script src="js/widgets/cardrenderer.sr5.js?v=5"></script>
+  <script src="js/widgets/cardrenderer.sr6.js?v=3"></script>
   <script src="js/widgets/cardrenderer.anarchy.js?v=1"></script>
   <script src="js/widgets/cardrenderer.linked.js?v=1"></script>
   <script src="js/widgets/ui.js?v=32"></script>
@@ -412,28 +441,28 @@
   <script src="js/widgets/grouppicker.js?v=1"></script>
   <script src="js/widgets/collection.js?v=3"></script>
   <script src="js/widgets/serverrenderer.js?v=3"></script>
-  <script src="js/widgets/encounterrenderer.js?v=1"></script>
+  <script src="js/widgets/encounterrenderer.js?v=4"></script>
   <script src="js/controllers/servers.js?v=10"></script>
   <script src="js/controllers/intrusion.js?v=1"></script>
   <script src="js/widgets/dicelog.js?v=2"></script>
-  <script src="js/widgets/diceroller.js?v=4"></script>
+  <script src="js/widgets/diceroller.js?v=6"></script>
   <script src="js/widgets/dicepanel.js?v=7"></script>
   <script src="js/widgets/sidebartoggle.js?v=18"></script>
   <script src="js/widgets/profcategories.js?v=17"></script>
   <script src="js/widgets/multiselect.js?v=16"></script>
-  <script src="js/widgets/singleselect.js?v=1"></script>
-  <script src="js/controllers/generator.js?v=27"></script>
+  <script src="js/widgets/singleselect.js?v=2"></script>
+  <script src="js/controllers/generator.js?v=28"></script>
   <script src="js/controllers/rungen.js?v=3"></script>
   <script src="js/controllers/shadows.js?v=21"></script>
   <script src="js/controllers/pnjlookup.js?v=1"></script>
-  <script src="js/controllers/encounter.js?v=1"></script>
-  <script src="js/controllers/editmodal.js?v=23"></script>
+  <script src="js/controllers/encounter.js?v=4"></script>
+  <script src="js/controllers/editmodal.js?v=25"></script>
   <script src="js/controllers/contactgen.js?v=18"></script>
   <script src="js/controllers/contacts.js?v=4"></script>
   <script src="js/controllers/contactsbook.js?v=1"></script>
   <script src="js/controllers/settings.js?v=19"></script>
   <script src="js/controllers/backup.js?v=17"></script>
-  <script src="js/app.js?v=24"></script>
+  <script src="js/app.js?v=26"></script>
 
 </body>
 

@@ -312,6 +312,7 @@ const Spirits = {
       physFilled: 0,
       stunFilled: 0,
       initDice: 2,
+      deployed: true,
     };
 
     const Mod = App.getEditionModule(edition);
@@ -402,6 +403,7 @@ const Spirits = {
       graveFilled: 0,
       incapFilled: 0,
       narcoUsed: 0,
+      deployed: true,
     };
   },
 };

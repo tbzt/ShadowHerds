@@ -8,7 +8,8 @@ Object.assign(CardRenderer, {
   _headerVehicle(v) {
     const icon = v.kind === "drone" ? "◇" : "▣";
     const kindLabel = v.kind === "drone" ? "Drone" : "Véhicule";
-    return `<div class="pnj-card-header vehicle-header">
+    const destroyed = App.getEditionModule(v.edition).conditionMonitor.isDestroyed(v);
+    return `<div class="pnj-card-header vehicle-header${destroyed ? " destroyed" : ""}">
       <div class="pnj-header-left">
         <div class="pnj-name">${icon} ${this._esc(v.name)}</div>
         <div class="pnj-meta">
@@ -17,15 +18,20 @@ Object.assign(CardRenderer, {
             title="Retrouver ${this._esc(v.ownerName)}">↳ lié à ${this._esc(v.ownerName)}</span>
         </div>
       </div>
-      <span class="pnj-rank-badge vehicle-badge">${kindLabel}</span>
+      ${destroyed
+        ? '<span class="pnj-rank-badge vehicle-badge destroyed">☠ Détruit</span>'
+        : `<span class="pnj-rank-badge vehicle-badge">${kindLabel}</span>`}
     </div>`;
   },
 
   /* ---- Header esprit (invoqué ou libre) ---- */
   _headerSpirit(sp) {
-    const spSummonPower = App.getEditionModule(sp.edition).summonPower;
-    const badge =
-      spSummonPower.field === "tier"
+    const Mod = App.getEditionModule(sp.edition);
+    const spSummonPower = Mod.summonPower;
+    const destroyed = Mod.conditionMonitor.isDestroyed(sp);
+    const badge = destroyed
+      ? '<span class="pnj-rank-badge vehicle-badge destroyed">☠ Détruit</span>'
+      : spSummonPower.field === "tier"
         ? `<span class="pnj-rank-badge vehicle-badge">${this._esc(sp[spSummonPower.field] || "Esprit")}</span>`
         : `<span class="pnj-rank-badge vehicle-badge">P ${sp[spSummonPower.field]}</span>`;
     const metaLine = sp.ownerId
@@ -33,7 +39,7 @@ Object.assign(CardRenderer, {
           data-action="focus-owner" data-id="${sp.ownerId}"
           title="Retrouver ${this._esc(sp.ownerName)}">↳ invoqué par ${this._esc(sp.ownerName)}</span>`
       : `<span>Esprit libre — indépendant</span>`;
-    return `<div class="pnj-card-header vehicle-header spirit-header">
+    return `<div class="pnj-card-header vehicle-header spirit-header${destroyed ? " destroyed" : ""}">
       <div class="pnj-header-left">
         <div class="pnj-name">✦ ${this._esc(sp.name)}</div>
         <div class="pnj-meta">${metaLine}</div>
@@ -142,13 +148,19 @@ Object.assign(CardRenderer, {
     const chips = items
       .map((item, idx) => {
         const parsed = deps.Vehicles.matchItem(item, pnj.edition);
-        const deployed = deps.Vehicles.linkedTo(pnj.id, item).length > 0;
+        const linked = deps.Vehicles.linkedTo(pnj.id, item);
+        const deployed = linked.some((v) => v.deployed);
+        const destroyed = linked.some((v) =>
+          App.getEditionModule(v.edition).conditionMonitor.isDestroyed(v),
+        );
         const icon = parsed.kind === "drone" ? "◇" : "▣";
         const label = parsed.count > 1 ? `${parsed.count}× ${parsed.name}` : parsed.name;
-        const state = deployed
-          ? '<span class="vehicle-chip-state on">● fiche</span>'
-          : '<span class="vehicle-chip-state">▸ déployer</span>';
-        return `<span class="tag vehicle-chip${deployed ? " deployed" : ""}" role="button" tabindex="0"
+        const state = destroyed
+          ? '<span class="vehicle-chip-state destroyed">☠ détruit</span>'
+          : deployed
+            ? '<span class="vehicle-chip-state on">● fiche</span>'
+            : '<span class="vehicle-chip-state">▸ déployer</span>';
+        return `<span class="tag vehicle-chip${deployed ? " deployed" : ""}${destroyed ? " destroyed" : ""}" role="button" tabindex="0"
           data-action="deploy-vehicle" data-id="${pnj.id}" data-idx="${idx}"
           title="${this._esc(item)}">${icon} ${this._esc(label)}${state}</span>`;
       })
@@ -176,12 +188,18 @@ Object.assign(CardRenderer, {
   /** Chip « Invoquer » dans la zone Combat des conjurateurs. */
   _spiritChipRow(pnj, deps) {
     if (!deps.Spirits || !deps.Spirits.canSummon(pnj)) return "";
-    const active = deps.Spirits.linkedTo(pnj.id).length;
-    const state = active
-      ? `<span class="vehicle-chip-state on">● ${active}</span>`
-      : '<span class="vehicle-chip-state">▸ invoquer</span>';
+    const linked = deps.Spirits.linkedTo(pnj.id).filter((sp) => sp.deployed);
+    const active = linked.length;
+    const destroyed = linked.some((sp) =>
+      App.getEditionModule(sp.edition).conditionMonitor.isDestroyed(sp),
+    );
+    const state = destroyed
+      ? '<span class="vehicle-chip-state destroyed">☠ détruit</span>'
+      : active
+        ? `<span class="vehicle-chip-state on">● ${active}</span>`
+        : '<span class="vehicle-chip-state">▸ invoquer</span>';
     return `<div class="combat-drugs spirit-chips">
-      <span class="tag vehicle-chip spirit-chip${active ? " deployed" : ""}" role="button" tabindex="0"
+      <span class="tag vehicle-chip spirit-chip${active ? " deployed" : ""}${destroyed ? " destroyed" : ""}" role="button" tabindex="0"
         data-action="open-summon" data-id="${pnj.id}"
         title="Invoquer un esprit lié à ce PNJ">✦ Esprit${state}</span>
     </div>`;

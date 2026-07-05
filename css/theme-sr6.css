@@ -173,3 +173,71 @@
 [data-edition="sr6"] .pnj-metavariant {
   color: #00c8ff;
 }
+
+/* ---- Empty state : coin coupé net, fine barre néon ---- */
+[data-edition="sr6"] .empty-state {
+  border: 1px solid #0e2030;
+  border-radius: 3px;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+  position: relative;
+}
+[data-edition="sr6"] .empty-state::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #00c8ff 0%, #7b2fff 100%);
+}
+[data-edition="sr6"] .empty-state-title {
+  color: #00c8ff;
+}
+
+/* ---- Modale : coin coupé net, fine barre néon ---- */
+[data-edition="sr6"] .modal {
+  border-radius: 3px;
+  border-top: 1px solid #0e2030;
+  clip-path: var(--card-clip);
+}
+[data-edition="sr6"] .modal-header {
+  border-bottom: 1px solid #0e2030;
+  position: relative;
+}
+[data-edition="sr6"] .modal-header::after {
+  content: "";
+  position: absolute;
+  left: 1.25rem;
+  bottom: -1px;
+  width: 56px;
+  height: 2px;
+  background: #00c8ff;
+}
+[data-edition="sr6"] .modal-title {
+  font-family: var(--font-display);
+  color: #00c8ff;
+}
+[data-edition="sr6"] .modal-close:hover {
+  border-color: #7b2fff;
+  color: #7b2fff;
+}
+
+/* ---- Formulaires : champs épurés, arrondis doux ---- */
+[data-edition="sr6"] .form-group label {
+  color: #5a7a94;
+}
+[data-edition="sr6"] .form-group input,
+[data-edition="sr6"] .form-group select,
+[data-edition="sr6"] .form-group textarea {
+  border-radius: 3px;
+}
+[data-edition="sr6"] .form-group input:focus,
+[data-edition="sr6"] .form-group select:focus,
+[data-edition="sr6"] .form-group textarea:focus {
+  border-color: #00c8ff;
+}
+
+/* ---- Sidebar : survol cyan ---- */
+[data-edition="sr6"] .nav-btn:hover {
+  background: rgba(0, 200, 255, 0.05);
+}

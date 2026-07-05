@@ -27,12 +27,30 @@ const EditionSR6 = {
   /** Neutre : SR6 utilise le lanceur de dés classique, pas le panneau
       de prise de risque (propre à Anarchy 2.0). */
   usesRiskPanel: false,
+  /** Neutre : la réserve de menace (compteur MJ global) est propre à
+      Anarchy 2.0 (p.138) — en SR6 la ressource de relance est l'Atout,
+      porté par chaque PNJ (attrs.EDG). */
+  usesThreatReserve: false,
+  /** Action de relance « Relancer les ratés » (p.50-51) : relance les dés
+      ratés (mode "misses"), interdite dès qu'il y a une bévue OU un échec
+      critique (blockedBy "glitch" couvre les deux — plus strict que SR5),
+      coûte des points d'Atout du PNJ. */
+  rerollAction: {
+    label: "Relancer les ratés",
+    mode: "misses",
+    blockedBy: "glitch",
+    costAttr: "EDG",
+  },
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
   /** Initiative chiffrée (base + dés) pour le tracker de combat : lue sur
       pnj.initBase/pnj.initDice, posés par generate() (Réaction + Intuition). */
   initiativeFor(pnj) {
     return { base: pnj.initBase, dice: pnj.initDice };
   },
+  /** Règles de round pour le tracker de combat. SR6 : l'initiative est
+      relancée à chaque round mais il n'y a plus de passes d'initiative
+      (une seule passe par round, p.44) → `passDecrement: 0`. */
+  combatModel: { rerollEachRound: true, passDecrement: 0 },
   summonPower: {
     field: "force",
     label: "Puissance",
@@ -92,6 +110,14 @@ const EditionSR6 = {
     /** Forme du moniteur d'un véhicule/drone lié : "total" (monTotal/
         monFilled, ⌈Structure/2⌉+8) en SR5/SR6, cf. vehicles.js:_monitor. */
     vehicleFields: "total",
+    /** Détruit : véhicule/drone dont le moniteur total est plein, ou
+        esprit dont le moniteur unique (me, cf. spirits.js:_spawnSR) est
+        plein. */
+    isDestroyed(entity) {
+      if (entity.type === "vehicle")
+        return (entity.monTotal || 0) > 0 && (entity.monFilled || 0) >= entity.monTotal;
+      return (entity.me || 0) > 0 && (entity.physFilled || 0) >= entity.me;
+    },
   },
   /** Résolution du jet d'arme (WeaponRoll) : synergie smartgun/smartlink
       flat +1 (pas de distinction implanté/externe en SR6), pas de limite
@@ -590,6 +616,16 @@ const EditionSR6 = {
       "Espion industriel",
       "Cambrioleur professionnel",
       "Decker freelance",
+      // Éveillés
+      "Chaman urbain",
+      "Adepte de rue",
+      // Matrice & riggers
+      "Technicien de terrain",
+      // Corpo & contacts
+      "Cadre corpo",
+      "Agent corpo",
+      "Négociateur corpo (Johnson)",
+      "Mage salarié",
     ],
     special: [
       "Aucun",
@@ -1031,6 +1067,64 @@ const EditionSR6 = {
       "Escroquerie",
       "Piratage",
     ],
+    // --- Éveillés ---
+    "Chaman urbain": [
+      "Sorcellerie",
+      "Conjuration",
+      "Astral",
+      "Perception",
+      "Influence",
+      "Survie",
+    ],
+    "Adepte de rue": [
+      "Combat rapproché",
+      "Athlétisme",
+      "Armes à feu",
+      "Furtivité",
+      "Perception",
+      "Intimidation",
+    ],
+    // --- Matrice & riggers ---
+    "Technicien de terrain": [
+      "Électronique",
+      "Ingénierie",
+      "Piratage",
+      "Perception",
+      "Pilotage",
+      "Biotech",
+    ],
+    // --- Corpo & contacts ---
+    "Cadre corpo": [
+      "Influence",
+      "Leadership",
+      "Perception",
+      "Électronique",
+      "Armes à feu",
+      "Escroquerie",
+    ],
+    "Agent corpo": [
+      "Armes à feu",
+      "Combat rapproché",
+      "Perception",
+      "Influence",
+      "Électronique",
+      "Athlétisme",
+    ],
+    "Négociateur corpo (Johnson)": [
+      "Influence",
+      "Leadership",
+      "Escroquerie",
+      "Perception",
+      "Armes à feu",
+    ],
+    "Mage salarié": [
+      "Sorcellerie",
+      "Conjuration",
+      "Astral",
+      "Perception",
+      "Influence",
+      "Électronique",
+    ],
   },
 
   skillCount: {
@@ -1334,6 +1428,7 @@ const EditionSR6 = {
     }
 
     const result = [commlink, primaryWeapon];
+    result.push("Mains nues [VD 2E, SO FOR+RÉA/–/–/–/–]");
 
     // Arme supplémentaire cohérente (aléa d'arsenal) — tirée du même pool
     // que l'arme principale pour ne jamais contredire ses stats.
@@ -1452,6 +1547,15 @@ const EditionSR6 = {
           ])
         : "Aucun";
     }
+    // Éveillés implicites : un archétype nommé « Chaman/Adepte/Mage… » sans
+    // spécialisation explicite dérive sa nature magique de son nom (même patron
+    // que SR5), pour que Mage salarié / Chaman urbain / Adepte de rue soient
+    // réellement éveillés (isMagicSpec) et castent — ou non, pour l'adepte.
+    if (special === "Aucun") {
+      if (archetype.includes("Chaman")) special = "Chaman";
+      else if (archetype.includes("Adepte")) special = "Adepte";
+      else if (archetype.includes("Mage")) special = "Mage hermétique";
+    }
 
     const p = Utils.clamp(proRating, 0, 10);
     const baseAttrs = { ...this.attrByProf[p] };
@@ -1508,6 +1612,11 @@ const EditionSR6 = {
     if (special === "Technomancien") {
       attrs.RES = Utils.clamp(Math.floor(p / 2) + Utils.randInt(1, 2), 1, 12);
     }
+
+    // Atout (Edge, p.50) : ressource de relance « Relancer les ratés ».
+    // Échelle simple corrélée au professionnalisme, bornée 1-7 ; ajustable
+    // à la main via l'editmodal.
+    attrs.EDG = Utils.clamp(1 + Math.round(p / 2) + Utils.randInt(0, 1), 1, 7);
 
     // Moniteur d'état
     const me = 8 + Math.ceil(attrs.CON / 2);
@@ -1670,6 +1779,9 @@ const EditionSR6 = {
 
   recalc(pnj) {
     const { attrs } = pnj;
+    // Atout (Edge) : init douce pour les PNJ sauvegardés avant l'ajout du
+    // champ (fallback au point d'usage, pas de migration versionnée).
+    attrs.EDG ??= Utils.clamp(1 + Math.round((pnj.proRating || 0) / 2), 1, 7);
     pnj.me = 8 + Math.ceil(attrs.CON / 2);
     pnj.initBase = attrs.RÉA + attrs.INT;
     pnj.defense = attrs.RÉA + attrs.INT;

@@ -119,6 +119,10 @@ const ProfCategories = {
         "Spécialiste contre-mesures",
       ],
     },
+    {
+      cat: "Corpo & contacts",
+      items: ["Cadre corpo", "Agent corpo", "Négociateur corpo", "Mage salarié"],
+    },
   ],
 
   /* ---- SR6 ---- */
@@ -201,7 +205,15 @@ const ProfCategories = {
     },
     {
       cat: "Matrice & riggers",
-      items: ["Decker freelance"],
+      items: ["Decker freelance", "Technicien de terrain"],
+    },
+    {
+      cat: "Éveillés",
+      items: ["Chaman urbain", "Adepte de rue"],
+    },
+    {
+      cat: "Corpo & contacts",
+      items: ["Cadre corpo", "Agent corpo", "Négociateur corpo (Johnson)", "Mage salarié"],
     },
   ],
 
@@ -251,6 +263,22 @@ const ProfCategories = {
         "Enquêteur",
         "Coyote",
       ],
+    },
+    {
+      cat: "Bas de l'échelle",
+      items: ["Civil", "Voyou de rue", "Technicien de rue"],
+    },
+    {
+      cat: "Crime organisé",
+      items: ["Soldat de syndicat", "Lieutenant de syndicat (capo)"],
+    },
+    {
+      cat: "Police & ordre",
+      items: ["Flic des rues", "Officier de police", "Détective"],
+    },
+    {
+      cat: "Professionnels spécialisés",
+      items: ["Ombre"],
     },
   ],
 

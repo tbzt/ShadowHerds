@@ -44,7 +44,7 @@ const SingleSelect = {
       .join("");
 
     return `<div class="form-group ss" data-ss="${id}" data-placeholder="${this._esc(placeholder)}">
-      <label>${label}</label>
+      ${label ? `<label>${label}</label>` : ""}
       <div class="ss-control ms-control" tabindex="0" role="button" aria-haspopup="listbox" aria-expanded="false">
         <span class="ss-value" data-ss-value>${selected ? this._esc(selected.label) : placeholder}</span>
         <span class="ss-caret ms-caret">▾</span>

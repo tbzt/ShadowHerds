@@ -137,6 +137,7 @@ const Coherence = {
     "Crime organisé": "crime",
     "Militaire & mercenaire": "militaire",
     "Militaire": "militaire",
+    "Éveillés": "ombres",
     "Professionnels spécialisés": "ombres",
     "Matrice & riggers": "ombres",
     "Corpo & contacts": "corpo",
@@ -153,8 +154,8 @@ const Coherence = {
     [/rigger|pilote|go-ganger/i, "rigger"],
     [/technicien|mécanicien|ingénieur|matériel/i, "technicien"],
     [/détective|espion|cambrioleur|assassin|passeur|coyote|sans-abri/i, "infiltrateur"],
-    [/johnson|cadre|employé corpo|enquêteur|négociant|dealer|capo|wakagashira|contrebandier|trafiquant/i, "social"],
-    [/^civil ordinaire$/i, "civil"],
+    [/johnson|cadre|employé corpo|enquêteur|négociant|négociateur|dealer|capo|wakagashira|contrebandier|trafiquant/i, "social"],
+    [/^civil/i, "civil"],
     // Filet générique : un archétype marqué « éveillé » sans mot-clé plus
     // précis (chaman/adepte) est traité comme mage par défaut.
     [/éveillé/i, "mage"],
@@ -182,6 +183,61 @@ const Coherence = {
       role: this.resolveRole(archetypeName),
       milieu: this.resolveMilieu(group ? group.cat : ""),
     };
+  },
+
+  /**
+   * Choisit un archétype nommé cohérent parmi `archetypes`, avec tirage
+   * *pondéré par milieu* et *relâchement gracieux*.
+   *
+   * - Filtre d'abord sur le rôle/milieu explicitement demandés.
+   * - Si ce filtre ne laisse rien (l'édition ne couvre pas cette
+   *   combinaison), relâche : milieu seul → rôle seul → tout — au lieu de
+   *   retomber en tirage « n'importe quoi » (qui, plat sur les archétypes,
+   *   favorise la catégorie la plus fournie, cf. flot de profils sécurité).
+   * - Tire enfin un milieu *uniformément parmi les milieux présents* dans le
+   *   pool, puis un archétype dans ce milieu : « Aléatoire » puise ainsi dans
+   *   les divers milieux pertinents au lieu du plus peuplé.
+   *
+   * @returns {string|null} nom d'archétype, ou null si le pool est vide.
+   */
+  pickArchetype(editionId, archetypes, { role = null, milieu = null } = {}) {
+    const tuples = (archetypes || [])
+      .filter((n) => n && n !== "Aléatoire")
+      .map((n) => ({ name: n, ...this.resolveTuple(editionId, n) }));
+    if (!tuples.length) return null;
+
+    const byRole = (p) => (!role || p.role === role);
+    const byMilieu = (p) => (!milieu || p.milieu === milieu);
+
+    // Relâchement gracieux : combinaison exacte → milieu seul → rôle seul → tout.
+    let pool = tuples.filter((p) => byRole(p) && byMilieu(p));
+    if (!pool.length && role && milieu) {
+      this._warnRelax(editionId, role, milieu, "milieu seul");
+      pool = tuples.filter(byMilieu);
+    }
+    if (!pool.length && (role || milieu)) {
+      this._warnRelax(editionId, role, milieu, role ? "rôle seul" : "tout");
+      pool = role ? tuples.filter(byRole) : tuples;
+    }
+    if (!pool.length) {
+      this._warnRelax(editionId, role, milieu, "tout");
+      pool = tuples;
+    }
+
+    // Tirage équilibré : un milieu uniformément parmi ceux présents, puis un
+    // archétype dans ce milieu.
+    const groups = {};
+    for (const p of pool) (groups[p.milieu] ||= []).push(p.name);
+    const chosenMilieu = Utils.rand(Object.keys(groups));
+    return Utils.rand(groups[chosenMilieu]);
+  },
+
+  _warnRelax(editionId, role, milieu, fallback) {
+    if (typeof Debug === "undefined") return;
+    Debug.warn(
+      "coherence",
+      `pickArchetype(${editionId}) : aucun archétype pour {role:${role || "—"}, milieu:${milieu || "—"}} → relâche vers ${fallback}`,
+    );
   },
 
   /* ========================================================
@@ -266,6 +322,22 @@ const Coherence = {
         const skills = this.sampleSkills(ed, role, "rue", 4);
         if (!skills.length) {
           Debug.warn("coherence", `sampleSkills(${ed}, ${role}) est vide`);
+        }
+      }
+    }
+    // Couverture rôle/milieu : signale les options « composition libre » qu'une
+    // édition ne peut satisfaire (aucun archétype résolu) → trous de contenu à
+    // peupler. Base = archétypes classés par ProfCategories.
+    if (typeof ProfCategories !== "undefined") {
+      const milieux = Object.keys(this.MILIEUX);
+      for (const ed of editions) {
+        const names = (ProfCategories[ed] || []).flatMap((g) => g.items);
+        const covRoles = new Set(names.map((n) => this.resolveRole(n)));
+        const covMilieux = new Set(names.map((n) => this.resolveTuple(ed, n).milieu));
+        const deadRoles = roles.filter((r) => !covRoles.has(r));
+        const deadMilieux = milieux.filter((m) => !covMilieux.has(m));
+        if (deadRoles.length || deadMilieux.length) {
+          Debug.warn("coherence", `couverture ${ed} : rôles sans archétype [${deadRoles.join(", ") || "—"}], milieux sans archétype [${deadMilieux.join(", ") || "—"}]`);
         }
       }
     }

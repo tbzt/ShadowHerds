@@ -18,12 +18,32 @@ const EditionSR5 = {
   /** Neutre : SR5 utilise le lanceur de dés classique, pas le panneau
       de prise de risque (propre à Anarchy 2.0). */
   usesRiskPanel: false,
+  /** Neutre : la réserve de menace (compteur MJ global) est propre à
+      Anarchy 2.0 (p.138) — en SR5 la ressource de relance est l'Edge,
+      porté par chaque PNJ (attrs.EDG). */
+  usesThreatReserve: false,
+  /** Action de relance « Seconde chance » (p.58) : relance les dés ratés
+      (mode "misses"), interdite sur échec critique, coûte 1 point d'Edge
+      du PNJ. Lue par DiceRoller via App.editionModule, jamais de branche
+      d'édition côté widget. */
+  rerollAction: {
+    label: "Seconde chance",
+    mode: "misses",
+    blockedBy: "critGlitch",
+    costAttr: "EDG",
+  },
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
   /** Initiative chiffrée (base + dés) pour le tracker de combat : lue sur
       pnj.init/pnj.initDice, posés par generate() (Réaction + Intuition). */
   initiativeFor(pnj) {
     return { base: pnj.init, dice: pnj.initDice };
   },
+  /** Règles de round pour le tracker de combat (lues via App.editionModule,
+      jamais de branche d'édition côté Encounter). SR5 : l'initiative est
+      relancée à chaque tour de combat, et chaque tour se joue en passes
+      d'initiative — −10 par passe, un combattant rapide rejoue tant que son
+      score reste > 0 (SR5 p.159). `passDecrement > 0` active les passes. */
+  combatModel: { rerollEachRound: true, passDecrement: 10 },
   summonPower: {
     field: "force",
     label: "Puissance",
@@ -85,6 +105,14 @@ const EditionSR5 = {
     /** Forme du moniteur d'un véhicule/drone lié : "total" (monTotal/
         monFilled, ⌈Structure/2⌉+8) en SR5/SR6, cf. vehicles.js:_monitor. */
     vehicleFields: "total",
+    /** Détruit : véhicule/drone dont le moniteur total est plein, ou
+        esprit dont le moniteur physique (physMon, cf. spirits.js:_spawnSR)
+        est plein. */
+    isDestroyed(entity) {
+      if (entity.type === "vehicle")
+        return (entity.monTotal || 0) > 0 && (entity.monFilled || 0) >= entity.monTotal;
+      return (entity.physMon || 0) > 0 && (entity.physFilled || 0) >= entity.physMon;
+    },
   },
   /** Résolution du jet d'arme (WeaponRoll) : synergie smartgun/smartlink
       (+2 implanté / +1 externe), la Précision (PRE) plafonne les succès,
@@ -357,6 +385,11 @@ const EditionSR5 = {
       "Decker freelance",
       "Technicien matriciel corpo",
       "Spécialiste contre-mesures",
+      // Corpo & contacts
+      "Cadre corpo",
+      "Agent corpo",
+      "Négociateur corpo",
+      "Mage salarié",
     ],
     special: [
       "Aucun",
@@ -902,6 +935,43 @@ const EditionSR5 = {
       "Informatique",
       "Perception",
     ],
+    // --- Corpo & contacts ---
+    "Cadre corpo": [
+      "Négociation",
+      "Étiquette",
+      "Leadership",
+      "Imposture",
+      "Perception",
+      "Informatique",
+      "Pistolets",
+    ],
+    "Agent corpo": [
+      "Pistolets",
+      "Armes automatiques",
+      "Combat à mains nues",
+      "Étiquette",
+      "Perception",
+      "Informatique",
+      "Premiers soins",
+    ],
+    "Négociateur corpo": [
+      "Négociation",
+      "Étiquette",
+      "Leadership",
+      "Imposture",
+      "Escroquerie",
+      "Perception",
+      "Pistolets",
+    ],
+    "Mage salarié": [
+      "Lancement de sorts",
+      "Invocation",
+      "Contresort",
+      "Perception",
+      "Étiquette",
+      "Négociation",
+      "Informatique",
+    ],
   },
 
   /* ---- Nombre de compétences tirées par proRating ---- */
@@ -1251,6 +1321,7 @@ const EditionSR5 = {
     ]);
 
     const result = [commlink, primaryWeapon];
+    result.push("Mains nues [Allonge —, VD (FOR)E, PA —]");
 
     // Arme supplémentaire cohérente (aléa d'arsenal) — tirée du même pool
     // que l'arme principale pour ne jamais contredire ses stats.
@@ -1454,6 +1525,11 @@ const EditionSR5 = {
     if (special === "Decker") {
       attrs.ESS = Utils.clamp(6 - Utils.randInt(1, 2), 3, 6);
     }
+
+    // Edge (Chance, p.58) : ressource de relance « Seconde chance ». Échelle
+    // simple corrélée au professionnalisme, bornée 1-7 ; ajustable à la main
+    // via l'editmodal.
+    attrs.EDG = Utils.clamp(1 + Math.round(proRating / 2) + Utils.randInt(0, 1), 1, 7);
 
     // Limites naturelles
     const limPhys = Math.ceil((attrs.FOR * 2 + attrs.CON + attrs.REA) / 3);
@@ -1682,6 +1758,9 @@ const EditionSR5 = {
 
   recalc(pnj) {
     const { attrs, proRating } = pnj;
+    // Edge : init douce pour les PNJ sauvegardés avant l'ajout du champ
+    // (fallback au point d'usage, pas de migration versionnée).
+    attrs.EDG ??= Utils.clamp(1 + Math.round((proRating || 0) / 2), 1, 7);
     pnj.limPhys = Math.ceil((attrs.FOR * 2 + attrs.CON + attrs.REA) / 3);
     pnj.limMent = Math.ceil((attrs.LOG * 2 + attrs.INT + attrs.VOL) / 3);
     pnj.limSoc = Math.ceil((attrs.CHA * 2 + attrs.VOL + (proRating || 0)) / 3);

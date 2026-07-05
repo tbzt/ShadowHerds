@@ -79,13 +79,11 @@ const UI = {
     if (!srcItem) return;
 
     const existing = Vehicles.linkedTo(ownerId, srcItem);
-    if (existing.length) {
-      this._flashCard(existing[0].id);
+    const alreadyShown = existing.filter((v) => v.deployed);
+    if (alreadyShown.length) {
+      this._flashCard(alreadyShown[0].id);
       return;
     }
-
-    const spawned = Vehicles.spawn(owner, srcItem, owner.edition);
-    if (!spawned.length) return;
 
     const inShadows = Shadows.data.all.some((p) => p.id === ownerId);
     // Un PNJ sauvegardé peut avoir deux cartes : on ancre la fiche liée
@@ -94,9 +92,18 @@ const UI = {
       document.querySelector(`.panel.active .pnj-card[data-id="${ownerId}"]`) ||
       document.querySelector(`.pnj-card[data-id="${ownerId}"]`);
     let anchor = ownerCard;
-    for (const v of spawned) {
-      if (inShadows) Shadows.data.all.push(v);
-      else Gen.pool.push(v);
+
+    // Des fiches rangées existent déjà pour cet item : on les redéploie
+    // telles quelles (moniteur, nom, notes... tout est conservé) plutôt
+    // que d'en fabriquer de nouvelles.
+    const toShow = existing.length ? existing : Vehicles.spawn(owner, srcItem, owner.edition);
+    if (!toShow.length) return;
+    for (const v of toShow) {
+      v.deployed = true;
+      if (!existing.length) {
+        if (inShadows) Shadows.data.all.push(v);
+        else Gen.pool.push(v);
+      }
       if (anchor) {
         const card = CardRenderer.render(v, inShadows ? ["remove"] : ["discard"]);
         card.classList.add("vehicle-card", "vehicle-deploying");
@@ -109,15 +116,14 @@ const UI = {
     CardRenderer.refresh(owner); // met à jour l'état des chips
   },
 
-  /** Bouton « Ranger » d'une fiche liée : retire la ou les fiches
-      issues du même item source. */
+  /** Bouton « Ranger » d'une fiche liée : masque la ou les fiches issues
+      du même item source, sans perdre leur état (moniteur, notes...). */
   dismissVehicle(vehicleId) {
     const v = PnjLookup.find(vehicleId);
     if (!v || v.type !== "vehicle") return;
     const siblings = Vehicles.linkedTo(v.ownerId, v.srcItem);
     for (const s of siblings) {
-      Shadows.data.all = Shadows.data.all.filter((p) => p.id !== s.id);
-      if (Gen.pool) Gen.pool = Gen.pool.filter((p) => p.id !== s.id);
+      s.deployed = false;
       document
         .querySelectorAll(`.pnj-card[data-id="${s.id}"]`)
         .forEach((card) => card.remove());
@@ -306,12 +312,12 @@ const UI = {
     CardRenderer.refresh(sp);
   },
 
-  /** Congédie un esprit : retire sa fiche. */
+  /** Congédie un esprit : masque sa fiche sans perdre son état (services
+      rendus, moniteur, notes...) — l'esprit reste dans le pool. */
   dismissSpirit(spiritId) {
     const sp = PnjLookup.find(spiritId);
     if (!sp || sp.type !== "spirit") return;
-    Shadows.data.all = Shadows.data.all.filter((p) => p.id !== sp.id);
-    if (Gen.pool) Gen.pool = Gen.pool.filter((p) => p.id !== sp.id);
+    sp.deployed = false;
     document
       .querySelectorAll(`.pnj-card[data-id="${sp.id}"]`)
       .forEach((card) => card.remove());

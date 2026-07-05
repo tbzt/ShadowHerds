@@ -167,6 +167,7 @@ const Vehicles = {
         weapons: parsed.weapons.map((w) => ({ ...w })),
         rrNotes: parsed.rrNotes,
         notes: "",
+        deployed: true,
       };
       if (App.getEditionModule(edition).conditionMonitor.vehicleFields === "thresholds") {
         v.legerFilled = 0;

@@ -196,6 +196,12 @@ const EditModal = {
         <input type="number" id="em-attr-MAG" value="${pnj.attrs.MAG}" min="1" max="12">
       </div>`;
     }
+    if (pnj.attrs.EDG !== undefined) {
+      html += `<div class="form-group">
+        <label>EDG</label>
+        <input type="number" id="em-attr-EDG" value="${pnj.attrs.EDG}" min="0" max="7">
+      </div>`;
+    }
     html += "</div></div>";
 
     // ---- Section Anarchy : Atouts libres ----
@@ -296,16 +302,18 @@ const EditModal = {
   _addSkillControls(pnj) {
     if (typeof SkillCatalog === "undefined") return "";
     const existing = new Set((pnj.skills || []).map((s) => s.name));
-    const opts = SkillCatalog.skillsFor(pnj.edition)
+    const options = SkillCatalog.skillsFor(pnj.edition)
       .filter((n) => !existing.has(n))
-      .map((n) => `<option value="${CardRenderer._esc(n)}">${CardRenderer._esc(n)}</option>`)
-      .join("");
-    if (!opts) return "";
+      .map((n) => ({ value: n, label: n }));
+    if (!options.length) return "";
     return `<div class="em-add-skill">
-      <select id="em-add-skill-select">
-        <option value="">+ Ajouter une compétence…</option>
-        ${opts}
-      </select>
+      ${SingleSelect.create({
+        id: "em-add-skill-select",
+        label: "",
+        options,
+        value: "",
+        placeholder: "+ Ajouter une compétence…",
+      })}
       <button type="button" class="em-add-skill-btn" data-action="add-skill">Ajouter</button>
     </div>`;
   },
@@ -408,15 +416,17 @@ const EditModal = {
           .filter(Boolean);
     }
 
-    // Attributs
-    const allAttrKeys = [...edModuleForm.attributes, "MAG"];
+    // Attributs (EDG borné 0-7 : 0 = réserve d'Edge épuisée, les autres 1-12)
+    const allAttrKeys = [...edModuleForm.attributes, "MAG", "EDG"];
     for (const k of allAttrKeys) {
       const el = document.getElementById(`em-attr-${k}`);
       if (el && pnj.attrs[k] !== undefined) {
+        const [lo, hi] = k === "EDG" ? [0, 7] : [1, 12];
+        const raw = parseInt(el.value, 10);
         pnj.attrs[k] = Utils.clamp(
-          parseInt(el.value, 10) || pnj.attrs[k],
-          1,
-          12,
+          Number.isNaN(raw) ? pnj.attrs[k] : raw,
+          lo,
+          hi,
         );
       }
     }

@@ -11,7 +11,7 @@
 const Encounter = {
   _KEY: "encounter_current",
   _empty() {
-    return { round: 1, turnIndex: 0, combatants: [] };
+    return { round: 1, pass: 1, turnIndex: 0, combatants: [] };
   },
 
   state: null,
@@ -19,6 +19,27 @@ const Encounter = {
   /* ---- Persistance (édition-scopée, comme Shadows/Servers) ---- */
   load() {
     this.state = Storage.get(this._KEY, null) || this._empty();
+    // Rétro-compat : scènes persistées avant l'ajout des passes d'initiative.
+    if (this.state.pass == null) this.state.pass = 1;
+    // La sidebar doit refléter la scène dès le chargement de l'édition, pas
+    // seulement à l'ouverture du tracker — reset de la fiche active d'une
+    // édition à l'autre (les pnjId ne collisionnent jamais entre éditions,
+    // c'est une garde défensive plutôt qu'un cas réel).
+    EncounterRenderer.resetActiveCard();
+    this._render();
+  },
+
+  /** Règles de round de l'édition active (relance, passes) lues via
+      l'API neutre du module d'édition — jamais de branche `App.edition`
+      ici (cf. CONTRIBUTING). Défaut prudent : relance chaque round, sans
+      passes, pour une édition qui ne déclarerait pas de combatModel. */
+  _model() {
+    return (
+      (App.editionModule && App.editionModule.combatModel) || {
+        rerollEachRound: true,
+        passDecrement: 0,
+      }
+    );
   },
   save() {
     Storage.set(this._KEY, this.state);
@@ -34,6 +55,45 @@ const Encounter = {
     this.state.combatants.push({ pnjId, init: null, hasActed: false, note: "" });
     this._commit();
     toast("Ajouté au suivi de combat.");
+  },
+
+  /** PJ ad-hoc : le MJ suit les tours des joueurs sans fiche (elle vit chez
+      le joueur). Combattant sans entité de pool, identifié par un pnjId
+      synthétique `pj-…` et porteur de son propre nom + kind. Init en saisie
+      manuelle (bouton ▸ editInit) ; jamais de dés stockés. */
+  addPJ() {
+    const name = prompt("Nom du PJ :", "");
+    if (name === null) return;
+    const n = name.trim();
+    if (!n) return;
+    this.state.combatants.push({
+      pnjId: "pj-" + Utils.uid(),
+      name: n,
+      kind: "pj",
+      init: null,
+      hasActed: false,
+      note: "",
+    });
+    this._commit();
+  },
+
+  /** Entités ajoutables depuis le tracker : exactement les pools que
+      PnjLookup sait résoudre (générés, Ombres portées, spiders Matrice),
+      moins ceux déjà en scène. Esprits libres et créatures générés vivent
+      aussi dans Gen.pool, donc listés ici. */
+  _candidates() {
+    const inScene = new Set(this.state.combatants.map((c) => c.pnjId));
+    const all = [
+      ...Gen.pool,
+      ...Shadows.data.all,
+      ...Servers.data.all.map((s) => s.spider).filter(Boolean),
+    ];
+    const seen = new Set();
+    return all.filter((p) => {
+      if (!p || inScene.has(p.id) || seen.has(p.id)) return false;
+      seen.add(p.id);
+      return true;
+    });
   },
 
   remove(pnjId) {
@@ -74,42 +134,66 @@ const Encounter = {
   /** Lance l'initiative via l'accesseur neutre du module d'édition
       (App.editionModule.initiativeFor) : jamais de lecture directe d'un
       champ pnj.init édition-spécifique ici (cf. CONTRIBUTING). */
-  rollInit(pnjId) {
+  /** Cœur du lancer d'initiative, sans re-rendu : réutilisé en boucle par
+      rollAllInit et nextRound (un seul _commit en fin). Retourne true si une
+      initiative chiffrée a bien été posée. */
+  _rollInit(pnjId, silent) {
     const c = this._find(pnjId);
     const pnj = c && PnjLookup.find(pnjId);
-    if (!c || !pnj) return;
+    if (!c || !pnj) return false; // PJ ad-hoc / entité disparue : init manuelle conservée
     const spec = App.editionModule && App.editionModule.initiativeFor(pnj);
     if (!spec) {
-      toast("Pas d'initiative chiffrée pour cette édition — classez ce PNJ manuellement (▲▼).");
-      return;
+      if (!silent) toast("Pas d'initiative chiffrée pour cette édition — classez ce PNJ manuellement (▲▼).");
+      return false;
     }
     // DiceRoller pose pnj.lastInit (champ neutre, déjà utilisé par les
     // cartes) : on le relit après le lancer plutôt que de recalculer.
-    DiceRoller.rollInitiative(spec.base, spec.dice, pnjId);
+    // silent (lancer groupé) : pas d'overlay de tirage — les N overlays
+    // s'écraseraient et seul le dernier resterait visible ; les scores
+    // s'affichent directement dans la liste du suivi.
+    DiceRoller.rollInitiative(spec.base, spec.dice, pnjId, "", { silent });
     c.init = pnj.lastInit ? pnj.lastInit.total : c.init;
+    return true;
+  },
+
+  rollInit(pnjId) {
+    this._rollInit(pnjId);
     this._commit();
   },
 
   /** Ne lance que les combattants sans initiative encore posée : ne
-      recouvre jamais une valeur déjà lancée ou saisie à la main. */
+      recouvre jamais une valeur déjà lancée ou saisie à la main. Lancer
+      groupé silencieux (pas d'overlay par combattant) : les scores
+      apparaissent directement dans la liste, on confirme d'un toast. */
   rollAllInit() {
+    let rolled = 0;
     for (const c of this.state.combatants) {
-      if (c.init == null) this.rollInit(c.pnjId);
+      if (c.init == null && this._rollInit(c.pnjId, true)) rolled++;
     }
+    this._commit();
+    toast(
+      rolled
+        ? `Initiative lancée (${rolled} combattant${rolled > 1 ? "s" : ""}).`
+        : "Rien à lancer : initiatives déjà posées ou saisie manuelle requise.",
+    );
   },
 
   /** Tri automatique décroissant par initiative (confort quand la valeur
       existe) ; les combattants sans init (null) restent en fin de liste.
       Reset du tour courant au premier de la nouvelle liste. Le tri manuel
       (▲▼) reste le mécanisme de base pour Anarchy, sans init chiffrée. */
-  sortByInit() {
+  _sortInPlace() {
     this.state.combatants.sort((a, b) => {
       if (a.init == null && b.init == null) return 0;
       if (a.init == null) return 1;
       if (b.init == null) return -1;
       return b.init - a.init;
     });
-    this.state.turnIndex = 0;
+  },
+
+  sortByInit() {
+    this._sortInPlace();
+    this.state.turnIndex = this._firstEligibleIndex();
     this._commit();
   },
 
@@ -128,7 +212,7 @@ const Encounter = {
     this._commit();
   },
 
-  /* ---- Tours / rounds ---- */
+  /* ---- Tours / rounds / passes d'initiative ---- */
   markActed(pnjId, acted) {
     const c = this._find(pnjId);
     if (!c) return;
@@ -136,24 +220,65 @@ const Encounter = {
     this._commit();
   },
 
+  /** Un combattant agit-il dans la passe courante ? Sans passes
+      (passDecrement falsy, ex. SR6/Anarchy) tout le monde est éligible.
+      Avec passes (SR5) : score effectif = init − (passe−1)×décrément, > 0. */
+  _eligible(c) {
+    const dec = this._model().passDecrement;
+    if (!dec) return true;
+    return c.init != null && c.init - (this.state.pass - 1) * dec > 0;
+  },
+
+  _firstEligibleIndex() {
+    return this._nextEligibleIndex(-1);
+  },
+  _nextEligibleIndex(after) {
+    const cs = this.state.combatants;
+    for (let i = after + 1; i < cs.length; i++) {
+      if (this._eligible(cs[i])) return i;
+    }
+    return -1;
+  },
+
   nextTurn() {
-    const combatants = this.state.combatants;
-    if (!combatants.length) return;
-    const current = combatants[this.state.turnIndex];
+    const cs = this.state.combatants;
+    if (!cs.length) return;
+    const current = cs[this.state.turnIndex];
     if (current) current.hasActed = true;
-    const nextIdx = this.state.turnIndex + 1;
-    if (nextIdx >= combatants.length) {
-      this.nextRound();
+
+    const next = this._nextEligibleIndex(this.state.turnIndex);
+    if (next !== -1) {
+      this.state.turnIndex = next;
+      this._commit();
       return;
     }
-    this.state.turnIndex = nextIdx;
-    this._commit();
+
+    // Fin de la passe courante. Une passe suivante existe (SR5) si un
+    // combattant garde un score effectif > 0 après un nouveau −décrément.
+    const dec = this._model().passDecrement;
+    if (dec && cs.some((c) => c.init != null && c.init - this.state.pass * dec > 0)) {
+      this.state.pass++;
+      cs.forEach((c) => (c.hasActed = false));
+      this.state.turnIndex = this._firstEligibleIndex();
+      this._commit();
+      toast("Passe d'initiative " + this.state.pass);
+      return;
+    }
+    this.nextRound();
   },
 
   nextRound() {
+    const model = this._model();
     this.state.round++;
-    this.state.turnIndex = 0;
+    this.state.pass = 1;
     this.state.combatants.forEach((c) => (c.hasActed = false));
+    // SR5/SR6 : nouvelle initiative à chaque tour de combat. Anarchy
+    // (rerollEachRound:false) conserve l'ordre rangé à la main.
+    if (model.rerollEachRound) {
+      for (const c of this.state.combatants) this._rollInit(c.pnjId, true);
+      this._sortInPlace();
+    }
+    this.state.turnIndex = this._firstEligibleIndex();
     this._commit();
   },
 
@@ -170,6 +295,8 @@ const Encounter = {
       (Ombres / Générateur / Matrice) et le met en surbrillance — réutilise
       UI.focusOwner tel quel, aucune logique de moniteur dupliquée ici. */
   focusCombatant(pnjId) {
+    // PJ ad-hoc / entité disparue : pas de fiche à afficher.
+    if (!PnjLookup.find(pnjId)) return;
     this.close();
     const panel = Shadows.data.all.some((p) => p.id === pnjId)
       ? "shadows"
@@ -182,17 +309,49 @@ const Encounter = {
 
   /* ---- Rendu ---- */
   _rows() {
-    return this.state.combatants.map((c) => ({ ...c, pnj: PnjLookup.find(c.pnjId) }));
+    return this.state.combatants.map((c) => ({
+      ...c,
+      // Un PJ ad-hoc n'est résolu par aucun pool : on synthétise l'objet
+      // d'affichage minimal (nom + drapeau _adhoc) pour ne jamais le filtrer.
+      pnj: PnjLookup.find(c.pnjId) || (c.name ? { id: c.pnjId, name: c.name, _adhoc: true } : null),
+    }));
+  },
+  /** Rendu complet (liste, fiche du combattant actif, résumé sidebar) —
+      factorisé pour être appelable aussi bien après un commit qu'au
+      chargement initial de l'édition (sidebar à jour sans ouvrir le
+      tracker). */
+  _render() {
+    const rows = this._rows();
+    const model = this._model();
+    EncounterRenderer.render(this.state, rows, model);
+    EncounterRenderer.renderActiveCard(rows, this.state);
+    EncounterRenderer.renderSidebar(this.state, rows, model);
   },
   _commit() {
     this.save();
-    EncounterRenderer.render(this.state, this._rows());
+    this._render();
+    this._renderPicker();
+  },
+
+  /** Ne (re)rend le panneau d'ajout que s'il est ouvert : évite de recalculer
+      la liste des candidats à chaque commit inutilement. */
+  _renderPicker() {
+    const panel = document.getElementById("encounter-add-panel");
+    if (panel && !panel.hidden) EncounterRenderer.renderPicker(this._candidates());
+  },
+
+  toggleAddPicker() {
+    const panel = document.getElementById("encounter-add-panel");
+    if (!panel) return;
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) EncounterRenderer.renderPicker(this._candidates());
   },
 
   /* ---- Overlay ---- */
   open() {
     document.getElementById("encounter-overlay").classList.add("open");
-    EncounterRenderer.render(this.state, this._rows());
+    this._render();
+    this._renderPicker();
   },
   close() {
     const el = document.getElementById("encounter-overlay");
@@ -218,6 +377,16 @@ const Encounter = {
           break;
         case "sort-init":
           this.sortByInit();
+          break;
+        case "toggle-add-picker":
+          this.toggleAddPicker();
+          break;
+        case "add-candidate":
+          this.add(id);
+          this._renderPicker();
+          break;
+        case "add-pj":
+          this.addPJ();
           break;
         case "next-turn":
           this.nextTurn();
