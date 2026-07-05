@@ -80,7 +80,8 @@ const DiceRoller = {
         const dice =
           parseInt(initEl.getAttribute("data-roll-init-dice"), 10) || 1;
         const pnjId = initEl.getAttribute("data-roll-pnj") || "";
-        this.rollInitiative(base, dice, pnjId);
+        const detail = initEl.getAttribute("data-roll-init-detail") || "";
+        this.rollInitiative(base, dice, pnjId, detail);
         return;
       }
 
@@ -105,6 +106,7 @@ const DiceRoller = {
           if (r) {
             this.openRiskPanel(r.pool, {
               label: `${r.weaponName} (${r.matchedSkill || r.skill})`,
+              detail: `${Utils.attrFullName(r.attr)} ${r.attrVal} + ${r.matchedSkill || r.skill} ${r.skillVal}`,
               rr: r.rr,
               adv: pnj.drugAdv || 0,
               who: pnj.name || "",
@@ -119,6 +121,7 @@ const DiceRoller = {
       const n = parseInt(t.getAttribute("data-roll"), 10);
       if (!n || n < 1) return;
       const label = t.getAttribute("data-roll-label") || "";
+      const detail = t.getAttribute("data-roll-detail") || "";
       const edition = t.getAttribute("data-roll-edition") || "";
       const rr = parseInt(t.getAttribute("data-roll-rr"), 10) || 0;
 
@@ -133,9 +136,9 @@ const DiceRoller = {
 
       // Anarchy 2.0 : on passe par le panneau de prise de risque
       if (App.getEditionModule(edition)?.usesRiskPanel) {
-        this.openRiskPanel(n, { label, rr, adv: (rollPnj && rollPnj.drugAdv) || 0, who });
+        this.openRiskPanel(n, { label, detail, rr, adv: (rollPnj && rollPnj.drugAdv) || 0, who });
       } else {
-        this.rollPool(n, { label, who });
+        this.rollPool(n, { label, detail, who });
       }
     });
 
@@ -158,6 +161,7 @@ const DiceRoller = {
     const approxTxt = r.approx ? " ~" : "";
     this.show(res, {
       label: `${r.weaponName} (${r.matchedSkill || r.skill}${approxTxt})`,
+      detail: `${Utils.attrFullName(r.attr)} ${r.attrVal} + ${r.matchedSkill || r.skill} ${r.skillVal}`,
       who: pnj.name || "",
     });
   },
@@ -170,12 +174,22 @@ const DiceRoller = {
     input.value = n;
   },
 
-  /** Texte de résultat standard. */
-  _resultText(res) {
-    let t = `${res.hits} succès`;
-    if (res.critGlitch) t += " — ÉCHEC CRITIQUE";
-    else if (res.glitch) t += " — Bévue";
-    return t;
+  /** Rend le résultat dans la barre du haut : compte de succès mis en
+      avant, état (bévue / échec critique) en pastille sémantique. Les
+      couleurs viennent des classes CSS (palette sémantique), pas d'un
+      style inline. */
+  _renderTopbarResult(el, res) {
+    el.classList.toggle("is-crit", !!res.critGlitch);
+    el.classList.toggle("is-glitch", !res.critGlitch && !!res.glitch);
+    const state = res.critGlitch
+      ? "Échec critique"
+      : res.glitch
+        ? "Bévue"
+        : "";
+    el.innerHTML =
+      `<span class="dice-result-hits">${res.hits}</span>` +
+      `<span class="dice-result-label">succès</span>` +
+      (state ? `<span class="dice-result-state">${state}</span>` : "");
   },
 
   /* ---- Bouton « Lancer » de la barre du haut ---- */
@@ -193,13 +207,7 @@ const DiceRoller = {
     const res = Dice.computeRoll(n);
 
     // Résultat textuel dans la barre (comportement d'origine conservé)
-    const el = document.getElementById("dice-result");
-    el.textContent = this._resultText(res);
-    el.style.color = res.critGlitch
-      ? "#c0392b"
-      : res.glitch
-        ? "var(--accent2)"
-        : "var(--accent)";
+    this._renderTopbarResult(document.getElementById("dice-result"), res);
 
     // Animation plein écran
     this.show(res, { label: "" });
@@ -208,14 +216,15 @@ const DiceRoller = {
   /* ---- Lancer d'une réserve depuis une carte ---- */
   rollPool(n, opts = {}) {
     const res = Dice.computeRoll(n);
-    this.show(res, { label: opts.label || "" });
+    this.show(res, { label: opts.label || "", detail: opts.detail || "" });
   },
 
-  rollInitiative(base, dice, pnjId) {
+  rollInitiative(base, dice, pnjId, detail = "") {
     const res = Dice.computeInitiative(base, dice);
     const pnjForLog = pnjId ? this._hooks.resolve(pnjId) : null;
     this.show(res, {
       label: "Initiative",
+      detail,
       who: (pnjForLog && pnjForLog.name) || "",
     });
 
@@ -234,7 +243,7 @@ const DiceRoller = {
   /* ========================================================
      PANNEAU DE PRISE DE RISQUE (Anarchy 2.0)
      ======================================================== */
-  _risk: { pool: 0, riskDice: 0, rr: 0, adv: 0, level: "normal", label: "" },
+  _risk: { pool: 0, riskDice: 0, rr: 0, adv: 0, level: "normal", label: "", detail: "" },
 
   RISK_LEVELS: [
     { key: "faible", label: "Faible", sub: "Précautionneuse" },
@@ -357,10 +366,10 @@ const DiceRoller = {
 
     // Lancer
     document.getElementById("risk-roll-btn").addEventListener("click", () => {
-      const { pool, riskDice, rr, adv, label, who } = this._risk;
+      const { pool, riskDice, rr, adv, label, detail, who } = this._risk;
       this._closeRiskPanel();
       const res = Dice.computeAnarchyRoll(pool, riskDice, rr, adv);
-      this.show(res, { label, who });
+      this.show(res, { label, detail, who });
     });
 
     // Échap ferme
@@ -382,6 +391,7 @@ const DiceRoller = {
       adv: Utils.clamp(opts.adv || 0, -1, 1),
       level: "normal",
       label: opts.label || "",
+      detail: opts.detail || "",
       who: opts.who || "",
       riskDice: 0,
     };
@@ -612,14 +622,18 @@ const DiceRoller = {
 
   _revealInitiative(res, summary, opts) {
     summary.classList.add("reveal", "good", "init");
-    const detail = `${res.base} + [${res.faces.join(", ")}]`;
+    const rollDetail = `${res.base} + [${res.faces.join(", ")}]`;
+    const attrDetailHtml = opts.detail
+      ? `<span class="dice-summary-breakdown">${Utils.escHtml(opts.detail)}</span>`
+      : "";
     summary.innerHTML = `
       ${this._whoHtml(opts)}
       <span class="dice-summary-label">Initiative</span>
       <div class="dice-summary-main">
         <span class="dice-summary-hits">${res.total}</span>
       </div>
-      <span class="dice-summary-breakdown">${res.total} = ${detail}</span>
+      ${attrDetailHtml}
+      <span class="dice-summary-breakdown">${res.total} = ${rollDetail}</span>
       <span class="dice-summary-pool">${res.base} + ${res.dice}D6</span>`;
   },
 
@@ -635,6 +649,9 @@ const DiceRoller = {
 
     const labelHtml = opts.label
       ? `<span class="dice-summary-label">${Utils.escHtml(opts.label)}</span>`
+      : "";
+    const breakdownHtml = opts.detail
+      ? `<span class="dice-summary-breakdown">${Utils.escHtml(opts.detail)}</span>`
       : "";
     const poolHtml = `<span class="dice-summary-pool">${res.n} dé${res.n > 1 ? "s" : ""}</span>`;
     const big = `<span class="dice-summary-hits">${res.hits}</span><span class="dice-summary-hits-label">succès</span>`;
@@ -654,6 +671,7 @@ const DiceRoller = {
       ${this._whoHtml(opts)}
       ${labelHtml}
       <div class="dice-summary-main">${big}</div>
+      ${breakdownHtml}
       ${tag}
       ${limitTag}
       ${poolHtml}`;
@@ -677,6 +695,9 @@ const DiceRoller = {
 
     const labelHtml = opts.label
       ? `<span class="dice-summary-label">${Utils.escHtml(opts.label)}</span>`
+      : "";
+    const poolDetailHtml = opts.detail
+      ? `<span class="dice-summary-breakdown">${Utils.escHtml(opts.detail)}</span>`
       : "";
     const big = `<span class="dice-summary-hits">${res.hits}</span><span class="dice-summary-hits-label">succès</span>`;
 
@@ -714,6 +735,7 @@ const DiceRoller = {
       ${this._whoHtml(opts)}
       ${labelHtml}
       <div class="dice-summary-main">${big}</div>
+      ${poolDetailHtml}
       ${breakdown}
       ${advTag}
       ${tag}

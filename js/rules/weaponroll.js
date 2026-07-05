@@ -56,18 +56,23 @@ const WeaponRoll = {
   },
 
   /* Groupes de compétences SR5 (« (GC) ») et compétences couvertes.
-     Une arme reliée à « Armes automatiques » est jouable avec le
-     groupe « Armes à feu (GC) ». Clés/valeurs en minuscules. */
+     Une arme reliée à « Pistolets » est jouable avec le groupe
+     « Armes à feu (GC) ». Membres = ceux du Livre de Règles p.150 :
+       - Armes à feu   : Armes automatiques, Fusils, Pistolets
+       - Combat rapproché : Armes tranchantes, Armes contondantes,
+         Combat à mains nues (+ « Arts martiaux », utilisé comme
+         compétence de corps-à-corps dans les profils de ce projet)
+       - Athlétisme    : Gymnastique, Course, Natation
+     Clés/valeurs en minuscules. */
   SR5_GROUPS: {
-    "armes à feu": ["armes à feu", "armes automatiques", "armes à distance"],
+    "armes à feu": ["armes automatiques", "fusils", "pistolets"],
     "combat rapproché": [
-      "combat rapproché",
       "armes tranchantes",
       "armes contondantes",
       "combat à mains nues",
       "arts martiaux",
     ],
-    athlétisme: ["athlétisme", "gymnastique", "course", "natation", "escalade"],
+    athlétisme: ["gymnastique", "course", "natation"],
   },
 
   _groupCovering(canonical) {

@@ -66,13 +66,42 @@ const Collection = {
             if (linked.isChild(e) && linked.ownerOf(e) === id) doomed.add(e.id);
           }
         }
+        // Instantané pour l'annulation, capturé AVANT filtrage : chaque entité
+        // retirée avec sa position d'origine dans data.all et son appartenance
+        // de groupe (le maître et ses entités liées partent ensemble).
+        const snapshot = [];
+        this.data.all.forEach((e, i) => {
+          if (doomed.has(e.id))
+            snapshot.push({ entity: e, index: i, groups: this.groupsOf(e.id) });
+        });
+
         this.data.all = this.data.all.filter((e) => !doomed.has(e.id));
         for (const g of Object.keys(this.data.groups)) {
           this.data.groups[g] = this.data.groups[g].filter((i) => !doomed.has(i));
         }
         this.save();
         this.render();
-        if (entity) toast(labels.removed(entity));
+        if (!entity) return;
+
+        const restore = () => {
+          // Ré-insertion aux index d'origine, en ordre croissant : chaque
+          // splice replace l'entité dans son créneau exact.
+          snapshot
+            .slice()
+            .sort((a, b) => a.index - b.index)
+            .forEach(({ entity, index }) => {
+              this.data.all.splice(Math.min(index, this.data.all.length), 0, entity);
+            });
+          for (const { entity, groups } of snapshot) {
+            for (const g of groups) {
+              if (this.data.groups[g] && !this.data.groups[g].includes(entity.id))
+                this.data.groups[g].push(entity.id);
+            }
+          }
+          this.save();
+          this.render();
+        };
+        toastUndo(labels.removed(entity), restore);
       },
 
       /* ---- Groupes ---- */

@@ -129,9 +129,10 @@ Object.assign(CardRenderer, {
         const attrVal = attrs[s.attr] || 0;
         const pool = s.val + attrVal;
         const rrStr = s.rr > 0 ? ` RR${s.rr}` : "";
+        const detail = `${this._esc(Utils.attrFullName(s.attr))} ${attrVal} + ${this._esc(s.name)} ${s.val}${rrStr}`;
         const rollMain =
           pool >= 1
-            ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}" data-roll-edition="anarchy" data-roll-rr="${s.rr || 0}" data-roll-pnj="${pnj.id}"`
+            ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}" data-roll-detail="${detail}" data-roll-edition="anarchy" data-roll-rr="${s.rr || 0}" data-roll-pnj="${pnj.id}"`
             : "";
         html += `<span class="tag skill-tag${pool >= 1 ? " rollable" : ""}"${rollMain} title="${this._esc(s.name)} : ${pool} (${s.val}+${s.attr}${rrStr}) — cliquer pour lancer">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong>${s.rr > 0 ? `<span class="lim">RR${s.rr}</span>` : ""}</span>`;
         if (s.spec && s.spec !== true && s.specVal) {
@@ -139,11 +140,12 @@ Object.assign(CardRenderer, {
           const specPool = s.specVal + specAttrVal;
           const specRr = s.specRR != null ? s.specRR : s.rr || 0;
           const specRrStr = specRr > 0 ? ` RR${specRr}` : "";
+          const specDetail = `${this._esc(Utils.attrFullName(s.specAttr || s.attr))} ${specAttrVal} + ${this._esc(s.spec)} ${s.specVal}${specRrStr}`;
           const rollSpec =
             specPool >= 1
-              ? ` data-roll="${specPool}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" data-roll-edition="anarchy" data-roll-rr="${specRr}" data-roll-pnj="${pnj.id}"`
+              ? ` data-roll="${specPool}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" data-roll-detail="${specDetail}" data-roll-edition="anarchy" data-roll-rr="${specRr}" data-roll-pnj="${pnj.id}"`
               : "";
-          html += `<span class="tag skill-tag skill-tag-spec${specPool >= 1 ? " rollable" : ""}"${rollSpec} title="Spécialisation ${this._esc(s.spec)} : ${specPool}${specRrStr} — cliquer pour lancer">◊&nbsp;${this._esc(s.spec)}&nbsp;<strong style="color:var(--text)">${specPool}</strong>${specRr > 0 ? `<span class="lim">RR${specRr}</span>` : ""}</span>`;
+          html += `<span class="tag skill-tag skill-tag-spec${specPool >= 1 ? " rollable" : ""}"${rollSpec} title="Spécialisation ${this._esc(s.spec)} : ${specPool} (${s.specVal}+${s.specAttr || s.attr}${specRrStr}) — cliquer pour lancer">◊&nbsp;${this._esc(s.spec)}&nbsp;<strong style="color:var(--text)">${specPool}</strong>${specRr > 0 ? `<span class="lim">RR${specRr}</span>` : ""}</span>`;
         }
       }
       html += "</div></div>";

@@ -7,9 +7,16 @@
 const DiceLog = {
   _open: false,
 
-  /* ---- Journal des jets (session, plus récent en premier) ---- */
+  /* ---- Journal des jets (persistant, plus récent en premier) ---- */
   history: [],
-  HISTORY_MAX: 30,
+  HISTORY_MAX: 100,
+
+  /** Persistance globale (commune aux 3 éditions, comme les préférences de
+      dés) : le journal survit au F5. Passe par Storage — jamais de
+      localStorage direct. */
+  _save() {
+    Storage.setGlobal("diceLog", this.history);
+  },
 
   _ensure() {
     if (document.getElementById("dice-log-panel")) return;
@@ -25,6 +32,7 @@ const DiceLog = {
     panel.innerHTML = `
       <div class="dice-log-head">
         <span class="dice-log-title">Journal des jets</span>
+        <button class="btn-icon-tiny" data-action="export" title="Exporter le journal">⤓</button>
         <button class="btn-icon-tiny" data-action="clear" title="Vider le journal">⌫</button>
         <button class="btn-icon-tiny" data-action="close" title="Fermer" aria-label="Fermer">✕</button>
       </div>
@@ -35,6 +43,7 @@ const DiceLog = {
       const btn = e.target.closest("[data-action]");
       if (!btn) return;
       if (btn.dataset.action === "clear") this.clear();
+      else if (btn.dataset.action === "export") this.export();
       else if (btn.dataset.action === "close") this.close();
     });
 
@@ -43,8 +52,10 @@ const DiceLog = {
     });
   },
 
-  /** Écoute du bouton d'ouverture dans la barre du haut (index.html). */
+  /** Écoute du bouton d'ouverture dans la barre du haut (index.html) et
+      restaure le journal persisté (survit au F5). */
   init() {
+    this.history = Storage.getGlobal("diceLog", []);
     const btn = document.getElementById("dice-log-btn");
     if (btn) btn.addEventListener("click", () => this.toggle());
   },
@@ -74,7 +85,37 @@ const DiceLog = {
 
   clear() {
     this.history.length = 0;
+    this._save();
     this.refresh();
+  },
+
+  /** Exporte le journal en fichier texte lisible (patron Blob/download de
+      backup.js). Une ligne par jet, plus récent en premier. */
+  export() {
+    if (!this.history.length) {
+      toast("Journal vide — rien à exporter.");
+      return;
+    }
+    const stamp = (t) => new Date(t).toLocaleString("fr-FR");
+    const lines = this.history.map((e) => {
+      const who = e.who ? `${e.who} · ` : "";
+      const label = e.label || "Jet libre";
+      const tag = e.tag ? ` [${e.tag}]` : "";
+      return `${stamp(e.t)} — ${who}${label} : ${e.main} ${e.unit || ""} (${e.sub})${tag}`
+        .replace(/\s+/g, " ")
+        .trim();
+    });
+    const blob = new Blob([lines.join("\n") + "\n"], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const date = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `shadowherds-jets-${date}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast(`Journal exporté : ${this.history.length} jets.`);
   },
 
   /** Enregistre un jet dans le journal (appelé par Dice._animate après chaque jet). */
@@ -84,13 +125,15 @@ const DiceLog = {
       e.label = e.label || "Initiative";
       e.main = String(res.total);
       e.unit = "";
-      e.sub = `${res.base} + ${res.dice}D6 [${res.faces.join(", ")}]`;
+      const base = opts.detail ? `${opts.detail} (${res.base})` : res.base;
+      e.sub = `${base} + ${res.dice}D6 [${res.faces.join(", ")}]`;
       e.cls = "good";
     } else if (res.anarchy) {
       e.main = String(res.hits);
       e.unit = `succès`;
       const advSuf = res.adv === 1 ? " · avantage" : res.adv === -1 ? " · désavantage" : "";
-      e.sub = `${res.pool} dés · ${res.riskDice} de risque${advSuf}`;
+      const detailPfx = opts.detail ? `${opts.detail} = ` : "";
+      e.sub = `${detailPfx}${res.pool} dés · ${res.riskDice} de risque${advSuf}`;
       const compLabel = {
         minor: "Complication mineure",
         critical: "Complication critique",
@@ -108,7 +151,7 @@ const DiceLog = {
     } else {
       e.main = String(res.hits);
       e.unit = `succès`;
-      e.sub = `${res.n} dés`;
+      e.sub = opts.detail ? `${opts.detail} = ${res.n} dés` : `${res.n} dés`;
       e.tag = res.critGlitch
         ? "Échec critique"
         : res.glitch
@@ -127,6 +170,7 @@ const DiceLog = {
     this.history.unshift(e);
     if (this.history.length > this.HISTORY_MAX)
       this.history.length = this.HISTORY_MAX;
+    this._save();
     this.refresh();
   },
 

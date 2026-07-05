@@ -80,6 +80,7 @@ const App = {
 
     Shadows.load();
     ContactsBook.load();
+    Encounter.load();
     Gen.buildForms();
     Settings.render();
 
@@ -184,8 +185,18 @@ const App = {
     if (this.edition !== "none") this.showPanel("welcome");
   },
 
+  /* ---- Aide raccourcis clavier ---- */
+  toggleCheatsheet(force) {
+    const el = document.getElementById("shortcuts-overlay");
+    if (!el) return;
+    const show = force !== undefined ? force : !el.classList.contains("open");
+    el.classList.toggle("open", show);
+  },
+
   /* ---- Changer d'édition ---- */
   changeEdition() {
+    Encounter.close();
+
     // Reset UI
     document.getElementById("app").classList.remove("visible");
     document.getElementById("edition-screen").classList.remove("hidden");
@@ -199,6 +210,17 @@ const App = {
     document.getElementById("gen-zone-group").innerHTML = "";
     Gen.pool = [];
   },
+};
+
+/* ---- P2 : registre d'actions clavier — 1 touche = 1 data-action déjà
+   nommé, aucune logique métier dupliquée ici. ---- */
+const SHORTCUT_PANELS = {
+  1: "shadows",
+  2: "generator",
+  3: "contacts",
+  4: "matrix",
+  5: "run",
+  6: "settings",
 };
 
 /* ============================================================
@@ -249,6 +271,15 @@ document.addEventListener("DOMContentLoaded", () => {
       case "contact-generate":
         ContactsBook.generate();
         break;
+      case "encounter-open":
+        Encounter.open();
+        break;
+      case "toggle-shortcuts":
+        App.toggleCheatsheet();
+        break;
+      case "shortcuts-close":
+        App.toggleCheatsheet(false);
+        break;
     }
   });
 
@@ -256,8 +287,50 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === e.currentTarget) EditModal.close();
   });
 
+  document.getElementById("encounter-overlay").addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) Encounter.close();
+  });
+
+  document.getElementById("shortcuts-overlay").addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) App.toggleCheatsheet(false);
+  });
+
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") EditModal.close();
+    if (e.key === "Escape") {
+      EditModal.close();
+      Encounter.close();
+      App.toggleCheatsheet(false);
+      return;
+    }
+
+    // Garde-fou : jamais de raccourci pendant une saisie, ni avec un
+    // modificateur (Ctrl/Cmd/Alt), ni avant d'avoir choisi une édition.
+    const tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (App.edition === "none") return;
+
+    if (SHORTCUT_PANELS[e.key]) {
+      App.showPanel(SHORTCUT_PANELS[e.key]);
+      return;
+    }
+    switch (e.key.toLowerCase()) {
+      case "g":
+        Gen.generateActive();
+        break;
+      case "r":
+        document.getElementById("dice-roll-btn")?.click();
+        break;
+      case "/":
+        e.preventDefault();
+        document
+          .querySelector('.panel.active input[data-action="filter"]')
+          ?.focus();
+        break;
+      case "?":
+        App.toggleCheatsheet();
+        break;
+    }
   });
 
   // Restauration depuis le hash URL (F5 / partage de lien)

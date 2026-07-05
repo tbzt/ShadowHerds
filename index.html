@@ -9,10 +9,10 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500&family=Oswald:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=27">
+  <link rel="stylesheet" href="css/base.css?v=32">
   <link rel="stylesheet" href="css/theme-sr5.css?v=16">
   <link rel="stylesheet" href="css/theme-sr6.css?v=16">
-  <link rel="stylesheet" href="css/theme-anarchy.css?v=16">
+  <link rel="stylesheet" href="css/theme-anarchy.css?v=17">
 </head>
 
 <body>
@@ -74,6 +74,12 @@
 
       <button class="dice-log-toggle" id="dice-log-btn"
         title="Journal des jets" aria-label="Journal des jets">≣</button>
+
+      <button class="dice-log-toggle" data-action="encounter-open"
+        title="Suivi de combat" aria-label="Suivi de combat">⚔</button>
+
+      <button class="dice-log-toggle" data-action="toggle-shortcuts"
+        title="Raccourcis clavier (?)" aria-label="Raccourcis clavier">?</button>
 
       <span class="topbar-spacer"></span>
     </div>
@@ -147,6 +153,7 @@
                 <span id="shadows-group-label" class="shadows-group-label">Tous les figurants</span>
                 <button class="btn-secondary btn-small" data-action="save-all-visible">Sauvegarder tout dans le
                   groupe</button>
+                <button class="btn-secondary btn-small" data-action="encounter-open" title="Ouvrir le suivi de combat">⚔ Combat</button>
                 <button class="btn-secondary btn-small" data-action="backup-export" title="Exporter tous les PNJ et contacts (toutes éditions)">⤓ Exporter</button>
                 <button class="btn-secondary btn-small" data-action="backup-import" title="Importer depuis un fichier ou une URL">⤒ Importer</button>
                 <input class="grid-filter" type="search" placeholder="Filtrer…"
@@ -325,36 +332,77 @@
     </div>
   </div>
 
+  <!-- OVERLAY SUIVI DE COMBAT -->
+  <div class="modal-overlay" id="encounter-overlay" role="dialog" aria-modal="true" aria-labelledby="encounter-title">
+    <div class="modal encounter-modal">
+      <div class="modal-header">
+        <span class="modal-title" id="encounter-title">Suivi de combat — Round <span id="encounter-round">1</span></span>
+        <button class="modal-close" data-action="encounter-close" aria-label="Fermer">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="encounter-toolbar">
+          <button class="btn-secondary btn-small" data-action="roll-all-init">⚄ Lancer l'initiative</button>
+          <button class="btn-secondary btn-small" data-action="sort-init" title="Trier par initiative (décroissant)">↓ Trier par init</button>
+          <button class="btn-primary btn-small" data-action="next-turn">Tour suivant</button>
+          <button class="btn-secondary btn-small" data-action="next-round">Round suivant</button>
+          <button class="danger-btn btn-small" data-action="clear-encounter">Vider la scène</button>
+        </div>
+        <div id="encounter-list" class="encounter-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY AIDE RACCOURCIS CLAVIER -->
+  <div class="modal-overlay" id="shortcuts-overlay" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="shortcuts-title">Raccourcis clavier</span>
+        <button class="modal-close" data-action="shortcuts-close" aria-label="Fermer">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="shortcuts-list">
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd>1</kbd>–<kbd>6</kbd></span><span>Changer de panel (Ombres, PNJ, Contacts, Matrice, Run, Réglages)</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd>G</kbd></span><span>Générer (onglet actif du générateur)</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd>R</kbd></span><span>Lancer les dés (réserve de la barre du haut)</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd>/</kbd></span><span>Focus sur le filtre de la liste affichée</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd>?</kbd></span><span>Afficher/masquer cette aide</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd>Échap</kbd></span><span>Fermer une fenêtre ouverte</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST -->
   <div id="toast" role="status" aria-live="polite"></div>
 
   <!-- SCRIPTS — ordre important : couches CONTRIBUTING.md § « Les dépendances
        vont dans un seul sens » (core → rules → editions → catalogs → widgets
        → controllers → app) -->
-  <script src="js/core/utils.js?v=23"></script>
+  <script src="js/core/utils.js?v=24"></script>
   <script src="js/core/debug.js?v=2"></script>
   <script src="js/core/storage.js?v=17"></script>
   <script src="js/rules/dice.js?v=3"></script>
   <script src="js/rules/metavariants.js?v=17"></script>
   <script src="js/rules/infected.js?v=21"></script>
   <script src="js/rules/matrix.js?v=3"></script>
-  <script src="js/rules/skillcatalog.js?v=16"></script>
-  <script src="js/rules/weaponroll.js?v=19"></script>
+  <script src="js/rules/skillcatalog.js?v=18"></script>
+  <script src="js/rules/weaponroll.js?v=20"></script>
   <script src="js/rules/itemresolver.js?v=1"></script>
   <script src="js/rules/bonusengine.js?v=23"></script>
   <script src="js/rules/flavor.js?v=16"></script>
   <script src="js/rules/content.js?v=20"></script>
   <script src="js/rules/magic.js?v=5"></script>
-  <script src="js/editions/sr5.js?v=29"></script>
-  <script src="js/editions/sr6.js?v=27"></script>
-  <script src="js/editions/anarchy.js?v=27"></script>
+  <script src="js/rules/coherence.js?v=3"></script>
+  <script src="js/editions/sr5.js?v=32"></script>
+  <script src="js/editions/sr6.js?v=28"></script>
+  <script src="js/editions/anarchy.js?v=28"></script>
   <script src="js/catalogs/drugs.js?v=2"></script>
   <script src="js/catalogs/vehicles.js?v=3"></script>
   <script src="js/catalogs/spirits.js?v=5"></script>
   <script src="js/catalogs/creatures.js?v=3"></script>
-  <script src="js/widgets/cardrenderer.js?v=5"></script>
-  <script src="js/widgets/cardrenderer.sr5.js?v=1"></script>
-  <script src="js/widgets/cardrenderer.sr6.js?v=1"></script>
+  <script src="js/widgets/cardrenderer.js?v=7"></script>
+  <script src="js/widgets/cardrenderer.sr5.js?v=4"></script>
+  <script src="js/widgets/cardrenderer.sr6.js?v=2"></script>
   <script src="js/widgets/cardrenderer.anarchy.js?v=1"></script>
   <script src="js/widgets/cardrenderer.linked.js?v=1"></script>
   <script src="js/widgets/ui.js?v=32"></script>
@@ -362,28 +410,30 @@
   <script src="js/widgets/runrenderer.js?v=2"></script>
   <script src="js/widgets/contentmodal.js?v=1"></script>
   <script src="js/widgets/grouppicker.js?v=1"></script>
-  <script src="js/widgets/collection.js?v=2"></script>
+  <script src="js/widgets/collection.js?v=3"></script>
   <script src="js/widgets/serverrenderer.js?v=3"></script>
+  <script src="js/widgets/encounterrenderer.js?v=1"></script>
   <script src="js/controllers/servers.js?v=10"></script>
   <script src="js/controllers/intrusion.js?v=1"></script>
-  <script src="js/widgets/dicelog.js?v=1"></script>
-  <script src="js/widgets/diceroller.js?v=3"></script>
+  <script src="js/widgets/dicelog.js?v=2"></script>
+  <script src="js/widgets/diceroller.js?v=4"></script>
   <script src="js/widgets/dicepanel.js?v=7"></script>
   <script src="js/widgets/sidebartoggle.js?v=18"></script>
   <script src="js/widgets/profcategories.js?v=17"></script>
   <script src="js/widgets/multiselect.js?v=16"></script>
   <script src="js/widgets/singleselect.js?v=1"></script>
-  <script src="js/controllers/generator.js?v=24"></script>
+  <script src="js/controllers/generator.js?v=27"></script>
   <script src="js/controllers/rungen.js?v=3"></script>
   <script src="js/controllers/shadows.js?v=21"></script>
   <script src="js/controllers/pnjlookup.js?v=1"></script>
+  <script src="js/controllers/encounter.js?v=1"></script>
   <script src="js/controllers/editmodal.js?v=23"></script>
   <script src="js/controllers/contactgen.js?v=18"></script>
   <script src="js/controllers/contacts.js?v=4"></script>
   <script src="js/controllers/contactsbook.js?v=1"></script>
   <script src="js/controllers/settings.js?v=19"></script>
   <script src="js/controllers/backup.js?v=17"></script>
-  <script src="js/app.js?v=23"></script>
+  <script src="js/app.js?v=24"></script>
 
 </body>
 

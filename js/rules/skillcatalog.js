@@ -15,73 +15,111 @@
    en Anarchy elles suivent la liste des règles.
    ============================================================ */
 const SkillCatalog = {
-  /* ---- SR5 : compétences actives (Livre de Règles p.130-150) ---- */
+  /* ---- SR5 : compétences actives (Livre de Règles p.130-150) ----
+     Liste canonique de la « Liste des compétences » p.149-150, classée
+     par attribut lié. Ne contient QUE des compétences actives : ni
+     groupes (Armes à feu, Athlétisme, Conjuration…), ni connaissances
+     (voir sr5Knowledges), ni spécialisations. Noms VF officiels. */
   sr5: {
-    "Acrobaties": "AGI",
-    "Armes à feu": "AGI",
+    // Agilité
+    "Arme à distance exotique": "AGI",
+    "Arme de mêlée exotique": "AGI",
     "Armes automatiques": "AGI",
     "Armes contondantes": "AGI",
     "Armes de jet": "AGI",
-    "Armes exotiques": "AGI",
+    "Armes de trait": "AGI",
+    "Armes de véhicule": "AGI",
     "Armes lourdes": "AGI",
     "Armes tranchantes": "AGI",
-    "Arts martiaux": "AGI",
-    "Athlétisme": "AGI",
-    "Aviation": "REA",
+    "Combat à mains nues": "AGI",
+    "Discrétion": "AGI",
+    "Escamotage": "AGI",
+    "Évasion": "AGI",
+    "Fusils": "AGI",
+    "Gymnastique": "AGI",
+    "Pistolets": "AGI",
+    "Serrurerie": "AGI",
+    // Charisme
+    "Animaux": "CHA",
+    "Enseignement": "CHA",
+    "Escroquerie": "CHA",
+    "Étiquette": "CHA",
+    "Imposture": "CHA",
+    "Intimidation": "CHA",
+    "Leadership": "CHA",
+    "Négociation": "CHA",
+    "Représentation": "CHA",
+    // Constitution
+    "Chute libre": "CON",
+    "Plongée": "CON",
+    // Force
+    "Course": "FOR",
+    "Natation": "FOR",
+    // Intuition
+    "Artisanat": "INT",
+    "Déguisement": "INT",
+    "Observation astrale": "INT",
+    "Orientation": "INT",
+    "Perception": "INT",
+    "Pistage": "INT",
+    // Logique
+    "Arcanes": "LOG",
+    "Armurerie": "LOG",
     "Biotechnologie": "LOG",
     "Chimie": "LOG",
-    "Combat à mains nues": "AGI",
-    "Conduite": "REA",
-    "Conjuration": "MAG",
-    "Connaissance ésotérique": "INT",
-    "Contrefaçon": "AGI",
-    "Contresort": "MAG",
-    "Course": "REA",
-    "Crochetage": "AGI",
     "Cybercombat": "LOG",
-    "Déguisement": "INT",
-    "Discrétion": "AGI",
-    "Électronique": "LOG",
-    "Enquête": "LOG",
-    "Étiquette": "CHA",
-    "Explosifs": "AGI",
-    "Filature": "AGI",
-    "Guérison": "MAG",
-    "Gymnastique": "AGI",
+    "Cybertechnologie": "LOG",
+    "Explosifs": "LOG",
+    "Falsification": "LOG",
+    "Guerre électronique": "LOG",
     "Hacking": "LOG",
-    "Hardware": "LOG",
-    "Imposition": "CHA",
-    "Industrie": "LOG",
     "Informatique": "LOG",
-    "Ingénierie": "LOG",
-    "Intimidation": "CHA",
-    "Lancer de sorts": "MAG",
-    "Leadership": "CHA",
-    "Magie rituelle": "MAG",
-    "Maîtrise des animaux": "CHA",
-    "Maintien de l'ordre": "AGI",
+    "Logiciels": "LOG",
+    "Matériel électronique": "LOG",
     "Mécanique aéronautique": "LOG",
     "Mécanique automobile": "LOG",
     "Mécanique industrielle": "LOG",
     "Mécanique nautique": "LOG",
-    "Métamorphose": "MAG",
-    "Natation": "FOR",
-    "Navigation": "INT",
-    "Négociation": "CHA",
-    "Observation astrale": "INT",
-    "Parachutisme": "REA",
-    "Perception": "INT",
-    "Pilotage drones": "REA",
-    "Pilotage exotiques": "REA",
-    "Pistolets": "AGI",
+    "Médecine": "LOG",
     "Premiers soins": "LOG",
+    // Magie
+    "Alchimie": "MAG",
+    "Bannissement": "MAG",
+    "Contresort": "MAG",
+    "Création d'artefact": "MAG",
+    "Désenchantement": "MAG",
+    "Invocation": "MAG",
+    "Lancement de sorts": "MAG",
+    "Lien d'esprit": "MAG",
+    "Magie rituelle": "MAG",
+    // Réaction
+    "Appareils spatiaux": "REA",
+    "Appareils volants": "REA",
+    "Marcheurs": "REA",
+    "Véhicule exotique": "REA",
+    "Véhicules aquatiques": "REA",
+    "Véhicules terrestres": "REA",
+    // Résonance
+    "Compilation": "RES",
+    "Décompilation": "RES",
+    "Inscription": "RES",
+    // Volonté
+    "Combat astral": "VOL",
+    "Survie": "VOL",
+  },
+
+  /* ---- SR5 : compétences de connaissances (Livre de Règles p.150-152) ----
+     En SR5 les connaissances sont LIBRES : il n'existe pas de liste
+     fermée comme pour les compétences actives. Cette map n'est qu'une
+     réserve de suggestions courantes (celles jadis mêlées à tort aux
+     compétences actives), tenue à part et NON exposée par skillsFor(). */
+  sr5Knowledges: {
+    "Connaissance ésotérique": "INT",
+    "Enquête": "LOG",
+    "Maintien de l'ordre": "INT",
     "Procédures de sécurité": "INT",
     "Psychologie": "LOG",
-    "Récupération de données": "LOG",
-    "Reliure": "MAG",
-    "Résistance aux sorts": "MAG",
     "Sciences appliquées": "LOG",
-    "Survie": "VOL",
   },
 
   /* ---- SR6 : 18 compétences regroupées (Livre de Règles p.106) ---- */
@@ -168,11 +206,14 @@ const SkillCatalog = {
     return Object.keys(map).sort((a, b) => a.localeCompare(b, "fr"));
   },
 
-  /* Attribut canonique d'une compétence (ou null). */
+  /* Attribut canonique d'une compétence — cherche d'abord dans les
+     compétences actives, puis dans les connaissances de l'édition (ex.
+     sr5Knowledges). Renvoie null si inconnu. */
   attrFor(edition, skillName) {
     const map = this[edition] || this.anarchy;
+    const knowMap = this[`${edition}Knowledges`] || {};
     // Tolère un suffixe de spécialisation entre parenthèses.
     const base = String(skillName).replace(/\s*\(.*\)\s*$/, "").trim();
-    return map[base] || map[skillName] || null;
+    return map[base] || map[skillName] || knowMap[base] || knowMap[skillName] || null;
   },
 };

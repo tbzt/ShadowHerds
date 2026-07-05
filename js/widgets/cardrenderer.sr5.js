@@ -48,6 +48,7 @@ Object.assign(CardRenderer, {
       physFilled,
       stunFilled,
       skills,
+      knowledges,
       equip,
       augs,
       spells,
@@ -94,6 +95,7 @@ Object.assign(CardRenderer, {
     // ---- ZONE CAPACITÉS ----
     html += '<div class="capacity-zone">';
     html += this._skillsSection(skills, malus5);
+    html += this._knowledgesSection(knowledges, pnj, malus5);
     if (spells && spells.length) html += this._listSection("Sorts", spells);
     if (powers && powers.length)
       html += this._listSection("Pouvoirs d'adepte", powers);

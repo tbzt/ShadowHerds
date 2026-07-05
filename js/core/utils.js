@@ -643,3 +643,30 @@ function toast(msg, duration = 2400) {
   clearTimeout(el._timer);
   el._timer = setTimeout(() => el.classList.remove("show"), duration);
 }
+
+/** Variante de toast avec un bouton « Annuler » qui appelle onUndo() puis
+    ferme le toast. Sert de filet de sécurité aux suppressions (Collection,
+    générateur). Durée plus longue (6 s) pour laisser le temps de réagir.
+    Le bouton est câblé en JS (pas de handler inline). */
+function toastUndo(msg, onUndo, duration = 6000) {
+  const el = document.getElementById("toast");
+  if (!el) return;
+  clearTimeout(el._timer);
+  el.innerHTML = "";
+  const span = document.createElement("span");
+  span.className = "toast-msg";
+  span.textContent = msg;
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "toast-undo";
+  btn.textContent = "Annuler";
+  const hide = () => el.classList.remove("show");
+  btn.addEventListener("click", () => {
+    clearTimeout(el._timer);
+    hide();
+    onUndo();
+  });
+  el.append(span, btn);
+  el.classList.add("show");
+  el._timer = setTimeout(hide, duration);
+}

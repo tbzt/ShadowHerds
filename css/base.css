@@ -19,6 +19,14 @@
   --card-clip: none;
   --hd-clip: none;
   --danger: #c0392b;
+  /* Palette sémantique — une teinte = un token unique (cf. --danger).
+     Universels par défaut ; à surcharger par thème seulement en cas de
+     collision avec l'identité d'édition. --warning/--info sont déclarés
+     pour compléter le jeu ; ils s'appliqueront aux surfaces d'alerte /
+     d'information à venir. */
+  --success: #2ecc71;
+  --warning: #e0a516;
+  --info: #3aa0e0;
 
   /* ---- Échelle typographique ----
      8 pas, plancher à 10px (--fs-2xs) : la plus petite taille lisible en
@@ -351,12 +359,52 @@ select optgroup {
 .dice-roll-btn:hover {
   opacity: 0.85;
 }
+/* Résultat de la barre du haut : compte de succès mis en avant + label +
+   pastille d'état. Les états réutilisent la palette sémantique. */
 #dice-result {
-  font-family: "Share Tech Mono", monospace;
-  font-size: 0.75rem;
-  color: var(--accent);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
   min-width: 120px;
   white-space: nowrap;
+}
+.dice-result-hits {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  line-height: 1;
+  color: var(--accent);
+}
+.dice-result-label {
+  font-family: "Share Tech Mono", monospace;
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.dice-result-state {
+  font-family: "Share Tech Mono", monospace;
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border: 1px solid;
+  border-radius: 2px;
+}
+/* Bévue = warning, échec critique = danger (cf. palette sémantique). */
+#dice-result.is-glitch .dice-result-hits,
+#dice-result.is-glitch .dice-result-state {
+  color: var(--warning);
+}
+#dice-result.is-glitch .dice-result-state {
+  border-color: var(--warning);
+}
+#dice-result.is-crit .dice-result-hits,
+#dice-result.is-crit .dice-result-state {
+  color: var(--danger);
+}
+#dice-result.is-crit .dice-result-state {
+  border-color: var(--danger);
 }
 
 /* MAIN BODY */
@@ -1292,7 +1340,7 @@ select optgroup {
 .card-saved-label {
   font-family: "Share Tech Mono", monospace;
   font-size: var(--fs-xs);
-  color: var(--accent);
+  color: var(--success);
   display: flex;
   align-items: center;
   padding: 0 0.25rem;
@@ -1750,7 +1798,6 @@ select optgroup {
 }
 .contact-notes::placeholder {
   color: var(--text-dim);
-  opacity: 0.5;
 }
 
 /* Ancien toolbar (conservé pour compatibilité) */
@@ -1920,6 +1967,118 @@ select optgroup {
 }
 .modal-grid .full {
   grid-column: 1 / -1;
+}
+
+/* ---- Suivi de combat (Encounter) ---- */
+.encounter-modal {
+  width: min(760px, 94vw);
+}
+.encounter-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.encounter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.encounter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg-mid);
+}
+.encounter-row.active-turn {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+.encounter-row.has-acted {
+  opacity: 0.55;
+}
+.encounter-init {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 3.2rem;
+}
+.encounter-init-val {
+  font-family: "Share Tech Mono", monospace;
+  font-weight: 700;
+  color: var(--accent);
+  background: transparent;
+  border: none;
+  min-width: 1.6rem;
+  text-align: center;
+}
+.encounter-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.encounter-name {
+  background: none;
+  border: none;
+  text-align: left;
+  color: var(--text);
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+}
+.encounter-name:hover {
+  color: var(--accent);
+}
+.encounter-note {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  padding: 0.15rem 0.4rem;
+}
+.encounter-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.encounter-acted {
+  display: flex;
+  align-items: center;
+}
+
+/* ---- Aide raccourcis clavier ---- */
+.shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.shortcut-keys {
+  flex-shrink: 0;
+  min-width: 4.5rem;
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+kbd {
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  padding: 0.15rem 0.45rem;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.75rem;
+  color: var(--accent);
 }
 
 /* ---- Compétences éditables dans le modal ---- */
@@ -2099,7 +2258,6 @@ select optgroup {
   font-family: "Share Tech Mono", monospace;
   font-size: 0.6rem;
   color: var(--text-dim);
-  opacity: 0.55;
   line-height: 1.9;
 }
 
@@ -2110,6 +2268,9 @@ select optgroup {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   background: var(--bg-card);
   border: 1px solid var(--accent);
   border-radius: 4px;
@@ -2124,11 +2285,31 @@ select optgroup {
     opacity 0.22s,
     transform 0.22s;
   pointer-events: none;
-  max-width: 280px;
+  max-width: 320px;
 }
 #toast.show {
   opacity: 1;
   transform: translateY(0);
+}
+/* Bouton « Annuler » (toastUndo) : cliquable malgré le pointer-events:none
+   du conteneur. */
+.toast-undo {
+  pointer-events: auto;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0.15rem 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.toast-undo:hover {
+  background: var(--accent);
+  color: var(--bg-card);
 }
 
 /* ============================================================
@@ -2437,7 +2618,7 @@ select optgroup {
   border-left-color: var(--accent);
 }
 .dice-log-item.glitch {
-  border-left-color: var(--accent2);
+  border-left-color: var(--warning);
 }
 .dice-log-item.crit {
   border-left-color: var(--danger);
@@ -2483,7 +2664,7 @@ select optgroup {
   text-transform: uppercase;
 }
 .dice-log-tag.glitch {
-  color: var(--accent2);
+  color: var(--warning);
 }
 .dice-log-tag.crit {
   color: var(--danger);
@@ -2540,7 +2721,7 @@ select optgroup {
   pointer-events: auto;
 }
 #dice-quick.dice-quick-glitch {
-  border-left-color: var(--accent2);
+  border-left-color: var(--warning);
 }
 #dice-quick.dice-quick-crit {
   border-left-color: var(--danger);
@@ -3332,6 +3513,13 @@ select optgroup {
   opacity: 0.8;
   font-size: var(--fs-2xs);
 }
+/* Connaissances SR5 — distinctes des compétences actives (même mécanique
+   de jet), cf. Livre de Règles p.130-152 : bordure pointillée + italique. */
+.skill-tag-knowledge {
+  font-style: italic;
+  border: 1px dashed var(--border, currentColor);
+  background: transparent;
+}
 .skill-tag .lim {
   font-size: var(--fs-2xs);
   opacity: 0.85;
@@ -3572,8 +3760,8 @@ select optgroup {
   border: 1px solid;
 }
 .dice-summary-tag.glitch {
-  color: var(--accent2);
-  border-color: var(--accent2);
+  color: var(--warning);
+  border-color: var(--warning);
   background: rgba(0, 0, 0, 0.3);
 }
 .dice-summary-tag.crit {
@@ -3583,8 +3771,8 @@ select optgroup {
   animation: crit-flash 0.5s ease;
 }
 @keyframes crit-flash {
-  0%, 100% { box-shadow: 0 0 0 rgba(192, 57, 43, 0); }
-  50% { box-shadow: 0 0 26px rgba(192, 57, 43, 0.8); }
+  0%, 100% { box-shadow: 0 0 0 transparent; }
+  50% { box-shadow: 0 0 26px color-mix(in srgb, var(--danger) 80%, transparent); }
 }
 /* Variantes de couleur du gros chiffre */
 .dice-summary.zero .dice-summary-hits {
@@ -3593,7 +3781,7 @@ select optgroup {
 }
 .dice-summary.crit .dice-summary-hits {
   color: var(--danger);
-  text-shadow: 0 0 22px rgba(192, 57, 43, 0.5);
+  text-shadow: 0 0 22px color-mix(in srgb, var(--danger) 50%, transparent);
 }
 
 .dice-hint {
@@ -3602,7 +3790,6 @@ select optgroup {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-dim);
-  opacity: 0.6;
 }
 
 /* Accessibilité : mouvement réduit */
@@ -4729,7 +4916,7 @@ input[type="range"]#risk-dice-slider {
   align-items: center;
   cursor: pointer;
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.6rem;
+  font-size: var(--fs-2xs);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -4813,7 +5000,7 @@ input[type="range"]#risk-dice-slider {
   align-items: center;
   cursor: pointer;
   font-family: "Share Tech Mono", monospace;
-  font-size: var(--fs-2xs);
+  font-size: 0.6rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -5443,4 +5630,25 @@ input[type="range"]#risk-dice-slider {
   color: var(--text);
   font-family: "Share Tech Mono", monospace;
   font-size: 0.7rem;
+}
+
+/* ============================================================
+   FOCUS CLAVIER — repère de focus cohérent (accent du thème)
+   ============================================================ */
+/* :focus-visible ne se déclenche qu'au clavier, jamais au clic souris.
+   Les champs de saisie signalent déjà le focus par leur bordure accent ;
+   on couvre ici les boutons et éléments cliquables (délégation data-*,
+   role="button") qui n'avaient aucun repère. Bloc en fin de fichier pour
+   l'emporter, à spécificité égale, sur les anciens `:focus{outline:none}`. */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* Boutons de pied de carte : la carte est en overflow:hidden ; un anneau
+   sortant serait rogné, on le passe donc en anneau intérieur. */
+.card-action-btn:focus-visible {
+  outline-offset: -2px;
 }

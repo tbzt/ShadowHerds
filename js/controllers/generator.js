@@ -22,6 +22,9 @@ const Gen = {
 
   /** correspondance label Origine -> valeur interne (rempli au build) */
   _originPoolLabelToValue: {},
+  /** correspondance label Rôle/Milieu -> clé Coherence (rempli au build) */
+  _roleLabelToValue: {},
+  _milieuLabelToValue: {},
 
   /** Retourne le module d'édition actif */
   get edition() {
@@ -38,6 +41,30 @@ const Gen = {
     this._buildSingleForm(ed);
     this._buildGroupForm(ed);
     MultiSelect.refresh(document.getElementById("panel-generator"));
+    this.restorePool();
+  },
+
+  /* ---- Persistance du pool de génération (édition-scopée) ----
+     Les PNJ générés mais pas encore sauvegardés survivent au F5 ; on ne
+     mémorise pas de quel onglet (individuel/groupe) ils viennent, donc la
+     restauration les remet tous dans l'onglet individuel. */
+  _POOL_KEY: "gen_pool",
+
+  _savePool() {
+    Storage.set(this._POOL_KEY, this.pool);
+  },
+
+  restorePool() {
+    const saved = Storage.get(this._POOL_KEY, []);
+    if (!saved.length) return;
+    this.pool = saved;
+    const zone = document.getElementById("gen-zone-single");
+    for (const pnj of saved) {
+      const actions = pnj.type === "vehicle" || (pnj.type === "spirit" && pnj.ownerId)
+        ? ["remove"]
+        : ["save", "discard"];
+      zone.appendChild(CardRenderer.render(pnj, actions));
+    }
   },
 
   _buildSingleForm(ed) {
@@ -292,6 +319,11 @@ const Gen = {
       groups,
     });
 
+    // Composition libre (facultative) — contraint le tirage « Aléatoire »
+    // de Profession à un rôle/milieu cohérent (js/rules/coherence.js),
+    // sans remplacer les professions nommées ci-dessus.
+    html += this._roleMilieuHTML(prefix);
+
     if (fo.special) {
       html += MultiSelect.create({
         id: `${prefix}-special`,
@@ -354,6 +386,36 @@ const Gen = {
     });
   },
 
+  /**
+   * Sélecteurs Rôle / Milieu (composition libre) — bornent le tirage
+   * « Aléatoire » de Profession à un tuple cohérent (js/rules/coherence.js)
+   * au lieu de piocher parmi tous les archétypes nommés sans distinction.
+   */
+  _roleMilieuHTML(prefix) {
+    const roleLabels = Object.entries(Coherence.ROLES).map(([k, r]) => {
+      this._roleLabelToValue[r.label] = k;
+      return r.label;
+    });
+    const milieuLabels = Object.entries(Coherence.MILIEUX).map(([k, m]) => {
+      this._milieuLabelToValue[m.label] = k;
+      return m.label;
+    });
+    return (
+      MultiSelect.create({
+        id: `${prefix}-role`,
+        label: "Rôle (composition libre)",
+        mode: "flat",
+        options: roleLabels,
+      }) +
+      MultiSelect.create({
+        id: `${prefix}-milieu`,
+        label: "Milieu (composition libre)",
+        mode: "flat",
+        options: milieuLabels,
+      })
+    );
+  },
+
   /* ---- Lecture du formulaire ---- */
   _pick(id, fallback = "Aléatoire") {
     const sel = MultiSelect.selected(id);
@@ -370,6 +432,20 @@ const Gen = {
         ? "Aléatoire"
         : this._originPoolLabelToValue[originPoolLabel] || originPoolLabel;
 
+    // Composition libre : si aucune profession nommée n'est cochée mais
+    // qu'un rôle/milieu l'est, on tire un archétype nommé dont le tuple
+    // résolu (Coherence.resolveTuple) correspond — la génération reste
+    // celle, déjà cohérente, des professions nommées.
+    const roleLabel = this._pick(`${prefix}-role`);
+    const milieuLabel = this._pick(`${prefix}-milieu`);
+    const role = roleLabel === "Aléatoire" ? null : this._roleLabelToValue[roleLabel];
+    const milieu = milieuLabel === "Aléatoire" ? null : this._milieuLabelToValue[milieuLabel];
+
+    let archetype = this._pick(`${prefix}-profession`);
+    if (archetype === "Aléatoire" && (role || milieu)) {
+      archetype = this._pickCoherentArchetype(role, milieu);
+    }
+
     return {
       name: nameEl ? nameEl.value : "",
       originPool,
@@ -377,9 +453,34 @@ const Gen = {
       gender: this._pick(`${prefix}-gender`),
       proRating: this._pick(`${prefix}-prof`),
       tier: this._pick(`${prefix}-rang`),
-      archetype: this._pick(`${prefix}-profession`),
+      archetype,
       special: this._pick(`${prefix}-special`, "Aucun"),
     };
+  },
+
+  /** Tire, parmi les professions nommées de l'édition active, une dont le
+      tuple résolu correspond au rôle et/ou milieu choisis en composition
+      libre. Retombe sur "Aléatoire" (tirage habituel) si rien ne correspond. */
+  _pickCoherentArchetype(role, milieu) {
+    const ed = this.edition;
+    const all = this._strip(ed.formOptions.archetype);
+    const matches = all.filter((name) => {
+      const t = Coherence.resolveTuple(ed.id, name);
+      return (!role || t.role === role) && (!milieu || t.milieu === milieu);
+    });
+    return matches.length ? Utils.rand(matches) : "Aléatoire";
+  },
+
+  /** Raccourci clavier « g » : génère sur l'onglet actif (individuel ou
+      groupe). No-op si le panel Générateur n'est pas affiché. */
+  generateActive() {
+    if (!document.getElementById("panel-generator")?.classList.contains("active"))
+      return;
+    const groupActive = document
+      .getElementById("gen-tab-group")
+      ?.classList.contains("active");
+    if (groupActive) this.generateGroup();
+    else this.generateSingle();
   },
 
   /* ---- Génération individuelle ---- */
@@ -391,6 +492,7 @@ const Gen = {
     const pnj = this.edition.generate(opts);
     Debug.log("generator", "→ PNJ généré", pnj);
     this.pool.push(pnj);
+    this._savePool();
 
     const zone = document.getElementById("gen-zone-single");
     const card = CardRenderer.render(pnj, ["save", "discard"]);
@@ -415,6 +517,7 @@ const Gen = {
     }
     Debug.log("generator", "→ esprit généré", spirit);
     this.pool.push(spirit);
+    this._savePool();
     const zone = document.getElementById("gen-zone-single");
     const card = CardRenderer.render(spirit, ["save", "discard"]);
     card.classList.add("spirit-card");
@@ -440,6 +543,7 @@ const Gen = {
     }
     Debug.log("generator", "→ créature générée", pnj);
     this.pool.push(pnj);
+    this._savePool();
     const zone = document.getElementById("gen-zone-single");
     zone.prepend(CardRenderer.render(pnj, ["save", "discard"]));
   },
@@ -463,6 +567,7 @@ const Gen = {
       newPNJs.push(pnj);
     }
     Debug.log("generator", `→ ${newPNJs.length} PNJ générés`, newPNJs);
+    this._savePool();
 
     for (const pnj of newPNJs) {
       zone.appendChild(CardRenderer.render(pnj, ["save", "discard"]));
@@ -476,20 +581,54 @@ const Gen = {
     for (const p of this.pool) {
       if (p.ownerId === id) doomed.add(p.id);
     }
+    // Instantané pour l'annulation : entrées du pool avec leur index d'origine.
+    const snapshot = [];
+    this.pool.forEach((p, i) => {
+      if (doomed.has(p.id)) snapshot.push({ entity: p, index: i });
+    });
+    const primary = snapshot.find((s) => s.entity.id === id);
     this.pool = this.pool.filter((p) => !doomed.has(p.id));
+    this._savePool();
+
+    // On conserve les nœuds de carte : l'annulation les ré-attache tels quels
+    // (rendu des entités liées préservé, aucun re-render nécessaire).
+    const cards = [];
     for (const did of doomed) {
       // Scopé au générateur : un PNJ sauvegardé a aussi une carte dans
       // les Ombres, qu'on ne doit pas toucher ici.
       const card = document.querySelector(
         `#panel-generator .pnj-card[data-id="${did}"]`,
       );
-      if (card) {
-        card.style.transition = "opacity 0.2s, transform 0.2s";
-        card.style.opacity = "0";
-        card.style.transform = "scale(0.94)";
-        setTimeout(() => card.remove(), 200);
-      }
+      if (!card) continue;
+      cards.push({ card, parent: card.parentElement, next: card.nextElementSibling });
+      card.style.transition = "opacity 0.2s, transform 0.2s";
+      card.style.opacity = "0";
+      card.style.transform = "scale(0.94)";
+      card._removeTimer = setTimeout(() => card.remove(), 200);
     }
+
+    const restore = () => {
+      snapshot
+        .slice()
+        .sort((a, b) => a.index - b.index)
+        .forEach(({ entity, index }) => {
+          this.pool.splice(Math.min(index, this.pool.length), 0, entity);
+        });
+      this._savePool();
+      // Ré-attache en ordre DOM inverse : chaque carte retrouve son ancre
+      // « suivant » déjà rebranchée.
+      for (const { card, parent, next } of cards.slice().reverse()) {
+        clearTimeout(card._removeTimer);
+        if (!card.isConnected && parent) {
+          parent.insertBefore(card, next && next.isConnected ? next : null);
+        }
+        card.style.opacity = "1";
+        card.style.transform = "none";
+      }
+    };
+
+    const name = primary && primary.entity.name;
+    toastUndo(name ? `${name} écarté.` : "PNJ écarté.", restore);
   },
 
   clearSingle() {
@@ -498,6 +637,7 @@ const Gen = {
       (c) => c.dataset.id,
     );
     this.pool = this.pool.filter((p) => !ids.includes(p.id));
+    this._savePool();
     zone.innerHTML = "";
   },
 
@@ -507,6 +647,7 @@ const Gen = {
       (c) => c.dataset.id,
     );
     this.pool = this.pool.filter((p) => !ids.includes(p.id));
+    this._savePool();
     zone.innerHTML = "";
   },
 

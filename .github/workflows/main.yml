@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -29,4 +29,4 @@ jobs:
         with:
           path: .
       - name: Deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

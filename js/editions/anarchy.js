@@ -30,6 +30,12 @@ const EditionAnarchy = {
     label: "Rang",
     options: ["Figurant", "Figurant d'élite", "Lieutenant", "Boss"],
   },
+  /** Neutre : Anarchy 2.0 ne documente pas de jet d'initiative chiffré pour
+      les PNJ (contrairement aux véhicules autonomes, cf. vehicleModel plus
+      bas) — le tracker de combat classe ces PNJ manuellement. */
+  initiativeFor() {
+    return null;
+  },
   // steps() est lazy : spirits.js (catalogs) charge après les modules
   // d'édition (foyer), Spirits.ANARCHY_TIERS n'existe pas encore ici.
   summonPower: {
@@ -3020,8 +3026,22 @@ const EditionAnarchy = {
 
     const statBlock = this.statBlocks[statBlockKey];
 
-    // Attributs avec variantes métatype
-    const attrs = { ...statBlock.attrs };
+    // Cohérence : rôle/milieu résolus depuis le nom du profil (ProfCategories
+    // + mots-clés), pour varier légèrement attributs/compétences autour du
+    // stat-block du livre sans sortir de son cadre (cf. js/rules/coherence.js).
+    const { role, milieu } = Coherence.resolveTuple("anarchy", statBlockKey);
+
+    // Attributs : petite variance (±1, comme SR5/SR6) puis repondération par
+    // rôle, avant les surcharges fixes de métatype (qui priment toujours —
+    // ce sont des valeurs imprimées, pas négociables).
+    const attrs = {};
+    for (const k of Object.keys(statBlock.attrs)) {
+      attrs[k] = Math.max(1, statBlock.attrs[k] + Utils.randInt(-1, 1));
+    }
+    const roleAttrs = Coherence.reweightAttrs(attrs, role, 1);
+    for (const k of Object.keys(roleAttrs)) {
+      attrs[k] = Utils.clamp(roleAttrs[k], 1, 6);
+    }
     const metaOverrides = statBlock.attrsMeta?.[meta] || {};
     for (const k in metaOverrides) attrs[k] = metaOverrides[k];
 
@@ -3081,14 +3101,23 @@ const EditionAnarchy = {
       meta,
       gender,
       tier,
+      role,
+      milieu,
       statBlockKey,
       archetype: statBlock.label,
       attrs,
+      // Compétences du stat-block copiées telles quelles, avec une petite
+      // variance (±1) sur celles qui font le cœur du rôle (ex. Sorcellerie
+      // pour un mage) — le reste (saveur) reste fidèle au livre.
       skills: statBlock.skills.map((s) => {
         const copy = { ...s };
         if (s.specMeta && s.specMeta[meta])
           copy.val = s.specMeta[meta].val ?? s.val;
         delete copy.specMeta;
+        const roleRegex = Coherence.ROLES[role]?.skillRegex;
+        if (roleRegex && roleRegex.test(copy.name) && typeof copy.val === "number") {
+          copy.val = Math.max(1, copy.val + Utils.randInt(-1, 1));
+        }
         return copy;
       }),
       edges: [...statBlock.edges, ...chosenEdges],

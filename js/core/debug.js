@@ -33,6 +33,7 @@ const Debug = {
     storage: "#ff9f43",
     generator: "#2ecc71",
     servers: "#c678dd",
+    coherence: "#f7c948",
   },
 
   _levels: ["debug", "info", "warn", "error"],

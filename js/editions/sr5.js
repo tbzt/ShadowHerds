@@ -19,6 +19,11 @@ const EditionSR5 = {
       de prise de risque (propre à Anarchy 2.0). */
   usesRiskPanel: false,
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
+  /** Initiative chiffrée (base + dés) pour le tracker de combat : lue sur
+      pnj.init/pnj.initDice, posés par generate() (Réaction + Intuition). */
+  initiativeFor(pnj) {
+    return { base: pnj.init, dice: pnj.initDice };
+  },
   summonPower: {
     field: "force",
     label: "Puissance",
@@ -1358,6 +1363,11 @@ const EditionSR5 = {
         ? Utils.rand(this.formOptions.archetype.slice(1))
         : opts.archetype;
 
+    // Cohérence : rôle/milieu résolus depuis l'archétype (ProfCategories +
+    // mots-clés), pour piocher des attributs/compétences variés mais
+    // cohérents (cf. js/rules/coherence.js).
+    const { role, milieu } = Coherence.resolveTuple("sr5", archetype);
+
     // Spécialisation
     let special = opts.special || "Aucun";
     if (special === "Aléatoire") {
@@ -1414,6 +1424,14 @@ const EditionSR5 = {
       const lo = range[k] ? range[k][0] : 1;
       const hi = range[k] ? range[k][1] : 6;
       attrs[k] = Utils.clamp(raw, lo, hi);
+    }
+    // Repondération par rôle (ex. LOG/INT pour un decker) — reclampée
+    // dans les mêmes bornes de métatype, pour varier sans sortir du cadre.
+    const roleAttrs = Coherence.reweightAttrs(attrs, role, 1);
+    for (const k of Object.keys(roleAttrs)) {
+      const lo = range[k] ? range[k][0] : 1;
+      const hi = range[k] ? range[k][1] : 6;
+      attrs[k] = Utils.clamp(roleAttrs[k], lo, hi);
     }
     attrs.ESS = baseAttrs.ESS;
 
@@ -1485,7 +1503,7 @@ const EditionSR5 = {
     const stunMon = 8 + Math.ceil(attrs.VOL / 2);
 
     // Compétences
-    const skills = this._buildSkills(archetype, proRating, special);
+    const { skills, knowledges } = this._buildSkills(archetype, proRating, special, role, milieu);
 
     // Équipement
     const equip = this._buildEquip(archetype, proRating, special);
@@ -1546,6 +1564,8 @@ const EditionSR5 = {
       archetype,
       special,
       attrs,
+      role,
+      milieu,
       limPhys,
       limMent,
       limSoc,
@@ -1568,6 +1588,7 @@ const EditionSR5 = {
       stunFilled: 0,
       armure: this.armureByProf[archetypeIdx] || 0,
       skills,
+      knowledges,
       equip,
       augs,
       spells: spellsList,
@@ -1588,24 +1609,32 @@ const EditionSR5 = {
     return pnj;
   },
 
-  _buildSkills(archetype, proRating, special) {
+  _buildSkills(archetype, proRating, special, role, milieu) {
     const p = Utils.clamp(proRating, 0, 6);
-    const pool =
+    const basePool =
       this.skillPools[archetype] || this.skillPools["Voyou de bas étage"];
+    // Élargit le pool figé du livre avec les compétences du rôle/milieu
+    // résolus (js/rules/coherence.js) : le pool du livre reste le plancher,
+    // le rôle/milieu ajoute de la variété cohérente autour.
+    const coherentPool = [
+      ...Coherence.skillsForRole("sr5", role),
+      ...Coherence.skillsForMilieu("sr5", milieu),
+    ];
+    const pool = [...new Set([...basePool, ...coherentPool])];
     const count = this.skillCount[p] || 4;
 
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
-    const skills = shuffled.slice(0, count).map((name) => ({
+    const picked = shuffled.slice(0, count).map((name) => ({
       name,
       val: Utils.clamp(p + 2 + Utils.randInt(-1, 2), 1, 12),
     }));
 
     // Compétences de spécialisation — sans doublon avec le pool
-    const existingNames = new Set(skills.map((s) => s.name));
+    const existingNames = new Set(picked.map((s) => s.name));
     const specialList = this.specialSkills[special] || [];
     for (const s of specialList) {
       if (!existingNames.has(s.name)) {
-        skills.push({
+        picked.push({
           name: s.name,
           val: Utils.clamp(p + s.bonus + Utils.randInt(0, 1), 1, 12),
         });
@@ -1613,7 +1642,38 @@ const EditionSR5 = {
       }
     }
 
-    return skills;
+    // Compétences actives vs connaissances (Livre de Règles p.130-152) —
+    // certains pools de ce fichier mêlaient encore des connaissances (ex.
+    // « Connaissance ésotérique ») aux compétences actives ; on route à
+    // part uniquement ce qui est EXPLICITEMENT une connaissance connue
+    // (SkillCatalog.sr5Knowledges). Ne pas inverser ce test (actif si
+    // présent dans SkillCatalog.sr5) : plusieurs pools utilisent encore
+    // une orthographe pré-nettoyage ("Armes à feu", "Athlétisme", "Combat
+    // rapproché"…) absente de la liste canonique resserrée — les traiter
+    // comme connaissances par défaut les sortirait à tort de pnj.skills
+    // et casserait le rapprochement arme↔compétence (WeaponRoll).
+    const isKnowledge = (name) => {
+      const base = name.replace(/\s*\(.*\)\s*$/, "").trim();
+      return !!SkillCatalog.sr5Knowledges[base];
+    };
+    const skills = picked.filter((s) => !isKnowledge(s.name));
+    const knowledges = picked.filter((s) => isKnowledge(s.name));
+
+    // Complète avec 1-2 connaissances suggérées (les connaissances SR5
+    // sont libres dans le livre ; cette réserve n'est qu'une saveur).
+    const knownNames = new Set(knowledges.map((k) => k.name));
+    const knowledgePool = Object.keys(SkillCatalog.sr5Knowledges).filter(
+      (n) => !knownNames.has(n),
+    );
+    const shuffledK = [...knowledgePool].sort(() => Math.random() - 0.5);
+    for (const name of shuffledK.slice(0, Utils.randInt(1, 2))) {
+      knowledges.push({
+        name,
+        val: Utils.clamp(p + 1 + Utils.randInt(-1, 1), 1, 12),
+      });
+    }
+
+    return { skills, knowledges };
   },
 
   _buildEquip(archetype, proRating, special) {

@@ -28,6 +28,11 @@ const EditionSR6 = {
       de prise de risque (propre à Anarchy 2.0). */
   usesRiskPanel: false,
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
+  /** Initiative chiffrée (base + dés) pour le tracker de combat : lue sur
+      pnj.initBase/pnj.initDice, posés par generate() (Réaction + Intuition). */
+  initiativeFor(pnj) {
+    return { base: pnj.initBase, dice: pnj.initDice };
+  },
   summonPower: {
     field: "force",
     label: "Puissance",
@@ -1428,6 +1433,11 @@ const EditionSR6 = {
     const archetype =
       opts.archetype === "Aléatoire" ? Utils.rand(archetypeList) : opts.archetype;
 
+    // Cohérence : rôle/milieu résolus depuis l'archétype (ProfCategories +
+    // mots-clés), pour piocher des attributs/compétences variés mais
+    // cohérents (cf. js/rules/coherence.js).
+    const { role, milieu } = Coherence.resolveTuple("sr6", archetype);
+
     let special = opts.special || "Aucun";
     if (special === "Aléatoire") {
       special = Utils.randBool(0.2)
@@ -1471,6 +1481,12 @@ const EditionSR6 = {
     for (const k of ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"]) {
       const raw = (baseAttrs[k] || 2) + (mods[k] || 0) + Utils.randInt(-1, 1);
       attrs[k] = Utils.clamp(raw, range[k]?.[0] ?? 1, range[k]?.[1] ?? 6);
+    }
+    // Repondération par rôle (ex. RÉA/LOG pour un rigger) — reclampée
+    // dans les mêmes bornes de métatype, pour varier sans sortir du cadre.
+    const roleAttrs = Coherence.reweightAttrs(attrs, role, 1, { REA: "RÉA" });
+    for (const k of Object.keys(roleAttrs)) {
+      attrs[k] = Utils.clamp(roleAttrs[k], range[k]?.[0] ?? 1, range[k]?.[1] ?? 6);
     }
 
     // Attributs spéciaux — MAG/RES seulement si profession explicitement magique ou special magique
@@ -1532,8 +1548,14 @@ const EditionSR6 = {
       ? attrs.VOL + (attrs[tradition.drainAttr] || 0)
       : null;
 
-    // Compétences
-    const pool = this.skillPools[archetype] || this.skillPools["Civil"];
+    // Compétences — le pool figé du livre reste le plancher, le rôle/milieu
+    // résolu ajoute de la variété cohérente autour (cf. coherence.js).
+    const basePool = this.skillPools[archetype] || this.skillPools["Civil"];
+    const coherentPool = [
+      ...Coherence.skillsForRole("sr6", role),
+      ...Coherence.skillsForMilieu("sr6", milieu),
+    ];
+    const pool = [...new Set([...basePool, ...coherentPool])];
     const count = this.skillCount[p] || 4;
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
     const existingNames = new Set();
@@ -1609,6 +1631,8 @@ const EditionSR6 = {
       archetype,
       special,
       attrs,
+      role,
+      milieu,
       me,
       sdBase,
       initBase,

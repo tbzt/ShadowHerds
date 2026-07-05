@@ -269,7 +269,7 @@ const CardRenderer = {
         }
         const approxTxt = r.approx ? " ~" : "";
         const smartTxt = r.smartBonus ? ` · +${r.smartBonus} smartlink` : "";
-        const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill}${approxTxt})${r.limit != null ? ` · limite ${r.limit}` : ""}${smartTxt}`;
+        const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill}${approxTxt} ${r.skillVal} + ${r.attr} ${r.attrVal})${r.limit != null ? ` · limite ${r.limit}` : ""}${smartTxt}`;
         const poolBadge = `<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="lim">▸${r.limit}</span>` : ""}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}${r.smartBonus ? `<span class="lim">SL+${r.smartBonus}</span>` : ""}</span>`;
         const dataAttr =
           edition === "anarchy"
@@ -292,7 +292,7 @@ const CardRenderer = {
   },
 
   /* ---- Helpers ---- */
-  _initPill(base, dice, pnj) {
+  _initPill(base, dice, pnj, attrDetail = "") {
     const b = Number(base) || 0;
     const d = Number(dice) || 1;
     const id = pnj && pnj.id ? pnj.id : "";
@@ -309,7 +309,11 @@ const CardRenderer = {
         `</span>`;
     }
 
-    return `<span class="stat-pill accent rollable init-pill" data-roll-init="${b}" data-roll-init-dice="${d}" data-roll-pnj="${id}" title="Lancer l'initiative : ${b} + ${d}D6">Init <strong>${b}+${d}D6</strong>${resultHtml}</span>`;
+    const baseTxt = attrDetail ? `${attrDetail} (${b})` : b;
+    const detailAttr = attrDetail
+      ? ` data-roll-init-detail="${this._esc(attrDetail)}"`
+      : "";
+    return `<span class="stat-pill accent rollable init-pill" data-roll-init="${b}" data-roll-init-dice="${d}" data-roll-pnj="${id}"${detailAttr} title="Lancer l'initiative : ${baseTxt} + ${d}D6">Init <strong>${b}+${d}D6</strong>${resultHtml}</span>`;
   },
 
   _attrCell(label, value, extraClass = "", opts = {}) {
@@ -337,8 +341,16 @@ const CardRenderer = {
     }).join("");
   },
 
-  _skillsSection(skills, malus = 0) {
+  /**
+   * @param {Object} [opts]
+   * @param {string} [opts.label] - libellé de section (ex. "Connaissances")
+   * @param {string} [opts.extraClass] - classe CSS ajoutée aux tags, pour
+   *   distinguer visuellement une variante (ex. connaissances SR5 vs
+   *   compétences actives — même mécanique de lancer de dés).
+   */
+  _skillsSection(skills, malus = 0, opts = {}) {
     if (!skills || !skills.length) return "";
+    const { label = "Compétences", extraClass = "" } = opts;
     const malusTxt = malus > 0 ? ` (malus blessure −${malus})` : "";
     const tags = skills
       .map((s) => {
@@ -349,7 +361,7 @@ const CardRenderer = {
             ? ` data-roll="${eff}" data-roll-label="${this._esc(s.name)}" title="Lancer ${eff} dés — ${this._esc(s.name)}${malusTxt}"`
             : "";
         const rollCls = Number.isFinite(eff) && eff >= 1 ? " rollable" : "";
-        let html = `<span class="tag skill-tag${rollCls}"${rollAttrs}>${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${eff}</strong></span>`;
+        let html = `<span class="tag skill-tag${extraClass}${rollCls}"${rollAttrs}>${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${eff}</strong></span>`;
         if (s.spec && s.spec !== true) {
           // Spécialité : +2 dés sur le pool en SR5/SR6.
           const specN = Number.isFinite(n) ? Math.max(0, n + 2 - malus) : null;
@@ -363,7 +375,47 @@ const CardRenderer = {
       })
       .join("");
     return `<div class="card-section">
-      <div class="card-section-label">Compétences${malus > 0 ? ` <span class="wound-malus-badge" title="Malus de blessure automatique">−${malus}D</span>` : ""}</div>
+      <div class="card-section-label">${label}${malus > 0 ? ` <span class="wound-malus-badge" title="Malus de blessure automatique">−${malus}D</span>` : ""}</div>
+      <div class="card-section-content">
+        ${tags}
+      </div>
+    </div>`;
+  },
+
+  /**
+   * Connaissances SR5 (Livre de Règles p.148-152) — un test de
+   * connaissance = valeur de connaissance + attribut lié (Logique pour
+   * l'académique/professionnel, Intuition pour la rue/les centres
+   * d'intérêt). On affiche donc le POOL (comme les réserves MJ), avec le
+   * détail « Attribut + Connaissance », et un tag visuellement distinct.
+   * @param {Array} knowledges
+   * @param {Object} pnj - pour lire l'attribut lié sur pnj.attrs
+   * @param {number} malus - malus de blessure
+   */
+  _knowledgesSection(knowledges, pnj, malus = 0) {
+    if (!knowledges || !knowledges.length) return "";
+    const attrs = (pnj && pnj.attrs) || {};
+    const tags = knowledges
+      .map((k) => {
+        const rating = Number(k.val);
+        const attr = SkillCatalog.attrFor("sr5", k.name); // LOG | INT | null
+        const attrVal = attr && Number.isFinite(attrs[attr]) ? attrs[attr] : 0;
+        const pool = Number.isFinite(rating)
+          ? Math.max(0, rating + attrVal - malus)
+          : rating;
+        const attrLabel = attr ? Utils.attrFullName(attr) : "";
+        const detail = attr
+          ? `${attrLabel} ${attrVal} + ${k.name} ${rating}`
+          : "";
+        const rollable = Number.isFinite(pool) && pool >= 1;
+        const rollAttrs = rollable
+          ? ` data-roll="${pool}" data-roll-label="${this._esc(k.name)}" data-roll-detail="${this._esc(detail)}" title="Test de connaissance : ${this._esc(detail)}"`
+          : "";
+        return `<span class="tag skill-tag skill-tag-knowledge${rollable ? " rollable" : ""}"${rollAttrs}>${this._esc(k.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong></span>`;
+      })
+      .join("");
+    return `<div class="card-section">
+      <div class="card-section-label">Connaissances</div>
       <div class="card-section-content">
         ${tags}
       </div>
@@ -544,6 +596,9 @@ const CardRenderer = {
         `<button class="card-action-btn danger" data-action="remove-pnj" data-id="${pnj.id}">Supprimer</button>`,
       );
     }
+    btns.push(
+      `<button class="card-action-btn ghost" data-action="add-to-encounter" data-id="${pnj.id}" title="Ajouter au suivi de combat">⚔ Combat</button>`,
+    );
     return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>${btns.join("")}</div>`;
   },
 
@@ -591,6 +646,9 @@ const CardRenderer = {
           break;
         case "remove-pnj":
           Shadows.removePNJ(id);
+          break;
+        case "add-to-encounter":
+          Encounter.add(id);
           break;
       }
     });
