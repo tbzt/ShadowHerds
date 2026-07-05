@@ -928,7 +928,7 @@ select optgroup {
 .pnj-name {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.15rem;
+  font-size: var(--fs-lg);
   letter-spacing: var(--title-spacing);
   color: var(--text);
   text-transform: var(--name-transform, none);
@@ -937,7 +937,7 @@ select optgroup {
 }
 .pnj-civilname {
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.62rem;
+  font-size: var(--fs-2xs);
   color: var(--text-dim);
   letter-spacing: 0.04em;
   margin-top: 1px;
@@ -947,14 +947,14 @@ select optgroup {
 }
 .pnj-meta {
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.62rem;
+  font-size: var(--fs-2xs);
   color: var(--text-dim);
   margin-top: 2px;
   line-height: 1.5;
 }
 .pnj-rank-badge {
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.6rem;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   letter-spacing: 0.12em;
   padding: 3px 7px;
@@ -1037,7 +1037,7 @@ select optgroup {
   border-radius: 10px;
   padding: 3px 9px;
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.62rem;
+  font-size: var(--fs-xs);
   color: var(--text-dim);
   white-space: nowrap;
   line-height: 1.4;
@@ -1079,7 +1079,7 @@ select optgroup {
 
 .card-section-label {
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.58rem;
+  font-size: var(--fs-2xs);
   color: var(--accent2);
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -1088,7 +1088,7 @@ select optgroup {
   border-bottom: 1px solid var(--border);
 }
 .card-section-content {
-  font-size: 0.78rem;
+  font-size: var(--fs-sm);
   color: var(--text-dim);
   line-height: 1.6;
 }
@@ -1115,7 +1115,7 @@ select optgroup {
 .flavor-section .flavor-row {
   display: flex;
   gap: 0.6rem;
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   line-height: 1.45;
   padding: 3px 0;
   border-bottom: 1px solid var(--border);
@@ -1128,7 +1128,7 @@ select optgroup {
   width: 84px;
   color: var(--accent);
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.58rem;
+  font-size: var(--fs-2xs);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding-top: 2px;
@@ -1165,7 +1165,7 @@ select optgroup {
   border-radius: 2px;
   padding: 1px 7px;
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.6rem;
+  font-size: var(--fs-xs);
   color: var(--text-dim);
   margin: 2px 2px 2px 0;
   line-height: 1.6;
@@ -1189,12 +1189,12 @@ select optgroup {
 .cliche-name {
   font-family: "Rajdhani", sans-serif;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: var(--fs-base);
   color: var(--text);
 }
 .cliche-dice {
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
   color: var(--accent);
 }
 
@@ -1207,7 +1207,7 @@ select optgroup {
 }
 .monitor-label {
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.58rem;
+  font-size: var(--fs-2xs);
   color: var(--text-dim);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1254,7 +1254,7 @@ select optgroup {
   padding: 0.38rem 0;
   font-family: "Rajdhani", sans-serif;
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   border-radius: 2px;
@@ -1291,7 +1291,7 @@ select optgroup {
 }
 .card-saved-label {
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.65rem;
+  font-size: var(--fs-xs);
   color: var(--accent);
   display: flex;
   align-items: center;
