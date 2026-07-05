@@ -32,12 +32,29 @@ const Utils = {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   },
 
+  /** Nom complet d'une abréviation d'attribut, pour l'affichage (tooltips, jets). */
+  attrFullName(abbr) {
+    const names = {
+      CON: "Constitution",
+      AGI: "Agilité",
+      REA: "Réaction",
+      RÉA: "Réaction",
+      FOR: "Force",
+      VOL: "Volonté",
+      LOG: "Logique",
+      INT: "Intuition",
+      CHA: "Charisme",
+      ESS: "Essence",
+      MAG: "Magie",
+    };
+    return names[abbr] || abbr;
+  },
+
   /** Malus de dés lié aux cases de moniteur remplies — formule propre à
       chaque édition, cf. `conditionMonitor.woundMalus` (js/editions/*.js). */
   woundMalus(pnj, edition) {
     if (!pnj) return 0;
-    const editionModule =
-      typeof App !== "undefined" ? App.getEditionModule(edition) : null;
+    const editionModule = App.getEditionModule(edition);
     return editionModule ? editionModule.conditionMonitor.woundMalus(pnj) : 0;
   },
 
