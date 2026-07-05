@@ -1,8 +1,12 @@
 "use strict";
 
 /* ============================================================
-   CONTACTS BOOK — contacts persistants avec groupes et notes
-   Structure miroir de Shadows, mais pour les contacts
+   CONTACTS BOOK — bibliothèque de contacts persistants.
+
+   Domaine contact, brique « bibliothèque » : contacts persistants
+   avec groupes et notes (socle Collection, structure miroir de
+   Shadows). Reçoit ses contacts de Contacts/ContactGen ; c'est la
+   seule des trois briques contact qui persiste.
    ============================================================ */
 const ContactsBook = Object.assign(
   Collection.create({
@@ -81,7 +85,7 @@ const ContactsBook = Object.assign(
     initPanel() {
       this.load();
       this.render();
-      if (typeof Contacts !== "undefined" && Contacts.renderForm) {
+      if (Contacts.renderForm) {
         Contacts.renderForm();
       }
     },

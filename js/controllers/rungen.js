@@ -1,7 +1,12 @@
 "use strict";
 
 /* ============================================================
-   RUN GENERATOR
+   RUN GENERATOR — générateur de missions (runs), PAS de contacts.
+   N'appartient pas au domaine contact (ContactGen/Contacts/
+   ContactsBook) : il produit des amorces de run, indépendamment
+   de tout contact. Rangé avec les générateurs (près de Generator),
+   pas avec le trio contact, dont il ne partage ni la donnée ni la
+   persistance.
    Tables bifurquées par édition :
    - SR5 / SR6 : opérations corpo classiques, Big Ten, crime organisé
    - Anarchy    : types d\'opérations du livre + adaptations narratives

@@ -12,17 +12,12 @@ const ServerRenderer = {
     const esc = CardRenderer._esc.bind(CardRenderer);
     const catalog = Matrix.use(ed).icCatalog();
     const profiles = Matrix.use(ed).profiles();
-    const secPhysBonus =
-      (typeof App !== "undefined" && App.getEditionModule
-        ? App.getEditionModule(ed)
-        : null
-      )?.secPhysBonus;
+    const secPhysBonus = App.getEditionModule(ed)?.secPhysBonus;
 
     const profOpts = [
       `<option value="random">Aléatoire</option>`,
       ...profiles.map(
-        (p) =>
-          `<option value="${p.id}">${esc(p.label)}${ed === "anarchy" ? ` (${p.indice})` : ` (${p.min}-${p.max})`}</option>`,
+        (p) => `<option value="${p.id}">${esc(p.label)}${Matrix.use(ed).profileRangeText(p)}</option>`,
       ),
     ].join("");
 
@@ -76,8 +71,11 @@ const ServerRenderer = {
     const catalog = Matrix.use(srv.edition).icCatalog();
 
     /* -- header + stats -- */
+    // Dispatch structurel accepté (issue #14) : deux blocs complets
+    // (Indice/Firewall+seuils Anarchy vs Matrix.ATTR_KEYS+icThresholdsText
+    // SR5/SR6), pas une valeur scalaire — cf. Matrix.hasAttrs().
     let statsHtml;
-    if (srv.edition === "anarchy") {
+    if (!Matrix.use(srv.edition).hasAttrs()) {
       statsHtml = `
         <div class="server-attrs">
           <span class="server-attr"><b>${srv.indice}</b>Indice</span>
@@ -85,14 +83,13 @@ const ServerRenderer = {
         </div>
         <div class="server-thresholds">Seuils de Piratage : sans élévation <b>${srv.indice}</b> · élever à Utilisateur <b>${srv.indice + 1}</b> · à Administrateur <b>${srv.indice + 2}</b> · décryptage <b>${srv.indice}</b></div>`;
     } else {
-      const a = srv.attrs || { ATQ: "?", COR: "?", TDD: "?", FW: "?" };
+      const a = srv.attrs || {};
       statsHtml = `
         <div class="server-attrs">
           <span class="server-attr"><b>${srv.indice}</b>Indice</span>
-          <span class="server-attr"><b>${a.ATQ}</b>ATQ</span>
-          <span class="server-attr"><b>${a.COR}</b>COR</span>
-          <span class="server-attr"><b>${a.TDD}</b>TdD</span>
-          <span class="server-attr"><b>${a.FW}</b>FW</span>
+          ${Matrix.ATTR_KEYS
+            .map((ak) => `<span class="server-attr"><b>${a[ak.key] ?? "?"}</b>${ak.badge}</span>`)
+            .join("")}
         </div>
         <div class="server-thresholds">CI : ${Matrix.use(srv.edition).icThresholdsText(srv)}</div>`;
     }
@@ -167,15 +164,14 @@ const ServerRenderer = {
       .map((n) => `<option value="${n}" ${n === srv.indice ? "selected" : ""}>${n}</option>`)
       .join("");
 
-    const attrsHtml =
-      srv.edition === "anarchy"
-        ? ""
-        : `<div class="server-edit-row">
-            ${["ATQ", "COR", "TDD", "FW"]
+    const attrsHtml = !Matrix.use(srv.edition).hasAttrs()
+      ? ""
+      : `<div class="server-edit-row">
+            ${Matrix.ATTR_KEYS
               .map(
-                (k) => `<label class="server-edit-attr">${k}
-                  <input type="number" id="se-${id}-${k.toLowerCase()}" min="1" max="15"
-                    value="${(srv.attrs || {})[k] || srv.indice}"></label>`,
+                (ak) => `<label class="server-edit-attr" title="${ak.label}">${ak.badge}
+                  <input type="number" id="se-${id}-${ak.key}" min="1" max="15"
+                    value="${(srv.attrs || {})[ak.key] || srv.indice}"></label>`,
               )
               .join("")}
             <button class="btn-secondary btn-small" data-action="redistribute-attrs" data-id="${id}"
@@ -216,7 +212,7 @@ const ServerRenderer = {
           <label class="server-edit-label narrow">Indice
             <select id="se-${id}-indice">${indOpts}</select></label>
         </div>
-        ${(typeof App !== "undefined" && App.getEditionModule ? App.getEditionModule(srv.edition) : null)?.secPhysBonus
+        ${App.getEditionModule(srv.edition)?.secPhysBonus
           ? `<label class="ic-choice"><input type="checkbox" id="se-${id}-secphys" ${srv.secPhys ? "checked" : ""}>Gère la sécurité physique</label>`
           : ""}
         ${attrsHtml}
@@ -253,14 +249,11 @@ const ServerRenderer = {
         const label = ic.label.replace(/^CI /, "");
         const eff = typeof ic.effect === "function" ? ic.effect(srv) : "";
 
+        const M = Matrix.use(srv.edition);
         const boxes = `<span class="monitor-boxes">${Array.from({ length: size }, (_, i) => {
           const n = i + 1;
-          const sep =
-            srv.edition === "anarchy" && (n === 3 || n === 4)
-              ? ' style="margin-left:3px;"'
-              : "";
-          return `<span class="monitor-box ${st.dmg >= n ? "filled" : ""}"${sep}
-              title="${srv.edition === "anarchy" ? ["Légère", "Légère", "Grave", "Incapacitante"][i] : `Case ${n}`}"
+          return `<span class="monitor-box ${st.dmg >= n ? "filled" : ""}"${M.monitorBoxSep(n)}
+              title="${M.monitorBoxLabel(n)}"
               data-action="ic-box" data-id="${srv.id}" data-k="${k}" data-n="${n}"></span>`;
         }).join("")}</span>`;
 
@@ -275,8 +268,7 @@ const ServerRenderer = {
 
         /* Jets (SR5/SR6) — les glaces Anarchy ont des succès fixes */
         let rolls = "";
-        if (srv.edition !== "anarchy" && (ic.watch || (st.active && !st.down))) {
-          const M = Matrix.use(srv.edition);
+        if (M.hasAttrs() && (ic.watch || (st.active && !st.down))) {
           const btn = (kind, txt, tip) =>
             `<button class="btn-secondary btn-small ic-roll" title="${esc(tip)}"
               data-action="roll-ic" data-id="${srv.id}" data-k="${k}" data-kind="${kind}">⚄ ${txt}</button>`;
@@ -306,9 +298,12 @@ const ServerRenderer = {
       })
       .join("");
 
-    /* Bloc surveillance selon édition */
-    const surveillance =
-      srv.edition === "anarchy" ? this.dieuBlock(srv) : this.ssBlock(srv);
+    /* Bloc surveillance selon édition — dispatch structurel accepté
+       (issue #14) : DIEU (Anarchy) vs Score de Surveillance (SR5/SR6),
+       deux modèles de règles complets. */
+    const surveillance = Matrix.use(srv.edition).hasAttrs()
+      ? this.ssBlock(srv)
+      : this.dieuBlock(srv);
 
     return `
       <div class="intrusion-panel">
@@ -346,6 +341,9 @@ const ServerRenderer = {
       )
       .join("");
 
+    // Dispatch structurel accepté (issue #14) : le mécanisme du Score de
+    // Surveillance diffère entre SR5 (+2D6/15 min, marks) et SR6
+    // (+1 par programme de hacking, accès illégaux maintenus, p.178/233).
     const sr5Extra =
       srv.edition === "sr5"
         ? `<button class="btn-secondary btn-small" data-action="add-ss-2d6" data-id="${srv.id}"

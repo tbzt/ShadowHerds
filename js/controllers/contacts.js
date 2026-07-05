@@ -1,12 +1,20 @@
 "use strict";
 
 /* ============================================================
-   CONTACTS — contrôleur du panneau générateur de contacts
+   CONTACTS — contrôleur du panneau générateur de contacts.
+
+   Domaine contact, brique « fiche/panneau » : formulaire dirigé et
+   affichage d'un contact généré. Délègue la donnée/génération à
+   ContactGen, et l'ajout à la bibliothèque persistante à
+   ContactsBook. Ne persiste rien lui-même.
    Contacts SR5/SR6 : Influence (1-12) + Loyauté (1-6)
    Contacts Anarchy : atout à niveau (0-6), RR sur Réseau
    ============================================================ */
 const Contacts = {
-  /** Affiche le formulaire dirigé adapté à l'édition courante. */
+  /** Affiche le formulaire dirigé adapté à l'édition courante.
+      Dispatch structurel accepté (issue #14) : Anarchy (atout+RR) et
+      SR5/SR6 (Influence/Loyauté) sont deux templates complets, pas une
+      valeur scalaire — cf. ContactGen.generate(). */
   renderForm() {
     const host = document.getElementById("contact-gen-form");
     if (!host) return;
@@ -112,15 +120,10 @@ const Contacts = {
 
   /** Lit le formulaire et génère un contact dirigé. */
   generate() {
-    if (App.edition === "anarchy") {
-      return ContactGen.generateAnarchy({
-        networkId: (document.getElementById("cg-network") || {}).value,
-        rr: parseInt((document.getElementById("cg-rr") || {}).value || "1", 10),
-        scope: (document.getElementById("cg-scope") || {}).value,
-        metatype: (document.getElementById("cg-meta") || {}).value,
-      });
-    }
-    return ContactGen.generateSR(App.edition, {
+    return ContactGen.generate(App.edition, {
+      networkId: (document.getElementById("cg-network") || {}).value,
+      rr: parseInt((document.getElementById("cg-rr") || {}).value || "1", 10),
+      scope: (document.getElementById("cg-scope") || {}).value,
       categoryId: (document.getElementById("cg-category") || {}).value,
       metatype: (document.getElementById("cg-meta") || {}).value,
     });

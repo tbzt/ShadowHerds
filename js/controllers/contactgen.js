@@ -1,7 +1,13 @@
 "use strict";
 
 /* ============================================================
-   CONTACT GEN — génération dirigée de contacts
+   CONTACT GEN — données + génération de contacts.
+
+   Domaine contact, brique « données » : catalogues (Réseaux,
+   métiers…) et fabrication d'un objet contact. Ne touche ni au DOM
+   du panneau (→ Contacts) ni à la persistance (→ ContactsBook).
+   À ne pas confondre avec RunGen, qui génère des runs, pas des
+   contacts (js/controllers/rungen.js).
 
    Anarchy 2.0 : on choisit un type de Réseau (parmi les 10
    officiels, p.163) et une Réduction de Risque (RR 1-3). Le coût
@@ -767,6 +773,19 @@ const ContactGen = {
   GENDERS: ["Aléatoire", "Homme", "Femme"],
 
   /**
+   * Point d'entrée unique : route vers generateAnarchy/generateSR selon
+   * l'édition. Anarchy (atout+RR) et SR5/SR6 (Influence/Loyauté) sont des
+   * modèles de contact structurellement différents, pas une propriété
+   * scalaire — le dispatch reste ici plutôt que chez l'appelant.
+   * @param {object} opts { networkId, rr, scope, categoryId, metatype, gender }
+   */
+  generate(edition, opts = {}) {
+    return edition === "anarchy"
+      ? this.generateAnarchy(opts)
+      : this.generateSR(edition, opts);
+  },
+
+  /**
    * Génère un contact Anarchy dirigé.
    * @param {object} opts { networkId, rr (1-3), scope, metatype, gender }
    */
@@ -800,10 +819,8 @@ const ContactGen = {
       metatype: this._resolveMeta(opts.metatype),
       trait: Utils.rand(this.traits),
     };
-    if (typeof Flavor !== "undefined") {
-      contact.role_tags = this._roleTags(networkId);
-      Flavor.apply(contact);
-    }
+    contact.role_tags = this._roleTags(networkId);
+    Flavor.apply(contact);
     return contact;
   },
 
@@ -830,10 +847,8 @@ const ContactGen = {
       metatype: this._resolveMeta(opts.metatype),
       trait: Utils.rand(this.traits),
     };
-    if (typeof Flavor !== "undefined") {
-      contact.role_tags = opts.categoryId ? [opts.categoryId] : null;
-      Flavor.apply(contact);
-    }
+    contact.role_tags = opts.categoryId ? [opts.categoryId] : null;
+    Flavor.apply(contact);
     return contact;
   },
 
