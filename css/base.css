@@ -18,6 +18,7 @@
   --title-spacing: 0.12em;
   --card-clip: none;
   --hd-clip: none;
+  --danger: #c0392b;
 }
 html {
   height: 100%;
@@ -493,16 +494,24 @@ select optgroup {
 }
 
 /* ============================================================
-   MULTI-SELECT (filtres « ajouter / enlever »)
+   MULTI-SELECT (filtres « ajouter / enlever ») & SINGLE-SELECT
+   (choix unique stylé, ex. type d'esprit/créature) — coquille
+   visuelle partagée (.ms-control/.ms-dropdown...) entre les deux
+   composants, pour que leur rendu reste identique à celui d'un
+   <select> natif sans en avoir les limites (police système dans
+   la liste déroulante ouverte selon l'OS).
    Hérite des couleurs de thème via les variables : conserve
    l'âme de chaque édition (accent, bordure, fond).
    ============================================================ */
-.form-group.ms {
+.form-group.ms,
+.form-group.ss {
   position: relative;
 }
 
-/* Déclencheur : ressemble à un <select> mais montre des puces */
-.ms-control {
+/* Déclencheur : ressemble à un <select> mais montre des puces (ms)
+   ou la valeur choisie (ss) */
+.ms-control,
+.ss-control {
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -516,7 +525,9 @@ select optgroup {
   transition: border-color 0.15s;
 }
 .ms-control:focus,
-.ms.ms-open .ms-control {
+.ms.ms-open .ms-control,
+.ss-control:focus,
+.ss.ss-open .ss-control {
   outline: none;
   border-color: var(--accent);
 }
@@ -532,13 +543,23 @@ select optgroup {
   font-size: 0.82rem;
   font-style: italic;
 }
-.ms-caret {
+.ss-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+.ms-caret,
+.ss-caret {
   color: var(--accent);
   font-size: 0.7rem;
   flex-shrink: 0;
   transition: transform 0.18s;
 }
-.ms.ms-open .ms-caret {
+.ms.ms-open .ms-caret,
+.ss.ss-open .ss-caret {
   transform: rotate(180deg);
 }
 
@@ -573,7 +594,8 @@ select optgroup {
 }
 
 /* Menu déroulant */
-.ms-dropdown {
+.ms-dropdown,
+.ss-dropdown {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
@@ -587,7 +609,8 @@ select optgroup {
   display: flex;
   flex-direction: column;
 }
-.ms-dropdown[hidden] {
+.ms-dropdown[hidden],
+.ss-dropdown[hidden] {
   display: none;
 }
 .ms-dropdown-tools {
@@ -615,7 +638,8 @@ select optgroup {
   color: var(--accent);
   border-color: var(--accent);
 }
-.ms-dropdown-body {
+.ms-dropdown-body,
+.ss-dropdown-body {
   overflow-y: auto;
   padding: 0.3rem 0;
 }
@@ -637,6 +661,13 @@ select optgroup {
   accent-color: var(--accent);
   flex-shrink: 0;
   cursor: pointer;
+}
+.ss-opt[hidden] {
+  display: none;
+}
+.ss-opt.active {
+  background: var(--glow);
+  color: var(--accent);
 }
 .ms-opt-child {
   padding-left: 1.6rem;
@@ -709,7 +740,7 @@ select optgroup {
   padding: 0.5rem 1.2rem;
   background: transparent;
   border: 1px solid #6b1a1a;
-  color: #c0392b;
+  color: var(--danger);
   font-family: "Rajdhani", sans-serif;
   font-weight: 700;
   font-size: 0.85rem;
@@ -722,7 +753,7 @@ select optgroup {
 }
 .danger-btn:hover {
   background: rgba(139, 26, 26, 0.15);
-  border-color: #c0392b;
+  border-color: var(--danger);
 }
 
 /* TABS */
@@ -1029,8 +1060,8 @@ select optgroup {
   line-height: 1.6;
 }
 .wound-malus-badge {
-  color: #c0392b;
-  border: 1px solid #c0392b;
+  color: var(--danger);
+  border: 1px solid var(--danger);
   border-radius: 3px;
   padding: 0 4px;
   margin-left: 4px;
@@ -1222,8 +1253,8 @@ select optgroup {
   color: var(--text-dim);
 }
 .card-action-btn.danger:hover {
-  border-color: #c0392b;
-  color: #c0392b;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 .card-saved-label {
   font-family: "Share Tech Mono", monospace;
@@ -1480,7 +1511,7 @@ select optgroup {
   color: var(--text);
 }
 .btn-icon-tiny.danger:hover {
-  color: #c0392b;
+  color: var(--danger);
 }
 
 .btn-small {
@@ -1811,8 +1842,8 @@ select optgroup {
     color 0.15s;
 }
 .modal-close:hover {
-  border-color: #c0392b;
-  color: #c0392b;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 .modal-body {
   padding: 1.25rem;
@@ -1913,8 +1944,8 @@ select optgroup {
   transition: all 0.15s;
 }
 .em-skill-del:hover {
-  border-color: var(--danger, #c0392b);
-  color: var(--danger, #c0392b);
+  border-color: var(--danger);
+  color: var(--danger);
 }
 .em-add-skill {
   display: flex;
@@ -2376,7 +2407,7 @@ select optgroup {
   border-left-color: var(--accent2);
 }
 .dice-log-item.crit {
-  border-left-color: #c0392b;
+  border-left-color: var(--danger);
 }
 .dice-log-item.zero {
   border-left-color: var(--text-dim);
@@ -2422,7 +2453,7 @@ select optgroup {
   color: var(--accent2);
 }
 .dice-log-tag.crit {
-  color: #c0392b;
+  color: var(--danger);
 }
 .dice-log-main {
   font-family: var(--font-display);
@@ -2432,7 +2463,7 @@ select optgroup {
   flex-shrink: 0;
 }
 .dice-log-item.crit .dice-log-main {
-  color: #c0392b;
+  color: var(--danger);
 }
 .dice-log-item.zero .dice-log-main {
   color: var(--text-dim);
@@ -2479,7 +2510,7 @@ select optgroup {
   border-left-color: var(--accent2);
 }
 #dice-quick.dice-quick-crit {
-  border-left-color: #c0392b;
+  border-left-color: var(--danger);
 }
 #dice-quick.dice-quick-zero {
   border-left-color: var(--text-dim);
@@ -2501,7 +2532,7 @@ select optgroup {
   color: var(--accent);
 }
 .dice-quick-crit .dice-quick-main {
-  color: #c0392b;
+  color: var(--danger);
 }
 .dice-quick-zero .dice-quick-main {
   color: var(--text-dim);
@@ -2520,7 +2551,7 @@ select optgroup {
   color: var(--accent2);
 }
 .dice-quick-crit .dice-quick-tag {
-  color: #c0392b;
+  color: var(--danger);
 }
 .dice-quick-sub {
   font-family: "Share Tech Mono", monospace;
@@ -3178,11 +3209,11 @@ select optgroup {
   background: var(--accent);
 }
 .drug-tag.drug-side {
-  border-color: var(--danger, #c0392b);
-  color: var(--danger, #c0392b);
+  border-color: var(--danger);
+  color: var(--danger);
 }
 .drug-tag.drug-side .drug-next {
-  background: var(--danger, #c0392b);
+  background: var(--danger);
 }
 
 /* ---- Modale de description ---- */
@@ -3514,8 +3545,8 @@ select optgroup {
 }
 .dice-summary-tag.crit {
   color: #fff;
-  border-color: #c0392b;
-  background: #c0392b;
+  border-color: var(--danger);
+  background: var(--danger);
   animation: crit-flash 0.5s ease;
 }
 @keyframes crit-flash {
@@ -3528,7 +3559,7 @@ select optgroup {
   text-shadow: none;
 }
 .dice-summary.crit .dice-summary-hits {
-  color: #c0392b;
+  color: var(--danger);
   text-shadow: 0 0 22px rgba(192, 57, 43, 0.5);
 }
 
@@ -3595,12 +3626,12 @@ select optgroup {
 }
 /* Un dé de risque qui sort un 1 : alerte complication */
 .die.risk.one .die-face {
-  border-color: #c0392b;
+  border-color: var(--danger);
   border-style: solid;
   box-shadow: 0 0 14px rgba(192, 57, 43, 0.7);
 }
 .die.risk.one .pip.on {
-  background: #c0392b;
+  background: var(--danger);
 }
 
 .dice-summary-breakdown {
@@ -4161,7 +4192,7 @@ input[type="range"]#risk-dice-slider {
 }
 .btn-danger-soft {
   background: transparent;
-  border: 1px solid #c0392b;
+  border: 1px solid var(--danger);
   color: #e74c3c;
   border-radius: 4px;
   padding: 0.55rem 1rem;
@@ -4173,7 +4204,7 @@ input[type="range"]#risk-dice-slider {
   transition: background 0.14s, color 0.14s;
 }
 .btn-danger-soft:hover {
-  background: #c0392b;
+  background: var(--danger);
   color: #fff;
 }
 .backup-back {
@@ -4411,34 +4442,61 @@ input[type="range"]#risk-dice-slider {
   }
 }
 
-/* ---- Sélecteur de type d'entité (générateur) ---- */
+/* ---- Sélecteur de type d'entité (générateur) ----
+   Rangée pleine largeur (grid-column: 1 / -1) : sans ça, cette barre
+   redevient une cellule de la grille .gen-form comme les autres champs
+   et hérite de la hauteur de sa voisine via align-items:stretch. */
 .entity-type-bar {
+  grid-column: 1 / -1;
   display: flex;
-  gap: 4px;
+  gap: 1px;
   margin-bottom: 12px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
 }
 .entity-type-btn {
   flex: 1;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  background: var(--bg-card);
+  border: none;
   color: var(--text-dim);
-  font-family: "Share Tech Mono", monospace;
-  font-size: 0.65rem;
-  padding: 6px 4px;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  padding: 8px 6px;
   cursor: pointer;
-  transition: all 0.15s;
-  text-transform: uppercase;
+  transition: background 0.15s, color 0.15s;
+  text-transform: var(--title-transform);
   letter-spacing: 0.04em;
 }
+.entity-type-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
 .entity-type-btn:hover {
-  border-color: var(--accent);
+  color: var(--text);
+  background: var(--bg-mid);
 }
 .entity-type-btn.active {
   background: var(--accent);
-  border-color: var(--accent);
   color: var(--bg);
   font-weight: 700;
+}
+.entity-type-btn.active .entity-type-icon {
+  color: var(--bg);
+}
+@media (max-width: 420px) {
+  .entity-type-label {
+    display: none;
+  }
+  .entity-type-icon {
+    font-size: 1.3rem;
+  }
 }
 
 /* ---- Esprits invoqués ---- */
@@ -4739,6 +4797,17 @@ input[type="range"]#risk-dice-slider {
   display: none;
 }
 
+/* Conteneurs de champs par type d'entité (métahumain/esprit/créature) :
+   même raison que .gen-filters ci-dessus — display:contents pour que
+   chaque .form-group interne reste une cellule de .gen-form, sinon tout
+   le bloc devient une seule cellule étroite et très haute. */
+.entity-fields {
+  display: contents;
+}
+.entity-fields[hidden] {
+  display: none;
+}
+
 /* ============================================================
    ANARCHY — seuils de blessures en zone Combat + armures optionnelles
    ============================================================ */
@@ -4972,8 +5041,8 @@ input[type="range"]#risk-dice-slider {
   color: var(--accent);
 }
 .btn-icon.danger {
-  color: var(--danger, #d33);
-  border-color: var(--danger, #d33);
+  color: var(--danger);
+  border-color: var(--danger);
   margin-left: auto;
 }
 
@@ -5005,8 +5074,8 @@ input[type="range"]#risk-dice-slider {
   color: var(--accent);
 }
 .btn-secondary.alert-on {
-  border-color: var(--danger, #d33);
-  color: var(--danger, #d33);
+  border-color: var(--danger);
+  color: var(--danger);
   animation: pulseAlert 1.6s ease-in-out infinite;
 }
 @keyframes pulseAlert {
@@ -5064,8 +5133,8 @@ input[type="range"]#risk-dice-slider {
   border-color: var(--accent2);
 }
 .ic-status.down {
-  color: var(--danger, #d33);
-  border-color: var(--danger, #d33);
+  color: var(--danger);
+  border-color: var(--danger);
   text-decoration: line-through;
 }
 .ic-row-effect {
@@ -5097,7 +5166,7 @@ input[type="range"]#risk-dice-slider {
 .ss-value.cool { color: var(--text); }
 .ss-value.warm { color: var(--accent2); }
 .ss-value.hot { color: var(--accent); }
-.ss-value.conv { color: var(--danger, #d33); }
+.ss-value.conv { color: var(--danger); }
 .ss-gauge {
   height: 9px;
   background: var(--bg-card);
@@ -5122,7 +5191,7 @@ input[type="range"]#risk-dice-slider {
 .ss-fill.warm { background: var(--accent2); }
 .ss-fill.hot { background: var(--accent); }
 .ss-fill.conv {
-  background: var(--danger, #d33);
+  background: var(--danger);
   animation: pulseAlert 1.2s ease-in-out infinite;
 }
 .ss-actions {
@@ -5170,9 +5239,9 @@ input[type="range"]#risk-dice-slider {
   color: var(--accent);
 }
 .ss-convergence {
-  border: 1px solid var(--danger, #d33);
+  border: 1px solid var(--danger);
   border-radius: 3px;
-  background: color-mix(in srgb, var(--danger, #d33) 12%, transparent);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
   color: var(--text);
   font-size: 0.7rem;
   line-height: 1.45;
