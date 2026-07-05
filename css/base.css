@@ -971,42 +971,46 @@ select optgroup {
   padding: 0.75rem 1rem;
 }
 
-/* Attribut grid — tous les attributs sur une seule ligne, quel que soit
-   leur nombre (8 pour SR5/SR6, 5 pour Anarchy). flex:1 répartit la largeur
-   à parts égales ; min-width:0 évite tout débordement. */
+/* Bloc attributs — table à filets verticaux, sans boîtes individuelles :
+   un seul plan, des filets entre colonnes, valeurs alignées (lecture
+   « fiche de perso »). La grille primaire s'adapte au nombre d'attributs
+   (8 pour SR5/SR6, 5 pour Anarchy) via grid-auto-flow. */
 .attr-grid {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 4px;
-  margin-bottom: 0.75rem;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  margin-bottom: var(--sp-2);
 }
-.attr-grid .attr-cell {
-  flex: 1 1 0;
-  min-width: 0;
-}
-.attr-grid.with-ess {
-  /* les grilles secondaires (ESS/MAG/RES) restent alignées à gauche
-     sans s'étirer sur toute la largeur */
-  flex-wrap: wrap;
-}
-.attr-grid.with-ess .attr-cell {
-  flex: 0 1 auto;
-  min-width: 56px;
+/* Ligne des attributs spéciaux (ESS/MAG/RES) : colonnes fixes calées sur
+   les primaires (var --attr-cols, 8 par défaut) ; les cellules se placent
+   automatiquement à gauche, donc ESS tombe sous le 1er attribut, etc. */
+.attr-grid.attr-special-row {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(var(--attr-cols, 8), 1fr);
+  margin-bottom: var(--sp-3);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--border);
 }
 
 .attr-cell {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 5px 2px;
+  padding: var(--sp-1) 2px;
   text-align: center;
 }
-.attr-cell.highlight {
-  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+/* Filet vertical entre colonnes uniquement (pas de lignes horizontales). */
+.attr-cell:not(:first-child) {
+  border-left: 1px solid var(--border);
+}
+/* Attributs spéciaux : label accentué et fond très légèrement teinté,
+   pour les distinguer des primaires sans rompre l'alignement. */
+.attr-cell.attr-special {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+.attr-cell.attr-special .attr-label {
+  color: var(--accent);
 }
 .attr-label {
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.52rem;
+  font-size: var(--fs-2xs);
   color: var(--text-dim);
   letter-spacing: 0.04em;
   display: block;
@@ -1014,7 +1018,7 @@ select optgroup {
 }
 .attr-value {
   font-family: "Share Tech Mono", monospace;
-  font-size: 1.05rem;
+  font-size: var(--fs-lg);
   color: var(--accent);
   display: block;
   line-height: 1.2;
@@ -1053,13 +1057,12 @@ select optgroup {
   cursor: help;
 }
 
-/* Limites SR5 (Phys/Ment/Soc) et référence SR6 (ME) — cellules à leur
-   taille naturelle, pas d'étirement quel que soit le nombre d'items. */
+/* Limites SR5 (Phys/Ment/Soc) et référence SR6 (ME) — mêmes filets
+   verticaux, calées à gauche à leur taille naturelle. */
 .limites-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--sp-3);
 }
 .limites-grid .attr-cell {
   flex: 0 1 auto;

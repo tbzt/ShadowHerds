@@ -56,10 +56,11 @@ Object.assign(CardRenderer, {
     html += '<div class="combat-zone">';
     html += this._zoneEyebrow("Combat");
     html += '<div class="combat-row">';
-    html += this._initPill(initBase ?? 0, initDice ?? 1, pnj);
+    const initDetail = `${Utils.attrFullName("RÉA")} ${attrs.RÉA} + ${Utils.attrFullName("INT")} ${attrs.INT}`;
+    html += this._initPill(initBase ?? 0, initDice ?? 1, pnj, initDetail);
     if (pnj.drainResist != null)
       html += this._rollPill("Drain", Math.max(0, pnj.drainResist - malus6), "Résistance au Drain");
-    html += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus6), "Test de défense");
+    html += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus6), "Test de défense : Réaction + Intuition");
     html += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure (non affectée par le malus de blessure)");
     html += `<span class="stat-pill" title="Score Défensif">SD <strong>${sdBase ?? "?"}</strong></span>`;
     if (pa) html += `<span class="stat-pill">PA <strong>${pa}</strong></span>`;
@@ -103,7 +104,7 @@ Object.assign(CardRenderer, {
       html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>`;
       html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k] ?? "—")).join("")}</div>`;
       if (extras.length)
-        html += `<div class="attr-grid with-ess">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
+        html += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, attrs[k], "attr-special")).join("")}</div>`;
       html += `<div class="limites-grid" style="margin-top:6px;">
         ${this._attrCell("ME", me ?? "?")}
       </div></div>`;

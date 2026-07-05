@@ -66,7 +66,8 @@ Object.assign(CardRenderer, {
     html += '<div class="combat-zone">';
     html += this._zoneEyebrow("Combat");
     html += '<div class="combat-row">';
-    html += this._initPill(init, initDice, pnj);
+    const initDetail = `${Utils.attrFullName("REA")} ${attrs.REA} + ${Utils.attrFullName("INT")} ${attrs.INT}`;
+    html += this._initPill(init, initDice, pnj, initDetail);
     if (drainResist != null)
       html += this._rollPill("Drain", Math.max(0, drainResist - malus5), "Résistance au Drain");
     html += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus5), "Test de défense : Réaction + Intuition");
@@ -108,11 +109,16 @@ Object.assign(CardRenderer, {
     html += '<div class="ref-zone">';
     if (prefs.showAttributes) {
       const attrKeys = ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"];
-      const extras = ["ESS", ...(attrs.MAG ? ["MAG"] : [])];
+      // Attributs spéciaux : ESS toujours, puis MAG (éveillé) ou RES (techno).
+      const extras = [
+        "ESS",
+        ...(attrs.MAG ? ["MAG"] : []),
+        ...(attrs.RES ? ["RES"] : []),
+      ];
       html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>`;
       html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
       if (extras.length)
-        html += `<div class="attr-grid with-ess">${extras.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
+        html += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, attrs[k], "attr-special")).join("")}</div>`;
       html += `<div class="limites-grid" style="margin-top:6px;">
         ${this._attrCell("Lim.Phys", limPhys)}
         ${this._attrCell("Lim.Ment", limMent)}

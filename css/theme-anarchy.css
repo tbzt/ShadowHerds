@@ -115,9 +115,13 @@
   font-weight: 700;
 }
 
-/* ---- Attributs : barre orange à gauche ---- */
+/* ---- Attributs : filet orange épais entre colonnes (identité punk) ----
+   Table à filets verticaux : la barre orange sépare les colonnes, donc
+   pas de filet en tête de rangée (première cellule exclue). */
 [data-edition="anarchy"] .attr-cell {
   border-radius: 0;
+}
+[data-edition="anarchy"] .attr-cell:not(:first-child) {
   border-left: 2px solid #ff8800;
 }
 
