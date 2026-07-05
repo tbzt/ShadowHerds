@@ -30,7 +30,8 @@ const Storage = {
       const raw = localStorage.getItem(this._globalKey(key));
       if (raw === null) return fallback;
       return JSON.parse(raw);
-    } catch {
+    } catch (e) {
+      Debug.warn("storage", "lecture globale échouée", { key, error: e });
       return fallback;
     }
   },
@@ -38,8 +39,10 @@ const Storage = {
   setGlobal(key, value) {
     try {
       localStorage.setItem(this._globalKey(key), JSON.stringify(value));
+      Debug.log("storage", "setGlobal", { key });
       return true;
-    } catch {
+    } catch (e) {
+      Debug.warn("storage", "écriture globale échouée", { key, error: e });
       return false;
     }
   },
@@ -49,7 +52,8 @@ const Storage = {
       const raw = localStorage.getItem(this._key(key));
       if (raw === null) return fallback;
       return JSON.parse(raw);
-    } catch {
+    } catch (e) {
+      Debug.warn("storage", "lecture échouée", { key, error: e });
       return fallback;
     }
   },
@@ -57,8 +61,10 @@ const Storage = {
   set(key, value) {
     try {
       localStorage.setItem(this._key(key), JSON.stringify(value));
+      Debug.log("storage", "set", { key });
       return true;
-    } catch {
+    } catch (e) {
+      Debug.warn("storage", "écriture échouée", { key, error: e });
       return false;
     }
   },
@@ -66,6 +72,7 @@ const Storage = {
   remove(key) {
     try {
       localStorage.removeItem(this._key(key));
+      Debug.log("storage", "remove", { key });
     } catch { /* noop */ }
   },
 
@@ -74,7 +81,8 @@ const Storage = {
       const raw = localStorage.getItem(this._keyForEdition(edition, key));
       if (raw === null) return fallback;
       return JSON.parse(raw);
-    } catch {
+    } catch (e) {
+      Debug.warn("storage", "lecture d'édition échouée", { edition, key, error: e });
       return fallback;
     }
   },
@@ -82,8 +90,10 @@ const Storage = {
   setForEdition(edition, key, value) {
     try {
       localStorage.setItem(this._keyForEdition(edition, key), JSON.stringify(value));
+      Debug.log("storage", "setForEdition", { edition, key });
       return true;
-    } catch {
+    } catch (e) {
+      Debug.warn("storage", "écriture d'édition échouée", { edition, key, error: e });
       return false;
     }
   },
@@ -113,15 +123,15 @@ const Storage = {
   /** Efface toutes les données de l'édition courante */
   clearEdition() {
     const prefix = `sr_pnj_v2_${this._edition}_`;
-    Object.keys(localStorage)
-      .filter(k => k.startsWith(prefix))
-      .forEach(k => localStorage.removeItem(k));
+    const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix));
+    keys.forEach(k => localStorage.removeItem(k));
+    Debug.warn("storage", "clearEdition", { edition: this._edition, removed: keys.length });
   },
 
   /** Efface toutes les données de toutes les éditions */
   clearAll() {
-    Object.keys(localStorage)
-      .filter(k => k.startsWith('sr_pnj_v2_'))
-      .forEach(k => localStorage.removeItem(k));
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('sr_pnj_v2_'));
+    keys.forEach(k => localStorage.removeItem(k));
+    Debug.warn("storage", "clearAll", { removed: keys.length });
   }
 };
