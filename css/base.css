@@ -3200,7 +3200,7 @@ select optgroup {
   border-radius: 50%;
   background: var(--accent);
   color: var(--bg);
-  font-size: 9px;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   font-style: italic;
   font-family: Georgia, serif;
@@ -3330,10 +3330,10 @@ select optgroup {
 }
 .skill-tag-spec {
   opacity: 0.8;
-  font-size: 0.56rem;
+  font-size: var(--fs-2xs);
 }
 .skill-tag .lim {
-  font-size: 0.56rem;
+  font-size: var(--fs-2xs);
   opacity: 0.85;
   padding-left: 4px;
   margin-left: 3px;
@@ -4041,7 +4041,7 @@ input[type="range"]#risk-dice-slider {
   border: 1px solid var(--accent);
   color: var(--accent);
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.66rem;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -4050,7 +4050,7 @@ input[type="range"]#risk-dice-slider {
   padding-left: 3px;
   border-left: 1px solid var(--accent);
   opacity: 0.85;
-  font-size: 0.6rem;
+  font-size: var(--fs-2xs);
 }
 /* dans la liste d'armes Anarchy, le badge s'aligne à droite */
 .anarchy-skill-row.weapon-rollable .anarchy-skill-pool {
@@ -4075,7 +4075,7 @@ input[type="range"]#risk-dice-slider {
   align-items: center;
   gap: 0.2rem;
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.78rem;
+  font-size: var(--fs-sm);
 }
 .init-result strong,
 .stat-pill.accent .init-result strong {
@@ -4084,12 +4084,12 @@ input[type="range"]#risk-dice-slider {
   border-radius: 3px;
   padding: 0 0.3rem;
   font-family: var(--font-display);
-  font-size: 0.86rem;
+  font-size: var(--fs-base);
 }
 .init-clear {
   margin-left: 0.15rem;
   cursor: pointer;
-  font-size: 0.6rem;
+  font-size: var(--fs-2xs);
   opacity: 0.6;
   color: var(--bg);
 }
@@ -4338,7 +4338,7 @@ input[type="range"]#risk-dice-slider {
    ============================================================ */
 .zone-eyebrow {
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.58rem;
+  font-size: var(--fs-2xs);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--accent);
@@ -4676,12 +4676,12 @@ input[type="range"]#risk-dice-slider {
   transform: scale(0.99);
 }
 .weapon-name {
-  font-size: 0.74rem;
+  font-size: var(--fs-xs);
   color: var(--text);
 }
 .weapon-stat {
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.58rem;
+  font-size: var(--fs-2xs);
   color: var(--text-dim);
   margin-top: 2px;
 }
@@ -4695,12 +4695,12 @@ input[type="range"]#risk-dice-slider {
   border: 1px solid var(--accent);
   color: var(--accent);
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   white-space: nowrap;
 }
 .weapon-line .weapon-pool .lim {
-  font-size: 0.56rem;
+  font-size: var(--fs-2xs);
   opacity: 0.85;
   padding-left: 3px;
   margin-left: 2px;
@@ -4761,7 +4761,7 @@ input[type="range"]#risk-dice-slider {
 }
 .ref-lbl {
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.56rem;
+  font-size: var(--fs-2xs);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -4813,7 +4813,7 @@ input[type="range"]#risk-dice-slider {
   align-items: center;
   cursor: pointer;
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.6rem;
+  font-size: var(--fs-2xs);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-dim);
