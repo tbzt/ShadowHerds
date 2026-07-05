@@ -19,6 +19,36 @@
   --card-clip: none;
   --hd-clip: none;
   --danger: #c0392b;
+
+  /* ---- Échelle typographique ----
+     8 pas, plancher à 10px (--fs-2xs) : la plus petite taille lisible en
+     table pour un MJ. Remplace la quarantaine de tailles ad hoc. */
+  --fs-2xs: 0.625rem;   /* 10px — micro-labels mono (attributs, sections) */
+  --fs-xs: 0.75rem;     /* 12px — pastilles, tags, méta */
+  --fs-sm: 0.8125rem;   /* 13px — corps secondaire */
+  --fs-base: 0.875rem;  /* 14px — corps */
+  --fs-md: 1rem;        /* 16px */
+  --fs-lg: 1.25rem;     /* 20px — valeurs d'attributs, titres de carte */
+  --fs-xl: 1.5rem;      /* 24px — titres de panel */
+  --fs-2xl: 2rem;       /* 32px */
+
+  /* ---- Échelle d'espacement ---- base 4px, pour un rythme régulier. */
+  --sp-1: 0.25rem;      /* 4px */
+  --sp-2: 0.5rem;       /* 8px */
+  --sp-3: 0.75rem;      /* 12px */
+  --sp-4: 1rem;         /* 16px */
+  --sp-5: 1.5rem;       /* 24px */
+  --sp-6: 2rem;         /* 32px */
+  --sp-8: 3rem;         /* 48px */
+
+  /* ---- Tokens de mouvement ---- 3 durées + 2 courbes ; centralise le
+     respect de prefers-reduced-motion. --ease-emphasized est la courbe
+     à léger dépassement déjà utilisée pour les feuilles basses. */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 300ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.34, 1.2, 0.6, 1);
 }
 html {
   height: 100%;
