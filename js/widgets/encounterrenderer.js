@@ -192,6 +192,9 @@ const EncounterRenderer = {
 
     const visible = rows.some((r) => r.pnj);
     box.hidden = !visible;
+    // Bouton combat de la topbar : allumé tant qu'une scène est en cours.
+    const combatBtn = document.getElementById("topbar-combat-btn");
+    if (combatBtn) combatBtn.classList.toggle("is-active", visible);
     if (!visible) return;
 
     const roundEl = document.getElementById("sidebar-encounter-round");

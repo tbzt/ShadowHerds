@@ -101,7 +101,7 @@ Object.assign(CardRenderer, {
       const extras = [];
       if (attrs.MAG) extras.push("MAG");
       if (attrs.RES) extras.push("RES");
-      if (attrs.EDG != null) extras.push("EDG");
+      if (attrs.ATO != null) extras.push("ATO");
       html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>`;
       html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k] ?? "—")).join("")}</div>`;
       if (extras.length)

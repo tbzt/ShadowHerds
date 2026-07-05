@@ -28,8 +28,8 @@ const EditionSR6 = {
       de prise de risque (propre à Anarchy 2.0). */
   usesRiskPanel: false,
   /** Neutre : la réserve de menace (compteur MJ global) est propre à
-      Anarchy 2.0 (p.138) — en SR6 la ressource de relance est l'Atout,
-      porté par chaque PNJ (attrs.EDG). */
+      Anarchy 2.0 (p.138) — en SR6 la ressource de relance est l'Atout
+      (ATO), porté par chaque PNJ (attrs.ATO). */
   usesThreatReserve: false,
   /** Action de relance « Relancer les ratés » (p.50-51) : relance les dés
       ratés (mode "misses"), interdite dès qu'il y a une bévue OU un échec
@@ -39,7 +39,7 @@ const EditionSR6 = {
     label: "Relancer les ratés",
     mode: "misses",
     blockedBy: "glitch",
-    costAttr: "EDG",
+    costAttr: "ATO",
   },
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
   /** Initiative chiffrée (base + dés) pour le tracker de combat : lue sur
@@ -493,19 +493,45 @@ const EditionSR6 = {
     10: 16,
   },
 
-  /* ---- Initiative base/dés par proRating ---- */
+  /* ---- Initiative ----
+     Initiative = RÉA + INT + 1D6. Les dés supplémentaires viennent UNIQUEMENT
+     des augmentations/pouvoirs (BonusEngine), jamais de la cote de prof :
+     base 1D6 pour tout métahumain (`dice` = 1 partout). */
   initByProf: {
-    0: { base: 4, dice: 1 },
-    1: { base: 4, dice: 1 },
-    2: { base: 4, dice: 1 },
-    3: { base: 6, dice: 1 },
-    4: { base: 8, dice: 1 },
-    5: { base: 9, dice: 2 },
-    6: { base: 11, dice: 3 },
-    7: { base: 12, dice: 3 },
-    8: { base: 15, dice: 4 },
-    9: { base: 14, dice: 3 },
-    10: { base: 15, dice: 5 },
+    0: { dice: 1 },
+    1: { dice: 1 },
+    2: { dice: 1 },
+    3: { dice: 1 },
+    4: { dice: 1 },
+    5: { dice: 1 },
+    6: { dice: 1 },
+    7: { dice: 1 },
+    8: { dice: 1 },
+    9: { dice: 1 },
+    10: { dice: 1 },
+  },
+
+  /* Plafond de dés d'initiative (max 5D6). Lu par BonusEngine. */
+  maxInitDice: 5,
+
+  /* Sources de dés d'initiative issues des livres (cyber/bioware), reconnues
+     par BonusEngine.CYBER_BONUS. Pool DÉDIÉ pour varier l'origine des dés des
+     combattants mundains (pas toujours « Réflexes câblés »). */
+  initAugPool: [
+    { label: "Réflexes câblés 1 [+1D6 initiative, +1 PA MIN]", dice: 1 },
+    { label: "Réflexes câblés 2 [+2D6 initiative, +1 PA]", dice: 2 },
+    { label: "Réflexes câblés 3 [+3D6 initiative, +1 PA MAJ]", dice: 3 },
+    { label: "Booster synaptique 1 [bioware, +1D6 initiative]", dice: 1 },
+    { label: "Booster synaptique 2 [bioware, +2D6 initiative]", dice: 2 },
+    { label: "Move-by-Wire 2 [+2D6 initiative]", dice: 2 },
+  ],
+
+  /** Tire une source d'init aléatoire, dés bornés par la cote (plafond 5D6
+      final géré par BonusEngine). Renvoie un libellé. */
+  initAugFor(proRating) {
+    const maxBonus = proRating >= 6 ? 3 : 2;
+    const eligible = this.initAugPool.filter((s) => s.dice <= maxBonus);
+    return Utils.rand(eligible).label;
   },
 
   /* ---- Potentiel d'actions par prof ---- */
@@ -1462,7 +1488,9 @@ const EditionSR6 = {
     if (isPolice) result.push(pools.meleeWeapons.find((w) => w.startsWith("Électromatraque")));
 
     result.push(armure);
-    if (!awakened && p >= 3) result.push(Utils.rand(pools.cyberware));
+    // Mundain aguerri : une source d'init variée (dés selon la cote), puis un
+    // cyber de saveur à haute cote. Le plafond 5D6 est appliqué par BonusEngine.
+    if (!awakened && p >= 3) result.push(EditionSR6.initAugFor(p));
     if (!awakened && p >= 6) result.push(Utils.rand(pools.cyberware));
     if (p >= 4 && Utils.randBool(0.4))
       result.push(Utils.rand(pools.equipSpecial));
@@ -1613,10 +1641,15 @@ const EditionSR6 = {
       attrs.RES = Utils.clamp(Math.floor(p / 2) + Utils.randInt(1, 2), 1, 12);
     }
 
-    // Atout (Edge, p.50) : ressource de relance « Relancer les ratés ».
-    // Échelle simple corrélée au professionnalisme, bornée 1-7 ; ajustable
-    // à la main via l'editmodal.
-    attrs.EDG = Utils.clamp(1 + Math.round(p / 2) + Utils.randInt(0, 1), 1, 7);
+    // Atout (ATO, p.69) : attribut suivant la souche métatype (attrRange du
+    // baseMetatype, toujours présent — les mv.ranges/infected peuvent
+    // l'omettre). Le centre du tirage monte avec le professionnalisme (0-10 :
+    // un figurant reste au plancher racial, une élite atteint ~60 % de la
+    // plage), toujours borné par attrRange. Ressource de relance « Relancer
+    // les ratés ».
+    const atoR = this.attrRange[baseMetatype]?.ATO || [1, 6];
+    const atoCenter = atoR[0] + Math.round((atoR[1] - atoR[0]) * Utils.clamp(p / 10, 0, 1) * 0.6);
+    attrs.ATO = Utils.clamp(atoCenter + Utils.randInt(0, 1), atoR[0], atoR[1]);
 
     // Moniteur d'état
     const me = 8 + Math.ceil(attrs.CON / 2);
@@ -1779,9 +1812,9 @@ const EditionSR6 = {
 
   recalc(pnj) {
     const { attrs } = pnj;
-    // Atout (Edge) : init douce pour les PNJ sauvegardés avant l'ajout du
-    // champ (fallback au point d'usage, pas de migration versionnée).
-    attrs.EDG ??= Utils.clamp(1 + Math.round((pnj.proRating || 0) / 2), 1, 7);
+    // Atout : init douce pour les PNJ sauvegardés avant l'ajout du champ
+    // (plancher racial d'attrRange, pas de migration versionnée).
+    attrs.ATO ??= this.attrRange[pnj.meta]?.ATO?.[0] ?? 3;
     pnj.me = 8 + Math.ceil(attrs.CON / 2);
     pnj.initBase = attrs.RÉA + attrs.INT;
     pnj.defense = attrs.RÉA + attrs.INT;

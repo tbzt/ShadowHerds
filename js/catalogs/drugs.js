@@ -50,11 +50,19 @@ const Drugs = {
           recalc: true,
           apply(pnj) {
             pnj.attrs.RÉA = (pnj.attrs.RÉA || 0) + 1;
-            pnj.initDice = (pnj.initDice || 0) + 2;
+            // +2D6 borné au plafond de l'édition (max 5D6) : on mémorise le
+            // delta réellement appliqué pour que revert() reste symétrique
+            // même quand le PNJ était déjà proche/au plafond.
+            const max = (App.getEditionModule(pnj.edition) || {}).maxInitDice || 5;
+            const before = pnj.initDice || 0;
+            const after = Math.min(before + 2, max);
+            pnj._jazzInitDelta = after - before;
+            pnj.initDice = after;
           },
           revert(pnj) {
             pnj.attrs.RÉA = (pnj.attrs.RÉA || 0) - 1;
-            pnj.initDice = (pnj.initDice || 0) - 2;
+            pnj.initDice = (pnj.initDice || 0) - (pnj._jazzInitDelta ?? 2);
+            delete pnj._jazzInitDelta;
           },
         },
         sideEffect: {

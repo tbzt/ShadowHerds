@@ -196,10 +196,13 @@ const EditModal = {
         <input type="number" id="em-attr-MAG" value="${pnj.attrs.MAG}" min="1" max="12">
       </div>`;
     }
-    if (pnj.attrs.EDG !== undefined) {
+    // Ressource de relance (Chance SR5 / Atout SR6), clé portée par le
+    // module d'édition — jamais de nom d'attribut figé côté contrôleur.
+    const edgeKey = App.getEditionModule(pnj.edition).rerollAction?.costAttr;
+    if (edgeKey && pnj.attrs[edgeKey] !== undefined) {
       html += `<div class="form-group">
-        <label>EDG</label>
-        <input type="number" id="em-attr-EDG" value="${pnj.attrs.EDG}" min="0" max="7">
+        <label>${edgeKey}</label>
+        <input type="number" id="em-attr-${edgeKey}" value="${pnj.attrs[edgeKey]}" min="0" max="7">
       </div>`;
     }
     html += "</div></div>";
@@ -416,12 +419,18 @@ const EditModal = {
           .filter(Boolean);
     }
 
-    // Attributs (EDG borné 0-7 : 0 = réserve d'Edge épuisée, les autres 1-12)
-    const allAttrKeys = [...edModuleForm.attributes, "MAG", "EDG"];
+    // Attributs. Ressource de relance (Chance CHC / Atout ATO) bornée 0-7
+    // (0 = épuisée) ; les autres 1-12. Clé lue via le module d'édition.
+    const edgeKey = edModuleForm.rerollAction?.costAttr;
+    const allAttrKeys = [
+      ...edModuleForm.attributes,
+      "MAG",
+      ...(edgeKey ? [edgeKey] : []),
+    ];
     for (const k of allAttrKeys) {
       const el = document.getElementById(`em-attr-${k}`);
       if (el && pnj.attrs[k] !== undefined) {
-        const [lo, hi] = k === "EDG" ? [0, 7] : [1, 12];
+        const [lo, hi] = k === edgeKey ? [0, 7] : [1, 12];
         const raw = parseInt(el.value, 10);
         pnj.attrs[k] = Utils.clamp(
           Number.isNaN(raw) ? pnj.attrs[k] : raw,

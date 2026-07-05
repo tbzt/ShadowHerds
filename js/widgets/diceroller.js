@@ -18,7 +18,7 @@ const DiceRoller = {
   /** Réserve de menace Anarchy 2.0 (p.138) : compteur MJ global de
       scénario, ressource de relance des PNJ. Persistée édition-scopée via
       Storage (jamais localStorage direct). SR5/SR6 n'y touchent pas (leur
-      ressource est l'Edge porté par chaque PNJ). */
+      ressource est la Chance / l'Atout portée par chaque PNJ). */
   _threat: 0,
   _THREAT_DEFAULT: 4,
 

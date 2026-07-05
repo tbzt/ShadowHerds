@@ -1222,7 +1222,18 @@ const Content = {
     ed = this._ed(ed);
     const list = this.pouvoirsAdepte[ed] || [];
     const pool = list.filter((p) => proRating >= p.proRatingMin);
-    return this._sample(pool, Math.min(n, pool.length));
+    const picks = this._sample(pool, Math.min(n, pool.length));
+    // « Réflexes améliorés » (+1 RÉA, +1D6 initiative) : garanti dès la cote 3
+    // pour que l'adepte de combat tire ses dés d'un pouvoir réel, et non de
+    // l'ancien +2 codé en dur (supprimé du calcul d'init).
+    if (proRating >= 3) {
+      const reflexes = pool.find((p) => p.name === "Réflexes améliorés");
+      if (reflexes && !picks.includes(reflexes)) {
+        if (picks.length >= n) picks[picks.length - 1] = reflexes;
+        else picks.push(reflexes);
+      }
+    }
+    return picks;
   },
 
   /** Choisit des traits cohérents avec l'édition et l'archétype. */

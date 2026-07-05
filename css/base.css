@@ -246,6 +246,27 @@ select optgroup {
   display: flex;
 }
 
+/* ============================================================
+   ICÔNES — jeu SVG partagé (sprite #icon-sprite dans index.html).
+   Trait en currentColor : l'icône prend la couleur de son bouton,
+   donc l'accent sur .active/:hover est gratuit, sans surcharge thème.
+   ============================================================ */
+.icon {
+  width: 1.15em;
+  height: 1.15em;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: middle;
+}
+.icon-sm {
+  width: 0.9em;
+  height: 0.9em;
+}
+
 /* TOP BAR */
 #topbar {
   height: 52px;
@@ -254,7 +275,14 @@ select optgroup {
   display: flex;
   align-items: center;
   padding: 0 var(--sp-4);
-  gap: var(--sp-4);
+  gap: var(--sp-3);
+  flex-shrink: 0;
+}
+/* Zone marque (gauche) : logo + badge, groupés et épinglés. */
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
   flex-shrink: 0;
 }
 .topbar-logo {
@@ -302,14 +330,44 @@ select optgroup {
   opacity: 1;
   transform: rotate(180deg);
 }
+/* Spacer entre la marque et le reste : cale marque à gauche, dés + actions
+   à droite → barre équilibrée au lieu de tout tassé à gauche. */
 .topbar-spacer {
   flex: 1;
 }
 
+/* Groupe dés : conteneur borduré discret pour que le stepper + « Lancer » +
+   résultat se lisent comme UNE unité, pas cinq contrôles épars. */
+.topbar-group {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 3px var(--sp-2);
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  flex-shrink: 0;
+}
 #dice-roller {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+}
+
+/* Séparateur vertical entre le groupe dés et les actions MJ. */
+.topbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* Zone actions MJ (droite) : combat, journal, menace, raccourcis. */
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
 }
 
 /* ---- Réserve : stepper + champ ---- */
@@ -363,10 +421,6 @@ select optgroup {
   letter-spacing: 0.1em;
   border-radius: 3px;
   transition: opacity var(--dur-base);
-}
-.dice-roll-icon {
-  font-size: 0.9rem;
-  line-height: 1;
 }
 .dice-roll-btn:hover {
   opacity: 0.85;
@@ -467,9 +521,15 @@ select optgroup {
     background var(--dur-base);
 }
 .nav-btn .nav-icon {
-  font-size: 0.85rem;
-  width: 16px;
-  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  flex-shrink: 0;
+}
+.nav-btn .nav-icon .icon {
+  width: 18px;
+  height: 18px;
 }
 .nav-btn:hover {
   color: var(--text);
@@ -2175,6 +2235,11 @@ select optgroup {
   margin-bottom: var(--sp-2);
   border-bottom: 1px solid var(--border);
 }
+/* Sans ce sélecteur, le display:flex ci-dessus l'emporte sur l'attribut
+   [hidden] et le bloc reste affiché (« Tour suivant / — ») hors combat. */
+.sidebar-encounter[hidden] {
+  display: none;
+}
 .sidebar-encounter-turn {
   display: flex;
   align-items: center;
@@ -2671,26 +2736,51 @@ kbd {
 }
 
 /* ============================================================
-   JOURNAL DES JETS — bouton topbar + panneau
+   ACTIONS TOPBAR — boutons-icônes combat / journal / raccourcis.
+   Base = secondaire neutre ; le combat est mis en avant, les
+   raccourcis restent discrets (-quiet).
    ============================================================ */
-.dice-log-toggle {
+.topbar-action {
   width: 28px;
   height: 28px;
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-dim);
-  font-size: 0.9rem;
-  line-height: 1;
   border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: border-color var(--dur-base), color var(--dur-base);
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base),
+    background var(--dur-base);
 }
-.dice-log-toggle:hover {
+.topbar-action:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+/* Combat : outil MJ majeur → liseré accent au repos pour ressortir de la
+   grappe d'icônes ; état actif plein quand une scène est en cours. */
+.topbar-action-combat {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.topbar-action-combat:hover {
+  background: var(--glow);
+}
+.topbar-action-combat.is-active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+/* Raccourcis : aide secondaire, volontairement discrète. */
+.topbar-action-quiet {
+  border-color: transparent;
+  opacity: 0.75;
+}
+.topbar-action-quiet:hover {
+  opacity: 1;
 }
 
 /* Réserve de menace (Anarchy 2.0) : badge topbar masqué par défaut,
@@ -3013,8 +3103,11 @@ kbd {
     border-right-color: var(--accent);
   }
   .nav-btn .nav-icon {
-    font-size: 1.05rem;
     width: auto;
+  }
+  .nav-btn .nav-icon .icon {
+    width: 22px;
+    height: 22px;
   }
   .nav-btn .nav-label {
     font-size: 0.56rem;
@@ -3214,8 +3307,14 @@ kbd {
     border-top-color: var(--accent);
   }
   .bnav-icon {
-    font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     line-height: 1;
+  }
+  .bnav-icon .icon {
+    width: 22px;
+    height: 22px;
   }
   .bnav-label {
     font-family: var(--font-display);
@@ -3225,11 +3324,14 @@ kbd {
     text-transform: uppercase;
   }
 
-  /* ---- Topbar allégée : logo (retour accueil) + badge édition ---- */
-  #dice-roller {
-    display: none;
-  }
-  .dice-log-toggle {
+  /* ---- Topbar allégée : marque + suivi de combat conservé ----
+     Les dés passent par le FAB, le journal par le bouton de la feuille des
+     dés ; on garde le combat joignable (sinon injoignable sur mobile) et on
+     retire le groupe dés, le séparateur et les actions secondaires. */
+  #dice-roller,
+  .topbar-divider,
+  #dice-log-btn,
+  .topbar-action-quiet {
     display: none;
   }
   .topbar-logo {
@@ -3237,6 +3339,10 @@ kbd {
   }
   .topbar-edition-badge {
     min-height: 34px;
+  }
+  .topbar-action-combat {
+    width: 38px;
+    height: 38px;
   }
 
   /* ---- Journal des jets en feuille basse ---- */
@@ -3463,10 +3569,9 @@ kbd {
     padding: 0 14px;
     font-size: 0.8rem;
   }
-  .dice-log-toggle {
+  .topbar-action {
     width: 38px;
     height: 38px;
-    font-size: 1rem;
   }
   .grid-filter {
     min-height: 38px;

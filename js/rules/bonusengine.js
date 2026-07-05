@@ -25,6 +25,10 @@ const BonusEngine = {
     sr5: [
       ["Réflexes câblés 1", { initDice: 1 }],
       ["Réflexes câblés 2", { initDice: 2 }],
+      ["Réflexes câblés 3", { initDice: 3 }],
+      ["Booster synaptique 1", { initDice: 1 }],
+      ["Booster synaptique 2", { initDice: 2 }],
+      ["Move-by-Wire 2", { initDice: 2 }],
       ["Accroissement de réaction", { attr: "REA", val: 1 }],
       ["Tonification musculaire", { attr: "FOR", val: 1 }],
       ["Armure dermique", { armor: 1 }],
@@ -32,6 +36,10 @@ const BonusEngine = {
     sr6: [
       ["Réflexes câblés 1", { initDice: 1 }],
       ["Réflexes câblés 2", { initDice: 2 }],
+      ["Réflexes câblés 3", { initDice: 3 }],
+      ["Booster synaptique 1", { initDice: 1 }],
+      ["Booster synaptique 2", { initDice: 2 }],
+      ["Move-by-Wire 2", { initDice: 2 }],
       ["Amplificateur de réaction 2", { attr: "RÉA", val: 2 }],
       ["Amplificateurs synaptiques 2", { attr: "INT", val: 2 }],
       ["Tonification musculaire 3", { attr: "FOR", val: 3 }],
@@ -175,6 +183,14 @@ const BonusEngine = {
     if (pnj._infectedBonus && this._applyOneBonus(pnj, edition, pnj._infectedBonus))
       attrsTouched = true;
     delete pnj._infectedBonus;
+
+    // Plafond règle : tous les bonus (cyber + traits + pouvoirs + métatype +
+    // Infecté) sont cumulés ci-dessus ; on borne ici, point de convergence
+    // unique. Max défini par le module d'édition (SR5/SR6 : 5D6, base 1 + 4).
+    if (pnj.initDice != null) {
+      const maxDice = EditionModule && EditionModule.maxInitDice ? EditionModule.maxInitDice : 5;
+      pnj.initDice = Utils.clamp(pnj.initDice || 1, 1, maxDice);
+    }
 
     if (attrsTouched && EditionModule && typeof EditionModule.recalc === "function") {
       EditionModule.recalc(pnj);

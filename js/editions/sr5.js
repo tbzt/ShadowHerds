@@ -19,18 +19,18 @@ const EditionSR5 = {
       de prise de risque (propre à Anarchy 2.0). */
   usesRiskPanel: false,
   /** Neutre : la réserve de menace (compteur MJ global) est propre à
-      Anarchy 2.0 (p.138) — en SR5 la ressource de relance est l'Edge,
-      porté par chaque PNJ (attrs.EDG). */
+      Anarchy 2.0 (p.138) — en SR5 la ressource de relance est la Chance
+      (CHC), portée par chaque PNJ (attrs.CHC). */
   usesThreatReserve: false,
   /** Action de relance « Seconde chance » (p.58) : relance les dés ratés
-      (mode "misses"), interdite sur échec critique, coûte 1 point d'Edge
+      (mode "misses"), interdite sur échec critique, coûte 1 point de Chance
       du PNJ. Lue par DiceRoller via App.editionModule, jamais de branche
       d'édition côté widget. */
   rerollAction: {
     label: "Seconde chance",
     mode: "misses",
     blockedBy: "critGlitch",
-    costAttr: "EDG",
+    costAttr: "CHC",
   },
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
   /** Initiative chiffrée (base + dés) pour le tracker de combat : lue sur
@@ -297,15 +297,43 @@ const EditionSR5 = {
       Neutre : SR5 n'a pas cette règle (concept propre à Anarchy 2.0). */
   secPhysBonus: null,
 
-  /* ---- Initiative par proRating ---- */
+  /* ---- Initiative ----
+     Règle SR5 p.159 : Initiative = RÉA + INT + 1D6. Les dés supplémentaires
+     viennent UNIQUEMENT des augmentations/pouvoirs (appliqués par BonusEngine),
+     jamais de la cote de prof. La base reste donc 1D6 pour tout métahumain ;
+     le champ `dice` vaut 1 partout (conservé pour compat. de forme). */
   initByProf: {
-    0: { base: 6, dice: 1 },
-    1: { base: 6, dice: 1 },
-    2: { base: 7, dice: 1 },
-    3: { base: 7, dice: 1 },
-    4: { base: 8, dice: 1 },
-    5: { base: 10, dice: 3 },
-    6: { base: 11, dice: 4 },
+    0: { dice: 1 },
+    1: { dice: 1 },
+    2: { dice: 1 },
+    3: { dice: 1 },
+    4: { dice: 1 },
+    5: { dice: 1 },
+    6: { dice: 1 },
+  },
+
+  /* Plafond de dés d'initiative (SR5 p.159 : max 5D6). Lu par BonusEngine. */
+  maxInitDice: 5,
+
+  /* Sources de dés d'initiative issues des livres (cyber/bioware), toutes
+     reconnues par BonusEngine.CYBER_BONUS. Pool DÉDIÉ (distinct du cyber
+     générique) pour varier l'origine des dés des combattants mundains sans en
+     refiler au hasard à des PNJ non augmentés. */
+  initAugPool: [
+    { label: "Réflexes câblés 1 [+1D6 initiative, +1 passe]", dice: 1 },
+    { label: "Réflexes câblés 2 [+2D6 initiative, +2 passes]", dice: 2 },
+    { label: "Réflexes câblés 3 [+3D6 initiative, +3 passes]", dice: 3 },
+    { label: "Booster synaptique 1 [bioware, +1D6 initiative]", dice: 1 },
+    { label: "Booster synaptique 2 [bioware, +2D6 initiative]", dice: 2 },
+    { label: "Move-by-Wire 2 [+2D6 initiative, +2 passes]", dice: 2 },
+  ],
+
+  /** Tire une source d'init aléatoire, dés bornés par la cote (le plafond 5D6
+      final reste géré par BonusEngine). Renvoie un libellé, jamais null. */
+  initAugFor(proRating) {
+    const maxBonus = proRating >= 6 ? 3 : 2;
+    const eligible = this.initAugPool.filter((s) => s.dice <= maxBonus);
+    return Utils.rand(eligible).label;
   },
 
   /* ---- Options du formulaire ---- */
@@ -1070,7 +1098,7 @@ const EditionSR5 = {
     Lieutenant: (proRating) =>
       proRating >= 3
         ? [
-            "Réflexes câblés 1",
+            EditionSR5.initAugFor(proRating),
             "Yeux cybernétiques (smartlink, vision nocturne)",
           ]
         : [],
@@ -1087,16 +1115,22 @@ const EditionSR5 = {
     Chaman: () => [],
     Technomancien: () => ["Renfort naturel"],
     "Mage Aztechnology": () => [],
+    // Mundain aguerri (prof ≥ 4) : une source d'init variée, plus parfois un
+    // autre cyber de saveur. Sous prof 4 : rien (initiative base 1D6).
     Aucun: (proRating) =>
       proRating >= 4
         ? [
-            Utils.rand([
-              "Réflexes câblés 1",
-              "Yeux cybernétiques (smartlink, vision nocturne)",
-              "Accroissement de réaction 1",
-              "Tonification musculaire 1",
-              "Armure dermique 1",
-            ]),
+            EditionSR5.initAugFor(proRating),
+            ...(Utils.randBool(0.5)
+              ? [
+                  Utils.rand([
+                    "Yeux cybernétiques (smartlink, vision nocturne)",
+                    "Accroissement de réaction 1",
+                    "Tonification musculaire 1",
+                    "Armure dermique 1",
+                  ]),
+                ]
+              : []),
           ]
         : [],
   },
@@ -1526,10 +1560,15 @@ const EditionSR5 = {
       attrs.ESS = Utils.clamp(6 - Utils.randInt(1, 2), 3, 6);
     }
 
-    // Edge (Chance, p.58) : ressource de relance « Seconde chance ». Échelle
-    // simple corrélée au professionnalisme, bornée 1-7 ; ajustable à la main
-    // via l'editmodal.
-    attrs.EDG = Utils.clamp(1 + Math.round(proRating / 2) + Utils.randInt(0, 1), 1, 7);
+    // Chance (CHC, p.68) : attribut suivant la souche métatype (attrRange
+    // du baseMetatype, toujours présent — les mv.ranges/infected peuvent
+    // l'omettre). Le centre du tirage monte avec le professionnalisme (un
+    // figurant reste au plancher racial, une élite atteint ~60 % de la
+    // plage), toujours borné par attrRange. Ressource de relance « Seconde
+    // chance ».
+    const chcR = this.attrRange[baseMetatype]?.CHC || [1, 6];
+    const chcCenter = chcR[0] + Math.round((chcR[1] - chcR[0]) * Utils.clamp(proRating / 6, 0, 1) * 0.6);
+    attrs.CHC = Utils.clamp(chcCenter + Utils.randInt(0, 1), chcR[0], chcR[1]);
 
     // Limites naturelles
     const limPhys = Math.ceil((attrs.FOR * 2 + attrs.CON + attrs.REA) / 3);
@@ -1539,11 +1578,11 @@ const EditionSR5 = {
     // Initiative
     const initData = this.initByProf[archetypeIdx];
     const init = attrs.REA + attrs.INT;
-    // Zoocanthrope : dés d'initiative animale propres (ex. "2D6"), priment
-    // sur le calcul standard par proRating.
+    // Base 1D6 pour tout métahumain ; les dés en plus (Réflexes câblés, pouvoir
+    // adepte « Réflexes améliorés », etc.) sont ajoutés ensuite par BonusEngine.
+    // Zoocanthrope : dés d'initiative animale propres (ex. "2D6") priment.
     const zooInitDice = mv && mv.init ? parseInt(mv.init, 10) : null;
-    const initDice =
-      zooInitDice || (special === "Adepte" && proRating >= 3 ? 2 : initData.dice);
+    const initDice = zooInitDice || initData.dice;
 
     // Tradition magique & esprit mentor (corrélés à l'origine).
     // Le mage/chaman lance des sorts (drainResist) ; l'adepte « pur » non.
@@ -1758,9 +1797,9 @@ const EditionSR5 = {
 
   recalc(pnj) {
     const { attrs, proRating } = pnj;
-    // Edge : init douce pour les PNJ sauvegardés avant l'ajout du champ
-    // (fallback au point d'usage, pas de migration versionnée).
-    attrs.EDG ??= Utils.clamp(1 + Math.round((proRating || 0) / 2), 1, 7);
+    // Chance : init douce pour les PNJ sauvegardés avant l'ajout du champ
+    // (plancher racial d'attrRange, pas de migration versionnée).
+    attrs.CHC ??= this.attrRange[pnj.meta]?.CHC?.[0] ?? 3;
     pnj.limPhys = Math.ceil((attrs.FOR * 2 + attrs.CON + attrs.REA) / 3);
     pnj.limMent = Math.ceil((attrs.LOG * 2 + attrs.INT + attrs.VOL) / 3);
     pnj.limSoc = Math.ceil((attrs.CHA * 2 + attrs.VOL + (proRating || 0)) / 3);
