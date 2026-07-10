@@ -31,6 +31,69 @@ const Portrait = {
     Troll: "visible horns on the forehead, tall and broad-shouldered, thick skin texture",
   },
 
+  /* Métavariantes, métaconsciences et zoocanthropes (pnj.metavariant,
+     posé à la génération SR5/SR6 — cf. js/rules/metavariants.js). Quand
+     présent, remplace _METATYPE_TRAITS plutôt que s'y ajouter : le nom de
+     métavariante encode déjà une identité visuelle cohérente avec le
+     métatype de base (ex. Oni implique Ork), les cumuler ferait doublon. */
+  _METAVARIANT_LOOK: {
+    // Troll
+    Cyclope: "cyclops, single large central eye, towering muscular troll build",
+    Fomori: "fomori, twisted asymmetrical troll features, gnarled hunched frame",
+    Géant: "giant, immense towering troll build, larger than an ordinary troll",
+    Minotaure: "minotaur, bull-like head with curved horns, powerful troll build",
+    // Ork
+    Hobgobelin: "hobgoblin, lean wiry ork build, sharp angular features",
+    Ogre: "ogre, hulking heavyset ork build, thick brutish features",
+    Oni: "oni, red-tinted skin, small horns, fierce ork features",
+    Satyre: "satyr, small goat-like horns, ork build with a mischievous look",
+    // Nain
+    Gnome: "gnome, small wiry dwarf build, sharp intelligent eyes",
+    Hanuman: "hanuman, monkey-like features, prehensile tail, agile dwarf build",
+    Koborokuru: "koborokuru, small stocky dwarf build, weathered features",
+    Menehune: "menehune, small sturdy dwarf build, warm island features",
+    Duende: "duende, small dwarf build with sharp mischievous features",
+    // Elfe
+    Dryade: "dryad, willowy elf build, faint bark-like skin texture, leaf-like hair",
+    Nocturna: "nocturna, pale elf build, large light-sensitive eyes, nocturnal features",
+    Wakyambi: "wakyambi, tall elongated limbs, graceful elf build",
+    "Xapiri thëpè": "elf build with vivid natural body markings, forest-attuned features",
+    Dalakitnon: "elf build with faint luminous skin markings",
+    // Humain
+    Nartaki: "nartaki, an extra pair of arms, human build",
+    Valkyrie: "valkyrie, tall powerful human build, commanding presence",
+    // Métaconsciences
+    Centaure: "centaur, human torso fused with a horse body, muscular build",
+    Naga: "naga, human torso with a long serpent lower body, ornate scales",
+    Pixie: "small winged humanoid pixie, delicate features, faint magical glow",
+    Sasquatch: "towering ape-like hominid, thick fur, broad shoulders",
+    Triton: "triton, aquatic humanoid with fish-like lower body or fins, ocean-attuned features",
+    // Zoocanthropes
+    Bovin: "human with bovine features, small horns, broad sturdy build",
+    Canin: "human with canine features, sharp teeth, alert posture",
+    Équin: "human with equine features, elongated face, powerful build",
+    Falcin: "human with falcon-like features, sharp eyes, lean build",
+    Léonin: "human with leonine features, mane-like hair, powerful build",
+    Lupin: "human with wolf-like features, sharp teeth, keen eyes",
+    Panthérin: "human with panther-like features, sleek build, sharp eyes",
+    Tigrin: "human with tiger-like features, faint striped markings, powerful build",
+    Ursin: "human with bear-like features, broad heavy build",
+    Vulpin: "human with fox-like features, sharp narrow face, agile build",
+  },
+
+  /* Types d'esprit (spirit.spiritType, posé par Spirits.spawn — mêmes
+     clés SR5/SR6/Anarchy pour air/betes/eau/feu/terre). */
+  _SPIRIT_TYPE_LOOK: {
+    air: "swirling translucent form of wind and mist, crackling with faint static",
+    betes: "beast-like astral form, feral animalistic silhouette, predatory posture",
+    eau: "flowing translucent form made of rippling water, droplets suspended in the air",
+    feu: "humanoid silhouette made of shifting flame and ember, glowing core",
+    homme: "human-shaped astral silhouette, calm and composed, faint glowing outline",
+    terre: "hulking rocky astral form, cracked stone texture, heavy and grounded",
+    aines: "ancient sage-like astral spirit, faint runic patterns, wise imposing presence",
+    plantes: "astral form woven from vines and roots, faint bioluminescent leaves",
+  },
+
   _GENDER_TRAITS: { M: "male", F: "female", NB: "androgynous" },
 
   /* Diversité d'apparence — sans ça, le modèle retombe par défaut sur des
@@ -114,7 +177,9 @@ const Portrait = {
   _describe(entity) {
     if (entity.type === "spirit") {
       const power = entity.force ?? entity.tier;
-      return `${entity.name}, astral spirit${power ? `, power ${power}` : ""}, ethereal, translucent`;
+      const look =
+        this._SPIRIT_TYPE_LOOK[entity.spiritType] || "ethereal, translucent astral form";
+      return `${entity.name}, astral spirit${power ? `, power ${power}` : ""}, ${look}`;
     }
     if (entity.type === "creature") {
       // visualTag (catalogue) : descripteur visuel dédié, prioritaire sur
@@ -133,7 +198,13 @@ const Portrait = {
     // PNJ standard : métatype + archétype + apparence + rôle (identité
     // visuelle prioritaire — un mage doit rester identifiable comme mage
     // même sous une tenue de sécurité) + décor du milieu + portrait narratif.
-    const meta = this._METATYPE_TRAITS[entity.meta] || entity.meta || "";
+    // Une métavariante (Oni, Naga, Léonin...) remplace le métatype de base :
+    // le nom encode déjà une identité visuelle cohérente avec ce métatype.
+    const meta =
+      this._METAVARIANT_LOOK[entity.metavariant] ||
+      this._METATYPE_TRAITS[entity.meta] ||
+      entity.meta ||
+      "";
     const gender = this._GENDER_TRAITS[entity.gender] || "";
     const archetype = entity.archetype || "";
     const appearance = this._appearanceFor(entity);
