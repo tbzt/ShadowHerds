@@ -309,11 +309,13 @@ const BonusEngine = {
   /** Point d'entrée unique, appelé en fin de generate() de chaque édition. */
   apply(pnj, edition) {
     if (!pnj) return pnj;
-    if (edition === "anarchy") {
+    const EditionModule = App.getEditionModule(edition);
+    // usesRiskPanel = famille Anarchy (RR, atouts, seuils) — jamais de
+    // branche `edition === "anarchy…"` ici (issue #14).
+    if (EditionModule && EditionModule.usesRiskPanel) {
       this._applyAnarchy(pnj);
       return pnj;
     }
-    const EditionModule = App.getEditionModule(edition);
     this._applySR(pnj, edition, EditionModule);
     return pnj;
   },

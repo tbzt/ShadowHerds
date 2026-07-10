@@ -22,7 +22,7 @@ const ItemResolver = {
       tactique activable, qui relève les seuils de blessures physiques
       (pnj.armorOptions[idx] = true). */
   armorOptions(pnj) {
-    if (pnj.edition !== "anarchy") return [];
+    if (!App.getEditionModule(pnj.edition)?.usesRiskPanel) return [];
     const out = [];
     (pnj.equip || []).forEach((item, idx) => {
       if (typeof item !== "string") return;

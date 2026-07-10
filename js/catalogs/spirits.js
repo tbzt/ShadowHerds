@@ -236,7 +236,7 @@ const Spirits = {
      passer alors opts.edition ; l'esprit n'a ni lien ni services. */
   spawn(owner, typeKey, opts = {}) {
     const edition = owner ? owner.edition : opts.edition;
-    return edition === "anarchy"
+    return App.getEditionModule(edition)?.usesRiskPanel
       ? this._spawnAnarchy(owner, typeKey, opts)
       : this._spawnSR(owner, typeKey, opts);
   },
@@ -368,7 +368,7 @@ const Spirits = {
     return {
       id: Utils.uid(),
       type: "spirit",
-      edition: "anarchy",
+      edition: "anarchy2",
       spiritType: typeKey,
       free,
       name: free ? `${t.label} libre` : t.label,

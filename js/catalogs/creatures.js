@@ -2561,7 +2561,7 @@ const Creatures = {
   /* ---- Anarchy 2.0 (p.256-261) : statblocks complets du livre.
      skills : {name, val, attr, rr, spec...} ; armes avec vd affiché ;
      moniteurs = seuils du livre. ---- */
-  ANARCHY: {
+  ANARCHY2: {
     chienGarde: {
       label: "Chien de garde", tier: "Figurant", threat: "forte",
       habitat: ["urbain"],
@@ -2809,7 +2809,7 @@ const Creatures = {
   spawn(edition, key) {
     const c = this.catalogFor(edition)[key];
     if (!c) return null;
-    if (edition === "anarchy") return this._spawnAnarchy(c, key);
+    if (App.getEditionModule(edition)?.usesRiskPanel) return this._spawnAnarchy(c, key);
     return this._spawnSR(c, key, edition);
   },
 
@@ -2886,7 +2886,7 @@ const Creatures = {
     return {
       id: Utils.uid(),
       type: "creature",
-      edition: "anarchy",
+      edition: "anarchy2",
       creatureKey: key,
       name: c.label,
       meta: "Créature",

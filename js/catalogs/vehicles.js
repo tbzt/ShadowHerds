@@ -75,15 +75,15 @@ const Vehicles = {
 
   /* VD standard des armes embarquées, par édition. */
   MOUNTED_WEAPONS: {
-    "fusil d'assaut": { sr5: "10P, PA -2", sr6: "VD 5P", anarchy: "VD 7" },
-    "mitrailleuse":   { sr5: "9P, PA -2",  sr6: "VD 5P", anarchy: "VD 9" },
+    "fusil d'assaut": { sr5: "10P, PA -2", sr6: "VD 5P", anarchy2: "VD 7" },
+    "mitrailleuse":   { sr5: "9P, PA -2",  sr6: "VD 5P", anarchy2: "VD 9" },
   },
 
   /* ---- Détection : un item d'équipement (ou atout Anarchy)
      correspond-il à un véhicule/drone déployable ? ---- */
   matchItem(item, edition) {
     if (typeof item !== "string") return null;
-    if (edition === "anarchy") return this._parseAnarchy(item);
+    if (App.getEditionModule(edition)?.usesRiskPanel) return this._parseAnarchy(item);
     const table = this.CATALOG[edition] || [];
     const entry = table.find((e) => e.match.test(item));
     if (!entry) return null;
@@ -128,7 +128,7 @@ const Vehicles = {
         vitesse: num(/Vitesse\s*\.?\s*(\d+)/i),
         blindage: num(/Blindage\s*(\d+)/i),
       },
-      weapons: this._parseMounted(item, "anarchy"),
+      weapons: this._parseMounted(item, "anarchy2"),
       rrNotes: rrM ? rrM[0].trim() : null,
     };
   },
