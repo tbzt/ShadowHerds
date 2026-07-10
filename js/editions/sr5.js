@@ -124,6 +124,75 @@ const EditionSR5 = {
     source: "equip",
   },
 
+  /* Régime Matrice SR5 — lu par Matrix via App.editionModule.matrixModel
+     (jamais de branche `_edition === "sr5"` dans js/rules/matrix.js). CI à
+     jets de dés, attributs ASDF, Score de Surveillance. */
+  matrixModel: {
+    hasAttrs: true,
+    indiceRange: [1, 12],
+    profileKey: "sr5",
+    icMonitorSize(indice) {
+      return 8 + Math.ceil(indice / 2);
+    },
+    maxActiveIC(indice) {
+      return indice;
+    },
+    profileRangeText(p) {
+      return ` (${p.min}-${p.max})`;
+    },
+    monitorBoxLabel(n) {
+      return `Case ${n}`;
+    },
+    monitorBoxSep() {
+      return "";
+    },
+    firewallLabel: "",
+    overwatchDelta() {
+      return 0;
+    },
+    pickCount(indice, candLen) {
+      return Utils.clamp(2 + Math.ceil(indice / 3) + Utils.randInt(-1, 1), 2, candLen);
+    },
+    icThresholdsText(srv) {
+      const a = srv.attrs || { attack: "?" };
+      return `attaque ${srv.indice * 2} dés [Attaque ${a.attack}] · moniteur ${this.icMonitorSize(srv.indice)} cases · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}`;
+    },
+    actionRoll(kind, srv) {
+      const i = srv.indice;
+      const a = srv.attrs || {};
+      if (kind === "per")
+        return {
+          txt: `Perception ${i * 2}d [T ${a.dataProcessing}]`,
+          tip: "Perception matricielle de la Patrouilleuse : indice × 2, limitée par le Traitement de données",
+        };
+      if (kind === "atk")
+        return {
+          txt: `Attaque ${i * 2}d [A ${a.attack}]`,
+          tip: "Attaque de la CI : indice × 2, limitée par l'Attaque du serveur (p.249)",
+        };
+      if (kind === "def")
+        return {
+          txt: `Défense ${i * 2}d`,
+          tip: "Défense de la CI quand le decker l'attaque (indice × 2, usage — la VF ne détaille pas cette réserve)",
+        };
+      if (kind === "soak")
+        return {
+          txt: `Encaisse ${i + (a.firewall || 0)}d`,
+          tip: "Résistance aux dommages matriciels : indice + Firewall du serveur (p.229)",
+        };
+      return null;
+    },
+    convergenceText() {
+      return "VD 12 dommages matriciels, reboot forcé (perte des marks, éjection, choc en RV). Dans un serveur : 3 marks posées + déploiement de CI ; le demi-DIEU converge à la sortie (p.233, 249).";
+    },
+    attrLimit(kind, srv) {
+      const a = srv.attrs || {};
+      if (kind === "atk") return a.attack ?? null;
+      if (kind === "per") return a.dataProcessing ?? null;
+      return null;
+    },
+  },
+
   /* ----
      ATTRIBUTS PAR MÉTATYPE — table officielle p.68
      Format : { min, max } pour chaque attribut

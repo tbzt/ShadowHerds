@@ -32,7 +32,7 @@ const Matrix = {
      ======================================================== */
   IC: {
     // Anarchy 2.0 p.223 — succès fixes = indice, FW 1, moniteur 2L/1G/1I
-    anarchy: {
+    anarchy2: {
       patrouilleuse: {
         label: "Patrouilleuse",
         watch: true,
@@ -243,7 +243,7 @@ const Matrix = {
      sev : sévérité 0/1/2 pour la sélection aléatoire des CI. */
   PROFILES: {
     // Anarchy 2.0 p.222
-    anarchy: [
+    anarchy2: [
       { id: "bricole", label: "Bricolé, très bas de gamme ou daté", indice: 2, sev: 0 },
       { id: "basdegamme", label: "Bas de gamme (ex : Stuffer Shack)", indice: 3, sev: 0 },
       { id: "moyen", label: "Moyen (corporation classique)", indice: 4, sev: 1 },
@@ -267,7 +267,7 @@ const Matrix = {
 
   /* ---- Curation des CI par gamme (sélection aléatoire) ---- */
   IC_POOLS: {
-    anarchy: [
+    anarchy2: [
       ["tueuse", "potdecolle"],
       ["traqueuse", "blaster", "acide", "bloqueuse"],
       ["noire"],
@@ -355,50 +355,59 @@ const Matrix = {
   /* ========================================================
      ACCESSEURS — patron use(edition), comme Infected/Metavariants
      ======================================================== */
-  _edition: "anarchy",
+  _edition: "anarchy2",
 
   use(edition) {
-    this._edition = this.IC[edition] ? edition : "anarchy";
+    this._edition = this.IC[edition] ? edition : "anarchy2";
     if (this._edition !== edition)
       Debug.warn("matrix", "édition inconnue, repli sur anarchy", { requested: edition });
     return this;
   },
 
+  /** Régime Matrice de l'édition courante (hasAttrs, tailles moniteur, textes
+      de CI…). Toute la logique par édition vit dans les modules
+      (App.editionModule.matrixModel) : matrix.js ne fait qu'orchestrer les
+      catalogues communs (IC / PROFILES / IC_POOLS) et déléguer le régime. */
+  _model() {
+    const mod = App.getEditionModule(this._edition);
+    return (mod && mod.matrixModel) || App.getEditionModule("anarchy2").matrixModel;
+  },
+
   icCatalog() {
-    return this.IC[this._edition] || this.IC.anarchy;
+    return this.IC[this._edition] || this.IC.anarchy2;
   },
 
   profiles() {
-    return this.PROFILES[this._edition === "sr6" ? "sr5" : this._edition] || this.PROFILES.anarchy;
+    return this.PROFILES[this._model().profileKey] || this.PROFILES.anarchy2;
   },
 
   /** Texte d'indice affiché à côté d'un profil (Anarchy : valeur fixe,
       SR5/SR6 : plage min-max — formes de données différentes en amont
       dans PROFILES). */
   profileRangeText(p) {
-    return this._edition === "anarchy" ? ` (${p.indice})` : ` (${p.min}-${p.max})`;
+    return this._model().profileRangeText(p);
   },
 
   /** Taille du moniteur matriciel d'une CI (Anarchy : fixe 4 cases). */
   icMonitorSize(indice) {
-    return this._edition === "anarchy" ? 4 : 8 + Math.ceil(indice / 2);
+    return this._model().icMonitorSize(indice);
   },
 
   /** Nombre max de CI actives simultanément (Anarchy : illimité, p.223). */
   maxActiveIC(indice) {
-    return this._edition === "anarchy" ? Infinity : indice;
+    return this._model().maxActiveIC(indice);
   },
 
   /** Plage d'indice disponible pour un serveur. */
   indiceRange() {
-    return this._edition === "anarchy" ? [2, 8] : [1, 12];
+    return this._model().indiceRange;
   },
 
   /** Anarchy 2.0 n'a pas d'attributs ASDF ni de jets de dés pour les CI
       (succès fixes, p.223) : les consommateurs testent ce flag plutôt
       que de comparer l'édition eux-mêmes. */
   hasAttrs() {
-    return this._edition !== "anarchy";
+    return this._model().hasAttrs;
   },
 
   /** Attributs matriciels ASDF (SR5/SR6), dans l'ordre d'affichage.
@@ -415,38 +424,31 @@ const Matrix = {
   /** Libellé d'une case de moniteur de CI (Anarchy : seuils de blessure
       nommés, SR5/SR6 : numéro de case générique). */
   monitorBoxLabel(n) {
-    return this._edition === "anarchy"
-      ? ["Légère", "Légère", "Grave", "Incapacitante"][n - 1]
-      : `Case ${n}`;
+    return this._model().monitorBoxLabel(n);
   },
 
   /** Séparateur visuel entre les cases de moniteur (Anarchy : regroupe
       les seuils légère/grave/incap par paquets de 2/1/1). */
   monitorBoxSep(n) {
-    return this._edition === "anarchy" && (n === 3 || n === 4)
-      ? ' style="margin-left:3px;"'
-      : "";
+    return this._model().monitorBoxSep(n);
   },
 
   /** Delta de Score de Surveillance dû aux accès illégaux maintenus,
       par round (SR6 uniquement, p.178). Neutre : 0 (SR5/Anarchy n'ont
       pas cette règle). */
   overwatchDelta(illUser, illAdmin) {
-    return this._edition === "sr6" ? illUser * 1 + illAdmin * 3 : 0;
+    return this._model().overwatchDelta(illUser, illAdmin);
   },
 
   /** Texte des seuils/jets de CI pour l'affichage de carte (SR5/SR6 —
       l'Anarchy a son propre bloc de seuils, hors de cette méthode). */
   icThresholdsText(srv) {
-    const a = srv.attrs || { attack: "?", sleaze: "?", dataProcessing: "?", firewall: "?" };
-    return this._edition === "sr5"
-      ? `attaque ${srv.indice * 2} dés [Attaque ${a.attack}] · moniteur ${this.icMonitorSize(srv.indice)} cases · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}`
-      : `jets ${srv.indice * 2} dés · SO ${(a.attack || 0) + (a.sleaze || 0)} · moniteur ${this.icMonitorSize(srv.indice)} cases · init TdD×2+3D6 · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}`;
+    return this._model().icThresholdsText(srv);
   },
 
   /** Libellé de Firewall affiché à côté du moniteur (Anarchy : Firewall fixe 1). */
   firewallLabel() {
-    return this._edition === "anarchy" ? " (Firewall 1)" : "";
+    return this._model().firewallLabel;
   },
 
   /** Texte + libellé d'un jet de CI (perception/attaque/défense/encaissement).
@@ -455,72 +457,30 @@ const Matrix = {
       règle d'encaissement de CI en SR6) : renvoie `null`, pas une valeur
       neutre inventée. */
   actionRoll(kind, srv) {
-    const i = srv.indice;
-    const a = srv.attrs || {};
-    const isSR5 = this._edition === "sr5";
-    if (kind === "per") {
-      return {
-        txt: `Perception ${i * 2}d${isSR5 ? ` [T ${a.dataProcessing}]` : ""}`,
-        tip:
-          "Perception matricielle de la Patrouilleuse : indice × 2" +
-          (isSR5 ? ", limitée par le Traitement de données" : ""),
-      };
-    }
-    if (kind === "atk") {
-      return {
-        txt: `Attaque ${i * 2}d${isSR5 ? ` [A ${a.attack}]` : ""}`,
-        tip: isSR5
-          ? "Attaque de la CI : indice × 2, limitée par l'Attaque du serveur (p.249)"
-          : "Jet d'attaque de la CI : indice × 2 (p.188)",
-      };
-    }
-    if (kind === "def") {
-      return {
-        txt: `Défense ${i * 2}d`,
-        tip: isSR5
-          ? "Défense de la CI quand le decker l'attaque (indice × 2, usage — la VF ne détaille pas cette réserve)"
-          : "Jet de défense de la CI : indice × 2 (p.188)",
-      };
-    }
-    if (kind === "soak" && isSR5) {
-      return {
-        txt: `Encaisse ${i + (a.firewall || 0)}d`,
-        tip: "Résistance aux dommages matriciels : indice + Firewall du serveur (p.229)",
-      };
-    }
-    return null;
+    return this._model().actionRoll(kind, srv);
   },
 
   /** Texte affiché à la convergence du Score de Surveillance (SS = 40,
       SR5/SR6 uniquement — l'Anarchy a son propre modèle DIEU). */
   convergenceText() {
-    return this._edition === "sr5"
-      ? "VD 12 dommages matriciels, reboot forcé (perte des marks, éjection, choc en RV). Dans un serveur : 3 marks posées + déploiement de CI ; le demi-DIEU converge à la sortie (p.233, 249)."
-      : "l'appareil de la dernière action illégale est brické, éjection avec choc, localisation signalée aux autorités (p.178).";
+    return this._model().convergenceText();
   },
 
   /** Limite (cap) d'un jet de CI selon l'attribut de serveur concerné
       (SR5 uniquement : Attaque pour l'attaque, Traitement de données
       pour la perception — SR6 n'a pas de limite, neutre : null). */
   attrLimit(kind, srv) {
-    if (this._edition !== "sr5") return null;
-    const a = srv.attrs || {};
-    if (kind === "atk") return a.attack ?? null;
-    if (kind === "per") return a.dataProcessing ?? null;
-    return null;
+    return this._model().attrLimit(kind, srv);
   },
 
   /** Sélection aléatoire cohérente des CI (Patrouilleuse toujours). */
   pickICs(indice, sev) {
-    const tiers = this.IC_POOLS[this._edition] || this.IC_POOLS.anarchy;
+    const tiers = this.IC_POOLS[this._edition] || this.IC_POOLS.anarchy2;
     const candidates = [...tiers[0]];
     if (sev >= 1) candidates.push(...tiers[1]);
     if (sev >= 2) candidates.push(...tiers[2]);
 
-    const n =
-      this._edition === "anarchy"
-        ? Utils.clamp(1 + Math.round(indice / 2) + Utils.randInt(-1, 1), 1, candidates.length)
-        : Utils.clamp(2 + Math.ceil(indice / 3) + Utils.randInt(-1, 1), 2, candidates.length);
+    const n = this._model().pickCount(indice, candidates.length);
 
     const shuffled = candidates.sort(() => Math.random() - 0.5);
     const chosen = shuffled.slice(0, n);

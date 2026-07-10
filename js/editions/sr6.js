@@ -130,6 +130,67 @@ const EditionSR6 = {
     source: "equip",
   },
 
+  /* Régime Matrice SR6 — lu par Matrix via App.editionModule.matrixModel.
+     Comme SR5 (CI à jets de dés, attributs ASDF) mais Score de Surveillance
+     par accès illégaux maintenus (p.178) et pas d'encaissement de CI ni de
+     limite d'attribut. Réutilise les profils d'indice de SR5. */
+  matrixModel: {
+    hasAttrs: true,
+    indiceRange: [1, 12],
+    profileKey: "sr5",
+    icMonitorSize(indice) {
+      return 8 + Math.ceil(indice / 2);
+    },
+    maxActiveIC(indice) {
+      return indice;
+    },
+    profileRangeText(p) {
+      return ` (${p.min}-${p.max})`;
+    },
+    monitorBoxLabel(n) {
+      return `Case ${n}`;
+    },
+    monitorBoxSep() {
+      return "";
+    },
+    firewallLabel: "",
+    overwatchDelta(illUser, illAdmin) {
+      return illUser * 1 + illAdmin * 3;
+    },
+    pickCount(indice, candLen) {
+      return Utils.clamp(2 + Math.ceil(indice / 3) + Utils.randInt(-1, 1), 2, candLen);
+    },
+    icThresholdsText(srv) {
+      const a = srv.attrs || {};
+      return `jets ${srv.indice * 2} dés · SO ${(a.attack || 0) + (a.sleaze || 0)} · moniteur ${this.icMonitorSize(srv.indice)} cases · init TdD×2+3D6 · max ${srv.indice} CI active${srv.indice > 1 ? "s" : ""}`;
+    },
+    actionRoll(kind, srv) {
+      const i = srv.indice;
+      if (kind === "per")
+        return {
+          txt: `Perception ${i * 2}d`,
+          tip: "Perception matricielle de la Patrouilleuse : indice × 2",
+        };
+      if (kind === "atk")
+        return {
+          txt: `Attaque ${i * 2}d`,
+          tip: "Jet d'attaque de la CI : indice × 2 (p.188)",
+        };
+      if (kind === "def")
+        return {
+          txt: `Défense ${i * 2}d`,
+          tip: "Jet de défense de la CI : indice × 2 (p.188)",
+        };
+      return null;
+    },
+    convergenceText() {
+      return "l'appareil de la dernière action illégale est brické, éjection avec choc, localisation signalée aux autorités (p.178).";
+    },
+    attrLimit() {
+      return null;
+    },
+  },
+
   /* ----
      ATTRIBUTS PAR MÉTATYPE — table officielle p.69 LdB SR6
      Format : [min, max]

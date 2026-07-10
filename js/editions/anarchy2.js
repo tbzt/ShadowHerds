@@ -14,8 +14,8 @@
    - PNJ "second rôle" : on utilise le nombre de succès moyen
    - PNJ "premier rôle" : on lance les dés + points d'Anarchy
    ============================================================ */
-const EditionAnarchy = {
-  id: "anarchy",
+const EditionAnarchy2 = {
+  id: "anarchy2",
   label: "Anarchy 2e",
   badgeLabel: "ANARCHY 2E",
   isWip: false,
@@ -126,6 +126,51 @@ const EditionAnarchy = {
     accuracyLimit: false,
     specMechanic: "rr",
     source: "weapons",
+  },
+
+  /* Régime Matrice Anarchy 2.0 (p.222-223) — lu par Matrix via
+     App.editionModule.matrixModel. CI à SUCCÈS FIXES (pas de jets ni
+     d'attributs ASDF), Firewall fixe 1, moniteur 2L/1G/1I (4 cases), indice
+     2-8, surveillance du DIEU (modèle propre). Les méthodes SR (jets, seuils,
+     convergence, limites) renvoient null : chemins gardés par hasAttrs. */
+  matrixModel: {
+    hasAttrs: false,
+    indiceRange: [2, 8],
+    profileKey: "anarchy2",
+    icMonitorSize() {
+      return 4;
+    },
+    maxActiveIC() {
+      return Infinity;
+    },
+    profileRangeText(p) {
+      return ` (${p.indice})`;
+    },
+    monitorBoxLabel(n) {
+      return ["Légère", "Légère", "Grave", "Incapacitante"][n - 1];
+    },
+    monitorBoxSep(n) {
+      return n === 3 || n === 4 ? ' style="margin-left:3px;"' : "";
+    },
+    firewallLabel: " (Firewall 1)",
+    overwatchDelta() {
+      return 0;
+    },
+    pickCount(indice, candLen) {
+      return Utils.clamp(1 + Math.round(indice / 2) + Utils.randInt(-1, 1), 1, candLen);
+    },
+    icThresholdsText() {
+      return null;
+    },
+    actionRoll() {
+      return null;
+    },
+    convergenceText() {
+      return null;
+    },
+    attrLimit() {
+      return null;
+    },
   },
 
   /* ========================================================
@@ -3384,7 +3429,7 @@ const EditionAnarchy = {
     // Cohérence : rôle/milieu résolus depuis le nom du profil (ProfCategories
     // + mots-clés), pour varier légèrement attributs/compétences autour du
     // stat-block du livre sans sortir de son cadre (cf. js/rules/coherence.js).
-    const { role, milieu } = Coherence.resolveTuple("anarchy", statBlockKey);
+    const { role, milieu } = Coherence.resolveTuple("anarchy2", statBlockKey);
 
     // Attributs : petite variance (±1, comme SR5/SR6) puis repondération par
     // rôle, avant les surcharges fixes de métatype (qui priment toujours —
@@ -3457,7 +3502,7 @@ const EditionAnarchy = {
 
     const pnj = {
       id: Utils.uid(),
-      edition: "anarchy",
+      edition: "anarchy2",
       name:
         opts.name && opts.name.trim()
           ? opts.name.trim()
@@ -3507,7 +3552,7 @@ const EditionAnarchy = {
       mentorSpirit:
         statBlock.awakened
           ? Magic.pickMentor(
-              "anarchy",
+              "anarchy2",
               opts.originPool !== "Aléatoire" ? opts.originPool : null,
               { chamanique: "shamanic", hermétique: "hermetic", adepte: "adept" }[
                 statBlock.awakened
@@ -3524,12 +3569,12 @@ const EditionAnarchy = {
             { Figurant: 1, "Figurant d'élite": 2, Lieutenant: 3, Boss: 4 }[
               tier
             ] || 2;
-          const preferredCats = EditionAnarchy._preferredSpellCats(
+          const preferredCats = EditionAnarchy2._preferredSpellCats(
             statBlock.skills,
             [...statBlock.edges, ...chosenEdges],
           );
           const picked = Content.pickSorts(
-            "anarchy",
+            "anarchy2",
             proRatingNum,
             tags,
             preferredCats,
@@ -3544,8 +3589,8 @@ const EditionAnarchy = {
       notes: "",
     };
     // Cohérence arme <-> compétence (renomme une compétence de combat si besoin)
-    WeaponRoll.reconcile(pnj, "anarchy");
-    BonusEngine.apply(pnj, "anarchy");
+    WeaponRoll.reconcile(pnj, "anarchy2");
+    BonusEngine.apply(pnj, "anarchy2");
     Flavor.apply(pnj);
     return pnj;
   },
