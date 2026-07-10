@@ -9,7 +9,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500&family=Oswald:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=40">
+  <link rel="stylesheet" href="css/base.css?v=44">
   <link rel="stylesheet" href="css/theme-sr5.css?v=18">
   <link rel="stylesheet" href="css/theme-sr6.css?v=17">
   <link rel="stylesheet" href="css/theme-anarchy.css?v=19">
@@ -180,27 +180,27 @@
           <button class="btn-secondary btn-small" data-action="sidebar-next-turn">Tour suivant ▶</button>
         </div>
 
-        <span class="nav-section-label">Gestion</span>
-        <button class="nav-btn active" data-panel="welcome" data-action="show-panel">
-          <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-home"></use></svg></span><span class="nav-label">Accueil</span>
-        </button>
-        <button class="nav-btn" data-panel="shadows" data-action="show-panel">
+        <span class="nav-section-label">Bibliothèque</span>
+        <!-- Hub transverse : PNJ, contacts et serveurs organisés par dossier. -->
+        <button class="nav-btn active" data-panel="shadows" data-action="show-panel">
           <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-shadows"></use></svg></span><span class="nav-label" data-short="Ombres">Ombres portées</span>
         </button>
-        <button class="nav-btn" data-panel="generator" data-action="show-panel">
-          <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-pnj"></use></svg></span><span class="nav-label" data-short="PNJ">Générateur PNJ</span>
-        </button>
 
-        <span class="nav-section-label">Outils</span>
+        <span class="nav-section-label">Génération</span>
+        <button class="nav-btn" data-panel="generator" data-action="show-panel">
+          <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-pnj"></use></svg></span><span class="nav-label">PNJ</span>
+        </button>
         <button class="nav-btn" data-panel="contacts" data-action="show-panel">
           <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-contacts"></use></svg></span><span class="nav-label">Contacts</span>
         </button>
         <button class="nav-btn" data-panel="matrix" data-action="show-panel">
-          <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-matrix"></use></svg></span><span class="nav-label">Matrice</span>
+          <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-matrix"></use></svg></span><span class="nav-label">Serveurs</span>
         </button>
         <button class="nav-btn" data-panel="run" data-action="show-panel">
           <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-run"></use></svg></span><span class="nav-label">Run</span>
         </button>
+
+        <span class="nav-section-label">Table</span>
         <!-- Combat : entrée permanente pour ouvrir le tracker (data-action, pas un panel). -->
         <button class="nav-btn" data-action="encounter-open">
           <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-combat"></use></svg></span><span class="nav-label">Combat</span>
@@ -215,46 +215,43 @@
       <!-- CONTENU PRINCIPAL -->
       <main id="content">
 
-        <!-- ACCUEIL -->
-        <div class="panel active" id="panel-welcome">
-          <div class="panel-title" id="welcome-title">Bienvenue</div>
-          <div class="welcome-card" id="welcome-body"></div>
-        </div>
-
-        <!-- OMBRES PORTÉES -->
-        <div class="panel" id="panel-shadows">
+        <!-- OMBRES PORTÉES — hub transverse (dossiers × types) -->
+        <div class="panel active" id="panel-shadows">
           <div class="panel-title">Ombres portées</div>
           <div class="shadows-layout" data-sidebar="shadows">
             <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="shadows"></div>
             <!-- Rail de réouverture (visible quand repliée) -->
-            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="shadows" title="Afficher les groupes"
-              aria-label="Afficher les groupes">
+            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="shadows" title="Afficher les dossiers"
+              aria-label="Afficher les dossiers">
               <span class="sidebar-reopen-icon">›</span>
-              <span class="sidebar-reopen-label">Groupes</span>
+              <span class="sidebar-reopen-label">Dossiers</span>
             </button>
-            <!-- Colonne gauche : groupes -->
+            <!-- Colonne gauche : arbre de dossiers -->
             <aside class="shadows-sidebar">
               <div class="shadows-sidebar-header">
                 <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="shadows" title="Replier"
-                  aria-label="Replier les groupes">‹</button>
-                <span class="shadows-sidebar-title">Groupes</span>
-                <button class="btn-icon" data-collection="shadows" data-action="add-group" title="Nouveau groupe">＋</button>
+                  aria-label="Replier les dossiers">‹</button>
+                <span class="shadows-sidebar-title">Dossiers</span>
+                <button class="btn-icon" data-hub data-action="add-dossier" title="Nouveau dossier">＋</button>
               </div>
-              <div id="shadows-group-list"></div>
+              <div id="hub-dossier-list"></div>
             </aside>
-            <!-- Zone principale : grille de cards -->
+            <!-- Zone principale : sections par type du dossier sélectionné -->
             <div class="shadows-main">
               <div class="shadows-main-toolbar">
-                <span id="shadows-group-label" class="shadows-group-label">Tous les figurants</span>
-                <button class="btn-secondary btn-small" data-action="save-all-visible">Sauvegarder tout dans le
-                  groupe</button>
+                <div class="hub-type-chips" role="tablist" aria-label="Filtrer par type">
+                  <button class="hub-type-chip active" data-hub data-action="hub-type" data-type="all">Tout</button>
+                  <button class="hub-type-chip" data-hub data-action="hub-type" data-type="pnj">Figurants</button>
+                  <button class="hub-type-chip" data-hub data-action="hub-type" data-type="contact">Contacts</button>
+                  <button class="hub-type-chip" data-hub data-action="hub-type" data-type="server">Serveurs</button>
+                </div>
+                <span id="hub-dossier-label" class="shadows-group-label">Tout le contenu</span>
                 <button class="btn-secondary btn-small" data-action="encounter-open" title="Ouvrir le suivi de combat">⚔ Combat</button>
                 <button class="btn-secondary btn-small" data-action="backup-export" title="Exporter tous les PNJ et contacts (toutes éditions)">⤓ Exporter</button>
                 <button class="btn-secondary btn-small" data-action="backup-import" title="Importer depuis un fichier ou une URL">⤒ Importer</button>
-                <input class="grid-filter" type="search" placeholder="Filtrer…"
-                  aria-label="Filtrer les figurants" data-collection="shadows" data-action="filter">
               </div>
-              <div class="cards-zone" id="shadows-grid"></div>
+              <div id="hub-create"></div>
+              <div id="hub-sections"></div>
             </div>
           </div>
         </div>
@@ -262,97 +259,109 @@
         <!-- GÉNÉRATEUR PNJ -->
         <div class="panel" id="panel-generator">
           <div class="panel-title">Générateur de PNJ</div>
+          <div class="shadows-layout" data-sidebar="generator">
+            <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="generator"></div>
+            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="generator" title="Afficher les dossiers"
+              aria-label="Afficher les dossiers">
+              <span class="sidebar-reopen-icon">›</span>
+              <span class="sidebar-reopen-label">Dossiers</span>
+            </button>
+            <aside class="shadows-sidebar">
+              <div class="shadows-sidebar-header">
+                <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="generator" title="Replier"
+                  aria-label="Replier les dossiers">‹</button>
+                <span class="shadows-sidebar-title">Dossier cible</span>
+                <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
+              </div>
+              <div id="gen-dossier-list"></div>
+            </aside>
+            <div class="shadows-main">
+              <div class="tab-bar">
+                <button class="tab-btn active" data-action="show-tab" data-tab="single">PNJ individuel</button>
+                <button class="tab-btn" data-action="show-tab" data-tab="group">Groupe / bande</button>
+              </div>
 
-          <div class="tab-bar">
-            <button class="tab-btn active" data-action="show-tab" data-tab="single">PNJ individuel</button>
-            <button class="tab-btn" data-action="show-tab" data-tab="group">Groupe / bande</button>
-          </div>
+              <!-- Onglet individuel -->
+              <div class="tab-panel active" id="gen-tab-single">
+                <div class="gen-form" id="gen-form-single"></div>
+                <div class="gen-actions">
+                  <button class="btn-primary" data-action="generate-single">Générer</button>
+                  <button class="btn-secondary" data-action="clear-single">Effacer</button>
+                </div>
+                <div class="cards-zone" id="gen-zone-single"></div>
+              </div>
 
-          <!-- Onglet individuel -->
-          <div class="tab-panel active" id="gen-tab-single">
-            <div class="gen-form" id="gen-form-single"></div>
-            <div class="gen-actions">
-              <button class="btn-primary" data-action="generate-single">Générer</button>
-              <button class="btn-secondary" data-action="clear-single">Effacer</button>
+              <!-- Onglet groupe -->
+              <div class="tab-panel" id="gen-tab-group">
+                <div class="gen-form" id="gen-form-group"></div>
+                <div class="gen-actions">
+                  <button class="btn-primary" data-action="generate-group">Générer le groupe</button>
+                  <button class="btn-secondary" data-action="clear-group">Effacer</button>
+                </div>
+                <div class="cards-zone" id="gen-zone-group"></div>
+              </div>
             </div>
-            <div class="cards-zone" id="gen-zone-single"></div>
-          </div>
-
-          <!-- Onglet groupe -->
-          <div class="tab-panel" id="gen-tab-group">
-            <div class="gen-form" id="gen-form-group"></div>
-            <div class="gen-actions">
-              <button class="btn-primary" data-action="generate-group">Générer le groupe</button>
-              <button class="btn-secondary" data-action="clear-group">Effacer</button>
-            </div>
-            <div class="cards-zone" id="gen-zone-group"></div>
           </div>
         </div>
 
-        <!-- CONTACTS -->
+        <!-- CONTACTS (génération) -->
         <div class="panel" id="panel-contacts">
           <div class="panel-title">Contacts</div>
           <div class="shadows-layout" data-sidebar="contacts">
             <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="contacts"></div>
-            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="contacts" title="Afficher les groupes"
-              aria-label="Afficher les groupes">
+            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="contacts" title="Afficher les dossiers"
+              aria-label="Afficher les dossiers">
               <span class="sidebar-reopen-icon">›</span>
-              <span class="sidebar-reopen-label">Groupes</span>
+              <span class="sidebar-reopen-label">Dossiers</span>
             </button>
             <aside class="shadows-sidebar">
               <div class="shadows-sidebar-header">
                 <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="contacts" title="Replier"
-                  aria-label="Replier les groupes">‹</button>
-                <span class="shadows-sidebar-title">Groupes</span>
-                <button class="btn-icon" data-collection="contacts" data-action="add-group" title="Nouveau groupe">＋</button>
+                  aria-label="Replier les dossiers">‹</button>
+                <span class="shadows-sidebar-title">Dossier cible</span>
+                <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
               </div>
-              <div id="contacts-group-list"></div>
+              <div id="contacts-dossier-list"></div>
             </aside>
             <div class="shadows-main">
               <div class="contacts-gen-bar">
                 <div id="contact-gen-form"></div>
                 <div class="shadows-main-toolbar">
                   <button class="btn-primary btn-small" data-action="contact-generate">Générer un contact</button>
-                  <span id="contacts-group-label" class="shadows-group-label">Tous les contacts</span>
-                  <input class="grid-filter" type="search" placeholder="Filtrer…"
-                    aria-label="Filtrer les contacts" data-collection="contacts" data-action="filter">
                 </div>
               </div>
-              <div class="cards-zone" id="contacts-grid"></div>
+              <div class="cards-zone" id="contacts-gen-grid"></div>
             </div>
           </div>
         </div>
 
-        <!-- MATRICE : SERVEURS & CI -->
+        <!-- SERVEURS (génération) -->
         <div class="panel" id="panel-matrix">
-          <div class="panel-title">Matrice — Serveurs & CI</div>
+          <div class="panel-title">Serveurs & CI</div>
           <div class="shadows-layout" data-sidebar="matrix">
-            <div class="sidebar-backdrop" data-action="sidebar-close"></div>
-            <button class="sidebar-reopen" data-action="sidebar-open" title="Afficher les groupes"
-              aria-label="Afficher les groupes">
+            <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="matrix"></div>
+            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="matrix" title="Afficher les dossiers"
+              aria-label="Afficher les dossiers">
               <span class="sidebar-reopen-icon">›</span>
-              <span class="sidebar-reopen-label">Groupes</span>
+              <span class="sidebar-reopen-label">Dossiers</span>
             </button>
             <aside class="shadows-sidebar">
               <div class="shadows-sidebar-header">
-                <button class="sidebar-collapse-btn" data-action="sidebar-close" title="Replier"
-                  aria-label="Replier les groupes">‹</button>
-                <span class="shadows-sidebar-title">Groupes</span>
-                <button class="btn-icon" data-collection="servers" data-action="add-group" title="Nouveau groupe">＋</button>
+                <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="matrix" title="Replier"
+                  aria-label="Replier les dossiers">‹</button>
+                <span class="shadows-sidebar-title">Dossier cible</span>
+                <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
               </div>
-              <div id="servers-group-list"></div>
+              <div id="servers-dossier-list"></div>
             </aside>
             <div class="shadows-main">
               <div class="contacts-gen-bar">
                 <div id="server-gen-form"></div>
                 <div class="shadows-main-toolbar">
                   <button class="btn-primary btn-small" data-action="create-server">Créer le serveur</button>
-                  <span id="servers-group-label" class="shadows-group-label">Tous les serveurs</span>
-                  <input class="grid-filter" type="search" placeholder="Filtrer…"
-                    aria-label="Filtrer les serveurs" data-collection="servers" data-action="filter">
                 </div>
               </div>
-              <div class="cards-zone" id="servers-grid"></div>
+              <div class="cards-zone" id="servers-gen-grid"></div>
             </div>
           </div>
         </div>
@@ -360,7 +369,26 @@
         <!-- RUN -->
         <div class="panel" id="panel-run">
           <div class="panel-title">Générateur de run</div>
-          <div id="run-panel-content"></div>
+          <div class="shadows-layout" data-sidebar="run">
+            <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="run"></div>
+            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="run" title="Afficher les dossiers"
+              aria-label="Afficher les dossiers">
+              <span class="sidebar-reopen-icon">›</span>
+              <span class="sidebar-reopen-label">Dossiers</span>
+            </button>
+            <aside class="shadows-sidebar">
+              <div class="shadows-sidebar-header">
+                <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="run" title="Replier"
+                  aria-label="Replier les dossiers">‹</button>
+                <span class="shadows-sidebar-title">Dossiers</span>
+                <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
+              </div>
+              <div id="run-dossier-list"></div>
+            </aside>
+            <div class="shadows-main">
+              <div id="run-panel-content"></div>
+            </div>
+          </div>
         </div>
 
         <!-- PARAMÈTRES -->
@@ -380,14 +408,11 @@
       <button class="bnav-btn" data-panel="generator" data-action="show-panel">
         <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-pnj"></use></svg></span><span class="bnav-label">PNJ</span>
       </button>
-      <button class="bnav-btn" data-panel="contacts" data-action="show-panel">
-        <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-contacts"></use></svg></span><span class="bnav-label">Contacts</span>
-      </button>
-      <button class="bnav-btn" data-panel="matrix" data-action="show-panel">
-        <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-matrix"></use></svg></span><span class="bnav-label">Matrice</span>
-      </button>
       <button class="bnav-btn" data-panel="run" data-action="show-panel">
         <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-run"></use></svg></span><span class="bnav-label">Run</span>
+      </button>
+      <button class="bnav-btn" data-action="encounter-open">
+        <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-combat"></use></svg></span><span class="bnav-label">Combat</span>
       </button>
       <button class="bnav-btn" data-panel="settings" data-action="show-panel">
         <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-settings"></use></svg></span><span class="bnav-label">Réglages</span>
@@ -509,33 +534,37 @@
   <script src="js/widgets/cardrenderer.linked.js?v=1"></script>
   <script src="js/widgets/ui.js?v=32"></script>
   <script src="js/widgets/contactrenderer.js?v=4"></script>
-  <script src="js/widgets/runrenderer.js?v=2"></script>
+  <script src="js/widgets/runrenderer.js?v=3"></script>
   <script src="js/widgets/contentmodal.js?v=1"></script>
-  <script src="js/widgets/grouppicker.js?v=1"></script>
-  <script src="js/widgets/collection.js?v=3"></script>
+  <script src="js/widgets/dialog.js?v=1"></script>
+  <script src="js/widgets/dossiers.js?v=1"></script>
+  <script src="js/widgets/dossierbar.js?v=1"></script>
+  <script src="js/widgets/grouppicker.js?v=2"></script>
+  <script src="js/widgets/collection.js?v=5"></script>
   <script src="js/widgets/serverrenderer.js?v=3"></script>
   <script src="js/widgets/encounterrenderer.js?v=5"></script>
-  <script src="js/controllers/servers.js?v=10"></script>
+  <script src="js/controllers/servers.js?v=12"></script>
   <script src="js/controllers/intrusion.js?v=1"></script>
   <script src="js/widgets/dicelog.js?v=2"></script>
   <script src="js/widgets/diceroller.js?v=6"></script>
   <script src="js/widgets/dicepanel.js?v=7"></script>
-  <script src="js/widgets/sidebartoggle.js?v=18"></script>
+  <script src="js/widgets/sidebartoggle.js?v=19"></script>
   <script src="js/widgets/profcategories.js?v=17"></script>
   <script src="js/widgets/multiselect.js?v=16"></script>
   <script src="js/widgets/singleselect.js?v=2"></script>
   <script src="js/controllers/generator.js?v=28"></script>
-  <script src="js/controllers/rungen.js?v=3"></script>
-  <script src="js/controllers/shadows.js?v=21"></script>
+  <script src="js/controllers/rungen.js?v=4"></script>
+  <script src="js/controllers/shadows.js?v=23"></script>
   <script src="js/controllers/pnjlookup.js?v=1"></script>
   <script src="js/controllers/encounter.js?v=4"></script>
   <script src="js/controllers/editmodal.js?v=26"></script>
   <script src="js/controllers/contactgen.js?v=18"></script>
   <script src="js/controllers/contacts.js?v=4"></script>
-  <script src="js/controllers/contactsbook.js?v=1"></script>
-  <script src="js/controllers/settings.js?v=19"></script>
+  <script src="js/controllers/contactsbook.js?v=2"></script>
+  <script src="js/controllers/hub.js?v=4"></script>
+  <script src="js/controllers/settings.js?v=20"></script>
   <script src="js/controllers/backup.js?v=17"></script>
-  <script src="js/app.js?v=26"></script>
+  <script src="js/app.js?v=30"></script>
 
 </body>
 

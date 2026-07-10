@@ -164,8 +164,9 @@ const Servers = Object.assign(
       });
 
       this.data.all.push(srv);
-      if (this.currentGroup !== "all" && this.data.groups[this.currentGroup]) {
-        this.data.groups[this.currentGroup].push(srv.id);
+      // Classe dans le dossier de destination courant (piloté par DossierBar).
+      if (this.currentGroup && this.currentGroup !== "all") {
+        (this.data.groups[this.currentGroup] ||= []).push(srv.id);
       }
       this.save();
       this.render();
@@ -364,6 +365,26 @@ const Servers = Object.assign(
       this._wire();
     },
 
+    /* ---- Écran de génération dédié (barre de dossiers + formulaire +
+       grille des serveurs du dossier courant) ---- */
+    _genWired: false,
+    initGenPanel() {
+      this.renderForm();
+      if (!this._genWired) {
+        this._genWired = true;
+        DossierBar.mount("servers-dossier-list");
+        DossierBar.subscribe(() => this._renderGenGrid());
+      }
+      this._renderGenGrid();
+      DossierBar.render();
+    },
+    _renderGenGrid() {
+      const grid = document.getElementById("servers-gen-grid");
+      if (!grid) return;
+      grid.innerHTML = "";
+      this.renderMembers(grid, DossierBar.memberIds(this));
+    },
+
     /** Migre les serveurs sauvegardés avant le renommage des attributs
         matriciels (ATQ/COR/TDD/FW → attack/sleaze/dataProcessing/firewall). */
     _migrateAttrs() {
@@ -386,7 +407,10 @@ const Servers = Object.assign(
     _wire() {
       if (this._wired) return;
       this._wired = true;
-      const panel = document.getElementById("panel-matrix");
+      // Cartes serveur rendues à la fois dans le hub et dans l'écran de
+      // génération Serveurs : la délégation est posée sur le conteneur
+      // applicatif qui couvre tous les panneaux.
+      const panel = document.getElementById("app");
       if (!panel) return;
 
       panel.addEventListener("click", (e) => {

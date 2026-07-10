@@ -1,34 +1,28 @@
 "use strict";
 
 /* ============================================================
-   SIDEBAR TOGGLE — repli/ouverture des sidebars de groupes
-   Gère "shadows" (Ombres portées) et "contacts".
-   Préférence d'affichage globale (toutes éditions confondues),
-   stockée hors du namespace Storage préfixé par édition.
+   SIDEBAR TOGGLE — repli/ouverture des sidebars de dossiers
+   Gère toute barre `.shadows-layout[data-sidebar="…"]` : hub
+   (shadows) + écrans de génération (generator, contacts, matrix,
+   run). Préférence d'affichage globale (toutes éditions
+   confondues), stockée hors du namespace Storage par édition.
    ============================================================ */
 const SidebarToggle = {
   _key: "sidebar_collapsed",
   _mobileBreakpoint: 640,
-  state: { shadows: false, contacts: false, matrix: false },
+  _panels: ["shadows", "generator", "contacts", "matrix", "run"],
+  state: {},
 
   init() {
-    // Restaurer l'état persisté
     const saved = Storage.getGlobal(this._key, {});
-    if (typeof saved.shadows === "boolean") this.state.shadows = saved.shadows;
-    if (typeof saved.contacts === "boolean")
-      this.state.contacts = saved.contacts;
-    if (typeof saved.matrix === "boolean") this.state.matrix = saved.matrix;
-
-    // Sur mobile : replier par défaut (overlay), sans écraser un choix explicite déjà stocké
-    if (this._isMobile() && Storage.getGlobal(this._key, null) === null) {
-      this.state.shadows = true;
-      this.state.contacts = true;
-      this.state.matrix = true;
+    const firstRun = Storage.getGlobal(this._key, null) === null;
+    // Sur mobile : replier par défaut (overlay), sans écraser un choix stocké.
+    const mobileDefault = this._isMobile() && firstRun;
+    for (const panel of this._panels) {
+      this.state[panel] =
+        typeof saved[panel] === "boolean" ? saved[panel] : mobileDefault;
+      this._apply(panel);
     }
-
-    this._apply("shadows");
-    this._apply("contacts");
-    this._apply("matrix");
   },
 
   _isMobile() {

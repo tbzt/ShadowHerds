@@ -93,51 +93,67 @@ const GroupPicker = {
   _render() {
     const panel = document.getElementById("group-picker-panel");
     if (!panel || !this._collection) return;
-    const id = this._id;
-    const groups = Object.keys(this._collection.data.groups);
-    const current = this._collection.groupsOf(id);
+    const current = this._collection.groupsOf(this._id); // noms de dossiers
 
-    const rows = groups.length
-      ? groups
-          .map((g) => {
-            const checked = current.includes(g) ? "checked" : "";
-            const gEsc = CardRenderer._esc(g);
-            return `<label class="group-picker-row">
-              <input type="checkbox" ${checked} data-group="${gEsc}">
-              <span>${gEsc}</span>
-            </label>`;
-          })
-          .join("")
-      : `<div class="group-picker-empty">Aucun groupe pour l'instant.</div>`;
+    // Liste transverse : dossiers + sous-groupes du registre partagé, pour
+    // ranger une entité dans un dossier même si sa collection ne le contient
+    // pas encore. Appartenance jointe par nom.
+    let rows = "";
+    for (const root of Dossiers.roots()) {
+      rows += this._rowHtml(root, current, false);
+      for (const child of Dossiers.children(root.id)) {
+        rows += this._rowHtml(child, current, true);
+      }
+    }
+    if (!rows)
+      rows = `<div class="group-picker-empty">Aucun dossier pour l'instant.</div>`;
 
     panel.innerHTML = `
       <div class="group-picker-head">
-        <span class="group-picker-title">Groupes</span>
+        <span class="group-picker-title">Dossiers</span>
         <button class="btn-icon-tiny" data-action="close" aria-label="Fermer">✕</button>
       </div>
       <div class="group-picker-list">${rows}</div>
-      <button class="group-picker-new" data-action="create">+ Nouveau groupe</button>`;
+      <button class="group-picker-new" data-action="create">+ Nouveau dossier</button>`;
+  },
+
+  _rowHtml(node, currentNames, isSub) {
+    const checked = currentNames.includes(node.name) ? "checked" : "";
+    const nameEsc = CardRenderer._esc(node.name);
+    return `<label class="group-picker-row${isSub ? " is-sub" : ""}">
+      <input type="checkbox" ${checked} data-group="${nameEsc}">
+      <span>${nameEsc}</span>
+    </label>`;
   },
 
   /** Crée un groupe et y assigne directement l'entité courante. */
   createAndAssign() {
     const col = this._collection;
     if (!col) return;
-    const name = prompt("Nom du groupe :");
-    if (!name || !name.trim()) return;
-    const key = name.trim();
-    if (key === "all") {
-      toast("Nom réservé.");
-      return;
-    }
-    if (col.data.groups[key]) {
-      toast("Ce nom existe déjà.");
-      return;
-    }
-    col.data.groups[key] = [this._id];
-    col.save();
-    col.render();
-    this._render();
-    toast(`Groupe "${key}" créé et entité ajoutée.`);
+    const id = this._id;
+    Dialog.prompt({
+      title: "Nouveau groupe",
+      label: "Nom du groupe",
+      placeholder: "ex. Gangers, Corpo, Renforts…",
+      confirmLabel: "Créer",
+    }).then((name) => {
+      // Le popover a pu être fermé entre-temps : on revalide la cible.
+      if (!name || !name.trim() || this._collection !== col || this._id !== id)
+        return;
+      const key = name.trim();
+      if (key === "all") {
+        toast("Nom réservé.");
+        return;
+      }
+      if (col.data.groups[key]) {
+        toast("Ce nom existe déjà.");
+        return;
+      }
+      col.data.groups[key] = [id];
+      col.save();
+      col.render();
+      this._render();
+      toast(`Groupe "${key}" créé et entité ajoutée.`);
+    });
   },
 };

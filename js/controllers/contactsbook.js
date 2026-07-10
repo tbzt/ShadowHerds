@@ -28,9 +28,9 @@ const ContactsBook = Object.assign(
       const c = Contacts.generate();
       c.notes = "";
       this.data.all.push(c);
-      // Si un groupe est sélectionné, l'y ajouter directement
-      if (this.currentGroup !== "all" && this.data.groups[this.currentGroup]) {
-        this.data.groups[this.currentGroup].push(c.id);
+      // Classe dans le dossier de destination courant (piloté par DossierBar).
+      if (this.currentGroup && this.currentGroup !== "all") {
+        (this.data.groups[this.currentGroup] ||= []).push(c.id);
       }
       this.save();
       this.render();
@@ -88,6 +88,26 @@ const ContactsBook = Object.assign(
       if (Contacts.renderForm) {
         Contacts.renderForm();
       }
+    },
+
+    /* ---- Écran de génération dédié (barre de dossiers + formulaire +
+       grille des contacts du dossier courant) ---- */
+    _genWired: false,
+    initGenPanel() {
+      Contacts.renderForm();
+      if (!this._genWired) {
+        this._genWired = true;
+        DossierBar.mount("contacts-dossier-list");
+        DossierBar.subscribe(() => this._renderGenGrid());
+      }
+      this._renderGenGrid();
+      DossierBar.render();
+    },
+    _renderGenGrid() {
+      const grid = document.getElementById("contacts-gen-grid");
+      if (!grid) return;
+      grid.innerHTML = "";
+      this.renderMembers(grid, DossierBar.memberIds(this));
     },
   },
 );

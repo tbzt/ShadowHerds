@@ -68,6 +68,10 @@ const Shadows = Object.assign(
           Gen.pool = Gen.pool.filter((p) => p.id !== e.id);
         }
       }
+      // Classe dans le dossier de destination courant (piloté par DossierBar).
+      if (this.currentGroup && this.currentGroup !== "all") {
+        (this.data.groups[this.currentGroup] ||= []).push(pnj.id);
+      }
       this.save();
       this.render();
       toast(`✓ ${pnj.name} ajouté aux Ombres.`);
@@ -89,29 +93,6 @@ const Shadows = Object.assign(
     /* ---- Supprimer un PNJ (et ses entités liées, via le socle) ---- */
     removePNJ(id) {
       this.remove(id);
-    },
-
-    /* ---- Sauvegarder tous les PNJ visibles dans le groupe courant ---- */
-    saveAllVisible() {
-      if (this.currentGroup === "all") {
-        toast("Sélectionnez un groupe d'abord.");
-        return;
-      }
-      const ids = this.data.groups[this.currentGroup] || [];
-      let added = 0;
-      for (const pnj of this.data.all) {
-        if (!ids.includes(pnj.id)) {
-          this.data.groups[this.currentGroup].push(pnj.id);
-          added++;
-        }
-      }
-      this.save();
-      this.render();
-      toast(
-        added > 0
-          ? `${added} PNJ ajoutés au groupe.`
-          : "Tous les PNJ sont déjà dans ce groupe.",
-      );
     },
   },
 );

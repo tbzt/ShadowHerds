@@ -170,6 +170,15 @@ const Settings = {
       <button class="danger-btn" data-action="atomize">⚠ Atomiser</button>
     </div>`;
 
+    // --- Présentation de l'édition (rapatriée de l'ancien écran d'accueil) ---
+    const intro = App.welcomeContent[App.edition];
+    if (intro) {
+      html += `<div class="settings-section">
+        <h3>${CardRenderer._esc(intro.title)}</h3>
+        ${intro.body}
+      </div>`;
+    }
+
     // --- À propos ---
     html += `<div class="settings-section">
       <h3>À propos</h3>

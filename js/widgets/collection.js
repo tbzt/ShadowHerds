@@ -77,7 +77,9 @@ const Collection = {
 
         this.data.all = this.data.all.filter((e) => !doomed.has(e.id));
         for (const g of Object.keys(this.data.groups)) {
-          this.data.groups[g] = this.data.groups[g].filter((i) => !doomed.has(i));
+          this.data.groups[g] = this.data.groups[g].filter(
+            (i) => !doomed.has(i),
+          );
         }
         this.save();
         this.render();
@@ -90,11 +92,18 @@ const Collection = {
             .slice()
             .sort((a, b) => a.index - b.index)
             .forEach(({ entity, index }) => {
-              this.data.all.splice(Math.min(index, this.data.all.length), 0, entity);
+              this.data.all.splice(
+                Math.min(index, this.data.all.length),
+                0,
+                entity,
+              );
             });
           for (const { entity, groups } of snapshot) {
             for (const g of groups) {
-              if (this.data.groups[g] && !this.data.groups[g].includes(entity.id))
+              if (
+                this.data.groups[g] &&
+                !this.data.groups[g].includes(entity.id)
+              )
                 this.data.groups[g].push(entity.id);
             }
           }
@@ -106,45 +115,68 @@ const Collection = {
 
       /* ---- Groupes ---- */
       addGroup() {
-        const name = prompt("Nom du groupe :");
-        if (!name || !name.trim()) return;
-        const key = name.trim();
-        if (key === "all") {
-          toast("Nom réservé.");
-          return;
-        }
-        if (!this.data.groups[key]) this.data.groups[key] = [];
-        this.save();
-        this.render();
-        toast(labels.createdGroup(key));
+        Dialog.prompt({
+          title: "Nouveau groupe",
+          label: "Nom du groupe",
+          placeholder: "ex. Gangers, Corpo, Renforts…",
+          confirmLabel: "Créer",
+        }).then((name) => {
+          if (!name || !name.trim()) return;
+          const key = name.trim();
+          if (key === "all") {
+            toast("Nom réservé.");
+            return;
+          }
+          if (!this.data.groups[key]) this.data.groups[key] = [];
+          this.save();
+          this.render();
+          toast(labels.createdGroup(key));
+        });
       },
 
       removeGroup(key) {
-        if (!confirm(labels.removeConfirm(key))) return;
-        delete this.data.groups[key];
-        if (this.currentGroup === key) this.currentGroup = "all";
-        this.save();
-        this.render();
+        Dialog.confirm({
+          title: "Supprimer le groupe",
+          message: labels.removeConfirm(key),
+          confirmLabel: "Supprimer",
+          danger: true,
+        }).then((ok) => {
+          if (!ok) return;
+          delete this.data.groups[key];
+          if (this.currentGroup === key) this.currentGroup = "all";
+          this.save();
+          this.render();
+        });
       },
 
       renameGroup(key) {
-        const newName = prompt("Nouveau nom :", key);
-        if (!newName || !newName.trim() || newName.trim() === key) return;
-        const newKey = newName.trim();
-        if (this.data.groups[newKey]) {
-          toast("Ce nom existe déjà.");
-          return;
-        }
-        this.data.groups[newKey] = this.data.groups[key];
-        delete this.data.groups[key];
-        if (this.currentGroup === key) this.currentGroup = newKey;
-        this.save();
-        this.render();
+        Dialog.prompt({
+          title: "Renommer le groupe",
+          label: "Nouveau nom",
+          value: key,
+          confirmLabel: "Renommer",
+        }).then((newName) => {
+          if (!newName || !newName.trim() || newName.trim() === key) return;
+          const newKey = newName.trim();
+          if (this.data.groups[newKey]) {
+            toast("Ce nom existe déjà.");
+            return;
+          }
+          this.data.groups[newKey] = this.data.groups[key];
+          delete this.data.groups[key];
+          if (this.currentGroup === key) this.currentGroup = newKey;
+          this.save();
+          this.render();
+        });
       },
 
       /** Ajoute/retire une entité d'un groupe sans toucher aux autres
-          (appartenance multi-groupes). */
+          (appartenance multi-groupes). Le tableau est créé à la volée à
+          la première assignation : permet de ranger dans un dossier que
+          cette collection ne contenait pas encore (jointure par nom). */
       toggleGroup(id, groupKey, checked) {
+        if (checked && !this.data.groups[groupKey])
+          this.data.groups[groupKey] = [];
         const arr = this.data.groups[groupKey];
         if (!arr) return;
         const has = arr.includes(id);
@@ -185,6 +217,10 @@ const Collection = {
         this._wire();
         this._renderSidebar();
         this._renderGrid();
+        // Notifie un agrégateur éventuel (ex : Hub) qu'une mutation a eu
+        // lieu, sans que le socle connaisse la couche haute : c'est elle
+        // qui injecte le callback via config.onChange.
+        if (config.onChange) config.onChange();
       },
 
       _renderSidebar() {
@@ -218,7 +254,8 @@ const Collection = {
 
         container.innerHTML = html;
 
-        const label = config.dom.label && document.getElementById(config.dom.label);
+        const label =
+          config.dom.label && document.getElementById(config.dom.label);
         if (label) {
           label.textContent =
             this.currentGroup === "all"
@@ -259,6 +296,15 @@ const Collection = {
           return;
         }
 
+        this._renderList(grid, list);
+      },
+
+      /** Rend une liste d'entités (déjà filtrée/ordonnée) dans un conteneur,
+          avec déclencheur de groupes, entités liées et entité imbriquée.
+          Extrait de _renderGrid pour être réutilisable par un agrégateur
+          externe (Hub) qui rend les membres d'un dossier hors de la grille
+          propre à la collection. */
+      _renderList(grid, list) {
         const allGroups = Object.keys(this.data.groups);
         const linked = config.linked;
         // Les entités liées suivent la carte de leur maître.
@@ -293,10 +339,21 @@ const Collection = {
         }
       },
 
+      /** Rend, dans un conteneur fourni, les entités dont l'id est listé
+          (les plus récentes d'abord, comme la grille propre). Utilisé par
+          le Hub pour composer une section par type dans une vue de dossier. */
+      renderMembers(grid, ids) {
+        const set = new Set(ids);
+        const list = this.data.all.filter((e) => set.has(e.id));
+        this._renderList(grid, list.slice().reverse());
+      },
+
       /** Bouton d'appartenance multi-groupes, uniforme sur toute carte.
           Ouvre le popover partagé (GroupPicker) par délégation. */
       _appendGroupTrigger(card, id) {
-        const footer = card.querySelector(config.footerSelector || ".pnj-card-footer");
+        const footer = card.querySelector(
+          config.footerSelector || ".pnj-card-footer",
+        );
         if (!footer) return;
         const groups = this.groupsOf(id);
         const gLabel =

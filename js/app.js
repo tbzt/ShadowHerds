@@ -80,18 +80,23 @@ const App = {
 
     Shadows.load();
     ContactsBook.load();
+    Servers.initPanel(); // charge + migre + câble la délégation serveur (#app)
+    DossierBar.init(); // Dossiers chargés/synchronisés + destination courante
     Encounter.load();
     DiceRoller.loadThreat();
     Gen.buildForms();
     Settings.render();
 
-    // Lire le panel depuis l'URL si disponible, sinon welcome
+    // Lire le panel depuis l'URL si disponible, sinon le hub
     const hashPanel = this._panelFromHash();
-    this.showPanel(hashPanel || "welcome", { updateHash: !hashPanel });
+    this.showPanel(hashPanel || "shadows", { updateHash: !hashPanel });
   },
 
   /* ---- Navigation entre panels ---- */
   showPanel(name, { updateHash = true } = {}) {
+    // L'accueil a été retiré : compat des anciens hash.
+    if (name === "welcome") name = "shadows";
+
     document
       .querySelectorAll(".panel")
       .forEach((p) => p.classList.remove("active"));
@@ -117,20 +122,23 @@ const App = {
     }
 
     switch (name) {
-      case "welcome":
-        this._renderWelcome();
-        break;
       case "shadows":
-        Shadows.render();
+        Hub.initPanel();
+        break;
+      case "generator":
+        DossierBar.mount("gen-dossier-list");
+        DossierBar.render();
         break;
       case "contacts":
-        ContactsBook.initPanel();
+        ContactsBook.initGenPanel();
         break;
       case "matrix":
-        Servers.initPanel();
+        Servers.initGenPanel();
         break;
       case "run":
+        DossierBar.mount("run-dossier-list");
         RunGen.initPanel();
+        DossierBar.render();
         break;
       case "settings":
         Settings.render();
@@ -165,25 +173,9 @@ const App = {
     return null;
   },
 
-  _renderWelcome() {
-    const w = this.welcomeContent[this.edition];
-    if (!w) return;
-    document.getElementById("welcome-title").textContent = w.title;
-    document.getElementById("welcome-body").innerHTML =
-      w.body +
-      `
-      <div class="legal-notice">
-        La Topps Company, Inc. détient les droits exclusifs sur Shadowrun.
-        Black Book Editions détient les droits de la version française.
-        Cet outil est non-commercial, sous licence CC BY-NC 4.0.
-        Les données sont stockées localement dans votre navigateur (localStorage),
-        jamais transmises.
-      </div>`;
-  },
-
-  /* ---- Retour à l'accueil (tap sur le logo, surtout mobile) ---- */
+  /* ---- Retour au hub (tap sur le logo, surtout mobile) ---- */
   goHome() {
-    if (this.edition !== "none") this.showPanel("welcome");
+    if (this.edition !== "none") this.showPanel("shadows");
   },
 
   /* ---- Aide raccourcis clavier ---- */
@@ -259,9 +251,6 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
       case "show-panel":
         App.showPanel(actionEl.dataset.panel);
-        break;
-      case "save-all-visible":
-        Shadows.saveAllVisible();
         break;
       case "backup-export":
         Backup.export();

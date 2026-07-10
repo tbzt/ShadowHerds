@@ -337,8 +337,25 @@ const RunGen = {
         case "discard-run":
           actionEl.closest(".run-card").remove();
           break;
+        case "run-to-dossier":
+          this.toDossier(actionEl.dataset.runName);
+          break;
       }
     });
+  },
+
+  /** Crée un dossier (transverse) pour y ranger PNJ, contacts et serveurs
+      de la prep. Le nom est proposé d'après la run, éditable. */
+  toDossier(suggested) {
+    const input = prompt("Nom du dossier pour cette run :", suggested || "Run");
+    if (!input || !input.trim()) return;
+    const name = input.trim();
+    if (Dossiers.list().some((d) => d.name === name)) {
+      toast(`Dossier « ${name} » existe déjà.`);
+      return;
+    }
+    Dossiers.add(name);
+    toast(`Dossier « ${name} » créé — rangez-y votre prep.`);
   },
 
   addOne() {
