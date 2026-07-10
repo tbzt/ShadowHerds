@@ -42,6 +42,7 @@ const WeaponRoll = {
       [/katana|épée|sabre|hache|couteau|lame|griffe|tranchant|crocs?|morsure|queue/i, "Combat rapproché"],
       [/matraque|massue|barre|bâton|télescopique|électro|gants?|poing|contondant/i, "Combat rapproché"],
     ],
+    get anarchy1() { return this.anarchy2; }, // placeholder V1 → V2 (Phase 3)
     anarchy2: [
       [/pistolet|fusil|arme à distance|smg|mitrail|sniper|revolver|taser/i, "Armes à distance"],
       [/katana|épée|sabre|hache|couteau|lame|griffe|matraque|bâton|mains? nues|poing|contondant|tranchant|rapproché/i, "Combat rapproché"],
@@ -52,6 +53,7 @@ const WeaponRoll = {
   FALLBACK_SKILL: {
     sr5: "Armes à feu",
     sr6: "Armes à feu",
+    get anarchy1() { return this.anarchy2; }, // placeholder V1 → V2 (Phase 3)
     anarchy2: "Armes à distance",
   },
 

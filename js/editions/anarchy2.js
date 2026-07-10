@@ -3414,6 +3414,10 @@ const EditionAnarchy2 = {
 
   /* ---- Génération ---- */
   generate(opts) {
+    // Id de l'édition courante — permet à un clone (ex. EditionAnarchy1) de
+    // réutiliser ce generate() en produisant des PNJ correctement taggés.
+    // `this` n'est pas disponible dans les IIFE plus bas : on le capture ici.
+    const edId = this.id;
     const meta = opts.meta === "Aléatoire" ? Utils.randMeta() : opts.meta;
     const gender =
       opts.gender === "Aléatoire" ? Utils.randGender() : opts.gender;
@@ -3429,7 +3433,7 @@ const EditionAnarchy2 = {
     // Cohérence : rôle/milieu résolus depuis le nom du profil (ProfCategories
     // + mots-clés), pour varier légèrement attributs/compétences autour du
     // stat-block du livre sans sortir de son cadre (cf. js/rules/coherence.js).
-    const { role, milieu } = Coherence.resolveTuple("anarchy2", statBlockKey);
+    const { role, milieu } = Coherence.resolveTuple(edId, statBlockKey);
 
     // Attributs : petite variance (±1, comme SR5/SR6) puis repondération par
     // rôle, avant les surcharges fixes de métatype (qui priment toujours —
@@ -3502,7 +3506,7 @@ const EditionAnarchy2 = {
 
     const pnj = {
       id: Utils.uid(),
-      edition: "anarchy2",
+      edition: edId,
       name:
         opts.name && opts.name.trim()
           ? opts.name.trim()
@@ -3552,7 +3556,7 @@ const EditionAnarchy2 = {
       mentorSpirit:
         statBlock.awakened
           ? Magic.pickMentor(
-              "anarchy2",
+              edId,
               opts.originPool !== "Aléatoire" ? opts.originPool : null,
               { chamanique: "shamanic", hermétique: "hermetic", adepte: "adept" }[
                 statBlock.awakened
@@ -3574,7 +3578,7 @@ const EditionAnarchy2 = {
             [...statBlock.edges, ...chosenEdges],
           );
           const picked = Content.pickSorts(
-            "anarchy2",
+            edId,
             proRatingNum,
             tags,
             preferredCats,
@@ -3589,8 +3593,8 @@ const EditionAnarchy2 = {
       notes: "",
     };
     // Cohérence arme <-> compétence (renomme une compétence de combat si besoin)
-    WeaponRoll.reconcile(pnj, "anarchy2");
-    BonusEngine.apply(pnj, "anarchy2");
+    WeaponRoll.reconcile(pnj, edId);
+    BonusEngine.apply(pnj, edId);
     Flavor.apply(pnj);
     return pnj;
   },

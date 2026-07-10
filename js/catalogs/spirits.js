@@ -368,7 +368,7 @@ const Spirits = {
     return {
       id: Utils.uid(),
       type: "spirit",
-      edition: "anarchy2",
+      edition: owner ? owner.edition : opts.edition,
       spiritType: typeKey,
       free,
       name: free ? `${t.label} libre` : t.label,

@@ -2802,14 +2802,20 @@ const Creatures = {
   },
 
   catalogFor(edition) {
-    return this[edition.toUpperCase()];
+    // Placeholder V1 → V2 : anarchy1 réutilise le catalogue ANARCHY2 tant que
+    // les créatures V1 ne sont pas saisies (Phase 3 ajoutera ANARCHY1, qui
+    // primera). Fallback limité à la famille Anarchy (usesRiskPanel).
+    return (
+      this[edition.toUpperCase()] ||
+      (App.getEditionModule(edition)?.usesRiskPanel ? this.ANARCHY2 : undefined)
+    );
   },
 
   /* ---- Génération d'une créature autonome (objet PNJ standard) ---- */
   spawn(edition, key) {
     const c = this.catalogFor(edition)[key];
     if (!c) return null;
-    if (App.getEditionModule(edition)?.usesRiskPanel) return this._spawnAnarchy(c, key);
+    if (App.getEditionModule(edition)?.usesRiskPanel) return this._spawnAnarchy(c, key, edition);
     return this._spawnSR(c, key, edition);
   },
 
@@ -2882,11 +2888,11 @@ const Creatures = {
     return pnj;
   },
 
-  _spawnAnarchy(c, key) {
+  _spawnAnarchy(c, key, edition) {
     return {
       id: Utils.uid(),
       type: "creature",
-      edition: "anarchy2",
+      edition,
       creatureKey: key,
       name: c.label,
       meta: "Créature",

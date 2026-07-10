@@ -75,8 +75,8 @@ const Vehicles = {
 
   /* VD standard des armes embarquées, par édition. */
   MOUNTED_WEAPONS: {
-    "fusil d'assaut": { sr5: "10P, PA -2", sr6: "VD 5P", anarchy2: "VD 7" },
-    "mitrailleuse":   { sr5: "9P, PA -2",  sr6: "VD 5P", anarchy2: "VD 9" },
+    "fusil d'assaut": { sr5: "10P, PA -2", sr6: "VD 5P", anarchy2: "VD 7", get anarchy1() { return this.anarchy2; } },
+    "mitrailleuse":   { sr5: "9P, PA -2",  sr6: "VD 5P", anarchy2: "VD 9", get anarchy1() { return this.anarchy2; } },
   },
 
   /* ---- Détection : un item d'équipement (ou atout Anarchy)

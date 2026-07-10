@@ -218,6 +218,7 @@ const ProfCategories = {
   ],
 
   /* ---- Anarchy ---- */
+  get anarchy1() { return this.anarchy2; }, // placeholder V1 → V2 (Phase 3)
   anarchy2: [
     {
       cat: "Gangs",

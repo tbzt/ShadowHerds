@@ -82,6 +82,7 @@ const Drugs = {
     // des statblocks) ET dans l'équipement (ajout manuel via l'édition) —
     // matchItem() ignore la source pour cette édition. Le contrecoup
     // standard applique le Désavantage global (pnj.drugAdv, p.67).
+    get anarchy1() { return this.anarchy2; }, // placeholder V1 → V2 (Phase 3)
     anarchy2: [
       {
         id: "jazz",

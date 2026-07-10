@@ -781,7 +781,7 @@ const ContactGen = {
    */
   generate(edition, opts = {}) {
     return App.getEditionModule(edition)?.usesRiskPanel
-      ? this.generateAnarchy(opts)
+      ? this.generateAnarchy(opts, edition)
       : this.generateSR(edition, opts);
   },
 
@@ -789,7 +789,7 @@ const ContactGen = {
    * Génère un contact Anarchy dirigé.
    * @param {object} opts { networkId, rr (1-3), scope, metatype, gender }
    */
-  generateAnarchy(opts = {}) {
+  generateAnarchy(opts = {}, edition = "anarchy2") {
     const networkId = opts.networkId || Utils.rand(this.NETWORKS).id;
     const rr = Utils.clamp(opts.rr || 1, 1, 3);
     const scope = opts.scope === "competence" ? "competence" : "specialisation";
@@ -804,7 +804,7 @@ const ContactGen = {
 
     const contact = {
       id: Utils.uid(),
-      edition: "anarchy2",
+      edition,
       name,
       role: cat ? cat.role : this._roleForNetwork(networkId),
       desc: cat ? cat.desc : this._descForNetwork(networkId),

@@ -484,6 +484,7 @@ const Content = {
     // matériau, ou réserve opposée de la cible). Test = Sorcellerie (spé du
     // type) + Volonté. 34 sorts officiels. Le champ `seuil` porte la valeur
     // affichée ; le détail complet est dans `desc`.
+    get anarchy1() { return this.anarchy2; }, // placeholder V1 → V2 (Phase 3)
     anarchy2: [
       // — Combat (7) — direct = dommages mentaux, indirect = physiques —
       {
