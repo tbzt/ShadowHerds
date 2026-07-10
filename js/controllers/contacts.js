@@ -19,7 +19,7 @@ const Contacts = {
     const host = document.getElementById("contact-gen-form");
     if (!host) return;
     host.innerHTML =
-      App.edition === "anarchy"
+      App.editionModule?.usesRiskPanel
         ? this._formAnarchy()
         : this._formSR();
     this._syncCost();

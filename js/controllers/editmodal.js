@@ -38,7 +38,7 @@ const EditModal = {
     if (pnj.type === "vehicle") {
       this._readFormVehicle(pnj);
       // Moniteur recalculé depuis la Structure (SR5/SR6)
-      if (pnj.edition !== "anarchy") {
+      if (!App.getEditionModule(pnj.edition)?.usesRiskPanel) {
         pnj.monTotal = Vehicles._monitor(pnj.stats, pnj.edition);
         pnj.monFilled = Math.min(pnj.monFilled || 0, pnj.monTotal);
       }

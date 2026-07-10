@@ -165,18 +165,21 @@ const Gen = {
       label: t.label,
     }));
 
+    // Champ de puissance piloté par le module (summonPower.field : "tier"
+    // pour la famille Anarchy, "force" pour SR) — jamais de branche sur
+    // l'id d'édition (issue #14).
     let powerField;
-    if (ed.id === "anarchy") {
+    if (ed.summonPower.field === "tier") {
       powerField = SingleSelect.create({
         id: "sg-spirit-power",
-        label: "Niveau",
+        label: ed.summonPower.label,
         options: Spirits.ANARCHY_TIERS.map((l, i) => ({ value: String(i), label: l })),
         value: "1",
       });
     } else {
       powerField = SingleSelect.create({
         id: "sg-spirit-power",
-        label: "Puissance",
+        label: ed.summonPower.label,
         options: [2, 3, 4, 5, 6, 7, 8, 9, 10].map((f) => ({ value: String(f), label: String(f) })),
         value: "6",
       });
@@ -507,10 +510,11 @@ const Gen = {
     const typeKey = selType || Utils.rand(Object.keys(types));
     const power = parseInt(document.getElementById("sg-spirit-power")?.value, 10);
     Debug.log("generator", "esprit libre — options", { edId, typeKey, power });
+    const isTier = App.getEditionModule(edId)?.summonPower?.field === "tier";
     const spirit = Spirits.spawn(null, typeKey, {
       edition: edId,
-      force: edId === "anarchy" ? undefined : power || 6,
-      tier: edId === "anarchy" ? (Number.isFinite(power) ? power : 1) : undefined,
+      force: isTier ? undefined : power || 6,
+      tier: isTier ? (Number.isFinite(power) ? power : 1) : undefined,
     });
     if (!spirit) {
       Debug.warn("generator", "esprit non généré", { typeKey, power });

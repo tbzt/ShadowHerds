@@ -102,7 +102,7 @@ const Servers = Object.assign(
       const indSel = (document.getElementById("srv-indice") || {}).value || "auto";
       if (indSel === "auto") {
         indice =
-          ed === "anarchy" ? profile.indice : Utils.randInt(profile.min, profile.max);
+          profile.indice != null ? profile.indice : Utils.randInt(profile.min, profile.max);
       } else {
         indice = parseInt(indSel, 10);
       }
@@ -114,7 +114,7 @@ const Servers = Object.assign(
 
       // Attributs ASDF (SR5/SR6) : indice à indice+3 répartis au hasard
       let attrs = null;
-      if (ed !== "anarchy") {
+      if (Mod?.matrixModel?.hasAttrs) {
         const vals = [indice, indice + 1, indice + 2, indice + 3].sort(
           () => Math.random() - 0.5,
         );
@@ -282,7 +282,7 @@ const Servers = Object.assign(
       const spEl = val("secphys");
       if (spEl) srv.secPhys = spEl.checked;
 
-      if (srv.edition !== "anarchy") {
+      if (App.getEditionModule(srv.edition)?.matrixModel?.hasAttrs) {
         srv.attrs = srv.attrs || {};
         for (const ak of Matrix.ATTR_KEYS) {
           const el = val(ak.key);
