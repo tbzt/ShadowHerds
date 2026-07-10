@@ -780,7 +780,7 @@ const ContactGen = {
    * @param {object} opts { networkId, rr, scope, categoryId, metatype, gender }
    */
   generate(edition, opts = {}) {
-    return edition === "anarchy"
+    return App.getEditionModule(edition)?.usesRiskPanel
       ? this.generateAnarchy(opts)
       : this.generateSR(edition, opts);
   },
@@ -804,7 +804,7 @@ const ContactGen = {
 
     const contact = {
       id: Utils.uid(),
-      edition: "anarchy",
+      edition: "anarchy2",
       name,
       role: cat ? cat.role : this._roleForNetwork(networkId),
       desc: cat ? cat.desc : this._descForNetwork(networkId),

@@ -484,7 +484,7 @@ const Content = {
     // matériau, ou réserve opposée de la cible). Test = Sorcellerie (spé du
     // type) + Volonté. 34 sorts officiels. Le champ `seuil` porte la valeur
     // affichée ; le détail complet est dans `desc`.
-    anarchy: [
+    anarchy2: [
       // — Combat (7) — direct = dommages mentaux, indirect = physiques —
       {
         name: "Éclair mana",
@@ -1157,7 +1157,7 @@ const Content = {
      ======================================================== */
 
   _ed(ed) {
-    return ed === "sr5" || ed === "sr6" || ed === "anarchy" ? ed : "sr6";
+    return App.getEditionModule(ed) ? ed : "sr6";
   },
 
   _match(item, tags) {

@@ -66,7 +66,7 @@ Object.assign(CardRenderer, {
     html += "</div>";
 
     // Réserves de dés (jets cliquables) + initiative SR5/SR6
-    const edAttr = v.edition === "anarchy" ? ' data-roll-edition="anarchy"' : "";
+    const edAttr = App.getEditionModule(v.edition)?.usesRiskPanel ? ` data-roll-edition="${v.edition}"` : "";
     html += '<div class="combat-row">';
     const init = deps.Vehicles.initiative(v);
     if (init) html += this._initPill(init.base, init.dice, v);

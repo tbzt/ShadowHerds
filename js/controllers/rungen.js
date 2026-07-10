@@ -276,7 +276,7 @@ const RunGen = {
 
   generate() {
     const ed = App?.edition || "sr5";
-    const isAnarchy = ed === "anarchy";
+    const isAnarchy = !!App.getEditionModule(ed)?.usesRiskPanel;
 
     const types = isAnarchy
       ? [...this.typesCommuns, ...this.typesAnarchy]
