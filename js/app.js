@@ -37,7 +37,7 @@ const App = {
         </ul>
         <p>Les PNJ SR6 utilisent le <strong>Score Défensif (SD)</strong>, le <strong>Potentiel d'Actions (PA)</strong> et un <strong>Moniteur d'état unique</strong>. Professionnalisme 0–10 calé sur les 20 PNJ de référence du livre (p.212–220). Les métavariantes couvrent Hobgobelin, Oni, Ogre, Satyre, Cyclope, Fomori, Géant, Minotaure, Nocturna, Wakyambi, Dalakitnon, Dryade, Xapiri thëpë, Nartaki, Valkyrie, Duende, Gnome, Hanuman, Koborokuru et Menehune.</p>`,
     },
-    anarchy: {
+    anarchy2: {
       title: "Shadowrun Anarchy 2e édition",
       body: `
         <h2>Shadow Herds — Anarchy 2e</h2>
@@ -57,7 +57,7 @@ const App = {
   _modules: {
     sr5: () => EditionSR5,
     sr6: () => EditionSR6,
-    anarchy: () => EditionAnarchy,
+    anarchy2: () => EditionAnarchy2,
   },
 
   getEditionModule(ed) {
@@ -74,11 +74,12 @@ const App = {
     document.getElementById("edition-screen").classList.add("hidden");
     document.getElementById("app").classList.add("visible");
 
-    const badgeLabels = { sr5: "SR5", sr6: "SR6", anarchy: "ANARCHY 2E" };
+    const badgeLabels = { sr5: "SR5", sr6: "SR6", anarchy2: "ANARCHY 2E" };
     document.getElementById("edition-badge").textContent =
       badgeLabels[ed] || ed;
 
     Shadows.load();
+    Characters.load();
     ContactsBook.load();
     Servers.initPanel(); // charge + migre + câble la délégation serveur (#app)
     DossierBar.init(); // Dossiers chargés/synchronisés + destination courante
@@ -125,6 +126,9 @@ const App = {
       case "shadows":
         Hub.initPanel();
         break;
+      case "characters":
+        Characters.render();
+        break;
       case "generator":
         DossierBar.mount("gen-dossier-list");
         DossierBar.render();
@@ -152,6 +156,7 @@ const App = {
     const panels = [
       "welcome",
       "shadows",
+      "characters",
       "generator",
       "contacts",
       "matrix",
@@ -168,7 +173,7 @@ const App = {
   _editionFromHash() {
     const hash = window.location.hash.slice(1);
     const parts = hash.split("/");
-    const editions = ["sr5", "sr6", "anarchy"];
+    const editions = ["sr5", "sr6", "anarchy2"];
     if (parts.length >= 1 && editions.includes(parts[0])) return parts[0];
     return null;
   },
@@ -209,17 +214,19 @@ const App = {
    nommé, aucune logique métier dupliquée ici. ---- */
 const SHORTCUT_PANELS = {
   1: "shadows",
-  2: "generator",
-  3: "contacts",
-  4: "matrix",
-  5: "run",
-  6: "settings",
+  2: "characters",
+  3: "generator",
+  4: "contacts",
+  5: "matrix",
+  6: "run",
+  7: "settings",
 };
 
 /* ============================================================
    INIT au chargement du DOM
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
+  Storage.migrateAnarchyId();
   DiceRoller.init({
     resolve: (id) => PnjLookup.find(id),
     getPrefs: () => Settings.getDicePrefs(),
@@ -235,6 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ContactRenderer.bindDelegation();
   CardRenderer.bindDelegation();
   SidebarToggle.bindDelegation();
+  CharGen.bindDelegation();
 
   document.addEventListener("click", (e) => {
     const actionEl = e.target.closest("[data-action]");
@@ -264,6 +272,12 @@ document.addEventListener("DOMContentLoaded", () => {
       case "encounter-open":
         Encounter.open();
         break;
+      case "chargen-open":
+        CharGen.open();
+        break;
+      case "chargen-close":
+        CharGen.close();
+        break;
       case "sidebar-next-turn":
         Encounter.nextTurn();
         break;
@@ -284,6 +298,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === e.currentTarget) Encounter.close();
   });
 
+  document.getElementById("chargen-overlay").addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) CharGen.close();
+  });
+
   document.getElementById("shortcuts-overlay").addEventListener("click", (e) => {
     if (e.target === e.currentTarget) App.toggleCheatsheet(false);
   });
@@ -292,6 +310,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") {
       EditModal.close();
       Encounter.close();
+      CharGen.close();
       App.toggleCheatsheet(false);
       return;
     }

@@ -147,7 +147,7 @@ const SkillCatalog = {
   },
 
   /* ---- Anarchy 2.0 : compétences (extraites des statBlocks du jeu) ---- */
-  anarchy: {
+  anarchy2: {
     "Armes à distance": "AGI",
     "Astral": "LOG",
     "Athlétisme": "FOR",
@@ -202,7 +202,7 @@ const SkillCatalog = {
 
   /* Liste des noms de compétences pour une édition donnée. */
   skillsFor(edition) {
-    const map = this[edition] || this.anarchy;
+    const map = this[edition] || this.anarchy2;
     return Object.keys(map).sort((a, b) => a.localeCompare(b, "fr"));
   },
 
@@ -210,7 +210,7 @@ const SkillCatalog = {
      compétences actives, puis dans les connaissances de l'édition (ex.
      sr5Knowledges). Renvoie null si inconnu. */
   attrFor(edition, skillName) {
-    const map = this[edition] || this.anarchy;
+    const map = this[edition] || this.anarchy2;
     const knowMap = this[`${edition}Knowledges`] || {};
     // Tolère un suffixe de spécialisation entre parenthèses.
     const base = String(skillName).replace(/\s*\(.*\)\s*$/, "").trim();

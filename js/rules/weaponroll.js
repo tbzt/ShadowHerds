@@ -42,7 +42,7 @@ const WeaponRoll = {
       [/katana|épée|sabre|hache|couteau|lame|griffe|tranchant|crocs?|morsure|queue/i, "Combat rapproché"],
       [/matraque|massue|barre|bâton|télescopique|électro|gants?|poing|contondant/i, "Combat rapproché"],
     ],
-    anarchy: [
+    anarchy2: [
       [/pistolet|fusil|arme à distance|smg|mitrail|sniper|revolver|taser/i, "Armes à distance"],
       [/katana|épée|sabre|hache|couteau|lame|griffe|matraque|bâton|mains? nues|poing|contondant|tranchant|rapproché/i, "Combat rapproché"],
       [/grenade|jet|arc|arbalète/i, "Armes à distance"],
@@ -52,7 +52,7 @@ const WeaponRoll = {
   FALLBACK_SKILL: {
     sr5: "Armes à feu",
     sr6: "Armes à feu",
-    anarchy: "Armes à distance",
+    anarchy2: "Armes à distance",
   },
 
   /* Groupes de compétences SR5 (« (GC) ») et compétences couvertes.

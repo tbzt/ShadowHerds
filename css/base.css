@@ -172,7 +172,7 @@ select optgroup {
   background: #080e14;
   box-shadow: 0 0 28px rgba(0, 200, 255, 0.22);
 }
-.edition-card[data-ed="anarchy"]:hover {
+.edition-card[data-ed="anarchy2"]:hover {
   border-color: #ff3c3c;
   background: #130a06;
   box-shadow: 0 0 28px rgba(255, 60, 60, 0.22);
@@ -192,7 +192,7 @@ select optgroup {
   color: #00c8ff;
   font-family: "Chakra Petch", sans-serif;
 }
-.edition-card[data-ed="anarchy"] .ed-num {
+.edition-card[data-ed="anarchy2"] .ed-num {
   color: #ff3c3c;
   font-family: "Saira Condensed", sans-serif;
 }
@@ -202,7 +202,7 @@ select optgroup {
 .edition-card[data-ed="sr6"] .ed-name {
   font-family: "Chakra Petch", sans-serif;
 }
-.edition-card[data-ed="anarchy"] .ed-name {
+.edition-card[data-ed="anarchy2"] .ed-name {
   font-family: "Saira Condensed", sans-serif;
   font-weight: 700;
 }
@@ -2914,7 +2914,7 @@ kbd {
 }
 
 /* Réserve de menace (Anarchy 2.0) : badge topbar masqué par défaut,
-   révélé uniquement sous [data-edition="anarchy"] (jamais via JS). */
+   révélé uniquement sous [data-edition="anarchy2"] (jamais via JS). */
 #threat-reserve {
   display: none;
   align-items: center;
@@ -2926,7 +2926,7 @@ kbd {
   color: var(--text-dim);
   flex-shrink: 0;
 }
-[data-edition="anarchy"] #threat-reserve {
+[data-edition="anarchy2"] #threat-reserve {
   display: flex;
 }
 .threat-reserve-lbl {
@@ -5446,6 +5446,186 @@ input[type="range"]#risk-dice-slider {
 .capacity-zone .card-section {
   border: none;
   padding: var(--sp-2) 0;
+}
+
+/* Zone narrative des personnages jouables (Anarchy) : mots-clés,
+   comportements, répliques — sous la zone Capacités. */
+.pc-narrative-zone {
+  padding: var(--sp-2) 14px var(--sp-2);
+  border-top: 1px solid var(--border);
+}
+.pc-narrative-zone .card-section {
+  border: none;
+  padding: var(--sp-2) 0;
+}
+.pc-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pc-quote {
+  font-style: italic;
+  color: var(--text-dim);
+  font-size: var(--fs-sm, 0.8rem);
+}
+
+/* ============================================================
+   CHARGEN — assistant de création de personnage jouable
+   ============================================================ */
+.chargen-modal {
+  width: min(760px, 96vw);
+}
+.cg-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: var(--sp-3);
+}
+.cg-step-tab {
+  padding: 4px 10px;
+  font-size: 0.68rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: border-color var(--dur-base), color var(--dur-base);
+}
+.cg-step-tab.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.cg-budget {
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--glow);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.cg-budget-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.cg-budget-cell {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.cg-budget-cell.over {
+  color: var(--danger);
+  font-weight: 600;
+}
+.cg-budget-bar {
+  flex: 1;
+  min-width: 120px;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.cg-budget-fill {
+  height: 100%;
+  background: var(--accent);
+}
+.cg-budget-fill.over {
+  background: var(--danger);
+}
+.cg-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.cg-step-section {
+  margin-top: var(--sp-2);
+}
+.cg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cg-field label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.cg-hint {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.cg-error-text {
+  color: var(--danger);
+  font-size: 0.7rem;
+}
+.cg-attr-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cg-attr-label {
+  width: 3em;
+  font-weight: 600;
+}
+.cg-attr-range {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+.cg-list-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cg-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.cg-section-label {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.62rem;
+  color: var(--accent2);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+.cg-check-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 4px;
+}
+.cg-check {
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.cg-narrative-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+.cg-review-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: var(--sp-3);
+}
+.cg-error {
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+.cg-ok {
+  color: var(--success);
+  font-size: 0.8rem;
+}
+.cg-review-card {
+  display: flex;
+  justify-content: center;
 }
 
 /* Bouton de repli Référence */

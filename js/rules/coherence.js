@@ -311,7 +311,7 @@ const Coherence = {
   _selfTest() {
     if (typeof Debug === "undefined") return;
     const roles = Object.keys(this.ROLES);
-    const editions = ["sr5", "sr6", "anarchy"];
+    const editions = ["sr5", "sr6", "anarchy2"];
     for (const role of roles) {
       if (!Array.isArray(this.ROLES[role].attrPriority)) {
         Debug.warn("coherence", `rôle ${role} : attrPriority invalide`);

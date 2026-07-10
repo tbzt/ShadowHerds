@@ -112,7 +112,7 @@ const CardRenderer = {
       switch (pnj.edition) {
         case "sr5": core = this._bodySR5(pnj, deps); break;
         case "sr6": core = this._bodySR6(pnj, deps); break;
-        case "anarchy": core = this._bodyAnarchy(pnj, deps); break;
+        case "anarchy2": core = this._bodyAnarchy(pnj, deps); break;
         default: return '<div class="pnj-card-body">—</div>';
       }
       return this._spiritServicesBar(pnj) + core;
@@ -125,7 +125,7 @@ const CardRenderer = {
       case "sr6":
         core = this._bodySR6(pnj, deps);
         break;
-      case "anarchy":
+      case "anarchy2":
         core = this._bodyAnarchy(pnj, deps);
         break;
       default:
@@ -272,7 +272,7 @@ const CardRenderer = {
         const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill}${approxTxt} ${r.skillVal} + ${r.attr} ${r.attrVal})${r.limit != null ? ` · limite ${r.limit}` : ""}${smartTxt}`;
         const poolBadge = `<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="lim">▸${r.limit}</span>` : ""}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}${r.smartBonus ? `<span class="lim">SL+${r.smartBonus}</span>` : ""}</span>`;
         const dataAttr =
-          edition === "anarchy"
+          App.getEditionModule(edition)?.usesRiskPanel
             ? `data-roll-weapon-anarchy="${this._esc(name)}"`
             : `data-roll-weapon="${this._esc(w)}" data-roll-edition="${edition}"`;
         return `<div class="weapon-line weapon-rollable rollable" ${dataAttr} data-roll-pnj="${pnj.id}" title="${this._esc(title)}">
@@ -512,7 +512,7 @@ const CardRenderer = {
     }
     if (App.getEditionModule(edition).hasEdges) {
       for (const a of pnj.edges || []) {
-        const drug = deps.Drugs.matchItem(a, "anarchy", "edges");
+        const drug = deps.Drugs.matchItem(a, edition, "edges");
         if (drug) found.push(this._drugTag(pnj, edition, drug, a, deps));
       }
     }
@@ -596,6 +596,11 @@ const CardRenderer = {
         `<button class="card-action-btn danger" data-action="remove-pnj" data-id="${pnj.id}">Supprimer</button>`,
       );
     }
+    if (actions.includes("remove-pj")) {
+      btns.push(
+        `<button class="card-action-btn danger" data-action="remove-pj" data-id="${pnj.id}">Supprimer</button>`,
+      );
+    }
     btns.push(
       `<button class="card-action-btn ghost" data-action="add-to-encounter" data-id="${pnj.id}" title="Ajouter au suivi de combat">⚔ Combat</button>`,
     );
@@ -646,6 +651,9 @@ const CardRenderer = {
           break;
         case "remove-pnj":
           Shadows.removePNJ(id);
+          break;
+        case "remove-pj":
+          Characters.removePJ(id);
           break;
         case "add-to-encounter":
           Encounter.add(id);

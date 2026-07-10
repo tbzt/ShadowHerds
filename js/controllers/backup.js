@@ -18,10 +18,12 @@
 const Backup = {
   FORMAT: "shadowherds-backup",
   VERSION: 1,
-  EDITIONS: ["sr5", "sr6", "anarchy"],
+  EDITIONS: ["sr5", "sr6", "anarchy2"],
   KEYS: [
     "shadows_all",
     "shadows_groups",
+    "characters_all",
+    "characters_groups",
     "contacts_all",
     "contacts_groups",
     "servers_all",

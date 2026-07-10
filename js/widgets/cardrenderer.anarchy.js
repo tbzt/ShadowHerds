@@ -38,6 +38,14 @@ Object.assign(CardRenderer, {
       matrixMonitor,
       awakened,
       notes,
+      isPC,
+      keywords,
+      behaviors,
+      quotes,
+      lifestyle,
+      karma,
+      nuyenSpent,
+      nuyenBudget,
     } = pnj;
 
     const prefs = this._displayPrefs(deps);
@@ -97,7 +105,7 @@ Object.assign(CardRenderer, {
         const noteStr = a.note
           ? ` <em style="color:var(--text-dim);font-size:0.58rem;">(${this._esc(a.note)})</em>`
           : "";
-        const r = deps.WeaponRoll ? deps.WeaponRoll.resolvePool(pnj, a, "anarchy") : null;
+        const r = deps.WeaponRoll ? deps.WeaponRoll.resolvePool(pnj, a, pnj.edition) : null;
         if (r) {
           const rrTxt = r.rr ? ` RR${r.rr}` : "";
           const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill} ${r.skillVal}+${r.attr} ${r.attrVal}${rrTxt}) — cliquer pour lancer`;
@@ -113,7 +121,7 @@ Object.assign(CardRenderer, {
       }
       html += "</div>";
     }
-    html += this._drugRow(pnj, "anarchy", deps);
+    html += this._drugRow(pnj, pnj.edition, deps);
     html += this._armorChipRow(pnj);
     html += this._vehicleChipRow(pnj, deps);
     html += this._spiritChipRow(pnj, deps);
@@ -132,7 +140,7 @@ Object.assign(CardRenderer, {
         const detail = `${this._esc(Utils.attrFullName(s.attr))} ${attrVal} + ${this._esc(s.name)} ${s.val}${rrStr}`;
         const rollMain =
           pool >= 1
-            ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}" data-roll-detail="${detail}" data-roll-edition="anarchy" data-roll-rr="${s.rr || 0}" data-roll-pnj="${pnj.id}"`
+            ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}" data-roll-detail="${detail}" data-roll-edition="${pnj.edition}" data-roll-rr="${s.rr || 0}" data-roll-pnj="${pnj.id}"`
             : "";
         html += `<span class="tag skill-tag${pool >= 1 ? " rollable" : ""}"${rollMain} title="${this._esc(s.name)} : ${pool} (${s.val}+${s.attr}${rrStr}) — cliquer pour lancer">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong>${s.rr > 0 ? `<span class="lim">RR${s.rr}</span>` : ""}</span>`;
         if (s.spec && s.spec !== true && s.specVal) {
@@ -143,7 +151,7 @@ Object.assign(CardRenderer, {
           const specDetail = `${this._esc(Utils.attrFullName(s.specAttr || s.attr))} ${specAttrVal} + ${this._esc(s.spec)} ${s.specVal}${specRrStr}`;
           const rollSpec =
             specPool >= 1
-              ? ` data-roll="${specPool}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" data-roll-detail="${specDetail}" data-roll-edition="anarchy" data-roll-rr="${specRr}" data-roll-pnj="${pnj.id}"`
+              ? ` data-roll="${specPool}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" data-roll-detail="${specDetail}" data-roll-edition="${pnj.edition}" data-roll-rr="${specRr}" data-roll-pnj="${pnj.id}"`
               : "";
           html += `<span class="tag skill-tag skill-tag-spec${specPool >= 1 ? " rollable" : ""}"${rollSpec} title="Spécialisation ${this._esc(s.spec)} : ${specPool} (${s.specVal}+${s.specAttr || s.attr}${specRrStr}) — cliquer pour lancer">◊&nbsp;${this._esc(s.spec)}&nbsp;<strong style="color:var(--text)">${specPool}</strong>${specRr > 0 ? `<span class="lim">RR${specRr}</span>` : ""}</span>`;
         }
@@ -164,6 +172,12 @@ Object.assign(CardRenderer, {
     if (spells && spells.length) html += this._listSection("Sorts", spells);
     html += "</div>"; // fin capacity-zone
 
+    // ---- ZONE PERSONNAGE (PJ uniquement) ----
+    // Couche narrative propre aux personnages jouables (mots-clés,
+    // comportements, répliques, p.50-51) + suivi de création/progression
+    // (nuyens dépensés, Karma). Absente des PNJ (isPC non posé).
+    if (isPC) html += this._pcNarrativeZone(pnj, { keywords, behaviors, quotes, lifestyle, karma, nuyenSpent, nuyenBudget });
+
     // ---- ZONE RÉFÉRENCE ----
     // (les seuils de blessures vivent dans la zone Combat, sous le moniteur)
     html += this._refToggle(pnj, "Référence — attributs, équipement");
@@ -174,7 +188,7 @@ Object.assign(CardRenderer, {
         <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}</div></div>`;
     }
     if (prefs.showEquipment && equip && equip.length)
-      html += this._equipSection(pnj, equip, "anarchy", deps);
+      html += this._equipSection(pnj, equip, pnj.edition, deps);
     if (notes) {
       html += `<div class="ref-block"><div class="ref-lbl">Notes</div>
         <div style="font-size:0.75rem;">${this._esc(notes)}</div></div>`;
@@ -182,6 +196,36 @@ Object.assign(CardRenderer, {
     html += "</div>"; // fin ref-zone
 
     html += "</div>";
+    return html;
+  },
+
+  /** Zone narrative d'un personnage jouable (p.50-51 : 5 mots-clés, 4
+      comportements, 4 répliques) + suivi Karma/nuyens de création. */
+  _pcNarrativeZone(pnj, { keywords, behaviors, quotes, lifestyle, karma, nuyenSpent, nuyenBudget }) {
+    let html = '<div class="pc-narrative-zone">';
+    html += this._zoneEyebrow("Personnage");
+
+    html += '<div class="combat-row">';
+    if (nuyenBudget) {
+      const spentStr = (nuyenSpent || 0).toLocaleString("fr-FR");
+      const budgetStr = nuyenBudget.toLocaleString("fr-FR");
+      html += `<span class="stat-pill">${spentStr} / ${budgetStr} ¥</span>`;
+    }
+    html += `<span class="stat-pill">Karma <strong>${karma || 0}</strong></span>`;
+    if (lifestyle) html += `<span class="stat-pill">${this._esc(lifestyle)}</span>`;
+    html += "</div>";
+
+    if (keywords && keywords.length) html += this._listSection("Mots-clés", keywords);
+    if (behaviors && behaviors.length) html += this._listSection("Comportements", behaviors);
+    if (quotes && quotes.length) {
+      html += `<div class="card-section">
+        <div class="card-section-label">Répliques</div>
+        <div class="card-section-content pc-quotes">
+          ${quotes.map((q) => `<div class="pc-quote">« ${this._esc(q)} »</div>`).join("")}
+        </div>
+      </div>`;
+    }
+    html += "</div>"; // fin pc-narrative-zone
     return html;
   },
 

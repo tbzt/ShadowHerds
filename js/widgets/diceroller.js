@@ -148,7 +148,7 @@ const DiceRoller = {
         const wName = waEl.getAttribute("data-roll-weapon-anarchy");
         if (pnj) {
           const weapon = (pnj.weapons || []).find((a) => a.name === wName);
-          const r = weapon ? WeaponRoll.resolvePool(pnj, weapon, "anarchy") : null;
+          const r = weapon ? WeaponRoll.resolvePool(pnj, weapon, pnj.edition) : null;
           if (r) {
             this.openRiskPanel(r.pool, {
               label: `${r.weaponName} (${r.matchedSkill || r.skill})`,

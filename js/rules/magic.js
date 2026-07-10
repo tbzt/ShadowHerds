@@ -247,7 +247,7 @@ const Magic = {
 
     // Anarchy : pas de mécanique de tradition à attribut de Drain dans le
     // livre de base (seul le type d'esprit invocable change, narratif).
-    anarchy: [],
+    anarchy2: [],
   },
 
   /* ========================================================
@@ -452,7 +452,7 @@ const Magic = {
     // une liste (on en tire `pick`), plus un Comportement imposé. Résolu par
     // Magic._resolveRrMentor() qui fixe les relances tirées (`chosen`) et
     // construit la description. Les relances sont appliquées par BonusEngine.
-    anarchy: [
+    anarchy2: [
       {
         name: "Chat",
         behavior: "Cruel",

@@ -82,7 +82,7 @@ const Drugs = {
     // des statblocks) ET dans l'équipement (ajout manuel via l'édition) —
     // matchItem() ignore la source pour cette édition. Le contrecoup
     // standard applique le Désavantage global (pnj.drugAdv, p.67).
-    anarchy: [
+    anarchy2: [
       {
         id: "jazz",
         match: /^Jazz\s*\(drogue\)/i,

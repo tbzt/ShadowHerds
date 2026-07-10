@@ -9,10 +9,10 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500&family=Oswald:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=44">
-  <link rel="stylesheet" href="css/theme-sr5.css?v=18">
-  <link rel="stylesheet" href="css/theme-sr6.css?v=17">
-  <link rel="stylesheet" href="css/theme-anarchy.css?v=19">
+  <link rel="stylesheet" href="css/base.css?v=47">
+  <link rel="stylesheet" href="css/theme-sr5.css?v=19">
+  <link rel="stylesheet" href="css/theme-sr6.css?v=18">
+  <link rel="stylesheet" href="css/theme-anarchy.css?v=20">
 </head>
 
 <body>
@@ -65,6 +65,11 @@
       <path d="M9 6h11M9 12h11M9 18h11"/>
       <path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>
     </symbol>
+    <symbol id="ic-character" viewBox="0 0 24 24">
+      <circle cx="12" cy="7.5" r="3.3"/>
+      <path d="M5.5 20c0-3.5 2.9-5.8 6.5-5.8s6.5 2.3 6.5 5.8"/>
+      <path d="M12 15.5l1.4 2.8-1.4 1.4-1.4-1.4 1.4-2.8z"/>
+    </symbol>
     <symbol id="ic-help" viewBox="0 0 24 24">
       <circle cx="12" cy="12" r="9"/>
       <path d="M9.3 9.2a2.8 2.8 0 0 1 5.4.9c0 1.9-2.7 2.3-2.7 4.1"/>
@@ -94,7 +99,7 @@
         <span class="ed-sub">6e édition</span>
       </div>
 
-      <div class="edition-card" data-ed="anarchy" data-action="select-edition">
+      <div class="edition-card" data-ed="anarchy2" data-action="select-edition">
         <span class="ed-num">∅</span>
         <span class="ed-name">Anarchy</span>
         <span class="ed-sub">2e édition</span>
@@ -146,7 +151,7 @@
         </button>
 
         <!-- Réserve de menace (Anarchy 2.0, p.138) : visibilité pilotée par
-             CSS [data-edition="anarchy"], jamais par du JS. -->
+             CSS [data-edition="anarchy2"], jamais par du JS. -->
         <div id="threat-reserve" title="Réserve de menace (relance des PNJ)">
           <span class="threat-reserve-lbl">Menace</span>
           <button class="threat-reserve-step" data-threat="-1" tabindex="-1"
@@ -184,6 +189,10 @@
         <!-- Hub transverse : PNJ, contacts et serveurs organisés par dossier. -->
         <button class="nav-btn active" data-panel="shadows" data-action="show-panel">
           <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-shadows"></use></svg></span><span class="nav-label" data-short="Ombres">Ombres portées</span>
+        </button>
+        <!-- Bibliothèque distincte : personnages jouables (PJ), séparée des PNJ. -->
+        <button class="nav-btn" data-panel="characters" data-action="show-panel">
+          <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-character"></use></svg></span><span class="nav-label" data-short="PJ">Personnages</span>
         </button>
 
         <span class="nav-section-label">Génération</span>
@@ -252,6 +261,39 @@
               </div>
               <div id="hub-create"></div>
               <div id="hub-sections"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PERSONNAGES — bibliothèque de personnages jouables (PJ),
+             distincte des Ombres portées (PNJ). Sidebar + grille propres
+             (socle Collection), sans passer par le Hub/DossierBar. -->
+        <div class="panel" id="panel-characters">
+          <div class="panel-title">Personnages</div>
+          <div class="shadows-layout" data-sidebar="characters">
+            <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="characters"></div>
+            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="characters" title="Afficher les groupes"
+              aria-label="Afficher les groupes">
+              <span class="sidebar-reopen-icon">›</span>
+              <span class="sidebar-reopen-label">Groupes</span>
+            </button>
+            <aside class="shadows-sidebar">
+              <div class="shadows-sidebar-header">
+                <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="characters" title="Replier"
+                  aria-label="Replier les groupes">‹</button>
+                <span class="shadows-sidebar-title">Groupes</span>
+                <button class="btn-icon" data-action="add-group" data-collection="characters" title="Nouveau groupe">＋</button>
+              </div>
+              <div id="characters-group-list"></div>
+            </aside>
+            <div class="shadows-main">
+              <div class="shadows-main-toolbar">
+                <span id="characters-group-label" class="shadows-group-label">Tous les personnages</span>
+                <input type="search" class="filter-input" data-action="filter" data-collection="characters"
+                  placeholder="Filtrer…" aria-label="Filtrer les personnages">
+                <button class="btn-primary btn-small" data-action="chargen-open">＋ Créer un personnage</button>
+              </div>
+              <div class="cards-zone" id="characters-grid"></div>
             </div>
           </div>
         </div>
@@ -405,6 +447,9 @@
       <button class="bnav-btn" data-panel="shadows" data-action="show-panel">
         <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-shadows"></use></svg></span><span class="bnav-label">Ombres</span>
       </button>
+      <button class="bnav-btn" data-panel="characters" data-action="show-panel">
+        <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-character"></use></svg></span><span class="bnav-label">PJ</span>
+      </button>
       <button class="bnav-btn" data-panel="generator" data-action="show-panel">
         <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-pnj"></use></svg></span><span class="bnav-label">PNJ</span>
       </button>
@@ -479,6 +524,22 @@
     </div>
   </div>
 
+  <!-- OVERLAY ASSISTANT DE CRÉATION DE PERSONNAGE (CharGen) -->
+  <div class="modal-overlay" id="chargen-overlay" role="dialog" aria-modal="true" aria-labelledby="chargen-title">
+    <div class="modal chargen-modal">
+      <div class="modal-header">
+        <span class="modal-title" id="chargen-title">Créer un personnage</span>
+        <button class="modal-close" data-action="chargen-close" aria-label="Fermer">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="chargen-steps" class="cg-steps"></div>
+        <div id="chargen-budget" class="cg-budget"></div>
+        <div id="chargen-body"></div>
+      </div>
+      <div class="modal-footer" id="chargen-footer"></div>
+    </div>
+  </div>
+
   <!-- OVERLAY AIDE RACCOURCIS CLAVIER -->
   <div class="modal-overlay" id="shortcuts-overlay" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
     <div class="modal">
@@ -488,7 +549,7 @@
       </div>
       <div class="modal-body">
         <div class="shortcuts-list">
-          <div class="shortcut-row"><span class="shortcut-keys"><kbd>1</kbd>–<kbd>6</kbd></span><span>Changer de panel (Ombres, PNJ, Contacts, Matrice, Run, Réglages)</span></div>
+          <div class="shortcut-row"><span class="shortcut-keys"><kbd>1</kbd>–<kbd>7</kbd></span><span>Changer de panel (Ombres, Personnages, PNJ, Contacts, Matrice, Run, Réglages)</span></div>
           <div class="shortcut-row"><span class="shortcut-keys"><kbd>G</kbd></span><span>Générer (onglet actif du générateur)</span></div>
           <div class="shortcut-row"><span class="shortcut-keys"><kbd>R</kbd></span><span>Lancer les dés (réserve de la barre du haut)</span></div>
           <div class="shortcut-row"><span class="shortcut-keys"><kbd>/</kbd></span><span>Focus sur le filtre de la liste affichée</span></div>
@@ -505,66 +566,69 @@
   <!-- SCRIPTS — ordre important : couches CONTRIBUTING.md § « Les dépendances
        vont dans un seul sens » (core → rules → editions → catalogs → widgets
        → controllers → app) -->
-  <script src="js/core/utils.js?v=24"></script>
-  <script src="js/core/debug.js?v=2"></script>
-  <script src="js/core/storage.js?v=17"></script>
-  <script src="js/rules/dice.js?v=4"></script>
-  <script src="js/rules/metavariants.js?v=17"></script>
-  <script src="js/rules/infected.js?v=21"></script>
-  <script src="js/rules/matrix.js?v=3"></script>
-  <script src="js/rules/skillcatalog.js?v=18"></script>
-  <script src="js/rules/weaponroll.js?v=20"></script>
-  <script src="js/rules/itemresolver.js?v=1"></script>
-  <script src="js/rules/bonusengine.js?v=24"></script>
-  <script src="js/rules/flavor.js?v=16"></script>
-  <script src="js/rules/content.js?v=21"></script>
-  <script src="js/rules/magic.js?v=5"></script>
-  <script src="js/rules/coherence.js?v=3"></script>
-  <script src="js/editions/sr5.js?v=38"></script>
-  <script src="js/editions/sr6.js?v=34"></script>
-  <script src="js/editions/anarchy.js?v=30"></script>
-  <script src="js/catalogs/drugs.js?v=3"></script>
-  <script src="js/catalogs/vehicles.js?v=3"></script>
-  <script src="js/catalogs/spirits.js?v=5"></script>
-  <script src="js/catalogs/creatures.js?v=3"></script>
-  <script src="js/widgets/cardrenderer.js?v=7"></script>
-  <script src="js/widgets/cardrenderer.sr5.js?v=6"></script>
-  <script src="js/widgets/cardrenderer.sr6.js?v=4"></script>
-  <script src="js/widgets/cardrenderer.anarchy.js?v=1"></script>
-  <script src="js/widgets/cardrenderer.linked.js?v=1"></script>
-  <script src="js/widgets/ui.js?v=32"></script>
-  <script src="js/widgets/contactrenderer.js?v=4"></script>
-  <script src="js/widgets/runrenderer.js?v=3"></script>
-  <script src="js/widgets/contentmodal.js?v=1"></script>
-  <script src="js/widgets/dialog.js?v=1"></script>
-  <script src="js/widgets/dossiers.js?v=1"></script>
-  <script src="js/widgets/dossierbar.js?v=2"></script>
-  <script src="js/widgets/grouppicker.js?v=2"></script>
-  <script src="js/widgets/collection.js?v=5"></script>
-  <script src="js/widgets/serverrenderer.js?v=3"></script>
-  <script src="js/widgets/encounterrenderer.js?v=5"></script>
-  <script src="js/controllers/servers.js?v=12"></script>
-  <script src="js/controllers/intrusion.js?v=1"></script>
-  <script src="js/widgets/dicelog.js?v=2"></script>
-  <script src="js/widgets/diceroller.js?v=6"></script>
-  <script src="js/widgets/dicepanel.js?v=7"></script>
-  <script src="js/widgets/sidebartoggle.js?v=19"></script>
-  <script src="js/widgets/profcategories.js?v=17"></script>
-  <script src="js/widgets/multiselect.js?v=16"></script>
-  <script src="js/widgets/singleselect.js?v=2"></script>
-  <script src="js/controllers/generator.js?v=28"></script>
-  <script src="js/controllers/rungen.js?v=4"></script>
-  <script src="js/controllers/shadows.js?v=23"></script>
-  <script src="js/controllers/pnjlookup.js?v=1"></script>
-  <script src="js/controllers/encounter.js?v=4"></script>
-  <script src="js/controllers/editmodal.js?v=26"></script>
-  <script src="js/controllers/contactgen.js?v=18"></script>
-  <script src="js/controllers/contacts.js?v=4"></script>
-  <script src="js/controllers/contactsbook.js?v=2"></script>
-  <script src="js/controllers/hub.js?v=4"></script>
-  <script src="js/controllers/settings.js?v=20"></script>
-  <script src="js/controllers/backup.js?v=17"></script>
-  <script src="js/app.js?v=30"></script>
+  <script src="js/core/utils.js?v=25"></script>
+  <script src="js/core/debug.js?v=3"></script>
+  <script src="js/core/storage.js?v=18"></script>
+  <script src="js/rules/dice.js?v=5"></script>
+  <script src="js/rules/metavariants.js?v=18"></script>
+  <script src="js/rules/infected.js?v=22"></script>
+  <script src="js/rules/matrix.js?v=4"></script>
+  <script src="js/rules/skillcatalog.js?v=19"></script>
+  <script src="js/rules/weaponroll.js?v=21"></script>
+  <script src="js/rules/itemresolver.js?v=2"></script>
+  <script src="js/rules/bonusengine.js?v=25"></script>
+  <script src="js/rules/flavor.js?v=17"></script>
+  <script src="js/rules/content.js?v=22"></script>
+  <script src="js/rules/magic.js?v=6"></script>
+  <script src="js/rules/coherence.js?v=4"></script>
+  <script src="js/editions/sr5.js?v=39"></script>
+  <script src="js/editions/sr6.js?v=35"></script>
+  <script src="js/editions/anarchy2.js?v=31"></script>
+  <script src="js/editions/anarchy2.creation.js?v=3"></script>
+  <script src="js/catalogs/drugs.js?v=4"></script>
+  <script src="js/catalogs/vehicles.js?v=4"></script>
+  <script src="js/catalogs/spirits.js?v=6"></script>
+  <script src="js/catalogs/creatures.js?v=4"></script>
+  <script src="js/widgets/cardrenderer.js?v=9"></script>
+  <script src="js/widgets/cardrenderer.sr5.js?v=7"></script>
+  <script src="js/widgets/cardrenderer.sr6.js?v=5"></script>
+  <script src="js/widgets/cardrenderer.anarchy.js?v=3"></script>
+  <script src="js/widgets/cardrenderer.linked.js?v=2"></script>
+  <script src="js/widgets/ui.js?v=33"></script>
+  <script src="js/widgets/contactrenderer.js?v=5"></script>
+  <script src="js/widgets/runrenderer.js?v=4"></script>
+  <script src="js/widgets/contentmodal.js?v=2"></script>
+  <script src="js/widgets/dialog.js?v=2"></script>
+  <script src="js/widgets/dossiers.js?v=2"></script>
+  <script src="js/widgets/dossierbar.js?v=3"></script>
+  <script src="js/widgets/grouppicker.js?v=3"></script>
+  <script src="js/widgets/collection.js?v=6"></script>
+  <script src="js/widgets/serverrenderer.js?v=4"></script>
+  <script src="js/widgets/encounterrenderer.js?v=6"></script>
+  <script src="js/controllers/servers.js?v=13"></script>
+  <script src="js/controllers/intrusion.js?v=2"></script>
+  <script src="js/widgets/dicelog.js?v=3"></script>
+  <script src="js/widgets/diceroller.js?v=7"></script>
+  <script src="js/widgets/dicepanel.js?v=8"></script>
+  <script src="js/widgets/sidebartoggle.js?v=21"></script>
+  <script src="js/widgets/profcategories.js?v=18"></script>
+  <script src="js/widgets/multiselect.js?v=17"></script>
+  <script src="js/widgets/singleselect.js?v=3"></script>
+  <script src="js/controllers/generator.js?v=29"></script>
+  <script src="js/controllers/rungen.js?v=5"></script>
+  <script src="js/controllers/shadows.js?v=24"></script>
+  <script src="js/controllers/characters.js?v=2"></script>
+  <script src="js/controllers/chargen.js?v=2"></script>
+  <script src="js/controllers/pnjlookup.js?v=3"></script>
+  <script src="js/controllers/encounter.js?v=6"></script>
+  <script src="js/controllers/editmodal.js?v=27"></script>
+  <script src="js/controllers/contactgen.js?v=19"></script>
+  <script src="js/controllers/contacts.js?v=5"></script>
+  <script src="js/controllers/contactsbook.js?v=3"></script>
+  <script src="js/controllers/hub.js?v=5"></script>
+  <script src="js/controllers/settings.js?v=21"></script>
+  <script src="js/controllers/backup.js?v=18"></script>
+  <script src="js/app.js?v=33"></script>
 
 </body>
 

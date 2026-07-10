@@ -218,7 +218,7 @@ const ProfCategories = {
   ],
 
   /* ---- Anarchy ---- */
-  anarchy: [
+  anarchy2: [
     {
       cat: "Gangs",
       items: [

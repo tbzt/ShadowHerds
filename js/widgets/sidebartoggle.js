@@ -10,7 +10,7 @@
 const SidebarToggle = {
   _key: "sidebar_collapsed",
   _mobileBreakpoint: 640,
-  _panels: ["shadows", "generator", "contacts", "matrix", "run"],
+  _panels: ["shadows", "characters", "generator", "contacts", "matrix", "run"],
   state: {},
 
   init() {

@@ -133,5 +133,29 @@ const Storage = {
     const keys = Object.keys(localStorage).filter(k => k.startsWith('sr_pnj_v2_'));
     keys.forEach(k => localStorage.removeItem(k));
     Debug.warn("storage", "clearAll", { removed: keys.length });
+  },
+
+  /** Migration one-shot : l'ancien identifiant d'édition "anarchy" désignait
+      Anarchy 2e. Depuis l'ajout d'Anarchy 1re il devient "anarchy2". On
+      renomme les clés `sr_pnj_v2_anarchy_*` → `sr_pnj_v2_anarchy2_*` et on
+      réécrit les champs `"edition":"anarchy"` dans les valeurs (PNJ, contacts,
+      véhicules, esprits liés). Idempotent, gardé par un flag global.
+      (Utilisateur unique : filet de sécurité, supprimable à terme.) */
+  migrateAnarchyId() {
+    if (this.getGlobal("anarchyIdMigrated", false)) return;
+    const oldPrefix = 'sr_pnj_v2_anarchy_';
+    const oldKeys = Object.keys(localStorage).filter(k => k.startsWith(oldPrefix));
+    oldKeys.forEach(k => {
+      const newKey = 'sr_pnj_v2_anarchy2_' + k.slice(oldPrefix.length);
+      let raw = localStorage.getItem(k);
+      if (raw !== null) {
+        raw = raw.split('"edition":"anarchy"').join('"edition":"anarchy2"');
+        localStorage.setItem(newKey, raw);
+      }
+      localStorage.removeItem(k);
+    });
+    this.setGlobal("anarchyIdMigrated", true);
+    if (oldKeys.length)
+      Debug.warn("storage", "migrateAnarchyId", { migrated: oldKeys.length });
   }
 };

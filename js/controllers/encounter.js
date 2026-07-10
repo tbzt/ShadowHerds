@@ -78,14 +78,16 @@ const Encounter = {
   },
 
   /** Entités ajoutables depuis le tracker : exactement les pools que
-      PnjLookup sait résoudre (générés, Ombres portées, spiders Matrice),
-      moins ceux déjà en scène. Esprits libres et créatures générés vivent
-      aussi dans Gen.pool, donc listés ici. */
+      PnjLookup sait résoudre (générés, Ombres portées, personnages
+      jouables, spiders Matrice), moins ceux déjà en scène. Esprits
+      libres et créatures générés vivent aussi dans Gen.pool, donc
+      listés ici. */
   _candidates() {
     const inScene = new Set(this.state.combatants.map((c) => c.pnjId));
     const all = [
       ...Gen.pool,
       ...Shadows.data.all,
+      ...Characters.data.all,
       ...Servers.data.all.map((s) => s.spider).filter(Boolean),
     ];
     const seen = new Set();

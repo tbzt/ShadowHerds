@@ -5,7 +5,7 @@
    Typo : Saira Condensed (titres) + Permanent Marker (noms) + STM
    Identité : brut, asymétrique, bordures épaisses, autocollants
    ============================================================ */
-[data-edition="anarchy"] {
+[data-edition="anarchy2"] {
   --bg: #0c0806;
   --bg-card: #130c08;
   --bg-mid: #180f0a;
@@ -25,37 +25,37 @@
 }
 
 /* ---- Écran d'accueil ---- */
-[data-edition="anarchy"] .edition-title {
+[data-edition="anarchy2"] .edition-title {
   color: #c08050;
 }
 
 /* ---- Topbar : bandeau brut + liseré orange épais ---- */
-[data-edition="anarchy"] #topbar {
+[data-edition="anarchy2"] #topbar {
   border-bottom: 3px solid #ff8800;
   background: #1a0d06;
 }
-[data-edition="anarchy"] .topbar-logo {
+[data-edition="anarchy2"] .topbar-logo {
   font-weight: 700;
 }
 
 /* ---- Sidebar : tranchante ---- */
-[data-edition="anarchy"] #sidebar {
+[data-edition="anarchy2"] #sidebar {
   border-right: 3px solid #2a1008;
 }
-[data-edition="anarchy"] .nav-section-label {
+[data-edition="anarchy2"] .nav-section-label {
   color: #ff8800;
   font-weight: 700;
 }
-[data-edition="anarchy"] .nav-btn {
+[data-edition="anarchy2"] .nav-btn {
   font-weight: 600;
 }
-[data-edition="anarchy"] .nav-btn.active {
+[data-edition="anarchy2"] .nav-btn.active {
   background: rgba(255, 60, 60, 0.08);
   border-left-width: 4px;
 }
 
 /* ---- Contenu : éclaboussures street ---- */
-[data-edition="anarchy"] #content {
+[data-edition="anarchy2"] #content {
   background-image:
     radial-gradient(
       ellipse at 88% 88%,
@@ -70,11 +70,11 @@
 }
 
 /* ---- Titres de panel : bloc orange franc ---- */
-[data-edition="anarchy"] .panel-title {
+[data-edition="anarchy2"] .panel-title {
   font-weight: 700;
   border-bottom: 2px solid #ff8800;
 }
-[data-edition="anarchy"] .panel-title::before {
+[data-edition="anarchy2"] .panel-title::before {
   width: 5px;
   height: 1.1em;
   background: #ff3c3c;
@@ -82,19 +82,19 @@
 }
 
 /* ---- Cartes PNJ : bordure épaisse, liseré orange ---- */
-[data-edition="anarchy"] .pnj-card {
+[data-edition="anarchy2"] .pnj-card {
   border-width: 2px;
 }
-[data-edition="anarchy"] .pnj-card::before {
+[data-edition="anarchy2"] .pnj-card::before {
   background: #ff8800;
   height: 3px;
 }
-[data-edition="anarchy"] .pnj-card-header {
+[data-edition="anarchy2"] .pnj-card-header {
   background: #1e0c04;
   border-bottom: 3px solid #ff8800;
 }
 /* Nom au feutre punk */
-[data-edition="anarchy"] .pnj-name {
+[data-edition="anarchy2"] .pnj-name {
   font-family: "Permanent Marker", cursive;
   font-weight: 400;
   letter-spacing: 0.01em;
@@ -103,14 +103,14 @@
 }
 
 /* ---- Badge de rang : autocollant incliné ---- */
-[data-edition="anarchy"] .pnj-rank-badge {
+[data-edition="anarchy2"] .pnj-rank-badge {
   border-radius: 0;
   font-weight: 700;
   transform: rotate(-2deg);
 }
 
 /* ---- Labels de section : orange brut ---- */
-[data-edition="anarchy"] .card-section-label {
+[data-edition="anarchy2"] .card-section-label {
   color: #ff8800;
   font-weight: 700;
 }
@@ -118,16 +118,16 @@
 /* ---- Attributs : filet orange épais entre colonnes (identité punk) ----
    Table à filets verticaux : la barre orange sépare les colonnes, donc
    pas de filet en tête de rangée (première cellule exclue). */
-[data-edition="anarchy"] .attr-cell {
+[data-edition="anarchy2"] .attr-cell {
   border-radius: 0;
 }
-[data-edition="anarchy"] .attr-cell:not(:first-child) {
+[data-edition="anarchy2"] .attr-cell:not(:first-child) {
   border-left: 2px solid #ff8800;
 }
 
 /* ---- Boutons : brutaux ---- */
-[data-edition="anarchy"] .btn-primary,
-[data-edition="anarchy"] .btn-secondary {
+[data-edition="anarchy2"] .btn-primary,
+[data-edition="anarchy2"] .btn-secondary {
   border-radius: 0;
   font-family: var(--font-display);
   font-weight: 700;
@@ -136,7 +136,7 @@
 }
 
 /* ---- Métavariante (Anarchy n'en a pas, mais cohérence) ---- */
-[data-edition="anarchy"] .pnj-metavariant {
+[data-edition="anarchy2"] .pnj-metavariant {
   color: #ff8800;
 }
 
@@ -145,52 +145,52 @@
    — conservés du thème d'origine
    ============================================================ */
 /* Rang badges couleur selon rang */
-[data-edition="anarchy"] .pnj-rank-badge.rang-figurant {
+[data-edition="anarchy2"] .pnj-rank-badge.rang-figurant {
   color: var(--text-dim);
   border-color: var(--border);
   background: transparent;
 }
-[data-edition="anarchy"] .pnj-rank-badge.rang-lieutenant {
+[data-edition="anarchy2"] .pnj-rank-badge.rang-lieutenant {
   color: var(--accent2);
   border-color: rgba(255, 136, 0, 0.3);
   background: rgba(255, 136, 0, 0.06);
 }
-[data-edition="anarchy"] .pnj-rank-badge.rang-boss {
+[data-edition="anarchy2"] .pnj-rank-badge.rang-boss {
   color: var(--accent);
   border-color: rgba(255, 60, 60, 0.4);
   background: rgba(255, 60, 60, 0.08);
 }
 
 /* Clichés — boss en orange */
-[data-edition="anarchy"] .cliche-item.boss-cliche {
+[data-edition="anarchy2"] .cliche-item.boss-cliche {
   border-color: rgba(255, 136, 0, 0.2);
 }
-[data-edition="anarchy"] .cliche-dice {
+[data-edition="anarchy2"] .cliche-dice {
   color: var(--accent);
 }
 
 /* Moniteur Anarchy : 2 cases légères / 1 grave / 1 incapacitante (p.68) */
-[data-edition="anarchy"] .monitor-box.sev-leger.filled {
+[data-edition="anarchy2"] .monitor-box.sev-leger.filled {
   background: #6e1800;
   border-color: #9e2200;
 }
-[data-edition="anarchy"] .monitor-box.sev-grave {
+[data-edition="anarchy2"] .monitor-box.sev-grave {
   border-color: #ff8800;
 }
-[data-edition="anarchy"] .monitor-box.sev-grave.filled {
+[data-edition="anarchy2"] .monitor-box.sev-grave.filled {
   background: #ff8800;
   border-color: #ff8800;
 }
-[data-edition="anarchy"] .monitor-box.sev-incap {
+[data-edition="anarchy2"] .monitor-box.sev-incap {
   border-color: #ff3c3c;
 }
-[data-edition="anarchy"] .monitor-box.sev-incap.filled {
+[data-edition="anarchy2"] .monitor-box.sev-incap.filled {
   background: #ff3c3c;
   border-color: #ff3c3c;
 }
 
 /* Narcos */
-[data-edition="anarchy"] .narco-dot {
+[data-edition="anarchy2"] .narco-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -202,7 +202,7 @@
     background 0.1s,
     border-color 0.1s;
 }
-[data-edition="anarchy"] .narco-dot.used {
+[data-edition="anarchy2"] .narco-dot.used {
   background: var(--accent2);
   border-color: var(--accent2);
 }
@@ -283,18 +283,18 @@
 }
 
 /* Espace entre les groupes léger/grave/incapacitante du moniteur */
-[data-edition="anarchy"] .monitor-gap {
+[data-edition="anarchy2"] .monitor-gap {
   width: 6px;
   flex-shrink: 0;
 }
 
 /* ---- Empty state : bordure brute asymétrique, façon fanzine ---- */
-[data-edition="anarchy"] .empty-state {
+[data-edition="anarchy2"] .empty-state {
   border: 2px dashed #ff8800;
   border-left-width: 4px;
   border-radius: 0;
 }
-[data-edition="anarchy"] .empty-state-title {
+[data-edition="anarchy2"] .empty-state-title {
   font-family: var(--font-display);
   color: #ff3c3c;
   transform: rotate(-1deg);
@@ -302,44 +302,44 @@
 }
 
 /* ---- Modale : bordure brute épaisse ---- */
-[data-edition="anarchy"] .modal {
+[data-edition="anarchy2"] .modal {
   border-radius: 0;
   border: 2px solid #2a1008;
   border-top: 3px solid #ff8800;
 }
-[data-edition="anarchy"] .modal-header {
+[data-edition="anarchy2"] .modal-header {
   border-bottom: 2px solid #ff8800;
   background: #1a0d06;
 }
-[data-edition="anarchy"] .modal-title {
+[data-edition="anarchy2"] .modal-title {
   font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: 0.06em;
   color: #ff8800;
 }
-[data-edition="anarchy"] .modal-close:hover {
+[data-edition="anarchy2"] .modal-close:hover {
   border-color: #ff3c3c;
   color: #ff3c3c;
 }
 
 /* ---- Formulaires : champs brutaux ---- */
-[data-edition="anarchy"] .form-group label {
+[data-edition="anarchy2"] .form-group label {
   color: #c07850;
   font-weight: 700;
 }
-[data-edition="anarchy"] .form-group input,
-[data-edition="anarchy"] .form-group select,
-[data-edition="anarchy"] .form-group textarea {
+[data-edition="anarchy2"] .form-group input,
+[data-edition="anarchy2"] .form-group select,
+[data-edition="anarchy2"] .form-group textarea {
   border-radius: 0;
   border-width: 2px;
 }
-[data-edition="anarchy"] .form-group input:focus,
-[data-edition="anarchy"] .form-group select:focus,
-[data-edition="anarchy"] .form-group textarea:focus {
+[data-edition="anarchy2"] .form-group input:focus,
+[data-edition="anarchy2"] .form-group select:focus,
+[data-edition="anarchy2"] .form-group textarea:focus {
   border-color: #ff8800;
 }
 
 /* ---- Sidebar : survol rouge punk ---- */
-[data-edition="anarchy"] .nav-btn:hover {
+[data-edition="anarchy2"] .nav-btn:hover {
   background: rgba(255, 60, 60, 0.05);
 }
