@@ -374,6 +374,18 @@ const FoundrySR5Export = {
     return typeof s === "string" && /^Grenade/i.test(this._name(s));
   },
 
+  /** Cyberware du catalogue equipPools.cyberware (js/editions/sr5.js) :
+      contrairement à pnj.augs (toujours itemAugmentation), ces picks
+      atterrissent dans pnj.equip via buildLoadout(). Testé APRÈS
+      _isWeaponStr (« Lame rétractable [VD 7P, PA -2] » reste une arme
+      jouable) et AVANT _isArmorStr (« Armure dermique (+1 armure) » n'a
+      aucun crochet chiffré : elle matchait par erreur le mot-clé
+      "armure" → itemArmor de valeur 0, bug constaté). */
+  _isCyberStr(s) {
+    if (typeof s !== "string" || this._isWeaponStr(s)) return false;
+    return /^(Réflexes câblés|Accroissement de réaction|Tonification musculaire|Yeux cybernétiques|Oreilles cybernétiques|Bras cybernétique|Armure dermique|Datajack)\b/i.test(s);
+  },
+
   /** Arme (chaîne) → système d'un Item `itemWeapon`. */
   parseWeapon(str) {
     const s = String(str);
@@ -485,6 +497,16 @@ const FoundrySR5Export = {
     return `shadowherds-foundry-${safe || "pnj"}.json`;
   },
 
+  /** Foundry valide `img` (FilePathField) : doit se terminer par une
+      extension d'image reconnue. Le portrait IA de ShadowHerds
+      (js/controllers/portrait.js) est soit une URL Pollinations sans
+      extension (mode anonyme), soit une data URI base64 (mode token) —
+      aucune des deux ne passe cette validation ("does not have a valid
+      file extension"). On ne l'utilise donc que si elle qualifie déjà. */
+  _hasImgExt(url) {
+    return typeof url === "string" && /\.(apng|avif|bmp|gif|jpe?g|png|svg|tiff|webp)(\?.*)?$/i.test(url);
+  },
+
   /** Item embarqué minimal { name, type, system }. */
   _item(name, type, system) {
     return { name: String(name || type), type, system: system || {} };
@@ -573,24 +595,30 @@ const FoundrySR5Export = {
     return { name: (entry && entry.name) || String(sp || ""), desc, category, type, range, duration, damageType, drainRaw, drainNum };
   },
 
+  /** Item `itemAugmentation` minimal à partir d'une chaîne (cyber/bioware). */
+  _augItem(str) {
+    return this._item(this._name(str) || str, "itemAugmentation", {
+      description: str, grade: "standard", category: "",
+      essenceCost: { value: 0, base: 0, modifiers: [], multiplier: "" },
+    });
+  },
+
   /** Construit tous les Items embarqués de l'acteur. */
   _buildItems(pnj, knowledgeFromSkills) {
     const items = [];
-    // Équipement : armes, armures, reste = matériel.
+    // Équipement : armes, armures, cyberware égaré dans equip, reste = matériel.
     for (const e of pnj.equip || []) {
       if (typeof e !== "string") continue;
       if (this._isGrenadeStr(e)) items.push(this._item(this._name(e), "itemWeapon", this.parseGrenade(e)));
       else if (this._isWeaponStr(e)) items.push(this._item(this._name(e), "itemWeapon", this.parseWeapon(e)));
+      else if (this._isCyberStr(e)) items.push(this._augItem(e));
       else if (this._isArmorStr(e)) items.push(this._item(this._name(e), "itemArmor", this.parseArmor(e)));
       else items.push(this._item(this._name(e) || e, "itemGear", { description: e, quantity: 1 }));
     }
-    // Augmentations (cyber/bioware).
+    // Augmentations (cyber/bioware) déjà bien rangées côté pnj.augs.
     for (const a of pnj.augs || []) {
       if (typeof a !== "string") continue;
-      items.push(this._item(this._name(a) || a, "itemAugmentation", {
-        description: a, grade: "standard", category: "",
-        essenceCost: { value: 0, base: 0, modifiers: [], multiplier: "" },
-      }));
+      items.push(this._augItem(a));
     }
     // Sorts, pouvoirs d'adepte, connaissances, atouts/traits.
     // Ces listes contiennent selon les cas des chaînes OU des objets
@@ -708,7 +736,7 @@ const FoundrySR5Export = {
     return {
       name: pnj.name || "PNJ",
       type: "actorGrunt",
-      img: pnj.portraitUrl || "icons/svg/mystery-man.svg",
+      img: this._hasImgExt(pnj.portraitUrl) ? pnj.portraitUrl : "icons/svg/mystery-man.svg",
       system,
       items,
     };

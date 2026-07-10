@@ -1463,10 +1463,15 @@ const EditionSR5 = {
     // Grenades : prof 4+
     if (p >= 4 && Utils.randBool(0.5)) result.push(Utils.rand(pools.grenades));
 
-    // Cyberware : prof 3+
-    // Cyberware : prof 3+ — JAMAIS pour un Éveillé (coût en Essence)
-    if (!awakened && p >= 3) result.push(Utils.rand(pools.cyberware));
-    if (!awakened && p >= 5) result.push(Utils.rand(pools.cyberware));
+    // Cyberware : prof 3+ — JAMAIS pour un Éveillé (coût en Essence). Le
+    // second tirage (prof 5+) exclut le premier : deux tirages indépendants
+    // dans le même pool pouvaient piocher deux fois le même implant (ex.
+    // 2x "Accroissement de réaction (+1 REA)", cumulé à tort par BonusEngine).
+    if (!awakened && p >= 3) {
+      const firstCyber = Utils.rand(pools.cyberware);
+      result.push(firstCyber);
+      if (p >= 5) result.push(Utils.rand(pools.cyberware.filter((c) => c !== firstCyber)));
+    }
 
     // Équip spécial : flics et sécu
     if (police || p >= 3) result.push(Utils.rand(pools.equipSpecial));
@@ -1699,7 +1704,20 @@ const EditionSR5 = {
     const awakened = this._isAwakened(archetype, special);
     const augsProducer =
       this.augsBySpecial[special] || this.augsBySpecial["Aucun"];
-    const augs = awakened ? [] : augsProducer(proRating);
+    // Anti-doublon inter-source : equip (cyberware du loadout) et augs
+    // (pioches spéciales) peuvent porter le même bonus sous un libellé
+    // différent (« Accroissement de réaction (+1 REA) » vs « ... 1 ») ;
+    // BonusEngine.CYBER_BONUS les reconnaît tous deux par préfixe, donc on
+    // n'en repioche pas un déjà présent côté equip (bug constaté : +3 RÉA
+    // au lieu de +1, cumulé depuis deux sources indépendantes).
+    const equipCyberPrefixes = BonusEngine.CYBER_BONUS.sr5
+      .map(([prefix]) => prefix)
+      .filter((prefix) => equip.some((e) => typeof e === "string" && e.startsWith(prefix)));
+    const augs = awakened
+      ? []
+      : augsProducer(proRating).filter(
+          (a) => !equipCyberPrefixes.some((prefix) => a.startsWith(prefix)),
+        );
 
     // Tags d'archétype pour la sélection de contenu cohérent
     const contentTags = Flavor.tagsFor({ archetype, special });
