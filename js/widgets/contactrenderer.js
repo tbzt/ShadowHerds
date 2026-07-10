@@ -63,6 +63,9 @@ const ContactRenderer = {
           ContactsBook.editField(id, "level", actionEl.dataset.niveauValue);
           ContactsBook.render();
           break;
+        case "generate-portrait":
+          Portrait.generateForContact(id, actionEl);
+          break;
       }
     });
   },
@@ -83,6 +86,7 @@ const ContactRenderer = {
     el.innerHTML = `
       <div class="contact-card-body">
         <div class="contact-header-row">
+          ${c.portraitUrl ? `<div class="contact-portrait-thumb"><img src="${CardRenderer._esc(c.portraitUrl)}" alt="" loading="lazy"></div>` : ""}
           <div>
             <div class="contact-name" contenteditable="true" spellcheck="false"
               data-contact-field="name"
@@ -111,6 +115,7 @@ const ContactRenderer = {
         </div>
       </div>
       <div class="pnj-card-footer">
+        ${!c.portraitUrl && Settings.getPortraitSettings().enabled ? '<button class="card-action-btn ghost" data-contact-action="generate-portrait">Portrait IA</button>' : ""}
         <button class="card-action-btn danger" data-contact-action="remove">Supprimer</button>
       </div>`;
     return el;

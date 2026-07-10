@@ -87,6 +87,20 @@ const Settings = {
     </div>`;
   },
 
+  /* ---- Portraits IA (GLOBAL, hors édition) — opt-in, désactivé par
+     défaut. Aucune clé Pollinations : endpoint anonyme uniquement (le
+     repo est public, on n'expose aucun secret). ---- */
+  _PORTRAIT_KEY: "portraitGen",
+  _portraitDefaults: { enabled: false },
+  getPortraitSettings() {
+    return { ...this._portraitDefaults, ...Storage.getGlobal(this._PORTRAIT_KEY, {}) };
+  },
+  setPortraitEnabled(on) {
+    Storage.setGlobal(this._PORTRAIT_KEY, { ...this.getPortraitSettings(), enabled: !!on });
+    this._refreshVisibleCards();
+    toast(on ? "Portraits IA activés." : "Portraits IA désactivés.");
+  },
+
   /* ---- Rendu du panel paramètres ---- */
   render() {
     const zone = document.getElementById("settings-panel-content");
@@ -130,6 +144,22 @@ const Settings = {
           ${this._checkCD("showAttributes", "Afficher les attributs", cd.showAttributes)}
           ${this._checkCD("showGmPools", "Afficher les réserves MJ", cd.showGmPools)}
           ${this._checkCD("showEquipment", "Afficher l'équipement", cd.showEquipment)}
+        </div>
+      </div>`;
+    }
+
+    // --- Portraits IA (global) ---
+    {
+      const pg = this.getPortraitSettings();
+      html += `<div class="settings-section">
+        <h3>Portraits IA</h3>
+        <p>Génère un portrait via Pollinations (gratuit, sans clé) au clic sur une carte PNJ, esprit, créature ou contact. Nécessite une connexion internet ; le prompt part vers un service tiers.</p>
+        <div class="display-prefs">
+          <div class="display-pref-row">
+            <label for="pg_enabled">Activer le bouton « Portrait IA » sur les cartes</label>
+            <input type="checkbox" id="pg_enabled" ${pg.enabled ? "checked" : ""}
+              data-action="toggle-portrait-gen">
+          </div>
         </div>
       </div>`;
     }
@@ -230,6 +260,8 @@ const Settings = {
         this.setDiceQuickRoll(el.checked);
       else if (el.dataset.action === "set-dice-default-count")
         this.setDiceDefaultCount(el.value);
+      else if (el.dataset.action === "toggle-portrait-gen")
+        this.setPortraitEnabled(el.checked);
     });
     zone.addEventListener("click", (e) => {
       const el = e.target.closest("[data-action]");

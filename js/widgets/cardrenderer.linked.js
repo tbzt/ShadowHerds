@@ -40,6 +40,7 @@ Object.assign(CardRenderer, {
           title="Retrouver ${this._esc(sp.ownerName)}">↳ invoqué par ${this._esc(sp.ownerName)}</span>`
       : `<span>Esprit libre — indépendant</span>`;
     return `<div class="pnj-card-header vehicle-header spirit-header${destroyed ? " destroyed" : ""}">
+      ${this._portraitThumb(sp)}
       <div class="pnj-header-left">
         <div class="pnj-name">✦ ${this._esc(sp.name)}</div>
         <div class="pnj-meta">${metaLine}</div>

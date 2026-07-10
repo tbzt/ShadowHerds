@@ -172,7 +172,7 @@ select optgroup {
   background: #080e14;
   box-shadow: 0 0 28px rgba(0, 200, 255, 0.22);
 }
-.edition-card[data-ed="anarchy2"]:hover {
+.edition-card[data-ed^="anarchy"]:hover {
   border-color: #ff3c3c;
   background: #130a06;
   box-shadow: 0 0 28px rgba(255, 60, 60, 0.22);
@@ -192,7 +192,7 @@ select optgroup {
   color: #00c8ff;
   font-family: "Chakra Petch", sans-serif;
 }
-.edition-card[data-ed="anarchy2"] .ed-num {
+.edition-card[data-ed^="anarchy"] .ed-num {
   color: #ff3c3c;
   font-family: "Saira Condensed", sans-serif;
 }
@@ -202,7 +202,7 @@ select optgroup {
 .edition-card[data-ed="sr6"] .ed-name {
   font-family: "Chakra Petch", sans-serif;
 }
-.edition-card[data-ed="anarchy2"] .ed-name {
+.edition-card[data-ed^="anarchy"] .ed-name {
   font-family: "Saira Condensed", sans-serif;
   font-weight: 700;
 }
@@ -1085,6 +1085,37 @@ select optgroup {
   text-transform: uppercase;
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+/* Vignette de portrait IA (opt-in) — carrée pour PNJ/esprit/créature,
+   ronde pour les contacts (cf. .contact-portrait-thumb). */
+.pnj-portrait-thumb {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.pnj-portrait-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.contact-portrait-thumb {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.contact-portrait-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .pnj-card-body {
@@ -2914,7 +2945,7 @@ kbd {
 }
 
 /* Réserve de menace (Anarchy 2.0) : badge topbar masqué par défaut,
-   révélé uniquement sous [data-edition="anarchy2"] (jamais via JS). */
+   révélé uniquement sous [data-edition^="anarchy"] (jamais via JS). */
 #threat-reserve {
   display: none;
   align-items: center;
@@ -2926,7 +2957,7 @@ kbd {
   color: var(--text-dim);
   flex-shrink: 0;
 }
-[data-edition="anarchy2"] #threat-reserve {
+[data-edition^="anarchy"] #threat-reserve {
   display: flex;
 }
 .threat-reserve-lbl {

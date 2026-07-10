@@ -51,6 +51,17 @@ const App = {
         </ul>
         <p>Les PNJ Anarchy incluent les <strong>variantes métatype</strong> sur chaque attribut, arme et threshold de blessure, les <strong>edges au choix</strong>, et la distinction <strong>Éveillé / Adepte</strong> et les spells.</p>`,
     },
+    anarchy1: {
+      title: "Shadowrun Anarchy 1re édition",
+      body: `
+        <h2>Shadow Herds — Anarchy 1re</h2>
+        <p><strong>Édition en cours d'intégration (WIP).</strong> Le squelette
+        Anarchy 1re est câblé : sélection, génération, jets, Matrice et carte
+        fonctionnent, mais les <strong>données affichées sont encore celles de
+        l'Anarchy 2e</strong> (placeholder) en attendant la saisie des valeurs
+        officielles de la 1re édition — livre de base
+        (<em>sran_01</em>) et Anarchistes (<em>sran_03</em>).</p>`,
+    },
   },
 
   /** Registre des modules d'édition */
@@ -58,6 +69,7 @@ const App = {
     sr5: () => EditionSR5,
     sr6: () => EditionSR6,
     anarchy2: () => EditionAnarchy2,
+    anarchy1: () => EditionAnarchy1,
   },
 
   getEditionModule(ed) {
@@ -74,7 +86,7 @@ const App = {
     document.getElementById("edition-screen").classList.add("hidden");
     document.getElementById("app").classList.add("visible");
 
-    const badgeLabels = { sr5: "SR5", sr6: "SR6", anarchy2: "ANARCHY 2E" };
+    const badgeLabels = { sr5: "SR5", sr6: "SR6", anarchy2: "ANARCHY 2E", anarchy1: "ANARCHY 1RE" };
     document.getElementById("edition-badge").textContent =
       badgeLabels[ed] || ed;
 
@@ -173,7 +185,7 @@ const App = {
   _editionFromHash() {
     const hash = window.location.hash.slice(1);
     const parts = hash.split("/");
-    const editions = ["sr5", "sr6", "anarchy2"];
+    const editions = ["sr5", "sr6", "anarchy2", "anarchy1"];
     if (parts.length >= 1 && editions.includes(parts[0])) return parts[0];
     return null;
   },

@@ -18,7 +18,7 @@
 const Backup = {
   FORMAT: "shadowherds-backup",
   VERSION: 1,
-  EDITIONS: ["sr5", "sr6", "anarchy2"],
+  EDITIONS: ["sr5", "sr6", "anarchy2", "anarchy1"],
   KEYS: [
     "shadows_all",
     "shadows_groups",

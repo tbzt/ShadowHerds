@@ -24,7 +24,7 @@ const CardRenderer = {
     el.dataset.edition = pnj.edition;
 
     el.innerHTML =
-      this._header(pnj) + this._body(pnj, deps) + this._footer(pnj, actions);
+      this._header(pnj) + this._body(pnj, deps) + this._footer(pnj, actions, deps);
 
     setTimeout(() => el.classList.remove("scanning"), 900);
     return el;
@@ -44,7 +44,7 @@ const CardRenderer = {
             ? JSON.parse(footer.dataset.savedActions)
             : ["edit", "remove"];
         el.innerHTML =
-          this._header(pnj) + this._body(pnj, deps) + this._footer(pnj, actions);
+          this._header(pnj) + this._body(pnj, deps) + this._footer(pnj, actions, deps);
       });
   },
 
@@ -78,11 +78,22 @@ const CardRenderer = {
     const nameHtml = this._nameBlock(pnj.name);
 
     return `<div class="pnj-card-header">
+      ${this._portraitThumb(pnj)}
       <div class="pnj-header-left">
         ${nameHtml}
         <div class="pnj-meta">${gIcon} ${metaStr} · ${pnj.archetype}${specialStr}</div>
       </div>
       ${badge}
+    </div>`;
+  },
+
+  /** Vignette de portrait IA (opt-in), affichée dès qu'un portrait a été
+      généré — indépendamment du réglage courant (désactiver le réglage
+      empêche d'en générer de nouveaux, pas d'afficher les existants). */
+  _portraitThumb(entity) {
+    if (!entity.portraitUrl) return "";
+    return `<div class="pnj-portrait-thumb">
+      <img src="${this._esc(entity.portraitUrl)}" alt="" loading="lazy">
     </div>`;
   },
 
@@ -112,6 +123,7 @@ const CardRenderer = {
       switch (pnj.edition) {
         case "sr5": core = this._bodySR5(pnj, deps); break;
         case "sr6": core = this._bodySR6(pnj, deps); break;
+        case "anarchy1":
         case "anarchy2": core = this._bodyAnarchy(pnj, deps); break;
         default: return '<div class="pnj-card-body">—</div>';
       }
@@ -125,6 +137,7 @@ const CardRenderer = {
       case "sr6":
         core = this._bodySR6(pnj, deps);
         break;
+      case "anarchy1":
       case "anarchy2":
         core = this._bodyAnarchy(pnj, deps);
         break;
@@ -555,8 +568,17 @@ const CardRenderer = {
       .replace(/"/g, "&quot;");
   },
 
+  /** Bouton "Portrait IA", affiché seulement si le réglage opt-in est
+      actif et qu'aucun portrait n'existe encore (véhicules exclus — hors
+      scope de la fonctionnalité). */
+  _portraitFooterBtn(pnj, deps) {
+    if (pnj.type === "vehicle" || pnj.portraitUrl) return "";
+    if (!deps.Settings || !deps.Settings.getPortraitSettings().enabled) return "";
+    return `<button class="card-action-btn ghost" data-action="generate-portrait" data-id="${pnj.id}">Portrait IA</button>`;
+  },
+
   /* ---- Footer ---- */
-  _footer(pnj, actions) {
+  _footer(pnj, actions, deps = CardRenderer.liveDeps()) {
     if (pnj.type === "vehicle") {
       return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>
         <button class="card-action-btn ghost" data-action="edit-open" data-id="${pnj.id}">Éditer</button>
@@ -567,11 +589,12 @@ const CardRenderer = {
     // (sauvegarder/virer) comme tout PNJ généré.
     if (pnj.type === "spirit" && pnj.ownerId) {
       return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>
+        ${this._portraitFooterBtn(pnj, deps)}
         <button class="card-action-btn ghost" data-action="edit-open" data-id="${pnj.id}">Éditer</button>
         <button class="card-action-btn danger" data-action="dismiss-spirit" data-id="${pnj.id}">Congédier</button>
       </div>`;
     }
-    const btns = [];
+    const btns = [this._portraitFooterBtn(pnj, deps)];
     if (actions.includes("saved")) {
       // Carte du générateur après sauvegarde dans les Ombres.
       btns.push(`<span class="card-saved-label">✓ Sauvegardé</span>`);
@@ -636,6 +659,9 @@ const CardRenderer = {
           break;
         case "cycle-drug":
           UI.cycleDrug(id, actionEl.dataset.edition, actionEl.dataset.drug);
+          break;
+        case "generate-portrait":
+          Portrait.generateForPnj(id, actionEl);
           break;
         case "edit-open":
           EditModal.open(id);
