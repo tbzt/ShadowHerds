@@ -509,19 +509,27 @@ Object.assign(EditionAnarchy2, {
        traduction points/nuyens : aucune règle de plafond ici, c'est le
        rôle de validate(). ---- */
 
-    /** Coût en ¥ d'une répartition d'attributs pour un métatype donné. */
+    /** Coût en ¥ d'une répartition d'attributs pour un métatype donné.
+        Les attributs se comptent DEPUIS 0 (p.85, « débute à 0 ») : chaque
+        point coûte attrPoint, sauf le dernier pour atteindre le max du
+        métatype qui coûte attrLastPoint. Exemple livre : Force 2 = 20 000 ¥,
+        Volonté 4 (max elfe) = 3×10 000 + 20 000 = 50 000 ¥. */
     costAttrs(attrs, meta) {
       const range = this.metatypes[meta] || this.metatypes.Humain;
       let total = 0;
       for (const k of ["FOR", "AGI", "VOL", "LOG", "CHA"]) {
-        const val = attrs[k] || 1;
-        const min = range[k][0];
+        const val = attrs[k] || 0;
         const max = range[k][1];
-        const pts = Math.max(0, val - min);
-        const atMax = val >= max;
-        total += atMax ? (pts - 1) * this.costs.attrPoint + this.costs.attrLastPoint : pts * this.costs.attrPoint;
+        const atMax = val >= max && val > 0;
+        total += val * this.costs.attrPoint + (atMax ? this.costs.attrLastPoint - this.costs.attrPoint : 0);
       }
       return total;
+    },
+
+    /** Points d'attributs consommés = somme brute des indices (base 0,
+        p.85) — le minimum de métatype est un plancher, pas une remise. */
+    attrPointsUsed(attrs) {
+      return ["FOR", "AGI", "VOL", "LOG", "CHA"].reduce((a, k) => a + (attrs[k] || 0), 0);
     },
 
     /** Coût en ¥ d'un point de compétence isolé, à l'indice `toIndex`. */
@@ -542,6 +550,13 @@ Object.assign(EditionAnarchy2, {
       return s.specs ? s.specs.length : s.spec ? 1 : 0;
     },
 
+    /** Points de compétences consommés = indices + spécialisations +
+        connaissances (regroupés dans la même catégorie p.85, 2 500 ¥ = 1 pt). */
+    skillPointsUsed(build) {
+      const skills = (build.skills || []).reduce((a, s) => a + (s.val || 0) + this.specCount(s), 0);
+      return skills + (build.knowledges || []).length;
+    },
+
     /** Coût en ¥ d'une liste de compétences [{val, specs?}]. */
     costSkills(skills) {
       let total = 0;
@@ -550,6 +565,11 @@ Object.assign(EditionAnarchy2, {
         total += this.specCount(s) * this.costs.specialization;
       }
       return total;
+    },
+
+    /** Coût en ¥ des connaissances (2 500 ¥ chacune, p.85). */
+    costKnowledges(knowledges) {
+      return (knowledges || []).length * this.costs.knowledge;
     },
 
     costEdges(edges) {
@@ -581,6 +601,7 @@ Object.assign(EditionAnarchy2, {
       return (
         this.costAttrs(build.attrs, build.meta) +
         this.costSkills(build.skills) +
+        this.costKnowledges(build.knowledges) +
         this.costEdges(build.edges) +
         this.costSpells((build.spells || []).length) +
         this.costWeapons(build.weapons) +
@@ -612,7 +633,7 @@ Object.assign(EditionAnarchy2, {
       // Attributs : bornes métatype + nombre au maximum autorisé.
       let atMaxCount = 0;
       for (const k of ["FOR", "AGI", "VOL", "LOG", "CHA"]) {
-        const val = (build.attrs || {})[k] || 1;
+        const val = (build.attrs || {})[k] || 0;
         const [min, max] = range[k];
         if (val < min || val > max) {
           out.attrs.push(`${k} doit être compris entre ${min} et ${max} pour un ${build.meta}.`);
@@ -625,19 +646,13 @@ Object.assign(EditionAnarchy2, {
         );
       }
 
-      // Compétences : plafond d'indice, sous-plafond "au rang max", et RR.
+      // Compétences : plafond d'indice + sous-plafond "au rang max".
       let atSkillCapCount = 0;
       for (const s of build.skills || []) {
         if (s.val > level.skillMax) {
           out.skills.push(`${s.name} dépasse l'indice maximum (${level.skillMax}) du niveau ${level.label}.`);
         }
         if (s.val >= level.skillMax) atSkillCapCount++;
-        if ((s.rr || 0) > level.rrMax) {
-          out.skills.push(`RR de ${s.name} dépasse le maximum du niveau (${level.rrMax}).`);
-        }
-        if ((s.specRR || 0) > level.rrMaxSpec) {
-          out.skills.push(`RR de la spécialisation de ${s.name} dépasse le maximum du niveau (${level.rrMaxSpec}).`);
-        }
       }
       if (table && table.skillsAtCap != null && atSkillCapCount > table.skillsAtCap) {
         out.skills.push(
@@ -645,12 +660,39 @@ Object.assign(EditionAnarchy2, {
         );
       }
 
+      // Réduction du risque : plafonds du niveau (p.85-86), cumuls compris.
+      // La RR provient d'atouts structurés (edge.rr = {skill, spec, amount}) ;
+      // les atouts RR en texte libre ne sont pas suivis (appréciation du MJ).
+      const rrSkill = {};
+      const rrSpec = {};
+      for (const e of build.edges || []) {
+        if (!e.rr || !e.rr.skill) continue;
+        if (e.rr.spec) {
+          const key = `${e.rr.skill}||${e.rr.spec}`;
+          rrSpec[key] = (rrSpec[key] || 0) + (e.rr.amount || 0);
+        } else {
+          rrSkill[e.rr.skill] = (rrSkill[e.rr.skill] || 0) + (e.rr.amount || 0);
+        }
+      }
+      for (const [skill, amt] of Object.entries(rrSkill)) {
+        if (amt > level.rrMax) {
+          out.edges.push(`RR de ${skill} (${amt}) dépasse le maximum du niveau (${level.rrMax}).`);
+        }
+      }
+      for (const [key, amt] of Object.entries(rrSpec)) {
+        const [skill, spec] = key.split("||");
+        const eff = amt + (rrSkill[skill] || 0); // cumul spé + compétence
+        if (eff > level.rrMaxSpec) {
+          out.edges.push(`RR de ${skill} (${spec}) — ${eff} avec cumul — dépasse le maximum du niveau (${level.rrMaxSpec}).`);
+        }
+      }
+
       // Budget mode table : bornes par catégorie (le mode avancé n'a qu'un
       // budget global, géré dans `validate()`).
       if (!build.advancedMode && table) {
-        const attrPts = Object.values(build.attrs || {}).reduce((a, b) => a + (b - 1), 0);
+        const attrPts = this.attrPointsUsed(build.attrs || {});
         if (attrPts > table.attrPoints) out.attrs.push(`Trop de points d'attributs (${attrPts}/${table.attrPoints}).`);
-        const skillPts = (build.skills || []).reduce((a, s) => a + (s.val || 0) + this.specCount(s), 0);
+        const skillPts = this.skillPointsUsed(build);
         if (skillPts > table.skillPoints) out.skills.push(`Trop de points de compétences (${skillPts}/${table.skillPoints}).`);
         const edgePts = (build.edges || []).reduce((a, e) => a + (e.level || 0), 0);
         if (edgePts > table.edgePoints) out.edges.push(`Trop de points d'atouts (${edgePts}/${table.edgePoints}).`);
@@ -728,6 +770,7 @@ Object.assign(EditionAnarchy2, {
         milieu: build.milieu || "",
         attrs,
         skills,
+        knowledges: [...(build.knowledges || [])],
         edges: (build.edges || []).map((e) => e.text),
         chosenEdges: (build.edges || []).map((e) => e.text),
         weapons,
@@ -759,8 +802,9 @@ Object.assign(EditionAnarchy2, {
   },
 });
 
-/* Noms d'armes considérées "de spécialiste" (p.83) parmi le catalogue
-   officiel — dérivé une fois, pas recopié à la main. */
+/* Noms d'armes "de spécialiste" (p.84 : fusil de précision, lance-grenades,
+   mitrailleuse « et armes plus lourdes ») parmi le catalogue officiel —
+   dérivé une fois. Les grenades à main restent une arme normale (2 500 ¥). */
 EditionAnarchy2.creation.WEAPON_CATALOG_SPECIALIST = new Set(
-  ["Fusil de précision", "Mitrailleuse", "Grenades"].filter((n) => EditionAnarchy2.WEAPON_CATALOG[n]),
+  ["Fusil de précision", "Lance-grenades", "Mitrailleuse"].filter((n) => EditionAnarchy2.WEAPON_CATALOG[n]),
 );

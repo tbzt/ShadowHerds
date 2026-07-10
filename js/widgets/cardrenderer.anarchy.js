@@ -28,6 +28,7 @@ Object.assign(CardRenderer, {
     const {
       attrs,
       skills,
+      knowledges,
       edges,
       weapons,
       equip,
@@ -164,6 +165,15 @@ Object.assign(CardRenderer, {
         }
       }
       html += "</div></div>";
+    }
+    if (knowledges && knowledges.length) {
+      // Connaissances (p.85) : flat, s'utilisent avec un attribut (souvent
+      // Logique) selon le contexte — rendues en tags simples, non lançables.
+      html += `<div class="card-section">
+        <div class="card-section-label">Connaissances</div>
+        <div class="card-section-content">
+          ${knowledges.map((k) => `<span class="tag skill-tag skill-tag-knowledge">${this._esc(typeof k === "string" ? k : k.name)}</span>`).join("")}
+        </div></div>`;
     }
     if (edges && edges.length) {
       html += `<div class="card-section">

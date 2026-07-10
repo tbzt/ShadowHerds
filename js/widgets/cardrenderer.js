@@ -77,11 +77,16 @@ const CardRenderer = {
 
     const nameHtml = this._nameBlock(pnj.name);
 
+    // L'archétype n'est affiché que s'il apporte une info en plus du nom :
+    // pour les créatures, name === archetype === label, on ne le répète pas.
+    const archStr =
+      pnj.archetype && pnj.archetype !== pnj.name ? ` · ${pnj.archetype}` : "";
+
     return `<div class="pnj-card-header">
       ${this._portraitThumb(pnj)}
       <div class="pnj-header-left">
         ${nameHtml}
-        <div class="pnj-meta">${gIcon} ${metaStr} · ${pnj.archetype}${specialStr}</div>
+        <div class="pnj-meta">${gIcon} ${metaStr}${archStr}${specialStr}</div>
       </div>
       ${badge}
     </div>`;

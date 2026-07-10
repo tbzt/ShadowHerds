@@ -81,6 +81,7 @@ const CharGen = {
       awakened: null,
       attrs: { FOR: 1, AGI: 1, VOL: 1, LOG: 1, CHA: 1 },
       skills: [],
+      knowledges: [],
       edges: [],
       weapons: [],
       gear: [],
@@ -113,6 +114,7 @@ const CharGen = {
       keywords: (b.keywords || []).map((s) => s.trim()).filter(Boolean),
       behaviors: (b.behaviors || []).map((s) => s.trim()).filter(Boolean),
       quotes: (b.quotes || []).map((s) => s.trim()).filter(Boolean),
+      knowledges: (b.knowledges || []).map((s) => s.trim()).filter(Boolean),
       contacts: (b.contacts || []).filter((c) => c && c.name && c.name.trim()),
     };
   },
@@ -192,8 +194,8 @@ const CharGen = {
       <div class="cg-budget-bar"><div class="cg-budget-fill${barOver ? " over" : ""}" style="width:${pct}%"></div></div>
     </div>`;
     if (!b.advancedMode) {
-      const attrPts = Object.values(b.attrs).reduce((a, v) => a + (v - 1), 0);
-      const skillPts = b.skills.reduce((a, s) => a + (s.val || 0) + (s.specs?.length || 0), 0);
+      const attrPts = c.attrPointsUsed(b.attrs);
+      const skillPts = c.skillPointsUsed(b);
       const edgePts = b.edges.reduce((a, e) => a + (e.level || 0), 0);
       const cell = (label, used, total) =>
         `<span class="cg-budget-cell${used > total ? " over" : ""}">${label} ${used}/${total}</span>`;
@@ -287,7 +289,7 @@ const CharGen = {
     const range = c.metatypes[b.meta];
     const level = c.gameLevels[b.gameLevel];
     const table = c.pointTables[b.gameLevel][b.archetypeTable];
-    const attrPtsUsed = Object.values(b.attrs).reduce((a, v) => a + (v - 1), 0);
+    const attrPtsUsed = c.attrPointsUsed(b.attrs);
     let atMaxCount = 0;
 
     const rows = ["FOR", "AGI", "VOL", "LOG", "CHA"]
@@ -314,7 +316,7 @@ const CharGen = {
     const overMax = atMaxCount > level.attrsAtMax;
     return `<div class="cg-step">
       ${this._stepErrorBox("attrs")}
-      <p class="cg-hint">Table « ${this._esc(table.label)} » : ${table.attrPoints} points d'attributs (base 1). Dé d'Anarchy du ${this._esc(b.meta)} : ${range.anarchy}.</p>
+      <p class="cg-hint">Table « ${this._esc(table.label)} » : ${table.attrPoints} points d'attributs, comptés depuis 0 (somme des indices, p.85). Dé d'Anarchy du ${this._esc(b.meta)} : ${range.anarchy}.</p>
       ${rows}
       <p class="cg-hint">Points utilisés : ${attrPtsUsed} / ${table.attrPoints} · <span class="${overMax ? "cg-error-text" : ""}">attributs au max : ${atMaxCount} / ${level.attrsAtMax}</span></p>
     </div>`;
@@ -328,7 +330,7 @@ const CharGen = {
     const table = c.pointTables[b.gameLevel][b.archetypeTable];
     const usedNames = new Set(b.skills.map((s) => s.name));
     const available = c.skills.filter((s) => !usedNames.has(s.name) && (!s.awakenedOnly || b.awakened));
-    const skillPts = b.skills.reduce((a, s) => a + (s.val || 0) + (s.specs?.length || 0), 0);
+    const skillPts = c.skillPointsUsed(b);
     const atCapCount = b.skills.filter((s) => (s.val || 0) >= level.skillMax).length;
 
     const rows = b.skills
@@ -372,13 +374,28 @@ const CharGen = {
         ? ` · <span class="${atCapCount > table.skillsAtCap ? "cg-error-text" : ""}">au plafond ${level.skillMax} : ${atCapCount} / ${table.skillsAtCap}</span>`
         : "";
 
+    // Connaissances (p.85) : 2 500 ¥ = 1 point de compétence chacune.
+    const knowledges = b.knowledges || [];
+    const knowledgeRows = knowledges
+      .map(
+        (k, i) =>
+          `<div class="cg-list-row"><span>${this._esc(k)}</span><button class="btn-icon-tiny danger" data-cg-action="remove-knowledge" data-idx="${i}" title="Retirer">✕</button></div>`,
+      )
+      .join("");
+
     return `<div class="cg-step">
       ${this._stepErrorBox("skills")}
-      <p class="cg-hint">Table : ${table.skillPoints} points de compétences. Plafond d'indice : ${level.skillMax}. ⚄ = pool de dés (indice + attribut). Plusieurs spés possibles par compétence (indice ≥ 1, sans limite de nombre).</p>
+      <p class="cg-hint">Table : ${table.skillPoints} points de compétences (spés et connaissances comprises). Plafond d'indice : ${level.skillMax}. ⚄ = pool de dés (indice + attribut). Plusieurs spés possibles par compétence (indice ≥ 1, sans limite de nombre).</p>
       ${rows || '<p class="cg-hint">Aucune compétence choisie.</p>'}
       <div class="cg-add-row">
         <select id="cg-skill-pick">${addOpts || "<option>— toutes prises —</option>"}</select>
         <button class="btn-secondary btn-small" data-cg-action="add-skill" ${available.length ? "" : "disabled"}>＋ Ajouter</button>
+      </div>
+      <div class="cg-section-label">Connaissances <span class="cg-section-note">2 500 ¥ chacune = 1 point</span></div>
+      ${knowledgeRows}
+      <div class="cg-add-row">
+        <input type="text" id="cg-knowledge-text" placeholder="ex. Gangs de Seattle, Sécurité corpo, Magie…">
+        <button class="btn-secondary btn-small" data-cg-action="add-knowledge">＋ Ajouter</button>
       </div>
       <p class="cg-hint">Points utilisés : ${skillPts} / ${table.skillPoints}${capNote}</p>
     </div>`;
@@ -748,6 +765,21 @@ const CharGen = {
         afterMutate();
         break;
 
+      case "add-knowledge": {
+        const inp = document.getElementById("cg-knowledge-text");
+        const val = inp?.value?.trim();
+        if (val) {
+          b.knowledges = b.knowledges || [];
+          b.knowledges.push(val);
+          afterMutate();
+        }
+        break;
+      }
+      case "remove-knowledge":
+        b.knowledges.splice(Number(el.dataset.idx), 1);
+        afterMutate();
+        break;
+
       case "add-spec": {
         const i = Number(el.dataset.idx);
         const s = b.skills[i];
@@ -775,7 +807,8 @@ const CharGen = {
         const s = b.skills[Number(idxStr)];
         const tpl = c.edgeTemplates.find((t) => t.id === "rr-spec");
         if (s && spec && tpl) {
-          b.edges.push({ level: tpl.level, text: tpl.text(s.name, spec) });
+          // rr structuré → permet la validation des plafonds par niveau.
+          b.edges.push({ level: tpl.level, text: tpl.text(s.name, spec), rr: { skill: s.name, spec, amount: 1 } });
           afterMutate();
         }
         break;
@@ -785,7 +818,7 @@ const CharGen = {
         const s = b.skills[Number(sel?.value)];
         const tpl = c.edgeTemplates.find((t) => t.id === "rr-skill");
         if (s && tpl) {
-          b.edges.push({ level: tpl.level, text: tpl.text(s.name) });
+          b.edges.push({ level: tpl.level, text: tpl.text(s.name), rr: { skill: s.name, spec: null, amount: 1 } });
           afterMutate();
         }
         break;
@@ -877,6 +910,7 @@ const CharGen = {
     // Entrée dans un champ « ＋ Ajouter » déclenche l'ajout correspondant.
     const ENTER_ADD = {
       "cg-gear-text": "add-gear",
+      "cg-knowledge-text": "add-knowledge",
       "cg-edge-custom-label": "add-edge-custom",
       "cg-edge-custom-level": "add-edge-custom",
     };

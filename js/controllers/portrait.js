@@ -173,51 +173,94 @@ const Portrait = {
     });
   },
 
-  _startLoading(btn) {
+  _startLoading(btn, label = "Génération…") {
     if (!btn) return;
     btn.disabled = true;
-    btn.dataset.origLabel = btn.textContent;
-    btn.textContent = "Génération…";
+    if (btn.dataset.origLabel === undefined) btn.dataset.origLabel = btn.textContent;
+    btn.textContent = label;
   },
   _stopLoading(btn) {
     if (!btn) return;
     btn.disabled = false;
     btn.textContent = btn.dataset.origLabel || "Portrait IA";
+    delete btn.dataset.origLabel;
+  },
+
+  /* ---- File d'attente — Pollinations (anonyme) n'accepte qu'une requête
+     à la fois par IP ("Queue full", cf. tests manuels). Empiler plusieurs
+     clics "Portrait IA" plutôt que de les lancer en parallèle évite
+     l'échec immédiat ; un échec malgré tout (surcharge du service) est
+     retenté automatiquement avant de déranger l'utilisateur. */
+  _queue: [],
+  _processing: false,
+  _MAX_ATTEMPTS: 3,
+  _RETRY_DELAY_MS: 4000,
+
+  _enqueue(job) {
+    const idle = !this._processing && this._queue.length === 0;
+    this._queue.push(job);
+    this._startLoading(job.btn, idle ? "Génération…" : `En file (${this._queue.length})…`);
+    this._processQueue();
+  },
+
+  async _processQueue() {
+    if (this._processing) return;
+    this._processing = true;
+    while (this._queue.length) {
+      const job = this._queue.shift();
+      await this._runJob(job);
+    }
+    this._processing = false;
+  },
+
+  async _runJob(job, attempt = 1) {
+    this._startLoading(job.btn, attempt > 1 ? `Nouvel essai (${attempt}/${this._MAX_ATTEMPTS})…` : "Génération…");
+    try {
+      await this._validate(job.url);
+      job.onSuccess();
+    } catch (e) {
+      if (attempt < this._MAX_ATTEMPTS) {
+        await new Promise((r) => setTimeout(r, this._RETRY_DELAY_MS * attempt));
+        return this._runJob(job, attempt + 1);
+      }
+      toast(`${job.label} — ${e.message}`);
+      this._stopLoading(job.btn);
+    }
   },
 
   /** PNJ, esprit ou créature (tous résolus via PnjLookup, tous persistés
       via Shadows.save() — même convention que les autres callers de
       PnjLookup.find, ex. UI.cycleDrug). */
-  async generateForPnj(id, btn) {
+  generateForPnj(id, btn) {
     const pnj = PnjLookup.find(id);
     if (!pnj) return;
-    this._startLoading(btn);
     const url = this._url(pnj);
-    try {
-      await this._validate(url);
-      pnj.portraitUrl = url;
-      Shadows.save();
-      CardRenderer.refresh(pnj);
-    } catch (e) {
-      toast(e.message);
-      this._stopLoading(btn);
-    }
+    this._enqueue({
+      btn,
+      url,
+      label: pnj.name || "PNJ",
+      onSuccess: () => {
+        pnj.portraitUrl = url;
+        Shadows.save();
+        CardRenderer.refresh(pnj);
+      },
+    });
   },
 
   /** Contact — persisté via ContactsBook (collection séparée). */
-  async generateForContact(id, btn) {
+  generateForContact(id, btn) {
     const c = ContactsBook.data.all.find((x) => x.id === id);
     if (!c) return;
-    this._startLoading(btn);
     const url = this._url(c);
-    try {
-      await this._validate(url);
-      ContactsBook.editField(id, "portraitUrl", url);
-      ContactsBook.render();
-    } catch (e) {
-      toast(e.message);
-      this._stopLoading(btn);
-    }
+    this._enqueue({
+      btn,
+      url,
+      label: c.name || "Contact",
+      onSuccess: () => {
+        ContactsBook.editField(id, "portraitUrl", url);
+        ContactsBook.render();
+      },
+    });
   },
 
   /* ---- Lightbox : clic sur une vignette → affichage en grand.
