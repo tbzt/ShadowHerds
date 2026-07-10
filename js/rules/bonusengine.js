@@ -25,10 +25,6 @@ const BonusEngine = {
     sr5: [
       ["Réflexes câblés 1", { initDice: 1 }],
       ["Réflexes câblés 2", { initDice: 2 }],
-      ["Réflexes câblés 3", { initDice: 3 }],
-      ["Booster synaptique 1", { initDice: 1 }],
-      ["Booster synaptique 2", { initDice: 2 }],
-      ["Move-by-Wire 2", { initDice: 2 }],
       ["Accroissement de réaction", { attr: "REA", val: 1 }],
       ["Tonification musculaire", { attr: "FOR", val: 1 }],
       ["Armure dermique", { armor: 1 }],
@@ -36,10 +32,6 @@ const BonusEngine = {
     sr6: [
       ["Réflexes câblés 1", { initDice: 1 }],
       ["Réflexes câblés 2", { initDice: 2 }],
-      ["Réflexes câblés 3", { initDice: 3 }],
-      ["Booster synaptique 1", { initDice: 1 }],
-      ["Booster synaptique 2", { initDice: 2 }],
-      ["Move-by-Wire 2", { initDice: 2 }],
       ["Amplificateur de réaction 2", { attr: "RÉA", val: 2 }],
       ["Amplificateurs synaptiques 2", { attr: "INT", val: 2 }],
       ["Tonification musculaire 3", { attr: "FOR", val: 3 }],
@@ -68,7 +60,8 @@ const BonusEngine = {
         if (bonus.armor) totals.armor += bonus.armor;
         if (bonus.sd) totals.sd += bonus.sd;
         if (bonus.attr) {
-          totals.attrs[bonus.attr] = (totals.attrs[bonus.attr] || 0) + bonus.val;
+          totals.attrs[bonus.attr] =
+            (totals.attrs[bonus.attr] || 0) + bonus.val;
         }
       }
     }
@@ -122,7 +115,8 @@ const BonusEngine = {
       const key = App.getEditionModule(edition).conditionMonitor.fields.primary;
       if (key) pnj[key] = (pnj[key] || 0) + b.monitor;
     }
-    const attr = b.attrChoice && b.attrChoice.length ? Utils.rand(b.attrChoice) : b.attr;
+    const attr =
+      b.attrChoice && b.attrChoice.length ? Utils.rand(b.attrChoice) : b.attr;
     if (attr) {
       pnj.attrs[attr] = (pnj.attrs[attr] || 0) + b.val;
       attrsTouched = true;
@@ -180,19 +174,18 @@ const BonusEngine = {
 
     // Bonus de type Infecté (initDice/sd/armor), déposé temporairement par
     // generate() sur pnj._infectedBonus.
-    if (pnj._infectedBonus && this._applyOneBonus(pnj, edition, pnj._infectedBonus))
+    if (
+      pnj._infectedBonus &&
+      this._applyOneBonus(pnj, edition, pnj._infectedBonus)
+    )
       attrsTouched = true;
     delete pnj._infectedBonus;
 
-    // Plafond règle : tous les bonus (cyber + traits + pouvoirs + métatype +
-    // Infecté) sont cumulés ci-dessus ; on borne ici, point de convergence
-    // unique. Max défini par le module d'édition (SR5/SR6 : 5D6, base 1 + 4).
-    if (pnj.initDice != null) {
-      const maxDice = EditionModule && EditionModule.maxInitDice ? EditionModule.maxInitDice : 5;
-      pnj.initDice = Utils.clamp(pnj.initDice || 1, 1, maxDice);
-    }
-
-    if (attrsTouched && EditionModule && typeof EditionModule.recalc === "function") {
+    if (
+      attrsTouched &&
+      EditionModule &&
+      typeof EditionModule.recalc === "function"
+    ) {
       EditionModule.recalc(pnj);
     }
 
@@ -301,6 +294,15 @@ const BonusEngine = {
       } else {
         s.rr = (s.rr || 0) + 1;
       }
+    }
+
+    // Plafond règle (p.71) : la RR cumulée toutes sources confondues (atouts
+    // + esprit mentor) ne peut jamais dépasser 3, même déjà respecté au jet
+    // par Dice.computeAnarchyRoll — on borne ici pour que l'affichage de la
+    // fiche corresponde à la RR réellement utilisable.
+    for (const s of pnj.skills || []) {
+      if (s.rr != null) s.rr = Utils.clamp(s.rr, 0, 3);
+      if (s.specRR != null) s.specRR = Utils.clamp(s.specRR, 0, 3);
     }
   },
 
