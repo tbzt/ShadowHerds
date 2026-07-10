@@ -180,53 +180,70 @@ const DossierBar = {
 
   /* ---- CRUD (cascade sur les collections, jointure par nom) ---- */
   addDossier() {
-    const name = prompt("Nom du dossier :");
-    if (!name || !name.trim()) return;
-    const clean = name.trim();
-    if (Dossiers.list().some((d) => d.name === clean)) {
-      toast("Ce dossier existe déjà.");
-      return;
-    }
-    const d = Dossiers.add(clean);
-    if (d) this.select(d.id);
-    toast(`Dossier « ${clean} » créé.`);
+    Dialog.prompt({
+      title: "Nouveau dossier",
+      label: "Nom du dossier",
+      placeholder: "ex. Run Aztechnology, Équipe A…",
+      confirmLabel: "Créer",
+    }).then((name) => {
+      if (!name || !name.trim()) return;
+      const clean = name.trim();
+      if (Dossiers.list().some((d) => d.name === clean)) {
+        toast("Ce dossier existe déjà.");
+        return;
+      }
+      const d = Dossiers.add(clean);
+      if (d) this.select(d.id);
+      toast(`Dossier « ${clean} » créé.`);
+    });
   },
 
   addSubgroup(parentId) {
-    const name = prompt("Nom du sous-groupe :");
-    if (!name || !name.trim()) return;
-    const clean = name.trim();
-    if (Dossiers.list().some((x) => x.name === clean)) {
-      toast("Ce nom existe déjà.");
-      return;
-    }
-    const d = Dossiers.add(clean, parentId);
-    if (d) this.select(d.id);
-    toast(`Sous-groupe « ${clean} » créé.`);
+    Dialog.prompt({
+      title: "Nouveau sous-groupe",
+      label: "Nom du sous-groupe",
+      confirmLabel: "Créer",
+    }).then((name) => {
+      if (!name || !name.trim()) return;
+      const clean = name.trim();
+      if (Dossiers.list().some((x) => x.name === clean)) {
+        toast("Ce nom existe déjà.");
+        return;
+      }
+      const d = Dossiers.add(clean, parentId);
+      if (d) this.select(d.id);
+      toast(`Sous-groupe « ${clean} » créé.`);
+    });
   },
 
   renameDossier(id) {
     const d = Dossiers.get(id);
     if (!d) return;
     const oldName = d.name;
-    const input = prompt("Nouveau nom :", oldName);
-    if (!input || !input.trim() || input.trim() === oldName) return;
-    const newName = input.trim();
-    if (Dossiers.list().some((x) => x.name === newName)) {
-      toast("Ce nom existe déjà.");
-      return;
-    }
-    Dossiers.rename(id, newName);
-    for (const col of this._cols()) {
-      if (col.data.groups[oldName]) {
-        col.data.groups[newName] = col.data.groups[oldName];
-        delete col.data.groups[oldName];
-        col.save();
+    Dialog.prompt({
+      title: "Renommer",
+      label: "Nouveau nom",
+      value: oldName,
+      confirmLabel: "Renommer",
+    }).then((input) => {
+      if (!input || !input.trim() || input.trim() === oldName) return;
+      const newName = input.trim();
+      if (Dossiers.list().some((x) => x.name === newName)) {
+        toast("Ce nom existe déjà.");
+        return;
       }
-    }
-    this._applyCurrent();
-    this.render();
-    this._notify();
+      Dossiers.rename(id, newName);
+      for (const col of this._cols()) {
+        if (col.data.groups[oldName]) {
+          col.data.groups[newName] = col.data.groups[oldName];
+          delete col.data.groups[oldName];
+          col.save();
+        }
+      }
+      this._applyCurrent();
+      this.render();
+      this._notify();
+    });
   },
 
   removeDossier(id) {
@@ -236,23 +253,30 @@ const DossierBar = {
     const msg = isParent
       ? `Supprimer « ${d.name} » et ses sous-groupes ? (Le contenu reste dans la bibliothèque.)`
       : `Supprimer « ${d.name} » ? (Le contenu reste dans la bibliothèque.)`;
-    if (!confirm(msg)) return;
-    const names = this._namesUnder(id);
-    Dossiers.remove(id);
-    for (const col of this._cols()) {
-      let changed = false;
-      for (const name of names) {
-        if (col.data.groups[name]) {
-          delete col.data.groups[name];
-          changed = true;
+    Dialog.confirm({
+      title: "Supprimer le dossier",
+      message: msg,
+      confirmLabel: "Supprimer",
+      danger: true,
+    }).then((ok) => {
+      if (!ok) return;
+      const names = this._namesUnder(id);
+      Dossiers.remove(id);
+      for (const col of this._cols()) {
+        let changed = false;
+        for (const name of names) {
+          if (col.data.groups[name]) {
+            delete col.data.groups[name];
+            changed = true;
+          }
         }
+        if (changed) col.save();
       }
-      if (changed) col.save();
-    }
-    if (!Dossiers.has(this.current)) this.current = "all";
-    this._applyCurrent();
-    this.render();
-    this._notify();
+      if (!Dossiers.has(this.current)) this.current = "all";
+      this._applyCurrent();
+      this.render();
+      this._notify();
+    });
   },
 
   _wire() {
