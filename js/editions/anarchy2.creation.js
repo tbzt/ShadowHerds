@@ -331,6 +331,180 @@ Object.assign(EditionAnarchy2, {
       },
     ],
 
+    /* ---- Accès catalogue (API lue par chargen.js) ----
+       Ces méthodes isolent les catalogues propres à Anarchy (armes, sorts,
+       esprits mentors) derrière une API neutre. chargen.js ne nomme ainsi
+       aucune édition : chaque module `creation` fournit sa propre version. */
+
+    /** Catalogue d'armes proposé à la création : nom + drapeau spécialiste. */
+    weaponCatalog() {
+      return Object.keys(EditionAnarchy2.WEAPON_CATALOG).map((name) => ({
+        name,
+        specialist: this.WEAPON_CATALOG_SPECIALIST.has(name),
+      }));
+    },
+
+    /** Sorts sélectionnables à la création. */
+    spellPool() {
+      return (Content.spells.anarchy2 || []).map((sp) => ({ name: sp.name }));
+    },
+
+    /** Tire un esprit mentor selon la tradition éveillée (ou null). */
+    drawMentor(awakened) {
+      const kindMap = { hermétique: "hermetic", chamanique: "shamanic", adepte: "adept" };
+      return Magic.pickMentor("anarchy2", null, kindMap[awakened]) || null;
+    },
+
+    /* ---- Presets de démarrage rapide ----
+       Chaque `patch` est un build partiel appliqué sur un brouillon neuf
+       (l'assistant normalise ensuite l'attribut de chaque compétence).
+       Pensés « dans les clous » d'un runner mais ajustables librement. */
+    presets: [
+      {
+        id: "sam",
+        label: "Samouraï des rues",
+        patch: {
+          archetypeTable: "combattant",
+          awakened: null,
+          attrs: { FOR: 3, AGI: 4, VOL: 3, LOG: 2, CHA: 2 },
+          skills: [
+            { name: "Armes à distance", val: 5, spec: "Pistolets" },
+            { name: "Combat rapproché", val: 4 },
+            { name: "Athlétisme", val: 3 },
+            { name: "Perception", val: 2 },
+          ],
+          weapons: [{ name: "Pistolet lourd" }, { name: "Couteau de combat" }],
+        },
+      },
+      {
+        id: "mage",
+        label: "Mage de combat",
+        patch: {
+          archetypeTable: "magicien",
+          awakened: "hermétique",
+          attrs: { FOR: 1, AGI: 2, VOL: 4, LOG: 3, CHA: 2 },
+          skills: [
+            { name: "Sorcellerie", val: 5, spec: "Sorts de combat" },
+            { name: "Conjuration", val: 3 },
+            { name: "Perception", val: 2 },
+            { name: "Athlétisme", val: 2 },
+          ],
+          spells: ["Boule de feu", "Armure"],
+        },
+      },
+      {
+        id: "decker",
+        label: "Décker",
+        patch: {
+          archetypeTable: "equilibre",
+          awakened: null,
+          attrs: { FOR: 1, AGI: 3, VOL: 2, LOG: 4, CHA: 2 },
+          skills: [
+            { name: "Piratage", val: 5, spec: "Cybercombat" },
+            { name: "Électronique", val: 4 },
+            { name: "Ingénierie", val: 2 },
+            { name: "Perception", val: 2 },
+          ],
+          weapons: [{ name: "Pistolet léger" }],
+        },
+      },
+      {
+        id: "face",
+        label: "Négociateur",
+        patch: {
+          archetypeTable: "equilibre",
+          awakened: null,
+          attrs: { FOR: 1, AGI: 2, VOL: 3, LOG: 2, CHA: 4 },
+          skills: [
+            { name: "Influence", val: 5, spec: "Négociation" },
+            { name: "Réseau", val: 4 },
+            { name: "Perception", val: 3 },
+            { name: "Armes à distance", val: 2 },
+          ],
+          weapons: [{ name: "Pistolet léger" }],
+        },
+      },
+      {
+        id: "rigger",
+        label: "Rigger",
+        patch: {
+          archetypeTable: "equilibre",
+          awakened: null,
+          attrs: { FOR: 1, AGI: 3, VOL: 2, LOG: 4, CHA: 2 },
+          skills: [
+            { name: "Pilotage", val: 5, spec: "Drones volants" },
+            { name: "Ingénierie", val: 4, spec: "C&R drones" },
+            { name: "Électronique", val: 2 },
+            { name: "Perception", val: 2 },
+          ],
+          weapons: [{ name: "Pistolet léger" }],
+        },
+      },
+    ],
+
+    /* ---- Pools d'inspiration narrative (p.50-51) ---- */
+    _narrativePools: {
+      keywords: [
+        "Ancien militaire",
+        "Orphelin des Barrens",
+        "Ex-corpo grillé",
+        "Contrebandier né",
+        "Idéaliste désabusé",
+        "Survivant des rues",
+        "Accro à l'adrénaline",
+        "Loyal jusqu'à la faute",
+        "Gueule cassée",
+        "Petite frappe ambitieuse",
+        "Déserteur recherché",
+        "Enfant de la Matrice",
+      ],
+      lifestyles: ["Bas", "Modeste", "Confort", "Élevé"],
+      behaviors: [
+        "Ne recule jamais devant un défi",
+        "Vérifie toujours les sorties d'une pièce",
+        "Parle trop quand il est nerveux",
+        "Ne fait confiance à personne trop vite",
+        "Protège les plus faibles",
+        "Rembourse toujours ses dettes",
+        "Méthodique jusqu'à l'obsession",
+        "Impulsif dès que ça chauffe",
+        "Garde toujours une carte dans sa manche",
+        "Déteste l'autorité corpo",
+      ],
+      quotes: [
+        "« On finit le boulot, point. »",
+        "« J'ai déjà vu pire. »",
+        "« Le nuyen d'abord, les questions après. »",
+        "« Personne ne me donne d'ordres. »",
+        "« Reste derrière moi. »",
+        "« Ça va bien se passer… ou pas. »",
+        "« Je connais un gars. »",
+        "« On aurait dû demander plus cher. »",
+        "« La rue n'oublie jamais. »",
+        "« Cours d'abord, réfléchis après. »",
+      ],
+    },
+
+    /** Suggestions narratives : remplit métatype + tirages distincts. Le
+        consommateur (chargen) ne remplit que les champs laissés vides. */
+    drawNarrative(build) {
+      const pickN = (arr, n) => {
+        const pool = [...arr];
+        const out = [];
+        for (let i = 0; i < n && pool.length; i++) {
+          out.push(pool.splice(Utils.randInt(0, pool.length - 1), 1)[0]);
+        }
+        return out;
+      };
+      const kw = pickN(this._narrativePools.keywords, 3);
+      const life = pickN(this._narrativePools.lifestyles, 1)[0];
+      return {
+        keywords: [build.meta, kw[0], kw[1], life, kw[2]],
+        behaviors: pickN(this._narrativePools.behaviors, 4),
+        quotes: pickN(this._narrativePools.quotes, 4),
+      };
+    },
+
     /* ---- Coûts de composition — chaque fonction ne fait que la
        traduction points/nuyens : aucune règle de plafond ici, c'est le
        rôle de validate(). ---- */
@@ -362,12 +536,18 @@ Object.assign(EditionAnarchy2, {
       return total;
     },
 
-    /** Coût en ¥ d'une liste de compétences [{val, spec?}]. */
+    /** Nombre de spécialisations d'une compétence (build : `specs[]` ;
+        tolère l'ancienne forme scalaire `spec`). Pas de plafond (p.85). */
+    specCount(s) {
+      return s.specs ? s.specs.length : s.spec ? 1 : 0;
+    },
+
+    /** Coût en ¥ d'une liste de compétences [{val, specs?}]. */
     costSkills(skills) {
       let total = 0;
       for (const s of skills || []) {
         total += this.costSkillIndex(s.val || 0);
-        if (s.spec) total += this.costs.specialization;
+        total += this.specCount(s) * this.costs.specialization;
       }
       return total;
     },
@@ -409,15 +589,25 @@ Object.assign(EditionAnarchy2, {
       );
     },
 
-    /** Validation live : renvoie un tableau d'erreurs lisibles (vide =
-        build valide). N'impose pas le mode table vs avancé — le budget
-        nuyen et les plafonds du niveau de jeu s'appliquent toujours. */
-    validate(build) {
-      const errors = [];
+    /** Erreurs de composition rangées par étape de l'assistant (concept,
+        attrs, skills, edges, gear). Source unique de vérité : `validate()`
+        n'en est que l'aplatissement. Permet à chargen.js de marquer les
+        onglets fautifs sans dupliquer le barème. Le dépassement de budget
+        global (mode avancé) n'appartient à aucune étape : il est ajouté par
+        `validate()` (visible via la barre de budget + la révision). */
+    stepErrors(build) {
+      const out = { concept: [], attrs: [], skills: [], edges: [], gear: [] };
       const level = this.gameLevels[build.gameLevel];
-      if (!level) return ["Niveau de jeu inconnu."];
+      if (!level) {
+        out.concept.push("Niveau de jeu inconnu.");
+        return out;
+      }
       const range = this.metatypes[build.meta];
-      if (!range) return ["Métatype inconnu."];
+      if (!range) {
+        out.concept.push("Métatype inconnu.");
+        return out;
+      }
+      const table = this.pointTables[build.gameLevel]?.[build.archetypeTable];
 
       // Attributs : bornes métatype + nombre au maximum autorisé.
       let atMaxCount = 0;
@@ -425,58 +615,63 @@ Object.assign(EditionAnarchy2, {
         const val = (build.attrs || {})[k] || 1;
         const [min, max] = range[k];
         if (val < min || val > max) {
-          errors.push(`${k} doit être compris entre ${min} et ${max} pour un ${build.meta}.`);
+          out.attrs.push(`${k} doit être compris entre ${min} et ${max} pour un ${build.meta}.`);
         }
         if (val >= max) atMaxCount++;
       }
       if (atMaxCount > level.attrsAtMax) {
-        errors.push(
+        out.attrs.push(
           `Au maximum ${level.attrsAtMax} attribut(s) au plafond du métatype pour le niveau ${level.label}.`,
         );
       }
 
-      // Compétences : plafond d'indice, et sous-plafond "au rang max" si
-      // la table en impose un (runner d'élite : 2 compétences à 6 max).
+      // Compétences : plafond d'indice, sous-plafond "au rang max", et RR.
       let atSkillCapCount = 0;
       for (const s of build.skills || []) {
         if (s.val > level.skillMax) {
-          errors.push(`${s.name} dépasse l'indice maximum (${level.skillMax}) du niveau ${level.label}.`);
+          out.skills.push(`${s.name} dépasse l'indice maximum (${level.skillMax}) du niveau ${level.label}.`);
         }
         if (s.val >= level.skillMax) atSkillCapCount++;
+        if ((s.rr || 0) > level.rrMax) {
+          out.skills.push(`RR de ${s.name} dépasse le maximum du niveau (${level.rrMax}).`);
+        }
+        if ((s.specRR || 0) > level.rrMaxSpec) {
+          out.skills.push(`RR de la spécialisation de ${s.name} dépasse le maximum du niveau (${level.rrMaxSpec}).`);
+        }
       }
-      const table = this.pointTables[build.gameLevel]?.[build.archetypeTable];
       if (table && table.skillsAtCap != null && atSkillCapCount > table.skillsAtCap) {
-        errors.push(
+        out.skills.push(
           `Seules ${table.skillsAtCap} compétence(s) peuvent atteindre l'indice ${level.skillMax} sur cette table.`,
         );
       }
 
-      // Réduction du risque : plafonds par niveau de jeu (p.85-86).
-      for (const s of build.skills || []) {
-        if ((s.rr || 0) > level.rrMax) {
-          errors.push(`RR de ${s.name} dépasse le maximum du niveau (${level.rrMax}).`);
-        }
-        if ((s.specRR || 0) > level.rrMaxSpec) {
-          errors.push(`RR de la spécialisation de ${s.name} dépasse le maximum du niveau (${level.rrMaxSpec}).`);
-        }
+      // Budget mode table : bornes par catégorie (le mode avancé n'a qu'un
+      // budget global, géré dans `validate()`).
+      if (!build.advancedMode && table) {
+        const attrPts = Object.values(build.attrs || {}).reduce((a, b) => a + (b - 1), 0);
+        if (attrPts > table.attrPoints) out.attrs.push(`Trop de points d'attributs (${attrPts}/${table.attrPoints}).`);
+        const skillPts = (build.skills || []).reduce((a, s) => a + (s.val || 0) + this.specCount(s), 0);
+        if (skillPts > table.skillPoints) out.skills.push(`Trop de points de compétences (${skillPts}/${table.skillPoints}).`);
+        const edgePts = (build.edges || []).reduce((a, e) => a + (e.level || 0), 0);
+        if (edgePts > table.edgePoints) out.edges.push(`Trop de points d'atouts (${edgePts}/${table.edgePoints}).`);
       }
 
-      // Budget nuyens : mode table (bornes par catégorie via pointTables)
-      // ou mode avancé (un seul budget global, transferts libres p.85).
-      if (build.advancedMode) {
+      return out;
+    },
+
+    /** Validation live : aplatit `stepErrors()` et y ajoute le dépassement de
+        budget global (mode avancé). Vide = build valide. */
+    validate(build) {
+      const steps = this.stepErrors(build);
+      const errors = [];
+      for (const k of ["concept", "attrs", "skills", "edges", "gear"]) errors.push(...steps[k]);
+      const level = this.gameLevels[build.gameLevel];
+      if (level && build.advancedMode) {
         const spent = this.totalCost(build);
         if (spent > level.nuyen) {
           errors.push(`Budget dépassé : ${spent.toLocaleString("fr-FR")} ¥ / ${level.nuyen.toLocaleString("fr-FR")} ¥.`);
         }
-      } else if (table) {
-        const attrPts = Object.values(build.attrs || {}).reduce((a, b) => a + (b - 1), 0);
-        if (attrPts > table.attrPoints) errors.push(`Trop de points d'attributs (${attrPts}/${table.attrPoints}).`);
-        const skillPts = (build.skills || []).reduce((a, s) => a + (s.val || 0) + (s.spec ? 1 : 0), 0);
-        if (skillPts > table.skillPoints) errors.push(`Trop de points de compétences (${skillPts}/${table.skillPoints}).`);
-        const edgePts = (build.edges || []).reduce((a, e) => a + (e.level || 0), 0);
-        if (edgePts > table.edgePoints) errors.push(`Trop de points d'atouts (${edgePts}/${table.edgePoints}).`);
       }
-
       return errors;
     },
 
@@ -486,16 +681,25 @@ Object.assign(EditionAnarchy2, {
       const attrs = { ...build.attrs };
       const skills = (build.skills || []).map((s) => {
         const def = this.skills.find((d) => d.name === s.name);
-        return {
+        const attr = s.attr || def?.attr || "LOG";
+        // Modèle PNJ mono-spé conservé : specs[0] = spé principale ; les
+        // suivantes vont dans extraSpecs (rendu/roll les prennent en compte).
+        const specs = s.specs || (s.spec ? [s.spec] : []);
+        const primary = specs[0];
+        const out = {
           name: s.name,
           val: s.val,
-          attr: s.attr || def?.attr || "LOG",
+          attr,
           rr: s.rr || 0,
-          spec: s.spec || undefined,
-          specVal: s.spec ? s.val + 2 : undefined,
-          specAttr: s.spec ? s.specAttr || s.attr || def?.attr : undefined,
-          specRR: s.spec ? s.specRR || 0 : undefined,
+          spec: primary || undefined,
+          specVal: primary ? s.val + 2 : undefined,
+          specAttr: primary ? attr : undefined,
+          specRR: primary ? s.specRR || 0 : undefined,
         };
+        if (specs.length > 1) {
+          out.extraSpecs = specs.slice(1).map((name) => ({ name, val: s.val + 2, attr, rr: 0 }));
+        }
+        return out;
       });
 
       const weapons = (build.weapons || []).map((w) =>

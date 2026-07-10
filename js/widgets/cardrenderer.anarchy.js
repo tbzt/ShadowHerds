@@ -143,17 +143,24 @@ Object.assign(CardRenderer, {
             ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}" data-roll-detail="${detail}" data-roll-edition="${pnj.edition}" data-roll-rr="${s.rr || 0}" data-roll-pnj="${pnj.id}"`
             : "";
         html += `<span class="tag skill-tag${pool >= 1 ? " rollable" : ""}"${rollMain} title="${this._esc(s.name)} : ${pool} (${s.val}+${s.attr}${rrStr}) — cliquer pour lancer">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong>${s.rr > 0 ? `<span class="lim">RR${s.rr}</span>` : ""}</span>`;
-        if (s.spec && s.spec !== true && s.specVal) {
-          const specAttrVal = attrs[s.specAttr || s.attr] || 0;
-          const specPool = s.specVal + specAttrVal;
-          const specRr = s.specRR != null ? s.specRR : s.rr || 0;
+        // Puce de spécialisation (indice+2). La spé principale + chaque
+        // spé supplémentaire (extraSpecs) partagent le même rendu lançable.
+        const specChip = (specName, specVal, specAttrKey, specRr) => {
+          const specAttrVal = attrs[specAttrKey || s.attr] || 0;
+          const specPool = specVal + specAttrVal;
           const specRrStr = specRr > 0 ? ` RR${specRr}` : "";
-          const specDetail = `${this._esc(Utils.attrFullName(s.specAttr || s.attr))} ${specAttrVal} + ${this._esc(s.spec)} ${s.specVal}${specRrStr}`;
+          const specDetail = `${this._esc(Utils.attrFullName(specAttrKey || s.attr))} ${specAttrVal} + ${this._esc(specName)} ${specVal}${specRrStr}`;
           const rollSpec =
             specPool >= 1
-              ? ` data-roll="${specPool}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" data-roll-detail="${specDetail}" data-roll-edition="${pnj.edition}" data-roll-rr="${specRr}" data-roll-pnj="${pnj.id}"`
+              ? ` data-roll="${specPool}" data-roll-label="${this._esc(s.name)} · ${this._esc(specName)}" data-roll-detail="${specDetail}" data-roll-edition="${pnj.edition}" data-roll-rr="${specRr}" data-roll-pnj="${pnj.id}"`
               : "";
-          html += `<span class="tag skill-tag skill-tag-spec${specPool >= 1 ? " rollable" : ""}"${rollSpec} title="Spécialisation ${this._esc(s.spec)} : ${specPool} (${s.specVal}+${s.specAttr || s.attr}${specRrStr}) — cliquer pour lancer">◊&nbsp;${this._esc(s.spec)}&nbsp;<strong style="color:var(--text)">${specPool}</strong>${specRr > 0 ? `<span class="lim">RR${specRr}</span>` : ""}</span>`;
+          return `<span class="tag skill-tag skill-tag-spec${specPool >= 1 ? " rollable" : ""}"${rollSpec} title="Spécialisation ${this._esc(specName)} : ${specPool} (${specVal}+${specAttrKey || s.attr}${specRrStr}) — cliquer pour lancer">◊&nbsp;${this._esc(specName)}&nbsp;<strong style="color:var(--text)">${specPool}</strong>${specRr > 0 ? `<span class="lim">RR${specRr}</span>` : ""}</span>`;
+        };
+        if (s.spec && s.spec !== true && s.specVal) {
+          html += specChip(s.spec, s.specVal, s.specAttr, s.specRR != null ? s.specRR : s.rr || 0);
+        }
+        for (const ex of s.extraSpecs || []) {
+          html += specChip(ex.name, ex.val != null ? ex.val : s.val + 2, ex.attr, ex.rr || 0);
         }
       }
       html += "</div></div>";

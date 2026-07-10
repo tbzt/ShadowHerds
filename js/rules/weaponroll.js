@@ -176,12 +176,19 @@ const WeaponRoll = {
     return re ? re.test(w) : false;
   },
 
-  /** Cherche une compétence du PNJ dont la spécialisation couvre
-      l'arme. Renvoie l'objet skill ou null. */
+  /** Cherche une spécialisation du PNJ (principale OU supplémentaire)
+      couvrant l'arme. Renvoie un descripteur normalisé
+      { skill, spec, specVal, specAttr, specRR } ou null. */
   findSpecFor(pnj, weaponName) {
     for (const s of pnj.skills || []) {
-      if (s.spec && s.spec !== true && this._specMatchesWeapon(s.spec, weaponName))
-        return s;
+      if (s.spec && s.spec !== true && this._specMatchesWeapon(s.spec, weaponName)) {
+        return { skill: s, spec: s.spec, specVal: s.specVal, specAttr: s.specAttr, specRR: s.specRR };
+      }
+      for (const ex of s.extraSpecs || []) {
+        if (this._specMatchesWeapon(ex.name, weaponName)) {
+          return { skill: s, spec: ex.name, specVal: ex.val, specAttr: ex.attr, specRR: ex.rr };
+        }
+      }
     }
     return null;
   },
@@ -261,10 +268,10 @@ const WeaponRoll = {
     if (weaponModel.specMechanic === "rr") {
       if (specSkill && specSkill.specVal != null) {
         skillVal = specSkill.specVal;
-        attr = specSkill.specAttr || specSkill.attr || attr;
+        attr = specSkill.specAttr || specSkill.skill.attr || attr;
         attrVal = (pnj.attrs && pnj.attrs[attr]) || 0;
         rr = specSkill.specRR || 0;
-        matchedSkill = `${specSkill.name} · ${specSkill.spec}`;
+        matchedSkill = `${specSkill.skill.name} · ${specSkill.spec}`;
       } else if (found) {
         const sObj = (pnj.skills || []).find((s) => s.name === found.matched);
         if (sObj && sObj.rr) rr = sObj.rr;
@@ -272,8 +279,8 @@ const WeaponRoll = {
     } else if (specSkill) {
       // Spécialité = +2 dés sur le pool.
       specBonus = 2;
-      if (!found && Number.isFinite(specSkill.val)) skillVal = specSkill.val;
-      matchedSkill = `${matchedSkill || specSkill.name} · ${specSkill.spec}`;
+      if (!found && Number.isFinite(specSkill.skill.val)) skillVal = specSkill.skill.val;
+      matchedSkill = `${matchedSkill || specSkill.skill.name} · ${specSkill.spec}`;
     }
 
     const basePool = skillVal + attrVal;

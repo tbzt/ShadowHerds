@@ -92,7 +92,8 @@ const CardRenderer = {
       empêche d'en générer de nouveaux, pas d'afficher les existants). */
   _portraitThumb(entity) {
     if (!entity.portraitUrl) return "";
-    return `<div class="pnj-portrait-thumb">
+    return `<div class="pnj-portrait-thumb" role="button" tabindex="0"
+      data-portrait-preview="${this._esc(entity.portraitUrl)}" title="Agrandir le portrait">
       <img src="${this._esc(entity.portraitUrl)}" alt="" loading="lazy">
     </div>`;
   },

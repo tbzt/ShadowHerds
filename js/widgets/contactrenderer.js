@@ -86,7 +86,7 @@ const ContactRenderer = {
     el.innerHTML = `
       <div class="contact-card-body">
         <div class="contact-header-row">
-          ${c.portraitUrl ? `<div class="contact-portrait-thumb"><img src="${CardRenderer._esc(c.portraitUrl)}" alt="" loading="lazy"></div>` : ""}
+          ${c.portraitUrl ? `<div class="contact-portrait-thumb" role="button" tabindex="0" data-portrait-preview="${CardRenderer._esc(c.portraitUrl)}" title="Agrandir le portrait"><img src="${CardRenderer._esc(c.portraitUrl)}" alt="" loading="lazy"></div>` : ""}
           <div>
             <div class="contact-name" contenteditable="true" spellcheck="false"
               data-contact-field="name"

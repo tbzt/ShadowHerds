@@ -255,6 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
   CardRenderer.bindDelegation();
   SidebarToggle.bindDelegation();
   CharGen.bindDelegation();
+  Portrait.bindDelegation();
 
   document.addEventListener("click", (e) => {
     const actionEl = e.target.closest("[data-action]");

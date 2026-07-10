@@ -4,8 +4,9 @@
    CHARGEN — assistant de création de personnage jouable (PJ)
    ------------------------------------------------------------
    Édition-agnostique : lit App.editionModule.creation (présent
-   uniquement pour Anarchy à ce stade — cf. js/editions/anarchy.
-   creation.js). Aucune branche `App.edition === …` ici.
+   uniquement pour Anarchy à ce stade — cf. js/editions/anarchy2.
+   creation.js). Aucune branche `App.edition === …` ni catalogue
+   d'édition nommé ici : tout passe par l'API `creation.*`.
 
    Assistant par étapes avec budget en direct (mode tables de
    points par défaut, mode nuyens fins en option). Toute la
@@ -46,10 +47,23 @@ const CharGen = {
       toast("Création de personnage non disponible pour cette édition.");
       return;
     }
-    this._build = this._loadDraft() || this._newBuild(creation);
+    const draft = this._loadDraft();
+    this._resumed = !!draft;
+    this._build = draft || this._newBuild(creation);
+    this._build.skills = this._normalizeSkillSpecs(this._build.skills);
     this._step = 0;
     document.getElementById("chargen-overlay").classList.add("open");
     this._renderAll();
+  },
+
+  /** Bandeau de reprise de brouillon (masquable, propose de repartir à zéro). */
+  _resumeBanner() {
+    if (!this._resumed) return "";
+    return `<div class="cg-resume-banner">
+      <span>↺ Brouillon repris.</span>
+      <button class="btn-secondary btn-small" data-cg-action="restart">Recommencer à zéro</button>
+      <button class="btn-icon-tiny" data-cg-action="dismiss-resume" title="Masquer">✕</button>
+    </div>`;
   },
 
   close() {
@@ -103,6 +117,16 @@ const CharGen = {
     };
   },
 
+  /** Migre les compétences vers le modèle multi-spés `specs: string[]`
+      (tolère l'ancienne forme scalaire `spec` des brouillons/presets). */
+  _normalizeSkillSpecs(skills) {
+    return (skills || []).map((s) => {
+      const specs = s.specs || (s.spec ? [s.spec] : []);
+      const { spec, ...rest } = s;
+      return { ...rest, specs };
+    });
+  },
+
   _setPath(obj, path, val) {
     const parts = path.split(".");
     let cur = obj;
@@ -111,6 +135,23 @@ const CharGen = {
       if (cur == null) return;
     }
     cur[parts[parts.length - 1]] = val;
+  },
+
+  /** Erreurs live de l'étape courante, rendues en tête de l'étape. */
+  _stepErrorBox(step) {
+    const errs = this._creation().stepErrors(this._build)[step] || [];
+    if (!errs.length) return "";
+    return `<div class="cg-step-errors">${errs
+      .map((e) => `<div class="cg-error-text">⚠ ${this._esc(e)}</div>`)
+      .join("")}</div>`;
+  },
+
+  /** Jauge « utilisé / offert par le kit » : ambre quand on paie au-delà
+      (payer est légal en Anarchy), le rouge restant réservé aux vraies erreurs. */
+  _kitMeter(used, free, label) {
+    const over = used > free;
+    const paid = over ? ` <span class="cg-kit-paid">+${used - free} payant</span>` : "";
+    return `<span class="cg-kit-meter${over ? " over" : ""}">${label} : ${used}/${free}${paid}</span>`;
   },
 
   /* ---- Rendu ---- */
@@ -124,10 +165,11 @@ const CharGen = {
   _renderSteps() {
     const el = document.getElementById("chargen-steps");
     if (!el) return;
-    el.innerHTML = this.STEPS.map(
-      (s, i) =>
-        `<button class="cg-step-tab${i === this._step ? " active" : ""}" data-cg-action="goto" data-idx="${i}">${i + 1}. ${this.STEP_LABELS[s]}</button>`,
-    ).join("");
+    const stepErr = this._creation().stepErrors(this._build);
+    el.innerHTML = this.STEPS.map((s, i) => {
+      const hasErr = (stepErr[s] || []).length > 0;
+      return `<button class="cg-step-tab${i === this._step ? " active" : ""}${hasErr ? " has-error" : ""}" data-cg-action="goto" data-idx="${i}" aria-current="${i === this._step ? "step" : "false"}">${i + 1}. ${this.STEP_LABELS[s]}${hasErr ? ' <span class="cg-tab-dot">●</span>' : ""}</button>`;
+    }).join("");
   },
 
   _renderBudget() {
@@ -137,21 +179,25 @@ const CharGen = {
     const b = this._build;
     const level = c.gameLevels[b.gameLevel];
     const table = c.pointTables[b.gameLevel][b.archetypeTable];
-    let html;
-    if (b.advancedMode) {
-      const spent = c.totalCost(b);
-      const pct = Math.min(100, Math.round((spent / level.nuyen) * 100));
-      html = `<div class="cg-budget-row">
-        <span class="cg-budget-cell${spent > level.nuyen ? " over" : ""}">${spent.toLocaleString("fr-FR")} / ${level.nuyen.toLocaleString("fr-FR")} ¥</span>
-        <div class="cg-budget-bar"><div class="cg-budget-fill${spent > level.nuyen ? " over" : ""}" style="width:${pct}%"></div></div>
-      </div>`;
-    } else {
+    const spent = c.totalCost(b);
+    const pct = Math.min(100, Math.round((spent / level.nuyen) * 100));
+    // Mode avancé : la barre nuyen EST la limite. Mode table : coût indicatif
+    // (la limite réelle sont les cellules de catégories affichées dessous).
+    const barOver = b.advancedMode && spent > level.nuyen;
+    const nuyenLabel = b.advancedMode
+      ? `${spent.toLocaleString("fr-FR")} / ${level.nuyen.toLocaleString("fr-FR")} ¥`
+      : `Coût ${spent.toLocaleString("fr-FR")} ¥ · budget ${level.nuyen.toLocaleString("fr-FR")} ¥`;
+    let html = `<div class="cg-budget-row">
+      <span class="cg-budget-cell${barOver ? " over" : ""}">${nuyenLabel}</span>
+      <div class="cg-budget-bar"><div class="cg-budget-fill${barOver ? " over" : ""}" style="width:${pct}%"></div></div>
+    </div>`;
+    if (!b.advancedMode) {
       const attrPts = Object.values(b.attrs).reduce((a, v) => a + (v - 1), 0);
-      const skillPts = b.skills.reduce((a, s) => a + (s.val || 0) + (s.spec ? 1 : 0), 0);
+      const skillPts = b.skills.reduce((a, s) => a + (s.val || 0) + (s.specs?.length || 0), 0);
       const edgePts = b.edges.reduce((a, e) => a + (e.level || 0), 0);
       const cell = (label, used, total) =>
         `<span class="cg-budget-cell${used > total ? " over" : ""}">${label} ${used}/${total}</span>`;
-      html = `<div class="cg-budget-row">
+      html += `<div class="cg-budget-row cg-budget-cats">
         ${cell("Attributs", attrPts, table.attrPoints)}
         ${cell("Compétences", skillPts, table.skillPoints)}
         ${cell("Atouts", edgePts, table.edgePoints)}
@@ -164,7 +210,7 @@ const CharGen = {
     const name = this.STEPS[this._step];
     const el = document.getElementById("chargen-body");
     if (!el) return;
-    el.innerHTML = this[`_render_${name}`].call(this);
+    el.innerHTML = this._resumeBanner() + this[`_render_${name}`].call(this);
     if (name === "review") this._mountReview();
   },
 
@@ -210,7 +256,19 @@ const CharGen = {
       .map(([v, l]) => opt(v, l, (b.awakened || "") === v))
       .join("");
 
+    const presetBtns = (c.presets || [])
+      .map(
+        (p) =>
+          `<button class="btn-secondary btn-small cg-preset-btn" data-cg-action="apply-preset" data-id="${p.id}">${this._esc(p.label)}</button>`,
+      )
+      .join("");
+
     return `<div class="cg-step">
+      ${this._stepErrorBox("concept")}
+      <div class="cg-preset-row">
+        <span class="cg-section-label">Démarrage rapide</span>
+        <div class="cg-preset-btns">${presetBtns}</div>
+      </div>
       <div class="cg-field"><label>Nom</label>
         <input type="text" data-cg="name" data-cg-rerender="false" value="${this._esc(b.name)}" placeholder="Nom du personnage"></div>
       <div class="cg-field"><label>Niveau de jeu</label><select data-cg="gameLevel">${levelOpts}</select></div>
@@ -230,16 +288,22 @@ const CharGen = {
     const level = c.gameLevels[b.gameLevel];
     const table = c.pointTables[b.gameLevel][b.archetypeTable];
     const attrPtsUsed = Object.values(b.attrs).reduce((a, v) => a + (v - 1), 0);
+    let atMaxCount = 0;
 
     const rows = ["FOR", "AGI", "VOL", "LOG", "CHA"]
       .map((k) => {
         const [min, max] = range[k];
         const val = b.attrs[k];
         const atMax = val >= max;
+        if (atMax) atMaxCount++;
         const outOfRange = val < min || val > max;
         return `<div class="cg-attr-row">
           <span class="cg-attr-label">${k}</span>
-          <input type="number" min="${min}" max="${max}" data-cg="attrs.${k}" value="${val}">
+          <div class="cg-stepper">
+            <button class="cg-step-btn" data-cg-action="attr-dec" data-key="${k}" ${val <= min ? "disabled" : ""} aria-label="Diminuer ${k}">−</button>
+            <input type="number" min="${min}" max="${max}" data-cg="attrs.${k}" value="${val}">
+            <button class="cg-step-btn" data-cg-action="attr-inc" data-key="${k}" ${val >= max ? "disabled" : ""} aria-label="Augmenter ${k}">＋</button>
+          </div>
           <span class="cg-attr-range">(${min}–${max})</span>
           ${atMax ? '<span class="tag">au max</span>' : ""}
           ${outOfRange ? '<span class="cg-error-text">hors bornes</span>' : ""}
@@ -247,10 +311,12 @@ const CharGen = {
       })
       .join("");
 
+    const overMax = atMaxCount > level.attrsAtMax;
     return `<div class="cg-step">
-      <p class="cg-hint">Table « ${this._esc(table.label)} » : ${table.attrPoints} points d'attributs (base 1), ${level.attrsAtMax} au maximum du métatype pour le niveau ${level.label}.</p>
+      ${this._stepErrorBox("attrs")}
+      <p class="cg-hint">Table « ${this._esc(table.label)} » : ${table.attrPoints} points d'attributs (base 1). Dé d'Anarchy du ${this._esc(b.meta)} : ${range.anarchy}.</p>
       ${rows}
-      <p class="cg-hint">Points utilisés : ${attrPtsUsed} / ${table.attrPoints}</p>
+      <p class="cg-hint">Points utilisés : ${attrPtsUsed} / ${table.attrPoints} · <span class="${overMax ? "cg-error-text" : ""}">attributs au max : ${atMaxCount} / ${level.attrsAtMax}</span></p>
     </div>`;
   },
 
@@ -262,37 +328,59 @@ const CharGen = {
     const table = c.pointTables[b.gameLevel][b.archetypeTable];
     const usedNames = new Set(b.skills.map((s) => s.name));
     const available = c.skills.filter((s) => !usedNames.has(s.name) && (!s.awakenedOnly || b.awakened));
-    const skillPts = b.skills.reduce((a, s) => a + (s.val || 0) + (s.spec ? 1 : 0), 0);
+    const skillPts = b.skills.reduce((a, s) => a + (s.val || 0) + (s.specs?.length || 0), 0);
+    const atCapCount = b.skills.filter((s) => (s.val || 0) >= level.skillMax).length;
 
     const rows = b.skills
       .map((s, i) => {
         const def = c.skills.find((d) => d.name === s.name);
-        const specOpts =
-          `<option value="">— aucune spécialisation —</option>` +
-          (def?.specs || [])
-            .map((sp) => `<option value="${this._esc(sp)}" ${s.spec === sp ? "selected" : ""}>${this._esc(sp)}</option>`)
-            .join("");
+        const specs = s.specs || [];
         const overCap = (s.val || 0) > level.skillMax;
-        return `<div class="cg-list-row">
+        const attrKey = s.attr || def?.attr || "LOG";
+        const attrVal = b.attrs[attrKey] || 0;
+        const pool = (s.val || 0) + attrVal;
+        const poolChip = `<span class="cg-pool" title="Pool = ${s.val || 0} (${this._esc(s.name)}) + ${attrVal} (${attrKey})">⚄ ${pool}</span>`;
+        // Une puce lançable par spécialisation (indice+2), retirable.
+        const specChips = specs
+          .map(
+            (sp) =>
+              `<span class="cg-spec-chip" title="Spécialisation ${this._esc(sp)} : ${(s.val || 0) + 2} + ${attrVal} (${attrKey})">◊ ${this._esc(sp)} <strong>${(s.val || 0) + 2 + attrVal}</strong><button class="cg-spec-x" data-cg-action="remove-spec" data-idx="${i}" data-spec="${this._esc(sp)}" title="Retirer la spécialisation">✕</button></span>`,
+          )
+          .join("");
+        const remaining = (def?.specs || []).filter((sp) => !specs.includes(sp));
+        const canAddSpec = (s.val || 0) >= 1 && remaining.length > 0;
+        const addSpec = remaining.length
+          ? `<span class="cg-spec-add">
+              <select id="cg-skill-spec-pick-${i}">${remaining.map((sp) => `<option value="${this._esc(sp)}">${this._esc(sp)}</option>`).join("")}</select>
+              <button class="btn-icon-tiny" data-cg-action="add-spec" data-idx="${i}" ${canAddSpec ? "" : "disabled"} title="${canAddSpec ? "Ajouter une spécialisation (2 500 ¥)" : "Indice ≥ 1 requis"}">＋ spé</button>
+            </span>`
+          : "";
+        return `<div class="cg-list-row cg-skill-row">
           <strong>${this._esc(s.name)}</strong>
           <input type="number" min="0" max="${level.skillMax}" data-cg="skills.${i}.val" value="${s.val || 0}" style="width:3.5em">
-          <select data-cg="skills.${i}.spec">${specOpts}</select>
+          ${poolChip}
           ${overCap ? '<span class="cg-error-text">&gt; plafond</span>' : ""}
           <button class="btn-icon-tiny danger" data-cg-action="remove-skill" data-idx="${i}" title="Retirer">✕</button>
+          <div class="cg-spec-line">${specChips}${addSpec}</div>
         </div>`;
       })
       .join("");
 
     const addOpts = available.map((s) => `<option value="${this._esc(s.name)}">${this._esc(s.name)} (${s.attr})</option>`).join("");
+    const capNote =
+      table.skillsAtCap != null
+        ? ` · <span class="${atCapCount > table.skillsAtCap ? "cg-error-text" : ""}">au plafond ${level.skillMax} : ${atCapCount} / ${table.skillsAtCap}</span>`
+        : "";
 
     return `<div class="cg-step">
-      <p class="cg-hint">Table : ${table.skillPoints} points de compétences${table.skillsAtCap ? `, ${table.skillsAtCap} au rang ${level.skillMax} maximum` : ""}. Plafond d'indice : ${level.skillMax}.</p>
+      ${this._stepErrorBox("skills")}
+      <p class="cg-hint">Table : ${table.skillPoints} points de compétences. Plafond d'indice : ${level.skillMax}. ⚄ = pool de dés (indice + attribut). Plusieurs spés possibles par compétence (indice ≥ 1, sans limite de nombre).</p>
       ${rows || '<p class="cg-hint">Aucune compétence choisie.</p>'}
       <div class="cg-add-row">
         <select id="cg-skill-pick">${addOpts || "<option>— toutes prises —</option>"}</select>
         <button class="btn-secondary btn-small" data-cg-action="add-skill" ${available.length ? "" : "disabled"}>＋ Ajouter</button>
       </div>
-      <p class="cg-hint">Points utilisés : ${skillPts} / ${table.skillPoints}</p>
+      <p class="cg-hint">Points utilisés : ${skillPts} / ${table.skillPoints}${capNote}</p>
     </div>`;
   },
 
@@ -311,16 +399,18 @@ const CharGen = {
       )
       .join("");
 
-    const skillsWithSpec = b.skills.filter((s) => s.spec);
-    const specOpts = skillsWithSpec
-      .map((s, i) => `<option value="${b.skills.indexOf(s)}">${this._esc(s.name)} (${this._esc(s.spec)})</option>`)
+    // Une option par paire (compétence, spécialisation) pour cibler le RR.
+    const specPairs = [];
+    b.skills.forEach((s, i) => (s.specs || []).forEach((sp) => specPairs.push({ i, name: s.name, spec: sp })));
+    const specOpts = specPairs
+      .map((p) => `<option value="${p.i}::${this._esc(p.spec)}">${this._esc(p.name)} (${this._esc(p.spec)})</option>`)
       .join("");
     const skillOpts = b.skills.map((s, i) => `<option value="${i}">${this._esc(s.name)}</option>`).join("");
 
     let magicHtml = "";
     if (b.awakened) {
       const kitSpells = table.kit.sorts;
-      const spellChecks = (Content.spells.anarchy2 || [])
+      const spellChecks = c.spellPool()
         .map(
           (sp) =>
             `<label class="cg-check"><input type="checkbox" data-cg-action="toggle-spell" data-name="${this._esc(sp.name)}" ${b.spells.includes(sp.name) ? "checked" : ""}> ${this._esc(sp.name)}</label>`,
@@ -331,7 +421,7 @@ const CharGen = {
            <button class="btn-icon-tiny danger" data-cg-action="clear-mentor" title="Retirer">✕</button>`
         : `<button class="btn-secondary btn-small" data-cg-action="draw-mentor">✦ Tirer un esprit mentor</button>`;
       magicHtml = `<div class="cg-step-section">
-        <div class="cg-section-label">Sorts (${b.spells.length}${kitSpells ? ` / ${kitSpells} au kit` : ""}, 5 000 ¥/sort hors kit)</div>
+        <div class="cg-section-label">Sorts <span class="cg-section-note">${this._kitMeter(b.spells.length, kitSpells, "au kit")} · 5 000 ¥/sort hors kit</span></div>
         <div class="cg-check-grid">${spellChecks}</div>
         <div class="cg-section-label">Esprit mentor</div>
         <div class="cg-add-row">${mentorBlock}</div>
@@ -339,11 +429,12 @@ const CharGen = {
     }
 
     return `<div class="cg-step">
+      ${this._stepErrorBox("edges")}
       <p class="cg-hint">Table : ${table.edgePoints} points d'atouts (5 000 ¥/niveau). Modèles RR pré-câblés (s'appliquent automatiquement) + atout personnalisé en texte libre pour le reste du système (cyberware/bioware/pouvoirs d'adepte…, p.58-63).</p>
       ${edgeRows || '<p class="cg-hint">Aucun atout.</p>'}
       <div class="cg-add-row">
         <select id="cg-edge-spec-pick">${specOpts || "<option value=\"\">— aucune spécialisation —</option>"}</select>
-        <button class="btn-secondary btn-small" data-cg-action="add-edge-rrspec" ${skillsWithSpec.length ? "" : "disabled"}>＋ RR 1 (spé, niv. 2)</button>
+        <button class="btn-secondary btn-small" data-cg-action="add-edge-rrspec" ${specPairs.length ? "" : "disabled"}>＋ RR 1 (spé, niv. 2)</button>
       </div>
       <div class="cg-add-row">
         <select id="cg-edge-skill-pick">${skillOpts || "<option value=\"\">— aucune compétence —</option>"}</select>
@@ -364,14 +455,15 @@ const CharGen = {
     const c = this._creation();
     const b = this._build;
     const table = c.pointTables[b.gameLevel][b.archetypeTable];
-    const weaponNames = Object.keys(EditionAnarchy2.WEAPON_CATALOG);
+    const catalog = c.weaponCatalog();
     const chosenNames = b.weapons.map((w) => w.name);
-    const weaponChecks = weaponNames
-      .map(
-        (n) =>
-          `<label class="cg-check"><input type="checkbox" data-cg-action="toggle-weapon" data-name="${this._esc(n)}" ${chosenNames.includes(n) ? "checked" : ""}> ${this._esc(n)}</label>`,
-      )
-      .join("");
+    const specialistNames = new Set(catalog.filter((w) => w.specialist).map((w) => w.name));
+    const chosenNormal = b.weapons.filter((w) => !specialistNames.has(w.name)).length;
+    const chosenSpe = b.weapons.filter((w) => specialistNames.has(w.name)).length;
+    const weaponCheck = (w) =>
+      `<label class="cg-check"><input type="checkbox" data-cg-action="toggle-weapon" data-name="${this._esc(w.name)}" ${chosenNames.includes(w.name) ? "checked" : ""}> ${this._esc(w.name)}</label>`;
+    const normalChecks = catalog.filter((w) => !w.specialist).map(weaponCheck).join("");
+    const speChecks = catalog.filter((w) => w.specialist).map(weaponCheck).join("");
     const gearRows = (b.gear || [])
       .map(
         (g, i) =>
@@ -380,12 +472,15 @@ const CharGen = {
       .join("");
 
     return `<div class="cg-step">
-      <p class="cg-hint">Kit gratuit (${this._esc(table.label)}) : ${table.kit.armesNormales} arme(s) normale(s), ${table.kit.armesSpe} arme(s) de spécialiste, ${table.kit.equipements} équipement(s) — plus commlink, faux SIN et armure 3 toujours fournis.</p>
-      <div class="cg-section-label">Armes (${b.weapons.length} choisies)</div>
-      <div class="cg-check-grid">${weaponChecks}</div>
-      <div class="cg-section-label">Armure supplémentaire (au-delà des 3 points du kit, 2 500 ¥/point)</div>
+      ${this._stepErrorBox("gear")}
+      <p class="cg-hint">Kit gratuit (${this._esc(table.label)}) : commlink, faux SIN et armure 3 toujours fournis. Au-delà des quotas, chaque élément est payé en nuyens.</p>
+      <div class="cg-section-label">Armes normales <span class="cg-section-note">${this._kitMeter(chosenNormal, table.kit.armesNormales, "au kit")}</span></div>
+      <div class="cg-check-grid">${normalChecks}</div>
+      ${speChecks ? `<div class="cg-section-label">Armes de spécialiste <span class="cg-section-note">${this._kitMeter(chosenSpe, table.kit.armesSpe, "au kit")}</span></div>
+      <div class="cg-check-grid">${speChecks}</div>` : ""}
+      <div class="cg-section-label">Armure supplémentaire <span class="cg-section-note">au-delà des 3 du kit, 2 500 ¥/point</span></div>
       <input type="number" min="0" data-cg="extraArmor" value="${b.extraArmor || 0}" style="width:4em">
-      <div class="cg-section-label">Équipement (${(b.gear || []).length})</div>
+      <div class="cg-section-label">Équipement <span class="cg-section-note">${this._kitMeter((b.gear || []).length, table.kit.equipements, "au kit")}</span></div>
       ${gearRows}
       <div class="cg-add-row">
         <input type="text" id="cg-gear-text" placeholder="Nom de l'équipement…">
@@ -397,10 +492,19 @@ const CharGen = {
   /* ---- Étape : Narratif (p.50-51) ---- */
   _render_narrative() {
     const b = this._build;
+    const roles = ["Métatype", "Origine", "Rôle", "Train de vie", "Libre"];
+    // Suggestion par défaut (une seule fois) : le mot-clé 1 reprend le métatype.
+    if (!b.keywords[0]) {
+      b.keywords[0] = b.meta;
+      this._saveDraft();
+    }
     const kwFields = b.keywords
       .map(
         (v, i) =>
-          `<input type="text" data-cg="keywords.${i}" data-cg-rerender="false" value="${this._esc(v)}" placeholder="Mot-clé ${i + 1}">`,
+          `<label class="cg-narrative-field">
+            <span class="cg-narrative-role">${this._esc(roles[i] || `Mot-clé ${i + 1}`)}</span>
+            <input type="text" data-cg="keywords.${i}" data-cg-rerender="false" value="${this._esc(v)}" placeholder="${this._esc(roles[i] || `Mot-clé ${i + 1}`)}">
+          </label>`,
       )
       .join("");
     const bhFields = b.behaviors
@@ -415,16 +519,17 @@ const CharGen = {
           `<input type="text" data-cg="quotes.${i}" data-cg-rerender="false" value="${this._esc(v)}" placeholder="Réplique ${i + 1}">`,
       )
       .join("");
+    const diceBtn = (field) =>
+      `<button class="btn-secondary btn-small cg-dice-btn" data-cg-action="draw-narrative" data-field="${field}" title="Remplit les champs vides">🎲 Inspiration</button>`;
 
     return `<div class="cg-step">
-      <div class="cg-section-label">5 mots-clés (métatype, origine, rôle, train de vie, libre — p.50-51)</div>
+      <div class="cg-section-label">5 mots-clés (p.50-51) ${diceBtn("keywords")}</div>
       <div class="cg-narrative-grid">${kwFields}</div>
-      <div class="cg-section-label">4 comportements</div>
+      <div class="cg-section-label">4 comportements ${diceBtn("behaviors")}</div>
       <div class="cg-narrative-grid">${bhFields}</div>
-      <div class="cg-section-label">4 répliques</div>
+      <div class="cg-section-label">4 répliques ${diceBtn("quotes")}</div>
       <div class="cg-narrative-grid">${qFields}</div>
-      <div class="cg-section-label">Train de vie</div>
-      <input type="text" data-cg="lifestyle" data-cg-rerender="false" value="${this._esc(b.lifestyle || "")}" placeholder="ex. Bas, Modeste, Confort, Élevé, Luxe">
+      <p class="cg-hint">Le mot-clé « Train de vie » sert aussi de train de vie du personnage.</p>
     </div>`;
   },
 
@@ -459,12 +564,28 @@ const CharGen = {
   _mountReview() {
     const c = this._creation();
     const clean = this._cleanBuild(this._build);
-    const errors = c.validate(clean);
+    const stepErr = c.stepErrors(clean);
     const errBox = document.getElementById("cg-review-errors");
     if (errBox) {
-      errBox.innerHTML = errors.length
-        ? errors.map((e) => `<div class="cg-error">⚠ ${this._esc(e)}</div>`).join("")
-        : '<div class="cg-ok">✓ Personnage valide.</div>';
+      const items = [];
+      this.STEPS.forEach((step, idx) => {
+        (stepErr[step] || []).forEach((e) => {
+          items.push(
+            `<div class="cg-error cg-error-link" data-cg-action="goto" data-idx="${idx}" title="Aller à l'étape ${this._esc(this.STEP_LABELS[step])}">⚠ ${this._esc(e)} <span class="cg-error-goto">→ ${this._esc(this.STEP_LABELS[step])}</span></div>`,
+          );
+        });
+      });
+      // Dépassement de budget global (mode avancé) : sans étape dédiée.
+      const level = c.gameLevels[clean.gameLevel];
+      if (level && clean.advancedMode) {
+        const spent = c.totalCost(clean);
+        if (spent > level.nuyen) {
+          items.push(
+            `<div class="cg-error">⚠ Budget dépassé : ${spent.toLocaleString("fr-FR")} ¥ / ${level.nuyen.toLocaleString("fr-FR")} ¥.</div>`,
+          );
+        }
+      }
+      errBox.innerHTML = items.length ? items.join("") : '<div class="cg-ok">✓ Personnage valide.</div>';
     }
     const holder = document.getElementById("cg-review-card");
     if (holder) {
@@ -517,6 +638,8 @@ const CharGen = {
       val = Utils.clamp(val, range[0], range[1]);
     }
     this._setPath(this._build, path, val);
+    // Le 4e mot-clé (Train de vie) alimente aussi le champ lifestyle du PJ.
+    if (path === "keywords.3") this._build.lifestyle = val;
     this._saveDraft();
     if (el.dataset.cgRerender === "false") this._renderBudget();
     else this._renderAll();
@@ -529,6 +652,7 @@ const CharGen = {
     const c = this._creation();
     const afterMutate = () => {
       this._saveDraft();
+      this._renderSteps();
       this._renderStep();
       this._renderBudget();
     };
@@ -552,12 +676,69 @@ const CharGen = {
       case "save":
         this._save();
         break;
+      case "restart":
+        this._build = this._newBuild(c);
+        this._clearDraft();
+        this._resumed = false;
+        this._step = 0;
+        this._renderAll();
+        break;
+      case "dismiss-resume":
+        this._resumed = false;
+        this._renderStep();
+        break;
+      case "apply-preset": {
+        const preset = (c.presets || []).find((p) => p.id === el.dataset.id);
+        if (!preset) break;
+        // Repart d'un brouillon neuf (garde le niveau de jeu choisi) + patch.
+        const level = b.gameLevel;
+        const fresh = this._newBuild(c);
+        fresh.gameLevel = level;
+        this._build = { ...fresh, ...preset.patch };
+        // Normalise l'attribut + les spés (specs[]) de chaque compétence.
+        this._build.skills = this._normalizeSkillSpecs(
+          (this._build.skills || []).map((s) => {
+            const def = c.skills.find((d) => d.name === s.name);
+            return { ...s, attr: s.attr || def?.attr };
+          }),
+        );
+        this._resumed = false;
+        this._saveDraft();
+        this._step = this.STEPS.indexOf("attrs");
+        this._renderAll();
+        toast(`Preset « ${preset.label} » appliqué.`);
+        break;
+      }
+      case "draw-narrative": {
+        const field = el.dataset.field;
+        const sug = c.drawNarrative(b);
+        const arr = b[field];
+        (sug[field] || []).forEach((val, i) => {
+          if (i < arr.length && !(arr[i] && arr[i].trim())) {
+            arr[i] = val;
+            if (field === "keywords" && i === 3) b.lifestyle = val;
+          }
+        });
+        afterMutate();
+        break;
+      }
+
+      case "attr-inc":
+      case "attr-dec": {
+        const key = el.dataset.key;
+        const range = c.metatypes[b.meta][key];
+        const delta = action === "attr-inc" ? 1 : -1;
+        b.attrs[key] = Utils.clamp((b.attrs[key] || 1) + delta, range[0], range[1]);
+        this._saveDraft();
+        this._renderAll();
+        break;
+      }
 
       case "add-skill": {
         const sel = document.getElementById("cg-skill-pick");
         const def = c.skills.find((d) => d.name === sel?.value);
         if (def) {
-          b.skills.push({ name: def.name, val: 1, attr: def.attr });
+          b.skills.push({ name: def.name, val: 1, attr: def.attr, specs: [] });
           afterMutate();
         }
         break;
@@ -567,12 +748,34 @@ const CharGen = {
         afterMutate();
         break;
 
+      case "add-spec": {
+        const i = Number(el.dataset.idx);
+        const s = b.skills[i];
+        const sel = document.getElementById(`cg-skill-spec-pick-${i}`);
+        const sp = sel?.value;
+        if (s && sp && (s.val || 0) >= 1) {
+          s.specs = s.specs || [];
+          if (!s.specs.includes(sp)) s.specs.push(sp);
+          afterMutate();
+        }
+        break;
+      }
+      case "remove-spec": {
+        const s = b.skills[Number(el.dataset.idx)];
+        if (s && s.specs) {
+          s.specs = s.specs.filter((sp) => sp !== el.dataset.spec);
+          afterMutate();
+        }
+        break;
+      }
+
       case "add-edge-rrspec": {
         const sel = document.getElementById("cg-edge-spec-pick");
-        const s = b.skills[Number(sel?.value)];
+        const [idxStr, spec] = (sel?.value || "").split("::");
+        const s = b.skills[Number(idxStr)];
         const tpl = c.edgeTemplates.find((t) => t.id === "rr-spec");
-        if (s && s.spec && tpl) {
-          b.edges.push({ level: tpl.level, text: tpl.text(s.name, s.spec) });
+        if (s && spec && tpl) {
+          b.edges.push({ level: tpl.level, text: tpl.text(s.name, spec) });
           afterMutate();
         }
         break;
@@ -608,8 +811,7 @@ const CharGen = {
         break;
       }
       case "draw-mentor": {
-        const kindMap = { hermétique: "hermetic", chamanique: "shamanic", adepte: "adept" };
-        const mentor = Magic.pickMentor("anarchy2", null, kindMap[b.awakened]);
+        const mentor = c.drawMentor(b.awakened);
         if (mentor) b.mentorSpirit = mentor;
         else toast("Aucun esprit mentor cette fois — retentez.");
         afterMutate();
@@ -671,6 +873,22 @@ const CharGen = {
       const el = e.target.closest("[data-cg-action]");
       if (!el || !overlay()?.contains(el)) return;
       this._handleAction(el);
+    });
+    // Entrée dans un champ « ＋ Ajouter » déclenche l'ajout correspondant.
+    const ENTER_ADD = {
+      "cg-gear-text": "add-gear",
+      "cg-edge-custom-label": "add-edge-custom",
+      "cg-edge-custom-level": "add-edge-custom",
+    };
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" || e.target.tagName !== "INPUT") return;
+      const ov = overlay();
+      if (!ov?.contains(e.target)) return;
+      const action = ENTER_ADD[e.target.id];
+      if (!action) return;
+      e.preventDefault();
+      const btn = ov.querySelector(`[data-cg-action="${action}"]`);
+      if (btn) this._handleAction(btn);
     });
   },
 };

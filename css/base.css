@@ -3984,6 +3984,60 @@ kbd {
   color: var(--accent);
 }
 
+/* ---- Vignette de portrait IA : agrandissement au clic ---- */
+.pnj-portrait-thumb,
+.contact-portrait-thumb {
+  cursor: pointer;
+}
+.portrait-preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--sp-5);
+  animation: modalFade 0.15s ease;
+}
+.portrait-preview-overlay.visible {
+  display: flex;
+}
+.portrait-preview-box {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  animation: modalPop 0.18s ease;
+}
+.portrait-preview-img {
+  display: block;
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  box-shadow:
+    0 0 40px var(--glow),
+    0 8px 32px rgba(0, 0, 0, 0.5);
+}
+.portrait-preview-close {
+  position: absolute;
+  top: -0.6rem;
+  right: -0.6rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  font-size: 1.4rem;
+  line-height: 1;
+  padding: 0;
+  transition: color var(--dur-base);
+}
+.portrait-preview-close:hover {
+  color: var(--accent);
+}
+
 /* ---- Compétences : tags compacts unifiés sur les 3 éditions ---- */
 .skill-tag {
   background: var(--bg-mid, var(--bg));
@@ -5657,6 +5711,172 @@ input[type="range"]#risk-dice-slider {
 .cg-review-card {
   display: flex;
   justify-content: center;
+}
+
+/* --- Passe design & QoL --- */
+.cg-step-tab.has-error {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.cg-tab-dot {
+  color: var(--danger);
+  font-size: 0.6rem;
+}
+.cg-step-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: var(--sp-2);
+  border: 1px solid var(--danger);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+}
+.cg-budget-cats {
+  margin-top: 6px;
+}
+.cg-section-note {
+  font-family: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-dim);
+  font-size: 0.7rem;
+}
+.cg-kit-meter {
+  color: var(--text-dim);
+}
+.cg-kit-meter.over {
+  color: var(--warning);
+}
+.cg-kit-paid {
+  color: var(--warning);
+  font-weight: 600;
+}
+.cg-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.cg-stepper input {
+  width: 3.2em;
+  text-align: center;
+}
+.cg-step-btn {
+  width: 1.8em;
+  height: 1.8em;
+  line-height: 1;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.cg-step-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.cg-step-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.cg-pool {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.72rem;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.cg-pool-spec {
+  color: var(--accent2);
+}
+.cg-skill-row {
+  flex-wrap: wrap;
+}
+.cg-spec-line {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 2px 1.5em;
+}
+.cg-spec-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 4px 1px 6px;
+  font-size: 0.72rem;
+  border: 1px solid var(--accent2);
+  border-radius: 2px;
+  color: var(--accent2);
+  white-space: nowrap;
+}
+.cg-spec-chip strong {
+  color: var(--text);
+}
+.cg-spec-x {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0 1px;
+}
+.cg-spec-x:hover {
+  color: var(--danger);
+}
+.cg-spec-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.cg-resume-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  margin-bottom: var(--sp-3);
+  border: 1px solid var(--accent2);
+  border-radius: 2px;
+  background: var(--glow);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.cg-resume-banner span {
+  flex: 1;
+}
+.cg-narrative-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cg-narrative-role {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.cg-dice-btn {
+  margin-left: 8px;
+}
+.cg-preset-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cg-preset-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cg-error-link {
+  cursor: pointer;
+}
+.cg-error-link:hover {
+  text-decoration: underline;
+}
+.cg-error-goto {
+  color: var(--accent2);
+  font-size: 0.7rem;
 }
 
 /* Bouton de repli Référence */
