@@ -171,6 +171,42 @@ const SkillCatalog = {
     "Survie": "VOL",
   },
 
+  /* ---- Anarchy 1re édition : ~25 compétences (base p.60-61) ----
+     Spécialisation = +2 dés (comme SR5, pas de RR) — pas de liste de
+     spécialités fermée comme anarchySpecs (V2) : texte libre en V1. */
+  anarchy1: {
+    // Force
+    "Athlétisme": "FOR",
+    // Agilité
+    "Acrobaties": "AGI",
+    "Armes à feu": "AGI",
+    "Armes à projectiles": "AGI",
+    "Armes de véhicules": "AGI",
+    "Armes lourdes": "AGI",
+    "Corps à corps": "AGI",
+    "Furtivité": "AGI",
+    "Véhicules divers": "AGI",
+    "Véhicules terrestres": "AGI",
+    // Volonté (Éveillés pour Combat astral/Conjuration/Sorcellerie)
+    "Combat astral": "VOL",
+    "Conjuration": "VOL",
+    "Sorcellerie": "VOL",
+    "Survie": "VOL",
+    // Logique (Technomancie réservée aux Émergés)
+    "Biotech": "LOG",
+    "Électronique": "LOG",
+    "Hacking": "LOG",
+    "Ingénierie": "LOG",
+    "Pistage": "LOG",
+    "Technomancie": "LOG",
+    // Charisme
+    "Animaux": "CHA",
+    "Comédie": "CHA",
+    "Étiquette": "CHA",
+    "Intimidation": "CHA",
+    "Négociation": "CHA",
+  },
+
   /* ---- Spécialités Anarchy 2.0 (liste des règles de base) ---- */
   anarchySpecs: [
     "Arme principale",

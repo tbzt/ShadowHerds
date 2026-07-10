@@ -224,8 +224,9 @@ const Portrait = {
   /** Précharge l'URL via une balise <img> — Pollinations bloque les
       requêtes fetch() « nues » derrière une vérification anti-bot
       (Cloudflare Turnstile) que la balise <img> ne déclenche pas ; on
-      valide donc par chargement réel plutôt que par fetch(). */
-  _validate(url) {
+      valide donc par chargement réel plutôt que par fetch(). Retourne
+      l'URL telle quelle : c'est elle qui sera stockée et réaffichée. */
+  _loadViaImg(url) {
     return new Promise((resolve, reject) => {
       const img = new Image();
       const timer = setTimeout(() => {
@@ -234,7 +235,7 @@ const Portrait = {
       }, 20000);
       img.onload = () => {
         clearTimeout(timer);
-        resolve();
+        resolve(url);
       };
       img.onerror = () => {
         clearTimeout(timer);
@@ -242,6 +243,36 @@ const Portrait = {
       };
       img.src = url;
     });
+  },
+
+  /** Avec un token personnel (Réglages), on passe par fetch() + header
+      Authorization — <img> ne peut pas porter de header. La réponse est
+      convertie en data URL (pas un blob: URL, qui ne survivrait pas à un
+      rechargement de page) pour rester stockable comme les URLs directes. */
+  async _loadViaToken(url, token) {
+    let resp;
+    try {
+      resp = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    } catch {
+      throw new Error("Génération impossible — vérifiez la connexion.");
+    }
+    if (!resp.ok) {
+      throw new Error(`Pollinations a répondu ${resp.status} (token invalide ?).`);
+    }
+    const blob = await resp.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Réponse illisible."));
+      reader.readAsDataURL(blob);
+    });
+  },
+
+  /** Résout l'URL finale à stocker pour un portrait — chemin token ou
+      chemin anonyme selon Settings.getPortraitSettings().token. */
+  _resolve(url) {
+    const token = Settings.getPortraitSettings().token;
+    return token ? this._loadViaToken(url, token) : this._loadViaImg(url);
   },
 
   _startLoading(btn, label = "Génération…") {
@@ -287,8 +318,8 @@ const Portrait = {
   async _runJob(job, attempt = 1) {
     this._startLoading(job.btn, attempt > 1 ? `Nouvel essai (${attempt}/${this._MAX_ATTEMPTS})…` : "Génération…");
     try {
-      await this._validate(job.url);
-      job.onSuccess();
+      const resolvedUrl = await this._resolve(job.url);
+      job.onSuccess(resolvedUrl);
     } catch (e) {
       if (attempt < this._MAX_ATTEMPTS) {
         await new Promise((r) => setTimeout(r, this._RETRY_DELAY_MS * attempt));
@@ -310,8 +341,8 @@ const Portrait = {
       btn,
       url,
       label: pnj.name || "PNJ",
-      onSuccess: () => {
-        pnj.portraitUrl = url;
+      onSuccess: (resolvedUrl) => {
+        pnj.portraitUrl = resolvedUrl;
         Shadows.save();
         CardRenderer.refresh(pnj);
       },
@@ -327,8 +358,8 @@ const Portrait = {
       btn,
       url,
       label: c.name || "Contact",
-      onSuccess: () => {
-        ContactsBook.editField(id, "portraitUrl", url);
+      onSuccess: (resolvedUrl) => {
+        ContactsBook.editField(id, "portraitUrl", resolvedUrl);
         ContactsBook.render();
       },
     });

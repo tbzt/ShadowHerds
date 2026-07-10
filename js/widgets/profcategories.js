@@ -218,7 +218,6 @@ const ProfCategories = {
   ],
 
   /* ---- Anarchy ---- */
-  get anarchy1() { return this.anarchy2; }, // placeholder V1 → V2 (Phase 3)
   anarchy2: [
     {
       cat: "Gangs",
@@ -280,6 +279,45 @@ const ProfCategories = {
     {
       cat: "Professionnels spécialisés",
       items: ["Ombre"],
+    },
+  ],
+
+  /* ---- Anarchy 1re édition (statblocks §GANGERS…JOHNSONS) ---- */
+  anarchy1: [
+    {
+      cat: "Gangs",
+      items: [
+        "Ganger typique",
+        "Ganger troll",
+        "Go-ganger",
+        "Ganger éveillé",
+        "Ganger decker",
+        "Ganger rigger",
+      ],
+    },
+    {
+      cat: "Sécurité corpo",
+      items: [
+        "Employé corporatiste",
+        "Cadre corporatiste",
+        "Agent de sécurité / Flic des rues",
+        "Officier de sécurité ou police",
+        "Mage de sécurité ou police",
+        "Hacker de sécurité ou police",
+        "Rigger de sécurité ou police",
+        "Officier de sécurité ou police — Forces d'élite",
+        "Mage de sécurité ou police — Forces d'élite",
+        "Hacker de sécurité ou police — Forces d'élite",
+        "Rigger de sécurité ou police — Forces d'élite",
+      ],
+    },
+    {
+      cat: "Militaire & mercenaire",
+      items: ["Soldat", "Soldat — Forces d'élite"],
+    },
+    {
+      cat: "Corpo & contacts",
+      items: ["M. Johnson (corporatiste)", "M. Johnson (à son compte)"],
     },
   ],
 

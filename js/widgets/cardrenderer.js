@@ -129,7 +129,7 @@ const CardRenderer = {
       switch (pnj.edition) {
         case "sr5": core = this._bodySR5(pnj, deps); break;
         case "sr6": core = this._bodySR6(pnj, deps); break;
-        case "anarchy1":
+        case "anarchy1": core = this._bodyAnarchy1(pnj, deps); break;
         case "anarchy2": core = this._bodyAnarchy(pnj, deps); break;
         default: return '<div class="pnj-card-body">—</div>';
       }
@@ -144,6 +144,8 @@ const CardRenderer = {
         core = this._bodySR6(pnj, deps);
         break;
       case "anarchy1":
+        core = this._bodyAnarchy1(pnj, deps);
+        break;
       case "anarchy2":
         core = this._bodyAnarchy(pnj, deps);
         break;
@@ -633,6 +635,14 @@ const CardRenderer = {
     btns.push(
       `<button class="card-action-btn ghost" data-action="add-to-encounter" data-id="${pnj.id}" title="Ajouter au suivi de combat">⚔ Combat</button>`,
     );
+    // Export Foundry VTT : affiché uniquement si l'édition active en expose
+    // la capacité (SR5). Lecture neutre du module d'édition, jamais de
+    // branche `App.edition === …` (prohibition #1).
+    if (App.getEditionModule(pnj.edition)?.foundryExport) {
+      btns.push(
+        `<button class="card-action-btn ghost" data-action="export-foundry" data-id="${pnj.id}" title="Exporter vers Foundry VTT (système SR5)">⬗ Foundry</button>`,
+      );
+    }
     return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>${btns.join("")}</div>`;
   },
 
@@ -689,6 +699,9 @@ const CardRenderer = {
           break;
         case "add-to-encounter":
           Encounter.add(id);
+          break;
+        case "export-foundry":
+          FoundryExport.exportPnj(id);
           break;
       }
     });

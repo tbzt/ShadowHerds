@@ -88,10 +88,12 @@ const Settings = {
   },
 
   /* ---- Portraits IA (GLOBAL, hors édition) — opt-in, désactivé par
-     défaut. Aucune clé Pollinations : endpoint anonyme uniquement (le
-     repo est public, on n'expose aucun secret). ---- */
+     défaut. Aucune clé Pollinations committée : endpoint anonyme par
+     défaut (le repo est public, on n'expose aucun secret) ; un token
+     personnel Pollinations (auth.pollinations.ai) est optionnel, saisi
+     et stocké localement par chacun pour lever la limite anonyme. */
   _PORTRAIT_KEY: "portraitGen",
-  _portraitDefaults: { enabled: false },
+  _portraitDefaults: { enabled: false, token: "" },
   getPortraitSettings() {
     return { ...this._portraitDefaults, ...Storage.getGlobal(this._PORTRAIT_KEY, {}) };
   },
@@ -99,6 +101,10 @@ const Settings = {
     Storage.setGlobal(this._PORTRAIT_KEY, { ...this.getPortraitSettings(), enabled: !!on });
     this._refreshVisibleCards();
     toast(on ? "Portraits IA activés." : "Portraits IA désactivés.");
+  },
+  setPortraitToken(token) {
+    Storage.setGlobal(this._PORTRAIT_KEY, { ...this.getPortraitSettings(), token: token.trim() });
+    toast(token.trim() ? "Token Pollinations enregistré." : "Token Pollinations retiré.");
   },
 
   /* ---- Rendu du panel paramètres ---- */
@@ -160,6 +166,19 @@ const Settings = {
             <input type="checkbox" id="pg_enabled" ${pg.enabled ? "checked" : ""}
               data-action="toggle-portrait-gen">
           </div>
+        </div>
+        <div class="form-group" style="margin-top:0.8rem;">
+          <label for="pg_token">Token personnel Pollinations (optionnel)</label>
+          <input type="password" id="pg_token" value="${CardRenderer._esc(pg.token)}"
+            placeholder="Laisser vide pour rester en anonyme"
+            data-action="set-portrait-token">
+          <p style="font-size:0.72rem;margin-top:0.3rem;">
+            Lève la limite d'1 requête à la fois de l'API anonyme. À obtenir sur
+            <a href="https://auth.pollinations.ai" target="_blank" style="color:var(--accent)">auth.pollinations.ai</a>.
+            Stocké uniquement dans ce navigateur, jamais envoyé ailleurs qu'à Pollinations —
+            mais reste visible dans les outils de développement du navigateur : à réserver
+            à un usage personnel, ne le partagez pas dans une copie publique de cet outil.
+          </p>
         </div>
       </div>`;
     }
@@ -262,6 +281,8 @@ const Settings = {
         this.setDiceDefaultCount(el.value);
       else if (el.dataset.action === "toggle-portrait-gen")
         this.setPortraitEnabled(el.checked);
+      else if (el.dataset.action === "set-portrait-token")
+        this.setPortraitToken(el.value);
     });
     zone.addEventListener("click", (e) => {
       const el = e.target.closest("[data-action]");

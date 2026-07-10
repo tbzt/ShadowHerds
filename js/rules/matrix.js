@@ -237,6 +237,59 @@ const Matrix = {
         effect: (s) => `${s.indice} + succès nets en dommages matriciels.`,
       },
     },
+
+    // Anarchy 1re édition (findings §6/§6b, sran_01 p.162-164+199) — GLACE
+    // À DÉS (pas de succès fixes) : statblock commun FW 6 · LOG 5 ·
+    // Défense 11 · Hacking 8 · Pistage 8 · Moniteur (M) 11. Cybercombat :
+    // Hacking+LOG vs LOG+Firewall (GLACE), dégâts (LOG/2)E. Les effets
+    // ci-dessous sont cumulables (chaque GLACE ajoute son effet propre).
+    anarchy1: {
+      patrouilleuse: {
+        label: "Patrouilleuse",
+        watch: true,
+        effect: () => "Ajoute +1 dé à tous les tests du serveur (toujours active).",
+      },
+      potdecolle: {
+        label: "Pot de colle",
+        def: "Cybercombat GLACE : LOG + Firewall",
+        effect: () => "Le hacker doit réussir un test de Hacking vs le serveur pour se déconnecter.",
+      },
+      traqueuse: {
+        label: "Traqueuse",
+        def: "Cybercombat GLACE : LOG + Firewall",
+        effect: () => "Localise physiquement chaque hacker qui obtient une complication.",
+      },
+      acide: {
+        label: "Acide",
+        def: "Cybercombat GLACE : LOG + Firewall",
+        effect: () => "Réduit le Firewall des hackers de 1, cumulatif (jusqu'au reboot).",
+      },
+      bloqueuse: {
+        label: "Bloqueuse",
+        def: "Cybercombat GLACE : LOG + Firewall",
+        effect: () => "Chaque échec de Hacking (hors cybercombat) inflige −1 dé cumulatif aux futurs tests de Hacking du hacker.",
+      },
+      brouilleuse: {
+        label: "Brouilleuse",
+        def: "Cybercombat GLACE : LOG + Firewall",
+        effect: () => "Un échec de Hacking avec ≥2 succès excédentaires du serveur force un reboot du hacker en fin de tour.",
+      },
+      crash: {
+        label: "Crash",
+        def: "Cybercombat GLACE : LOG + Firewall",
+        effect: () => "Fait planter un programme du hacker (au choix du MJ), indisponible jusqu'au reboot.",
+      },
+      noire: {
+        label: "Noire",
+        def: "Cybercombat GLACE : LOG + Firewall",
+        effect: () => "Chaque succès excédentaire du serveur inflige 1 case de dégâts physiques au hacker.",
+      },
+      tueuse: {
+        label: "Tueuse",
+        def: "Cybercombat GLACE : LOG + Firewall",
+        effect: () => "Chaque succès excédentaire du serveur inflige 1 case de dégâts d'étourdissement au hacker.",
+      },
+    },
   },
 
   /* ---- Profils d'indice (tables officielles) ----
@@ -263,6 +316,15 @@ const Matrix = {
     get sr6() {
       return this.sr5;
     },
+    // Anarchy 1re édition (findings §6b) — le « indice » est directement le
+    // pool de défense en dés (pas une échelle 1-12 comme SR5/SR6).
+    anarchy1: [
+      { id: "artisanal", label: "Artisanal (bricolé, très bas de gamme ou daté)", indice: 4, sev: 0 },
+      { id: "faible", label: "Faible (Stuffer Shack, public)", indice: 6, sev: 0 },
+      { id: "moyen", label: "Moyen (corporation classique)", indice: 8, sev: 1 },
+      { id: "hautaaa", label: "Haut (corporation AAA)", indice: 10, sev: 1 },
+      { id: "hautmilitaire", label: "Haut (R&D / militaire)", indice: 12, sev: 2 },
+    ],
   },
 
   /* ---- Curation des CI par gamme (sélection aléatoire) ---- */
@@ -270,6 +332,12 @@ const Matrix = {
     anarchy2: [
       ["tueuse", "potdecolle"],
       ["traqueuse", "blaster", "acide", "bloqueuse"],
+      ["noire"],
+    ],
+    // Anarchy 1re édition (findings §6b, 9 GLACE)
+    anarchy1: [
+      ["tueuse", "potdecolle", "crash"],
+      ["traqueuse", "acide", "bloqueuse", "brouilleuse"],
       ["noire"],
     ],
     sr5: [
@@ -444,6 +512,20 @@ const Matrix = {
       l'Anarchy a son propre bloc de seuils, hors de cette méthode). */
   icThresholdsText(srv) {
     return this._model().icThresholdsText(srv);
+  },
+
+  /** Badges de stats serveur pour le régime hasAttrs:false (Anarchy 2.0 :
+      Indice/Firewall ; Anarchy 1re : pool de défense) — propre à chaque
+      édition, jamais codé en dur dans serverrenderer.js. */
+  serverAttrs(srv) {
+    return this._model().serverAttrs(srv);
+  },
+
+  /** Texte des seuils pour le régime hasAttrs:false (Anarchy 2.0 : seuils
+      d'élévation de Piratage ; Anarchy 1re : Hacking vs pool de défense +
+      cybercombat GLACE). */
+  thresholdsText(srv) {
+    return this._model().thresholdsText(srv);
   },
 
   /** Libellé de Firewall affiché à côté du moniteur (Anarchy : Firewall fixe 1). */

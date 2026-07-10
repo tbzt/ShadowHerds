@@ -1681,6 +1681,7 @@ const EditionSR5 = {
     const judgeIntentions = attrs.INT + attrs.CHA; // jauger les intentions
     const memory = attrs.LOG + attrs.VOL; // mémoire
     const liftCarry = attrs.FOR + attrs.CON; // soulever/porter
+    const surprise = attrs.REA + attrs.INT; // surprise
 
     // Moniteurs
     const physMon = 8 + Math.ceil(attrs.CON / 2);
@@ -1766,6 +1767,7 @@ const EditionSR5 = {
       judgeIntentions,
       memory,
       liftCarry,
+      surprise,
       physMon,
       stunMon,
       physFilled: 0,
@@ -1887,6 +1889,7 @@ const EditionSR5 = {
     pnj.judgeIntentions = attrs.INT + attrs.CHA;
     pnj.memory = attrs.LOG + attrs.VOL;
     pnj.liftCarry = attrs.FOR + attrs.CON;
+    pnj.surprise = attrs.REA + attrs.INT;
     return pnj;
   },
 };

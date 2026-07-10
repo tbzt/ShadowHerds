@@ -162,6 +162,17 @@ const EditionAnarchy2 = {
     icThresholdsText() {
       return null;
     },
+    /** Badges de la carte serveur (p.222) : Indice et Firewall (fixe = indice). */
+    serverAttrs(srv) {
+      return [
+        { label: "Indice", value: srv.indice },
+        { label: "Firewall", value: srv.indice },
+      ];
+    },
+    /** Seuils d'élévation de Piratage (p.223). */
+    thresholdsText(srv) {
+      return `Seuils de Piratage : sans élévation <b>${srv.indice}</b> · élever à Utilisateur <b>${srv.indice + 1}</b> · à Administrateur <b>${srv.indice + 2}</b> · décryptage <b>${srv.indice}</b>`;
+    },
     actionRoll() {
       return null;
     },

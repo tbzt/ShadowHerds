@@ -247,7 +247,11 @@ const Magic = {
 
     // Anarchy : pas de mécanique de tradition à attribut de Drain dans le
     // livre de base (seul le type d'esprit invocable change, narratif).
-    get anarchy1() { return this.anarchy2; }, // placeholder V1 → V2 (Phase 3)
+    // V1 : idem — 4 traditions supplémentaires listées en Anarchistes
+    // (Hindouisme, Animisme, Magie du chaos, Traditions du peuple) sont
+    // purement narratives (findings §13), pas de mécanique de Drain propre
+    // à motoriser ici.
+    anarchy1: [],
     anarchy2: [],
   },
 
@@ -453,7 +457,41 @@ const Magic = {
     // une liste (on en tire `pick`), plus un Comportement imposé. Résolu par
     // Magic._resolveRrMentor() qui fixe les relances tirées (`chosen`) et
     // construit la description. Les relances sont appliquées par BonusEngine.
-    get anarchy1() { return this.anarchy2; }, // placeholder V1 → V2 (Phase 3)
+    // ----- Anarchy 1re édition (findings §12/§13) : 6 esprits mentors
+    // cités (Aigle, Chat, Chien, Corbeau, Loup, Ours), mécanique simple
+    // (comme SR5 : bonus « Tous » chiffrable ou null, pas de RR à choix).
+    anarchy1: [
+      {
+        name: "Aigle",
+        bonus: null,
+        desc: "Défenseur des cieux, messager. Tous : vision perçante (avantage narratif en Perception). Magicien : +1 dé Conjuration (esprits de l'Air).",
+      },
+      {
+        name: "Chat",
+        bonus: { skill: "Furtivité", val: 2 },
+        desc: "Gardienne des secrets. Tous : +2 Furtivité. Magicien : +1 dé Sorcellerie (sorts d'illusion/manipulation).",
+      },
+      {
+        name: "Chien",
+        bonus: { skill: "Pistage", val: 2 },
+        desc: "Loyauté et protection. Tous : +2 Pistage. Magicien : +1 dé Conjuration (esprits protecteurs).",
+      },
+      {
+        name: "Corbeau",
+        bonus: { skill: "Comédie", val: 2 },
+        desc: "Messager malicieux. Tous : +2 Comédie. Magicien : +1 dé Sorcellerie (sorts de manipulation).",
+      },
+      {
+        name: "Loup",
+        bonus: { skill: "Corps à corps", val: 2 },
+        desc: "Chasseur fidèle à la meute. Tous : +2 Corps à corps. Magicien : +1 dé Sorcellerie (sorts de combat).",
+      },
+      {
+        name: "Ours",
+        bonus: null,
+        desc: "Guérisseur féroce. Tous : résistance accrue aux dommages (avantage narratif). Magicien : +1 dé Sorcellerie (sorts de soins).",
+      },
+    ],
     anarchy2: [
       {
         name: "Chat",

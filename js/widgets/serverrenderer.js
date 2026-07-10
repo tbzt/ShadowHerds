@@ -72,16 +72,20 @@ const ServerRenderer = {
 
     /* -- header + stats -- */
     // Dispatch structurel accepté (issue #14) : deux blocs complets
-    // (Indice/Firewall+seuils Anarchy vs Matrix.ATTR_KEYS+icThresholdsText
-    // SR5/SR6), pas une valeur scalaire — cf. Matrix.hasAttrs().
+    // (badges+seuils propres au régime vs Matrix.ATTR_KEYS+icThresholdsText
+    // SR5/SR6), pas une valeur scalaire — cf. Matrix.hasAttrs(). Le régime
+    // hasAttrs:false n'est plus mono-édition (anarchy1 ≠ anarchy2, textes
+    // de seuils différents) : badges/texte lus via matrixModel.serverAttrs/
+    // thresholdsText, jamais codés en dur ici.
     let statsHtml;
     if (!Matrix.use(srv.edition).hasAttrs()) {
+      const M = Matrix.use(srv.edition);
+      const badges = M.serverAttrs(srv)
+        .map((a) => `<span class="server-attr"><b>${a.value}</b>${esc(a.label)}</span>`)
+        .join("");
       statsHtml = `
-        <div class="server-attrs">
-          <span class="server-attr"><b>${srv.indice}</b>Indice</span>
-          <span class="server-attr"><b>${srv.indice}</b>Firewall</span>
-        </div>
-        <div class="server-thresholds">Seuils de Piratage : sans élévation <b>${srv.indice}</b> · élever à Utilisateur <b>${srv.indice + 1}</b> · à Administrateur <b>${srv.indice + 2}</b> · décryptage <b>${srv.indice}</b></div>`;
+        <div class="server-attrs">${badges}</div>
+        <div class="server-thresholds">${M.thresholdsText(srv)}</div>`;
     } else {
       const a = srv.attrs || {};
       statsHtml = `

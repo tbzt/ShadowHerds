@@ -73,10 +73,11 @@ const Vehicles = {
     ],
   },
 
-  /* VD standard des armes embarquées, par édition. */
+  /* VD standard des armes embarquées, par édition. V1 (findings §11,
+     statblocks §Rigger/Soldat) : pas de PA, VD imprimée directement. */
   MOUNTED_WEAPONS: {
-    "fusil d'assaut": { sr5: "10P, PA -2", sr6: "VD 5P", anarchy2: "VD 7", get anarchy1() { return this.anarchy2; } },
-    "mitrailleuse":   { sr5: "9P, PA -2",  sr6: "VD 5P", anarchy2: "VD 9", get anarchy1() { return this.anarchy2; } },
+    "fusil d'assaut": { sr5: "10P, PA -2", sr6: "VD 5P", anarchy2: "VD 7", anarchy1: "VD 8P" },
+    "mitrailleuse":   { sr5: "9P, PA -2",  sr6: "VD 5P", anarchy2: "VD 9", anarchy1: "VD 8P" },
   },
 
   /* ---- Détection : un item d'équipement (ou atout Anarchy)

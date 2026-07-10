@@ -42,7 +42,16 @@ const WeaponRoll = {
       [/katana|épée|sabre|hache|couteau|lame|griffe|tranchant|crocs?|morsure|queue/i, "Combat rapproché"],
       [/matraque|massue|barre|bâton|télescopique|électro|gants?|poing|contondant/i, "Combat rapproché"],
     ],
-    get anarchy1() { return this.anarchy2; }, // placeholder V1 → V2 (Phase 3)
+    // Catalogue d'armes V1 (findings §11) : mitrailleuses/canons →
+    // Armes lourdes ; arcs/arbalètes/grenades/armes de jet → Armes à
+    // projectiles ; armes à feu classiques → Armes à feu ; le reste
+    // (courtes, matraques, longues) → Corps à corps.
+    anarchy1: [
+      [/mitrailleuse|canon|lance-roquet|lance-missile|lanceur/i, "Armes lourdes"],
+      [/grenade|arc|arbalète|shuriken|chakram|javelot|de jet|lancé/i, "Armes à projectiles"],
+      [/taser|tranquillisant|pistolet|mitraillette|smg|fusil|shotgun|revolver|predator|ares|colt|ruger|browning|fichetti|beretta/i, "Armes à feu"],
+      [/couteau|lame|katana|épée|sabre|hache|tronçonneuse|vibrolame|matraque|massue|barre|bâton|kali|griffe|poing|mains? nues/i, "Corps à corps"],
+    ],
     anarchy2: [
       [/pistolet|fusil|arme à distance|smg|mitrail|sniper|revolver|taser/i, "Armes à distance"],
       [/katana|épée|sabre|hache|couteau|lame|griffe|matraque|bâton|mains? nues|poing|contondant|tranchant|rapproché/i, "Combat rapproché"],
@@ -53,7 +62,7 @@ const WeaponRoll = {
   FALLBACK_SKILL: {
     sr5: "Armes à feu",
     sr6: "Armes à feu",
-    get anarchy1() { return this.anarchy2; }, // placeholder V1 → V2 (Phase 3)
+    anarchy1: "Armes à feu",
     anarchy2: "Armes à distance",
   },
 
@@ -92,6 +101,7 @@ const WeaponRoll = {
       "armes à feu",
       "armes automatiques",
       "armes à distance",
+      "armes à projectiles",
       "pistolets",
       "fusils",
       "armes lourdes",
@@ -100,6 +110,7 @@ const WeaponRoll = {
     ];
     const melee = [
       "combat rapproché",
+      "corps à corps",
       "armes tranchantes",
       "armes contondantes",
       "combat à mains nues",

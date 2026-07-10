@@ -201,6 +201,144 @@ const Spirits = {
 
   ANARCHY_TIERS: ["Inférieur", "Normal", "Supérieur"],
 
+  /* ---- Anarchy 1re édition (statblocks §ESPRITS, base p.191-198) ----
+     6 types × 3 puissances (mineur/normal/majeur), triplets [min,norm,maj]
+     comme ANARCHY_TYPES. `skills` = indice fixe (l'attribut lié scale avec
+     la puissance, cf. patron commun p.198). `edgeOptionsFor(ti)` construit
+     les Atouts au choix avec leurs valeurs mises à l'échelle de la
+     puissance ; `fixedEdgeFor(ti)` l'Atout élémentaire toujours présent
+     (absent pour Air, dont l'attaque élémentaire fait partie du choix).
+     Bêtes normal/majeur : non confirmés en source (findings §ESPRITS,
+     "à confirmer p.198") — extrapolés depuis le pas uniforme (+2/+2/+2/
+     +2/+2/+1 attrs, +4 DÉF, +1/+1 P/E) observé sur les 5 autres types. */
+  ANARCHY1_TYPES: {
+    air: {
+      label: "Esprit de l'air",
+      attrs: { FOR: [1, 3, 5], AGI: [7, 9, 11], VOL: [3, 5, 7], LOG: [3, 5, 7], CHA: [3, 5, 7], CHC: [1, 2, 3] },
+      defense: [10, 14, 18],
+      physMon: [9, 10, 11],
+      stunMon: [10, 11, 12],
+      armor: 0,
+      skills: [
+        { name: "Armes à projectiles", val: 3, attr: "AGI" },
+        { name: "Combat astral", val: 3, attr: "VOL" },
+        { name: "Corps à corps", val: 3, attr: "AGI" },
+        { name: "Sorcellerie", val: 3, attr: "VOL" },
+      ],
+      edgeOptionsFor(ti) {
+        const p = (v) => v[ti];
+        return [
+          `Attaque élémentaire électricité (${p([4, 6, 8])}P/CA, Déf AGI+LOG)`,
+          `Attaque élémentaire froid (${p([4, 6, 8])}E/CA, +2 Armure)`,
+          "Aura de froid",
+          `Confusion (−${p([1, 2, 3])} dé)`,
+          `Engloutissement (${p([2, 4, 6])}E/CA, immobilise)`,
+          "Psychokinésie",
+          "Recherche",
+        ];
+      },
+    },
+    eau: {
+      label: "Esprit de l'eau",
+      attrs: { FOR: [3, 5, 7], AGI: [5, 7, 9], VOL: [3, 5, 7], LOG: [3, 5, 7], CHA: [3, 5, 7], CHC: [1, 2, 3] },
+      defense: [8, 12, 16],
+      physMon: [10, 11, 12],
+      stunMon: [10, 11, 12],
+      armor: 0,
+      skills: [
+        { name: "Armes à projectiles", val: 3, attr: "AGI" },
+        { name: "Combat astral", val: 3, attr: "VOL" },
+        { name: "Corps à corps", val: 3, attr: "AGI" },
+        { name: "Sorcellerie", val: 3, attr: "VOL" },
+      ],
+      fixedEdgeFor(ti) {
+        return `Attaque élémentaire eau (${[5, 7, 9][ti]}E, Déf AGI+LOG, immobilise)`;
+      },
+      edgeOptionsFor() {
+        return ["Collage (cible à mi-vitesse)", "Dissimulation (relance Furtivité)", "Engloutissement", "Mouvement", "Recherche"];
+      },
+    },
+    feu: {
+      label: "Esprit du feu",
+      attrs: { FOR: [3, 5, 7], AGI: [5, 7, 9], VOL: [3, 5, 7], LOG: [3, 5, 7], CHA: [3, 5, 7], CHC: [1, 2, 3] },
+      defense: [8, 12, 16],
+      physMon: [10, 11, 12],
+      stunMon: [10, 11, 12],
+      armor: 0,
+      skills: [
+        { name: "Armes à projectiles", val: 3, attr: "AGI" },
+        { name: "Combat astral", val: 3, attr: "VOL" },
+        { name: "Corps à corps", val: 3, attr: "AGI" },
+        { name: "Intimidation", val: 3, attr: "CHA" },
+      ],
+      fixedEdgeFor(ti) {
+        return `Attaque élémentaire feu (${[4, 6, 8][ti]}P, +2 dmg à l'Armure)`;
+      },
+      edgeOptionsFor() {
+        return ["Aura de feu", "Engloutissement (feu)", "Peur", "Recherche"];
+      },
+    },
+    terre: {
+      label: "Esprit de la terre",
+      attrs: { FOR: [7, 9, 11], AGI: [1, 3, 5], VOL: [3, 5, 7], LOG: [3, 5, 7], CHA: [3, 5, 7], CHC: [1, 2, 3] },
+      defense: [4, 8, 12],
+      physMon: [12, 13, 14],
+      stunMon: [10, 11, 12],
+      armor: 6,
+      skills: [
+        { name: "Armes à projectiles", val: 3, attr: "AGI" },
+        { name: "Combat astral", val: 3, attr: "VOL" },
+        { name: "Corps à corps", val: 3, attr: "AGI" },
+        { name: "Sorcellerie", val: 3, attr: "VOL" },
+      ],
+      fixedEdgeFor(ti) {
+        return `Attaque élémentaire terre (${[6, 8, 10][ti]}P, Déf AGI+LOG)`;
+      },
+      edgeOptionsFor() {
+        return ["Collage (cible à mi-vitesse)", "Confusion", "Dissimulation", "Engloutissement", "Recherche"];
+      },
+    },
+    homme: {
+      label: "Esprit de l'homme",
+      attrs: { FOR: [3, 5, 7], AGI: [4, 6, 8], VOL: [3, 5, 7], LOG: [4, 6, 8], CHA: [3, 5, 7], CHC: [1, 2, 3] },
+      defense: [8, 12, 16],
+      physMon: [10, 11, 12],
+      stunMon: [10, 11, 12],
+      armor: 0,
+      skills: [
+        { name: "Combat astral", val: 3, attr: "VOL" },
+        { name: "Corps à corps", val: 3, attr: "AGI" },
+        { name: "Intimidation", val: 3, attr: "CHA" },
+        { name: "Sorcellerie", val: 3, attr: "VOL" },
+      ],
+      fixedEdgeFor(ti) {
+        return `Contrôle des pensées (+${[1, 3, 5][ti]} dés Intimidation/Négociation)`;
+      },
+      edgeOptionsFor() {
+        return ["Accident", "Confusion", "Dissimulation", "Peur", "Psychokinésie", "Recherche"];
+      },
+    },
+    betes: {
+      label: "Esprit des bêtes",
+      attrs: { FOR: [5, 7, 9], AGI: [3, 5, 7], VOL: [3, 5, 7], LOG: [3, 5, 7], CHA: [3, 5, 7], CHC: [1, 2, 3] },
+      defense: [6, 10, 14],
+      physMon: [11, 12, 13],
+      stunMon: [10, 11, 12],
+      armor: 0,
+      skills: [
+        { name: "Combat astral", val: 3, attr: "VOL" },
+        { name: "Corps à corps", val: 3, attr: "AGI" },
+        { name: "Intimidation", val: 3, attr: "CHA" },
+      ],
+      fixedWeapon(ti, attrs) {
+        return { name: "Armes naturelles (griffes/crocs/queue)", dmg: Math.ceil(attrs.FOR / 2) + 2, dmgType: "P" };
+      },
+      edgeOptionsFor() {
+        return ["Contrôle animal", "Dissimulation", "Peur", "Recherche"];
+      },
+    },
+  },
+
   typesFor(edition) {
     return App.getEditionModule(edition).spiritModel.types();
   },
@@ -233,10 +371,15 @@ const Spirits = {
 
   /* ---- Invocation ----
      `owner` peut être null (esprit libre généré depuis le générateur) :
-     passer alors opts.edition ; l'esprit n'a ni lien ni services. */
+     passer alors opts.edition ; l'esprit n'a ni lien ni services.
+     Un régime tiers (ex. Anarchy 1re, ni SR ni Anarchy 2.0) expose son
+     propre `spiritModel.spawn` — hook de modèle plutôt qu'une troisième
+     branche d'édition ici (cf. plan Anarchy 1re §9). */
   spawn(owner, typeKey, opts = {}) {
     const edition = owner ? owner.edition : opts.edition;
-    return App.getEditionModule(edition)?.usesRiskPanel
+    const Mod = App.getEditionModule(edition);
+    if (Mod?.spiritModel?.spawn) return Mod.spiritModel.spawn(owner, typeKey, opts);
+    return Mod?.usesRiskPanel
       ? this._spawnAnarchy(owner, typeKey, opts)
       : this._spawnSR(owner, typeKey, opts);
   },

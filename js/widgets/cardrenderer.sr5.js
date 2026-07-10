@@ -14,6 +14,11 @@ Object.assign(CardRenderer, {
         "Sang-froid : Volonté + Charisme",
       ),
       this._gmPoolRow(
+        "Surprise",
+        pnj.surprise,
+        "Surprise : Réaction + Intuition",
+      ),
+      this._gmPoolRow(
         "Intentions",
         pnj.judgeIntentions,
         "Jauger les intentions : Intuition + Charisme",
