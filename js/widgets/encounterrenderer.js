@@ -114,6 +114,7 @@ const EncounterRenderer = {
       </div>
       <div class="encounter-main">
         <div class="encounter-name-row">
+          ${isActive ? `<span class="encounter-active-flag" title="Tour actif" aria-label="Tour actif">▸</span>` : ""}
           <span class="encounter-kind">${this._kindLabel(r)}</span>
           ${nameHtml}
         </div>
@@ -121,13 +122,15 @@ const EncounterRenderer = {
           data-action="set-note" data-id="${pnjId}">
       </div>
       <div class="encounter-controls">
-        <button class="btn-icon-tiny" data-action="move-up" data-id="${pnjId}" title="Monter" aria-label="Monter">▲</button>
-        <button class="btn-icon-tiny" data-action="move-down" data-id="${pnjId}" title="Descendre" aria-label="Descendre">▼</button>
         <label class="encounter-acted" title="A joué ce tour">
           <input type="checkbox" ${hasActed ? "checked" : ""} data-action="toggle-acted" data-id="${pnjId}">
         </label>
-        ${pnj._adhoc ? "" : `<button class="btn-icon-tiny" data-action="heal-combatant" data-id="${pnjId}" title="Réinitialiser les moniteurs" aria-label="Réinitialiser les moniteurs">✚</button>`}
-        <button class="btn-icon-tiny danger" data-action="remove-combatant" data-id="${pnjId}" title="Retirer">✕</button>
+        <span class="encounter-controls-secondary">
+          <button class="btn-icon-tiny" data-action="move-up" data-id="${pnjId}" title="Monter" aria-label="Monter">▲</button>
+          <button class="btn-icon-tiny" data-action="move-down" data-id="${pnjId}" title="Descendre" aria-label="Descendre">▼</button>
+          ${pnj._adhoc ? "" : `<button class="btn-icon-tiny" data-action="heal-combatant" data-id="${pnjId}" title="Réinitialiser les moniteurs" aria-label="Réinitialiser les moniteurs">✚</button>`}
+          <button class="btn-icon-tiny danger" data-action="remove-combatant" data-id="${pnjId}" title="Retirer">✕</button>
+        </span>
       </div>
     </div>`;
   },
@@ -217,7 +220,12 @@ const EncounterRenderer = {
   /** Fiche complète (CardRenderer) du combattant dont c'est le tour, affichée
       à côté de la liste. Rien pour un PJ ad-hoc (pas de fiche) ni une scène
       vide. actions=[] : pas de boutons sauvegarder/éditer/virer, la card
-      reste malgré tout pleinement interactive (jets, moniteur, drogues…). */
+      reste malgré tout pleinement interactive (jets, moniteur, drogues…).
+      CH-C5 : chaque combattant entre en scène en fiche COMPACTE (référence
+      repliée) pour ne pas noyer le tour sous 65 chiffres — on pose le seul
+      levier per-carte exposé (_refIsOpen lit pnj._refOpen en priorité). Le MJ
+      garde la .ref-toggle de la carte pour déplier au besoin ; l'effet ne
+      touche la carte du pool qu'à son prochain rendu (compact = défaut CH-C1). */
   renderActiveCard(rows, state) {
     const box = document.getElementById("encounter-active-card");
     if (!box) return;
@@ -230,7 +238,10 @@ const EncounterRenderer = {
 
     box.innerHTML = "";
     box.hidden = !pnj;
-    if (pnj) box.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
+    if (pnj) {
+      pnj._refOpen = false;
+      box.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
+    }
   },
 
   /** Résumé persistant dans la sidebar (round/passe + combattant actif),
