@@ -42,6 +42,19 @@ const EditionSR6 = {
     costAttr: "ATO",
   },
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
+  /** Réglage propre à SR6 remonté ici (prohibition n°1). Reçoit Settings (S). */
+  settingsHTML(S) {
+    const sep = S.get("separateMonitors", false);
+    return `<div class="settings-section">
+      <h3>Moniteur de condition</h3>
+      <p>Par défaut, les PNJ SR6 ont un moniteur unique. Vous pouvez activer les moniteurs séparés (physique + étourdissement).</p>
+      <div class="radio-group">
+        ${S._radio("separateMonitors", "false", "Moniteur unique (standard SR6)", !sep)}
+        ${S._radio("separateMonitors", "true", "Moniteurs séparés (Physique + Étourd.)", sep)}
+      </div>
+      <p style="font-size:0.75rem;margin-top:0.6rem;">Ce réglage s'applique aux PNJ générés après ce point.</p>
+    </div>`;
+  },
   /** Initiative chiffrée (base + dés) pour le tracker de combat : lue sur
       pnj.initBase/pnj.initDice, posés par generate() (Réaction + Intuition). */
   initiativeFor(pnj) {

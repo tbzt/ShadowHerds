@@ -110,9 +110,7 @@ const Settings = {
   /* ---- Rendu du panel paramètres ---- */
   render() {
     const zone = document.getElementById("settings-panel-content");
-    const ed = App.edition;
-
-    let html = "";
+    let html = `<div class="settings-group-label">Global</div>`;
 
     // --- Lanceur de dés (global) ---
     {
@@ -172,6 +170,8 @@ const Settings = {
           <input type="password" id="pg_token" value="${CardRenderer._esc(pg.token)}"
             placeholder="Laisser vide pour rester en anonyme"
             data-action="set-portrait-token">
+          <details class="settings-detail">
+          <summary>À propos du token personnel</summary>
           <p style="font-size:0.72rem;margin-top:0.3rem;">
             Lève la limite d'1 requête à la fois de l'API anonyme. À obtenir sur
             <a href="https://auth.pollinations.ai" target="_blank" style="color:var(--accent)">auth.pollinations.ai</a>.
@@ -179,38 +179,15 @@ const Settings = {
             mais reste visible dans les outils de développement du navigateur : à réserver
             à un usage personnel, ne le partagez pas dans une copie publique de cet outil.
           </p>
+          </details>
         </div>
       </div>`;
     }
 
-    // --- Moniteurs (SR5 uniquement) ---
-    if (ed === "sr5") {
-      const woundMod = this.get("woundMod", 3);
-      html += `<div class="settings-section">
-        <h3>Malus de blessure</h3>
-        <p>Les PNJ subissent normalement −1D par tranche de cases sur leur moniteur. Choisissez la fréquence.</p>
-        <div class="radio-group">
-          ${this._radio("woundMod", "3", "−1D pour 3 cases (standard)", woundMod == 3)}
-          ${this._radio("woundMod", "2", "−1D pour 2 cases", woundMod == 2)}
-          ${this._radio("woundMod", "1", "−1D par case", woundMod == 1)}
-          ${this._radio("woundMod", "0", "Pas de malus de blessure", woundMod == 0)}
-        </div>
-      </div>`;
-    }
-
-    // --- Moniteurs séparés (SR6) ---
-    if (ed === "sr6") {
-      const sep = this.get("separateMonitors", false);
-      html += `<div class="settings-section">
-        <h3>Moniteur de condition</h3>
-        <p>Par défaut, les PNJ SR6 ont un moniteur unique. Vous pouvez activer les moniteurs séparés (physique + étourdissement).</p>
-        <div class="radio-group">
-          ${this._radio("separateMonitors", "false", "Moniteur unique (standard SR6)", !sep)}
-          ${this._radio("separateMonitors", "true", "Moniteurs séparés (Physique + Étourd.)", sep)}
-        </div>
-        <p style="font-size:0.75rem;margin-top:0.6rem;">Ce réglage s'applique aux PNJ générés après ce point.</p>
-      </div>`;
-    }
+    // --- Réglages propres à l'édition active (remontés dans le module — A5,
+    //     plus de branche `if (ed===…)` ici : prohibition n°1) ---
+    html += `<div class="settings-group-label">Cette édition — ${CardRenderer._esc(App.editionModule?.label || App.edition.toUpperCase())}</div>`;
+    html += App.editionModule?.settingsHTML?.(this) ?? "";
 
     // --- Atomiser ---
     html += `<div class="settings-section">
@@ -218,6 +195,9 @@ const Settings = {
       <p>Efface tous les PNJ sauvegardés et paramètres pour cette édition. Action irréversible.</p>
       <button class="danger-btn" data-action="atomize">⚠ Atomiser</button>
     </div>`;
+
+    // --- Informations (hors réglages fonctionnels) : présentation + à propos ---
+    html += `<div class="settings-group-label">Informations</div>`;
 
     // --- Présentation de l'édition (rapatriée de l'ancien écran d'accueil) ---
     const intro = App.welcomeContent[App.edition];

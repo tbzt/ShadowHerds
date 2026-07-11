@@ -33,6 +33,22 @@ const EditionSR5 = {
     costAttr: "CHC",
   },
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
+  /** Réglage propre à SR5 remonté ici (prohibition n°1 : plus de
+      `if (ed==='sr5')` dans settings.js). Reçoit le contrôleur Settings (S)
+      pour lire l'état et réutiliser ses helpers de rendu. */
+  settingsHTML(S) {
+    const woundMod = S.get("woundMod", 3);
+    return `<div class="settings-section">
+      <h3>Malus de blessure</h3>
+      <p>Les PNJ subissent normalement −1D par tranche de cases sur leur moniteur. Choisissez la fréquence.</p>
+      <div class="radio-group">
+        ${S._radio("woundMod", "3", "−1D pour 3 cases (standard)", woundMod == 3)}
+        ${S._radio("woundMod", "2", "−1D pour 2 cases", woundMod == 2)}
+        ${S._radio("woundMod", "1", "−1D par case", woundMod == 1)}
+        ${S._radio("woundMod", "0", "Pas de malus de blessure", woundMod == 0)}
+      </div>
+    </div>`;
+  },
   /** Initiative chiffrée (base + dés) pour le tracker de combat : lue sur
       pnj.init/pnj.initDice, posés par generate() (Réaction + Intuition). */
   initiativeFor(pnj) {
