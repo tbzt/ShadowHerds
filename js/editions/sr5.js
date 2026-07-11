@@ -32,6 +32,13 @@ const EditionSR5 = {
     blockedBy: "critGlitch",
     costAttr: "CHC",
   },
+  /** Type de dégâts du Drain (p.283, étape 4/6) : Physique si les succès du
+      test de Lancement de sorts (après Limite) dépassent l'indice de Magie
+      du lanceur, sinon Étourdissant. */
+  drainDamageType(castHits, pnj) {
+    const mag = (pnj.attrs && pnj.attrs.MAG) || 0;
+    return castHits > mag ? "physical" : "stun";
+  },
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
   /** Réglage propre à SR5 remonté ici (prohibition n°1 : plus de
       `if (ed==='sr5')` dans settings.js). Reçoit le contrôleur Settings (S)

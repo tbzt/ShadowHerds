@@ -41,6 +41,11 @@ const EditionSR6 = {
     blockedBy: "glitch",
     costAttr: "ATO",
   },
+  /** Neutre : aucune règle de conversion Physique/Étourdissant trouvée dans
+      le livre de base SR6 pour le Drain — toujours Étourdissant. */
+  drainDamageType() {
+    return "stun";
+  },
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
   /** Réglage propre à SR6 remonté ici (prohibition n°1). Reçoit Settings (S). */
   settingsHTML(S) {

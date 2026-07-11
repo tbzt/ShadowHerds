@@ -43,6 +43,11 @@ const EditionAnarchy1 = {
     blockedBy: "critGlitch",
     costAttr: "CHC",
   },
+  /** Neutre : Anarchy 1re n'a pas de MAG/conversion Physique-Étourdissant
+      documentée pour le Drain (`drainResist` reste toujours null en V1). */
+  drainDamageType() {
+    return "stun";
+  },
   ratingBadge: {
     field: "tier",
     label: "Dangerosité",

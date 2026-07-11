@@ -39,6 +39,12 @@ const EditionAnarchy2 = {
     blockedBy: null,
     costAttr: null,
   },
+  /** Neutre : Anarchy 2.0 n'a pas de Valeur de Drain séparée — le Drain est
+      déjà couvert par le système de complications du jet de risque (p.170),
+      aucune pastille Drain ni conversion Physique/Étourdissant à câbler. */
+  drainDamageType() {
+    return "stun";
+  },
   ratingBadge: {
     field: "tier",
     label: "Rang",
