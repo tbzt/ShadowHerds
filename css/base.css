@@ -5718,9 +5718,24 @@ input[type="range"]#risk-dice-slider {
   border-left: 1px solid var(--accent);
 }
 
-/* Zone Capacités */
+/* Zone Capacités — NIVEAU 2 de la hiérarchie de carte (CH-C2).
+   Les trois zones existent déjà dans le DOM (Combat / Capacités / Référence) ;
+   on rend la hiérarchie VISIBLE par un dégradé d'emphase de fond, du plus fort
+   (Combat, jets de combat, fond --glow plein) au plus discret (Référence,
+   repliée, sans fond). La zone Capacités (jets de compétence) est bornée par
+   une bordure haute + un fond --glow atténué : elle lit comme une RÉGION
+   commune intermédiaire (Gestalt de région commune), même famille visuelle que
+   la zone Combat, si bien que tous les jets — armes, pastilles et compétences,
+   déjà unifiés par le dé ⚄ (CH-M1) — se regroupent en régions cohérentes.
+   But audit : l'œil trouve une info en < 2 s. */
 .capacity-zone {
   padding: var(--sp-1) 14px var(--sp-2);
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--glow) 30%, transparent);
+}
+/* PNJ sans aucune capacité : pas de bande vide (la div est émise même vide). */
+.capacity-zone:empty {
+  display: none;
 }
 .capacity-zone .card-section {
   border: none;
