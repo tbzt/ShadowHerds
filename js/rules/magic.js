@@ -666,4 +666,31 @@ const Magic = {
     if (String(special || "").toLowerCase().includes("adepte")) return "adept";
     return null;
   },
+
+  /* ========================================================
+     DRAIN (CH-M3) — calcul générique, sans lecture d'édition :
+     le code de sort SR5 (« P-3 », « P+2 »…) est relatif à la Puissance,
+     la VD SR6 est déjà une valeur fixe par sort (Content.spells.sr6).
+     Chaque module d'édition décide ce qu'il passe en `base`.
+     ======================================================== */
+
+  /** Modificateur signé d'un code de Drain SR5 (ex. « P-3 » → -3, « P » → 0).
+      Ignore les valeurs déjà numériques (SR6 : VD fixe, pas de code à parser). */
+  parseDrainMod(code) {
+    if (typeof code !== "string") return 0;
+    const m = code.match(/([+-]\d+)/);
+    return m ? parseInt(m[1], 10) : 0;
+  },
+
+  /** Valeur de Drain = base (Puissance en SR5, VD fixe en SR6) + modificateur,
+      jamais inférieure à 2 (Livre de Règles SR5 p.283). */
+  drainValue(base, mod = 0) {
+    return Math.max(2, (base || 0) + (mod || 0));
+  },
+
+  /** Dommages de Drain après résistance : un point par succès de VD restant
+      (SR5 p.280 / SR6 p.150). */
+  resolveDrainDamage(dv, hits) {
+    return Math.max(0, (dv || 0) - (hits || 0));
+  },
 };
