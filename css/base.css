@@ -1124,25 +1124,31 @@ select optgroup {
 /* ============================================================
    PNJ CARD
    ============================================================ */
+/* CH-V4 : layout masonry (colonnes indépendantes) plutôt que grid à
+   rangées alignées — des hauteurs de carte inégales (portrait/compétences
+   dépliés ou non) créaient des trous d'alignement entre rangées voisines
+   (audit visuel I3). column-count empile chaque carte au plus court sans
+   forcer d'alignement de rangée ; column-gap gère l'espace horizontal, le
+   margin-bottom de chaque carte gère l'espace vertical (pas de row-gap en
+   multi-colonnes). */
 .cards-zone {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--sp-4);
+  column-count: 4;
+  column-gap: var(--sp-4);
   margin-top: var(--sp-2);
 }
 @media (min-width: 1700px) {
   .cards-zone {
-    grid-template-columns: repeat(5, 1fr);
+    column-count: 5;
   }
 }
 @media (max-width: 1280px) {
   .cards-zone {
-    grid-template-columns: repeat(3, 1fr);
+    column-count: 3;
   }
 }
 @media (max-width: 900px) {
   .cards-zone {
-    grid-template-columns: repeat(2, 1fr);
+    column-count: 2;
   }
 }
 
@@ -1157,6 +1163,9 @@ select optgroup {
   animation: cardIn 0.3s ease;
   transition: box-shadow var(--dur-base);
   clip-path: var(--card-clip);
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin-bottom: var(--sp-4);
 }
 .pnj-card:hover {
   box-shadow: 0 0 16px var(--glow);
@@ -3083,6 +3092,9 @@ kbd {
   width: 290px;
   overflow: hidden;
   animation: cardIn 0.3s ease;
+  break-inside: avoid; /* CH-V4 : masonry .cards-zone */
+  -webkit-column-break-inside: avoid;
+  margin-bottom: var(--sp-4);
 }
 .contact-card::before {
   content: "";
@@ -4170,7 +4182,7 @@ kbd {
 
   /* ---- Cartes : une seule colonne, lisible ---- */
   .cards-zone {
-    grid-template-columns: 1fr;
+    column-count: 1;
   }
   .pnj-card {
     width: 100%;
@@ -6254,6 +6266,63 @@ input[type="range"]#risk-dice-slider {
   border-left: 1px solid var(--accent);
 }
 
+/* Sorts en zone Combat (CH-M7e) — lignes calquées sur les armes. */
+.spell-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.spell-block .zone-eyebrow {
+  margin-top: 2px;
+}
+.spell-line .spell-main {
+  min-width: 0;
+  flex: 1;
+}
+.spell-line .weapon-name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.spell-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.spell-info:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+/* Dernier jet mémorisé (sort maintenu) — même langage que .init-result. */
+.spell-last {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: "Share Tech Mono", monospace;
+  font-size: var(--fs-2xs);
+  color: var(--accent);
+  white-space: nowrap;
+}
+.spell-last strong {
+  font-size: var(--fs-sm);
+}
+.spell-last-clear {
+  cursor: pointer;
+  color: var(--text-dim);
+  padding: 0 2px;
+}
+.spell-last-clear:hover {
+  color: var(--danger);
+}
+
 /* Zone Capacités — NIVEAU 2 de la hiérarchie de carte (CH-C2).
    Les trois zones existent déjà dans le DOM (Combat / Capacités / Référence) ;
    on rend la hiérarchie VISIBLE par un dégradé d'emphase de fond, du plus fort
@@ -6853,6 +6922,9 @@ input[type="range"]#risk-dice-slider {
   max-width: 100%;
   overflow: hidden;
   animation: cardIn 0.3s ease;
+  break-inside: avoid; /* CH-V4 : masonry .cards-zone */
+  -webkit-column-break-inside: avoid;
+  margin-bottom: var(--sp-4);
 }
 .server-card::before {
   content: "";

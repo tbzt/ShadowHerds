@@ -92,6 +92,7 @@ Object.assign(CardRenderer, {
     </div>`;
 
     html += this._weaponBlock(pnj, weapons, "sr5", deps);
+    html += this._spellsBlock(pnj, spells, "sr5");
     html += this._drugRow(pnj, "sr5", deps);
     html += this._vehicleChipRow(pnj, deps);
     html += this._spiritChipRow(pnj, deps);
@@ -101,7 +102,6 @@ Object.assign(CardRenderer, {
     html += '<div class="capacity-zone">';
     html += this._skillsSection(skills, malus5);
     html += this._knowledgesSection(knowledges, pnj, malus5);
-    html += this._spellsSection(pnj, spells);
     if (powers && powers.length)
       html += this._listSection("Pouvoirs d'adepte", powers);
     if (traits && traits.length) html += this._listSection("Traits", traits);

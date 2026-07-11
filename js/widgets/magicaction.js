@@ -25,12 +25,31 @@ const MagicAction = {
       throw new Error("MagicAction.init: hook onPnjChanged manquant");
     }
     this._hooks = hooks;
-    // Délégation du clic « Lancer » d'un sort (rendu par cardrenderer).
+    // Délégation des interactions d'une ligne de sort (rendu par cardrenderer).
     document.addEventListener("click", (e) => {
+      // ✕ : efface le dernier jet mémorisé (prioritaire, ne lance pas).
+      const clr = e.target.closest("[data-spell-clear]");
+      if (clr) {
+        this._clearLastCast(clr.getAttribute("data-roll-pnj"), clr.getAttribute("data-spell-clear"));
+        return;
+      }
+      // ⓘ : détails du sort — laissé à ContentModal, ne pas lancer.
+      if (e.target.closest("[data-content-name]")) return;
       const b = e.target.closest("[data-cast-spell]");
       if (!b) return;
       this.castSpell(b.getAttribute("data-roll-pnj"), b.getAttribute("data-cast-spell"));
     });
+  },
+
+  /** Efface le dernier jet mémorisé d'un sort (sort maintenu terminé). */
+  _clearLastCast(pnjId, name) {
+    const pnj = PnjLookup.find(pnjId);
+    if (!pnj) return;
+    const sp = (pnj.spells || []).find((s) => s && s.name === name);
+    if (sp && sp._lastCast) {
+      delete sp._lastCast;
+      this._hooks.onPnjChanged(pnj);
+    }
   },
 
   _ensurePanel() {
@@ -160,6 +179,9 @@ const MagicAction = {
     const castPool = Magic.actionPool(pnj, ed.spellSkill, c.edition);
     const castRes = Dice.computeRoll(castPool);
     DiceLog.record(castRes, { label: `Sort — ${c.name}`, who: pnj.name || "" });
+    // Mémorise le dernier jet sur le sort (persisté, présenté sur la carte —
+    // utile pour un sort maintenu). Même patron que pnj.lastInit.
+    c.entry._lastCast = { hits: castRes.hits };
 
     // 2-3) Drain (VD du contrat) : résiste, encaisse, présente.
     const dv = ed.spellDrainValue(c.entry, c.force);

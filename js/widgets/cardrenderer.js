@@ -493,31 +493,68 @@ const CardRenderer = {
     </div>`;
   },
 
-  /** Sorts (SR5/SR6, CH-M7b) : le tag info existant (_contentTag) reste
-      inchangé ; un bouton de lancer s'ajoute quand le PNJ a une résistance
-      au Drain ET que le sort porte un code de Drain exploitable — délégué
-      à diceroller.js (data-cast-spell), pas de onclick inline. */
-  _spellsSection(pnj, spells) {
+  /** Infos rapides d'un sort, affichées sous son nom (façon `weapon-stat`) :
+      code/valeur de Drain (SR5/SR6) ou seuil (Anarchy), puis catégorie. */
+  _spellInfo(sp) {
+    if (!sp || typeof sp !== "object") return "";
+    const bits = [];
+    if (sp.drain != null) bits.push(`Drain ${sp.drain}`);
+    else if (sp.seuil != null) bits.push(`Seuil ${sp.seuil}`);
+    if (sp.cat) bits.push(sp.cat);
+    return bits.join(" · ");
+  },
+
+  /** Bloc de sorts lançables (CH-M7e), en zone Combat — rendu façon armes
+      (`.weapon-line` : nom + infos rapides + pastille de réserve, clic pour
+      lancer). Le dernier jet (succès) est mémorisé sur `sp._lastCast` et
+      présenté sur la ligne (utile pour un sort maintenu ; ✕ pour effacer).
+      Éditions à VD (SR5/SR6/Anarchy1) : clic → `data-cast-spell` (MagicAction).
+      Anarchy 2 (option `opts.viaRisk`) : clic → jet de risque Sorcellerie
+      (`data-roll`), le Drain étant géré par complication (CH-M7d). */
+  _spellsBlock(pnj, spells, edition, opts = {}) {
     if (!spells || !spells.length) return "";
-    const canCast = pnj.drainResist != null;
-    const tags = spells
-      .map((item) => {
-        let html = this._contentTag(item);
-        const drain = item && typeof item === "object" ? item.drain : null;
-        if (canCast && drain != null) {
-          const name = this._esc(item.name);
-          html += `<button type="button" class="tag skill-tag-spec rollable"
-            data-cast-spell="${name}" data-roll-pnj="${pnj.id}"
-            title="Lancer ce sort — résoudre le Drain">⚄ Lancer</button>`;
+    const ed = App.getEditionModule(edition);
+    const canCast = ed.spellSkill && pnj.drainResist != null;
+    const rows = spells
+      .map((sp) => {
+        const name = (sp && sp.name) || String(sp);
+        const info = this._spellInfo(sp);
+        const infoBtn =
+          sp && sp.desc
+            ? `<span class="spell-info" role="button" tabindex="0" data-content-name="${this._esc(name)}" data-content-desc="${this._esc(sp.desc)}" title="Détails du sort">ⓘ</span>`
+            : "";
+        const last = sp && sp._lastCast;
+        const lastHtml = last
+          ? `<span class="spell-last" title="Dernier jet : ${last.hits} succès (suivi d'un sort maintenu)">→ <strong>${last.hits}</strong><span class="spell-last-clear" data-spell-clear="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" title="Effacer le dernier jet">✕</span></span>`
+          : "";
+
+        let castAttr = "";
+        let poolBadge = "";
+        if (opts.viaRisk) {
+          // Anarchy 2 : lance via la compétence Sorcellerie (jet de risque).
+          const pool = opts.riskPool || 0;
+          castAttr = `data-roll="${pool}" data-roll-label="Sorcellerie · ${this._esc(name)}" data-roll-edition="${edition}" data-roll-rr="${opts.riskRR || 0}" data-roll-spell="${this._esc(name)}"`;
+          poolBadge = pool ? `<span class="weapon-pool">⚄${pool}</span>` : "";
+        } else if (canCast) {
+          castAttr = `data-cast-spell="${this._esc(name)}"`;
+          const pool = Magic.actionPool(pnj, ed.spellSkill, edition);
+          poolBadge = pool ? `<span class="weapon-pool">⚄${pool}</span>` : "";
         }
-        return html;
+        const rollable = !!castAttr;
+        const lineCls = `weapon-line spell-line${rollable ? " weapon-rollable rollable" : ""}`;
+        return `<div class="${lineCls}" ${castAttr} data-roll-pnj="${pnj.id}">
+          <div class="spell-main">
+            <div class="weapon-name">${this._esc(name)} ${infoBtn}</div>
+            ${info ? `<div class="weapon-stat">${this._esc(info)}</div>` : ""}
+          </div>
+          ${poolBadge}
+          ${lastHtml}
+        </div>`;
       })
       .join("");
-    return `<div class="card-section">
-      <div class="card-section-label">Sorts</div>
-      <div class="card-section-content">
-        ${tags}
-      </div>
+    return `<div class="weapon-block spell-block">
+      <div class="zone-eyebrow">Sorts</div>
+      ${rows}
     </div>`;
   },
 

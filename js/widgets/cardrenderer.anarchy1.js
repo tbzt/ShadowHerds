@@ -56,6 +56,7 @@ Object.assign(CardRenderer, {
     </div>`;
 
     html += this._weaponBlock(pnj, weapons, "anarchy1", deps);
+    html += this._spellsBlock(pnj, spells, "anarchy1");
     html += this._drugRow(pnj, "anarchy1", deps);
     html += this._vehicleChipRow(pnj, deps);
     html += this._spiritChipRow(pnj, deps);
@@ -65,7 +66,6 @@ Object.assign(CardRenderer, {
     html += '<div class="capacity-zone">';
     html += this._skillsSection(skills, malus);
     if (edges && edges.length) html += this._listSection("Atouts", edges);
-    if (spells && spells.length) html += this._listSection("Sorts", spells);
     html += "</div>";
 
     // ---- ZONE RÉFÉRENCE (repliable) ----
