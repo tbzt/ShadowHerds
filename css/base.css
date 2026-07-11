@@ -3873,13 +3873,34 @@ kbd {
     min-height: 38px;
   }
   .dice-roll-btn {
-    height: 38px;
+    min-height: 44px;
     padding: 0 14px;
     font-size: 0.8rem;
   }
   .topbar-action {
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
+  }
+  /* Badge d'édition : 19px de haut au repos → cible tactile pleine (WCAG
+     2.5.8 / 2.5.5, cf. audit I1). */
+  .topbar-edition-badge {
+    min-height: 44px;
+    padding: var(--sp-1) var(--sp-3);
+  }
+  /* Boutons de jet sur la carte : au doigt, 15 pastilles adjacentes = risque
+     de mis-taps (Fitts). Toutes portent .rollable → cible ≥ 44px. Les
+     inline-flex pour que min-height s'applique aux pastilles/tags en ligne ;
+     .attr-cell (cellule de grille) garde son display et ne prend que la
+     hauteur mini. */
+  .stat-pill.rollable,
+  .tag.rollable {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .attr-cell.rollable,
+  .weapon-line.weapon-rollable {
+    min-height: 44px;
   }
   .grid-filter {
     min-height: 38px;
