@@ -153,6 +153,18 @@ const Encounter = {
     this._commit();
   },
 
+  /** Ajustement ±1 de l'initiative (Vague B) : corrige un score lancé sans
+      convoquer le clavier (edge, bonus oublié). Ne re-trie pas — la ligne ne
+      saute pas (le tri reste explicite : ↓ Trier / Lancer & classer). Départ à
+      0 si aucune init posée. Jamais négatif. */
+  adjustInit(pnjId, delta) {
+    const c = this._find(pnjId);
+    if (!c) return;
+    const base = Number.isFinite(c.init) ? c.init : 0;
+    c.init = Math.max(0, base + delta);
+    this._commit();
+  },
+
   /** Lance l'initiative via l'accesseur neutre du module d'édition
       (App.editionModule.initiativeFor) : jamais de lecture directe d'un
       champ pnj.init édition-spécifique ici (cf. CONTRIBUTING). */
@@ -599,6 +611,20 @@ const Encounter = {
           // Ligne narrative : tap = bascule « a joué » (grise / rallume).
           const c = this._find(id);
           if (c) this.markActed(id, !c.hasActed);
+          break;
+        }
+        case "init-step":
+          // Stepper ±1 de l'initiative (Vague B).
+          this.adjustInit(id, parseInt(el.dataset.delta, 10) || 0);
+          break;
+        case "note-toggle": {
+          // Révèle le champ de note (masqué quand vide) et y met le focus.
+          const row = el.closest(".encounter-row");
+          if (row) {
+            row.classList.add("note-open");
+            const inp = row.querySelector(".encounter-note");
+            if (inp) inp.focus();
+          }
           break;
         }
         case "roll-init":

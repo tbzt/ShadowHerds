@@ -169,6 +169,9 @@ const EncounterRenderer = {
   _row(r, isActive, outOfPass, effectiveInit) {
     const { pnjId, init, hasActed, note, pnj } = r;
     const initVal = init == null ? "" : String(init);
+    // Vague B : la note ne s'affiche en 2ᵉ ligne que si remplie ; sinon elle est
+    // masquée (déclutter) et révélée à la demande via « ✎ Note » du menu ⋯.
+    const hasNote = !!(note && note.trim());
     // CH-M5 : même calcul générique que sur la fiche (Utils.woundMalus),
     // affiché ici pour que le malus soit visible sans rouvrir la carte.
     const malus = Utils.woundMalus(pnj, pnj.edition);
@@ -195,11 +198,17 @@ const EncounterRenderer = {
     // par data-action="row-menu", cf. Encounter) pour dégager la ligne sur mobile.
     // Vague D : hors de combat → jeton d'init remplacé par « — » (init retirée)
     // + badge ; « devrait fuir » → bandeau de moral avec action « Faire fuir ».
+    // Vague B : steppers ±1 autour du champ (ajuster une init lancée sans
+    // convoquer le clavier). Pas de re-tri → la ligne ne saute pas.
     const initZone = r.down
       ? `<div class="encounter-init is-out"><span class="encounter-init-out" title="Hors de combat — sans initiative">—</span></div>`
       : `<div class="encounter-init">
-        <input class="encounter-init-val" type="text" inputmode="numeric" data-action="set-init" data-id="${pnjId}"
-          value="${initVal}" placeholder="—" title="Initiative (base) — saisie directe" aria-label="Initiative">
+        <div class="encounter-init-main">
+          <button class="encounter-init-step" data-action="init-step" data-delta="-1" data-id="${pnjId}" title="Initiative −1" aria-label="Diminuer l'initiative">−</button>
+          <input class="encounter-init-val" type="text" inputmode="numeric" data-action="set-init" data-id="${pnjId}"
+            value="${initVal}" placeholder="—" title="Initiative (base) — saisie directe" aria-label="Initiative">
+          <button class="encounter-init-step" data-action="init-step" data-delta="1" data-id="${pnjId}" title="Initiative +1" aria-label="Augmenter l'initiative">+</button>
+        </div>
         ${malusHtml}
         ${effHtml}
       </div>`;
@@ -213,7 +222,7 @@ const EncounterRenderer = {
           ${r.down ? this._downBadge() : ""}
         </div>
         ${this._moraleBanner(r)}
-        <input type="text" class="encounter-note" placeholder="Note…" value="${Utils.escHtml(note || "")}"
+        <input type="text" class="encounter-note${hasNote ? "" : " is-empty"}" placeholder="Note…" value="${Utils.escHtml(note || "")}"
           data-action="set-note" data-id="${pnjId}">
       </div>
       <div class="encounter-controls">
@@ -225,6 +234,7 @@ const EncounterRenderer = {
           <button class="btn-icon-tiny" data-action="roll-init" data-id="${pnjId}" title="Lancer l'initiative" aria-label="Lancer l'initiative">⚄</button>
           <button class="btn-icon-tiny" data-action="move-up" data-id="${pnjId}" title="Monter" aria-label="Monter">▲</button>
           <button class="btn-icon-tiny" data-action="move-down" data-id="${pnjId}" title="Descendre" aria-label="Descendre">▼</button>
+          ${hasNote ? "" : `<button class="btn-icon-tiny" data-action="note-toggle" data-id="${pnjId}" title="Ajouter une note" aria-label="Ajouter une note">✎</button>`}
           ${pnj._adhoc ? "" : `<button class="btn-icon-tiny" data-action="heal-combatant" data-id="${pnjId}" title="Réinitialiser les moniteurs" aria-label="Réinitialiser les moniteurs">✚</button>`}
           <button class="btn-icon-tiny danger" data-action="remove-combatant" data-id="${pnjId}" title="Retirer" aria-label="Retirer">✕</button>
         </span>

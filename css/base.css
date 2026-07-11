@@ -2612,6 +2612,39 @@ select optgroup {
   min-width: 1.6rem;
   text-align: center;
 }
+/* Vague B : steppers ±1 autour du champ d'init. */
+.encounter-init-main {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+.encounter-init-main .encounter-init-val {
+  width: 2.2rem;
+}
+.encounter-init-step {
+  flex: none;
+  width: 20px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 1.05rem;
+  line-height: 1;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.encounter-init-step:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+/* Vague B : note masquée quand vide (déclutter), révélée en mode saisie. */
+.encounter-note.is-empty {
+  display: none;
+}
+.encounter-row.note-open .encounter-note.is-empty {
+  display: block;
+}
 /* Score effectif de la passe courante (SR5, base − décrément) : rendu
    visible à côté du score de base plutôt que déduit du seul grisé
    out-of-pass. Rouge (--danger) une fois retombé à 0 ou moins. */
@@ -2915,6 +2948,11 @@ select optgroup {
   .encounter-acted input[type="checkbox"] {
     width: 22px;
     height: 22px;
+  }
+  .encounter-init-step {
+    min-width: 34px;
+    min-height: 34px;
+    font-size: 1.2rem;
   }
 }
 
