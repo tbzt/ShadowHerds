@@ -1339,6 +1339,41 @@ select optgroup {
 .attr-cell:not(:first-child) {
   border-left: 1px solid var(--border);
 }
+
+/* CH-C7 : grille responsive — au-delà d'un certain nombre de colonnes, les
+   cellules deviennent illisibles sur écran étroit (audit charge cognitive :
+   8 colonnes ≈ 40px/cellule sur mobile). Passage à la ligne (repeat(N,1fr))
+   plutôt qu'écrasement d'une seule rangée ; la ligne spéciale partage le
+   même N pour garder ses filets verticaux alignés avec la ligne primaire,
+   quel que soit le nombre réel d'attributs de l'édition. */
+@media (max-width: 900px) {
+  .attr-grid {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .attr-grid.attr-special-row {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  /* Le filet vertical (border-left sur chaque cellule sauf la 1ère) laisse
+     un trait parasite en début de chaque rangée enveloppée. */
+  .attr-grid .attr-cell:nth-child(4n + 1) {
+    border-left: none;
+  }
+}
+@media (max-width: 420px) {
+  .attr-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .attr-grid.attr-special-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .attr-grid .attr-cell:nth-child(4n + 1) {
+    border-left: 1px solid var(--border);
+  }
+  .attr-grid .attr-cell:nth-child(2n + 1) {
+    border-left: none;
+  }
+}
 /* Attributs spéciaux : label accentué et fond très légèrement teinté,
    pour les distinguer des primaires sans rompre l'alignement. */
 .attr-cell.attr-special {
@@ -6061,6 +6096,33 @@ input[type="range"]#risk-dice-slider {
 }
 .spirit-header .pnj-name {
   font-size: 1rem;
+}
+
+/* Bascule repli/dépli d'une fiche d'esprit (en-tête). */
+.spirit-fold-btn {
+  flex: 0 0 auto;
+  margin-left: auto;
+  align-self: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 6px);
+  background: transparent;
+  color: var(--text-dim, var(--text));
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.spirit-fold-btn:hover {
+  background: var(--surface-2, rgba(127, 127, 127, 0.12));
+  color: var(--text);
+}
+/* Fiche repliée : ne reste que l'en-tête. */
+.pnj-card.spirit-collapsed .pnj-card-body,
+.pnj-card.spirit-collapsed .pnj-card-footer {
+  display: none;
 }
 .spirit-services {
   display: flex;
