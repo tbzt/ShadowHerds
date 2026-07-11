@@ -346,6 +346,12 @@ document.addEventListener("DOMContentLoaded", () => {
       case "r":
         document.getElementById("dice-roll-btn")?.click();
         break;
+      case "c":
+        Encounter.open();
+        break;
+      case "j":
+        DiceLog.toggle();
+        break;
       case "/":
         e.preventDefault();
         document

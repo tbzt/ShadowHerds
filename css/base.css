@@ -2206,6 +2206,11 @@ select optgroup {
   border: 1px dashed var(--border);
   border-radius: 4px;
 }
+.empty-state-cta {
+  display: block;
+  width: fit-content;
+  margin: var(--sp-4) auto 0;
+}
 .empty-state-title {
   font-family: "Rajdhani", sans-serif;
   font-size: 1.1rem;

@@ -96,15 +96,24 @@ const Hub = {
     }
 
     if (!total) {
+      const filtering = !!this._filter.trim();
       const selected = DossierBar.current !== "all";
-      const body = this._filter.trim()
+      const body = filtering
         ? `Aucune fiche ne correspond à « ${CardRenderer._esc(this._filter.trim())} ».`
         : selected
           ? "Ce dossier est vide pour ce filtre."
           : "Générez du contenu (PNJ, contacts, serveurs) et rangez-le dans un dossier.";
+      // Onboarding léger (CH-U11) : « commencer ici » seulement à vide total
+      // (nouvel utilisateur) — pas en recherche ni dans un dossier vide.
+      // Réutilise l'action show-panel, aucun nouveau mécanisme.
+      const cta =
+        !filtering && !selected
+          ? `<button class="btn-primary btn-small empty-state-cta" data-action="show-panel" data-panel="generator">▸ Créer un PNJ</button>`
+          : "";
       box.innerHTML = `<div class="empty-state">
-        <span class="empty-state-title">${this._filter.trim() ? "Aucun résultat" : "Rien ici"}</span>
+        <span class="empty-state-title">${filtering ? "Aucun résultat" : "Rien ici"}</span>
         ${body}
+        ${cta}
       </div>`;
     }
     this._renderLabel(total);
