@@ -92,6 +92,13 @@ const EncounterRenderer = {
   _row(r, isActive, outOfPass, effectiveInit) {
     const { pnjId, init, hasActed, note, pnj } = r;
     const initVal = init == null ? "" : String(init);
+    // CH-M5 : même calcul générique que sur la fiche (Utils.woundMalus),
+    // affiché ici pour que le malus soit visible sans rouvrir la carte.
+    const malus = Utils.woundMalus(pnj, pnj.edition);
+    const malusHtml =
+      malus > 0
+        ? `<span class="wound-malus-badge" title="Malus de blessure automatique (déjà appliqué à l'initiative)">−${malus}D</span>`
+        : "";
     const name = Utils.escHtml(pnj.name || "");
     // PJ ad-hoc : pas de fiche à ouvrir → nom en span inerte.
     const nameHtml = pnj._adhoc
@@ -110,6 +117,7 @@ const EncounterRenderer = {
         <button class="btn-icon-tiny" data-action="roll-init" data-id="${pnjId}" title="Lancer l'initiative">⚄</button>
         <input class="encounter-init-val" type="text" inputmode="numeric" data-action="set-init" data-id="${pnjId}"
           value="${initVal}" placeholder="—" title="Initiative (base) — saisie directe" aria-label="Initiative">
+        ${malusHtml}
         ${effHtml}
       </div>
       <div class="encounter-main">

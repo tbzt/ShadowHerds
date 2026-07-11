@@ -173,7 +173,12 @@ const Encounter = {
     // silent (lancer groupé) : pas d'overlay de tirage — les N overlays
     // s'écraseraient et seul le dernier resterait visible ; les scores
     // s'affichent directement dans la liste du suivi.
-    DiceRoller.rollInitiative(spec.base, spec.dice, pnjId, "", { silent });
+    // CH-M5 : le modificateur de blessure s'applique aussi au score
+    // d'initiative (SR5 p.171, SR6 — initiative modifiée par tout ce qui
+    // affecte l'initiative physique) — réutilise le calcul déjà générique
+    // Utils.woundMalus, aucune règle nouvelle à écrire ici.
+    const malus = Utils.woundMalus(pnj, pnj.edition);
+    DiceRoller.rollInitiative(spec.base - malus, spec.dice, pnjId, "", { silent });
     c.init = pnj.lastInit ? pnj.lastInit.total : c.init;
     return true;
   },
@@ -365,6 +370,9 @@ const Encounter = {
     if (!this._resetMonitors(pnj)) return;
     Shadows.save();
     CardRenderer.refresh(pnj);
+    // CH-M5 : le badge de malus de la ligne (calculé depuis le moniteur)
+    // resterait sinon périmé jusqu'au prochain rendu du tracker.
+    this._render();
     toast("Moniteurs réinitialisés.");
   },
 
@@ -384,7 +392,10 @@ const Encounter = {
         n++;
       }
     }
-    if (n) Shadows.save();
+    if (n) {
+      Shadows.save();
+      this._render(); // CH-M5 : badges de malus de toutes les lignes à jour
+    }
     toast(
       n
         ? `Moniteurs réinitialisés (${n} combattant${n > 1 ? "s" : ""}).`
