@@ -178,6 +178,17 @@ const Dice = {
     return out;
   },
 
+  /* ========================================================
+     TEST OPPOSÉ (SR5 p.49 / même principe SR6 & Anarchy) : deux
+     réserves lancées séparément, on compare les succès — pas de
+     seuil sur un test opposé (cf. livre de règles).
+     ======================================================== */
+  computeOpposedRoll(poolA, poolB) {
+    const a = this.computeRoll(poolA);
+    const b = this.computeRoll(poolB);
+    return { opposed: true, a, b, net: a.hits - b.hits };
+  },
+
   /* ---- Initiative : base + N D6, en SOMME (pas de succès) ---- */
   computeInitiative(base, dice) {
     base = Math.max(0, base | 0);

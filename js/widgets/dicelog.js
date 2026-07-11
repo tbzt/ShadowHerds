@@ -128,6 +128,14 @@ const DiceLog = {
       const base = opts.detail ? `${opts.detail} (${res.base})` : res.base;
       e.sub = `${base} + ${res.dice}D6 [${res.faces.join(", ")}]`;
       e.cls = "good";
+    } else if (res.opposed) {
+      e.label = e.label || "Jet opposé";
+      e.main = res.net > 0 ? `+${res.net}` : String(res.net);
+      e.unit = "net";
+      e.sub = `A : ${res.a.hits} succès — B : ${res.b.hits} succès`;
+      e.tag =
+        res.net > 0 ? "Camp A" : res.net < 0 ? "Camp B" : "Égalité";
+      e.cls = res.net > 0 ? "good" : res.net < 0 ? "glitch" : "zero";
     } else if (res.anarchy) {
       e.main = String(res.hits);
       e.unit = `succès`;
@@ -158,14 +166,20 @@ const DiceLog = {
           ? "Bévue"
           : res.limited
             ? `Limité (${res.cappedFrom}→${res.limit})`
-            : "";
+            : res.threshold != null
+              ? `Seuil ${res.threshold} ${res.hits >= res.threshold ? "atteint" : "manqué"}`
+              : "";
       e.cls = res.critGlitch
         ? "crit"
         : res.glitch
           ? "glitch"
-          : res.hits > 0
-            ? "good"
-            : "zero";
+          : res.threshold != null
+            ? res.hits >= res.threshold
+              ? "good"
+              : "zero"
+            : res.hits > 0
+              ? "good"
+              : "zero";
     }
     this.history.unshift(e);
     if (this.history.length > this.HISTORY_MAX)
