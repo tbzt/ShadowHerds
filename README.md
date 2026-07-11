@@ -1,45 +1,61 @@
 # Shadow Herds
 
-**Générateur de PNJ, contacts et runs pour Shadowrun 5e, 6e, et Anarchy V2**
+**Assistant de meneur de jeu pour Shadowrun — génère PNJ, contacts, runs, et pilote combat & Matrice.**
 
-SPA (Single Page Application) sans dépendances externes ni serveur : fonctionne directement depuis le navigateur.
+Application web à page unique, **100 % locale** : aucun serveur, aucune dépendance externe, aucune donnée transmise. Tout tourne dans le navigateur et se range dans son `localStorage`. Pensée pour la table de jeu — ordinateur, tablette ou téléphone.
 
-→ [shadowherds.github.io](https://tbzt.github.io/ShadowHerds)
+→ [tbzt.github.io/ShadowHerds](https://tbzt.github.io/ShadowHerds)
+
+Éditions prises en charge : **Shadowrun 5**, **Shadowrun 6**, **Anarchy 2** — et **Anarchy 1** (en chantier). L'édition se change à tout moment via le badge en haut à gauche ; chaque édition a ses propres règles, son thème visuel et son export.
 
 ---
 
 ## Fonctionnalités
 
-### Générateur de PNJ
+### Générer
+- **PNJ** complets à la volée (attributs, compétences, connaissances, armes, augmentations, équipement, réserves MJ, fiche d'ambiance), à l'unité ou en **bande**.
+- **Contacts**, **serveurs & CI** (Matrice), et **runs** (ébauche de mission : mandant, lieu, complication, objectif, paiement).
+- **Entités liées** : drones/véhicules, esprits invoqués (services), créatures et esprits libres.
+- Composition cohérente **Rôle × Milieu × Professionnalisme**, ou profession nommée.
 
-Génère des PNJ complets à la volée pour peupler le monde à la demande du MJ. Chaque édition a ses propres mécaniques.
+### Créer
+- **Personnages joueurs** via un assistant de création (CharGen) pas à pas.
 
-### Ombres portées
+### Consulter & organiser — « Ombres portées »
+- Bibliothèque transverse (PNJ, contacts, serveurs, PJ) persistante entre les sessions.
+- **Dossiers hiérarchiques**, appartenance **multi-groupes** par fiche, **recherche** par nom/archétype.
+- Moniteurs de blessures cliquables, portraits IA optionnels.
 
-Bibliothèque de PNJ sauvegardés, persistante entre les sessions (localStorage). Layout en deux colonnes : sidebar de groupes à gauche, grille de cards à droite.
+### Jouer
+- **Suivi de combat** : initiative groupée, tri auto, passes SR5, fiche du combattant actif, moniteurs, **raccourcis clavier** (Espace/N = tour, R = init, ↑/↓ = réordonner).
+- **Intrusion Matrice** : déploiement de CI, jets calculés, Score de Surveillance, marks (SR5) / accès illégaux (SR6) / DIEU (Anarchy).
+- **Lanceur de dés** + journal ; sur une fiche, chaque réserve `⚄` est cliquable et lance sa pile pré-calculée.
+- **Réserve de Menace** (Anarchy 2).
 
-- Création et gestion de groupes nommés (renommer, supprimer)
-- Sélecteur de groupe à la sauvegarde depuis le générateur
-- Déplacement d'un PNJ entre groupes
-- Moniteurs de blessures cliquables
+### Système
+- **Export Foundry VTT** par fiche.
+- **Sauvegarde / import-export** (fichier ou URL) — portabilité sans cloud.
+- Raccourcis clavier (`1`–`7`, `G`, `R`, `/`, `?`), aide intégrée.
 
-### Contacts
+---
 
-Contacts persistants comme les Ombres portées.
+## Lancer en local
 
-### Générateur de run
+Site statique : servez le dossier avec n'importe quel serveur HTTP.
 
-Ébauche de scénario en un clic : type de mission, client (faction nommée), lieu, complication, objectif secondaire, paiement.
+```bash
+python3 -m http.server 8000
+# puis ouvrir http://localhost:8000
+```
 
-### Navigation et persistance
+---
 
-- Sélecteur d'édition accessible depuis le badge `SR5 ⇄` / `SR6 ⇄` / `ANARCHY 2E ⇄` en haut à gauche
+## Contribuer
+
+Le projet suit une **doctrine d'architecture stricte** (simplicité, couches à sens unique, zéro dépendance). Avant toute modification, lisez **[CONTRIBUTING.md](CONTRIBUTING.md)** — il définit les principes de conception et trois prohibitions non négociables (pas de logique d'édition hors `js/editions/`, persistance uniquement via `storage.js`, pas de handler `onclick` inline). Les changements substantiels passent par un plan préalable.
 
 ---
 
 ## Mentions légales
 
-Shadowrun et Matrix sont des marques déposées de The Topps Company, Inc.
-La version française est éditée par Black Book Éditions.
-Cet outil est non-commercial, à usage personnel pour les tables de jeu.
-Aucune donnée n'est transmise — tout est stocké localement dans le navigateur (localStorage).
+Outil **non-officiel** de fans, sans but lucratif, à usage personnel pour les tables de jeu. *Shadowrun* est une marque de The Topps Company, Inc. ; droits d'édition Catalyst Game Labs ; version française Black Book Éditions. Aucune donnée n'est transmise — tout est stocké localement dans le navigateur.
