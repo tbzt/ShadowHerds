@@ -179,10 +179,15 @@ const SummonPanel = {
       ownerCard.insertAdjacentElement("afterend", card);
       setTimeout(() => card.classList.remove("vehicle-deploying"), 700);
     }
-    if (conj) {
-      toast(`Esprit invoqué : ${services} service${services > 1 ? "s" : ""}. ${this._drainToast(conj)}`);
-    }
     CardRenderer.refresh(owner);
+    // Invocation chiffrée : présente le résultat dans l'affichage de dés
+    // standard (jet de Conjuration + services + Drain) avec Secondes chances,
+    // parité avec le lancer de sort. Toast conservé pour Anarchy (pas de conj).
+    if (conj) {
+      MagicAction.presentConjuration(owner, s.force, conj, spirit);
+    } else {
+      toast(`Esprit invoqué : ${services} service${services > 1 ? "s" : ""}.`);
+    }
   },
 
   /** Pip de service : marque les services rendus (clic = bascule). */
@@ -190,6 +195,17 @@ const SummonPanel = {
     const sp = PnjLookup.find(spiritId);
     if (!sp || sp.type !== "spirit") return;
     sp.servicesUsed = idx < (sp.servicesUsed || 0) ? idx : idx + 1;
+    Shadows.save();
+    CardRenderer.refresh(sp);
+  },
+
+  /** Replie/déplie la fiche d'un esprit sur place : masque son corps sans
+      le congédier (l'esprit reste actif dans le pool). Purement visuel,
+      distinct de dismissSpirit qui retire la fiche du plateau. */
+  toggleFold(spiritId) {
+    const sp = PnjLookup.find(spiritId);
+    if (!sp || sp.type !== "spirit") return;
+    sp.collapsed = !sp.collapsed;
     Shadows.save();
     CardRenderer.refresh(sp);
   },

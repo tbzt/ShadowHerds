@@ -30,7 +30,7 @@ const MagicAction = {
       // Seconde chance sur le sort / le Drain (boutons de l'overlay de dés).
       const rr = e.target.closest("[data-action='reroll-cast'], [data-action='reroll-drain']");
       if (rr && !rr.disabled) {
-        if (rr.dataset.action === "reroll-cast") this.rerollCast();
+        if (rr.dataset.action === "reroll-cast") this.rerollMain();
         else this.rerollDrain();
         return;
       }
@@ -197,25 +197,17 @@ const MagicAction = {
       label: c.name,
     });
 
-    // Contexte du lancer courant : source des Secondes chances (sort/Drain),
-    // qui re-résolvent une partie et corrigent l'encaissement (jamais deux
-    // fois la même partie — flags castRerolled/drainRerolled).
+    // Contexte du lancer courant : source des Secondes chances. Modèle
+    // UNIFIÉ sort / invocation — `kind` distingue, `main` est le jet du
+    // lanceur (Lancement de sorts OU Conjuration), `drain` porte le Drain.
     this._resolved = {
+      kind: "spell",
       pnjId: c.pnjId,
       edition: c.edition,
-      entry: c.entry,
       force: c.force,
-      dv,
-      castRes,
-      drain: {
-        res: drain.res,
-        dv,
-        damage: drain.drainDamage,
-        type: drain.type,
-        applied: drain.applied,
-        castRerolled: false,
-        drainRerolled: false,
-      },
+      main: castRes,
+      entry: c.entry,
+      drain: this._drainState(drain, dv),
     };
 
     // 3) Présente TOUT via l'affichage de dés standard : jet de lancement (dés
@@ -224,20 +216,64 @@ const MagicAction = {
     this._present(true);
   },
 
+  /** Construit l'état de Drain stocké (résultat + flags de relance). */
+  _drainState(drain, dv) {
+    return {
+      res: drain.res,
+      dv,
+      damage: drain.drainDamage,
+      type: drain.type,
+      applied: drain.applied,
+      mainRerolled: false,
+      drainRerolled: false,
+    };
+  },
+
+  /** Présente une invocation (parité avec les sorts, CH-M7e) : appelée par le
+      panneau d'invocation APRÈS création de l'esprit. `conj` vient de
+      resolveConjuration (jets conjRes/spiritRes/drain déjà loggés) ; `spirit`
+      est l'esprit créé (ses services suivent les Secondes chances). */
+  presentConjuration(owner, force, conj, spirit) {
+    this._resolved = {
+      kind: "conjuration",
+      pnjId: owner.id,
+      edition: owner.edition,
+      force,
+      main: conj.conjRes,
+      spiritRes: conj.spiritRes,
+      netHits: conj.netHits,
+      spirit,
+      drain: this._drainState(conj.drain, conj.dv),
+    };
+    // conjRes/spiritRes/drain sont déjà journalisés par resolveConjuration.
+    this._present(false);
+  },
+
+  /** Libellé du jet de Drain / titre du lancer selon le type. */
+  _label() {
+    const r = this._resolved;
+    return r.kind === "conjuration" ? "Invocation" : `Sort — ${r.entry.name}`;
+  },
+
   /** (Ré)affiche le lancer courant via l'affichage de dés standard.
-      `logCast` : journalise le jet de sort (vrai au 1er lancer et sur une
-      Seconde chance du sort ; faux sur une Seconde chance du Drain, où le
-      cast n'a pas changé — on ne re-logge que le Drain, fait par l'appelant). */
-  _present(logCast) {
+      `logMain` : journalise le jet du lanceur (vrai au 1er lancer d'un sort et
+      sur une Seconde chance du jet principal ; faux quand le jet principal n'a
+      pas changé — Seconde chance du Drain — ou déjà loggé — invocation). */
+  _present(logMain) {
     const r = this._resolved;
     const pnj = PnjLookup.find(r.pnjId);
-    DiceRoller.show(r.castRes, {
-      label: `Sort — ${r.entry.name}`,
+    const opts = {
+      label: this._label(),
       who: (pnj && pnj.name) || "",
       pnjId: r.pnjId,
       drain: r.drain,
-      noLog: !logCast,
-    });
+      kind: r.kind,
+      noLog: !logMain,
+    };
+    if (r.kind === "conjuration") {
+      opts.conjure = { spiritHits: r.spiritRes.hits, netHits: r.netHits };
+    }
+    DiceRoller.show(r.main, opts);
   },
 
   /** Débite 1 point de la ressource de Seconde chance (Chance/Atout) du
@@ -259,40 +295,50 @@ const MagicAction = {
     pnj[applied.field] = Math.max(0, (pnj[applied.field] || 0) - applied.delta);
   },
 
-  /** Seconde chance sur le SORT (p.58) : relance les dés ratés du jet de
-      lancement → nouvel effet + « → N » mis à jour. En SR5 les succès
-      déterminent le type de Drain : si le type bascule, on corrige
-      l'encaissement (même quantité, autre moniteur). */
-  rerollCast() {
+  /** Seconde chance sur le JET PRINCIPAL (p.58) : relance les dés ratés.
+      Sort → nouvel effet + « → N » ; en SR5 le type de Drain (selon les
+      succès) peut basculer → le moniteur est corrigé. Invocation → nouveaux
+      succès nets = services de l'esprit (mis à jour). Le Drain d'invocation
+      dépend des succès de l'ESPRIT (inchangés) → non affecté ici. */
+  rerollMain() {
     const r = this._resolved;
-    if (!r || r.drain.castRerolled) return;
+    if (!r || r.drain.mainRerolled) return;
     const pnj = PnjLookup.find(r.pnjId);
     if (!pnj) return;
     const ed = App.getEditionModule(r.edition);
-    if (r.castRes.critGlitch) return; // Seconde chance interdite sur échec critique
+    if (r.main.critGlitch) return; // Seconde chance interdite sur échec critique
     if (!this._debitEdge(pnj, ed)) return;
 
-    r.castRes = Dice.rerollMisses(r.castRes);
-    r.entry._lastCast = { hits: r.castRes.hits };
-    r.drain.castRerolled = true;
+    r.main = Dice.rerollMisses(r.main);
+    r.drain.mainRerolled = true;
 
-    // Type de Drain revu (SR5 : selon les succès du sort) — corrige le moniteur.
-    const newType = ed.drainDamageType(
-      { kind: "spell", castHits: r.castRes.hits, drainDamage: r.drain.damage, force: r.force },
-      pnj,
-    );
-    if (newType !== r.drain.type) {
-      this._revertDrain(pnj, r.drain.applied);
-      r.drain.type = newType;
-      r.drain.applied = ed.applyDrainDamage(pnj, r.drain.damage, newType);
+    if (r.kind === "conjuration") {
+      r.netHits = Math.max(0, r.main.hits - r.spiritRes.hits);
+      if (r.spirit) {
+        r.spirit.services = r.netHits;
+        this._hooks.onPnjChanged(r.spirit);
+      }
+    } else {
+      r.entry._lastCast = { hits: r.main.hits };
+      // Type de Drain revu (SR5 : selon les succès du sort) — corrige le moniteur.
+      const newType = ed.drainDamageType(
+        { kind: "spell", castHits: r.main.hits, drainDamage: r.drain.damage, force: r.force },
+        pnj,
+      );
+      if (newType !== r.drain.type) {
+        this._revertDrain(pnj, r.drain.applied);
+        r.drain.type = newType;
+        r.drain.applied = ed.applyDrainDamage(pnj, r.drain.damage, newType);
+      }
     }
     this._hooks.onPnjChanged(pnj);
-    this._present(true); // nouveau jet de sort → journalisé
+    this._present(true); // nouveau jet principal → journalisé
   },
 
   /** Seconde chance sur le DRAIN (p.58) : relance les dés ratés de la
       résistance → nouveaux dégâts. Défait l'encaissement précédent avant
-      d'appliquer le nouveau (les dégâts ne restent jamais appliqués à tort). */
+      d'appliquer le nouveau (les dégâts ne restent jamais appliqués à tort).
+      Identique pour sorts et invocation. */
   rerollDrain() {
     const r = this._resolved;
     if (!r || r.drain.drainRerolled) return;
@@ -306,27 +352,27 @@ const MagicAction = {
     this._revertDrain(pnj, r.drain.applied);
     // 2) Relance la résistance, recalcule dégâts + type, réapplique.
     const newRes = Dice.rerollMisses(r.drain.res);
-    const newDamage = Magic.resolveDrainDamage(r.dv, newRes.hits);
+    const newDamage = Magic.resolveDrainDamage(r.drain.dv, newRes.hits);
     const newType = ed.drainDamageType(
-      { kind: "spell", castHits: r.castRes.hits, drainDamage: newDamage, force: r.force },
+      { kind: r.kind, castHits: r.main.hits, drainDamage: newDamage, force: r.force },
       pnj,
     );
     const applied = ed.applyDrainDamage(pnj, newDamage, newType);
     r.drain = {
       res: newRes,
-      dv: r.dv,
+      dv: r.drain.dv,
       damage: newDamage,
       type: newType,
       applied,
-      castRerolled: r.drain.castRerolled,
+      mainRerolled: r.drain.mainRerolled,
       drainRerolled: true,
     };
     DiceLog.record(newRes, {
-      label: `Résistance au Drain — ${r.entry.name}`,
+      label: `Résistance au Drain — ${this._label().replace(/^Sort — /, "")}`,
       who: pnj.name || "",
     });
     this._hooks.onPnjChanged(pnj);
-    this._present(false); // le cast n'a pas changé → seul le Drain est re-loggé
+    this._present(false); // le jet principal n'a pas changé → seul le Drain re-loggé
   },
 
   /** Résout le Drain d'une action magique et l'encaisse (partagé sorts /
@@ -372,6 +418,17 @@ const MagicAction = {
       force,
       label: "Invocation",
     });
-    return { netHits, casterHits: conjRes.hits, spiritHits: spiritRes.hits, dv, ...drain };
+    // Objets conjRes/spiritRes/drain conservés pour presentConjuration (relances).
+    return {
+      netHits,
+      casterHits: conjRes.hits,
+      spiritHits: spiritRes.hits,
+      dv,
+      conjRes,
+      spiritRes,
+      drain,
+      drainDamage: drain.drainDamage,
+      type: drain.type,
+    };
   },
 };

@@ -900,8 +900,17 @@ const DiceRoller = {
       ${tag}
       ${limitTag}
       ${poolHtml}
+      ${this._conjureInfoHtml(opts)}
       ${this._drainBlockHtml(opts.drain)}
       ${opts.drain ? this._spellRerollButtons(res, opts) : this._rerollBtnHtml()}`;
+  },
+
+  /** Ligne d'info d'une invocation (CH-M7e) : résistance de l'esprit et
+      succès nets = services obtenus. */
+  _conjureInfoHtml(opts) {
+    if (!opts.conjure) return "";
+    const c = opts.conjure;
+    return `<span class="dice-summary-breakdown">Esprit résiste : ${c.spiritHits} · Services : <strong>${c.netHits}</strong></span>`;
   },
 
   /** Deux boutons de Seconde chance pour un lancer de sort (CH-M7e) : l'un
@@ -909,7 +918,7 @@ const DiceRoller = {
       comme dans les règles). Chacun débite 1 point d'Edge, se désactive si
       la ressource manque, si cette partie a déjà été relancée, ou sur échec
       critique. Gérés par MagicAction (data-action=reroll-cast/-drain). */
-  _spellRerollButtons(castRes, opts) {
+  _spellRerollButtons(mainRes, opts) {
     const d = opts.drain;
     const pnj = opts.pnjId ? this._hooks.resolve(opts.pnjId) : null;
     const action = App.editionModule && App.editionModule.rerollAction;
@@ -917,10 +926,12 @@ const DiceRoller = {
     const attr = action.costAttr;
     const edge = (pnj.attrs && pnj.attrs[attr]) || 0;
     const hint = `<span class="dice-reroll-hint">${Utils.escHtml(attr)} ${edge}</span>`;
-    const castDis = edge <= 0 || d.castRerolled || castRes.critGlitch;
+    // Libellé du jet principal selon le type d'action magique.
+    const mainLabel = opts.kind === "conjuration" ? "Conjuration" : "sort";
+    const mainDis = edge <= 0 || d.mainRerolled || mainRes.critGlitch;
     const drainDis = edge <= 0 || d.drainRerolled || d.res.critGlitch;
     return `<div class="dice-spell-rerolls">
-      <button class="dice-reroll-btn" data-action="reroll-cast"${castDis ? " disabled" : ""}>↻ ${Utils.escHtml(action.label)} — sort${hint}</button>
+      <button class="dice-reroll-btn" data-action="reroll-cast"${mainDis ? " disabled" : ""}>↻ ${Utils.escHtml(action.label)} — ${mainLabel}${hint}</button>
       <button class="dice-reroll-btn" data-action="reroll-drain"${drainDis ? " disabled" : ""}>↻ ${Utils.escHtml(action.label)} — Drain${hint}</button>
     </div>`;
   },
