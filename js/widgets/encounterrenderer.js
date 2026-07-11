@@ -44,7 +44,13 @@ const EncounterRenderer = {
       </div>`;
       return;
     }
-    list.innerHTML = html;
+    // Action de fin de scène rendue en pied de liste (le tracker n'a pas de
+    // barre d'outils modifiable ici) : réinitialise tous les moniteurs.
+    list.innerHTML =
+      html +
+      `<div class="encounter-scene-actions">
+        <button class="btn-secondary btn-small" data-action="heal-all" title="Réinitialiser les moniteurs de tous les combattants">⛨ Fin de scène — tout soigner</button>
+      </div>`;
   },
 
   /** Suffixe « · Passe N » (SR5 uniquement) — partagé entre le titre du
@@ -120,6 +126,7 @@ const EncounterRenderer = {
         <label class="encounter-acted" title="A joué ce tour">
           <input type="checkbox" ${hasActed ? "checked" : ""} data-action="toggle-acted" data-id="${pnjId}">
         </label>
+        ${pnj._adhoc ? "" : `<button class="btn-icon-tiny" data-action="heal-combatant" data-id="${pnjId}" title="Réinitialiser les moniteurs" aria-label="Réinitialiser les moniteurs">✚</button>`}
         <button class="btn-icon-tiny danger" data-action="remove-combatant" data-id="${pnjId}" title="Retirer">✕</button>
       </div>
     </div>`;

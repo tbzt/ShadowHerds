@@ -323,6 +323,57 @@ const Encounter = {
     UI.focusOwner(pnjId);
   },
 
+  /* ---- Moniteurs (réutiliser un PNJ « frais ») ---- */
+  /** Remet à zéro tous les moniteurs d'un PNJ : générique et édition-
+      agnostique (toute clé finissant par « Filled » — phys/stun/mon/ment/
+      mat, léger/grave/incap Anarchy), donc aucune branche d'édition ici.
+      C'est l'opération inverse d'UI.toggleMonitor et suit le même chemin de
+      persistance. Retourne true si un moniteur a réellement été effacé. */
+  _resetMonitors(pnj) {
+    if (!pnj) return false;
+    let changed = false;
+    for (const k of Object.keys(pnj)) {
+      if (k.endsWith("Filled") && pnj[k]) {
+        pnj[k] = 0;
+        changed = true;
+      }
+    }
+    return changed;
+  },
+
+  /** Bouton « réinitialiser les moniteurs » d'une carte de combat. */
+  healCombatant(pnjId) {
+    const pnj = PnjLookup.find(pnjId);
+    if (!this._resetMonitors(pnj)) return;
+    Shadows.save();
+    CardRenderer.refresh(pnj);
+    toast("Moniteurs réinitialisés.");
+  },
+
+  /** Fin de scène : soigne tous les combattants résolvables d'un coup. */
+  async healAll() {
+    const ok = await Dialog.confirm({
+      title: "Fin de scène",
+      message: "Réinitialiser les moniteurs de tous les combattants (les remettre « frais ») ?",
+      confirmLabel: "Tout soigner",
+    });
+    if (!ok) return;
+    let n = 0;
+    for (const c of this.state.combatants) {
+      const pnj = PnjLookup.find(c.pnjId);
+      if (this._resetMonitors(pnj)) {
+        CardRenderer.refresh(pnj);
+        n++;
+      }
+    }
+    if (n) Shadows.save();
+    toast(
+      n
+        ? `Moniteurs réinitialisés (${n} combattant${n > 1 ? "s" : ""}).`
+        : "Aucun moniteur à réinitialiser.",
+    );
+  },
+
   /* ---- Rendu ---- */
   _rows() {
     return this.state.combatants.map((c) => ({
@@ -424,6 +475,12 @@ const Encounter = {
           break;
         case "remove-combatant":
           this.remove(id);
+          break;
+        case "heal-combatant":
+          this.healCombatant(id);
+          break;
+        case "heal-all":
+          this.healAll();
           break;
         case "focus-combatant":
           this.focusCombatant(id);
