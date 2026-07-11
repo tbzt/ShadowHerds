@@ -709,6 +709,20 @@ select optgroup {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  flex-wrap: wrap;
+}
+/* Sous-titre fonctionnel d'en-tête (CH-U3) : passe en pleine ligne sous le
+   titre (flex-basis:100%), au-dessus du liseré. Police corps, non capitalisée,
+   atténuée — dit CE QUE contient le panneau sans alourdir le titre d'ambiance. */
+.panel-subtitle {
+  flex-basis: 100%;
+  margin-top: -0.35rem;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.8rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-dim);
 }
 .panel-title::before {
   content: "";
