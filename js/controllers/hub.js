@@ -7,13 +7,16 @@
    une seule vue organisée par DOSSIER. Pour la sélection courante
    (pilotée par DossierBar, partagée avec les écrans de génération),
    le contenu est sectionné automatiquement par type ; un filtre de
-   type isole une famille. Une barre de création permet de créer
-   depuis le hub (l'autre mode étant les écrans de génération dédiés).
+   type isole une famille. Le hub est CONSULTATION SEULE (CH-C3) : la
+   création vit dans les écrans dédiés (générateur, Contacts, Serveurs).
+   Un bouton de création CONTEXTUEL y NAVIGUE selon la puce de type
+   active — c'est le seul chemin mobile vers Contacts/Serveurs, absents
+   de la bottom-nav.
 
    Le hub ne détient PAS la sélection : il délègue la sidebar de
    dossiers à DossierBar et s'y abonne pour se rafraîchir. Il ne
-   porte que le filtre de type, le libellé, la grille et la barre
-   de création.
+   porte que le filtre de type, le libellé, la grille et le bouton
+   de création contextuel.
    ============================================================ */
 const Hub = {
   _type: "all", // all | pnj | contact | server
@@ -41,7 +44,34 @@ const Hub = {
 
   render() {
     this._renderChips();
+    this._renderCreate();
     this._renderMain(); // met aussi le libellé à jour (compte affiché)
+  },
+
+  // Chaque type de contenu → son écran de création dédié. En vue « Tout »
+  // (pas d'entrée manquante), le bouton est masqué (pas de cible unique).
+  _CREATE_TARGET: {
+    pnj: { panel: "generator", label: "PNJ" },
+    contact: { panel: "contacts", label: "contact" },
+    server: { panel: "matrix", label: "serveur" },
+    pj: { panel: "characters", label: "PJ" },
+  },
+
+  /** Bouton de création contextuel : navigue (show-panel) vers l'écran de
+      création du type filtré. Reste dans la doctrine « consultation seule »
+      (il ne crée pas en ligne) et fournit sur mobile le seul accès à la
+      création de contacts/serveurs, absents de la bottom-nav. */
+  _renderCreate() {
+    const btn = document.getElementById("hub-create-btn");
+    if (!btn) return;
+    const target = this._CREATE_TARGET[this._type];
+    if (!target) {
+      btn.hidden = true;
+      return;
+    }
+    btn.hidden = false;
+    btn.dataset.panel = target.panel;
+    btn.textContent = `＋ Nouveau ${target.label}`;
   },
 
   // `shown` = nombre d'entités réellement affichées après filtrage ; en

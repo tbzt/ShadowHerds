@@ -133,10 +133,10 @@ const EditionAnarchy2 = {
   initiativeFor() {
     return null;
   },
-  /** Règles de round pour le tracker de combat. Anarchy 2.0 : pas
-      d'initiative chiffrée, l'ordre est décidé/rangé à la main et conservé
-      d'un round à l'autre → pas de relance, passe unique. */
-  combatModel: { rerollEachRound: false, passDecrement: 0 },
+  /** Règles de round pour le tracker de combat. Anarchy 2.0 : pas d'initiative
+      chiffrée, l'ordre est narratif (combativité, cf. p.180). narrative:true →
+      le tracker passe en mode dépouillé (tap-to-grise), sans init/tri/réordre. */
+  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true },
   // steps() est lazy : spirits.js (catalogs) charge après les modules
   // d'édition (foyer), Spirits.ANARCHY_TIERS n'existe pas encore ici.
   summonPower: {

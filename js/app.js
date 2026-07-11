@@ -83,7 +83,7 @@ const App = {
      créatures + 3 thèmes inutiles du chargement initial. */
   _loadedAssets: new Set(),
   _EDITION_CSS: {
-    sr5: "css/theme-sr5.css?v=19",
+    sr5: "css/theme-sr5.css?v=20",
     sr6: "css/theme-sr6.css?v=18",
     anarchy2: "css/theme-anarchy.css?v=20",
     anarchy1: "css/theme-anarchy1.css?v=1",
@@ -92,11 +92,11 @@ const App = {
     sr5: ["js/editions/sr5.js?v=956", "js/editions/sr5.foundry.js?v=4"],
     sr6: ["js/editions/sr6.js?v=955", "js/editions/sr6.foundry.js?v=5"],
     anarchy2: [
-      "js/editions/anarchy2.js?v=38",
+      "js/editions/anarchy2.js?v=39",
       "js/editions/anarchy2.creation.js?v=6",
       "js/editions/anarchy2.foundry.js?v=6",
     ],
-    anarchy1: ["js/editions/anarchy1.js?v=13"],
+    anarchy1: ["js/editions/anarchy1.js?v=14"],
   },
   // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
   _COMMON_JS: ["js/catalogs/creatures.js?v=955"],

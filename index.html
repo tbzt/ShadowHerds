@@ -10,7 +10,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@400;500&family=Oswald:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=75">
+  <link rel="stylesheet" href="css/base.css?v=77">
   <!-- Thèmes d'édition chargés à la sélection (App._loadEditionAssets, CH-P1b). -->
 </head>
 
@@ -309,6 +309,11 @@
                 <span id="hub-dossier-label" class="shadows-group-label">Tout le contenu</span>
                 <input type="search" class="filter-input" data-hub-filter
                   placeholder="Rechercher (nom, archétype…)" aria-label="Rechercher dans Ombres portées">
+                <!-- Création contextuelle : NAVIGUE vers l'écran de création du
+                     type filtré (le hub reste consultation seule, CH-C3). Libellé
+                     et cible pilotés par Hub._renderCreate selon la puce active ;
+                     masqué en vue « Tout ». Seul chemin mobile vers Contacts/Serveurs. -->
+                <button class="btn-primary btn-small" id="hub-create-btn" data-action="show-panel" hidden>＋ Créer</button>
                 <button class="btn-secondary btn-small" data-action="encounter-open" title="Ouvrir le suivi de combat">⚔ Combat</button>
                 <button class="btn-secondary btn-small" data-action="backup-export" title="Exporter tous les PNJ et contacts (toutes éditions)">⤓ Exporter</button>
                 <button class="btn-secondary btn-small" data-action="backup-import" title="Importer depuis un fichier ou une URL">⤒ Importer</button>
@@ -575,6 +580,9 @@
                pouce sur mobile), séparée des actions secondaires ci-dessus. -->
           <div class="encounter-turn-bar">
             <button class="btn-primary" data-action="next-turn">▸ Tour suivant</button>
+            <!-- Mode narratif (Anarchy) : pas d'ordre de tour → l'action primaire
+                 est « Round suivant » (rallume tous les combattants). -->
+            <button class="btn-primary encounter-narrative-only" data-action="next-round">↻ Round suivant</button>
           </div>
         </div>
         <!-- Fiche du combattant actif (cf. EncounterRenderer.renderActiveCard) : masquée pour un PJ ad-hoc ou une scène vide. -->
@@ -684,7 +692,7 @@
   <script defer src="js/widgets/collection.js?v=9"></script>
   <script defer src="js/widgets/bulkbar.js?v=1"></script>
   <script defer src="js/widgets/serverrenderer.js?v=5"></script>
-  <script defer src="js/widgets/encounterrenderer.js?v=9"></script>
+  <script defer src="js/widgets/encounterrenderer.js?v=10"></script>
   <script defer src="js/controllers/servers.js?v=950"></script>
   <script defer src="js/controllers/intrusion.js?v=2"></script>
   <script defer src="js/widgets/dicelog.js?v=4"></script>
@@ -705,7 +713,7 @@
   <script defer src="js/controllers/pnjlookup.js?v=4"></script>
   <script defer src="js/widgets/palette.js?v=1"></script>
   <script defer src="js/controllers/portrait.js?v=11"></script>
-  <script defer src="js/controllers/encounter.js?v=11"></script>
+  <script defer src="js/controllers/encounter.js?v=12"></script>
   <script defer src="js/controllers/editmodal.js?v=951"></script>
   <script defer src="js/controllers/contactgen.js?v=951"></script>
   <script defer src="js/controllers/contacts.js?v=950"></script>

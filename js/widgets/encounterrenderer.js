@@ -24,6 +24,14 @@ const EncounterRenderer = {
     const passEl = document.getElementById("encounter-pass");
     if (passEl) passEl.textContent = this._passSuffix(state, model);
 
+    // CH combat (Vague N) : mode narratif (Anarchy) — pas d'initiative ni d'ordre,
+    // juste un pool qu'on éteint. Piloté par la CAPACITÉ combatModel.narrative
+    // déclarée dans le module d'édition (jamais une branche App.edition ici) ;
+    // bascule la présentation du modal (boutons chiffrés masqués, cf. CSS).
+    const narrative = !!model.narrative;
+    const modal = document.querySelector(".encounter-modal");
+    if (modal) modal.classList.toggle("is-narrative", narrative);
+
     const list = document.getElementById("encounter-list");
     if (!list) return;
 
@@ -32,7 +40,9 @@ const EncounterRenderer = {
     const html = rows
       .map((r, i) =>
         r.pnj
-          ? this._row(r, i === state.turnIndex, this._outOfPass(r, state, model), this._effectiveInit(r, state, model))
+          ? narrative
+            ? this._rowNarrative(r)
+            : this._row(r, i === state.turnIndex, this._outOfPass(r, state, model), this._effectiveInit(r, state, model))
           : ""
       )
       .join("");
@@ -44,13 +54,54 @@ const EncounterRenderer = {
       </div>`;
       return;
     }
+    // En narratif : compteur « X / N ont joué » en tête de liste (état d'un coup
+    // d'œil, à la place de l'ordre d'initiative absent).
+    const progressHtml = narrative ? this._narrativeProgress(rows) : "";
     // Action de fin de scène rendue en pied de liste (le tracker n'a pas de
     // barre d'outils modifiable ici) : réinitialise tous les moniteurs.
     list.innerHTML =
+      progressHtml +
       html +
       `<div class="encounter-scene-actions">
         <button class="btn-secondary btn-small" data-action="heal-all" title="Réinitialiser les moniteurs de tous les combattants">⛨ Fin de scène — tout soigner</button>
       </div>`;
+  },
+
+  /** Compteur de progression du round narratif : combien de combattants ont
+      déjà joué sur le total présent. */
+  _narrativeProgress(rows) {
+    const present = rows.filter((r) => r.pnj);
+    const played = present.filter((r) => r.hasActed).length;
+    return `<div class="encounter-progress">${played} / ${present.length} ont joué</div>`;
+  },
+
+  /** Ligne narrative (Anarchy) : la ligne entière est un bouton tap-to-grise
+      (data-action="narrative-toggle") ; pas de jeton d'init, ⚄, tri ni ▲▼.
+      Le ✕ (retirer) et « voir la fiche » restent derrière le menu ⋯ pour ne
+      pas retirer par mégarde en tapant pour marquer « a joué ». */
+  _rowNarrative(r) {
+    const { pnjId, hasActed, pnj } = r;
+    const name = Utils.escHtml(pnj.name || "");
+    const kind = this._kindLabel(r);
+    // Combativité (Anarchy 2.0, champ threatLevel) affichée en pastille — c'est
+    // l'info qui guide « qui décroche quand » (cf. Vague D).
+    const comb = pnj.threatLevel
+      ? `<span class="encounter-kind encounter-comb">${Utils.escHtml(pnj.threatLevel)}</span>`
+      : "";
+    const focusItem = pnj._adhoc
+      ? ""
+      : `<button class="btn-icon-tiny" data-action="focus-combatant" data-id="${pnjId}" title="Voir la fiche" aria-label="Voir la fiche">☰</button>`;
+    return `<div class="encounter-nrow${hasActed ? " has-acted" : ""}" data-action="narrative-toggle" data-id="${pnjId}" role="button" tabindex="0" aria-pressed="${hasActed}" title="A joué — toucher pour basculer">
+      <span class="encounter-nrow-check" aria-hidden="true">✓</span>
+      <span class="encounter-nrow-name">${name}</span>
+      <span class="encounter-kind">${kind}</span>
+      ${comb}
+      <button class="btn-icon-tiny encounter-row-menu" data-action="row-menu" title="Plus d'actions" aria-label="Plus d'actions">⋯</button>
+      <span class="encounter-controls-secondary">
+        ${focusItem}
+        <button class="btn-icon-tiny danger" data-action="remove-combatant" data-id="${pnjId}" title="Retirer" aria-label="Retirer">✕</button>
+      </span>
+    </div>`;
   },
 
   /** Suffixe « · Passe N » (SR5 uniquement) — partagé entre le titre du
@@ -243,9 +294,18 @@ const EncounterRenderer = {
       levier per-carte exposé (_refIsOpen lit pnj._refOpen en priorité). Le MJ
       garde la .ref-toggle de la carte pour déplier au besoin ; l'effet ne
       touche la carte du pool qu'à son prochain rendu (compact = défaut CH-C1). */
-  renderActiveCard(rows, state) {
+  renderActiveCard(rows, state, model) {
     const box = document.getElementById("encounter-active-card");
     if (!box) return;
+
+    // En narratif il n'y a pas de « tour actif » : pas de fiche épinglée (elle
+    // afficherait arbitrairement le 1er combattant). On la masque.
+    if (model && model.narrative) {
+      this._activeCardId = null;
+      box.hidden = true;
+      box.innerHTML = "";
+      return;
+    }
 
     const active = rows[state.turnIndex];
     const pnj = active && active.pnj && !active.pnj._adhoc ? active.pnj : null;
@@ -277,9 +337,18 @@ const EncounterRenderer = {
     const roundEl = document.getElementById("sidebar-encounter-round");
     if (roundEl) roundEl.textContent = "Round " + state.round + this._passSuffix(state, model);
 
-    const active = rows[state.turnIndex];
     const nameEl = document.getElementById("sidebar-encounter-name");
     const kindEl = document.getElementById("sidebar-encounter-kind");
+    // Narratif : pas de combattant actif → on résume la progression du round.
+    if (model && model.narrative) {
+      const present = rows.filter((r) => r.pnj);
+      const played = present.filter((r) => r.hasActed).length;
+      if (nameEl) nameEl.textContent = `${played} / ${present.length} ont joué`;
+      if (kindEl) kindEl.textContent = "";
+      return;
+    }
+
+    const active = rows[state.turnIndex];
     if (active && active.pnj) {
       if (nameEl) nameEl.textContent = active.pnj.name || "—";
       if (kindEl) kindEl.textContent = this._kindLabel(active);

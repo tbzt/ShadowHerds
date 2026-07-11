@@ -200,7 +200,8 @@
 
 /* ---- Formulaires : champs anguleux façon fiche administrative ---- */
 [data-edition="sr5"] .form-group label {
-  color: #8b6a4a;
+  /* CH-V9 : 4.5:1 mini sur --bg-card (l'ancien #8b6a4a plafonnait à 3.95). */
+  color: #a58057;
 }
 [data-edition="sr5"] .form-group input,
 [data-edition="sr5"] .form-group select,

@@ -166,8 +166,10 @@ select optgroup {
   text-transform: uppercase;
   text-align: center;
 }
+/* CH-V9 : encres de l'accueil remontées ≥ 4.5:1 (AA) sur leur fond —
+   même teinte, juste plus claire ; la hiérarchie reste donnée par la taille. */
 .edition-title span {
-  color: #444;
+  color: #7e7e7e;
   display: block;
   font-size: 0.45em;
   letter-spacing: 0.3em;
@@ -188,7 +190,7 @@ select optgroup {
   display: block;
   margin-top: 0.35rem;
   font-size: 0.8rem;
-  color: #5a5a5a;
+  color: #828282;
 }
 
 .edition-cards {
@@ -334,13 +336,13 @@ select optgroup {
   font-family: "Share Tech Mono", monospace;
 }
 .edition-card[data-ed="sr5"] .ed-sub {
-  color: #7a5a2a;
+  color: #a77b35;
 }
 .edition-card[data-ed="sr6"] .ed-sub {
-  color: #1a7a95;
+  color: #2a95b5;
 }
 .edition-card[data-ed="anarchy1"] .ed-sub {
-  color: #6a4038;
+  color: #a8705f;
 }
 .edition-card[data-ed="anarchy2"] .ed-sub {
   color: #ff8a8a;
@@ -352,7 +354,7 @@ select optgroup {
   right: 6px;
   font-family: "Share Tech Mono", monospace;
   font-size: 0.55rem;
-  color: #7a5050;
+  color: #a8746a;
   border: 1px solid #4a2620;
   padding: 0 4px;
   border-radius: 2px;
@@ -367,7 +369,7 @@ select optgroup {
   font-family: "Share Tech Mono", monospace;
   font-size: 0.6rem;
   line-height: 1.6;
-  color: #4a4a4a;
+  color: #7a7a7a;
   text-align: center;
 }
 
@@ -2734,6 +2736,92 @@ select optgroup {
 .encounter-turn-bar .btn-primary {
   flex: 1;
   min-height: 44px;
+}
+
+/* ---- Mode narratif (Anarchy) : tracker dépouillé ----
+   Piloté par .is-narrative (posé selon combatModel.narrative). On masque les
+   actions chiffrées (init/tri) et « Tour suivant » (pas d'ordre) ; l'action
+   primaire devient « Round suivant » (rallume tout le monde). */
+.encounter-narrative-only {
+  display: none;
+}
+.encounter-modal.is-narrative .encounter-toolbar [data-action="roll-and-sort"],
+.encounter-modal.is-narrative .encounter-toolbar [data-action="sort-init"],
+.encounter-modal.is-narrative .encounter-toolbar [data-action="next-round"],
+.encounter-modal.is-narrative .encounter-turn-bar [data-action="next-turn"] {
+  display: none;
+}
+.encounter-modal.is-narrative .encounter-narrative-only {
+  display: flex;
+}
+/* Compteur « X / N ont joué » en tête de liste narrative. */
+.encounter-progress {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.1rem 0.5rem;
+}
+/* Ligne narrative : grande cible tap-to-grise, sans jeton d'init. */
+.encounter-nrow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.7rem 0.6rem;
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-mid);
+  color: var(--text);
+  cursor: pointer;
+}
+.encounter-nrow-check {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  font-size: 0.8rem;
+}
+.encounter-nrow-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.encounter-comb {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+/* Joué : coché + grisé barré (fond succès discret). */
+.encounter-nrow.has-acted {
+  background: color-mix(in srgb, var(--success) 12%, var(--bg-mid));
+  border-color: var(--success);
+  opacity: 0.85;
+}
+.encounter-nrow.has-acted .encounter-nrow-check {
+  background: var(--success);
+  border-color: var(--success);
+  color: #fff;
+}
+.encounter-nrow.has-acted .encounter-nrow-name {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+.encounter-nrow .encounter-controls-secondary {
+  display: none;
+}
+.encounter-nrow.menu-open .encounter-controls-secondary {
+  display: inline-flex;
+}
+.encounter-nrow.menu-open .encounter-row-menu {
+  color: var(--accent);
 }
 
 /* Cibles tactiles ≥44px partout où le pointeur est grossier (mobile ET

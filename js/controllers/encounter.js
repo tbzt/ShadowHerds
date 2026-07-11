@@ -439,7 +439,7 @@ const Encounter = {
     const rows = this._rows();
     const model = this._model();
     EncounterRenderer.render(this.state, rows, model);
-    EncounterRenderer.renderActiveCard(rows, this.state);
+    EncounterRenderer.renderActiveCard(rows, this.state, model);
     EncounterRenderer.renderSidebar(this.state, rows, model);
   },
   _commit() {
@@ -524,11 +524,17 @@ const Encounter = {
           this.clear();
           break;
         case "row-menu": {
-          // Divulgation des actions secondaires d'une ligne (⚄▲▼✚✕) : simple
-          // bascule de classe, éphémère (le prochain commit re-rend la ligne
-          // repliée, ce qui referme le menu — comportement voulu).
-          const row = el.closest(".encounter-row");
+          // Divulgation des actions secondaires d'une ligne (⚄▲▼✚✕ en ordonné,
+          // ☰✕ en narratif) : simple bascule de classe, éphémère (le prochain
+          // commit re-rend la ligne repliée, ce qui referme le menu — voulu).
+          const row = el.closest(".encounter-row, .encounter-nrow");
           if (row) row.classList.toggle("menu-open");
+          break;
+        }
+        case "narrative-toggle": {
+          // Ligne narrative : tap = bascule « a joué » (grise / rallume).
+          const c = this._find(id);
+          if (c) this.markActed(id, !c.hasActed);
           break;
         }
         case "roll-init":

@@ -75,7 +75,10 @@ const EditionAnarchy1 = {
     const attrs = pnj.attrs || {};
     return { base: Math.max(attrs.AGI || 0, attrs.LOG || 0), dice: 2 };
   },
-  combatModel: { rerollEachRound: false, passDecrement: 0 },
+  /** narrative:true — combat sans initiative chiffrée ni ordre figé (le livre
+      A1 gère l'ordre par la narration). Le tracker bascule en mode dépouillé
+      (pool de jetons qu'on éteint), cf. EncounterRenderer._rowNarrative. */
+  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true },
   /** 3 puissances par esprit V1 (mineur/normal/majeur, findings §ESPRITS) —
       field:"tier" réutilise le champ à 3 paliers déjà câblé côté générateur
       (Spirits.ANARCHY_TIERS). Table réelle des esprits : Lot 6. */
