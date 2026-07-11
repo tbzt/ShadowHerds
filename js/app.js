@@ -96,7 +96,7 @@ const App = {
       "js/editions/anarchy2.creation.js?v=6",
       "js/editions/anarchy2.foundry.js?v=6",
     ],
-    anarchy1: ["js/editions/anarchy1.js?v=12"],
+    anarchy1: ["js/editions/anarchy1.js?v=13"],
   },
   // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
   _COMMON_JS: ["js/catalogs/creatures.js?v=955"],

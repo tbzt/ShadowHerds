@@ -10,7 +10,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@400;500&family=Oswald:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=69">
+  <link rel="stylesheet" href="css/base.css?v=71">
   <!-- Thèmes d'édition chargés à la sélection (App._loadEditionAssets, CH-P1b). -->
 </head>
 
@@ -84,6 +84,22 @@
       <circle cx="6" cy="12" r="3.2"/>
       <circle cx="18" cy="12" r="3.2"/>
       <path d="M10.5 8.5l3-3M10.5 15.5l3 3"/>
+    </symbol>
+    <!-- CH-V7 (suite) : barre de type d'entité du générateur (▣✦❖ texte
+         → sprite), seul endroit où ces glyphes étaient déjà traités comme
+         de vraies icônes de nav (icône+libellé séparés, cf. generator.js). -->
+    <symbol id="ic-meta" viewBox="0 0 24 24">
+      <circle cx="12" cy="8" r="3.3"/>
+      <path d="M5.5 20c0-3.5 2.9-5.8 6.5-5.8s6.5 2.3 6.5 5.8"/>
+    </symbol>
+    <symbol id="ic-spirit" viewBox="0 0 24 24">
+      <path d="M12 3l1.8 6.2L20 11l-6.2 1.8L12 19l-1.8-6.2L4 11l6.2-1.8z"/>
+    </symbol>
+    <symbol id="ic-creature" viewBox="0 0 24 24">
+      <circle cx="12" cy="15.5" r="4"/>
+      <circle cx="6" cy="8" r="1.8"/>
+      <circle cx="12" cy="5.5" r="1.8"/>
+      <circle cx="18" cy="8" r="1.8"/>
     </symbol>
   </svg>
 
@@ -637,7 +653,7 @@
   <script defer src="js/rules/itemresolver.js?v=950"></script>
   <script defer src="js/rules/bonusengine.js?v=950"></script>
   <script defer src="js/rules/flavor.js?v=17"></script>
-  <script defer src="js/rules/content.js?v=951"></script>
+  <script defer src="js/rules/content.js?v=952"></script>
   <script defer src="js/rules/magic.js?v=953"></script>
   <script defer src="js/rules/coherence.js?v=950"></script>
   <!-- js/editions/* chargés à la sélection d'édition (App._loadEditionAssets, CH-P1b). -->
@@ -645,7 +661,7 @@
   <script defer src="js/catalogs/vehicles.js?v=951"></script>
   <script defer src="js/catalogs/spirits.js?v=951"></script>
   <!-- creatures.js (238 Ko) chargé à la sélection d'édition (App._loadEditionAssets, CH-P2). -->
-  <script defer src="js/widgets/cardrenderer.js?v=956"></script>
+  <script defer src="js/widgets/cardrenderer.js?v=957"></script>
   <script defer src="js/widgets/cardrenderer.sr5.js?v=9"></script>
   <script defer src="js/widgets/cardrenderer.sr6.js?v=7"></script>
   <script defer src="js/widgets/cardrenderer.anarchy.js?v=954"></script>
@@ -668,14 +684,14 @@
   <script defer src="js/widgets/dicelog.js?v=4"></script>
   <script defer src="js/widgets/notepad.js?v=1"></script>
   <script defer src="js/widgets/opposedroll.js?v=3"></script>
-  <script defer src="js/widgets/magicaction.js?v=4"></script>
-  <script defer src="js/widgets/diceroller.js?v=955"></script>
+  <script defer src="js/widgets/magicaction.js?v=5"></script>
+  <script defer src="js/widgets/diceroller.js?v=956"></script>
   <script defer src="js/widgets/dicepanel.js?v=8"></script>
   <script defer src="js/widgets/sidebartoggle.js?v=21"></script>
   <script defer src="js/widgets/profcategories.js?v=952"></script>
   <script defer src="js/widgets/multiselect.js?v=18"></script>
   <script defer src="js/widgets/singleselect.js?v=3"></script>
-  <script defer src="js/controllers/generator.js?v=953"></script>
+  <script defer src="js/controllers/generator.js?v=954"></script>
   <script defer src="js/controllers/rungen.js?v=953"></script>
   <script defer src="js/controllers/shadows.js?v=27"></script>
   <script defer src="js/controllers/characters.js?v=3"></script>
@@ -692,7 +708,7 @@
   <script defer src="js/controllers/settings.js?v=25"></script>
   <script defer src="js/controllers/backup.js?v=951"></script>
   <script defer src="js/controllers/foundryexport.js?v=4"></script>
-  <script defer src="js/app.js?v=958"></script>
+  <script defer src="js/app.js?v=959"></script>
 
 </body>
 

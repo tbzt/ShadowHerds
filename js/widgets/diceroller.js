@@ -581,6 +581,34 @@ const DiceRoller = {
     return cells;
   },
 
+  /** Petit dé STATIQUE (non animé), pour un jet secondaire présenté dans le
+      résumé (ex. les dés de résistance au Drain d'un sort). */
+  _miniDie(value) {
+    const hit = value >= 5;
+    const one = value === 1;
+    return `<div class="die mini${hit ? " hit" : ""}${one ? " one" : ""}"><div class="die-face">${this._pips(value)}</div></div>`;
+  },
+
+  /** Bloc « Drain » du résumé (CH-M7e) : jet de résistance (ses dés + succès)
+      et dégâts encaissés (ou résisté). Rassemble tout le résultat du lancer de
+      sort dans l'affichage de dés standard. `drain` = { res, dv, damage, type }. */
+  _drainBlockHtml(drain) {
+    if (!drain) return "";
+    const { res, dv, damage, type } = drain;
+    const dice = (res.faces || []).map((v) => this._miniDie(v)).join("");
+    const typeLabel = type === "physical" ? "Physique" : "Étourdissant";
+    const outCls = damage > 0 ? "bad" : "safe";
+    const outcome =
+      damage > 0
+        ? `${damage} case${damage > 1 ? "s" : ""} · ${typeLabel}`
+        : "Résisté";
+    return `<div class="dice-drain">
+      <span class="dice-drain-title">Résistance au Drain — VD ${dv}</span>
+      <div class="dice-drain-tray">${dice}</div>
+      <span class="dice-drain-sub">${res.hits} succès → <strong class="${outCls}">${outcome}</strong></span>
+    </div>`;
+  },
+
   _dieEl(value, delay, isRisk = false, isInit = false, threshold = 5) {
     const hit = !isInit && value >= threshold;
     const one = !isInit && value === 1;
@@ -638,12 +666,21 @@ const DiceRoller = {
       ? `<span class="dice-quick-tag">${Utils.escHtml(last.tag)}</span>`
       : "";
     const rerollHtml = this._rerollBtnHtml();
+    // Drain d'un sort (CH-M7e) : résumé compact dans le bandeau rapide.
+    let drainHtml = "";
+    if (opts.drain) {
+      const d = opts.drain;
+      const t = d.type === "physical" ? "Physique" : "Étourdissant";
+      const txt = d.damage > 0 ? `${d.damage} case${d.damage > 1 ? "s" : ""} (${t})` : "résisté";
+      drainHtml = `<span class="dice-quick-drain">Drain ${d.res.hits}✓ → ${txt}</span>`;
+    }
     el.className = `dice-quick-${last.cls}`;
     el.innerHTML = `${labelHtml}
       <span class="dice-quick-main">${last.main}</span>
       <span class="dice-quick-unit">${last.unit || ""}</span>
       ${tagHtml}
       <span class="dice-quick-sub">${Utils.escHtml(last.sub)}</span>
+      ${drainHtml}
       ${rerollHtml}`;
     void el.offsetWidth;
     el.classList.add("show");
@@ -849,6 +886,7 @@ const DiceRoller = {
       ${tag}
       ${limitTag}
       ${poolHtml}
+      ${this._drainBlockHtml(opts.drain)}
       ${this._rerollBtnHtml()}`;
   },
 

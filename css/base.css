@@ -4954,6 +4954,58 @@ kbd {
     box-shadow: 0 0 26px color-mix(in srgb, var(--danger) 80%, transparent);
   }
 }
+
+/* Bloc « Résistance au Drain » dans le résumé d'un lancer de sort (CH-M7e) :
+   jet de résistance (mini-dés statiques + succès) + dégâts encaissés. */
+.dice-drain {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  border-top: 1px solid var(--border);
+  width: 100%;
+  max-width: 340px;
+}
+.dice-drain-title {
+  font-family: "Share Tech Mono", monospace;
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+.dice-drain-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+.die.mini {
+  --die-size: 20px;
+}
+.die.mini .die-face {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+.dice-drain-sub {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.78rem;
+  color: var(--text);
+}
+.dice-drain-sub .bad {
+  color: var(--danger);
+}
+.dice-drain-sub .safe {
+  color: var(--success);
+}
+.dice-quick-drain {
+  font-family: "Share Tech Mono", monospace;
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  padding-left: 0.5rem;
+  border-left: 1px solid var(--border);
+  margin-left: 0.3rem;
+}
 /* Variantes de couleur du gros chiffre */
 .dice-summary.zero .dice-summary-hits {
   color: var(--text-dim);
@@ -5962,8 +6014,8 @@ input[type="range"]#risk-dice-slider {
   letter-spacing: 0.04em;
 }
 .entity-type-icon {
-  font-size: 1.05rem;
-  line-height: 1;
+  width: 1.05rem;
+  height: 1.05rem;
 }
 .entity-type-btn:hover {
   color: var(--text);
@@ -5982,7 +6034,8 @@ input[type="range"]#risk-dice-slider {
     display: none;
   }
   .entity-type-icon {
-    font-size: 1.3rem;
+    width: 1.3rem;
+    height: 1.3rem;
   }
 }
 

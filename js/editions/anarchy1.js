@@ -465,13 +465,13 @@ const EditionAnarchy1 = {
         { name: "Intimidation", val: 2, attr: "CHA" },
         { name: "Sorcellerie", val: 3, attr: "VOL" },
       ],
-      edgeChoices: 2,
-      edgeOptions: [
-        "Éclair mana (6P/CA, Déf FOR+VOL)",
-        "Boule de feu (7P aire, Déf AGI+LOG)",
-        "Confusion (−2 dés)",
-        "Armure (6 cases)",
-        "Invisibilité",
+      spellChoices: 2,
+      spellOptions: [
+        { name: "Éclair mana", note: "6P/CA" },
+        { name: "Boule de feu", note: "7P aire" },
+        { name: "Confusion", note: "−2 dés" },
+        { name: "Armure", note: "6 cases" },
+        { name: "Invisibilité" },
       ],
       weapons: [
         { name: "Mains nues", dmg: 2, dmgType: "E" },
@@ -636,13 +636,16 @@ const EditionAnarchy1 = {
         { name: "Furtivité", val: 2, attr: "AGI" },
         { name: "Sorcellerie", val: 5, attr: "VOL" },
       ],
-      edges: ["Éclair étourdissant (7E/CA, Déf FOR+VOL)"],
-      edgeChoices: 2,
+      spells: [{ name: "Éclair étourdissant", note: "7E/CA" }],
+      spellChoices: 2,
+      spellOptions: [
+        { name: "Boule de feu", note: "6P aire" },
+        { name: "Confusion", note: "−1 dé" },
+        { name: "Armure", note: "3 cases" },
+        { name: "Soins" },
+      ],
+      edgeChoices: 1,
       edgeOptions: [
-        "Boule de feu (6P aire, Déf AGI+LOG)",
-        "Confusion (−1 dé)",
-        "Armure (3 cases)",
-        "Soins",
         "Focus de maintien",
         "Focus d'invocation (+1 dé Conjuration)",
         "Focus de Sorcellerie (+1 dé)",
@@ -762,15 +765,18 @@ const EditionAnarchy1 = {
         { name: "Furtivité", val: 2, attr: "AGI" },
         { name: "Sorcellerie", val: 6, attr: "VOL" },
       ],
-      edgeChoices: 3,
+      spellChoices: 3,
+      spellOptions: [
+        { name: "Éclair étourdissant", note: "8E/CA" },
+        { name: "Boule de feu", note: "8P aire" },
+        { name: "Confusion", note: "−3 dés" },
+        { name: "Armure", note: "9 cases" },
+        { name: "Invisibilité" },
+        { name: "Augmentation de réflexes" },
+        { name: "Soins" },
+      ],
+      edgeChoices: 1,
       edgeOptions: [
-        "Éclair étourdissant (8E/CA)",
-        "Boule de feu (8P aire)",
-        "Confusion (−3 dés)",
-        "Armure (9 cases)",
-        "Invisibilité",
-        "Augmentation de réflexes",
-        "Soins",
         "Focus de maintien",
         "Focus d'invocation (+3 dés Conjuration)",
         "Focus de Sorcellerie (+3 dés)",
@@ -1013,6 +1019,17 @@ const EditionAnarchy1 = {
       chosenEdges.push(...shuffled.slice(0, statBlock.edgeChoices));
     }
 
+    // Sorts (Éveillés) : sorts fixes + N tirés du pool `spellOptions`, enrichis
+    // par nom depuis Content.spells.anarchy1 (cat/niveau/desc). La `note` de
+    // palier (ex. "8P aire") reste propre au profil. Distinct des Atouts : les
+    // sorts vivent dans leur zone Combat, plus dans les edgeOptions.
+    const chosenSpells = [...(statBlock.spells || [])];
+    if (statBlock.spellChoices > 0 && statBlock.spellOptions?.length) {
+      const shuffled = [...statBlock.spellOptions].sort(() => Math.random() - 0.5);
+      chosenSpells.push(...shuffled.slice(0, statBlock.spellChoices));
+    }
+    const spells = chosenSpells.map((e) => this._enrichSpell(e));
+
     const armor = (statBlock.armor || 0) + armorBonus;
     const pnj = {
       id: Utils.uid(),
@@ -1042,6 +1059,7 @@ const EditionAnarchy1 = {
       skills: statBlock.skills.map((s) => ({ ...s })),
       edges: [...(statBlock.edges || []), ...chosenEdges],
       chosenEdges,
+      spells,
       equip: [
         ...statBlock.weapons.map((w) => this._resolveWeaponV1(w)),
         `Armure ${armor}`,
@@ -1069,6 +1087,19 @@ const EditionAnarchy1 = {
       CardRenderer (VD imprimé au livre, pas recalculé). */
   _resolveWeaponV1(w) {
     return `${w.name} [VD ${w.dmg}${w.dmgType}${w.ranges ? ", " + w.ranges : ""}]`;
+  },
+
+  /** Enrichit un sort de statBlock ({ name, note? }) avec sa fiche catalogue
+      (cat/niveau/desc, Content.spells.anarchy1). La `note` de palier propre au
+      profil (ex. "8P aire") est conservée. Sort inconnu du catalogue → renvoyé
+      tel quel (nom + note), sans planter le rendu. */
+  _enrichSpell(entry) {
+    const name = typeof entry === "string" ? entry : entry.name;
+    const note = (entry && entry.note) || null;
+    const found = (Content.spells.anarchy1 || []).find((s) => s.name === name);
+    return found
+      ? { name, cat: found.cat, niveau: found.niveau, desc: found.desc, note }
+      : { name, note };
   },
 
   /** Recalcule moniteurs/Défense/Init après édition manuelle des attributs

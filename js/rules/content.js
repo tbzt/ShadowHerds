@@ -484,12 +484,236 @@ const Content = {
     // matériau, ou réserve opposée de la cible). Test = Sorcellerie (spé du
     // type) + Volonté. 34 sorts officiels. Le champ `seuil` porte la valeur
     // affichée ; le détail complet est dans `desc`.
-    // V1 : les sorts sont des Atouts (niveau = coût, findings §12), pas un
-    // catalogue séparé comme SR5/SR6/Anarchy 2.0 — EditionAnarchy1.generate()
-    // les pioche directement dans statBlock.edgeOptions. Vide plutôt qu'un
-    // alias vers les 34 sorts d'Anarchy 2.0 (catalogue différent, coûts en
-    // "Seuil" qui n'existent pas en V1).
-    anarchy1: [],
+    // ----- ANARCHY 1re (Shadowrun : Anarchy V1, « SORTS (ÉVEILLÉS
+    // UNIQUEMENT) » p.68-69 + supplément « Anarchistes » p.72) -----
+    // En V1, un sort est un Atout dont le coût s'exprime en « niveau »
+    // (souvent une plage 2/3/4 ; champ `niveau`, nombre ou chaîne — PAS de
+    // `drain` ni de `seuil`, qui n'existent pas en V1). Le livre ne connaît
+    // que 2 types (« sort de combat » / « sort d'effet ») ; on aligne ici la
+    // taxonomie sur les 5 catégories des autres éditions (combat/détection/
+    // santé/illusion/manipulation) pour un filtrage cohérent — la catégorie
+    // d'un sort partagé suit celle d'Anarchy 2.0 (ex. Sens du combat →
+    // détection, Armure → manipulation). Test V1 = Sorcellerie + Volonté ;
+    // pas de VD chiffrée (drainResist reste null). Les 3 statBlocks Éveillés
+    // piochent leurs sorts dans leur propre pool `spellOptions`
+    // (EditionAnarchy1.generate) enrichi par nom depuis ce catalogue.
+    anarchy1: [
+      // — Combat (sorts de combat) — connus des autres éditions d'abord —
+      {
+        name: "Éclair mana",
+        cat: "combat",
+        niveau: 2,
+        proRatingMin: 2,
+        desc: "Sort de combat direct : Dommages 6P/CA, Défense FOR + VOL.",
+      },
+      {
+        name: "Éclair étourdissant",
+        cat: "combat",
+        niveau: 4,
+        proRatingMin: 3,
+        desc: "Sort de combat direct : Dommages 8E/CA, Défense FOR + VOL. Neutralise sans tuer.",
+      },
+      {
+        name: "Boule de feu",
+        cat: "combat",
+        niveau: 2,
+        proRatingMin: 2,
+        desc: "Sort de combat à aire d'effet : Dommages 6P, affecte plusieurs cibles, Défense AGI + LOG.",
+      },
+      {
+        name: "Flot d'acide",
+        cat: "combat",
+        niveau: 2,
+        proRatingMin: 2,
+        desc: "Sort de combat : Dommages 6P, Défense AGI + LOG, +2 dommages à l'Armure.",
+      },
+      {
+        name: "Foudre",
+        cat: "combat",
+        niveau: 3,
+        proRatingMin: 3,
+        desc: "Sort de combat : Dommages 6P/CA, Défense AGI + LOG, permet de relancer 1 échec sur le test de Sorcellerie.",
+      },
+      {
+        name: "Vague de pollution",
+        cat: "combat",
+        niveau: "4 / 5 / 6",
+        proRatingMin: 3,
+        desc: "(Anarchistes) Sort de combat à aire d'effet : Dommages 6/7/8P, Défense AGI + LOG, +2 dommages à l'Armure.",
+      },
+      {
+        name: "Rayon radioactif",
+        cat: "combat",
+        niveau: "3 / 4 / 5",
+        proRatingMin: 3,
+        desc: "(Anarchistes) Dommages 6P/CA, Défense FOR + VOL. Dommages continus de 1P (armure ignorée) les 1/2/3 prochaines Narrations.",
+      },
+      {
+        name: "Explosion radioactive",
+        cat: "combat",
+        niveau: "4 / 5 / 6",
+        proRatingMin: 3,
+        desc: "(Anarchistes) Aire d'effet : Dommages 6P/CA, Défense FOR + VOL. Dommages continus de 1P (armure ignorée) les 1/2/3 prochaines Narrations.",
+      },
+      // — Détection —
+      {
+        name: "Analyse de véracité",
+        cat: "detection",
+        niveau: 1,
+        proRatingMin: 1,
+        desc: "Le lanceur détermine si la cible dit la vérité ou non.",
+      },
+      {
+        name: "Détection de la magie",
+        cat: "detection",
+        niveau: 1,
+        proRatingMin: 1,
+        desc: "Rend les objets magiques et les sorts actifs brillants aux yeux du lanceur.",
+      },
+      {
+        name: "Détection des ennemis",
+        cat: "detection",
+        niveau: 1,
+        proRatingMin: 1,
+        desc: "Localise toute personne à portée intermédiaire ayant des intentions hostiles envers le personnage.",
+      },
+      {
+        name: "Sens du combat",
+        cat: "detection",
+        niveau: "2 / 3 / 4",
+        proRatingMin: 2,
+        desc: "Permet d'ajouter 1/2/3 dés sur ses tests de défense en combat tant que le sort est maintenu.",
+      },
+      {
+        name: "Clairvoyance",
+        cat: "detection",
+        niveau: 1,
+        proRatingMin: 1,
+        desc: "Permet au lanceur de voir un lieu distant comme s'il s'y trouvait.",
+      },
+      {
+        name: "Diagnostic",
+        cat: "detection",
+        niveau: 1,
+        proRatingMin: 1,
+        desc: "Permet de déterminer l'état de santé de la cible.",
+      },
+      // — Santé —
+      {
+        name: "Soins",
+        cat: "sante",
+        niveau: 2,
+        proRatingMin: 2,
+        desc: "Soigne une case de dommages Physiques ou Étourdissants par succès sur un test simple de Sorcellerie + Volonté (tenir compte de l'Essence de la cible).",
+      },
+      {
+        name: "Augmentation de réflexes",
+        cat: "sante",
+        niveau: "2 / 3 / 4",
+        proRatingMin: 2,
+        desc: "Accélère la cible : niveau 2 = +1 point d'Anarchy/Scène ; niveau 3 = +1 attaque par Narration, +1 point d'Anarchy/Scène ; niveau 4 = +1 attaque par Narration, +2 points d'Anarchy/Scène.",
+      },
+      {
+        name: "Antidote",
+        cat: "sante",
+        niveau: 1,
+        proRatingMin: 1,
+        desc: "Permet à la cible d'éliminer les effets d'une toxine.",
+      },
+      {
+        name: "Résistance à la douleur",
+        cat: "sante",
+        niveau: "2 / 3 / 4",
+        proRatingMin: 2,
+        desc: "Permet d'ignorer les modificateurs de blessure de 1/2/3 dés.",
+      },
+      // — Illusion —
+      {
+        name: "Invisibilité",
+        cat: "illusion",
+        niveau: "2 / 3 / 4",
+        proRatingMin: 2,
+        desc: "Permet à la cible de relancer 1/2/3 échecs sur ses tests de Furtivité tant que le sort est maintenu.",
+      },
+      {
+        name: "Confusion",
+        cat: "illusion",
+        niveau: "2 / 3 / 4",
+        proRatingMin: 2,
+        desc: "La cible est confuse et subit un modificateur de −1/2/3 dés sur tous ses tests tant que le sort est maintenu.",
+      },
+      {
+        name: "Masque",
+        cat: "illusion",
+        niveau: "2 / 3 / 4",
+        proRatingMin: 2,
+        desc: "Change l'apparence de la cible et lui permet de relancer 1/2/3 échecs sur ses tests de Comédie tant que le sort est maintenu.",
+      },
+      {
+        name: "Illusion",
+        cat: "illusion",
+        niveau: "2 / 3 / 4",
+        proRatingMin: 2,
+        desc: "La cible voit des choses qui n'existent pas et subit un modificateur de −1/2/3 dés sur tous ses tests perturbés par ces visions tant que le sort est maintenu.",
+      },
+      {
+        name: "Invisibilité de masse",
+        cat: "illusion",
+        niveau: "3 / 4 / 5",
+        proRatingMin: 3,
+        desc: "Permet à un groupe de personnages de relancer 1/2/3 échecs sur leurs tests de Furtivité tant que le sort est maintenu.",
+      },
+      {
+        name: "Monde chaotique",
+        cat: "illusion",
+        niveau: "3 / 4 / 5",
+        proRatingMin: 3,
+        desc: "Rend tous les personnages dans la zone confus et les force à relancer 1/2/3 succès sur tous leurs tests tant que le sort est maintenu.",
+      },
+      // — Manipulation —
+      {
+        name: "Armure",
+        cat: "manipulation",
+        niveau: "2 / 3 / 4",
+        proRatingMin: 2,
+        desc: "Octroie 3/6/9 cases d'Armure supplémentaires à la cible tant qu'il est maintenu ; le sort est automatiquement interrompu une fois toutes les cases cochées.",
+      },
+      {
+        name: "Contrôle des pensées",
+        cat: "manipulation",
+        niveau: "2 / 3 / 4",
+        proRatingMin: 2,
+        desc: "Octroie +1/2/3 dés pour les tests d'Intimidation et de Négociation contre la cible tant que le sort est maintenu.",
+      },
+      {
+        name: "Barrière",
+        cat: "manipulation",
+        niveau: "2 / 3 / 4",
+        proRatingMin: 2,
+        desc: "Crée une barrière magique fixe de quelques mètres ayant 3/6/9 cases de Blindage.",
+      },
+      {
+        name: "Armure de flammes",
+        cat: "manipulation",
+        niveau: 3,
+        proRatingMin: 3,
+        desc: "Octroie 3 cases d'Armure supplémentaires tant qu'il est maintenu et cause 1 case de dommages à tout personnage qui touche la cible au corps à corps.",
+      },
+      {
+        name: "Accident",
+        cat: "manipulation",
+        niveau: 3,
+        proRatingMin: 3,
+        desc: "Lors d'un combat, ajoute un dé de complication sur deux tests de la cible à chaque Tour.",
+      },
+      {
+        name: "Mana corrompu",
+        cat: "manipulation",
+        niveau: 3,
+        proRatingMin: 3,
+        desc: "(Anarchistes) Corrompt le mana autour de la cible, qui doit relancer 2 succès sur ses tests de Sorcellerie.",
+      },
+    ],
     anarchy2: [
       // — Combat (7) — direct = dommages mentaux, indirect = physiques —
       {

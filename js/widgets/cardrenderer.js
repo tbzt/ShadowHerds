@@ -498,8 +498,11 @@ const CardRenderer = {
   _spellInfo(sp) {
     if (!sp || typeof sp !== "object") return "";
     const bits = [];
+    // Note de palier (Anarchy 1re : dégâts/effet propres au profil, ex. "8P aire").
+    if (sp.note) bits.push(sp.note);
     if (sp.drain != null) bits.push(`Drain ${sp.drain}`);
     else if (sp.seuil != null) bits.push(`Seuil ${sp.seuil}`);
+    else if (sp.niveau != null) bits.push(`Niveau ${sp.niveau}`);
     if (sp.cat) bits.push(sp.cat);
     return bits.join(" · ");
   },

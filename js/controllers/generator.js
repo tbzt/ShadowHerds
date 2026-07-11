@@ -126,18 +126,18 @@ const Gen = {
   /* ---- Sélecteur de type d'entité (PNJ individuel) ---- */
   _entityTypeBar() {
     const types = [
-      ["meta", "▣", "Métahumain"],
-      ["spirit", "✦", "Esprit libre"],
-      ["creature", "❖", "Créature"],
+      ["meta", "Métahumain"],
+      ["spirit", "Esprit libre"],
+      ["creature", "Créature"],
     ];
     return `<div class="entity-type-bar" role="tablist" aria-label="Type d'entité">
       ${types
         .map(
-          ([key, icon, label]) =>
+          ([key, label]) =>
             `<button type="button" class="entity-type-btn${key === this.entityType ? " active" : ""}"
               role="tab" aria-selected="${key === this.entityType}"
               data-action="set-entity-type" data-entity-type="${key}">
-              <span class="entity-type-icon" aria-hidden="true">${icon}</span>
+              <svg class="icon entity-type-icon" aria-hidden="true"><use href="#ic-${key}"></use></svg>
               <span class="entity-type-label">${label}</span>
             </button>`,
         )

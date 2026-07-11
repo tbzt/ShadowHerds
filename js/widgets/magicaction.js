@@ -178,13 +178,9 @@ const MagicAction = {
     // le dernier jet sur le sort (persisté ; utile pour un sort maintenu).
     const castRes = Dice.computeRoll(Magic.actionPool(pnj, ed.spellSkill, c.edition));
     c.entry._lastCast = { hits: castRes.hits };
-    DiceRoller.show(castRes, {
-      label: `Sort — ${c.name}`,
-      who: pnj.name || "",
-      pnjId: c.pnjId,
-    });
 
-    // 2) Drain (VD du contrat) : résiste, encaisse (met à jour la carte), signale.
+    // 2) Drain (VD du contrat) : résiste (jet loggé), encaisse (met à jour la
+    // carte). Résolu AVANT l'affichage pour le présenter dans le même overlay.
     const dv = ed.spellDrainValue(c.entry, c.force);
     const drain = this._resolveDrain(pnj, ed, {
       dv,
@@ -193,12 +189,16 @@ const MagicAction = {
       force: c.force,
       label: c.name,
     });
-    const t = drain.type === "physical" ? "Physique" : "Étourdissant";
-    toast(
-      drain.drainDamage > 0
-        ? `Drain — ${drain.drainDamage} case${drain.drainDamage > 1 ? "s" : ""} (${t})`
-        : "Drain résisté",
-    );
+
+    // 3) Présente TOUT via l'affichage de dés standard : jet de lancement (dés
+    // + succès) + jet de résistance au Drain + dégâts encaissés. Le cast est
+    // loggé ici (après le Drain → il apparaît en tête, au-dessus de son Drain).
+    DiceRoller.show(castRes, {
+      label: `Sort — ${c.name}`,
+      who: pnj.name || "",
+      pnjId: c.pnjId,
+      drain: { res: drain.res, dv, damage: drain.drainDamage, type: drain.type },
+    });
   },
 
   /** Résout le Drain d'une action magique et l'encaisse (partagé sorts /
@@ -216,7 +216,7 @@ const MagicAction = {
     const type = ed.drainDamageType({ kind, castHits, drainDamage, force }, pnj);
     ed.applyDrainDamage(pnj, drainDamage, type);
     this._hooks.onPnjChanged(pnj);
-    return { resistHits: drainRes.hits, drainDamage, type };
+    return { res: drainRes, resistHits: drainRes.hits, drainDamage, type };
   },
 
   /** Résout une invocation (CH-M7c) : roule Conjuration (magicien) +
