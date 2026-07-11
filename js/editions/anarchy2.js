@@ -61,6 +61,32 @@ const EditionAnarchy2 = {
   },
   /** Neutre : pas de Drain chiffré à appliquer (cf. drainDamageType). */
   applyDrainDamage() {},
+
+  /* ---- Drain par complication (CH-M7d, p.170) : le Drain d'Anarchy 2 n'est
+     pas une VD à résister mais un effet supplémentaire lors des complications
+     d'un jet de risque magique. « Tous les tests de Sorcellerie et Conjuration
+     sont sujets au drain » → magicSkills liste les compétences concernées
+     (donnée d'édition, lue par DiceRoller sans branche). ---- */
+  magicSkills: ["Sorcellerie", "Conjuration"],
+
+  /** Applique l'effet de Drain d'une complication sur un jet magique (p.170) :
+      critique → blessure légère, désastre → blessure incapacitante, mineure →
+      désavantage narratif (non modélisé, simple rappel). Renvoie
+      { wound, label } pour la présentation (toast). */
+  drainOnComplication(pnj, level) {
+    if (level === "critical") {
+      const cap = 2 + (pnj.legerCapBonus || 0);
+      pnj.legerFilled = Utils.clamp((pnj.legerFilled || 0) + 1, 0, cap);
+      return { wound: true, label: "Drain : blessure légère" };
+    }
+    if (level === "disaster") {
+      pnj.incapFilled = 1;
+      return { wound: true, label: "Drain : blessure incapacitante" };
+    }
+    // minor : désavantage magique jusqu'à la prochaine narration — état flou
+    // que l'app ne ferme pas ; on se contente d'un rappel (choix produit).
+    return { wound: false, label: "Drain : désavantage magique jusqu'à la prochaine narration" };
+  },
   ratingBadge: {
     field: "tier",
     label: "Rang",

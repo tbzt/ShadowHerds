@@ -180,8 +180,13 @@ const DiceRoller = {
       const who = (rollPnj && rollPnj.name) || "";
 
       // Anarchy 2.0 : on passe par le panneau de prise de risque
-      if (App.getEditionModule(edition)?.usesRiskPanel) {
-        this.openRiskPanel(n, { label, detail, rr, adv: (rollPnj && rollPnj.drugAdv) || 0, who, pnjId });
+      const edMod = App.getEditionModule(edition);
+      if (edMod?.usesRiskPanel) {
+        // Jet magique (Sorcellerie/Conjuration) → sujet au Drain sur
+        // complication (CH-M7d). Base du label = avant « · » (spécialité).
+        const skillBase = label.split(" · ")[0];
+        const isMagic = !!(edMod.magicSkills && edMod.magicSkills.includes(skillBase));
+        this.openRiskPanel(n, { label, detail, rr, adv: (rollPnj && rollPnj.drugAdv) || 0, who, pnjId, isMagic });
       } else {
         this.rollPool(n, { label, detail, who, pnjId });
       }
@@ -423,10 +428,10 @@ const DiceRoller = {
 
     // Lancer
     document.getElementById("risk-roll-btn").addEventListener("click", () => {
-      const { pool, riskDice, rr, adv, label, detail, who } = this._risk;
+      const { pool, riskDice, rr, adv, label, detail, who, pnjId, isMagic } = this._risk;
       this._closeRiskPanel();
       const res = Dice.computeAnarchyRoll(pool, riskDice, rr, adv);
-      this.show(res, { label, detail, who });
+      this.show(res, { label, detail, who, pnjId, isMagic });
     });
 
     // Échap ferme
@@ -450,6 +455,8 @@ const DiceRoller = {
       label: opts.label || "",
       detail: opts.detail || "",
       who: opts.who || "",
+      pnjId: opts.pnjId || "",
+      isMagic: !!opts.isMagic,
       riskDice: 0,
     };
     this._risk.riskDice = Dice.riskDiceFor("normal", this._risk.rr, pool);
@@ -645,6 +652,11 @@ const DiceRoller = {
     DiceLog.record(res, opts);
     // Source de la relance : dernier résultat brut + son contexte.
     this._lastRoll = { res, opts };
+
+    // Drain par complication (Anarchy 2, CH-M7d) : appliqué ici pour couvrir
+    // les deux rendus (overlay ET lancer rapide) et une seule fois (jamais
+    // sur une relance — la complication d'origine est figée, déjà encaissée).
+    this._applyAnarchyDrain(res, opts);
 
     // Lancer rapide : pas d'animation plein écran
     if (this._prefs().quickRoll) {
@@ -894,5 +906,23 @@ const DiceRoller = {
       ${tag}
       ${poolHtml}
       ${this._rerollBtnHtml()}`;
+  },
+
+  /** Drain par complication (Anarchy 2, CH-M7d) : un jet magique
+      (Sorcellerie/Conjuration, opts.isMagic) qui produit une complication
+      inflige au lanceur l'effet de Drain via le contrat d'édition
+      (drainOnComplication). Blessure encaissée + persistée (onPnjChanged) ;
+      complication mineure = simple rappel. Jamais sur une relance (la
+      complication est figée, déjà appliquée au premier jet). */
+  _applyAnarchyDrain(res, opts) {
+    if (!opts.isMagic || res.rerolled) return;
+    if (!res.anarchy || !res.complication || res.complication === "none") return;
+    const pnj = opts.pnjId ? this._hooks.resolve(opts.pnjId) : null;
+    if (!pnj) return;
+    const mod = App.getEditionModule(pnj.edition);
+    if (!mod || typeof mod.drainOnComplication !== "function") return;
+    const drain = mod.drainOnComplication(pnj, res.complication);
+    if (drain.wound) this._hooks.onPnjChanged(pnj);
+    toast(drain.label);
   },
 };
