@@ -161,32 +161,70 @@ const MagicAction = {
     const castRes = Dice.computeRoll(castPool);
     DiceLog.record(castRes, { label: `Sort — ${c.name}`, who: pnj.name || "" });
 
-    // 2) Drain : VD via le contrat, résistance au Drain du PNJ.
+    // 2-3) Drain (VD du contrat) : résiste, encaisse, présente.
     const dv = ed.spellDrainValue(c.entry, c.force);
-    const drainPool = Math.max(0, (pnj.drainResist || 0) - Utils.woundMalus(pnj, c.edition));
-    const drainRes = Dice.computeRoll(drainPool);
-    DiceLog.record(drainRes, {
-      label: `Résistance au Drain — ${c.name}`,
-      who: pnj.name || "",
+    const drain = this._resolveDrain(pnj, ed, {
+      dv,
+      kind: "spell",
+      castHits: castRes.hits,
+      force: c.force,
+      label: c.name,
     });
-
-    // 3) Dégâts + type (contrat), encaissement sur le bon moniteur.
-    const drainDamage = Magic.resolveDrainDamage(dv, drainRes.hits);
-    const type = ed.drainDamageType(
-      { kind: "spell", castHits: castRes.hits, drainDamage, force: c.force },
-      pnj,
-    );
-    ed.applyDrainDamage(pnj, drainDamage, type);
-    this._hooks.onPnjChanged(pnj);
 
     this._renderResult({
       castHits: castRes.hits,
       dv,
-      resistHits: drainRes.hits,
-      drainDamage,
-      type,
+      resistHits: drain.resistHits,
+      drainDamage: drain.drainDamage,
+      type: drain.type,
     });
     document.getElementById("magic-roll-btn").textContent = "Lancer à nouveau";
+  },
+
+  /** Résout le Drain d'une action magique et l'encaisse (partagé sorts /
+      invocation) : roule la résistance au Drain du PNJ (loggée), calcule les
+      dégâts + le type (contrat d'édition), applique sur le bon moniteur.
+      Renvoie { resistHits, drainDamage, type }. */
+  _resolveDrain(pnj, ed, { dv, kind, castHits, force, label }) {
+    const drainPool = Math.max(0, (pnj.drainResist || 0) - Utils.woundMalus(pnj, pnj.edition));
+    const drainRes = Dice.computeRoll(drainPool);
+    DiceLog.record(drainRes, {
+      label: `Résistance au Drain — ${label}`,
+      who: pnj.name || "",
+    });
+    const drainDamage = Magic.resolveDrainDamage(dv, drainRes.hits);
+    const type = ed.drainDamageType({ kind, castHits, drainDamage, force }, pnj);
+    ed.applyDrainDamage(pnj, drainDamage, type);
+    this._hooks.onPnjChanged(pnj);
+    return { resistHits: drainRes.hits, drainDamage, type };
+  },
+
+  /** Résout une invocation (CH-M7c) : roule Conjuration (magicien) +
+      résistance de l'esprit → services = succès nets, puis le Drain
+      (VD = contrat sur les succès de l'esprit). Renvoie
+      { netHits, casterHits, spiritHits, dv, resistHits, drainDamage, type },
+      ou `null` si l'édition n'a pas de mécanique chiffrée (Anarchy). Ne crée
+      PAS l'esprit — c'est ui._doSummon qui décide selon netHits. */
+  resolveConjuration(owner, force) {
+    const ed = App.getEditionModule(owner.edition);
+    if (!ed.conjureSkill) return null;
+    const conjRes = Dice.computeRoll(Magic.actionPool(owner, ed.conjureSkill, owner.edition));
+    DiceLog.record(conjRes, { label: "Invocation", who: owner.name || "" });
+    const spiritRes = Dice.computeRoll(ed.spiritResistPool(force));
+    DiceLog.record(spiritRes, {
+      label: `Résistance de l'esprit (Puissance ${force})`,
+      who: owner.name || "",
+    });
+    const netHits = Math.max(0, conjRes.hits - spiritRes.hits);
+    const dv = ed.conjureDrainValue(spiritRes.hits);
+    const drain = this._resolveDrain(owner, ed, {
+      dv,
+      kind: "conjuration",
+      castHits: conjRes.hits,
+      force,
+      label: "Invocation",
+    });
+    return { netHits, casterHits: conjRes.hits, spiritHits: spiritRes.hits, dv, ...drain };
   },
 
   _renderResult({ castHits, dv, resistHits, drainDamage, type }) {

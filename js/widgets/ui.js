@@ -179,7 +179,7 @@ const UI = {
           <span class="summon-row-label" id="summon-power-label">Puissance</span>
           <div class="summon-steps" id="summon-power-steps"></div>
         </div>
-        <div class="summon-row">
+        <div class="summon-row" id="summon-service-row">
           <span class="summon-row-label">Services</span>
           <div class="summon-steps" id="summon-service-steps"></div>
         </div>
@@ -229,8 +229,13 @@ const UI = {
     };
     document.getElementById("summon-title").textContent =
       `Invoquer — ${owner.name || "PNJ"}`;
+    const ed = App.getEditionModule(owner.edition);
     document.getElementById("summon-power-label").textContent =
-      App.getEditionModule(owner.edition).summonPower.label;
+      ed.summonPower.label;
+    // Services choisis à la main uniquement là où l'invocation n'est pas
+    // chiffrée (Anarchy) ; en SR5/SR6 ils découlent des succès nets du jet.
+    document.getElementById("summon-service-row").style.display =
+      ed.conjureSkill ? "none" : "";
     this._syncSummonPanel();
     const p = document.getElementById("summon-panel");
     p.removeAttribute("hidden");
@@ -272,16 +277,44 @@ const UI = {
       .join("");
   },
 
+  /** Résumé lisible d'un Drain pour un toast. */
+  _drainToast(conj) {
+    const t = conj.type === "physical" ? "Physique" : "Étourdissant";
+    return conj.drainDamage > 0
+      ? `Drain : ${conj.drainDamage} case${conj.drainDamage > 1 ? "s" : ""} (${t}).`
+      : "Drain résisté.";
+  },
+
   _doSummon(typeKey) {
     const s = this._summon;
     const owner = PnjLookup.find(s.ownerId);
     if (!owner) return;
+    const ed = App.getEditionModule(owner.edition);
+
+    // SR5/SR6 : l'app roule l'invocation (services = succès nets) + le Drain.
+    // Anarchy : pas de mécanique chiffrée → services choisis à la main, pas
+    // de Drain (comportement historique).
+    let services = s.services;
+    let conj = null;
+    if (ed.conjureSkill) {
+      conj = MagicAction.resolveConjuration(owner, s.force);
+      services = conj.netHits;
+    }
+
+    this._closeSummonPanel();
+
+    // Invocation ratée (aucun succès net) : l'esprit n'apparaît pas, mais le
+    // magicien subit tout de même le Drain (SR5 p.303 / SR6 p.150).
+    if (conj && conj.netHits < 1) {
+      toast(`Invocation ratée (0 succès net). ${this._drainToast(conj)}`);
+      return;
+    }
+
     const spirit = Spirits.spawn(owner, typeKey, {
       force: s.force,
       tier: s.tier,
-      services: s.services,
+      services,
     });
-    this._closeSummonPanel();
     if (!spirit) return;
 
     const inShadows = Shadows.data.all.some((p) => p.id === owner.id);
@@ -299,6 +332,9 @@ const UI = {
       card.classList.add("vehicle-card", "spirit-card", "vehicle-deploying");
       ownerCard.insertAdjacentElement("afterend", card);
       setTimeout(() => card.classList.remove("vehicle-deploying"), 700);
+    }
+    if (conj) {
+      toast(`Esprit invoqué : ${services} service${services > 1 ? "s" : ""}. ${this._drainToast(conj)}`);
     }
     CardRenderer.refresh(owner);
   },
