@@ -296,17 +296,21 @@ const SHORTCUT_PANELS = {
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   Storage.migrateAnarchyId();
+  // Persiste + re-rend une fiche modifiée par un jet (dés, Drain…). Partagé
+  // par DiceRoller et MagicAction pour ne pas diverger.
+  const onPnjChanged = (pnj) => {
+    if (Shadows.data.all.some((p) => p.id === pnj.id)) Shadows.save();
+    if (Servers.ownsPnj(pnj.id)) Servers.save();
+    CardRenderer.refresh(pnj);
+  };
   DiceRoller.init({
     resolve: (id) => PnjLookup.find(id),
     getPrefs: () => Settings.getDicePrefs(),
-    onPnjChanged: (pnj) => {
-      if (Shadows.data.all.some((p) => p.id === pnj.id)) Shadows.save();
-      if (Servers.ownsPnj(pnj.id)) Servers.save();
-      CardRenderer.refresh(pnj);
-    },
+    onPnjChanged,
     isRefOpen: (pnj) => CardRenderer._refIsOpen(pnj),
     isAnarchy: () => !!(App.editionModule && App.editionModule.usesRiskPanel),
   });
+  MagicAction.init({ onPnjChanged });
   ContentModal.bindDelegation();
   ContactRenderer.bindDelegation();
   CardRenderer.bindDelegation();

@@ -6,18 +6,9 @@
    seuil sur un test opposé) ou une réserve seule face à un seuil
    fixé par le MJ. Panneau autonome (calqué sur Notepad/DiceLog),
    pas de persistance : c'est un scratch pad de jet, pas une donnée.
-
-   openForDrain (CH-M7b) réutilise le même panneau en mode seuil verrouillé
-   (Camp B désactivé) et rappelle `opts.onResult(hits)` après le jet — ce
-   widget reste sans connaissance de PNJ, l'appelant (diceroller.js) décide
-   quoi faire du résultat (ex. appliquer les dégâts de Drain).
    ============================================================ */
 const OpposedRoll = {
   _open: false,
-
-  /** Contexte du seul appel courant (CH-M7b) : { onResult } quand ouvert
-      via openForDrain, sinon null. Jamais persisté — un panneau à la fois. */
-  _current: null,
 
   _ensure() {
     if (document.getElementById("opposed-panel")) return;
@@ -28,7 +19,7 @@ const OpposedRoll = {
     p.innerHTML = `
       <div class="risk-panel" role="dialog" aria-label="Jet opposé / seuil">
         <div class="risk-panel-head">
-          <span class="risk-panel-title" id="opposed-title">Jet opposé / seuil</span>
+          <span class="risk-panel-title">Jet opposé / seuil</span>
           <button class="risk-panel-close" id="opposed-close" aria-label="Fermer">✕</button>
         </div>
         <div class="opposed-row">
@@ -36,7 +27,7 @@ const OpposedRoll = {
           <input class="opposed-input" type="number" id="opposed-pool-a" min="1" max="40" value="6">
         </div>
         <div class="opposed-row">
-          <label class="opposed-label" for="opposed-pool-b">Camp B <span class="opposed-hint" id="opposed-pool-b-hint">(0 = jet de seuil)</span></label>
+          <label class="opposed-label" for="opposed-pool-b">Camp B <span class="opposed-hint">(0 = jet de seuil)</span></label>
           <input class="opposed-input" type="number" id="opposed-pool-b" min="0" max="40" value="0">
         </div>
         <div class="opposed-row">
@@ -65,38 +56,6 @@ const OpposedRoll = {
 
   open() {
     this._ensure();
-    document.getElementById("opposed-title").textContent = "Jet opposé / seuil";
-    const poolB = document.getElementById("opposed-pool-b");
-    poolB.disabled = false;
-    poolB.value = "0";
-    document.getElementById("opposed-pool-b-hint").textContent = "(0 = jet de seuil)";
-    this._current = null;
-    const p = document.getElementById("opposed-panel");
-    p.removeAttribute("hidden");
-    void p.offsetWidth;
-    p.classList.add("show");
-    this._open = true;
-    document.getElementById("opposed-result").innerHTML = "";
-  },
-
-  /** Ouverture dédiée au Drain (CH-M7b) : Camp A = réserve de résistance,
-      Seuil = VD calculée (Magic.drainValue), Camp B verrouillé à 0 — un
-      Drain n'est jamais un test opposé (cf. livre de règles). `opts.onResult`
-      est rappelé avec les succès obtenus, pour que l'appelant (diceroller.js)
-      applique les dégâts résultants — ce widget reste indépendant des PNJ. */
-  openForDrain(poolResist, dv, opts = {}) {
-    this._ensure();
-    document.getElementById("opposed-title").textContent = opts.who
-      ? `${opts.who} — ${opts.label || "Drain"}`
-      : opts.label || "Drain";
-    document.getElementById("opposed-pool-a").value = String(Utils.clamp(poolResist, 1, 40));
-    const poolB = document.getElementById("opposed-pool-b");
-    poolB.value = "0";
-    poolB.disabled = true;
-    document.getElementById("opposed-pool-b-hint").textContent = "(verrouillé — un Drain n'est jamais un test opposé)";
-    document.getElementById("opposed-threshold").value = String(Utils.clamp(dv, 0, 40));
-    this._current = { onResult: opts.onResult || null };
-
     const p = document.getElementById("opposed-panel");
     p.removeAttribute("hidden");
     void p.offsetWidth;
@@ -139,7 +98,6 @@ const OpposedRoll = {
       out.innerHTML = `
         <span class="opposed-result-main">${res.hits} succès</span>
         <span class="opposed-result-sub">Seuil ${threshold} — ${success ? "atteint" : "manqué"}</span>`;
-      if (this._current && this._current.onResult) this._current.onResult(res.hits);
     }
   },
 };
