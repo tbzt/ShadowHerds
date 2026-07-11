@@ -40,7 +40,6 @@ const Hub = {
 
   render() {
     this._renderChips();
-    this._renderCreate();
     this._renderMain(); // met aussi le libellé à jour (compte affiché)
   },
 
@@ -62,33 +61,6 @@ const Hub = {
     document.querySelectorAll("#panel-shadows .hub-type-chip").forEach((c) => {
       c.classList.toggle("active", c.dataset.type === this._type);
     });
-  },
-
-  /** Barre de création contextuelle : selon le filtre-type actif, propose la
-      génération de contact, la création de serveur, ou un lien vers l'écran
-      PNJ. Le contenu créé se range dans le dossier courant (DossierBar). */
-  _renderCreate() {
-    const box = document.getElementById("hub-create");
-    if (!box) return;
-    if (this._type === "contact") {
-      box.innerHTML = `<div class="hub-create-bar">
-        <div id="contact-gen-form"></div>
-        <button class="btn-primary btn-small" data-action="contact-generate">Générer un contact</button>
-      </div>`;
-      Contacts.renderForm();
-    } else if (this._type === "server") {
-      box.innerHTML = `<div class="hub-create-bar">
-        <div id="server-gen-form"></div>
-        <button class="btn-primary btn-small" data-action="create-server">Créer le serveur</button>
-      </div>`;
-      Servers.renderForm();
-    } else if (this._type === "pnj") {
-      box.innerHTML = `<div class="hub-create-bar">
-        <button class="btn-secondary btn-small" data-action="show-panel" data-panel="generator">→ Ouvrir le Générateur PNJ</button>
-      </div>`;
-    } else {
-      box.innerHTML = "";
-    }
   },
 
   _renderMain() {

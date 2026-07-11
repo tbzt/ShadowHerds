@@ -1920,16 +1920,6 @@ select optgroup {
 }
 
 /* ---- Hub : barre de création contextuelle (contact / serveur / PNJ) ---- */
-.hub-create-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--sp-3);
-  margin-bottom: var(--sp-4);
-  padding-bottom: var(--sp-3);
-  border-bottom: 1px solid var(--border);
-}
-
 /* ---- Boutons utilitaires ---- */
 .btn-icon {
   background: transparent;
