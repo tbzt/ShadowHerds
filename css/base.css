@@ -1009,6 +1009,19 @@ select optgroup {
   flex-wrap: wrap;
   align-items: center;
 }
+/* CH-C8 : sur écran tactile, « Générer » reste atteignable sans scroll même
+   filtres dépliés (formulaire long). Fond opaque pour décoller du contenu. */
+@media (pointer: coarse) {
+  .gen-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin-bottom: 0;
+    padding-block: var(--sp-2);
+    background: var(--bg);
+    box-shadow: 0 -8px 12px -8px var(--bg);
+  }
+}
 
 /* BUTTONS */
 .btn-primary {

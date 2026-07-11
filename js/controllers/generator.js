@@ -88,7 +88,10 @@ const Gen = {
   _FILTERS_KEY: "gen_filters_collapsed",
 
   filtersCollapsed() {
-    return Storage.getGlobal(this._FILTERS_KEY, false);
+    // CH-C4 : replié par défaut (loi de Tesler) — générer un PNJ/bande
+    // aléatoire ne demande qu'un bouton. L'état est mémorisé : qui déplie une
+    // fois garde les filtres ouverts ensuite.
+    return Storage.getGlobal(this._FILTERS_KEY, true);
   },
 
   /** Enrobe les champs d'un formulaire dans une zone repliable, avec sa
