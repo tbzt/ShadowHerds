@@ -216,6 +216,11 @@ const Collection = {
 
       /* ---- Rendu ---- */
       render() {
+        // Toute mutation de data.all passe par save()+render() : on invalide
+        // ici le cache childrenByOwner. La frappe du filtre passe par
+        // setFilter → _renderGrid (jamais render()), donc le cache survit aux
+        // frappes successives et data.all n'est plus rebalayé à chaque touche.
+        this._childrenByOwner = null;
         this._wire();
         this._renderSidebar();
         this._renderGrid();
@@ -312,14 +317,19 @@ const Collection = {
       _renderList(grid, list) {
         const allGroups = Object.keys(this.data.groups);
         const linked = config.linked;
-        // Les entités liées suivent la carte de leur maître.
-        const childrenByOwner = {};
-        if (linked) {
-          for (const e of this.data.all) {
-            if (linked.isChild(e))
-              (childrenByOwner[linked.ownerOf(e)] ||= []).push(e);
+        // Les entités liées suivent la carte de leur maître. Table mémoïsée :
+        // reconstruite seulement après une mutation (render() remet à null),
+        // pas à chaque frappe du filtre.
+        if (!this._childrenByOwner) {
+          const map = {};
+          if (linked) {
+            for (const e of this.data.all) {
+              if (linked.isChild(e)) (map[linked.ownerOf(e)] ||= []).push(e);
+            }
           }
+          this._childrenByOwner = map;
         }
+        const childrenByOwner = this._childrenByOwner;
 
         for (const entity of list) {
           if (linked && linked.isChild(entity)) continue; // rendue sous son maître
