@@ -39,12 +39,19 @@ Object.assign(CardRenderer, {
           data-action="focus-owner" data-id="${sp.ownerId}"
           title="Retrouver ${this._esc(sp.ownerName)}">↳ invoqué par ${this._esc(sp.ownerName)}</span>`
       : `<span>Esprit libre — indépendant</span>`;
+    // Bascule repli/dépli : masque le corps de la fiche sans congédier
+    // l'esprit (il reste dans le pool avec tout son état). Purement visuel.
+    const foldBtn = `<button class="spirit-fold-btn" data-action="toggle-spirit-fold" data-id="${sp.id}"
+        title="${sp.collapsed ? "Déplier la fiche" : "Replier la fiche"}"
+        aria-label="${sp.collapsed ? "Déplier la fiche" : "Replier la fiche"}"
+        aria-expanded="${sp.collapsed ? "false" : "true"}">${sp.collapsed ? "▸" : "▾"}</button>`;
     return `<div class="pnj-card-header vehicle-header spirit-header${destroyed ? " destroyed" : ""}">
       ${this._portraitThumb(sp)}
       <div class="pnj-header-left">
         <div class="pnj-name">✦ ${this._esc(sp.name)}</div>
         <div class="pnj-meta">${metaLine}</div>
       </div>
+      ${foldBtn}
       ${badge}
     </div>`;
   },

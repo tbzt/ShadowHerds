@@ -10,7 +10,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@400;500&family=Oswald:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=74">
+  <link rel="stylesheet" href="css/base.css?v=75">
   <!-- Thèmes d'édition chargés à la sélection (App._loadEditionAssets, CH-P1b). -->
 </head>
 
@@ -564,14 +564,18 @@
         <div class="encounter-main-col">
           <div class="encounter-toolbar">
             <button class="btn-secondary btn-small" data-action="toggle-add-picker" title="Ajouter un combattant">➕ Ajouter</button>
-            <button class="btn-secondary btn-small" data-action="roll-all-init">⚄ Lancer l'initiative</button>
-            <button class="btn-secondary btn-small" data-action="sort-init" title="Trier par initiative (décroissant)">↓ Trier par init</button>
-            <button class="btn-primary btn-small" data-action="next-turn">Tour suivant</button>
+            <button class="btn-secondary btn-small" data-action="roll-and-sort" title="Lancer l'initiative de tous et classer">⚄ Lancer &amp; classer</button>
+            <button class="btn-secondary btn-small" data-action="sort-init" title="Trier par initiative (décroissant)">↓ Trier</button>
             <button class="btn-secondary btn-small" data-action="next-round">Round suivant</button>
             <button class="danger-btn btn-small" data-action="clear-encounter">Vider la scène</button>
           </div>
           <div id="encounter-add-panel" class="encounter-add-panel" hidden></div>
           <div id="encounter-list" class="encounter-list"></div>
+          <!-- Action primaire de la boucle : collée en pied de colonne (zone
+               pouce sur mobile), séparée des actions secondaires ci-dessus. -->
+          <div class="encounter-turn-bar">
+            <button class="btn-primary" data-action="next-turn">▸ Tour suivant</button>
+          </div>
         </div>
         <!-- Fiche du combattant actif (cf. EncounterRenderer.renderActiveCard) : masquée pour un PJ ad-hoc ou une scène vide. -->
         <div id="encounter-active-card" class="encounter-active-card" hidden></div>
@@ -662,14 +666,14 @@
   <script defer src="js/catalogs/vehicles.js?v=951"></script>
   <script defer src="js/catalogs/spirits.js?v=951"></script>
   <!-- creatures.js (238 Ko) chargé à la sélection d'édition (App._loadEditionAssets, CH-P2). -->
-  <script defer src="js/widgets/cardrenderer.js?v=958"></script>
+  <script defer src="js/widgets/cardrenderer.js?v=959"></script>
   <script defer src="js/widgets/cardrenderer.sr5.js?v=9"></script>
   <script defer src="js/widgets/cardrenderer.sr6.js?v=7"></script>
   <script defer src="js/widgets/cardrenderer.anarchy.js?v=954"></script>
   <script defer src="js/widgets/cardrenderer.anarchy1.js?v=2"></script>
-  <script defer src="js/widgets/cardrenderer.linked.js?v=950"></script>
+  <script defer src="js/widgets/cardrenderer.linked.js?v=951"></script>
   <script defer src="js/widgets/ui.js?v=35"></script>
-  <script defer src="js/widgets/summonpanel.js?v=1"></script>
+  <script defer src="js/widgets/summonpanel.js?v=2"></script>
   <script defer src="js/widgets/contactrenderer.js?v=952"></script>
   <script defer src="js/widgets/runrenderer.js?v=4"></script>
   <script defer src="js/widgets/contentmodal.js?v=2"></script>
@@ -680,14 +684,14 @@
   <script defer src="js/widgets/collection.js?v=9"></script>
   <script defer src="js/widgets/bulkbar.js?v=1"></script>
   <script defer src="js/widgets/serverrenderer.js?v=5"></script>
-  <script defer src="js/widgets/encounterrenderer.js?v=8"></script>
+  <script defer src="js/widgets/encounterrenderer.js?v=9"></script>
   <script defer src="js/controllers/servers.js?v=950"></script>
   <script defer src="js/controllers/intrusion.js?v=2"></script>
   <script defer src="js/widgets/dicelog.js?v=4"></script>
   <script defer src="js/widgets/notepad.js?v=1"></script>
   <script defer src="js/widgets/opposedroll.js?v=3"></script>
-  <script defer src="js/widgets/magicaction.js?v=5"></script>
-  <script defer src="js/widgets/diceroller.js?v=956"></script>
+  <script defer src="js/widgets/magicaction.js?v=6"></script>
+  <script defer src="js/widgets/diceroller.js?v=957"></script>
   <script defer src="js/widgets/dicepanel.js?v=8"></script>
   <script defer src="js/widgets/sidebartoggle.js?v=21"></script>
   <script defer src="js/widgets/profcategories.js?v=952"></script>
@@ -701,7 +705,7 @@
   <script defer src="js/controllers/pnjlookup.js?v=4"></script>
   <script defer src="js/widgets/palette.js?v=1"></script>
   <script defer src="js/controllers/portrait.js?v=11"></script>
-  <script defer src="js/controllers/encounter.js?v=10"></script>
+  <script defer src="js/controllers/encounter.js?v=11"></script>
   <script defer src="js/controllers/editmodal.js?v=951"></script>
   <script defer src="js/controllers/contactgen.js?v=951"></script>
   <script defer src="js/controllers/contacts.js?v=950"></script>

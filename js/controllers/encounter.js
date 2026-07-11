@@ -224,6 +224,25 @@ const Encounter = {
     this._commit();
   },
 
+  /** Lancer + classer en un geste (CH combat) : supprime la friction « lancer
+      puis trier à la main » du round 1, qui contredisait le round 2+ où
+      nextRound relance ET trie déjà tout seul. Un seul commit. Sans effet de
+      tri en Anarchy (init null → fin de liste), comme sortByInit. */
+  rollAndSort() {
+    let rolled = 0;
+    for (const c of this.state.combatants) {
+      if (c.init == null && this._rollInit(c.pnjId, true)) rolled++;
+    }
+    this._sortInPlace();
+    this.state.turnIndex = this._firstEligibleIndex();
+    this._commit();
+    toast(
+      rolled
+        ? `Initiative lancée et classée (${rolled} combattant${rolled > 1 ? "s" : ""}).`
+        : "Classé. Rien à lancer : initiatives déjà posées ou saisie manuelle requise.",
+    );
+  },
+
   /* ---- Tri manuel (nécessaire : Anarchy n'a pas d'initiative chiffrée) ---- */
   moveUp(pnjId) {
     const idx = this.state.combatants.findIndex((c) => c.pnjId === pnjId);
@@ -482,6 +501,9 @@ const Encounter = {
         case "sort-init":
           this.sortByInit();
           break;
+        case "roll-and-sort":
+          this.rollAndSort();
+          break;
         case "toggle-add-picker":
           this.toggleAddPicker();
           break;
@@ -501,6 +523,14 @@ const Encounter = {
         case "clear-encounter":
           this.clear();
           break;
+        case "row-menu": {
+          // Divulgation des actions secondaires d'une ligne (⚄▲▼✚✕) : simple
+          // bascule de classe, éphémère (le prochain commit re-rend la ligne
+          // repliée, ce qui referme le menu — comportement voulu).
+          const row = el.closest(".encounter-row");
+          if (row) row.classList.toggle("menu-open");
+          break;
+        }
         case "roll-init":
           this.rollInit(id);
           break;
@@ -573,7 +603,7 @@ const Encounter = {
             break;
           case "r":
           case "R":
-            this.rollAllInit();
+            this.rollAndSort();
             break;
           case "ArrowUp":
             this.moveActive(-1);

@@ -20,6 +20,7 @@ const CardRenderer = {
   render(pnj, actions = ["save", "discard"], deps = CardRenderer.liveDeps()) {
     const el = document.createElement("div");
     el.className = "pnj-card scanning";
+    if (pnj.collapsed) el.classList.add("spirit-collapsed");
     el.dataset.id = pnj.id;
     el.dataset.edition = pnj.edition;
 
@@ -43,6 +44,7 @@ const CardRenderer = {
           footer && footer.dataset.savedActions
             ? JSON.parse(footer.dataset.savedActions)
             : ["edit", "remove"];
+        el.classList.toggle("spirit-collapsed", !!pnj.collapsed);
         el.innerHTML =
           this._header(pnj) + this._body(pnj, deps) + this._footer(pnj, actions, deps);
       });
@@ -798,6 +800,9 @@ const CardRenderer = {
           break;
         case "dismiss-spirit":
           SummonPanel.dismissSpirit(id);
+          break;
+        case "toggle-spirit-fold":
+          SummonPanel.toggleFold(id);
           break;
         case "save-pnj":
           Shadows.savePNJ(id);

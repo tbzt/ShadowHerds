@@ -2573,25 +2573,40 @@ select optgroup {
   border-radius: 3px;
   background: var(--bg-mid);
 }
+/* Tour actif : dominant (barre d'accent à gauche + fond teinté), pas une
+   simple bordore fine — repérable d'un coup d'œil sur petit écran sombre. */
 .encounter-row.active-turn {
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent) inset;
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-mid));
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 .encounter-row.has-acted {
   opacity: 0.55;
 }
+/* Jeton d'initiative : bloc compact (score de base + malus + score effectif
+   de passe), séparé visuellement du nom. Le lancer ⚄ par ligne a migré dans
+   le menu ⋯ pour dégager la ligne. */
 .encounter-init {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
-  min-width: 3.2rem;
+  justify-content: center;
+  gap: 0.1rem;
+  flex: none;
+  min-width: 2.8rem;
+  padding: 0.3rem 0.35rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
 }
 .encounter-init-val {
   font-family: "Share Tech Mono", monospace;
+  font-size: var(--fs-lg);
   font-weight: 700;
   color: var(--accent);
   background: transparent;
   border: none;
+  width: 100%;
   min-width: 1.6rem;
   text-align: center;
 }
@@ -2675,21 +2690,18 @@ select optgroup {
   padding: 0.05rem 0.3rem;
 }
 
-/* Contrôles secondaires (↑▼✚✕) : masqués au repos, révélés au survol/focus/tactile. */
+/* Contrôles secondaires (⚄▲▼✚✕) : repliés derrière le menu ⋯, révélés au tap
+   (classe .menu-open posée par Encounter). Remplace l'ancien survol/coarse qui
+   laissait 4 icônes en permanence sur mobile — source du tassement horizontal. */
 .encounter-controls-secondary {
-  display: inline-flex;
+  display: none;
   gap: 0.3rem;
-  opacity: 0;
-  transition: opacity var(--dur-fast);
 }
-.encounter-row:hover .encounter-controls-secondary,
-.encounter-controls-secondary:focus-within {
-  opacity: 1;
+.encounter-row.menu-open .encounter-controls-secondary {
+  display: inline-flex;
 }
-@media (pointer: coarse) {
-  .encounter-controls-secondary {
-    opacity: 1;
-  }
+.encounter-row.menu-open .encounter-row-menu {
+  color: var(--accent);
 }
 /* Marqueur de dominance du combattant actif. */
 .encounter-active-flag {
@@ -2704,6 +2716,68 @@ select optgroup {
   border-top: 1px solid var(--border);
   display: flex;
   justify-content: flex-end;
+}
+
+/* Action primaire « Tour suivant » : collée au bas de la colonne (zone pouce
+   sur mobile). Le fond opaque (= fond du modal) occulte les lignes qui défilent
+   dessous ; le conteneur scrollable est .modal (overflow-y:auto). */
+.encounter-turn-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin-top: var(--sp-3);
+  padding: var(--sp-2) 0;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  display: flex;
+}
+.encounter-turn-bar .btn-primary {
+  flex: 1;
+  min-height: 44px;
+}
+
+/* Cibles tactiles ≥44px partout où le pointeur est grossier (mobile ET
+   tablette) — les btn-icon-tiny de 32px passaient sous le minimum ergonomique. */
+@media (pointer: coarse) {
+  .encounter-row .btn-icon-tiny {
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 1rem;
+  }
+  .encounter-acted input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* Reflow 2 étages sous 640px : le jeton d'init reste à gauche, le bloc central
+   prend la largeur, la note passe en pleine largeur, les contrôles s'alignent
+   sans tasser. Le menu ⋯ ouvert fait retomber ⚄▲▼✚✕ sous la ligne. */
+@media (max-width: 640px) {
+  .encounter-row {
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    padding: var(--sp-2);
+  }
+  .encounter-main {
+    flex: 1 1 60%;
+  }
+  .encounter-note {
+    order: 3;
+    flex-basis: 100%;
+    width: 100%;
+  }
+  .encounter-controls {
+    margin-left: auto;
+  }
+  .encounter-row.menu-open .encounter-controls-secondary {
+    order: 4;
+    flex-basis: 100%;
+    justify-content: flex-end;
+  }
+  .encounter-toolbar .btn-small {
+    flex: 1 1 auto;
+  }
 }
 /* Champ de recherche du picker de combattants. */
 .encounter-picker-search {
@@ -6120,6 +6194,7 @@ input[type="range"]#risk-dice-slider {
   color: var(--text);
 }
 /* Fiche repliée : ne reste que l'en-tête. */
+.pnj-card.spirit-collapsed .spirit-services,
 .pnj-card.spirit-collapsed .pnj-card-body,
 .pnj-card.spirit-collapsed .pnj-card-footer {
   display: none;

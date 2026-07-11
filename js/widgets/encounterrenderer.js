@@ -112,9 +112,12 @@ const EncounterRenderer = {
         ? `<span class="encounter-init-eff${effectiveInit <= 0 ? " spent" : ""}" title="Score effectif en passe courante (base − décrément)">→ ${effectiveInit}</span>`
         : "";
 
+    // CH combat (Vague A) : ligne 2 étages responsive. Le jeton d'init ne porte
+    // plus que le score (base + malus + score effectif de passe) ; le lancer ⚄
+    // par ligne et la gestion (▲▼✚✕) sont regroupés derrière un menu ⋯ (déplié
+    // par data-action="row-menu", cf. Encounter) pour dégager la ligne sur mobile.
     return `<div class="encounter-row${isActive ? " active-turn" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}" data-id="${pnjId}">
       <div class="encounter-init">
-        <button class="btn-icon-tiny" data-action="roll-init" data-id="${pnjId}" title="Lancer l'initiative">⚄</button>
         <input class="encounter-init-val" type="text" inputmode="numeric" data-action="set-init" data-id="${pnjId}"
           value="${initVal}" placeholder="—" title="Initiative (base) — saisie directe" aria-label="Initiative">
         ${malusHtml}
@@ -133,11 +136,13 @@ const EncounterRenderer = {
         <label class="encounter-acted" title="A joué ce tour">
           <input type="checkbox" ${hasActed ? "checked" : ""} data-action="toggle-acted" data-id="${pnjId}">
         </label>
+        <button class="btn-icon-tiny encounter-row-menu" data-action="row-menu" title="Plus d'actions" aria-label="Plus d'actions">⋯</button>
         <span class="encounter-controls-secondary">
+          <button class="btn-icon-tiny" data-action="roll-init" data-id="${pnjId}" title="Lancer l'initiative" aria-label="Lancer l'initiative">⚄</button>
           <button class="btn-icon-tiny" data-action="move-up" data-id="${pnjId}" title="Monter" aria-label="Monter">▲</button>
           <button class="btn-icon-tiny" data-action="move-down" data-id="${pnjId}" title="Descendre" aria-label="Descendre">▼</button>
           ${pnj._adhoc ? "" : `<button class="btn-icon-tiny" data-action="heal-combatant" data-id="${pnjId}" title="Réinitialiser les moniteurs" aria-label="Réinitialiser les moniteurs">✚</button>`}
-          <button class="btn-icon-tiny danger" data-action="remove-combatant" data-id="${pnjId}" title="Retirer">✕</button>
+          <button class="btn-icon-tiny danger" data-action="remove-combatant" data-id="${pnjId}" title="Retirer" aria-label="Retirer">✕</button>
         </span>
       </div>
     </div>`;
