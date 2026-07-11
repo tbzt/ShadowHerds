@@ -60,9 +60,15 @@ const Encounter = {
   /** PJ ad-hoc : le MJ suit les tours des joueurs sans fiche (elle vit chez
       le joueur). Combattant sans entité de pool, identifié par un pnjId
       synthétique `pj-…` et porteur de son propre nom + kind. Init en saisie
-      manuelle (bouton ▸ editInit) ; jamais de dés stockés. */
-  addPJ() {
-    const name = prompt("Nom du PJ :", "");
+      inline dans la ligne ; jamais de dés stockés. Saisie du nom via le
+      Dialog interne (jamais de prompt() natif). */
+  async addPJ() {
+    const name = await Dialog.prompt({
+      title: "Ajouter un PJ",
+      label: "Nom du PJ",
+      placeholder: "Nom du personnage joueur",
+      confirmLabel: "Ajouter",
+    });
     if (name === null) return;
     const n = name.trim();
     if (!n) return;
@@ -108,8 +114,14 @@ const Encounter = {
     this._commit();
   },
 
-  clear() {
-    if (!confirm("Vider la scène de combat ?")) return;
+  async clear() {
+    const ok = await Dialog.confirm({
+      title: "Vider la scène",
+      message: "Retirer tous les combattants de la scène ?",
+      confirmLabel: "Vider",
+      danger: true,
+    });
+    if (!ok) return;
     this.state = this._empty();
     this._commit();
   },
@@ -121,16 +133,6 @@ const Encounter = {
     const n = parseInt(value, 10);
     c.init = Number.isFinite(n) ? n : null;
     this._commit();
-  },
-
-  /** Saisie manuelle (toujours possible, même pour les éditions sans
-      initiative chiffrée comme Anarchy). */
-  editInit(pnjId) {
-    const c = this._find(pnjId);
-    if (!c) return;
-    const v = prompt("Initiative :", c.init != null ? String(c.init) : "");
-    if (v === null) return;
-    this.setInit(pnjId, v.trim());
   },
 
   /** Lance l'initiative via l'accesseur neutre du module d'édition
@@ -211,6 +213,18 @@ const Encounter = {
   _swap(i, j) {
     const arr = this.state.combatants;
     [arr[i], arr[j]] = [arr[j], arr[i]];
+    this._commit();
+  },
+
+  /** Déplace le combattant actif (celui dont c'est le tour) d'un cran et
+      garde le tour sur lui — pilotage clavier ↑/↓ (CH-Q3). */
+  moveActive(dir) {
+    const cs = this.state.combatants;
+    const i = this.state.turnIndex;
+    const j = i + dir;
+    if (j < 0 || j >= cs.length) return;
+    [cs[i], cs[j]] = [cs[j], cs[i]];
+    this.state.turnIndex = j;
     this._commit();
   },
 
@@ -309,6 +323,57 @@ const Encounter = {
     UI.focusOwner(pnjId);
   },
 
+  /* ---- Moniteurs (réutiliser un PNJ « frais ») ---- */
+  /** Remet à zéro tous les moniteurs d'un PNJ : générique et édition-
+      agnostique (toute clé finissant par « Filled » — phys/stun/mon/ment/
+      mat, léger/grave/incap Anarchy), donc aucune branche d'édition ici.
+      C'est l'opération inverse d'UI.toggleMonitor et suit le même chemin de
+      persistance. Retourne true si un moniteur a réellement été effacé. */
+  _resetMonitors(pnj) {
+    if (!pnj) return false;
+    let changed = false;
+    for (const k of Object.keys(pnj)) {
+      if (k.endsWith("Filled") && pnj[k]) {
+        pnj[k] = 0;
+        changed = true;
+      }
+    }
+    return changed;
+  },
+
+  /** Bouton « réinitialiser les moniteurs » d'une carte de combat. */
+  healCombatant(pnjId) {
+    const pnj = PnjLookup.find(pnjId);
+    if (!this._resetMonitors(pnj)) return;
+    Shadows.save();
+    CardRenderer.refresh(pnj);
+    toast("Moniteurs réinitialisés.");
+  },
+
+  /** Fin de scène : soigne tous les combattants résolvables d'un coup. */
+  async healAll() {
+    const ok = await Dialog.confirm({
+      title: "Fin de scène",
+      message: "Réinitialiser les moniteurs de tous les combattants (les remettre « frais ») ?",
+      confirmLabel: "Tout soigner",
+    });
+    if (!ok) return;
+    let n = 0;
+    for (const c of this.state.combatants) {
+      const pnj = PnjLookup.find(c.pnjId);
+      if (this._resetMonitors(pnj)) {
+        CardRenderer.refresh(pnj);
+        n++;
+      }
+    }
+    if (n) Shadows.save();
+    toast(
+      n
+        ? `Moniteurs réinitialisés (${n} combattant${n > 1 ? "s" : ""}).`
+        : "Aucun moniteur à réinitialiser.",
+    );
+  },
+
   /* ---- Rendu ---- */
   _rows() {
     return this.state.combatants.map((c) => ({
@@ -402,9 +467,6 @@ const Encounter = {
         case "roll-init":
           this.rollInit(id);
           break;
-        case "edit-init":
-          this.editInit(id);
-          break;
         case "move-up":
           this.moveUp(id);
           break;
@@ -414,6 +476,12 @@ const Encounter = {
         case "remove-combatant":
           this.remove(id);
           break;
+        case "heal-combatant":
+          this.healCombatant(id);
+          break;
+        case "heal-all":
+          this.healAll();
+          break;
         case "focus-combatant":
           this.focusCombatant(id);
           break;
@@ -421,14 +489,71 @@ const Encounter = {
     });
 
     overlay.addEventListener("change", (e) => {
-      const el = e.target.closest('[data-action="toggle-acted"]');
-      if (el) this.markActed(el.dataset.id, el.checked);
+      const acted = e.target.closest('[data-action="toggle-acted"]');
+      if (acted) {
+        this.markActed(acted.dataset.id, acted.checked);
+        return;
+      }
+      // Initiative saisie inline dans la ligne (remplace l'ancien prompt) :
+      // 'change' plutôt que 'input' — la valeur n'est committée qu'au blur/
+      // Entrée, donc le re-rendu de _commit ne casse pas la frappe en cours.
+      const init = e.target.closest('[data-action="set-init"]');
+      if (init) this.setInit(init.dataset.id, init.value);
     });
 
     overlay.addEventListener("input", (e) => {
-      const el = e.target.closest('[data-action="set-note"]');
-      if (el) this.setNote(el.dataset.id, el.value);
+      const note = e.target.closest('[data-action="set-note"]');
+      if (note) {
+        this.setNote(note.dataset.id, note.value);
+        return;
+      }
+      const filter = e.target.closest('[data-action="filter-candidates"]');
+      if (filter) EncounterRenderer.filterCandidates(filter.value);
     });
+
+    // Raccourcis clavier du tracker (CH-Q3), actifs seulement overlay ouvert.
+    // En capture pour passer AVANT les raccourcis globaux d'app.js — sinon
+    // « r » y déclenche le lanceur de dés au lieu de relancer l'init.
+    // Garde-fous : jamais pendant une saisie (champ init/note) ni quand un
+    // Dialog est ouvert par-dessus. Échap n'est pas capté ici : il retombe
+    // sur le handler global d'app.js, qui ferme l'overlay.
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        if (!overlay.classList.contains("open")) return;
+        const tag = (e.target.tagName || "").toLowerCase();
+        if (tag === "input" || tag === "textarea" || tag === "select") return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const dlg = document.getElementById("dialog-overlay");
+        if (dlg && dlg.classList.contains("open")) return;
+
+        let handled = true;
+        switch (e.key) {
+          case " ":
+          case "n":
+          case "N":
+            this.nextTurn();
+            break;
+          case "r":
+          case "R":
+            this.rollAllInit();
+            break;
+          case "ArrowUp":
+            this.moveActive(-1);
+            break;
+          case "ArrowDown":
+            this.moveActive(1);
+            break;
+          default:
+            handled = false;
+        }
+        if (handled) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      },
+      true,
+    );
   },
 };
 

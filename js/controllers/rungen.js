@@ -346,9 +346,14 @@ const RunGen = {
 
   /** Crée un dossier (transverse) pour y ranger PNJ, contacts et serveurs
       de la prep. Le nom est proposé d'après la run, éditable. */
-  toDossier(suggested) {
-    const input = prompt("Nom du dossier pour cette run :", suggested || "Run");
-    if (!input || !input.trim()) return;
+  async toDossier(suggested) {
+    const input = await Dialog.prompt({
+      title: "Ranger la run",
+      label: "Nom du dossier pour cette run",
+      value: suggested || "Run",
+      confirmLabel: "Créer le dossier",
+    });
+    if (input === null || !input.trim()) return;
     const name = input.trim();
     if (Dossiers.list().some((d) => d.name === name)) {
       toast(`Dossier « ${name} » existe déjà.`);

@@ -44,7 +44,13 @@ const EncounterRenderer = {
       </div>`;
       return;
     }
-    list.innerHTML = html;
+    // Action de fin de scène rendue en pied de liste (le tracker n'a pas de
+    // barre d'outils modifiable ici) : réinitialise tous les moniteurs.
+    list.innerHTML =
+      html +
+      `<div class="encounter-scene-actions">
+        <button class="btn-secondary btn-small" data-action="heal-all" title="Réinitialiser les moniteurs de tous les combattants">⛨ Fin de scène — tout soigner</button>
+      </div>`;
   },
 
   /** Suffixe « · Passe N » (SR5 uniquement) — partagé entre le titre du
@@ -85,15 +91,15 @@ const EncounterRenderer = {
 
   _row(r, isActive, outOfPass, effectiveInit) {
     const { pnjId, init, hasActed, note, pnj } = r;
-    const initLabel = init == null ? "—" : String(init);
+    const initVal = init == null ? "" : String(init);
     const name = Utils.escHtml(pnj.name || "");
     // PJ ad-hoc : pas de fiche à ouvrir → nom en span inerte.
     const nameHtml = pnj._adhoc
       ? `<span class="encounter-name is-pj">${name}</span>`
       : `<button class="encounter-name" data-action="focus-combatant" data-id="${pnjId}" title="Voir la fiche">${name}</button>`;
-    // Score effectif de la passe (SR5, à partir de la passe 2) : le bouton
-    // reste sur la base (c'est elle qu'edit-init modifie), le décrément est
-    // affiché à côté plutôt qu'en remplacement.
+    // Score effectif de la passe (SR5, à partir de la passe 2) : le champ de
+    // saisie reste sur la base (c'est elle que set-init modifie), le décrément
+    // est affiché à côté plutôt qu'en remplacement.
     const effHtml =
       effectiveInit != null
         ? `<span class="encounter-init-eff${effectiveInit <= 0 ? " spent" : ""}" title="Score effectif en passe courante (base − décrément)">→ ${effectiveInit}</span>`
@@ -102,11 +108,13 @@ const EncounterRenderer = {
     return `<div class="encounter-row${isActive ? " active-turn" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}" data-id="${pnjId}">
       <div class="encounter-init">
         <button class="btn-icon-tiny" data-action="roll-init" data-id="${pnjId}" title="Lancer l'initiative">⚄</button>
-        <button class="encounter-init-val" data-action="edit-init" data-id="${pnjId}" title="Modifier l'initiative (base)">${initLabel}</button>
+        <input class="encounter-init-val" type="text" inputmode="numeric" data-action="set-init" data-id="${pnjId}"
+          value="${initVal}" placeholder="—" title="Initiative (base) — saisie directe" aria-label="Initiative">
         ${effHtml}
       </div>
       <div class="encounter-main">
         <div class="encounter-name-row">
+          ${isActive ? `<span class="encounter-active-flag" title="Tour actif" aria-label="Tour actif">▸</span>` : ""}
           <span class="encounter-kind">${this._kindLabel(r)}</span>
           ${nameHtml}
         </div>
@@ -114,38 +122,86 @@ const EncounterRenderer = {
           data-action="set-note" data-id="${pnjId}">
       </div>
       <div class="encounter-controls">
-        <button class="btn-icon-tiny" data-action="move-up" data-id="${pnjId}" title="Monter" aria-label="Monter">▲</button>
-        <button class="btn-icon-tiny" data-action="move-down" data-id="${pnjId}" title="Descendre" aria-label="Descendre">▼</button>
         <label class="encounter-acted" title="A joué ce tour">
           <input type="checkbox" ${hasActed ? "checked" : ""} data-action="toggle-acted" data-id="${pnjId}">
         </label>
-        <button class="btn-icon-tiny danger" data-action="remove-combatant" data-id="${pnjId}" title="Retirer">✕</button>
+        <span class="encounter-controls-secondary">
+          <button class="btn-icon-tiny" data-action="move-up" data-id="${pnjId}" title="Monter" aria-label="Monter">▲</button>
+          <button class="btn-icon-tiny" data-action="move-down" data-id="${pnjId}" title="Descendre" aria-label="Descendre">▼</button>
+          ${pnj._adhoc ? "" : `<button class="btn-icon-tiny" data-action="heal-combatant" data-id="${pnjId}" title="Réinitialiser les moniteurs" aria-label="Réinitialiser les moniteurs">✚</button>`}
+          <button class="btn-icon-tiny danger" data-action="remove-combatant" data-id="${pnjId}" title="Retirer">✕</button>
+        </span>
       </div>
     </div>`;
   },
 
-  /** Panneau d'ajout : PJ manuel + entités résolvables non encore en scène
-      (générées, Ombres, spiders). candidates: [pnj]. */
+  /** Filtre de recherche du picker (CH-Q4). Conservé côté renderer, comme
+      _activeCardId : c'est de l'état de vue éphémère (le texte tapé dans le
+      champ du picker), pas une préférence du contrôleur. Ré-appliqué après
+      chaque reconstruction du panneau pour survivre aux _commit (ajout/
+      retrait d'un combattant). */
+  _pickerQuery: "",
+
+  /** Panneau d'ajout : PJ manuel + champ de filtre + entités résolvables non
+      encore en scène (générées, Ombres, spiders). candidates: [pnj]. */
   renderPicker(candidates) {
     const panel = document.getElementById("encounter-add-panel");
     if (!panel) return;
 
     const rows = candidates
-      .map(
-        (p) => `<button class="encounter-candidate" data-action="add-candidate" data-id="${p.id}">
-          <span class="encounter-kind">${this._kindLabel({ pnj: p })}</span>
+      .map((p) => {
+        const kind = this._kindLabel({ pnj: p });
+        // data-name = clé de recherche normalisée (jamais affichée). Les noms
+        // générés contiennent souvent un surnom entre guillemets ("…") : on
+        // remplace ces " par une espace (Utils.escHtml n'échappe pas le
+        // guillemet) sinon l'attribut est tronqué et le filtre ne matche que
+        // le premier mot. Frontière de mot préservée pour le filtre par token.
+        const norm = Utils.escHtml(Utils.searchNorm((p.name || "") + " " + kind).replace(/"/g, " "));
+        return `<button class="encounter-candidate" data-action="add-candidate" data-id="${p.id}" data-name="${norm}">
+          <span class="encounter-kind">${kind}</span>
           <span class="encounter-candidate-name">${Utils.escHtml(p.name || "Sans nom")}</span>
           <span class="encounter-candidate-add">＋</span>
-        </button>`
-      )
+        </button>`;
+      })
       .join("");
 
     panel.innerHTML = `<div class="encounter-add-actions">
         <button class="btn-secondary btn-small" data-action="add-pj">＋ Ajouter un PJ</button>
+        <input type="search" class="encounter-picker-search" data-action="filter-candidates"
+          placeholder="Filtrer par nom ou type…" value="${Utils.escHtml(this._pickerQuery || "")}"
+          aria-label="Filtrer les combattants à ajouter">
       </div>
       <div class="encounter-candidates">
         ${rows || `<div class="empty-state"><span class="empty-state-title">Aucune entité disponible</span>Générez ou sauvegardez des PNJ, créatures ou esprits pour les ajouter ici.</div>`}
+        <div class="encounter-picker-empty empty-state" style="display:none"><span class="empty-state-title">Aucun résultat</span>Aucune entité ne correspond à ce filtre.</div>
       </div>`;
+
+    if (this._pickerQuery) this._applyPickerFilter();
+  },
+
+  /** Filtre le picker sans reconstruire le DOM (préserve le focus du champ).
+      Appelé par Encounter sur l'event input du champ de recherche. */
+  filterCandidates(query) {
+    this._pickerQuery = query || "";
+    this._applyPickerFilter();
+  },
+
+  /** Masque les candidats hors filtre via style.display inline — la règle
+      auteur .encounter-candidate{display:flex} l'emporterait sur [hidden]. */
+  _applyPickerFilter() {
+    const panel = document.getElementById("encounter-add-panel");
+    if (!panel) return;
+    const words = Utils.searchNorm(this._pickerQuery).trim().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    const cands = panel.querySelectorAll(".encounter-candidate");
+    cands.forEach((btn) => {
+      const hay = btn.dataset.name || "";
+      const match = !words.length || words.every((w) => hay.includes(w));
+      btn.style.display = match ? "" : "none";
+      if (match) shown++;
+    });
+    const emptyEl = panel.querySelector(".encounter-picker-empty");
+    if (emptyEl) emptyEl.style.display = cands.length && !shown ? "" : "none";
   },
 
   /** id du combattant dont la fiche est actuellement affichée à côté du
@@ -168,7 +224,12 @@ const EncounterRenderer = {
   /** Fiche complète (CardRenderer) du combattant dont c'est le tour, affichée
       à côté de la liste. Rien pour un PJ ad-hoc (pas de fiche) ni une scène
       vide. actions=[] : pas de boutons sauvegarder/éditer/virer, la card
-      reste malgré tout pleinement interactive (jets, moniteur, drogues…). */
+      reste malgré tout pleinement interactive (jets, moniteur, drogues…).
+      CH-C5 : chaque combattant entre en scène en fiche COMPACTE (référence
+      repliée) pour ne pas noyer le tour sous 65 chiffres — on pose le seul
+      levier per-carte exposé (_refIsOpen lit pnj._refOpen en priorité). Le MJ
+      garde la .ref-toggle de la carte pour déplier au besoin ; l'effet ne
+      touche la carte du pool qu'à son prochain rendu (compact = défaut CH-C1). */
   renderActiveCard(rows, state) {
     const box = document.getElementById("encounter-active-card");
     if (!box) return;
@@ -181,7 +242,10 @@ const EncounterRenderer = {
 
     box.innerHTML = "";
     box.hidden = !pnj;
-    if (pnj) box.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
+    if (pnj) {
+      pnj._refOpen = false;
+      box.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
+    }
   },
 
   /** Résumé persistant dans la sidebar (round/passe + combattant actif),
