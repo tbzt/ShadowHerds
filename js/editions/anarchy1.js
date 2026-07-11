@@ -43,6 +43,20 @@ const EditionAnarchy1 = {
     blockedBy: "critGlitch",
     costAttr: "CHC",
   },
+  /* ---- Action magique (CH-M7c) : Anarchy n'a pas de Drain chiffré →
+     tout neutre. MagicAction ne déclenche rien (spellSkill/conjureSkill null). ---- */
+  spellUsesForce: false,
+  spellSkill: null,
+  conjureSkill: null,
+  spellDrainValue() {
+    return 0;
+  },
+  conjureDrainValue() {
+    return 0;
+  },
+  spiritResistPool() {
+    return 0;
+  },
   /** Neutre : Anarchy 1re n'a pas de MAG/conversion Physique-Étourdissant
       documentée pour le Drain (`drainResist` reste toujours null en V1). */
   drainDamageType() {

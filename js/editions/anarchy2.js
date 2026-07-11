@@ -39,6 +39,20 @@ const EditionAnarchy2 = {
     blockedBy: null,
     costAttr: null,
   },
+  /* ---- Action magique (CH-M7c) : Drain déjà couvert par les complications
+     du jet de risque (p.170), aucune VD séparée → tout neutre. ---- */
+  spellUsesForce: false,
+  spellSkill: null,
+  conjureSkill: null,
+  spellDrainValue() {
+    return 0;
+  },
+  conjureDrainValue() {
+    return 0;
+  },
+  spiritResistPool() {
+    return 0;
+  },
   /** Neutre : Anarchy 2.0 n'a pas de Valeur de Drain séparée — le Drain est
       déjà couvert par le système de complications du jet de risque (p.170),
       aucune pastille Drain ni conversion Physique/Étourdissant à câbler. */

@@ -41,13 +41,34 @@ const EditionSR6 = {
     blockedBy: "glitch",
     costAttr: "ATO",
   },
-  /** Neutre : aucune règle de conversion Physique/Étourdissant trouvée dans
-      le livre de base SR6 pour le Drain — toujours Étourdissant. */
-  drainDamageType() {
-    return "stun";
+  /* ---- Action magique (CH-M7c) : lu par MagicAction via le contrat. ---- */
+  /** SR6 : pas de Puissance de sort à choisir — la VD est fixe (p.135-136). */
+  spellUsesForce: false,
+  spellSkill: "Sorcellerie",
+  conjureSkill: "Conjuration",
+  /** VD d'un sort SR6 : valeur fixe portée par le sort (Content.spells.sr6). */
+  spellDrainValue(entry) {
+    return Magic.drainValue(entry.drain, 0);
+  },
+  /** VD d'invocation (p.150) : succès de l'esprit (pas de doublement ni de
+      minimum documenté en SR6, contrairement à SR5). */
+  conjureDrainValue(spiritHits) {
+    return Math.max(0, spiritHits | 0);
+  },
+  /** Réserve de résistance de l'esprit (p.150) : Puissance × 2. */
+  spiritResistPool(force) {
+    return force * 2;
+  },
+  /** Type de dégâts du Drain (p.136 sort / p.150 invocation) : SR6 tranche sur
+      les dégâts APRÈS résistance — Physique s'ils dépassent la Magie, sinon
+      Étourdissant. (Corrige CH-M7b, qui renvoyait toujours « stun ».) */
+  drainDamageType(ctx, pnj) {
+    const mag = (pnj.attrs && pnj.attrs.MAG) || 0;
+    return (ctx.drainDamage || 0) > mag ? "physical" : "stun";
   },
   /** Moniteur unique (8 + CON/2, posé sur pnj.me) : le Drain y ajoute des
-      cases, sans distinction Physique/Étourdissant (cf. drainDamageType). */
+      cases. Le type Physique/Étourdissant ne change pas la case en SR6 (un
+      seul moniteur) mais est calculé pour l'affichage/le journal. */
   applyDrainDamage(pnj, amount) {
     if (!amount) return;
     pnj.physFilled = Utils.clamp((pnj.physFilled || 0) + amount, 0, pnj.me ?? 99);

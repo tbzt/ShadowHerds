@@ -693,4 +693,18 @@ const Magic = {
   resolveDrainDamage(dv, hits) {
     return Math.max(0, (dv || 0) - (hits || 0));
   },
+
+  /** Réserve d'une action magique (CH-M7c) : compétence de Sorcellerie /
+      Conjuration + Magie − malus de blessure. L'attribut est toujours Magie
+      pour Lancement de sorts / Invocation / Conjuration (pas besoin de
+      SkillCatalog). `skillName` vient du contrat d'édition (spellSkill /
+      conjureSkill) ; s'il est absent du PNJ, seule la Magie compte. */
+  actionPool(pnj, skillName, edition) {
+    if (!skillName) return 0;
+    const sk = (pnj.skills || []).find((s) => s && s.name === skillName);
+    const skillVal = sk ? Number(sk.val) || 0 : 0;
+    const mag = (pnj.attrs && pnj.attrs.MAG) || 0;
+    const malus = Utils.woundMalus(pnj, edition);
+    return Math.max(0, skillVal + mag - malus);
+  },
 };

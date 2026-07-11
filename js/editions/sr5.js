@@ -32,12 +32,33 @@ const EditionSR5 = {
     blockedBy: "critGlitch",
     costAttr: "CHC",
   },
-  /** Type de dégâts du Drain (p.283, étape 4/6) : Physique si les succès du
-      test de Lancement de sorts (après Limite) dépassent l'indice de Magie
-      du lanceur, sinon Étourdissant. */
-  drainDamageType(castHits, pnj) {
+  /* ---- Action magique (CH-M7c) : sorts + invocation, tout lu par
+     MagicAction via le contrat, jamais de branche d'édition côté widget. ---- */
+  /** SR5 : la Puissance du sort est choisie par le lanceur (p.283). */
+  spellUsesForce: true,
+  /** Compétence de Sorcellerie utilisée pour lancer un sort (pool + Magie). */
+  spellSkill: "Lancement de sorts",
+  /** Compétence de Conjuration utilisée pour invoquer (pool + Magie). */
+  conjureSkill: "Invocation",
+  /** VD d'un sort (p.283) : Puissance + code du sort (« P-3 »…), min 2. */
+  spellDrainValue(entry, force) {
+    return Magic.drainValue(force, Magic.parseDrainMod(entry.drain));
+  },
+  /** VD d'invocation (p.303) : 2 × succès de l'esprit, min 2. */
+  conjureDrainValue(spiritHits) {
+    return Magic.drainValue(spiritHits * 2, 0);
+  },
+  /** Réserve de résistance de l'esprit à l'invocation (p.303) : Puissance. */
+  spiritResistPool(force) {
+    return force;
+  },
+  /** Type de dégâts du Drain (p.283 sort / p.303 invocation) : SR5 compare une
+      valeur connue AVANT la résistance — succès du sort, ou Puissance de
+      l'esprit pour une invocation. Physique si elle dépasse la Magie. */
+  drainDamageType(ctx, pnj) {
     const mag = (pnj.attrs && pnj.attrs.MAG) || 0;
-    return castHits > mag ? "physical" : "stun";
+    const cmp = ctx.kind === "conjuration" ? (ctx.force || 0) : (ctx.castHits || 0);
+    return cmp > mag ? "physical" : "stun";
   },
   /** Applique des dégâts de Drain au moniteur du PNJ (deux moniteurs
       séparés en SR5), plafonnés à leur taille respective. */

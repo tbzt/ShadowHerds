@@ -272,7 +272,7 @@ const DiceRoller = {
     const dmg = Magic.resolveDrainDamage(dv, resistHits);
     if (dmg <= 0) return;
     const edModule = App.getEditionModule(pnj.edition);
-    const type = edModule.drainDamageType(castHits, pnj);
+    const type = edModule.drainDamageType({ kind: "spell", castHits, drainDamage: dmg }, pnj);
     edModule.applyDrainDamage(pnj, dmg, type);
     this._hooks.onPnjChanged(pnj);
     toast(`Drain : ${dmg} case${dmg > 1 ? "s" : ""} (${type === "physical" ? "Physique" : "Étourdissant"}).`);
