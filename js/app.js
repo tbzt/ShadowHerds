@@ -76,8 +76,65 @@ const App = {
     return this._modules[ed] ? this._modules[ed]() : null;
   },
 
+  /* ---- Chargement conditionnel des assets d'édition (CH-P1b/P2) ----
+     L'écran de choix n'a besoin d'aucun module d'édition ni du gros catalogue
+     de créatures : on les charge à la sélection, avant selectEdition (qui
+     appelle buildForms → Creatures). Retire ~280 Ko d'éditions + 238 Ko de
+     créatures + 3 thèmes inutiles du chargement initial. */
+  _loadedAssets: new Set(),
+  _EDITION_CSS: {
+    sr5: "css/theme-sr5.css?v=19",
+    sr6: "css/theme-sr6.css?v=18",
+    anarchy2: "css/theme-anarchy.css?v=20",
+    anarchy1: "css/theme-anarchy1.css?v=1",
+  },
+  _EDITION_JS: {
+    sr5: ["js/editions/sr5.js?v=952", "js/editions/sr5.foundry.js?v=4"],
+    sr6: ["js/editions/sr6.js?v=951", "js/editions/sr6.foundry.js?v=5"],
+    anarchy2: [
+      "js/editions/anarchy2.js?v=33",
+      "js/editions/anarchy2.creation.js?v=6",
+      "js/editions/anarchy2.foundry.js?v=6",
+    ],
+    anarchy1: ["js/editions/anarchy1.js?v=9"],
+  },
+  // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
+  _COMMON_JS: ["js/catalogs/creatures.js?v=955"],
+
+  _loadCss(href) {
+    if (!href || this._loadedAssets.has(href)) return;
+    this._loadedAssets.add(href);
+    const l = document.createElement("link");
+    l.rel = "stylesheet";
+    l.href = href;
+    document.head.appendChild(l);
+  },
+  _loadScript(src) {
+    return new Promise((resolve, reject) => {
+      if (this._loadedAssets.has(src)) return resolve();
+      const s = document.createElement("script");
+      s.src = src;
+      s.onload = () => {
+        this._loadedAssets.add(src);
+        resolve();
+      };
+      s.onerror = () => reject(new Error("Échec de chargement : " + src));
+      document.head.appendChild(s);
+    });
+  },
+  /** Charge (une seule fois) le thème + les scripts de l'édition. Séquentiel :
+      le fichier principal avant ses compagnons .foundry/.creation, qui font des
+      Object.assign sur le module et exigent qu'il existe déjà. */
+  async _loadEditionAssets(ed) {
+    this._loadCss(this._EDITION_CSS[ed]);
+    for (const src of [...this._COMMON_JS, ...(this._EDITION_JS[ed] || [])]) {
+      await this._loadScript(src);
+    }
+  },
+
   /* ---- Sélection d'édition ---- */
-  selectEdition(ed) {
+  async selectEdition(ed) {
+    await this._loadEditionAssets(ed);
     this.edition = ed;
     this.editionModule = this.getEditionModule(ed);
 
