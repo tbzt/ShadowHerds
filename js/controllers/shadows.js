@@ -11,6 +11,7 @@
 const Shadows = Object.assign(
   Collection.create({
     key: "shadows",
+    combatEligible: true,
     storageKeys: { all: "shadows_all", groups: "shadows_groups" },
     dom: { grid: "shadows-grid", sidebar: "shadows-group-list", label: "shadows-group-label" },
     labels: {

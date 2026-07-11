@@ -18,6 +18,7 @@
 const Characters = Object.assign(
   Collection.create({
     key: "characters",
+    combatEligible: true,
     storageKeys: { all: "characters_all", groups: "characters_groups" },
     dom: {
       grid: "characters-grid",

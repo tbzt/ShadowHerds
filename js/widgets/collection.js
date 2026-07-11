@@ -36,6 +36,9 @@ const Collection = {
    *                 imbriquée dans l'entité, pas sœur (ex : spider d'un serveur)
    *   footerSelector sélecteur CSS du footer de carte où ancrer le
    *                 déclencheur de groupes (défaut : ".pnj-card-footer")
+   *   combatEligible (CH-Q10) true si ces entités peuvent rejoindre le
+   *                 suivi de combat — affiche le bouton dédié de la
+   *                 barre de sélection multiple (Shadows/Characters).
    */
   create(config) {
     const labels = Object.assign({}, this._defaults, config.labels || {});
@@ -49,6 +52,7 @@ const Collection = {
       data: { all: [], groups: {} },
       currentGroup: "all",
       filterText: "",
+      _selected: new Set(), // CH-Q10 : ids sélectionnés, éphémère (pas de Storage)
 
       /* ---- Persistance ---- */
       load() {
@@ -115,6 +119,74 @@ const Collection = {
           this.render();
         };
         toastUndo(labels.removed(entity), restore);
+      },
+
+      /** Suppression en masse (CH-Q10) : même mécanique que remove() mais
+          un seul snapshot fusionné + un seul toastUndo pour N entités
+          (au lieu de N appels empilés qui s'écraseraient l'un l'autre). */
+      removeMany(ids) {
+        const doomed = new Set(ids);
+        const linked = config.linked;
+        if (linked) {
+          for (const e of this.data.all) {
+            if (linked.isChild(e) && doomed.has(linked.ownerOf(e))) doomed.add(e.id);
+          }
+        }
+        const snapshot = [];
+        this.data.all.forEach((e, i) => {
+          if (doomed.has(e.id))
+            snapshot.push({ entity: e, index: i, groups: this.groupsOf(e.id) });
+        });
+        if (!snapshot.length) return;
+
+        this.data.all = this.data.all.filter((e) => !doomed.has(e.id));
+        for (const g of Object.keys(this.data.groups)) {
+          this.data.groups[g] = this.data.groups[g].filter((i) => !doomed.has(i));
+        }
+        this.save();
+        this.render();
+
+        const restore = () => {
+          snapshot
+            .slice()
+            .sort((a, b) => a.index - b.index)
+            .forEach(({ entity, index }) => {
+              this.data.all.splice(Math.min(index, this.data.all.length), 0, entity);
+            });
+          for (const { entity, groups } of snapshot) {
+            for (const g of groups) {
+              if (this.data.groups[g] && !this.data.groups[g].includes(entity.id))
+                this.data.groups[g].push(entity.id);
+            }
+          }
+          this.save();
+          this.render();
+        };
+        const n = snapshot.length;
+        toastUndo(
+          n === 1 ? labels.removed(snapshot[0].entity) : `${n} entités supprimées.`,
+          restore,
+        );
+      },
+
+      /* ---- Sélection multiple (CH-Q10) ---- */
+      toggleSelect(id, checked) {
+        if (checked) this._selected.add(id);
+        else this._selected.delete(id);
+        const input = document.querySelector(
+          `[data-collection="${this.key}"][data-action="toggle-select"][data-id="${id}"]`,
+        );
+        const card = input && input.closest(".bulk-selectable");
+        if (card) card.classList.toggle("bulk-selected", checked);
+        BulkBar.update(this);
+      },
+      selectedIds() {
+        return [...this._selected];
+      },
+      clearSelection() {
+        this._selected.clear();
+        this.render();
+        BulkBar.update(this);
       },
 
       /* ---- Groupes ---- */
@@ -187,6 +259,16 @@ const Collection = {
         if (checked && !has) arr.push(id);
         if (!checked && has)
           this.data.groups[groupKey] = arr.filter((i) => i !== id);
+        this.save();
+        this.render();
+      },
+
+      /** Déplace N entités vers un dossier en un seul save()+render() (CH-Q10),
+          plutôt que d'enchaîner toggleGroup() qui re-rendrait à chaque id. */
+      addManyToGroup(ids, groupKey) {
+        if (!this.data.groups[groupKey]) this.data.groups[groupKey] = [];
+        const arr = this.data.groups[groupKey];
+        for (const id of ids) if (!arr.includes(id)) arr.push(id);
         this.save();
         this.render();
       },
@@ -345,6 +427,7 @@ const Collection = {
           // Toujours affiché : le popover permet de créer un premier
           // groupe à la volée même quand aucun n'existe encore.
           this._appendGroupTrigger(card, entity.id);
+          this._appendSelectCheckbox(card, entity.id);
           grid.appendChild(card);
           for (const child of childrenByOwner[entity.id] || []) {
             grid.appendChild(linked.renderChild(child));
@@ -407,6 +490,20 @@ const Collection = {
         footer.prepend(pin);
       },
 
+      /** Case à cocher de sélection multiple (CH-Q10), en coin de carte —
+          la classe marqueur passe la carte en position:relative, générique
+          quel que soit le renderer de carte utilisé par le domaine. */
+      _appendSelectCheckbox(card, id) {
+        card.classList.add("bulk-selectable");
+        const checked = this._selected.has(id);
+        if (checked) card.classList.add("bulk-selected");
+        const label = document.createElement("label");
+        label.className = "bulk-select-check";
+        label.title = "Sélectionner";
+        label.innerHTML = `<input type="checkbox" data-collection="${this.key}" data-action="toggle-select" data-id="${id}"${checked ? " checked" : ""}>`;
+        card.prepend(label);
+      },
+
       /* ---- Délégation d'événements (modèle ContentModal) ----
          Un seul écouteur par instance, filtré sur data-collection. */
       _wire() {
@@ -441,6 +538,14 @@ const Collection = {
               break;
             }
           }
+        });
+
+        document.addEventListener("change", (e) => {
+          const el = e.target.closest(
+            `[data-action="toggle-select"][data-collection="${this.key}"]`,
+          );
+          if (!el) return;
+          this.toggleSelect(el.dataset.id, el.checked);
         });
 
         document.addEventListener("input", (e) => {
