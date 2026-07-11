@@ -135,7 +135,8 @@
       <div class="topbar-brand">
         <span class="topbar-logo" data-action="go-home" title="Accueil">Shadow Herds</span>
         <button class="topbar-edition-badge" id="edition-badge" data-action="change-edition"
-          title="Changer d'édition">—</button>
+          title="Édition active — cliquez pour changer (réversible à tout moment)"
+          aria-label="Changer d'édition (réversible à tout moment)">—</button>
       </div>
 
       <span class="topbar-spacer"></span>
@@ -169,7 +170,7 @@
 
         <!-- Réserve de menace (Anarchy 2.0, p.138) : visibilité pilotée par
              CSS [data-edition="anarchy2"], jamais par du JS. -->
-        <div id="threat-reserve" title="Réserve de menace (relance des PNJ)">
+        <div id="threat-reserve" title="Réserve de Menace (Anarchy 2.0) — points que le MJ dépense pour relancer les PNJ ou intensifier une scène ; propre à Anarchy.">
           <span class="threat-reserve-lbl">Menace</span>
           <button class="threat-reserve-step" data-threat="-1" tabindex="-1"
             aria-label="Diminuer la réserve de menace">−</button>
