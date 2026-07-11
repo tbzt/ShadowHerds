@@ -56,7 +56,7 @@ const Shadows = Object.assign(
     savePNJ(id) {
       const pnj = Gen.findInPool(id);
       if (!pnj) {
-        toast("PNJ introuvable dans le pool.");
+        toast("PNJ introuvable dans le pool.", "warning");
         return;
       }
       if (this.data.all.find((p) => p.id === id)) {
@@ -107,7 +107,7 @@ const Shadows = Object.assign(
     duplicatePNJ(id) {
       const original = this.data.all.find((p) => p.id === id);
       if (!original) {
-        toast("PNJ introuvable.");
+        toast("PNJ introuvable.", "warning");
         return;
       }
 

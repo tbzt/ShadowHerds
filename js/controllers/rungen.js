@@ -362,7 +362,7 @@ const RunGen = {
     if (input === null || !input.trim()) return;
     const name = input.trim();
     if (Dossiers.list().some((d) => d.name === name)) {
-      toast(`Dossier « ${name} » existe déjà.`);
+      toast(`Dossier « ${name} » existe déjà.`, "warning");
       return;
     }
     Dossiers.add(name);

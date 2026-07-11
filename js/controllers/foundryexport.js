@@ -54,12 +54,12 @@ const FoundryExport = {
   exportPnj(id) {
     const pnj = PnjLookup.find(id);
     if (!pnj) {
-      toast("PNJ introuvable.");
+      toast("PNJ introuvable.", "warning");
       return;
     }
     const cap = this._capabilityFor(pnj);
     if (!cap) {
-      toast("Export Foundry indisponible pour cette édition.");
+      toast("Export Foundry indisponible pour cette édition.", "warning");
       return;
     }
 
@@ -71,7 +71,7 @@ const FoundryExport = {
     } catch (e) {
       this._session = null;
       Debug.warn("foundry", "buildActor a échoué", { id, error: e });
-      toast("Export impossible (données du PNJ incomplètes).");
+      toast("Export impossible (données du PNJ incomplètes).", "danger");
       return;
     }
     const unresolved = this._session;
@@ -90,7 +90,7 @@ const FoundryExport = {
       console.warn(
         `[foundry-export] « ${pnj.name} » (${pnj.edition}) : ${unresolved.length} mapping(s) non résolu(s) — export tout de même produit, voir détails ci-dessus.`,
       );
-      toast(`« ${pnj.name} » exporté${extraMsg} — ⚠ ${unresolved.length} mapping(s) non résolu(s) (voir console).`);
+      toast(`« ${pnj.name} » exporté${extraMsg} — ${unresolved.length} mapping(s) non résolu(s) (voir console).`, "warning");
     } else {
       toast(`« ${pnj.name} » exporté pour Foundry${extraMsg}.`);
     }

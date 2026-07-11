@@ -142,11 +142,11 @@ const GroupPicker = {
         return;
       const key = name.trim();
       if (key === "all") {
-        toast("Nom réservé.");
+        toast("Nom réservé.", "warning");
         return;
       }
       if (col.data.groups[key]) {
-        toast("Ce nom existe déjà.");
+        toast("Ce nom existe déjà.", "warning");
         return;
       }
       col.data.groups[key] = [id];

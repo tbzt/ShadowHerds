@@ -202,7 +202,7 @@ const DossierBar = {
       if (!name || !name.trim()) return;
       const clean = name.trim();
       if (Dossiers.list().some((d) => d.name === clean)) {
-        toast("Ce dossier existe déjà.");
+        toast("Ce dossier existe déjà.", "warning");
         return;
       }
       const d = Dossiers.add(clean);
@@ -220,7 +220,7 @@ const DossierBar = {
       if (!name || !name.trim()) return;
       const clean = name.trim();
       if (Dossiers.list().some((x) => x.name === clean)) {
-        toast("Ce nom existe déjà.");
+        toast("Ce nom existe déjà.", "warning");
         return;
       }
       const d = Dossiers.add(clean, parentId);
@@ -233,7 +233,7 @@ const DossierBar = {
     const d = Dossiers.get(id);
     if (!d) return;
     if (d.name === Collection.FAV_GROUP) {
-      toast("Dossier réservé (Favoris).");
+      toast("Dossier réservé (Favoris).", "warning");
       return;
     }
     const oldName = d.name;
@@ -246,7 +246,7 @@ const DossierBar = {
       if (!input || !input.trim() || input.trim() === oldName) return;
       const newName = input.trim();
       if (Dossiers.list().some((x) => x.name === newName)) {
-        toast("Ce nom existe déjà.");
+        toast("Ce nom existe déjà.", "warning");
         return;
       }
       Dossiers.rename(id, newName);
@@ -267,7 +267,7 @@ const DossierBar = {
     const d = Dossiers.get(id);
     if (!d) return;
     if (d.name === Collection.FAV_GROUP) {
-      toast("Dossier réservé (Favoris).");
+      toast("Dossier réservé (Favoris).", "warning");
       return;
     }
     const isParent = Dossiers.children(id).length > 0;

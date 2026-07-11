@@ -200,7 +200,7 @@ const Collection = {
           if (!name || !name.trim()) return;
           const key = name.trim();
           if (key === "all") {
-            toast("Nom réservé.");
+            toast("Nom réservé.", "warning");
             return;
           }
           if (!this.data.groups[key]) this.data.groups[key] = [];
@@ -235,7 +235,7 @@ const Collection = {
           if (!newName || !newName.trim() || newName.trim() === key) return;
           const newKey = newName.trim();
           if (this.data.groups[newKey]) {
-            toast("Ce nom existe déjà.");
+            toast("Ce nom existe déjà.", "warning");
             return;
           }
           this.data.groups[newKey] = this.data.groups[key];

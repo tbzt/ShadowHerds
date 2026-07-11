@@ -94,7 +94,7 @@ const ContactsBook = Object.assign(
       const c = this.data.all.find((x) => x.id === id);
       if (!c) return;
       if (Shadows.data.all.some((p) => p.sourceContactId === id)) {
-        toast("PNJ déjà déployé pour ce contact.");
+        toast("PNJ déjà déployé pour ce contact.", "warning");
         return;
       }
       const ed = App.editionModule;

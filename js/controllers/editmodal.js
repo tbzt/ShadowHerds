@@ -9,7 +9,7 @@ const EditModal = {
   open(id) {
     const pnj = PnjLookup.find(id);
     if (!pnj) {
-      toast("PNJ introuvable.");
+      toast("PNJ introuvable.", "warning");
       return;
     }
     this.currentId = id;

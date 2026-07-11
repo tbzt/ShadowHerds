@@ -1478,10 +1478,15 @@ const Utils = {
 /* ============================================================
    TOAST
    ============================================================ */
-function toast(msg, duration = 2400) {
+/** @param type (CH-V8) "warning" | "danger" | "info" | null — pose une classe
+    modificatrice sur les tokens sémantiques déjà déclarés (--warning/--danger/
+    --info) ; omis = apparence neutre existante, rétrocompatible. */
+function toast(msg, type = null, duration = 2400) {
   const el = document.getElementById("toast");
   if (!el) return;
   el.textContent = msg;
+  el.classList.remove("toast-warning", "toast-danger", "toast-info");
+  if (type) el.classList.add(`toast-${type}`);
   el.classList.add("show");
   clearTimeout(el._timer);
   el._timer = setTimeout(() => el.classList.remove("show"), duration);
@@ -1496,6 +1501,7 @@ function toastUndo(msg, onUndo, duration = 6000) {
   if (!el) return;
   clearTimeout(el._timer);
   el.innerHTML = "";
+  el.classList.remove("toast-warning", "toast-danger", "toast-info"); // pas de type persistant d'un toast() précédent
   const span = document.createElement("span");
   span.className = "toast-msg";
   span.textContent = msg;

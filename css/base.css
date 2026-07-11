@@ -3061,6 +3061,21 @@ kbd {
   opacity: 1;
   transform: translateY(0);
 }
+/* CH-V8 : tokens sémantiques réellement exploités — un toast bloqué/refusé
+   (nom déjà pris, entité introuvable...) ne ressemblait à rien de distinct
+   d'une confirmation de succès. */
+#toast.toast-warning {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+#toast.toast-danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+#toast.toast-info {
+  border-color: var(--info);
+  color: var(--info);
+}
 /* Bouton « Annuler » (toastUndo) : cliquable malgré le pointer-events:none
    du conteneur. */
 .toast-undo {

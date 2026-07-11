@@ -75,7 +75,7 @@ const Backup = {
     const pkg = this.build();
     const s = this.stats(pkg);
     if (s.pnj === 0 && s.contacts === 0 && s.servers === 0) {
-      toast("Rien à exporter pour le moment.");
+      toast("Rien à exporter pour le moment.", "info");
       return;
     }
     const json = JSON.stringify(pkg, null, 2);
