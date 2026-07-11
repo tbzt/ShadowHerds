@@ -50,12 +50,6 @@ python3 -m http.server 8000
 
 ---
 
-## Contribuer
-
-Le projet suit une **doctrine d'architecture stricte** (simplicité, couches à sens unique, zéro dépendance). Avant toute modification, lisez **[CONTRIBUTING.md](CONTRIBUTING.md)** — il définit les principes de conception et trois prohibitions non négociables (pas de logique d'édition hors `js/editions/`, persistance uniquement via `storage.js`, pas de handler `onclick` inline). Les changements substantiels passent par un plan préalable.
-
----
-
 ## Mentions légales
 
 Outil **non-officiel** de fans, sans but lucratif, à usage personnel pour les tables de jeu. *Shadowrun* est une marque de The Topps Company, Inc. ; droits d'édition Catalyst Game Labs ; version française Black Book Éditions. Aucune donnée n'est transmise — tout est stocké localement dans le navigateur.
