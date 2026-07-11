@@ -444,7 +444,7 @@ select optgroup {
 .topbar-edition-badge::after {
   content: "⇄";
   font-size: 0.7rem;
-  opacity: 0.5;
+  opacity: 0.7;
   transition:
     opacity var(--dur-base),
     transform var(--dur-base);
@@ -2459,6 +2459,45 @@ select optgroup {
   border: 1px solid var(--border);
   border-radius: 2px;
   padding: 0.05rem 0.3rem;
+}
+
+/* Contrôles secondaires (↑▼✚✕) : masqués au repos, révélés au survol/focus/tactile. */
+.encounter-controls-secondary {
+  display: inline-flex;
+  gap: 0.3rem;
+  opacity: 0;
+  transition: opacity var(--dur-fast);
+}
+.encounter-row:hover .encounter-controls-secondary,
+.encounter-controls-secondary:focus-within {
+  opacity: 1;
+}
+@media (pointer: coarse) {
+  .encounter-controls-secondary {
+    opacity: 1;
+  }
+}
+/* Marqueur de dominance du combattant actif. */
+.encounter-active-flag {
+  color: var(--accent);
+  font-weight: 700;
+  flex: none;
+}
+/* Pied de scène : actions de fin de scène. */
+.encounter-scene-actions {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+}
+/* Champ de recherche du picker de combattants. */
+.encounter-picker-search {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.3rem 0.5rem;
+  width: 100%;
 }
 
 /* ---- Panneau d'ajout de combattants ---- */

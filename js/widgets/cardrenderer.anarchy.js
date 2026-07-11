@@ -143,7 +143,12 @@ Object.assign(CardRenderer, {
           pool >= 1
             ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}" data-roll-detail="${detail}" data-roll-edition="${pnj.edition}" data-roll-rr="${s.rr || 0}" data-roll-pnj="${pnj.id}"`
             : "";
-        html += `<span class="tag skill-tag${pool >= 1 ? " rollable" : ""}"${rollMain} title="${this._esc(s.name)} : ${pool} (${s.val}+${s.attr}${rrStr}) — cliquer pour lancer">${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong>${s.rr > 0 ? `<span class="lim">RR${s.rr}</span>` : ""}</span>`;
+        html += this._rollableTag(
+          pool >= 1,
+          `tag skill-tag${pool >= 1 ? " rollable" : ""}`,
+          `${rollMain} title="${this._esc(s.name)} : ${pool} (${s.val}+${s.attr}${rrStr}) — cliquer pour lancer"`,
+          `${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong>${s.rr > 0 ? `<span class="lim">RR${s.rr}</span>` : ""}`,
+        );
         // Puce de spécialisation (indice+2). La spé principale + chaque
         // spé supplémentaire (extraSpecs) partagent le même rendu lançable.
         const specChip = (specName, specVal, specAttrKey, specRr) => {
@@ -155,7 +160,12 @@ Object.assign(CardRenderer, {
             specPool >= 1
               ? ` data-roll="${specPool}" data-roll-label="${this._esc(s.name)} · ${this._esc(specName)}" data-roll-detail="${specDetail}" data-roll-edition="${pnj.edition}" data-roll-rr="${specRr}" data-roll-pnj="${pnj.id}"`
               : "";
-          return `<span class="tag skill-tag skill-tag-spec${specPool >= 1 ? " rollable" : ""}"${rollSpec} title="Spécialisation ${this._esc(specName)} : ${specPool} (${specVal}+${specAttrKey || s.attr}${specRrStr}) — cliquer pour lancer">◊&nbsp;${this._esc(specName)}&nbsp;<strong style="color:var(--text)">${specPool}</strong>${specRr > 0 ? `<span class="lim">RR${specRr}</span>` : ""}</span>`;
+          return this._rollableTag(
+            specPool >= 1,
+            `tag skill-tag skill-tag-spec${specPool >= 1 ? " rollable" : ""}`,
+            `${rollSpec} title="Spécialisation ${this._esc(specName)} : ${specPool} (${specVal}+${specAttrKey || s.attr}${specRrStr}) — cliquer pour lancer"`,
+            `◊&nbsp;${this._esc(specName)}&nbsp;<strong style="color:var(--text)">${specPool}</strong>${specRr > 0 ? `<span class="lim">RR${specRr}</span>` : ""}`,
+          );
         };
         if (s.spec && s.spec !== true && s.specVal) {
           html += specChip(s.spec, s.specVal, s.specAttr, s.specRR != null ? s.specRR : s.rr || 0);

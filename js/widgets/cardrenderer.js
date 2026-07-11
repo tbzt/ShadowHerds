@@ -683,7 +683,7 @@ const CardRenderer = {
     // jamais de branche `App.edition === …` (prohibition #1).
     if (App.getEditionModule(pnj.edition)?.foundryExport) {
       btns.push(
-        `<button class="card-action-btn ghost" data-action="export-foundry" data-id="${pnj.id}" title="Exporter vers Foundry VTT">⬗ Foundry</button>`,
+        `<button class="card-action-btn ghost" data-action="export-foundry" data-id="${pnj.id}" title="Exporter vers Foundry VTT (télécharge un fichier JSON)">⬗ Foundry</button>`,
       );
     }
     return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>${btns.join("")}</div>`;
