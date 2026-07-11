@@ -69,7 +69,6 @@ const MagicAction = {
           <div class="summon-steps" id="magic-force-steps"></div>
         </div>
         <div class="magic-forecast" id="magic-forecast"></div>
-        <div class="magic-result" id="magic-result"></div>
         <button class="risk-roll-btn" id="magic-roll-btn">Lancer le sort</button>
       </div>`;
     document.body.appendChild(p);
@@ -78,7 +77,7 @@ const MagicAction = {
       if (e.target === p) this._close();
     });
     document.getElementById("magic-close").addEventListener("click", () => this._close());
-    document.getElementById("magic-roll-btn").addEventListener("click", () => this._roll());
+    document.getElementById("magic-roll-btn").addEventListener("click", () => this._doCast());
     document.getElementById("magic-force-steps").addEventListener("click", (e) => {
       const b = e.target.closest("[data-force]");
       if (!b || !this._cast) return;
@@ -90,7 +89,9 @@ const MagicAction = {
     });
   },
 
-  /** Ouvre le panneau pour lancer un sort d'un PNJ. */
+  /** Lance un sort d'un PNJ. SR5 (Puissance à choisir) : ouvre un sélecteur ;
+      « Lancer » → jet présenté par l'affichage de dés standard. SR6/Anarchy1
+      (VD fixe, aucune Puissance) : lance directement, comme une compétence. */
   castSpell(pnjId, spellName) {
     const pnj = PnjLookup.find(pnjId);
     if (!pnj) return;
@@ -99,7 +100,6 @@ const MagicAction = {
     const ed = App.getEditionModule(pnj.edition);
     if (!ed.spellSkill) return; // édition sans mécanique de sort (Anarchy)
 
-    this._ensurePanel();
     const mag = (pnj.attrs && pnj.attrs.MAG) || 1;
     this._cast = {
       pnjId,
@@ -108,29 +108,23 @@ const MagicAction = {
       edition: pnj.edition,
       force: Utils.clamp(mag, 1, 12),
     };
-    document.getElementById("magic-title").textContent =
-      `${pnj.name || "PNJ"} — ${spellName}`;
 
-    // Sélecteur de Puissance : uniquement là où le sort en dépend (SR5).
-    const forceRow = document.getElementById("magic-force-row");
-    if (ed.spellUsesForce) {
-      forceRow.style.display = "";
-      const maxForce = Utils.clamp(mag * 2, 1, 12);
-      document.getElementById("magic-force-steps").innerHTML = Array.from(
-        { length: maxForce },
-        (_, i) => i + 1,
-      )
-        .map(
-          (n) =>
-            `<button class="summon-step-btn" data-force="${n}">${n}</button>`,
-        )
-        .join("");
-    } else {
-      forceRow.style.display = "none";
+    if (!ed.spellUsesForce) {
+      this._doCast(); // pas de Puissance à choisir → lancer direct
+      return;
     }
 
-    document.getElementById("magic-result").innerHTML = "";
-    document.getElementById("magic-roll-btn").textContent = "Lancer le sort";
+    // SR5 : sélecteur de Puissance (le seul réglage avant le jet).
+    this._ensurePanel();
+    document.getElementById("magic-title").textContent =
+      `${pnj.name || "PNJ"} — ${spellName}`;
+    const maxForce = Utils.clamp(mag * 2, 1, 12);
+    document.getElementById("magic-force-steps").innerHTML = Array.from(
+      { length: maxForce },
+      (_, i) => i + 1,
+    )
+      .map((n) => `<button class="summon-step-btn" data-force="${n}">${n}</button>`)
+      .join("");
     this._syncPanel();
 
     const p = document.getElementById("magic-panel");
@@ -168,22 +162,29 @@ const MagicAction = {
       `<span class="magic-forecast-note">Drain VD ${dv} — résistance ${Math.max(0, (pnj.drainResist || 0) - Utils.woundMalus(pnj, c.edition))} dés</span>`;
   },
 
-  _roll() {
+  /** Lance le sort et présente le résultat via l'affichage de dés STANDARD
+      (DiceRoller.show — animation, journal, Seconde chance/Edge), pas un
+      affichage maison. Le Drain est résolu/encaissé et signalé par un toast
+      (comme le Drain Anarchy), cohérent avec le reste de l'app. */
+  _doCast() {
     const c = this._cast;
     if (!c) return;
     const pnj = PnjLookup.find(c.pnjId);
     if (!pnj) return;
     const ed = App.getEditionModule(c.edition);
+    this._close(); // le résultat passe par l'affichage de dés, pas le panneau
 
-    // 1) Test de Lancement de sorts (l'app le roule) → succès = effet.
-    const castPool = Magic.actionPool(pnj, ed.spellSkill, c.edition);
-    const castRes = Dice.computeRoll(castPool);
-    DiceLog.record(castRes, { label: `Sort — ${c.name}`, who: pnj.name || "" });
-    // Mémorise le dernier jet sur le sort (persisté, présenté sur la carte —
-    // utile pour un sort maintenu). Même patron que pnj.lastInit.
+    // 1) Test de Lancement de sorts (l'app le roule) → succès = effet. Mémorise
+    // le dernier jet sur le sort (persisté ; utile pour un sort maintenu).
+    const castRes = Dice.computeRoll(Magic.actionPool(pnj, ed.spellSkill, c.edition));
     c.entry._lastCast = { hits: castRes.hits };
+    DiceRoller.show(castRes, {
+      label: `Sort — ${c.name}`,
+      who: pnj.name || "",
+      pnjId: c.pnjId,
+    });
 
-    // 2-3) Drain (VD du contrat) : résiste, encaisse, présente.
+    // 2) Drain (VD du contrat) : résiste, encaisse (met à jour la carte), signale.
     const dv = ed.spellDrainValue(c.entry, c.force);
     const drain = this._resolveDrain(pnj, ed, {
       dv,
@@ -192,15 +193,12 @@ const MagicAction = {
       force: c.force,
       label: c.name,
     });
-
-    this._renderResult({
-      castHits: castRes.hits,
-      dv,
-      resistHits: drain.resistHits,
-      drainDamage: drain.drainDamage,
-      type: drain.type,
-    });
-    document.getElementById("magic-roll-btn").textContent = "Lancer à nouveau";
+    const t = drain.type === "physical" ? "Physique" : "Étourdissant";
+    toast(
+      drain.drainDamage > 0
+        ? `Drain — ${drain.drainDamage} case${drain.drainDamage > 1 ? "s" : ""} (${t})`
+        : "Drain résisté",
+    );
   },
 
   /** Résout le Drain d'une action magique et l'encaisse (partagé sorts /
@@ -247,15 +245,5 @@ const MagicAction = {
       label: "Invocation",
     });
     return { netHits, casterHits: conjRes.hits, spiritHits: spiritRes.hits, dv, ...drain };
-  },
-
-  _renderResult({ castHits, dv, resistHits, drainDamage, type }) {
-    const typeLabel = type === "physical" ? "Physique" : "Étourdissant";
-    const drainCls = drainDamage === 0 ? "good" : drainDamage >= dv ? "crit" : "glitch";
-    const el = document.getElementById("magic-result");
-    el.innerHTML =
-      `<div class="magic-result-line good">Sort lancé : <strong>${castHits}</strong> succès</div>` +
-      `<div class="magic-result-line ${drainCls}">Drain : VD ${dv} − ${resistHits} succès = ` +
-      `<strong>${drainDamage}</strong> case${drainDamage > 1 ? "s" : ""} ${drainDamage > 0 ? `(${typeLabel})` : "· résisté"}</div>`;
   },
 };

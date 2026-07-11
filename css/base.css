@@ -6113,36 +6113,6 @@ input[type="range"]#risk-dice-slider {
   font-size: 0.66rem;
   letter-spacing: 0.04em;
 }
-.magic-result {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-.magic-result:empty {
-  display: none;
-}
-.magic-result-line {
-  font-family: "Share Tech Mono", monospace;
-  font-size: 0.8rem;
-  color: var(--text);
-  padding: 0.4rem 0.6rem;
-  border-radius: 4px;
-  background: var(--bg-mid);
-  border-left: 3px solid var(--text-dim);
-}
-.magic-result-line strong {
-  color: var(--text);
-  font-size: 1rem;
-}
-.magic-result-line.good {
-  border-left-color: var(--accent);
-}
-.magic-result-line.glitch {
-  border-left-color: var(--warning);
-}
-.magic-result-line.crit {
-  border-left-color: var(--danger);
-}
 
 /* Panneau d'invocation (réutilise l'habillage .risk-panel) */
 .summon-row {
