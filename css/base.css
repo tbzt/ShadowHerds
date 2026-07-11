@@ -202,11 +202,15 @@ select optgroup {
   transform: translateY(-4px);
 }
 
+/* Glow d'accueil (audit M1) : « instrument, pas vitrine ». La lueur pulse
+   UNE fois à l'entrée puis rentre au repos (plus de boucle infinie) — HUD
+   calme au repos, batterie ménagée sur tablette, captures stabilisées.
+   prefers-reduced-motion coupe déjà ces animations plus bas (l.~353). */
 .edition-card[data-ed="sr5"] {
   --glow: rgba(212, 130, 10, 0.35);
   border-color: #3a2a10;
   background: #100c08;
-  animation: edition-glow-breathe 4s ease-in-out infinite;
+  animation: edition-glow-breathe 4s ease-in-out 1;
 }
 .edition-card[data-ed="sr5"]:hover {
   border-color: #d4820a;
@@ -217,7 +221,7 @@ select optgroup {
   border-color: #0a3a4a;
   background: #080e14;
   clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
-  animation: edition-glow-breathe 3.2s ease-in-out infinite;
+  animation: edition-glow-breathe 3.2s ease-in-out 1;
 }
 .edition-card[data-ed="sr6"]:hover {
   border-color: #00c8ff;
@@ -227,9 +231,8 @@ select optgroup {
   --glow: rgba(156, 74, 58, 0.3);
   border-color: #4a2620;
   background: #0d0808;
-  animation:
-    edition-glow-breathe 5s ease-in-out infinite,
-    edition-flicker 6s linear infinite;
+  /* Flicker en boucle retiré (néon permanent) ; une seule pulsation d'accueil. */
+  animation: edition-glow-breathe 5s ease-in-out 1;
 }
 .edition-card[data-ed="anarchy1"]:hover {
   border-color: #9c4a3a;
@@ -239,7 +242,7 @@ select optgroup {
   --glow: rgba(255, 60, 60, 0.4);
   border: 2px solid #ff3c3c;
   background: #150806;
-  animation: edition-glow-breathe-strong 2.6s ease-in-out infinite;
+  animation: edition-glow-breathe-strong 2.6s ease-in-out 1;
 }
 
 .ed-scan {
@@ -249,7 +252,8 @@ select optgroup {
   top: 0;
   height: 40%;
   background: linear-gradient(180deg, transparent, rgba(0, 200, 255, 0.12), transparent);
-  animation: edition-scan-sweep 3.2s linear infinite;
+  /* Un seul balayage d'accueil, puis la barre sort du cadre et reste au repos. */
+  animation: edition-scan-sweep 3.2s linear 1 forwards;
   pointer-events: none;
 }
 
