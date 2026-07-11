@@ -46,6 +46,12 @@ const EditionSR6 = {
   drainDamageType() {
     return "stun";
   },
+  /** Moniteur unique (8 + CON/2, posé sur pnj.me) : le Drain y ajoute des
+      cases, sans distinction Physique/Étourdissant (cf. drainDamageType). */
+  applyDrainDamage(pnj, amount) {
+    if (!amount) return;
+    pnj.physFilled = Utils.clamp((pnj.physFilled || 0) + amount, 0, pnj.me ?? 99);
+  },
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
   /** Réglage propre à SR6 remonté ici (prohibition n°1). Reçoit Settings (S). */
   settingsHTML(S) {

@@ -89,14 +89,14 @@ const App = {
     anarchy1: "css/theme-anarchy1.css?v=1",
   },
   _EDITION_JS: {
-    sr5: ["js/editions/sr5.js?v=953", "js/editions/sr5.foundry.js?v=4"],
-    sr6: ["js/editions/sr6.js?v=952", "js/editions/sr6.foundry.js?v=5"],
+    sr5: ["js/editions/sr5.js?v=954", "js/editions/sr5.foundry.js?v=4"],
+    sr6: ["js/editions/sr6.js?v=953", "js/editions/sr6.foundry.js?v=5"],
     anarchy2: [
-      "js/editions/anarchy2.js?v=34",
+      "js/editions/anarchy2.js?v=35",
       "js/editions/anarchy2.creation.js?v=6",
       "js/editions/anarchy2.foundry.js?v=6",
     ],
-    anarchy1: ["js/editions/anarchy1.js?v=10"],
+    anarchy1: ["js/editions/anarchy1.js?v=11"],
   },
   // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
   _COMMON_JS: ["js/catalogs/creatures.js?v=955"],

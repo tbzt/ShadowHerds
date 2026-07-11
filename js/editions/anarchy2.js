@@ -45,6 +45,8 @@ const EditionAnarchy2 = {
   drainDamageType() {
     return "stun";
   },
+  /** Neutre : pas de Drain chiffré à appliquer (cf. drainDamageType). */
+  applyDrainDamage() {},
   ratingBadge: {
     field: "tier",
     label: "Rang",

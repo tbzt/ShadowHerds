@@ -39,6 +39,14 @@ const EditionSR5 = {
     const mag = (pnj.attrs && pnj.attrs.MAG) || 0;
     return castHits > mag ? "physical" : "stun";
   },
+  /** Applique des dégâts de Drain au moniteur du PNJ (deux moniteurs
+      séparés en SR5), plafonnés à leur taille respective. */
+  applyDrainDamage(pnj, amount, type) {
+    if (!amount) return;
+    const field = type === "physical" ? "physFilled" : "stunFilled";
+    const max = type === "physical" ? pnj.physMon : pnj.stunMon;
+    pnj[field] = Utils.clamp((pnj[field] || 0) + amount, 0, max ?? 99);
+  },
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
   /** Réglage propre à SR5 remonté ici (prohibition n°1 : plus de
       `if (ed==='sr5')` dans settings.js). Reçoit le contrôleur Settings (S)
