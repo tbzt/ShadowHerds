@@ -162,6 +162,10 @@ const DiceRoller = {
         return;
       }
 
+      // Affordances internes d'une ligne de sort (ⓘ détails, ✕ effacer) :
+      // gérées ailleurs (ContentModal / MagicAction), ne pas lancer.
+      if (e.target.closest("[data-content-name], [data-spell-clear]")) return;
+
       const t = e.target.closest("[data-roll]");
       if (!t) return;
       const n = parseInt(t.getAttribute("data-roll"), 10);
@@ -170,6 +174,8 @@ const DiceRoller = {
       const detail = t.getAttribute("data-roll-detail") || "";
       const edition = t.getAttribute("data-roll-edition") || "";
       const rr = parseInt(t.getAttribute("data-roll-rr"), 10) || 0;
+      // Sort Anarchy 2 : nom porté par la ligne pour mémoriser le dernier jet.
+      const spellName = t.getAttribute("data-roll-spell") || "";
 
       // PNJ à l'origine du jet : attribut explicite, sinon la carte
       // englobante (compétences SR5/SR6, réserves MJ…). Alimente le
@@ -186,7 +192,7 @@ const DiceRoller = {
         // complication (CH-M7d). Base du label = avant « · » (spécialité).
         const skillBase = label.split(" · ")[0];
         const isMagic = !!(edMod.magicSkills && edMod.magicSkills.includes(skillBase));
-        this.openRiskPanel(n, { label, detail, rr, adv: (rollPnj && rollPnj.drugAdv) || 0, who, pnjId, isMagic });
+        this.openRiskPanel(n, { label, detail, rr, adv: (rollPnj && rollPnj.drugAdv) || 0, who, pnjId, isMagic, spellName });
       } else {
         this.rollPool(n, { label, detail, who, pnjId });
       }
@@ -428,10 +434,10 @@ const DiceRoller = {
 
     // Lancer
     document.getElementById("risk-roll-btn").addEventListener("click", () => {
-      const { pool, riskDice, rr, adv, label, detail, who, pnjId, isMagic } = this._risk;
+      const { pool, riskDice, rr, adv, label, detail, who, pnjId, isMagic, spellName } = this._risk;
       this._closeRiskPanel();
       const res = Dice.computeAnarchyRoll(pool, riskDice, rr, adv);
-      this.show(res, { label, detail, who, pnjId, isMagic });
+      this.show(res, { label, detail, who, pnjId, isMagic, spellName });
     });
 
     // Échap ferme
@@ -457,6 +463,7 @@ const DiceRoller = {
       who: opts.who || "",
       pnjId: opts.pnjId || "",
       isMagic: !!opts.isMagic,
+      spellName: opts.spellName || "",
       riskDice: 0,
     };
     this._risk.riskDice = Dice.riskDiceFor("normal", this._risk.rr, pool);
@@ -657,6 +664,9 @@ const DiceRoller = {
     // les deux rendus (overlay ET lancer rapide) et une seule fois (jamais
     // sur une relance — la complication d'origine est figée, déjà encaissée).
     this._applyAnarchyDrain(res, opts);
+    // Sort lancé via jet de risque (Anarchy 2, CH-M7e) : mémorise les succès
+    // sur le sort (présenté sur la carte, utile pour un sort maintenu).
+    this._storeSpellCast(res, opts);
 
     // Lancer rapide : pas d'animation plein écran
     if (this._prefs().quickRoll) {
@@ -924,5 +934,18 @@ const DiceRoller = {
     const drain = mod.drainOnComplication(pnj, res.complication);
     if (drain.wound) this._hooks.onPnjChanged(pnj);
     toast(drain.label);
+  },
+
+  /** Mémorise le dernier jet d'un sort lancé via jet de risque (Anarchy 2,
+      CH-M7e) sur `sp._lastCast` — présenté sur la carte, effaçable, utile
+      pour un sort maintenu. Même mémoire per-entité que `pnj.lastInit`. */
+  _storeSpellCast(res, opts) {
+    if (!opts.spellName || !opts.pnjId || res.init) return;
+    const pnj = this._hooks.resolve(opts.pnjId);
+    if (!pnj) return;
+    const sp = (pnj.spells || []).find((s) => s && s.name === opts.spellName);
+    if (!sp) return;
+    sp._lastCast = { hits: res.hits };
+    this._hooks.onPnjChanged(pnj);
   },
 };

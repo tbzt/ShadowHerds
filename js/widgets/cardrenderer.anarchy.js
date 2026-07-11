@@ -122,6 +122,18 @@ Object.assign(CardRenderer, {
       }
       html += "</div>";
     }
+    // Sorts (CH-M7e) : en zone Combat, façon armes. Anarchy 2 lance via la
+    // compétence Sorcellerie (jet de risque) — le Drain est géré par
+    // complication (CH-M7d). Pool = Sorcellerie (val + attribut + RR).
+    if (spells && spells.length) {
+      const sorc = (skills || []).find((s) => s.name === "Sorcellerie");
+      const riskPool = sorc ? sorc.val + (attrs[sorc.attr] || 0) : 0;
+      html += this._spellsBlock(pnj, spells, pnj.edition, {
+        viaRisk: true,
+        riskPool,
+        riskRR: sorc ? sorc.rr || 0 : 0,
+      });
+    }
     html += this._drugRow(pnj, pnj.edition, deps);
     html += this._armorChipRow(pnj);
     html += this._vehicleChipRow(pnj, deps);
@@ -196,7 +208,6 @@ Object.assign(CardRenderer, {
       }
       html += "</div></div>";
     }
-    if (spells && spells.length) html += this._listSection("Sorts", spells);
     html += "</div>"; // fin capacity-zone
 
     // ---- ZONE PERSONNAGE (PJ uniquement) ----
