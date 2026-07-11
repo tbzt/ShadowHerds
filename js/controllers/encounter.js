@@ -290,6 +290,33 @@ const Encounter = {
     this._commit();
   },
 
+  /** Action retardée (Vague C) : le combattant tient son action. Il devient
+      inéligible (sauté par les tours) mais reste dans le round, à sa place. S'il
+      tenait le tour courant, on avance au suivant sans le marquer « a joué »
+      (il n'a pas encore agi). Se relève par « Agir maintenant » (actNow). */
+  delayCombatant(pnjId) {
+    const c = this._find(pnjId);
+    if (!c) return;
+    c.delayed = true;
+    const idx = this.state.combatants.findIndex((x) => x.pnjId === pnjId);
+    if (idx === this.state.turnIndex) {
+      const next = this._nextEligibleIndex(this.state.turnIndex);
+      if (next !== -1) this.state.turnIndex = next;
+    }
+    this._commit();
+  },
+
+  /** Reprise d'une action retardée (Vague C) : le combattant agit tout de
+      suite — on lève le drapeau et on lui donne le tour courant. */
+  actNow(pnjId) {
+    const c = this._find(pnjId);
+    if (!c) return;
+    c.delayed = false;
+    const idx = this.state.combatants.findIndex((x) => x.pnjId === pnjId);
+    if (idx !== -1) this.state.turnIndex = idx;
+    this._commit();
+  },
+
   /** Hors de combat (Vague D) : moniteur plein, via l'accesseur neutre
       combatDisposition du module d'édition (jamais de branche d'édition ici).
       Un combattant hors de combat ne joue plus (inéligible) et sera rendu en
@@ -306,6 +333,7 @@ const Encounter = {
       éligible. Avec passes (SR5) : score effectif = init − (passe−1)×décrément, > 0. */
   _eligible(c) {
     if (this._isDown(c)) return false;
+    if (c.delayed) return false; // action retardée (Vague C) : tient son tour
     const dec = this._model().passDecrement;
     if (!dec) return true;
     return c.init != null && c.init - (this.state.pass - 1) * dec > 0;
@@ -353,7 +381,12 @@ const Encounter = {
     const model = this._model();
     this.state.round++;
     this.state.pass = 1;
-    this.state.combatants.forEach((c) => (c.hasActed = false));
+    // Nouveau round : tout le monde rejoue, les actions retardées (Vague C)
+    // tombent (on ne tient pas son action d'un round sur l'autre).
+    this.state.combatants.forEach((c) => {
+      c.hasActed = false;
+      c.delayed = false;
+    });
     // SR5/SR6 : nouvelle initiative à chaque tour de combat. Anarchy
     // (rerollEachRound:false) conserve l'ordre rangé à la main.
     if (model.rerollEachRound) {
@@ -417,6 +450,21 @@ const Encounter = {
     // resterait sinon périmé jusqu'au prochain rendu du tracker.
     this._render();
     toast("Moniteurs réinitialisés.");
+  },
+
+  /** Mise hors de combat immédiate (Vague C) : remplit le moniteur via
+      l'accesseur neutre conditionMonitor.knockOut (jamais de branche d'édition
+      ici) → le combattant bascule « hors de combat » (fond de pile, init
+      retirée, cf. Vague D). Réversible d'un tap par le bouton ✚ (soigner). */
+  knockOut(pnjId) {
+    const pnj = PnjLookup.find(pnjId);
+    const cm = App.editionModule && App.editionModule.conditionMonitor;
+    if (!pnj || !cm || !cm.knockOut || cm.isDestroyed(pnj)) return;
+    cm.knockOut(pnj);
+    Shadows.save();
+    CardRenderer.refresh(pnj);
+    this._render();
+    toast("Mis hors de combat.");
   },
 
   /** Fin de scène : soigne tous les combattants résolvables d'un coup. */
@@ -647,6 +695,15 @@ const Encounter = {
           break;
         case "heal-combatant":
           this.healCombatant(id);
+          break;
+        case "knockout-combatant":
+          this.knockOut(id);
+          break;
+        case "delay-combatant":
+          this.delayCombatant(id);
+          break;
+        case "act-now-combatant":
+          this.actNow(id);
           break;
         case "heal-all":
           this.healAll();

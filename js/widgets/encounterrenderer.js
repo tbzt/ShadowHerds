@@ -105,6 +105,8 @@ const EncounterRenderer = {
       <button class="btn-icon-tiny encounter-row-menu" data-action="row-menu" title="Plus d'actions" aria-label="Plus d'actions">⋯</button>
       <span class="encounter-controls-secondary">
         ${focusItem}
+        ${pnj._adhoc || r.down ? "" : `<button class="btn-icon-tiny" data-action="knockout-combatant" data-id="${pnjId}" title="Mettre hors de combat" aria-label="Mettre hors de combat">☠</button>`}
+        ${pnj._adhoc ? "" : `<button class="btn-icon-tiny" data-action="heal-combatant" data-id="${pnjId}" title="Réinitialiser les moniteurs (réanimer)" aria-label="Réinitialiser les moniteurs">✚</button>`}
         <button class="btn-icon-tiny danger" data-action="remove-combatant" data-id="${pnjId}" title="Retirer" aria-label="Retirer">✕</button>
       </span>
       ${this._moraleBanner(r)}
@@ -150,6 +152,11 @@ const EncounterRenderer = {
   /** Badge « hors de combat » (Vague D), partagé ordonné/narratif. */
   _downBadge() {
     return `<span class="encounter-down-badge" title="Moniteur plein — hors de combat">☠ Hors de combat</span>`;
+  },
+
+  /** Badge « action retardée » (Vague C) : le combattant tient son tour. */
+  _delayedBadge() {
+    return `<span class="encounter-delayed-badge" title="Action retardée — tient son tour">⏸ En attente</span>`;
   },
 
   /** Bandeau de moral (Vague D) : ⚑ « Devrait fuir » (règle de l'édition) ou
@@ -212,7 +219,7 @@ const EncounterRenderer = {
         ${malusHtml}
         ${effHtml}
       </div>`;
-    return `<div class="encounter-row${isActive ? " active-turn" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}${r.down ? " down" : ""}" data-id="${pnjId}">
+    return `<div class="encounter-row${isActive ? " active-turn" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}${r.down ? " down" : ""}${r.delayed && !r.down ? " delayed" : ""}" data-id="${pnjId}">
       ${initZone}
       <div class="encounter-main">
         <div class="encounter-name-row">
@@ -220,6 +227,7 @@ const EncounterRenderer = {
           <span class="encounter-kind">${this._kindLabel(r)}</span>
           ${nameHtml}
           ${r.down ? this._downBadge() : ""}
+          ${!r.down && r.delayed ? this._delayedBadge() : ""}
         </div>
         ${this._moraleBanner(r)}
         <input type="text" class="encounter-note${hasNote ? "" : " is-empty"}" placeholder="Note…" value="${Utils.escHtml(note || "")}"
@@ -234,8 +242,16 @@ const EncounterRenderer = {
           <button class="btn-icon-tiny" data-action="roll-init" data-id="${pnjId}" title="Lancer l'initiative" aria-label="Lancer l'initiative">⚄</button>
           <button class="btn-icon-tiny" data-action="move-up" data-id="${pnjId}" title="Monter" aria-label="Monter">▲</button>
           <button class="btn-icon-tiny" data-action="move-down" data-id="${pnjId}" title="Descendre" aria-label="Descendre">▼</button>
+          ${
+            r.down
+              ? ""
+              : r.delayed
+                ? `<button class="btn-icon-tiny" data-action="act-now-combatant" data-id="${pnjId}" title="Agir maintenant" aria-label="Agir maintenant">▶</button>`
+                : `<button class="btn-icon-tiny" data-action="delay-combatant" data-id="${pnjId}" title="Retarder l'action (tenir son tour)" aria-label="Retarder l'action">⏸</button>`
+          }
           ${hasNote ? "" : `<button class="btn-icon-tiny" data-action="note-toggle" data-id="${pnjId}" title="Ajouter une note" aria-label="Ajouter une note">✎</button>`}
-          ${pnj._adhoc ? "" : `<button class="btn-icon-tiny" data-action="heal-combatant" data-id="${pnjId}" title="Réinitialiser les moniteurs" aria-label="Réinitialiser les moniteurs">✚</button>`}
+          ${pnj._adhoc || r.down ? "" : `<button class="btn-icon-tiny" data-action="knockout-combatant" data-id="${pnjId}" title="Mettre hors de combat" aria-label="Mettre hors de combat">☠</button>`}
+          ${pnj._adhoc ? "" : `<button class="btn-icon-tiny" data-action="heal-combatant" data-id="${pnjId}" title="Réinitialiser les moniteurs (réanimer)" aria-label="Réinitialiser les moniteurs">✚</button>`}
           <button class="btn-icon-tiny danger" data-action="remove-combatant" data-id="${pnjId}" title="Retirer" aria-label="Retirer">✕</button>
         </span>
       </div>

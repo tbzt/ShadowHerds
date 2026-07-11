@@ -2923,6 +2923,21 @@ select optgroup {
   text-decoration: line-through;
   color: var(--text-dim);
 }
+/* Action retardée (Vague C) : ligne atténuée + badge « en attente ». */
+.encounter-row.delayed {
+  opacity: 0.75;
+}
+.encounter-delayed-badge {
+  flex: none;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--info);
+  background: color-mix(in srgb, var(--info) 15%, transparent);
+  border: 1px solid var(--info);
+  border-radius: 3px;
+  padding: 0.05rem 0.35rem;
+}
 /* Bandeau « devrait fuir » — conseil (⚑) + raccourci « Faire fuir ». */
 .encounter-flee {
   display: flex;

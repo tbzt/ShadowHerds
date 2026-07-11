@@ -221,6 +221,11 @@ const EditionAnarchy2 = {
     isDestroyed(entity) {
       return (entity.incapFilled || 0) >= 1;
     },
+    /** Mise hors de combat immédiate (Vague C) : coche la case incapacitante
+        (moniteur à seuils). Réversible par _resetMonitors (✚). */
+    knockOut(entity) {
+      entity.incapFilled = 1;
+    },
   },
   /** Résolution du jet d'arme (WeaponRoll) : pas de règle smartlink/
       smartgun en Anarchy 2.0 (neutre `null`, doc), pas de limite de

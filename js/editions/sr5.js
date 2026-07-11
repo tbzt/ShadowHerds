@@ -189,6 +189,13 @@ const EditionSR5 = {
         return (entity.monTotal || 0) > 0 && (entity.monFilled || 0) >= entity.monTotal;
       return (entity.physMon || 0) > 0 && (entity.physFilled || 0) >= entity.physMon;
     },
+    /** Mise hors de combat immédiate (Vague C) : remplit le moniteur physique
+        (ou total pour un véhicule) → isDestroyed devient vrai. Réversible par
+        _resetMonitors (bouton ✚). Inverse de isDestroyed. */
+    knockOut(entity) {
+      if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
+      else entity.physFilled = entity.physMon || 0;
+    },
   },
   /** Résolution du jet d'arme (WeaponRoll) : synergie smartgun/smartlink
       (+2 implanté / +1 externe), la Précision (PRE) plafonne les succès,

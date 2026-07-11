@@ -55,12 +55,15 @@ const App = {
       title: "Shadowrun Anarchy 1re édition",
       body: `
         <h2>Shadow Herds — Anarchy 1re</h2>
-        <p><strong>Édition en cours d'intégration (WIP).</strong> Le squelette
-        Anarchy 1re est câblé : sélection, génération, jets, Matrice et carte
-        fonctionnent, mais les <strong>données affichées sont encore celles de
-        l'Anarchy 2e</strong> (placeholder) en attendant la saisie des valeurs
-        officielles de la 1re édition — livre de base
-        (<em>sran_01</em>) et Anarchistes (<em>sran_03</em>).</p>`,
+        <p>Gestionnaire de PNJ pour <strong>Shadowrun : Anarchy (1re édition)</strong>, calibré sur le livre de base (<em>sran_01</em>) et Anarchistes (<em>sran_03</em>).</p>
+        <ul>
+          <li><strong>Ombres portées</strong> — Bibliothèque de PNJ sauvegardés, organisés en groupes. Sidebar de navigation à gauche.</li>
+          <li><strong>Générateur PNJ</strong> — 21 archétypes officiels du livre (gangers typique / troll / éveillé / decker / rigger, go-ganger, employés et cadres corpo, agents et officiers de sécurité ou police, versions Forces d'élite, soldats, M. Johnson). Six attributs (FOR / AGI / VOL / LOG / CHA / Chance), deux moniteurs Physique/Étourdissement, score de Défense, compétences en pool indice + attribut, VD imprimées, Atouts fixes et au choix, sorts pour les Éveillés, esprits mentors, métavariantes (Anarchistes).</li>
+          <li><strong>Contacts</strong> — Contacts avec Influence et Loyauté, métatype, lieux, traits, champ Notes et groupes.</li>
+          <li><strong>Matrice</strong> — Serveurs à pool de défense (4–12 dés, +2 en sécurité physique), 9 types de GLACE à jets de dés (cybercombat Hacking + LOG vs LOG + Firewall, dégâts (LOG/2)E), tracker d'intrusion, spider lié.</li>
+          <li><strong>Run</strong> — Ébauche de scénario : factions, lieux, complications.</li>
+        </ul>
+        <p>Les PNJ Anarchy 1re incluent les <strong>variantes métatype</strong>, la <strong>Chance</strong> (seconde chance sur les échecs), les <strong>esprits</strong> (6 types × 3 puissances) et les créatures du bestiaire (combat narratif, sans initiative chiffrée).</p>`,
     },
   },
 
@@ -89,14 +92,14 @@ const App = {
     anarchy1: "css/theme-anarchy1.css?v=1",
   },
   _EDITION_JS: {
-    sr5: ["js/editions/sr5.js?v=957", "js/editions/sr5.foundry.js?v=4"],
-    sr6: ["js/editions/sr6.js?v=956", "js/editions/sr6.foundry.js?v=5"],
+    sr5: ["js/editions/sr5.js?v=958", "js/editions/sr5.foundry.js?v=4"],
+    sr6: ["js/editions/sr6.js?v=957", "js/editions/sr6.foundry.js?v=5"],
     anarchy2: [
-      "js/editions/anarchy2.js?v=40",
+      "js/editions/anarchy2.js?v=41",
       "js/editions/anarchy2.creation.js?v=6",
       "js/editions/anarchy2.foundry.js?v=6",
     ],
-    anarchy1: ["js/editions/anarchy1.js?v=15"],
+    anarchy1: ["js/editions/anarchy1.js?v=16"],
   },
   // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
   _COMMON_JS: ["js/catalogs/creatures.js?v=955"],

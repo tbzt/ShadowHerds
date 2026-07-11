@@ -191,6 +191,12 @@ const EditionSR6 = {
         return (entity.monTotal || 0) > 0 && (entity.monFilled || 0) >= entity.monTotal;
       return (entity.me || 0) > 0 && (entity.physFilled || 0) >= entity.me;
     },
+    /** Mise hors de combat immédiate (Vague C) : remplit le moniteur unique
+        (ou total pour un véhicule). Réversible par _resetMonitors (✚). */
+    knockOut(entity) {
+      if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
+      else entity.physFilled = entity.me || 0;
+    },
   },
   /** Résolution du jet d'arme (WeaponRoll) : synergie smartgun/smartlink
       flat +1 (pas de distinction implanté/externe en SR6), pas de limite
