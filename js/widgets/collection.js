@@ -407,7 +407,13 @@ const Collection = {
           const el = e.target.closest(
             `[data-action="filter"][data-collection="${this.key}"]`,
           );
-          if (el) this.setFilter(el.value);
+          if (!el) return;
+          // Debounce : la grille est reconstruite au plus une fois par salve
+          // de frappes (~130 ms), pas à chaque touche. La valeur est capturée
+          // maintenant car l'input peut avoir changé au déclenchement.
+          const value = el.value;
+          clearTimeout(this._filterTimer);
+          this._filterTimer = setTimeout(() => this.setFilter(value), 130);
         });
       },
     };
