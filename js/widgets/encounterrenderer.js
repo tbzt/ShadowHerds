@@ -85,15 +85,15 @@ const EncounterRenderer = {
 
   _row(r, isActive, outOfPass, effectiveInit) {
     const { pnjId, init, hasActed, note, pnj } = r;
-    const initLabel = init == null ? "—" : String(init);
+    const initVal = init == null ? "" : String(init);
     const name = Utils.escHtml(pnj.name || "");
     // PJ ad-hoc : pas de fiche à ouvrir → nom en span inerte.
     const nameHtml = pnj._adhoc
       ? `<span class="encounter-name is-pj">${name}</span>`
       : `<button class="encounter-name" data-action="focus-combatant" data-id="${pnjId}" title="Voir la fiche">${name}</button>`;
-    // Score effectif de la passe (SR5, à partir de la passe 2) : le bouton
-    // reste sur la base (c'est elle qu'edit-init modifie), le décrément est
-    // affiché à côté plutôt qu'en remplacement.
+    // Score effectif de la passe (SR5, à partir de la passe 2) : le champ de
+    // saisie reste sur la base (c'est elle que set-init modifie), le décrément
+    // est affiché à côté plutôt qu'en remplacement.
     const effHtml =
       effectiveInit != null
         ? `<span class="encounter-init-eff${effectiveInit <= 0 ? " spent" : ""}" title="Score effectif en passe courante (base − décrément)">→ ${effectiveInit}</span>`
@@ -102,7 +102,8 @@ const EncounterRenderer = {
     return `<div class="encounter-row${isActive ? " active-turn" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}" data-id="${pnjId}">
       <div class="encounter-init">
         <button class="btn-icon-tiny" data-action="roll-init" data-id="${pnjId}" title="Lancer l'initiative">⚄</button>
-        <button class="encounter-init-val" data-action="edit-init" data-id="${pnjId}" title="Modifier l'initiative (base)">${initLabel}</button>
+        <input class="encounter-init-val" type="text" inputmode="numeric" data-action="set-init" data-id="${pnjId}"
+          value="${initVal}" placeholder="—" title="Initiative (base) — saisie directe" aria-label="Initiative">
         ${effHtml}
       </div>
       <div class="encounter-main">

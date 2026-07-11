@@ -297,13 +297,14 @@ const Settings = {
     </label>`;
   },
 
-  atomize() {
-    if (
-      !confirm(
-        `Supprimer toutes les données Shadowrun ${App.edition.toUpperCase()} ?\nCette action est irréversible.`,
-      )
-    )
-      return;
+  async atomize() {
+    const ok = await Dialog.confirm({
+      title: "Atomiser cette édition",
+      message: `Supprimer toutes les données Shadowrun ${App.edition.toUpperCase()} ? Cette action est irréversible.`,
+      confirmLabel: "Atomiser",
+      danger: true,
+    });
+    if (!ok) return;
     Storage.clearEdition();
     Shadows.data = { all: [], groups: {} };
     Shadows.currentGroup = "all";

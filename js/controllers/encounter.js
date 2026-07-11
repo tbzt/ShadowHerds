@@ -60,9 +60,15 @@ const Encounter = {
   /** PJ ad-hoc : le MJ suit les tours des joueurs sans fiche (elle vit chez
       le joueur). Combattant sans entité de pool, identifié par un pnjId
       synthétique `pj-…` et porteur de son propre nom + kind. Init en saisie
-      manuelle (bouton ▸ editInit) ; jamais de dés stockés. */
-  addPJ() {
-    const name = prompt("Nom du PJ :", "");
+      inline dans la ligne ; jamais de dés stockés. Saisie du nom via le
+      Dialog interne (jamais de prompt() natif). */
+  async addPJ() {
+    const name = await Dialog.prompt({
+      title: "Ajouter un PJ",
+      label: "Nom du PJ",
+      placeholder: "Nom du personnage joueur",
+      confirmLabel: "Ajouter",
+    });
     if (name === null) return;
     const n = name.trim();
     if (!n) return;
@@ -108,8 +114,14 @@ const Encounter = {
     this._commit();
   },
 
-  clear() {
-    if (!confirm("Vider la scène de combat ?")) return;
+  async clear() {
+    const ok = await Dialog.confirm({
+      title: "Vider la scène",
+      message: "Retirer tous les combattants de la scène ?",
+      confirmLabel: "Vider",
+      danger: true,
+    });
+    if (!ok) return;
     this.state = this._empty();
     this._commit();
   },
@@ -121,16 +133,6 @@ const Encounter = {
     const n = parseInt(value, 10);
     c.init = Number.isFinite(n) ? n : null;
     this._commit();
-  },
-
-  /** Saisie manuelle (toujours possible, même pour les éditions sans
-      initiative chiffrée comme Anarchy). */
-  editInit(pnjId) {
-    const c = this._find(pnjId);
-    if (!c) return;
-    const v = prompt("Initiative :", c.init != null ? String(c.init) : "");
-    if (v === null) return;
-    this.setInit(pnjId, v.trim());
   },
 
   /** Lance l'initiative via l'accesseur neutre du module d'édition
@@ -402,9 +404,6 @@ const Encounter = {
         case "roll-init":
           this.rollInit(id);
           break;
-        case "edit-init":
-          this.editInit(id);
-          break;
         case "move-up":
           this.moveUp(id);
           break;
@@ -421,8 +420,16 @@ const Encounter = {
     });
 
     overlay.addEventListener("change", (e) => {
-      const el = e.target.closest('[data-action="toggle-acted"]');
-      if (el) this.markActed(el.dataset.id, el.checked);
+      const acted = e.target.closest('[data-action="toggle-acted"]');
+      if (acted) {
+        this.markActed(acted.dataset.id, acted.checked);
+        return;
+      }
+      // Initiative saisie inline dans la ligne (remplace l'ancien prompt) :
+      // 'change' plutôt que 'input' — la valeur n'est committée qu'au blur/
+      // Entrée, donc le re-rendu de _commit ne casse pas la frappe en cours.
+      const init = e.target.closest('[data-action="set-init"]');
+      if (init) this.setInit(init.dataset.id, init.value);
     });
 
     overlay.addEventListener("input", (e) => {
