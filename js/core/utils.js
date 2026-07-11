@@ -4,6 +4,15 @@
    UTILS
    ============================================================ */
 const Utils = {
+  /** Résolveur du module d'édition, injecté par App au démarrage (CH-A6).
+      Utils (couche 1, socle) ne référence jamais App (couche 6) par son nom :
+      la dépendance ne descend que dans un sens (CONTRIBUTING.md « cycle
+      verrou ») — c'est App qui appelle Utils.init, jamais l'inverse. */
+  _resolveEditionModule: null,
+  init(hooks) {
+    this._resolveEditionModule = hooks.resolveEditionModule;
+  },
+
   rand(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
   },
@@ -53,8 +62,8 @@ const Utils = {
   /** Malus de dés lié aux cases de moniteur remplies — formule propre à
       chaque édition, cf. `conditionMonitor.woundMalus` (js/editions/*.js). */
   woundMalus(pnj, edition) {
-    if (!pnj) return 0;
-    const editionModule = App.getEditionModule(edition);
+    if (!pnj || !this._resolveEditionModule) return 0;
+    const editionModule = this._resolveEditionModule(edition);
     return editionModule ? editionModule.conditionMonitor.woundMalus(pnj) : 0;
   },
 

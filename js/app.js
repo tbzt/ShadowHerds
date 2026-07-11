@@ -296,6 +296,9 @@ const SHORTCUT_PANELS = {
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   Storage.migrateAnarchyId();
+  // CH-A6 : Utils (couche 1) ne référence jamais App directement — c'est App
+  // qui lui injecte le résolveur, une seule fois au démarrage.
+  Utils.init({ resolveEditionModule: (ed) => App.getEditionModule(ed) });
   // Persiste + re-rend une fiche modifiée par un jet (dés, Drain…). Partagé
   // par DiceRoller et MagicAction pour ne pas diverger.
   const onPnjChanged = (pnj) => {
