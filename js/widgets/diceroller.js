@@ -551,6 +551,11 @@ const DiceRoller = {
         this._doReroll();
         return;
       }
+      // Secondes chances de sort (sort/Drain) : gérées par MagicAction — ne pas
+      // fermer, et laisser l'événement remonter jusqu'à son écouteur document.
+      if (e.target.closest('[data-action="reroll-cast"], [data-action="reroll-drain"]')) {
+        return;
+      }
       this._closeOverlay();
     });
   },
@@ -653,6 +658,10 @@ const DiceRoller = {
           this._doReroll();
           return;
         }
+        // Secondes chances de sort : gérées par MagicAction — ne pas masquer.
+        if (e.target.closest('[data-action="reroll-cast"], [data-action="reroll-drain"]')) {
+          return;
+        }
         el.classList.remove("show");
       });
     }
@@ -665,7 +674,10 @@ const DiceRoller = {
     const tagHtml = last.tag
       ? `<span class="dice-quick-tag">${Utils.escHtml(last.tag)}</span>`
       : "";
-    const rerollHtml = this._rerollBtnHtml();
+    // Sort : deux Secondes chances (sort/Drain) ; sinon relance générique.
+    const rerollHtml = opts.drain
+      ? this._spellRerollButtons(res, opts)
+      : this._rerollBtnHtml();
     // Drain d'un sort (CH-M7e) : résumé compact dans le bandeau rapide.
     let drainHtml = "";
     if (opts.drain) {
@@ -693,7 +705,9 @@ const DiceRoller = {
   },
 
   show(res, opts = {}) {
-    DiceLog.record(res, opts);
+    // opts.noLog : l'appelant a déjà journalisé dans le bon ordre (ex.
+    // MagicAction sur une Seconde chance du Drain — le cast n'a pas changé).
+    if (!opts.noLog) DiceLog.record(res, opts);
     // Source de la relance : dernier résultat brut + son contexte.
     this._lastRoll = { res, opts };
 
@@ -887,7 +901,28 @@ const DiceRoller = {
       ${limitTag}
       ${poolHtml}
       ${this._drainBlockHtml(opts.drain)}
-      ${this._rerollBtnHtml()}`;
+      ${opts.drain ? this._spellRerollButtons(res, opts) : this._rerollBtnHtml()}`;
+  },
+
+  /** Deux boutons de Seconde chance pour un lancer de sort (CH-M7e) : l'un
+      relance le jet de sort, l'autre la résistance au Drain (au choix du MJ,
+      comme dans les règles). Chacun débite 1 point d'Edge, se désactive si
+      la ressource manque, si cette partie a déjà été relancée, ou sur échec
+      critique. Gérés par MagicAction (data-action=reroll-cast/-drain). */
+  _spellRerollButtons(castRes, opts) {
+    const d = opts.drain;
+    const pnj = opts.pnjId ? this._hooks.resolve(opts.pnjId) : null;
+    const action = App.editionModule && App.editionModule.rerollAction;
+    if (!pnj || !action || !action.costAttr) return "";
+    const attr = action.costAttr;
+    const edge = (pnj.attrs && pnj.attrs[attr]) || 0;
+    const hint = `<span class="dice-reroll-hint">${Utils.escHtml(attr)} ${edge}</span>`;
+    const castDis = edge <= 0 || d.castRerolled || castRes.critGlitch;
+    const drainDis = edge <= 0 || d.drainRerolled || d.res.critGlitch;
+    return `<div class="dice-spell-rerolls">
+      <button class="dice-reroll-btn" data-action="reroll-cast"${castDis ? " disabled" : ""}>↻ ${Utils.escHtml(action.label)} — sort${hint}</button>
+      <button class="dice-reroll-btn" data-action="reroll-drain"${drainDis ? " disabled" : ""}>↻ ${Utils.escHtml(action.label)} — Drain${hint}</button>
+    </div>`;
   },
 
   _revealAnarchy(res, summary, opts) {

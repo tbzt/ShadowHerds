@@ -5055,6 +5055,22 @@ kbd {
   text-transform: none;
   opacity: 0.85;
 }
+/* Deux Secondes chances d'un lancer de sort (sort / Drain), CH-M7e. */
+.dice-spell-rerolls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+  margin-top: 0.6rem;
+}
+.dice-spell-rerolls .dice-reroll-btn {
+  margin-top: 0;
+  font-size: 0.72rem;
+  padding: 0.28rem 0.6rem;
+}
+#dice-quick .dice-spell-rerolls {
+  margin-top: 0;
+}
 /* Bandeau rapide : bouton un cran plus compact. */
 #dice-quick .dice-reroll-btn {
   margin-top: 0;

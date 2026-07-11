@@ -61,12 +61,17 @@ const EditionSR5 = {
     return cmp > mag ? "physical" : "stun";
   },
   /** Applique des dégâts de Drain au moniteur du PNJ (deux moniteurs
-      séparés en SR5), plafonnés à leur taille respective. */
+      séparés en SR5), plafonnés à leur taille respective. Renvoie
+      `{ field, delta }` — le champ touché et la quantité RÉELLEMENT ajoutée
+      (après plafonnement), pour permettre d'annuler l'encaissement lors d'une
+      Seconde chance sur le Drain (CH-M7e). */
   applyDrainDamage(pnj, amount, type) {
-    if (!amount) return;
     const field = type === "physical" ? "physFilled" : "stunFilled";
+    if (!amount) return { field, delta: 0 };
     const max = type === "physical" ? pnj.physMon : pnj.stunMon;
-    pnj[field] = Utils.clamp((pnj[field] || 0) + amount, 0, max ?? 99);
+    const before = pnj[field] || 0;
+    pnj[field] = Utils.clamp(before + amount, 0, max ?? 99);
+    return { field, delta: pnj[field] - before };
   },
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
   /** Réglage propre à SR5 remonté ici (prohibition n°1 : plus de

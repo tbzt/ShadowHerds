@@ -68,10 +68,14 @@ const EditionSR6 = {
   },
   /** Moniteur unique (8 + CON/2, posé sur pnj.me) : le Drain y ajoute des
       cases. Le type Physique/Étourdissant ne change pas la case en SR6 (un
-      seul moniteur) mais est calculé pour l'affichage/le journal. */
+      seul moniteur) mais est calculé pour l'affichage/le journal. Renvoie
+      `{ field, delta }` réellement appliqué (annulation d'une Seconde chance
+      sur le Drain, CH-M7e). */
   applyDrainDamage(pnj, amount) {
-    if (!amount) return;
-    pnj.physFilled = Utils.clamp((pnj.physFilled || 0) + amount, 0, pnj.me ?? 99);
+    if (!amount) return { field: "physFilled", delta: 0 };
+    const before = pnj.physFilled || 0;
+    pnj.physFilled = Utils.clamp(before + amount, 0, pnj.me ?? 99);
+    return { field: "physFilled", delta: pnj.physFilled - before };
   },
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
   /** Réglage propre à SR6 remonté ici (prohibition n°1). Reçoit Settings (S). */

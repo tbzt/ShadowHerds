@@ -27,6 +27,13 @@ const MagicAction = {
     this._hooks = hooks;
     // Délégation des interactions d'une ligne de sort (rendu par cardrenderer).
     document.addEventListener("click", (e) => {
+      // Seconde chance sur le sort / le Drain (boutons de l'overlay de dés).
+      const rr = e.target.closest("[data-action='reroll-cast'], [data-action='reroll-drain']");
+      if (rr && !rr.disabled) {
+        if (rr.dataset.action === "reroll-cast") this.rerollCast();
+        else this.rerollDrain();
+        return;
+      }
       // ✕ : efface le dernier jet mémorisé (prioritaire, ne lance pas).
       const clr = e.target.closest("[data-spell-clear]");
       if (clr) {
@@ -190,15 +197,136 @@ const MagicAction = {
       label: c.name,
     });
 
+    // Contexte du lancer courant : source des Secondes chances (sort/Drain),
+    // qui re-résolvent une partie et corrigent l'encaissement (jamais deux
+    // fois la même partie — flags castRerolled/drainRerolled).
+    this._resolved = {
+      pnjId: c.pnjId,
+      edition: c.edition,
+      entry: c.entry,
+      force: c.force,
+      dv,
+      castRes,
+      drain: {
+        res: drain.res,
+        dv,
+        damage: drain.drainDamage,
+        type: drain.type,
+        applied: drain.applied,
+        castRerolled: false,
+        drainRerolled: false,
+      },
+    };
+
     // 3) Présente TOUT via l'affichage de dés standard : jet de lancement (dés
     // + succès) + jet de résistance au Drain + dégâts encaissés. Le cast est
     // loggé ici (après le Drain → il apparaît en tête, au-dessus de son Drain).
-    DiceRoller.show(castRes, {
-      label: `Sort — ${c.name}`,
-      who: pnj.name || "",
-      pnjId: c.pnjId,
-      drain: { res: drain.res, dv, damage: drain.drainDamage, type: drain.type },
+    this._present(true);
+  },
+
+  /** (Ré)affiche le lancer courant via l'affichage de dés standard.
+      `logCast` : journalise le jet de sort (vrai au 1er lancer et sur une
+      Seconde chance du sort ; faux sur une Seconde chance du Drain, où le
+      cast n'a pas changé — on ne re-logge que le Drain, fait par l'appelant). */
+  _present(logCast) {
+    const r = this._resolved;
+    const pnj = PnjLookup.find(r.pnjId);
+    DiceRoller.show(r.castRes, {
+      label: `Sort — ${r.entry.name}`,
+      who: (pnj && pnj.name) || "",
+      pnjId: r.pnjId,
+      drain: r.drain,
+      noLog: !logCast,
     });
+  },
+
+  /** Débite 1 point de la ressource de Seconde chance (Chance/Atout) du
+      lanceur. Renvoie false (et ne débite pas) si indisponible. */
+  _debitEdge(pnj, ed) {
+    const attr = ed.rerollAction && ed.rerollAction.costAttr;
+    if (!attr) return true; // édition sans coût (ne devrait pas arriver ici)
+    const val = (pnj.attrs && pnj.attrs[attr]) || 0;
+    if (val <= 0) return false;
+    pnj.attrs[attr] = val - 1;
+    return true;
+  },
+
+  /** Annule un encaissement de Drain (retire du moniteur ce qui a été
+      réellement appliqué). `applied` = { field, delta } renvoyé par
+      edModule.applyDrainDamage. */
+  _revertDrain(pnj, applied) {
+    if (!applied || !applied.delta) return;
+    pnj[applied.field] = Math.max(0, (pnj[applied.field] || 0) - applied.delta);
+  },
+
+  /** Seconde chance sur le SORT (p.58) : relance les dés ratés du jet de
+      lancement → nouvel effet + « → N » mis à jour. En SR5 les succès
+      déterminent le type de Drain : si le type bascule, on corrige
+      l'encaissement (même quantité, autre moniteur). */
+  rerollCast() {
+    const r = this._resolved;
+    if (!r || r.drain.castRerolled) return;
+    const pnj = PnjLookup.find(r.pnjId);
+    if (!pnj) return;
+    const ed = App.getEditionModule(r.edition);
+    if (r.castRes.critGlitch) return; // Seconde chance interdite sur échec critique
+    if (!this._debitEdge(pnj, ed)) return;
+
+    r.castRes = Dice.rerollMisses(r.castRes);
+    r.entry._lastCast = { hits: r.castRes.hits };
+    r.drain.castRerolled = true;
+
+    // Type de Drain revu (SR5 : selon les succès du sort) — corrige le moniteur.
+    const newType = ed.drainDamageType(
+      { kind: "spell", castHits: r.castRes.hits, drainDamage: r.drain.damage, force: r.force },
+      pnj,
+    );
+    if (newType !== r.drain.type) {
+      this._revertDrain(pnj, r.drain.applied);
+      r.drain.type = newType;
+      r.drain.applied = ed.applyDrainDamage(pnj, r.drain.damage, newType);
+    }
+    this._hooks.onPnjChanged(pnj);
+    this._present(true); // nouveau jet de sort → journalisé
+  },
+
+  /** Seconde chance sur le DRAIN (p.58) : relance les dés ratés de la
+      résistance → nouveaux dégâts. Défait l'encaissement précédent avant
+      d'appliquer le nouveau (les dégâts ne restent jamais appliqués à tort). */
+  rerollDrain() {
+    const r = this._resolved;
+    if (!r || r.drain.drainRerolled) return;
+    const pnj = PnjLookup.find(r.pnjId);
+    if (!pnj) return;
+    const ed = App.getEditionModule(r.edition);
+    if (r.drain.res.critGlitch) return;
+    if (!this._debitEdge(pnj, ed)) return;
+
+    // 1) Annule l'ancien encaissement.
+    this._revertDrain(pnj, r.drain.applied);
+    // 2) Relance la résistance, recalcule dégâts + type, réapplique.
+    const newRes = Dice.rerollMisses(r.drain.res);
+    const newDamage = Magic.resolveDrainDamage(r.dv, newRes.hits);
+    const newType = ed.drainDamageType(
+      { kind: "spell", castHits: r.castRes.hits, drainDamage: newDamage, force: r.force },
+      pnj,
+    );
+    const applied = ed.applyDrainDamage(pnj, newDamage, newType);
+    r.drain = {
+      res: newRes,
+      dv: r.dv,
+      damage: newDamage,
+      type: newType,
+      applied,
+      castRerolled: r.drain.castRerolled,
+      drainRerolled: true,
+    };
+    DiceLog.record(newRes, {
+      label: `Résistance au Drain — ${r.entry.name}`,
+      who: pnj.name || "",
+    });
+    this._hooks.onPnjChanged(pnj);
+    this._present(false); // le cast n'a pas changé → seul le Drain est re-loggé
   },
 
   /** Résout le Drain d'une action magique et l'encaisse (partagé sorts /
@@ -214,9 +342,9 @@ const MagicAction = {
     });
     const drainDamage = Magic.resolveDrainDamage(dv, drainRes.hits);
     const type = ed.drainDamageType({ kind, castHits, drainDamage, force }, pnj);
-    ed.applyDrainDamage(pnj, drainDamage, type);
+    const applied = ed.applyDrainDamage(pnj, drainDamage, type);
     this._hooks.onPnjChanged(pnj);
-    return { res: drainRes, resistHits: drainRes.hits, drainDamage, type };
+    return { res: drainRes, resistHits: drainRes.hits, drainDamage, type, applied };
   },
 
   /** Résout une invocation (CH-M7c) : roule Conjuration (magicien) +
