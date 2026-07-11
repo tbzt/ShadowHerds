@@ -22,7 +22,7 @@ const Hub = {
 
   _typeDefs() {
     return [
-      { col: Shadows, type: "pnj", label: "Figurants" },
+      { col: Shadows, type: "pnj", label: "PNJ" },
       { col: ContactsBook, type: "contact", label: "Contacts" },
       { col: Servers, type: "server", label: "Serveurs" },
     ];
