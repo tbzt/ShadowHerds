@@ -816,6 +816,13 @@ select optgroup {
 .form-group.ss {
   position: relative;
 }
+/* Marqueur d'aide (CH-U5) sur un label de champ : ⓘ discret, infobulle au
+   survol. Repère la présence d'une explication sans alourdir le formulaire. */
+.ms-hint {
+  font-size: 0.8em;
+  color: var(--text-dim);
+  cursor: help;
+}
 
 /* Déclencheur : ressemble à un <select> mais montre des puces (ms)
    ou la valeur choisie (ss) */

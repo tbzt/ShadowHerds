@@ -311,6 +311,7 @@ const Gen = {
         label: "Professionnalisme",
         mode: "flat",
         options: this._strip(fo.proRating),
+        hint: "Du grouille amateur à l'élite chevronnée — pèse sur les réserves de dés.",
       });
     }
 
@@ -322,6 +323,7 @@ const Gen = {
       label: "Profession",
       mode: "grouped",
       groups,
+      hint: "Le métier du PNJ (decker, samouraï…) — fixe compétences et équipement.",
     });
 
     // Composition libre (facultative) — contraint le tirage « Aléatoire »
@@ -411,12 +413,14 @@ const Gen = {
         label: "Rôle (composition libre)",
         mode: "flat",
         options: roleLabels,
+        hint: "Ce que le PNJ fait dans la scène. Composition libre : oriente le tirage « Aléatoire » sans remplacer une profession nommée.",
       }) +
       MultiSelect.create({
         id: `${prefix}-milieu`,
         label: "Milieu (composition libre)",
         mode: "flat",
         options: milieuLabels,
+        hint: "D'où vient le PNJ (rue, corpo…). Composition libre : oriente le tirage « Aléatoire » sans remplacer une profession nommée.",
       })
     );
   },

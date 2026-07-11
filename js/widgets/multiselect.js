@@ -43,6 +43,7 @@ const MultiSelect = {
       options = [],
       groups = [],
       emptyLabel = "Aléatoire (tout)",
+      hint = "",
     } = cfg;
 
     const body =
@@ -52,7 +53,7 @@ const MultiSelect = {
 
     return `
       <div class="form-group ms" data-ms="${id}" data-empty="${this._esc(emptyLabel)}">
-        <label>${label}</label>
+        <label>${label}${hint ? ` <span class="ms-hint" title="${this._esc(hint)}" aria-label="${this._esc(hint)}">ⓘ</span>` : ""}</label>
         <div class="ms-control" tabindex="0" role="button" aria-haspopup="listbox" aria-expanded="false">
           <div class="ms-chips" data-ms-chips></div>
           <span class="ms-caret">▾</span>
