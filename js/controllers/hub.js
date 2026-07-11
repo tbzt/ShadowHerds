@@ -17,6 +17,7 @@
    ============================================================ */
 const Hub = {
   _type: "all", // all | pnj | contact | server
+  _filter: "", // texte de recherche transverse (nom, archétype…)
   _wired: false,
 
   _typeDefs() {
@@ -38,19 +39,23 @@ const Hub = {
   },
 
   render() {
-    this._renderLabel();
     this._renderChips();
     this._renderCreate();
-    this._renderMain();
+    this._renderMain(); // met aussi le libellé à jour (compte affiché)
   },
 
-  _renderLabel() {
+  // `shown` = nombre d'entités réellement affichées après filtrage ; en
+  // recherche active on montre « affichées/total » pour que le compte ne mente
+  // pas quand le filtre masque des fiches du dossier.
+  _renderLabel(shown) {
     const label = document.getElementById("hub-dossier-label");
     if (!label) return;
     const node = DossierBar.currentNode();
-    label.textContent = node
-      ? `${node.name} (${DossierBar.count()})`
-      : `Tout le contenu (${DossierBar.count()})`;
+    const base = node ? node.name : "Tout le contenu";
+    const total = DossierBar.count();
+    label.textContent = this._filter.trim()
+      ? `${base} (${shown}/${total})`
+      : `${base} (${total})`;
   },
 
   _renderChips() {
@@ -91,10 +96,17 @@ const Hub = {
     if (!box) return;
     box.innerHTML = "";
 
+    // Requête normalisée UNE fois pour toutes les sections (comme
+    // Collection._renderGrid) ; chaque collection filtre ensuite ses membres
+    // avec sa propre logique _matchesFilter (searchFields neutre par type).
+    const q = Utils.searchNorm(this._filter).trim();
+    const words = q ? q.split(/\s+/) : [];
+
     let total = 0;
     for (const { col, type, label } of this._typeDefs()) {
       if (this._type !== "all" && this._type !== type) continue;
-      const ids = DossierBar.memberIds(col);
+      let ids = DossierBar.memberIds(col);
+      if (words.length) ids = this._filterIds(col, ids, words);
       if (!ids.length) continue;
       total += ids.length;
 
@@ -113,16 +125,39 @@ const Hub = {
 
     if (!total) {
       const selected = DossierBar.current !== "all";
+      const body = this._filter.trim()
+        ? `Aucune fiche ne correspond à « ${CardRenderer._esc(this._filter.trim())} ».`
+        : selected
+          ? "Ce dossier est vide pour ce filtre."
+          : "Générez du contenu (PNJ, contacts, serveurs) et rangez-le dans un dossier.";
       box.innerHTML = `<div class="empty-state">
-        <span class="empty-state-title">Rien ici</span>
-        ${selected ? "Ce dossier est vide pour ce filtre." : "Générez du contenu (PNJ, contacts, serveurs) et rangez-le dans un dossier."}
+        <span class="empty-state-title">${this._filter.trim() ? "Aucun résultat" : "Rien ici"}</span>
+        ${body}
       </div>`;
     }
+    this._renderLabel(total);
+  },
+
+  /** Restreint une liste d'ids d'une collection aux entités qui matchent la
+      recherche transverse, en réutilisant SA logique _matchesFilter (donc son
+      searchFields neutre) — pas de résolveur concurrent. `words` est déjà
+      normalisé/découpé par _renderMain. */
+  _filterIds(col, ids, words) {
+    const byId = new Map(col.data.all.map((e) => [e.id, e]));
+    return ids.filter((id) => {
+      const e = byId.get(id);
+      return e && col._matchesFilter(e, words);
+    });
   },
 
   setType(t) {
     this._type = t;
     this.render();
+  },
+
+  setFilter(v) {
+    this._filter = v || "";
+    this._renderMain();
   },
 
   _wire() {
@@ -132,6 +167,16 @@ const Hub = {
       const el = e.target.closest("[data-hub][data-action]");
       if (!el) return;
       if (el.dataset.action === "hub-type") this.setType(el.dataset.type);
+    });
+
+    // Recherche transverse : debounce ~130 ms (aligné sur Collection) pour ne
+    // reconstruire les sections qu'une fois par salve de frappes.
+    document.addEventListener("input", (e) => {
+      const el = e.target.closest("[data-hub-filter]");
+      if (!el) return;
+      const value = el.value;
+      clearTimeout(this._filterTimer);
+      this._filterTimer = setTimeout(() => this.setFilter(value), 130);
     });
   },
 };

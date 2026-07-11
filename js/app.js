@@ -349,7 +349,9 @@ document.addEventListener("DOMContentLoaded", () => {
       case "/":
         e.preventDefault();
         document
-          .querySelector('.panel.active input[data-action="filter"]')
+          .querySelector(
+            '.panel.active input[data-action="filter"], .panel.active input[data-hub-filter]',
+          )
           ?.focus();
         break;
       case "?":
