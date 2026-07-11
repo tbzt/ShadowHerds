@@ -493,6 +493,34 @@ const CardRenderer = {
     </div>`;
   },
 
+  /** Sorts (SR5/SR6, CH-M7b) : le tag info existant (_contentTag) reste
+      inchangé ; un bouton de lancer s'ajoute quand le PNJ a une résistance
+      au Drain ET que le sort porte un code de Drain exploitable — délégué
+      à diceroller.js (data-cast-spell), pas de onclick inline. */
+  _spellsSection(pnj, spells) {
+    if (!spells || !spells.length) return "";
+    const canCast = pnj.drainResist != null;
+    const tags = spells
+      .map((item) => {
+        let html = this._contentTag(item);
+        const drain = item && typeof item === "object" ? item.drain : null;
+        if (canCast && drain != null) {
+          const name = this._esc(item.name);
+          html += `<button type="button" class="tag skill-tag-spec rollable"
+            data-cast-spell="${name}" data-roll-pnj="${pnj.id}"
+            title="Lancer ce sort — résoudre le Drain">⚄ Lancer</button>`;
+        }
+        return html;
+      })
+      .join("");
+    return `<div class="card-section">
+      <div class="card-section-label">Sorts</div>
+      <div class="card-section-content">
+        ${tags}
+      </div>
+    </div>`;
+  },
+
   /* Rend un élément de contenu : objet {nom, desc} -> tag cliquable
      ouvrant une modale ; chaîne simple -> tag normal. Pour les sorts, un
      champ drain (SR5/SR6) ou niveau (Anarchy) est affiché dans le libellé. */

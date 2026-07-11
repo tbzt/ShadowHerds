@@ -83,7 +83,7 @@ Object.assign(CardRenderer, {
     // ---- ZONE CAPACITÉS ----
     html += '<div class="capacity-zone">';
     html += this._skillsSection(skills, malus6);
-    if (spells && spells.length) html += this._listSection("Sorts", spells);
+    html += this._spellsSection(pnj, spells);
     if (powers && powers.length)
       html += this._listSection("Pouvoirs d'adepte", powers);
     if (traits && traits.length) html += this._listSection("Traits", traits);
