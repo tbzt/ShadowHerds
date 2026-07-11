@@ -92,7 +92,7 @@ const App = {
     sr5: ["js/editions/sr5.js?v=955", "js/editions/sr5.foundry.js?v=4"],
     sr6: ["js/editions/sr6.js?v=954", "js/editions/sr6.foundry.js?v=5"],
     anarchy2: [
-      "js/editions/anarchy2.js?v=37",
+      "js/editions/anarchy2.js?v=38",
       "js/editions/anarchy2.creation.js?v=6",
       "js/editions/anarchy2.foundry.js?v=6",
     ],

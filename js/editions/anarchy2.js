@@ -69,19 +69,54 @@ const EditionAnarchy2 = {
      (donnée d'édition, lue par DiceRoller sans branche). ---- */
   magicSkills: ["Sorcellerie", "Conjuration"],
 
-  /** Applique l'effet de Drain d'une complication sur un jet magique (p.170) :
-      critique → blessure légère, désastre → blessure incapacitante, mineure →
-      désavantage narratif (non modélisé, simple rappel). Renvoie
-      { wound, label } pour la présentation (toast). */
-  drainOnComplication(pnj, level) {
-    if (level === "critical") {
-      const cap = 2 + (pnj.legerCapBonus || 0);
-      pnj.legerFilled = Utils.clamp((pnj.legerFilled || 0) + 1, 0, cap);
-      return { wound: true, label: "Drain : blessure légère" };
+  /** Moniteur de blessures Anarchy 2 : gravité croissante + cap de chaque cran
+      (2 légères / 1 grave / 1 incapacitante, p.68, `+ *CapBonus` par Atout). */
+  _woundTiers(pnj) {
+    return [
+      { sev: "leger", label: "légère", cap: 2 + (pnj.legerCapBonus || 0) },
+      { sev: "grave", label: "grave", cap: 1 + (pnj.graveCapBonus || 0) },
+      { sev: "incap", label: "incapacitante", cap: 1 },
+    ];
+  },
+
+  /** Encaisse une blessure d'une gravité donnée avec **cascade** (p.68) : si
+      toutes les cases de ce cran sont pleines, la blessure s'aggrave au cran
+      supérieur (ex. 3ᵉ légère → grave, 4ᵉ → incapacitante). Modèle général des
+      blessures Anarchy 2, réutilisable par toute source de dégât automatique.
+      Renvoie le cran réellement appliqué : { sev, label } (ou null si tout est
+      déjà plein). */
+  applyWound(pnj, severity) {
+    const tiers = this._woundTiers(pnj);
+    let i = tiers.findIndex((t) => t.sev === severity);
+    if (i < 0) i = 0;
+    for (; i < tiers.length; i++) {
+      const t = tiers[i];
+      const cur = pnj[`${t.sev}Filled`] || 0;
+      if (cur < t.cap) {
+        pnj[`${t.sev}Filled`] = cur + 1;
+        return { sev: t.sev, label: t.label };
+      }
     }
-    if (level === "disaster") {
-      pnj.incapFilled = 1;
-      return { wound: true, label: "Drain : blessure incapacitante" };
+    return null; // moniteur saturé (déjà incapacité)
+  },
+
+  /** Applique l'effet de Drain d'une complication sur un jet magique (p.170),
+      via applyWound (donc avec cascade p.68) : critique → blessure légère,
+      désastre → blessure incapacitante, mineure → désavantage narratif (non
+      modélisé, simple rappel). Renvoie { wound, label } pour le toast. */
+  drainOnComplication(pnj, level) {
+    if (level === "critical" || level === "disaster") {
+      const requested = level === "critical" ? "légère" : "incapacitante";
+      const applied = this.applyWound(pnj, level === "critical" ? "leger" : "incap");
+      if (!applied) {
+        return { wound: false, label: "Drain : moniteur déjà saturé" };
+      }
+      // Cascade : la blessure a été aggravée au-delà de la gravité de base.
+      const escalated = applied.label !== requested;
+      return {
+        wound: true,
+        label: `Drain : blessure ${applied.label}${escalated ? " (aggravée)" : ""}`,
+      };
     }
     // minor : désavantage magique jusqu'à la prochaine narration — état flou
     // que l'app ne ferme pas ; on se contente d'un rappel (choix produit).
