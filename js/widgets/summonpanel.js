@@ -1,157 +1,15 @@
 "use strict";
 
 /* ============================================================
-   UI — interactions live (moniteurs, drogues, véhicules/drones liés).
-   L'invocation d'esprits vit dans SummonPanel (CH-A7 : UI était un
-   fourre-tout mélangeant plusieurs domaines fonctionnels autonomes).
+   SUMMON PANEL — invocation d'esprits (extrait de UI, CH-A7 :
+   UI était un fourre-tout mélangeant moniteurs/véhicules/esprits ;
+   l'invocation est un domaine fonctionnel complet et autonome).
    ============================================================ */
-const UI = {
-  /** Clic sur une case de moniteur */
-  toggleMonitor(pnjId, type, idx) {
-    const pnj = PnjLookup.find(pnjId);
-    if (!pnj) return;
-
-    // Mapping type → champ du PNJ
-    const fieldMap = {
-      phys: "physFilled",
-      stun: "stunFilled",
-      mon: "monFilled",
-      ment: "mentFilled",
-      mat: "matFilled",
-      // Anarchy 2.0 : moniteur d'état unique à cases fixes (léger/grave/incap)
-      leger: "legerFilled",
-      grave: "graveFilled",
-      incap: "incapFilled",
-    };
-    const field = fieldMap[type] || "monFilled";
-    if (pnj[field] === undefined) pnj[field] = 0;
-
-    pnj[field] = idx < pnj[field] ? idx : idx + 1;
-
-    Shadows.save();
-    CardRenderer.refresh(pnj);
-  },
-
-  /** Clic sur le tag d'une drogue : fait avancer le cycle idle → effet →
-      contrecoup → idle (cf. js/drugs.js). */
-  cycleDrug(pnjId, edition, drugId) {
-    const pnj = PnjLookup.find(pnjId);
-    if (!pnj) return;
-    Drugs.advance(pnj, edition, drugId);
-    Shadows.save();
-    CardRenderer.refresh(pnj);
-  },
-
-  /** Clic sur le tag d'une armure optionnelle (Anarchy) : équipe/range le
-      bouclier, ce qui relève/abaisse les seuils physiques affichés. */
-  toggleArmorOption(pnjId, idx) {
-    const pnj = PnjLookup.find(pnjId);
-    if (!pnj) return;
-    pnj.armorOptions = pnj.armorOptions || {};
-    if (pnj.armorOptions[idx]) delete pnj.armorOptions[idx];
-    else pnj.armorOptions[idx] = true;
-    Shadows.save();
-    CardRenderer.refresh(pnj);
-  },
-
-  /* ========================================================
-     VÉHICULES & DRONES LIÉS (js/vehicles.js)
-     ======================================================== */
-
-  /** Clic sur une chip de la zone Combat : déploie la fiche liée,
-      ou recentre la vue dessus si elle existe déjà. */
-  deployVehicle(ownerId, srcIdx) {
-    const owner = PnjLookup.find(ownerId);
-    if (!owner) return;
-    const srcItem = (this._vehicleItems(owner) || [])[srcIdx];
-    if (!srcItem) return;
-
-    const existing = Vehicles.linkedTo(ownerId, srcItem);
-    const alreadyShown = existing.filter((v) => v.deployed);
-    if (alreadyShown.length) {
-      this._flashCard(alreadyShown[0].id);
-      return;
-    }
-
-    const inShadows = Shadows.data.all.some((p) => p.id === ownerId);
-    // Un PNJ sauvegardé peut avoir deux cartes : on ancre la fiche liée
-    // sur la carte du panneau actif (celle que l'utilisateur voit).
-    const ownerCard =
-      document.querySelector(`.panel.active .pnj-card[data-id="${ownerId}"]`) ||
-      document.querySelector(`.pnj-card[data-id="${ownerId}"]`);
-    let anchor = ownerCard;
-
-    // Des fiches rangées existent déjà pour cet item : on les redéploie
-    // telles quelles (moniteur, nom, notes... tout est conservé) plutôt
-    // que d'en fabriquer de nouvelles.
-    const toShow = existing.length ? existing : Vehicles.spawn(owner, srcItem, owner.edition);
-    if (!toShow.length) return;
-    for (const v of toShow) {
-      v.deployed = true;
-      if (!existing.length) {
-        if (inShadows) Shadows.data.all.push(v);
-        else Gen.pool.push(v);
-      }
-      if (anchor) {
-        const card = CardRenderer.render(v, inShadows ? ["remove"] : ["discard"]);
-        card.classList.add("vehicle-card", "vehicle-deploying");
-        anchor.insertAdjacentElement("afterend", card);
-        setTimeout(() => card.classList.remove("vehicle-deploying"), 700);
-        anchor = card;
-      }
-    }
-    if (inShadows) Shadows.save();
-    CardRenderer.refresh(owner); // met à jour l'état des chips
-  },
-
-  /** Bouton « Ranger » d'une fiche liée : masque la ou les fiches issues
-      du même item source, sans perdre leur état (moniteur, notes...). */
-  dismissVehicle(vehicleId) {
-    const v = PnjLookup.find(vehicleId);
-    if (!v || v.type !== "vehicle") return;
-    const siblings = Vehicles.linkedTo(v.ownerId, v.srcItem);
-    for (const s of siblings) {
-      s.deployed = false;
-      document
-        .querySelectorAll(`.pnj-card[data-id="${s.id}"]`)
-        .forEach((card) => card.remove());
-    }
-    Shadows.save();
-    const owner = PnjLookup.find(v.ownerId);
-    if (owner) CardRenderer.refresh(owner);
-  },
-
-  /** Badge « lié à » : scroll + flash de la carte du propriétaire. */
-  focusOwner(ownerId) {
-    this._flashCard(ownerId);
-  },
-
-  _flashCard(id) {
-    const card =
-      document.querySelector(`.panel.active .pnj-card[data-id="${id}"]`) ||
-      document.querySelector(`.pnj-card[data-id="${id}"]`);
-    if (!card) return;
-    card.scrollIntoView({ behavior: "smooth", block: "center" });
-    card.classList.add("card-flash");
-    setTimeout(() => card.classList.remove("card-flash"), 1200);
-  },
-
-  /** Items déployables d'un PNJ (équipement + atouts Anarchy),
-      dans un ordre stable — l'index sert de référence aux chips. */
-  _vehicleItems(pnj) {
-    if (typeof Vehicles === "undefined" || !pnj || pnj.type === "vehicle")
-      return [];
-    const src = [...(pnj.equip || []), ...(App.getEditionModule(pnj.edition).hasEdges ? pnj.edges || [] : [])];
-    return src.filter((i) => Vehicles.matchItem(i, pnj.edition));
-  },
-
-  /* ========================================================
-     ESPRITS INVOQUÉS (js/spirits.js)
-     ======================================================== */
+const SummonPanel = {
   _summon: null, // état du panneau : { ownerId, force, tier, services }
 
   /** Panneau d'invocation singleton (pattern du panneau de risque). */
-  _ensureSummonPanel() {
+  _ensure() {
     if (document.getElementById("summon-panel")) return;
     const p = document.createElement("div");
     p.id = "summon-panel";
@@ -175,13 +33,13 @@ const UI = {
       </div>`;
     document.body.appendChild(p);
     p.addEventListener("click", (e) => {
-      if (e.target === p) this._closeSummonPanel();
+      if (e.target === p) this._close();
     });
     document.getElementById("summon-close").addEventListener("click", () =>
-      this._closeSummonPanel(),
+      this._close(),
     );
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !p.hasAttribute("hidden")) this._closeSummonPanel();
+      if (e.key === "Escape" && !p.hasAttribute("hidden")) this._close();
     });
 
     document.getElementById("summon-power-steps").addEventListener("click", (e) => {
@@ -189,13 +47,13 @@ const UI = {
       if (!b) return;
       const summonField = App.getEditionModule(this._summon.edition).summonPower.field;
       this._summon[summonField] = parseInt(b.dataset.power, 10);
-      this._syncSummonPanel();
+      this._sync();
     });
     document.getElementById("summon-service-steps").addEventListener("click", (e) => {
       const b = e.target.closest("[data-services]");
       if (!b) return;
       this._summon.services = parseInt(b.dataset.services, 10);
-      this._syncSummonPanel();
+      this._sync();
     });
     document.getElementById("summon-types").addEventListener("click", (e) => {
       const b = e.target.closest("[data-spirit-type]");
@@ -204,10 +62,10 @@ const UI = {
     });
   },
 
-  openSummonPanel(ownerId) {
+  open(ownerId) {
     const owner = PnjLookup.find(ownerId);
     if (!owner) return;
-    this._ensureSummonPanel();
+    this._ensure();
     this._summon = {
       ownerId,
       edition: owner.edition,
@@ -224,14 +82,14 @@ const UI = {
     // chiffrée (Anarchy) ; en SR5/SR6 ils découlent des succès nets du jet.
     document.getElementById("summon-service-row").style.display =
       ed.conjureSkill ? "none" : "";
-    this._syncSummonPanel();
+    this._sync();
     const p = document.getElementById("summon-panel");
     p.removeAttribute("hidden");
     void p.offsetWidth;
     p.classList.add("show");
   },
 
-  _closeSummonPanel() {
+  _close() {
     const p = document.getElementById("summon-panel");
     if (!p) return;
     p.classList.remove("show");
@@ -239,7 +97,7 @@ const UI = {
     p._t = setTimeout(() => p.setAttribute("hidden", ""), 200);
   },
 
-  _syncSummonPanel() {
+  _sync() {
     const s = this._summon;
     const powerEl = document.getElementById("summon-power-steps");
     const summonPower = App.getEditionModule(s.edition).summonPower;
@@ -289,7 +147,7 @@ const UI = {
       services = conj.netHits;
     }
 
-    this._closeSummonPanel();
+    this._close();
 
     // Invocation ratée (aucun succès net) : l'esprit n'apparaît pas, mais le
     // magicien subit tout de même le Drain (SR5 p.303 / SR6 p.150).

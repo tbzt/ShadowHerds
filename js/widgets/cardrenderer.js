@@ -773,13 +773,13 @@ const CardRenderer = {
           UI.deployVehicle(id, Number(actionEl.dataset.idx));
           break;
         case "toggle-service":
-          UI.toggleService(id, Number(actionEl.dataset.idx));
+          SummonPanel.toggleService(id, Number(actionEl.dataset.idx));
           break;
         case "toggle-armor":
           UI.toggleArmorOption(id, Number(actionEl.dataset.idx));
           break;
         case "open-summon":
-          UI.openSummonPanel(id);
+          SummonPanel.open(id);
           break;
         case "toggle-monitor":
           UI.toggleMonitor(id, actionEl.dataset.sev, Number(actionEl.dataset.idx));
@@ -797,7 +797,7 @@ const CardRenderer = {
           UI.dismissVehicle(id);
           break;
         case "dismiss-spirit":
-          UI.dismissSpirit(id);
+          SummonPanel.dismissSpirit(id);
           break;
         case "save-pnj":
           Shadows.savePNJ(id);
