@@ -1368,7 +1368,7 @@ select optgroup {
    donc --text-dim par défaut ; chaque thème surcharge avec un accent lisible. */
 .card-section-label {
   font-family: "Share Tech Mono", monospace;
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   color: var(--text-dim);
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -5254,7 +5254,7 @@ input[type="range"]#risk-dice-slider {
    ============================================================ */
 .zone-eyebrow {
   font-family: "Share Tech Mono", monospace;
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--accent);
@@ -6061,7 +6061,7 @@ input[type="range"]#risk-dice-slider {
 }
 .ref-lbl {
   font-family: "Share Tech Mono", monospace;
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-dim);
