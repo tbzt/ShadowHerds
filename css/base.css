@@ -1362,10 +1362,14 @@ select optgroup {
   margin-bottom: 0;
 }
 
+/* Convention (audit I2) : --accent2 est une couleur de DÉCOR (liseré, trait,
+   fond), jamais de texte porteur d'information — son contraste sur --bg peut
+   descendre sous 4.5:1 (ex. SR5 #8b1a1a = 2.17:1). Le libellé de section lit
+   donc --text-dim par défaut ; chaque thème surcharge avec un accent lisible. */
 .card-section-label {
   font-family: "Share Tech Mono", monospace;
   font-size: var(--fs-2xs);
-  color: var(--accent2);
+  color: var(--text-dim);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   margin-bottom: 0.3rem;
