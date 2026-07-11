@@ -57,6 +57,24 @@ const Encounter = {
     toast("Ajouté au suivi de combat.");
   },
 
+  /** Ajout groupé (CH-Q8) : dédup, UN seul commit + UN seul toast. */
+  addMany(ids) {
+    let n = 0;
+    for (const id of ids) {
+      if (id && !this._find(id)) {
+        this.state.combatants.push({ pnjId: id, init: null, hasActed: false, note: "" });
+        n++;
+      }
+    }
+    if (n) this._commit();
+    toast(
+      n
+        ? `${n} combattant${n > 1 ? "s" : ""} ajouté${n > 1 ? "s" : ""} au suivi de combat.`
+        : "Déjà dans le suivi de combat.",
+    );
+    return n;
+  },
+
   /** PJ ad-hoc : le MJ suit les tours des joueurs sans fiche (elle vit chez
       le joueur). Combattant sans entité de pool, identifié par un pnjId
       synthétique `pj-…` et porteur de son propre nom + kind. Init en saisie

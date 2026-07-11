@@ -586,6 +586,19 @@ const Gen = {
     }
   },
 
+  /** CH-Q8 : envoie toute la bande affichée (zone groupe) au tracker de combat
+      en un geste. Les membres sont déjà dans le pool → résolvables par PnjLookup. */
+  addGroupToEncounter() {
+    const ids = [
+      ...document.querySelectorAll("#gen-zone-group .pnj-card[data-id]"),
+    ].map((c) => c.dataset.id);
+    if (!ids.length) {
+      toast("Générez d'abord une bande.");
+      return;
+    }
+    Encounter.addMany(ids);
+  },
+
   /* ---- Actions ---- */
   discard(id) {
     // Cascade : les entités liées (drones/véhicules) partent avec leur maître.
@@ -705,6 +718,9 @@ const Gen = {
           break;
         case "generate-group":
           this.generateGroup();
+          break;
+        case "add-group-to-encounter":
+          this.addGroupToEncounter();
           break;
         case "clear-group":
           this.clearGroup();
