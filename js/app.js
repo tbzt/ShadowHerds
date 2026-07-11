@@ -196,7 +196,7 @@ const App = {
         Hub.initPanel();
         break;
       case "characters":
-        Characters.render();
+        Characters.initPanel();
         break;
       case "generator":
         DossierBar.mount("gen-dossier-list");

@@ -3,11 +3,15 @@
 /* ============================================================
    CHARACTERS — bibliothèque de personnages jouables (PJ)
    ------------------------------------------------------------
-   Panneau autonome, distinct des « Ombres portées » (PNJ) : sidebar
-   de groupes + grille propres, via le socle Collection (même brique
-   que Shadows/ContactsBook/Servers), mais SANS passer par le Hub ni
-   DossierBar — un PJ n'est pas rangé dans les mêmes dossiers qu'un
-   PNJ généré.
+   Panneau autonome (reste le point de CRÉATION, cf. CharGen), mais sa
+   sidebar affiche désormais l'arbre de dossiers **transverse**
+   (DossierBar), le même que Ombres portées — CH-A3 polish : un PJ rangé
+   dans « Run 1 » y apparaît, qu'on vienne d'ici ou d'Ombres portées.
+   Pas de `dom.sidebar` dans la config Collection ci-dessous : c'est
+   `initPanel()` qui monte DossierBar sur #characters-group-list, la
+   grille (`_renderGrid` du socle) continue de filtrer sur `currentGroup`,
+   déjà tenu à jour par `DossierBar._applyCurrent()` (Characters fait
+   partie de `DossierBar._cols()` depuis CH-A3).
 
    Les entités stockées ont la forme d'un PNJ (cf.
    EditionAnarchy2.generate()) avec la couche PJ en plus (isPC,
@@ -22,7 +26,6 @@ const Characters = Object.assign(
     storageKeys: { all: "characters_all", groups: "characters_groups" },
     dom: {
       grid: "characters-grid",
-      sidebar: "characters-group-list",
       label: "characters-group-label",
     },
     labels: {
@@ -51,11 +54,39 @@ const Characters = Object.assign(
       this.data.all.push(pnj);
       this.save();
       this.render();
+      this.renderLabel();
       toast(`✓ ${pnj.name} ajouté aux Personnages.`);
     },
 
     removePJ(id) {
       this.remove(id);
+    },
+
+    /** Montage du panneau (CH-A3 polish) : la sidebar de dossiers est
+        transverse (DossierBar), pas propre à Characters — même patron que
+        Hub.initPanel(). `_renderSidebar()` du socle Collection est un no-op
+        ici (pas de `dom.sidebar` dans la config) : c'est cette méthode qui
+        met à jour le libellé (`dom.label` visé directement, hors socle).
+        L'abonné appelle `_renderGrid()` (privé), PAS `render()` : DossierBar.
+        init() câble déjà `col._cfg.onChange = () => DossierBar.refresh()`
+        sur chaque collection — `render()` déclencherait onChange → refresh
+        → notify → ce même abonné → render() → boucle infinie. */
+    initPanel() {
+      DossierBar.mount("characters-group-list");
+      DossierBar.subscribe(() => {
+        this._renderGrid();
+        this.renderLabel();
+      });
+      DossierBar.refresh(); // rend l'arbre + notifie → grille/libellé ici
+      this.renderLabel();
+    },
+
+    renderLabel() {
+      const label = document.getElementById("characters-group-label");
+      if (!label) return;
+      const node = DossierBar.currentNode();
+      const base = node ? node.name : "Tous les personnages";
+      label.textContent = `${base} (${DossierBar.memberIds(this).length})`;
     },
   },
 );

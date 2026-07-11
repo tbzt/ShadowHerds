@@ -319,23 +319,24 @@
         </div>
 
         <!-- PERSONNAGES — bibliothèque de personnages jouables (PJ),
-             distincte des Ombres portées (PNJ). Sidebar + grille propres
-             (socle Collection), sans passer par le Hub/DossierBar. -->
+             distincte des Ombres portées (PNJ) mais MÊME arbre de dossiers
+             transverse (DossierBar, CH-A3 polish) : grille propre (socle
+             Collection), sidebar partagée. -->
         <div class="panel" id="panel-characters">
           <div class="panel-title">Personnages<span class="panel-subtitle">vos personnages-joueurs sauvegardés</span></div>
           <div class="shadows-layout" data-sidebar="characters">
             <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="characters"></div>
-            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="characters" title="Afficher les groupes"
-              aria-label="Afficher les groupes">
+            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="characters" title="Afficher les dossiers"
+              aria-label="Afficher les dossiers">
               <span class="sidebar-reopen-icon">›</span>
-              <span class="sidebar-reopen-label">Groupes</span>
+              <span class="sidebar-reopen-label">Dossiers</span>
             </button>
             <aside class="shadows-sidebar">
               <div class="shadows-sidebar-header">
                 <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="characters" title="Replier"
-                  aria-label="Replier les groupes">‹</button>
-                <span class="shadows-sidebar-title">Groupes</span>
-                <button class="btn-icon" data-action="add-group" data-collection="characters" title="Nouveau groupe">＋</button>
+                  aria-label="Replier les dossiers">‹</button>
+                <span class="shadows-sidebar-title">Dossiers</span>
+                <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
               </div>
               <div id="characters-group-list"></div>
             </aside>
@@ -695,7 +696,7 @@
   <script defer src="js/controllers/generator.js?v=954"></script>
   <script defer src="js/controllers/rungen.js?v=953"></script>
   <script defer src="js/controllers/shadows.js?v=27"></script>
-  <script defer src="js/controllers/characters.js?v=3"></script>
+  <script defer src="js/controllers/characters.js?v=4"></script>
   <script defer src="js/controllers/chargen.js?v=5"></script>
   <script defer src="js/controllers/pnjlookup.js?v=4"></script>
   <script defer src="js/widgets/palette.js?v=1"></script>
@@ -709,7 +710,7 @@
   <script defer src="js/controllers/settings.js?v=25"></script>
   <script defer src="js/controllers/backup.js?v=951"></script>
   <script defer src="js/controllers/foundryexport.js?v=4"></script>
-  <script defer src="js/app.js?v=960"></script>
+  <script defer src="js/app.js?v=961"></script>
 
 </body>
 
