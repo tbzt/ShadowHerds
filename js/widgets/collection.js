@@ -203,13 +203,15 @@ const Collection = {
         this.filterText = v || "";
         this._renderGrid();
       },
-      _matchesFilter(entity) {
-        const q = Utils.searchNorm(this.filterText).trim();
-        if (!q) return true;
+      // `words` = requête déjà normalisée et découpée (calculée UNE fois par
+      // _renderGrid, hors de la boucle de filtrage). Ne normalise plus ici que
+      // le foin propre à l'entité.
+      _matchesFilter(entity, words) {
+        if (!words.length) return true;
         const hay = Utils.searchNorm(
           config.searchFields(entity).filter(Boolean).join(" "),
         );
-        return q.split(/\s+/).every((word) => hay.includes(word));
+        return words.every((word) => hay.includes(word));
       },
 
       /* ---- Rendu ---- */
@@ -280,7 +282,10 @@ const Collection = {
         // Le plus récent en premier (data.all reste en ordre d'insertion).
         list = list.slice().reverse();
         const unfiltered = list.length;
-        list = list.filter((e) => this._matchesFilter(e));
+        // Requête normalisée calculée une seule fois pour toute la liste.
+        const q = Utils.searchNorm(this.filterText).trim();
+        const words = q ? q.split(/\s+/) : [];
+        list = list.filter((e) => this._matchesFilter(e, words));
 
         if (!list.length) {
           grid.innerHTML =
