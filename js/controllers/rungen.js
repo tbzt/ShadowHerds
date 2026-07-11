@@ -297,6 +297,7 @@ const RunGen = {
     const pay = Math.round((baseK * payMult) / 500) * 500;
 
     return {
+      id: Utils.uid(),
       type: Utils.rand(types),
       client: Utils.rand(clients),
       lieu: Utils.rand(lieux),
@@ -318,6 +319,7 @@ const RunGen = {
         <button class="btn-secondary" data-action="clear-all">Effacer tout</button>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:1rem;" id="run-list"></div>`;
+    this._restore();
   },
 
   _delegated: false,
@@ -334,9 +336,13 @@ const RunGen = {
         case "clear-all":
           this.clearAll();
           break;
-        case "discard-run":
-          actionEl.closest(".run-card").remove();
+        case "discard-run": {
+          const card = actionEl.closest(".run-card");
+          this._runs = this._runs.filter((r) => r.id !== card.dataset.id);
+          this._save();
+          card.remove();
           break;
+        }
         case "run-to-dossier":
           this.toDossier(actionEl.dataset.runName);
           break;
@@ -363,12 +369,36 @@ const RunGen = {
     toast(`Dossier « ${name} » créé — rangez-y votre prep.`);
   },
 
+  /* ---- Persistance des runs générées (CH-Q5, édition-scopée) ----
+     Miroir du pattern gen_pool : les runs survivent au F5 et au changement de
+     panel, restaurées par initPanel(). Storage = source de vérité. */
+  _RUNS_KEY: "gen_runs",
+  _runs: [],
+  _save() {
+    Storage.set(this._RUNS_KEY, this._runs);
+  },
+  /** Rend une carte et la relie à son objet run par data-id (suppression +
+      persistance). RunRenderer reste générique. */
+  _renderCard(run, prepend) {
+    const el = RunRenderer.render(run);
+    el.dataset.id = run.id;
+    const list = document.getElementById("run-list");
+    prepend ? list.prepend(el) : list.append(el);
+  },
+  _restore() {
+    this._runs = Storage.get(this._RUNS_KEY, []);
+    // _runs est du plus récent au plus ancien : append les rend haut → bas.
+    for (const run of this._runs) this._renderCard(run, false);
+  },
   addOne() {
-    document
-      .getElementById("run-list")
-      .prepend(RunRenderer.render(this.generate()));
+    const run = this.generate();
+    this._runs.unshift(run);
+    this._save();
+    this._renderCard(run, true);
   },
   clearAll() {
+    this._runs = [];
+    this._save();
     document.getElementById("run-list").innerHTML = "";
   },
 };
