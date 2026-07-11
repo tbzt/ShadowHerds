@@ -4254,6 +4254,38 @@ kbd {
   opacity: 0.85;
 }
 
+/* ---- Compétences & connaissances lançables : AFFORDANCE AU REPOS (CH-M1) ----
+   Le survol n'existe pas sur tablette/téléphone (appareil cible du MJ) ; le
+   signal cliquable doit donc être permanent, comme sur les armes. La réserve
+   pré-calculée est déjà dans le tag ; on ajoute le dé ⚄ en permanence + une
+   bordure accent discrète (même langage que .combat-pill), en gardant le halo
+   pour le survol/focus afin de ne pas saturer une carte de 15 jets (CH-C2).
+   Les tags lançables sont des <button> : focus + Entrée/Espace natifs. */
+.skill-tag.rollable {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  text-align: left;
+  vertical-align: middle;
+}
+.skill-tag.rollable::after {
+  content: "⚄";
+  margin-left: 0.3em;
+  font-size: 0.82em;
+  color: var(--accent);
+  opacity: 0.75;
+  vertical-align: middle;
+}
+.skill-tag.rollable:hover::after,
+.skill-tag.rollable:focus-visible::after {
+  opacity: 1;
+}
+/* État clavier visible : le focus doit ressortir autant que le survol. */
+.skill-tag.rollable:focus-visible {
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 1px var(--accent),
+    0 0 14px var(--glow);
+}
+
 /* ============================================================
    OVERLAY DE LANCER DE DÉS
    ============================================================ */

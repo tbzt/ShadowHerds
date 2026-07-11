@@ -385,6 +385,16 @@ const CardRenderer = {
    *   distinguer visuellement une variante (ex. connaissances SR5 vs
    *   compétences actives — même mécanique de lancer de dés).
    */
+  /** Rend un tag de compétence/connaissance : <button> quand il est lançable
+      (focus + activation Entrée/Espace NATIFS → la délégation click de
+      diceroller.js:96 fait le jet, on ne la redouble pas), sinon <span>.
+      L'affordance visible au repos (dé ⚄ + bordure) vit dans base.css. */
+  _rollableTag(rollable, cls, attrs, inner) {
+    return rollable
+      ? `<button type="button" class="${cls}"${attrs}>${inner}</button>`
+      : `<span class="${cls}"${attrs}>${inner}</span>`;
+  },
+
   _skillsSection(skills, malus = 0, opts = {}) {
     if (!skills || !skills.length) return "";
     const { label = "Compétences", extraClass = "" } = opts;
@@ -393,20 +403,29 @@ const CardRenderer = {
       .map((s) => {
         const n = Number(s.val);
         const eff = Number.isFinite(n) ? Math.max(0, n - malus) : n;
-        const rollAttrs =
-          Number.isFinite(eff) && eff >= 1
-            ? ` data-roll="${eff}" data-roll-label="${this._esc(s.name)}" title="Lancer ${eff} dés — ${this._esc(s.name)}${malusTxt}"`
-            : "";
-        const rollCls = Number.isFinite(eff) && eff >= 1 ? " rollable" : "";
-        let html = `<span class="tag skill-tag${extraClass}${rollCls}"${rollAttrs}>${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${eff}</strong></span>`;
+        const rollable = Number.isFinite(eff) && eff >= 1;
+        const rollAttrs = rollable
+          ? ` data-roll="${eff}" data-roll-label="${this._esc(s.name)}" title="Lancer ${eff} dés — ${this._esc(s.name)}${malusTxt}"`
+          : "";
+        let html = this._rollableTag(
+          rollable,
+          `tag skill-tag${extraClass}${rollable ? " rollable" : ""}`,
+          rollAttrs,
+          `${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${eff}</strong>`,
+        );
         if (s.spec && s.spec !== true) {
           // Spécialité : +2 dés sur le pool en SR5/SR6.
           const specN = Number.isFinite(n) ? Math.max(0, n + 2 - malus) : null;
-          const specRoll =
-            specN && specN >= 1
-              ? ` data-roll="${specN}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" title="Spécialité ${this._esc(s.spec)} : ${specN} dés (+2)${malusTxt}"`
-              : ` title="Spécialité ${this._esc(s.spec)} : +2 dés${malusTxt}"`;
-          html += `<span class="tag skill-tag skill-tag-spec${specN ? " rollable" : ""}"${specRoll}>◊&nbsp;${this._esc(s.spec)}</span>`;
+          const specRollable = !!(specN && specN >= 1);
+          const specRoll = specRollable
+            ? ` data-roll="${specN}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" title="Spécialité ${this._esc(s.spec)} : ${specN} dés (+2)${malusTxt}"`
+            : ` title="Spécialité ${this._esc(s.spec)} : +2 dés${malusTxt}"`;
+          html += this._rollableTag(
+            specRollable,
+            `tag skill-tag skill-tag-spec${specRollable ? " rollable" : ""}`,
+            specRoll,
+            `◊&nbsp;${this._esc(s.spec)}`,
+          );
         }
         return html;
       })
@@ -448,7 +467,12 @@ const CardRenderer = {
         const rollAttrs = rollable
           ? ` data-roll="${pool}" data-roll-label="${this._esc(k.name)}" data-roll-detail="${this._esc(detail)}" title="Test de connaissance : ${this._esc(detail)}"`
           : "";
-        return `<span class="tag skill-tag skill-tag-knowledge${rollable ? " rollable" : ""}"${rollAttrs}>${this._esc(k.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong></span>`;
+        return this._rollableTag(
+          rollable,
+          `tag skill-tag skill-tag-knowledge${rollable ? " rollable" : ""}`,
+          rollAttrs,
+          `${this._esc(k.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong>`,
+        );
       })
       .join("");
     return `<div class="card-section">
