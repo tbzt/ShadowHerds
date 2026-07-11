@@ -5350,6 +5350,15 @@ input[type="range"]#risk-dice-slider {
   border-left: 3px solid var(--accent);
   position: relative;
 }
+
+/* PNJ déployé depuis un contact (ContactsBook.deployPNJ), imbriqué dans la
+   carte contact — même liseré que la carte sœur véhicule/esprit. */
+.contact-deployed-pnj {
+  margin-top: 10px;
+}
+.contact-deployed-pnj .pnj-card {
+  border-left: 3px solid var(--accent);
+}
 .vehicle-header .pnj-name {
   font-size: 1rem;
 }

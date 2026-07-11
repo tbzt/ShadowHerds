@@ -624,6 +624,9 @@ const CardRenderer = {
     }
     if (actions.includes("remove")) {
       btns.push(
+        `<button class="card-action-btn ghost" data-action="duplicate-pnj" data-id="${pnj.id}">Dupliquer</button>`,
+      );
+      btns.push(
         `<button class="card-action-btn danger" data-action="remove-pnj" data-id="${pnj.id}">Supprimer</button>`,
       );
     }
@@ -636,11 +639,11 @@ const CardRenderer = {
       `<button class="card-action-btn ghost" data-action="add-to-encounter" data-id="${pnj.id}" title="Ajouter au suivi de combat">⚔ Combat</button>`,
     );
     // Export Foundry VTT : affiché uniquement si l'édition active en expose
-    // la capacité (SR5). Lecture neutre du module d'édition, jamais de
-    // branche `App.edition === …` (prohibition #1).
+    // la capacité (SR5, Anarchy2...). Lecture neutre du module d'édition,
+    // jamais de branche `App.edition === …` (prohibition #1).
     if (App.getEditionModule(pnj.edition)?.foundryExport) {
       btns.push(
-        `<button class="card-action-btn ghost" data-action="export-foundry" data-id="${pnj.id}" title="Exporter vers Foundry VTT (système SR5)">⬗ Foundry</button>`,
+        `<button class="card-action-btn ghost" data-action="export-foundry" data-id="${pnj.id}" title="Exporter vers Foundry VTT">⬗ Foundry</button>`,
       );
     }
     return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>${btns.join("")}</div>`;
@@ -693,6 +696,9 @@ const CardRenderer = {
           break;
         case "remove-pnj":
           Shadows.removePNJ(id);
+          break;
+        case "duplicate-pnj":
+          Shadows.duplicatePNJ(id);
           break;
         case "remove-pj":
           Characters.removePJ(id);

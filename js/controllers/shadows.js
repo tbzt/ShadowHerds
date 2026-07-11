@@ -40,6 +40,12 @@ const Shadows = Object.assign(
       },
     },
     renderCard: (pnj) => CardRenderer.render(pnj, ["edit", "remove"]),
+    // Garde la carte imbriquée dans une fiche contact (déployée via
+    // ContactsBook.deployPNJ) synchronisée si le PNJ est modifié/supprimé
+    // depuis la grille des Ombres elle-même.
+    onChange: () => {
+      if (typeof ContactsBook !== "undefined") ContactsBook.refreshGrid();
+    },
   }),
   {
     /* ---- Sauvegarder un PNJ depuis le générateur ----
@@ -93,6 +99,39 @@ const Shadows = Object.assign(
     /* ---- Supprimer un PNJ (et ses entités liées, via le socle) ---- */
     removePNJ(id) {
       this.remove(id);
+    },
+
+    /* ---- Dupliquer un PNJ (et ses entités liées : drones/véhicules,
+       esprits invoqués qui suivent leur maître) ---- */
+    duplicatePNJ(id) {
+      const original = this.data.all.find((p) => p.id === id);
+      if (!original) {
+        toast("PNJ introuvable.");
+        return;
+      }
+
+      const copy = structuredClone(original);
+      copy.id = Utils.uid();
+      copy.name = `${original.name} (copie)`;
+      this.data.all.push(copy);
+
+      const children = this.data.all.filter(
+        (e) => e.ownerId === original.id && e.id !== copy.id,
+      );
+      for (const child of children) {
+        const childCopy = structuredClone(child);
+        childCopy.id = Utils.uid();
+        childCopy.ownerId = copy.id;
+        this.data.all.push(childCopy);
+      }
+
+      for (const g of this.groupsOf(original.id)) {
+        (this.data.groups[g] ||= []).push(copy.id);
+      }
+
+      this.save();
+      this.render();
+      toast(`✓ ${copy.name} dupliqué.`);
     },
   },
 );

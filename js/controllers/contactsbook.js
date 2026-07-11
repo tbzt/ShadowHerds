@@ -82,6 +82,44 @@ const ContactsBook = Object.assign(
       this.render();
     },
 
+    /* ---- Déployer un PNJ complet depuis un contact ----
+       Le vocabulaire des contacts ne correspond pas aux archétypes nommés
+       du générateur : on ne mappe que le milieu (ContactGen.milieuForContact,
+       depuis le tag réseau/catégorie du contact) et on laisse Coherence
+       choisir un archétype cohérent, comme la « composition libre » du
+       Générateur. Le PNJ va directement aux Ombres (data.all de Shadows,
+       même accès direct que Shadows.savePNJ fait déjà vers Gen.pool) et sa
+       carte s'affiche imbriquée dans la fiche contact (ContactRenderer). */
+    deployPNJ(id) {
+      const c = this.data.all.find((x) => x.id === id);
+      if (!c) return;
+      if (Shadows.data.all.some((p) => p.sourceContactId === id)) {
+        toast("PNJ déjà déployé pour ce contact.");
+        return;
+      }
+      const ed = App.editionModule;
+      if (!ed) return;
+      const milieu = ContactGen.milieuForContact(c);
+      const archetype =
+        Coherence.pickArchetype(App.edition, ed.formOptions.archetype, { milieu }) ||
+        "Aléatoire";
+      const pnj = ed.generate({
+        name: c.name,
+        originPool: "Aléatoire",
+        meta: c.metatype || "Aléatoire",
+        gender: "Aléatoire",
+        proRating: "Aléatoire",
+        tier: "Aléatoire",
+        archetype,
+        special: "Aucun",
+      });
+      pnj.sourceContactId = id;
+      Shadows.data.all.push(pnj);
+      Shadows.save();
+      Shadows.render();
+      toast(`✓ ${pnj.name} déployé aux Ombres depuis ${c.name}.`);
+    },
+
     initPanel() {
       this.load();
       this.render();
@@ -108,6 +146,15 @@ const ContactsBook = Object.assign(
       if (!grid) return;
       grid.innerHTML = "";
       this.renderMembers(grid, DossierBar.memberIds(this));
+    },
+
+    /** Rafraîchit la grille de contacts affichée, sans reconstruire le
+        formulaire ni les dossiers. Point d'entrée public pour un
+        rafraîchissement déclenché depuis un autre contrôleur (ex. Shadows,
+        quand un PNJ déployé depuis un contact est modifié/supprimé —
+        cf. onChange dans js/controllers/shadows.js). */
+    refreshGrid() {
+      this._renderGenGrid();
     },
   },
 );

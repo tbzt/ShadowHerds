@@ -66,6 +66,9 @@ const ContactRenderer = {
         case "generate-portrait":
           Portrait.generateForContact(id, actionEl);
           break;
+        case "deploy-pnj":
+          ContactsBook.deployPNJ(id);
+          break;
       }
     });
   },
@@ -82,6 +85,10 @@ const ContactRenderer = {
     // complets (atout+RR vs Influence/Loyauté), pas une valeur scalaire.
     const isAnarchy = !!App.getEditionModule(c.edition)?.usesRiskPanel;
     const stats = isAnarchy ? this._statsAnarchy(c) : this._statsSR(c);
+
+    // PNJ complet déployé depuis ce contact (ContactsBook.deployPNJ),
+    // affiché imbriqué dans la carte plutôt que dans un autre écran.
+    const deployed = Shadows.data.all.find((p) => p.sourceContactId === c.id);
 
     el.innerHTML = `
       <div class="contact-card-body">
@@ -113,11 +120,19 @@ const ContactRenderer = {
             data-contact-notes
             >${CardRenderer._esc(c.notes || "")}</textarea>
         </div>
+
+        ${deployed ? '<div class="contact-deployed-pnj" data-deployed-slot></div>' : ""}
       </div>
       <div class="pnj-card-footer">
         ${!c.portraitUrl && Settings.getPortraitSettings().enabled ? '<button class="card-action-btn ghost" data-contact-action="generate-portrait">Portrait IA</button>' : ""}
+        ${!deployed ? '<button class="card-action-btn ghost" data-contact-action="deploy-pnj">Déployer en PNJ</button>' : ""}
         <button class="card-action-btn danger" data-contact-action="remove">Supprimer</button>
       </div>`;
+
+    if (deployed) {
+      const slot = el.querySelector("[data-deployed-slot]");
+      if (slot) slot.appendChild(CardRenderer.render(deployed, ["edit", "remove"]));
+    }
     return el;
   },
 

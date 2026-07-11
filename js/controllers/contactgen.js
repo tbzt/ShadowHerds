@@ -772,6 +772,31 @@ const ContactGen = {
   METATYPES: ["Aléatoire", "Humain", "Ork", "Elfe", "Nain", "Troll"],
   GENDERS: ["Aléatoire", "Homme", "Femme"],
 
+  /** Correspondance tag de contact (réseau Anarchy via _roleTags, ou
+      categoryId SR via SR_CATEGORIES) → milieu Coherence. Sert à déployer un
+      PNJ cohérent depuis un contact (bouton « Déployer en PNJ »,
+      ContactsBook.deployPNJ) sans mapper le libellé du contact à un
+      archétype nommé — le milieu suffit à Coherence.pickArchetype. */
+  CONTACT_TAG_TO_MILIEU: {
+    corpo: "corpo",
+    crime: "crime",
+    rue: "rue",
+    police: "police",
+    tech: "ombres",
+    magique: "ombres",
+    matrice: "ombres",
+    securite: "securite_corpo",
+    medical: "ombres",
+    media: "rue",
+  },
+
+  /** Milieu Coherence déduit du tag du contact, ou null (tirage non
+      contraint) si le contact n'a pas de tag ou qu'il n'est pas mappé. */
+  milieuForContact(c) {
+    const tag = (c.role_tags || [])[0];
+    return this.CONTACT_TAG_TO_MILIEU[tag] || null;
+  },
+
   /**
    * Point d'entrée unique : route vers generateAnarchy/generateSR selon
    * l'édition. Anarchy (atout+RR) et SR5/SR6 (Influence/Loyauté) sont des
