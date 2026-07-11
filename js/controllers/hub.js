@@ -25,6 +25,7 @@ const Hub = {
       { col: Shadows, type: "pnj", label: "PNJ" },
       { col: ContactsBook, type: "contact", label: "Contacts" },
       { col: Servers, type: "server", label: "Serveurs" },
+      { col: Characters, type: "pj", label: "PJ" },
     ];
   },
 

@@ -27,7 +27,7 @@ const DossierBar = {
   _wired: false,
 
   _cols() {
-    return [Shadows, ContactsBook, Servers];
+    return [Shadows, ContactsBook, Servers, Characters];
   },
 
   /** À appeler une fois les collections chargées. Réconcilie le registre,
