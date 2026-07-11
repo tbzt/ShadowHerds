@@ -14,6 +14,22 @@
    Backup.export().
    ============================================================ */
 const FoundryExport = {
+  /* ---- Diagnostic des mappings non résolus (socle partagé) ----
+     Les modules d'édition appellent FoundryExport.note(...) à leurs points
+     de repli LOSSY : compétence droppée, catégorie d'arme devinée, métatype
+     ou attribut de Drain inconnu. Un mapping non résolu = perte de donnée
+     silencieuse à l'export (la pire catégorie, cf. doctrine storage.js) →
+     console.warn INCONDITIONNEL (pas via Debug, qui est débrayable via
+     ?debug=off). `_session` collecte le temps d'un export pour un récap ;
+     null hors export (buildActor appelé seul en test → warn quand même). */
+  _session: null,
+
+  note(kind, value, fallback) {
+    const tail = fallback !== undefined ? ` → repli « ${fallback} »` : " (ignoré)";
+    console.warn(`[foundry-export] mapping non résolu — ${kind} « ${value} »${tail}`);
+    if (this._session) this._session.push({ kind, value, fallback });
+  },
+
   /** Le PNJ résolu peut-il être exporté dans l'édition active ? */
   _capabilityFor(pnj) {
     const mod = App.getEditionModule(pnj && pnj.edition);
@@ -48,14 +64,18 @@ const FoundryExport = {
     }
 
     let actor, extras;
+    this._session = [];
     try {
       actor = cap.buildActor(pnj);
       extras = cap.buildVehicleActors ? cap.buildVehicleActors(pnj) || [] : [];
     } catch (e) {
+      this._session = null;
       Debug.warn("foundry", "buildActor a échoué", { id, error: e });
       toast("Export impossible (données du PNJ incomplètes).");
       return;
     }
+    const unresolved = this._session;
+    this._session = null;
 
     const base = cap.filename ? cap.filename(pnj) : "foundry-actor.json";
     this._download(actor, base);
@@ -65,6 +85,14 @@ const FoundryExport = {
     });
 
     const extraMsg = extras.length ? ` (+${extras.length} véhicule${extras.length > 1 ? "s" : ""} lié${extras.length > 1 ? "s" : ""})` : "";
-    toast(`« ${pnj.name} » exporté pour Foundry${extraMsg}.`);
+    if (unresolved.length) {
+      // Récap groupé après le détail ligne-à-ligne déjà émis par note().
+      console.warn(
+        `[foundry-export] « ${pnj.name} » (${pnj.edition}) : ${unresolved.length} mapping(s) non résolu(s) — export tout de même produit, voir détails ci-dessus.`,
+      );
+      toast(`« ${pnj.name} » exporté${extraMsg} — ⚠ ${unresolved.length} mapping(s) non résolu(s) (voir console).`);
+    } else {
+      toast(`« ${pnj.name} » exporté pour Foundry${extraMsg}.`);
+    }
   },
 };

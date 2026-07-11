@@ -62,6 +62,12 @@ const FoundryAnarchy2Export = {
     // Course = sous-compétence d'Athlétisme (spec_running), pas un skill séparé.
     "Course": "athletics",
     "Sociale": "influence",
+    // Intimidation/Négociation sont des compétences séparées côté ShadowHerds
+    // Anarchy2 mais des facettes d'Influence côté sra2 (comme "Sociale").
+    // Sans ce mapping elles étaient droppées silencieusement (repéré par le
+    // diagnostic FoundryExport.note).
+    "Intimidation": "influence",
+    "Négociation": "influence",
   },
 
   /* Attribut lié par slug (SkillDataModel.linkedAttribute), tiré de
@@ -79,30 +85,43 @@ const FoundryAnarchy2Export = {
   ATTR_MAP: { FOR: "strength", AGI: "agility", VOL: "willpower", LOG: "logic", CHA: "charisma" },
 
   /* ----------------------------------------------------------
-     ARMES — classification par CATÉGORIE/FORMULE (pas par nom :
-     les catalogues sra2 sont des noms de saveur fictifs). Calée sur
-     EditionAnarchy2.WEAPON_CATALOG (16 entrées, p.141-144), réutilisé
-     via resolveWeapon() pour obtenir vd/ranges déjà résolus (bonus de
-     métatype, suffixe parenthésé "(sur Doberman)" strippé, etc.).
+     ARMES — classification par CATÉGORIE/FORMULE (pas par nom exact :
+     les catalogues sra2 sont des noms de saveur fictifs). Table ORDONNÉE
+     de règles (spécifique avant générique), matchée en sous-chaîne sur le
+     nom → tolère les variantes et accessoires (« Pistolet lourd silencieux »,
+     « Arme longue (katana, batte) »…) sans re-tomber en custom-weapon.
+     Slugs = WEAPON_TYPES du système sra2 (item-feat.ts), eux-mêmes calés
+     sur la table d'armes Anarchy 2 (p.141-144). Correspondances vérifiées
+     par croisement des VD/portées (ex. « Lame dissimulée » VD FOR+1 →
+     short-weapons ; « Lame monofilament » VD FOR+2 → long-weapons ;
+     « Pistolet lourd silencieux » VD 5, [OK/OK/Dés./–] → heavy-pistols).
   ---------------------------------------------------------- */
-  WEAPON_TYPE: {
-    "Mains nues": "bare-hands",
-    "Couteau": "short-weapons",
-    "Couteau de combat": "short-weapons",
-    "Matraque": "advanced-melee",
-    "Arme longue (katana, hache, épée)": "long-weapons",
-    "Électromatraque": "advanced-melee",
-    "Taser": "tasers",
-    "Pistolet de poche": "pocket-pistols",
-    "Pistolet léger": "light-pistols",
-    "Pistolet lourd": "heavy-pistols",
-    "Pistolet automatique": "automatic-pistols",
-    "Mitraillette": "smgs",
-    "Fusil d'assaut": "assault-rifles",
-    "Fusil de précision": "sniper-rifles",
-    "Shotgun": "shotguns",
-    "Mitrailleuse": "machine-guns",
-    "Grenades": "grenades",
+  WEAPON_TYPE_RULES: [
+    // Mêlée
+    [/mains?\s*nues/i, "bare-hands"],
+    [/[ée]lectromatraque|matraque|massue|b[aâ]ton|gourdin|contondant/i, "advanced-melee"],
+    [/lame monofilament/i, "long-weapons"],
+    [/arme longue|katana|hache|[ée]p[ée]e|sabre|claymore/i, "long-weapons"],
+    [/couteau|lame|dague|poignard/i, "short-weapons"],
+    // Distance
+    [/taser/i, "tasers"],
+    [/pistolet de poche/i, "pocket-pistols"],
+    [/pistolet l[ée]ger/i, "light-pistols"],
+    [/pistolet automatique/i, "automatic-pistols"],
+    [/pistolet lourd/i, "heavy-pistols"],
+    [/mitraillette/i, "smgs"],
+    [/fusil d'assaut/i, "assault-rifles"],
+    [/fusil de pr[ée]cision/i, "sniper-rifles"],
+    [/shotgun|fusil à pompe/i, "shotguns"],
+    [/mitrailleuse/i, "machine-guns"],
+    [/grenade/i, "grenades"],
+  ],
+
+  /** Nom d'arme FR → slug weaponType sra2, ou null si aucune règle ne
+      matche (→ custom-weapon + diagnostic). */
+  _classifyWeaponType(name) {
+    for (const [re, slug] of this.WEAPON_TYPE_RULES) if (re.test(name)) return slug;
+    return null;
   },
 
   /* Noms hors catalogue à ne JAMAIS exporter en itemWeapon (pas de
@@ -137,8 +156,9 @@ const FoundryAnarchy2Export = {
     if (this._isNonWeaponName(entry.name)) return null;
     const attrs = pnj.attrs || {};
     const resolved = EditionAnarchy2.resolveWeapon(entry, attrs, pnj.meta);
-    const baseName = entry.name.replace(/\s*\([^)]*\)\s*$/, "").trim();
-    const weaponType = this.WEAPON_TYPE[entry.name] || this.WEAPON_TYPE[baseName] || "custom-weapon";
+    const weaponType = this._classifyWeaponType(entry.name) || "custom-weapon";
+    if (!this._classifyWeaponType(entry.name))
+      FoundryExport.note("catégorie d'arme", entry.name, "custom-weapon");
     const { value, damageType } = this.parseVd(resolved.vd);
     const ranges = this.parseRanges(resolved.ranges);
     return this._item(resolved.name, "feat", {
@@ -421,7 +441,11 @@ const FoundryAnarchy2Export = {
     for (const sk of pnj.skills || []) {
       if (!sk || sk.name == null) continue;
       const slug = this.SKILL_SLUG[sk.name] || null;
-      if (!slug || slug === "@astral") continue; // Astral : pas de skill item (cf. awakened)
+      if (slug === "@astral") continue; // Astral : pas de skill item (cf. awakened) — repli intentionnel
+      if (!slug) {
+        FoundryExport.note("compétence", sk.name);
+        continue;
+      }
       const linkedAttribute = this.SKILL_ATTR[slug] || "logic";
       // Deux libellés ShadowHerds peuvent pointer vers le même slug sra2
       // (ex. Matricielle/Cybercombat → cracking, Course/Athlétisme →

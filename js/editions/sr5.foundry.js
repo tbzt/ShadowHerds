@@ -154,14 +154,18 @@ const FoundrySR5Export = {
   ],
 
   /** { category, type } d'une arme, avec repli mot-clé générique pour tout
-      nom hors catalogue (édition manuelle, ajout futur au pool). */
-  _classifyWeapon(name) {
+      nom hors catalogue (édition manuelle, ajout futur au pool). `silent`
+      supprime le diagnostic quand l'appelant gère déjà la catégorie (ex.
+      parseGrenade réutilise parseWeapon puis écrase category="grenade" :
+      pas un vrai mapping non résolu). */
+  _classifyWeapon(name, silent) {
     for (const [re, category, type] of this.WEAPON_CLASSIFY)
       if (re.test(name)) return { category, type };
     if (/mains?\s*nues/i.test(name)) return { category: "meleeWeapon", type: "unarmedCombat" };
     if (/matraque|massue|b[aâ]ton|gourdin|contondant/i.test(name)) return { category: "meleeWeapon", type: "clubs" };
     if (/couteau|katana|[ée]p[ée]e|sabre|hache|lame|machette|tranchant|griffe/i.test(name)) return { category: "meleeWeapon", type: "blades" };
     if (/taser|shocker/i.test(name)) return { category: "rangedWeapon", type: "taser" };
+    if (!silent) FoundryExport.note("catégorie d'arme", name, "exoticRangedWeapon");
     return { category: "rangedWeapon", type: "exoticRangedWeapon" };
   },
 
@@ -386,8 +390,9 @@ const FoundrySR5Export = {
     return /^(Réflexes câblés|Accroissement de réaction|Tonification musculaire|Yeux cybernétiques|Oreilles cybernétiques|Bras cybernétique|Armure dermique|Datajack)\b/i.test(s);
   },
 
-  /** Arme (chaîne) → système d'un Item `itemWeapon`. */
-  parseWeapon(str) {
+  /** Arme (chaîne) → système d'un Item `itemWeapon`. `silent` propagé au
+      classificateur (cf. parseGrenade). */
+  parseWeapon(str, silent) {
     const s = String(str);
     // VD : nombre (« 8P ») ou basé sur la Force (« (FOR+2)P »).
     let dvValue = 0, strBased = false, dmgLetter = "P";
@@ -439,7 +444,7 @@ const FoundrySR5Export = {
     const current = ["semiAutomatic", "singleShot", "burstFire", "fullyAutomatic"].find((k) => modeFlags[k]);
     const firingMode = { ...modeFlags, value: modeValue, current: current ? MODE_CODE[current] : "" };
 
-    const { category, type } = this._classifyWeapon(this._name(s));
+    const { category, type } = this._classifyWeapon(this._name(s), silent);
     const weaponSkill = {
       dicePool: 0, base: 0, modifiers: [], specialization: false,
       category: this._weaponSkillFor(category, type),
@@ -465,7 +470,7 @@ const FoundrySR5Export = {
       grenades (fumigène) n'ont ni VD ni PRE : detectée par préfixe de nom,
       pas par _isWeaponStr, sinon elle finirait en itemGear (bug constaté). */
   parseGrenade(str) {
-    const base = this.parseWeapon(str);
+    const base = this.parseWeapon(str, true);
     const s = String(str);
     const blastM = s.match(/Souffle\s*(\d+)\s*m/i);
     const radius = blastM ? parseInt(blastM[1], 10) : 0;
@@ -535,7 +540,12 @@ const FoundrySR5Export = {
         continue;
       }
       const meta = this.SKILL_META[res.key];
-      if (!meta) continue;
+      if (!meta) {
+        // res.key vient de SKILL_MAP (nos propres tables) : une clé sans
+        // méta signale une incohérence interne, pas une dérive de catalogue.
+        FoundryExport.note("compétence (clé sans métadonnées)", `${sk.name} → ${res.key}`);
+        continue;
+      }
       const [linkedAttribute, category, skillGroup, limitBase, canDefault] = meta;
       // Spécialité : celle de la compétence (sk.spec) prime sur la
       // parenthèse du nom (res.spec).
