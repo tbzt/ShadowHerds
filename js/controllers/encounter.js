@@ -434,7 +434,15 @@ const Encounter = {
 
   /* ---- Overlay ---- */
   open() {
-    document.getElementById("encounter-overlay").classList.add("open");
+    const overlay = document.getElementById("encounter-overlay");
+    overlay.classList.add("open");
+    // CH-M4 : dock latéral non bloquant ≥641px (le Hub reste utilisable
+    // derrière, ex. suivre une intrusion en cours) ; plein écran réel en
+    // dessous (pas de place pour cohabiter) — aria-modal reflète lequel.
+    overlay.setAttribute(
+      "aria-modal",
+      window.matchMedia("(max-width: 640px)").matches ? "true" : "false",
+    );
     this._render();
     this._renderPicker();
   },

@@ -2375,6 +2375,29 @@ select optgroup {
 .encounter-modal {
   width: min(1100px, 96vw);
 }
+/* CH-M4 : dock latéral non bloquant sur desktop/tablette — le voile
+   plein écran de .modal-overlay devient transparent et ne capte plus le
+   clic (le Hub derrière, ex. l'onglet Matrice, reste utilisable pendant
+   le combat) ; seul le panneau lui-même reste interactif. Sous 641px,
+   .modal-overlay/.modal gardent leur comportement plein écran existant
+   (pas de place pour cohabiter). */
+@media (min-width: 641px) {
+  #encounter-overlay {
+    background: transparent;
+    pointer-events: none;
+    align-items: stretch;
+    justify-content: flex-end;
+  }
+  #encounter-overlay .encounter-modal {
+    pointer-events: auto;
+    width: min(720px, 92vw);
+    max-height: none;
+    height: 100%;
+    border-radius: 0;
+    border-right: none;
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.4);
+  }
+}
 .encounter-body {
   display: flex;
   flex-wrap: wrap;
