@@ -10,7 +10,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@400;500&family=Oswald:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=60">
+  <link rel="stylesheet" href="css/base.css?v=61">
   <link rel="stylesheet" href="css/theme-sr5.css?v=19">
   <link rel="stylesheet" href="css/theme-sr6.css?v=18">
   <link rel="stylesheet" href="css/theme-anarchy.css?v=20">
@@ -76,6 +76,9 @@
       <circle cx="12" cy="12" r="9"/>
       <path d="M9.3 9.2a2.8 2.8 0 0 1 5.4.9c0 1.9-2.7 2.3-2.7 4.1"/>
       <path d="M12 17.4h.01"/>
+    </symbol>
+    <symbol id="ic-note" viewBox="0 0 24 24">
+      <path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 15.5h6"/>
     </symbol>
   </svg>
 
@@ -167,6 +170,10 @@
         <button class="topbar-action" id="dice-log-btn"
           title="Journal des jets" aria-label="Journal des jets">
           <svg class="icon" aria-hidden="true"><use href="#ic-log"></use></svg>
+        </button>
+        <button class="topbar-action" id="notepad-btn"
+          title="Bloc-notes de séance" aria-label="Bloc-notes de séance">
+          <svg class="icon" aria-hidden="true"><use href="#ic-note"></use></svg>
         </button>
 
         <!-- Réserve de menace (Anarchy 2.0, p.138) : visibilité pilotée par
@@ -653,6 +660,7 @@
   <script defer src="js/controllers/servers.js?v=950"></script>
   <script defer src="js/controllers/intrusion.js?v=2"></script>
   <script defer src="js/widgets/dicelog.js?v=3"></script>
+  <script defer src="js/widgets/notepad.js?v=1"></script>
   <script defer src="js/widgets/diceroller.js?v=950"></script>
   <script defer src="js/widgets/dicepanel.js?v=8"></script>
   <script defer src="js/widgets/sidebartoggle.js?v=21"></script>

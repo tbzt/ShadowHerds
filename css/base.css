@@ -3297,6 +3297,86 @@ kbd {
   transform: translateY(0);
   pointer-events: auto;
 }
+/* Bloc-notes de séance (CH-M2) — même comportement d'overlay que le journal
+   des jets ; en-tête partagé (.dice-log-head/.dice-log-title). Panneau un peu
+   plus large pour le texte. */
+#notepad-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 540;
+}
+#notepad-backdrop.open {
+  display: block;
+}
+#notepad-panel {
+  position: fixed;
+  top: 58px;
+  right: 0.75rem;
+  width: min(420px, calc(100vw - 1.5rem));
+  height: min(70vh, 560px);
+  z-index: 550;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 4px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition:
+    opacity var(--dur-base) ease,
+    transform var(--dur-base) ease;
+}
+#notepad-panel.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.notepad-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  padding: 0.6rem;
+}
+.notepad-textarea {
+  flex: 1;
+  width: 100%;
+  resize: none;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  padding: 0.6rem;
+}
+@media (max-width: 640px) {
+  #notepad-backdrop.open {
+    background: rgba(0, 0, 0, 0.55);
+  }
+  #notepad-panel {
+    top: auto;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 70dvh;
+    border-radius: 12px 12px 0 0;
+    border-left: none;
+    border-right: none;
+    transform: translateY(100%);
+    transition:
+      transform var(--dur-slow) var(--ease-emphasized),
+      opacity var(--dur-base);
+  }
+  #notepad-panel.open {
+    transform: translateY(0);
+  }
+}
 .dice-log-head {
   display: flex;
   align-items: center;
