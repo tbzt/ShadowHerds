@@ -216,6 +216,18 @@ const Encounter = {
     this._commit();
   },
 
+  /** Déplace le combattant actif (celui dont c'est le tour) d'un cran et
+      garde le tour sur lui — pilotage clavier ↑/↓ (CH-Q3). */
+  moveActive(dir) {
+    const cs = this.state.combatants;
+    const i = this.state.turnIndex;
+    const j = i + dir;
+    if (j < 0 || j >= cs.length) return;
+    [cs[i], cs[j]] = [cs[j], cs[i]];
+    this.state.turnIndex = j;
+    this._commit();
+  },
+
   /* ---- Tours / rounds / passes d'initiative ---- */
   markActed(pnjId, acted) {
     const c = this._find(pnjId);
@@ -436,6 +448,50 @@ const Encounter = {
       const el = e.target.closest('[data-action="set-note"]');
       if (el) this.setNote(el.dataset.id, el.value);
     });
+
+    // Raccourcis clavier du tracker (CH-Q3), actifs seulement overlay ouvert.
+    // En capture pour passer AVANT les raccourcis globaux d'app.js — sinon
+    // « r » y déclenche le lanceur de dés au lieu de relancer l'init.
+    // Garde-fous : jamais pendant une saisie (champ init/note) ni quand un
+    // Dialog est ouvert par-dessus. Échap n'est pas capté ici : il retombe
+    // sur le handler global d'app.js, qui ferme l'overlay.
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        if (!overlay.classList.contains("open")) return;
+        const tag = (e.target.tagName || "").toLowerCase();
+        if (tag === "input" || tag === "textarea" || tag === "select") return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const dlg = document.getElementById("dialog-overlay");
+        if (dlg && dlg.classList.contains("open")) return;
+
+        let handled = true;
+        switch (e.key) {
+          case " ":
+          case "n":
+          case "N":
+            this.nextTurn();
+            break;
+          case "r":
+          case "R":
+            this.rollAllInit();
+            break;
+          case "ArrowUp":
+            this.moveActive(-1);
+            break;
+          case "ArrowDown":
+            this.moveActive(1);
+            break;
+          default:
+            handled = false;
+        }
+        if (handled) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      },
+      true,
+    );
   },
 };
 
