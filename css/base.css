@@ -2938,6 +2938,29 @@ select optgroup {
   border-radius: 3px;
   padding: 0.05rem 0.35rem;
 }
+/* Poignée de glisse (Vague C1) : réordonner à la souris ou au doigt.
+   touch-action:none pour que le glisser ne fasse pas défiler la page. */
+.encounter-drag-handle {
+  flex: none;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  color: var(--text-dim);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 0.15rem;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.encounter-drag-handle:hover {
+  color: var(--accent);
+}
+.encounter-row.dragging {
+  opacity: 0.6;
+  background: var(--bg-card);
+  cursor: grabbing;
+}
 /* Bandeau « devrait fuir » — conseil (⚑) + raccourci « Faire fuir ». */
 .encounter-flee {
   display: flex;
@@ -2991,6 +3014,10 @@ select optgroup {
     min-width: 34px;
     min-height: 34px;
     font-size: 1.2rem;
+  }
+  .encounter-drag-handle {
+    padding: 0 0.5rem;
+    font-size: 1.25rem;
   }
 }
 

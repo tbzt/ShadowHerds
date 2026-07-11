@@ -270,6 +270,27 @@ const Encounter = {
     this._commit();
   },
 
+  /** Réordonne state.combatants selon une liste d'ids (ordre DOM après un
+      glisser, Vague C1). Le tour actif est préservé par pnjId (pas par index,
+      qui change). Tout id absent de la liste est conservé en fin (garde-fou). */
+  reorderByIds(ids) {
+    const activeId = (this.state.combatants[this.state.turnIndex] || {}).pnjId;
+    const byId = new Map(this.state.combatants.map((c) => [c.pnjId, c]));
+    const next = [];
+    for (const id of ids) {
+      const c = byId.get(id);
+      if (c) {
+        next.push(c);
+        byId.delete(id);
+      }
+    }
+    for (const c of byId.values()) next.push(c);
+    this.state.combatants = next;
+    const ai = next.findIndex((c) => c.pnjId === activeId);
+    if (ai !== -1) this.state.turnIndex = ai;
+    this._commit();
+  },
+
   /** Déplace le combattant actif (celui dont c'est le tour) d'un cran et
       garde le tour sur lui — pilotage clavier ↑/↓ (CH-Q3). */
   moveActive(dir) {
@@ -605,11 +626,83 @@ const Encounter = {
     if (el) el.classList.remove("open");
   },
 
+  /* ---- Glisser-déposer pour réordonner (Vague C1) ----
+     Pointer Events (souris + tactile), sans dépendance et sans drag HTML5
+     natif (qui ne marche pas au doigt). Pendant le glisser on ne réordonne que
+     le DOM (retour visuel immédiat) ; l'état n'est réécrit qu'au relâcher, via
+     reorderByIds — un seul _commit. Les lignes hors de combat (épinglées en
+     bas) ne sont ni saisissables ni des cibles d'insertion. */
+  _drag: null,
+  _initDrag(overlay) {
+    overlay.addEventListener("pointerdown", (e) => {
+      const handle = e.target.closest(".encounter-drag-handle");
+      if (!handle) return;
+      const row = handle.closest(".encounter-row");
+      const list = document.getElementById("encounter-list");
+      if (!row || !list) return;
+      e.preventDefault();
+      this._drag = { row, list };
+      row.classList.add("dragging");
+      try {
+        handle.setPointerCapture(e.pointerId);
+      } catch (_) {}
+      const move = (ev) => this._dragMove(ev);
+      const up = (ev) => {
+        try {
+          handle.releasePointerCapture(ev.pointerId);
+        } catch (_) {}
+        document.removeEventListener("pointermove", move);
+        document.removeEventListener("pointerup", up);
+        document.removeEventListener("pointercancel", up);
+        this._dragEnd();
+      };
+      document.addEventListener("pointermove", move);
+      document.addEventListener("pointerup", up);
+      document.addEventListener("pointercancel", up);
+    });
+  },
+  /** Déplace la ligne saisie parmi les lignes vivantes selon la position Y du
+      pointeur (comparée au milieu de chaque cible). Ne dépasse jamais le
+      séparateur « hors de combat » / le pied de scène. */
+  _dragMove(ev) {
+    if (!this._drag) return;
+    ev.preventDefault();
+    const { row, list } = this._drag;
+    const targets = [...list.querySelectorAll(".encounter-row:not(.down):not(.dragging)")];
+    let before = null;
+    for (const t of targets) {
+      const box = t.getBoundingClientRect();
+      if (ev.clientY < box.top + box.height / 2) {
+        before = t;
+        break;
+      }
+    }
+    if (before) {
+      list.insertBefore(row, before);
+    } else {
+      // Après la dernière ligne vivante : juste avant le séparateur / le pied.
+      const anchor =
+        list.querySelector(".encounter-downsep") || list.querySelector(".encounter-scene-actions");
+      if (anchor) list.insertBefore(row, anchor);
+      else list.appendChild(row);
+    }
+  },
+  _dragEnd() {
+    if (!this._drag) return;
+    const { list, row } = this._drag;
+    row.classList.remove("dragging");
+    this._drag = null;
+    const ids = [...list.querySelectorAll(".encounter-row")].map((r) => r.dataset.id);
+    this.reorderByIds(ids);
+  },
+
   /** Délégation globale, scopée au conteneur (jamais recréé — modèle
       EditModal.init() : seul le contenu de #encounter-list change). */
   init() {
     const overlay = document.getElementById("encounter-overlay");
     if (!overlay) return;
+
+    this._initDrag(overlay);
 
     overlay.addEventListener("click", (e) => {
       const el = e.target.closest("[data-action]");

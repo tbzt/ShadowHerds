@@ -219,7 +219,13 @@ const EncounterRenderer = {
         ${malusHtml}
         ${effHtml}
       </div>`;
+    // Vague C1 : poignée de glisse (Pointer Events, souris + tactile) pour
+    // réordonner à la main. Pas sur les lignes hors de combat (épinglées en bas).
+    const dragHandle = r.down
+      ? ""
+      : `<span class="encounter-drag-handle" title="Glisser pour réordonner" aria-hidden="true">⠿</span>`;
     return `<div class="encounter-row${isActive ? " active-turn" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}${r.down ? " down" : ""}${r.delayed && !r.down ? " delayed" : ""}" data-id="${pnjId}">
+      ${dragHandle}
       ${initZone}
       <div class="encounter-main">
         <div class="encounter-name-row">
