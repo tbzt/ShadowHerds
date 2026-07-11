@@ -37,15 +37,20 @@ const EncounterRenderer = {
 
     // rows est 1:1 avec state.combatants (même ordre) : l'index brut vaut le
     // turnIndex. On rend chaque ligne visible en conservant cet index réel.
-    const html = rows
-      .map((r, i) =>
-        r.pnj
-          ? narrative
-            ? this._rowNarrative(r)
-            : this._row(r, i === state.turnIndex, this._outOfPass(r, state, model), this._effectiveInit(r, state, model))
-          : ""
-      )
-      .join("");
+    // Vague D : les combattants hors de combat (r.down) sont poussés en fond de
+    // liste, sous un séparateur, sans initiative — ils ne rejouent plus.
+    const renderOne = (r, i) =>
+      narrative
+        ? this._rowNarrative(r)
+        : this._row(r, i === state.turnIndex, this._outOfPass(r, state, model), this._effectiveInit(r, state, model));
+    const visible = rows.map((r, i) => ({ r, i })).filter((x) => x.r.pnj);
+    const liveHtml = visible.filter((x) => !x.r.down).map((x) => renderOne(x.r, x.i)).join("");
+    const downList = visible.filter((x) => x.r.down);
+    const downHtml = downList.length
+      ? `<div class="encounter-downsep">Hors de combat · sans initiative</div>` +
+        downList.map((x) => renderOne(x.r, x.i)).join("")
+      : "";
+    const html = liveHtml + downHtml;
 
     if (!html) {
       list.innerHTML = `<div class="empty-state">
@@ -91,16 +96,18 @@ const EncounterRenderer = {
     const focusItem = pnj._adhoc
       ? ""
       : `<button class="btn-icon-tiny" data-action="focus-combatant" data-id="${pnjId}" title="Voir la fiche" aria-label="Voir la fiche">☰</button>`;
-    return `<div class="encounter-nrow${hasActed ? " has-acted" : ""}" data-action="narrative-toggle" data-id="${pnjId}" role="button" tabindex="0" aria-pressed="${hasActed}" title="A joué — toucher pour basculer">
+    return `<div class="encounter-nrow${hasActed ? " has-acted" : ""}${r.down ? " down" : ""}" data-action="narrative-toggle" data-id="${pnjId}" role="button" tabindex="0" aria-pressed="${hasActed}" title="A joué — toucher pour basculer">
       <span class="encounter-nrow-check" aria-hidden="true">✓</span>
       <span class="encounter-nrow-name">${name}</span>
       <span class="encounter-kind">${kind}</span>
       ${comb}
+      ${r.down ? this._downBadge() : ""}
       <button class="btn-icon-tiny encounter-row-menu" data-action="row-menu" title="Plus d'actions" aria-label="Plus d'actions">⋯</button>
       <span class="encounter-controls-secondary">
         ${focusItem}
         <button class="btn-icon-tiny danger" data-action="remove-combatant" data-id="${pnjId}" title="Retirer" aria-label="Retirer">✕</button>
       </span>
+      ${this._moraleBanner(r)}
     </div>`;
   },
 
@@ -140,6 +147,25 @@ const EncounterRenderer = {
     return "PNJ";
   },
 
+  /** Badge « hors de combat » (Vague D), partagé ordonné/narratif. */
+  _downBadge() {
+    return `<span class="encounter-down-badge" title="Moniteur plein — hors de combat">☠ Hors de combat</span>`;
+  },
+
+  /** Bandeau de moral (Vague D) : ⚑ « Devrait fuir » (règle de l'édition) ou
+      « Moral fragile — à tester » (SR6, cases > Professionnalisme), avec le
+      raccourci facultatif « Faire fuir ». Rien si hors combat, moral stable ou
+      absent (ex. PJ, Anarchy 1). Partagé ordonné/narratif. */
+  _moraleBanner(r) {
+    if (r.down || !r.morale || r.morale === "steady") return "";
+    const shaky = r.morale === "shaky";
+    const label = shaky ? "Moral fragile — à tester" : "Devrait fuir";
+    return `<div class="encounter-flee${shaky ? " is-shaky" : ""}">
+      <span class="encounter-flee-tag" title="Selon la règle de moral de l'édition">⚑ ${label}</span>
+      <button class="btn-small encounter-flee-act" data-action="flee-combatant" data-id="${r.pnjId}" title="Retirer ce combattant (fuite)">Faire fuir</button>
+    </div>`;
+  },
+
   _row(r, isActive, outOfPass, effectiveInit) {
     const { pnjId, init, hasActed, note, pnj } = r;
     const initVal = init == null ? "" : String(init);
@@ -167,19 +193,26 @@ const EncounterRenderer = {
     // plus que le score (base + malus + score effectif de passe) ; le lancer ⚄
     // par ligne et la gestion (▲▼✚✕) sont regroupés derrière un menu ⋯ (déplié
     // par data-action="row-menu", cf. Encounter) pour dégager la ligne sur mobile.
-    return `<div class="encounter-row${isActive ? " active-turn" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}" data-id="${pnjId}">
-      <div class="encounter-init">
+    // Vague D : hors de combat → jeton d'init remplacé par « — » (init retirée)
+    // + badge ; « devrait fuir » → bandeau de moral avec action « Faire fuir ».
+    const initZone = r.down
+      ? `<div class="encounter-init is-out"><span class="encounter-init-out" title="Hors de combat — sans initiative">—</span></div>`
+      : `<div class="encounter-init">
         <input class="encounter-init-val" type="text" inputmode="numeric" data-action="set-init" data-id="${pnjId}"
           value="${initVal}" placeholder="—" title="Initiative (base) — saisie directe" aria-label="Initiative">
         ${malusHtml}
         ${effHtml}
-      </div>
+      </div>`;
+    return `<div class="encounter-row${isActive ? " active-turn" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}${r.down ? " down" : ""}" data-id="${pnjId}">
+      ${initZone}
       <div class="encounter-main">
         <div class="encounter-name-row">
           ${isActive ? `<span class="encounter-active-flag" title="Tour actif" aria-label="Tour actif">▸</span>` : ""}
           <span class="encounter-kind">${this._kindLabel(r)}</span>
           ${nameHtml}
+          ${r.down ? this._downBadge() : ""}
         </div>
+        ${this._moraleBanner(r)}
         <input type="text" class="encounter-note" placeholder="Note…" value="${Utils.escHtml(note || "")}"
           data-action="set-note" data-id="${pnjId}">
       </div>

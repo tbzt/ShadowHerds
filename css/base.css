@@ -2765,6 +2765,7 @@ select optgroup {
 /* Ligne narrative : grande cible tap-to-grise, sans jeton d'init. */
 .encounter-nrow {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--sp-2);
   padding: 0.7rem 0.6rem;
@@ -2822,6 +2823,85 @@ select optgroup {
 }
 .encounter-nrow.menu-open .encounter-row-menu {
   color: var(--accent);
+}
+
+/* ---- Dispositions de combat (Vague D) : hors de combat + devrait fuir ---- */
+.encounter-downsep {
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  margin: var(--sp-3) 0 var(--sp-1);
+  padding-top: var(--sp-2);
+  border-top: 1px dashed var(--border);
+}
+.encounter-row.down,
+.encounter-nrow.down {
+  border-style: dashed;
+  background: var(--bg-card);
+  opacity: 0.9;
+}
+.encounter-init.is-out {
+  min-width: 2.8rem;
+  padding: 0.3rem 0.35rem;
+}
+.encounter-init-out {
+  font-family: "Share Tech Mono", monospace;
+  font-size: var(--fs-lg);
+  color: var(--text-dim);
+}
+.encounter-down-badge {
+  flex: none;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+  border: 1px solid var(--danger);
+  border-radius: 3px;
+  padding: 0.05rem 0.35rem;
+}
+.encounter-row.down .encounter-name,
+.encounter-row.down .encounter-name.is-pj,
+.encounter-nrow.down .encounter-nrow-name {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+/* Bandeau « devrait fuir » — conseil (⚑) + raccourci « Faire fuir ». */
+.encounter-flee {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: 0.25rem;
+}
+.encounter-nrow .encounter-flee {
+  flex-basis: 100%;
+}
+.encounter-flee-tag {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  border: 1px solid var(--warning);
+  border-radius: 3px;
+  padding: 0.1rem 0.4rem;
+}
+.encounter-flee.is-shaky .encounter-flee-tag {
+  color: var(--info);
+  background: color-mix(in srgb, var(--info) 15%, transparent);
+  border-color: var(--info);
+}
+.encounter-flee-act {
+  border: 1px solid var(--warning);
+  color: var(--warning);
+  background: transparent;
+  border-radius: 3px;
+  padding: 0.15rem 0.5rem;
+  cursor: pointer;
+  min-height: 32px;
+}
+.encounter-flee-act:hover {
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
 }
 
 /* Cibles tactiles ≥44px partout où le pointeur est grossier (mobile ET

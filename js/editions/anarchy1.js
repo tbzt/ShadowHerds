@@ -79,6 +79,13 @@ const EditionAnarchy1 = {
       A1 gère l'ordre par la narration). Le tracker bascule en mode dépouillé
       (pool de jetons qu'on éteint), cf. EncounterRenderer._rowNarrative. */
   combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true },
+  /** Disposition de combat (Vague D) : Anarchy 1 n'a PAS de règle de combativité
+      imprimée (seulement « Dangerosité », niveaux de dés) → morale toujours null
+      (pas de drapeau « devrait fuir »). Seul « hors de combat » (moniteur
+      physique plein) est signalé. */
+  combatDisposition(pnj) {
+    return { down: this.conditionMonitor.isDestroyed(pnj), morale: null };
+  },
   /** 3 puissances par esprit V1 (mineur/normal/majeur, findings §ESPRITS) —
       field:"tier" réutilise le champ à 3 paliers déjà câblé côté générateur
       (Spirits.ANARCHY_TIERS). Table réelle des esprits : Lot 6. */

@@ -101,6 +101,25 @@ const EditionSR5 = {
       d'initiative — −10 par passe, un combattant rapide rejoue tant que son
       score reste > 0 (SR5 p.159). `passDecrement > 0` active les passes. */
   combatModel: { rerollEachRound: true, passDecrement: 10 },
+  /** Disposition de combat (Vague D) : { down, morale } — lu par le tracker via
+      l'API neutre, jamais de branche d'édition côté Encounter.
+      SR5 « brutes » (p.381) : le moral est de GROUPE, selon le Professionnalisme,
+      sur la proportion d'alliés hors de combat. group = { down, total } fourni
+      par le tracker (proxy PJ-vs-reste). down réutilise isDestroyed (moniteur
+      physique plein). PJ / entités sans proRating : pas de drapeau. */
+  combatDisposition(pnj, group) {
+    const down = this.conditionMonitor.isDestroyed(pnj);
+    if (down) return { down: true, morale: null };
+    const pr = pnj.proRating;
+    if (pr == null || !group || !group.total) return { down: false, morale: null };
+    const frac = group.down / group.total;
+    let flee;
+    if (pr <= 0) flee = group.down >= 1; // 0 : un allié tombe → le reste fuit
+    else if (pr <= 2) flee = frac > 0.25; // 1-2 : > ¼ de l'équipe hors combat
+    else if (pr <= 4) flee = frac > 0.5; // 3-4 : > ½ de l'effectif
+    else flee = false; // 5-6 : élite, ne craque pas
+    return { down: false, morale: flee ? "flee" : "steady" };
+  },
   summonPower: {
     field: "force",
     label: "Puissance",

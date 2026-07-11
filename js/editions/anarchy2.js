@@ -137,6 +137,28 @@ const EditionAnarchy2 = {
       chiffrée, l'ordre est narratif (combativité, cf. p.180). narrative:true →
       le tracker passe en mode dépouillé (tap-to-grise), sans init/tri/réordre. */
   combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true },
+  /** Disposition de combat (Vague D) : { down, morale }. Anarchy 2.0 COMBATIVITÉ
+      (p.180) — champ threatLevel (nulle/faible/forte/extrême). Déclencheur
+      individuel (1re blessure légère/grave, ou incapacité) OU proportion
+      d'alliés hors combat (¼ / ½ / ¾). down = case incapacitante pleine
+      (isDestroyed). */
+  combatDisposition(pnj, group) {
+    const down = this.conditionMonitor.isDestroyed(pnj);
+    if (down) return { down: true, morale: null };
+    const lvl = pnj.threatLevel;
+    if (!lvl) return { down: false, morale: null };
+    const frac = group && group.total ? group.down / group.total : 0;
+    const anyWound =
+      (pnj.legerFilled || 0) >= 1 || (pnj.graveFilled || 0) >= 1 || (pnj.incapFilled || 0) >= 1;
+    const graveWound = (pnj.graveFilled || 0) >= 1 || (pnj.incapFilled || 0) >= 1;
+    let flee;
+    if (lvl === "nulle") flee = true; // évite le combat, se rend
+    else if (lvl === "faible") flee = anyWound || frac >= 0.25; // 1re blessure légère / ¼
+    else if (lvl === "forte") flee = graveWound || frac >= 0.5; // 1re blessure grave / ½
+    else if (lvl === "extrême") flee = frac >= 0.75; // sinon seulement incapacité (= down)
+    else flee = false;
+    return { down: false, morale: flee ? "flee" : "steady" };
+  },
   // steps() est lazy : spirits.js (catalogs) charge après les modules
   // d'édition (foyer), Spirits.ANARCHY_TIERS n'existe pas encore ici.
   summonPower: {

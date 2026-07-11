@@ -278,10 +278,22 @@ const Encounter = {
     this._commit();
   },
 
-  /** Un combattant agit-il dans la passe courante ? Sans passes
-      (passDecrement falsy, ex. SR6/Anarchy) tout le monde est éligible.
-      Avec passes (SR5) : score effectif = init − (passe−1)×décrément, > 0. */
+  /** Hors de combat (Vague D) : moniteur plein, via l'accesseur neutre
+      combatDisposition du module d'édition (jamais de branche d'édition ici).
+      Un combattant hors de combat ne joue plus (inéligible) et sera rendu en
+      fond de liste, sans initiative. */
+  _isDown(c) {
+    const mod = App.editionModule;
+    if (!mod || !mod.combatDisposition) return false;
+    const pnj = PnjLookup.find(c.pnjId);
+    return pnj ? !!mod.combatDisposition(pnj).down : false;
+  },
+
+  /** Un combattant agit-il dans la passe courante ? Hors de combat → jamais.
+      Sans passes (passDecrement falsy, ex. SR6/Anarchy) tout le monde est
+      éligible. Avec passes (SR5) : score effectif = init − (passe−1)×décrément, > 0. */
   _eligible(c) {
+    if (this._isDown(c)) return false;
     const dec = this._model().passDecrement;
     if (!dec) return true;
     return c.init != null && c.init - (this.state.pass - 1) * dec > 0;
@@ -424,12 +436,64 @@ const Encounter = {
 
   /* ---- Rendu ---- */
   _rows() {
-    return this.state.combatants.map((c) => ({
+    const rows = this.state.combatants.map((c) => ({
       ...c,
       // Un PJ ad-hoc n'est résolu par aucun pool : on synthétise l'objet
       // d'affichage minimal (nom + drapeau _adhoc) pour ne jamais le filtrer.
       pnj: PnjLookup.find(c.pnjId) || (c.name ? { id: c.pnjId, name: c.name, _adhoc: true } : null),
     }));
+    return this._decorateDisposition(rows);
+  },
+
+  /** Un combattant est-il un PJ (piloté par un joueur) ? PJ ad-hoc (kind:'pj')
+      ou personnage résolu depuis le pool des jouables. Sert au proxy « PJ vs
+      le reste » : les PJ ne portent pas de drapeau de moral et ne comptent pas
+      dans le groupe d'opposition. */
+  _isPJ(r) {
+    return (
+      r.kind === "pj" ||
+      (!!r.pnj && !r.pnj._adhoc && Characters.data.all.some((p) => p.id === r.pnjId))
+    );
+  },
+
+  /** Décore chaque row de { down, morale } via l'accesseur d'édition
+      combatDisposition. Le moral (proportion d'alliés hors combat) se calcule
+      sur le GROUPE d'opposition (tout sauf les PJ — proxy) et n'est appliqué
+      qu'à ce groupe. « down » vaut pour tout le monde. */
+  _decorateDisposition(rows) {
+    const mod = App.editionModule;
+    if (!mod || !mod.combatDisposition) {
+      rows.forEach((r) => {
+        r.down = false;
+        r.morale = null;
+      });
+      return rows;
+    }
+    const opp = rows.filter((r) => r.pnj && !this._isPJ(r));
+    let oppDown = 0;
+    for (const r of opp) if (mod.combatDisposition(r.pnj).down) oppDown++;
+    const group = { down: oppDown, total: opp.length };
+    for (const r of rows) {
+      if (!r.pnj) {
+        r.down = false;
+        r.morale = null;
+        continue;
+      }
+      const d = mod.combatDisposition(r.pnj, group);
+      r.down = !!d.down;
+      r.morale = this._isPJ(r) ? null : d.morale;
+    }
+    return rows;
+  },
+
+  /** Re-rend le tracker quand le moniteur d'un combattant change hors du
+      tracker (dégâts encaissés sur sa carte) — sinon « hors de combat » /
+      « devrait fuir » resteraient périmés. Appelé par app.js (onPnjChanged) et
+      UI.toggleMonitor. No-op si le PNJ n'est pas dans la scène. */
+  notifyPnjChanged(pnj) {
+    if (!pnj || !this.state) return;
+    if (!this.state.combatants.some((c) => c.pnjId === pnj.id)) return;
+    this._render();
   },
   /** Rendu complet (liste, fiche du combattant actif, résumé sidebar) —
       factorisé pour être appelable aussi bien après un commit qu'au
@@ -548,6 +612,12 @@ const Encounter = {
           break;
         case "remove-combatant":
           this.remove(id);
+          break;
+        case "flee-combatant":
+          // Raccourci du drapeau « devrait fuir » : retire le combattant en un
+          // tap (le MJ reste maître — action facultative, jamais automatique).
+          this.remove(id);
+          toast("Combattant retiré (fuite).");
           break;
         case "heal-combatant":
           this.healCombatant(id);

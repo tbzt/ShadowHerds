@@ -89,14 +89,14 @@ const App = {
     anarchy1: "css/theme-anarchy1.css?v=1",
   },
   _EDITION_JS: {
-    sr5: ["js/editions/sr5.js?v=956", "js/editions/sr5.foundry.js?v=4"],
-    sr6: ["js/editions/sr6.js?v=955", "js/editions/sr6.foundry.js?v=5"],
+    sr5: ["js/editions/sr5.js?v=957", "js/editions/sr5.foundry.js?v=4"],
+    sr6: ["js/editions/sr6.js?v=956", "js/editions/sr6.foundry.js?v=5"],
     anarchy2: [
-      "js/editions/anarchy2.js?v=39",
+      "js/editions/anarchy2.js?v=40",
       "js/editions/anarchy2.creation.js?v=6",
       "js/editions/anarchy2.foundry.js?v=6",
     ],
-    anarchy1: ["js/editions/anarchy1.js?v=14"],
+    anarchy1: ["js/editions/anarchy1.js?v=15"],
   },
   // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
   _COMMON_JS: ["js/catalogs/creatures.js?v=955"],
@@ -305,6 +305,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (Shadows.data.all.some((p) => p.id === pnj.id)) Shadows.save();
     if (Servers.ownsPnj(pnj.id)) Servers.save();
     CardRenderer.refresh(pnj);
+    // Vague D : un jet/Drain qui remplit un moniteur peut mettre un combattant
+    // hors de combat ou déclencher son moral — rafraîchir le tracker s'il y est.
+    if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(pnj);
   };
   DiceRoller.init({
     resolve: (id) => PnjLookup.find(id),

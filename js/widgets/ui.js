@@ -30,6 +30,9 @@ const UI = {
 
     Shadows.save();
     CardRenderer.refresh(pnj);
+    // Vague D : cocher/décocher un moniteur peut basculer « hors de combat » ou
+    // le drapeau « devrait fuir » d'un combattant → rafraîchir le tracker.
+    if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(pnj);
   },
 
   /** Clic sur le tag d'une drogue : fait avancer le cycle idle → effet →

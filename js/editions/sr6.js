@@ -100,6 +100,30 @@ const EditionSR6 = {
       relancée à chaque round mais il n'y a plus de passes d'initiative
       (une seule passe par round, p.44) → `passDecrement: 0`. */
   combatModel: { rerollEachRound: true, passDecrement: 0 },
+  /** Disposition de combat (Vague D) : { down, morale }. SR6 « figurants »
+      (p.211) : DEUX couches. Groupe (comme SR5) selon le Professionnalisme sur
+      la proportion d'alliés hors de combat ; et individuel — si les cases de
+      dommages cochées dépassent le Professionnalisme, test de Sang-froid pour
+      décamper ('shaky'). down = moniteur unique plein (isDestroyed). */
+  combatDisposition(pnj, group) {
+    const down = this.conditionMonitor.isDestroyed(pnj);
+    if (down) return { down: true, morale: null };
+    const pr = pnj.proRating;
+    if (pr == null) return { down: false, morale: null };
+    let flee = false;
+    if (group && group.total) {
+      const frac = group.down / group.total;
+      if (pr <= 0) flee = group.down >= 1; // 0 : un neutralisé → les autres fuient
+      else if (pr <= 4) flee = frac > 0.25; // 1-4 : > ¼ perdus → retraite
+      else if (pr <= 7) flee = frac > 0.5; // 5-7 : > ½ → retraite en tirant
+      else flee = false; // 8-10 : élite, ne cède jamais
+    }
+    if (flee) return { down: false, morale: "flee" };
+    // Individuel : cases cochées > Professionnalisme → test de Sang-froid.
+    const boxes = pnj.physFilled || 0;
+    if (pr <= 7 && boxes > pr) return { down: false, morale: "shaky" };
+    return { down: false, morale: "steady" };
+  },
   summonPower: {
     field: "force",
     label: "Puissance",
