@@ -162,6 +162,16 @@ const DiceRoller = {
         return;
       }
 
+      // Lancer un sort (CH-M7b) : résout la VD du Drain puis ouvre le
+      // panneau seuil (OpposedRoll) pré-rempli, dégâts appliqués au retour.
+      const castEl = e.target.closest("[data-cast-spell]");
+      if (castEl) {
+        const pnj = this._hooks.resolve(castEl.getAttribute("data-roll-pnj"));
+        const name = castEl.getAttribute("data-cast-spell");
+        if (pnj) this._castSpell(pnj, name);
+        return;
+      }
+
       const t = e.target.closest("[data-roll]");
       if (!t) return;
       const n = parseInt(t.getAttribute("data-roll"), 10);
@@ -210,6 +220,62 @@ const DiceRoller = {
       who: pnj.name || "",
       pnjId: pnj.id || "",
     });
+  },
+
+  /** Lance un sort (CH-M7b) : calcule la VD (Puissance + code du sort en
+      SR5 ; VD déjà fixe en SR6), ouvre le panneau seuil pré-rempli avec la
+      réserve de résistance au Drain du PNJ. `entry.drain` en chaîne (SR5,
+      ex. « P-3 ») demande la Puissance ET les succès du jet de sort (pour
+      la conversion Physique/Étourdissant, p.283) ; en nombre (SR6, VD
+      fixe), aucun prompt. */
+  async _castSpell(pnj, name) {
+    const entry = (pnj.spells || []).find((s) => s && s.name === name);
+    if (!entry || entry.drain == null) return;
+
+    let dv;
+    let castHits = 0;
+    if (typeof entry.drain === "string") {
+      const forceStr = await Dialog.prompt({
+        title: `Lancer « ${name} »`,
+        label: "Puissance du sort",
+        value: "6",
+        placeholder: "1-12",
+      });
+      if (forceStr == null) return;
+      const force = Utils.clamp(parseInt(forceStr, 10) || 0, 1, 12);
+      dv = Magic.drainValue(force, Magic.parseDrainMod(entry.drain));
+
+      const hitsStr = await Dialog.prompt({
+        title: `Lancer « ${name} »`,
+        label: "Succès au jet de Lancement de sorts (0 si non lancé — Physique si > Magie)",
+        value: "0",
+        placeholder: "0",
+      });
+      if (hitsStr == null) return;
+      castHits = Utils.clamp(parseInt(hitsStr, 10) || 0, 0, 40);
+    } else {
+      dv = Magic.drainValue(entry.drain, 0);
+    }
+
+    const malus = Utils.woundMalus(pnj, pnj.edition);
+    const pool = Math.max(0, (pnj.drainResist || 0) - malus);
+    OpposedRoll.openForDrain(pool, dv, {
+      label: `Drain — ${name}`,
+      who: pnj.name || "",
+      onResult: (hits) => this._applyDrainDamage(pnj, dv, hits, castHits),
+    });
+  },
+
+  /** Applique les dégâts résultants au moniteur du PNJ, via le contrat
+      d'édition (chaque module sait où vivent ses champs de moniteur). */
+  _applyDrainDamage(pnj, dv, resistHits, castHits) {
+    const dmg = Magic.resolveDrainDamage(dv, resistHits);
+    if (dmg <= 0) return;
+    const edModule = App.getEditionModule(pnj.edition);
+    const type = edModule.drainDamageType(castHits, pnj);
+    edModule.applyDrainDamage(pnj, dmg, type);
+    this._hooks.onPnjChanged(pnj);
+    toast(`Drain : ${dmg} case${dmg > 1 ? "s" : ""} (${type === "physical" ? "Physique" : "Étourdissant"}).`);
   },
 
   /** Stepper −/＋ du compteur de dés topbar. */
