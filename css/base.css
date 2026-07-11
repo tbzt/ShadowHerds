@@ -3377,6 +3377,90 @@ kbd {
     transform: translateY(0);
   }
 }
+/* Palette de commandes (CH-Q7) — overlay centré « trouver + aller à ». */
+#palette-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  background: rgba(0, 0, 0, 0.5);
+  padding-top: 12vh;
+  justify-content: center;
+  align-items: flex-start;
+}
+#palette-overlay.open {
+  display: flex;
+}
+#palette-box {
+  width: min(560px, calc(100vw - 2rem));
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 6px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+#palette-input {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 0.9rem 1rem;
+  outline: none;
+}
+#palette-results {
+  overflow-y: auto;
+  flex: 1;
+}
+.palette-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+.palette-row.sel,
+.palette-row:hover {
+  background: var(--glow, rgba(255, 255, 255, 0.06));
+}
+.palette-type {
+  flex: none;
+  min-width: 3.6rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0.1rem 0.3rem;
+  text-align: center;
+}
+.palette-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+.palette-empty {
+  padding: 1rem;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  text-align: center;
+}
+#palette-hint {
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
 .dice-log-head {
   display: flex;
   align-items: center;

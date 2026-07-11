@@ -324,7 +324,16 @@ document.addEventListener("DOMContentLoaded", () => {
       EditModal.close();
       Encounter.close();
       CharGen.close();
+      Palette.close();
       App.toggleCheatsheet(false);
+      return;
+    }
+
+    // Palette de commandes (CH-Q7) : Ctrl/Cmd+K, capté AVANT les garde-fous
+    // (doit fonctionner même depuis un champ de saisie).
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      if (App.edition !== "none") Palette.toggle();
       return;
     }
 
