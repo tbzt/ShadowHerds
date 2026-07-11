@@ -445,8 +445,13 @@ const Encounter = {
     });
 
     overlay.addEventListener("input", (e) => {
-      const el = e.target.closest('[data-action="set-note"]');
-      if (el) this.setNote(el.dataset.id, el.value);
+      const note = e.target.closest('[data-action="set-note"]');
+      if (note) {
+        this.setNote(note.dataset.id, note.value);
+        return;
+      }
+      const filter = e.target.closest('[data-action="filter-candidates"]');
+      if (filter) EncounterRenderer.filterCandidates(filter.value);
     });
 
     // Raccourcis clavier du tracker (CH-Q3), actifs seulement overlay ouvert.

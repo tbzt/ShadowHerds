@@ -125,28 +125,69 @@ const EncounterRenderer = {
     </div>`;
   },
 
-  /** Panneau d'ajout : PJ manuel + entités résolvables non encore en scène
-      (générées, Ombres, spiders). candidates: [pnj]. */
+  /** Filtre de recherche du picker (CH-Q4). Conservé côté renderer, comme
+      _activeCardId : c'est de l'état de vue éphémère (le texte tapé dans le
+      champ du picker), pas une préférence du contrôleur. Ré-appliqué après
+      chaque reconstruction du panneau pour survivre aux _commit (ajout/
+      retrait d'un combattant). */
+  _pickerQuery: "",
+
+  /** Panneau d'ajout : PJ manuel + champ de filtre + entités résolvables non
+      encore en scène (générées, Ombres, spiders). candidates: [pnj]. */
   renderPicker(candidates) {
     const panel = document.getElementById("encounter-add-panel");
     if (!panel) return;
 
     const rows = candidates
-      .map(
-        (p) => `<button class="encounter-candidate" data-action="add-candidate" data-id="${p.id}">
-          <span class="encounter-kind">${this._kindLabel({ pnj: p })}</span>
+      .map((p) => {
+        const kind = this._kindLabel({ pnj: p });
+        // data-name normalisé : sert au filtre client sans re-render.
+        const norm = Utils.searchNorm((p.name || "") + " " + kind);
+        return `<button class="encounter-candidate" data-action="add-candidate" data-id="${p.id}" data-name="${norm}">
+          <span class="encounter-kind">${kind}</span>
           <span class="encounter-candidate-name">${Utils.escHtml(p.name || "Sans nom")}</span>
           <span class="encounter-candidate-add">＋</span>
-        </button>`
-      )
+        </button>`;
+      })
       .join("");
 
     panel.innerHTML = `<div class="encounter-add-actions">
         <button class="btn-secondary btn-small" data-action="add-pj">＋ Ajouter un PJ</button>
+        <input type="search" class="encounter-picker-search" data-action="filter-candidates"
+          placeholder="Filtrer par nom ou type…" value="${Utils.escHtml(this._pickerQuery || "")}"
+          aria-label="Filtrer les combattants à ajouter">
       </div>
       <div class="encounter-candidates">
         ${rows || `<div class="empty-state"><span class="empty-state-title">Aucune entité disponible</span>Générez ou sauvegardez des PNJ, créatures ou esprits pour les ajouter ici.</div>`}
+        <div class="encounter-picker-empty empty-state" style="display:none"><span class="empty-state-title">Aucun résultat</span>Aucune entité ne correspond à ce filtre.</div>
       </div>`;
+
+    if (this._pickerQuery) this._applyPickerFilter();
+  },
+
+  /** Filtre le picker sans reconstruire le DOM (préserve le focus du champ).
+      Appelé par Encounter sur l'event input du champ de recherche. */
+  filterCandidates(query) {
+    this._pickerQuery = query || "";
+    this._applyPickerFilter();
+  },
+
+  /** Masque les candidats hors filtre via style.display inline — la règle
+      auteur .encounter-candidate{display:flex} l'emporterait sur [hidden]. */
+  _applyPickerFilter() {
+    const panel = document.getElementById("encounter-add-panel");
+    if (!panel) return;
+    const words = Utils.searchNorm(this._pickerQuery).trim().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    const cands = panel.querySelectorAll(".encounter-candidate");
+    cands.forEach((btn) => {
+      const hay = btn.dataset.name || "";
+      const match = !words.length || words.every((w) => hay.includes(w));
+      btn.style.display = match ? "" : "none";
+      if (match) shown++;
+    });
+    const emptyEl = panel.querySelector(".encounter-picker-empty");
+    if (emptyEl) emptyEl.style.display = cands.length && !shown ? "" : "none";
   },
 
   /** id du combattant dont la fiche est actuellement affichée à côté du
