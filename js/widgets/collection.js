@@ -18,6 +18,10 @@
    Un contact/PNJ/serveur peut appartenir à PLUSIEURS groupes.
    ============================================================ */
 const Collection = {
+  /** Nom de groupe réservé pour l'épingle rapide (CH-Q9) — un dossier
+      transverse comme un autre, pinné en tête par DossierBar. */
+  FAV_GROUP: "★ Favoris",
+
   /**
    * @param {object} config
    *   key           identifiant court, porté par data-collection="..."
@@ -387,6 +391,20 @@ const Collection = {
         btn.dataset.id = id;
         btn.innerHTML = `<span class="group-picker-trigger-icon">🏷</span><span class="group-picker-trigger-label">${CardRenderer._esc(gLabel)}</span>`;
         footer.prepend(btn);
+
+        // Épingle rapide (CH-Q9) : même groupe multi-appartenance que le
+        // bouton ci-dessus, juste une case réservée bascule en un clic —
+        // aucun nouveau mécanisme de persistance.
+        const pinned = groups.includes(Collection.FAV_GROUP);
+        const pin = document.createElement("button");
+        pin.type = "button";
+        pin.className = "group-picker-trigger" + (pinned ? " has-groups" : "");
+        pin.title = pinned ? "Retirer des favoris" : "Épingler aux favoris";
+        pin.dataset.collection = this.key;
+        pin.dataset.action = "toggle-pin";
+        pin.dataset.id = id;
+        pin.innerHTML = `<span class="group-picker-trigger-icon">★</span>`;
+        footer.prepend(pin);
       },
 
       /* ---- Délégation d'événements (modèle ContentModal) ----
@@ -415,6 +433,13 @@ const Collection = {
             case "open-picker":
               GroupPicker.open(this, el.dataset.id, el);
               break;
+            case "toggle-pin": {
+              const pinned = this.groupsOf(el.dataset.id).includes(
+                Collection.FAV_GROUP,
+              );
+              this.toggleGroup(el.dataset.id, Collection.FAV_GROUP, !pinned);
+              break;
+            }
           }
         });
 

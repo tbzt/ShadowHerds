@@ -149,7 +149,12 @@ const DossierBar = {
       <span class="group-item-name">Tout</span>
       <span class="group-item-count">${this._countFor(null)}</span>
     </div>`;
+    // Favoris (CH-Q9) épinglé en tête, hors boucle des racines — dossier
+    // réservé créé à la volée par syncDossiers() dès la première épingle.
+    const fav = Dossiers.roots().find((d) => d.name === Collection.FAV_GROUP);
+    if (fav) html += this._nodeHtml(fav, false, true);
     for (const d of Dossiers.roots()) {
+      if (fav && d.id === fav.id) continue;
       html += this._nodeHtml(d, false);
       for (const child of Dossiers.children(d.id)) {
         html += this._nodeHtml(child, true);
@@ -158,11 +163,19 @@ const DossierBar = {
     box.innerHTML = html;
   },
 
-  /** Ligne de l'arbre : dossier (racine) ou sous-groupe (isSub). */
-  _nodeHtml(node, isSub) {
+  /** Ligne de l'arbre : dossier (racine) ou sous-groupe (isSub). Le nœud
+      Favoris (isFav) est réservé : pas de sous-groupe/renommer/supprimer. */
+  _nodeHtml(node, isSub, isFav = false) {
     const active = this.current === node.id ? "active" : "";
     const nameEsc = CardRenderer._esc(node.name);
     const sub = isSub ? " group-subitem" : "";
+    if (isFav) {
+      return `<div class="group-item ${active}" data-dossier-bar data-action="switch-dossier" data-dossier="${node.id}">
+        <span class="group-item-icon">★</span>
+        <span class="group-item-name">${nameEsc}</span>
+        <span class="group-item-count">${this._countFor(this._namesUnder(node.id))}</span>
+      </div>`;
+    }
     const addBtn = isSub
       ? ""
       : `<button class="btn-icon-tiny" data-dossier-bar data-action="add-subgroup" data-parent="${node.id}" title="Nouveau sous-groupe">+</button>`;
@@ -219,6 +232,10 @@ const DossierBar = {
   renameDossier(id) {
     const d = Dossiers.get(id);
     if (!d) return;
+    if (d.name === Collection.FAV_GROUP) {
+      toast("Dossier réservé (Favoris).");
+      return;
+    }
     const oldName = d.name;
     Dialog.prompt({
       title: "Renommer",
@@ -249,6 +266,10 @@ const DossierBar = {
   removeDossier(id) {
     const d = Dossiers.get(id);
     if (!d) return;
+    if (d.name === Collection.FAV_GROUP) {
+      toast("Dossier réservé (Favoris).");
+      return;
+    }
     const isParent = Dossiers.children(id).length > 0;
     const msg = isParent
       ? `Supprimer « ${d.name} » et ses sous-groupes ? (Le contenu reste dans la bibliothèque.)`
