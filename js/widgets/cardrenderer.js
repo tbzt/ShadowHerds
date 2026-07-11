@@ -59,9 +59,9 @@ const CardRenderer = {
     if (ratingBadge.options) {
       const tier = pnj[ratingBadge.field] || ratingBadge.options[0];
       const tierClass = `rang-${tier.toLowerCase()}`;
-      badge = `<span class="pnj-rank-badge ${tierClass}">${tier}</span>`;
+      badge = `<span class="pnj-rank-badge ${tierClass}" title="Rang tactique — poids du PNJ dans une scène">${tier}</span>`;
     } else {
-      badge = `<span class="pnj-rank-badge">PRO&nbsp;${pnj[ratingBadge.field]}</span>`;
+      badge = `<span class="pnj-rank-badge" title="Niveau de professionnalisme">PRO&nbsp;${pnj[ratingBadge.field]}</span>`;
     }
 
     const specialStr =

@@ -10,7 +10,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@400;500&family=Oswald:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=53">
+  <link rel="stylesheet" href="css/base.css?v=55">
   <link rel="stylesheet" href="css/theme-sr5.css?v=19">
   <link rel="stylesheet" href="css/theme-sr6.css?v=18">
   <link rel="stylesheet" href="css/theme-anarchy.css?v=20">
@@ -89,6 +89,7 @@
       <span>Shadow Herds</span>
       Shadowrun
     </div>
+    <p class="edition-baseline">Générez PNJ, contacts et runs, pilotez le combat et la Matrice — SR5, SR6, Anarchy.<span class="edition-baseline-note">Édition modifiable à tout moment.</span></p>
     <div class="edition-cards">
 
       <div class="edition-card" data-ed="sr5" data-action="select-edition">
@@ -105,7 +106,7 @@
       </div>
 
       <div class="edition-card" data-ed="anarchy1" data-action="select-edition">
-        <span class="ed-wip">Chantier</span>
+        <span class="ed-wip" title="Édition incomplète — en construction">Chantier</span>
         <span class="ed-word">Anarchy 1</span>
         <span class="ed-bar"></span>
         <span class="ed-sub">1re édition</span>
@@ -182,7 +183,7 @@
         </div>
 
         <button class="topbar-action topbar-action-quiet" data-action="toggle-shortcuts"
-          title="Raccourcis clavier (?)" aria-label="Raccourcis clavier">
+          title="Aide & raccourcis (?)" aria-label="Aide et raccourcis clavier">
           <svg class="icon" aria-hidden="true"><use href="#ic-help"></use></svg>
         </button>
       </div>
@@ -564,10 +565,14 @@
   <div class="modal-overlay" id="shortcuts-overlay" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
     <div class="modal">
       <div class="modal-header">
-        <span class="modal-title" id="shortcuts-title">Raccourcis clavier</span>
+        <span class="modal-title" id="shortcuts-title">Aide</span>
         <button class="modal-close" data-action="shortcuts-close" aria-label="Fermer">✕</button>
       </div>
       <div class="modal-body">
+        <p class="help-intro">Assistant de MJ Shadowrun, 100 % local à votre navigateur. Générez PNJ, contacts et runs, pilotez le combat et la Matrice.</p>
+        <p class="help-intro"><strong>Démarrer :</strong> ouvrez <em>PNJ</em> dans GÉNÉRATION, cliquez « Générer », puis rangez la fiche dans un dossier depuis « Ombres portées ».</p>
+        <p class="help-intro"><strong>Astuce :</strong> sur une fiche, les réserves <span class="help-die">⚄</span> sont cliquables — un clic lance les dés.</p>
+        <div class="help-section-label">Raccourcis clavier</div>
         <div class="shortcuts-list">
           <div class="shortcut-row"><span class="shortcut-keys"><kbd>1</kbd>–<kbd>7</kbd></span><span>Changer de panel (Ombres, Personnages, PNJ, Contacts, Serveurs, Run, Paramètres)</span></div>
           <div class="shortcut-row"><span class="shortcut-keys"><kbd>G</kbd></span><span>Générer (onglet actif du générateur)</span></div>
@@ -618,7 +623,7 @@
   <script defer src="js/catalogs/vehicles.js?v=951"></script>
   <script defer src="js/catalogs/spirits.js?v=951"></script>
   <script defer src="js/catalogs/creatures.js?v=955"></script>
-  <script defer src="js/widgets/cardrenderer.js?v=953"></script>
+  <script defer src="js/widgets/cardrenderer.js?v=954"></script>
   <script defer src="js/widgets/cardrenderer.sr5.js?v=7"></script>
   <script defer src="js/widgets/cardrenderer.sr6.js?v=5"></script>
   <script defer src="js/widgets/cardrenderer.anarchy.js?v=953"></script>
