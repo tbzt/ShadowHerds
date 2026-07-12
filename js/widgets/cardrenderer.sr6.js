@@ -72,6 +72,7 @@ Object.assign(CardRenderer, {
         <span class="monitor-label">État</span>
         <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "phys", monTotal, physFilled ?? 0)}</div>
       </div>
+      ${this._monitorMalusBadge(malus6)}
     </div>`;
 
     html += this._weaponBlock(pnj, weapons, "sr6", deps);

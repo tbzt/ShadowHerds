@@ -1710,6 +1710,22 @@ select optgroup {
 .monitor-box.penalty {
   border-color: var(--accent);
 }
+/* K2 : regroupement visuel par rangées de 3, fidèle à la grille du livre
+   (SR6 p.43) — un espace un peu plus large toutes les 3 cases. Exclu des
+   moniteurs segmentés Anarchy 2 (sev-léger/grave/incap, qui ont déjà leurs
+   propres séparateurs .monitor-gap, une règle différente). */
+.monitor-boxes .monitor-box:not(.sev-leger):not(.sev-grave):not(.sev-incap):nth-child(3n) {
+  margin-right: 6px;
+}
+/* Malus cumulé en marge du moniteur (déjà appliqué aux tests, cf.
+   Utils.woundMalus) — lisible sans recompter les cases pleines. */
+.monitor-malus {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--accent);
+}
 
 /* Card footer */
 /* ---- Journal de fiche (F2) ---- */

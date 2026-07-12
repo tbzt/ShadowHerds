@@ -380,6 +380,14 @@ const CardRenderer = {
     }).join("");
   },
 
+  /** Malus cumulé en marge du moniteur (K2, grille du livre — SR6 p.43) :
+      même valeur déjà calculée par chaque renderer (Utils.woundMalus), donc
+      pas de nouveau calcul ici. Vide si aucun malus (cas le plus fréquent). */
+  _monitorMalusBadge(malus) {
+    if (!(malus > 0)) return "";
+    return `<div class="monitor-malus" title="Malus de blessure cumulé (déjà appliqué aux tests)">−${malus}D</div>`;
+  },
+
   /**
    * @param {Object} [opts]
    * @param {string} [opts.label] - libellé de section (ex. "Connaissances")

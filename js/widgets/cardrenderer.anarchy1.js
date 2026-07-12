@@ -53,6 +53,7 @@ Object.assign(CardRenderer, {
         <span class="monitor-label">Étourd</span>
         <div class="monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, stunFilled)}</div>
       </div>
+      ${this._monitorMalusBadge(malus)}
     </div>`;
 
     html += this._weaponBlock(pnj, weapons, "anarchy1", deps);
