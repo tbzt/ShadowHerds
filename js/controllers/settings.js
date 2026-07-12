@@ -158,20 +158,24 @@ const Settings = {
     return `<div class="form-group sync-fields" style="margin-top:0.6rem;">
       <label for="sync_gist_token">Token GitHub (périmètre « gist »)</label>
       <input type="password" id="sync_gist_token" value="${CardRenderer._esc(sc.gist.token)}"
-        placeholder="ghp_… ou github_pat_…"
+        placeholder="ghp_… ou github_pat_… (pas l'URL du gist)"
         data-action="set-sync-field" data-prov="gist" data-field="token">
-      <label for="sync_gist_id" style="margin-top:0.5rem;">Identifiant du gist (facultatif)</label>
+      <label for="sync_gist_id" style="margin-top:0.5rem;">URL ou identifiant du gist (facultatif)</label>
       <input type="text" id="sync_gist_id" value="${CardRenderer._esc(sc.gist.gistId)}"
         placeholder="vide = créé ou retrouvé automatiquement"
         data-action="set-sync-field" data-prov="gist" data-field="gistId">
       <details class="settings-detail">
         <summary>Comment obtenir un token</summary>
         <p style="font-size:0.72rem;margin-top:0.3rem;">
-          Sur <a href="https://github.com/settings/tokens?type=beta" target="_blank" style="color:var(--accent)">github.com/settings/tokens</a>,
-          créez un token limité au périmètre <strong>Gist</strong>. Un gist secret est créé
-          automatiquement au premier envoi. Collez le même token sur vos autres appareils.
-          Stocké uniquement dans ce navigateur, visible dans les outils de développement :
-          usage personnel, ne le partagez pas dans une copie publique de l'outil.
+          Le <strong>token</strong> n'est pas l'adresse du gist : c'est un jeton
+          d'authentification. Créez-en un sur
+          <a href="https://github.com/settings/tokens?type=beta" target="_blank" style="color:var(--accent)">github.com/settings/tokens</a>
+          avec la permission <strong>Gist</strong> (lecture + écriture), puis collez-le
+          ci-dessus. L'URL de votre gist, elle, va dans le champ « identifiant » (facultatif).
+          Un gist secret est créé automatiquement au premier envoi si vous laissez ce champ vide.
+          Collez le même token sur vos autres appareils. Stocké uniquement dans ce navigateur,
+          visible dans les outils de développement : usage personnel, ne le partagez pas dans
+          une copie publique de l'outil.
         </p>
       </details>
     </div>`;
@@ -227,8 +231,15 @@ const Settings = {
       toast("Renseignez le stockage, puis « Synchroniser maintenant ».");
   },
   setSyncField(prov, field, value) {
+    let v = (value || "").trim();
+    // Tolérance : une URL de gist collée dans le champ identifiant est réduite
+    // à l'ID (dernier segment hexadécimal), pour éviter la confusion token/URL.
+    if (prov === "gist" && field === "gistId" && v) {
+      const m = v.match(/[0-9a-f]{20,}/i);
+      if (m) v = m[0];
+    }
     const c = Sync.cfg();
-    Sync._saveCfg({ [prov]: { ...c[prov], [field]: (value || "").trim() } });
+    Sync._saveCfg({ [prov]: { ...c[prov], [field]: v } });
   },
   toggleSyncAuto(on) {
     Sync._saveCfg({ auto: !!on });
