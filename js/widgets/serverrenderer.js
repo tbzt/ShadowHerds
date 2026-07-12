@@ -266,12 +266,17 @@ const ServerRenderer = {
       </div>`;
   },
 
-  /* ---- Bloc intrusion (tracker) ---- */
-  intrusionPanel(srv, { icMonitorSize } = {}) {
+  /* ---- Bloc intrusion (tracker) ----
+     inEncounter (K4) : rendu dans le tiroir Matrice du tracker de combat —
+     ajoute « ⚔ Init » sur chaque CI active pas encore dans l'ordre
+     (launchedKeys = clés déjà lancées, fournies par Encounter). Hors tracker
+     (carte du panneau Serveurs), ces options n'apparaissent pas. */
+  intrusionPanel(srv, { icMonitorSize, inEncounter, launchedKeys } = {}) {
     const esc = CardRenderer._esc.bind(CardRenderer);
     const intr = srv.intrusion;
     const catalog = Matrix.use(srv.edition).icCatalog();
     const size = icMonitorSize != null ? icMonitorSize : Matrix.use(srv.edition).icMonitorSize(srv.indice);
+    const launched = new Set(launchedKeys || []);
 
     /* Lignes de CI */
     const rows = (srv.icList || [])
@@ -320,10 +325,21 @@ const ServerRenderer = {
           }
         }
 
+        // K4 : « ⚔ Init » pour envoyer cette CI dans l'ordre d'initiative du
+        // combat (seulement dans le tiroir, sur une CI déployée non détruite et
+        // pas déjà en scène ; jamais la Patrouilleuse en veille).
+        let launchBtn = "";
+        if (inEncounter && !ic.watch && st.active && !st.down) {
+          launchBtn = launched.has(k)
+            ? `<span class="ic-status active" title="Déjà dans l'initiative du combat">⚔ en scène</span>`
+            : `<button class="btn-secondary btn-small" data-action="launch-ic" data-id="${srv.id}" data-k="${k}" title="Envoyer cette CI dans l'ordre d'initiative">⚔ Init</button>`;
+        }
+
         return `<div class="ic-row ${isActive ? "on" : ""} ${st.down ? "dead" : ""}">
           <div class="ic-row-head">
             <span class="ic-row-name">${esc(label)}</span>
             ${status}
+            ${launchBtn}
           </div>
           <div class="ic-row-effect">${ic.def ? `<b>Défense :</b> ${esc(ic.def)} — ` : ""}${esc(eff)}</div>
           ${rolls ? `<div class="ic-row-rolls">${rolls}</div>` : ""}

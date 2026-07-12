@@ -86,6 +86,11 @@ const EditionAnarchy1 = {
     const attrs = pnj.attrs || {};
     return { base: Math.max(attrs.AGI || 0, attrs.LOG || 0), dice: 2 };
   },
+  /** K4 : spec d'un combattant CI lancé dans l'initiative. Comme Anarchy 2,
+      combat narratif → jeton sans init chiffrée. */
+  icCombatant(ic) {
+    return { name: ic.label, narrative: true };
+  },
   /** narrative:true — combat sans initiative chiffrée ni ordre figé (le livre
       A1 gère l'ordre par la narration). Le tracker bascule en mode dépouillé
       (pool de jetons qu'on éteint), cf. EncounterRenderer._rowNarrative. */

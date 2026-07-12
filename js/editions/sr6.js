@@ -112,6 +112,13 @@ const EditionSR6 = {
   initiativeFor(pnj) {
     return { base: pnj.initBase, dice: pnj.initDice };
   },
+  /** K4 : spec d'un combattant CI lancé dans l'initiative. Init du livre SR6 :
+      Traitement de données ×2 + 3D6 (p.188). La règle vit ici (prohibition
+      n°1) ; repli sur l'indice si le serveur n'a pas d'attributs ASDF posés. */
+  icCombatant(ic, srv) {
+    const td = (srv.attrs && srv.attrs.dataProcessing) || srv.indice;
+    return { name: ic.label, initBase: td * 2, initDice: 3 };
+  },
   /** Règles de round pour le tracker de combat. SR6 : l'initiative est
       relancée à chaque round mais il n'y a plus de passes d'initiative
       (une seule passe par round, p.44) → `passDecrement: 0`. */

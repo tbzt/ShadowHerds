@@ -173,6 +173,7 @@ const EncounterRenderer = {
       véhicule liés), pnj.type (spirit/creature) ; PNJ par défaut. */
   _kindLabel(r) {
     if (r.kind === "pj") return "PJ";
+    if (r.kind === "matrix") return "CI"; // K4 : combattant matriciel (Matrice)
     const p = r.pnj;
     if (p.kind === "drone") return "Drone";
     if (p.kind === "vehicule") return "Véhicule";
@@ -207,22 +208,26 @@ const EncounterRenderer = {
 
   _row(r, isActive, outOfPass, effectiveInit) {
     const { pnjId, init, hasActed, note, pnj } = r;
+    const isMatrix = r.kind === "matrix";
     const initVal = init == null ? "" : String(init);
     // Vague B : la note ne s'affiche en 2ᵉ ligne que si remplie ; sinon elle est
     // masquée (déclutter) et révélée à la demande via « ✎ Note » du menu ⋯.
     const hasNote = !!(note && note.trim());
     // CH-M5 : même calcul générique que sur la fiche (Utils.woundMalus),
-    // affiché ici pour que le malus soit visible sans rouvrir la carte.
-    const malus = Utils.woundMalus(pnj, pnj.edition);
+    // affiché ici pour que le malus soit visible sans rouvrir la carte. Une CI
+    // n'a pas de moniteur chair → pas de malus de blessure.
+    const malus = isMatrix ? 0 : Utils.woundMalus(pnj, pnj.edition);
     const malusHtml =
       malus > 0
         ? `<span class="wound-malus-badge" title="Malus de blessure automatique (déjà appliqué à l'initiative)">−${malus}D</span>`
         : "";
     const name = Utils.escHtml(pnj.name || "");
-    // PJ ad-hoc : pas de fiche à ouvrir → nom en span inerte.
-    const nameHtml = pnj._adhoc
-      ? `<span class="encounter-name is-pj">${name}</span>`
-      : `<button class="encounter-name" data-action="focus-combatant" data-id="${pnjId}" title="Voir la fiche">${name}</button>`;
+    // Nom : bouton « voir la fiche » pour une entité résolvable ou une CI (qui
+    // ouvre le tiroir Matrice) ; span inerte pour un PJ ad-hoc (pas de fiche).
+    const nameHtml =
+      pnj._adhoc && !isMatrix
+        ? `<span class="encounter-name is-pj">${name}</span>`
+        : `<button class="encounter-name" data-action="focus-combatant" data-id="${pnjId}" title="${isMatrix ? "Ouvrir la Matrice" : "Voir la fiche"}">${name}</button>`;
     // Score effectif de la passe (SR5, à partir de la passe 2) : le champ de
     // saisie reste sur la base (c'est elle que set-init modifie), le décrément
     // est affiché à côté plutôt qu'en remplacement.
@@ -256,7 +261,7 @@ const EncounterRenderer = {
     const dragHandle = r.down
       ? ""
       : `<span class="encounter-drag-handle" title="Glisser pour réordonner" aria-hidden="true">⠿</span>`;
-    return `<div class="encounter-row${isActive ? " active-turn" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}${r.down ? " down" : ""}${r.delayed && !r.down ? " delayed" : ""}" data-id="${pnjId}">
+    return `<div class="encounter-row${isMatrix ? " is-matrix" : ""}${isActive ? " active-turn" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}${r.down ? " down" : ""}${r.delayed && !r.down ? " delayed" : ""}" data-id="${pnjId}">
       ${dragHandle}
       ${initZone}
       <div class="encounter-main">
@@ -301,10 +306,12 @@ const EncounterRenderer = {
       comme le nom de la ligne) — rien de nouveau côté contrôleur. */
   _token(r, isActive, outOfPass) {
     const { pnjId, init, pnj } = r;
+    const isMatrix = r.kind === "matrix";
     const name = Utils.escHtml(pnj.name || "");
     const initLabel = r.down ? "—" : r.delayed ? "⏸" : init == null ? "·" : String(init);
     const cls = [
       "encounter-token",
+      isMatrix && "is-matrix", // K4 : canal --accent2 (jeton CI)
       isActive && "active-turn",
       r.hasActed && "has-acted",
       outOfPass && "out-of-pass",
@@ -313,8 +320,11 @@ const EncounterRenderer = {
     ]
       .filter(Boolean)
       .join(" ");
-    const action = pnj._adhoc ? "" : ` data-action="focus-combatant" data-id="${pnjId}"`;
-    const tag = pnj._adhoc ? "div" : "button";
+    // K4 : une CI matricielle est _adhoc mais reste tappable (focusCombatant
+    // ouvre le tiroir Matrice, pas une fiche de pool).
+    const tappable = isMatrix || !pnj._adhoc;
+    const action = tappable ? ` data-action="focus-combatant" data-id="${pnjId}"` : "";
+    const tag = tappable ? "button" : "div";
     return `<${tag} class="${cls}"${action} title="${name}">
       <span class="encounter-token-init">${initLabel}</span>
       <span class="encounter-token-name">${name}</span>
@@ -482,6 +492,16 @@ const EncounterRenderer = {
     }
 
     const active = rows[state.turnIndex];
+
+    // K4 : combattant matriciel (CI) — fiche minimale, pas de fiche de pool.
+    // Toujours re-rendue (le moniteur matriciel vit sur le serveur et change
+    // au fil du combat) : on ne met pas en cache via _activeCardId.
+    if (active && active.kind === "matrix") {
+      this._activeCardId = null;
+      this._renderMatrixActiveCard(box, active);
+      return;
+    }
+
     const pnj = active && active.pnj && !active.pnj._adhoc ? active.pnj : null;
     const id = pnj ? pnj.id : null;
     if (id === this._activeCardId) return; // déjà affiché, laissé au rafraîchissement global
@@ -500,6 +520,52 @@ const EncounterRenderer = {
       box.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
       box.insertAdjacentHTML("beforeend", this._activeNote(active));
     }
+  },
+
+  /** Fiche CI minimale (K4) : ce que le MJ regarde au tour d'une CI —
+      A/S/T/F (si le serveur a des attributs), moniteur matriciel (lecture
+      seule : la saisie de dégâts se fait dans le tiroir, où ic-box est
+      câblé), pouvoir, lien vers le serveur parent (ouvre le tiroir). Pas
+      de fausse fiche chair. L'état vivant est lu sur le serveur, jamais copié. */
+  _renderMatrixActiveCard(box, r) {
+    const m = r.matrix || {};
+    const srv = Servers.find(m.serverId);
+    if (!srv) {
+      box.hidden = true;
+      box.innerHTML = "";
+      return;
+    }
+    const M = Matrix.use(srv.edition);
+    const ic = M.icCatalog()[m.icKey] || { label: r.name };
+    const st = (srv.intrusion && srv.intrusion.ics[m.icKey]) || { dmg: 0, down: false };
+    const size = M.icMonitorSize(srv.indice);
+    const label = (ic.label || r.name).replace(/^CI /, "");
+    const eff = typeof ic.effect === "function" ? ic.effect(srv) : "";
+    const attrsHtml = M.hasAttrs()
+      ? `<div class="attr-grid">${Matrix.ATTR_KEYS.map((ak) => {
+          const v = (srv.attrs || {})[ak.key];
+          return `<div class="attr-cell"><span class="attr-label">${ak.badge}</span><span class="attr-value">${v ?? "—"}</span></div>`;
+        }).join("")}</div>`
+      : "";
+    const boxes = Array.from({ length: size }, (_, i) => {
+      const isPenalty = (i + 1) % 3 === 0;
+      return `<div class="monitor-box${i < st.dmg ? " filled" : ""}${isPenalty ? " penalty" : ""}"></div>`;
+    }).join("");
+    box.hidden = false;
+    box.innerHTML =
+      this._activeBandeau(r) +
+      `<div class="encounter-ic-card">
+        <div class="encounter-ic-head">
+          <span class="encounter-kind is-matrix">CI</span>
+          <span class="encounter-ic-name">${Utils.escHtml(label)}</span>
+        </div>
+        <div class="encounter-ic-server">${Utils.escHtml(srv.name)} · indice ${srv.indice}</div>
+        ${attrsHtml}
+        <div class="monitor-row"><span class="monitor-label">Moniteur</span><div class="monitor-boxes">${boxes}</div></div>
+        ${eff ? `<div class="encounter-ic-power">${Utils.escHtml(eff)}</div>` : ""}
+        <button class="btn-secondary btn-small encounter-ic-open" data-action="toggle-matrix-drawer" title="Ouvrir le tiroir Matrice (jets, moniteur, surveillance)">⚡ Ouvrir la Matrice</button>
+      </div>` +
+      this._activeNote(r);
   },
 
   /** Résumé persistant dans la sidebar (round/passe + combattant actif),
@@ -541,7 +607,7 @@ const EncounterRenderer = {
       level : état dérivé 0-3 (Encounter.matrixState). Le contenu du tiroir
       réutilise verbatim ServerRenderer.intrusionPanel/matrixDrawerHeader —
       rien n'est recalculé ici (cf. audit intrusion.js pré-K3). */
-  renderMatrix(srv, level) {
+  renderMatrix(srv, level, launchedKeys) {
     const btn = document.getElementById("encounter-matrix-btn");
     if (btn) {
       btn.hidden = level === 0;
@@ -567,8 +633,12 @@ const EncounterRenderer = {
 
     const body = document.getElementById("matrix-drawer-body");
     if (!body) return;
+    // inEncounter + launchedKeys : ServerRenderer ajoute « ⚔ Init » sur chaque
+    // CI active pas encore dans l'ordre (K4). Le reste du contenu est le panneau
+    // d'intrusion réutilisé verbatim (K3).
     body.innerHTML = srv
-      ? ServerRenderer.matrixDrawerHeader(srv) + ServerRenderer.intrusionPanel(srv, {})
+      ? ServerRenderer.matrixDrawerHeader(srv) +
+        ServerRenderer.intrusionPanel(srv, { inEncounter: true, launchedKeys: launchedKeys || [] })
       : "";
   },
 };

@@ -108,6 +108,12 @@ const EditionSR5 = {
   initiativeFor(pnj) {
     return { base: pnj.init, dice: pnj.initDice };
   },
+  /** K4 : spec d'un combattant CI lancé dans l'initiative (fiche CI minimale +
+      jeton Matrice). Init du livre SR5 : indice de l'hôte ×2 + 4D6 (p.249).
+      La règle vit ici (prohibition n°1) ; Encounter lit le spec neutre. */
+  icCombatant(ic, srv) {
+    return { name: ic.label, initBase: srv.indice * 2, initDice: 4 };
+  },
   /** Règles de round pour le tracker de combat (lues via App.editionModule,
       jamais de branche d'édition côté Encounter). SR5 : l'initiative est
       relancée à chaque tour de combat, et chaque tour se joue en passes

@@ -175,8 +175,19 @@ const Encounter = {
       initiative chiffrée a bien été posée. */
   _rollInit(pnjId, silent) {
     const c = this._find(pnjId);
-    const pnj = c && PnjLookup.find(pnjId);
-    if (!c || !pnj) return false; // PJ ad-hoc / entité disparue : init manuelle conservée
+    if (!c) return false;
+    // K4 : CI matricielle — init du livre (base+dés stockés à la création,
+    // cf. icCombatant), relancée comme tout le monde en SR5/SR6. Pas de pnj
+    // de pool ni d'overlay : jet direct via Dice. Narrative (Anarchy) → pas
+    // d'init (initBase null), classée à la main comme les PNJ Anarchy.
+    if (c.kind === "matrix") {
+      const m = c.matrix;
+      if (!m || m.initBase == null) return false;
+      c.init = Dice.computeInitiative(m.initBase, m.initDice).total;
+      return true;
+    }
+    const pnj = PnjLookup.find(pnjId);
+    if (!pnj) return false; // PJ ad-hoc / entité disparue : init manuelle conservée
     const spec = App.editionModule && App.editionModule.initiativeFor(pnj);
     if (!spec) {
       if (!silent) toast("Pas d'initiative chiffrée pour cette édition — classez ce PNJ manuellement (▲▼).");
@@ -345,10 +356,28 @@ const Encounter = {
       Un combattant hors de combat ne joue plus (inéligible) et sera rendu en
       fond de liste, sans initiative. */
   _isDown(c) {
+    // K4 : une CI matricielle est « hors de combat » quand son moniteur
+    // matriciel est plein (source unique srv.intrusion.ics[key].down, gérée
+    // par Intrusion) — jamais via combatDisposition (ce n'est pas une entité
+    // chair sans pnj de pool).
+    if (c.kind === "matrix") {
+      const st = this._matrixICState(c);
+      return !!(st && st.down);
+    }
     const mod = App.editionModule;
     if (!mod || !mod.combatDisposition) return false;
     const pnj = PnjLookup.find(c.pnjId);
     return pnj ? !!mod.combatDisposition(pnj).down : false;
+  },
+
+  /** État vivant d'une CI (moniteur, détruite) lu sur le serveur — jamais
+      copié dans le combattant. null si le combattant n'est pas matriciel ou
+      si le serveur/la CI a disparu. */
+  _matrixICState(c) {
+    const m = c && c.matrix;
+    if (!m) return null;
+    const srv = Servers.find(m.serverId);
+    return (srv && srv.intrusion && srv.intrusion.ics[m.icKey]) || null;
   },
 
   /** Un combattant agit-il dans la passe courante ? Hors de combat → jamais.
@@ -418,6 +447,13 @@ const Encounter = {
     }
     this.state.turnIndex = this._firstEligibleIndex();
     this._commit();
+    // K4 : rappel de cadence — l'hôte peut déployer une CI par tour de combat
+    // (SR5 p.249, SR6 p.188). Rappel seulement si un serveur alerté est lié et
+    // que l'édition a des CI chiffrées (hasAttrs) ; Anarchy déploie à sa façon.
+    const srv = this._linkedServer();
+    if (srv && Matrix.use(srv.edition).hasAttrs() && srv.intrusion && srv.intrusion.alerted) {
+      toast("Nouveau tour : le serveur peut déployer une CI.");
+    }
   },
 
   setNote(pnjId, text) {
@@ -433,6 +469,13 @@ const Encounter = {
       (Ombres / Générateur / Matrice) et le met en surbrillance — réutilise
       UI.focusOwner tel quel, aucune logique de moniteur dupliquée ici. */
   focusCombatant(pnjId) {
+    // K4 : une CI matricielle n'a pas de fiche de pool — tap = ouvrir le
+    // tiroir Matrice (là où elle vit vraiment), sans fermer le tracker.
+    const c = this._find(pnjId);
+    if (c && c.kind === "matrix") {
+      this.openMatrixDrawer();
+      return;
+    }
     // PJ ad-hoc / entité disparue : pas de fiche à afficher.
     if (!PnjLookup.find(pnjId)) return;
     this.close();
@@ -608,6 +651,63 @@ const Encounter = {
     setTimeout(() => overlay.classList.remove("open"), 220);
   },
 
+  /** Clés des CI déjà lancées dans l'init pour le serveur lié — passées au
+      rendu du tiroir pour ne pas re-proposer « ⚔ Init » sur une CI en scène. */
+  _launchedICKeys() {
+    return this.state.combatants
+      .filter((c) => c.kind === "matrix" && c.matrix && c.matrix.serverId === this.state.serverId)
+      .map((c) => c.matrix.icKey);
+  },
+
+  /** K4 : une CI rejoint l'ordre d'initiative (demande explicite + entretien
+      Sofia : plus jamais d'oubli de la CI). Lancée depuis le tiroir, donc le
+      serveur est déjà lié (porte 3 implicite satisfaite). Init du livre via
+      icCombatant (module d'édition — prohibition n°1) ; l'état vivant (moniteur)
+      reste sur srv.intrusion, jamais copié. Insérée à sa place d'init sans
+      voler le tour courant. No-op si déjà en scène. */
+  launchIC(serverId, icKey) {
+    const srv = Servers.find(serverId);
+    if (!srv) return;
+    const ic = Matrix.use(srv.edition).icCatalog()[icKey];
+    if (!ic) return;
+    if (this.state.combatants.some((c) => c.kind === "matrix" && c.matrix && c.matrix.serverId === serverId && c.matrix.icKey === icKey)) {
+      toast("Cette CI est déjà dans l'initiative.");
+      return;
+    }
+    const spec = App.editionModule.icCombatant(ic, srv);
+    if (!spec) return;
+    const c = {
+      pnjId: "ic-" + Utils.uid(),
+      name: spec.name,
+      kind: "matrix",
+      init: null,
+      hasActed: false,
+      note: "",
+      matrix: { serverId, icKey, initBase: spec.initBase ?? null, initDice: spec.initDice ?? null },
+    };
+    if (!spec.narrative && spec.initBase != null) {
+      c.init = Dice.computeInitiative(spec.initBase, spec.initDice).total;
+    }
+    this._insertByInit(c);
+    this._commit();
+    toast(`${spec.name} rejoint l'initiative.`);
+  },
+
+  /** Insère un combattant à sa place dans l'ordre d'init décroissant sans
+      re-trier toute la liste (moins perturbant en plein round) et en gardant
+      le tour sur le combattant courant (suivi par pnjId, pas par index).
+      Init null (narrative) → placé en fin, comme au tri. */
+  _insertByInit(c) {
+    const cs = this.state.combatants;
+    const activeId = (cs[this.state.turnIndex] || {}).pnjId;
+    const cInit = c.init == null ? -Infinity : c.init;
+    let idx = cs.findIndex((x) => (x.init == null ? -Infinity : x.init) < cInit);
+    if (idx === -1) idx = cs.length;
+    cs.splice(idx, 0, c);
+    const ai = cs.findIndex((x) => x.pnjId === activeId);
+    if (ai !== -1) this.state.turnIndex = ai;
+  },
+
   /* ---- Rendu ---- */
   _rows() {
     const rows = this.state.combatants.map((c) => ({
@@ -643,11 +743,19 @@ const Encounter = {
       });
       return rows;
     }
-    const opp = rows.filter((r) => r.pnj && !this._isPJ(r));
+    // K4 : les CI matricielles sont hors du groupe de moral (ni chair, ni
+    // PJ) — leur « down » vient du moniteur matriciel, pas de combatDisposition.
+    const opp = rows.filter((r) => r.pnj && !this._isPJ(r) && r.kind !== "matrix");
     let oppDown = 0;
     for (const r of opp) if (mod.combatDisposition(r.pnj).down) oppDown++;
     const group = { down: oppDown, total: opp.length };
     for (const r of rows) {
+      if (r.kind === "matrix") {
+        const st = this._matrixICState(r);
+        r.down = !!(st && st.down);
+        r.morale = null;
+        continue;
+      }
       if (!r.pnj) {
         r.down = false;
         r.morale = null;
@@ -677,7 +785,12 @@ const Encounter = {
       n'est pas le serveur lié. Appelé par Intrusion._persist. */
   notifyServerChanged(srv) {
     if (!srv || !this.state || this.state.serverId !== srv.id) return;
-    EncounterRenderer.renderMatrix(srv, this.matrixState());
+    // K4 : si des CI de ce serveur sont dans l'init, leur état (moniteur,
+    // détruite) a pu changer → re-rendre toute la scène (liste + jetons +
+    // fiche active), pas seulement le bouton. _render rafraîchit aussi le
+    // tiroir en fin de parcours.
+    if (this.state.combatants.some((c) => c.kind === "matrix")) this._render();
+    else EncounterRenderer.renderMatrix(srv, this.matrixState(), this._launchedICKeys());
   },
   /** Rendu complet (liste, fiche du combattant actif, résumé sidebar) —
       factorisé pour être appelable aussi bien après un commit qu'au
@@ -699,7 +812,7 @@ const Encounter = {
     EncounterRenderer.render(this.state, rows, model);
     EncounterRenderer.renderActiveCard(rows, this.state, model);
     EncounterRenderer.renderSidebar(this.state, rows, model);
-    EncounterRenderer.renderMatrix(srv, this.matrixState());
+    EncounterRenderer.renderMatrix(srv, this.matrixState(), this._launchedICKeys());
   },
   _commit() {
     this.save();
@@ -835,6 +948,12 @@ const Encounter = {
             break;
           case "unlink-server":
             this.unlinkServer();
+            break;
+          case "launch-ic":
+            // K4 : « ⚔ Init » d'une CI du tiroir → elle rejoint l'ordre.
+            // Les autres data-action du tiroir (next-turn, ic-box…) sont
+            // gérées par la délégation de Servers._wire (contenu réutilisé).
+            this.launchIC(el.dataset.id, el.dataset.k);
             break;
         }
       });

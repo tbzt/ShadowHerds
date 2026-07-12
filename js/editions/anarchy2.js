@@ -146,6 +146,12 @@ const EditionAnarchy2 = {
   initiativeFor() {
     return null;
   },
+  /** K4 : spec d'un combattant CI lancé dans l'initiative. Anarchy n'a pas
+      d'initiative chiffrée (ordre narratif) : jeton narratif sans init, comme
+      les PNJ Anarchy. narrative:true → Encounter n'appelle pas Dice. */
+  icCombatant(ic) {
+    return { name: ic.label, narrative: true };
+  },
   /** Règles de round pour le tracker de combat. Anarchy 2.0 : pas d'initiative
       chiffrée, l'ordre est narratif (combativité, cf. p.180). narrative:true →
       le tracker passe en mode dépouillé (tap-to-grise), sans init/tri/réordre. */
