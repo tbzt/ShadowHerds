@@ -11,7 +11,7 @@
 const Encounter = {
   _KEY: "encounter_current",
   _empty() {
-    return { round: 1, pass: 1, turnIndex: 0, combatants: [] };
+    return { round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null };
   },
 
   state: null,
@@ -21,6 +21,8 @@ const Encounter = {
     this.state = Storage.get(this._KEY, null) || this._empty();
     // Rétro-compat : scènes persistées avant l'ajout des passes d'initiative.
     if (this.state.pass == null) this.state.pass = 1;
+    // Rétro-compat K3 : scènes persistées avant le lien serveur (§ Matrice).
+    if (this.state.serverId === undefined) this.state.serverId = null;
     // La sidebar doit refléter la scène dès le chargement de l'édition, pas
     // seulement à l'ouverture du tracker — reset de la fiche active d'une
     // édition à l'autre (les pnjId ne collisionnent jamais entre éditions,
@@ -515,6 +517,97 @@ const Encounter = {
     );
   },
 
+  /* ---- Matrice contextuelle (K3) : un seul serveur lié à la scène ----
+     state.serverId vit dans la scène déjà persistée (encounter_current,
+     prohibition n°2 — aucune nouvelle clé Storage). Le contenu du tiroir
+     (CI, surveillance, jets) reste entièrement porté par Intrusion/
+     ServerRenderer : ce module ne fait que lier/délier et dériver l'état
+     0-3 affiché sur le bouton de la barre pouce. */
+  _linkedServer() {
+    return this.state.serverId ? Servers.find(this.state.serverId) : null;
+  },
+
+  /** État Matrice dérivé (0 absente · 1 liée · 2 en alerte · 3 CI en jeu),
+      recalculé à chaque rendu — jamais persisté séparément. */
+  matrixState() {
+    const srv = this._linkedServer();
+    if (!srv) return 0;
+    const intr = srv.intrusion;
+    if (!intr) return 1;
+    const activeIC = Object.values(intr.ics || {}).filter((s) => s.active && !s.down).length;
+    if (activeIC > 0) return 3;
+    if (intr.alerted) return 2;
+    return 1;
+  },
+
+  /** Serveurs proposables à la liaison (porte 1, picker) : tous sauf celui
+      déjà lié (le retaper serait un no-op). */
+  _serverCandidates() {
+    return Servers.data.all.filter((s) => s.id !== this.state.serverId);
+  },
+
+  /** Lie un serveur à la scène (portes K3 : picker, « ⚔ Envoyer au combat »,
+      implicite en K4). Confirmation seulement si un autre serveur est déjà
+      lié avec une CI en jeu (remplacement, un seul serveur en V1). */
+  async linkServer(id) {
+    if (!id || this.state.serverId === id) return;
+    if (this.state.serverId && this.matrixState() === 3) {
+      const ok = await Dialog.confirm({
+        title: "Remplacer le serveur lié",
+        message: "Une CI est en jeu sur le serveur actuellement lié à la scène. Le remplacer par ce nouveau serveur ?",
+        confirmLabel: "Remplacer",
+        danger: true,
+      });
+      if (!ok) return;
+    }
+    this.state.serverId = id;
+    // Garantit srv.intrusion pour le tiroir (mutation légitime d'une action,
+    // pas d'un rendu) — même accesseur que le panneau Serveurs, rien de dupliqué.
+    Intrusion._get(id);
+    this._commit();
+    toast("Serveur lié à la scène.");
+  },
+
+  /** Délie le serveur courant (tiroir uniquement, cf. plan) — confirmation
+      si une CI est en jeu. */
+  async unlinkServer() {
+    if (!this.state.serverId) return;
+    if (this.matrixState() === 3) {
+      const ok = await Dialog.confirm({
+        title: "Délier le serveur",
+        message: "Une CI est en jeu sur ce serveur. Le délier de la scène quand même ?",
+        confirmLabel: "Délier",
+        danger: true,
+      });
+      if (!ok) return;
+    }
+    this.state.serverId = null;
+    this._commit();
+    this.closeMatrixDrawer();
+  },
+
+  toggleMatrixDrawer() {
+    const overlay = document.getElementById("matrix-drawer-overlay");
+    if (!overlay) return;
+    if (overlay.classList.contains("open")) this.closeMatrixDrawer();
+    else this.openMatrixDrawer();
+  },
+  /** Ouverture/fermeture en deux classes (comme #dice-sheet-overlay) : .open
+      pose display:flex, .show (au rAF suivant) déclenche la transition —
+      sans ce décalage, la feuille apparaîtrait déjà translatée à 0. */
+  openMatrixDrawer() {
+    const overlay = document.getElementById("matrix-drawer-overlay");
+    if (!overlay) return;
+    overlay.classList.add("open");
+    requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add("show")));
+  },
+  closeMatrixDrawer() {
+    const overlay = document.getElementById("matrix-drawer-overlay");
+    if (!overlay || !overlay.classList.contains("open")) return;
+    overlay.classList.remove("show");
+    setTimeout(() => overlay.classList.remove("open"), 220);
+  },
+
   /* ---- Rendu ---- */
   _rows() {
     const rows = this.state.combatants.map((c) => ({
@@ -576,6 +669,16 @@ const Encounter = {
     if (!this.state.combatants.some((c) => c.pnjId === pnj.id)) return;
     this._render();
   },
+
+  /** K3 : re-rend le bouton/tiroir Matrice quand le serveur lié change
+      hors du cycle de commit d'Encounter — les actions du tiroir
+      (next-turn, ic-box, roll-ic…) passent par Intrusion._persist, pas par
+      Encounter._commit. Même garde que notifyPnjChanged : no-op si ce
+      n'est pas le serveur lié. Appelé par Intrusion._persist. */
+  notifyServerChanged(srv) {
+    if (!srv || !this.state || this.state.serverId !== srv.id) return;
+    EncounterRenderer.renderMatrix(srv, this.matrixState());
+  },
   /** Rendu complet (liste, fiche du combattant actif, résumé sidebar) —
       factorisé pour être appelable aussi bien après un commit qu'au
       chargement initial de l'édition (sidebar à jour sans ouvrir le
@@ -583,9 +686,20 @@ const Encounter = {
   _render() {
     const rows = this._rows();
     const model = this._model();
+    // K3 : auto-guérison si le serveur lié a été supprimé entre-temps (ex.
+    // depuis le panneau Serveurs) — jamais de référence pendante.
+    if (this.state.serverId && !Servers.find(this.state.serverId)) {
+      this.state.serverId = null;
+      this.save();
+    }
+    // Garantit srv.intrusion avant le rendu (Intrusion._get, mutation
+    // idempotente) sans jamais faire lire/muter Servers à EncounterRenderer
+    // (qui reste un rendu pur — reçoit le serveur déjà résolu).
+    const srv = this.state.serverId ? Intrusion._get(this.state.serverId) : null;
     EncounterRenderer.render(this.state, rows, model);
     EncounterRenderer.renderActiveCard(rows, this.state, model);
     EncounterRenderer.renderSidebar(this.state, rows, model);
+    EncounterRenderer.renderMatrix(srv, this.matrixState());
   },
   _commit() {
     this.save();
@@ -597,14 +711,14 @@ const Encounter = {
       la liste des candidats à chaque commit inutilement. */
   _renderPicker() {
     const panel = document.getElementById("encounter-add-panel");
-    if (panel && !panel.hidden) EncounterRenderer.renderPicker(this._candidates());
+    if (panel && !panel.hidden) EncounterRenderer.renderPicker(this._candidates(), this._serverCandidates());
   },
 
   toggleAddPicker() {
     const panel = document.getElementById("encounter-add-panel");
     if (!panel) return;
     panel.hidden = !panel.hidden;
-    if (!panel.hidden) EncounterRenderer.renderPicker(this._candidates());
+    if (!panel.hidden) EncounterRenderer.renderPicker(this._candidates(), this._serverCandidates());
   },
 
   /* ---- Overlay ---- */
@@ -706,6 +820,26 @@ const Encounter = {
 
     this._initDrag(overlay);
 
+    // K3 : le tiroir Matrice est hors de #encounter-overlay (overlay séparé,
+    // cf. index.html) — Servers._wire() y pose sa propre délégation pour le
+    // contenu réutilisé d'intrusionPanel ; ici seulement les 2 actions
+    // propres à Encounter (fermer, délier).
+    const matrixDrawer = document.getElementById("matrix-drawer-overlay");
+    if (matrixDrawer) {
+      matrixDrawer.addEventListener("click", (e) => {
+        const el = e.target.closest("[data-action]");
+        if (!el) return;
+        switch (el.dataset.action) {
+          case "close-matrix-drawer":
+            this.closeMatrixDrawer();
+            break;
+          case "unlink-server":
+            this.unlinkServer();
+            break;
+        }
+      });
+    }
+
     overlay.addEventListener("click", (e) => {
       // La poignée n'a pas de data-action propre : sans cette garde, un clic
       // dessus remonterait à .encounter-nrow (data-action="narrative-toggle")
@@ -743,6 +877,15 @@ const Encounter = {
           break;
         case "add-pj":
           this.addPJ();
+          break;
+        case "link-server":
+          // K3, porte 1 (picker) : lie un serveur à la scène, remplace
+          // aucun combattant — même panneau, destination différente.
+          this.linkServer(id);
+          this._renderPicker();
+          break;
+        case "toggle-matrix-drawer":
+          this.toggleMatrixDrawer();
           break;
         case "next-turn":
           this.nextTurn();

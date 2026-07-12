@@ -413,7 +413,12 @@ const Servers = Object.assign(
       const panel = document.getElementById("app");
       if (!panel) return;
 
-      panel.addEventListener("click", (e) => {
+      // K3 : le tiroir Matrice du tracker de combat (cf. Encounter) est hors
+      // de #app (overlay au même niveau qu'#encounter-overlay) mais réutilise
+      // verbatim ServerRenderer.intrusionPanel — même délégation posée sur
+      // les deux conteneurs plutôt qu'une 2ᵉ copie du switch (audit
+      // intrusion.js pré-K3 : la logique existait déjà, on ne la duplique pas).
+      const onClick = (e) => {
         const el = e.target.closest("[data-action]");
         if (!el) return;
         const id = el.dataset.id;
@@ -506,8 +511,15 @@ const Servers = Object.assign(
           case "reboot-decker":
             Intrusion.rebootDecker(id);
             break;
+          case "send-to-encounter":
+            Encounter.linkServer(id);
+            Encounter.open();
+            break;
         }
-      });
+      };
+      panel.addEventListener("click", onClick);
+      const matrixDrawer = document.getElementById("matrix-drawer-overlay");
+      if (matrixDrawer) matrixDrawer.addEventListener("click", onClick);
 
       panel.addEventListener("change", (e) => {
         const el = e.target.closest('[data-action="edit-note"]');

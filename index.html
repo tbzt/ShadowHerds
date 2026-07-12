@@ -8,7 +8,7 @@
   <!-- Fontes auto-hébergées (CH-V10) : l'app reste fonctionnelle et fidèle
        à ses identités d'édition sans réseau (table de jeu = contexte nominal). -->
   <link rel="stylesheet" href="css/fonts.css?v=1">
-  <link rel="stylesheet" href="css/base.css?v=100">
+  <link rel="stylesheet" href="css/base.css?v=101">
   <link rel="stylesheet" href="css/print.css?v=5">
   <!-- Thèmes d'édition chargés à la sélection (App._loadEditionAssets, CH-P1b). -->
 </head>
@@ -598,6 +598,9 @@
           <!-- Action primaire de la boucle : collée en pied de colonne (zone
                pouce sur mobile), séparée des actions secondaires ci-dessus. -->
           <div class="encounter-turn-bar">
+            <!-- K3 : bouton Matrice contextuel (0 absent/masqué → 3 CI en jeu, cf.
+                 Encounter.matrixState/EncounterRenderer.renderMatrix). -->
+            <button class="btn-secondary encounter-matrix-btn" id="encounter-matrix-btn" data-action="toggle-matrix-drawer" hidden></button>
             <button class="btn-primary" data-action="next-turn">▸ Tour suivant</button>
             <!-- Mode narratif (Anarchy) : pas d'ordre de tour → l'action primaire
                  est « Round suivant » (rallume tous les combattants). -->
@@ -607,6 +610,23 @@
         <!-- Fiche du combattant actif (cf. EncounterRenderer.renderActiveCard) : masquée pour un PJ ad-hoc ou une scène vide. -->
         <div id="encounter-active-card" class="encounter-active-card" hidden></div>
       </div>
+    </div>
+  </div>
+
+  <!-- TIROIR MATRICE CONTEXTUEL (K3) — hors de #encounter-overlay : réutilise
+       verbatim le contenu de ServerRenderer.intrusionPanel, dont les actions
+       (next-turn, ic-box, roll-ic…) sont déjà déléguées par Servers._wire()
+       sur #app. Servers._wire() pose la même délégation sur cet overlay
+       plutôt que de dupliquer le switch (cf. audit intrusion.js). -->
+  <div id="matrix-drawer-overlay" role="dialog" aria-modal="false" aria-label="Matrice — serveur lié à la scène">
+    <div id="matrix-drawer">
+      <div class="dice-sheet-handle"></div>
+      <div class="matrix-drawer-header">
+        <span class="matrix-drawer-title" id="matrix-drawer-title">Matrice</span>
+        <button class="btn-icon-tiny" data-action="unlink-server" title="Délier le serveur de la scène">Délier</button>
+        <button class="modal-close" data-action="close-matrix-drawer" aria-label="Fermer">✕</button>
+      </div>
+      <div id="matrix-drawer-body"></div>
     </div>
   </div>
 
@@ -711,10 +731,10 @@
   <script defer src="js/widgets/collection.js?v=9"></script>
   <script defer src="js/widgets/bulkbar.js?v=2"></script>
   <script defer src="js/widgets/selectionmode.js?v=1"></script>
-  <script defer src="js/widgets/serverrenderer.js?v=6"></script>
-  <script defer src="js/widgets/encounterrenderer.js?v=17"></script>
-  <script defer src="js/controllers/servers.js?v=950"></script>
-  <script defer src="js/controllers/intrusion.js?v=2"></script>
+  <script defer src="js/widgets/serverrenderer.js?v=7"></script>
+  <script defer src="js/widgets/encounterrenderer.js?v=18"></script>
+  <script defer src="js/controllers/servers.js?v=951"></script>
+  <script defer src="js/controllers/intrusion.js?v=3"></script>
   <script defer src="js/widgets/dicelog.js?v=4"></script>
   <script defer src="js/widgets/notepad.js?v=1"></script>
   <script defer src="js/widgets/opposedroll.js?v=3"></script>
@@ -735,7 +755,7 @@
   <script defer src="js/widgets/pinrow.js?v=1"></script>
   <script defer src="js/widgets/onboarding.js?v=1"></script>
   <script defer src="js/controllers/portrait.js?v=11"></script>
-  <script defer src="js/controllers/encounter.js?v=19"></script>
+  <script defer src="js/controllers/encounter.js?v=20"></script>
   <script defer src="js/controllers/editmodal.js?v=951"></script>
   <script defer src="js/controllers/contactgen.js?v=951"></script>
   <script defer src="js/controllers/contacts.js?v=950"></script>

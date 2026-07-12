@@ -3229,6 +3229,36 @@ body.selecting .bulk-selectable .contact-header-row {
   min-height: 44px;
 }
 
+/* ---- K3 : bouton Matrice (barre pouce) — 4 états, canal --accent2 ----
+   0 absent (masqué, [hidden]) · 1 liée (discret + initiale) · 2 en alerte
+   (teinte accent2 + point) · 3 CI en jeu (compteur ×N). Jamais flex:1 (les
+   boutons primaires gardent la priorité de largeur). */
+.encounter-matrix-btn {
+  flex: none;
+  min-height: 44px;
+  border-color: var(--accent2);
+  color: var(--accent2);
+}
+.encounter-matrix-btn.is-alert {
+  background: color-mix(in srgb, var(--accent2) 16%, var(--bg-card));
+}
+.encounter-matrix-btn.is-ic {
+  background: color-mix(in srgb, var(--accent2) 28%, var(--bg-card));
+  font-weight: 700;
+}
+.matrix-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent2);
+  margin-left: 0.2rem;
+}
+.matrix-ic-count {
+  font-family: var(--font-mono);
+  margin-left: 0.2rem;
+}
+
 /* ---- Mode narratif (Anarchy) : tracker dépouillé ----
    Piloté par .is-narrative (posé selon combatModel.narrative). On masque les
    actions chiffrées (init/tri) et « Tour suivant » (pas d'ordre) ; l'action
@@ -3668,6 +3698,62 @@ body.selecting .bulk-selectable .contact-header-row {
 }
 .encounter-active-note .encounter-note {
   width: 100%;
+}
+
+/* ---- K3 : tiroir Matrice contextuel — chrome copié de #dice-sheet
+   (feuille basse, --ease-emphasized) ; canal --accent2 (bordure/titre) au
+   lieu de --accent, pour distinguer le calque Matrice du reste du cockpit.
+   Réutilise verbatim ServerRenderer.intrusionPanel (contenu), donc les
+   actions internes (next-turn, ic-box, roll-ic…) restent celles de
+   Servers/Intrusion — cf. la délégation dédiée posée sur cet overlay par
+   Servers._wire() (audit intrusion.js pré-K3 : pas de logique dupliquée). */
+#matrix-drawer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-command);
+  background: rgba(0, 0, 0, 0.55);
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--dur-base) ease;
+}
+#matrix-drawer-overlay.open {
+  display: flex;
+}
+#matrix-drawer-overlay.show {
+  opacity: 1;
+}
+#matrix-drawer {
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border-top: 2px solid var(--accent2);
+  border-radius: 12px 12px 0 0;
+  padding: 0.6rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  transform: translateY(100%);
+  transition: transform var(--dur-slow) var(--ease-emphasized);
+}
+#matrix-drawer-overlay.show #matrix-drawer {
+  transform: translateY(0);
+}
+.matrix-drawer-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+.matrix-drawer-title {
+  flex: 1;
+  font-weight: 700;
+  color: var(--accent2);
+}
+.matrix-drawer-stats {
+  margin-bottom: var(--sp-3);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--border);
 }
 
 /* ---- Résumé de la scène de combat dans la sidebar ---- */

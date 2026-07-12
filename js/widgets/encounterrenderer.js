@@ -341,8 +341,10 @@ const EncounterRenderer = {
   _pickerQuery: "",
 
   /** Panneau d'ajout : PJ manuel + champ de filtre + entités résolvables non
-      encore en scène (générées, Ombres, spiders). candidates: [pnj]. */
-  renderPicker(candidates) {
+      encore en scène (générées, Ombres, spiders) + serveurs (K3, porte 1 de
+      liaison Matrice — même panneau, destination différente : state.serverId
+      plutôt qu'un combattant). candidates: [pnj], servers: [srv]. */
+  renderPicker(candidates, servers) {
     const panel = document.getElementById("encounter-add-panel");
     if (!panel) return;
 
@@ -359,6 +361,17 @@ const EncounterRenderer = {
       })
       .join("");
 
+    const serverRows = (servers || [])
+      .map((s) => {
+        const norm = Utils.escHtml(Utils.searchNorm((s.name || "") + " serveur"));
+        return `<button class="encounter-candidate" data-action="link-server" data-id="${s.id}" data-name="${norm}">
+          <span class="encounter-kind">Serveur</span>
+          <span class="encounter-candidate-name">${Utils.escHtml(s.name || "Sans nom")}</span>
+          <span class="encounter-candidate-add">⚡</span>
+        </button>`;
+      })
+      .join("");
+
     panel.innerHTML = `<div class="encounter-add-actions">
         <button class="btn-secondary btn-small" data-action="add-pj">＋ Ajouter un PJ</button>
         <input type="search" class="encounter-picker-search" data-action="filter-candidates"
@@ -366,7 +379,12 @@ const EncounterRenderer = {
           aria-label="Filtrer les combattants à ajouter">
       </div>
       <div class="encounter-candidates">
-        ${rows || `<div class="empty-state"><span class="empty-state-title">Aucune entité disponible</span>Générez ou sauvegardez des PNJ, créatures ou esprits pour les ajouter ici.</div>`}
+        ${rows}${serverRows}
+        ${
+          rows || serverRows
+            ? ""
+            : `<div class="empty-state"><span class="empty-state-title">Aucune entité disponible</span>Générez ou sauvegardez des PNJ, créatures ou esprits pour les ajouter ici.</div>`
+        }
         <div class="encounter-picker-empty empty-state" style="display:none"><span class="empty-state-title">Aucun résultat</span>Aucune entité ne correspond à ce filtre.</div>
       </div>`;
 
@@ -516,5 +534,41 @@ const EncounterRenderer = {
       if (nameEl) nameEl.textContent = active.pnj.name || "—";
       if (kindEl) kindEl.textContent = this._kindLabel(active);
     }
+  },
+
+  /** Bouton Matrice (barre pouce) + tiroir (K3). srv : serveur déjà résolu
+      par Encounter (jamais lu ici — rendu pur), ou null si aucun lien.
+      level : état dérivé 0-3 (Encounter.matrixState). Le contenu du tiroir
+      réutilise verbatim ServerRenderer.intrusionPanel/matrixDrawerHeader —
+      rien n'est recalculé ici (cf. audit intrusion.js pré-K3). */
+  renderMatrix(srv, level) {
+    const btn = document.getElementById("encounter-matrix-btn");
+    if (btn) {
+      btn.hidden = level === 0;
+      btn.classList.toggle("is-alert", level === 2);
+      btn.classList.toggle("is-ic", level === 3);
+      if (srv) {
+        const activeCount = srv.intrusion
+          ? Object.values(srv.intrusion.ics || {}).filter((s) => s.active && !s.down).length
+          : 0;
+        const initial = Utils.escHtml((srv.name || "?").slice(0, 1));
+        btn.innerHTML =
+          level === 3
+            ? `⚡ Matrice <span class="matrix-ic-count">×${activeCount}</span>`
+            : level === 2
+              ? `⚡ Matrice <span class="matrix-dot" aria-hidden="true"></span>`
+              : `⚡ ${initial}`;
+        btn.title = "Matrice — " + srv.name;
+      }
+    }
+
+    const title = document.getElementById("matrix-drawer-title");
+    if (title) title.textContent = srv ? "Matrice — " + srv.name : "Matrice";
+
+    const body = document.getElementById("matrix-drawer-body");
+    if (!body) return;
+    body.innerHTML = srv
+      ? ServerRenderer.matrixDrawerHeader(srv) + ServerRenderer.intrusionPanel(srv, {})
+      : "";
   },
 };

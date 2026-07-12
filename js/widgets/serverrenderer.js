@@ -61,6 +61,45 @@ const ServerRenderer = {
       </div>`;
   },
 
+  /** Badges + seuils du serveur (indice, attributs ou régime sans attrs) —
+      extrait de card() pour être réutilisé tel quel par le tiroir Matrice
+      du tracker (K3, matrixDrawerHeader) : même contenu, pas une deuxième
+      version. Dispatch structurel accepté (issue #14) : deux blocs complets
+      (badges+seuils propres au régime vs Matrix.ATTR_KEYS+icThresholdsText
+      SR5/SR6), pas une valeur scalaire — cf. Matrix.hasAttrs(). */
+  statsHtml(srv) {
+    const esc = CardRenderer._esc.bind(CardRenderer);
+    if (!Matrix.use(srv.edition).hasAttrs()) {
+      const M = Matrix.use(srv.edition);
+      const badges = M.serverAttrs(srv)
+        .map((a) => `<span class="server-attr"><b>${a.value}</b>${esc(a.label)}</span>`)
+        .join("");
+      return `
+        <div class="server-attrs">${badges}</div>
+        <div class="server-thresholds">${M.thresholdsText(srv)}</div>`;
+    }
+    const a = srv.attrs || {};
+    return `
+      <div class="server-attrs">
+        <span class="server-attr"><b>${srv.indice}</b>Indice</span>
+        ${Matrix.ATTR_KEYS
+          .map((ak) => `<span class="server-attr"><b>${a[ak.key] ?? "?"}</b>${ak.badge}</span>`)
+          .join("")}
+      </div>
+      <div class="server-thresholds">CI : ${Matrix.use(srv.edition).icThresholdsText(srv)}</div>`;
+  },
+
+  /** En-tête du tiroir Matrice (K3, cf. Encounter.state.serverId) : profil +
+      statsHtml, au-dessus du bloc intrusion complet (intrusionPanel, réutilisé
+      verbatim). Pas une 2ᵉ carte serveur — juste le contexte utile en combat. */
+  matrixDrawerHeader(srv) {
+    const esc = CardRenderer._esc.bind(CardRenderer);
+    return `<div class="matrix-drawer-stats">
+      <div class="server-profile">${esc(srv.profile || "")}${srv.secPhys ? " · sécurité physique (+1)" : ""}</div>
+      ${this.statsHtml(srv)}
+    </div>`;
+  },
+
   card(srv, { editing, icMonitorSize } = {}) {
     const esc = CardRenderer._esc.bind(CardRenderer);
     const card = document.createElement("div");
@@ -77,26 +116,7 @@ const ServerRenderer = {
     // hasAttrs:false n'est plus mono-édition (anarchy1 ≠ anarchy2, textes
     // de seuils différents) : badges/texte lus via matrixModel.serverAttrs/
     // thresholdsText, jamais codés en dur ici.
-    let statsHtml;
-    if (!Matrix.use(srv.edition).hasAttrs()) {
-      const M = Matrix.use(srv.edition);
-      const badges = M.serverAttrs(srv)
-        .map((a) => `<span class="server-attr"><b>${a.value}</b>${esc(a.label)}</span>`)
-        .join("");
-      statsHtml = `
-        <div class="server-attrs">${badges}</div>
-        <div class="server-thresholds">${M.thresholdsText(srv)}</div>`;
-    } else {
-      const a = srv.attrs || {};
-      statsHtml = `
-        <div class="server-attrs">
-          <span class="server-attr"><b>${srv.indice}</b>Indice</span>
-          ${Matrix.ATTR_KEYS
-            .map((ak) => `<span class="server-attr"><b>${a[ak.key] ?? "?"}</b>${ak.badge}</span>`)
-            .join("")}
-        </div>
-        <div class="server-thresholds">CI : ${Matrix.use(srv.edition).icThresholdsText(srv)}</div>`;
-    }
+    const statsHtml = this.statsHtml(srv);
 
     /* -- chips CI -- */
     const chips = (srv.icList || [])
@@ -133,6 +153,9 @@ const ServerRenderer = {
       : [
           { kind: "secondary", label: "Éditer", attrs: `data-action="toggle-edit" data-id="${srv.id}"` },
           { kind: "primary", icon: "⚡", label: intr.open ? "Fermer l'intrusion" : "Intrusion", attrs: `data-action="toggle-intrusion" data-id="${srv.id}"` },
+          // K3 : calque du « ⚔ Combat » des PNJ — porte 2 de liaison au tiroir
+          // Matrice (Encounter.linkServer), même geste que pour un combattant.
+          { kind: "menu", label: "⚔ Envoyer au combat", attrs: `data-action="send-to-encounter" data-id="${srv.id}"` },
           srv.spider
             ? { kind: "menu", label: "Retirer le spider", attrs: `data-action="remove-spider" data-id="${srv.id}"` }
             : { kind: "menu", label: "Ajouter un spider", attrs: `data-action="add-spider" data-id="${srv.id}"` },

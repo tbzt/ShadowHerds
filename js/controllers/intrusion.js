@@ -40,12 +40,23 @@ const Intrusion = {
     return srv;
   },
 
+  /** Persiste + rend le panneau Serveurs, comme chaque mutateur ci-dessous
+      faisait individuellement — factorisé pour ajouter un seul point de
+      rafraîchissement du tiroir Matrice (K3, Encounter) sans le dupliquer
+      15 fois. Même garde `typeof Encounter !== "undefined"` que
+      DiceRoller/UI.toggleMonitor (app.js, ui.js) pour notifier un module
+      qui charge après celui-ci sans dépendance dure dans ce sens. */
+  _persist(srv) {
+    Servers.save();
+    Servers.render();
+    if (typeof Encounter !== "undefined") Encounter.notifyServerChanged(srv);
+  },
+
   toggleIntrusion(id) {
     const srv = this._get(id);
     if (!srv) return;
     srv.intrusion.open = !srv.intrusion.open;
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
   },
 
   /** L'alerte est donnée (la Patrouilleuse a repéré l'intrus). */
@@ -54,8 +65,7 @@ const Intrusion = {
     if (!srv) return;
     srv.intrusion.alerted = !srv.intrusion.alerted;
     if (srv.intrusion.alerted && srv.intrusion.turn === 0) srv.intrusion.turn = 1;
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
   },
 
   /** Tour suivant : déploie la prochaine CI (1/tour) + SS SR6. */
@@ -94,8 +104,7 @@ const Intrusion = {
         }
       }
     }
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
   },
 
   resetIntrusion(id) {
@@ -105,8 +114,7 @@ const Intrusion = {
     const open = srv.intrusion.open;
     srv.intrusion = this.newState();
     srv.intrusion.open = open;
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
   },
 
   /** Relance une CI détruite (dès le tour suivant, au choix du serveur). */
@@ -119,8 +127,7 @@ const Intrusion = {
       down: false,
       turn: srv.intrusion.turn,
     };
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
   },
 
   /** Clic sur une case du moniteur d'une CI. */
@@ -131,8 +138,7 @@ const Intrusion = {
     st.dmg = st.dmg === n ? n - 1 : n;
     const size = Servers.icMonitorSize(srv);
     st.down = st.dmg >= size;
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
   },
 
   /* ---- Jets des CI (SR5/SR6 — les glaces Anarchy ont des succès
@@ -180,8 +186,7 @@ const Intrusion = {
     const srv = this._get(id);
     if (!srv) return;
     srv.intrusion.marks = Utils.clamp(srv.intrusion.marks + delta, 0, 3);
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
   },
 
   /* ---- Score de Surveillance (SR5/SR6) ---- */
@@ -197,8 +202,7 @@ const Intrusion = {
     const srv = this._get(id);
     if (!srv) return;
     this._pushSS(srv, delta, label || "succès de la défense");
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
   },
 
   /** SR5 : +2D6 toutes les 15 minutes (jet réel, loggé au journal). */
@@ -209,8 +213,7 @@ const Intrusion = {
     DiceRoller.show(res, { label: "Surveillance DIEU : +2D6 SS", who: srv.name });
     srv.intrusion.lastRollT = Date.now();
     this._pushSS(srv, res.total, `+2D6 (temps) : [${res.faces.join(", ")}]`);
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
   },
 
   undoSS(id) {
@@ -218,8 +221,7 @@ const Intrusion = {
     if (!srv || !srv.intrusion.ssLog.length) return;
     const last = srv.intrusion.ssLog.shift();
     srv.intrusion.ss = Math.max(0, srv.intrusion.ss - last.d);
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
   },
 
   /** Reboot du decker : SS et marks repartent à zéro. */
@@ -231,8 +233,7 @@ const Intrusion = {
     srv.intrusion.ssLog = [];
     srv.intrusion.marks = 0;
     srv.intrusion.lastRollT = 0;
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
     toast("SS remis à zéro (reboot : perte des marks, choc d'éjection en RV).");
   },
 
@@ -242,8 +243,7 @@ const Intrusion = {
     if (!srv) return;
     const k = kind === "admin" ? "illAdmin" : "illUser";
     srv.intrusion[k] = Utils.clamp(srv.intrusion[k] + delta, 0, 9);
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
   },
 
   /* ---- Surveillance du DIEU (Anarchy p.218) ---- */
@@ -252,16 +252,14 @@ const Intrusion = {
     if (!srv) return;
     const k = kind === "critical" ? "critical" : "minor";
     srv.intrusion[k] = Utils.clamp(srv.intrusion[k] + delta, 0, 9);
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
   },
 
   disaster(id) {
     const srv = this._get(id);
     if (!srv) return;
     srv.intrusion.converged = !srv.intrusion.converged;
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
   },
 
   /** Anarchy : reboot + 1 h hors ligne — les malus disparaissent. */
@@ -271,8 +269,7 @@ const Intrusion = {
     srv.intrusion.minor = 0;
     srv.intrusion.critical = 0;
     srv.intrusion.converged = false;
-    Servers.save();
-    Servers.render();
+    this._persist(srv);
     toast("Reboot + 1 h hors ligne : malus DIEU effacés, tous les accès sont perdus.");
   },
 };
