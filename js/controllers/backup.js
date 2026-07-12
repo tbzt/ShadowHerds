@@ -28,6 +28,7 @@ const Backup = {
     "contacts_groups",
     "servers_all",
     "servers_groups",
+    "dossiers", // arbre de dossiers (structure {id,name,parentId}) — CH sync
   ],
 
   /* ---- Construction du paquet exportable ---- */
@@ -198,8 +199,8 @@ const Backup = {
   _mergeEdition(edition, incoming) {
     // TODO: reads internal structures {all, groups} of Shadows, ContactsBook, Servers
     // This tight coupling should be addressed in sprint 3 (linked entities roadmap)
-    // PNJ et contacts : fusion par id
-    for (const listKey of ["shadows_all", "contacts_all", "servers_all"]) {
+    // PNJ, contacts, personnages, dossiers : fusion par id (chaque élément a un id)
+    for (const listKey of ["shadows_all", "contacts_all", "servers_all", "characters_all", "dossiers"]) {
       if (!Array.isArray(incoming[listKey])) continue;
       const current = this._readRaw(edition, listKey, []);
       const byId = new Set(current.map((x) => x && x.id));
@@ -213,7 +214,7 @@ const Backup = {
     }
 
     // Groupes : fusion par clé ; les membres (tableaux d'ids) sont unifiés
-    for (const groupKey of ["shadows_groups", "contacts_groups", "servers_groups"]) {
+    for (const groupKey of ["shadows_groups", "contacts_groups", "servers_groups", "characters_groups"]) {
       if (!incoming[groupKey] || typeof incoming[groupKey] !== "object") continue;
       const current = this._readRaw(edition, groupKey, {});
       for (const [gname, members] of Object.entries(incoming[groupKey])) {
@@ -229,11 +230,15 @@ const Backup = {
     }
   },
 
-  /** Recharge Shadows et Contacts en mémoire pour refléter l'import. */
+  /** Recharge les collections en mémoire pour refléter l'import/la synchro. */
   _reloadActive() {
     if (Shadows.load) {
       Shadows.load();
       if (Shadows.render) Shadows.render();
+    }
+    if (typeof Characters !== "undefined" && Characters.load) {
+      Characters.load();
+      if (Characters.render) Characters.render();
     }
     if (ContactsBook.load) {
       ContactsBook.load();
@@ -243,6 +248,9 @@ const Backup = {
       Servers.load();
       if (Servers.render) Servers.render();
     }
+    // Dossiers (arbre de dossiers) : recharger la structure + rafraîchir la barre.
+    if (typeof Dossiers !== "undefined" && Dossiers.load) Dossiers.load();
+    if (typeof DossierBar !== "undefined" && DossierBar.refresh) DossierBar.refresh();
   },
 
   /* ========================================================
