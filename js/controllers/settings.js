@@ -200,7 +200,7 @@ const Settings = {
   },
   _syncReminderHTML(st) {
     if (!st.lastAt) return `<span>Aucune sauvegarde effectuée pour l'instant.</span>`;
-    const days = Math.floor((Date.now() - new Date(st.lastAt).getTime()) / 86400000);
+    const days = Sync.daysSinceSave();
     const txt =
       days <= 0 ? "aujourd'hui" : days === 1 ? "hier" : `il y a ${days} jours`;
     return `<span>Dernière sauvegarde : ${txt}.</span>`;

@@ -270,6 +270,14 @@ const App = {
 
   /* ---- Changer d'édition ---- */
   changeEdition() {
+    // Rassure au moment précis du changement (FIELD_STUDY REC-3) : le
+    // cloisonnement des données par édition (storage.js) surprend sans
+    // annonce — deux paniques et une perte de données réelles dans l'étude
+    // terrain venaient de là, pas d'un bug.
+    const badgeLabels = { sr5: "SR5", sr6: "SR6", anarchy2: "Anarchy 2", anarchy1: "Anarchy 1" };
+    const label = badgeLabels[this.edition] || this.edition;
+    toast(`Chaque édition a sa propre bibliothèque — vos fiches ${label} vous attendent séparément.`, "info");
+
     Encounter.close();
 
     // Reset UI

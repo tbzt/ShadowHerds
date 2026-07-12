@@ -22,6 +22,11 @@ const Hub = {
   _type: "all", // all | pnj | contact | server
   _filter: "", // texte de recherche transverse (nom, archétype…)
   _wired: false,
+  // Bandeau de rappel de sauvegarde (F3) : masqué pour la session courante
+  // seulement (pas de Storage — réapparaît à la prochaine ouverture, comme
+  // le bandeau de reprise de brouillon de CharGen).
+  _saveReminderDismissed: false,
+  _SAVE_REMINDER_DAYS: 7,
 
   _typeDefs() {
     return [
@@ -43,9 +48,32 @@ const Hub = {
   },
 
   render() {
+    this._renderSaveReminder();
     this._renderChips();
     this._renderCreate();
     this._renderMain(); // met aussi le libellé à jour (compte affiché)
+  },
+
+  /** Bandeau discret (F3, FIELD_STUDY REC-3) : « le filet existe, il faut le
+      tendre avant la chute » — jamais sauvegardé, ou dernière sauvegarde trop
+      ancienne. Réutilise l'horodatage `lastAt` partagé avec la synchro
+      (Sync.daysSinceSave) et l'action backup-export déjà câblée (app.js). */
+  _renderSaveReminder() {
+    const box = document.getElementById("hub-save-reminder");
+    if (!box) return;
+    const days = Sync.daysSinceSave();
+    const stale = days === null || days >= this._SAVE_REMINDER_DAYS;
+    if (this._saveReminderDismissed || !stale) {
+      box.innerHTML = "";
+      return;
+    }
+    const txt =
+      days === null ? "Vous n'avez encore jamais sauvegardé vos fiches." : `Dernière sauvegarde : il y a ${days} jours.`;
+    box.innerHTML = `<div class="hub-save-reminder">
+      <span>${txt}</span>
+      <button class="btn-secondary btn-small" data-action="backup-export">⤓ Sauvegarder mes fiches</button>
+      <button class="btn-icon-tiny" data-hub data-action="dismiss-save-reminder" title="Masquer">✕</button>
+    </div>`;
   },
 
   // Chaque type de contenu → son écran de création dédié. En vue « Tout »
@@ -179,6 +207,10 @@ const Hub = {
       const el = e.target.closest("[data-hub][data-action]");
       if (!el) return;
       if (el.dataset.action === "hub-type") this.setType(el.dataset.type);
+      else if (el.dataset.action === "dismiss-save-reminder") {
+        this._saveReminderDismissed = true;
+        this._renderSaveReminder();
+      }
     });
 
     // Recherche transverse : debounce ~130 ms (aligné sur Collection) pour ne

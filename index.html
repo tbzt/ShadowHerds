@@ -8,7 +8,7 @@
   <!-- Fontes auto-hébergées (CH-V10) : l'app reste fonctionnelle et fidèle
        à ses identités d'édition sans réseau (table de jeu = contexte nominal). -->
   <link rel="stylesheet" href="css/fonts.css?v=1">
-  <link rel="stylesheet" href="css/base.css?v=86">
+  <link rel="stylesheet" href="css/base.css?v=87">
   <!-- Thèmes d'édition chargés à la sélection (App._loadEditionAssets, CH-P1b). -->
 </head>
 
@@ -275,6 +275,7 @@
         <!-- OMBRES PORTÉES — hub transverse (dossiers × types) -->
         <div class="panel active" id="panel-shadows">
           <div class="panel-title">Ombres portées<span class="panel-subtitle">vos PNJ, contacts et serveurs sauvegardés</span></div>
+          <div id="hub-save-reminder"></div>
           <div class="shadows-layout" data-sidebar="shadows">
             <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="shadows"></div>
             <!-- Rail de réouverture (visible quand repliée) -->
@@ -312,8 +313,8 @@
                      masqué en vue « Tout ». Seul chemin mobile vers Contacts/Serveurs. -->
                 <button class="btn-primary btn-small" id="hub-create-btn" data-action="show-panel" hidden>＋ Créer</button>
                 <button class="btn-secondary btn-small" data-action="encounter-open" title="Ouvrir le suivi de combat">⚔ Combat</button>
-                <button class="btn-secondary btn-small" data-action="backup-export" title="Exporter tous les PNJ et contacts (toutes éditions)">⤓ Exporter</button>
-                <button class="btn-secondary btn-small" data-action="backup-import" title="Importer depuis un fichier ou une URL">⤒ Importer</button>
+                <button class="btn-secondary btn-small" data-action="backup-export" title="Sauvegarder toutes vos fiches (PNJ et contacts, toutes éditions)">⤓ Sauvegarder</button>
+                <button class="btn-secondary btn-small" data-action="backup-import" title="Charger une sauvegarde depuis un fichier ou une URL">⤒ Charger</button>
               </div>
               <div id="hub-sections"></div>
             </div>
@@ -721,12 +722,12 @@
   <script defer src="js/controllers/contactgen.js?v=951"></script>
   <script defer src="js/controllers/contacts.js?v=950"></script>
   <script defer src="js/controllers/contactsbook.js?v=5"></script>
-  <script defer src="js/controllers/hub.js?v=10"></script>
-  <script defer src="js/controllers/settings.js?v=28"></script>
+  <script defer src="js/controllers/hub.js?v=11"></script>
+  <script defer src="js/controllers/settings.js?v=29"></script>
   <script defer src="js/controllers/backup.js?v=953"></script>
-  <script defer src="js/controllers/sync.js?v=2"></script>
+  <script defer src="js/controllers/sync.js?v=3"></script>
   <script defer src="js/controllers/foundryexport.js?v=4"></script>
-  <script defer src="js/app.js?v=964"></script>
+  <script defer src="js/app.js?v=965"></script>
 
 </body>
 

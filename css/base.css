@@ -7135,6 +7135,23 @@ input[type="range"]#risk-dice-slider {
 .cg-resume-banner span {
   flex: 1;
 }
+/* Rappel de sauvegarde (F3, Hub) : même registre discret que le bandeau de
+   reprise de brouillon (.cg-resume-banner) — pas de nouveau vocabulaire visuel. */
+.hub-save-reminder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  margin: 0 0 var(--sp-3);
+  border: 1px solid var(--accent2);
+  border-radius: 2px;
+  background: var(--glow);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+.hub-save-reminder span {
+  flex: 1;
+}
 .cg-narrative-field {
   display: flex;
   flex-direction: column;
