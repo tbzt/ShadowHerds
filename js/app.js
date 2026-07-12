@@ -385,6 +385,9 @@ document.addEventListener("DOMContentLoaded", () => {
       case "print-sheets":
         PrintSheet.print();
         break;
+      case "foundry-dossier":
+        FoundryExport.exportDossier();
+        break;
       case "backup-import":
         Backup.openImportDialog();
         break;

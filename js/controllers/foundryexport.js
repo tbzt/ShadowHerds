@@ -50,18 +50,12 @@ const FoundryExport = {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   },
 
-  /** Point d'entrée du bouton de carte (data-action="export-foundry"). */
-  exportPnj(id) {
-    const pnj = PnjLookup.find(id);
-    if (!pnj) {
-      toast("PNJ introuvable.", "warning");
-      return;
-    }
+  /** Construit et télécharge le(s) fichier(s) acteur d'UNE entité. Renvoie un
+      récap ({ ok, files, extras, unresolved }) sans toaster : les points
+      d'entrée (carte, dossier) décident du message. */
+  _exportEntity(pnj) {
     const cap = this._capabilityFor(pnj);
-    if (!cap) {
-      toast("Export Foundry indisponible pour cette édition.", "warning");
-      return;
-    }
+    if (!cap) return { ok: false, reason: "unsupported" };
 
     let actor, extras;
     this._session = [];
@@ -70,9 +64,8 @@ const FoundryExport = {
       extras = cap.buildVehicleActors ? cap.buildVehicleActors(pnj) || [] : [];
     } catch (e) {
       this._session = null;
-      Debug.warn("foundry", "buildActor a échoué", { id, error: e });
-      toast("Export impossible (données du PNJ incomplètes).", "danger");
-      return;
+      Debug.warn("foundry", "buildActor a échoué", { id: pnj.id, error: e });
+      return { ok: false, reason: "error" };
     }
     const unresolved = this._session;
     this._session = null;
@@ -80,19 +73,84 @@ const FoundryExport = {
     const base = cap.filename ? cap.filename(pnj) : "foundry-actor.json";
     this._download(actor, base);
     extras.forEach((extraActor, i) => {
-      const suffix = `-vehicule-${i + 1}`;
-      this._download(extraActor, base.replace(/\.json$/, `${suffix}.json`));
+      this._download(extraActor, base.replace(/\.json$/, `-vehicule-${i + 1}.json`));
     });
+    return { ok: true, files: 1 + extras.length, extras: extras.length, unresolved: unresolved.length };
+  },
 
-    const extraMsg = extras.length ? ` (+${extras.length} véhicule${extras.length > 1 ? "s" : ""} lié${extras.length > 1 ? "s" : ""})` : "";
-    if (unresolved.length) {
-      // Récap groupé après le détail ligne-à-ligne déjà émis par note().
-      console.warn(
-        `[foundry-export] « ${pnj.name} » (${pnj.edition}) : ${unresolved.length} mapping(s) non résolu(s) — export tout de même produit, voir détails ci-dessus.`,
+  /** Point d'entrée du bouton de carte (data-action="export-foundry"). */
+  exportPnj(id) {
+    const pnj = PnjLookup.find(id);
+    if (!pnj) {
+      toast("PNJ introuvable.", "warning");
+      return;
+    }
+    const res = this._exportEntity(pnj);
+    if (!res.ok) {
+      toast(
+        res.reason === "unsupported"
+          ? "Export Foundry indisponible pour cette édition."
+          : "Export impossible (données du PNJ incomplètes).",
+        res.reason === "unsupported" ? "warning" : "danger",
       );
-      toast(`« ${pnj.name} » exporté${extraMsg} — ${unresolved.length} mapping(s) non résolu(s) (voir console).`, "warning");
+      return;
+    }
+    const extraMsg = res.extras ? ` (+${res.extras} véhicule${res.extras > 1 ? "s" : ""} lié${res.extras > 1 ? "s" : ""})` : "";
+    if (res.unresolved) {
+      console.warn(
+        `[foundry-export] « ${pnj.name} » (${pnj.edition}) : ${res.unresolved} mapping(s) non résolu(s) — export tout de même produit, voir détails ci-dessus.`,
+      );
+      toast(`« ${pnj.name} » exporté${extraMsg} — ${res.unresolved} mapping(s) non résolu(s) (voir console).`, "warning");
     } else {
       toast(`« ${pnj.name} » exporté pour Foundry${extraMsg}.`);
     }
+  },
+
+  /** Fiches PNJ/PJ du dossier Hub courant, hors entités liées (leurs
+      véhicules partent avec leur maître via buildVehicleActors). */
+  _dossierEntities() {
+    const out = [];
+    for (const col of [Shadows, Characters]) {
+      if (typeof col === "undefined") continue;
+      const byId = new Map(col.data.all.map((e) => [e.id, e]));
+      for (const id of DossierBar.memberIds(col)) {
+        const e = byId.get(id);
+        if (e && !e.ownerId) out.push(e);
+      }
+    }
+    return out;
+  },
+
+  /** Point d'entrée du bouton Hub (data-action="foundry-dossier") : exporte
+      toutes les fiches exportables du dossier courant, une par fichier
+      (Foundry n'importe qu'un acteur par fichier). Confirme d'abord — un
+      dossier peut produire beaucoup de téléchargements. */
+  async exportDossier() {
+    const ents = this._dossierEntities().filter((e) => this._capabilityFor(e));
+    if (!ents.length) {
+      toast("Aucune fiche exportable vers Foundry dans ce dossier.", "info");
+      return;
+    }
+    const ok = await Dialog.confirm({
+      title: "Exporter vers Foundry",
+      message: `Exporter ${ents.length} fiche${ents.length > 1 ? "s" : ""} de ce dossier vers Foundry VTT ? Un fichier JSON par acteur sera téléchargé.`,
+    });
+    if (!ok) return;
+
+    let files = 0;
+    let unresolved = 0;
+    let failed = 0;
+    for (const pnj of ents) {
+      const res = this._exportEntity(pnj);
+      if (!res.ok) failed++;
+      else {
+        files += res.files;
+        unresolved += res.unresolved;
+      }
+    }
+    const parts = [`${ents.length - failed}/${ents.length} fiche(s) exportée(s)`, `${files} fichier(s)`];
+    if (unresolved) parts.push(`${unresolved} mapping(s) non résolu(s) — voir console`);
+    if (failed) parts.push(`${failed} échec(s)`);
+    toast(parts.join(" · "), unresolved || failed ? "warning" : "success");
   },
 };
