@@ -8,7 +8,7 @@
   <!-- Fontes auto-hébergées (CH-V10) : l'app reste fonctionnelle et fidèle
        à ses identités d'édition sans réseau (table de jeu = contexte nominal). -->
   <link rel="stylesheet" href="css/fonts.css?v=1">
-  <link rel="stylesheet" href="css/base.css?v=95">
+  <link rel="stylesheet" href="css/base.css?v=96">
   <link rel="stylesheet" href="css/print.css?v=5">
   <!-- Thèmes d'édition chargés à la sélection (App._loadEditionAssets, CH-P1b). -->
 </head>
@@ -397,31 +397,18 @@
               <div id="gen-dossier-list"></div>
             </aside>
             <div class="shadows-main">
-              <div class="tab-bar">
-                <button class="tab-btn active" data-action="show-tab" data-tab="single">PNJ individuel</button>
-                <button class="tab-btn" data-action="show-tab" data-tab="group">Groupe / bande</button>
+              <!-- Générateur unique : le nombre est une variable de génération
+                   (1 = un PNJ, N = une bande). Plus d'onglet individuel/groupe. -->
+              <div class="gen-form" id="gen-form-single"></div>
+              <div class="gen-actions">
+                <label class="gen-count">Nombre
+                  <input type="number" id="sg-count" min="1" max="20" value="1" inputmode="numeric" aria-label="Nombre de PNJ à générer">
+                </label>
+                <button class="btn-primary" data-action="generate">Générer</button>
+                <button class="btn-secondary" data-action="clear">Effacer</button>
+                <button class="btn-secondary" data-action="add-all-to-encounter">⚔ Tout ajouter au combat</button>
               </div>
-
-              <!-- Onglet individuel -->
-              <div class="tab-panel active" id="gen-tab-single">
-                <div class="gen-form" id="gen-form-single"></div>
-                <div class="gen-actions">
-                  <button class="btn-primary" data-action="generate-single">Générer</button>
-                  <button class="btn-secondary" data-action="clear-single">Effacer</button>
-                </div>
-                <div class="cards-zone" id="gen-zone-single"></div>
-              </div>
-
-              <!-- Onglet groupe -->
-              <div class="tab-panel" id="gen-tab-group">
-                <div class="gen-form" id="gen-form-group"></div>
-                <div class="gen-actions">
-                  <button class="btn-primary" data-action="generate-group">Générer le groupe</button>
-                  <button class="btn-secondary" data-action="clear-group">Effacer</button>
-                  <button class="btn-secondary" data-action="add-group-to-encounter">⚔ Tout ajouter au combat</button>
-                </div>
-                <div class="cards-zone" id="gen-zone-group"></div>
-              </div>
+              <div class="cards-zone" id="gen-zone-single"></div>
             </div>
           </div>
         </div>
@@ -734,7 +721,7 @@
   <script defer src="js/widgets/profcategories.js?v=952"></script>
   <script defer src="js/widgets/multiselect.js?v=18"></script>
   <script defer src="js/widgets/singleselect.js?v=3"></script>
-  <script defer src="js/controllers/generator.js?v=954"></script>
+  <script defer src="js/controllers/generator.js?v=955"></script>
   <script defer src="js/controllers/rungen.js?v=953"></script>
   <script defer src="js/controllers/shadows.js?v=28"></script>
   <script defer src="js/controllers/characters.js?v=5"></script>
@@ -750,12 +737,12 @@
   <script defer src="js/controllers/contacts.js?v=950"></script>
   <script defer src="js/controllers/contactsbook.js?v=5"></script>
   <script defer src="js/controllers/hub.js?v=12"></script>
-  <script defer src="js/controllers/settings.js?v=32"></script>
+  <script defer src="js/controllers/settings.js?v=33"></script>
   <script defer src="js/controllers/backup.js?v=955"></script>
   <script defer src="js/controllers/printsheet.js?v=1"></script>
   <script defer src="js/controllers/sync.js?v=7"></script>
   <script defer src="js/controllers/foundryexport.js?v=5"></script>
-  <script defer src="js/app.js?v=969"></script>
+  <script defer src="js/app.js?v=970"></script>
 
 </body>
 

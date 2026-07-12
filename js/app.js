@@ -312,7 +312,6 @@ const App = {
     this.editionModule = null;
 
     document.getElementById("gen-zone-single").innerHTML = "";
-    document.getElementById("gen-zone-group").innerHTML = "";
     Gen.pool = [];
   },
 };

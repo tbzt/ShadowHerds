@@ -39,7 +39,6 @@ const Gen = {
     MultiSelect.init();
     SingleSelect.init();
     this._buildSingleForm(ed);
-    this._buildGroupForm(ed);
     MultiSelect.refresh(document.getElementById("panel-generator"));
     this.restorePool();
   },
@@ -233,23 +232,6 @@ const Gen = {
       const tags = (opt.dataset.habitat || "").split(" ").filter(Boolean);
       return tags.includes(habitat);
     });
-  },
-
-  _buildGroupForm(ed) {
-    const el = document.getElementById("gen-form-group");
-    el.innerHTML = this._wrapFilters(`
-      ${SingleSelect.create({
-        id: "gg-count",
-        label: "Nombre",
-        options: [
-          { value: "2-4", label: "2 – 4" },
-          { value: "3-6", label: "3 – 6" },
-          { value: "4-10", label: "4 – 10" },
-        ],
-        value: "2-4",
-      })}
-      ${this._formHTML(ed, "gg", { hideName: true })}
-    `);
   },
 
   /**
@@ -482,24 +464,26 @@ const Gen = {
     return Coherence.pickArchetype(ed.id, all, { role, milieu }) || "Aléatoire";
   },
 
-  /** Raccourci clavier « g » : génère sur l'onglet actif (individuel ou
-      groupe). No-op si le panel Générateur n'est pas affiché. */
+  /** Raccourci clavier « g » : génère. No-op si le panel Générateur n'est pas
+      affiché. */
   generateActive() {
     if (!document.getElementById("panel-generator")?.classList.contains("active"))
       return;
-    const groupActive = document
-      .getElementById("gen-tab-group")
-      ?.classList.contains("active");
-    if (groupActive) this.generateGroup();
-    else this.generateSingle();
+    this.generate();
   },
 
-  /* ---- Génération individuelle ---- */
-  generateSingle() {
+  /* ---- Génération : le nombre est une variable (1 = un PNJ, N = une bande) ---- */
+  generate() {
+    const raw = parseInt(document.getElementById("sg-count")?.value, 10);
+    const n = Math.max(1, Math.min(20, Number.isFinite(raw) ? raw : 1));
+    for (let i = 0; i < n; i++) this._generateOne();
+  },
+
+  _generateOne() {
     if (this.entityType === "spirit") return this._generateFreeSpirit();
     if (this.entityType === "creature") return this._generateCreature();
     const opts = this._readForm("sg");
-    Debug.log("generator", "generateSingle — options", opts);
+    Debug.log("generator", "generate — options", opts);
     const pnj = this.edition.generate(opts);
     Debug.log("generator", "→ PNJ généré", pnj);
     this.pool.push(pnj);
@@ -560,40 +544,14 @@ const Gen = {
     zone.prepend(CardRenderer.render(pnj, ["save", "discard"]));
   },
 
-  /* ---- Génération de groupe ---- */
-  generateGroup() {
-    const countStr = document.getElementById("gg-count")?.value || "2-4";
-    const [cmin, cmax] = countStr.split("-").map(Number);
-    const count = Utils.randInt(cmin, cmax);
-    Debug.log("generator", "generateGroup", { countStr, count });
-
-    const zone = document.getElementById("gen-zone-group");
-    zone.innerHTML = "";
-
-    const newPNJs = [];
-    for (let i = 0; i < count; i++) {
-      const opts = this._readForm("gg"); // re-tirage par PNJ
-      opts.name = "";
-      const pnj = this.edition.generate(opts);
-      this.pool.push(pnj);
-      newPNJs.push(pnj);
-    }
-    Debug.log("generator", `→ ${newPNJs.length} PNJ générés`, newPNJs);
-    this._savePool();
-
-    for (const pnj of newPNJs) {
-      zone.appendChild(CardRenderer.render(pnj, ["save", "discard"]));
-    }
-  },
-
-  /** CH-Q8 : envoie toute la bande affichée (zone groupe) au tracker de combat
-      en un geste. Les membres sont déjà dans le pool → résolvables par PnjLookup. */
-  addGroupToEncounter() {
+  /** CH-Q8 : envoie toutes les fiches affichées au tracker de combat en un
+      geste. Les membres sont déjà dans le pool → résolvables par PnjLookup. */
+  addAllToEncounter() {
     const ids = [
-      ...document.querySelectorAll("#gen-zone-group .pnj-card[data-id]"),
+      ...document.querySelectorAll("#gen-zone-single .pnj-card[data-id]"),
     ].map((c) => c.dataset.id);
     if (!ids.length) {
-      toast("Générez d'abord une bande.");
+      toast("Générez d'abord des PNJ.");
       return;
     }
     Encounter.addMany(ids);
@@ -656,18 +614,8 @@ const Gen = {
     toastUndo(name ? `${name} écarté.` : "PNJ écarté.", restore);
   },
 
-  clearSingle() {
+  clear() {
     const zone = document.getElementById("gen-zone-single");
-    const ids = [...zone.querySelectorAll(".pnj-card")].map(
-      (c) => c.dataset.id,
-    );
-    this.pool = this.pool.filter((p) => !ids.includes(p.id));
-    this._savePool();
-    zone.innerHTML = "";
-  },
-
-  clearGroup() {
-    const zone = document.getElementById("gen-zone-group");
     const ids = [...zone.querySelectorAll(".pnj-card")].map(
       (c) => c.dataset.id,
     );
@@ -680,17 +628,6 @@ const Gen = {
     return this.pool.find((p) => p.id === id) || null;
   },
 
-  showTab(tab, btn) {
-    document
-      .querySelectorAll("#panel-generator .tab-btn")
-      .forEach((b) => b.classList.remove("active"));
-    document
-      .querySelectorAll("#panel-generator .tab-panel")
-      .forEach((p) => p.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(`gen-tab-${tab}`).classList.add("active");
-  },
-
   /** Délégation globale du panel (boutons statiques + cartes générées,
       dont le contenu est reconstruit à chaque render sans jamais
       remplacer le conteneur #panel-generator lui-même). */
@@ -701,29 +638,20 @@ const Gen = {
       const el = e.target.closest("[data-action]");
       if (!el) return;
       switch (el.dataset.action) {
-        case "show-tab":
-          this.showTab(el.dataset.tab, el);
-          break;
         case "toggle-filters":
           this.toggleFilters();
           break;
         case "set-entity-type":
           this.setEntityType(el.dataset.entityType);
           break;
-        case "generate-single":
-          this.generateSingle();
+        case "generate":
+          this.generate();
           break;
-        case "clear-single":
-          this.clearSingle();
+        case "clear":
+          this.clear();
           break;
-        case "generate-group":
-          this.generateGroup();
-          break;
-        case "add-group-to-encounter":
-          this.addGroupToEncounter();
-          break;
-        case "clear-group":
-          this.clearGroup();
+        case "add-all-to-encounter":
+          this.addAllToEncounter();
           break;
         case "discard":
           this.discard(el.dataset.id);

@@ -1080,6 +1080,30 @@ select optgroup {
     box-shadow: 0 -8px 12px -8px var(--bg);
   }
 }
+/* #54 : le nombre à générer, variable de génération posée à côté de « Générer ». */
+.gen-count {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.gen-count input {
+  width: 3.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.4rem 0.5rem;
+  border-radius: 3px;
+  font-size: var(--fs-base);
+}
+.gen-count input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
 
 /* BUTTONS */
 .btn-primary {

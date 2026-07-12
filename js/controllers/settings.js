@@ -466,7 +466,6 @@ const Settings = {
     Shadows.currentGroup = "all";
     Gen.pool = [];
     document.getElementById("gen-zone-single").innerHTML = "";
-    document.getElementById("gen-zone-group").innerHTML = "";
     Shadows.render();
     toast("Atomisé. Table rase.");
   },
