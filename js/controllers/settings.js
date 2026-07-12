@@ -164,6 +164,10 @@ const Settings = {
       <input type="text" id="sync_gist_id" value="${CardRenderer._esc(sc.gist.gistId)}"
         placeholder="vide = créé ou retrouvé automatiquement"
         data-action="set-sync-field" data-prov="gist" data-field="gistId">
+      <label for="sync_gist_device" style="margin-top:0.5rem;">Nom de cet appareil (facultatif)</label>
+      <input type="text" id="sync_gist_device" value="${CardRenderer._esc(sc.gist.deviceLabel || "")}"
+        placeholder="${CardRenderer._esc(Sync._deviceLabel())}"
+        data-action="set-sync-field" data-prov="gist" data-field="deviceLabel">
       <details class="settings-detail">
         <summary>Comment obtenir un token</summary>
         <p style="font-size:0.72rem;margin-top:0.3rem;">

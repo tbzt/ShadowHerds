@@ -36,7 +36,7 @@ const Sync = {
   _defaults: {
     provider: "none", // 'none' | 'gist' | 'webdav'
     auto: true,
-    gist: { token: "", gistId: "" },
+    gist: { token: "", gistId: "", deviceLabel: "" },
     webdav: { url: "", user: "", pass: "" },
     lastRevision: null,
     lastHash: null,
@@ -71,6 +71,27 @@ const Sync = {
   status() {
     const c = this.cfg();
     return { provider: c.provider, auto: c.auto, lastAt: c.lastAt, state: this._state };
+  },
+  /** Étiquette de cet appareil pour la description du gist (Modèle B) :
+      celle saisie par l'utilisateur, sinon devinée depuis le navigateur/OS.
+      Le nom réel de la machine n'est pas accessible au navigateur. */
+  _deviceLabel() {
+    const set = (this.cfg().gist.deviceLabel || "").trim();
+    if (set) return set;
+    const ua = navigator.userAgent || "";
+    let br = "Navigateur";
+    if (/Firefox\//.test(ua)) br = "Firefox";
+    else if (/Edg\//.test(ua)) br = "Edge";
+    else if (/OPR\//.test(ua)) br = "Opera";
+    else if (/Chrome\//.test(ua)) br = "Chrome";
+    else if (/Safari\//.test(ua)) br = "Safari";
+    let os = "";
+    if (/Windows/.test(ua)) os = "Windows";
+    else if (/Android/.test(ua)) os = "Android";
+    else if (/iPhone|iPad|iPod/.test(ua)) os = "iOS";
+    else if (/Mac OS X/.test(ua)) os = "Mac";
+    else if (/Linux/.test(ua)) os = "Linux";
+    return os ? `${br}/${os}` : br;
   },
   /** Nombre de jours entiers depuis la dernière sauvegarde (export ou
       synchro, même horodatage `lastAt`) ; null si jamais sauvegardé.
@@ -366,6 +387,16 @@ const Sync = {
         if (gist.history && gist.history[0]) return gist.history[0].version;
         return gist.updated_at || null;
       },
+      /** Description du gist (Modèle B) : trace le dernier appareil ayant
+          synchronisé, sans multiplier les gists. Réécrite à chaque envoi. */
+      _description() {
+        return (
+          "ShadowHerds — dernière synchro : " +
+          Sync._deviceLabel() +
+          ", " +
+          new Date().toLocaleString("fr-FR")
+        );
+      },
       async pull(c) {
         const { gistId, cfgPatch } = await this._ensureGistId(c);
         if (!gistId) return { empty: true, cfgPatch };
@@ -385,7 +416,7 @@ const Sync = {
             method: "POST",
             headers: this._headers(c),
             body: JSON.stringify({
-              description: "ShadowHerds — sauvegarde synchronisée",
+              description: this._description(),
               public: false,
               files,
             }),
@@ -410,7 +441,7 @@ const Sync = {
         const resp = await fetch(`${this._api}/${gistId}`, {
           method: "PATCH",
           headers: this._headers(c),
-          body: JSON.stringify({ files }),
+          body: JSON.stringify({ files, description: this._description() }),
         });
         if (resp.status === 404)
           throw new Error("Gist introuvable — videz l'identifiant pour le recréer.");
