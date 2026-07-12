@@ -837,6 +837,14 @@ const Encounter = {
       const note = e.target.closest('[data-action="set-note"]');
       if (note) {
         this.setNote(note.dataset.id, note.value);
+        // K2 : la même note existe en double (ligne dépliée + fiche active) —
+        // on garde l'autre champ en phase sans re-rendu complet (qui casserait
+        // le focus/curseur de la saisie en cours, cf. setNote).
+        document
+          .querySelectorAll(`[data-action="set-note"][data-id="${note.dataset.id}"]`)
+          .forEach((el) => {
+            if (el !== note) el.value = note.value;
+          });
         return;
       }
       const filter = e.target.closest('[data-action="filter-candidates"]');

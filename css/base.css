@@ -3635,6 +3635,24 @@ body.selecting .bulk-selectable .contact-header-row {
 .encounter-active-card[hidden] {
   display: none;
 }
+/* K2 : « vue combat » — l'init ne se regarde plus sur la fiche active (elle
+   vit dans la réglette/liste, cf. K1) ; les attributs sont déjà repliés par
+   défaut (pnj._refOpen=false, CH-C5), rien à masquer côté CSS pour eux. */
+.encounter-active-card .init-pill {
+  display: none;
+}
+.encounter-active-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.5rem 0.6rem 0;
+}
+.encounter-active-note {
+  padding: 0.5rem 0.6rem 0.6rem;
+}
+.encounter-active-note .encounter-note {
+  width: 100%;
+}
 
 /* ---- Résumé de la scène de combat dans la sidebar ---- */
 .sidebar-encounter {

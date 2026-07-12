@@ -415,6 +415,32 @@ const EncounterRenderer = {
     box.innerHTML = "";
   },
 
+  /** Bandeau d'état au-dessus de la fiche active (K2) : hors de
+      combat/retardé/devrait fuir — mêmes badges que la ligne (_downBadge,
+      _delayedBadge, _moraleBanner), rien de nouveau. Vide si le combattant
+      est dans un état stable (cas le plus fréquent). */
+  _activeBandeau(r) {
+    const shaky = r.morale && r.morale !== "steady" && !r.down;
+    if (!r.down && !r.delayed && !shaky) return "";
+    return `<div class="encounter-active-badges">
+      ${r.down ? this._downBadge() : ""}
+      ${!r.down && r.delayed ? this._delayedBadge() : ""}
+      ${this._moraleBanner(r)}
+    </div>`;
+  },
+
+  /** Note de scène éditable sous la fiche active (K2) : même champ que
+      c.note (déjà persisté par ligne), même action `set-note` — la
+      délégation d'Encounter la reçoit qu'elle vienne de la ligne ou d'ici.
+      Toujours visible (pas de masquage « vide » comme sur la ligne : c'est
+      un besoin de premier plan en combat, pas un détail à révéler). */
+  _activeNote(r) {
+    return `<div class="encounter-active-note">
+      <input type="text" class="encounter-note" placeholder="Note de scène…"
+        value="${Utils.escHtml(r.note || "")}" data-action="set-note" data-id="${r.pnjId}">
+    </div>`;
+  },
+
   /** Fiche complète (CardRenderer) du combattant dont c'est le tour, affichée
       à côté de la liste. Rien pour un PJ ad-hoc (pas de fiche) ni une scène
       vide. actions=[] : pas de boutons sauvegarder/éditer/virer, la card
@@ -447,7 +473,14 @@ const EncounterRenderer = {
     box.hidden = !pnj;
     if (pnj) {
       pnj._refOpen = false;
+      // K2 : bandeau d'état (hors de combat/retardé/devrait fuir, réutilise
+      // les badges de la ligne) au-dessus de la carte, note de scène éditable
+      // en dessous — la fiche « vue combat » n'affiche que ce que le MJ
+      // regarde à chaque tour (l'init est masquée en CSS, les attributs sont
+      // déjà repliés par pnj._refOpen ci-dessus).
+      box.innerHTML = this._activeBandeau(active);
       box.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
+      box.insertAdjacentHTML("beforeend", this._activeNote(active));
     }
   },
 
