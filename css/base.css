@@ -1866,6 +1866,99 @@ select optgroup {
   flex: 1;
 }
 
+/* ---- Grammaire de pied unifiée (Phase 1) ----
+   Amas « agir » aligné à droite : secondaires + primaire + menu ⋯.
+   Le socle Collection préfixe ★/🏷 à gauche du pied (footer.prepend),
+   l'amas est poussé à droite par margin-left:auto. */
+.card-act-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-left: auto;
+  position: relative;
+}
+/* Dans l'amas, les boutons se dimensionnent au contenu — le flex:1 de
+   Phase 0 ne concernait que le pied plat historique, désormais remplacé. */
+.card-act-cluster .card-action-btn {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 0.38rem 0.7rem;
+}
+/* Primaire « quitter la scène » (Ranger) : proéminent mais clairement
+   terminal — plein danger plutôt qu'accent. */
+.card-action-btn.primary-danger {
+  background: var(--danger);
+  color: #fff;
+  border: 1px solid transparent;
+}
+.card-action-btn.primary-danger:hover {
+  opacity: 0.85;
+}
+.card-kebab {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  font-size: var(--fs-md);
+  line-height: 1;
+  background: transparent;
+  transition:
+    border-color var(--dur-fast),
+    color var(--dur-fast);
+}
+.card-kebab:hover,
+.card-kebab.open {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* Menu de débordement : s'ouvre VERS LE HAUT (la carte est overflow:hidden,
+   le popover reste donc dans le rectangle de la carte, au-dessus du pied). */
+.card-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  min-width: 180px;
+  z-index: var(--z-popover);
+  background: var(--bg-card);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  border-radius: 4px;
+  padding: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.card-menu[hidden] {
+  display: none;
+}
+.card-menu-item {
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  padding: 7px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast);
+}
+.card-menu-item:hover {
+  background: var(--bg-mid);
+  color: var(--accent);
+}
+.card-menu-item.danger:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
 /* ============================================================
    OMBRES PORTÉES
    ============================================================ */
@@ -7785,10 +7878,6 @@ input[type="range"]#risk-dice-slider {
   gap: 5px;
   padding: var(--sp-2) var(--sp-4) 0.65rem;
   border-top: 1px solid var(--border);
-}
-.server-card-footer .btn-secondary.active {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 .btn-icon.danger {
   color: var(--danger);

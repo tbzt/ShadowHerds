@@ -686,13 +686,16 @@ const CardRenderer = {
       .replace(/"/g, "&quot;");
   },
 
-  /** Bouton "Portrait IA", affiché seulement si le réglage opt-in est
-      actif et qu'aucun portrait n'existe encore (véhicules exclus — hors
-      scope de la fonctionnalité). */
-  _portraitFooterBtn(pnj, deps) {
-    if (pnj.type === "vehicle" || pnj.portraitUrl) return "";
-    if (!deps.Settings || !deps.Settings.getPortraitSettings().enabled) return "";
-    return `<button class="card-action-btn ghost" data-action="generate-portrait" data-id="${pnj.id}">Portrait IA</button>`;
+  /** Le bouton « Portrait IA » est-il pertinent ? Opt-in actif et aucun
+      portrait encore généré (véhicules exclus — hors scope). Consommé par
+      _footer pour décider d'un item du menu ⋯. */
+  _portraitEnabled(pnj, deps) {
+    return (
+      pnj.type !== "vehicle" &&
+      !pnj.portraitUrl &&
+      !!deps.Settings &&
+      deps.Settings.getPortraitSettings().enabled
+    );
   },
 
   /* ---- Journal de fiche (F2) ----
@@ -773,67 +776,70 @@ const CardRenderer = {
   },
 
   /* ---- Footer ---- */
+  /* Grammaire de pied unifiée (voir CONTRIBUTING « Chrome de carte ») : on
+     décrit les actions, CardFooter les dispose (secondaire + primaire + ⋯).
+     Seul le primaire porte un glyphe. Le socle préfixe ★/🏷 à gauche. */
   _footer(pnj, actions, deps = CardRenderer.liveDeps()) {
+    const id = pnj.id;
+    const saved = JSON.stringify(actions);
+
+    // Véhicule / esprit invoqué : « Ranger » (quitter la scène) en primaire
+    // terminal ; Éditer en secondaire.
     if (pnj.type === "vehicle") {
-      return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>
-        <button class="card-action-btn ghost" data-action="edit-open" data-id="${pnj.id}">Éditer</button>
-        <button class="card-action-btn danger" data-action="dismiss-vehicle" data-id="${pnj.id}">Ranger</button>
-      </div>`;
+      return CardFooter.render(
+        [
+          { kind: "secondary", label: "Éditer", attrs: `data-action="edit-open" data-id="${id}"` },
+          { kind: "primary", danger: true, icon: "⏏", label: "Ranger", attrs: `data-action="dismiss-vehicle" data-id="${id}"` },
+        ],
+        { savedActions: saved },
+      );
     }
-    // Esprit invoqué : Congédier. Esprit libre : boutons standards
-    // (sauvegarder/virer) comme tout PNJ généré.
     if (pnj.type === "spirit" && pnj.ownerId) {
-      return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>
-        ${this._portraitFooterBtn(pnj, deps)}
-        <button class="card-action-btn ghost" data-action="edit-open" data-id="${pnj.id}">Éditer</button>
-        <button class="card-action-btn danger" data-action="dismiss-spirit" data-id="${pnj.id}">Congédier</button>
-      </div>`;
+      const acts = [
+        { kind: "secondary", label: "Éditer", attrs: `data-action="edit-open" data-id="${id}"` },
+        { kind: "primary", danger: true, icon: "⏏", label: "Ranger", attrs: `data-action="dismiss-spirit" data-id="${id}"` },
+      ];
+      if (this._portraitEnabled(pnj, deps))
+        acts.push({ kind: "menu", label: "Portrait IA", attrs: `data-action="generate-portrait" data-id="${id}"` });
+      return CardFooter.render(acts, { savedActions: saved });
     }
-    const btns = [this._portraitFooterBtn(pnj, deps)];
-    if (actions.includes("saved")) {
-      // Carte du générateur après sauvegarde dans les Ombres.
-      btns.push(`<span class="card-saved-label">✓ Sauvegardé</span>`);
-    }
-    if (actions.includes("save")) {
-      btns.push(
-        `<button class="card-action-btn save" data-action="save-pnj" data-id="${pnj.id}">Sauvegarder</button>`,
-      );
-    }
-    if (actions.includes("edit")) {
-      btns.push(
-        `<button class="card-action-btn ghost" data-action="edit-open" data-id="${pnj.id}">Éditer</button>`,
-      );
-    }
-    if (actions.includes("discard")) {
-      btns.push(
-        `<button class="card-action-btn danger" data-action="discard" data-id="${pnj.id}">Virer</button>`,
-      );
-    }
-    if (actions.includes("remove")) {
-      btns.push(
-        `<button class="card-action-btn ghost" data-action="duplicate-pnj" data-id="${pnj.id}">Dupliquer</button>`,
-      );
-      btns.push(
-        `<button class="card-action-btn danger" data-action="remove-pnj" data-id="${pnj.id}">Supprimer</button>`,
-      );
-    }
-    if (actions.includes("remove-pj")) {
-      btns.push(
-        `<button class="card-action-btn danger" data-action="remove-pj" data-id="${pnj.id}">Supprimer</button>`,
-      );
-    }
-    btns.push(
-      `<button class="card-action-btn ghost" data-action="add-to-encounter" data-id="${pnj.id}" title="Ajouter au suivi de combat">⚔ Combat</button>`,
-    );
-    // Export Foundry VTT : affiché uniquement si l'édition active en expose
-    // la capacité (SR5, Anarchy2...). Lecture neutre du module d'édition,
-    // jamais de branche `App.edition === …` (prohibition #1).
-    if (App.getEditionModule(pnj.edition)?.foundryExport) {
-      btns.push(
-        `<button class="card-action-btn ghost" data-action="export-foundry" data-id="${pnj.id}" title="Exporter vers Foundry VTT (télécharge un fichier JSON)">⬗ Foundry</button>`,
-      );
-    }
-    return `<div class="pnj-card-footer" data-saved-actions='${JSON.stringify(actions)}'>${btns.join("")}</div>`;
+
+    const has = (k) => actions.includes(k);
+    const acts = [];
+
+    // Primaire : Sauvegarder (générateur) sinon ⚔ Combat (l'action reine à la table).
+    if (has("save"))
+      acts.push({ kind: "primary", icon: "⊕", label: "Sauvegarder", attrs: `data-action="save-pnj" data-id="${id}"` });
+    else
+      acts.push({ kind: "primary", icon: "⚔", label: "Combat", attrs: `data-action="add-to-encounter" data-id="${id}"` });
+
+    // Secondaire visible : Éditer.
+    if (has("edit"))
+      acts.push({ kind: "secondary", label: "Éditer", attrs: `data-action="edit-open" data-id="${id}"` });
+
+    // ⋯ : Combat (rétrogradé quand Sauvegarder est primaire), Dupliquer,
+    // Portrait, Foundry, puis le destructif en dernier (rouge, annulable).
+    if (has("save"))
+      acts.push({ kind: "menu", label: "Combat", attrs: `data-action="add-to-encounter" data-id="${id}"` });
+    if (has("remove"))
+      acts.push({ kind: "menu", label: "Dupliquer", attrs: `data-action="duplicate-pnj" data-id="${id}"` });
+    if (this._portraitEnabled(pnj, deps))
+      acts.push({ kind: "menu", label: "Portrait IA", attrs: `data-action="generate-portrait" data-id="${id}"` });
+    // Export Foundry : uniquement si l'édition l'expose. Lecture neutre du
+    // module d'édition, jamais de branche `App.edition === …` (prohibition #1).
+    if (App.getEditionModule(pnj.edition)?.foundryExport)
+      acts.push({ kind: "menu", label: "Foundry", attrs: `data-action="export-foundry" data-id="${id}"` });
+    if (has("discard"))
+      acts.push({ kind: "menu", danger: true, label: "Ranger", attrs: `data-action="discard" data-id="${id}"` });
+    if (has("remove"))
+      acts.push({ kind: "menu", danger: true, label: "Supprimer", attrs: `data-action="remove-pnj" data-id="${id}"` });
+    if (has("remove-pj"))
+      acts.push({ kind: "menu", danger: true, label: "Supprimer", attrs: `data-action="remove-pj" data-id="${id}"` });
+
+    return CardFooter.render(acts, {
+      savedActions: saved,
+      savedLabel: has("saved") ? "✓ Sauvegardé" : null,
+    });
   },
 
   _delegated: false,

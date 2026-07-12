@@ -122,6 +122,23 @@ const ServerRenderer = {
         <div class="server-ic-row">${chips}</div>
         ${intr.open ? this.intrusionPanel(srv, { icMonitorSize }) : ""}`;
 
+    // Pied unifié (CardFooter) : même grammaire que PNJ/contacts. Intrusion
+    // (ou Terminer en édition) en primaire, Éditer en secondaire, Spider et
+    // Supprimer dans le ⋯.
+    const footerActs = editing
+      ? [
+          { kind: "primary", icon: "✓", label: "Terminer", attrs: `data-action="toggle-edit" data-id="${srv.id}"` },
+          { kind: "menu", danger: true, label: "Supprimer", attrs: `data-action="remove" data-id="${srv.id}"` },
+        ]
+      : [
+          { kind: "secondary", label: "Éditer", attrs: `data-action="toggle-edit" data-id="${srv.id}"` },
+          { kind: "primary", icon: "⚡", label: intr.open ? "Fermer l'intrusion" : "Intrusion", attrs: `data-action="toggle-intrusion" data-id="${srv.id}"` },
+          srv.spider
+            ? { kind: "menu", label: "Retirer le spider", attrs: `data-action="remove-spider" data-id="${srv.id}"` }
+            : { kind: "menu", label: "Ajouter un spider", attrs: `data-action="add-spider" data-id="${srv.id}"` },
+          { kind: "menu", danger: true, label: "Supprimer", attrs: `data-action="remove" data-id="${srv.id}"` },
+        ];
+
     card.innerHTML = `
       <div class="server-card-header">
         <span class="server-name" title="${esc(srv.profile || "")}">${esc(srv.name)}</span>
@@ -132,17 +149,7 @@ const ServerRenderer = {
         <textarea class="server-notes" placeholder="Notes…"
           data-action="edit-note" data-id="${srv.id}">${esc(srv.notes || "")}</textarea>
       </div>
-      <div class="server-card-footer">
-        ${editing
-          ? `<button class="btn-primary btn-small" data-action="toggle-edit" data-id="${srv.id}">✓ Terminer</button>`
-          : `<button class="btn-secondary btn-small ${intr.open ? "active" : ""}"
-              data-action="toggle-intrusion" data-id="${srv.id}">${intr.open ? "Fermer l'intrusion" : "⚡ Intrusion"}</button>
-            <button class="btn-secondary btn-small" data-action="toggle-edit" data-id="${srv.id}" title="Éditer le serveur">✎ Éditer</button>
-            ${srv.spider
-              ? `<button class="btn-secondary btn-small" data-action="remove-spider" data-id="${srv.id}" title="Retirer le spider">Spider ✕</button>`
-              : `<button class="btn-secondary btn-small" data-action="add-spider" data-id="${srv.id}" title="Générer un decker de sécurité lié">+ Spider</button>`}`}
-        <button class="btn-icon danger" data-action="remove" data-id="${srv.id}" title="Supprimer">✕</button>
-      </div>`;
+      ${CardFooter.render(footerActs, { footerClass: "server-card-footer" })}`;
     return card;
   },
 

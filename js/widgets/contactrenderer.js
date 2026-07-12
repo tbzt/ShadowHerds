@@ -90,6 +90,18 @@ const ContactRenderer = {
     // affiché imbriqué dans la carte plutôt que dans un autre écran.
     const deployed = Shadows.data.all.find((p) => p.sourceContactId === c.id);
 
+    // Pied unifié (CardFooter) : Déployer en primaire ; Portrait IA et
+    // Supprimer dans le ⋯. Le contact s'édite en ligne, pas de bouton Éditer.
+    const footerActs = [
+      ...(deployed
+        ? []
+        : [{ kind: "primary", icon: "⇲", label: "Déployer", attrs: 'data-contact-action="deploy-pnj"' }]),
+      ...(!c.portraitUrl && Settings.getPortraitSettings().enabled
+        ? [{ kind: "menu", label: "Portrait IA", attrs: 'data-contact-action="generate-portrait"' }]
+        : []),
+      { kind: "menu", danger: true, label: "Supprimer", attrs: 'data-contact-action="remove"' },
+    ];
+
     el.innerHTML = `
       <div class="contact-card-body">
         <div class="contact-header-row">
@@ -123,11 +135,7 @@ const ContactRenderer = {
 
         ${deployed ? '<div class="contact-deployed-pnj" data-deployed-slot></div>' : ""}
       </div>
-      <div class="pnj-card-footer">
-        ${!c.portraitUrl && Settings.getPortraitSettings().enabled ? '<button class="card-action-btn ghost" data-contact-action="generate-portrait">Portrait IA</button>' : ""}
-        ${!deployed ? '<button class="card-action-btn ghost" data-contact-action="deploy-pnj">Déployer en PNJ</button>' : ""}
-        <button class="card-action-btn danger" data-contact-action="remove">Supprimer</button>
-      </div>`;
+      ${CardFooter.render(footerActs)}`;
 
     if (deployed) {
       const slot = el.querySelector("[data-deployed-slot]");
