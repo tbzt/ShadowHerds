@@ -1475,12 +1475,13 @@ const Utils = {
     return this.rand(["M", "F", "F", "M", "NB"]);
   },
 
-  /** Échappe &, < et > pour une insertion sûre dans du HTML. */
+  /** Échappe &, <, > et " pour une insertion sûre dans du HTML (texte ou attribut). */
   escHtml(s) {
     return String(s)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   },
 };
 

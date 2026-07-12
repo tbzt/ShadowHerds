@@ -280,12 +280,8 @@ const EncounterRenderer = {
     const rows = candidates
       .map((p) => {
         const kind = this._kindLabel({ pnj: p });
-        // data-name = clé de recherche normalisée (jamais affichée). Les noms
-        // générés contiennent souvent un surnom entre guillemets ("…") : on
-        // remplace ces " par une espace (Utils.escHtml n'échappe pas le
-        // guillemet) sinon l'attribut est tronqué et le filtre ne matche que
-        // le premier mot. Frontière de mot préservée pour le filtre par token.
-        const norm = Utils.escHtml(Utils.searchNorm((p.name || "") + " " + kind).replace(/"/g, " "));
+        // data-name = clé de recherche normalisée (jamais affichée).
+        const norm = Utils.escHtml(Utils.searchNorm((p.name || "") + " " + kind));
         return `<button class="encounter-candidate" data-action="add-candidate" data-id="${p.id}" data-name="${norm}">
           <span class="encounter-kind">${kind}</span>
           <span class="encounter-candidate-name">${Utils.escHtml(p.name || "Sans nom")}</span>
