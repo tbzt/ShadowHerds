@@ -2298,7 +2298,9 @@ select optgroup {
 
 /* ---- Hub : sous-groupe indenté dans l'arbre de dossiers ---- */
 .group-item.group-subitem {
-  padding-left: var(--sp-5);
+  /* #49 : indent par niveau (--depth posé inline, clampé à MAX_DEPTH côté JS
+     pour ne pas déborder la sidebar mobile). Profondeur 1 ≈ ancien --sp-5. */
+  padding-left: calc(var(--sp-3) + var(--depth, 1) * var(--sp-4));
   font-size: var(--fs-base);
 }
 .group-item.group-subitem .group-item-name {

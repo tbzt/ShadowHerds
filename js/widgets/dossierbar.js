@@ -26,6 +26,24 @@ const DossierBar = {
   _listeners: [], // rappelés à chaque changement (hub, grilles de génération)
   _wired: false,
 
+  // Plafond dur : 4 niveaux (racine = profondeur 0 → petit-petit-enfant = 3).
+  // Au-delà, l'indentation et la charge cognitive débordent la sidebar mobile
+  // (cf. mémoire project_responsive_target). Le modèle Dossiers reste illimité ;
+  // c'est une limite d'UI, appliquée au rendu du bouton « + » et à la création.
+  MAX_DEPTH: 3,
+
+  /** Profondeur d'un nœud (racine = 0), en remontant les parents. Le garde-fou
+      à 50 est purement défensif — move() interdit déjà les cycles. */
+  _depthOf(id) {
+    let depth = 0;
+    let node = Dossiers.get(id);
+    while (node && node.parentId != null && depth < 50) {
+      depth++;
+      node = Dossiers.get(node.parentId);
+    }
+    return depth;
+  },
+
   _cols() {
     return [Shadows, ContactsBook, Servers, Characters];
   },
@@ -152,23 +170,34 @@ const DossierBar = {
     // Favoris (CH-Q9) épinglé en tête, hors boucle des racines — dossier
     // réservé créé à la volée par syncDossiers() dès la première épingle.
     const fav = Dossiers.roots().find((d) => d.name === Collection.FAV_GROUP);
-    if (fav) html += this._nodeHtml(fav, false, true);
+    if (fav) html += this._nodeHtml(fav, 0, true);
     for (const d of Dossiers.roots()) {
       if (fav && d.id === fav.id) continue;
-      html += this._nodeHtml(d, false);
-      for (const child of Dossiers.children(d.id)) {
-        html += this._nodeHtml(child, true);
-      }
+      html += this._nodeTreeHtml(d, 0);
     }
     box.innerHTML = html;
   },
 
+  /** Un nœud puis tous ses descendants, en profondeur (DFS), indentés par
+      `depth`. La hiérarchie de données est illimitée ; seul le rendu du
+      bouton « + » est plafonné (cf. MAX_DEPTH), pas le parcours. */
+  _nodeTreeHtml(node, depth) {
+    let html = this._nodeHtml(node, depth);
+    for (const child of Dossiers.children(node.id)) {
+      html += this._nodeTreeHtml(child, depth + 1);
+    }
+    return html;
+  },
+
   /** Ligne de l'arbre : dossier (racine) ou sous-groupe (isSub). Le nœud
       Favoris (isFav) est réservé : pas de sous-groupe/renommer/supprimer. */
-  _nodeHtml(node, isSub, isFav = false) {
+  _nodeHtml(node, depth, isFav = false) {
     const active = this.current === node.id ? "active" : "";
     const nameEsc = CardRenderer._esc(node.name);
+    const isSub = depth > 0;
     const sub = isSub ? " group-subitem" : "";
+    // Indent piloté par --depth (clampé au plafond visuel), pas un handler.
+    const style = isSub ? ` style="--depth:${Math.min(depth, this.MAX_DEPTH)}"` : "";
     if (isFav) {
       return `<div class="group-item ${active}" data-dossier-bar data-action="switch-dossier" data-dossier="${node.id}">
         <span class="group-item-icon">★</span>
@@ -176,10 +205,11 @@ const DossierBar = {
         <span class="group-item-count">${this._countFor(this._namesUnder(node.id))}</span>
       </div>`;
     }
-    const addBtn = isSub
-      ? ""
-      : `<button class="btn-icon-tiny" data-dossier-bar data-action="add-subgroup" data-parent="${node.id}" title="Nouveau sous-groupe">+</button>`;
-    return `<div class="group-item${sub} ${active}" data-dossier-bar data-action="switch-dossier" data-dossier="${node.id}">
+    // « + » masqué au dernier niveau : un enfant dépasserait MAX_DEPTH.
+    const addBtn = depth < this.MAX_DEPTH
+      ? `<button class="btn-icon-tiny" data-dossier-bar data-action="add-subgroup" data-parent="${node.id}" title="Nouveau sous-groupe">+</button>`
+      : "";
+    return `<div class="group-item${sub} ${active}"${style} data-dossier-bar data-action="switch-dossier" data-dossier="${node.id}">
       <span class="group-item-icon">${isSub ? "↳" : "▸"}</span>
       <span class="group-item-name">${nameEsc}</span>
       <span class="group-item-count">${this._countFor(this._namesUnder(node.id))}</span>
@@ -212,6 +242,10 @@ const DossierBar = {
   },
 
   addSubgroup(parentId) {
+    if (this._depthOf(parentId) >= this.MAX_DEPTH) {
+      toast("Profondeur maximale atteinte (4 niveaux).", "warning");
+      return;
+    }
     Dialog.prompt({
       title: "Nouveau sous-groupe",
       label: "Nom du sous-groupe",
