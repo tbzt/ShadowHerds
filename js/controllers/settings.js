@@ -223,6 +223,14 @@ const Settings = {
     if (rem) rem.innerHTML = this._syncReminderHTML(st);
     const stt = document.getElementById("sync-state");
     if (stt) stt.innerHTML = this._syncStateHTML(st);
+    // Rend visible le gist réellement utilisé : après une création ou une
+    // découverte automatique, l'identifiant apparaît dans le champ (et se
+    // trouve dès lors épinglé). Ne touche pas le champ pendant la saisie.
+    const idInput = document.getElementById("sync_gist_id");
+    if (idInput && document.activeElement !== idInput) {
+      const cur = Sync.cfg().gist.gistId || "";
+      if (idInput.value !== cur) idInput.value = cur;
+    }
   },
   setSyncProvider(v) {
     Sync._saveCfg({ provider: v });
