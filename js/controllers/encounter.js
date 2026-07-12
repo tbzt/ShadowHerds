@@ -626,18 +626,20 @@ const Encounter = {
     if (el) el.classList.remove("open");
   },
 
-  /* ---- Glisser-déposer pour réordonner (Vague C1) ----
+  /* ---- Glisser-déposer pour réordonner (Vague C1, étendu au narratif T1.5) ----
      Pointer Events (souris + tactile), sans dépendance et sans drag HTML5
      natif (qui ne marche pas au doigt). Pendant le glisser on ne réordonne que
      le DOM (retour visuel immédiat) ; l'état n'est réécrit qu'au relâcher, via
      reorderByIds — un seul _commit. Les lignes hors de combat (épinglées en
-     bas) ne sont ni saisissables ni des cibles d'insertion. */
+     bas) ne sont ni saisissables ni des cibles d'insertion. Fonctionne aussi
+     bien sur .encounter-row (ordonné) que .encounter-nrow (narratif Anarchy,
+     cf. _narrativeNote côté renderer). */
   _drag: null,
   _initDrag(overlay) {
     overlay.addEventListener("pointerdown", (e) => {
       const handle = e.target.closest(".encounter-drag-handle");
       if (!handle) return;
-      const row = handle.closest(".encounter-row");
+      const row = handle.closest(".encounter-row, .encounter-nrow");
       const list = document.getElementById("encounter-list");
       if (!row || !list) return;
       e.preventDefault();
@@ -668,7 +670,7 @@ const Encounter = {
     if (!this._drag) return;
     ev.preventDefault();
     const { row, list } = this._drag;
-    const targets = [...list.querySelectorAll(".encounter-row:not(.down):not(.dragging)")];
+    const targets = [...list.querySelectorAll(".encounter-row:not(.down):not(.dragging), .encounter-nrow:not(.down):not(.dragging)")];
     let before = null;
     for (const t of targets) {
       const box = t.getBoundingClientRect();
@@ -692,7 +694,7 @@ const Encounter = {
     const { list, row } = this._drag;
     row.classList.remove("dragging");
     this._drag = null;
-    const ids = [...list.querySelectorAll(".encounter-row")].map((r) => r.dataset.id);
+    const ids = [...list.querySelectorAll(".encounter-row, .encounter-nrow")].map((r) => r.dataset.id);
     this.reorderByIds(ids);
   },
 
@@ -705,6 +707,10 @@ const Encounter = {
     this._initDrag(overlay);
 
     overlay.addEventListener("click", (e) => {
+      // La poignée n'a pas de data-action propre : sans cette garde, un clic
+      // dessus remonterait à .encounter-nrow (data-action="narrative-toggle")
+      // et basculerait « a joué » à chaque glisser en mode narratif.
+      if (e.target.closest(".encounter-drag-handle")) return;
       const el = e.target.closest("[data-action]");
       if (!el) return;
       const id = el.dataset.id;

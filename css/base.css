@@ -2813,6 +2813,14 @@ select optgroup {
 .encounter-modal.is-narrative .encounter-narrative-only {
   display: flex;
 }
+/* Rappel du silence des actions chiffrées en narratif (T1.5 FIELD_STUDY REC-6) —
+   même registre discret que .encounter-progress, posée juste au-dessus. */
+.encounter-narrative-note {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  font-style: italic;
+  padding: 0.2rem 0.1rem 0;
+}
 /* Compteur « X / N ont joué » en tête de liste narrative. */
 .encounter-progress {
   font-size: var(--fs-xs);
@@ -2959,7 +2967,8 @@ select optgroup {
 .encounter-drag-handle:hover {
   color: var(--accent);
 }
-.encounter-row.dragging {
+.encounter-row.dragging,
+.encounter-nrow.dragging {
   opacity: 0.6;
   background: var(--bg-card);
   cursor: grabbing;

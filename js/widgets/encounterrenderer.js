@@ -59,9 +59,10 @@ const EncounterRenderer = {
       </div>`;
       return;
     }
-    // En narratif : compteur « X / N ont joué » en tête de liste (état d'un coup
-    // d'œil, à la place de l'ordre d'initiative absent).
-    const progressHtml = narrative ? this._narrativeProgress(rows) : "";
+    // En narratif : compteur « X / N ont joué » + ligne expliquant le silence
+    // des actions chiffrées (REC-6 FIELD_STUDY — sans elle, l'absence d'init/tri
+    // est lue comme une panne plutôt qu'une règle appliquée à la lettre).
+    const progressHtml = narrative ? this._narrativeNote() + this._narrativeProgress(rows) : "";
     // Action de fin de scène rendue en pied de liste (le tracker n'a pas de
     // barre d'outils modifiable ici) : réinitialise tous les moniteurs.
     list.innerHTML =
@@ -70,6 +71,15 @@ const EncounterRenderer = {
       `<div class="encounter-scene-actions">
         <button class="btn-secondary btn-small" data-action="heal-all" title="Réinitialiser les moniteurs de tous les combattants">⛨ Fin de scène — tout soigner</button>
       </div>`;
+  },
+
+  /** Ligne statique : Anarchy n'a pas d'initiative chiffrée, l'ordre est
+      décidé à la table et réordonné à la main (glisser-déposer, cf.
+      dragHandle de _rowNarrative) — sans ce rappel, le silence de « Lancer &
+      classer »/« Trier » (masqués en narratif, cf. CSS .is-narrative) est pris
+      pour une panne plutôt qu'une règle appliquée à la lettre. */
+  _narrativeNote() {
+    return `<div class="encounter-narrative-note">Anarchy : ordre narratif — glissez ⠿ pour réordonner</div>`;
   },
 
   /** Compteur de progression du round narratif : combien de combattants ont
@@ -81,7 +91,9 @@ const EncounterRenderer = {
   },
 
   /** Ligne narrative (Anarchy) : la ligne entière est un bouton tap-to-grise
-      (data-action="narrative-toggle") ; pas de jeton d'init, ⚄, tri ni ▲▼.
+      (data-action="narrative-toggle") ; pas de jeton d'init, ⚄ ni tri — l'ordre
+      se réordonne à la main via la poignée de glisse (⠿, comme _row), câblée
+      par Encounter._initDrag sur .encounter-nrow au même titre que .encounter-row.
       Le ✕ (retirer) et « voir la fiche » restent derrière le menu ⋯ pour ne
       pas retirer par mégarde en tapant pour marquer « a joué ». */
   _rowNarrative(r) {
@@ -96,7 +108,13 @@ const EncounterRenderer = {
     const focusItem = pnj._adhoc
       ? ""
       : `<button class="btn-icon-tiny" data-action="focus-combatant" data-id="${pnjId}" title="Voir la fiche" aria-label="Voir la fiche">☰</button>`;
+    // Pas de poignée sur les lignes hors de combat (épinglées en bas, non
+    // réordonnables) — même garde que _row.
+    const dragHandle = r.down
+      ? ""
+      : `<span class="encounter-drag-handle" title="Glisser pour réordonner" aria-hidden="true">⠿</span>`;
     return `<div class="encounter-nrow${hasActed ? " has-acted" : ""}${r.down ? " down" : ""}" data-action="narrative-toggle" data-id="${pnjId}" role="button" tabindex="0" aria-pressed="${hasActed}" title="A joué — toucher pour basculer">
+      ${dragHandle}
       <span class="encounter-nrow-check" aria-hidden="true">✓</span>
       <span class="encounter-nrow-name">${name}</span>
       <span class="encounter-kind">${kind}</span>
