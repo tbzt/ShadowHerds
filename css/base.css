@@ -1685,6 +1685,123 @@ select optgroup {
 }
 
 /* Card footer */
+/* ---- Journal de fiche (F2) ---- */
+.pnj-journal {
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.journal-toggle {
+  width: 100%;
+  text-align: left;
+  padding: 0.4rem var(--sp-4);
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color var(--dur-base);
+}
+.journal-toggle:hover {
+  color: var(--accent);
+}
+.journal-count {
+  display: inline-block;
+  min-width: 1.1em;
+  padding: 0 0.35em;
+  margin-left: 0.2em;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  text-align: center;
+}
+.journal-body {
+  padding: 0 var(--sp-4) 0.55rem;
+}
+.journal-list {
+  list-style: none;
+  margin: 0 0 var(--sp-2);
+  padding: 0;
+}
+.journal-entry {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding: 0.2rem 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: var(--fs-xs);
+}
+.journal-date {
+  flex: 0 0 auto;
+  color: var(--text-faint, var(--text-dim));
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  white-space: nowrap;
+}
+.journal-text {
+  flex: 1 1 auto;
+  color: var(--text);
+  word-break: break-word;
+}
+.journal-del {
+  flex: 0 0 auto;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  line-height: 1;
+  padding: 0 0.2em;
+  opacity: 0.6;
+  transition:
+    color var(--dur-base),
+    opacity var(--dur-base);
+}
+.journal-del:hover {
+  color: var(--danger);
+  opacity: 1;
+}
+.journal-input-row {
+  display: flex;
+  gap: var(--sp-2);
+}
+.journal-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.35rem var(--sp-2);
+  background: var(--bg-elev, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+}
+.journal-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.journal-add-btn {
+  flex: 0 0 auto;
+  padding: 0.35rem var(--sp-3);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base);
+}
+.journal-add-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .pnj-card-footer {
   padding: 0.55rem var(--sp-4);
   border-top: 1px solid var(--border);

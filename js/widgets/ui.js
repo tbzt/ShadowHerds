@@ -35,6 +35,71 @@ const UI = {
     if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(pnj);
   },
 
+  /* ========================================================
+     JOURNAL DE FICHE (F2) — notes datées, empilées en tête.
+     Champ ADDITIF `pnj.journal = [{ts, text}]` : voyage tel quel
+     dans les exports (Backup sérialise les tableaux *_all en bloc)
+     et est lu par la recherche plein-fiche (Utils.entityContent).
+     ======================================================== */
+
+  /** Toutes les COPIES vivantes d'une entité, par id. Un PNJ généré puis
+      sauvegardé garde une entrée dans Gen.pool ET dans une bibliothèque ; après
+      un reload ces copies sont désérialisées SÉPARÉMENT (mêmes valeurs,
+      références distinctes). Muter/persister toutes les copies garde le journal
+      cohérent quelle que soit la carte affichée (générateur ou Hub). */
+  _entityCopies(id) {
+    const out = [];
+    const scan = (arr) => {
+      if (arr) for (const e of arr) if (e && e.id === id) out.push(e);
+    };
+    if (typeof Gen !== "undefined") scan(Gen.pool);
+    scan(Shadows.data.all);
+    if (typeof Characters !== "undefined") scan(Characters.data.all);
+    if (typeof ContactsBook !== "undefined") scan(ContactsBook.data.all);
+    if (typeof Servers !== "undefined") {
+      const sp = Servers.findSpider(id);
+      if (sp) out.push(sp);
+    }
+    return out;
+  },
+
+  /** Persiste tous les stores contenant l'id (pas de branche d'édition ;
+      route par appartenance). */
+  persistEntity(id) {
+    if (typeof Gen !== "undefined" && Gen.findInPool(id)) Gen._savePool();
+    if (Shadows.data.all.some((p) => p.id === id)) Shadows.save();
+    if (typeof Characters !== "undefined" && Characters.data.all.some((p) => p.id === id))
+      Characters.save();
+    if (typeof ContactsBook !== "undefined" && ContactsBook.data.all.some((p) => p.id === id))
+      ContactsBook.save();
+    if (typeof Servers !== "undefined" && Servers.findSpider(id)) Servers.save();
+  },
+
+  addJournalEntry(pnjId, text) {
+    const t = (text || "").trim();
+    if (!t) return;
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
+    const entry = { ts: Date.now(), text: t }; // partagé entre copies (identique)
+    for (const c of copies) {
+      if (!Array.isArray(c.journal)) c.journal = [];
+      c.journal.unshift(entry); // plus récent en tête
+    }
+    this.persistEntity(pnjId);
+    CardRenderer.refresh(copies[0]);
+  },
+
+  removeJournalEntry(pnjId, ts) {
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
+    for (const c of copies) {
+      if (Array.isArray(c.journal))
+        c.journal = c.journal.filter((e) => String(e.ts) !== String(ts));
+    }
+    this.persistEntity(pnjId);
+    CardRenderer.refresh(copies[0]);
+  },
+
   /** Clic sur le tag d'une drogue : fait avancer le cycle idle → effet →
       contrecoup → idle (cf. js/drugs.js). */
   cycleDrug(pnjId, edition, drugId) {

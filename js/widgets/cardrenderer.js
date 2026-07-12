@@ -25,7 +25,7 @@ const CardRenderer = {
     el.dataset.edition = pnj.edition;
 
     el.innerHTML =
-      this._header(pnj) + this._body(pnj, deps) + this._footer(pnj, actions, deps);
+      this._header(pnj) + this._body(pnj, deps) + this._journal(pnj) + this._footer(pnj, actions, deps);
 
     setTimeout(() => el.classList.remove("scanning"), 900);
     return el;
@@ -46,7 +46,7 @@ const CardRenderer = {
             : ["edit", "remove"];
         el.classList.toggle("spirit-collapsed", !!pnj.collapsed);
         el.innerHTML =
-          this._header(pnj) + this._body(pnj, deps) + this._footer(pnj, actions, deps);
+          this._header(pnj) + this._body(pnj, deps) + this._journal(pnj) + this._footer(pnj, actions, deps);
       });
   },
 
@@ -695,6 +695,83 @@ const CardRenderer = {
     return `<button class="card-action-btn ghost" data-action="generate-portrait" data-id="${pnj.id}">Portrait IA</button>`;
   },
 
+  /* ---- Journal de fiche (F2) ----
+     Notes datées, empilées en tête, repliées derrière un bouton pour ne pas
+     alourdir la grille. Le compte reste visible (mémoire présente). L'état
+     d'ouverture vit dans un Set TRANSIENT (jamais sérialisé sur l'entité,
+     contrairement à _refOpen) : uniquement de la présentation.
+     Exclu des entités liées/transitoires (véhicules, esprits, enfants) :
+     le journal est la mémoire d'une fiche autonome qu'on suit dans le temps. */
+  _journalOpen: new Set(),
+
+  _journal(pnj) {
+    if (pnj.type === "vehicle" || pnj.type === "spirit" || pnj.ownerId) return "";
+    const entries = Array.isArray(pnj.journal) ? pnj.journal : [];
+    const open = this._journalOpen.has(pnj.id);
+    const count = entries.length
+      ? ` <span class="journal-count">${entries.length}</span>`
+      : "";
+    if (!open) {
+      return `<div class="pnj-journal">
+        <button class="journal-toggle" data-action="journal-toggle" data-id="${pnj.id}"
+          aria-expanded="false" title="Notes de séance sur cette fiche">＋ Journal${count}</button>
+      </div>`;
+    }
+    const rows = entries
+      .map((e) => {
+        const d = new Date(e.ts);
+        const dstr = isNaN(d.getTime())
+          ? ""
+          : d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+        return `<li class="journal-entry">
+          <span class="journal-date">${dstr}</span>
+          <span class="journal-text">${this._esc(e.text)}</span>
+          <button class="journal-del" data-action="journal-remove" data-id="${pnj.id}"
+            data-ts="${e.ts}" title="Supprimer cette note" aria-label="Supprimer">✕</button>
+        </li>`;
+      })
+      .join("");
+    return `<div class="pnj-journal">
+      <button class="journal-toggle" data-action="journal-toggle" data-id="${pnj.id}"
+        aria-expanded="true" title="Replier le journal">▾ Journal${count}</button>
+      <div class="journal-body">
+        ${entries.length ? `<ul class="journal-list">${rows}</ul>` : ""}
+        <div class="journal-input-row">
+          <input type="text" class="journal-input" data-journal-input data-id="${pnj.id}"
+            maxlength="200" placeholder="Une note, datée…" aria-label="Nouvelle note">
+          <button class="journal-add-btn" data-action="journal-add" data-id="${pnj.id}">Ajouter</button>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  /** Ouvre/replie l'input du journal (présentation seule). Rafraîchit toutes
+      les copies de la carte, puis met le focus sur l'input si on vient d'ouvrir. */
+  _toggleJournal(id) {
+    if (this._journalOpen.has(id)) this._journalOpen.delete(id);
+    else this._journalOpen.add(id);
+    const pnj = PnjLookup.find(id);
+    if (pnj) this.refresh(pnj);
+    if (this._journalOpen.has(id)) {
+      setTimeout(() => {
+        document.querySelector(`.pnj-card[data-id="${id}"] [data-journal-input]`)?.focus();
+      }, 0);
+    }
+  },
+
+  /** Lit l'input de la carte cliquée et délègue l'ajout à UI (persistance),
+      puis re-focus l'input (l'ajout reste ouvert pour empiler plusieurs notes). */
+  _submitJournal(actionEl) {
+    const id = actionEl.dataset.id;
+    const input = actionEl.closest(".pnj-card")?.querySelector("[data-journal-input]");
+    const text = input ? input.value : "";
+    if (!text.trim()) return;
+    UI.addJournalEntry(id, text);
+    setTimeout(() => {
+      document.querySelector(`.pnj-card[data-id="${id}"] [data-journal-input]`)?.focus();
+    }, 0);
+  },
+
   /* ---- Footer ---- */
   _footer(pnj, actions, deps = CardRenderer.liveDeps()) {
     if (pnj.type === "vehicle") {
@@ -822,7 +899,32 @@ const CardRenderer = {
         case "export-foundry":
           FoundryExport.exportPnj(id);
           break;
+        case "journal-toggle":
+          this._toggleJournal(id);
+          break;
+        case "journal-add":
+          this._submitJournal(actionEl);
+          break;
+        case "journal-remove":
+          UI.removeJournalEntry(id, actionEl.dataset.ts);
+          break;
       }
+    });
+
+    // Entrée dans l'input de journal = ajouter la note (pas de <form> : évite
+    // une soumission de page ; délégation cohérente avec le reste des cartes).
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      const input = e.target.closest("[data-journal-input]");
+      if (!input) return;
+      e.preventDefault();
+      const id = input.dataset.id;
+      const text = input.value;
+      if (!text.trim()) return;
+      UI.addJournalEntry(id, text);
+      setTimeout(() => {
+        document.querySelector(`.pnj-card[data-id="${id}"] [data-journal-input]`)?.focus();
+      }, 0);
     });
   },
 };
