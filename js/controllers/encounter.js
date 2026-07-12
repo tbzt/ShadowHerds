@@ -730,6 +730,13 @@ const Encounter = {
         case "toggle-add-picker":
           this.toggleAddPicker();
           break;
+        case "toggle-rail": {
+          // K1 : bascule réglette compacte / liste complète — état de vue
+          // éphémère (comme row-menu), pas de nouvelle clé Storage.
+          const modal = document.querySelector(".encounter-modal");
+          if (modal) modal.classList.toggle("rail-expanded");
+          break;
+        }
         case "add-candidate":
           this.add(id);
           this._renderPicker();

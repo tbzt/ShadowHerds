@@ -8,7 +8,7 @@
   <!-- Fontes auto-hébergées (CH-V10) : l'app reste fonctionnelle et fidèle
        à ses identités d'édition sans réseau (table de jeu = contexte nominal). -->
   <link rel="stylesheet" href="css/fonts.css?v=1">
-  <link rel="stylesheet" href="css/base.css?v=97">
+  <link rel="stylesheet" href="css/base.css?v=98">
   <link rel="stylesheet" href="css/print.css?v=5">
   <!-- Thèmes d'édition chargés à la sélection (App._loadEditionAssets, CH-P1b). -->
 </head>
@@ -587,9 +587,13 @@
             <button class="btn-secondary btn-small" data-action="roll-and-sort" title="Lancer l'initiative de tous et classer">⚄ Lancer &amp; classer</button>
             <button class="btn-secondary btn-small" data-action="sort-init" title="Trier par initiative (décroissant)">↓ Trier</button>
             <button class="btn-secondary btn-small" data-action="next-round">Round suivant</button>
+            <!-- K1 : rail compact (mobile) vs liste complète (drag, menu ⋯) — bascule de classe, masqué ≥641px (cf. CSS). -->
+            <button class="btn-secondary btn-small encounter-rail-toggle" data-action="toggle-rail" title="Basculer réglette compacte / liste complète">☰ Réglette/Liste</button>
             <button class="danger-btn btn-small" data-action="clear-encounter">Vider la scène</button>
           </div>
           <div id="encounter-add-panel" class="encounter-add-panel" hidden></div>
+          <!-- K1 : réglette compacte (rail de jetons, sous 641px par défaut) — sœur de la liste complète, jamais les deux visibles à la fois. -->
+          <div id="encounter-rail" class="encounter-rail"></div>
           <div id="encounter-list" class="encounter-list"></div>
           <!-- Action primaire de la boucle : collée en pied de colonne (zone
                pouce sur mobile), séparée des actions secondaires ci-dessus. -->
@@ -708,7 +712,7 @@
   <script defer src="js/widgets/bulkbar.js?v=2"></script>
   <script defer src="js/widgets/selectionmode.js?v=1"></script>
   <script defer src="js/widgets/serverrenderer.js?v=6"></script>
-  <script defer src="js/widgets/encounterrenderer.js?v=15"></script>
+  <script defer src="js/widgets/encounterrenderer.js?v=16"></script>
   <script defer src="js/controllers/servers.js?v=950"></script>
   <script defer src="js/controllers/intrusion.js?v=2"></script>
   <script defer src="js/widgets/dicelog.js?v=4"></script>
@@ -731,7 +735,7 @@
   <script defer src="js/widgets/pinrow.js?v=1"></script>
   <script defer src="js/widgets/onboarding.js?v=1"></script>
   <script defer src="js/controllers/portrait.js?v=11"></script>
-  <script defer src="js/controllers/encounter.js?v=17"></script>
+  <script defer src="js/controllers/encounter.js?v=18"></script>
   <script defer src="js/controllers/editmodal.js?v=951"></script>
   <script defer src="js/controllers/contactgen.js?v=951"></script>
   <script defer src="js/controllers/contacts.js?v=950"></script>

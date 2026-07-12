@@ -52,6 +52,20 @@ const EncounterRenderer = {
       : "";
     const html = liveHtml + downHtml;
 
+    // K1 : réglette compacte (rail de jetons, sœur de la liste complète —
+    // jamais reconstruite depuis elle, mêmes rows). Toujours rendue (même
+    // vide), la visibilité rail/liste est purement CSS (cf. .rail-expanded).
+    const rail = document.getElementById("encounter-rail");
+    if (rail) {
+      const railHtml = narrative
+        ? visible.map((x) => this._tokenNarrative(x.r)).join("")
+        : visible
+            .map((x) => this._token(x.r, x.i === state.turnIndex, this._outOfPass(x.r, state, model)))
+            .join("");
+      rail.innerHTML =
+        railHtml || `<div class="encounter-rail-empty">Aucun combattant</div>`;
+    }
+
     if (!html) {
       list.innerHTML = `<div class="empty-state">
         <span class="empty-state-title">Aucun combattant</span>
@@ -280,6 +294,43 @@ const EncounterRenderer = {
         </span>
       </div>
     </div>`;
+  },
+
+  /** Jeton compact de la réglette K1 (ordonné) : init + nom tronqué, mêmes
+      classes d'état que la ligne complète, mêmes tap-actions (focus-combatant,
+      comme le nom de la ligne) — rien de nouveau côté contrôleur. */
+  _token(r, isActive, outOfPass) {
+    const { pnjId, init, pnj } = r;
+    const name = Utils.escHtml(pnj.name || "");
+    const initLabel = r.down ? "—" : r.delayed ? "⏸" : init == null ? "·" : String(init);
+    const cls = [
+      "encounter-token",
+      isActive && "active-turn",
+      r.hasActed && "has-acted",
+      outOfPass && "out-of-pass",
+      r.down && "down",
+      r.delayed && !r.down && "delayed",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const action = pnj._adhoc ? "" : ` data-action="focus-combatant" data-id="${pnjId}"`;
+    const tag = pnj._adhoc ? "div" : "button";
+    return `<${tag} class="${cls}"${action} title="${name}">
+      <span class="encounter-token-init">${initLabel}</span>
+      <span class="encounter-token-name">${name}</span>
+    </${tag}>`;
+  },
+
+  /** Jeton narratif (Anarchy) : puce/✓ au lieu d'une init, tap = bascule « a
+      joué » (même action que la ligne narrative). */
+  _tokenNarrative(r) {
+    const { pnjId, hasActed, pnj } = r;
+    const name = Utils.escHtml(pnj.name || "");
+    const cls = ["encounter-token", hasActed && "has-acted", r.down && "down"].filter(Boolean).join(" ");
+    return `<button class="${cls}" data-action="narrative-toggle" data-id="${pnjId}" title="${name}">
+      <span class="encounter-token-init">${hasActed ? "✓" : "•"}</span>
+      <span class="encounter-token-name">${name}</span>
+    </button>`;
   },
 
   /** Filtre de recherche du picker (CH-Q4). Conservé côté renderer, comme
