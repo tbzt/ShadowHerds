@@ -9,6 +9,7 @@
        à ses identités d'édition sans réseau (table de jeu = contexte nominal). -->
   <link rel="stylesheet" href="css/fonts.css?v=1">
   <link rel="stylesheet" href="css/base.css?v=91">
+  <link rel="stylesheet" href="css/print.css?v=3">
   <!-- Thèmes d'édition chargés à la sélection (App._loadEditionAssets, CH-P1b). -->
 </head>
 
@@ -323,6 +324,7 @@
                      masqué en vue « Tout ». Seul chemin mobile vers Contacts/Serveurs. -->
                 <button class="btn-primary btn-small" id="hub-create-btn" data-action="show-panel" hidden>＋ Créer</button>
                 <button class="btn-secondary btn-small" data-action="encounter-open" title="Ouvrir le suivi de combat">⚔ Combat</button>
+                <button class="btn-secondary btn-small" data-action="print-sheets" title="Imprimer les fiches de ce dossier (une par page, style de l'édition)">🖨 Imprimer</button>
                 <button class="btn-secondary btn-small" data-action="backup-export" title="Sauvegarder toutes vos fiches (PNJ et contacts, toutes éditions)">⤓ Sauvegarder</button>
                 <button class="btn-secondary btn-small" data-action="backup-import" title="Charger une sauvegarde depuis un fichier ou une URL">⤒ Charger</button>
               </div>
@@ -662,6 +664,9 @@
 
   <!-- TOAST -->
   <div id="toast" role="status" aria-live="polite"></div>
+  <!-- Racine d'impression (F4) : peuplée par PrintSheet, invisible à l'écran,
+       révélée par @media print (ou .print-preview pour la vérification). -->
+  <div id="print-root" aria-hidden="true"></div>
 
   <!-- SCRIPTS — ordre important : couches CONTRIBUTING.md § « Les dépendances
        vont dans un seul sens » (core → rules → editions → catalogs → widgets
@@ -734,9 +739,10 @@
   <script defer src="js/controllers/hub.js?v=12"></script>
   <script defer src="js/controllers/settings.js?v=32"></script>
   <script defer src="js/controllers/backup.js?v=954"></script>
+  <script defer src="js/controllers/printsheet.js?v=1"></script>
   <script defer src="js/controllers/sync.js?v=7"></script>
   <script defer src="js/controllers/foundryexport.js?v=4"></script>
-  <script defer src="js/app.js?v=967"></script>
+  <script defer src="js/app.js?v=968"></script>
 
 </body>
 

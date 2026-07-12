@@ -1,0 +1,400 @@
+/* ============================================================
+   PRINT — feuilles de fiches PNJ imprimables, FIDÈLES aux livres
+   de chaque édition (F4). Le rendu HTML par édition vit dans les
+   modules (js/editions/*.print.js) ; ici, la PRÉSENTATION.
+
+   Les styles de fiche (.psheet*) sont du CSS NORMAL (pas sous
+   @media print) pour être rendables à l'écran (aperçu, vérif).
+   Le bloc @media print ne fait que : masquer le chrome, révéler
+   #print-root, forcer fond clair + couleurs exactes + sauts de page.
+
+   Palette FIDÈLE AU LIVRE (choix utilisateur) : SR5 ambre/rouge sang,
+   SR6 magenta, Anarchy 2 or — chacune sur fond CLAIR (encre économe).
+   ============================================================ */
+
+/* #print-root est invisible à l'écran ; seul @media print le montre.
+   .print-preview le force visible pour la vérification manuelle. */
+#print-root {
+  display: none;
+}
+.print-preview #print-root {
+  display: block;
+  background: #6b6b6b; /* fond neutre d'aperçu, hors impression */
+  padding: 20px;
+}
+
+/* ---- Fiche : base commune (fond clair, encre sombre) ---- */
+.psheet {
+  --p-ink: #17140f;
+  --p-dim: #5a5346;
+  --p-line: #cfc7b8;
+  --p-paper: #ffffff;
+  --p-accent: #333;
+  --p-accent2: #777;
+  --p-display: "Oswald", sans-serif;
+  --p-body: "Inter", sans-serif;
+
+  box-sizing: border-box;
+  width: 190mm;
+  max-width: 100%;
+  margin: 0 auto 14px;
+  padding: 10mm 11mm;
+  background: var(--p-paper);
+  color: var(--p-ink);
+  font-family: var(--p-body);
+  font-size: 10.5pt;
+  line-height: 1.35;
+}
+.psheet * {
+  box-sizing: border-box;
+}
+
+/* Barre-titre + métatype */
+.psheet-titlebar {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 4px;
+}
+.psheet-name {
+  font-family: var(--p-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 22pt;
+  line-height: 1;
+  color: var(--p-accent);
+  margin: 0;
+}
+.psheet-sub {
+  font-family: var(--p-display);
+  font-size: 11pt;
+  color: var(--p-dim);
+}
+.psheet-meta {
+  font-family: var(--p-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10pt;
+  color: var(--p-accent);
+  margin: 2px 0 6px;
+}
+
+/* Grille : bloc de stats à gauche, portrait à droite si présent */
+.psheet-cols {
+  display: flex;
+  gap: 10mm;
+  align-items: flex-start;
+}
+.psheet-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.psheet-aside {
+  flex: 0 0 46mm;
+}
+.psheet-portrait {
+  width: 46mm;
+  height: auto;
+  border: 1.5pt solid var(--p-accent);
+  object-fit: cover;
+}
+
+/* Table d'attributs (SR5/SR6) */
+.psheet-attrs {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 7px;
+  font-family: var(--p-display);
+}
+.psheet-attrs th {
+  background: var(--p-accent);
+  color: #fff;
+  font-size: 8.5pt;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 2px 3px;
+  text-align: center;
+  border: 0.5pt solid var(--p-accent);
+}
+.psheet-attrs td {
+  font-size: 11pt;
+  font-weight: 600;
+  text-align: center;
+  padding: 2px 3px;
+  border: 0.5pt solid var(--p-line);
+  color: var(--p-ink);
+}
+
+/* Lignes libellées « Libellé : valeurs » (SR5/SR6) */
+.psheet-lines {
+  margin: 0;
+}
+.psheet-line {
+  margin: 0 0 2.5px;
+  text-indent: -10px;
+  padding-left: 10px;
+}
+.psheet-line-label {
+  font-weight: 700;
+  color: var(--p-accent);
+}
+.psheet-line-label::after {
+  content: " : ";
+  color: var(--p-dim);
+}
+
+/* Moniteurs de condition entiers (cases visibles) */
+.psheet-monitors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 5px 0;
+}
+.psheet-monitor-label {
+  font-family: var(--p-display);
+  font-weight: 600;
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  color: var(--p-dim);
+  margin-right: 4px;
+}
+.psheet-boxes {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  vertical-align: middle;
+}
+.psheet-box {
+  width: 9pt;
+  height: 9pt;
+  border: 0.75pt solid var(--p-accent);
+  display: inline-block;
+}
+.psheet-box.pen {
+  border-color: var(--p-accent2);
+}
+
+/* Journal sur la fiche imprimée (mémoire de table) */
+.psheet-journal {
+  margin-top: 6px;
+  border-top: 0.75pt solid var(--p-line);
+  padding-top: 4px;
+}
+.psheet-journal-label {
+  font-family: var(--p-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 8.5pt;
+  letter-spacing: 0.05em;
+  color: var(--p-accent);
+}
+.psheet-journal-entry {
+  font-size: 9.5pt;
+}
+.psheet-journal-date {
+  color: var(--p-dim);
+  font-family: var(--p-display);
+}
+
+/* ============================================================
+   SR5 — « dossier classifié » : ambre + rouge sang, Oswald,
+   barre-titre biseautée.
+   ============================================================ */
+.psheet-sr5 {
+  --p-accent: #b56b00;
+  --p-accent2: #8b1a1a;
+  --p-display: "Oswald", sans-serif;
+  --p-paper: #faf8f4;
+}
+.psheet-sr5 .psheet-titlebar {
+  background: linear-gradient(90deg, #8b1a1a 0%, #b56b00 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  padding: 4px 12px;
+  margin-bottom: 6px;
+}
+.psheet-sr5 .psheet-name {
+  color: #fff;
+}
+.psheet-sr5 .psheet-sub {
+  color: #ffe;
+}
+
+/* ============================================================
+   SR6 — magenta + Chakra Petch, titre souligné hachuré (le livre
+   n'a pas de barre pleine mais un liseré pointillé sous le titre).
+   ============================================================ */
+.psheet-sr6 {
+  --p-accent: #d6006e;
+  --p-accent2: #7b2fff;
+  --p-display: "Chakra Petch", sans-serif;
+  --p-paper: #ffffff;
+}
+.psheet-sr6 .psheet-titlebar {
+  background-image: repeating-linear-gradient(90deg, var(--p-accent) 0, var(--p-accent) 5px, transparent 5px, transparent 9px);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 2.5pt;
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+}
+
+/* ============================================================
+   ANARCHY 2 — parchemin + or, Saira, tables zébrées, attributs en
+   ligne, colonnes narratives (script). Fidèle au prétiré du livre.
+   ============================================================ */
+.psheet-anarchy2 {
+  --p-accent: #a9820b;
+  --p-accent2: #7a5c00;
+  --p-ink: #241d0e;
+  --p-line: #d8c9a0;
+  --p-display: "Saira Condensed", "Oswald", sans-serif;
+  --p-paper: #f7f1e0;
+}
+.psheet-anarchy2 .psheet-name {
+  letter-spacing: -0.01em;
+}
+.psheet-anarchy2 .psheet-titlebar {
+  border-bottom: 2.5pt solid var(--p-accent);
+  padding-bottom: 3px;
+  margin-bottom: 7px;
+}
+.pa-attrs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 14px;
+  margin: 0 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 0.75pt solid var(--p-line);
+}
+.pa-attr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pa-attr-lbl {
+  font-family: var(--p-display);
+  font-weight: 600;
+  font-size: 8pt;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--p-accent);
+}
+.pa-attr-val {
+  font-family: var(--p-display);
+  font-weight: 700;
+  font-size: 18pt;
+  line-height: 1;
+  color: var(--p-ink);
+}
+.pa-ess {
+  margin-left: auto;
+  font-family: var(--p-display);
+  font-size: 10pt;
+  color: var(--p-dim);
+}
+.pa-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6px 0;
+  font-size: 9.5pt;
+}
+.pa-table th {
+  font-family: var(--p-display);
+  font-weight: 600;
+  font-size: 8pt;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: left;
+  color: var(--p-accent);
+  border-bottom: 1pt solid var(--p-accent);
+  padding: 2px 4px;
+}
+.pa-table td {
+  padding: 1.5px 4px;
+  border-bottom: 0.5pt solid var(--p-line);
+  color: var(--p-ink);
+}
+.pa-table tbody tr:nth-child(odd) {
+  background: rgba(169, 130, 11, 0.08);
+}
+.pa-sk-name {
+  font-weight: 600;
+}
+.pa-sk-spec .pa-sk-name {
+  font-weight: 400;
+  padding-left: 12px;
+  color: var(--p-dim);
+}
+.pa-sk-rd {
+  font-weight: 700;
+}
+.pa-atouts {
+  margin: 6px 0;
+}
+.pa-atout {
+  font-size: 9.5pt;
+}
+.pa-narr-title {
+  font-family: var(--p-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 9pt;
+  letter-spacing: 0.05em;
+  color: var(--p-accent);
+  border-bottom: 0.75pt solid var(--p-line);
+  margin: 8px 0 3px;
+}
+.pa-narr {
+  margin-bottom: 6px;
+}
+.pa-narr-item {
+  font-style: italic;
+  font-size: 9.5pt;
+  line-height: 1.3;
+  color: var(--p-ink);
+}
+
+/* ============================================================
+   @media print — mise en page papier
+   ============================================================ */
+@media print {
+  /* Masque toute l'app ; ne montre que les fiches. */
+  body > *:not(#print-root) {
+    display: none !important;
+  }
+  #print-root {
+    display: block !important;
+    background: #fff !important;
+    padding: 0 !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  /* Plusieurs fiches par page : une fiche ne se COUPE jamais entre deux pages
+     (break-inside: avoid), mais elles s'empilent librement — pas de saut de
+     page forcé. Un filet sépare deux fiches sur la même page. */
+  .psheet {
+    margin: 0 auto;
+    box-shadow: none;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .psheet + .psheet {
+    border-top: 0.75pt dashed var(--p-line);
+    padding-top: 8mm;
+    margin-top: 4mm;
+  }
+  /* Force l'impression des aplats de couleur (barre-titre, en-têtes). */
+  .psheet,
+  .psheet * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  @page {
+    margin: 12mm;
+  }
+}
