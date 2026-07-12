@@ -92,14 +92,15 @@ const App = {
     anarchy1: "css/theme-anarchy1.css?v=3",
   },
   _EDITION_JS: {
-    sr5: ["js/editions/sr5.js?v=959", "js/editions/sr5.foundry.js?v=4"],
-    sr6: ["js/editions/sr6.js?v=958", "js/editions/sr6.foundry.js?v=5"],
+    sr5: ["js/editions/sr5.js?v=959", "js/editions/sr5.foundry.js?v=4", "js/editions/sr5.print.js?v=1"],
+    sr6: ["js/editions/sr6.js?v=958", "js/editions/sr6.foundry.js?v=5", "js/editions/sr6.print.js?v=1"],
     anarchy2: [
       "js/editions/anarchy2.js?v=42",
       "js/editions/anarchy2.creation.js?v=6",
       "js/editions/anarchy2.foundry.js?v=6",
+      "js/editions/anarchy2.print.js?v=3",
     ],
-    anarchy1: ["js/editions/anarchy1.js?v=17"],
+    anarchy1: ["js/editions/anarchy1.js?v=17", "js/editions/anarchy1.print.js?v=1"],
   },
   // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
   _COMMON_JS: ["js/catalogs/creatures.js?v=955"],
@@ -382,6 +383,12 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
       case "backup-export":
         Backup.export();
+        break;
+      case "print-sheets":
+        PrintSheet.print();
+        break;
+      case "foundry-dossier":
+        FoundryExport.exportDossier();
         break;
       case "backup-import":
         Backup.openImportDialog();
