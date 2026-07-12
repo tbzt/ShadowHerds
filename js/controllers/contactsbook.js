@@ -29,12 +29,27 @@ const ContactsBook = Object.assign(
       c.notes = "";
       this.data.all.push(c);
       // Classe dans le dossier de destination courant (piloté par DossierBar).
-      if (this.currentGroup && this.currentGroup !== "all") {
-        (this.data.groups[this.currentGroup] ||= []).push(c.id);
+      const group =
+        this.currentGroup && this.currentGroup !== "all" ? this.currentGroup : null;
+      if (group) {
+        (this.data.groups[group] ||= []).push(c.id);
       }
       this.save();
       this.render();
-      toast(`✓ ${c.name} ajouté aux contacts.`);
+      // Zone d'essai / undo (parité avec le pool PNJ du Générateur) : un
+      // contact généré doit pouvoir être écarté sans passer par la
+      // suppression explicite de la fiche.
+      const restore = () => {
+        this.data.all = this.data.all.filter((x) => x.id !== c.id);
+        if (group) {
+          this.data.groups[group] = (this.data.groups[group] || []).filter(
+            (id) => id !== c.id,
+          );
+        }
+        this.save();
+        this.render();
+      };
+      toastUndo(`✓ ${c.name} ajouté aux contacts.`, restore);
     },
 
     /* ---- Édition inline ---- */
