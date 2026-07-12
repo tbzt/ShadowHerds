@@ -1806,12 +1806,18 @@ select optgroup {
   padding: 0.55rem var(--sp-4);
   border-top: 1px solid var(--border);
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: var(--sp-2);
   background: var(--bg);
 }
+/* Le pied passe sur deux lignes plutôt que de se couper quand les actions
+   sont nombreuses (Phase 0). La hiérarchie propre — un primaire + un ⋯ —
+   arrive en Phase 1 ; ici on empêche seulement le débordement. */
 .card-action-btn {
-  flex: 1;
-  padding: 0.38rem 0;
+  flex: 1 1 auto;
+  min-width: 84px;
+  padding: 0.38rem 0.4rem;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: var(--fs-xs);
@@ -2281,20 +2287,43 @@ select optgroup {
   top: 0.5rem;
   left: 0.5rem;
   z-index: var(--z-card);
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-card);
+  background: color-mix(in srgb, var(--bg-card) 80%, transparent);
   border: 1px solid var(--border);
   border-radius: 3px;
   cursor: pointer;
+  opacity: 0.5;
+  transition: opacity var(--dur-fast);
+}
+/* Discrète au repos (la sélection multiple est peu fréquente), franche au
+   survol, au focus ou une fois cochée. Reste visible et cliquable au
+   tactile (pas de pointer-events:none). Phase 1 : bascule en mode
+   « Sélectionner », masqué par défaut hors du mode. */
+.bulk-selectable:hover .bulk-select-check,
+.bulk-selectable:focus-within .bulk-select-check,
+.bulk-select-check:has(input:checked) {
+  opacity: 1;
 }
 .bulk-select-check input {
   width: 15px;
   height: 15px;
   cursor: pointer;
+}
+/* Gouttière réservée : la case (empreinte ≈ 30px depuis le bord de carte)
+   ne recouvre plus jamais le nom ni le portrait. Scopée à .bulk-selectable,
+   donc les entités liées sans case (véhicules, esprits invoqués) gardent
+   leur header pleine largeur. Le header contact est imbriqué dans un body
+   déjà paddé (var(--sp-4)), d'où une valeur moindre. */
+.bulk-selectable .pnj-card-header,
+.bulk-selectable .server-card-header {
+  padding-left: 2.25rem;
+}
+.bulk-selectable .contact-header-row {
+  padding-left: 1.25rem;
 }
 #bulk-bar {
   display: none;
