@@ -169,6 +169,10 @@ const App = {
     // Lire le panel depuis l'URL si disponible, sinon le hub
     const hashPanel = this._panelFromHash();
     this.showPanel(hashPanel || "shadows", { updateHash: !hashPanel });
+
+    // Première présentation de la barre du haut (CH-V6-T1.7, N1) : une
+    // seule fois, jamais répétée (Onboarding.dismiss pose le flag global).
+    Onboarding.maybeShow();
   },
 
   /* ---- Navigation entre panels ---- */
@@ -397,6 +401,9 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
       case "toggle-shortcuts":
         App.toggleCheatsheet();
+        break;
+      case "open-palette":
+        Palette.open();
         break;
       case "shortcuts-close":
         App.toggleCheatsheet(false);

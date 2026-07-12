@@ -543,6 +543,33 @@ select optgroup {
   flex-shrink: 0;
 }
 
+/* ---- Onboarding (CH-V6-T1.7) : bulle non-modale, une seule fois ----
+   Pas de backdrop (contrairement aux panneaux .risk-panel-overlay) : l'app
+   reste utilisable dessous, cohérent avec « signaler, ne pas guider de
+   force » (COMITE_TERRAIN D4). Ancrée sous la barre du haut, jamais au-delà
+   de la largeur du viewport (mobile compris). */
+#onboarding-bubble {
+  position: fixed;
+  top: 60px;
+  right: var(--sp-4);
+  z-index: var(--z-popover);
+  max-width: min(320px, calc(100vw - 2 * var(--sp-4)));
+  background: var(--bg-card);
+  border: 1px solid var(--accent2);
+  border-radius: 6px;
+  padding: var(--sp-3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+#onboarding-bubble p {
+  margin: 0 0 var(--sp-2);
+  line-height: 1.5;
+}
+#onboarding-bubble kbd {
+  font-size: 0.9em;
+}
+
 /* ---- Réserve : stepper + champ ---- */
 .dice-count-group {
   display: flex;
