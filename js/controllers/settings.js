@@ -107,6 +107,138 @@ const Settings = {
     toast(token.trim() ? "Token Pollinations enregistré." : "Token Pollinations retiré.");
   },
 
+  /* ---- Sauvegarde & synchronisation (GLOBAL, hors édition) ----
+     L'UI se contente de piloter Sync ; toute la logique (pull/push,
+     conflits, providers) vit dans sync.js. Le rappel de sauvegarde (F3)
+     et la synchro partagent le même horodatage `lastAt`. */
+  _syncSectionHTML() {
+    const sc = Sync.cfg();
+    const st = Sync.status();
+    let h = `<div class="settings-section" id="sync-section">
+      <h3>Sauvegarde &amp; synchronisation</h3>
+      <p>Vos fiches sont enregistrées dans ce navigateur. Sauvegardez-les, ou synchronisez-les automatiquement entre vos appareils via un stockage qui vous appartient — rien ne transite par un serveur ShadowHerds.</p>
+      <div class="sync-reminder" id="sync-reminder">${this._syncReminderHTML(st)}</div>
+      <div class="display-prefs" style="margin-top:0.6rem;">
+        <button class="btn-primary" data-action="backup-export">Sauvegarder mes fiches</button>
+        <button class="btn-secondary" data-action="backup-import">Importer une sauvegarde…</button>
+      </div>
+      <div class="form-group" style="margin-top:1rem;">
+        <label>Synchronisation automatique entre appareils</label>
+        <div class="radio-group">
+          ${this._radioSync("none", "Aucune (sauvegarde manuelle)", sc.provider === "none")}
+          ${this._radioSync("gist", "GitHub Gist secret (tous appareils)", sc.provider === "gist")}
+          ${this._radioSync("webdav", "WebDAV / NAS", sc.provider === "webdav")}
+        </div>
+      </div>`;
+
+    if (sc.provider === "gist") h += this._syncGistFields(sc);
+    else if (sc.provider === "webdav") h += this._syncWebdavFields(sc);
+
+    if (sc.provider !== "none") {
+      h += `<div class="display-pref-row" style="margin-top:0.6rem;">
+          <label for="sync_auto">Synchroniser à chaque modification</label>
+          <input type="checkbox" id="sync_auto" ${sc.auto ? "checked" : ""} data-action="toggle-sync-auto">
+        </div>
+        <div class="display-prefs" style="margin-top:0.6rem;">
+          <button class="btn-secondary" data-action="sync-now">Synchroniser maintenant</button>
+        </div>
+        <p class="sync-state" id="sync-state">${this._syncStateHTML(st)}</p>`;
+    }
+
+    return h + `</div>`;
+  },
+  _radioSync(val, label, checked) {
+    return `<label class="radio-option">
+      <input type="radio" name="sync_provider" value="${val}" ${checked ? "checked" : ""}
+        data-action="set-sync-provider">
+      <span>${label}</span>
+    </label>`;
+  },
+  _syncGistFields(sc) {
+    return `<div class="form-group sync-fields" style="margin-top:0.6rem;">
+      <label for="sync_gist_token">Token GitHub (périmètre « gist »)</label>
+      <input type="password" id="sync_gist_token" value="${CardRenderer._esc(sc.gist.token)}"
+        placeholder="ghp_… ou github_pat_…"
+        data-action="set-sync-field" data-prov="gist" data-field="token">
+      <label for="sync_gist_id" style="margin-top:0.5rem;">Identifiant du gist (facultatif)</label>
+      <input type="text" id="sync_gist_id" value="${CardRenderer._esc(sc.gist.gistId)}"
+        placeholder="vide = créé ou retrouvé automatiquement"
+        data-action="set-sync-field" data-prov="gist" data-field="gistId">
+      <details class="settings-detail">
+        <summary>Comment obtenir un token</summary>
+        <p style="font-size:0.72rem;margin-top:0.3rem;">
+          Sur <a href="https://github.com/settings/tokens?type=beta" target="_blank" style="color:var(--accent)">github.com/settings/tokens</a>,
+          créez un token limité au périmètre <strong>Gist</strong>. Un gist secret est créé
+          automatiquement au premier envoi. Collez le même token sur vos autres appareils.
+          Stocké uniquement dans ce navigateur, visible dans les outils de développement :
+          usage personnel, ne le partagez pas dans une copie publique de l'outil.
+        </p>
+      </details>
+    </div>`;
+  },
+  _syncWebdavFields(sc) {
+    return `<div class="form-group sync-fields" style="margin-top:0.6rem;">
+      <label for="sync_webdav_url">URL du fichier de sauvegarde</label>
+      <input type="text" id="sync_webdav_url" value="${CardRenderer._esc(sc.webdav.url)}"
+        placeholder="https://mon-nas.local/dav/shadowherds.json"
+        data-action="set-sync-field" data-prov="webdav" data-field="url">
+      <div class="backup-url-row" style="margin-top:0.5rem;">
+        <input type="text" placeholder="utilisateur" value="${CardRenderer._esc(sc.webdav.user)}"
+          data-action="set-sync-field" data-prov="webdav" data-field="user">
+        <input type="password" placeholder="mot de passe" value="${CardRenderer._esc(sc.webdav.pass)}"
+          data-action="set-sync-field" data-prov="webdav" data-field="pass">
+      </div>
+      <p style="font-size:0.72rem;margin-top:0.3rem;">
+        Le serveur doit autoriser l'accès distant (CORS) et exposer l'en-tête ETag.
+        Préférez des identifiants dédiés, pas le mot de passe principal du NAS.
+      </p>
+    </div>`;
+  },
+  _syncReminderHTML(st) {
+    if (!st.lastAt) return `<span>Aucune sauvegarde effectuée pour l'instant.</span>`;
+    const days = Math.floor((Date.now() - new Date(st.lastAt).getTime()) / 86400000);
+    const txt =
+      days <= 0 ? "aujourd'hui" : days === 1 ? "hier" : `il y a ${days} jours`;
+    return `<span>Dernière sauvegarde : ${txt}.</span>`;
+  },
+  _syncStateHTML(st) {
+    const map = {
+      pulling: "Synchronisation en cours…",
+      pushing: "Envoi en cours…",
+      conflict: "Conflit à résoudre.",
+      error: "La dernière synchronisation a échoué.",
+    };
+    const label = map[st.state] || "";
+    return label ? `<em>${label}</em>` : "";
+  },
+  /** Rafraîchit uniquement les lignes d'état (appelé par Sync après une
+      opération) sans reconstruire tout le panneau. */
+  renderSyncStatus() {
+    const st = Sync.status();
+    const rem = document.getElementById("sync-reminder");
+    if (rem) rem.innerHTML = this._syncReminderHTML(st);
+    const stt = document.getElementById("sync-state");
+    if (stt) stt.innerHTML = this._syncStateHTML(st);
+  },
+  setSyncProvider(v) {
+    Sync._saveCfg({ provider: v });
+    this.render(); // réaffiche pour montrer/masquer les champs du provider
+    if (v !== "none")
+      toast("Renseignez le stockage, puis « Synchroniser maintenant ».");
+  },
+  setSyncField(prov, field, value) {
+    const c = Sync.cfg();
+    Sync._saveCfg({ [prov]: { ...c[prov], [field]: (value || "").trim() } });
+  },
+  toggleSyncAuto(on) {
+    Sync._saveCfg({ auto: !!on });
+    toast(on ? "Synchro automatique activée." : "Synchro automatique désactivée.");
+  },
+  async syncNow() {
+    await Sync.syncNow();
+    this.renderSyncStatus();
+  },
+
   /* ---- Rendu du panel paramètres ---- */
   render() {
     const zone = document.getElementById("settings-panel-content");
@@ -184,6 +316,9 @@ const Settings = {
       </div>`;
     }
 
+    // --- Sauvegarde & synchronisation (global) ---
+    html += this._syncSectionHTML();
+
     // --- Réglages propres à l'édition active (remontés dans le module — A5,
     //     plus de branche `if (ed===…)` ici : prohibition n°1) ---
     html += `<div class="settings-group-label">Cette édition — ${CardRenderer._esc(App.editionModule?.label || App.edition.toUpperCase())}</div>`;
@@ -229,8 +364,9 @@ const Settings = {
     zone.innerHTML = html;
     this._bindDelegation(zone);
 
-    // Bind les radios
-    zone.querySelectorAll("input[type=radio]").forEach((r) => {
+    // Bind les radios propres à l'édition (ceux pilotés par data-action —
+    // affichage des cartes, synchro — ont leur propre gestion en délégation).
+    zone.querySelectorAll("input[type=radio]:not([data-action])").forEach((r) => {
       r.addEventListener("change", () => {
         const k = r.name;
         let v = r.value;
@@ -263,10 +399,18 @@ const Settings = {
         this.setPortraitEnabled(el.checked);
       else if (el.dataset.action === "set-portrait-token")
         this.setPortraitToken(el.value);
+      else if (el.dataset.action === "set-sync-provider")
+        this.setSyncProvider(el.value);
+      else if (el.dataset.action === "set-sync-field")
+        this.setSyncField(el.dataset.prov, el.dataset.field, el.value);
+      else if (el.dataset.action === "toggle-sync-auto")
+        this.toggleSyncAuto(el.checked);
     });
     zone.addEventListener("click", (e) => {
       const el = e.target.closest("[data-action]");
-      if (el && el.dataset.action === "atomize") this.atomize();
+      if (!el) return;
+      if (el.dataset.action === "atomize") this.atomize();
+      else if (el.dataset.action === "sync-now") this.syncNow();
     });
   },
 

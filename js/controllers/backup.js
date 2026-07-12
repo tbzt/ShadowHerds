@@ -90,6 +90,8 @@ const Backup = {
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     toast(`Export : ${s.pnj} PNJ, ${s.contacts} contacts, ${s.servers} serveurs.`);
+    // Alimente le rappel de sauvegarde (F3) : même horodatage que la synchro.
+    if (typeof Sync !== "undefined" && Sync.noteLocalSave) Sync.noteLocalSave();
   },
 
   /* ---- Validation d'un paquet importé ---- */
@@ -150,10 +152,10 @@ const Backup = {
      mode 'replace' : écrase intégralement les données existantes
      mode 'merge'   : ajoute les PNJ/contacts absents, fusionne les groupes
   ---- */
-  apply(pkg, mode = "merge") {
+  apply(pkg, mode = "merge", { silent = false } = {}) {
     const err = this.validate(pkg);
     if (err) {
-      toast(err);
+      if (!silent) toast(err);
       return false;
     }
     const data = pkg.data;
@@ -175,10 +177,12 @@ const Backup = {
 
     // Recharger les modules en mémoire pour l'édition courante
     this._reloadActive();
-    const s = this.stats(pkg);
-    toast(
-      `Import ${mode === "replace" ? "(remplacement)" : "(fusion)"} : ${s.pnj} PNJ, ${s.contacts} contacts, ${s.servers} serveurs.`,
-    );
+    if (!silent) {
+      const s = this.stats(pkg);
+      toast(
+        `Import ${mode === "replace" ? "(remplacement)" : "(fusion)"} : ${s.pnj} PNJ, ${s.contacts} contacts, ${s.servers} serveurs.`,
+      );
+    }
     return true;
   },
 

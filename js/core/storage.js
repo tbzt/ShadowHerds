@@ -7,9 +7,24 @@
 
 const Storage = {
   _edition: 'none',
+  _observers: [],
 
   init(edition) {
     this._edition = edition;
+  },
+
+  /** Observe les écritures persistées (clé complète en argument). Générique :
+      Storage ignore le sens des clés ; c'est à l'abonné (ex. Sync) de filtrer
+      celles qui l'intéressent. N'émet PAS pour les préférences globales. */
+  subscribe(cb) {
+    if (typeof cb === 'function') this._observers.push(cb);
+  },
+
+  _notify(fullKey) {
+    for (const cb of this._observers) {
+      try { cb(fullKey); }
+      catch (e) { Debug.warn("storage", "observateur échoué", { error: e }); }
+    }
   },
 
   _key(key) {
@@ -62,6 +77,7 @@ const Storage = {
     try {
       localStorage.setItem(this._key(key), JSON.stringify(value));
       Debug.log("storage", "set", { key });
+      this._notify(this._key(key));
       return true;
     } catch (e) {
       Debug.warn("storage", "écriture échouée", { key, error: e });
@@ -91,6 +107,7 @@ const Storage = {
     try {
       localStorage.setItem(this._keyForEdition(edition, key), JSON.stringify(value));
       Debug.log("storage", "setForEdition", { edition, key });
+      this._notify(this._keyForEdition(edition, key));
       return true;
     } catch (e) {
       Debug.warn("storage", "écriture d'édition échouée", { edition, key, error: e });

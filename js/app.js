@@ -160,6 +160,11 @@ const App = {
     Gen.buildForms();
     Settings.render();
 
+    // Récupère une éventuelle sauvegarde en ligne plus récente (silencieux,
+    // non bloquant). Paquet multi-éditions : appelé une fois suffit, mais
+    // ré-appeler à chaque changement d'édition est sans effet si rien n'a bougé.
+    Sync.pullOnLoad();
+
     // Lire le panel depuis l'URL si disponible, sinon le hub
     const hashPanel = this._panelFromHash();
     this.showPanel(hashPanel || "shadows", { updateHash: !hashPanel });
@@ -299,6 +304,7 @@ const SHORTCUT_PANELS = {
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   Storage.migrateAnarchyId();
+  Sync.init(); // branche l'écoute des écritures (push auto si activé)
   // CH-A6 : Utils (couche 1) ne référence jamais App directement — c'est App
   // qui lui injecte le résolveur, une seule fois au démarrage.
   Utils.init({ resolveEditionModule: (ed) => App.getEditionModule(ed) });
