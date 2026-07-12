@@ -27,6 +27,26 @@ const Hub = {
   // le bandeau de reprise de brouillon de CharGen).
   _saveReminderDismissed: false,
   _SAVE_REMINDER_DAYS: 7,
+  // Puces de filtre auto (F1) : valeurs de facette sélectionnées, par axe.
+  // État de SESSION (jamais persisté) ; réinitialisé à chaque render() (donc
+  // au changement de dossier/type/mutation), conservé pendant la frappe et le
+  // basculement d'une puce (qui passent par _renderMain).
+  _facets: { role: new Set(), milieu: new Set(), meta: new Set() },
+
+  /** Les 3 axes de facette exposés (Rôle · Milieu · Métatype). `get` lit une
+      métadonnée de génération GÉNÉRIQUE (aucune branche d'édition) ; `labelOf`
+      traduit la clé interne en libellé lisible via les tables Coherence. */
+  _facetDefs() {
+    const roleLabel = (v) =>
+      (typeof Coherence !== "undefined" && Coherence.ROLES?.[v]?.label) || v;
+    const milieuLabel = (v) =>
+      (typeof Coherence !== "undefined" && Coherence.MILIEUX?.[v]?.label) || v;
+    return [
+      { key: "role", label: "Rôle", get: (e) => e.role, labelOf: roleLabel },
+      { key: "milieu", label: "Milieu", get: (e) => e.milieu, labelOf: milieuLabel },
+      { key: "meta", label: "Métatype", get: (e) => e.meta || e.metatype, labelOf: (v) => v },
+    ];
+  },
 
   _typeDefs() {
     return [
@@ -48,6 +68,10 @@ const Hub = {
   },
 
   render() {
+    // Le socle de contenu change (dossier/type/mutation) : les facettes
+    // sélectionnées ne s'y appliquent peut-être plus → on repart à zéro
+    // (évite l'écran vide « sans raison visible », garde-fou D4-a).
+    for (const s of Object.values(this._facets)) s.clear();
     this._renderSaveReminder();
     this._renderChips();
     this._renderCreate();
@@ -133,33 +157,54 @@ const Hub = {
     const q = Utils.searchNorm(this._filter).trim();
     const words = q ? q.split(/\s+/) : [];
 
-    let total = 0;
+    // Passe 1 — entités retenues par le TEXTE (avant facettes), par type.
+    // Sert à la fois à peupler les puces (options stables tant qu'on toggle)
+    // et à rendre les sections après application des facettes.
+    const perType = [];
+    const textMatched = [];
     for (const { col, type, label } of this._typeDefs()) {
       if (this._type !== "all" && this._type !== type) continue;
       let ids = DossierBar.memberIds(col);
       if (words.length) ids = this._filterIds(col, ids, words);
-      if (!ids.length) continue;
-      total += ids.length;
+      const byId = new Map(col.data.all.map((e) => [e.id, e]));
+      const ents = ids.map((id) => byId.get(id)).filter(Boolean);
+      perType.push({ col, type, label, ents });
+      textMatched.push(...ents);
+    }
+
+    // Puces de facette calculées sur l'ensemble texte (elles ne disparaissent
+    // pas quand on en sélectionne une).
+    this._renderFacets(textMatched);
+
+    // Passe 2 — applique les facettes actives et rend les sections.
+    let total = 0;
+    for (const { col, label, ents } of perType) {
+      const kept = ents.filter((e) => this._passesFacets(e));
+      if (!kept.length) continue;
+      total += kept.length;
 
       const section = document.createElement("div");
       section.className = "hub-section";
       const head = document.createElement("div");
       head.className = "hub-section-head";
-      head.innerHTML = `<span class="hub-section-title">${label}</span><span class="hub-section-count">${ids.length}</span>`;
+      head.innerHTML = `<span class="hub-section-title">${label}</span><span class="hub-section-count">${kept.length}</span>`;
       section.appendChild(head);
       const grid = document.createElement("div");
       grid.className = "cards-zone";
-      col.renderMembers(grid, ids);
+      col.renderMembers(grid, kept.map((e) => e.id));
       section.appendChild(grid);
       box.appendChild(section);
     }
 
     if (!total) {
-      const filtering = !!this._filter.trim();
+      const facetsActive = this._facetsActive();
+      const filtering = !!this._filter.trim() || facetsActive;
       const selected = DossierBar.current !== "all";
-      const body = filtering
+      const body = this._filter.trim()
         ? `Aucune fiche ne correspond à « ${CardRenderer._esc(this._filter.trim())} ».`
-        : selected
+        : facetsActive
+          ? "Aucune fiche ne correspond aux filtres actifs."
+          : selected
           ? "Ce dossier est vide pour ce filtre."
           : "Générez du contenu (PNJ, contacts, serveurs) et rangez-le dans un dossier.";
       // Onboarding léger (CH-U11) : « commencer ici » seulement à vide total
@@ -190,6 +235,62 @@ const Hub = {
     });
   },
 
+  _facetsActive() {
+    return Object.values(this._facets).some((s) => s.size > 0);
+  },
+
+  /** Une entité passe si, pour CHAQUE axe ayant des valeurs actives, sa propre
+      valeur figure dans la sélection (ET entre axes, OU au sein d'un axe). Une
+      entité sans valeur sur un axe actif est écartée — la puce narrows
+      honnêtement (ex. un serveur n'a pas de « Rôle »). */
+  _passesFacets(e) {
+    for (const def of this._facetDefs()) {
+      const active = this._facets[def.key];
+      if (!active.size) continue;
+      if (!active.has(def.get(e))) return false;
+    }
+    return true;
+  },
+
+  /** Rend les puces auto (Rôle · Milieu · Métatype) à partir des valeurs
+      DISTINCTES présentes dans `entities`. Un axe n'apparaît qu'avec ≥ 2
+      valeurs (une puce seule ne filtrerait rien). */
+  _renderFacets(entities) {
+    const box = document.getElementById("hub-facets");
+    if (!box) return;
+    let html = "";
+    for (const def of this._facetDefs()) {
+      const values = new Map(); // valeur brute → libellé
+      for (const e of entities) {
+        const raw = def.get(e);
+        if (raw == null || raw === "") continue;
+        if (!values.has(raw)) values.set(raw, def.labelOf(raw));
+      }
+      if (values.size < 2) continue;
+      const active = this._facets[def.key];
+      const chips = [...values.entries()]
+        .sort((a, b) => String(a[1]).localeCompare(String(b[1]), "fr"))
+        .map(([raw, lab]) => {
+          const on = active.has(raw) ? " active" : "";
+          return `<button class="hub-facet-chip${on}" data-hub data-action="hub-facet"
+            data-facet="${def.key}" data-value="${CardRenderer._esc(raw)}"
+            aria-pressed="${active.has(raw)}">${CardRenderer._esc(lab)}</button>`;
+        })
+        .join("");
+      html += `<div class="hub-facet-group">
+        <span class="hub-facet-label">${def.label}</span>${chips}</div>`;
+    }
+    box.innerHTML = html;
+  },
+
+  toggleFacet(key, value) {
+    const set = this._facets[key];
+    if (!set) return;
+    if (set.has(value)) set.delete(value);
+    else set.add(value);
+    this._renderMain();
+  },
+
   setType(t) {
     this._type = t;
     this.render();
@@ -207,6 +308,8 @@ const Hub = {
       const el = e.target.closest("[data-hub][data-action]");
       if (!el) return;
       if (el.dataset.action === "hub-type") this.setType(el.dataset.type);
+      else if (el.dataset.action === "hub-facet")
+        this.toggleFacet(el.dataset.facet, el.dataset.value);
       else if (el.dataset.action === "dismiss-save-reminder") {
         this._saveReminderDismissed = true;
         this._renderSaveReminder();
