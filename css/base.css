@@ -2497,6 +2497,73 @@ body.selecting .bulk-selectable .contact-header-row {
   color: var(--text-dim);
 }
 
+/* ---- Rangée d'épingles (F5) : dossier ouvert + fiches consultées ---- */
+#pin-row {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.3rem var(--sp-4);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.pin-row-toggle {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: var(--fs-xs);
+  padding: 0.2rem 0.3rem;
+}
+.pin-row-toggle:hover {
+  color: var(--accent);
+}
+.pin-row-label {
+  flex-shrink: 0;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.pin-row-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.pin-chip {
+  flex-shrink: 0;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: var(--fs-xs);
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pin-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.pin-row-sep {
+  flex-shrink: 0;
+  width: 1px;
+  height: 14px;
+  background: var(--border);
+}
+@media (max-width: 640px) {
+  #pin-row {
+    padding: 0.3rem 0.85rem;
+  }
+}
+
 /* ---- Popover : liste de groupes à cocher (multi-appartenance) ---- */
 #group-picker-backdrop {
   display: none;

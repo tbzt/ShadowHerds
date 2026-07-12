@@ -8,7 +8,7 @@
   <!-- Fontes auto-hébergées (CH-V10) : l'app reste fonctionnelle et fidèle
        à ses identités d'édition sans réseau (table de jeu = contexte nominal). -->
   <link rel="stylesheet" href="css/fonts.css?v=1">
-  <link rel="stylesheet" href="css/base.css?v=93">
+  <link rel="stylesheet" href="css/base.css?v=94">
   <link rel="stylesheet" href="css/print.css?v=5">
   <!-- Thèmes d'édition chargés à la sélection (App._loadEditionAssets, CH-P1b). -->
 </head>
@@ -228,6 +228,10 @@
         </button>
       </div>
     </div>
+
+    <!-- RANGÉE D'ÉPINGLES (F5) : fiches du dossier ouvert + consultées en
+         session. Peuplée par PinRow (js/widgets/pinrow.js), masquée si vide. -->
+    <div id="pin-row" hidden></div>
 
     <!-- CORPS -->
     <div id="main-body">
@@ -736,7 +740,8 @@
   <script defer src="js/controllers/characters.js?v=5"></script>
   <script defer src="js/controllers/chargen.js?v=5"></script>
   <script defer src="js/controllers/pnjlookup.js?v=4"></script>
-  <script defer src="js/widgets/palette.js?v=1"></script>
+  <script defer src="js/widgets/palette.js?v=2"></script>
+  <script defer src="js/widgets/pinrow.js?v=1"></script>
   <script defer src="js/widgets/onboarding.js?v=1"></script>
   <script defer src="js/controllers/portrait.js?v=11"></script>
   <script defer src="js/controllers/encounter.js?v=17"></script>

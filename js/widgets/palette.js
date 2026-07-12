@@ -111,6 +111,7 @@ const Palette = {
       dépendance à la classe de carte ni à un flash. */
   _reveal(r) {
     this.close();
+    PinRow.noteConsulted(r);
     if (r.type === "pj") {
       App.showPanel("characters");
       setTimeout(() => {
