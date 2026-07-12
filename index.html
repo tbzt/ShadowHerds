@@ -8,7 +8,7 @@
   <!-- Fontes auto-hébergées (CH-V10) : l'app reste fonctionnelle et fidèle
        à ses identités d'édition sans réseau (table de jeu = contexte nominal). -->
   <link rel="stylesheet" href="css/fonts.css?v=1">
-  <link rel="stylesheet" href="css/base.css?v=92">
+  <link rel="stylesheet" href="css/base.css?v=93">
   <!-- Thèmes d'édition chargés à la sélection (App._loadEditionAssets, CH-P1b). -->
 </head>
 
@@ -323,6 +323,7 @@
                      masqué en vue « Tout ». Seul chemin mobile vers Contacts/Serveurs. -->
                 <button class="btn-primary btn-small" id="hub-create-btn" data-action="show-panel" hidden>＋ Créer</button>
                 <button class="btn-secondary btn-small" data-action="encounter-open" title="Ouvrir le suivi de combat">⚔ Combat</button>
+                <button class="btn-secondary btn-small" data-action="toggle-select-mode" title="Sélectionner plusieurs fiches">☑ Sélectionner</button>
                 <button class="btn-secondary btn-small" data-action="backup-export" title="Sauvegarder toutes vos fiches (PNJ et contacts, toutes éditions)">⤓ Sauvegarder</button>
                 <button class="btn-secondary btn-small" data-action="backup-import" title="Charger une sauvegarde depuis un fichier ou une URL">⤒ Charger</button>
               </div>
@@ -362,6 +363,7 @@
                 <input type="search" class="filter-input" data-action="filter" data-collection="characters"
                   placeholder="Filtrer…" aria-label="Filtrer les personnages">
                 <button class="btn-primary btn-small" data-action="chargen-open">＋ Créer un personnage</button>
+                <button class="btn-secondary btn-small" data-action="toggle-select-mode" title="Sélectionner plusieurs fiches">☑ Sélectionner</button>
               </div>
               <div class="cards-zone" id="characters-grid"></div>
             </div>
@@ -441,6 +443,7 @@
                 <div id="contact-gen-form"></div>
                 <div class="shadows-main-toolbar">
                   <button class="btn-primary btn-small" data-action="contact-generate">Générer un contact</button>
+                  <button class="btn-secondary btn-small" data-action="toggle-select-mode" title="Sélectionner plusieurs fiches">☑ Sélectionner</button>
                 </div>
               </div>
               <div class="cards-zone" id="contacts-gen-grid"></div>
@@ -472,6 +475,7 @@
                 <div id="server-gen-form"></div>
                 <div class="shadows-main-toolbar">
                   <button class="btn-primary btn-small" data-action="create-server">Créer le serveur</button>
+                  <button class="btn-secondary btn-small" data-action="toggle-select-mode" title="Sélectionner plusieurs fiches">☑ Sélectionner</button>
                 </div>
               </div>
               <div class="cards-zone" id="servers-gen-grid"></div>
@@ -704,7 +708,8 @@
   <script defer src="js/widgets/dossierbar.js?v=6"></script>
   <script defer src="js/widgets/grouppicker.js?v=4"></script>
   <script defer src="js/widgets/collection.js?v=9"></script>
-  <script defer src="js/widgets/bulkbar.js?v=1"></script>
+  <script defer src="js/widgets/bulkbar.js?v=2"></script>
+  <script defer src="js/widgets/selectionmode.js?v=1"></script>
   <script defer src="js/widgets/serverrenderer.js?v=6"></script>
   <script defer src="js/widgets/encounterrenderer.js?v=15"></script>
   <script defer src="js/controllers/servers.js?v=950"></script>
@@ -738,7 +743,7 @@
   <script defer src="js/controllers/backup.js?v=954"></script>
   <script defer src="js/controllers/sync.js?v=7"></script>
   <script defer src="js/controllers/foundryexport.js?v=4"></script>
-  <script defer src="js/app.js?v=968"></script>
+  <script defer src="js/app.js?v=969"></script>
 
 </body>
 

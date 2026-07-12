@@ -25,7 +25,8 @@ const BulkBar = {
       if (!el) return;
       switch (el.dataset.action) {
         case "bulk-clear":
-          if (this._col) this._col.clearSelection();
+          // ✕ = « j'ai fini » : vide la sélection ET sort du mode.
+          SelectionMode.exit();
           break;
         case "bulk-delete":
           this._delete();
@@ -52,6 +53,12 @@ const BulkBar = {
         menu.hidden = true;
       }
     });
+  },
+
+  /** Vide la sélection de la collection active et referme la barre.
+      Appelé par SelectionMode à la sortie du mode. */
+  exit() {
+    if (this._col) this._col.clearSelection();
   },
 
   /** Appelé par Collection à chaque changement de sélection. */

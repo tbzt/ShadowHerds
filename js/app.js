@@ -359,6 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ContactRenderer.bindDelegation();
   CardRenderer.bindDelegation();
   CardMenu.bindDelegation();
+  SelectionMode.bindDelegation();
   SidebarToggle.bindDelegation();
   CharGen.bindDelegation();
   Portrait.bindDelegation();

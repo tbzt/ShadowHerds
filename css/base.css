@@ -2389,34 +2389,40 @@ select optgroup {
   border: 1px solid var(--border);
   border-radius: 3px;
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 0;
+  pointer-events: none;
   transition: opacity var(--dur-fast);
 }
-/* Discrète au repos (la sélection multiple est peu fréquente), franche au
-   survol, au focus ou une fois cochée. Reste visible et cliquable au
-   tactile (pas de pointer-events:none). Phase 1 : bascule en mode
-   « Sélectionner », masqué par défaut hors du mode. */
-.bulk-selectable:hover .bulk-select-check,
-.bulk-selectable:focus-within .bulk-select-check,
-.bulk-select-check:has(input:checked) {
+/* La sélection multiple est un MODE (doctrine « Chrome de carte » #1) :
+   aucune case au repos, headers pleine largeur. La classe `selecting` sur
+   <body> — posée par SelectionMode (bouton, appui long, clic droit) — révèle
+   les cases et la gouttière sur toutes les cartes à la fois. */
+body.selecting .bulk-select-check {
   opacity: 1;
+  pointer-events: auto;
 }
 .bulk-select-check input {
   width: 15px;
   height: 15px;
   cursor: pointer;
 }
-/* Gouttière réservée : la case (empreinte ≈ 30px depuis le bord de carte)
-   ne recouvre plus jamais le nom ni le portrait. Scopée à .bulk-selectable,
-   donc les entités liées sans case (véhicules, esprits invoqués) gardent
-   leur header pleine largeur. Le header contact est imbriqué dans un body
-   déjà paddé (var(--sp-4)), d'où une valeur moindre. */
-.bulk-selectable .pnj-card-header,
-.bulk-selectable .server-card-header {
+/* Gouttière réservée, UNIQUEMENT en mode : la case (empreinte ≈ 30px depuis
+   le bord de carte) ne recouvre jamais le nom ni le portrait. Scopée à
+   .bulk-selectable, donc les entités liées sans case (véhicules, esprits
+   invoqués) ne bougent pas. Header contact imbriqué dans un body déjà paddé
+   (var(--sp-4)), d'où une valeur moindre. */
+body.selecting .bulk-selectable .pnj-card-header,
+body.selecting .bulk-selectable .server-card-header {
   padding-left: 2.25rem;
 }
-.bulk-selectable .contact-header-row {
+body.selecting .bulk-selectable .contact-header-row {
   padding-left: 1.25rem;
+}
+/* Bouton d'entrée du mode, état actif (« ✕ Terminer »). */
+[data-action="toggle-select-mode"].active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 #bulk-bar {
   display: none;
