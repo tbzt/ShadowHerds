@@ -76,10 +76,13 @@
   --z-command: 600;
   --z-toast: 900;
   --z-screen: 1000;
-  --z-dialog: 1100;
   --z-dice: 1200;
   --z-risk: 1250;
   --z-backup: 1260;
+  /* Dialog = remplaçant générique de prompt()/confirm(), invocable DEPUIS
+     n'importe quel overlay ci-dessus (backup « Remplacer », etc.) → doit coiffer
+     toute la pile plein écran/système. */
+  --z-dialog: 1300;
 }
 
 /* Centralise prefers-reduced-motion pour toutes les transitions tokenisées :

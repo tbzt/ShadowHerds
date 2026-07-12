@@ -399,12 +399,16 @@ const Backup = {
     this._setStage("confirm");
   },
 
-  _confirm(mode) {
+  async _confirm(mode) {
     if (!this._pending) return;
     if (mode === "replace") {
-      const ok = window.confirm(
-        "Remplacer écrasera définitivement vos PNJ et contacts actuels. Continuer ?",
-      );
+      const ok = await Dialog.confirm({
+        title: "Remplacer les données ?",
+        message:
+          "Remplacer écrasera définitivement vos PNJ et contacts actuels. Continuer ?",
+        confirmLabel: "Remplacer",
+        danger: true,
+      });
       if (!ok) return;
     }
     this.apply(this._pending, mode);
