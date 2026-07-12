@@ -343,16 +343,20 @@ const RunGen = {
           card.remove();
           break;
         }
-        case "run-to-dossier":
-          this.toDossier(actionEl.dataset.runName);
+        case "run-to-dossier": {
+          const card = actionEl.closest(".run-card");
+          this.toDossier(card.dataset.id, actionEl.dataset.runName);
           break;
+        }
       }
     });
   },
 
-  /** Crée un dossier (transverse) pour y ranger PNJ, contacts et serveurs
-      de la prep. Le nom est proposé d'après la run, éditable. */
-  async toDossier(suggested) {
+  /** Crée (ou réutilise) un dossier transverse pour y ranger PNJ, contacts et
+      serveurs de la prep, et relie cette run au dossier (la carte l'affiche
+      ensuite au lieu du bouton — la run ne reste plus sans lien visible une
+      fois rangée). Le nom est proposé d'après la run, éditable. */
+  async toDossier(runId, suggested) {
     const input = await Dialog.prompt({
       title: "Ranger la run",
       label: "Nom du dossier pour cette run",
@@ -361,12 +365,29 @@ const RunGen = {
     });
     if (input === null || !input.trim()) return;
     const name = input.trim();
-    if (Dossiers.list().some((d) => d.name === name)) {
-      toast(`Dossier « ${name} » existe déjà.`, "warning");
-      return;
+    if (!Dossiers.list().some((d) => d.name === name)) {
+      Dossiers.add(name);
     }
-    Dossiers.add(name);
-    toast(`Dossier « ${name} » créé — rangez-y votre prep.`);
+    const run = this._runs.find((r) => r.id === runId);
+    if (run) {
+      run.dossierName = name;
+      this._save();
+      this._refreshCard(runId);
+    }
+    toast(`Dossier « ${name} » — rangez-y votre prep.`);
+  },
+
+  /** Ré-affiche une seule carte de run après mutation (évite un re-render
+      complet de la liste). */
+  _refreshCard(id) {
+    const run = this._runs.find((r) => r.id === id);
+    const old = [...document.querySelectorAll("#run-list .run-card")].find(
+      (c) => c.dataset.id === id,
+    );
+    if (!run || !old) return;
+    const el = RunRenderer.render(run);
+    el.dataset.id = run.id;
+    old.replaceWith(el);
   },
 
   /* ---- Persistance des runs générées (CH-Q5, édition-scopée) ----

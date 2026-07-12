@@ -37,8 +37,12 @@ const RunRenderer = {
         </div>
       </div>
       <div class="pnj-card-footer">
-        <button class="card-action-btn" data-action="run-to-dossier"
-          data-run-name="${CardRenderer._esc(r.type)}">＋ Dossier</button>
+        ${
+          r.dossierName
+            ? `<span class="pnj-rank-badge" title="Rangée dans ce dossier">📁 ${CardRenderer._esc(r.dossierName)}</span>`
+            : `<button class="card-action-btn" data-action="run-to-dossier"
+                 data-run-name="${CardRenderer._esc(r.type)}">＋ Dossier</button>`
+        }
         <button class="card-action-btn danger" data-action="discard-run">Virer</button>
       </div>`;
     return el;
