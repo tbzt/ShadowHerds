@@ -119,8 +119,9 @@ const Sync = {
       if (res.empty) {
         this._setState("idle");
         // Premier appareil configuré : envoi initial si le local n'est pas vide.
+        // Attendu (pas « feu et oublie ») pour ne pas télescoper un push suivant.
         if (this._hash(Backup.build()) !== this._hash(this._emptyPkg()))
-          this._doPush(true).catch(() => {});
+          await this._doPush(true);
         return;
       }
       if (res.revision === c.lastRevision) {
@@ -178,8 +179,8 @@ const Sync = {
       toast("Configurez d'abord un stockage de synchronisation.", "warning");
       return;
     }
-    await this.pullOnLoad(); // récupère et applique/résout d'abord
-    await this._doPush(true); // puis pousse l'état courant
+    await this.pullOnLoad(); // récupère et applique/résout (+ push initial si vide)
+    await this._doPush(); // pousse l'état courant seulement s'il reste du neuf
     if (this._state === "idle") toast("Synchronisation effectuée.");
   },
 
@@ -325,10 +326,15 @@ const Sync = {
         if (resp.status === 401) throw new Error("Token GitHub refusé (401).");
         if (!resp.ok) return { gistId: null, cfgPatch: null };
         const list = await resp.json();
-        const hit = Array.isArray(list)
-          ? list.find((g) => g.files && g.files[Sync.GIST_FILE])
-          : null;
-        if (!hit) return { gistId: null, cfgPatch: null };
+        const matches = Array.isArray(list)
+          ? list.filter((g) => g.files && g.files[Sync.GIST_FILE])
+          : [];
+        if (!matches.length) return { gistId: null, cfgPatch: null };
+        // Choix déterministe (le plus ancien) : si plusieurs sauvegardes
+        // coexistent, tous les appareils convergent vers la même plutôt que
+        // d'en choisir une au hasard.
+        matches.sort((a, b) => (a.created_at || "").localeCompare(b.created_at || ""));
+        const hit = matches[0];
         return { gistId: hit.id, cfgPatch: { gist: { ...c.gist, gistId: hit.id } } };
       },
       async _getById(c, gistId) {
@@ -409,6 +415,14 @@ const Sync = {
         if (resp.status === 404)
           throw new Error("Gist introuvable — videz l'identifiant pour le recréer.");
         if (resp.status === 401) throw new Error("Token GitHub refusé (401).");
+        if (resp.status === 409) {
+          // Le distant a changé entre-temps (autre appareil) : conflit à résoudre.
+          const current = await this._getById(c, gistId);
+          throw new SyncConflict(
+            current ? await this._readPkg(current) : null,
+            current ? this._revOf(current) : null,
+          );
+        }
         if (!resp.ok) throw new Error("Envoi refusé (" + resp.status + ").");
         const gist = await resp.json();
         return { revision: this._revOf(gist), cfgPatch };
