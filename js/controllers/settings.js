@@ -255,6 +255,15 @@ const Settings = {
     const zone = document.getElementById("settings-panel-content");
     let html = `<div class="settings-group-label">Global</div>`;
 
+    // --- Aide & raccourcis (#55) : seul accès sur mobile — le bouton « ? »
+    // de la topbar est masqué sous 640px (.topbar-action-quiet), Paramètres
+    // reste joignable par la bottom-nav. Réutilise l'action déjà câblée. ---
+    html += `<div class="settings-section">
+      <h3>Aide</h3>
+      <p>Raccourcis clavier et légende des symboles, adaptés à l'édition active.</p>
+      <button class="btn-secondary" data-action="toggle-shortcuts">Aide &amp; raccourcis…</button>
+    </div>`;
+
     // --- Lanceur de dés (global) ---
     {
       const dp = this.getDicePrefs();

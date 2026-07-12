@@ -22,6 +22,19 @@ const EditionAnarchy2 = {
 
   /* ---- Contrat commun édition (résorption des branches, issue #14) ---- */
   attributes: ["FOR", "AGI", "VOL", "LOG", "CHA"],
+  /** Légende des symboles affichée dans l'Aide (?), lue par
+      App._renderHelpLegend (CH-V6-T1.4, FIELD_STUDY REC-6). Pas d'Init, PRE,
+      PA ni modes de tir CC/SA/TR/TA (Anarchy 2 résout autrement — ordre
+      narratif, cf. EncounterRenderer._narrativeNote) : légende propre,
+      pas un sous-ensemble de celle de SR5/SR6. */
+  helpLegend: [
+    { keys: "⚄ N", html: "Réserve de dés <strong>cliquable</strong> — un clic lance le test à N dés." },
+    { keys: "RR", html: "Réduction de Risque : dés retirés au pool <strong>adverse</strong> (pas une relance)." },
+    { keys: "VD", html: "Valeur de Dégâts — <strong>P</strong> physique, <strong>E</strong> étourdissant." },
+    { keys: "Portées", html: "4 bandes CONTACT / COURTE / MOYENNE / LONGUE : « OK » sans malus, « Dés. » désavantage, « – » hors de portée." },
+    { keys: "Seuils", html: "Physiques / Mentales (/ Matricielles), notés « léger / grave / incapacitant »." },
+    { keys: "Combativité", html: "nulle / faible / forte / extrême — qui décroche en premier dans le tracker." },
+  ],
   /** Anarchy 2.0 : tout jet de dés passe par le panneau de prise de
       risque (dés de risque, RR) plutôt que le lanceur classique. */
   usesRiskPanel: true,

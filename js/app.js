@@ -92,14 +92,14 @@ const App = {
     anarchy1: "css/theme-anarchy1.css?v=3",
   },
   _EDITION_JS: {
-    sr5: ["js/editions/sr5.js?v=958", "js/editions/sr5.foundry.js?v=4"],
-    sr6: ["js/editions/sr6.js?v=957", "js/editions/sr6.foundry.js?v=5"],
+    sr5: ["js/editions/sr5.js?v=959", "js/editions/sr5.foundry.js?v=4"],
+    sr6: ["js/editions/sr6.js?v=958", "js/editions/sr6.foundry.js?v=5"],
     anarchy2: [
-      "js/editions/anarchy2.js?v=41",
+      "js/editions/anarchy2.js?v=42",
       "js/editions/anarchy2.creation.js?v=6",
       "js/editions/anarchy2.foundry.js?v=6",
     ],
-    anarchy1: ["js/editions/anarchy1.js?v=16"],
+    anarchy1: ["js/editions/anarchy1.js?v=17"],
   },
   // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
   _COMMON_JS: ["js/catalogs/creatures.js?v=955"],
@@ -149,6 +149,7 @@ const App = {
     const badgeLabels = { sr5: "SR5", sr6: "SR6", anarchy2: "ANARCHY 2E", anarchy1: "ANARCHY 1RE" };
     document.getElementById("edition-badge").textContent =
       badgeLabels[ed] || ed;
+    this._renderHelpLegend();
 
     Shadows.load();
     Characters.load();
@@ -266,6 +267,22 @@ const App = {
     if (!el) return;
     const show = force !== undefined ? force : !el.classList.contains("open");
     el.classList.toggle("open", show);
+  },
+
+  /** Légende des symboles de l'Aide (?), sensible à l'édition (CH-V6-T1.4,
+      FIELD_STUDY REC-6) : la légende était figée « (SR5) » quelle que soit
+      l'édition active — trompeur, pas juste démodé (« PA » change de sens
+      entre SR5 et SR6, cf. js/editions/sr6.js). Lit editionModule.helpLegend
+      (données déclarées dans js/editions/*), aucune branche d'édition ici. */
+  _renderHelpLegend() {
+    const label = document.getElementById("help-legend-label");
+    const list = document.getElementById("help-legend-list");
+    if (!label || !list) return;
+    const entries = (this.editionModule && this.editionModule.helpLegend) || [];
+    label.textContent = `Légende des symboles${this.editionModule ? " — " + this.editionModule.label : ""}`;
+    list.innerHTML = entries
+      .map((e) => `<div class="shortcut-row"><span class="shortcut-keys">${e.keys}</span><span>${e.html}</span></div>`)
+      .join("");
   },
 
   /* ---- Changer d'édition ---- */

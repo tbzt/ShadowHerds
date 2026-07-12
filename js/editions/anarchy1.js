@@ -30,6 +30,17 @@ const EditionAnarchy1 = {
 
   /* ---- Contrat commun édition ---- */
   attributes: ["FOR", "AGI", "VOL", "LOG", "CHA", "CHC"],
+  /** Légende des symboles affichée dans l'Aide (?), lue par
+      App._renderHelpLegend (CH-V6-T1.4, FIELD_STUDY REC-6). V1 ≈ un SR5
+      simplifié (cf. cardrenderer.anarchy1.js) mais SANS PRE ni PA sur les
+      armes : weaponModel.accuracyLimit=false, et _resolveWeaponV1 ne pose
+      que VD + portées (« Nom [VD XP, C OK · I −2] », imprimé au livre). */
+  helpLegend: [
+    { keys: "⚄ N", html: "Réserve de dés <strong>cliquable</strong> — un clic lance le test à N dés." },
+    { keys: "Init", html: "Initiative : score de base + dés d'initiative (ex. 8+2D6)." },
+    { keys: "VD", html: "Valeur de Dégâts — <strong>P</strong> physique, <strong>E</strong> étourdissant (imprimée au livre, pas recalculée)." },
+    { keys: "Portées", html: "<strong>C</strong> Courte · <strong>I</strong> Intermédiaire · <strong>L</strong> Longue — « OK » sans malus, sinon le malus de dés est indiqué (ex. « I −2 »)." },
+  ],
   /** V1 n'a pas de panneau de Réduction de Risque (propre à Anarchy 2.0) :
       elle retombe sur les chemins « SR » des gates de Phase 1. */
   usesRiskPanel: false,

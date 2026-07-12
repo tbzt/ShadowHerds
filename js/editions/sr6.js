@@ -24,6 +24,22 @@ const EditionSR6 = {
 
   /* ---- Contrat commun édition (résorption des branches, issue #14) ---- */
   attributes: ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"],
+  /** Légende des symboles affichée dans l'Aide (?), lue par
+      App._renderHelpLegend (CH-V6-T1.4, FIELD_STUDY REC-6) — la légende SR5
+      était affichée telle quelle en SR6 alors que « PA » y désigne le
+      Potentiel d'Actions (MAJ+MIN, cf. commentaire d'en-tête), pas la
+      Pénétration d'Armure : collision de sigle, pas juste un vocabulaire
+      démodé. SO (Score Offensif) remplace PRE — SR6 n'a pas de limite de
+      précision (weaponModel.accuracyLimit=false). */
+  helpLegend: [
+    { keys: "⚄ N", html: "Réserve de dés <strong>cliquable</strong> — un clic lance le test à N dés." },
+    { keys: "Init", html: "Initiative : score de base + dés d'initiative (ex. 8+2D6)." },
+    { keys: "SD", html: "Score Défensif du PNJ (remplace les Limites de SR5)." },
+    { keys: "SO", html: "Score Offensif de l'arme (remplace la Précision de SR5 — pas de limite en SR6)." },
+    { keys: "VD", html: "Valeur de Dégâts — <strong>P</strong> physique, <strong>E</strong> étourdissant." },
+    { keys: "PA", html: "<strong>Potentiel d'Actions</strong> (Majeures + Mineures par round) — ⚠ sens différent de SR5, où PA désigne la Pénétration d'Armure." },
+    { keys: "Modes", html: "<strong>CC</strong> Coup par Coup · <strong>SA</strong> Semi-Auto · <strong>TR</strong> Tir en Rafales · <strong>TA</strong> Tir Automatique." },
+  ],
   /** Neutre : SR6 utilise le lanceur de dés classique, pas le panneau
       de prise de risque (propre à Anarchy 2.0). */
   usesRiskPanel: false,

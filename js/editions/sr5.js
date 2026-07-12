@@ -15,6 +15,19 @@ const EditionSR5 = {
 
   /* ---- Contrat commun édition (résorption des branches, issue #14) ---- */
   attributes: ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"],
+  /** Légende des symboles affichée dans l'Aide (?), lue par
+      App._renderHelpLegend — jamais de branche d'édition côté app.js
+      (CH-V6-T1.4, FIELD_STUDY REC-6). Sens vérifiés au Livre de Règles
+      (chap. Combat) : CC Coup par Coup · SA Semi-Auto · TR Tir en Rafales ·
+      TA Tir Automatique ; PRE plafonne les succès ; P physique / E étourdissant. */
+  helpLegend: [
+    { keys: "⚄ N", html: "Réserve de dés <strong>cliquable</strong> — un clic lance le test à N dés." },
+    { keys: "Init", html: "Initiative : score de base + dés d'initiative (ex. 8+2D6)." },
+    { keys: "PRE", html: "Précision — plafonne le nombre de succès ; <em>(n)</em> = avec accessoire." },
+    { keys: "VD", html: "Valeur de Dégâts — <strong>P</strong> physique, <strong>E</strong> étourdissant." },
+    { keys: "PA", html: "Pénétration d'Armure (« — » = nulle)." },
+    { keys: "Modes", html: "<strong>CC</strong> Coup par Coup · <strong>SA</strong> Semi-Auto · <strong>TR</strong> Tir en Rafales · <strong>TA</strong> Tir Automatique." },
+  ],
   /** Neutre : SR5 utilise le lanceur de dés classique, pas le panneau
       de prise de risque (propre à Anarchy 2.0). */
   usesRiskPanel: false,
