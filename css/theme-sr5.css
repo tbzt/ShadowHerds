@@ -150,7 +150,6 @@
 [data-edition="sr5"] .btn-primary,
 [data-edition="sr5"] .btn-secondary {
   border-radius: 0;
-  font-family: var(--font-display);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -190,7 +189,6 @@
   background: linear-gradient(180deg, #140a08 0%, transparent 100%);
 }
 [data-edition="sr5"] .modal-title {
-  font-family: var(--font-display);
   color: #d4820a;
 }
 [data-edition="sr5"] .modal-close:hover {

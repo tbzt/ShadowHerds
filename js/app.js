@@ -86,10 +86,10 @@ const App = {
      créatures + 3 thèmes inutiles du chargement initial. */
   _loadedAssets: new Set(),
   _EDITION_CSS: {
-    sr5: "css/theme-sr5.css?v=20",
-    sr6: "css/theme-sr6.css?v=18",
-    anarchy2: "css/theme-anarchy.css?v=20",
-    anarchy1: "css/theme-anarchy1.css?v=1",
+    sr5: "css/theme-sr5.css?v=21",
+    sr6: "css/theme-sr6.css?v=19",
+    anarchy2: "css/theme-anarchy.css?v=22",
+    anarchy1: "css/theme-anarchy1.css?v=3",
   },
   _EDITION_JS: {
     sr5: ["js/editions/sr5.js?v=958", "js/editions/sr5.foundry.js?v=4"],

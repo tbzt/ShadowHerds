@@ -132,7 +132,6 @@
 [data-edition="anarchy1"] .btn-primary,
 [data-edition="anarchy1"] .btn-secondary {
   border-radius: 0;
-  font-family: var(--font-display);
   font-weight: 400;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -155,7 +154,6 @@
   border-radius: 0;
 }
 [data-edition="anarchy1"] .empty-state-title {
-  font-family: var(--font-display);
   color: #ff2fb0;
   transform: none;
 }
@@ -171,7 +169,6 @@
   background: #150c1c;
 }
 [data-edition="anarchy1"] .modal-title {
-  font-family: var(--font-display);
   letter-spacing: 0.03em;
   color: #9fff3c;
 }
