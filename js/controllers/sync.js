@@ -30,6 +30,7 @@ class SyncConflict extends Error {
 const Sync = {
   _CFG_KEY: "sync",
   PUSH_DEBOUNCE_MS: 15000,
+  POLL_INTERVAL_MS: 45000, // récupération périodique quand l'app est visible
   GIST_FILE: "shadowherds-backup.json",
 
   _defaults: {
@@ -46,6 +47,8 @@ const Sync = {
   _applying: false, // garde anti-boucle pendant l'application d'un distant
   _inited: false,
   _pushTimer: null,
+  _pollTimer: null,
+  _pullInFlight: false, // garde de réentrance (focus + visibilitychange + poll)
 
   /* ---------- Config (globale, par appareil) ---------- */
   cfg() {
@@ -83,12 +86,32 @@ const Sync = {
     if (this._inited) return;
     this._inited = true;
     Storage.subscribe((k) => this._onStorageChange(k));
+    this._startAutoPull();
+  },
+
+  /* Récupère les changements faits sur un autre appareil sans recharger la
+     page : au retour sur l'app (onglet redevenu visible / fenêtre refocalisée)
+     et par sondage léger tant que l'app est visible. Le push, lui, reste
+     déclenché par les modifications locales (schedulePush). */
+  _startAutoPull() {
+    const maybePull = () => {
+      if (document.visibilityState !== "visible") return;
+      if (this.cfg().provider === "none") return;
+      if (this._pullInFlight) return;
+      this.pullOnLoad();
+    };
+    document.addEventListener("visibilitychange", maybePull);
+    window.addEventListener("focus", maybePull);
+    clearInterval(this._pollTimer);
+    this._pollTimer = setInterval(maybePull, this.POLL_INTERVAL_MS);
   },
 
   async pullOnLoad() {
     const prov = this.provider();
     const c = this.cfg();
     if (!prov || !prov.isConfigured(c)) return;
+    if (this._pullInFlight) return;
+    this._pullInFlight = true;
     this._setState("pulling");
     try {
       const res = await prov.pull(c);
@@ -105,13 +128,15 @@ const Sync = {
         return;
       }
       if (this._hash(Backup.build()) === c.lastHash) {
-        // Local inchangé depuis la dernière synchro → avance rapide.
-        await this._applyRemote(res.pkg);
+        // Local inchangé depuis la dernière synchro → avance rapide. On avance
+        // la révision AVANT d'appliquer/rendre : un incident de rendu ne doit
+        // pas empêcher le suivi de révision, sinon on re-récupère en boucle.
         this._saveCfg({
           lastRevision: res.revision,
-          lastHash: this._hash(Backup.build()),
+          lastHash: this._hash(res.pkg),
           lastAt: new Date().toISOString(),
         });
+        await this._applyRemote(res.pkg);
         this._setState("idle");
         this._refreshSettings();
         toast("Fiches synchronisées depuis votre sauvegarde en ligne.");
@@ -123,6 +148,8 @@ const Sync = {
     } catch (e) {
       this._setState("error");
       Debug.warn("sync", "pull au chargement échoué", { error: e });
+    } finally {
+      this._pullInFlight = false;
     }
   },
 
@@ -192,6 +219,10 @@ const Sync = {
     this._applying = true;
     try {
       Backup.apply(pkg, "replace", { silent: true });
+    } catch (e) {
+      // Les données sont écrites avant le rendu dans Backup.apply ; un incident
+      // de rendu ne doit pas faire échouer la synchro ni bloquer la révision.
+      Debug.warn("sync", "rendu post-application échoué", { error: e });
     } finally {
       this._applying = false;
     }
