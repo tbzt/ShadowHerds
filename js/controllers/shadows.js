@@ -30,6 +30,8 @@ const Shadows = Object.assign(
       pnj.meta,
       pnj.metavariant,
       pnj.infected,
+      // Recherche plein-fiche (F1) : compétences, équipement, sorts…
+      Utils.entityContent(pnj),
     ],
     linked: {
       isChild: (e) => !!e.ownerId,

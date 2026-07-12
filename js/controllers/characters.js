@@ -45,6 +45,8 @@ const Characters = Object.assign(
       pnj.gameLevel,
       pnj.archetypeTable,
       ...(pnj.keywords || []),
+      // Recherche plein-fiche (F1) : compétences, équipement, sorts…
+      Utils.entityContent(pnj),
     ],
     renderCard: (pnj) => CardRenderer.render(pnj, ["remove-pj"]),
   }),

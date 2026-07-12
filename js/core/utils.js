@@ -29,6 +29,33 @@ const Utils = {
       .replace(/[\u0300-\u036f]/g, "");
   },
 
+  /** Aplatit le CONTENU d'une fiche (compétences, équipement, sorts,
+      pouvoirs, augmentations, armes, connaissances, journal) en une seule
+      chaîne indexable par la recherche plein-fiche (F1). Lit des champs
+      GÉNÉRIQUES posés à la génération dans toutes les éditions — aucune
+      branche `App.edition`. Tolère les entrées chaîne OU objet ({name,…}) :
+      selon l'édition, spells/powers/knowledges sont l'un ou l'autre. Les
+      champs `journal`/`note` sont lus défensivement (absents avant F2). */
+  entityContent(e) {
+    if (!e) return "";
+    const named = (v) => (v == null ? "" : typeof v === "string" ? v : v.name || "");
+    const list = (arr) => (Array.isArray(arr) ? arr.map(named).join(" ") : "");
+    const journal = Array.isArray(e.journal)
+      ? e.journal.map((j) => (typeof j === "string" ? j : j && j.text) || "").join(" ")
+      : "";
+    return [
+      list(e.skills),
+      list(e.equip),
+      list(e.spells),
+      list(e.powers),
+      list(e.augs),
+      list(e.weapons),
+      list(e.knowledges),
+      journal,
+      e.note || "",
+    ].join(" ");
+  },
+
   randBool(p = 0.5) {
     return Math.random() < p;
   },
