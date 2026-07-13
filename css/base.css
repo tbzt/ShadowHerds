@@ -3818,6 +3818,70 @@ body.selecting .bulk-selectable .contact-header-row {
   color: var(--accent2);
 }
 
+/* ---- K5 : organes d'édition ---- */
+/* Rangée Atout (SR6) sur la fiche active : 7 jetons + steppers. */
+.encounter-edge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.6rem 0;
+  flex-wrap: wrap;
+}
+.encounter-edge-lbl {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.edge-tokens {
+  display: flex;
+  gap: 3px;
+}
+.edge-token {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg);
+}
+.edge-token.filled {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.encounter-edge-val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--accent);
+}
+/* Miroir de la Réserve de menace dans l'en-tête du cockpit (Anarchy). */
+.encounter-threat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: auto;
+  margin-right: var(--sp-2);
+  padding: 0 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+}
+.encounter-threat[hidden] {
+  display: none;
+}
+.encounter-threat-lbl {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+#encounter-threat-val {
+  font-family: var(--font-mono);
+  min-width: 1.2ch;
+  text-align: center;
+  color: var(--accent);
+}
+
 /* ---- Résumé de la scène de combat dans la sidebar ---- */
 .sidebar-encounter {
   display: flex;

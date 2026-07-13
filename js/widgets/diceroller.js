@@ -57,6 +57,22 @@ const DiceRoller = {
   _renderThreat() {
     const el = document.getElementById("threat-reserve-val");
     if (el) el.textContent = this._threat;
+    // K5 : miroir dans l'en-tête du cockpit — même source de vérité, écrite
+    // une seule fois ici (topbar ET cockpit rafraîchis ensemble).
+    const cockpit = document.getElementById("encounter-threat-val");
+    if (cockpit) cockpit.textContent = this._threat;
+  },
+
+  /* ---- API publique de la Réserve de menace (K5) : le cockpit de combat
+     mute la même valeur que le badge topbar, jamais une copie. ---- */
+  threatValue() {
+    return this._threat;
+  },
+  stepThreat(delta) {
+    this._setThreat(this._threat + (delta | 0));
+  },
+  resetThreat() {
+    this._setThreat(this._THREAT_DEFAULT);
   },
 
   /** hooks: { resolve(id), getPrefs(), onPnjChanged(pnj), isRefOpen(pnj), isAnarchy() }. */

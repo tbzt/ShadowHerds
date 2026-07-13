@@ -94,7 +94,10 @@ const EditionAnarchy1 = {
   /** narrative:true — combat sans initiative chiffrée ni ordre figé (le livre
       A1 gère l'ordre par la narration). Le tracker bascule en mode dépouillé
       (pool de jetons qu'on éteint), cf. EncounterRenderer._rowNarrative. */
-  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true },
+  /** threatReserve (K5) : miroir de la Réserve de menace (badge topbar visible
+      aussi en A1, cf. CSS `[data-edition^="anarchy"]`) dans l'en-tête du
+      cockpit — même source (DiceRoller._threat), pas d'état doublé. */
+  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: true },
   /** Disposition de combat (Vague D) : Anarchy 1 n'a PAS de règle de combativité
       imprimée (seulement « Dangerosité », niveaux de dés) → morale toujours null
       (pas de drapeau « devrait fuir »). Seul « hors de combat » (moniteur

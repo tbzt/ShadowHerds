@@ -122,7 +122,10 @@ const EditionSR6 = {
   /** Règles de round pour le tracker de combat. SR6 : l'initiative est
       relancée à chaque round mais il n'y a plus de passes d'initiative
       (une seule passe par round, p.44) → `passDecrement: 0`. */
-  combatModel: { rerollEachRound: true, passDecrement: 0 },
+  /** edgeTracker (K5) : SR6 pilote l'Atout en combat (rangée de 7 jetons sur
+      la fiche active, gain plafonné à +2/tour de personnage, p.50). Le tracker
+      lit ce drapeau, jamais une branche d'édition. */
+  combatModel: { rerollEachRound: true, passDecrement: 0, edgeTracker: true },
   /** Disposition de combat (Vague D) : { down, morale }. SR6 « figurants »
       (p.211) : DEUX couches. Groupe (comme SR5) selon le Professionnalisme sur
       la proportion d'alliés hors de combat ; et individuel — si les cases de

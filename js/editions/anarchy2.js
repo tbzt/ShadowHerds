@@ -155,7 +155,10 @@ const EditionAnarchy2 = {
   /** Règles de round pour le tracker de combat. Anarchy 2.0 : pas d'initiative
       chiffrée, l'ordre est narratif (combativité, cf. p.180). narrative:true →
       le tracker passe en mode dépouillé (tap-to-grise), sans init/tri/réordre. */
-  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true },
+  /** threatReserve (K5) : miroir de la Réserve de menace (badge topbar) dans
+      l'en-tête du cockpit — même source de vérité (DiceRoller._threat), aucun
+      état doublé. Le tracker lit ce drapeau, jamais une branche d'édition. */
+  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: true },
   /** Disposition de combat (Vague D) : { down, morale }. Anarchy 2.0 COMBATIVITÉ
       (p.180) — champ threatLevel (nulle/faible/forte/extrême). Déclencheur
       individuel (1re blessure légère/grave, ou incapacité) OU proportion

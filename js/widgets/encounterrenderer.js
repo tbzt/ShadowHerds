@@ -32,6 +32,18 @@ const EncounterRenderer = {
     const modal = document.querySelector(".encounter-modal");
     if (modal) modal.classList.toggle("is-narrative", narrative);
 
+    // K5 : miroir de la Réserve de menace dans l'en-tête (Anarchy) — visibilité
+    // pilotée par combatModel.threatReserve, valeur lue sur DiceRoller (source
+    // unique). Pas de branche d'édition ici.
+    const threatEl = document.getElementById("encounter-threat");
+    if (threatEl) {
+      threatEl.hidden = !model.threatReserve;
+      if (model.threatReserve) {
+        const val = document.getElementById("encounter-threat-val");
+        if (val) val.textContent = DiceRoller.threatValue();
+      }
+    }
+
     const list = document.getElementById("encounter-list");
     if (!list) return;
 
@@ -457,6 +469,22 @@ const EncounterRenderer = {
     </div>`;
   },
 
+  /** Rangée Atout (K5, SR6) : compteur de combat 0-7 par combattant, stocké
+      dans l'entrée de scène (c.edge) — pas sur le PNJ (l'Atout dépensé/gagné
+      est propre à la rencontre). ± via edge-step ; le plafond +2/tour est un
+      avertissement non bloquant (Encounter.adjustEdge). */
+  _activeEdge(r) {
+    const edge = r.edge || 0;
+    const tokens = Array.from({ length: 7 }, (_, i) => `<span class="edge-token${i < edge ? " filled" : ""}"></span>`).join("");
+    return `<div class="encounter-edge" title="Atout SR6 (max 7, gain +2/tour de personnage — p.50)">
+      <span class="encounter-edge-lbl">Atout</span>
+      <button class="btn-icon-tiny" data-action="edge-step" data-delta="-1" data-id="${r.pnjId}" aria-label="Atout −1">−</button>
+      <span class="edge-tokens" aria-hidden="true">${tokens}</span>
+      <span class="encounter-edge-val">${edge}/7</span>
+      <button class="btn-icon-tiny" data-action="edge-step" data-delta="1" data-id="${r.pnjId}" aria-label="Atout +1">＋</button>
+    </div>`;
+  },
+
   /** Note de scène éditable sous la fiche active (K2) : même champ que
       c.note (déjà persisté par ligne), même action `set-note` — la
       délégation d'Encounter la reçoit qu'elle vienne de la ligne ou d'ici.
@@ -518,6 +546,9 @@ const EncounterRenderer = {
       // déjà repliés par pnj._refOpen ci-dessus).
       box.innerHTML = this._activeBandeau(active);
       box.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
+      // K5 : rangée Atout (SR6, combatModel.edgeTracker) — organe d'édition
+      // sur la fiche active. Absente en SR5/Anarchy (drapeau non posé).
+      if (model && model.edgeTracker) box.insertAdjacentHTML("beforeend", this._activeEdge(active));
       box.insertAdjacentHTML("beforeend", this._activeNote(active));
     }
   },

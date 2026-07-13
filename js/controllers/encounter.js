@@ -438,6 +438,9 @@ const Encounter = {
     this.state.combatants.forEach((c) => {
       c.hasActed = false;
       c.delayed = false;
+      // K5 : compteur de gains d'Atout du tour remis à zéro à chaque round
+      // (plafond +2/tour de personnage, SR6 p.50).
+      c.edgeTurn = 0;
     });
     // SR5/SR6 : nouvelle initiative à chaque tour de combat. Anarchy
     // (rerollEachRound:false) conserve l'ordre rangé à la main.
@@ -463,6 +466,28 @@ const Encounter = {
     // Pas de _commit() ici : un re-rendu complet ferait perdre le focus/
     // curseur du champ en cours de saisie. Sauvegarde silencieuse.
     this.save();
+  },
+
+  /** K5 : ajuste l'Atout de combat d'un combattant (SR6, 0-7). Le gain est
+      plafonné à +2 par tour de personnage (p.50) — avertissement NON bloquant
+      (le MJ a toujours raison). Le compteur de gains (edgeTurn) est remis à
+      zéro à chaque round (nextRound). L'Atout vit dans l'entrée de scène
+      (c.edge), pas sur le PNJ — c'est une ressource de la rencontre. */
+  adjustEdge(pnjId, delta) {
+    const c = this._find(pnjId);
+    if (!c) return;
+    const before = c.edge || 0;
+    const next = Utils.clamp(before + delta, 0, 7);
+    if (next === before) return;
+    c.edge = next;
+    if (delta > 0) {
+      c.edgeTurn = (c.edgeTurn || 0) + 1;
+      if (c.edgeTurn > 2) toast("Atout : déjà 2 gagnés ce tour (SR6 p.50).", "warning");
+    }
+    // La rangée Atout vit dans la fiche active mise en cache par _activeCardId :
+    // forcer sa reconstruction pour que les jetons reflètent la nouvelle valeur.
+    EncounterRenderer._activeCardId = null;
+    this._commit();
   },
 
   /** Ferme l'overlay, bascule sur le panel où vit réellement ce PNJ
@@ -990,6 +1015,18 @@ const Encounter = {
           if (modal) modal.classList.toggle("rail-expanded");
           break;
         }
+        case "edge-step":
+          // K5 : ±1 Atout du combattant actif (SR6).
+          this.adjustEdge(id, parseInt(el.dataset.delta, 10) || 0);
+          break;
+        case "threat-step":
+          // K5 : ±1 Réserve de menace (Anarchy) — mute la source unique
+          // DiceRoller (le badge topbar et le miroir cockpit se synchronisent).
+          DiceRoller.stepThreat(parseInt(el.dataset.delta, 10) || 0);
+          break;
+        case "threat-reset":
+          DiceRoller.resetThreat();
+          break;
         case "add-candidate":
           this.add(id);
           this._renderPicker();
