@@ -1157,10 +1157,11 @@ const Encounter = {
           this.remove(id);
           break;
         case "flee-combatant":
-          // Raccourci du drapeau « devrait fuir » : retire le combattant en un
-          // tap (le MJ reste maître — action facultative, jamais automatique).
-          this.remove(id);
-          toast("Combattant retiré (fuite).");
+          // Raccourci du drapeau « devrait fuir » : bascule hors de combat en
+          // un tap (comme knockOut), réversible — pas un retrait définitif
+          // (issue #60 : le combattant qui fuit sort de la mêlée, il n'est
+          // pas rayé de la scène).
+          this.knockOut(id);
           break;
         case "heal-combatant":
           this.healCombatant(id);
