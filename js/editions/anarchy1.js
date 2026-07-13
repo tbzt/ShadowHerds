@@ -197,6 +197,13 @@ const EditionAnarchy1 = {
     source: "equip",
   },
 
+  /* Anarchy 1 n'a pas de catalogue d'équipement centralisé (armes codées par
+     stat-block, Lot 3 non fait) : `null` masque le sélecteur « ＋ Catalogue »
+     dans EditModal, comme `foundryExport` absent masque l'export Foundry. */
+  equipCatalog() {
+    return null;
+  },
+
   /** Invocation d'esprits V1 (6 types × 3 puissances, statblocks
       §ESPRITS). `types`/`spawn` référencent Spirits en lazy (spirits.js
       charge après les modules d'édition, même pattern que sr5/anarchy2). */

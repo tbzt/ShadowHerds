@@ -1518,6 +1518,32 @@ const EditionSR5 = {
     ],
   },
 
+  /* ---- Catalogue d'équipement (API neutre lue par EditModal) ----
+     `_equipLabels` fixe l'ordre et les libellés lisibles des catégories du
+     sélecteur « ＋ Catalogue » ; ItemResolver aplatit `equipPools` (dont les
+     sous-listes commlinks/armures). Tout item du catalogue est une chaîne
+     poussée telle quelle dans `pnj.equip` (les armes SR5 y vivent déjà). */
+  _equipLabels: {
+    commlinks: "Commlinks",
+    pistoletsLegers: "Pistolets légers",
+    pistoletsLourds: "Pistolets lourds",
+    mitraillettes: "Mitraillettes",
+    fusilsAssaut: "Fusils d'assaut",
+    snipers: "Fusils de précision",
+    meleeWeapons: "Corps à corps",
+    electroarmes: "Électro-armes",
+    armures: "Armures",
+    grenades: "Grenades",
+    cyberware: "Cyberware",
+    equipSpecial: "Équipement spécial",
+  },
+  equipCatalog() {
+    return ItemResolver.flattenEquipPools(this.equipPools, this._equipLabels);
+  },
+  addCatalogItem(pnj, id) {
+    ItemResolver.addEquipString(pnj, this.equipPools, id);
+  },
+
   /* ----
      RÈGLE DE SÉLECTION D'ÉQUIPEMENT
      Par profession et professionnalisme, on sélectionne un profil

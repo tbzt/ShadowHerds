@@ -92,7 +92,7 @@ const EditModal = {
 
     if (pnj.pcLight) {
       this._readFormLight(pnj);
-      Characters.save();
+      UI.persistEntity(pnj.id);
       Characters.render();
       CardRenderer.refresh(pnj);
       this.close();
@@ -107,7 +107,7 @@ const EditModal = {
         pnj.monTotal = Vehicles._monitor(pnj.stats, pnj.edition);
         pnj.monFilled = Math.min(pnj.monFilled || 0, pnj.monTotal);
       }
-      Shadows.save();
+      UI.persistEntity(pnj.id);
       CardRenderer.refresh(pnj);
       this.close();
       toast(`${pnj.name} mis à jour.`);
@@ -124,7 +124,7 @@ const EditModal = {
       pnj.me = edModule.conditionMonitor.spiritMonitor(pnj.force);
     }
 
-    Shadows.save();
+    UI.persistEntity(pnj.id);
     if (Shadows.data.all.some((p) => p.id === pnj.id)) {
       Shadows.render();
     }
@@ -515,16 +515,30 @@ const EditModal = {
       </div>`;
     }
 
-    // ---- Section : Équipement ----
-    if (pnj.equip && pnj.equip.length) {
+    // ---- Section : Armes structurées ----
+    // Montée seulement pour une édition qui stocke ses armes en objets
+    // (`weaponModel.source === "weapons"`, Anarchy 2 aujourd'hui) — lecture
+    // neutre, jamais de branche d'édition. Le catalogue de la section
+    // Équipement route alors ses armes ici (pnj.weapons), pas dans equip.
+    if (App.getEditionModule(pnj.edition).weaponModel?.source === "weapons") {
       html += `<div class="modal-section">
-        <div class="modal-section-title">Équipement</div>
-        <div class="form-group">
-          <label>Un élément par ligne</label>
-          <textarea id="em-equip" rows="4">${pnj.equip.join("\n")}</textarea>
+        <div class="modal-section-title">Armes</div>
+        <div id="em-weapons-list" class="em-skills-list">
+          ${this._weaponRows(pnj)}
         </div>
       </div>`;
     }
+
+    // ---- Section : Équipement (toujours affichée : on peut désormais en
+    // ajouter à un PNJ qui n'en a pas encore, via le catalogue). ----
+    html += `<div class="modal-section">
+        <div class="modal-section-title">Équipement</div>
+        <div class="form-group">
+          <label>Un élément par ligne</label>
+          <textarea id="em-equip" rows="4">${(pnj.equip || []).join("\n")}</textarea>
+        </div>
+        ${this._equipCatalogControls(pnj)}
+      </div>`;
 
     // ---- Section : Cyberdeck (M1) — seulement si déjà structuré (généré ou
     // migré depuis l'ancienne chaîne libre) ; pas de bouton « en ajouter un »
@@ -606,7 +620,7 @@ const EditModal = {
   /* Ajoute une compétence choisie dans le catalogue. Lit d'abord le
      formulaire en cours pour ne pas perdre les modifications. */
   addSkill() {
-    const pnj = Shadows.data.all.find((p) => p.id === this.currentId);
+    const pnj = PnjLookup.find(this.currentId);
     if (!pnj) return;
     const sel = document.getElementById("em-add-skill-select");
     const name = sel?.value;
@@ -630,7 +644,7 @@ const EditModal = {
 
   /* Retire la compétence d'index i. */
   removeSkill(i) {
-    const pnj = Shadows.data.all.find((p) => p.id === this.currentId);
+    const pnj = PnjLookup.find(this.currentId);
     if (!pnj || !pnj.skills) return;
     this._readSkills(pnj);
     pnj.skills.splice(i, 1);
@@ -674,6 +688,86 @@ const EditModal = {
       const rrEl = document.getElementById(`em-skill-rr-${i}`);
       if (rrEl) s.rr = Utils.clamp(parseInt(rrEl.value, 10) || 0, 0, 3);
     });
+  },
+
+  /* ---- Armes structurées (éditions à pnj.weapons) + catalogue ---- */
+
+  /* Lignes de la section « Armes » (réutilise le chrome des compétences). */
+  _weaponRows(pnj) {
+    const esc = CardRenderer._esc;
+    return (pnj.weapons || [])
+      .map((w, i) => {
+        const detail = [w.vd, w.ranges].filter(Boolean).join(" ");
+        return `<div class="em-skill-row" data-idx="${i}">
+          <span class="em-skill-name">${esc(w.name)}${detail ? ` — ${esc(detail)}` : ""}</span>
+          <button type="button" class="em-skill-del" title="Retirer"
+            data-action="remove-weapon">×</button>
+        </div>`;
+      })
+      .join("");
+  },
+
+  /* Sélecteur groupé « ＋ Catalogue » — monté seulement si l'édition expose
+     un catalogue (equipCatalog() ≠ null), comme l'export Foundry. */
+  _equipCatalogControls(pnj) {
+    const catalog = App.getEditionModule(pnj.edition).equipCatalog?.();
+    if (!catalog || !catalog.length) return "";
+    const esc = CardRenderer._esc;
+    const groups = catalog
+      .map(
+        (g) =>
+          `<optgroup label="${esc(g.category)}">` +
+          g.items
+            .map((it) => `<option value="${esc(it.id)}">${esc(it.label)}</option>`)
+            .join("") +
+          `</optgroup>`,
+      )
+      .join("");
+    return `<div class="em-add-skill">
+      <select id="em-equip-catalog" class="em-equip-catalog" aria-label="Catalogue d'équipement">
+        <option value="">＋ Catalogue…</option>
+        ${groups}
+      </select>
+      <button type="button" class="em-add-skill-btn" data-action="add-equip-item">Ajouter</button>
+    </div>`;
+  },
+
+  /* Ajoute l'item choisi au catalogue. Commit d'abord le formulaire courant
+     (comme addSkill) pour ne perdre aucune saisie, puis laisse l'édition
+     placer l'item (equip texte, ou pnj.weapons structuré), et repeint ciblé. */
+  addEquipItem() {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj) return;
+    const sel = document.getElementById("em-equip-catalog");
+    const id = sel?.value;
+    if (!id) return;
+    this._readForm(pnj);
+    App.getEditionModule(pnj.edition).addCatalogItem(pnj, id);
+    this._rerenderEquip(pnj);
+    if (App.getEditionModule(pnj.edition).weaponModel?.source === "weapons")
+      this._rerenderWeapons(pnj);
+    if (sel) sel.value = "";
+  },
+
+  /* Retire l'arme structurée d'index i. */
+  removeWeapon(i) {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj || !pnj.weapons) return;
+    this._readForm(pnj);
+    pnj.weapons.splice(i, 1);
+    this._rerenderWeapons(pnj);
+  },
+
+  /* Repeint la seule textarea d'équipement depuis pnj.equip. */
+  _rerenderEquip(pnj) {
+    const el = document.getElementById("em-equip");
+    if (el) el.value = (pnj.equip || []).join("\n");
+  },
+
+  /* Repeint la seule liste d'armes depuis pnj.weapons. */
+  _rerenderWeapons(pnj) {
+    const list = document.getElementById("em-weapons-list");
+    if (list) list.innerHTML = this._weaponRows(pnj);
   },
 
   /* ---- Lecture du formulaire → mise à jour du PNJ ---- */
@@ -763,6 +857,14 @@ const EditModal = {
         case "remove-skill": {
           const row = el.closest("[data-idx]");
           if (row) this.removeSkill(parseInt(row.dataset.idx, 10));
+          break;
+        }
+        case "add-equip-item":
+          this.addEquipItem();
+          break;
+        case "remove-weapon": {
+          const row = el.closest("[data-idx]");
+          if (row) this.removeWeapon(parseInt(row.dataset.idx, 10));
           break;
         }
         case "pick-pc-color":

@@ -456,6 +456,32 @@ const EditionAnarchy2 = {
     };
   },
 
+  /* ---- Catalogue d'équipement (API neutre lue par EditModal) ----
+     Anarchy 2.0 = armes STRUCTURÉES : le catalogue dérive de WEAPON_CATALOG
+     (groupé mêlée / distance) et `addCatalogItem` route l'arme vers
+     `pnj.weapons` (objet {name, vd, ranges} jouable via resolveWeapon), pas
+     dans `pnj.equip`. Un id hors catalogue retombe en gear texte (equip). */
+  equipCatalog() {
+    const groups = { melee: [], fixed: [] };
+    Object.keys(this.WEAPON_CATALOG).forEach((name) => {
+      const cat = this.WEAPON_CATALOG[name];
+      (groups[cat.type] || groups.fixed).push({ id: name, label: name });
+    });
+    const out = [];
+    if (groups.melee.length) out.push({ category: "Corps à corps", items: groups.melee });
+    if (groups.fixed.length) out.push({ category: "Armes à distance", items: groups.fixed });
+    return out;
+  },
+  addCatalogItem(pnj, id) {
+    if (this.WEAPON_CATALOG[id]) {
+      if (!Array.isArray(pnj.weapons)) pnj.weapons = [];
+      pnj.weapons.push(this.resolveWeapon({ name: id }, pnj.attrs || {}, pnj.meta));
+      return;
+    }
+    if (!Array.isArray(pnj.equip)) pnj.equip = [];
+    pnj.equip.push(id);
+  },
+
   /** Archétype utilisé pour un spider (decker de sécurité lié à un serveur,
       issue #14) — le meilleur decker disponible dépend de l'indice défendu. */
   spiderArchetype(indice) {

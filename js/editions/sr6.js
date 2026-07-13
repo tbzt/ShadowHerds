@@ -1667,6 +1667,31 @@ const EditionSR6 = {
     ],
   },
 
+  /* ---- Catalogue d'équipement (API neutre lue par EditModal) ----
+     Même socle que SR5 : `_equipLabels` ordonne/nomme les catégories,
+     ItemResolver aplatit `equipPools`. Armes SR6 = chaînes dans `pnj.equip`. */
+  _equipLabels: {
+    commlinks: "Commlinks",
+    pistoletsPoche: "Pistolets de poche",
+    pistoletsLegers: "Pistolets légers",
+    pistoletsAutomatiques: "Pistolets automatiques",
+    pistoletsLourds: "Pistolets lourds",
+    mitraillettes: "Mitraillettes",
+    shotguns: "Fusils à pompe",
+    fusils: "Fusils d'assaut",
+    snipersLourds: "Fusils de précision",
+    meleeWeapons: "Corps à corps",
+    armures: "Armures",
+    cyberware: "Cyberware",
+    equipSpecial: "Équipement spécial",
+  },
+  equipCatalog() {
+    return ItemResolver.flattenEquipPools(this.equipPools, this._equipLabels);
+  },
+  addCatalogItem(pnj, id) {
+    ItemResolver.addEquipString(pnj, this.equipPools, id);
+  },
+
   buildLoadout(archetype, proRating, awakened) {
     const p = proRating;
     const pools = this.equipPools;

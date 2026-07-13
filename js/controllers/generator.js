@@ -61,7 +61,7 @@ const Gen = {
     for (const pnj of saved) {
       const actions = pnj.type === "vehicle" || (pnj.type === "spirit" && pnj.ownerId)
         ? ["remove"]
-        : ["save", "discard"];
+        : ["save", "discard", "edit"];
       zone.appendChild(CardRenderer.render(pnj, actions));
     }
   },
@@ -490,7 +490,7 @@ const Gen = {
     this._savePool();
 
     const zone = document.getElementById("gen-zone-single");
-    const card = CardRenderer.render(pnj, ["save", "discard"]);
+    const card = CardRenderer.render(pnj, ["save", "discard", "edit"]);
     zone.prepend(card);
   },
 
@@ -515,7 +515,7 @@ const Gen = {
     this.pool.push(spirit);
     this._savePool();
     const zone = document.getElementById("gen-zone-single");
-    const card = CardRenderer.render(spirit, ["save", "discard"]);
+    const card = CardRenderer.render(spirit, ["save", "discard", "edit"]);
     card.classList.add("spirit-card");
     zone.prepend(card);
   },
@@ -541,7 +541,7 @@ const Gen = {
     this.pool.push(pnj);
     this._savePool();
     const zone = document.getElementById("gen-zone-single");
-    zone.prepend(CardRenderer.render(pnj, ["save", "discard"]));
+    zone.prepend(CardRenderer.render(pnj, ["save", "discard", "edit"]));
   },
 
   /** CH-Q8 : envoie toutes les fiches affichées au tracker de combat en un

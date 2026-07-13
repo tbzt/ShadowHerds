@@ -16,6 +16,18 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
+## [1.8.0] — 2026-07-14
+
+### Générer
+- **Éditer un PNJ avant de le sauvegarder** : le bouton « Éditer » est
+  disponible dès le générateur, sur un PNJ pas encore rangé en bibliothèque —
+  plus besoin de sauvegarder d'abord pour corriger un détail.
+- **Catalogue d'équipement** : la fiche d'édition propose désormais un
+  sélecteur « ＋ Catalogue » (armes, armures, commlinks, cyberware…) au lieu
+  de tout taper à la main. **Anarchy 2.0** : les armes ajoutées sont
+  structurées (VD et portées calculées), donc jouables immédiatement au tour
+  du PNJ.
+
 ## [1.7.0] — 2026-07-14
 
 ### Jouer

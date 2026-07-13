@@ -1468,6 +1468,13 @@ kbd {
   padding: 5px 7px;
   font-size: var(--fs-xs);
 }
+/* Sélecteur natif « ＋ Catalogue » (optgroups) : occupe la rangée comme le
+   SingleSelect des compétences. */
+.em-add-skill .em-equip-catalog {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-xs);
+}
 .em-add-skill-btn {
   background: color-mix(in srgb, var(--accent) 15%, var(--bg));
   border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
