@@ -89,11 +89,16 @@ const EncounterRenderer = {
     // des actions chiffrées (REC-6 FIELD_STUDY — sans elle, l'absence d'init/tri
     // est lue comme une panne plutôt qu'une règle appliquée à la lettre).
     const progressHtml = narrative ? this._narrativeNote() + this._narrativeProgress(rows) : "";
+    // M4 : en narratif (Anarchy 2), le brickage n'a pas de fiche active où loger
+    // — une bande dédiée en pied de liste (gate scène Matrice), avant l'action
+    // de fin de scène. Vide (donc invisible) hors scène Matrice.
+    const devicesHtml = narrative ? this._narrativeDevices(rows, state) : "";
     // Action de fin de scène rendue en pied de liste (le tracker n'a pas de
     // barre d'outils modifiable ici) : réinitialise tous les moniteurs.
     list.innerHTML =
       progressHtml +
       html +
+      devicesHtml +
       `<div class="encounter-scene-actions">
         <button class="btn-secondary btn-small" data-action="heal-all" title="Réinitialiser les moniteurs de tous les combattants">⛨ Fin de scène — tout soigner</button>
       </div>`;
@@ -536,6 +541,14 @@ const EncounterRenderer = {
     box.innerHTML = "";
   },
 
+  /** Contenu du wrapper live `.encounter-active-top` (rafraîchi à chaque
+      `_render()`, indépendant du cache `_activeCardId`) : tout ce qui doit
+      rester à jour au fil du tour sans re-rendre la fiche complète — bandeau
+      d'état (K2), pont decker→scène (M3), appareils matriciels (M4). */
+  _activeTop(r, state) {
+    return this._activeBandeau(r) + this._activeDeckerLink(r, state) + this._activeDevices(r, state);
+  },
+
   /** Bandeau d'état au-dessus de la fiche active (K2) : hors de
       combat/retardé/devrait fuir — mêmes badges que la ligne (_downBadge,
       _delayedBadge, _moraleBanner), rien de nouveau. Vide si le combattant
@@ -564,6 +577,122 @@ const EncounterRenderer = {
     if (!srv) return "";
     return `<div class="encounter-active-badges">
       <button class="btn-secondary btn-small" data-action="link-server" data-id="${srv.id}" title="Lier ${Utils.escHtml(srv.name)} à la scène">🔗 Lier ${Utils.escHtml(srv.name)} à la scène</button>
+    </div>`;
+  },
+
+  /** M4 : « Appareils matriciels » — les armes du combattant deviennent des
+      cibles brickables. Vit dans le wrapper live `.encounter-active-top` (posé
+      par M3), donc rafraîchi à chaque `_render()` (appliquer des dégâts au même
+      tour se voit immédiatement). Trois garde-fous, dans l'ordre :
+      1. régime d'édition via Matrix.deviceBricking() — "monitor" (SR5/SR6) /
+         "narrative" (A2) / null (A1, rien) — jamais un `if (App.edition)` ;
+      2. gate contexte Matrice (Silk) : rien hors d'une scène Matrice (serveur
+         lié OU un decker présent) — un flingue n'est une cible que si la
+         Matrice est en jeu ;
+      3. au moins une arme (ItemResolver, même extraction que la carte).
+      L'état vit sur l'entrée combattant `r.devices` (= `c.devices`, copié par
+      `_rows`), scène-scopé — cf. Encounter.targetDevice. */
+  _activeDevices(r, state) {
+    const pnj = r.pnj;
+    if (!pnj || pnj._adhoc) return "";
+    // Fiche active = éditions à tour actif (SR5/SR6) → seul le régime "monitor"
+    // s'y affiche. Le narratif (A2) passe par _narrativeDevices (pas de fiche).
+    if (Matrix.use(pnj.edition).deviceBricking() !== "monitor") return "";
+    if (!this._matrixSceneActive(state)) return "";
+    const weapons = ItemResolver.splitEquip(pnj.equip).weapons;
+    if (!weapons.length) return "";
+    const devices = r.devices || {};
+    const rows = weapons.map((w) => this._deviceRow(pnj, w, devices[w])).join("");
+    return `<div class="encounter-devices">
+      <div class="encounter-devices-lbl">Appareils matriciels</div>
+      ${rows}
+    </div>`;
+  },
+
+  /** Une scène est « Matrice active » (Silk : gate d'affichage du brickage) si
+      un serveur est lié OU un decker (PNJ avec cyberdeck) est présent — hors de
+      ce contexte, une arme n'est pas une cible matricielle. Partagé par la
+      fiche active (SR5/SR6) et la bande narrative (A2). */
+  _matrixSceneActive(state) {
+    if (state.serverId) return true;
+    return state.combatants.some((c) => {
+      const p = PnjLookup.find(c.pnjId);
+      return p && p.cyberdeck;
+    });
+  },
+
+  /** M4 — bande « Appareils matriciels » pour le tracker NARRATIF (Anarchy 2 :
+      pas de fiche active où loger le brickage). Liste tous les combattants
+      armés d'un coup (utile au MJ : « quel Smartgun est encore actif ? ») avec
+      une bascule « hors service » en un tap par arme (régime narratif : ni
+      moniteur, ni indice — le verbe est au livre A2 p.210, sans chiffre).
+      Même gate contexte Matrice que la fiche active. Vide (donc masquée) hors
+      scène Matrice ou si l'édition n'a pas le régime narratif. */
+  _narrativeDevices(rows, state) {
+    const mod = App.editionModule;
+    if (!mod || !mod.matrixModel || mod.matrixModel.deviceBricking !== "narrative") return "";
+    if (!this._matrixSceneActive(state)) return "";
+    const esc = Utils.escHtml;
+    const blocks = rows
+      .filter((r) => r.pnj && !r.pnj._adhoc)
+      .map((r) => {
+        const weapons = ItemResolver.splitEquip(r.pnj.equip).weapons;
+        if (!weapons.length) return "";
+        const devices = r.devices || {};
+        const chips = weapons
+          .map((w) => {
+            const bricked = !!(devices[w] && devices[w].bricked);
+            const idAttrs = `data-id="${r.pnj.id}" data-label="${esc(w)}"`;
+            return `<button class="react-btn${bricked ? " is-off" : ""}" data-action="device-narrative-toggle" ${idAttrs} title="${bricked ? "Réparer" : "Rendre hors service"}">${esc(w)}${bricked ? " — hors service" : ""}</button>`;
+          })
+          .join("");
+        return `<div class="encounter-ndevice-row">
+          <span class="encounter-ndevice-owner">${esc(r.pnj.name || "")}</span>
+          <span class="encounter-ndevice-chips">${chips}</span>
+        </div>`;
+      })
+      .join("");
+    if (!blocks) return "";
+    return `<div class="encounter-devices encounter-ndevices">
+      <div class="encounter-devices-lbl">Appareils matriciels — touchez une arme pour la rendre hors service</div>
+      ${blocks}
+    </div>`;
+  },
+
+  /** Une ligne « appareil » (arme) sur la fiche active (SR5/SR6, mode moniteur).
+      Le régime narratif (Anarchy 2) ne passe jamais ici : sa combativité n'a
+      pas de fiche active (renderActiveCard sort tôt) — il a sa propre bande,
+      _narrativeDevices, dans la liste. */
+  _deviceRow(pnj, label, d) {
+    const esc = Utils.escHtml;
+    const el = esc(label);
+    const idAttrs = `data-id="${pnj.id}" data-label="${el}"`;
+    if (!d) {
+      return `<div class="encounter-device-row">
+        <span class="encounter-device-name">${el}</span>
+        <button class="react-btn" data-action="target-device" ${idAttrs}>Bricker</button>
+      </div>`;
+    }
+    const brickedBadge = d.bricked
+      ? `<span class="encounter-device-bricked">hors service</span>`
+      : "";
+    const untarget = `<button class="react-btn" data-action="untarget-device" ${idAttrs} title="Retirer la cible" aria-label="Retirer la cible">✕</button>`;
+    const size = Matrix.use(pnj.edition).icMonitorSize(d.indice);
+    const boxes = Array.from({ length: size }, (_, i) => {
+      const filled = i < (d.filled || 0);
+      const penalty = (i + 1) % 3 === 0;
+      return `<div class="monitor-box${filled ? " filled" : ""}${penalty ? " penalty" : ""}" data-action="device-box" ${idAttrs} data-idx="${i}"></div>`;
+    }).join("");
+    const rating = `<span class="encounter-device-rating" title="Indice d'appareil (défaut 2 « Moyen »)">
+      <button class="btn-icon-tiny" data-action="device-rating-step" data-delta="-1" ${idAttrs} aria-label="Indice −1">−</button>
+      Ind. ${d.indice}
+      <button class="btn-icon-tiny" data-action="device-rating-step" data-delta="1" ${idAttrs} aria-label="Indice +1">＋</button>
+    </span>`;
+    return `<div class="encounter-device-row${d.bricked ? " is-bricked" : ""}">
+      <span class="encounter-device-name">${el}</span>
+      ${rating}
+      <div class="monitor-boxes">${boxes}</div>
+      ${brickedBadge}${untarget}
     </div>`;
   },
 
@@ -671,7 +800,10 @@ const EncounterRenderer = {
     // suivant (linkServer réussissait bel et bien, seul l'affichage mentait).
     if (pnj) {
       const top = box.querySelector(":scope > .encounter-active-top");
-      if (top) top.innerHTML = this._activeBandeau(active) + this._activeDeckerLink(active, state);
+      // M4 : les appareils matriciels (armes brickables) vivent aussi dans ce
+      // wrapper live — appliquer des dégâts au même tour se voit sans attendre
+      // le tour suivant (même raison que le pont decker ci-dessus).
+      if (top) top.innerHTML = this._activeTop(active, state);
     }
     if (id === this._activeCardId) return; // déjà affiché, laissé au rafraîchissement global
     this._activeCardId = id;
@@ -685,7 +817,7 @@ const EncounterRenderer = {
       // en dessous — la fiche « vue combat » n'affiche que ce que le MJ
       // regarde à chaque tour (l'init est masquée en CSS, les attributs sont
       // déjà repliés par pnj._refOpen ci-dessus).
-      box.innerHTML = `<div class="encounter-active-top">${this._activeBandeau(active) + this._activeDeckerLink(active, state)}</div>`;
+      box.innerHTML = `<div class="encounter-active-top">${this._activeTop(active, state)}</div>`;
       box.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
       // K5 : rangée Atout (SR6, combatModel.edgeTracker) — organe d'édition
       // sur la fiche active. Absente en SR5/Anarchy (drapeau non posé).

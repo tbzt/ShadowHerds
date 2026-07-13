@@ -658,6 +658,88 @@ const Encounter = {
     return res;
   },
 
+  /* ---- M4 : bricker des armes (cibles matricielles) ----
+     L'état de brickage est **de scène**, PAS sur le PNJ : il vit sur l'entrée
+     combattant `c.devices` (comme `c.matrix` pour les CI), donc dans
+     `Encounter.state.combatants`, sérialisé tel quel par Storage.set (interdit
+     n°2 respecté — aucune écriture localStorage directe, aucune 5ᵉ collection).
+     Scène-scopé : vidé à `clear()`, jamais copié sur la fiche permanente. Le
+     régime par édition (moniteur SR5/SR6 vs bascule narrative A2 vs rien A1)
+     est lu via Matrix.deviceBricking() — jamais un `if (App.edition)` ici. */
+
+  /** Désigne une arme comme cible matricielle. Forme du descripteur selon le
+      régime : "monitor" → {indice, filled, bricked} ; "narrative" → {indice:null,
+      bricked}. Idempotent (re-taper la même arme ne recrée pas de moniteur). */
+  targetDevice(pnjId, label) {
+    const c = this._find(pnjId);
+    if (!c || !label) return;
+    const pnj = PnjLookup.find(pnjId);
+    const mode = pnj && Matrix.use(pnj.edition).deviceBricking();
+    if (!mode) return;
+    c.devices ||= {};
+    if (c.devices[label]) return;
+    c.devices[label] =
+      mode === "narrative"
+        ? { indice: null, bricked: false }
+        : { indice: Matrix.DEVICE_DEFAULT_RATING, filled: 0, bricked: false };
+    this._commit();
+  },
+
+  untargetDevice(pnjId, label) {
+    const c = this._find(pnjId);
+    if (!c || !c.devices || !c.devices[label]) return;
+    delete c.devices[label];
+    this._commit();
+  },
+
+  /** Clic sur une case du moniteur d'un appareil (SR5/SR6). Même geste que le
+      moniteur de deck (UI.toggleDeckMonitor) / le moniteur de CI (Intrusion.icBox)
+      — taper une case remplit jusque-là, re-taper la dernière rend une case.
+      Brické quand le moniteur est plein (8+Indice/2). */
+  deviceBox(pnjId, label, idx) {
+    const c = this._find(pnjId);
+    const d = c && c.devices && c.devices[label];
+    if (!d || d.indice == null) return;
+    d.filled = idx < d.filled ? idx : idx + 1;
+    const pnj = PnjLookup.find(pnjId);
+    const size = Matrix.use(pnj.edition).icMonitorSize(d.indice);
+    d.bricked = d.filled >= size;
+    this._commit();
+  },
+
+  /** ±1 sur l'Indice d'appareil (défaut 2 « Moyen », plage 1-6, cf. table du
+      livre) — pas de saisie clavier en combat (patron edge-step/threat-step).
+      Le moniteur se redimensionne ; on reclampe le rempli et on recalcule le
+      brickage. */
+  deviceRatingStep(pnjId, label, delta) {
+    const c = this._find(pnjId);
+    const d = c && c.devices && c.devices[label];
+    if (!d || d.indice == null) return;
+    d.indice = Utils.clamp(d.indice + delta, 1, 6);
+    const pnj = PnjLookup.find(pnjId);
+    const size = Matrix.use(pnj.edition).icMonitorSize(d.indice);
+    if (d.filled > size) d.filled = size;
+    d.bricked = d.filled >= size;
+    this._commit();
+  },
+
+  /** Anarchy 2.0 (régime narratif) : bascule « hors service » en un tap depuis
+      la bande narrative. Pas de moniteur ni d'indice — le descripteur se réduit
+      à { indice:null, bricked }. 1er tap sur une arme non ciblée = brické
+      d'emblée (le geste du MJ EST « rends-la inopérante ») ; re-taper une arme
+      brickée = réparée, on retire le descripteur (l'arme redevient une simple
+      cible potentielle, pas d'état résiduel). */
+  deviceNarrativeToggle(pnjId, label) {
+    const c = this._find(pnjId);
+    if (!c || !label) return;
+    c.devices ||= {};
+    const d = c.devices[label];
+    if (!d) c.devices[label] = { indice: null, bricked: true };
+    else if (d.bricked) delete c.devices[label];
+    else d.bricked = true;
+    this._commit();
+  },
+
   /** Fin de scène : soigne tous les combattants résolvables d'un coup. */
   async healAll() {
     const ok = await Dialog.confirm({
@@ -1200,6 +1282,25 @@ const Encounter = {
           // K8 : Anarchy 2 — un cran de gravité, pas un nombre de cases.
           this.damageCombatant(id, 1, { severity: el.dataset.sev });
           EncounterRenderer.toggleReactDamage(id, true);
+          break;
+        case "target-device":
+          // M4 : désigne une arme comme cible matricielle (brickable).
+          this.targetDevice(id, el.dataset.label);
+          break;
+        case "untarget-device":
+          this.untargetDevice(id, el.dataset.label);
+          break;
+        case "device-box":
+          // M4 : case du moniteur d'un appareil (SR5/SR6).
+          this.deviceBox(id, el.dataset.label, parseInt(el.dataset.idx, 10) || 0);
+          break;
+        case "device-rating-step":
+          // M4 : ±1 Indice d'appareil (patron edge-step, pas de saisie clavier).
+          this.deviceRatingStep(id, el.dataset.label, parseInt(el.dataset.delta, 10) || 0);
+          break;
+        case "device-narrative-toggle":
+          // M4 : Anarchy 2 — bascule « hors service » en un tap (régime narratif).
+          this.deviceNarrativeToggle(id, el.dataset.label);
           break;
         case "action-set":
           // K7 : consomme/rend une action du tour actif (jeton tappable).
