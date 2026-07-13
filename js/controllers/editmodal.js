@@ -211,7 +211,11 @@ const EditModal = {
       "anarchy" (capacité figée par la règle, cf. CardRenderer). */
   _tableBlockMonitorInputs(pnj, block) {
     const esc = CardRenderer._esc;
-    if (block.monitorKind === "double") {
+    // "monitorKind" peut être une fonction (SR6 : réglage separateMonitors,
+    // cf. CardRenderer._tableBlockMonitors — même résolution des deux côtés).
+    const kind =
+      typeof block.monitorKind === "function" ? block.monitorKind() : block.monitorKind;
+    if (kind === "double") {
       return `<div class="form-group">
           <label>Moniteur physique (cases)</label>
           <input type="number" id="em-tb-physMon" value="${pnj.physMon ?? ""}" min="0" max="30">
@@ -221,7 +225,7 @@ const EditModal = {
           <input type="number" id="em-tb-stunMon" value="${pnj.stunMon ?? ""}" min="0" max="30">
         </div>`;
     }
-    if (block.monitorKind === "single") {
+    if (kind === "single") {
       const key = block.monitorMaxKey || "me";
       return `<div class="form-group">
         <label>Moniteur d'état (cases)</label>
@@ -255,10 +259,12 @@ const EditModal = {
         pnj[f.key] = Number.isFinite(n) ? n : null;
       }
     }
+    const kind =
+      typeof block.monitorKind === "function" ? block.monitorKind() : block.monitorKind;
     const monKeys =
-      block.monitorKind === "double"
+      kind === "double"
         ? ["physMon", "stunMon"]
-        : block.monitorKind === "single"
+        : kind === "single"
           ? [block.monitorMaxKey || "me"]
           : [];
     for (const key of monKeys) {

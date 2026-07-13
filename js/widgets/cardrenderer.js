@@ -139,13 +139,18 @@ const CardRenderer = {
       `_monitorBoxesAnarchy`) : même markup, même délégation `toggle-monitor`. */
   _tableBlockMonitors(pnj, block) {
     if (!block || !block.monitorKind) return "";
-    if (block.monitorKind === "anarchy") {
+    // "monitorKind" peut être une fonction (SR6 : dépend du réglage
+    // separateMonitors, résolu à chaque lecture — un PJ léger n'a pas de
+    // moment de « génération » où baker la valeur, contrairement aux PNJ).
+    const kind =
+      typeof block.monitorKind === "function" ? block.monitorKind() : block.monitorKind;
+    if (kind === "anarchy") {
       return `<div class="monitor-block"><div class="monitor-row">
         <span class="monitor-label">État</span>
         <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj)}</div>
       </div></div>`;
     }
-    if (block.monitorKind === "single") {
+    if (kind === "single") {
       const key = block.monitorMaxKey || "me";
       const max = pnj[key] || 0;
       if (!max) return "";

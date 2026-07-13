@@ -202,10 +202,17 @@ const EditionSR6 = {
     },
   },
   /** E3 (chantier Équipe) : bloc « mécanique de table » du PJ léger.
-      SR6 = UN SEUL moniteur d'état (champ `me`, cf. `conditionMonitor`
-      ci-dessous) — pas de piste Phys/Étourd séparée comme SR5/Anarchy1.
-      `monitorMaxKey` indique quel champ porte la capacité (saisie MJ, le
-      PJ léger n'a pas d'attribut CON pour la dériver). */
+      SR6 standard = UN SEUL moniteur d'état (champ `me`) — mais le réglage
+      `separateMonitors` (cf. `settingsHTML` plus haut, option de table
+      p.??) bascule vers deux pistes Phys/Étourd séparées, comme SR5.
+      `monitorKind` est ici une fonction (résolue à chaque lecture, pas au
+      moment de la création du PJ léger — il n'a pas de « génération » où
+      baker la valeur) plutôt qu'une chaîne fixe : signalé en vérifiant que
+      `separateMonitors` n'était en réalité consulté nulle part ailleurs
+      dans le code (mort partout, y compris pour les PNJ complets — bug
+      pré-existant hors scope, signalé séparément). `monitorMaxKey` indique
+      quel champ porte la capacité (saisie MJ, le PJ léger n'a pas
+      d'attribut CON pour la dériver). */
   pcTableBlock: {
     fields: [
       { key: "initBase", label: "Initiative (base)", kind: "number" },
@@ -214,7 +221,7 @@ const EditionSR6 = {
       { key: "perception", label: "Perception", kind: "number" },
       { key: "volonte", label: "Volonté", kind: "number" },
     ],
-    monitorKind: "single",
+    monitorKind: () => (Settings.get("separateMonitors", false) ? "double" : "single"),
     monitorMaxKey: "me",
   },
   /** Malus de dés lié aux cases de moniteur remplies : −1D par tranche de
