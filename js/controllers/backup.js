@@ -45,16 +45,19 @@ const Backup = {
     return {
       format: this.FORMAT,
       version: this.VERSION,
+      schemaVersion: Storage.SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
       app: "ShadowHerds",
       data,
     };
   },
 
-  /** Statistiques lisibles d'un paquet (pour confirmation). */
+  /** Statistiques lisibles d'un paquet (pour confirmation). Lit toujours le
+      paquet migré (`_migrate`) : un vieux paquet non renommé (édition
+      "anarchy") doit compter dans les bons totaux avant même d'être importé. */
   stats(pkg) {
     const out = { pnj: 0, contacts: 0, servers: 0, editions: [] };
-    const data = pkg && pkg.data ? pkg.data : {};
+    const data = this._migrate(pkg);
     for (const ed of this.EDITIONS) {
       const b = data[ed];
       if (!b) continue;
@@ -102,7 +105,39 @@ const Backup = {
       return "Ce fichier n'est pas une sauvegarde ShadowHerds.";
     if (!pkg.data || typeof pkg.data !== "object")
       return "Sauvegarde sans données exploitables.";
+    // Un paquet sans schemaVersion est antérieur à ce champ (donc plus ancien
+    // que le schéma courant) : `undefined > SCHEMA_VERSION` vaut toujours
+    // faux, il n'est jamais refusé ici — seulement migré par `_migrate`.
+    if (pkg.schemaVersion > Storage.SCHEMA_VERSION)
+      return "Cette sauvegarde vient d'une version plus récente de ShadowHerds. Mettez à jour l'application avant de l'importer.";
     return null; // ok
+  },
+
+  /** Aligne le `data` d'un paquet importé sur le schéma courant. Un paquet
+      déjà à jour (export du jour) traverse cette fonction sans modification.
+      Ne touche jamais `localStorage` : ne transforme que l'objet en mémoire,
+      avant `apply`/`stats`. Mise à jour au fil de l'eau, en miroir de
+      `Storage._MIGRATIONS` : seules les migrations qui affectent la FORME
+      d'un paquet Backup (les clés listées dans `KEYS`) ont besoin d'une
+      contrepartie ici — appelant garanti d'avoir déjà passé `validate`. */
+  _migrate(pkg) {
+    const from = pkg.schemaVersion || 0;
+    let data = pkg.data;
+    if (from < 1) data = this._migrateAnarchyBucket(data);
+    return data;
+  },
+
+  /** Contrepartie, pour un paquet importé, de la migration v:1 de Storage
+      (édition "anarchy" renommée "anarchy2"). Un éventuel bucket "anarchy2"
+      déjà présent dans le paquet garde la priorité sur les clés migrées. */
+  _migrateAnarchyBucket(data) {
+    if (!data.anarchy) return data;
+    const { anarchy, ...rest } = data;
+    const renamed = JSON.parse(
+      JSON.stringify(anarchy).split('"edition":"anarchy"').join('"edition":"anarchy2"')
+    );
+    rest.anarchy2 = { ...renamed, ...(rest.anarchy2 || {}) };
+    return rest;
   },
 
   /* ---- Import : depuis un fichier local ---- */
@@ -159,7 +194,7 @@ const Backup = {
       if (!silent) toast(err);
       return false;
     }
-    const data = pkg.data;
+    const data = this._migrate(pkg);
 
     for (const ed of this.EDITIONS) {
       const incoming = data[ed];

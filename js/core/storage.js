@@ -153,8 +153,10 @@ const Storage = {
   },
 
   /** Dernière version de schéma connue. Incrémenter à chaque nouvelle entrée
-      ajoutée à `_MIGRATIONS`. Voir CONTRIBUTING.md § Versionner les schémas. */
-  _SCHEMA_VERSION: 2,
+      ajoutée à `_MIGRATIONS`. Publique (contrairement à `_MIGRATIONS`) : les
+      paquets exportés (`Backup`) la tamponnent pour savoir, à l'import, s'ils
+      ont besoin d'être migrés. Voir CONTRIBUTING.md § Versionner les schémas. */
+  SCHEMA_VERSION: 2,
 
   /** Chaîne de migrations de schéma, ordonnée par version croissante. Chaque
       `up()` mute le `localStorage` brut (pas de dépendance à `_edition`) et
@@ -236,7 +238,7 @@ const Storage = {
     const stored = this.getGlobal("schemaVersion", null);
     const baseline = stored !== null
       ? stored
-      : (this._hasLegacyData() ? 0 : this._SCHEMA_VERSION);
+      : (this._hasLegacyData() ? 0 : this.SCHEMA_VERSION);
     const pending = this._MIGRATIONS
       .filter((m) => m.v > baseline)
       .sort((a, b) => a.v - b.v);
