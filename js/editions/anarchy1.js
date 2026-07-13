@@ -399,6 +399,17 @@ const EditionAnarchy1 = {
     },
   },
 
+  /* Régime cyberdeck Anarchy 1re (M1, findings §6/§6b, sran_01 p.62-65) —
+     Firewall seul (pas d'ASDF) + relance de N échecs aux tests de Hacking
+     (Erika 1 … Fairlight Excalibur 3). Pas de réallocation (Canon). */
+  cyberdeckModel: {
+    attrKeys: ["firewall"],
+    reallocatable: false,
+    hasReroll: true,
+    hasBiofeedbackFilter: false,
+    label: "Cyberdeck",
+  },
+
   /* ----
      ATTRIBUTS PAR MÉTATYPE — table des indices max V1 (findings §1)
      FOR/AGI/VOL/LOG/CHA/CHC

@@ -352,6 +352,18 @@ const EditionSR5 = {
     },
   },
 
+  /* Régime cyberdeck SR5 (M1, PLAN_MATRICE_CYBERDECK.md) — lu par Cyberdeck
+     via App.editionModule.cyberdeckModel. 4 attributs ASDF réallouables par
+     action gratuite (p.229, réallocation motorisée en M2) ; moniteur du deck
+     et Limites d'attribut : M2/M6. */
+  cyberdeckModel: {
+    attrKeys: ["attack", "sleaze", "dataProcessing", "firewall"],
+    reallocatable: true,
+    hasReroll: false,
+    hasBiofeedbackFilter: false,
+    label: "Cyberdeck",
+  },
+
   /* ----
      ATTRIBUTS PAR MÉTATYPE — table officielle p.68
      Format : { min, max } pour chaque attribut

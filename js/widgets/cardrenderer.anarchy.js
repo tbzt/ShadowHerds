@@ -227,6 +227,7 @@ Object.assign(CardRenderer, {
     }
     if (prefs.showEquipment && equip && equip.length)
       html += this._equipSection(pnj, equip, pnj.edition, deps);
+    if (pnj.cyberdeck) html += CyberdeckRenderer.block(pnj, pnj.edition, deps);
     if (notes) {
       html += `<div class="ref-block"><div class="ref-lbl">Notes</div>
         <div style="font-size:0.75rem;">${this._esc(notes)}</div></div>`;

@@ -381,6 +381,16 @@ const EditionSR6 = {
     },
   },
 
+  /* Régime cyberdeck SR6 (M1) — 4 attributs ACTF, réallouables (coût de
+     reconfiguration à confirmer en M2, p.185). Moniteur/Score Défensif : M2/M6. */
+  cyberdeckModel: {
+    attrKeys: ["attack", "sleaze", "dataProcessing", "firewall"],
+    reallocatable: true,
+    hasReroll: false,
+    hasBiofeedbackFilter: false,
+    label: "Cyberdeck",
+  },
+
   /* ----
      ATTRIBUTS PAR MÉTATYPE — table officielle p.69 LdB SR6
      Format : [min, max]

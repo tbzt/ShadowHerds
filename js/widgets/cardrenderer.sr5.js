@@ -137,6 +137,7 @@ Object.assign(CardRenderer, {
     if (prefs.showGmPools) html += this._gmPoolsSR5(pnj);
     if (prefs.showEquipment && gear.length)
       html += this._equipSection(pnj, gear, "sr5", deps);
+    if (pnj.cyberdeck) html += CyberdeckRenderer.block(pnj, "sr5", deps);
     if (augs && augs.length) html += this._listSection("Augmentations", augs);
     html += "</div>"; // fin ref-zone
 

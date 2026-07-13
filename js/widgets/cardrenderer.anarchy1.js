@@ -81,6 +81,7 @@ Object.assign(CardRenderer, {
     }
     if (prefs.showEquipment && gear.length)
       html += this._equipSection(pnj, gear, "anarchy1", deps);
+    if (pnj.cyberdeck) html += CyberdeckRenderer.block(pnj, "anarchy1", deps);
     html += "</div>"; // fin ref-zone
 
     html += "</div>";

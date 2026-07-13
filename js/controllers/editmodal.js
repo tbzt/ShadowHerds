@@ -526,6 +526,11 @@ const EditModal = {
       </div>`;
     }
 
+    // ---- Section : Cyberdeck (M1) — seulement si déjà structuré (généré ou
+    // migré depuis l'ancienne chaîne libre) ; pas de bouton « en ajouter un »
+    // en M1 (socle data, cf. PLAN_MATRICE_CYBERDECK.md). ----
+    if (pnj.cyberdeck) html += CyberdeckRenderer.editSection(pnj);
+
     // ---- Section : Notes ----
     html += this._notesBlock(pnj.notes);
 
@@ -727,6 +732,9 @@ const EditModal = {
 
     // Compétences (SR5/SR6 + Anarchy) : niveau, spécialité, RR
     this._readSkills(pnj);
+
+    // Cyberdeck (M1) — lu seulement si la section a été montée (pnj.cyberdeck).
+    if (pnj.cyberdeck) CyberdeckRenderer.readForm(pnj);
 
     // Notes
     const notesEl = document.getElementById("em-notes");

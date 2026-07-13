@@ -133,6 +133,7 @@ Object.assign(CardRenderer, {
     if (prefs.showGmPools) html += this._gmPoolsSR6(pnj);
     if (prefs.showEquipment && gear.length)
       html += this._equipSection(pnj, gear, "sr6", deps);
+    if (pnj.cyberdeck) html += CyberdeckRenderer.block(pnj, "sr6", deps);
     if (augs && augs.length) html += this._listSection("Augmentations", augs);
     html += "</div>";
 

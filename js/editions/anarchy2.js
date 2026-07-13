@@ -370,6 +370,17 @@ const EditionAnarchy2 = {
     },
   },
 
+  /* Régime cyberdeck Anarchy 2.0 (M1, p.62-64 & p.210) — Attaque + Firewall
+     (1-5, améliorables par atout), + option filtre de biofeedback (repo).
+     Pas de réallocation (Canon : Att/FW fixes). */
+  cyberdeckModel: {
+    attrKeys: ["attack", "firewall"],
+    reallocatable: false,
+    hasReroll: false,
+    hasBiofeedbackFilter: true,
+    label: "Cyberdeck",
+  },
+
   /* ========================================================
      CATALOGUE D'ARMES OFFICIEL (Shadowrun : Anarchy 2.0, p.141-144)
      ------------------------------------------------------

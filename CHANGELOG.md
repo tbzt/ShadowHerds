@@ -16,6 +16,16 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
+## [1.2.0] — 2026-07-13
+
+### Consulter & organiser
+- **Cyberdeck structuré** : le cyberdeck d'un decker (SR5/SR6/Anarchy 1/2) n'est
+  plus qu'une ligne de texte dans l'équipement — attributs matriciels lisibles et
+  éditables sur la carte (ASDF/ACTF en SR5/SR6, Firewall + relance en Anarchy 1,
+  Attaque + Firewall + filtre de biofeedback en Anarchy 2.0), programmes en liste.
+  Migration automatique et sans perte depuis l'ancienne chaîne libre (le texte
+  d'origine reste visible en note de secours).
+
 ## [1.1.0] — 2026-07-13
 
 ### Jouer
