@@ -20,6 +20,15 @@ const Tour = {
   _root: null,
   _onEnd: null,
   _MOBILE: 640,
+  _navigate: null,
+
+  /** Injection depuis app.js : navigation par panneau, pour les étapes qui
+      déclarent `panel`. Garde le moteur édition-agnostique — aucun App.* en
+      dur ici. Optionnel : sans `navigate`, une étape à `panel` retombe sur son
+      `fallback` si son ancre n'est pas visible. */
+  init(opts = {}) {
+    this._navigate = opts.navigate || null;
+  },
 
   /** Démarre un parcours. Ne fait rien si aucune étape n'y appartient. */
   start(tourName, opts = {}) {
@@ -120,6 +129,8 @@ const Tour = {
 
   _render() {
     const step = this._steps[this._i];
+    // Étape à `panel` : amener le bon écran AVANT de résoudre l'ancre.
+    if (step.panel && this._navigate) this._navigate(step.panel);
     const q = (sel) => this._root.querySelector(sel);
     q("#tour-title").textContent = step.title || "";
     q("#tour-body").textContent = step.body || "";

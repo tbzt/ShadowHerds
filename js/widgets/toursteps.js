@@ -58,5 +58,28 @@ const TourSteps = {
       title: "Aide & raccourcis",
       body: "Ce bouton rouvre cette visite à tout moment, et liste les raccourcis clavier. En cas de doute, tout repart d'ici.",
     },
+
+    /* --- Orientation (premier lancement, ≤ 4 étapes, « fait faire ») --- */
+    {
+      id: "o-lib", anchor: "nav-shadows", panel: "shadows", tours: ["orientation"], since: "1.0.0", fallback: "center",
+      title: "Bienvenue, chummer",
+      body: "« Ombres portées », votre bibliothèque : tout ce que vous créez et rangez vit ici, par dossier.",
+    },
+    {
+      id: "o-gen", anchor: "nav-generator", panel: "generator", tours: ["orientation"], since: "1.0.0", fallback: "center",
+      title: "Créer un PNJ",
+      body: "Voici le générateur : il fabrique un runner complet et jouable — attributs, armes, réserves de dés cliquables.",
+    },
+    {
+      id: "o-generate", anchor: "gen-generate", panel: "generator", tours: ["orientation"], since: "1.0.0", fallback: "center",
+      title: "Un clic suffit",
+      body: "« Générer » et c'est prêt. Sauvegardez-le ensuite : il rejoindra Ombres portées.",
+      try: "cliquez « Générer » dès la fin de cette visite.",
+    },
+    {
+      id: "o-help", anchor: "help", tours: ["orientation"], since: "1.0.0", fallback: "center",
+      title: "Perdu ? Ce bouton",
+      body: "Il relance cette visite et liste les raccourcis clavier. Bon jeu.",
+    },
   ],
 };

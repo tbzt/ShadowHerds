@@ -9295,7 +9295,10 @@ a:focus-visible,
 .tour-root { position: fixed; inset: 0; z-index: var(--z-command); pointer-events: none; }
 .tour-root[hidden] { display: none; }
 .tour-scrim { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); pointer-events: auto; }
-.tour-ring { position: absolute; border: 2px solid var(--accent); border-radius: 8px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent); pointer-events: none; transition: left var(--dur-base) var(--ease-standard), top var(--dur-base) var(--ease-standard), width var(--dur-base) var(--ease-standard), height var(--dur-base) var(--ease-standard); }
+/* L'anneau SAUTE d'une cible à l'autre (pas de transition de position) : plus
+   lisible qu'un glissement, et robuste (une transition gèle en onglet masqué,
+   laissant l'anneau visuellement en retard sur sa cible). */
+.tour-ring { position: absolute; border: 2px solid var(--accent); border-radius: 8px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent); pointer-events: none; }
 .tour-card { position: absolute; width: min(340px, calc(100vw - 24px)); background: var(--bg-card); color: var(--text); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px; padding: 16px 18px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); pointer-events: auto; }
 .tour-root.tour-centered .tour-card { left: 50% !important; top: 50% !important; transform: translate(-50%, -50%); }
 .tour-progress { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.1em; color: var(--text-dim); }
