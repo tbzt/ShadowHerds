@@ -133,4 +133,18 @@ const Cyberdeck = {
       legacyText: str,
     };
   },
+
+  /** Génération : structure `pnj.cyberdeck` depuis la 1ère ligne "Cyberdeck…"
+      trouvée dans equip/augs/edges, si pas déjà structuré. Miroir *runtime*
+      de la migration Storage v4 (storage.js) — mais ici les modules d'édition
+      sont chargés, donc parseLegacy restreint les attrs au sous-ensemble de
+      l'édition (cyberdeckModel.attrKeys) au lieu de tout garder. Idempotent ;
+      appelée en fin de generate() par chaque édition. */
+  hydrate(pnj, edition) {
+    if (!pnj || pnj.cyberdeck) return pnj;
+    const pools = [...(pnj.equip || []), ...(pnj.augs || []), ...(pnj.edges || [])];
+    const line = pools.find((s) => typeof s === "string" && /cyberdeck/i.test(s));
+    if (line) pnj.cyberdeck = this.parseLegacy(line, edition);
+    return pnj;
+  },
 };

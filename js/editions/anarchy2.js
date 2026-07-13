@@ -3839,6 +3839,7 @@ const EditionAnarchy2 = {
     WeaponRoll.reconcile(pnj, edId);
     BonusEngine.apply(pnj, edId);
     Flavor.apply(pnj);
+    Cyberdeck.hydrate(pnj, edId);
     return pnj;
   },
 
