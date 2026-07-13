@@ -3953,6 +3953,15 @@ body.selecting .bulk-selectable .contact-header-row {
   border-style: dashed;
   cursor: default;
 }
+/* Libellé texte des boutons de réaction (DA : pas d'émoji couleur — même
+   grammaire que les autres étiquettes mono uppercase). */
+.react-lbl {
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-weight: 400;
+}
 
 /* Miroir de la Réserve de menace dans l'en-tête du cockpit (Anarchy). */
 .encounter-threat {

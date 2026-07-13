@@ -638,7 +638,7 @@ const EncounterRenderer = {
 
   /** Console de réaction (K7-B) : au tour d'un PJ, une ligne par PNJ vivant
       (hors PJ, hors CI matricielle, hors de combat) avec deux gros boutons —
-      🛡 Défense · 🧱 Encaisser. Les boutons portent `data-roll` (comme les
+      Déf(ense) · Enc(aissement). Les boutons portent `data-roll` (comme les
       pastilles des cartes) : le lancer passe par le handler global de
       DiceRoller, aucune logique de jet nouvelle. Les pools sont ceux déjà
       portés par les cartes (pnj.defense − malus de blessure ; pnj.damageResist
@@ -659,12 +659,15 @@ const EncounterRenderer = {
         const malus = Utils.woundMalus(pnj, pnj.edition);
         const def = Math.max(0, (pnj.defense || 0) - malus);
         const soak = pnj.damageResist || 0;
+        // DA : pas d'émoji couleur (hors vocabulaire — l'app parle en glyphes
+        // monochromes et en pastilles texte mono, cf. stat-pill des cartes).
+        // Libellés texte : mêmes mots que les pastilles Défense/Encaissement.
         const defBtn = def >= 1
-          ? `<button class="react-btn" data-roll="${def}" data-roll-label="Défense — ${name}" data-roll-pnj="${pnj.id}" title="Test de défense (${def} dés)">🛡 ${def}</button>`
-          : `<span class="react-btn is-off" title="Pas de réserve de défense">🛡 —</span>`;
+          ? `<button class="react-btn" data-roll="${def}" data-roll-label="Défense — ${name}" data-roll-pnj="${pnj.id}" title="Test de défense (${def} dés)"><span class="react-lbl">Déf</span> ${def}</button>`
+          : `<span class="react-btn is-off" title="Pas de réserve de défense"><span class="react-lbl">Déf</span> —</span>`;
         const soakBtn = soak >= 1
-          ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${name}" data-roll-pnj="${pnj.id}" title="Résistance aux dommages (${soak} dés)">🧱 ${soak}</button>`
-          : `<span class="react-btn is-off" title="Pas de réserve d'encaissement">🧱 —</span>`;
+          ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${name}" data-roll-pnj="${pnj.id}" title="Résistance aux dommages (${soak} dés)"><span class="react-lbl">Enc</span> ${soak}</button>`
+          : `<span class="react-btn is-off" title="Pas de réserve d'encaissement"><span class="react-lbl">Enc</span> —</span>`;
         return `<div class="react-row">
           <span class="react-name">${name}</span>
           <span class="react-buttons">${defBtn}${soakBtn}</span>
