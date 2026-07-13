@@ -22,7 +22,7 @@ commit.
 - **Le decker vise un serveur** : depuis la carte d'un PNJ (hub/biblio, en
   combat comme hors combat), le bloc Cyberdeck propose un serveur cible
   (picker) puis « ⚡ Ouvrir la Matrice » (ouvre le tracker d'intrusion de ce
-  serveur) et, en SR5/SR6/Anarchy 2.0, « 🎯 Piratage » (jet du pool Attaque du
+  serveur) et, en SR5/SR6/Anarchy 2.0, « ⚔ Piratage » (jet du pool Attaque du
   deck). En combat, si le serveur ciblé diffère du serveur lié à la scène, un
   bouton « 🔗 Lier à la scène » l'y promeut en un tap.
 
