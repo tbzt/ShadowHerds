@@ -921,3 +921,51 @@ body.selecting .bulk-selectable .contact-header-row {
   margin-bottom: var(--sp-1);
 }
 
+/* ============================================================
+   AJOUT RAPIDE DE CONTACT DEPUIS UNE FICHE PJ
+   Le « ＋ » de la section « Contacts » ouvre une liste-popover
+   (réutilise .card-menu / CardMenu) : 1er item « Créer », puis
+   les contacts existants non liés (clic = lien immédiat).
+   ============================================================ */
+.contact-add-wrap {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+.contact-add-btn {
+  cursor: pointer;
+  padding: 0 6px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+/* Popover ancré au « ＋ » du corps de carte : s'ouvre VERS LE BAS, aligné à
+   gauche (au pied de carte il s'ouvre vers le haut ; ici la section vit dans
+   le corps, plus de place dessous). Défilable si beaucoup de contacts. */
+.contact-add-wrap .card-menu {
+  right: auto;
+  left: 0;
+  bottom: auto;
+  top: calc(100% + 4px);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+/* Modale de création (ContactCreate) : champs numériques au même style que les
+   champs texte du formulaire de contact, astérisque de champ requis. */
+.contact-form input[type="number"] {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem var(--sp-2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+.contact-form input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.cc-req {
+  color: var(--danger);
+}
+

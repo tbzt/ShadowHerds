@@ -877,6 +877,40 @@ const ContactGen = {
     return contact;
   },
 
+  /**
+   * Construit un contact SAISI À LA MAIN (ajout rapide depuis une fiche PJ,
+   * cf. ContactsBook.createManual / ContactCreate). Même dispatch structurel
+   * que generate() (`usesRiskPanel`) : on ne bâtit PAS un tirage aléatoire, on
+   * n'écrit que ce que l'utilisateur a fourni, avec des défauts neutres pour
+   * garder le contact bien formé (et éditable ensuite sur sa fiche). Pas de
+   * Flavor.apply : la saisie est assumée manuelle, le portrait reste
+   * re-générable via ContactsBook.rerollFlavor.
+   * @param {object} fields { name, role?, metatype?, influence?, loyaute?, level?, rr? }
+   */
+  buildManual(edition, fields = {}) {
+    const base = {
+      id: Utils.uid(),
+      edition,
+      name: (fields.name || "").trim(),
+      role: (fields.role || "").trim(),
+      desc: "",
+      metatype: this._resolveMeta(fields.metatype),
+      trait: null,
+      role_tags: null,
+    };
+    if (App.getEditionModule(edition)?.usesRiskPanel) {
+      return Object.assign(base, {
+        level: Utils.clamp(parseInt(fields.level, 10) || 1, 0, 6),
+        rr: Utils.clamp(parseInt(fields.rr, 10) || 1, 1, 3),
+        scope: "specialisation",
+      });
+    }
+    return Object.assign(base, {
+      influence: Utils.clamp(parseInt(fields.influence, 10) || 1, 1, 12),
+      loyaute: Utils.clamp(parseInt(fields.loyaute, 10) || 1, 1, 6),
+    });
+  },
+
   /* ---- Helpers ---- */
 
   _makeName() {

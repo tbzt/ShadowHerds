@@ -61,8 +61,8 @@ const ContactsBook = Object.assign(
        (même logique que generate()), persiste, et le renvoie pour que
        l'appelant le lie au PJ (Characters.addContactLink). Pas de zone d'essai/
        undo ici : la création est intentionnelle, pas un tirage à écarter. */
-    createManual(fields) {
-      const c = ContactGen.buildManual(App.edition, fields);
+    createManual(fields, edition = App.edition) {
+      const c = ContactGen.buildManual(edition, fields);
       this.data.all.push(c);
       const group =
         this.currentGroup && this.currentGroup !== "all" ? this.currentGroup : null;

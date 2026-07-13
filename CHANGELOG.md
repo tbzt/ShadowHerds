@@ -16,6 +16,17 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
+## [1.6.0] — 2026-07-14
+
+### Organiser
+- **Ajouter un contact depuis un PJ, hors édition** : sur la fiche d'un
+  personnage-joueur, la section « Contacts » gagne un bouton « ＋ » qui ouvre une
+  liste — « ＋ Créer un contact » en tête, puis les contacts existants du carnet.
+  Cliquer un contact le lie immédiatement ; « Créer » ouvre un mini-formulaire où
+  seul le nom est requis (métatype, rôle, Influence/Loyauté ou Niveau/RR selon
+  l'édition sont facultatifs) et fait vivre le contact dans le carnet, éditable
+  ensuite sur sa fiche. Plus besoin de passer par « Éditer ».
+
 ## [1.5.0] — 2026-07-14
 
 ### Organiser
