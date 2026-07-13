@@ -2267,6 +2267,15 @@ select optgroup {
 .shadows-main-toolbar > .btn-small {
   flex: 1 1 auto;
 }
+/* D3 : dossier vide → masque les actions qui n'ont rien sur quoi agir
+   (Combat/Sélectionner/Imprimer/Foundry) ; Charger + recherche restent
+   utiles à vide (import, ou trouver un contenu ailleurs). */
+#panel-shadows.hub-empty [data-action="encounter-open"],
+#panel-shadows.hub-empty [data-action="toggle-select-mode"],
+#panel-shadows.hub-empty [data-action="print-sheets"],
+#panel-shadows.hub-empty [data-action="foundry-dossier"] {
+  display: none;
+}
 .shadows-group-label {
   font-family: var(--font-display);
   font-weight: 700;

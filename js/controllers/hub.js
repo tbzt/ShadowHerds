@@ -68,6 +68,11 @@ const Hub = {
   },
 
   render() {
+    // D3 : dossier vide (sélection courante, indépendant du filtre texte) →
+    // masque les actions qui n'ont rien à faire (Combat/Sélectionner/
+    // Imprimer/Foundry) ; Charger + recherche restent utiles à vide.
+    const empty = DossierBar.count() === 0;
+    document.getElementById("panel-shadows").classList.toggle("hub-empty", empty);
     // Le socle de contenu change (dossier/type/mutation) : les facettes
     // sélectionnées ne s'y appliquent peut-être plus → on repart à zéro
     // (évite l'écran vide « sans raison visible », garde-fou D4-a).
