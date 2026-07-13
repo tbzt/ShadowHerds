@@ -811,6 +811,9 @@ body.selecting .bulk-selectable .contact-header-row {
   border-color: var(--accent);
   outline: none;
 }
+.contact-pjlink-menu[hidden] {
+  display: none;
+}
 .contact-pjlink-menu {
   position: absolute;
   top: calc(100% + 4px);
