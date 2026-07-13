@@ -1153,6 +1153,12 @@ select optgroup {
   border-color: var(--accent);
   color: var(--accent);
 }
+/* E2 : équipe active désignée (autre chose que « tous les PJ ») — même
+   traitement visuel que le survol, mais permanent. */
+.btn-secondary.is-active-team {
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
 .danger-btn {
   padding: var(--sp-2) 1.2rem;

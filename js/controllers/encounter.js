@@ -120,6 +120,35 @@ const Encounter = {
     this._commit();
   },
 
+  /** E2 : « + Équipe » — l'équipe active (Characters.activeTeamMembers,
+      tous les PJ par défaut) rejoint la scène en un geste ; les membres déjà
+      présents sont ignorés (même règle que _candidates()). Un PJ one-shot
+      inconnu de l'équipe passe par « Ajouter un PJ » (E1), juste à côté.
+      Après l'ajout, la rafale d'init prend le relais (EncounterRenderer,
+      mode ordonné uniquement — narratif Anarchy : pas d'init, no-op). */
+  addTeam() {
+    const team = Characters.activeTeamMembers();
+    if (!team.length) {
+      toast("Aucun PJ dans la bibliothèque — créez-en un d'abord.", "warning");
+      return;
+    }
+    const inScene = new Set(this.state.combatants.map((c) => c.pnjId));
+    let n = 0;
+    for (const pnj of team) {
+      if (inScene.has(pnj.id)) continue;
+      this.state.combatants.push({ pnjId: pnj.id, kind: "pj", init: null, hasActed: false, note: "" });
+      n++;
+    }
+    toast(
+      n
+        ? `${n} PJ ajouté${n > 1 ? "s" : ""} au suivi de combat.`
+        : "Équipe déjà en scène.",
+    );
+    if (!n) return;
+    this._commit();
+    EncounterRenderer.focusNextPJInit();
+  },
+
   /** Entités ajoutables depuis le tracker : exactement les pools que
       PnjLookup sait résoudre (générés, Ombres portées, personnages
       jouables, spiders Matrice), moins ceux déjà en scène. Esprits
@@ -1127,6 +1156,9 @@ const Encounter = {
         case "add-pj":
           this.addPJ();
           break;
+        case "add-team":
+          this.addTeam();
+          break;
         case "link-server":
           // K3, porte 1 (picker) : lie un serveur à la scène, remplace
           // aucun combattant — même panneau, destination différente.
@@ -1231,6 +1263,19 @@ const Encounter = {
       // plus une checkbox.)
       const init = e.target.closest('[data-action="set-init"]');
       if (init) this.setInit(init.dataset.id, init.value);
+    });
+
+    // E2 : rafale d'init après « + Équipe » — Entrée commit (blur → 'change'
+    // ci-dessus, synchrone) puis enchaîne sur le prochain champ d'init PJ
+    // vide (setTimeout 0 : laisse _commit()/_render() reconstruire le DOM
+    // avant de chercher le prochain champ).
+    overlay.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      const input = e.target.closest('.encounter-init-val[data-pj="1"]');
+      if (!input) return;
+      e.preventDefault();
+      input.blur();
+      setTimeout(() => EncounterRenderer.focusNextPJInit(), 0);
     });
 
     overlay.addEventListener("input", (e) => {

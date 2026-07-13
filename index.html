@@ -7,9 +7,9 @@
   <title>Shadow Herds</title>
   <!-- Fontes auto-hébergées (CH-V10) : l'app reste fonctionnelle et fidèle
        à ses identités d'édition sans réseau (table de jeu = contexte nominal). -->
-  <link rel="stylesheet" href="css/fonts.css?v=980">
-  <link rel="stylesheet" href="css/base.css?v=980">
-  <link rel="stylesheet" href="css/print.css?v=980">
+  <link rel="stylesheet" href="css/fonts.css?v=981">
+  <link rel="stylesheet" href="css/base.css?v=981">
+  <link rel="stylesheet" href="css/print.css?v=981">
   <!-- Thèmes d'édition chargés à la sélection (App._loadEditionAssets, CH-P1b). -->
 </head>
 
@@ -371,6 +371,8 @@
                   placeholder="Filtrer…" aria-label="Filtrer les personnages">
                 <button class="btn-primary btn-small" id="btn-chargen-open" data-action="chargen-open">＋ Créer un personnage</button>
                 <button class="btn-secondary btn-small" data-action="pj-quick-add" title="Un nom suffit — fiche complétable ensuite">＋ PJ rapide</button>
+                <button class="btn-secondary btn-small" id="btn-active-team" data-action="set-active-team"
+                  title="Désigne le dossier affiché comme équipe active pour « + Équipe » (suivi de combat)">☆ Équipe : Tous les PJ</button>
                 <button class="btn-secondary btn-small" data-action="toggle-select-mode" title="Sélectionner plusieurs fiches">☑ Sélectionner</button>
               </div>
               <div class="cards-zone" id="characters-grid"></div>
@@ -711,82 +713,82 @@
   <!-- SCRIPTS — ordre important : couches CONTRIBUTING.md § « Les dépendances
        vont dans un seul sens » (core → rules → editions → catalogs → widgets
        → controllers → app) -->
-  <script defer src="js/core/utils.js?v=980"></script>
-  <script defer src="js/core/debug.js?v=980"></script>
-  <script defer src="js/core/storage.js?v=980"></script>
-  <script defer src="js/rules/dice.js?v=980"></script>
-  <script defer src="js/rules/metavariants.js?v=980"></script>
-  <script defer src="js/rules/infected.js?v=980"></script>
-  <script defer src="js/rules/matrix.js?v=980"></script>
-  <script defer src="js/rules/skillcatalog.js?v=980"></script>
-  <script defer src="js/rules/weaponroll.js?v=980"></script>
-  <script defer src="js/rules/itemresolver.js?v=980"></script>
-  <script defer src="js/rules/bonusengine.js?v=980"></script>
-  <script defer src="js/rules/flavor.js?v=980"></script>
-  <script defer src="js/rules/content.js?v=980"></script>
-  <script defer src="js/rules/magic.js?v=980"></script>
-  <script defer src="js/rules/coherence.js?v=980"></script>
+  <script defer src="js/core/utils.js?v=981"></script>
+  <script defer src="js/core/debug.js?v=981"></script>
+  <script defer src="js/core/storage.js?v=981"></script>
+  <script defer src="js/rules/dice.js?v=981"></script>
+  <script defer src="js/rules/metavariants.js?v=981"></script>
+  <script defer src="js/rules/infected.js?v=981"></script>
+  <script defer src="js/rules/matrix.js?v=981"></script>
+  <script defer src="js/rules/skillcatalog.js?v=981"></script>
+  <script defer src="js/rules/weaponroll.js?v=981"></script>
+  <script defer src="js/rules/itemresolver.js?v=981"></script>
+  <script defer src="js/rules/bonusengine.js?v=981"></script>
+  <script defer src="js/rules/flavor.js?v=981"></script>
+  <script defer src="js/rules/content.js?v=981"></script>
+  <script defer src="js/rules/magic.js?v=981"></script>
+  <script defer src="js/rules/coherence.js?v=981"></script>
   <!-- js/editions/* chargés à la sélection d'édition (App._loadEditionAssets, CH-P1b). -->
-  <script defer src="js/catalogs/drugs.js?v=980"></script>
-  <script defer src="js/catalogs/vehicles.js?v=980"></script>
-  <script defer src="js/catalogs/spirits.js?v=980"></script>
+  <script defer src="js/catalogs/drugs.js?v=981"></script>
+  <script defer src="js/catalogs/vehicles.js?v=981"></script>
+  <script defer src="js/catalogs/spirits.js?v=981"></script>
   <!-- creatures.js (238 Ko) chargé à la sélection d'édition (App._loadEditionAssets, CH-P2). -->
-  <script defer src="js/widgets/cardfooter.js?v=980"></script>
-  <script defer src="js/widgets/cardmenu.js?v=980"></script>
-  <script defer src="js/widgets/cardrenderer.js?v=980"></script>
-  <script defer src="js/widgets/cardrenderer.sr5.js?v=980"></script>
-  <script defer src="js/widgets/cardrenderer.sr6.js?v=980"></script>
-  <script defer src="js/widgets/cardrenderer.anarchy.js?v=980"></script>
-  <script defer src="js/widgets/cardrenderer.anarchy1.js?v=980"></script>
-  <script defer src="js/widgets/cardrenderer.linked.js?v=980"></script>
-  <script defer src="js/widgets/ui.js?v=980"></script>
-  <script defer src="js/widgets/summonpanel.js?v=980"></script>
-  <script defer src="js/widgets/contactrenderer.js?v=980"></script>
-  <script defer src="js/widgets/runrenderer.js?v=980"></script>
-  <script defer src="js/widgets/contentmodal.js?v=980"></script>
-  <script defer src="js/widgets/dialog.js?v=980"></script>
-  <script defer src="js/widgets/dossiers.js?v=980"></script>
-  <script defer src="js/widgets/dossierbar.js?v=980"></script>
-  <script defer src="js/widgets/grouppicker.js?v=980"></script>
-  <script defer src="js/widgets/collection.js?v=980"></script>
-  <script defer src="js/widgets/bulkbar.js?v=980"></script>
-  <script defer src="js/widgets/selectionmode.js?v=980"></script>
-  <script defer src="js/widgets/serverrenderer.js?v=980"></script>
-  <script defer src="js/widgets/encounterrenderer.js?v=980"></script>
-  <script defer src="js/controllers/servers.js?v=980"></script>
-  <script defer src="js/controllers/intrusion.js?v=980"></script>
-  <script defer src="js/widgets/dicelog.js?v=980"></script>
-  <script defer src="js/widgets/notepad.js?v=980"></script>
-  <script defer src="js/widgets/opposedroll.js?v=980"></script>
-  <script defer src="js/widgets/magicaction.js?v=980"></script>
-  <script defer src="js/widgets/diceroller.js?v=980"></script>
-  <script defer src="js/widgets/dicepanel.js?v=980"></script>
-  <script defer src="js/widgets/sidebartoggle.js?v=980"></script>
-  <script defer src="js/widgets/profcategories.js?v=980"></script>
-  <script defer src="js/widgets/multiselect.js?v=980"></script>
-  <script defer src="js/widgets/singleselect.js?v=980"></script>
-  <script defer src="js/controllers/generator.js?v=980"></script>
-  <script defer src="js/controllers/rungen.js?v=980"></script>
-  <script defer src="js/controllers/shadows.js?v=980"></script>
-  <script defer src="js/controllers/characters.js?v=980"></script>
-  <script defer src="js/controllers/chargen.js?v=980"></script>
-  <script defer src="js/controllers/pnjlookup.js?v=980"></script>
-  <script defer src="js/widgets/palette.js?v=980"></script>
-  <script defer src="js/widgets/pinrow.js?v=980"></script>
-  <script defer src="js/widgets/onboarding.js?v=980"></script>
-  <script defer src="js/controllers/portrait.js?v=980"></script>
-  <script defer src="js/controllers/encounter.js?v=980"></script>
-  <script defer src="js/controllers/editmodal.js?v=980"></script>
-  <script defer src="js/controllers/contactgen.js?v=980"></script>
-  <script defer src="js/controllers/contacts.js?v=980"></script>
-  <script defer src="js/controllers/contactsbook.js?v=980"></script>
-  <script defer src="js/controllers/hub.js?v=980"></script>
-  <script defer src="js/controllers/settings.js?v=980"></script>
-  <script defer src="js/controllers/backup.js?v=980"></script>
-  <script defer src="js/controllers/printsheet.js?v=980"></script>
-  <script defer src="js/controllers/sync.js?v=980"></script>
-  <script defer src="js/controllers/foundryexport.js?v=980"></script>
-  <script defer src="js/app.js?v=980"></script>
+  <script defer src="js/widgets/cardfooter.js?v=981"></script>
+  <script defer src="js/widgets/cardmenu.js?v=981"></script>
+  <script defer src="js/widgets/cardrenderer.js?v=981"></script>
+  <script defer src="js/widgets/cardrenderer.sr5.js?v=981"></script>
+  <script defer src="js/widgets/cardrenderer.sr6.js?v=981"></script>
+  <script defer src="js/widgets/cardrenderer.anarchy.js?v=981"></script>
+  <script defer src="js/widgets/cardrenderer.anarchy1.js?v=981"></script>
+  <script defer src="js/widgets/cardrenderer.linked.js?v=981"></script>
+  <script defer src="js/widgets/ui.js?v=981"></script>
+  <script defer src="js/widgets/summonpanel.js?v=981"></script>
+  <script defer src="js/widgets/contactrenderer.js?v=981"></script>
+  <script defer src="js/widgets/runrenderer.js?v=981"></script>
+  <script defer src="js/widgets/contentmodal.js?v=981"></script>
+  <script defer src="js/widgets/dialog.js?v=981"></script>
+  <script defer src="js/widgets/dossiers.js?v=981"></script>
+  <script defer src="js/widgets/dossierbar.js?v=981"></script>
+  <script defer src="js/widgets/grouppicker.js?v=981"></script>
+  <script defer src="js/widgets/collection.js?v=981"></script>
+  <script defer src="js/widgets/bulkbar.js?v=981"></script>
+  <script defer src="js/widgets/selectionmode.js?v=981"></script>
+  <script defer src="js/widgets/serverrenderer.js?v=981"></script>
+  <script defer src="js/widgets/encounterrenderer.js?v=981"></script>
+  <script defer src="js/controllers/servers.js?v=981"></script>
+  <script defer src="js/controllers/intrusion.js?v=981"></script>
+  <script defer src="js/widgets/dicelog.js?v=981"></script>
+  <script defer src="js/widgets/notepad.js?v=981"></script>
+  <script defer src="js/widgets/opposedroll.js?v=981"></script>
+  <script defer src="js/widgets/magicaction.js?v=981"></script>
+  <script defer src="js/widgets/diceroller.js?v=981"></script>
+  <script defer src="js/widgets/dicepanel.js?v=981"></script>
+  <script defer src="js/widgets/sidebartoggle.js?v=981"></script>
+  <script defer src="js/widgets/profcategories.js?v=981"></script>
+  <script defer src="js/widgets/multiselect.js?v=981"></script>
+  <script defer src="js/widgets/singleselect.js?v=981"></script>
+  <script defer src="js/controllers/generator.js?v=981"></script>
+  <script defer src="js/controllers/rungen.js?v=981"></script>
+  <script defer src="js/controllers/shadows.js?v=981"></script>
+  <script defer src="js/controllers/characters.js?v=981"></script>
+  <script defer src="js/controllers/chargen.js?v=981"></script>
+  <script defer src="js/controllers/pnjlookup.js?v=981"></script>
+  <script defer src="js/widgets/palette.js?v=981"></script>
+  <script defer src="js/widgets/pinrow.js?v=981"></script>
+  <script defer src="js/widgets/onboarding.js?v=981"></script>
+  <script defer src="js/controllers/portrait.js?v=981"></script>
+  <script defer src="js/controllers/encounter.js?v=981"></script>
+  <script defer src="js/controllers/editmodal.js?v=981"></script>
+  <script defer src="js/controllers/contactgen.js?v=981"></script>
+  <script defer src="js/controllers/contacts.js?v=981"></script>
+  <script defer src="js/controllers/contactsbook.js?v=981"></script>
+  <script defer src="js/controllers/hub.js?v=981"></script>
+  <script defer src="js/controllers/settings.js?v=981"></script>
+  <script defer src="js/controllers/backup.js?v=981"></script>
+  <script defer src="js/controllers/printsheet.js?v=981"></script>
+  <script defer src="js/controllers/sync.js?v=981"></script>
+  <script defer src="js/controllers/foundryexport.js?v=981"></script>
+  <script defer src="js/app.js?v=981"></script>
 
 </body>
 

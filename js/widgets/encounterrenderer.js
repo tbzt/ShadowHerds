@@ -301,6 +301,7 @@ const EncounterRenderer = {
         <div class="encounter-init-main">
           <button class="encounter-init-step" data-action="init-step" data-delta="-1" data-id="${pnjId}" title="Initiative −1" aria-label="Diminuer l'initiative">−</button>
           <input class="encounter-init-val" type="text" inputmode="numeric" data-action="set-init" data-id="${pnjId}"
+            ${r.isPJ ? 'data-pj="1"' : ""}
             value="${initVal}" placeholder="—" title="Initiative (base) — saisie directe" aria-label="Initiative">
           <button class="encounter-init-step" data-action="init-step" data-delta="1" data-id="${pnjId}" title="Initiative +1" aria-label="Augmenter l'initiative">+</button>
         </div>
@@ -433,6 +434,7 @@ const EncounterRenderer = {
       .join("");
 
     panel.innerHTML = `<div class="encounter-add-actions">
+        <button class="btn-secondary btn-small" data-action="add-team" title="Toute l'équipe active (désignée dans Personnages), moins ceux déjà en scène">＋ Équipe</button>
         <button class="btn-secondary btn-small" data-action="add-pj">＋ Ajouter un PJ</button>
         <input type="search" class="encounter-picker-search" data-action="filter-candidates"
           placeholder="Filtrer par nom ou type…" value="${Utils.escHtml(this._pickerQuery || "")}"
@@ -449,6 +451,15 @@ const EncounterRenderer = {
       </div>`;
 
     if (this._pickerQuery) this._applyPickerFilter();
+  },
+
+  /** E2 : rafale d'init après « + Équipe » — focus le premier champ d'init PJ
+      encore vide (`:placeholder-shown` ⇔ valeur vide, pas de calcul JS pour
+      le détecter). Mode narratif Anarchy : aucun `[data-pj]` n'existe (pas
+      d'init), le sélecteur ne trouve rien → no-op silencieux. */
+  focusNextPJInit() {
+    const input = document.querySelector('.encounter-init-val[data-pj="1"]:placeholder-shown');
+    if (input) input.focus();
   },
 
   /** Filtre le picker sans reconstruire le DOM (préserve le focus du champ).

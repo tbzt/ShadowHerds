@@ -413,6 +413,9 @@ document.addEventListener("DOMContentLoaded", () => {
       case "pj-quick-add":
         Characters.promptAddLight();
         break;
+      case "set-active-team":
+        Characters.toggleActiveTeam();
+        break;
       case "chargen-close":
         CharGen.close();
         break;

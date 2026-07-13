@@ -107,6 +107,55 @@ const Characters = Object.assign(
       this.remove(id);
     },
 
+    /** E2 : équipe active pour « + Équipe » (Encounter.addTeam). Référence un
+        NOM de dossier existant — même clé que `Characters.data.groups`, déjà
+        synchronisée avec DossierBar/Dossiers (CH-A3) : pas de 2ᵉ concept de
+        regroupement (garde-fou F5). `null` = tous les PJ (défaut, table
+        unique). Clé légère dédiée, hors du cycle load()/save() du socle
+        (lue à la demande, jamais mise en cache). */
+    getActiveTeamName() {
+      return Storage.get("characters_team", null);
+    },
+    setActiveTeamName(name) {
+      Storage.set("characters_team", name || null);
+    },
+    activeTeamMembers() {
+      const name = this.getActiveTeamName();
+      if (name && this.data.groups[name]) {
+        const ids = new Set(this.data.groups[name]);
+        return this.data.all.filter((p) => ids.has(p.id));
+      }
+      return this.data.all.slice();
+    },
+
+    /** Désigne le dossier affiché dans le panneau Personnages comme équipe
+        active — redésigner le même dossier réinitialise à « tous les PJ »
+        (le MJ table unique n'a jamais besoin d'y toucher). */
+    toggleActiveTeam() {
+      const node = DossierBar.currentNode();
+      if (!node) {
+        toast("Ouvrez un dossier de PJ pour le désigner comme équipe.", "warning");
+        return;
+      }
+      const current = this.getActiveTeamName();
+      if (current === node.name) {
+        this.setActiveTeamName(null);
+        toast("Équipe active : tous les PJ.");
+      } else {
+        this.setActiveTeamName(node.name);
+        toast(`Équipe active : ${node.name}.`);
+      }
+      this._renderActiveTeamLabel();
+    },
+
+    _renderActiveTeamLabel() {
+      const btn = document.getElementById("btn-active-team");
+      if (!btn) return;
+      const name = this.getActiveTeamName();
+      btn.textContent = name ? `★ Équipe : ${name}` : "☆ Équipe : Tous les PJ";
+      btn.classList.toggle("is-active-team", !!name);
+    },
+
     /** Montage du panneau (CH-A3 polish) : la sidebar de dossiers est
         transverse (DossierBar), pas propre à Characters — même patron que
         Hub.initPanel(). `_renderSidebar()` du socle Collection est un no-op
@@ -125,6 +174,7 @@ const Characters = Object.assign(
       DossierBar.refresh(); // rend l'arbre + notifie → grille/libellé ici
       this.renderLabel();
       this._toggleChargenButton();
+      this._renderActiveTeamLabel();
     },
 
     /** Seule Anarchy 2 expose un assistant de création complet
