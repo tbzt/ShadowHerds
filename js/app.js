@@ -407,6 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
   CharGen.bindDelegation();
   Portrait.bindDelegation();
   Tour.init({ navigate: (p) => App.showPanel(p), version: App.VERSION });
+  Mentions.wireAuto();
 
   document.addEventListener("click", (e) => {
     const actionEl = e.target.closest("[data-action]");
@@ -476,6 +477,12 @@ document.addEventListener("DOMContentLoaded", () => {
       case "tour-whatsnew":
         App.toggleCheatsheet(false);
         Tour.openWhatsNew();
+        break;
+      case "mention-open":
+        Palette.reveal(actionEl.dataset.id);
+        break;
+      case "tag-open":
+        Palette.openTag(actionEl.dataset.tag);
         break;
     }
   });

@@ -61,6 +61,21 @@ const Mentions = {
     });
   },
 
+  /** E7 — auto-attach délégué : tout champ portant `data-mentions` (posé par
+      le renderer) est câblé au focus, sans câblage explicite par hôte. Un
+      nouveau champ (re-rendu, futur écran) est couvert automatiquement dès
+      qu'il porte l'attribut. `attach()` reste idempotent, donc sans risque de
+      double câblage avec les hôtes historiques (Notepad, EditModal). */
+  _autoWired: false,
+  wireAuto() {
+    if (this._autoWired) return;
+    this._autoWired = true;
+    document.addEventListener("focusin", (e) => {
+      const el = e.target.closest("[data-mentions]");
+      if (el) this.attach(el);
+    });
+  },
+
   /** Détecte un `@partiel` ou `#partiel` juste avant le curseur (précédé d'un
       début de texte ou d'un espace, sans espace jusqu'au curseur). Le garde
       `startsWith("[")` évite de se déclencher quand le curseur est À
@@ -216,7 +231,14 @@ const Mentions = {
         const ent = PnjLookup.locate(id);
         const name = ent ? ent.name : m[1];
         const dead = ent ? "" : " mention-chip--dead";
-        out += `<span class="mention-chip${dead}" data-action="mention-open" data-id="${Utils.escHtml(id)}" role="button" tabindex="0">@${Utils.escHtml(name || "?")}</span>`;
+        // Signature visuelle PJ (E6) : la puce reprend la couleur identifiante
+        // du PJ, résolue à chaque rendu — un changement de couleur se propage
+        // au prochain affichage, comme le nom (aucun cache, aucun hook).
+        const pcStyle =
+          ent && ent.type === "pj" && ent.pcColor
+            ? ` style="--mention-pc-color:${Utils.escHtml(ent.pcColor)}"`
+            : "";
+        out += `<span class="mention-chip${dead}"${pcStyle} data-action="mention-open" data-id="${Utils.escHtml(id)}" role="button" tabindex="0">@${Utils.escHtml(name || "?")}</span>`;
       } else if (m[3] != null) {
         const tag = m[3];
         out += `<span class="tag-chip" data-action="tag-open" data-tag="${Utils.escHtml(tag)}" role="button" tabindex="0">#${Utils.escHtml(tag)}</span>`;
@@ -247,6 +269,7 @@ const Mentions = {
     scan(Shadows.data.all, "pnj");
     scan(Characters.data.all, "pj");
     scan(ContactsBook.data.all, "contact");
+    scan(Servers.data.all, "server");
   },
 
   _locOut(loc) {

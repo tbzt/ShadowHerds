@@ -5120,6 +5120,57 @@ kbd {
   line-height: 1.5;
   padding: 0.6rem;
 }
+.notepad-read {
+  flex: 1;
+  width: 100%;
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  padding: 0.6rem;
+}
+.notepad-read-empty {
+  color: var(--text-dim);
+}
+/* Puces de mention (E7) — @ (--accent) vs # (--accent2), même distinction de
+   canal que le reste de l'appli (cf. audit I2, canal --accent2 = décor). */
+.mention-chip,
+.tag-chip {
+  padding: 0 0.3em;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background var(--dur-base) ease;
+}
+.mention-chip {
+  /* Signature visuelle PJ (E6) : --mention-pc-color posée en inline par
+     Mentions.renderText pour un PJ, sinon retombe sur --accent (PNJ/contact/
+     serveur). Un seul et même canal pour la couleur ET le fond teinté. */
+  background: color-mix(in srgb, var(--mention-pc-color, var(--accent)) 15%, transparent);
+  color: var(--mention-pc-color, var(--accent));
+}
+.mention-chip:hover {
+  background: color-mix(in srgb, var(--mention-pc-color, var(--accent)) 28%, transparent);
+}
+.mention-chip--dead {
+  color: var(--text-dim);
+  background: transparent;
+  text-decoration: line-through;
+  cursor: default;
+}
+.mention-chip--dead:hover {
+  background: transparent;
+}
+.tag-chip {
+  background: color-mix(in srgb, var(--accent2) 15%, transparent);
+  color: var(--accent2);
+}
+.tag-chip:hover {
+  background: color-mix(in srgb, var(--accent2) 28%, transparent);
+}
 @media (max-width: 640px) {
   #notepad-backdrop.open {
     background: rgba(0, 0, 0, 0.55);

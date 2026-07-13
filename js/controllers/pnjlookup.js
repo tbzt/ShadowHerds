@@ -67,15 +67,19 @@ const PnjLookup = {
     return out.slice(0, 30).map(({ _rank, ...r }) => r);
   },
 
-  /** id → { id, name, type } (même forme qu'un résultat de `search`), pour
-      résoudre le NOM COURANT d'une mention `@[…](id)` et y naviguer. Balaie
-      les quatre bibliothèques sauvegardées offertes par `search` (PNJ, PJ,
-      contact, serveur). `null` si l'id ne résout plus (entité supprimée). */
+  /** id → { id, name, type, pcColor? } (même forme qu'un résultat de
+      `search`, + `pcColor` pour un PJ), pour résoudre le NOM COURANT d'une
+      mention `@[…](id)` et y naviguer. Balaie les quatre bibliothèques
+      sauvegardées offertes par `search` (PNJ, PJ, contact, serveur). `null`
+      si l'id ne résout plus (entité supprimée). */
   locate(id) {
     if (!id) return null;
     const hit = (arr, type) => {
       const e = arr && arr.find((x) => x.id === id);
-      return e ? { id: e.id, name: e.name || "Sans nom", type } : null;
+      if (!e) return null;
+      const r = { id: e.id, name: e.name || "Sans nom", type };
+      if (type === "pj" && e.pcColor) r.pcColor = e.pcColor;
+      return r;
     };
     return (
       hit(Shadows.data.all, "pnj") ||

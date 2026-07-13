@@ -9,6 +9,7 @@ const Palette = {
   _open: false,
   _sel: 0,
   _results: [],
+  _mode: "entity", // "entity" | "tag" (E7 — préfixe `#`)
 
   _TYPE_LABEL: { pnj: "PNJ", pj: "PJ", contact: "Contact", server: "Serveur" },
 
@@ -57,6 +58,7 @@ const Palette = {
     overlay.classList.add("open");
     const input = document.getElementById("palette-input");
     input.value = "";
+    this._mode = "entity";
     this._results = [];
     this._sel = 0;
     this._render();
@@ -70,9 +72,24 @@ const Palette = {
     this._open = false;
   },
 
+  /** Ouvre la Palette en mode mot-clé, `#tag` pré-rempli (clic sur une puce
+      `#`, E7). */
+  openTag(tag) {
+    this.open();
+    const input = document.getElementById("palette-input");
+    input.value = `#${tag}`;
+    this._onInput();
+  },
+
   _onInput() {
     const q = document.getElementById("palette-input").value;
-    this._results = PnjLookup.search(q);
+    if (q.startsWith("#")) {
+      this._mode = "tag";
+      this._results = Mentions.notesWithTag(q.slice(1));
+    } else {
+      this._mode = "entity";
+      this._results = PnjLookup.search(q);
+    }
     this._sel = 0;
     this._render();
   },
@@ -87,7 +104,28 @@ const Palette = {
     const box = document.getElementById("palette-results");
     if (!this._results.length) {
       const typed = document.getElementById("palette-input").value.trim();
-      box.innerHTML = `<div class="palette-empty">${typed ? "Aucun résultat." : "Tapez pour rechercher dans vos bibliothèques."}</div>`;
+      const empty =
+        this._mode === "tag"
+          ? typed
+            ? "Aucune note avec ce mot-clé."
+            : "Tapez #mot-clé pour retrouver les notes qui le portent."
+          : typed
+            ? "Aucun résultat."
+            : "Tapez pour rechercher dans vos bibliothèques.";
+      box.innerHTML = `<div class="palette-empty">${empty}</div>`;
+      return;
+    }
+    if (this._mode === "tag") {
+      box.innerHTML = this._results
+        .map((r, i) => {
+          const label = r.kind === "notepad" ? r.label : r.name;
+          return `<div class="palette-row${i === this._sel ? " sel" : ""}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+              <span class="palette-type">${r.kind === "notepad" ? "Bloc-notes" : this._TYPE_LABEL[r.type] || r.type}</span>
+              <span class="palette-name">${Utils.escHtml(label)}</span>
+            </div>`;
+        })
+        .join("");
+      box.querySelector(".palette-row.sel")?.scrollIntoView({ block: "nearest" });
       return;
     }
     box.innerHTML = this._results
@@ -106,7 +144,23 @@ const Palette = {
 
   _activate() {
     const r = this._results[this._sel];
-    if (r) this._reveal(r);
+    if (!r) return;
+    if (this._mode === "tag") {
+      if (r.kind === "notepad") {
+        this.close();
+        Notepad.open();
+      } else {
+        this._reveal(r);
+      }
+      return;
+    }
+    this._reveal(r);
+  },
+
+  /** API publique : révèle une entité par id (clic sur une puce `@`, E7). */
+  reveal(id) {
+    const ent = PnjLookup.locate(id);
+    if (ent) this._reveal(ent);
   },
 
   /** Amène l'entité à l'écran en réutilisant le filtre existant (Q1) : pas de
