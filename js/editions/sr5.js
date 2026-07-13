@@ -359,9 +359,20 @@ const EditionSR5 = {
   cyberdeckModel: {
     attrKeys: ["attack", "sleaze", "dataProcessing", "firewall"],
     reallocatable: true,
+    reallocCostLabel: "action gratuite (p.229)",
     hasReroll: false,
     hasBiofeedbackFilter: false,
     label: "Cyberdeck",
+    /** M2 : moniteur matriciel du deck = 8 + (Indice d'appareil / 2), p.229.
+        L'app ne porte pas de champ « Indice » séparé pour un deck (seulement
+        ses 4 attributs) : approximation assumée = l'attribut le plus élevé,
+        cohérent avec la fourchette officielle « Indice à Indice+3 » (p.441) où
+        l'attribut haut plafonne près de l'Indice réel. */
+    monitorSize(deck) {
+      const vals = Object.values((deck && deck.attrs) || {});
+      const top = vals.length ? Math.max(...vals) : 0;
+      return 8 + Math.ceil(top / 2);
+    },
   },
 
   /* ----

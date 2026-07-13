@@ -23,11 +23,34 @@ const CyberdeckRenderer = {
     const attrsHtml = keys.length
       ? `<div class="attr-grid">${keys.map((k) => CardRenderer._attrCell(k.badge, deck.attrs[k.key], "", { roll: false })).join("")}</div>`
       : "";
+    // M2 : réallocation en un tap — bouton d'échange ⇄ entre attributs
+    // adjacents si réallouable (SR5/SR6). Rangée séparée de l'attr-grid
+    // (plutôt qu'interfolée dedans) pour ne pas perturber sa grille
+    // responsive existante (grid-auto-flow + repli 4/2 colonnes, cf.
+    // css/base/pnj-card.css) — n'importe quelle permutation s'obtient en
+    // quelques taps, comme un tri par transpositions.
+    const realloc = Cyberdeck.reallocatable(edition);
+    const reallocHtml = realloc && keys.length > 1
+      ? `<div class="cyberdeck-realloc" title="Reconfigurer le deck (${esc(Cyberdeck.reallocCostLabel(edition))})">${keys
+          .slice(0, -1)
+          .map(
+            (k, i) =>
+              `<button type="button" class="cyberdeck-swap" data-action="deck-realloc" data-id="${pnj.id}" data-from="${k.key}" data-to="${keys[i + 1].key}" aria-label="Échanger ${esc(k.label)} et ${esc(keys[i + 1].label)}">${k.badge} ⇄ ${keys[i + 1].badge}</button>`,
+          )
+          .join("")}</div>`
+      : "";
     const rerollHtml = Cyberdeck.hasReroll(edition) && deck.reroll
       ? `<div class="cyberdeck-note">Relance ${deck.reroll} échec${deck.reroll > 1 ? "s" : ""} (Hacking)</div>`
       : "";
     const biofeedbackHtml = Cyberdeck.hasBiofeedbackFilter(edition) && deck.biofeedbackFilter
       ? `<div class="cyberdeck-note">Filtre de biofeedback</div>`
+      : "";
+    // M2 : moniteur matriciel du deck (rangées de 3, malus en marge — même
+    // patron que le moniteur de condition du cockpit combat, cf. K2/K6).
+    // Absent si l'édition n'a pas de moniteur de deck séparé (Anarchy 2.0).
+    const size = Cyberdeck.monitorSize(edition, deck);
+    const monitorHtml = size
+      ? `<div class="monitor-row"><span class="monitor-label">Moniteur</span><div class="monitor-boxes">${this._monitorBoxes(pnj.id, size, deck.filled || 0)}</div></div>`
       : "";
     const programsHtml = deck.programs && deck.programs.length
       ? `<div class="cyberdeck-programs">${deck.programs.map((p) => `<span class="tag">${esc(p)}</span>`).join("")}</div>`
@@ -36,10 +59,24 @@ const CyberdeckRenderer = {
     return `<div class="ref-block cyberdeck-block">
       <div class="ref-lbl">${esc(Cyberdeck.label(edition))}${nameHtml ? " — " : ""}${nameHtml}</div>
       ${attrsHtml}
+      ${reallocHtml}
+      ${monitorHtml}
       ${rerollHtml}
       ${biofeedbackHtml}
       ${programsHtml}
     </div>`;
+  },
+
+  /** Cases du moniteur de deck, data-action="toggle-deck-monitor" (distinct
+      de toggle-monitor : mute pnj.cyberdeck.filled, pas un champ top-level).
+      Pénalité toutes les 3 cases, même patron que CardRenderer._monitorBoxes. */
+  _monitorBoxes(pnjId, total, filled) {
+    return Array.from({ length: total }, (_, i) => {
+      const isFilled = i < filled;
+      const isPenalty = (i + 1) % 3 === 0;
+      const cls = `monitor-box ${isFilled ? "filled" : ""} ${isPenalty ? "penalty" : ""}`.trim();
+      return `<div class="${cls}" data-action="toggle-deck-monitor" data-id="${pnjId}" data-idx="${i}"></div>`;
+    }).join("");
   },
 
   /** Section du formulaire EditModal (données brutes, un champ par attribut

@@ -379,6 +379,10 @@ const EditionAnarchy2 = {
     hasReroll: false,
     hasBiofeedbackFilter: true,
     label: "Cyberdeck",
+    // Pas de monitorSize() ici (M2, table CODIR) : le biofeedback d'Anarchy
+    // 2.0 encaisse sur la Volonté du decker (moniteur du PNJ), pas sur un
+    // moniteur de deck séparé — Cyberdeck.monitorSize() renvoie null, le
+    // cockpit n'affiche donc pas de moniteur de deck pour cette édition.
   },
 
   /* ========================================================

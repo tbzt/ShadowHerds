@@ -408,6 +408,16 @@ const EditionAnarchy1 = {
     hasReroll: true,
     hasBiofeedbackFilter: false,
     label: "Cyberdeck",
+    /** M2 : moniteurs des 3 decks catalogués (findings §6, p.62-65) — Erika
+        MCD-1 (FW1) 6 cases, Novatech Navigator (FW2) 9, Shiawase Cyber-5
+        (FW3) 15. Pas de formule imprimée pour un Firewall hors de ces 3
+        modèles : extrapolation linéaire documentée (6 + 3×(FW−1)) au-delà,
+        à corriger si un futur decker sort de cette fourchette. */
+    monitorSize(deck) {
+      const table = { 1: 6, 2: 9, 3: 15 };
+      const fw = (deck && deck.attrs && deck.attrs.firewall) || 1;
+      return table[fw] ?? 6 + 3 * (fw - 1);
+    },
   },
 
   /* ----

@@ -293,6 +293,7 @@ const Storage = {
             programs: [],
             reroll: numFrom(str, /relance\s+(?:de\s+)?(\d+)\s+[ée]chec/i),
             biofeedbackFilter: /biofeedback/i.test(str),
+            filled: 0,
             legacyText: str,
           };
         };

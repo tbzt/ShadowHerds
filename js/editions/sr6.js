@@ -386,9 +386,21 @@ const EditionSR6 = {
   cyberdeckModel: {
     attrKeys: ["attack", "sleaze", "dataProcessing", "firewall"],
     reallocatable: true,
+    // Coût de reconfiguration non détaillé au-delà de « une action » (p.185) —
+    // décision M2 (faute de certitude au livre) : traité par défaut comme
+    // mineure, documentée ici pour être corrigée d'un seul endroit si le MJ
+    // confirme le contraire.
+    reallocCostLabel: "action mineure (coût à confirmer, p.185)",
     hasReroll: false,
     hasBiofeedbackFilter: false,
     label: "Cyberdeck",
+    /** M2 : moniteur du deck ≈ 8 + (Indice/2), comme SR5 (à confirmer au
+        livre) — même approximation « attribut le plus élevé = Indice ». */
+    monitorSize(deck) {
+      const vals = Object.values((deck && deck.attrs) || {});
+      const top = vals.length ? Math.max(...vals) : 0;
+      return 8 + Math.ceil(top / 2);
+    },
   },
 
   /* ----

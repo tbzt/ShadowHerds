@@ -52,6 +52,20 @@ const Cyberdeck = {
   label(edition) {
     return (this._model(edition) || {}).label || "Cyberdeck";
   },
+  /** M2 : libellé du coût de reconfiguration (SR5 = action gratuite p.229 ;
+      SR6 = action mineure, coût imprimé non détaillé au-delà de « une
+      action » p.185 — traité par défaut comme mineure, à confirmer). Vide en
+      Anarchy (pas de réallocation, attrs fixes). */
+  reallocCostLabel(edition) {
+    return (this._model(edition) || {}).reallocCostLabel || "";
+  },
+  /** M2 : taille du moniteur matriciel du deck. `null` = pas de moniteur de
+      deck séparé pour cette édition (Anarchy 2.0 : le biofeedback encaisse
+      sur la Volonté du decker, pas sur un moniteur de deck — table CODIR). */
+  monitorSize(edition, deck) {
+    const m = this._model(edition);
+    return m && typeof m.monitorSize === "function" ? m.monitorSize(deck) : null;
+  },
 
   /** Deck vierge d'une édition — structure minimale, aucune valeur devinée
       (l'utilisateur/le MJ les saisit). */
@@ -65,6 +79,7 @@ const Cyberdeck = {
       programs: [],
       reroll: 0,
       biofeedbackFilter: false,
+      filled: 0,
       legacyText: "",
     };
   },
@@ -102,6 +117,7 @@ const Cyberdeck = {
       programs: [],
       reroll: num(/relance\s+(?:de\s+)?(\d+)\s+[ée]chec/i),
       biofeedbackFilter: /biofeedback/i.test(str),
+      filled: 0,
       legacyText: str,
     };
   },

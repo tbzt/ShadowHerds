@@ -16,6 +16,16 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
+## [1.3.0] — 2026-07-13
+
+### Jouer
+- **Cyberdeck en vie** : le deck a désormais son propre moniteur matriciel
+  (rangées de 3 cases, malus en marge) et, en SR5/SR6, une **réallocation ASDF/
+  ACTF en un tap** (échange de 2 attributs — action gratuite en SR5, mineure en
+  SR6). Masqué en Anarchy 1/2, sans réallocation dans leur modèle ; le
+  biofeedback d'Anarchy 2.0 continue d'encaisser sur la Volonté du decker, pas
+  sur un moniteur de deck séparé.
+
 ## [1.2.0] — 2026-07-13
 
 ### Consulter & organiser

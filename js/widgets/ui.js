@@ -43,6 +43,42 @@ const UI = {
     if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(copies[0]);
   },
 
+  /** M2 (PLAN_MATRICE_CYBERDECK.md) : case du moniteur matriciel du DECK
+      (`pnj.cyberdeck.filled`), distinct de toggleMonitor ci-dessus (qui ne
+      connaît que des champs top-level `pnj.*Filled`). Même motif copies
+      multiples + persistEntity (F2) que le reste de cette section. */
+  toggleDeckMonitor(pnjId, idx) {
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
+    for (const pnj of copies) {
+      if (!pnj.cyberdeck) continue;
+      const cur = pnj.cyberdeck.filled || 0;
+      pnj.cyberdeck.filled = idx < cur ? idx : idx + 1;
+    }
+    this.persistEntity(pnjId);
+    CardRenderer.refresh(copies[0]);
+  },
+
+  /** M2 : réallocation ASDF/ACTF en un tap — échange les valeurs de deux
+      attributs matriciels du deck (SR5 : action gratuite p.229 ; SR6 :
+      action mineure, coût à confirmer — cf. cyberdeckModel.reallocCostLabel).
+      Masqué en Anarchy côté rendu (Cyberdeck.reallocatable() false), donc
+      jamais appelable depuis l'UI pour ces éditions — pas de garde ici. */
+  reallocDeck(pnjId, fromKey, toKey) {
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
+    for (const pnj of copies) {
+      if (!pnj.cyberdeck || !pnj.cyberdeck.attrs) continue;
+      const a = pnj.cyberdeck.attrs;
+      const tmp = a[fromKey];
+      a[fromKey] = a[toKey];
+      a[toKey] = tmp;
+    }
+    this.persistEntity(pnjId);
+    CardRenderer.refresh(copies[0]);
+    toast("Cyberdeck reconfiguré.");
+  },
+
   /* ========================================================
      JOURNAL DE FICHE (F2) — notes datées, empilées en tête.
      Champ ADDITIF `pnj.journal = [{ts, text}]` : voyage tel quel
