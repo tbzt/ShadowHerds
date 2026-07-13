@@ -141,7 +141,7 @@ const CardRenderer = {
       `Palette._reveal`, même navigation que les backlinks E4. */
   _contactLinksSection(pnj) {
     const links = pnj.contactLinks || [];
-    if (!links.length) return "";
+    const linkedIds = new Set(links.map((l) => l.contactId));
     const items = links
       .map((l) => {
         const c = ContactsBook.data.all.find((x) => x.id === l.contactId);
@@ -150,10 +150,28 @@ const CardRenderer = {
         return `<span class="tag tag-clickable" role="button" tabindex="0" data-action="contact-link-goto" data-id="${this._esc(c.id)}" data-name="${this._esc(c.name)}">${this._esc(label)}</span>`;
       })
       .join("");
-    if (!items) return "";
+    // Ajout rapide (hors édition) : le « ＋ » ouvre une liste-popover — 1er item
+    // « ＋ Créer un contact » (ContactCreate), puis les contacts existants non
+    // encore liés (clic = lien immédiat). Réutilise CardMenu tel quel
+    // (data-card-menu-toggle + .card-menu frère) → aucun code de toggle neuf.
+    const unlinked = (typeof ContactsBook !== "undefined" ? ContactsBook.data.all : [])
+      .filter((c) => !linkedIds.has(c.id));
+    const pickItems = unlinked
+      .map(
+        (c) =>
+          `<button type="button" role="menuitem" class="card-menu-item" data-action="contact-link-pick" data-id="${this._esc(pnj.id)}" data-contact-id="${this._esc(c.id)}">${this._esc(c.name)}</button>`,
+      )
+      .join("");
+    const addControl = `<span class="contact-add-wrap">
+      <button type="button" class="tag contact-add-btn" data-card-menu-toggle aria-haspopup="true" aria-expanded="false" title="Ajouter un contact">＋</button>
+      <div class="card-menu" role="menu" hidden>
+        <button type="button" role="menuitem" class="card-menu-item" data-action="contact-create-open" data-id="${this._esc(pnj.id)}">＋ Créer un contact</button>
+        ${pickItems}
+      </div>
+    </span>`;
     return `<div class="card-section">
       <div class="card-section-label">Contacts</div>
-      <div class="card-section-content">${items}</div>
+      <div class="card-section-content">${items}${addControl}</div>
     </div>`;
   },
 
@@ -1132,6 +1150,14 @@ const CardRenderer = {
           break;
         case "contact-link-goto":
           Palette._reveal({ id: actionEl.dataset.id, name: actionEl.dataset.name, type: "contact" });
+          break;
+        case "contact-link-pick":
+          // Ajout rapide : lier un contact EXISTANT au PJ (lien nu ; qualifiable
+          // ensuite via Éditer). addContactLink persiste + rafraîchit la carte.
+          Characters.addContactLink(id, actionEl.dataset.contactId, "", null);
+          break;
+        case "contact-create-open":
+          ContactCreate.open(id);
           break;
       }
     });

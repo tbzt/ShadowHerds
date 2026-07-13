@@ -16,7 +16,7 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
-## [1.5.0] — 2026-07-14
+## [1.7.0] — 2026-07-14
 
 ### Jouer
 - **Bricker les armes adverses** : en combat, quand une scène Matrice est active
@@ -29,6 +29,27 @@ commit.
   « hors service » d'un tap dans le tracker narratif, sans moniteur ni chiffre.
   Anarchy 1re n'a pas ce système (rien affiché). L'état est propre à la scène
   (jamais écrit sur la fiche permanente).
+
+## [1.6.0] — 2026-07-14
+
+### Organiser
+- **Ajouter un contact depuis un PJ, hors édition** : sur la fiche d'un
+  personnage-joueur, la section « Contacts » gagne un bouton « ＋ » qui ouvre une
+  liste — « ＋ Créer un contact » en tête, puis les contacts existants du carnet.
+  Cliquer un contact le lie immédiatement ; « Créer » ouvre un mini-formulaire où
+  seul le nom est requis (métatype, rôle, Influence/Loyauté ou Niveau/RR selon
+  l'édition sont facultatifs) et fait vivre le contact dans le carnet, éditable
+  ensuite sur sa fiche. Plus besoin de passer par « Éditer ».
+
+## [1.5.0] — 2026-07-14
+
+### Organiser
+- **Lier un contact à toute l'équipe active** : les sélecteurs de PJ (menu
+  « ＋ Lier un PJ » d'une fiche contact et « 🔗 Lier à un PJ » de la sélection
+  multiple) offrent en tête une entrée « ★ L'équipe » qui rattache le ou les
+  contacts à chaque membre de l'équipe active d'un seul geste — plus besoin de
+  lier PJ par PJ. « L'équipe » vaut tous les PJ quand aucun dossier n'est
+  désigné comme équipe.
 
 ## [1.4.0] — 2026-07-13
 
