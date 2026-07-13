@@ -1,0 +1,5 @@
+# Pilote de merge « vbump » : neutralise les `?v=` de cache-busting pour que
+# les bumps parallèles (tools/bump_version.py) ne conflictent plus.
+# Enregistrer le pilote une fois par clone : tools/setup_git.sh
+index.html merge=vbump
+js/app.js merge=vbump
