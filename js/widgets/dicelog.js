@@ -25,6 +25,10 @@ const DiceLog = {
       le toast <641 (pas de slot topbar visible à cette largeur). */
   _unseen: 0,
 
+  /** J4 : entrées dont le formulaire de note est ouvert — session only,
+      clé = e.t (comme _expanded). */
+  _noteEditing: new Set(),
+
   /** Persistance globale (commune aux 3 éditions, comme les préférences de
       dés) : le journal survit au F5. Passe par Storage — jamais de
       localStorage direct. */
@@ -68,7 +72,40 @@ const DiceLog = {
       } else if (btn.dataset.action === "log-filter") {
         this._filter = btn.dataset.filter;
         this.refresh();
+      } else if (btn.dataset.action === "log-pin") {
+        const entry = this.history.find((h) => String(h.t) === btn.dataset.t);
+        if (entry) {
+          entry.pinned = !entry.pinned;
+          this._save();
+          this.refresh();
+        }
+      } else if (btn.dataset.action === "log-note-open") {
+        this._noteEditing.add(btn.dataset.t);
+        this.refresh();
+      } else if (btn.dataset.action === "log-note-clear") {
+        const entry = this.history.find((h) => String(h.t) === btn.dataset.t);
+        if (entry) {
+          entry.note = null;
+          this._save();
+          this.refresh();
+        }
       }
+    });
+
+    // J4 : soumission du formulaire de note (Entrée dans le champ) — un seul
+    // écouteur délégué, comme le reste de la délégation data-action du panel.
+    panel.addEventListener("submit", (e) => {
+      const form = e.target.closest('[data-action="log-note-form"]');
+      if (!form) return;
+      e.preventDefault();
+      const t = form.dataset.t;
+      const input = form.querySelector(".dice-log-note-input");
+      const text = (input && input.value || "").trim();
+      const entry = this.history.find((h) => String(h.t) === t);
+      if (entry && text) entry.note = text.slice(0, 140);
+      this._noteEditing.delete(t);
+      this._save();
+      this.refresh();
     });
 
     document.addEventListener("keydown", (e) => {
@@ -155,6 +192,9 @@ const DiceLog = {
       who: opts.who || "",
       turn: opts.turn ?? null,
       turnLabel: opts.turnLabel ?? null,
+      // J4 : champs additifs, jamais de migration de schéma Storage.
+      pinned: false,
+      note: null,
     };
     if (res.init) {
       e.label = e.label || "Initiative";
@@ -217,19 +257,20 @@ const DiceLog = {
               : "zero";
     }
     this.history.unshift(e);
-    // Rétention protégée (J3) : le plafond n'ampute jamais le tour en cours.
-    // Les entrées du round actif sont toujours les plus récentes (unshift),
-    // donc contiguës en tête — les compter suffit à savoir jusqu'où étendre
-    // la limite avant de tronquer la queue (entrées les plus anciennes).
-    let protectedCount = 0;
-    if (e.turn != null) {
-      for (const h of this.history) {
-        if (h.turn === e.turn) protectedCount++;
-        else break;
+    // Rétention protégée (J3 + J4) : le plafond n'ampute jamais le tour en
+    // cours NI un jet épinglé. Le tour actif est toujours contigu en tête
+    // (unshift), mais les épingles peuvent être dispersées n'importe où dans
+    // l'historique — on purge donc en partant de la queue (le plus ancien),
+    // en sautant tout ce qui est protégé, jusqu'à repasser sous le plafond
+    // (ou à court d'entrées non protégées : un pin illimité reste possible).
+    if (this.history.length > this.HISTORY_MAX) {
+      for (let i = this.history.length - 1; i >= 0 && this.history.length > this.HISTORY_MAX; i--) {
+        const h = this.history[i];
+        if (h.pinned) continue;
+        if (e.turn != null && h.turn === e.turn) continue;
+        this.history.splice(i, 1);
       }
     }
-    const keep = Math.max(this.HISTORY_MAX, protectedCount);
-    if (this.history.length > keep) this.history.length = keep;
     this._save();
     if ((e.cls === "crit" || e.cls === "glitch") && !this._open) this._flash();
     this.refresh();
@@ -274,9 +315,11 @@ const DiceLog = {
     const whos = [...new Set(this.history.map((e) => e.who).filter(Boolean))];
     const chip = (filter, label) =>
       `<button class="hub-facet-chip${this._filter === filter ? " active" : ""}" data-action="log-filter" data-filter="${Utils.escHtml(filter)}">${Utils.escHtml(label)}</button>`;
+    const hasPinned = this.history.some((e) => e.pinned);
     box.innerHTML =
       chip("all", "Tout") +
       chip("alarm", "Alarmes") +
+      (hasPinned ? chip("pinned", "📌 Épinglés") : "") +
       whos.map((w) => chip(w, w)).join("");
   },
 
@@ -288,6 +331,7 @@ const DiceLog = {
     const entries = this.history.filter((e) => {
       if (this._filter === "all") return true;
       if (this._filter === "alarm") return e.cls === "crit" || e.cls === "glitch";
+      if (this._filter === "pinned") return !!e.pinned;
       return e.who === this._filter;
     });
     if (!entries.length) {
@@ -348,15 +392,37 @@ const DiceLog = {
       ? `<span class="dice-log-sub">${Utils.escHtml(e.sub)}</span>
          <button class="dice-log-detail-btn" data-action="log-expand" data-t="${e.t}">▾ Replier</button>`
       : `<button class="dice-log-detail-btn" data-action="log-expand" data-t="${e.t}">▸ Détail</button>`;
-    return `<div class="dice-log-item ${e.cls}${isCard ? " is-card" : ""}">
+    // J4 : une note à la fois par jet (pas un journal — un seul jet, un seul
+    // rappel), sur le même patron que les boutons détail (bouton texte
+    // discret, pas d'éditeur).
+    const t = String(e.t);
+    let note;
+    if (e.note) {
+      note = `<div class="dice-log-note">
+        <span class="dice-log-note-text">${Utils.escHtml(e.note)}</span>
+        <button class="dice-log-detail-btn" data-action="log-note-clear" data-t="${e.t}">✕</button>
+      </div>`;
+    } else if (this._noteEditing.has(t)) {
+      note = `<form class="dice-log-note-form" data-action="log-note-form" data-t="${e.t}">
+        <input class="dice-log-note-input" type="text" maxlength="140" placeholder="Note…" autofocus>
+      </form>`;
+    } else {
+      note = `<button class="dice-log-detail-btn" data-action="log-note-open" data-t="${e.t}">✎ Note</button>`;
+    }
+    const pinBtn = `<button class="dice-log-pin-btn${e.pinned ? " is-pinned" : ""}" data-action="log-pin" data-t="${e.t}"
+      title="${e.pinned ? "Désépingler" : "Épingler — garder ce jet même après la purge"}"
+      aria-label="${e.pinned ? "Désépingler" : "Épingler"}">📌</button>`;
+    return `<div class="dice-log-item ${e.cls}${isCard ? " is-card" : ""}${e.pinned ? " is-pinned" : ""}">
       <span class="dice-log-time">${fmt(e.t)}</span>
       ${icon}
       <div class="dice-log-body">
         ${label}
         ${detail}
+        ${note}
         ${tag}
       </div>
       <span class="dice-log-main">${e.main}<small>${e.unit || ""}</small></span>
+      ${pinBtn}
     </div>`;
   },
 };

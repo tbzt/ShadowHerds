@@ -5195,6 +5195,54 @@ kbd {
   margin-left: 3px;
   text-transform: uppercase;
 }
+/* J4 : épingler — exempte de la purge (cf. dicelog.js record()). Liseré
+   accent discret sur la ligne/carte, pastille pleine sur le bouton actif. */
+.dice-log-item.is-pinned {
+  border-left-color: var(--accent);
+}
+.dice-log-pin-btn {
+  align-self: flex-start;
+  flex: none;
+  background: transparent;
+  border: none;
+  padding: 0 0 0 0.4rem;
+  font-size: var(--fs-sm);
+  opacity: 0.35;
+  cursor: pointer;
+  filter: grayscale(1);
+}
+.dice-log-pin-btn:hover {
+  opacity: 0.7;
+}
+.dice-log-pin-btn.is-pinned {
+  opacity: 1;
+  filter: none;
+}
+.dice-log-note {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+}
+.dice-log-note-text {
+  font-family: var(--font-body);
+  font-size: var(--fs-2xs);
+  font-style: italic;
+  color: var(--text-dim);
+}
+.dice-log-note-form {
+  display: flex;
+}
+.dice-log-note-input {
+  width: 100%;
+  max-width: 220px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-2xs);
+  padding: 1px 4px;
+}
 
 /* ============================================================
    LANCER RAPIDE — bandeau de résultat discret
