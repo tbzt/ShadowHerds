@@ -881,7 +881,7 @@ const CardRenderer = {
           : d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
         return `<li class="journal-entry">
           <span class="journal-date">${dstr}</span>
-          <span class="journal-text">${this._esc(e.text)}</span>
+          <span class="journal-text">${Mentions.renderText(e.text)}</span>
           <button class="journal-del" data-action="journal-remove" data-id="${pnj.id}"
             data-ts="${e.ts}" title="Supprimer cette note" aria-label="Supprimer">✕</button>
         </li>`;
@@ -893,7 +893,7 @@ const CardRenderer = {
       <div class="journal-body">
         ${entries.length ? `<ul class="journal-list">${rows}</ul>` : ""}
         <div class="journal-input-row">
-          <input type="text" class="journal-input" data-journal-input data-id="${pnj.id}"
+          <input type="text" class="journal-input" data-journal-input data-mentions data-id="${pnj.id}"
             maxlength="200" placeholder="Une note, datée…" aria-label="Nouvelle note">
           <button class="journal-add-btn" data-action="journal-add" data-id="${pnj.id}">Ajouter</button>
         </div>

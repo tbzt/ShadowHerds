@@ -50,8 +50,8 @@ const Notepad = {
       clearTimeout(this._saveTimer);
       this._saveTimer = setTimeout(() => this._save(ta.value), 400);
     });
-    // E4 : autocomplétion @ (mentions.js) — un seul widget, deux hôtes.
-    Mentions.attach(ta);
+    // E7 : autocomplétion @/# (mentions.js) câblée par l'auto-attach délégué
+    // sur `data-mentions` (Mentions.wireAuto) — plus de câblage explicite ici.
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") this.close();

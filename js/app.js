@@ -393,6 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
   SidebarToggle.bindDelegation();
   CharGen.bindDelegation();
   Portrait.bindDelegation();
+  Mentions.wireAuto();
 
   document.addEventListener("click", (e) => {
     const actionEl = e.target.closest("[data-action]");

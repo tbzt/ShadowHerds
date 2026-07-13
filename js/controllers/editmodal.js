@@ -24,10 +24,10 @@ const EditModal = {
         ? this._buildFormVehicle(pnj)
         : this._buildForm(pnj);
 
-    // E4 : autocomplétion @ (mentions.js) — em-notes est régénéré à chaque
-    // open(), donc rattaché ici (idempotent, sans effet si déjà attaché).
+    // E7 : autocomplétion @/# câblée par l'auto-attach délégué sur
+    // `data-mentions` (Mentions.wireAuto) — plus de câblage explicite ici,
+    // même si em-notes est régénéré à chaque open().
     const notesEl = document.getElementById("em-notes");
-    if (notesEl) Mentions.attach(notesEl);
     // E7 : le textarea est régénéré à chaque open() — repartir du mode
     // Lire/Éditer par défaut selon le contenu, jamais garder l'état de la
     // fiche précédemment ouverte.
