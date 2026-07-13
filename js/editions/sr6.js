@@ -82,13 +82,21 @@ const EditionSR6 = {
     const mag = (pnj.attrs && pnj.attrs.MAG) || 0;
     return (ctx.drainDamage || 0) > mag ? "physical" : "stun";
   },
-  /** Moniteur unique (8 + CON/2, posé sur pnj.me) : le Drain y ajoute des
-      cases. Le type Physique/Étourdissant ne change pas la case en SR6 (un
-      seul moniteur) mais est calculé pour l'affichage/le journal. Renvoie
-      `{ field, delta }` réellement appliqué (annulation d'une Seconde chance
-      sur le Drain, CH-M7e). */
-  applyDrainDamage(pnj, amount) {
+  /** Moniteur unique (8 + CON/2, posé sur pnj.me) par défaut : le Drain y
+      ajoute des cases, sans distinction Physique/Étourdissant (un seul
+      moniteur). Si le réglage separateMonitors était actif à la génération
+      du PNJ (pnj.stunMon posé, cf. generate()), on bascule Phys/Étourd comme
+      SR5. Renvoie `{ field, delta }` réellement appliqué (annulation d'une
+      Seconde chance sur le Drain, CH-M7e). */
+  applyDrainDamage(pnj, amount, type) {
     if (!amount) return { field: "physFilled", delta: 0 };
+    if (pnj.stunMon !== undefined) {
+      const field = type === "physical" ? "physFilled" : "stunFilled";
+      const max = type === "physical" ? pnj.physMon : pnj.stunMon;
+      const before = pnj[field] || 0;
+      pnj[field] = Utils.clamp(before + amount, 0, max ?? 99);
+      return { field, delta: pnj[field] - before };
+    }
     const before = pnj.physFilled || 0;
     pnj.physFilled = Utils.clamp(before + amount, 0, pnj.me ?? 99);
     return { field: "physFilled", delta: pnj.physFilled - before };
@@ -225,11 +233,18 @@ const EditionSR6 = {
     monitorMaxKey: "me",
   },
   /** Malus de dés lié aux cases de moniteur remplies : −1D par tranche de
-      3 cases du moniteur d'état unique. */
+      3 cases. Modèle par défaut = moniteur d'état unique (8 + CON/2), mais
+      un PNJ généré avec separateMonitors actif porte physMon/stunMon (comme
+      SR5, cf. generate()) — chaque fonction ci-dessous bascule sur la
+      présence de `stunMon` plutôt que de relire le réglage courant, pour
+      rester fidèle au modèle figé à la génération du PNJ. */
   conditionMonitor: {
-    model: "moniteur d'état unique, cases = 8 + CON/2",
+    model: "moniteur d'état unique (8 + CON/2), ou séparé Phys/Étourd (8+CON/2 / 8+VOL/2) si separateMonitors",
     fields: { primary: "me" },
     woundMalus(pnj) {
+      if (pnj.stunMon !== undefined) {
+        return Math.floor(((pnj.physFilled || 0) + (pnj.stunFilled || 0)) / 3);
+      }
       return Math.floor((pnj.physFilled || 0) / 3);
     },
     /** Moniteur d'un esprit invoqué : (Puissance/2)+8, p.224 — distinct
@@ -241,26 +256,37 @@ const EditionSR6 = {
     /** Forme du moniteur d'un véhicule/drone lié : "total" (monTotal/
         monFilled, ⌈Structure/2⌉+8) en SR5/SR6, cf. vehicles.js:_monitor. */
     vehicleFields: "total",
-    /** Détruit : véhicule/drone dont le moniteur total est plein, ou
-        esprit dont le moniteur unique (me, cf. spirits.js:_spawnSR) est
-        plein. */
+    /** Détruit : véhicule/drone dont le moniteur total est plein, esprit
+        dont le moniteur unique (me, cf. spirits.js:_spawnSR) est plein, ou
+        PNJ dont la piste Physique (physMon) est pleine en mode séparé —
+        cohérent avec SR5, seul le Physique compte pour la destruction. */
     isDestroyed(entity) {
       if (entity.type === "vehicle")
         return (entity.monTotal || 0) > 0 && (entity.monFilled || 0) >= entity.monTotal;
+      if (entity.stunMon !== undefined)
+        return (entity.physMon || 0) > 0 && (entity.physFilled || 0) >= entity.physMon;
       return (entity.me || 0) > 0 && (entity.physFilled || 0) >= entity.me;
     },
     /** Mise hors de combat immédiate (Vague C) : remplit le moniteur unique
-        (ou total pour un véhicule). Réversible par _resetMonitors (✚). */
+        (ou la piste Physique en mode séparé, ou total pour un véhicule).
+        Réversible par _resetMonitors (✚). */
     knockOut(entity) {
       if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
+      else if (entity.stunMon !== undefined) entity.physFilled = entity.physMon || 0;
       else entity.physFilled = entity.me || 0;
     },
     /** K6 : résumé du moniteur pour la mini-jauge du cockpit — cases remplies
-        / total du moniteur d'état unique (mêmes champs que isDestroyed/
-        knockOut). total 0 = pas de moniteur, pas de jauge. */
+        / total, cumulées sur les deux pistes en mode séparé (comme SR5).
+        total 0 = pas de moniteur, pas de jauge. */
     gauge(entity) {
       if (entity.type === "vehicle")
         return { filled: entity.monFilled || 0, total: entity.monTotal || 0 };
+      if (entity.stunMon !== undefined) {
+        return {
+          filled: (entity.physFilled || 0) + (entity.stunFilled || 0),
+          total: (entity.physMon || 0) + (entity.stunMon || 0),
+        };
+      }
       return { filled: entity.physFilled || 0, total: entity.me || 0 };
     },
   },
@@ -1857,8 +1883,14 @@ const EditionSR6 = {
     const atoCenter = atoR[0] + Math.round((atoR[1] - atoR[0]) * Utils.clamp(p / 10, 0, 1) * 0.6);
     attrs.ATO = Utils.clamp(atoCenter + Utils.randInt(0, 1), atoR[0], atoR[1]);
 
-    // Moniteur d'état
-    const me = 8 + Math.ceil(attrs.CON / 2);
+    // Moniteur d'état : unique (me, standard SR6) par défaut, ou séparé
+    // Phys/Étourd (physMon/stunMon, comme SR5) si la table a activé le
+    // réglage separateMonitors (settingsHTML ci-dessus) — figé au moment de
+    // la génération, cf. conditionMonitor.* qui bascule sur pnj.stunMon.
+    const separateMonitors = Settings.get("separateMonitors", false);
+    const me = separateMonitors ? null : 8 + Math.ceil(attrs.CON / 2);
+    const physMon = separateMonitors ? 8 + Math.ceil(attrs.CON / 2) : null;
+    const stunMon = separateMonitors ? 8 + Math.ceil(attrs.VOL / 2) : null;
 
     // SD base profil + armure (ajoutée dans equip)
     const sdBase = this.sdByProf[p] || 4;
@@ -1981,7 +2013,7 @@ const EditionSR6 = {
       attrs,
       role,
       milieu,
-      me,
+      ...(separateMonitors ? { physMon, stunMon, stunFilled: 0 } : { me }),
       sdBase,
       initBase,
       initDice: initData.dice,
@@ -2021,7 +2053,14 @@ const EditionSR6 = {
     // Atout : init douce pour les PNJ sauvegardés avant l'ajout du champ
     // (plancher racial d'attrRange, pas de migration versionnée).
     attrs.ATO ??= this.attrRange[pnj.meta]?.ATO?.[0] ?? 3;
-    pnj.me = 8 + Math.ceil(attrs.CON / 2);
+    // Recalcule selon le modèle figé à la génération du PNJ (pnj.stunMon
+    // présent = separateMonitors était actif) plutôt que le réglage courant.
+    if (pnj.stunMon !== undefined) {
+      pnj.physMon = 8 + Math.ceil(attrs.CON / 2);
+      pnj.stunMon = 8 + Math.ceil(attrs.VOL / 2);
+    } else {
+      pnj.me = 8 + Math.ceil(attrs.CON / 2);
+    }
     pnj.initBase = attrs.RÉA + attrs.INT;
     pnj.defense = attrs.RÉA + attrs.INT;
     pnj.damageResist = attrs.CON;
