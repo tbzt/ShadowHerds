@@ -883,6 +883,53 @@
 .encounter-ndevice-chips .react-btn.is-off {
   text-decoration: line-through;
 }
+.encounter-ndevice-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+/* M5 : protection Firewall (badge/picker) — inline dans une ligne d'appareil,
+   SR5/SR6 (fiche active) et A2 (bande narrative). */
+.encounter-device-protect {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: var(--fs-2xs);
+}
+.encounter-device-protector-select {
+  min-height: 28px;
+  padding: 0.1rem 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+}
+.encounter-device-protect.is-protected .encounter-device-protector-badge {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* M5a : duel decker↔decker — même rangée que .encounter-devices. */
+.encounter-duel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.6rem 0;
+}
+.encounter-duel-select {
+  min-height: 32px;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+}
 
 /* ---- K3 : tiroir Matrice contextuel — chrome copié de #dice-sheet
    (feuille basse, --ease-emphasized) ; canal --accent2 (bordure/titre) au

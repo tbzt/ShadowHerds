@@ -16,6 +16,20 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
+## [1.9.0] — 2026-07-14
+
+### Jouer
+- **Duel decker↔decker** : en combat, un decker peut viser un autre decker
+  présent dans la scène et lancer « ⚔ Piratage » contre lui — les dégâts se
+  résolvent sur le moniteur de son propre cyberdeck (déjà affiché sur sa
+  carte).
+- **Protéger un allié avec son Firewall** : un appareil ciblé (M4) peut être
+  désigné comme protégé par un decker présent — badge 🛡️ + jet de
+  **Défense** dédié (SR5 p.236, Indice de l'appareil + Firewall du
+  protecteur ; Anarchy 2.0 « Protection active », p.216-217, Firewall +
+  Logique du protecteur). SR6 n'a pas cette règle au livre — approximée par
+  la même formule que SR5.
+
 ## [1.8.0] — 2026-07-14
 
 ### Générer
