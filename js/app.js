@@ -178,7 +178,20 @@ const App = {
 
     // Première présentation de la barre du haut (CH-V6-T1.7, N1) : une
     // seule fois, jamais répétée (Onboarding.dismiss pose le flag global).
-    Onboarding.maybeShow();
+    // Premier lancement (V9/G2) : orientation guidée qui mène au générateur ;
+    // « Passer » définitif via tour_seen. Sinon, le coachmark topbar habituel.
+    if (Storage.getGlobal("tour_seen", false)) {
+      Onboarding.maybeShow();
+    } else {
+      Tour.start("orientation", {
+        onEnd: () => {
+          Storage.setGlobal("tour_seen", true);
+          Storage.setGlobal("tour_seen_version", App.VERSION); // base « Quoi de neuf »
+          Tour.refreshBadge();
+        },
+      });
+    }
+    Tour.refreshBadge(); // badge « Quoi de neuf » (+ migration douce de la base)
   },
 
   /* ---- D1 : sheet mobile « Plus » (Contacts/Serveurs/Run/Paramètres) ---- */
@@ -393,6 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
   SidebarToggle.bindDelegation();
   CharGen.bindDelegation();
   Portrait.bindDelegation();
+  Tour.init({ navigate: (p) => App.showPanel(p), version: App.VERSION });
 
   document.addEventListener("click", (e) => {
     const actionEl = e.target.closest("[data-action]");
@@ -454,6 +468,14 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
       case "shortcuts-close":
         App.toggleCheatsheet(false);
+        break;
+      case "tour-full":
+        App.toggleCheatsheet(false);
+        Tour.start("full");
+        break;
+      case "tour-whatsnew":
+        App.toggleCheatsheet(false);
+        Tour.openWhatsNew();
         break;
     }
   });
