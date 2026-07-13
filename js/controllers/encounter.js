@@ -11,6 +11,16 @@
 const Encounter = {
   _KEY: "encounter_current",
 
+  /** Version de la FORME de l'état persisté (round/pass/turnIndex/combatants/
+      serverId/v) — distincte du `schemaVersion` de Storage, qui versionne la
+      chaîne de migrations elle-même. Si la forme évolue encore, incrémenter
+      ici et ajouter le backfill correspondant à la migration de Storage (le
+      seul endroit qui migre — voir CONTRIBUTING.md § Versionner les
+      schémas). Les scènes persistées avant l'ajout de ce champ sont
+      tamponnées `v:1` par cette migration au boot : `load()` peut donc
+      supposer l'état déjà à niveau, sans rétro-compat locale. */
+  _V: 1,
+
   /** J3 (journal des jets) : incrémenté à chaque scène fraîche (_empty),
       pour distinguer deux combats séparés qui repartiraient chacun au round
       1 — sinon leurs jets fusionneraient dans le même groupe « Tour 1 » du
@@ -20,7 +30,7 @@ const Encounter = {
   _sceneSeq: 0,
   _empty() {
     this._sceneSeq++;
-    return { round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null };
+    return { v: this._V, round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null };
   },
 
   state: null,
@@ -28,10 +38,6 @@ const Encounter = {
   /* ---- Persistance (édition-scopée, comme Shadows/Servers) ---- */
   load() {
     this.state = Storage.get(this._KEY, null) || this._empty();
-    // Rétro-compat : scènes persistées avant l'ajout des passes d'initiative.
-    if (this.state.pass == null) this.state.pass = 1;
-    // Rétro-compat K3 : scènes persistées avant le lien serveur (§ Matrice).
-    if (this.state.serverId === undefined) this.state.serverId = null;
     // La sidebar doit refléter la scène dès le chargement de l'édition, pas
     // seulement à l'ouverture du tracker — reset de la fiche active d'une
     // édition à l'autre (les pnjId ne collisionnent jamais entre éditions,

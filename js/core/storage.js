@@ -154,7 +154,7 @@ const Storage = {
 
   /** Dernière version de schéma connue. Incrémenter à chaque nouvelle entrée
       ajoutée à `_MIGRATIONS`. Voir CONTRIBUTING.md § Versionner les schémas. */
-  _SCHEMA_VERSION: 1,
+  _SCHEMA_VERSION: 2,
 
   /** Chaîne de migrations de schéma, ordonnée par version croissante. Chaque
       `up()` mute le `localStorage` brut (pas de dépendance à `_edition`) et
@@ -181,6 +181,38 @@ const Storage = {
         });
         if (oldKeys.length)
           Debug.warn("storage", "migration v1 (anarchyId)", { migrated: oldKeys.length });
+      },
+    },
+    {
+      v: 2,
+      /** L'état de tour (Encounter) n'était pas versionné et portait des
+          champs ajoutés après coup (pass, serverId) que `load()` complétait
+          à la volée à chaque lecture. On tamponne `v:1` (version de la FORME
+          d'un `encounter_current` — distincte de ce `schemaVersion` global,
+          qui versionne la chaîne de migrations elle-même) sur les scènes
+          persistées avant l'ajout du versionnage, avec les mêmes défauts que
+          l'ancien rétro-compat. Une scène déjà tamponnée est ignorée. */
+      up() {
+        const suffix = '_encounter_current';
+        const keys = Object.keys(localStorage).filter(
+          (k) => k.startsWith('sr_pnj_v2_') && k.endsWith(suffix)
+        );
+        let migrated = 0;
+        keys.forEach((k) => {
+          const raw = localStorage.getItem(k);
+          if (raw === null) return;
+          let data;
+          try { data = JSON.parse(raw); }
+          catch { return; }
+          if (data.v != null) return;
+          data.v = 1;
+          if (data.pass == null) data.pass = 1;
+          if (data.serverId === undefined) data.serverId = null;
+          localStorage.setItem(k, JSON.stringify(data));
+          migrated++;
+        });
+        if (migrated)
+          Debug.warn("storage", "migration v2 (encounterVersion)", { migrated });
       },
     },
   ],
