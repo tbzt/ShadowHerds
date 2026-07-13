@@ -53,10 +53,16 @@ const PrintSR6 = {
   },
 
   _monitors(pnj) {
-    const n = Math.max(0, (pnj.me ?? 0) | 0);
-    const boxes = Array.from({ length: n }, () => `<span class="psheet-box"></span>`).join("");
+    const boxes = (n) =>
+      Array.from({ length: Math.max(0, n | 0) }, () => `<span class="psheet-box"></span>`).join("");
+    if (pnj.stunMon !== undefined) {
+      return `<div class="psheet-monitors">
+        <span><span class="psheet-monitor-label">Physique</span><span class="psheet-boxes">${boxes(pnj.physMon)}</span></span>
+        <span><span class="psheet-monitor-label">Étourdissant</span><span class="psheet-boxes">${boxes(pnj.stunMon)}</span></span>
+      </div>`;
+    }
     return `<div class="psheet-monitors">
-      <span><span class="psheet-monitor-label">Moniteur d'états</span><span class="psheet-boxes">${boxes}</span></span>
+      <span><span class="psheet-monitor-label">Moniteur d'états</span><span class="psheet-boxes">${boxes(pnj.me)}</span></span>
     </div>`;
   },
 
@@ -85,7 +91,9 @@ const PrintSR6 = {
     const main = [
       this._attrTable(pnj),
       this._line("Initiative / Actions", initStr),
-      this._line("Moniteur d'états", pnj.me != null ? this._esc(pnj.me) : ""),
+      pnj.stunMon !== undefined
+        ? this._line("Moniteur de condition (P/E)", `${this._esc(pnj.physMon)} / ${this._esc(pnj.stunMon)}`)
+        : this._line("Moniteur d'états", pnj.me != null ? this._esc(pnj.me) : ""),
       this._monitors(pnj),
       this._line("Score Défensif", pnj.sdBase != null ? this._esc(pnj.sdBase) : ""),
       pnj.drainResist != null ? this._line("Résistance au Drain", this._esc(pnj.drainResist)) : "",

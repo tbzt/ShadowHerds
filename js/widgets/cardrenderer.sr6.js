@@ -32,11 +32,14 @@ Object.assign(CardRenderer, {
     const {
       attrs,
       me,
+      physMon,
+      stunMon,
       sdBase,
       initBase,
       initDice,
       pa,
       physFilled,
+      stunFilled,
       skills,
       equip,
       augs,
@@ -66,14 +69,30 @@ Object.assign(CardRenderer, {
     if (pa) html += `<span class="stat-pill">PA <strong>${pa}</strong></span>`;
     html += "</div>";
 
-    const monTotal = me ?? 9;
-    html += `<div class="monitor-block">
-      <div class="monitor-row">
-        <span class="monitor-label">État</span>
-        <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "phys", monTotal, physFilled ?? 0)}</div>
-      </div>
-      ${this._monitorMalusBadge(malus6)}
-    </div>`;
+    // Moniteur unique (standard SR6) sauf si le PNJ a été généré avec le
+    // réglage separateMonitors actif (physMon/stunMon posés, comme SR5).
+    if (stunMon !== undefined) {
+      html += `<div class="monitor-block">
+        <div class="monitor-row">
+          <span class="monitor-label">Phys</span>
+          <div class="monitor-boxes monitor-phys">${this._monitorBoxes(pnj.id, "phys", physMon, physFilled ?? 0)}</div>
+        </div>
+        <div class="monitor-row" style="margin-top:4px;">
+          <span class="monitor-label">Étourd</span>
+          <div class="monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, stunFilled ?? 0)}</div>
+        </div>
+        ${this._monitorMalusBadge(malus6)}
+      </div>`;
+    } else {
+      const monTotal = me ?? 9;
+      html += `<div class="monitor-block">
+        <div class="monitor-row">
+          <span class="monitor-label">État</span>
+          <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "phys", monTotal, physFilled ?? 0)}</div>
+        </div>
+        ${this._monitorMalusBadge(malus6)}
+      </div>`;
+    }
 
     html += this._weaponBlock(pnj, weapons, "sr6", deps);
     html += this._spellsBlock(pnj, spells, "sr6");
