@@ -15,6 +15,10 @@ const DiceLog = {
       uniquement (pas de Storage), clé = e.t (timestamp, déjà unique). */
   _expanded: new Set(),
 
+  /** J2 : filtre actif — "all" | "alarm" | un nom de who. Session only
+      (comme les facettes du Hub F1), reset à chaque ouverture du panneau. */
+  _filter: "all",
+
   /** Persistance globale (commune aux 3 éditions, comme les préférences de
       dés) : le journal survit au F5. Passe par Storage — jamais de
       localStorage direct. */
@@ -40,6 +44,7 @@ const DiceLog = {
         <button class="btn-icon-tiny" data-action="clear" title="Vider le journal">⌫</button>
         <button class="btn-icon-tiny" data-action="close" title="Fermer" aria-label="Fermer">✕</button>
       </div>
+      <div class="dice-log-filters" id="dice-log-filters"></div>
       <div class="dice-log-list" id="dice-log-list"></div>`;
     document.body.appendChild(panel);
 
@@ -53,6 +58,9 @@ const DiceLog = {
         const t = btn.dataset.t;
         if (this._expanded.has(t)) this._expanded.delete(t);
         else this._expanded.add(t);
+        this.refresh();
+      } else if (btn.dataset.action === "log-filter") {
+        this._filter = btn.dataset.filter;
         this.refresh();
       }
     });
@@ -78,6 +86,7 @@ const DiceLog = {
     this._ensure();
     // Sur mobile, le journal remplace la feuille de dés si elle est ouverte
     DicePanel.close();
+    this._filter = "all";
     this.refresh();
     document.getElementById("dice-log-backdrop").classList.add("open");
     document.getElementById("dice-log-panel").classList.add("open");
@@ -198,12 +207,37 @@ const DiceLog = {
     this.refresh();
   },
 
+  /** J2 : rangée de puces Tout / Alarmes / <par personnage> — mêmes règles que
+      les facettes du Hub F1 (valeurs distinctes présentes, filtre session-only,
+      pas de branche App.edition, la sémantique cls est déjà neutre). */
+  _renderFilters() {
+    const box = document.getElementById("dice-log-filters");
+    if (!box) return;
+    if (!this.history.length) {
+      box.innerHTML = "";
+      return;
+    }
+    const whos = [...new Set(this.history.map((e) => e.who).filter(Boolean))];
+    const chip = (filter, label) =>
+      `<button class="hub-facet-chip${this._filter === filter ? " active" : ""}" data-action="log-filter" data-filter="${Utils.escHtml(filter)}">${Utils.escHtml(label)}</button>`;
+    box.innerHTML =
+      chip("all", "Tout") +
+      chip("alarm", "Alarmes") +
+      whos.map((w) => chip(w, w)).join("");
+  },
+
   /** Re-rend la liste (appelé après chaque jet si le panneau existe). */
   refresh() {
     const list = document.getElementById("dice-log-list");
     if (!list) return;
-    if (!this.history.length) {
-      list.innerHTML = `<div class="dice-log-empty">Aucun jet pour l'instant.</div>`;
+    this._renderFilters();
+    const entries = this.history.filter((e) => {
+      if (this._filter === "all") return true;
+      if (this._filter === "alarm") return e.cls === "crit" || e.cls === "glitch";
+      return e.who === this._filter;
+    });
+    if (!entries.length) {
+      list.innerHTML = `<div class="dice-log-empty">${this.history.length ? "Aucun jet ne correspond à ce filtre." : "Aucun jet pour l'instant."}</div>`;
       return;
     }
     const fmt = (t) => {
@@ -216,7 +250,7 @@ const DiceLog = {
     // reste reste en ligne compacte. Icône ⚠/✕ : réutilise le vocabulaire
     // déjà en place ailleurs (☠/⚑ du tracker de combat), pas un ajout de motif.
     const ICON = { crit: "✕", glitch: "⚠" };
-    list.innerHTML = this.history
+    list.innerHTML = entries
       .map((e) => {
         const isCard = e.cls === "crit" || e.cls === "glitch";
         const who = e.who

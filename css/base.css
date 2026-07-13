@@ -4937,6 +4937,31 @@ kbd {
   text-transform: uppercase;
   color: var(--accent);
 }
+/* J2 : rangée de puces de filtre — réutilise .hub-facet-chip tel quel (même
+   pastille active/inactive que le Hub F1). Desktop/tablette : wrap normal ;
+   mobile : scroll horizontal (la rangée reste sur une ligne, pas de retour
+   qui pousserait la liste). */
+.dice-log-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+.dice-log-filters:empty {
+  display: none;
+  border-bottom: none;
+}
+@media (max-width: 640px) {
+  .dice-log-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .dice-log-filters::-webkit-scrollbar {
+    display: none;
+  }
+}
 .dice-log-list {
   flex: 1;
   overflow-y: auto;
