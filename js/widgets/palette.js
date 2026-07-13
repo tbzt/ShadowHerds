@@ -91,13 +91,15 @@ const Palette = {
       return;
     }
     box.innerHTML = this._results
-      .map(
-        (r, i) =>
-          `<div class="palette-row${i === this._sel ? " sel" : ""}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+      .map((r, i) => {
+        // E6 : avatar PJ constant (couleur+anneau+initiale) — un aller-retour
+        // PnjLookup de plus par ligne, liste bornée à 30 résultats (search()).
+        const avatar = r.type === "pj" ? CardRenderer._pcAvatar(PnjLookup.find(r.id)) : "";
+        return `<div class="palette-row${i === this._sel ? " sel" : ""}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
             <span class="palette-type">${this._TYPE_LABEL[r.type] || r.type}</span>
-            <span class="palette-name">${Utils.escHtml(r.name)}</span>
-          </div>`,
-      )
+            <span class="palette-name">${avatar}${Utils.escHtml(r.name)}</span>
+          </div>`;
+      })
       .join("");
     box.querySelector(".palette-row.sel")?.scrollIntoView({ block: "nearest" });
   },

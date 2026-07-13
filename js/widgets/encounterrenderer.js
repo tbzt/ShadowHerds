@@ -138,9 +138,7 @@ const EncounterRenderer = {
     const focusItem = pnj._adhoc
       ? ""
       : `<button class="btn-icon-tiny" data-action="focus-combatant" data-id="${pnjId}" title="Voir la fiche" aria-label="Voir la fiche">☰</button>`;
-    const colorDot = r.isPJ && pnj.pcColor
-      ? `<span class="pc-color-dot" style="background:${Utils.escHtml(pnj.pcColor)}" title="Couleur du PJ" aria-hidden="true"></span>`
-      : "";
+    const colorDot = r.isPJ ? CardRenderer._pcAvatar(pnj) : "";
     // Pas de poignée sur les lignes hors de combat (épinglées en bas, non
     // réordonnables) — même garde que _row.
     const dragHandle = r.down
@@ -268,11 +266,9 @@ const EncounterRenderer = {
         ? `<span class="wound-malus-badge" title="Malus de blessure automatique (déjà appliqué à l'initiative)">−${malus}D</span>`
         : "";
     const name = Utils.escHtml(pnj.name || "");
-    // PJ (E1) : pastille de couleur constante avant le nom — 1er indice DA,
-    // redondant avec la forme/initiale prévues en E6 (jamais le seul indice).
-    const colorDot = r.isPJ && pnj.pcColor
-      ? `<span class="pc-color-dot" style="background:${Utils.escHtml(pnj.pcColor)}" title="Couleur du PJ" aria-hidden="true"></span>`
-      : "";
+    // PJ : avatar constant avant le nom — couleur + anneau + initiale du
+    // joueur (E6, CardRenderer._pcAvatar), jamais un indice isolé.
+    const colorDot = r.isPJ ? CardRenderer._pcAvatar(pnj) : "";
     // Nom : bouton « voir la fiche » pour une entité résolvable ou une CI (qui
     // ouvre le tiroir Matrice) ; span inerte pour un PJ ad-hoc (pas de fiche).
     const nameHtml =
@@ -359,6 +355,7 @@ const EncounterRenderer = {
     const { pnjId, init, pnj } = r;
     const isMatrix = r.kind === "matrix";
     const name = Utils.escHtml(pnj.name || "");
+    const avatar = r.isPJ ? CardRenderer._pcAvatar(pnj) : "";
     const initLabel = r.down ? "—" : r.delayed ? "⏸" : init == null ? "·" : String(init);
     const cls = [
       "encounter-token",
@@ -378,7 +375,7 @@ const EncounterRenderer = {
     const tag = tappable ? "button" : "div";
     return `<${tag} class="${cls}"${action} title="${name}">
       <span class="encounter-token-init">${initLabel}</span>
-      <span class="encounter-token-name">${name}</span>
+      <span class="encounter-token-name">${avatar}${name}</span>
     </${tag}>`;
   },
 
@@ -387,10 +384,11 @@ const EncounterRenderer = {
   _tokenNarrative(r) {
     const { pnjId, hasActed, pnj } = r;
     const name = Utils.escHtml(pnj.name || "");
+    const avatar = r.isPJ ? CardRenderer._pcAvatar(pnj) : "";
     const cls = ["encounter-token", hasActed && "has-acted", r.down && "down"].filter(Boolean).join(" ");
     return `<button class="${cls}" data-action="narrative-toggle" data-id="${pnjId}" title="${name}">
       <span class="encounter-token-init">${hasActed ? "✓" : "•"}</span>
-      <span class="encounter-token-name">${name}</span>
+      <span class="encounter-token-name">${avatar}${name}</span>
     </button>`;
   },
 

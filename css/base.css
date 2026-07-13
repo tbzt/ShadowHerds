@@ -1370,21 +1370,33 @@ select optgroup {
   flex-shrink: 0;
 }
 
-/* PJ léger (E1, chantier Équipe) — pastille de couleur constante, indice 1/3
-   de la DA (forme sur avatar + initiale arrivent en E6). */
-.pc-color-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
+/* Avatar PJ (E1 couleur, E6 forme+initiale, chantier Équipe) — trois indices
+   redondants systématiques : couleur (pcColor) + anneau (ce badge n'existe
+   QUE pour les PJ, jamais posé sur un PNJ) + initiale du joueur (jamais de
+   portrait sur un PJ léger). Constant partout : tracker (lignes+jetons),
+   carte, PinRow, Palette, menu de mentions. */
+.pc-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
+  border: 2px solid var(--text);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
   flex-shrink: 0;
   vertical-align: middle;
   margin: -2px 5px 0 0;
-  border: 1px solid color-mix(in srgb, var(--text) 25%, transparent);
 }
-.pnj-card-header .pc-color-dot {
-  width: 14px;
-  height: 14px;
+.pnj-card-header .pc-avatar {
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
   margin: 3px 0 0;
 }
 .pnj-card-body-light {
@@ -3768,6 +3780,13 @@ body.selecting .bulk-selectable .contact-header-row {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.encounter-token-name .pc-avatar {
+  width: 11px;
+  height: 11px;
+  font-size: 7px;
+  margin: -1px 2px 0 0;
+  border-width: 1px;
 }
 .encounter-token.active-turn {
   border-color: var(--accent);

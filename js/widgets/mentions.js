@@ -97,13 +97,14 @@ const Mentions = {
   _render() {
     const box = this._ensureBox();
     box.innerHTML = this._results
-      .map(
-        (r, i) =>
-          `<div class="palette-row${i === this._sel ? " sel" : ""}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+      .map((r, i) => {
+        // E6 : même avatar constant que la Palette (couleur+anneau+initiale).
+        const avatar = r.type === "pj" ? CardRenderer._pcAvatar(PnjLookup.find(r.id)) : "";
+        return `<div class="palette-row${i === this._sel ? " sel" : ""}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
             <span class="palette-type">${this._TYPE_LABEL[r.type] || r.type}</span>
-            <span class="palette-name">${Utils.escHtml(r.name)}</span>
-          </div>`,
-      )
+            <span class="palette-name">${avatar}${Utils.escHtml(r.name)}</span>
+          </div>`;
+      })
       .join("");
     this._position();
     box.hidden = false;

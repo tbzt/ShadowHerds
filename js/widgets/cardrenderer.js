@@ -103,9 +103,21 @@ const CardRenderer = {
         ${this._nameBlock(pnj.name)}
         <div class="pnj-meta">Personnage-joueur${pnj.player ? ` · ${this._esc(pnj.player)}` : ""}</div>
       </div>
-      <span class="pc-color-dot" style="background:${this._esc(pnj.pcColor || "")}"
-        title="Couleur du PJ" aria-hidden="true"></span>
+      ${this._pcAvatar(pnj)}
     </div>`;
+  },
+
+  /** E6 : signature visuelle du PJ, CONSTANTE partout (tracker, PinRow,
+      Palette, mentions, carte) — trois indices redondants (jamais un seul,
+      daltoniens) : couleur `pcColor` (E1) + anneau (forme, ce badge lui-même
+      n'existe QUE pour les PJ) + initiale du joueur (un PJ léger n'a jamais
+      de portrait). `""` pour toute entité sans `pcColor` (PNJ) — aucune
+      régression visuelle ailleurs. */
+  _pcAvatar(pnj) {
+    if (!pnj || !pnj.pcColor) return "";
+    const label = (pnj.player || pnj.name || "?").trim().charAt(0).toUpperCase();
+    const title = `PJ${pnj.player ? " · " + pnj.player : ""}`;
+    return `<span class="pc-avatar" style="background:${this._esc(pnj.pcColor)}" title="${this._esc(title)}" aria-hidden="true">${this._esc(label)}</span>`;
   },
 
   _bodyLight(pnj) {

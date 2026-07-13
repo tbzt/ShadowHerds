@@ -213,11 +213,8 @@ const ContactRenderer = {
     if (!linked.length) return "";
     const chips = linked
       .map((p) => {
-        const dot = p.pcColor
-          ? `<span class="pc-color-dot" style="background:${CardRenderer._esc(p.pcColor)}" aria-hidden="true"></span>`
-          : "";
         return `<span class="tag tag-clickable" role="button" tabindex="0" data-contact-action="goto-pj"
-          data-pj-id="${CardRenderer._esc(p.id)}" data-pj-name="${CardRenderer._esc(p.name)}">${dot}${CardRenderer._esc(p.name)}</span>`;
+          data-pj-id="${CardRenderer._esc(p.id)}" data-pj-name="${CardRenderer._esc(p.name)}">${CardRenderer._pcAvatar(p)}${CardRenderer._esc(p.name)}</span>`;
       })
       .join("");
     return `<div class="card-section" style="margin-top:6px;">

@@ -65,14 +65,25 @@ const PinRow = {
     return out;
   },
 
+  /** E6 : l'équipe active (Characters.activeTeamMembers, E2 — tous les PJ
+      par défaut, ou le dossier désigné) est épinglée en permanence, pas
+      seulement quand son dossier est ouvert : « toujours à portée de
+      pouce ». Réutilise le calcul existant, aucun 2ᵉ concept d'équipe. */
+  _teamEntries() {
+    if (typeof Characters === "undefined") return [];
+    return Characters.activeTeamMembers().map((p) => ({ id: p.id, type: "pj", name: p.name || "Sans nom" }));
+  },
+
   render() {
     const row = document.getElementById("pin-row");
     if (!row) return;
-    const dossier = this._dossierEntries();
-    const seen = new Set(dossier.map((e) => e.id));
+    const team = this._teamEntries();
+    const seenTeam = new Set(team.map((e) => e.id));
+    const dossier = this._dossierEntries().filter((e) => !seenTeam.has(e.id));
+    const seen = new Set([...seenTeam, ...dossier.map((e) => e.id)]);
     const consulted = this._consulted.filter((e) => !seen.has(e.id));
 
-    if (!dossier.length && !consulted.length) {
+    if (!team.length && !dossier.length && !consulted.length) {
       row.hidden = true;
       row.innerHTML = "";
       return;
@@ -80,21 +91,29 @@ const PinRow = {
     row.hidden = false;
 
     if (this._collapsed) {
-      const n = dossier.length + consulted.length;
+      const n = team.length + dossier.length + consulted.length;
       row.innerHTML = `<button class="pin-row-toggle" data-action="pinrow-toggle" aria-label="Déplier la rangée d'épingles">▸ ${n} fiche${n > 1 ? "s" : ""}</button>`;
       return;
     }
 
     const label = DossierBar.currentNode()?.name;
-    const chip = (e) =>
-      `<button class="pin-chip" data-pinrow-id="${e.id}" data-pinrow-type="${e.type}" data-pinrow-name="${CardRenderer._esc(e.name)}" title="${CardRenderer._esc(e.name)}">${CardRenderer._esc(e.name)}</button>`;
+    const chip = (e) => {
+      // E6 : avatar PJ constant (couleur+anneau+initiale), résolu une fois
+      // par entrée — même entité que celle déjà chargée par PnjLookup
+      // ci-dessus pour les entrées dossier ; retrouvée à la volée ici pour
+      // team/consulted (listes courtes, coût négligeable).
+      const avatar = e.type === "pj" ? CardRenderer._pcAvatar(PnjLookup.find(e.id)) : "";
+      return `<button class="pin-chip" data-pinrow-id="${e.id}" data-pinrow-type="${e.type}" data-pinrow-name="${CardRenderer._esc(e.name)}" title="${CardRenderer._esc(e.name)}">${avatar}${CardRenderer._esc(e.name)}</button>`;
+    };
 
     row.innerHTML = `
       <button class="pin-row-toggle" data-action="pinrow-toggle" aria-label="Replier la rangée d'épingles">▾</button>
       ${label ? `<span class="pin-row-label">${CardRenderer._esc(label)}</span>` : ""}
       <div class="pin-row-chips">
+        ${team.map(chip).join("")}
+        ${team.length && dossier.length ? `<span class="pin-row-sep"></span>` : ""}
         ${dossier.map(chip).join("")}
-        ${consulted.length && dossier.length ? `<span class="pin-row-sep"></span>` : ""}
+        ${consulted.length && (team.length || dossier.length) ? `<span class="pin-row-sep"></span>` : ""}
         ${consulted.map(chip).join("")}
       </div>`;
   },
