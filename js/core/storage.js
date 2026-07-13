@@ -152,27 +152,74 @@ const Storage = {
     Debug.warn("storage", "clearAll", { removed: keys.length });
   },
 
-  /** Migration one-shot : l'ancien identifiant d'édition "anarchy" désignait
-      Anarchy 2e. Depuis l'ajout d'Anarchy 1re il devient "anarchy2". On
-      renomme les clés `sr_pnj_v2_anarchy_*` → `sr_pnj_v2_anarchy2_*` et on
-      réécrit les champs `"edition":"anarchy"` dans les valeurs (PNJ, contacts,
-      véhicules, esprits liés). Idempotent, gardé par un flag global.
-      (Utilisateur unique : filet de sécurité, supprimable à terme.) */
-  migrateAnarchyId() {
-    if (this.getGlobal("anarchyIdMigrated", false)) return;
-    const oldPrefix = 'sr_pnj_v2_anarchy_';
-    const oldKeys = Object.keys(localStorage).filter(k => k.startsWith(oldPrefix));
-    oldKeys.forEach(k => {
-      const newKey = 'sr_pnj_v2_anarchy2_' + k.slice(oldPrefix.length);
-      let raw = localStorage.getItem(k);
-      if (raw !== null) {
-        raw = raw.split('"edition":"anarchy"').join('"edition":"anarchy2"');
-        localStorage.setItem(newKey, raw);
+  /** Dernière version de schéma connue. Incrémenter à chaque nouvelle entrée
+      ajoutée à `_MIGRATIONS`. Voir CONTRIBUTING.md § Versionner les schémas. */
+  _SCHEMA_VERSION: 1,
+
+  /** Chaîne de migrations de schéma, ordonnée par version croissante. Chaque
+      `up()` mute le `localStorage` brut (pas de dépendance à `_edition`) et
+      doit pouvoir être rejouée sans effet si son travail est déjà fait. */
+  _MIGRATIONS: [
+    {
+      v: 1,
+      /** L'ancien identifiant d'édition "anarchy" désignait Anarchy 2e.
+          Depuis l'ajout d'Anarchy 1re il devient "anarchy2". Renomme les clés
+          `sr_pnj_v2_anarchy_*` → `sr_pnj_v2_anarchy2_*` et réécrit les champs
+          `"edition":"anarchy"` dans les valeurs (PNJ, contacts, véhicules,
+          esprits liés). */
+      up() {
+        const oldPrefix = 'sr_pnj_v2_anarchy_';
+        const oldKeys = Object.keys(localStorage).filter(k => k.startsWith(oldPrefix));
+        oldKeys.forEach(k => {
+          const newKey = 'sr_pnj_v2_anarchy2_' + k.slice(oldPrefix.length);
+          let raw = localStorage.getItem(k);
+          if (raw !== null) {
+            raw = raw.split('"edition":"anarchy"').join('"edition":"anarchy2"');
+            localStorage.setItem(newKey, raw);
+          }
+          localStorage.removeItem(k);
+        });
+        if (oldKeys.length)
+          Debug.warn("storage", "migration v1 (anarchyId)", { migrated: oldKeys.length });
+      },
+    },
+  ],
+
+  /** Un profil qui a déjà des données mais pas encore de `schemaVersion` est
+      un profil antérieur à VR1 : il doit rejouer les migrations depuis 0.
+      Un profil réellement neuf (aucune clé) n'en a besoin d'aucune. */
+  _hasLegacyData() {
+    const schemaKey = this._globalKey("schemaVersion");
+    return Object.keys(localStorage).some(
+      (k) => k.startsWith('sr_pnj_v2_') && k !== schemaKey
+    );
+  },
+
+  /** Point d'entrée unique des migrations, appelé une fois au boot avant tout
+      accès applicatif. La version stockée n'avance qu'après un `up()` réussi,
+      migration par migration : une erreur stoppe la chaîne sans faire sauter
+      les paliers suivants (retentée au prochain boot). Voir CONTRIBUTING.md
+      § Versionner les schémas. */
+  runMigrations() {
+    const stored = this.getGlobal("schemaVersion", null);
+    const baseline = stored !== null
+      ? stored
+      : (this._hasLegacyData() ? 0 : this._SCHEMA_VERSION);
+    const pending = this._MIGRATIONS
+      .filter((m) => m.v > baseline)
+      .sort((a, b) => a.v - b.v);
+    if (!pending.length) {
+      if (stored === null) this.setGlobal("schemaVersion", baseline);
+      return;
+    }
+    for (const m of pending) {
+      try {
+        m.up.call(this);
+        this.setGlobal("schemaVersion", m.v);
+      } catch (e) {
+        Debug.warn("storage", "migration échouée", { v: m.v, error: e });
+        return;
       }
-      localStorage.removeItem(k);
-    });
-    this.setGlobal("anarchyIdMigrated", true);
-    if (oldKeys.length)
-      Debug.warn("storage", "migrateAnarchyId", { migrated: oldKeys.length });
-  }
+    }
+  },
 };

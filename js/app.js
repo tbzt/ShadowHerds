@@ -332,7 +332,7 @@ const SHORTCUT_PANELS = {
    INIT au chargement du DOM
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
-  Storage.migrateAnarchyId();
+  Storage.runMigrations();
   Sync.init(); // branche l'écoute des écritures (push auto si activé)
   // CH-A6 : Utils (couche 1) ne référence jamais App directement — c'est App
   // qui lui injecte le résolveur, une seule fois au démarrage.
