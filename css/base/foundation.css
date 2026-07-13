@@ -1,0 +1,754 @@
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Variables typographiques par défaut — surchargées par thème d'édition */
+:root {
+  --font-display: "Rajdhani", sans-serif;
+  --font-mono: "Share Tech Mono", monospace;
+  --font-body: "Inter", sans-serif;
+  --title-transform: uppercase;
+  --title-spacing: 0.12em;
+  --card-clip: none;
+  --hd-clip: none;
+  --danger: #c0392b;
+  /* Palette sémantique — une teinte = un token unique (cf. --danger).
+     Universels par défaut ; à surcharger par thème seulement en cas de
+     collision avec l'identité d'édition. --warning/--info sont déclarés
+     pour compléter le jeu ; ils s'appliqueront aux surfaces d'alerte /
+     d'information à venir. */
+  --success: #2ecc71;
+  --warning: #e0a516;
+  --info: #3aa0e0;
+
+  /* ---- Échelle typographique ----
+     8 pas, plancher à 10px (--fs-2xs) : la plus petite taille lisible en
+     table pour un MJ. Remplace la quarantaine de tailles ad hoc. */
+  --fs-2xs: 0.625rem; /* 10px — micro-labels mono (attributs, sections) */
+  --fs-xs: 0.75rem; /* 12px — pastilles, tags, méta */
+  --fs-sm: 0.8125rem; /* 13px — corps secondaire */
+  --fs-base: 0.875rem; /* 14px — corps */
+  --fs-md: 1rem; /* 16px */
+  --fs-lg: 1.25rem; /* 20px — valeurs d'attributs, titres de carte */
+  --fs-xl: 1.5rem; /* 24px — titres de panel */
+  --fs-2xl: 2rem; /* 32px */
+
+  /* ---- Échelle d'espacement ---- base 4px, pour un rythme régulier. */
+  --sp-1: 0.25rem; /* 4px */
+  --sp-2: 0.5rem; /* 8px */
+  --sp-3: 0.75rem; /* 12px */
+  --sp-4: 1rem; /* 16px */
+  --sp-5: 1.5rem; /* 24px */
+  --sp-6: 2rem; /* 32px */
+  --sp-8: 3rem; /* 48px */
+
+  /* ---- Tokens de mouvement ---- 3 durées + 2 courbes ; centralise le
+     respect de prefers-reduced-motion. --ease-emphasized est la courbe
+     à léger dépassement déjà utilisée pour les feuilles basses. */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 300ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.34, 1.2, 0.6, 1);
+
+  /* ---- Échelle d'empilement (z-index, CH-V11) ---- 6 bandes sémantiques,
+     ordre calé sur la hiérarchie déjà en place (aucun changement de rendu,
+     juste des valeurs nommées) : local < coquille mobile < popovers/modales
+     < notification < plein écran/système. Les tokens d'une même bande
+     gardent des valeurs distinctes quand l'ordre relatif est significatif
+     (ex. FAB sous la barre du bas, sous le rideau du tiroir, sous le tiroir). */
+  --z-card: 10; /* dropdown de formulaire, badge, sticky interne à une carte/panneau */
+  --z-fab: 390;
+  --z-bottom-nav: 400;
+  --z-sidebar-backdrop: 440;
+  --z-sidebar: 450;
+  --z-modal: 500;
+  --z-popover-backdrop: 540;
+  --z-popover: 550;
+  --z-hud: 560;
+  --z-command: 600;
+  --z-toast: 900;
+  --z-screen: 1000;
+  --z-dice: 1200;
+  --z-risk: 1250;
+  --z-backup: 1260;
+  /* Dialog = remplaçant générique de prompt()/confirm(), invocable DEPUIS
+     n'importe quel overlay ci-dessus (backup « Remplacer », etc.) → doit coiffer
+     toute la pile plein écran/système. */
+  --z-dialog: 1300;
+}
+
+/* Centralise prefers-reduced-motion pour toutes les transitions tokenisées :
+   annuler les durées ici les rend instantanées partout sans dupliquer la
+   media query sur chaque règle. Les animations @keyframes (dés, cartes...)
+   ont leurs propres surcharges dédiées plus bas dans le fichier. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+  }
+}
+html {
+  height: 100%;
+  /* Racine du rem (CH-V12) : point zéro de l'échelle typographique, pas une
+     entrée de celle-ci — ne jamais remplacer par un --fs-* (référence
+     circulaire : --fs-md = 1rem est calculé À PARTIR de cette valeur). */
+  font-size: 16px;
+}
+body {
+  height: 100%;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+select option {
+  background: var(--bg-card);
+  color: var(--text);
+}
+select optgroup {
+  background: var(--bg-card);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+
+/* ============================================================
+   EDITION SELECTOR SCREEN
+   ============================================================ */
+@keyframes edition-bg-drift {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 0 560px, 560px 0; }
+}
+@keyframes edition-glow-breathe {
+  0%, 100% { box-shadow: 0 0 6px 0 var(--glow); }
+  50% { box-shadow: 0 0 26px 3px var(--glow); }
+}
+@keyframes edition-glow-breathe-strong {
+  0%, 100% { box-shadow: 0 0 10px 1px var(--glow); }
+  50% { box-shadow: 0 0 34px 5px var(--glow); }
+}
+@keyframes edition-flicker {
+  0%, 89%, 100% { opacity: 1; }
+  90% { opacity: 0.55; }
+  91% { opacity: 1; }
+  95% { opacity: 0.7; }
+  96% { opacity: 1; }
+}
+@keyframes edition-scan-sweep {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(220%); }
+}
+
+#edition-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 0%, #141018 0%, #060608 55%);
+  z-index: var(--z-screen);
+  gap: 2.5rem;
+  overflow: hidden;
+}
+#edition-screen.hidden {
+  display: none;
+}
+
+.edition-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(#ffffff08 1px, transparent 1px),
+    linear-gradient(90deg, #ffffff06 1px, transparent 1px);
+  background-size: 100% 28px, 28px 100%;
+  animation: edition-bg-drift 24s linear infinite;
+  pointer-events: none;
+}
+
+.edition-title {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 3.2rem);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #888;
+  text-transform: uppercase;
+  text-align: center;
+}
+/* CH-V9 : encres de l'accueil remontées ≥ 4.5:1 (AA) sur leur fond —
+   même teinte, juste plus claire ; la hiérarchie reste donnée par la taille. */
+.edition-title span {
+  color: #7e7e7e;
+  display: block;
+  font-size: 0.45em;
+  letter-spacing: 0.3em;
+  margin-bottom: 0.3em;
+}
+/* Baseline d'accueil (CH-U1) : dit ce que fait l'outil avant le choix
+   d'édition. Palette grise neutre de l'écran (pas encore de thème actif). */
+.edition-baseline {
+  max-width: 560px;
+  margin: 0 auto var(--sp-6);
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  color: #8a8a8a;
+}
+.edition-baseline-note {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: var(--fs-sm);
+  color: #828282;
+}
+
+.edition-cards {
+  position: relative;
+  display: flex;
+  gap: var(--sp-5);
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 0 var(--sp-4);
+}
+
+.edition-card {
+  position: relative;
+  width: 168px;
+  border: 1px solid #222;
+  border-radius: 6px;
+  padding: var(--sp-6) var(--sp-3) var(--sp-5);
+  background: #0d0d0d;
+  text-align: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    border-color var(--dur-slow),
+    background var(--dur-slow),
+    transform var(--dur-base);
+}
+.edition-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Glow d'accueil (audit M1) : « instrument, pas vitrine ». La lueur pulse
+   UNE fois à l'entrée puis rentre au repos (plus de boucle infinie) — HUD
+   calme au repos, batterie ménagée sur tablette, captures stabilisées.
+   prefers-reduced-motion coupe déjà ces animations plus bas (l.~353). */
+.edition-card[data-ed="sr5"] {
+  --glow: rgba(212, 130, 10, 0.35);
+  border-color: #3a2a10;
+  background: #100c08;
+  animation: edition-glow-breathe 4s ease-in-out 1;
+}
+.edition-card[data-ed="sr5"]:hover {
+  border-color: #d4820a;
+}
+
+.edition-card[data-ed="sr6"] {
+  --glow: rgba(0, 200, 255, 0.35);
+  border-color: #0a3a4a;
+  background: #080e14;
+  clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+  animation: edition-glow-breathe 3.2s ease-in-out 1;
+}
+.edition-card[data-ed="sr6"]:hover {
+  border-color: #00c8ff;
+}
+
+.edition-card[data-ed="anarchy1"] {
+  --glow: rgba(156, 74, 58, 0.3);
+  border-color: #4a2620;
+  background: #0d0808;
+  /* Flicker en boucle retiré (néon permanent) ; une seule pulsation d'accueil. */
+  animation: edition-glow-breathe 5s ease-in-out 1;
+}
+.edition-card[data-ed="anarchy1"]:hover {
+  border-color: #9c4a3a;
+}
+
+.edition-card[data-ed="anarchy2"] {
+  --glow: rgba(255, 60, 60, 0.4);
+  border: 2px solid #ff3c3c;
+  background: #150806;
+  animation: edition-glow-breathe-strong 2.6s ease-in-out 1;
+}
+
+.ed-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 40%;
+  background: linear-gradient(180deg, transparent, rgba(0, 200, 255, 0.12), transparent);
+  /* Un seul balayage d'accueil, puis la barre sort du cadre et reste au repos. */
+  animation: edition-scan-sweep 3.2s linear 1 forwards;
+  pointer-events: none;
+}
+
+.ed-word {
+  position: relative;
+  display: block;
+  font-weight: 700;
+  font-size: var(--fs-md);
+  white-space: nowrap;
+}
+.edition-card[data-ed="sr5"] .ed-word {
+  font-family: "Oswald", sans-serif;
+  font-style: italic;
+  color: #d4820a;
+}
+.edition-card[data-ed="sr6"] .ed-word {
+  font-family: "Chakra Petch", sans-serif;
+  font-size: var(--fs-base);
+  color: #00c8ff;
+}
+.edition-card[data-ed^="anarchy"] .ed-word {
+  font-family: "Saira Condensed", sans-serif;
+  font-size: var(--fs-lg);
+}
+.edition-card[data-ed="anarchy1"] .ed-word {
+  color: #9c4a3a;
+}
+.edition-card[data-ed="anarchy2"] .ed-word {
+  color: #ff3c3c;
+}
+
+.ed-bar {
+  position: relative;
+  display: block;
+  width: 26px;
+  height: 2px;
+  margin: 0.6rem auto;
+  opacity: 0.6;
+}
+.edition-card[data-ed="sr5"] .ed-bar {
+  background: #d4820a;
+}
+.edition-card[data-ed="sr6"] .ed-bar {
+  background: #00c8ff;
+}
+.edition-card[data-ed="anarchy1"] .ed-bar {
+  background: #9c4a3a;
+  opacity: 0.5;
+}
+.edition-card[data-ed="anarchy2"] .ed-bar {
+  background: #ff3c3c;
+  opacity: 0.8;
+}
+
+.ed-sub {
+  position: relative;
+  display: block;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.15em;
+  font-weight: 400;
+  font-family: var(--font-mono);
+}
+.edition-card[data-ed="sr5"] .ed-sub {
+  color: #a77b35;
+}
+.edition-card[data-ed="sr6"] .ed-sub {
+  color: #2a95b5;
+}
+.edition-card[data-ed="anarchy1"] .ed-sub {
+  color: #a8705f;
+}
+.edition-card[data-ed="anarchy2"] .ed-sub {
+  color: #ff8a8a;
+}
+
+.ed-wip {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: #a8746a;
+  border: 1px solid #4a2620;
+  padding: 0 4px;
+  border-radius: 2px;
+  letter-spacing: 0.1em;
+}
+
+.edition-disclaimer {
+  position: relative;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 0 var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  line-height: 1.6;
+  color: #7a7a7a;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edition-bg,
+  .edition-card,
+  .ed-scan {
+    animation: none;
+  }
+}
+
+/* ============================================================
+   APP LAYOUT
+   ============================================================ */
+#app {
+  display: none;
+  height: 100vh;
+  flex-direction: column;
+}
+#app.visible {
+  display: flex;
+}
+
+/* ============================================================
+   ICÔNES — jeu SVG partagé (sprite #icon-sprite dans index.html).
+   Trait en currentColor : l'icône prend la couleur de son bouton,
+   donc l'accent sur .active/:hover est gratuit, sans surcharge thème.
+   ============================================================ */
+.icon {
+  width: 1.15em;
+  height: 1.15em;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: middle;
+}
+.icon-sm {
+  width: 0.9em;
+  height: 0.9em;
+}
+
+/* TOP BAR */
+#topbar {
+  height: 52px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-4);
+  gap: var(--sp-3);
+  flex-shrink: 0;
+}
+/* Zone marque (gauche) : logo + badge, groupés et épinglés. */
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-shrink: 0;
+}
+.topbar-logo {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.topbar-edition-badge {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent);
+  background: var(--badge);
+  border: 1px solid var(--accent);
+  padding: 2px var(--sp-2);
+  border-radius: 2px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition:
+    background var(--dur-base),
+    border-color var(--dur-base),
+    color var(--dur-base);
+  position: relative;
+}
+.topbar-edition-badge::after {
+  content: "⇄";
+  font-size: var(--fs-xs);
+  opacity: 0.7;
+  transition:
+    opacity var(--dur-base),
+    transform var(--dur-base);
+}
+.topbar-edition-badge:hover {
+  background: var(--glow);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.topbar-edition-badge:hover::after {
+  opacity: 1;
+  transform: rotate(180deg);
+}
+/* Spacer entre la marque et le reste : cale marque à gauche, dés + actions
+   à droite → barre équilibrée au lieu de tout tassé à gauche. */
+.topbar-spacer {
+  flex: 1;
+}
+
+/* Groupe dés : conteneur borduré discret pour que le stepper + « Lancer » +
+   résultat se lisent comme UNE unité, pas cinq contrôles épars. */
+.topbar-group {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 3px var(--sp-2);
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+#dice-roller {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Séparateur vertical entre le groupe dés et les actions MJ. */
+.topbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* Zone actions MJ (droite) : combat, journal, menace, raccourcis. */
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+
+/* ---- Onboarding (CH-V6-T1.7) : bulle non-modale, une seule fois ----
+   Pas de backdrop (contrairement aux panneaux .risk-panel-overlay) : l'app
+   reste utilisable dessous, cohérent avec « signaler, ne pas guider de
+   force » (COMITE_TERRAIN D4). Ancrée sous la barre du haut, jamais au-delà
+   de la largeur du viewport (mobile compris). */
+#onboarding-bubble {
+  position: fixed;
+  top: 60px;
+  right: var(--sp-4);
+  z-index: var(--z-popover);
+  max-width: min(320px, calc(100vw - 2 * var(--sp-4)));
+  background: var(--bg-card);
+  border: 1px solid var(--accent2);
+  border-radius: 6px;
+  padding: var(--sp-3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+#onboarding-bubble p {
+  margin: 0 0 var(--sp-2);
+  line-height: 1.5;
+}
+#onboarding-bubble kbd {
+  font-size: 0.9em;
+}
+
+/* ---- Réserve : stepper + champ ---- */
+.dice-count-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.dice-count-step {
+  width: 24px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: var(--fs-md);
+  line-height: 1;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base);
+}
+.dice-count-step:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.dice-count-input {
+  width: 38px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  padding: 3px var(--sp-1);
+  border-radius: 3px;
+}
+.dice-roll-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 var(--sp-3);
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.1em;
+  border-radius: 3px;
+  transition: opacity var(--dur-base);
+}
+.dice-roll-btn:hover {
+  opacity: 0.85;
+}
+/* Résultat de la barre du haut : compte de succès mis en avant + label +
+   pastille d'état. Les états réutilisent la palette sémantique. */
+#dice-result {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  min-width: 120px;
+  white-space: nowrap;
+}
+.dice-result-hits {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  line-height: 1;
+  color: var(--accent);
+}
+.dice-result-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.dice-result-state {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border: 1px solid;
+  border-radius: 2px;
+}
+/* Bévue = warning, échec critique = danger (cf. palette sémantique). */
+#dice-result.is-glitch .dice-result-hits,
+#dice-result.is-glitch .dice-result-state {
+  color: var(--warning);
+}
+#dice-result.is-glitch .dice-result-state {
+  border-color: var(--warning);
+}
+#dice-result.is-crit .dice-result-hits,
+#dice-result.is-crit .dice-result-state {
+  color: var(--danger);
+}
+#dice-result.is-crit .dice-result-state {
+  border-color: var(--danger);
+}
+
+/* MAIN BODY */
+#main-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* SIDEBAR */
+#sidebar {
+  width: 190px;
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-3) 0;
+  gap: 2px;
+  overflow-y: auto;
+}
+.nav-section-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.8rem var(--sp-4) 0.3rem;
+}
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem var(--sp-4);
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-base);
+  letter-spacing: 0.05em;
+  text-align: left;
+  width: 100%;
+  border-left: 2px solid transparent;
+  transition:
+    color var(--dur-base),
+    border-color var(--dur-base),
+    background var(--dur-base);
+}
+.nav-btn .nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  flex-shrink: 0;
+}
+.nav-btn .nav-icon .icon {
+  width: 18px;
+  height: 18px;
+}
+.nav-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+.nav-btn.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: var(--glow);
+}
+
+/* CONTENT AREA */
+#content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-5);
+  background: var(--bg);
+}
+

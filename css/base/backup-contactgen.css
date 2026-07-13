@@ -1,0 +1,238 @@
+/* ============================================================
+   BACKUP — boîte de dialogue d'import
+   ============================================================ */
+.backup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-backup);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity var(--dur-base) ease;
+  padding: var(--sp-4);
+}
+.backup-overlay[hidden] {
+  display: none;
+}
+.backup-overlay.show {
+  opacity: 1;
+}
+.backup-panel {
+  width: min(94vw, 440px);
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.6);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  transform: translateY(10px) scale(0.98);
+  transition: transform var(--dur-base) var(--ease-emphasized);
+}
+.backup-overlay.show .backup-panel {
+  transform: translateY(0) scale(1);
+}
+.backup-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.6rem;
+}
+.backup-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: var(--title-transform, uppercase);
+  color: var(--accent);
+}
+.backup-close {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: var(--fs-md);
+  line-height: 1;
+  transition: color var(--dur-base);
+}
+.backup-close:hover {
+  color: var(--accent);
+}
+.backup-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.backup-hint {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  margin: 0;
+}
+.backup-full {
+  width: 100%;
+}
+.backup-or {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+.backup-url-row {
+  display: flex;
+  gap: var(--sp-2);
+}
+.backup-url-row input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: var(--sp-2) 0.6rem;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+.backup-url-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.backup-summary {
+  font-size: var(--fs-base);
+  color: var(--text);
+  margin: 0;
+  line-height: 1.5;
+}
+.backup-summary strong {
+  color: var(--accent);
+}
+.backup-detail {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+}
+.backup-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+.backup-actions button {
+  flex: 1;
+}
+.btn-danger-soft {
+  background: transparent;
+  border: 1px solid var(--danger);
+  color: #e74c3c;
+  border-radius: 4px;
+  padding: 0.55rem var(--sp-4);
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: var(--fs-sm);
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast);
+}
+.btn-danger-soft:hover {
+  background: var(--danger);
+  color: #fff;
+}
+.backup-back {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  align-self: flex-start;
+  padding: 0.2rem 0;
+  transition: color var(--dur-base);
+}
+.backup-back:hover {
+  color: var(--accent);
+}
+
+/* ============================================================
+   CONTACT GEN — formulaire de génération dirigée
+   ============================================================ */
+.contacts-gen-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: var(--sp-3);
+}
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.contact-form-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.contact-form label {
+  flex: 1;
+  min-width: 130px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+.contact-form select {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem var(--sp-2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.contact-form select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.contact-form-cost {
+  font-size: var(--fs-sm);
+  color: var(--text);
+  padding-top: 0.15rem;
+}
+.contact-form-cost strong {
+  color: var(--accent);
+  font-family: var(--font-display);
+}
+.cost-sub {
+  display: block;
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  margin-top: 0.1rem;
+}
+.contact-form-hint {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  line-height: 1.45;
+  font-style: italic;
+}
+.contact-meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 0.1rem;
+}
+

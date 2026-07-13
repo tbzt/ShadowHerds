@@ -1,0 +1,495 @@
+/* ============================================================
+   CHARGEN — assistant de création de personnage jouable
+   ============================================================ */
+.chargen-modal {
+  width: min(760px, 96vw);
+}
+.cg-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: var(--sp-3);
+}
+.cg-step-tab {
+  padding: 4px 10px;
+  font-size: var(--fs-2xs);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: border-color var(--dur-base), color var(--dur-base);
+}
+.cg-step-tab.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.cg-budget {
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--glow);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.cg-budget-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.cg-budget-cell {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+.cg-budget-cell.over {
+  color: var(--danger);
+  font-weight: 600;
+}
+.cg-budget-bar {
+  flex: 1;
+  min-width: 120px;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.cg-budget-fill {
+  height: 100%;
+  background: var(--accent);
+}
+.cg-budget-fill.over {
+  background: var(--danger);
+}
+.cg-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.cg-step-section {
+  margin-top: var(--sp-2);
+}
+.cg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cg-field label {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.cg-hint {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+.cg-error-text {
+  color: var(--danger);
+  font-size: var(--fs-xs);
+}
+.cg-attr-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cg-attr-label {
+  width: 3em;
+  font-weight: 600;
+}
+.cg-attr-range {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+.cg-list-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cg-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.cg-section-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent2);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+.cg-check-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 4px;
+}
+.cg-check {
+  font-size: var(--fs-xs);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.cg-narrative-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+.cg-review-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: var(--sp-3);
+}
+.cg-error {
+  color: var(--danger);
+  font-size: var(--fs-sm);
+}
+.cg-ok {
+  color: var(--success);
+  font-size: var(--fs-sm);
+}
+.cg-review-card {
+  display: flex;
+  justify-content: center;
+}
+
+/* --- Passe design & QoL --- */
+.cg-step-tab.has-error {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.cg-tab-dot {
+  color: var(--danger);
+  font-size: var(--fs-2xs);
+}
+.cg-step-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: var(--sp-2);
+  border: 1px solid var(--danger);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+}
+.cg-budget-cats {
+  margin-top: 6px;
+}
+.cg-section-note {
+  font-family: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+}
+.cg-kit-meter {
+  color: var(--text-dim);
+}
+.cg-kit-meter.over {
+  color: var(--warning);
+}
+.cg-kit-paid {
+  color: var(--warning);
+  font-weight: 600;
+}
+.cg-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.cg-stepper input {
+  width: 3.2em;
+  text-align: center;
+}
+.cg-step-btn {
+  width: 1.8em;
+  height: 1.8em;
+  line-height: 1;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.cg-step-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.cg-step-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.cg-pool {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--accent);
+  white-space: nowrap;
+}
+.cg-pool-spec {
+  color: var(--accent2);
+}
+.cg-skill-row {
+  flex-wrap: wrap;
+}
+.cg-spec-line {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 2px 1.5em;
+}
+.cg-spec-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 4px 1px 6px;
+  font-size: var(--fs-xs);
+  border: 1px solid var(--accent2);
+  border-radius: 2px;
+  color: var(--accent2);
+  white-space: nowrap;
+}
+.cg-spec-chip strong {
+  color: var(--text);
+}
+.cg-spec-x {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: var(--fs-xs);
+  line-height: 1;
+  padding: 0 1px;
+}
+.cg-spec-x:hover {
+  color: var(--danger);
+}
+.cg-spec-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.cg-resume-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  margin-bottom: var(--sp-3);
+  border: 1px solid var(--accent2);
+  border-radius: 2px;
+  background: var(--glow);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+.cg-resume-banner span {
+  flex: 1;
+}
+/* Rappel de sauvegarde (F3, Hub) : même registre discret que le bandeau de
+   reprise de brouillon (.cg-resume-banner) — pas de nouveau vocabulaire visuel. */
+.hub-save-reminder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  margin: 0 0 var(--sp-3);
+  border: 1px solid var(--accent2);
+  border-radius: 2px;
+  background: var(--glow);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+.hub-save-reminder span {
+  flex: 1;
+}
+.cg-narrative-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cg-narrative-role {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.cg-dice-btn {
+  margin-left: 8px;
+}
+.cg-preset-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+/* Boutons de démarrage rapide : tuiles à colonnes égales (grille auto-fill) —
+   elles s'alignent et remplissent la largeur au lieu de se ranger en briques de
+   largeurs inégales (cf. audit alignement). */
+.cg-preset-btns {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: 6px;
+}
+.cg-error-link {
+  cursor: pointer;
+}
+.cg-error-link:hover {
+  text-decoration: underline;
+}
+.cg-error-goto {
+  color: var(--accent2);
+  font-size: var(--fs-xs);
+}
+
+/* Bouton de repli Référence */
+.ref-toggle {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  transition: color var(--dur-fast);
+}
+.ref-toggle:hover {
+  color: var(--accent);
+}
+.ref-toggle .chev {
+  transition: transform var(--dur-base);
+}
+.ref-collapsed .ref-toggle .chev {
+  transform: rotate(-90deg);
+}
+
+/* Zone Référence */
+.ref-zone {
+  padding: var(--sp-1) 14px 10px;
+}
+.ref-collapsed .ref-zone {
+  display: none;
+}
+.ref-block {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ref-block:last-child {
+  border-bottom: none;
+}
+.ref-lbl {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: var(--sp-2);
+}
+.anarchy-seuil-val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text);
+}
+
+/* Réglages d'affichage des cartes */
+.display-prefs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+.display-pref-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-2) 0.7rem;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: var(--fs-xs);
+}
+.display-pref-row label {
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* ============================================================
+   FILTRES REPLIABLES DU GÉNÉRATEUR
+   .gen-filters garde `display:contents` pour que ses champs restent
+   des items de la grille .gen-form ; replié, tout disparaît.
+   ============================================================ */
+.filters-toggle {
+  grid-column: 1 / -1;
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 7px var(--sp-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  transition:
+    color var(--dur-fast),
+    border-color var(--dur-fast);
+}
+.filters-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.gen-filters {
+  display: contents;
+}
+.gen-filters.collapsed {
+  display: none;
+}
+
+/* Conteneurs de champs par type d'entité (métahumain/esprit/créature) :
+   même raison que .gen-filters ci-dessus — display:contents pour que
+   chaque .form-group interne reste une cellule de .gen-form, sinon tout
+   le bloc devient une seule cellule étroite et très haute. */
+.entity-fields {
+  display: contents;
+}
+.entity-fields[hidden] {
+  display: none;
+}
+
+/* ============================================================
+   ANARCHY — seuils de blessures en zone Combat + armures optionnelles
+   ============================================================ */
+.combat-seuils {
+  margin-top: 6px;
+  padding: 6px var(--sp-2);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+.combat-seuils .anarchy-seuil-label {
+  width: auto;
+  min-width: 92px;
+}
+.armor-bonus-note {
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: normal;
+}
+.armor-chip.deployed {
+  border-color: var(--accent);
+}
+

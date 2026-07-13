@@ -1,0 +1,859 @@
+/* ============================================================
+   PNJ CARD
+   ============================================================ */
+/* CH-V4 : layout masonry (colonnes indépendantes) plutôt que grid à
+   rangées alignées — des hauteurs de carte inégales (portrait/compétences
+   dépliés ou non) créaient des trous d'alignement entre rangées voisines
+   (audit visuel I3). column-count empile chaque carte au plus court sans
+   forcer d'alignement de rangée ; column-gap gère l'espace horizontal, le
+   margin-bottom de chaque carte gère l'espace vertical (pas de row-gap en
+   multi-colonnes). */
+.cards-zone {
+  column-count: 4;
+  column-gap: var(--sp-4);
+  margin-top: var(--sp-2);
+}
+@media (min-width: 1700px) {
+  .cards-zone {
+    column-count: 5;
+  }
+}
+@media (max-width: 1280px) {
+  .cards-zone {
+    column-count: 3;
+  }
+}
+@media (max-width: 900px) {
+  .cards-zone {
+    column-count: 2;
+  }
+}
+
+.pnj-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  width: 100%;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  animation: cardIn 0.3s ease;
+  transition: box-shadow var(--dur-base);
+  clip-path: var(--card-clip);
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin-bottom: var(--sp-4);
+}
+.pnj-card:hover {
+  box-shadow: 0 0 16px var(--glow);
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* accent line top */
+.pnj-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+}
+
+/* Scan animation */
+.pnj-card.scanning::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent) 50%,
+    transparent 100%
+  );
+  animation: scanLine 0.7s ease-out forwards;
+  pointer-events: none;
+  z-index: var(--z-card);
+}
+@keyframes scanLine {
+  from {
+    top: 2px;
+    opacity: 1;
+  }
+  to {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+.pnj-card-header {
+  padding: 0.8rem var(--sp-4) 0.65rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+.pnj-header-left {
+  flex: 1;
+  min-width: 0;
+}
+.pnj-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  letter-spacing: var(--title-spacing);
+  color: var(--text);
+  text-transform: var(--name-transform, none);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.pnj-civilname {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pnj-meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+.pnj-rank-badge {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 3px 7px;
+  border-radius: 2px;
+  background: var(--badge);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Avatar PJ (E1 couleur, E6 forme+initiale, chantier Équipe) — trois indices
+   redondants systématiques : couleur (pcColor) + anneau (ce badge n'existe
+   QUE pour les PJ, jamais posé sur un PNJ) + initiale du joueur (jamais de
+   portrait sur un PJ léger). Constant partout : tracker (lignes+jetons),
+   carte, PinRow, Palette, menu de mentions. */
+.pc-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--text);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+  vertical-align: middle;
+  margin: -2px 5px 0 0;
+}
+.pnj-card-header .pc-avatar {
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+  margin: 3px 0 0;
+}
+.pnj-card-body-light {
+  padding: var(--sp-4);
+}
+.pc-light-notes {
+  font-size: var(--fs-sm);
+  color: var(--text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.pc-light-empty {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  font-style: italic;
+}
+.em-color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.em-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.em-color-swatch.selected {
+  border-color: var(--text);
+}
+
+/* Vignette de portrait IA (opt-in) — carrée pour PNJ/esprit/créature,
+   ronde pour les contacts (cf. .contact-portrait-thumb). */
+.pnj-portrait-thumb {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.pnj-portrait-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.contact-portrait-thumb {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.contact-portrait-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pnj-card-body {
+  padding: var(--sp-3) var(--sp-4);
+}
+
+/* Bloc attributs — table à filets verticaux, sans boîtes individuelles :
+   un seul plan, des filets entre colonnes, valeurs alignées (lecture
+   « fiche de perso »). La grille primaire s'adapte au nombre d'attributs
+   (8 pour SR5/SR6, 5 pour Anarchy) via grid-auto-flow. */
+.attr-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  margin-bottom: var(--sp-2);
+}
+/* Ligne des attributs spéciaux (ESS/MAG/RES) : colonnes fixes calées sur
+   les primaires (var --attr-cols, 8 par défaut) ; les cellules se placent
+   automatiquement à gauche, donc ESS tombe sous le 1er attribut, etc. */
+.attr-grid.attr-special-row {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(var(--attr-cols, 8), 1fr);
+  margin-bottom: var(--sp-3);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--border);
+}
+
+.attr-cell {
+  padding: var(--sp-1) 2px;
+  text-align: center;
+}
+/* Filet vertical entre colonnes uniquement (pas de lignes horizontales). */
+.attr-cell:not(:first-child) {
+  border-left: 1px solid var(--border);
+}
+
+/* CH-C7 : grille responsive — au-delà d'un certain nombre de colonnes, les
+   cellules deviennent illisibles sur écran étroit (audit charge cognitive :
+   8 colonnes ≈ 40px/cellule sur mobile). Passage à la ligne (repeat(N,1fr))
+   plutôt qu'écrasement d'une seule rangée ; la ligne spéciale partage le
+   même N pour garder ses filets verticaux alignés avec la ligne primaire,
+   quel que soit le nombre réel d'attributs de l'édition. */
+@media (max-width: 900px) {
+  .attr-grid {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .attr-grid.attr-special-row {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  /* Le filet vertical (border-left sur chaque cellule sauf la 1ère) laisse
+     un trait parasite en début de chaque rangée enveloppée. */
+  .attr-grid .attr-cell:nth-child(4n + 1) {
+    border-left: none;
+  }
+}
+@media (max-width: 420px) {
+  .attr-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .attr-grid.attr-special-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .attr-grid .attr-cell:nth-child(4n + 1) {
+    border-left: 1px solid var(--border);
+  }
+  .attr-grid .attr-cell:nth-child(2n + 1) {
+    border-left: none;
+  }
+}
+/* Attributs spéciaux : label accentué et fond très légèrement teinté,
+   pour les distinguer des primaires sans rompre l'alignement. */
+.attr-cell.attr-special {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+.attr-cell.attr-special .attr-label {
+  color: var(--accent);
+}
+.attr-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+  display: block;
+  white-space: nowrap;
+}
+.attr-value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  color: var(--accent);
+  display: block;
+  line-height: 1.2;
+}
+
+/* Stats pills */
+.stats-row {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-3);
+}
+.stat-pill {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 3px 9px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.stat-pill strong {
+  color: var(--text);
+}
+.stat-pill.accent {
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.stat-pill.accent strong {
+  color: var(--accent);
+}
+/* Initiative : premier chiffre lu par le MJ à chaque tour — mis en avant
+   comme le résultat de dés (cf. #8), pour rester scannable à distance. */
+.init-pill {
+  padding: 4px 10px;
+  border-width: 1.5px;
+}
+.init-pill strong {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+}
+.gm-pools-section .stat-pill.gm-pool {
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg));
+  border-color: color-mix(in srgb, var(--accent) 18%, var(--border));
+  cursor: help;
+}
+
+/* Limites SR5 (Phys/Ment/Soc) et référence SR6 (ME) — mêmes filets
+   verticaux, calées à gauche à leur taille naturelle. */
+.limites-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-3);
+}
+.limites-grid .attr-cell {
+  flex: 0 1 auto;
+  min-width: 64px;
+}
+
+/* Sections dans la card */
+.card-section {
+  margin-bottom: 0.7rem;
+}
+.card-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Convention (audit I2) : --accent2 est une couleur de DÉCOR (liseré, trait,
+   fond), jamais de texte porteur d'information — son contraste sur --bg peut
+   descendre sous 4.5:1 (ex. SR5 #8b1a1a = 2.17:1). Le libellé de section lit
+   donc --text-dim par défaut ; chaque thème surcharge avec un accent lisible. */
+.card-section-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid var(--border);
+}
+.card-section-content {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+.wound-malus-badge {
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: 3px;
+  padding: 0 var(--sp-1);
+  margin-left: var(--sp-1);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* ---- Métavariante dans l'en-tête ---- */
+.pnj-metavariant {
+  color: var(--accent);
+  font-style: italic;
+}
+
+/* ---- Section Portrait (habillage) ----
+   Aligné visuellement sur le reste de la carte : mêmes couleurs,
+   même typographie d'étiquette que les autres sections, séparateurs
+   discrets cohérents avec les bordures de carte. */
+.flavor-section .flavor-row {
+  display: flex;
+  gap: 0.6rem;
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+}
+.flavor-section .flavor-row:last-child {
+  border-bottom: none;
+}
+.flavor-key {
+  flex-shrink: 0;
+  width: 84px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding-top: 2px;
+  opacity: 0.85;
+}
+.flavor-val {
+  flex: 1;
+  color: var(--text-dim);
+}
+
+/* ---- Portrait éditable des contacts ---- */
+.contact-portrait .card-section-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.contact-portrait .flavor-val[contenteditable] {
+  border-radius: 2px;
+  padding: 0 2px;
+  transition: background var(--dur-fast);
+  cursor: text;
+}
+.contact-portrait .flavor-val[contenteditable]:hover {
+  background: var(--glow);
+}
+.contact-portrait .flavor-val[contenteditable]:focus {
+  background: var(--bg);
+  outline: 1px solid var(--accent);
+}
+.tag {
+  display: inline-block;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 1px 7px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  margin: 2px 2px 2px 0;
+  line-height: 1.6;
+}
+
+/* Clichés — Anarchy */
+.cliche-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.cliche-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 5px 9px;
+}
+.cliche-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-base);
+  color: var(--text);
+}
+.cliche-dice {
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+  color: var(--accent);
+}
+
+/* Moniteur de condition cliquable */
+.monitor-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+.monitor-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.monitor-boxes {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.monitor-box {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  background: var(--bg);
+  transition:
+    background var(--dur-fast),
+    border-color var(--dur-fast);
+  flex-shrink: 0;
+}
+.monitor-box:hover {
+  border-color: var(--accent);
+}
+.monitor-box.filled {
+  background: var(--accent2);
+  border-color: var(--accent2);
+}
+.monitor-box.penalty {
+  border-color: var(--accent);
+}
+/* K2 : regroupement visuel par rangées de 3, fidèle à la grille du livre
+   (SR6 p.43) — un espace un peu plus large toutes les 3 cases. Exclu des
+   moniteurs segmentés Anarchy 2 (sev-léger/grave/incap, qui ont déjà leurs
+   propres séparateurs .monitor-gap, une règle différente). */
+.monitor-boxes .monitor-box:not(.sev-leger):not(.sev-grave):not(.sev-incap):nth-child(3n) {
+  margin-right: 6px;
+}
+/* Malus cumulé en marge du moniteur (déjà appliqué aux tests, cf.
+   Utils.woundMalus) — lisible sans recompter les cases pleines. */
+.monitor-malus {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* Card footer */
+/* ---- Journal de fiche (F2) ---- */
+.pnj-journal {
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.journal-toggle {
+  width: 100%;
+  text-align: left;
+  padding: 0.4rem var(--sp-4);
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color var(--dur-base);
+}
+.journal-toggle:hover {
+  color: var(--accent);
+}
+.journal-count {
+  display: inline-block;
+  min-width: 1.1em;
+  padding: 0 0.35em;
+  margin-left: 0.2em;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  text-align: center;
+}
+.journal-body {
+  padding: 0 var(--sp-4) 0.55rem;
+}
+.journal-list {
+  list-style: none;
+  margin: 0 0 var(--sp-2);
+  padding: 0;
+}
+.journal-entry {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding: 0.2rem 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: var(--fs-xs);
+}
+.journal-date {
+  flex: 0 0 auto;
+  color: var(--text-faint, var(--text-dim));
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  white-space: nowrap;
+}
+.journal-text {
+  flex: 1 1 auto;
+  color: var(--text);
+  word-break: break-word;
+}
+.journal-del {
+  flex: 0 0 auto;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  line-height: 1;
+  padding: 0 0.2em;
+  opacity: 0.6;
+  transition:
+    color var(--dur-base),
+    opacity var(--dur-base);
+}
+.journal-del:hover {
+  color: var(--danger);
+  opacity: 1;
+}
+.journal-input-row {
+  display: flex;
+  gap: var(--sp-2);
+}
+.journal-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.35rem var(--sp-2);
+  background: var(--bg-elev, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+}
+.journal-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.journal-add-btn {
+  flex: 0 0 auto;
+  padding: 0.35rem var(--sp-3);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base);
+}
+.journal-add-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pnj-card-footer {
+  padding: 0.55rem var(--sp-4);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  background: var(--bg);
+}
+/* Le pied passe sur deux lignes plutôt que de se couper quand les actions
+   sont nombreuses (Phase 0). La hiérarchie propre — un primaire + un ⋯ —
+   arrive en Phase 1 ; ici on empêche seulement le débordement. */
+.card-action-btn {
+  flex: 1 1 auto;
+  min-width: 84px;
+  padding: 0.38rem 0.4rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  transition:
+    opacity var(--dur-base),
+    border-color var(--dur-base),
+    color var(--dur-base);
+}
+.card-action-btn.save {
+  background: var(--accent);
+  color: var(--bg);
+  border: 1px solid transparent;
+}
+.card-action-btn.save:hover {
+  opacity: 0.85;
+}
+.card-action-btn.ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.card-action-btn.ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.card-action-btn.danger {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.card-action-btn.danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.card-saved-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-1);
+  gap: 0.3rem;
+  flex: 1;
+}
+
+/* ---- Grammaire de pied unifiée (Phase 1) ----
+   Amas « agir » aligné à droite : secondaires + primaire + menu ⋯.
+   Le socle Collection préfixe ★/🏷 à gauche du pied (footer.prepend),
+   l'amas est poussé à droite par margin-left:auto. */
+.card-act-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-left: auto;
+  position: relative;
+}
+/* Dans l'amas, les boutons se dimensionnent au contenu — le flex:1 de
+   Phase 0 ne concernait que le pied plat historique, désormais remplacé. */
+.card-act-cluster .card-action-btn {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 0.38rem 0.7rem;
+}
+/* Primaire « quitter la scène » (Ranger) : proéminent mais clairement
+   terminal — plein danger plutôt qu'accent. */
+.card-action-btn.primary-danger {
+  background: var(--danger);
+  color: #fff;
+  border: 1px solid transparent;
+}
+.card-action-btn.primary-danger:hover {
+  opacity: 0.85;
+}
+.card-kebab {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  font-size: var(--fs-md);
+  line-height: 1;
+  background: transparent;
+  transition:
+    border-color var(--dur-fast),
+    color var(--dur-fast);
+}
+.card-kebab:hover,
+.card-kebab.open {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* Menu de débordement : s'ouvre VERS LE HAUT (la carte est overflow:hidden,
+   le popover reste donc dans le rectangle de la carte, au-dessus du pied). */
+.card-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  min-width: 180px;
+  z-index: var(--z-popover);
+  background: var(--bg-card);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  border-radius: 4px;
+  padding: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.card-menu[hidden] {
+  display: none;
+}
+.card-menu-item {
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  padding: 7px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast);
+}
+.card-menu-item:hover {
+  background: var(--bg-mid);
+  color: var(--accent);
+}
+.card-menu-item.danger:hover {
+  background: var(--danger);
+  color: #fff;
+}
+

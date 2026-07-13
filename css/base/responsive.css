@@ -1,0 +1,656 @@
+/* ============================================================
+   TABLETTE (641–1024px) — rail d'icônes libellées
+   ============================================================ */
+@media (min-width: 641px) and (max-width: 1024px) {
+  #sidebar {
+    width: 68px;
+    padding: var(--sp-2) 0;
+  }
+  .nav-section-label {
+    display: none;
+  }
+  .nav-btn {
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    padding: 0.6rem 0.2rem;
+    border-left: none;
+    border-right: 2px solid transparent;
+    text-align: center;
+  }
+  .nav-btn.active {
+    border-right-color: var(--accent);
+  }
+  .nav-btn .nav-icon {
+    width: auto;
+  }
+  .nav-btn .nav-icon .icon {
+    width: 22px;
+    height: 22px;
+  }
+  .nav-btn .nav-label {
+    font-size: var(--fs-2xs);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 62px;
+  }
+  /* Libellé court quand il existe (évite « Ombres po… ») */
+  .nav-btn .nav-label[data-short] {
+    font-size: 0;
+  }
+  .nav-btn .nav-label[data-short]::before {
+    content: attr(data-short);
+    font-size: var(--fs-2xs);
+    letter-spacing: 0.04em;
+  }
+  #content {
+    padding: 1.25rem var(--sp-4);
+  }
+}
+
+/* ============================================================
+   NAVIGATION MOBILE — barre du bas + FAB dés + bottom sheet
+   (masqués sur desktop, activés dans le bloc @media 640px)
+   ============================================================ */
+#bottom-nav {
+  display: none;
+}
+#dice-fab {
+  display: none;
+}
+#dice-sheet-overlay,
+#more-sheet-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-command);
+  background: rgba(0, 0, 0, 0.55);
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--dur-base) ease;
+}
+#dice-sheet-overlay.show,
+#more-sheet-overlay.show {
+  opacity: 1;
+}
+#dice-sheet,
+#more-sheet {
+  width: 100%;
+  background: var(--bg-card);
+  border-top: 2px solid var(--accent);
+  border-radius: 12px 12px 0 0;
+  padding: 0.6rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  transform: translateY(100%);
+  transition: transform var(--dur-slow) var(--ease-emphasized);
+}
+#dice-sheet-overlay.show #dice-sheet,
+#more-sheet-overlay.show #more-sheet {
+  transform: translateY(0);
+}
+#more-sheet .bnav-btn {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: var(--sp-3);
+  min-height: 52px;
+  border-top: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+#more-sheet .bnav-btn:last-child {
+  border-bottom: none;
+}
+#more-sheet .bnav-btn.active {
+  color: var(--accent);
+}
+#more-sheet .bnav-icon .icon {
+  width: 20px;
+  height: 20px;
+}
+#more-sheet .bnav-label {
+  font-size: var(--fs-base);
+}
+.dice-sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  margin: 0 auto 0.2rem;
+}
+.dice-sheet-counter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+}
+.dice-sheet-step {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: var(--fs-xl);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    border-color var(--dur-fast),
+    color var(--dur-fast);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.dice-sheet-step:active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+#dice-sheet-count {
+  font-family: var(--font-mono);
+  font-size: 2.4rem;
+  color: var(--accent);
+  min-width: 2.2ch;
+  text-align: center;
+}
+.dice-sheet-roll {
+  min-height: 54px;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-md);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  transition:
+    opacity var(--dur-base),
+    transform var(--dur-fast);
+}
+.dice-sheet-roll:active {
+  transform: scale(0.98);
+}
+.dice-sheet-log {
+  min-height: 44px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-base);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base);
+}
+.dice-sheet-log:active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ============================================================
+   RESPONSIVE — refonte mobile
+   ============================================================ */
+@media (max-width: 640px) {
+  /* Hauteur dynamique : évite le contenu coupé par la barre d'URL */
+  #app {
+    height: 100dvh;
+  }
+
+  /* ---- Un seul contexte de scroll : #content porte tout ---- */
+  #content {
+    padding: var(--sp-4) 0.85rem calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+  .panel.active {
+    height: auto;
+  }
+  .shadows-layout {
+    height: auto;
+    min-height: 0;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .shadows-main {
+    overflow-y: visible;
+    padding: 0;
+  }
+
+  /* ---- Sidebar desktop remplacée par la barre du bas ---- */
+  #sidebar {
+    display: none;
+  }
+  #bottom-nav {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-bottom-nav);
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .bnav-btn {
+    flex: 1;
+    min-height: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: transparent;
+    border: none;
+    border-top: 2px solid transparent;
+    color: var(--text-dim);
+    transition:
+      color var(--dur-base),
+      border-color var(--dur-base);
+  }
+  .bnav-btn.active {
+    color: var(--accent);
+    border-top-color: var(--accent);
+  }
+  .bnav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .bnav-icon .icon {
+    width: 22px;
+    height: 22px;
+  }
+  .bnav-label {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--fs-2xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ---- Topbar allégée, repliée sur 2 lignes ----
+     Les dés passent par le FAB, le journal par le bouton de la feuille des
+     dés ; on retire le groupe dés, le séparateur et les actions secondaires.
+     La marque tient la 1re ligne, les actions (dont la réserve de menace en
+     Anarchy) passent sur une 2e ligne pleine largeur. Sans ce repli, la
+     réserve de menace fait déborder la topbar horizontalement ; sur Android
+     Chrome le viewport s'élargit alors au-delà de 640 px, ce qui désactive
+     ce bloc @media et masque la barre du bas. `overflow-x: hidden` est un
+     filet : même en cas de débordement résiduel, le document ne s'élargit
+     plus et la barre du bas reste garantie. */
+  #topbar {
+    height: auto;
+    flex-wrap: wrap;
+    row-gap: var(--sp-2);
+    padding-top: var(--sp-2);
+    padding-bottom: var(--sp-2);
+    overflow-x: hidden;
+  }
+  #dice-roller,
+  .topbar-divider,
+  #dice-log-btn,
+  .topbar-spacer,
+  .topbar-action-quiet {
+    display: none;
+  }
+  .topbar-actions {
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  .topbar-logo {
+    cursor: pointer;
+  }
+  .topbar-edition-badge {
+    min-height: 34px;
+  }
+  .topbar-action-combat {
+    width: 38px;
+    height: 38px;
+  }
+
+  /* ---- Journal des jets en feuille basse ---- */
+  #dice-log-backdrop.open {
+    background: rgba(0, 0, 0, 0.55);
+  }
+  #dice-log-panel {
+    top: auto;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 65dvh;
+    border-radius: 12px 12px 0 0;
+    border-left: none;
+    border-right: none;
+    transform: translateY(100%);
+    transition:
+      transform var(--dur-slow) var(--ease-emphasized),
+      opacity var(--dur-base);
+  }
+  #dice-log-panel.open {
+    transform: translateY(0);
+  }
+  .dice-log-head {
+    padding: 0.8rem var(--sp-4);
+  }
+  .dice-log-list {
+    padding-bottom: calc(var(--sp-2) + env(safe-area-inset-bottom, 0px));
+  }
+  .dice-log-item {
+    padding: 0.65rem var(--sp-4);
+  }
+
+  /* ---- Popover groupes (contacts) en feuille basse ---- */
+  #group-picker-backdrop.open {
+    background: rgba(0, 0, 0, 0.55);
+  }
+  #group-picker-panel {
+    top: auto !important;
+    left: 0 !important;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 60dvh;
+    border-radius: 12px 12px 0 0;
+    border-left: none;
+    border-right: none;
+    transform: translateY(100%);
+    transition:
+      transform var(--dur-slow) var(--ease-emphasized),
+      opacity var(--dur-base);
+  }
+  #group-picker-panel.open {
+    transform: translateY(0);
+  }
+  .group-picker-head {
+    padding: 0.8rem var(--sp-4);
+  }
+  .group-picker-row {
+    padding: 0.6rem 0.6rem;
+    font-size: var(--fs-base);
+  }
+  .group-picker-new {
+    margin: var(--sp-2) calc(var(--sp-2) + env(safe-area-inset-bottom, 0px))
+      calc(var(--sp-2) + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ---- Bandeau de lancer rapide au-dessus de la barre du bas ---- */
+  #dice-quick {
+    bottom: calc(132px + env(safe-area-inset-bottom, 0px));
+    flex-wrap: wrap;
+    row-gap: 0.1rem;
+  }
+
+  /* ---- FAB dés ---- */
+  #dice-fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    right: 1rem;
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    font-size: var(--fs-xl);
+    z-index: var(--z-fab);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55);
+    transition: transform var(--dur-fast);
+  }
+  #dice-fab:active {
+    transform: scale(0.93);
+  }
+  #dice-sheet-overlay.open,
+  #more-sheet-overlay.open {
+    display: flex;
+  }
+
+  /* ---- Cartes : une seule colonne, lisible ---- */
+  .cards-zone {
+    column-count: 1;
+  }
+  .pnj-card {
+    width: 100%;
+  }
+  .edition-cards {
+    flex-direction: column;
+    align-items: center;
+  }
+  .gen-form {
+    grid-template-columns: 1fr 1fr;
+  }
+  .panel-title {
+    font-size: var(--fs-lg);
+    margin-bottom: 0.9rem;
+  }
+
+  /* ---- Sidebar groupes : tiroir fixe au-dessus du contenu ---- */
+  .shadows-sidebar {
+    position: fixed;
+    top: 52px;
+    left: 0;
+    bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+    width: min(78vw, 280px);
+    z-index: var(--z-sidebar);
+    border-radius: 0;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.5);
+    transition:
+      transform var(--dur-slow) ease,
+      opacity var(--dur-base) ease;
+  }
+  /* L'état replié se fait par translation, pas par écrasement de largeur */
+  .shadows-layout.sidebar-collapsed > .shadows-sidebar {
+    width: min(78vw, 280px);
+    min-width: 0;
+    border-right: 1px solid var(--border);
+    opacity: 1;
+    transform: translateX(-105%);
+    pointer-events: none;
+  }
+  .shadows-layout:not(.sidebar-collapsed) > .sidebar-backdrop {
+    display: block;
+  }
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-sidebar-backdrop);
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  /* ---- Rail vertical remplacé par une puce horizontale « Groupes » ---- */
+  .shadows-layout.sidebar-collapsed > .sidebar-reopen {
+    position: static;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+    width: auto;
+    align-self: flex-start;
+    min-height: 40px;
+    padding: 0.3rem var(--sp-4);
+    margin-bottom: 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+  }
+  .shadows-layout.sidebar-collapsed > .sidebar-reopen .sidebar-reopen-label {
+    writing-mode: horizontal-tb;
+    font-size: var(--fs-2xs);
+  }
+
+  /* ---- Toast au-dessus de la barre du bas et du FAB ---- */
+  #toast {
+    bottom: calc(132px + env(safe-area-inset-bottom, 0px));
+    right: 1rem;
+    left: 1rem;
+    text-align: center;
+  }
+
+  /* ---- Modale d'édition en plein écran ---- */
+  .modal-overlay.open {
+    align-items: stretch;
+    justify-content: stretch;
+  }
+  .modal {
+    width: 100vw;
+    max-height: none;
+    height: 100dvh;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  .modal-footer {
+    padding-bottom: calc(var(--sp-3) + env(safe-area-inset-bottom, 0px));
+  }
+  .modal-footer .btn-primary,
+  .modal-footer .btn-secondary {
+    flex: 1;
+  }
+}
+
+/* ============================================================
+   CIBLES TACTILES — écrans tactiles (pointer: coarse)
+   ============================================================ */
+@media (pointer: coarse) {
+  /* iOS zoome sur tout champ < 16px : on neutralise. Seuil technique fixe
+     (CH-V12) — intentionnellement littéral et non lié à --fs-md : ce
+     dernier peut évoluer pour des raisons de hiérarchie visuelle, ce seuil
+     ne doit jamais en dépendre sous peine de réintroduire le zoom iOS. */
+  .form-group input,
+  .form-group select,
+  .form-group textarea,
+  .contact-form select,
+  .grid-filter,
+  .dice-count-input {
+    font-size: 16px;
+  }
+
+  /* ---- Lanceur topbar utilisable au doigt (iPad) ---- */
+  .dice-count-step {
+    width: 44px;
+    height: 44px;
+    font-size: var(--fs-lg);
+  }
+  .dice-count-input {
+    width: 54px;
+    min-height: 38px;
+  }
+  .dice-roll-btn {
+    min-height: 44px;
+    padding: 0 14px;
+    font-size: var(--fs-sm);
+  }
+  .topbar-action {
+    width: 44px;
+    height: 44px;
+  }
+  /* Badge d'édition : 19px de haut au repos → cible tactile pleine (WCAG
+     2.5.8 / 2.5.5, cf. audit I1). */
+  .topbar-edition-badge {
+    min-height: 44px;
+    padding: var(--sp-1) var(--sp-3);
+  }
+  /* Boutons de jet sur la carte : au doigt, 15 pastilles adjacentes = risque
+     de mis-taps (Fitts). Toutes portent .rollable → cible ≥ 44px. Les
+     inline-flex pour que min-height s'applique aux pastilles/tags en ligne ;
+     .attr-cell (cellule de grille) garde son display et ne prend que la
+     hauteur mini. */
+  .stat-pill.rollable,
+  .tag.rollable {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .attr-cell.rollable,
+  .weapon-line.weapon-rollable {
+    min-height: 44px;
+  }
+  .grid-filter {
+    min-height: 38px;
+  }
+  .group-picker-trigger {
+    min-height: 34px;
+    padding: var(--sp-1) 9px;
+  }
+  .group-picker-row {
+    min-height: 40px;
+    padding: 0.55rem 0.6rem;
+  }
+  .group-picker-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+  }
+
+  .monitor-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+  }
+  .monitor-boxes {
+    gap: var(--sp-1);
+  }
+
+  .btn-icon {
+    width: 38px;
+    height: 38px;
+    font-size: var(--fs-md);
+  }
+  .btn-icon-tiny {
+    min-width: 32px;
+    min-height: 32px;
+    font-size: var(--fs-base);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sidebar-collapse-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .card-action-btn {
+    padding: 0.7rem 0;
+    font-size: var(--fs-base);
+  }
+  .btn-small {
+    min-height: 40px;
+    padding: 0.45rem 0.9rem;
+    font-size: var(--fs-sm);
+  }
+  .btn-primary,
+  .btn-secondary,
+  .danger-btn {
+    min-height: 44px;
+  }
+  .tab-btn {
+    min-height: 44px;
+    padding: var(--sp-2) var(--sp-4);
+  }
+
+  .tag {
+    font-size: var(--fs-xs);
+    padding: var(--sp-1) 9px;
+    margin: 3px 3px 3px 0;
+  }
+
+  /* Pas de survol sur tactile : actions de groupe toujours visibles */
+  .group-item {
+    padding: 0.65rem 0.9rem;
+    font-size: var(--fs-md);
+  }
+  .group-item-actions {
+    display: flex;
+    gap: var(--sp-1);
+  }
+}
+

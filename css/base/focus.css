@@ -1,0 +1,21 @@
+/* ============================================================
+   FOCUS CLAVIER — repère de focus cohérent (accent du thème)
+   ============================================================ */
+/* :focus-visible ne se déclenche qu'au clavier, jamais au clic souris.
+   Les champs de saisie signalent déjà le focus par leur bordure accent ;
+   on couvre ici les boutons et éléments cliquables (délégation data-*,
+   role="button") qui n'avaient aucun repère. Bloc en fin de fichier pour
+   l'emporter, à spécificité égale, sur les anciens `:focus{outline:none}`. */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* Boutons de pied de carte : la carte est en overflow:hidden ; un anneau
+   sortant serait rogné, on le passe donc en anneau intérieur. */
+.card-action-btn:focus-visible {
+  outline-offset: -2px;
+}
+

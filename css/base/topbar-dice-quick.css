@@ -1,0 +1,742 @@
+/* ============================================================
+   ACTIONS TOPBAR — boutons-icônes combat / journal / raccourcis.
+   Base = secondaire neutre ; le combat est mis en avant, les
+   raccourcis restent discrets (-quiet).
+   ============================================================ */
+.topbar-action {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base),
+    background var(--dur-base);
+}
+.topbar-action:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* Combat : outil MJ majeur → liseré accent au repos pour ressortir de la
+   grappe d'icônes ; état actif plein quand une scène est en cours. */
+.topbar-action-combat {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.topbar-action-combat:hover {
+  background: var(--glow);
+}
+.topbar-action-combat.is-active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+/* Raccourcis : aide secondaire, volontairement discrète. */
+.topbar-action-quiet {
+  border-color: transparent;
+  opacity: 0.75;
+}
+.topbar-action-quiet:hover {
+  opacity: 1;
+}
+
+/* Réserve de menace (Anarchy 2.0) : badge topbar masqué par défaut,
+   révélé uniquement sous [data-edition^="anarchy"] (jamais via JS). */
+#threat-reserve {
+  display: none;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.35rem;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+[data-edition^="anarchy"] #threat-reserve {
+  display: flex;
+}
+.threat-reserve-lbl {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+#threat-reserve-val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-base);
+  min-width: 1ch;
+  text-align: center;
+  color: var(--accent);
+}
+.threat-reserve-step,
+.threat-reserve-reset {
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  line-height: 1;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base);
+}
+.threat-reserve-step:hover,
+.threat-reserve-reset:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+#dice-log-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-popover-backdrop);
+  background: transparent;
+}
+#dice-log-backdrop.open {
+  display: block;
+}
+#dice-log-panel {
+  position: fixed;
+  top: 58px;
+  right: 0.75rem;
+  width: min(360px, calc(100vw - 1.5rem));
+  max-height: min(60vh, 480px);
+  z-index: var(--z-popover);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 4px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition:
+    opacity var(--dur-base) ease,
+    transform var(--dur-base) ease;
+}
+#dice-log-panel.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+/* Bloc-notes de séance (CH-M2) — même comportement d'overlay que le journal
+   des jets ; en-tête partagé (.dice-log-head/.dice-log-title). Panneau un peu
+   plus large pour le texte. */
+#notepad-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-popover-backdrop);
+}
+#notepad-backdrop.open {
+  display: block;
+}
+#notepad-panel {
+  position: fixed;
+  top: 58px;
+  right: 0.75rem;
+  width: min(420px, calc(100vw - 1.5rem));
+  height: min(70vh, 560px);
+  z-index: var(--z-popover);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 4px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition:
+    opacity var(--dur-base) ease,
+    transform var(--dur-base) ease;
+}
+#notepad-panel.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.notepad-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  padding: 0.6rem;
+}
+.notepad-textarea {
+  flex: 1;
+  width: 100%;
+  resize: none;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  padding: 0.6rem;
+}
+.notepad-read {
+  flex: 1;
+  width: 100%;
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  padding: 0.6rem;
+}
+.notepad-read-empty {
+  color: var(--text-dim);
+}
+/* Puces de mention (E7) — @ (--accent) vs # (--accent2), même distinction de
+   canal que le reste de l'appli (cf. audit I2, canal --accent2 = décor). */
+.mention-chip,
+.tag-chip {
+  padding: 0 0.3em;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background var(--dur-base) ease;
+}
+.mention-chip {
+  /* Signature visuelle PJ (E6) : --mention-pc-color posée en inline par
+     Mentions.renderText pour un PJ, sinon retombe sur --accent (PNJ/contact/
+     serveur). Un seul et même canal pour la couleur ET le fond teinté. */
+  background: color-mix(in srgb, var(--mention-pc-color, var(--accent)) 15%, transparent);
+  color: var(--mention-pc-color, var(--accent));
+}
+.mention-chip:hover {
+  background: color-mix(in srgb, var(--mention-pc-color, var(--accent)) 28%, transparent);
+}
+.mention-chip--dead {
+  color: var(--text-dim);
+  background: transparent;
+  text-decoration: line-through;
+  cursor: default;
+}
+.mention-chip--dead:hover {
+  background: transparent;
+}
+.tag-chip {
+  background: color-mix(in srgb, var(--accent2) 15%, transparent);
+  color: var(--accent2);
+}
+.tag-chip:hover {
+  background: color-mix(in srgb, var(--accent2) 28%, transparent);
+}
+@media (max-width: 640px) {
+  #notepad-backdrop.open {
+    background: rgba(0, 0, 0, 0.55);
+  }
+  #notepad-panel {
+    top: auto;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 70dvh;
+    border-radius: 12px 12px 0 0;
+    border-left: none;
+    border-right: none;
+    transform: translateY(100%);
+    transition:
+      transform var(--dur-slow) var(--ease-emphasized),
+      opacity var(--dur-base);
+  }
+  #notepad-panel.open {
+    transform: translateY(0);
+  }
+}
+/* Palette de commandes (CH-Q7) — overlay centré « trouver + aller à ». */
+#palette-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-command);
+  background: rgba(0, 0, 0, 0.5);
+  padding-top: 12vh;
+  justify-content: center;
+  align-items: flex-start;
+}
+#palette-overlay.open {
+  display: flex;
+}
+#palette-box {
+  width: min(560px, calc(100vw - 2rem));
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 6px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+#palette-input {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  padding: 0.9rem 1rem;
+  outline: none;
+}
+#palette-results {
+  overflow-y: auto;
+  flex: 1;
+}
+.palette-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+.palette-row.sel,
+.palette-row:hover {
+  background: var(--glow, rgba(255, 255, 255, 0.06));
+}
+.palette-type {
+  flex: none;
+  min-width: 3.6rem;
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0.1rem 0.3rem;
+  text-align: center;
+}
+.palette-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+.palette-empty {
+  padding: 1rem;
+  color: var(--text-dim);
+  font-size: var(--fs-base);
+  text-align: center;
+}
+#palette-hint {
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+}
+
+/* E4 (mentions.js) : popup d'autocomplétion @ ancrée sous le textarea
+   (desktop/tablette) — réutilise .palette-row/.palette-type/.palette-name
+   tels quels, aucun nouveau composant de ligne. */
+#mentions-box {
+  position: absolute;
+  z-index: var(--z-command);
+  max-height: 40vh;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+/* <641px : ancrée en bas de viewport (au-dessus du clavier virtuel quand
+   VisualViewport est disponible, cf. Mentions._position). */
+#mentions-box.mentions-mobile {
+  position: fixed;
+  left: 0.5rem;
+  right: 0.5rem;
+  top: auto;
+  width: auto !important;
+  max-height: 35vh;
+}
+.dice-log-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+.dice-log-title {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+/* J2 : rangée de puces de filtre — réutilise .hub-facet-chip tel quel (même
+   pastille active/inactive que le Hub F1). Une seule ligne à toute largeur
+   (défilement horizontal si trop de personnages) plutôt qu'un retour à la ligne
+   qui casserait l'axe horizontal en « escalier » (cf. audit alignement) ;
+   align-items:center garantit un axe commun, les puces gardent leur largeur au
+   contenu. */
+.dice-log-filters {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dice-log-filters::-webkit-scrollbar {
+  display: none;
+}
+/* Les puces ne se compriment pas (sinon les noms longs s'écrasent) : elles
+   défilent. */
+.dice-log-filters > .hub-facet-chip {
+  flex: none;
+}
+.dice-log-filters:empty {
+  display: none;
+  border-bottom: none;
+}
+.dice-log-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.3rem 0;
+}
+/* J3 : en-tête de tour sticky — reste visible en tête de liste pendant le
+   défilement (repère « où en est-on », pas un vrai groupement collapsible). */
+.dice-log-turn-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-card);
+  padding: 0.3rem 0.8rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+}
+.dice-log-empty {
+  padding: 1.2rem 0.9rem;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  text-align: center;
+}
+.dice-log-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: var(--sp-2) 0.8rem;
+  border-left: 2px solid var(--border);
+  margin: 2px 0;
+  flex-wrap: wrap;
+}
+.dice-log-item.good {
+  border-left-color: var(--accent);
+}
+.dice-log-item.glitch {
+  border-left-color: var(--warning);
+}
+.dice-log-item.crit {
+  border-left-color: var(--danger);
+}
+.dice-log-item.zero {
+  border-left-color: var(--text-dim);
+}
+/* J1 : cartes pré-attentives — seules les ALARMES (crit/glitch, cf. sémantique
+   cls) se détachent en carte pleine (bordure + fond teinté + icône) ; le
+   reste garde la ligne compacte ci-dessus. */
+.dice-log-item.is-card {
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: 4px;
+  padding: 0.6rem 0.8rem;
+}
+.dice-log-item.crit.is-card {
+  border-left-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, var(--bg-card));
+}
+.dice-log-item.glitch.is-card {
+  border-left-color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 10%, var(--bg-card));
+}
+.dice-log-icon {
+  flex: none;
+  font-size: var(--fs-md);
+}
+.dice-log-item.crit .dice-log-icon {
+  color: var(--danger);
+}
+.dice-log-item.glitch .dice-log-icon {
+  color: var(--warning);
+}
+.dice-log-detail-btn {
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.dice-log-detail-btn:hover {
+  color: var(--accent);
+}
+/* J3 : pastille de flash — alarme (crit/glitch) ajoutée pendant que le
+   journal est fermé. #dice-log-btn est masqué <641px (cf. media query plus
+   bas), donc cette pastille n'existe de fait qu'à partir de 641px. */
+.dice-log-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: var(--warning);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+.dice-log-time {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+.dice-log-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.dice-log-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dice-log-label.dim {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+.dice-log-sub {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+}
+.dice-log-tag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.dice-log-tag.glitch {
+  color: var(--warning);
+}
+.dice-log-tag.crit {
+  color: var(--danger);
+}
+.dice-log-main {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.dice-log-item.crit .dice-log-main {
+  color: var(--danger);
+}
+.dice-log-item.zero .dice-log-main {
+  color: var(--text-dim);
+}
+.dice-log-main small {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 400;
+  color: var(--text-dim);
+  margin-left: 3px;
+  text-transform: uppercase;
+}
+/* J4 : épingler — exempte de la purge (cf. dicelog.js record()). Liseré
+   accent discret sur la ligne/carte, pastille pleine sur le bouton actif. */
+.dice-log-item.is-pinned {
+  border-left-color: var(--accent);
+}
+.dice-log-pin-btn {
+  align-self: flex-start;
+  flex: none;
+  background: transparent;
+  border: none;
+  padding: 0 0 0 0.4rem;
+  font-size: var(--fs-sm);
+  opacity: 0.35;
+  cursor: pointer;
+  filter: grayscale(1);
+}
+.dice-log-pin-btn:hover {
+  opacity: 0.7;
+}
+.dice-log-pin-btn.is-pinned {
+  opacity: 1;
+  filter: none;
+}
+.dice-log-note {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+}
+.dice-log-note-text {
+  font-family: var(--font-body);
+  font-size: var(--fs-2xs);
+  font-style: italic;
+  color: var(--text-dim);
+}
+.dice-log-note-form {
+  display: flex;
+}
+.dice-log-note-input {
+  width: 100%;
+  max-width: 220px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-2xs);
+  padding: 1px 4px;
+}
+
+/* ============================================================
+   LANCER RAPIDE — bandeau de résultat discret
+   ============================================================ */
+#dice-quick {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translate(-50%, 12px);
+  z-index: var(--z-hud);
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  max-width: min(92vw, 520px);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 0.55rem var(--sp-4);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--dur-base) ease,
+    transform var(--dur-base) ease;
+  cursor: pointer;
+}
+#dice-quick.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+#dice-quick.dice-quick-glitch {
+  border-left-color: var(--warning);
+}
+#dice-quick.dice-quick-crit {
+  border-left-color: var(--danger);
+}
+#dice-quick.dice-quick-zero {
+  border-left-color: var(--text-dim);
+}
+.dice-quick-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-base);
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dice-quick-main {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-xl);
+  line-height: 1;
+  color: var(--accent);
+}
+.dice-quick-crit .dice-quick-main {
+  color: var(--danger);
+}
+.dice-quick-zero .dice-quick-main {
+  color: var(--text-dim);
+}
+.dice-quick-unit {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+.dice-quick-tag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent2);
+}
+.dice-quick-crit .dice-quick-tag {
+  color: var(--danger);
+}
+.dice-quick-sub {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* Réglages : champ numérique */
+.settings-number-input {
+  width: 64px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-align: center;
+  padding: 0.3rem 0.4rem;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+}
+.settings-number-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+

@@ -1,0 +1,230 @@
+/* ============================================================
+   CONTENU CLIQUABLE — tags avec description + modale
+   ============================================================ */
+.tag-clickable {
+  cursor: pointer;
+  position: relative;
+  transition:
+    background var(--dur-base),
+    border-color var(--dur-base);
+}
+.tag-clickable:hover,
+.tag-clickable:focus-visible {
+  background: var(--glow);
+  border-color: var(--accent);
+  outline: none;
+}
+.tag-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  margin-left: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  font-style: italic;
+  font-family: Georgia, serif;
+  vertical-align: middle;
+}
+
+/* Drain / Seuil affiché dans le libellé d'un sort */
+.tag-stat {
+  color: var(--text-dim);
+  font-size: 0.82em;
+  font-weight: 600;
+}
+
+/* ---- Tag drogue (cycle idle → effet → contrecoup → OK) ---- */
+.drug-tag {
+  cursor: pointer;
+  transition:
+    background var(--dur-base),
+    border-color var(--dur-base);
+}
+.drug-tag:hover,
+.drug-tag:focus-visible {
+  background: var(--glow);
+  outline: none;
+}
+.drug-next {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 var(--sp-1);
+  border-radius: 2px;
+  font-size: 0.85em;
+  font-weight: 700;
+  color: var(--bg);
+  background: var(--text-dim);
+}
+.drug-tag.drug-effect {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.drug-tag.drug-effect .drug-next {
+  background: var(--accent);
+}
+.drug-tag.drug-side {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.drug-tag.drug-side .drug-next {
+  background: var(--danger);
+}
+
+/* ---- Modale de description ---- */
+.content-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-screen);
+  padding: var(--sp-5);
+  animation: modalFade 0.15s ease;
+}
+.content-modal-overlay.visible {
+  display: flex;
+}
+@keyframes modalFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.content-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  max-width: 420px;
+  width: 100%;
+  padding: 1.4rem var(--sp-5) var(--sp-5);
+  position: relative;
+  box-shadow:
+    0 0 40px var(--glow),
+    0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: modalPop 0.18s ease;
+}
+@keyframes modalPop {
+  from {
+    transform: translateY(12px) scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+.content-modal-title {
+  font-family: var(--font-display);
+  color: var(--accent);
+  font-size: var(--fs-lg);
+  letter-spacing: var(--title-spacing);
+  text-transform: var(--title-transform);
+  margin-bottom: 0.7rem;
+  padding-right: var(--sp-5);
+}
+.content-modal-desc {
+  color: var(--text);
+  font-size: var(--fs-base);
+  line-height: 1.5;
+}
+.content-modal-close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.8rem;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: var(--fs-xl);
+  line-height: 1;
+  padding: 0;
+  transition: color var(--dur-base);
+}
+.content-modal-close:hover {
+  color: var(--accent);
+}
+
+/* ---- Vignette de portrait IA : agrandissement au clic ---- */
+.pnj-portrait-thumb,
+.contact-portrait-thumb {
+  cursor: pointer;
+}
+.portrait-preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-screen);
+  padding: var(--sp-5);
+  animation: modalFade 0.15s ease;
+}
+.portrait-preview-overlay.visible {
+  display: flex;
+}
+.portrait-preview-box {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  animation: modalPop 0.18s ease;
+}
+.portrait-preview-img {
+  display: block;
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  box-shadow:
+    0 0 40px var(--glow),
+    0 8px 32px rgba(0, 0, 0, 0.5);
+}
+.portrait-preview-close {
+  position: absolute;
+  top: -0.6rem;
+  right: -0.6rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  font-size: var(--fs-xl);
+  line-height: 1;
+  padding: 0;
+  transition: color var(--dur-base);
+}
+.portrait-preview-close:hover {
+  color: var(--accent);
+}
+
+/* ---- Compétences : tags compacts unifiés sur les 3 éditions ---- */
+.skill-tag {
+  background: var(--bg-mid, var(--bg));
+}
+.skill-tag-spec {
+  opacity: 0.8;
+  font-size: var(--fs-2xs);
+}
+/* Connaissances SR5 — distinctes des compétences actives (même mécanique
+   de jet), cf. Livre de Règles p.130-152 : bordure pointillée + italique. */
+.skill-tag-knowledge {
+  font-style: italic;
+  border: 1px dashed var(--border, currentColor);
+  background: transparent;
+}
+.skill-tag .lim {
+  font-size: var(--fs-2xs);
+  opacity: 0.85;
+  padding-left: var(--sp-1);
+  margin-left: 3px;
+  border-left: 1px solid var(--accent, currentColor);
+  color: var(--accent);
+}
+

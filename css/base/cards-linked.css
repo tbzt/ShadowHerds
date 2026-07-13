@@ -1,0 +1,629 @@
+/* ============================================================
+   REDESIGN CARTES — zones Combat / Capacités / Référence
+   ============================================================ */
+.zone-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 9px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.zone-eyebrow::before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Zone Combat : mise en avant (fond accentué) */
+.combat-zone {
+  background: var(--glow);
+  border-bottom: 1px solid var(--border);
+  padding: var(--sp-3) 14px;
+}
+.combat-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+/* pastille de combat lançable : signalée comme interactive */
+.combat-pill {
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* Moniteurs dans la zone combat */
+.monitor-block {
+  margin-top: 10px;
+}
+
+/* Bloc d'armes lançables (zone combat) */
+.weapon-block {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.combat-drugs {
+  margin-top: var(--sp-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+/* ============================================================
+   FICHES LIÉES — drones & véhicules déployés depuis un PNJ
+   ============================================================ */
+.vehicle-chip {
+  cursor: pointer;
+  transition:
+    background var(--dur-base),
+    border-color var(--dur-base);
+}
+.vehicle-chip:hover,
+.vehicle-chip:focus-visible {
+  background: var(--glow);
+  border-color: var(--accent);
+  outline: none;
+}
+.vehicle-chip-state {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 var(--sp-1);
+  border-radius: 2px;
+  font-size: 0.85em;
+  font-weight: 700;
+  color: var(--bg);
+  background: var(--text-dim);
+}
+.vehicle-chip.deployed {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.vehicle-chip.deployed .vehicle-chip-state {
+  background: var(--accent);
+}
+.vehicle-chip.destroyed {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.vehicle-chip-state.destroyed {
+  background: var(--danger);
+  color: var(--bg);
+}
+
+/* Carte sœur : liseré de liaison + léger retrait visuel */
+.pnj-card.vehicle-card {
+  border-left: 3px solid var(--accent);
+  position: relative;
+}
+
+/* PNJ déployé depuis un contact (ContactsBook.deployPNJ), imbriqué dans la
+   carte contact — même liseré que la carte sœur véhicule/esprit. */
+.contact-deployed-pnj {
+  margin-top: 10px;
+}
+.contact-deployed-pnj .pnj-card {
+  border-left: 3px solid var(--accent);
+}
+.vehicle-header .pnj-name {
+  font-size: var(--fs-md);
+}
+.vehicle-owner-link {
+  cursor: pointer;
+  color: var(--accent);
+  transition: opacity var(--dur-base);
+}
+.vehicle-owner-link:hover,
+.vehicle-owner-link:focus-visible {
+  opacity: 0.75;
+  text-decoration: underline;
+  outline: none;
+}
+.pnj-rank-badge.vehicle-badge {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+.pnj-rank-badge.vehicle-badge.destroyed {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.vehicle-header.destroyed {
+  opacity: 0.75;
+}
+.vehicle-header.destroyed .pnj-name {
+  text-decoration: line-through;
+}
+.vehicle-stats .stat-pill {
+  opacity: 0.9;
+}
+
+/* Animation de déploiement : slide-in + pulse d'accent */
+.vehicle-deploying {
+  animation:
+    vehicle-slide-in 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    vehicle-pulse 0.7s ease-out;
+}
+@keyframes vehicle-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes vehicle-pulse {
+  0% {
+    box-shadow:
+      0 0 0 0 var(--glow),
+      0 0 18px var(--accent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* ---- Sélecteur de type d'entité (générateur) ----
+   Rangée pleine largeur (grid-column: 1 / -1) : sans ça, cette barre
+   redevient une cellule de la grille .gen-form comme les autres champs
+   et hérite de la hauteur de sa voisine via align-items:stretch. */
+.entity-type-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 1px;
+  margin-bottom: var(--sp-3);
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.entity-type-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+  background: var(--bg-card);
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  padding: var(--sp-2) 6px;
+  cursor: pointer;
+  transition:
+    background var(--dur-base),
+    color var(--dur-base);
+  text-transform: var(--title-transform);
+  letter-spacing: 0.04em;
+}
+.entity-type-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+.entity-type-btn:hover {
+  color: var(--text);
+  background: var(--bg-mid);
+}
+.entity-type-btn.active {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+}
+.entity-type-btn.active .entity-type-icon {
+  color: var(--bg);
+}
+@media (max-width: 420px) {
+  .entity-type-label {
+    display: none;
+  }
+  .entity-type-icon {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+}
+
+/* ---- Esprits invoqués ---- */
+.spirit-card {
+  border-left-color: var(--accent2);
+}
+.spirit-header .pnj-name {
+  font-size: var(--fs-md);
+}
+
+/* Bascule repli/dépli d'une fiche d'esprit (en-tête). */
+.spirit-fold-btn {
+  flex: 0 0 auto;
+  margin-left: auto;
+  align-self: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 6px);
+  background: transparent;
+  color: var(--text-dim, var(--text));
+  font-size: var(--fs-base);
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.spirit-fold-btn:hover {
+  background: var(--surface-2, rgba(127, 127, 127, 0.12));
+  color: var(--text);
+}
+/* Fiche repliée : ne reste que l'en-tête. */
+.pnj-card.spirit-collapsed .spirit-services,
+.pnj-card.spirit-collapsed .pnj-card-body,
+.pnj-card.spirit-collapsed .pnj-card-footer {
+  display: none;
+}
+.spirit-services {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 6px 14px;
+  border-bottom: 1px dashed var(--border);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+}
+.spirit-services-pips {
+  display: flex;
+  gap: var(--sp-1);
+}
+.service-pip {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--accent2);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background var(--dur-base);
+}
+.service-pip:hover {
+  background: var(--glow);
+}
+.service-pip.used {
+  background: var(--accent2);
+  opacity: 0.55;
+}
+.spirit-services-count {
+  margin-left: auto;
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* Panneau jet opposé / seuil (réutilise l'habillage .risk-panel) */
+.opposed-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.opposed-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.opposed-hint {
+  text-transform: none;
+  letter-spacing: normal;
+  opacity: 0.7;
+}
+.opposed-input {
+  width: 4.5rem;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+  text-align: center;
+  padding: 0.3rem 0.4rem;
+}
+.opposed-input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+.opposed-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-height: 2.6rem;
+  padding: var(--sp-2);
+  border-radius: 4px;
+  background: var(--bg-mid);
+  border-left: 3px solid var(--text-dim);
+}
+.opposed-result.good {
+  border-left-color: var(--accent);
+}
+.opposed-result.glitch {
+  border-left-color: var(--warning);
+}
+.opposed-result.zero {
+  border-left-color: var(--text-dim);
+}
+.opposed-result-main {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.opposed-result-sub {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Panneau d'action magique (CH-M7c, réutilise l'habillage .risk-panel) */
+.magic-forecast {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text);
+}
+.magic-forecast strong {
+  color: var(--accent);
+}
+.magic-forecast-note {
+  color: var(--text-dim);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.04em;
+}
+
+/* Panneau d'invocation (réutilise l'habillage .risk-panel) */
+.summon-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+.summon-row-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  min-width: 70px;
+}
+.summon-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+.summon-step-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  padding: var(--sp-1) 9px;
+  cursor: pointer;
+  transition: all var(--dur-base);
+}
+.summon-step-btn:hover {
+  border-color: var(--accent);
+}
+.summon-step-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+}
+.summon-types {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: var(--sp-3);
+}
+.summon-type-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  padding: 9px 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--dur-base);
+}
+.summon-type-btn:hover {
+  border-color: var(--accent2);
+  background: var(--glow);
+  color: var(--accent2);
+}
+
+/* Flash de localisation (badge « lié à », re-clic sur une chip) */
+.pnj-card.card-flash {
+  animation: card-flash 1.2s ease-out;
+}
+@keyframes card-flash {
+  0%,
+  40% {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    box-shadow: 0 0 22px var(--glow);
+  }
+  100% {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+}
+.weapon-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-2);
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+}
+.weapon-line.weapon-rollable {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  cursor: pointer;
+  transition:
+    box-shadow var(--dur-fast),
+    transform var(--dur-fast);
+}
+.weapon-line.weapon-rollable:hover {
+  box-shadow:
+    0 0 0 1px var(--accent),
+    0 0 12px var(--glow);
+}
+.weapon-line.weapon-rollable:active {
+  transform: scale(0.99);
+}
+.weapon-name {
+  font-size: var(--fs-xs);
+  color: var(--text);
+}
+.weapon-stat {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+.weapon-line .weapon-pool {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--glow);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.weapon-line .weapon-pool .lim {
+  font-size: var(--fs-2xs);
+  opacity: 0.85;
+  padding-left: 3px;
+  margin-left: 2px;
+  border-left: 1px solid var(--accent);
+}
+
+/* Sorts en zone Combat (CH-M7e) — lignes calquées sur les armes. */
+.spell-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.spell-block .zone-eyebrow {
+  margin-top: 2px;
+}
+.spell-line .spell-main {
+  min-width: 0;
+  flex: 1;
+}
+.spell-line .weapon-name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.spell-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.spell-info:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+/* Dernier jet mémorisé (sort maintenu) — même langage que .init-result. */
+.spell-last {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent);
+  white-space: nowrap;
+}
+.spell-last strong {
+  font-size: var(--fs-sm);
+}
+.spell-last-clear {
+  cursor: pointer;
+  color: var(--text-dim);
+  padding: 0 2px;
+}
+.spell-last-clear:hover {
+  color: var(--danger);
+}
+
+/* Zone Capacités — NIVEAU 2 de la hiérarchie de carte (CH-C2).
+   Les trois zones existent déjà dans le DOM (Combat / Capacités / Référence) ;
+   on rend la hiérarchie VISIBLE par un dégradé d'emphase de fond, du plus fort
+   (Combat, jets de combat, fond --glow plein) au plus discret (Référence,
+   repliée, sans fond). La zone Capacités (jets de compétence) est bornée par
+   une bordure haute + un fond --glow atténué : elle lit comme une RÉGION
+   commune intermédiaire (Gestalt de région commune), même famille visuelle que
+   la zone Combat, si bien que tous les jets — armes, pastilles et compétences,
+   déjà unifiés par le dé ⚄ (CH-M1) — se regroupent en régions cohérentes.
+   But audit : l'œil trouve une info en < 2 s. */
+.capacity-zone {
+  padding: var(--sp-1) 14px var(--sp-2);
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--glow) 30%, transparent);
+}
+/* PNJ sans aucune capacité : pas de bande vide (la div est émise même vide). */
+.capacity-zone:empty {
+  display: none;
+}
+.capacity-zone .card-section {
+  border: none;
+  padding: var(--sp-2) 0;
+}
+
+/* Zone narrative des personnages jouables (Anarchy) : mots-clés,
+   comportements, répliques — sous la zone Capacités. */
+.pc-narrative-zone {
+  padding: var(--sp-2) 14px var(--sp-2);
+  border-top: 1px solid var(--border);
+}
+.pc-narrative-zone .card-section {
+  border: none;
+  padding: var(--sp-2) 0;
+}
+.pc-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pc-quote {
+  font-style: italic;
+  color: var(--text-dim);
+  font-size: var(--fs-sm, 0.8rem);
+}
+
