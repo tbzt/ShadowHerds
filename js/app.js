@@ -455,6 +455,15 @@ document.addEventListener("DOMContentLoaded", () => {
       case "shortcuts-close":
         App.toggleCheatsheet(false);
         break;
+      case "mention-open":
+        Palette.reveal(actionEl.dataset.id);
+        break;
+      case "tag-open":
+        // Provisoire (vague 5 posera le mode `#` de la Palette) : ouvre la
+        // Palette avec le mot-clé pré-rempli, sans recherche dédiée pour l'instant.
+        Palette.open();
+        document.getElementById("palette-input").value = "#" + actionEl.dataset.tag;
+        break;
     }
   });
 

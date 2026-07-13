@@ -109,6 +109,12 @@ const Palette = {
     if (r) this._reveal(r);
   },
 
+  /** API publique : révèle une entité par id (clic sur une puce `@`, E7). */
+  reveal(id) {
+    const ent = PnjLookup.locate(id);
+    if (ent) this._reveal(ent);
+  },
+
   /** Amène l'entité à l'écran en réutilisant le filtre existant (Q1) : pas de
       dépendance à la classe de carte ni à un flash. */
   _reveal(r) {

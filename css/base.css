@@ -5124,6 +5124,43 @@ kbd {
   line-height: 1.5;
   padding: 0.6rem;
 }
+.notepad-read {
+  flex: 1;
+  width: 100%;
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  padding: 0.6rem;
+}
+.notepad-read-empty {
+  color: var(--text-dim);
+}
+/* Puces de mention (E7) — style provisoire, affiné en vague 6. */
+.mention-chip {
+  padding: 0 0.3em;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+  cursor: pointer;
+}
+.mention-chip--dead {
+  color: var(--text-dim);
+  background: transparent;
+  text-decoration: line-through;
+  cursor: default;
+}
+.tag-chip {
+  padding: 0 0.3em;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent2) 15%, transparent);
+  color: var(--accent2);
+  cursor: pointer;
+}
 @media (max-width: 640px) {
   #notepad-backdrop.open {
     background: rgba(0, 0, 0, 0.55);
