@@ -64,6 +64,34 @@ const CyberdeckRenderer = {
       ${rerollHtml}
       ${biofeedbackHtml}
       ${programsHtml}
+      ${this._targetRow(pnj, edition, deck)}
+    </div>`;
+  },
+
+  /** M3 : cible du decker — picker de serveur + accès au tracker Matrice,
+      identique en scène de combat et hors combat (hub/biblio). Le jet de
+      piratage n'apparaît que si Cyberdeck.rollAttack renvoie un pool
+      (édition-neutre, cf. le module de règles). */
+  _targetRow(pnj, edition, deck) {
+    const esc = CardRenderer._esc;
+    const targetId = DeckRun.target(pnj);
+    const servers = (Servers.data && Servers.data.all) || [];
+    const options =
+      `<option value="">Aucune cible</option>` +
+      servers
+        .map((s) => `<option value="${s.id}" ${s.id === targetId ? "selected" : ""}>${esc(s.name)}</option>`)
+        .join("");
+    const openBtn = targetId
+      ? `<button type="button" class="cyberdeck-swap" data-action="deck-open-matrix" data-id="${pnj.id}" title="Ouvrir la Matrice de ce serveur">⚡ Ouvrir la Matrice</button>`
+      : "";
+    const canAttack = targetId && Cyberdeck.rollAttack(edition, deck);
+    const attackBtn = canAttack
+      ? `<button type="button" class="cyberdeck-swap" data-action="deck-attack" data-id="${pnj.id}" title="Jet de piratage contre le serveur ciblé">🎯 Piratage</button>`
+      : "";
+    return `<div class="cyberdeck-target">
+      <select class="cyberdeck-target-select" data-action="deck-set-target" data-id="${pnj.id}" aria-label="Serveur ciblé">${options}</select>
+      ${openBtn}
+      ${attackBtn}
     </div>`;
   },
 

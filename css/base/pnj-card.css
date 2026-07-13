@@ -906,3 +906,25 @@
   background: color-mix(in srgb, var(--accent) 10%, var(--bg-card));
 }
 
+/* M3 : cible Matrice du decker — picker de serveur + accès au tracker,
+   même rangée en scène de combat et hors combat (hub/biblio). */
+.cyberdeck-target {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+}
+.cyberdeck-target-select {
+  flex: 1 1 auto;
+  min-height: 32px;
+  min-width: 8rem;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+}
+
