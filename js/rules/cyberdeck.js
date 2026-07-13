@@ -96,6 +96,33 @@ const Cyberdeck = {
     return { pool: (deck.attrs || {}).attack || 0, label: "Piratage" };
   },
 
+  /** M5 : pool de défense d'un appareil M4 PROTÉGÉ (SR5 p.236 — PAN/esclave :
+      l'appareil esclave « utilise l'indice le plus avantageux entre le sien et
+      celui de son maître », additionné du Firewall du maître ; SR6 n'a pas
+      cette règle au livre — approximation par la même formule, arbitrage
+      utilisateur/traducteur officiel 2026-07-14). Simplifié aux SEULS champs
+      réellement trackés : ni la Volonté (`pnj.volonte` existe en chargen SR5
+      mais n'est lue nulle part ailleurs dans le code, vérifié) ni un Firewall
+      propre à l'appareil (M4 n'a que l'Indice) ne sont fiables — pool =
+      Indice de l'appareil + Firewall du deck protecteur, tel quel. */
+  rollDefense(deviceIndice, protectorDeck) {
+    const fw = (protectorDeck && protectorDeck.attrs && protectorDeck.attrs.firewall) || 0;
+    return { pool: (deviceIndice || 0) + fw, label: "Défense protégée" };
+  },
+
+  /** M5 : « Protection active » Anarchy 2.0 (p.216-217) — un coéquipier
+      dépense une action pour un test Électronique (protection matricielle) +
+      Logique, dont les succès se retranchent de ceux de l'attaquant (vaut
+      aussi contre une tentative de brickage, p.217). La compétence
+      Électronique n'étant pas trackée pour les PNJ (même simplification que
+      Cyberdeck.rollAttack, qui ignore déjà Cybercombat), le pool retenu est
+      Firewall du deck protecteur + Logique (attrs.LOG) du protecteur. */
+  rollProtectActive(protectorPnj) {
+    const fw = (protectorPnj.cyberdeck && protectorPnj.cyberdeck.attrs && protectorPnj.cyberdeck.attrs.firewall) || 0;
+    const log = (protectorPnj.attrs && protectorPnj.attrs.LOG) || 0;
+    return { pool: fw + log, label: "Protection active" };
+  },
+
   /** M1 — migration : reconstruit un deck structuré à partir d'une ligne
       d'équipement/atout héritée. Formes rencontrées dans les catalogues :
       "Cyberdeck (Attaque 4, Firewall 4)", "Cyberdeck Shiawase Cyber-5
