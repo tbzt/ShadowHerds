@@ -84,6 +84,18 @@ const Cyberdeck = {
     };
   },
 
+  /** M3 : pool de piratage d'un serveur — même simplicité que les jets de CI
+      existants (Intrusion.rollIC : un seul pool, pas de test opposé calculé).
+      La formule livre (SR5 p.229 : Cybercombat + Logique ; SR6 : action
+      d'attaque cybercombat, nom VF à confirmer) reste à affiner en M4 — ici,
+      pool = l'attribut Attaque du deck, tel quel. `null` si l'édition n'a pas
+      d'attribut Attaque motorisé (Anarchy 1 = Firewall seul, pas d'attaque). */
+  rollAttack(edition, deck) {
+    const keys = this.attrKeys(edition);
+    if (!keys.some((k) => k.key === "attack")) return null;
+    return { pool: (deck.attrs || {}).attack || 0, label: "Piratage" };
+  },
+
   /** M1 — migration : reconstruit un deck structuré à partir d'une ligne
       d'équipement/atout héritée. Formes rencontrées dans les catalogues :
       "Cyberdeck (Attaque 4, Firewall 4)", "Cyberdeck Shiawase Cyber-5

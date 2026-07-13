@@ -1048,6 +1048,37 @@ const CardRenderer = {
           // action mineure — cf. Cyberdeck.reallocatable/cyberdeckModel).
           UI.reallocDeck(id, actionEl.dataset.from, actionEl.dataset.to);
           break;
+        case "deck-open-matrix": {
+          // M3 : ouvre le tracker Matrice du serveur ciblé par ce decker —
+          // en scène si ce serveur y est déjà lié (reste dans le tracker de
+          // combat), sinon via le panneau Serveurs (hors combat comme en
+          // combat sur un serveur non lié).
+          const pnj = PnjLookup.find(id);
+          const srv = pnj && DeckRun.targetServer(pnj);
+          if (!srv) break;
+          Intrusion._get(srv.id);
+          srv.intrusion.open = true;
+          Servers.save();
+          Servers.render();
+          if (typeof Encounter !== "undefined" && Encounter.state && Encounter.state.serverId === srv.id) {
+            Encounter.openMatrixDrawer();
+          } else {
+            App.showPanel("matrix");
+          }
+          break;
+        }
+        case "deck-attack": {
+          // M3 : jet de piratage — même forme que Intrusion.rollIC (un seul
+          // pool, pas de test opposé calculé ; la formule livre reste à
+          // affiner en M4, cf. Cyberdeck.rollAttack).
+          const pnj = PnjLookup.find(id);
+          const srv = pnj && DeckRun.targetServer(pnj);
+          const atk = pnj && Cyberdeck.rollAttack(pnj.edition, pnj.cyberdeck);
+          if (!srv || !atk) break;
+          const res = Dice.computeRoll(atk.pool);
+          DiceRoller.show(res, { label: `${atk.label} — ${pnj.name} vs ${srv.name}`, who: pnj.name });
+          break;
+        }
         case "cycle-drug":
           UI.cycleDrug(id, actionEl.dataset.edition, actionEl.dataset.drug);
           break;
@@ -1103,6 +1134,14 @@ const CardRenderer = {
           Palette._reveal({ id: actionEl.dataset.id, name: actionEl.dataset.name, type: "contact" });
           break;
       }
+    });
+
+    // M3 : cible Matrice du decker (<select>, pas un clic — délégation change
+    // dédiée, même patron que MultiSelect._wire).
+    document.addEventListener("change", (e) => {
+      const el = e.target.closest('[data-action="deck-set-target"]');
+      if (!el) return;
+      UI.setDeckTarget(el.dataset.id, el.value);
     });
 
     // Entrée dans l'input de journal = ajouter la note (pas de <form> : évite

@@ -79,6 +79,22 @@ const UI = {
     toast("Cyberdeck reconfiguré.");
   },
 
+  /** M3 : le decker vise un serveur (`pnj.cyberdeck.run.targetServerId`),
+      hors combat comme en scène — même motif copies multiples + persistEntity
+      (F2) que reallocDeck/toggleDeckMonitor ci-dessus. `serverId` vide
+      (option "Aucune") efface la cible. */
+  setDeckTarget(pnjId, serverId) {
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
+    const id = serverId || null;
+    for (const pnj of copies) {
+      if (!pnj.cyberdeck) continue;
+      DeckRun._ensure(pnj).targetServerId = id;
+    }
+    this.persistEntity(pnjId);
+    CardRenderer.refresh(copies[0]);
+  },
+
   /* ========================================================
      JOURNAL DE FICHE (F2) — notes datées, empilées en tête.
      Champ ADDITIF `pnj.journal = [{ts, text}]` : voyage tel quel
