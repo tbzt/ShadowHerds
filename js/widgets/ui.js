@@ -61,7 +61,7 @@ const UI = {
 
   /** M2 : réallocation ASDF/ACTF en un tap — échange les valeurs de deux
       attributs matriciels du deck (SR5 : action gratuite p.229 ; SR6 :
-      action mineure, coût à confirmer — cf. cyberdeckModel.reallocCostLabel).
+      action mineure p.185 — cf. cyberdeckModel.reallocCostLabel).
       Masqué en Anarchy côté rendu (Cyberdeck.reallocatable() false), donc
       jamais appelable depuis l'UI pour ces éditions — pas de garde ici. */
   reallocDeck(pnjId, fromKey, toKey) {

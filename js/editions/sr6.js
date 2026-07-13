@@ -381,16 +381,16 @@ const EditionSR6 = {
     },
   },
 
-  /* Régime cyberdeck SR6 (M1) — 4 attributs ACTF, réallouables (coût de
-     reconfiguration à confirmer en M2, p.185). Moniteur/Score Défensif : M2/M6. */
+  /* Régime cyberdeck SR6 (M1) — 4 attributs ACTF, réallouables. Reconfigurer
+     les attributs matriciels (I) : Légale, action Mineure, aucun test, aucun
+     accès nécessaire — échange les valeurs de deux attributs non nuls du
+     persona matriciel, change aussi les programmes actifs (p.185). Confirmé
+     au livre par l'utilisateur (traducteur officiel Anarchy, 2026-07-13).
+     Moniteur/Score Défensif : M2/M6. */
   cyberdeckModel: {
     attrKeys: ["attack", "sleaze", "dataProcessing", "firewall"],
     reallocatable: true,
-    // Coût de reconfiguration non détaillé au-delà de « une action » (p.185) —
-    // décision M2 (faute de certitude au livre) : traité par défaut comme
-    // mineure, documentée ici pour être corrigée d'un seul endroit si le MJ
-    // confirme le contraire.
-    reallocCostLabel: "action mineure (coût à confirmer, p.185)",
+    reallocCostLabel: "action mineure (p.185)",
     hasReroll: false,
     hasBiofeedbackFilter: false,
     label: "Cyberdeck",
