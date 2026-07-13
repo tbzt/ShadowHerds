@@ -4099,6 +4099,15 @@ body.selecting .bulk-selectable .contact-header-row {
     border-left: 1px solid color-mix(in srgb, var(--accent2) 45%, var(--border));
   }
 }
+/* Dans la colonne dockée (320px), les libellés longs de moniteur (ex. Anarchy
+   « Surveillance du DIEU (complications de Piratage) ») reviennent à la ligne
+   au lieu de déborder la colonne : le nowrap global de .monitor-label ne vaut
+   que là où la place existe (panneau Serveurs, tiroir mobile plein largeur).
+   Interlettrage un cran plus serré pour tenir sur deux lignes propres. */
+#encounter-matrix-dock .monitor-label {
+  white-space: normal;
+  letter-spacing: 0.06em;
+}
 
 /* ---- Résumé de la scène de combat dans la sidebar ---- */
 .sidebar-encounter {
