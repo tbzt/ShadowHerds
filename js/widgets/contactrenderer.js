@@ -89,6 +89,11 @@ const ContactRenderer = {
           Characters.addContactLink(actionEl.dataset.pjId, id, "", null);
           UI.refreshEntityCard(id);
           break;
+        case "link-team":
+          // Rattache ce contact à toute l'équipe active (render() côté carnet
+          // rafraîchit tous les chips « Connu de »).
+          ContactsBook.linkManyToTeam([id]);
+          break;
         case "unlink-pj":
           Characters.removeContactLink(actionEl.dataset.pjId, id);
           UI.refreshEntityCard(id);
@@ -246,6 +251,12 @@ const ContactRenderer = {
 
     let addControl = "";
     if (unlinked.length) {
+      // Raccourci « toute l'équipe active » en tête du menu, quand l'équipe a
+      // des membres — évite N clics pour rattacher un contact à toute la table.
+      const teamItem =
+        typeof Characters !== "undefined" && Characters.activeTeamMembers().length
+          ? `<button type="button" class="contact-pjlink-item contact-pjlink-team" data-contact-action="link-team">${CardRenderer._esc(ContactsBook.teamLinkLabel())}</button>`
+          : "";
       const items = unlinked
         .map(
           (p) =>
@@ -255,7 +266,7 @@ const ContactRenderer = {
         .join("");
       addControl = `<span class="contact-pjlink-wrap">
         <button type="button" class="tag contact-pjlink-add" data-contact-action="toggle-pjlink-menu">＋ Lier un PJ</button>
-        <div class="contact-pjlink-menu" hidden>${items}</div>
+        <div class="contact-pjlink-menu" hidden>${teamItem}${items}</div>
       </span>`;
     } else if (!linked.length) {
       addControl = `<span class="pjlink-empty">Aucun PJ — créez-en un dans Équipe.</span>`;

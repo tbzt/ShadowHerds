@@ -16,6 +16,16 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
+## [1.5.0] — 2026-07-14
+
+### Organiser
+- **Lier un contact à toute l'équipe active** : les sélecteurs de PJ (menu
+  « ＋ Lier un PJ » d'une fiche contact et « 🔗 Lier à un PJ » de la sélection
+  multiple) offrent en tête une entrée « ★ L'équipe » qui rattache le ou les
+  contacts à chaque membre de l'équipe active d'un seul geste — plus besoin de
+  lier PJ par PJ. « L'équipe » vaut tous les PJ quand aucun dossier n'est
+  désigné comme équipe.
+
 ## [1.4.0] — 2026-07-13
 
 ### Jouer

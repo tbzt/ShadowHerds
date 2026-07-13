@@ -50,6 +50,9 @@ const BulkBar = {
         case "bulk-link-to":
           this._linkToPj(el.dataset.pjId);
           break;
+        case "bulk-link-team":
+          this._linkToTeam();
+          break;
       }
     });
 
@@ -107,8 +110,17 @@ const BulkBar = {
     let linkBtn = "";
     if (pjLinkable) {
       const pjs = this._col.pjLinkOptions();
+      // Raccourci « toute l'équipe active » en tête du menu, quand l'équipe a
+      // des membres et que la collection expose linkManyToTeam.
+      const teamItem =
+        typeof this._col.linkManyToTeam === "function" &&
+        typeof Characters !== "undefined" &&
+        Characters.activeTeamMembers().length
+          ? `<button class="bulk-move-item bulk-link-team" data-action="bulk-link-team">${CardRenderer._esc(ContactsBook.teamLinkLabel())}</button>`
+          : "";
       const linkMenu = pjs.length
-        ? pjs
+        ? teamItem +
+          pjs
             .map(
               (p) =>
                 `<button class="bulk-move-item" data-action="bulk-link-to" data-pj-id="${CardRenderer._esc(p.id)}">${CardRenderer._esc(p.name)}</button>`,
@@ -141,6 +153,13 @@ const BulkBar = {
   _linkToPj(pjId) {
     if (!this._col || !pjId || typeof this._col.linkManyToPj !== "function") return;
     this._col.linkManyToPj(this._col.selectedIds(), pjId);
+  },
+
+  /** Rattache la sélection à toute l'équipe active (linkManyToTeam gère lien,
+      toast et vidage). Symétrique de _linkToPj. */
+  _linkToTeam() {
+    if (!this._col || typeof this._col.linkManyToTeam !== "function") return;
+    this._col.linkManyToTeam(this._col.selectedIds());
   },
 
   _moveTo(name) {

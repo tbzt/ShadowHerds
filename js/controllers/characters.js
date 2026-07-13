@@ -161,6 +161,17 @@ const Characters = Object.assign(
       return added;
     },
 
+    /** E5+E2 : lie un ou plusieurs contacts à CHAQUE membre de l'équipe active
+        (activeTeamMembers → addContactLinks par membre, doublons sautés). Un
+        seul geste côté carnet pour rattacher un fixer/indic à toute la table.
+        Renvoie { members, added } pour le récap toast côté ContactsBook. */
+    linkContactsToActiveTeam(contactIds) {
+      const members = this.activeTeamMembers();
+      let added = 0;
+      for (const pj of members) added += this.addContactLinks(pj.id, contactIds);
+      return { members: members.length, added };
+    },
+
     /** E2 : équipe active pour « + Équipe » (Encounter.addTeam). Référence
         l'ID d'un dossier existant (Dossiers) — jamais son nom : un dossier
         renommé (DossierBar.renameDossier) cascade déjà le renommage dans

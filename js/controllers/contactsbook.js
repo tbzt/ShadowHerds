@@ -54,6 +54,26 @@ const ContactsBook = Object.assign(
       toastUndo(`✓ ${c.name} ajouté aux contacts.`, restore);
     },
 
+    /* ---- Créer un contact saisi à la main ----
+       Ajout rapide depuis une fiche PJ (ContactCreate) : crée un vrai contact
+       du carnet à partir des champs saisis (seul le nom est requis, cf.
+       ContactGen.buildManual), le range dans le dossier courant si applicable
+       (même logique que generate()), persiste, et le renvoie pour que
+       l'appelant le lie au PJ (Characters.addContactLink). Pas de zone d'essai/
+       undo ici : la création est intentionnelle, pas un tirage à écarter. */
+    createManual(fields) {
+      const c = ContactGen.buildManual(App.edition, fields);
+      this.data.all.push(c);
+      const group =
+        this.currentGroup && this.currentGroup !== "all" ? this.currentGroup : null;
+      if (group) {
+        (this.data.groups[group] ||= []).push(c.id);
+      }
+      this.save();
+      this.render();
+      return c;
+    },
+
     /* ---- Rattachement en masse à un PJ (BulkBar → _cfg.pjLinkable) ----
        Les liens sont stockés côté PJ (Characters.contactLinks) ; ces deux
        méthodes sont l'API que BulkBar lit sur la collection active, sans rien
@@ -71,6 +91,37 @@ const ContactsBook = Object.assign(
         added
           ? `${added} contact${added > 1 ? "s" : ""} lié${added > 1 ? "s" : ""} à ${name}.`
           : `Déjà liés à ${name}.`,
+        added ? "success" : "warning",
+      );
+      this.clearSelection();
+      this.render();
+    },
+
+    /** Libellé de l'entrée « équipe » en tête des sélecteurs de PJ (fiche
+        contact + BulkBar) — reflète le dossier désigné comme équipe active, ou
+        « tous les PJ » quand aucun (cas table unique). Vocabulaire ★/☆ aligné
+        sur le bouton #btn-active-team (Characters._renderActiveTeamLabel). */
+    teamLinkLabel() {
+      if (typeof Characters === "undefined") return "★ L'équipe";
+      const node = Characters._activeTeamNode();
+      return node ? `★ Équipe : ${node.name}` : "★ L'équipe (tous les PJ)";
+    },
+
+    /** Lie un/des contacts à toute l'équipe active en un geste (mono-contact
+        depuis la carte via linkManyToTeam([id]), ou sélection depuis BulkBar).
+        Délègue à Characters.linkContactsToActiveTeam ; render() rafraîchit tous
+        les chips « Connu de » d'un coup. */
+    linkManyToTeam(ids) {
+      if (typeof Characters === "undefined") return;
+      const { members, added } = Characters.linkContactsToActiveTeam(ids);
+      if (!members) {
+        toast("Aucun PJ dans l'équipe active.", "warning");
+        return;
+      }
+      toast(
+        added
+          ? `${added} lien${added > 1 ? "s" : ""} ajouté${added > 1 ? "s" : ""} à l'équipe (${members} PJ).`
+          : "Déjà liés à l'équipe.",
         added ? "success" : "warning",
       );
       this.clearSelection();
