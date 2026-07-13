@@ -16,6 +16,16 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
+## [1.4.0] — 2026-07-13
+
+### Jouer
+- **Le decker vise un serveur** : depuis la carte d'un PNJ (hub/biblio, en
+  combat comme hors combat), le bloc Cyberdeck propose un serveur cible
+  (picker) puis « ⚡ Ouvrir la Matrice » (ouvre le tracker d'intrusion de ce
+  serveur) et, en SR5/SR6/Anarchy 2.0, « 🎯 Piratage » (jet du pool Attaque du
+  deck). En combat, si le serveur ciblé diffère du serveur lié à la scène, un
+  bouton « 🔗 Lier à la scène » l'y promeut en un tap.
+
 ## [1.3.0] — 2026-07-13
 
 ### Jouer
