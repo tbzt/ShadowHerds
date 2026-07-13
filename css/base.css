@@ -3337,11 +3337,31 @@ body.selecting .bulk-selectable .contact-header-row {
   display: flex;
   align-items: center;
   gap: 0.3rem;
+  position: relative; /* ancre le popover .card-menu du ⋯ (K10) */
 }
-/* Toggle « a joué » ordonné (SR5/SR6), rangé dans le groupe ⋯ : jeton ✓ (à
-   marquer) / ↩ (à annuler), vert quand joué. Remplace l'ancienne checkbox
-   native permanente — action rare, déjà automatisée par « Tour suivant » ;
-   le grisé de ligne (.encounter-row.has-acted) reste l'indicateur passif. */
+/* K10 : chips inline des verbes fréquents du tour (✓/↩ ⚄ ⏸/▶) — contour +
+   --text au repos, lisibles à toute taille de pointeur (contrairement à
+   l'ancienne bande .btn-icon-tiny nue, révélée seulement au tap). */
+.encounter-chip {
+  flex: none;
+  min-width: 32px;
+  min-height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text);
+  font-size: var(--fs-sm);
+  line-height: 1;
+  cursor: pointer;
+}
+.encounter-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* Toggle « a joué » ordonné (SR5/SR6) : jeton ✓ (à marquer) / ↩ (à annuler),
+   vert quand joué. Remplace l'ancienne checkbox native permanente — action
+   rare, déjà automatisée par « Tour suivant » ; le grisé de ligne
+   (.encounter-row.has-acted) reste l'indicateur passif. */
 .encounter-acted-toggle.is-done {
   color: var(--success);
   border-color: color-mix(in srgb, var(--success) 55%, transparent);
@@ -3378,19 +3398,6 @@ body.selecting .bulk-selectable .contact-header-row {
   padding: 0.05rem 0.3rem;
 }
 
-/* Contrôles secondaires (⚄▲▼✚✕) : repliés derrière le menu ⋯, révélés au tap
-   (classe .menu-open posée par Encounter). Remplace l'ancien survol/coarse qui
-   laissait 4 icônes en permanence sur mobile — source du tassement horizontal. */
-.encounter-controls-secondary {
-  display: none;
-  gap: 0.3rem;
-}
-.encounter-row.menu-open .encounter-controls-secondary {
-  display: inline-flex;
-}
-.encounter-row.menu-open .encounter-row-menu {
-  color: var(--accent);
-}
 /* Marqueur de dominance du combattant actif. */
 .encounter-active-flag {
   color: var(--accent);
@@ -3587,14 +3594,10 @@ body.selecting .bulk-selectable .contact-header-row {
   text-decoration: line-through;
   color: var(--text-dim);
 }
-.encounter-nrow .encounter-controls-secondary {
-  display: none;
-}
-.encounter-nrow.menu-open .encounter-controls-secondary {
-  display: inline-flex;
-}
-.encounter-nrow.menu-open .encounter-row-menu {
-  color: var(--accent);
+/* Menu ⋯ narratif : ancre .card-menu, poussé en fin de ligne (flex-wrap). */
+.encounter-nrow .encounter-controls {
+  position: relative;
+  margin-left: auto;
 }
 
 /* ---- Dispositions de combat (Vague D) : hors de combat + devrait fuir ---- */
@@ -3715,15 +3718,13 @@ body.selecting .bulk-selectable .contact-header-row {
   background: color-mix(in srgb, var(--warning) 12%, transparent);
 }
 
-/* Cibles tactiles ≥44px partout où le pointeur est grossier (mobile ET
-   tablette) — les btn-icon-tiny de 32px passaient sous le minimum ergonomique. */
+/* Cibles tactiles ≥40px partout où le pointeur est grossier (mobile ET
+   tablette) — chips inline + ⋯ (K10) de 32/30px passent sous le minimum
+   ergonomique sans ce correctif. */
 @media (pointer: coarse) {
-  .encounter-row .btn-icon-tiny {
-    min-width: 40px;
-    min-height: 40px;
-    font-size: var(--fs-md);
-  }
-  .encounter-nrow .btn-icon-tiny {
+  .encounter-row .encounter-chip,
+  .encounter-row .card-kebab,
+  .encounter-nrow .card-kebab {
     min-width: 40px;
     min-height: 40px;
     font-size: var(--fs-md);
@@ -3740,8 +3741,8 @@ body.selecting .bulk-selectable .contact-header-row {
 }
 
 /* Reflow 2 étages sous 640px : le jeton d'init reste à gauche, le bloc central
-   prend la largeur, la note passe en pleine largeur, les contrôles s'alignent
-   sans tasser. Le menu ⋯ ouvert fait retomber ⚄▲▼✚✕ sous la ligne. */
+   prend la largeur, la note passe en pleine largeur, les contrôles (chips +
+   ⋯) s'alignent en fin de ligne sans tasser. */
 @media (max-width: 640px) {
   .encounter-row {
     flex-wrap: wrap;
@@ -3758,11 +3759,6 @@ body.selecting .bulk-selectable .contact-header-row {
   }
   .encounter-controls {
     margin-left: auto;
-  }
-  .encounter-row.menu-open .encounter-controls-secondary {
-    order: 4;
-    flex-basis: 100%;
-    justify-content: flex-end;
   }
   /* K1 : la fiche du combattant actif prend tout l'écran sous le rail —
      plus de largeur bridée à 300/320px comme dans le dock desktop. */

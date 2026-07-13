@@ -135,9 +135,7 @@ const EncounterRenderer = {
     const comb = pnj.threatLevel
       ? `<span class="encounter-kind encounter-comb">${Utils.escHtml(pnj.threatLevel)}</span>`
       : "";
-    const focusItem = pnj._adhoc
-      ? ""
-      : `<button class="btn-icon-tiny" data-action="focus-combatant" data-id="${pnjId}" title="Voir la fiche" aria-label="Voir la fiche">☰</button>`;
+    const canFocus = !pnj._adhoc;
     const colorDot = r.isPJ ? CardRenderer._pcAvatar(pnj) : "";
     // Pas de poignée sur les lignes hors de combat (épinglées en bas, non
     // réordonnables) — même garde que _row.
@@ -150,6 +148,23 @@ const EncounterRenderer = {
     const status = r.down
       ? this._downBadge()
       : `<span class="encounter-nrow-status${hasActed ? " is-done" : ""}">${hasActed ? "Joué" : "À jouer"}</span>`;
+    // K10 : les actions rares (voir la fiche / hors de combat / réinitialiser /
+    // retirer) vivent derrière le menu ⋯ canonique (.card-kebab/.card-menu,
+    // CardMenu.bindDelegation() déjà bindé au boot — aucun câblage neuf ici).
+    // Pas de chips inline en narratif : le tap pleine-ligne reste le geste
+    // dominant (cf. décision C, PLAN_COCKPIT_COMBAT § K10).
+    const menuItems = [
+      canFocus
+        ? { attrs: `data-action="focus-combatant" data-id="${pnjId}"`, label: "Voir la fiche" }
+        : null,
+      pnj._adhoc || r.down
+        ? null
+        : { attrs: `data-action="knockout-combatant" data-id="${pnjId}"`, label: "Hors de combat" },
+      pnj._adhoc
+        ? null
+        : { attrs: `data-action="heal-combatant" data-id="${pnjId}"`, label: "Réinitialiser les moniteurs" },
+      { attrs: `data-action="remove-combatant" data-id="${pnjId}"`, label: "Retirer du combat", danger: true },
+    ].filter(Boolean);
     return `<div class="encounter-nrow${hasActed ? " has-acted" : ""}${r.down ? " down" : ""}" data-action="narrative-toggle" data-id="${pnjId}" role="button" tabindex="0" aria-pressed="${hasActed}" title="Toucher pour basculer « a joué »">
       ${dragHandle}
       <span class="encounter-nrow-check" aria-hidden="true">✓</span>
@@ -159,15 +174,26 @@ const EncounterRenderer = {
       </div>
       ${status}
       ${this._lifeGauge(r)}
-      <button class="btn-icon-tiny encounter-row-menu" data-action="row-menu" title="Plus d'actions" aria-label="Plus d'actions">⋯</button>
-      <span class="encounter-controls-secondary">
-        ${focusItem}
-        ${pnj._adhoc || r.down ? "" : `<button class="btn-icon-tiny" data-action="knockout-combatant" data-id="${pnjId}" title="Mettre hors de combat" aria-label="Mettre hors de combat">☠</button>`}
-        ${pnj._adhoc ? "" : `<button class="btn-icon-tiny" data-action="heal-combatant" data-id="${pnjId}" title="Réinitialiser les moniteurs (réanimer)" aria-label="Réinitialiser les moniteurs">✚</button>`}
-        <button class="btn-icon-tiny danger" data-action="remove-combatant" data-id="${pnjId}" title="Retirer" aria-label="Retirer">✕</button>
-      </span>
+      <span class="encounter-controls">${this._rowMenu(menuItems)}</span>
       ${this._moraleBanner(r)}
     </div>`;
+  },
+
+  /** Menu de débordement ⋯ générique d'une ligne (ordonné + narratif) —
+      réutilise le patron canonique .card-kebab/.card-menu (cardfooter.js) :
+      libellés lisibles, ouverture/fermeture déjà gérées par
+      CardMenu.bindDelegation() (clic-dehors, Échap, un seul ouvert,
+      aria-expanded). Items = simples data-action, câblés par la délégation
+      d'Encounter existante — ce helper ne décide d'aucune action métier. */
+  _rowMenu(items) {
+    const esc = Utils.escHtml;
+    return `<button type="button" class="card-kebab" data-card-menu-toggle aria-haspopup="true" aria-expanded="false" aria-label="Plus d'actions">⋯</button>
+      <div class="card-menu" role="menu" hidden>${items
+        .map(
+          (a) =>
+            `<button type="button" role="menuitem" class="card-menu-item${a.danger ? " danger" : ""}" ${a.attrs}>${esc(a.label)}</button>`,
+        )
+        .join("")}</div>`;
   },
 
   /** Suffixe « · Passe N » (SR5 uniquement) — partagé entre le titre du
@@ -284,9 +310,9 @@ const EncounterRenderer = {
         : "";
 
     // CH combat (Vague A) : ligne 2 étages responsive. Le jeton d'init ne porte
-    // plus que le score (base + malus + score effectif de passe) ; le lancer ⚄
-    // par ligne et la gestion (▲▼✚✕) sont regroupés derrière un menu ⋯ (déplié
-    // par data-action="row-menu", cf. Encounter) pour dégager la ligne sur mobile.
+    // plus que le score (base + malus + score effectif de passe) ; les verbes
+    // fréquents (✓/↩ ⚄ ⏸/▶) restent en chips inline, la gestion rare (▲▼✎☠✚✕)
+    // vit derrière le menu ⋯ canonique .card-menu (K10, _rowMenu).
     // Vague D : hors de combat → jeton d'init remplacé par « — » (init retirée)
     // + badge ; « devrait fuir » → bandeau de moral avec action « Faire fuir ».
     // Vague B : steppers ±1 autour du champ (ajuster une init lancée sans
@@ -309,6 +335,28 @@ const EncounterRenderer = {
     const dragHandle = r.down
       ? ""
       : `<span class="encounter-drag-handle" title="Glisser pour réordonner" aria-hidden="true">⠿</span>`;
+    // K10 : verbes du tour (fréquents) en chips inline lisibles à toutes tailles
+    // de pointeur ; le reste (réordre, note, hors de combat, réinitialiser,
+    // retirer) derrière le menu ⋯ canonique (décision C, PLAN_COCKPIT_COMBAT § K10).
+    const actedChip = `<button class="encounter-chip encounter-acted-toggle${hasActed ? " is-done" : ""}" data-action="toggle-acted" data-id="${pnjId}" title="${hasActed ? "Marquer « pas encore joué »" : "Marquer « a joué »"}" aria-label="${hasActed ? "Marquer comme pas encore joué" : "Marquer comme a joué"}">${hasActed ? "↩" : "✓"}</button>`;
+    const rollChip = `<button class="encounter-chip" data-action="roll-init" data-id="${pnjId}" title="Lancer l'initiative" aria-label="Lancer l'initiative">⚄</button>`;
+    const delayChip = r.down
+      ? ""
+      : r.delayed
+        ? `<button class="encounter-chip" data-action="act-now-combatant" data-id="${pnjId}" title="Agir maintenant" aria-label="Agir maintenant">▶</button>`
+        : `<button class="encounter-chip" data-action="delay-combatant" data-id="${pnjId}" title="Retarder l'action (tenir son tour)" aria-label="Retarder l'action">⏸</button>`;
+    const menuItems = [
+      { attrs: `data-action="move-up" data-id="${pnjId}"`, label: "Monter dans l'ordre" },
+      { attrs: `data-action="move-down" data-id="${pnjId}"`, label: "Descendre dans l'ordre" },
+      hasNote ? null : { attrs: `data-action="note-toggle" data-id="${pnjId}"`, label: "Ajouter une note" },
+      pnj._adhoc || r.down
+        ? null
+        : { attrs: `data-action="knockout-combatant" data-id="${pnjId}"`, label: "Hors de combat" },
+      pnj._adhoc
+        ? null
+        : { attrs: `data-action="heal-combatant" data-id="${pnjId}"`, label: "Réinitialiser les moniteurs" },
+      { attrs: `data-action="remove-combatant" data-id="${pnjId}"`, label: "Retirer du combat", danger: true },
+    ].filter(Boolean);
     return `<div class="encounter-row${isMatrix ? " is-matrix" : ""}${isActive ? " active-turn" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}${r.down ? " down" : ""}${r.delayed && !r.down ? " delayed" : ""}" data-id="${pnjId}">
       ${dragHandle}
       ${initZone}
@@ -326,24 +374,10 @@ const EncounterRenderer = {
           data-action="set-note" data-id="${pnjId}">
       </div>
       <div class="encounter-controls">
-        <button class="btn-icon-tiny encounter-row-menu" data-action="row-menu" title="Plus d'actions" aria-label="Plus d'actions">⋯</button>
-        <span class="encounter-controls-secondary">
-          <button class="btn-icon-tiny encounter-acted-toggle${hasActed ? " is-done" : ""}" data-action="toggle-acted" data-id="${pnjId}" title="${hasActed ? "Marquer « pas encore joué »" : "Marquer « a joué »"}" aria-label="${hasActed ? "Marquer comme pas encore joué" : "Marquer comme a joué"}">${hasActed ? "↩" : "✓"}</button>
-          <button class="btn-icon-tiny" data-action="roll-init" data-id="${pnjId}" title="Lancer l'initiative" aria-label="Lancer l'initiative">⚄</button>
-          <button class="btn-icon-tiny" data-action="move-up" data-id="${pnjId}" title="Monter" aria-label="Monter">▲</button>
-          <button class="btn-icon-tiny" data-action="move-down" data-id="${pnjId}" title="Descendre" aria-label="Descendre">▼</button>
-          ${
-            r.down
-              ? ""
-              : r.delayed
-                ? `<button class="btn-icon-tiny" data-action="act-now-combatant" data-id="${pnjId}" title="Agir maintenant" aria-label="Agir maintenant">▶</button>`
-                : `<button class="btn-icon-tiny" data-action="delay-combatant" data-id="${pnjId}" title="Retarder l'action (tenir son tour)" aria-label="Retarder l'action">⏸</button>`
-          }
-          ${hasNote ? "" : `<button class="btn-icon-tiny" data-action="note-toggle" data-id="${pnjId}" title="Ajouter une note" aria-label="Ajouter une note">✎</button>`}
-          ${pnj._adhoc || r.down ? "" : `<button class="btn-icon-tiny" data-action="knockout-combatant" data-id="${pnjId}" title="Mettre hors de combat" aria-label="Mettre hors de combat">☠</button>`}
-          ${pnj._adhoc ? "" : `<button class="btn-icon-tiny" data-action="heal-combatant" data-id="${pnjId}" title="Réinitialiser les moniteurs (réanimer)" aria-label="Réinitialiser les moniteurs">✚</button>`}
-          <button class="btn-icon-tiny danger" data-action="remove-combatant" data-id="${pnjId}" title="Retirer" aria-label="Retirer">✕</button>
-        </span>
+        ${actedChip}
+        ${rollChip}
+        ${delayChip}
+        ${this._rowMenu(menuItems)}
       </div>
     </div>`;
   },

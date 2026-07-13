@@ -1138,7 +1138,7 @@ const Encounter = {
           break;
         case "toggle-rail": {
           // K1 : bascule réglette compacte / liste complète — état de vue
-          // éphémère (comme row-menu), pas de nouvelle clé Storage.
+          // éphémère (comme le menu ⋯ .card-menu[hidden]), pas de nouvelle clé Storage.
           const modal = document.querySelector(".encounter-modal");
           if (modal) modal.classList.toggle("rail-expanded");
           break;
@@ -1201,14 +1201,6 @@ const Encounter = {
         case "clear-encounter":
           this.clear();
           break;
-        case "row-menu": {
-          // Divulgation des actions secondaires d'une ligne (⚄▲▼✚✕ en ordonné,
-          // ☰✕ en narratif) : simple bascule de classe, éphémère (le prochain
-          // commit re-rend la ligne repliée, ce qui referme le menu — voulu).
-          const row = el.closest(".encounter-row, .encounter-nrow");
-          if (row) row.classList.toggle("menu-open");
-          break;
-        }
         case "narrative-toggle": {
           // Ligne narrative : tap = bascule « a joué » (grise / rallume).
           const c = this._find(id);
