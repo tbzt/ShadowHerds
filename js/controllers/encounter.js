@@ -740,6 +740,19 @@ const Encounter = {
     this._commit();
   },
 
+  /** M5 : désigne/retire le decker qui protège cet appareil de son Firewall
+      (SR5 p.236 PAN/esclave ; A2 p.216-217 Protection active — SR6 approximé
+      par analogie, arbitrage utilisateur). Ne crée PAS le descripteur si
+      l'appareil n'est pas encore une cible (targetDevice d'abord) — protéger
+      un appareil qui n'existe pas encore n'a pas de sens. */
+  setDeviceProtector(pnjId, label, protectorId) {
+    const c = this._find(pnjId);
+    const d = c && c.devices && c.devices[label];
+    if (!d) return;
+    d.protectorId = protectorId || null;
+    this._commit();
+  },
+
   /** Fin de scène : soigne tous les combattants résolvables d'un coup. */
   async healAll() {
     const ok = await Dialog.confirm({
@@ -1302,6 +1315,54 @@ const Encounter = {
           // M4 : Anarchy 2 — bascule « hors service » en un tap (régime narratif).
           this.deviceNarrativeToggle(id, el.dataset.label);
           break;
+        case "device-protect": {
+          // M5 : désigne le decker protecteur — lit le <select> voisin (même
+          // rangée), jamais un data-* mutable au clic (valeur choisie à l'instant).
+          // targetDevice d'abord (idempotent) : en narratif (A2), protéger une
+          // arme peut être le tout premier geste sur elle, avant tout brickage —
+          // pas de bouton "Bricker" séparé dans la bande narrative.
+          const sel = el.closest(".encounter-device-protect")?.querySelector("select");
+          this.targetDevice(id, el.dataset.label);
+          this.setDeviceProtector(id, el.dataset.label, sel && sel.value);
+          break;
+        }
+        case "device-unprotect":
+          this.setDeviceProtector(id, el.dataset.label, null);
+          break;
+        case "device-defense": {
+          // M5 : jet de défense protégée (SR5/SR6 : Indice + Firewall du
+          // protecteur ; A2 : Protection active, Firewall+Logique). Le MJ
+          // interprète/retranche avant de cliquer les cases — jamais résolu
+          // ici, même philosophie que le reste du cockpit.
+          const pnj = PnjLookup.find(id);
+          const c = this._find(id);
+          const d = c && c.devices && c.devices[el.dataset.label];
+          const protector = d && d.protectorId && PnjLookup.find(d.protectorId);
+          if (!pnj || !d || !protector) break;
+          const mode = Matrix.use(pnj.edition).deviceBricking();
+          const roll =
+            mode === "narrative"
+              ? Cyberdeck.rollProtectActive(protector)
+              : Cyberdeck.rollDefense(d.indice, protector.cyberdeck);
+          const res = Dice.computeRoll(roll.pool);
+          DiceRoller.show(res, { label: `${roll.label} — ${protector.name} protège ${pnj.name}`, who: protector.name });
+          break;
+        }
+        case "decker-attack": {
+          // M5 : decker↔decker — attaquer un autre decker, c'est attaquer son
+          // propre pnj.cyberdeck (déjà modélisé M2). Aucune donnée neuve : le
+          // MJ encaisse en cliquant les cases du moniteur du decker CIBLÉ,
+          // déjà affiché sur sa propre carte (toggle-deck-monitor, M2).
+          const sel = el.closest(".encounter-duel")?.querySelector("select");
+          const targetId = sel && sel.value;
+          const pnj = PnjLookup.find(id);
+          const target = targetId && PnjLookup.find(targetId);
+          const atk = pnj && Cyberdeck.rollAttack(pnj.edition, pnj.cyberdeck);
+          if (!target || !atk) break;
+          const res = Dice.computeRoll(atk.pool);
+          DiceRoller.show(res, { label: `${atk.label} — ${pnj.name} vs ${target.name} (decker)`, who: pnj.name });
+          break;
+        }
         case "action-set":
           // K7 : consomme/rend une action du tour actif (jeton tappable).
           this.setAction(id, el.dataset.key, parseInt(el.dataset.idx, 10) || 0);

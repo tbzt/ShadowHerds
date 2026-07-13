@@ -544,9 +544,15 @@ const EncounterRenderer = {
   /** Contenu du wrapper live `.encounter-active-top` (rafraîchi à chaque
       `_render()`, indépendant du cache `_activeCardId`) : tout ce qui doit
       rester à jour au fil du tour sans re-rendre la fiche complète — bandeau
-      d'état (K2), pont decker→scène (M3), appareils matriciels (M4). */
+      d'état (K2), pont decker→scène (M3), appareils matriciels (M4), duel
+      decker↔decker (M5a). */
   _activeTop(r, state) {
-    return this._activeBandeau(r) + this._activeDeckerLink(r, state) + this._activeDevices(r, state);
+    return (
+      this._activeBandeau(r) +
+      this._activeDeckerLink(r, state) +
+      this._activeDevices(r, state) +
+      this._deckerDuel(r, state)
+    );
   },
 
   /** Bandeau d'état au-dessus de la fiche active (K2) : hors de
@@ -602,10 +608,52 @@ const EncounterRenderer = {
     const weapons = ItemResolver.splitEquip(pnj.equip).weapons;
     if (!weapons.length) return "";
     const devices = r.devices || {};
-    const rows = weapons.map((w) => this._deviceRow(pnj, w, devices[w])).join("");
+    const protectors = this._deckersInScene(state, pnj.id);
+    const rows = weapons.map((w) => this._deviceRow(pnj, w, devices[w], protectors)).join("");
     return `<div class="encounter-devices">
       <div class="encounter-devices-lbl">Appareils matriciels</div>
       ${rows}
+    </div>`;
+  },
+
+  /** M5 : deckers présents dans la scène (PNJ avec `cyberdeck`), hors un id
+      donné — candidats « protecteur » (M5b, Firewall pour un allié) et cibles
+      du duel decker↔decker (M5a). Partagé par les deux usages. */
+  _deckersInScene(state, excludePnjId) {
+    const out = [];
+    for (const c of state.combatants) {
+      if (c.pnjId === excludePnjId) continue;
+      const p = PnjLookup.find(c.pnjId);
+      if (p && p.cyberdeck) out.push(p);
+    }
+    return out;
+  },
+
+  /** M5a : decker↔decker — attaquer un autre decker, c'est attaquer son propre
+      `pnj.cyberdeck` (déjà modélisé M2, moniteur + toggle-deck-monitor déjà
+      câblés sur sa carte). Zéro état neuf : un sélecteur éphémère (lu au clic,
+      jamais persisté) + `⚔ Piratage` réutilisant Cyberdeck.rollAttack tel
+      quel. Visible seulement si le combattant actif est lui-même decker ET
+      qu'au moins un AUTRE decker CIBLABLE est présent dans la scène — combat
+      uniquement (hors combat, « quel autre decker viser » n'a pas de sens).
+      Cible filtrée sur `Cyberdeck.monitorSize` non nul (SR5/SR6) : Anarchy
+      2.0 n'a pas de moniteur de deck propre (M2, biofeedback → Volonté), donc
+      rien où appliquer les dégâts — exclu explicitement, pas par accident (le
+      combat A2 est de toute façon narratif, sans fiche active, mais ce garde
+      reste correct si cette hypothèse change un jour). */
+  _deckerDuel(r, state) {
+    const pnj = r.pnj;
+    if (!pnj || pnj._adhoc || !pnj.cyberdeck) return "";
+    const targets = this._deckersInScene(state, pnj.id).filter(
+      (t) => Cyberdeck.monitorSize(t.edition, t.cyberdeck) != null,
+    );
+    if (!targets.length) return "";
+    const esc = Utils.escHtml;
+    const options = targets.map((t) => `<option value="${t.id}">${esc(t.name)}</option>`).join("");
+    return `<div class="encounter-duel">
+      <span class="encounter-devices-lbl">Duel decker↔decker</span>
+      <select class="encounter-duel-select" aria-label="Decker ciblé">${options}</select>
+      <button class="react-btn" data-action="decker-attack" data-id="${pnj.id}" title="Piratage contre ce decker (dégâts : cases de son propre moniteur de deck)">⚔ Piratage</button>
     </div>`;
   },
 
@@ -639,11 +687,16 @@ const EncounterRenderer = {
         const weapons = ItemResolver.splitEquip(r.pnj.equip).weapons;
         if (!weapons.length) return "";
         const devices = r.devices || {};
+        const protectors = this._deckersInScene(state, r.pnj.id);
         const chips = weapons
           .map((w) => {
             const bricked = !!(devices[w] && devices[w].bricked);
             const idAttrs = `data-id="${r.pnj.id}" data-label="${esc(w)}"`;
-            return `<button class="react-btn${bricked ? " is-off" : ""}" data-action="device-narrative-toggle" ${idAttrs} title="${bricked ? "Réparer" : "Rendre hors service"}">${esc(w)}${bricked ? " — hors service" : ""}</button>`;
+            const toggle = `<button class="react-btn${bricked ? " is-off" : ""}" data-action="device-narrative-toggle" ${idAttrs} title="${bricked ? "Réparer" : "Rendre hors service"}">${esc(w)}${bricked ? " — hors service" : ""}</button>`;
+            // M5b : la protection peut être posée sur une arme jamais encore
+            // ciblée (pas de bouton « Bricker » séparé en narratif) — d peut
+            // être absent, _deviceProtection le traite comme non protégé.
+            return `<span class="encounter-ndevice-chip">${toggle}${this._deviceProtection(r.pnj, w, devices[w] || {}, protectors)}</span>`;
           })
           .join("");
         return `<div class="encounter-ndevice-row">
@@ -662,8 +715,10 @@ const EncounterRenderer = {
   /** Une ligne « appareil » (arme) sur la fiche active (SR5/SR6, mode moniteur).
       Le régime narratif (Anarchy 2) ne passe jamais ici : sa combativité n'a
       pas de fiche active (renderActiveCard sort tôt) — il a sa propre bande,
-      _narrativeDevices, dans la liste. */
-  _deviceRow(pnj, label, d) {
+      _narrativeDevices, dans la liste. `protectors` (M5b) : deckers candidats
+      pour protéger cet appareil de leur Firewall (liste déjà exclue de son
+      propriétaire, cf. _deckersInScene) — vide si aucun protecteur possible. */
+  _deviceRow(pnj, label, d, protectors) {
     const esc = Utils.escHtml;
     const el = esc(label);
     const idAttrs = `data-id="${pnj.id}" data-label="${el}"`;
@@ -693,7 +748,31 @@ const EncounterRenderer = {
       ${rating}
       <div class="monitor-boxes">${boxes}</div>
       ${brickedBadge}${untarget}
+      ${this._deviceProtection(pnj, label, d, protectors)}
     </div>`;
+  },
+
+  /** M5b : Firewall pour un allié — badge + jet de défense une fois protégé,
+      sinon picker « Protéger » (SR5 p.236 PAN/esclave, SR6 approximé). Rien
+      si aucun autre decker n'est présent dans la scène pour protéger. */
+  _deviceProtection(pnj, label, d, protectors) {
+    if (!protectors || !protectors.length) return "";
+    const esc = Utils.escHtml;
+    const idAttrs = `data-id="${pnj.id}" data-label="${esc(label)}"`;
+    if (!d.protectorId) {
+      const options = protectors.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join("");
+      return `<span class="encounter-device-protect">
+        <select class="encounter-device-protector-select" aria-label="Decker protecteur">${options}</select>
+        <button class="react-btn" data-action="device-protect" ${idAttrs} title="Ce decker protège l'appareil de son Firewall">🛡️ Protéger</button>
+      </span>`;
+    }
+    const protector = PnjLookup.find(d.protectorId);
+    const protectorName = protector ? esc(protector.name) : "?";
+    return `<span class="encounter-device-protect is-protected">
+      <span class="encounter-device-protector-badge">🛡️ ${protectorName}</span>
+      <button class="react-btn" data-action="device-defense" ${idAttrs}>Défense</button>
+      <button class="react-btn" data-action="device-unprotect" ${idAttrs} title="Retirer la protection" aria-label="Retirer la protection">✕</button>
+    </span>`;
   },
 
   /** Rangée Atout (K5, SR6) : compteur de combat 0-7 par combattant, stocké
