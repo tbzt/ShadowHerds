@@ -8,7 +8,7 @@
   <!-- Fontes auto-hébergées (CH-V10) : l'app reste fonctionnelle et fidèle
        à ses identités d'édition sans réseau (table de jeu = contexte nominal). -->
   <link rel="stylesheet" href="css/fonts.css?v=987">
-  <link rel="stylesheet" href="css/base.css?v=991">
+  <link rel="stylesheet" href="css/base.css?v=992">
   <link rel="stylesheet" href="css/print.css?v=987">  <!-- Thèmes d'édition chargés à la sélection (App._loadEditionAssets, CH-P1b). -->
 </head>
 
@@ -688,6 +688,10 @@
         <button class="modal-close" data-action="shortcuts-close" aria-label="Fermer">✕</button>
       </div>
       <div class="modal-body">
+        <div class="help-tour-actions">
+          <button class="btn-primary btn-small" data-action="tour-full">▸ Visite guidée</button>
+          <button class="btn-secondary btn-small" id="help-whatsnew" data-action="tour-whatsnew" hidden>✦ Quoi de neuf</button>
+        </div>
         <p class="help-intro">Assistant de MJ Shadowrun, 100 % local à votre navigateur. Générez PNJ, contacts et runs, pilotez le combat et la Matrice.</p>
         <p class="help-intro"><strong>Démarrer :</strong> ouvrez <em>PNJ</em> dans CRÉER, cliquez « Générer », puis rangez la fiche dans un dossier depuis « Ombres portées ».</p>
         <p class="help-intro"><strong>Astuce :</strong> sur une fiche, les réserves <span class="help-die">⚄</span> sont cliquables — un clic lance les dés.</p>
@@ -790,7 +794,7 @@
   <script defer src="js/widgets/pinrow.js?v=987"></script>
   <script defer src="js/widgets/onboarding.js?v=987"></script>
   <script defer src="js/widgets/toursteps.js?v=991"></script>
-  <script defer src="js/widgets/tour.js?v=991"></script>
+  <script defer src="js/widgets/tour.js?v=992"></script>
   <script defer src="js/controllers/portrait.js?v=987"></script>
   <script defer src="js/controllers/encounter.js?v=987"></script>
   <script defer src="js/controllers/editmodal.js?v=987"></script>
@@ -803,7 +807,7 @@
   <script defer src="js/controllers/printsheet.js?v=987"></script>
   <script defer src="js/controllers/sync.js?v=987"></script>
   <script defer src="js/controllers/foundryexport.js?v=987"></script>
-  <script defer src="js/app.js?v=991"></script>
+  <script defer src="js/app.js?v=992"></script>
 </body>
 
 </html>

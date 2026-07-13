@@ -21,13 +21,14 @@ const Tour = {
   _onEnd: null,
   _MOBILE: 640,
   _navigate: null,
+  _version: "0.0.0",
 
-  /** Injection depuis app.js : navigation par panneau, pour les étapes qui
-      déclarent `panel`. Garde le moteur édition-agnostique — aucun App.* en
-      dur ici. Optionnel : sans `navigate`, une étape à `panel` retombe sur son
-      `fallback` si son ancre n'est pas visible. */
+  /** Injection depuis app.js : `navigate` (navigation par panneau pour les
+      étapes à `panel`) et `version` (App.VERSION, base du « Quoi de neuf »).
+      Garde le moteur édition-agnostique — aucun App.* en dur ici. */
   init(opts = {}) {
     this._navigate = opts.navigate || null;
+    this._version = opts.version || "0.0.0";
   },
 
   /** Démarre un parcours. Ne fait rien si aucune étape n'y appartient. */
@@ -76,6 +77,124 @@ const Tour = {
   /* ---- capacité (neutre en G1, résolue par l'édition en G3) ---- */
   _hasCapability(cap) {
     return true;
+  },
+
+  /* ---- « Montre-moi » : démo d'une seule étape depuis Quoi de neuf ---- */
+  demo(stepId) {
+    const all = (typeof TourSteps !== "undefined" && TourSteps.steps) || [];
+    const s = all.find((x) => x.id === stepId);
+    if (!s) return;
+    this._onEnd = null;
+    this._steps = [s];
+    this._i = 0;
+    this._active = true;
+    this._ensureRoot();
+    this._root.hidden = false;
+    document.addEventListener("keydown", this._onKey, true);
+    this._render();
+  },
+
+  /* ---- « Quoi de neuf » : delta cumulé depuis la dernière version vue ---- */
+  _semverGt(a, b) {
+    const pa = String(a || "0").split(".").map(Number);
+    const pb = String(b || "0").split(".").map(Number);
+    for (let i = 0; i < 3; i++) {
+      if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) > (pb[i] || 0);
+    }
+    return false;
+  },
+
+  /** Étapes annoncées (`tours` contient "whatsnew") plus récentes que `seen`. */
+  _newsSince(seen) {
+    const all = (typeof TourSteps !== "undefined" && TourSteps.steps) || [];
+    return all.filter(
+      (s) => s.since && (s.tours || []).includes("whatsnew") && this._semverGt(s.since, seen),
+    );
+  },
+
+  /** Pose/retire le badge sur le bouton Aide + met à jour l'entrée « Quoi de
+      neuf (N) ». Migration douce : un profil déjà onboardé mais sans version
+      vue (pré-G3) est calé sur la version courante — pas de faux badge. */
+  refreshBadge() {
+    if (
+      Storage.getGlobal("tour_seen", false) &&
+      Storage.getGlobal("tour_seen_version", null) == null
+    ) {
+      Storage.setGlobal("tour_seen_version", this._version);
+    }
+    const seen = Storage.getGlobal("tour_seen_version", null);
+    const n = seen != null ? this._newsSince(seen).length : 0;
+    const help = document.querySelector('[data-action="toggle-shortcuts"]');
+    if (help) help.classList.toggle("has-news", n > 0);
+    const entry = document.getElementById("help-whatsnew");
+    if (entry) {
+      entry.hidden = n === 0;
+      entry.textContent = `✦ Quoi de neuf (${n})`;
+    }
+  },
+
+  /** Ouvre le panneau consolidé (une seule fenêtre quel que soit le nombre de
+      versions sautées), groupé par version décroissante. */
+  openWhatsNew() {
+    const seen = Storage.getGlobal("tour_seen_version", null);
+    const items = this._newsSince(seen);
+    if (!items.length) return;
+    const byVer = {};
+    for (const s of items) (byVer[s.since] = byVer[s.since] || []).push(s);
+    const versions = Object.keys(byVer).sort((a, b) => (this._semverGt(a, b) ? -1 : 1));
+    const esc = (t) =>
+      String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const rows = versions
+      .map(
+        (v) =>
+          `<div class="wn-group"><div class="wn-ver">v${esc(v)}</div>` +
+          byVer[v]
+            .map(
+              (s) =>
+                `<div class="wn-row"><div class="wn-txt"><strong>${esc(s.title)}</strong><span>${esc(s.body)}</span></div>` +
+                `<button class="btn-secondary btn-small" data-action="wn-demo" data-step="${esc(s.id)}">Montre-moi</button></div>`,
+            )
+            .join("") +
+          `</div>`,
+      )
+      .join("");
+    let root = document.getElementById("whatsnew-root");
+    if (!root) {
+      root = document.createElement("div");
+      root.id = "whatsnew-root";
+      root.className = "whatsnew-root";
+      root.hidden = true;
+      document.body.appendChild(root);
+      root.addEventListener("click", (e) => {
+        const el = e.target.closest("[data-action]");
+        if (!el) return;
+        if (el.dataset.action === "wn-close") this._closeWhatsNew();
+        else if (el.dataset.action === "wn-demo") {
+          const id = el.dataset.step;
+          this._closeWhatsNew();
+          this.demo(id);
+        }
+      });
+    }
+    root.innerHTML =
+      `<div class="wn-scrim" data-action="wn-close"></div>` +
+      `<div class="wn-panel" role="dialog" aria-modal="true" aria-label="Quoi de neuf" tabindex="-1">` +
+      `<div class="wn-head"><span class="wn-title">✦ Quoi de neuf</span>` +
+      `<button class="modal-close" data-action="wn-close" aria-label="Fermer">✕</button></div>` +
+      `<div class="wn-list">${rows}</div>` +
+      `<div class="wn-foot"><button class="btn-primary btn-small" data-action="wn-close">Compris</button></div>` +
+      `</div>`;
+    root.hidden = false;
+    root.querySelector(".wn-panel").focus({ preventScroll: true });
+  },
+
+  /** Fermeture : `tour_seen_version` = version courante → le badge s'éteint
+      d'un coup, quel que soit le nombre de versions cumulées. */
+  _closeWhatsNew() {
+    const root = document.getElementById("whatsnew-root");
+    if (root) root.hidden = true;
+    Storage.setGlobal("tour_seen_version", this._version);
+    this.refreshBadge();
   },
 
   /* ---- chrome ---- */
