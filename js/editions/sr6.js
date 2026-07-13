@@ -289,6 +289,25 @@ const EditionSR6 = {
       }
       return { filled: entity.physFilled || 0, total: entity.me || 0 };
     },
+    /** K8 : résultat NET de dégâts appliqué au moniteur — unique par défaut,
+        ou piste Physique si `separateMonitors` (stunMon posé) ; `opts.type`
+        ("phys"/"stun") ne sert qu'en mode séparé. */
+    applyDamage(entity, n, opts) {
+      const amount = Math.max(0, n || 0);
+      const sep = entity.stunMon !== undefined;
+      const type = sep && opts && opts.type === "stun" ? "stun" : "phys";
+      const field = type === "stun" ? "stunFilled" : "physFilled";
+      const max = type === "stun" ? entity.stunMon : sep ? entity.physMon : entity.me;
+      const before = entity[field] || 0;
+      entity[field] = Utils.clamp(before + amount, 0, max ?? 99);
+      return { field, applied: entity[field] - before };
+    },
+    /** K8 : descripteur neutre — la bascule P/S n'apparaît qu'en mode
+        `separateMonitors` (sinon moniteur d'état unique, pas de type à choisir). */
+    damageUI(entity) {
+      const sep = entity && entity.stunMon !== undefined;
+      return { kind: "numeric", chips: [1, 2, 3, 5], hasType: sep, defaultType: "phys" };
+    },
   },
   /** Résolution du jet d'arme (WeaponRoll) : synergie smartgun/smartlink
       flat +1 (pas de distinction implanté/externe en SR6), pas de limite

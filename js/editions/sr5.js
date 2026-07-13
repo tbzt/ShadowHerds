@@ -253,6 +253,25 @@ const EditionSR5 = {
         total: (entity.physMon || 0) + (entity.stunMon || 0),
       };
     },
+    /** K8 : résultat NET de dégâts (déjà résisté par le MJ hors app) appliqué au
+        moniteur — le cockpit n'a pas la valeur d'attaque, il ne fait que
+        remplir des cases. `opts.type` = "phys" (défaut, arme physique) ou
+        "stun" (bascule un tap dans le cockpit) — jamais recalculé ici, juste
+        clampé à la taille du moniteur visé (débordement laissé au MJ). */
+    applyDamage(entity, n, opts) {
+      const amount = Math.max(0, n || 0);
+      const type = opts && opts.type === "stun" ? "stun" : "phys";
+      const field = type === "stun" ? "stunFilled" : "physFilled";
+      const max = type === "stun" ? entity.stunMon : entity.physMon;
+      const before = entity[field] || 0;
+      entity[field] = Utils.clamp(before + amount, 0, max ?? 99);
+      return { field, applied: entity[field] - before };
+    },
+    /** K8 : descripteur neutre lu par le cockpit pour bâtir les chips de
+        dégâts — SR5 a deux pistes (Physique/Étourdissant), défaut Physique. */
+    damageUI() {
+      return { kind: "numeric", chips: [1, 2, 3, 5], hasType: true, defaultType: "phys" };
+    },
   },
   /** Résolution du jet d'arme (WeaponRoll) : synergie smartgun/smartlink
       (+2 implanté / +1 externe), la Précision (PRE) plafonne les succès,

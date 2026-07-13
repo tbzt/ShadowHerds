@@ -172,6 +172,20 @@ const EditionAnarchy1 = {
         total: (entity.physMon || 0) + (entity.stunMon || 0),
       };
     },
+    /** K8 : résultat NET de dégâts appliqué au moniteur (comme SR5, deux
+        pistes Physique/Étourdissant, défaut Physique). */
+    applyDamage(entity, n, opts) {
+      const amount = Math.max(0, n || 0);
+      const type = opts && opts.type === "stun" ? "stun" : "phys";
+      const field = type === "stun" ? "stunFilled" : "physFilled";
+      const max = type === "stun" ? entity.stunMon : entity.physMon;
+      const before = entity[field] || 0;
+      entity[field] = Utils.clamp(before + amount, 0, max ?? 99);
+      return { field, applied: entity[field] - before };
+    },
+    damageUI() {
+      return { kind: "numeric", chips: [1, 2, 3, 5], hasType: true, defaultType: "phys" };
+    },
   },
 
   /* ---- Armes ---- Pas de RR, spécialisation = +2 dés (comme SR5). Pool

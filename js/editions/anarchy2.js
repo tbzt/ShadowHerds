@@ -285,6 +285,23 @@ const EditionAnarchy2 = {
       }
       return { filled, total };
     },
+    /** K8 : résultat NET de dégâts en Anarchy 2 = un cran de gravité, pas des
+        cases — délègue à applyWound (cascade p.68 incluse). `opts.severity`
+        ("leger"/"grave"/"incap", défaut "leger"). `n` est ignoré : un dégât net
+        en Anarchy 2 EST le cran, jamais un nombre de cases. */
+    applyDamage(entity, n, opts) {
+      const sev = (opts && opts.severity) || "leger";
+      const applied = EditionAnarchy2.applyWound(entity, sev);
+      return applied ? { field: `${applied.sev}Filled`, applied: 1, wound: applied } : { field: null, applied: 0 };
+    },
+    /** K8 : descripteur neutre — pas de chips numériques, 3 niveaux de gravité
+        (le MJ dit « c'est une blessure grave », l'app ne demande pas de cases). */
+    damageUI() {
+      return {
+        kind: "wound",
+        levels: EditionAnarchy2._woundTiers({}).map((t) => ({ sev: t.sev, label: t.label })),
+      };
+    },
   },
   /** Résolution du jet d'arme (WeaponRoll) : pas de règle smartlink/
       smartgun en Anarchy 2.0 (neutre `null`, doc), pas de limite de

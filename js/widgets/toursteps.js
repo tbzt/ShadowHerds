@@ -81,5 +81,12 @@ const TourSteps = {
       title: "Perdu ? Ce bouton",
       body: "Il relance cette visite et liste les raccourcis clavier. Bon jeu.",
     },
+
+    /* --- Quoi de neuf (badge « ✦ », cumulé depuis la dernière version vue) --- */
+    {
+      id: "wn-k8-damage", anchor: "nav-combat", tours: ["whatsnew"], since: "1.1.0", fallback: "center",
+      title: "Dégâts en un tap",
+      body: "Au tour d'un PJ, la console de réaction encaisse maintenant les dégâts : bouton ✸ Dégâts par PNJ, cases ou gravité selon l'édition — la boucle Défense → Encaisser → Dégâts se boucle sans quitter l'écran.",
+    },
   ],
 };

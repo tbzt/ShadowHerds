@@ -641,6 +641,23 @@ const Encounter = {
     toast("Mis hors de combat.");
   },
 
+  /** K8 : ferme la boucle de réaction — 💥/✸ « Dégâts » applique un résultat
+      NET (déjà résisté, le cockpit n'a pas la valeur d'attaque) au moniteur
+      d'un combattant, via l'accesseur neutre conditionMonitor.applyDamage
+      (jamais de branche d'édition ici, comme knockOut ci-dessus). `opts` porte
+      `type` (SR5/SR6 : "phys"/"stun") ou `severity` (Anarchy 2 : cran de
+      gravité) selon ce que damageUI() de l'édition annonce. */
+  damageCombatant(pnjId, n, opts) {
+    const pnj = PnjLookup.find(pnjId);
+    const cm = App.editionModule && App.editionModule.conditionMonitor;
+    if (!pnj || !cm || !cm.applyDamage) return null;
+    const res = cm.applyDamage(pnj, n, opts || {});
+    Shadows.save();
+    CardRenderer.refresh(pnj);
+    this._render();
+    return res;
+  },
+
   /** Fin de scène : soigne tous les combattants résolvables d'un coup. */
   async healAll() {
     const ok = await Dialog.confirm({
@@ -1160,6 +1177,29 @@ const Encounter = {
           // réaction (accordéon, vue éphémère). Le rendu vit au renderer ; ici,
           // aucune logique de combat.
           EncounterRenderer.toggleReactExpand(id);
+          break;
+        case "react-damage-toggle":
+          // K8 : déplie/replie les chips de dégâts d'une ligne de réaction
+          // (état de vue éphémère, comme react-expand ci-dessus).
+          EncounterRenderer.toggleReactDamage(id);
+          break;
+        case "damage-type-toggle":
+          // K8 : bascule Physique/Étourdissant (SR5/SR6 séparé) avant d'appliquer
+          // un chip — vue seulement, aucune mutation du PNJ.
+          EncounterRenderer.toggleDamageType(id);
+          break;
+        case "react-damage":
+          // K8 : applique un résultat NET de dégâts (chip) au moniteur —
+          // conditionMonitor.applyDamage lu via Encounter, jamais de calcul ici.
+          this.damageCombatant(id, parseInt(el.dataset.n, 10) || 0, {
+            type: EncounterRenderer.reactDamageType(id),
+          });
+          EncounterRenderer.toggleReactDamage(id, true);
+          break;
+        case "react-wound":
+          // K8 : Anarchy 2 — un cran de gravité, pas un nombre de cases.
+          this.damageCombatant(id, 1, { severity: el.dataset.sev });
+          EncounterRenderer.toggleReactDamage(id, true);
           break;
         case "action-set":
           // K7 : consomme/rend une action du tour actif (jeton tappable).

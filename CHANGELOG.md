@@ -13,9 +13,17 @@ commit.
 ## [Non publié]
 
 ### Prévu (mineures en cours)
-- **Cockpit de combat** — appliquer les dégâts aux PNJ + modes Agir/Réagir.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
+
+## [1.1.0] — 2026-07-13
+
+### Jouer
+- **Suivi de combat — dégâts nets** : la console de réaction (tour d'un PJ) peut
+  désormais appliquer un résultat *net* (déjà résisté) au moniteur d'un PNJ —
+  bouton ✸ Dégâts par ligne, cases Physique/Étourdissant (SR5/SR6) ou cran de
+  gravité (Anarchy 2), boucle Défense → Encaisser → Dégâts sans quitter l'écran.
+- Légende du cockpit (Aide « ? ») complétée avec le glyphe ✸.
 
 ## [1.0.0] — 2026-07-13
 
