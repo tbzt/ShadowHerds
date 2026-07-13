@@ -6,7 +6,7 @@ Application web à page unique, **100 % locale** : aucun serveur, aucune dépend
 
 → [tbzt.github.io/ShadowHerds](https://tbzt.github.io/ShadowHerds)
 
-Éditions prises en charge : **Shadowrun 5**, **Shadowrun 6**, **Anarchy 2** — et **Anarchy 1** (en chantier). L'édition se change à tout moment via le badge en haut à gauche ; chaque édition a ses propres règles, son thème visuel et son export.
+Éditions prises en charge : **Shadowrun 5**, **Shadowrun 6**, **Anarchy 1re édition** et **Anarchy 2e édition** — quatre identités visuelles et quatre jeux de règles distincts, pas des variantes l'une de l'autre. L'édition se change à tout moment via le badge en haut à gauche ; chaque édition a ses propres règles, son thème visuel et son export.
 
 ---
 
@@ -27,15 +27,17 @@ Application web à page unique, **100 % locale** : aucun serveur, aucune dépend
 - Moniteurs de blessures cliquables, portraits IA optionnels.
 
 ### Jouer
-- **Suivi de combat** : initiative groupée, tri auto, passes SR5, fiche du combattant actif, moniteurs, **raccourcis clavier** (Espace/N = tour, R = init, ↑/↓ = réordonner).
-- **Intrusion Matrice** : déploiement de CI, jets calculés, Score de Surveillance, marks (SR5) / accès illégaux (SR6) / DIEU (Anarchy).
-- **Lanceur de dés** + journal ; sur une fiche, chaque réserve `⚄` est cliquable et lance sa pile pré-calculée.
+- **Suivi de combat** : initiative groupée, tri auto, passes SR5, CI intégrées à l'initiative, console de réaction, Atout/réserve de menace, compteur d'actions, fiche du combattant actif, moniteurs, **raccourcis clavier** (Espace/N = tour, R = init, ↑/↓ = réordonner).
+- **L'équipe** : personnages joueurs référencés (un PJ = un nom), persistants entre les scènes.
+- **Intrusion Matrice** : déploiement de CI, jets calculés, Score de Surveillance, marks (SR5) / accès illégaux (SR6) / DIEU (Anarchy), tiroir dédié depuis le suivi de combat.
+- **Lanceur de dés** + journal des jets (filtres, regroupement par tour, épingles, notes) ; sur une fiche, chaque réserve `⚄` est cliquable et lance sa pile pré-calculée.
 - **Réserve de Menace** (Anarchy 2).
 
 ### Système
-- **Export Foundry VTT** par fiche.
-- **Sauvegarde / import-export** (fichier ou URL) — portabilité sans cloud.
-- Raccourcis clavier (`1`–`7`, `G`, `R`, `/`, `?`), aide intégrée.
+- **Export Foundry VTT**, par fiche ou par dossier.
+- **Impression fidèle au livre**, par édition.
+- **Sauvegarde / import-export** (fichier ou URL) — 100 % local par défaut ; **synchro cloud optionnelle** (Gist secret ou WebDAV/NAS) pour qui la veut, jamais activée par défaut.
+- Raccourcis clavier (`1`–`7`, `G`, `R`, `/`, `?`), aide et légende sensibles à l'édition, palette de commandes (Ctrl/Cmd+K) pour retrouver une fiche.
 
 ---
 
