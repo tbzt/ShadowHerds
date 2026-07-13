@@ -118,6 +118,28 @@ const CardRenderer = {
           ? `<div class="pc-light-notes">${this._esc(pnj.notes)}</div>`
           : `<div class="pc-light-empty">Fiche légère — nom seul. « Éditer » pour joueur/notes.</div>`
       }
+      ${this._backlinksSection(pnj)}
+    </div>`;
+  },
+
+  /** E4 : « Mentionné dans » — backlinks calculés à la volée par Mentions
+      (bloc-notes de séance + notes des autres entités contenant `@Nom`),
+      réutilise `.tag`/`.tag-clickable` tel quel (même patron que les tags
+      cliquables du corps de carte, cf. `_contentTag`). */
+  _backlinksSection(pnj) {
+    if (typeof Mentions === "undefined") return "";
+    const links = Mentions.backlinksFor(pnj.name, pnj.id);
+    if (!links.length) return "";
+    const items = links
+      .map((l) =>
+        l.kind === "notepad"
+          ? `<span class="tag tag-clickable" role="button" tabindex="0" data-action="mention-goto-notepad">${this._esc(l.label)}</span>`
+          : `<span class="tag tag-clickable" role="button" tabindex="0" data-action="mention-goto" data-id="${this._esc(l.id)}" data-name="${this._esc(l.name)}" data-type="${this._esc(l.type)}">${this._esc(l.name)}</span>`,
+      )
+      .join("");
+    return `<div class="card-section">
+      <div class="card-section-label">Mentionné dans</div>
+      <div class="card-section-content">${items}</div>
     </div>`;
   },
 
@@ -1008,6 +1030,12 @@ const CardRenderer = {
           break;
         case "journal-remove":
           UI.removeJournalEntry(id, actionEl.dataset.ts);
+          break;
+        case "mention-goto-notepad":
+          Notepad.open();
+          break;
+        case "mention-goto":
+          Palette._reveal({ id: actionEl.dataset.id, name: actionEl.dataset.name, type: actionEl.dataset.type });
           break;
       }
     });

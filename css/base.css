@@ -5099,6 +5099,31 @@ kbd {
   font-size: var(--fs-2xs);
   color: var(--text-dim);
 }
+
+/* E4 (mentions.js) : popup d'autocomplétion @ ancrée sous le textarea
+   (desktop/tablette) — réutilise .palette-row/.palette-type/.palette-name
+   tels quels, aucun nouveau composant de ligne. */
+#mentions-box {
+  position: absolute;
+  z-index: var(--z-command);
+  max-height: 40vh;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+/* <641px : ancrée en bas de viewport (au-dessus du clavier virtuel quand
+   VisualViewport est disponible, cf. Mentions._position). */
+#mentions-box.mentions-mobile {
+  position: fixed;
+  left: 0.5rem;
+  right: 0.5rem;
+  top: auto;
+  width: auto !important;
+  max-height: 35vh;
+}
 .dice-log-head {
   display: flex;
   align-items: center;

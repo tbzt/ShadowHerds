@@ -44,6 +44,8 @@ const Notepad = {
       clearTimeout(this._saveTimer);
       this._saveTimer = setTimeout(() => this._save(ta.value), 400);
     });
+    // E4 : autocomplétion @ (mentions.js) — un seul widget, deux hôtes.
+    Mentions.attach(ta);
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") this.close();

@@ -23,6 +23,11 @@ const EditModal = {
         ? this._buildFormVehicle(pnj)
         : this._buildForm(pnj);
 
+    // E4 : autocomplétion @ (mentions.js) — em-notes est régénéré à chaque
+    // open(), donc rattaché ici (idempotent, sans effet si déjà attaché).
+    const notesEl = document.getElementById("em-notes");
+    if (notesEl) Mentions.attach(notesEl);
+
     document.getElementById("edit-modal").classList.add("open");
   },
 
