@@ -118,7 +118,30 @@ const CardRenderer = {
           ? `<div class="pc-light-notes">${this._esc(pnj.notes)}</div>`
           : `<div class="pc-light-empty">Fiche légère — nom seul. « Éditer » pour joueur/notes.</div>`
       }
+      ${this._contactLinksSection(pnj)}
       ${this._backlinksSection(pnj)}
+    </div>`;
+  },
+
+  /** E5 : « Contacts » du PJ léger — liens qualifiés (relation, loyauté),
+      un contact supprimé depuis est filtré silencieusement (pas de cascade
+      destructive, cf. plan E5). Cliquable vers la fiche contact via
+      `Palette._reveal`, même navigation que les backlinks E4. */
+  _contactLinksSection(pnj) {
+    const links = pnj.contactLinks || [];
+    if (!links.length) return "";
+    const items = links
+      .map((l) => {
+        const c = ContactsBook.data.all.find((x) => x.id === l.contactId);
+        if (!c) return "";
+        const label = l.relation ? `${c.name} — ${l.relation}` : c.name;
+        return `<span class="tag tag-clickable" role="button" tabindex="0" data-action="contact-link-goto" data-id="${this._esc(c.id)}" data-name="${this._esc(c.name)}">${this._esc(label)}</span>`;
+      })
+      .join("");
+    if (!items) return "";
+    return `<div class="card-section">
+      <div class="card-section-label">Contacts</div>
+      <div class="card-section-content">${items}</div>
     </div>`;
   },
 
@@ -1036,6 +1059,9 @@ const CardRenderer = {
           break;
         case "mention-goto":
           Palette._reveal({ id: actionEl.dataset.id, name: actionEl.dataset.name, type: actionEl.dataset.type });
+          break;
+        case "contact-link-goto":
+          Palette._reveal({ id: actionEl.dataset.id, name: actionEl.dataset.name, type: "contact" });
           break;
       }
     });

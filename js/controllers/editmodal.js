@@ -168,12 +168,87 @@ const EditModal = {
       </div>
     </div>
     ${this._buildTableBlock(pnj, App.getEditionModule(pnj.edition)?.pcTableBlock)}
+    ${this._buildContactLinksSection(pnj)}
     <div class="modal-section">
       <div class="modal-section-title">Notes</div>
       <div class="form-group">
         <textarea id="em-notes" rows="3" placeholder="Notes libres…">${esc(pnj.notes || "")}</textarea>
       </div>
     </div>`;
+  },
+
+  /** E5 : « Contacts liés » — repliée par défaut (`<details>`), générée
+      depuis `Characters`/`ContactsBook` (mutation immédiate au clic, comme
+      les compétences éditables — pas de champ à valider via Sauvegarder).
+      Réutilise `SingleSelect` (picker existant) + le patron visuel
+      `.em-skill-row`/`.em-add-skill` des compétences, aucun nouveau widget. */
+  _buildContactLinksSection(pnj) {
+    const esc = CardRenderer._esc;
+    const links = pnj.contactLinks || [];
+    const linkedIds = new Set(links.map((l) => l.contactId));
+    const rows = links
+      .map((l) => {
+        const c = ContactsBook.data.all.find((x) => x.id === l.contactId);
+        const name = c ? c.name : "(contact supprimé)";
+        const meta = [l.relation, l.loyalty != null ? `loyauté ${l.loyalty}` : null]
+          .filter(Boolean)
+          .join(" · ");
+        return `<div class="em-skill-row" data-idx="${esc(l.contactId)}">
+          <span class="em-skill-name">${esc(name)}${meta ? ` — ${esc(meta)}` : ""}</span>
+          <button type="button" class="em-skill-del" title="Délier"
+            data-action="remove-contact-link" data-id="${esc(l.contactId)}">×</button>
+        </div>`;
+      })
+      .join("");
+    const options = ContactsBook.data.all
+      .filter((c) => !linkedIds.has(c.id))
+      .map((c) => ({ value: c.id, label: c.name }));
+    const picker = options.length
+      ? `<div class="em-add-skill">
+          ${SingleSelect.create({
+            id: "em-contact-pick",
+            label: "",
+            options,
+            value: "",
+            placeholder: "Choisir un contact…",
+          })}
+          <input type="text" id="em-contact-relation" placeholder="Relation (ex. fixer)">
+          <input type="number" id="em-contact-loyalty" placeholder="Loyauté" min="1" max="6">
+          <button type="button" class="em-add-skill-btn" data-action="add-contact-link">Lier</button>
+        </div>`
+      : `<p style="font-size:0.75rem;color:var(--text-dim);">Aucun contact disponible — créez-en un dans Contacts.</p>`;
+    return `<details class="modal-section em-contact-links-section">
+      <summary class="modal-section-title">Contacts liés</summary>
+      <div id="em-contact-links-list">${rows}</div>
+      ${picker}
+    </details>`;
+  },
+
+  addContactLink() {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj) return;
+    const contactId = document.getElementById("em-contact-pick")?.value;
+    if (!contactId) {
+      toast("Choisissez un contact.", "warning");
+      return;
+    }
+    const relation = document.getElementById("em-contact-relation")?.value.trim() || "";
+    const loyaltyRaw = document.getElementById("em-contact-loyalty")?.value;
+    const loyalty = loyaltyRaw ? parseInt(loyaltyRaw, 10) : null;
+    Characters.addContactLink(pnj.id, contactId, relation, loyalty);
+    this._rerenderContactLinks(pnj);
+  },
+
+  removeContactLink(contactId) {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj) return;
+    Characters.removeContactLink(pnj.id, contactId);
+    this._rerenderContactLinks(pnj);
+  },
+
+  _rerenderContactLinks(pnj) {
+    const details = document.querySelector("#modal-form-body .em-contact-links-section");
+    if (details) details.outerHTML = this._buildContactLinksSection(pnj);
   },
 
   /** E3 : section « Mécanique de table » — générée depuis le descripteur
@@ -652,6 +727,12 @@ const EditModal = {
         }
         case "pick-pc-color":
           this.pickColor(el.dataset.color);
+          break;
+        case "add-contact-link":
+          this.addContactLink();
+          break;
+        case "remove-contact-link":
+          this.removeContactLink(el.dataset.id);
           break;
       }
     });

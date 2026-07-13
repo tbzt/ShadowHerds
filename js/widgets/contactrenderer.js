@@ -69,6 +69,9 @@ const ContactRenderer = {
         case "deploy-pnj":
           ContactsBook.deployPNJ(id);
           break;
+        case "goto-pj":
+          Palette._reveal({ id: actionEl.dataset.pjId, name: actionEl.dataset.pjName, type: "pj" });
+          break;
       }
     });
   },
@@ -120,6 +123,8 @@ const ContactRenderer = {
         <div class="contact-desc">${CardRenderer._esc(c.desc)}</div>
 
         ${stats}
+
+        ${this._knownBy(c)}
 
         <div class="contact-trait">⚠ <span contenteditable="true" spellcheck="false"
           data-contact-field="trait"
@@ -194,6 +199,30 @@ const ContactRenderer = {
       </div>
       ${c.atoutCost != null ? `<div class="contact-stat-row"><span class="contact-stat-label">Atout</span><span class="contact-stat-val">${c.atoutCost} pts</span></div>` : ""}
       ${bonus}
+    </div>`;
+  },
+
+  /** E5 : sens inverse du lien PJ↔contact, calculé à la volée (jamais
+      stocké côté contact — une seule source de vérité, `pnj.contactLinks`).
+      Pastille `pcColor` (E1) pour l'identification au coup d'œil. */
+  _knownBy(c) {
+    if (typeof Characters === "undefined") return "";
+    const linked = Characters.data.all.filter(
+      (p) => Array.isArray(p.contactLinks) && p.contactLinks.some((l) => l.contactId === c.id),
+    );
+    if (!linked.length) return "";
+    const chips = linked
+      .map((p) => {
+        const dot = p.pcColor
+          ? `<span class="pc-color-dot" style="background:${CardRenderer._esc(p.pcColor)}" aria-hidden="true"></span>`
+          : "";
+        return `<span class="tag tag-clickable" role="button" tabindex="0" data-contact-action="goto-pj"
+          data-pj-id="${CardRenderer._esc(p.id)}" data-pj-name="${CardRenderer._esc(p.name)}">${dot}${CardRenderer._esc(p.name)}</span>`;
+      })
+      .join("");
+    return `<div class="card-section" style="margin-top:6px;">
+      <div class="card-section-label">Connu de</div>
+      <div class="card-section-content">${chips}</div>
     </div>`;
   },
 

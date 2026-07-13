@@ -107,6 +107,35 @@ const Characters = Object.assign(
       this.remove(id);
     },
 
+    /** E5 : liens contacts ↔ PJ qualifiés. `contactLinks` additif sur
+        l'entité PJ (vit dans `characters_all`, aucune nouvelle clé) — sens
+        inverse (« Connu de » sur la fiche contact) calculé à la volée par
+        `ContactRenderer`, jamais stocké côté contact (une seule source de
+        vérité). Loyauté en nombre libre, non contraint : vérifié dans les
+        livres, SR5/SR6 ont une échelle 1-6 imprimée pour les contacts mais
+        Anarchy (1 et 2) n'a aucune notion de loyauté (modèle « Niveau »
+        différent) — imposer un clamp aurait inventé une règle. */
+    addContactLink(pnjId, contactId, relation, loyalty) {
+      const pnj = this.data.all.find((p) => p.id === pnjId);
+      if (!pnj || !contactId) return;
+      if (!Array.isArray(pnj.contactLinks)) pnj.contactLinks = [];
+      if (pnj.contactLinks.some((l) => l.contactId === contactId)) {
+        toast("Ce contact est déjà lié.", "warning");
+        return;
+      }
+      pnj.contactLinks.push({ contactId, relation: relation || "", loyalty: loyalty ?? null });
+      this.save();
+      CardRenderer.refresh(pnj);
+    },
+
+    removeContactLink(pnjId, contactId) {
+      const pnj = this.data.all.find((p) => p.id === pnjId);
+      if (!pnj || !Array.isArray(pnj.contactLinks)) return;
+      pnj.contactLinks = pnj.contactLinks.filter((l) => l.contactId !== contactId);
+      this.save();
+      CardRenderer.refresh(pnj);
+    },
+
     /** E2 : équipe active pour « + Équipe » (Encounter.addTeam). Référence
         l'ID d'un dossier existant (Dossiers) — jamais son nom : un dossier
         renommé (DossierBar.renameDossier) cascade déjà le renommage dans
