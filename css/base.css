@@ -9285,3 +9285,26 @@ a:focus-visible,
 .card-action-btn:focus-visible {
   outline-offset: -2px;
 }
+
+/* ============================================================
+   VISITE GUIDÉE (V9 · G1) — chrome du tour. Tokens uniquement :
+   s'adapte aux 4 thèmes sans couleur littérale.
+   ============================================================ */
+/* Visibilité pilotée par l'attribut [hidden] uniquement (robuste : ne dépend
+   d'aucune transition/rAF, qui gèlent en onglet masqué). */
+.tour-root { position: fixed; inset: 0; z-index: var(--z-command); pointer-events: none; }
+.tour-root[hidden] { display: none; }
+.tour-scrim { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); pointer-events: auto; }
+.tour-ring { position: absolute; border: 2px solid var(--accent); border-radius: 8px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent); pointer-events: none; transition: left var(--dur-base) var(--ease-standard), top var(--dur-base) var(--ease-standard), width var(--dur-base) var(--ease-standard), height var(--dur-base) var(--ease-standard); }
+.tour-card { position: absolute; width: min(340px, calc(100vw - 24px)); background: var(--bg-card); color: var(--text); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px; padding: 16px 18px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); pointer-events: auto; }
+.tour-root.tour-centered .tour-card { left: 50% !important; top: 50% !important; transform: translate(-50%, -50%); }
+.tour-progress { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.1em; color: var(--text-dim); }
+.tour-title { font-family: var(--font-display); text-transform: var(--title-transform); font-size: var(--fs-lg); line-height: 1.1; color: var(--accent); margin: 0.2em 0 0.35em; }
+.tour-body { font-size: var(--fs-base); line-height: 1.5; margin: 0; color: var(--text); }
+.tour-try { font-size: var(--fs-sm); color: var(--text-dim); margin: 0.6em 0 0; border-top: 1px dashed var(--border); padding-top: 0.5em; }
+.tour-actions { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.tour-spacer { flex: 1; }
+@media (max-width: 640px) {
+  .tour-card, .tour-root.tour-centered .tour-card { left: 0 !important; right: 0; top: auto !important; bottom: 0; width: 100%; max-width: none; transform: none !important; border-radius: 14px 14px 0 0; border-left: none; border-top: 3px solid var(--accent); }
+}
+@media (prefers-reduced-motion: reduce) { .tour-root, .tour-ring { transition: none; } }
