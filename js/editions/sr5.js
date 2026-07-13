@@ -114,6 +114,16 @@ const EditionSR5 = {
   icCombatant(ic, srv) {
     return { name: ic.label, initBase: srv.indice * 2, initDice: 4 };
   },
+  /** K7 : budget d'actions par phase d'action (= passe d'init, déjà motorisée)
+      — vérifié Livre de Règles p.164 : 2 actions simples OU 1 complexe, + 1
+      gratuite. Le « ou » est laissé au jugement du MJ (deux rangées). */
+  actionBudget() {
+    return [
+      { key: "simple", label: "Simples", total: 2 },
+      { key: "complex", label: "Complexe", total: 1 },
+      { key: "free", label: "Gratuite", total: 1 },
+    ];
+  },
   /** Règles de round pour le tracker de combat (lues via App.editionModule,
       jamais de branche d'édition côté Encounter). SR5 : l'initiative est
       relancée à chaque tour de combat, et chaque tour se joue en passes

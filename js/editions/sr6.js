@@ -119,6 +119,15 @@ const EditionSR6 = {
     const td = (srv.attrs && srv.attrs.dataProcessing) || srv.indice;
     return { name: ic.label, initBase: td * 2, initDice: 3 };
   },
+  /** K7 : budget d'actions du tour actif (vérifié Livre de base p.42) — 1 majeure
+      + 1 mineure de base, +1 mineure par dé d'initiative (max 5 dés → 6 mineures).
+      Lu par le tracker via l'API neutre, jamais une branche d'édition. */
+  actionBudget(pnj) {
+    return [
+      { key: "major", label: "Majeure", total: 1 },
+      { key: "minor", label: "Mineures", total: Math.min(1 + (pnj.initDice || 1), 6) },
+    ];
+  },
   /** Règles de round pour le tracker de combat. SR6 : l'initiative est
       relancée à chaque round mais il n'y a plus de passes d'initiative
       (une seule passe par round, p.44) → `passDecrement: 0`. */

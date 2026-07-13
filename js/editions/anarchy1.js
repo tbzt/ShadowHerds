@@ -91,6 +91,12 @@ const EditionAnarchy1 = {
   icCombatant(ic) {
     return { name: ic.label, narrative: true };
   },
+  /** K7 : budget d'actions par narration (vérifié p.155) — 1 action + déplacement
+      gratuit. Atouts (Réflexes câblés) et points d'Anarchy ajoutent des actions :
+      au MJ d'incrémenter. */
+  actionBudget() {
+    return [{ key: "action", label: "Action", total: 1 }];
+  },
   /** narrative:true — combat sans initiative chiffrée ni ordre figé (le livre
       A1 gère l'ordre par la narration). Le tracker bascule en mode dépouillé
       (pool de jetons qu'on éteint), cf. EncounterRenderer._rowNarrative. */

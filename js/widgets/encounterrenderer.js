@@ -485,6 +485,28 @@ const EncounterRenderer = {
     </div>`;
   },
 
+  /** Rangée budget d'actions (K7) du combattant actif : un groupe par type
+      d'action de l'édition (majeure/mineure SR6, simple/complexe/gratuite SR5,
+      action Anarchy). Jetons tappables façon moniteur (taper = consommer
+      jusque-là ; re-taper le dernier = rendre). Le budget vient d'App.
+      editionModule.actionBudget(pnj) ; l'usage est stocké c.actionsUsed. */
+  _activeActions(r) {
+    const budget = App.editionModule.actionBudget(r.pnj);
+    if (!budget || !budget.length) return "";
+    const used = r.actionsUsed || {};
+    const groups = budget
+      .map((g) => {
+        const u = used[g.key] || 0;
+        const tokens = Array.from({ length: g.total }, (_, i) => `<span class="action-token${i < u ? " used" : ""}" data-action="action-set" data-key="${g.key}" data-idx="${i}" data-id="${r.pnjId}" title="${Utils.escHtml(g.label)} ${i + 1}"></span>`).join("");
+        return `<span class="action-group">
+          <span class="action-group-lbl">${Utils.escHtml(g.label)}</span>
+          <span class="action-tokens">${tokens}</span>
+        </span>`;
+      })
+      .join("");
+    return `<div class="encounter-actions" title="Actions du tour (économie de l'édition — taper pour consommer)">${groups}</div>`;
+  },
+
   /** Note de scène éditable sous la fiche active (K2) : même champ que
       c.note (déjà persisté par ligne), même action `set-note` — la
       délégation d'Encounter la reçoit qu'elle vienne de la ligne ou d'ici.
@@ -549,6 +571,11 @@ const EncounterRenderer = {
       // K5 : rangée Atout (SR6, combatModel.edgeTracker) — organe d'édition
       // sur la fiche active. Absente en SR5/Anarchy (drapeau non posé).
       if (model && model.edgeTracker) box.insertAdjacentHTML("beforeend", this._activeEdge(active));
+      // K7 : rangée budget d'actions du tour (lue via l'API neutre d'édition
+      // actionBudget — jamais une branche App.edition ici).
+      if (App.editionModule && App.editionModule.actionBudget) {
+        box.insertAdjacentHTML("beforeend", this._activeActions(active));
+      }
       box.insertAdjacentHTML("beforeend", this._activeNote(active));
     }
   },

@@ -152,6 +152,12 @@ const EditionAnarchy2 = {
   icCombatant(ic) {
     return { name: ic.label, narrative: true };
   },
+  /** K7 : budget d'actions par narration (vérifié p.65) — 1 action significative
+      (déplacement + annexes gratuits, non décomptés). Les points d'Anarchy
+      accordent des actions en plus : au MJ d'incrémenter (jeton supplémentaire). */
+  actionBudget() {
+    return [{ key: "action", label: "Action", total: 1 }];
+  },
   /** Règles de round pour le tracker de combat. Anarchy 2.0 : pas d'initiative
       chiffrée, l'ordre est narratif (combativité, cf. p.180). narrative:true →
       le tracker passe en mode dépouillé (tap-to-grise), sans init/tri/réordre. */

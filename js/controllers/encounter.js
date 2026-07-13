@@ -411,6 +411,7 @@ const Encounter = {
     const next = this._nextEligibleIndex(this.state.turnIndex);
     if (next !== -1) {
       this.state.turnIndex = next;
+      this._resetActions(next); // K7 : budget d'actions frais au début du tour
       this._commit();
       return;
     }
@@ -422,6 +423,8 @@ const Encounter = {
       this.state.pass++;
       cs.forEach((c) => (c.hasActed = false));
       this.state.turnIndex = this._firstEligibleIndex();
+      // K7 : nouvelle phase d'action SR5 → budget d'actions rechargé.
+      this._resetActions(this.state.turnIndex);
       this._commit();
       toast("Passe d'initiative " + this.state.pass);
       return;
@@ -441,6 +444,8 @@ const Encounter = {
       // K5 : compteur de gains d'Atout du tour remis à zéro à chaque round
       // (plafond +2/tour de personnage, SR6 p.50).
       c.edgeTurn = 0;
+      // K7 : budget d'actions rechargé pour tout le monde au nouveau round.
+      c.actionsUsed = {};
     });
     // SR5/SR6 : nouvelle initiative à chaque tour de combat. Anarchy
     // (rerollEachRound:false) conserve l'ordre rangé à la main.
@@ -488,6 +493,28 @@ const Encounter = {
     // forcer sa reconstruction pour que les jetons reflètent la nouvelle valeur.
     EncounterRenderer._activeCardId = null;
     this._commit();
+  },
+
+  /** K7 : consomme/rend les actions du tour actif (compteur par groupe :
+      majeure/mineure SR6, simple/complexe SR5, action Anarchy). Jeton tappable
+      façon moniteur : taper le jeton d'index idx consomme jusqu'à idx+1 ; re-
+      taper le dernier consommé le rend. Stocké c.actionsUsed[groupe] dans la
+      scène (aucune clé Storage), remis à zéro au début de chaque tour. */
+  setAction(pnjId, key, idx) {
+    const c = this._find(pnjId);
+    if (!c) return;
+    c.actionsUsed = c.actionsUsed || {};
+    const cur = c.actionsUsed[key] || 0;
+    c.actionsUsed[key] = cur === idx + 1 ? idx : idx + 1;
+    EncounterRenderer._activeCardId = null;
+    this._commit();
+  },
+
+  /** Remet à zéro le budget d'actions d'un combattant : appelé au début de son
+      tour (nextTurn / nouvelle passe / nouveau round), jamais en cours de tour. */
+  _resetActions(i) {
+    const c = this.state.combatants[i];
+    if (c) c.actionsUsed = {};
   },
 
   /** Ferme l'overlay, bascule sur le panel où vit réellement ce PNJ
@@ -1018,6 +1045,10 @@ const Encounter = {
         case "edge-step":
           // K5 : ±1 Atout du combattant actif (SR6).
           this.adjustEdge(id, parseInt(el.dataset.delta, 10) || 0);
+          break;
+        case "action-set":
+          // K7 : consomme/rend une action du tour actif (jeton tappable).
+          this.setAction(id, el.dataset.key, parseInt(el.dataset.idx, 10) || 0);
           break;
         case "threat-step":
           // K5 : ±1 Réserve de menace (Anarchy) — mute la source unique
