@@ -66,10 +66,19 @@ const Encounter = {
     return this.state.combatants.find((c) => c.pnjId === pnjId) || null;
   },
 
+  /** E3 : initiative pré-remplie depuis le bloc « mécanique de table » d'un
+      PJ léger (`pnj.initBase`, saisi une fois en début de campagne) — le MJ
+      écrase à la volée, les joueurs annoncent, l'app propose. `null` pour
+      toute entité sans ce champ (PNJ générés, PJ sans bloc renseigné). */
+  _initFor(pnjId) {
+    const pnj = PnjLookup.find(pnjId);
+    return pnj && Number.isFinite(pnj.initBase) ? pnj.initBase : null;
+  },
+
   /* ---- Composition de la scène ---- */
   add(pnjId) {
     if (!pnjId || this._find(pnjId)) return;
-    this.state.combatants.push({ pnjId, init: null, hasActed: false, note: "" });
+    this.state.combatants.push({ pnjId, init: this._initFor(pnjId), hasActed: false, note: "" });
     this._commit();
     toast("Ajouté au suivi de combat.");
   },
@@ -79,7 +88,7 @@ const Encounter = {
     let n = 0;
     for (const id of ids) {
       if (id && !this._find(id)) {
-        this.state.combatants.push({ pnjId: id, init: null, hasActed: false, note: "" });
+        this.state.combatants.push({ pnjId: id, init: this._initFor(id), hasActed: false, note: "" });
         n++;
       }
     }
@@ -136,7 +145,8 @@ const Encounter = {
     let n = 0;
     for (const pnj of team) {
       if (inScene.has(pnj.id)) continue;
-      this.state.combatants.push({ pnjId: pnj.id, kind: "pj", init: null, hasActed: false, note: "" });
+      const init = Number.isFinite(pnj.initBase) ? pnj.initBase : null;
+      this.state.combatants.push({ pnjId: pnj.id, kind: "pj", init, hasActed: false, note: "" });
       n++;
     }
     toast(

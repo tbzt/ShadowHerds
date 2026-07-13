@@ -201,6 +201,22 @@ const EditionSR6 = {
       return { base: p * 2, dice: 4 };
     },
   },
+  /** E3 (chantier Équipe) : bloc « mécanique de table » du PJ léger.
+      SR6 = UN SEUL moniteur d'état (champ `me`, cf. `conditionMonitor`
+      ci-dessous) — pas de piste Phys/Étourd séparée comme SR5/Anarchy1.
+      `monitorMaxKey` indique quel champ porte la capacité (saisie MJ, le
+      PJ léger n'a pas d'attribut CON pour la dériver). */
+  pcTableBlock: {
+    fields: [
+      { key: "initBase", label: "Initiative (base)", kind: "number" },
+      { key: "initDice", label: "Dés d'initiative", kind: "number" },
+      { key: "defense", label: "Indice de défense", kind: "number" },
+      { key: "perception", label: "Perception", kind: "number" },
+      { key: "volonte", label: "Volonté", kind: "number" },
+    ],
+    monitorKind: "single",
+    monitorMaxKey: "me",
+  },
   /** Malus de dés lié aux cases de moniteur remplies : −1D par tranche de
       3 cases du moniteur d'état unique. */
   conditionMonitor: {

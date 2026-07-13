@@ -192,6 +192,23 @@ const EditionSR5 = {
       return { base: p * 2, dice: 4 };
     },
   },
+  /** E3 (chantier Équipe) : bloc « mécanique de table » du PJ léger
+      (`pcLight`) — ce que le MJ demande dix fois par soirée, saisi une fois.
+      Optionnel, jamais dérivé (le PJ léger n'a pas d'attributs) : chaque
+      valeur est un nombre entré à la main. `monitorKind:"double"` réutilise
+      physMon/stunMon + physFilled/stunFilled, exactement le modèle des PNJ
+      complets SR5 (cf. `conditionMonitor` ci-dessous) — mêmes champs, donc
+      `CardRenderer._monitorBoxes`/`UI.toggleMonitor` s'appliquent tels quels. */
+  pcTableBlock: {
+    fields: [
+      { key: "initBase", label: "Initiative (base)", kind: "number" },
+      { key: "initDice", label: "Dés d'initiative", kind: "number" },
+      { key: "mentalLimit", label: "Limite mentale", kind: "number" },
+      { key: "perception", label: "Perception", kind: "number" },
+      { key: "volonte", label: "Volonté", kind: "number" },
+    ],
+    monitorKind: "double",
+  },
   /** Malus de dés lié aux cases de moniteur remplies : −1D par tranche de
       `woundMod` cases (physique + étourdissement cumulés), réglable en
       Réglages (défaut 3, désactivable à 0). */

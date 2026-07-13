@@ -125,6 +125,15 @@ const EditionAnarchy1 = {
       comme en V2 — pas de correspondance universelle nécessaire ici. */
   drugModel: { matchAll: false },
 
+  /** E3 (chantier Équipe) : bloc « mécanique de table » du PJ léger. Pas
+      d'initiative chiffrée en A1 (narrative:true, ci-dessus) ni de règle de
+      combativité imprimée (cf. combatDisposition ci-dessus) → aucun champ
+      numérique à demander au joueur, seulement les moniteurs (mêmes champs
+      physMon/stunMon que les PNJ complets A1, cf. conditionMonitor). */
+  pcTableBlock: {
+    fields: [],
+    monitorKind: "double",
+  },
   /* ---- Moniteurs & combat ----
      Deux moniteurs numériques P/E (findings §3), comme en SR5, mais taille
      dérivée de FOR/VOL (pas CON/VOL) : phys = 8 + ⌈FOR/2⌉,

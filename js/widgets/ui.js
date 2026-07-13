@@ -6,10 +6,17 @@
    fourre-tout mélangeant plusieurs domaines fonctionnels autonomes).
    ============================================================ */
 const UI = {
-  /** Clic sur une case de moniteur */
+  /** Clic sur une case de moniteur. Mute TOUTES les copies vivantes de
+      l'entité et persiste tous les stores concernés (`_entityCopies`/
+      `persistEntity`, motif F2) — corrige un bug latent trouvé en vérifiant
+      E3 : un PJ (léger ou complet) ne vit que dans `Characters`, jamais
+      `Shadows` ; l'ancien `Shadows.save()` inconditionnel ne persistait
+      donc jamais une case cochée sur un PJ (perdue au reload), et une
+      entité à copies multiples (pool+biblio) ne mutait que la première
+      trouvée par `PnjLookup.find`. */
   toggleMonitor(pnjId, type, idx) {
-    const pnj = PnjLookup.find(pnjId);
-    if (!pnj) return;
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
 
     // Mapping type → champ du PNJ
     const fieldMap = {
@@ -24,15 +31,16 @@ const UI = {
       incap: "incapFilled",
     };
     const field = fieldMap[type] || "monFilled";
-    if (pnj[field] === undefined) pnj[field] = 0;
+    for (const pnj of copies) {
+      if (pnj[field] === undefined) pnj[field] = 0;
+      pnj[field] = idx < pnj[field] ? idx : idx + 1;
+    }
 
-    pnj[field] = idx < pnj[field] ? idx : idx + 1;
-
-    Shadows.save();
-    CardRenderer.refresh(pnj);
+    this.persistEntity(pnjId);
+    CardRenderer.refresh(copies[0]);
     // Vague D : cocher/décocher un moniteur peut basculer « hors de combat » ou
     // le drapeau « devrait fuir » d'un combattant → rafraîchir le tracker.
-    if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(pnj);
+    if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(copies[0]);
   },
 
   /* ========================================================

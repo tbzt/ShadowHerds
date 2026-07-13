@@ -162,12 +162,73 @@ const EditModal = {
         </div>
       </div>
     </div>
+    ${this._buildTableBlock(pnj, App.getEditionModule(pnj.edition)?.pcTableBlock)}
     <div class="modal-section">
       <div class="modal-section-title">Notes</div>
       <div class="form-group">
         <textarea id="em-notes" rows="3" placeholder="Notes libres…">${esc(pnj.notes || "")}</textarea>
       </div>
     </div>`;
+  },
+
+  /** E3 : section « Mécanique de table » — générée depuis le descripteur
+      neutre `pcTableBlock` (jamais `App.edition` ici), repliée par défaut
+      (`<details>` natif, pas de JS de bascule à écrire) : le PJ nom-seul
+      reste la norme, cette section n'existe que si le MJ l'ouvre. */
+  _buildTableBlock(pnj, block) {
+    if (!block) return "";
+    const esc = CardRenderer._esc;
+    const fieldsHtml = (block.fields || [])
+      .map((f) => {
+        if (f.kind === "select") {
+          const opts = f.options
+            .map(
+              (o) =>
+                `<option value="${esc(o)}"${pnj[f.key] === o ? " selected" : ""}>${esc(o)}</option>`,
+            )
+            .join("");
+          return `<div class="form-group">
+            <label>${esc(f.label)}</label>
+            <select id="em-tb-${f.key}"><option value="">—</option>${opts}</select>
+          </div>`;
+        }
+        return `<div class="form-group">
+          <label>${esc(f.label)}</label>
+          <input type="number" id="em-tb-${f.key}" value="${pnj[f.key] ?? ""}">
+        </div>`;
+      })
+      .join("");
+    const monitorFieldsHtml = this._tableBlockMonitorInputs(pnj, block);
+    if (!fieldsHtml && !monitorFieldsHtml) return "";
+    return `<details class="modal-section">
+      <summary class="modal-section-title">Mécanique de table (optionnel)</summary>
+      <div class="modal-grid">${fieldsHtml}${monitorFieldsHtml}</div>
+    </details>`;
+  },
+
+  /** Cases de moniteur = saisies par le MJ pour "double"/"single" (le PJ
+      léger n'a pas d'attribut pour les dériver) ; rien à saisir pour
+      "anarchy" (capacité figée par la règle, cf. CardRenderer). */
+  _tableBlockMonitorInputs(pnj, block) {
+    const esc = CardRenderer._esc;
+    if (block.monitorKind === "double") {
+      return `<div class="form-group">
+          <label>Moniteur physique (cases)</label>
+          <input type="number" id="em-tb-physMon" value="${pnj.physMon ?? ""}" min="0" max="30">
+        </div>
+        <div class="form-group">
+          <label>Moniteur étourdissant (cases)</label>
+          <input type="number" id="em-tb-stunMon" value="${pnj.stunMon ?? ""}" min="0" max="30">
+        </div>`;
+    }
+    if (block.monitorKind === "single") {
+      const key = block.monitorMaxKey || "me";
+      return `<div class="form-group">
+        <label>Moniteur d'état (cases)</label>
+        <input type="number" id="em-tb-${esc(key)}" value="${pnj[key] ?? ""}" min="0" max="30">
+      </div>`;
+    }
+    return "";
   },
 
   _readFormLight(pnj) {
@@ -179,6 +240,33 @@ const EditModal = {
     if (notesEl) pnj.notes = notesEl.value;
     const picked = document.querySelector(".em-color-swatch.selected");
     if (picked) pnj.pcColor = picked.dataset.color;
+    this._readTableBlock(pnj, App.getEditionModule(pnj.edition)?.pcTableBlock);
+  },
+
+  _readTableBlock(pnj, block) {
+    if (!block) return;
+    for (const f of block.fields || []) {
+      const el = document.getElementById(`em-tb-${f.key}`);
+      if (!el) continue;
+      if (f.kind === "select") {
+        pnj[f.key] = el.value || null;
+      } else {
+        const n = parseInt(el.value, 10);
+        pnj[f.key] = Number.isFinite(n) ? n : null;
+      }
+    }
+    const monKeys =
+      block.monitorKind === "double"
+        ? ["physMon", "stunMon"]
+        : block.monitorKind === "single"
+          ? [block.monitorMaxKey || "me"]
+          : [];
+    for (const key of monKeys) {
+      const el = document.getElementById(`em-tb-${key}`);
+      if (!el) continue;
+      const n = parseInt(el.value, 10);
+      pnj[key] = Number.isFinite(n) && n > 0 ? n : null;
+    }
   },
 
   /** Sélection de couleur : mise à jour visuelle immédiate, lue par

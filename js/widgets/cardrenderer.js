@@ -109,11 +109,68 @@ const CardRenderer = {
   },
 
   _bodyLight(pnj) {
+    const block = App.getEditionModule(pnj.edition)?.pcTableBlock;
     return `<div class="pnj-card-body pnj-card-body-light">
+      ${this._tableBlockChips(pnj, block)}
+      ${this._tableBlockMonitors(pnj, block)}
       ${
         pnj.notes
           ? `<div class="pc-light-notes">${this._esc(pnj.notes)}</div>`
           : `<div class="pc-light-empty">Fiche légère — nom seul. « Éditer » pour joueur/notes.</div>`
+      }
+    </div>`;
+  },
+
+  /** E3 : valeurs saisies du bloc « mécanique de table » (init/perception/
+      volonté/combativité…) — un `.tag` par valeur RENSEIGNÉE seulement
+      (« vide par défaut » : rien n'apparaît tant que le MJ n'a rien saisi),
+      réutilise `_listSection`/`.tag` tel quel, aucun nouveau composant. */
+  _tableBlockChips(pnj, block) {
+    if (!block) return "";
+    const items = (block.fields || [])
+      .filter((f) => pnj[f.key] !== undefined && pnj[f.key] !== null && pnj[f.key] !== "")
+      .map((f) => `${f.label} ${pnj[f.key]}`);
+    return this._listSection("Mécanique de table", items);
+  },
+
+  /** E3 : moniteurs du bloc de table — dispatch sur `monitorKind` (descripteur
+      neutre posé par le module d'édition, jamais `App.edition` ici). Réutilise
+      les moniteurs déjà motorisés pour les PNJ complets (`_monitorBoxes`,
+      `_monitorBoxesAnarchy`) : même markup, même délégation `toggle-monitor`. */
+  _tableBlockMonitors(pnj, block) {
+    if (!block || !block.monitorKind) return "";
+    if (block.monitorKind === "anarchy") {
+      return `<div class="monitor-block"><div class="monitor-row">
+        <span class="monitor-label">État</span>
+        <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj)}</div>
+      </div></div>`;
+    }
+    if (block.monitorKind === "single") {
+      const key = block.monitorMaxKey || "me";
+      const max = pnj[key] || 0;
+      if (!max) return "";
+      return `<div class="monitor-block"><div class="monitor-row">
+        <span class="monitor-label">État</span>
+        <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "phys", max, pnj.physFilled || 0)}</div>
+      </div></div>`;
+    }
+    // "double" (SR5, Anarchy1) : physMon/stunMon, chaque piste optionnelle
+    // indépendamment (un MJ peut ne saisir que le physique).
+    const physMon = pnj.physMon || 0;
+    const stunMon = pnj.stunMon || 0;
+    if (!physMon && !stunMon) return "";
+    return `<div class="monitor-block">
+      ${
+        physMon
+          ? `<div class="monitor-row"><span class="monitor-label">Phys</span>
+             <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "phys", physMon, pnj.physFilled || 0)}</div></div>`
+          : ""
+      }
+      ${
+        stunMon
+          ? `<div class="monitor-row" style="margin-top:4px;"><span class="monitor-label">Étourd</span>
+             <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "stun", stunMon, pnj.stunFilled || 0)}</div></div>`
+          : ""
       }
     </div>`;
   },

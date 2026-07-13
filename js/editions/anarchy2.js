@@ -227,6 +227,25 @@ const EditionAnarchy2 = {
     },
     initiative: null,
   },
+  /** E3 (chantier Équipe) : bloc « mécanique de table » du PJ léger. Pas
+      d'initiative chiffrée en A2 (ordre narratif). `threatLevel` réutilise
+      TEL QUEL le champ déjà lu par `EncounterRenderer._rowNarrative` (badge
+      de combativité sur la ligne narrative, p.180) — aucun champ concurrent.
+      `monitorKind:"anarchy"` réutilise le moniteur d'état à seuils fixes
+      (2 légères/1 grave/1 incap., cf. `CardRenderer._monitorBoxesAnarchy`
+      et `conditionMonitor` ci-dessous) : rien à saisir, capacité figée par
+      la règle. */
+  pcTableBlock: {
+    fields: [
+      {
+        key: "threatLevel",
+        label: "Combativité",
+        kind: "select",
+        options: ["nulle", "faible", "forte", "extrême"],
+      },
+    ],
+    monitorKind: "anarchy",
+  },
   /** Anarchy 2.0 n'a pas de malus de dés lié aux cases remplies (le
       moniteur fonctionne par seuils de blessure — cf. statBlocks — pas par
       malus cumulatif). Neutre documenté : pas de champ "primary" unique
