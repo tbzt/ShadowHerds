@@ -4,6 +4,12 @@
    APP — Bootstrap, routing, sélecteur d'édition
    ============================================================ */
 const App = {
+  /** Version applicative (semver) — axe distinct du `schemaVersion` de
+      Storage (qui versionne les données) : celui-ci versionne la RELEASE.
+      Lisible en console pour le support ; future base de la révision « Quoi
+      de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
+  VERSION: "1.0.0",
+
   edition: "none",
   editionModule: null,
 
