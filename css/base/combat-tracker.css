@@ -809,6 +809,81 @@
   width: 100%;
 }
 
+/* ---- M4 : appareils matriciels (armes brickables) sur la fiche active.
+   Réutilise .react-btn / .btn-icon-tiny / .monitor-box existants ; ce bloc
+   ne pose que le conteneur et l'état « hors service ». ---- */
+.encounter-devices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.5rem 0.6rem 0;
+}
+.encounter-devices-lbl {
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+.encounter-device-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.4rem;
+}
+.encounter-device-name {
+  flex: 1 1 8rem;
+  min-width: 6rem;
+  font-size: var(--fs-xs);
+}
+.encounter-device-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.encounter-device-bricked {
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--danger);
+  font-weight: 600;
+}
+.encounter-device-row.is-bricked .encounter-device-name {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+
+/* Bande narrative (Anarchy 2) : un bloc par combattant armé, chips d'armes
+   tappables. Réutilise .react-btn / .react-btn.is-off (état brické). */
+.encounter-ndevices {
+  border-top: 1px solid var(--border);
+  margin-top: 0.4rem;
+  padding-top: 0.5rem;
+}
+.encounter-ndevice-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.5rem;
+}
+.encounter-ndevice-owner {
+  flex: 0 0 auto;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.encounter-ndevice-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.encounter-ndevice-chips .react-btn.is-off {
+  text-decoration: line-through;
+}
+
 /* ---- K3 : tiroir Matrice contextuel — chrome copié de #dice-sheet
    (feuille basse, --ease-emphasized) ; canal --accent2 (bordure/titre) au
    lieu de --accent, pour distinguer le calque Matrice du reste du cockpit.

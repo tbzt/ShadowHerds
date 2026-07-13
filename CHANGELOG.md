@@ -16,6 +16,20 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
+## [1.5.0] — 2026-07-14
+
+### Jouer
+- **Bricker les armes adverses** : en combat, quand une scène Matrice est active
+  (serveur lié ou decker présent), les armes d'un combattant deviennent des
+  cibles matricielles. **SR5/SR6** : chaque arme a un moniteur matriciel
+  (9 cases à l'Indice d'appareil 2 « Moyen », ajustable ±) qui se remplit sous
+  les dégâts ; plein → **hors service** (la fonction électronique tombe, le
+  mécanique reste — la lame coupe encore). **Anarchy 2.0** : le verbe canon
+  (« rendre les Smartguns inopérants », p.210) est motorisé en une bascule
+  « hors service » d'un tap dans le tracker narratif, sans moniteur ni chiffre.
+  Anarchy 1re n'a pas ce système (rien affiché). L'état est propre à la scène
+  (jamais écrit sur la fiche permanente).
+
 ## [1.4.0] — 2026-07-13
 
 ### Jouer
