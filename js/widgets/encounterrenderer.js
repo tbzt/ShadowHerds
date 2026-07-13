@@ -552,6 +552,16 @@ const EncounterRenderer = {
       return;
     }
 
+    // K7-B : tour d'un PJ (piloté par un joueur) — au lieu d'une fiche vide,
+    // une console de réaction pour faire réagir les PNJ non actifs (défense,
+    // encaissement) vite et sans aller chercher leur carte. Toujours re-rendue
+    // (l'état des PNJ change au fil du tour) : pas de cache _activeCardId.
+    if (active && active.isPJ) {
+      this._activeCardId = null;
+      this._renderReactionConsole(box, rows);
+      return;
+    }
+
     const pnj = active && active.pnj && !active.pnj._adhoc ? active.pnj : null;
     const id = pnj ? pnj.id : null;
     if (id === this._activeCardId) return; // déjà affiché, laissé au rafraîchissement global
@@ -624,6 +634,48 @@ const EncounterRenderer = {
         <button class="btn-secondary btn-small encounter-ic-open" data-action="toggle-matrix-drawer" title="Ouvrir le tiroir Matrice (jets, moniteur, surveillance)">⚡ Ouvrir la Matrice</button>
       </div>` +
       this._activeNote(r);
+  },
+
+  /** Console de réaction (K7-B) : au tour d'un PJ, une ligne par PNJ vivant
+      (hors PJ, hors CI matricielle, hors de combat) avec deux gros boutons —
+      🛡 Défense · 🧱 Encaisser. Les boutons portent `data-roll` (comme les
+      pastilles des cartes) : le lancer passe par le handler global de
+      DiceRoller, aucune logique de jet nouvelle. Les pools sont ceux déjà
+      portés par les cartes (pnj.defense − malus de blessure ; pnj.damageResist
+      non réduit, cf. carte). Édition-neutre. En mode narratif (Anarchy) il n'y
+      a pas de tour actif → cette console ne s'affiche pas (renderActiveCard
+      sort avant). */
+  _renderReactionConsole(box, rows) {
+    const targets = rows.filter((r) => r.pnj && !r.isPJ && r.kind !== "matrix" && !r.down);
+    if (!targets.length) {
+      box.hidden = true;
+      box.innerHTML = "";
+      return;
+    }
+    const rowsHtml = targets
+      .map((r) => {
+        const pnj = r.pnj;
+        const name = Utils.escHtml(pnj.name || "");
+        const malus = Utils.woundMalus(pnj, pnj.edition);
+        const def = Math.max(0, (pnj.defense || 0) - malus);
+        const soak = pnj.damageResist || 0;
+        const defBtn = def >= 1
+          ? `<button class="react-btn" data-roll="${def}" data-roll-label="Défense — ${name}" data-roll-pnj="${pnj.id}" title="Test de défense (${def} dés)">🛡 ${def}</button>`
+          : `<span class="react-btn is-off" title="Pas de réserve de défense">🛡 —</span>`;
+        const soakBtn = soak >= 1
+          ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${name}" data-roll-pnj="${pnj.id}" title="Résistance aux dommages (${soak} dés)">🧱 ${soak}</button>`
+          : `<span class="react-btn is-off" title="Pas de réserve d'encaissement">🧱 —</span>`;
+        return `<div class="react-row">
+          <span class="react-name">${name}</span>
+          <span class="react-buttons">${defBtn}${soakBtn}</span>
+        </div>`;
+      })
+      .join("");
+    box.hidden = false;
+    box.innerHTML = `<div class="encounter-react">
+      <div class="encounter-react-head">Tour d'un PJ — faites réagir les PNJ</div>
+      ${rowsHtml}
+    </div>`;
   },
 
   /** Résumé persistant dans la sidebar (round/passe + combattant actif),

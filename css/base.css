@@ -3894,6 +3894,66 @@ body.selecting .bulk-selectable .contact-header-row {
   background: var(--accent);
   border-color: var(--accent);
 }
+
+/* ---- K7-B : console de réaction (tour d'un PJ) ---- */
+.encounter-react {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem;
+}
+.encounter-react-head {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.2rem;
+}
+.react-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.35rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-mid);
+}
+.react-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.react-buttons {
+  display: flex;
+  gap: 0.3rem;
+  flex: none;
+}
+.react-btn {
+  min-height: 40px;
+  min-width: 52px;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: 4px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  cursor: pointer;
+}
+.react-btn:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-card));
+}
+.react-btn.is-off {
+  opacity: 0.45;
+  border-style: dashed;
+  cursor: default;
+}
+
 /* Miroir de la Réserve de menace dans l'en-tête du cockpit (Anarchy). */
 .encounter-threat {
   display: inline-flex;

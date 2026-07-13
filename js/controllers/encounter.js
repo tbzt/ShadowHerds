@@ -768,6 +768,9 @@ const Encounter = {
       // d'affichage minimal (nom + drapeau _adhoc) pour ne jamais le filtrer.
       pnj: PnjLookup.find(c.pnjId) || (c.name ? { id: c.pnjId, name: c.name, _adhoc: true } : null),
     }));
+    // K7-B : marque « PJ vs reste » une fois pour le rendu (console de réaction :
+    // tour d'un PJ → faire réagir les PNJ). Déjà utilisé par le moral.
+    rows.forEach((r) => (r.isPJ = this._isPJ(r)));
     return this._decorateDisposition(rows);
   },
 
