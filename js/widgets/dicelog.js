@@ -11,6 +11,10 @@ const DiceLog = {
   history: [],
   HISTORY_MAX: 100,
 
+  /** J1 : détail (sub) replié par défaut, déplié au tap — état de session
+      uniquement (pas de Storage), clé = e.t (timestamp, déjà unique). */
+  _expanded: new Set(),
+
   /** Persistance globale (commune aux 3 éditions, comme les préférences de
       dés) : le journal survit au F5. Passe par Storage — jamais de
       localStorage direct. */
@@ -45,6 +49,12 @@ const DiceLog = {
       if (btn.dataset.action === "clear") this.clear();
       else if (btn.dataset.action === "export") this.export();
       else if (btn.dataset.action === "close") this.close();
+      else if (btn.dataset.action === "log-expand") {
+        const t = btn.dataset.t;
+        if (this._expanded.has(t)) this._expanded.delete(t);
+        else this._expanded.add(t);
+        this.refresh();
+      }
     });
 
     document.addEventListener("keydown", (e) => {
@@ -200,8 +210,15 @@ const DiceLog = {
       const d = new Date(t);
       return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
     };
+    // J1 : cartes pré-attentives — crit (échec critique/désastre) et glitch
+    // (bévue/complication mineure) sont les seules ALARMES (cf. sémantique
+    // cls, dicelog.js:159-183) ; elles se détachent en carte pleine, tout le
+    // reste reste en ligne compacte. Icône ⚠/✕ : réutilise le vocabulaire
+    // déjà en place ailleurs (☠/⚑ du tracker de combat), pas un ajout de motif.
+    const ICON = { crit: "✕", glitch: "⚠" };
     list.innerHTML = this.history
       .map((e) => {
+        const isCard = e.cls === "crit" || e.cls === "glitch";
         const who = e.who
           ? `<span class="dice-log-who">${Utils.escHtml(e.who)}</span> `
           : "";
@@ -213,11 +230,20 @@ const DiceLog = {
         const tag = e.tag
           ? `<span class="dice-log-tag ${e.cls}">${Utils.escHtml(e.tag)}</span>`
           : "";
-        return `<div class="dice-log-item ${e.cls}">
+        const icon = isCard ? `<span class="dice-log-icon" aria-hidden="true">${ICON[e.cls]}</span>` : "";
+        // Détail replié par défaut : bouton "▸ Détail" à la place du sub brut,
+        // le pool complet reste à un tap (outil de confiance à la demande).
+        const expanded = this._expanded.has(String(e.t));
+        const detail = expanded
+          ? `<span class="dice-log-sub">${Utils.escHtml(e.sub)}</span>
+             <button class="dice-log-detail-btn" data-action="log-expand" data-t="${e.t}">▾ Replier</button>`
+          : `<button class="dice-log-detail-btn" data-action="log-expand" data-t="${e.t}">▸ Détail</button>`;
+        return `<div class="dice-log-item ${e.cls}${isCard ? " is-card" : ""}">
           <span class="dice-log-time">${fmt(e.t)}</span>
+          ${icon}
           <div class="dice-log-body">
             ${label}
-            <span class="dice-log-sub">${Utils.escHtml(e.sub)}</span>
+            ${detail}
             ${tag}
           </div>
           <span class="dice-log-main">${e.main}<small>${e.unit || ""}</small></span>

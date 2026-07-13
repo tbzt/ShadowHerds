@@ -4955,6 +4955,7 @@ kbd {
   padding: var(--sp-2) 0.8rem;
   border-left: 2px solid var(--border);
   margin: 2px 0;
+  flex-wrap: wrap;
 }
 .dice-log-item.good {
   border-left-color: var(--accent);
@@ -4967,6 +4968,46 @@ kbd {
 }
 .dice-log-item.zero {
   border-left-color: var(--text-dim);
+}
+/* J1 : cartes pré-attentives — seules les ALARMES (crit/glitch, cf. sémantique
+   cls) se détachent en carte pleine (bordure + fond teinté + icône) ; le
+   reste garde la ligne compacte ci-dessus. */
+.dice-log-item.is-card {
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: 4px;
+  padding: 0.6rem 0.8rem;
+}
+.dice-log-item.crit.is-card {
+  border-left-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, var(--bg-card));
+}
+.dice-log-item.glitch.is-card {
+  border-left-color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 10%, var(--bg-card));
+}
+.dice-log-icon {
+  flex: none;
+  font-size: var(--fs-md);
+}
+.dice-log-item.crit .dice-log-icon {
+  color: var(--danger);
+}
+.dice-log-item.glitch .dice-log-icon {
+  color: var(--warning);
+}
+.dice-log-detail-btn {
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.dice-log-detail-btn:hover {
+  color: var(--accent);
 }
 .dice-log-time {
   font-family: var(--font-mono);
