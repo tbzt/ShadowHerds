@@ -92,24 +92,24 @@ const App = {
      créatures + 3 thèmes inutiles du chargement initial. */
   _loadedAssets: new Set(),
   _EDITION_CSS: {
-    sr5: "css/theme-sr5.css?v=984",
-    sr6: "css/theme-sr6.css?v=984",
-    anarchy2: "css/theme-anarchy.css?v=984",
-    anarchy1: "css/theme-anarchy1.css?v=984",
+    sr5: "css/theme-sr5.css?v=985",
+    sr6: "css/theme-sr6.css?v=985",
+    anarchy2: "css/theme-anarchy.css?v=985",
+    anarchy1: "css/theme-anarchy1.css?v=985",
   },
   _EDITION_JS: {
-    sr5: ["js/editions/sr5.js?v=984", "js/editions/sr5.foundry.js?v=984", "js/editions/sr5.print.js?v=984"],
-    sr6: ["js/editions/sr6.js?v=984", "js/editions/sr6.foundry.js?v=984", "js/editions/sr6.print.js?v=984"],
+    sr5: ["js/editions/sr5.js?v=985", "js/editions/sr5.foundry.js?v=985", "js/editions/sr5.print.js?v=985"],
+    sr6: ["js/editions/sr6.js?v=985", "js/editions/sr6.foundry.js?v=985", "js/editions/sr6.print.js?v=985"],
     anarchy2: [
-      "js/editions/anarchy2.js?v=984",
-      "js/editions/anarchy2.creation.js?v=984",
-      "js/editions/anarchy2.foundry.js?v=984",
-      "js/editions/anarchy2.print.js?v=984",
+      "js/editions/anarchy2.js?v=985",
+      "js/editions/anarchy2.creation.js?v=985",
+      "js/editions/anarchy2.foundry.js?v=985",
+      "js/editions/anarchy2.print.js?v=985",
     ],
-    anarchy1: ["js/editions/anarchy1.js?v=984", "js/editions/anarchy1.print.js?v=984"],
+    anarchy1: ["js/editions/anarchy1.js?v=985", "js/editions/anarchy1.print.js?v=985"],
   },
   // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
-  _COMMON_JS: ["js/catalogs/creatures.js?v=984"],
+  _COMMON_JS: ["js/catalogs/creatures.js?v=985"],
 
   _loadCss(href) {
     if (!href || this._loadedAssets.has(href)) return;
@@ -182,6 +182,22 @@ const App = {
     Onboarding.maybeShow();
   },
 
+  /* ---- D1 : sheet mobile « Plus » (Contacts/Serveurs/Run/Paramètres) ---- */
+  openMore() {
+    const overlay = document.getElementById("more-sheet-overlay");
+    if (!overlay) return;
+    overlay.classList.add("open");
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => overlay.classList.add("show")),
+    );
+  },
+  closeMore() {
+    const overlay = document.getElementById("more-sheet-overlay");
+    if (!overlay || !overlay.classList.contains("open")) return;
+    overlay.classList.remove("show");
+    setTimeout(() => overlay.classList.remove("open"), 220);
+  },
+
   /* ---- Navigation entre panels ---- */
   showPanel(name, { updateHash = true } = {}) {
     // L'accueil a été retiré : compat des anciens hash.
@@ -193,6 +209,7 @@ const App = {
     document
       .querySelectorAll(".nav-btn, .bnav-btn")
       .forEach((b) => b.classList.remove("active"));
+    this.closeMore();
 
     const panel = document.getElementById(`panel-${name}`);
     if (panel) panel.classList.add("active");
@@ -428,6 +445,9 @@ document.addEventListener("DOMContentLoaded", () => {
       case "open-palette":
         Palette.open();
         break;
+      case "open-more":
+        App.openMore();
+        break;
       case "shortcuts-close":
         App.toggleCheatsheet(false);
         break;
@@ -450,6 +470,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === e.currentTarget) App.toggleCheatsheet(false);
   });
 
+  document.getElementById("more-sheet-overlay").addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) App.closeMore();
+  });
+
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       EditModal.close();
@@ -457,6 +481,7 @@ document.addEventListener("DOMContentLoaded", () => {
       CharGen.close();
       Palette.close();
       App.toggleCheatsheet(false);
+      App.closeMore();
       return;
     }
 

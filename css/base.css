@@ -5525,7 +5525,8 @@ kbd {
 #dice-fab {
   display: none;
 }
-#dice-sheet-overlay {
+#dice-sheet-overlay,
+#more-sheet-overlay {
   display: none;
   position: fixed;
   inset: 0;
@@ -5536,10 +5537,12 @@ kbd {
   opacity: 0;
   transition: opacity var(--dur-base) ease;
 }
-#dice-sheet-overlay.show {
+#dice-sheet-overlay.show,
+#more-sheet-overlay.show {
   opacity: 1;
 }
-#dice-sheet {
+#dice-sheet,
+#more-sheet {
   width: 100%;
   background: var(--bg-card);
   border-top: 2px solid var(--accent);
@@ -5551,8 +5554,31 @@ kbd {
   transform: translateY(100%);
   transition: transform var(--dur-slow) var(--ease-emphasized);
 }
-#dice-sheet-overlay.show #dice-sheet {
+#dice-sheet-overlay.show #dice-sheet,
+#more-sheet-overlay.show #more-sheet {
   transform: translateY(0);
+}
+#more-sheet .bnav-btn {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: var(--sp-3);
+  min-height: 52px;
+  border-top: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+#more-sheet .bnav-btn:last-child {
+  border-bottom: none;
+}
+#more-sheet .bnav-btn.active {
+  color: var(--accent);
+}
+#more-sheet .bnav-icon .icon {
+  width: 20px;
+  height: 20px;
+}
+#more-sheet .bnav-label {
+  font-size: var(--fs-base);
 }
 .dice-sheet-handle {
   width: 40px;
@@ -5849,7 +5875,8 @@ kbd {
   #dice-fab:active {
     transform: scale(0.93);
   }
-  #dice-sheet-overlay.open {
+  #dice-sheet-overlay.open,
+  #more-sheet-overlay.open {
     display: flex;
   }
 
