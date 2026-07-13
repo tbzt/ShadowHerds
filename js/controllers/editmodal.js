@@ -5,6 +5,7 @@
    ============================================================ */
 const EditModal = {
   currentId: null,
+  _notesMode: "read", // "read" (puces @/#) | "edit" (jeton brut) — E7
 
   open(id) {
     const pnj = PnjLookup.find(id);
@@ -27,8 +28,54 @@ const EditModal = {
     // open(), donc rattaché ici (idempotent, sans effet si déjà attaché).
     const notesEl = document.getElementById("em-notes");
     if (notesEl) Mentions.attach(notesEl);
+    // E7 : le textarea est régénéré à chaque open() — repartir du mode
+    // Lire/Éditer par défaut selon le contenu, jamais garder l'état de la
+    // fiche précédemment ouverte.
+    this._notesMode = notesEl && notesEl.value.trim() ? "read" : "edit";
+    this._syncNotesView();
 
     document.getElementById("edit-modal").classList.add("open");
+  },
+
+  /** Bascule Lire (puces @/# cliquables) / Éditer (jeton brut) des notes
+      libres `em-notes` — même mécanique que le bloc-notes de séance. E7. */
+  toggleNotesMode() {
+    this._notesMode = this._notesMode === "read" ? "edit" : "read";
+    this._syncNotesView();
+    if (this._notesMode === "edit") document.getElementById("em-notes")?.focus();
+  },
+
+  _syncNotesView() {
+    const notesEl = document.getElementById("em-notes");
+    const readEl = document.getElementById("em-notes-read");
+    if (!notesEl || !readEl) return;
+    if (this._notesMode === "read") {
+      readEl.innerHTML =
+        Mentions.renderText(notesEl.value) ||
+        '<span class="notepad-read-empty">Vide.</span>';
+      readEl.hidden = false;
+      notesEl.hidden = true;
+    } else {
+      readEl.hidden = true;
+      notesEl.hidden = false;
+    }
+  },
+
+  /** Bloc « Notes » commun aux 3 gabarits (identité/véhicule/PJ léger/PNJ
+      complet) : textarea éditable + vue lecture (puces @/#) + bascule. E7 —
+      remplace la triplication du `<textarea id="em-notes">`. */
+  _notesBlock(notes) {
+    const esc = CardRenderer._esc;
+    return `<div class="modal-section">
+      <div class="modal-section-title">
+        Notes
+        <button type="button" class="btn-icon-tiny" data-action="toggle-notes-mode" title="Lire / Éditer" aria-label="Lire / Éditer">✎</button>
+      </div>
+      <div class="form-group">
+        <div class="notepad-read" id="em-notes-read"></div>
+        <textarea id="em-notes" rows="3" data-mentions placeholder="Notes libres…">${esc(notes || "")}</textarea>
+      </div>
+    </div>`;
   },
 
   close() {
@@ -112,12 +159,7 @@ const EditModal = {
       </div>`;
     }
     html += `</div></div>
-    <div class="modal-section">
-      <div class="modal-section-title">Notes</div>
-      <div class="form-group">
-        <textarea id="em-notes" rows="3" placeholder="Notes libres…">${esc(v.notes || "")}</textarea>
-      </div>
-    </div>`;
+    ${this._notesBlock(v.notes)}`;
     return html;
   },
 
@@ -169,12 +211,7 @@ const EditModal = {
     </div>
     ${this._buildTableBlock(pnj, App.getEditionModule(pnj.edition)?.pcTableBlock)}
     ${this._buildContactLinksSection(pnj)}
-    <div class="modal-section">
-      <div class="modal-section-title">Notes</div>
-      <div class="form-group">
-        <textarea id="em-notes" rows="3" placeholder="Notes libres…">${esc(pnj.notes || "")}</textarea>
-      </div>
-    </div>`;
+    ${this._notesBlock(pnj.notes)}`;
   },
 
   /** E5 : « Contacts liés » — repliée par défaut (`<details>`), générée
@@ -490,12 +527,7 @@ const EditModal = {
     }
 
     // ---- Section : Notes ----
-    html += `<div class="modal-section">
-      <div class="modal-section-title">Notes</div>
-      <div class="form-group">
-        <textarea id="em-notes" rows="3" placeholder="Notes libres…">${CardRenderer._esc(pnj.notes || "")}</textarea>
-      </div>
-    </div>`;
+    html += this._notesBlock(pnj.notes);
 
     return html;
   },
@@ -733,6 +765,9 @@ const EditModal = {
           break;
         case "remove-contact-link":
           this.removeContactLink(el.dataset.id);
+          break;
+        case "toggle-notes-mode":
+          this.toggleNotesMode();
           break;
       }
     });
