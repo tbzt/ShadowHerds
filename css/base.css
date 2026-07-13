@@ -6159,8 +6159,8 @@ kbd {
 
   /* ---- Lanceur topbar utilisable au doigt (iPad) ---- */
   .dice-count-step {
-    width: 34px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     font-size: var(--fs-lg);
   }
   .dice-count-input {

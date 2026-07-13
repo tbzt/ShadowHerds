@@ -412,6 +412,10 @@ const CardRenderer = {
       S._CARD_KEY &&
       Storage.getGlobal(S._CARD_KEY, null) != null;
     if (configured) return S.getCardDisplay();
+    // Contexte bibliothèque (consultation, D6a) : référence toujours repliée,
+    // quel que soit l'écran — le mur de cartes desktop devient un annuaire
+    // scannable. Le générateur (aucun contexte transmis) garde l'aperçu riche.
+    if (deps && deps.context === "library") return { layout: "compact", ...shows };
     // Sinon, une seule base responsive à défaut adaptatif : carte compacte
     // (référence repliée) sur tablette/mobile (≤ 1024px), dépliée sur desktop.
     const compact =

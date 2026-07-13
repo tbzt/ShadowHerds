@@ -196,7 +196,7 @@ const Hub = {
       section.appendChild(head);
       const grid = document.createElement("div");
       grid.className = "cards-zone";
-      col.renderMembers(grid, kept.map((e) => e.id));
+      col.renderMembers(grid, kept.map((e) => e.id), "library");
       section.appendChild(grid);
       box.appendChild(section);
     }

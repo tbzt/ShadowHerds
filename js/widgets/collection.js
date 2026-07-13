@@ -400,7 +400,7 @@ const Collection = {
           Extrait de _renderGrid pour être réutilisable par un agrégateur
           externe (Hub) qui rend les membres d'un dossier hors de la grille
           propre à la collection. */
-      _renderList(grid, list) {
+      _renderList(grid, list, context) {
         const allGroups = Object.keys(this.data.groups);
         const linked = config.linked;
         // Les entités liées suivent la carte de leur maître. Table mémoïsée :
@@ -423,6 +423,7 @@ const Collection = {
             allGroups,
             groupsIn: this.groupsOf(entity.id),
             collection: this,
+            context,
           });
           // Toujours affiché : le popover permet de créer un premier
           // groupe à la volée même quand aucun n'existe encore.
@@ -443,11 +444,13 @@ const Collection = {
 
       /** Rend, dans un conteneur fourni, les entités dont l'id est listé
           (les plus récentes d'abord, comme la grille propre). Utilisé par
-          le Hub pour composer une section par type dans une vue de dossier. */
-      renderMembers(grid, ids) {
+          le Hub pour composer une section par type dans une vue de dossier.
+          `context` (ex. "library", D6a) descend jusqu'au rendu de carte pour
+          adapter la densité à l'usage (consultation vs génération). */
+      renderMembers(grid, ids, context) {
         const set = new Set(ids);
         const list = this.data.all.filter((e) => set.has(e.id));
-        this._renderList(grid, list.slice().reverse());
+        this._renderList(grid, list.slice().reverse(), context);
       },
 
       /** Bouton d'appartenance multi-groupes, uniforme sur toute carte.
