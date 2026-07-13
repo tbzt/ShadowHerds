@@ -550,6 +550,23 @@ const EncounterRenderer = {
     </div>`;
   },
 
+  /** M3 : pont entre le ciblage personnel d'un decker (DeckRun.target,
+      cf. cyberdeckrenderer.js) et la Matrice contextuelle de la scène
+      (Encounter.state.serverId, K3). Le bloc deck du combattant actif
+      affiche déjà sa cible (CardRenderer.render → CyberdeckRenderer.block) ;
+      cette ligne ne fait qu'offrir de la promouvoir en un tap si elle
+      diffère du serveur déjà lié — réutilise linkServer, aucune donnée neuve. */
+  _activeDeckerLink(r, state) {
+    if (!r.pnj || r.pnj._adhoc || !r.pnj.cyberdeck) return "";
+    const targetId = DeckRun.target(r.pnj);
+    if (!targetId || targetId === state.serverId) return "";
+    const srv = Servers.find(targetId);
+    if (!srv) return "";
+    return `<div class="encounter-active-badges">
+      <button class="btn-secondary btn-small" data-action="link-server" data-id="${srv.id}" title="Lier ${Utils.escHtml(srv.name)} à la scène">🔗 Lier ${Utils.escHtml(srv.name)} à la scène</button>
+    </div>`;
+  },
+
   /** Rangée Atout (K5, SR6) : compteur de combat 0-7 par combattant, stocké
       dans l'entrée de scène (c.edge) — pas sur le PNJ (l'Atout dépensé/gagné
       est propre à la rencontre). ± via edge-step ; le plafond +2/tour est un
@@ -645,6 +662,17 @@ const EncounterRenderer = {
 
     const pnj = active && active.pnj && !active.pnj._adhoc ? active.pnj : null;
     const id = pnj ? pnj.id : null;
+    // M3 : le bandeau (badges + pont decker→scène) doit rester à jour même
+    // sans changement de combattant actif (ex. lier un serveur alors que
+    // c'est toujours le tour du même decker) — recalculé à chaque appel, à
+    // l'inverse de la fiche complète ci-dessous (coûteuse, gardée en cache
+    // par id). Trouvé en vérifiant ce pont : sans ce fractionnement, le
+    // bouton « Lier à la scène » restait affiché après un clic jusqu'au tour
+    // suivant (linkServer réussissait bel et bien, seul l'affichage mentait).
+    if (pnj) {
+      const top = box.querySelector(":scope > .encounter-active-top");
+      if (top) top.innerHTML = this._activeBandeau(active) + this._activeDeckerLink(active, state);
+    }
     if (id === this._activeCardId) return; // déjà affiché, laissé au rafraîchissement global
     this._activeCardId = id;
 
@@ -657,7 +685,7 @@ const EncounterRenderer = {
       // en dessous — la fiche « vue combat » n'affiche que ce que le MJ
       // regarde à chaque tour (l'init est masquée en CSS, les attributs sont
       // déjà repliés par pnj._refOpen ci-dessus).
-      box.innerHTML = this._activeBandeau(active);
+      box.innerHTML = `<div class="encounter-active-top">${this._activeBandeau(active) + this._activeDeckerLink(active, state)}</div>`;
       box.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
       // K5 : rangée Atout (SR6, combatModel.edgeTracker) — organe d'édition
       // sur la fiche active. Absente en SR5/Anarchy (drapeau non posé).
