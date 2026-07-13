@@ -86,7 +86,7 @@ const CyberdeckRenderer = {
       : "";
     const canAttack = targetId && Cyberdeck.rollAttack(edition, deck);
     const attackBtn = canAttack
-      ? `<button type="button" class="cyberdeck-swap" data-action="deck-attack" data-id="${pnj.id}" title="Jet de piratage contre le serveur ciblé">🎯 Piratage</button>`
+      ? `<button type="button" class="cyberdeck-swap" data-action="deck-attack" data-id="${pnj.id}" title="Jet de piratage contre le serveur ciblé">⚔ Piratage</button>`
       : "";
     return `<div class="cyberdeck-target">
       <select class="cyberdeck-target-select" data-action="deck-set-target" data-id="${pnj.id}" aria-label="Serveur ciblé">${options}</select>
