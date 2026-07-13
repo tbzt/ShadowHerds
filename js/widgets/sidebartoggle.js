@@ -15,12 +15,13 @@ const SidebarToggle = {
 
   init() {
     const saved = Storage.getGlobal(this._key, {});
-    const firstRun = Storage.getGlobal(this._key, null) === null;
-    // Sur mobile : replier par défaut (overlay), sans écraser un choix stocké.
-    const mobileDefault = this._isMobile() && firstRun;
+    // Sur mobile : replier par défaut (overlay) pour tout panel sans
+    // préférence stockée, sans écraser un choix stocké — indépendant de
+    // firstRun (sinon un panel jamais visité s'ouvre en grand dès qu'un
+    // autre panel a été togglé une fois).
     for (const panel of this._panels) {
       this.state[panel] =
-        typeof saved[panel] === "boolean" ? saved[panel] : mobileDefault;
+        typeof saved[panel] === "boolean" ? saved[panel] : this._isMobile();
       this._apply(panel);
     }
   },
