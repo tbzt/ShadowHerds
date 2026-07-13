@@ -353,6 +353,9 @@ document.addEventListener("DOMContentLoaded", () => {
     onPnjChanged,
     isRefOpen: (pnj) => CardRenderer._refIsOpen(pnj),
     isAnarchy: () => !!(App.editionModule && App.editionModule.usesRiskPanel),
+    // J3 (journal des jets) : round de la scène en cours, pour grouper le
+    // journal par tour — seule App (couche 6) connaît Encounter (couche 5).
+    currentTurn: () => (typeof Encounter !== "undefined" ? Encounter.currentTurn() : null),
   });
   MagicAction.init({ onPnjChanged });
   ContentModal.bindDelegation();

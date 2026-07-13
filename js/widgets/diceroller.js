@@ -75,9 +75,9 @@ const DiceRoller = {
     this._setThreat(this._THREAT_DEFAULT);
   },
 
-  /** hooks: { resolve(id), getPrefs(), onPnjChanged(pnj), isRefOpen(pnj), isAnarchy() }. */
+  /** hooks: { resolve(id), getPrefs(), onPnjChanged(pnj), isRefOpen(pnj), isAnarchy(), currentTurn() }. */
   init(hooks) {
-    const required = ["resolve", "getPrefs", "onPnjChanged", "isRefOpen", "isAnarchy"];
+    const required = ["resolve", "getPrefs", "onPnjChanged", "isRefOpen", "isAnarchy", "currentTurn"];
     const missing = required.filter((k) => typeof (hooks || {})[k] !== "function");
     if (missing.length) {
       throw new Error(`DiceRoller.init: hooks manquants: ${missing.join(", ")}`);
@@ -723,7 +723,18 @@ const DiceRoller = {
   show(res, opts = {}) {
     // opts.noLog : l'appelant a déjà journalisé dans le bon ordre (ex.
     // MagicAction sur une Seconde chance du Drain — le cast n'a pas changé).
-    if (!opts.noLog) DiceLog.record(res, opts);
+    // J3 : entonnoir unique pour poser opts.turn/turnLabel (clé de groupement
+    // + numéro affiché de la scène active, ou null hors combat) — un seul
+    // point d'injection plutôt que chaque site d'appel (rollWeapon, rollPool,
+    // panneau de risque…).
+    if (!opts.noLog) {
+      const turnInfo = this._hooks.currentTurn();
+      DiceLog.record(res, {
+        ...opts,
+        turn: turnInfo ? turnInfo.key : null,
+        turnLabel: turnInfo ? turnInfo.round : null,
+      });
+    }
     // Source de la relance : dernier résultat brut + son contexte.
     this._lastRoll = { res, opts };
 

@@ -19,6 +19,12 @@ const DiceLog = {
       (comme les facettes du Hub F1), reset à chaque ouverture du panneau. */
   _filter: "all",
 
+  /** J3 : compteur d'alarmes (crit/glitch) ajoutées pendant que le panneau
+      est fermé — session only, remis à zéro à l'ouverture. Alimente la
+      pastille sur #dice-log-btn (≥641, seule largeur où il est visible) et
+      le toast <641 (pas de slot topbar visible à cette largeur). */
+  _unseen: 0,
+
   /** Persistance globale (commune aux 3 éditions, comme les préférences de
       dés) : le journal survit au F5. Passe par Storage — jamais de
       localStorage direct. */
@@ -87,6 +93,8 @@ const DiceLog = {
     // Sur mobile, le journal remplace la feuille de dés si elle est ouverte
     DicePanel.close();
     this._filter = "all";
+    this._unseen = 0;
+    this._renderBadge();
     this.refresh();
     document.getElementById("dice-log-backdrop").classList.add("open");
     document.getElementById("dice-log-panel").classList.add("open");
@@ -139,7 +147,15 @@ const DiceLog = {
 
   /** Enregistre un jet dans le journal (appelé par Dice._animate après chaque jet). */
   record(res, opts = {}) {
-    const e = { t: Date.now(), label: opts.label || "", who: opts.who || "" };
+    // J3 : turn = clé de groupement (scène+round, opaque), turnLabel = numéro
+    // affiché — injectés par DiceRoller.show, null/null hors combat.
+    const e = {
+      t: Date.now(),
+      label: opts.label || "",
+      who: opts.who || "",
+      turn: opts.turn ?? null,
+      turnLabel: opts.turnLabel ?? null,
+    };
     if (res.init) {
       e.label = e.label || "Initiative";
       e.main = String(res.total);
@@ -201,10 +217,48 @@ const DiceLog = {
               : "zero";
     }
     this.history.unshift(e);
-    if (this.history.length > this.HISTORY_MAX)
-      this.history.length = this.HISTORY_MAX;
+    // Rétention protégée (J3) : le plafond n'ampute jamais le tour en cours.
+    // Les entrées du round actif sont toujours les plus récentes (unshift),
+    // donc contiguës en tête — les compter suffit à savoir jusqu'où étendre
+    // la limite avant de tronquer la queue (entrées les plus anciennes).
+    let protectedCount = 0;
+    if (e.turn != null) {
+      for (const h of this.history) {
+        if (h.turn === e.turn) protectedCount++;
+        else break;
+      }
+    }
+    const keep = Math.max(this.HISTORY_MAX, protectedCount);
+    if (this.history.length > keep) this.history.length = keep;
     this._save();
+    if ((e.cls === "crit" || e.cls === "glitch") && !this._open) this._flash();
     this.refresh();
+  },
+
+  /** J3 : signale une alarme ajoutée pendant que le panneau est fermé.
+      ≥641 : pastille/compteur sur #dice-log-btn (seule largeur où il est
+      visible, cf. base.css). <641 : ce bouton est masqué (le journal s'ouvre
+      depuis la feuille de dés mobile), donc toast() est le seul relais. */
+  _flash() {
+    this._unseen++;
+    this._renderBadge();
+    toast("Nouvelle alarme dans le journal des jets.", "warning");
+  },
+
+  _renderBadge() {
+    const btn = document.getElementById("dice-log-btn");
+    if (!btn) return;
+    let badge = btn.querySelector(".dice-log-badge");
+    if (!this._unseen) {
+      if (badge) badge.remove();
+      return;
+    }
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "dice-log-badge";
+      btn.appendChild(badge);
+    }
+    badge.textContent = this._unseen > 9 ? "9+" : String(this._unseen);
   },
 
   /** J2 : rangée de puces Tout / Alarmes / <par personnage> — mêmes règles que
@@ -250,40 +304,60 @@ const DiceLog = {
     // reste reste en ligne compacte. Icône ⚠/✕ : réutilise le vocabulaire
     // déjà en place ailleurs (☠/⚑ du tracker de combat), pas un ajout de motif.
     const ICON = { crit: "✕", glitch: "⚠" };
-    list.innerHTML = entries
-      .map((e) => {
-        const isCard = e.cls === "crit" || e.cls === "glitch";
-        const who = e.who
-          ? `<span class="dice-log-who">${Utils.escHtml(e.who)}</span> `
-          : "";
-        const label = e.label
-          ? `<span class="dice-log-label">${who}${Utils.escHtml(e.label)}</span>`
-          : e.who
-            ? `<span class="dice-log-label">${who}</span>`
-            : `<span class="dice-log-label dim">Jet libre</span>`;
-        const tag = e.tag
-          ? `<span class="dice-log-tag ${e.cls}">${Utils.escHtml(e.tag)}</span>`
-          : "";
-        const icon = isCard ? `<span class="dice-log-icon" aria-hidden="true">${ICON[e.cls]}</span>` : "";
-        // Détail replié par défaut : bouton "▸ Détail" à la place du sub brut,
-        // le pool complet reste à un tap (outil de confiance à la demande).
-        const expanded = this._expanded.has(String(e.t));
-        const detail = expanded
-          ? `<span class="dice-log-sub">${Utils.escHtml(e.sub)}</span>
-             <button class="dice-log-detail-btn" data-action="log-expand" data-t="${e.t}">▾ Replier</button>`
-          : `<button class="dice-log-detail-btn" data-action="log-expand" data-t="${e.t}">▸ Détail</button>`;
-        return `<div class="dice-log-item ${e.cls}${isCard ? " is-card" : ""}">
-          <span class="dice-log-time">${fmt(e.t)}</span>
-          ${icon}
-          <div class="dice-log-body">
-            ${label}
-            ${detail}
-            ${tag}
-          </div>
-          <span class="dice-log-main">${e.main}<small>${e.unit || ""}</small></span>
-        </div>`;
-      })
-      .join("");
+    // J3 : en-têtes de tour sticky — les entrées d'un même round sont déjà
+    // contiguës (unshift à l'enregistrement), un simple changement de valeur
+    // suffit à repérer une frontière de groupe. liveTurn = round du tout
+    // dernier jet enregistré (non filtré) : proxy du round « en cours ».
+    const liveTurn = this.history[0] && this.history[0].turn != null ? this.history[0].turn : null;
+    const header = (e) =>
+      e.turn == null
+        ? `<div class="dice-log-turn-header">Hors combat</div>`
+        : `<div class="dice-log-turn-header">Tour ${e.turnLabel}${e.turn === liveTurn ? " en cours" : ""}</div>`;
+    let prevTurn;
+    const parts = [];
+    entries.forEach((e) => {
+      if (e.turn !== prevTurn) {
+        parts.push(header(e));
+        prevTurn = e.turn;
+      }
+      parts.push(this._itemHtml(e, fmt, ICON));
+    });
+    list.innerHTML = parts.join("");
+  },
+
+  /** Rendu d'une entrée (extrait de refresh en J3 pour intercaler les
+      en-têtes de tour sans dupliquer le HTML de la carte/ligne). */
+  _itemHtml(e, fmt, ICON) {
+    const isCard = e.cls === "crit" || e.cls === "glitch";
+    const who = e.who
+      ? `<span class="dice-log-who">${Utils.escHtml(e.who)}</span> `
+      : "";
+    const label = e.label
+      ? `<span class="dice-log-label">${who}${Utils.escHtml(e.label)}</span>`
+      : e.who
+        ? `<span class="dice-log-label">${who}</span>`
+        : `<span class="dice-log-label dim">Jet libre</span>`;
+    const tag = e.tag
+      ? `<span class="dice-log-tag ${e.cls}">${Utils.escHtml(e.tag)}</span>`
+      : "";
+    const icon = isCard ? `<span class="dice-log-icon" aria-hidden="true">${ICON[e.cls]}</span>` : "";
+    // Détail replié par défaut : bouton "▸ Détail" à la place du sub brut,
+    // le pool complet reste à un tap (outil de confiance à la demande).
+    const expanded = this._expanded.has(String(e.t));
+    const detail = expanded
+      ? `<span class="dice-log-sub">${Utils.escHtml(e.sub)}</span>
+         <button class="dice-log-detail-btn" data-action="log-expand" data-t="${e.t}">▾ Replier</button>`
+      : `<button class="dice-log-detail-btn" data-action="log-expand" data-t="${e.t}">▸ Détail</button>`;
+    return `<div class="dice-log-item ${e.cls}${isCard ? " is-card" : ""}">
+      <span class="dice-log-time">${fmt(e.t)}</span>
+      ${icon}
+      <div class="dice-log-body">
+        ${label}
+        ${detail}
+        ${tag}
+      </div>
+      <span class="dice-log-main">${e.main}<small>${e.unit || ""}</small></span>
+    </div>`;
   },
 };
 

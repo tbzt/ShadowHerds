@@ -10,7 +10,16 @@
    ============================================================ */
 const Encounter = {
   _KEY: "encounter_current",
+
+  /** J3 (journal des jets) : incrémenté à chaque scène fraîche (_empty),
+      pour distinguer deux combats séparés qui repartiraient chacun au round
+      1 — sinon leurs jets fusionneraient dans le même groupe « Tour 1 » du
+      journal. Session only (pas persisté) : un F5 en plein combat ouvre un
+      nouveau groupe visuel, effet de bord mineur accepté (pas de perte de
+      données, juste un en-tête de plus). */
+  _sceneSeq: 0,
   _empty() {
+    this._sceneSeq++;
     return { round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null };
   },
 
@@ -834,6 +843,18 @@ const Encounter = {
       r.gauge = cm && cm.gauge ? cm.gauge(r.pnj) : null;
     }
     return rows;
+  },
+
+  /** J3 (journal des jets) : { key, round } si une scène est active avec au
+      moins un combattant, sinon null (« hors combat »). `key` inclut
+      `_sceneSeq` pour que deux combats distincts démarrant chacun au round 1
+      ne fusionnent pas dans le même groupe du journal ; `round` est le
+      numéro affiché. Lu par App via le hook injecté à DiceRoller.init —
+      DiceRoller/DiceLog (couche 4) ne connaissent jamais Encounter
+      (couche 5) directement. */
+  currentTurn() {
+    if (!this.state || !this.state.combatants.length) return null;
+    return { key: `${this._sceneSeq}:${this.state.round}`, round: this.state.round };
   },
 
   /** Re-rend le tracker quand le moniteur d'un combattant change hors du
