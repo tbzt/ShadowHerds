@@ -5150,11 +5150,14 @@ kbd {
   transition: background var(--dur-base) ease;
 }
 .mention-chip {
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
-  color: var(--accent);
+  /* Signature visuelle PJ (E6) : --mention-pc-color posée en inline par
+     Mentions.renderText pour un PJ, sinon retombe sur --accent (PNJ/contact/
+     serveur). Un seul et même canal pour la couleur ET le fond teinté. */
+  background: color-mix(in srgb, var(--mention-pc-color, var(--accent)) 15%, transparent);
+  color: var(--mention-pc-color, var(--accent));
 }
 .mention-chip:hover {
-  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  background: color-mix(in srgb, var(--mention-pc-color, var(--accent)) 28%, transparent);
 }
 .mention-chip--dead {
   color: var(--text-dim);

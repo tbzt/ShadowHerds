@@ -231,7 +231,14 @@ const Mentions = {
         const ent = PnjLookup.locate(id);
         const name = ent ? ent.name : m[1];
         const dead = ent ? "" : " mention-chip--dead";
-        out += `<span class="mention-chip${dead}" data-action="mention-open" data-id="${Utils.escHtml(id)}" role="button" tabindex="0">@${Utils.escHtml(name || "?")}</span>`;
+        // Signature visuelle PJ (E6) : la puce reprend la couleur identifiante
+        // du PJ, résolue à chaque rendu — un changement de couleur se propage
+        // au prochain affichage, comme le nom (aucun cache, aucun hook).
+        const pcStyle =
+          ent && ent.type === "pj" && ent.pcColor
+            ? ` style="--mention-pc-color:${Utils.escHtml(ent.pcColor)}"`
+            : "";
+        out += `<span class="mention-chip${dead}"${pcStyle} data-action="mention-open" data-id="${Utils.escHtml(id)}" role="button" tabindex="0">@${Utils.escHtml(name || "?")}</span>`;
       } else if (m[3] != null) {
         const tag = m[3];
         out += `<span class="tag-chip" data-action="tag-open" data-tag="${Utils.escHtml(tag)}" role="button" tabindex="0">#${Utils.escHtml(tag)}</span>`;
