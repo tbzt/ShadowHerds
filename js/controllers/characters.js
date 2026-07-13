@@ -107,22 +107,30 @@ const Characters = Object.assign(
       this.remove(id);
     },
 
-    /** E2 : équipe active pour « + Équipe » (Encounter.addTeam). Référence un
-        NOM de dossier existant — même clé que `Characters.data.groups`, déjà
-        synchronisée avec DossierBar/Dossiers (CH-A3) : pas de 2ᵉ concept de
-        regroupement (garde-fou F5). `null` = tous les PJ (défaut, table
-        unique). Clé légère dédiée, hors du cycle load()/save() du socle
-        (lue à la demande, jamais mise en cache). */
-    getActiveTeamName() {
+    /** E2 : équipe active pour « + Équipe » (Encounter.addTeam). Référence
+        l'ID d'un dossier existant (Dossiers) — jamais son nom : un dossier
+        renommé (DossierBar.renameDossier) cascade déjà le renommage dans
+        `Characters.data.groups`, mais une clé stockée à part comme celle-ci
+        n'aurait pas suivi si elle gardait le nom — bug trouvé en vérifiant.
+        L'id, lui, ne change jamais au renommage. `null` = tous les PJ
+        (défaut, table unique). Clé légère dédiée, hors du cycle load()/
+        save() du socle (lue à la demande, jamais mise en cache). */
+    getActiveTeamId() {
       return Storage.get("characters_team", null);
     },
-    setActiveTeamName(name) {
-      Storage.set("characters_team", name || null);
+    setActiveTeamId(id) {
+      Storage.set("characters_team", id || null);
+    },
+    /** Dossier de l'équipe active, ou null si désigné mais supprimé depuis
+        (repli silencieux sur « tous les PJ », même garde que ci-dessous). */
+    _activeTeamNode() {
+      const id = this.getActiveTeamId();
+      return id ? Dossiers.get(id) : null;
     },
     activeTeamMembers() {
-      const name = this.getActiveTeamName();
-      if (name && this.data.groups[name]) {
-        const ids = new Set(this.data.groups[name]);
+      const node = this._activeTeamNode();
+      if (node && this.data.groups[node.name]) {
+        const ids = new Set(this.data.groups[node.name]);
         return this.data.all.filter((p) => ids.has(p.id));
       }
       return this.data.all.slice();
@@ -137,12 +145,12 @@ const Characters = Object.assign(
         toast("Ouvrez un dossier de PJ pour le désigner comme équipe.", "warning");
         return;
       }
-      const current = this.getActiveTeamName();
-      if (current === node.name) {
-        this.setActiveTeamName(null);
+      const current = this.getActiveTeamId();
+      if (current === node.id) {
+        this.setActiveTeamId(null);
         toast("Équipe active : tous les PJ.");
       } else {
-        this.setActiveTeamName(node.name);
+        this.setActiveTeamId(node.id);
         toast(`Équipe active : ${node.name}.`);
       }
       this._renderActiveTeamLabel();
@@ -151,9 +159,9 @@ const Characters = Object.assign(
     _renderActiveTeamLabel() {
       const btn = document.getElementById("btn-active-team");
       if (!btn) return;
-      const name = this.getActiveTeamName();
-      btn.textContent = name ? `★ Équipe : ${name}` : "☆ Équipe : Tous les PJ";
-      btn.classList.toggle("is-active-team", !!name);
+      const node = this._activeTeamNode();
+      btn.textContent = node ? `★ Équipe : ${node.name}` : "☆ Équipe : Tous les PJ";
+      btn.classList.toggle("is-active-team", !!node);
     },
 
     /** Montage du panneau (CH-A3 polish) : la sidebar de dossiers est
