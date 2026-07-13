@@ -3147,9 +3147,13 @@ body.selecting .bulk-selectable .contact-header-row {
   align-items: center;
   gap: 0.3rem;
 }
-.encounter-acted {
-  display: flex;
-  align-items: center;
+/* Toggle « a joué » ordonné (SR5/SR6), rangé dans le groupe ⋯ : jeton ✓ (à
+   marquer) / ↩ (à annuler), vert quand joué. Remplace l'ancienne checkbox
+   native permanente — action rare, déjà automatisée par « Tour suivant » ;
+   le grisé de ligne (.encounter-row.has-acted) reste l'indicateur passif. */
+.encounter-acted-toggle.is-done {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 55%, transparent);
 }
 /* Passe d'initiative (SR5) affichée à côté du round. */
 .encounter-pass {
@@ -3305,29 +3309,77 @@ body.selecting .bulk-selectable .contact-header-row {
   color: var(--text);
   cursor: pointer;
 }
+/* Anneau-check narratif : cible de tap ÉVIDENTE (pas une puce muette). Vide,
+   un ✓ fantôme et une bordure épaisse annoncent « coche ici » ; il s'allume
+   à l'approche (pointeur fin) et s'enfonce au tap (feedback tactile). Plein
+   vert = joué. Le tap est capté par toute la ligne (data-action="narrative-
+   toggle") — l'anneau n'est qu'aria-hidden décoratif. */
 .encounter-nrow-check {
   flex: none;
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  border: 1.5px solid var(--border);
+  border: 2px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: transparent;
-  font-size: var(--fs-sm);
+  color: color-mix(in srgb, var(--text-dim) 40%, transparent);
+  font-size: var(--fs-md);
+  transition:
+    background var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    color var(--dur-fast) ease,
+    transform var(--dur-fast) ease;
 }
-.encounter-nrow-name {
+.encounter-nrow:not(.down):hover .encounter-nrow-check {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.encounter-nrow:not(.down):active .encounter-nrow-check {
+  transform: scale(0.88);
+}
+/* Corps : nom en tête, type + combativité en sous-ligne (hiérarchie claire). */
+.encounter-nrow-body {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.encounter-nrow-name {
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 600;
 }
+.encounter-nrow-sub {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
 .encounter-comb {
   color: var(--accent);
   border-color: var(--accent);
+}
+/* Pastille d'état : seconde lecture de « a joué » + invite au tap. « À jouer »
+   discret (action en attente) → « Joué » vert. */
+.encounter-nrow-status {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+}
+.encounter-nrow-status.is-done {
+  color: var(--success);
+  border-color: var(--success);
+  background: color-mix(in srgb, var(--success) 12%, transparent);
 }
 /* Joué : coché + grisé barré (fond succès discret). */
 .encounter-nrow.has-acted {
@@ -3480,9 +3532,10 @@ body.selecting .bulk-selectable .contact-header-row {
     min-height: 40px;
     font-size: var(--fs-md);
   }
-  .encounter-acted input[type="checkbox"] {
-    width: 22px;
-    height: 22px;
+  .encounter-nrow .btn-icon-tiny {
+    min-width: 40px;
+    min-height: 40px;
+    font-size: var(--fs-md);
   }
   .encounter-init-step {
     min-width: 34px;

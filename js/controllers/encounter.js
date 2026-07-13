@@ -1130,6 +1130,16 @@ const Encounter = {
           if (c) this.markActed(id, !c.hasActed);
           break;
         }
+        case "toggle-acted": {
+          // Ordonné : bascule « a joué » depuis le menu ⋯ (jeton ✓/↩). La
+          // case à cocher native a été retirée (elle sur-pondérait une action
+          // rare, déjà automatisée par « Tour suivant ») ; le grisé de ligne
+          // reste l'indicateur passif. Bouton → switch click (plus la branche
+          // 'change' de l'ancienne checkbox).
+          const c = this._find(id);
+          if (c) this.markActed(id, !c.hasActed);
+          break;
+        }
         case "init-step":
           // Stepper ±1 de l'initiative (Vague B).
           this.adjustInit(id, parseInt(el.dataset.delta, 10) || 0);
@@ -1185,14 +1195,11 @@ const Encounter = {
     });
 
     overlay.addEventListener("change", (e) => {
-      const acted = e.target.closest('[data-action="toggle-acted"]');
-      if (acted) {
-        this.markActed(acted.dataset.id, acted.checked);
-        return;
-      }
       // Initiative saisie inline dans la ligne (remplace l'ancien prompt) :
       // 'change' plutôt que 'input' — la valeur n'est committée qu'au blur/
       // Entrée, donc le re-rendu de _commit ne casse pas la frappe en cours.
+      // (« a joué » ne passe plus par ici : c'est un bouton du switch click,
+      // plus une checkbox.)
       const init = e.target.closest('[data-action="set-init"]');
       if (init) this.setInit(init.dataset.id, init.value);
     });

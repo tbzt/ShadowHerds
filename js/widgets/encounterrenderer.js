@@ -105,7 +105,7 @@ const EncounterRenderer = {
       classer »/« Trier » (masqués en narratif, cf. CSS .is-narrative) est pris
       pour une panne plutôt qu'une règle appliquée à la lettre. */
   _narrativeNote() {
-    return `<div class="encounter-narrative-note">Anarchy : ordre narratif — glissez ⠿ pour réordonner</div>`;
+    return `<div class="encounter-narrative-note">Anarchy : ordre narratif — <b>touchez une ligne</b> pour la marquer « jouée » · glissez ⠿ pour réordonner</div>`;
   },
 
   /** Compteur de progression du round narratif : combien de combattants ont
@@ -116,12 +116,16 @@ const EncounterRenderer = {
     return `<div class="encounter-progress">${played} / ${present.length} ont joué</div>`;
   },
 
-  /** Ligne narrative (Anarchy) : la ligne entière est un bouton tap-to-grise
-      (data-action="narrative-toggle") ; pas de jeton d'init, ⚄ ni tri — l'ordre
-      se réordonne à la main via la poignée de glisse (⠿, comme _row), câblée
-      par Encounter._initDrag sur .encounter-nrow au même titre que .encounter-row.
-      Le ✕ (retirer) et « voir la fiche » restent derrière le menu ⋯ pour ne
-      pas retirer par mégarde en tapant pour marquer « a joué ». */
+  /** Ligne narrative (Anarchy) — refonte « tap-to-jouer » lisible : la ligne
+      entière reste le bouton (data-action="narrative-toggle"), mais l'état
+      « a joué » n'est plus une puce muette. Deux affordances redondantes
+      l'annoncent : (1) un ANNEAU-check à gauche (vide = cible évidente avec ✓
+      fantôme + feedback pressé ; plein vert = joué) ; (2) une PASTILLE d'état
+      à droite (« À jouer » → « Joué »). Le nom + type/combativité sont
+      empilés (hiérarchie claire). Pas de jeton d'init, ⚄ ni tri — l'ordre se
+      réordonne à la main via ⠿ (câblé par Encounter._initDrag comme .encounter-row).
+      Le ✕ (retirer) et « voir la fiche » restent derrière ⋯ pour ne pas
+      retirer par mégarde en tapant pour marquer « a joué ». */
   _rowNarrative(r) {
     const { pnjId, hasActed, pnj } = r;
     const name = Utils.escHtml(pnj.name || "");
@@ -139,13 +143,20 @@ const EncounterRenderer = {
     const dragHandle = r.down
       ? ""
       : `<span class="encounter-drag-handle" title="Glisser pour réordonner" aria-hidden="true">⠿</span>`;
-    return `<div class="encounter-nrow${hasActed ? " has-acted" : ""}${r.down ? " down" : ""}" data-action="narrative-toggle" data-id="${pnjId}" role="button" tabindex="0" aria-pressed="${hasActed}" title="A joué — toucher pour basculer">
+    // Pastille d'état à droite : seconde lecture de « a joué », et invite au
+    // tap (« À jouer » = action en attente). Remplacée par le badge ☠ quand
+    // le combattant est hors de combat (il ne joue plus — pas de bascule utile).
+    const status = r.down
+      ? this._downBadge()
+      : `<span class="encounter-nrow-status${hasActed ? " is-done" : ""}">${hasActed ? "Joué" : "À jouer"}</span>`;
+    return `<div class="encounter-nrow${hasActed ? " has-acted" : ""}${r.down ? " down" : ""}" data-action="narrative-toggle" data-id="${pnjId}" role="button" tabindex="0" aria-pressed="${hasActed}" title="Toucher pour basculer « a joué »">
       ${dragHandle}
       <span class="encounter-nrow-check" aria-hidden="true">✓</span>
-      <span class="encounter-nrow-name">${name}</span>
-      <span class="encounter-kind">${kind}</span>
-      ${comb}
-      ${r.down ? this._downBadge() : ""}
+      <div class="encounter-nrow-body">
+        <span class="encounter-nrow-name">${name}</span>
+        <span class="encounter-nrow-sub"><span class="encounter-kind">${kind}</span>${comb}</span>
+      </div>
+      ${status}
       ${this._lifeGauge(r)}
       <button class="btn-icon-tiny encounter-row-menu" data-action="row-menu" title="Plus d'actions" aria-label="Plus d'actions">⋯</button>
       <span class="encounter-controls-secondary">
@@ -305,11 +316,9 @@ const EncounterRenderer = {
           data-action="set-note" data-id="${pnjId}">
       </div>
       <div class="encounter-controls">
-        <label class="encounter-acted" title="A joué ce tour">
-          <input type="checkbox" ${hasActed ? "checked" : ""} data-action="toggle-acted" data-id="${pnjId}">
-        </label>
         <button class="btn-icon-tiny encounter-row-menu" data-action="row-menu" title="Plus d'actions" aria-label="Plus d'actions">⋯</button>
         <span class="encounter-controls-secondary">
+          <button class="btn-icon-tiny encounter-acted-toggle${hasActed ? " is-done" : ""}" data-action="toggle-acted" data-id="${pnjId}" title="${hasActed ? "Marquer « pas encore joué »" : "Marquer « a joué »"}" aria-label="${hasActed ? "Marquer comme pas encore joué" : "Marquer comme a joué"}">${hasActed ? "↩" : "✓"}</button>
           <button class="btn-icon-tiny" data-action="roll-init" data-id="${pnjId}" title="Lancer l'initiative" aria-label="Lancer l'initiative">⚄</button>
           <button class="btn-icon-tiny" data-action="move-up" data-id="${pnjId}" title="Monter" aria-label="Monter">▲</button>
           <button class="btn-icon-tiny" data-action="move-down" data-id="${pnjId}" title="Descendre" aria-label="Descendre">▼</button>
