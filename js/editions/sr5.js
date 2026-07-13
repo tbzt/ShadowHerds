@@ -290,6 +290,9 @@ const EditionSR5 = {
     hasAttrs: true,
     indiceRange: [1, 12],
     profileKey: "sr5",
+    // M4 : régime de brickage des appareils (armes) — SR5 a un vrai moniteur
+    // matriciel d'appareil (8+Indice/2, p.229) : cases cliquables + indice.
+    deviceBricking: "monitor",
     icMonitorSize(indice) {
       return 8 + Math.ceil(indice / 2);
     },

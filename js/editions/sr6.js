@@ -328,6 +328,9 @@ const EditionSR6 = {
     hasAttrs: true,
     indiceRange: [1, 12],
     profileKey: "sr5",
+    // M4 : brickage d'appareil — SR6 a le même moniteur matriciel d'appareil
+    // que SR5 (8+Indice/2 arrondi sup., p.182) : cases cliquables + indice.
+    deviceBricking: "monitor",
     icMonitorSize(indice) {
       return 8 + Math.ceil(indice / 2);
     },

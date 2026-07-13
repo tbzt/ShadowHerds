@@ -323,6 +323,11 @@ const EditionAnarchy2 = {
     hasAttrs: false,
     indiceRange: [2, 8],
     profileKey: "anarchy2",
+    // M4 : Anarchy 2.0 n'a pas de moniteur d'appareil ni d'indice, mais le
+    // verbe « rendre les Smartguns inopérants » est explicite au livre
+    // (p.210) — régime NARRATIF : une simple bascule « hors service », sans
+    // cases ni chiffre (arbitrage CODIR, reco Canon).
+    deviceBricking: "narrative",
     icMonitorSize() {
       return 4;
     },

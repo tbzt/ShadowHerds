@@ -353,6 +353,10 @@ const EditionAnarchy1 = {
     hasAttrs: false,
     indiceRange: [4, 12],
     profileKey: "anarchy1",
+    // M4 : Anarchy 1re ne décrit pas le brickage d'appareil au texte — pas de
+    // régime (ni moniteur, ni bascule). `null` explicite : Matrix.deviceBricking()
+    // renvoie null → la section « Appareils matriciels » ne s'affiche jamais.
+    deviceBricking: null,
     icMonitorSize() {
       return 11;
     },

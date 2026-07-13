@@ -478,6 +478,22 @@ const Matrix = {
     return this._model().hasAttrs;
   },
 
+  /** M4 : régime de brickage des appareils (armes) de l'édition, lu par le
+      cockpit combat plutôt que de comparer l'édition (interdit n°1) :
+      - "monitor"   → SR5/SR6 : vrai moniteur matriciel d'appareil (8+Indice/2)
+      - "narrative" → Anarchy 2.0 : bascule « hors service » sans moniteur (le
+                      verbe est au livre p.210, mais pas de chiffre à motoriser)
+      - null        → Anarchy 1re : pas de brickage (verbe absent du texte). */
+  deviceBricking() {
+    return this._model().deviceBricking || null;
+  },
+
+  /** M4 : Indice d'appareil par défaut d'une arme = 2 (« Moyen ») — vérifié
+      au livre, identique SR5 (p.425) et SR6 (p.258), les deux listent « armes »
+      à l'indice 2. Le MJ ajuste ensuite par pas ± si l'arme est un modèle
+      supérieur. Constante partagée : les deux régimes « monitor » s'accordent. */
+  DEVICE_DEFAULT_RATING: 2,
+
   /** Attributs matriciels ASDF (SR5/SR6), dans l'ordre d'affichage.
       Clé = nom de donnée (attrs.<key>), badge = libellé compact (carte),
       label = libellé complet (descriptions, tooltips). Source unique
