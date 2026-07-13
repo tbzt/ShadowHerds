@@ -3,7 +3,8 @@
    ============================================================ */
 .attr-cell.rollable,
 .skill-tag.rollable,
-.gm-pool.rollable {
+.gm-pool.rollable,
+.stat-pill.rollable {
   cursor: pointer;
   transition:
     border-color var(--dur-fast),
@@ -12,7 +13,8 @@
 }
 .attr-cell.rollable:hover,
 .skill-tag.rollable:hover,
-.gm-pool.rollable:hover {
+.gm-pool.rollable:hover,
+.stat-pill.rollable:hover {
   border-color: var(--accent);
   box-shadow:
     0 0 0 1px var(--accent),
@@ -20,7 +22,8 @@
 }
 .attr-cell.rollable:active,
 .skill-tag.rollable:active,
-.gm-pool.rollable:active {
+.gm-pool.rollable:active,
+.stat-pill.rollable:active {
   transform: scale(0.96);
 }
 /* petit dé fantôme indiquant qu'on peut lancer */
@@ -35,6 +38,23 @@
 }
 .attr-cell.rollable:hover .attr-value::after {
   opacity: 0.85;
+}
+
+/* Glyphe sémantique des pastilles combat (D9) — ⛉ dévier / ⛊ absorber, repris
+   du patron .react-glyph (console de réaction), un seul glyphe par pastille. */
+.pill-glyph {
+  color: var(--accent);
+  margin-right: 0.15em;
+}
+/* Init : pas de glyphe sémantique dédié → ⚄ générique au repos, même patron
+   que .skill-tag.rollable (visible en permanence, pas de survol tablette). */
+.init-pill.rollable::after {
+  content: "⚄";
+  margin-left: 0.3em;
+  font-size: 0.82em;
+  color: var(--accent);
+  opacity: 0.75;
+  vertical-align: middle;
 }
 
 /* ---- Compétences & connaissances lançables : AFFORDANCE AU REPOS (CH-M1) ----
@@ -67,6 +87,50 @@
   box-shadow:
     0 0 0 1px var(--accent),
     0 0 14px var(--glow);
+}
+
+/* ---- Micro-affordance : le dé-glyphe ⚄ « bouge un tout petit peu » ----
+   Renforce l'idée que le tag est lançable sans saturer une carte de 15 jets.
+   inline-block : indispensable pour que transform s'applique au ::after.
+   Survol = desktop ; :active = tap tablette/téléphone (appareil cible MJ). */
+.skill-tag.rollable::after,
+.init-pill.rollable::after {
+  display: inline-block;
+  transition: transform var(--dur-fast) var(--ease-emphasized);
+}
+.skill-tag.rollable:hover::after,
+.skill-tag.rollable:focus-visible::after,
+.init-pill.rollable:hover::after {
+  transform: rotate(-12deg) scale(1.1);
+}
+.skill-tag.rollable:active::after,
+.init-pill.rollable:active::after {
+  animation: die-nudge 0.34s var(--ease-emphasized);
+}
+@keyframes die-nudge {
+  0% {
+    transform: rotate(0) scale(1);
+  }
+  30% {
+    transform: rotate(-16deg) scale(1.14);
+  }
+  62% {
+    transform: rotate(10deg) scale(1.08);
+  }
+  100% {
+    transform: rotate(0) scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skill-tag.rollable:active::after,
+  .init-pill.rollable:active::after {
+    animation: none;
+  }
+  .skill-tag.rollable:hover::after,
+  .skill-tag.rollable:focus-visible::after,
+  .init-pill.rollable:hover::after {
+    transform: none;
+  }
 }
 
 /* ============================================================

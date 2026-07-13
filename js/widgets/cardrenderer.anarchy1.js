@@ -41,7 +41,7 @@ Object.assign(CardRenderer, {
     if (drainResist != null)
       html += this._rollPill("Drain", Math.max(0, drainResist - malus), "Résistance au Drain");
     if (pnj.defense != null)
-      html += this._rollPill("Défense", Math.max(0, pnj.defense - malus), "Test de défense : Agilité + Logique");
+      html += this._rollPill("Défense", Math.max(0, pnj.defense - malus), "Test de défense : Agilité + Logique", "⛉");
     html += "</div>";
 
     html += `<div class="monitor-block">

@@ -432,9 +432,12 @@ const CardRenderer = {
   },
 
   /** Pastille de réserve lançable (Défense, Encaissement…). */
-  _rollPill(label, value, title) {
+  _rollPill(label, value, title, glyph) {
     if (value == null) return "";
-    return `<span class="stat-pill rollable combat-pill" data-roll="${value}" data-roll-label="${this._esc(label)}" title="${this._esc(title || label)}">${this._esc(label)} <strong>${value}</strong></span>`;
+    const glyphHtml = glyph
+      ? `<span class="pill-glyph" aria-hidden="true">${glyph}</span> `
+      : "";
+    return `<span class="stat-pill rollable combat-pill" data-roll="${value}" data-roll-label="${this._esc(label)}" title="${this._esc(title || label)}">${glyphHtml}${this._esc(label)} <strong>${value}</strong></span>`;
   },
 
   _zoneEyebrow(label) {

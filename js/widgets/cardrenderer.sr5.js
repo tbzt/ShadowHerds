@@ -76,8 +76,8 @@ Object.assign(CardRenderer, {
     html += this._initPill(init, initDice, pnj, initDetail);
     if (drainResist != null)
       html += this._rollPill("Drain", Math.max(0, drainResist - malus5), "Résistance au Drain");
-    html += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus5), "Test de défense : Réaction + Intuition");
-    html += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure (non affectée par le malus de blessure)");
+    html += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus5), "Test de défense : Réaction + Intuition", "⛉");
+    html += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure (non affectée par le malus de blessure)", "⛊");
     html += "</div>";
 
     html += `<div class="monitor-block">
