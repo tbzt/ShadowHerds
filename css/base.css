@@ -5140,13 +5140,21 @@ kbd {
 .notepad-read-empty {
   color: var(--text-dim);
 }
-/* Puces de mention (E7) — style provisoire, affiné en vague 6. */
-.mention-chip {
+/* Puces de mention (E7) — @ (--accent) vs # (--accent2), même distinction de
+   canal que le reste de l'appli (cf. audit I2, canal --accent2 = décor). */
+.mention-chip,
+.tag-chip {
   padding: 0 0.3em;
   border-radius: 3px;
+  cursor: pointer;
+  transition: background var(--dur-base) ease;
+}
+.mention-chip {
   background: color-mix(in srgb, var(--accent) 15%, transparent);
   color: var(--accent);
-  cursor: pointer;
+}
+.mention-chip:hover {
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 .mention-chip--dead {
   color: var(--text-dim);
@@ -5154,12 +5162,15 @@ kbd {
   text-decoration: line-through;
   cursor: default;
 }
+.mention-chip--dead:hover {
+  background: transparent;
+}
 .tag-chip {
-  padding: 0 0.3em;
-  border-radius: 3px;
   background: color-mix(in srgb, var(--accent2) 15%, transparent);
   color: var(--accent2);
-  cursor: pointer;
+}
+.tag-chip:hover {
+  background: color-mix(in srgb, var(--accent2) 28%, transparent);
 }
 @media (max-width: 640px) {
   #notepad-backdrop.open {
