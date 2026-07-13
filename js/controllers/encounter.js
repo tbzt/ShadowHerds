@@ -1147,6 +1147,20 @@ const Encounter = {
           // K5 : ±1 Atout du combattant actif (SR6).
           this.adjustEdge(id, parseInt(el.dataset.delta, 10) || 0);
           break;
+        case "roll-ic":
+          // K9 : jet d'une CI (attaque/défense/encaissement/perception) depuis
+          // la fiche CI active ou la console de réaction — même moteur que le
+          // tiroir (Intrusion.rollIC), aucun calcul de réserve dupliqué. Ces
+          // boutons vivent dans #encounter-overlay (fiche active), hors de la
+          // délégation #app de Servers._wire → câblés ici.
+          Intrusion.rollIC(el.dataset.id, el.dataset.k, el.dataset.kind);
+          break;
+        case "react-expand":
+          // K9 : déplie/replie la fiche complète d'un PNJ dans la console de
+          // réaction (accordéon, vue éphémère). Le rendu vit au renderer ; ici,
+          // aucune logique de combat.
+          EncounterRenderer.toggleReactExpand(id);
+          break;
         case "action-set":
           // K7 : consomme/rend une action du tour actif (jeton tappable).
           this.setAction(id, el.dataset.key, parseInt(el.dataset.idx, 10) || 0);

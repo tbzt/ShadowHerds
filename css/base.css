@@ -2850,28 +2850,81 @@ body.selecting .bulk-selectable .contact-header-row {
   outline: none;
   border-bottom-color: var(--accent);
 }
-.contact-notes-row {
-  margin-top: 6px;
+/* « Connu de » éditable : chip PJ avec croix de déliaison + menu déplié
+   pour rattacher un PJ non encore lié (même grammaire que .bulk-move-menu). */
+.pjlink-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
-.contact-notes {
-  width: 100%;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border);
-  border-radius: 3px;
+.pjlink-unlink {
+  background: transparent;
+  border: none;
   color: var(--text-dim);
-  font-family: var(--font-mono);
-  font-size: var(--fs-2xs);
-  padding: var(--sp-1) 6px;
-  resize: vertical;
-  min-height: 36px;
-  transition: border-color var(--dur-fast);
+  font-size: var(--fs-sm);
+  line-height: 1;
+  padding: 0 1px;
+  margin-left: 1px;
+  cursor: pointer;
+  border-radius: 2px;
 }
-.contact-notes:focus {
+.pjlink-unlink:hover,
+.pjlink-unlink:focus-visible {
+  color: var(--danger);
+  outline: none;
+}
+.contact-pjlink-wrap {
+  position: relative;
+  display: inline-block;
+}
+.contact-pjlink-add {
+  cursor: pointer;
+  color: var(--accent);
+  border-style: dashed;
+}
+.contact-pjlink-add:hover,
+.contact-pjlink-add:focus-visible {
+  color: var(--text);
   border-color: var(--accent);
   outline: none;
-  color: var(--text);
 }
-.contact-notes::placeholder {
+.contact-pjlink-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: var(--sp-1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+.contact-pjlink-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  text-align: left;
+  padding: 0.35rem 0.5rem;
+  border-radius: 3px;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.contact-pjlink-item:hover,
+.contact-pjlink-item:focus-visible {
+  background: var(--bg-mid);
+  outline: none;
+}
+.pjlink-empty {
+  font-size: var(--fs-2xs);
   color: var(--text-dim);
 }
 
@@ -4159,6 +4212,46 @@ body.selecting .bulk-selectable .contact-header-row {
   color: var(--text-dim);
 }
 
+/* K9 : pastilles de jet d'une CI sur la fiche active (⚔/⛉/⛊/◎ → Intrusion.rollIC).
+   flex:1 1 auto = barre hétérogène qui remplit sans « mur de briques ». */
+.encounter-ic-rolls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: var(--sp-2);
+}
+.encounter-ic-rolls .react-btn {
+  flex: 1 1 auto;
+}
+
+/* K9 : chevron de dépliage d'une ligne de réaction (accordéon, un seul ouvert). */
+.react-expand-btn {
+  min-height: 40px;
+  min-width: 40px;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-card);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.react-expand-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.react-chevron {
+  display: inline-block;
+  font-size: var(--fs-md);
+  line-height: 1;
+  transition: transform var(--dur-fast, 0.15s) var(--ease-emphasized, ease);
+}
+.react-expand-btn.is-open .react-chevron {
+  transform: rotate(180deg);
+}
+.react-expand-body {
+  margin: 0.2rem 0 0.1rem;
+}
+
 /* Miroir de la Réserve de menace dans l'en-tête du cockpit (Anarchy). */
 .encounter-threat {
   display: inline-flex;
@@ -4340,6 +4433,17 @@ kbd {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   color: var(--accent);
+}
+/* K9 : sous-titre de section dans la légende de l'Aide (« Cockpit de combat »). */
+.shortcut-subhead {
+  margin-top: 0.6rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
 }
 
 /* ---- Compétences éditables dans le modal ---- */
@@ -6048,7 +6152,6 @@ kbd {
   .form-group select,
   .form-group textarea,
   .contact-form select,
-  .contact-notes,
   .grid-filter,
   .dice-count-input {
     font-size: 16px;

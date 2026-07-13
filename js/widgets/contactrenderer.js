@@ -38,15 +38,16 @@ const ContactRenderer = {
       );
     });
 
-    document.addEventListener("change", (e) => {
-      const notesEl = e.target.closest("[data-contact-notes]");
-      if (!notesEl) return;
-      const card = notesEl.closest(".contact-card");
-      if (!card) return;
-      ContactsBook.editNote(card.dataset.id, notesEl.value);
-    });
-
     document.addEventListener("click", (e) => {
+      // Ferme tout menu « Lier un PJ » ouvert au clic en dehors de son wrap
+      // (pas de backdrop : la fiche doit rester manipulable). Fait avant le
+      // switch pour ne pas court-circuiter un clic sur un item du menu.
+      if (!e.target.closest(".contact-pjlink-wrap")) {
+        document
+          .querySelectorAll(".contact-pjlink-menu:not([hidden])")
+          .forEach((m) => (m.hidden = true));
+      }
+
       const actionEl = e.target.closest("[data-contact-action]");
       if (!actionEl) return;
       const card = actionEl.closest(".contact-card");
@@ -71,6 +72,26 @@ const ContactRenderer = {
           break;
         case "goto-pj":
           Palette._reveal({ id: actionEl.dataset.pjId, name: actionEl.dataset.pjName, type: "pj" });
+          break;
+        case "toggle-pjlink-menu": {
+          // Un seul menu ouvert à la fois : on referme les autres d'abord.
+          const menu = actionEl.parentElement.querySelector(".contact-pjlink-menu");
+          const willOpen = menu && menu.hidden;
+          document
+            .querySelectorAll(".contact-pjlink-menu:not([hidden])")
+            .forEach((m) => (m.hidden = true));
+          if (menu) menu.hidden = !willOpen;
+          break;
+        }
+        case "link-pj":
+          // Le lien vit côté PJ (contactLinks) ; on rafraîchit la grille
+          // contacts pour afficher le nouveau chip « Connu de ».
+          Characters.addContactLink(actionEl.dataset.pjId, id, "", null);
+          UI.refreshEntityCard(id);
+          break;
+        case "unlink-pj":
+          Characters.removeContactLink(actionEl.dataset.pjId, id);
+          UI.refreshEntityCard(id);
           break;
       }
     });
@@ -132,14 +153,9 @@ const ContactRenderer = {
 
         ${this._portrait(c)}
 
-        <div class="contact-notes-row">
-          <textarea class="contact-notes" placeholder="Notes…" rows="2"
-            data-contact-notes
-            >${CardRenderer._esc(c.notes || "")}</textarea>
-        </div>
-
         ${deployed ? '<div class="contact-deployed-pnj" data-deployed-slot></div>' : ""}
       </div>
+      ${CardRenderer._journal(c)}
       ${CardFooter.render(footerActs)}`;
 
     if (deployed) {
@@ -204,22 +220,50 @@ const ContactRenderer = {
 
   /** E5 : sens inverse du lien PJ↔contact, calculé à la volée (jamais
       stocké côté contact — une seule source de vérité, `pnj.contactLinks`).
-      Pastille `pcColor` (E1) pour l'identification au coup d'œil. */
+      Éditable depuis la fiche contact (miroir de l'éditeur côté PJ) : chaque
+      chip porte une croix pour délier, et un menu déplié rattache un PJ non
+      encore lié. Le lien reste stocké côté PJ (`Characters.addContactLink`) —
+      lier ici ne fait qu'écrire dans `contactLinks` du PJ choisi. Pastille
+      `pcColor` (E1) pour l'identification au coup d'œil. */
   _knownBy(c) {
     if (typeof Characters === "undefined") return "";
-    const linked = Characters.data.all.filter(
+    const all = Characters.data.all;
+    const linked = all.filter(
       (p) => Array.isArray(p.contactLinks) && p.contactLinks.some((l) => l.contactId === c.id),
     );
-    if (!linked.length) return "";
+    const linkedIds = new Set(linked.map((p) => p.id));
+    const unlinked = all.filter((p) => !linkedIds.has(p.id));
+
     const chips = linked
       .map((p) => {
-        return `<span class="tag tag-clickable" role="button" tabindex="0" data-contact-action="goto-pj"
-          data-pj-id="${CardRenderer._esc(p.id)}" data-pj-name="${CardRenderer._esc(p.name)}">${CardRenderer._pcAvatar(p)}${CardRenderer._esc(p.name)}</span>`;
+        const link = p.contactLinks.find((l) => l.contactId === c.id);
+        const rel = link && link.relation ? ` — ${CardRenderer._esc(link.relation)}` : "";
+        return `<span class="tag tag-clickable pjlink-chip" role="button" tabindex="0" data-contact-action="goto-pj"
+          data-pj-id="${CardRenderer._esc(p.id)}" data-pj-name="${CardRenderer._esc(p.name)}">${CardRenderer._pcAvatar(p)}${CardRenderer._esc(p.name)}${rel}<button type="button" class="pjlink-unlink" title="Délier ce PJ" aria-label="Délier"
+            data-contact-action="unlink-pj" data-pj-id="${CardRenderer._esc(p.id)}">×</button></span>`;
       })
       .join("");
-    return `<div class="card-section" style="margin-top:6px;">
+
+    let addControl = "";
+    if (unlinked.length) {
+      const items = unlinked
+        .map(
+          (p) =>
+            `<button type="button" class="contact-pjlink-item" data-contact-action="link-pj"
+              data-pj-id="${CardRenderer._esc(p.id)}">${CardRenderer._pcAvatar(p)}${CardRenderer._esc(p.name)}</button>`,
+        )
+        .join("");
+      addControl = `<span class="contact-pjlink-wrap">
+        <button type="button" class="tag contact-pjlink-add" data-contact-action="toggle-pjlink-menu">＋ Lier un PJ</button>
+        <div class="contact-pjlink-menu" hidden>${items}</div>
+      </span>`;
+    } else if (!linked.length) {
+      addControl = `<span class="pjlink-empty">Aucun PJ — créez-en un dans Équipe.</span>`;
+    }
+
+    return `<div class="card-section contact-pjlink-section" style="margin-top:6px;">
       <div class="card-section-label">Connu de</div>
-      <div class="card-section-content">${chips}</div>
+      <div class="card-section-content">${chips}${addControl}</div>
     </div>`;
   },
 

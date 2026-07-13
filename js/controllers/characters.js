@@ -136,6 +136,31 @@ const Characters = Object.assign(
       CardRenderer.refresh(pnj);
     },
 
+    /** Lien en masse depuis la fiche contact (BulkBar → ContactsBook.
+        linkManyToPj) : rattache N contacts au même PJ en un seul save() +
+        refresh, en sautant silencieusement les liens déjà présents (pas de
+        toast par doublon, contrairement au lien individuel `addContactLink`).
+        Liens nus (relation/loyauté vides) — la qualification se fait côté PJ
+        (E5). Renvoie le nombre de liens réellement ajoutés. */
+    addContactLinks(pnjId, contactIds) {
+      const pnj = this.data.all.find((p) => p.id === pnjId);
+      if (!pnj || !Array.isArray(contactIds)) return 0;
+      if (!Array.isArray(pnj.contactLinks)) pnj.contactLinks = [];
+      const existing = new Set(pnj.contactLinks.map((l) => l.contactId));
+      let added = 0;
+      for (const contactId of contactIds) {
+        if (!contactId || existing.has(contactId)) continue;
+        pnj.contactLinks.push({ contactId, relation: "", loyalty: null });
+        existing.add(contactId);
+        added++;
+      }
+      if (added) {
+        this.save();
+        CardRenderer.refresh(pnj);
+      }
+      return added;
+    },
+
     /** E2 : équipe active pour « + Équipe » (Encounter.addTeam). Référence
         l'ID d'un dossier existant (Dossiers) — jamais son nom : un dossier
         renommé (DossierBar.renameDossier) cascade déjà le renommage dans

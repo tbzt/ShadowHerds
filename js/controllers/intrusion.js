@@ -101,6 +101,13 @@ const Intrusion = {
           const label = Servers.icCatalog(srv.edition)[next]?.label || next;
           Debug.log("servers", "CI déployée", { server: srv.name, turn: intr.turn, ic: next });
           toast(`Le serveur déploie : ${label}.`);
+          // K9 : la CI déployée rejoint l'ordre d'initiative sans second geste
+          // (« zéro clic »), mais seulement si ce serveur est celui lié à la
+          // scène en cours. Même garde descendante que _persist ; launchIC est
+          // idempotent (no-op si la CI y est déjà) et toaste « rejoint l'init ».
+          if (typeof Encounter !== "undefined" && Encounter.state && Encounter.state.serverId === id) {
+            Encounter.launchIC(id, next);
+          }
         }
       }
     }

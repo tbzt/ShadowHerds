@@ -666,6 +666,23 @@ const EncounterRenderer = {
       const isPenalty = (i + 1) % 3 === 0;
       return `<div class="monitor-box${i < st.dmg ? " filled" : ""}${isPenalty ? " penalty" : ""}"></div>`;
     }).join("");
+    // K9 : jets de la CI directement sur la fiche active (avant, seul le tiroir
+    // les portait). Réutilise Intrusion.rollIC (aucun calcul de réserve dupliqué)
+    // via data-action="roll-ic", câblé dans Encounter.init (overlay). Les glaces
+    // Anarchy ont des succès fixes (hasAttrs=false) → pas de pastilles de jet.
+    const rollsHtml = M.hasAttrs()
+      ? `<div class="encounter-ic-rolls">${[
+          ["atk", "⚔", "Attaque"],
+          ["def", "⛉", "Défense"],
+          ["soak", "⛊", "Encaisser"],
+          ["per", "◎", "Perception"],
+        ]
+          .map(
+            ([kind, glyph, lbl]) =>
+              `<button class="react-btn" data-action="roll-ic" data-id="${srv.id}" data-k="${m.icKey}" data-kind="${kind}" title="${lbl} — ${Utils.escHtml(label)}" aria-label="${lbl} — ${Utils.escHtml(label)}"><span class="react-glyph" aria-hidden="true">${glyph}</span> ${lbl}</button>`
+          )
+          .join("")}</div>`
+      : "";
     box.hidden = false;
     box.innerHTML =
       this._activeBandeau(r) +
@@ -678,6 +695,7 @@ const EncounterRenderer = {
         ${attrsHtml}
         <div class="monitor-row"><span class="monitor-label">Moniteur</span><div class="monitor-boxes">${boxes}</div></div>
         ${eff ? `<div class="encounter-ic-power">${Utils.escHtml(eff)}</div>` : ""}
+        ${rollsHtml}
         <button class="btn-secondary btn-small encounter-ic-open" data-action="toggle-matrix-drawer" title="Ouvrir le tiroir Matrice (jets, moniteur, surveillance)">⚡ Ouvrir la Matrice</button>
       </div>` +
       this._activeNote(r);
@@ -693,40 +711,113 @@ const EncounterRenderer = {
       a pas de tour actif → cette console ne s'affiche pas (renderActiveCard
       sort avant). */
   _renderReactionConsole(box, rows) {
-    const targets = rows.filter((r) => r.pnj && !r.isPJ && r.kind !== "matrix" && !r.down);
+    // K7-B + K9 : PNJ chair ET CI matricielles actives (une CI attaquée par un
+    // PJ doit pouvoir défendre/encaisser). PJ et combattants « down » exclus.
+    const targets = rows.filter((r) => r.pnj && !r.isPJ && !r.down);
     if (!targets.length) {
       box.hidden = true;
       box.innerHTML = "";
       return;
     }
     const rowsHtml = targets
-      .map((r) => {
-        const pnj = r.pnj;
-        const name = Utils.escHtml(pnj.name || "");
-        const malus = Utils.woundMalus(pnj, pnj.edition);
-        const def = Math.max(0, (pnj.defense || 0) - malus);
-        const soak = pnj.damageResist || 0;
-        // DA : glyphes Unicode monochromes (héritent de la couleur du thème),
-        // jamais d'émoji couleur. ⛉ bouclier contour = dévier (défense) ;
-        // ⛊ bouclier plein = absorber (encaissement) — même bloc Unicode que
-        // le ⛨ déjà en service (soigner), couverture identique.
-        const defBtn = def >= 1
-          ? `<button class="react-btn" data-roll="${def}" data-roll-label="Défense — ${name}" data-roll-pnj="${pnj.id}" title="Test de défense (${def} dés)" aria-label="Défense — ${name} (${def} dés)"><span class="react-glyph" aria-hidden="true">⛉</span> ${def}</button>`
-          : `<span class="react-btn is-off" title="Pas de réserve de défense"><span class="react-glyph" aria-hidden="true">⛉</span> —</span>`;
-        const soakBtn = soak >= 1
-          ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${name}" data-roll-pnj="${pnj.id}" title="Résistance aux dommages (${soak} dés)" aria-label="Encaissement — ${name} (${soak} dés)"><span class="react-glyph" aria-hidden="true">⛊</span> ${soak}</button>`
-          : `<span class="react-btn is-off" title="Pas de réserve d'encaissement"><span class="react-glyph" aria-hidden="true">⛊</span> —</span>`;
-        return `<div class="react-row">
-          <span class="react-name">${name}</span>
-          <span class="react-buttons">${defBtn}${soakBtn}</span>
-        </div>`;
-      })
+      .map((r) => (r.kind === "matrix" ? this._reactMatrixRow(r) : this._reactPnjRow(r)))
       .join("");
     box.hidden = false;
     box.innerHTML = `<div class="encounter-react">
       <div class="encounter-react-head">Tour d'un PJ — faites réagir les PNJ</div>
       ${rowsHtml}
     </div>`;
+  },
+
+  /** Ligne de réaction d'un PNJ chair : ⛉ Défense · ⛊ Encaisser (pools portés
+      par la carte, via data-roll → DiceRoller) + chevron ▾ qui déplie la fiche
+      complète (K9). DA : glyphes Unicode monochromes (couleur du thème), jamais
+      d'émoji couleur — même bloc que le ⛨ déjà en service. */
+  _reactPnjRow(r) {
+    const pnj = r.pnj;
+    const name = Utils.escHtml(pnj.name || "");
+    const malus = Utils.woundMalus(pnj, pnj.edition);
+    const def = Math.max(0, (pnj.defense || 0) - malus);
+    const soak = pnj.damageResist || 0;
+    const defBtn = def >= 1
+      ? `<button class="react-btn" data-roll="${def}" data-roll-label="Défense — ${name}" data-roll-pnj="${pnj.id}" title="Test de défense (${def} dés)" aria-label="Défense — ${name} (${def} dés)"><span class="react-glyph" aria-hidden="true">⛉</span> ${def}</button>`
+      : `<span class="react-btn is-off" title="Pas de réserve de défense"><span class="react-glyph" aria-hidden="true">⛉</span> —</span>`;
+    const soakBtn = soak >= 1
+      ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${name}" data-roll-pnj="${pnj.id}" title="Résistance aux dommages (${soak} dés)" aria-label="Encaissement — ${name} (${soak} dés)"><span class="react-glyph" aria-hidden="true">⛊</span> ${soak}</button>`
+      : `<span class="react-btn is-off" title="Pas de réserve d'encaissement"><span class="react-glyph" aria-hidden="true">⛊</span> —</span>`;
+    // Chevron réservé aux PNJ résolus (une carte réelle à monter) — pas sur un
+    // combattant ad-hoc sans fiche. Le déplié (accordéon, board) est un état de
+    // vue éphémère monté à la demande par toggleReactExpand — aucune clé Storage.
+    const expand = !pnj._adhoc
+      ? `<button class="react-expand-btn" data-action="react-expand" data-id="${pnj.id}" aria-label="Déplier la fiche de ${name}" title="Voir la fiche complète"><span class="react-chevron" aria-hidden="true">▾</span></button>`
+      : "";
+    return `<div class="react-row">
+        <span class="react-name">${name}</span>
+        <span class="react-buttons">${defBtn}${soakBtn}${expand}</span>
+      </div>${expand ? `<div class="react-expand-body" data-expand-for="${pnj.id}" hidden></div>` : ""}`;
+  },
+
+  /** Ligne de réaction d'une CI (K9) : mêmes glyphes ⛉/⛊, mais la réserve d'une
+      CI est dérivée (indice×2, +Firewall à l'encaissement) → data-action
+      "roll-ic" vers Intrusion.rollIC, jamais data-roll. Glaces Anarchy (succès
+      fixes) : boutons inactifs. Pas de chevron (la CI a sa fiche + le tiroir). */
+  _reactMatrixRow(r) {
+    const m = r.matrix || {};
+    const srv = Servers.find(m.serverId);
+    const canRoll = !!(srv && Matrix.use(srv.edition).hasAttrs());
+    const name = Utils.escHtml(r.name || (r.pnj && r.pnj.name) || "CI");
+    const mk = (kind, glyph, lbl) =>
+      canRoll
+        ? `<button class="react-btn" data-action="roll-ic" data-id="${m.serverId}" data-k="${m.icKey}" data-kind="${kind}" title="${lbl} — ${name}" aria-label="${lbl} — ${name}"><span class="react-glyph" aria-hidden="true">${glyph}</span> ${lbl}</button>`
+        : `<span class="react-btn is-off" title="Glace à succès fixes (ne lance pas les dés)"><span class="react-glyph" aria-hidden="true">${glyph}</span> —</span>`;
+    return `<div class="react-row">
+        <span class="react-name">${name} <span class="encounter-kind is-matrix">CI</span></span>
+        <span class="react-buttons">${mk("def", "⛉", "Défense")}${mk("soak", "⛊", "Encaisser")}</span>
+      </div>`;
+  },
+
+  /** K9 : déplie/replie la fiche complète d'un PNJ sous sa ligne de réaction.
+      Accordéon (board : un seul ouvert — perf mobile + charge cognitive) : on
+      replie tout, puis on monte la carte demandée à la volée. Éphémère : aucun
+      état persisté, reconstruit au prochain _render. La règle « le nom n'est
+      jamais recouvert » (chrome de carte) garantit la contrainte MJ par
+      construction. */
+  toggleReactExpand(pnjId) {
+    const react = document.querySelector(".encounter-react");
+    if (!react) return;
+    const esc = window.CSS && CSS.escape ? CSS.escape(pnjId) : pnjId;
+    const body = react.querySelector(`.react-expand-body[data-expand-for="${esc}"]`);
+    if (!body) return;
+    const wasOpen = !body.hidden;
+    react.querySelectorAll(".react-expand-body").forEach((b) => {
+      b.hidden = true;
+      b.innerHTML = "";
+    });
+    react.querySelectorAll(".react-expand-btn").forEach((b) => b.classList.remove("is-open"));
+    if (!wasOpen) {
+      const pnj = PnjLookup.find(pnjId);
+      if (!pnj) return;
+      body.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
+      body.hidden = false;
+      const btn = react.querySelector(`.react-expand-btn[data-id="${esc}"]`);
+      if (btn) btn.classList.add("is-open");
+    }
+  },
+
+  /** Légende commune (trans-édition) des glyphes du cockpit de combat, ajoutée
+      à l'Aide « ? » à la suite de la légende d'édition (App._renderHelpLegend).
+      Vit ici, avec le cockpit qui possède ces glyphes, plutôt que dupliquée
+      dans les 4 helpLegend d'édition. */
+  cockpitLegend() {
+    return [
+      { keys: "⛉", html: "<strong>Défense</strong> — le PNJ (ou la CI) esquive/pare un test." },
+      { keys: "⛊", html: "<strong>Encaisser</strong> — résistance aux dommages." },
+      { keys: "⚔", html: "Envoyer au <strong>combat</strong> / rejoindre l'initiative." },
+      { keys: "◎", html: "<strong>Perception matricielle</strong> d'une CI." },
+      { keys: "⚡", html: "Ouvrir le <strong>tiroir Matrice</strong> (jets, moniteur, surveillance)." },
+      { keys: "▾", html: "<strong>Déplier</strong> la fiche complète d'un PNJ en réaction." },
+      { keys: "CI", html: "<strong>Contre-mesure d'Intrusion</strong> engagée dans l'initiative." },
+    ];
   },
 
   /** Résumé persistant dans la sidebar (round/passe + combattant actif),

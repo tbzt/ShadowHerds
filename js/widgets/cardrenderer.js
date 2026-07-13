@@ -157,13 +157,14 @@ const CardRenderer = {
     </div>`;
   },
 
-  /** E4 : « Mentionné dans » — backlinks calculés à la volée par Mentions
-      (bloc-notes de séance + notes des autres entités contenant `@Nom`),
+  /** E4/E7 : « Mentionné dans » — backlinks calculés à la volée par Mentions
+      (bloc-notes de séance + notes/journal des autres entités mentionnant
+      cette fiche). Scan par ID depuis E7 (robuste au renommage/homonymes),
       réutilise `.tag`/`.tag-clickable` tel quel (même patron que les tags
       cliquables du corps de carte, cf. `_contentTag`). */
   _backlinksSection(pnj) {
     if (typeof Mentions === "undefined") return "";
-    const links = Mentions.backlinksFor(pnj.name, pnj.id);
+    const links = Mentions.backlinksFor(pnj.id);
     if (!links.length) return "";
     const items = links
       .map((l) =>
@@ -900,31 +901,40 @@ const CardRenderer = {
     </div>`;
   },
 
-  /** Ouvre/replie l'input du journal (présentation seule). Rafraîchit toutes
-      les copies de la carte, puis met le focus sur l'input si on vient d'ouvrir. */
+  /** Focus (re)mis sur l'input de journal d'une fiche, après un rendu. Le
+      journal vit aussi bien sur un `.pnj-card` que sur un `.contact-card`
+      (mêmes data-* de délégation) : on cible les deux familles de carte. */
+  _focusJournalInput(id) {
+    setTimeout(() => {
+      document
+        .querySelector(
+          `.pnj-card[data-id="${id}"] [data-journal-input], .contact-card[data-id="${id}"] [data-journal-input]`,
+        )
+        ?.focus();
+    }, 0);
+  },
+
+  /** Ouvre/replie l'input du journal (présentation seule). Rafraîchit la carte
+      via UI (route PNJ vs contact), puis met le focus sur l'input si on vient
+      d'ouvrir. */
   _toggleJournal(id) {
     if (this._journalOpen.has(id)) this._journalOpen.delete(id);
     else this._journalOpen.add(id);
-    const pnj = PnjLookup.find(id);
-    if (pnj) this.refresh(pnj);
-    if (this._journalOpen.has(id)) {
-      setTimeout(() => {
-        document.querySelector(`.pnj-card[data-id="${id}"] [data-journal-input]`)?.focus();
-      }, 0);
-    }
+    UI.refreshEntityCard(id);
+    if (this._journalOpen.has(id)) this._focusJournalInput(id);
   },
 
   /** Lit l'input de la carte cliquée et délègue l'ajout à UI (persistance),
       puis re-focus l'input (l'ajout reste ouvert pour empiler plusieurs notes). */
   _submitJournal(actionEl) {
     const id = actionEl.dataset.id;
-    const input = actionEl.closest(".pnj-card")?.querySelector("[data-journal-input]");
+    const input = actionEl
+      .closest(".pnj-card, .contact-card")
+      ?.querySelector("[data-journal-input]");
     const text = input ? input.value : "";
     if (!text.trim()) return;
     UI.addJournalEntry(id, text);
-    setTimeout(() => {
-      document.querySelector(`.pnj-card[data-id="${id}"] [data-journal-input]`)?.focus();
-    }, 0);
+    this._focusJournalInput(id);
   },
 
   /* ---- Footer ---- */
@@ -1089,9 +1099,7 @@ const CardRenderer = {
       const text = input.value;
       if (!text.trim()) return;
       UI.addJournalEntry(id, text);
-      setTimeout(() => {
-        document.querySelector(`.pnj-card[data-id="${id}"] [data-journal-input]`)?.focus();
-      }, 0);
+      this._focusJournalInput(id);
     });
   },
 };

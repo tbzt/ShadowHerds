@@ -1,21 +1,33 @@
 "use strict";
 
 /* ============================================================
-   MENTIONS (E4, chantier Équipe) — autocomplétion `@` dans un textarea.
-   V1 = plein texte, zéro migration : insère "@Nom" en texte brut, aucun
-   format de stockage nouveau (les notes existantes valident déjà si le nom
-   y figure). Candidats résolus par PnjLookup.search — la même source que
-   la Palette (CH-Q7), aucun résolveur concurrent. Deux hôtes actuels
-   (Notepad, EditModal em-notes), un seul widget : Mentions.attach(textarea).
+   MENTIONS & MOTS-CLÉS (E4 → E7) — autocomplétion `@` et `#` dans un
+   textarea, + rendu des puces cliquables (mode Lire des hôtes, cartes).
 
-   Backlinks « Mentionné dans » : calculés à la volée (scan du bloc-notes de
-   séance + du champ `notes` des entités sauvegardées), pas d'index
-   persistant — volumes faibles, cf. plan E4.
+   E7 — ancrage par ID. Une mention se stocke `@[nom](id)` : l'ID est la
+   VÉRITÉ, le nom entre crochets n'est qu'un cache lisible/cherchable. Le
+   rendu résout toujours l'id → nom COURANT (PnjLookup.locate) — d'où la
+   propagation automatique du renommage (Nita → Nitao) SANS aucun hook.
+   L'auteur ne tape jamais le jeton : il saisit « @Ni », choisit dans la
+   liste, le widget insère `@[Nita](id)`.
+
+   Un mot-clé `#mot` reste du texte brut (il EST son propre libellé, aucun
+   id) ; l'autocomplétion ne propose que les tags déjà employés.
+
+   Candidats `@` résolus par PnjLookup.search — même source que la Palette
+   (CH-Q7), aucun résolveur concurrent. Deux hôtes (Notepad, EditModal
+   em-notes), un seul widget : Mentions.attach(textarea).
+
+   Index (backlinks « Mentionné dans » par id, récolte des `#tags`) : calculé
+   à la volée par un balayage unique des notes (bloc-notes de séance + champ
+   `notes` et journal des entités sauvegardées) — pas d'index persistant,
+   volumes faibles (cf. plan E4/E7).
    ============================================================ */
 const Mentions = {
   _box: null,
   _target: null,
   _match: null, // { start, end, query }
+  _mode: null, // "@" (entités) | "#" (mots-clés)
   _results: [],
   _sel: 0,
 
@@ -49,26 +61,36 @@ const Mentions = {
     });
   },
 
-  /** Détecte un `@partiel` juste avant le curseur (précédé d'un début de
-      texte ou d'un espace, sans espace jusqu'au curseur). */
+  /** Détecte un `@partiel` ou `#partiel` juste avant le curseur (précédé d'un
+      début de texte ou d'un espace, sans espace jusqu'au curseur). Le garde
+      `startsWith("[")` évite de se déclencher quand le curseur est À
+      L'INTÉRIEUR d'un jeton `@[…](id)` déjà posé. */
   _onInput(textarea) {
     const pos = textarea.selectionStart;
     const before = textarea.value.slice(0, pos);
-    const m = before.match(/(?:^|\s)@([^\s@]*)$/);
-    if (!m) {
-      this._close();
+    const at = before.match(/(?:^|\s)@([^\s@]*)$/);
+    if (at && !at[1].startsWith("[")) {
+      this._open(textarea, pos, at[1], "@");
       return;
     }
-    const query = m[1];
+    const hash = before.match(/(?:^|\s)#([^\s#]*)$/);
+    if (hash) {
+      this._open(textarea, pos, hash[1], "#");
+      return;
+    }
+    this._close();
+  },
+
+  _open(textarea, pos, query, mode) {
+    this._mode = mode;
     this._match = { start: pos - query.length - 1, end: pos, query };
-    this._results = PnjLookup.search(query).slice(0, 8);
-    this._sel = 0;
     this._target = textarea;
-    if (!this._results.length) {
-      this._close();
-      return;
-    }
-    this._render();
+    this._sel = 0;
+    this._results =
+      mode === "#"
+        ? this.usedTags(query)
+        : PnjLookup.search(query).slice(0, 8);
+    this._results.length ? this._render() : this._close();
   },
 
   _onKeydown(e) {
@@ -98,9 +120,16 @@ const Mentions = {
     const box = this._ensureBox();
     box.innerHTML = this._results
       .map((r, i) => {
+        const sel = i === this._sel ? " sel" : "";
+        if (this._mode === "#") {
+          return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+              <span class="palette-type">Mot-clé</span>
+              <span class="palette-name">#${Utils.escHtml(r.tag)}</span>
+            </div>`;
+        }
         // E6 : même avatar constant que la Palette (couleur+anneau+initiale).
         const avatar = r.type === "pj" ? CardRenderer._pcAvatar(PnjLookup.find(r.id)) : "";
-        return `<div class="palette-row${i === this._sel ? " sel" : ""}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+        return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
             <span class="palette-type">${this._TYPE_LABEL[r.type] || r.type}</span>
             <span class="palette-name">${avatar}${Utils.escHtml(r.name)}</span>
           </div>`;
@@ -133,6 +162,8 @@ const Mentions = {
     box.style.width = `${r.width}px`;
   },
 
+  /** Insère le jeton à la place du `@partiel`/`#partiel`. L'auteur ne voit
+      jamais cette syntaxe se former à la main : il choisit dans la liste. */
   _pick(idx) {
     const r = this._results[idx];
     const ta = this._target;
@@ -140,7 +171,10 @@ const Mentions = {
     if (!r || !ta || !m) return;
     const before = ta.value.slice(0, m.start);
     const after = ta.value.slice(m.end);
-    const insert = `@${r.name} `;
+    const insert =
+      this._mode === "#"
+        ? `#${r.tag} `
+        : `@[${this._label(r.name)}](${r.id}) `;
     ta.value = `${before}${insert}${after}`;
     const caret = before.length + insert.length;
     ta.focus();
@@ -149,34 +183,142 @@ const Mentions = {
     this._close();
   },
 
+  /** Nettoie un nom pour le cache entre crochets (l'id reste la vérité) :
+      pas de `]` ni de saut de ligne qui casseraient le parseur. */
+  _label(name) {
+    return String(name || "").replace(/[\]\n]/g, " ").trim() || "?";
+  },
+
   _close() {
     this._match = null;
+    this._mode = null;
     this._results = [];
     if (this._box) this._box.hidden = true;
   },
 
-  /** Backlinks « Mentionné dans » (calculés à la volée) : le bloc-notes de
-      séance (global, hors édition) + le champ `notes` de chaque entité
-      sauvegardée (PJ/PNJ/contact) qui contient `@Nom`. `excludeId` retire
-      l'entité elle-même de ses propres résultats. */
-  backlinksFor(name, excludeId) {
-    if (!name) return [];
-    const needle = `@${name}`;
-    const out = [];
-    const noteText = Storage.getGlobal("sessionNotes", "");
-    if (noteText && noteText.includes(needle)) {
-      out.push({ kind: "notepad", label: "Bloc-notes de séance" });
+  // ---- Rendu (mode Lire des hôtes + cartes) --------------------------------
+
+  /** Rend un texte de note en HTML sûr : `@[nom](id)` → puce cliquable au nom
+      COURANT (résolu par id → propagation du renommage), `#mot` → puce
+      mot-clé, le reste échappé. Un ancien `@Nom` nu (E4) reste du texte. Les
+      clics sont câblés par délégation côté hôte (`data-action`), jamais en
+      inline. */
+  renderText(text) {
+    if (!text) return "";
+    const RE = /@\[([^\]\n]*)\]\(([^)\n]+)\)|(?:^|(?<=\s))#([^\s#]+)/g;
+    let out = "";
+    let last = 0;
+    let m;
+    while ((m = RE.exec(text))) {
+      out += Utils.escHtml(text.slice(last, m.index));
+      if (m[2] != null) {
+        const id = m[2];
+        const ent = PnjLookup.locate(id);
+        const name = ent ? ent.name : m[1];
+        const dead = ent ? "" : " mention-chip--dead";
+        out += `<span class="mention-chip${dead}" data-action="mention-open" data-id="${Utils.escHtml(id)}" role="button" tabindex="0">@${Utils.escHtml(name || "?")}</span>`;
+      } else if (m[3] != null) {
+        const tag = m[3];
+        out += `<span class="tag-chip" data-action="tag-open" data-tag="${Utils.escHtml(tag)}" role="button" tabindex="0">#${Utils.escHtml(tag)}</span>`;
+      }
+      last = RE.lastIndex;
     }
+    out += Utils.escHtml(text.slice(last));
+    return out.replace(/\n/g, "<br>");
+  },
+
+  // ---- Index (backlinks + récolte des mots-clés) ---------------------------
+
+  /** Un seul balayage des notes (bloc-notes de séance + champ `notes` et
+      journal de chaque entité sauvegardée). `cb(text, loc)` par fragment.
+      Source unique réutilisée par backlinksFor / notesWithTag / usedTags. */
+  _scanNotes(cb) {
+    const note = Storage.getGlobal("sessionNotes", "");
+    if (note) cb(note, { kind: "notepad", label: "Bloc-notes de séance" });
     const scan = (arr, type) => {
       for (const e of arr || []) {
-        if (e && e.id !== excludeId && e.notes && e.notes.includes(needle)) {
-          out.push({ kind: "entity", id: e.id, name: e.name, type });
+        const loc = { kind: "entity", id: e.id, name: e.name, type };
+        if (e.notes) cb(e.notes, loc);
+        if (Array.isArray(e.journal)) {
+          for (const j of e.journal) if (j && j.text) cb(j.text, loc);
         }
       }
     };
-    scan(Characters.data.all, "pj");
     scan(Shadows.data.all, "pnj");
+    scan(Characters.data.all, "pj");
     scan(ContactsBook.data.all, "contact");
+  },
+
+  _locOut(loc) {
+    return loc.kind === "entity"
+      ? { kind: "entity", id: loc.id, name: loc.name, type: loc.type }
+      : { kind: "notepad", label: loc.label };
+  },
+
+  /** Backlinks « Mentionné dans » d'une entité, par ID (robuste au renommage
+      et aux homonymes — E7). Dédupliqué par emplacement, exclut l'entité
+      elle-même. */
+  backlinksFor(id) {
+    if (!id) return [];
+    const needle = `](${id})`;
+    const out = [];
+    const seen = new Set();
+    this._scanNotes((text, loc) => {
+      if (!text.includes(needle)) return;
+      if (loc.kind === "entity" && loc.id === id) return; // pas soi-même
+      const key = loc.kind === "entity" ? `e:${loc.id}` : "n";
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push(this._locOut(loc));
+    });
     return out;
+  },
+
+  /** Emplacements de note portant `#tag` (récolte Palette, E7). */
+  notesWithTag(tag) {
+    const t = Utils.searchNorm(tag || "");
+    if (!t) return [];
+    const re = /(?:^|\s)#([^\s#]+)/g;
+    const out = [];
+    const seen = new Set();
+    this._scanNotes((text, loc) => {
+      re.lastIndex = 0;
+      let m;
+      let hit = false;
+      while ((m = re.exec(text))) {
+        if (Utils.searchNorm(m[1]) === t) {
+          hit = true;
+          break;
+        }
+      }
+      if (!hit) return;
+      const key = loc.kind === "entity" ? `e:${loc.id}` : "n";
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push(this._locOut(loc));
+    });
+    return out;
+  },
+
+  /** Mots-clés `#` déjà employés, filtrés par préfixe (autocomplétion `#`).
+      Ne fabrique jamais un tag : ne propose que ce que l'auteur a déjà tapé. */
+  usedTags(prefix) {
+    const p = Utils.searchNorm(prefix || "");
+    const re = /(?:^|\s)#([^\s#]+)/g;
+    const seen = new Map(); // normalisé -> première forme affichée
+    this._scanNotes((text) => {
+      re.lastIndex = 0;
+      let m;
+      while ((m = re.exec(text))) {
+        const norm = Utils.searchNorm(m[1]);
+        if (norm && !seen.has(norm)) seen.set(norm, m[1]);
+      }
+    });
+    return [...seen.entries()]
+      .filter(([norm]) => !p || norm.startsWith(p))
+      .map(([, raw]) => raw)
+      .sort((a, b) => a.localeCompare(b))
+      .slice(0, 8)
+      .map((tag) => ({ tag }));
   },
 };

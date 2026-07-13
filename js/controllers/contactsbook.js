@@ -21,12 +21,14 @@ const ContactsBook = Object.assign(
     },
     searchFields: (c) => [c.name, c.role, c.metatype, c.desc],
     renderCard: (c) => ContactRenderer.renderPersistent(c),
+    // Rattachement en masse à un PJ (BulkBar) : les liens vivent côté PJ
+    // (Characters.contactLinks, E5), le contact n'est que la cible du lien.
+    pjLinkable: true,
   }),
   {
     /* ---- Générer et ajouter ---- */
     generate() {
       const c = Contacts.generate();
-      c.notes = "";
       this.data.all.push(c);
       // Classe dans le dossier de destination courant (piloté par DossierBar).
       const group =
@@ -52,15 +54,30 @@ const ContactsBook = Object.assign(
       toastUndo(`✓ ${c.name} ajouté aux contacts.`, restore);
     },
 
-    /* ---- Édition inline ---- */
-    editNote(id, value) {
-      const c = this.data.all.find((x) => x.id === id);
-      if (c) {
-        c.notes = value;
-        this.save();
-      }
+    /* ---- Rattachement en masse à un PJ (BulkBar → _cfg.pjLinkable) ----
+       Les liens sont stockés côté PJ (Characters.contactLinks) ; ces deux
+       méthodes sont l'API que BulkBar lit sur la collection active, sans rien
+       connaître du domaine contact/PJ. */
+    pjLinkOptions() {
+      if (typeof Characters === "undefined") return [];
+      return Characters.data.all.map((p) => ({ id: p.id, name: p.name }));
+    },
+    linkManyToPj(ids, pjId) {
+      if (typeof Characters === "undefined" || !pjId) return;
+      const pj = Characters.data.all.find((p) => p.id === pjId);
+      const added = Characters.addContactLinks(pjId, ids);
+      const name = pj ? pj.name : "ce PJ";
+      toast(
+        added
+          ? `${added} contact${added > 1 ? "s" : ""} lié${added > 1 ? "s" : ""} à ${name}.`
+          : `Déjà liés à ${name}.`,
+        added ? "success" : "warning",
+      );
+      this.clearSelection();
+      this.render();
     },
 
+    /* ---- Édition inline ---- */
     editField(id, field, value) {
       const c = this.data.all.find((x) => x.id === id);
       if (c) {

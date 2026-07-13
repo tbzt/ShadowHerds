@@ -83,6 +83,22 @@ const UI = {
     if (typeof Servers !== "undefined" && Servers.findSpider(id)) Servers.save();
   },
 
+  /** Rafraîchit la ou les cartes affichées d'une entité, en routant par
+      appartenance comme `persistEntity` : un contact vit dans une grille de
+      Collection (ContactsBook.render), les autres entités dans des `.pnj-card`
+      (CardRenderer.refresh, qui balaie déjà toutes les copies DOM). Point
+      d'entrée commun du journal (toggle/ajout/retrait), qui s'affiche
+      désormais aussi bien sur un PNJ que sur un contact. */
+  refreshEntityCard(id) {
+    if (typeof ContactsBook !== "undefined" && ContactsBook.data.all.some((c) => c.id === id)) {
+      ContactsBook.render();
+      if (ContactsBook.refreshGrid) ContactsBook.refreshGrid(); // écran de génération
+      return;
+    }
+    const pnj = PnjLookup.find(id);
+    if (pnj) CardRenderer.refresh(pnj);
+  },
+
   addJournalEntry(pnjId, text) {
     const t = (text || "").trim();
     if (!t) return;
@@ -94,7 +110,7 @@ const UI = {
       c.journal.unshift(entry); // plus récent en tête
     }
     this.persistEntity(pnjId);
-    CardRenderer.refresh(copies[0]);
+    this.refreshEntityCard(pnjId);
   },
 
   removeJournalEntry(pnjId, ts) {
@@ -105,7 +121,7 @@ const UI = {
         c.journal = c.journal.filter((e) => String(e.ts) !== String(ts));
     }
     this.persistEntity(pnjId);
-    CardRenderer.refresh(copies[0]);
+    this.refreshEntityCard(pnjId);
   },
 
   /** Clic sur le tag d'une drogue : fait avancer le cycle idle → effet →

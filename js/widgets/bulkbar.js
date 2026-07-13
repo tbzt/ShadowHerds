@@ -42,15 +42,27 @@ const BulkBar = {
         case "bulk-move-to":
           this._moveTo(el.dataset.dossierName);
           break;
+        case "bulk-link": {
+          const menu = document.getElementById("bulk-link-menu");
+          if (menu) menu.hidden = !menu.hidden;
+          break;
+        }
+        case "bulk-link-to":
+          this._linkToPj(el.dataset.pjId);
+          break;
       }
     });
 
-    // Ferme le menu « Déplacer vers » au clic ailleurs (pas de backdrop
-    // dédié, la barre doit rester non bloquante).
+    // Ferme les menus dépliés (Déplacer / Lier) au clic ailleurs (pas de
+    // backdrop dédié, la barre doit rester non bloquante).
     document.addEventListener("click", (e) => {
-      const menu = document.getElementById("bulk-move-menu");
-      if (menu && !menu.hidden && !e.target.closest(".bulk-move-wrap")) {
-        menu.hidden = true;
+      const move = document.getElementById("bulk-move-menu");
+      if (move && !move.hidden && !e.target.closest(".bulk-move-wrap")) {
+        move.hidden = true;
+      }
+      const link = document.getElementById("bulk-link-menu");
+      if (link && !link.hidden && !e.target.closest(".bulk-link-wrap")) {
+        link.hidden = true;
       }
     });
   },
@@ -87,6 +99,28 @@ const BulkBar = {
           )
           .join("")
       : `<span class="bulk-move-empty">Aucun dossier — créez-en un via « 🏷 Groupes ».</span>`;
+
+    // Rattachement en masse à un PJ (collections dont _cfg.pjLinkable) : la
+    // collection fournit la liste des PJ (pjLinkOptions) et exécute le lien
+    // (linkManyToPj) — BulkBar ne connaît que cette API, jamais le domaine.
+    const pjLinkable = !!this._col._cfg.pjLinkable && typeof this._col.pjLinkOptions === "function";
+    let linkBtn = "";
+    if (pjLinkable) {
+      const pjs = this._col.pjLinkOptions();
+      const linkMenu = pjs.length
+        ? pjs
+            .map(
+              (p) =>
+                `<button class="bulk-move-item" data-action="bulk-link-to" data-pj-id="${CardRenderer._esc(p.id)}">${CardRenderer._esc(p.name)}</button>`,
+            )
+            .join("")
+        : `<span class="bulk-move-empty">Aucun PJ — créez-en un dans Équipe.</span>`;
+      linkBtn = `<span class="bulk-move-wrap bulk-link-wrap">
+          <button class="btn-secondary btn-small" data-action="bulk-link">🔗 Lier à un PJ ▾</button>
+          <div class="bulk-move-menu" id="bulk-link-menu" hidden>${linkMenu}</div>
+        </span>`;
+    }
+
     bar.innerHTML = `
       <span class="bulk-count">${ids.length} sélectionné${ids.length > 1 ? "s" : ""}</span>
       <span class="bulk-actions">
@@ -94,11 +128,19 @@ const BulkBar = {
           <button class="btn-secondary btn-small" data-action="bulk-move">Déplacer vers ▾</button>
           <div class="bulk-move-menu" id="bulk-move-menu" hidden>${moveMenu}</div>
         </span>
+        ${linkBtn}
         ${combat ? `<button class="btn-secondary btn-small" data-action="bulk-encounter">⚔ Ajouter au combat</button>` : ""}
         <button class="danger-btn btn-small" data-action="bulk-delete">Supprimer</button>
         <button class="btn-icon-tiny" data-action="bulk-clear" title="Annuler la sélection" aria-label="Annuler la sélection">✕</button>
       </span>`;
     bar.classList.add("open");
+  },
+
+  /** Rattache les entités sélectionnées au PJ choisi, via l'API publique de
+      la collection active (linkManyToPj gère lien, toast et vidage). */
+  _linkToPj(pjId) {
+    if (!this._col || !pjId || typeof this._col.linkManyToPj !== "function") return;
+    this._col.linkManyToPj(this._col.selectedIds(), pjId);
   },
 
   _moveTo(name) {

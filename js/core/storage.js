@@ -156,7 +156,7 @@ const Storage = {
       ajoutée à `_MIGRATIONS`. Publique (contrairement à `_MIGRATIONS`) : les
       paquets exportés (`Backup`) la tamponnent pour savoir, à l'import, s'ils
       ont besoin d'être migrés. Voir CONTRIBUTING.md § Versionner les schémas. */
-  SCHEMA_VERSION: 2,
+  SCHEMA_VERSION: 3,
 
   /** Chaîne de migrations de schéma, ordonnée par version croissante. Chaque
       `up()` mute le `localStorage` brut (pas de dépendance à `_edition`) et
@@ -215,6 +215,44 @@ const Storage = {
         });
         if (migrated)
           Debug.warn("storage", "migration v2 (encounterVersion)", { migrated });
+      },
+    },
+    {
+      v: 3,
+      /** Les notes de contact passent du champ scalaire `notes` (textarea
+          unique, écrasée) au journal de fiche daté `journal = [{ts, text}]`,
+          commun aux PNJ (UI.addJournalEntry). Chaque contact portant une note
+          non vide la voit convertie en une première entrée datée du jour de la
+          migration (la note d'origine n'était pas horodatée), puis `notes` est
+          vidée. Idempotent : garde sur `notes` non vide + absence de `journal`,
+          donc rejouable sans effet une fois la conversion faite. */
+      up() {
+        const suffix = '_contacts_all';
+        const keys = Object.keys(localStorage).filter(
+          (k) => k.startsWith('sr_pnj_v2_') && k.endsWith(suffix)
+        );
+        let migrated = 0;
+        keys.forEach((k) => {
+          const raw = localStorage.getItem(k);
+          if (raw === null) return;
+          let list;
+          try { list = JSON.parse(raw); }
+          catch { return; }
+          if (!Array.isArray(list)) return;
+          let changed = false;
+          const now = Date.now();
+          for (const c of list) {
+            if (c && typeof c.notes === 'string' && c.notes.trim() && !Array.isArray(c.journal)) {
+              c.journal = [{ ts: now, text: c.notes.trim() }];
+              c.notes = '';
+              changed = true;
+              migrated++;
+            }
+          }
+          if (changed) localStorage.setItem(k, JSON.stringify(list));
+        });
+        if (migrated)
+          Debug.warn("storage", "migration v3 (contactNotesToJournal)", { migrated });
       },
     },
   ],

@@ -92,24 +92,24 @@ const App = {
      créatures + 3 thèmes inutiles du chargement initial. */
   _loadedAssets: new Set(),
   _EDITION_CSS: {
-    sr5: "css/theme-sr5.css?v=991",
-    sr6: "css/theme-sr6.css?v=991",
-    anarchy2: "css/theme-anarchy.css?v=991",
-    anarchy1: "css/theme-anarchy1.css?v=991",
+    sr5: "css/theme-sr5.css?v=994",
+    sr6: "css/theme-sr6.css?v=994",
+    anarchy2: "css/theme-anarchy.css?v=994",
+    anarchy1: "css/theme-anarchy1.css?v=994",
   },
   _EDITION_JS: {
-    sr5: ["js/editions/sr5.js?v=991", "js/editions/sr5.foundry.js?v=991", "js/editions/sr5.print.js?v=991"],
-    sr6: ["js/editions/sr6.js?v=991", "js/editions/sr6.foundry.js?v=991", "js/editions/sr6.print.js?v=991"],
+    sr5: ["js/editions/sr5.js?v=994", "js/editions/sr5.foundry.js?v=994", "js/editions/sr5.print.js?v=994"],
+    sr6: ["js/editions/sr6.js?v=994", "js/editions/sr6.foundry.js?v=994", "js/editions/sr6.print.js?v=994"],
     anarchy2: [
-      "js/editions/anarchy2.js?v=991",
-      "js/editions/anarchy2.creation.js?v=991",
-      "js/editions/anarchy2.foundry.js?v=991",
-      "js/editions/anarchy2.print.js?v=991",
+      "js/editions/anarchy2.js?v=994",
+      "js/editions/anarchy2.creation.js?v=994",
+      "js/editions/anarchy2.foundry.js?v=994",
+      "js/editions/anarchy2.print.js?v=994",
     ],
-    anarchy1: ["js/editions/anarchy1.js?v=991", "js/editions/anarchy1.print.js?v=991"],
+    anarchy1: ["js/editions/anarchy1.js?v=994", "js/editions/anarchy1.print.js?v=994"],
   },
   // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
-  _COMMON_JS: ["js/catalogs/creatures.js?v=991"],
+  _COMMON_JS: ["js/catalogs/creatures.js?v=994"],
   _loadCss(href) {
     if (!href || this._loadedAssets.has(href)) return;
     this._loadedAssets.add(href);
@@ -307,9 +307,14 @@ const App = {
     if (!label || !list) return;
     const entries = (this.editionModule && this.editionModule.helpLegend) || [];
     label.textContent = `Légende des symboles${this.editionModule ? " — " + this.editionModule.label : ""}`;
-    list.innerHTML = entries
-      .map((e) => `<div class="shortcut-row"><span class="shortcut-keys">${e.keys}</span><span>${e.html}</span></div>`)
-      .join("");
+    const row = (e) => `<div class="shortcut-row"><span class="shortcut-keys">${e.keys}</span><span>${e.html}</span></div>`;
+    // K9 : section commune trans-édition des glyphes du cockpit de combat, à la
+    // suite de la légende d'édition. Possédée par le cockpit (EncounterRenderer,
+    // couche 4 — appel descendant direct), pas dupliquée dans les 4 helpLegend.
+    const cockpit = EncounterRenderer.cockpitLegend();
+    list.innerHTML =
+      entries.map(row).join("") +
+      (cockpit.length ? `<div class="shortcut-subhead">Cockpit de combat</div>` + cockpit.map(row).join("") : "");
   },
 
   /* ---- Changer d'édition ---- */
