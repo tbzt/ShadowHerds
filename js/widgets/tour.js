@@ -197,6 +197,22 @@ const Tour = {
     this.refreshBadge();
   },
 
+  /** Garde-fou dev (G4), exécuté une fois au chargement : une étape dont l'ancre
+      n'existe sur AUCUN support (typo, oubli d'ancre `data-tour` dans
+      index.html) est signalée en console. Jamais visible par l'utilisateur —
+      passe par le canal `Debug` s'il est là (comme le self-test Coherence),
+      sinon `console.warn`. Une étape sans `anchor` (carte centrée) est ignorée. */
+  _auditAnchors() {
+    const all = (typeof TourSteps !== "undefined" && TourSteps.steps) || [];
+    const missing = all
+      .filter((s) => s.anchor && !document.querySelector(`[data-tour="${s.anchor}"]`))
+      .map((s) => `${s.id}→${s.anchor}`);
+    if (!missing.length) return;
+    const msg = "étape(s) à ancre absente (aucun support) : " + missing.join(", ");
+    if (typeof Debug !== "undefined") Debug.warn("tour", msg);
+    else console.warn("[tour]", msg);
+  },
+
   /* ---- chrome ---- */
   _ensureRoot() {
     if (this._root) return;
@@ -316,3 +332,10 @@ const Tour = {
     }
   },
 };
+
+/* Garde-fou dev (G4) : signale au chargement toute étape à ancre absente. */
+if (typeof window !== "undefined") {
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", () => Tour._auditAnchors());
+  else Tour._auditAnchors();
+}
