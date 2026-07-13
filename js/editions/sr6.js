@@ -289,6 +289,25 @@ const EditionSR6 = {
       }
       return { filled: entity.physFilled || 0, total: entity.me || 0 };
     },
+    /** K8 : résultat NET de dégâts appliqué au moniteur — unique par défaut,
+        ou piste Physique si `separateMonitors` (stunMon posé) ; `opts.type`
+        ("phys"/"stun") ne sert qu'en mode séparé. */
+    applyDamage(entity, n, opts) {
+      const amount = Math.max(0, n || 0);
+      const sep = entity.stunMon !== undefined;
+      const type = sep && opts && opts.type === "stun" ? "stun" : "phys";
+      const field = type === "stun" ? "stunFilled" : "physFilled";
+      const max = type === "stun" ? entity.stunMon : sep ? entity.physMon : entity.me;
+      const before = entity[field] || 0;
+      entity[field] = Utils.clamp(before + amount, 0, max ?? 99);
+      return { field, applied: entity[field] - before };
+    },
+    /** K8 : descripteur neutre — la bascule P/S n'apparaît qu'en mode
+        `separateMonitors` (sinon moniteur d'état unique, pas de type à choisir). */
+    damageUI(entity) {
+      const sep = entity && entity.stunMon !== undefined;
+      return { kind: "numeric", chips: [1, 2, 3, 5], hasType: sep, defaultType: "phys" };
+    },
   },
   /** Résolution du jet d'arme (WeaponRoll) : synergie smartgun/smartlink
       flat +1 (pas de distinction implanté/externe en SR6), pas de limite
@@ -359,6 +378,28 @@ const EditionSR6 = {
     },
     attrLimit() {
       return null;
+    },
+  },
+
+  /* Régime cyberdeck SR6 (M1) — 4 attributs ACTF, réallouables. Reconfigurer
+     les attributs matriciels (I) : Légale, action Mineure, aucun test, aucun
+     accès nécessaire — échange les valeurs de deux attributs non nuls du
+     persona matriciel, change aussi les programmes actifs (p.185). Confirmé
+     au livre par l'utilisateur (traducteur officiel Anarchy, 2026-07-13).
+     Moniteur/Score Défensif : M2/M6. */
+  cyberdeckModel: {
+    attrKeys: ["attack", "sleaze", "dataProcessing", "firewall"],
+    reallocatable: true,
+    reallocCostLabel: "action mineure (p.185)",
+    hasReroll: false,
+    hasBiofeedbackFilter: false,
+    label: "Cyberdeck",
+    /** M2 : moniteur du deck ≈ 8 + (Indice/2), comme SR5 (à confirmer au
+        livre) — même approximation « attribut le plus élevé = Indice ». */
+    monitorSize(deck) {
+      const vals = Object.values((deck && deck.attrs) || {});
+      const top = vals.length ? Math.max(...vals) : 0;
+      return 8 + Math.ceil(top / 2);
     },
   },
 

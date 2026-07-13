@@ -172,6 +172,20 @@ const EditionAnarchy1 = {
         total: (entity.physMon || 0) + (entity.stunMon || 0),
       };
     },
+    /** K8 : résultat NET de dégâts appliqué au moniteur (comme SR5, deux
+        pistes Physique/Étourdissant, défaut Physique). */
+    applyDamage(entity, n, opts) {
+      const amount = Math.max(0, n || 0);
+      const type = opts && opts.type === "stun" ? "stun" : "phys";
+      const field = type === "stun" ? "stunFilled" : "physFilled";
+      const max = type === "stun" ? entity.stunMon : entity.physMon;
+      const before = entity[field] || 0;
+      entity[field] = Utils.clamp(before + amount, 0, max ?? 99);
+      return { field, applied: entity[field] - before };
+    },
+    damageUI() {
+      return { kind: "numeric", chips: [1, 2, 3, 5], hasType: true, defaultType: "phys" };
+    },
   },
 
   /* ---- Armes ---- Pas de RR, spécialisation = +2 dés (comme SR5). Pool
@@ -382,6 +396,27 @@ const EditionAnarchy1 = {
     },
     attrLimit() {
       return null;
+    },
+  },
+
+  /* Régime cyberdeck Anarchy 1re (M1, findings §6/§6b, sran_01 p.62-65) —
+     Firewall seul (pas d'ASDF) + relance de N échecs aux tests de Hacking
+     (Erika 1 … Fairlight Excalibur 3). Pas de réallocation (Canon). */
+  cyberdeckModel: {
+    attrKeys: ["firewall"],
+    reallocatable: false,
+    hasReroll: true,
+    hasBiofeedbackFilter: false,
+    label: "Cyberdeck",
+    /** M2 : moniteurs des 3 decks catalogués (findings §6, p.62-65) — Erika
+        MCD-1 (FW1) 6 cases, Novatech Navigator (FW2) 9, Shiawase Cyber-5
+        (FW3) 15. Pas de formule imprimée pour un Firewall hors de ces 3
+        modèles : extrapolation linéaire documentée (6 + 3×(FW−1)) au-delà,
+        à corriger si un futur decker sort de cette fourchette. */
+    monitorSize(deck) {
+      const table = { 1: 6, 2: 9, 3: 15 };
+      const fw = (deck && deck.attrs && deck.attrs.firewall) || 1;
+      return table[fw] ?? 6 + 3 * (fw - 1);
     },
   },
 

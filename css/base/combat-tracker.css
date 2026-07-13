@@ -1101,6 +1101,32 @@
   margin: 0.2rem 0 0.1rem;
 }
 
+/* K8 : bouton « Dégâts » — le rouge se mérite, réservé à ce seul contrôle
+   (décision DA de la table ronde K8) : le reste de la console reste neutre. */
+.react-glyph-danger {
+  color: var(--danger);
+}
+.react-damage-btn.is-open {
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, var(--bg-card));
+}
+.react-damage-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.2rem 0 0.1rem;
+  padding: 0.4rem;
+  border: 1px dashed color-mix(in srgb, var(--danger) 45%, var(--border));
+  border-radius: 4px;
+}
+.react-btn-danger {
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+}
+.react-btn-danger:hover {
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 14%, var(--bg-card));
+}
+
 /* Miroir de la Réserve de menace dans l'en-tête du cockpit (Anarchy). */
 .encounter-threat {
   display: inline-flex;

@@ -81,5 +81,22 @@ const TourSteps = {
       title: "Perdu ? Ce bouton",
       body: "Il relance cette visite et liste les raccourcis clavier. Bon jeu.",
     },
+
+    /* --- Quoi de neuf (badge « ✦ », cumulé depuis la dernière version vue) --- */
+    {
+      id: "wn-k8-damage", anchor: "nav-combat", tours: ["whatsnew"], since: "1.1.0", fallback: "center",
+      title: "Dégâts en un tap",
+      body: "Au tour d'un PJ, la console de réaction encaisse maintenant les dégâts : bouton ✸ Dégâts par PNJ, cases ou gravité selon l'édition — la boucle Défense → Encaisser → Dégâts se boucle sans quitter l'écran.",
+    },
+    {
+      id: "wn-m1-cyberdeck", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.2.0", fallback: "center",
+      title: "Le cyberdeck d'un decker",
+      body: "Fini la ligne de texte dans l'équipement : le cyberdeck a maintenant ses attributs matriciels lisibles et éditables sur la carte (ASDF/ACTF, Firewall, programmes…), migrés automatiquement sans rien perdre de l'ancien texte.",
+    },
+    {
+      id: "wn-m2-deck-live", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.3.0", fallback: "center",
+      title: "Le deck a son moniteur",
+      body: "Le cyberdeck encaisse maintenant ses propres dégâts matriciels (moniteur cliquable) et se reconfigure en un tap en SR5/SR6 (échange de 2 attributs).",
+    },
   ],
 };

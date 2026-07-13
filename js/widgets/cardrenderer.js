@@ -1035,6 +1035,16 @@ const CardRenderer = {
         case "toggle-monitor":
           UI.toggleMonitor(id, actionEl.dataset.sev, Number(actionEl.dataset.idx));
           break;
+        case "toggle-deck-monitor":
+          // M2 : case du moniteur matriciel du deck (pnj.cyberdeck.filled),
+          // distinct de toggle-monitor (champs top-level pnj.*Filled).
+          UI.toggleDeckMonitor(id, Number(actionEl.dataset.idx));
+          break;
+        case "deck-realloc":
+          // M2 : réallocation ASDF/ACTF en un tap (SR5 action gratuite, SR6
+          // action mineure — cf. Cyberdeck.reallocatable/cyberdeckModel).
+          UI.reallocDeck(id, actionEl.dataset.from, actionEl.dataset.to);
+          break;
         case "cycle-drug":
           UI.cycleDrug(id, actionEl.dataset.edition, actionEl.dataset.drug);
           break;

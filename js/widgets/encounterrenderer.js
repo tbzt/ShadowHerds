@@ -779,16 +779,93 @@ const EncounterRenderer = {
     const soakBtn = soak >= 1
       ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${name}" data-roll-pnj="${pnj.id}" title="Résistance aux dommages (${soak} dés)" aria-label="Encaissement — ${name} (${soak} dés)"><span class="react-glyph" aria-hidden="true">⛊</span> ${soak}</button>`
       : `<span class="react-btn is-off" title="Pas de réserve d'encaissement"><span class="react-glyph" aria-hidden="true">⛊</span> —</span>`;
+    // K8 : « Dégâts » ferme la boucle ⛉→⛊→✸ — un résultat NET (déjà résisté),
+    // jamais un brut recalculé. damageUI() est lu sur le module d'édition
+    // (jamais une branche ici) : chips numériques P/S (SR5/SR6) ou crans de
+    // gravité (Anarchy 2, cf. _reactDamageChips).
+    const damageBtn = !pnj._adhoc && App.editionModule && App.editionModule.conditionMonitor
+      ? `<button class="react-btn react-damage-btn" data-action="react-damage-toggle" data-id="${pnj.id}" title="Appliquer des dégâts nets" aria-label="Dégâts — ${name}"><span class="react-glyph react-glyph-danger" aria-hidden="true">✸</span> Dégâts</button>`
+      : "";
     // Chevron réservé aux PNJ résolus (une carte réelle à monter) — pas sur un
     // combattant ad-hoc sans fiche. Le déplié (accordéon, board) est un état de
     // vue éphémère monté à la demande par toggleReactExpand — aucune clé Storage.
     const expand = !pnj._adhoc
       ? `<button class="react-expand-btn" data-action="react-expand" data-id="${pnj.id}" aria-label="Déplier la fiche de ${name}" title="Voir la fiche complète"><span class="react-chevron" aria-hidden="true">▾</span></button>`
       : "";
+    const chipsBody = damageBtn ? this._reactDamageChips(pnj) : "";
     return `<div class="react-row">
         <span class="react-name">${name}</span>
-        <span class="react-buttons">${defBtn}${soakBtn}${expand}</span>
-      </div>${expand ? `<div class="react-expand-body" data-expand-for="${pnj.id}" hidden></div>` : ""}`;
+        <span class="react-buttons">${defBtn}${soakBtn}${damageBtn}${expand}</span>
+      </div>${chipsBody}${expand ? `<div class="react-expand-body" data-expand-for="${pnj.id}" hidden></div>` : ""}`;
+  },
+
+  /** K8 : panneau de chips de dégâts d'un PNJ, replié par défaut (déplié par
+      toggleReactDamage). Édition-neutre : lit damageUI() sur le module. */
+  _reactDamageChips(pnj) {
+    const cm = App.editionModule && App.editionModule.conditionMonitor;
+    const ui = cm && cm.damageUI ? cm.damageUI(pnj) : null;
+    if (!ui) return "";
+    if (ui.kind === "wound") {
+      const btns = (ui.levels || [])
+        .map(
+          (lv) =>
+            `<button class="react-btn react-btn-danger" data-action="react-wound" data-id="${pnj.id}" data-sev="${lv.sev}">✸ ${Utils.escHtml(lv.label)}</button>`,
+        )
+        .join("");
+      return `<div class="react-damage-chips" data-damage-for="${pnj.id}" hidden>${btns}</div>`;
+    }
+    const type = this.reactDamageType(pnj.id) || ui.defaultType || "phys";
+    const typeToggle = ui.hasType
+      ? `<button class="react-btn" data-action="damage-type-toggle" data-id="${pnj.id}" title="Basculer Physique/Étourdissant">${type === "stun" ? "Étourd." : "Phys."} ⇄</button>`
+      : "";
+    const chips = (ui.chips || [1, 2, 3, 5])
+      .map(
+        (n) =>
+          `<button class="react-btn react-btn-danger" data-action="react-damage" data-id="${pnj.id}" data-n="${n}">✸ ${n}</button>`,
+      )
+      .join("");
+    return `<div class="react-damage-chips" data-damage-for="${pnj.id}" hidden>${typeToggle}${chips}</div>`;
+  },
+
+  /** K8 : état de vue éphémère (aucune clé Storage) — type Phys/Étourd.
+      sélectionné par PNJ pour le prochain chip appliqué. Purement transitoire
+      (comme _activeCardId), reconstruit/oublié au fil des rendus. */
+  _reactDamageTypes: {},
+
+  reactDamageType(pnjId) {
+    return this._reactDamageTypes[pnjId];
+  },
+
+  /** Déplie/replie le panneau de chips (un seul ouvert à la fois, comme
+      toggleReactExpand) ; `close=true` force la fermeture (après application
+      d'un dégât, cf. Encounter). */
+  toggleReactDamage(pnjId, close) {
+    const react = document.querySelector(".encounter-react");
+    if (!react) return;
+    const esc = window.CSS && CSS.escape ? CSS.escape(pnjId) : pnjId;
+    const body = react.querySelector(`.react-damage-chips[data-damage-for="${esc}"]`);
+    if (!body) return;
+    const shouldOpen = close ? false : body.hidden;
+    react.querySelectorAll(".react-damage-chips").forEach((b) => (b.hidden = true));
+    react.querySelectorAll(".react-damage-btn").forEach((b) => b.classList.remove("is-open"));
+    if (shouldOpen) {
+      body.hidden = false;
+      const btn = react.querySelector(`.react-damage-btn[data-id="${esc}"]`);
+      if (btn) btn.classList.add("is-open");
+    }
+  },
+
+  /** Bascule Physique/Étourdissant avant d'appliquer un chip (SR5/SR6 séparé
+      uniquement — vue seulement, aucune mutation du PNJ). Rouvre le panneau
+      pour ne pas perdre le fil du geste. */
+  toggleDamageType(pnjId) {
+    this._reactDamageTypes[pnjId] = this._reactDamageTypes[pnjId] === "stun" ? "phys" : "stun";
+    const react = document.querySelector(".encounter-react");
+    if (!react) return;
+    const esc = window.CSS && CSS.escape ? CSS.escape(pnjId) : pnjId;
+    const body = react.querySelector(`.react-damage-chips[data-damage-for="${esc}"]`);
+    const btn = body && body.querySelector('[data-action="damage-type-toggle"]');
+    if (btn) btn.textContent = this._reactDamageTypes[pnjId] === "stun" ? "Étourd. ⇄" : "Phys. ⇄";
   },
 
   /** Ligne de réaction d'une CI (K9) : mêmes glyphes ⛉/⛊, mais la réserve d'une
@@ -846,6 +923,7 @@ const EncounterRenderer = {
     return [
       { keys: "⛉", html: "<strong>Défense</strong> — le PNJ (ou la CI) esquive/pare un test." },
       { keys: "⛊", html: "<strong>Encaisser</strong> — résistance aux dommages." },
+      { keys: "✸", html: "<strong>Dégâts</strong> — applique un résultat déjà résisté (net) au moniteur." },
       { keys: "⚔", html: "Envoyer au <strong>combat</strong> / rejoindre l'initiative." },
       { keys: "◎", html: "<strong>Perception matricielle</strong> d'une CI." },
       { keys: "⚡", html: "Ouvrir le <strong>tiroir Matrice</strong> (jets, moniteur, surveillance)." },

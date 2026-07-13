@@ -13,9 +13,37 @@ commit.
 ## [Non publié]
 
 ### Prévu (mineures en cours)
-- **Cockpit de combat** — appliquer les dégâts aux PNJ + modes Agir/Réagir.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
+
+## [1.3.0] — 2026-07-13
+
+### Jouer
+- **Cyberdeck en vie** : le deck a désormais son propre moniteur matriciel
+  (rangées de 3 cases, malus en marge) et, en SR5/SR6, une **réallocation ASDF/
+  ACTF en un tap** (échange de 2 attributs — action gratuite en SR5, mineure en
+  SR6). Masqué en Anarchy 1/2, sans réallocation dans leur modèle ; le
+  biofeedback d'Anarchy 2.0 continue d'encaisser sur la Volonté du decker, pas
+  sur un moniteur de deck séparé.
+
+## [1.2.0] — 2026-07-13
+
+### Consulter & organiser
+- **Cyberdeck structuré** : le cyberdeck d'un decker (SR5/SR6/Anarchy 1/2) n'est
+  plus qu'une ligne de texte dans l'équipement — attributs matriciels lisibles et
+  éditables sur la carte (ASDF/ACTF en SR5/SR6, Firewall + relance en Anarchy 1,
+  Attaque + Firewall + filtre de biofeedback en Anarchy 2.0), programmes en liste.
+  Migration automatique et sans perte depuis l'ancienne chaîne libre (le texte
+  d'origine reste visible en note de secours).
+
+## [1.1.0] — 2026-07-13
+
+### Jouer
+- **Suivi de combat — dégâts nets** : la console de réaction (tour d'un PJ) peut
+  désormais appliquer un résultat *net* (déjà résisté) au moniteur d'un PNJ —
+  bouton ✸ Dégâts par ligne, cases Physique/Étourdissant (SR5/SR6) ou cran de
+  gravité (Anarchy 2), boucle Défense → Encaisser → Dégâts sans quitter l'écran.
+- Légende du cockpit (Aide « ? ») complétée avec le glyphe ✸.
 
 ## [1.0.0] — 2026-07-13
 

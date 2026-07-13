@@ -857,3 +857,52 @@
   color: #fff;
 }
 
+/* M1 (PLAN_MATRICE_CYBERDECK.md) : bloc cyberdeck sur la carte — même patron
+   que les autres blocs de référence (.ref-block/.ref-lbl, cf. chargen.css),
+   attr-grid réutilisé tel quel pour les attributs matriciels du deck. */
+.cyberdeck-block .cyberdeck-name {
+  font-weight: 600;
+  color: var(--text);
+}
+.cyberdeck-note {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+.cyberdeck-programs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.3rem;
+}
+.cyberdeck-legacy-note {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  font-style: italic;
+  margin-top: 0.3rem;
+}
+/* M2 : réallocation en un tap — rangée de boutons d'échange, sous l'attr-grid
+   (pas interfolée dedans, pour ne pas perturber sa grille responsive). */
+.cyberdeck-realloc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0.3rem 0;
+}
+.cyberdeck-swap {
+  min-height: 32px;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-card);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  cursor: pointer;
+}
+.cyberdeck-swap:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-card));
+}
+

@@ -156,7 +156,7 @@ const Storage = {
       ajoutée à `_MIGRATIONS`. Publique (contrairement à `_MIGRATIONS`) : les
       paquets exportés (`Backup`) la tamponnent pour savoir, à l'import, s'ils
       ont besoin d'être migrés. Voir CONTRIBUTING.md § Versionner les schémas. */
-  SCHEMA_VERSION: 3,
+  SCHEMA_VERSION: 4,
 
   /** Chaîne de migrations de schéma, ordonnée par version croissante. Chaque
       `up()` mute le `localStorage` brut (pas de dépendance à `_edition`) et
@@ -253,6 +253,72 @@ const Storage = {
         });
         if (migrated)
           Debug.warn("storage", "migration v3 (contactNotesToJournal)", { migrated });
+      },
+    },
+    {
+      v: 4,
+      /** M1 (PLAN_MATRICE_CYBERDECK.md) : un decker ne portait son cyberdeck
+          qu'en texte libre dans son équipement/ses atouts ("Cyberdeck
+          (Attaque 4, Firewall 4)", "Cyberdeck Shiawase Cyber-5 (Att 8, FW 7,
+          DP 5)", "Cyberdeck Erika MCD-1 (Firewall 1, …, relance 1 échec)").
+          Structure `pnj.cyberdeck` à partir de la première ligne "Cyberdeck…"
+          trouvée dans equip/augs/edges (les 3 champs selon l'édition — cf.
+          js/rules/bonusengine.js et js/editions/anarchy*.js), SANS retirer la
+          ligne d'origine de sa liste (gardée intacte + copiée telle quelle
+          dans cyberdeck.legacyText — garde-fou si le parsing est imparfait).
+          Parseur autonome (pas de dépendance à Cyberdeck/App.editionModule :
+          les migrations mutent le JSON brut, cf. commentaire de _MIGRATIONS,
+          et tous les modules d'édition ne sont pas chargés au moment où les
+          migrations tournent). Idempotent : ignore les PNJ qui ont déjà un
+          `cyberdeck`. */
+      up() {
+        const suffixes = ["_shadows_all", "_characters_all", "_gen_pool"];
+        const keys = Object.keys(localStorage).filter(
+          (k) => k.startsWith("sr_pnj_v2_") && suffixes.some((s) => k.endsWith(s)),
+        );
+        const numFrom = (str, re) => {
+          const m = str.match(re);
+          return m ? parseInt(m[1], 10) : 0;
+        };
+        const parseDeck = (str) => {
+          const nameMatch = str.match(/^Cyberdeck\s+([^(]+?)\s*\(/i);
+          return {
+            name: nameMatch ? nameMatch[1].trim() : "",
+            attrs: {
+              attack: numFrom(str, /(?:attaque|att)\s*[:\s]?\s*(\d+)/i),
+              sleaze: numFrom(str, /(?:corruption|corr|sleaze)\s*[:\s]?\s*(\d+)/i),
+              dataProcessing: numFrom(str, /(?:traitement de donn[ée]es|tdd|dp)\s*[:\s]?\s*(\d+)/i),
+              firewall: numFrom(str, /(?:firewall|fw)\s*[:\s]?\s*(\d+)/i),
+            },
+            programs: [],
+            reroll: numFrom(str, /relance\s+(?:de\s+)?(\d+)\s+[ée]chec/i),
+            biofeedbackFilter: /biofeedback/i.test(str),
+            filled: 0,
+            legacyText: str,
+          };
+        };
+        let migrated = 0;
+        keys.forEach((k) => {
+          const raw = localStorage.getItem(k);
+          if (raw === null) return;
+          let list;
+          try { list = JSON.parse(raw); }
+          catch { return; }
+          if (!Array.isArray(list)) return;
+          let changed = false;
+          for (const pnj of list) {
+            if (!pnj || pnj.cyberdeck) continue;
+            const pools = [...(pnj.equip || []), ...(pnj.augs || []), ...(pnj.edges || [])];
+            const found = pools.find((s) => typeof s === "string" && /cyberdeck/i.test(s));
+            if (!found) continue;
+            pnj.cyberdeck = parseDeck(found);
+            changed = true;
+            migrated++;
+          }
+          if (changed) localStorage.setItem(k, JSON.stringify(list));
+        });
+        if (migrated)
+          Debug.warn("storage", "migration v4 (cyberdeckStructure)", { migrated });
       },
     },
   ],
