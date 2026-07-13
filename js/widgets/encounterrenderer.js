@@ -146,6 +146,7 @@ const EncounterRenderer = {
       <span class="encounter-kind">${kind}</span>
       ${comb}
       ${r.down ? this._downBadge() : ""}
+      ${this._lifeGauge(r)}
       <button class="btn-icon-tiny encounter-row-menu" data-action="row-menu" title="Plus d'actions" aria-label="Plus d'actions">⋯</button>
       <span class="encounter-controls-secondary">
         ${focusItem}
@@ -192,6 +193,20 @@ const EncounterRenderer = {
     if (p.type === "spirit") return "Esprit";
     if (p.type === "creature") return "Créature";
     return "PNJ";
+  },
+
+  /** Mini-jauge de vie (K6) : résumé du moniteur en barre fine, non
+      interactive (les cases se cochent sur la fiche), visible en posture
+      dock ≥641px (cf. CSS). Fraction remplie = dégâts encaissés, teinte
+      --warning/--danger aux seuils ½ et ¾. Rien sans moniteur (gauge
+      absente ou total 0 : PJ ad-hoc, CI matricielle) ni hors de combat
+      (la ligne porte déjà le badge ☠). */
+  _lifeGauge(r) {
+    const g = r.gauge;
+    if (r.down || !g || !g.total) return "";
+    const frac = Math.min(1, g.filled / g.total);
+    const tone = frac >= 0.75 ? " is-crit" : frac >= 0.5 ? " is-warn" : "";
+    return `<div class="encounter-life" title="Moniteur : ${g.filled}/${g.total}" aria-hidden="true"><span class="encounter-life-fill${tone}" style="width:${Math.round(frac * 100)}%"></span></div>`;
   },
 
   /** Badge « hors de combat » (Vague D), partagé ordonné/narratif. */
@@ -284,6 +299,7 @@ const EncounterRenderer = {
           ${r.down ? this._downBadge() : ""}
           ${!r.down && r.delayed ? this._delayedBadge() : ""}
         </div>
+        ${this._lifeGauge(r)}
         ${this._moraleBanner(r)}
         <input type="text" class="encounter-note${hasNote ? "" : " is-empty"}" placeholder="Note…" value="${Utils.escHtml(note || "")}"
           data-action="set-note" data-id="${pnjId}">
@@ -742,17 +758,31 @@ const EncounterRenderer = {
       }
     }
 
-    const title = document.getElementById("matrix-drawer-title");
-    if (title) title.textContent = srv ? "Matrice — " + srv.name : "Matrice";
+    const drawerTitle = document.getElementById("matrix-drawer-title");
+    if (drawerTitle) drawerTitle.textContent = srv ? "Matrice — " + srv.name : "Matrice";
+    // K6 : titre de la colonne dockée — même texte, second montage.
+    const dockTitle = document.getElementById("matrix-dock-title");
+    if (dockTitle) dockTitle.textContent = srv ? "Matrice — " + srv.name : "Matrice";
 
-    const body = document.getElementById("matrix-drawer-body");
-    if (!body) return;
     // inEncounter + launchedKeys : ServerRenderer ajoute « ⚔ Init » sur chaque
     // CI active pas encore dans l'ordre (K4). Le reste du contenu est le panneau
-    // d'intrusion réutilisé verbatim (K3).
-    body.innerHTML = srv
+    // d'intrusion réutilisé verbatim (K3). Calculé une fois, posé dans les deux
+    // montages (tiroir mobile/dock ≥1100px) — jamais recalculé deux fois.
+    const html = srv
       ? ServerRenderer.matrixDrawerHeader(srv) +
         ServerRenderer.intrusionPanel(srv, { inEncounter: true, launchedKeys: launchedKeys || [] })
       : "";
+    const body = document.getElementById("matrix-drawer-body");
+    if (body) body.innerHTML = html;
+    const dockBody = document.getElementById("matrix-dock-body");
+    if (dockBody) dockBody.innerHTML = html;
+
+    // K6 : colonne dockée visible seulement ≥1100px ET état ≥1 (état 0 = 2
+    // colonnes, cf. CSS .encounter-modal.has-matrix-dock) — classe posée sur
+    // le modal, jamais une media query seule (l'état prime sur la largeur).
+    const modal = document.querySelector(".encounter-modal");
+    if (modal) modal.classList.toggle("has-matrix-dock", level > 0);
+    const dock = document.getElementById("encounter-matrix-dock");
+    if (dock) dock.hidden = level === 0;
   },
 };

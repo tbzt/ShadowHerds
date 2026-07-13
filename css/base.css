@@ -3992,6 +3992,61 @@ body.selecting .bulk-selectable .contact-header-row {
   color: var(--accent);
 }
 
+/* ---- K6 : postures tablette / grand écran ----
+   641-1099 : dock 2 colonnes déjà livré (liste + fiche, cf. @media 641px
+   plus haut), enrichi ici d'une mini-jauge de vie par ligne (résumé du
+   moniteur, pas un moniteur interactif — cf. EncounterRenderer._lifeGauge).
+   ≥1100 : dock élargi, 3ᵉ colonne = tiroir Matrice docké en permanence,
+   seulement si un serveur est lié (état ≥1 — état 0 reste 2 colonnes, la
+   fiche respire). Canal --accent2 systématisé sur le liseré de colonne. */
+.encounter-life {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg);
+  overflow: hidden;
+  margin-top: 2px;
+}
+.encounter-nrow .encounter-life {
+  flex-basis: 100%;
+}
+.encounter-life-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.encounter-life-fill.is-warn {
+  background: var(--warning);
+}
+.encounter-life-fill.is-crit {
+  background: var(--danger);
+}
+
+/* Colonne Matrice dockée : même contenu que #matrix-drawer (deux montages
+   du même rendu, cf. EncounterRenderer.renderMatrix) — masquée par défaut,
+   visible seulement ≥1100px ET état Matrice ≥1 (.has-matrix-dock, posé par
+   JS sur .encounter-modal, jamais une classe de largeur d'écran seule). */
+.encounter-matrix-dock {
+  display: none;
+}
+@media (min-width: 1100px) {
+  /* #encounter-overlay .encounter-modal (spécificité ID, cf. @media 641px
+     plus haut) l'emporterait sur .encounter-modal.has-matrix-dock seul —
+     même préfixe ID ici pour gagner la cascade. */
+  #encounter-overlay .encounter-modal.has-matrix-dock {
+    width: min(1100px, 94vw);
+  }
+  .encounter-modal.has-matrix-dock .encounter-matrix-dock {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 320px;
+    max-width: 340px;
+    max-height: 100%;
+    overflow-y: auto;
+    padding-left: var(--sp-4);
+    border-left: 1px solid color-mix(in srgb, var(--accent2) 45%, var(--border));
+  }
+}
+
 /* ---- Résumé de la scène de combat dans la sidebar ---- */
 .sidebar-encounter {
   display: flex;

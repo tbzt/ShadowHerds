@@ -225,6 +225,17 @@ const EditionSR5 = {
       if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
       else entity.physFilled = entity.physMon || 0;
     },
+    /** K6 : résumé du moniteur pour la mini-jauge du cockpit — cases remplies
+        / total, physique + étourdissement cumulés (mêmes champs que
+        isDestroyed/knockOut). total 0 = pas de moniteur, pas de jauge. */
+    gauge(entity) {
+      if (entity.type === "vehicle")
+        return { filled: entity.monFilled || 0, total: entity.monTotal || 0 };
+      return {
+        filled: (entity.physFilled || 0) + (entity.stunFilled || 0),
+        total: (entity.physMon || 0) + (entity.stunMon || 0),
+      };
+    },
   },
   /** Résolution du jet d'arme (WeaponRoll) : synergie smartgun/smartlink
       (+2 implanté / +1 externe), la Précision (PRE) plafonne les succès,

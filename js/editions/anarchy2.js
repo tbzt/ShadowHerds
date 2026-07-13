@@ -254,6 +254,18 @@ const EditionAnarchy2 = {
     knockOut(entity) {
       entity.incapFilled = 1;
     },
+    /** K6 : résumé du moniteur pour la mini-jauge du cockpit — cases de
+        blessure cochées / capacité totale, tous crans cumulés (mêmes tiers
+        que applyWound, cf. _woundTiers : caps + bonus d'atouts inclus). */
+    gauge(entity) {
+      let filled = 0;
+      let total = 0;
+      for (const t of EditionAnarchy2._woundTiers(entity)) {
+        filled += entity[`${t.sev}Filled`] || 0;
+        total += t.cap;
+      }
+      return { filled, total };
+    },
   },
   /** Résolution du jet d'arme (WeaponRoll) : pas de règle smartlink/
       smartgun en Anarchy 2.0 (neutre `null`, doc), pas de limite de

@@ -232,6 +232,14 @@ const EditionSR6 = {
       if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
       else entity.physFilled = entity.me || 0;
     },
+    /** K6 : résumé du moniteur pour la mini-jauge du cockpit — cases remplies
+        / total du moniteur d'état unique (mêmes champs que isDestroyed/
+        knockOut). total 0 = pas de moniteur, pas de jauge. */
+    gauge(entity) {
+      if (entity.type === "vehicle")
+        return { filled: entity.monFilled || 0, total: entity.monTotal || 0 };
+      return { filled: entity.physFilled || 0, total: entity.me || 0 };
+    },
   },
   /** Résolution du jet d'arme (WeaponRoll) : synergie smartgun/smartlink
       flat +1 (pas de distinction implanté/externe en SR6), pas de limite

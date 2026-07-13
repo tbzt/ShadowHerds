@@ -520,6 +520,11 @@ const Servers = Object.assign(
       panel.addEventListener("click", onClick);
       const matrixDrawer = document.getElementById("matrix-drawer-overlay");
       if (matrixDrawer) matrixDrawer.addEventListener("click", onClick);
+      // K6 : colonne Matrice dockée (≥1100px) — 3ᵉ montage du même contenu
+      // (intrusionPanel), même délégation que le tiroir mobile plutôt qu'une
+      // 3ᵉ copie du switch.
+      const matrixDock = document.getElementById("encounter-matrix-dock");
+      if (matrixDock) matrixDock.addEventListener("click", onClick);
 
       panel.addEventListener("change", (e) => {
         const el = e.target.closest('[data-action="edit-note"]');

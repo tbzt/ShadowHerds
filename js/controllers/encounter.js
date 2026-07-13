@@ -691,6 +691,14 @@ const Encounter = {
       pose display:flex, .show (au rAF suivant) déclenche la transition —
       sans ce décalage, la feuille apparaîtrait déjà translatée à 0. */
   openMatrixDrawer() {
+    // K6 : quand la colonne Matrice dockée est visible (≥1100px, serveur
+    // lié), la Matrice est déjà à l'écran — pas de tiroir par-dessus, on
+    // amène la colonne en vue (tap sur un jeton CI, « Ouvrir la Matrice »).
+    const dock = document.getElementById("encounter-matrix-dock");
+    if (dock && !dock.hidden && window.matchMedia("(min-width: 1100px)").matches) {
+      dock.scrollIntoView({ block: "nearest" });
+      return;
+    }
     const overlay = document.getElementById("matrix-drawer-overlay");
     if (!overlay) return;
     overlay.classList.add("open");
@@ -819,6 +827,11 @@ const Encounter = {
       const d = mod.combatDisposition(r.pnj, group);
       r.down = !!d.down;
       r.morale = this._isPJ(r) ? null : d.morale;
+      // K6 : résumé du moniteur pour la mini-jauge de la ligne (accesseur
+      // neutre conditionMonitor.gauge — jamais de forme de moniteur ici).
+      // total 0 (PJ ad-hoc, entité sans moniteur) = pas de jauge au rendu.
+      const cm = mod.conditionMonitor;
+      r.gauge = cm && cm.gauge ? cm.gauge(r.pnj) : null;
     }
     return rows;
   },
@@ -990,35 +1003,52 @@ const Encounter = {
 
     // K3 : le tiroir Matrice est hors de #encounter-overlay (overlay séparé,
     // cf. index.html) — Servers._wire() y pose sa propre délégation pour le
-    // contenu réutilisé d'intrusionPanel ; ici seulement les 2 actions
-    // propres à Encounter (fermer, délier).
+    // contenu réutilisé d'intrusionPanel ; ici seulement les actions
+    // propres à Encounter (fermer, délier, lancer une CI). K6 : le même
+    // contenu est aussi monté dans la colonne dockée (#encounter-matrix-dock,
+    // ≥1100px) — même handler sur les deux montages, mais cette fois nichée
+    // DANS #encounter-overlay (contrairement au tiroir, overlay séparé) : un
+    // clic y bulle jusqu'au switch de combat plus bas (data-action homonymes,
+    // ex. « next-turn » = tour d'INTRUSION ici, tour de combat là-bas). Un
+    // garde-fou sur e.target ne suffit pas : Intrusion.nextTurn (via
+    // Servers._wire, attaché sur ce même nœud) ré-écrit dockBody.innerHTML de
+    // façon synchrone AVANT que la bulle n'atteigne #encounter-overlay,
+    // détachant e.target — closest() y échouerait silencieusement. On coupe
+    // donc la propagation ici, en premier (Encounter.init tourne avant
+    // Servers._wire, donc ce listener est posé — et s'exécute — avant le
+    // sien sur le même nœud).
+    const drawerActions = (e) => {
+      e.stopPropagation();
+      const el = e.target.closest("[data-action]");
+      if (!el) return;
+      switch (el.dataset.action) {
+        case "close-matrix-drawer":
+          this.closeMatrixDrawer();
+          break;
+        case "unlink-server":
+          this.unlinkServer();
+          break;
+        case "launch-ic":
+          // K4 : « ⚔ Init » d'une CI du tiroir → elle rejoint l'ordre.
+          // Les autres data-action du tiroir (next-turn, ic-box…) sont
+          // gérées par la délégation de Servers._wire (contenu réutilisé).
+          this.launchIC(el.dataset.id, el.dataset.k);
+          break;
+      }
+    };
     const matrixDrawer = document.getElementById("matrix-drawer-overlay");
-    if (matrixDrawer) {
-      matrixDrawer.addEventListener("click", (e) => {
-        const el = e.target.closest("[data-action]");
-        if (!el) return;
-        switch (el.dataset.action) {
-          case "close-matrix-drawer":
-            this.closeMatrixDrawer();
-            break;
-          case "unlink-server":
-            this.unlinkServer();
-            break;
-          case "launch-ic":
-            // K4 : « ⚔ Init » d'une CI du tiroir → elle rejoint l'ordre.
-            // Les autres data-action du tiroir (next-turn, ic-box…) sont
-            // gérées par la délégation de Servers._wire (contenu réutilisé).
-            this.launchIC(el.dataset.id, el.dataset.k);
-            break;
-        }
-      });
-    }
+    if (matrixDrawer) matrixDrawer.addEventListener("click", drawerActions);
+    const matrixDock = document.getElementById("encounter-matrix-dock");
+    if (matrixDock) matrixDock.addEventListener("click", drawerActions);
 
     overlay.addEventListener("click", (e) => {
       // La poignée n'a pas de data-action propre : sans cette garde, un clic
       // dessus remonterait à .encounter-nrow (data-action="narrative-toggle")
       // et basculerait « a joué » à chaque glisser en mode narratif.
       if (e.target.closest(".encounter-drag-handle")) return;
+      // K6 : les clics dans la colonne Matrice dockée n'atteignent jamais ce
+      // switch — drawerActions (posé sur #encounter-matrix-dock) coupe la
+      // propagation avant qu'elle ne bulle jusqu'ici (cf. son commentaire).
       const el = e.target.closest("[data-action]");
       if (!el) return;
       const id = el.dataset.id;
