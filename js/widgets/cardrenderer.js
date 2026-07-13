@@ -52,6 +52,7 @@ const CardRenderer = {
 
   /* ---- Header ---- */
   _header(pnj) {
+    if (pnj.pcLight) return this._headerLight(pnj);
     if (pnj.type === "vehicle") return this._headerVehicle(pnj);
     if (pnj.type === "spirit") return this._headerSpirit(pnj);
     const gIcon = { M: "♂", F: "♀", NB: "⚧" }[pnj.gender] || "";
@@ -94,6 +95,29 @@ const CardRenderer = {
     </div>`;
   },
 
+  /* ---- PJ léger (E1) — gabarit minimal commun, aucune branche d'édition :
+     un PJ léger n'a ni attrs ni skills, seulement nom/joueur/couleur/notes. ---- */
+  _headerLight(pnj) {
+    return `<div class="pnj-card-header">
+      <div class="pnj-header-left">
+        ${this._nameBlock(pnj.name)}
+        <div class="pnj-meta">Personnage-joueur${pnj.player ? ` · ${this._esc(pnj.player)}` : ""}</div>
+      </div>
+      <span class="pc-color-dot" style="background:${this._esc(pnj.pcColor || "")}"
+        title="Couleur du PJ" aria-hidden="true"></span>
+    </div>`;
+  },
+
+  _bodyLight(pnj) {
+    return `<div class="pnj-card-body pnj-card-body-light">
+      ${
+        pnj.notes
+          ? `<div class="pc-light-notes">${this._esc(pnj.notes)}</div>`
+          : `<div class="pc-light-empty">Fiche légère — nom seul. « Éditer » pour joueur/notes.</div>`
+      }
+    </div>`;
+  },
+
   /** Vignette de portrait IA (opt-in), affichée dès qu'un portrait a été
       généré — indépendamment du réglage courant (désactiver le réglage
       empêche d'en générer de nouveaux, pas d'afficher les existants). */
@@ -122,6 +146,7 @@ const CardRenderer = {
 
   /* ---- Body ---- */
   _body(pnj, deps) {
+    if (pnj.pcLight) return this._bodyLight(pnj);
     if (pnj.type === "vehicle") return this._bodyVehicle(pnj, deps);
     // Les esprits sont des objets PNJ standards : le corps d'édition les
     // rend tel quel (jets, moniteurs, RR). Seule la barre de services est

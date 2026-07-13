@@ -410,6 +410,9 @@ document.addEventListener("DOMContentLoaded", () => {
       case "chargen-open":
         CharGen.open();
         break;
+      case "pj-quick-add":
+        Characters.promptAddLight();
+        break;
       case "chargen-close":
         CharGen.close();
         break;

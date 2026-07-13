@@ -138,6 +138,9 @@ const EncounterRenderer = {
     const focusItem = pnj._adhoc
       ? ""
       : `<button class="btn-icon-tiny" data-action="focus-combatant" data-id="${pnjId}" title="Voir la fiche" aria-label="Voir la fiche">☰</button>`;
+    const colorDot = r.isPJ && pnj.pcColor
+      ? `<span class="pc-color-dot" style="background:${Utils.escHtml(pnj.pcColor)}" title="Couleur du PJ" aria-hidden="true"></span>`
+      : "";
     // Pas de poignée sur les lignes hors de combat (épinglées en bas, non
     // réordonnables) — même garde que _row.
     const dragHandle = r.down
@@ -153,7 +156,7 @@ const EncounterRenderer = {
       ${dragHandle}
       <span class="encounter-nrow-check" aria-hidden="true">✓</span>
       <div class="encounter-nrow-body">
-        <span class="encounter-nrow-name">${name}</span>
+        <span class="encounter-nrow-name">${colorDot}${name}</span>
         <span class="encounter-nrow-sub"><span class="encounter-kind">${kind}</span>${comb}</span>
       </div>
       ${status}
@@ -203,6 +206,11 @@ const EncounterRenderer = {
     if (p.kind === "vehicule") return "Véhicule";
     if (p.type === "spirit") return "Esprit";
     if (p.type === "creature") return "Créature";
+    // E1 : un PJ (léger ou complet) ajouté depuis la bibliothèque `Characters`
+    // n'a ni `kind:"pj"` (réservé au PJ ad-hoc historique) ni `type` distinctif
+    // — sans ce test il retombait sur « PNJ », mislabeling visible partout où
+    // ce badge est réutilisé (picker, carte active, ligne du tracker).
+    if (Characters.data.all.some((c) => c.id === p.id)) return "PJ";
     return "PNJ";
   },
 
@@ -260,12 +268,17 @@ const EncounterRenderer = {
         ? `<span class="wound-malus-badge" title="Malus de blessure automatique (déjà appliqué à l'initiative)">−${malus}D</span>`
         : "";
     const name = Utils.escHtml(pnj.name || "");
+    // PJ (E1) : pastille de couleur constante avant le nom — 1er indice DA,
+    // redondant avec la forme/initiale prévues en E6 (jamais le seul indice).
+    const colorDot = r.isPJ && pnj.pcColor
+      ? `<span class="pc-color-dot" style="background:${Utils.escHtml(pnj.pcColor)}" title="Couleur du PJ" aria-hidden="true"></span>`
+      : "";
     // Nom : bouton « voir la fiche » pour une entité résolvable ou une CI (qui
     // ouvre le tiroir Matrice) ; span inerte pour un PJ ad-hoc (pas de fiche).
     const nameHtml =
       pnj._adhoc && !isMatrix
-        ? `<span class="encounter-name is-pj">${name}</span>`
-        : `<button class="encounter-name" data-action="focus-combatant" data-id="${pnjId}" title="${isMatrix ? "Ouvrir la Matrice" : "Voir la fiche"}">${name}</button>`;
+        ? `<span class="encounter-name is-pj">${colorDot}${name}</span>`
+        : `<button class="encounter-name" data-action="focus-combatant" data-id="${pnjId}" title="${isMatrix ? "Ouvrir la Matrice" : "Voir la fiche"}">${colorDot}${name}</button>`;
     // Score effectif de la passe (SR5, à partir de la passe 2) : le champ de
     // saisie reste sur la base (c'est elle que set-init modifie), le décrément
     // est affiché à côté plutôt qu'en remplacement.

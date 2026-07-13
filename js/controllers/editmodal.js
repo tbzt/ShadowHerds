@@ -17,8 +17,11 @@ const EditModal = {
     document.querySelector(".modal-title").textContent =
       `Édition — ${pnj.name}`;
     const body = document.getElementById("modal-form-body");
-    body.innerHTML =
-      pnj.type === "vehicle" ? this._buildFormVehicle(pnj) : this._buildForm(pnj);
+    body.innerHTML = pnj.pcLight
+      ? this._buildFormLight(pnj)
+      : pnj.type === "vehicle"
+        ? this._buildFormVehicle(pnj)
+        : this._buildForm(pnj);
 
     document.getElementById("edit-modal").classList.add("open");
   },
@@ -32,6 +35,16 @@ const EditModal = {
     const pnj = PnjLookup.find(this.currentId);
     if (!pnj) {
       this.close();
+      return;
+    }
+
+    if (pnj.pcLight) {
+      this._readFormLight(pnj);
+      Characters.save();
+      Characters.render();
+      CardRenderer.refresh(pnj);
+      this.close();
+      toast(`${pnj.name} mis à jour.`);
       return;
     }
 
@@ -116,6 +129,64 @@ const EditModal = {
       });
     const notesEl = document.getElementById("em-notes");
     if (notesEl) v.notes = notesEl.value;
+  },
+
+  /* ---- Formulaire minimal d'un PJ léger (E1) : ni attrs ni skills, jamais
+     de branche d'édition — nom/joueur/couleur/notes seulement. ---- */
+  _buildFormLight(pnj) {
+    const esc = CardRenderer._esc;
+    const colors = Characters._PC_COLORS;
+    return `<div class="modal-section">
+      <div class="modal-section-title">Identité</div>
+      <div class="modal-grid wide">
+        <div class="form-group full">
+          <label>Nom</label>
+          <input type="text" id="em-name" value="${esc(pnj.name)}">
+        </div>
+        <div class="form-group full">
+          <label>Joueur·se</label>
+          <input type="text" id="em-player" value="${esc(pnj.player || "")}" placeholder="Nom à la table (optionnel)">
+        </div>
+        <div class="form-group full">
+          <label>Couleur</label>
+          <div class="em-color-picker">
+            ${colors
+              .map(
+                (c) =>
+                  `<button type="button" class="em-color-swatch${pnj.pcColor === c ? " selected" : ""}"
+                    style="background:${c}" data-action="pick-pc-color" data-color="${c}"
+                    title="${c}" aria-label="Choisir ${c}"></button>`,
+              )
+              .join("")}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Notes</div>
+      <div class="form-group">
+        <textarea id="em-notes" rows="3" placeholder="Notes libres…">${esc(pnj.notes || "")}</textarea>
+      </div>
+    </div>`;
+  },
+
+  _readFormLight(pnj) {
+    const nameEl = document.getElementById("em-name");
+    if (nameEl && nameEl.value.trim()) pnj.name = nameEl.value.trim();
+    const playerEl = document.getElementById("em-player");
+    if (playerEl) pnj.player = playerEl.value.trim();
+    const notesEl = document.getElementById("em-notes");
+    if (notesEl) pnj.notes = notesEl.value;
+    const picked = document.querySelector(".em-color-swatch.selected");
+    if (picked) pnj.pcColor = picked.dataset.color;
+  },
+
+  /** Sélection de couleur : mise à jour visuelle immédiate, lue par
+      `_readFormLight` à la sauvegarde (pas d'écriture au clic). */
+  pickColor(color) {
+    document
+      .querySelectorAll(".em-color-swatch")
+      .forEach((el) => el.classList.toggle("selected", el.dataset.color === color));
   },
 
   /* ---- Construction du formulaire ---- */
@@ -480,6 +551,9 @@ const EditModal = {
           if (row) this.removeSkill(parseInt(row.dataset.idx, 10));
           break;
         }
+        case "pick-pc-color":
+          this.pickColor(el.dataset.color);
+          break;
       }
     });
   },

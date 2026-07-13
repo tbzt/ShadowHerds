@@ -92,11 +92,14 @@ const Encounter = {
     return n;
   },
 
-  /** PJ ad-hoc : le MJ suit les tours des joueurs sans fiche (elle vit chez
-      le joueur). Combattant sans entité de pool, identifié par un pnjId
-      synthétique `pj-…` et porteur de son propre nom + kind. Init en saisie
-      inline dans la ligne ; jamais de dés stockés. Saisie du nom via le
-      Dialog interne (jamais de prompt() natif). */
+  /** PJ (E1) : un PJ ajouté depuis le tracker persiste désormais dans
+      `Characters` (PJ léger, `Characters.addLight`) au lieu de rester
+      jetable — même id que la bibliothèque, résolu par `PnjLookup` comme
+      n'importe quelle entité. `kind:"pj"` reste posé pour la rétro-compat
+      des scènes déjà persistées avec un `pnjId` synthétique `pj-…` (ces
+      combattants-là restent lus tels quels, cf. `_rows()`/`_isPJ()`) et
+      pour distinguer visuellement la ligne sans dépendre de `Characters`.
+      Saisie du nom via le Dialog interne (jamais de prompt() natif). */
   async addPJ() {
     const name = await Dialog.prompt({
       title: "Ajouter un PJ",
@@ -105,11 +108,10 @@ const Encounter = {
       confirmLabel: "Ajouter",
     });
     if (name === null) return;
-    const n = name.trim();
-    if (!n) return;
+    const pnj = Characters.addLight(name);
+    if (!pnj) return;
     this.state.combatants.push({
-      pnjId: "pj-" + Utils.uid(),
-      name: n,
+      pnjId: pnj.id,
       kind: "pj",
       init: null,
       hasActed: false,

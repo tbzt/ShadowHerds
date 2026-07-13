@@ -48,7 +48,7 @@ const Characters = Object.assign(
       // Recherche plein-fiche (F1) : compétences, équipement, sorts…
       Utils.entityContent(pnj),
     ],
-    renderCard: (pnj) => CardRenderer.render(pnj, ["remove-pj"]),
+    renderCard: (pnj) => CardRenderer.render(pnj, ["edit", "remove-pj"]),
   }),
   {
     /** Ajoute un PJ déjà construit (buildCharacter) à la bibliothèque. */
@@ -58,6 +58,49 @@ const Characters = Object.assign(
       this.render();
       this.renderLabel();
       toast(`✓ ${pnj.name} ajouté aux Personnages.`);
+    },
+
+    /** Palette d'accent des PJ légers — rotation, pas de branche d'édition.
+        Indice 1/3 de la DA (couleur constante partout, cf. E6) ; les indices
+        2-3 (forme sur l'avatar, initiale) arrivent au chantier E6. */
+    _PC_COLORS: ["#e0533d", "#3d90e0", "#3dbf6e", "#c9a13d", "#9d5fd6", "#3dc2c2"],
+
+    /** E1 : PJ léger — « un PJ = un nom », persistant, hors chargen. Entité
+        volontairement squelette : CardRenderer/EditModal la détectent via
+        `pcLight` et rendent un gabarit minimal commun (aucune branche
+        `App.edition`, la fiche complète du chargen n'est pas concernée). */
+    addLight(name) {
+      const n = (name || "").trim();
+      if (!n) return null;
+      const pnj = {
+        id: "char-" + Utils.uid(),
+        name: n,
+        edition: App.edition,
+        isPC: true,
+        pcLight: true,
+        player: "",
+        notes: "",
+        pcColor: this._PC_COLORS[this.data.all.length % this._PC_COLORS.length],
+      };
+      this.data.all.push(pnj);
+      this.save();
+      this.render();
+      this.renderLabel();
+      toast(`✓ ${pnj.name} ajouté à l'équipe.`);
+      return pnj;
+    },
+
+    /** Dialog interne (jamais de prompt() natif) déclenché par le bouton
+        « ＋ PJ rapide » du panneau Personnages. */
+    async promptAddLight() {
+      const name = await Dialog.prompt({
+        title: "Ajouter un PJ",
+        label: "Nom du PJ",
+        placeholder: "Nom du personnage joueur",
+        confirmLabel: "Ajouter",
+      });
+      if (name === null) return;
+      this.addLight(name);
     },
 
     removePJ(id) {
@@ -81,6 +124,19 @@ const Characters = Object.assign(
       });
       DossierBar.refresh(); // rend l'arbre + notifie → grille/libellé ici
       this.renderLabel();
+      this._toggleChargenButton();
+    },
+
+    /** Seule Anarchy 2 expose un assistant de création complet
+        (`App.editionModule.creation`, cf. `chargen.js`) ; masquer le bouton
+        ailleurs plutôt que laisser l'utilisateur cliquer dans le vide (le
+        toast « non disponible » de `CharGen.open()` restait bizarre). Lecture
+        de l'API neutre de l'édition, aucune branche `App.edition`. */
+    _toggleChargenButton() {
+      const btn = document.getElementById("btn-chargen-open");
+      if (!btn) return;
+      const available = !!(App.editionModule && App.editionModule.creation);
+      btn.toggleAttribute("hidden", !available);
     },
 
     renderLabel() {
