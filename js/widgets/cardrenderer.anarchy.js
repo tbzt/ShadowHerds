@@ -137,6 +137,7 @@ Object.assign(CardRenderer, {
     combatBody += CyberdeckRenderer.combatArsenal(pnj, pnj.edition); // CP2 : râtelier Attaques unifié
     const combatSummary = threatLevel ? `Combativité ${threatLevel}` : "";
     html += this._zoneShell(pnj, "combat", combatBody, combatSummary);
+    html += this._modulesHtml(pnj, deps); // CP3 : modules conditionnels (Magie, Matrice), après Combat
 
     // ---- ZONE CAPACITÉS ----
     let capBody = "";
@@ -225,7 +226,7 @@ Object.assign(CardRenderer, {
     }
     if (prefs.showEquipment && equip && equip.length)
       detailsBody += this._equipSection(pnj, equip, pnj.edition, deps);
-    if (pnj.cyberdeck) detailsBody += CyberdeckRenderer.block(pnj, pnj.edition, deps);
+    // Cyberdeck : vit désormais dans le module Matrice (CP3).
     if (notes) {
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Notes</div>
         <div style="font-size:0.75rem;">${this._esc(notes)}</div></div>`;

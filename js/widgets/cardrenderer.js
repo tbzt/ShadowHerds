@@ -362,11 +362,8 @@ const CardRenderer = {
       const openIdx = core.indexOf(">") + 1;
       core = core.slice(0, openIdx) + flavor + core.slice(openIdx);
     }
-    // Injecter magie (tradition/esprit mentor) + traits raciaux + lore créature
-    const extra =
-      this._magicSection(pnj) +
-      this._metaTraitsSection(pnj) +
-      this._creatureLoreSection(pnj);
+    // Injecter traits raciaux + lore créature (habillage neutre, hors modules)
+    const extra = this._metaTraitsSection(pnj) + this._creatureLoreSection(pnj);
     if (extra) {
       const idx = core.lastIndexOf("</div>");
       if (idx !== -1) {
@@ -376,8 +373,45 @@ const CardRenderer = {
     return core;
   },
 
-  /* ---- Tradition magique & esprit mentor (Éveillés) ---- */
-  _magicSection(pnj) {
+  /* ---- Modules conditionnels (CP3) ------------------------------------
+     Un module = une zone à part entière, placée après Combat, qui n'existe
+     QUE si applies(pnj) est vrai. Formalise ce qui vivait en vrac
+     (_magicSection, CyberdeckRenderer.block planqué en Détails). Le glyphe
+     sert les onglets de sélecteur (CP4) — inutilisé pour l'instant. */
+  _MODULES: [
+    {
+      key: "magie",
+      label: "Magie",
+      glyph: "✸",
+      applies: (pnj) => !!(pnj.tradition || pnj.mentorSpirit || (pnj.powers && pnj.powers.length)),
+      render: (pnj) => CardRenderer._magieModule(pnj),
+      lenses: ["fiche", "combat"],
+    },
+    {
+      key: "matrice",
+      label: "Matrice",
+      glyph: "⚡",
+      applies: (pnj) => !!pnj.cyberdeck,
+      render: (pnj, deps) => CyberdeckRenderer.block(pnj, pnj.edition, deps),
+      lenses: ["fiche", "combat"],
+    },
+  ],
+
+  /** Rend les modules applicables, chacun dans sa propre coquille de zone
+      (I3 : aucun module vide). Appelé par les 4 corps d'édition juste après
+      la zone Combat. */
+  _modulesHtml(pnj, deps) {
+    return CardRenderer._MODULES.filter((m) => m.applies(pnj))
+      .map((m) => this._zoneShell(pnj, m.key, m.render(pnj, deps), ""))
+      .join("");
+  },
+
+  /** Module Magie (CP3) : tradition, esprit mentor, pouvoirs d'adepte —
+      consolidés (vivaient éparpillés : "extra" de fin de carte + zone
+      Capacités). *Scope* : la Résistance au Drain RESTE en zone Combat (un
+      jet actif de combat doit rester à 1 tap, cf. coût d'interruption) —
+      déviation assumée de la table doctrine §4.3. */
+  _magieModule(pnj) {
     let html = "";
     if (pnj.tradition) {
       html += this._listSection("Tradition", [
@@ -386,6 +420,9 @@ const CardRenderer = {
     }
     if (pnj.mentorSpirit) {
       html += this._listSection("Esprit mentor", [pnj.mentorSpirit]);
+    }
+    if (pnj.powers && pnj.powers.length) {
+      html += this._listSection("Pouvoirs d'adepte", pnj.powers);
     }
     return html;
   },
@@ -490,12 +527,16 @@ const CardRenderer = {
     return { layout: compact ? "compact" : "expanded", ...shows };
   },
 
-  /** Libellés verrouillés (CP1/CONTRIBUTING § Chrome de carte). */
+  /** Libellés verrouillés (CP1/CONTRIBUTING § Chrome de carte). Magie/Matrice
+      (CP3) reprennent le libellé de leur module (_MODULES), gardés ici aussi
+      pour que _zoneShell reste un point d'entrée unique. */
   _ZONE_LABELS: {
     combat: "Combat",
     capacites: "Capacités",
     incarnation: "Incarnation",
     details: "Détails",
+    magie: "Magie",
+    matrice: "Matrice",
   },
 
   /** Cette zone est-elle ouverte pour cette carte ? Résolution (I4) :

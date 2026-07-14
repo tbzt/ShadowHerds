@@ -61,6 +61,7 @@ Object.assign(CardRenderer, {
     combatBody += CyberdeckRenderer.combatArsenal(pnj, "anarchy1"); // CP2 : râtelier Attaques unifié
     const combatSummary = init != null ? `Init ${init}+${initDice}D6` : "";
     html += this._zoneShell(pnj, "combat", combatBody, combatSummary);
+    html += this._modulesHtml(pnj, deps); // CP3 : modules conditionnels (Magie, Matrice), après Combat
 
     // ---- ZONE CAPACITÉS ----
     let capBody = "";
@@ -80,7 +81,7 @@ Object.assign(CardRenderer, {
     }
     if (prefs.showEquipment && gear.length)
       detailsBody += this._equipSection(pnj, gear, "anarchy1", deps);
-    if (pnj.cyberdeck) detailsBody += CyberdeckRenderer.block(pnj, "anarchy1", deps);
+    // Cyberdeck : vit désormais dans le module Matrice (CP3).
     html += this._zoneShell(pnj, "details", detailsBody, "attributs, équipement");
 
     html += "</div>";

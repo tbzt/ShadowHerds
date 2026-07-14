@@ -12,6 +12,19 @@ commit.
 
 ## [Non publié]
 
+## [1.23.0] — 2026-07-14
+
+### Jouer
+- **Module Matrice** : le bloc cyberdeck d'un decker (attributs, réallocation,
+  moniteur, programmes, cible) vit désormais dans sa propre section « Matrice »
+  ⚡, juste après Combat — sorti de Détails où il était noyé.
+- **Module Magie** : tradition, esprit mentor et pouvoirs d'adepte se
+  regroupent dans une section « Magie » ✸ après Combat, au lieu d'être
+  éparpillés en bas de carte et dans Capacités. La Résistance au Drain reste
+  en Combat (un jet actif de combat doit rester à 1 tap).
+- Ces sections n'apparaissent que si le PNJ les concerne (un PNJ sans deck ni
+  don magique n'a ni l'une ni l'autre).
+
 ## [1.22.0] — 2026-07-14
 
 ### Jouer

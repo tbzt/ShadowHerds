@@ -173,5 +173,10 @@ const TourSteps = {
       title: "Incarnation en haut, attaques regroupées",
       body: "L'habillage (âge, style, manie, motivation) se lit désormais juste après l'identité. Les actions offensives d'un decker rejoignent armes et sorts en zone Combat. Équipement porté et augmentations tiennent dans une seule section.",
     },
+    {
+      id: "wn-card-modules", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.23.0", fallback: "center",
+      title: "Modules Magie et Matrice",
+      body: "Un decker gagne une section « Matrice » ⚡ (deck, moniteur, cible) juste après Combat. Un personnage magique gagne une section « Magie » ✸ (tradition, esprit mentor, pouvoirs d'adepte). Invisibles si le PNJ n'est pas concerné.",
+    },
   ],
 };
