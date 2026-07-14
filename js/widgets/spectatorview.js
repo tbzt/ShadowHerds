@@ -74,6 +74,30 @@ const SpectatorView = {
     zone.innerHTML = header + `<div class="spectator-list">${list}</div>`;
   },
 
+  /** Libellé de type joueur-facing (PJ/PNJ/CI/Drone…). Miroir NEUTRE de
+      EncounterRenderer._kindLabel — recopié (et non appelé : c'est un privé
+      d'un autre fichier) pour garder l'écran spectateur isolé du cluster
+      cockpit. Aucune branche d'édition. */
+  _typeLabel(r) {
+    if (r.kind === "pj") return "PJ";
+    if (r.kind === "matrix") return "CI";
+    const p = r.pnj || {};
+    if (p.kind === "drone") return "Drone";
+    if (p.kind === "vehicule") return "Véhicule";
+    if (p.type === "spirit") return "Esprit";
+    if (p.type === "creature") return "Créature";
+    if (typeof Characters !== "undefined" && Characters.data && Characters.data.all.some((c) => c.id === p.id)) return "PJ";
+    return "PNJ";
+  },
+
+  /** Portrait de l'entité s'il existe (lecture seule, pas d'agrandissement ici —
+      l'écran spectateur n'a aucune interaction). */
+  _portrait(r) {
+    const url = r.pnj && r.pnj.portraitUrl;
+    if (!url) return "";
+    return `<img class="spectator-portrait" src="${Utils.escHtml(url)}" alt="" loading="lazy">`;
+  },
+
   _row(r, isActive) {
     const name = Utils.escHtml(r.pnj?.name || r.name || "?");
     const gauge =
@@ -81,8 +105,14 @@ const SpectatorView = {
         ? `<div class="monitor-boxes spectator-gauge">${CardRenderer._monitorBoxes(r.pnjId, "gauge", r.gauge.total, r.gauge.filled)}</div>`
         : "";
     const cls = `spectator-row${isActive ? " is-active" : ""}${r.down ? " is-down" : ""}`;
+    // Identité (portrait + nom + type) à gauche, moniteur à droite : les joueurs
+    // doivent savoir QUI est en jeu, pas seulement voir des cases.
     return `<div class="${cls}">
-      <span class="spectator-name">${name}</span>
+      <div class="spectator-identity">
+        ${this._portrait(r)}
+        <span class="spectator-name">${name}</span>
+        <span class="spectator-type">${this._typeLabel(r)}</span>
+      </div>
       ${gauge}
     </div>`;
   },
