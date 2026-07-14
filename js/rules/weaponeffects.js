@@ -44,6 +44,31 @@ const WeaponEffects = {
       source: "Densité musculaire",
       page: "SR5 p.461",
     },
+    // SR6 VF p.299-300, table « Indices de densité osseuse » : VD mains nues
+    // devient PHYSIQUE, valeur absolue 3P/3P/4P/4P (table imprimée « VD »).
+    // Base générée = « Mains nues [VD 2E, ...] » (sr6.js:2039) : le delta
+    // NUMÉRIQUE (3-2/3-2/4-2/4-2) est correct, mais la conversion de type
+    // Étourdissant→Physique n'est pas représentée par un chip additif —
+    // limite connue du modèle delta actuel, cosmétique (le chiffre est juste,
+    // la lettre affichée reste celle de la base).
+    {
+      match: /augmentation de densit[ée] osseuse/i,
+      target: "dv",
+      perRating: [null, 1, 1, 2, 2],
+      conditional: (name) => WeaponEffects._isUnarmed(name),
+      source: "Augmentation de densité osseuse",
+      page: "SR6 p.299-300",
+    },
+    // Même table, colonne « SO » — imprimée avec un signe (+1/+2/+2/+3),
+    // donc un vrai delta sur le Score Offensif de base (FOR+RÉA).
+    {
+      match: /augmentation de densit[ée] osseuse/i,
+      target: "accuracy",
+      perRating: [null, 1, 2, 2, 3],
+      conditional: (name) => WeaponEffects._isUnarmed(name),
+      source: "Augmentation de densité osseuse",
+      page: "SR6 p.299-300",
+    },
   ],
 
   /** Résout les effets d'objet pour un jet d'arme donné → contributions
