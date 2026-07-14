@@ -25,6 +25,11 @@ const BonusEngine = {
     sr5: [
       ["Réflexes câblés 1", { initDice: 1 }],
       ["Réflexes câblés 2", { initDice: 2 }],
+      // Fusion V5 (sr5_cyberware.md item 1/2) : le volet REA manquait — le
+      // livre (p.458) augmente aussi la Réaction, pas seulement les dés
+      // d'init (déjà motorisés séparément via initAugPool).
+      ["Réflexes câblés 1", { attr: "REA", val: 1 }],
+      ["Réflexes câblés 2", { attr: "REA", val: 2 }],
       ["Accroissement de réaction", { attr: "REA", val: 1 }],
       // Correctif collecte V5 : « Tonification musculaire » = bioware AGI au
       // livre (Muscle Toner, SR5 p.464), PAS FOR. Le +FOR était un bug (cf.
@@ -35,6 +40,18 @@ const BonusEngine = {
       // p.463) = +INDICE Force — premier bonus indice-scalé (byRating).
       ["Renforcement musculaire", { attr: "FOR", byRating: true }],
       ["Armure dermique", { armor: 1 }],
+      // Fusion V5 (sr5_cyberware.md item 35) : Substitut musculaire = double
+      // attribut, le livre ajoute l'indice à FOR **et** AGI simultanément.
+      ["Substitut musculaire", { attr: "FOR", byRating: true }],
+      ["Substitut musculaire", { attr: "AGI", byRating: true }],
+      // Fusion V5 (sr5_bioware.md item 13) : Booster cérébral = +indice LOG
+      // (p.464). Décision utilisateur 2026-07-15 : LOG seul, le livre ne
+      // motorise pas l'INT malgré le libellé catalogue « bonus LOG/INT ».
+      ["Booster cérébral", { attr: "LOG", byRating: true }],
+      // Fusion V5 (sr5_bioware.md item 14) : Booster synaptique = +1 REA à
+      // l'indice 1 (seul indice existant pour ce volet, p.464). Le volet dés
+      // d'initiative reste motorisé séparément (initAugPool).
+      ["Booster synaptique", { attr: "REA", val: 1 }],
     ],
     sr6: [
       ["Réflexes câblés 1", { initDice: 1 }],
@@ -47,6 +64,17 @@ const BonusEngine = {
       ["Substituts musculaires", { attr: "AGI", val: 2 }],
       ["Armure dermique 3", { sd: 3 }],
       ["Armure dermique 4", { sd: 4 }],
+      // Fusion V5 (sr6_bioware.md) : Articulations améliorées = +1 AGI fixe
+      // (p.299 ; la remise d'Atout espaces étroits n'est pas motorisable, pas
+      // de champ pour ça dans BonusEngine).
+      ["Articulations améliorées", { attr: "AGI", val: 1 }],
+      // Fusion V5 (sr6_bioware.md) : Glande suprathyroïdienne = +1 fixe à
+      // AGI/CON/RÉA simultanément (p.300). La part FOR+25% est multiplicative,
+      // hors du schéma additif {attr,val} — non motorisée (signalée dans la
+      // collecte).
+      ["Glande suprathyroïdienne", { attr: "AGI", val: 1 }],
+      ["Glande suprathyroïdienne", { attr: "CON", val: 1 }],
+      ["Glande suprathyroïdienne", { attr: "RÉA", val: 1 }],
     ],
   },
 

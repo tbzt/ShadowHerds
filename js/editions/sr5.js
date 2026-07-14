@@ -1624,7 +1624,6 @@ const EditionSR5 = {
       "Oreilles cybernétiques [Indice 2, filtre de son]",
       "Bras cybernétique [FOR +2 à bras]",
       "Armure dermique (+1 armure)",
-      "Lame rétractable [VD 7P, PA -2]",
       "Datajack [connexion directe commlink]",
       // Céphaloware (p.454-456)
       "Amplificateur gustatif [Indice 1-6, bonus Perception (goût)]",
