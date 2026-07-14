@@ -112,7 +112,7 @@ const EditionSR6 = {
         ${S._radio("separateMonitors", "false", "Moniteur unique (standard SR6)", !sep)}
         ${S._radio("separateMonitors", "true", "Moniteurs séparés (Physique + Étourd.)", sep)}
       </div>
-      <p style="font-size:0.75rem;margin-top:0.6rem;">Ce réglage s'applique aux PNJ générés après ce point.</p>
+      <p class="settings-note">Ce réglage s'applique aux PNJ générés après ce point.</p>
     </div>`;
   },
   /** Initiative chiffrée (base + dés) pour le tracker de combat : lue sur

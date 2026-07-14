@@ -73,7 +73,7 @@ const Settings = {
     if (ContactsBook.render) ContactsBook.render();
   },
   _radioCD(key, val, label, checked) {
-    return `<label class="radio-option">
+    return `<label class="radio-label">
       <input type="radio" name="cd_${key}" value="${val}" ${checked ? "checked" : ""}
         data-action="set-card-layout">
       <span>${label}</span>
@@ -148,7 +148,7 @@ const Settings = {
     return h + `</div>`;
   },
   _radioSync(val, label, checked) {
-    return `<label class="radio-option">
+    return `<label class="radio-label">
       <input type="radio" name="sync_provider" value="${val}" ${checked ? "checked" : ""}
         data-action="set-sync-provider">
       <span>${label}</span>
@@ -170,10 +170,10 @@ const Settings = {
         data-action="set-sync-field" data-prov="gist" data-field="deviceLabel">
       <details class="settings-detail">
         <summary>Comment obtenir un token</summary>
-        <p style="font-size:0.72rem;margin-top:0.3rem;">
+        <p class="settings-note">
           Le <strong>token</strong> n'est pas l'adresse du gist : c'est un jeton
           d'authentification. Créez-en un sur
-          <a href="https://github.com/settings/tokens?type=beta" target="_blank" style="color:var(--accent)">github.com/settings/tokens</a>
+          <a href="https://github.com/settings/tokens?type=beta" target="_blank" class="settings-link">github.com/settings/tokens</a>
           avec la permission <strong>Gist</strong> (lecture + écriture), puis collez-le
           ci-dessus. L'URL de votre gist, elle, va dans le champ « identifiant » (facultatif).
           Un gist secret est créé automatiquement au premier envoi si vous laissez ce champ vide.
@@ -196,7 +196,7 @@ const Settings = {
         <input type="password" placeholder="mot de passe" value="${CardRenderer._esc(sc.webdav.pass)}"
           data-action="set-sync-field" data-prov="webdav" data-field="pass">
       </div>
-      <p style="font-size:0.72rem;margin-top:0.3rem;">
+      <p class="settings-note">
         Le serveur doit autoriser l'accès distant (CORS) et exposer l'en-tête ETag.
         Préférez des identifiants dédiés, pas le mot de passe principal du NAS.
       </p>
@@ -262,24 +262,12 @@ const Settings = {
     this.renderSyncStatus();
   },
 
-  /* ---- Rendu du panel paramètres ---- */
-  render() {
-    const zone = document.getElementById("settings-panel-content");
-    let html = `<div class="settings-group-label">Global</div>`;
-
-    // --- Aide & raccourcis (#55) : seul accès sur mobile — le bouton « ? »
-    // de la topbar est masqué sous 640px (.topbar-action-quiet), Paramètres
-    // reste joignable par la bottom-nav. Réutilise l'action déjà câblée. ---
-    html += `<div class="settings-section">
-      <h3>Aide</h3>
-      <p>Raccourcis clavier et légende des symboles, adaptés à l'édition active.</p>
-      <button class="btn-secondary" data-action="toggle-shortcuts">Aide &amp; raccourcis…</button>
-    </div>`;
-
-    // --- Lanceur de dés (global) ---
-    {
-      const dp = this.getDicePrefs();
-      html += `<div class="settings-section">
+  /* ---- Panneaux du maître-détail ---- */
+  _catGeneral() {
+    const dp = this.getDicePrefs();
+    const cd = this.getCardDisplay();
+    const pg = this.getPortraitSettings();
+    return `<div class="settings-section">
         <h3>Lanceur de dés</h3>
         <p>Le lancer rapide affiche le résultat en bandeau discret, sans l'animation plein écran. Tous les jets restent consultables dans le journal des jets.</p>
         <div class="display-prefs">
@@ -295,13 +283,8 @@ const Settings = {
               data-action="set-dice-default-count">
           </div>
         </div>
-      </div>`;
-    }
-
-    // --- Affichage des cartes (global) ---
-    {
-      const cd = this.getCardDisplay();
-      html += `<div class="settings-section">
+      </div>
+      <div class="settings-section">
         <h3>Affichage des cartes</h3>
         <p>Disposition par défaut des cartes de PNJ. La zone Combat est toujours en avant ; la Référence (attributs, réserves MJ, équipement) peut être dépliée ou repliée par défaut, et reste ajustable carte par carte.</p>
         <div class="radio-group">
@@ -313,69 +296,55 @@ const Settings = {
           ${this._checkCD("showGmPools", "Afficher les réserves MJ", cd.showGmPools)}
           ${this._checkCD("showEquipment", "Afficher l'équipement", cd.showEquipment)}
         </div>
-      </div>`;
-    }
-
-    // --- Portraits IA (global) ---
-    {
-      const pg = this.getPortraitSettings();
-      html += `<div class="settings-section">
-        <h3>Portraits IA</h3>
-        <p>Génère un portrait via Pollinations (gratuit, sans clé) au clic sur une carte PNJ, esprit, créature ou contact. Nécessite une connexion internet ; le prompt part vers un service tiers.</p>
-        <div class="display-prefs">
-          <div class="display-pref-row">
-            <label for="pg_enabled">Activer le bouton « Portrait IA » sur les cartes</label>
-            <input type="checkbox" id="pg_enabled" ${pg.enabled ? "checked" : ""}
-              data-action="toggle-portrait-gen">
-          </div>
+        <div class="display-pref-row" style="margin-top:var(--sp-4);">
+          <label for="pg_enabled">Portrait IA (Pollinations) sur les cartes</label>
+          <input type="checkbox" id="pg_enabled" ${pg.enabled ? "checked" : ""}
+            data-action="toggle-portrait-gen">
         </div>
-        <div class="form-group" style="margin-top:0.8rem;">
+        <p class="settings-note">Génère un portrait au clic sur une carte PNJ, esprit, créature ou contact. Nécessite une connexion internet ; le prompt part vers un service tiers.</p>
+        <div class="form-group" style="margin-top:0.6rem;">
           <label for="pg_token">Token personnel Pollinations (optionnel)</label>
           <input type="password" id="pg_token" value="${CardRenderer._esc(pg.token)}"
             placeholder="Laisser vide pour rester en anonyme"
             data-action="set-portrait-token">
           <details class="settings-detail">
-          <summary>À propos du token personnel</summary>
-          <p style="font-size:0.72rem;margin-top:0.3rem;">
-            Lève la limite d'1 requête à la fois de l'API anonyme. À obtenir sur
-            <a href="https://auth.pollinations.ai" target="_blank" style="color:var(--accent)">auth.pollinations.ai</a>.
-            Stocké uniquement dans ce navigateur, jamais envoyé ailleurs qu'à Pollinations —
-            mais reste visible dans les outils de développement du navigateur : à réserver
-            à un usage personnel, ne le partagez pas dans une copie publique de cet outil.
-          </p>
+            <summary>À propos du token personnel</summary>
+            <p class="settings-note">
+              Lève la limite d'1 requête à la fois de l'API anonyme. À obtenir sur
+              <a href="https://auth.pollinations.ai" target="_blank" class="settings-link">auth.pollinations.ai</a>.
+              Stocké uniquement dans ce navigateur, jamais envoyé ailleurs qu'à Pollinations —
+              mais reste visible dans les outils de développement du navigateur : à réserver
+              à un usage personnel, ne le partagez pas dans une copie publique de cet outil.
+            </p>
           </details>
         </div>
       </div>`;
-    }
-
-    // --- Sauvegarde & synchronisation (global) ---
-    html += this._syncSectionHTML();
-
-    // --- Réglages propres à l'édition active (remontés dans le module — A5,
-    //     plus de branche `if (ed===…)` ici : prohibition n°1) ---
-    html += `<div class="settings-group-label">Cette édition — ${CardRenderer._esc(App.editionModule?.label || App.edition.toUpperCase())}</div>`;
-    html += App.editionModule?.settingsHTML?.(this) ?? "";
-
-    // --- Atomiser ---
-    html += `<div class="settings-section">
-      <h3>Remise à zéro</h3>
-      <p>Efface tous les PNJ sauvegardés et paramètres pour cette édition. Action irréversible.</p>
-      <button class="danger-btn" data-action="atomize">⚠ Atomiser</button>
-    </div>`;
-
-    // --- Informations (hors réglages fonctionnels) : présentation + à propos ---
-    html += `<div class="settings-group-label">Informations</div>`;
-
-    // --- Présentation de l'édition (rapatriée de l'ancien écran d'accueil) ---
+  },
+  _catBackup() {
+    return this._syncSectionHTML();
+  },
+  _catEdition() {
+    const edHTML = App.editionModule?.settingsHTML?.(this);
+    return (
+      (edHTML && edHTML.trim()
+        ? edHTML
+        : `<div class="settings-section"><p class="settings-note">Aucun réglage spécifique à cette édition — la table suit le livre.</p></div>`) +
+      `<div class="settings-section is-danger">
+        <h3>Remise à zéro</h3>
+        <p>Efface tous les PNJ sauvegardés et paramètres pour cette édition. Action irréversible.</p>
+        <button class="danger-btn" data-action="atomize">⚠ Atomiser</button>
+      </div>`
+    );
+  },
+  _catAbout() {
     const intro = App.welcomeContent[App.edition];
+    let html = "";
     if (intro) {
-      html += `<div class="settings-section">
-        <h3>${CardRenderer._esc(intro.title)}</h3>
+      html += `<details class="settings-section settings-prose">
+        <summary>${CardRenderer._esc(intro.title)}</summary>
         ${intro.body}
-      </div>`;
+      </details>`;
     }
-
-    // --- À propos ---
     html += `<div class="settings-section">
       <h3>À propos</h3>
       <p>
@@ -384,16 +353,55 @@ const Settings = {
         traduit par <strong>Michel_Platinium</strong>,
         adapté et refondu par <strong>tbzt</strong>.
       </p>
-      <p style="font-size:0.75rem;">
+      <p class="settings-note">
         Shadowrun est une marque de The Topps Company, Inc.
         Black Book Editions détient les droits de la version française.
         Cet outil est non-commercial, distribué sous licence
         <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank"
-           style="color:var(--accent)">CC BY-NC 4.0</a>.
+           class="settings-link">CC BY-NC 4.0</a>.
       </p>
     </div>`;
+    return html;
+  },
 
-    zone.innerHTML = html;
+  /* ---- Rendu du panel paramètres (maître-détail) ---- */
+  render() {
+    const zone = document.getElementById("settings-panel-content");
+    if (!this._cat) this._cat = "general";
+
+    const cats = [
+      { key: "general", label: "Général" },
+      { key: "backup", label: "Sauvegarde" },
+      {
+        key: "edition",
+        label: `Cette édition — ${CardRenderer._esc(App.editionModule?.label || App.edition.toUpperCase())}`,
+      },
+      { key: "about", label: "À propos" },
+    ];
+    const panes = {
+      general: () => this._catGeneral(),
+      backup: () => this._catBackup(),
+      edition: () => this._catEdition(),
+      about: () => this._catAbout(),
+    };
+    if (!panes[this._cat]) this._cat = "general";
+
+    const navItems = cats
+      .map(
+        (c) =>
+          `<button class="settings-nav-item${this._cat === c.key ? " is-active" : ""}"
+            data-action="settings-cat" data-cat="${c.key}">${c.label}</button>`
+      )
+      .join("");
+
+    zone.innerHTML = `<div class="settings-layout">
+      <nav class="settings-nav">
+        ${navItems}
+        <hr class="settings-nav-sep">
+        <button class="settings-nav-item is-action" data-action="toggle-shortcuts">Aide et raccourcis ↗</button>
+      </nav>
+      <div class="settings-pane">${panes[this._cat]()}</div>
+    </div>`;
     this._bindDelegation(zone);
 
     // Bind les radios propres à l'édition (ceux pilotés par data-action —
@@ -443,6 +451,10 @@ const Settings = {
       if (!el) return;
       if (el.dataset.action === "atomize") this.atomize();
       else if (el.dataset.action === "sync-now") this.syncNow();
+      else if (el.dataset.action === "settings-cat") {
+        this._cat = el.dataset.cat;
+        this.render();
+      }
     });
   },
 
