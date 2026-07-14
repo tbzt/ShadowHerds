@@ -130,6 +130,12 @@ const EditionAnarchy1 = {
       combativité imprimée (cf. combatDisposition ci-dessus) → aucun champ
       numérique à demander au joueur, seulement les moniteurs (mêmes champs
       physMon/stunMon que les PNJ complets A1, cf. conditionMonitor). */
+  /** Anarchy (1re éd.) n'a pas de réputation chiffrée : valeur neutre `[]`
+      (contrat commun — une propriété asymétrique forcerait un branchement
+      d'édition chez le consommateur). Le suivi de campagne reste possible via
+      les nuyens, le Karma et les compteurs libres (cf. Campaign). */
+  reputationTracks: [],
+
   pcTableBlock: {
     fields: [],
     monitorKind: "double",

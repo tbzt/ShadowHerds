@@ -25,7 +25,7 @@ const CardRenderer = {
     el.dataset.edition = pnj.edition;
 
     el.innerHTML =
-      this._header(pnj) + this._body(pnj, deps) + this._journal(pnj) + this._footer(pnj, actions, deps);
+      this._header(pnj) + this._body(pnj, deps) + this._progressionZone(pnj) + this._journal(pnj) + this._footer(pnj, actions, deps);
 
     setTimeout(() => el.classList.remove("scanning"), 900);
     return el;
@@ -46,7 +46,7 @@ const CardRenderer = {
             : ["edit", "remove"];
         el.classList.toggle("spirit-collapsed", !!pnj.collapsed);
         el.innerHTML =
-          this._header(pnj) + this._body(pnj, deps) + this._journal(pnj) + this._footer(pnj, actions, deps);
+          this._header(pnj) + this._body(pnj, deps) + this._progressionZone(pnj) + this._journal(pnj) + this._footer(pnj, actions, deps);
       });
   },
 
@@ -962,6 +962,112 @@ const CardRenderer = {
     this._focusJournalInput(id);
   },
 
+  /* ---- Suivi de campagne (Progression) ----
+     Soldes vivants (nuyens, Karma, réputation, compteurs libres) + registre
+     daté, replié comme le journal. Neutre et PC-only : aucune branche
+     d'édition — les ressources arrivent de `Campaign.tracks` (dont la
+     réputation via `edModule.reputationTracks`). L'état d'ouverture vit dans
+     un Set TRANSIENT (présentation seule, jamais sérialisé). */
+  _progressionOpen: new Set(),
+
+  _progressionZone(pnj) {
+    if (!pnj.isPC) return "";
+    const edModule = App.getEditionModule(pnj.edition);
+    const tracks = Campaign.tracks(pnj, edModule);
+    const pills = tracks
+      .map((t) => ({ t, bal: Campaign.balance(pnj.campaign, t.key) }))
+      .filter((b) => b.bal !== 0)
+      .map((b) => this._trackPill(b.t, b.bal))
+      .join("");
+    const open = this._progressionOpen.has(pnj.id);
+    if (!open) {
+      return `<div class="pnj-progression">
+        <button class="progression-toggle" data-action="progression-toggle" data-id="${pnj.id}"
+          aria-expanded="false" title="Suivi de campagne (nuyens, Karma…)">＋ Progression</button>
+        ${pills ? `<div class="progression-pills">${pills}</div>` : ""}
+      </div>`;
+    }
+    const entries = (pnj.campaign && pnj.campaign.ledger) || [];
+    const rows = entries.map((e) => this._ledgerRow(pnj, e, tracks)).join("");
+    const addBtns = tracks
+      .map(
+        (t) =>
+          `<button class="progression-res-btn" data-action="ledger-add" data-id="${pnj.id}"
+            data-res="${this._esc(t.key)}" title="Appliquer le montant à ${this._esc(t.label)}">${this._esc(t.glyph || t.label)}</button>`,
+      )
+      .join("");
+    return `<div class="pnj-progression">
+      <button class="progression-toggle" data-action="progression-toggle" data-id="${pnj.id}"
+        aria-expanded="true" title="Replier">▾ Progression</button>
+      <div class="progression-body">
+        ${pills ? `<div class="progression-pills">${pills}</div>` : ""}
+        ${entries.length ? `<ul class="progression-list">${rows}</ul>` : ""}
+        <div class="progression-add">
+          <div class="progression-add-fields">
+            <input type="number" class="progression-amount" data-id="${pnj.id}"
+              placeholder="± montant" aria-label="Montant (signé)">
+            <input type="text" class="progression-reason" data-id="${pnj.id}" data-mentions
+              maxlength="120" placeholder="Motif (run, achat…)" aria-label="Motif">
+          </div>
+          <div class="progression-res-row">${addBtns}</div>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  /** Pastille de solde d'une ressource. Devise (glyphe) → « 8 000 ¥ » ;
+      score → « Renommée 3 » (le négatif SR6 s'affiche naturellement). */
+  _trackPill(t, bal) {
+    if (t.glyph)
+      return `<span class="stat-pill accent"><strong>${bal.toLocaleString("fr-FR")}</strong> ${this._esc(t.glyph)}</span>`;
+    return `<span class="stat-pill accent">${this._esc(t.label)} <strong>${bal}</strong></span>`;
+  },
+
+  /** Ligne du registre : date · montant signé · motif (puces @/#) · suppression.
+      Réutilise `.journal-date`/`.journal-del` (même grammaire que le journal). */
+  _ledgerRow(pnj, e, tracks) {
+    const d = new Date(e.ts);
+    const dstr = isNaN(d.getTime())
+      ? ""
+      : d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+    const t = tracks.find((x) => x.key === e.res);
+    const sign = e.delta > 0 ? "+" : "";
+    const amount =
+      t && t.glyph
+        ? `${sign}${e.delta.toLocaleString("fr-FR")} ${this._esc(t.glyph)}`
+        : `${sign}${e.delta} ${this._esc(t ? t.label : e.res)}`;
+    const cls = "progression-delta" + (e.delta < 0 ? " neg" : " pos");
+    const reason = e.reason
+      ? `<span class="progression-reason-txt">${Mentions.renderText(e.reason)}</span>`
+      : "";
+    return `<li class="progression-entry">
+      <span class="journal-date">${dstr}</span>
+      <span class="${cls}">${amount}</span>
+      ${reason}
+      <button class="journal-del" data-action="ledger-remove" data-id="${pnj.id}"
+        data-ts="${e.ts}" title="Supprimer cette écriture" aria-label="Supprimer">✕</button>
+    </li>`;
+  },
+
+  /** Ouvre/replie la zone Progression (présentation seule). */
+  _toggleProgression(id) {
+    if (this._progressionOpen.has(id)) this._progressionOpen.delete(id);
+    else this._progressionOpen.add(id);
+    UI.refreshEntityCard(id);
+  },
+
+  /** Lit le montant + motif de la carte cliquée et écrit l'entrée pour la
+      ressource du bouton. Le re-rendu (refreshEntityCard) vide les champs. */
+  _submitLedger(actionEl) {
+    const id = actionEl.dataset.id;
+    const res = actionEl.dataset.res;
+    const card = actionEl.closest(".pnj-card");
+    const delta = parseInt(card?.querySelector(".progression-amount")?.value, 10);
+    if (!Number.isFinite(delta) || delta === 0) return;
+    const reason = card?.querySelector(".progression-reason")?.value || "";
+    UI.addLedgerEntry(id, res, delta, reason);
+  },
+
   /* ---- Footer ---- */
   /* Grammaire de pied unifiée (voir CONTRIBUTING « Chrome de carte ») : on
      décrit les actions, CardFooter les dispose (secondaire + primaire + ⋯).
@@ -1141,6 +1247,15 @@ const CardRenderer = {
           break;
         case "journal-remove":
           UI.removeJournalEntry(id, actionEl.dataset.ts);
+          break;
+        case "progression-toggle":
+          this._toggleProgression(id);
+          break;
+        case "ledger-add":
+          this._submitLedger(actionEl);
+          break;
+        case "ledger-remove":
+          UI.removeLedgerEntry(id, actionEl.dataset.ts);
           break;
         case "mention-goto-notepad":
           Notepad.open();

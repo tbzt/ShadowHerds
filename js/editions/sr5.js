@@ -199,6 +199,17 @@ const EditionSR5 = {
       physMon/stunMon + physFilled/stunFilled, exactement le modèle des PNJ
       complets SR5 (cf. `conditionMonitor` ci-dessous) — mêmes champs, donc
       `CardRenderer._monitorBoxes`/`UI.toggleMonitor` s'appliquent tels quels. */
+  /** Réputation SR5 (Livre de Règles p.374) : trois scores distincts —
+      Crédibilité (accomplissements), Rumeur (côté négatif), Renommée
+      (reconnaissance publique). Suivis librement par le MJ (compteurs de
+      campagne, cf. Campaign) : la Crédibilité dérive du Karma dans le livre
+      mais d'autres facteurs l'altèrent, on ne l'auto-calcule donc pas. */
+  reputationTracks: [
+    { key: "cred", label: "Crédibilité" },
+    { key: "rumeur", label: "Rumeur" },
+    { key: "renommee", label: "Renommée" },
+  ],
+
   pcTableBlock: {
     fields: [
       { key: "initBase", label: "Initiative (base)", kind: "number" },

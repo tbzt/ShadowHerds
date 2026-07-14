@@ -44,7 +44,6 @@ Object.assign(CardRenderer, {
       behaviors,
       quotes,
       lifestyle,
-      karma,
       nuyenSpent,
       nuyenBudget,
     } = pnj;
@@ -214,7 +213,7 @@ Object.assign(CardRenderer, {
     // Couche narrative propre aux personnages jouables (mots-clés,
     // comportements, répliques, p.50-51) + suivi de création/progression
     // (nuyens dépensés, Karma). Absente des PNJ (isPC non posé).
-    if (isPC) html += this._pcNarrativeZone(pnj, { keywords, behaviors, quotes, lifestyle, karma, nuyenSpent, nuyenBudget });
+    if (isPC) html += this._pcNarrativeZone(pnj, { keywords, behaviors, quotes, lifestyle, nuyenSpent, nuyenBudget });
 
     // ---- ZONE RÉFÉRENCE ----
     // (les seuils de blessures vivent dans la zone Combat, sous le moniteur)
@@ -239,8 +238,11 @@ Object.assign(CardRenderer, {
   },
 
   /** Zone narrative d'un personnage jouable (p.50-51 : 5 mots-clés, 4
-      comportements, 4 répliques) + suivi Karma/nuyens de création. */
-  _pcNarrativeZone(pnj, { keywords, behaviors, quotes, lifestyle, karma, nuyenSpent, nuyenBudget }) {
+      comportements, 4 répliques) + budget de CRÉATION (nuyens dépensés).
+      Le Karma et les nuyens VIVANTS de campagne vivent dans la zone
+      Progression (cross-édition, cf. CardRenderer._progressionZone) : ici on
+      ne garde que la référence de création, distincte du portefeuille courant. */
+  _pcNarrativeZone(pnj, { keywords, behaviors, quotes, lifestyle, nuyenSpent, nuyenBudget }) {
     let html = '<div class="pc-narrative-zone">';
     html += this._zoneEyebrow("Personnage");
 
@@ -248,9 +250,8 @@ Object.assign(CardRenderer, {
     if (nuyenBudget) {
       const spentStr = (nuyenSpent || 0).toLocaleString("fr-FR");
       const budgetStr = nuyenBudget.toLocaleString("fr-FR");
-      html += `<span class="stat-pill">${spentStr} / ${budgetStr} ¥</span>`;
+      html += `<span class="stat-pill" title="Budget de création (dépensé / disponible)">${spentStr} / ${budgetStr} ¥</span>`;
     }
-    html += `<span class="stat-pill">Karma <strong>${karma || 0}</strong></span>`;
     if (lifestyle) html += `<span class="stat-pill">${this._esc(lifestyle)}</span>`;
     html += "</div>";
 

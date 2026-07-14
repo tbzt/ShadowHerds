@@ -235,6 +235,11 @@ const EditionAnarchy2 = {
       (2 légères/1 grave/1 incap., cf. `CardRenderer._monitorBoxesAnarchy`
       et `conditionMonitor` ci-dessous) : rien à saisir, capacité figée par
       la règle. */
+  /** Anarchy (2e éd.) n'a pas de réputation chiffrée : valeur neutre `[]`
+      (contrat commun — cf. anarchy1). Le suivi de campagne passe par les
+      nuyens, le Karma et les compteurs libres (cf. Campaign). */
+  reputationTracks: [],
+
   pcTableBlock: {
     fields: [
       {

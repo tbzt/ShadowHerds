@@ -221,6 +221,15 @@ const EditionSR6 = {
       pré-existant hors scope, signalé séparément). `monitorMaxKey` indique
       quel champ porte la capacité (saisie MJ, le PJ léger n'a pas
       d'attribut CON pour la dériver). */
+  /** Réputation SR6 (p.239-241) : un seul score de Réputation (peut être
+      NÉGATIF, selon les seuils favorables/défavorables) + la Pression (menace
+      des autorités, accumulée en fin de séance). Le registre de campagne
+      encaisse nativement les deltas négatifs et l'accumulation (cf. Campaign). */
+  reputationTracks: [
+    { key: "reputation", label: "Réputation" },
+    { key: "pression", label: "Pression" },
+  ],
+
   pcTableBlock: {
     fields: [
       { key: "initBase", label: "Initiative (base)", kind: "number" },
