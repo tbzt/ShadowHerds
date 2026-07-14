@@ -8,8 +8,8 @@
    Shadows). Reçoit ses contacts de Contacts/ContactGen ; c'est la
    seule des trois briques contact qui persiste.
    ============================================================ */
-const ContactsBook = Object.assign(
-  Collection.create({
+const _contactsCollection = Collection.create(
+  {
     key: "contacts",
     storageKeys: { all: "contacts_all", groups: "contacts_groups" },
     // dragGrid (Vague B1) : dom.grid n'est jamais monté dans le DOM (les
@@ -32,8 +32,24 @@ const ContactsBook = Object.assign(
     // Rattachement en masse à un PJ (BulkBar) : les liens vivent côté PJ
     // (Characters.contactLinks, E5), le contact n'est que la cible du lien.
     pjLinkable: true,
-  }),
-  {
+  },
+);
+// Capturé avant extension pour pouvoir envelopper le `load` du socle (CO-a).
+const _contactsBaseLoad = _contactsCollection.load;
+const ContactsBook = Object.assign(_contactsCollection, {
+    /* ---- Normalisation à la lecture (CO-a, carte Contact) : les contacts
+       déjà sauvegardés n'ont pas de `type`. On rétro-pose `type:"contact"`
+       en mémoire pour que la garde `CardRenderer.isContact` (consommée à
+       partir de CO-b) soit vraie partout, sans écriture au boot — la
+       persistance suit le prochain `save()` naturel (champ additif, aucun
+       bump de schéma). Couvre boot (app.js) et restauration (backup.js). ---- */
+    load() {
+      _contactsBaseLoad.call(this);
+      for (const c of this.data.all) {
+        if (c && !c.type) c.type = "contact";
+      }
+    },
+
     /* ---- Générer et ajouter ---- */
     generate() {
       const c = Contacts.generate();

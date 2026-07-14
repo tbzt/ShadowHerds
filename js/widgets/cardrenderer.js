@@ -50,6 +50,15 @@ const CardRenderer = {
       });
   },
 
+  /** CO-a (carte Contact) : reconnaissance d'un contact rendu par la carte
+      partagée. Le contact porte `type:"contact"` (posé à la génération par
+      `ContactGen`, rétro-normalisé à la lecture par `ContactsBook.load`).
+      Non consommée en CO-a — contrat du module Relation + dispatch header/body
+      à partir de CO-b. Miroir de la garde `isPC` (module Suivi). */
+  isContact(pnj) {
+    return !!pnj && pnj.type === "contact";
+  },
+
   /* ---- Header ---- */
   _header(pnj, deps = CardRenderer.liveDeps()) {
     if (pnj.pcLight) return this._headerLight(pnj);
