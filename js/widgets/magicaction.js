@@ -107,7 +107,7 @@ const MagicAction = {
     const ed = App.getEditionModule(pnj.edition);
     if (!ed.spellSkill) return; // édition sans mécanique de sort (Anarchy)
 
-    const mag = (pnj.attrs && pnj.attrs.MAG) || 1;
+    const mag = Actor.attr(pnj, "MAG") || 1;
     this._cast = {
       pnjId,
       name: spellName,
@@ -281,9 +281,9 @@ const MagicAction = {
   _debitEdge(pnj, ed) {
     const attr = ed.rerollAction && ed.rerollAction.costAttr;
     if (!attr) return true; // édition sans coût (ne devrait pas arriver ici)
-    const val = (pnj.attrs && pnj.attrs[attr]) || 0;
+    const val = Actor.attr(pnj, attr);
     if (val <= 0) return false;
-    pnj.attrs[attr] = val - 1;
+    pnj.attrs[attr] = val - 1; // mutation (dépense) : mutateur dédié en V2
     return true;
   },
 

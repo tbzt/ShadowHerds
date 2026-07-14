@@ -208,13 +208,24 @@
   flex: 1 1 auto;
 }
 /* D3 : dossier vide → masque les actions qui n'ont rien sur quoi agir
-   (Combat/Sélectionner/Imprimer/Foundry) ; Charger + recherche restent
-   utiles à vide (import, ou trouver un contenu ailleurs). */
+   (Combat + le menu ⋯ dont tous les items — Sélectionner/Imprimer/Foundry —
+   n'opèrent que sur un contenu). La recherche reste utile à vide. */
 #panel-shadows.hub-empty [data-action="encounter-open"],
-#panel-shadows.hub-empty [data-action="toggle-select-mode"],
-#panel-shadows.hub-empty [data-action="print-sheets"],
-#panel-shadows.hub-empty [data-action="foundry-dossier"] {
+#panel-shadows.hub-empty .hub-toolbar-more {
   display: none;
+}
+
+/* #64 : menu ⋯ de débordement de la barre d'outils du hub — réutilise le
+   patron canonique .card-kebab/.card-menu (cardfooter.js), mais la barre est
+   EN HAUT du panneau : le popover s'ouvre vers le BAS (le défaut carte ouvre
+   vers le haut, hors-écran ici). */
+.hub-toolbar-more {
+  position: relative;
+  flex: 0 0 auto;
+}
+.hub-toolbar-more .card-menu {
+  top: calc(100% + 6px);
+  bottom: auto;
 }
 .shadows-group-label {
   font-family: var(--font-display);

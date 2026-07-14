@@ -69,7 +69,7 @@ const SummonPanel = {
     this._summon = {
       ownerId,
       edition: owner.edition,
-      force: Utils.clamp((owner.attrs && owner.attrs.MAG) || 4, 1, 12),
+      force: Utils.clamp(Actor.attr(owner, "MAG") || 4, 1, 12),
       tier: 1,
       services: 3,
     };

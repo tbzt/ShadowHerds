@@ -263,7 +263,7 @@ const WeaponRoll = {
 
     const cat = SkillCatalog[edition] || {};
     let attr = cat[canonical] || "AGI";
-    let attrVal = (pnj.attrs && pnj.attrs[attr]) || 0;
+    let attrVal = Actor.attr(pnj, attr);
 
     // Spécialisation couvrant l'arme : c'est elle qui gouverne le jet
     // (ex. « Attaque élémentaire » des esprits, « Lames » d'un ganger).
@@ -280,7 +280,7 @@ const WeaponRoll = {
       if (specSkill && specSkill.specVal != null) {
         skillVal = specSkill.specVal;
         attr = specSkill.specAttr || specSkill.skill.attr || attr;
-        attrVal = (pnj.attrs && pnj.attrs[attr]) || 0;
+        attrVal = Actor.attr(pnj, attr);
         rr = specSkill.specRR || 0;
         matchedSkill = `${specSkill.skill.name} · ${specSkill.spec}`;
       } else if (found) {

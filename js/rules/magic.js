@@ -703,7 +703,7 @@ const Magic = {
     if (!skillName) return 0;
     const sk = (pnj.skills || []).find((s) => s && s.name === skillName);
     const skillVal = sk ? Number(sk.val) || 0 : 0;
-    const mag = (pnj.attrs && pnj.attrs.MAG) || 0;
+    const mag = Actor.attr(pnj, "MAG");
     const malus = Utils.woundMalus(pnj, edition);
     return Math.max(0, skillVal + mag - malus);
   },

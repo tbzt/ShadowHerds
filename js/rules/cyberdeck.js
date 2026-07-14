@@ -174,7 +174,7 @@ const Cyberdeck = {
       Firewall du deck protecteur + Logique (attrs.LOG) du protecteur. */
   rollProtectActive(protectorPnj) {
     const fw = (protectorPnj.cyberdeck && protectorPnj.cyberdeck.attrs && protectorPnj.cyberdeck.attrs.firewall) || 0;
-    const log = (protectorPnj.attrs && protectorPnj.attrs.LOG) || 0;
+    const log = Actor.attr(protectorPnj, "LOG");
     return { pool: fw + log, label: "Protection active" };
   },
 
