@@ -39,10 +39,6 @@ Object.assign(CardRenderer, {
       matrixMonitor,
       awakened,
       notes,
-      isPC,
-      keywords,
-      behaviors,
-      quotes,
       lifestyle,
       nuyenSpent,
       nuyenBudget,
@@ -210,15 +206,28 @@ Object.assign(CardRenderer, {
     const capSummary = skills && skills.length ? `${skills.length} compétence${skills.length > 1 ? "s" : ""}` : "";
     html += this._zoneShell(pnj, "capacites", capBody, capSummary);
 
-    // ---- ZONE PERSONNAGE (PJ uniquement) ----
-    // Couche narrative propre aux personnages jouables (mots-clés,
-    // comportements, répliques, p.50-51) + suivi de création/progression
-    // (nuyens dépensés, Karma). Absente des PNJ (isPC non posé).
-    if (isPC) html += this._pcNarrativeZone(pnj, { keywords, behaviors, quotes, lifestyle, nuyenSpent, nuyenBudget });
-
     // ---- ZONE DÉTAILS ----
     // (les seuils de blessures vivent dans la zone Combat, sous le moniteur)
+    // PJ-b (dissolution de « zone Personnage » Anarchy) : Budget de création
+    // + Lifestyle rejoignent Détails ; Mots-clés/Comportements/Répliques sont
+    // partis en Incarnation (_flavorSection) ; le portefeuille VIVANT (nuyens
+    // de campagne) vit dans le module Suivi (_suiviModule, PJ-c) — plus de
+    // double-nuyens (I6 : plus de zone spéciale « Personnage » Anarchy-only).
     let detailsBody = "";
+    if (nuyenBudget) {
+      const spentStr = (nuyenSpent || 0).toLocaleString("fr-FR");
+      const budgetStr = nuyenBudget.toLocaleString("fr-FR");
+      detailsBody += `<div class="ref-block"><div class="ref-lbl">Budget de création</div>
+        <div class="combat-row">
+          <span class="stat-pill" title="Budget de création (dépensé / disponible)">${spentStr} / ${budgetStr} ¥</span>
+          ${lifestyle ? `<span class="stat-pill">${this._esc(lifestyle)}</span>` : ""}
+        </div>
+      </div>`;
+    } else if (lifestyle) {
+      detailsBody += `<div class="ref-block"><div class="ref-lbl">Style de vie</div>
+        <div class="combat-row"><span class="stat-pill">${this._esc(lifestyle)}</span></div>
+      </div>`;
+    }
     if (prefs.showAttributes) {
       const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA"];
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Attributs</div>
@@ -234,38 +243,6 @@ Object.assign(CardRenderer, {
     html += this._zoneShell(pnj, "details", detailsBody, "attributs, équipement");
 
     html += "</div>";
-    return html;
-  },
-
-  /** Zone narrative d'un personnage jouable (p.50-51 : 5 mots-clés, 4
-      comportements, 4 répliques) + budget de CRÉATION (nuyens dépensés).
-      Le Karma et les nuyens VIVANTS de campagne vivent dans la zone
-      Progression (cross-édition, cf. CardRenderer._progressionZone) : ici on
-      ne garde que la référence de création, distincte du portefeuille courant. */
-  _pcNarrativeZone(pnj, { keywords, behaviors, quotes, lifestyle, nuyenSpent, nuyenBudget }) {
-    let html = '<div class="pc-narrative-zone">';
-    html += this._zoneEyebrow("Personnage");
-
-    html += '<div class="combat-row">';
-    if (nuyenBudget) {
-      const spentStr = (nuyenSpent || 0).toLocaleString("fr-FR");
-      const budgetStr = nuyenBudget.toLocaleString("fr-FR");
-      html += `<span class="stat-pill" title="Budget de création (dépensé / disponible)">${spentStr} / ${budgetStr} ¥</span>`;
-    }
-    if (lifestyle) html += `<span class="stat-pill">${this._esc(lifestyle)}</span>`;
-    html += "</div>";
-
-    if (keywords && keywords.length) html += this._listSection("Mots-clés", keywords);
-    if (behaviors && behaviors.length) html += this._listSection("Comportements", behaviors);
-    if (quotes && quotes.length) {
-      html += `<div class="card-section">
-        <div class="card-section-label">Répliques</div>
-        <div class="card-section-content pc-quotes">
-          ${quotes.map((q) => `<div class="pc-quote">« ${this._esc(q)} »</div>`).join("")}
-        </div>
-      </div>`;
-    }
-    html += "</div>"; // fin pc-narrative-zone
     return html;
   },
 

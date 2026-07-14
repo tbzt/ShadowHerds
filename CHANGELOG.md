@@ -12,6 +12,21 @@ commit.
 
 ## [Non publié]
 
+## [1.25.0] — 2026-07-14
+
+### Table
+- **Suivi de campagne repensé** : sur la fiche d'un PJ, chaque ressource
+  (nuyens, Karma, réputation, compteurs libres) est maintenant une ligne
+  cliquable avec son solde toujours visible — toucher la ligne déplie
+  montant + motif + ✓ sur place. Fini la rangée de boutons-glyphes ambiguë.
+  Onglet ❖ dédié pour ouvrir directement le Suivi.
+- **Anarchy 2 — fiche PJ réorganisée** : mots-clés, comportements et
+  répliques rejoignent l'Incarnation ; le budget de création rejoint
+  Détails. Un seul solde de nuyens visible (le portefeuille vivant, dans le
+  Suivi) au lieu de deux compteurs qui se répondaient mal.
+- **Signature visuelle du PJ** (couleur + initiale) désormais visible sur
+  toutes les cartes de personnage, pas seulement les fiches allégées.
+
 ## [1.24.0] — 2026-07-14
 
 ### Jouer
@@ -28,7 +43,7 @@ commit.
   moniteur, programmes, cible) vit désormais dans sa propre section « Matrice »
   ⚡, juste après Combat — sorti de Détails où il était noyé.
 - **Module Magie** : tradition, esprit mentor et pouvoirs d'adepte se
-  regroupent dans une section « Magie » ✸ après Combat, au lieu d'être
+  regroupent dans une section « Magie » ✦ après Combat, au lieu d'être
   éparpillés en bas de carte et dans Capacités. La Résistance au Drain reste
   en Combat (un jet actif de combat doit rester à 1 tap).
 - Ces sections n'apparaissent que si le PNJ les concerne (un PNJ sans deck ni

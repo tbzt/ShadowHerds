@@ -25,7 +25,7 @@ const CardRenderer = {
     el.dataset.edition = pnj.edition;
 
     el.innerHTML =
-      this._header(pnj, deps) + this._body(pnj, deps) + this._progressionZone(pnj) + this._journal(pnj) + this._footer(pnj, actions, deps);
+      this._header(pnj, deps) + this._body(pnj, deps) + this._footModulesHtml(pnj, deps) + this._journal(pnj, deps) + this._footer(pnj, actions, deps);
 
     setTimeout(() => el.classList.remove("scanning"), 900);
     return el;
@@ -46,7 +46,7 @@ const CardRenderer = {
             : ["edit", "remove"];
         el.classList.toggle("spirit-collapsed", !!pnj.collapsed);
         el.innerHTML =
-          this._header(pnj, deps) + this._body(pnj, deps) + this._progressionZone(pnj) + this._journal(pnj) + this._footer(pnj, actions, deps);
+          this._header(pnj, deps) + this._body(pnj, deps) + this._footModulesHtml(pnj, deps) + this._journal(pnj, deps) + this._footer(pnj, actions, deps);
       });
   },
 
@@ -92,6 +92,7 @@ const CardRenderer = {
         <div class="pnj-meta">${gIcon} ${metaStr}${archStr}${specialStr}</div>
       </div>
       ${badge}
+      ${this._pcAvatar(pnj)}
       ${this._lensSelector(pnj, deps)}
     </div>`;
   },
@@ -384,7 +385,10 @@ const CardRenderer = {
     {
       key: "magie",
       label: "Magie",
-      glyph: "✸",
+      // ✦ (pas ✸, déjà pris par "Dégâts" dans cockpitLegend) — déjà établi
+      // pour la magie ailleurs dans l'app (esprit mentor, badge Éveillé,
+      // invocation d'esprit) : réutilisé, pas inventé (feedback_glyph_vocabulary).
+      glyph: "✦",
       applies: (pnj) => !!(pnj.tradition || pnj.mentorSpirit || (pnj.powers && pnj.powers.length)),
       render: (pnj) => CardRenderer._magieModule(pnj),
       lenses: ["fiche", "combat"],
@@ -397,14 +401,39 @@ const CardRenderer = {
       render: (pnj, deps) => CyberdeckRenderer.block(pnj, pnj.edition, deps),
       lenses: ["fiche", "combat"],
     },
+    {
+      key: "suivi",
+      label: "Suivi",
+      // ❖ libre dans cockpitLegend (V7 glyphes→sprite) — pas un emoji neuf.
+      glyph: "❖",
+      // PJ-c : PAS un module d'action → placement "foot" (au pied, jumelé au
+      // Journal par le PLACEMENT, pas fusionné avec lui : Journal reste
+      // universel, Suivi reste PJ-only). `_modulesHtml` (après Combat)
+      // l'exclut ; seul `_footModulesHtml` le rend. `lenses` sans "combat" :
+      // ne s'ouvre jamais en vue Combat (D1).
+      placement: "foot",
+      applies: (pnj) => !!pnj.isPC,
+      render: (pnj) => CardRenderer._suiviModule(pnj),
+      summary: (pnj) => CardRenderer._suiviSummary(pnj),
+      lenses: ["fiche"],
+    },
   ],
 
-  /** Rend les modules applicables, chacun dans sa propre coquille de zone
+  /** Rend les modules d'action applicables (placement après Combat, exclut
+      les modules "foot" comme Suivi), chacun dans sa propre coquille de zone
       (I3 : aucun module vide). Appelé par les 4 corps d'édition juste après
       la zone Combat. */
   _modulesHtml(pnj, deps) {
-    return CardRenderer._MODULES.filter((m) => m.applies(pnj))
-      .map((m) => this._zoneShell(pnj, m.key, m.render(pnj, deps), ""))
+    return CardRenderer._MODULES.filter((m) => m.placement !== "foot" && m.applies(pnj))
+      .map((m) => this._zoneShell(pnj, m.key, m.render(pnj, deps), m.summary ? m.summary(pnj) : ""))
+      .join("");
+  },
+
+  /** Rend les modules "foot" (Suivi, PJ-c) — au pied de la carte, jamais
+      après Combat (placement distinct du reste des modules d'action). */
+  _footModulesHtml(pnj, deps) {
+    return CardRenderer._MODULES.filter((m) => m.placement === "foot" && m.applies(pnj))
+      .map((m) => this._zoneShell(pnj, m.key, m.render(pnj, deps), m.summary ? m.summary(pnj) : ""))
       .join("");
   },
 
@@ -479,16 +508,26 @@ const CardRenderer = {
       distinct de "library") → onglets sur la carte elle-même ; mur de
       cartes (deps.context === "library") → pas d'onglet par carte (un
       contrôle au niveau liste reste à faire, hors scope CP4). Hit-area
-      ≥ 44 px (padding), délégation data-lens (jamais de <select> natif). */
+      ≥ 44 px (padding), délégation data-lens (jamais de <select> natif).
+      PJ-c/D5 : onglet(s) de module phare (Suivi ❖) ajoutés après les 3 vues —
+      pas une vue, un accès direct 1-tap qui replie/déplie CE module précis
+      (data-zone-toggle, même mécanique qu'un pli manuel, I2 : n'insère
+      jamais le pied en zone d'action). */
   _lensSelector(pnj, deps) {
     if (pnj.type === "vehicle" || pnj.type === "spirit" || pnj.ownerId) return "";
     if (deps && deps.context === "library") return "";
     const current = this._currentViewKey(pnj, deps);
-    const tabs = this._VIEWS.map((v) => {
+    const viewTabs = this._VIEWS.map((v) => {
       const active = v.key === current ? " active" : "";
       return `<button type="button" class="lens-tab${active}" data-lens="${v.key}" data-id="${pnj.id}" title="Vue : ${this._esc(v.label)}" aria-label="Vue : ${this._esc(v.label)}" aria-pressed="${v.key === current}">${v.glyph}</button>`;
     }).join("");
-    return `<div class="lens-selector" role="tablist" aria-label="Vue">${tabs}</div>`;
+    const moduleTabs = CardRenderer._MODULES.filter((m) => m.placement === "foot" && m.applies(pnj))
+      .map((m) => {
+        const open = this._zoneIsOpen(pnj, m.key, deps);
+        return `<button type="button" class="lens-tab${open ? " active" : ""}" data-zone-toggle="${m.key}" data-id="${pnj.id}" title="${this._esc(m.label)}" aria-label="${this._esc(m.label)}" aria-pressed="${open}">${m.glyph}</button>`;
+      })
+      .join("");
+    return `<div class="lens-selector" role="tablist" aria-label="Vue">${viewTabs}${moduleTabs}</div>`;
   },
 
   /* ---- Traits raciaux de métavariante ---- */
@@ -513,30 +552,46 @@ const CardRenderer = {
   },
 
   /* ---- Habillage (âge, signe, manie, motivation, style, attitude) ----
-     Zone Incarnation (CP1) : « Portrait » reste le mot pour l'image IA,
+     Zone Incarnation (CP1/CP2) : « Portrait » reste le mot pour l'image IA,
      le vocabulaire verrouillé de la ZONE est « Incarnation » (porté par le
-     libellé du zone-toggle, cf. _ZONE_LABELS). Promotion en haut de carte
-     et fusion complète : CP2. */
+     libellé du zone-toggle, cf. _ZONE_LABELS).
+     PJ-b (dissolution de `_pcNarrativeZone`, Anarchy 2, p.50-51) : Mots-clés/
+     Comportements/Répliques d'un PJ rejoignent cette même zone — champs
+     neutres (`pnj.keywords`/`behaviors`/`quotes`), aucune branche d'édition,
+     zone déjà présente aux 4 éditions (I6). Vide sur un PNJ (champs absents),
+     comme avant. */
   _flavorSection(pnj) {
     const f = pnj.flavor;
-    if (!f) return "";
-    const rows = [
-      ["Âge", `${f.age} ans`],
-      ["Signe distinctif", f.signe],
-      ["Style", f.style],
-      ["Attitude", f.attitude],
-      ["Manie", f.manie],
-      ["Motivation", f.motivation],
-    ]
-      .filter(([, v]) => v)
-      .map(
-        ([k, v]) =>
-          `<div class="flavor-row"><span class="flavor-key">${k}</span><span class="flavor-val">${this._esc(String(v))}</span></div>`,
-      )
-      .join("");
-    if (!rows) return "";
-    const summary = f.style || f.attitude || f.motivation || "";
-    return this._zoneShell(pnj, "incarnation", `<div class="card-section flavor-section">${rows}</div>`, summary);
+    const rows = f
+      ? [
+          ["Âge", `${f.age} ans`],
+          ["Signe distinctif", f.signe],
+          ["Style", f.style],
+          ["Attitude", f.attitude],
+          ["Manie", f.manie],
+          ["Motivation", f.motivation],
+        ]
+          .filter(([, v]) => v)
+          .map(
+            ([k, v]) =>
+              `<div class="flavor-row"><span class="flavor-key">${k}</span><span class="flavor-val">${this._esc(String(v))}</span></div>`,
+          )
+          .join("")
+      : "";
+    let html = rows ? `<div class="card-section flavor-section">${rows}</div>` : "";
+    if (pnj.keywords && pnj.keywords.length) html += this._listSection("Mots-clés", pnj.keywords);
+    if (pnj.behaviors && pnj.behaviors.length) html += this._listSection("Comportements", pnj.behaviors);
+    if (pnj.quotes && pnj.quotes.length) {
+      html += `<div class="card-section">
+        <div class="card-section-label">Répliques</div>
+        <div class="card-section-content pc-quotes">
+          ${pnj.quotes.map((q) => `<div class="pc-quote">« ${this._esc(q)} »</div>`).join("")}
+        </div>
+      </div>`;
+    }
+    if (!html) return "";
+    const summary = (f && (f.style || f.attitude || f.motivation)) || (pnj.keywords && pnj.keywords[0]) || "";
+    return this._zoneShell(pnj, "incarnation", html, summary);
   },
 
   /* ---- Réserves de dés utiles au MJ ---- */
@@ -586,6 +641,8 @@ const CardRenderer = {
     details: "Détails",
     magie: "Magie",
     matrice: "Matrice",
+    suivi: "Suivi",
+    journal: "Journal",
   },
 
   /** Cette zone est-elle ouverte pour cette carte ? Résolution (I4) :
@@ -1053,27 +1110,23 @@ const CardRenderer = {
   },
 
   /* ---- Journal de fiche (F2) ----
-     Notes datées, empilées en tête, repliées derrière un bouton pour ne pas
-     alourdir la grille. Le compte reste visible (mémoire présente). L'état
-     d'ouverture vit dans un Set TRANSIENT (jamais sérialisé sur l'entité,
-     contrairement à _zoneOpen) : uniquement de la présentation.
-     Exclu des entités liées/transitoires (véhicules, esprits, enfants) :
-     le journal est la mémoire d'une fiche autonome qu'on suit dans le temps. */
-  _journalOpen: new Set(),
-
-  _journal(pnj) {
+     Notes datées, empilées en tête. CP1 : zone repliable comme les autres
+     (data-zone-toggle="journal", _zoneShell), plus de bouton de repli
+     bespoke. Universel (tous types sauf entités liées/transitoires) —
+     contrairement à Suivi (PJ-only), Journal reste un simple `_zoneShell`
+     hors registre de modules (pas conditionnel). */
+  _journal(pnj, deps) {
     if (pnj.type === "vehicle" || pnj.type === "spirit" || pnj.ownerId) return "";
     const entries = Array.isArray(pnj.journal) ? pnj.journal : [];
-    const open = this._journalOpen.has(pnj.id);
-    const count = entries.length
-      ? ` <span class="journal-count">${entries.length}</span>`
-      : "";
-    if (!open) {
-      return `<div class="pnj-journal">
-        <button class="journal-toggle" data-action="journal-toggle" data-id="${pnj.id}"
-          aria-expanded="false" title="Notes de séance sur cette fiche">＋ Journal${count}</button>
-      </div>`;
-    }
+    const summary = entries.length ? `${entries.length} note${entries.length > 1 ? "s" : ""}` : "";
+    return this._zoneShell(pnj, "journal", this._journalInner(pnj), summary);
+  },
+
+  /** Contenu du Journal (liste + saisie), sans coquille — réutilisé tel quel
+      par le module Suivi n'est PAS le cas (Suivi et Journal restent deux
+      zones distinctes, cf. _MODULES "suivi" placement:"foot"). */
+  _journalInner(pnj) {
+    const entries = Array.isArray(pnj.journal) ? pnj.journal : [];
     const rows = entries
       .map((e) => {
         const d = new Date(e.ts);
@@ -1088,18 +1141,12 @@ const CardRenderer = {
         </li>`;
       })
       .join("");
-    return `<div class="pnj-journal">
-      <button class="journal-toggle" data-action="journal-toggle" data-id="${pnj.id}"
-        aria-expanded="true" title="Replier le journal">▾ Journal${count}</button>
-      <div class="journal-body">
-        ${entries.length ? `<ul class="journal-list">${rows}</ul>` : ""}
-        <div class="journal-input-row">
-          <input type="text" class="journal-input" data-journal-input data-mentions data-id="${pnj.id}"
-            maxlength="200" placeholder="Une note, datée…" aria-label="Nouvelle note">
-          <button class="journal-add-btn" data-action="journal-add" data-id="${pnj.id}">Ajouter</button>
-        </div>
-      </div>
-    </div>`;
+    return `${entries.length ? `<ul class="journal-list">${rows}</ul>` : ""}
+      <div class="journal-input-row">
+        <input type="text" class="journal-input" data-journal-input data-mentions data-id="${pnj.id}"
+          maxlength="200" placeholder="Une note, datée…" aria-label="Nouvelle note">
+        <button class="journal-add-btn" data-action="journal-add" data-id="${pnj.id}">Ajouter</button>
+      </div>`;
   },
 
   /** Focus (re)mis sur l'input de journal d'une fiche, après un rendu. Le
@@ -1115,16 +1162,6 @@ const CardRenderer = {
     }, 0);
   },
 
-  /** Ouvre/replie l'input du journal (présentation seule). Rafraîchit la carte
-      via UI (route PNJ vs contact), puis met le focus sur l'input si on vient
-      d'ouvrir. */
-  _toggleJournal(id) {
-    if (this._journalOpen.has(id)) this._journalOpen.delete(id);
-    else this._journalOpen.add(id);
-    UI.refreshEntityCard(id);
-    if (this._journalOpen.has(id)) this._focusJournalInput(id);
-  },
-
   /** Lit l'input de la carte cliquée et délègue l'ajout à UI (persistance),
       puis re-focus l'input (l'ajout reste ouvert pour empiler plusieurs notes). */
   _submitJournal(actionEl) {
@@ -1138,77 +1175,74 @@ const CardRenderer = {
     this._focusJournalInput(id);
   },
 
-  /* ---- Suivi de campagne (Progression) ----
-     Soldes vivants (nuyens, Karma, réputation, compteurs libres) + registre
-     daté, replié comme le journal. Neutre et PC-only : aucune branche
-     d'édition — les ressources arrivent de `Campaign.tracks` (dont la
-     réputation via `edModule.reputationTracks`). L'état d'ouverture vit dans
-     un Set TRANSIENT (présentation seule, jamais sérialisé). */
-  _progressionOpen: new Set(),
+  /* ---- Module Suivi (PJ-c) — Progression : nuyens, Karma, réputation,
+     compteurs libres. Neutre, aucune branche d'édition — les ressources
+     arrivent de `Campaign.tracks` (dont la réputation via
+     `edModule.reputationTracks`). Placement "foot" (cf. _MODULES), jamais
+     après Combat, jamais en vue Combat (lenses:["fiche"]). */
 
   /* Vague A3 : marqueur TRANSIENT (présentation seule) du dernier compteur
      modifié par une action directe sur la carte (`_submitLedger`), pour lui
      faire jouer un flash bref au re-rendu qui suit. Auto-consommé dans
-     `_trackPill` : une entrée n'y survit qu'un seul rendu. */
+     `_trackLine` : une entrée n'y survit qu'un seul rendu. */
   _flashTrack: new Map(),
 
-  _progressionZone(pnj) {
-    if (!pnj.isPC) return "";
+  /* D3 (PJ-c) : quelles lignes-ressource sont dépliées (montant+motif+✓) sur
+     quelle carte. TRANSIENT, présentation seule — clé `${pnjId}:${resKey}`. */
+  _suiviLineOpen: new Set(),
+
+  /** Résumé affiché dans l'en-tête de la zone Suivi même repliée (D3 :
+      soldes visibles au repos) : soldes non nuls + compte de notes. */
+  _suiviSummary(pnj) {
     const edModule = App.getEditionModule(pnj.edition);
     const tracks = Campaign.tracks(pnj, edModule);
-    // Rendu (et donc consommation du marqueur de flash A3) sur TOUS les
-    // tracks, y compris solde nul : un track tombé à 0 n'a pas de pastille où
-    // flasher, mais son marqueur ne doit pas trainer pour un rendu ultérieur.
-    const pills = tracks
+    const parts = tracks
       .map((t) => ({ t, bal: Campaign.balance(pnj.campaign, t.key) }))
-      .map((b) => ({ ...b, html: this._trackPill(b.t, b.bal, pnj.id) }))
       .filter((b) => b.bal !== 0)
-      .map((b) => b.html)
-      .join("");
-    const open = this._progressionOpen.has(pnj.id);
-    if (!open) {
-      return `<div class="pnj-progression">
-        <button class="progression-toggle" data-action="progression-toggle" data-id="${pnj.id}"
-          aria-expanded="false" title="Suivi de campagne (nuyens, Karma…)">＋ Progression</button>
-        ${pills ? `<div class="progression-pills">${pills}</div>` : ""}
-      </div>`;
-    }
-    const entries = (pnj.campaign && pnj.campaign.ledger) || [];
-    const rows = entries.map((e) => this._ledgerRow(pnj, e, tracks)).join("");
-    const addBtns = tracks
-      .map(
-        (t) =>
-          `<button class="progression-res-btn" data-action="ledger-add" data-id="${pnj.id}"
-            data-res="${this._esc(t.key)}" title="Appliquer le montant à ${this._esc(t.label)}">${this._esc(t.glyph || t.label)}</button>`,
-      )
-      .join("");
-    return `<div class="pnj-progression">
-      <button class="progression-toggle" data-action="progression-toggle" data-id="${pnj.id}"
-        aria-expanded="true" title="Replier">▾ Progression</button>
-      <div class="progression-body">
-        ${pills ? `<div class="progression-pills">${pills}</div>` : ""}
-        ${entries.length ? `<ul class="progression-list">${rows}</ul>` : ""}
-        <div class="progression-add">
-          <div class="progression-add-fields">
-            <input type="number" class="progression-amount" data-id="${pnj.id}"
-              placeholder="± montant" aria-label="Montant (signé)">
-            <input type="text" class="progression-reason" data-id="${pnj.id}" data-mentions
-              maxlength="120" placeholder="Motif (run, achat…)" aria-label="Motif">
-          </div>
-          <div class="progression-res-row">${addBtns}</div>
-        </div>
-      </div>
-    </div>`;
+      .map((b) => (b.t.glyph ? `${b.bal.toLocaleString("fr-FR")}${b.t.glyph}` : `${b.t.label} ${b.bal}`));
+    return parts.join(" · ");
   },
 
-  /** Pastille de solde d'une ressource. Devise (glyphe) → « 8 000 ¥ » ;
-      score → « Renommée 3 » (le négatif SR6 s'affiche naturellement). */
-  _trackPill(t, bal, pnjId) {
-    const flashKey = pnjId != null ? `${pnjId}:${t.key}` : null;
-    const flash = flashKey && this._flashTrack.delete(flashKey) ? " entry-flash" : "";
-    if (t.glyph)
-      return `<span class="stat-pill accent${flash}"><strong>${bal.toLocaleString("fr-FR")}</strong> ${this._esc(t.glyph)}</span>`;
-    return `<span class="stat-pill accent${flash}">${this._esc(t.label)} <strong>${bal}</strong></span>`;
+  /** Corps du module Suivi : une ligne libellée par ressource (D3, remplace
+      la rangée de boutons-glyphes ambiguë), registre daté en dessous. */
+  _suiviModule(pnj) {
+    const edModule = App.getEditionModule(pnj.edition);
+    const tracks = Campaign.tracks(pnj, edModule);
+    const lines = tracks
+      .map((t) => this._trackLine(pnj, t, Campaign.balance(pnj.campaign, t.key)))
+      .join("");
+    const entries = (pnj.campaign && pnj.campaign.ledger) || [];
+    const ledger = entries.length
+      ? `<ul class="progression-list">${entries.map((e) => this._ledgerRow(pnj, e, tracks)).join("")}</ul>`
+      : "";
+    return `<div class="progression-lines">${lines}</div>${ledger}`;
+  },
+
+  /** Ligne-ressource D3 : label + solde toujours visibles ; toucher la ligne
+      déplie SUR PLACE montant + motif + ✓ (≤2 taps, découvrable). */
+  _trackLine(pnj, t, bal) {
+    const key = `${pnj.id}:${t.key}`;
+    const open = this._suiviLineOpen.has(key);
+    const flash = this._flashTrack.delete(key) ? " entry-flash" : "";
+    const balStr = t.glyph
+      ? `${bal.toLocaleString("fr-FR")} ${this._esc(t.glyph)}`
+      : `${bal}`;
+    const row = `<button type="button" class="suivi-line${flash}${open ? " open" : ""}"
+      data-action="suivi-line-toggle" data-id="${pnj.id}" data-res="${this._esc(t.key)}"
+      aria-expanded="${open}" title="${this._esc(t.label)}">
+      <span class="suivi-line-label">${this._esc(t.label)}</span>
+      <span class="suivi-line-bal">${balStr}</span>
+      <span class="suivi-line-add" aria-hidden="true">${open ? "▾" : "＋"}</span>
+    </button>`;
+    if (!open) return row;
+    return `${row}<div class="suivi-line-form">
+      <input type="number" class="progression-amount" data-id="${pnj.id}"
+        placeholder="± montant" aria-label="Montant (signé)">
+      <input type="text" class="progression-reason" data-id="${pnj.id}" data-mentions
+        maxlength="120" placeholder="Motif (run, achat…)" aria-label="Motif">
+      <button type="button" class="suivi-line-submit" data-action="ledger-add" data-id="${pnj.id}"
+        data-res="${this._esc(t.key)}" aria-label="Valider">✓</button>
+    </div>`;
   },
 
   /** Ligne du registre : date · montant signé · motif (puces @/#) · suppression.
@@ -1237,22 +1271,24 @@ const CardRenderer = {
     </li>`;
   },
 
-  /** Ouvre/replie la zone Progression (présentation seule). */
-  _toggleProgression(id) {
-    if (this._progressionOpen.has(id)) this._progressionOpen.delete(id);
-    else this._progressionOpen.add(id);
+  /** Ouvre/replie la ligne-ressource (présentation seule). */
+  _toggleSuiviLine(id, res) {
+    const key = `${id}:${res}`;
+    if (this._suiviLineOpen.has(key)) this._suiviLineOpen.delete(key);
+    else this._suiviLineOpen.add(key);
     UI.refreshEntityCard(id);
   },
 
-  /** Lit le montant + motif de la carte cliquée et écrit l'entrée pour la
-      ressource du bouton. Le re-rendu (refreshEntityCard) vide les champs. */
+  /** Lit montant + motif DANS LE FORMULAIRE de la ligne cliquée (jamais
+      carte-wide : plusieurs lignes peuvent être dépliées en même temps) et
+      écrit l'entrée pour la ressource du bouton. Le re-rendu vide les champs. */
   _submitLedger(actionEl) {
     const id = actionEl.dataset.id;
     const res = actionEl.dataset.res;
-    const card = actionEl.closest(".pnj-card");
-    const delta = parseInt(card?.querySelector(".progression-amount")?.value, 10);
+    const form = actionEl.closest(".suivi-line-form");
+    const delta = parseInt(form?.querySelector(".progression-amount")?.value, 10);
     if (!Number.isFinite(delta) || delta === 0) return;
-    const reason = card?.querySelector(".progression-reason")?.value || "";
+    const reason = form?.querySelector(".progression-reason")?.value || "";
     this._flashTrack.set(`${id}:${res}`, true);
     UI.addLedgerEntry(id, res, delta, reason);
   },
@@ -1457,17 +1493,14 @@ const CardRenderer = {
         case "export-foundry":
           FoundryExport.exportPnj(id);
           break;
-        case "journal-toggle":
-          this._toggleJournal(id);
-          break;
         case "journal-add":
           this._submitJournal(actionEl);
           break;
         case "journal-remove":
           UI.removeJournalEntry(id, actionEl.dataset.ts);
           break;
-        case "progression-toggle":
-          this._toggleProgression(id);
+        case "suivi-line-toggle":
+          this._toggleSuiviLine(id, actionEl.dataset.res);
           break;
         case "ledger-add":
           this._submitLedger(actionEl);
@@ -1482,7 +1515,10 @@ const CardRenderer = {
           const { id: mid, name: mname, type: mtype, slot: mslot, ts: mts } = actionEl.dataset;
           // Journal : déplier AVANT la révélation pour que le re-rendu de la
           // liste par _reveal inclue l'entrée ciblée dans le DOM.
-          if (mslot === "journal") this._journalOpen.add(mid);
+          if (mslot === "journal") {
+            const target = PnjLookup.find(mid);
+            if (target) target._zoneOpen = { ...target._zoneOpen, journal: true };
+          }
           Palette._reveal({ id: mid, name: mname, type: mtype });
           this._scrollToBacklink({ id: mid, slot: mslot, ts: mts });
           break;
