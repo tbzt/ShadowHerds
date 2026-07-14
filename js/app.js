@@ -307,6 +307,12 @@ const App = {
     if (!el) return;
     const show = force !== undefined ? force : !el.classList.contains("open");
     el.classList.toggle("open", show);
+    // #50 : la ligne « Réserve de Menace » n'a de sens que là où le raccourci
+    // agit (Anarchy 1&2) — gardée par le flag d'API, pas de branche d'édition.
+    if (show) {
+      const mrow = document.getElementById("cheat-menace");
+      if (mrow) mrow.hidden = !(this.editionModule && this.editionModule.usesThreatReserve);
+    }
   },
 
   /** Légende des symboles de l'Aide (?), sensible à l'édition (CH-V6-T1.4,
@@ -551,6 +557,15 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
       case "j":
         DiceLog.toggle();
+        break;
+      case "m":
+        // #50 : monter/baisser la Réserve de menace au clavier (m = +1,
+        // Maj+M = −1). Gardé par le flag d'API d'édition (Anarchy 1&2), pas
+        // de branche App.edition ; inactif en SR5/SR6. Source unique = DiceRoller
+        // (badge topbar + miroir tracker se rafraîchissent seuls).
+        if (App.editionModule && App.editionModule.usesThreatReserve) {
+          DiceRoller.stepThreat(e.shiftKey ? -1 : 1);
+        }
         break;
       case "/":
         e.preventDefault();
