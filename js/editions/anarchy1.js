@@ -203,11 +203,85 @@ const EditionAnarchy1 = {
     source: "equip",
   },
 
-  /* Anarchy 1 n'a pas de catalogue d'équipement centralisé (armes codées par
-     stat-block, Lot 3 non fait) : `null` masque le sélecteur « ＋ Catalogue »
-     dans EditModal, comme `foundryExport` absent masque l'export Foundry. */
+  /* ---- Catalogue d'équipement (armes/armures/gear, p.71-77) ----
+     Même socle que SR5/SR6 : `equipPools` + `_equipLabels`, ItemResolver
+     aplatit et résout (id "clé::index"). Armes = chaînes poussées dans
+     `pnj.equip` (weaponModel.source: "equip", comme SR5). Les Atouts
+     (cyberware/bioware/pouvoirs/sorts, fondus dans un système narratif
+     unique en Anarchy) restent hors de ce catalogue — cf. `powerCatalog`
+     `null` et `spellCatalog` séparé plus bas. */
+  equipPools: {
+    armesCorpsACorps: [
+      "Mains nues [(FOR/2)E, courte]",
+      "Armes courtes [(FOR/2+1)P, courte]",
+      "Marques [(FOR/2+2)P, courte]",
+      "Marques étourdissantes [7E, courte]",
+      "Armes longues [(FOR/2+3)P, courte]",
+    ],
+    armesProjectiles: [
+      "Armes de jet [(FOR/2+1)P, courte, -2 intermédiaire]",
+      "Arcs [(FOR/2+1)P, -2 courte, OK intermédiaire, -2 longue]",
+      "Arbalètes [5P, courte, -2 intermédiaire]",
+      "Grenades [12P, courte/intermédiaire]",
+      "Grenades étourdissantes [8E, courte/intermédiaire]",
+    ],
+    armesFeu: [
+      "Tasers/Pistolets tranquillisants [6E, courte, -4 intermédiaire]",
+      "Pistolets légers [5P, courte, -2 intermédiaire]",
+      "Pistolets lourds [6P, courte, -2 intermédiaire]",
+      "Pistolets mitrailleurs [5P, courte, -2 intermédiaire]",
+      "Mitrailleuses [6P, courte/intermédiaire]",
+      "Fusils d'assaut [8P, courte/intermédiaire, -2 longue]",
+      "Fusils de précision [9P, -4 courte, -2 intermédiaire, OK longue]",
+      "Shotguns [9P, courte, -2 intermédiaire]",
+    ],
+    armesLourdes: [
+      "Mitrailleuses lourdes [8P, tous rangs]",
+      "Canons/Lanceurs [12P, tous rangs]",
+    ],
+    armures: {
+      legere: ["Armure légère [Armure 6, veste synthécuir/costume Actioner, +1 point de compétence]"],
+      moyenne: ["Armure moyenne [Armure 9, gilet/armure corporelle]"],
+      lourde: ["Armure lourde [Armure 12, veste/armure corporelle, -1 point de compétence]"],
+    },
+    equipSpecial: [
+      "Brouilleur de zone [bloque les communications, zone large]",
+      "Commlink [device de communication]",
+      "Contrat DocWagon [services médicaux d'urgence]",
+      "Fausse licence [légalise un équipement]",
+      "Faux SIN [identité synthétique]",
+      "Générateur de bruit blanc [masque les conversations]",
+      "Grenade fumigène [écran de fumée]",
+      "Lunettes/Lentilles [lien visuel, vision thermographique, zoom optique]",
+      "Lunettes de vision nocturne [ignore les modificateurs de vision]",
+      "Mallette blindée [protège le matériel transporté]",
+      "Matériel pour loge magique [pour sorciers]",
+      "Médikit [soins basiques]",
+      "Menottes métalliques ou plastique [entrave]",
+      "Pied de biche [forçage]",
+      "Sac de coursier [transport]",
+      "Stim patch [soigne un personnage blessé]",
+      "Trauma patch [stabilise un personnage]",
+      "Kit de survie [ressources en milieu sauvage]",
+      "Kit d'outillage [à préciser selon le métier]",
+      "Kit d'effraction [bonus aux tests de crochetage]",
+      "Combinaison caméléon [Armure 9, bonus Furtivité]",
+      "Console de commande Rigger [contrôle de drones]",
+    ],
+  },
+  _equipLabels: {
+    armesCorpsACorps: "Corps à corps",
+    armesProjectiles: "Armes de trait/jet",
+    armesFeu: "Armes à feu",
+    armesLourdes: "Armes lourdes",
+    armures: "Armures",
+    equipSpecial: "Équipement spécial",
+  },
   equipCatalog() {
-    return null;
+    return ItemResolver.flattenEquipPools(this.equipPools, this._equipLabels);
+  },
+  addCatalogItem(pnj, id) {
+    ItemResolver.addEquipString(pnj, this.equipPools, id);
   },
   /* Sorts : catalogue partagé (taxonomie commune aux 4 éditions), source
      unique dans Content. Ajout surchargé (pas de délégation directe) pour
