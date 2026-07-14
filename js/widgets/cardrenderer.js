@@ -993,11 +993,12 @@ const CardRenderer = {
     if (!weapons.length) return "";
     const rows = weapons
       .map((w) => {
+        const s = ItemResolver.itemStr(w); // #63 : item chaîne OU objet
         const r = deps.WeaponRoll ? deps.WeaponRoll.resolvePool(pnj, w, edition) : null;
-        const parsed = deps.WeaponRoll ? deps.WeaponRoll.parse(w) : { name: w };
-        const name = parsed.name || w;
-        const stat = String(w).includes("[")
-          ? String(w).split("[")[1].replace("]", "").replace(/,\s*/g, " · ")
+        const parsed = deps.WeaponRoll ? deps.WeaponRoll.parse(w) : { name: s };
+        const name = parsed.name || s;
+        const stat = s.includes("[")
+          ? s.split("[")[1].replace("]", "").replace(/,\s*/g, " · ")
           : "";
         if (!r) {
           return `<div class="weapon-line"><div><div class="weapon-name">${this._esc(name)}</div><div class="weapon-stat">${this._esc(stat)}</div></div></div>`;
@@ -1020,7 +1021,7 @@ const CardRenderer = {
         const dataAttr =
           App.getEditionModule(edition)?.usesRiskPanel
             ? `data-roll-weapon-anarchy="${this._esc(name)}"`
-            : `data-roll-weapon="${this._esc(w)}" data-roll-edition="${edition}"`;
+            : `data-roll-weapon="${this._esc(s)}" data-roll-edition="${edition}"`;
         return `<div class="weapon-line weapon-rollable rollable" ${dataAttr} data-roll-pnj="${pnj.id}" title="${this._esc(title)}">
           <div><div class="weapon-name">${this._esc(name)}</div><div class="weapon-stat">${this._esc(stat)}</div></div>
           ${poolBadge}
@@ -1384,24 +1385,24 @@ const CardRenderer = {
   _equipSection(pnj, items, edition, deps, augs) {
     const tags = (items || [])
       .map((i) => {
+        const s = ItemResolver.itemStr(i); // #63 : item chaîne OU objet
         // Les drogues sont pilotées depuis leur tag dans la zone Combat
         // (this._drugRow) — ici, texte simple pour éviter le doublon.
-        if (deps.Drugs && deps.Drugs.matchItem(i, edition, "equip"))
-          return this._contentTag(i);
-        const isWeapon =
-          typeof i === "string" && /\[/.test(i) && /(VD|PRE)/.test(i);
-        if (!isWeapon) return this._contentTag(i);
-        const r = deps.WeaponRoll ? deps.WeaponRoll.resolvePool(pnj, i, edition) : null;
-        if (!r) return this._contentTag(i);
+        if (deps.Drugs && deps.Drugs.matchItem(s, edition, "equip"))
+          return this._contentTag(s);
+        const isWeapon = /\[/.test(s) && /(VD|PRE)/.test(s);
+        if (!isWeapon) return this._contentTag(s);
+        const r = deps.WeaponRoll ? deps.WeaponRoll.resolvePool(pnj, s, edition) : null;
+        if (!r) return this._contentTag(s);
         const limTxt = r.limit != null ? ` · lim ${r.limit}` : "";
         const approxTxt = r.approx ? " ~" : "";
         const smartTxt = r.smartBonus ? ` · +${r.smartBonus} smartlink` : "";
         const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill}${approxTxt} ${r.skillVal} + ${r.attr} ${r.attrVal})${limTxt}${smartTxt} — cliquer pour lancer`;
-        return `<span class="tag weapon-rollable rollable" data-roll-weapon="${this._esc(i)}" data-roll-pnj="${pnj.id}" data-roll-edition="${edition}" title="${this._esc(title)}">${this._esc(i)}<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="weapon-lim">▸${r.limit}</span>` : ""}</span></span>`;
+        return `<span class="tag weapon-rollable rollable" data-roll-weapon="${this._esc(s)}" data-roll-pnj="${pnj.id}" data-roll-edition="${edition}" title="${this._esc(title)}">${this._esc(s)}<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="weapon-lim">▸${r.limit}</span>` : ""}</span></span>`;
       })
       .join("");
     const augsHtml = (augs || []).length
-      ? augs.map((a) => this._contentTag(a)).join("")
+      ? augs.map((a) => this._contentTag(ItemResolver.itemStr(a))).join("")
       : "";
     if (!tags && !augsHtml) return "";
     const body =

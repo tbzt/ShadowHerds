@@ -5,13 +5,36 @@
    rendu HTML), consommée par CardRenderer.
    ============================================================ */
 const ItemResolver = {
-  /** Sépare l'équipement : weapons (lançables, notation [VD/PRE]) vs reste. */
+  /* ---- #63 : item POLYMORPHE (chaîne legacy OU objet {str, cat, rating}) ----
+     La catégorie du catalogue, jetée jusqu'ici à l'ajout, est préservée sur
+     l'objet ; les lecteurs coercent via ces helpers (motif « seam », comme
+     Actor pour les attributs). Tolérant : une chaîne reste une chaîne. */
+  /** Chaîne d'affichage/parse d'un item (l'objet expose `.str`). */
+  itemStr(item) {
+    if (typeof item === "string") return item;
+    return item && typeof item === "object" ? item.str || "" : "";
+  },
+  /** Clé de catégorie d'un item (`equipPools`), "" pour une chaîne legacy. */
+  itemCat(item) {
+    return item && typeof item === "object" ? item.cat || "" : "";
+  },
+  /** Indice choisi d'un item : champ `rating` sinon lu dans le libellé
+      (« Indice 3 » ; une plage « 1-4 » non résolue → null). */
+  itemRating(item) {
+    if (item && typeof item === "object" && item.rating != null)
+      return item.rating;
+    const m = ItemResolver.itemStr(item).match(/indice\s+(\d+)(?!\s*[-–])/i);
+    return m ? parseInt(m[1], 10) : null;
+  },
+
+  /** Sépare l'équipement : weapons (lançables, notation [VD/PRE]) vs reste.
+      Préserve la forme d'origine (chaîne ou objet) dans chaque liste. */
   splitEquip(equip) {
     const weapons = [];
     const gear = [];
     (equip || []).forEach((i) => {
-      if (typeof i === "string" && /\[/.test(i) && /(VD|PRE)/.test(i))
-        weapons.push(i);
+      const s = ItemResolver.itemStr(i);
+      if (/\[/.test(s) && /(VD|PRE)/.test(s)) weapons.push(i);
       else gear.push(i);
     });
     return { weapons, gear };
@@ -25,8 +48,9 @@ const ItemResolver = {
     if (!App.getEditionModule(pnj.edition)?.usesRiskPanel) return [];
     const out = [];
     (pnj.equip || []).forEach((item, idx) => {
-      if (typeof item !== "string") return;
-      const m = item.match(/([^+(]+?)\s*optionnel\s*\(Armure\s*\+(\d+)\)/i);
+      const s = ItemResolver.itemStr(item);
+      if (!s) return;
+      const m = s.match(/([^+(]+?)\s*optionnel\s*\(Armure\s*\+(\d+)\)/i);
       if (!m) return;
       out.push({
         idx,
@@ -93,6 +117,12 @@ const ItemResolver = {
     const str = ItemResolver._flatPool(equipPools[key])[Number(idxStr)];
     if (!str) return false;
     if (!Array.isArray(pnj.equip)) pnj.equip = [];
+    // #63 : le SEAM (helpers itemStr/itemCat/itemRating + lecteurs tolérants)
+    // est en place ; l'ÉMISSION en objet {str, cat:key} est prête mais
+    // volontairement différée au lot « flip » (reste à rendre tolérants :
+    // export Foundry, clé d'appareil matriciel, drug matcher, utils, état de
+    // combat). Tant que le flip n'est pas fait, on pousse la chaîne (aucun
+    // objet en circulation → arbre 100 % fonctionnel).
     pnj.equip.push(str);
     return true;
   },

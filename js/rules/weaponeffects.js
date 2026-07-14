@@ -30,16 +30,9 @@ const WeaponEffects = {
     return /mains nues|unarmed|à mains nues/i.test(String(name || ""));
   },
 
-  /** Indice choisi d'un item, lu dans son libellé (« Indice 3 »). Une
-      plage non résolue (« Indice 1-4 ») renvoie null → effet inactif tant
-      que le MJ n'a pas choisi (le stepper d'édition, dépendant de #63,
-      écrira l'indice unique). */
-  _rating(itemStr) {
-    const m = String(itemStr || "").match(/indice\s+(\d+)(?!\s*[-–])/i);
-    return m ? parseInt(m[1], 10) : null;
-  },
-
-  /* Socle N2 (V4). perRating indexé par l'indice (index 0 = inutilisé). */
+  /* Socle N2 (V4). perRating indexé par l'indice (index 0 = inutilisé).
+     L'indice de l'item est lu par ItemResolver.itemRating (champ `.rating`
+     de la forme objet #63, ou « Indice N » dans le libellé). */
   CATALOG: [
     {
       // SR5 VF p.461, table « Attaques à mains nues » :
@@ -61,16 +54,14 @@ const WeaponEffects = {
     if (!pnj) return out;
     const items = [...(pnj.equip || []), ...(pnj.augs || [])];
     for (const entry of this.CATALOG) {
-      // L'item porteur de l'effet (avec son indice éventuel).
-      const carrier = items.find(
-        (it) => typeof it === "string" && entry.match.test(it),
-      );
+      // L'item porteur de l'effet (chaîne OU objet #63, avec son indice).
+      const carrier = items.find((it) => entry.match.test(ItemResolver.itemStr(it)));
       if (!carrier) continue;
       if (entry.conditional && !entry.conditional(weaponName, edition)) continue;
 
       let value = entry.value;
       if (entry.perRating) {
-        const r = this._rating(carrier);
+        const r = ItemResolver.itemRating(carrier); // champ .rating ou « Indice N »
         if (r == null) continue; // indice non choisi → effet inactif
         value = entry.perRating[r];
       }

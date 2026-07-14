@@ -125,6 +125,9 @@ const WeaponRoll = {
   /** Analyse une arme (chaîne ou objet) → { name, pre, vd }. */
   parse(weapon) {
     if (weapon && typeof weapon === "object") {
+      // #63 : item-objet {str, cat} → parse sa chaîne. Distinct de l'objet
+      // arme structuré {name, vd} (éditions à pnj.weapons).
+      if (typeof weapon.str === "string") return WeaponRoll.parse(weapon.str);
       return { name: weapon.name || "", pre: null, vd: weapon.vd ?? null };
     }
     const str = String(weapon || "");
@@ -362,9 +365,10 @@ const WeaponRoll = {
     if (App.getEditionModule(edition).weaponModel.source === "weapons") {
       return pnj.weapons || [];
     }
-    return (pnj.equip || []).filter(
-      (e) => typeof e === "string" && /\[/.test(e) && /(VD|PRE)/.test(e),
-    );
+    return (pnj.equip || []).filter((e) => {
+      const s = ItemResolver.itemStr(e); // #63 : item chaîne OU objet
+      return /\[/.test(s) && /(VD|PRE)/.test(s);
+    });
   },
 
   /**

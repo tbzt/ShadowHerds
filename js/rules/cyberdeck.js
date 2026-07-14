@@ -225,7 +225,9 @@ const Cyberdeck = {
   hydrate(pnj, edition) {
     if (!pnj || pnj.cyberdeck) return pnj;
     const pools = [...(pnj.equip || []), ...(pnj.augs || []), ...(pnj.edges || [])];
-    const line = pools.find((s) => typeof s === "string" && /cyberdeck/i.test(s));
+    const line = pools // #63 : item chaîne OU objet
+      .map((s) => ItemResolver.itemStr(s))
+      .find((s) => /cyberdeck/i.test(s));
     if (line) pnj.cyberdeck = this.parseLegacy(line, edition);
     return pnj;
   },

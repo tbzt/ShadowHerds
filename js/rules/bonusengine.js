@@ -55,9 +55,10 @@ const BonusEngine = {
     // reconnu) plutôt qu'une somme — la provenance remonte jusqu'au Trait.
     const totals = { initDice: 0, armor: 0, sd: 0, attrMods: [] };
     for (const item of items) {
-      if (typeof item !== "string") continue;
+      const s = ItemResolver.itemStr(item); // #63 : item chaîne OU objet
+      if (!s) continue;
       for (const [prefix, bonus] of table) {
-        if (!item.startsWith(prefix)) continue;
+        if (!s.startsWith(prefix)) continue;
         if (bonus.initDice) totals.initDice += bonus.initDice;
         if (bonus.armor) totals.armor += bonus.armor;
         if (bonus.sd) totals.sd += bonus.sd;
@@ -75,9 +76,9 @@ const BonusEngine = {
     let implanted = false;
     let external = false;
     for (const item of items) {
-      if (typeof item !== "string") continue;
-      if (!/smartlink/i.test(item)) continue;
-      if (/cybernétique|implant/i.test(item)) implanted = true;
+      const s = ItemResolver.itemStr(item); // #63 : item chaîne OU objet
+      if (!s || !/smartlink/i.test(s)) continue;
+      if (/cybernétique|implant/i.test(s)) implanted = true;
       else external = true;
     }
     if (!implanted && !external) return null;
