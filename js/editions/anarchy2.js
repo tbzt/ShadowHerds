@@ -474,11 +474,113 @@ const EditionAnarchy2 = {
     };
   },
 
+  /* ---- Catalogue gear/armures/augmentations (« Bien s'équiper » p.148-160,
+     Atouts cyberware/bioware) ---- Même socle que SR5/SR6 : ItemResolver
+     aplatit ce pool via `_gearLabels`, id = "<clé>::<index>". Poussé tel
+     quel dans `pnj.equip` (convention Atouts « Nom (cyberware) : effet »
+     déjà en usage dans les statblocks). */
+  GEAR_CATALOG: {
+    armures: [
+      "Vêtements pare-balles légers [Armure +1]",
+      "Vêtements pare-balles avec manteau [Armure +2]",
+      "Protections légères [Armure +3]",
+      "Armures intégrales [Armure +4]",
+      "Armures militaires [Armure +5]",
+      "Bouclier balistique [Armure +1]",
+      "Combinaison caméléon [Armure +3, RR 2 aux tests de Furtivité]",
+      "Costume Actioneer [Armure +1, RR 1 aux tests d'Influence (étiquette)]",
+      "SecureTech Invisi-shield [Armure +1]",
+    ],
+    equipement: [
+      "Alcool/Synthanol [ignore les modificateurs de blessure, désavantage Logique]",
+      "Bliss [ignore les modificateurs de blessure, désavantage Volonté]",
+      "Céréprax [RR 1 aux tests de Logique, blessure grave après dissipation]",
+      "Cram [+1 point d'Anarchy par scène, blessure grave après dissipation]",
+      "Deepweed [RR 1 aux tests de Volonté, force la perception astrale]",
+      "Jazz [+1 point d'Anarchy par scène, +1 action par narration]",
+      "Kamikaze [RR 1 aux tests d'Agilité, VD +1 en mêlée, +1 point d'Anarchy par scène]",
+      "Long cours [reste éveillé 4 jours, sommeil 24h après dissipation]",
+      "Nitro [VD +1 en mêlée, +1 point d'Anarchy par scène]",
+      "Novacoke [RR 1 aux tests de Charisme et de Perception sociale]",
+      "Psyché [RR 1 aux tests de Volonté, maintient un sort supplémentaire]",
+      "Veille de nuit [vision nocturne]",
+      "Zen [RR 1 aux tests de Volonté, désavantage Force/Agilité]",
+    ],
+    toxines: [
+      "Couteau de combat, toxine létale [VD (FOR+3)]",
+      "Couteau de combat, toxine débilitante [VD (FOR+1), désavantage à toutes les actions]",
+      "Gaz lacrymogène [désavantage à toutes les actions]",
+      "Neuro-Stun VIII [blessure légère chaque tour selon Force]",
+      "Neuro-Stun X [blessure grave chaque tour selon Force]",
+      "Seven-7 [blessure grave chaque tour selon Force, létal]",
+      "Gamma-scopolamine [paralysie, sérum de vérité au réveil]",
+      "Leäl [efface les souvenirs des 2 dernières heures]",
+    ],
+    cyberware: [
+      "Datajack (cyberware) : interface neurale directe, RV cold-sim",
+      "Datajack débridé (cyberware) : interface neurale directe, RV cold-sim ou hot-sim",
+      "Cyberjack MCT Decker-Pro (cyberware) : IND, RV cold/hot-sim, +1 point d'Anarchy et +1 action par narration en piratage RV",
+      "Câblage de contrôle Shiawase Neo-Rigger (cyberware) : IND, RV cold-sim, plongée véhicule",
+      "Câblage de contrôle Ares FeelTheRide (cyberware) : IND, RV cold/hot-sim, plongée véhicule",
+      "Câblage de contrôle Dassault MilRig+ (cyberware) : IND, RV cold/hot-sim, plongée véhicule, +1 point d'Anarchy et +1 action par narration en plongée",
+      "Commlink implanté (cyberware) : IND, RV cold-sim, commlink",
+      "Coprocesseur cortical (cyberware) : RR 1 aux tests liés à la Logique",
+      "Yeux cybernétiques standards (cyberware) : interface visuelle, caméra",
+      "Yeux cybernétiques ProView (cyberware) : interface visuelle, caméra, RR 1 aux tests de Perception (physique), vision nocturne",
+      "Yeux cybernétiques AbsoluteView (cyberware) : interface visuelle, caméra, RR 2 aux tests de Perception (physique), vision thermographique",
+      "Yeux cybernétiques ProShooter (cyberware) : interface visuelle, caméra, RR 2 aux tests d'Armes à distance (pistolets)",
+      "Yeux cybernétiques SharpShooter (cyberware) : interface visuelle, caméra, RR 1 aux tests d'Armes à distance (fusils), zoom",
+      "Yeux cybernétiques EyeDrone (cyberware) : interface visuelle, caméra, RR 1 aux tests de Perception (physique), micro-drone oculaire",
+      "Oreilles cybernétiques standards (cyberware) : interface auditive, micro",
+      "Oreilles cybernétiques ProSound (cyberware) : interface auditive, micro, RR 1 aux tests de Perception (physique)",
+      "Oreilles cybernétiques UltraSound (cyberware) : interface auditive, micro, RR 1 aux tests de Perception (physique), spectre auditif élargi",
+      "Amplificateur de réaction (cyberware) : +1 point d'Anarchy par scène d'action",
+      "Réflexes câblés Ares (cyberware) : +1 point d'Anarchy par scène d'action, +1 action par narration",
+      "Réflexes câblés Evo (cyberware) : +2 points d'Anarchy par scène d'action, +1 action par narration",
+      "Move-by-wire (cyberware) : +2 points d'Anarchy par scène d'action, +1 action par narration, RR 1 aux tests d'Athlétisme (défense à distance) et Combat rapproché",
+      "Armure dermique (cyberware) : Armure +1",
+      "Auto-injecteur (cyberware) : injecte la drogue choisie par commande mentale",
+      "Auto-injecteur et biomoniteur (cyberware) : biomoniteur, injection auto stim patch/trauma patch",
+      "Bras cybernétique avec lame (cyberware) : lame courte implantée, RR 1 aux tests de Combat rapproché (lames)",
+      "Bras cybernétique avec pistolet lourd (cyberware) : pistolet lourd implanté, RR 1 aux tests d'Armes à distance (pistolets)",
+      "Bras d'escalade (cyberware) : griffes d'escalade rétractables, RR 1 aux tests d'Athlétisme (escalade)",
+      "Bras d'escalade avec lance-grappin (cyberware) : griffes d'escalade rétractables et lance-grappin, RR 2 aux tests d'Athlétisme (escalade)",
+      "Jambes cybernétiques (cyberware) : RR 1 aux tests d'Athlétisme",
+      "Jambes cybernétiques digitigrades (cyberware) : RR 1 aux tests d'Athlétisme (course)",
+      "Ossature renforcée en plastique (cyberware) : +1 case de blessure légère",
+      "Ossature renforcée en aluminium (cyberware) : VD à mains nues +1, +1 case de blessure légère",
+      "Ossature renforcée en titane (cyberware) : VD à mains nues +1, +1 case de blessure grave",
+      "Substituts musculaires (cyberware) : RR 1 aux tests d'Athlétisme",
+    ],
+    bioware: [
+      "Amplificateur synaptique (bioware) : +1 point d'Anarchy par scène d'action, +1 action par narration",
+      "Amplification cérébrale (bioware) : RR 1 aux tests de Logique",
+      "Augmentation de densité osseuse (bioware) : VD +1 à mains nues, +1 case de blessure légère",
+      "Filtre trachéal et extracteur de toxines (bioware) : immunité aux toxines injectées et respirées",
+      "Fixateurs de réflexes (bioware) : RR 1 aux tests d'une spécialisation de compétence physique",
+      "Orthoderme (bioware) : Armure +1",
+      "Phéromones large spectre (bioware) : RR 1 aux tests de Charisme",
+      "Phéromones optimisées (bioware) : RR 1 aux tests d'Influence",
+      "Producteurs de plaquettes (bioware) : +1 case de blessure grave",
+      "Renforcement musculaire (bioware) : RR 1 aux tests de Force",
+      "Tonification musculaire (bioware) : RR 1 aux tests d'Agilité",
+    ],
+  },
+  _gearLabels: {
+    armures: "Armures",
+    equipement: "Équipement / Drogues",
+    toxines: "Toxines",
+    cyberware: "Cyberware",
+    bioware: "Bioware",
+  },
+
   /* ---- Catalogue d'équipement (API neutre lue par EditModal) ----
      Anarchy 2.0 = armes STRUCTURÉES : le catalogue dérive de WEAPON_CATALOG
      (groupé mêlée / distance) et `addCatalogItem` route l'arme vers
      `pnj.weapons` (objet {name, vd, ranges} jouable via resolveWeapon), pas
-     dans `pnj.equip`. Un id hors catalogue retombe en gear texte (equip). */
+     dans `pnj.equip`. Le GEAR_CATALOG (armures/gear/cyberware/bioware) suit
+     le socle SR5/SR6 (ids "clé::index") et pousse dans `pnj.equip`. Un id
+     hors des deux catalogues retombe en gear texte brut (equip). */
   equipCatalog() {
     const groups = { melee: [], fixed: [] };
     Object.keys(this.WEAPON_CATALOG).forEach((name) => {
@@ -488,12 +590,16 @@ const EditionAnarchy2 = {
     const out = [];
     if (groups.melee.length) out.push({ category: "Corps à corps", items: groups.melee });
     if (groups.fixed.length) out.push({ category: "Armes à distance", items: groups.fixed });
-    return out;
+    return out.concat(ItemResolver.flattenEquipPools(this.GEAR_CATALOG, this._gearLabels));
   },
   addCatalogItem(pnj, id) {
     if (this.WEAPON_CATALOG[id]) {
       if (!Array.isArray(pnj.weapons)) pnj.weapons = [];
       pnj.weapons.push(this.resolveWeapon({ name: id }, pnj.attrs || {}, pnj.meta));
+      return;
+    }
+    if (typeof id === "string" && id.includes("::")) {
+      ItemResolver.addEquipString(pnj, this.GEAR_CATALOG, id);
       return;
     }
     if (!Array.isArray(pnj.equip)) pnj.equip = [];
