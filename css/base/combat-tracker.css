@@ -808,7 +808,8 @@
 }
 /* K2 : « vue combat » — l'init ne se regarde plus sur la fiche active (elle
    vit dans la réglette/liste, cf. K1) ; les attributs sont déjà repliés par
-   défaut (pnj._refOpen=false, CH-C5), rien à masquer côté CSS pour eux. */
+   défaut (pnj._zoneOpen.details=false, CH-C5/CP1), rien à masquer côté CSS
+   pour eux. */
 .encounter-active-card .init-pill {
   display: none;
 }

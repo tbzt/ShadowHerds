@@ -163,5 +163,10 @@ const TourSteps = {
       title: "La rencontre se range et se rouvre",
       body: "Depuis le menu « ⋯ » d'un dossier Run (ou sa carte de prep) : « Ouvrir la rencontre » restaure combattants, initiative et serveur lié ; « Fermer » range tout. Chaque dossier a aussi son propre carnet de notes.",
     },
+    {
+      id: "wn-zones-collapsible", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.21.0", fallback: "center",
+      title: "Repliez chaque section d'une carte",
+      body: "Combat, Capacités et Incarnation se replient maintenant comme Détails — chacune garde sa propre mémoire par carte. Une section repliée affiche un résumé (« Init 11+3D6 », « 6 compétences »…) pour ne rien perdre du coup d'œil.",
+    },
   ],
 };

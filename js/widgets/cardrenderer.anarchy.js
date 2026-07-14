@@ -49,19 +49,16 @@ Object.assign(CardRenderer, {
     } = pnj;
 
     const prefs = this._displayPrefs(deps);
-    const refOpen = this._refIsOpen(pnj, deps);
-    let html = `<div class="pnj-card-body${refOpen ? "" : " ref-collapsed"}">`;
+    let html = `<div class="pnj-card-body">`;
 
     const fmtThresholds = (arr) =>
       arr ? `${arr[0]} / ${arr[1]} / ${arr[2]}` : "—";
 
     // ---- ZONE COMBAT ----
-    html += '<div class="combat-zone">';
-    html += this._zoneEyebrow("Combat");
-    html += '<div class="combat-row">';
+    let combatBody = '<div class="combat-row">';
     const combClass =
       threatLevel === "forte" || threatLevel === "extrême" ? "accent" : "";
-    html += `<span class="stat-pill ${combClass}">Combativité <strong>${threatLevel}</strong></span>`;
+    combatBody += `<span class="stat-pill ${combClass}">Combativité <strong>${threatLevel}</strong></span>`;
     if (awakened) {
       const evLabel =
         {
@@ -69,16 +66,16 @@ Object.assign(CardRenderer, {
           adepte: "Adepte",
           chamanique: "Éveillé chaman",
         }[awakened] || awakened;
-      html += `<span class="stat-pill">✦ ${evLabel}</span>`;
+      combatBody += `<span class="stat-pill">✦ ${evLabel}</span>`;
     }
-    html += "</div>";
+    combatBody += "</div>";
 
     // Moniteur d'état (p.68) : UN SEUL moniteur par personnage (2 cases
     // légères / 1 grave / 1 incapacitante, extensible par atout), quel
     // que soit le type de dommage. Les seuils Phys/Ment/Matr ci-dessous
     // ne déterminent que la GRAVITÉ d'un coup reçu (via des attributs de
     // résistance différents), pas des moniteurs séparés.
-    html += `<div class="monitor-block">
+    combatBody += `<div class="monitor-block">
       <div class="monitor-row">
         <span class="monitor-label">État</span>
         <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj)}</div>
@@ -92,7 +89,7 @@ Object.assign(CardRenderer, {
     const effPhys = physMonitor
       ? physMonitor.map((v) => v + armorBonus)
       : null;
-    html += `<div class="anarchy-seuils combat-seuils">
+    combatBody += `<div class="anarchy-seuils combat-seuils">
       <div class="anarchy-seuil-row"><span class="anarchy-seuil-label">Seuils phys.${armorBonus ? ` <span class="armor-bonus-note">(armure +${armorBonus})</span>` : ""}</span><span class="anarchy-seuil-val">${fmtThresholds(effPhys)}</span></div>
       <div class="anarchy-seuil-row" style="margin-top:3px;"><span class="anarchy-seuil-label">Seuils ment.</span><span class="anarchy-seuil-val">${fmtThresholds(mentMonitor)}</span></div>
       ${matrixMonitor ? `<div class="anarchy-seuil-row" style="margin-top:3px;"><span class="anarchy-seuil-label">Seuils matr.</span><span class="anarchy-seuil-val">${fmtThresholds(matrixMonitor)}</span></div>` : ""}
@@ -100,7 +97,7 @@ Object.assign(CardRenderer, {
 
     // Armes (lançables, ouvrent le panneau de risque RR)
     if (weapons && weapons.length) {
-      html += `<div class="weapon-block">`;
+      combatBody += `<div class="weapon-block">`;
       for (const a of weapons) {
         const noteStr = a.note
           ? ` <em style="color:var(--text-dim);font-size:0.58rem;">(${this._esc(a.note)})</em>`
@@ -109,17 +106,17 @@ Object.assign(CardRenderer, {
         if (r) {
           const rrTxt = r.rr ? ` RR${r.rr}` : "";
           const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill} ${r.skillVal}+${r.attr} ${r.attrVal}${rrTxt}) — cliquer pour lancer`;
-          html += `<div class="weapon-line weapon-rollable rollable" data-roll-weapon-anarchy="${this._esc(a.name)}" data-roll-pnj="${pnj.id}" title="${this._esc(title)}">
+          combatBody += `<div class="weapon-line weapon-rollable rollable" data-roll-weapon-anarchy="${this._esc(a.name)}" data-roll-pnj="${pnj.id}" title="${this._esc(title)}">
             <div><div class="weapon-name">${this._esc(a.name)}${noteStr}</div><div class="weapon-stat">VD ${a.vd} · ${this._esc(a.ranges)}</div></div>
             <span class="weapon-pool">⚄${r.pool}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}</span>
           </div>`;
         } else {
-          html += `<div class="weapon-line">
+          combatBody += `<div class="weapon-line">
             <div><div class="weapon-name">${this._esc(a.name)}${noteStr}</div><div class="weapon-stat">VD ${a.vd} · ${this._esc(a.ranges)}</div></div>
           </div>`;
         }
       }
-      html += "</div>";
+      combatBody += "</div>";
     }
     // Sorts (CH-M7e) : en zone Combat, façon armes. Anarchy 2 lance via la
     // compétence Sorcellerie (jet de risque) — le Drain est géré par
@@ -127,22 +124,23 @@ Object.assign(CardRenderer, {
     if (spells && spells.length) {
       const sorc = (skills || []).find((s) => s.name === "Sorcellerie");
       const riskPool = sorc ? sorc.val + (attrs[sorc.attr] || 0) : 0;
-      html += this._spellsBlock(pnj, spells, pnj.edition, {
+      combatBody += this._spellsBlock(pnj, spells, pnj.edition, {
         viaRisk: true,
         riskPool,
         riskRR: sorc ? sorc.rr || 0 : 0,
       });
     }
-    html += this._drugRow(pnj, pnj.edition, deps);
-    html += this._armorChipRow(pnj);
-    html += this._vehicleChipRow(pnj, deps);
-    html += this._spiritChipRow(pnj, deps);
-    html += "</div>"; // fin combat-zone
+    combatBody += this._drugRow(pnj, pnj.edition, deps);
+    combatBody += this._armorChipRow(pnj);
+    combatBody += this._vehicleChipRow(pnj, deps);
+    combatBody += this._spiritChipRow(pnj, deps);
+    const combatSummary = threatLevel ? `Combativité ${threatLevel}` : "";
+    html += this._zoneShell(pnj, "combat", combatBody, combatSummary);
 
     // ---- ZONE CAPACITÉS ----
-    html += '<div class="capacity-zone">';
+    let capBody = "";
     if (skills && skills.length) {
-      html += `<div class="card-section">
+      capBody += `<div class="card-section">
         <div class="card-section-label">Compétences</div>
         <div class="card-section-content">`;
       for (const s of skills) {
@@ -154,7 +152,7 @@ Object.assign(CardRenderer, {
           pool >= 1
             ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}" data-roll-detail="${detail}" data-roll-edition="${pnj.edition}" data-roll-rr="${s.rr || 0}" data-roll-pnj="${pnj.id}"`
             : "";
-        html += this._rollableTag(
+        capBody += this._rollableTag(
           pool >= 1,
           `tag skill-tag${pool >= 1 ? " rollable" : ""}`,
           `${rollMain} title="${this._esc(s.name)} : ${pool} (${s.val}+${s.attr}${rrStr}) — cliquer pour lancer"`,
@@ -179,35 +177,36 @@ Object.assign(CardRenderer, {
           );
         };
         if (s.spec && s.spec !== true && s.specVal) {
-          html += specChip(s.spec, s.specVal, s.specAttr, s.specRR != null ? s.specRR : s.rr || 0);
+          capBody += specChip(s.spec, s.specVal, s.specAttr, s.specRR != null ? s.specRR : s.rr || 0);
         }
         for (const ex of s.extraSpecs || []) {
-          html += specChip(ex.name, ex.val != null ? ex.val : s.val + 2, ex.attr, ex.rr || 0);
+          capBody += specChip(ex.name, ex.val != null ? ex.val : s.val + 2, ex.attr, ex.rr || 0);
         }
       }
-      html += "</div></div>";
+      capBody += "</div></div>";
     }
     if (knowledges && knowledges.length) {
       // Connaissances (p.85) : flat, s'utilisent avec un attribut (souvent
       // Logique) selon le contexte — rendues en tags simples, non lançables.
-      html += `<div class="card-section">
+      capBody += `<div class="card-section">
         <div class="card-section-label">Connaissances</div>
         <div class="card-section-content">
           ${knowledges.map((k) => `<span class="tag skill-tag skill-tag-knowledge">${this._esc(typeof k === "string" ? k : k.name)}</span>`).join("")}
         </div></div>`;
     }
     if (edges && edges.length) {
-      html += `<div class="card-section">
+      capBody += `<div class="card-section">
         <div class="card-section-label">Atouts</div>
         <div class="card-section-content">`;
       // Les drogues sont pilotées depuis leur tag dans la zone Combat
       // (this._drugRow) — ici, texte simple pour éviter le doublon.
       for (const a of edges) {
-        html += `<div class="anarchy-atout">• ${this._esc(a)}</div>`;
+        capBody += `<div class="anarchy-atout">• ${this._esc(a)}</div>`;
       }
-      html += "</div></div>";
+      capBody += "</div></div>";
     }
-    html += "</div>"; // fin capacity-zone
+    const capSummary = skills && skills.length ? `${skills.length} compétence${skills.length > 1 ? "s" : ""}` : "";
+    html += this._zoneShell(pnj, "capacites", capBody, capSummary);
 
     // ---- ZONE PERSONNAGE (PJ uniquement) ----
     // Couche narrative propre aux personnages jouables (mots-clés,
@@ -215,23 +214,22 @@ Object.assign(CardRenderer, {
     // (nuyens dépensés, Karma). Absente des PNJ (isPC non posé).
     if (isPC) html += this._pcNarrativeZone(pnj, { keywords, behaviors, quotes, lifestyle, nuyenSpent, nuyenBudget });
 
-    // ---- ZONE RÉFÉRENCE ----
+    // ---- ZONE DÉTAILS ----
     // (les seuils de blessures vivent dans la zone Combat, sous le moniteur)
-    html += this._refToggle(pnj, "Référence — attributs, équipement");
-    html += '<div class="ref-zone">';
+    let detailsBody = "";
     if (prefs.showAttributes) {
       const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA"];
-      html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>
+      detailsBody += `<div class="ref-block"><div class="ref-lbl">Attributs</div>
         <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k], "", { roll: true, edition: pnj.edition })).join("")}</div></div>`;
     }
     if (prefs.showEquipment && equip && equip.length)
-      html += this._equipSection(pnj, equip, pnj.edition, deps);
-    if (pnj.cyberdeck) html += CyberdeckRenderer.block(pnj, pnj.edition, deps);
+      detailsBody += this._equipSection(pnj, equip, pnj.edition, deps);
+    if (pnj.cyberdeck) detailsBody += CyberdeckRenderer.block(pnj, pnj.edition, deps);
     if (notes) {
-      html += `<div class="ref-block"><div class="ref-lbl">Notes</div>
+      detailsBody += `<div class="ref-block"><div class="ref-lbl">Notes</div>
         <div style="font-size:0.75rem;">${this._esc(notes)}</div></div>`;
     }
-    html += "</div>"; // fin ref-zone
+    html += this._zoneShell(pnj, "details", detailsBody, "attributs, équipement");
 
     html += "</div>";
     return html;

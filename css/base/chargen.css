@@ -354,42 +354,9 @@
   font-size: var(--fs-xs);
 }
 
-/* Bouton de repli Référence */
-.ref-toggle {
-  width: 100%;
-  background: transparent;
-  border: none;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 10px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: var(--fs-2xs);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  transition: color var(--dur-fast);
-}
-.ref-toggle:hover {
-  color: var(--accent);
-}
-.ref-toggle .chev {
-  transition: transform var(--dur-base);
-}
-.ref-collapsed .ref-toggle .chev {
-  transform: rotate(-90deg);
-}
-
-/* Zone Référence */
-.ref-zone {
-  padding: var(--sp-1) 14px 10px;
-}
-.ref-collapsed .ref-zone {
-  display: none;
-}
+/* Contenu interne d'une zone repliable (Détails, etc.) — le bouton et le
+   fold animé sont génériques, cf. .zone-toggle/.zone-body (pnj-card.css,
+   CP1). */
 .ref-block {
   padding: 10px 0;
   border-bottom: 1px solid var(--border);

@@ -264,6 +264,101 @@
   padding: var(--sp-3) var(--sp-4);
 }
 
+/* ============================================================
+   ZONES REPLIABLES (CP1) — Combat / Capacités / Incarnation / Détails.
+   Coquille générique : bouton (libellé + résumé + chevron) + corps animé.
+   ============================================================ */
+.card-zone {
+  border-top: 1px solid var(--border);
+}
+.card-zone:first-of-type {
+  border-top: none;
+}
+.zone-toggle {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-2);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  transition: color var(--dur-fast);
+}
+.zone-toggle:hover,
+.zone-toggle:focus-visible {
+  color: var(--accent);
+}
+.zone-toggle-label {
+  flex: none;
+  color: var(--text);
+}
+.zone-toggle-summary {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+  text-transform: none;
+  letter-spacing: normal;
+  opacity: 0.8;
+}
+.zone-toggle .chev {
+  flex: none;
+  transition: transform var(--dur-base);
+}
+.card-zone.zone-collapsed .zone-toggle .chev {
+  transform: rotate(-90deg);
+}
+
+/* Repli animé « doux » (doctrine DA CP1) : hauteur (grid-template-rows) +
+   fondu, ~280ms, cubic-bezier emphasized. Le wrapper .zone-body-inner porte
+   overflow:hidden — indispensable pour que la ligne de grille puisse
+   s'écraser à 0fr sans que son contenu ne déborde pendant l'animation. */
+.zone-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--dur-base) var(--ease-emphasized);
+}
+/* .zone-body-inner ne porte AUCUN padding : c'est l'élément étiré par la
+   grille (stretch) et clippé (overflow:hidden) — un padding ici empêche le
+   repli d'atteindre une hauteur réellement nulle (le padding reste rendu
+   même à hauteur de grille 0fr). Le padding vit sur .zone-body-pad, plus
+   profond, qui disparaît intégralement avec le clip de son parent. */
+.zone-body-inner {
+  overflow: hidden;
+  min-height: 0;
+  opacity: 1;
+  transition: opacity var(--dur-base) ease;
+}
+.zone-body-pad {
+  padding: var(--sp-1) 14px 10px;
+}
+.card-zone.zone-collapsed .zone-body {
+  grid-template-rows: 0fr;
+}
+.card-zone.zone-collapsed .zone-body-inner {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zone-body,
+  .zone-body-inner {
+    transition: none;
+  }
+}
+/* Anti-scrollbar-imbriquée (garde-fou doctrine) : une rangée à défilement
+   horizontal ne doit jamais ajouter de défilement vertical dans une zone. */
+.zone-body-inner [class$="-row"] {
+  overflow-y: hidden;
+}
+
 /* Bloc attributs — table à filets verticaux, sans boîtes individuelles :
    un seul plan, des filets entre colonnes, valeurs alignées (lecture
    « fiche de perso »). La grille primaire s'adapte au nombre d'attributs

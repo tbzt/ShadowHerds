@@ -12,6 +12,15 @@ commit.
 
 ## [Non publié]
 
+## [1.21.0] — 2026-07-14
+
+### Jouer
+- **Zones repliables sur les cartes** : Combat, Capacités et Incarnation se
+  replient désormais comme Détails, chacune avec sa propre mémoire (un pli
+  manuel sur une carte reste tel quel). Une zone repliée affiche un résumé
+  (ex. « Init 11+3D6 », « 6 compétences ») pour ne rien perdre du coup d'œil.
+  Repli animé, jamais de scrollbar imbriquée.
+
 ## [1.20.0] — 2026-07-14
 
 ### Organiser

@@ -850,11 +850,13 @@ const EncounterRenderer = {
       à côté de la liste. Rien pour un PJ ad-hoc (pas de fiche) ni une scène
       vide. actions=[] : pas de boutons sauvegarder/éditer/virer, la card
       reste malgré tout pleinement interactive (jets, moniteur, drogues…).
-      CH-C5 : chaque combattant entre en scène en fiche COMPACTE (référence
-      repliée) pour ne pas noyer le tour sous 65 chiffres — on pose le seul
-      levier per-carte exposé (_refIsOpen lit pnj._refOpen en priorité). Le MJ
-      garde la .ref-toggle de la carte pour déplier au besoin ; l'effet ne
-      touche la carte du pool qu'à son prochain rendu (compact = défaut CH-C1). */
+      CH-C5 : chaque combattant entre en scène avec la zone Détails repliée
+      (attributs/réserves/équipement) pour ne pas noyer le tour sous 65
+      chiffres — Combat et Capacités restent à leur défaut (c'est justement ce
+      qu'on regarde en combat). Levier per-carte, per-zone exposé (_zoneIsOpen
+      lit pnj._zoneOpen en priorité, CP1). Le MJ garde le .zone-toggle de la
+      carte pour déplier au besoin ; l'effet ne touche la carte du pool qu'à
+      son prochain rendu (compact = défaut CH-C1). */
   renderActiveCard(rows, state, model) {
     const box = document.getElementById("encounter-active-card");
     if (!box) return;
@@ -911,12 +913,12 @@ const EncounterRenderer = {
     box.innerHTML = "";
     box.hidden = !pnj;
     if (pnj) {
-      pnj._refOpen = false;
+      pnj._zoneOpen = { ...pnj._zoneOpen, details: false };
       // K2 : bandeau d'état (hors de combat/retardé/devrait fuir, réutilise
       // les badges de la ligne) au-dessus de la carte, note de scène éditable
       // en dessous — la fiche « vue combat » n'affiche que ce que le MJ
       // regarde à chaque tour (l'init est masquée en CSS, les attributs sont
-      // déjà repliés par pnj._refOpen ci-dessus).
+      // déjà repliés par pnj._zoneOpen ci-dessus).
       box.innerHTML = `<div class="encounter-active-top">${this._activeTop(active, state)}</div>`;
       box.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
       // K5 : rangée Atout (SR6, combatModel.edgeTracker) — organe d'édition

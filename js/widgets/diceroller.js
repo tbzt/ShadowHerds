@@ -23,7 +23,7 @@ const DiceRoller = {
   _THREAT_DEFAULT: 4,
 
   /** Hooks injectés par App au démarrage (couche 6, seule à connaître
-      tous les contrôleurs) : resolve, getPrefs, onPnjChanged, isRefOpen,
+      tous les contrôleurs) : resolve, getPrefs, onPnjChanged, isZoneOpen,
       isAnarchy. Voir init(). */
   _hooks: null,
 
@@ -75,9 +75,9 @@ const DiceRoller = {
     this._setThreat(this._THREAT_DEFAULT);
   },
 
-  /** hooks: { resolve(id), getPrefs(), onPnjChanged(pnj), isRefOpen(pnj), isAnarchy(), currentTurn() }. */
+  /** hooks: { resolve(id), getPrefs(), onPnjChanged(pnj), isZoneOpen(pnj, zoneKey), isAnarchy(), currentTurn() }. */
   init(hooks) {
-    const required = ["resolve", "getPrefs", "onPnjChanged", "isRefOpen", "isAnarchy", "currentTurn"];
+    const required = ["resolve", "getPrefs", "onPnjChanged", "isZoneOpen", "isAnarchy", "currentTurn"];
     const missing = required.filter((k) => typeof (hooks || {})[k] !== "function");
     if (missing.length) {
       throw new Error(`DiceRoller.init: hooks manquants: ${missing.join(", ")}`);
@@ -111,13 +111,15 @@ const DiceRoller = {
 
     // Clic sur n'importe quelle réserve marquée [data-roll] dans une carte
     document.addEventListener("click", (e) => {
-      // Replier/déplier la zone Référence d'une carte
-      const refEl = e.target.closest("[data-ref-toggle]");
-      if (refEl) {
-        const pnj = this._hooks.resolve(refEl.getAttribute("data-ref-toggle"));
+      // Replier/déplier une zone de carte (CP1 : pli par zone, sparse,
+      // persisté sur pnj._zoneOpen — override qui gagne et reste, I4).
+      const zoneEl = e.target.closest("[data-zone-toggle]");
+      if (zoneEl) {
+        const zoneKey = zoneEl.getAttribute("data-zone-toggle");
+        const pnj = this._hooks.resolve(zoneEl.getAttribute("data-id"));
         if (pnj) {
-          const open = this._hooks.isRefOpen(pnj);
-          pnj._refOpen = !open;
+          const open = this._hooks.isZoneOpen(pnj, zoneKey);
+          pnj._zoneOpen = { ...pnj._zoneOpen, [zoneKey]: !open };
           this._hooks.onPnjChanged(pnj);
         }
         return;

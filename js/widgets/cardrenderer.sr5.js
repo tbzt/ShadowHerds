@@ -62,25 +62,22 @@ Object.assign(CardRenderer, {
     } = pnj;
 
     const prefs = this._displayPrefs(deps);
-    const refOpen = this._refIsOpen(pnj, deps);
     const { weapons, gear } = ItemResolver.splitEquip(equip);
-    let html = `<div class="pnj-card-body${refOpen ? "" : " ref-collapsed"}">`;
+    let html = `<div class="pnj-card-body">`;
 
     const malus5 = Utils.woundMalus(pnj, "sr5");
 
     // ---- ZONE COMBAT ----
-    html += '<div class="combat-zone">';
-    html += this._zoneEyebrow("Combat");
-    html += '<div class="combat-row">';
+    let combatBody = '<div class="combat-row">';
     const initDetail = `${Utils.attrFullName("REA")} ${attrs.REA} + ${Utils.attrFullName("INT")} ${attrs.INT}`;
-    html += this._initPill(init, initDice, pnj, initDetail);
+    combatBody += this._initPill(init, initDice, pnj, initDetail);
     if (drainResist != null)
-      html += this._rollPill("Drain", Math.max(0, drainResist - malus5), "Résistance au Drain");
-    html += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus5), "Test de défense : Réaction + Intuition", "⛉");
-    html += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure (non affectée par le malus de blessure)", "⛊");
-    html += "</div>";
+      combatBody += this._rollPill("Drain", Math.max(0, drainResist - malus5), "Résistance au Drain");
+    combatBody += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus5), "Test de défense : Réaction + Intuition", "⛉");
+    combatBody += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure (non affectée par le malus de blessure)", "⛊");
+    combatBody += "</div>";
 
-    html += `<div class="monitor-block">
+    combatBody += `<div class="monitor-block">
       <div class="monitor-row">
         <span class="monitor-label">Phys</span>
         <div class="monitor-boxes monitor-phys">${this._monitorBoxes(pnj.id, "phys", physMon, physFilled)}</div>
@@ -92,29 +89,30 @@ Object.assign(CardRenderer, {
       ${this._monitorMalusBadge(malus5)}
     </div>`;
 
-    html += this._weaponBlock(pnj, weapons, "sr5", deps);
-    html += this._spellsBlock(pnj, spells, "sr5");
-    html += this._drugRow(pnj, "sr5", deps);
-    html += this._vehicleChipRow(pnj, deps);
-    html += this._spiritChipRow(pnj, deps);
-    html += "</div>"; // fin combat-zone
+    combatBody += this._weaponBlock(pnj, weapons, "sr5", deps);
+    combatBody += this._spellsBlock(pnj, spells, "sr5");
+    combatBody += this._drugRow(pnj, "sr5", deps);
+    combatBody += this._vehicleChipRow(pnj, deps);
+    combatBody += this._spiritChipRow(pnj, deps);
+    const combatSummary = init != null ? `Init ${init}+${initDice}D6` : "";
+    html += this._zoneShell(pnj, "combat", combatBody, combatSummary);
 
     // ---- ZONE CAPACITÉS ----
-    html += '<div class="capacity-zone">';
-    html += this._skillsSection(skills, malus5);
-    html += this._knowledgesSection(knowledges, pnj, malus5);
+    let capBody = "";
+    capBody += this._skillsSection(skills, malus5);
+    capBody += this._knowledgesSection(knowledges, pnj, malus5);
     if (powers && powers.length)
-      html += this._listSection("Pouvoirs d'adepte", powers);
-    if (traits && traits.length) html += this._listSection("Traits", traits);
+      capBody += this._listSection("Pouvoirs d'adepte", powers);
+    if (traits && traits.length) capBody += this._listSection("Traits", traits);
     if (pnj.infectedPowers && pnj.infectedPowers.length)
-      html += this._listSection("Pouvoirs (Infecté)", pnj.infectedPowers);
+      capBody += this._listSection("Pouvoirs (Infecté)", pnj.infectedPowers);
     if (pnj.infectedWeaknesses && pnj.infectedWeaknesses.length)
-      html += this._listSection("Faiblesses (Infecté)", pnj.infectedWeaknesses);
-    html += "</div>";
+      capBody += this._listSection("Faiblesses (Infecté)", pnj.infectedWeaknesses);
+    const capSummary = skills && skills.length ? `${skills.length} compétence${skills.length > 1 ? "s" : ""}` : "";
+    html += this._zoneShell(pnj, "capacites", capBody, capSummary);
 
-    // ---- ZONE RÉFÉRENCE (repliable) ----
-    html += this._refToggle(pnj, "Référence — attributs, réserves MJ, équipement");
-    html += '<div class="ref-zone">';
+    // ---- ZONE DÉTAILS (repliable) ----
+    let detailsBody = "";
     if (prefs.showAttributes) {
       const attrKeys = ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"];
       // Attributs spéciaux : ESS toujours, puis MAG (éveillé) ou RES (techno).
@@ -124,23 +122,23 @@ Object.assign(CardRenderer, {
         ...(attrs.RES ? ["RES"] : []),
         ...(attrs.CHC != null ? ["CHC"] : []),
       ];
-      html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>`;
-      html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k], "", { roll: true, edition: "sr5" })).join("")}</div>`;
+      detailsBody += `<div class="ref-block"><div class="ref-lbl">Attributs</div>`;
+      detailsBody += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k], "", { roll: true, edition: "sr5" })).join("")}</div>`;
       if (extras.length)
         // ESS n'est pas un pool de dés (ressource, pas un test) — non lançable.
-        html += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, attrs[k], "attr-special", { roll: k !== "ESS", edition: "sr5" })).join("")}</div>`;
-      html += `<div class="limites-grid" style="margin-top:6px;">
+        detailsBody += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, attrs[k], "attr-special", { roll: k !== "ESS", edition: "sr5" })).join("")}</div>`;
+      detailsBody += `<div class="limites-grid" style="margin-top:6px;">
         ${this._attrCell("Lim.Phys", limPhys)}
         ${this._attrCell("Lim.Ment", limMent)}
         ${this._attrCell("Lim.Soc", limSoc)}
       </div></div>`;
     }
-    if (prefs.showGmPools) html += this._gmPoolsSR5(pnj);
+    if (prefs.showGmPools) detailsBody += this._gmPoolsSR5(pnj);
     if (prefs.showEquipment && gear.length)
-      html += this._equipSection(pnj, gear, "sr5", deps);
-    if (pnj.cyberdeck) html += CyberdeckRenderer.block(pnj, "sr5", deps);
-    if (augs && augs.length) html += this._listSection("Augmentations", augs);
-    html += "</div>"; // fin ref-zone
+      detailsBody += this._equipSection(pnj, gear, "sr5", deps);
+    if (pnj.cyberdeck) detailsBody += CyberdeckRenderer.block(pnj, "sr5", deps);
+    if (augs && augs.length) detailsBody += this._listSection("Augmentations", augs);
+    html += this._zoneShell(pnj, "details", detailsBody, "attributs, réserves MJ, équipement");
 
     html += "</div>";
     return html;

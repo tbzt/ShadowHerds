@@ -26,25 +26,22 @@ Object.assign(CardRenderer, {
     } = pnj;
 
     const prefs = this._displayPrefs(deps);
-    const refOpen = this._refIsOpen(pnj, deps);
     const { weapons, gear } = ItemResolver.splitEquip(equip);
-    let html = `<div class="pnj-card-body${refOpen ? "" : " ref-collapsed"}">`;
+    let html = `<div class="pnj-card-body">`;
 
     const malus = Utils.woundMalus(pnj, "anarchy1");
 
     // ---- ZONE COMBAT ----
-    html += '<div class="combat-zone">';
-    html += this._zoneEyebrow("Combat");
-    html += '<div class="combat-row">';
+    let combatBody = '<div class="combat-row">';
     if (init != null)
-      html += this._initPill(init, initDice, pnj);
+      combatBody += this._initPill(init, initDice, pnj);
     if (drainResist != null)
-      html += this._rollPill("Drain", Math.max(0, drainResist - malus), "Résistance au Drain");
+      combatBody += this._rollPill("Drain", Math.max(0, drainResist - malus), "Résistance au Drain");
     if (pnj.defense != null)
-      html += this._rollPill("Défense", Math.max(0, pnj.defense - malus), "Test de défense : Agilité + Logique", "⛉");
-    html += "</div>";
+      combatBody += this._rollPill("Défense", Math.max(0, pnj.defense - malus), "Test de défense : Agilité + Logique", "⛉");
+    combatBody += "</div>";
 
-    html += `<div class="monitor-block">
+    combatBody += `<div class="monitor-block">
       <div class="monitor-row">
         <span class="monitor-label">Phys</span>
         <div class="monitor-boxes monitor-phys">${this._monitorBoxes(pnj.id, "phys", physMon, physFilled)}</div>
@@ -56,33 +53,34 @@ Object.assign(CardRenderer, {
       ${this._monitorMalusBadge(malus)}
     </div>`;
 
-    html += this._weaponBlock(pnj, weapons, "anarchy1", deps);
-    html += this._spellsBlock(pnj, spells, "anarchy1");
-    html += this._drugRow(pnj, "anarchy1", deps);
-    html += this._vehicleChipRow(pnj, deps);
-    html += this._spiritChipRow(pnj, deps);
-    html += "</div>"; // fin combat-zone
+    combatBody += this._weaponBlock(pnj, weapons, "anarchy1", deps);
+    combatBody += this._spellsBlock(pnj, spells, "anarchy1");
+    combatBody += this._drugRow(pnj, "anarchy1", deps);
+    combatBody += this._vehicleChipRow(pnj, deps);
+    combatBody += this._spiritChipRow(pnj, deps);
+    const combatSummary = init != null ? `Init ${init}+${initDice}D6` : "";
+    html += this._zoneShell(pnj, "combat", combatBody, combatSummary);
 
     // ---- ZONE CAPACITÉS ----
-    html += '<div class="capacity-zone">';
-    html += this._skillsSection(skills, malus);
-    if (edges && edges.length) html += this._listSection("Atouts", edges);
-    html += "</div>";
+    let capBody = "";
+    capBody += this._skillsSection(skills, malus);
+    if (edges && edges.length) capBody += this._listSection("Atouts", edges);
+    const capSummary = skills && skills.length ? `${skills.length} compétence${skills.length > 1 ? "s" : ""}` : "";
+    html += this._zoneShell(pnj, "capacites", capBody, capSummary);
 
-    // ---- ZONE RÉFÉRENCE (repliable) ----
-    html += this._refToggle(pnj, "Référence — attributs, équipement");
-    html += '<div class="ref-zone">';
+    // ---- ZONE DÉTAILS (repliable) ----
+    let detailsBody = "";
     if (prefs.showAttributes) {
       const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA", "CHC"];
-      html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>
+      detailsBody += `<div class="ref-block"><div class="ref-lbl">Attributs</div>
         <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k], "", { roll: true, edition: "anarchy1" })).join("")}</div>
         ${attrs.ESS != null ? `<div class="attr-grid attr-special-row">${this._attrCell("ESS", attrs.ESS, "attr-special")}</div>` : ""}
       </div>`;
     }
     if (prefs.showEquipment && gear.length)
-      html += this._equipSection(pnj, gear, "anarchy1", deps);
-    if (pnj.cyberdeck) html += CyberdeckRenderer.block(pnj, "anarchy1", deps);
-    html += "</div>"; // fin ref-zone
+      detailsBody += this._equipSection(pnj, gear, "anarchy1", deps);
+    if (pnj.cyberdeck) detailsBody += CyberdeckRenderer.block(pnj, "anarchy1", deps);
+    html += this._zoneShell(pnj, "details", detailsBody, "attributs, équipement");
 
     html += "</div>";
     return html;

@@ -403,7 +403,11 @@ const CardRenderer = {
     </div>`;
   },
 
-  /* ---- Habillage (âge, signe, manie, motivation, style, attitude) ---- */
+  /* ---- Habillage (âge, signe, manie, motivation, style, attitude) ----
+     Zone Incarnation (CP1) : « Portrait » reste le mot pour l'image IA,
+     le vocabulaire verrouillé de la ZONE est « Incarnation » (porté par le
+     libellé du zone-toggle, cf. _ZONE_LABELS). Promotion en haut de carte
+     et fusion complète : CP2. */
   _flavorSection(pnj) {
     const f = pnj.flavor;
     if (!f) return "";
@@ -421,10 +425,9 @@ const CardRenderer = {
           `<div class="flavor-row"><span class="flavor-key">${k}</span><span class="flavor-val">${this._esc(String(v))}</span></div>`,
       )
       .join("");
-    return `<div class="card-section flavor-section">
-      <div class="card-section-label">Portrait</div>
-      ${rows}
-    </div>`;
+    if (!rows) return "";
+    const summary = f.style || f.attitude || f.motivation || "";
+    return this._zoneShell(pnj, "incarnation", `<div class="card-section flavor-section">${rows}</div>`, summary);
   },
 
   /* ---- Réserves de dés utiles au MJ ---- */
@@ -440,17 +443,17 @@ const CardRenderer = {
   },
 
   /* ========================================================
-     Cartes organisées par usage de jeu : zone Combat (mise en
-     avant) / Capacités / Référence (repliable). Préférences :
-     défaut global (Réglages) + surcharge par carte (état de repli
-     mémorisé sur pnj._refOpen). Corps par édition dans les
+     Cartes organisées par usage de jeu : zones Combat / Capacités /
+     Incarnation / Détails, chacune repliable (CP1). Préférences :
+     défaut global (Réglages) + surcharge PAR ZONE, PAR CARTE (carte de
+     pli sparse mémorisée sur pnj._zoneOpen). Corps par édition dans les
      fichiers cardrenderer.sr5/sr6/anarchy.js.
      ======================================================== */
 
   /** Préférences d'affichage, avec défaut ADAPTATIF (CH-C1).
-      Le « compact » = référence repliée (layout) : attributs, réserves MJ et
-      équipement vivent DANS la zone Référence repliable (cf.
-      cardrenderer.sr5/sr6/anarchy.js), dont .ref-toggle reste l'affordance
+      Le « compact » = zones repliées par défaut (layout) : attributs,
+      réserves MJ et équipement vivent DANS la zone Détails repliable (cf.
+      cardrenderer.sr5/sr6/anarchy.js), dont .zone-toggle reste l'affordance
       d'expansion permanente. On garde donc show* à true — replier par défaut
       ne doit pas vider l'expansion. */
   _displayPrefs(deps) {
@@ -479,9 +482,25 @@ const CardRenderer = {
     return { layout: compact ? "compact" : "expanded", ...shows };
   },
 
-  /** La référence est-elle ouverte pour cette carte ? */
-  _refIsOpen(pnj, deps = CardRenderer.liveDeps()) {
-    if (pnj._refOpen === true || pnj._refOpen === false) return pnj._refOpen;
+  /** Libellés verrouillés (CP1/CONTRIBUTING § Chrome de carte). */
+  _ZONE_LABELS: {
+    combat: "Combat",
+    capacites: "Capacités",
+    incarnation: "Incarnation",
+    details: "Détails",
+  },
+
+  /** Cette zone est-elle ouverte pour cette carte ? Résolution (I4) :
+      1. override par carte, PAR ZONE (persisté, sparse) — gagne et reste.
+      2. défaut de contexte (_displayPrefs).
+      Compat : l'ancien pnj._refOpen (booléen unique, pré-CP1) ne couvrait
+      que l'ex-Référence → lu comme repli pour la zone "details" seulement,
+      tant qu'aucun override _zoneOpen.details n'existe. Présentation pure,
+      aucun schemaVersion (comme _refOpen hier). */
+  _zoneIsOpen(pnj, zoneKey, deps = CardRenderer.liveDeps()) {
+    const map = pnj._zoneOpen;
+    if (map && typeof map[zoneKey] === "boolean") return map[zoneKey];
+    if (zoneKey === "details" && typeof pnj._refOpen === "boolean") return pnj._refOpen;
     return this._displayPrefs(deps).layout === "expanded";
   },
 
@@ -529,11 +548,21 @@ const CardRenderer = {
     return `<div class="weapon-block">${rows}</div>`;
   },
 
-  _refToggle(pnj, summary) {
-    return `<button class="ref-toggle" data-ref-toggle="${pnj.id}">
-      <span>${this._esc(summary)}</span>
-      <span class="chev">▾</span>
-    </button>`;
+  /** Coquille de zone repliable (CP1) : bouton (libellé + résumé + chevron)
+      + corps animé (`.zone-body`, fold CSS dans pnj-card.css). Zone/module
+      vide = rien (I3) — pas de zone qui n'a aucun contenu à montrer. */
+  _zoneShell(pnj, zoneKey, bodyHtml, summary = "") {
+    if (!bodyHtml) return "";
+    const open = this._zoneIsOpen(pnj, zoneKey);
+    const label = this._ZONE_LABELS[zoneKey] || zoneKey;
+    return `<div class="card-zone${open ? "" : " zone-collapsed"}" data-zone="${zoneKey}">
+      <button class="zone-toggle" data-zone-toggle="${zoneKey}" data-id="${pnj.id}">
+        <span class="zone-toggle-label">${this._esc(label)}</span>
+        ${summary ? `<span class="zone-toggle-summary">${this._esc(summary)}</span>` : ""}
+        <span class="chev">▾</span>
+      </button>
+      <div class="zone-body"><div class="zone-body-inner"><div class="zone-body-pad">${bodyHtml}</div></div></div>
+    </div>`;
   },
 
   /* ---- Helpers ---- */
@@ -916,7 +945,7 @@ const CardRenderer = {
      Notes datées, empilées en tête, repliées derrière un bouton pour ne pas
      alourdir la grille. Le compte reste visible (mémoire présente). L'état
      d'ouverture vit dans un Set TRANSIENT (jamais sérialisé sur l'entité,
-     contrairement à _refOpen) : uniquement de la présentation.
+     contrairement à _zoneOpen) : uniquement de la présentation.
      Exclu des entités liées/transitoires (véhicules, esprits, enfants) :
      le journal est la mémoire d'une fiche autonome qu'on suit dans le temps. */
   _journalOpen: new Set(),
