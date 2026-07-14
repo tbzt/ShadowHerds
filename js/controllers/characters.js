@@ -45,6 +45,8 @@ const Characters = Object.assign(
       pnj.gameLevel,
       pnj.archetypeTable,
       ...(pnj.keywords || []),
+      // Suivi de campagne : motifs du registre (mentionnent runs/contacts).
+      ...((pnj.campaign && pnj.campaign.ledger) || []).map((e) => e.reason),
       // Recherche plein-fiche (F1) : compétences, équipement, sorts…
       Utils.entityContent(pnj),
     ],

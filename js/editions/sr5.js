@@ -199,6 +199,17 @@ const EditionSR5 = {
       physMon/stunMon + physFilled/stunFilled, exactement le modèle des PNJ
       complets SR5 (cf. `conditionMonitor` ci-dessous) — mêmes champs, donc
       `CardRenderer._monitorBoxes`/`UI.toggleMonitor` s'appliquent tels quels. */
+  /** Réputation SR5 (Livre de Règles p.374) : trois scores distincts —
+      Crédibilité (accomplissements), Rumeur (côté négatif), Renommée
+      (reconnaissance publique). Suivis librement par le MJ (compteurs de
+      campagne, cf. Campaign) : la Crédibilité dérive du Karma dans le livre
+      mais d'autres facteurs l'altèrent, on ne l'auto-calcule donc pas. */
+  reputationTracks: [
+    { key: "cred", label: "Crédibilité" },
+    { key: "rumeur", label: "Rumeur" },
+    { key: "renommee", label: "Renommée" },
+  ],
+
   pcTableBlock: {
     fields: [
       { key: "initBase", label: "Initiative (base)", kind: "number" },
@@ -1356,9 +1367,9 @@ const EditionSR5 = {
             "Yeux cybernétiques (smartlink, vision nocturne)",
           ]
         : [],
-    Decker: () => [
+    Decker: (proRating) => [
       "Datajack",
-      "Cyberdeck Shiawase Cyber-5 (Att 8, FW 7, DP 5)",
+      Utils.rand(EditionSR5.equipPools.cyberdecks[EditionSR5._deckTier(proRating)]),
     ],
     Rigger: () => [
       "Câblage de contrôle de véhicules",
@@ -1413,6 +1424,26 @@ const EditionSR5 = {
         "Commlink Erika Elite (Indice 4)",
         "Commlink Hermes Ikon (Indice 5)",
         "Commlink Sony CIY-720 (Indice 5)",
+      ],
+    },
+    // Cyberdecks p.439-441 (Att/Corr/TDD/FW) — mêmes paliers de prof que
+    // commlinks (cf. _deckTier). Lu par Cyberdeck.parseLegacy à la génération.
+    cyberdecks: {
+      bas: [
+        "Cyberdeck Erika MCD-1 (Att 4, Corr 3, TDD 3, FW 2)",
+        "Cyberdeck Microdeck Summit (Att 2, Corr 2, TDD 3, FW 4)",
+      ],
+      moyen: [
+        "Cyberdeck Hermes Chariot (Att 3, Corr 5, TDD 4, FW 3)",
+        "Cyberdeck Novatech Navigator (Att 3, Corr 3, TDD 5, FW 4)",
+      ],
+      haut: [
+        "Cyberdeck Renraku Tsurugi (Att 5, Corr 4, TDD 4, FW 3)",
+        "Cyberdeck Sony CIY-720 (Att 4, Corr 3, TDD 5, FW 6)",
+      ],
+      elite: [
+        "Cyberdeck Shiawase Cyber-5 (Att 5, Corr 4, TDD 6, FW 7)",
+        "Cyberdeck Fairlight Excalibur (Att 8, Corr 6, TDD 5, FW 4)",
       ],
     },
     pistoletsLegers: [
@@ -1565,6 +1596,12 @@ const EditionSR5 = {
     if (magSpecials.includes(special)) return true;
     const magProf = ["Mage", "Chaman", "Adepte", "Initié", "Conjuration"];
     return magProf.some((k) => (archetype || "").includes(k));
+  },
+
+  /** Palier de matériel selon le professionnalisme — mêmes seuils que le
+      tirage de commlink ci-dessous, réutilisé pour les cyberdecks. */
+  _deckTier(proRating) {
+    return proRating <= 1 ? "bas" : proRating <= 3 ? "moyen" : proRating <= 5 ? "haut" : "elite";
   },
 
   buildLoadout(archetype, proRating, special) {
@@ -1781,6 +1818,13 @@ const EditionSR5 = {
       else if (archetype.includes("Mage") || archetype.includes("Initié"))
         special = "Mage hermétique";
     }
+
+    // Un archétype matriciel implique la spécialisation Decker (compétences
+    // matricielles + cyberdeck), sauf spécialisation déjà fixée. `role` vient
+    // de Coherence.resolveTuple (ci-dessus) ; /matriciel/ rattrape les
+    // archétypes typés « technicien » (ex. « Technicien matriciel corpo »).
+    if (special === "Aucun" && (role === "decker" || /matriciel/i.test(archetype)))
+      special = "Decker";
 
     // Attributs de base selon professionnalisme
     const archetypeIdx = Utils.clamp(proRating, 0, 6);
@@ -2021,6 +2065,7 @@ const EditionSR5 = {
     WeaponRoll.reconcile(pnj, "sr5");
     BonusEngine.apply(pnj, "sr5");
     Flavor.apply(pnj);
+    Cyberdeck.hydrate(pnj, "sr5");
     return pnj;
   },
 

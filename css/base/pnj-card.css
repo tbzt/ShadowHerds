@@ -700,6 +700,128 @@
   color: var(--accent);
 }
 
+/* ---- Suivi de campagne (Progression) ----
+   Même grammaire que le journal (bande repliable en pied de fiche) ; réutilise
+   .journal-date / .journal-del. Pastilles de solde via .stat-pill (tokens). */
+.pnj-progression {
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.progression-toggle {
+  width: 100%;
+  text-align: left;
+  padding: 0.4rem var(--sp-4);
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color var(--dur-base);
+}
+.progression-toggle:hover {
+  color: var(--accent);
+}
+.progression-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-4) 0.5rem;
+}
+.progression-body {
+  padding: 0 var(--sp-4) 0.55rem;
+}
+.progression-body .progression-pills {
+  padding: 0 0 0.5rem;
+}
+.progression-list {
+  list-style: none;
+  margin: 0 0 var(--sp-2);
+  padding: 0;
+}
+.progression-entry {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding: 0.2rem 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: var(--fs-xs);
+}
+.progression-delta {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.progression-delta.pos {
+  color: var(--success);
+}
+.progression-delta.neg {
+  color: var(--danger);
+}
+.progression-reason-txt {
+  flex: 1 1 auto;
+  color: var(--text);
+  word-break: break-word;
+}
+.progression-add {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.progression-add-fields {
+  display: flex;
+  gap: var(--sp-2);
+}
+.progression-amount {
+  flex: 0 0 6.5rem;
+  min-width: 0;
+}
+.progression-reason {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.progression-amount,
+.progression-reason {
+  padding: 0.35rem var(--sp-2);
+  background: var(--bg-elev, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+}
+.progression-amount:focus,
+.progression-reason:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.progression-res-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.progression-res-btn {
+  min-height: 2.4rem;
+  padding: 0.35rem 0.7rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base);
+}
+.progression-res-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .pnj-card-footer {
   padding: 0.55rem var(--sp-4);
   border-top: 1px solid var(--border);

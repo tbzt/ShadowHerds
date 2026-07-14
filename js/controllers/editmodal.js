@@ -210,6 +210,7 @@ const EditModal = {
       </div>
     </div>
     ${this._buildTableBlock(pnj, App.getEditionModule(pnj.edition)?.pcTableBlock)}
+    ${this._buildCampaignSection(pnj)}
     ${this._buildContactLinksSection(pnj)}
     ${this._notesBlock(pnj.notes)}`;
   },
@@ -362,6 +363,7 @@ const EditModal = {
     const picked = document.querySelector(".em-color-swatch.selected");
     if (picked) pnj.pcColor = picked.dataset.color;
     this._readTableBlock(pnj, App.getEditionModule(pnj.edition)?.pcTableBlock);
+    this._readCampaignSection(pnj);
   },
 
   _readTableBlock(pnj, block) {
@@ -390,6 +392,99 @@ const EditModal = {
       const n = parseInt(el.value, 10);
       pnj[key] = Number.isFinite(n) && n > 0 ? n : null;
     }
+  },
+
+  /** Suivi de campagne (optionnel) — réglage des soldes courants depuis
+      l'édition. Repliée (`<details>` natif), présente uniquement pour un PJ.
+      Générée depuis `Campaign.tracks` (devises + réputation d'édition +
+      compteurs libres) : aucune branche d'édition. Les valeurs pré-remplies
+      sont les SOLDES dérivés ; à la sauvegarde, l'écart est enregistré comme
+      une écriture d'ajustement datée (`_readCampaignSection`). */
+  _buildCampaignSection(pnj, open) {
+    if (!pnj.isPC) return "";
+    const esc = CardRenderer._esc;
+    const edModule = App.getEditionModule(pnj.edition);
+    const rows = Campaign.tracks(pnj, edModule)
+      .map((t) => {
+        const bal = Campaign.balance(pnj.campaign, t.key);
+        const suffix = t.glyph ? ` (${esc(t.glyph)})` : "";
+        return `<div class="form-group">
+          <label>${esc(t.label)}${suffix}</label>
+          <input type="number" id="em-camp-${esc(t.key)}" value="${bal}">
+        </div>`;
+      })
+      .join("");
+    const custom = (pnj.campaign && pnj.campaign.customTracks) || [];
+    const customRows = custom
+      .map(
+        (t) => `<div class="em-camp-track-row" data-key="${esc(t.key)}">
+          <input type="text" class="em-camp-label" id="em-camp-label-${esc(t.key)}" value="${esc(t.label)}" aria-label="Nom du compteur">
+          <button type="button" class="btn-icon-tiny" data-action="camp-track-remove" data-key="${esc(t.key)}" title="Retirer ce compteur" aria-label="Retirer">✕</button>
+        </div>`,
+      )
+      .join("");
+    return `<details class="modal-section em-campaign-section"${open ? " open" : ""}>
+      <summary class="modal-section-title">Suivi de campagne (optionnel)</summary>
+      <p class="modal-section-hint">Réglez le solde courant : l'écart est enregistré comme un ajustement daté. Le suivi fin (gains/dépenses motivés) se fait ensuite sur la fiche.</p>
+      <div class="modal-grid">${rows}</div>
+      <div class="em-camp-customs">
+        <div class="modal-section-hint">Compteurs personnalisés (mois de style de vie, faveurs dues…)</div>
+        ${customRows}
+        <div class="em-camp-add-row">
+          <input type="text" id="em-camp-newtrack" placeholder="Nouveau compteur" aria-label="Nom du nouveau compteur">
+          <button type="button" class="btn-secondary" data-action="camp-track-add">＋ Ajouter</button>
+        </div>
+      </div>
+    </details>`;
+  },
+
+  /** Lit les soldes cibles (écriture d'ajustement `cible − solde courant`,
+      jamais d'écrasement) et les renommages de compteurs libres. Muté
+      directement sur `pnj` (copie canonique) ; `save()` persiste et rafraîchit. */
+  _readCampaignSection(pnj) {
+    if (!pnj.isPC) return;
+    const edModule = App.getEditionModule(pnj.edition);
+    for (const t of Campaign.tracks(pnj, edModule)) {
+      const el = document.getElementById(`em-camp-${t.key}`);
+      if (!el || el.value === "") continue;
+      const target = parseInt(el.value, 10);
+      if (!Number.isFinite(target)) continue;
+      const delta = target - Campaign.balance(pnj.campaign, t.key);
+      if (delta !== 0) Campaign.ensure(pnj).ledger.unshift(Campaign.entry(t.key, delta, "ajustement"));
+    }
+    // Renommage des compteurs libres (appliqué à la sauvegarde).
+    for (const t of (pnj.campaign && pnj.campaign.customTracks) || []) {
+      const el = document.getElementById(`em-camp-label-${t.key}`);
+      const l = el && el.value.trim();
+      if (l) t.label = l;
+    }
+  },
+
+  /** Ajoute un compteur libre depuis l'édition (mutation immédiate via UI),
+      puis re-rend la section dépliée pour enchaîner. */
+  addCampaignTrack() {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj) return;
+    const el = document.getElementById("em-camp-newtrack");
+    const label = el && el.value.trim();
+    if (!label) {
+      toast("Nommez le compteur.", "warning");
+      return;
+    }
+    UI.addCustomTrack(pnj.id, label);
+    this._rerenderCampaignSection(pnj);
+  },
+
+  removeCampaignTrack(key) {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj) return;
+    UI.removeCustomTrack(pnj.id, key);
+    this._rerenderCampaignSection(pnj);
+  },
+
+  _rerenderCampaignSection(pnj) {
+    const details = document.querySelector("#modal-form-body .em-campaign-section");
+    if (details) details.outerHTML = this._buildCampaignSection(pnj, true);
   },
 
   /** Sélection de couleur : mise à jour visuelle immédiate, lue par
@@ -544,6 +639,9 @@ const EditModal = {
     // migré depuis l'ancienne chaîne libre) ; pas de bouton « en ajouter un »
     // en M1 (socle data, cf. PLAN_MATRICE_CYBERDECK.md). ----
     if (pnj.cyberdeck) html += CyberdeckRenderer.editSection(pnj);
+
+    // ---- Section : Suivi de campagne (optionnel, PJ seulement) ----
+    html += this._buildCampaignSection(pnj);
 
     // ---- Section : Notes ----
     html += this._notesBlock(pnj.notes);
@@ -830,6 +928,9 @@ const EditModal = {
     // Cyberdeck (M1) — lu seulement si la section a été montée (pnj.cyberdeck).
     if (pnj.cyberdeck) CyberdeckRenderer.readForm(pnj);
 
+    // Suivi de campagne (optionnel, PJ seulement)
+    this._readCampaignSection(pnj);
+
     // Notes
     const notesEl = document.getElementById("em-notes");
     if (notesEl) pnj.notes = notesEl.value;
@@ -878,6 +979,12 @@ const EditModal = {
           break;
         case "toggle-notes-mode":
           this.toggleNotesMode();
+          break;
+        case "camp-track-add":
+          this.addCampaignTrack();
+          break;
+        case "camp-track-remove":
+          this.removeCampaignTrack(el.dataset.key);
           break;
       }
     });

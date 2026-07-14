@@ -221,6 +221,15 @@ const EditionSR6 = {
       pré-existant hors scope, signalé séparément). `monitorMaxKey` indique
       quel champ porte la capacité (saisie MJ, le PJ léger n'a pas
       d'attribut CON pour la dériver). */
+  /** Réputation SR6 (p.239-241) : un seul score de Réputation (peut être
+      NÉGATIF, selon les seuils favorables/défavorables) + la Pression (menace
+      des autorités, accumulée en fin de séance). Le registre de campagne
+      encaisse nativement les deltas négatifs et l'accumulation (cf. Campaign). */
+  reputationTracks: [
+    { key: "reputation", label: "Réputation" },
+    { key: "pression", label: "Pression" },
+  ],
+
   pcTableBlock: {
     fields: [
       { key: "initBase", label: "Initiative (base)", kind: "number" },
@@ -1547,6 +1556,26 @@ const EditionSR6 = {
         "Commlink Sony CIY-720 (IA 5)",
       ],
     },
+    // Cyberdecks p.184-185 (Att/Corr/TDD/FW) — mêmes paliers de prof que
+    // commlinks (cf. _deckTier). Lu par Cyberdeck.parseLegacy à la génération.
+    cyberdecks: {
+      bas: [
+        "Cyberdeck Erika MCD-1 (Att 3, Corr 3, TDD 2, FW 2)",
+        "Cyberdeck Microdeck Summit (Att 2, Corr 2, TDD 3, FW 3)",
+      ],
+      moyen: [
+        "Cyberdeck Hermes Chariot (Att 4, Corr 4, TDD 3, FW 3)",
+        "Cyberdeck Novatech Navigator (Att 3, Corr 3, TDD 4, FW 4)",
+      ],
+      haut: [
+        "Cyberdeck Renraku Tsurugi (Att 5, Corr 4, TDD 4, FW 4)",
+        "Cyberdeck Sony CIY-720 (Att 4, Corr 4, TDD 5, FW 5)",
+      ],
+      elite: [
+        "Cyberdeck Shiawase Cyber-6 (Att 6, Corr 5, TDD 5, FW 5)",
+        "Cyberdeck Fairlight Excalibur (Att 6, Corr 6, TDD 6, FW 5)",
+      ],
+    },
     pistoletsPoche: [
       "Fichetti Tiffani Needler [Pistolet de poche, VD 3P, SO 10/6/2/-/-, CC, 4(c)]",
       "Streetline Special [Pistolet de poche, VD 2P, SO 8/8/-/-/-, CC, 6(c)]",
@@ -1690,6 +1719,12 @@ const EditionSR6 = {
   },
   addCatalogItem(pnj, id) {
     ItemResolver.addEquipString(pnj, this.equipPools, id);
+  },
+
+  /** Palier de matériel selon le professionnalisme — mêmes seuils que le
+      tirage de commlink ci-dessous, réutilisé pour les cyberdecks. */
+  _deckTier(proRating) {
+    return proRating <= 1 ? "bas" : proRating <= 3 ? "moyen" : proRating <= 5 ? "haut" : "elite";
   },
 
   buildLoadout(archetype, proRating, awakened) {
@@ -1886,6 +1921,11 @@ const EditionSR6 = {
       else if (archetype.includes("Mage")) special = "Mage hermétique";
     }
 
+    // Un archétype matriciel implique la spécialisation Decker (cyberdeck),
+    // sauf spécialisation déjà fixée — même patron que sr5.js.
+    if (special === "Aucun" && (role === "decker" || /matriciel/i.test(archetype)))
+      special = "Decker";
+
     const p = Utils.clamp(proRating, 0, 10);
     const baseAttrs = { ...this.attrByProf[p] };
     const mods = this.metaMod[baseMetatype] || {};
@@ -2056,9 +2096,14 @@ const EditionSR6 = {
     if (infected) equip.push(...infected.naturalWeapons);
     if (mv && mv.naturalWeapons) equip.push(...mv.naturalWeapons);
 
-    // Augmentations corpo — jamais pour un Éveillé
+    // Augmentations corpo — jamais pour un Éveillé ; un decker reçoit son
+    // cyberdeck ici (pas de augsBySpecial en SR6, contrairement à sr5.js).
     const augs =
-      !awakened && p >= 5 ? [Utils.rand(this.equipPools.cyberware)] : [];
+      special === "Decker"
+        ? ["Datajack", Utils.rand(this.equipPools.cyberdecks[this._deckTier(p)])]
+        : !awakened && p >= 5
+          ? [Utils.rand(this.equipPools.cyberware)]
+          : [];
 
     const pnj = {
       id: Utils.uid(),
@@ -2114,6 +2159,7 @@ const EditionSR6 = {
     WeaponRoll.reconcile(pnj, "sr6");
     BonusEngine.apply(pnj, "sr6");
     Flavor.apply(pnj);
+    Cyberdeck.hydrate(pnj, "sr6");
     return pnj;
   },
 

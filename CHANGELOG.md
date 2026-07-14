@@ -16,7 +16,7 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
-## [1.9.0] — 2026-07-14
+## [1.10.0] — 2026-07-14
 
 ### Jouer
 - **Duel decker↔decker** : en combat, un decker peut viser un autre decker
@@ -29,6 +29,21 @@ commit.
   protecteur ; Anarchy 2.0 « Protection active », p.216-217, Firewall +
   Logique du protecteur). SR6 n'a pas cette règle au livre — approximée par
   la même formule que SR5.
+
+## [1.9.0] — 2026-07-14
+
+### Table
+- **Suivi de campagne sur la fiche d'un PJ** : chaque personnage-joueur peut
+  désormais tenir ses **nuyens** et son **Karma** dans le temps — un registre
+  daté où chaque gain/dépense porte un motif (« Run Aztechnology +8 000 ¥ »),
+  le solde étant recalculé à partir de l'historique. Réglage rapide sur la
+  fiche (déplié « Progression ») ou dans l'édition. Entièrement **optionnel** :
+  invisible tant qu'on ne s'en sert pas.
+- **Réputation par édition** : **SR5** suit les trois scores canon (Crédibilité,
+  Rumeur, Renommée), **SR6** la Réputation (négative possible) et la Pression ;
+  **Anarchy** n'en a pas et n'affiche donc rien.
+- **Compteurs personnalisés** : ajoutez vos propres lignes de suivi (mois de
+  style de vie payés, faveurs dues…), avec le même historique daté.
 
 ## [1.8.0] — 2026-07-14
 

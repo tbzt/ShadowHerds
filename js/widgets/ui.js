@@ -176,6 +176,77 @@ const UI = {
     this.refreshEntityCard(pnjId);
   },
 
+  /* ========================================================
+     SUIVI DE CAMPAGNE (nuyens, Karma, réputation, compteurs libres)
+     Jumeau du journal : registre daté `pnj.campaign.ledger = [{ts,res,
+     delta,reason}]`, muté sur TOUTES les copies vivantes, persisté par
+     appartenance ; le solde est DÉRIVÉ (Campaign.balance), jamais stocké.
+     Champ additif → voyage tel quel dans characters_all (pas de migration).
+     ======================================================== */
+
+  addLedgerEntry(pnjId, res, delta, reason) {
+    const d = Number(delta);
+    if (!res || !Number.isFinite(d) || d === 0) return;
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
+    const entry = Campaign.entry(res, d, reason); // partagé entre copies (identique)
+    for (const c of copies) Campaign.ensure(c).ledger.unshift(entry); // plus récent en tête
+    this.persistEntity(pnjId);
+    this.refreshEntityCard(pnjId);
+  },
+
+  removeLedgerEntry(pnjId, ts) {
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
+    for (const c of copies) {
+      if (c.campaign && Array.isArray(c.campaign.ledger))
+        c.campaign.ledger = c.campaign.ledger.filter((e) => String(e.ts) !== String(ts));
+    }
+    this.persistEntity(pnjId);
+    this.refreshEntityCard(pnjId);
+  },
+
+  /** Règle le solde d'une ressource à une valeur cible en écrivant l'ajustement
+      correspondant (`cible − solde courant`), jamais un écrasement de l'historique.
+      Utilisé par l'édition ; l'écriture reste une ligne datée comme les autres. */
+  setTrackerBalance(pnjId, res, target, reason) {
+    const pnj = this._entityCopies(pnjId)[0];
+    if (!pnj) return;
+    const t = Number(target);
+    if (!Number.isFinite(t)) return;
+    const delta = t - Campaign.balance(pnj.campaign, res);
+    if (delta !== 0) this.addLedgerEntry(pnjId, res, delta, reason || "ajustement");
+  },
+
+  /** Compteur libre (nommé) créé par le MJ — même ressource dans le registre
+      que les devises/réputation, distinguée par une clé stable unique. */
+  addCustomTrack(pnjId, label) {
+    const l = (label || "").trim();
+    if (!l) return null;
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return null;
+    const key = "c_" + Utils.uid();
+    for (const c of copies) Campaign.ensure(c).customTracks.push({ key, label: l });
+    this.persistEntity(pnjId);
+    this.refreshEntityCard(pnjId);
+    return key;
+  },
+
+  /** Retire un compteur libre ET ses écritures (pas de solde orphelin). */
+  removeCustomTrack(pnjId, key) {
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
+    for (const c of copies) {
+      if (!c.campaign) continue;
+      if (Array.isArray(c.campaign.customTracks))
+        c.campaign.customTracks = c.campaign.customTracks.filter((t) => t.key !== key);
+      if (Array.isArray(c.campaign.ledger))
+        c.campaign.ledger = c.campaign.ledger.filter((e) => e.res !== key);
+    }
+    this.persistEntity(pnjId);
+    this.refreshEntityCard(pnjId);
+  },
+
   /** Clic sur le tag d'une drogue : fait avancer le cycle idle → effet →
       contrecoup → idle (cf. js/drugs.js). */
   cycleDrug(pnjId, edition, drugId) {
