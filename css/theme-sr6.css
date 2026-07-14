@@ -25,6 +25,10 @@
   /* Coin supérieur droit coupé net — signature SR6 */
   --hd-clip: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
   --card-clip: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+
+  /* Réordre : soulèvement corpo net, sans inclinaison (interface épurée). */
+  --drag-tilt: 0deg;
+  --drag-lift: 1.03;
 }
 
 /* ---- Écran d'accueil ---- */

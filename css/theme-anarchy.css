@@ -22,6 +22,11 @@
   --title-transform: uppercase;
   --title-spacing: 0.04em;
   --name-transform: uppercase;
+
+  /* Réordre : « décoller un autocollant et le reposer » — inclinaison
+     franche + soulèvement marqué, pile l'identité fanzine (stickers). */
+  --drag-tilt: -2.5deg;
+  --drag-lift: 1.05;
 }
 
 /* ---- Écran d'accueil ---- */

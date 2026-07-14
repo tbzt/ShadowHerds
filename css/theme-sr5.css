@@ -24,6 +24,11 @@
   --name-transform: uppercase;
   /* En-tête de carte biseauté façon dossier estampillé */
   --hd-clip: polygon(0 0, 100% 0, 100% 100%, 14px 100%, 0 calc(100% - 10px));
+
+  /* Réordre : « lever un document du dossier » — pas d'inclinaison, un
+     soulèvement discret et net (l'identité SR5 est administrative). */
+  --drag-tilt: 0deg;
+  --drag-lift: 1.025;
 }
 
 /* ---- Écran d'accueil ---- */

@@ -522,33 +522,79 @@
   padding: 0.05rem 0.35rem;
 }
 /* Poignée de glisse (Vague C1) : réordonner à la souris ou au doigt.
-   touch-action:none pour que le glisser ne fasse pas défiler la page. */
+   touch-action:none pour que le glisser ne fasse pas défiler la page.
+   Chip TOUJOURS visible (pas de révélation au survol : le tactile, cible du
+   projet, n'a pas de survol) — bordure + fond discret annoncent l'affordance
+   au repos. */
 .encounter-drag-handle {
   flex: none;
-  align-self: stretch;
+  align-self: center;
   display: flex;
   align-items: center;
-  color: var(--text-dim);
+  justify-content: center;
+  color: var(--text);
   font-size: var(--fs-md);
   line-height: 1;
-  padding: 0 0.15rem;
+  padding: 0.1rem 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
   cursor: grab;
   touch-action: none;
   user-select: none;
 }
 .encounter-drag-handle:hover {
   color: var(--accent);
+  border-color: var(--accent);
 }
+/* Ligne saisie : « décollée » — suit le doigt (--drag-dy, écrit par le JS)
+   et prend l'inclinaison/soulèvement de l'édition (--drag-tilt/--drag-lift,
+   posés par theme-*.css). Ordre de composition : translation d'abord (suivi),
+   puis rotation + échelle (identité). z-index pour passer AU-DESSUS des
+   lignes survolées. */
 .encounter-row.dragging,
 .encounter-nrow.dragging {
-  opacity: 0.85;
+  opacity: 0.97;
   background: var(--bg-card);
   cursor: grabbing;
-  /* Lift discret (Vague B2) : un cran plus sobre que le drag des cartes de
-     collection (B1) — le cockpit reste sec en combat (Croupier), ce n'est
-     qu'un repère visuel bref, pas un moment « signature ». */
-  transform: scale(1.015);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  transform: translateY(var(--drag-dy, 0)) rotate(var(--drag-tilt)) scale(var(--drag-lift));
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+  position: relative;
+  z-index: var(--z-card);
+  will-change: transform;
+}
+/* Trait d'insertion : montre où la ligne « se reposera » (commit au dépôt
+   seulement — pas de réordre en direct, cf. arbitrage CODIR/Failsafe). */
+.encounter-drop-line {
+  height: 0;
+  border-top: 2px solid var(--accent);
+  margin: -1px 0;
+  border-radius: 2px;
+  pointer-events: none;
+}
+/* Repose du sticker : la ligne re-rendue au dépôt joue un bref « clac »
+   (dépassement d'inclinaison → 0 + rebond d'échelle), via --ease-emphasized. */
+@keyframes encounter-drop-settle {
+  0% {
+    transform: translateY(-4px) rotate(var(--drag-tilt)) scale(var(--drag-lift));
+  }
+  100% {
+    transform: none;
+  }
+}
+.encounter-row.just-dropped,
+.encounter-nrow.just-dropped {
+  animation: encounter-drop-settle var(--dur-base) var(--ease-emphasized);
+}
+@media (prefers-reduced-motion: reduce) {
+  .encounter-row.dragging,
+  .encounter-nrow.dragging {
+    transform: translateY(var(--drag-dy, 0));
+  }
+  .encounter-row.just-dropped,
+  .encounter-nrow.just-dropped {
+    animation: none;
+  }
 }
 /* Bandeau « devrait fuir » — conseil (⚑) + raccourci « Faire fuir ». */
 .encounter-flee {
@@ -641,8 +687,9 @@
 /* ---- K1 : réglette compacte (rail de jetons, mobile) ----
    Bâtie sur .encounter-init : même info (init/malus), format jeton au lieu
    de ligne. Cachée par défaut (desktop/tablette gardent la liste 2 étages
-   de la vague A intacte) ; sous 641px, visible tant que le MJ n'a pas
-   déplié via « ☰ Réglette/Liste » (.rail-expanded bascule les deux). */
+   de la vague A intacte). Sous 641px, la LISTE DÉPLIÉE est désormais la vue
+   par défaut (poignées de glisse ⠿ visibles d'emblée — décision utilisateur) ;
+   le rail compact devient opt-in via « ☰ Réglette/Liste » (.rail-compact). */
 .encounter-rail {
   display: none;
 }
@@ -653,20 +700,19 @@
   .encounter-rail-toggle {
     display: inline-flex;
   }
-  .encounter-modal:not(.rail-expanded) .encounter-rail {
+  /* Vue compacte opt-in : rail de jetons, liste masquée. Sans la classe, la
+     liste 2 étages reste affichée (défaut mobile). */
+  .encounter-modal.rail-compact .encounter-rail {
     display: flex;
     gap: 0.4rem;
     overflow-x: auto;
     padding: 0.2rem 0.1rem 0.5rem;
     scrollbar-width: none;
   }
-  .encounter-modal:not(.rail-expanded) .encounter-rail::-webkit-scrollbar {
+  .encounter-modal.rail-compact .encounter-rail::-webkit-scrollbar {
     display: none;
   }
-  .encounter-modal:not(.rail-expanded) #encounter-list {
-    display: none;
-  }
-  .encounter-modal.rail-expanded .encounter-rail {
+  .encounter-modal.rail-compact #encounter-list {
     display: none;
   }
 }

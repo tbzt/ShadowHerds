@@ -28,6 +28,11 @@
   --title-transform: uppercase;
   --title-spacing: 0.02em;
   --name-transform: uppercase;
+
+  /* Réordre : décalage « risographe mal calée » — légère inclinaison
+     inverse de la V2 (analogique, pas l'autocollant franc du fanzine). */
+  --drag-tilt: 1.5deg;
+  --drag-lift: 1.04;
 }
 
 /* ---- Écran d'accueil ---- */

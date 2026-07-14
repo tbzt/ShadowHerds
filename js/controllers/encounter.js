@@ -1191,15 +1191,25 @@ const Encounter = {
     if (el) el.classList.remove("open");
   },
 
-  /* ---- Glisser-déposer pour réordonner (Vague C1, étendu au narratif T1.5) ----
+  /* ---- Glisser-déposer pour réordonner (Vague C1, refonte « feel sticker ») ----
      Pointer Events (souris + tactile), sans dépendance et sans drag HTML5
-     natif (qui ne marche pas au doigt). Pendant le glisser on ne réordonne que
-     le DOM (retour visuel immédiat) ; l'état n'est réécrit qu'au relâcher, via
-     reorderByIds — un seul _commit. Les lignes hors de combat (épinglées en
-     bas) ne sont ni saisissables ni des cibles d'insertion. Fonctionne aussi
-     bien sur .encounter-row (ordonné) que .encounter-nrow (narratif Anarchy,
-     cf. _narrativeNote côté renderer). */
+     natif (qui ne marche pas au doigt). La ligne saisie se DÉCOLLE et SUIT le
+     doigt (--drag-dy composé avec l'inclinaison/soulèvement d'édition
+     --drag-tilt/--drag-lift, cf. theme-*.css) ; un TRAIT D'INSERTION montre
+     où elle se reposera. Le DOM n'est PAS réordonné en direct (sinon la base
+     de translation saute — arbitrage CODIR/Failsafe) : on ne repose la ligne
+     et ne réécrit l'état (reorderByIds → un seul _commit) qu'au relâcher.
+     Les lignes hors de combat (épinglées en bas) ne sont ni saisissables ni
+     des cibles d'insertion. Fonctionne sur .encounter-row (ordonné) comme
+     .encounter-nrow (narratif Anarchy). */
   _drag: null,
+  /** Vibration courte (Android ; iOS l'ignore silencieusement) — « clac » de
+      décollage/repose du sticker, bonus tactile, le visuel tient seul. */
+  _vibrate(ms) {
+    try {
+      if (navigator.vibrate) navigator.vibrate(ms);
+    } catch (_) {}
+  },
   _initDrag(overlay) {
     overlay.addEventListener("pointerdown", (e) => {
       const handle = e.target.closest(".encounter-drag-handle");
@@ -1208,11 +1218,13 @@ const Encounter = {
       const list = document.getElementById("encounter-list");
       if (!row || !list) return;
       e.preventDefault();
-      this._drag = { row, list };
+      this._drag = { row, list, startY: e.clientY, lastY: e.clientY, before: null, line: null, raf: 0 };
       row.classList.add("dragging");
+      this._vibrate(12);
       try {
         handle.setPointerCapture(e.pointerId);
       } catch (_) {}
+      this._dragScroll();
       const move = (ev) => this._dragMove(ev);
       const up = (ev) => {
         try {
@@ -1228,14 +1240,16 @@ const Encounter = {
       document.addEventListener("pointercancel", up);
     });
   },
-  /** Déplace la ligne saisie parmi les lignes vivantes selon la position Y du
-      pointeur (comparée au milieu de chaque cible). Ne dépasse jamais le
-      séparateur « hors de combat » / le pied de scène. */
+  /** La ligne suit le doigt (--drag-dy) ; le trait d'insertion se pose à
+      l'emplacement de dépôt (première ligne vivante dont on dépasse le milieu).
+      Ne dépasse jamais le séparateur « hors de combat » / le pied de scène. */
   _dragMove(ev) {
-    if (!this._drag) return;
+    const d = this._drag;
+    if (!d) return;
     ev.preventDefault();
-    const { row, list } = this._drag;
-    const targets = [...list.querySelectorAll(".encounter-row:not(.down):not(.dragging), .encounter-nrow:not(.down):not(.dragging)")];
+    d.lastY = ev.clientY;
+    d.row.style.setProperty("--drag-dy", ev.clientY - d.startY + "px");
+    const targets = [...d.list.querySelectorAll(".encounter-row:not(.down):not(.dragging), .encounter-nrow:not(.down):not(.dragging)")];
     let before = null;
     for (const t of targets) {
       const box = t.getBoundingClientRect();
@@ -1244,23 +1258,75 @@ const Encounter = {
         break;
       }
     }
-    if (before) {
-      list.insertBefore(row, before);
-    } else {
-      // Après la dernière ligne vivante : juste avant le séparateur / le pied.
-      const anchor =
-        list.querySelector(".encounter-downsep") || list.querySelector(".encounter-scene-actions");
-      if (anchor) list.insertBefore(row, anchor);
-      else list.appendChild(row);
+    d.before = before;
+    this._placeDropLine();
+  },
+  /** Pose (ou déplace) le trait d'insertion avant la cible courante, ou juste
+      avant le séparateur/le pied si le dépôt vise le bas de la liste vivante. */
+  _placeDropLine() {
+    const d = this._drag;
+    if (!d) return;
+    if (!d.line) {
+      d.line = document.createElement("div");
+      d.line.className = "encounter-drop-line";
     }
+    const anchor =
+      d.before ||
+      d.list.querySelector(".encounter-downsep") ||
+      d.list.querySelector(".encounter-scene-actions");
+    if (anchor) d.list.insertBefore(d.line, anchor);
+    else d.list.appendChild(d.line);
+  },
+  /** Auto-défilement quand le doigt approche le haut/bas du conteneur scrollable
+      (liste longue sur petit écran) — boucle rAF auto-annulée à la fin du drag. */
+  _dragScroll() {
+    const d = this._drag;
+    if (!d) return;
+    const sc = this._scrollParent(d.list);
+    if (sc) {
+      const r = sc.getBoundingClientRect();
+      const edge = 48;
+      if (d.lastY < r.top + edge) sc.scrollTop -= 12;
+      else if (d.lastY > r.bottom - edge) sc.scrollTop += 12;
+    }
+    d.raf = requestAnimationFrame(() => this._dragScroll());
+  },
+  _scrollParent(el) {
+    let n = el;
+    while (n && n !== document.body) {
+      const oy = getComputedStyle(n).overflowY;
+      if ((oy === "auto" || oy === "scroll") && n.scrollHeight > n.clientHeight) return n;
+      n = n.parentElement;
+    }
+    return document.scrollingElement || document.documentElement;
   },
   _dragEnd() {
-    if (!this._drag) return;
-    const { list, row } = this._drag;
+    const d = this._drag;
+    if (!d) return;
+    const { list, row } = d;
+    const droppedId = row.dataset.id;
+    if (d.raf) cancelAnimationFrame(d.raf);
+    // Repose à l'emplacement du trait (commit unique) puis nettoyage visuel.
+    const anchor =
+      d.before ||
+      list.querySelector(".encounter-downsep") ||
+      list.querySelector(".encounter-scene-actions");
+    if (anchor && anchor !== row) list.insertBefore(row, anchor);
+    else if (!anchor) list.appendChild(row);
+    if (d.line && d.line.parentNode) d.line.parentNode.removeChild(d.line);
     row.classList.remove("dragging");
+    row.style.removeProperty("--drag-dy");
     this._drag = null;
+    this._vibrate(16);
     const ids = [...list.querySelectorAll(".encounter-row, .encounter-nrow")].map((r) => r.dataset.id);
-    this.reorderByIds(ids);
+    this.reorderByIds(ids); // → _commit → re-render (détruit ces nœuds)
+    // La ligne re-rendue joue la « repose » du sticker (dépassement → 0).
+    const esc = window.CSS && CSS.escape ? CSS.escape(droppedId) : droppedId;
+    const fresh = list.querySelector(`.encounter-row[data-id="${esc}"], .encounter-nrow[data-id="${esc}"]`);
+    if (fresh) {
+      fresh.classList.add("just-dropped");
+      fresh.addEventListener("animationend", () => fresh.classList.remove("just-dropped"), { once: true });
+    }
   },
 
   /** Délégation globale, scopée au conteneur (jamais recréé — modèle
@@ -1342,7 +1408,7 @@ const Encounter = {
           // K1 : bascule réglette compacte / liste complète — état de vue
           // éphémère (comme le menu ⋯ .card-menu[hidden]), pas de nouvelle clé Storage.
           const modal = document.querySelector(".encounter-modal");
-          if (modal) modal.classList.toggle("rail-expanded");
+          if (modal) modal.classList.toggle("rail-compact");
           break;
         }
         case "edge-step":

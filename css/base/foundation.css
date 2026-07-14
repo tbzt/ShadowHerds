@@ -58,6 +58,17 @@
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-emphasized: cubic-bezier(0.34, 1.2, 0.6, 1);
 
+  /* ---- « Feel » du glisser-déposer (réordre du tracker de combat) ----
+     Le décollage/repose d'une ligne saisie est une SIGNATURE par édition
+     (Chrome, CODIR) : inclinaison + soulèvement pilotés par token, jamais
+     en dur ici. Défaut sobre (SR-like : pas d'inclinaison) ; chaque
+     theme-*.css pose sa valeur — Anarchy = sticker franc incliné, SR5 =
+     lift « dossier » discret, SR6 = soulèvement net, Anarchy 1 = décalage
+     risographe. --drag-dy est écrit par le JS (suivi du doigt), composé
+     avec tilt/lift dans la même transform. */
+  --drag-tilt: 0deg;
+  --drag-lift: 1.02;
+
   /* ---- Échelle d'empilement (z-index, CH-V11) ---- 6 bandes sémantiques,
      ordre calé sur la hiérarchie déjà en place (aucun changement de rendu,
      juste des valeurs nommées) : local < coquille mobile < popovers/modales
