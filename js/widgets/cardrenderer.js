@@ -545,14 +545,14 @@ const CardRenderer = {
     return `<div class="monitor-block">
       ${
         physMon
-          ? `<div class="monitor-row"><span class="monitor-label">Phys</span>
-             <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "phys", physMon, pnj.physFilled || 0)}</div></div>`
+          ? `<div class="monitor-row"><span class="monitor-label" title="Physique">P</span>
+             <div class="monitor-boxes monitor-phys">${this._monitorBoxes(pnj.id, "phys", physMon, pnj.physFilled || 0)}</div></div>`
           : ""
       }
       ${
         stunMon
-          ? `<div class="monitor-row" style="margin-top:4px;"><span class="monitor-label">Étourd</span>
-             <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "stun", stunMon, pnj.stunFilled || 0)}</div></div>`
+          ? `<div class="monitor-row"><span class="monitor-label" title="Étourdissant">E</span>
+             <div class="monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, pnj.stunFilled || 0)}</div></div>`
           : ""
       }
     </div>`;
@@ -641,6 +641,12 @@ const CardRenderer = {
       if (idx !== -1) {
         core = core.slice(0, idx) + extra + core.slice(idx);
       }
+    }
+    // Modificateurs situationnels d'objet (visibles + sourcés, non auto-appliqués).
+    const situ = this._situationalMods(pnj);
+    if (situ) {
+      const idx = core.lastIndexOf("</div>");
+      if (idx !== -1) core = core.slice(0, idx) + situ + core.slice(idx);
     }
     return core;
   },
@@ -1427,6 +1433,32 @@ const CardRenderer = {
     return `<div class="card-section">
       <div class="card-section-label">Équipement</div>
       ${body}
+    </div>`;
+  },
+
+  /** Section « Modificateurs situationnels » : effets d'objet qui bonifient
+      un test/une situation sans surface de jet dédiée (résistances, limites
+      de Perception…). Visibles + sourcés, jamais auto-appliqués (garde-fou).
+      Vide → rien (ActorEffects absent ou aucun modificateur actif). */
+  _situationalMods(pnj) {
+    const mods =
+      typeof ActorEffects !== "undefined" ? ActorEffects.forActor(pnj) : [];
+    if (!mods.length) return "";
+    // Style inline volontaire (CSS de carte éditée en parallèle par une autre
+    // session — on reste disjoint au niveau fichier ; à extraire plus tard).
+    const rows = mods
+      .map(
+        (m) =>
+          `<div style="display:flex;align-items:baseline;gap:6px;font-size:var(--fs-xs);padding:1px 0;">
+            <span style="flex:1 1 auto;">${this._esc(m.scope)}</span>
+            <span style="font-family:var(--font-mono);font-weight:700;color:var(--accent);">+${m.value}</span>
+            <span style="color:var(--text-dim);">${this._esc(m.source)}</span>
+          </div>`,
+      )
+      .join("");
+    return `<div class="card-section">
+      <div class="card-section-label">Modificateurs situationnels</div>
+      ${rows}
     </div>`;
   },
 

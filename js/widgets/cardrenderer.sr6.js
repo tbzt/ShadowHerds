@@ -70,11 +70,11 @@ Object.assign(CardRenderer, {
     if (stunMon !== undefined) {
       combatBody += `<div class="monitor-block">
         <div class="monitor-row">
-          <span class="monitor-label">Phys</span>
+          <span class="monitor-label" title="Physique">P</span>
           <div class="monitor-boxes monitor-phys">${this._monitorBoxes(pnj.id, "phys", physMon, physFilled ?? 0)}</div>
         </div>
-        <div class="monitor-row" style="margin-top:4px;">
-          <span class="monitor-label">Étourd</span>
+        <div class="monitor-row">
+          <span class="monitor-label" title="Étourdissant">E</span>
           <div class="monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, stunFilled ?? 0)}</div>
         </div>
         ${this._monitorMalusBadge(malus6)}
