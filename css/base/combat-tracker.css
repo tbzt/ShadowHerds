@@ -76,6 +76,12 @@
   border: 1px solid var(--border);
   border-radius: 3px;
   background: var(--bg-mid);
+  /* Vague B2 : seule la retombée du glisser anime (transform/box-shadow) —
+     bref et tokenisé, le cockpit reste sec (Croupier), rien d'autre ne
+     transitionne ici. */
+  transition:
+    transform var(--dur-fast) var(--ease-standard),
+    box-shadow var(--dur-fast);
 }
 /* Tour actif : dominant (barre d'accent à gauche + fond teinté), pas une
    simple bordore fine — repérable d'un coup d'œil sur petit écran sombre. */
@@ -359,6 +365,11 @@
   background: var(--bg-mid);
   color: var(--text);
   cursor: pointer;
+  /* Vague B2 : même retombée de glisser que .encounter-row (transform/
+     box-shadow uniquement), le cockpit narratif reste sec lui aussi. */
+  transition:
+    transform var(--dur-fast) var(--ease-standard),
+    box-shadow var(--dur-fast);
 }
 /* Anneau-check narratif : cible de tap ÉVIDENTE (pas une puce muette). Vide,
    un ✓ fantôme et une bordure épaisse annoncent « coche ici » ; il s'allume
@@ -530,9 +541,14 @@
 }
 .encounter-row.dragging,
 .encounter-nrow.dragging {
-  opacity: 0.6;
+  opacity: 0.85;
   background: var(--bg-card);
   cursor: grabbing;
+  /* Lift discret (Vague B2) : un cran plus sobre que le drag des cartes de
+     collection (B1) — le cockpit reste sec en combat (Croupier), ce n'est
+     qu'un repère visuel bref, pas un moment « signature ». */
+  transform: scale(1.015);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 /* Bandeau « devrait fuir » — conseil (⚑) + raccourci « Faire fuir ». */
 .encounter-flee {

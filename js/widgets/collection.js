@@ -401,6 +401,12 @@ const Collection = {
           externe (Hub) qui rend les membres d'un dossier hors de la grille
           propre à la collection. */
       _renderList(grid, list, context) {
+        // Point d'entrée commun à _renderGrid ET renderMembers (Hub, écrans
+        // de génération) : y poser _wire() garantit la délégation (dont le
+        // glisser-déposer B1) même pour les collections qui n'appellent
+        // jamais render() sur ce chemin (Characters évite l'appel exprès,
+        // cf. son initPanel, pour ne pas boucler avec l'onChange DossierBar).
+        this._wire();
         const allGroups = Object.keys(this.data.groups);
         const linked = config.linked;
         // Les entités liées suivent la carte de leur maître. Table mémoïsée :
@@ -428,6 +434,7 @@ const Collection = {
           // Toujours affiché : le popover permet de créer un premier
           // groupe à la volée même quand aucun n'existe encore.
           this._appendGroupTrigger(card, entity.id);
+          this._appendReorderHandle(card, entity.id);
           this._appendSelectCheckbox(card, entity.id);
           grid.appendChild(card);
           for (const child of childrenByOwner[entity.id] || []) {
@@ -491,6 +498,27 @@ const Collection = {
         pin.dataset.id = id;
         pin.innerHTML = `<span class="group-picker-trigger-icon">★</span>`;
         footer.prepend(pin);
+      },
+
+      /** Poignée de réorganisation (Vague B1), dans le pied-gauche à côté de
+          ★/🏷 — jamais de contrôle au repos (doctrine « Chrome de carte »),
+          révélée uniquement par la classe `reordering` sur <body> (posée
+          par ReorderMode). Un vrai <button> focusable : les flèches ↑/↓ au
+          clavier sont le canal d'accessibilité de base, le glisser au
+          pointeur/doigt est l'enrichissement progressif par-dessus. */
+      _appendReorderHandle(card, id) {
+        const footer = card.querySelector(
+          config.footerSelector || ".pnj-card-footer",
+        );
+        if (!footer) return;
+        card.dataset.reorderId = id;
+        const handle = document.createElement("button");
+        handle.type = "button";
+        handle.className = "reorder-handle";
+        handle.title = "Glisser pour réordonner (ou flèches ↑/↓)";
+        handle.setAttribute("aria-label", "Réordonner");
+        handle.textContent = "⠿";
+        footer.prepend(handle);
       },
 
       /** Case à cocher de sélection multiple (CH-Q10), en coin de carte —
@@ -562,6 +590,157 @@ const Collection = {
           const value = el.value;
           clearTimeout(this._filterTimer);
           this._filterTimer = setTimeout(() => this.setFilter(value), 130);
+        });
+
+        this._initReorderDrag();
+        this._wireReorderKeys();
+      },
+
+      /* ---- Réorganisation manuelle (Vague B1) ----
+         Même patron que Encounter._initDrag/_dragMove/_dragEnd (Pointer
+         Events, DOM réordonné en direct pendant le glisser, commit au
+         relâcher seulement) — pas extrait en utilitaire partagé pour ne pas
+         toucher un mécanisme combat-critique déjà stable ; la forme de
+         l'algorithme reste la même aux deux endroits.
+         Simplification assumée : reorderByIds/moveUp/moveDown opèrent sur
+         data.all en entier, y compris quand la vue affichée est filtrée par
+         dossier (DossierBar) — le résultat reste toujours correct (aucune
+         entité perdue, les ids hors du glisser sont préservés en fin de
+         liste), simplement moins intuitif dans ce cas précis. Le cas
+         d'usage principal (dossier « Tout ») n'est pas affecté. */
+      moveUp(id) {
+        // "Monter" à l'écran = plus récent = index plus grand dans data.all
+        // (le rendu affiche data.all inversé, le plus récent en tête).
+        const idx = this.data.all.findIndex((e) => e.id === id);
+        if (idx === -1 || idx >= this.data.all.length - 1) return;
+        this._reorderSwap(idx, idx + 1);
+      },
+      moveDown(id) {
+        const idx = this.data.all.findIndex((e) => e.id === id);
+        if (idx <= 0) return;
+        this._reorderSwap(idx, idx - 1);
+      },
+      _reorderSwap(i, j) {
+        const arr = this.data.all;
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        this._afterReorder();
+      },
+      /** Réordonne data.all selon un ordre d'AFFICHAGE (plus récent en
+          tête, comme rendu par _renderGrid) — même patron que
+          Encounter.reorderByIds : reconstruction par Map, toute entité
+          absente de displayIds (liée, filtrée hors vue) est conservée en
+          fin, jamais perdue. */
+      reorderByIds(displayIds) {
+        const storageIds = displayIds.slice().reverse();
+        const byId = new Map(this.data.all.map((e) => [e.id, e]));
+        const next = [];
+        for (const id of storageIds) {
+          const e = byId.get(id);
+          if (e) {
+            next.push(e);
+            byId.delete(id);
+          }
+        }
+        for (const e of byId.values()) next.push(e);
+        this.data.all = next;
+        this._afterReorder();
+      },
+      /** Referme la boucle avec le rafraîchissement propre à chaque
+          domaine : render() (générique, suffisant pour Characters dont la
+          grille est le rendu natif) PUIS refreshGrid() si le contrôleur en
+          expose un (Contacts/Servers, dont l'écran de génération est une
+          vue externe à la grille native — cf. ContactsBook.refreshGrid). */
+      _afterReorder() {
+        this.save();
+        this.render();
+        if (typeof this.refreshGrid === "function") this.refreshGrid();
+      },
+      /** Conteneur réellement visible où glisser (Contacts/Servers y
+          affichent leurs cartes hors de dom.grid, cf. dragGrid). */
+      _dragGridEl() {
+        return document.getElementById(config.dom.dragGrid || config.dom.grid);
+      },
+      _initReorderDrag() {
+        const grid = this._dragGridEl();
+        if (!grid) return;
+        grid.addEventListener("pointerdown", (e) => {
+          const handle = e.target.closest(".reorder-handle");
+          if (!handle) return;
+          const card = handle.closest("[data-reorder-id]");
+          if (!card) return;
+          e.preventDefault();
+          this._rdrag = { card, grid };
+          card.classList.add("dragging");
+          try {
+            handle.setPointerCapture(e.pointerId);
+          } catch (_) {}
+          const move = (ev) => this._reorderDragMove(ev);
+          const up = (ev) => {
+            try {
+              handle.releasePointerCapture(ev.pointerId);
+            } catch (_) {}
+            document.removeEventListener("pointermove", move);
+            document.removeEventListener("pointerup", up);
+            document.removeEventListener("pointercancel", up);
+            this._reorderDragEnd();
+          };
+          document.addEventListener("pointermove", move);
+          document.addEventListener("pointerup", up);
+          document.addEventListener("pointercancel", up);
+        });
+      },
+      /** Déplace la carte saisie parmi ses voisines selon la position Y du
+          pointeur (comparée au milieu de chaque cible), DOM seul — l'état
+          n'est réécrit qu'au relâcher (_reorderDragEnd). */
+      _reorderDragMove(ev) {
+        if (!this._rdrag) return;
+        ev.preventDefault();
+        const { card, grid } = this._rdrag;
+        const targets = [
+          ...grid.querySelectorAll("[data-reorder-id]:not(.dragging)"),
+        ];
+        let before = null;
+        for (const t of targets) {
+          const box = t.getBoundingClientRect();
+          if (ev.clientY < box.top + box.height / 2) {
+            before = t;
+            break;
+          }
+        }
+        if (before) grid.insertBefore(card, before);
+        else grid.appendChild(card);
+      },
+      _reorderDragEnd() {
+        if (!this._rdrag) return;
+        const { card, grid } = this._rdrag;
+        card.classList.remove("dragging");
+        this._rdrag = null;
+        const ids = [...grid.querySelectorAll("[data-reorder-id]")].map(
+          (c) => c.dataset.reorderId,
+        );
+        this.reorderByIds(ids);
+      },
+      /** Flèches ↑/↓ sur la poignée focus (a11y — Vector) : canal de base,
+          le glisser est l'enrichissement progressif par-dessus. */
+      _wireReorderKeys() {
+        const grid = this._dragGridEl();
+        if (!grid) return;
+        grid.addEventListener("keydown", (e) => {
+          if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+          const handle = e.target.closest(".reorder-handle");
+          if (!handle) return;
+          const id = handle.closest("[data-reorder-id]")?.dataset.reorderId;
+          if (!id) return;
+          e.preventDefault();
+          if (e.key === "ArrowUp") this.moveUp(id);
+          else this.moveDown(id);
+          // _afterReorder() -> render() reconstruit tout le DOM de façon
+          // SYNCHRONE (aucune des trois collections ne diffère son rendu) :
+          // le focus est perdu sans ce recentrage, appelé ici sans délai
+          // (pas de requestAnimationFrame — le nouveau nœud existe déjà).
+          document
+            .querySelector(`[data-reorder-id="${CSS.escape(id)}"] .reorder-handle`)
+            ?.focus();
         });
       },
     };

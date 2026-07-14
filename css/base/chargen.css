@@ -18,7 +18,18 @@
   border-radius: 2px;
   color: var(--text-dim);
   cursor: pointer;
-  transition: border-color var(--dur-base), color var(--dur-base);
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base),
+    transform var(--dur-fast) var(--ease-standard);
+}
+@media (hover: hover) {
+  .cg-step-tab:hover {
+    transform: translateY(-1px);
+  }
+}
+.cg-step-tab:active {
+  transform: scale(0.96);
 }
 .cg-step-tab.active {
   border-color: var(--accent);

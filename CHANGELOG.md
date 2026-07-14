@@ -16,6 +16,15 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
+## [1.12.0] — 2026-07-14
+
+### Organiser
+- **Réorganiser à la main** : bouton « ⠿ Réorganiser » sur les personnages,
+  contacts et serveurs — glisser une fiche à sa place (souris ou doigt) ou
+  la déplacer au clavier (flèches ↑/↓). L'ordre choisi est sauvegardé. La
+  réorganisation des PNJ (Ombres portées) n'est pas couverte — reportée,
+  le Hub affichant une vue toujours reconstruite et potentiellement filtrée.
+
 ## [1.11.0] — 2026-07-14
 
 ### Organiser

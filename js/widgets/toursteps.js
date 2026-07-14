@@ -118,5 +118,10 @@ const TourSteps = {
       title: "Ranger vos dossiers en campagnes et runs",
       body: "Un dossier peut être marqué « Campagne » ou « Run » depuis le menu « ⋯ » de la barre de dossiers — automatique quand vous « Rangez la run ». Une run pointe vers sa prep générée, une campagne compte ses runs.",
     },
+    {
+      id: "wn-collection-reorder", anchor: "nav-characters", tours: ["whatsnew"], since: "1.12.0", fallback: "center",
+      title: "Réorganisez vos fiches à la main",
+      body: "Bouton « ⠿ Réorganiser » sur les personnages, contacts et serveurs : glissez une fiche à sa place (souris ou doigt), ou déplacez-la au clavier avec les flèches ↑/↓. L'ordre choisi est sauvegardé.",
+    },
   ],
 };

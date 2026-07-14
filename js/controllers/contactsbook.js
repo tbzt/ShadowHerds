@@ -12,7 +12,15 @@ const ContactsBook = Object.assign(
   Collection.create({
     key: "contacts",
     storageKeys: { all: "contacts_all", groups: "contacts_groups" },
-    dom: { grid: "contacts-grid", sidebar: "contacts-group-list", label: "contacts-group-label" },
+    // dragGrid (Vague B1) : dom.grid n'est jamais monté dans le DOM (les
+    // contacts ne s'affichent QUE via l'écran de génération, cf.
+    // _renderGenGrid) — le glisser-déposer doit viser le conteneur réel.
+    dom: {
+      grid: "contacts-grid",
+      dragGrid: "contacts-gen-grid",
+      sidebar: "contacts-group-list",
+      label: "contacts-group-label",
+    },
     labels: {
       allSummary: (n) => `Tous les contacts (${n})`,
       emptyTitle: "Aucun contact ici",

@@ -721,7 +721,11 @@ select optgroup {
   transition:
     color var(--dur-base),
     border-color var(--dur-base),
-    background var(--dur-base);
+    background var(--dur-base),
+    transform var(--dur-fast) var(--ease-standard);
+}
+.nav-btn:active {
+  transform: scale(0.97);
 }
 .nav-btn .nav-icon {
   display: inline-flex;

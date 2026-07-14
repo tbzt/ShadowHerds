@@ -362,6 +362,13 @@
 .stat-pill.accent strong {
   color: var(--accent);
 }
+/* Vague A3 : flash bref d'un compteur de campagne (nuyens/Karma/réputation)
+   qui vient de changer. Réutilise le keyframe entry-flash (déjà thémé par
+   --accent/--glow, donc « signature édition » sans travail supplémentaire) ;
+   un seul consommateur de plus, pas un nouveau keyframe. */
+.stat-pill.accent.entry-flash {
+  animation: entry-flash 1.2s ease-out;
+}
 /* Initiative : premier chiffre lu par le MJ à chaque tour — mis en avant
    comme le résultat de dés (cf. #8), pour rester scannable à distance. */
 .init-pill {

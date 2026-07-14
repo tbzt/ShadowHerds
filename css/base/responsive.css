@@ -251,7 +251,11 @@
     color: var(--text-dim);
     transition:
       color var(--dur-base),
-      border-color var(--dur-base);
+      border-color var(--dur-base),
+      transform var(--dur-fast) var(--ease-standard);
+  }
+  .bnav-btn:active {
+    transform: scale(0.94);
   }
   .bnav-btn.active {
     color: var(--accent);

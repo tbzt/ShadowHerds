@@ -66,6 +66,9 @@ const SelectionMode = {
     else this.enter();
   },
   enter() {
+    // Exclusivité mutuelle avec ReorderMode (Vague B1) : jamais deux jeux
+    // de contrôles de carte superposés sur le même repos visuel.
+    if (typeof ReorderMode !== "undefined" && ReorderMode.isOn()) ReorderMode.exit();
     document.body.classList.add("selecting");
     this._syncButtons();
   },

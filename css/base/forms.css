@@ -8,6 +8,10 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  /* Fondu d'entrée (vague A2) : réutilise cardIn (déjà défini pour les
+     cartes) plutôt qu'un keyframe dédié. Le cockpit combat (#encounter-
+     overlay, hors du système .panel) n'est pas concerné : il reste sec. */
+  animation: cardIn var(--dur-base) var(--ease-standard);
 }
 /* Les panels sans layout flex particulier reviennent à block */
 #panel-welcome.active,
@@ -393,11 +397,15 @@
   border-radius: 3px;
   transition:
     border-color var(--dur-base),
-    color var(--dur-base);
+    color var(--dur-base),
+    transform var(--dur-fast) var(--ease-standard);
 }
 .btn-secondary:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+.btn-secondary:active {
+  transform: scale(0.97);
 }
 /* E2 : équipe active désignée (autre chose que « tous les PJ ») — même
    traitement visuel que le survol, mais permanent. */
@@ -419,11 +427,15 @@
   border-radius: 3px;
   transition:
     background var(--dur-base),
-    border-color var(--dur-base);
+    border-color var(--dur-base),
+    transform var(--dur-fast) var(--ease-standard);
 }
 .danger-btn:hover {
   background: rgba(139, 26, 26, 0.15);
   border-color: var(--danger);
+}
+.danger-btn:active {
+  transform: scale(0.97);
 }
 
 /* TABS */
@@ -445,11 +457,20 @@
   text-transform: uppercase;
   transition:
     color var(--dur-base),
-    border-color var(--dur-base);
+    border-color var(--dur-base),
+    transform var(--dur-fast) var(--ease-standard);
   margin-bottom: -1px;
 }
 .tab-btn:hover {
   color: var(--text);
+}
+@media (hover: hover) {
+  .tab-btn:hover {
+    transform: translateY(-1px);
+  }
+}
+.tab-btn:active {
+  transform: scale(0.97);
 }
 .tab-btn.active {
   color: var(--accent);

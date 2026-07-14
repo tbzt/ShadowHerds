@@ -255,11 +255,17 @@
   font-size: var(--fs-base);
   line-height: 1;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast),
+    transform var(--dur-fast) var(--ease-standard);
 }
 .spirit-fold-btn:hover {
   background: var(--surface-2, rgba(127, 127, 127, 0.12));
   color: var(--text);
+}
+.spirit-fold-btn:active {
+  transform: scale(0.9);
 }
 /* Fiche repliée : ne reste que l'en-tête. */
 .pnj-card.spirit-collapsed .spirit-services,

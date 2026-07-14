@@ -17,7 +17,14 @@ const Servers = Object.assign(
   Collection.create({
     key: "servers",
     storageKeys: { all: "servers_all", groups: "servers_groups" },
-    dom: { grid: "servers-grid", sidebar: "servers-group-list", label: "servers-group-label" },
+    // dragGrid (Vague B1) : dom.grid n'est jamais monté (mêmes raisons que
+    // ContactsBook) — le glisser-déposer vise l'écran de génération réel.
+    dom: {
+      grid: "servers-grid",
+      dragGrid: "servers-gen-grid",
+      sidebar: "servers-group-list",
+      label: "servers-group-label",
+    },
     footerSelector: ".server-card-footer",
     labels: {
       allSummary: (n) => `Tous les serveurs (${n})`,
@@ -383,6 +390,13 @@ const Servers = Object.assign(
       if (!grid) return;
       grid.innerHTML = "";
       this.renderMembers(grid, DossierBar.memberIds(this));
+    },
+
+    /** Rafraîchit la grille de serveurs affichée, sans reconstruire le
+        formulaire ni les dossiers. Miroir de ContactsBook.refreshGrid —
+        point d'entrée public utilisé par Collection._afterReorder (B1). */
+    refreshGrid() {
+      this._renderGenGrid();
     },
 
     /** Migre les serveurs sauvegardés avant le renommage des attributs

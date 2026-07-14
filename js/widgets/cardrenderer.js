@@ -1006,14 +1006,24 @@ const CardRenderer = {
      un Set TRANSIENT (présentation seule, jamais sérialisé). */
   _progressionOpen: new Set(),
 
+  /* Vague A3 : marqueur TRANSIENT (présentation seule) du dernier compteur
+     modifié par une action directe sur la carte (`_submitLedger`), pour lui
+     faire jouer un flash bref au re-rendu qui suit. Auto-consommé dans
+     `_trackPill` : une entrée n'y survit qu'un seul rendu. */
+  _flashTrack: new Map(),
+
   _progressionZone(pnj) {
     if (!pnj.isPC) return "";
     const edModule = App.getEditionModule(pnj.edition);
     const tracks = Campaign.tracks(pnj, edModule);
+    // Rendu (et donc consommation du marqueur de flash A3) sur TOUS les
+    // tracks, y compris solde nul : un track tombé à 0 n'a pas de pastille où
+    // flasher, mais son marqueur ne doit pas trainer pour un rendu ultérieur.
     const pills = tracks
       .map((t) => ({ t, bal: Campaign.balance(pnj.campaign, t.key) }))
+      .map((b) => ({ ...b, html: this._trackPill(b.t, b.bal, pnj.id) }))
       .filter((b) => b.bal !== 0)
-      .map((b) => this._trackPill(b.t, b.bal))
+      .map((b) => b.html)
       .join("");
     const open = this._progressionOpen.has(pnj.id);
     if (!open) {
@@ -1053,10 +1063,12 @@ const CardRenderer = {
 
   /** Pastille de solde d'une ressource. Devise (glyphe) → « 8 000 ¥ » ;
       score → « Renommée 3 » (le négatif SR6 s'affiche naturellement). */
-  _trackPill(t, bal) {
+  _trackPill(t, bal, pnjId) {
+    const flashKey = pnjId != null ? `${pnjId}:${t.key}` : null;
+    const flash = flashKey && this._flashTrack.delete(flashKey) ? " entry-flash" : "";
     if (t.glyph)
-      return `<span class="stat-pill accent"><strong>${bal.toLocaleString("fr-FR")}</strong> ${this._esc(t.glyph)}</span>`;
-    return `<span class="stat-pill accent">${this._esc(t.label)} <strong>${bal}</strong></span>`;
+      return `<span class="stat-pill accent${flash}"><strong>${bal.toLocaleString("fr-FR")}</strong> ${this._esc(t.glyph)}</span>`;
+    return `<span class="stat-pill accent${flash}">${this._esc(t.label)} <strong>${bal}</strong></span>`;
   },
 
   /** Ligne du registre : date · montant signé · motif (puces @/#) · suppression.
@@ -1101,6 +1113,7 @@ const CardRenderer = {
     const delta = parseInt(card?.querySelector(".progression-amount")?.value, 10);
     if (!Number.isFinite(delta) || delta === 0) return;
     const reason = card?.querySelector(".progression-reason")?.value || "";
+    this._flashTrack.set(`${id}:${res}`, true);
     UI.addLedgerEntry(id, res, delta, reason);
   },
 
