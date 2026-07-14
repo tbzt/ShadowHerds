@@ -225,7 +225,7 @@ const Mentions = {
     let last = 0;
     let m;
     while ((m = RE.exec(text))) {
-      out += Utils.escHtml(text.slice(last, m.index));
+      out += Markdown.inline(Utils.escHtml(text.slice(last, m.index)));
       if (m[2] != null) {
         const id = m[2];
         const ent = PnjLookup.locate(id);
@@ -245,7 +245,7 @@ const Mentions = {
       }
       last = RE.lastIndex;
     }
-    out += Utils.escHtml(text.slice(last));
+    out += Markdown.inline(Utils.escHtml(text.slice(last)));
     return out.replace(/\n/g, "<br>");
   },
 
