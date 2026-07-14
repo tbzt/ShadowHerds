@@ -226,6 +226,45 @@ const Hub = {
       </div>`;
     }
     this._renderLabel(total);
+    // A3 : rappel du rôle du dossier dans la campagne, en tête du contenu.
+    // Après le rendu des sections/état-vide (qui réécrivent #hub-sections),
+    // pour survivre aux deux chemins.
+    this._renderContextBanner();
+  },
+
+  /** Bandeau de contexte de campagne (A3) : quand le dossier courant est typé
+      (run/campagne), rappelle son rôle en tête du contenu et offre le raccourci
+      utile — vers la prep pour une run, un décompte de runs pour une campagne.
+      Réutilise la coquille `.hub-section` (aucun CSS neuf). L'étagère « scènes
+      jouées » viendra avec la mémoire de scène (Part B). */
+  _renderContextBanner() {
+    const box = document.getElementById("hub-sections");
+    const node = DossierBar.currentNode();
+    if (!box || !node || !node.kind) return;
+    let title = "";
+    let right = "";
+    if (node.kind === "run") {
+      title = "◆ Run";
+      const hasPrep = RunGen.forDossier(node.name).length > 0;
+      right = hasPrep
+        ? `<button class="btn-secondary btn-small" data-action="show-panel" data-panel="run">Voir la prep</button>`
+        : `<span class="hub-section-count">prep non générée</span>`;
+    } else if (node.kind === "campaign") {
+      title = "❖ Campagne";
+      const runs = Dossiers.children(node.id).filter((d) => d.kind === "run").length;
+      right = `<span class="hub-section-count">${runs} run${runs > 1 ? "s" : ""}</span>`;
+    } else {
+      return;
+    }
+    box.insertAdjacentHTML(
+      "afterbegin",
+      `<div class="hub-section hub-context-banner">
+        <div class="hub-section-head">
+          <span class="hub-section-title">${title} — ${CardRenderer._esc(node.name)}</span>
+          ${right}
+        </div>
+      </div>`,
+    );
   },
 
   /** Restreint une liste d'ids d'une collection aux entités qui matchent la

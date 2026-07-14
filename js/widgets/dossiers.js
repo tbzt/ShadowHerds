@@ -7,10 +7,12 @@
    collections à la fois (PNJ + contacts + serveurs). Ce module
    ne détient QUE la structure : un arbre plat à parentId.
 
-       [{ id, name, parentId }]
+       [{ id, name, parentId, kind? }]
 
    parentId = null  → dossier de premier niveau
    parentId = <id>  → sous-groupe libre d'un dossier
+   kind             → type optionnel dans la hiérarchie de campagne :
+                      "campaign" | "run" | absent (non typé, historique)
 
    Les sections par type (PNJ / Contacts / Serveurs) ne sont pas
    stockées : elles se dérivent du type d'entité au rendu.
@@ -53,15 +55,26 @@ const Dossiers = {
     const d = this.get(id);
     return d ? d.name : null;
   },
+  /** Type de campagne d'un dossier : "campaign" | "run" | null (non typé). */
+  kindOf(id) {
+    const d = this.get(id);
+    return (d && d.kind) || null;
+  },
   has(id) {
     return this._tree.some((d) => d.id === id);
   },
 
   /* ---- CRUD ---- */
-  add(name, parentId = null) {
+  /** `kind` (optionnel) type le dossier dans la hiérarchie de campagne :
+      "campaign" (racine d'une chronique) | "run" (une mission) | null (non
+      typé, comportement historique). Champ ADDITIF : un dossier sans `kind`
+      reste valide, et le typage voyage tel quel dans les dossiers déjà
+      synchronisés/fusionnés-par-id (aucune migration). */
+  add(name, parentId = null, kind = null) {
     const clean = String(name || "").trim();
     if (!clean) return null;
     const node = { id: Utils.uid(), name: clean, parentId: parentId || null };
+    if (kind) node.kind = kind;
     this._tree.push(node);
     this.save();
     return node;
@@ -72,6 +85,16 @@ const Dossiers = {
     const node = this.get(id);
     if (!node || !clean) return false;
     node.name = clean;
+    this.save();
+    return true;
+  },
+
+  /** Type un dossier (ou le dé-type avec `null`). Additif, idempotent. */
+  setKind(id, kind) {
+    const node = this.get(id);
+    if (!node) return false;
+    if (kind) node.kind = kind;
+    else delete node.kind;
     this.save();
     return true;
   },

@@ -209,14 +209,34 @@ const DossierBar = {
     const addBtn = depth < this.MAX_DEPTH
       ? `<button class="btn-icon-tiny" data-dossier-bar data-action="add-subgroup" data-parent="${node.id}" title="Nouveau sous-groupe">+</button>`
       : "";
+    // Pastille de type (hiérarchie de campagne) : le glyphe du slot d'icône
+    // signale campagne/run ; un dossier non typé garde son glyphe de position
+    // (▸/↳). Réutilise le slot existant — aucun CSS neuf.
+    const posIcon = isSub ? "↳" : "▸";
+    const icon =
+      node.kind === "campaign" ? "❖" : node.kind === "run" ? "◆" : posIcon;
+    const kindTitle =
+      node.kind === "campaign" ? "Campagne" : node.kind === "run" ? "Run" : "";
+    // Typage a posteriori (menu ⋯) — réutilise le popover .card-menu déjà câblé
+    // (CardMenu.bindDelegation) : aucun CSS ni handler neuf, juste des items
+    // data-action="set-kind" pris par la délégation de cette barre.
+    const kindItem = (k, label) =>
+      `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="set-kind" data-kind="${k}" data-dossier="${node.id}">${node.kind === k ? "✓ " : ""}${label}</button>`;
+    const typeMenu = `<button type="button" class="card-kebab btn-icon-tiny" data-card-menu-toggle aria-haspopup="true" aria-expanded="false" title="Type de dossier" aria-label="Type de dossier">⋯</button>
+        <div class="card-menu" role="menu" hidden>
+          ${kindItem("campaign", "Campagne")}
+          ${kindItem("run", "Run")}
+          ${node.kind ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="set-kind" data-kind="" data-dossier="${node.id}">Retirer le type</button>` : ""}
+        </div>`;
     return `<div class="group-item${sub} ${active}"${style} data-dossier-bar data-action="switch-dossier" data-dossier="${node.id}">
-      <span class="group-item-icon">${isSub ? "↳" : "▸"}</span>
+      <span class="group-item-icon"${kindTitle ? ` title="${kindTitle}"` : ""}>${icon}</span>
       <span class="group-item-name">${nameEsc}</span>
       <span class="group-item-count">${this._countFor(this._namesUnder(node.id))}</span>
       <span class="group-item-actions">
         ${addBtn}
         <button class="btn-icon-tiny" data-dossier-bar data-action="rename-dossier" data-dossier="${node.id}" title="Renommer">✎</button>
         <button class="btn-icon-tiny danger" data-dossier-bar data-action="remove-dossier" data-dossier="${node.id}" title="Supprimer">✕</button>
+        ${typeMenu}
       </span>
     </div>`;
   },
@@ -297,6 +317,24 @@ const DossierBar = {
     });
   },
 
+  /** Type (ou dé-type) un dossier dans la hiérarchie de campagne. Le dossier
+      Favoris est réservé : jamais typé. Additif — n'affecte ni les membres ni
+      les groupes des collections, seulement la structure Dossiers. */
+  setDossierKind(id, kind) {
+    const d = Dossiers.get(id);
+    if (!d || d.name === Collection.FAV_GROUP) return;
+    Dossiers.setKind(id, kind);
+    this.render();
+    this._notify();
+    toast(
+      kind === "campaign"
+        ? `« ${d.name} » est une campagne.`
+        : kind === "run"
+          ? `« ${d.name} » est une run.`
+          : `Type retiré de « ${d.name} ».`,
+    );
+  },
+
   removeDossier(id) {
     const d = Dossiers.get(id);
     if (!d) return;
@@ -355,6 +393,9 @@ const DossierBar = {
           break;
         case "remove-dossier":
           this.removeDossier(el.dataset.dossier);
+          break;
+        case "set-kind":
+          this.setDossierKind(el.dataset.dossier, el.dataset.kind || null);
           break;
       }
     });

@@ -365,8 +365,11 @@ const RunGen = {
     });
     if (input === null || !input.trim()) return;
     const name = input.trim();
+    // Un dossier créé pour ranger une run est typé « run » (hiérarchie de
+    // campagne) ; un dossier existant garde son type (on ne redéfinit pas la
+    // structure déjà posée par le MJ).
     if (!Dossiers.list().some((d) => d.name === name)) {
-      Dossiers.add(name);
+      Dossiers.add(name, null, "run");
     }
     const run = this._runs.find((r) => r.id === runId);
     if (run) {
@@ -397,6 +400,13 @@ const RunGen = {
   _runs: [],
   _save() {
     Storage.set(this._RUNS_KEY, this._runs);
+  },
+  /** Runs rattachées à un dossier (par nom). Lit Storage frais — utilisable
+      depuis n'importe quel panneau (le Hub notamment), sans dépendre de
+      `_runs`, qui n'est restauré qu'à l'ouverture du panneau Run. */
+  forDossier(name) {
+    if (!name) return [];
+    return Storage.get(this._RUNS_KEY, []).filter((r) => r.dossierName === name);
   },
   /** Rend une carte et la relie à son objet run par data-id (suppression +
       persistance). RunRenderer reste générique. */
