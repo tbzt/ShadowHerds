@@ -205,6 +205,15 @@ const EditModal = {
                     title="${c}" aria-label="Choisir ${c}"></button>`,
               )
               .join("")}
+            ${(() => {
+              const isCustom = pnj.pcColor && !colors.includes(pnj.pcColor);
+              const val = pnj.pcColor || colors[0];
+              return `<label class="em-color-swatch em-color-custom${isCustom ? " selected" : ""}"
+                  ${isCustom ? `style="background:${esc(val)}"` : ""}
+                  data-color="${esc(val)}" title="Autre couleur…" aria-label="Choisir une autre couleur">
+                <input type="color" class="em-color-custom-input" value="${esc(val)}">
+              </label>`;
+            })()}
           </div>
         </div>
       </div>
@@ -493,6 +502,18 @@ const EditModal = {
     document
       .querySelectorAll(".em-color-swatch")
       .forEach((el) => el.classList.toggle("selected", el.dataset.color === color));
+  },
+
+  /** Pastille « libre » (input color natif) : même bascule de sélection que
+      pickColor, mais le fond de la pastille suit la teinte choisie en direct. */
+  pickCustomColor(color) {
+    const custom = document.querySelector(".em-color-custom");
+    if (!custom) return;
+    custom.dataset.color = color;
+    custom.style.background = color;
+    document
+      .querySelectorAll(".em-color-swatch")
+      .forEach((el) => el.classList.toggle("selected", el === custom));
   },
 
   /* ---- Construction du formulaire ---- */
@@ -1189,6 +1210,11 @@ const EditModal = {
         case "camp-track-remove":
           this.removeCampaignTrack(el.dataset.key);
           break;
+      }
+    });
+    modal.addEventListener("input", (e) => {
+      if (e.target.classList.contains("em-color-custom-input")) {
+        this.pickCustomColor(e.target.value);
       }
     });
   },

@@ -133,5 +133,10 @@ const TourSteps = {
       title: "Réorganisez vos fiches à la main",
       body: "Bouton « ⠿ Réorganiser » sur les personnages, contacts et serveurs : glissez une fiche à sa place (souris ou doigt), ou déplacez-la au clavier avec les flèches ↑/↓. L'ordre choisi est sauvegardé.",
     },
+    {
+      id: "wn-pc-color-custom", anchor: "nav-characters", tours: ["whatsnew"], since: "1.16.0", fallback: "center",
+      title: "N'importe quelle couleur pour un PJ",
+      body: "Dans la fiche d'un personnage, la palette de teintes préréglées garde une dernière pastille arc-en-ciel : elle ouvre le sélecteur de couleur du navigateur pour choisir exactement la teinte voulue.",
+    },
   ],
 };

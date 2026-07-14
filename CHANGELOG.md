@@ -16,6 +16,13 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
+## [1.16.0] — 2026-07-14
+
+### Personnaliser
+- **Couleur PJ libre** : la palette de 6 teintes préréglées d'un personnage
+  garde une 7ᵉ pastille pour choisir n'importe quelle couleur (sélecteur
+  natif du navigateur).
+
 ## [1.15.0] — 2026-07-14
 
 ### Organiser
