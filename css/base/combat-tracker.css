@@ -1560,3 +1560,58 @@ kbd {
   background: color-mix(in srgb, var(--accent) 25%, var(--bg));
 }
 
+/* ÉCRAN SPECTATEUR (#59) : lu à distance, posé au centre de la table — texte
+   large, une colonne, aucune affordance interactive (cf. spectatorview.js). */
+.spectator-header {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  color: var(--accent);
+  text-align: center;
+  padding: var(--sp-5) 0 var(--sp-3);
+}
+.spectator-empty {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: var(--fs-lg);
+  padding: var(--sp-5);
+}
+.spectator-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 var(--sp-4) var(--sp-5);
+}
+.spectator-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-mid);
+}
+.spectator-row.is-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-mid));
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.spectator-row.is-down {
+  border-style: dashed;
+  opacity: 0.7;
+}
+.spectator-row.is-down .spectator-name {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+.spectator-name {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+.spectator-gauge {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+

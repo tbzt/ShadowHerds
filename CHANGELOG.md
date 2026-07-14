@@ -12,6 +12,14 @@ commit.
 
 ## [Non publié]
 
+## [1.26.0] — 2026-07-14
+
+### Table
+- **Écran spectateur** (#59) : dans Paramètres, « Ouvrir l'écran spectateur »
+  lance un second onglet en lecture seule — ordre d'initiative et moniteurs
+  de condition de la rencontre en cours, sans rien d'éditable ni de fiche
+  secrète. À poser côté joueurs ; se met à jour en direct pendant le combat.
+
 ## [1.25.0] — 2026-07-14
 
 ### Table

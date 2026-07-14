@@ -273,6 +273,13 @@ const Settings = {
             </p>
           </details>
         </div>
+      </div>
+      <div class="settings-section">
+        <h3>Écran spectateur</h3>
+        <p>Ouvre un second onglet en lecture seule (rien d'éditable, aucune fiche secrète) : ordre d'initiative et moniteurs de condition des combattants de la rencontre en cours. À poser côté joueurs.</p>
+        <div class="display-prefs">
+          <button class="btn-secondary" data-action="open-spectator">Ouvrir l'écran spectateur ↗</button>
+        </div>
       </div>`;
   },
   _catBackup() {
@@ -403,6 +410,7 @@ const Settings = {
       if (!el) return;
       if (el.dataset.action === "atomize") this.atomize();
       else if (el.dataset.action === "sync-now") this.syncNow();
+      else if (el.dataset.action === "open-spectator") this.openSpectator();
       else if (el.dataset.action === "settings-cat") {
         this._cat = el.dataset.cat;
         this.render();
@@ -415,6 +423,13 @@ const Settings = {
       <input type="radio" name="${name}" value="${value}" ${checked ? "checked" : ""}>
       ${label}
     </label>`;
+  },
+
+  /** #59 : ouvre l'écran spectateur (lecture seule) de l'édition courante
+      dans un nouvel onglet — même origine, même localStorage, donc
+      synchronisé en direct via l'évènement "storage" (cf. spectatorview.js). */
+  openSpectator() {
+    window.open(`${location.pathname}#${App.edition}/spectateur`, "_blank");
   },
 
   async atomize() {
