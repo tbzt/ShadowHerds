@@ -5,7 +5,7 @@
    Ne gère QUE l'ouverture/fermeture (délégation globale, modèle
    ContentModal). Les items du menu sont de simples boutons
    data-action déjà câblés par la délégation de leur domaine
-   (CardRenderer, ContactRenderer, Servers) : ce module n'exécute
+   (CardRenderer — dont les contacts, CO-b —, Servers) : ce module n'exécute
    aucune action métier. Un seul menu ouvert à la fois ; clic
    ailleurs ou Échap → fermeture.
    ============================================================ */

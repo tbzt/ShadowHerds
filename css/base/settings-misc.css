@@ -329,40 +329,24 @@
 /* ============================================================
    CONTACTS & RUN
    ============================================================ */
-.contact-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  width: 290px;
-  overflow: hidden;
-  animation: cardIn 0.3s ease;
-  break-inside: avoid; /* CH-V4 : masonry .cards-zone */
-  -webkit-column-break-inside: avoid;
-  margin-bottom: var(--sp-4);
-}
-.contact-card::before {
-  content: "";
-  display: block;
-  height: 2px;
+/* CO-e (merge, reconciliation post rail-carnet) : chrome retargeté sur
+   `.pnj-card-frame` — `background`/`border`/`border-radius`/`overflow`/
+   `animation`/`break-inside`/`margin-bottom` sont désormais IDENTIQUES à
+   la coquille partagée `.pnj-card`/`.pnj-card-frame` (retirés, redondants).
+   Largeur fixe 290px abandonnée aussi : `#contacts-gen-grid` est la même
+   `.cards-zone` masonry que toutes les autres cartes, qui remplissent leur
+   colonne (`width:100%`, base `.pnj-card`) sans px figé. Seul un vrai delta
+   survit : l'accent2 (au lieu de l'accent générique) du liseré du haut,
+   retargeté sur le frame — plus forte spécificité que la règle de base,
+   ordre de chargement CSS non requis. */
+.contact-card .pnj-card-frame::before {
   background: var(--accent2);
 }
-.contact-card-body {
-  padding: var(--sp-3) var(--sp-4);
-}
-.contact-name {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--fs-md);
-  color: var(--text);
-  margin-bottom: 1px;
-}
-.contact-role {
-  font-family: var(--font-mono);
-  font-size: var(--fs-2xs);
-  color: var(--accent2);
-  letter-spacing: 0.06em;
-  margin-bottom: 5px;
-}
+/* CO-e (nettoyage) : `.contact-card-body`/`.contact-name`/`.contact-role`
+   (padding + typographie bespoke de l'ex-`ContactRenderer`) retirées — le
+   contact utilise désormais les conteneurs/classes génériques partagés
+   avec le PNJ (`.pnj-card-body`, `.pnj-name`, `.pnj-meta`), convergence
+   voulue, pas une régression à rattraper. */
 .contact-desc {
   font-size: var(--fs-xs);
   color: var(--text-dim);

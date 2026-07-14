@@ -104,14 +104,9 @@
   border-left: 3px solid var(--accent);
 }
 
-/* PNJ déployé depuis un contact (ContactsBook.deployPNJ), imbriqué dans la
-   carte contact — même liseré que la carte sœur véhicule/esprit. */
-.contact-deployed-pnj {
-  margin-top: 10px;
-}
-.contact-deployed-pnj .pnj-card .pnj-card-frame {
-  border-left: 3px solid var(--accent);
-}
+/* CO-e (nettoyage) : `.contact-deployed-pnj` (imbrication carte-dans-carte)
+   retirée — le PNJ déployé depuis un contact (ContactsBook.deployPNJ) rend
+   sa propre carte directement dans le carnet depuis CO-d, plus de nesting. */
 .vehicle-header .pnj-name {
   font-size: var(--fs-md);
 }

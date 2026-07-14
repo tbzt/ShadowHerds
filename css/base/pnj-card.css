@@ -651,22 +651,27 @@
   color: var(--text-dim);
 }
 
-/* ---- Portrait éditable des contacts ---- */
-.contact-portrait .card-section-label {
+/* ---- Portrait éditable des contacts (CO-e) ----
+   Généralisé depuis `.contact-portrait .xxx` (ancêtre disparu quand
+   `_flavorSection` a convergé sur le `.card-section.flavor-section`
+   partagé PNJ/contact, CO-b) : `:has()` cible directement le libellé qui
+   porte le bouton ⟳ reroll (seul cas où « Portrait » a un bouton), et le
+   sélecteur d'attribut cible tout champ éditable, sans ancêtre requis. */
+.card-section-label:has(.btn-icon-tiny) {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.contact-portrait .flavor-val[contenteditable] {
+.flavor-val[contenteditable] {
   border-radius: 2px;
   padding: 0 2px;
   transition: background var(--dur-fast);
   cursor: text;
 }
-.contact-portrait .flavor-val[contenteditable]:hover {
+.flavor-val[contenteditable]:hover {
   background: var(--glow);
 }
-.contact-portrait .flavor-val[contenteditable]:focus {
+.flavor-val[contenteditable]:focus {
   background: var(--bg);
   outline: 1px solid var(--accent);
 }

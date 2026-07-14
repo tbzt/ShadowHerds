@@ -49,9 +49,9 @@ const Shadows = Object.assign(
             ...CardRenderer.liveDeps(),
             context: opts && opts.context,
           }),
-    // Garde la carte imbriquée dans une fiche contact (déployée via
-    // ContactsBook.deployPNJ) synchronisée si le PNJ est modifié/supprimé
-    // depuis la grille des Ombres elle-même.
+    // Le carnet Contacts affiche directement la carte du PNJ déployé
+    // (ContactsBook.deployPNJ, joint CO-d) : la rafraîchir si ce PNJ est
+    // modifié/supprimé/re-déployé depuis la grille des Ombres elle-même.
     onChange: () => {
       if (typeof ContactsBook !== "undefined") ContactsBook.refreshGrid();
     },

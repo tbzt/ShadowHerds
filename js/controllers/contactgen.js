@@ -829,6 +829,7 @@ const ContactGen = {
 
     const contact = {
       id: Utils.uid(),
+      type: "contact", // CO-a : garde CardRenderer.isContact (carte partagée)
       edition,
       name,
       role: cat ? cat.role : this._roleForNetwork(networkId),
@@ -861,6 +862,7 @@ const ContactGen = {
 
     const contact = {
       id: Utils.uid(),
+      type: "contact", // CO-a : garde CardRenderer.isContact (carte partagée)
       edition,
       name,
       role: cat.role,
@@ -890,6 +892,7 @@ const ContactGen = {
   buildManual(edition, fields = {}) {
     const base = {
       id: Utils.uid(),
+      type: "contact", // CO-a : garde CardRenderer.isContact (carte partagée)
       edition,
       name: (fields.name || "").trim(),
       role: (fields.role || "").trim(),

@@ -112,7 +112,7 @@ const Characters = Object.assign(
     /** E5 : liens contacts ↔ PJ qualifiés. `contactLinks` additif sur
         l'entité PJ (vit dans `characters_all`, aucune nouvelle clé) — sens
         inverse (« Connu de » sur la fiche contact) calculé à la volée par
-        `ContactRenderer`, jamais stocké côté contact (une seule source de
+        `CardRenderer._contactKnownBy` (CO-b), jamais stocké côté contact (une seule source de
         vérité). Loyauté en nombre libre, non contraint : vérifié dans les
         livres, SR5/SR6 ont une échelle 1-6 imprimée pour les contacts mais
         Anarchy (1 et 2) n'a aucune notion de loyauté (modèle « Niveau »

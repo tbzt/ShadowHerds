@@ -12,6 +12,18 @@ commit.
 
 ## [Non publié]
 
+## [1.29.0] — 2026-07-14
+
+### Organiser
+- **La carte contact converge sur la fiche PNJ** : Incarnation devient une
+  zone repliable (même vocabulaire, même repli animé que le PNJ), onglets
+  ☰ Fiche / ❝ Incarner en haut de carte, et un module **◈ Relation** (Influence/
+  Loyauté ou Niveau/RR/Atout selon l'édition, + « Connu de ») remplace les
+  anciennes stats figées.
+- **Fini la carte imbriquée** : un contact déployé en PNJ affiche directement
+  sa fiche complète (Combat, capacités, module Relation) — plus de carte
+  dans la carte, plus de double pied de carte.
+
 ## [1.28.0] — 2026-07-14
 
 ### Table

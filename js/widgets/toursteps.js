@@ -203,5 +203,10 @@ const TourSteps = {
       title: "Actions et réactions en combat Anarchy",
       body: "En combat narratif, touchez une ligne pour mettre ce combattant « en focus » : sa fiche et son budget d'actions s'affichent aussitôt, et si un PJ agit, la console de réaction des PNJ prend le relais. Marquer « joué » passe sur l'anneau ✓ et la pastille.",
     },
+    {
+      id: "wn-contact-card", anchor: "nav-characters", tours: ["whatsnew"], since: "1.29.0", fallback: "center",
+      title: "La carte contact rejoint la fiche PNJ",
+      body: "Incarnation repliable, onglets ☰ Fiche / ❝ Incarner, module ◈ Relation (Influence/Loyauté ou Niveau/RR + « Connu de »). Un contact déployé affiche directement sa fiche complète, plus de carte imbriquée.",
+    },
   ],
 };
