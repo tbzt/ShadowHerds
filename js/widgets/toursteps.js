@@ -193,5 +193,10 @@ const TourSteps = {
       title: "Un écran pour les joueurs",
       body: "Dans Paramètres : « Ouvrir l'écran spectateur » lance un second onglet en lecture seule — initiative et moniteurs de condition de la rencontre en cours, rien d'éditable, aucune fiche secrète. À poser côté table.",
     },
+    {
+      id: "wn-session-summary", anchor: "nav-combat", tours: ["whatsnew"], since: "1.27.0", fallback: "center",
+      title: "Le résumé de la séance",
+      body: "En tête du Journal des jets, un bandeau repliable agrège toute la partie : nombre de jets, taux de réussite, alarmes et le MVP du soir. De quoi raconter la séance en un coup d'œil, sans rien à saisir.",
+    },
   ],
 };

@@ -59,6 +59,7 @@ const DiceLog = {
         <button class="btn-icon-tiny" data-action="clear" title="Vider le journal">⌫</button>
         <button class="btn-icon-tiny" data-action="close" title="Fermer" aria-label="Fermer">✕</button>
       </div>
+      <div class="dice-log-summary" id="dice-log-summary"></div>
       <div class="dice-log-filters" id="dice-log-filters"></div>
       <div class="dice-log-list" id="dice-log-list"></div>`;
     document.body.appendChild(panel);
@@ -69,6 +70,10 @@ const DiceLog = {
       if (btn.dataset.action === "clear") this.clear();
       else if (btn.dataset.action === "export") this.export();
       else if (btn.dataset.action === "close") this.close();
+      else if (btn.dataset.action === "summary-toggle") {
+        Storage.setGlobal("diceLogSummaryOpen", !this._summaryOpen());
+        this.refresh();
+      }
       else if (btn.dataset.action === "log-expand") {
         const t = btn.dataset.t;
         if (this._expanded.has(t)) this._expanded.delete(t);
@@ -316,6 +321,74 @@ const DiceLog = {
     badge.textContent = this._unseen > 9 ? "9+" : String(this._unseen);
   },
 
+  /** Résumé de séance : pli mémorisé en Storage global (comme les préférences
+      de dés / le journal lui-même) — jamais de localStorage direct. Replié
+      par défaut. */
+  _summaryOpen() {
+    return Storage.getGlobal("diceLogSummaryOpen", false);
+  },
+
+  /** Bandeau « Résumé de séance » repliable en tête du panneau, recalculé à la
+      volée sur tout l'historique — aucune donnée neuve, aucun nouvel écran.
+      La sémantique `cls` (good/zero/glitch/crit) est déjà neutre aux 4 éditions ;
+      le champ `unit` l'est aussi et partitionne les entrées sans branche
+      `App.edition` : "succès" = vrai test (normal/Anarchy), "" = initiative,
+      "net" = jet opposé. On n'agrège le taux de réussite et le MVP que sur les
+      vrais tests (init & opposés ne sont pas des tests de compétence). */
+  _summaryBand() {
+    const box = document.getElementById("dice-log-summary");
+    if (!box) return;
+    if (!this.history.length) {
+      box.innerHTML = "";
+      return;
+    }
+    const total = this.history.length;
+    // Alarmes : même prédicat que la puce « Alarmes » (cls crit/glitch), pour
+    // que le compteur du résumé colle exactement au filtre.
+    const alarms = this.history.filter(
+      (e) => e.cls === "crit" || e.cls === "glitch"
+    ).length;
+    const tests = this.history.filter((e) => e.unit === "succès");
+    const good = tests.filter((e) => e.cls === "good").length;
+    const zero = tests.filter((e) => e.cls === "zero").length;
+    const rate = good + zero ? Math.round((good / (good + zero)) * 100) : null;
+    // MVP : le `who` cumulant le plus de « good » parmi les tests ; ex æquo →
+    // celui qui a le plus de jets.
+    const byWho = {};
+    tests.forEach((e) => {
+      if (!e.who) return;
+      const w = (byWho[e.who] = byWho[e.who] || { good: 0, rolls: 0 });
+      if (e.cls === "good") w.good++;
+      w.rolls++;
+    });
+    let mvp = null;
+    let best = null;
+    Object.keys(byWho).forEach((w) => {
+      const s = byWho[w];
+      if (!s.good) return;
+      if (!best || s.good > best.good || (s.good === best.good && s.rolls > best.rolls)) {
+        best = s;
+        mvp = w;
+      }
+    });
+    const open = this._summaryOpen();
+    const stat = (val, unit) =>
+      `<span class="dice-log-stat"><b>${val}</b>${unit ? `<small>${unit}</small>` : ""}</span>`;
+    const body = open
+      ? `<div class="dice-log-summary-body">
+          ${stat(total, total > 1 ? "jets" : "jet")}
+          ${stat(rate == null ? "—" : rate + "%", "réussite")}
+          ${stat(alarms, alarms > 1 ? "alarmes" : "alarme")}
+          ${mvp ? `<span class="dice-log-stat">MVP <b>${Utils.escHtml(mvp)}</b></span>` : ""}
+        </div>`
+      : "";
+    box.innerHTML =
+      `<button class="dice-log-summary-toggle" data-action="summary-toggle" aria-expanded="${open}">
+        <span class="dice-log-summary-chevron" aria-hidden="true">${open ? "▾" : "▸"}</span>
+        Résumé de séance
+      </button>${body}`;
+  },
+
   /** J2 : rangée de puces Tout / Alarmes / <par personnage> — mêmes règles que
       les facettes du Hub F1 (valeurs distinctes présentes, filtre session-only,
       pas de branche App.edition, la sémantique cls est déjà neutre). */
@@ -346,6 +419,7 @@ const DiceLog = {
   refresh() {
     const list = document.getElementById("dice-log-list");
     if (!list) return;
+    this._summaryBand();
     this._renderFilters();
     const entries = this.history.filter((e) => {
       if (this._filter === "all") return true;

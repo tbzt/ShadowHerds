@@ -12,6 +12,14 @@ commit.
 
 ## [Non publié]
 
+## [1.27.0] — 2026-07-14
+
+### Table
+- **Résumé de séance** : en tête du Journal des jets, un bandeau repliable
+  agrège toute la partie — nombre de jets, taux de réussite, alarmes
+  (échecs critiques et bévues) et le personnage le plus « chanceux » (MVP).
+  Un coup d'œil pour raconter la séance à la fin, sans rien à saisir.
+
 ## [1.26.0] — 2026-07-14
 
 ### Table

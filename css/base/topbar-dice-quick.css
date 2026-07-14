@@ -396,6 +396,50 @@
   text-transform: uppercase;
   color: var(--accent);
 }
+/* « Résumé de séance » : bandeau repliable entre l'en-tête et les filtres,
+   recalculé sur tout l'historique. Replié par défaut ; l'en-tête reprend la
+   fonte mono/casse des autres en-têtes du panneau (dice-log-turn-header). */
+.dice-log-summary:empty {
+  display: none;
+}
+.dice-log-summary {
+  border-bottom: 1px solid var(--border);
+}
+.dice-log-summary-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  width: 100%;
+  padding: 0.45rem 0.8rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: left;
+}
+.dice-log-summary-chevron {
+  color: var(--accent);
+}
+.dice-log-summary-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-3);
+  padding: 0 0.8rem 0.6rem;
+}
+.dice-log-stat {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+.dice-log-stat b {
+  color: var(--text);
+  font-size: var(--fs-sm);
+  margin-right: 0.2em;
+}
 /* J2 : rangée de puces de filtre — réutilise .hub-facet-chip tel quel (même
    pastille active/inactive que le Hub F1). Une seule ligne à toute largeur
    (défilement horizontal si trop de personnages) plutôt qu'un retour à la ligne
