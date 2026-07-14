@@ -16,6 +16,15 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
+## [1.11.0] — 2026-07-14
+
+### Organiser
+- **Campagnes et runs** : un dossier peut désormais être marqué « Campagne »
+  ou « Run » (menu « ⋯ » de la barre de dossiers, ou automatiquement via
+  « Ranger la run »). Une run affiche un raccourci vers sa prep générée ;
+  une campagne, le nombre de runs qu'elle contient. Purement organisationnel
+  — un dossier non marqué se comporte exactement comme avant.
+
 ## [1.10.0] — 2026-07-14
 
 ### Jouer

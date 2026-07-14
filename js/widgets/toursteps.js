@@ -113,5 +113,10 @@ const TourSteps = {
       title: "Suivre la campagne sur la fiche d'un PJ",
       body: "Sur un personnage-joueur, dépliez « Progression » : tenez ses nuyens et son Karma dans le temps, chaque gain/dépense daté et motivé, solde recalculé tout seul. Réputation gérée selon l'édition (SR5/SR6), plus vos propres compteurs. Optionnel : invisible tant qu'on ne s'en sert pas.",
     },
+    {
+      id: "wn-campaign-folders", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.11.0", fallback: "center",
+      title: "Ranger vos dossiers en campagnes et runs",
+      body: "Un dossier peut être marqué « Campagne » ou « Run » depuis le menu « ⋯ » de la barre de dossiers — automatique quand vous « Rangez la run ». Une run pointe vers sa prep générée, une campagne compte ses runs.",
+    },
   ],
 };
