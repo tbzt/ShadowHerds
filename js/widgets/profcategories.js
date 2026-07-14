@@ -319,6 +319,28 @@ const ProfCategories = {
       cat: "Corpo & contacts",
       items: ["M. Johnson (corporatiste)", "M. Johnson (à son compte)"],
     },
+    // Customs D5/couverture (2026-07-14) : cf. anarchy1.js — mêmes archétypes,
+    // ferment les milieux/rôles absents du livre de base.
+    {
+      cat: "Bas de l'échelle",
+      items: ["Civil de quartier", "Adepte de rue"],
+    },
+    {
+      cat: "Crime organisé",
+      items: ["Cambrioleur"],
+    },
+    {
+      cat: "Police & ordre",
+      items: ["Officier de patrouille"],
+    },
+    {
+      cat: "Éveillés",
+      items: ["Chaman des rues"],
+    },
+    {
+      cat: "Professionnels spécialisés",
+      items: ["Technicien indépendant"],
+    },
   ],
 
   /**

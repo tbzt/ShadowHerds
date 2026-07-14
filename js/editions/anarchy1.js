@@ -1113,6 +1113,127 @@ const EditionAnarchy1 = {
       ],
       armor: 6,
     },
+
+    /* ---- Customs D5/couverture (2026-07-14) : peuplement des rôles/milieux
+       sans archétype (rue, crime, police, ombres · chamane, adepte,
+       technicien, infiltrateur, civil), signalés par Coherence._selfTest.
+       Le livre de base (p.182-190) ne couvre que gangers/corpo/sécurité/
+       militaire/Johnson — customs assumés dans le même esprit que le
+       peuplement Anarchy 2 (cf. mémoire project_coherence_content_gaps). */
+    "Civil de quartier": {
+      label: "Civil de quartier",
+      tier: "Figurant",
+      attrs: { FOR: 2, AGI: 2, VOL: 2, LOG: 2, CHA: 3, CHC: 2 },
+      skills: [
+        { name: "Étiquette", val: 3, attr: "CHA" },
+        { name: "Comédie", val: 1, attr: "CHA" },
+        { name: "Véhicules terrestres", val: 1, attr: "AGI" },
+      ],
+      weapons: [{ name: "Mains nues", dmg: 1, dmgType: "E" }],
+      armor: 0,
+    },
+
+    "Adepte de rue": {
+      label: "Adepte de rue",
+      tier: "Sbire",
+      awakened: true,
+      attrs: { FOR: 4, AGI: 4, VOL: 3, LOG: 2, CHA: 2, CHC: 2 },
+      skills: [
+        { name: "Corps à corps", val: 4, attr: "AGI" },
+        { name: "Athlétisme", val: 3, attr: "FOR" },
+        { name: "Acrobaties", val: 2, attr: "AGI" },
+        { name: "Intimidation", val: 1, attr: "CHA" },
+      ],
+      edges: [
+        "Réflexes améliorés (pouvoir d'adepte, +1 attaque/Narration, +1 pt Anarchy/Scène)",
+        "Peau d'acier (pouvoir d'adepte, +3 Armure naturelle)",
+      ],
+      weapons: [
+        { name: "Mains nues", dmg: 3, dmgType: "E" },
+        { name: "Poing américain/Couteau", dmg: 4, dmgType: "P" },
+      ],
+      armor: 9,
+    },
+
+    "Cambrioleur": {
+      label: "Cambrioleur",
+      tier: "Sbire",
+      attrs: { FOR: 2, AGI: 4, VOL: 2, LOG: 3, CHA: 2, CHC: 3 },
+      skills: [
+        { name: "Furtivité", val: 4, attr: "AGI" },
+        { name: "Pistage", val: 2, attr: "LOG" },
+        { name: "Corps à corps", val: 2, attr: "AGI" },
+        { name: "Comédie", val: 1, attr: "CHA" },
+      ],
+      edges: ["Kit d'intrusion optimisé (relance 1 échec Furtivité en intrusion)"],
+      weapons: [
+        { name: "Mains nues", dmg: 1, dmgType: "E" },
+        { name: "Poing américain/Couteau", dmg: 2, dmgType: "P" },
+        { name: "Pistolet léger", dmg: 5, dmgType: "P", ranges: "C OK · I −2" },
+      ],
+      armor: 6,
+    },
+
+    "Officier de patrouille": {
+      label: "Officier de patrouille",
+      tier: "Sbire",
+      essence: 5,
+      attrs: { FOR: 3, AGI: 3, VOL: 3, LOG: 3, CHA: 3, CHC: 2 },
+      skills: [
+        { name: "Armes à feu", val: 3, attr: "AGI" },
+        { name: "Athlétisme", val: 2, attr: "FOR" },
+        { name: "Intimidation", val: 2, attr: "CHA" },
+        { name: "Pistage", val: 1, attr: "LOG" },
+      ],
+      edges: ["Yeux cybernétiques (relance 1 dé Perception)"],
+      weapons: [
+        { name: "Mains nues", dmg: 2, dmgType: "E" },
+        { name: "Matraque", dmg: 5, dmgType: "P" },
+        { name: "Pistolet léger", dmg: 5, dmgType: "P", ranges: "C OK · I −2" },
+      ],
+      armor: 9,
+    },
+
+    "Chaman des rues": {
+      label: "Chaman des rues",
+      tier: "Sbire",
+      awakened: true,
+      attrs: { FOR: 2, AGI: 2, VOL: 4, LOG: 2, CHA: 3, CHC: 2 },
+      skills: [
+        { name: "Conjuration", val: 3, attr: "VOL" },
+        { name: "Sorcellerie", val: 3, attr: "VOL" },
+        { name: "Survie", val: 2, attr: "VOL" },
+        { name: "Comédie", val: 1, attr: "CHA" },
+      ],
+      spellChoices: 2,
+      spellOptions: [
+        { name: "Éclair mana", note: "6P/CA" },
+        { name: "Boule de feu", note: "7P aire" },
+        { name: "Confusion", note: "−2 dés" },
+        { name: "Armure", note: "6 cases" },
+        { name: "Invisibilité" },
+      ],
+      weapons: [{ name: "Mains nues", dmg: 2, dmgType: "E" }],
+      armor: 6,
+    },
+
+    "Technicien indépendant": {
+      label: "Technicien indépendant",
+      tier: "Sbire",
+      attrs: { FOR: 2, AGI: 3, VOL: 2, LOG: 4, CHA: 2, CHC: 2 },
+      skills: [
+        { name: "Ingénierie", val: 3, attr: "LOG" },
+        { name: "Électronique", val: 3, attr: "LOG" },
+        { name: "Véhicules terrestres", val: 2, attr: "AGI" },
+        { name: "Négociation", val: 1, attr: "CHA" },
+      ],
+      edges: ["Kit d'outils spécialisé (relance 1 échec Ingénierie/Électronique)"],
+      weapons: [
+        { name: "Mains nues", dmg: 1, dmgType: "E" },
+        { name: "Pistolet léger", dmg: 5, dmgType: "P", ranges: "C OK · I −2" },
+      ],
+      armor: 6,
+    },
   },
 
   /* ---- Génération principale ----
