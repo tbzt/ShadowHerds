@@ -141,7 +141,7 @@ const BulkBar = {
           <div class="bulk-move-menu" id="bulk-move-menu" hidden>${moveMenu}</div>
         </span>
         ${linkBtn}
-        ${combat ? `<button class="btn-secondary btn-small" data-action="bulk-encounter">⚔ Ajouter au combat</button>` : ""}
+        ${combat ? `<button class="btn-secondary btn-small" data-action="bulk-encounter"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-combat"></use></svg> Ajouter au combat</button>` : ""}
         <button class="danger-btn btn-small" data-action="bulk-delete">Supprimer</button>
         <button class="btn-icon-tiny" data-action="bulk-clear" title="Annuler la sélection" aria-label="Annuler la sélection">✕</button>
       </span>`;

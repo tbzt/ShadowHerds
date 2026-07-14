@@ -685,7 +685,7 @@ const EncounterRenderer = {
     return `<div class="encounter-duel">
       <span class="encounter-devices-lbl">Duel decker↔decker</span>
       <select class="encounter-duel-select" aria-label="Decker ciblé">${options}</select>
-      <button class="react-btn" data-action="decker-attack" data-id="${pnj.id}" title="Piratage contre ce decker (dégâts : cases de son propre moniteur de deck)">⚔ Piratage</button>
+      <button class="react-btn" data-action="decker-attack" data-id="${pnj.id}" title="Piratage contre ce decker (dégâts : cases de son propre moniteur de deck)"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-combat"></use></svg> Piratage</button>
     </div>`;
   },
 

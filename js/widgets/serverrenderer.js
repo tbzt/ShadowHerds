@@ -331,8 +331,8 @@ const ServerRenderer = {
         let launchBtn = "";
         if (inEncounter && !ic.watch && st.active && !st.down) {
           launchBtn = launched.has(k)
-            ? `<span class="ic-status active" title="Déjà dans l'initiative du combat">⚔ en scène</span>`
-            : `<button class="btn-secondary btn-small" data-action="launch-ic" data-id="${srv.id}" data-k="${k}" title="Envoyer cette CI dans l'ordre d'initiative">⚔ Init</button>`;
+            ? `<span class="ic-status active" title="Déjà dans l'initiative du combat"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-combat"></use></svg> en scène</span>`
+            : `<button class="btn-secondary btn-small" data-action="launch-ic" data-id="${srv.id}" data-k="${k}" title="Envoyer cette CI dans l'ordre d'initiative"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-combat"></use></svg> Init</button>`;
         }
 
         return `<div class="ic-row ${isActive ? "on" : ""} ${st.down ? "dead" : ""}">

@@ -94,7 +94,7 @@ const CyberdeckRenderer = {
     if (!acts.length) return "";
     const btn = (a) => {
       const isPrimary = a.type === "attack";
-      const glyph = isPrimary ? "⚔ " : "";
+      const glyph = isPrimary ? '<svg class="icon icon-sm" aria-hidden="true"><use href="#ic-combat"></use></svg> ' : "";
       const poolTxt = a.pool != null ? ` ${a.pool}d` : "";
       const dvTxt = a.dv != null ? ` · VD ${a.dv}` : "";
       const cls = `cyberdeck-swap deck-action-btn${isPrimary ? " is-primary" : ""}`;
