@@ -692,7 +692,10 @@ const EditModal = {
         <div class="modal-section-title">Équipement</div>
         <div class="form-group">
           <label>Un élément par ligne</label>
-          <textarea id="em-equip" rows="4">${(pnj.equip || []).join("\n")}</textarea>
+          <textarea id="em-equip" rows="4">${this._equipTextLines(pnj).join("\n")}</textarea>
+        </div>
+        <div id="em-equip-ratings" class="em-skills-list">
+          ${this._equipRatingRows(pnj)}
         </div>
         ${this._equipCatalogControls(pnj)}
       </div>`;
@@ -913,10 +916,60 @@ const EditModal = {
     this._rerenderWeapons(pnj);
   },
 
-  /* Repeint la seule textarea d'équipement depuis pnj.equip. */
+  /* #63 : lignes texte libre de la textarea équipement — seuls les items
+     CHAÎNE (indice fixe/absent). Les items OBJET (indice non résolu) vivent
+     dans la liste à stepper (_equipRatingRows), jamais dans la textarea
+     (sinon `[object Object]` + perte de `.rating` au prochain save). */
+  _equipTextLines(pnj) {
+    return (pnj.equip || []).filter((it) => typeof it === "string");
+  },
+
+  /* #63 : une ligne par item à indice non résolu (« Indice 1-4 ») — libellé +
+     stepper numérique borné par la plage lue dans le libellé, + retrait. */
+  /* `data-idx` de chaque ligne = position PARMI LES OBJETS SEULEMENT
+     (pas l'index brut de `pnj.equip`, qui se réordonne au save — cf.
+     _readForm : les objets remontent en tête). `id="em-equip-rating-<i>"`
+     garde lui l'index brut : c'est lui que _readForm relit avant réordre. */
+  _equipRatingRows(pnj) {
+    const esc = CardRenderer._esc;
+    return (pnj.equip || [])
+      .map((it, i) => (it && typeof it === "object" ? { it, i } : null))
+      .filter(Boolean)
+      .map(({ it, i }, ratingIdx) => {
+        const [lo, hi] = ItemResolver.ratingRange(it.str) || [1, 6];
+        const label = it.str.split(" [")[0].trim();
+        return `<div class="em-skill-row em-equip-rating-row" data-idx="${ratingIdx}">
+          <span class="em-skill-name">${esc(label)}</span>
+          <input type="number" class="em-equip-rating" id="em-equip-rating-${i}"
+            value="${it.rating != null ? it.rating : ""}" min="${lo}" max="${hi}"
+            placeholder="indice ${lo}-${hi}" title="Indice (${lo}-${hi})">
+          <button type="button" class="em-skill-del" title="Retirer"
+            data-action="remove-equip-rating">×</button>
+        </div>`;
+      })
+      .join("");
+  },
+
+  /* Repeint la textarea + la liste à stepper depuis pnj.equip. */
   _rerenderEquip(pnj) {
     const el = document.getElementById("em-equip");
-    if (el) el.value = (pnj.equip || []).join("\n");
+    if (el) el.value = this._equipTextLines(pnj).join("\n");
+    const ratings = document.getElementById("em-equip-ratings");
+    if (ratings) ratings.innerHTML = this._equipRatingRows(pnj);
+  },
+
+  /* Retire l'item d'équipement (objet à indice) à la position ratingIdx
+     PARMI LES OBJETS (cf. note _equipRatingRows) — pas un index brut de
+     pnj.equip, qui se réordonne pendant _readForm. */
+  removeEquipRating(ratingIdx) {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj || !Array.isArray(pnj.equip)) return;
+    this._readForm(pnj);
+    const objects = pnj.equip.filter((it) => it && typeof it === "object");
+    const target = objects[ratingIdx];
+    if (!target) return;
+    pnj.equip = pnj.equip.filter((it) => it !== target);
+    this._rerenderEquip(pnj);
   },
 
   /* Repeint la seule liste d'armes depuis pnj.weapons. */
@@ -1133,13 +1186,30 @@ const EditModal = {
       }
     }
 
-    // Équipement
+    // Équipement — #63 : la textarea ne porte que les items CHAÎNE (indice
+    // fixe/absent) ; les items OBJET (indice non résolu) vivent à part dans
+    // la liste à stepper et ne doivent jamais être écrasés par elle, sous
+    // peine de perdre `.rating` au save. On lit d'abord le stepper de chaque
+    // objet en place, puis on ne remplace que le sous-ensemble « chaînes ».
+    if (Array.isArray(pnj.equip)) {
+      pnj.equip.forEach((it, i) => {
+        if (!it || typeof it !== "object") return;
+        const input = document.getElementById(`em-equip-rating-${i}`);
+        if (!input) return;
+        const [lo, hi] = ItemResolver.ratingRange(it.str) || [1, 6];
+        const raw = parseInt(input.value, 10);
+        it.rating = Number.isNaN(raw) ? null : Utils.clamp(raw, lo, hi);
+      });
+    }
     const equipEl = document.getElementById("em-equip");
-    if (equipEl)
-      pnj.equip = equipEl.value
+    if (equipEl) {
+      const lines = equipEl.value
         .split("\n")
         .map((s) => s.trim())
         .filter(Boolean);
+      const objects = (pnj.equip || []).filter((it) => it && typeof it === "object");
+      pnj.equip = [...objects, ...lines];
+    }
 
     // Compétences (SR5/SR6 + Anarchy) : niveau, spécialité, RR
     this._readSkills(pnj);
@@ -1193,6 +1263,11 @@ const EditModal = {
         case "add-equip-item":
           this.addEquipItem();
           break;
+        case "remove-equip-rating": {
+          const row = el.closest("[data-idx]");
+          if (row) this.removeEquipRating(parseInt(row.dataset.idx, 10));
+          break;
+        }
         case "remove-weapon": {
           const row = el.closest("[data-idx]");
           if (row) this.removeWeapon(parseInt(row.dataset.idx, 10));

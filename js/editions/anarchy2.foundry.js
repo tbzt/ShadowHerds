@@ -475,8 +475,9 @@ const FoundryAnarchy2Export = {
       const feat = this.buildWeaponFeat(w, pnj);
       if (feat) items.push(feat);
     }
-    for (const e of pnj.equip || []) {
-      if (typeof e !== "string") continue;
+    for (const raw of pnj.equip || []) {
+      const e = ItemResolver.itemStr(raw); // #63 : item chaîne OU objet
+      if (!e) continue;
       if (this._isCyberdeckStr(e)) items.push(this.buildCyberdeckFeat(e));
       else if (this._isArmorStr(e)) items.push(...this.buildArmorFeats(e));
       else items.push(this._item(this._name(e) || e, "feat", {

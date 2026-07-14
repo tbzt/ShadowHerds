@@ -103,7 +103,10 @@ const BonusEngine = {
           // non résolu (plage « 1-4 ») → 0 (inactif jusqu'au stepper #63).
           let val = bonus.val;
           if (bonus.byRating || bonus.perRating) {
-            const r = ItemResolver.itemRating(s);
+            // #63 : lire l'indice sur l'ITEM d'origine (chaîne OU objet),
+            // pas sur `s` déjà aplati en chaîne — sinon `.rating` réglé par
+            // le stepper (EditModal) est invisible ici.
+            const r = ItemResolver.itemRating(item);
             val = r == null ? 0 : bonus.byRating ? r : bonus.perRating[r] || 0;
           }
           if (val) totals.attrMods.push({ attr: bonus.attr, val, source: prefix });

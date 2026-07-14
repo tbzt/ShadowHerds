@@ -12,7 +12,8 @@ const PrintSR5 = {
   _esc: (s) => CardRenderer._esc(s == null ? "" : String(s)),
 
   _named(v) {
-    return v == null ? "" : typeof v === "string" ? v : v.name || "";
+    // #63 : v.str couvre l'item d'équipement polymorphe {str,cat,rating}.
+    return v == null ? "" : typeof v === "string" ? v : v.name || v.str || "";
   },
   _list(arr) {
     return (Array.isArray(arr) ? arr : []).map((v) => this._named(v)).filter(Boolean);

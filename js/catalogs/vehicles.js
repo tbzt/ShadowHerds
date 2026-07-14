@@ -216,8 +216,9 @@ const Vehicles = {
 
   /* ---- Détection : un item d'équipement (ou atout Anarchy)
      correspond-il à un véhicule/drone déployable ? ---- */
-  matchItem(item, edition) {
-    if (typeof item !== "string") return null;
+  matchItem(rawItem, edition) {
+    const item = ItemResolver.itemStr(rawItem); // #63 : item chaîne OU objet
+    if (!item) return null;
     if (App.getEditionModule(edition)?.usesRiskPanel) return this._parseAnarchy(item);
     const table = this.CATALOG[edition] || [];
     const entry = table.find((e) => e.match.test(item));

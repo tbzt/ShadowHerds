@@ -10,7 +10,8 @@
 const PrintAnarchy1 = {
   _esc: (s) => CardRenderer._esc(s == null ? "" : String(s)),
   _named(v) {
-    return v == null ? "" : typeof v === "string" ? v : v.name || "";
+    // #63 : v.str couvre l'item d'équipement polymorphe {str,cat,rating}.
+    return v == null ? "" : typeof v === "string" ? v : v.name || v.str || "";
   },
   // Initiale d'attribut pour la notation « indice+X » du livre.
   _attrInitial: { FOR: "F", AGI: "A", VOL: "V", LOG: "L", CHA: "C", CHC: "Ch" },

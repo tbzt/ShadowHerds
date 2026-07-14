@@ -38,7 +38,9 @@ const Utils = {
       champs `journal`/`note` sont lus défensivement (absents avant F2). */
   entityContent(e) {
     if (!e) return "";
-    const named = (v) => (v == null ? "" : typeof v === "string" ? v : v.name || "");
+    // #63 : v.str couvre l'item d'équipement polymorphe {str,cat,rating}
+    // (ItemResolver), v.name les autres formes objet (sorts/pouvoirs/...).
+    const named = (v) => (v == null ? "" : typeof v === "string" ? v : v.name || v.str || "");
     const list = (arr) => (Array.isArray(arr) ? arr.map(named).join(" ") : "");
     const journal = Array.isArray(e.journal)
       ? e.journal.map((j) => (typeof j === "string" ? j : j && j.text) || "").join(" ")

@@ -290,8 +290,9 @@ const FoundrySR6Export = {
       pouvoirs/traits). */
   _buildItems(pnj) {
     const items = [];
-    for (const e of pnj.equip || []) {
-      if (typeof e !== "string") continue;
+    for (const raw of pnj.equip || []) {
+      const e = ItemResolver.itemStr(raw); // #63 : item chaîne OU objet
+      if (!e) continue;
       if (this._isCyberStr(e)) items.push(this._augItem(e));
       else if (this._isArmorStr(e)) items.push(this.buildArmorItem(e));
       else if (this._isWeaponStr(e)) items.push(this.buildWeaponItem(e));
@@ -299,8 +300,9 @@ const FoundrySR6Export = {
         type: "utility", quantity: 1, description: e,
       }));
     }
-    for (const a of pnj.augs || []) {
-      if (typeof a === "string") items.push(this._augItem(a));
+    for (const raw of pnj.augs || []) {
+      const a = ItemResolver.itemStr(raw); // #63 : item chaîne OU objet
+      if (a) items.push(this._augItem(a));
     }
     for (const sp of pnj.spells || []) {
       const { name, desc } = this._named(sp);

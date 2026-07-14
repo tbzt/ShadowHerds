@@ -140,12 +140,13 @@ const Drugs = {
       En Anarchy les drogues sont des atouts d'équipement : elles peuvent
       apparaître dans les deux listes, la source n'est pas filtrée. */
   matchItem(item, edition, source) {
-    if (typeof item !== "string") return null;
+    const s = ItemResolver.itemStr(item); // #63 : item chaîne OU objet
+    if (!s) return null;
     const table = this.CATALOG[edition] || [];
     const matchAll = App.getEditionModule(edition).drugModel.matchAll;
     return (
       table.find(
-        (d) => (matchAll || (d.source || "equip") === source) && d.match.test(item),
+        (d) => (matchAll || (d.source || "equip") === source) && d.match.test(s),
       ) || null
     );
   },

@@ -617,8 +617,9 @@ const FoundrySR5Export = {
   _buildItems(pnj, knowledgeFromSkills) {
     const items = [];
     // Équipement : armes, armures, cyberware égaré dans equip, reste = matériel.
-    for (const e of pnj.equip || []) {
-      if (typeof e !== "string") continue;
+    for (const raw of pnj.equip || []) {
+      const e = ItemResolver.itemStr(raw); // #63 : item chaîne OU objet
+      if (!e) continue;
       if (this._isGrenadeStr(e)) items.push(this._item(this._name(e), "itemWeapon", this.parseGrenade(e)));
       else if (this._isWeaponStr(e)) items.push(this._item(this._name(e), "itemWeapon", this.parseWeapon(e)));
       else if (this._isCyberStr(e)) items.push(this._augItem(e));
@@ -626,8 +627,9 @@ const FoundrySR5Export = {
       else items.push(this._item(this._name(e) || e, "itemGear", { description: e, quantity: 1 }));
     }
     // Augmentations (cyber/bioware) déjà bien rangées côté pnj.augs.
-    for (const a of pnj.augs || []) {
-      if (typeof a !== "string") continue;
+    for (const raw of pnj.augs || []) {
+      const a = ItemResolver.itemStr(raw); // #63 : item chaîne OU objet
+      if (!a) continue;
       items.push(this._augItem(a));
     }
     // Sorts, pouvoirs d'adepte, connaissances, atouts/traits.

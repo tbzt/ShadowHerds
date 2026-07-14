@@ -1550,6 +1550,11 @@ kbd {
 .em-skill-row-anarchy {
   grid-template-columns: 1fr 48px 44px minmax(100px, 1fr) 28px;
 }
+/* #63 : ligne stepper d'indice (équipement à plage non résolue) — nom +
+   indice numérique + retrait, pas de 4ᵉ colonne spécialité. */
+.em-equip-rating-row {
+  grid-template-columns: 1fr 70px 28px;
+}
 .em-skill-name {
   font-size: var(--fs-sm);
   color: var(--text);

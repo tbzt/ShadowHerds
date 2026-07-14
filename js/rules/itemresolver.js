@@ -18,6 +18,17 @@ const ItemResolver = {
   itemCat(item) {
     return item && typeof item === "object" ? item.cat || "" : "";
   },
+  /** Plage d'indice NON résolue dans un libellé catalogue (« Indice 1-4 »),
+      ou null si l'indice est fixe/absent. Sert à décider si l'item a besoin
+      d'un stepper (#63) avant que son bonus (BonusEngine/WeaponEffects) ne
+      s'active (`itemRating` renvoie null tant que le stepper n'a pas réglé
+      `.rating`). */
+  ratingRange(item) {
+    const s = ItemResolver.itemStr(item);
+    const m = s.match(/\bindice\s+(\d+)\s*[-–]\s*(\d+)/i);
+    return m ? [parseInt(m[1], 10), parseInt(m[2], 10)] : null;
+  },
+
   /** Indice choisi d'un item : champ `rating` sinon lu dans le libellé
       (« Indice 3 » ; une plage « 1-4 » non résolue → null). */
   itemRating(item) {
@@ -126,13 +137,16 @@ const ItemResolver = {
     const str = ItemResolver._flatPool(equipPools[key])[Number(idxStr)];
     if (!str) return false;
     if (!Array.isArray(pnj.equip)) pnj.equip = [];
-    // #63 : le SEAM (helpers itemStr/itemCat/itemRating + lecteurs tolérants)
-    // est en place ; l'ÉMISSION en objet {str, cat:key} est prête mais
-    // volontairement différée au lot « flip » (reste à rendre tolérants :
-    // export Foundry, clé d'appareil matriciel, drug matcher, utils, état de
-    // combat). Tant que le flip n'est pas fait, on pousse la chaîne (aucun
-    // objet en circulation → arbre 100 % fonctionnel).
-    pnj.equip.push(str);
+    // #63 : le SEAM (helpers itemStr/itemCat/itemRating + lecteurs tolérants,
+    // désormais étendus à tous les consommateurs : export Foundry, vues
+    // d'impression, recherche plein-fiche, matcher drogues/véhicules) est en
+    // place. On n'émet un OBJET {str, cat:key, rating:null} que pour les
+    // items dont l'indice est une plage non résolue (« Indice 1-4 ») — le
+    // stepper (EditModal) règle `.rating` ensuite. Le reste du catalogue
+    // (valeur fixe ou sans indice) reste une chaîne, inchangé : blast radius
+    // minimal, la majorité des items ne change jamais de forme.
+    const range = ItemResolver.ratingRange(str);
+    pnj.equip.push(range ? { str, cat: key, rating: null } : str);
     return true;
   },
 };
