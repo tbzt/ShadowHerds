@@ -65,8 +65,17 @@ const CyberdeckRenderer = {
       ${biofeedbackHtml}
       ${programsHtml}
       ${this._targetRow(pnj, edition, deck)}
-      ${this._arsenalRow(pnj, edition, deck)}
     </div>`;
+  },
+
+  /** CP2 : râtelier Attaques unifié — l'arsenal matriciel (M7) rejoint les
+      armes/sorts en zone Combat au lieu de rester tapi dans Détails, à côté
+      du reste du bloc deck. Vide si pas de decker ou pas de loadout. Appelé
+      par les 4 renderers d'édition, juste après _weaponBlock/_spellsBlock. */
+  combatArsenal(pnj, edition) {
+    const deck = pnj.cyberdeck;
+    if (!deck) return "";
+    return this._arsenalRow(pnj, edition, deck);
   },
 
   /** M7 : râtelier d'actions matricielles offensives — l'« arsenal » du decker
@@ -77,7 +86,8 @@ const CyberdeckRenderer = {
       mono-ligne (doctrine d'alignement : jamais un mur de boutons
       indifférenciés). Vide si l'édition n'a pas de râtelier (Anarchy 1re) ou si
       le loadout est vide. Rendu identique carte / cockpit (le bloc est réutilisé
-      en combat par Encounter.renderActiveCard). */
+      en combat par Encounter.renderActiveCard). CP2 : déplacé en zone Combat,
+      cf. combatArsenal() ci-dessus (plus appelé depuis block()). */
   _arsenalRow(pnj, edition, deck) {
     const esc = CardRenderer._esc;
     const acts = Cyberdeck.actions(edition, deck);

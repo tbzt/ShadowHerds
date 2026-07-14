@@ -34,7 +34,7 @@ Object.assign(CardRenderer, {
       .join("");
     if (!cells) return "";
     return `<div class="card-section gm-pools-section">
-      <div class="card-section-label">Réserves MJ</div>
+      <div class="card-section-label">Jets de situation</div>
       <div class="stats-row" style="flex-wrap:wrap;gap:5px;">${cells}</div>
     </div>`;
   },
@@ -94,6 +94,7 @@ Object.assign(CardRenderer, {
     combatBody += this._drugRow(pnj, "sr5", deps);
     combatBody += this._vehicleChipRow(pnj, deps);
     combatBody += this._spiritChipRow(pnj, deps);
+    combatBody += CyberdeckRenderer.combatArsenal(pnj, "sr5"); // CP2 : râtelier Attaques unifié
     const combatSummary = init != null ? `Init ${init}+${initDice}D6` : "";
     html += this._zoneShell(pnj, "combat", combatBody, combatSummary);
 
@@ -134,11 +135,10 @@ Object.assign(CardRenderer, {
       </div></div>`;
     }
     if (prefs.showGmPools) detailsBody += this._gmPoolsSR5(pnj);
-    if (prefs.showEquipment && gear.length)
-      detailsBody += this._equipSection(pnj, gear, "sr5", deps);
+    // CP2 : inventaire consolidé (Porté + Augmentations en une section).
+    detailsBody += this._equipSection(pnj, prefs.showEquipment ? gear : [], "sr5", deps, augs);
     if (pnj.cyberdeck) detailsBody += CyberdeckRenderer.block(pnj, "sr5", deps);
-    if (augs && augs.length) detailsBody += this._listSection("Augmentations", augs);
-    html += this._zoneShell(pnj, "details", detailsBody, "attributs, réserves MJ, équipement");
+    html += this._zoneShell(pnj, "details", detailsBody, "attributs, jets de situation, équipement");
 
     html += "</div>";
     return html;

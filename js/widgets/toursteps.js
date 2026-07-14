@@ -168,5 +168,10 @@ const TourSteps = {
       title: "Repliez chaque section d'une carte",
       body: "Combat, Capacités et Incarnation se replient maintenant comme Détails — chacune garde sa propre mémoire par carte. Une section repliée affiche un résumé (« Init 11+3D6 », « 6 compétences »…) pour ne rien perdre du coup d'œil.",
     },
+    {
+      id: "wn-card-incarnation-attacks", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.22.0", fallback: "center",
+      title: "Incarnation en haut, attaques regroupées",
+      body: "L'habillage (âge, style, manie, motivation) se lit désormais juste après l'identité. Les actions offensives d'un decker rejoignent armes et sorts en zone Combat. Équipement porté et augmentations tiennent dans une seule section.",
+    },
   ],
 };

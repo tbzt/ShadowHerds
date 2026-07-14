@@ -353,12 +353,20 @@ const CardRenderer = {
       default:
         return '<div class="pnj-card-body">—</div>';
     }
-    // Injecter magie (tradition/esprit mentor) + traits raciaux + habillage
+    // CP2 : Incarnation promue tout en haut du corps (juste après l'ouverture
+    // de pnj-card-body, donc juste après le header) — la saveur se regarde
+    // avant le combat/les capacités, pas après (I2 : jamais déplacée ensuite,
+    // seulement pliée/dépliée).
+    const flavor = this._flavorSection(pnj);
+    if (flavor) {
+      const openIdx = core.indexOf(">") + 1;
+      core = core.slice(0, openIdx) + flavor + core.slice(openIdx);
+    }
+    // Injecter magie (tradition/esprit mentor) + traits raciaux + lore créature
     const extra =
       this._magicSection(pnj) +
       this._metaTraitsSection(pnj) +
-      this._creatureLoreSection(pnj) +
-      this._flavorSection(pnj);
+      this._creatureLoreSection(pnj);
     if (extra) {
       const idx = core.lastIndexOf("</div>");
       if (idx !== -1) {
@@ -452,7 +460,7 @@ const CardRenderer = {
 
   /** Préférences d'affichage, avec défaut ADAPTATIF (CH-C1).
       Le « compact » = zones repliées par défaut (layout) : attributs,
-      réserves MJ et équipement vivent DANS la zone Détails repliable (cf.
+      Jets de situation et équipement vivent DANS la zone Détails repliable (cf.
       cardrenderer.sr5/sr6/anarchy.js), dont .zone-toggle reste l'affordance
       d'expansion permanente. On garde donc show* à true — replier par défaut
       ne doit pas vider l'expansion. */
@@ -895,9 +903,13 @@ const CardRenderer = {
   },
 
   /** Section Équipement où les weapons (VD/PRE) deviennent lançables. */
-  _equipSection(pnj, items, edition, deps) {
-    if (!items || !items.length) return "";
-    const tags = items
+  /** CP2 : inventaire consolidé — équipement porté + augmentations en UNE
+      seule section (au lieu de deux fragments distincts). Sous-libellés
+      (patron .ref-block/.ref-lbl, déjà utilisé pour Attributs en Détails)
+      seulement si les deux groupes coexistent — sinon liste plate, pas de
+      sous-titre qui ne distingue rien (minimalisme). `augs` optionnel. */
+  _equipSection(pnj, items, edition, deps, augs) {
+    const tags = (items || [])
       .map((i) => {
         // Les drogues sont pilotées depuis leur tag dans la zone Combat
         // (this._drugRow) — ici, texte simple pour éviter le doublon.
@@ -915,9 +927,18 @@ const CardRenderer = {
         return `<span class="tag weapon-rollable rollable" data-roll-weapon="${this._esc(i)}" data-roll-pnj="${pnj.id}" data-roll-edition="${edition}" title="${this._esc(title)}">${this._esc(i)}<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="weapon-lim">▸${r.limit}</span>` : ""}</span></span>`;
       })
       .join("");
+    const augsHtml = (augs || []).length
+      ? augs.map((a) => this._contentTag(a)).join("")
+      : "";
+    if (!tags && !augsHtml) return "";
+    const body =
+      tags && augsHtml
+        ? `<div class="ref-block"><div class="ref-lbl">Porté</div><div class="card-section-content">${tags}</div></div>
+           <div class="ref-block"><div class="ref-lbl">Augmentations</div><div class="card-section-content">${augsHtml}</div></div>`
+        : `<div class="card-section-content">${tags || augsHtml}</div>`;
     return `<div class="card-section">
       <div class="card-section-label">Équipement</div>
-      <div class="card-section-content">${tags}</div>
+      ${body}
     </div>`;
   },
 

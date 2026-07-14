@@ -134,6 +134,7 @@ Object.assign(CardRenderer, {
     combatBody += this._armorChipRow(pnj);
     combatBody += this._vehicleChipRow(pnj, deps);
     combatBody += this._spiritChipRow(pnj, deps);
+    combatBody += CyberdeckRenderer.combatArsenal(pnj, pnj.edition); // CP2 : râtelier Attaques unifié
     const combatSummary = threatLevel ? `Combativité ${threatLevel}` : "";
     html += this._zoneShell(pnj, "combat", combatBody, combatSummary);
 

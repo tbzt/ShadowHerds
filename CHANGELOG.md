@@ -12,6 +12,22 @@ commit.
 
 ## [Non publié]
 
+## [1.22.0] — 2026-07-14
+
+### Jouer
+- **Incarnation en haut de carte** : âge, style, attitude, manie et motivation
+  se lisent maintenant juste après l'identité, avant le combat — au lieu
+  d'être relégués en bas de fiche.
+- **Râtelier Attaques unifié** : l'arsenal matriciel d'un decker (pic de
+  données…) rejoint les armes et sorts en zone Combat, au lieu de rester
+  tapi dans Détails.
+- **Inventaire consolidé** : équipement porté et augmentations tiennent
+  désormais dans une seule section « Équipement » au lieu de deux blocs
+  séparés.
+- **« Jets de situation »** (SR5/SR6) : nouveau nom des réserves MJ
+  (Sang-froid, Surprise, Intentions, Mémoire…), plus clair que « Réserves
+  MJ ».
+
 ## [1.21.0] — 2026-07-14
 
 ### Jouer
