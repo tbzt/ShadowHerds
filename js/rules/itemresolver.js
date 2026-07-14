@@ -23,8 +23,17 @@ const ItemResolver = {
   itemRating(item) {
     if (item && typeof item === "object" && item.rating != null)
       return item.rating;
-    const m = ItemResolver.itemStr(item).match(/indice\s+(\d+)(?!\s*[-–])/i);
-    return m ? parseInt(m[1], 10) : null;
+    const s = ItemResolver.itemStr(item);
+    // Forme explicite « Indice N » (hors plage « 1-4 » non résolue → null).
+    const m = s.match(/\bindice\s+(\d+)(?!\s*[-–])/i);
+    if (m) return parseInt(m[1], 10);
+    // Forme courte des statblocks (`augsBySpecial`) : « … N » (N=1-6) juste
+    // avant une stat-line « [ » ou la fin de chaîne (ex. « Tonification
+    // musculaire 1 », « Booster synaptique 2 [bioware…] »). N'est consultée
+    // que sur un item déjà sélectionné par un descripteur (byRating/match),
+    // donc pas de faux positif sur une arme (« SCK Model 100 » non ciblé).
+    const m2 = s.match(/\s([1-6])(?=\s*(?:\[|$))/);
+    return m2 ? parseInt(m2[1], 10) : null;
   },
 
   /** Sépare l'équipement : weapons (lançables, notation [VD/PRE]) vs reste.

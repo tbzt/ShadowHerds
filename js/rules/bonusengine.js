@@ -31,6 +31,9 @@ const BonusEngine = {
       // sr5_bioware.md). ⚠ SR6 « Tonification musculaire 3 → FOR » non corrigé
       // ici (hors périmètre de la collecte, à vérifier au livre SR6).
       ["Tonification musculaire", { attr: "AGI", val: 1 }],
+      // Fusion V5 : Renforcement musculaire (bioware Muscle Augmentation, SR5
+      // p.463) = +INDICE Force — premier bonus indice-scalé (byRating).
+      ["Renforcement musculaire", { attr: "FOR", byRating: true }],
       ["Armure dermique", { armor: 1 }],
     ],
     sr6: [
@@ -67,7 +70,15 @@ const BonusEngine = {
         if (bonus.armor) totals.armor += bonus.armor;
         if (bonus.sd) totals.sd += bonus.sd;
         if (bonus.attr) {
-          totals.attrMods.push({ attr: bonus.attr, val: bonus.val, source: prefix });
+          // Valeur à l'INDICE (collecte V5) : `byRating` = +indice ;
+          // `perRating[r]` = table littérale ; sinon `val` fixe. Un indice
+          // non résolu (plage « 1-4 ») → 0 (inactif jusqu'au stepper #63).
+          let val = bonus.val;
+          if (bonus.byRating || bonus.perRating) {
+            const r = ItemResolver.itemRating(s);
+            val = r == null ? 0 : bonus.byRating ? r : bonus.perRating[r] || 0;
+          }
+          if (val) totals.attrMods.push({ attr: bonus.attr, val, source: prefix });
         }
       }
     }
