@@ -1194,12 +1194,15 @@ const CardRenderer = {
         case "deck-attack": {
           // M3 : jet de piratage — même forme que Intrusion.rollIC (un seul
           // pool, pas de test opposé calculé ; la formule livre reste à
-          // affiner en M4, cf. Cyberdeck.rollAttack).
+          // affiner en M4, cf. Cyberdeck.rollAttack). M6 : Bruit de scène
+          // retranché si une scène de combat est active (hors combat, pas de
+          // Bruit — l'action n'existe pas encore, cf. Encounter._noisyPool).
           const pnj = PnjLookup.find(id);
           const srv = pnj && DeckRun.targetServer(pnj);
           const atk = pnj && Cyberdeck.rollAttack(pnj.edition, pnj.cyberdeck);
           if (!srv || !atk) break;
-          const res = Dice.computeRoll(atk.pool);
+          const pool = typeof Encounter !== "undefined" ? Encounter._noisyPool(atk.pool) : atk.pool;
+          const res = Dice.computeRoll(pool);
           DiceRoller.show(res, { label: `${atk.label} — ${pnj.name} vs ${srv.name}`, who: pnj.name });
           break;
         }

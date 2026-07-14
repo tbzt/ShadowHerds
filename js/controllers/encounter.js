@@ -30,7 +30,7 @@ const Encounter = {
   _sceneSeq: 0,
   _empty() {
     this._sceneSeq++;
-    return { v: this._V, round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null };
+    return { v: this._V, round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null, noise: 0 };
   },
 
   state: null,
@@ -753,6 +753,25 @@ const Encounter = {
     this._commit();
   },
 
+  /** M6 : Bruit (SR5 p.232/SR6 équivalent) — modificateur de scène, réglé à la
+      main par le MJ (distance/environnement ne sont pas des données trackées
+      par l'app, cf. plan) et retranché des jets Matrice du decker (Piratage,
+      duel, défense protégée). Scène-scopée comme `state.serverId` — pas sur
+      le PNJ, pas sur le serveur (le bruit affecte la connexion, pas un côté
+      en particulier). */
+  stepNoise(delta) {
+    this.state.noise = Utils.clamp((this.state.noise || 0) + delta, 0, 20);
+    this._commit();
+  },
+
+  /** Pool après Bruit — plancher 0 (un pool négatif ne veut rien dire).
+      Utilisé par tout jet Matrice du decker (Piratage M3, duel M5a, défense
+      protégée M5b) ; jamais par les jets côté serveur (Intrusion.rollIC,
+      hors périmètre de cette scène-ci). */
+  _noisyPool(pool) {
+    return Math.max(0, (pool || 0) - (this.state.noise || 0));
+  },
+
   /** Fin de scène : soigne tous les combattants résolvables d'un coup. */
   async healAll() {
     const ok = await Dialog.confirm({
@@ -1344,7 +1363,7 @@ const Encounter = {
             mode === "narrative"
               ? Cyberdeck.rollProtectActive(protector)
               : Cyberdeck.rollDefense(d.indice, protector.cyberdeck);
-          const res = Dice.computeRoll(roll.pool);
+          const res = Dice.computeRoll(this._noisyPool(roll.pool));
           DiceRoller.show(res, { label: `${roll.label} — ${protector.name} protège ${pnj.name}`, who: protector.name });
           break;
         }
@@ -1359,10 +1378,15 @@ const Encounter = {
           const target = targetId && PnjLookup.find(targetId);
           const atk = pnj && Cyberdeck.rollAttack(pnj.edition, pnj.cyberdeck);
           if (!target || !atk) break;
-          const res = Dice.computeRoll(atk.pool);
+          const res = Dice.computeRoll(this._noisyPool(atk.pool));
           DiceRoller.show(res, { label: `${atk.label} — ${pnj.name} vs ${target.name} (decker)`, who: pnj.name });
           break;
         }
+        case "noise-step":
+          // M6 : ±1 Bruit (SR5 p.232) — modificateur de scène réglé à la
+          // main (distance/environnement non trackés par l'app).
+          this.stepNoise(parseInt(el.dataset.delta, 10) || 0);
+          break;
         case "action-set":
           // K7 : consomme/rend une action du tour actif (jeton tappable).
           this.setAction(id, el.dataset.key, parseInt(el.dataset.idx, 10) || 0);
