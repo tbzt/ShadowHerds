@@ -39,52 +39,18 @@ const Settings = {
     toast(`Réserve par défaut : ${n} dés.`);
   },
 
-  /* ---- Préférences d'affichage des cartes (GLOBALES, hors édition) ---- */
-  _CARD_KEY: "cardDisplay",
-  _cardDefaults: {
-    layout: "expanded",
-    showAttributes: true,
-    showGmPools: true,
-    showEquipment: true,
-  },
-  getCardDisplay() {
-    return { ...this._cardDefaults, ...Storage.getGlobal(this._CARD_KEY, {}) };
-  },
-  setCardDisplay(patch) {
-    const next = { ...this.getCardDisplay(), ...patch };
-    Storage.setGlobal(this._CARD_KEY, next);
-    return next;
-  },
-  /** Bascule un booléen d'affichage et rafraîchit les cartes visibles. */
-  toggleCardDisplay(key, value) {
-    const patch = {};
-    patch[key] = value;
-    this.setCardDisplay(patch);
-    this._refreshVisibleCards();
-  },
-  setCardLayout(layout) {
-    this.setCardDisplay({ layout });
-    this._refreshVisibleCards();
-  },
+  /* ---- CP4 : la section « Affichage des cartes » (radio layout + cases
+     attributs/réserves MJ/équipement) a été retirée — remplacée par les vues
+     de carte (lentilles) + le pli par zone, ajustables carte par carte
+     (cardrenderer.js). L'ancien blob `cardDisplay` éventuellement présent
+     chez un utilisateur reste en Storage mais n'est plus lu nulle part
+     (présentation pure, aucune migration nécessaire). */
+
   /** Re-rend les cartes actuellement affichées (Ombres/contacts) pour
       refléter le changement de préférence. */
   _refreshVisibleCards() {
     if (Shadows.render) Shadows.render();
     if (ContactsBook.render) ContactsBook.render();
-  },
-  _radioCD(key, val, label, checked) {
-    return `<label class="radio-label">
-      <input type="radio" name="cd_${key}" value="${val}" ${checked ? "checked" : ""}
-        data-action="set-card-layout">
-      <span>${label}</span>
-    </label>`;
-  },
-  _checkCD(key, label, checked) {
-    return `<div class="display-pref-row">
-      <label for="cd_${key}">${label}</label>
-      <input type="checkbox" id="cd_${key}" ${checked ? "checked" : ""}
-        data-action="toggle-card-display" data-key="${key}">
-    </div>`;
   },
 
   /* ---- Portraits IA (GLOBAL, hors édition) — opt-in, désactivé par
@@ -265,7 +231,6 @@ const Settings = {
   /* ---- Panneaux du maître-détail ---- */
   _catGeneral() {
     const dp = this.getDicePrefs();
-    const cd = this.getCardDisplay();
     const pg = this.getPortraitSettings();
     return `<div class="settings-section">
         <h3>Lanceur de dés</h3>
@@ -285,18 +250,8 @@ const Settings = {
         </div>
       </div>
       <div class="settings-section">
-        <h3>Affichage des cartes</h3>
-        <p>Disposition par défaut des cartes de PNJ. La zone Combat est toujours en avant ; la Référence (attributs, réserves MJ, équipement) peut être dépliée ou repliée par défaut, et reste ajustable carte par carte.</p>
-        <div class="radio-group">
-          ${this._radioCD("layout", "expanded", "Tout afficher (référence dépliée)", cd.layout === "expanded")}
-          ${this._radioCD("layout", "compact", "Compact (référence repliée)", cd.layout === "compact")}
-        </div>
-        <div class="display-prefs">
-          ${this._checkCD("showAttributes", "Afficher les attributs", cd.showAttributes)}
-          ${this._checkCD("showGmPools", "Afficher les réserves MJ", cd.showGmPools)}
-          ${this._checkCD("showEquipment", "Afficher l'équipement", cd.showEquipment)}
-        </div>
-        <div class="display-pref-row" style="margin-top:var(--sp-4);">
+        <h3>Portrait IA</h3>
+        <div class="display-pref-row">
           <label for="pg_enabled">Portrait IA (Pollinations) sur les cartes</label>
           <input type="checkbox" id="pg_enabled" ${pg.enabled ? "checked" : ""}
             data-action="toggle-portrait-gen">
@@ -428,10 +383,7 @@ const Settings = {
     zone.addEventListener("change", (e) => {
       const el = e.target.closest("[data-action]");
       if (!el) return;
-      if (el.dataset.action === "set-card-layout") this.setCardLayout(el.value);
-      else if (el.dataset.action === "toggle-card-display")
-        this.toggleCardDisplay(el.dataset.key, el.checked);
-      else if (el.dataset.action === "set-dice-quick-roll")
+      if (el.dataset.action === "set-dice-quick-roll")
         this.setDiceQuickRoll(el.checked);
       else if (el.dataset.action === "set-dice-default-count")
         this.setDiceDefaultCount(el.value);

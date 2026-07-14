@@ -92,24 +92,24 @@ const App = {
      créatures + 3 thèmes inutiles du chargement initial. */
   _loadedAssets: new Set(),
   _EDITION_CSS: {
-    sr5: "css/theme-sr5.css?v=1040",
-    sr6: "css/theme-sr6.css?v=1040",
-    anarchy2: "css/theme-anarchy.css?v=1040",
-    anarchy1: "css/theme-anarchy1.css?v=1040",
+    sr5: "css/theme-sr5.css?v=1042",
+    sr6: "css/theme-sr6.css?v=1042",
+    anarchy2: "css/theme-anarchy.css?v=1042",
+    anarchy1: "css/theme-anarchy1.css?v=1042",
   },
   _EDITION_JS: {
-    sr5: ["js/editions/sr5.js?v=1040", "js/editions/sr5.foundry.js?v=1040", "js/editions/sr5.print.js?v=1040"],
-    sr6: ["js/editions/sr6.js?v=1040", "js/editions/sr6.foundry.js?v=1040", "js/editions/sr6.print.js?v=1040"],
+    sr5: ["js/editions/sr5.js?v=1042", "js/editions/sr5.foundry.js?v=1042", "js/editions/sr5.print.js?v=1042"],
+    sr6: ["js/editions/sr6.js?v=1042", "js/editions/sr6.foundry.js?v=1042", "js/editions/sr6.print.js?v=1042"],
     anarchy2: [
-      "js/editions/anarchy2.js?v=1040",
-      "js/editions/anarchy2.creation.js?v=1040",
-      "js/editions/anarchy2.foundry.js?v=1040",
-      "js/editions/anarchy2.print.js?v=1040",
+      "js/editions/anarchy2.js?v=1042",
+      "js/editions/anarchy2.creation.js?v=1042",
+      "js/editions/anarchy2.foundry.js?v=1042",
+      "js/editions/anarchy2.print.js?v=1042",
     ],
-    anarchy1: ["js/editions/anarchy1.js?v=1040", "js/editions/anarchy1.print.js?v=1040"],
+    anarchy1: ["js/editions/anarchy1.js?v=1042", "js/editions/anarchy1.print.js?v=1042"],
   },
   // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
-  _COMMON_JS: ["js/catalogs/creatures.js?v=1040"],
+  _COMMON_JS: ["js/catalogs/creatures.js?v=1042"],
   _loadCss(href) {
     if (!href || this._loadedAssets.has(href)) return;
     this._loadedAssets.add(href);

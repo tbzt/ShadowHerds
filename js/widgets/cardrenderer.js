@@ -559,31 +559,16 @@ const CardRenderer = {
      fichiers cardrenderer.sr5/sr6/anarchy.js.
      ======================================================== */
 
-  /** Préférences d'affichage, avec défaut ADAPTATIF (CH-C1).
-      Le « compact » = zones repliées par défaut (layout) : attributs,
-      Jets de situation et équipement vivent DANS la zone Détails repliable (cf.
-      cardrenderer.sr5/sr6/anarchy.js), dont .zone-toggle reste l'affordance
-      d'expansion permanente. On garde donc show* à true — replier par défaut
-      ne doit pas vider l'expansion. */
+  /** Préférences d'affichage, avec défaut ADAPTATIF (CH-C1). CP4 : recâblé
+      sur le moteur de vues — plus de réglage global (les 3 cases attributs/
+      Jets de situation/équipement et le levier layout ont été retirés des
+      Réglages, remplacés par les vues + le pli par carte). L'ancien blob
+      `cardDisplay` hérité n'est plus jamais lu (aucun crash, présentation
+      pure). Reste le SEUL défaut adaptatif par contexte : bibliothèque
+      (consultation, D6a) → toujours compact ; sinon responsive (≤1024px). */
   _displayPrefs(deps) {
-    const S = deps.Settings;
     const shows = { showGmPools: true, showAttributes: true, showEquipment: true };
-    if (!S || !S.getCardDisplay) return { layout: "expanded", ...shows };
-    // Réglage manuel prioritaire : au premier réglage, Settings.setCardDisplay
-    // persiste l'objet complet. La présence de ce blob = « l'utilisateur a
-    // choisi » → on respecte son choix tel quel, sans le surcharger.
-    const configured =
-      typeof Storage !== "undefined" &&
-      Storage.getGlobal &&
-      S._CARD_KEY &&
-      Storage.getGlobal(S._CARD_KEY, null) != null;
-    if (configured) return S.getCardDisplay();
-    // Contexte bibliothèque (consultation, D6a) : référence toujours repliée,
-    // quel que soit l'écran — le mur de cartes desktop devient un annuaire
-    // scannable. Le générateur (aucun contexte transmis) garde l'aperçu riche.
     if (deps && deps.context === "library") return { layout: "compact", ...shows };
-    // Sinon, une seule base responsive à défaut adaptatif : carte compacte
-    // (référence repliée) sur tablette/mobile (≤ 1024px), dépliée sur desktop.
     const compact =
       typeof window !== "undefined" &&
       typeof window.matchMedia === "function" &&
