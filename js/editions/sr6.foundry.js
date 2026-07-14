@@ -361,7 +361,7 @@ const FoundrySR6Export = {
 
   /** PNJ SR6 → document acteur Foundry `grunt`. */
   buildActor(pnj) {
-    const a = pnj.attrs || {};
+    const a = Actor.flatAttrs(pnj); // totals plats (attrs = Traits en V2)
     const attributes = {};
     for (const [code, key] of Object.entries(this.ATTR_MAP)) attributes[key] = this._attr(a[code]);
     attributes.edge = this._attr(a.ATO);

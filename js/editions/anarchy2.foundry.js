@@ -154,7 +154,7 @@ const FoundryAnarchy2Export = {
       null si l'arme ne doit pas devenir un item (Cybercombat, Frappe élémentaire). */
   buildWeaponFeat(entry, pnj) {
     if (this._isNonWeaponName(entry.name)) return null;
-    const attrs = pnj.attrs || {};
+    const attrs = Actor.flatAttrs(pnj); // totals plats (attrs = Traits en V2)
     const resolved = EditionAnarchy2.resolveWeapon(entry, attrs, pnj.meta);
     const weaponType = this._classifyWeaponType(entry.name) || "custom-weapon";
     if (!this._classifyWeaponType(entry.name))
@@ -399,7 +399,7 @@ const FoundryAnarchy2Export = {
 
   _metatypeItem(pnj) {
     const base = this.METATYPE_MAX[pnj.meta] || this.METATYPE_MAX.Humain;
-    const a = pnj.attrs || {};
+    const a = Actor.flatAttrs(pnj); // totals plats (attrs = Traits en V2)
     const real = {
       strength: a.FOR || 1, agility: a.AGI || 1, willpower: a.VOL || 1,
       logic: a.LOG || 1, charisma: a.CHA || 1,
@@ -496,7 +496,7 @@ const FoundryAnarchy2Export = {
 
   /** PNJ Anarchy2 → document acteur Foundry `character`. */
   buildActor(pnj) {
-    const a = pnj.attrs || {};
+    const a = Actor.flatAttrs(pnj); // totals plats (attrs = Traits en V2)
     const attributes = {};
     for (const [code, key] of Object.entries(this.ATTR_MAP)) attributes[key] = a[code] || 1;
 

@@ -49,7 +49,7 @@ const Drugs = {
           text: "Réaction +1, dés d'initiative +2D6 (durée 10×1D6 min)",
           recalc: true,
           apply(pnj) {
-            pnj.attrs.RÉA = (pnj.attrs.RÉA || 0) + 1;
+            Actor.setBase(pnj, "RÉA", Actor.base(pnj, "RÉA") + 1);
             // +2D6 borné au plafond de l'édition (max 5D6) : on mémorise le
             // delta réellement appliqué pour que revert() reste symétrique
             // même quand le PNJ était déjà proche/au plafond.
@@ -60,7 +60,7 @@ const Drugs = {
             pnj.initDice = after;
           },
           revert(pnj) {
-            pnj.attrs.RÉA = (pnj.attrs.RÉA || 0) - 1;
+            Actor.setBase(pnj, "RÉA", Actor.base(pnj, "RÉA") - 1);
             pnj.initDice = (pnj.initDice || 0) - (pnj._jazzInitDelta ?? 2);
             delete pnj._jazzInitDelta;
           },

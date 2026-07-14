@@ -283,7 +283,7 @@ const MagicAction = {
     if (!attr) return true; // édition sans coût (ne devrait pas arriver ici)
     const val = Actor.attr(pnj, attr);
     if (val <= 0) return false;
-    pnj.attrs[attr] = val - 1; // mutation (dépense) : mutateur dédié en V2
+    Actor.spend(pnj, attr, 1); // dépense d'attribut-ressource (Chance/Atout)
     return true;
   },
 

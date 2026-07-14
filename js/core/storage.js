@@ -156,7 +156,7 @@ const Storage = {
       ajoutée à `_MIGRATIONS`. Publique (contrairement à `_MIGRATIONS`) : les
       paquets exportés (`Backup`) la tamponnent pour savoir, à l'import, s'ils
       ont besoin d'être migrés. Voir CONTRIBUTING.md § Versionner les schémas. */
-  SCHEMA_VERSION: 5,
+  SCHEMA_VERSION: 6,
 
   /** Chaîne de migrations de schéma, ordonnée par version croissante. Chaque
       `up()` mute le `localStorage` brut (pas de dépendance à `_edition`) et
@@ -366,6 +366,48 @@ const Storage = {
         });
         if (migrated)
           Debug.warn("storage", "migration v5 (runDossierId)", { migrated });
+      },
+    },
+    {
+      v: 6,
+      /** Refonte du modèle d'acteur (PLANS/PLAN_REFONTE_ACTEUR.md, V2) : chaque
+          attribut plat `attrs.FOR = 5` devient un Trait `{base:5, mods:[],
+          total:5}` porteur de provenance (les mods étiquetés viendront de
+          BonusEngine à la (re)génération). Reboot assumé (sole user) : la base
+          d'un PNJ migré = son ancien total (bonus déjà cuits, non ré-itemisés) ;
+          les mods se re-peuplent au prochain recalc/regénération. Migration
+          autonome (mute le JSON brut, sans dépendre d'Actor — cf. _MIGRATIONS).
+          Idempotent : ignore un attribut déjà objet. Couvre PNJ, PJ, pool de
+          génération ET esprits/créatures sauvegardés (mêmes collections). */
+      up() {
+        const suffixes = ["_shadows_all", "_characters_all", "_gen_pool"];
+        const keys = Object.keys(localStorage).filter(
+          (k) => k.startsWith("sr_pnj_v2_") && suffixes.some((s) => k.endsWith(s)),
+        );
+        let migrated = 0;
+        keys.forEach((k) => {
+          const raw = localStorage.getItem(k);
+          if (raw === null) return;
+          let list;
+          try { list = JSON.parse(raw); }
+          catch { return; }
+          if (!Array.isArray(list)) return;
+          let changed = false;
+          for (const pnj of list) {
+            if (!pnj || !pnj.attrs || typeof pnj.attrs !== "object") continue;
+            for (const key of Object.keys(pnj.attrs)) {
+              const v = pnj.attrs[key];
+              if (typeof v === "number") {
+                pnj.attrs[key] = { base: v, mods: [], total: v };
+                changed = true;
+                migrated++;
+              }
+            }
+          }
+          if (changed) localStorage.setItem(k, JSON.stringify(list));
+        });
+        if (migrated)
+          Debug.warn("storage", "migration v6 (attrTraits)", { migrated });
       },
     },
   ],

@@ -2349,29 +2349,32 @@ const EditionSR5 = {
   },
 
   recalc(pnj) {
-    const { attrs, proRating } = pnj;
+    const { proRating } = pnj;
     // Chance : init douce pour les PNJ sauvegardés avant l'ajout du champ
     // (plancher racial d'attrRange, pas de migration versionnée).
-    attrs.CHC ??= this.attrRange[pnj.meta]?.CHC?.[0] ?? 3;
-    pnj.limPhys = Math.ceil((attrs.FOR * 2 + attrs.CON + attrs.REA) / 3);
-    pnj.limMent = Math.ceil((attrs.LOG * 2 + attrs.INT + attrs.VOL) / 3);
-    pnj.limSoc = Math.ceil((attrs.CHA * 2 + attrs.VOL + (proRating || 0)) / 3);
-    pnj.physMon = 8 + Math.ceil(attrs.CON / 2);
-    pnj.stunMon = 8 + Math.ceil(attrs.VOL / 2);
-    pnj.init = attrs.REA + attrs.INT;
+    if (pnj.attrs && pnj.attrs.CHC == null)
+      pnj.attrs.CHC = this.attrRange[pnj.meta]?.CHC?.[0] ?? 3;
+    Actor.refreshAttrs(pnj); // Trait : total = base + Σ mods, avant les dérivées
+    const A = (k) => Actor.attr(pnj, k);
+    pnj.limPhys = Math.ceil((A("FOR") * 2 + A("CON") + A("REA")) / 3);
+    pnj.limMent = Math.ceil((A("LOG") * 2 + A("INT") + A("VOL")) / 3);
+    pnj.limSoc = Math.ceil((A("CHA") * 2 + A("VOL") + (proRating || 0)) / 3);
+    pnj.physMon = 8 + Math.ceil(A("CON") / 2);
+    pnj.stunMon = 8 + Math.ceil(A("VOL") / 2);
+    pnj.init = A("REA") + A("INT");
     pnj.drainResist = pnj.traditionDrainAttr
-      ? attrs.VOL + (attrs[pnj.traditionDrainAttr] || 0)
+      ? A("VOL") + A(pnj.traditionDrainAttr)
       : ["Mage hermétique", "Chaman"].includes(pnj.special)
-        ? attrs.VOL + attrs.LOG // fallback anciens PNJ sans tradition
+        ? A("VOL") + A("LOG") // fallback anciens PNJ sans tradition
         : null;
     const armure = pnj.armure || 0;
-    pnj.defense = attrs.REA + attrs.INT;
-    pnj.damageResist = attrs.CON + armure;
-    pnj.composure = attrs.VOL + attrs.CHA;
-    pnj.judgeIntentions = attrs.INT + attrs.CHA;
-    pnj.memory = attrs.LOG + attrs.VOL;
-    pnj.liftCarry = attrs.FOR + attrs.CON;
-    pnj.surprise = attrs.REA + attrs.INT;
+    pnj.defense = A("REA") + A("INT");
+    pnj.damageResist = A("CON") + armure;
+    pnj.composure = A("VOL") + A("CHA");
+    pnj.judgeIntentions = A("INT") + A("CHA");
+    pnj.memory = A("LOG") + A("VOL");
+    pnj.liftCarry = A("FOR") + A("CON");
+    pnj.surprise = A("REA") + A("INT");
     return pnj;
   },
 };

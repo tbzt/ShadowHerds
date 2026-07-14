@@ -51,7 +51,9 @@ const BonusEngine = {
   _collectCyberBonuses(pnj, edition) {
     const table = this.CYBER_BONUS[edition] || [];
     const items = [...(pnj.equip || []), ...(pnj.augs || [])];
-    const totals = { initDice: 0, armor: 0, sd: 0, attrs: {} };
+    // attrMods : contributions ÉTIQUETÉES (source = libellé du cyberware
+    // reconnu) plutôt qu'une somme — la provenance remonte jusqu'au Trait.
+    const totals = { initDice: 0, armor: 0, sd: 0, attrMods: [] };
     for (const item of items) {
       if (typeof item !== "string") continue;
       for (const [prefix, bonus] of table) {
@@ -60,8 +62,7 @@ const BonusEngine = {
         if (bonus.armor) totals.armor += bonus.armor;
         if (bonus.sd) totals.sd += bonus.sd;
         if (bonus.attr) {
-          totals.attrs[bonus.attr] =
-            (totals.attrs[bonus.attr] || 0) + bonus.val;
+          totals.attrMods.push({ attr: bonus.attr, val: bonus.val, source: prefix });
         }
       }
     }
@@ -97,7 +98,7 @@ const BonusEngine = {
    *   par les traits SR5/SR6 existants)
    * Renvoie true si un attribut a été touché (pour déclencher recalc()).
    */
-  _applyOneBonus(pnj, edition, b) {
+  _applyOneBonus(pnj, edition, b, source = "") {
     if (!b) return false;
     let attrsTouched = false;
     if (b.initDice) pnj.initDice = (pnj.initDice || 0) + b.initDice;
@@ -118,7 +119,7 @@ const BonusEngine = {
     const attr =
       b.attrChoice && b.attrChoice.length ? Utils.rand(b.attrChoice) : b.attr;
     if (attr) {
-      pnj.attrs[attr] = (pnj.attrs[attr] || 0) + b.val;
+      Actor.addMod(pnj, attr, { value: b.val, source: source || "bonus", type: "trait" });
       attrsTouched = true;
     }
     const skillName =
@@ -139,7 +140,7 @@ const BonusEngine = {
   _sumListBonus(pnj, edition, list) {
     let attrsTouched = false;
     for (const item of list || []) {
-      if (item && item.bonus && this._applyOneBonus(pnj, edition, item.bonus))
+      if (item && item.bonus && this._applyOneBonus(pnj, edition, item.bonus, item.name || ""))
         attrsTouched = true;
     }
     return attrsTouched;
@@ -154,8 +155,8 @@ const BonusEngine = {
     if (totals.initDice) pnj.initDice = (pnj.initDice || 0) + totals.initDice;
     if (totals.armor) pnj.armure = (pnj.armure || 0) + totals.armor;
     if (totals.sd) pnj.sdBase = (pnj.sdBase || 0) + totals.sd;
-    for (const [attr, val] of Object.entries(totals.attrs)) {
-      pnj.attrs[attr] = (pnj.attrs[attr] || 0) + val;
+    for (const m of totals.attrMods) {
+      Actor.addMod(pnj, m.attr, { value: m.val, source: m.source, type: "cyber" });
       attrsTouched = true;
     }
 
@@ -168,7 +169,7 @@ const BonusEngine = {
     if (
       pnj.mentorSpirit &&
       pnj.mentorSpirit.bonus &&
-      this._applyOneBonus(pnj, edition, pnj.mentorSpirit.bonus)
+      this._applyOneBonus(pnj, edition, pnj.mentorSpirit.bonus, pnj.mentorSpirit.name || "Mentor")
     )
       attrsTouched = true;
 
@@ -176,7 +177,7 @@ const BonusEngine = {
     // generate() sur pnj._infectedBonus.
     if (
       pnj._infectedBonus &&
-      this._applyOneBonus(pnj, edition, pnj._infectedBonus)
+      this._applyOneBonus(pnj, edition, pnj._infectedBonus, "Infecté")
     )
       attrsTouched = true;
     delete pnj._infectedBonus;

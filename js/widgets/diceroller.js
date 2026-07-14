@@ -877,7 +877,7 @@ const DiceRoller = {
     if (mod.usesThreatReserve) {
       this._setThreat(this._threat - 1);
     } else if (st.pnj && st.action.costAttr) {
-      st.pnj.attrs[st.action.costAttr] -= 1; // mutation (dépense) : mutateur dédié en V2 (Trait)
+      Actor.spend(st.pnj, st.action.costAttr, 1); // dépense d'attribut-ressource
       this._hooks.onPnjChanged(st.pnj); // re-render la carte (Edge à jour)
     }
     // Jet sans PNJ en SR5/SR6 : relance gratuite, aucune ressource débitée.

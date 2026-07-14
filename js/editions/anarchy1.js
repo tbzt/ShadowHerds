@@ -1457,11 +1457,12 @@ const EditionAnarchy1 = {
   /** Recalcule moniteurs/Défense/Init après édition manuelle des attributs
       (façon sr5.js recalc). */
   recalc(pnj) {
-    const { attrs } = pnj;
-    pnj.physMon = 8 + Math.ceil(attrs.FOR / 2);
-    pnj.stunMon = 8 + Math.ceil(attrs.VOL / 2);
-    pnj.defense = attrs.AGI + attrs.LOG;
-    pnj.init = Math.max(attrs.AGI, attrs.LOG);
+    Actor.refreshAttrs(pnj); // Trait : total = base + Σ mods, avant les dérivées
+    const A = (k) => Actor.attr(pnj, k);
+    pnj.physMon = 8 + Math.ceil(A("FOR") / 2);
+    pnj.stunMon = 8 + Math.ceil(A("VOL") / 2);
+    pnj.defense = A("AGI") + A("LOG");
+    pnj.init = Math.max(A("AGI"), A("LOG"));
     return pnj;
   },
 };

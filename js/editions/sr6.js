@@ -2410,33 +2410,35 @@ const EditionSR6 = {
   },
 
   recalc(pnj) {
-    const { attrs } = pnj;
     // Atout : init douce pour les PNJ sauvegardés avant l'ajout du champ
     // (plancher racial d'attrRange, pas de migration versionnée).
-    attrs.ATO ??= this.attrRange[pnj.meta]?.ATO?.[0] ?? 3;
+    if (pnj.attrs && pnj.attrs.ATO == null)
+      pnj.attrs.ATO = this.attrRange[pnj.meta]?.ATO?.[0] ?? 3;
+    Actor.refreshAttrs(pnj); // Trait : total = base + Σ mods, avant les dérivées
+    const A = (k) => Actor.attr(pnj, k);
     // Recalcule selon le modèle figé à la génération du PNJ (pnj.stunMon
     // présent = separateMonitors était actif) plutôt que le réglage courant.
     if (pnj.stunMon !== undefined) {
-      pnj.physMon = 8 + Math.ceil(attrs.CON / 2);
-      pnj.stunMon = 8 + Math.ceil(attrs.VOL / 2);
+      pnj.physMon = 8 + Math.ceil(A("CON") / 2);
+      pnj.stunMon = 8 + Math.ceil(A("VOL") / 2);
     } else {
-      pnj.me = 8 + Math.ceil(attrs.CON / 2);
+      pnj.me = 8 + Math.ceil(A("CON") / 2);
     }
-    pnj.initBase = attrs.RÉA + attrs.INT;
-    pnj.defense = attrs.RÉA + attrs.INT;
-    pnj.damageResist = attrs.CON;
-    pnj.composure = attrs.VOL + attrs.CHA;
-    pnj.judgeIntentions = attrs.INT + attrs.CHA;
-    pnj.memory = attrs.LOG + attrs.VOL;
+    pnj.initBase = A("RÉA") + A("INT");
+    pnj.defense = A("RÉA") + A("INT");
+    pnj.damageResist = A("CON");
+    pnj.composure = A("VOL") + A("CHA");
+    pnj.judgeIntentions = A("INT") + A("CHA");
+    pnj.memory = A("LOG") + A("VOL");
     if (pnj.traditionDrainAttr) {
-      pnj.drainResist = attrs.VOL + (attrs[pnj.traditionDrainAttr] || 0);
-    } else if (attrs.MAG && pnj.special !== "Adepte") {
+      pnj.drainResist = A("VOL") + A(pnj.traditionDrainAttr);
+    } else if (A("MAG") && pnj.special !== "Adepte") {
       // fallback anciens PNJ sans tradition
       const tradAttr =
         String(pnj.archetype).includes("Chaman") || pnj.special === "Chaman"
-          ? attrs.CHA
-          : attrs.LOG;
-      pnj.drainResist = attrs.VOL + tradAttr;
+          ? A("CHA")
+          : A("LOG");
+      pnj.drainResist = A("VOL") + tradAttr;
     } else {
       pnj.drainResist = null;
     }

@@ -1123,12 +1123,12 @@ const EditModal = {
       if (el && pnj.attrs[k] !== undefined) {
         const [lo, hi] = k === edgeKey ? [0, 7] : [1, 12];
         const raw = parseInt(el.value, 10);
-        // Écriture d'attribut (édition manuelle) : écrit le plat aujourd'hui ;
-        // en V2 elle posera le `base` du Trait (mutateur dédié).
-        pnj.attrs[k] = Utils.clamp(
-          Number.isNaN(raw) ? pnj.attrs[k] : raw,
-          lo,
-          hi,
+        // Édition manuelle : pose la BASE du Trait (le total est recalculé,
+        // mods d'équipement préservés). Fallback = base courante si NaN.
+        Actor.setBase(
+          pnj,
+          k,
+          Utils.clamp(Number.isNaN(raw) ? Actor.base(pnj, k) : raw, lo, hi),
         );
       }
     }

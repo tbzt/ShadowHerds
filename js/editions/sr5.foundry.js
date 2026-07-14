@@ -673,7 +673,7 @@ const FoundrySR5Export = {
 
   /** PNJ SR5 → document acteur Foundry `actorGrunt`. */
   buildActor(pnj) {
-    const a = pnj.attrs || {};
+    const a = Actor.flatAttrs(pnj); // totals plats (attrs = Traits en V2)
 
     // Attributs principaux.
     const attributes = {};
