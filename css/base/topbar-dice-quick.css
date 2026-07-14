@@ -560,6 +560,13 @@
 .dice-log-detail-btn:hover {
   color: var(--accent);
 }
+/* CH-V7 : chevron ▸/▾ → sprite, pivote pour pointer vers le bas (déplié). */
+.dice-log-detail-btn .icon {
+  transition: transform var(--dur-fast);
+}
+.dice-log-detail-btn .icon.is-open {
+  transform: rotate(90deg);
+}
 /* J3 : pastille de flash — alarme (crit/glitch) ajoutée pendant que le
    journal est fermé. #dice-log-btn est masqué <641px (cf. media query plus
    bas), donc cette pastille n'existe de fait qu'à partir de 641px. */

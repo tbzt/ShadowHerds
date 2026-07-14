@@ -12,7 +12,7 @@ Object.assign(CardRenderer, {
       .map((o) => {
         const state = o.on
           ? '<span class="vehicle-chip-state on">● actif</span>'
-          : '<span class="vehicle-chip-state">▸ activer</span>';
+          : '<span class="vehicle-chip-state"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> activer</span>';
         const title = o.on
           ? `${o.label} : seuils physiques +${o.bonus} — cliquer pour ranger`
           : `${o.label} : cliquer pour l'équiper (seuils physiques +${o.bonus})`;

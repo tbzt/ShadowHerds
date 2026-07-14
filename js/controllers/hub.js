@@ -217,7 +217,7 @@ const Hub = {
       // Réutilise l'action show-panel, aucun nouveau mécanisme.
       const cta =
         !filtering && !selected
-          ? `<button class="btn-primary btn-small empty-state-cta" data-action="show-panel" data-panel="generator">▸ Créer un PNJ</button>`
+          ? `<button class="btn-primary btn-small empty-state-cta" data-action="show-panel" data-panel="generator"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> Créer un PNJ</button>`
           : "";
       box.innerHTML = `<div class="empty-state">
         <span class="empty-state-title">${filtering ? "Aucun résultat" : "Rien ici"}</span>

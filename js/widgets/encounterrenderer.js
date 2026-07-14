@@ -382,7 +382,7 @@ const EncounterRenderer = {
       ${initZone}
       <div class="encounter-main">
         <div class="encounter-name-row">
-          ${isActive ? `<span class="encounter-active-flag" title="Tour actif" aria-label="Tour actif">▸</span>` : ""}
+          ${isActive ? `<span class="encounter-active-flag" title="Tour actif" aria-label="Tour actif"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>` : ""}
           <span class="encounter-kind">${this._kindLabel(r)}</span>
           ${nameHtml}
           ${r.down ? this._downBadge() : ""}

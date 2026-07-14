@@ -484,10 +484,11 @@ const DiceLog = {
     // Détail replié par défaut : bouton "▸ Détail" à la place du sub brut,
     // le pool complet reste à un tap (outil de confiance à la demande).
     const expanded = this._expanded.has(String(e.t));
+    const detailChev = `<svg class="icon icon-sm${expanded ? " is-open" : ""}" aria-hidden="true"><use href="#ic-chevron"></use></svg>`;
     const detail = expanded
       ? `<span class="dice-log-sub">${Utils.escHtml(e.sub)}</span>
-         <button class="dice-log-detail-btn" data-action="log-expand" data-t="${e.t}">▾ Replier</button>`
-      : `<button class="dice-log-detail-btn" data-action="log-expand" data-t="${e.t}">▸ Détail</button>`;
+         <button class="dice-log-detail-btn" data-action="log-expand" data-t="${e.t}">${detailChev} Replier</button>`
+      : `<button class="dice-log-detail-btn" data-action="log-expand" data-t="${e.t}">${detailChev} Détail</button>`;
     // J4 : une note à la fois par jet (pas un journal — un seul jet, un seul
     // rappel), sur le même patron que les boutons détail (bouton texte
     // discret, pas d'éditeur).

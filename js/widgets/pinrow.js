@@ -92,7 +92,7 @@ const PinRow = {
 
     if (this._collapsed) {
       const n = team.length + dossier.length + consulted.length;
-      row.innerHTML = `<button class="pin-row-toggle" data-action="pinrow-toggle" aria-label="Déplier la rangée d'épingles">▸ ${n} fiche${n > 1 ? "s" : ""}</button>`;
+      row.innerHTML = `<button class="pin-row-toggle" data-action="pinrow-toggle" aria-label="Déplier la rangée d'épingles"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> ${n} fiche${n > 1 ? "s" : ""}</button>`;
       return;
     }
 

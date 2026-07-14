@@ -363,7 +363,7 @@ const ServerRenderer = {
             data-action="set-alert" data-id="${srv.id}"
             title="La Patrouilleuse a repéré l'intrus : le serveur déploie une CI par tour">
             ${intr.alerted ? "⚠ Alerte en cours" : "Donner l'alerte"}</button>
-          <button class="btn-primary btn-small" data-action="next-turn" data-id="${srv.id}">Tour suivant ▸</button>
+          <button class="btn-primary btn-small" data-action="next-turn" data-id="${srv.id}">Tour suivant <svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>
           <button class="btn-icon" data-action="reset-intrusion" data-id="${srv.id}" title="Réinitialiser l'intrusion"><svg class="icon" aria-hidden="true"><use href="#ic-reset"></use></svg></button>
         </div>
         <div class="ic-rows">${rows}</div>

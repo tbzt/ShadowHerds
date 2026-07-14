@@ -167,7 +167,7 @@ Object.assign(CardRenderer, {
           ? '<span class="vehicle-chip-state destroyed">☠ détruit</span>'
           : deployed
             ? '<span class="vehicle-chip-state on">● fiche</span>'
-            : '<span class="vehicle-chip-state">▸ déployer</span>';
+            : '<span class="vehicle-chip-state"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> déployer</span>';
         return `<span class="tag vehicle-chip${deployed ? " deployed" : ""}${destroyed ? " destroyed" : ""}" role="button" tabindex="0"
           data-action="deploy-vehicle" data-id="${pnj.id}" data-idx="${idx}"
           title="${this._esc(item)}">${icon} ${this._esc(label)}${state}</span>`;
@@ -205,7 +205,7 @@ Object.assign(CardRenderer, {
       ? '<span class="vehicle-chip-state destroyed">☠ détruit</span>'
       : active
         ? `<span class="vehicle-chip-state on">● ${active}</span>`
-        : '<span class="vehicle-chip-state">▸ invoquer</span>';
+        : '<span class="vehicle-chip-state"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> invoquer</span>';
     return `<div class="combat-drugs spirit-chips">
       <span class="tag vehicle-chip spirit-chip${active ? " deployed" : ""}${destroyed ? " destroyed" : ""}" role="button" tabindex="0"
         data-action="open-summon" data-id="${pnj.id}"
