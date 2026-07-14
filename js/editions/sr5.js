@@ -1618,7 +1618,7 @@ const EditionSR5 = {
       "Réflexes câblés 1 [+1D6 initiative, +1 passe]",
       "Réflexes câblés 2 [+2D6 initiative, +2 passes]",
       "Accroissement de réaction (+1 REA)",
-      "Tonification musculaire (+1 FOR)",
+      "Tonification musculaire (+1 AGI)",
       "Yeux cybernétiques [Indice 2, smartlink, vision nocturne]",
       "Yeux cybernétiques [Indice 3, compensation antiflash, vision thermique]",
       "Oreilles cybernétiques [Indice 2, filtre de son]",

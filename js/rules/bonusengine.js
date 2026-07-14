@@ -26,7 +26,11 @@ const BonusEngine = {
       ["Réflexes câblés 1", { initDice: 1 }],
       ["Réflexes câblés 2", { initDice: 2 }],
       ["Accroissement de réaction", { attr: "REA", val: 1 }],
-      ["Tonification musculaire", { attr: "FOR", val: 1 }],
+      // Correctif collecte V5 : « Tonification musculaire » = bioware AGI au
+      // livre (Muscle Toner, SR5 p.464), PAS FOR. Le +FOR était un bug (cf.
+      // sr5_bioware.md). ⚠ SR6 « Tonification musculaire 3 → FOR » non corrigé
+      // ici (hors périmètre de la collecte, à vérifier au livre SR6).
+      ["Tonification musculaire", { attr: "AGI", val: 1 }],
       ["Armure dermique", { armor: 1 }],
     ],
     sr6: [
