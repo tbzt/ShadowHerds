@@ -26,18 +26,21 @@
 .stat-pill.rollable:active {
   transform: scale(0.96);
 }
-/* petit dé fantôme indiquant qu'on peut lancer */
+/* Petit dé fantôme indiquant qu'on peut lancer — AU REPOS (CP0, E8-suite) :
+   le survol n'existe pas sur tablette/téléphone (appareil cible du MJ), même
+   patron que .skill-tag.rollable ci-dessous. */
 .attr-cell.rollable .attr-value::after {
   content: "⚄";
   font-size: 0.6em;
-  opacity: 0;
+  opacity: 0.75;
   margin-left: 0.25em;
   color: var(--accent);
   transition: opacity var(--dur-fast);
   vertical-align: middle;
 }
-.attr-cell.rollable:hover .attr-value::after {
-  opacity: 0.85;
+.attr-cell.rollable:hover .attr-value::after,
+.attr-cell.rollable:focus-visible .attr-value::after {
+  opacity: 1;
 }
 
 /* Glyphe sémantique des pastilles combat (D9) — ⛉ dévier / ⛊ absorber, repris
@@ -46,9 +49,14 @@
   color: var(--accent);
   margin-right: 0.15em;
 }
-/* Init : pas de glyphe sémantique dédié → ⚄ générique au repos, même patron
-   que .skill-tag.rollable (visible en permanence, pas de survol tablette). */
-.init-pill.rollable::after {
+/* Init & Jets de situation (gm-pool) : pas de glyphe sémantique dédié → ⚄
+   générique au repos, même patron que .skill-tag.rollable (visible en
+   permanence, pas de survol tablette). Pastilles combat SANS .pill-glyph
+   (ex. Drain, un seul glyphe par pastille — D9) : même traitement, le ⚄
+   devient leur unique signifiant. */
+.init-pill.rollable::after,
+.gm-pool.rollable::after,
+.combat-pill.rollable:not(:has(.pill-glyph))::after {
   content: "⚄";
   margin-left: 0.3em;
   font-size: 0.82em;
@@ -94,17 +102,23 @@
    inline-block : indispensable pour que transform s'applique au ::after.
    Survol = desktop ; :active = tap tablette/téléphone (appareil cible MJ). */
 .skill-tag.rollable::after,
-.init-pill.rollable::after {
+.init-pill.rollable::after,
+.gm-pool.rollable::after,
+.combat-pill.rollable:not(:has(.pill-glyph))::after {
   display: inline-block;
   transition: transform var(--dur-fast) var(--ease-emphasized);
 }
 .skill-tag.rollable:hover::after,
 .skill-tag.rollable:focus-visible::after,
-.init-pill.rollable:hover::after {
+.init-pill.rollable:hover::after,
+.gm-pool.rollable:hover::after,
+.combat-pill.rollable:not(:has(.pill-glyph)):hover::after {
   transform: rotate(-12deg) scale(1.1);
 }
 .skill-tag.rollable:active::after,
-.init-pill.rollable:active::after {
+.init-pill.rollable:active::after,
+.gm-pool.rollable:active::after,
+.combat-pill.rollable:not(:has(.pill-glyph)):active::after {
   animation: die-nudge 0.34s var(--ease-emphasized);
 }
 @keyframes die-nudge {
@@ -123,12 +137,16 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .skill-tag.rollable:active::after,
-  .init-pill.rollable:active::after {
+  .init-pill.rollable:active::after,
+  .gm-pool.rollable:active::after,
+  .combat-pill.rollable:not(:has(.pill-glyph)):active::after {
     animation: none;
   }
   .skill-tag.rollable:hover::after,
   .skill-tag.rollable:focus-visible::after,
-  .init-pill.rollable:hover::after {
+  .init-pill.rollable:hover::after,
+  .gm-pool.rollable:hover::after,
+  .combat-pill.rollable:not(:has(.pill-glyph)):hover::after {
     transform: none;
   }
 }
