@@ -12,9 +12,20 @@ commit.
 
 ## [Non publié]
 
-### Prévu (mineures en cours)
-- **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
-- **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
+## [1.17.0] — 2026-07-14
+
+### Jouer
+- **Journal vivant** : dans les notes (bloc-notes, journal, fiches), tapez `@`
+  pour mentionner n'importe quel PNJ/PJ/contact/serveur par son nom (lien
+  ancré par son identifiant — renommer l'entité met à jour tous ses liens) et
+  `#` pour un mot-clé libre retrouvable partout. Chaque fiche affiche désormais
+  « Mentionné dans » : ses apparitions dans le reste des notes.
+
+### Système
+- **Visite guidée** : neuf étapes présentent l'outil au premier lancement, un
+  parcours court « fait faire » mène au premier PNJ généré. Le bouton Aide
+  (`?`) la relance à tout moment et ouvre un bandeau « Quoi de neuf » cumulé
+  qui résume les capacités ajoutées depuis votre dernière visite.
 
 ## [1.16.0] — 2026-07-14
 

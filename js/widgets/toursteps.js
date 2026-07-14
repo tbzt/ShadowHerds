@@ -138,5 +138,15 @@ const TourSteps = {
       title: "N'importe quelle couleur pour un PJ",
       body: "Dans la fiche d'un personnage, la palette de teintes préréglées garde une dernière pastille arc-en-ciel : elle ouvre le sélecteur de couleur du navigateur pour choisir exactement la teinte voulue.",
     },
+    {
+      id: "wn-journal-mentions", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.17.0", fallback: "center",
+      title: "@ pour mentionner, # pour un mot-clé",
+      body: "Dans n'importe quelle note (bloc-notes, journal, fiches), tapez « @ » pour mentionner un PNJ/PJ/contact/serveur par son nom (lien ancré, mis à jour si vous le renommez) ou « # » pour un mot-clé libre. Chaque fiche affiche « Mentionné dans » ses apparitions ailleurs.",
+    },
+    {
+      id: "wn-guided-tour", anchor: "help", tours: ["whatsnew"], since: "1.17.0", fallback: "center",
+      title: "Cette visite guidée",
+      body: "Le bouton Aide relance ce tour à tout moment et ouvre ce bandeau « Quoi de neuf » — cumulé depuis votre dernière visite, quel que soit le nombre de versions sautées.",
+    },
   ],
 };
