@@ -156,21 +156,11 @@ const CardRenderer = {
     return `<span class="pc-avatar" style="background:${this._esc(pnj.pcColor)}" title="${this._esc(title)}" aria-hidden="true">${this._esc(label)}</span>`;
   },
 
-  /** CO-b (carte Contact) : corps — description, stats de Relation (SR
-      Influence/Loyauté ou Anarchy Niveau/RR/Atout, dispatch structurel via
-      `usesRiskPanel` — aucune branche d'édition), « Connu de », trait,
-      Incarnation (zone partagée, éditable via `_flavorSection`), et le PNJ
-      déployé imbriqué s'il existe.
-      *Scope assumé (CO-b)* : Relation/Connu de restent du contenu PLAT — ce
-      n'est pas une régression (`ContactRenderer` ne les repliait déjà pas) ;
-      leur formalisation en module `_MODULES` (glyphe ◈, `placement:"foot"`,
-      `lenses`) est CO-c. Le joint déployé (imbrication → carte unique) est
-      CO-d ; l'imbrication actuelle est préservée telle quelle ici. */
+  /** CO-c : Relation (stats + « Connu de ») est sortie en module `_MODULES`
+      (rendue par `_footModulesHtml`, entre le corps et le Journal) — ne
+      reste ici que ce qui n'est pas de la Relation : description, trait,
+      Incarnation, PNJ déployé imbriqué. */
   _bodyContact(pnj, deps = CardRenderer.liveDeps()) {
-    const isAnarchy = !!App.getEditionModule(pnj.edition)?.usesRiskPanel;
-    const stats = isAnarchy
-      ? this._contactStatsAnarchy(pnj, deps)
-      : this._contactStatsSR(pnj, deps);
     const deployed = Shadows.data.all.find((p) => p.sourceContactId === pnj.id);
     const editable = !!(deps && deps.editable);
     const traitAttrs = editable
@@ -178,12 +168,30 @@ const CardRenderer = {
       : "";
     return `<div class="pnj-card-body">
       <div class="contact-desc">${this._esc(pnj.desc)}</div>
-      ${stats}
-      ${this._contactKnownBy(pnj)}
       <div class="contact-trait">⚠ <span${traitAttrs}>${this._esc(pnj.trait)}</span></div>
       ${this._flavorSection(pnj, deps)}
       ${deployed ? '<div class="contact-deployed-pnj" data-deployed-slot></div>' : ""}
     </div>`;
+  },
+
+  /** CO-c : contenu du module Relation — stats (SR Influence/Loyauté ou
+      Anarchy Niveau/RR/Atout, dispatch via `usesRiskPanel`) + « Connu de ».
+      Rendu par le registre `_MODULES` (placement "foot"), donc déjà enrobé
+      dans une coquille de zone repliable par `_footModulesHtml`. */
+  _relationModule(pnj, deps = CardRenderer.liveDeps()) {
+    const isAnarchy = !!App.getEditionModule(pnj.edition)?.usesRiskPanel;
+    const stats = isAnarchy
+      ? this._contactStatsAnarchy(pnj, deps)
+      : this._contactStatsSR(pnj, deps);
+    return `${stats}${this._contactKnownBy(pnj)}`;
+  },
+
+  /** Résumé visible zone repliée (résumé au repos, Croupier). */
+  _relationSummary(pnj) {
+    const isAnarchy = !!App.getEditionModule(pnj.edition)?.usesRiskPanel;
+    return isAnarchy
+      ? `Niveau ${pnj.level} · RR ${pnj.rr}`
+      : `Infl ${pnj.influence} · Loy ${pnj.loyaute}`;
   },
 
   /** Dispatch structurel accepté (issue #14) : deux blocs de stats complets
@@ -593,6 +601,23 @@ const CardRenderer = {
       summary: (pnj) => CardRenderer._suiviSummary(pnj),
       lenses: ["fiche"],
     },
+    {
+      key: "relation",
+      label: "Relation",
+      // ◈ décidé avec l'utilisateur (2026-07-14) : sibling géométrique de ❖
+      // (Suivi), libre dans cockpitLegend — pas un emoji neuf.
+      glyph: "◈",
+      // CO-c : formalise en module ce que CO-b avait migré en contenu plat
+      // (stats + « Connu de »), faute de registre encore branché à ce
+      // moment. PAS un module d'action (un contact n'a pas de Combat) →
+      // placement "foot", jumelé au Journal comme Suivi ; `lenses` sans
+      // "combat". CO-d étendra `applies` au PNJ déployé (`sourceContactId`).
+      placement: "foot",
+      applies: (pnj) => CardRenderer.isContact(pnj),
+      render: (pnj, deps) => CardRenderer._relationModule(pnj, deps),
+      summary: (pnj) => CardRenderer._relationSummary(pnj),
+      lenses: ["fiche"],
+    },
   ],
 
   /** Rend les modules d'action applicables (placement après Combat, exclut
@@ -830,6 +855,7 @@ const CardRenderer = {
     magie: "Magie",
     matrice: "Matrice",
     suivi: "Suivi",
+    relation: "Relation",
     journal: "Journal",
   },
 
