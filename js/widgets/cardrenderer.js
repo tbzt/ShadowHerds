@@ -182,19 +182,55 @@ const CardRenderer = {
       cliquables du corps de carte, cf. `_contentTag`). */
   _backlinksSection(pnj) {
     if (typeof Mentions === "undefined") return "";
-    const links = Mentions.backlinksFor(pnj.id);
+    // Un contact DÉJÀ lié (contactLinks) relève de la section « Contacts » : on
+    // ne le répète pas ici. Un contact non lié qui mentionne le PJ y reste.
+    const linkedContactIds = new Set((pnj.contactLinks || []).map((l) => l.contactId));
+    const links = Mentions.backlinksFor(pnj.id).filter(
+      (l) => !(l.kind === "entity" && l.type === "contact" && linkedContactIds.has(l.id)),
+    );
     if (!links.length) return "";
     const items = links
       .map((l) =>
         l.kind === "notepad"
           ? `<span class="tag tag-clickable" role="button" tabindex="0" data-action="mention-goto-notepad">${this._esc(l.label)}</span>`
-          : `<span class="tag tag-clickable" role="button" tabindex="0" data-action="mention-goto" data-id="${this._esc(l.id)}" data-name="${this._esc(l.name)}" data-type="${this._esc(l.type)}">${this._esc(l.name)}</span>`,
+          : `<span class="tag tag-clickable" role="button" tabindex="0" data-action="mention-goto" data-id="${this._esc(l.id)}" data-name="${this._esc(l.name)}" data-type="${this._esc(l.type)}"${l.slot ? ` data-slot="${this._esc(l.slot)}"` : ""}${l.ts != null ? ` data-ts="${this._esc(String(l.ts))}"` : ""}>${this._esc(l.name)}</span>`,
       )
       .join("");
     return `<div class="card-section">
       <div class="card-section-label">Mentionné dans</div>
       <div class="card-section-content">${items}</div>
     </div>`;
+  },
+
+  /** E7 : après un clic sur un chip « Mentionné dans », amène à l'écran
+      l'ENDROIT exact de la mention (l'entrée de journal ciblée, ou la carte
+      source pour le champ `notes` — bloc unique). `_reveal` re-rend le panneau
+      de façon asynchrone (délai variable PJ/Hub) : on attend l'apparition de
+      la cible par rAF borné plutôt qu'un délai fixe. Réutilise le patron
+      scroll+flash de `UI._flashCard`, étendu aux `.contact-card`. */
+  _scrollToBacklink({ id, slot, ts }) {
+    // Boucle de reprise en `setTimeout` (pas `requestAnimationFrame` : rAF est
+    // gelé si l'onglet passe en arrière-plan — le scroll manquerait). ~30 essais
+    // × 30 ms couvrent le délai variable du re-rendu de `_reveal` (PJ 40 ms/Hub).
+    let tries = 30;
+    const tick = () => {
+      const card = document.querySelector(
+        `.panel.active .pnj-card[data-id="${id}"], .panel.active .contact-card[data-id="${id}"], .pnj-card[data-id="${id}"], .contact-card[data-id="${id}"]`,
+      );
+      const target =
+        slot === "journal" && card && ts != null
+          ? card.querySelector(`.journal-entry[data-ts="${ts}"]`)
+          : card;
+      if (!target) {
+        if (--tries > 0) setTimeout(tick, 30);
+        return;
+      }
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      const cls = target === card ? "card-flash" : "entry-flash";
+      target.classList.add(cls);
+      setTimeout(() => target.classList.remove(cls), 1200);
+    };
+    tick();
   },
 
   /** E3 : valeurs saisies du bloc « mécanique de table » (init/perception/
@@ -904,7 +940,7 @@ const CardRenderer = {
         const dstr = isNaN(d.getTime())
           ? ""
           : d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
-        return `<li class="journal-entry">
+        return `<li class="journal-entry" data-ts="${e.ts}">
           <span class="journal-date">${dstr}</span>
           <span class="journal-text">${Mentions.renderText(e.text)}</span>
           <button class="journal-del" data-action="journal-remove" data-id="${pnj.id}"
@@ -1260,9 +1296,15 @@ const CardRenderer = {
         case "mention-goto-notepad":
           Notepad.open();
           break;
-        case "mention-goto":
-          Palette._reveal({ id: actionEl.dataset.id, name: actionEl.dataset.name, type: actionEl.dataset.type });
+        case "mention-goto": {
+          const { id: mid, name: mname, type: mtype, slot: mslot, ts: mts } = actionEl.dataset;
+          // Journal : déplier AVANT la révélation pour que le re-rendu de la
+          // liste par _reveal inclue l'entrée ciblée dans le DOM.
+          if (mslot === "journal") this._journalOpen.add(mid);
+          Palette._reveal({ id: mid, name: mname, type: mtype });
+          this._scrollToBacklink({ id: mid, slot: mslot, ts: mts });
           break;
+        }
         case "contact-link-goto":
           Palette._reveal({ id: actionEl.dataset.id, name: actionEl.dataset.name, type: "contact" });
           break;
