@@ -159,9 +159,9 @@ const CardRenderer = {
   /** CO-c : Relation (stats + « Connu de ») est sortie en module `_MODULES`
       (rendue par `_footModulesHtml`, entre le corps et le Journal) — ne
       reste ici que ce qui n'est pas de la Relation : description, trait,
-      Incarnation, PNJ déployé imbriqué. */
+      Incarnation. Le PNJ déployé n'est plus imbriqué ici (CO-d : rendu
+      directement par `ContactsBook.renderCard`, plus de double chrome). */
   _bodyContact(pnj, deps = CardRenderer.liveDeps()) {
-    const deployed = Shadows.data.all.find((p) => p.sourceContactId === pnj.id);
     const editable = !!(deps && deps.editable);
     const traitAttrs = editable
       ? ` contenteditable="true" spellcheck="false" data-contact-field="trait"`
@@ -170,41 +170,57 @@ const CardRenderer = {
       <div class="contact-desc">${this._esc(pnj.desc)}</div>
       <div class="contact-trait">⚠ <span${traitAttrs}>${this._esc(pnj.trait)}</span></div>
       ${this._flavorSection(pnj, deps)}
-      ${deployed ? '<div class="contact-deployed-pnj" data-deployed-slot></div>' : ""}
     </div>`;
   },
 
-  /** CO-c : contenu du module Relation — stats (SR Influence/Loyauté ou
+  /** CO-d : résout l'objet CONTACT qui porte la Relation, que la carte
+      affichée soit le contact lui-même (rendu direct) ou le PNJ qu'il a
+      déployé (`sourceContactId`, lookup) — la Relation est un jugement porté
+      sur le contact, jamais dupliqué/recopié sur le PNJ. Contact supprimé
+      après déploiement → lookup `null` → `applies()` devient faux (I3,
+      silencieux, même patron que `_contactKnownBy` pour un PJ supprimé). */
+  _relationSource(pnj) {
+    if (CardRenderer.isContact(pnj)) return pnj;
+    if (pnj.sourceContactId) {
+      return ContactsBook.data.all.find((c) => c.id === pnj.sourceContactId) || null;
+    }
+    return null;
+  },
+
+  /** CO-c/CO-d : contenu du module Relation — stats (SR Influence/Loyauté ou
       Anarchy Niveau/RR/Atout, dispatch via `usesRiskPanel`) + « Connu de ».
       Rendu par le registre `_MODULES` (placement "foot"), donc déjà enrobé
       dans une coquille de zone repliable par `_footModulesHtml`. */
-  _relationModule(pnj, deps = CardRenderer.liveDeps()) {
-    const isAnarchy = !!App.getEditionModule(pnj.edition)?.usesRiskPanel;
-    const stats = isAnarchy
-      ? this._contactStatsAnarchy(pnj, deps)
-      : this._contactStatsSR(pnj, deps);
-    return `${stats}${this._contactKnownBy(pnj)}`;
+  _relationModule(pnj) {
+    const c = CardRenderer._relationSource(pnj);
+    if (!c) return "";
+    const isAnarchy = !!App.getEditionModule(c.edition)?.usesRiskPanel;
+    const stats = isAnarchy ? this._contactStatsAnarchy(c) : this._contactStatsSR(c);
+    return `${stats}${this._contactKnownBy(c)}`;
   },
 
   /** Résumé visible zone repliée (résumé au repos, Croupier). */
   _relationSummary(pnj) {
-    const isAnarchy = !!App.getEditionModule(pnj.edition)?.usesRiskPanel;
-    return isAnarchy
-      ? `Niveau ${pnj.level} · RR ${pnj.rr}`
-      : `Infl ${pnj.influence} · Loy ${pnj.loyaute}`;
+    const c = CardRenderer._relationSource(pnj);
+    if (!c) return "";
+    const isAnarchy = !!App.getEditionModule(c.edition)?.usesRiskPanel;
+    return isAnarchy ? `Niveau ${c.level} · RR ${c.rr}` : `Infl ${c.influence} · Loy ${c.loyaute}`;
   },
 
   /** Dispatch structurel accepté (issue #14) : deux blocs de stats complets
-      (atout+RR vs Influence/Loyauté), pas une valeur scalaire. Points de
-      niveau interactifs seulement si `deps.editable` (D-edit-A). */
-  _contactStatsAnarchy(c, deps = CardRenderer.liveDeps()) {
-    const editable = !!(deps && deps.editable);
+      (atout+RR vs Influence/Loyauté), pas une valeur scalaire.
+      CO-d : toujours interactif (dots cliquables, champs éditables), qu'on
+      soit sur la carte du contact ou celle du PNJ déployé — contrairement à
+      Identité/Incarnation (D-edit-A), la Relation n'est pas gardée par
+      `deps.editable` : ce n'est pas du texte libre risquant de fuiter sur un
+      vrai PNJ (un PNJ n'a jamais de `sourceContactId` sans Relation
+      applicable), c'est de la gestion de relation — même logique que
+      « Connu de », toujours actif. `c.id` (le CONTACT, jamais le PNJ hôte)
+      est explicite sur chaque élément, jamais déduit de la carte porteuse. */
+  _contactStatsAnarchy(c) {
     const dots = Array.from({ length: 6 }, (_, i) => {
       const filled = i < c.level ? " filled" : "";
-      const act = editable
-        ? ` data-action="contact-set-niveau" data-id="${c.id}" data-niveau-value="${i + 1}"`
-        : "";
-      return `<span class="niveau-dot${filled}"${act}></span>`;
+      return `<span class="niveau-dot${filled}" data-action="contact-set-niveau" data-id="${c.id}" data-niveau-value="${i + 1}"></span>`;
     }).join("");
     const bonus = c.bonus ? `<div class="contact-bonus">+ ${this._esc(c.bonus)}</div>` : "";
     return `<div class="contact-anarchy-stats">
@@ -222,10 +238,13 @@ const CardRenderer = {
     </div>`;
   },
 
-  _contactStatsSR(c, deps = CardRenderer.liveDeps()) {
-    const editable = !!(deps && deps.editable);
+  /** CO-d : `data-id="${c.id}"` explicite sur chaque champ éditable — sur la
+      carte du PNJ déployé, la racine porte l'id du PNJ, pas celui du
+      contact ; la délégation focusout lit cet id explicite en priorité
+      (cf. `bindDelegation`), jamais l'ancêtre `.pnj-card`. */
+  _contactStatsSR(c) {
     const numAttrs = (field) =>
-      editable ? ` contenteditable="true" spellcheck="false" data-contact-field="${field}"` : "";
+      ` contenteditable="true" spellcheck="false" data-contact-field="${field}" data-id="${this._esc(c.id)}"`;
     return `<div class="stats-row" style="margin-top:6px;flex-wrap:wrap;gap:6px;">
       <span class="stat-pill accent">Influence
         <strong${numAttrs("influence")} class="editable-num">${c.influence}</strong>
@@ -288,9 +307,12 @@ const CardRenderer = {
   },
 
   /** CO-b : pied d'un contact — Déployer (primaire, tant que non déployé),
-      Portrait IA (⋯, opt-in), Supprimer (⋯, destructif). *Scope assumé* : le
-      PNJ déployé reste imbriqué (double chrome hérité de `ContactRenderer`,
-      inchangé) — le joint déployé (carte unique) est CO-d. */
+      Portrait IA (⋯, opt-in), Supprimer (⋯, destructif). Depuis CO-d,
+      `ContactsBook.renderCard` ne rend plus la carte du contact du tout une
+      fois déployé (carte du PNJ directement) — cette fonction n'est donc
+      jamais atteinte pour un contact déployé par ce chemin ; le garde
+      `!deployed` reste défensif pour un appel direct de `CardRenderer.render`
+      sur l'objet contact. */
   _footerContact(pnj, deps = CardRenderer.liveDeps()) {
     const id = pnj.id;
     const deployed = Shadows.data.all.some((p) => p.sourceContactId === id);
@@ -611,10 +633,12 @@ const CardRenderer = {
       // (stats + « Connu de »), faute de registre encore branché à ce
       // moment. PAS un module d'action (un contact n'a pas de Combat) →
       // placement "foot", jumelé au Journal comme Suivi ; `lenses` sans
-      // "combat". CO-d étendra `applies` au PNJ déployé (`sourceContactId`).
+      // "combat". CO-d : `applies` couvre aussi le PNJ déployé
+      // (`sourceContactId`, résolu par `_relationSource`) — la Relation est
+      // un jugement porté sur LE CONTACT, jamais dupliqué sur le PNJ.
       placement: "foot",
-      applies: (pnj) => CardRenderer.isContact(pnj),
-      render: (pnj, deps) => CardRenderer._relationModule(pnj, deps),
+      applies: (pnj) => !!CardRenderer._relationSource(pnj),
+      render: (pnj) => CardRenderer._relationModule(pnj),
       summary: (pnj) => CardRenderer._relationSummary(pnj),
       lenses: ["fiche"],
     },
@@ -1818,9 +1842,13 @@ const CardRenderer = {
     document.addEventListener("focusout", (e) => {
       const fieldEl = e.target.closest("[data-contact-field]");
       if (fieldEl) {
-        const card = fieldEl.closest(".pnj-card");
-        if (!card) return;
-        ContactsBook.editField(card.dataset.id, fieldEl.dataset.contactField, fieldEl.textContent.trim());
+        // CO-d : id explicite sur le champ (Relation, qui peut vivre sur la
+        // carte du PNJ déployé) prioritaire sur l'ancêtre — l'ancêtre
+        // `.pnj-card` reste le fallback correct pour Identité (name/role/
+        // trait), qui ne vit jamais que sur la carte du contact lui-même.
+        const id = fieldEl.dataset.id || fieldEl.closest(".pnj-card")?.dataset.id;
+        if (!id) return;
+        ContactsBook.editField(id, fieldEl.dataset.contactField, fieldEl.textContent.trim());
         return;
       }
       const flavorEl = e.target.closest("[data-contact-flavor]");

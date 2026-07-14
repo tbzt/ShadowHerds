@@ -32,21 +32,27 @@ const _contactsCollection = Collection.create(
     // dissous). `editable:true` (D-edit-A) préserve l'édition en ligne de la
     // fiche contact ; `contact-card`/`contact-card-saved` restent posées sur
     // la racine pour préserver la grille/masonry existante (CSS inchangée,
-    // nettoyage éventuel en CO-e). Le PNJ déployé reste imbriqué (double
-    // chrome hérité, joint re-tranché en CO-d) — même post-traitement que
-    // l'ex-`ContactRenderer.renderPersistent`.
+    // nettoyage éventuel en CO-e).
+    // CO-d (joint déployé, cible) : une fois déployé, on ne ré-imbrique plus
+    // une carte contact autour du PNJ — on rend DIRECTEMENT la carte du PNJ
+    // (Combat/Capacités/modules + module Relation qui lit ce contact via
+    // `sourceContactId`, cf. `CardRenderer._relationSource`). Fin du double
+    // chrome hérité de `ContactRenderer`/CO-b. Rafraîchi automatiquement au
+    // déploiement par l'`onChange` déjà câblé côté `Shadows` (ContactsBook.
+    // refreshGrid()) — aucune plomberie neuve.
     renderCard: (c, ctx) => {
-      const el = CardRenderer.render(c, [], {
-        ...CardRenderer.liveDeps(),
-        editable: true,
-        context: ctx && ctx.context,
-      });
-      el.classList.add("contact-card", "contact-card-saved");
       const deployed = Shadows.data.all.find((p) => p.sourceContactId === c.id);
-      if (deployed) {
-        const slot = el.querySelector("[data-deployed-slot]");
-        if (slot) slot.appendChild(CardRenderer.render(deployed, ["edit", "remove"]));
-      }
+      const el = deployed
+        ? CardRenderer.render(deployed, ["edit", "remove"], {
+            ...CardRenderer.liveDeps(),
+            context: ctx && ctx.context,
+          })
+        : CardRenderer.render(c, [], {
+            ...CardRenderer.liveDeps(),
+            editable: true,
+            context: ctx && ctx.context,
+          });
+      el.classList.add("contact-card", "contact-card-saved");
       return el;
     },
     // Rattachement en masse à un PJ (BulkBar) : les liens vivent côté PJ
@@ -215,9 +221,9 @@ const ContactsBook = Object.assign(_contactsCollection, {
        depuis le tag réseau/catégorie du contact) et on laisse Coherence
        choisir un archétype cohérent, comme la « composition libre » du
        Générateur. Le PNJ va directement aux Ombres (data.all de Shadows,
-       même accès direct que Shadows.savePNJ fait déjà vers Gen.pool) et sa
-       carte s'affiche imbriquée dans la fiche contact (renderCard, CO-b —
-       joint re-tranché en CO-d). */
+       même accès direct que Shadows.savePNJ fait déjà vers Gen.pool) ; sa
+       carte remplace directement celle du contact dans ce carnet dès qu'il
+       est déployé (renderCard, joint CO-d — plus d'imbrication). */
     deployPNJ(id) {
       const c = this.data.all.find((x) => x.id === id);
       if (!c) return;
