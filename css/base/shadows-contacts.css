@@ -35,6 +35,11 @@
   border-color: var(--accent);
   color: var(--accent);
 }
+/* CH-V7 : le chevron du sprite pointe à droite (› = réouvrir) ; le bouton
+   replier montre l'inverse (‹), obtenu par miroir horizontal. */
+.sidebar-collapse-btn .icon {
+  transform: scaleX(-1);
+}
 
 /* ---- Rail de réouverture (caché par défaut, visible quand repliée) ---- */
 .sidebar-reopen {

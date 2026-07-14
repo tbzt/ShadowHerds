@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="css/base/foundation.css?v=1046">
   <link rel="stylesheet" href="css/base/forms.css?v=1046">
   <link rel="stylesheet" href="css/base/pnj-card.css?v=1047">
-  <link rel="stylesheet" href="css/base/shadows-contacts.css?v=1046">
+  <link rel="stylesheet" href="css/base/shadows-contacts.css?v=1047">
   <link rel="stylesheet" href="css/base/modal-core.css?v=1046">
   <link rel="stylesheet" href="css/base/combat-tracker.css?v=1046">
   <link rel="stylesheet" href="css/base/settings-misc.css?v=1046">
@@ -124,6 +124,12 @@
     <symbol id="ic-search" viewBox="0 0 24 24">
       <circle cx="10.5" cy="10.5" r="6.5"/>
       <path d="M20 20l-4.8-4.8"/>
+    </symbol>
+    <!-- CH-V7 : chevron de repli/réouverture des sidebars de dossiers (ex-glyphes
+         texte › ‹). Pointe à droite (› = réouvrir) ; retourné en CSS pour le
+         bouton replier (‹), cf. .sidebar-collapse-btn .icon. -->
+    <symbol id="ic-chevron" viewBox="0 0 24 24">
+      <path d="M9 6l6 6-6 6"/>
     </symbol>
   </svg>
 
@@ -315,14 +321,14 @@
             <!-- Rail de réouverture (visible quand repliée) -->
             <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="shadows" title="Afficher les dossiers"
               aria-label="Afficher les dossiers">
-              <span class="sidebar-reopen-icon">›</span>
+              <span class="sidebar-reopen-icon"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>
               <span class="sidebar-reopen-label">Dossiers</span>
             </button>
             <!-- Colonne gauche : arbre de dossiers -->
             <aside class="shadows-sidebar">
               <div class="shadows-sidebar-header">
                 <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="shadows" title="Replier"
-                  aria-label="Replier les dossiers">‹</button>
+                  aria-label="Replier les dossiers"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>
                 <span class="shadows-sidebar-title">Dossiers</span>
                 <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
               </div>
@@ -372,13 +378,13 @@
             <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="characters"></div>
             <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="characters" title="Afficher les dossiers"
               aria-label="Afficher les dossiers">
-              <span class="sidebar-reopen-icon">›</span>
+              <span class="sidebar-reopen-icon"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>
               <span class="sidebar-reopen-label">Dossiers</span>
             </button>
             <aside class="shadows-sidebar">
               <div class="shadows-sidebar-header">
                 <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="characters" title="Replier"
-                  aria-label="Replier les dossiers">‹</button>
+                  aria-label="Replier les dossiers"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>
                 <span class="shadows-sidebar-title">Dossiers</span>
                 <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
               </div>
@@ -408,13 +414,13 @@
             <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="generator"></div>
             <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="generator" title="Afficher les dossiers"
               aria-label="Afficher les dossiers">
-              <span class="sidebar-reopen-icon">›</span>
+              <span class="sidebar-reopen-icon"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>
               <span class="sidebar-reopen-label">Dossiers</span>
             </button>
             <aside class="shadows-sidebar">
               <div class="shadows-sidebar-header">
                 <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="generator" title="Replier"
-                  aria-label="Replier les dossiers">‹</button>
+                  aria-label="Replier les dossiers"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>
                 <span class="shadows-sidebar-title">Dossier cible</span>
                 <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
               </div>
@@ -444,13 +450,13 @@
             <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="contacts"></div>
             <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="contacts" title="Afficher les dossiers"
               aria-label="Afficher les dossiers">
-              <span class="sidebar-reopen-icon">›</span>
+              <span class="sidebar-reopen-icon"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>
               <span class="sidebar-reopen-label">Dossiers</span>
             </button>
             <aside class="shadows-sidebar">
               <div class="shadows-sidebar-header">
                 <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="contacts" title="Replier"
-                  aria-label="Replier les dossiers">‹</button>
+                  aria-label="Replier les dossiers"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>
                 <span class="shadows-sidebar-title">Dossier cible</span>
                 <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
               </div>
@@ -477,13 +483,13 @@
             <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="matrix"></div>
             <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="matrix" title="Afficher les dossiers"
               aria-label="Afficher les dossiers">
-              <span class="sidebar-reopen-icon">›</span>
+              <span class="sidebar-reopen-icon"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>
               <span class="sidebar-reopen-label">Dossiers</span>
             </button>
             <aside class="shadows-sidebar">
               <div class="shadows-sidebar-header">
                 <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="matrix" title="Replier"
-                  aria-label="Replier les dossiers">‹</button>
+                  aria-label="Replier les dossiers"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>
                 <span class="shadows-sidebar-title">Dossier cible</span>
                 <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
               </div>
@@ -510,13 +516,13 @@
             <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="run"></div>
             <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="run" title="Afficher les dossiers"
               aria-label="Afficher les dossiers">
-              <span class="sidebar-reopen-icon">›</span>
+              <span class="sidebar-reopen-icon"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>
               <span class="sidebar-reopen-label">Dossiers</span>
             </button>
             <aside class="shadows-sidebar">
               <div class="shadows-sidebar-header">
                 <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="run" title="Replier"
-                  aria-label="Replier les dossiers">‹</button>
+                  aria-label="Replier les dossiers"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>
                 <span class="shadows-sidebar-title">Dossiers</span>
                 <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
               </div>
