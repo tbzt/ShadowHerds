@@ -632,6 +632,31 @@
   border-bottom: 1px dashed var(--border);
   font-size: var(--fs-xs);
 }
+/* E7 : flash d'une CARTE contact ciblée depuis un chip « Mentionné dans »
+   (slot `notes`). Le keyframe `card-flash` (cards-linked.css) n'était câblé que
+   sur `.pnj-card` ; on l'étend aux cartes contact, mêmes cartes porteuses de
+   journal/notes. */
+.contact-card.card-flash {
+  animation: card-flash 1.2s ease-out;
+}
+/* E7 : entrée ciblée depuis un chip « Mentionné dans » (scroll + flash).
+   Même vocabulaire visuel que `.card-flash` (outline accent qui s'estompe). */
+.journal-entry.entry-flash {
+  animation: entry-flash 1.2s ease-out;
+}
+@keyframes entry-flash {
+  0%,
+  40% {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    background: var(--glow, rgba(0, 200, 255, 0.12));
+  }
+  100% {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    background: transparent;
+  }
+}
 .journal-date {
   flex: 0 0 auto;
   color: var(--text-faint, var(--text-dim));

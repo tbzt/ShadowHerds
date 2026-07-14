@@ -260,9 +260,9 @@ const Mentions = {
     const scan = (arr, type) => {
       for (const e of arr || []) {
         const loc = { kind: "entity", id: e.id, name: e.name, type };
-        if (e.notes) cb(e.notes, loc);
+        if (e.notes) cb(e.notes, { ...loc, slot: "notes" });
         if (Array.isArray(e.journal)) {
-          for (const j of e.journal) if (j && j.text) cb(j.text, loc);
+          for (const j of e.journal) if (j && j.text) cb(j.text, { ...loc, slot: "journal", ts: j.ts });
         }
       }
     };
@@ -274,7 +274,7 @@ const Mentions = {
 
   _locOut(loc) {
     return loc.kind === "entity"
-      ? { kind: "entity", id: loc.id, name: loc.name, type: loc.type }
+      ? { kind: "entity", id: loc.id, name: loc.name, type: loc.type, slot: loc.slot, ts: loc.ts }
       : { kind: "notepad", label: loc.label };
   },
 
