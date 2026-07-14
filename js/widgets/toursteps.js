@@ -178,5 +178,10 @@ const TourSteps = {
       title: "Modules Magie et Matrice",
       body: "Un decker gagne une section « Matrice » ⚡ (deck, moniteur, cible) juste après Combat. Un personnage magique gagne une section « Magie » ✸ (tradition, esprit mentor, pouvoirs d'adepte). Invisibles si le PNJ n'est pas concerné.",
     },
+    {
+      id: "wn-card-views", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.24.0", fallback: "center",
+      title: "Changez la vue d'une carte",
+      body: "Trois onglets en haut de carte : ☰ Fiche (tout), ❝ Incarner (juste l'habillage), ⚔ Combat (Combat/Capacités/modules). Un pli que vous faites à la main sur une carte garde toujours la priorité.",
+    },
   ],
 };

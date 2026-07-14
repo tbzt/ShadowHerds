@@ -125,6 +125,19 @@ const DiceRoller = {
         return;
       }
 
+      // Appliquer une vue (lentille) — CP4 : écrit le pli des 4 zones +
+      // modules applicables en une fois (CardRenderer.applyView), devient
+      // la nouvelle mémoire de la carte comme un pli manuel (I4).
+      const lensEl = e.target.closest("[data-lens]");
+      if (lensEl) {
+        const pnj = this._hooks.resolve(lensEl.getAttribute("data-id"));
+        if (pnj) {
+          CardRenderer.applyView(pnj, lensEl.getAttribute("data-lens"));
+          this._hooks.onPnjChanged(pnj);
+        }
+        return;
+      }
+
       // Effacer l'initiative affichée sur un PNJ
       const clearEl = e.target.closest("[data-init-clear]");
       if (clearEl) {

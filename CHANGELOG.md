@@ -12,6 +12,15 @@ commit.
 
 ## [Non publié]
 
+## [1.24.0] — 2026-07-14
+
+### Jouer
+- **Vues de carte** : trois onglets glyphes (☰ Fiche, ❝ Incarner, ⚔ Combat)
+  en haut de chaque carte PNJ/PJ changent en un tap ce qui est déplié —
+  Incarner ne montre que l'habillage, Combat déplie Combat/Capacités/modules
+  et replie le reste. Un pli individuel fait sur une carte garde toujours la
+  main sur la vue.
+
 ## [1.23.0] — 2026-07-14
 
 ### Jouer

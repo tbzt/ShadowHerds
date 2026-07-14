@@ -25,7 +25,7 @@ const CardRenderer = {
     el.dataset.edition = pnj.edition;
 
     el.innerHTML =
-      this._header(pnj) + this._body(pnj, deps) + this._progressionZone(pnj) + this._journal(pnj) + this._footer(pnj, actions, deps);
+      this._header(pnj, deps) + this._body(pnj, deps) + this._progressionZone(pnj) + this._journal(pnj) + this._footer(pnj, actions, deps);
 
     setTimeout(() => el.classList.remove("scanning"), 900);
     return el;
@@ -46,12 +46,12 @@ const CardRenderer = {
             : ["edit", "remove"];
         el.classList.toggle("spirit-collapsed", !!pnj.collapsed);
         el.innerHTML =
-          this._header(pnj) + this._body(pnj, deps) + this._progressionZone(pnj) + this._journal(pnj) + this._footer(pnj, actions, deps);
+          this._header(pnj, deps) + this._body(pnj, deps) + this._progressionZone(pnj) + this._journal(pnj) + this._footer(pnj, actions, deps);
       });
   },
 
   /* ---- Header ---- */
-  _header(pnj) {
+  _header(pnj, deps = CardRenderer.liveDeps()) {
     if (pnj.pcLight) return this._headerLight(pnj);
     if (pnj.type === "vehicle") return this._headerVehicle(pnj);
     if (pnj.type === "spirit") return this._headerSpirit(pnj);
@@ -92,6 +92,7 @@ const CardRenderer = {
         <div class="pnj-meta">${gIcon} ${metaStr}${archStr}${specialStr}</div>
       </div>
       ${badge}
+      ${this._lensSelector(pnj, deps)}
     </div>`;
   },
 
@@ -377,7 +378,8 @@ const CardRenderer = {
      Un module = une zone à part entière, placée après Combat, qui n'existe
      QUE si applies(pnj) est vrai. Formalise ce qui vivait en vrac
      (_magicSection, CyberdeckRenderer.block planqué en Détails). Le glyphe
-     sert les onglets de sélecteur (CP4) — inutilisé pour l'instant. */
+     sert l'onglet conditionnel de module phare (_currentViewKey/_lensSelector
+     ci-dessous, CP4). */
   _MODULES: [
     {
       key: "magie",
@@ -425,6 +427,68 @@ const CardRenderer = {
       html += this._listSection("Pouvoirs d'adepte", pnj.powers);
     }
     return html;
+  },
+
+  /* ---- Vues (lentilles), CP4 ------------------------------------------
+     Une vue = un preset {zone→ouvert/fermé} (§4.2). C'est un VERBE, pas un
+     état stocké : appliquer une vue ÉCRIT l'état de pli (pnj._zoneOpen,
+     I4) — aucune 4ᵉ collection, aucun champ « vue active » persistant.
+     Les modules suivent leurs propres `lenses` (§4.3) plutôt que le preset
+     `zones` (universel aux 4 zones fixes seulement). */
+  _VIEWS: [
+    { key: "fiche", glyph: "☰", label: "Fiche", zones: { incarnation: true, combat: true, capacites: true, details: true } },
+    { key: "incarner", glyph: "❝", label: "Incarner", zones: { incarnation: true, combat: false, capacites: false, details: false } },
+    { key: "combat", glyph: "⚔", label: "Combat", zones: { incarnation: false, combat: true, capacites: true, details: false } },
+  ],
+
+  /** Applique une vue : écrit le pli des 4 zones universelles + des modules
+      qui déclarent cette vue dans `lenses` (fermés sinon). Devient la
+      nouvelle mémoire de la carte (I4), comme un pli manuel — jusqu'au
+      prochain tap ou pli individuel. */
+  applyView(pnj, viewKey) {
+    const view = this._VIEWS.find((v) => v.key === viewKey);
+    if (!view) return;
+    const zoneOpen = { ...pnj._zoneOpen, ...view.zones };
+    for (const m of this._MODULES) {
+      zoneOpen[m.key] = m.lenses.includes(viewKey);
+    }
+    pnj._zoneOpen = zoneOpen;
+  },
+
+  /** La vue actuellement affichée correspond-elle EXACTEMENT à un preset ?
+      Sert uniquement à mettre en surbrillance l'onglet actif du sélecteur —
+      un état de pli qui ne correspond à aucun preset (overrides mélangés)
+      n'active simplement aucun onglet, ce qui est correct (I4). */
+  _currentViewKey(pnj, deps) {
+    const applicable = CardRenderer._MODULES.filter((m) => m.applies(pnj));
+    return (
+      this._VIEWS.find((v) => {
+        const zonesMatch = Object.entries(v.zones).every(
+          ([k, open]) => this._zoneIsOpen(pnj, k, deps) === open,
+        );
+        const modulesMatch = applicable.every(
+          (m) => this._zoneIsOpen(pnj, m.key, deps) === m.lenses.includes(v.key),
+        );
+        return zonesMatch && modulesMatch;
+      })?.key || null
+    );
+  },
+
+  /** Sélecteur d'onglets glyphes (« carnet »), CP4. Placement doctrine §4.5 :
+      carte focalisée (générateur/Hub/cockpit — deps.context absent ou
+      distinct de "library") → onglets sur la carte elle-même ; mur de
+      cartes (deps.context === "library") → pas d'onglet par carte (un
+      contrôle au niveau liste reste à faire, hors scope CP4). Hit-area
+      ≥ 44 px (padding), délégation data-lens (jamais de <select> natif). */
+  _lensSelector(pnj, deps) {
+    if (pnj.type === "vehicle" || pnj.type === "spirit" || pnj.ownerId) return "";
+    if (deps && deps.context === "library") return "";
+    const current = this._currentViewKey(pnj, deps);
+    const tabs = this._VIEWS.map((v) => {
+      const active = v.key === current ? " active" : "";
+      return `<button type="button" class="lens-tab${active}" data-lens="${v.key}" data-id="${pnj.id}" title="Vue : ${this._esc(v.label)}" aria-label="Vue : ${this._esc(v.label)}" aria-pressed="${v.key === current}">${v.glyph}</button>`;
+    }).join("");
+    return `<div class="lens-selector" role="tablist" aria-label="Vue">${tabs}</div>`;
   },
 
   /* ---- Traits raciaux de métavariante ---- */

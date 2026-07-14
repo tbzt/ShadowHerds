@@ -99,6 +99,52 @@
   }
 }
 
+/* ============================================================
+   SÉLECTEUR D'ONGLETS « CARNET » (vues, CP4) — glyphes monochromes,
+   jamais un <select> natif. Simplification DA assumée : dans le header
+   (pas de rail hors-cadre) — .pnj-card a overflow:hidden + clip-path,
+   incompatible avec un débordement visuel du bord droit sans repenser
+   la coquille de carte ; polish futur si besoin. Zone tactile ≥44px via
+   padding (le glyphe visible reste compact). */
+.lens-selector {
+  display: flex;
+  flex: none;
+  gap: 2px;
+  align-self: flex-start;
+}
+.lens-tab {
+  min-width: 30px;
+  min-height: 30px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition: color var(--dur-fast), border-color var(--dur-fast), background var(--dur-fast);
+}
+/* Zone tactile étendue à 44px sans agrandir le glyphe visible (padding
+   transparent, Vector) — les tabs restent compacts au repos. */
+@media (pointer: coarse) {
+  .lens-tab {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+.lens-tab:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.lens-tab.active {
+  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
 .pnj-card-header {
   padding: 0.8rem var(--sp-4) 0.65rem;
   border-bottom: 1px solid var(--border);
