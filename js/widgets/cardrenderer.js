@@ -1011,13 +1011,27 @@ const CardRenderer = {
           if (i === 0) return `${label} ${c.value}`;
           return `${c.value >= 0 ? "+" : "−"} ${label} ${Math.abs(c.value)}`;
         });
-        // Facette VD : bonus d'objet motorisés (ex. densité musculaire, V4).
-        const dvSum = (r.dvContributions || []).reduce((a, c) => a + c.value, 0);
-        const dvTxt = (r.dvContributions || [])
-          .map((c) => `VD +${c.value} ${c.source}`)
-          .join(" · ");
-        const title = `${r.weaponName} : ${r.pool} dés (${parts.join(" ")})${r.limit != null ? ` · limite ${r.limit}` : ""}${dvTxt ? ` · ${dvTxt}` : ""}`;
-        const poolBadge = `<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="lim">▸${r.limit}</span>` : ""}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}${r.smartBonus ? `<span class="lim">SL+${r.smartBonus}</span>` : ""}${dvSum ? `<span class="lim" title="${this._esc(dvTxt)}">VD+${dvSum}</span>` : ""}</span>`;
+        // Facettes d'objet motorisées, GÉNÉRALES : VD, précision, PA (chaque
+        // facette résolue par WeaponEffects porte ses contributions étiquetées).
+        const FACETS = [
+          ["dvContributions", "VD"],
+          ["accuracyContributions", "Prec"],
+          ["apContributions", "PA"],
+        ];
+        const facetChips = [];
+        const facetTxts = [];
+        for (const [fkey, flbl] of FACETS) {
+          const list = r[fkey] || [];
+          if (!list.length) continue;
+          const sum = list.reduce((a, c) => a + c.value, 0);
+          const sign = (v) => (v >= 0 ? "+" : "−") + Math.abs(v);
+          facetTxts.push(list.map((c) => `${flbl} ${sign(c.value)} ${c.source}`).join(" · "));
+          if (sum)
+            facetChips.push(`<span class="lim" title="${this._esc(list.map((c) => `${flbl} ${sign(c.value)} ${c.source}`).join(" · "))}">${flbl}${sign(sum)}</span>`);
+        }
+        const facetTxt = facetTxts.join(" · ");
+        const title = `${r.weaponName} : ${r.pool} dés (${parts.join(" ")})${r.limit != null ? ` · limite ${r.limit}` : ""}${facetTxt ? ` · ${facetTxt}` : ""}`;
+        const poolBadge = `<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="lim">▸${r.limit}</span>` : ""}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}${r.smartBonus ? `<span class="lim">SL+${r.smartBonus}</span>` : ""}${facetChips.join("")}</span>`;
         const dataAttr =
           App.getEditionModule(edition)?.usesRiskPanel
             ? `data-roll-weapon-anarchy="${this._esc(name)}"`
