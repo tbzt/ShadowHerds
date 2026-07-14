@@ -261,7 +261,7 @@ const Mentions = {
         dossierId === Notebooks._GLOBAL
           ? "Bloc-notes de séance"
           : Dossiers.nameOf(dossierId) || "Carnet";
-      cb(doc, { kind: "notepad", label });
+      cb(doc, { kind: "notepad", label, dossierId });
     }
     const scan = (arr, type) => {
       for (const e of arr || []) {
@@ -281,7 +281,7 @@ const Mentions = {
   _locOut(loc) {
     return loc.kind === "entity"
       ? { kind: "entity", id: loc.id, name: loc.name, type: loc.type, slot: loc.slot, ts: loc.ts }
-      : { kind: "notepad", label: loc.label };
+      : { kind: "notepad", label: loc.label, dossierId: loc.dossierId };
   },
 
   /** Backlinks « Mentionné dans » d'une entité, par ID (robuste au renommage
@@ -322,6 +322,24 @@ const Mentions = {
       }
       if (!hit) return;
       const key = loc.kind === "entity" ? `e:${loc.id}` : "n";
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push(this._locOut(loc));
+    });
+    return out;
+  },
+
+  /** Emplacements de note dont le texte contient `query` (#61 — plein-texte,
+      hors `#tag`). Sous-chaîne simple sur le texte normalisé (pas de
+      tokenisation mot-à-mot) — même granularité que `notesWithTag`. */
+  notesWithText(query) {
+    const q = Utils.searchNorm(query || "");
+    if (!q) return [];
+    const out = [];
+    const seen = new Set();
+    this._scanNotes((text, loc) => {
+      if (!Utils.searchNorm(text).includes(q)) return;
+      const key = loc.kind === "entity" ? `e:${loc.id}` : `n:${loc.dossierId}`;
       if (seen.has(key)) return;
       seen.add(key);
       out.push(this._locOut(loc));

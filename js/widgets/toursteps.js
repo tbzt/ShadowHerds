@@ -203,5 +203,10 @@ const TourSteps = {
       title: "Actions et réactions en combat Anarchy",
       body: "En combat narratif, touchez une ligne pour mettre ce combattant « en focus » : sa fiche et son budget d'actions s'affichent aussitôt, et si un PJ agit, la console de réaction des PNJ prend le relais. Marquer « joué » passe sur l'anneau ✓ et la pastille.",
     },
+    {
+      id: "wn-notes-fulltext-search", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.29.0", fallback: "center",
+      title: "La palette trouve aussi vos notes",
+      body: "Ctrl/Cmd+K cherche désormais dans le bloc-notes de séance et les carnets, pas seulement les fiches — plus besoin d'un « #mot-clé » exact. Ouvrir un résultat mène directement au bon carnet.",
+    },
   ],
 };

@@ -88,7 +88,12 @@ const Palette = {
       this._results = Mentions.notesWithTag(q.slice(1));
     } else {
       this._mode = "entity";
-      this._results = PnjLookup.search(q);
+      // #61 : au-delà de 2 caractères, complète les entités par les notes
+      // (Notepad global + carnets) dont le texte contient la requête.
+      this._results =
+        q.trim().length >= 2
+          ? [...PnjLookup.search(q), ...Mentions.notesWithText(q)]
+          : PnjLookup.search(q);
     }
     this._sel = 0;
     this._render();
@@ -130,10 +135,20 @@ const Palette = {
     }
     box.innerHTML = this._results
       .map((r, i) => {
+        const sel = i === this._sel ? " sel" : "";
+        // #61 : résultat "note" (Mentions.notesWithText) mêlé aux entités —
+        // même gabarit que le mode tag, pas d'avatar (ce n'est pas une carte).
+        if (r.kind === "notepad" || r.kind === "entity") {
+          const label = r.kind === "notepad" ? r.label : r.name;
+          return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+              <span class="palette-type">${r.kind === "notepad" ? "Bloc-notes" : this._TYPE_LABEL[r.type] || r.type}</span>
+              <span class="palette-name">${Utils.escHtml(label)}</span>
+            </div>`;
+        }
         // E6 : avatar PJ constant (couleur+anneau+initiale) — un aller-retour
         // PnjLookup de plus par ligne, liste bornée à 30 résultats (search()).
         const avatar = r.type === "pj" ? CardRenderer._pcAvatar(PnjLookup.find(r.id)) : "";
-        return `<div class="palette-row${i === this._sel ? " sel" : ""}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+        return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
             <span class="palette-type">${this._TYPE_LABEL[r.type] || r.type}</span>
             <span class="palette-name">${avatar}${Utils.escHtml(r.name)}</span>
           </div>`;
@@ -145,16 +160,23 @@ const Palette = {
   _activate() {
     const r = this._results[this._sel];
     if (!r) return;
-    if (this._mode === "tag") {
-      if (r.kind === "notepad") {
-        this.close();
-        Notepad.open();
-      } else {
-        this._reveal(r);
-      }
+    if (r.kind === "notepad") {
+      this._openNotebook(r.dossierId);
       return;
     }
+    // #61 : un résultat "note" en mode entité a la même forme _locOut("entity")
+    // qu'un résultat PnjLookup.search (id/type/name) — réutilise _reveal tel quel.
     this._reveal(r);
+  },
+
+  /** Ouvre le carnet où vit le résultat (#61 — corrige l'ouverture qui
+      atterrissait toujours dans le carnet du dossier courant, ignorant celui
+      où la note a été trouvée). `dossierId` est `Notebooks._GLOBAL` pour le
+      bloc-notes de séance, sinon un vrai id de dossier. */
+  _openNotebook(dossierId) {
+    this.close();
+    DossierBar.select(dossierId === Notebooks._GLOBAL ? "all" : dossierId);
+    Notepad.open();
   },
 
   /** API publique : révèle une entité par id (clic sur une puce `@`, E7). */
