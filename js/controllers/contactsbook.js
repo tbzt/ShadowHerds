@@ -28,7 +28,27 @@ const _contactsCollection = Collection.create(
       noMatch: (q) => `Aucun contact ne correspond à « ${q} ».`,
     },
     searchFields: (c) => [c.name, c.role, c.metatype, c.desc],
-    renderCard: (c) => ContactRenderer.renderPersistent(c),
+    // CO-b : la carte contact converge sur CardRenderer (ex-`ContactRenderer`,
+    // dissous). `editable:true` (D-edit-A) préserve l'édition en ligne de la
+    // fiche contact ; `contact-card`/`contact-card-saved` restent posées sur
+    // la racine pour préserver la grille/masonry existante (CSS inchangée,
+    // nettoyage éventuel en CO-e). Le PNJ déployé reste imbriqué (double
+    // chrome hérité, joint re-tranché en CO-d) — même post-traitement que
+    // l'ex-`ContactRenderer.renderPersistent`.
+    renderCard: (c, ctx) => {
+      const el = CardRenderer.render(c, [], {
+        ...CardRenderer.liveDeps(),
+        editable: true,
+        context: ctx && ctx.context,
+      });
+      el.classList.add("contact-card", "contact-card-saved");
+      const deployed = Shadows.data.all.find((p) => p.sourceContactId === c.id);
+      if (deployed) {
+        const slot = el.querySelector("[data-deployed-slot]");
+        if (slot) slot.appendChild(CardRenderer.render(deployed, ["edit", "remove"]));
+      }
+      return el;
+    },
     // Rattachement en masse à un PJ (BulkBar) : les liens vivent côté PJ
     // (Characters.contactLinks, E5), le contact n'est que la cible du lien.
     pjLinkable: true,
@@ -196,7 +216,8 @@ const ContactsBook = Object.assign(_contactsCollection, {
        choisir un archétype cohérent, comme la « composition libre » du
        Générateur. Le PNJ va directement aux Ombres (data.all de Shadows,
        même accès direct que Shadows.savePNJ fait déjà vers Gen.pool) et sa
-       carte s'affiche imbriquée dans la fiche contact (ContactRenderer). */
+       carte s'affiche imbriquée dans la fiche contact (renderCard, CO-b —
+       joint re-tranché en CO-d). */
     deployPNJ(id) {
       const c = this.data.all.find((x) => x.id === id);
       if (!c) return;

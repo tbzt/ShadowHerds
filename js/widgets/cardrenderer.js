@@ -61,6 +61,7 @@ const CardRenderer = {
 
   /* ---- Header ---- */
   _header(pnj, deps = CardRenderer.liveDeps()) {
+    if (this.isContact(pnj)) return this._headerContact(pnj, deps);
     if (pnj.pcLight) return this._headerLight(pnj);
     if (pnj.type === "vehicle") return this._headerVehicle(pnj);
     if (pnj.type === "spirit") return this._headerSpirit(pnj);
@@ -106,6 +107,30 @@ const CardRenderer = {
     </div>`;
   },
 
+  /** CO-b (carte Contact, convergence sur CardRenderer) : header d'un
+      contact — portrait + nom/rôle éditables en ligne (D-edit-A,
+      `deps.editable`) + métatype statique. Ni badge de rang ni icône de
+      genre (absents du modèle contact) ; pas de lentille (CO-e). Nom SANS
+      le découpage alias/civil de `_nameBlock` : un contact n'a jamais eu ce
+      format, et le split casserait l'édition en ligne d'un seul champ. */
+  _headerContact(pnj, deps = CardRenderer.liveDeps()) {
+    const editable = !!(deps && deps.editable);
+    const nameAttrs = editable
+      ? ` contenteditable="true" spellcheck="false" data-contact-field="name"`
+      : "";
+    const roleAttrs = editable
+      ? ` contenteditable="true" spellcheck="false" data-contact-field="role"`
+      : "";
+    return `<div class="pnj-card-header">
+      ${this._portraitThumb(pnj)}
+      <div class="pnj-header-left">
+        <div class="pnj-name"${nameAttrs}>${this._esc(pnj.name)}</div>
+        <div class="pnj-meta"${roleAttrs}>${this._esc(pnj.role)}</div>
+        ${pnj.metatype ? `<div class="contact-meta">${this._esc(pnj.metatype)}</div>` : ""}
+      </div>
+    </div>`;
+  },
+
   /* ---- PJ léger (E1) — gabarit minimal commun, aucune branche d'édition :
      un PJ léger n'a ni attrs ni skills, seulement nom/joueur/couleur/notes. ---- */
   _headerLight(pnj) {
@@ -129,6 +154,147 @@ const CardRenderer = {
     const label = (pnj.player || pnj.name || "?").trim().charAt(0).toUpperCase();
     const title = `PJ${pnj.player ? " · " + pnj.player : ""}`;
     return `<span class="pc-avatar" style="background:${this._esc(pnj.pcColor)}" title="${this._esc(title)}" aria-hidden="true">${this._esc(label)}</span>`;
+  },
+
+  /** CO-b (carte Contact) : corps — description, stats de Relation (SR
+      Influence/Loyauté ou Anarchy Niveau/RR/Atout, dispatch structurel via
+      `usesRiskPanel` — aucune branche d'édition), « Connu de », trait,
+      Incarnation (zone partagée, éditable via `_flavorSection`), et le PNJ
+      déployé imbriqué s'il existe.
+      *Scope assumé (CO-b)* : Relation/Connu de restent du contenu PLAT — ce
+      n'est pas une régression (`ContactRenderer` ne les repliait déjà pas) ;
+      leur formalisation en module `_MODULES` (glyphe ◈, `placement:"foot"`,
+      `lenses`) est CO-c. Le joint déployé (imbrication → carte unique) est
+      CO-d ; l'imbrication actuelle est préservée telle quelle ici. */
+  _bodyContact(pnj, deps = CardRenderer.liveDeps()) {
+    const isAnarchy = !!App.getEditionModule(pnj.edition)?.usesRiskPanel;
+    const stats = isAnarchy
+      ? this._contactStatsAnarchy(pnj, deps)
+      : this._contactStatsSR(pnj, deps);
+    const deployed = Shadows.data.all.find((p) => p.sourceContactId === pnj.id);
+    const editable = !!(deps && deps.editable);
+    const traitAttrs = editable
+      ? ` contenteditable="true" spellcheck="false" data-contact-field="trait"`
+      : "";
+    return `<div class="pnj-card-body">
+      <div class="contact-desc">${this._esc(pnj.desc)}</div>
+      ${stats}
+      ${this._contactKnownBy(pnj)}
+      <div class="contact-trait">⚠ <span${traitAttrs}>${this._esc(pnj.trait)}</span></div>
+      ${this._flavorSection(pnj, deps)}
+      ${deployed ? '<div class="contact-deployed-pnj" data-deployed-slot></div>' : ""}
+    </div>`;
+  },
+
+  /** Dispatch structurel accepté (issue #14) : deux blocs de stats complets
+      (atout+RR vs Influence/Loyauté), pas une valeur scalaire. Points de
+      niveau interactifs seulement si `deps.editable` (D-edit-A). */
+  _contactStatsAnarchy(c, deps = CardRenderer.liveDeps()) {
+    const editable = !!(deps && deps.editable);
+    const dots = Array.from({ length: 6 }, (_, i) => {
+      const filled = i < c.level ? " filled" : "";
+      const act = editable
+        ? ` data-action="contact-set-niveau" data-id="${c.id}" data-niveau-value="${i + 1}"`
+        : "";
+      return `<span class="niveau-dot${filled}"${act}></span>`;
+    }).join("");
+    const bonus = c.bonus ? `<div class="contact-bonus">+ ${this._esc(c.bonus)}</div>` : "";
+    return `<div class="contact-anarchy-stats">
+      <div class="contact-stat-row">
+        <span class="contact-stat-label">Niveau</span>
+        <div class="niveau-dots">${dots}</div>
+        <span class="contact-stat-val">${c.level} (${(c.level * 5000).toLocaleString("fr-FR")}¥)</span>
+      </div>
+      <div class="contact-stat-row">
+        <span class="contact-stat-label">Effet</span>
+        <span class="contact-rr">RR ${c.rr} — ${this._esc(c.domaine)}</span>
+      </div>
+      ${c.atoutCost != null ? `<div class="contact-stat-row"><span class="contact-stat-label">Atout</span><span class="contact-stat-val">${c.atoutCost} pts</span></div>` : ""}
+      ${bonus}
+    </div>`;
+  },
+
+  _contactStatsSR(c, deps = CardRenderer.liveDeps()) {
+    const editable = !!(deps && deps.editable);
+    const numAttrs = (field) =>
+      editable ? ` contenteditable="true" spellcheck="false" data-contact-field="${field}"` : "";
+    return `<div class="stats-row" style="margin-top:6px;flex-wrap:wrap;gap:6px;">
+      <span class="stat-pill accent">Influence
+        <strong${numAttrs("influence")} class="editable-num">${c.influence}</strong>
+      </span>
+      <span class="stat-pill">Loyauté
+        <strong${numAttrs("loyaute")} class="editable-num">${c.loyaute}</strong>
+      </span>
+      ${c.lieu ? `<span style="font-size:0.68rem;color:var(--text-dim);align-self:center;">📍 ${this._esc(c.lieu)}</span>` : ""}
+    </div>`;
+  },
+
+  /** E5 : sens inverse du lien PJ↔contact, calculé à la volée (jamais
+      stocké côté contact — source unique `pnj.contactLinks`). Toujours actif
+      (pas de garde `deps.editable` : gestion de liens, pas édition de champ
+      texte — la distinction D-edit-A ne porte que sur le second). */
+  _contactKnownBy(c) {
+    if (typeof Characters === "undefined") return "";
+    const all = Characters.data.all;
+    const linked = all.filter(
+      (p) => Array.isArray(p.contactLinks) && p.contactLinks.some((l) => l.contactId === c.id),
+    );
+    const linkedIds = new Set(linked.map((p) => p.id));
+    const unlinked = all.filter((p) => !linkedIds.has(p.id));
+
+    const chips = linked
+      .map((p) => {
+        const link = p.contactLinks.find((l) => l.contactId === c.id);
+        const rel = link && link.relation ? ` — ${this._esc(link.relation)}` : "";
+        return `<span class="tag tag-clickable pjlink-chip" role="button" tabindex="0" data-action="contact-goto-pj"
+          data-pj-id="${this._esc(p.id)}" data-pj-name="${this._esc(p.name)}">${this._pcAvatar(p)}${this._esc(p.name)}${rel}<button type="button" class="pjlink-unlink" title="Délier ce PJ" aria-label="Délier"
+            data-action="contact-unlink-pj" data-id="${this._esc(c.id)}" data-pj-id="${this._esc(p.id)}">×</button></span>`;
+      })
+      .join("");
+
+    let addControl = "";
+    if (unlinked.length) {
+      const teamItem =
+        typeof Characters !== "undefined" && Characters.activeTeamMembers().length
+          ? `<button type="button" class="contact-pjlink-item contact-pjlink-team" data-action="contact-link-team" data-id="${this._esc(c.id)}">${this._esc(ContactsBook.teamLinkLabel())}</button>`
+          : "";
+      const items = unlinked
+        .map(
+          (p) =>
+            `<button type="button" class="contact-pjlink-item" data-action="contact-link-pj"
+              data-id="${this._esc(c.id)}" data-pj-id="${this._esc(p.id)}">${this._pcAvatar(p)}${this._esc(p.name)}</button>`,
+        )
+        .join("");
+      addControl = `<span class="contact-pjlink-wrap">
+        <button type="button" class="tag contact-pjlink-add" data-action="contact-toggle-pjlink-menu">＋ Lier un PJ</button>
+        <div class="contact-pjlink-menu" hidden>${teamItem}${items}</div>
+      </span>`;
+    } else if (!linked.length) {
+      addControl = `<span class="pjlink-empty">Aucun PJ — créez-en un dans Équipe.</span>`;
+    }
+
+    return `<div class="card-section contact-pjlink-section" style="margin-top:6px;">
+      <div class="card-section-label">Connu de</div>
+      <div class="card-section-content">${chips}${addControl}</div>
+    </div>`;
+  },
+
+  /** CO-b : pied d'un contact — Déployer (primaire, tant que non déployé),
+      Portrait IA (⋯, opt-in), Supprimer (⋯, destructif). *Scope assumé* : le
+      PNJ déployé reste imbriqué (double chrome hérité de `ContactRenderer`,
+      inchangé) — le joint déployé (carte unique) est CO-d. */
+  _footerContact(pnj, deps = CardRenderer.liveDeps()) {
+    const id = pnj.id;
+    const deployed = Shadows.data.all.some((p) => p.sourceContactId === id);
+    const acts = [];
+    if (!deployed) {
+      acts.push({ kind: "primary", icon: "⇲", label: "Déployer", attrs: `data-action="contact-deploy" data-id="${id}"` });
+    }
+    if (this._portraitEnabled(pnj, deps)) {
+      acts.push({ kind: "menu", label: "Portrait IA", attrs: `data-action="contact-generate-portrait" data-id="${id}"` });
+    }
+    acts.push({ kind: "menu", danger: true, label: "Supprimer", attrs: `data-action="contact-remove" data-id="${id}"` });
+    return CardFooter.render(acts);
   },
 
   _bodyLight(pnj) {
@@ -331,6 +497,7 @@ const CardRenderer = {
 
   /* ---- Body ---- */
   _body(pnj, deps) {
+    if (this.isContact(pnj)) return this._bodyContact(pnj, deps);
     if (pnj.pcLight) return this._bodyLight(pnj);
     if (pnj.type === "vehicle") return this._bodyVehicle(pnj, deps);
     // Les esprits sont des objets PNJ standards : le corps d'édition les
@@ -368,7 +535,7 @@ const CardRenderer = {
     // de pnj-card-body, donc juste après le header) — la saveur se regarde
     // avant le combat/les capacités, pas après (I2 : jamais déplacée ensuite,
     // seulement pliée/dépliée).
-    const flavor = this._flavorSection(pnj);
+    const flavor = this._flavorSection(pnj, deps);
     if (flavor) {
       const openIdx = core.indexOf(">") + 1;
       core = core.slice(0, openIdx) + flavor + core.slice(openIdx);
@@ -568,26 +735,38 @@ const CardRenderer = {
      Comportements/Répliques d'un PJ rejoignent cette même zone — champs
      neutres (`pnj.keywords`/`behaviors`/`quotes`), aucune branche d'édition,
      zone déjà présente aux 4 éditions (I6). Vide sur un PNJ (champs absents),
-     comme avant. */
-  _flavorSection(pnj) {
+     comme avant.
+     CO-b (carte Contact) : `deps.editable` (D-edit-A) rend chaque ligne
+     éditable en ligne (`data-contact-flavor`) + ajoute le bouton ⟳ (relance
+     tout le portrait, ex-`ContactRenderer._portrait`). Sortie PNJ inchangée
+     octet pour octet quand `editable` est faux (défaut). */
+  _flavorSection(pnj, deps = CardRenderer.liveDeps()) {
     const f = pnj.flavor;
-    const rows = f
+    const editable = !!(deps && deps.editable);
+    const defs = f
       ? [
-          ["Âge", `${f.age} ans`],
-          ["Signe distinctif", f.signe],
-          ["Style", f.style],
-          ["Attitude", f.attitude],
-          ["Manie", f.manie],
-          ["Motivation", f.motivation],
-        ]
-          .filter(([, v]) => v)
-          .map(
-            ([k, v]) =>
-              `<div class="flavor-row"><span class="flavor-key">${k}</span><span class="flavor-val">${this._esc(String(v))}</span></div>`,
-          )
-          .join("")
+          ["age", "Âge", f.age != null ? `${f.age} ans` : null],
+          ["signe", "Signe distinctif", f.signe],
+          ["style", "Style", f.style],
+          ["attitude", "Attitude", f.attitude],
+          ["manie", "Manie", f.manie],
+          ["motivation", "Motivation", f.motivation],
+        ].filter(([, , v]) => v)
+      : [];
+    const rows = defs
+      .map(([field, k, v]) =>
+        editable
+          ? `<div class="flavor-row"><span class="flavor-key">${k}</span><span class="flavor-val" contenteditable="true" spellcheck="false" data-contact-flavor="${field}">${this._esc(String(v))}</span></div>`
+          : `<div class="flavor-row"><span class="flavor-key">${k}</span><span class="flavor-val">${this._esc(String(v))}</span></div>`,
+      )
+      .join("");
+    const reroll =
+      editable && rows
+        ? `<button type="button" class="btn-icon-tiny" title="Relancer le portrait" data-action="contact-reroll-flavor" data-id="${this._esc(pnj.id)}">⟳</button>`
+        : "";
+    let html = rows
+      ? `<div class="card-section flavor-section">${reroll ? `<div class="card-section-label">Portrait${reroll}</div>` : ""}${rows}</div>`
       : "";
-    let html = rows ? `<div class="card-section flavor-section">${rows}</div>` : "";
     if (pnj.keywords && pnj.keywords.length) html += this._listSection("Mots-clés", pnj.keywords);
     if (pnj.behaviors && pnj.behaviors.length) html += this._listSection("Comportements", pnj.behaviors);
     if (pnj.quotes && pnj.quotes.length) {
@@ -1307,6 +1486,7 @@ const CardRenderer = {
      décrit les actions, CardFooter les dispose (secondaire + primaire + ⋯).
      Seul le primaire porte un glyphe. Le socle préfixe ★/🏷 à gauche. */
   _footer(pnj, actions, deps = CardRenderer.liveDeps()) {
+    if (this.isContact(pnj)) return this._footerContact(pnj, deps);
     const id = pnj.id;
     const saved = JSON.stringify(actions);
 
@@ -1374,6 +1554,16 @@ const CardRenderer = {
     if (this._delegated) return;
     this._delegated = true;
     document.addEventListener("click", (e) => {
+      // CO-b (carte Contact) : ferme tout menu « Lier un PJ » ouvert au clic
+      // en dehors de son wrap (pas de backdrop : la fiche reste manipulable).
+      // Fait avant le switch pour ne pas court-circuiter un clic sur un item
+      // du menu (ex-`ContactRenderer.bindDelegation`).
+      if (!e.target.closest(".contact-pjlink-wrap")) {
+        document
+          .querySelectorAll(".contact-pjlink-menu:not([hidden])")
+          .forEach((m) => (m.hidden = true));
+      }
+
       const actionEl = e.target.closest("[data-action]");
       if (!actionEl) return;
       const id = actionEl.dataset.id;
@@ -1543,7 +1733,75 @@ const CardRenderer = {
         case "contact-create-open":
           ContactCreate.open(id);
           break;
+        // ---- CO-b (carte Contact, convergence) : actions de la carte
+        // contact elle-même, fusionnées depuis l'ex-`ContactRenderer.
+        // bindDelegation` (préfixe `contact-` pour ne pas collider avec les
+        // actions PNJ ci-dessus ni avec `contact-link-goto`/`contact-link-
+        // pick`/`contact-create-open`, qui vont dans l'autre sens : PJ→contact). ----
+        case "contact-remove":
+          ContactsBook.remove(id);
+          break;
+        case "contact-reroll-flavor":
+          ContactsBook.rerollFlavor(id);
+          break;
+        case "contact-set-niveau":
+          ContactsBook.editField(id, "level", actionEl.dataset.niveauValue);
+          ContactsBook.render();
+          break;
+        case "contact-generate-portrait":
+          Portrait.generateForContact(id, actionEl);
+          break;
+        case "contact-deploy":
+          ContactsBook.deployPNJ(id);
+          break;
+        case "contact-goto-pj":
+          Palette._reveal({ id: actionEl.dataset.pjId, name: actionEl.dataset.pjName, type: "pj" });
+          break;
+        case "contact-toggle-pjlink-menu": {
+          // Un seul menu ouvert à la fois : on referme les autres d'abord.
+          const menu = actionEl.parentElement.querySelector(".contact-pjlink-menu");
+          const willOpen = menu && menu.hidden;
+          document
+            .querySelectorAll(".contact-pjlink-menu:not([hidden])")
+            .forEach((m) => (m.hidden = true));
+          if (menu) menu.hidden = !willOpen;
+          break;
+        }
+        case "contact-link-pj":
+          // Le lien vit côté PJ (contactLinks) ; on rafraîchit la grille
+          // contacts pour afficher le nouveau chip « Connu de ».
+          Characters.addContactLink(actionEl.dataset.pjId, id, "", null);
+          UI.refreshEntityCard(id);
+          break;
+        case "contact-link-team":
+          // Rattache ce contact à toute l'équipe active (render() côté carnet
+          // rafraîchit tous les chips « Connu de »).
+          ContactsBook.linkManyToTeam([id]);
+          break;
+        case "contact-unlink-pj":
+          Characters.removeContactLink(actionEl.dataset.pjId, id);
+          UI.refreshEntityCard(id);
+          break;
       }
+    });
+
+    // CO-b (carte Contact) : blur/focus ne bubblent pas ; focusout si, c'est
+    // son équivalent — même patron que le reste de la délégation. Les cards
+    // contact persistantes ne portent aucun onclick/onblur figé, seulement
+    // des data-* lus ici (ex-`ContactRenderer.bindDelegation`).
+    document.addEventListener("focusout", (e) => {
+      const fieldEl = e.target.closest("[data-contact-field]");
+      if (fieldEl) {
+        const card = fieldEl.closest(".pnj-card");
+        if (!card) return;
+        ContactsBook.editField(card.dataset.id, fieldEl.dataset.contactField, fieldEl.textContent.trim());
+        return;
+      }
+      const flavorEl = e.target.closest("[data-contact-flavor]");
+      if (!flavorEl) return;
+      const card = flavorEl.closest(".pnj-card");
+      if (!card) return;
+      ContactsBook.editFlavor(card.dataset.id, flavorEl.dataset.contactFlavor, flavorEl.textContent.trim());
     });
 
     // M3 : cible Matrice du decker (<select>, pas un clic — délégation change
