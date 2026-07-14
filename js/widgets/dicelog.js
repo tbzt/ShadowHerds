@@ -55,7 +55,7 @@ const DiceLog = {
     panel.innerHTML = `
       <div class="dice-log-head">
         <span class="dice-log-title">Journal des jets</span>
-        <button class="btn-icon-tiny" data-action="export" title="Exporter le journal">⤓</button>
+        <button class="btn-icon-tiny" data-action="export" title="Exporter le journal"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-export"></use></svg></button>
         <button class="btn-icon-tiny" data-action="clear" title="Vider le journal">⌫</button>
         <button class="btn-icon-tiny" data-action="close" title="Fermer" aria-label="Fermer">✕</button>
       </div>
