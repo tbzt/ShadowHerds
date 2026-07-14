@@ -1002,10 +1002,21 @@ const CardRenderer = {
         if (!r) {
           return `<div class="weapon-line"><div><div class="weapon-name">${this._esc(name)}</div><div class="weapon-stat">${this._esc(stat)}</div></div></div>`;
         }
-        const approxTxt = r.approx ? " ~" : "";
-        const smartTxt = r.smartBonus ? ` · +${r.smartBonus} smartlink` : "";
-        const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill}${approxTxt} ${r.skillVal} + ${r.attr} ${r.attrVal})${r.limit != null ? ` · limite ${r.limit}` : ""}${smartTxt}`;
-        const poolBadge = `<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="lim">▸${r.limit}</span>` : ""}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}${r.smartBonus ? `<span class="lim">SL+${r.smartBonus}</span>` : ""}</span>`;
+        // Explication du jet, GÉNÉRALE : décompose le pool depuis
+        // `contributions` (compétence + attribut + spécialité + smartlink +
+        // effets d'objet − blessure) plutôt que des champs figés (V3).
+        const parts = (r.contributions || []).map((c, i) => {
+          const label = i === 0 && r.approx ? `${c.label} ~` : c.label;
+          if (i === 0) return `${label} ${c.value}`;
+          return `${c.value >= 0 ? "+" : "−"} ${label} ${Math.abs(c.value)}`;
+        });
+        // Facette VD : bonus d'objet motorisés (ex. densité musculaire, V4).
+        const dvSum = (r.dvContributions || []).reduce((a, c) => a + c.value, 0);
+        const dvTxt = (r.dvContributions || [])
+          .map((c) => `VD +${c.value} ${c.source}`)
+          .join(" · ");
+        const title = `${r.weaponName} : ${r.pool} dés (${parts.join(" ")})${r.limit != null ? ` · limite ${r.limit}` : ""}${dvTxt ? ` · ${dvTxt}` : ""}`;
+        const poolBadge = `<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="lim">▸${r.limit}</span>` : ""}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}${r.smartBonus ? `<span class="lim">SL+${r.smartBonus}</span>` : ""}${dvSum ? `<span class="lim" title="${this._esc(dvTxt)}">VD+${dvSum}</span>` : ""}</span>`;
         const dataAttr =
           App.getEditionModule(edition)?.usesRiskPanel
             ? `data-roll-weapon-anarchy="${this._esc(name)}"`

@@ -309,7 +309,27 @@ const WeaponRoll = {
         : weaponModel.smartlinkBonus.external;
     }
     const malus = Utils.woundMalus(pnj, edition);
-    const pool = Math.max(0, basePool + smartBonus + specBonus - malus);
+
+    // V3/V4 : effets d'objet motorisés, par FACETTE (pool/accuracy/dv/ap).
+    // Provenance étiquetée — le pool absorbe ses contributions, les autres
+    // facettes sont portées telles quelles vers l'explication du jet.
+    const fx =
+      typeof WeaponEffects !== "undefined"
+        ? WeaponEffects.forWeapon(pnj, parsed.name, edition)
+        : { pool: [], accuracy: [], dv: [], ap: [] };
+    const itemPool = fx.pool.reduce((a, c) => a + c.value, 0);
+    const pool = Math.max(0, basePool + smartBonus + specBonus + itemPool - malus);
+
+    // Décomposition GÉNÉRALE du pool (source unique de l'explication du jet) :
+    // compétence + attribut + spécialité + smartlink + effets d'objet − blessure.
+    const contributions = [
+      { label: matchedSkill || canonical, value: skillVal },
+      { label: attr, value: attrVal },
+    ];
+    if (specBonus) contributions.push({ label: "spécialité", value: specBonus });
+    if (smartBonus) contributions.push({ label: "smartlink", value: smartBonus });
+    for (const c of fx.pool) contributions.push({ label: c.source, value: c.value });
+    if (malus) contributions.push({ label: "blessure", value: -malus });
 
     return {
       weaponName: parsed.name,
@@ -326,6 +346,10 @@ const WeaponRoll = {
       limit: weaponModel.accuracyLimit ? parsed.pre : null,
       rr,
       edition,
+      contributions, // pool décomposé (explication du jet)
+      dvContributions: fx.dv, // VD : bonus d'objet étiquetés
+      accuracyContributions: fx.accuracy, // précision/limite
+      apContributions: fx.ap, // pénétration d'armure
     };
   },
 
