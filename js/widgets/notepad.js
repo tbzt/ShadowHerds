@@ -44,6 +44,15 @@ const Notepad = {
       .querySelector('[data-action="toggle-mode"]')
       .addEventListener("click", () => this.toggleMode());
 
+    // E8-A1 : click-to-edit — cible énorme (tout le rendu) plutôt que le ✎
+    // minuscule. Garde puce : un clic sur @/# navigue (délégation document,
+    // app.js). Garde sélection : sélectionner pour copier ne bascule pas.
+    panel.querySelector("#notepad-read").addEventListener("click", (e) => {
+      if (e.target.closest("[data-action]")) return;
+      if (!document.getSelection().isCollapsed) return;
+      this._editFromRead();
+    });
+
     const ta = panel.querySelector("#notepad-textarea");
     // Sauvegarde débouncée : on n'écrit pas à chaque frappe.
     ta.addEventListener("input", () => {
@@ -73,6 +82,18 @@ const Notepad = {
       this._mode = "read";
       this._syncView();
     }
+  },
+
+  /** Bascule en édition depuis un clic dans le rendu, curseur en fin (E8-A1 —
+      décision A : on ajoute 90 % du temps, pas de mapping clic→offset). */
+  _editFromRead() {
+    if (this._mode !== "read") return;
+    this._mode = "edit";
+    this._syncView();
+    const ta = document.getElementById("notepad-textarea");
+    if (!ta) return;
+    ta.focus();
+    ta.setSelectionRange(ta.value.length, ta.value.length);
   },
 
   _syncView() {

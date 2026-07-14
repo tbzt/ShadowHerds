@@ -148,5 +148,10 @@ const TourSteps = {
       title: "Cette visite guidée",
       body: "Le bouton Aide relance ce tour à tout moment et ouvre ce bandeau « Quoi de neuf » — cumulé depuis votre dernière visite, quel que soit le nombre de versions sautées.",
     },
+    {
+      id: "wn-notes-writing", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.18.0", fallback: "center",
+      title: "Écrivez directement dans vos notes",
+      body: "Cliquez n'importe où dans le texte affiché d'une note (bloc-notes, fiche) pour écrire — plus besoin de viser le crayon ✎. Et mettez en forme : « **gras** », « _italique_ », « `code` ».",
+    },
   ],
 };

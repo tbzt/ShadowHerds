@@ -12,6 +12,15 @@ commit.
 
 ## [Non publié]
 
+## [1.18.0] — 2026-07-14
+
+### Jouer
+- **Écriture directe dans les notes** : dans le bloc-notes de séance et les
+  notes de fiche, cliquez n'importe où dans le texte affiché pour écrire —
+  plus besoin de viser le crayon ✎.
+- **Mise en forme légère** : `**gras**`, `_italique_` et `` `code` `` sont
+  désormais rendus dans toutes les notes (bloc-notes, journal, fiches).
+
 ## [1.17.0] — 2026-07-14
 
 ### Jouer

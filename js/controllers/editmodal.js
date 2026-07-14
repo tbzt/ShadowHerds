@@ -45,6 +45,18 @@ const EditModal = {
     if (this._notesMode === "edit") document.getElementById("em-notes")?.focus();
   },
 
+  /** Bascule en édition depuis un clic dans le rendu, curseur en fin (E8-A1,
+      même mécanique que le bloc-notes de séance). */
+  _editNotesFromRead() {
+    if (this._notesMode !== "read") return;
+    this._notesMode = "edit";
+    this._syncNotesView();
+    const notesEl = document.getElementById("em-notes");
+    if (!notesEl) return;
+    notesEl.focus();
+    notesEl.setSelectionRange(notesEl.value.length, notesEl.value.length);
+  },
+
   _syncNotesView() {
     const notesEl = document.getElementById("em-notes");
     const readEl = document.getElementById("em-notes-read");
@@ -1148,6 +1160,16 @@ const EditModal = {
     const modal = document.getElementById("edit-modal");
     if (!modal) return;
     modal.addEventListener("click", (e) => {
+      // E8-A1 : click-to-edit sur le rendu des notes — avant la délégation
+      // data-action (une puce @/# à l'intérieur reste prioritaire, cf. garde).
+      if (
+        e.target.closest("#em-notes-read") &&
+        !e.target.closest("[data-action]") &&
+        document.getSelection().isCollapsed
+      ) {
+        this._editNotesFromRead();
+        return;
+      }
       const el = e.target.closest("[data-action]");
       if (!el) return;
       switch (el.dataset.action) {
