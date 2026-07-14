@@ -123,5 +123,10 @@ const TourSteps = {
       title: "Sorts, Pouvoirs et Atouts au catalogue",
       body: "La fiche d'édition propose désormais un sélecteur « ＋ Catalogue » pour les Sorts (4 éditions), les Pouvoirs d'adepte (SR5/SR6) et les Atouts (Anarchy 1re/2.0) — plus besoin de tout taper à la main. Au passage, le sélecteur d'équipement a la même apparence que celui des compétences.",
     },
+    {
+      id: "wn-cyberdeck-arsenal", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.14.0", fallback: "center",
+      title: "L'arsenal matriciel du decker",
+      body: "Le bouton « Piratage » unique devient un râtelier d'actions offensives nommées : Pic de données (avec sa VD), Force brute/Sonder l'accès, Planter un programme… selon l'édition. Chaque decker peut curer son loadout dans la fiche d'édition. Le MJ garde toujours la main sur le jet.",
+    },
   ],
 };

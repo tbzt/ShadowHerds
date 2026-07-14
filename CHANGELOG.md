@@ -16,6 +16,17 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
+## [1.14.0] — 2026-07-14
+
+### Jouer
+- **Arsenal matriciel du decker** : le bouton unique « Piratage » devient un
+  râtelier d'actions offensives nommées (Pic de données, Force brute/Sonder
+  l'accès, Planter un programme, Effacer une mark selon l'édition), chacune
+  avec son pool et — pour le pic de données — sa VD (SR5 p.242, SR6 p.184).
+  Anarchy 2.0 : verbes narratifs (Cybercombat, Pirater la Matrice). Anarchy
+  1re : pas de râtelier (Firewall seul, pas d'attribut Attaque). Loadout curé
+  par decker (EditModal), prep hors scène — le MJ garde la main sur chaque jet.
+
 ## [1.13.0] — 2026-07-14
 
 ### Générer

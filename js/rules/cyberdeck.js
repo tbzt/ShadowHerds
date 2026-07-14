@@ -84,16 +84,71 @@ const Cyberdeck = {
     };
   },
 
-  /** M3 : pool de piratage d'un serveur — même simplicité que les jets de CI
-      existants (Intrusion.rollIC : un seul pool, pas de test opposé calculé).
-      La formule livre (SR5 p.229 : Cybercombat + Logique ; SR6 : action
-      d'attaque cybercombat, nom VF à confirmer) reste à affiner en M4 — ici,
-      pool = l'attribut Attaque du deck, tel quel. `null` si l'édition n'a pas
-      d'attribut Attaque motorisé (Anarchy 1 = Firewall seul, pas d'attaque). */
+  /** M7 : catalogue PLEIN des actions matricielles offensives de l'édition
+      (entrées brutes {key, name, type, page, pool(deck), dv(deck)}), délégué au
+      module d'édition (`cyberdeckModel.actions`, îlot — zéro `if (App.edition)`).
+      Miroir de forme du catalogue de CI de matrix.js. Vide si l'édition n'a pas
+      de râtelier (Anarchy 1re : Firewall seul, pas d'attribut Attaque). Sert le
+      picker de loadout (toutes les actions disponibles). */
+  catalog(edition) {
+    return (this._model(edition) || {}).actions || [];
+  },
+
+  /** M7 : entrées de catalogue ÉQUIPÉES d'un deck. Défaut PARESSEUX : `loadout`
+      absent → toutes les actions (decks migrés/anciens = râtelier plein, aucune
+      migration). Un `loadout` présent mais vide = aucune action (le decker a
+      tout retiré volontairement — distinct de « absent »). */
+  loadout(edition, deck) {
+    const all = this.catalog(edition);
+    if (!deck || !Array.isArray(deck.loadout)) return all;
+    const keep = new Set(deck.loadout);
+    return all.filter((a) => keep.has(a.key));
+  },
+
+  /** M7 : actions équipées, RÉSOLUES pour ce deck (pool/VD calculés). Pool
+      simplifié = l'attribut du deck lié à la limite [crochets] de l'action
+      (même simplification que rollAttack, qui ignore compétence + attribut
+      cognitif — cohérent avec Intrusion.rollIC). La VD n'est chiffrée que pour
+      le pic de données (VD = indice d'Attaque, SR5 p.242 / SR6 p.184) ; les
+      succès excédentaires (+1) et marks (+2) s'ajoutent live, côté MJ. */
+  actions(edition, deck) {
+    return this.loadout(edition, deck).map((a) => ({
+      key: a.key,
+      name: a.name,
+      type: a.type,
+      page: a.page,
+      pool: typeof a.pool === "function" ? a.pool(deck || {}) : null,
+      dv: typeof a.dv === "function" ? a.dv(deck || {}) : null,
+    }));
+  },
+
+  /** M7 : descripteur d'un jet d'action (consommé par le dispatch deck-action).
+      Cherche dans le catalogue plein (une action peut être jouée même hors
+      loadout affiché — le picker filtre l'affichage, pas la validité). `null`
+      si la clé n'existe pas dans l'édition. Une action narrative (`pool null`,
+      ex. « Pirater la Matrice » en Anarchy) se joue en marqueur, sans dés. */
+  rollAction(edition, deck, key) {
+    const a = this.catalog(edition).find((x) => x.key === key);
+    if (!a) return null;
+    return {
+      pool: typeof a.pool === "function" ? a.pool(deck || {}) : null,
+      dv: typeof a.dv === "function" ? a.dv(deck || {}) : null,
+      label: a.name,
+      type: a.type,
+    };
+  },
+
+  /** M3→M7 : pool de l'attaque matricielle principale (le « pic de données »),
+      conservé pour compatibilité — délègue à la 1ʳᵉ action de type "attack" du
+      catalogue. `null` si l'édition n'a pas d'attaque motorisée (Anarchy 1re).
+      Même simplicité que Intrusion.rollIC : un seul pool, pas de test opposé. */
   rollAttack(edition, deck) {
-    const keys = this.attrKeys(edition);
-    if (!keys.some((k) => k.key === "attack")) return null;
-    return { pool: (deck.attrs || {}).attack || 0, label: "Piratage" };
+    const atk = this.catalog(edition).find((a) => a.type === "attack");
+    if (!atk) return null;
+    const pool = typeof atk.pool === "function" ? atk.pool(deck || {}) : null;
+    if (pool == null) return null;
+    const dv = typeof atk.dv === "function" ? atk.dv(deck || {}) : null;
+    return { pool, dv, label: atk.name };
   },
 
   /** M5 : pool de défense d'un appareil M4 PROTÉGÉ (SR5 p.236 — PAN/esclave :
