@@ -387,6 +387,21 @@ const EditionSR5 = {
       const top = vals.length ? Math.max(...vals) : 0;
       return 8 + Math.ceil(top / 2);
     },
+    /* M7 : catalogue d'actions matricielles OFFENSIVES (colonne « ATTAQUE »
+       p.247, compétence Cybercombat). Pool simplifié = l'attribut du deck lié
+       à la Limite entre crochets ([Attaque] → attack, [Corruption] → sleaze) ;
+       VD chiffrée seulement pour le pic de données (VD = indice d'Attaque,
+       p.242 — les +1/succès exc. et +2/mark s'ajoutent live, côté MJ). */
+    actions: [
+      { key: "spike", name: "Pic de données", type: "attack", page: 242,
+        pool: (d) => (d.attrs || {}).attack || 0, dv: (d) => (d.attrs || {}).attack || 0 },
+      { key: "crash", name: "Planter un programme", type: "crash", page: 243,
+        pool: (d) => (d.attrs || {}).attack || 0, dv: () => null },
+      { key: "erasemark", name: "Effacer une mark", type: "erase", page: 242,
+        pool: (d) => (d.attrs || {}).attack || 0, dv: () => null },
+      { key: "hackfly", name: "Hacker à la volée", type: "access", page: 242,
+        pool: (d) => (d.attrs || {}).sleaze || 0, dv: () => null },
+    ],
   },
 
   /* ----
@@ -1573,6 +1588,20 @@ const EditionSR5 = {
   },
   addCatalogItem(pnj, id) {
     ItemResolver.addEquipString(pnj, this.equipPools, id);
+  },
+  /* Sorts/pouvoirs d'adepte : catalogues partagés (taxonomie commune aux
+     4 éditions), source unique dans Content — cf. Content.spellCatalogFor. */
+  spellCatalog() {
+    return Content.spellCatalogFor(this.id);
+  },
+  addSpellItem(pnj, id) {
+    Content.addSpellItem(pnj, this.id, id);
+  },
+  powerCatalog() {
+    return Content.powerCatalogFor(this.id);
+  },
+  addPowerItem(pnj, id) {
+    Content.addPowerItem(pnj, this.id, id);
   },
 
   /* ----

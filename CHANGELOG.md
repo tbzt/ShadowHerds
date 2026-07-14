@@ -16,6 +16,18 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
+## [1.13.0] — 2026-07-14
+
+### Générer
+- **DA du sélecteur « ＋ Catalogue »** : il utilise désormais le même composant que
+  « ＋ Ajouter une compétence » (au lieu d'un `<select>` natif détonnant).
+- **Catalogue de Sorts** (4 éditions) et **Pouvoirs d'adepte** (SR5/SR6) dans la fiche
+  d'édition : plus besoin de taper un sort ou un pouvoir à la main.
+- **Catalogue d'Atouts** (Anarchy 1re/2.0) : agrégé depuis tous les archétypes du livre.
+  Comme il n'existe pas de liste unique et canonique des Atouts, un même Atout peut
+  apparaître en plusieurs variantes proches selon l'archétype d'origine (ex. Essence
+  différente) — ce n'est pas un bug, juste l'absence de liste maîtresse dans le livre.
+
 ## [1.12.0] — 2026-07-14
 
 ### Jouer

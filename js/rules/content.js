@@ -1473,4 +1473,69 @@ const Content = {
     const pool = this._eligible(list, proRating, tags);
     return this._sample(pool, Math.min(n, pool.length));
   },
+
+  /* ========================================================
+     API — catalogues de choix manuel (édition d'un PNJ existant),
+     distincts des « pick » ci-dessus (tirage aléatoire à la génération).
+     Source unique pour les 4 éditions : la taxonomie à 5 catégories de
+     sorts est partagée (combat/detection/sante/illusion/manipulation),
+     pas de duplication par module d'édition.
+     ======================================================== */
+
+  spellCatLabels: {
+    combat: "Combat",
+    detection: "Détection",
+    sante: "Santé",
+    illusion: "Illusion",
+    manipulation: "Manipulation",
+  },
+
+  /** Catalogue de sorts groupé par catégorie, pour un sélecteur manuel
+      (EditModal). `null` si l'édition n'a pas de sorts catalogués. */
+  spellCatalogFor(ed) {
+    ed = this._ed(ed);
+    const list = this.spells[ed];
+    if (!list || !list.length) return null;
+    const byCat = new Map();
+    for (const sp of list) {
+      if (!byCat.has(sp.cat)) byCat.set(sp.cat, []);
+      byCat.get(sp.cat).push({ id: sp.name, label: sp.name });
+    }
+    return [...byCat.entries()].map(([cat, items]) => ({
+      category: this.spellCatLabels[cat] || cat,
+      items,
+    }));
+  },
+
+  /** Ajoute un sort du catalogue à `pnj.spells` par son nom (référence de
+      l'objet catalogue, en lecture seule ensuite — cf. diceroller/magicaction
+      qui ne font que `.find(s => s.name === ...)`). */
+  addSpellItem(pnj, ed, name) {
+    ed = this._ed(ed);
+    const entry = (this.spells[ed] || []).find((s) => s.name === name);
+    if (!entry) return;
+    pnj.spells = pnj.spells || [];
+    pnj.spells.push(entry);
+  },
+
+  /** Catalogue plat de pouvoirs d'adepte (pas de catégorie dans
+      `pouvoirsAdepte`). `null` pour les éditions sans concept d'adepte
+      séparé (Anarchy 1/2 — cf. pickPouvoirs). */
+  powerCatalogFor(ed) {
+    ed = this._ed(ed);
+    const list = this.pouvoirsAdepte[ed];
+    if (!list || !list.length) return null;
+    return list.map((p) => ({ id: p.name, label: p.name }));
+  },
+
+  /** Ajoute un pouvoir d'adepte du catalogue à `pnj.powers` par son nom
+      (référence de l'objet catalogue — lu par BonusEngine._sumListBonus,
+      jamais muté ensuite). */
+  addPowerItem(pnj, ed, name) {
+    ed = this._ed(ed);
+    const entry = (this.pouvoirsAdepte[ed] || []).find((p) => p.name === name);
+    if (!entry) return;
+    pnj.powers = pnj.powers || [];
+    pnj.powers.push(entry);
+  },
 };

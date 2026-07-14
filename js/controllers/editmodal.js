@@ -584,14 +584,43 @@ const EditModal = {
     }
     html += "</div></div>";
 
-    // ---- Section Anarchy : Atouts libres ----
-    if (App.getEditionModule(pnj.edition).hasEdges && pnj.edges) {
+    // ---- Section Anarchy : Atouts (toujours affichée dès que l'édition a
+    // le concept — capacité de l'édition, pas contenu courant, même
+    // correctif que l'Équipement). Hors esprits (sémantique distincte). ----
+    if (App.getEditionModule(pnj.edition).hasEdges && pnj.type !== "spirit") {
       html += `<div class="modal-section">
         <div class="modal-section-title">Atouts</div>
         <div class="form-group">
           <label>Un edge par ligne</label>
           <textarea id="em-atouts" rows="5">${(pnj.edges || []).join("\n")}</textarea>
         </div>
+        ${this._edgeCatalogControls(pnj)}
+      </div>`;
+    }
+
+    // ---- Section : Sorts (montée si l'édition a un catalogue de sorts).
+    // Hors esprits. Objets structurés (add/retrait via catalogue seulement,
+    // pas de saisie libre — comme les Armes). ----
+    if (App.getEditionModule(pnj.edition).spellCatalog?.() && pnj.type !== "spirit") {
+      html += `<div class="modal-section">
+        <div class="modal-section-title">Sorts</div>
+        <div id="em-spells-list" class="em-skills-list">
+          ${this._spellRows(pnj)}
+        </div>
+        ${this._spellCatalogControls(pnj)}
+      </div>`;
+    }
+
+    // ---- Section : Pouvoirs d'adepte (SR5/SR6 seulement — Anarchy fond
+    // cette mécanique dans les Atouts). Hors esprits (pnj.powers a une
+    // sémantique différente sur un esprit — cf. js/catalogs/spirits.js). ----
+    if (App.getEditionModule(pnj.edition).powerCatalog?.() && pnj.type !== "spirit") {
+      html += `<div class="modal-section">
+        <div class="modal-section-title">Pouvoirs</div>
+        <div id="em-powers-list" class="em-skills-list">
+          ${this._powerRows(pnj)}
+        </div>
+        ${this._powerCatalogControls(pnj)}
       </div>`;
     }
 
@@ -810,22 +839,17 @@ const EditModal = {
   _equipCatalogControls(pnj) {
     const catalog = App.getEditionModule(pnj.edition).equipCatalog?.();
     if (!catalog || !catalog.length) return "";
-    const esc = CardRenderer._esc;
-    const groups = catalog
-      .map(
-        (g) =>
-          `<optgroup label="${esc(g.category)}">` +
-          g.items
-            .map((it) => `<option value="${esc(it.id)}">${esc(it.label)}</option>`)
-            .join("") +
-          `</optgroup>`,
-      )
-      .join("");
     return `<div class="em-add-skill">
-      <select id="em-equip-catalog" class="em-equip-catalog" aria-label="Catalogue d'équipement">
-        <option value="">＋ Catalogue…</option>
-        ${groups}
-      </select>
+      ${SingleSelect.create({
+        id: "em-equip-catalog",
+        label: "",
+        groups: catalog.map((g) => ({
+          category: g.category,
+          items: g.items.map((it) => ({ value: it.id, label: it.label })),
+        })),
+        value: "",
+        placeholder: "＋ Catalogue…",
+      })}
       <button type="button" class="em-add-skill-btn" data-action="add-equip-item">Ajouter</button>
     </div>`;
   },
@@ -844,7 +868,7 @@ const EditModal = {
     this._rerenderEquip(pnj);
     if (App.getEditionModule(pnj.edition).weaponModel?.source === "weapons")
       this._rerenderWeapons(pnj);
-    if (sel) sel.value = "";
+    SingleSelect.reset("em-equip-catalog");
   },
 
   /* Retire l'arme structurée d'index i. */
@@ -866,6 +890,166 @@ const EditModal = {
   _rerenderWeapons(pnj) {
     const list = document.getElementById("em-weapons-list");
     if (list) list.innerHTML = this._weaponRows(pnj);
+  },
+
+  /* ---- Sorts (objets structurés, add/retrait via catalogue seulement) ---- */
+
+  _spellRows(pnj) {
+    const esc = CardRenderer._esc;
+    return (pnj.spells || [])
+      .map((sp, i) => {
+        const detail = [
+          Content.spellCatLabels[sp.cat] || sp.cat,
+          sp.drain != null ? `Drain ${sp.drain}` : sp.niveau != null ? `Niv. ${sp.niveau}` : null,
+        ]
+          .filter(Boolean)
+          .join(", ");
+        return `<div class="em-skill-row" data-idx="${i}">
+          <span class="em-skill-name" title="${esc(sp.desc || "")}">${esc(sp.name)}${detail ? ` — ${esc(detail)}` : ""}</span>
+          <button type="button" class="em-skill-del" title="Retirer"
+            data-action="remove-spell">×</button>
+        </div>`;
+      })
+      .join("");
+  },
+
+  /* Sélecteur groupé « ＋ Catalogue » — monté seulement si l'édition expose
+     un catalogue de sorts (spellCatalog() ≠ null). */
+  _spellCatalogControls(pnj) {
+    const catalog = App.getEditionModule(pnj.edition).spellCatalog?.();
+    if (!catalog || !catalog.length) return "";
+    return `<div class="em-add-skill">
+      ${SingleSelect.create({
+        id: "em-spell-catalog",
+        label: "",
+        groups: catalog.map((g) => ({
+          category: g.category,
+          items: g.items.map((it) => ({ value: it.id, label: it.label })),
+        })),
+        value: "",
+        placeholder: "＋ Catalogue…",
+      })}
+      <button type="button" class="em-add-skill-btn" data-action="add-spell-item">Ajouter</button>
+    </div>`;
+  },
+
+  addSpellItem() {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj) return;
+    const sel = document.getElementById("em-spell-catalog");
+    const id = sel?.value;
+    if (!id) return;
+    this._readForm(pnj);
+    App.getEditionModule(pnj.edition).addSpellItem(pnj, id);
+    this._rerenderSpells(pnj);
+    SingleSelect.reset("em-spell-catalog");
+  },
+
+  removeSpell(i) {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj || !pnj.spells) return;
+    this._readForm(pnj);
+    pnj.spells.splice(i, 1);
+    this._rerenderSpells(pnj);
+  },
+
+  _rerenderSpells(pnj) {
+    const list = document.getElementById("em-spells-list");
+    if (list) list.innerHTML = this._spellRows(pnj);
+  },
+
+  /* ---- Pouvoirs d'adepte (objets structurés, add/retrait via catalogue seulement) ---- */
+
+  _powerRows(pnj) {
+    const esc = CardRenderer._esc;
+    return (pnj.powers || [])
+      .map(
+        (p, i) => `<div class="em-skill-row" data-idx="${i}">
+          <span class="em-skill-name" title="${esc(p.desc || "")}">${esc(p.name)}</span>
+          <button type="button" class="em-skill-del" title="Retirer"
+            data-action="remove-power">×</button>
+        </div>`,
+      )
+      .join("");
+  },
+
+  /* Sélecteur plat « ＋ Catalogue » — monté seulement si l'édition expose un
+     catalogue de pouvoirs d'adepte (powerCatalog() ≠ null). */
+  _powerCatalogControls(pnj) {
+    const catalog = App.getEditionModule(pnj.edition).powerCatalog?.();
+    if (!catalog || !catalog.length) return "";
+    return `<div class="em-add-skill">
+      ${SingleSelect.create({
+        id: "em-power-catalog",
+        label: "",
+        options: catalog.map((it) => ({ value: it.id, label: it.label })),
+        value: "",
+        placeholder: "＋ Catalogue…",
+      })}
+      <button type="button" class="em-add-skill-btn" data-action="add-power-item">Ajouter</button>
+    </div>`;
+  },
+
+  addPowerItem() {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj) return;
+    const sel = document.getElementById("em-power-catalog");
+    const id = sel?.value;
+    if (!id) return;
+    this._readForm(pnj);
+    App.getEditionModule(pnj.edition).addPowerItem(pnj, id);
+    this._rerenderPowers(pnj);
+    SingleSelect.reset("em-power-catalog");
+  },
+
+  removePower(i) {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj || !pnj.powers) return;
+    this._readForm(pnj);
+    pnj.powers.splice(i, 1);
+    this._rerenderPowers(pnj);
+  },
+
+  _rerenderPowers(pnj) {
+    const list = document.getElementById("em-powers-list");
+    if (list) list.innerHTML = this._powerRows(pnj);
+  },
+
+  /* ---- Atouts (texte libre + catalogue dédupliqué qui ajoute une ligne) ---- */
+
+  /* Sélecteur plat « ＋ Catalogue » — monté seulement si l'édition expose un
+     catalogue d'Atouts (edgeCatalog() ≠ null, Anarchy 1/2 seulement — le
+     gate hasEdges de la section exclut déjà SR5/SR6 avant même l'appel). */
+  _edgeCatalogControls(pnj) {
+    const catalog = App.getEditionModule(pnj.edition).edgeCatalog?.();
+    if (!catalog || !catalog.length) return "";
+    return `<div class="em-add-skill">
+      ${SingleSelect.create({
+        id: "em-edge-catalog",
+        label: "",
+        options: catalog.map((it) => ({ value: it.id, label: it.label })),
+        value: "",
+        placeholder: "＋ Catalogue…",
+      })}
+      <button type="button" class="em-add-skill-btn" data-action="add-edge-item">Ajouter</button>
+    </div>`;
+  },
+
+  addEdgeItem() {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj) return;
+    const sel = document.getElementById("em-edge-catalog");
+    const id = sel?.value;
+    if (!id) return;
+    this._readForm(pnj);
+    App.getEditionModule(pnj.edition).addEdgeItem(pnj, id);
+    this._rerenderEdges(pnj);
+    SingleSelect.reset("em-edge-catalog");
+  },
+
+  _rerenderEdges(pnj) {
+    const el = document.getElementById("em-atouts");
+    if (el) el.value = (pnj.edges || []).join("\n");
   },
 
   /* ---- Lecture du formulaire → mise à jour du PNJ ---- */
@@ -968,6 +1152,25 @@ const EditModal = {
           if (row) this.removeWeapon(parseInt(row.dataset.idx, 10));
           break;
         }
+        case "add-spell-item":
+          this.addSpellItem();
+          break;
+        case "remove-spell": {
+          const row = el.closest("[data-idx]");
+          if (row) this.removeSpell(parseInt(row.dataset.idx, 10));
+          break;
+        }
+        case "add-power-item":
+          this.addPowerItem();
+          break;
+        case "remove-power": {
+          const row = el.closest("[data-idx]");
+          if (row) this.removePower(parseInt(row.dataset.idx, 10));
+          break;
+        }
+        case "add-edge-item":
+          this.addEdgeItem();
+          break;
         case "pick-pc-color":
           this.pickColor(el.dataset.color);
           break;

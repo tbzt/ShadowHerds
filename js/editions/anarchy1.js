@@ -209,6 +209,22 @@ const EditionAnarchy1 = {
   equipCatalog() {
     return null;
   },
+  /* Sorts : catalogue partagé (taxonomie commune aux 4 éditions), source
+     unique dans Content. Ajout surchargé (pas de délégation directe) pour
+     garder la forme enrichie {name,cat,niveau,desc,note} des sorts générés
+     (cf. _enrichSpell), plutôt que l'objet brut de Content.spells.anarchy1. */
+  spellCatalog() {
+    return Content.spellCatalogFor(this.id);
+  },
+  addSpellItem(pnj, id) {
+    pnj.spells = pnj.spells || [];
+    pnj.spells.push(this._enrichSpell(id));
+  },
+  /* Pas de pouvoirs d'adepte séparés en Anarchy (mécanique fondue dans les
+     Atouts). */
+  powerCatalog() {
+    return null;
+  },
 
   /** Invocation d'esprits V1 (6 types × 3 puissances, statblocks
       §ESPRITS). `types`/`spawn` référencent Spirits en lazy (spirits.js
@@ -435,6 +451,11 @@ const EditionAnarchy1 = {
       const fw = (deck && deck.attrs && deck.attrs.firewall) || 1;
       return table[fw] ?? 6 + 3 * (fw - 1);
     },
+    // M7 : pas de catalogue `actions` (râtelier matriciel offensif) — décision
+    // Canon. Le deck Anarchy 1re n'a qu'un Firewall (pas d'attribut Attaque
+    // motorisé) et le livre ne décrit pas d'actions matricielles chiffrées côté
+    // decker : Cyberdeck.catalog() renvoie donc [] et aucun bouton d'arsenal
+    // n'est monté pour cette édition (absence volontaire, pas un oubli).
   },
 
   /* ----
@@ -474,6 +495,28 @@ const EditionAnarchy1 = {
     get archetype() {
       return ["Aléatoire", ...Object.keys(EditionAnarchy1.statBlocks)];
     },
+  },
+
+  /* Catalogue d'Atouts (édition manuelle d'un PNJ) : pas de liste globale
+     dans le livre — dédupliqué à partir des `edgeOptions` de tous les
+     statBlocks (déduplication par chaîne exacte, sans fusion approximative :
+     un même Atout peut apparaître en plusieurs variantes selon l'archétype
+     d'origine, ex. Essence différente — accepté, cf. CHANGELOG). */
+  _edgeCatalogCache: null,
+  edgeCatalog() {
+    if (!this._edgeCatalogCache) {
+      const set = new Set();
+      for (const sb of Object.values(this.statBlocks))
+        for (const e of sb.edgeOptions || []) set.add(e);
+      this._edgeCatalogCache = [...set]
+        .sort((a, b) => a.localeCompare(b, "fr"))
+        .map((e) => ({ id: e, label: e }));
+    }
+    return this._edgeCatalogCache;
+  },
+  addEdgeItem(pnj, id) {
+    pnj.edges = pnj.edges || [];
+    pnj.edges.push(id);
   },
 
   /* ============================================================

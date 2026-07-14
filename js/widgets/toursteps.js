@@ -118,5 +118,10 @@ const TourSteps = {
       title: "Ranger vos dossiers en campagnes et runs",
       body: "Un dossier peut être marqué « Campagne » ou « Run » depuis le menu « ⋯ » de la barre de dossiers — automatique quand vous « Rangez la run ». Une run pointe vers sa prep générée, une campagne compte ses runs.",
     },
+    {
+      id: "wn-spell-power-edge-catalog", anchor: "nav-generator", tours: ["whatsnew"], since: "1.13.0", fallback: "center",
+      title: "Sorts, Pouvoirs et Atouts au catalogue",
+      body: "La fiche d'édition propose désormais un sélecteur « ＋ Catalogue » pour les Sorts (4 éditions), les Pouvoirs d'adepte (SR5/SR6) et les Atouts (Anarchy 1re/2.0) — plus besoin de tout taper à la main. Au passage, le sélecteur d'équipement a la même apparence que celui des compétences.",
+    },
   ],
 };

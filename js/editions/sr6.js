@@ -413,6 +413,22 @@ const EditionSR6 = {
       const top = vals.length ? Math.max(...vals) : 0;
       return 8 + Math.ceil(top / 2);
     },
+    /* M7 : catalogue d'actions matricielles OFFENSIVES. SR6 remplace les marks
+       par l'accès (Invité/Utilisateur/Admin), d'où « Forcer l'accès » (dépend
+       de l'Attaque, p.183) et « Sonder l'accès » (dépend de la Corruption,
+       p.186) au lieu des actions de markage SR5. Pool simplifié = attribut du
+       deck concerné ; VD chiffrée pour le pic de données (p.184, même modèle de
+       dommages matriciels que SR5, VD = indice d'Attaque). */
+    actions: [
+      { key: "spike", name: "Pic de données", type: "attack", page: 184,
+        pool: (d) => (d.attrs || {}).attack || 0, dv: (d) => (d.attrs || {}).attack || 0 },
+      { key: "forceaccess", name: "Forcer l'accès", type: "access", page: 183,
+        pool: (d) => (d.attrs || {}).attack || 0, dv: () => null },
+      { key: "probeaccess", name: "Sonder l'accès", type: "access", page: 186,
+        pool: (d) => (d.attrs || {}).sleaze || 0, dv: () => null },
+      { key: "crash", name: "Planter un programme", type: "crash", page: 184,
+        pool: (d) => (d.attrs || {}).attack || 0, dv: () => null },
+    ],
   },
 
   /* ----
@@ -1719,6 +1735,20 @@ const EditionSR6 = {
   },
   addCatalogItem(pnj, id) {
     ItemResolver.addEquipString(pnj, this.equipPools, id);
+  },
+  /* Sorts/pouvoirs d'adepte : catalogues partagés (taxonomie commune aux
+     4 éditions), source unique dans Content — cf. Content.spellCatalogFor. */
+  spellCatalog() {
+    return Content.spellCatalogFor(this.id);
+  },
+  addSpellItem(pnj, id) {
+    Content.addSpellItem(pnj, this.id, id);
+  },
+  powerCatalog() {
+    return Content.powerCatalogFor(this.id);
+  },
+  addPowerItem(pnj, id) {
+    Content.addPowerItem(pnj, this.id, id);
   },
 
   /** Palier de matériel selon le professionnalisme — mêmes seuils que le
