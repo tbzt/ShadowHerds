@@ -180,16 +180,21 @@ const App = {
     // seule fois, jamais répétée (Onboarding.dismiss pose le flag global).
     // Premier lancement (V9/G2) : orientation guidée qui mène au générateur ;
     // « Passer » définitif via tour_seen. Sinon, le coachmark topbar habituel.
-    if (Storage.getGlobal("tour_seen", false)) {
-      Onboarding.maybeShow();
-    } else {
-      Tour.start("orientation", {
-        onEnd: () => {
-          Storage.setGlobal("tour_seen", true);
-          Storage.setGlobal("tour_seen_version", App.VERSION); // base « Quoi de neuf »
-          Tour.refreshBadge();
-        },
-      });
+    // Écran spectateur (#59) : kiosque lecture seule sur un 2e onglet/appareil.
+    // La visite d'orientation NAVIGUE (1er pas panel:"shadows") et écraserait
+    // le panneau + le hash — on saute tout l'onboarding MJ dans ce mode.
+    if (hashPanel !== "spectateur") {
+      if (Storage.getGlobal("tour_seen", false)) {
+        Onboarding.maybeShow();
+      } else {
+        Tour.start("orientation", {
+          onEnd: () => {
+            Storage.setGlobal("tour_seen", true);
+            Storage.setGlobal("tour_seen_version", App.VERSION); // base « Quoi de neuf »
+            Tour.refreshBadge();
+          },
+        });
+      }
     }
     Tour.refreshBadge(); // badge « Quoi de neuf » (+ migration douce de la base)
   },
