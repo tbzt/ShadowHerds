@@ -12,6 +12,19 @@ commit.
 
 ## [Non publié]
 
+## [1.19.0] — 2026-07-14
+
+### Jouer
+- **Attributs lançables** : sur une carte, chaque attribut (et Magie/Résonance/
+  Atout selon l'édition) se clique désormais pour lancer un test à ce nombre de
+  dés — comme les compétences et les réserves MJ. Les limites (SR5) et
+  l'Essence restent de simples valeurs de référence, non lançables.
+- **Affordance de lancer toujours visible** : le petit dé ⚄ qui signale
+  qu'une pastille est cliquable ne dépend plus du survol (absent au tactile) —
+  il est désormais visible en permanence sur les attributs, les Jets de
+  situation et les pastilles combat sans glyphe dédié (ex. Résistance au
+  Drain).
+
 ## [1.18.0] — 2026-07-14
 
 ### Jouer

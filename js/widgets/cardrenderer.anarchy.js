@@ -222,7 +222,7 @@ Object.assign(CardRenderer, {
     if (prefs.showAttributes) {
       const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA"];
       html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>
-        <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}</div></div>`;
+        <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k], "", { roll: true, edition: pnj.edition })).join("")}</div></div>`;
     }
     if (prefs.showEquipment && equip && equip.length)
       html += this._equipSection(pnj, equip, pnj.edition, deps);

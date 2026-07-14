@@ -123,9 +123,9 @@ Object.assign(CardRenderer, {
       if (attrs.RES) extras.push("RES");
       if (attrs.ATO != null) extras.push("ATO");
       html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>`;
-      html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k] ?? "—")).join("")}</div>`;
+      html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k] ?? "—", "", { roll: true, edition: "sr6" })).join("")}</div>`;
       if (extras.length)
-        html += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, attrs[k], "attr-special")).join("")}</div>`;
+        html += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, attrs[k], "attr-special", { roll: true, edition: "sr6" })).join("")}</div>`;
       html += `<div class="limites-grid" style="margin-top:6px;">
         ${this._attrCell("ME", me ?? "?")}
       </div></div>`;

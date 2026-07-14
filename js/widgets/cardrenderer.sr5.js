@@ -125,9 +125,10 @@ Object.assign(CardRenderer, {
         ...(attrs.CHC != null ? ["CHC"] : []),
       ];
       html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>`;
-      html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}</div>`;
+      html += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k], "", { roll: true, edition: "sr5" })).join("")}</div>`;
       if (extras.length)
-        html += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, attrs[k], "attr-special")).join("")}</div>`;
+        // ESS n'est pas un pool de dés (ressource, pas un test) — non lançable.
+        html += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, attrs[k], "attr-special", { roll: k !== "ESS", edition: "sr5" })).join("")}</div>`;
       html += `<div class="limites-grid" style="margin-top:6px;">
         ${this._attrCell("Lim.Phys", limPhys)}
         ${this._attrCell("Lim.Ment", limMent)}

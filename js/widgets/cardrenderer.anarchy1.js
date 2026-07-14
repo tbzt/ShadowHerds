@@ -75,7 +75,7 @@ Object.assign(CardRenderer, {
     if (prefs.showAttributes) {
       const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA", "CHC"];
       html += `<div class="ref-block"><div class="ref-lbl">Attributs</div>
-        <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k])).join("")}</div>
+        <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k], "", { roll: true, edition: "anarchy1" })).join("")}</div>
         ${attrs.ESS != null ? `<div class="attr-grid attr-special-row">${this._attrCell("ESS", attrs.ESS, "attr-special")}</div>` : ""}
       </div>`;
     }

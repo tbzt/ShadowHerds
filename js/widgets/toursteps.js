@@ -153,5 +153,10 @@ const TourSteps = {
       title: "Écrivez directement dans vos notes",
       body: "Cliquez n'importe où dans le texte affiché d'une note (bloc-notes, fiche) pour écrire — plus besoin de viser le crayon ✎. Et mettez en forme : « **gras** », « _italique_ », « `code` ».",
     },
+    {
+      id: "wn-attrs-rollable", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.19.0", fallback: "center",
+      title: "Attributs lançables",
+      body: "Sur une carte, cliquez un attribut (ou Magie/Résonance/Atout) pour lancer un test à ce nombre de dés — comme les compétences. Le petit dé ⚄ signalant qu'une pastille est cliquable est désormais visible en permanence, sans avoir à survoler.",
+    },
   ],
 };
