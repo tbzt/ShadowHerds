@@ -8,7 +8,7 @@ const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.25.0",
+  VERSION: "1.26.0",
 
   edition: "none",
   editionModule: null,
@@ -92,24 +92,24 @@ const App = {
      créatures + 3 thèmes inutiles du chargement initial. */
   _loadedAssets: new Set(),
   _EDITION_CSS: {
-    sr5: "css/theme-sr5.css?v=1045",
-    sr6: "css/theme-sr6.css?v=1045",
-    anarchy2: "css/theme-anarchy.css?v=1045",
-    anarchy1: "css/theme-anarchy1.css?v=1045",
+    sr5: "css/theme-sr5.css?v=1046",
+    sr6: "css/theme-sr6.css?v=1046",
+    anarchy2: "css/theme-anarchy.css?v=1046",
+    anarchy1: "css/theme-anarchy1.css?v=1046",
   },
   _EDITION_JS: {
-    sr5: ["js/editions/sr5.js?v=1045", "js/editions/sr5.foundry.js?v=1045", "js/editions/sr5.print.js?v=1045"],
-    sr6: ["js/editions/sr6.js?v=1045", "js/editions/sr6.foundry.js?v=1045", "js/editions/sr6.print.js?v=1045"],
+    sr5: ["js/editions/sr5.js?v=1046", "js/editions/sr5.foundry.js?v=1046", "js/editions/sr5.print.js?v=1046"],
+    sr6: ["js/editions/sr6.js?v=1046", "js/editions/sr6.foundry.js?v=1046", "js/editions/sr6.print.js?v=1046"],
     anarchy2: [
-      "js/editions/anarchy2.js?v=1045",
-      "js/editions/anarchy2.creation.js?v=1045",
-      "js/editions/anarchy2.foundry.js?v=1045",
-      "js/editions/anarchy2.print.js?v=1045",
+      "js/editions/anarchy2.js?v=1046",
+      "js/editions/anarchy2.creation.js?v=1046",
+      "js/editions/anarchy2.foundry.js?v=1046",
+      "js/editions/anarchy2.print.js?v=1046",
     ],
-    anarchy1: ["js/editions/anarchy1.js?v=1045", "js/editions/anarchy1.print.js?v=1045"],
+    anarchy1: ["js/editions/anarchy1.js?v=1046", "js/editions/anarchy1.print.js?v=1046"],
   },
   // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
-  _COMMON_JS: ["js/catalogs/creatures.js?v=1045"],
+  _COMMON_JS: ["js/catalogs/creatures.js?v=1046"],
   _loadCss(href) {
     if (!href || this._loadedAssets.has(href)) return;
     this._loadedAssets.add(href);
@@ -231,6 +231,14 @@ const App = {
       )
       .forEach((b) => b.classList.add("active"));
 
+    // Écran spectateur (#59) : masque le chrome MJ (topbar/sidebar/bottom-nav,
+    // cf. foundation.css [data-mode="spectateur"]) — jamais pour les autres panels.
+    if (name === "spectateur") document.documentElement.setAttribute("data-mode", "spectateur");
+    else {
+      document.documentElement.removeAttribute("data-mode");
+      if (typeof SpectatorView !== "undefined") SpectatorView.leave();
+    }
+
     // Sur mobile, chaque panel repart du haut (un seul contexte de scroll)
     const content = document.getElementById("content");
     if (content) content.scrollTop = 0;
@@ -265,6 +273,9 @@ const App = {
       case "settings":
         Settings.render();
         break;
+      case "spectateur":
+        SpectatorView.initPanel();
+        break;
     }
   },
 
@@ -280,6 +291,7 @@ const App = {
       "matrix",
       "run",
       "settings",
+      "spectateur",
     ];
     const parts = hash.split("/");
     if (parts.length === 2 && parts[1] && panels.includes(parts[1]))

@@ -756,3 +756,16 @@ select optgroup {
   background: var(--bg);
 }
 
+/* ÉCRAN SPECTATEUR (#59) : projection plein-écran, chrome MJ masqué —
+   posé sur <html> par App.showPanel(), jamais par une préférence utilisateur
+   (cf. spectatorview.js / Note d'arbitrage #59). */
+[data-mode="spectateur"] #topbar,
+[data-mode="spectateur"] #pin-row,
+[data-mode="spectateur"] #sidebar,
+[data-mode="spectateur"] #bottom-nav {
+  display: none;
+}
+[data-mode="spectateur"] #content {
+  padding: 0;
+}
+

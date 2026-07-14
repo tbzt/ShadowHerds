@@ -188,5 +188,10 @@ const TourSteps = {
       title: "Suivi de campagne, repensé",
       body: "Sur la fiche d'un PJ, chaque ressource (nuyens, Karma, réputation…) est une ligne avec son solde toujours visible — touchez-la pour ajouter un montant motivé. Onglet ❖ dédié pour ouvrir directement le Suivi.",
     },
+    {
+      id: "wn-spectator-view", anchor: "nav-settings", tours: ["whatsnew"], since: "1.26.0", fallback: "center",
+      title: "Un écran pour les joueurs",
+      body: "Dans Paramètres : « Ouvrir l'écran spectateur » lance un second onglet en lecture seule — initiative et moniteurs de condition de la rencontre en cours, rien d'éditable, aucune fiche secrète. À poser côté table.",
+    },
   ],
 };
