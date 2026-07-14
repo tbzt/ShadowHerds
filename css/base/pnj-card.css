@@ -764,6 +764,36 @@
 .monitor-boxes .monitor-box:not(.sev-leger):not(.sev-grave):not(.sev-incap):nth-child(3n) {
   margin-right: 6px;
 }
+/* #65 : normaliser les moniteurs de condition PNJ (SR5/SR6/Anarchy 1) — le
+   flex-wrap libre laissait PHYS et ÉTOURD (nombres de cases différents) se
+   décaler l'un par rapport à l'autre, surtout sur mobile. On passe en grille
+   fixe de 3 colonnes = l'escalier du livre (SR6 p.43) : chaque rangée = 3
+   cases = un palier de malus (la case de droite = marqueur de pénalité). La
+   grille garantit un alignement colonne par colonne, indépendant du total.
+   Portée : seulement les moniteurs de CONDITION dans .monitor-block, et on
+   EXCLUT les moniteurs segmentés Anarchy 2 (repérés par leur .monitor-gap) —
+   règle neutre par édition (pas de branche App.edition). Les moniteurs
+   Matrice/appareil/entités liées (hors .monitor-block) gardent leur flex. */
+.monitor-block .monitor-boxes:not(:has(.monitor-gap)) {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  justify-content: start;
+  width: max-content;
+}
+/* En grille, la case de droite est déjà la colonne du marqueur de pénalité :
+   la marge de groupement toutes-les-3 devient un espace mort en fin de rangée.
+   (Sélecteur calqué sur la règle de groupement ci-dessus + `.monitor-block` pour
+   la battre en spécificité et remettre la 3ᵉ colonne à la largeur des autres.) */
+.monitor-block .monitor-boxes:not(:has(.monitor-gap)) .monitor-box:not(.sev-leger):not(.sev-grave):not(.sev-incap):nth-child(3n) {
+  margin-right: 0;
+}
+/* PHYS (« Phys ») et ÉTOURD (« Étourd ») n'ont pas la même largeur de
+   libellé : sans largeur fixe, les deux grilles démarreraient à des x
+   différents et les colonnes ne s'aligneraient pas verticalement. */
+.monitor-block .monitor-label {
+  flex: 0 0 auto;
+  min-width: 3.4rem;
+}
 /* Malus cumulé en marge du moniteur (déjà appliqué aux tests, cf.
    Utils.woundMalus) — lisible sans recompter les cases pleines. */
 .monitor-malus {
