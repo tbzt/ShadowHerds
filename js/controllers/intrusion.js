@@ -26,6 +26,7 @@ const Intrusion = {
       lastRollT: 0,
       illUser: 0,
       illAdmin: 0,
+      access: 0,
       minor: 0,
       critical: 0,
       converged: false,
@@ -250,6 +251,16 @@ const Intrusion = {
     if (!srv) return;
     const k = kind === "admin" ? "illAdmin" : "illUser";
     srv.intrusion[k] = Utils.clamp(srv.intrusion[k] + delta, 0, 9);
+    this._persist(srv);
+  },
+
+  /** SR6 : niveau d'accès obtenu sur ce serveur (0 Invité/1 Utilisateur/
+      2 Administrateur, p.179) — miroir des marks SR5, gagné via Forcer
+      l'accès / Sonder l'accès (M7, côté decker). */
+  setAccess(id, delta) {
+    const srv = this._get(id);
+    if (!srv) return;
+    srv.intrusion.access = Utils.clamp((srv.intrusion.access || 0) + delta, 0, 2);
     this._persist(srv);
   },
 

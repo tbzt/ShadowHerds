@@ -571,6 +571,20 @@ const Matrix = {
     return this._model().attrLimit(kind, srv);
   },
 
+  /** Score Défensif matriciel de la cible (SR6 uniquement, p.177 : TdD +
+      Firewall) — `null` si l'édition n'a pas cette notion (SR5/Anarchy). */
+  defenseScore(srv) {
+    const m = this._model();
+    return typeof m.defenseScore === "function" ? m.defenseScore(srv) : null;
+  },
+
+  /** Libellés des niveaux d'accès matriciels (SR6 uniquement, p.179 :
+      Invité/Utilisateur/Administrateur) — `[]` sinon (SR5 utilise les
+      marks, Anarchy n'a pas cette mécanique). */
+  accessLevels() {
+    return this._model().accessLevels || [];
+  },
+
   /** Sélection aléatoire cohérente des CI (Patrouilleuse toujours). */
   pickICs(indice, sev) {
     const tiers = this.IC_POOLS[this._edition] || this.IC_POOLS.anarchy2;

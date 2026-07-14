@@ -510,6 +510,9 @@ const Servers = Object.assign(
           case "set-illegal":
             Intrusion.setIllegal(id, el.dataset.kind, n());
             break;
+          case "set-access":
+            Intrusion.setAccess(id, n());
+            break;
           case "undo-ss":
             Intrusion.undoSS(id);
             break;

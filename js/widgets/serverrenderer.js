@@ -411,6 +411,12 @@ const ServerRenderer = {
             Utilisateur <button class="btn-icon-tiny" data-action="set-illegal" data-id="${srv.id}" data-kind="user" data-n="-1">−</button><b>${intr.illUser}</b><button class="btn-icon-tiny" data-action="set-illegal" data-id="${srv.id}" data-kind="user" data-n="1">＋</button>
             · Admin <button class="btn-icon-tiny" data-action="set-illegal" data-id="${srv.id}" data-kind="admin" data-n="-1">−</button><b>${intr.illAdmin}</b><button class="btn-icon-tiny" data-action="set-illegal" data-id="${srv.id}" data-kind="admin" data-n="1">＋</button>
             <small>(+1/+3 SS par round, appliqués à « Tour suivant »)</small>
+          </span>
+          <span class="ss-marks" title="Score Défensif de la cible = Traitement de données + Firewall (p.177), opposition de Forcer l'accès / Sonder l'accès">Accès obtenu —
+            <button class="btn-icon-tiny" data-action="set-access" data-id="${srv.id}" data-n="-1">−</button>
+            <b>${esc(Matrix.use(srv.edition).accessLevels()[intr.access || 0] || "Invité")}</b>
+            <button class="btn-icon-tiny" data-action="set-access" data-id="${srv.id}" data-n="1">＋</button>
+            <small>(SD cible ${Matrix.use(srv.edition).defenseScore(srv)})</small>
           </span>`;
 
     const convergence =

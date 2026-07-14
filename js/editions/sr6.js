@@ -391,6 +391,16 @@ const EditionSR6 = {
     attrLimit() {
       return null;
     },
+    /** Score Défensif matriciel (p.177) = Traitement de données + Firewall
+        de la cible — pool d'opposition de Forcer l'accès / Sonder l'accès
+        (p.183/186), miroir des marks SR5 mais chiffré plutôt que compté.
+        Backlog "Score Défensif / accès SR6", vérifié au livre 2026-07-14. */
+    defenseScore(srv) {
+      const a = srv.attrs || {};
+      return (a.dataProcessing || 0) + (a.firewall || 0);
+    },
+    /** Les 3 niveaux d'accès matriciels (p.179), dans l'ordre de progression. */
+    accessLevels: ["Invité", "Utilisateur", "Administrateur"],
   },
 
   /* Régime cyberdeck SR6 (M1) — 4 attributs ACTF, réallouables. Reconfigurer
