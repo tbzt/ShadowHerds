@@ -129,6 +129,32 @@ const Encounter = {
     this._commit();
   },
 
+  /** #17 : combattant ad-hoc jetable — une ligne « nom + compteur libre »
+      (garde-fou (b) : le combattant qui n'est pas un combattant, ex. « ALARME »,
+      « la bombe », des renforts). Contrairement à `addPJ`, il ne persiste RIEN
+      dans `Characters` : le `pnjId` synthétique `adhoc-…` ne résout jamais dans
+      `PnjLookup`, donc `_rows()` (l.~1009) le synthétise en `{ name, _adhoc:true }`
+      — ligne inerte sans fiche (`encounterrenderer._row`), champ d'init éditable
+      servant de compteur libre. Le nom est un champ additif du combattant, lu
+      défensivement au reload (aucun `SCHEMA_VERSION`). */
+  async addAdhoc() {
+    const name = await Dialog.prompt({
+      title: "Ajouter une ligne libre",
+      label: "Nom",
+      placeholder: "ALARME, la bombe, renforts…",
+      confirmLabel: "Ajouter",
+    });
+    if (name === null || !name.trim()) return;
+    this.state.combatants.push({
+      pnjId: "adhoc-" + Utils.uid(),
+      name: name.trim(),
+      init: null,
+      hasActed: false,
+      note: "",
+    });
+    this._commit();
+  },
+
   /** E2 : « + Équipe » — l'équipe active (Characters.activeTeamMembers,
       tous les PJ par défaut) rejoint la scène en un geste ; les membres déjà
       présents sont ignorés (même règle que _candidates()). Un PJ one-shot
@@ -1450,6 +1476,9 @@ const Encounter = {
           break;
         case "add-pj":
           this.addPJ();
+          break;
+        case "add-adhoc":
+          this.addAdhoc();
           break;
         case "add-team":
           this.addTeam();
