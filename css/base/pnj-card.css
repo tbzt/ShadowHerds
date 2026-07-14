@@ -29,22 +29,38 @@
   }
 }
 
+/* Coquille à deux couches (rail carnet hors-cadre, doctrine §5) :
+   `.pnj-card` = conteneur de positionnement + élément de grille (footprint
+   complet, réserve la bande du rail quand `.has-rail`), SANS chrome visuel ;
+   `.pnj-card-frame` = la carte VISIBLE (fond/bordure/clip/scan/liseré). Le
+   rail (`.lens-selector`) est frère du frame et vit dans la bande droite
+   réservée — à l'intérieur du footprint, donc aucune collision avec la
+   colonne voisine du layout multi-colonnes. */
 .pnj-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  --rail-w: 30px;
   width: 100%;
   min-width: 0;
   position: relative;
-  overflow: hidden;
   animation: cardIn 0.3s ease;
-  transition: box-shadow var(--dur-base);
-  clip-path: var(--card-clip);
   break-inside: avoid;
   -webkit-column-break-inside: avoid;
   margin-bottom: var(--sp-4);
 }
-.pnj-card:hover {
+.pnj-card-frame {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  clip-path: var(--card-clip);
+  transition: box-shadow var(--dur-base);
+}
+/* La bande droite réservée n'existe que si un rail y vit (pas sur les
+   entités liées, I7) — pas de bande vide sinon. */
+.pnj-card.has-rail .pnj-card-frame {
+  margin-right: var(--rail-w);
+}
+.pnj-card:hover .pnj-card-frame {
   box-shadow: 0 0 16px var(--glow);
 }
 
@@ -59,8 +75,8 @@
   }
 }
 
-/* accent line top */
-.pnj-card::before {
+/* accent line top (sur le frame : la carte visible, pas la bande du rail) */
+.pnj-card-frame::before {
   content: "";
   position: absolute;
   top: 0;
@@ -71,7 +87,7 @@
 }
 
 /* Scan animation */
-.pnj-card.scanning::after {
+.pnj-card.scanning .pnj-card-frame::after {
   content: "";
   position: absolute;
   top: 2px;
@@ -100,38 +116,44 @@
 }
 
 /* ============================================================
-   SÉLECTEUR D'ONGLETS « CARNET » (vues, CP4) — glyphes monochromes,
-   jamais un <select> natif. Simplification DA assumée : dans le header
-   (pas de rail hors-cadre) — .pnj-card a overflow:hidden + clip-path,
-   incompatible avec un débordement visuel du bord droit sans repenser
-   la coquille de carte ; polish futur si besoin. Zone tactile ≥44px via
-   padding (le glyphe visible reste compact). */
+   LE RAIL « CARNET » (vues) — onglets de dossier hors-cadre sur le bord
+   droit (doctrine §5), glyphes monochromes, jamais un <select> natif. Vit
+   dans la bande réservée par `.pnj-card.has-rail` (frame en retrait), donc
+   à l'INTÉRIEUR du footprint de la carte : aucun débordement dans la
+   colonne voisine du layout multi-colonnes. Chaque languette émerge du bord
+   droit du frame (bord gauche affleurant, coins droits arrondis). Habillage
+   par tokens d'édition (thème), jamais de couleur en dur. */
 .lens-selector {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  width: var(--rail-w);
   display: flex;
-  flex: none;
-  gap: 2px;
-  align-self: flex-start;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 1;
 }
 .lens-tab {
-  min-width: 30px;
+  width: 100%;
   min-height: 30px;
-  padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-left: none;
+  border-radius: 0 3px 3px 0;
+  margin-left: -1px;
   color: var(--text-dim);
   font-size: var(--fs-sm);
+  line-height: 1;
   cursor: pointer;
   transition: color var(--dur-fast), border-color var(--dur-fast), background var(--dur-fast);
 }
-/* Zone tactile étendue à 44px sans agrandir le glyphe visible (padding
-   transparent, Vector) — les tabs restent compacts au repos. */
+/* Zone tactile étendue à 44px de haut sans élargir le glyphe (Vector) —
+   les languettes restent compactes horizontalement (bande étroite). */
 @media (pointer: coarse) {
   .lens-tab {
-    min-width: 44px;
     min-height: 44px;
   }
 }

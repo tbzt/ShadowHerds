@@ -98,10 +98,10 @@
   color: var(--bg);
 }
 
-/* Carte sœur : liseré de liaison + léger retrait visuel */
-.pnj-card.vehicle-card {
+/* Carte sœur : liseré de liaison + léger retrait visuel (sur le frame :
+   la bordure vit désormais sur `.pnj-card-frame`, pas sur le conteneur). */
+.pnj-card.vehicle-card .pnj-card-frame {
   border-left: 3px solid var(--accent);
-  position: relative;
 }
 
 /* PNJ déployé depuis un contact (ContactsBook.deployPNJ), imbriqué dans la
@@ -109,7 +109,7 @@
 .contact-deployed-pnj {
   margin-top: 10px;
 }
-.contact-deployed-pnj .pnj-card {
+.contact-deployed-pnj .pnj-card .pnj-card-frame {
   border-left: 3px solid var(--accent);
 }
 .vehicle-header .pnj-name {

@@ -16,7 +16,11 @@ const CardRenderer = {
     return { Settings, Drugs, Vehicles, Spirits, WeaponRoll, UI };
   },
 
-  /** Rend une card PNJ et retourne l'élément DOM */
+  /** Rend une card PNJ et retourne l'élément DOM.
+      Coquille à deux couches : `.pnj-card` (élément de grille, footprint
+      complet, réserve la bande du rail) enveloppe `.pnj-card-frame` (la
+      carte VISIBLE : bordure/clip/scan) + le rail « carnet » en frère du
+      frame, posé hors-cadre dans la bande droite réservée. */
   render(pnj, actions = ["save", "discard"], deps = CardRenderer.liveDeps()) {
     const el = document.createElement("div");
     el.className = "pnj-card scanning";
@@ -24,11 +28,26 @@ const CardRenderer = {
     el.dataset.id = pnj.id;
     el.dataset.edition = pnj.edition;
 
-    el.innerHTML =
-      this._header(pnj, deps) + this._body(pnj, deps) + this._footModulesHtml(pnj, deps) + this._journal(pnj, deps) + this._footer(pnj, actions, deps);
+    el.innerHTML = this._shell(pnj, actions, deps);
+    if (this._lensSelector(pnj, deps)) el.classList.add("has-rail");
 
     setTimeout(() => el.classList.remove("scanning"), 900);
     return el;
+  },
+
+  /** Contenu interne d'une carte : le frame visible + le rail carnet frère.
+      Point unique de composition, partagé par render() et refresh(). */
+  _shell(pnj, actions, deps = CardRenderer.liveDeps()) {
+    return (
+      `<div class="pnj-card-frame">` +
+      this._header(pnj, deps) +
+      this._body(pnj, deps) +
+      this._footModulesHtml(pnj, deps) +
+      this._journal(pnj, deps) +
+      this._footer(pnj, actions, deps) +
+      `</div>` +
+      this._lensSelector(pnj, deps)
+    );
   },
 
   /** Met à jour le contenu d'une card existante (après édition).
@@ -45,8 +64,8 @@ const CardRenderer = {
             ? JSON.parse(footer.dataset.savedActions)
             : ["edit", "remove"];
         el.classList.toggle("spirit-collapsed", !!pnj.collapsed);
-        el.innerHTML =
-          this._header(pnj, deps) + this._body(pnj, deps) + this._footModulesHtml(pnj, deps) + this._journal(pnj, deps) + this._footer(pnj, actions, deps);
+        el.innerHTML = this._shell(pnj, actions, deps);
+        el.classList.toggle("has-rail", !!this._lensSelector(pnj, deps));
       });
   },
 
@@ -93,7 +112,6 @@ const CardRenderer = {
       </div>
       ${badge}
       ${this._pcAvatar(pnj)}
-      ${this._lensSelector(pnj, deps)}
     </div>`;
   },
 
@@ -503,19 +521,20 @@ const CardRenderer = {
     );
   },
 
-  /** Sélecteur d'onglets glyphes (« carnet »), CP4. Placement doctrine §4.5 :
-      carte focalisée (générateur/Hub/cockpit — deps.context absent ou
-      distinct de "library") → onglets sur la carte elle-même ; mur de
-      cartes (deps.context === "library") → pas d'onglet par carte (un
-      contrôle au niveau liste reste à faire, hors scope CP4). Hit-area
-      ≥ 44 px (padding), délégation data-lens (jamais de <select> natif).
-      PJ-c/D5 : onglet(s) de module phare (Suivi ❖) ajoutés après les 3 vues —
-      pas une vue, un accès direct 1-tap qui replie/déplie CE module précis
-      (data-zone-toggle, même mécanique qu'un pli manuel, I2 : n'insère
-      jamais le pied en zone d'action). */
+  /** Sélecteur d'onglets glyphes = le RAIL « carnet » hors-cadre (doctrine
+      §5), posé en frère du `.pnj-card-frame` dans la bande droite réservée
+      par `.pnj-card.has-rail` — plus jamais dans le header (le glyphe ⚔ ne
+      peut donc plus se lire comme le ✕ du coin-fermer). Présent dans TOUS les
+      contextes de carte autonome, y compris le mur d'Ombres (le garde
+      `context:"library"` de CP4 est levé) ; la bande est réservée par carte,
+      à l'intérieur du footprint, donc aucune collision avec la colonne
+      voisine du layout multi-colonnes. Hit-area ≥ 44 px (padding), délégation
+      data-lens (jamais de <select> natif). Entités liées (véhicules/esprits)
+      exclues (I7). PJ-c/D5 : onglet(s) de module phare (Suivi ❖) ajoutés après
+      les 3 vues — pas une vue, un accès direct 1-tap qui replie/déplie CE
+      module précis (data-zone-toggle, même mécanique qu'un pli manuel). */
   _lensSelector(pnj, deps) {
     if (pnj.type === "vehicle" || pnj.type === "spirit" || pnj.ownerId) return "";
-    if (deps && deps.context === "library") return "";
     const current = this._currentViewKey(pnj, deps);
     const viewTabs = this._VIEWS.map((v) => {
       const active = v.key === current ? " active" : "";

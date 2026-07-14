@@ -86,7 +86,7 @@
 }
 
 /* ---- Cartes PNJ : en-tête biseauté, liseré sang ---- */
-[data-edition="sr5"] .pnj-card::before {
+[data-edition="sr5"] .pnj-card-frame::before {
   background: linear-gradient(90deg, #d4820a 0%, #8b1a1a 100%);
   height: 3px;
 }

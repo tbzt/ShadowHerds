@@ -82,10 +82,10 @@
 }
 
 /* ---- Cartes PNJ : bordure épaisse, liseré orange ---- */
-[data-edition^="anarchy"] .pnj-card {
+[data-edition^="anarchy"] .pnj-card-frame {
   border-width: 2px;
 }
-[data-edition^="anarchy"] .pnj-card::before {
+[data-edition^="anarchy"] .pnj-card-frame::before {
   background: #ff8800;
   height: 3px;
 }

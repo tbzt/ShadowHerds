@@ -99,7 +99,7 @@
 }
 
 /* ---- Cartes PNJ : coin coupé, liseré bicolore ---- */
-[data-edition="sr6"] .pnj-card::before {
+[data-edition="sr6"] .pnj-card-frame::before {
   background: linear-gradient(90deg, #00c8ff 0%, #7b2fff 100%);
   height: 2px;
 }

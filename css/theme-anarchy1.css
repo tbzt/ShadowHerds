@@ -81,10 +81,10 @@
 }
 
 /* ---- Cartes PNJ : bordure fine, pas de sticker ---- */
-[data-edition="anarchy1"] .pnj-card {
+[data-edition="anarchy1"] .pnj-card-frame {
   border-width: 1px;
 }
-[data-edition="anarchy1"] .pnj-card::before {
+[data-edition="anarchy1"] .pnj-card-frame::before {
   background: #9fff3c;
   height: 1px;
 }
