@@ -430,6 +430,15 @@
   color: var(--accent);
   border-color: var(--accent);
 }
+/* CH-V7 : chevron ▸/▾ → sprite, pointe à droite par défaut (replié),
+   pivote pour pointer vers le bas (déplié). */
+.filters-toggle .chev {
+  display: inline-flex;
+  transition: transform var(--dur-fast);
+}
+.filters-toggle .chev.is-open {
+  transform: rotate(90deg);
+}
 .gen-filters {
   display: contents;
 }

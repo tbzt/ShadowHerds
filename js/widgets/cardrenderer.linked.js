@@ -44,7 +44,7 @@ Object.assign(CardRenderer, {
     const foldBtn = `<button class="spirit-fold-btn" data-action="toggle-spirit-fold" data-id="${sp.id}"
         title="${sp.collapsed ? "Déplier la fiche" : "Replier la fiche"}"
         aria-label="${sp.collapsed ? "Déplier la fiche" : "Replier la fiche"}"
-        aria-expanded="${sp.collapsed ? "false" : "true"}">${sp.collapsed ? "▸" : "▾"}</button>`;
+        aria-expanded="${sp.collapsed ? "false" : "true"}"><svg class="icon${sp.collapsed ? "" : " is-open"}" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>`;
     return `<div class="pnj-card-header vehicle-header spirit-header${destroyed ? " destroyed" : ""}">
       ${this._portraitThumb(sp)}
       <div class="pnj-header-left">

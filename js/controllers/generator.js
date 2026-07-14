@@ -101,7 +101,7 @@ const Gen = {
     return `<button type="button" class="filters-toggle" data-action="toggle-filters"
         title="Replier / déplier les filtres" aria-expanded="${!collapsed}">
         <span>Filtres</span>
-        <span class="chev">${collapsed ? "▸" : "▾"}</span>
+        <span class="chev${collapsed ? "" : " is-open"}"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>
       </button>
       <div class="gen-filters${collapsed ? " collapsed" : ""}">${fieldsHTML}</div>`;
   },
@@ -118,7 +118,7 @@ const Gen = {
       .forEach((btn) => {
         btn.setAttribute("aria-expanded", String(!collapsed));
         const chev = btn.querySelector(".chev");
-        if (chev) chev.textContent = collapsed ? "▸" : "▾";
+        if (chev) chev.classList.toggle("is-open", !collapsed);
       });
   },
 

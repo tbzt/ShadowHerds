@@ -384,7 +384,7 @@ const DiceLog = {
       : "";
     box.innerHTML =
       `<button class="dice-log-summary-toggle" data-action="summary-toggle" aria-expanded="${open}">
-        <span class="dice-log-summary-chevron" aria-hidden="true">${open ? "▾" : "▸"}</span>
+        <span class="dice-log-summary-chevron${open ? " is-open" : ""}" aria-hidden="true"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>
         Résumé de séance
       </button>${body}`;
   },

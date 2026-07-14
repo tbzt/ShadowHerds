@@ -262,6 +262,13 @@
 .spirit-fold-btn:active {
   transform: scale(0.9);
 }
+/* CH-V7 : chevron ▸/▾ → sprite, pivote pour pointer vers le bas (dépliée). */
+.spirit-fold-btn .icon {
+  transition: transform var(--dur-fast);
+}
+.spirit-fold-btn .icon.is-open {
+  transform: rotate(90deg);
+}
 /* Fiche repliée : ne reste que l'en-tête. */
 .pnj-card.spirit-collapsed .spirit-services,
 .pnj-card.spirit-collapsed .pnj-card-body,

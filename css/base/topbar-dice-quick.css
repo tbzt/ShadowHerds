@@ -423,6 +423,11 @@
 }
 .dice-log-summary-chevron {
   color: var(--accent);
+  display: inline-flex;
+  transition: transform var(--dur-fast);
+}
+.dice-log-summary-chevron.is-open {
+  transform: rotate(90deg);
 }
 .dice-log-summary-body {
   display: flex;
