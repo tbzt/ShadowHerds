@@ -183,7 +183,7 @@ const Hub = {
 
     // Passe 2 — applique les facettes actives et rend les sections.
     let total = 0;
-    for (const { col, label, ents } of perType) {
+    for (const { col, type, label, ents } of perType) {
       const kept = ents.filter((e) => this._passesFacets(e));
       if (!kept.length) continue;
       total += kept.length;
@@ -192,7 +192,13 @@ const Hub = {
       section.className = "hub-section";
       const head = document.createElement("div");
       head.className = "hub-section-head";
-      head.innerHTML = `<span class="hub-section-title">${label}</span><span class="hub-section-count">${kept.length}</span>`;
+      // CO-e (reliquat CP4, doctrine §4.5) : en mur de cartes, le sélecteur
+      // de vue par carte est supprimé (_lensSelector, context "library") —
+      // ce bandeau au niveau de la SECTION bascule toutes les cartes
+      // visibles d'un coup. Scopé aux contacts pour l'instant (seul
+      // consommateur de ce chantier ; générique si un autre type en a besoin).
+      const lensBar = type === "contact" ? CardRenderer._hubLensBar() : "";
+      head.innerHTML = `<span class="hub-section-title">${label}</span>${lensBar}<span class="hub-section-count">${kept.length}</span>`;
       section.appendChild(head);
       const grid = document.createElement("div");
       grid.className = "cards-zone";
@@ -279,6 +285,34 @@ const Hub = {
     });
   },
 
+  /** CO-e : recalcule les entités actuellement visibles d'UNE collection
+      (même texte + facettes que `_renderMain`), pour une action en masse
+      (sélecteur de vue au niveau liste) — recalculé au clic plutôt que
+      capturé dans le DOM, cohérent avec « la vue est un verbe » (§4.4). */
+  _visibleEntitiesFor(col) {
+    const q = Utils.searchNorm(this._filter).trim();
+    const words = q ? q.split(/\s+/) : [];
+    let ids = DossierBar.memberIds(col);
+    if (words.length) ids = this._filterIds(col, ids, words);
+    const byId = new Map(col.data.all.map((e) => [e.id, e]));
+    return ids
+      .map((id) => byId.get(id))
+      .filter(Boolean)
+      .filter((e) => this._passesFacets(e));
+  },
+
+  /** Bascule TOUS les contacts actuellement visibles sur le même preset de
+      vue (reliquat CP4, `CardRenderer._hubLensBar`). Écrit `_zoneOpen` sur
+      chaque entité comme un pli manuel individuel (I4 : reste modifiable
+      ensuite carte par carte). */
+  _applyLensToVisible(viewKey) {
+    for (const c of this._visibleEntitiesFor(ContactsBook)) {
+      CardRenderer.applyView(c, viewKey);
+    }
+    ContactsBook.save();
+    this._renderMain();
+  },
+
   _facetsActive() {
     return Object.values(this._facets).some((s) => s.size > 0);
   },
@@ -357,7 +391,7 @@ const Hub = {
       else if (el.dataset.action === "dismiss-save-reminder") {
         this._saveReminderDismissed = true;
         this._renderSaveReminder();
-      }
+      } else if (el.dataset.action === "hub-lens") this._applyLensToVisible(el.dataset.lens);
     });
 
     // Recherche transverse : debounce ~130 ms (aligné sur Collection) pour ne

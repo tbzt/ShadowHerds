@@ -346,23 +346,11 @@
   height: 2px;
   background: var(--accent2);
 }
-.contact-card-body {
-  padding: var(--sp-3) var(--sp-4);
-}
-.contact-name {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--fs-md);
-  color: var(--text);
-  margin-bottom: 1px;
-}
-.contact-role {
-  font-family: var(--font-mono);
-  font-size: var(--fs-2xs);
-  color: var(--accent2);
-  letter-spacing: 0.06em;
-  margin-bottom: 5px;
-}
+/* CO-e (nettoyage) : `.contact-card-body`/`.contact-name`/`.contact-role`
+   (padding + typographie bespoke de l'ex-`ContactRenderer`) retirées — le
+   contact utilise désormais les conteneurs/classes génériques partagés
+   avec le PNJ (`.pnj-card-body`, `.pnj-name`, `.pnj-meta`), convergence
+   voulue, pas une régression à rattraper. */
 .contact-desc {
   font-size: var(--fs-xs);
   color: var(--text-dim);

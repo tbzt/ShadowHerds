@@ -110,9 +110,11 @@ const CardRenderer = {
   /** CO-b (carte Contact, convergence sur CardRenderer) : header d'un
       contact — portrait + nom/rôle éditables en ligne (D-edit-A,
       `deps.editable`) + métatype statique. Ni badge de rang ni icône de
-      genre (absents du modèle contact) ; pas de lentille (CO-e). Nom SANS
-      le découpage alias/civil de `_nameBlock` : un contact n'a jamais eu ce
-      format, et le split casserait l'édition en ligne d'un seul champ. */
+      genre (absents du modèle contact). Nom SANS le découpage alias/civil
+      de `_nameBlock` : un contact n'a jamais eu ce format, et le split
+      casserait l'édition en ligne d'un seul champ.
+      CO-e : lentilles ☰❝ ajoutées (`_lensSelector`, filtré sans Combat — un
+      contact n'a pas de zone Combat, I3). */
   _headerContact(pnj, deps = CardRenderer.liveDeps()) {
     const editable = !!(deps && deps.editable);
     const nameAttrs = editable
@@ -128,6 +130,7 @@ const CardRenderer = {
         <div class="pnj-meta"${roleAttrs}>${this._esc(pnj.role)}</div>
         ${pnj.metatype ? `<div class="contact-meta">${this._esc(pnj.metatype)}</div>` : ""}
       </div>
+      ${this._lensSelector(pnj, deps)}
     </div>`;
   },
 
@@ -504,7 +507,12 @@ const CardRenderer = {
       empêche d'en générer de nouveaux, pas d'afficher les existants). */
   _portraitThumb(entity) {
     if (!entity.portraitUrl) return "";
-    return `<div class="pnj-portrait-thumb" role="button" tabindex="0"
+    // CO-e (correctif) : la vignette contact reste RONDE (.contact-portrait-
+    // thumb, distincte de .pnj-portrait-thumb carrée) — un accent visuel
+    // "rolodex" volontaire, perdu par inadvertance en CO-b quand `_headerContact`
+    // s'est mis à réutiliser ce helper générique sans distinguo de classe.
+    const cls = this.isContact(entity) ? "contact-portrait-thumb" : "pnj-portrait-thumb";
+    return `<div class="${cls}" role="button" tabindex="0"
       data-portrait-preview="${this._esc(entity.portraitUrl)}" title="Agrandir le portrait">
       <img src="${this._esc(entity.portraitUrl)}" alt="" loading="lazy">
     </div>`;
@@ -709,6 +717,17 @@ const CardRenderer = {
     pnj._zoneOpen = zoneOpen;
   },
 
+  /** CO-e : vues OFFERTES pour cette carte — un contact n'a pas de zone
+      Combat (jamais de stats de combat), donc la vue Combat n'a rien à
+      montrer et ne s'offre pas (I3, étendu du zonage au niveau vue). Filtre
+      de données neutre sur la FORME de `pnj` (isContact), aucune branche
+      d'édition. */
+  _viewsFor(pnj) {
+    return CardRenderer.isContact(pnj)
+      ? CardRenderer._VIEWS.filter((v) => v.key !== "combat")
+      : CardRenderer._VIEWS;
+  },
+
   /** La vue actuellement affichée correspond-elle EXACTEMENT à un preset ?
       Sert uniquement à mettre en surbrillance l'onglet actif du sélecteur —
       un état de pli qui ne correspond à aucun preset (overrides mélangés)
@@ -716,7 +735,7 @@ const CardRenderer = {
   _currentViewKey(pnj, deps) {
     const applicable = CardRenderer._MODULES.filter((m) => m.applies(pnj));
     return (
-      this._VIEWS.find((v) => {
+      this._viewsFor(pnj).find((v) => {
         const zonesMatch = Object.entries(v.zones).every(
           ([k, open]) => this._zoneIsOpen(pnj, k, deps) === open,
         );
@@ -737,12 +756,13 @@ const CardRenderer = {
       PJ-c/D5 : onglet(s) de module phare (Suivi ❖) ajoutés après les 3 vues —
       pas une vue, un accès direct 1-tap qui replie/déplie CE module précis
       (data-zone-toggle, même mécanique qu'un pli manuel, I2 : n'insère
-      jamais le pied en zone d'action). */
+      jamais le pied en zone d'action). CO-e : vues filtrées par `_viewsFor`
+      (un contact n'offre pas Combat, I3). */
   _lensSelector(pnj, deps) {
     if (pnj.type === "vehicle" || pnj.type === "spirit" || pnj.ownerId) return "";
     if (deps && deps.context === "library") return "";
     const current = this._currentViewKey(pnj, deps);
-    const viewTabs = this._VIEWS.map((v) => {
+    const viewTabs = this._viewsFor(pnj).map((v) => {
       const active = v.key === current ? " active" : "";
       return `<button type="button" class="lens-tab${active}" data-lens="${v.key}" data-id="${pnj.id}" title="Vue : ${this._esc(v.label)}" aria-label="Vue : ${this._esc(v.label)}" aria-pressed="${v.key === current}">${v.glyph}</button>`;
     }).join("");
@@ -753,6 +773,28 @@ const CardRenderer = {
       })
       .join("");
     return `<div class="lens-selector" role="tablist" aria-label="Vue">${viewTabs}${moduleTabs}</div>`;
+  },
+
+  /** CO-e : sélecteur de vue AU NIVEAU LISTE (doctrine §4.5, reliquat CP4) —
+      en contexte "library" (mur de cartes), `_lensSelector` par carte est
+      supprimé (trop d'onglets empilés) ; ce bandeau, posé UNE fois dans
+      l'en-tête de section par le domaine appelant (ex. `Hub`), bascule
+      D'UN COUP toutes les cartes actuellement visibles de cette section sur
+      le même preset. C'est un VERBE (comme `applyView`), pas un état : pas
+      d'onglet "actif" affiché ici (les cartes listées peuvent avoir des plis
+      individuels divergents, I4). Vues sans Combat (contacts, seul
+      consommateur pour l'instant — générique si un autre mur en a besoin).
+      Délégation : `data-action="hub-lens"` (câblée côté appelant, pas ici,
+      pour ne rien coupler à Hub spécifiquement). */
+  _hubLensBar() {
+    const views = CardRenderer._VIEWS.filter((v) => v.key !== "combat");
+    const tabs = views
+      .map(
+        (v) =>
+          `<button type="button" class="lens-tab" data-hub="1" data-action="hub-lens" data-lens="${v.key}" title="Tout basculer en vue : ${this._esc(v.label)}" aria-label="Tout basculer en vue : ${this._esc(v.label)}">${v.glyph}</button>`,
+      )
+      .join("");
+    return `<span class="lens-selector hub-lens-bar" role="group" aria-label="Vue (toutes les cartes visibles)">${tabs}</span>`;
   },
 
   /* ---- Traits raciaux de métavariante ---- */

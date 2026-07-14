@@ -188,5 +188,10 @@ const TourSteps = {
       title: "Suivi de campagne, repensé",
       body: "Sur la fiche d'un PJ, chaque ressource (nuyens, Karma, réputation…) est une ligne avec son solde toujours visible — touchez-la pour ajouter un montant motivé. Onglet ❖ dédié pour ouvrir directement le Suivi.",
     },
+    {
+      id: "wn-contact-card", anchor: "nav-characters", tours: ["whatsnew"], since: "1.27.0", fallback: "center",
+      title: "La carte contact rejoint la fiche PNJ",
+      body: "Incarnation repliable, onglets ☰ Fiche / ❝ Incarner, module ◈ Relation (Influence/Loyauté ou Niveau/RR + « Connu de »). Un contact déployé affiche directement sa fiche complète, plus de carte imbriquée. Dans Ombres portées, un bandeau bascule toutes les cartes contact visibles sur la même vue en un geste.",
+    },
   ],
 };

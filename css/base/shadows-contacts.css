@@ -335,6 +335,14 @@
   font-size: var(--fs-2xs);
   color: var(--text-dim);
 }
+/* CO-e : sélecteur de vue au niveau section (reliquat CP4, mur de cartes) —
+   `align-self: center` corrige le `align-items: baseline` du parent, qui
+   désaligne verticalement des boutons glyphes à côté de texte. */
+.hub-lens-bar {
+  align-self: center;
+  display: inline-flex;
+  gap: 2px;
+}
 
 /* ---- Hub : sous-groupe indenté dans l'arbre de dossiers ---- */
 .group-item.group-subitem {
@@ -478,14 +486,11 @@ body.selecting .bulk-select-check {
 /* Gouttière réservée, UNIQUEMENT en mode : la case (empreinte ≈ 30px depuis
    le bord de carte) ne recouvre jamais le nom ni le portrait. Scopée à
    .bulk-selectable, donc les entités liées sans case (véhicules, esprits
-   invoqués) ne bougent pas. Header contact imbriqué dans un body déjà paddé
-   (var(--sp-4)), d'où une valeur moindre. */
+   invoqués) ne bougent pas. Le contact partage `.pnj-card-header` depuis
+   CO-b (plus de `.contact-header-row` bespoke à couvrir séparément, CO-e). */
 body.selecting .bulk-selectable .pnj-card-header,
 body.selecting .bulk-selectable .server-card-header {
   padding-left: 2.25rem;
-}
-body.selecting .bulk-selectable .contact-header-row {
-  padding-left: 1.25rem;
 }
 /* Bouton d'entrée du mode, état actif (« ✕ Terminer »). */
 [data-action="toggle-select-mode"].active {
@@ -815,20 +820,9 @@ body.reordering .reorder-handle {
 .contact-card-saved {
   border-color: var(--border);
 }
-.contact-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--sp-2);
-  margin-bottom: var(--sp-1);
-}
-.contact-header-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--sp-1);
-  flex-shrink: 0;
-}
+/* CO-e (nettoyage) : `.contact-header-row`/`.contact-header-actions`
+   (layout du header bespoke de l'ex-`ContactRenderer`) retirées — le
+   contact partage désormais `.pnj-card-header`/`.pnj-header-left`. */
 .editable-num {
   min-width: 1ch;
   display: inline-block;
