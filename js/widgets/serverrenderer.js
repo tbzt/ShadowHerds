@@ -364,7 +364,7 @@ const ServerRenderer = {
             title="La Patrouilleuse a repéré l'intrus : le serveur déploie une CI par tour">
             ${intr.alerted ? "⚠ Alerte en cours" : "Donner l'alerte"}</button>
           <button class="btn-primary btn-small" data-action="next-turn" data-id="${srv.id}">Tour suivant ▸</button>
-          <button class="btn-icon" data-action="reset-intrusion" data-id="${srv.id}" title="Réinitialiser l'intrusion">↺</button>
+          <button class="btn-icon" data-action="reset-intrusion" data-id="${srv.id}" title="Réinitialiser l'intrusion"><svg class="icon" aria-hidden="true"><use href="#ic-reset"></use></svg></button>
         </div>
         <div class="ic-rows">${rows}</div>
         ${surveillance}
@@ -440,7 +440,7 @@ const ServerRenderer = {
             )
             .join("")}
           <button class="btn-icon-tiny" data-action="undo-ss" data-id="${srv.id}" title="Annuler le dernier ajout">⌫</button>
-          <button class="btn-icon-tiny" data-action="reset-ss" data-id="${srv.id}" title="Reboot du decker : SS à zéro">↺</button>
+          <button class="btn-icon-tiny" data-action="reset-ss" data-id="${srv.id}" title="Reboot du decker : SS à zéro"><svg class="icon" aria-hidden="true"><use href="#ic-reset"></use></svg></button>
         </div>
         <div class="ss-actions">${sr5Extra}</div>
         ${convergence}

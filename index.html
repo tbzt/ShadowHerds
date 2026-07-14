@@ -131,6 +131,12 @@
     <symbol id="ic-chevron" viewBox="0 0 24 24">
       <path d="M9 6l6 6-6 6"/>
     </symbol>
+    <!-- CH-V7 : réinitialiser (ex-glyphe texte ↺) — boutons icône-seule
+         (réserve de menace, reset intrusion/decker). -->
+    <symbol id="ic-reset" viewBox="0 0 24 24">
+      <path d="M4 12a8 8 0 1 1 2.5 5.8"/>
+      <path d="M4 12V6M4 12h6"/>
+    </symbol>
   </svg>
 
   <!-- ============================================================
@@ -244,7 +250,9 @@
           <button class="threat-reserve-step" data-threat="1" tabindex="-1"
             aria-label="Augmenter la réserve de menace">＋</button>
           <button class="threat-reserve-reset" data-threat="reset" tabindex="-1"
-            title="Réinitialiser" aria-label="Réinitialiser la réserve de menace">↺</button>
+            title="Réinitialiser" aria-label="Réinitialiser la réserve de menace">
+            <svg class="icon" aria-hidden="true"><use href="#ic-reset"></use></svg>
+          </button>
         </div>
 
         <button class="topbar-action topbar-action-quiet" data-tour="help" data-action="toggle-shortcuts"
@@ -635,7 +643,7 @@
           <button class="btn-icon-tiny" data-action="threat-step" data-delta="-1" aria-label="Menace −1">−</button>
           <span id="encounter-threat-val">0</span>
           <button class="btn-icon-tiny" data-action="threat-step" data-delta="1" aria-label="Menace +1">＋</button>
-          <button class="btn-icon-tiny" data-action="threat-reset" title="Réinitialiser" aria-label="Réinitialiser la menace">↺</button>
+          <button class="btn-icon-tiny" data-action="threat-reset" title="Réinitialiser" aria-label="Réinitialiser la menace"><svg class="icon" aria-hidden="true"><use href="#ic-reset"></use></svg></button>
         </span>
         <button class="modal-close" data-action="encounter-close" aria-label="Fermer">✕</button>
       </div>
@@ -810,7 +818,7 @@
   <script defer src="js/widgets/bulkbar.js?v=1053"></script>
   <script defer src="js/widgets/selectionmode.js?v=1053"></script>
   <script defer src="js/widgets/reordermode.js?v=1053"></script>
-  <script defer src="js/widgets/serverrenderer.js?v=1053"></script>
+  <script defer src="js/widgets/serverrenderer.js?v=1054"></script>
   <script defer src="js/widgets/cyberdeckrenderer.js?v=1053"></script>
   <script defer src="js/widgets/encounterrenderer.js?v=1053"></script>
   <script defer src="js/widgets/spectatorview.js?v=1053"></script>
