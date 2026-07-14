@@ -380,8 +380,13 @@
   flex: none;
   width: 28px;
   height: 28px;
+  padding: 0;
   border-radius: 50%;
   border: 2px solid var(--border);
+  background: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -393,11 +398,11 @@
     color var(--dur-fast) ease,
     transform var(--dur-fast) ease;
 }
-.encounter-nrow:not(.down):hover .encounter-nrow-check {
+.encounter-nrow-check:hover {
   border-color: var(--accent);
   color: var(--accent);
 }
-.encounter-nrow:not(.down):active .encounter-nrow-check {
+.encounter-nrow-check:active {
   transform: scale(0.88);
 }
 /* Corps : nom en tête, type + combativité en sous-ligne (hiérarchie claire). */
@@ -437,6 +442,16 @@
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 0.1rem 0.5rem;
+  background: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+/* Ligne narrative EN FOCUS (Volet B) : liseré accent + barre à gauche, pour
+   savoir quel combattant la fiche active montre. Distinct du vert « joué ». */
+.encounter-nrow.is-focused {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 .encounter-nrow-status.is-done {
   color: var(--success);

@@ -12,6 +12,16 @@ commit.
 
 ## [Non publié]
 
+## [1.28.0] — 2026-07-14
+
+### Table
+- **Actions et réactions en combat narratif** (Anarchy) : touchez une ligne
+  du tracker pour mettre ce combattant « en focus » — sa fiche et son budget
+  d'actions s'affichent aussitôt, comme au tour actif des autres éditions ;
+  si c'est un PJ qui agit, la console de réaction des PNJ (défense,
+  encaissement) prend sa place. Marquer « joué » passe sur l'anneau ✓ et la
+  pastille, séparés du focus. Fini l'écran vide où « rien ne s'affichait ».
+
 ## [1.27.0] — 2026-07-14
 
 ### Table

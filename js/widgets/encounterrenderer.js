@@ -32,6 +32,13 @@ const EncounterRenderer = {
     const modal = document.querySelector(".encounter-modal");
     if (modal) modal.classList.toggle("is-narrative", narrative);
 
+    // Volet B : en narratif (pas de tour d'initiative), la fiche active suit un
+    // combattant « en focus » (tap sur une ligne, cf. focus-active). On résout
+    // ici l'id effectif — le tap mémorisé s'il est encore vivant, sinon le
+    // premier « à jouer » — pour que la ligne surlignée et la fiche active
+    // montrent le MÊME combattant. État de vue éphémère, aucune clé Storage.
+    this._narrativeFocusId = narrative ? (this._narrativeFocus(rows) || {}).pnjId || null : null;
+
     // K5 : miroir de la Réserve de menace dans l'en-tête (Anarchy) — visibilité
     // pilotée par combatModel.threatReserve, valeur lue sur DiceRoller (source
     // unique). Pas de branche d'édition ici.
@@ -115,7 +122,7 @@ const EncounterRenderer = {
       classer »/« Trier » (masqués en narratif, cf. CSS .is-narrative) est pris
       pour une panne plutôt qu'une règle appliquée à la lettre. */
   _narrativeNote() {
-    return `<div class="encounter-narrative-note">Anarchy : ordre narratif — <b>touchez une ligne</b> pour la marquer « jouée » · glissez ⠿ pour réordonner</div>`;
+    return `<div class="encounter-narrative-note">Anarchy : ordre narratif — <b>touchez ✓</b> pour marquer « joué », <b>la ligne</b> pour voir ses actions · glissez ⠿ pour réordonner</div>`;
   },
 
   /** Compteur de progression du round narratif : combien de combattants ont
@@ -126,18 +133,21 @@ const EncounterRenderer = {
     return `<div class="encounter-progress">${played} / ${present.length} ont joué</div>`;
   },
 
-  /** Ligne narrative (Anarchy) — refonte « tap-to-jouer » lisible : la ligne
-      entière reste le bouton (data-action="narrative-toggle"), mais l'état
-      « a joué » n'est plus une puce muette. Deux affordances redondantes
-      l'annoncent : (1) un ANNEAU-check à gauche (vide = cible évidente avec ✓
-      fantôme + feedback pressé ; plein vert = joué) ; (2) une PASTILLE d'état
-      à droite (« À jouer » → « Joué »). Le nom + type/combativité sont
-      empilés (hiérarchie claire). Pas de jeton d'init, ⚄ ni tri — l'ordre se
-      réordonne à la main via ⠿ (câblé par Encounter._initDrag comme .encounter-row).
-      Le ✕ (retirer) et « voir la fiche » restent derrière ⋯ pour ne pas
-      retirer par mégarde en tapant pour marquer « a joué ». */
+  /** Ligne narrative (Anarchy) — Volet B : la LIGNE ENTIÈRE met le combattant
+      « en focus » (data-action="focus-active" → sa fiche + budget d'actions,
+      ou la console de réaction si c'est un PJ, s'affichent dans #encounter-
+      active-card, comme le tour actif en ordonné). Marquer « joué » migre sur
+      deux affordances DÉDIÉES, toutes deux data-action="narrative-toggle" :
+      (1) l'ANNEAU-check à gauche (vide avec ✓ fantôme = à jouer ; plein vert =
+      joué — il ressemble déjà à une case à cocher) ; (2) la PASTILLE d'état à
+      droite (« À jouer » → « Joué »). Séparer focus (grande cible) et « joué »
+      (contrôles dédiés) évite le double-sens du tap. Le nom + type/combativité
+      sont empilés. Pas de jeton d'init, ⚄ ni tri — l'ordre se réordonne à la
+      main via ⠿ (câblé par Encounter._initDrag). Le ✕ (retirer) et « voir la
+      fiche » (panneau complet) restent derrière ⋯. */
   _rowNarrative(r) {
     const { pnjId, hasActed, pnj } = r;
+    const isFocused = pnjId === this._narrativeFocusId;
     const name = Utils.escHtml(pnj.name || "");
     const kind = this._kindLabel(r);
     // Combativité (Anarchy 2.0, champ threatLevel) affichée en pastille — c'est
@@ -157,7 +167,7 @@ const EncounterRenderer = {
     // le combattant est hors de combat (il ne joue plus — pas de bascule utile).
     const status = r.down
       ? this._downBadge()
-      : `<span class="encounter-nrow-status${hasActed ? " is-done" : ""}">${hasActed ? "Joué" : "À jouer"}</span>`;
+      : `<button type="button" class="encounter-nrow-status${hasActed ? " is-done" : ""}" data-action="narrative-toggle" data-id="${pnjId}" aria-pressed="${hasActed}" title="Marquer « joué »">${hasActed ? "Joué" : "À jouer"}</button>`;
     // K10 : les actions rares (voir la fiche / hors de combat / réinitialiser /
     // retirer) vivent derrière le menu ⋯ canonique (.card-kebab/.card-menu,
     // CardMenu.bindDelegation() déjà bindé au boot — aucun câblage neuf ici).
@@ -175,9 +185,9 @@ const EncounterRenderer = {
         : { attrs: `data-action="heal-combatant" data-id="${pnjId}"`, label: "Réinitialiser les moniteurs" },
       { attrs: `data-action="remove-combatant" data-id="${pnjId}"`, label: "Retirer du combat", danger: true },
     ].filter(Boolean);
-    return `<div class="encounter-nrow${hasActed ? " has-acted" : ""}${r.down ? " down" : ""}" data-action="narrative-toggle" data-id="${pnjId}" role="button" tabindex="0" aria-pressed="${hasActed}" title="Toucher pour basculer « a joué »">
+    return `<div class="encounter-nrow${hasActed ? " has-acted" : ""}${r.down ? " down" : ""}${isFocused ? " is-focused" : ""}" data-action="focus-active" data-id="${pnjId}" role="button" tabindex="0" aria-current="${isFocused ? "true" : "false"}" title="Toucher pour voir ses actions">
       ${dragHandle}
-      <span class="encounter-nrow-check" aria-hidden="true">✓</span>
+      ${r.down ? `<span class="encounter-nrow-check" aria-hidden="true">✓</span>` : `<button type="button" class="encounter-nrow-check" data-action="narrative-toggle" data-id="${pnjId}" aria-pressed="${hasActed}" title="Marquer « joué »" aria-label="Marquer joué — ${name}">✓</button>`}
       <div class="encounter-nrow-body">
         <span class="encounter-nrow-name">${colorDot}${name}</span>
         <span class="encounter-nrow-sub"><span class="encounter-kind">${kind}</span>${comb}</span>
@@ -858,20 +868,28 @@ const EncounterRenderer = {
       lit pnj._zoneOpen en priorité, CP1). Le MJ garde le .zone-toggle de la
       carte pour déplier au besoin ; l'effet ne touche la carte du pool qu'à
       son prochain rendu (compact = défaut CH-C1). */
+  /** Combattant « en focus » en narratif : le tap mémorisé (_narrativeFocusId,
+      posé par render() tant qu'il est vivant) ou, par défaut, le premier
+      « à jouer » (sinon le premier vivant). Null si aucun combattant vivant.
+      C'est la source de focus que renderActiveCard partage avec le tour actif
+      du mode ordonné (un seul chemin d'aval — Kernel/CODIR). */
+  _narrativeFocusId: null,
+  _narrativeFocus(rows) {
+    const live = rows.filter((r) => r.pnj && !r.down);
+    if (!live.length) return null;
+    const found = this._narrativeFocusId && live.find((r) => r.pnjId === this._narrativeFocusId);
+    return found || live.find((r) => !r.hasActed) || live[0];
+  },
+
   renderActiveCard(rows, state, model) {
     const box = document.getElementById("encounter-active-card");
     if (!box) return;
 
-    // En narratif il n'y a pas de « tour actif » : pas de fiche épinglée (elle
-    // afficherait arbitrairement le 1er combattant). On la masque.
-    if (model && model.narrative) {
-      this._activeCardId = null;
-      box.hidden = true;
-      box.innerHTML = "";
-      return;
-    }
-
-    const active = rows[state.turnIndex];
+    // En narratif (pas de tour d'initiative), la fiche suit le combattant EN
+    // FOCUS (tap sur une ligne, focus-active) ; en ordonné, le combattant dont
+    // c'est le tour. Un seul chemin d'aval ensuite — fiche « vue combat » +
+    // budget d'actions, ou console de réaction si le focus est un PJ.
+    const active = model && model.narrative ? this._narrativeFocus(rows) : rows[state.turnIndex];
 
     // K4 : combattant matriciel (CI) — fiche minimale, pas de fiche de pool.
     // Toujours re-rendue (le moniteur matriciel vit sur le serveur et change
@@ -1021,7 +1039,7 @@ const EncounterRenderer = {
       .join("");
     box.hidden = false;
     box.innerHTML = `<div class="encounter-react">
-      <div class="encounter-react-head">Tour d'un PJ — faites réagir les PNJ</div>
+      <div class="encounter-react-head">Un PJ agit — faites réagir les PNJ</div>
       ${rowsHtml}
     </div>`;
   },

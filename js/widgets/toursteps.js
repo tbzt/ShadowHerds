@@ -198,5 +198,10 @@ const TourSteps = {
       title: "Le résumé de la séance",
       body: "En tête du Journal des jets, un bandeau repliable agrège toute la partie : nombre de jets, taux de réussite, alarmes et le MVP du soir. De quoi raconter la séance en un coup d'œil, sans rien à saisir.",
     },
+    {
+      id: "wn-narrative-actions", anchor: "nav-combat", tours: ["whatsnew"], since: "1.28.0", fallback: "center",
+      title: "Actions et réactions en combat Anarchy",
+      body: "En combat narratif, touchez une ligne pour mettre ce combattant « en focus » : sa fiche et son budget d'actions s'affichent aussitôt, et si un PJ agit, la console de réaction des PNJ prend le relais. Marquer « joué » passe sur l'anneau ✓ et la pastille.",
+    },
   ],
 };

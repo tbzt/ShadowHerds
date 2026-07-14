@@ -1382,6 +1382,10 @@ const Encounter = {
       // dessus remonterait à .encounter-nrow (data-action="narrative-toggle")
       // et basculerait « a joué » à chaque glisser en mode narratif.
       if (e.target.closest(".encounter-drag-handle")) return;
+      // CardMenu gère l'ouverture du ⋯ (délégation document) et ne coupe pas la
+      // propagation : sans cette garde, ouvrir le ⋯ bulle jusqu'à la ligne
+      // (focus-active en narratif) — double action parasite.
+      if (e.target.closest("[data-card-menu-toggle]")) return;
       // K6 : les clics dans la colonne Matrice dockée n'atteignent jamais ce
       // switch — drawerActions (posé sur #encounter-matrix-dock) coupe la
       // propagation avant qu'elle ne bulle jusqu'ici (cf. son commentaire).
@@ -1568,11 +1572,19 @@ const Encounter = {
           this.clear();
           break;
         case "narrative-toggle": {
-          // Ligne narrative : tap = bascule « a joué » (grise / rallume).
+          // Ligne narrative : ✓/pastille = bascule « a joué » (grise / rallume).
           const c = this._find(id);
           if (c) this.markActed(id, !c.hasActed);
           break;
         }
+        case "focus-active":
+          // Volet B : tap sur une ligne narrative = met ce combattant en focus
+          // → sa fiche + budget d'actions (ou console de réaction si PJ)
+          // s'affichent dans #encounter-active-card. État de vue éphémère
+          // (aucune clé Storage) ; render() clampe si le combattant disparaît.
+          EncounterRenderer._narrativeFocusId = id;
+          this._render();
+          break;
         case "toggle-acted": {
           // Ordonné : bascule « a joué » depuis le menu ⋯ (jeton ✓/↩). La
           // case à cocher native a été retirée (elle sur-pondérait une action
