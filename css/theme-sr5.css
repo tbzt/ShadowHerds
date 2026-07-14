@@ -15,6 +15,12 @@
   --text-dim: #9c8568;
   --border: #2a1e14;
   --glow: rgba(212, 130, 10, 0.12);
+  /* Canaux de calque (transverses aux 4 éditions) : Matrice = vert phosphore,
+     Magie = violet arcane. Teintent les blocs .matrix-block / .spell-block. */
+  --accent-matrix: #2fbf74;
+  --glow-matrix: rgba(47, 191, 116, 0.14);
+  --accent-magic: #9a6bff;
+  --glow-magic: rgba(154, 107, 255, 0.14);
   --badge: #1a0a00;
   --scan: rgba(212, 130, 10, 0.08);
 

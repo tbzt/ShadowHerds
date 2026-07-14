@@ -92,19 +92,38 @@ const CyberdeckRenderer = {
     const esc = CardRenderer._esc;
     const acts = Cyberdeck.actions(edition, deck);
     if (!acts.length) return "";
-    const btn = (a) => {
-      const isPrimary = a.type === "attack";
-      const glyph = isPrimary ? '<svg class="icon icon-sm" aria-hidden="true"><use href="#ic-combat"></use></svg> ' : "";
-      const poolTxt = a.pool != null ? ` ${a.pool}d` : "";
-      const dvTxt = a.dv != null ? ` · VD ${a.dv}` : "";
-      const cls = `cyberdeck-swap deck-action-btn${isPrimary ? " is-primary" : ""}`;
-      return `<button type="button" class="${cls}" data-action="deck-action" data-id="${pnj.id}" data-key="${esc(a.key)}" title="${esc(a.name)}${dvTxt} (p.${a.page})">${glyph}${esc(a.name)}${poolTxt}${dvTxt}</button>`;
+    // CP4 : même grammaire qu'une arme (et qu'un sort). Chaque action est une
+    // `.weapon-line` — nom + VD en `.weapon-stat`, dés en badge `⚄` — au lieu
+    // d'un bouton-pilule. La teinte « Matrice » (vert) vient de `.matrix-block`,
+    // qui redéfinit --accent/--glow ; la ligne reprend donc tout le chrome des
+    // armes sans une règle CSS dupliquée. Le pic de données (type "attack")
+    // reste en tête ; les autres actions se replient derrière un <details> ⋯,
+    // déplié d'office quand une intrusion est en cours (serveur ciblé posé).
+    const line = (a) => {
+      const rollable = a.pool != null; // action narrative (pool null) = non lançable
+      const poolBadge = rollable ? `<span class="weapon-pool">⚄${a.pool}</span>` : "";
+      const dvTxt = a.dv != null ? `VD ${a.dv}` : "";
+      const title = `${a.name}${a.dv != null ? ` · VD ${a.dv}` : ""}${rollable ? ` · ${a.pool} dés` : ""} (p.${a.page})`;
+      return `<div class="weapon-line matrix-line${rollable ? " weapon-rollable rollable" : ""}" data-action="deck-action" data-id="${pnj.id}" data-key="${esc(a.key)}" title="${esc(title)}">
+        <div><div class="weapon-name">${esc(a.name)}</div>${dvTxt ? `<div class="weapon-stat">${dvTxt}</div>` : ""}</div>
+        ${poolBadge}
+      </div>`;
     };
-    const primary = acts.filter((a) => a.type === "attack").map(btn).join("");
-    const rest = acts.filter((a) => a.type !== "attack").map(btn).join("");
-    return `<div class="cyberdeck-arsenal" role="group" aria-label="Actions matricielles offensives">
+    const primary = acts.filter((a) => a.type === "attack").map(line).join("");
+    const rest = acts.filter((a) => a.type !== "attack");
+    let restHtml = "";
+    if (rest.length) {
+      const open = DeckRun.target(pnj) ? " open" : "";
+      const n = rest.length;
+      restHtml = `<details class="cyberdeck-more"${open}>
+        <summary class="cyberdeck-more-summary"><span class="cyberdeck-more-dots">⋯</span> ${n} autre${n > 1 ? "s" : ""} action${n > 1 ? "s" : ""}</summary>
+        <div class="cyberdeck-more-body">${rest.map(line).join("")}</div>
+      </details>`;
+    }
+    return `<div class="weapon-block matrix-block">
+      <div class="zone-eyebrow">Matrice</div>
       ${primary}
-      ${rest ? `<div class="cyberdeck-arsenal-rest">${rest}</div>` : ""}
+      ${restHtml}
     </div>`;
   },
 

@@ -21,6 +21,11 @@
   --text-dim: #8a72a0;
   --border: #241030;
   --glow: rgba(255, 47, 176, 0.12);
+  /* Canaux de calque (cf. theme-sr5.css) : Matrice vert, Magie violet. */
+  --accent-matrix: #2fbf74;
+  --glow-matrix: rgba(47, 191, 116, 0.14);
+  --accent-magic: #9a6bff;
+  --glow-magic: rgba(154, 107, 255, 0.14);
   --badge: #1a0524;
   --scan: rgba(159, 255, 60, 0.06);
 

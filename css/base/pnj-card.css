@@ -1232,45 +1232,10 @@
   font-size: var(--fs-2xs);
 }
 
-/* M7 : râtelier d'actions matricielles offensives — l'arsenal du decker.
-   Le pic de données (action primaire) est mis en avant, pleine largeur ;
-   les autres actions défilent en rang mono-ligne (doctrine d'alignement :
-   scroll horizontal plutôt qu'un mur de boutons qui casse la grille de la
-   carte sur smartphone). */
-.cyberdeck-arsenal {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin-top: 0.4rem;
-}
-.cyberdeck-arsenal .deck-action-btn {
-  text-align: left;
-}
-/* Action primaire (pic de données) : canal Matrice accentué, occupe la ligne. */
-.cyberdeck-arsenal .deck-action-btn.is-primary {
-  width: 100%;
-  border-color: var(--accent);
-  color: var(--text);
-  background: color-mix(in srgb, var(--accent) 14%, var(--bg-card));
-  font-weight: 600;
-}
-.cyberdeck-arsenal .deck-action-btn.is-primary:hover {
-  background: color-mix(in srgb, var(--accent) 24%, var(--bg-card));
-}
-/* Reste des actions : rang mono-ligne scrollable (jamais de retour à la ligne
-   qui empile). Cibles tactiles conservées via .cyberdeck-swap (min-height 32). */
-.cyberdeck-arsenal-rest {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 0.25rem;
-  overflow-x: auto;
-  padding-bottom: 0.15rem;
-  scrollbar-width: thin;
-}
-.cyberdeck-arsenal-rest .deck-action-btn {
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
+/* CP4 : le râtelier matriciel (arsenal du decker) est désormais rendu dans la
+   grammaire des armes/sorts — .matrix-block + .weapon-line, teinté « Matrice »
+   via css/base/cards-linked.css. L'ancien chrome bouton (.cyberdeck-arsenal,
+   .deck-action-btn) a été retiré ici : il n'a plus de consommateur. */
 
 /* M7 : picker de loadout (EditModal) — cases à cocher compactes, une par
    action du catalogue. Peu d'items (2-4), donc simple flex qui peut replier ;

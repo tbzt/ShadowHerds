@@ -542,6 +542,72 @@
 .spell-block .zone-eyebrow {
   margin-top: 2px;
 }
+
+/* CP4 : calques teintés « Matrice » (vert) et « Magie » (violet). Le bloc
+   redéfinit --accent/--glow ; toutes les .weapon-line, badges ⚄ et .lim
+   qu'il contient reprennent la teinte du calque sans une règle dupliquée.
+   Léger cadre-halo statique (aucune animation, cf. Vector) pour signaler le
+   calque sans crier. */
+.matrix-block {
+  --accent: var(--accent-matrix);
+  --glow: var(--glow-matrix);
+}
+.spell-block {
+  --accent: var(--accent-magic);
+  --glow: var(--glow-magic);
+}
+.matrix-block,
+.spell-block {
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  border-radius: 8px;
+  padding: 6px 7px 7px;
+  box-shadow: inset 0 0 18px -12px var(--accent);
+}
+
+/* Actions secondaires repliées (Planter un programme, Effacer une mark…) :
+   <details> natif — clavier + zéro JS/état persisté. Déplié d'office pendant
+   une intrusion (attribut `open` posé au rendu si un serveur est ciblé). */
+.cyberdeck-more {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cyberdeck-more-summary {
+  cursor: pointer;
+  list-style: none;
+  align-self: flex-start;
+  padding: 3px 8px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-size: var(--fs-2xs);
+  font-family: var(--font-mono);
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.cyberdeck-more-summary::-webkit-details-marker {
+  display: none;
+}
+.cyberdeck-more-summary:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.cyberdeck-more[open] > .cyberdeck-more-summary {
+  color: var(--accent);
+}
+.cyberdeck-more-dots {
+  font-size: var(--fs-sm);
+  line-height: 1;
+  letter-spacing: 1px;
+}
+.cyberdeck-more-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
 .spell-line .spell-main {
   min-width: 0;
   flex: 1;
