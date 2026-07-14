@@ -35,7 +35,7 @@ const CyberdeckRenderer = {
           .slice(0, -1)
           .map(
             (k, i) =>
-              `<button type="button" class="cyberdeck-swap" data-action="deck-realloc" data-id="${pnj.id}" data-from="${k.key}" data-to="${keys[i + 1].key}" aria-label="Échanger ${esc(k.label)} et ${esc(keys[i + 1].label)}">${k.badge} ⇄ ${keys[i + 1].badge}</button>`,
+              `<button type="button" class="cyberdeck-swap" data-action="deck-realloc" data-id="${pnj.id}" data-from="${k.key}" data-to="${keys[i + 1].key}" aria-label="Échanger ${esc(k.label)} et ${esc(keys[i + 1].label)}">${k.badge} <svg class="icon icon-sm" aria-hidden="true"><use href="#ic-swap"></use></svg> ${keys[i + 1].badge}</button>`,
           )
           .join("")}</div>`
       : "";

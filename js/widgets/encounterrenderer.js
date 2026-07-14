@@ -1097,7 +1097,7 @@ const EncounterRenderer = {
     }
     const type = this.reactDamageType(pnj.id) || ui.defaultType || "phys";
     const typeToggle = ui.hasType
-      ? `<button class="react-btn" data-action="damage-type-toggle" data-id="${pnj.id}" title="Basculer Physique/Étourdissant">${type === "stun" ? "Étourd." : "Phys."} ⇄</button>`
+      ? `<button class="react-btn" data-action="damage-type-toggle" data-id="${pnj.id}" title="Basculer Physique/Étourdissant">${type === "stun" ? "Étourd." : "Phys."} <svg class="icon icon-sm" aria-hidden="true"><use href="#ic-swap"></use></svg></button>`
       : "";
     const chips = (ui.chips || [1, 2, 3, 5])
       .map(
@@ -1146,7 +1146,8 @@ const EncounterRenderer = {
     const esc = window.CSS && CSS.escape ? CSS.escape(pnjId) : pnjId;
     const body = react.querySelector(`.react-damage-chips[data-damage-for="${esc}"]`);
     const btn = body && body.querySelector('[data-action="damage-type-toggle"]');
-    if (btn) btn.textContent = this._reactDamageTypes[pnjId] === "stun" ? "Étourd. ⇄" : "Phys. ⇄";
+    if (btn)
+      btn.innerHTML = `${this._reactDamageTypes[pnjId] === "stun" ? "Étourd." : "Phys."} <svg class="icon icon-sm" aria-hidden="true"><use href="#ic-swap"></use></svg>`;
   },
 
   /** Ligne de réaction d'une CI (K9) : mêmes glyphes ⛉/⛊, mais la réserve d'une
