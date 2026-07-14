@@ -14,12 +14,16 @@
    puces retirables.
 
    API :
-     SingleSelect.create({ id, label, options, value, placeholder })
-       -> string HTML (options: [{ value, label, data? }])
+     SingleSelect.create({ id, label, options, groups, value, placeholder })
+       -> string HTML (options: [{ value, label, data? }] ; ou groups:
+          [{ category, items: [{ value, label }] }] pour un catalogue
+          groupé — en-têtes non sélectionnables, réutilise le CSS de
+          MultiSelect (.ms-group-head/.ms-opt-child), cf. forms.css)
      SingleSelect.init()          -> branche les écouteurs (délégués)
      SingleSelect.filterOptions(id, predicate) -> masque les options
        pour lesquelles predicate(optionEl) est faux ; réinitialise
        la sélection si l'option active devient masquée.
+     SingleSelect.reset(id) -> revient au placeholder (aucune sélection).
 
    La valeur est stockée dans un <input type="hidden"> portant l'id
    demandé : les lectures existantes (`element.value`) et les
@@ -30,18 +34,11 @@ const SingleSelect = {
   _bound: false,
 
   create(cfg) {
-    const { id, label, options = [], value = "", placeholder = "Aléatoire" } = cfg;
-    const selected = options.find((o) => o.value === value);
+    const { id, label, options = [], groups = null, value = "", placeholder = "Aléatoire" } = cfg;
+    const flat = groups ? groups.flatMap((g) => g.items) : options;
+    const selected = flat.find((o) => o.value === value);
 
-    const opts = options
-      .map((o) => {
-        const dataAttrs = Object.entries(o.data || {})
-          .map(([k, v]) => ` data-${k}="${this._esc(v)}"`)
-          .join("");
-        return `<div class="ss-opt ms-opt${o.value === value ? " active" : ""}"
-          role="option" data-value="${this._esc(o.value)}"${dataAttrs}>${this._esc(o.label)}</div>`;
-      })
-      .join("");
+    const opts = groups ? this._groupedOpts(groups, value) : this._flatOpts(options, value);
 
     return `<div class="form-group ss" data-ss="${id}" data-placeholder="${this._esc(placeholder)}">
       ${label ? `<label>${label}</label>` : ""}
@@ -54,6 +51,46 @@ const SingleSelect = {
       </div>
       <input type="hidden" id="${id}" value="${this._esc(value)}">
     </div>`;
+  },
+
+  _flatOpts(options, value) {
+    return options
+      .map((o) => {
+        const dataAttrs = Object.entries(o.data || {})
+          .map(([k, v]) => ` data-${k}="${this._esc(v)}"`)
+          .join("");
+        return `<div class="ss-opt ms-opt${o.value === value ? " active" : ""}"
+          role="option" data-value="${this._esc(o.value)}"${dataAttrs}>${this._esc(o.label)}</div>`;
+      })
+      .join("");
+  },
+
+  /* En-tête de groupe non sélectionnable (pas de classe ss-opt ni data-value
+     -> ignoré par le clic et par _select, comme les checkboxes d'en-tête de
+     MultiSelect). Réutilise .ms-group/.ms-group-head/.ms-opt-child, déjà
+     stylés (forms.css) pour le mode groupé de MultiSelect. */
+  _groupedOpts(groups, value) {
+    return groups
+      .map((g) => {
+        const items = g.items
+          .map(
+            (o) => `<div class="ss-opt ms-opt ms-opt-child${o.value === value ? " active" : ""}"
+              role="option" data-value="${this._esc(o.value)}">${this._esc(o.label)}</div>`,
+          )
+          .join("");
+        return `<div class="ms-group">
+          <div class="ms-opt ms-group-head" role="presentation">${this._esc(g.category)}</div>
+          <div class="ms-group-items">${items}</div>
+        </div>`;
+      })
+      .join("");
+  },
+
+  /** Revient au placeholder (aucune sélection) — utile après un « Ajouter »
+      pour vider un sélecteur de catalogue sans reconstruire le HTML. */
+  reset(id) {
+    const root = document.querySelector(`[data-ss="${id}"]`);
+    if (root) this._select(root, "");
   },
 
   /** Masque les options pour lesquelles predicate(optionEl) est faux ;

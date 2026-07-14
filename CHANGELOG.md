@@ -16,7 +16,7 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
-## [1.12.0] — 2026-07-14
+## [1.15.0] — 2026-07-14
 
 ### Organiser
 - **Réorganiser à la main** : bouton « ⠿ Réorganiser » sur les personnages,
@@ -24,6 +24,38 @@ commit.
   la déplacer au clavier (flèches ↑/↓). L'ordre choisi est sauvegardé. La
   réorganisation des PNJ (Ombres portées) n'est pas couverte — reportée,
   le Hub affichant une vue toujours reconstruite et potentiellement filtrée.
+
+## [1.14.0] — 2026-07-14
+
+### Jouer
+- **Arsenal matriciel du decker** : le bouton unique « Piratage » devient un
+  râtelier d'actions offensives nommées (Pic de données, Force brute/Sonder
+  l'accès, Planter un programme, Effacer une mark selon l'édition), chacune
+  avec son pool et — pour le pic de données — sa VD (SR5 p.242, SR6 p.184).
+  Anarchy 2.0 : verbes narratifs (Cybercombat, Pirater la Matrice). Anarchy
+  1re : pas de râtelier (Firewall seul, pas d'attribut Attaque). Loadout curé
+  par decker (EditModal), prep hors scène — le MJ garde la main sur chaque jet.
+
+## [1.13.0] — 2026-07-14
+
+### Générer
+- **DA du sélecteur « ＋ Catalogue »** : il utilise désormais le même composant que
+  « ＋ Ajouter une compétence » (au lieu d'un `<select>` natif détonnant).
+- **Catalogue de Sorts** (4 éditions) et **Pouvoirs d'adepte** (SR5/SR6) dans la fiche
+  d'édition : plus besoin de taper un sort ou un pouvoir à la main.
+- **Catalogue d'Atouts** (Anarchy 1re/2.0) : agrégé depuis tous les archétypes du livre.
+  Comme il n'existe pas de liste unique et canonique des Atouts, un même Atout peut
+  apparaître en plusieurs variantes proches selon l'archétype d'origine (ex. Essence
+  différente) — ce n'est pas un bug, juste l'absence de liste maîtresse dans le livre.
+
+## [1.12.0] — 2026-07-14
+
+### Jouer
+- **Bruit matriciel** : réglage ± de scène (SR5 p.232), retranché des jets
+  Matrice du decker (Piratage, duel decker↔decker, défense protégée) — la
+  distance/l'environnement restent à la main du MJ, pas trackés par l'app.
+- Légende du cockpit (Aide « ? ») complétée avec `🔗` (lier à la scène) et
+  `🛡️` (protection Firewall d'un allié).
 
 ## [1.11.0] — 2026-07-14
 

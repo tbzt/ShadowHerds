@@ -65,13 +65,44 @@ const CyberdeckRenderer = {
       ${biofeedbackHtml}
       ${programsHtml}
       ${this._targetRow(pnj, edition, deck)}
+      ${this._arsenalRow(pnj, edition, deck)}
+    </div>`;
+  },
+
+  /** M7 : râtelier d'actions matricielles offensives — l'« arsenal » du decker
+      (pic de données & co.). Miroir logique du râtelier d'armes d'un combattant
+      physique, mais dérivé du catalogue d'édition (Cyberdeck.actions) filtré
+      par le loadout du deck. Le pic de données (type "attack") est mis en avant
+      (bouton primaire) ; les autres actions équipées défilent en rang
+      mono-ligne (doctrine d'alignement : jamais un mur de boutons
+      indifférenciés). Vide si l'édition n'a pas de râtelier (Anarchy 1re) ou si
+      le loadout est vide. Rendu identique carte / cockpit (le bloc est réutilisé
+      en combat par Encounter.renderActiveCard). */
+  _arsenalRow(pnj, edition, deck) {
+    const esc = CardRenderer._esc;
+    const acts = Cyberdeck.actions(edition, deck);
+    if (!acts.length) return "";
+    const btn = (a) => {
+      const isPrimary = a.type === "attack";
+      const glyph = isPrimary ? "⚔ " : "";
+      const poolTxt = a.pool != null ? ` ${a.pool}d` : "";
+      const dvTxt = a.dv != null ? ` · VD ${a.dv}` : "";
+      const cls = `cyberdeck-swap deck-action-btn${isPrimary ? " is-primary" : ""}`;
+      return `<button type="button" class="${cls}" data-action="deck-action" data-id="${pnj.id}" data-key="${esc(a.key)}" title="${esc(a.name)}${dvTxt} (p.${a.page})">${glyph}${esc(a.name)}${poolTxt}${dvTxt}</button>`;
+    };
+    const primary = acts.filter((a) => a.type === "attack").map(btn).join("");
+    const rest = acts.filter((a) => a.type !== "attack").map(btn).join("");
+    return `<div class="cyberdeck-arsenal" role="group" aria-label="Actions matricielles offensives">
+      ${primary}
+      ${rest ? `<div class="cyberdeck-arsenal-rest">${rest}</div>` : ""}
     </div>`;
   },
 
   /** M3 : cible du decker — picker de serveur + accès au tracker Matrice,
-      identique en scène de combat et hors combat (hub/biblio). Le jet de
-      piratage n'apparaît que si Cyberdeck.rollAttack renvoie un pool
-      (édition-neutre, cf. le module de règles). */
+      identique en scène de combat et hors combat (hub/biblio). Depuis M7, le
+      jet d'attaque n'est plus un bouton unique ici : il vit dans le râtelier
+      (`_arsenalRow`, actions nommées), indépendant de la cible (le serveur visé
+      ne sert plus qu'à nommer la cible du jet, pas à débloquer l'attaque). */
   _targetRow(pnj, edition, deck) {
     const esc = CardRenderer._esc;
     const targetId = DeckRun.target(pnj);
@@ -84,14 +115,9 @@ const CyberdeckRenderer = {
     const openBtn = targetId
       ? `<button type="button" class="cyberdeck-swap" data-action="deck-open-matrix" data-id="${pnj.id}" title="Ouvrir la Matrice de ce serveur">⚡ Ouvrir la Matrice</button>`
       : "";
-    const canAttack = targetId && Cyberdeck.rollAttack(edition, deck);
-    const attackBtn = canAttack
-      ? `<button type="button" class="cyberdeck-swap" data-action="deck-attack" data-id="${pnj.id}" title="Jet de piratage contre le serveur ciblé">⚔ Piratage</button>`
-      : "";
     return `<div class="cyberdeck-target">
       <select class="cyberdeck-target-select" data-action="deck-set-target" data-id="${pnj.id}" aria-label="Serveur ciblé">${options}</select>
       ${openBtn}
-      ${attackBtn}
     </div>`;
   },
 
@@ -135,6 +161,25 @@ const CyberdeckRenderer = {
           <label><input type="checkbox" id="em-deck-biofeedback" ${deck.biofeedbackFilter ? "checked" : ""}> Filtre de biofeedback</label>
         </div>`
       : "";
+    // M7 : loadout curé — quelles actions matricielles ce decker garde
+    // « équipées » dans son râtelier (prep, hors scène — cf. Croupier). Cases à
+    // cocher (2-4 actions, pas un mur), pré-cochées selon le loadout courant ;
+    // défaut = tout coché (loadout absent). Vide pour Anarchy 1re (catalogue []).
+    const catalog = Cyberdeck.catalog(edition);
+    const equipped = new Set(Cyberdeck.loadout(edition, deck).map((a) => a.key));
+    const loadoutInput = catalog.length
+      ? `<div class="form-group full">
+          <label>Actions matricielles équipées (râtelier)</label>
+          <div class="deck-loadout-picker">
+            ${catalog
+              .map(
+                (a) =>
+                  `<label class="deck-loadout-opt"><input type="checkbox" class="em-deck-action" value="${esc(a.key)}" ${equipped.has(a.key) ? "checked" : ""}> ${esc(a.name)}</label>`,
+              )
+              .join("")}
+          </div>
+        </div>`
+      : "";
     return `<div class="modal-section">
       <div class="modal-section-title">${esc(Cyberdeck.label(edition))}</div>
       <div class="modal-grid">
@@ -146,6 +191,7 @@ const CyberdeckRenderer = {
         ${rerollInput}
         ${biofeedbackInput}
       </div>
+      ${loadoutInput}
       <div class="form-group">
         <label>Programmes (un par ligne — choisis hors scène)</label>
         <textarea id="em-deck-programs" rows="3">${(deck.programs || []).join("\n")}</textarea>
@@ -175,6 +221,15 @@ const CyberdeckRenderer = {
     }
     const biofeedbackEl = document.getElementById("em-deck-biofeedback");
     if (biofeedbackEl) deck.biofeedbackFilter = !!biofeedbackEl.checked;
+    // M7 : loadout curé — enregistre les clés d'actions cochées. Écrit un
+    // tableau EXPLICITE (même si tout est coché) dès que le picker est monté :
+    // le choix devient persistant sur pnj.cyberdeck (objet déjà routé par
+    // Storage, aucune nouvelle collection). Un decker jamais édité garde
+    // `loadout` absent → défaut paresseux « tout » (cf. Cyberdeck.loadout).
+    const actionEls = document.querySelectorAll(".em-deck-action");
+    if (actionEls.length) {
+      deck.loadout = [...actionEls].filter((c) => c.checked).map((c) => c.value);
+    }
     const programsEl = document.getElementById("em-deck-programs");
     if (programsEl)
       deck.programs = programsEl.value

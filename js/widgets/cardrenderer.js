@@ -1243,13 +1243,42 @@ const CardRenderer = {
         case "deck-attack": {
           // M3 : jet de piratage — même forme que Intrusion.rollIC (un seul
           // pool, pas de test opposé calculé ; la formule livre reste à
-          // affiner en M4, cf. Cyberdeck.rollAttack).
+          // affiner en M4, cf. Cyberdeck.rollAttack). M6 : Bruit de scène
+          // retranché si une scène de combat est active (hors combat, pas de
+          // Bruit — l'action n'existe pas encore, cf. Encounter._noisyPool).
           const pnj = PnjLookup.find(id);
           const srv = pnj && DeckRun.targetServer(pnj);
           const atk = pnj && Cyberdeck.rollAttack(pnj.edition, pnj.cyberdeck);
           if (!srv || !atk) break;
-          const res = Dice.computeRoll(atk.pool);
+          const pool = typeof Encounter !== "undefined" ? Encounter._noisyPool(atk.pool) : atk.pool;
+          const res = Dice.computeRoll(pool);
           DiceRoller.show(res, { label: `${atk.label} — ${pnj.name} vs ${srv.name}`, who: pnj.name });
+          break;
+        }
+        case "deck-action": {
+          // M7 : action matricielle offensive du râtelier (pic de données & co.).
+          // Même forme que deck-attack (Dice.computeRoll + DiceRoller.show +
+          // Bruit de scène M6), mais par action nommée, et INDÉPENDANTE de la
+          // cible (le serveur visé ne sert plus qu'à nommer la cible dans le
+          // label). Une action narrative (pool null, ex. « Pirater la Matrice »
+          // en Anarchy) devient un marqueur toast, sans jet de dés. Le MJ garde
+          // la main : la VD est affichée, jamais appliquée automatiquement
+          // (aucun test opposé auto-résolu).
+          const pnj = PnjLookup.find(id);
+          if (!pnj) break;
+          const act = Cyberdeck.rollAction(pnj.edition, pnj.cyberdeck, actionEl.dataset.key);
+          if (!act) break;
+          const srv = DeckRun.targetServer(pnj);
+          const vs = srv ? ` vs ${srv.name}` : "";
+          const dvTxt = act.dv != null ? ` (VD ${act.dv})` : "";
+          const label = `${act.label}${dvTxt} — ${pnj.name}${vs}`;
+          if (act.pool == null) {
+            toast(label);
+            break;
+          }
+          const pool = typeof Encounter !== "undefined" ? Encounter._noisyPool(act.pool) : act.pool;
+          const res = Dice.computeRoll(pool);
+          DiceRoller.show(res, { label, who: pnj.name });
           break;
         }
         case "cycle-drug":

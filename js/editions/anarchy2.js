@@ -393,6 +393,19 @@ const EditionAnarchy2 = {
     // 2.0 encaisse sur la Volonté du decker (moniteur du PNJ), pas sur un
     // moniteur de deck séparé — Cyberdeck.monitorSize() renvoie null, le
     // cockpit n'affiche donc pas de moniteur de deck pour cette édition.
+    /* M7 : actions matricielles offensives — narratives (Anarchy est un jeu de
+       pool + narration, pas de VD chiffrée). Le Cybercombat (p.225) utilise
+       l'Attaque pour infliger des dommages matriciels → action jouable
+       (pool = Attaque, VD narrée par les succès). « Pirater la Matrice »
+       (p.213) relève de la compétence Piratage (non trackée pour les PNJ) →
+       marqueur sans dés. Les effets de programme (Biofeedback, Verrouillage de
+       connexion, p.210) restent en texte libre dans deck.programs. */
+    actions: [
+      { key: "cybercombat", name: "Cybercombat", type: "attack", page: 225,
+        pool: (d) => (d.attrs || {}).attack || 0, dv: () => null },
+      { key: "hack", name: "Pirater la Matrice", type: "narrative", page: 213,
+        pool: () => null, dv: () => null },
+    ],
   },
 
   /* ========================================================
@@ -485,6 +498,18 @@ const EditionAnarchy2 = {
     }
     if (!Array.isArray(pnj.equip)) pnj.equip = [];
     pnj.equip.push(id);
+  },
+  /* Sorts : catalogue partagé (taxonomie commune aux 4 éditions), source
+     unique dans Content — cf. Content.spellCatalogFor. Pas de pouvoirs
+     d'adepte séparés en Anarchy (mécanique fondue dans les Atouts). */
+  spellCatalog() {
+    return Content.spellCatalogFor(this.id);
+  },
+  addSpellItem(pnj, id) {
+    Content.addSpellItem(pnj, this.id, id);
+  },
+  powerCatalog() {
+    return null;
   },
 
   /** Archétype utilisé pour un spider (decker de sécurité lié à un serveur,
@@ -594,6 +619,29 @@ const EditionAnarchy2 = {
        spells,       // string[] (si éveillé)
      }
   ---- */
+
+  /* Catalogue d'Atouts (édition manuelle d'un PNJ) : pas de liste globale
+     dans le livre — dédupliqué à partir des `edgeOptions` de tous les
+     statBlocks (déduplication par chaîne exacte, sans fusion approximative :
+     un même Atout peut apparaître en plusieurs variantes selon l'archétype
+     d'origine, ex. Essence différente — accepté, cf. CHANGELOG). */
+  _edgeCatalogCache: null,
+  edgeCatalog() {
+    if (!this._edgeCatalogCache) {
+      const set = new Set();
+      for (const sb of Object.values(this.statBlocks))
+        for (const e of sb.edgeOptions || []) set.add(e);
+      this._edgeCatalogCache = [...set]
+        .sort((a, b) => a.localeCompare(b, "fr"))
+        .map((e) => ({ id: e, label: e }));
+    }
+    return this._edgeCatalogCache;
+  },
+  addEdgeItem(pnj, id) {
+    pnj.edges = pnj.edges || [];
+    pnj.edges.push(id);
+  },
+
   statBlocks: {
     /* ======== GANGERS (p.244-248 Anarchy V2) ======== */
 
