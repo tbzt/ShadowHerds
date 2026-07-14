@@ -30,7 +30,7 @@ const Encounter = {
   _sceneSeq: 0,
   _empty() {
     this._sceneSeq++;
-    return { v: this._V, round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null, noise: 0 };
+    return { v: this._V, round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null, noise: 0, focusId: null };
   },
 
   state: null,
@@ -43,6 +43,10 @@ const Encounter = {
     // édition à l'autre (les pnjId ne collisionnent jamais entre éditions,
     // c'est une garde défensive plutôt qu'un cas réel).
     EncounterRenderer.resetActiveCard();
+    // Focus narratif : re-synchronise l'état en mémoire d'EncounterRenderer
+    // depuis la scène persistée (survit à un F5, et c'est aussi la valeur
+    // que l'écran spectateur lit via Storage — cf. focus-active plus bas).
+    EncounterRenderer._narrativeFocusId = this.state.focusId || null;
     this._render();
   },
 
@@ -1580,10 +1584,13 @@ const Encounter = {
         case "focus-active":
           // Volet B : tap sur une ligne narrative = met ce combattant en focus
           // → sa fiche + budget d'actions (ou console de réaction si PJ)
-          // s'affichent dans #encounter-active-card. État de vue éphémère
-          // (aucune clé Storage) ; render() clampe si le combattant disparaît.
+          // s'affichent dans #encounter-active-card. Persisté (state.focusId)
+          // pour survivre à un F5 et se propager à l'écran spectateur via
+          // l'event "storage" (_commit, pas juste _render) ; render() clampe
+          // si le combattant disparaît.
           EncounterRenderer._narrativeFocusId = id;
-          this._render();
+          this.state.focusId = id;
+          this._commit();
           break;
         case "toggle-acted": {
           // Ordonné : bascule « a joué » depuis le menu ⋯ (jeton ✓/↩). La

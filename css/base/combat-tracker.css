@@ -1667,6 +1667,12 @@ kbd {
   text-decoration: line-through;
   color: var(--text-dim);
 }
+.spectator-row.has-acted {
+  opacity: 0.6;
+}
+.spectator-row.has-acted .spectator-name {
+  color: var(--text-dim);
+}
 /* Identité du combattant côté joueurs : portrait (si dispo) + nom + type, à
    gauche de la ligne. Les joueurs doivent reconnaître QUI est en jeu. */
 .spectator-identity {

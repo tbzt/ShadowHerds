@@ -70,8 +70,24 @@ const SpectatorView = {
     const rows = Encounter._rows();
     const passLabel = state.pass > 1 ? ` · Passe ${state.pass}` : "";
     const header = `<div class="spectator-header">Round ${state.round}${passLabel}</div>`;
-    const list = rows.map((r, i) => this._row(r, i === state.turnIndex)).join("");
+    const activeId = this._activeId(rows, state);
+    const list = rows.map((r) => this._row(r, r.pnjId === activeId)).join("");
     zone.innerHTML = header + `<div class="spectator-list">${list}</div>`;
+  },
+
+  /** Combattant à mettre en avant : Miroir NEUTRE de la résolution de focus
+      d'EncounterRenderer (recopié plutôt qu'appelé, même logique qu'ailleurs
+      dans ce fichier — écran spectateur isolé du cluster cockpit). En
+      narratif (Anarchy 2 : pas de tour d'initiative), c'est le focus posé
+      par le MJ (state.focusId, persisté par focus-active) ou, à défaut, le
+      premier vivant qui n'a pas encore joué ; en ordonné, c'est turnIndex. */
+  _activeId(rows, state) {
+    const model = (App.editionModule && App.editionModule.combatModel) || {};
+    if (!model.narrative) return (rows[state.turnIndex] || {}).pnjId || null;
+    const live = rows.filter((r) => r.pnj && !r.down);
+    if (!live.length) return null;
+    const focused = state.focusId && live.find((r) => r.pnjId === state.focusId);
+    return (focused || live.find((r) => !r.hasActed) || live[0]).pnjId;
   },
 
   /** Libellé de type joueur-facing (PJ/PNJ/CI/Drone…). Miroir NEUTRE de
@@ -104,7 +120,7 @@ const SpectatorView = {
       r.gauge && r.gauge.total > 0
         ? `<div class="monitor-boxes spectator-gauge">${CardRenderer._monitorBoxes(r.pnjId, "gauge", r.gauge.total, r.gauge.filled)}</div>`
         : "";
-    const cls = `spectator-row${isActive ? " is-active" : ""}${r.down ? " is-down" : ""}`;
+    const cls = `spectator-row${isActive ? " is-active" : ""}${r.down ? " is-down" : ""}${r.hasActed ? " has-acted" : ""}`;
     // Identité (portrait + nom + type) à gauche, moniteur à droite : les joueurs
     // doivent savoir QUI est en jeu, pas seulement voir des cases.
     return `<div class="${cls}">
