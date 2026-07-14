@@ -213,5 +213,10 @@ const TourSteps = {
       title: "La palette trouve aussi vos notes",
       body: "Ctrl/Cmd+K cherche désormais dans le bloc-notes de séance et les carnets, pas seulement les fiches — plus besoin d'un « #mot-clé » exact. Ouvrir un résultat mène directement au bon carnet.",
     },
+    {
+      id: "wn-spectator-identity", anchor: "nav-settings", tours: ["whatsnew"], since: "1.31.0", fallback: "center",
+      title: "Écran spectateur : qui est qui",
+      body: "L'écran joueurs affiche maintenant le portrait (si dispo) et le type (PJ/PNJ/CI) de chaque combattant à côté de son nom — plus une rangée de moniteurs anonymes.",
+    },
   ],
 };

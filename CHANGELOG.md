@@ -12,6 +12,14 @@ commit.
 
 ## [Non publié]
 
+## [1.31.0] — 2026-07-14
+
+### Table
+- **Écran spectateur — on sait qui est qui** : chaque combattant y affiche
+  désormais son **portrait** (s'il en a un) et un **badge de type** (PJ / PNJ /
+  CI…) à côté de son nom, avant ses moniteurs. Fini l'alignement de cases
+  anonymes côté joueurs.
+
 ## [1.30.0] — 2026-07-14
 
 ### Table

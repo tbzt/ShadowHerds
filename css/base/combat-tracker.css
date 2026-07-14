@@ -1667,9 +1667,39 @@ kbd {
   text-decoration: line-through;
   color: var(--text-dim);
 }
+/* Identité du combattant côté joueurs : portrait (si dispo) + nom + type, à
+   gauche de la ligne. Les joueurs doivent reconnaître QUI est en jeu. */
+.spectator-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.spectator-portrait {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
 .spectator-name {
   font-size: var(--fs-lg);
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.spectator-type {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
 }
 .spectator-gauge {
   flex-wrap: wrap;
