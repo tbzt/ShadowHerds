@@ -69,7 +69,7 @@ const EditionSR5 = {
       valeur connue AVANT la résistance — succès du sort, ou Puissance de
       l'esprit pour une invocation. Physique si elle dépasse la Magie. */
   drainDamageType(ctx, pnj) {
-    const mag = (pnj.attrs && pnj.attrs.MAG) || 0;
+    const mag = Actor.attr(pnj, "MAG");
     const cmp = ctx.kind === "conjuration" ? (ctx.force || 0) : (ctx.castHits || 0);
     return cmp > mag ? "physical" : "stun";
   },

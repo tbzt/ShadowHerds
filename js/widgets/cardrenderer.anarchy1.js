@@ -75,8 +75,8 @@ Object.assign(CardRenderer, {
     if (prefs.showAttributes) {
       const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA", "CHC"];
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Attributs</div>
-        <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k], "", { roll: true, edition: "anarchy1" })).join("")}</div>
-        ${attrs.ESS != null ? `<div class="attr-grid attr-special-row">${this._attrCell("ESS", attrs.ESS, "attr-special")}</div>` : ""}
+        <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, Actor.attr(pnj, k), "", { roll: true, edition: "anarchy1" })).join("")}</div>
+        ${attrs.ESS != null ? `<div class="attr-grid attr-special-row">${this._attrCell("ESS", Actor.attr(pnj, "ESS"), "attr-special")}</div>` : ""}
       </div>`;
     }
     if (prefs.showEquipment && gear.length)

@@ -79,7 +79,7 @@ const EditionSR6 = {
       les dégâts APRÈS résistance — Physique s'ils dépassent la Magie, sinon
       Étourdissant. (Corrige CH-M7b, qui renvoyait toujours « stun ».) */
   drainDamageType(ctx, pnj) {
-    const mag = (pnj.attrs && pnj.attrs.MAG) || 0;
+    const mag = Actor.attr(pnj, "MAG");
     return (ctx.drainDamage || 0) > mag ? "physical" : "stun";
   },
   /** Moniteur unique (8 + CON/2, posé sur pnj.me) par défaut : le Drain y

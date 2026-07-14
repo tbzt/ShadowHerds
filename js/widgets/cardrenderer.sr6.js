@@ -55,7 +55,7 @@ Object.assign(CardRenderer, {
 
     // ---- ZONE COMBAT ----
     let combatBody = '<div class="combat-row">';
-    const initDetail = `${Utils.attrFullName("RÉA")} ${attrs.RÉA} + ${Utils.attrFullName("INT")} ${attrs.INT}`;
+    const initDetail = `${Utils.attrFullName("RÉA")} ${Actor.attr(pnj, "RÉA")} + ${Utils.attrFullName("INT")} ${Actor.attr(pnj, "INT")}`;
     combatBody += this._initPill(initBase ?? 0, initDice ?? 1, pnj, initDetail);
     if (pnj.drainResist != null)
       combatBody += this._rollPill("Drain", Math.max(0, pnj.drainResist - malus6), "Résistance au Drain");
@@ -121,9 +121,9 @@ Object.assign(CardRenderer, {
       if (attrs.RES) extras.push("RES");
       if (attrs.ATO != null) extras.push("ATO");
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Attributs</div>`;
-      detailsBody += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k] ?? "—", "", { roll: true, edition: "sr6" })).join("")}</div>`;
+      detailsBody += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, Actor.attr(pnj, k), "", { roll: true, edition: "sr6" })).join("")}</div>`;
       if (extras.length)
-        detailsBody += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, attrs[k], "attr-special", { roll: true, edition: "sr6" })).join("")}</div>`;
+        detailsBody += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, Actor.attr(pnj, k), "attr-special", { roll: true, edition: "sr6" })).join("")}</div>`;
       detailsBody += `<div class="limites-grid" style="margin-top:6px;">
         ${this._attrCell("ME", me ?? "?")}
       </div></div>`;

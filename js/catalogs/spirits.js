@@ -389,7 +389,7 @@ const Spirits = {
     if (!t) return null;
     const edition = owner ? owner.edition : opts.edition;
     const P = Utils.clamp(
-      opts.force || (owner && owner.attrs && owner.attrs.MAG) || 4, 1, 12);
+      opts.force || Actor.attr(owner, "MAG") || 4, 1, 12);
     const attrs = {};
     // `t.mods` utilise les clés canoniques SR5 (P1 `attributes`, ordre
     // fixe) ; `keys` retrouve le nom réel de l'attribut sur le pnj

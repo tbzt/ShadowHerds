@@ -1166,12 +1166,11 @@ const CardRenderer = {
    */
   _knowledgesSection(knowledges, pnj, malus = 0) {
     if (!knowledges || !knowledges.length) return "";
-    const attrs = (pnj && pnj.attrs) || {};
     const tags = knowledges
       .map((k) => {
         const rating = Number(k.val);
         const attr = SkillCatalog.attrFor("sr5", k.name); // LOG | INT | null
-        const attrVal = attr && Number.isFinite(attrs[attr]) ? attrs[attr] : 0;
+        const attrVal = attr ? Actor.attr(pnj, attr) : 0;
         const pool = Number.isFinite(rating)
           ? Math.max(0, rating + attrVal - malus)
           : rating;

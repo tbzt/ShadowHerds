@@ -119,7 +119,7 @@ Object.assign(CardRenderer, {
     // complication (CH-M7d). Pool = Sorcellerie (val + attribut + RR).
     if (spells && spells.length) {
       const sorc = (skills || []).find((s) => s.name === "Sorcellerie");
-      const riskPool = sorc ? sorc.val + (attrs[sorc.attr] || 0) : 0;
+      const riskPool = sorc ? sorc.val + Actor.attr(pnj, sorc.attr) : 0;
       combatBody += this._spellsBlock(pnj, spells, pnj.edition, {
         viaRisk: true,
         riskPool,
@@ -142,7 +142,7 @@ Object.assign(CardRenderer, {
         <div class="card-section-label">Compétences</div>
         <div class="card-section-content">`;
       for (const s of skills) {
-        const attrVal = attrs[s.attr] || 0;
+        const attrVal = Actor.attr(pnj, s.attr);
         const pool = s.val + attrVal;
         const rrStr = s.rr > 0 ? ` RR${s.rr}` : "";
         const detail = `${this._esc(Utils.attrFullName(s.attr))} ${attrVal} + ${this._esc(s.name)} ${s.val}${rrStr}`;
@@ -159,7 +159,7 @@ Object.assign(CardRenderer, {
         // Puce de spécialisation (indice+2). La spé principale + chaque
         // spé supplémentaire (extraSpecs) partagent le même rendu lançable.
         const specChip = (specName, specVal, specAttrKey, specRr) => {
-          const specAttrVal = attrs[specAttrKey || s.attr] || 0;
+          const specAttrVal = Actor.attr(pnj, specAttrKey || s.attr);
           const specPool = specVal + specAttrVal;
           const specRrStr = specRr > 0 ? ` RR${specRr}` : "";
           const specDetail = `${this._esc(Utils.attrFullName(specAttrKey || s.attr))} ${specAttrVal} + ${this._esc(specName)} ${specVal}${specRrStr}`;
@@ -231,7 +231,7 @@ Object.assign(CardRenderer, {
     if (prefs.showAttributes) {
       const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA"];
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Attributs</div>
-        <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k], "", { roll: true, edition: pnj.edition })).join("")}</div></div>`;
+        <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, Actor.attr(pnj, k), "", { roll: true, edition: pnj.edition })).join("")}</div></div>`;
     }
     if (prefs.showEquipment && equip && equip.length)
       detailsBody += this._equipSection(pnj, equip, pnj.edition, deps);

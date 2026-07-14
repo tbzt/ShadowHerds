@@ -68,7 +68,7 @@ Object.assign(CardRenderer, {
 
     // ---- ZONE COMBAT ----
     let combatBody = '<div class="combat-row">';
-    const initDetail = `${Utils.attrFullName("REA")} ${attrs.REA} + ${Utils.attrFullName("INT")} ${attrs.INT}`;
+    const initDetail = `${Utils.attrFullName("REA")} ${Actor.attr(pnj, "REA")} + ${Utils.attrFullName("INT")} ${Actor.attr(pnj, "INT")}`;
     combatBody += this._initPill(init, initDice, pnj, initDetail);
     if (drainResist != null)
       combatBody += this._rollPill("Drain", Math.max(0, drainResist - malus5), "Résistance au Drain");
@@ -123,10 +123,10 @@ Object.assign(CardRenderer, {
         ...(attrs.CHC != null ? ["CHC"] : []),
       ];
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Attributs</div>`;
-      detailsBody += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, attrs[k], "", { roll: true, edition: "sr5" })).join("")}</div>`;
+      detailsBody += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, Actor.attr(pnj, k), "", { roll: true, edition: "sr5" })).join("")}</div>`;
       if (extras.length)
         // ESS n'est pas un pool de dés (ressource, pas un test) — non lançable.
-        detailsBody += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, attrs[k], "attr-special", { roll: k !== "ESS", edition: "sr5" })).join("")}</div>`;
+        detailsBody += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, Actor.attr(pnj, k), "attr-special", { roll: k !== "ESS", edition: "sr5" })).join("")}</div>`;
       detailsBody += `<div class="limites-grid" style="margin-top:6px;">
         ${this._attrCell("Lim.Phys", limPhys)}
         ${this._attrCell("Lim.Ment", limMent)}

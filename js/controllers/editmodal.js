@@ -596,14 +596,14 @@ const EditModal = {
       if (pnj.attrs[k] !== undefined) {
         html += `<div class="form-group">
           <label>${k}</label>
-          <input type="number" id="em-attr-${k}" value="${pnj.attrs[k]}" min="1" max="12">
+          <input type="number" id="em-attr-${k}" value="${Actor.attr(pnj, k)}" min="1" max="12">
         </div>`;
       }
     }
     if (pnj.attrs.MAG !== undefined) {
       html += `<div class="form-group">
         <label>MAG</label>
-        <input type="number" id="em-attr-MAG" value="${pnj.attrs.MAG}" min="1" max="12">
+        <input type="number" id="em-attr-MAG" value="${Actor.attr(pnj, "MAG")}" min="1" max="12">
       </div>`;
     }
     // Ressource de relance (Chance SR5 / Atout SR6), clé portée par le
@@ -612,7 +612,7 @@ const EditModal = {
     if (edgeKey && pnj.attrs[edgeKey] !== undefined) {
       html += `<div class="form-group">
         <label>${edgeKey}</label>
-        <input type="number" id="em-attr-${edgeKey}" value="${pnj.attrs[edgeKey]}" min="0" max="7">
+        <input type="number" id="em-attr-${edgeKey}" value="${Actor.attr(pnj, edgeKey)}" min="0" max="7">
       </div>`;
     }
     html += "</div></div>";
@@ -1123,6 +1123,8 @@ const EditModal = {
       if (el && pnj.attrs[k] !== undefined) {
         const [lo, hi] = k === edgeKey ? [0, 7] : [1, 12];
         const raw = parseInt(el.value, 10);
+        // Écriture d'attribut (édition manuelle) : écrit le plat aujourd'hui ;
+        // en V2 elle posera le `base` du Trait (mutateur dédié).
         pnj.attrs[k] = Utils.clamp(
           Number.isNaN(raw) ? pnj.attrs[k] : raw,
           lo,

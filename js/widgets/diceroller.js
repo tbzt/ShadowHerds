@@ -843,7 +843,7 @@ const DiceRoller = {
       hint = `Menace ${this._threat}`;
     } else if (action.costAttr) {
       pnj = opts.pnjId ? this._hooks.resolve(opts.pnjId) : null;
-      const val = pnj && pnj.attrs ? pnj.attrs[action.costAttr] : null;
+      const val = pnj && pnj.attrs ? Actor.attr(pnj, action.costAttr) : null;
       if (val != null) {
         available = val > 0;
         hint = `${action.costAttr} ${val}`;
@@ -877,7 +877,7 @@ const DiceRoller = {
     if (mod.usesThreatReserve) {
       this._setThreat(this._threat - 1);
     } else if (st.pnj && st.action.costAttr) {
-      st.pnj.attrs[st.action.costAttr] -= 1;
+      st.pnj.attrs[st.action.costAttr] -= 1; // mutation (dépense) : mutateur dédié en V2 (Trait)
       this._hooks.onPnjChanged(st.pnj); // re-render la carte (Edge à jour)
     }
     // Jet sans PNJ en SR5/SR6 : relance gratuite, aucune ressource débitée.
@@ -966,7 +966,7 @@ const DiceRoller = {
     const action = App.editionModule && App.editionModule.rerollAction;
     if (!pnj || !action || !action.costAttr) return "";
     const attr = action.costAttr;
-    const edge = (pnj.attrs && pnj.attrs[attr]) || 0;
+    const edge = Actor.attr(pnj, attr);
     const hint = `<span class="dice-reroll-hint">${Utils.escHtml(attr)} ${edge}</span>`;
     // Libellé du jet principal selon le type d'action magique.
     const mainLabel = opts.kind === "conjuration" ? "Conjuration" : "sort";
