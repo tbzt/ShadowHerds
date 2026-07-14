@@ -478,6 +478,7 @@ const EncounterRenderer = {
     panel.innerHTML = `<div class="encounter-add-actions">
         <button class="btn-secondary btn-small" data-action="add-team" title="Toute l'équipe active (désignée dans Personnages), moins ceux déjà en scène">＋ Équipe</button>
         <button class="btn-secondary btn-small" data-action="add-pj">＋ Ajouter un PJ</button>
+        <button class="btn-secondary btn-small" data-action="add-adhoc" title="Ligne jetable : nom + compteur libre (ALARME, la bombe, renforts…) — non enregistrée dans les personnages">＋ Ligne libre</button>
         <input type="search" class="encounter-picker-search" data-action="filter-candidates"
           placeholder="Filtrer par nom ou type…" value="${Utils.escHtml(this._pickerQuery || "")}"
           aria-label="Filtrer les combattants à ajouter">
