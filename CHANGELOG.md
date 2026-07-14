@@ -16,6 +16,15 @@ commit.
 - **Équipe PJ** — personnages-joueurs persistants, référencés à la table.
 - **Visite guidée** — orientation au premier lancement + bandeau « Quoi de neuf ».
 
+## [1.12.0] — 2026-07-14
+
+### Jouer
+- **Bruit matriciel** : réglage ± de scène (SR5 p.232), retranché des jets
+  Matrice du decker (Piratage, duel decker↔decker, défense protégée) — la
+  distance/l'environnement restent à la main du MJ, pas trackés par l'app.
+- Légende du cockpit (Aide « ? ») complétée avec `🔗` (lier à la scène) et
+  `🛡️` (protection Firewall d'un allié).
+
 ## [1.11.0] — 2026-07-14
 
 ### Organiser
