@@ -12,6 +12,14 @@ commit.
 
 ## [Non publié]
 
+## [1.30.0] — 2026-07-14
+
+### Table
+- **Recherche plein-texte** (#61) : la palette de commandes (Ctrl/Cmd+K)
+  trouve désormais aussi ce qui est écrit dans le bloc-notes de séance et
+  les carnets — plus besoin d'un `#mot-clé` exact. Activer un résultat
+  ouvre directement le bon carnet, plus jamais celui du dossier courant.
+
 ## [1.29.0] — 2026-07-14
 
 ### Organiser

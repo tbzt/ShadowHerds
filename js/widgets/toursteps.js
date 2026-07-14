@@ -208,5 +208,10 @@ const TourSteps = {
       title: "La carte contact rejoint la fiche PNJ",
       body: "Incarnation repliable, onglets ☰ Fiche / ❝ Incarner, module ◈ Relation (Influence/Loyauté ou Niveau/RR + « Connu de »). Un contact déployé affiche directement sa fiche complète, plus de carte imbriquée.",
     },
+    {
+      id: "wn-notes-fulltext-search", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.30.0", fallback: "center",
+      title: "La palette trouve aussi vos notes",
+      body: "Ctrl/Cmd+K cherche désormais dans le bloc-notes de séance et les carnets, pas seulement les fiches — plus besoin d'un « #mot-clé » exact. Ouvrir un résultat mène directement au bon carnet.",
+    },
   ],
 };
