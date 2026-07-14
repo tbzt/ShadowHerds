@@ -251,12 +251,18 @@ const Mentions = {
 
   // ---- Index (backlinks + récolte des mots-clés) ---------------------------
 
-  /** Un seul balayage des notes (bloc-notes de séance + champ `notes` et
+  /** Un seul balayage des notes (tous les carnets R2 + champ `notes` et
       journal de chaque entité sauvegardée). `cb(text, loc)` par fragment.
       Source unique réutilisée par backlinksFor / notesWithTag / usedTags. */
   _scanNotes(cb) {
-    const note = Storage.getGlobal("sessionNotes", "");
-    if (note) cb(note, { kind: "notepad", label: "Bloc-notes de séance" });
+    for (const [dossierId, doc] of Object.entries(Notebooks.all())) {
+      if (!doc) continue;
+      const label =
+        dossierId === Notebooks._GLOBAL
+          ? "Bloc-notes de séance"
+          : Dossiers.nameOf(dossierId) || "Carnet";
+      cb(doc, { kind: "notepad", label });
+    }
     const scan = (arr, type) => {
       for (const e of arr || []) {
         const loc = { kind: "entity", id: e.id, name: e.name, type };

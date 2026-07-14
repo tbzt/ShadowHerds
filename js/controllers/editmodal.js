@@ -1159,6 +1159,7 @@ const EditModal = {
   init() {
     const modal = document.getElementById("edit-modal");
     if (!modal) return;
+
     modal.addEventListener("click", (e) => {
       // E8-A1 : click-to-edit sur le rendu des notes — avant la délégation
       // data-action (une puce @/# à l'intérieur reste prioritaire, cf. garde).

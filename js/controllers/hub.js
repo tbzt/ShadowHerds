@@ -245,7 +245,7 @@ const Hub = {
     let right = "";
     if (node.kind === "run") {
       title = "◆ Run";
-      const hasPrep = RunGen.forDossier(node.name).length > 0;
+      const hasPrep = RunGen.forDossier(node.id).length > 0;
       right = hasPrep
         ? `<button class="btn-secondary btn-small" data-action="show-panel" data-panel="run">Voir la prep</button>`
         : `<span class="hub-section-count">prep non générée</span>`;

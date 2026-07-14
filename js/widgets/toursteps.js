@@ -158,5 +158,10 @@ const TourSteps = {
       title: "Attributs lançables",
       body: "Sur une carte, cliquez un attribut (ou Magie/Résonance/Atout) pour lancer un test à ce nombre de dés — comme les compétences. Le petit dé ⚄ signalant qu'une pastille est cliquable est désormais visible en permanence, sans avoir à survoler.",
     },
+    {
+      id: "wn-ranger-la-run", anchor: "nav-run", tours: ["whatsnew"], since: "1.20.0", fallback: "center",
+      title: "La rencontre se range et se rouvre",
+      body: "Depuis le menu « ⋯ » d'un dossier Run (ou sa carte de prep) : « Ouvrir la rencontre » restaure combattants, initiative et serveur lié ; « Fermer » range tout. Chaque dossier a aussi son propre carnet de notes.",
+    },
   ],
 };

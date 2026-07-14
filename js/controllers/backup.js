@@ -29,6 +29,8 @@ const Backup = {
     "servers_all",
     "servers_groups",
     "dossiers", // arbre de dossiers (structure {id,name,parentId}) — CH sync
+    "encounter_by_dossier", // R1 (Ranger la run) : rencontres rangées par dossier
+    "notebooks", // R2 (Ranger la run) : carnets de notes par dossier
   ],
 
   /* ---- Construction du paquet exportable ---- */

@@ -222,11 +222,21 @@ const DossierBar = {
     // data-action="set-kind" pris par la délégation de cette barre.
     const kindItem = (k, label) =>
       `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="set-kind" data-kind="${k}" data-dossier="${node.id}">${node.kind === k ? "✓ " : ""}${label}</button>`;
+    // R4 : geste « rencontre » (ouvrir/fermer), seul concept d'UI neuf de ce
+    // chantier — un seul item, réutilise le même popover ⋯ que le typage
+    // (aucun CSS/handler neuf). Visible seulement sur un dossier « run ».
+    const rencontreItem =
+      node.kind === "run"
+        ? Encounter.activeDossierId === node.id
+          ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="close-rencontre" data-dossier="${node.id}">⏹ Fermer la rencontre</button>`
+          : `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="open-rencontre" data-dossier="${node.id}">▶ ${Encounter.hasStash(node.id) ? "Rouvrir" : "Ouvrir"} la rencontre</button>`
+        : "";
     const typeMenu = `<button type="button" class="card-kebab btn-icon-tiny" data-card-menu-toggle aria-haspopup="true" aria-expanded="false" title="Type de dossier" aria-label="Type de dossier">⋯</button>
         <div class="card-menu" role="menu" hidden>
           ${kindItem("campaign", "Campagne")}
           ${kindItem("run", "Run")}
           ${node.kind ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="set-kind" data-kind="" data-dossier="${node.id}">Retirer le type</button>` : ""}
+          ${rencontreItem}
         </div>`;
     return `<div class="group-item${sub} ${active}"${style} data-dossier-bar data-action="switch-dossier" data-dossier="${node.id}">
       <span class="group-item-icon"${kindTitle ? ` title="${kindTitle}"` : ""}>${icon}</span>
@@ -397,7 +407,35 @@ const DossierBar = {
         case "set-kind":
           this.setDossierKind(el.dataset.dossier, el.dataset.kind || null);
           break;
+        case "open-rencontre":
+          this.openRencontre(el.dataset.dossier);
+          break;
+        case "close-rencontre":
+          this.closeRencontre(el.dataset.dossier);
+          break;
       }
     });
+  },
+
+  /** R4 : geste unifiant « ouvrir la rencontre » — restaure la scène (init +
+      serveur lié, R1), pose le contexte (filtre journal des jets R3, dossier
+      courant → carnet R2 qui s'ouvre dessus), ouvre le tracker. Aucune
+      nouvelle entrée de nav : le tracker est l'overlay déjà existant. */
+  openRencontre(dossierId) {
+    if (!dossierId) return;
+    Encounter.restore(dossierId);
+    this.select(dossierId); // dossier courant = carnet courant (R2)
+    Encounter.open();
+    toast(`Rencontre « ${Dossiers.nameOf(dossierId) || "?"} » ouverte.`);
+  },
+
+  /** Fermer la rencontre : snapshot (R1) + retrait du contexte actif. */
+  closeRencontre(dossierId) {
+    if (!dossierId) return;
+    Encounter.stash(dossierId);
+    if (DiceLog._filter === DiceLog._ENCOUNTER_FILTER) DiceLog._filter = "all";
+    Encounter.close();
+    this.render();
+    toast(`Rencontre « ${Dossiers.nameOf(dossierId) || "?"} » rangée.`);
   },
 };

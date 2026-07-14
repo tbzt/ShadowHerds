@@ -348,6 +348,16 @@ const RunGen = {
           this.toDossier(card.dataset.id, actionEl.dataset.runName);
           break;
         }
+        // R4 : miroir du geste « rencontre » de dossierbar sur la carte de
+        // run (même dossierId, mêmes méthodes — aucune logique dupliquée).
+        case "open-rencontre":
+          DossierBar.openRencontre(actionEl.dataset.dossier);
+          this._refreshCard(actionEl.closest(".run-card")?.dataset.id);
+          break;
+        case "close-rencontre":
+          DossierBar.closeRencontre(actionEl.dataset.dossier);
+          this._refreshCard(actionEl.closest(".run-card")?.dataset.id);
+          break;
       }
     });
   },
@@ -368,11 +378,13 @@ const RunGen = {
     // Un dossier créé pour ranger une run est typé « run » (hiérarchie de
     // campagne) ; un dossier existant garde son type (on ne redéfinit pas la
     // structure déjà posée par le MJ).
-    if (!Dossiers.list().some((d) => d.name === name)) {
-      Dossiers.add(name, null, "run");
-    }
+    let dossier = Dossiers.list().find((d) => d.name === name);
+    if (!dossier) dossier = Dossiers.add(name, null, "run");
     const run = this._runs.find((r) => r.id === runId);
-    if (run) {
+    if (run && dossier) {
+      // R0 : jointure par id (stable au renommage) ; dossierName gardé en
+      // secours d'affichage 1 release pour les runs pas encore migrées.
+      run.dossierId = dossier.id;
       run.dossierName = name;
       this._save();
       this._refreshCard(runId);
@@ -401,12 +413,18 @@ const RunGen = {
   _save() {
     Storage.set(this._RUNS_KEY, this._runs);
   },
-  /** Runs rattachées à un dossier (par nom). Lit Storage frais — utilisable
-      depuis n'importe quel panneau (le Hub notamment), sans dépendre de
-      `_runs`, qui n'est restauré qu'à l'ouverture du panneau Run. */
-  forDossier(name) {
-    if (!name) return [];
-    return Storage.get(this._RUNS_KEY, []).filter((r) => r.dossierName === name);
+  /** Runs rattachées à un dossier, par id (R0 — stable au renommage). Lit
+      Storage frais — utilisable depuis n'importe quel panneau (le Hub
+      notamment), sans dépendre de `_runs`, qui n'est restauré qu'à
+      l'ouverture du panneau Run. Fallback `dossierName` pour une run pas
+      encore migrée (la migration storage.js v5 couvre le cas normal ; ce
+      filet couvre une écriture concurrente entre le boot et la migration). */
+  forDossier(id) {
+    if (!id) return [];
+    const name = Dossiers.nameOf(id);
+    return Storage.get(this._RUNS_KEY, []).filter(
+      (r) => r.dossierId === id || (!r.dossierId && r.dossierName === name),
+    );
   },
   /** Rend une carte et la relie à son objet run par data-id (suppression +
       persistance). RunRenderer reste générique. */

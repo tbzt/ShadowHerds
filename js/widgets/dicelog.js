@@ -15,9 +15,14 @@ const DiceLog = {
       uniquement (pas de Storage), clé = e.t (timestamp, déjà unique). */
   _expanded: new Set(),
 
-  /** J2 : filtre actif — "all" | "alarm" | un nom de who. Session only
-      (comme les facettes du Hub F1), reset à chaque ouverture du panneau. */
+  /** J2 : filtre actif — "all" | "alarm" | "pinned" | un nom de who | R3
+      `_ENCOUNTER_FILTER`. Session only (comme les facettes du Hub F1), reset
+      à chaque ouverture du panneau. */
   _filter: "all",
+
+  /** R3 : valeur de `_filter` réservée pour « cette rencontre » — préfixée
+      pour ne jamais collisionner avec un nom de personnage (`who`). */
+  _ENCOUNTER_FILTER: "__encounter__",
 
   /** J3 : compteur d'alarmes (crit/glitch) ajoutées pendant que le panneau
       est fermé — session only, remis à zéro à l'ouverture. Alimente la
@@ -129,7 +134,12 @@ const DiceLog = {
     this._ensure();
     // Sur mobile, le journal remplace la feuille de dés si elle est ouverte
     DicePanel.close();
-    this._filter = "all";
+    // R3 : une rencontre ouverte (Encounter.restore) est le filtre par
+    // défaut — « rouvrir une rencontre applique ce filtre » (R4).
+    this._filter =
+      typeof Encounter !== "undefined" && Encounter.activeDossierId
+        ? this._ENCOUNTER_FILTER
+        : "all";
     this._unseen = 0;
     this._renderBadge();
     this.refresh();
@@ -195,6 +205,10 @@ const DiceLog = {
       // J4 : champs additifs, jamais de migration de schéma Storage.
       pinned: false,
       note: null,
+      // R3 (Ranger la run) : tague le jet avec la rencontre ouverte au
+      // moment du jet, si une rencontre est active (Encounter.restore) —
+      // champ additif, jamais de migration.
+      dossierId: (typeof Encounter !== "undefined" && Encounter.activeDossierId) || null,
     };
     if (res.init) {
       e.label = e.label || "Initiative";
@@ -316,10 +330,15 @@ const DiceLog = {
     const chip = (filter, label) =>
       `<button class="hub-facet-chip${this._filter === filter ? " active" : ""}" data-action="log-filter" data-filter="${Utils.escHtml(filter)}">${Utils.escHtml(label)}</button>`;
     const hasPinned = this.history.some((e) => e.pinned);
+    // R3 : puce "cette rencontre" seulement si une rencontre est ouverte
+    // (Encounter.restore) — filtre session-only, aucun 2ᵉ mécanisme
+    // d'historique (garde-fou c), réutilise `_filter` comme les autres puces.
+    const activeDossierId = typeof Encounter !== "undefined" ? Encounter.activeDossierId : null;
     box.innerHTML =
       chip("all", "Tout") +
       chip("alarm", "Alarmes") +
       (hasPinned ? chip("pinned", "📌 Épinglés") : "") +
+      (activeDossierId ? chip(this._ENCOUNTER_FILTER, "🎬 Cette rencontre") : "") +
       whos.map((w) => chip(w, w)).join("");
   },
 
@@ -332,6 +351,9 @@ const DiceLog = {
       if (this._filter === "all") return true;
       if (this._filter === "alarm") return e.cls === "crit" || e.cls === "glitch";
       if (this._filter === "pinned") return !!e.pinned;
+      if (this._filter === this._ENCOUNTER_FILTER) {
+        return e.dossierId && typeof Encounter !== "undefined" && e.dossierId === Encounter.activeDossierId;
+      }
       return e.who === this._filter;
     });
     if (!entries.length) {

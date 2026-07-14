@@ -156,7 +156,7 @@ const Storage = {
       ajoutée à `_MIGRATIONS`. Publique (contrairement à `_MIGRATIONS`) : les
       paquets exportés (`Backup`) la tamponnent pour savoir, à l'import, s'ils
       ont besoin d'être migrés. Voir CONTRIBUTING.md § Versionner les schémas. */
-  SCHEMA_VERSION: 4,
+  SCHEMA_VERSION: 5,
 
   /** Chaîne de migrations de schéma, ordonnée par version croissante. Chaque
       `up()` mute le `localStorage` brut (pas de dépendance à `_edition`) et
@@ -319,6 +319,53 @@ const Storage = {
         });
         if (migrated)
           Debug.warn("storage", "migration v4 (cyberdeckStructure)", { migrated });
+      },
+    },
+    {
+      v: 5,
+      /** R0 (PLAN_RANGER_LA_RUN.md) : une run rangée dans un dossier n'était
+          reliée que par `dossierName` (nom), fragile au renommage — un
+          dossier renommé cassait le lien affiché par la carte de run et le
+          bandeau du Hub. Résout chaque `run.dossierName` vers l'`id` du
+          dossier de même nom (même édition) et écrit `dossierId`. Garde
+          `dossierName` intact (secours d'affichage 1 release). Idempotent :
+          ignore les runs qui ont déjà un `dossierId`. */
+      up() {
+        const suffix = "_gen_runs";
+        const keys = Object.keys(localStorage).filter(
+          (k) => k.startsWith("sr_pnj_v2_") && k.endsWith(suffix),
+        );
+        let migrated = 0;
+        keys.forEach((k) => {
+          const raw = localStorage.getItem(k);
+          if (raw === null) return;
+          let runs;
+          try { runs = JSON.parse(raw); }
+          catch { return; }
+          if (!Array.isArray(runs) || !runs.length) return;
+          const editionPrefix = k.slice(0, -suffix.length); // "sr_pnj_v2_<edition>"
+          const dossiersRaw = localStorage.getItem(`${editionPrefix}_dossiers`);
+          let dossiers = [];
+          if (dossiersRaw !== null) {
+            try { dossiers = JSON.parse(dossiersRaw); }
+            catch { dossiers = []; }
+          }
+          if (!Array.isArray(dossiers) || !dossiers.length) return;
+          const idByName = new Map(dossiers.map((d) => [d.name, d.id]));
+          let changed = false;
+          for (const run of runs) {
+            if (!run || run.dossierId || !run.dossierName) continue;
+            const id = idByName.get(run.dossierName);
+            if (id) {
+              run.dossierId = id;
+              changed = true;
+              migrated++;
+            }
+          }
+          if (changed) localStorage.setItem(k, JSON.stringify(runs));
+        });
+        if (migrated)
+          Debug.warn("storage", "migration v5 (runDossierId)", { migrated });
       },
     },
   ],

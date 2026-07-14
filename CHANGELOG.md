@@ -12,6 +12,16 @@ commit.
 
 ## [Non publié]
 
+## [1.20.0] — 2026-07-14
+
+### Organiser
+- **La rencontre se range et se rouvre** : depuis le menu « ⋯ » d'un dossier
+  Run (ou sa carte de prep), « Ouvrir la rencontre » restaure combattants,
+  initiative et serveur lié tels qu'ils étaient ; « Fermer » range tout dans
+  le dossier. Le journal des jets peut se filtrer sur la rencontre en cours.
+  Chaque dossier a aussi son propre carnet de notes (fini le bloc-notes
+  unique qui se mélange d'une campagne à l'autre).
+
 ## [1.19.0] — 2026-07-14
 
 ### Jouer

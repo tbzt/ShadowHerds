@@ -8,9 +8,12 @@
    ============================================================ */
 const Notepad = {
   _open: false,
-  _KEY: "sessionNotes", // global (comme le journal des jets), survit au F5
   _saveTimer: null,
   _mode: "read", // "read" (puces @/#) | "edit" (jeton brut) — E7
+  // R2 (Notebooks) : carnet courant, figé à l'ouverture (le panneau est un
+  // overlay plein écran à backdrop bloquant — le dossier courant ne peut pas
+  // changer pendant qu'il est ouvert, pas besoin de re-résoudre en direct).
+  _openDossierId: null,
 
   _ensure() {
     if (document.getElementById("notepad-panel")) return;
@@ -26,7 +29,7 @@ const Notepad = {
     panel.setAttribute("aria-label", "Bloc-notes de séance");
     panel.innerHTML = `
       <div class="dice-log-head">
-        <span class="dice-log-title">Bloc-notes de séance</span>
+        <span class="dice-log-title" id="notepad-title">Bloc-notes de séance</span>
         <button class="btn-icon-tiny" data-action="toggle-mode" title="Lire / Éditer" aria-label="Lire / Éditer">✎</button>
         <button class="btn-icon-tiny" data-action="close" title="Fermer" aria-label="Fermer">✕</button>
       </div>
@@ -113,7 +116,7 @@ const Notepad = {
   },
 
   _save(value) {
-    Storage.setGlobal(this._KEY, value);
+    Notebooks.set(this._openDossierId, value);
   },
 
   /** Câble le bouton d'ouverture de la barre du haut (index.html). */
@@ -128,14 +131,32 @@ const Notepad = {
 
   open() {
     this._ensure();
+    // R2 : le carnet courant = le dossier courant (DossierBar), résolu une
+    // fois à l'ouverture. "all"/aucune sélection → carnet global.
+    this._openDossierId =
+      typeof DossierBar !== "undefined" && DossierBar.current !== "all"
+        ? DossierBar.current
+        : null;
+    Notebooks.seedFromLegacyIfEmpty(this._openDossierId);
     const ta = document.getElementById("notepad-textarea");
-    ta.value = Storage.getGlobal(this._KEY, "");
+    ta.value = Notebooks.get(this._openDossierId);
     this._mode = ta.value.trim() ? "read" : "edit";
     this._syncView();
+    this._updateTitle();
     document.getElementById("notepad-backdrop").classList.add("open");
     document.getElementById("notepad-panel").classList.add("open");
     this._open = true;
     if (this._mode === "edit") ta.focus();
+  },
+
+  /** Affiche le nom du carnet courant en tête de panneau — sans ça, rien ne
+      distingue visuellement « je suis dans le carnet de cette run » d'un
+      bloc-notes global unique (R2). */
+  _updateTitle() {
+    const title = document.getElementById("notepad-title");
+    if (!title) return;
+    const name = this._openDossierId && Dossiers.nameOf(this._openDossierId);
+    title.textContent = name ? `Bloc-notes — ${name}` : "Bloc-notes de séance";
   },
 
   close() {

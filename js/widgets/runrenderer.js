@@ -38,13 +38,29 @@ const RunRenderer = {
       </div>
       <div class="pnj-card-footer">
         ${
-          r.dossierName
-            ? `<span class="pnj-rank-badge" title="Rangée dans ce dossier">📁 ${CardRenderer._esc(r.dossierName)}</span>`
+          r.dossierId || r.dossierName
+            ? `<span class="pnj-rank-badge" title="Rangée dans ce dossier">📁 ${CardRenderer._esc(
+                (r.dossierId && Dossiers.nameOf(r.dossierId)) || r.dossierName,
+              )}</span>`
             : `<button class="card-action-btn" data-action="run-to-dossier"
                  data-run-name="${CardRenderer._esc(r.type)}">＋ Dossier</button>`
         }
+        ${this._rencontreBtn(r)}
         <button class="card-action-btn danger" data-action="discard-run">Virer</button>
       </div>`;
     return el;
+  },
+
+  /** R4 : miroir du geste « rencontre » de dossierbar (même dossierId, mêmes
+      méthodes DossierBar.open/closeRencontre) — seulement pour une run
+      rangée dans un dossier réellement typé « run ». */
+  _rencontreBtn(r) {
+    if (!r.dossierId || Dossiers.kindOf(r.dossierId) !== "run") return "";
+    const active = Encounter.activeDossierId === r.dossierId;
+    const action = active ? "close-rencontre" : "open-rencontre";
+    const label = active
+      ? "⏹ Fermer la rencontre"
+      : `▶ ${Encounter.hasStash(r.dossierId) ? "Rouvrir" : "Ouvrir"} la rencontre`;
+    return `<button class="card-action-btn" data-action="${action}" data-dossier="${r.dossierId}">${label}</button>`;
   },
 };

@@ -202,6 +202,51 @@ const Encounter = {
     this._commit();
   },
 
+  /* ---- Rencontre persistante (R1, PLAN_RANGER_LA_RUN.md) -----------------
+     Le tracker reste mono-scène ACTIVE ; la persistance multi-scène vit dans
+     ce side-key édition-scopé, keyé par id de dossier `kind:"run"`. Clé
+     additive (défaut `{}`) : aucune migration nécessaire. */
+  _STASH_KEY: "encounter_by_dossier",
+
+  /** Rencontre actuellement ouverte (session, pas persisté) — pointeur léger
+      lu par DiceLog.record (R3) pour taguer les jets. `null` hors rencontre :
+      la scène « mono-active » reste utilisable sans jamais être rattachée à
+      un dossier (usage historique, pas de régression). */
+  activeDossierId: null,
+
+  /** Fermer la rencontre : snapshot de la scène active dans le slot du
+      dossier, puis remise à vide (sans confirmation — c'est un rangement,
+      pas une suppression : le bundle reste récupérable via `restore`). */
+  stash(dossierId) {
+    if (!dossierId) return;
+    const map = Storage.get(this._STASH_KEY, {});
+    map[dossierId] = structuredClone(this.state);
+    Storage.set(this._STASH_KEY, map);
+    this.state = this._empty();
+    if (this.activeDossierId === dossierId) this.activeDossierId = null;
+    this._commit();
+  },
+
+  /** Ouvrir la rencontre : restaure le bundle du dossier dans le tracker
+      (round/pass/turnIndex/combatants/serverId à l'identique). Un dossier
+      sans bundle restaure une scène vide plutôt que d'échouer. */
+  restore(dossierId) {
+    if (!dossierId) return;
+    const map = Storage.get(this._STASH_KEY, {});
+    const bundle = map[dossierId];
+    this.state = bundle ? structuredClone(bundle) : this._empty();
+    this.activeDossierId = dossierId;
+    EncounterRenderer.resetActiveCard();
+    this._commit();
+  },
+
+  /** Affordance UI (R4) : un dossier a-t-il une rencontre rangée ? */
+  hasStash(dossierId) {
+    if (!dossierId) return false;
+    const map = Storage.get(this._STASH_KEY, {});
+    return Object.prototype.hasOwnProperty.call(map, dossierId);
+  },
+
   /* ---- Initiative ---- */
   setInit(pnjId, value) {
     const c = this._find(pnjId);
