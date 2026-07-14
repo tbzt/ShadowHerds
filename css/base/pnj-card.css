@@ -1284,3 +1284,68 @@
   cursor: pointer;
 }
 
+/* ============================================================
+   ROSTER ROW (D6b) — ligne d'annuaire dense, alternative à la carte
+   compacte (D6a) pour consulter un long roster. Un `.cards-zone` qui
+   contient au moins une ligne bascule en une seule colonne (:has,
+   déjà utilisé dans dice-overlay.css) : pas de plomberie côté Hub
+   pour cibler spécifiquement la section Ombres.
+   ============================================================ */
+.cards-zone:has(.roster-row) {
+  column-count: 1;
+}
+.pnj-card.roster-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-1) var(--sp-2);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-bottom: 2px;
+}
+.roster-row-name {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  flex: 1 1 auto;
+  min-width: 0;
+  background: none;
+  border: none;
+  padding: var(--sp-1) 0;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text);
+  font: inherit;
+}
+.roster-row-name:hover .roster-row-nametext {
+  color: var(--accent);
+}
+.roster-row-nametext {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.roster-row-arch {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.roster-row-pools {
+  display: flex;
+  gap: var(--sp-2);
+  flex: 0 0 auto;
+}
+.roster-row-life {
+  flex: 0 0 60px;
+}
+@media (max-width: 640px) {
+  .roster-row-arch,
+  .roster-row-life {
+    display: none;
+  }
+}
+

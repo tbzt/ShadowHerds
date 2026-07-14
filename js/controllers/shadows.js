@@ -43,10 +43,12 @@ const Shadows = Object.assign(
       },
     },
     renderCard: (pnj, opts) =>
-      CardRenderer.render(pnj, ["edit", "remove"], {
-        ...CardRenderer.liveDeps(),
-        context: opts && opts.context,
-      }),
+      opts && opts.context === "library" && RosterView.active()
+        ? CardRenderer.renderRow(pnj, CardRenderer.liveDeps())
+        : CardRenderer.render(pnj, ["edit", "remove"], {
+            ...CardRenderer.liveDeps(),
+            context: opts && opts.context,
+          }),
     // Garde la carte imbriquée dans une fiche contact (déployée via
     // ContactsBook.deployPNJ) synchronisée si le PNJ est modifié/supprimé
     // depuis la grille des Ombres elle-même.

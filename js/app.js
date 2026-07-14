@@ -422,6 +422,8 @@ document.addEventListener("DOMContentLoaded", () => {
   CardMenu.bindDelegation();
   ContactCreate.bindDelegation();
   SelectionMode.bindDelegation();
+  RosterView.init();
+  RosterView.bindDelegation();
   ReorderMode.bindDelegation();
   SidebarToggle.bindDelegation();
   CharGen.bindDelegation();

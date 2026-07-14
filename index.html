@@ -12,7 +12,7 @@
        reproduit l'ordre exact de l'ancien fichier plat, cascade inchangée. -->
   <link rel="stylesheet" href="css/base/foundation.css?v=1046">
   <link rel="stylesheet" href="css/base/forms.css?v=1046">
-  <link rel="stylesheet" href="css/base/pnj-card.css?v=1046">
+  <link rel="stylesheet" href="css/base/pnj-card.css?v=1047">
   <link rel="stylesheet" href="css/base/shadows-contacts.css?v=1046">
   <link rel="stylesheet" href="css/base/modal-core.css?v=1046">
   <link rel="stylesheet" href="css/base/combat-tracker.css?v=1046">
@@ -347,6 +347,7 @@
                      masqué en vue « Tout ». Seul chemin mobile vers Contacts/Serveurs. -->
                 <button class="btn-primary btn-small" id="hub-create-btn" data-action="show-panel" hidden>＋ Créer</button>
                 <button class="btn-secondary btn-small" data-action="encounter-open" title="Ouvrir le suivi de combat">⚔ Combat</button>
+                <button class="btn-secondary btn-small" data-action="toggle-roster-row" title="Basculer entre cartes et annuaire dense (PNJ)">☰ Annuaire</button>
                 <button class="btn-secondary btn-small" data-action="toggle-select-mode" title="Sélectionner plusieurs fiches">☑ Sélectionner</button>
                 <button class="btn-secondary btn-small" data-action="print-sheets" title="Imprimer les fiches de ce dossier (style de l'édition)">🖨 Imprimer</button>
                 <button class="btn-secondary btn-small" data-action="foundry-dossier" title="Exporter les fiches de ce dossier vers Foundry VTT (un fichier par acteur)">⬗ Foundry</button>
@@ -783,7 +784,7 @@
   <!-- creatures.js (238 Ko) chargé à la sélection d'édition (App._loadEditionAssets, CH-P2). -->
   <script defer src="js/widgets/cardfooter.js?v=1046"></script>
   <script defer src="js/widgets/cardmenu.js?v=1046"></script>
-  <script defer src="js/widgets/cardrenderer.js?v=1046"></script>
+  <script defer src="js/widgets/cardrenderer.js?v=1047"></script>
   <script defer src="js/widgets/cardrenderer.sr5.js?v=1046"></script>
   <script defer src="js/widgets/cardrenderer.sr6.js?v=1046"></script>
   <script defer src="js/widgets/cardrenderer.anarchy.js?v=1046"></script>
@@ -791,6 +792,7 @@
   <script defer src="js/widgets/cardrenderer.linked.js?v=1046"></script>
   <script defer src="js/widgets/ui.js?v=1046"></script>
   <script defer src="js/widgets/summonpanel.js?v=1046"></script>
+  <script defer src="js/widgets/rosterview.js?v=1"></script>
   <script defer src="js/widgets/contactrenderer.js?v=1046"></script>
   <script defer src="js/widgets/runrenderer.js?v=1046"></script>
   <script defer src="js/widgets/contentmodal.js?v=1046"></script>
@@ -822,7 +824,7 @@
   <script defer src="js/widgets/singleselect.js?v=1046"></script>
   <script defer src="js/controllers/generator.js?v=1046"></script>
   <script defer src="js/controllers/rungen.js?v=1046"></script>
-  <script defer src="js/controllers/shadows.js?v=1046"></script>
+  <script defer src="js/controllers/shadows.js?v=1047"></script>
   <script defer src="js/controllers/characters.js?v=1046"></script>
   <script defer src="js/controllers/chargen.js?v=1046"></script>
   <script defer src="js/controllers/pnjlookup.js?v=1046"></script>
@@ -845,6 +847,6 @@
   <script defer src="js/controllers/printsheet.js?v=1046"></script>
   <script defer src="js/controllers/sync.js?v=1046"></script>
   <script defer src="js/controllers/foundryexport.js?v=1046"></script>
-  <script defer src="js/app.js?v=1046"></script></body>
+  <script defer src="js/app.js?v=1047"></script></body>
 
 </html>

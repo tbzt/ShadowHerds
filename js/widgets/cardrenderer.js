@@ -69,6 +69,45 @@ const CardRenderer = {
       });
   },
 
+  /** Ligne d'annuaire (D6b) : consultation dense d'une longue bibliothèque
+      — la carte compacte (D6a) replie déjà les zones mais garde son en-tête
+      + accordéon (~480px/fiche mesuré), encore lourd à faire défiler pour
+      15+ PNJ. Une ligne = nom · archétype · Défense/Encaissement (mêmes
+      champs pré-calculés `pnj.defense`/`damageResist` que la carte, PAS de
+      recalcul par édition — Anarchy 2 n'a pas ces champs, la pastille est
+      simplement absente, cohérent avec son modèle narratif) · jauge de
+      moniteur condensée (réutilise `conditionMonitor.gauge`, K6, déjà
+      partagé avec la mini-jauge du cockpit). Clic sur le nom = RosterView
+      rouvre la carte complète (repli), pas de logique dupliquée ici. */
+  renderRow(pnj, deps = CardRenderer.liveDeps()) {
+    const el = document.createElement("div");
+    el.className = "pnj-card roster-row";
+    el.dataset.id = pnj.id;
+    el.dataset.edition = pnj.edition;
+
+    const archStr = pnj.archetype && pnj.archetype !== pnj.name ? pnj.archetype : "";
+    const defense = this._rollPill("Défense", pnj.defense, "Défense — clic pour lancer");
+    const resist = this._rollPill("Encaissement", pnj.damageResist, "Encaissement — clic pour lancer");
+    const cm = App.getEditionModule(pnj.edition).conditionMonitor;
+    const gauge = cm && cm.gauge ? cm.gauge(pnj) : null;
+    let life = "";
+    if (gauge && gauge.total) {
+      const frac = Math.min(1, gauge.filled / gauge.total);
+      const tone = frac >= 0.75 ? " is-crit" : frac >= 0.5 ? " is-warn" : "";
+      life = `<div class="encounter-life roster-row-life" title="Moniteur : ${gauge.filled}/${gauge.total}" aria-hidden="true"><span class="encounter-life-fill${tone}" style="width:${Math.round(frac * 100)}%"></span></div>`;
+    }
+
+    el.innerHTML = `
+      <button type="button" class="roster-row-name" data-action="roster-row-open" data-id="${pnj.id}">
+        <span class="roster-row-nametext">${this._esc(pnj.name)}</span>
+        ${archStr ? `<span class="roster-row-arch">${this._esc(archStr)}</span>` : ""}
+      </button>
+      <div class="roster-row-pools">${defense}${resist}</div>
+      ${life}
+    `;
+    return el;
+  },
+
   /* ---- Header ---- */
   _header(pnj, deps = CardRenderer.liveDeps()) {
     if (pnj.pcLight) return this._headerLight(pnj);
