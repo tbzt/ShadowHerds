@@ -46,14 +46,41 @@ details[open] > summary.modal-section-title::before {
   transition: none;
 }
 
-/* 2) La coquille de carte suppose un cadre à filets (border-top entre zones) ;
-   dans la modale, les zones cohabitent avec des .modal-section à border-bottom.
-   Un filet haut sur chaque card-zone donne le même rythme de séparation. */
+/* 2) Rythme de séparation UNIFORME (ME2c). Sur la carte, les zones se suivent
+   avec un filet-haut ; dans la modale elles cohabitent avec des .modal-section
+   à filet-bas + grande marge → double filet SECT↔ZONE et collage ZONE↔SECT.
+   On aligne tout le monde sur « chaque bloc s'ouvre par un filet-haut » :
+   les .modal-section perdent leur filet-bas/marge, gagnent un filet-haut ; le
+   1ᵉʳ bloc (Identité) n'en porte pas (il suit l'en-tête de la modale). */
 #edit-modal .card-zone {
   border-top: 1px solid var(--border);
 }
 #edit-modal .card-zone:first-of-type {
   border-top: 1px solid var(--border);
+}
+#edit-modal .modal-section {
+  border-top: 1px solid var(--border);
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-top: 12px;
+  padding-bottom: 16px;
+}
+#modal-form-body > .modal-section:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+/* 3) Alignement horizontal (ME2c) : le contenu des zones de carte est indenté
+   de 14px (padding de zone-toggle/body-pad), superflu dans la modale déjà
+   padée à 20px — on aligne le bord GAUCHE sur celui des .modal-section (le bord
+   droit ne s'aligne sur rien). Le toggle garde son padding-droit pour que le
+   chevron ne déborde pas ; le corps s'étend pleine largeur. */
+#edit-modal .zone-toggle {
+  padding-left: 0;
+}
+#edit-modal .zone-body-pad {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* ME1f (constat C) : gouttières/paddings des rangées em-* alignés sur les
