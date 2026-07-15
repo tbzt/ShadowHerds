@@ -2850,6 +2850,37 @@ const EditionSR5 = {
     return this.buildLoadout(archetype, proRating, special, role, milieu);
   },
 
+  /** Décompose une réserve dérivée en contributions nommées {label,value}
+      (source unique consommée par le popover ⓘ et le résultat du jet — ne
+      duplique pas la formule de recalc, lit les mêmes attributs totaux). */
+  reserveBreakdown(pnj, key) {
+    const A = (k) => Actor.attr(pnj, k);
+    switch (key) {
+      case "defense":
+        return [
+          { label: Utils.attrFullName("REA"), value: A("REA") },
+          { label: Utils.attrFullName("INT"), value: A("INT") },
+        ];
+      case "damageResist":
+        return [
+          { label: Utils.attrFullName("CON"), value: A("CON") },
+          { label: "Armure", value: pnj.armure || 0 },
+        ];
+      case "drainResist": {
+        const attr =
+          pnj.traditionDrainAttr ||
+          (["Mage hermétique", "Chaman"].includes(pnj.special) ? "LOG" : null);
+        if (!attr) return null;
+        return [
+          { label: Utils.attrFullName("VOL"), value: A("VOL") },
+          { label: Utils.attrFullName(attr), value: A(attr) },
+        ];
+      }
+      default:
+        return null;
+    }
+  },
+
   recalc(pnj) {
     const { proRating } = pnj;
     // Chance : init douce pour les PNJ sauvegardés avant l'ajout du champ
