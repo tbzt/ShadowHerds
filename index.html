@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="css/base/pnj-card.css?v=1097">
   <link rel="stylesheet" href="css/base/shadows-contacts.css?v=1097">
   <link rel="stylesheet" href="css/base/modal-core.css?v=1097">
-  <link rel="stylesheet" href="css/base/combat-tracker.css?v=1097">
+  <link rel="stylesheet" href="css/base/combat-tracker.css?v=1098">
   <link rel="stylesheet" href="css/base/settings-misc.css?v=1097">
   <link rel="stylesheet" href="css/base/topbar-dice-quick.css?v=1097">
   <link rel="stylesheet" href="css/base/responsive.css?v=1097">
@@ -692,12 +692,21 @@
             <button class="btn-secondary btn-small" data-action="next-round">Round suivant</button>
             <!-- K1 : rail compact (mobile) vs liste complète (drag, menu ⋯) — bascule de classe, masqué ≥641px (cf. CSS). -->
             <button class="btn-secondary btn-small encounter-rail-toggle" data-action="toggle-rail" title="Basculer réglette compacte / liste complète">☰ Réglette/Liste</button>
+            <!-- R2-E : scène Matrice autonome (moteur Matrice seul, pas d'initiative)
+                 — bascule state.motors, cf. Encounter.toggleSceneType. -->
+            <button class="btn-secondary btn-small" id="encounter-scene-type-toggle" data-action="toggle-scene-type" title="Basculer entre scène de combat et scène Matrice seule (decker qui infiltre pendant que les autres négocient)">⚡ Scène Matrice</button>
             <button class="danger-btn btn-small" data-action="clear-encounter">Vider la scène</button>
           </div>
           <div id="encounter-add-panel" class="encounter-add-panel" hidden></div>
           <!-- K1 : réglette compacte (rail de jetons, sous 641px par défaut) — sœur de la liste complète, jamais les deux visibles à la fois. -->
           <div id="encounter-rail" class="encounter-rail"></div>
           <div id="encounter-list" class="encounter-list"></div>
+          <!-- R2-E : scène Matrice seule — remplace la liste/réglette d'init
+               (vides et hors-sujet ici), cf. .encounter-modal.is-matrix-only. -->
+          <div id="encounter-matrix-only-note" class="encounter-matrix-only-note" hidden>
+            Scène Matrice — le decker infiltre pendant que les autres négocient.
+            Suivez l'intrusion dans le tiroir ⚡ ci-dessous.
+          </div>
           <!-- Action primaire de la boucle : collée en pied de colonne (zone
                pouce sur mobile), séparée des actions secondaires ci-dessus. -->
           <div class="encounter-turn-bar">
@@ -811,7 +820,7 @@
        → controllers → app) -->
   <script defer src="js/core/utils.js?v=1097"></script>
   <script defer src="js/core/debug.js?v=1097"></script>
-  <script defer src="js/core/storage.js?v=1098"></script>
+  <script defer src="js/core/storage.js?v=1099"></script>
   <script defer src="js/rules/actor.js?v=1097"></script>
   <script defer src="js/rules/dice.js?v=1097"></script>
   <script defer src="js/rules/metavariants.js?v=1097"></script>
@@ -839,7 +848,7 @@
   <!-- creatures.js (238 Ko) chargé à la sélection d'édition (App._loadEditionAssets, CH-P2). -->
   <script defer src="js/widgets/cardfooter.js?v=1097"></script>
   <script defer src="js/widgets/cardmenu.js?v=1097"></script>
-  <script defer src="js/widgets/cardrenderer.js?v=1098"></script>
+  <script defer src="js/widgets/cardrenderer.js?v=1099"></script>
   <script defer src="js/widgets/cardrenderer.sr5.js?v=1097"></script>
   <script defer src="js/widgets/cardrenderer.sr6.js?v=1097"></script>
   <script defer src="js/widgets/cardrenderer.anarchy.js?v=1097"></script>
@@ -859,13 +868,13 @@
   <script defer src="js/widgets/bulkbar.js?v=1097"></script>
   <script defer src="js/widgets/selectionmode.js?v=1097"></script>
   <script defer src="js/widgets/reordermode.js?v=1097"></script>
-  <script defer src="js/widgets/serverrenderer.js?v=1097"></script>
+  <script defer src="js/widgets/serverrenderer.js?v=1098"></script>
   <script defer src="js/widgets/cyberdeckrenderer.js?v=1097"></script>
-  <script defer src="js/widgets/encounterrenderer.js?v=1097"></script>
+  <script defer src="js/widgets/encounterrenderer.js?v=1098"></script>
   <script defer src="js/widgets/spectatorview.js?v=1097"></script>
-  <script defer src="js/controllers/servers.js?v=1097"></script>
-  <script defer src="js/controllers/intrusion.js?v=1097"></script>
-  <script defer src="js/controllers/deckrun.js?v=1097"></script>
+  <script defer src="js/controllers/servers.js?v=1098"></script>
+  <script defer src="js/controllers/intrusion.js?v=1098"></script>
+  <script defer src="js/controllers/deckrun.js?v=1098"></script>
   <script defer src="js/widgets/dicelog.js?v=1097"></script>
   <script defer src="js/widgets/notepad.js?v=1097"></script>
   <script defer src="js/widgets/opposedroll.js?v=1097"></script>
@@ -890,7 +899,7 @@
   <script defer src="js/widgets/toursteps.js?v=1097"></script>
   <script defer src="js/widgets/tour.js?v=1097"></script>
   <script defer src="js/controllers/portrait.js?v=1097"></script>
-  <script defer src="js/controllers/encounter.js?v=1098"></script>
+  <script defer src="js/controllers/encounter.js?v=1099"></script>
   <script defer src="js/controllers/editmodal.js?v=1097"></script>
   <script defer src="js/controllers/contactgen.js?v=1097"></script>
   <script defer src="js/controllers/contacts.js?v=1097"></script>

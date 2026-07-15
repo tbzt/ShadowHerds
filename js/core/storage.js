@@ -156,7 +156,7 @@ const Storage = {
       ajoutée à `_MIGRATIONS`. Publique (contrairement à `_MIGRATIONS`) : les
       paquets exportés (`Backup`) la tamponnent pour savoir, à l'import, s'ils
       ont besoin d'être migrés. Voir CONTRIBUTING.md § Versionner les schémas. */
-  SCHEMA_VERSION: 7,
+  SCHEMA_VERSION: 8,
 
   /** Chaîne de migrations de schéma, ordonnée par version croissante. Chaque
       `up()` mute le `localStorage` brut (pas de dépendance à `_edition`) et
@@ -439,6 +439,74 @@ const Storage = {
         });
         if (migrated)
           Debug.warn("storage", "migration v7 (sceneMotors)", { migrated });
+      },
+    },
+    {
+      v: 8,
+      /** R2-B (PLANS/PLAN_RECABLAGE_MASTER.md, D-R2-1/D-R2-2) : l'état vivant
+          d'intrusion quitte `srv.intrusion` (Actif, un seul serveur affiché à
+          la fois) pour la scène : `state.matrix{serverId → intrusion}`, qui
+          admet PLUSIEURS serveurs actifs en parallèle. Un serveur dont
+          l'intrusion n'a jamais bougé (toujours à l'état neuf) n'a rien à
+          préserver — seuls les serveurs avec une progression réelle sont
+          déplacés dans la scène de LEUR édition ; `intrusion` est ensuite
+          retiré du serveur (redevenu une pure définition). Idempotente :
+          ignore les scènes déjà à `v >= 3` et les serveurs sans `intrusion`. */
+      up() {
+        const srvSuffix = "_servers_all";
+        const srvKeys = Object.keys(localStorage).filter(
+          (k) => k.startsWith("sr_pnj_v2_") && k.endsWith(srvSuffix)
+        );
+        const isPristine = (i) =>
+          !i.open && !i.alerted && !i.turn &&
+          !(i.ics && Object.keys(i.ics).length) &&
+          !i.marks && !i.ss && !(i.ssLog && i.ssLog.length) &&
+          !i.illUser && !i.illAdmin && !i.access && !i.minor && !i.critical && !i.converged;
+        let migrated = 0;
+        srvKeys.forEach((k) => {
+          const editionPrefix = k.slice(0, -srvSuffix.length); // "sr_pnj_v2_<edition>"
+          const raw = localStorage.getItem(k);
+          if (raw === null) return;
+          let servers;
+          try { servers = JSON.parse(raw); }
+          catch { return; }
+          if (!Array.isArray(servers)) return;
+          const toMove = [];
+          let changed = false;
+          servers.forEach((srv) => {
+            if (!srv || !srv.intrusion) return;
+            if (!isPristine(srv.intrusion)) toMove.push([srv.id, srv.intrusion]);
+            delete srv.intrusion;
+            changed = true;
+          });
+          if (changed) localStorage.setItem(k, JSON.stringify(servers));
+          if (!toMove.length) return;
+          const sceneKey = `${editionPrefix}_encounter_current`;
+          const sceneRaw = localStorage.getItem(sceneKey);
+          let scene;
+          try { scene = sceneRaw !== null ? JSON.parse(sceneRaw) : null; }
+          catch { scene = null; }
+          // Pas de scène persistée dans cette édition (l'intrusion a pu être
+          // touchée depuis la bibliothèque sans jamais ouvrir le tracker) :
+          // en créer une, même forme que Encounter._empty() — sinon la
+          // progression migrée n'aurait nulle part où vivre (perte silencieuse).
+          if (!scene) {
+            scene = {
+              v: 3, round: 1, pass: 1, turnIndex: 0, combatants: [],
+              serverId: null, noise: 0, focusId: null, motors: ["combat"], matrix: {},
+            };
+          } else if (scene.v >= 3) {
+            return;
+          } else {
+            scene.v = 3;
+            scene.matrix ||= {};
+          }
+          toMove.forEach(([id, intr]) => { scene.matrix[id] = intr; });
+          localStorage.setItem(sceneKey, JSON.stringify(scene));
+          migrated += toMove.length;
+        });
+        if (migrated)
+          Debug.warn("storage", "migration v8 (intrusionToScene)", { migrated });
       },
     },
   ],

@@ -1825,8 +1825,10 @@ const CardRenderer = {
           const pnj = PnjLookup.find(id);
           const srv = pnj && DeckRun.targetServer(pnj);
           if (!srv) break;
-          Intrusion._get(srv.id);
-          srv.intrusion.open = true;
+          // R2-B : l'état vivant est scène-scopé (Encounter.state.matrix),
+          // plus srv.intrusion.
+          const intr = typeof Encounter !== "undefined" ? Encounter.intrusionFor(srv.id) : null;
+          if (intr) intr.open = true;
           Servers.save();
           Servers.render();
           if (typeof Encounter !== "undefined" && Encounter.state && Encounter.state.serverId === srv.id) {

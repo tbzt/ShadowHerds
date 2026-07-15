@@ -8,6 +8,21 @@
    Matrix (js/matrix.js), comme dans Servers.
    ============================================================ */
 const ServerRenderer = {
+  /** R2-B : état d'intrusion scène-scopé d'un serveur (`Encounter.state.
+      matrix`), lu ici pour l'affichage — remplace `srv.intrusion`. Un seul
+      point de résolution plutôt que de faire percoler un paramètre `intr`
+      dans les 4 fonctions de rendu ci-dessous (card/intrusionPanel/ssBlock/
+      dieuBlock) — jamais muté ici (rendu pur, comme le reste du module).
+      Repli défensif (état neuf, non persisté) si Encounter n'est pas encore
+      chargé, pour ne jamais faire planter un rendu appelé tôt. */
+  _intr(srv) {
+    if (typeof Encounter !== "undefined" && Encounter.intrusionFor) {
+      const intr = Encounter.intrusionFor(srv.id);
+      if (intr) return intr;
+    }
+    return Intrusion.newState();
+  },
+
   renderForm(ed) {
     const esc = CardRenderer._esc.bind(CardRenderer);
     const catalog = Matrix.use(ed).icCatalog();
@@ -106,7 +121,7 @@ const ServerRenderer = {
     card.className = "server-card";
     card.dataset.id = srv.id;
 
-    const intr = srv.intrusion || { open: false };
+    const intr = this._intr(srv);
     const catalog = Matrix.use(srv.edition).icCatalog();
 
     /* -- header + stats -- */
@@ -273,7 +288,7 @@ const ServerRenderer = {
      (carte du panneau Serveurs), ces options n'apparaissent pas. */
   intrusionPanel(srv, { icMonitorSize, inEncounter, launchedKeys } = {}) {
     const esc = CardRenderer._esc.bind(CardRenderer);
-    const intr = srv.intrusion;
+    const intr = this._intr(srv);
     const catalog = Matrix.use(srv.edition).icCatalog();
     const size = icMonitorSize != null ? icMonitorSize : Matrix.use(srv.edition).icMonitorSize(srv.indice);
     const launched = new Set(launchedKeys || []);
@@ -374,7 +389,7 @@ const ServerRenderer = {
   /* ---- Jauge SS (SR5/SR6) ---- */
   ssBlock(srv) {
     const esc = CardRenderer._esc.bind(CardRenderer);
-    const intr = srv.intrusion;
+    const intr = this._intr(srv);
     const ss = intr.ss;
     const pct = Utils.clamp((ss / 40) * 100, 0, 100);
     const zone = ss >= 40 ? "conv" : ss >= 30 ? "hot" : ss >= 20 ? "warm" : "cool";
@@ -450,7 +465,7 @@ const ServerRenderer = {
 
   /* ---- Surveillance du DIEU (Anarchy) ---- */
   dieuBlock(srv) {
-    const intr = srv.intrusion;
+    const intr = this._intr(srv);
     const riskMin = intr.minor * 2;
     const seuil = intr.critical;
 

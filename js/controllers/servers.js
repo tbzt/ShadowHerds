@@ -152,7 +152,9 @@ const Servers = Object.assign(
         sculpture: Matrix.pickSculpture(profile.sev),
         spider: null,
         notes: "",
-        intrusion: Intrusion.newState(),
+        // R2-B : plus d'`intrusion` ici — le serveur redevient une pure
+        // définition, l'état vivant vit scène-scopé (Encounter.state.matrix),
+        // créé à la volée par Intrusion._state.
       };
 
       if ((document.getElementById("srv-spider") || {}).checked) {
@@ -346,7 +348,13 @@ const Servers = Object.assign(
       const srv = this.find(id);
       if (!srv || key === "patrouilleuse") return;
       srv.icList = srv.icList.filter((k) => k !== key);
-      if (srv.intrusion && srv.intrusion.ics) delete srv.intrusion.ics[key];
+      // R2-B : l'état vivant de ce serveur (s'il y en a un) vit scène-scopé,
+      // pas sur srv — nettoyé là où il se trouve réellement.
+      const intr =
+        typeof Encounter !== "undefined" && Encounter.state && Encounter.state.matrix
+          ? Encounter.state.matrix[id]
+          : null;
+      if (intr && intr.ics) delete intr.ics[key];
       this.save();
       this.render();
     },
@@ -543,10 +551,16 @@ const Servers = Object.assign(
       const matrixDock = document.getElementById("encounter-matrix-dock");
       if (matrixDock) matrixDock.addEventListener("click", onClick);
 
-      panel.addEventListener("change", (e) => {
-        const el = e.target.closest('[data-action="edit-note"]');
-        if (el) this.editNote(el.dataset.id, el.value);
-      });
+      const onChange = (e) => {
+        const noteEl = e.target.closest('[data-action="edit-note"]');
+        if (noteEl) return this.editNote(noteEl.dataset.id, noteEl.value);
+        // R2-B : sélecteur multi-serveur du tiroir Matrice.
+        const switchEl = e.target.closest('[data-action="switch-matrix-server"]');
+        if (switchEl) Encounter.linkServer(switchEl.value);
+      };
+      panel.addEventListener("change", onChange);
+      if (matrixDrawer) matrixDrawer.addEventListener("change", onChange);
+      if (matrixDock) matrixDock.addEventListener("change", onChange);
     },
 
     renderForm() {

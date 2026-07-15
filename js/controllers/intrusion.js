@@ -6,14 +6,17 @@
    déployées, Score de Surveillance, marks, Surveillance du DIEU)
    de la génération/persistance des serveurs (js/controllers/servers.js).
 
-   Ce module ne possède aucune donnée : il lit et mute l'objet
-   `srv.intrusion` porté par chaque serveur, puis délègue toute
-   persistance et tout re-rendu à Servers (Servers.save/render).
+   R2-B : cet état vivant est scène-scopée (`Encounter.state.matrix
+   {serverId → intrusion}`, D-R2-1/D-R2-2) — plus `srv.intrusion`, qui
+   ne redevient qu'une définition. Ce module ne possède toujours aucune
+   donnée : il lit et mute l'état renvoyé par `Encounter.intrusionFor(id)`,
+   puis délègue la persistance à `Encounter._commit()` (source unique de
+   la scène) + un rendu du panneau Serveurs (qui affiche aussi cet état).
    Les catalogues/règles de CI restent délégués à Matrix, comme
    dans Servers.
    ============================================================ */
 const Intrusion = {
-  /** État neuf d'une intrusion (forme de l'objet `srv.intrusion`). */
+  /** État neuf d'une intrusion (forme de l'objet `state.matrix[serverId]`). */
   newState() {
     return {
       open: false,
@@ -33,54 +36,63 @@ const Intrusion = {
     };
   },
 
-  /** Serveur + intrusion garantie (créée à la volée si absente). */
+  /** Serveur (définition), pour les besoins (édition, icList, indice…) des
+      mutateurs ci-dessous — jamais muté ici (R2-B : plus d'`intrusion` sur
+      l'objet serveur). */
   _get(id) {
-    const srv = Servers.find(id);
-    if (!srv) return null;
-    if (!srv.intrusion) srv.intrusion = this.newState();
-    return srv;
+    return Servers.find(id) || null;
   },
 
-  /** Persiste + rend le panneau Serveurs, comme chaque mutateur ci-dessous
-      faisait individuellement — factorisé pour ajouter un seul point de
-      rafraîchissement du tiroir Matrice (K3, Encounter) sans le dupliquer
-      15 fois. Même garde `typeof Encounter !== "undefined"` que
-      DiceRoller/UI.toggleMonitor (app.js, ui.js) pour notifier un module
-      qui charge après celui-ci sans dépendance dure dans ce sens. */
-  _persist(srv) {
+  /** État d'intrusion scène-scopé garanti (créé à la volée) — source unique
+      lue/écrite par tous les mutateurs ci-dessous. `null` si aucune scène
+      n'est chargée (garde défensive, ne devrait pas arriver une fois une
+      édition sélectionnée). */
+  _state(id) {
+    if (typeof Encounter === "undefined") return null;
+    return Encounter.intrusionFor(id);
+  },
+
+  /** Persiste la scène (source unique de l'état vivant) + rend le panneau
+      Serveurs, qui affiche aussi cet état — factorisé pour ne pas dupliquer
+      15 fois le même couple d'appels. `Encounter._commit()` recouvre déjà
+      le rendu du tiroir/dock (R2-B : plus besoin du pont `notifyServerChanged`,
+      l'écriture a déjà eu lieu sur `state.matrix`). */
+  _persist() {
     Servers.save();
     Servers.render();
-    if (typeof Encounter !== "undefined") Encounter.notifyServerChanged(srv);
+    if (typeof Encounter !== "undefined") Encounter._commit();
   },
 
   toggleIntrusion(id) {
     const srv = this._get(id);
-    if (!srv) return;
-    srv.intrusion.open = !srv.intrusion.open;
-    this._persist(srv);
+    const intr = this._state(id);
+    if (!srv || !intr) return;
+    intr.open = !intr.open;
+    this._persist();
   },
 
   /** L'alerte est donnée (la Patrouilleuse a repéré l'intrus). */
   setAlert(id) {
     const srv = this._get(id);
-    if (!srv) return;
-    srv.intrusion.alerted = !srv.intrusion.alerted;
-    if (srv.intrusion.alerted && srv.intrusion.turn === 0) srv.intrusion.turn = 1;
-    this._persist(srv);
+    const intr = this._state(id);
+    if (!srv || !intr) return;
+    intr.alerted = !intr.alerted;
+    if (intr.alerted && intr.turn === 0) intr.turn = 1;
+    this._persist();
   },
 
   /** Tour suivant : déploie la prochaine CI (1/tour) + SS SR6. */
   nextTurn(id) {
     const srv = this._get(id);
-    if (!srv) return;
-    const intr = srv.intrusion;
+    const intr = this._state(id);
+    if (!srv || !intr) return;
     intr.turn += 1;
 
     // SR6 : accès illégaux maintenus (+1/round Utilisateur, +3/round Admin)
     if (intr.illUser > 0 || intr.illAdmin > 0) {
       const delta = Matrix.use(srv.edition).overwatchDelta(intr.illUser, intr.illAdmin);
       if (delta > 0) {
-        this._pushSS(srv, delta, `accès illégaux maintenus (${intr.illUser}U/${intr.illAdmin}A)`);
+        this._pushSS(intr, srv, delta, `accès illégaux maintenus (${intr.illUser}U/${intr.illAdmin}A)`);
       }
     }
 
@@ -102,51 +114,55 @@ const Intrusion = {
           const label = Servers.icCatalog(srv.edition)[next]?.label || next;
           Debug.log("servers", "CI déployée", { server: srv.name, turn: intr.turn, ic: next });
           toast(`Le serveur déploie : ${label}.`);
-          // K9 : la CI déployée rejoint l'ordre d'initiative sans second geste
-          // (« zéro clic »), mais seulement si ce serveur est celui lié à la
-          // scène en cours. Même garde descendante que _persist ; launchIC est
-          // idempotent (no-op si la CI y est déjà) et toaste « rejoint l'init ».
-          if (typeof Encounter !== "undefined" && Encounter.state && Encounter.state.serverId === id) {
+          // R2-C : la CI déployée rejoint l'ordre d'initiative sans second
+          // geste (« zéro clic »), pour N'IMPORTE QUEL serveur de la scène —
+          // plus de pont conditionnel `serverId === id` (plusieurs serveurs
+          // actifs en parallèle, R2-B). launchIC est idempotent (no-op si la
+          // CI y est déjà) et toaste « rejoint l'init ».
+          if (typeof Encounter !== "undefined" && Encounter.state) {
             Encounter.launchIC(id, next);
           }
         }
       }
     }
-    this._persist(srv);
+    this._persist();
   },
 
   resetIntrusion(id) {
     const srv = this._get(id);
-    if (!srv) return;
+    const intr = this._state(id);
+    if (!srv || !intr) return;
     if (!confirm("Réinitialiser l'intrusion (tours, CI, surveillance) ?")) return;
-    const open = srv.intrusion.open;
-    srv.intrusion = this.newState();
-    srv.intrusion.open = open;
-    this._persist(srv);
+    const open = intr.open;
+    const fresh = this.newState();
+    fresh.open = open;
+    Object.assign(intr, fresh);
+    this._persist();
   },
 
   /** Relance une CI détruite (dès le tour suivant, au choix du serveur). */
   relaunchIC(id, key) {
-    const srv = this._get(id);
-    if (!srv) return;
-    srv.intrusion.ics[key] = {
+    const intr = this._state(id);
+    if (!intr) return;
+    intr.ics[key] = {
       active: true,
       dmg: 0,
       down: false,
-      turn: srv.intrusion.turn,
+      turn: intr.turn,
     };
-    this._persist(srv);
+    this._persist();
   },
 
   /** Clic sur une case du moniteur d'une CI. */
   icBox(id, key, n) {
     const srv = this._get(id);
-    if (!srv) return;
-    const st = (srv.intrusion.ics[key] ||= { active: true, dmg: 0, down: false });
+    const intr = this._state(id);
+    if (!srv || !intr) return;
+    const st = (intr.ics[key] ||= { active: true, dmg: 0, down: false });
     st.dmg = st.dmg === n ? n - 1 : n;
     const size = Servers.icMonitorSize(srv);
     st.down = st.dmg >= size;
-    this._persist(srv);
+    this._persist();
   },
 
   /* ---- Jets des CI (SR5/SR6 — les glaces Anarchy ont des succès
@@ -191,15 +207,14 @@ const Intrusion = {
 
   /* ---- Marks (SR5) ---- */
   addMarks(id, delta) {
-    const srv = this._get(id);
-    if (!srv) return;
-    srv.intrusion.marks = Utils.clamp(srv.intrusion.marks + delta, 0, 3);
-    this._persist(srv);
+    const intr = this._state(id);
+    if (!intr) return;
+    intr.marks = Utils.clamp(intr.marks + delta, 0, 3);
+    this._persist();
   },
 
   /* ---- Score de Surveillance (SR5/SR6) ---- */
-  _pushSS(srv, delta, label) {
-    const intr = srv.intrusion;
+  _pushSS(intr, srv, delta, label) {
     intr.ss = Math.max(0, intr.ss + delta);
     Debug.log("servers", "SS", { server: srv.name, delta, total: intr.ss, label });
     intr.ssLog.unshift({ t: Date.now(), d: delta, label });
@@ -208,86 +223,88 @@ const Intrusion = {
 
   addSS(id, delta, label) {
     const srv = this._get(id);
-    if (!srv) return;
-    this._pushSS(srv, delta, label || "succès de la défense");
-    this._persist(srv);
+    const intr = this._state(id);
+    if (!srv || !intr) return;
+    this._pushSS(intr, srv, delta, label || "succès de la défense");
+    this._persist();
   },
 
   /** SR5 : +2D6 toutes les 15 minutes (jet réel, loggé au journal). */
   addSS2D6(id) {
     const srv = this._get(id);
-    if (!srv) return;
+    const intr = this._state(id);
+    if (!srv || !intr) return;
     const res = Dice.computeInitiative(0, 2);
     DiceRoller.show(res, { label: "Surveillance DIEU : +2D6 SS", who: srv.name });
-    srv.intrusion.lastRollT = Date.now();
-    this._pushSS(srv, res.total, `+2D6 (temps) : [${res.faces.join(", ")}]`);
-    this._persist(srv);
+    intr.lastRollT = Date.now();
+    this._pushSS(intr, srv, res.total, `+2D6 (temps) : [${res.faces.join(", ")}]`);
+    this._persist();
   },
 
   undoSS(id) {
-    const srv = this._get(id);
-    if (!srv || !srv.intrusion.ssLog.length) return;
-    const last = srv.intrusion.ssLog.shift();
-    srv.intrusion.ss = Math.max(0, srv.intrusion.ss - last.d);
-    this._persist(srv);
+    const intr = this._state(id);
+    if (!intr || !intr.ssLog.length) return;
+    const last = intr.ssLog.shift();
+    intr.ss = Math.max(0, intr.ss - last.d);
+    this._persist();
   },
 
   /** Reboot du decker : SS et marks repartent à zéro. */
   resetSS(id) {
-    const srv = this._get(id);
-    if (!srv) return;
+    const intr = this._state(id);
+    if (!intr) return;
     if (!confirm("Reboot du decker : SS et marks à zéro ?")) return;
-    srv.intrusion.ss = 0;
-    srv.intrusion.ssLog = [];
-    srv.intrusion.marks = 0;
-    srv.intrusion.lastRollT = 0;
-    this._persist(srv);
+    intr.ss = 0;
+    intr.ssLog = [];
+    intr.marks = 0;
+    intr.lastRollT = 0;
+    this._persist();
     toast("SS remis à zéro (reboot : perte des marks, choc d'éjection en RV).");
   },
 
   /** SR6 : compteurs d'accès illégaux maintenus. */
   setIllegal(id, kind, delta) {
-    const srv = this._get(id);
-    if (!srv) return;
+    const intr = this._state(id);
+    if (!intr) return;
     const k = kind === "admin" ? "illAdmin" : "illUser";
-    srv.intrusion[k] = Utils.clamp(srv.intrusion[k] + delta, 0, 9);
-    this._persist(srv);
+    intr[k] = Utils.clamp(intr[k] + delta, 0, 9);
+    this._persist();
   },
 
   /** SR6 : niveau d'accès obtenu sur ce serveur (0 Invité/1 Utilisateur/
       2 Administrateur, p.179) — miroir des marks SR5, gagné via Forcer
       l'accès / Sonder l'accès (M7, côté decker). */
   setAccess(id, delta) {
-    const srv = this._get(id);
-    if (!srv) return;
-    srv.intrusion.access = Utils.clamp((srv.intrusion.access || 0) + delta, 0, 2);
-    this._persist(srv);
+    const intr = this._state(id);
+    if (!intr) return;
+    intr.access = Utils.clamp((intr.access || 0) + delta, 0, 2);
+    this._persist();
   },
 
   /* ---- Surveillance du DIEU (Anarchy p.218) ---- */
   dieu(id, kind, delta) {
-    const srv = this._get(id);
-    if (!srv) return;
+    const intr = this._state(id);
+    if (!intr) return;
     const k = kind === "critical" ? "critical" : "minor";
-    srv.intrusion[k] = Utils.clamp(srv.intrusion[k] + delta, 0, 9);
-    this._persist(srv);
+    intr[k] = Utils.clamp(intr[k] + delta, 0, 9);
+    this._persist();
   },
 
   disaster(id) {
-    const srv = this._get(id);
-    if (!srv) return;
-    srv.intrusion.converged = !srv.intrusion.converged;
-    this._persist(srv);
+    const intr = this._state(id);
+    if (!intr) return;
+    intr.converged = !intr.converged;
+    this._persist();
   },
 
   /** Anarchy : reboot + 1 h hors ligne — les malus disparaissent. */
   rebootDecker(id) {
-    const srv = this._get(id);
-    if (!srv) return;
-    srv.intrusion.minor = 0;
-    srv.intrusion.critical = 0;
-    srv.intrusion.converged = false;
-    this._persist(srv);
+    const intr = this._state(id);
+    if (!intr) return;
+    intr.minor = 0;
+    intr.critical = 0;
+    intr.converged = false;
+    this._persist();
     toast("Reboot + 1 h hors ligne : malus DIEU effacés, tous les accès sont perdus.");
   },
 };

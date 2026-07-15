@@ -3,8 +3,9 @@
 /* ============================================================
    DECKRUN — ciblage vivant du decker (M3, PLAN_MATRICE_CYBERDECK.md).
    Mirror minimal d'Intrusion, mais côté decker : quel serveur ce
-   decker vise-t-il ? État nesté sur `pnj.cyberdeck.run` (comme
-   `srv.intrusion` sur le serveur) — pas de 5ᵉ collection Storage
+   decker vise-t-il ? État nesté sur `pnj.cyberdeck.run` (comme l'intrusion
+   d'un serveur vit dans `Encounter.state.matrix`, R2-B) — pas de 5ᵉ
+   collection Storage
    (prohibition n°2). Ne possède aucune donnée propre : lit/mute
    l'objet porté par le PNJ, toute persistance passe par UI
    (_entityCopies/persistEntity, motif F2 — un decker vit en

@@ -336,6 +336,27 @@
 .encounter-modal.is-narrative .encounter-narrative-only {
   display: flex;
 }
+
+/* ---- R2-E : scène Matrice seule (state.motors sans "combat") ----
+   Le tiroir Matrice devient la surface principale : liste/réglette d'init,
+   « Ajouter », « Lancer & classer », « Round/Tour suivant » n'ont plus de
+   sens (aucun combattant chair requis) — remplacés par une note qui pointe
+   vers le tiroir ⚡. */
+.encounter-modal.is-matrix-only .encounter-list,
+.encounter-modal.is-matrix-only .encounter-rail,
+.encounter-modal.is-matrix-only .encounter-toolbar [data-action="toggle-add-picker"],
+.encounter-modal.is-matrix-only .encounter-toolbar [data-action="roll-and-sort"],
+.encounter-modal.is-matrix-only .encounter-toolbar [data-action="next-round"],
+.encounter-modal.is-matrix-only .encounter-turn-bar [data-action="next-turn"],
+.encounter-modal.is-matrix-only .encounter-turn-bar .encounter-narrative-only {
+  display: none;
+}
+.encounter-matrix-only-note {
+  padding: var(--sp-3);
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
 /* Rappel du silence des actions chiffrées en narratif (T1.5 FIELD_STUDY REC-6) —
    même registre discret que .encounter-progress, posée juste au-dessus. */
 .encounter-narrative-note {
@@ -1077,6 +1098,11 @@
   margin-bottom: var(--sp-3);
   padding-bottom: var(--sp-2);
   border-bottom: 1px solid var(--border);
+}
+/* R2-B : sélecteur multi-serveur (plusieurs intrusions actives en scène). */
+.matrix-server-switch {
+  width: 100%;
+  margin-bottom: var(--sp-2);
 }
 
 /* ---- K4 : combattant matriciel (CI) dans le tracker ---- */

@@ -32,6 +32,19 @@ const EncounterRenderer = {
     const modal = document.querySelector(".encounter-modal");
     if (modal) modal.classList.toggle("is-narrative", narrative);
 
+    // R2-E : scène Matrice seule (state.motors sans "combat") — pas de
+    // réglette d'init ni de liste vide à afficher, le tiroir Matrice
+    // (toujours ouvert dans ce mode) est la surface principale.
+    const matrixOnly = !(state.motors || []).includes("combat");
+    if (modal) modal.classList.toggle("is-matrix-only", matrixOnly);
+    const toggleBtn = document.getElementById("encounter-scene-type-toggle");
+    if (toggleBtn) {
+      toggleBtn.textContent = matrixOnly ? "⚔ Scène Combat" : "⚡ Scène Matrice";
+      toggleBtn.setAttribute("aria-pressed", String(matrixOnly));
+    }
+    const matrixNote = document.getElementById("encounter-matrix-only-note");
+    if (matrixNote) matrixNote.hidden = !matrixOnly;
+
     // Volet B : en narratif (pas de tour d'initiative), la fiche active suit un
     // combattant « en focus » (tap sur une ligne, cf. focus-active). On résout
     // ici l'id effectif — le tap mémorisé s'il est encore vivant, sinon le
@@ -980,7 +993,9 @@ const EncounterRenderer = {
     }
     const M = Matrix.use(srv.edition);
     const ic = M.icCatalog()[m.icKey] || { label: r.name };
-    const st = (srv.intrusion && srv.intrusion.ics[m.icKey]) || { dmg: 0, down: false };
+    // R2-B : l'état vivant vit dans la scène (state.matrix), plus srv.intrusion.
+    const intr = Encounter.state.matrix && Encounter.state.matrix[srv.id];
+    const st = (intr && intr.ics[m.icKey]) || { dmg: 0, down: false };
     const size = M.icMonitorSize(srv.indice);
     const label = (ic.label || r.name).replace(/^CI /, "");
     const eff = typeof ic.effect === "function" ? ic.effect(srv) : "";
@@ -1269,19 +1284,18 @@ const EncounterRenderer = {
 
   /** Bouton Matrice (barre pouce) + tiroir (K3). srv : serveur déjà résolu
       par Encounter (jamais lu ici — rendu pur), ou null si aucun lien.
-      level : état dérivé 0-3 (Encounter.matrixState). Le contenu du tiroir
-      réutilise verbatim ServerRenderer.intrusionPanel/matrixDrawerHeader —
-      rien n'est recalculé ici (cf. audit intrusion.js pré-K3). */
-  renderMatrix(srv, level, launchedKeys) {
+      level : état dérivé 0-3 (Encounter.matrixState). activeCount : nombre
+      de CI actives (Encounter._activeICCount, R2-B — l'état vivant vit dans
+      la scène, pas sur srv). Le contenu du tiroir réutilise verbatim
+      ServerRenderer.intrusionPanel/matrixDrawerHeader — rien n'est recalculé
+      ici (cf. audit intrusion.js pré-K3). */
+  renderMatrix(srv, level, launchedKeys, activeCount, activeServers) {
     const btn = document.getElementById("encounter-matrix-btn");
     if (btn) {
       btn.hidden = level === 0;
       btn.classList.toggle("is-alert", level === 2);
       btn.classList.toggle("is-ic", level === 3);
       if (srv) {
-        const activeCount = srv.intrusion
-          ? Object.values(srv.intrusion.ics || {}).filter((s) => s.active && !s.down).length
-          : 0;
         const initial = Utils.escHtml((srv.name || "?").slice(0, 1));
         btn.innerHTML =
           level === 3
@@ -1299,12 +1313,24 @@ const EncounterRenderer = {
     const dockTitle = document.getElementById("matrix-dock-title");
     if (dockTitle) dockTitle.textContent = srv ? "Matrice — " + srv.name : "Matrice";
 
+    // R2-B (sous-ticket 3) : plusieurs serveurs peuvent tourner en parallèle
+    // dans la scène (state.matrix) — un sélecteur n'apparaît que s'il y en a
+    // plus d'un (sinon le titre suffit, rien de neuf à l'écran par défaut).
+    const switcher =
+      srv && activeServers && activeServers.length > 1
+        ? `<select class="matrix-server-switch" data-action="switch-matrix-server" title="Serveur affiché dans le tiroir">
+            ${activeServers
+              .map((s) => `<option value="${s.id}" ${s.id === srv.id ? "selected" : ""}>${Utils.escHtml(s.name)}</option>`)
+              .join("")}
+          </select>`
+        : "";
     // inEncounter + launchedKeys : ServerRenderer ajoute « ⚔ Init » sur chaque
     // CI active pas encore dans l'ordre (K4). Le reste du contenu est le panneau
     // d'intrusion réutilisé verbatim (K3). Calculé une fois, posé dans les deux
     // montages (tiroir mobile/dock ≥1100px) — jamais recalculé deux fois.
     const html = srv
-      ? ServerRenderer.matrixDrawerHeader(srv) +
+      ? switcher +
+        ServerRenderer.matrixDrawerHeader(srv) +
         ServerRenderer.intrusionPanel(srv, { inEncounter: true, launchedKeys: launchedKeys || [] })
       : "";
     const body = document.getElementById("matrix-drawer-body");

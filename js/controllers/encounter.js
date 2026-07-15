@@ -19,7 +19,7 @@ const Encounter = {
       schémas). Les scènes persistées avant l'ajout de ce champ sont
       tamponnées `v:1` par cette migration au boot : `load()` peut donc
       supposer l'état déjà à niveau, sans rétro-compat locale. */
-  _V: 2,
+  _V: 3,
 
   /** J3 (journal des jets) : incrémenté à chaque scène fraîche (_empty),
       pour distinguer deux combats séparés qui repartiraient chacun au round
@@ -30,7 +30,7 @@ const Encounter = {
   _sceneSeq: 0,
   _empty() {
     this._sceneSeq++;
-    return { v: this._V, round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null, noise: 0, focusId: null, motors: ["combat"] };
+    return { v: this._V, round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null, noise: 0, focusId: null, motors: ["combat"], matrix: {} };
   },
 
   state: null,
@@ -483,9 +483,9 @@ const Encounter = {
       fond de liste, sans initiative. */
   _isDown(c) {
     // K4 : une CI matricielle est « hors de combat » quand son moniteur
-    // matriciel est plein (source unique srv.intrusion.ics[key].down, gérée
-    // par Intrusion) — jamais via combatDisposition (ce n'est pas une entité
-    // chair sans pnj de pool).
+    // matriciel est plein (source unique state.matrix[serverId].ics[key].down,
+    // gérée par Intrusion, R2-B) — jamais via combatDisposition (ce n'est
+    // pas une entité chair sans pnj de pool).
     if (c.kind === "matrix") {
       const st = this._matrixICState(c);
       return !!(st && st.down);
@@ -496,14 +496,14 @@ const Encounter = {
     return pnj ? !!mod.combatDisposition(pnj).down : false;
   },
 
-  /** État vivant d'une CI (moniteur, détruite) lu sur le serveur — jamais
+  /** État vivant d'une CI (moniteur, détruite) lu dans la scène — jamais
       copié dans le combattant. null si le combattant n'est pas matriciel ou
       si le serveur/la CI a disparu. */
   _matrixICState(c) {
     const m = c && c.matrix;
     if (!m) return null;
-    const srv = Servers.find(m.serverId);
-    return (srv && srv.intrusion && srv.intrusion.ics[m.icKey]) || null;
+    const intr = this.state.matrix && this.state.matrix[m.serverId];
+    return (intr && intr.ics[m.icKey]) || null;
   },
 
   /** Un combattant agit-il dans la passe courante ? Hors de combat → jamais.
@@ -585,7 +585,8 @@ const Encounter = {
     // (SR5 p.249, SR6 p.188). Rappel seulement si un serveur alerté est lié et
     // que l'édition a des CI chiffrées (hasAttrs) ; Anarchy déploie à sa façon.
     const srv = this._linkedServer();
-    if (srv && Matrix.use(srv.edition).hasAttrs() && srv.intrusion && srv.intrusion.alerted) {
+    const intr = srv && this.state.matrix && this.state.matrix[srv.id];
+    if (srv && Matrix.use(srv.edition).hasAttrs() && intr && intr.alerted) {
       toast("Nouveau tour : le serveur peut déployer une CI.");
     }
   },
@@ -890,22 +891,65 @@ const Encounter = {
     );
   },
 
-  /* ---- Matrice contextuelle (K3) : un seul serveur lié à la scène ----
-     state.serverId vit dans la scène déjà persistée (encounter_current,
-     prohibition n°2 — aucune nouvelle clé Storage). Le contenu du tiroir
-     (CI, surveillance, jets) reste entièrement porté par Intrusion/
-     ServerRenderer : ce module ne fait que lier/délier et dériver l'état
-     0-3 affiché sur le bouton de la barre pouce. */
+  /* ---- Matrice, scène-scopée (R2-B) ----
+     `state.matrix{serverId → intrusion}` porte l'état vivant (tours, CI
+     déployées, surveillance) de TOUS les serveurs actifs dans la scène —
+     D-R2-1 (quitte `srv.intrusion`, qui ne redevient qu'une définition) +
+     D-R2-2 (plusieurs serveurs possibles, pas un `serverId` unique).
+     `state.serverId` garde un rôle plus étroit : le serveur actuellement
+     AFFICHÉ dans le tiroir (porte 3 : quelle CI rejoint l'init par défaut),
+     pas celui qui « possède » les données. */
+  /** État d'intrusion d'un serveur dans CETTE scène — créé à la volée, lu et
+      muté par `Intrusion` (jamais par ce module). Utilisable par la
+      bibliothèque comme par le tiroir : source unique, quel que soit le
+      point d'entrée. */
+  intrusionFor(id) {
+    if (!this.state || !id) return null;
+    this.state.matrix ||= {};
+    return (this.state.matrix[id] ||= Intrusion.newState());
+  },
+
+  /** Serveurs ayant une intrusion en cours dans cette scène (au moins un
+      champ non pristine) — alimente le sélecteur multi-serveur du tiroir
+      (R2-B, sous-ticket 3). */
+  activeMatrixServerIds() {
+    if (!this.state || !this.state.matrix) return [];
+    return Object.keys(this.state.matrix).filter((id) => Servers.find(id));
+  },
+
   _linkedServer() {
     return this.state.serverId ? Servers.find(this.state.serverId) : null;
   },
 
-  /** État Matrice dérivé (0 absente · 1 liée · 2 en alerte · 3 CI en jeu),
-      recalculé à chaque rendu — jamais persisté séparément. */
+  /** R2-E : bascule le type de scène — Combat (init/roster, défaut) ↔
+      Matrice seule (moteur Matrice seul, pas d'initiative : le decker
+      infiltre pendant que les autres négocient). Binaire volontairement
+      simple (D-R2-3 garde `motors` extensible pour un futur « Combat +
+      Matrice », non tranché ici — pas de sur-construction avant besoin
+      réel). */
+  toggleSceneType() {
+    const isMatrixOnly = !this.state.motors.includes("combat");
+    this.state.motors = isMatrixOnly ? ["combat"] : ["matrix"];
+    this._commit();
+    if (!isMatrixOnly) {
+      // Le tiroir Matrice devient la surface principale : l'ouvrir tout de
+      // suite plutôt que de laisser un MJ chercher où suivre l'intrusion.
+      // Un seul geste (pas ré-ouvert de force à chaque commit suivant — le
+      // MJ peut le refermer sans qu'on le lui réimpose).
+      this.openMatrixDrawer();
+      toast("Scène Matrice — pas d'initiative, suivez l'intrusion.");
+    } else {
+      toast("Scène de combat.");
+    }
+  },
+
+  /** État Matrice dérivé du serveur affiché (0 absente · 1 liée · 2 en
+      alerte · 3 CI en jeu), recalculé à chaque rendu — jamais persisté
+      séparément. */
   matrixState() {
     const srv = this._linkedServer();
     if (!srv) return 0;
-    const intr = srv.intrusion;
+    const intr = this.state.matrix && this.state.matrix[srv.id];
     if (!intr) return 1;
     const activeIC = Object.values(intr.ics || {}).filter((s) => s.active && !s.down).length;
     if (activeIC > 0) return 3;
@@ -914,43 +958,50 @@ const Encounter = {
   },
 
   /** Serveurs proposables à la liaison (porte 1, picker) : tous sauf celui
-      déjà lié (le retaper serait un no-op). */
+      déjà affiché (le retaper serait un no-op). Une intrusion déjà en cours
+      sur un autre serveur (activeMatrixServerIds) N'EST PLUS bloquante —
+      plusieurs serveurs peuvent tourner en parallèle dans la même scène. */
   _serverCandidates() {
     return Servers.data.all.filter((s) => s.id !== this.state.serverId);
   },
 
-  /** Lie un serveur à la scène (portes K3 : picker, « ⚔ Envoyer au combat »,
-      implicite en K4). Confirmation seulement si un autre serveur est déjà
-      lié avec une CI en jeu (remplacement, un seul serveur en V1). */
+  /** Affiche un serveur dans le tiroir (portes K3 : picker, « ⚔ Envoyer au
+      combat », implicite en K4, sélecteur multi-serveur). Ne « remplace »
+      plus rien au sens data (chaque serveur garde son état dans
+      `state.matrix`) — seule la porte 3 (quelle CI rejoint l'init par
+      défaut) suit le serveur affiché, d'où une confirmation si une CI de
+      l'ANCIEN serveur affiché est en jeu (on ne la perd pas, on cesse
+      seulement de la mettre en avant). */
   async linkServer(id) {
     if (!id || this.state.serverId === id) return;
     if (this.state.serverId && this.matrixState() === 3) {
       const ok = await Dialog.confirm({
-        title: "Remplacer le serveur lié",
-        message: "Une CI est en jeu sur le serveur actuellement lié à la scène. Le remplacer par ce nouveau serveur ?",
-        confirmLabel: "Remplacer",
-        danger: true,
+        title: "Changer de serveur affiché",
+        message: "Une CI est en jeu sur le serveur actuellement affiché. L'intrusion continue en arrière-plan — afficher ce nouveau serveur à la place ?",
+        confirmLabel: "Afficher",
       });
       if (!ok) return;
     }
     this.state.serverId = id;
-    // Garantit srv.intrusion pour le tiroir (mutation légitime d'une action,
-    // pas d'un rendu) — même accesseur que le panneau Serveurs, rien de dupliqué.
-    Intrusion._get(id);
+    // Garantit l'état d'intrusion scène-scopé pour le tiroir (mutation
+    // légitime d'une action, pas d'un rendu) — même accesseur que le
+    // panneau Serveurs, rien de dupliqué.
+    this.intrusionFor(id);
     this._commit();
-    toast("Serveur lié à la scène.");
+    toast("Serveur affiché dans le tiroir.");
   },
 
-  /** Délie le serveur courant (tiroir uniquement, cf. plan) — confirmation
-      si une CI est en jeu. */
+  /** Cesse d'afficher le serveur courant dans le tiroir (l'intrusion, elle,
+      continue d'exister dans `state.matrix` — rien n'est perdu, R2-B).
+      Confirmation informative seulement si une CI est en jeu, plus de
+      `danger` : ce n'est plus une suppression de données. */
   async unlinkServer() {
     if (!this.state.serverId) return;
     if (this.matrixState() === 3) {
       const ok = await Dialog.confirm({
-        title: "Délier le serveur",
-        message: "Une CI est en jeu sur ce serveur. Le délier de la scène quand même ?",
-        confirmLabel: "Délier",
-        danger: true,
+        title: "Masquer le serveur",
+        message: "Une CI est en jeu sur ce serveur. L'intrusion continue en arrière-plan — cesser de l'afficher dans le tiroir ?",
+        confirmLabel: "Masquer",
       });
       if (!ok) return;
     }
@@ -997,11 +1048,13 @@ const Encounter = {
       .map((c) => c.matrix.icKey);
   },
 
-  /** K4 : une CI rejoint l'ordre d'initiative (demande explicite + entretien
-      Sofia : plus jamais d'oubli de la CI). Lancée depuis le tiroir, donc le
-      serveur est déjà lié (porte 3 implicite satisfaite). Init du livre via
-      icCombatant (module d'édition — prohibition n°1) ; l'état vivant (moniteur)
-      reste sur srv.intrusion, jamais copié. Insérée à sa place d'init sans
+  /** K4/R2-C : une CI rejoint l'ordre d'initiative — automatiquement au
+      déploiement (Intrusion.nextTurn, sans second geste, résout #1) ou à la
+      demande explicite depuis le tiroir. Fonctionne pour N'IMPORTE QUEL
+      serveur de la scène, pas seulement celui affiché (R2-B : plusieurs
+      serveurs actifs en parallèle). Init du livre via icCombatant (module
+      d'édition — prohibition n°1) ; l'état vivant (moniteur) reste dans
+      `state.matrix[serverId]`, jamais copié. Insérée à sa place d'init sans
       voler le tour courant. No-op si déjà en scène. */
   launchIC(serverId, icKey) {
     const srv = Servers.find(serverId);
@@ -1136,20 +1189,24 @@ const Encounter = {
     this._render();
   },
 
-  /** K3 : re-rend le bouton/tiroir Matrice quand le serveur lié change
-      hors du cycle de commit d'Encounter — les actions du tiroir
-      (next-turn, ic-box, roll-ic…) passent par Intrusion._persist, pas par
-      Encounter._commit. Même garde que notifyPnjChanged : no-op si ce
-      n'est pas le serveur lié. Appelé par Intrusion._persist. */
-  notifyServerChanged(srv) {
-    if (!srv || !this.state || this.state.serverId !== srv.id) return;
-    // K4 : si des CI de ce serveur sont dans l'init, leur état (moniteur,
-    // détruite) a pu changer → re-rendre toute la scène (liste + jetons +
-    // fiche active), pas seulement le bouton. _render rafraîchit aussi le
-    // tiroir en fin de parcours.
-    if (this.state.combatants.some((c) => c.kind === "matrix")) this._render();
-    else EncounterRenderer.renderMatrix(srv, this.matrixState(), this._launchedICKeys());
+  /** Nombre de CI actives (non détruites) d'un serveur, dans CETTE scène —
+      pour le badge du bouton Matrice (barre pouce). Résolu ici (pas dans
+      EncounterRenderer, qui reste un rendu pur). */
+  _activeICCount(srv) {
+    const intr = srv && this.state.matrix && this.state.matrix[srv.id];
+    return intr ? Object.values(intr.ics || {}).filter((s) => s.active && !s.down).length : 0;
   },
+
+  /** R2-B (sous-ticket 3) : serveurs {id, name} avec une intrusion en cours
+      dans cette scène — alimente le sélecteur multi-serveur du tiroir
+      (affiché seulement s'il y en a plus d'un ; sinon le titre suffit). */
+  _activeMatrixServers() {
+    return this.activeMatrixServerIds()
+      .map((id) => Servers.find(id))
+      .filter(Boolean)
+      .map((s) => ({ id: s.id, name: s.name }));
+  },
+
   /** Rendu complet (liste, fiche du combattant actif, résumé sidebar) —
       factorisé pour être appelable aussi bien après un commit qu'au
       chargement initial de l'édition (sidebar à jour sans ouvrir le
@@ -1163,14 +1220,21 @@ const Encounter = {
       this.state.serverId = null;
       this.save();
     }
-    // Garantit srv.intrusion avant le rendu (Intrusion._get, mutation
-    // idempotente) sans jamais faire lire/muter Servers à EncounterRenderer
-    // (qui reste un rendu pur — reçoit le serveur déjà résolu).
+    // Garantit l'état d'intrusion scène-scopé avant le rendu (Intrusion._get,
+    // mutation idempotente, R2-B) sans jamais faire lire/muter Servers à
+    // EncounterRenderer (qui reste un rendu pur — reçoit le serveur déjà
+    // résolu).
     const srv = this.state.serverId ? Intrusion._get(this.state.serverId) : null;
     EncounterRenderer.render(this.state, rows, model);
     EncounterRenderer.renderActiveCard(rows, this.state, model);
     EncounterRenderer.renderSidebar(this.state, rows, model);
-    EncounterRenderer.renderMatrix(srv, this.matrixState(), this._launchedICKeys());
+    EncounterRenderer.renderMatrix(
+      srv,
+      this.matrixState(),
+      this._launchedICKeys(),
+      this._activeICCount(srv),
+      this._activeMatrixServers(),
+    );
   },
   _commit() {
     this.save();
@@ -1439,6 +1503,9 @@ const Encounter = {
           if (modal) modal.classList.toggle("rail-compact");
           break;
         }
+        case "toggle-scene-type":
+          this.toggleSceneType();
+          break;
         case "edge-step":
           // K5 : ±1 Atout du combattant actif (SR6).
           this.adjustEdge(id, parseInt(el.dataset.delta, 10) || 0);
