@@ -112,20 +112,22 @@ const ItemResolver = {
   /** Aplati un `equipPools` en `[{category, items:[{id, label}]}]` pour un
       sélecteur groupé. `labelMap` fixe l'ordre ET les libellés lisibles ;
       les clés absentes de `labelMap` (ou vides) sont ignorées.
-      id = "<clé>::<index à plat>" (décodable par addEquipString) ;
-      label = nom avant « [ » (la stat-line reste dans la chaîne poussée). */
+      id = "<clé>::<index à plat>" (décodable par addEquipString, référence
+      la position dans `equipPools` — inchangée par le tri d'affichage
+      ci-dessous) ; label = nom avant « [ » (la stat-line reste dans la
+      chaîne poussée). Items triés par label (affichage seulement) pour ne
+      pas dépendre de l'ordre d'ajout des suppléments dans le catalogue. */
   flattenEquipPools(equipPools, labelMap) {
     const out = [];
     Object.keys(labelMap).forEach((key) => {
       const flat = ItemResolver._flatPool(equipPools[key]);
       if (!flat.length) return;
-      out.push({
-        category: labelMap[key],
-        items: flat.map((str, idx) => ({
-          id: `${key}::${idx}`,
-          label: String(str).split(" [")[0].trim(),
-        })),
-      });
+      const items = flat.map((str, idx) => ({
+        id: `${key}::${idx}`,
+        label: String(str).split(" [")[0].trim(),
+      }));
+      items.sort((a, b) => a.label.localeCompare(b.label, "fr", { sensitivity: "base" }));
+      out.push({ category: labelMap[key], items });
     });
     return out;
   },
