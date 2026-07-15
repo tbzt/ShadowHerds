@@ -12,7 +12,7 @@ commit.
 
 ## [Non publié]
 
-## [1.44.0] — 2026-07-16
+## [1.44.2] — 2026-07-16
 
 ### Table
 - **Explication décomposée des réserves (ⓘ)** : sur Défense, Encaissement
@@ -24,6 +24,17 @@ commit.
   intégrale 15 + Casque 3 ») quand elle est reconstituable depuis
   l'équipement. Popover ancré au clic/survol sur desktop, plein écran
   glissé du bas sur mobile.
+
+## [1.44.0] — 2026-07-15
+
+### Générer
+- **Équipement SR6 plus cohérent, et riggers correctement équipés** :
+  même refonte qu'en SR5 côté génération — l'arsenal reflète mieux le
+  niveau et le rôle du PNJ. Un archétype rigger (même sans le mot
+  « Rigger » dans son nom) reçoit désormais ses compétences (Pilotage,
+  Ingénierie) et son câblage de contrôle. Les mages et chamanes
+  reçoivent un **focus de pouvoir**, absent jusqu'ici : il augmente
+  réellement leurs jets de Sorcellerie et de Conjuration.
 
 ## [1.43.0] — 2026-07-15
 

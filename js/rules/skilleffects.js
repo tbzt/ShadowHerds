@@ -131,6 +131,19 @@ const SkillEffects = {
       source: "Focus de puissance",
       page: "SR5 p.318",
     },
+    // SR6 p.157 : « Focus de pouvoir » — terme distinct de « Focus de
+    // puissance » (SR5), regex disjointe, pas de contamination croisée.
+    // SR6 n'a pas de compétence Contresort séparée (Sorcellerie/Conjuration/
+    // Astral seulement) ; le livre décrit le focus de pouvoir comme
+    // contribuant à « tout test utilisant la Magie » — scope limité aux deux
+    // actions réellement motorisées par Magic.actionPool (V3).
+    {
+      match: /focus de pouvoir/i,
+      skills: ["Sorcellerie", "Conjuration"],
+      perRating: [null, 1, 2, 3, 4, 5, 6],
+      source: "Focus de pouvoir",
+      page: "SR6 p.157",
+    },
   ],
 
   /** Résout la valeur à l'indice d'un item porteur, ou null si l'objet

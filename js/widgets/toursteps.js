@@ -274,7 +274,12 @@ const TourSteps = {
       body: "La modale d'édition PNJ suit désormais l'ordre de la carte, avec les sections lourdes (Sorts, Compétences, Augmentations…) repliées et résumées. L'indice de Magie (SR5/SR6) est toujours éditable, y compris à 0 — Sorts/Pouvoirs restent visibles mais verrouillés tant qu'il est nul. Une section Connaissances permet d'ajouter une connaissance libre avec sa catégorie (Rue, Académique, Professionnelle, Hobbies), qui câble le bon attribut.",
     },
     {
-      id: "wn-reserve-breakdown", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.44.0", fallback: "center",
+      id: "wn-sr6-loadout-rigger", anchor: "nav-generator", tours: ["whatsnew"], since: "1.44.0", fallback: "center",
+      title: "Équipement SR6 plus cohérent, riggers correctement équipés",
+      body: "Même refonte qu'en SR5 : l'arsenal généré reflète mieux le niveau et le rôle du PNJ. Un archétype rigger (même sans le mot « Rigger » dans son nom) reçoit ses compétences et son câblage de contrôle. Mages et chamanes reçoivent un focus de pouvoir qui augmente réellement leurs jets de Sorcellerie et de Conjuration.",
+    },
+    {
+      id: "wn-reserve-breakdown", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.44.2", fallback: "center",
       title: "Explication décomposée des réserves",
       body: "Défense, Encaissement, Drain : un bouton ⓘ séparé du lancer ouvre désormais le détail, source nommée + chiffre (« Défense 7 = Réaction 3 + Intuition 4 »), au lieu du survol figé. Le résultat du jet porte le même décompte. En SR5, l'Encaissement détaille aussi l'armure pièce par pièce quand elle est reconstituable depuis l'équipement.",
     },

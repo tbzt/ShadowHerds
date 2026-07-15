@@ -2306,9 +2306,17 @@ const EditionSR5 = {
       nanotechnologie: "militaire", equipSpecial: "courant",
       fociCaster: "pro", fociAdepte: "pro",
     },
+    // V4 — vérifié au livre (Shadowrun 5 - Livre de Règles + Run & Gun) :
+    // valeurs de Dispo réelles cross-checkées ligne à ligne dans les tables
+    // du chapitre équipement, pas des suppositions. Bandes D1 : courant≤6,
+    // pro 7-11, militaire 12-17, blackops 18+.
     tierByItem: {
-      "Fusil Gauss": "blackops", "Ares Redline": "blackops", "Ares Lancer MP Laser": "blackops",
-      "Monofilament": "militaire", "Katana": "pro",
+      "Fusil Gauss": "blackops", // Ares Thunderstruck, Run & Gun p.62 : Dispo 24 — CONFIRMÉ
+      "Ares Lancer MP Laser": "blackops", // Run & Gun p.64 : Dispo 18 — CONFIRMÉ (à la limite)
+      "Ares Redline": "militaire", // Run & Gun p.64 : Dispo 14 — CORRIGÉ (était blackops, deviné avant vérif)
+      "Monofilament": "militaire", "Katana": "pro", // Livre de Règles p.421 : Dispo 9R — CONFIRMÉ
+      "AK-97": "courant", // Livre de Règles p.427 : Dispo 4R — le fusil d'assaut de base est bien plus
+      // répandu que la catégorie fusilsAssaut (pro) ne le laisse supposer par défaut.
       "Fétiche": "courant", "Focus de puissance": "militaire",
     },
     tagsByCat: {
