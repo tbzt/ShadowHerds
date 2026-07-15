@@ -70,6 +70,30 @@ const SkillEffects = {
       source: "Amélioration mnémonique",
       page: "SR5 p.464",
     },
+    // SR5 p.463 : Phéromones optimisées « ajoute l'indice aux tests des
+    // groupes Comédie et Influence (si la cible perçoit le personnage) ».
+    // Membres des deux groupes transcrits du livre (section Compétences
+    // sociales) : Comédie = Escroquerie/Imposture/Représentation ;
+    // Influence = Étiquette/Leadership/Négociation. Le volet Limite sociale
+    // est déjà motorisé à part (BonusEngine, tranche 1) — facette distincte.
+    // LIMITE ASSUMÉE : la condition « si la cible perçoit le personnage »
+    // n'est pas modélisable (pas d'état-cible au jet) → bonus baké, la source
+    // affichée laisse le MJ l'écarter si la cible ne peut pas percevoir/sentir
+    // le PNJ (cohérent avec le baking conditionnel de WeaponEffects/Modulateur).
+    {
+      match: /phéromones optimisées/i,
+      skills: [
+        "Escroquerie",
+        "Imposture",
+        "Représentation",
+        "Étiquette",
+        "Leadership",
+        "Négociation",
+      ],
+      perRating: [null, 1, 2, 3],
+      source: "Phéromones optimisées",
+      page: "SR5 p.463",
+    },
   ],
 
   /** Résout la valeur à l'indice d'un item porteur, ou null si l'objet
