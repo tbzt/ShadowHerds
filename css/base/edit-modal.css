@@ -1,0 +1,146 @@
+/* Mode édition PNJ (#edit-modal) — tout le préfixe em-*, extrait de
+   combat-tracker.css/modal-core.css/pnj-card.css (ME1a). */
+
+/* ---- Compétences éditables dans le modal ---- */
+.em-skills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.em-skill-row {
+  display: grid;
+  grid-template-columns: 1fr 56px minmax(110px, 1.2fr) 28px;
+  align-items: center;
+  gap: 0.45rem;
+}
+.em-skill-row-anarchy {
+  grid-template-columns: 1fr 48px 44px minmax(100px, 1fr) 28px;
+}
+/* #63 : ligne stepper d'indice (équipement à plage non résolue) — nom +
+   indice numérique + retrait, pas de 4ᵉ colonne spécialité. */
+.em-equip-rating-row {
+  grid-template-columns: 1fr 70px 28px;
+}
+.em-skill-name {
+  font-size: var(--fs-sm);
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.em-skill-attr {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  font-style: normal;
+}
+.em-skill-row input,
+.em-skill-row select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: var(--sp-1) 6px;
+  font-size: var(--fs-xs);
+}
+.em-skill-row input:focus,
+.em-skill-row select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.em-skill-del {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: var(--fs-md);
+  line-height: 1;
+  padding: 2px 0;
+  transition: all var(--dur-base);
+}
+.em-skill-del:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.em-add-skill {
+  display: flex;
+  gap: 0.45rem;
+  margin-top: 0.7rem;
+  align-items: center;
+}
+.em-add-skill .form-group.ss {
+  flex: 1;
+  min-width: 0;
+}
+.em-add-skill .ss-control {
+  padding: 5px 7px;
+  font-size: var(--fs-xs);
+}
+.em-add-skill-btn {
+  background: color-mix(in srgb, var(--accent) 15%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 4px;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: var(--fs-xs);
+  padding: 5px var(--sp-3);
+  white-space: nowrap;
+}
+.em-add-skill-btn:hover {
+  background: color-mix(in srgb, var(--accent) 25%, var(--bg));
+}
+
+/* Compteurs libres du suivi de campagne : lignes compactes label + retrait,
+   puis une rangée d'ajout. */
+.em-camp-customs {
+  margin-top: var(--sp-3);
+}
+.em-camp-track-row,
+.em-camp-add-row {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  margin-bottom: var(--sp-2);
+}
+.em-camp-track-row .em-camp-label,
+.em-camp-add-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Palette de couleur de la vignette (portrait) */
+.em-color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.em-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.em-color-swatch.selected {
+  border-color: var(--text);
+}
+.em-color-custom {
+  position: relative;
+  overflow: hidden;
+  background: conic-gradient(
+    red, yellow, lime, cyan, blue, magenta, red
+  );
+}
+.em-color-custom-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0;
+}
