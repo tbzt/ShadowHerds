@@ -288,7 +288,7 @@ const Encounter = {
 
   /** Ajustement ±1 de l'initiative (Vague B) : corrige un score lancé sans
       convoquer le clavier (edge, bonus oublié). Ne re-trie pas — la ligne ne
-      saute pas (le tri reste explicite : ↓ Trier / Lancer & classer). Départ à
+      saute pas (le tri reste explicite : ⚄ Lancer & classer). Départ à
       0 si aucune init posée. Jamais négatif. */
   adjustInit(pnjId, delta) {
     const c = this._find(pnjId);
@@ -374,16 +374,11 @@ const Encounter = {
     });
   },
 
-  sortByInit() {
-    this._sortInPlace();
-    this.state.turnIndex = this._firstEligibleIndex();
-    this._commit();
-  },
-
   /** Lancer + classer en un geste (CH combat) : supprime la friction « lancer
       puis trier à la main » du round 1, qui contredisait le round 2+ où
       nextRound relance ET trie déjà tout seul. Un seul commit. Sans effet de
-      tri en Anarchy (init null → fin de liste), comme sortByInit. */
+      tri en Anarchy (init null → fin de liste). R1c : c'était l'unique tri
+      explicite restant après le retrait du bouton « ↓ Trier » (redondant). */
   rollAndSort() {
     let rolled = 0;
     for (const c of this.state.combatants) {
@@ -1169,11 +1164,18 @@ const Encounter = {
     if (panel && !panel.hidden) EncounterRenderer.renderPicker(this._candidates(), this._serverCandidates());
   },
 
+  /** R1c : bouton-bascule libellée (aria-expanded), pas une icône nue — le
+      tiroir ouvert/fermé doit être évident sans avoir à cliquer pour vérifier. */
   toggleAddPicker() {
     const panel = document.getElementById("encounter-add-panel");
     if (!panel) return;
     panel.hidden = !panel.hidden;
     if (!panel.hidden) EncounterRenderer.renderPicker(this._candidates(), this._serverCandidates());
+    const btn = document.getElementById("encounter-add-toggle");
+    if (btn) {
+      btn.setAttribute("aria-expanded", String(!panel.hidden));
+      btn.textContent = panel.hidden ? "➕ Ajouter" : "✕ Fermer";
+    }
   },
 
   /* ---- Overlay ---- */
@@ -1402,9 +1404,6 @@ const Encounter = {
           break;
         case "roll-all-init":
           this.rollAllInit();
-          break;
-        case "sort-init":
-          this.sortByInit();
           break;
         case "roll-and-sort":
           this.rollAndSort();

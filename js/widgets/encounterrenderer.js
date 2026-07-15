@@ -932,14 +932,20 @@ const EncounterRenderer = {
     box.innerHTML = "";
     box.hidden = !pnj;
     if (pnj) {
-      pnj._zoneOpen = { ...pnj._zoneOpen, details: false };
+      // R1b : la fiche active s'ouvre en vue Combat (moniteurs+attaques
+      // dépliés, incarnation/détails repliés, cf. CardRenderer._VIEWS). Appliquée
+      // sur un CLONE (pli superficiel de pnj + copie de _zoneOpen) : applyView
+      // écrase les 4 zones + les modules à lenses, on ne veut pas que ce pli de
+      // combat devienne la mémoire de la carte bibliothèque (K2 ne touchait
+      // qu'un seul champ, applyView est plus large — cf. plan R1b).
+      const combatPnj = { ...pnj, _zoneOpen: { ...pnj._zoneOpen } };
+      CardRenderer.applyView(combatPnj, "combat");
       // K2 : bandeau d'état (hors de combat/retardé/devrait fuir, réutilise
       // les badges de la ligne) au-dessus de la carte, note de scène éditable
       // en dessous — la fiche « vue combat » n'affiche que ce que le MJ
-      // regarde à chaque tour (l'init est masquée en CSS, les attributs sont
-      // déjà repliés par pnj._zoneOpen ci-dessus).
+      // regarde à chaque tour (l'init est masquée en CSS).
       box.innerHTML = `<div class="encounter-active-top">${this._activeTop(active, state)}</div>`;
-      box.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
+      box.appendChild(CardRenderer.render(combatPnj, [], CardRenderer.liveDeps()));
       // K5 : rangée Atout (SR6, combatModel.edgeTracker) — organe d'édition
       // sur la fiche active. Absente en SR5/Anarchy (drapeau non posé).
       if (model && model.edgeTracker) box.insertAdjacentHTML("beforeend", this._activeEdge(active));
@@ -1190,7 +1196,11 @@ const EncounterRenderer = {
     if (!wasOpen) {
       const pnj = PnjLookup.find(pnjId);
       if (!pnj) return;
-      body.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
+      // R1b : même vue Combat que la fiche active, sur un clone (cf. son
+      // commentaire dans renderActiveCard) — ne pas polluer le pli bibliothèque.
+      const combatPnj = { ...pnj, _zoneOpen: { ...pnj._zoneOpen } };
+      CardRenderer.applyView(combatPnj, "combat");
+      body.appendChild(CardRenderer.render(combatPnj, [], CardRenderer.liveDeps()));
       body.hidden = false;
       const btn = react.querySelector(`.react-expand-btn[data-id="${esc}"]`);
       if (btn) btn.classList.add("is-open");
