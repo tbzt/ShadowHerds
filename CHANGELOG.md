@@ -12,7 +12,7 @@ commit.
 
 ## [Non publié]
 
-## [1.40.0] — 2026-07-15
+## [1.41.0] — 2026-07-15
 
 ### Table
 - **Navigation « Créer » / « Jouer » + espace Jouer** : la barre latérale se
@@ -23,6 +23,16 @@ commit.
 - **Le générateur de missions devient « Topos »** : il produit des *amorces*
   de mission ; « Faire une run » promeut un topos en run (le mot canon « run »
   reste réservé à la mission jouée). Désambiguïse « générer » vs « jouer ».
+
+## [1.40.0] — 2026-07-15
+
+### Générer
+- **Équipement plus cohérent en SR5** : un PNJ généré porte désormais un
+  arsenal qui reflète vraiment son niveau et son rôle — un grouille n'hérite
+  plus d'un fusil Gauss par hasard, un flic penche vers l'électromatraque,
+  un adepte vers la lame. Les mages, chamanes et adeptes reçoivent enfin un
+  **focus magique**, absent jusqu'ici : il augmente réellement leurs jets de
+  sort, d'invocation ou d'attaque selon son type.
 
 ## [1.39.0] — 2026-07-15
 
