@@ -543,7 +543,10 @@ const EditModal = {
         ${SingleSelect.create({
           id: "em-meta",
           label: "Métatype",
-          value: pnj.meta || "",
+          // pnj.meta ne porte que la souche (5 valeurs) — la métavariante
+          // vit à part dans pnj.metavariant (cf. generate() sr5/sr6/anarchy1
+          // et _readForm ci-dessous, qui la re-dérive au save).
+          value: pnj.metavariant || pnj.meta || "",
           placeholder: "Métatype",
           // #66 : métatype (5 souches) ET métavariante (ex. Troll Cyclope)
           // dans le même picker groupé, fourni par l'édition — jamais un
@@ -1146,13 +1149,35 @@ const EditModal = {
     if (el) el.value = (pnj.edges || []).join("\n");
   },
 
+  /* #66 : la valeur du picker peut être une souche OU une métavariante/
+     métaconscience/zoocanthrope (même liste plate que metaOptions()) —
+     la re-résoudre via Metavariants pour retomber sur le même quatuor de
+     champs que generate() (meta = souche seule, metavariant/metaFamily/
+     metaTraits à part), sinon la fiche affiche « Nartaki » comme souche
+     et perd les traits raciaux. Anarchy 2.0 (pas de useMetavariants) garde
+     l'ancien comportement : `val` est déjà une souche. */
+  _readMeta(pnj, val) {
+    if (!val) return;
+    const ed = App.getEditionModule(pnj.edition);
+    if (!ed.useMetavariants || typeof Metavariants === "undefined") {
+      pnj.meta = val;
+      return;
+    }
+    Metavariants.use(pnj.edition);
+    const resolved = Metavariants.resolve(val);
+    pnj.meta = resolved ? resolved.baseMetatype : val;
+    pnj.metavariant = resolved ? resolved.name : null;
+    pnj.metaFamily = resolved ? resolved.family : null;
+    pnj.metaTraits = resolved ? resolved.traits || [] : [];
+  },
+
   /* ---- Lecture du formulaire → mise à jour du PNJ ---- */
   _readForm(pnj) {
     const val = (id) => document.getElementById(id)?.value ?? "";
     const num = (id, fallback) => parseInt(val(id), 10) || fallback;
 
     pnj.name = val("em-name").trim() || pnj.name;
-    pnj.meta = val("em-meta") || pnj.meta;
+    this._readMeta(pnj, val("em-meta"));
     pnj.gender = val("em-gender") || pnj.gender;
 
     const edModuleForm = App.getEditionModule(pnj.edition);
