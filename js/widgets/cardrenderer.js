@@ -574,19 +574,17 @@ const CardRenderer = {
     </div>`;
   },
 
-  /* Découpe « Prénom "Surnom" Famille » : le surnom devient le titre
-     mis en avant ; le nom civil (prénom + famille) passe en sous-ligne
-     discrète. Si aucun surnom n'est présent, on affiche le nom tel quel. */
+  /* Découpe « Prénom "Surnom" Famille » (Utils.parseName, seule découpe du
+     projet) : le surnom devient le titre mis en avant ; le nom civil (prénom
+     + famille) passe en sous-ligne discrète. Si aucun surnom n'est présent,
+     on affiche le nom tel quel. */
   _nameBlock(rawName) {
-    const name = String(rawName ?? "");
-    const m = name.match(/^(.*?)\s*[«"“]([^»"”]+)[»"”]\s*(.*)$/);
-    if (m) {
-      const alias = m[2].trim();
-      const civil = `${m[1].trim()} ${m[3].trim()}`.replace(/\s+/g, " ").trim();
-      return `<div class="pnj-name" title="${this._esc(name)}">${this._esc(alias)}</div>
+    const { alias, civil, full } = Utils.parseName(rawName);
+    if (alias) {
+      return `<div class="pnj-name" title="${this._esc(full)}">${this._esc(alias)}</div>
         ${civil ? `<div class="pnj-civilname">${this._esc(civil)}</div>` : ""}`;
     }
-    return `<div class="pnj-name" title="${this._esc(name)}">${this._esc(name)}</div>`;
+    return `<div class="pnj-name" title="${this._esc(full)}">${this._esc(full)}</div>`;
   },
 
   /* ---- Body ---- */

@@ -1520,6 +1520,26 @@ const Utils = {
     return this.rand(["M", "F", "F", "M", "NB"]);
   },
 
+  /** Découpe un nom « Prénom "Surnom" Famille » en composantes réutilisables
+      (carte, tracker). Règle Canon nom compact : alias si présent, sinon le
+      dernier mot du nom civil — jamais tronquer un mononyme (`family === full`
+      quand le nom n'a qu'un mot). */
+  parseName(raw) {
+    const full = String(raw ?? "");
+    const m = full.match(/^(.*?)\s*[«"“]([^»"”]+)[»"”]\s*(.*)$/);
+    if (m) {
+      const alias = m[2].trim();
+      const given = m[1].trim();
+      const family = m[3].trim();
+      const civil = `${given} ${family}`.replace(/\s+/g, " ").trim();
+      return { alias, given, family, civil, full };
+    }
+    const parts = full.trim().split(/\s+/).filter(Boolean);
+    const family = parts.length ? parts[parts.length - 1] : "";
+    const given = parts.length > 1 ? parts.slice(0, -1).join(" ") : "";
+    return { alias: "", given, family, civil: full, full };
+  },
+
   /** Échappe &, <, > et " pour une insertion sûre dans du HTML (texte ou attribut). */
   escHtml(s) {
     return String(s)

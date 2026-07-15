@@ -161,7 +161,9 @@ const EncounterRenderer = {
   _rowNarrative(r) {
     const { pnjId, hasActed, pnj } = r;
     const isFocused = pnjId === this._narrativeFocusId;
-    const name = Utils.escHtml(pnj.name || "");
+    const { alias, family, full } = Utils.parseName(pnj.name);
+    const name = Utils.escHtml(alias || family || full);
+    const fullName = Utils.escHtml(full);
     const kind = this._kindLabel(r);
     // Combativité (Anarchy 2.0, champ threatLevel) affichée en pastille — c'est
     // l'info qui guide « qui décroche quand » (cf. Vague D).
@@ -200,7 +202,7 @@ const EncounterRenderer = {
     ].filter(Boolean);
     return `<div class="encounter-nrow${hasActed ? " has-acted" : ""}${r.down ? " down" : ""}${isFocused ? " is-focused" : ""}" data-action="focus-active" data-id="${pnjId}" role="button" tabindex="0" aria-current="${isFocused ? "true" : "false"}" title="Toucher pour voir ses actions">
       ${dragHandle}
-      ${r.down ? `<span class="encounter-nrow-check" aria-hidden="true">✓</span>` : `<button type="button" class="encounter-nrow-check" data-action="narrative-toggle" data-id="${pnjId}" aria-pressed="${hasActed}" title="Marquer « joué »" aria-label="Marquer joué — ${name}">✓</button>`}
+      ${r.down ? `<span class="encounter-nrow-check" aria-hidden="true">✓</span>` : `<button type="button" class="encounter-nrow-check" data-action="narrative-toggle" data-id="${pnjId}" aria-pressed="${hasActed}" title="Marquer « joué »" aria-label="Marquer joué — ${fullName}">✓</button>`}
       <div class="encounter-nrow-body">
         <span class="encounter-nrow-name">${colorDot}${name}</span>
         <span class="encounter-nrow-sub"><span class="encounter-kind">${kind}</span>${comb}</span>
@@ -324,15 +326,19 @@ const EncounterRenderer = {
       malus > 0
         ? `<span class="wound-malus-badge" title="Malus de blessure automatique (déjà appliqué à l'initiative)">−${malus}D</span>`
         : "";
-    const name = Utils.escHtml(pnj.name || "");
+    const { alias, family, full } = Utils.parseName(pnj.name);
+    const name = Utils.escHtml(alias || family || full);
     // PJ : avatar constant avant le nom — couleur + anneau + initiale du
     // joueur (E6, CardRenderer._pcAvatar), jamais un indice isolé.
     const colorDot = r.isPJ ? CardRenderer._pcAvatar(pnj) : "";
     // Nom : bouton « voir la fiche » pour une entité résolvable ou une CI (qui
     // ouvre le tiroir Matrice) ; span inerte pour un PJ ad-hoc (pas de fiche).
+    // CE4 : nom compact affiché (alias/famille) ; le span inerte (pas d'autre
+    // affordance) porte le nom complet en title, le bouton garde son intitulé
+    // d'action existant (title = geste, pas le nom).
     const nameHtml =
       pnj._adhoc && !isMatrix
-        ? `<span class="encounter-name is-pj">${colorDot}${name}</span>`
+        ? `<span class="encounter-name is-pj" title="${Utils.escHtml(full)}">${colorDot}${name}</span>`
         : `<button class="encounter-name" data-action="focus-combatant" data-id="${pnjId}" title="${isMatrix ? "Ouvrir la Matrice" : "Voir la fiche"}">${colorDot}${name}</button>`;
     // Score effectif de la passe (SR5, à partir de la passe 2) : le champ de
     // saisie reste sur la base (c'est elle que set-init modifie), le décrément
@@ -421,7 +427,9 @@ const EncounterRenderer = {
   _token(r, isActive, outOfPass) {
     const { pnjId, init, pnj } = r;
     const isMatrix = r.kind === "matrix";
-    const name = Utils.escHtml(pnj.name || "");
+    const { alias, family, full } = Utils.parseName(pnj.name);
+    const name = Utils.escHtml(alias || family || full);
+    const fullName = Utils.escHtml(full);
     const avatar = r.isPJ ? CardRenderer._pcAvatar(pnj) : "";
     const initLabel = r.down ? "—" : r.delayed ? "⏸" : init == null ? "·" : String(init);
     const cls = [
@@ -440,7 +448,7 @@ const EncounterRenderer = {
     const tappable = isMatrix || !pnj._adhoc;
     const action = tappable ? ` data-action="focus-combatant" data-id="${pnjId}"` : "";
     const tag = tappable ? "button" : "div";
-    return `<${tag} class="${cls}"${action} title="${name}">
+    return `<${tag} class="${cls}"${action} title="${fullName}">
       <span class="encounter-token-init">${initLabel}</span>
       <span class="encounter-token-name">${avatar}${name}</span>
     </${tag}>`;
@@ -450,10 +458,12 @@ const EncounterRenderer = {
       joué » (même action que la ligne narrative). */
   _tokenNarrative(r) {
     const { pnjId, hasActed, pnj } = r;
-    const name = Utils.escHtml(pnj.name || "");
+    const { alias, family, full } = Utils.parseName(pnj.name);
+    const name = Utils.escHtml(alias || family || full);
+    const fullName = Utils.escHtml(full);
     const avatar = r.isPJ ? CardRenderer._pcAvatar(pnj) : "";
     const cls = ["encounter-token", hasActed && "has-acted", r.down && "down"].filter(Boolean).join(" ");
-    return `<button class="${cls}" data-action="narrative-toggle" data-id="${pnjId}" title="${name}">
+    return `<button class="${cls}" data-action="narrative-toggle" data-id="${pnjId}" title="${fullName}">
       <span class="encounter-token-init">${hasActed ? "✓" : "•"}</span>
       <span class="encounter-token-name">${avatar}${name}</span>
     </button>`;
