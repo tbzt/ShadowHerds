@@ -1,40 +1,10 @@
 /* ============================================================
-   BREAKDOWN — affordance ⓘ (pill-explain) + popover d'explication
-   décomposée d'une réserve (breakdown-pop / breakdown-sheet mobile).
-   Tokens uniquement, thémé par édition via [data-edition] en amont.
+   BREAKDOWN — popover d'explication décomposée d'une réserve
+   (breakdown-pop / breakdown-sheet mobile). Un seul contrôle par
+   pastille (survol desktop / appui long tactile, aucun bouton visible
+   dédié — cf. js/widgets/breakdown.js). Tokens uniquement, thémé par
+   édition via [data-edition] en amont.
    ============================================================ */
-
-.pill-explain {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  margin-left: 2px;
-  padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  background: var(--bg);
-  color: var(--text-dim);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  line-height: 1;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
-}
-.pill-explain:hover,
-.pill-explain:focus-visible {
-  color: var(--accent);
-  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
-}
-@media (hover: none) {
-  /* Cible tactile ≥ 32px (Vector) : l'affordance visuelle reste discrète,
-     la zone cliquable s'agrandit sans changer le rendu. */
-  .pill-explain {
-    width: 32px;
-    height: 32px;
-  }
-}
 
 .breakdown-pop {
   position: fixed;

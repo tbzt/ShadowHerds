@@ -988,9 +988,12 @@ const CardRenderer = {
   },
 
   /** Pastille de réserve lançable (Défense, Encaissement…).
-      opts = { title, glyph, key, pnj } — key+pnj activent l'affordance ⓘ
-      (reserveBreakdown, explication décomposée) et posent le détail sur le
-      résultat du jet (data-roll-detail, déjà affiché par diceroller.js). */
+      opts = { title, glyph, key, pnj } — key+pnj posent le détail décomposé
+      sur la pastille ELLE-MÊME (data-explain), un seul contrôle : clic/tap
+      lance (inchangé), survol desktop ou appui long tactile ouvre le
+      décompte (Breakdown, js/widgets/breakdown.js). Le résultat du jet
+      porte aussi le détail (data-roll-detail, déjà affiché par
+      diceroller.js). */
   _rollPill(label, value, opts = {}) {
     if (value == null) return "";
     const { title, glyph, key, pnj } = opts;
@@ -998,7 +1001,7 @@ const CardRenderer = {
       ? `<span class="pill-glyph" aria-hidden="true">${glyph}</span> `
       : "";
     let detailAttr = "";
-    let explainHtml = "";
+    let explainAttr = "";
     const ed = key && pnj ? App.getEditionModule(pnj.edition) : null;
     const bd = ed && ed.reserveBreakdown ? ed.reserveBreakdown(pnj, key) : null;
     if (bd && bd.length) {
@@ -1010,9 +1013,9 @@ const CardRenderer = {
         )
         .join(" ");
       detailAttr = ` data-roll-detail="${this._esc(detail)}"`;
-      explainHtml = `<button type="button" class="pill-explain" data-explain="${key}" data-explain-pnj="${this._esc(pnj.id)}" aria-label="Détail du calcul" tabindex="0">ⓘ</button>`;
+      explainAttr = ` data-explain="${key}" data-explain-pnj="${this._esc(pnj.id)}"`;
     }
-    return `<span class="stat-pill rollable combat-pill" data-roll="${value}" data-roll-label="${this._esc(label)}"${detailAttr} title="${this._esc(title || label)}">${glyphHtml}${this._esc(label)} <strong>${value}</strong></span>${explainHtml}`;
+    return `<span class="stat-pill rollable combat-pill" data-roll="${value}" data-roll-label="${this._esc(label)}"${detailAttr}${explainAttr} title="${this._esc(title || label)}">${glyphHtml}${this._esc(label)} <strong>${value}</strong></span>`;
   },
 
   _zoneEyebrow(label) {
