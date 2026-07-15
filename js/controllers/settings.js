@@ -169,11 +169,30 @@ const Settings = {
     </div>`;
   },
   _syncReminderHTML(st) {
-    if (!st.lastAt) return `<span>Aucune sauvegarde effectuée pour l'instant.</span>`;
-    const days = Sync.daysSinceSave();
+    const saveLine = !st.lastAt
+      ? `<span>Aucune sauvegarde effectuée pour l'instant.</span>`
+      : (() => {
+          const days = Sync.daysSinceSave();
+          const txt = days <= 0 ? "aujourd'hui" : days === 1 ? "hier" : `il y a ${days} jours`;
+          return `<span>Dernière sauvegarde : ${txt}.</span>`;
+        })();
+    return saveLine + this._exportReminderHTML();
+  },
+  /** 2e ligne du rappel (#47) : l'archive TÉLÉCHARGÉE (rituel NAS/drive),
+      distincte de la sauvegarde ci-dessus qui inclut aussi la synchro
+      cloud — une synchro ne doit pas faire taire ce rappel. */
+  _exportReminderHTML() {
+    const days = Sync.daysSinceExport();
+    const stale = days === null || days >= 30;
     const txt =
-      days <= 0 ? "aujourd'hui" : days === 1 ? "hier" : `il y a ${days} jours`;
-    return `<span>Dernière sauvegarde : ${txt}.</span>`;
+      days === null
+        ? "Aucune archive téléchargée pour l'instant."
+        : days <= 0
+          ? "Dernière archive téléchargée : aujourd'hui."
+          : days === 1
+            ? "Dernière archive téléchargée : hier."
+            : `Dernière archive téléchargée : il y a ${days} jours.`;
+    return `<br><span class="${stale ? "settings-note" : ""}">${txt}</span>`;
   },
   _syncStateHTML(st) {
     const map = {

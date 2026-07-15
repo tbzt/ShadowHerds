@@ -98,6 +98,9 @@ const Backup = {
     toast(`Export : ${s.pnj} PNJ, ${s.contacts} contacts, ${s.servers} serveurs.`);
     // Alimente le rappel de sauvegarde (F3) : même horodatage que la synchro.
     if (typeof Sync !== "undefined" && Sync.noteLocalSave) Sync.noteLocalSave();
+    // Alimente aussi le rappel d'archive téléchargée (#47), distinct : un
+    // sync cloud ne doit pas faire taire le besoin d'archive locale.
+    if (typeof Sync !== "undefined" && Sync.noteLocalExport) Sync.noteLocalExport();
   },
 
   /* ---- Validation d'un paquet importé ---- */
