@@ -1254,11 +1254,21 @@ const EncounterRenderer = {
     const box = document.getElementById("sidebar-encounter");
     if (!box) return;
 
-    const visible = rows.some((r) => r.pnj);
+    // R3-D : « vivante » ne se limite pas aux combattants — une scène Matrice
+    // seule (decker en intrusion, aucune CI déployée) est tout aussi vivante
+    // (doctrine « moteurs de scène »). Rendu pur : dérive uniquement de
+    // `state`/`rows` déjà reçus, ne touche jamais App/Storage.
+    const hasMatrix = !!(state.serverId || (state.matrix && Object.keys(state.matrix).length));
+    const visible = rows.some((r) => r.pnj) || hasMatrix;
     box.hidden = !visible;
-    // Bouton combat de la topbar : allumé tant qu'une scène est en cours.
+    // Perche « Reprendre » (R3-D) : allumée partout où la scène peut se
+    // rouvrir en un geste — topbar (desktop+mobile), sidebar, bottom-nav
+    // mobile. Un même badge pulsé (`.tb-crumb-live`, déjà établi R3-B) posé
+    // dans les 3 boutons `data-action="encounter-open"` correspondants.
     const combatBtn = document.getElementById("topbar-combat-btn");
     if (combatBtn) combatBtn.classList.toggle("is-active", visible);
+    this._toggleLiveBadge("nav-combat-btn", visible);
+    this._toggleLiveBadge("bnav-combat-btn", visible);
     if (!visible) return;
 
     const roundEl = document.getElementById("sidebar-encounter-round");
@@ -1280,6 +1290,14 @@ const EncounterRenderer = {
       if (nameEl) nameEl.textContent = active.pnj.name || "—";
       if (kindEl) kindEl.textContent = this._kindLabel(active);
     }
+  },
+
+  /** R3-D : bascule le badge de vie (`.tb-crumb-live`, pastille pulsée déjà
+      établie au fil d'Ariane R3-B) dans le bouton `id` s'il en porte un. */
+  _toggleLiveBadge(id, on) {
+    const btn = document.getElementById(id);
+    const badge = btn && btn.querySelector(".tb-crumb-live");
+    if (badge) badge.hidden = !on;
   },
 
   /** Bouton Matrice (barre pouce) + tiroir (K3). srv : serveur déjà résolu

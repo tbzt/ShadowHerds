@@ -12,6 +12,15 @@ commit.
 
 ## [Non publié]
 
+## [1.39.0] — 2026-07-15
+
+### Table
+- **La scène en cours ne se perd plus** : une pastille pulsée signale
+  désormais « Combat » dans la sidebar **et** dans la barre du bas mobile dès
+  qu'une scène tourne — pas seulement le petit bouton de la barre du haut.
+  Une scène **Matrice seule** (decker en intrusion, pas encore de CI
+  déployée) l'allume aussi, elle qui ne se signalait nulle part avant.
+
 ## [1.38.0] — 2026-07-15
 
 ### Table

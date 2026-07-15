@@ -248,5 +248,10 @@ const TourSteps = {
       title: "Sauter d'un contexte à l'autre",
       body: "Un même sélecteur de contexte est disponible en haut de l'écran (dans le fil d'Ariane) et dans le bloc-notes. Le titre du bloc-notes devient ce sélecteur : changez de carnet — celui d'une autre run, le carnet global — sans fermer le panneau.",
     },
+    {
+      id: "wn-live-scene-badge", anchor: "nav-combat", tours: ["whatsnew"], since: "1.39.0", fallback: "center",
+      title: "La scène en cours ne se perd plus",
+      body: "Une pastille pulsée s'allume sur « Combat » (sidebar et barre du bas mobile) dès qu'une scène tourne — y compris une intrusion Matrice seule, sans combattant. Un coup d'œil suffit pour savoir si une scène vous attend, où que vous soyez dans l'appli.",
+    },
   ],
 };

@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="css/fonts.css?v=1108">
   <!-- base.css scindé par domaine (charge répartie) : l'ordre ci-dessous
        reproduit l'ordre exact de l'ancien fichier plat, cascade inchangée. -->
-  <link rel="stylesheet" href="css/base/foundation.css?v=1108">
+  <link rel="stylesheet" href="css/base/foundation.css?v=1109">
   <link rel="stylesheet" href="css/base/forms.css?v=1108">
   <link rel="stylesheet" href="css/base/pnj-card.css?v=1108">
   <link rel="stylesheet" href="css/base/shadows-contacts.css?v=1108">
@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="css/base/combat-tracker.css?v=1108">
   <link rel="stylesheet" href="css/base/settings-misc.css?v=1108">
   <link rel="stylesheet" href="css/base/topbar-dice-quick.css?v=1108">
-  <link rel="stylesheet" href="css/base/responsive.css?v=1108">
+  <link rel="stylesheet" href="css/base/responsive.css?v=1109">
   <link rel="stylesheet" href="css/base/interactive-content.css?v=1108">
   <link rel="stylesheet" href="css/base/dice-overlay.css?v=1108">
   <link rel="stylesheet" href="css/base/backup-contactgen.css?v=1108">
@@ -345,8 +345,9 @@
 
         <span class="nav-section-label">Table</span>
         <!-- Combat : entrée permanente pour ouvrir le tracker (data-action, pas un panel). -->
-        <button class="nav-btn" data-tour="nav-combat" data-action="encounter-open">
+        <button class="nav-btn" id="nav-combat-btn" data-tour="nav-combat" data-action="encounter-open">
           <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-combat"></use></svg></span><span class="nav-label">Combat</span>
+          <span class="tb-crumb-live" aria-hidden="true" title="Scène en cours" hidden></span>
         </button>
 
         <span class="nav-section-label">Système</span>
@@ -615,8 +616,8 @@
       <button class="bnav-btn" data-panel="generator" data-tour="nav-generator" data-action="show-panel">
         <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-pnj"></use></svg></span><span class="bnav-label">PNJ</span>
       </button>
-      <button class="bnav-btn" data-tour="nav-combat" data-action="encounter-open">
-        <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-combat"></use></svg></span><span class="bnav-label">Combat</span>
+      <button class="bnav-btn" id="bnav-combat-btn" data-tour="nav-combat" data-action="encounter-open">
+        <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-combat"></use></svg><span class="tb-crumb-live" aria-hidden="true" title="Scène en cours" hidden></span></span><span class="bnav-label">Combat</span>
       </button>
       <button class="bnav-btn" data-action="open-more">
         <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-more"></use></svg></span><span class="bnav-label">Plus</span>
@@ -880,7 +881,7 @@
   <script defer src="js/widgets/reordermode.js?v=1108"></script>
   <script defer src="js/widgets/serverrenderer.js?v=1108"></script>
   <script defer src="js/widgets/cyberdeckrenderer.js?v=1108"></script>
-  <script defer src="js/widgets/encounterrenderer.js?v=1108"></script>
+  <script defer src="js/widgets/encounterrenderer.js?v=1109"></script>
   <script defer src="js/widgets/spectatorview.js?v=1108"></script>
   <script defer src="js/controllers/servers.js?v=1108"></script>
   <script defer src="js/controllers/intrusion.js?v=1108"></script>
@@ -906,7 +907,7 @@
   <script defer src="js/widgets/mentions.js?v=1108"></script>
   <script defer src="js/widgets/pinrow.js?v=1108"></script>
   <script defer src="js/widgets/onboarding.js?v=1108"></script>
-  <script defer src="js/widgets/toursteps.js?v=1108"></script>
+  <script defer src="js/widgets/toursteps.js?v=1109"></script>
   <script defer src="js/widgets/tour.js?v=1108"></script>
   <script defer src="js/controllers/portrait.js?v=1108"></script>
   <script defer src="js/controllers/encounter.js?v=1108"></script>
@@ -920,6 +921,6 @@
   <script defer src="js/controllers/printsheet.js?v=1108"></script>
   <script defer src="js/controllers/sync.js?v=1108"></script>
   <script defer src="js/controllers/foundryexport.js?v=1108"></script>
-  <script defer src="js/app.js?v=1108"></script></body>
+  <script defer src="js/app.js?v=1109"></script></body>
 
 </html>

@@ -961,6 +961,16 @@ select optgroup {
   border-left-color: var(--accent);
   background: var(--glow);
 }
+/* R3-D : perche « Reprendre » — badge de vie posé en coin de l'icône, hors
+   flux (sinon il s'intercale entre icône et libellé). */
+.nav-btn {
+  position: relative;
+}
+.nav-btn .tb-crumb-live {
+  position: absolute;
+  left: calc(var(--sp-4) + 11px);
+  top: 8px;
+}
 
 /* CONTENT AREA */
 #content {
