@@ -110,23 +110,6 @@
   line-height: 1.5;
   margin: 0 0 var(--sp-3);
 }
-/* Compteurs libres du suivi de campagne : lignes compactes label + retrait,
-   puis une rangée d'ajout. */
-.em-camp-customs {
-  margin-top: var(--sp-3);
-}
-.em-camp-track-row,
-.em-camp-add-row {
-  display: flex;
-  gap: var(--sp-2);
-  align-items: center;
-  margin-bottom: var(--sp-2);
-}
-.em-camp-track-row .em-camp-label,
-.em-camp-add-row input {
-  flex: 1 1 auto;
-  min-width: 0;
-}
 .modal-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));

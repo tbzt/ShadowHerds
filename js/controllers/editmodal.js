@@ -358,16 +358,13 @@ const EditModal = {
     const fieldsHtml = (block.fields || [])
       .map((f) => {
         if (f.kind === "select") {
-          const opts = f.options
-            .map(
-              (o) =>
-                `<option value="${esc(o)}"${pnj[f.key] === o ? " selected" : ""}>${esc(o)}</option>`,
-            )
-            .join("");
-          return `<div class="form-group">
-            <label>${esc(f.label)}</label>
-            <select id="em-tb-${f.key}"><option value="">—</option>${opts}</select>
-          </div>`;
+          return SingleSelect.create({
+            id: `em-tb-${f.key}`,
+            label: f.label,
+            options: f.options.map((o) => ({ value: o, label: o })),
+            value: pnj[f.key] || "",
+            placeholder: "—",
+          });
         }
         return `<div class="form-group">
           <label>${esc(f.label)}</label>
@@ -593,31 +590,23 @@ const EditModal = {
             options: ["Humain", "Elfe", "Nain", "Ork", "Troll"].map((m) => ({ value: m, label: m })),
           }),
         })}
-        <div class="form-group">
-          <label>Genre</label>
-          <select id="em-gender">
-            ${["M", "F", "NB"]
-              .map(
-                (g) =>
-                  `<option${pnj.gender === g ? " selected" : ""}>${g}</option>`,
-              )
-              .join("")}
-          </select>
-        </div>`;
+        ${SingleSelect.create({
+          id: "em-gender",
+          label: "Genre",
+          options: ["M", "F", "NB"].map((g) => ({ value: g, label: g })),
+          value: pnj.gender || "M",
+          placeholder: "—",
+        })}`;
 
     const ratingBadge = App.getEditionModule(pnj.edition).ratingBadge;
     if (ratingBadge.options) {
-      html += `<div class="form-group">
-        <label>${ratingBadge.label}</label>
-        <select id="em-rang">
-          ${ratingBadge.options
-            .map(
-              (r) =>
-                `<option${pnj[ratingBadge.field] === r ? " selected" : ""}>${r}</option>`,
-            )
-            .join("")}
-        </select>
-      </div>`;
+      html += SingleSelect.create({
+        id: "em-rang",
+        label: ratingBadge.label,
+        options: ratingBadge.options.map((r) => ({ value: r, label: r })),
+        value: pnj[ratingBadge.field],
+        placeholder: "—",
+      });
     } else {
       html += `<div class="form-group">
         <label>${ratingBadge.label}</label>
@@ -730,16 +719,28 @@ const EditModal = {
 
     // ---- Section : Équipement (toujours affichée : on peut désormais en
     // ajouter à un PNJ qui n'en a pas encore, via le catalogue). ----
+    // ME1c/D-ME-2 : saisie libre seule ici (chaînes « un par ligne ») — les
+    // objets structurés (#63, indice borné) sortent vers « Augmentations »
+    // juste en dessous (D-ME-2b), sinon mix textarea+rows dans une section.
     html += `<div class="modal-section">
         <div class="modal-section-title">Équipement</div>
         <div class="form-group">
           <label>Un élément par ligne</label>
           <textarea id="em-equip" rows="4">${this._equipTextLines(pnj).join("\n")}</textarea>
         </div>
-        <div id="em-equip-ratings" class="em-skills-list">
-          ${this._equipRatingRows(pnj)}
-        </div>
         ${this._equipCatalogControls(pnj)}
+      </div>`;
+
+    // ---- Section : Augmentations (objets structurés d'équip — #63 à indice
+    // non résolu + cyber/bioware à indice fixe). Toujours montée dans le DOM
+    // (#em-equip-ratings reste une cible stable pour _rerenderEquip, ajout
+    // d'item en cours d'édition compris) ; masquée par CSS quand vide
+    // (même patron que .dice-log-summary:empty). Réutilise #em-equip-ratings
+    // + _equipRatingRows inchangés (contrat Failsafe : data-idx/
+    // id="em-equip-rating-<i>" et le réordre de _readForm ne bougent pas). ----
+    html += `<div class="modal-section em-augmentations-section">
+        <div class="modal-section-title">Augmentations</div>
+        <div id="em-equip-ratings" class="em-skills-list">${this._equipRatingRows(pnj)}</div>
       </div>`;
 
     // ---- Section : Cyberdeck — montée si le PNJ a un deck structuré (généré,
