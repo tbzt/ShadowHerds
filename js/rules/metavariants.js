@@ -1682,6 +1682,23 @@ const Metavariants = {
       .filter((g) => g.metavariants.length > 0 || true);
   },
 
+  /** #66 : groupes prêts pour `SingleSelect.create({groups})` — souche (5)
+      + ses métavariantes, puis Métaconsciences/Zoocanthropes si l'édition en
+      a. Un seul appel pour la génération (déjà via groupedOptions/allXxx
+      composés à la main dans generator.js) et l'édition PNJ (EditModal),
+      pour ne pas dupliquer le tri deux fois. */
+  pickerGroups() {
+    const groups = this.groupedOptions().map((g) => ({
+      category: g.baseMetatype,
+      items: [g.baseMetatype, ...g.metavariants].map((n) => ({ value: n, label: n })),
+    }));
+    const mc = this.allMetaconsciences();
+    if (mc.length) groups.push({ category: "Métaconsciences", items: mc.map((n) => ({ value: n, label: n })) });
+    const zoo = this.allZoocanthropes();
+    if (zoo.length) groups.push({ category: "Zoocanthropes", items: zoo.map((n) => ({ value: n, label: n })) });
+    return groups;
+  },
+
   /** Toutes les métaconsciences de l'édition active (liste plate) */
   allMetaconsciences() {
     return Object.keys(this._dataMC());

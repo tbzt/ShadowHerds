@@ -268,6 +268,32 @@ const EditionAnarchy1 = {
       "Combinaison caméléon [Armure 9, bonus Furtivité]",
       "Console de commande Rigger [contrôle de drones]",
     ],
+    // Drogues et toxines (Anarchistes, p.76-79).
+    drogues: [
+      "Alcool (Anarchistes) [réduit douleur / mauvais en combat]",
+      "Bliss (Extase) (Anarchistes) [tranquillisant, réduit douleur]",
+      "Cram (Anarchistes) [alerter, paranoia, contrecoup]",
+      "Deepweed (Anarchistes) [force perception astrale des Éveillés]",
+      "Jazz (Anarchistes) [nervosité, hyperactivité, désorienation]",
+      "Kamikaze (Anarchistes) [augmente capacités physiques/mentales]",
+      "Long Cours (Anarchistes) [rester éveillé longtemps]",
+      "Nitro (Anarchistes) [énergie, volatilité, augmente force]",
+      "Novacoke (Anarchistes) [affable/alerte, humeur exécrable après]",
+      "Psyché (Anarchistes) [+2 dés pour sortilèges/formes]",
+      "Zen (Anarchistes) [Volonté +1, agit dernier]",
+    ],
+    toxines: [
+      "Bêta-endgorphine (Anarchistes) [dommages 2E/tour, -1 dé]",
+      "Gamma-Scopolamine (Anarchistes) [paralysie, sérum de vérité]",
+      "Gaz lacrymogène (Anarchistes) [irrite yeux/peau, panique]",
+      "Gaz Neuro-Stun (Anarchistes) [inconscience rapide ~30s]",
+      "Gaz Neuro-Stun IX (Anarchistes) [dommages 3P/tour]",
+      "Gaz vomitif (Anarchistes) [nausée persistante, -2 dés]",
+      "Gaz Seven-7 (Anarchistes) [crampes/nausées, mortel haute dose]",
+      "Leäl (Anarchistes) [amnésie 1-2 heures]",
+      "Narcoject (Anarchistes) [sédatif sans effet secondaire]",
+      "Narcsea (Anarchistes) [sédatif tranquillisant, -3 dés]",
+    ],
   },
   _equipLabels: {
     armesCorpsACorps: "Corps à corps",
@@ -276,12 +302,20 @@ const EditionAnarchy1 = {
     armesLourdes: "Armes lourdes",
     armures: "Armures",
     equipSpecial: "Équipement spécial",
+    drogues: "Drogues",
+    toxines: "Toxines",
   },
   equipCatalog() {
     return ItemResolver.flattenEquipPools(this.equipPools, this._equipLabels);
   },
   addCatalogItem(pnj, id) {
     ItemResolver.addEquipString(pnj, this.equipPools, id);
+  },
+  /** #66 : groupes métatype/métavariante pour le sélecteur d'édition PNJ
+      (EditModal, `SingleSelect.create({groups})`), même source que le
+      générateur (`Metavariants.pickerGroups`). */
+  metaOptions() {
+    return { groups: Metavariants.use("anarchy1").pickerGroups() };
   },
   /* Sorts : catalogue partagé (taxonomie commune aux 4 éditions), source
      unique dans Content. Ajout surchargé (pas de délégation directe) pour

@@ -75,6 +75,17 @@
   background: var(--bg-card);
 }
 
+/* Indicateur discret « les modifs sont sauvegardées toutes seules » : occupe
+   la place de l'ancien bouton Sauvegarder et pousse les actions à droite. */
+.modal-autosave-hint {
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+}
+
 .modal-section {
   margin-bottom: 1.25rem;
   padding-bottom: 1.25rem;

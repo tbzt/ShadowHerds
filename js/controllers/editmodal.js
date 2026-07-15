@@ -5,6 +5,9 @@
    ============================================================ */
 const EditModal = {
   currentId: null,
+  // Instantané profond pris à l'ouverture : socle de « Annuler les
+  // modifications » (revert) et du commit conditionnel à la fermeture.
+  _snapshot: null,
   _notesMode: "read", // "read" (puces @/#) | "edit" (jeton brut) — E7
 
   open(id) {
@@ -14,6 +17,9 @@ const EditModal = {
       return;
     }
     this.currentId = id;
+    // Avant toute mutation : les sous-actions (compétences, équipement,
+    // liens, campagne, couleur) mutent `pnj` en direct pendant la session.
+    this._snapshot = structuredClone(pnj);
 
     document.querySelector(".modal-title").textContent =
       `Édition — ${pnj.name}`;
@@ -90,25 +96,20 @@ const EditModal = {
     </div>`;
   },
 
+  /** Fermeture = commit automatique. Lit le formulaire dans l'objet
+      canonique, persiste et rafraîchit — puis referme. Appelé par ✕, le
+      bouton « Fermer », Échap et le clic hors-modale (app.js). Aucune saisie
+      n'est perdue faute d'avoir cliqué sur un bouton Sauvegarder. */
   close() {
-    document.getElementById("edit-modal").classList.remove("open");
-    this.currentId = null;
-  },
-
-  save() {
-    const pnj = PnjLookup.find(this.currentId);
+    const pnj = this.currentId && PnjLookup.find(this.currentId);
     if (!pnj) {
-      this.close();
+      this._hide();
       return;
     }
 
     if (pnj.pcLight) {
       this._readFormLight(pnj);
-      UI.persistEntity(pnj.id);
-      Characters.render();
-      CardRenderer.refresh(pnj);
-      this.close();
-      toast(`${pnj.name} mis à jour.`);
+      this._finish(pnj, () => Characters.render());
       return;
     }
 
@@ -119,10 +120,7 @@ const EditModal = {
         pnj.monTotal = Vehicles._monitor(pnj.stats, pnj.edition);
         pnj.monFilled = Math.min(pnj.monFilled || 0, pnj.monTotal);
       }
-      UI.persistEntity(pnj.id);
-      CardRenderer.refresh(pnj);
-      this.close();
-      toast(`${pnj.name} mis à jour.`);
+      this._finish(pnj, null);
       return;
     }
 
@@ -136,13 +134,53 @@ const EditModal = {
       pnj.me = edModule.conditionMonitor.spiritMonitor(pnj.force);
     }
 
-    UI.persistEntity(pnj.id);
-    if (Shadows.data.all.some((p) => p.id === pnj.id)) {
-      Shadows.render();
+    this._finish(pnj, () => {
+      if (Shadows.data.all.some((p) => p.id === pnj.id)) Shadows.render();
+    });
+  },
+
+  /** Tail commun du commit : ne persiste/rafraîchit/notifie que si l'objet a
+      réellement changé depuis l'ouverture (évite l'écriture et le toast « mis
+      à jour » quand on referme sans rien avoir touché). */
+  _finish(pnj, renderCollection) {
+    const changed =
+      !this._snapshot || JSON.stringify(pnj) !== JSON.stringify(this._snapshot);
+    if (changed) {
+      UI.persistEntity(pnj.id);
+      if (renderCollection) renderCollection();
+      CardRenderer.refresh(pnj);
     }
-    CardRenderer.refresh(pnj);
-    this.close();
-    toast(`${pnj.name} mis à jour.`);
+    this._hide();
+    if (changed) toast(`${pnj.name} mis à jour.`);
+  },
+
+  /** « Annuler les modifications » : restaure l'objet dans l'état capturé à
+      l'ouverture, re-persiste (certaines sous-actions ont pu persister en
+      cours de session) et referme. */
+  revert() {
+    const pnj = this.currentId && PnjLookup.find(this.currentId);
+    if (pnj && this._snapshot) {
+      this._restore(pnj, this._snapshot);
+      UI.persistEntity(pnj.id);
+      if (pnj.pcLight) Characters.render();
+      else if (Shadows.data.all.some((p) => p.id === pnj.id)) Shadows.render();
+      CardRenderer.refresh(pnj);
+    }
+    this._hide();
+    toast("Modifications annulées.");
+  },
+
+  /** Restaure `snap` dans `target` EN PLACE (l'identité de référence est
+      partagée par les collections et le DOM — jamais réassigner). */
+  _restore(target, snap) {
+    for (const k of Object.keys(target)) if (!(k in snap)) delete target[k];
+    Object.assign(target, structuredClone(snap));
+  },
+
+  _hide() {
+    document.getElementById("edit-modal").classList.remove("open");
+    this.currentId = null;
+    this._snapshot = null;
   },
 
   /* ---- Formulaire d'une fiche véhicule/drone liée ---- */
@@ -540,17 +578,21 @@ const EditModal = {
           <label>Nom</label>
           <input type="text" id="em-name" value="${CardRenderer._esc(pnj.name)}">
         </div>
-        <div class="form-group">
-          <label>Métatype</label>
-          <select id="em-meta">
-            ${["Humain", "Elfe", "Nain", "Ork", "Troll"]
-              .map(
-                (m) =>
-                  `<option${pnj.meta === m ? " selected" : ""}>${m}</option>`,
-              )
-              .join("")}
-          </select>
-        </div>
+        ${SingleSelect.create({
+          id: "em-meta",
+          label: "Métatype",
+          // pnj.meta ne porte que la souche (5 valeurs) — la métavariante
+          // vit à part dans pnj.metavariant (cf. generate() sr5/sr6/anarchy1
+          // et _readForm ci-dessous, qui la re-dérive au save).
+          value: pnj.metavariant || pnj.meta || "",
+          placeholder: "Métatype",
+          // #66 : métatype (5 souches) ET métavariante (ex. Troll Cyclope)
+          // dans le même picker groupé, fourni par l'édition — jamais un
+          // if(App.edition===…) ici (cf. metaOptions() par module).
+          ...(App.getEditionModule(pnj.edition).metaOptions?.() || {
+            options: ["Humain", "Elfe", "Nain", "Ork", "Troll"].map((m) => ({ value: m, label: m })),
+          }),
+        })}
         <div class="form-group">
           <label>Genre</label>
           <select id="em-gender">
@@ -924,25 +966,32 @@ const EditModal = {
     return (pnj.equip || []).filter((it) => typeof it === "string");
   },
 
-  /* #63 : une ligne par item à indice non résolu (« Indice 1-4 ») — libellé +
-     stepper numérique borné par la plage lue dans le libellé, + retrait. */
+  /* #63 : une ligne par item OBJET de `pnj.equip` — soit à indice non résolu
+     (« Indice 1-4 », stepper numérique borné par la plage), soit catégorisé
+     à indice fixe (cyberware/bioware du catalogue, taggé `cat` pour le
+     routage Augmentations — cf. ItemResolver.augItems) : label + retrait
+     seul, pas de stepper qui n'aurait rien à régler. */
   /* `data-idx` de chaque ligne = position PARMI LES OBJETS SEULEMENT
      (pas l'index brut de `pnj.equip`, qui se réordonne au save — cf.
      _readForm : les objets remontent en tête). `id="em-equip-rating-<i>"`
-     garde lui l'index brut : c'est lui que _readForm relit avant réordre. */
+     garde lui l'index brut : c'est lui que _readForm relit avant réordre
+     (absent pour les items sans plage — _readForm ignore alors `.rating`). */
   _equipRatingRows(pnj) {
     const esc = CardRenderer._esc;
     return (pnj.equip || [])
       .map((it, i) => (it && typeof it === "object" ? { it, i } : null))
       .filter(Boolean)
       .map(({ it, i }, ratingIdx) => {
-        const [lo, hi] = ItemResolver.ratingRange(it.str) || [1, 6];
         const label = it.str.split(" [")[0].trim();
+        const range = ItemResolver.ratingRange(it.str);
+        const control = range
+          ? `<input type="number" class="em-equip-rating" id="em-equip-rating-${i}"
+              value="${it.rating != null ? it.rating : ""}" min="${range[0]}" max="${range[1]}"
+              placeholder="indice ${range[0]}-${range[1]}" title="Indice (${range[0]}-${range[1]})">`
+          : "";
         return `<div class="em-skill-row em-equip-rating-row" data-idx="${ratingIdx}">
           <span class="em-skill-name">${esc(label)}</span>
-          <input type="number" class="em-equip-rating" id="em-equip-rating-${i}"
-            value="${it.rating != null ? it.rating : ""}" min="${lo}" max="${hi}"
-            placeholder="indice ${lo}-${hi}" title="Indice (${lo}-${hi})">
+          ${control}
           <button type="button" class="em-skill-del" title="Retirer"
             data-action="remove-equip-rating">×</button>
         </div>`;
@@ -1138,13 +1187,35 @@ const EditModal = {
     if (el) el.value = (pnj.edges || []).join("\n");
   },
 
+  /* #66 : la valeur du picker peut être une souche OU une métavariante/
+     métaconscience/zoocanthrope (même liste plate que metaOptions()) —
+     la re-résoudre via Metavariants pour retomber sur le même quatuor de
+     champs que generate() (meta = souche seule, metavariant/metaFamily/
+     metaTraits à part), sinon la fiche affiche « Nartaki » comme souche
+     et perd les traits raciaux. Anarchy 2.0 (pas de useMetavariants) garde
+     l'ancien comportement : `val` est déjà une souche. */
+  _readMeta(pnj, val) {
+    if (!val) return;
+    const ed = App.getEditionModule(pnj.edition);
+    if (!ed.useMetavariants || typeof Metavariants === "undefined") {
+      pnj.meta = val;
+      return;
+    }
+    Metavariants.use(pnj.edition);
+    const resolved = Metavariants.resolve(val);
+    pnj.meta = resolved ? resolved.baseMetatype : val;
+    pnj.metavariant = resolved ? resolved.name : null;
+    pnj.metaFamily = resolved ? resolved.family : null;
+    pnj.metaTraits = resolved ? resolved.traits || [] : [];
+  },
+
   /* ---- Lecture du formulaire → mise à jour du PNJ ---- */
   _readForm(pnj) {
     const val = (id) => document.getElementById(id)?.value ?? "";
     const num = (id, fallback) => parseInt(val(id), 10) || fallback;
 
     pnj.name = val("em-name").trim() || pnj.name;
-    pnj.meta = val("em-meta") || pnj.meta;
+    this._readMeta(pnj, val("em-meta"));
     pnj.gender = val("em-gender") || pnj.gender;
 
     const edModuleForm = App.getEditionModule(pnj.edition);
@@ -1249,8 +1320,8 @@ const EditModal = {
         case "close":
           this.close();
           break;
-        case "save":
-          this.save();
+        case "revert":
+          this.revert();
           break;
         case "add-skill":
           this.addSkill();

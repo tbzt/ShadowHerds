@@ -12,6 +12,36 @@ commit.
 
 ## [Non publié]
 
+## [1.34.0] — 2026-07-15
+
+### Table
+- **Édition sans perte : enregistrement automatique + annulation** :
+  l'édition avancée (PNJ, contact, PJ, véhicule…) enregistre désormais les
+  modifications **automatiquement à la fermeture** — plus besoin de cliquer
+  sur « Sauvegarder », et plus de saisie perdue faute de l'avoir fait. Un
+  indicateur « ⟳ Enregistrement automatique » le rappelle dans la fenêtre, et
+  un bouton **« Annuler les modifications »** rétablit la fiche telle qu'elle
+  était à l'ouverture.
+
+## [1.33.0] — 2026-07-15
+
+### Table
+- **Toutes les métavariantes à l'édition PNJ (#66)** : le champ Métatype de
+  l'édition avancée n'est plus limité aux 5 souches — il propose désormais
+  toutes les métavariantes jouables (ex. Troll Cyclope), métaconsciences et
+  zoocanthropes de l'édition, dans un picker filtrable groupé par souche
+  (SR5, SR6, Anarchy 1re — Anarchy 2.0 reste aux 5 souches, sans
+  métavariantes motorisées).
+
+## [1.32.0] — 2026-07-15
+
+### Table
+- **Cyberware/bioware rangés en Augmentations (#63)** : un implant ajouté
+  depuis le catalogue (SR5/SR6) atterrit désormais dans la section
+  **Augmentations** de la fiche et de la vue d'impression — plus en
+  « Équipement » générique. Toujours modifiable/retirable depuis l'édition
+  avancée.
+
 ## [1.31.0] — 2026-07-14
 
 ### Table

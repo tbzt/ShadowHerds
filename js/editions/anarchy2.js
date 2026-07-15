@@ -605,6 +605,16 @@ const EditionAnarchy2 = {
     if (!Array.isArray(pnj.equip)) pnj.equip = [];
     pnj.equip.push(id);
   },
+  /** #66 : Anarchy 2.0 ne motorise pas les métavariantes (pas de
+      `useMetavariants`) — liste plate des 5 souches, même source que le
+      formulaire de génération. */
+  metaOptions() {
+    return {
+      options: this.formOptions.meta
+        .filter((m) => m !== "Aléatoire")
+        .map((m) => ({ value: m, label: m })),
+    };
+  },
   /* Sorts : catalogue partagé (taxonomie commune aux 4 éditions), source
      unique dans Content — cf. Content.spellCatalogFor. Pas de pouvoirs
      d'adepte séparés en Anarchy (mécanique fondue dans les Atouts). */

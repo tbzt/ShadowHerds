@@ -245,6 +245,14 @@
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
+/* #62 : barre de recherche en tête de dropdown (SingleSelect, catalogues
+   longs) — .form-group input fixe déjà la coquille (forms.css:82), ici
+   seulement la mise en page dans le panneau déroulant. */
+.ss-search {
+  flex-shrink: 0;
+  margin: 0.4rem 0.6rem;
+  width: auto;
+}
 .ms-tool {
   background: transparent;
   border: 1px solid var(--border);
