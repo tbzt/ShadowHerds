@@ -30,17 +30,20 @@ details[open] > summary.modal-section-title::before {
   display: none;
 }
 
+/* ME1f (constat C) : gouttières/paddings des rangées em-* alignés sur les
+   tokens --sp-* (au lieu de rem/px disparates au fil des lots) — un seul
+   rythme, sans toucher aux grid-template-columns porteurs de sens. */
 /* ---- Compétences éditables dans le modal ---- */
 .em-skills-list {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--sp-2);
 }
 .em-skill-row {
   display: grid;
   grid-template-columns: 1fr 56px minmax(110px, 1.2fr) 28px;
   align-items: center;
-  gap: 0.45rem;
+  gap: var(--sp-2);
 }
 .em-skill-row-anarchy {
   grid-template-columns: 1fr 48px 44px minmax(100px, 1fr) 28px;
@@ -70,7 +73,7 @@ details[open] > summary.modal-section-title::before {
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text);
-  padding: var(--sp-1) 6px;
+  padding: var(--sp-1) var(--sp-2);
   font-size: var(--fs-xs);
 }
 .em-skill-row input:focus,
@@ -95,8 +98,8 @@ details[open] > summary.modal-section-title::before {
 }
 .em-add-skill {
   display: flex;
-  gap: 0.45rem;
-  margin-top: 0.7rem;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
   align-items: center;
 }
 .em-add-skill .form-group.ss {
@@ -104,7 +107,7 @@ details[open] > summary.modal-section-title::before {
   min-width: 0;
 }
 .em-add-skill .ss-control {
-  padding: 5px 7px;
+  padding: var(--sp-1) var(--sp-2);
   font-size: var(--fs-xs);
 }
 .em-add-skill-btn {
@@ -114,7 +117,7 @@ details[open] > summary.modal-section-title::before {
   color: var(--accent);
   cursor: pointer;
   font-size: var(--fs-xs);
-  padding: 5px var(--sp-3);
+  padding: var(--sp-1) var(--sp-3);
   white-space: nowrap;
 }
 .em-add-skill-btn:hover {
@@ -143,7 +146,7 @@ details[open] > summary.modal-section-title::before {
 .em-color-picker {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--sp-2);
 }
 .em-color-swatch {
   width: 28px;
