@@ -1176,6 +1176,12 @@
 }
 
 /* ---- K5 : organes d'édition ---- */
+/* CE2 : bandeau économie du tour (Atout + Actions), wrapper live entre
+   .encounter-active-top et la carte — cf. renderActiveCard. */
+.encounter-active-economy {
+  display: flex;
+  flex-direction: column;
+}
 /* Rangée Atout (SR6) sur la fiche active : 7 jetons + steppers. */
 .encounter-edge {
   display: flex;

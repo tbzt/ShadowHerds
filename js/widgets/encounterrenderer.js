@@ -828,6 +828,21 @@ const EncounterRenderer = {
     </span>`;
   },
 
+  /** CE2 : bandeau « économie du tour » — regroupe Atout (SR6) et budget
+      d'actions, les deux organes de portée « tour » (par opposition aux
+      ressources de scène du CE1, Bruit/Menace). Posé dans le wrapper live
+      `.encounter-active-economy` (voir renderActiveCard), rafraîchi à chaque
+      `_render()` comme `.encounter-active-top` — corrige le bug où un tap sur
+      un jeton ne se voyait qu'au tour suivant (jetons hors du wrapper live
+      auparavant). Ancrage futur : nature « +1 action » des Points d'Anarchy
+      (Pass C, différée). */
+  _activeEconomy(r, model) {
+    const edgeHtml = model && model.edgeTracker ? this._activeEdge(r) : "";
+    const actionsHtml = App.editionModule && App.editionModule.actionBudget ? this._activeActions(r) : "";
+    if (!edgeHtml && !actionsHtml) return "";
+    return `<div class="encounter-economy">${edgeHtml}${actionsHtml}</div>`;
+  },
+
   /** Rangée Atout (K5, SR6) : compteur de combat 0-7 par combattant, stocké
       dans l'entrée de scène (c.edge) — pas sur le PNJ (l'Atout dépensé/gagné
       est propre à la rencontre). ± via edge-step ; le plafond +2/tour est un
@@ -946,6 +961,11 @@ const EncounterRenderer = {
       // wrapper live — appliquer des dégâts au même tour se voit sans attendre
       // le tour suivant (même raison que le pont decker ci-dessus).
       if (top) top.innerHTML = this._activeTop(active, state);
+      // CE2 : bandeau économie (Atout + Actions) — même traitement live que
+      // .encounter-active-top, hors du cache _activeCardId ci-dessous. Corrige
+      // le bug où consommer un jeton ne se voyait qu'au tour suivant.
+      const econ = box.querySelector(":scope > .encounter-active-economy");
+      if (econ) econ.innerHTML = this._activeEconomy(active, model);
     }
     if (id === this._activeCardId) return; // déjà affiché, laissé au rafraîchissement global
     this._activeCardId = id;
@@ -962,19 +982,13 @@ const EncounterRenderer = {
       const combatPnj = { ...pnj, _zoneOpen: { ...pnj._zoneOpen } };
       CardRenderer.applyView(combatPnj, "combat");
       // K2 : bandeau d'état (hors de combat/retardé/devrait fuir, réutilise
-      // les badges de la ligne) au-dessus de la carte, note de scène éditable
-      // en dessous — la fiche « vue combat » n'affiche que ce que le MJ
-      // regarde à chaque tour (l'init est masquée en CSS).
-      box.innerHTML = `<div class="encounter-active-top">${this._activeTop(active, state)}</div>`;
+      // les badges de la ligne) au-dessus de la carte ; CE2 : bandeau économie
+      // (Atout K5 + Actions K7) juste en dessous, au-dessus de la carte (portée
+      // « tour », lisible avant de dérouler la fiche) ; note de scène éditable
+      // sous la carte.
+      box.innerHTML = `<div class="encounter-active-top">${this._activeTop(active, state)}</div>
+        <div class="encounter-active-economy">${this._activeEconomy(active, model)}</div>`;
       box.appendChild(CardRenderer.render(combatPnj, [], CardRenderer.liveDeps()));
-      // K5 : rangée Atout (SR6, combatModel.edgeTracker) — organe d'édition
-      // sur la fiche active. Absente en SR5/Anarchy (drapeau non posé).
-      if (model && model.edgeTracker) box.insertAdjacentHTML("beforeend", this._activeEdge(active));
-      // K7 : rangée budget d'actions du tour (lue via l'API neutre d'édition
-      // actionBudget — jamais une branche App.edition ici).
-      if (App.editionModule && App.editionModule.actionBudget) {
-        box.insertAdjacentHTML("beforeend", this._activeActions(active));
-      }
       box.insertAdjacentHTML("beforeend", this._activeNote(active));
     }
   },
