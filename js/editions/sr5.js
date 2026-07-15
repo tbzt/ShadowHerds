@@ -2861,11 +2861,24 @@ const EditionSR5 = {
           { label: Utils.attrFullName("REA"), value: A("REA") },
           { label: Utils.attrFullName("INT"), value: A("INT") },
         ];
-      case "damageResist":
+      case "damageResist": {
+        const armure = pnj.armure || 0;
+        const pieces = ItemResolver.armorPieces(pnj);
+        const armorContrib = { label: "Armure", value: armure };
+        // Réconciliation Lot C (Failsafe) : detail imbriqué SEULEMENT si la
+        // somme des pièces lues dans l'équipement colle exactement à la
+        // valeur stockée — jamais de contradiction avec pnj.armure/
+        // pnj.damageResist (armure motorisée séparément par palier de pro,
+        // pas dérivée de l'équipement choisi ; coïncide surtout après une
+        // édition manuelle cohérente).
+        if (pieces.length && pieces.reduce((s, p) => s + p.value, 0) === armure) {
+          armorContrib.detail = pieces;
+        }
         return [
           { label: Utils.attrFullName("CON"), value: A("CON") },
-          { label: "Armure", value: pnj.armure || 0 },
+          armorContrib,
         ];
+      }
       case "drainResist": {
         const attr =
           pnj.traditionDrainAttr ||
