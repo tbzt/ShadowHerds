@@ -12,6 +12,15 @@ commit.
 
 ## [Non publié]
 
+## [1.32.0] — 2026-07-15
+
+### Table
+- **Cyberware/bioware rangés en Augmentations (#63)** : un implant ajouté
+  depuis le catalogue (SR5/SR6) atterrit désormais dans la section
+  **Augmentations** de la fiche et de la vue d'impression — plus en
+  « Équipement » générique. Toujours modifiable/retirable depuis l'édition
+  avancée.
+
 ## [1.31.0] — 2026-07-14
 
 ### Table

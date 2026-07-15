@@ -924,25 +924,32 @@ const EditModal = {
     return (pnj.equip || []).filter((it) => typeof it === "string");
   },
 
-  /* #63 : une ligne par item à indice non résolu (« Indice 1-4 ») — libellé +
-     stepper numérique borné par la plage lue dans le libellé, + retrait. */
+  /* #63 : une ligne par item OBJET de `pnj.equip` — soit à indice non résolu
+     (« Indice 1-4 », stepper numérique borné par la plage), soit catégorisé
+     à indice fixe (cyberware/bioware du catalogue, taggé `cat` pour le
+     routage Augmentations — cf. ItemResolver.augItems) : label + retrait
+     seul, pas de stepper qui n'aurait rien à régler. */
   /* `data-idx` de chaque ligne = position PARMI LES OBJETS SEULEMENT
      (pas l'index brut de `pnj.equip`, qui se réordonne au save — cf.
      _readForm : les objets remontent en tête). `id="em-equip-rating-<i>"`
-     garde lui l'index brut : c'est lui que _readForm relit avant réordre. */
+     garde lui l'index brut : c'est lui que _readForm relit avant réordre
+     (absent pour les items sans plage — _readForm ignore alors `.rating`). */
   _equipRatingRows(pnj) {
     const esc = CardRenderer._esc;
     return (pnj.equip || [])
       .map((it, i) => (it && typeof it === "object" ? { it, i } : null))
       .filter(Boolean)
       .map(({ it, i }, ratingIdx) => {
-        const [lo, hi] = ItemResolver.ratingRange(it.str) || [1, 6];
         const label = it.str.split(" [")[0].trim();
+        const range = ItemResolver.ratingRange(it.str);
+        const control = range
+          ? `<input type="number" class="em-equip-rating" id="em-equip-rating-${i}"
+              value="${it.rating != null ? it.rating : ""}" min="${range[0]}" max="${range[1]}"
+              placeholder="indice ${range[0]}-${range[1]}" title="Indice (${range[0]}-${range[1]})">`
+          : "";
         return `<div class="em-skill-row em-equip-rating-row" data-idx="${ratingIdx}">
           <span class="em-skill-name">${esc(label)}</span>
-          <input type="number" class="em-equip-rating" id="em-equip-rating-${i}"
-            value="${it.rating != null ? it.rating : ""}" min="${lo}" max="${hi}"
-            placeholder="indice ${lo}-${hi}" title="Indice (${lo}-${hi})">
+          ${control}
           <button type="button" class="em-skill-del" title="Retirer"
             data-action="remove-equip-rating">×</button>
         </div>`;

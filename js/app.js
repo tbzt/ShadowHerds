@@ -8,7 +8,7 @@ const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.31.0",
+  VERSION: "1.32.0",
 
   edition: "none",
   editionModule: null,
@@ -98,8 +98,8 @@ const App = {
     anarchy1: "css/theme-anarchy1.css?v=1080",
   },
   _EDITION_JS: {
-    sr5: ["js/editions/sr5.js?v=1081", "js/editions/sr5.foundry.js?v=1082", "js/editions/sr5.print.js?v=1082"],
-    sr6: ["js/editions/sr6.js?v=1080", "js/editions/sr6.foundry.js?v=1082", "js/editions/sr6.print.js?v=1082"],
+    sr5: ["js/editions/sr5.js?v=1083", "js/editions/sr5.foundry.js?v=1082", "js/editions/sr5.print.js?v=1083"],
+    sr6: ["js/editions/sr6.js?v=1083", "js/editions/sr6.foundry.js?v=1082", "js/editions/sr6.print.js?v=1083"],
     anarchy2: [
       "js/editions/anarchy2.js?v=1080",
       "js/editions/anarchy2.creation.js?v=1080",

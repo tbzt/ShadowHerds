@@ -55,13 +55,18 @@ Object.assign(CardRenderer, {
       skills,
       knowledges,
       equip,
-      augs,
       spells,
       traits,
     } = pnj;
 
     const prefs = this._displayPrefs(deps);
-    const { weapons, gear } = ItemResolver.splitEquip(equip);
+    const augsKeys = App.getEditionModule("sr5").AUGS_KEYS;
+    const { weapons, gear: gearAll } = ItemResolver.splitEquip(equip);
+    // #63 : les items catalogue catégorisés cyberware/bioware rejoignent
+    // l'affichage Augmentations (cf. ItemResolver.augItems) au lieu de
+    // « Porté » — stockage inchangé, seul le tri d'affichage bouge.
+    const gear = gearAll.filter((i) => !augsKeys.includes(ItemResolver.itemCat(i)));
+    const augsAll = ItemResolver.augItems(pnj, augsKeys);
     let html = `<div class="pnj-card-body">`;
 
     const malus5 = Utils.woundMalus(pnj, "sr5");
@@ -135,7 +140,7 @@ Object.assign(CardRenderer, {
     }
     if (prefs.showGmPools) detailsBody += this._gmPoolsSR5(pnj);
     // CP2 : inventaire consolidé (Porté + Augmentations en une section).
-    detailsBody += this._equipSection(pnj, prefs.showEquipment ? gear : [], "sr5", deps, augs);
+    detailsBody += this._equipSection(pnj, prefs.showEquipment ? gear : [], "sr5", deps, augsAll);
     // Cyberdeck : vit désormais dans le module Matrice (CP3).
     html += this._zoneShell(pnj, "details", detailsBody, "attributs, jets de situation, équipement");
 

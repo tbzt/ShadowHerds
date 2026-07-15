@@ -1765,8 +1765,12 @@ const EditionSR5 = {
     return ItemResolver.flattenEquipPools(this.equipPools, this._equipLabels);
   },
   addCatalogItem(pnj, id) {
-    ItemResolver.addEquipString(pnj, this.equipPools, id);
+    ItemResolver.addEquipString(pnj, this.equipPools, id, this.AUGS_KEYS);
   },
+  // #63 : clés du catalogue reconnues comme augmentation (routage affichage
+  // « Augmentations », cf. ItemResolver.augItems) — donnée d'édition, pas
+  // une branche.
+  AUGS_KEYS: ["cyberware", "bioware"],
   /* Sorts/pouvoirs d'adepte : catalogues partagés (taxonomie commune aux
      4 éditions), source unique dans Content — cf. Content.spellCatalogFor. */
   spellCatalog() {

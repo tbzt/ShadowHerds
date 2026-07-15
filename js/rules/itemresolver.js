@@ -131,22 +131,42 @@ const ItemResolver = {
   },
 
   /** Retrouve la chaîne complète d'un id « <clé>::<index> » dans `equipPools`
-      et la pousse dans `pnj.equip`. Retourne false si l'id ne résout rien. */
-  addEquipString(pnj, equipPools, id) {
+      et la pousse dans `pnj.equip`. Retourne false si l'id ne résout rien.
+      `augsKeys` (optionnel, fourni par l'appelant — SR5/SR6 uniquement) :
+      clés du catalogue à tagger `cat` même à indice fixe, pour que l'item
+      soit reconnu comme augmentation à l'affichage (cf. `augItems`) sans
+      changer sa forme de stockage pour les autres catégories. */
+  addEquipString(pnj, equipPools, id, augsKeys) {
     const [key, idxStr] = String(id).split("::");
     const str = ItemResolver._flatPool(equipPools[key])[Number(idxStr)];
     if (!str) return false;
     if (!Array.isArray(pnj.equip)) pnj.equip = [];
     // #63 : le SEAM (helpers itemStr/itemCat/itemRating + lecteurs tolérants,
-    // désormais étendus à tous les consommateurs : export Foundry, vues
-    // d'impression, recherche plein-fiche, matcher drogues/véhicules) est en
-    // place. On n'émet un OBJET {str, cat:key, rating:null} que pour les
-    // items dont l'indice est une plage non résolue (« Indice 1-4 ») — le
-    // stepper (EditModal) règle `.rating` ensuite. Le reste du catalogue
-    // (valeur fixe ou sans indice) reste une chaîne, inchangé : blast radius
-    // minimal, la majorité des items ne change jamais de forme.
+    // étendu à tous les consommateurs : export Foundry, vues d'impression,
+    // recherche plein-fiche, matcher drogues/véhicules) est en place. On
+    // n'émet un OBJET {str, cat:key, rating} que si l'indice est une plage
+    // non résolue (« Indice 1-4 » → rating:null, réglé par le stepper
+    // EditModal) OU si `key` fait partie des `augsKeys` de l'édition
+    // (catégorisation pour le routage Augmentations, cf. `augItems`).
+    // Le reste du catalogue (valeur fixe, catégorie non taguée) reste une
+    // chaîne, inchangé : blast radius minimal.
     const range = ItemResolver.ratingRange(str);
-    pnj.equip.push(range ? { str, cat: key, rating: null } : str);
+    const tagCat = range || (augsKeys || []).includes(key);
+    pnj.equip.push(tagCat ? { str, cat: key, rating: range ? null : undefined } : str);
     return true;
+  },
+
+  /** #63 : items d'augmentation (cyberware/bioware) affichables sous
+      « Augmentations » — `pnj.augs` (généré, sans interface d'édition) +
+      les items d'`pnj.equip` catégorisés via `augsKeys` (ajoutés depuis le
+      catalogue, éditables dans EditModal). Source unique pour carte, vues
+      d'impression et export Foundry — ne jamais lire `pnj.augs` seul quand
+      `augsKeys` existe pour l'édition. */
+  augItems(pnj, augsKeys) {
+    if (!augsKeys || !augsKeys.length) return pnj.augs || [];
+    const fromEquip = (pnj.equip || []).filter((i) =>
+      augsKeys.includes(ItemResolver.itemCat(i)),
+    );
+    return [...(pnj.augs || []), ...fromEquip];
   },
 };

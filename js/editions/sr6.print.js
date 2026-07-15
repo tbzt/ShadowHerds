@@ -81,10 +81,18 @@ const PrintSR6 = {
   },
 
   build(pnj) {
-    const { weapons, gear } =
+    const { weapons, gear: gearAll } =
       typeof ItemResolver !== "undefined" && ItemResolver.splitEquip
         ? ItemResolver.splitEquip(pnj.equip || [])
         : { weapons: [], gear: pnj.equip || [] };
+    // #63 : les items catalogue cyberware/bioware rejoignent Augmentations
+    // (cf. ItemResolver.augItems), même tri que la carte.
+    const hasResolver = typeof ItemResolver !== "undefined";
+    const augsKeys = EditionSR6.AUGS_KEYS;
+    const gear = hasResolver
+      ? gearAll.filter((i) => !augsKeys.includes(ItemResolver.itemCat(i)))
+      : gearAll;
+    const augsAll = hasResolver ? ItemResolver.augItems(pnj, augsKeys) : pnj.augs;
 
     const metaStr = pnj.meta + (pnj.metavariant ? ` (${this._esc(pnj.metavariant)})` : "");
     const initStr = `${this._esc(pnj.initBase ?? 0)} + ${this._esc(pnj.initDice ?? 1)}D6` + (pnj.pa ? ` / ${this._esc(pnj.pa)}` : "");
@@ -103,7 +111,7 @@ const PrintSR6 = {
       this._line("Traits", this._list(pnj.traits).map((s) => this._esc(s)).join(", ")),
       this._line("Sorts", this._list(pnj.spells).map((s) => this._esc(s)).join(", ")),
       this._line("Pouvoirs d'adepte", this._list(pnj.powers).map((s) => this._esc(s)).join(", ")),
-      this._line("Augmentations", this._list(pnj.augs).map((s) => this._esc(s)).join(", ")),
+      this._line("Augmentations", this._list(augsAll).map((s) => this._esc(s)).join(", ")),
       this._line("Armes", this._list(weapons).map((s) => this._esc(s)).join(", ")),
       this._line("Équipement", this._list(gear).map((s) => this._esc(s)).join(", ")),
       this._journal(pnj),
