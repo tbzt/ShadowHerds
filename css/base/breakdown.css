@@ -1,0 +1,134 @@
+/* ============================================================
+   BREAKDOWN — affordance ⓘ (pill-explain) + popover d'explication
+   décomposée d'une réserve (breakdown-pop / breakdown-sheet mobile).
+   Tokens uniquement, thémé par édition via [data-edition] en amont.
+   ============================================================ */
+
+.pill-explain {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-left: 2px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.pill-explain:hover,
+.pill-explain:focus-visible {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+@media (hover: none) {
+  /* Cible tactile ≥ 32px (Vector) : l'affordance visuelle reste discrète,
+     la zone cliquable s'agrandit sans changer le rendu. */
+  .pill-explain {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.breakdown-pop {
+  position: fixed;
+  z-index: 200;
+  min-width: 200px;
+  max-width: 320px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  clip-path: var(--card-clip);
+  border-radius: 8px;
+  padding: var(--sp-3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  animation: breakdown-in 0.12s ease-out;
+}
+@keyframes breakdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.breakdown-title {
+  font-family: var(--font-display);
+  color: var(--text);
+  margin-bottom: var(--sp-2);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--border);
+}
+.breakdown-title strong {
+  color: var(--accent);
+  margin-left: var(--sp-2);
+}
+
+.breakdown-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.breakdown-line {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.breakdown-line > span:last-child {
+  color: var(--text);
+}
+.breakdown-sub {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-left: var(--sp-3);
+  color: var(--text-dim);
+  opacity: 0.85;
+}
+.breakdown-line[data-negative="true"] > span:last-child,
+.breakdown-sub[data-negative="true"] > span:last-child {
+  color: var(--danger);
+}
+
+/* Bottom-sheet mobile (≤640px) : même contenu, ancré en bas d'écran plutôt
+   que positionné dynamiquement près du déclencheur (pas de zone fixe
+   permanente — Vector). */
+.breakdown-sheet {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0;
+  bottom: 0;
+  top: auto !important;
+  max-width: none;
+  width: 100%;
+  border-radius: 12px 12px 0 0;
+  border-bottom: none;
+  padding: var(--sp-4) var(--sp-3) calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  animation: breakdown-sheet-in 0.15s ease-out;
+}
+@keyframes breakdown-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breakdown-pop,
+  .breakdown-sheet {
+    animation: none;
+  }
+}

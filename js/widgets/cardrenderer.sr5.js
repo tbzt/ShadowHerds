@@ -76,9 +76,23 @@ Object.assign(CardRenderer, {
     const initDetail = `${Utils.attrFullName("REA")} ${Actor.attr(pnj, "REA")} + ${Utils.attrFullName("INT")} ${Actor.attr(pnj, "INT")}`;
     combatBody += this._initPill(init, initDice, pnj, initDetail);
     if (drainResist != null)
-      combatBody += this._rollPill("Drain", Math.max(0, drainResist - malus5), "Résistance au Drain");
-    combatBody += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus5), "Test de défense : Réaction + Intuition", "⛉");
-    combatBody += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure (non affectée par le malus de blessure)", "⛊");
+      combatBody += this._rollPill("Drain", Math.max(0, drainResist - malus5), {
+        title: "Résistance au Drain",
+        key: "drainResist",
+        pnj,
+      });
+    combatBody += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus5), {
+      title: "Test de défense : Réaction + Intuition",
+      glyph: "⛉",
+      key: "defense",
+      pnj,
+    });
+    combatBody += this._rollPill("Encaissement", pnj.damageResist, {
+      title: "Résistance aux dommages : Constitution + armure (non affectée par le malus de blessure)",
+      glyph: "⛊",
+      key: "damageResist",
+      pnj,
+    });
     combatBody += "</div>";
 
     combatBody += `<div class="monitor-block">

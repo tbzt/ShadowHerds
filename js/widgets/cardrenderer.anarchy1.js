@@ -36,9 +36,18 @@ Object.assign(CardRenderer, {
     if (init != null)
       combatBody += this._initPill(init, initDice, pnj);
     if (drainResist != null)
-      combatBody += this._rollPill("Drain", Math.max(0, drainResist - malus), "Résistance au Drain");
+      combatBody += this._rollPill("Drain", Math.max(0, drainResist - malus), {
+        title: "Résistance au Drain",
+        key: "drainResist",
+        pnj,
+      });
     if (pnj.defense != null)
-      combatBody += this._rollPill("Défense", Math.max(0, pnj.defense - malus), "Test de défense : Agilité + Logique", "⛉");
+      combatBody += this._rollPill("Défense", Math.max(0, pnj.defense - malus), {
+        title: "Test de défense : Agilité + Logique",
+        glyph: "⛉",
+        key: "defense",
+        pnj,
+      });
     combatBody += "</div>";
 
     combatBody += `<div class="monitor-block">
