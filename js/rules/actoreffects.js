@@ -35,6 +35,12 @@ const ActorEffects = {
       perRating: [null, 1, 2, 3], source: "Amplification visuelle", page: "SR5 p.456" },
     { match: /amplification auditive/i, scope: "Limite — Perception auditive",
       perRating: [null, 1, 2, 3], source: "Amplification auditive", page: "SR5 p.456" },
+    // Fusion V5 (livres oubliés, oubli-sr6.md #2) : Système immunitaire
+    // renforcé (Corps à la carte p.60) « ajoute son indice à la Constitution
+    // LORS DES TESTS DE RÉSISTANCE AUX MALADIES » — CON SCOPÉ, pas global →
+    // ActorEffects (affiché, pas baké), comme les Défenses immunitaires SR5.
+    { match: /système immunitaire renforcé/i, scope: "Résistance aux maladies (CON)",
+      perRating: [null, 1, 2, 3, 4], source: "Système immunitaire renforcé", page: "SR6 Corps à la carte p.60" },
   ],
 
   /** Modificateurs situationnels portés par un PNJ → [{scope, value, source}].

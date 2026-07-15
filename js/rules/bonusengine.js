@@ -69,6 +69,13 @@ const BonusEngine = {
       // Débloqué par le puits Limite + le fix d'écrasement recalc (seau
       // _limitMods).
       ["Articulations intelligentes", { limit: "phys", val: 2 }],
+      // Fusion V5 (livres oubliés, oubli-sr5.md #1) : Optimisation
+      // d'accroissement de réaction (Chrome Flesh p.171, optimisation
+      // génétique) = +1 au SCORE d'Initiative (fixe, « aucun bonus pour
+      // indices supérieurs »). PAS +1 REA (le livre dit Initiative). Passe
+      // par le seau _initMod (dérivée recalculée). Préfixe « Optimisation
+      // d'… » distinct de « Accroissement de réaction » (pas de collision).
+      ["Optimisation d'accroissement de réaction", { init: 1 }],
     ],
     sr6: [
       ["Réflexes câblés 1", { initDice: 1 }],
@@ -110,6 +117,15 @@ const BonusEngine = {
       // porte l'un OU l'autre) → pas de double-comptage. Volet « dés de
       // défense » = pool distinct, non couvert (facette défense hors puits).
       ["Ossature renforcée TMG", { sd: 1 }],
+      // Fusion V5 (livres oubliés, oubli-sr6.md #1) : Move-by-wire (Corps à
+      // la carte p.39, indice 1-2) — « chaque point octroie +2 Réaction ET
+      // +2 Agilité » → table littérale ×2 par indice (1→+2, 2→+4). Le volet
+      // « +2 actions mineures mouvement » (économie d'action) est hors puits.
+      // ⚠ Incompatible au livre avec toute autre augmentation de Réaction
+      // (Réflexes câblés/Amplificateur) — non modélisé (BonusEngine ne gère
+      // pas les incompatibilités, il somme ce que le PNJ porte).
+      ["Move-by-wire", { attr: "RÉA", perRating: [null, 2, 4] }],
+      ["Move-by-wire", { attr: "AGI", perRating: [null, 2, 4] }],
       // Fusion V5 (sr6_bioware.md) : Articulations améliorées = +1 AGI fixe
       // (p.299 ; la remise d'Atout espaces étroits n'est pas motorisable, pas
       // de champ pour ça dans BonusEngine).
@@ -134,13 +150,17 @@ const BonusEngine = {
     const items = [...(pnj.equip || []), ...(pnj.augs || [])];
     // attrMods : contributions ÉTIQUETÉES (source = libellé du cyberware
     // reconnu) plutôt qu'une somme — la provenance remonte jusqu'au Trait.
-    const totals = { initDice: 0, armor: 0, sd: 0, limits: {}, attrMods: [] };
+    const totals = { initDice: 0, initScore: 0, armor: 0, sd: 0, limits: {}, attrMods: [] };
     for (const item of items) {
       const s = ItemResolver.itemStr(item); // #63 : item chaîne OU objet
       if (!s) continue;
       for (const [prefix, bonus] of table) {
         if (!s.startsWith(prefix)) continue;
         if (bonus.initDice) totals.initDice += bonus.initDice;
+        // `init` = bonus au SCORE d'Initiative (≠ dé d'init). Dérivé
+        // recalculé (REA+INT) → passe par le seau `_initMod` (comme les
+        // Limites), sinon écrasé par recalc.
+        if (bonus.init) totals.initScore += bonus.init;
         // Valeur à l'INDICE (collecte V5) : `byRating` = +indice ;
         // `perRating[r]` = table littérale ; sinon la valeur fixe du champ.
         // Un indice non résolu (plage « 1-4 ») → 0 (inactif jusqu'au
@@ -259,10 +279,18 @@ const BonusEngine = {
     // trait) : recalc le ré-appliquera après sa formule de base. Reset →
     // pas de double-comptage si _applySR est rejoué (régénération).
     pnj._limitMods = { phys: 0, ment: 0, soc: 0 };
+    // Seau de mod du SCORE d'Initiative (dérivé REA+INT, recalculé) — même
+    // logique que _limitMods (fix tranche 4) : reset ici, ré-appliqué par
+    // recalc. Fusion V5 : Optimisation d'accroissement de réaction (SR5).
+    pnj._initMod = 0;
     const totals = this._collectCyberBonuses(pnj, edition);
     let attrsTouched = false;
 
     if (totals.initDice) pnj.initDice = (pnj.initDice || 0) + totals.initDice;
+    if (totals.initScore) {
+      pnj._initMod = (pnj._initMod || 0) + totals.initScore;
+      attrsTouched = true; // dérivée init → recalc doit se déclencher
+    }
     if (totals.armor) pnj.armure = (pnj.armure || 0) + totals.armor;
     if (totals.sd) pnj.sdBase = (pnj.sdBase || 0) + totals.sd;
     // Fusion V5 (3e vague) : bonus de Limite naturelle scalés à l'indice

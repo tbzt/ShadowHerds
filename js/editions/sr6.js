@@ -1978,7 +1978,7 @@ const EditionSR6 = {
       "Griffes d'escalade rétractables (Corps à la carte) [+1 atout escalade, réduit seuil]",
       "Implants de compétence (Corps à la carte) [compétence artificielle indice 1-6]",
       "Interface tactile (Corps à la carte) [retours haptiques réalité augmentée]",
-      "Move-by-wire (Corps à la carte) [+2 réaction/agilité + 2 actions mineures mouvement]",
+      "Move-by-wire (Corps à la carte) [Indice 1-2, +2 réaction/agilité par point + 2 actions mineures mouvement]",
       "Palmes cybernétiques (Corps à la carte) [natation +1 atout, vitesse +2m/round]",
       "Pulvérisateur gastrique (Corps à la carte) [digestion acides et matériaux]",
       "Queues cybernétiques - Stabilisatrice (Corps à la carte) [trait félin]",

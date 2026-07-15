@@ -2726,7 +2726,7 @@ const EditionSR5 = {
     pnj.limSoc = Math.ceil((A("CHA") * 2 + A("VOL") + (proRating || 0)) / 3) + (lm.soc || 0);
     pnj.physMon = 8 + Math.ceil(A("CON") / 2);
     pnj.stunMon = 8 + Math.ceil(A("VOL") / 2);
-    pnj.init = A("REA") + A("INT");
+    pnj.init = A("REA") + A("INT") + (pnj._initMod || 0);
     pnj.drainResist = pnj.traditionDrainAttr
       ? A("VOL") + A(pnj.traditionDrainAttr)
       : ["Mage hermétique", "Chaman"].includes(pnj.special)
