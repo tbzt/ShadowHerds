@@ -1210,17 +1210,27 @@ const CardRenderer = {
    */
   _knowledgesSection(knowledges, pnj, malus = 0) {
     if (!knowledges || !knowledges.length) return "";
+    // Fusion V5 : bonus de pool applicable à toute connaissance (Amélioration
+    // mnémonique). Blanket → résolu une fois, ajouté à chaque puce.
+    const kContribs =
+      pnj && typeof SkillEffects !== "undefined"
+        ? SkillEffects.forKnowledge(pnj)
+        : [];
+    const kBonus = kContribs.reduce((a, c) => a + c.value, 0);
+    const kSrc = kContribs.length
+      ? " + " + kContribs.map((c) => `${c.source} ${c.value}`).join(" + ")
+      : "";
     const tags = knowledges
       .map((k) => {
         const rating = Number(k.val);
         const attr = SkillCatalog.attrFor("sr5", k.name); // LOG | INT | null
         const attrVal = attr ? Actor.attr(pnj, attr) : 0;
         const pool = Number.isFinite(rating)
-          ? Math.max(0, rating + attrVal - malus)
+          ? Math.max(0, rating + attrVal + kBonus - malus)
           : rating;
         const attrLabel = attr ? Utils.attrFullName(attr) : "";
         const detail = attr
-          ? `${attrLabel} ${attrVal} + ${k.name} ${rating}`
+          ? `${attrLabel} ${attrVal} + ${k.name} ${rating}${kSrc}`
           : "";
         const rollable = Number.isFinite(pool) && pool >= 1;
         const rollAttrs = rollable

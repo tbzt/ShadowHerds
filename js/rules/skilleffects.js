@@ -14,12 +14,17 @@
    motorisation N2, même vocabulaire `{value, source}` que les `Mod`.
 
    Un effet déclare :
-     { match, skills, perRating?|value, conditional?, source, page }
+     { match, skills?|knowledge?, perRating?|value, conditional?, source, page }
    - match       : RegExp sur le libellé de l'item porté (equip/augs).
-   - skills      : liste LITTÉRALE de noms de compétences visées. Pour un
-                   « groupe » SR5 (qui n'a pas de puce dédiée), on liste
-                   ses membres exacts transcrits du livre (Canon, jamais
-                   une supposition — comme `perRating`).
+   - skills      : liste LITTÉRALE de noms de compétences ACTIVES visées.
+                   Pour un « groupe » SR5 (qui n'a pas de puce dédiée), on
+                   liste ses membres exacts transcrits du livre (Canon,
+                   jamais une supposition — comme `perRating`). Consommé par
+                   forSkill(pnj, skillName).
+   - knowledge   : true = bonus qui s'applique à TOUTES les connaissances
+                   (Connaissances/langues/mémoire), pas à une compétence
+                   nommée. Consommé par forKnowledge(pnj). Exclusif de
+                   `skills`.
    - perRating[] : table LITTÉRALE du livre indexée par l'indice ; sinon
                    `value` fixe.
    - conditional : (pnj) => bool, optionnel (ex. sans-fil requis).
@@ -53,29 +58,63 @@ const SkillEffects = {
       source: "Synthécarde",
       page: "SR5 p.464",
     },
+    // SR5 p.464 : Amélioration mnémonique « ajoute son indice aux tests de
+    // compétences de Connaissances, langues, tests liés à la mémoire ».
+    // S'applique à TOUTES les connaissances → `knowledge:true` (pas une
+    // compétence active nommée). Le volet Limite mentale est déjà motorisé
+    // à part (BonusEngine, tranche 1) — facette distincte, pas de doublon.
+    {
+      match: /amélioration mnémonique/i,
+      knowledge: true,
+      perRating: [null, 1, 2, 3],
+      source: "Amélioration mnémonique",
+      page: "SR5 p.464",
+    },
   ],
 
+  /** Résout la valeur à l'indice d'un item porteur, ou null si l'objet
+      n'est pas porté / condition non remplie / indice non résolu. Facteur
+      commun de forSkill et forKnowledge. */
+  _resolve(pnj, entry, items) {
+    const carrier = items.find((it) => entry.match.test(ItemResolver.itemStr(it)));
+    if (!carrier) return null;
+    if (entry.conditional && !entry.conditional(pnj)) return null;
+    let value = entry.value;
+    if (entry.perRating) {
+      const r = ItemResolver.itemRating(carrier);
+      if (r == null) return null; // indice non choisi → inactif
+      value = entry.perRating[r];
+    }
+    return value || null;
+  },
+
   /** Contributions de pool portées par les objets du PNJ pour une
-      compétence NOMMÉE → [{value, source}]. Neutre par édition. Tolérant
-      items chaîne/objet (#63). Liste vide si rien ne s'applique. */
+      compétence ACTIVE nommée → [{value, source}]. Neutre par édition.
+      Tolérant items chaîne/objet (#63). Liste vide si rien ne s'applique. */
   forSkill(pnj, skillName) {
     if (!pnj || !skillName) return [];
     const name = String(skillName).toLowerCase();
     const items = [...(pnj.equip || []), ...(pnj.augs || [])];
     const out = [];
     for (const e of this.CATALOG) {
-      if (!e.skills.some((s) => s.toLowerCase() === name)) continue;
-      const carrier = items.find((it) => e.match.test(ItemResolver.itemStr(it)));
-      if (!carrier) continue;
-      if (e.conditional && !e.conditional(pnj)) continue;
-      let value = e.value;
-      if (e.perRating) {
-        const r = ItemResolver.itemRating(carrier);
-        if (r == null) continue; // indice non choisi → inactif
-        value = e.perRating[r];
-      }
-      if (!value) continue;
-      out.push({ value, source: e.source });
+      if (!e.skills || !e.skills.some((s) => s.toLowerCase() === name)) continue;
+      const value = this._resolve(pnj, e, items);
+      if (value) out.push({ value, source: e.source });
+    }
+    return out;
+  },
+
+  /** Contributions de pool applicables à TOUTE connaissance (Amélioration
+      mnémonique…) → [{value, source}]. Blanket : même bonus pour chaque
+      puce de la section Connaissances. */
+  forKnowledge(pnj) {
+    if (!pnj) return [];
+    const items = [...(pnj.equip || []), ...(pnj.augs || [])];
+    const out = [];
+    for (const e of this.CATALOG) {
+      if (!e.knowledge) continue;
+      const value = this._resolve(pnj, e, items);
+      if (value) out.push({ value, source: e.source });
     }
     return out;
   },
