@@ -229,7 +229,12 @@ const EditionSR5 = {
     woundMalus(pnj) {
       const div = parseInt(Settings.get("woundMod", 3), 10);
       if (!div) return 0;
-      const total = (pnj.physFilled || 0) + (pnj.stunFilled || 0);
+      // Fusion V5 : le Compensateur de dommages (p.464) ignore N cases
+      // (phys et/ou étourdissant) pour les modificateurs de blessure.
+      const total = Math.max(
+        0,
+        (pnj.physFilled || 0) + (pnj.stunFilled || 0) - Utils.woundBoxesIgnored(pnj),
+      );
       return Math.floor(total / div);
     },
     /** Neutre : les esprits SR5 utilisent le moniteur générique basé sur

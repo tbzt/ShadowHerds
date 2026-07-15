@@ -251,10 +251,17 @@ const EditionSR6 = {
     model: "moniteur d'état unique (8 + CON/2), ou séparé Phys/Étourd (8+CON/2 / 8+VOL/2) si separateMonitors",
     fields: { primary: "me" },
     woundMalus(pnj) {
+      // Fusion V5 : Compensateur de dommages (p.301) ignore N cases pour
+      // les modificateurs de blessure — mécanique identique à SR5.
+      const ignore = Utils.woundBoxesIgnored(pnj);
       if (pnj.stunMon !== undefined) {
-        return Math.floor(((pnj.physFilled || 0) + (pnj.stunFilled || 0)) / 3);
+        const total = Math.max(
+          0,
+          (pnj.physFilled || 0) + (pnj.stunFilled || 0) - ignore,
+        );
+        return Math.floor(total / 3);
       }
-      return Math.floor((pnj.physFilled || 0) / 3);
+      return Math.floor(Math.max(0, (pnj.physFilled || 0) - ignore) / 3);
     },
     /** Moniteur d'un esprit invoqué : (Puissance/2)+8, p.224 — distinct
         de la formule PNJ (basée sur CON) puisqu'un esprit n'a pas de
@@ -1774,7 +1781,6 @@ const EditionSR6 = {
       "Substituts musculaires [AGI+2]",
       "Datajack [connexion directe]",
       "Câblage de contrôle [Rigger]",
-      "Filtre antalgique 2 [résiste à 2 malus de blessure]",
       // Implants cérébraux (p.291-292)
       "Amplificateur gustatif [Indice 1-3, bonus Perception (goût)]",
       "Amplificateur olfactif [Indice 1-3, bonus Perception (odorat)]",
@@ -1845,6 +1851,17 @@ const EditionSR6 = {
       "Glande suprathyroïdienne [+1 AGI/CON/RÉA, +25% FOR, appétit doublé]",
       "Extracteur de toxines [bonus résistance toxines]",
       "Filtre trachéal [bonus résistance toxines inhalées]",
+      // Fusion V5 (tranche 3) : Compensateur de dommages (p.301, absent du
+      // catalogue jusqu'ici) — ignore N cases pour les modificateurs de
+      // blessure (motorisé dans conditionMonitor.woundMalus via
+      // Utils.woundBoxesIgnored).
+      "Compensateur de dommages [Indice 1-12, ignore N cases pour malus de blessure]",
+      // Correction Canon (p.301, vérifiée) : Filtre antalgique est un
+      // BIOWARE (déplacé depuis cyberware), SANS indice, qui ignore TOUS les
+      // modificateurs de blessure quand ACTIF (item à activation → non
+      // motorisé, comme la Pompe à adrénaline). L'ancien libellé « Filtre
+      // antalgique 2 [résiste à 2 malus] » était faux sur les 3 points.
+      "Filtre antalgique [ignore tous les malus de blessure quand actif]",
     ],
     equipSpecial: [
       "Lunettes smartlink [indice 2]",

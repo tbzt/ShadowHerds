@@ -96,6 +96,22 @@ const Utils = {
     return editionModule ? editionModule.conditionMonitor.woundMalus(pnj) : 0;
   },
 
+  /** Fusion V5 : nombre de cases de dommages ignorées pour le calcul des
+      modificateurs de blessure, apporté par un « Compensateur de dommages »
+      (SR5 p.464 / SR6 p.301, indice 1-12, mécanique identique). Neutre —
+      le libellé est le même dans les deux éditions, l'APPLICATION vit dans
+      chaque `conditionMonitor.woundMalus`. Indice non résolu (plage non
+      réglée par le stepper #63) → 0. */
+  woundBoxesIgnored(pnj) {
+    if (!pnj || typeof ItemResolver === "undefined") return 0;
+    const items = [...(pnj.equip || []), ...(pnj.augs || [])];
+    const carrier = items.find((it) =>
+      /compensateur de dommages/i.test(ItemResolver.itemStr(it)),
+    );
+    if (!carrier) return 0;
+    return ItemResolver.itemRating(carrier) || 0;
+  },
+
   /* ============================================================
      TABLES DE NOMS
      Organisées par origine culturelle pour donner de la texture.
