@@ -156,6 +156,15 @@ const EditionSR5 = {
   },
   skillModel: { shape: "simple", valRange: [1, 12], hasGroups: true },
   hasEdges: false,
+  /** Attribut MAG chiffré (Livre de Règles p.68, table Attributs par
+      métatype) : absent en Anarchy (magie narrative, pas d'attribut).
+      Gate EditModal — MAG toujours affiché (0 par défaut, éditable) +
+      verrouille Sorts/Pouvoirs à 0. */
+  magicAttr: "MAG",
+  /** Connaissances éditables à la main (nom libre + catégorie →
+      Logique/Intuition, cf. SkillCatalog.knowledgeCategories) — modèle
+      absent en Anarchy (pas de pool de connaissances chiffré). */
+  hasKnowledges: true,
   /** Neutre : les drogues SR5 sont des équipements, pas des atouts au
       choix — matchItem() filtre déjà par source, pas de correspondance
       universelle nécessaire (concept propre à Anarchy 2.0 p.150). */

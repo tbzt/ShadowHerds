@@ -122,6 +122,23 @@ const SkillCatalog = {
     "Sciences appliquées": "LOG",
   },
 
+  /* ---- Catégories de connaissance (Livre de Règles SR5 p.150-152, vérifié
+     texte du livre) — les 4 catégories canon sont Rue/Académique/
+     Professionnelle/Hobbies (PAS « Intérêt », erreur répandue à ne pas
+     reproduire). Rue et Hobbies → Intuition ; Académique et Professionnelle
+     → Logique. Mécanique présumée identique en SR6 (pas de livre de base
+     SR6 disponible pour vérification directe, mais le split
+     rue/académique/professionnelle/hobbies est un principe transverse
+     documenté ailleurs dans le canon). Utilisé par EditModal pour câbler
+     l'attribut d'une connaissance ajoutée à la main (nom libre → catégorie
+     choisie, pas de lookup par nom sur un texte imprévisible). */
+  knowledgeCategories: {
+    "Académique": "LOG",
+    "Professionnelle": "LOG",
+    "Rue": "INT",
+    "Hobbies": "INT",
+  },
+
   /* ---- SR6 : 18 compétences regroupées (Livre de Règles p.106) ---- */
   sr6: {
     "Armes à feu": "AGI",

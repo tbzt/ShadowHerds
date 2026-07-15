@@ -603,6 +603,21 @@ const EditModal = {
     if (sum) sum.textContent = text;
   },
 
+  /* Zone VERROUILLÉE (nouveau, magie) : montre que la capacité existe (le
+     MJ voit « Sorts »/« Pouvoirs » dans la liste des zones) sans l'exposer
+     comme actionnable — pas de bouton, pas de catalogue, juste un en-tête
+     grisé + le motif du verrou. Volontairement pas un `.zone-toggle`
+     cliquable (rien à déplier) : un <div> inerte, pas de faux affordance. */
+  _zoneLocked(label, hint) {
+    const esc = CardRenderer._esc;
+    return `<div class="card-zone em-zone-locked">
+      <div class="zone-toggle em-zone-locked-header">
+        <span class="zone-toggle-label">${esc(label)}</span>
+        <span class="zone-toggle-summary">${esc(hint)}</span>
+      </div>
+    </div>`;
+  },
+
   /* ---- Construction du formulaire ---- */
   _buildForm(pnj) {
     let html = "";
@@ -671,10 +686,15 @@ const EditModal = {
         </div>`;
       }
     }
-    if (pnj.attrs.MAG !== undefined) {
+    // MAG toujours affiché quand l'édition porte l'attribut chiffré (SR5/
+    // SR6, cf. magicAttr), 0 par défaut — le MJ doit pouvoir FAIRE DEVENIR
+    // un PNJ magicien (poser MAG > 0) sans qu'il l'ait déjà été à la
+    // génération. min=0 (pas 1) : 0 = non magicien, valeur légitime.
+    const magicAttr = App.getEditionModule(pnj.edition).magicAttr;
+    if (magicAttr) {
       html += `<div class="form-group">
-        <label>MAG</label>
-        <input type="number" id="em-attr-MAG" value="${Actor.attr(pnj, "MAG")}" min="1" max="12">
+        <label>${magicAttr}</label>
+        <input type="number" id="em-attr-${magicAttr}" value="${Actor.attr(pnj, magicAttr)}" min="0" max="12">
       </div>`;
     }
     // Ressource de relance (Chance SR5 / Atout SR6), clé portée par le
@@ -703,32 +723,52 @@ const EditModal = {
       });
     }
 
+    // Verrou magie (nouveau) : si l'édition porte un MAG chiffré et que ce
+    // PNJ a 0 (non magicien), Sorts/Pouvoirs sont inutiles à catalogeur —
+    // verrouillés (grisés, catalogue caché) plutôt que masqués : le MJ VOIT
+    // que la capacité existe et pourquoi elle est inaccessible (poser MAG >
+    // 0 la débloque). Garde-fou Failsafe : si des sorts/pouvoirs existent
+    // déjà malgré MAG=0 (édition manuelle antérieure, import…), la zone
+    // reste normale/éditable — jamais de donnée cachée ou perdue.
+    const magLocked =
+      magicAttr && Actor.attr(pnj, magicAttr) <= 0
+        ? { hint: `Nécessite de la Magie (${magicAttr} > 0).` }
+        : null;
+
     // ---- Section : Sorts (montée si l'édition a un catalogue de sorts).
     // Hors esprits. Objets structurés (add/retrait via catalogue seulement,
     // pas de saisie libre — comme les Armes). ----
     if (App.getEditionModule(pnj.edition).spellCatalog?.() && pnj.type !== "spirit") {
-      const spellsBody = `<div id="em-spells-list" class="em-skills-list">
+      if (magLocked && !(pnj.spells || []).length) {
+        html += this._zoneLocked("Sorts", magLocked.hint);
+      } else {
+        const spellsBody = `<div id="em-spells-list" class="em-skills-list">
           ${this._spellRows(pnj)}
         </div>
         ${this._spellCatalogControls(pnj)}`;
-      html += this._zone("Sorts", spellsBody, {
-        summary: this._zoneCount((pnj.spells || []).length, "sort", "sorts"),
-        collapsed: true,
-      });
+        html += this._zone("Sorts", spellsBody, {
+          summary: this._zoneCount((pnj.spells || []).length, "sort", "sorts"),
+          collapsed: true,
+        });
+      }
     }
 
     // ---- Section : Pouvoirs d'adepte (SR5/SR6 seulement — Anarchy fond
     // cette mécanique dans les Atouts). Hors esprits (pnj.powers a une
     // sémantique différente sur un esprit — cf. js/catalogs/spirits.js). ----
     if (App.getEditionModule(pnj.edition).powerCatalog?.() && pnj.type !== "spirit") {
-      const powersBody = `<div id="em-powers-list" class="em-skills-list">
+      if (magLocked && !(pnj.powers || []).length) {
+        html += this._zoneLocked("Pouvoirs", magLocked.hint);
+      } else {
+        const powersBody = `<div id="em-powers-list" class="em-skills-list">
           ${this._powerRows(pnj)}
         </div>
         ${this._powerCatalogControls(pnj)}`;
-      html += this._zone("Pouvoirs", powersBody, {
-        summary: this._zoneCount((pnj.powers || []).length, "pouvoir", "pouvoirs"),
-        collapsed: true,
-      });
+        html += this._zone("Pouvoirs", powersBody, {
+          summary: this._zoneCount((pnj.powers || []).length, "pouvoir", "pouvoirs"),
+          collapsed: true,
+        });
+      }
     }
 
     // ---- Section : Cyberdeck (module Matrice de la carte) — montée si le PNJ
@@ -753,6 +793,24 @@ const EditModal = {
         ${this._addSkillControls(pnj)}`;
       html += this._zone("Compétences", skillsBody, {
         summary: this._zoneCount((pnj.skills || []).length, "compétence", "compétences"),
+        collapsed: true,
+      });
+    }
+
+    // ---- Section : Connaissances (SR5/SR6 — cf. hasKnowledges du module ;
+    // Anarchy fond ce concept ailleurs, pas de pool de connaissances
+    // chiffré). Nom LIBRE (aucune liste fermée au livre) + catégorie choisie
+    // qui câble l'attribut lié (Logique/Intuition, cf.
+    // SkillCatalog.knowledgeCategories) — un lookup par nom serait peu
+    // fiable sur du texte imprévisible, la catégorie est donc stockée
+    // explicitement sur l'item (`k.cat`), lue par _knowledgesSection. ----
+    if (App.getEditionModule(pnj.edition).hasKnowledges) {
+      const knowledgesBody = `<div id="em-knowledges-list" class="em-skills-list">
+          ${(pnj.knowledges || []).map((k, i) => this._knowledgeRow(k, i)).join("")}
+        </div>
+        ${this._knowledgeAddControls()}`;
+      html += this._zone("Connaissances", knowledgesBody, {
+        summary: this._zoneCount((pnj.knowledges || []).length, "connaissance", "connaissances"),
         collapsed: true,
       });
     }
@@ -955,6 +1013,107 @@ const EditModal = {
       const rrEl = document.getElementById(`em-skill-rr-${i}`);
       if (rrEl) s.rr = Utils.clamp(parseInt(rrEl.value, 10) || 0, 0, 3);
     });
+  },
+
+  /* ---- Connaissances (nom libre + catégorie → attribut, SR5/SR6) ---- */
+
+  /* Ligne d'une connaissance : nom éditable (texte libre, contrairement aux
+     compétences actives issues d'un catalogue fermé), niveau, catégorie
+     (câble l'attribut lié, cf. SkillCatalog.knowledgeCategories). */
+  _knowledgeRow(k, i) {
+    const esc = CardRenderer._esc;
+    const cats = Object.keys(SkillCatalog.knowledgeCategories);
+    // Item LEGACY sans catégorie connue (généré avant ce chantier, ou nom de
+    // la réserve sr5Knowledges) : option neutre en tête, jamais une catégorie
+    // choisie à sa place — un <select> sans `selected` retomberait sinon
+    // silencieusement sur la 1ʳᵉ option et _readKnowledges l'écrirait comme
+    // si l'utilisateur l'avait choisie (fausse donnée, piège vérifié en
+    // navigateur : "Connaissance ésotérique" héritait "Académique" à tort).
+    const blankOpt = cats.includes(k.cat) ? "" : `<option value="" selected>— Catégorie ? —</option>`;
+    const catOpts = cats
+      .map((c) => `<option value="${esc(c)}"${k.cat === c ? " selected" : ""}>${esc(c)}</option>`)
+      .join("");
+    return `<div class="em-skill-row em-skill-row-knowledge" data-idx="${i}">
+      <input type="text" class="em-skill-name-input" id="em-know-name-${i}"
+        value="${esc(k.name)}" placeholder="Nom de la connaissance">
+      <input type="number" class="em-skill-val" id="em-know-val-${i}" value="${k.val}" min="1" max="12" title="Niveau">
+      <select class="em-skill-spec" id="em-know-cat-${i}" title="Catégorie (câble l'attribut lié)">${blankOpt}${catOpts}</select>
+      <button type="button" class="em-skill-del" title="Retirer"
+        data-action="remove-knowledge">×</button>
+    </div>`;
+  },
+
+  /* Ajout à la main (pas de catalogue — les connaissances sont libres au
+     livre) : nom texte + catégorie, jamais les deux mêlés dans un select
+     catalogue comme les compétences actives. */
+  _knowledgeAddControls() {
+    const cats = Object.keys(SkillCatalog.knowledgeCategories);
+    return `<div class="em-add-skill em-add-knowledge">
+      <input type="text" id="em-know-add-name" class="em-know-add-name-input"
+        placeholder="Nouvelle connaissance…">
+      ${SingleSelect.create({
+        id: "em-know-add-cat",
+        label: "",
+        options: cats.map((c) => ({ value: c, label: c })),
+        value: cats[0],
+        placeholder: "Catégorie",
+      })}
+      <button type="button" class="em-add-skill-btn" data-action="add-knowledge">Ajouter</button>
+    </div>`;
+  },
+
+  /* Ajoute la connaissance tapée. Lit d'abord le formulaire en cours (comme
+     addSkill) pour ne perdre aucune saisie. */
+  addKnowledge() {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj) return;
+    const nameEl = document.getElementById("em-know-add-name");
+    const name = nameEl?.value.trim();
+    if (!name) return;
+    this._readKnowledges(pnj);
+    if (!pnj.knowledges) pnj.knowledges = [];
+    if (pnj.knowledges.some((k) => k.name === name)) return;
+    const cat =
+      document.getElementById("em-know-add-cat")?.value ||
+      Object.keys(SkillCatalog.knowledgeCategories)[0];
+    pnj.knowledges.push({ name, val: 1, cat });
+    this._rerenderKnowledges(pnj);
+  },
+
+  /* Retire la connaissance d'index i. */
+  removeKnowledge(i) {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj || !pnj.knowledges) return;
+    this._readKnowledges(pnj);
+    pnj.knowledges.splice(i, 1);
+    this._rerenderKnowledges(pnj);
+  },
+
+  /* Lit les lignes existantes (nom/niveau/catégorie) dans pnj.knowledges —
+     appelée par _readForm ET par les ajouts/retraits pour ne perdre aucune
+     saisie en cours. */
+  _readKnowledges(pnj) {
+    if (!pnj.knowledges) return;
+    pnj.knowledges.forEach((k, i) => {
+      const nameEl = document.getElementById(`em-know-name-${i}`);
+      if (nameEl) k.name = nameEl.value.trim() || k.name;
+      const valEl = document.getElementById(`em-know-val-${i}`);
+      if (valEl) k.val = Utils.clamp(parseInt(valEl.value, 10) || k.val, 1, 12);
+      const catEl = document.getElementById(`em-know-cat-${i}`);
+      if (catEl) k.cat = catEl.value || k.cat;
+    });
+  },
+
+  /* Reconstruit uniquement la liste des connaissances + le résumé au repos. */
+  _rerenderKnowledges(pnj) {
+    const list = document.getElementById("em-knowledges-list");
+    if (list) list.innerHTML = (pnj.knowledges || []).map((k, i) => this._knowledgeRow(k, i)).join("");
+    const addName = document.getElementById("em-know-add-name");
+    if (addName) addName.value = "";
+    this._refreshZoneSummary(
+      "em-knowledges-list",
+      this._zoneCount((pnj.knowledges || []).length, "connaissance", "connaissances"),
+    );
   },
 
   /* ---- Armes structurées (éditions à pnj.weapons) + catalogue ---- */
@@ -1338,17 +1497,24 @@ const EditModal = {
     }
 
     // Attributs. Ressource de relance (Chance CHC / Atout ATO) bornée 0-7
-    // (0 = épuisée) ; les autres 1-12. Clé lue via le module d'édition.
+    // (0 = épuisée) ; MAG bornée 0-12 (0 = non magicien, légitime — le MJ
+    // doit pouvoir FAIRE DEVENIR un PNJ magicien) ; les autres 1-12. Clé lue
+    // via le module d'édition.
     const edgeKey = edModuleForm.rerollAction?.costAttr;
+    const magicAttrKey = edModuleForm.magicAttr;
     const allAttrKeys = [
       ...edModuleForm.attributes,
-      "MAG",
+      ...(magicAttrKey ? [magicAttrKey] : []),
       ...(edgeKey ? [edgeKey] : []),
     ];
     for (const k of allAttrKeys) {
       const el = document.getElementById(`em-attr-${k}`);
-      if (el && pnj.attrs[k] !== undefined) {
-        const [lo, hi] = k === edgeKey ? [0, 7] : [1, 12];
+      // MAG : lu même si pnj.attrs.MAG n'existait pas encore (le champ est
+      // TOUJOURS rendu pour l'édition, cf. _buildForm) — sinon impossible de
+      // faire naître un magicien depuis 0. Les autres attrs gardent la garde
+      // (le champ n'existe que si l'attribut existe déjà, cf. rendu).
+      if (el && (pnj.attrs[k] !== undefined || k === magicAttrKey)) {
+        const [lo, hi] = k === edgeKey ? [0, 7] : k === magicAttrKey ? [0, 12] : [1, 12];
         const raw = parseInt(el.value, 10);
         // Édition manuelle : pose la BASE du Trait (le total est recalculé,
         // mods d'équipement préservés). Fallback = base courante si NaN.
@@ -1387,6 +1553,9 @@ const EditModal = {
 
     // Compétences (SR5/SR6 + Anarchy) : niveau, spécialité, RR
     this._readSkills(pnj);
+
+    // Connaissances (SR5/SR6, hasKnowledges) : nom, niveau, catégorie
+    this._readKnowledges(pnj);
 
     // Cyberdeck (M1) — lu seulement si la section a été montée (pnj.cyberdeck).
     if (pnj.cyberdeck) CyberdeckRenderer.readForm(pnj);
@@ -1432,6 +1601,14 @@ const EditModal = {
         case "remove-skill": {
           const row = el.closest("[data-idx]");
           if (row) this.removeSkill(parseInt(row.dataset.idx, 10));
+          break;
+        }
+        case "add-knowledge":
+          this.addKnowledge();
+          break;
+        case "remove-knowledge": {
+          const row = el.closest("[data-idx]");
+          if (row) this.removeKnowledge(parseInt(row.dataset.idx, 10));
           break;
         }
         case "add-equip-item":

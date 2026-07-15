@@ -1213,13 +1213,18 @@ const CardRenderer = {
   },
 
   /**
-   * Connaissances SR5 (Livre de Règles p.148-152) — un test de
-   * connaissance = valeur de connaissance + attribut lié (Logique pour
-   * l'académique/professionnel, Intuition pour la rue/les centres
-   * d'intérêt). On affiche donc le POOL (comme les réserves MJ), avec le
-   * détail « Attribut + Connaissance », et un tag visuellement distinct.
+   * Connaissances SR5/SR6 (Livre de Règles SR5 p.150-152, mécanique reprise
+   * en SR6) — un test de connaissance = valeur de connaissance + attribut
+   * lié (Logique pour Académique/Professionnelle, Intuition pour Rue/
+   * Hobbies — PAS « centres d'intérêt », erreur corrigée ici). L'attribut se
+   * lit d'abord sur `k.cat` (catégorie choisie à l'ajout, EditModal
+   * ME-connaissances) via `SkillCatalog.knowledgeCategories`, sinon en
+   * dernier recours par lookup du nom dans la réserve `sr5Knowledges`
+   * (items legacy sans catégorie explicite). On affiche donc le POOL
+   * (comme les réserves MJ), avec le détail « Attribut + Connaissance »,
+   * et un tag visuellement distinct.
    * @param {Array} knowledges
-   * @param {Object} pnj - pour lire l'attribut lié sur pnj.attrs
+   * @param {Object} pnj - pour lire l'attribut lié sur pnj.attrs et l'édition
    * @param {number} malus - malus de blessure
    */
   _knowledgesSection(knowledges, pnj, malus = 0) {
@@ -1237,7 +1242,12 @@ const CardRenderer = {
     const tags = knowledges
       .map((k) => {
         const rating = Number(k.val);
-        const attr = SkillCatalog.attrFor("sr5", k.name); // LOG | INT | null
+        // Catégorie explicite (ajout à la main, EditModal) d'abord — un nom
+        // libre ne peut pas être fiablement résolu par lookup ; en dernier
+        // recours, réserve de suggestions sr5Knowledges (items legacy).
+        const attr =
+          (k.cat && SkillCatalog.knowledgeCategories[k.cat]) ||
+          SkillCatalog.attrFor(pnj.edition, k.name); // LOG | INT | null
         const attrVal = attr ? Actor.attr(pnj, attr) : 0;
         const pool = Number.isFinite(rating)
           ? Math.max(0, rating + attrVal + kBonus - malus)
