@@ -12,6 +12,19 @@ commit.
 
 ## [Non publié]
 
+## [1.44.0] — 2026-07-16
+
+### Table
+- **Explication décomposée des réserves (ⓘ)** : sur Défense, Encaissement
+  et Drain, un bouton ⓘ séparé du geste de lancer ouvre un panneau qui
+  décompose la valeur, source nommée + chiffre (« Défense 7 = Réaction 3 +
+  Intuition 4 »), au lieu du survol figé natif. Le même décompte apparaît
+  désormais dans le résultat du jet. En SR5, l'Encaissement montre en plus
+  le détail de l'armure pièce par pièce (« Armure 18 = Armure corporelle
+  intégrale 15 + Casque 3 ») quand elle est reconstituable depuis
+  l'équipement. Popover ancré au clic/survol sur desktop, plein écran
+  glissé du bas sur mobile.
+
 ## [1.43.0] — 2026-07-15
 
 ### Table
