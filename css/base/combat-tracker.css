@@ -622,6 +622,30 @@
 .encounter-nrow.just-dropped {
   animation: encounter-drop-settle var(--dur-base) var(--ease-emphasized);
 }
+/* CE3 : feel au tap — le jeton d'action/Atout se consume, bref rebond
+   d'échelle (~120ms, transform seul, zéro reflow). */
+@keyframes token-consume {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.action-token,
+.edge-token {
+  transition:
+    transform var(--dur-fast) var(--ease-emphasized),
+    background var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+}
+.action-token.used,
+.edge-token.filled {
+  animation: token-consume var(--dur-fast) var(--ease-emphasized);
+}
 @media (prefers-reduced-motion: reduce) {
   .encounter-row.dragging,
   .encounter-nrow.dragging {
@@ -629,6 +653,14 @@
   }
   .encounter-row.just-dropped,
   .encounter-nrow.just-dropped {
+    animation: none;
+  }
+  .action-token,
+  .edge-token {
+    transition: none;
+  }
+  .action-token.used,
+  .edge-token.filled {
     animation: none;
   }
 }
