@@ -156,7 +156,7 @@ const Storage = {
       ajoutée à `_MIGRATIONS`. Publique (contrairement à `_MIGRATIONS`) : les
       paquets exportés (`Backup`) la tamponnent pour savoir, à l'import, s'ils
       ont besoin d'être migrés. Voir CONTRIBUTING.md § Versionner les schémas. */
-  SCHEMA_VERSION: 6,
+  SCHEMA_VERSION: 7,
 
   /** Chaîne de migrations de schéma, ordonnée par version croissante. Chaque
       `up()` mute le `localStorage` brut (pas de dépendance à `_edition`) et
@@ -408,6 +408,37 @@ const Storage = {
         });
         if (migrated)
           Debug.warn("storage", "migration v6 (attrTraits)", { migrated });
+      },
+    },
+    {
+      v: 7,
+      /** R2-A (PLANS/PLAN_RECABLAGE_MASTER.md) : la scène gagne un ensemble de
+          moteurs actifs `motors: []` (D-R2-3 — extensible, pas un `type`
+          figé), préalable à R2-B/R2-E (intrusion en scène, scène Matrice
+          seule). Une scène déjà persistée sans ce champ tourne forcément en
+          combat classique : backfill `motors: ["combat"]` + `v: 2` (forme
+          locale `Encounter._V`, distincte de ce schemaVersion global — cf.
+          migration v2). Idempotente : ignore les scènes déjà à `v >= 2`. */
+      up() {
+        const suffix = '_encounter_current';
+        const keys = Object.keys(localStorage).filter(
+          (k) => k.startsWith('sr_pnj_v2_') && k.endsWith(suffix)
+        );
+        let migrated = 0;
+        keys.forEach((k) => {
+          const raw = localStorage.getItem(k);
+          if (raw === null) return;
+          let data;
+          try { data = JSON.parse(raw); }
+          catch { return; }
+          if (data.v >= 2) return;
+          data.v = 2;
+          if (!Array.isArray(data.motors)) data.motors = ["combat"];
+          localStorage.setItem(k, JSON.stringify(data));
+          migrated++;
+        });
+        if (migrated)
+          Debug.warn("storage", "migration v7 (sceneMotors)", { migrated });
       },
     },
   ],

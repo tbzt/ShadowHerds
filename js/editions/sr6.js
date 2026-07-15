@@ -347,9 +347,33 @@ const EditionSR6 = {
     // M4 : brickage d'appareil — SR6 a le même moniteur matriciel d'appareil
     // que SR5 (8+Indice/2 arrondi sup., p.182) : cases cliquables + indice.
     deviceBricking: "monitor",
-    // R1d/R2-D : cf. sr5.js — table vide (stopgap) tant que R2-D n'a pas
-    // peuplé le catalogue SR6 par catégorie.
-    connectedByCat: {},
+    // R2-D : cf. sr5.js — taxonomie D-R2-4. `matrice`/`tasers` OUI (spécifique
+    // SR6) ; cyberware/equipSpecial restent NON par défaut (override regex).
+    connectedByCat: {
+      commlinks: true,
+      cyberdecks: true,
+      matrice: true,
+      tasers: true,
+      pistoletsPoche: false,
+      pistoletsLegers: false,
+      pistoletsAutomatiques: false,
+      pistoletsLourds: false,
+      mitraillettes: false,
+      shotguns: false,
+      armesJet: false,
+      armesSpeciales: false,
+      fusils: false,
+      snipersLourds: false,
+      meleeWeapons: false,
+      armesSupplement: false,
+      armures: false,
+      grenades: false,
+      roquettes: false,
+      explosifs: false,
+      cyberware: false,
+      bioware: false,
+      equipSpecial: false,
+    },
     icMonitorSize(indice) {
       return 8 + Math.ceil(indice / 2);
     },

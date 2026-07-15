@@ -309,10 +309,34 @@ const EditionSR5 = {
     // M4 : régime de brickage des appareils (armes) — SR5 a un vrai moniteur
     // matriciel d'appareil (8+Indice/2, p.229) : cases cliquables + indice.
     deviceBricking: "monitor",
-    // R1d/R2-D : table « connecté » par catégorie d'item (#63 `cat`), lue par
-    // Matrix.deviceConnected — vide (stopgap) tant que R2-D n'a pas peuplé le
-    // catalogue SR5 par catégorie.
-    connectedByCat: {},
+    // R2-D : table « connecté » par catégorie d'`equipPools` (dérivée par
+    // Matrix._resolveCat, jamais besoin de tagger chaque item), taxonomie
+    // tranchée D-R2-4. cyberware/equipSpecial restent NON par défaut : le
+    // sans-fil réel (cyberyeux/oreilles, cyberdeck implanté, antenne…) passe
+    // par l'override regex de Matrix.deviceConnected, pas cette table.
+    connectedByCat: {
+      commlinks: true,
+      cyberdecks: true,
+      electroarmes: true,
+      pistoletsPoche: false,
+      pistoletsLegers: false,
+      pistoletsLourds: false,
+      mitraillettes: false,
+      fusilsAssaut: false,
+      shotguns: false,
+      mitrailleuses: false,
+      snipers: false,
+      armesSpeciales: false,
+      armesExotiques: false,
+      meleeWeapons: false,
+      armures: false,
+      grenades: false,
+      explosifs: false,
+      cyberware: false,
+      bioware: false,
+      nanotechnologie: false,
+      equipSpecial: false,
+    },
     icMonitorSize(indice) {
       return 8 + Math.ceil(indice / 2);
     },

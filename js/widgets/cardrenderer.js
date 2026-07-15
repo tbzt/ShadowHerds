@@ -13,7 +13,7 @@ const CardRenderer = {
       Point de câblage unique : le reste du renderer ne lit plus aucun de
       ces modules directement, tout arrive via le paramètre `deps`. */
   liveDeps() {
-    return { Settings, Drugs, Vehicles, Spirits, WeaponRoll, UI };
+    return { Settings, Drugs, Vehicles, Spirits, WeaponRoll, UI, Encounter };
   },
 
   /** Rend une card PNJ et retourne l'élément DOM.
@@ -1036,13 +1036,23 @@ const CardRenderer = {
             facetChips.push(`<span class="lim" title="${this._esc(list.map((c) => `${flbl} ${sign(c.value)} ${c.source}`).join(" · "))}">${flbl}${sign(sum)}</span>`);
         }
         const facetTxt = facetTxts.join(" · ");
-        const title = `${r.weaponName} : ${r.pool} dés (${parts.join(" ")})${r.limit != null ? ` · limite ${r.limit}` : ""}${facetTxt ? ` · ${facetTxt}` : ""}`;
-        const poolBadge = `<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="lim">▸${r.limit}</span>` : ""}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}${r.smartBonus ? `<span class="lim">SL+${r.smartBonus}</span>` : ""}${facetChips.join("")}</span>`;
-        const dataAttr =
-          App.getEditionModule(edition)?.usesRiskPanel
+        // R2-D6 : une arme brickée en scène (Encounter.deviceState) perd sa
+        // pastille d'attaque — l'enforcement réel que R1d renvoyait ici.
+        // Hors combat (ou hors participant), `dev` est null : aucun effet.
+        const dev = deps.Encounter ? deps.Encounter.deviceState(pnj.id, s) : null;
+        const bricked = !!(dev && dev.bricked);
+        const title = bricked
+          ? `${r.weaponName} : hors service (brické)`
+          : `${r.weaponName} : ${r.pool} dés (${parts.join(" ")})${r.limit != null ? ` · limite ${r.limit}` : ""}${facetTxt ? ` · ${facetTxt}` : ""}`;
+        const poolBadge = bricked
+          ? `<span class="weapon-pool weapon-bricked">⛔</span>`
+          : `<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="lim">▸${r.limit}</span>` : ""}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}${r.smartBonus ? `<span class="lim">SL+${r.smartBonus}</span>` : ""}${facetChips.join("")}</span>`;
+        const dataAttr = bricked
+          ? ""
+          : App.getEditionModule(edition)?.usesRiskPanel
             ? `data-roll-weapon-anarchy="${this._esc(name)}"`
             : `data-roll-weapon="${this._esc(s)}" data-roll-edition="${edition}"`;
-        return `<div class="weapon-line weapon-rollable rollable" ${dataAttr} data-roll-pnj="${pnj.id}" title="${this._esc(title)}">
+        return `<div class="weapon-line${bricked ? " is-bricked" : " weapon-rollable rollable"}" ${dataAttr} ${bricked ? "" : `data-roll-pnj="${pnj.id}"`} title="${this._esc(title)}">
           <div><div class="weapon-name">${this._esc(name)}</div><div class="weapon-stat">${this._esc(stat)}</div></div>
           ${poolBadge}
         </div>`;

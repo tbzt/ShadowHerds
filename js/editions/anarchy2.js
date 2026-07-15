@@ -333,9 +333,17 @@ const EditionAnarchy2 = {
     // (p.210) — régime NARRATIF : une simple bascule « hors service », sans
     // cases ni chiffre (arbitrage CODIR, reco Canon).
     deviceBricking: "narrative",
-    // R1d/R2-D : cf. sr5.js — table vide (stopgap) tant que R2-D n'a pas
-    // peuplé le catalogue Anarchy 2 par catégorie.
-    connectedByCat: {},
+    // R2-D : cf. sr5.js — taxonomie D-R2-4. Armes/Commlinks A2 hors
+    // `equipPools` (structure typée par archétype) : résolus par le motif de
+    // repli `Matrix._LABEL_CAT_RX`, pas cette table.
+    connectedByCat: {
+      cyberdecks: true,
+      armures: false,
+      equipement: false,
+      toxines: false,
+      cyberware: false,
+      bioware: false,
+    },
     icMonitorSize() {
       return 4;
     },

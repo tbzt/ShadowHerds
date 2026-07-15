@@ -488,17 +488,73 @@ const Matrix = {
     return this._model().deviceBricking || null;
   },
 
-  /** R1d : un appareil (arme) est-il une cible matricielle plausible ?
-      Stopgap D-R1d — mains nues exclues (jamais de composant sans-fil à
-      hacker), reste laissé passer par défaut. Point d'extension pour R2-D :
-      `matrixModel.connectedByCat[cat]` (table par catégorie #63), vide dans
-      les 4 modules aujourd'hui — la quasi-totalité de l'équipement généré
-      reste une chaîne non catégorisée (cat=""), donc cette table ne filtre
-      encore rien tant qu'elle n'est pas peuplée (R2-D1..D4, hors R1d). Même
-      fonction, jamais remplacée (1 fonction, 1 propriétaire). */
+  /** R2-D : dérive la catégorie d'équipement d'un item non taggé (#63) en le
+      retrouvant tel quel dans `equipPools` de l'édition — un item généré
+      (Gen._generateOne) est toujours une chaîne littérale du catalogue,
+      jamais reconstruite. Index construit une fois par édition (catalogues
+      statiques, jamais invalidé). Ne résout rien pour l'équipement hors
+      `equipPools` (armes/commlinks Anarchy 2, posés en dur par archétype —
+      cf. D-R2-4 et `_LABEL_CAT_RX` ci-dessous). */
+  _catIndex: {},
+  _resolveCat(str) {
+    const mod = App.getEditionModule(this._edition);
+    // Anarchy 2 nomme son pool `GEAR_CATALOG` (armures/gear/cyberware/
+    // bioware, cf. anarchy2.js) plutôt que `equipPools` (SR5/SR6/Anarchy 1) —
+    // même forme aplatissable, nom différent.
+    const pools = mod && (mod.equipPools || mod.GEAR_CATALOG);
+    if (!pools) return "";
+    if (!this._catIndex[this._edition]) {
+      const idx = {};
+      Object.keys(pools).forEach((key) => {
+        ItemResolver._flatPool(pools[key]).forEach((s) => {
+          if (!(s in idx)) idx[s] = key;
+        });
+      });
+      this._catIndex[this._edition] = idx;
+    }
+    return this._catIndex[this._edition][str] || "";
+  },
+
+  /** Repli par libellé pour les appareils qui ne vivent pas dans
+      `equipPools` (Commlink/Cyberdeck posés en dur dans `equip[]` des
+      archétypes Anarchy 2) — un commlink reste un commlink quelle que soit
+      sa provenance de données. Vérifié avant la résolution de catégorie
+      (prioritaire sur un éventuel classement générique). */
+  _LABEL_CAT_RX: [
+    { rx: /^Commlink\b/i, cat: "commlinks" },
+    { rx: /^Cyberdeck\b/i, cat: "cyberdecks" },
+  ],
+
+  /** Électronique sans-fil noyée dans les catégories fourre-tout
+      (cyberware/equipSpecial/equipement, défaut NON — D-R2-4 « override
+      obligatoire ») : reconnue par mot-clé plutôt que par tag item-par-item,
+      cohérent avec le motif de parsing déjà en place (AnarchyAtouts,
+      WeaponEffects). Jamais consultée hors ces catégories (une arme de
+      mêlée « sans fil » — fouet monofilament — n'en devient pas un appareil
+      matriciel). Couvre cyberyeux/oreilles cybernétiques, cyberdeck/commlink
+      implantés, cyberjack et l'électronique réseau (antenne, routeur,
+      liaison satellite, scanner de fréquences, grappin dérivateur). */
+  _WIRELESS_RX:
+    /cyberjack|cyberdeck implant|commlink implant|yeux? cybern|oreilles? cybern|routeur interne|\bantenne\b|liaison satellite|scanner de fréquences|grappin dérivateur/i,
+
+  /** Un appareil (arme/équipement) est-il une cible matricielle plausible ?
+      Ordre : mains nues (jamais) → override explicite (#63 `item.connected`)
+      → libellé commlink/cyberdeck (repli hors `equipPools`) → smartgun
+      (toujours sans-fil) → catégorie résolue (#63 `cat` ou repli catalogue)
+      → sans-fil noyé dans cyberware/equipSpecial/equipement → table par
+      catégorie de l'édition → défaut permissif (catégorie inconnue, jamais
+      de faux négatif de brickage). Même fonction depuis R1d, jamais
+      remplacée (1 fonction, 1 propriétaire). */
   deviceConnected(item) {
-    if (WeaponEffects.isUnarmed(ItemResolver.itemStr(item))) return false;
-    const cat = ItemResolver.itemCat(item);
+    const str = ItemResolver.itemStr(item);
+    if (WeaponEffects.isUnarmed(str)) return false;
+    if (item && typeof item === "object" && item.connected != null) return !!item.connected;
+    const labelHit = this._LABEL_CAT_RX.find((e) => e.rx.test(str));
+    if (labelHit) return true;
+    if (/\bsmartgun\b/i.test(str)) return true;
+    const cat = ItemResolver.itemCat(item) || this._resolveCat(str);
+    if ((cat === "cyberware" || cat === "equipSpecial" || cat === "equipement") && this._WIRELESS_RX.test(str))
+      return true;
     const table = this._model().connectedByCat;
     if (cat && table && cat in table) return !!table[cat];
     return true;

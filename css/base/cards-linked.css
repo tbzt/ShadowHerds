@@ -532,6 +532,21 @@
   margin-left: 2px;
   border-left: 1px solid var(--accent);
 }
+/* R2-D6 : pastille d'attaque coupée pour une arme brickée en scène (jumeau
+   carte de .encounter-device-row.is-bricked, combat-tracker.css). */
+.weapon-line.is-bricked {
+  opacity: 0.6;
+  border-color: var(--border);
+}
+.weapon-line.is-bricked .weapon-name {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+.weapon-line.is-bricked .weapon-pool.weapon-bricked {
+  background: transparent;
+  border-color: var(--danger);
+  color: var(--danger);
+}
 
 /* Sorts en zone Combat (CH-M7e) — lignes calquées sur les armes. */
 .spell-block {

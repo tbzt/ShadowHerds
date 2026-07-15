@@ -19,7 +19,7 @@ const Encounter = {
       schémas). Les scènes persistées avant l'ajout de ce champ sont
       tamponnées `v:1` par cette migration au boot : `load()` peut donc
       supposer l'état déjà à niveau, sans rétro-compat locale. */
-  _V: 1,
+  _V: 2,
 
   /** J3 (journal des jets) : incrémenté à chaque scène fraîche (_empty),
       pour distinguer deux combats séparés qui repartiraient chacun au round
@@ -30,7 +30,7 @@ const Encounter = {
   _sceneSeq: 0,
   _empty() {
     this._sceneSeq++;
-    return { v: this._V, round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null, noise: 0, focusId: null };
+    return { v: this._V, round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null, noise: 0, focusId: null, motors: ["combat"] };
   },
 
   state: null,
@@ -760,6 +760,15 @@ const Encounter = {
     if (!c || !c.devices || !c.devices[label]) return;
     delete c.devices[label];
     this._commit();
+  },
+
+  /** R2-D6 : état d'appareil d'un participant (bricked/indice), lu par la
+      carte (CardRenderer) pour couper la pastille d'attaque d'une arme
+      hors service — accesseur public plutôt qu'exposer `devices`/`_find`.
+      `null` hors combat ou hors participant (aucune dépendance dure). */
+  deviceState(pnjId, label) {
+    const c = this._find(pnjId);
+    return (c && c.devices && c.devices[label]) || null;
   },
 
   /** R1d : « Remettre en marche » un appareil brické (régime moniteur SR5/SR6)
