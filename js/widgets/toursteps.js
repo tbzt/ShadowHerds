@@ -40,8 +40,8 @@ const TourSteps = {
     },
     {
       id: "run", anchor: "nav-run", tours: ["full"], since: "1.0.0", fallback: "center",
-      title: "Run",
-      body: "Une ébauche de mission en un clic : mandant, lieu, complication, objectif, paiement. L'amorce quand les joueurs partent où vous ne l'aviez pas prévu.",
+      title: "Topos",
+      body: "Une amorce de mission en un clic : mandant, lieu, complication, objectif, paiement. Quand les joueurs partent où vous ne l'aviez pas prévu — puis « Faire une run » pour la promouvoir en vraie run.",
     },
     {
       id: "combat", anchor: "nav-combat", tours: ["full"], since: "1.0.0", fallback: "center",

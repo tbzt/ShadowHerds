@@ -43,7 +43,7 @@ const RunRenderer = {
                 (r.dossierId && Dossiers.nameOf(r.dossierId)) || r.dossierName,
               )}</span>`
             : `<button class="card-action-btn" data-action="run-to-dossier"
-                 data-run-name="${CardRenderer._esc(r.type)}">＋ Dossier</button>`
+                 data-run-name="${CardRenderer._esc(r.type)}" title="Promouvoir ce topos en run canon">＋ Faire une run</button>`
         }
         ${this._rencontreBtn(r)}
         <button class="card-action-btn danger" data-action="discard-run">Virer</button>

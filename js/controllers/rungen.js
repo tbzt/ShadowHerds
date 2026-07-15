@@ -315,7 +315,7 @@ const RunGen = {
     zone.dataset.init = "1";
     zone.innerHTML = `
       <div class="gen-actions">
-        <button class="btn-primary"   data-action="add-one">Générer une run</button>
+        <button class="btn-primary"   data-action="add-one">Générer un topos</button>
         <button class="btn-secondary" data-action="clear-all">Effacer tout</button>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:1rem;" id="run-list"></div>`;
@@ -362,34 +362,35 @@ const RunGen = {
     });
   },
 
-  /** Crée (ou réutilise) un dossier transverse pour y ranger PNJ, contacts et
-      serveurs de la prep, et relie cette run au dossier (la carte l'affiche
-      ensuite au lieu du bouton — la run ne reste plus sans lien visible une
-      fois rangée). Le nom est proposé d'après la run, éditable. */
+  /** R3-E : « Faire une run » — promeut un topos (amorce générée) en RUN canon.
+      Crée (ou réutilise) un dossier typé `run` où ranger PNJ, contacts et
+      serveurs de la prep, et relie le topos au dossier (la carte l'affiche
+      ensuite au lieu du bouton — le topos ne reste plus sans lien visible une
+      fois promu). Le nom est proposé d'après le topos, éditable. */
   async toDossier(runId, suggested) {
     const input = await Dialog.prompt({
-      title: "Ranger la run",
-      label: "Nom du dossier pour cette run",
+      title: "Faire une run",
+      label: "Nom de la run",
       value: suggested || "Run",
-      confirmLabel: "Créer le dossier",
+      confirmLabel: "Faire la run",
     });
     if (input === null || !input.trim()) return;
     const name = input.trim();
-    // Un dossier créé pour ranger une run est typé « run » (hiérarchie de
-    // campagne) ; un dossier existant garde son type (on ne redéfinit pas la
-    // structure déjà posée par le MJ).
+    // Le dossier créé est typé « run » (mission canon de la colonne
+    // Campagne › Run › Scène) ; un dossier existant garde son type (on ne
+    // redéfinit pas la structure déjà posée par le MJ).
     let dossier = Dossiers.list().find((d) => d.name === name);
     if (!dossier) dossier = Dossiers.add(name, null, "run");
     const run = this._runs.find((r) => r.id === runId);
     if (run && dossier) {
       // R0 : jointure par id (stable au renommage) ; dossierName gardé en
-      // secours d'affichage 1 release pour les runs pas encore migrées.
+      // secours d'affichage 1 release pour les topos pas encore migrés.
       run.dossierId = dossier.id;
       run.dossierName = name;
       this._save();
       this._refreshCard(runId);
     }
-    toast(`Dossier « ${name} » — rangez-y votre prep.`);
+    toast(`Run « ${name} » créée — rangez-y votre prep.`);
   },
 
   /** Ré-affiche une seule carte de run après mutation (évite un re-render
