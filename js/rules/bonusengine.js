@@ -64,6 +64,11 @@ const BonusEngine = {
       // mnémonique = +indice à la Limite mentale (p.464). Le volet pool
       // Connaissances/langues reste hors schéma — non motorisé ici.
       ["Amélioration mnémonique", { limit: "ment", byRating: true }],
+      // Fusion V5 (livres oubliés, oubli-sr5.md #4) : Articulations
+      // intelligentes (Chrome Flesh, cyberware) = +2 Limite physique, fixe.
+      // Débloqué par le puits Limite + le fix d'écrasement recalc (seau
+      // _limitMods).
+      ["Articulations intelligentes", { limit: "phys", val: 2 }],
     ],
     sr6: [
       ["Réflexes câblés 1", { initDice: 1 }],
@@ -96,6 +101,15 @@ const BonusEngine = {
       ["Ossature renforcée (plastique)", { attr: "CON", val: 1, sd: 1 }],
       ["Ossature renforcée (aluminium)", { attr: "CON", val: 2, sd: 1 }],
       ["Ossature renforcée (titane)", { attr: "CON", val: 2, sd: 2 }],
+      // Fusion V5 (livres oubliés, oubli-sr6.md #3) : Ossature renforcée TMG
+      // (Hantise astrale) — les 3 variantes (Plastique/Aluminium/Titane) ne
+      // diffèrent qu'en Essence/coût, toutes +1 SD → une seule entrée. Le
+      // préfixe « Ossature renforcée TMG » ne collisionne PAS avec les
+      // matchers standard ci-dessus (« Ossature renforcée [ » et
+      // « … (plastique/…) »). Item alternatif à l'Ossature standard (un PNJ
+      // porte l'un OU l'autre) → pas de double-comptage. Volet « dés de
+      // défense » = pool distinct, non couvert (facette défense hors puits).
+      ["Ossature renforcée TMG", { sd: 1 }],
       // Fusion V5 (sr6_bioware.md) : Articulations améliorées = +1 AGI fixe
       // (p.299 ; la remise d'Atout espaces étroits n'est pas motorisable, pas
       // de champ pour ça dans BonusEngine).
