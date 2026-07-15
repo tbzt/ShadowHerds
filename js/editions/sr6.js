@@ -2402,14 +2402,36 @@ const EditionSR6 = {
   },
 
   /* ----
-     PROFIL DE LOADOUT (V3) — miroir du profil SR5 (sr5.js), adapté à
-     l'échelle de professionnalisme SR6 (0-10, contre 0-6 en SR5) et aux
-     clés d'`equipPools` propres à cette édition. Même doctrine : rareté
-     (tier, chevauchement doux) × affinité (tags rôle/milieu Coherence),
-     consommées par LoadoutEngine (js/rules/loadoutengine.js, neutre).
-     SIDECAR : les chaînes d'`equipPools` restent inchangées. Pools
-     sous-bucketés (commlinks/armures) exclus : déjà tierés par sous-bucket
-     ci-dessous, comme en SR5.
+     PROFIL DE LOADOUT (V3, recalibré V4) — miroir du profil SR5 (sr5.js),
+     adapté à l'échelle de professionnalisme SR6 (0-10, contre 0-6 en SR5)
+     et aux clés d'`equipPools` propres à cette édition. Même doctrine :
+     rareté (tier, chevauchement doux) × affinité (tags rôle/milieu
+     Coherence), consommées par LoadoutEngine (neutre). SIDECAR : les
+     chaînes d'`equipPools` restent inchangées. Pools sous-bucketés
+     (commlinks/armures) exclus : déjà tierés par sous-bucket ci-dessous.
+
+     V4 — RECALIBRAGE IMPORTANT (vérifié Shadowrun 6e — Livre de Règles
+     p.254-255 + table d'équipement p.265-266). L'échelle de Disponibilité
+     SR6 n'est PAS celle de SR5 : le livre le dit explicitement, « la
+     Disponibilité a un indice qui oscille généralement entre 1 et 6, mais
+     dans certaines circonstances cet indice peut atteindre 9 » — les
+     indices >9 sont réservés au cyberware alpha/beta/delta, pas aux armes.
+     Vérifié ligne à ligne dans la table d'armes : AK-97 Dispo 2, Ares Alpha
+     Dispo 5, Ares Desert Strike Dispo 4, Cavalier Arms Crockett EBR Dispo 5,
+     Barret Model 122 (fusil antimatériel) Dispo 6, Steyr TMP Dispo 3 — TOUT
+     le catalogue d'armes standard tient entre 1 et 6. Les 4 tiers restent
+     les mêmes LIBELLÉS que SR5 (courant/pro/militaire/blackops, cohérence
+     inter-édition du vocabulaire), mais leurs SEUILS sont propres à SR6 :
+     courant ≈ 1-3, pro ≈ 4-6, militaire ≈ 7-9 et/ou légalité (I) (corpo/
+     gouvernement/sécurité uniquement, cf. p.255), blackops = au-delà de
+     l'échelle achetable normale (rare/absent du catalogue de base — cf.
+     cyberware alpha/beta/delta, seule famille où le livre mentionne des
+     indices plus élevés). tierByCat ci-dessous reflète ce recalibrage ;
+     seules les catégories d'armes à feu ont été vérifiées item par item
+     (fusils/snipersLourds) — armesSpeciales/roquettes/explosifs/grenades
+     restent tierées "militaire" par nature de l'équipement (munitions de
+     guerre, cf. légalité (I) p.255) plutôt que par indice numérique
+     vérifié un par un (non chiffrées dans la même table).
   ---- */
   loadoutProfile: {
     proRatingBuckets: [[1, "grouille"], [3, "amateur"], [5, "pro"], [7, "vet"], [Infinity, "elite"]],
@@ -2423,13 +2445,31 @@ const EditionSR6 = {
     tierByCat: {
       pistoletsPoche: "courant", pistoletsLegers: "courant", pistoletsAutomatiques: "courant",
       pistoletsLourds: "pro", mitraillettes: "pro", shotguns: "pro", tasers: "courant",
-      fusils: "pro", snipersLourds: "militaire", armesSpeciales: "militaire",
-      roquettes: "militaire", explosifs: "militaire", meleeWeapons: "courant",
-      grenades: "militaire", cyberware: "pro", bioware: "pro", equipSpecial: "courant",
+      // fusils/snipersLourds : "pro" — RECALIBRÉ V4 (était "militaire" pour
+      // snipersLourds, contredit par le Dispo réel 4-6 des fusils de
+      // précision du livre ; voir AK-97 override ci-dessous pour l'outlier
+      // bas de gamme au sein de "fusils").
+      fusils: "pro", snipersLourds: "pro",
+      // Ordnance militaire : tierée par nature de l'équipement (légalité
+      // (I), corpo/gouv/sécu uniquement) plutôt que par indice numérique
+      // vérifié item par item — ces catégories ne sont pas dans la même
+      // table chiffrée que les armes à feu standard.
+      armesSpeciales: "militaire", roquettes: "militaire", explosifs: "militaire",
+      grenades: "militaire", meleeWeapons: "courant",
+      cyberware: "pro", bioware: "pro", equipSpecial: "courant",
       fociCaster: "pro",
     },
     tierByItem: {
-      "Barret Model 122": "blackops",
+      // "Barret Model 122" retiré : Dispo réelle 6 (vérifié p.266), déjà
+      // correctement "pro" via la catégorie snipersLourds recalibrée
+      // ci-dessus — l'ancien tag "blackops" était une supposition non
+      // vérifiée (V3), corrigée en V4.
+      "AK-97": "courant", // Dispo 2 (L), livre p.265 — nettement sous la
+      // moyenne de la catégorie "fusils" (Ares Alpha etc. tournent à 5).
+      // Focus de pouvoir : pas de table de Dispo au catalogue (objet
+      // fabriqué sur mesure, jamais acheté en boutique, cf. p.157-158) —
+      // "militaire" reste un choix de conception (rare/coûteux à créer),
+      // pas une valeur vérifiée au livre comme les armes ci-dessus.
       "Focus de pouvoir": "militaire",
     },
     tagsByCat: {
