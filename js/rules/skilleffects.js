@@ -35,7 +35,9 @@
    qu'en SR5 ; SR6 = « Escroquerie ») — pas de branche `App.edition`.
    Le CATALOG se peuple item par item sans toucher ce moteur.
    ============================================================ */
-const SkillEffects = {
+import { ItemResolver } from "./itemresolver.js";
+
+export const SkillEffects = {
   CATALOG: [
     // SR5 p.455 : « l'indice du modulateur est ajouté à la réserve de
     // dés pour les tests d'Imposture ». Une seule compétence, sans
@@ -193,3 +195,6 @@ const SkillEffects = {
     return out;
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.SkillEffects = SkillEffects;

@@ -23,7 +23,9 @@
    source, page }. Indice lu par ItemResolver.itemRating. Le CATALOG se
    peuple ensuite item par item sans toucher ce moteur.
    ============================================================ */
-const ActorEffects = {
+import { ItemResolver } from "./itemresolver.js";
+
+export const ActorEffects = {
   CATALOG: [
     { match: /défenses immunitaires optimisées/i, scope: "Résistance aux maladies",
       perRating: [null, 1, 2, 3, 4, 5, 6], source: "Défenses immunitaires optimisées", page: "SR5 p.463" },
@@ -65,3 +67,6 @@ const ActorEffects = {
     return out;
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.ActorEffects = ActorEffects;

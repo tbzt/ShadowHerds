@@ -4,7 +4,7 @@
    ITEM RESOLVER — logique métier de classement d'objets (pas de
    rendu HTML), consommée par CardRenderer.
    ============================================================ */
-const ItemResolver = {
+export const ItemResolver = {
   /* ---- Item POLYMORPHE (chaîne legacy OU objet {str, cat, rating}) ----
      La catégorie du catalogue, jetée jusqu'ici à l'ajout, est préservée sur
      l'objet ; les lecteurs coercent via ces helpers (motif « seam », comme
@@ -194,3 +194,6 @@ const ItemResolver = {
     return [...(pnj.augs || []), ...fromEquip];
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.ItemResolver = ItemResolver;

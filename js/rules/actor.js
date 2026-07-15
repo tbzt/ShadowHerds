@@ -17,7 +17,7 @@
 
    Neutre par édition (aucune branche `App.edition`).
    ============================================================ */
-const Actor = {
+export const Actor = {
   /** Coerce une valeur d'acteur en NOMBRE, quelle que soit sa forme :
       - nombre plat (forme legacy) → tel quel ;
       - Trait `{base, mods, total}` (forme cible) → son `total`. */
@@ -135,3 +135,6 @@ const Actor = {
     return this._num(found.rank != null ? found.rank : found.val);
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Actor = Actor;

@@ -35,7 +35,11 @@
      sans `originPools` est neutre (tirable pour toute origine).
    ============================================================ */
 
-const Magic = {
+import { Actor } from "./actor.js";
+import { SkillEffects } from "./skilleffects.js";
+import { Utils } from "../core/utils.js";
+
+export const Magic = {
   /* ========================================================
      TRADITIONS
      ======================================================== */
@@ -717,3 +721,6 @@ const Magic = {
     return Math.max(0, skillVal + mag + foci - malus);
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Magic = Magic;

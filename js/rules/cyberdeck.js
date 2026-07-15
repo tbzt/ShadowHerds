@@ -16,7 +16,10 @@
    Le moniteur matriciel du deck et la réallocation en un tap sont
    du ressort de la réallocation — ce module ne pose que le socle data.
    ============================================================ */
-const Cyberdeck = {
+import { Actor } from "./actor.js";
+import { ItemResolver } from "./itemresolver.js";
+
+export const Cyberdeck = {
   /** Codes d'attributs matriciels communs (mêmes clés que Matrix.ATTR_KEYS,
       réutilisées ici pour rester cohérent entre le régime serveur et le
       régime decker) — chaque édition n'en retient qu'un sous-ensemble via
@@ -335,3 +338,6 @@ const Cyberdeck = {
     return fresh;
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Cyberdeck = Cyberdeck;

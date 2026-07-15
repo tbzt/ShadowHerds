@@ -17,7 +17,11 @@
    Limites/Défense/Moniteurs/etc. à partir de pnj.attrs — pas de formule
    dupliquée ici.
    ============================================================ */
-const BonusEngine = {
+import { Actor } from "./actor.js";
+import { ItemResolver } from "./itemresolver.js";
+import { Utils } from "../core/utils.js";
+
+export const BonusEngine = {
   /* Table de correspondance « préfixe du libellé déjà existant dans
      equipPools.cyberware/equipSpecial/augsBySpecial » → bonus.
      Pas de réécriture des libellés : on les reconnaît tels quels. */
@@ -463,3 +467,6 @@ const BonusEngine = {
     return pnj;
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.BonusEngine = BonusEngine;

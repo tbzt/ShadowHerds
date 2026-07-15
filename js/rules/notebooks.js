@@ -13,7 +13,9 @@
    Clé Storage additive `notebooks = { version:1, entries: { [dossierId or
    "__global__"]: "<doc>" } }` — pas de migration nécessaire (nouvelle clé).
    ============================================================ */
-const Notebooks = {
+import { Storage } from "../core/storage.js";
+
+export const Notebooks = {
   _KEY: "notebooks",
   _GLOBAL: "__global__",
   _cache: null,
@@ -54,3 +56,6 @@ const Notebooks = {
     Storage.set(this._KEY, data);
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Notebooks = Notebooks;

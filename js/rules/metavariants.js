@@ -25,6 +25,8 @@
    pas dupliquer la même prose à chaque occurrence. Chaque trait affiché
    référence un `desc` pris dans ce dictionnaire — même mécanisme que les
    pouvoirs d'adepte (content.js), rendu cliquable par CardRenderer._contentTag. */
+import { Utils } from "../core/utils.js";
+
 const RULE = {
   visionNocturne:
     "Vision nocturne (basse lumière) : voit normalement dans la pénombre et par faible luminosité, sans pénalité pour manque de lumière.",
@@ -150,7 +152,7 @@ const RULE = {
     "Atout obligatoire : la métavariante impose de dépenser un Atout de ce niveau sur un trait racial précis, non substituable par un autre Atout à ce niveau.",
 };
 
-const Metavariants = {
+export const Metavariants = {
   /* ---- Métavariantes jouables (p.76) ---- */
   metavariants: {
     // — Souche TROLL —
@@ -1770,3 +1772,6 @@ const Metavariants = {
     return baseMetatype;
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Metavariants = Metavariants;

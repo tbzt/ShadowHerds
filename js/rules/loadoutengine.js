@@ -86,7 +86,10 @@
      ],
    }
    ============================================================ */
-const LoadoutEngine = {
+import { ItemResolver } from "./itemresolver.js";
+import { Utils } from "../core/utils.js";
+
+export const LoadoutEngine = {
   /* ---- Vocabulaire canonique (D1 + D5) ---- */
 
   /** Les 4 crans de rareté, du plus courant au plus rare (ordre = échelle
@@ -283,3 +286,6 @@ const LoadoutEngine = {
     return out;
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.LoadoutEngine = LoadoutEngine;

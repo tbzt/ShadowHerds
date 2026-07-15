@@ -16,7 +16,7 @@
    Champ additif porté par l'entité : `pnj.campaign = { ledger, customTracks }`
    (voyage tel quel dans `characters_all`, comme `journal`/`contactLinks`).
    ============================================================ */
-const Campaign = {
+export const Campaign = {
   /** Devises universelles aux 4 éditions — socle neutre, jamais branché. */
   CORE: [
     { key: "nuyen", label: "nuyens", glyph: "¥" },
@@ -54,3 +54,6 @@ const Campaign = {
     return [...this.CORE, ...rep, ...custom];
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Campaign = Campaign;

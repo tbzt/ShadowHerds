@@ -14,7 +14,7 @@
    sont proposées par compétence ; en SR5/SR6 elles restent libres,
    en Anarchy elles suivent la liste des règles.
    ============================================================ */
-const SkillCatalog = {
+export const SkillCatalog = {
   /* ---- SR5 : compétences actives (Livre de Règles p.130-150) ----
      Liste canonique de la « Liste des compétences » p.149-150, classée
      par attribut lié. Ne contient QUE des compétences actives : ni
@@ -270,3 +270,6 @@ const SkillCatalog = {
     return map[base] || map[skillName] || knowMap[base] || knowMap[skillName] || null;
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.SkillCatalog = SkillCatalog;

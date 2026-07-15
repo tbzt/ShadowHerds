@@ -19,7 +19,9 @@
           magique, matrice, tech, gang, civil.
    ============================================================ */
 
-const Content = {
+import { Utils } from "../core/utils.js";
+
+export const Content = {
   /* ========================================================
      SORTS
      ======================================================== */
@@ -3761,3 +3763,6 @@ const Content = {
     pnj.powers.push(entry);
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Content = Content;

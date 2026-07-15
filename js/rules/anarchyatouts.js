@@ -17,7 +17,12 @@
    contribuent que lorsqu'elles sont ACTIVES (Drugs.state === effect) :
    le toggle de scène existant gate leur inclusion, pas de mutation.
    ============================================================ */
-const AnarchyAtouts = {
+import { BonusEngine } from "./bonusengine.js";
+import { Drugs } from "../catalogs/drugs.js";
+import { ItemResolver } from "./itemresolver.js";
+import { Utils } from "../core/utils.js";
+
+export const AnarchyAtouts = {
   /** Nom d'attribut FR (au singulier, tel qu'écrit dans les atouts VF)
       → clé d'attribut. Sert à distinguer un « RR aux tests de Force »
       (attribut, touche tous les tests liés à FOR) d'un « RR aux tests
@@ -184,3 +189,6 @@ const AnarchyAtouts = {
     return sum;
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.AnarchyAtouts = AnarchyAtouts;

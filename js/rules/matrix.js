@@ -26,7 +26,12 @@
      +1/round par accès Utilisateur illégal, +3/round par accès
      Admin illégal, convergence à 40.
    ============================================================ */
-const Matrix = {
+import { Debug } from "../core/debug.js";
+import { ItemResolver } from "./itemresolver.js";
+import { Utils } from "../core/utils.js";
+import { WeaponEffects } from "./weaponeffects.js";
+
+export const Matrix = {
   /* ========================================================
      CATALOGUES — types de CI par édition
      ======================================================== */
@@ -686,3 +691,6 @@ const Matrix = {
     return `${org} — ${Utils.rand(this.SUFFIXES)}`;
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Matrix = Matrix;

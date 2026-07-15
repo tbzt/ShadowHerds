@@ -32,7 +32,10 @@ function Drug_anarchy(id, match, label, effectText, crashText) {
   };
 }
 
-const Drugs = {
+import { Actor } from "../rules/actor.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+
+export const Drugs = {
   CATALOG: {
     // Aucune drogue dans les pools d'équipement SR5 actuels — le
     // mécanisme est prêt, prêt à être alimenté dès qu'une entrée
@@ -214,3 +217,6 @@ const Drugs = {
     else pnj.drugState[drugId] = nxt;
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Drugs = Drugs;

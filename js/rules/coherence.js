@@ -21,7 +21,11 @@
    polyvalents que les PJ, mais la taxonomie doit pouvoir
    s'affiner).
    ============================================================ */
-const Coherence = {
+import { Debug } from "../core/debug.js";
+import { SkillCatalog } from "./skillcatalog.js";
+import { Utils } from "../core/utils.js";
+
+export const Coherence = {
   /* ========================================================
      RÔLES — fonction du PNJ. attrPriority = attributs canoniques
      à favoriser (ordre = poids décroissant) ; skillRegex filtre
@@ -348,3 +352,6 @@ const Coherence = {
 if (typeof window !== "undefined") {
   window.addEventListener("DOMContentLoaded", () => Coherence._selfTest());
 }
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Coherence = Coherence;

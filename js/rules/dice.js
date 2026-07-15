@@ -5,7 +5,9 @@
    Shadowrun standard (computeRoll), initiative (computeInitiative)
    et Anarchy 2.0 avec dés de risque (computeAnarchyRoll, riskDiceFor).
    ============================================================ */
-const Dice = {
+import { Utils } from "../core/utils.js";
+
+export const Dice = {
   /* ---- Moteur de règles pur (testable, sans DOM) ---- */
   computeRoll(n) {
     n = Utils.clamp(n, 1, 60);
@@ -203,3 +205,6 @@ const Dice = {
     return { init: true, base, dice, faces, diceSum: sum, total: base + sum };
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Dice = Dice;

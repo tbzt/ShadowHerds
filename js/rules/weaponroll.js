@@ -18,7 +18,12 @@
    que l'arme principale du PNJ a bien sa compétence (renomme une
    compétence de combat existante si elle ne correspond pas).
    ============================================================ */
-const WeaponRoll = {
+import { Actor } from "./actor.js";
+import { ItemResolver } from "./itemresolver.js";
+import { Utils } from "../core/utils.js";
+import { WeaponEffects } from "./weaponeffects.js";
+
+export const WeaponRoll = {
   /* Mots-clés du nom d'arme → compétence canonique (par édition).
      L'ordre compte : du plus spécifique au plus générique. */
   KEYWORD_SKILL: {
@@ -451,3 +456,6 @@ const WeaponRoll = {
     return false;
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.WeaponRoll = WeaponRoll;

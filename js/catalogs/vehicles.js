@@ -17,7 +17,10 @@
    L'entité créée est un objet du même pool que les PNJ
    (Gen.pool / Shadows.data.all) avec type:"vehicle" et ownerId.
    ============================================================ */
-const Vehicles = {
+import { ItemResolver } from "../rules/itemresolver.js";
+import { Utils } from "../core/utils.js";
+
+export const Vehicles = {
   /* ---- Catalogue SR5/SR6 : stats des tables du livre de base ----
      mania/vitesse/accel/structure/blindage/pilote/senseurs.
      SR6 : vitesse = Vitesse max, accel = Accélération, intervalle
@@ -518,3 +521,6 @@ const Vehicles = {
     return fn ? fn(v) : null;
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Vehicles = Vehicles;

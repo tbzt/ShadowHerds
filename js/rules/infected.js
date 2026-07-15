@@ -37,7 +37,9 @@
    - naturalWeapons : chaînes au format arme déjà utilisé par l'édition
    ============================================================ */
 
-const Infected = {
+import { Utils } from "../core/utils.js";
+
+export const Infected = {
   sr6: {
     Bandersnatch: {
       baseMetatypes: ["Sasquatch"],
@@ -552,3 +554,6 @@ const Infected = {
     };
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Infected = Infected;

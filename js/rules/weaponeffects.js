@@ -28,7 +28,10 @@
    Le CATALOG ci-dessous est le socle N2. Il se peuple ensuite item par
    item contre le PDF — SANS toucher ce moteur.
    ============================================================ */
-const WeaponEffects = {
+import { Drugs } from "../catalogs/drugs.js";
+import { ItemResolver } from "./itemresolver.js";
+
+export const WeaponEffects = {
   /* Prédicats de condition réutilisables. */
   isUnarmed(name) {
     return /mains nues|unarmed|à mains nues/i.test(String(name || ""));
@@ -179,3 +182,6 @@ const WeaponEffects = {
     return out;
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.WeaponEffects = WeaponEffects;

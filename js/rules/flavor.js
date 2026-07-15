@@ -14,7 +14,9 @@
    manie, motivation, style }. L'affichage les lit depuis là.
    ============================================================ */
 
-const Flavor = {
+import { Utils } from "../core/utils.js";
+
+export const Flavor = {
   /* ----------------------------------------------------------
      CLASSIFICATION : on dérive des « tags » depuis la profession.
      Ces tags pilotent ensuite la sélection des détails.
@@ -1996,3 +1998,6 @@ const Flavor = {
     return pnj;
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Flavor = Flavor;

@@ -19,7 +19,9 @@
      Immunité aux armes normales (Armure 3/4/5), seuils armes
      normales/magiques, VD mains nues = FOR.
    ============================================================ */
-const Spirits = {
+import { Utils } from "../core/utils.js";
+
+export const Spirits = {
   /* ---- SR5/SR6 : modificateurs d'attributs par type (± Puissance) ---- */
   SR_TYPES: {
     air: {
@@ -550,3 +552,6 @@ const Spirits = {
     };
   },
 };
+
+// Pont couche 2 (migration modules ES) — retiré en fin de migration.
+window.Spirits = Spirits;

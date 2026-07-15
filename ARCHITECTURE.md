@@ -75,7 +75,7 @@ branchent jamais `if (App.edition === …)`.
 |---|---|---|
 | `actor.js` | `Actor` | Accesseurs de valeurs d'acteur (attributs, compétences). Couture (`seam`) de la refonte du modèle d'acteur : forme cible `Trait {base, mods, total}`. |
 | `dice.js` | `Dice` | Moteur de jets pur et testable (sans DOM) : jet standard, initiative, jet Anarchy à dés de risque. |
-| `metavariants.js` | **`RULE`** ⚠️ | Métavariantes SR5 (souches, métaconsciences). **Nom d'objet non conforme** (`RULE` au lieu de `Metavariants`) — voir §8. |
+| `metavariants.js` | `Metavariants` | Métavariantes SR5 (souches, métaconsciences). Déclare aussi un petit helper interne `RULE` (texte de trait partagé), non exporté. |
 | `infected.js` | `Infected` | Infectés (goules, vampires…) sélectionnables comme métavariante. |
 | `matrix.js` | `Matrix` | Catalogues de CI, profils d'indice et sculptures, par édition (`Matrix.use(edition)`). Côté serveur. |
 | `cyberdeck.js` | `Cyberdeck` | Miroir de `matrix.js` côté decker ; délègue tout à `cyberdeckModel` de l'édition. |
@@ -342,9 +342,6 @@ modules d'édition ni du gros catalogue de créatures (~280 Ko + 238 Ko) :
 
 ## 8. Pièges de navigation (les exceptions à connaître)
 
-- **`metavariants.js` déclare `RULE`**, pas `Metavariants` : seule entorse
-  actuelle à la règle « objet = nom du fichier ». Chercher `RULE` pour trouver
-  les métavariantes SR5.
 - **`creatures.js` absent d'`index.html`** (chargé en différé, §7).
 - **Trois copies divergentes** du patron collection (`Shadows` /
   `ContactsBook` / `Servers`) : voir §4b.
