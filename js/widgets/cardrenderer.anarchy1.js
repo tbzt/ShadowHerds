@@ -65,7 +65,7 @@ Object.assign(CardRenderer, {
 
     // ---- ZONE CAPACITÉS ----
     let capBody = "";
-    capBody += this._skillsSection(skills, malus);
+    capBody += this._skillsSection(skills, malus, { pnj });
     if (edges && edges.length) capBody += this._listSection("Atouts", edges);
     const capSummary = skills && skills.length ? `${skills.length} compétence${skills.length > 1 ? "s" : ""}` : "";
     html += this._zoneShell(pnj, "capacites", capBody, capSummary);

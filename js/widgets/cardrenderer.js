@@ -1145,15 +1145,26 @@ const CardRenderer = {
 
   _skillsSection(skills, malus = 0, opts = {}) {
     if (!skills || !skills.length) return "";
-    const { label = "Compétences", extraClass = "" } = opts;
+    const { label = "Compétences", extraClass = "", pnj = null } = opts;
     const malusTxt = malus > 0 ? ` (malus blessure −${malus})` : "";
     const tags = skills
       .map((s) => {
         const n = Number(s.val);
-        const eff = Number.isFinite(n) ? Math.max(0, n - malus) : n;
+        // Fusion V5 tranche 2 : bonus de pool d'objet (SkillEffects) cuit
+        // dans la réserve cliquable, avec sa source. Contributions
+        // {value, source} — même vocabulaire que WeaponEffects.
+        const contribs =
+          pnj && typeof SkillEffects !== "undefined"
+            ? SkillEffects.forSkill(pnj, s.name)
+            : [];
+        const bonus = contribs.reduce((a, c) => a + c.value, 0);
+        const srcTxt = contribs.length
+          ? " — dont " + contribs.map((c) => `${c.source} +${c.value}`).join(", ")
+          : "";
+        const eff = Number.isFinite(n) ? Math.max(0, n + bonus - malus) : n;
         const rollable = Number.isFinite(eff) && eff >= 1;
         const rollAttrs = rollable
-          ? ` data-roll="${eff}" data-roll-label="${this._esc(s.name)}" title="Lancer ${eff} dés — ${this._esc(s.name)}${malusTxt}"`
+          ? ` data-roll="${eff}" data-roll-label="${this._esc(s.name)}"${srcTxt ? ` data-roll-detail="${this._esc(s.name + " " + eff + srcTxt)}"` : ""} title="Lancer ${eff} dés — ${this._esc(s.name)}${malusTxt}${this._esc(srcTxt)}"`
           : "";
         let html = this._rollableTag(
           rollable,
@@ -1162,11 +1173,12 @@ const CardRenderer = {
           `${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${eff}</strong>`,
         );
         if (s.spec && s.spec !== true) {
-          // Spécialité : +2 dés sur le pool en SR5/SR6.
-          const specN = Number.isFinite(n) ? Math.max(0, n + 2 - malus) : null;
+          // Spécialité : +2 dés sur le pool en SR5/SR6 (le bonus d'objet
+          // s'ajoute aussi à la spécialité, même réserve de base).
+          const specN = Number.isFinite(n) ? Math.max(0, n + 2 + bonus - malus) : null;
           const specRollable = !!(specN && specN >= 1);
           const specRoll = specRollable
-            ? ` data-roll="${specN}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" title="Spécialité ${this._esc(s.spec)} : ${specN} dés (+2)${malusTxt}"`
+            ? ` data-roll="${specN}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" title="Spécialité ${this._esc(s.spec)} : ${specN} dés (+2)${malusTxt}${this._esc(srcTxt)}"`
             : ` title="Spécialité ${this._esc(s.spec)} : +2 dés${malusTxt}"`;
           html += this._rollableTag(
             specRollable,

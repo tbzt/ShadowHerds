@@ -100,7 +100,7 @@ Object.assign(CardRenderer, {
 
     // ---- ZONE CAPACITÉS ----
     let capBody = "";
-    capBody += this._skillsSection(skills, malus5);
+    capBody += this._skillsSection(skills, malus5, { pnj });
     capBody += this._knowledgesSection(knowledges, pnj, malus5);
     // Pouvoirs d'adepte : vivent désormais dans le module Magie (CP3).
     if (traits && traits.length) capBody += this._listSection("Traits", traits);
