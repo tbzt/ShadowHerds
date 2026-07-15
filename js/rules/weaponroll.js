@@ -29,8 +29,9 @@ const WeaponRoll = {
       [/mitraillette|smg|hk[\s-]|ingram|smartgun x|ceska|uzi/i, "Armes automatiques"],
       [/sniper|ranger arms|remington|barrett|fusil de précision|fusil de chasse|fusil à pompe|shotgun/i, "Armes à feu"],
       [/pistolet|predator|manhunter|browning|colt|ruger|warhawk|fichetti|ares|beretta|revolver|taser|defiance|shocker/i, "Armes à feu"],
+      [/mains? nues|poing/i, "Combat à mains nues"],
       [/katana|épée|sabre|hache|couteau|lame|griffe|tranchant|crocs?|morsure|queue/i, "Combat rapproché"],
-      [/matraque|massue|barre|bâton|gourdin|contondant|électromatraque|gants?|poing/i, "Combat rapproché"],
+      [/matraque|massue|barre|bâton|gourdin|contondant|électromatraque|gants?/i, "Combat rapproché"],
       [/arc|arbalète|shuriken|étoile|javelot|jet/i, "Armes de jet"],
     ],
     sr6: [
@@ -40,7 +41,7 @@ const WeaponRoll = {
       [/mitraillette|smg|hk mp|ingram|smartgun/i, "Armes à feu"],
       [/pistolet|predator|colt|cavalier|fichetti|beretta|revolver|taser|defiance|hk p/i, "Armes à feu"],
       [/katana|épée|sabre|hache|couteau|lame|griffe|tranchant|crocs?|morsure|queue/i, "Combat rapproché"],
-      [/matraque|massue|barre|bâton|télescopique|électro|gants?|poing|contondant/i, "Combat rapproché"],
+      [/matraque|massue|barre|bâton|télescopique|électro|gants?|poing|contondant|mains? nues/i, "Combat rapproché"],
     ],
     // Catalogue d'armes V1 (findings §11) : mitrailleuses/canons →
     // Armes lourdes ; arcs/arbalètes/grenades/armes de jet → Armes à
