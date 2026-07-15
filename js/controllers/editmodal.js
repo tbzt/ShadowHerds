@@ -563,6 +563,46 @@ const EditModal = {
       .forEach((el) => el.classList.toggle("selected", el === custom));
   },
 
+  /* ---- Coquille de zone repliable (ME2b, D-ME-5 = A) ----
+     Réutilise TELLES QUELLES les classes globales de la carte
+     (.card-zone/.zone-toggle/.zone-body/.zone-body-inner/.zone-body-pad,
+     pnj-card.css déjà chargé pour tout le document) — zéro duplication CSS,
+     zéro mutation de la carte. Le pli est ÉPHÉMÈRE (D-ME-6 = D-a) : le toggle
+     `em-zone-toggle` bascule seulement `.zone-collapsed` sur le DOM, ne touche
+     NI `pnj._zoneOpen` (grammaire de persistance de la carte, cf. diceroller)
+     NI aucune donnée — l'état repart du défaut à chaque `open()`.
+     La zone porte toujours une `.zone-toggle-summary` (même vide) : les
+     `_rerender*` la rafraîchissent quand le compte change en cours d'édition
+     (cf. _refreshZoneSummary). */
+  _zone(label, bodyHtml, opts = {}) {
+    if (!bodyHtml) return "";
+    const { summary = "", collapsed = false, zoneClass = "" } = opts;
+    const esc = CardRenderer._esc;
+    return `<div class="card-zone${collapsed ? " zone-collapsed" : ""}${zoneClass ? " " + zoneClass : ""}">
+      <button type="button" class="zone-toggle" data-action="em-zone-toggle" aria-expanded="${!collapsed}">
+        <span class="zone-toggle-label">${esc(label)}</span>
+        <span class="zone-toggle-summary">${esc(summary)}</span>
+        <span class="chev" aria-hidden="true">▾</span>
+      </button>
+      <div class="zone-body"><div class="zone-body-inner"><div class="zone-body-pad">${bodyHtml}</div></div></div>
+    </div>`;
+  },
+
+  /* Texte de résumé au repos « N libellé(s) », vide si N=0 (rien à résumer). */
+  _zoneCount(n, singular, plural) {
+    return n ? `${n} ${n > 1 ? plural : singular}` : "";
+  },
+
+  /* Rafraîchit le résumé de la zone qui contient l'élément d'ancrage (par id),
+     appelé par les _rerender* pour que le compte au repos ne mente pas après
+     un ajout/retrait en cours d'édition. */
+  _refreshZoneSummary(anchorId, text) {
+    const anchor = document.getElementById(anchorId);
+    const zone = anchor && anchor.closest(".card-zone");
+    const sum = zone && zone.querySelector(".zone-toggle-summary");
+    if (sum) sum.textContent = text;
+  },
+
   /* ---- Construction du formulaire ---- */
   _buildForm(pnj) {
     let html = "";
@@ -652,40 +692,43 @@ const EditModal = {
     // le concept — capacité de l'édition, pas contenu courant, même
     // correctif que l'Équipement). Hors esprits (sémantique distincte). ----
     if (App.getEditionModule(pnj.edition).hasEdges && pnj.type !== "spirit") {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Atouts</div>
-        <div class="form-group">
+      const atoutsBody = `<div class="form-group">
           <label>Un edge par ligne</label>
           <textarea id="em-atouts" rows="5">${(pnj.edges || []).join("\n")}</textarea>
         </div>
-        ${this._edgeCatalogControls(pnj)}
-      </div>`;
+        ${this._edgeCatalogControls(pnj)}`;
+      html += this._zone("Atouts", atoutsBody, {
+        summary: this._zoneCount((pnj.edges || []).length, "atout", "atouts"),
+        collapsed: true,
+      });
     }
 
     // ---- Section : Sorts (montée si l'édition a un catalogue de sorts).
     // Hors esprits. Objets structurés (add/retrait via catalogue seulement,
     // pas de saisie libre — comme les Armes). ----
     if (App.getEditionModule(pnj.edition).spellCatalog?.() && pnj.type !== "spirit") {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Sorts</div>
-        <div id="em-spells-list" class="em-skills-list">
+      const spellsBody = `<div id="em-spells-list" class="em-skills-list">
           ${this._spellRows(pnj)}
         </div>
-        ${this._spellCatalogControls(pnj)}
-      </div>`;
+        ${this._spellCatalogControls(pnj)}`;
+      html += this._zone("Sorts", spellsBody, {
+        summary: this._zoneCount((pnj.spells || []).length, "sort", "sorts"),
+        collapsed: true,
+      });
     }
 
     // ---- Section : Pouvoirs d'adepte (SR5/SR6 seulement — Anarchy fond
     // cette mécanique dans les Atouts). Hors esprits (pnj.powers a une
     // sémantique différente sur un esprit — cf. js/catalogs/spirits.js). ----
     if (App.getEditionModule(pnj.edition).powerCatalog?.() && pnj.type !== "spirit") {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Pouvoirs</div>
-        <div id="em-powers-list" class="em-skills-list">
+      const powersBody = `<div id="em-powers-list" class="em-skills-list">
           ${this._powerRows(pnj)}
         </div>
-        ${this._powerCatalogControls(pnj)}
-      </div>`;
+        ${this._powerCatalogControls(pnj)}`;
+      html += this._zone("Pouvoirs", powersBody, {
+        summary: this._zoneCount((pnj.powers || []).length, "pouvoir", "pouvoirs"),
+        collapsed: true,
+      });
     }
 
     // ---- Section : Cyberdeck (module Matrice de la carte) — montée si le PNJ
@@ -698,19 +741,20 @@ const EditModal = {
       pnj.cyberdeck ? CyberdeckRenderer.editSection(pnj) : ""
     }</div>`;
 
-    // ---- Section : Compétences (éditables + ajout) ----
+    // ---- Section : Compétences (éditables + ajout) — zone Capacités ----
     {
       const rowFn =
         App.getEditionModule(pnj.edition).skillModel.shape === "extended"
           ? this._skillRowAnarchy.bind(this)
           : this._skillRowSR.bind(this);
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Compétences</div>
-        <div id="em-skills-list" class="em-skills-list">
+      const skillsBody = `<div id="em-skills-list" class="em-skills-list">
           ${(pnj.skills || []).map((s, i) => rowFn(pnj, s, i)).join("")}
         </div>
-        ${this._addSkillControls(pnj)}
-      </div>`;
+        ${this._addSkillControls(pnj)}`;
+      html += this._zone("Compétences", skillsBody, {
+        summary: this._zoneCount((pnj.skills || []).length, "compétence", "compétences"),
+        collapsed: true,
+      });
     }
 
     // ---- Section : Armes structurées ----
@@ -719,12 +763,13 @@ const EditModal = {
     // neutre, jamais de branche d'édition. Le catalogue de la section
     // Équipement route alors ses armes ici (pnj.weapons), pas dans equip.
     if (App.getEditionModule(pnj.edition).weaponModel?.source === "weapons") {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Armes</div>
-        <div id="em-weapons-list" class="em-skills-list">
+      const weaponsBody = `<div id="em-weapons-list" class="em-skills-list">
           ${this._weaponRows(pnj)}
-        </div>
-      </div>`;
+        </div>`;
+      html += this._zone("Armes", weaponsBody, {
+        summary: this._zoneCount((pnj.weapons || []).length, "arme", "armes"),
+        collapsed: true,
+      });
     }
 
     // ---- Section : Équipement (toujours affichée : on peut désormais en
@@ -745,13 +790,20 @@ const EditModal = {
     // non résolu + cyber/bioware à indice fixe). Toujours montée dans le DOM
     // (#em-equip-ratings reste une cible stable pour _rerenderEquip, ajout
     // d'item en cours d'édition compris) ; masquée par CSS quand vide
-    // (même patron que .dice-log-summary:empty). Réutilise #em-equip-ratings
-    // + _equipRatingRows inchangés (contrat Failsafe : data-idx/
-    // id="em-equip-rating-<i>" et le réordre de _readForm ne bougent pas). ----
-    html += `<div class="modal-section em-augmentations-section">
-        <div class="modal-section-title">Augmentations</div>
-        <div id="em-equip-ratings" class="em-skills-list">${this._equipRatingRows(pnj)}</div>
-      </div>`;
+    // (`.em-augmentations-section:has(#em-equip-ratings:empty)`, classe portée
+    // par la card-zone). Réutilise #em-equip-ratings + _equipRatingRows
+    // inchangés (contrat Failsafe : data-idx/id="em-equip-rating-<i>" et le
+    // réordre de _readForm ne bougent pas). ----
+    const augCount = (pnj.equip || []).filter((it) => it && typeof it === "object").length;
+    html += this._zone(
+      "Augmentations",
+      `<div id="em-equip-ratings" class="em-skills-list">${this._equipRatingRows(pnj)}</div>`,
+      {
+        summary: this._zoneCount(augCount, "augmentation", "augmentations"),
+        collapsed: true,
+        zoneClass: "em-augmentations-section",
+      },
+    );
 
     // ---- Section : Suivi de campagne (optionnel, PJ seulement) ----
     html += this._buildCampaignSection(pnj);
@@ -880,6 +932,10 @@ const EditModal = {
     } else {
       list.insertAdjacentHTML("afterend", this._addSkillControls(pnj));
     }
+    this._refreshZoneSummary(
+      "em-skills-list",
+      this._zoneCount((pnj.skills || []).length, "compétence", "compétences"),
+    );
   },
 
   /* Lit les champs de compétences du formulaire dans le PNJ. */
@@ -1031,6 +1087,11 @@ const EditModal = {
     if (el) el.value = this._equipTextLines(pnj).join("\n");
     const ratings = document.getElementById("em-equip-ratings");
     if (ratings) ratings.innerHTML = this._equipRatingRows(pnj);
+    const augCount = (pnj.equip || []).filter((it) => it && typeof it === "object").length;
+    this._refreshZoneSummary(
+      "em-equip-ratings",
+      this._zoneCount(augCount, "augmentation", "augmentations"),
+    );
   },
 
   /* Retire l'item d'équipement (objet à indice) à la position ratingIdx
@@ -1051,6 +1112,10 @@ const EditModal = {
   _rerenderWeapons(pnj) {
     const list = document.getElementById("em-weapons-list");
     if (list) list.innerHTML = this._weaponRows(pnj);
+    this._refreshZoneSummary(
+      "em-weapons-list",
+      this._zoneCount((pnj.weapons || []).length, "arme", "armes"),
+    );
   },
 
   /* ---- Sorts (objets structurés, add/retrait via catalogue seulement) ---- */
@@ -1117,6 +1182,10 @@ const EditModal = {
   _rerenderSpells(pnj) {
     const list = document.getElementById("em-spells-list");
     if (list) list.innerHTML = this._spellRows(pnj);
+    this._refreshZoneSummary(
+      "em-spells-list",
+      this._zoneCount((pnj.spells || []).length, "sort", "sorts"),
+    );
   },
 
   /* ---- Pouvoirs d'adepte (objets structurés, add/retrait via catalogue seulement) ---- */
@@ -1174,6 +1243,10 @@ const EditModal = {
   _rerenderPowers(pnj) {
     const list = document.getElementById("em-powers-list");
     if (list) list.innerHTML = this._powerRows(pnj);
+    this._refreshZoneSummary(
+      "em-powers-list",
+      this._zoneCount((pnj.powers || []).length, "pouvoir", "pouvoirs"),
+    );
   },
 
   /* ---- Atouts (texte libre + catalogue dédupliqué qui ajoute une ligne) ---- */
@@ -1211,6 +1284,10 @@ const EditModal = {
   _rerenderEdges(pnj) {
     const el = document.getElementById("em-atouts");
     if (el) el.value = (pnj.edges || []).join("\n");
+    this._refreshZoneSummary(
+      "em-atouts",
+      this._zoneCount((pnj.edges || []).length, "atout", "atouts"),
+    );
   },
 
   /* #66 : la valeur du picker peut être une souche OU une métavariante/
@@ -1407,6 +1484,17 @@ const EditModal = {
         case "camp-track-remove":
           this.removeCampaignTrack(el.dataset.key);
           break;
+        case "em-zone-toggle": {
+          // Pli ÉPHÉMÈRE (D-a) : bascule la classe DOM, aucune persistance,
+          // aucune mutation de pnj (surtout PAS pnj._zoneOpen, réservé à la
+          // carte). L'état repart du défaut à la prochaine ouverture.
+          const zone = el.closest(".card-zone");
+          if (zone) {
+            const collapsed = zone.classList.toggle("zone-collapsed");
+            el.setAttribute("aria-expanded", String(!collapsed));
+          }
+          break;
+        }
       }
     });
     modal.addEventListener("input", (e) => {

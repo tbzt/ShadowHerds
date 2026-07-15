@@ -30,6 +30,32 @@ details[open] > summary.modal-section-title::before {
   display: none;
 }
 
+/* ME2b : coquille de zone repliable réutilisée de la carte (.card-zone/
+   .zone-toggle/.zone-body, D-ME-5 = A — CSS global de pnj-card.css, jamais
+   dupliqué ni muté). Deux ajustements PROPRES à la modale :
+
+   1) Pli INSTANTANÉ. La carte anime grid-template-rows 0fr↔1fr car ses zones
+      NAISSENT dépliées (le 1fr résout la hauteur de contenu au 1ᵉʳ layout,
+      puis on anime vers 0fr). Dans la modale, les zones lourdes naissent
+      REPLIÉES (D-a) : l'animation 0fr→1fr ne résout jamais la hauteur (fr sans
+      espace libre dans un conteneur à hauteur auto → reste 0). Sans transition,
+      la bascule de classe commute entre deux états déjà résolus, correct dans
+      les deux sens. Le chevron garde sa rotation animée (transition à part). */
+#edit-modal .zone-body,
+#edit-modal .zone-body-inner {
+  transition: none;
+}
+
+/* 2) La coquille de carte suppose un cadre à filets (border-top entre zones) ;
+   dans la modale, les zones cohabitent avec des .modal-section à border-bottom.
+   Un filet haut sur chaque card-zone donne le même rythme de séparation. */
+#edit-modal .card-zone {
+  border-top: 1px solid var(--border);
+}
+#edit-modal .card-zone:first-of-type {
+  border-top: 1px solid var(--border);
+}
+
 /* ME1f (constat C) : gouttières/paddings des rangées em-* alignés sur les
    tokens --sp-* (au lieu de rem/px disparates au fil des lots) — un seul
    rythme, sans toucher aux grid-template-columns porteurs de sens. */
