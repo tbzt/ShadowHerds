@@ -1,6 +1,13 @@
 /* Mode édition PNJ (#edit-modal) — tout le préfixe em-*, extrait de
    combat-tracker.css/modal-core.css/pnj-card.css (ME1a). */
 
+/* ME1c/D-ME-2b : section « Augmentations » (objets structurés #em-equip-
+   ratings) toujours dans le DOM, masquée quand vide (même patron que
+   .dice-log-summary:empty). */
+.em-augmentations-section:has(#em-equip-ratings:empty) {
+  display: none;
+}
+
 /* ---- Compétences éditables dans le modal ---- */
 .em-skills-list {
   display: flex;
