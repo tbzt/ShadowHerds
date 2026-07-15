@@ -29,9 +29,20 @@
    demandé : les lectures existantes (`element.value`) et les
    écouteurs `change` déjà câblés continuent de fonctionner sans
    changement, le composant se contente de piloter cet input caché.
+
+   #62 : recherche texte — dropdown au-delà de `_SEARCH_THRESHOLD` options,
+   une barre de filtre apparaît en tête. Coexiste avec `filterOptions`
+   (ex. créature filtrée par habitat, cf. generator.js) via deux drapeaux
+   indépendants sur chaque .ss-opt (`data-hab-hidden` / `data-search-hidden`) :
+   la visibilité finale est le OU des deux, aucun des deux mécanismes
+   n'écrase l'autre. La recherche se réinitialise à la fermeture du
+   dropdown (repart propre à chaque ouverture).
    ============================================================ */
 const SingleSelect = {
   _bound: false,
+  // #62 : en dessous, la recherche n'apporte rien (liste déjà courte d'un
+  // coup d'œil) — évite d'alourdir les petits pickers (genre, habitat…).
+  _SEARCH_THRESHOLD: 8,
 
   create(cfg) {
     const { id, label, options = [], groups = null, value = "", placeholder = "Aléatoire" } = cfg;
@@ -39,6 +50,10 @@ const SingleSelect = {
     const selected = flat.find((o) => o.value === value);
 
     const opts = groups ? this._groupedOpts(groups, value) : this._flatOpts(options, value);
+    const search =
+      flat.length > this._SEARCH_THRESHOLD
+        ? `<input type="text" class="ss-search" placeholder="Filtrer…" autocomplete="off" spellcheck="false">`
+        : "";
 
     return `<div class="form-group ss" data-ss="${id}" data-placeholder="${this._esc(placeholder)}">
       ${label ? `<label>${label}</label>` : ""}
@@ -47,6 +62,7 @@ const SingleSelect = {
         <span class="ss-caret ms-caret">▾</span>
       </div>
       <div class="ss-dropdown ms-dropdown" role="listbox" hidden>
+        ${search}
         <div class="ss-dropdown-body ms-dropdown-body">${opts}</div>
       </div>
       <input type="hidden" id="${id}" value="${this._esc(value)}">
@@ -94,18 +110,57 @@ const SingleSelect = {
   },
 
   /** Masque les options pour lesquelles predicate(optionEl) est faux ;
-      réinitialise l'affichage si l'option choisie devient masquée. */
+      réinitialise l'affichage si l'option choisie devient masquée.
+      #62 : drapeau `data-hab-hidden` indépendant de la recherche texte
+      (`data-search-hidden`) — la visibilité finale (`_applyHidden`) est le
+      OU des deux, aucun des deux mécanismes n'écrase l'autre. */
   filterOptions(id, predicate) {
     const root = document.querySelector(`[data-ss="${id}"]`);
     if (!root) return;
-    const input = root.querySelector("input");
+    const hiddenInput = root.querySelector('input[type="hidden"]');
     let activeHidden = false;
     root.querySelectorAll(".ss-opt").forEach((opt) => {
-      const hidden = !predicate(opt);
-      opt.hidden = hidden;
-      if (hidden && opt.dataset.value === input.value) activeHidden = true;
+      const hab = !predicate(opt);
+      opt.dataset.habHidden = hab ? "1" : "";
+      this._applyHidden(opt);
+      if (opt.hidden && opt.dataset.value === hiddenInput.value) activeHidden = true;
     });
+    this._updateGroupVisibility(root);
     if (activeHidden) this._select(root, "");
+  },
+
+  /** Combine les deux drapeaux de masquage sur une option. */
+  _applyHidden(opt) {
+    opt.hidden = opt.dataset.habHidden === "1" || opt.dataset.searchHidden === "1";
+  },
+
+  /** Masque les en-têtes de groupe dont tous les enfants sont masqués (mode
+      groupé uniquement — no-op si `root` n'a pas de .ms-group). */
+  _updateGroupVisibility(root) {
+    root.querySelectorAll(".ms-group").forEach((g) => {
+      const items = g.querySelectorAll(".ss-opt");
+      const allHidden = items.length > 0 && [...items].every((o) => o.hidden);
+      g.hidden = allHidden;
+    });
+  },
+
+  /** Normalise pour une comparaison insensible à la casse/aux accents. */
+  _normalize(s) {
+    return String(s)
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase();
+  },
+
+  /** #62 : filtre en direct pendant la frappe dans `.ss-search`. */
+  _applySearch(root, query) {
+    const q = this._normalize(query.trim());
+    root.querySelectorAll(".ss-opt").forEach((opt) => {
+      const hidden = q.length > 0 && !this._normalize(opt.textContent).includes(q);
+      opt.dataset.searchHidden = hidden ? "1" : "";
+      this._applyHidden(opt);
+    });
+    this._updateGroupVisibility(root);
   },
 
   init() {
@@ -147,12 +202,20 @@ const SingleSelect = {
         document.querySelectorAll(".ss").forEach((ss) => this._setOpen(ss, false));
       }
     });
+
+    // #62 : recherche en direct — délégué comme le reste (aucun listener
+    // par instance, un seul au document).
+    document.addEventListener("input", (e) => {
+      const search = e.target.closest(".ss-search");
+      if (!search) return;
+      this._applySearch(search.closest(".ss"), search.value);
+    });
   },
 
   /* ---- interne ---- */
 
   _select(ss, value) {
-    const input = ss.querySelector("input");
+    const input = ss.querySelector('input[type="hidden"]');
     const valueEl = ss.querySelector("[data-ss-value]");
     const opt = value ? ss.querySelector(`.ss-opt[data-value="${CSS.escape(value)}"]`) : null;
 
@@ -165,10 +228,21 @@ const SingleSelect = {
   _setOpen(ss, open) {
     const dd = ss.querySelector(".ss-dropdown");
     const control = ss.querySelector(".ss-control");
-    if (!dd) return;
+    if (!dd || dd.hidden === !open) return; // pas de changement d'état, rien à faire
     dd.hidden = !open;
     ss.classList.toggle("ss-open", open);
     if (control) control.setAttribute("aria-expanded", String(open));
+    const search = dd.querySelector(".ss-search");
+    if (search) {
+      if (open) {
+        search.focus();
+      } else {
+        // #62 : repart propre à chaque ouverture (le filtre habitat éventuel
+        // — data-hab-hidden — n'est pas touché par _applySearch).
+        search.value = "";
+        this._applySearch(ss, "");
+      }
+    }
   },
 
   _esc(s) {
