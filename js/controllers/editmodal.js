@@ -5,6 +5,9 @@
    ============================================================ */
 const EditModal = {
   currentId: null,
+  // Instantané profond pris à l'ouverture : socle de « Annuler les
+  // modifications » (revert) et du commit conditionnel à la fermeture.
+  _snapshot: null,
   _notesMode: "read", // "read" (puces @/#) | "edit" (jeton brut) — E7
 
   open(id) {
@@ -14,6 +17,9 @@ const EditModal = {
       return;
     }
     this.currentId = id;
+    // Avant toute mutation : les sous-actions (compétences, équipement,
+    // liens, campagne, couleur) mutent `pnj` en direct pendant la session.
+    this._snapshot = structuredClone(pnj);
 
     document.querySelector(".modal-title").textContent =
       `Édition — ${pnj.name}`;
@@ -90,25 +96,20 @@ const EditModal = {
     </div>`;
   },
 
+  /** Fermeture = commit automatique. Lit le formulaire dans l'objet
+      canonique, persiste et rafraîchit — puis referme. Appelé par ✕, le
+      bouton « Fermer », Échap et le clic hors-modale (app.js). Aucune saisie
+      n'est perdue faute d'avoir cliqué sur un bouton Sauvegarder. */
   close() {
-    document.getElementById("edit-modal").classList.remove("open");
-    this.currentId = null;
-  },
-
-  save() {
-    const pnj = PnjLookup.find(this.currentId);
+    const pnj = this.currentId && PnjLookup.find(this.currentId);
     if (!pnj) {
-      this.close();
+      this._hide();
       return;
     }
 
     if (pnj.pcLight) {
       this._readFormLight(pnj);
-      UI.persistEntity(pnj.id);
-      Characters.render();
-      CardRenderer.refresh(pnj);
-      this.close();
-      toast(`${pnj.name} mis à jour.`);
+      this._finish(pnj, () => Characters.render());
       return;
     }
 
@@ -119,10 +120,7 @@ const EditModal = {
         pnj.monTotal = Vehicles._monitor(pnj.stats, pnj.edition);
         pnj.monFilled = Math.min(pnj.monFilled || 0, pnj.monTotal);
       }
-      UI.persistEntity(pnj.id);
-      CardRenderer.refresh(pnj);
-      this.close();
-      toast(`${pnj.name} mis à jour.`);
+      this._finish(pnj, null);
       return;
     }
 
@@ -136,13 +134,53 @@ const EditModal = {
       pnj.me = edModule.conditionMonitor.spiritMonitor(pnj.force);
     }
 
-    UI.persistEntity(pnj.id);
-    if (Shadows.data.all.some((p) => p.id === pnj.id)) {
-      Shadows.render();
+    this._finish(pnj, () => {
+      if (Shadows.data.all.some((p) => p.id === pnj.id)) Shadows.render();
+    });
+  },
+
+  /** Tail commun du commit : ne persiste/rafraîchit/notifie que si l'objet a
+      réellement changé depuis l'ouverture (évite l'écriture et le toast « mis
+      à jour » quand on referme sans rien avoir touché). */
+  _finish(pnj, renderCollection) {
+    const changed =
+      !this._snapshot || JSON.stringify(pnj) !== JSON.stringify(this._snapshot);
+    if (changed) {
+      UI.persistEntity(pnj.id);
+      if (renderCollection) renderCollection();
+      CardRenderer.refresh(pnj);
     }
-    CardRenderer.refresh(pnj);
-    this.close();
-    toast(`${pnj.name} mis à jour.`);
+    this._hide();
+    if (changed) toast(`${pnj.name} mis à jour.`);
+  },
+
+  /** « Annuler les modifications » : restaure l'objet dans l'état capturé à
+      l'ouverture, re-persiste (certaines sous-actions ont pu persister en
+      cours de session) et referme. */
+  revert() {
+    const pnj = this.currentId && PnjLookup.find(this.currentId);
+    if (pnj && this._snapshot) {
+      this._restore(pnj, this._snapshot);
+      UI.persistEntity(pnj.id);
+      if (pnj.pcLight) Characters.render();
+      else if (Shadows.data.all.some((p) => p.id === pnj.id)) Shadows.render();
+      CardRenderer.refresh(pnj);
+    }
+    this._hide();
+    toast("Modifications annulées.");
+  },
+
+  /** Restaure `snap` dans `target` EN PLACE (l'identité de référence est
+      partagée par les collections et le DOM — jamais réassigner). */
+  _restore(target, snap) {
+    for (const k of Object.keys(target)) if (!(k in snap)) delete target[k];
+    Object.assign(target, structuredClone(snap));
+  },
+
+  _hide() {
+    document.getElementById("edit-modal").classList.remove("open");
+    this.currentId = null;
+    this._snapshot = null;
   },
 
   /* ---- Formulaire d'une fiche véhicule/drone liée ---- */
@@ -1282,8 +1320,8 @@ const EditModal = {
         case "close":
           this.close();
           break;
-        case "save":
-          this.save();
+        case "revert":
+          this.revert();
           break;
         case "add-skill":
           this.addSkill();

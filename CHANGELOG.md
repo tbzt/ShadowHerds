@@ -12,6 +12,17 @@ commit.
 
 ## [Non publié]
 
+## [1.34.0] — 2026-07-15
+
+### Table
+- **Édition sans perte : enregistrement automatique + annulation** :
+  l'édition avancée (PNJ, contact, PJ, véhicule…) enregistre désormais les
+  modifications **automatiquement à la fermeture** — plus besoin de cliquer
+  sur « Sauvegarder », et plus de saisie perdue faute de l'avoir fait. Un
+  indicateur « ⟳ Enregistrement automatique » le rappelle dans la fenêtre, et
+  un bouton **« Annuler les modifications »** rétablit la fiche telle qu'elle
+  était à l'ouverture.
+
 ## [1.33.0] — 2026-07-15
 
 ### Table
