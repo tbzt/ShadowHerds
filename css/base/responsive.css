@@ -309,6 +309,12 @@
     flex-wrap: wrap;
     justify-content: flex-start;
   }
+  /* Fil d'Ariane (R3-B) : rangée fine autonome, déjà pleine largeur ; on élargit
+     juste les cibles tactiles des chips. */
+  .tb-crumb {
+    max-width: 22ch;
+    padding: 5px var(--sp-2);
+  }
   .topbar-logo {
     cursor: pointer;
   }

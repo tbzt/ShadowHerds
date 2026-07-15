@@ -517,6 +517,96 @@ select optgroup {
   opacity: 1;
   transform: rotate(180deg);
 }
+/* Fil d'Ariane (R3-B) : rangée fine autonome sous la topbar, localisation
+   « Campagne › Run › Scène » lue en continu depuis App.context. Pleine largeur,
+   mono-ligne scrollable (jamais de retour à la ligne) ; masquée quand vide. */
+.topbar-locator {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px var(--sp-4);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.topbar-locator::-webkit-scrollbar {
+  display: none;
+}
+.topbar-locator:empty {
+  display: none;
+}
+.tb-crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0; /* chaque échelle garde sa largeur ; le locator scrolle si besoin */
+  max-width: 15ch;
+  padding: 3px var(--sp-2);
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  font-family: inherit;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition:
+    background var(--dur-base),
+    color var(--dur-base);
+}
+.tb-crumb:hover {
+  background: var(--glow);
+  color: var(--accent);
+}
+.tb-crumb-icon {
+  flex-shrink: 0;
+  opacity: 0.8;
+  font-size: var(--fs-2xs);
+}
+.tb-crumb-sep {
+  flex-shrink: 0;
+  color: var(--text-dim);
+  opacity: 0.5;
+  font-size: var(--fs-xs);
+  user-select: none;
+}
+/* Chip de scène vivante : accentué + pastille pulsée. Affordance « reprendre ». */
+.tb-crumb-scene.is-live {
+  color: var(--accent);
+  font-weight: 600;
+}
+.tb-crumb-live {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 var(--accent);
+  animation: tb-crumb-pulse 2s ease-out infinite;
+}
+@keyframes tb-crumb-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--glow);
+  }
+  70% {
+    box-shadow: 0 0 0 5px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tb-crumb-live {
+    animation: none;
+  }
+}
+
 /* Spacer entre la marque et le reste : cale marque à gauche, dés + actions
    à droite → barre équilibrée au lieu de tout tassé à gauche. */
 .topbar-spacer {
@@ -771,6 +861,7 @@ select optgroup {
    posé sur <html> par App.showPanel(), jamais par une préférence utilisateur
    (cf. spectatorview.js / Note d'arbitrage #59). */
 [data-mode="spectateur"] #topbar,
+[data-mode="spectateur"] #topbar-locator,
 [data-mode="spectateur"] #pin-row,
 [data-mode="spectateur"] #sidebar,
 [data-mode="spectateur"] #bottom-nav {

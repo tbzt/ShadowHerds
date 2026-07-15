@@ -161,6 +161,10 @@ const DossierBar = {
   render() {
     this.syncDossiers();
     for (const id of this._mounts) this._renderInto(id);
+    // R3-B : garde le fil d'Ariane en phase avec tout changement de la barre
+    // (renommage, suppression, comptes) — App.context détient le focus, la
+    // barre en est un miroir d'affichage.
+    if (typeof App !== "undefined" && App.context) App.context.render();
   },
 
   _renderInto(containerId) {

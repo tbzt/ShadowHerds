@@ -238,5 +238,10 @@ const TourSteps = {
       title: "Bricking d'appareil plus fiable",
       body: "Dans le suivi de combat, les mains nues n'apparaissent plus comme cible matricielle « brickable » — seules les vraies armes/appareils le sont. Un appareil hors service se remet en marche d'un geste, sans perdre son indice réglé.",
     },
+    {
+      id: "wn-context-locator", anchor: "edition-badge", tours: ["whatsnew"], since: "1.37.0", fallback: "center",
+      title: "Vous savez toujours où vous êtes",
+      body: "Un fil d'Ariane « Campagne › Run › Scène » s'affiche en haut de l'écran dès qu'un dossier est en focus. Chaque niveau est cliquable pour y revenir, et une pastille « En cours » rouvre la scène qui tourne — plus moyen de perdre un combat ou une note dans les dossiers.",
+    },
   ],
 };

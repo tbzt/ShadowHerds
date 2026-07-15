@@ -8,7 +8,7 @@ const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.36.0",
+  VERSION: "1.37.0",
 
   edition: "none",
   editionModule: null,
@@ -62,6 +62,7 @@ const App = {
     },
     _save() {
       Storage.set(this._KEY, { dossier: this.dossier, scene: this.scene });
+      this.render(); // R3-B : le fil d'Ariane reflète tout changement de contexte
     },
 
     /** Pose le dossier en focus (appelé par `DossierBar.select`). `"all"` → null. */
@@ -100,11 +101,36 @@ const App = {
           d.kind === "campaign" ? "campaign" : d.kind === "run" ? "run" : "folder";
         out.push({ scale, id: d.id, name: d.name });
       }
-      if (this.scene) {
-        const s = Dossiers.get(this.scene);
-        out.push({ scale: "scene", id: this.scene, name: s ? s.name : "Scène", live: true });
-      }
+      // Scène affichée seulement si son run existe encore (un run supprimé
+      // sans rangement laisserait un id de scène orphelin — pas de chip
+      // « En cours » fantôme ; la persistance se purge au prochain load()).
+      const s = this.scene ? Dossiers.get(this.scene) : null;
+      if (s) out.push({ scale: "scene", id: this.scene, name: s.name, live: true });
       return out;
+    },
+
+    /** R3-B — fil d'Ariane : rend `trail()` dans la topbar (`#topbar-locator`).
+        Chips cliquables : une échelle dossier remet le focus dessus (hub) ; la
+        scène vivante rouvre le tracker (`● En cours`). Vide → innerHTML vide,
+        masqué par CSS (`:empty`). Appelé à chaque changement de contexte
+        (_save) et à chaque re-rendu de la barre de dossiers (renames/removes). */
+    render() {
+      const el = document.getElementById("topbar-locator");
+      if (!el) return;
+      const trail = this.trail();
+      if (!trail.length) {
+        el.innerHTML = "";
+        return;
+      }
+      const esc = CardRenderer._esc;
+      const ICON = { campaign: "❖", run: "◆", folder: "▸" };
+      const parts = trail.map((seg) => {
+        if (seg.scale === "scene") {
+          return `<button type="button" class="tb-crumb tb-crumb-scene is-live" data-action="crumb-scene" title="Reprendre la scène en cours : ${esc(seg.name)}"><span class="tb-crumb-live" aria-hidden="true"></span>En cours</button>`;
+        }
+        return `<button type="button" class="tb-crumb" data-action="crumb-open" data-id="${seg.id}" title="Aller à « ${esc(seg.name)} »"><span class="tb-crumb-icon" aria-hidden="true">${ICON[seg.scale] || "▸"}</span>${esc(seg.name)}</button>`;
+      });
+      el.innerHTML = parts.join('<span class="tb-crumb-sep" aria-hidden="true">›</span>');
     },
   },
 
@@ -599,6 +625,15 @@ document.addEventListener("DOMContentLoaded", () => {
       case "tour-whatsnew":
         App.toggleCheatsheet(false);
         Tour.openWhatsNew();
+        break;
+      case "crumb-open":
+        // R3-B : une échelle du fil d'Ariane remet le focus sur son dossier
+        // (le hub s'y filtre). `DossierBar.select` miroite vers App.context.
+        DossierBar.select(actionEl.dataset.id);
+        App.showPanel("shadows");
+        break;
+      case "crumb-scene":
+        Encounter.open(); // R3-B : rouvre la scène vivante depuis le fil d'Ariane
         break;
       case "mention-open":
         Palette.reveal(actionEl.dataset.id);

@@ -12,6 +12,16 @@ commit.
 
 ## [Non publié]
 
+## [1.37.0] — 2026-07-15
+
+### Table
+- **Fil d'Ariane « Campagne › Run › Scène »** : un repère de localisation
+  apparaît en haut de l'écran dès qu'un dossier est en focus, et affiche la
+  hiérarchie campagne › run, plus une pastille **« En cours »** quand une scène
+  tourne. Chaque niveau est cliquable pour y revenir ; la pastille rouvre la
+  scène vivante. Fini le « j'ai créé un combat / une note, je ne les retrouve
+  plus ».
+
 ## [1.36.0] — 2026-07-15
 
 ### Table
