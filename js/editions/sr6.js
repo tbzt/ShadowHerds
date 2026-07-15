@@ -1852,6 +1852,15 @@ const EditionSR6 = {
       "Cocktail Molotov (2) [VD 4P/3P/2P, SO 6/5/0/—/—, Souffle 15m]",
       "Grenades incendiaires (4) [VD Feu 6P/4P/2P, SO 9/8/3/—/—, Souffle 15m]",
     ],
+    // Focus magiques (SR6 p.157-158) — pool du slot `focus` du générateur
+    // (Éveillés uniquement). Un seul type motorisé : le « Focus de pouvoir »
+    // (universel à tout test de Magie, cf. SkillEffects → Sorcellerie +
+    // Conjuration) — les focus de sort/qi SR6 sont verrouillés par catégorie
+    // ou par pouvoir précis, non génerables sans appariement correct
+    // (cf. commentaire buildLoadout). Libellé de base ; la Puissance est
+    // apposée à la génération, adossée au professionnalisme. Non listé dans
+    // `_equipLabels` → hors sélecteur « ＋ Catalogue » (générateur seulement).
+    fociCaster: ["Focus de pouvoir"],
     armures: {
       legere: [
         "Vêtements pare-balles [SD+2]",
@@ -2392,10 +2401,73 @@ const EditionSR6 = {
     return proRating <= 1 ? "bas" : proRating <= 3 ? "moyen" : proRating <= 5 ? "haut" : "elite";
   },
 
-  buildLoadout(archetype, proRating, awakened) {
+  /* ----
+     PROFIL DE LOADOUT (V3) — miroir du profil SR5 (sr5.js), adapté à
+     l'échelle de professionnalisme SR6 (0-10, contre 0-6 en SR5) et aux
+     clés d'`equipPools` propres à cette édition. Même doctrine : rareté
+     (tier, chevauchement doux) × affinité (tags rôle/milieu Coherence),
+     consommées par LoadoutEngine (js/rules/loadoutengine.js, neutre).
+     SIDECAR : les chaînes d'`equipPools` restent inchangées. Pools
+     sous-bucketés (commlinks/armures) exclus : déjà tierés par sous-bucket
+     ci-dessous, comme en SR5.
+  ---- */
+  loadoutProfile: {
+    proRatingBuckets: [[1, "grouille"], [3, "amateur"], [5, "pro"], [7, "vet"], [Infinity, "elite"]],
+    tierWeights: {
+      grouille: { courant: 85, pro: 15, militaire: 0, blackops: 0 },
+      amateur: { courant: 55, pro: 40, militaire: 5, blackops: 0 },
+      pro: { courant: 25, pro: 55, militaire: 18, blackops: 2 },
+      vet: { courant: 10, pro: 40, militaire: 42, blackops: 8 },
+      elite: { courant: 5, pro: 25, militaire: 50, blackops: 20 },
+    },
+    tierByCat: {
+      pistoletsPoche: "courant", pistoletsLegers: "courant", pistoletsAutomatiques: "courant",
+      pistoletsLourds: "pro", mitraillettes: "pro", shotguns: "pro", tasers: "courant",
+      fusils: "pro", snipersLourds: "militaire", armesSpeciales: "militaire",
+      roquettes: "militaire", explosifs: "militaire", meleeWeapons: "courant",
+      grenades: "militaire", cyberware: "pro", bioware: "pro", equipSpecial: "courant",
+      fociCaster: "pro",
+    },
+    tierByItem: {
+      "Barret Model 122": "blackops",
+      "Focus de pouvoir": "militaire",
+    },
+    tagsByCat: {
+      meleeWeapons: ["melee", "adepte", "gang"],
+      snipersLourds: ["sniper", "militaire"],
+      armesSpeciales: ["heavy", "militaire"],
+      fusils: ["combattant"],
+      pistoletsPoche: ["holdout", "stealth"],
+      pistoletsLegers: ["holdout"],
+      fociCaster: ["magical", "mage", "chamane"],
+    },
+    affinity: {
+      combattant: { tags: { combattant: 3 }, cats: { fusils: 2, pistoletsLourds: 2 } },
+      adepte: { tags: { melee: 4, magical: 3 }, cats: { meleeWeapons: 3 } },
+      mage: { tags: { magical: 4, mage: 3 } },
+      chamane: { tags: { magical: 4, chamane: 3 } },
+      infiltrateur: { tags: { stealth: 4, holdout: 3 } },
+      social: { tags: { holdout: 2 } },
+      militaire: { tags: { heavy: 4, sniper: 3, militaire: 3 } },
+      // Pas d'entrée police/securite_corpo : l'électromatraque leur est déjà
+      // garantie par un pick déterministe ci-dessous (buildLoadout), pas par
+      // l'affinité — aucun tag "police" n'existe dans tagsByCat, une entrée
+      // ici serait un no-op mort.
+      gang: { tags: { melee: 3, holdout: 2, gang: 2 } },
+      crime: { tags: { holdout: 2, melee: 2 } },
+      ombres: { tags: { stealth: 2, holdout: 2 } },
+    },
+  },
+
+  buildLoadout(archetype, proRating, awakened, role, milieu, special) {
     const p = proRating;
     const pools = this.equipPools;
+    const profile = this.loadoutProfile;
+    const ctx = { proRating: p, role, milieu, archetype, awakened };
+    const pick = (cats) =>
+      LoadoutEngine.weightedPick(LoadoutEngine.gatherCandidates(pools, cats), ctx, profile);
 
+    // Commlink / armure : pools sous-bucketés, déjà tierés par prof — inchangés.
     const commlink =
       p <= 1
         ? Utils.rand(pools.commlinks.bas)
@@ -2414,90 +2486,71 @@ const EditionSR6 = {
             ? Utils.rand(pools.armures.lourde)
             : Utils.rand(pools.armures.militaire);
 
-    const isSniper = [
-      "Ghost de Tír",
-      "Wildcats Sioux",
-      "Navy SEAL",
-      "Onotari",
-    ].some((k) => archetype.includes(k));
-    const isHeavy = [
-      "Commando",
-      "Marines",
-      "SEAL",
-      "Wildcats",
-      "Séraphin",
-      "Samouraï rouge",
-      "Mercenaire",
-      "Forces",
-    ].some((k) => archetype.includes(k));
-
-    let primaryWeapon;
-    if (p >= 8 || isSniper) {
-      primaryWeapon = Utils.rand([...pools.fusils, ...pools.snipersLourds]);
-    } else if (p >= 5 || isHeavy) {
-      primaryWeapon = Utils.rand([...pools.fusils, ...pools.mitraillettes]);
-    } else if (p >= 3) {
-      primaryWeapon = Utils.rand([
-        ...pools.mitraillettes,
-        ...pools.shotguns,
-        ...pools.fusils.slice(0, 3),
-      ]);
-    } else if (p >= 1) {
-      primaryWeapon = Utils.rand([
-        ...pools.pistoletsLourds,
-        ...pools.pistoletsAutomatiques,
-      ]);
-    } else {
-      primaryWeapon = Utils.rand([
-        ...pools.pistoletsPoche,
-        ...pools.pistoletsLegers,
-      ]);
-    }
+    // Arme principale : tout l'éventail à distance. La matrice de rareté
+    // (proRating→tier) + l'affinité (militaire→heavy/sniper) remplacent les
+    // anciens seuils de prof ET les listes isSniper/isHeavy en dur.
+    const primaryWeapon = pick([
+      "pistoletsPoche", "pistoletsLegers", "pistoletsAutomatiques", "pistoletsLourds",
+      "mitraillettes", "shotguns", "fusils", "snipersLourds", "armesSpeciales",
+    ]);
 
     const result = [commlink, primaryWeapon];
     result.push("Mains nues [VD 2E, SO FOR+RÉA/–/–/–/–]");
 
-    // Arme supplémentaire cohérente (aléa d'arsenal) — tirée du même pool
-    // que l'arme principale pour ne jamais contredire ses stats.
-    const secondaryWeapon = Utils.rand([
-      ...pools.meleeWeapons,
-      ...pools.pistoletsLegers,
-      ...pools.pistoletsAutomatiques,
-    ]);
-    if (Utils.randBool(0.6) && secondaryWeapon !== primaryWeapon) {
+    // Arme supplémentaire cohérente (aléa d'arsenal) — via le moteur.
+    const secondaryWeapon = pick(["meleeWeapons", "pistoletsLegers", "pistoletsAutomatiques"]);
+    if (Utils.randBool(0.6) && secondaryWeapon && secondaryWeapon !== primaryWeapon) {
       result.push(secondaryWeapon);
     }
 
-    const isMelee = [
-      "Yakuza",
-      "Maître des Lames",
-      "Ganger",
-      "Sons of Sauron",
-      "Halloweeners",
-      "Ancients",
-      "Vory",
-    ].some((k) => archetype.includes(k));
-    if (isMelee || Utils.randBool(0.35))
-      result.push(Utils.rand(pools.meleeWeapons));
+    // Arme de mêlée : l'affinité de rôle/milieu (adepte, gang, crime organisé)
+    // remplace l'ancienne liste isMelee en dur.
+    const meleeAffinity = role === "adepte" || milieu === "gang" || milieu === "crime";
+    if (meleeAffinity || Utils.randBool(0.35)) result.push(pick(["meleeWeapons"]));
 
-    const isPolice = [
-      "Lone Star",
-      "Knight Errant",
-      "SWAT",
-      "Patrouilleur",
-    ].some((k) => archetype.includes(k));
-    if (isPolice) result.push(pools.meleeWeapons.find((w) => w.startsWith("Électromatraque")));
+    // Électromatraque : pick déterministe conservé (pas de problème de
+    // rareté — l'électromatraque EST le standard non-létal SR6, cf. p.157 —
+    // seul le déclencheur passe de l'archétype nommé au rôle/milieu résolu.
+    const policeLike = milieu === "police" || milieu === "securite_corpo";
+    if (policeLike) {
+      const shockBaton = pools.meleeWeapons.find((w) => w.startsWith("Électromatraque"));
+      if (shockBaton) result.push(shockBaton);
+    }
 
     result.push(armure);
     // Mundain aguerri : une source d'init variée (dés selon la cote), puis un
     // cyber de saveur à haute cote. Le plafond 5D6 est appliqué par BonusEngine.
     if (!awakened && p >= 3) result.push(EditionSR6.initAugFor(p));
-    if (!awakened && p >= 6) result.push(Utils.rand(pools.cyberware));
+    if (!awakened && p >= 6) result.push(pick(["cyberware"]) || Utils.rand(pools.cyberware));
     if (p >= 4 && Utils.randBool(0.4))
-      result.push(Utils.rand(pools.equipSpecial));
+      result.push(pick(["equipSpecial"]) || Utils.rand(pools.equipSpecial));
 
-    // Drones et véhicules : riggers (stats du catalogue js/vehicles.js)
-    if (archetype.includes("Rigger")) {
+    // Focus / fétiche : matériel magique des Éveillés (comble le même trou
+    // que sr5.js — aucun n'était généré). Simplification Canon-fidèle p.157 :
+    // seul le « Focus de pouvoir » (universel à tout test de Magie) est
+    // motorisé — les focus de sort SR6 sont verrouillés par catégorie de
+    // sort, le focus de qi lié à un pouvoir précis ; les générer pour un PNJ
+    // tiré au hasard sans les apparier correctement serait faux au livre.
+    // Adepte pur exclu : le Focus de pouvoir ne contribue qu'aux tests de
+    // Magie (Sorcellerie/Conjuration, cf. SkillEffects) — un adepte n'en
+    // lance jamais, le focus serait purement décoratif. SR6 n'a pas
+    // d'équivalent simple/universel pour l'adepte (focus de qi = lié à un
+    // pouvoir précis, cf. commentaire plus haut) : lacune assumée, pas une
+    // omission — mieux vaut rien qu'un objet qui ne fait rien.
+    if (awakened && special !== "Adepte") {
+      const focus = pick(["fociCaster"]);
+      // « indice » = convention interne de l'app pour tout item à valeur
+      // réglable (ItemResolver.itemRating ne reconnaît que ce mot — déjà le
+      // cas en SR5 malgré le terme livre « Force »/« Puissance » selon
+      // l'édition ; le libellé affiché reste « Focus de pouvoir », le mot
+      // clé parseur est invisible à la table).
+      if (focus) result.push(`${focus} (indice ${Utils.clamp(1 + Math.floor(p / 3), 1, 6)})`);
+    }
+
+    // Drones et véhicules : riggers (stats du catalogue js/vehicles.js) — le
+    // rôle Coherence remplace le test de libellé (même correctif que sr5.js).
+    const rigger = role === "rigger" || archetype.includes("Rigger");
+    if (rigger) {
       result.push(
         Utils.rand([
           "Drone Lockheed Optic-X2 (surveillance)",
@@ -2522,7 +2575,7 @@ const EditionSR6 = {
       );
     }
 
-    return result;
+    return result.filter(Boolean);
   },
 
   /* ---- Génération principale ---- */
@@ -2590,6 +2643,14 @@ const EditionSR6 = {
     // sauf spécialisation déjà fixée — même patron que sr5.js.
     if (special === "Aucun" && (role === "decker" || /matriciel/i.test(archetype)))
       special = "Decker";
+
+    // V3 : même réconciliation pour le rigger (cf. V2b sr5.js) — seul le
+    // decker en bénéficiait. Sans elle, un archétype nommé dont le rôle
+    // résout à "rigger" restait sur special="Aucun", privé de
+    // specialSkills.Rigger (Pilotage/Ingénierie/Électronique) ET du câblage
+    // de contrôle rigger (cf. augs plus bas) — seuls les drones (déjà
+    // gatés sur `role`, cf. buildLoadout) étaient corrects.
+    if (special === "Aucun" && role === "rigger") special = "Rigger";
 
     const p = Utils.clamp(proRating, 0, 10);
     const baseAttrs = { ...this.attrByProf[p] };
@@ -2757,18 +2818,23 @@ const EditionSR6 = {
       : [];
 
     // Équipement — pas de cyberware pour un Éveillé (coût en Essence)
-    const equip = this.buildLoadout(archetype, p, awakened);
+    const equip = this.buildLoadout(archetype, p, awakened, role, milieu, special);
     if (infected) equip.push(...infected.naturalWeapons);
     if (mv && mv.naturalWeapons) equip.push(...mv.naturalWeapons);
 
     // Augmentations corpo — jamais pour un Éveillé ; un decker reçoit son
     // cyberdeck ici (pas de augsBySpecial en SR6, contrairement à sr5.js).
+    // V3 : le rigger reçoit son câblage de contrôle au même titre — même
+    // motif que le decker juste au-dessus (item garanti par spécialisation),
+    // catalogue réel (equipPools.cyberware), pas de string inventée.
     const augs =
       special === "Decker"
         ? ["Datajack", Utils.rand(this.equipPools.cyberdecks[this._deckTier(p)])]
-        : !awakened && p >= 5
-          ? [Utils.rand(this.equipPools.cyberware)]
-          : [];
+        : special === "Rigger"
+          ? ["Câblage de contrôle [Rigger]"]
+          : !awakened && p >= 5
+            ? [Utils.rand(this.equipPools.cyberware)]
+            : [];
 
     const pnj = {
       id: Utils.uid(),
