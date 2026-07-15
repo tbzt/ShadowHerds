@@ -358,16 +358,13 @@ const EditModal = {
     const fieldsHtml = (block.fields || [])
       .map((f) => {
         if (f.kind === "select") {
-          const opts = f.options
-            .map(
-              (o) =>
-                `<option value="${esc(o)}"${pnj[f.key] === o ? " selected" : ""}>${esc(o)}</option>`,
-            )
-            .join("");
-          return `<div class="form-group">
-            <label>${esc(f.label)}</label>
-            <select id="em-tb-${f.key}"><option value="">—</option>${opts}</select>
-          </div>`;
+          return SingleSelect.create({
+            id: `em-tb-${f.key}`,
+            label: f.label,
+            options: f.options.map((o) => ({ value: o, label: o })),
+            value: pnj[f.key] || "",
+            placeholder: "—",
+          });
         }
         return `<div class="form-group">
           <label>${esc(f.label)}</label>
@@ -593,31 +590,23 @@ const EditModal = {
             options: ["Humain", "Elfe", "Nain", "Ork", "Troll"].map((m) => ({ value: m, label: m })),
           }),
         })}
-        <div class="form-group">
-          <label>Genre</label>
-          <select id="em-gender">
-            ${["M", "F", "NB"]
-              .map(
-                (g) =>
-                  `<option${pnj.gender === g ? " selected" : ""}>${g}</option>`,
-              )
-              .join("")}
-          </select>
-        </div>`;
+        ${SingleSelect.create({
+          id: "em-gender",
+          label: "Genre",
+          options: ["M", "F", "NB"].map((g) => ({ value: g, label: g })),
+          value: pnj.gender || "M",
+          placeholder: "—",
+        })}`;
 
     const ratingBadge = App.getEditionModule(pnj.edition).ratingBadge;
     if (ratingBadge.options) {
-      html += `<div class="form-group">
-        <label>${ratingBadge.label}</label>
-        <select id="em-rang">
-          ${ratingBadge.options
-            .map(
-              (r) =>
-                `<option${pnj[ratingBadge.field] === r ? " selected" : ""}>${r}</option>`,
-            )
-            .join("")}
-        </select>
-      </div>`;
+      html += SingleSelect.create({
+        id: "em-rang",
+        label: ratingBadge.label,
+        options: ratingBadge.options.map((r) => ({ value: r, label: r })),
+        value: pnj[ratingBadge.field],
+        placeholder: "—",
+      });
     } else {
       html += `<div class="form-group">
         <label>${ratingBadge.label}</label>
