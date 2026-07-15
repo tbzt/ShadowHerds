@@ -1766,6 +1766,22 @@ const EditionSR5 = {
       "Cavalier Safeguard [PRE 5(6), VD 6E(e), PA -5, SA, 6(m), —]",
       "Tiffani-Defiance Protector [PRE 5(6), VD 7E(u), PA -5, SA, 3(m), 2]",
     ],
+    // Foci magiques (SR5 p.318) — pools du slot `focus` du générateur (Éveillés
+    // uniquement). Libellés de BASE ; l'indice est apposé à la génération
+    // (« … (indice N) »), adossé au professionnalisme. Motorisés : les foci
+    // caster via SkillEffects (+ Magic.actionPool), le focus d'arme via
+    // WeaponEffects (réserve d'attaque en mêlée). Non listés dans _equipLabels
+    // → hors sélecteur « ＋ Catalogue » (générateur seulement).
+    fociCaster: [
+      "Focus d'incantation",
+      "Focus de contresort",
+      "Fétiche de conjuration",
+      "Focus de puissance",
+    ],
+    fociAdepte: [
+      "Focus d'arme",
+      "Focus de puissance",
+    ],
     armures: {
       legere: [
         "Veste pare-balles [9]",
@@ -2238,128 +2254,164 @@ const EditionSR5 = {
     return proRating <= 1 ? "bas" : proRating <= 3 ? "moyen" : proRating <= 5 ? "haut" : "elite";
   },
 
-  buildLoadout(archetype, proRating, special) {
+  /** true si `name` désigne une arme de mêlée du catalogue SR5 (utilisé par
+      WeaponEffects pour gater le Focus d'arme). Détection par le pool
+      `meleeWeapons` (base name) + repli sur la stat-line « Allonge » — jamais
+      de liste d'armes en dur dans le moteur neutre. */
+  isMeleeWeapon(name) {
+    const base = String(name || "").split(" [")[0].trim().toLowerCase();
+    if (!base) return false;
+    return (
+      this.equipPools.meleeWeapons.some(
+        (w) => String(w).split(" [")[0].trim().toLowerCase() === base,
+      ) || /\ballonge\b/i.test(String(name))
+    );
+  },
+
+  /* ----
+     PROFIL DE LOADOUT (V2) — données d'affinage consommées par LoadoutEngine.
+     Rareté (`tier`) : gate par proRating (chevauchement doux). Affinité
+     (`tags`) : dérivée des rôles/milieux Coherence déjà portés par le PNJ.
+     SIDECAR : les chaînes d'`equipPools` restent inchangées. Les pools
+     SOUS-BUCKETÉS (commlinks/armures) sont exclus : déjà tierés par leurs
+     sous-buckets dans buildLoadout.
+  ---- */
+  loadoutProfile: {
+    proRatingBuckets: [[1, "grouille"], [2, "amateur"], [4, "pro"], [5, "vet"], [Infinity, "elite"]],
+    tierWeights: {
+      grouille: { courant: 85, pro: 15, militaire: 0, blackops: 0 },
+      amateur: { courant: 55, pro: 40, militaire: 5, blackops: 0 },
+      pro: { courant: 25, pro: 55, militaire: 18, blackops: 2 },
+      vet: { courant: 10, pro: 40, militaire: 42, blackops: 8 },
+      elite: { courant: 5, pro: 25, militaire: 50, blackops: 20 },
+    },
+    tierByCat: {
+      pistoletsPoche: "courant", pistoletsLegers: "courant", pistoletsLourds: "courant",
+      mitraillettes: "pro", fusilsAssaut: "pro", shotguns: "pro",
+      snipers: "militaire", mitrailleuses: "militaire", armesSpeciales: "militaire",
+      armesExotiques: "militaire", meleeWeapons: "courant", electroarmes: "courant",
+      grenades: "militaire", explosifs: "militaire", cyberware: "pro", bioware: "pro",
+      nanotechnologie: "militaire", equipSpecial: "courant",
+      fociCaster: "pro", fociAdepte: "pro",
+    },
+    tierByItem: {
+      "Fusil Gauss": "blackops", "Ares Redline": "blackops", "Ares Lancer MP Laser": "blackops",
+      "Monofilament": "militaire", "Katana": "pro",
+      "Fétiche": "courant", "Focus de puissance": "militaire",
+    },
+    tagsByCat: {
+      meleeWeapons: ["melee", "adepte", "gang"],
+      electroarmes: ["nonlethal", "police", "securite_corpo"],
+      snipers: ["sniper", "militaire"],
+      mitrailleuses: ["heavy", "militaire"],
+      armesSpeciales: ["heavy", "militaire"],
+      fusilsAssaut: ["combattant"],
+      pistoletsPoche: ["holdout", "stealth"],
+      pistoletsLegers: ["holdout"],
+      fociCaster: ["magical", "mage", "chamane"],
+      fociAdepte: ["magical", "adepte"],
+      nanotechnologie: ["militaire"],
+    },
+    affinity: {
+      combattant: { tags: { combattant: 3 }, cats: { fusilsAssaut: 2, pistoletsLourds: 2 } },
+      adepte: { tags: { melee: 4, magical: 3 }, cats: { meleeWeapons: 3 } },
+      mage: { tags: { magical: 4, mage: 3 } },
+      chamane: { tags: { magical: 4, chamane: 3 } },
+      infiltrateur: { tags: { stealth: 4, holdout: 3 } },
+      social: { tags: { holdout: 2 } },
+      militaire: { tags: { heavy: 4, sniper: 3, militaire: 3 } },
+      police: { tags: { nonlethal: 4, police: 3 }, cats: { electroarmes: 4 } },
+      securite_corpo: { tags: { nonlethal: 2 }, cats: { electroarmes: 2 } },
+      gang: { tags: { melee: 3, holdout: 2, gang: 2 } },
+      crime: { tags: { holdout: 2, melee: 2 } },
+      ombres: { tags: { stealth: 2, holdout: 2 } },
+    },
+  },
+
+  buildLoadout(archetype, proRating, special, role, milieu) {
     const p = proRating;
     const pools = this.equipPools;
     const awakened = this._isAwakened(archetype, special);
+    const profile = this.loadoutProfile;
+    const ctx = { proRating: p, role, milieu, archetype, special, awakened };
+    // Tire un item pondéré (rareté × affinité) dans une ou plusieurs catégories
+    // PLATES d'equipPools. Remplace `Utils.rand(pool)`.
+    const pick = (cats) =>
+      LoadoutEngine.weightedPick(LoadoutEngine.gatherCandidates(pools, cats), ctx, profile);
 
-    // Commlink selon prof
+    // Commlink / armure : pools SOUS-BUCKETÉS, déjà tierés par prof — inchangés.
     const commlink =
-      p <= 1
-        ? Utils.rand(pools.commlinks.bas)
-        : p <= 3
-          ? Utils.rand(pools.commlinks.moyen)
-          : p <= 5
-            ? Utils.rand(pools.commlinks.haut)
-            : Utils.rand(pools.commlinks.elite);
-
-    // Armure selon prof
+      p <= 1 ? Utils.rand(pools.commlinks.bas)
+      : p <= 3 ? Utils.rand(pools.commlinks.moyen)
+      : p <= 5 ? Utils.rand(pools.commlinks.haut)
+      : Utils.rand(pools.commlinks.elite);
     const armure =
-      p <= 1
-        ? Utils.rand(pools.armures.legere)
-        : p <= 3
-          ? Utils.rand(pools.armures.moyenne)
-          : p <= 5
-            ? Utils.rand(pools.armures.lourde)
-            : Utils.rand(pools.armures.militaire);
+      p <= 1 ? Utils.rand(pools.armures.legere)
+      : p <= 3 ? Utils.rand(pools.armures.moyenne)
+      : p <= 5 ? Utils.rand(pools.armures.lourde)
+      : Utils.rand(pools.armures.militaire);
 
-    // Arme principale selon profession et prof
-    const isHeavy = [
-      "Samouraï rouge Renraku",
-      "Séraphin Ares",
-      "Commando Aztlan",
-      "Soldat UCAS",
-      "Soldat CAS",
-      "Commando NAN",
-      "Mercenaire freelance",
-      "Mercenaire Ares private",
-      "Forces spéciales / militaire",
-      "SWAT Knight Errant",
-      "Rigger militaire",
-    ].some((p) => archetype.includes(p.split(" ")[0]));
-
-    let primaryWeapon;
-    if (p >= 5 || isHeavy) {
-      primaryWeapon = Utils.rand(pools.fusilsAssaut);
-    } else if (p >= 3) {
-      primaryWeapon = Utils.rand([
-        ...pools.mitraillettes,
-        ...pools.fusilsAssaut,
-      ]);
-    } else if (p >= 1) {
-      primaryWeapon = Utils.rand([
-        ...pools.pistoletsLourds,
-        ...pools.mitraillettes,
-      ]);
-    } else {
-      primaryWeapon = Utils.rand([
-        ...pools.pistoletsLegers,
-        ...pools.pistoletsLourds,
-      ]);
-    }
-
-    // Arme secondaire / de mêlée
-    const secondaryWeapon = Utils.rand([
-      ...pools.meleeWeapons,
-      ...pools.pistoletsLegers,
-      ...pools.pistoletsLourds,
+    // Arme principale : tout l'éventail à distance. La matrice de rareté
+    // (proRating→tier) + l'affinité (militaire→heavy/sniper) remplacent les
+    // anciens seuils de prof ET la liste `isHeavy` en dur.
+    const primaryWeapon = pick([
+      "pistoletsPoche", "pistoletsLegers", "pistoletsLourds", "mitraillettes",
+      "fusilsAssaut", "shotguns", "snipers", "mitrailleuses", "armesSpeciales",
     ]);
 
     const result = [commlink, primaryWeapon];
     result.push("Mains nues [Allonge —, VD (FOR)E, PA —]");
 
-    // Arme supplémentaire cohérente (aléa d'arsenal) — tirée du même pool
-    // que l'arme principale pour ne jamais contredire ses stats.
-    if (Utils.randBool(0.6) && secondaryWeapon !== primaryWeapon) {
+    // Arme secondaire (aléa d'arsenal) — pistolets/mêlée, via le moteur.
+    const secondaryWeapon = pick(["pistoletsLegers", "pistoletsLourds", "meleeWeapons"]);
+    if (Utils.randBool(0.6) && secondaryWeapon && secondaryWeapon !== primaryWeapon) {
       result.push(secondaryWeapon);
     }
 
-    // Arme de mêlée : gangs et pros du corps à corps
-    const melee = [
-      "Ganger",
-      "Yakuza",
-      "Triade",
-      "Mafia",
-      "Assassin",
-      "Vory",
-      "Adepte",
-      "Cambrioleur",
-      "Koshari",
-    ].some((k) => archetype.includes(k));
-    if (melee || Utils.randBool(0.4)) {
-      result.push(Utils.rand(pools.meleeWeapons));
-    }
+    // Arme de mêlée : l'affinité de rôle/milieu (adepte, gang, crime organisé)
+    // remplace l'ancienne liste `melee` en dur.
+    const meleeAffinity = role === "adepte" || milieu === "gang" || milieu === "crime";
+    if (meleeAffinity || Utils.randBool(0.4)) result.push(pick(["meleeWeapons"]));
 
-    // Électromatraque : flics et sécu
-    const police = [
-      "Flic",
-      "Knight Errant",
-      "Lone Star",
-      "Agent de sécurité",
-    ].some((k) => archetype.includes(k));
-    if (police) result.push(Utils.rand(pools.electroarmes));
+    // Électromatraque : l'affinité police/sécu remplace la liste `police`.
+    const policeLike = milieu === "police" || milieu === "securite_corpo";
+    if (policeLike) result.push(pick(["electroarmes"]));
 
     // Armure
     result.push(armure);
 
     // Grenades : prof 4+
-    if (p >= 4 && Utils.randBool(0.5)) result.push(Utils.rand(pools.grenades));
+    if (p >= 4 && Utils.randBool(0.5)) result.push(pick(["grenades"]));
 
-    // Cyberware : prof 3+ — JAMAIS pour un Éveillé (coût en Essence). Le
-    // second tirage (prof 5+) exclut le premier : deux tirages indépendants
-    // dans le même pool pouvaient piocher deux fois le même implant (ex.
-    // 2x "Accroissement de réaction (+1 REA)", cumulé à tort par BonusEngine).
+    // Cyberware : prof 3+ — JAMAIS pour un Éveillé (coût en Essence). Second
+    // tirage (prof 5+) distinct du premier (anti-doublon de bonus, cf.
+    // BonusEngine.CYBER_BONUS reconnu par préfixe).
     if (!awakened && p >= 3) {
-      const firstCyber = Utils.rand(pools.cyberware);
-      result.push(firstCyber);
-      if (p >= 5) result.push(Utils.rand(pools.cyberware.filter((c) => c !== firstCyber)));
+      const firstCyber = pick(["cyberware"]);
+      if (firstCyber) result.push(firstCyber);
+      if (p >= 5) {
+        const secondCyber = pick(["cyberware"]);
+        if (secondCyber && secondCyber !== firstCyber) result.push(secondCyber);
+      }
     }
 
-    // Équip spécial : flics et sécu
-    if (police || p >= 3) result.push(Utils.rand(pools.equipSpecial));
+    // Focus / fétiche : matériel magique des Éveillés (comble le trou §9.7 —
+    // aucun n'était généré). Caster → foci d'incantation/invocation/puissance ;
+    // adepte → focus d'arme/de puissance. L'indice est adossé au prof (grouille
+    // → fétiche d'indice 1, éveillé chevronné → focus de puissance d'indice 4).
+    // Motorisé : SkillEffects (caster) / WeaponEffects (focus d'arme).
+    if (awakened) {
+      const isAdept = special === "Adepte" || role === "adepte";
+      const focus = pick([isAdept ? "fociAdepte" : "fociCaster"]);
+      if (focus) result.push(`${focus} (indice ${Utils.clamp(1 + Math.floor(p / 2), 1, 4)})`);
+    }
 
-    // Drones et véhicules : riggers (stats du catalogue js/vehicles.js)
-    const rigger = archetype.includes("Rigger") || special === "Rigger";
+    // Équip spécial : flics/sécu ou pros
+    if (policeLike || p >= 3) result.push(pick(["equipSpecial"]));
+
+    // Drones et véhicules : riggers (stats du catalogue js/vehicles.js) — hors
+    // equipPools, inchangés. Le rôle Coherence remplace le test de libellé.
+    const rigger = role === "rigger" || archetype.includes("Rigger") || special === "Rigger";
     if (rigger) {
       result.push(
         Utils.rand([
@@ -2389,7 +2441,7 @@ const EditionSR5 = {
       );
     }
 
-    return result;
+    return result.filter(Boolean);
   },
 
   /* ---- Génération principale ---- */
@@ -2585,7 +2637,7 @@ const EditionSR5 = {
     const { skills, knowledges } = this._buildSkills(archetype, proRating, special, role, milieu);
 
     // Équipement
-    const equip = this._buildEquip(archetype, proRating, special);
+    const equip = this._buildEquip(archetype, proRating, special, role, milieu);
     if (infected) equip.push(...infected.naturalWeapons);
     if (mv && mv.naturalWeapons) equip.push(...mv.naturalWeapons);
 
@@ -2770,8 +2822,8 @@ const EditionSR5 = {
     return { skills, knowledges };
   },
 
-  _buildEquip(archetype, proRating, special) {
-    return this.buildLoadout(archetype, proRating, special);
+  _buildEquip(archetype, proRating, special, role, milieu) {
+    return this.buildLoadout(archetype, proRating, special, role, milieu);
   },
 
   recalc(pnj) {

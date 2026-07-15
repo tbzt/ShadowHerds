@@ -136,6 +136,21 @@ const WeaponEffects = {
       source: "Nitro (drogue)",
       page: "SRAN2 p.159",
     },
+    // Focus d'arme (SR5 p.318) — motorise le slot `focus` de l'ADEPTE : ajoute
+    // son indice à la réserve d'ATTAQUE d'une arme de mêlée (l'arme liée du
+    // livre ; simplifié « toute arme de mêlée du PNJ » à la génération, faute
+    // d'arme liée nommée). Prédicat de mêlée = contrat d'édition
+    // (isMeleeWeapon), comme les drogues « en mêlée » ci-dessus — le moteur
+    // reste neutre (aucune liste d'armes en dur).
+    {
+      match: /focus d'arme/i,
+      target: "pool",
+      perRating: [null, 1, 2, 3, 4, 5, 6],
+      conditional: (name, edition) =>
+        !!App.getEditionModule(edition)?.isMeleeWeapon?.(name),
+      source: "Focus d'arme",
+      page: "SR5 p.318",
+    },
   ],
 
   /** Résout les effets d'objet pour un jet d'arme donné → contributions

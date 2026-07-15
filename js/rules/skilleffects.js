@@ -94,6 +94,43 @@ const SkillEffects = {
       source: "Phéromones optimisées",
       page: "SR5 p.463",
     },
+    // --- Foci magiques (SR5 p.318) — motorisation du slot `focus` du
+    // générateur. Un focus « lié » ajoute son indice à la réserve de dés du
+    // test magique visé. Consommé par la puce de compétence de la carte ET,
+    // depuis V2, par Magic.actionPool (jet réel d'incantation/invocation), qui
+    // lit désormais SkillEffects. Skills = noms SR5 (l'entrée SR6 viendra en
+    // V3 avec « Sorcellerie »/« Conjuration » — forSkill filtre par nom exact,
+    // donc pas de contamination croisée).
+    {
+      match: /focus d'incantation/i,
+      skills: ["Lancement de sorts"],
+      perRating: [null, 1, 2, 3, 4, 5, 6],
+      source: "Focus d'incantation",
+      page: "SR5 p.318",
+    },
+    {
+      match: /focus de contresort/i,
+      skills: ["Contresort"],
+      perRating: [null, 1, 2, 3, 4, 5, 6],
+      source: "Focus de contresort",
+      page: "SR5 p.318",
+    },
+    {
+      match: /(focus|fétiche) de conjuration/i,
+      skills: ["Invocation"],
+      perRating: [null, 1, 2, 3, 4, 5, 6],
+      source: "Focus de conjuration",
+      page: "SR5 p.318",
+    },
+    {
+      // Focus de puissance : ajoute son indice à TOUTE action magique
+      // (lancement, invocation, contresort).
+      match: /focus de puissance/i,
+      skills: ["Lancement de sorts", "Invocation", "Contresort"],
+      perRating: [null, 1, 2, 3, 4, 5, 6],
+      source: "Focus de puissance",
+      page: "SR5 p.318",
+    },
   ],
 
   /** Résout la valeur à l'indice d'un item porteur, ou null si l'objet

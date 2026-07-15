@@ -705,6 +705,15 @@ const Magic = {
     const skillVal = sk ? Number(sk.val) || 0 : 0;
     const mag = Actor.attr(pnj, "MAG");
     const malus = Utils.woundMalus(pnj, edition);
-    return Math.max(0, skillVal + mag - malus);
+    // Bonus de pool d'objet sur la compétence magique (foci d'incantation /
+    // d'invocation / de contresort / de puissance) — MÊME source que la puce
+    // de compétence de la carte (SkillEffects.forSkill), pour que le JET réel
+    // inclue ce que la carte affiche. Neutre par édition (scopé au nom de
+    // compétence). Sans SkillEffects (contexte de test isolé), 0.
+    const foci =
+      typeof SkillEffects !== "undefined"
+        ? SkillEffects.forSkill(pnj, skillName).reduce((sum, e) => sum + (e.value || 0), 0)
+        : 0;
+    return Math.max(0, skillVal + mag + foci - malus);
   },
 };

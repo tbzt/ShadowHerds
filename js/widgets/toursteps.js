@@ -253,5 +253,10 @@ const TourSteps = {
       title: "La scène en cours ne se perd plus",
       body: "Une pastille pulsée s'allume sur « Combat » (sidebar et barre du bas mobile) dès qu'une scène tourne — y compris une intrusion Matrice seule, sans combattant. Un coup d'œil suffit pour savoir si une scène vous attend, où que vous soyez dans l'appli.",
     },
+    {
+      id: "wn-sr5-loadout-focus", anchor: "nav-generator", tours: ["whatsnew"], since: "1.40.0", fallback: "center",
+      title: "Équipement SR5 plus cohérent, foci enfin motorisés",
+      body: "En SR5, l'arsenal généré reflète mieux le niveau et le rôle du PNJ (un grouille n'hérite plus d'un fusil Gauss par hasard) : rareté et affinité pèsent désormais sur le tirage. Les mages, chamanes et adeptes reçoivent en plus un focus magique, jusqu'ici absent — il augmente réellement leurs jets de sort, d'invocation ou d'attaque selon son type.",
+    },
   ],
 };
