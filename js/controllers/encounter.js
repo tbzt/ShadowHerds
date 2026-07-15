@@ -762,6 +762,18 @@ const Encounter = {
     this._commit();
   },
 
+  /** R1d : « Remettre en marche » un appareil brické (régime moniteur SR5/SR6)
+      — remet le moniteur à zéro sans retirer le suivi (l'indice réglé reste),
+      contrairement à untargetDevice qui efface tout le descripteur. */
+  reenableDevice(pnjId, label) {
+    const c = this._find(pnjId);
+    const d = c && c.devices && c.devices[label];
+    if (!d) return;
+    d.bricked = false;
+    d.filled = 0;
+    this._commit();
+  },
+
   /** Clic sur une case du moniteur d'un appareil (SR5/SR6). Même geste que le
       moniteur de deck (UI.toggleDeckMonitor) / le moniteur de CI (Intrusion.icBox)
       — taper une case remplit jusque-là, re-taper la dernière rend une case.
@@ -1465,6 +1477,9 @@ const Encounter = {
           break;
         case "untarget-device":
           this.untargetDevice(id, el.dataset.label);
+          break;
+        case "reenable-device":
+          this.reenableDevice(id, el.dataset.label);
           break;
         case "device-box":
           // M4 : case du moniteur d'un appareil (SR5/SR6).

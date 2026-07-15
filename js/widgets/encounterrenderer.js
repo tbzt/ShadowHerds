@@ -637,7 +637,9 @@ const EncounterRenderer = {
     // s'y affiche. Le narratif (A2) passe par _narrativeDevices (pas de fiche).
     if (Matrix.use(pnj.edition).deviceBricking() !== "monitor") return "";
     if (!this._matrixSceneActive(state)) return "";
-    const weapons = ItemResolver.splitEquip(pnj.equip).weapons;
+    // R1d : mains nues exclues des cibles matricielles (stopgap D-R1d,
+    // Matrix.deviceConnected — jamais un test ad hoc ici).
+    const weapons = ItemResolver.splitEquip(pnj.equip).weapons.filter((w) => Matrix.deviceConnected(w));
     if (!weapons.length) return "";
     const devices = r.devices || {};
     const protectors = this._deckersInScene(state, pnj.id);
@@ -716,7 +718,8 @@ const EncounterRenderer = {
     const blocks = rows
       .filter((r) => r.pnj && !r.pnj._adhoc)
       .map((r) => {
-        const weapons = ItemResolver.splitEquip(r.pnj.equip).weapons;
+        // R1d : mains nues exclues, même prédicat que _activeDevices.
+        const weapons = ItemResolver.splitEquip(r.pnj.equip).weapons.filter((w) => Matrix.deviceConnected(w));
         if (!weapons.length) return "";
         const devices = r.devices || {};
         const protectors = this._deckersInScene(state, r.pnj.id);
@@ -760,8 +763,12 @@ const EncounterRenderer = {
         <button class="react-btn" data-action="target-device" ${idAttrs}>Bricker</button>
       </div>`;
     }
+    // R1d : geste explicite pour sortir du brickage sans retirer le suivi de
+    // l'appareil (untarget-device fait ça, mais oublie l'indice réglé) —
+    // Encounter.reenableDevice remet le moniteur à zéro.
     const brickedBadge = d.bricked
-      ? `<span class="encounter-device-bricked">hors service</span>`
+      ? `<span class="encounter-device-bricked">hors service</span>
+      <button class="react-btn" data-action="reenable-device" ${idAttrs} title="Remettre en marche">Remettre en marche</button>`
       : "";
     const untarget = `<button class="react-btn" data-action="untarget-device" ${idAttrs} title="Retirer la cible" aria-label="Retirer la cible">✕</button>`;
     const size = Matrix.use(pnj.edition).icMonitorSize(d.indice);

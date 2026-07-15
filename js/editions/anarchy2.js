@@ -333,6 +333,9 @@ const EditionAnarchy2 = {
     // (p.210) — régime NARRATIF : une simple bascule « hors service », sans
     // cases ni chiffre (arbitrage CODIR, reco Canon).
     deviceBricking: "narrative",
+    // R1d/R2-D : cf. sr5.js — table vide (stopgap) tant que R2-D n'a pas
+    // peuplé le catalogue Anarchy 2 par catégorie.
+    connectedByCat: {},
     icMonitorSize() {
       return 4;
     },

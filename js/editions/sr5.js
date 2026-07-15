@@ -309,6 +309,10 @@ const EditionSR5 = {
     // M4 : régime de brickage des appareils (armes) — SR5 a un vrai moniteur
     // matriciel d'appareil (8+Indice/2, p.229) : cases cliquables + indice.
     deviceBricking: "monitor",
+    // R1d/R2-D : table « connecté » par catégorie d'item (#63 `cat`), lue par
+    // Matrix.deviceConnected — vide (stopgap) tant que R2-D n'a pas peuplé le
+    // catalogue SR5 par catégorie.
+    connectedByCat: {},
     icMonitorSize(indice) {
       return 8 + Math.ceil(indice / 2);
     },
