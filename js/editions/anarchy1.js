@@ -505,6 +505,9 @@ const EditionAnarchy1 = {
     // régime (ni moniteur, ni bascule). `null` explicite : Matrix.deviceBricking()
     // renvoie null → la section « Appareils matriciels » ne s'affiche jamais.
     deviceBricking: null,
+    // R1d : jamais consultée (deviceBricking null coupe la section en amont)
+    // — présente pour le contrat symétrique des 4 modules (CONTRIBUTING).
+    connectedByCat: {},
     icMonitorSize() {
       return 11;
     },

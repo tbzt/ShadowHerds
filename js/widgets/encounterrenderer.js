@@ -637,7 +637,9 @@ const EncounterRenderer = {
     // s'y affiche. Le narratif (A2) passe par _narrativeDevices (pas de fiche).
     if (Matrix.use(pnj.edition).deviceBricking() !== "monitor") return "";
     if (!this._matrixSceneActive(state)) return "";
-    const weapons = ItemResolver.splitEquip(pnj.equip).weapons;
+    // R1d : mains nues exclues des cibles matricielles (stopgap D-R1d,
+    // Matrix.deviceConnected — jamais un test ad hoc ici).
+    const weapons = ItemResolver.splitEquip(pnj.equip).weapons.filter((w) => Matrix.deviceConnected(w));
     if (!weapons.length) return "";
     const devices = r.devices || {};
     const protectors = this._deckersInScene(state, pnj.id);
@@ -716,7 +718,8 @@ const EncounterRenderer = {
     const blocks = rows
       .filter((r) => r.pnj && !r.pnj._adhoc)
       .map((r) => {
-        const weapons = ItemResolver.splitEquip(r.pnj.equip).weapons;
+        // R1d : mains nues exclues, même prédicat que _activeDevices.
+        const weapons = ItemResolver.splitEquip(r.pnj.equip).weapons.filter((w) => Matrix.deviceConnected(w));
         if (!weapons.length) return "";
         const devices = r.devices || {};
         const protectors = this._deckersInScene(state, r.pnj.id);
@@ -760,8 +763,12 @@ const EncounterRenderer = {
         <button class="react-btn" data-action="target-device" ${idAttrs}>Bricker</button>
       </div>`;
     }
+    // R1d : geste explicite pour sortir du brickage sans retirer le suivi de
+    // l'appareil (untarget-device fait ça, mais oublie l'indice réglé) —
+    // Encounter.reenableDevice remet le moniteur à zéro.
     const brickedBadge = d.bricked
-      ? `<span class="encounter-device-bricked">hors service</span>`
+      ? `<span class="encounter-device-bricked">hors service</span>
+      <button class="react-btn" data-action="reenable-device" ${idAttrs} title="Remettre en marche">Remettre en marche</button>`
       : "";
     const untarget = `<button class="react-btn" data-action="untarget-device" ${idAttrs} title="Retirer la cible" aria-label="Retirer la cible">✕</button>`;
     const size = Matrix.use(pnj.edition).icMonitorSize(d.indice);
@@ -932,14 +939,20 @@ const EncounterRenderer = {
     box.innerHTML = "";
     box.hidden = !pnj;
     if (pnj) {
-      pnj._zoneOpen = { ...pnj._zoneOpen, details: false };
+      // R1b : la fiche active s'ouvre en vue Combat (moniteurs+attaques
+      // dépliés, incarnation/détails repliés, cf. CardRenderer._VIEWS). Appliquée
+      // sur un CLONE (pli superficiel de pnj + copie de _zoneOpen) : applyView
+      // écrase les 4 zones + les modules à lenses, on ne veut pas que ce pli de
+      // combat devienne la mémoire de la carte bibliothèque (K2 ne touchait
+      // qu'un seul champ, applyView est plus large — cf. plan R1b).
+      const combatPnj = { ...pnj, _zoneOpen: { ...pnj._zoneOpen } };
+      CardRenderer.applyView(combatPnj, "combat");
       // K2 : bandeau d'état (hors de combat/retardé/devrait fuir, réutilise
       // les badges de la ligne) au-dessus de la carte, note de scène éditable
       // en dessous — la fiche « vue combat » n'affiche que ce que le MJ
-      // regarde à chaque tour (l'init est masquée en CSS, les attributs sont
-      // déjà repliés par pnj._zoneOpen ci-dessus).
+      // regarde à chaque tour (l'init est masquée en CSS).
       box.innerHTML = `<div class="encounter-active-top">${this._activeTop(active, state)}</div>`;
-      box.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
+      box.appendChild(CardRenderer.render(combatPnj, [], CardRenderer.liveDeps()));
       // K5 : rangée Atout (SR6, combatModel.edgeTracker) — organe d'édition
       // sur la fiche active. Absente en SR5/Anarchy (drapeau non posé).
       if (model && model.edgeTracker) box.insertAdjacentHTML("beforeend", this._activeEdge(active));
@@ -1190,7 +1203,11 @@ const EncounterRenderer = {
     if (!wasOpen) {
       const pnj = PnjLookup.find(pnjId);
       if (!pnj) return;
-      body.appendChild(CardRenderer.render(pnj, [], CardRenderer.liveDeps()));
+      // R1b : même vue Combat que la fiche active, sur un clone (cf. son
+      // commentaire dans renderActiveCard) — ne pas polluer le pli bibliothèque.
+      const combatPnj = { ...pnj, _zoneOpen: { ...pnj._zoneOpen } };
+      CardRenderer.applyView(combatPnj, "combat");
+      body.appendChild(CardRenderer.render(combatPnj, [], CardRenderer.liveDeps()));
       body.hidden = false;
       const btn = react.querySelector(`.react-expand-btn[data-id="${esc}"]`);
       if (btn) btn.classList.add("is-open");

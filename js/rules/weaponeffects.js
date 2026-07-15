@@ -30,7 +30,7 @@
    ============================================================ */
 const WeaponEffects = {
   /* Prédicats de condition réutilisables. */
-  _isUnarmed(name) {
+  isUnarmed(name) {
     return /mains nues|unarmed|à mains nues/i.test(String(name || ""));
   },
 
@@ -44,7 +44,7 @@ const WeaponEffects = {
       match: /densit[ée] musculaire/i,
       target: "dv",
       perRating: [null, 0, 1, 2, 3],
-      conditional: (name) => WeaponEffects._isUnarmed(name),
+      conditional: (name) => WeaponEffects.isUnarmed(name),
       source: "Densité musculaire",
       page: "SR5 p.461",
     },
@@ -59,7 +59,7 @@ const WeaponEffects = {
       match: /augmentation de densit[ée] osseuse/i,
       target: "dv",
       perRating: [null, 1, 1, 2, 2],
-      conditional: (name) => WeaponEffects._isUnarmed(name),
+      conditional: (name) => WeaponEffects.isUnarmed(name),
       source: "Augmentation de densité osseuse",
       page: "SR6 p.299-300",
     },
@@ -69,7 +69,7 @@ const WeaponEffects = {
       match: /augmentation de densit[ée] osseuse/i,
       target: "accuracy",
       perRating: [null, 1, 2, 2, 3],
-      conditional: (name) => WeaponEffects._isUnarmed(name),
+      conditional: (name) => WeaponEffects.isUnarmed(name),
       source: "Augmentation de densité osseuse",
       page: "SR6 p.299-300",
     },
@@ -84,7 +84,7 @@ const WeaponEffects = {
       match: /ossature renforcée en aluminium/i,
       target: "dv",
       value: 1,
-      conditional: (name) => WeaponEffects._isUnarmed(name),
+      conditional: (name) => WeaponEffects.isUnarmed(name),
       source: "Ossature renforcée en aluminium",
       page: "SRAN2 p.148-149",
     },
@@ -92,7 +92,7 @@ const WeaponEffects = {
       match: /ossature renforcée en titane/i,
       target: "dv",
       value: 1,
-      conditional: (name) => WeaponEffects._isUnarmed(name),
+      conditional: (name) => WeaponEffects.isUnarmed(name),
       source: "Ossature renforcée en titane",
       page: "SRAN2 p.148-149",
     },
@@ -100,7 +100,7 @@ const WeaponEffects = {
       match: /augmentation de densit[ée] osseuse \(bioware\)/i,
       target: "dv",
       value: 1,
-      conditional: (name) => WeaponEffects._isUnarmed(name),
+      conditional: (name) => WeaponEffects.isUnarmed(name),
       source: "Augmentation de densité osseuse",
       page: "SRAN2 p.148-149",
     },

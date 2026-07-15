@@ -12,6 +12,14 @@ commit.
 
 ## [Non publié]
 
+## [1.36.0] — 2026-07-15
+
+### Table
+- **Bricking d'appareil plus fiable** : dans le suivi de combat, les mains
+  nues n'apparaissent plus comme cible matricielle « brickable » (seules les
+  vraies armes/appareils le sont) ; un appareil hors service peut être remis
+  en marche d'un geste, sans perdre son indice réglé.
+
 ## [1.35.0] — 2026-07-15
 
 ### Table

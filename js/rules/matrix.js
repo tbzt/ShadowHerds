@@ -488,6 +488,22 @@ const Matrix = {
     return this._model().deviceBricking || null;
   },
 
+  /** R1d : un appareil (arme) est-il une cible matricielle plausible ?
+      Stopgap D-R1d — mains nues exclues (jamais de composant sans-fil à
+      hacker), reste laissé passer par défaut. Point d'extension pour R2-D :
+      `matrixModel.connectedByCat[cat]` (table par catégorie #63), vide dans
+      les 4 modules aujourd'hui — la quasi-totalité de l'équipement généré
+      reste une chaîne non catégorisée (cat=""), donc cette table ne filtre
+      encore rien tant qu'elle n'est pas peuplée (R2-D1..D4, hors R1d). Même
+      fonction, jamais remplacée (1 fonction, 1 propriétaire). */
+  deviceConnected(item) {
+    if (WeaponEffects.isUnarmed(ItemResolver.itemStr(item))) return false;
+    const cat = ItemResolver.itemCat(item);
+    const table = this._model().connectedByCat;
+    if (cat && table && cat in table) return !!table[cat];
+    return true;
+  },
+
   /** M4 : Indice d'appareil par défaut d'une arme = 2 (« Moyen ») — vérifié
       au livre, identique SR5 (p.425) et SR6 (p.258), les deux listent « armes »
       à l'indice 2. Le MJ ajuste ensuite par pas ± si l'arme est un modèle

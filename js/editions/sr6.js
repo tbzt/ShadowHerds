@@ -347,6 +347,9 @@ const EditionSR6 = {
     // M4 : brickage d'appareil — SR6 a le même moniteur matriciel d'appareil
     // que SR5 (8+Indice/2 arrondi sup., p.182) : cases cliquables + indice.
     deviceBricking: "monitor",
+    // R1d/R2-D : cf. sr5.js — table vide (stopgap) tant que R2-D n'a pas
+    // peuplé le catalogue SR6 par catégorie.
+    connectedByCat: {},
     icMonitorSize(indice) {
       return 8 + Math.ceil(indice / 2);
     },

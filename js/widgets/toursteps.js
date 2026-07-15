@@ -233,5 +233,10 @@ const TourSteps = {
       title: "Cyberdecks et programmes à l'édition",
       body: "L'édition avancée ajoute un cyberdeck depuis le catalogue d'équipement (il renseigne les attributs du deck), et permet d'équiper des programmes matriciels tirés des livres — ceux qui relèvent un attribut/limite ou les dégâts augmentent automatiquement vos jets de Matrice.",
     },
+    {
+      id: "wn-device-reenable", anchor: "nav-combat", tours: ["whatsnew"], since: "1.36.0", fallback: "center",
+      title: "Bricking d'appareil plus fiable",
+      body: "Dans le suivi de combat, les mains nues n'apparaissent plus comme cible matricielle « brickable » — seules les vraies armes/appareils le sont. Un appareil hors service se remet en marche d'un geste, sans perdre son indice réglé.",
+    },
   ],
 };
