@@ -148,6 +148,11 @@ const DossierBar = {
   select(id) {
     this.current = id;
     this._applyCurrent();
+    // R3-A : miroir vers la vérité unique `App.context` (persistée). Réentrée
+    // inoffensive au boot (App.context.load → select → setDossier garde sur
+    // l'égalité). Adaptateur progressif : `current` reste la source lue par le
+    // code en place, `App.context` s'ajoute au-dessus.
+    if (typeof App !== "undefined" && App.context) App.context.setDossier(id);
     this.render();
     this._notify();
   },

@@ -254,6 +254,8 @@ const Encounter = {
     Storage.set(this._STASH_KEY, map);
     this.state = this._empty();
     if (this.activeDossierId === dossierId) this.activeDossierId = null;
+    // R3-A : miroir vers la scène vivante d'App.context (persistée).
+    if (typeof App !== "undefined" && App.context) App.context.setScene(this.activeDossierId);
     this._commit();
   },
 
@@ -266,6 +268,8 @@ const Encounter = {
     const bundle = map[dossierId];
     this.state = bundle ? structuredClone(bundle) : this._empty();
     this.activeDossierId = dossierId;
+    // R3-A : miroir vers la scène vivante d'App.context (persistée) → survit au reload.
+    if (typeof App !== "undefined" && App.context) App.context.setScene(dossierId);
     EncounterRenderer.resetActiveCard();
     this._commit();
   },

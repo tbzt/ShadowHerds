@@ -13,6 +13,101 @@ const App = {
   edition: "none",
   editionModule: null,
 
+  /* ============================================================
+     CONTEXT — vérité unique « où suis-je ? » (R3-A, doctrine
+     Campagne › Run › Scène). Pointeur édition-scopé PERSISTÉ :
+     { dossier, scene }. Les trois échelles (campagne/run/scène) se
+     DÉRIVENT à la demande de la chaîne de parents Dossiers + du
+     `kind` (trail()) ; jamais stockées séparément → aucune
+     divergence possible.
+
+     Adaptateur progressif (D-R3-1) : cette source unique s'ajoute
+     AU-DESSUS des pointeurs existants (`DossierBar.current`,
+     `Encounter.activeDossierId`), qui restent lus tels quels par le
+     code en place ; seules les surfaces neuves (fil d'Ariane R3-B,
+     sélecteur R3-C, perche « Reprendre » R3-D) liront ici. Rien à
+     migrer dans `storage.js` : clé neuve « context », pas de
+     `SCHEMA_VERSION`. */
+  context: {
+    _KEY: "context",
+    dossier: null, // id du dossier en focus (null = « Tout »)
+    scene: null, // id du dossier `run` dont la scène est vivante (null hors scène)
+
+    /** Boot : relit le contexte persisté de l'édition courante, purge les
+        ids devenus orphelins (dossier supprimé, ou id d'une autre édition —
+        le contexte est édition-scopé comme Dossiers/Encounter/Notebooks),
+        aligne le dossier en focus sur `DossierBar`, et RÉHYDRATE le pointeur
+        volatil `Encounter.activeDossierId` depuis `scene`. C'est cette
+        réhydratation qui fait « survivre la scène au rechargement » (la
+        scène elle-même vit déjà dans `encounter_current`) — socle de R3-D.
+        Appelé après Dossiers + Encounter chargés. */
+    load() {
+      const saved = Storage.get(this._KEY, {}) || {};
+      this.dossier = Dossiers.has(saved.dossier) ? saved.dossier : null;
+      // La scène « vit » tant que son dossier run existe encore ; sa fermeture
+      // (stash) a déjà remis `scene` à null via setScene, donc un id présent
+      // signifie une rencontre effectivement ouverte au moment du reload.
+      this.scene = Dossiers.has(saved.scene) ? saved.scene : null;
+      // Aligne SYSTÉMATIQUEMENT les pointeurs historiques sur cette vérité
+      // unique — y compris pour EFFACER un reliquat d'une autre édition (le
+      // contexte est édition-scopé, ces pointeurs sont mémoire de module et
+      // collants d'une édition à l'autre). `activeDossierId` réhydraté ici fait
+      // survivre la scène au reload (socle R3-D) ; on écrit `current` + on
+      // ré-applique la destination sans `notify()` (le panneau sera rendu frais
+      // par `showPanel`, éviter la propagation à mi-bascule d'édition).
+      Encounter.activeDossierId = this.scene;
+      DossierBar.current = this.dossier || "all";
+      DossierBar._applyCurrent();
+      this._save();
+    },
+    _save() {
+      Storage.set(this._KEY, { dossier: this.dossier, scene: this.scene });
+    },
+
+    /** Pose le dossier en focus (appelé par `DossierBar.select`). `"all"` → null. */
+    setDossier(id) {
+      const next = id && id !== "all" ? id : null;
+      if (next === this.dossier) return;
+      this.dossier = next;
+      this._save();
+    },
+
+    /** Pose (ou retire, `null`) la scène vivante (appelé par
+        `Encounter.restore`/`stash`, en miroir de `activeDossierId`). */
+    setScene(id) {
+      const next = id || null;
+      if (next === this.scene) return;
+      this.scene = next;
+      this._save();
+    },
+
+    /** Fil d'Ariane : chaîne d'échelles de la racine au dossier en focus,
+        taguée par `kind`, suivie de la scène vivante si présente. Dérivé à la
+        demande, jamais stocké. Consommé par R3-B (locator) et R3-C
+        (sélecteur). Renvoie `[{ scale, id, name, live? }]`,
+        `scale ∈ campaign|run|folder|scene`. */
+    trail() {
+      const out = [];
+      const chain = [];
+      let node = this.dossier ? Dossiers.get(this.dossier) : null;
+      let guard = 0;
+      while (node && guard++ < 50) {
+        chain.unshift(node);
+        node = node.parentId != null ? Dossiers.get(node.parentId) : null;
+      }
+      for (const d of chain) {
+        const scale =
+          d.kind === "campaign" ? "campaign" : d.kind === "run" ? "run" : "folder";
+        out.push({ scale, id: d.id, name: d.name });
+      }
+      if (this.scene) {
+        const s = Dossiers.get(this.scene);
+        out.push({ scale: "scene", id: this.scene, name: s ? s.name : "Scène", live: true });
+      }
+      return out;
+    },
+  },
+
   /** Contenu des panels d'accueil par édition */
   welcomeContent: {
     sr5: {
@@ -163,6 +258,7 @@ const App = {
     Servers.initPanel(); // charge + migre + câble la délégation serveur (#app)
     DossierBar.init(); // Dossiers chargés/synchronisés + destination courante
     Encounter.load();
+    this.context.load(); // R3-A : réhydrate { dossier, scene } + Encounter.activeDossierId
     DiceRoller.loadThreat();
     Gen.buildForms();
     Settings.render();
