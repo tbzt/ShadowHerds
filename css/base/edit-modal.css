@@ -1,6 +1,28 @@
 /* Mode édition PNJ (#edit-modal) — tout le préfixe em-*, extrait de
    combat-tracker.css/modal-core.css/pnj-card.css (ME1a). */
 
+/* ME1d (constat D) : chevron maison sur les <summary> pliables — distingue
+   à l'œil un titre inerte (div.modal-section-title) d'un titre qui se
+   déplie (summary.modal-section-title), sans dépendre du survol. Même
+   glyphe/rotation que le patron existant .settings-prose (chevron ›). */
+summary.modal-section-title {
+  display: list-item;
+  cursor: pointer;
+  list-style: none;
+}
+summary.modal-section-title::-webkit-details-marker {
+  display: none;
+}
+summary.modal-section-title::before {
+  content: "›";
+  display: inline-block;
+  margin-right: var(--sp-2);
+  transition: transform var(--dur-base);
+}
+details[open] > summary.modal-section-title::before {
+  transform: rotate(90deg);
+}
+
 /* ME1c/D-ME-2b : section « Augmentations » (objets structurés #em-equip-
    ratings) toujours dans le DOM, masquée quand vide (même patron que
    .dice-log-summary:empty). */
