@@ -688,6 +688,16 @@ const EditModal = {
       </div>`;
     }
 
+    // ---- Section : Cyberdeck (module Matrice de la carte) — montée si le PNJ
+    // a un deck structuré (généré, migré depuis l'ancienne chaîne libre, OU
+    // ajouté depuis le catalogue d'équipement, cf. addEquipItem). Wrapper à id
+    // stable pour un re-render ciblé quand un deck apparaît/change en cours
+    // d'édition. ME2a : remontée près des capacités magiques pour regrouper les
+    // modules (Magie + Matrice) comme la carte. ----
+    html += `<div id="em-cyberdeck-section">${
+      pnj.cyberdeck ? CyberdeckRenderer.editSection(pnj) : ""
+    }</div>`;
+
     // ---- Section : Compétences (éditables + ajout) ----
     {
       const rowFn =
@@ -742,14 +752,6 @@ const EditModal = {
         <div class="modal-section-title">Augmentations</div>
         <div id="em-equip-ratings" class="em-skills-list">${this._equipRatingRows(pnj)}</div>
       </div>`;
-
-    // ---- Section : Cyberdeck — montée si le PNJ a un deck structuré (généré,
-    // migré depuis l'ancienne chaîne libre, OU ajouté depuis le catalogue
-    // d'équipement, cf. addEquipItem). Wrapper à id stable pour un re-render
-    // ciblé quand un deck apparaît/change en cours d'édition. ----
-    html += `<div id="em-cyberdeck-section">${
-      pnj.cyberdeck ? CyberdeckRenderer.editSection(pnj) : ""
-    }</div>`;
 
     // ---- Section : Suivi de campagne (optionnel, PJ seulement) ----
     html += this._buildCampaignSection(pnj);
