@@ -1833,12 +1833,15 @@ const EditionSR6 = {
     bioware: [
       "Articulations améliorées [+1 AGI, bonus espaces étroits]",
       "Augmentation de densité osseuse [Indice 1-4, bonus VD/SO mains nues]",
-      "Orthoderme [bonus Score Défensif égal à l'indice]",
+      // Fusion V5 (3e vague) : plage d'indice ajoutée au libellé pour que
+      // ItemResolver.ratingRange (#63) détecte l'item et propose le
+      // stepper — sans quoi l'indice ne peut jamais être résolu.
+      "Orthoderme [Indice 1-4, bonus Score Défensif égal à l'indice]",
       "Phéromones optimisées [bonus Charisme social]",
       "Poche corporelle [stockage dissimulé, seuil Dissimulation 10]",
       "Pompe à adrénaline [boost temporaire FOR/AGI/RÉA/VOL]",
       "Producteurs de plaquettes [réduit dégâts physiques]",
-      "Renforcement musculaire [bonus FOR]",
+      "Renforcement musculaire [Indice 1-4, bonus FOR]",
       "Glande suprathyroïdienne [+1 AGI/CON/RÉA, +25% FOR, appétit doublé]",
       "Extracteur de toxines [bonus résistance toxines]",
       "Filtre trachéal [bonus résistance toxines inhalées]",

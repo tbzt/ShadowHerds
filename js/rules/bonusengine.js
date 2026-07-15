@@ -52,6 +52,18 @@ const BonusEngine = {
       // l'indice 1 (seul indice existant pour ce volet, p.464). Le volet dés
       // d'initiative reste motorisé séparément (initAugPool).
       ["Booster synaptique", { attr: "REA", val: 1 }],
+      // Fusion V5 (3e vague, sr5_bioware.md item 5) : Orthoderme = bonus
+      // d'armure égal à l'indice (p.462-463).
+      ["Orthoderme", { armor: true, byRating: true }],
+      // Fusion V5 (3e vague, sr5_bioware.md item 6) : Phéromones optimisées
+      // = +indice à la Limite sociale (p.463). Le volet pool Comédie/
+      // Influence (bonus de dés, pas de Limite) reste hors schéma — non
+      // motorisé ici.
+      ["Phéromones optimisées", { limit: "soc", byRating: true }],
+      // Fusion V5 (3e vague, sr5_bioware.md item 12) : Amélioration
+      // mnémonique = +indice à la Limite mentale (p.464). Le volet pool
+      // Connaissances/langues reste hors schéma — non motorisé ici.
+      ["Amélioration mnémonique", { limit: "ment", byRating: true }],
     ],
     sr6: [
       ["Réflexes câblés 1", { initDice: 1 }],
@@ -60,10 +72,30 @@ const BonusEngine = {
       ["Amplificateurs synaptiques 2", { attr: "INT", val: 2 }],
       ["Tonification musculaire 3", { attr: "FOR", val: 3 }],
       ["Renforcement musculaire 3", { attr: "FOR", val: 3 }],
-      ["Ossature renforcée", { attr: "CON", val: 2 }],
+      // Préfixe resserré sur la forme crochets (item cyberware simple) pour
+      // ne pas capter les variantes parenthétiques ci-dessous (fusion V5).
+      ["Ossature renforcée [", { attr: "CON", val: 2 }],
       ["Substituts musculaires", { attr: "AGI", val: 2 }],
       ["Armure dermique 3", { sd: 3 }],
       ["Armure dermique 4", { sd: 4 }],
+      // Fusion V5 (3e vague, sr6_bioware.md) : Orthoderme = +indice au Score
+      // Défensif (p.299). Nécessite le libellé catalogue corrigé (sr6.js)
+      // pour porter « Indice 1-4 » et rendre le stepper opérant.
+      ["Orthoderme", { sd: true, byRating: true }],
+      // Fusion V5 (3e vague, sr6_bioware.md) : Renforcement musculaire =
+      // +indice FOR (p.300). Préfixe resserré sur « [Indice » (forme
+      // catalogue manuelle, sr6.js) : la forme courte des statblocks générés
+      // « Renforcement musculaire 3 [FOR+3] » est lue par ItemResolver.
+      // itemRating comme un indice « 3 » via son repli sur la forme courte
+      // (`\s([1-6])(?=\s*\[|$)`) — un préfixe générique collisionnerait avec
+      // l'entrée fixe ci-dessus et compterait le bonus deux fois (vérifié en
+      // navigateur : FOR 3→9 au lieu de 3→6 avant ce resserrement).
+      ["Renforcement musculaire [Indice", { attr: "FOR", byRating: true }],
+      // Fusion V5 (3e vague, sr6.js:1812-1814, p.294-295) : trois variantes
+      // fixes, valeurs déjà dans le libellé catalogue.
+      ["Ossature renforcée (plastique)", { attr: "CON", val: 1, sd: 1 }],
+      ["Ossature renforcée (aluminium)", { attr: "CON", val: 2, sd: 1 }],
+      ["Ossature renforcée (titane)", { attr: "CON", val: 2, sd: 2 }],
       // Fusion V5 (sr6_bioware.md) : Articulations améliorées = +1 AGI fixe
       // (p.299 ; la remise d'Atout espaces étroits n'est pas motorisable, pas
       // de champ pour ça dans BonusEngine).
@@ -88,27 +120,34 @@ const BonusEngine = {
     const items = [...(pnj.equip || []), ...(pnj.augs || [])];
     // attrMods : contributions ÉTIQUETÉES (source = libellé du cyberware
     // reconnu) plutôt qu'une somme — la provenance remonte jusqu'au Trait.
-    const totals = { initDice: 0, armor: 0, sd: 0, attrMods: [] };
+    const totals = { initDice: 0, armor: 0, sd: 0, limits: {}, attrMods: [] };
     for (const item of items) {
       const s = ItemResolver.itemStr(item); // #63 : item chaîne OU objet
       if (!s) continue;
       for (const [prefix, bonus] of table) {
         if (!s.startsWith(prefix)) continue;
         if (bonus.initDice) totals.initDice += bonus.initDice;
-        if (bonus.armor) totals.armor += bonus.armor;
-        if (bonus.sd) totals.sd += bonus.sd;
+        // Valeur à l'INDICE (collecte V5) : `byRating` = +indice ;
+        // `perRating[r]` = table littérale ; sinon la valeur fixe du champ.
+        // Un indice non résolu (plage « 1-4 ») → 0 (inactif jusqu'au
+        // stepper #63). Généralisé (fusion V5, 3e vague) au-delà de
+        // `attr` : `armor`/`sd` (booléens quand scalés) et `limit`.
+        let scaled = null;
+        if (bonus.byRating || bonus.perRating) {
+          // #63 : lire l'indice sur l'ITEM d'origine (chaîne OU objet),
+          // pas sur `s` déjà aplati en chaîne — sinon `.rating` réglé par
+          // le stepper (EditModal) est invisible ici.
+          const r = ItemResolver.itemRating(item);
+          scaled = r == null ? 0 : bonus.byRating ? r : bonus.perRating[r] || 0;
+        }
+        if (bonus.armor) totals.armor += bonus.armor === true ? scaled : bonus.armor;
+        if (bonus.sd) totals.sd += bonus.sd === true ? scaled : bonus.sd;
+        if (bonus.limit) {
+          const val = scaled != null ? scaled : bonus.val;
+          if (val) totals.limits[bonus.limit] = (totals.limits[bonus.limit] || 0) + val;
+        }
         if (bonus.attr) {
-          // Valeur à l'INDICE (collecte V5) : `byRating` = +indice ;
-          // `perRating[r]` = table littérale ; sinon `val` fixe. Un indice
-          // non résolu (plage « 1-4 ») → 0 (inactif jusqu'au stepper #63).
-          let val = bonus.val;
-          if (bonus.byRating || bonus.perRating) {
-            // #63 : lire l'indice sur l'ITEM d'origine (chaîne OU objet),
-            // pas sur `s` déjà aplati en chaîne — sinon `.rating` réglé par
-            // le stepper (EditModal) est invisible ici.
-            const r = ItemResolver.itemRating(item);
-            val = r == null ? 0 : bonus.byRating ? r : bonus.perRating[r] || 0;
-          }
+          const val = scaled != null ? scaled : bonus.val;
           if (val) totals.attrMods.push({ attr: bonus.attr, val, source: prefix });
         }
       }
@@ -202,6 +241,13 @@ const BonusEngine = {
     if (totals.initDice) pnj.initDice = (pnj.initDice || 0) + totals.initDice;
     if (totals.armor) pnj.armure = (pnj.armure || 0) + totals.armor;
     if (totals.sd) pnj.sdBase = (pnj.sdBase || 0) + totals.sd;
+    // Fusion V5 (3e vague) : bonus de Limite naturelle scalés à l'indice
+    // (Phéromones optimisées, Amélioration mnémonique), même mapping que
+    // `_applyOneBonus` (traits/pouvoirs).
+    for (const [k, v] of Object.entries(totals.limits)) {
+      const key = { phys: "limPhys", ment: "limMent", soc: "limSoc" }[k];
+      if (key && v) pnj[key] = (pnj[key] || 0) + v;
+    }
     for (const m of totals.attrMods) {
       Actor.addMod(pnj, m.attr, { value: m.val, source: m.source, type: "cyber" });
       attrsTouched = true;

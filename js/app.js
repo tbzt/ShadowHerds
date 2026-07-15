@@ -99,7 +99,7 @@ const App = {
   },
   _EDITION_JS: {
     sr5: ["js/editions/sr5.js?v=1081", "js/editions/sr5.foundry.js?v=1082", "js/editions/sr5.print.js?v=1082"],
-    sr6: ["js/editions/sr6.js?v=1080", "js/editions/sr6.foundry.js?v=1082", "js/editions/sr6.print.js?v=1082"],
+    sr6: ["js/editions/sr6.js?v=1083", "js/editions/sr6.foundry.js?v=1082", "js/editions/sr6.print.js?v=1082"],
     anarchy2: [
       "js/editions/anarchy2.js?v=1080",
       "js/editions/anarchy2.creation.js?v=1080",

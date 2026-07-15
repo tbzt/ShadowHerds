@@ -69,6 +69,37 @@ const WeaponEffects = {
       source: "Augmentation de densité osseuse",
       page: "SR6 p.299-300",
     },
+    // Fusion V5 (3e vague, anarchy2_gear.md p.148-149) : seul le volet VD
+    // est motorisable pour ce catalogue (BonusEngine._applyAnarchy ne lit
+    // jamais pnj.equip, cf. journal § 8nonies) — le volet « case de
+    // blessure » de ces objets reste hors schéma, non représenté ici.
+    // `match` distingue explicitement le libellé Anarchy2 (prose entre
+    // parenthèses) du libellé SR6 déjà motorisé ci-dessus (forme crochets),
+    // sans jamais comparer `edition` (interdit n°1).
+    {
+      match: /ossature renforcée en aluminium/i,
+      target: "dv",
+      value: 1,
+      conditional: (name) => WeaponEffects._isUnarmed(name),
+      source: "Ossature renforcée en aluminium",
+      page: "SRAN2 p.148-149",
+    },
+    {
+      match: /ossature renforcée en titane/i,
+      target: "dv",
+      value: 1,
+      conditional: (name) => WeaponEffects._isUnarmed(name),
+      source: "Ossature renforcée en titane",
+      page: "SRAN2 p.148-149",
+    },
+    {
+      match: /augmentation de densit[ée] osseuse \(bioware\)/i,
+      target: "dv",
+      value: 1,
+      conditional: (name) => WeaponEffects._isUnarmed(name),
+      source: "Augmentation de densité osseuse",
+      page: "SRAN2 p.148-149",
+    },
   ],
 
   /** Résout les effets d'objet pour un jet d'arme donné → contributions
