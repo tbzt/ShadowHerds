@@ -24,9 +24,15 @@ const PrintAnarchy2 = {
 
   _attrTable(pnj) {
     const a = pnj.attrs || {};
+    const at = this._atoutsRef;
     const cols = [["FOR", a.FOR], ["AGI", a.AGI], ["VOL", a.VOL], ["LOG", a.LOG], ["CHA", a.CHA]];
     const head = cols.map(([k]) => `<th>${k}</th>`).join("");
-    const body = cols.map(([, v]) => `<td>${this._esc(v)}</td>`).join("");
+    const body = cols
+      .map(([k, v]) => {
+        const rr = at ? at.attrRR[k] || 0 : 0;
+        return `<td>${this._esc(v)}${rr > 0 ? ` <span class="a2-rr">RR${rr}</span>` : ""}</td>`;
+      })
+      .join("");
     return `<table class="a2-attrs"><thead><tr>${head}</tr></thead><tbody><tr>${body}</tr></tbody></table>`;
   },
 
@@ -40,14 +46,20 @@ const PrintAnarchy2 = {
 
   _skills(pnj) {
     this._attrsRef = pnj.attrs || {};
+    const at = this._atoutsRef;
     const items = [];
     for (const s of pnj.skills || []) {
       if (!s || s.name == null) continue;
-      items.push(`<li>${this._skillItem(s.name, s.val, s.attr, s.rr)}`);
+      const effRr = at ? AnarchyAtouts.skillRR(at, s) : s.rr;
+      items.push(`<li>${this._skillItem(s.name, s.val, s.attr, effRr)}`);
       const subs = [];
       const spec = (n, v, ak, rr) => subs.push(`<div class="a2-spec">◊ ${this._skillItem(n, v, ak || s.attr, rr)}</div>`);
-      if (s.spec && s.spec !== true && s.specVal) spec(s.spec, s.specVal, s.specAttr, s.specRR != null ? s.specRR : s.rr || 0);
-      for (const ex of s.extraSpecs || []) spec(ex.name, ex.val != null ? ex.val : s.val + 2, ex.attr, ex.rr || 0);
+      if (s.spec && s.spec !== true && s.specVal) {
+        const baked = s.specRR != null ? s.specRR : s.rr || 0;
+        spec(s.spec, s.specVal, s.specAttr, at ? AnarchyAtouts.specRR(at, s, s.spec, s.specAttr, baked) : baked);
+      }
+      for (const ex of s.extraSpecs || [])
+        spec(ex.name, ex.val != null ? ex.val : s.val + 2, ex.attr, at ? AnarchyAtouts.specRR(at, s, ex.name, ex.attr, ex.rr || 0) : ex.rr || 0);
       items[items.length - 1] += subs.join("") + "</li>";
     }
     if (!items.length) return "";
@@ -72,16 +84,28 @@ const PrintAnarchy2 = {
   /** Moniteur d'état Anarchy (2 légères / 1 grave / 1 incap, extensible par
       atout) — les cases □□/□/□ du livre. Suit CAPS de _monitorBoxesAnarchy. */
   _monitor(pnj) {
-    const caps = { leger: 2 + (pnj.legerCapBonus || 0), grave: 1 + (pnj.graveCapBonus || 0), incap: 1 };
+    const at = this._atoutsRef;
+    const caps = {
+      leger: 2 + (pnj.legerCapBonus || 0) + (at ? at.legerBonus : 0),
+      grave: 1 + (pnj.graveCapBonus || 0) + (at ? at.graveBonus : 0),
+      incap: 1,
+    };
     const seg = (sev) => Array.from({ length: caps[sev] }, () => `<span class="a2-box a2-box-${sev}"></span>`).join("");
     return `<span class="a2-mon">${seg("leger")}<span class="a2-mon-sep">/</span>${seg("grave")}<span class="a2-mon-sep">/</span>${seg("incap")}</span>`;
   },
 
   _seuils(pnj) {
     const fmt = (arr) => (Array.isArray(arr) ? `${arr[0]} / ${arr[1]} / ${arr[2]}` : "—");
+    // Seuils physiques = base + armure optionnelle active (bug préexistant :
+    // n'était PAS appliquée en impression) + armure d'atout d'équipement.
+    const armorBonus =
+      ItemResolver.armorOptionBonus(pnj) + (this._atoutsRef ? this._atoutsRef.armor : 0);
+    const effPhys = Array.isArray(pnj.physMonitor)
+      ? pnj.physMonitor.map((v) => v + armorBonus)
+      : null;
     const rows = [];
     rows.push(`<div class="a2-seuil"><span class="a2-seuil-lbl">Combativité</span>${this._esc(pnj.threatLevel || "—")}</div>`);
-    if (Array.isArray(pnj.physMonitor)) rows.push(`<div class="a2-seuil"><span class="a2-seuil-lbl">Physiques</span>${fmt(pnj.physMonitor)}</div>`);
+    if (effPhys) rows.push(`<div class="a2-seuil"><span class="a2-seuil-lbl">Physiques${armorBonus ? ` (armure +${armorBonus})` : ""}</span>${fmt(effPhys)}</div>`);
     if (Array.isArray(pnj.mentMonitor)) rows.push(`<div class="a2-seuil"><span class="a2-seuil-lbl">Mentales</span>${fmt(pnj.mentMonitor)}</div>`);
     if (Array.isArray(pnj.matrixMonitor)) rows.push(`<div class="a2-seuil"><span class="a2-seuil-lbl">Matrice</span>${fmt(pnj.matrixMonitor)}</div>`);
     const head = `Seuils de blessures &nbsp;${this._monitor(pnj)}`;
@@ -106,6 +130,10 @@ const PrintAnarchy2 = {
   },
 
   build(pnj) {
+    // Overlay des atouts d'équipement (RR/armure/blessure), même source que
+    // la carte écran. Stocké pour _skills/_seuils/_monitor/_attrTable.
+    this._atoutsRef =
+      typeof AnarchyAtouts !== "undefined" ? AnarchyAtouts.collect(pnj) : null;
     const know = (pnj.knowledges || []).map((k) => this._esc(typeof k === "string" ? k : k.name)).filter(Boolean);
     const left = [
       this._skills(pnj),

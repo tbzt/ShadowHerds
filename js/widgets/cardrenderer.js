@@ -1097,13 +1097,17 @@ const CardRenderer = {
     const n = Number(value);
     const rollable = opts.roll && Number.isFinite(n) && n >= 1;
     const edAttr = opts.edition ? ` data-roll-edition="${opts.edition}"` : "";
+    // RR d'atout d'équipement (Anarchy 2 : « RR N aux tests de <attribut> »).
+    // data-roll-rr est déjà consommé par le moteur de dés (figé à 0 avant) ;
+    // opts.rr par défaut 0 → aucun effet sur SR5/SR6.
+    const rr = opts.rr || 0;
     const rollAttrs = rollable
-      ? ` data-roll="${n}" data-roll-label="${this._esc(label)}"${edAttr} data-roll-rr="0" title="Lancer ${n} dés — ${this._esc(label)}"`
+      ? ` data-roll="${n}" data-roll-label="${this._esc(label)}"${edAttr} data-roll-rr="${rr}" title="Lancer ${n} dés — ${this._esc(label)}${rr > 0 ? ` (RR ${rr})` : ""}"`
       : "";
     const cls = `attr-cell ${extraClass} ${rollable ? "rollable" : ""}`.trim();
     return `<div class="${cls}"${rollAttrs}>
       <span class="attr-label">${label}</span>
-      <span class="attr-value">${value ?? "—"}</span>
+      <span class="attr-value">${value ?? "—"}${rr > 0 ? `<span class="lim">RR${rr}</span>` : ""}</span>
     </div>`;
   },
 

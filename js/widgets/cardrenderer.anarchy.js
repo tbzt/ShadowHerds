@@ -45,6 +45,12 @@ Object.assign(CardRenderer, {
     } = pnj;
 
     const prefs = this._displayPrefs(deps);
+    // Overlay render-time des atouts d'ÉQUIPEMENT (RR/armure/blessure des
+    // items catalogue, que le bake de génération ne voit pas). Neutre :
+    // gating usesRiskPanel, pas de branche App.edition. Calculé une fois.
+    const atouts = App.getEditionModule(pnj.edition)?.usesRiskPanel
+      ? AnarchyAtouts.collect(pnj)
+      : null;
     let html = `<div class="pnj-card-body">`;
 
     const fmtThresholds = (arr) =>
@@ -74,14 +80,15 @@ Object.assign(CardRenderer, {
     combatBody += `<div class="monitor-block">
       <div class="monitor-row">
         <span class="monitor-label">État</span>
-        <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj)}</div>
+        <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj, atouts)}</div>
       </div>
     </div>`;
 
     // Seuils de blessures, sous la gestion des dégâts (un coup dont la VD
     // atteint le seuil 1/2/3 inflige une blessure légère/grave/incap.).
     // Les seuils physiques intègrent les armures optionnelles actives.
-    const armorBonus = ItemResolver.armorOptionBonus(pnj);
+    const armorBonus =
+      ItemResolver.armorOptionBonus(pnj) + (atouts ? atouts.armor : 0);
     const effPhys = physMonitor
       ? physMonitor.map((v) => v + armorBonus)
       : null;
@@ -144,17 +151,20 @@ Object.assign(CardRenderer, {
       for (const s of skills) {
         const attrVal = Actor.attr(pnj, s.attr);
         const pool = s.val + attrVal;
-        const rrStr = s.rr > 0 ? ` RR${s.rr}` : "";
+        // RR effective = RR bakée (edges) + RR d'équipement (atouts) ; overlay
+        // local, le renderer ne mute jamais s.rr. Sans atout → s.rr inchangé.
+        const effRr = AnarchyAtouts.skillRR(atouts, s);
+        const rrStr = effRr > 0 ? ` RR${effRr}` : "";
         const detail = `${this._esc(Utils.attrFullName(s.attr))} ${attrVal} + ${this._esc(s.name)} ${s.val}${rrStr}`;
         const rollMain =
           pool >= 1
-            ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}" data-roll-detail="${detail}" data-roll-edition="${pnj.edition}" data-roll-rr="${s.rr || 0}" data-roll-pnj="${pnj.id}"`
+            ? ` data-roll="${pool}" data-roll-label="${this._esc(s.name)}" data-roll-detail="${detail}" data-roll-edition="${pnj.edition}" data-roll-rr="${effRr}" data-roll-pnj="${pnj.id}"`
             : "";
         capBody += this._rollableTag(
           pool >= 1,
           `tag skill-tag${pool >= 1 ? " rollable" : ""}`,
           `${rollMain} title="${this._esc(s.name)} : ${pool} (${s.val}+${s.attr}${rrStr}) — cliquer pour lancer"`,
-          `${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong>${s.rr > 0 ? `<span class="lim">RR${s.rr}</span>` : ""}`,
+          `${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong>${effRr > 0 ? `<span class="lim">RR${effRr}</span>` : ""}`,
         );
         // Puce de spécialisation (indice+2). La spé principale + chaque
         // spé supplémentaire (extraSpecs) partagent le même rendu lançable.
@@ -175,10 +185,21 @@ Object.assign(CardRenderer, {
           );
         };
         if (s.spec && s.spec !== true && s.specVal) {
-          capBody += specChip(s.spec, s.specVal, s.specAttr, s.specRR != null ? s.specRR : s.rr || 0);
+          const bakedSpecRr = s.specRR != null ? s.specRR : s.rr || 0;
+          capBody += specChip(
+            s.spec,
+            s.specVal,
+            s.specAttr,
+            AnarchyAtouts.specRR(atouts, s, s.spec, s.specAttr, bakedSpecRr),
+          );
         }
         for (const ex of s.extraSpecs || []) {
-          capBody += specChip(ex.name, ex.val != null ? ex.val : s.val + 2, ex.attr, ex.rr || 0);
+          capBody += specChip(
+            ex.name,
+            ex.val != null ? ex.val : s.val + 2,
+            ex.attr,
+            AnarchyAtouts.specRR(atouts, s, ex.name, ex.attr, ex.rr || 0),
+          );
         }
       }
       capBody += "</div></div>";
@@ -231,7 +252,7 @@ Object.assign(CardRenderer, {
     if (prefs.showAttributes) {
       const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA"];
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Attributs</div>
-        <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, Actor.attr(pnj, k), "", { roll: true, edition: pnj.edition })).join("")}</div></div>`;
+        <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, Actor.attr(pnj, k), "", { roll: true, edition: pnj.edition, rr: atouts ? atouts.attrRR[k] || 0 : 0 })).join("")}</div></div>`;
     }
     if (prefs.showEquipment && equip && equip.length)
       detailsBody += this._equipSection(pnj, equip, pnj.edition, deps);
@@ -254,10 +275,10 @@ Object.assign(CardRenderer, {
    * à définir des moniteurs séparés. `legerCapBonus`/`graveCapBonus` sur
    * le PNJ permettent d'ajouter les cases supplémentaires d'un atout.
    */
-  _monitorBoxesAnarchy(pnj) {
+  _monitorBoxesAnarchy(pnj, atouts) {
     const CAPS = {
-      leger: 2 + (pnj.legerCapBonus || 0),
-      grave: 1 + (pnj.graveCapBonus || 0),
+      leger: 2 + (pnj.legerCapBonus || 0) + (atouts ? atouts.legerBonus : 0),
+      grave: 1 + (pnj.graveCapBonus || 0) + (atouts ? atouts.graveBonus : 0),
       incap: 1,
     };
     const seg = (sev) =>
