@@ -1297,13 +1297,80 @@
   gap: 0.4rem;
   padding: 0.6rem;
 }
-.encounter-react-head {
+/* ── Polish DA « deux températures » (Agir vs Réagir) ────────────────────────
+   Le mode est piloté par le tour (jamais un réglage manuel) : Agir = fiche
+   CHAUDE (--accent), Réagir = rack FROID, distingué par la *forme* (fond/glyphes
+   neutres), pas par un 3e accent (Matrice=--accent2 réservé). Bandeau d'une
+   ligne nommant le mode + le combattant actif → tue l'erreur de mode. Le rouge
+   (--danger) reste au seul contrôle Dégâts (« le rouge se mérite »). */
+.encounter-mode-head {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  padding: 0.28rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.3rem;
+}
+.encounter-mode-head::before {
+  font-size: var(--fs-md);
+  font-weight: 400;
+  line-height: 1;
+}
+.encounter-mode-head.is-agir {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-left: 2px solid var(--accent);
+}
+.encounter-mode-head.is-agir::before {
+  content: "⚔";
+}
+.encounter-mode-head.is-react {
   color: var(--text-dim);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  border-left: 2px solid var(--border);
   margin-bottom: 0.2rem;
+}
+.encounter-mode-head.is-react::before {
+  content: "⛉";
+}
+
+/* Rack froid : ⛉/⛊ et bordures neutres (défense/encaissement restent neutres,
+   décision DA). Scopé à la console → ne touche PAS .react-btn réutilisé ailleurs
+   (pastilles de jet CI sur la fiche active K9, chips d'appareil brické R2-D).
+   `:not(.react-btn-danger)` / `:not(.react-glyph-danger)` : le contrôle Dégâts
+   garde --danger (« le rouge se mérite ») malgré la spécificité (0,2,0) de ce
+   sélecteur scopé, qui sinon écraserait les règles danger (0,1,0) plus bas. */
+.encounter-react .react-btn:not(.react-btn-danger) {
+  border-color: var(--border);
+}
+.encounter-react .react-btn:not(.react-btn-danger):hover {
+  border-color: var(--text-dim);
+  background: var(--bg-mid);
+}
+.encounter-react .react-glyph:not(.react-glyph-danger) {
+  color: var(--text);
+}
+
+/* Bascule fiche↔rack : fondu-glissé ≤200 ms joué UNIQUEMENT au changement de
+   mode (classe mode-enter posée par renderActiveCard), coupé sous reduced-motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .encounter-active-card .mode-enter {
+    animation: encounter-mode-enter 0.18s var(--ease-emphasized, ease);
+  }
+  @keyframes encounter-mode-enter {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 .react-row {
   display: flex;

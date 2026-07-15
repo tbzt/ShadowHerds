@@ -579,6 +579,11 @@ const EncounterRenderer = {
       dans app.js), retrouve cette card via son data-id comme les autres. */
   _activeCardId: null,
 
+  /** Polish DA « deux températures » : mode de la fiche active au dernier rendu
+      (agir | react | matrix | null). Sert à n'animer la bascule fiche↔rack qu'au
+      CHANGEMENT de mode, jamais aux refresh de même mode (sinon flicker). */
+  _activeMode: null,
+
   resetActiveCard() {
     this._activeCardId = null;
     const box = document.getElementById("encounter-active-card");
@@ -927,6 +932,14 @@ const EncounterRenderer = {
     // budget d'actions, ou console de réaction si le focus est un PJ.
     const active = model && model.narrative ? this._narrativeFocus(rows) : rows[state.turnIndex];
 
+    // Polish DA « deux températures » : le mode est piloté par le tour (jamais
+    // un réglage manuel) — Agir (fiche chaude) au tour d'un PNJ, Réagir (rack
+    // froid) au tour d'un PJ, CI au tour d'une glace. On ne s'en sert que pour
+    // n'animer la bascule fiche↔rack qu'au CHANGEMENT de mode (pas aux refresh).
+    const mode = !active ? null : active.kind === "matrix" ? "matrix" : active.isPJ ? "react" : "agir";
+    const modeEnter = mode !== this._activeMode;
+    this._activeMode = mode;
+
     // K4 : combattant matriciel (CI) — fiche minimale, pas de fiche de pool.
     // Toujours re-rendue (le moniteur matriciel vit sur le serveur et change
     // au fil du combat) : on ne met pas en cache via _activeCardId.
@@ -942,7 +955,7 @@ const EncounterRenderer = {
     // (l'état des PNJ change au fil du tour) : pas de cache _activeCardId.
     if (active && active.isPJ) {
       this._activeCardId = null;
-      this._renderReactionConsole(box, rows);
+      this._renderReactionConsole(box, rows, active, modeEnter);
       return;
     }
 
@@ -986,7 +999,8 @@ const EncounterRenderer = {
       // (Atout K5 + Actions K7) juste en dessous, au-dessus de la carte (portée
       // « tour », lisible avant de dérouler la fiche) ; note de scène éditable
       // sous la carte.
-      box.innerHTML = `<div class="encounter-active-top">${this._activeTop(active, state)}</div>
+      box.innerHTML = `<div class="encounter-mode-head is-agir${modeEnter ? " mode-enter" : ""}">Agir · ${Utils.escHtml(pnj.name || "")}</div>
+        <div class="encounter-active-top">${this._activeTop(active, state)}</div>
         <div class="encounter-active-economy">${this._activeEconomy(active, model)}</div>`;
       box.appendChild(CardRenderer.render(combatPnj, [], CardRenderer.liveDeps()));
       box.insertAdjacentHTML("beforeend", this._activeNote(active));
@@ -1068,7 +1082,7 @@ const EncounterRenderer = {
       non réduit, cf. carte). Édition-neutre. En mode narratif (Anarchy) il n'y
       a pas de tour actif → cette console ne s'affiche pas (renderActiveCard
       sort avant). */
-  _renderReactionConsole(box, rows) {
+  _renderReactionConsole(box, rows, active, modeEnter) {
     // K7-B + K9 : PNJ chair ET CI matricielles actives (une CI attaquée par un
     // PJ doit pouvoir défendre/encaisser). PJ et combattants « down » exclus.
     const targets = rows.filter((r) => r.pnj && !r.isPJ && !r.down);
@@ -1080,9 +1094,15 @@ const EncounterRenderer = {
     const rowsHtml = targets
       .map((r) => (r.kind === "matrix" ? this._reactMatrixRow(r) : this._reactPnjRow(r)))
       .join("");
+    // Polish DA : bandeau de mode FROID nommant le PJ actif (tue l'erreur de
+    // mode — persona Tom : « à qui c'est le tour »). Édition-neutre : lit le nom
+    // du combattant, aucun App.edition.
+    const pjName = active
+      ? Utils.escHtml((active.pnj && active.pnj.name) || active.name || "un PJ")
+      : "un PJ";
     box.hidden = false;
-    box.innerHTML = `<div class="encounter-react">
-      <div class="encounter-react-head">Un PJ agit — faites réagir les PNJ</div>
+    box.innerHTML = `<div class="encounter-react${modeEnter ? " mode-enter" : ""}">
+      <div class="encounter-mode-head is-react">Réagir · ${pjName} agit — faites réagir les PNJ</div>
       ${rowsHtml}
     </div>`;
   },
