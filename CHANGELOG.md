@@ -12,6 +12,20 @@ commit.
 
 ## [Non publié]
 
+## [1.35.0] — 2026-07-15
+
+### Table
+- **Cyberdecks et programmes matriciels à l'édition** : l'édition avancée
+  permet désormais d'**ajouter un cyberdeck depuis le catalogue d'équipement**
+  (SR5, SR6, Anarchy 1 & 2) — l'ajout renseigne directement les attributs du
+  deck (Attaque/Corruption/Traitement/Firewall selon l'édition), plus besoin de
+  les saisir à la main. On peut aussi équiper des **programmes matriciels**
+  tirés des livres (26 en SR5, 20 en SR6, 8 en Anarchy 1re) via un sélecteur à
+  cases : ceux qui relèvent un attribut/limite du deck ou infligent plus de
+  dégâts sont **motorisés** (ils augmentent automatiquement les réserves de dés
+  et la Valeur de Dégâts des actions Matrice), les autres restent listés pour
+  mémoire. Un programme « maison » hors catalogue reste saisissable librement.
+
 ## [1.34.0] — 2026-07-15
 
 ### Table

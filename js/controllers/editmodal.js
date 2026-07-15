@@ -742,10 +742,13 @@ const EditModal = {
         ${this._equipCatalogControls(pnj)}
       </div>`;
 
-    // ---- Section : Cyberdeck (M1) — seulement si déjà structuré (généré ou
-    // migré depuis l'ancienne chaîne libre) ; pas de bouton « en ajouter un »
-    // en M1 (socle data, cf. PLAN_MATRICE_CYBERDECK.md). ----
-    if (pnj.cyberdeck) html += CyberdeckRenderer.editSection(pnj);
+    // ---- Section : Cyberdeck — montée si le PNJ a un deck structuré (généré,
+    // migré depuis l'ancienne chaîne libre, OU ajouté depuis le catalogue
+    // d'équipement, cf. addEquipItem). Wrapper à id stable pour un re-render
+    // ciblé quand un deck apparaît/change en cours d'édition. ----
+    html += `<div id="em-cyberdeck-section">${
+      pnj.cyberdeck ? CyberdeckRenderer.editSection(pnj) : ""
+    }</div>`;
 
     // ---- Section : Suivi de campagne (optionnel, PJ seulement) ----
     html += this._buildCampaignSection(pnj);
@@ -943,10 +946,30 @@ const EditModal = {
     if (!id) return;
     this._readForm(pnj);
     App.getEditionModule(pnj.edition).addCatalogItem(pnj, id);
+    // Un cyberdeck choisi au catalogue configure aussi le deck mécanique
+    // (attrs/nom), pas seulement la ligne d'équipement — détection
+    // édition-agnostique sur la dernière ligne poussée (pas de branche
+    // d'édition ici, cf. prohibition n°1). Décision utilisateur 2026-07-15.
+    const last = (pnj.equip || [])[pnj.equip.length - 1];
+    const lastStr = ItemResolver.itemStr(last);
+    if (/cyberdeck/i.test(lastStr)) {
+      Cyberdeck.setFromLine(pnj, lastStr, pnj.edition);
+      this._rerenderCyberdeck(pnj);
+    }
     this._rerenderEquip(pnj);
     if (App.getEditionModule(pnj.edition).weaponModel?.source === "weapons")
       this._rerenderWeapons(pnj);
     SingleSelect.reset("em-equip-catalog");
+  },
+
+  /* Repeint la section Cyberdeck (apparition/changement de deck en cours
+     d'édition, cf. addEquipItem). Le wrapper #em-cyberdeck-section est
+     toujours présent dans le corps du modal ; on y (re)pose la section
+     d'édition du deck, ou rien si le PNJ n'a pas de deck. */
+  _rerenderCyberdeck(pnj) {
+    const wrap = document.getElementById("em-cyberdeck-section");
+    if (wrap)
+      wrap.innerHTML = pnj.cyberdeck ? CyberdeckRenderer.editSection(pnj) : "";
   },
 
   /* Retire l'arme structurée d'index i. */

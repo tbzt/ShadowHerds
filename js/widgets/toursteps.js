@@ -228,5 +228,10 @@ const TourSteps = {
       title: "Toutes les métavariantes à l'édition",
       body: "L'édition avancée d'un PNJ propose maintenant toutes les métavariantes, métaconsciences et zoocanthropes de l'édition (Troll Cyclope, Nartaki…), pas seulement les 5 souches de base.",
     },
+    {
+      id: "wn-cyberdeck-programs", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.35.0", fallback: "center",
+      title: "Cyberdecks et programmes à l'édition",
+      body: "L'édition avancée ajoute un cyberdeck depuis le catalogue d'équipement (il renseigne les attributs du deck), et permet d'équiper des programmes matriciels tirés des livres — ceux qui relèvent un attribut/limite ou les dégâts augmentent automatiquement vos jets de Matrice.",
+    },
   ],
 };

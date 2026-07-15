@@ -446,6 +446,34 @@ const EditionSR6 = {
       { key: "crash", name: "Planter un programme", type: "crash", page: 184,
         pool: (d) => (d.attrs || {}).attack || 0, dv: () => null },
     ],
+    /* Programmes matriciels (chapitre Matrice, p.187 ; collecte 2026-07-15).
+       La plupart des effets SR6 touchent des actions non codées (Crypter/Éditer/
+       Se cacher…) ou le Score Offensif/Défensif (non stocké comme attribut de
+       deck ici) → `effect: null`. Motorisés : Toolbox (+1 Traitement de données,
+       via `attr`, visible sur la carte) et Overclock (+2 dés à une action
+       matricielle, `poolAll`). */
+    programs: [
+      { key: "configurateur", name: "Configurateur", page: 187, effect: null }, // config alternative rechargeable
+      { key: "cryptage", name: "Cryptage", page: 187, effect: null }, // +2 dés « Crypter un fichier » (action non codée)
+      { key: "editeur", name: "Éditeur", page: 187, effect: null }, // remise d'Atout sur « Éditer un fichier »
+      { key: "machine-virtuelle", name: "Machine virtuelle", page: 187, effect: null }, // +2 emplacements, +1 case dégât non résistée
+      { key: "navigateur", name: "Navigateur", page: 187, effect: null }, // remise d'Atout sur les recherches
+      { key: "nettoyeur-signal", name: "Nettoyeur de signal", page: 187, effect: null }, // −2 Bruit
+      { key: "surveillance", name: "Surveillance", page: 187, effect: null }, // affiche le Score de Surveillance
+      { key: "toolbox", name: "Toolbox", page: 187, effect: { attr: { dataProcessing: 1 } } }, // +1 Traitement de données
+      { key: "armure", name: "Armure", page: 187, effect: null }, // +2 Score Défensif (non stocké comme attribut de deck)
+      { key: "biofeedback", name: "Biofeedback", page: 187, effect: null }, // change le type de dégâts (lié à Attaque)
+      { key: "blackout", name: "Blackout", page: 187, effect: null }, // dégâts étourdissants (lié à Attaque)
+      { key: "decryptage", name: "Décryptage", page: 187, effect: null }, // +2 dés « Décrypter un fichier » (action non codée)
+      { key: "desamorcage", name: "Désamorçage", page: 187, effect: null }, // encaisser une bombe avec Indice/CON
+      { key: "exploitation", name: "Exploitation", page: 187, effect: null }, // +2 Score Offensif (non stocké comme attribut de deck)
+      { key: "filtre-biofeedback", name: "Filtre de biofeedback", page: 187, effect: null }, // encaisser le biofeedback avec Indice/CON
+      { key: "fork", name: "Fork", page: 187, effect: null }, // touche deux cibles en une action
+      { key: "furtivite", name: "Furtivité", page: 187, effect: null }, // remise d'Atout sur « Se cacher »
+      { key: "overclock", name: "Overclock", page: 187, effect: { poolAll: 2 } }, // +2 dés à une action matricielle
+      { key: "traceur", name: "Traceur", page: 187, effect: null }, // remise d'Atout sur « Traquer une icône »
+      { key: "verrouillage", name: "Verrouillage", page: 187, effect: null }, // verrouillage de connexion sur dégât
+    ],
   },
 
   /* ----
@@ -2269,6 +2297,7 @@ const EditionSR6 = {
      ItemResolver aplatit `equipPools`. Armes SR6 = chaînes dans `pnj.equip`. */
   _equipLabels: {
     commlinks: "Commlinks",
+    cyberdecks: "Cyberdecks",
     pistoletsPoche: "Pistolets de poche",
     pistoletsLegers: "Pistolets légers",
     pistoletsAutomatiques: "Pistolets automatiques",

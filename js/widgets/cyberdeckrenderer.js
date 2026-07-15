@@ -20,8 +20,18 @@ const CyberdeckRenderer = {
     if (!deck) return "";
     const esc = (deps && deps.CardRenderer && deps.CardRenderer._esc) || CardRenderer._esc;
     const keys = Cyberdeck.attrKeys(edition);
+    // Attributs EFFECTIFS : base + programmes de type `attr` (ex. Cryptage
+    // +1 Firewall, Toolbox +1 TdD). Le puits d'édition modifie la base ; la
+    // carte affiche la valeur réellement en jeu, comme une stat dérivée. Une
+    // cellule relevée par un programme est marquée (classe `attr-boosted`).
+    const effAttrs = Cyberdeck.effectiveAttrs(edition, deck);
     const attrsHtml = keys.length
-      ? `<div class="attr-grid">${keys.map((k) => CardRenderer._attrCell(k.badge, deck.attrs[k.key], "", { roll: false })).join("")}</div>`
+      ? `<div class="attr-grid">${keys
+          .map((k) => {
+            const boosted = (effAttrs[k.key] || 0) !== (deck.attrs[k.key] || 0);
+            return CardRenderer._attrCell(k.badge, effAttrs[k.key], boosted ? "attr-boosted" : "", { roll: false });
+          })
+          .join("")}</div>`
       : "";
     // M2 : réallocation en un tap — bouton d'échange ⇄ entre attributs
     // adjacents si réallouable (SR5/SR6). Rangée séparée de l'attr-grid
@@ -221,12 +231,46 @@ const CyberdeckRenderer = {
         ${biofeedbackInput}
       </div>
       ${loadoutInput}
-      <div class="form-group">
-        <label>Programmes (un par ligne — choisis hors scène)</label>
-        <textarea id="em-deck-programs" rows="3">${(deck.programs || []).join("\n")}</textarea>
-      </div>
+      ${this._programsInput(deck, edition)}
       ${deck.legacyText ? `<div class="cyberdeck-legacy-note">Origine : « ${esc(deck.legacyText)} »</div>` : ""}
     </div>`;
+  },
+
+  /** Programmes matriciels chargés : picker à cases à cocher du catalogue
+      d'édition (même grammaire que le loadout ci-dessus), pré-coché selon
+      `deck.programs`. Un point ● marque les programmes à effet mécanique
+      (bonus de pool/VD motorisé). Les entrées libres/legacy hors catalogue
+      restent éditables dans un petit textarea « autres ». Si l'édition n'a pas
+      de catalogue de programmes (Anarchy 2.0), seul le textarea est monté. */
+  _programsInput(deck, edition) {
+    const esc = CardRenderer._esc;
+    const catalog = Cyberdeck.programCatalog(edition);
+    const chosen = new Set(deck.programs || []);
+    const catalogNames = new Set(catalog.map((p) => p.name));
+    // Entrées non catalogue = programmes libres/legacy → textarea « autres ».
+    const custom = (deck.programs || []).filter((p) => !catalogNames.has(p));
+    const picker = catalog.length
+      ? `<div class="form-group full">
+          <label>Programmes chargés</label>
+          <div class="deck-loadout-picker">
+            ${catalog
+              .map((p) => {
+                const motor = p.effect ? " ●" : "";
+                const tip = `p.${p.page}${p.effect ? " · effet mécanique" : ""}`;
+                return `<label class="deck-loadout-opt" title="${esc(tip)}"><input type="checkbox" class="em-deck-program" value="${esc(p.name)}" ${chosen.has(p.name) ? "checked" : ""}> ${esc(p.name)}${motor}</label>`;
+              })
+              .join("")}
+          </div>
+        </div>`
+      : "";
+    const customLabel = catalog.length
+      ? "Autres programmes (un par ligne)"
+      : "Programmes (un par ligne — choisis hors scène)";
+    return `${picker}
+      <div class="form-group">
+        <label>${customLabel}</label>
+        <textarea id="em-deck-programs" rows="${catalog.length ? 2 : 3}">${esc(custom.join("\n"))}</textarea>
+      </div>`;
   },
 
   /** Lit les champs du formulaire ci-dessus dans pnj.cyberdeck (appelé par
@@ -259,11 +303,19 @@ const CyberdeckRenderer = {
     if (actionEls.length) {
       deck.loadout = [...actionEls].filter((c) => c.checked).map((c) => c.value);
     }
+    // Programmes = cases cochées du catalogue (ordre d'affichage) + entrées
+    // libres du textarea « autres ». Le picker peut être absent (édition sans
+    // catalogue de programmes) → seules les lignes libres comptent (rétrocompat).
+    const checked = [...document.querySelectorAll(".em-deck-program")]
+      .filter((c) => c.checked)
+      .map((c) => c.value);
     const programsEl = document.getElementById("em-deck-programs");
-    if (programsEl)
-      deck.programs = programsEl.value
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean);
+    const custom = programsEl
+      ? programsEl.value
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+    deck.programs = [...checked, ...custom];
   },
 };
