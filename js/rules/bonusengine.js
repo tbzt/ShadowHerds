@@ -194,9 +194,15 @@ const BonusEngine = {
       attrsTouched = true; // pour rafraîchir damageResist (SR5) via recalc()
     }
     if (b.sd) pnj.sdBase = (pnj.sdBase || 0) + b.sd;
-    if (b.limit) {
-      const key = { phys: "limPhys", ment: "limMent", soc: "limSoc" }[b.limit];
-      if (key) pnj[key] = (pnj[key] || 0) + b.val;
+    if (b.limit && b.val) {
+      // Les Limites sont RECALCULÉES depuis les attributs par recalc() —
+      // un `pnj.limSoc += v` serait écrasé. On accumule dans un seau
+      // `pnj._limitMods` que recalc ré-ajoute après sa formule de base
+      // (miroir de Actor.addMod/refreshAttrs pour les attributs). Survit
+      // au recalc de génération ET d'édition (editmodal.js).
+      pnj._limitMods = pnj._limitMods || { phys: 0, ment: 0, soc: 0 };
+      pnj._limitMods[b.limit] = (pnj._limitMods[b.limit] || 0) + b.val;
+      attrsTouched = true; // un bonus de Limite seul doit déclencher recalc
     }
     if (b.monitor) {
       const key = App.getEditionModule(edition).conditionMonitor.fields.primary;
@@ -235,6 +241,10 @@ const BonusEngine = {
   /** SR5/SR6 : cyberware + traits + pouvoirs d'adepte + métatype + Infecté
       → attrs/initiative/armure/limites/moniteur, puis recalc(). */
   _applySR(pnj, edition, EditionModule) {
+    // Reset du seau de mods de Limite AVANT toute accumulation (item ou
+    // trait) : recalc le ré-appliquera après sa formule de base. Reset →
+    // pas de double-comptage si _applySR est rejoué (régénération).
+    pnj._limitMods = { phys: 0, ment: 0, soc: 0 };
     const totals = this._collectCyberBonuses(pnj, edition);
     let attrsTouched = false;
 
@@ -242,11 +252,14 @@ const BonusEngine = {
     if (totals.armor) pnj.armure = (pnj.armure || 0) + totals.armor;
     if (totals.sd) pnj.sdBase = (pnj.sdBase || 0) + totals.sd;
     // Fusion V5 (3e vague) : bonus de Limite naturelle scalés à l'indice
-    // (Phéromones optimisées, Amélioration mnémonique), même mapping que
-    // `_applyOneBonus` (traits/pouvoirs).
+    // (Phéromones optimisées, Amélioration mnémonique). Accumulés dans le
+    // seau `_limitMods` (ré-appliqué par recalc), PAS un `pnj.limX +=` qui
+    // serait écrasé par le recalc suivant (fix tranche 4).
     for (const [k, v] of Object.entries(totals.limits)) {
-      const key = { phys: "limPhys", ment: "limMent", soc: "limSoc" }[k];
-      if (key && v) pnj[key] = (pnj[key] || 0) + v;
+      if (v) {
+        pnj._limitMods[k] = (pnj._limitMods[k] || 0) + v;
+        attrsTouched = true; // un bonus de Limite seul doit déclencher recalc
+      }
     }
     for (const m of totals.attrMods) {
       Actor.addMod(pnj, m.attr, { value: m.val, source: m.source, type: "cyber" });

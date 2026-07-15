@@ -98,7 +98,7 @@ const App = {
     anarchy1: "css/theme-anarchy1.css?v=1080",
   },
   _EDITION_JS: {
-    sr5: ["js/editions/sr5.js?v=1084", "js/editions/sr5.foundry.js?v=1082", "js/editions/sr5.print.js?v=1082"],
+    sr5: ["js/editions/sr5.js?v=1085", "js/editions/sr5.foundry.js?v=1082", "js/editions/sr5.print.js?v=1082"],
     sr6: ["js/editions/sr6.js?v=1084", "js/editions/sr6.foundry.js?v=1082", "js/editions/sr6.print.js?v=1082"],
     anarchy2: [
       "js/editions/anarchy2.js?v=1080",

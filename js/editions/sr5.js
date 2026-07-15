@@ -2360,9 +2360,14 @@ const EditionSR5 = {
       pnj.attrs.CHC = this.attrRange[pnj.meta]?.CHC?.[0] ?? 3;
     Actor.refreshAttrs(pnj); // Trait : total = base + Σ mods, avant les dérivées
     const A = (k) => Actor.attr(pnj, k);
-    pnj.limPhys = Math.ceil((A("FOR") * 2 + A("CON") + A("REA")) / 3);
-    pnj.limMent = Math.ceil((A("LOG") * 2 + A("INT") + A("VOL")) / 3);
-    pnj.limSoc = Math.ceil((A("CHA") * 2 + A("VOL") + (proRating || 0)) / 3);
+    // Seau de mods de Limite (BonusEngine : Phéromones→soc, Amélioration
+    // mnémonique→ment, traits→phys…). Ré-ajouté APRÈS la formule de base à
+    // chaque recalc pour survivre à la recomputation (fix tranche 4) —
+    // miroir de Actor.addMod/refreshAttrs pour les attributs.
+    const lm = pnj._limitMods || {};
+    pnj.limPhys = Math.ceil((A("FOR") * 2 + A("CON") + A("REA")) / 3) + (lm.phys || 0);
+    pnj.limMent = Math.ceil((A("LOG") * 2 + A("INT") + A("VOL")) / 3) + (lm.ment || 0);
+    pnj.limSoc = Math.ceil((A("CHA") * 2 + A("VOL") + (proRating || 0)) / 3) + (lm.soc || 0);
     pnj.physMon = 8 + Math.ceil(A("CON") / 2);
     pnj.stunMon = 8 + Math.ceil(A("VOL") / 2);
     pnj.init = A("REA") + A("INT");
