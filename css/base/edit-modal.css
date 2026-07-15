@@ -30,6 +30,78 @@ details[open] > summary.modal-section-title::before {
   display: none;
 }
 
+/* ME2b : coquille de zone repliable réutilisée de la carte (.card-zone/
+   .zone-toggle/.zone-body, D-ME-5 = A — CSS global de pnj-card.css, jamais
+   dupliqué ni muté). Deux ajustements PROPRES à la modale :
+
+   1) Pli INSTANTANÉ. La carte anime grid-template-rows 0fr↔1fr car ses zones
+      NAISSENT dépliées (le 1fr résout la hauteur de contenu au 1ᵉʳ layout,
+      puis on anime vers 0fr). Dans la modale, les zones lourdes naissent
+      REPLIÉES (D-a) : l'animation 0fr→1fr ne résout jamais la hauteur (fr sans
+      espace libre dans un conteneur à hauteur auto → reste 0). Sans transition,
+      la bascule de classe commute entre deux états déjà résolus, correct dans
+      les deux sens. Le chevron garde sa rotation animée (transition à part). */
+#edit-modal .zone-body,
+#edit-modal .zone-body-inner {
+  transition: none;
+}
+
+/* 2) Rythme de séparation UNIFORME (ME2c). Sur la carte, les zones se suivent
+   avec un filet-haut ; dans la modale elles cohabitent avec des .modal-section
+   à filet-bas + grande marge → double filet SECT↔ZONE et collage ZONE↔SECT.
+   On aligne tout le monde sur « chaque bloc s'ouvre par un filet-haut » :
+   les .modal-section perdent leur filet-bas/marge, gagnent un filet-haut ; le
+   1ᵉʳ bloc (Identité) n'en porte pas (il suit l'en-tête de la modale). */
+#edit-modal .card-zone {
+  border-top: 1px solid var(--border);
+}
+#edit-modal .card-zone:first-of-type {
+  border-top: 1px solid var(--border);
+}
+#edit-modal .modal-section {
+  border-top: 1px solid var(--border);
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-top: 12px;
+  padding-bottom: 16px;
+}
+#modal-form-body > .modal-section:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+/* 3) Alignement horizontal (ME2c) : le contenu des zones de carte est indenté
+   de 14px (padding de zone-toggle/body-pad), superflu dans la modale déjà
+   padée à 20px — on aligne le bord GAUCHE sur celui des .modal-section (le bord
+   droit ne s'aligne sur rien). Le toggle garde son padding-droit pour que le
+   chevron ne déborde pas ; le corps s'étend pleine largeur. */
+#edit-modal .zone-toggle {
+  padding-left: 0;
+}
+#edit-modal .zone-body-pad {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Zone verrouillée (magie à 0) : montre que la capacité existe, grisée,
+   pas de faux affordance de clic (pas de curseur pointer, pas de chevron —
+   .em-zone-locked-header n'est pas un .zone-toggle interactif malgré la
+   classe partagée pour le rythme visuel). Réutilise l'opacité 0.55 déjà
+   établie pour les états « présent mais inactif » (has-acted, is-bricked). */
+.em-zone-locked .zone-toggle-label,
+.em-zone-locked .zone-toggle-summary {
+  color: var(--text-dim);
+}
+.em-zone-locked-header {
+  opacity: 0.55;
+  cursor: default;
+}
+.em-zone-locked .zone-toggle-summary {
+  text-transform: none;
+  letter-spacing: normal;
+  font-style: italic;
+}
+
 /* ME1f (constat C) : gouttières/paddings des rangées em-* alignés sur les
    tokens --sp-* (au lieu de rem/px disparates au fil des lots) — un seul
    rythme, sans toucher aux grid-template-columns porteurs de sens. */
@@ -47,6 +119,14 @@ details[open] > summary.modal-section-title::before {
 }
 .em-skill-row-anarchy {
   grid-template-columns: 1fr 48px 44px minmax(100px, 1fr) 28px;
+}
+/* Connaissances : nom LIBRE (input texte, pas un <span> — contrairement aux
+   compétences de catalogue) + niveau + catégorie (câble l'attribut) + retrait. */
+.em-skill-row-knowledge {
+  grid-template-columns: 1fr 56px minmax(120px, 1fr) 28px;
+}
+.em-skill-name-input {
+  min-width: 0;
 }
 /* #63 : ligne stepper d'indice (équipement à plage non résolue) — nom +
    indice numérique + retrait, pas de 4ᵉ colonne spécialité. */
@@ -109,6 +189,23 @@ details[open] > summary.modal-section-title::before {
 .em-add-skill .ss-control {
   padding: var(--sp-1) var(--sp-2);
   font-size: var(--fs-xs);
+}
+/* Ajout Connaissance : nom texte (flex:2, plus de place que la catégorie)
+   + SingleSelect catégorie (flex:1, hérité de .em-add-skill .form-group.ss)
+   + bouton. Même hauteur/typo que les selects catalogue voisins. */
+.em-know-add-name-input {
+  flex: 2;
+  min-width: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-xs);
+}
+.em-know-add-name-input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 .em-add-skill-btn {
   background: color-mix(in srgb, var(--accent) 15%, var(--bg));

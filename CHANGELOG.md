@@ -12,6 +12,26 @@ commit.
 
 ## [Non publié]
 
+## [1.43.0] — 2026-07-15
+
+### Table
+- **L'édition avancée reflète la carte, zones repliables** : la modale
+  d'édition PNJ suit désormais le même ordre que la carte (Identité →
+  Attributs → Magie/Matrice → Compétences → Équipement → Suivi → Notes),
+  les sections lourdes (Sorts, Pouvoirs, Compétences, Armes,
+  Augmentations…) sont repliées par défaut avec un résumé (« 4 sorts »)
+  au lieu de dérouler onze sections d'un coup.
+- **MAG toujours éditable, magie verrouillée à 0** : l'indice de Magie
+  (SR5/SR6) est désormais toujours affiché dans l'édition, y compris à 0
+  — vous pouvez faire naître un magicien depuis un mondain. Tant que MAG
+  vaut 0, les sections Sorts/Pouvoirs restent visibles mais grisées et
+  verrouillées (leur catalogue n'apparaît qu'une fois de la Magie posée).
+- **Connaissances éditables (SR5/SR6)** : nouvelle section « Connaissances »
+  dans l'édition — ajout à la main d'une connaissance libre (aucune liste
+  fermée au livre) avec sa catégorie (Rue, Académique, Professionnelle,
+  Hobbies), qui câble automatiquement le bon attribut (Intuition ou
+  Logique) pour le calcul de la réserve.
+
 ## [1.42.0] — 2026-07-15
 
 ### Générer

@@ -108,6 +108,9 @@ Object.assign(CardRenderer, {
     // ---- ZONE CAPACITÉS ----
     let capBody = "";
     capBody += this._skillsSection(skills, malus6, { pnj });
+    // Connaissances (édition d'origine ajoutée via EditModal — pas de
+    // génération auto en SR6 aujourd'hui, cf. hasKnowledges du module).
+    capBody += this._knowledgesSection(pnj.knowledges, pnj, malus6);
     // Pouvoirs d'adepte : vivent désormais dans le module Magie (CP3).
     if (traits && traits.length) capBody += this._listSection("Traits", traits);
     if (pnj.infectedPowers && pnj.infectedPowers.length)

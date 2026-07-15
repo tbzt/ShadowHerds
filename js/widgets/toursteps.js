@@ -268,5 +268,10 @@ const TourSteps = {
       title: "Riggers SR5 correctement équipés",
       body: "Un archétype rigger (même sans le mot « Rigger » dans son nom, ex. Go-ganger) reçoit désormais ses compétences de pilotage/drones et son matériel de contrôle (câblage, console) — jusqu'ici seuls les drones étaient au rendez-vous.",
     },
+    {
+      id: "wn-edit-mirror-magic-knowledges", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.43.0", fallback: "center",
+      title: "L'édition reflète la carte, magie verrouillée, connaissances",
+      body: "La modale d'édition PNJ suit désormais l'ordre de la carte, avec les sections lourdes (Sorts, Compétences, Augmentations…) repliées et résumées. L'indice de Magie (SR5/SR6) est toujours éditable, y compris à 0 — Sorts/Pouvoirs restent visibles mais verrouillés tant qu'il est nul. Une section Connaissances permet d'ajouter une connaissance libre avec sa catégorie (Rue, Académique, Professionnelle, Hobbies), qui câble le bon attribut.",
+    },
   ],
 };
