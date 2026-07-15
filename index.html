@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="css/base/foundation.css?v=1109">
   <link rel="stylesheet" href="css/base/forms.css?v=1108">
   <link rel="stylesheet" href="css/base/pnj-card.css?v=1108">
-  <link rel="stylesheet" href="css/base/shadows-contacts.css?v=1108">
+  <link rel="stylesheet" href="css/base/shadows-contacts.css?v=1110">
   <link rel="stylesheet" href="css/base/modal-core.css?v=1108">
   <link rel="stylesheet" href="css/base/edit-modal.css?v=1108">
   <link rel="stylesheet" href="css/base/combat-tracker.css?v=1108">
@@ -75,6 +75,11 @@
     </symbol>
     <symbol id="ic-more" viewBox="0 0 24 24">
       <circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.8" fill="currentColor" stroke="none"/>
+    </symbol>
+    <!-- R3-E : « Jouer » (panneau Campagne › Run › Scène) — triangle de lecture,
+         lu instantanément « jouer/en cours ». -->
+    <symbol id="ic-play" viewBox="0 0 24 24">
+      <path d="M7 5.5v13l11-6.5z"/>
     </symbol>
     <symbol id="ic-dice" viewBox="0 0 24 24">
       <rect x="4" y="4" width="16" height="16" rx="3"/>
@@ -346,7 +351,11 @@
           <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-run"></use></svg></span><span class="nav-label">Topos</span>
         </button>
 
-        <span class="nav-section-label">Table</span>
+        <span class="nav-section-label">Jouer</span>
+        <!-- Jouer (R3-E) : la colonne Campagne › Run › Scène. -->
+        <button class="nav-btn" data-panel="play" data-tour="nav-play" data-action="show-panel" title="Vos campagnes, runs et la scène en cours">
+          <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-play"></use></svg></span><span class="nav-label">Jouer</span>
+        </button>
         <!-- Combat : entrée permanente pour ouvrir le tracker (data-action, pas un panel). -->
         <button class="nav-btn" id="nav-combat-btn" data-tour="nav-combat" data-action="encounter-open">
           <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-combat"></use></svg></span><span class="nav-label">Combat</span>
@@ -591,6 +600,14 @@
           </div>
         </div>
 
+        <!-- JOUER (R3-E) : vue dédiée de la colonne Campagne › Run › Scène,
+             pendant « monde Jouer » du hub « monde Créer ». Contenu rendu par
+             Play (js/controllers/play.js) depuis Dossiers + l'état vivant. -->
+        <div class="panel" id="panel-play">
+          <div class="panel-title">Jouer<span class="panel-subtitle">vos campagnes, runs et la scène en cours</span></div>
+          <div id="play-content"></div>
+        </div>
+
         <!-- PARAMÈTRES -->
         <div class="panel" id="panel-settings">
           <div class="panel-title">Paramètres</div>
@@ -631,6 +648,10 @@
     <div id="more-sheet-overlay" role="dialog" aria-modal="true" aria-label="Plus">
       <div id="more-sheet">
         <div class="dice-sheet-handle"></div>
+        <!-- Jouer (R3-E) : colonne Campagne › Run › Scène, au more-sheet mobile. -->
+        <button class="bnav-btn" data-panel="play" data-tour="nav-play" data-action="show-panel" title="Vos campagnes, runs et la scène en cours">
+          <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-play"></use></svg></span><span class="bnav-label">Jouer</span>
+        </button>
         <button class="bnav-btn" data-panel="contacts" data-tour="nav-contacts" data-action="show-panel">
           <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-contacts"></use></svg></span><span class="bnav-label">Contacts</span>
         </button>
@@ -901,6 +922,7 @@
   <script defer src="js/widgets/singleselect.js?v=1108"></script>
   <script defer src="js/controllers/generator.js?v=1108"></script>
   <script defer src="js/controllers/rungen.js?v=1110"></script>
+  <script defer src="js/controllers/play.js?v=1110"></script>
   <script defer src="js/controllers/shadows.js?v=1108"></script>
   <script defer src="js/controllers/characters.js?v=1108"></script>
   <script defer src="js/controllers/chargen.js?v=1108"></script>
@@ -924,6 +946,6 @@
   <script defer src="js/controllers/printsheet.js?v=1108"></script>
   <script defer src="js/controllers/sync.js?v=1108"></script>
   <script defer src="js/controllers/foundryexport.js?v=1108"></script>
-  <script defer src="js/app.js?v=1109"></script></body>
+  <script defer src="js/app.js?v=1110"></script></body>
 
 </html>

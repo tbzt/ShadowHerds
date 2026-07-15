@@ -12,6 +12,18 @@ commit.
 
 ## [Non publié]
 
+## [1.40.0] — 2026-07-15
+
+### Table
+- **Navigation « Créer » / « Jouer » + espace Jouer** : la barre latérale se
+  lit désormais en deux mondes — **Créer** (vos actifs : Personnages, PNJ,
+  Contacts, Serveurs, Topos) et **Jouer** (un nouvel écran listant vos
+  campagnes et runs, avec la scène en cours signalée « ● En cours » et un geste
+  pour la reprendre, focaliser une run dans la bibliothèque, ou voir son topos).
+- **Le générateur de missions devient « Topos »** : il produit des *amorces*
+  de mission ; « Faire une run » promeut un topos en run (le mot canon « run »
+  reste réservé à la mission jouée). Désambiguïse « générer » vs « jouer ».
+
 ## [1.39.0] — 2026-07-15
 
 ### Table

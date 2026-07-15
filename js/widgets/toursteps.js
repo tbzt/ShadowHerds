@@ -253,5 +253,10 @@ const TourSteps = {
       title: "La scène en cours ne se perd plus",
       body: "Une pastille pulsée s'allume sur « Combat » (sidebar et barre du bas mobile) dès qu'une scène tourne — y compris une intrusion Matrice seule, sans combattant. Un coup d'œil suffit pour savoir si une scène vous attend, où que vous soyez dans l'appli.",
     },
+    {
+      id: "wn-play-panel", anchor: "nav-play", tours: ["whatsnew"], since: "1.40.0", fallback: "center",
+      title: "Un espace « Jouer », et le générateur devient « Topos »",
+      body: "La navigation se sépare en « Créer » (vos actifs : Personnages, PNJ, Contacts, Serveurs, Topos) et « Jouer » (vos campagnes, runs et la scène en cours). Le générateur de missions s'appelle désormais « Topos » — l'amorce que vous transformez en run d'un geste.",
+    },
   ],
 };

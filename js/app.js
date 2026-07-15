@@ -8,7 +8,7 @@ const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.39.0",
+  VERSION: "1.40.0",
 
   edition: "none",
   editionModule: null,
@@ -408,6 +408,9 @@ const App = {
         RunGen.initPanel();
         DossierBar.render();
         break;
+      case "play":
+        Play.initPanel(); // R3-E : colonne Campagne › Run › Scène
+        break;
       case "settings":
         Settings.render();
         break;
@@ -428,6 +431,7 @@ const App = {
       "contacts",
       "matrix",
       "run",
+      "play",
       "settings",
       "spectateur",
     ];
@@ -522,6 +526,7 @@ const SHORTCUT_PANELS = {
   5: "matrix",
   6: "run",
   7: "settings",
+  8: "play", // R3-E : Jouer (8 pour ne pas décaler la mémoire des touches 1-7)
 };
 
 /* ============================================================

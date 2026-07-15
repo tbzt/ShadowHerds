@@ -352,6 +352,81 @@
   color: var(--text-dim);
 }
 
+/* ---- Panneau « Jouer » (R3-E) : lignes de run + état vide ---- */
+.play-run {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.play-run-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  padding: 4px var(--sp-2);
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-base);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background var(--dur-base), color var(--dur-base);
+}
+.play-run-name:hover {
+  background: var(--glow);
+  color: var(--accent);
+}
+.play-run-icon {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.play-run-actions {
+  display: inline-flex;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+.play-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  color: var(--accent);
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.play-empty-note {
+  padding: var(--sp-2) 0;
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+}
+.play-onboard {
+  max-width: 46ch;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.play-onboard-lead {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  margin-bottom: var(--sp-2);
+}
+.play-onboard-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
 /* ---- Hub : sous-groupe indenté dans l'arbre de dossiers ---- */
 .group-item.group-subitem {
   /* #49 : indent par niveau (--depth posé inline, clampé à MAX_DEPTH côté JS
