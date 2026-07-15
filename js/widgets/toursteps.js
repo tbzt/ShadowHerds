@@ -223,5 +223,10 @@ const TourSteps = {
       title: "Cyberware/bioware bien rangés",
       body: "Un implant ajouté depuis le catalogue (SR5/SR6) rejoint désormais la section Augmentations de la fiche et de la vue d'impression, au lieu de l'Équipement générique.",
     },
+    {
+      id: "wn-metavariants-edit", anchor: "nav-characters", tours: ["whatsnew"], since: "1.33.0", fallback: "center",
+      title: "Toutes les métavariantes à l'édition",
+      body: "L'édition avancée d'un PNJ propose maintenant toutes les métavariantes, métaconsciences et zoocanthropes de l'édition (Troll Cyclope, Nartaki…), pas seulement les 5 souches de base.",
+    },
   ],
 };

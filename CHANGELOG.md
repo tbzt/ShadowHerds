@@ -12,6 +12,16 @@ commit.
 
 ## [Non publié]
 
+## [1.33.0] — 2026-07-15
+
+### Table
+- **Toutes les métavariantes à l'édition PNJ (#66)** : le champ Métatype de
+  l'édition avancée n'est plus limité aux 5 souches — il propose désormais
+  toutes les métavariantes jouables (ex. Troll Cyclope), métaconsciences et
+  zoocanthropes de l'édition, dans un picker filtrable groupé par souche
+  (SR5, SR6, Anarchy 1re — Anarchy 2.0 reste aux 5 souches, sans
+  métavariantes motorisées).
+
 ## [1.32.0] — 2026-07-15
 
 ### Table

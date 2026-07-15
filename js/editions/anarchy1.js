@@ -283,6 +283,12 @@ const EditionAnarchy1 = {
   addCatalogItem(pnj, id) {
     ItemResolver.addEquipString(pnj, this.equipPools, id);
   },
+  /** #66 : groupes métatype/métavariante pour le sélecteur d'édition PNJ
+      (EditModal, `SingleSelect.create({groups})`), même source que le
+      générateur (`Metavariants.pickerGroups`). */
+  metaOptions() {
+    return { groups: Metavariants.use("anarchy1").pickerGroups() };
+  },
   /* Sorts : catalogue partagé (taxonomie commune aux 4 éditions), source
      unique dans Content. Ajout surchargé (pas de délégation directe) pour
      garder la forme enrichie {name,cat,niveau,desc,note} des sorts générés

@@ -540,17 +540,18 @@ const EditModal = {
           <label>Nom</label>
           <input type="text" id="em-name" value="${CardRenderer._esc(pnj.name)}">
         </div>
-        <div class="form-group">
-          <label>Métatype</label>
-          <select id="em-meta">
-            ${["Humain", "Elfe", "Nain", "Ork", "Troll"]
-              .map(
-                (m) =>
-                  `<option${pnj.meta === m ? " selected" : ""}>${m}</option>`,
-              )
-              .join("")}
-          </select>
-        </div>
+        ${SingleSelect.create({
+          id: "em-meta",
+          label: "Métatype",
+          value: pnj.meta || "",
+          placeholder: "Métatype",
+          // #66 : métatype (5 souches) ET métavariante (ex. Troll Cyclope)
+          // dans le même picker groupé, fourni par l'édition — jamais un
+          // if(App.edition===…) ici (cf. metaOptions() par module).
+          ...(App.getEditionModule(pnj.edition).metaOptions?.() || {
+            options: ["Humain", "Elfe", "Nain", "Ork", "Troll"].map((m) => ({ value: m, label: m })),
+          }),
+        })}
         <div class="form-group">
           <label>Genre</label>
           <select id="em-gender">

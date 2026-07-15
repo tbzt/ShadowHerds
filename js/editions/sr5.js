@@ -1771,6 +1771,12 @@ const EditionSR5 = {
   // « Augmentations », cf. ItemResolver.augItems) — donnée d'édition, pas
   // une branche.
   AUGS_KEYS: ["cyberware", "bioware"],
+  /** #66 : groupes métatype/métavariante pour le sélecteur d'édition PNJ
+      (EditModal, `SingleSelect.create({groups})`), même source que le
+      générateur (`Metavariants.pickerGroups`). */
+  metaOptions() {
+    return { groups: Metavariants.use("sr5").pickerGroups() };
+  },
   /* Sorts/pouvoirs d'adepte : catalogues partagés (taxonomie commune aux
      4 éditions), source unique dans Content — cf. Content.spellCatalogFor. */
   spellCatalog() {
