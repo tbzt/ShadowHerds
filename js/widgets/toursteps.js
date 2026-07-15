@@ -283,5 +283,10 @@ const TourSteps = {
       title: "Explication décomposée des réserves",
       body: "Défense, Encaissement, Drain : un bouton ⓘ séparé du lancer ouvre désormais le détail, source nommée + chiffre (« Défense 7 = Réaction 3 + Intuition 4 »), au lieu du survol figé. Le résultat du jet porte le même décompte. En SR5, l'Encaissement détaille aussi l'armure pièce par pièce quand elle est reconstituable depuis l'équipement.",
     },
+    {
+      id: "wn-foundry-import", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.45.0", fallback: "center",
+      title: "Importer des PJ et PNJ depuis Foundry VTT",
+      body: "Le menu ⋯ du hub propose désormais « Importer depuis Foundry VTT » : chargez un ou plusieurs fichiers d'acteur exportés de Foundry (SR5, SR6, Anarchy 2) et Shadow Herds crée les fiches en peuplant les bons champs — attributs, compétences, armes, équipement, sorts, atouts. L'édition est détectée automatiquement ; un PJ Foundry rejoint vos Personnages, un grunt vos Ombres. Les champs non modélisés sont signalés en console.",
+    },
   ],
 };

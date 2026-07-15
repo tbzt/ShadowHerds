@@ -12,6 +12,20 @@ commit.
 
 ## [Non publié]
 
+## [1.45.0] — 2026-07-16
+
+### Bibliothèque
+- **Import Foundry VTT (PJ et PNJ)** : le menu ⋯ du hub propose
+  « Importer depuis Foundry VTT ». Chargez un ou plusieurs fichiers
+  d'acteur exportés de Foundry (SR5, SR6, Anarchy 2) : Shadow Herds
+  crée les fiches en peuplant les bons champs — attributs, compétences
+  (avec spécialités), armes, armure, équipement, augmentations, sorts,
+  pouvoirs, connaissances, atouts. L'édition est détectée
+  automatiquement d'après la forme de l'acteur ; un PJ Foundry rejoint
+  vos Personnages, un grunt vos Ombres portées. Miroir de l'export
+  Foundry existant ; les champs sans équivalent dans le modèle
+  Shadow Herds sont signalés en console plutôt que perdus en silence.
+
 ## [1.44.2] — 2026-07-16
 
 ### Table

@@ -2963,6 +2963,21 @@ const EditionSR6 = {
           { label: Utils.attrFullName(attr), value: A(attr) },
         ];
       }
+      case "composure":
+        return [
+          { label: Utils.attrFullName("VOL"), value: A("VOL") },
+          { label: Utils.attrFullName("CHA"), value: A("CHA") },
+        ];
+      case "judgeIntentions":
+        return [
+          { label: Utils.attrFullName("INT"), value: A("INT") },
+          { label: Utils.attrFullName("CHA"), value: A("CHA") },
+        ];
+      case "memory":
+        return [
+          { label: Utils.attrFullName("LOG"), value: A("LOG") },
+          { label: Utils.attrFullName("VOL"), value: A("VOL") },
+        ];
       default:
         return null;
     }

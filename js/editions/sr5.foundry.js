@@ -755,9 +755,238 @@ const FoundrySR5Export = {
   },
 };
 
+/* ============================================================
+   IMPORT FOUNDRY → SR5 (miroir de FoundrySR5Export)
+
+   Reconstruit un PNJ ShadowHerds depuis un acteur Foundry SR5
+   (actorPc, riche, ou actorGrunt). Réutilise les tables de l'export
+   (ATTR_MAP, SKILL_MAP, SKILL_META) — une seule source de vérité. On
+   ne remplit que les champs modélisés côté ShadowHerds ; le reste est
+   signalé via FoundryImport.note (perte volontaire vers le modèle
+   simple). Les dérivées (limites, moniteurs) sont recalculées par
+   EditionSR5.recalc côté contrôleur neutre.
+   ============================================================ */
+const FoundrySR5Import = {
+  /* attribut Foundry → code ShadowHerds (inverse de ATTR_MAP). */
+  _attrRev() {
+    if (this.__attrRev) return this.__attrRev;
+    const rev = {};
+    for (const [code, key] of Object.entries(FoundrySR5Export.ATTR_MAP)) rev[key] = code;
+    return (this.__attrRev = rev);
+  },
+
+  /* clé de compétence Foundry → libellé FR canonique (1re entrée de
+     SKILL_MAP pointant vers cette clé, hors « @know »). */
+  _skillRev() {
+    if (this.__skillRev) return this.__skillRev;
+    const rev = {};
+    for (const [fr, key] of Object.entries(FoundrySR5Export.SKILL_MAP)) {
+      if (key === "@know" || rev[key]) continue;
+      rev[key] = fr;
+    }
+    return (this.__skillRev = rev);
+  },
+
+  /** Score de confiance : cet acteur est-il un PNJ/PJ SR5 ? Distingue de
+      SR6 (attributs `natural.total`) et Anarchy2 (pas d'attribut `body`). */
+  detect(actor) {
+    const t = actor.type;
+    const at = actor.system && actor.system.attributes;
+    if (!at || at.body == null) return 0; // Anarchy2 n'a pas de « body »
+    const body = at.body;
+    // SR6 : natural.total présent ; SR5 : value / natural.value / base.
+    const isSr6Shape = body && body.natural && typeof body.natural === "object" && "total" in body.natural;
+    if (isSr6Shape) return 0;
+    let score = 2; // schéma d'attributs SR5 reconnu
+    if (t === "actorPc" || t === "actorGrunt") score += 1;
+    return score;
+  },
+
+  /** Foundry PC ? (actorPc / character) vs grunt/critter → PNJ. */
+  isPc(actor) {
+    return actor.type === "actorPc" || actor.type === "character";
+  },
+
+  /** Valeur numérique d'un nœud d'attribut, quelle que soit sa forme :
+      nombre plat, {value}, {base}, {natural:{value|total|base}}. */
+  _attrVal(node) {
+    if (node == null) return 0;
+    if (typeof node === "number") return node;
+    if (node.natural && typeof node.natural === "object") return this._attrVal(node.natural);
+    return Number(node.value ?? node.base ?? node.total ?? 0) || 0;
+  },
+
+  /** Trait ShadowHerds {base, mods, total} à partir d'un nombre. */
+  _trait(n) {
+    const v = Number(n) || 0;
+    return { base: v, mods: [], total: v };
+  },
+
+  /** Nombre porté par un nœud {value|base|rating}. */
+  _num(node) {
+    if (node == null) return 0;
+    if (typeof node === "number") return node;
+    return Number(node.value ?? node.base ?? node.rating ?? node.total ?? 0) || 0;
+  },
+
+  /** Map de compétences Foundry (active PC, ou plat grunt) → tableau
+      ShadowHerds [{name, val, spec}]. */
+  _readSkills(system) {
+    const out = [];
+    const rev = this._skillRev();
+    // actorPc : skills.active ; grunt (export) : skills = { clé: {...} } plat.
+    const src = (system.skills && system.skills.active) || system.skills || {};
+    for (const [key, node] of Object.entries(src)) {
+      if (!node || typeof node !== "object" || node.rating == null) continue; // saute languageSkills/knowledgeSkills
+      const val = this._num(node.rating);
+      if (val <= 0) continue;
+      const name = rev[key];
+      if (!name) {
+        FoundryImport.note("compétence", key);
+        continue;
+      }
+      out.push({ name, val, spec: node.specializations || "" });
+    }
+    return out;
+  },
+
+  /** itemWeapon → chaîne d'équipement relisible par WeaponRoll SR5
+      (« Nom [VD 8P, PA -1, SA] »). */
+  _weaponStr(item) {
+    const s = item.system || {};
+    const dv = this._num(s.damageValue);
+    const strBased = s.damageValue && s.damageValue.isStrengthBased;
+    const dt = s.damageType === "stun" ? "S" : "P";
+    const ap = this._num(s.armorPenetration);
+    const acc = this._num(s.accuracy);
+    const codes = { singleShot: "CC", semiAutomatic: "SA", burstFire: "TR", fullyAutomatic: "TA" };
+    const modes = ((s.firingMode && s.firingMode.value) || []).map((m) => codes[m]).filter(Boolean);
+    const parts = [];
+    parts.push(strBased ? `VD (FOR${dv >= 0 ? "+" : ""}${dv})${dt}` : `VD ${dv}${dt}`);
+    if (ap) parts.push(`PA ${ap}`);
+    if (acc) parts.push(`PRE ${acc}`);
+    if (modes.length) parts.push(modes.join("/"));
+    return `${item.name} [${parts.join(", ")}]`;
+  },
+
+  /** itemArmor → « Nom [valeur] ». */
+  _armorStr(item) {
+    const val = this._num((item.system || {}).armorValue);
+    return val ? `${item.name} [${val}]` : item.name;
+  },
+
+  /** Répartit les Items embarqués dans les listes du PNJ. */
+  _readItems(actor, pnj) {
+    for (const item of actor.items || []) {
+      if (!item || !item.name) continue;
+      const desc = (item.system && item.system.description) || "";
+      switch (item.type) {
+        case "itemWeapon":
+          pnj.equip.push(this._weaponStr(item));
+          break;
+        case "itemArmor":
+          pnj.equip.push(this._armorStr(item));
+          break;
+        case "itemAugmentation":
+        case "itemCyberware":
+        case "itemBioware":
+          pnj.augs.push(item.name);
+          break;
+        case "itemGear":
+        case "itemDevice":
+        case "itemCyberdeck":
+        case "itemAmmunition":
+        case "itemLifestyle":
+          pnj.equip.push(item.name);
+          break;
+        case "itemSpell":
+          pnj.spells.push(desc ? { name: item.name, desc } : item.name);
+          break;
+        case "itemComplexForm":
+          pnj.spells.push(item.name);
+          break;
+        case "itemPower":
+        case "itemAdeptPower":
+          pnj.powers.push(desc ? { name: item.name, desc } : item.name);
+          break;
+        case "itemKnowledge":
+        case "itemLanguage":
+          pnj.knowledges.push({ name: item.name, val: this._num((item.system || {}).rating) });
+          break;
+        case "itemQuality":
+          pnj.traits.push(desc ? { name: item.name, desc } : item.name);
+          break;
+        case "itemContact":
+        case "itemSin":
+        case "itemMark":
+        case "itemKarma":
+        case "itemNuyen":
+          break; // hors modèle ShadowHerds, sans intérêt de fiche
+        default:
+          FoundryImport.note("item", `${item.name} (${item.type})`);
+      }
+    }
+  },
+
+  /** Acteur Foundry SR5 → PNJ ShadowHerds (id/edition posés par le
+      contrôleur neutre ; dérivées par recalc). */
+  buildPnj(actor) {
+    const system = actor.system || {};
+    const rev = this._attrRev();
+    const attrs = {};
+    const at = system.attributes || {};
+    for (const [key, code] of Object.entries(rev)) attrs[code] = this._trait(this._attrVal(at[key]));
+
+    // Attributs spéciaux : Magie / Résonance / Chance (edge) / Essence.
+    const sp = system.specialAttributes || {};
+    attrs.MAG = this._trait(this._attrVal(sp.magic));
+    attrs.RES = this._trait(this._attrVal(sp.resonance));
+    attrs.CHC = this._trait(this._attrVal(sp.edge));
+    attrs.ESS = this._trait(system.essence ? this._num(system.essence) : 6);
+
+    const bio = system.biography || {};
+    const magicType = (system.magic && system.magic.magicType) || "";
+    const tradRev = {};
+    for (const [fr, key] of Object.entries(FoundrySR5Export.TRADITION_MAP)) tradRev[key] = fr;
+
+    const pnj = {
+      name: actor.name || "PNJ importé",
+      attrs,
+      meta: bio.characterMetatype || bio.metatype || "",
+      metavariant: bio.metatypeVariant || "",
+      gender: bio.gender === "male" ? "M" : bio.gender === "female" ? "F" : "",
+      archetype: bio.description || "",
+      notes: [bio.background, bio.notes].filter(Boolean).join("\n"),
+      special: magicType === "adept" ? "Adepte" : "Aucun",
+      tradition: tradRev[(system.magic && system.magic.tradition)] || "",
+      skills: this._readSkills(system),
+      equip: [],
+      augs: [],
+      spells: [],
+      powers: [],
+      knowledges: [],
+      traits: [],
+    };
+    this._readItems(actor, pnj);
+    // Champs posés par generate() mais pas par recalc : sans eux la carte
+    // affiche « undefined » (badge PRO, dé d'init). proRating ≈ meilleure
+    // compétence (proxy de professionnalisme, échelle 1-6) ; dé d'init
+    // baseline 1 (Réaction+Intuition+1D6 sans augmentation).
+    const maxSk = pnj.skills.reduce((m, s) => Math.max(m, s.val || 0), 0);
+    pnj.proRating = Math.min(6, Math.max(1, maxSk || 1));
+    pnj.initDice = 1;
+    if (this.isPc(actor)) {
+      pnj.isPC = true;
+      pnj.player = "";
+    }
+    return pnj;
+  },
+};
+
 /* Auto-enregistrement sur le module d'édition SR5 (chargé avant nous).
-   Le contrôleur neutre FoundryExport lira App.editionModule.foundryExport ;
-   absent pour SR6/Anarchy (aucune capacité d'export Foundry pour l'instant). */
+   Le contrôleur neutre FoundryExport lira App.editionModule.foundryExport,
+   FoundryImport lira App.editionModule.foundryImport. */
 if (typeof EditionSR5 !== "undefined") {
   EditionSR5.foundryExport = FoundrySR5Export;
+  EditionSR5.foundryImport = FoundrySR5Import;
 }

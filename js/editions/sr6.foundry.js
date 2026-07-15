@@ -406,9 +406,228 @@ const FoundrySR6Export = {
   },
 };
 
+/* ============================================================
+   IMPORT FOUNDRY → SR6 (miroir de FoundrySR6Export)
+
+   Reconstruit un PNJ ShadowHerds depuis un acteur Foundry SR6
+   (character ou grunt). Réutilise les tables de l'export. On ne lit
+   que les `.base` (seule donnée non-dérivée, cf. en-tête de l'export)
+   et les Items ; le reste est recalculé par EditionSR6.recalc.
+   ============================================================ */
+const FoundrySR6Import = {
+  _attrRev() {
+    if (this.__attrRev) return this.__attrRev;
+    const rev = {};
+    for (const [code, key] of Object.entries(FoundrySR6Export.ATTR_MAP)) rev[key] = code;
+    return (this.__attrRev = rev);
+  },
+
+  /* clé Foundry → libellé FR : on préfère l'entrée SANS spécialité (la
+     compétence de base : influence→Influence, pas Intimidation). */
+  _skillRev() {
+    if (this.__skillRev) return this.__skillRev;
+    const rev = {};
+    for (const [fr, map] of Object.entries(FoundrySR6Export.SKILL_MAP)) {
+      if (map.spec) continue;
+      if (!rev[map.key]) rev[map.key] = fr;
+    }
+    // Complète avec les entrées à spécialité pour les clés encore absentes.
+    for (const [fr, map] of Object.entries(FoundrySR6Export.SKILL_MAP)) {
+      if (!rev[map.key]) rev[map.key] = fr;
+    }
+    return (this.__skillRev = rev);
+  },
+
+  /* clé grunt Foundry → métatype FR (inverse de METATYPE_GRUNT, variantes
+     scindées Nain/Troll ramenées au métatype de base). */
+  _metaRev() {
+    if (this.__metaRev) return this.__metaRev;
+    const rev = { dwarfWill: "Nain", dwarfBody: "Nain", trollBody: "Troll", trollStr: "Troll" };
+    for (const [fr, key] of Object.entries(FoundrySR6Export.METATYPE_GRUNT)) {
+      if (!rev[key]) rev[key] = fr;
+    }
+    return (this.__metaRev = rev);
+  },
+
+  detect(actor) {
+    const at = actor.system && actor.system.attributes;
+    if (!at || at.body == null) return 0;
+    const body = at.body;
+    const isSr6Shape = body && body.natural && typeof body.natural === "object" && "total" in body.natural;
+    if (!isSr6Shape) return 0;
+    let score = 2;
+    if (actor.type === "character" || actor.type === "grunt") score += 1;
+    return score;
+  },
+
+  isPc(actor) {
+    return actor.type === "character";
+  },
+
+  _attrVal(node) {
+    if (node == null) return 0;
+    if (typeof node === "number") return node;
+    if (node.natural && typeof node.natural === "object") {
+      return Number(node.natural.base ?? node.natural.total ?? 0) || 0;
+    }
+    return Number(node.base ?? node.total ?? node.value ?? 0) || 0;
+  },
+
+  _trait(n) {
+    const v = Number(n) || 0;
+    return { base: v, mods: [], total: v };
+  },
+
+  _num(node) {
+    if (node == null) return 0;
+    if (typeof node === "number") return node;
+    return Number(node.base ?? node.total ?? node.value ?? node.rating ?? 0) || 0;
+  },
+
+  _readSkills(system) {
+    const out = [];
+    const rev = this._skillRev();
+    const src = system.skills || {};
+    for (const [key, node] of Object.entries(src)) {
+      if (!node || typeof node !== "object" || node.rank == null) continue;
+      const val = this._num(node.rank);
+      if (val <= 0) continue;
+      const name = rev[key];
+      if (!name) {
+        FoundryImport.note("compétence", key);
+        continue;
+      }
+      // Spécialité sélectionnée (specialization.list.<spec>.isSelected).
+      let spec = "";
+      const list = node.specialization && node.specialization.list;
+      if (list && typeof list === "object") {
+        const sel = Object.keys(list).find((k) => list[k] && list[k].isSelected);
+        if (sel) spec = sel;
+      }
+      out.push({ name, val, spec });
+    }
+    return out;
+  },
+
+  /** itemWeapon (weapon) → chaîne relisible « Nom [VD nX, SO a/b/c/d/e, modes] ». */
+  _weaponStr(item) {
+    const s = item.system || {};
+    // Export SR6 : damage.value est un nœud {base,total,mods} (cf. _n).
+    const v = this._num(s.damage && s.damage.value);
+    const dt = s.damage && s.damage.type === "stun" ? "E" : "P";
+    const r = (s.attackRating && s.attackRating.range) || {};
+    const bands = ["close", "near", "medium", "far", "extreme"].map((b) => this._num(r[b]));
+    const codes = { singleShot: "CC", semiAutomatic: "SA", burstFire: "TR", fullyAutomatic: "TA" };
+    const modes = ((s.firingMode && s.firingMode.value) || []).map((m) => codes[m]).filter(Boolean);
+    const parts = [`VD ${v}${dt}`];
+    if (s.type === "meleeWeapon") parts.push(`SO ${bands[0]}`);
+    else parts.push(`SO ${bands.join("/")}`);
+    if (modes.length) parts.push(modes.join("/"));
+    return `${item.name} [${parts.join(", ")}]`;
+  },
+
+  _armorStr(item) {
+    const val = this._num((item.system || {}).defenseRating);
+    return val ? `${item.name} [SD+${val}]` : item.name;
+  },
+
+  _readItems(actor, pnj) {
+    for (const item of actor.items || []) {
+      if (!item || !item.name) continue;
+      const desc = (item.system && item.system.description) || "";
+      switch (item.type) {
+        case "weapon":
+          pnj.equip.push(this._weaponStr(item));
+          break;
+        case "armor":
+          pnj.equip.push(this._armorStr(item));
+          break;
+        case "augmentation":
+          pnj.augs.push(item.name);
+          break;
+        case "gear":
+        case "device":
+        case "cyberdeck":
+          pnj.equip.push(item.name);
+          break;
+        case "spell":
+          pnj.spells.push(desc ? { name: item.name, desc } : item.name);
+          break;
+        case "complexform":
+        case "complexForm":
+          pnj.spells.push(item.name);
+          break;
+        case "poweradept":
+          pnj.powers.push(desc ? { name: item.name, desc } : item.name);
+          break;
+        case "quality":
+          pnj.traits.push(desc ? { name: item.name, desc } : item.name);
+          break;
+        case "knowledge":
+        case "language":
+          pnj.knowledges.push({ name: item.name, val: this._num((item.system || {}).rating) });
+          break;
+        case "contact":
+        case "sin":
+          break;
+        default:
+          FoundryImport.note("item", `${item.name} (${item.type})`);
+      }
+    }
+  },
+
+  buildPnj(actor) {
+    const system = actor.system || {};
+    const rev = this._attrRev();
+    const at = system.attributes || {};
+    const attrs = {};
+    for (const [key, code] of Object.entries(rev)) attrs[code] = this._trait(this._attrVal(at[key]));
+    attrs.ATO = this._trait(this._attrVal(at.edge));
+    attrs.MAG = this._trait(this._attrVal(at.magic));
+    attrs.RES = this._trait(this._attrVal(at.resonance));
+    attrs.ESS = this._trait(at.essence ? this._attrVal(at.essence) : 6);
+
+    const bio = system.biography || {};
+    const drainRev = {};
+    for (const [code, key] of Object.entries(FoundrySR6Export.DRAIN_ATTR_MAP)) drainRev[key] = code;
+    const magicType = (system.magic && system.magic.type) || "none";
+    const isLt = system.grunt && system.grunt.isLieutenant;
+
+    const pnj = {
+      name: actor.name || bio.realName || "PNJ importé",
+      attrs,
+      meta: this._metaRev()[bio.metatype] || bio.metatype || "",
+      metavariant: bio.metatypeVariant || "",
+      gender: bio.gender === "male" ? "M" : bio.gender === "female" ? "F" : "",
+      archetype: bio.description || "",
+      notes: bio.background || "",
+      special: magicType === "adept" ? "Adepte" : isLt ? "Lieutenant" : "Aucun",
+      traditionDrainAttr: drainRev[(system.magic && system.magic.drainAttribute)] || "",
+      skills: this._readSkills(system),
+      equip: [],
+      augs: [],
+      spells: [],
+      powers: [],
+      knowledges: [],
+      traits: [],
+    };
+    this._readItems(actor, pnj);
+    // Champs posés par generate() mais pas par recalc (cf. import SR5) :
+    // évite « undefined » sur le badge PRO et le dé d'init de la carte.
+    const maxSk = pnj.skills.reduce((m, s) => Math.max(m, s.val || 0), 0);
+    pnj.proRating = Math.min(6, Math.max(1, maxSk || 1));
+    pnj.initDice = 1;
+    if (this.isPc(actor)) {
+      pnj.isPC = true;
+      pnj.player = "";
+    }
+    return pnj;
+  },
+};
+
 /* Auto-enregistrement sur le module d'édition SR6 (chargé avant nous).
-   Le contrôleur neutre FoundryExport lira App.editionModule.foundryExport ;
-   absent pour SR5/Anarchy1/Anarchy2 (chacun sa propre capacité). */
+   FoundryExport lira foundryExport ; FoundryImport lira foundryImport. */
 if (typeof EditionSR6 !== "undefined") {
   EditionSR6.foundryExport = FoundrySR6Export;
+  EditionSR6.foundryImport = FoundrySR6Import;
 }

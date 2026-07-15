@@ -2897,6 +2897,31 @@ const EditionSR5 = {
           { label: Utils.attrFullName(attr), value: A(attr) },
         ];
       }
+      case "composure":
+        return [
+          { label: Utils.attrFullName("VOL"), value: A("VOL") },
+          { label: Utils.attrFullName("CHA"), value: A("CHA") },
+        ];
+      case "judgeIntentions":
+        return [
+          { label: Utils.attrFullName("INT"), value: A("INT") },
+          { label: Utils.attrFullName("CHA"), value: A("CHA") },
+        ];
+      case "memory":
+        return [
+          { label: Utils.attrFullName("LOG"), value: A("LOG") },
+          { label: Utils.attrFullName("VOL"), value: A("VOL") },
+        ];
+      case "liftCarry":
+        return [
+          { label: Utils.attrFullName("FOR"), value: A("FOR") },
+          { label: Utils.attrFullName("CON"), value: A("CON") },
+        ];
+      case "surprise":
+        return [
+          { label: Utils.attrFullName("REA"), value: A("REA") },
+          { label: Utils.attrFullName("INT"), value: A("INT") },
+        ];
       default:
         return null;
     }
