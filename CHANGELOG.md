@@ -12,6 +12,16 @@ commit.
 
 ## [Non publié]
 
+## [1.42.0] — 2026-07-15
+
+### Générer
+- **Riggers SR5 correctement équipés** : un archétype dont le rôle est
+  rigger (même sans le mot « Rigger » dans son nom, ex. *Go-ganger*)
+  reçoit désormais les compétences (Pilotage, Ingénierie drones,
+  Hardware, Cybercombat drones) et le matériel de contrôle (câblage,
+  console rigger) attendus — jusqu'ici seuls les drones étaient corrects,
+  le reste restait silencieusement absent.
+
 ## [1.41.0] — 2026-07-15
 
 ### Table

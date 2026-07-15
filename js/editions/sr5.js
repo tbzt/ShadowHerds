@@ -1460,11 +1460,14 @@ const EditionSR5 = {
       "Câblage de contrôle de véhicules",
       "Console de commande rigger",
     ],
-    Adepte: () => [],
-    "Mage hermétique": () => [],
-    Chaman: () => [],
+    // V2b : les 4 entrées Éveillées (Adepte/Mage hermétique/Chaman/Mage
+    // Aztechnology) ont été retirées — mortes depuis toujours. `_isAwakened`
+    // les classe TOUTES comme Éveillées (magSpecials), et generate() force
+    // `augs = []` pour tout Éveillé AVANT même d'appeler ce producteur (le
+    // ternaire ne l'évalue pas). Les supprimer ne change rien au résultat ;
+    // le lookup retombe sur "Aucun" ci-dessous, dont le retour est de toute
+    // façon jeté par ce même garde-fou.
     Technomancien: () => ["Renfort naturel"],
-    "Mage Aztechnology": () => [],
     // Mundain aguerri (prof ≥ 4) : une source d'init variée, plus parfois un
     // autre cyber de saveur. Sous prof 4 : rien (initiative base 1D6).
     Aucun: (proRating) =>
@@ -2511,6 +2514,18 @@ const EditionSR5 = {
     // archétypes typés « technicien » (ex. « Technicien matriciel corpo »).
     if (special === "Aucun" && (role === "decker" || /matriciel/i.test(archetype)))
       special = "Decker";
+
+    // V2b : même réconciliation pour le rigger — jusqu'ici SEUL le decker
+    // en bénéficiait. Un archétype nommé dont le rôle résout à "rigger"
+    // (ex. « Rigger de gang ») restait sur special="Aucun" par défaut,
+    // silencieusement privé à la fois des compétences de spécialisation
+    // (specialSkills.Rigger : Pilotage/Ingénierie/Hardware/Cybercombat
+    // drones) ET de l'équipement de contrôle (augsBySpecial.Rigger :
+    // câblage + console) — les drones eux-mêmes restaient corrects (déjà
+    // gatés sur `role`, cf. buildLoadout ci-dessous), mais un rigger sans
+    // console pour s'y jacker n'a rien d'un rigger. Sans risque de doublon
+    // (specialSkills fusionne par nom déjà unique, cf. _buildSkills).
+    if (special === "Aucun" && role === "rigger") special = "Rigger";
 
     // Attributs de base selon professionnalisme
     const archetypeIdx = Utils.clamp(proRating, 0, 6);

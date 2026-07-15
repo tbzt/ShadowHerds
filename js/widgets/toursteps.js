@@ -263,5 +263,10 @@ const TourSteps = {
       title: "Un espace « Jouer », et le générateur devient « Topos »",
       body: "La navigation se sépare en « Créer » (vos actifs : Personnages, PNJ, Contacts, Serveurs, Topos) et « Jouer » (vos campagnes, runs et la scène en cours). Le générateur de missions s'appelle désormais « Topos » — l'amorce que vous transformez en run d'un geste.",
     },
+    {
+      id: "wn-sr5-rigger-fix", anchor: "nav-generator", tours: ["whatsnew"], since: "1.42.0", fallback: "center",
+      title: "Riggers SR5 correctement équipés",
+      body: "Un archétype rigger (même sans le mot « Rigger » dans son nom, ex. Go-ganger) reçoit désormais ses compétences de pilotage/drones et son matériel de contrôle (câblage, console) — jusqu'ici seuls les drones étaient au rendez-vous.",
+    },
   ],
 };
