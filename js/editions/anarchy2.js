@@ -480,6 +480,18 @@ const EditionAnarchy2 = {
      quel dans `pnj.equip` (convention Atouts « Nom (cyberware) : effet »
      déjà en usage dans les statblocks). */
   GEAR_CATALOG: {
+    // Cyberdecks (Anarchy 2.0, p.212-213 ; atout de base FW 1 / Att 0, p.60).
+    // Deux attributs tracké = Attaque + Firewall. Le préfixe « Cyberdeck »
+    // permet à l'ajout de configurer aussi le deck mécanique
+    // (Cyberdeck.setFromLine → parseLegacy, qui lit « Att N » et « FW N »).
+    cyberdecks: [
+      "Cyberdeck Erika MCD-6 (Att 1, FW 2)",
+      "Cyberdeck Spinrad Falcon (Att 2, FW 2)",
+      "Cyberdeck MCT 360 (Att 3, FW 3)",
+      "Cyberdeck Renraku Kitsune (Att 4, FW 4)",
+      "Cyberdeck Shiawase Cyber-6 (Att 4, FW 5)",
+      "Cyberdeck Fairlight Excalibur (Att 5, FW 5)",
+    ],
     armures: [
       "Vêtements pare-balles légers [Armure +1]",
       "Vêtements pare-balles avec manteau [Armure +2]",
@@ -568,6 +580,7 @@ const EditionAnarchy2 = {
   },
   _gearLabels: {
     armures: "Armures",
+    cyberdecks: "Cyberdecks",
     equipement: "Équipement / Drogues",
     toxines: "Toxines",
     cyberware: "Cyberware",

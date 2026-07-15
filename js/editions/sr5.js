@@ -402,6 +402,43 @@ const EditionSR5 = {
       { key: "hackfly", name: "Hacker à la volée", type: "access", page: 242,
         pool: (d) => (d.attrs || {}).sleaze || 0, dv: () => null },
     ],
+    /* Programmes matriciels (CYBERPROGRAMMES, p.246-248 ; collecte 2026-07-15).
+       Dans cette app, les 4 attributs du deck (attack/sleaze/dataProcessing/
+       firewall) SONT les limites matricielles et alimentent pools d'actions,
+       défense (Firewall) et affichage — un programme qui relève un attribut/
+       limite est donc pleinement motorisé via `attr:{…}` (effectiveAttrs).
+       `dvByType`/`poolByType` restent pour les rares bonus purement liés à une
+       action (Marteau = +VD au pic). `effect: null` = réellement non
+       motorisable ici : bonus sur une action non modélisée (éditer/traquer un
+       fichier…), résistance à un jet non tracké, ou effet narratif/règle. */
+    programs: [
+      { key: "configurateur", name: "Configurateur", page: 246, effect: null }, // config alternative rechargeable (narratif)
+      { key: "cryptage", name: "Cryptage", page: 246, effect: { attr: { firewall: 1 } } }, // +1 Firewall (défense)
+      { key: "edition", name: "Édition", page: 247, effect: null }, // +2 limite TdD pour « éditer un fichier » (action non modélisée)
+      { key: "gommage-de-bruit", name: "Gommage de bruit", page: 247, effect: null }, // réduction de bruit 2 (non tracké)
+      { key: "machine-virtuelle", name: "Machine virtuelle", page: 247, effect: null }, // +2 emplacements, +1 case dégât encaissé
+      { key: "navigateur", name: "Navigateur", page: 247, effect: null }, // ÷2 temps de recherche matricielle
+      { key: "toolbox", name: "Toolbox", page: 247, effect: { attr: { dataProcessing: 1 } } }, // +1 Traitement de données
+      { key: "armure", name: "Armure", page: 247, effect: null }, // +2 dés résistance dommages matriciels (jet non tracké)
+      { key: "agresseur", name: "Agresseur", page: 247, effect: null }, // +1 dégâts des marks (hors actions codées)
+      { key: "biofeedback", name: "Biofeedback", page: 247, effect: null }, // dégâts biofeedback si cible organique (narratif)
+      { key: "blackout", name: "Blackout", page: 247, effect: null }, // Biofeedback étourdissant seul (narratif)
+      { key: "carapace", name: "Carapace", page: 247, effect: null }, // +1 dé résistance matriciel & biofeedback (jet non tracké)
+      { key: "decryptage", name: "Décryptage", page: 247, effect: { attr: { attack: 1 } } }, // +1 Attaque (limite du Pic de données)
+      { key: "demolition", name: "Démolition", page: 247, effect: null }, // +1 indice bombes matricielles
+      { key: "desamorcage", name: "Désamorçage", page: 247, effect: null }, // +4 dés résistance bombes (jet non tracké)
+      { key: "discretion", name: "Discrétion", page: 247, effect: null }, // +2 dés défense contre pistage (jet non tracké)
+      { key: "exploitation", name: "Exploitation", page: 247, effect: { attr: { sleaze: 2 } } }, // +2 Corruption (Hacker à la volée)
+      { key: "filtre-de-biofeedback", name: "Filtre de biofeedback", page: 247, effect: null }, // +2 dés résistance biofeedback (jet non tracké)
+      { key: "fork", name: "Fork", page: 247, effect: null }, // 2 cibles/1 action (règle)
+      { key: "furtivite", name: "Furtivité", page: 247, effect: { attr: { sleaze: 1 } } }, // +1 Corruption
+      { key: "garde", name: "Garde", page: 247, effect: null }, // réduit les dégâts des marks (défense, jet non tracké)
+      { key: "maquillage", name: "Maquillage", page: 247, effect: null }, // apparence des icônes (narratif)
+      { key: "marteau", name: "Marteau", page: 247, effect: { dvByType: { attack: 2 } } }, // +2 cases de dégâts au Pic de données
+      { key: "pistage", name: "Pistage", page: 248, effect: null }, // +2 limite TdD pour « traquer une icône » (action non modélisée)
+      { key: "surveillance", name: "Surveillance", page: 248, effect: null }, // connaît son Score de Surveillance (narratif)
+      { key: "verrouillage", name: "Verrouillage", page: 248, effect: null }, // verrouille la connexion sur dégât (règle)
+    ],
   },
 
   /* ----
@@ -2087,6 +2124,7 @@ const EditionSR5 = {
      poussée telle quelle dans `pnj.equip` (les armes SR5 y vivent déjà). */
   _equipLabels: {
     commlinks: "Commlinks",
+    cyberdecks: "Cyberdecks",
     pistoletsPoche: "Pistolets de poche",
     pistoletsLegers: "Pistolets légers",
     pistoletsLourds: "Pistolets lourds",

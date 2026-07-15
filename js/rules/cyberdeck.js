@@ -94,6 +94,76 @@ const Cyberdeck = {
     return (this._model(edition) || {}).actions || [];
   },
 
+  /** Catalogue PLEIN des programmes matriciels de l'édition (données
+      d'édition, îlot `cyberdeckModel.programs`). Chaque entrée :
+      `{key, name, page, effect}` où `effect` est soit `null` (programme
+      catalogué mais non motorisable par un simple bonus de pool/VD : effet
+      narratif, sur une action non modélisée, ou sur le Score O/D), soit un
+      descripteur additif `{poolByType:{<type>:N}, poolAll:N, dvByType:{<type>:N},
+      dvAll:N}`. Vide si l'édition n'a pas de programmes (Anarchy). */
+  programCatalog(edition) {
+    return (this._model(edition) || {}).programs || [];
+  },
+
+  /** Somme des effets mécaniques des programmes ACTIFS d'un deck. `deck.programs`
+      est un tableau de noms (tolérant au texte libre : une entrée sans
+      correspondance au catalogue — programme custom/legacy — est simplement
+      ignorée côté effet, mais reste affichée). Deux familles d'effet :
+      - `attr:{<clé>:N}` = modifie un ATTRIBUT/LIMITE du deck (attack/sleaze/
+        dataProcessing/firewall). Dans cette app l'attribut EST la limite et
+        alimente pools d'actions, défense (Firewall) et affichage → motorisé
+        partout via effectiveAttrs().
+      - `poolByType/poolAll/dvByType/dvAll` = bonus direct à une action donnée,
+        pour les rares programmes qui ne passent pas par un attribut (Marteau
+        SR5 = +VD au pic ; Overclock SR6 = +dés à toute action).
+      Renvoie toujours la forme complète (zéros/objets vides par défaut). */
+  programModifiers(edition, deck) {
+    const mods = { attr: {}, poolByType: {}, poolAll: 0, dvByType: {}, dvAll: 0 };
+    const cat = this.programCatalog(edition);
+    if (!cat.length || !deck || !Array.isArray(deck.programs)) return mods;
+    const byName = new Map(cat.map((p) => [p.name, p.effect]));
+    for (const entry of deck.programs) {
+      const eff = byName.get(entry);
+      if (!eff) continue; // programme libre/inconnu → aucun bonus
+      if (eff.poolAll) mods.poolAll += eff.poolAll;
+      if (eff.dvAll) mods.dvAll += eff.dvAll;
+      for (const [k, n] of Object.entries(eff.attr || {}))
+        mods.attr[k] = (mods.attr[k] || 0) + n;
+      for (const [t, n] of Object.entries(eff.poolByType || {}))
+        mods.poolByType[t] = (mods.poolByType[t] || 0) + n;
+      for (const [t, n] of Object.entries(eff.dvByType || {}))
+        mods.dvByType[t] = (mods.dvByType[t] || 0) + n;
+    }
+    return mods;
+  },
+
+  /** Attributs EFFECTIFS du deck = base (`deck.attrs`) + deltas des programmes
+      actifs (`attr:{…}`), bornés à ≥ 0. Source unique lue par les calculs de
+      pool/VD, la défense (Firewall) et l'affichage de la carte — un programme
+      qui relève un attribut/limite se voit donc partout. Ne mute jamais
+      `deck.attrs` (les programmes sont amovibles). */
+  effectiveAttrs(edition, deck) {
+    const base = (deck && deck.attrs) || {};
+    const delta = this.programModifiers(edition, deck).attr;
+    const out = { ...base };
+    for (const [k, n] of Object.entries(delta))
+      out[k] = Math.max(0, (base[k] || 0) + n);
+    return out;
+  },
+
+  /** Applique les modificateurs d'ACTION (pool/VD) à un couple résolu pour une
+      action de type `type`. `null` reste `null` (une action non lançable / sans
+      VD ne devient jamais chiffrée par un programme). Les modificateurs
+      d'attribut, eux, sont déjà pris en compte en amont via effectiveAttrs. */
+  _withProgramMods(mods, type, pool, dv) {
+    const poolBonus = mods.poolAll + (mods.poolByType[type] || 0);
+    const dvBonus = mods.dvAll + (mods.dvByType[type] || 0);
+    return {
+      pool: pool == null ? null : pool + poolBonus,
+      dv: dv == null ? null : dv + dvBonus,
+    };
+  },
+
   /** M7 : entrées de catalogue ÉQUIPÉES d'un deck. Défaut PARESSEUX : `loadout`
       absent → toutes les actions (decks migrés/anciens = râtelier plein, aucune
       migration). Un `loadout` présent mais vide = aucune action (le decker a
@@ -112,14 +182,16 @@ const Cyberdeck = {
       le pic de données (VD = indice d'Attaque, SR5 p.242 / SR6 p.184) ; les
       succès excédentaires (+1) et marks (+2) s'ajoutent live, côté MJ. */
   actions(edition, deck) {
-    return this.loadout(edition, deck).map((a) => ({
-      key: a.key,
-      name: a.name,
-      type: a.type,
-      page: a.page,
-      pool: typeof a.pool === "function" ? a.pool(deck || {}) : null,
-      dv: typeof a.dv === "function" ? a.dv(deck || {}) : null,
-    }));
+    const mods = this.programModifiers(edition, deck);
+    // Deck « vu » avec ses attributs effectifs (programmes de type `attr`
+    // pris en compte) — les fonctions pool/dv du catalogue lisent d.attrs.
+    const effDeck = { ...(deck || {}), attrs: this.effectiveAttrs(edition, deck) };
+    return this.loadout(edition, deck).map((a) => {
+      const basePool = typeof a.pool === "function" ? a.pool(effDeck) : null;
+      const baseDv = typeof a.dv === "function" ? a.dv(effDeck) : null;
+      const { pool, dv } = this._withProgramMods(mods, a.type, basePool, baseDv);
+      return { key: a.key, name: a.name, type: a.type, page: a.page, pool, dv };
+    });
   },
 
   /** M7 : descripteur d'un jet d'action (consommé par le dispatch deck-action).
@@ -130,12 +202,16 @@ const Cyberdeck = {
   rollAction(edition, deck, key) {
     const a = this.catalog(edition).find((x) => x.key === key);
     if (!a) return null;
-    return {
-      pool: typeof a.pool === "function" ? a.pool(deck || {}) : null,
-      dv: typeof a.dv === "function" ? a.dv(deck || {}) : null,
-      label: a.name,
-      type: a.type,
-    };
+    const effDeck = { ...(deck || {}), attrs: this.effectiveAttrs(edition, deck) };
+    const basePool = typeof a.pool === "function" ? a.pool(effDeck) : null;
+    const baseDv = typeof a.dv === "function" ? a.dv(effDeck) : null;
+    const { pool, dv } = this._withProgramMods(
+      this.programModifiers(edition, deck),
+      a.type,
+      basePool,
+      baseDv,
+    );
+    return { pool, dv, label: a.name, type: a.type };
   },
 
   /** M3→M7 : pool de l'attaque matricielle principale (le « pic de données »),
@@ -145,9 +221,12 @@ const Cyberdeck = {
   rollAttack(edition, deck) {
     const atk = this.catalog(edition).find((a) => a.type === "attack");
     if (!atk) return null;
-    const pool = typeof atk.pool === "function" ? atk.pool(deck || {}) : null;
-    if (pool == null) return null;
-    const dv = typeof atk.dv === "function" ? atk.dv(deck || {}) : null;
+    const effDeck = { ...(deck || {}), attrs: this.effectiveAttrs(edition, deck) };
+    const mods = this.programModifiers(edition, deck);
+    const basePool = typeof atk.pool === "function" ? atk.pool(effDeck) : null;
+    if (basePool == null) return null;
+    const baseDv = typeof atk.dv === "function" ? atk.dv(effDeck) : null;
+    const { pool, dv } = this._withProgramMods(mods, atk.type, basePool, baseDv);
     return { pool, dv, label: atk.name };
   },
 
@@ -173,7 +252,10 @@ const Cyberdeck = {
       Cyberdeck.rollAttack, qui ignore déjà Cybercombat), le pool retenu est
       Firewall du deck protecteur + Logique (attrs.LOG) du protecteur. */
   rollProtectActive(protectorPnj) {
-    const fw = (protectorPnj.cyberdeck && protectorPnj.cyberdeck.attrs && protectorPnj.cyberdeck.attrs.firewall) || 0;
+    // Firewall EFFECTIF (programmes de type `attr`, ex. Cryptage +1 Firewall).
+    const fw = protectorPnj.cyberdeck
+      ? this.effectiveAttrs(protectorPnj.edition, protectorPnj.cyberdeck).firewall || 0
+      : 0;
     const log = Actor.attr(protectorPnj, "LOG");
     return { pool: fw + log, label: "Protection active" };
   },
@@ -230,5 +312,26 @@ const Cyberdeck = {
       .find((s) => /cyberdeck/i.test(s));
     if (line) pnj.cyberdeck = this.parseLegacy(line, edition);
     return pnj;
+  },
+
+  /** Choix explicite d'un deck depuis le catalogue d'équipement (EditModal) :
+      (re)configure `pnj.cyberdeck` à partir d'une ligne "Cyberdeck …" — attrs
+      + nom via parseLegacy — en PRÉSERVANT le curage déjà fait par le joueur
+      (programmes choisis, loadout d'actions, cases de moniteur remplies). Le
+      joueur peut donc changer de matériel sans reperdre son paramétrage. À la
+      différence de hydrate() (idempotent, ne s'active que si pas de deck), ce
+      point d'entrée ÉCRASE volontairement les attrs. `null` si la ligne n'est
+      pas un cyberdeck. */
+  setFromLine(pnj, str, edition) {
+    const fresh = this.parseLegacy(str, edition);
+    if (!fresh) return null;
+    const prev = pnj.cyberdeck;
+    if (prev) {
+      fresh.programs = prev.programs || [];
+      fresh.loadout = prev.loadout; // peut être absent → défaut paresseux « tout »
+      fresh.filled = prev.filled || 0;
+    }
+    pnj.cyberdeck = fresh;
+    return fresh;
   },
 };

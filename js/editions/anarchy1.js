@@ -244,6 +244,16 @@ const EditionAnarchy1 = {
       moyenne: ["Armure moyenne [Armure 9, gilet/armure corporelle]"],
       lourde: ["Armure lourde [Armure 12, veste/armure corporelle, -1 point de compétence]"],
     },
+    // Cyberdecks (Anarchy 1re, p.68). Un seul attribut tracké = Firewall ;
+    // les modèles nommés illustrent chaque palier. Le préfixe « Cyberdeck »
+    // est requis pour que l'ajout configure aussi le deck mécanique
+    // (Cyberdeck.setFromLine → parseLegacy, qui lit « FW N »).
+    cyberdecks: [
+      "Cyberdeck premier prix (FW 1) — ex. Erika MCD-1, Microdeck Summit",
+      "Cyberdeck entrée de gamme (FW 2) — ex. Microtrónica Azteca 200, Hermes Chariot",
+      "Cyberdeck de gamme intermédiaire (FW 3) — ex. Novatech Navigator, Renraku Tsurugi",
+      "Cyberdeck haut de gamme (FW 3) — ex. Sony CIY-720",
+    ],
     equipSpecial: [
       "Brouilleur de zone [bloque les communications, zone large]",
       "Commlink [device de communication]",
@@ -301,6 +311,7 @@ const EditionAnarchy1 = {
     armesFeu: "Armes à feu",
     armesLourdes: "Armes lourdes",
     armures: "Armures",
+    cyberdecks: "Cyberdecks",
     equipSpecial: "Équipement spécial",
     drogues: "Drogues",
     toxines: "Toxines",
@@ -564,6 +575,22 @@ const EditionAnarchy1 = {
     // motorisé) et le livre ne décrit pas d'actions matricielles chiffrées côté
     // decker : Cyberdeck.catalog() renvoie donc [] et aucun bouton d'arsenal
     // n'est monté pour cette édition (absence volontaire, pas un oubli).
+    /* Programmes matriciels (Anarchy 1re, p.68). Catalogués et sélectionnables
+       (l'atout de deck en précise le nombre simultané), mais NON motorisés
+       (`effect: null`) : A1 n'a ni actions matricielles chiffrées ni attribut
+       de deck hors Firewall auquel rattacher un bonus de pool/VD. Leurs effets
+       (bonus de dés en cybercombat/hors cybercombat, dégâts, moniteur, défense)
+       n'ont pas de support mécanique côté decker dans cette édition. */
+    programs: [
+      { key: "agresseur", name: "Agresseur", page: 68, effect: null }, // +dés Hacking en cybercombat
+      { key: "exploitation", name: "Exploitation", page: 68, effect: null }, // +dés Hacking hors cybercombat
+      { key: "marteau", name: "Marteau", page: 68, effect: null }, // +dommages en cybercombat
+      { key: "armure", name: "Armure", page: 68, effect: null }, // +cases moniteur matriciel
+      { key: "cryptage", name: "Cryptage", page: 68, effect: null }, // +dés en défense cybercombat
+      { key: "biofeedback", name: "Biofeedback", page: 68, effect: null }, // dommages physiques/étourdissants (narratif)
+      { key: "furtivite", name: "Furtivité", page: 68, effect: null }, // −dés à qui piste le personnage
+      { key: "pistage", name: "Pistage", page: 68, effect: null }, // +dés au Pistage matriciel
+    ],
   },
 
   /* ----
