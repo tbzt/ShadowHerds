@@ -2934,6 +2934,40 @@ const EditionSR6 = {
     return pnj;
   },
 
+  /** Décompose une réserve dérivée en contributions nommées {label,value}
+      (source unique consommée par le popover ⓘ et le résultat du jet — ne
+      duplique pas la formule de recalc, lit les mêmes attributs totaux).
+      damageResist = Constitution seule (l'armure est un Score Défensif à
+      part en SR6, pas mêlée à l'Encaissement). */
+  reserveBreakdown(pnj, key) {
+    const A = (k) => Actor.attr(pnj, k);
+    switch (key) {
+      case "defense":
+        return [
+          { label: Utils.attrFullName("RÉA"), value: A("RÉA") },
+          { label: Utils.attrFullName("INT"), value: A("INT") },
+        ];
+      case "damageResist":
+        return [{ label: Utils.attrFullName("CON"), value: A("CON") }];
+      case "drainResist": {
+        let attr = pnj.traditionDrainAttr;
+        if (!attr) {
+          if (!A("MAG") || pnj.special === "Adepte") return null;
+          attr =
+            String(pnj.archetype).includes("Chaman") || pnj.special === "Chaman"
+              ? "CHA"
+              : "LOG";
+        }
+        return [
+          { label: Utils.attrFullName("VOL"), value: A("VOL") },
+          { label: Utils.attrFullName(attr), value: A(attr) },
+        ];
+      }
+      default:
+        return null;
+    }
+  },
+
   recalc(pnj) {
     // Atout : init douce pour les PNJ sauvegardés avant l'ajout du champ
     // (plancher racial d'attrRange, pas de migration versionnée).

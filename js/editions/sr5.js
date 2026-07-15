@@ -2858,6 +2858,50 @@ const EditionSR5 = {
     return this.buildLoadout(archetype, proRating, special, role, milieu);
   },
 
+  /** Décompose une réserve dérivée en contributions nommées {label,value}
+      (source unique consommée par le popover ⓘ et le résultat du jet — ne
+      duplique pas la formule de recalc, lit les mêmes attributs totaux). */
+  reserveBreakdown(pnj, key) {
+    const A = (k) => Actor.attr(pnj, k);
+    switch (key) {
+      case "defense":
+        return [
+          { label: Utils.attrFullName("REA"), value: A("REA") },
+          { label: Utils.attrFullName("INT"), value: A("INT") },
+        ];
+      case "damageResist": {
+        const armure = pnj.armure || 0;
+        const pieces = ItemResolver.armorPieces(pnj);
+        const armorContrib = { label: "Armure", value: armure };
+        // Réconciliation Lot C (Failsafe) : detail imbriqué SEULEMENT si la
+        // somme des pièces lues dans l'équipement colle exactement à la
+        // valeur stockée — jamais de contradiction avec pnj.armure/
+        // pnj.damageResist (armure motorisée séparément par palier de pro,
+        // pas dérivée de l'équipement choisi ; coïncide surtout après une
+        // édition manuelle cohérente).
+        if (pieces.length && pieces.reduce((s, p) => s + p.value, 0) === armure) {
+          armorContrib.detail = pieces;
+        }
+        return [
+          { label: Utils.attrFullName("CON"), value: A("CON") },
+          armorContrib,
+        ];
+      }
+      case "drainResist": {
+        const attr =
+          pnj.traditionDrainAttr ||
+          (["Mage hermétique", "Chaman"].includes(pnj.special) ? "LOG" : null);
+        if (!attr) return null;
+        return [
+          { label: Utils.attrFullName("VOL"), value: A("VOL") },
+          { label: Utils.attrFullName(attr), value: A(attr) },
+        ];
+      }
+      default:
+        return null;
+    }
+  },
+
   recalc(pnj) {
     const { proRating } = pnj;
     // Chance : init douce pour les PNJ sauvegardés avant l'ajout du champ

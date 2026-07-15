@@ -89,6 +89,28 @@ const ItemResolver = {
       .reduce((sum, o) => sum + o.bonus, 0);
   },
 
+  /** Pièces d'armure lisibles dans l'équipement d'un PNJ (catalogue « Nom
+      [N] » corps, « Nom [+N] » casque/bouclier ADDITIF, cf. sr5.js:1820,
+      sr6.js:1873) — un item peut porter plusieurs pièces dans une seule
+      chaîne (« Armure corporelle intégrale [15] + Casque [+3] + Isolation
+      chimique »). Ne matche QUE les brackets à valeur entière simple :
+      une plage (« [2 à 3] ») ou un choix (« [4/6/8] ») est non résolue,
+      donc ignorée — jamais une valeur devinée (Failsafe, sert la
+      réconciliation Lot C : le caller n'attache un détail que si la somme
+      des pièces colle exactement à la valeur stockée). */
+  armorPieces(pnj) {
+    const out = [];
+    (pnj.equip || []).forEach((item) => {
+      const s = ItemResolver.itemStr(item);
+      const re = /([^,+[\]]+?)\s*\[\+?(\d+)\]/g;
+      let m;
+      while ((m = re.exec(s))) {
+        out.push({ label: m[1].trim(), value: parseInt(m[2], 10) });
+      }
+    });
+    return out;
+  },
+
   /* ---- Catalogue d'équipement (socle partagé SR5/SR6) ----
      Aplatit un `equipPools` d'édition en catégories affichables pour le
      sélecteur « ＋ Catalogue » d'EditModal. Ces helpers restent neutres :

@@ -195,7 +195,7 @@ const DiceRoller = {
 
       // Affordances internes d'une ligne de sort (ⓘ détails, ✕ effacer) :
       // gérées ailleurs (ContentModal / MagicAction), ne pas lancer.
-      if (e.target.closest("[data-content-name], [data-spell-clear]")) return;
+      if (e.target.closest("[data-content-name], [data-spell-clear], [data-explain]")) return;
 
       const t = e.target.closest("[data-roll]");
       if (!t) return;

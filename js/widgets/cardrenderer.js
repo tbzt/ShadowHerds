@@ -86,8 +86,16 @@ const CardRenderer = {
     el.dataset.edition = pnj.edition;
 
     const archStr = pnj.archetype && pnj.archetype !== pnj.name ? pnj.archetype : "";
-    const defense = this._rollPill("Défense", pnj.defense, "Défense — clic pour lancer");
-    const resist = this._rollPill("Encaissement", pnj.damageResist, "Encaissement — clic pour lancer");
+    const defense = this._rollPill("Défense", pnj.defense, {
+      title: "Défense — clic pour lancer",
+      key: "defense",
+      pnj,
+    });
+    const resist = this._rollPill("Encaissement", pnj.damageResist, {
+      title: "Encaissement — clic pour lancer",
+      key: "damageResist",
+      pnj,
+    });
     const cm = App.getEditionModule(pnj.edition).conditionMonitor;
     const gauge = cm && cm.gauge ? cm.gauge(pnj) : null;
     let life = "";
@@ -979,13 +987,32 @@ const CardRenderer = {
     return this._displayPrefs(deps).layout === "expanded";
   },
 
-  /** Pastille de réserve lançable (Défense, Encaissement…). */
-  _rollPill(label, value, title, glyph) {
+  /** Pastille de réserve lançable (Défense, Encaissement…).
+      opts = { title, glyph, key, pnj } — key+pnj activent l'affordance ⓘ
+      (reserveBreakdown, explication décomposée) et posent le détail sur le
+      résultat du jet (data-roll-detail, déjà affiché par diceroller.js). */
+  _rollPill(label, value, opts = {}) {
     if (value == null) return "";
+    const { title, glyph, key, pnj } = opts;
     const glyphHtml = glyph
       ? `<span class="pill-glyph" aria-hidden="true">${glyph}</span> `
       : "";
-    return `<span class="stat-pill rollable combat-pill" data-roll="${value}" data-roll-label="${this._esc(label)}" title="${this._esc(title || label)}">${glyphHtml}${this._esc(label)} <strong>${value}</strong></span>`;
+    let detailAttr = "";
+    let explainHtml = "";
+    const ed = key && pnj ? App.getEditionModule(pnj.edition) : null;
+    const bd = ed && ed.reserveBreakdown ? ed.reserveBreakdown(pnj, key) : null;
+    if (bd && bd.length) {
+      const detail = bd
+        .map((c, i) =>
+          i === 0
+            ? `${c.label} ${c.value}`
+            : `${c.value >= 0 ? "+" : "−"} ${c.label} ${Math.abs(c.value)}`,
+        )
+        .join(" ");
+      detailAttr = ` data-roll-detail="${this._esc(detail)}"`;
+      explainHtml = `<button type="button" class="pill-explain" data-explain="${key}" data-explain-pnj="${this._esc(pnj.id)}" aria-label="Détail du calcul" tabindex="0">ⓘ</button>`;
+    }
+    return `<span class="stat-pill rollable combat-pill" data-roll="${value}" data-roll-label="${this._esc(label)}"${detailAttr} title="${this._esc(title || label)}">${glyphHtml}${this._esc(label)} <strong>${value}</strong></span>${explainHtml}`;
   },
 
   _zoneEyebrow(label) {

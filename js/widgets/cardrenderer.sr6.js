@@ -63,9 +63,23 @@ Object.assign(CardRenderer, {
     const initDetail = `${Utils.attrFullName("RÉA")} ${Actor.attr(pnj, "RÉA")} + ${Utils.attrFullName("INT")} ${Actor.attr(pnj, "INT")}`;
     combatBody += this._initPill(initBase ?? 0, initDice ?? 1, pnj, initDetail);
     if (pnj.drainResist != null)
-      combatBody += this._rollPill("Drain", Math.max(0, pnj.drainResist - malus6), "Résistance au Drain");
-    combatBody += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus6), "Test de défense : Réaction + Intuition", "⛉");
-    combatBody += this._rollPill("Encaissement", pnj.damageResist, "Résistance aux dommages : Constitution + armure (non affectée par le malus de blessure)", "⛊");
+      combatBody += this._rollPill("Drain", Math.max(0, pnj.drainResist - malus6), {
+        title: "Résistance au Drain",
+        key: "drainResist",
+        pnj,
+      });
+    combatBody += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus6), {
+      title: "Test de défense : Réaction + Intuition",
+      glyph: "⛉",
+      key: "defense",
+      pnj,
+    });
+    combatBody += this._rollPill("Encaissement", pnj.damageResist, {
+      title: "Résistance aux dommages : Constitution seule (l'armure est un Score Défensif séparé, non affectée par le malus de blessure)",
+      glyph: "⛊",
+      key: "damageResist",
+      pnj,
+    });
     combatBody += `<span class="stat-pill" title="Score Défensif">SD <strong>${sdBase ?? "?"}</strong></span>`;
     if (pa) combatBody += `<span class="stat-pill">PA <strong>${pa}</strong></span>`;
     combatBody += "</div>";

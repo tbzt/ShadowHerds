@@ -278,5 +278,10 @@ const TourSteps = {
       title: "Équipement SR6 plus cohérent, riggers correctement équipés",
       body: "Même refonte qu'en SR5 : l'arsenal généré reflète mieux le niveau et le rôle du PNJ. Un archétype rigger (même sans le mot « Rigger » dans son nom) reçoit ses compétences et son câblage de contrôle. Mages et chamanes reçoivent un focus de pouvoir qui augmente réellement leurs jets de Sorcellerie et de Conjuration.",
     },
+    {
+      id: "wn-reserve-breakdown", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.44.2", fallback: "center",
+      title: "Explication décomposée des réserves",
+      body: "Défense, Encaissement, Drain : un bouton ⓘ séparé du lancer ouvre désormais le détail, source nommée + chiffre (« Défense 7 = Réaction 3 + Intuition 4 »), au lieu du survol figé. Le résultat du jet porte le même décompte. En SR5, l'Encaissement détaille aussi l'armure pièce par pièce quand elle est reconstituable depuis l'équipement.",
+    },
   ],
 };

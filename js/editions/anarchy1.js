@@ -1518,6 +1518,23 @@ const EditionAnarchy1 = {
       : { name, note };
   },
 
+  /** Décompose une réserve dérivée en contributions nommées {label,value}
+      (source unique consommée par le popover ⓘ et le résultat du jet).
+      damageResist/drainResist : Anarchy 1 n'a pas ces réserves motorisées
+      (drainResist toujours null, cf. plus haut) → null neutre documenté. */
+  reserveBreakdown(pnj, key) {
+    const A = (k) => Actor.attr(pnj, k);
+    switch (key) {
+      case "defense":
+        return [
+          { label: Utils.attrFullName("AGI"), value: A("AGI") },
+          { label: Utils.attrFullName("LOG"), value: A("LOG") },
+        ];
+      default:
+        return null;
+    }
+  },
+
   /** Recalcule moniteurs/Défense/Init après édition manuelle des attributs
       (façon sr5.js recalc). */
   recalc(pnj) {

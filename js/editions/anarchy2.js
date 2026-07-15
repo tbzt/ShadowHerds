@@ -4045,6 +4045,15 @@ const EditionAnarchy2 = {
     return pnj;
   },
 
+  /** Anarchy 2 n'a ni Défense ni Encaissement/Drain motorisés comme réserve
+      opposée : le combat se joue sur les Seuils phys./mentaux (blessures) et
+      le Drain se résout en complication narrative (cf. commentaire
+      cardrenderer.anarchy.js sur la Sorcellerie), jamais un test résisté à
+      décomposer. `null` neutre documenté sur les 3 clés (§ contrat Lot A). */
+  reserveBreakdown(pnj, key) {
+    return null;
+  },
+
   recalc(pnj) {
     return pnj;
   },
