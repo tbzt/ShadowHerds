@@ -5,13 +5,10 @@
    ============================================================ */
 'use strict';
 
-// Import réel (pas de pont), en URL relative versionnée — PAS via
-// specifier nu d'import map : constaté en Phase 1 que l'import map,
-// pourtant fonctionnelle en PoC isolé (tests/esm-poc/), échoue une fois
-// intégrée dans le vrai index.html (cause non identifiée — à ré-investiguer
-// avant la Phase 2, PLANS/PLAN_MODULES_ES.md §8). L'URL relative, elle,
-// ne dépend d'aucune import map et fonctionne de façon fiable.
-import { Debug } from "./debug.js?v=1130";
+// Import par URL relative simple — pas de specifier nu (import map jugée non
+// fiable sur le vrai index.html, cf. plan §10) ni de ?v= (cache géré par les
+// en-têtes HTTP de GitHub Pages, pas par un bump manuel).
+import { Debug } from "./debug.js";
 
 export const Storage = {
   _edition: 'none',
