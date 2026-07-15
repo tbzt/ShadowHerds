@@ -1030,18 +1030,38 @@
   font-size: var(--fs-2xs);
 }
 
-/* M6 : Bruit — réglage ± de scène, même rangée que .encounter-devices. */
-.encounter-noise {
-  display: flex;
+/* CE1 : Bruit — miroir de la Menace dans l'en-tête (ressources de scène),
+   même gabarit compact que .encounter-threat. */
+.encounter-scene-resources {
+  display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.5rem 0.6rem 0;
+  gap: var(--sp-2);
+  margin-left: auto;
+  margin-right: var(--sp-2);
 }
-.encounter-noise-val {
+.encounter-noise {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+}
+.encounter-noise[hidden] {
+  display: none;
+}
+.encounter-noise-lbl {
   font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  min-width: 1.2em;
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+#encounter-noise-val {
+  font-family: var(--font-mono);
+  min-width: 1.2ch;
   text-align: center;
+  color: var(--accent);
 }
 
 /* ---- K3 : tiroir Matrice contextuel — chrome copié de #dice-sheet
@@ -1367,13 +1387,12 @@
   background: color-mix(in srgb, var(--danger) 14%, var(--bg-card));
 }
 
-/* Miroir de la Réserve de menace dans l'en-tête du cockpit (Anarchy). */
+/* Miroir de la Réserve de menace dans l'en-tête du cockpit (Anarchy).
+   CE1 : margin-left:auto porté par .encounter-scene-resources (wrapper). */
 .encounter-threat {
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  margin-left: auto;
-  margin-right: var(--sp-2);
   padding: 0 0.3rem;
   border: 1px solid var(--border);
   border-radius: 3px;

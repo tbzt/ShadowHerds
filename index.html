@@ -708,14 +708,26 @@
     <div class="modal encounter-modal">
       <div class="modal-header">
         <span class="modal-title" id="encounter-title">Suivi de combat — Round <span id="encounter-round">1</span><span id="encounter-pass"></span></span>
-        <!-- K5 : miroir de la Réserve de menace (Anarchy) — même source que le
-             badge topbar (DiceRoller._threat). Affiché selon combatModel.threatReserve. -->
-        <span class="encounter-threat" id="encounter-threat" hidden title="Réserve de Menace (Anarchy) — même compteur que la topbar">
-          <span class="encounter-threat-lbl">Menace</span>
-          <button class="btn-icon-tiny" data-action="threat-step" data-delta="-1" aria-label="Menace −1">−</button>
-          <span id="encounter-threat-val">0</span>
-          <button class="btn-icon-tiny" data-action="threat-step" data-delta="1" aria-label="Menace +1">＋</button>
-          <button class="btn-icon-tiny" data-action="threat-reset" title="Réinitialiser" aria-label="Réinitialiser la menace"><svg class="icon" aria-hidden="true"><use href="#ic-reset"></use></svg></button>
+        <!-- CE1 : ressources de scène groupées (portée = scène, pas combattant) —
+             Menace (K5, Anarchy) + Bruit (M6, ex-fiche active/pied narratif). -->
+        <span class="encounter-scene-resources" id="encounter-scene-resources">
+          <!-- K5 : miroir de la Réserve de menace (Anarchy) — même source que le
+               badge topbar (DiceRoller._threat). Affiché selon combatModel.threatReserve. -->
+          <span class="encounter-threat" id="encounter-threat" hidden title="Réserve de Menace (Anarchy) — même compteur que la topbar">
+            <span class="encounter-threat-lbl">Menace</span>
+            <button class="btn-icon-tiny" data-action="threat-step" data-delta="-1" aria-label="Menace −1">−</button>
+            <span id="encounter-threat-val">0</span>
+            <button class="btn-icon-tiny" data-action="threat-step" data-delta="1" aria-label="Menace +1">＋</button>
+            <button class="btn-icon-tiny" data-action="threat-reset" title="Réinitialiser" aria-label="Réinitialiser la menace"><svg class="icon" aria-hidden="true"><use href="#ic-reset"></use></svg></button>
+          </span>
+          <!-- M6 : Bruit matriciel de scène (SR5 p.232), visible fiche active
+               (SR5/SR6) et narratif (A2) — un seul point d'affichage désormais. -->
+          <span class="encounter-noise" id="encounter-noise" hidden title="Bruit matriciel (SR5 p.232) — retranché des jets du decker">
+            <span class="encounter-noise-lbl">Bruit</span>
+            <button class="btn-icon-tiny" data-action="noise-step" data-delta="-1" aria-label="Bruit −1">−</button>
+            <span id="encounter-noise-val">0</span>
+            <button class="btn-icon-tiny" data-action="noise-step" data-delta="1" aria-label="Bruit +1">＋</button>
+          </span>
         </span>
         <button class="modal-close" data-action="encounter-close" aria-label="Fermer">✕</button>
       </div>

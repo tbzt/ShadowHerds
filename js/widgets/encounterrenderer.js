@@ -63,6 +63,18 @@ const EncounterRenderer = {
         if (val) val.textContent = DiceRoller.threatValue();
       }
     }
+    // CE1 : Bruit rejoint la Menace dans l'en-tête (ressources de scène, même
+    // patron id-driven) — un seul point d'affichage pour la fiche active
+    // (SR5) et le narratif (A2), qui se partageaient jusqu'ici deux rendus.
+    const noiseEl = document.getElementById("encounter-noise");
+    if (noiseEl) {
+      const noiseActive = this._matrixSceneActive(state);
+      noiseEl.hidden = !noiseActive;
+      if (noiseActive) {
+        const val = document.getElementById("encounter-noise-val");
+        if (val) val.textContent = state.noise || 0;
+      }
+    }
 
     const list = document.getElementById("encounter-list");
     if (!list) return;
@@ -113,17 +125,12 @@ const EncounterRenderer = {
     // — une bande dédiée en pied de liste (gate scène Matrice), avant l'action
     // de fin de scène. Vide (donc invisible) hors scène Matrice.
     const devicesHtml = narrative ? this._narrativeDevices(rows, state) : "";
-    // M6 : Bruit visible aussi en narratif (A2) — deck-attack (M3, Piratage
-    // vs serveur) et device-defense (M5b, Protection active) y tournent tous
-    // les deux, même hors fiche active.
-    const noiseHtml = narrative ? this._matrixNoiseRow(state) : "";
     // Action de fin de scène rendue en pied de liste (le tracker n'a pas de
     // barre d'outils modifiable ici) : réinitialise tous les moniteurs.
     list.innerHTML =
       progressHtml +
       html +
       devicesHtml +
-      noiseHtml +
       `<div class="encounter-scene-actions">
         <button class="btn-secondary btn-small" data-action="heal-all" title="Réinitialiser les moniteurs de tous les combattants">⛨ Fin de scène — tout soigner</button>
       </div>`;
@@ -590,24 +597,8 @@ const EncounterRenderer = {
       this._activeBandeau(r) +
       this._activeDeckerLink(r, state) +
       this._activeDevices(r, state) +
-      this._deckerDuel(r, state) +
-      this._matrixNoiseRow(state)
+      this._deckerDuel(r, state)
     );
-  },
-
-  /** M6 : Bruit de scène (SR5 p.232) — un seul réglage ± partagé par tous les
-      jets Matrice du decker (Piratage M3, duel M5a, défense protégée M5b),
-      visible dès qu'une scène Matrice est active (même gate que le reste,
-      _matrixSceneActive). Scène-scopée (`state.noise`), jamais sur un PNJ. */
-  _matrixNoiseRow(state) {
-    if (!this._matrixSceneActive(state)) return "";
-    const noise = state.noise || 0;
-    return `<div class="encounter-noise" title="Bruit matriciel (SR5 p.232) — retranché des jets du decker">
-      <span class="encounter-devices-lbl">Bruit</span>
-      <button class="btn-icon-tiny" data-action="noise-step" data-delta="-1" aria-label="Bruit −1">−</button>
-      <span class="encounter-noise-val">${noise}</span>
-      <button class="btn-icon-tiny" data-action="noise-step" data-delta="1" aria-label="Bruit +1">＋</button>
-    </div>`;
   },
 
   /** Bandeau d'état au-dessus de la fiche active (K2) : hors de
