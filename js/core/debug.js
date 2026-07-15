@@ -24,7 +24,7 @@
      Debug.log("matrix", "résolution CI", { hote, indice });
      Debug.warn("storage", "clé absente", key);
    ============================================================ */
-const Debug = {
+export const Debug = {
   // Canaux connus + couleur d'affichage. Étendre cette table pour en
   // déclarer un nouveau ; un canal ad hoc passé à on() marche aussi
   // (couleur neutre par défaut).

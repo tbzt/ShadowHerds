@@ -5,7 +5,15 @@
    ============================================================ */
 'use strict';
 
-const Storage = {
+// Import réel (pas de pont), en URL relative versionnée — PAS via
+// specifier nu d'import map : constaté en Phase 1 que l'import map,
+// pourtant fonctionnelle en PoC isolé (tests/esm-poc/), échoue une fois
+// intégrée dans le vrai index.html (cause non identifiée — à ré-investiguer
+// avant la Phase 2, PLANS/PLAN_MODULES_ES.md §8). L'URL relative, elle,
+// ne dépend d'aucune import map et fonctionne de façon fiable.
+import { Debug } from "./debug.js?v=1130";
+
+export const Storage = {
   _edition: 'none',
   _observers: [],
 
@@ -549,3 +557,7 @@ const Storage = {
     }
   },
 };
+
+// Pont couche 1 (voir PLANS/PLAN_MODULES_ES.md) : accessible en global
+// classique tant que les couches hautes n'ont pas basculé en `import`.
+window.Storage = Storage;

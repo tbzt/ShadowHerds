@@ -3,7 +3,7 @@
 /* ============================================================
    UTILS
    ============================================================ */
-const Utils = {
+export const Utils = {
   /** Résolveur du module d'édition, injecté par App au démarrage.
       Utils (couche 1, socle) ne référence jamais App (couche 6) par son nom :
       la dépendance ne descend que dans un sens (CONTRIBUTING.md « cycle
@@ -1556,7 +1556,7 @@ const Utils = {
 /** @param type "warning" | "danger" | "info" | null — pose une classe
     modificatrice sur les tokens sémantiques déjà déclarés (--warning/--danger/
     --info) ; omis = apparence neutre existante, rétrocompatible. */
-function toast(msg, type = null, duration = 2400) {
+export function toast(msg, type = null, duration = 2400) {
   const el = document.getElementById("toast");
   if (!el) return;
   el.textContent = msg;
@@ -1571,7 +1571,7 @@ function toast(msg, type = null, duration = 2400) {
     ferme le toast. Sert de filet de sécurité aux suppressions (Collection,
     générateur). Durée plus longue (6 s) pour laisser le temps de réagir.
     Le bouton est câblé en JS (pas de handler inline). */
-function toastUndo(msg, onUndo, duration = 6000) {
+export function toastUndo(msg, onUndo, duration = 6000) {
   const el = document.getElementById("toast");
   if (!el) return;
   clearTimeout(el._timer);
@@ -1594,3 +1594,11 @@ function toastUndo(msg, onUndo, duration = 6000) {
   el.classList.add("show");
   el._timer = setTimeout(hide, duration);
 }
+
+// Pont couche 1 (voir PLANS/PLAN_MODULES_ES.md) : ces trois exports restent
+// aussi accessibles en globals classiques (`Utils.x`, `toast(...)`), tant
+// que les modules d'édition/widgets/contrôleurs n'ont pas eux-mêmes basculé
+// en `import`. Retiré en fin de migration (Phase 6).
+window.Utils = Utils;
+window.toast = toast;
+window.toastUndo = toastUndo;
