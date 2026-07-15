@@ -180,6 +180,18 @@ const MultiSelect = {
       }
     });
 
+    // Le dropdown est en position:fixed (échappe au clipping des ancêtres
+    // scrollables, cf. forms.css) : ses coordonnées sont figées à l'ouverture,
+    // donc on ferme au moindre scroll pour ne pas laisser un menu mal placé.
+    document.addEventListener(
+      "scroll",
+      (e) => {
+        if (e.target.closest && e.target.closest(".ms-dropdown")) return;
+        document.querySelectorAll(".ms-open").forEach((ms) => this._setOpen(ms, false));
+      },
+      true,
+    );
+
     // Retirer une puce
     document.addEventListener("click", (e) => {
       const chip = e.target.closest(".ms-chip[data-val]");
@@ -201,9 +213,19 @@ const MultiSelect = {
     const dd = ms.querySelector(".ms-dropdown");
     const control = ms.querySelector(".ms-control");
     if (!dd) return;
+    if (open) this._position(ms, dd, control);
     dd.hidden = !open;
     ms.classList.toggle("ms-open", open);
     if (control) control.setAttribute("aria-expanded", String(open));
+  },
+
+  /** Positionne le dropdown (position:fixed) sous son contrôle — recalculé
+      à chaque ouverture puisque le scroll ferme le menu (cf. init). */
+  _position(ms, dd, control) {
+    const r = control.getBoundingClientRect();
+    dd.style.top = `${r.bottom + 4}px`;
+    dd.style.left = `${r.left}px`;
+    dd.style.width = `${r.width}px`;
   },
 
   /** Met à jour l'état indéterminé/coché des en-têtes de catégorie. */

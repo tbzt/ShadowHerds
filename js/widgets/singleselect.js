@@ -210,9 +210,32 @@ const SingleSelect = {
       if (!search) return;
       this._applySearch(search.closest(".ss"), search.value);
     });
+
+    // Le dropdown est en position:fixed (échappe au clipping des ancêtres
+    // scrollables, cf. forms.css) : ses coordonnées sont figées à l'ouverture,
+    // donc on ferme au moindre scroll pour ne pas laisser un menu mal placé.
+    document.addEventListener(
+      "scroll",
+      (e) => {
+        if (e.target.closest && e.target.closest(".ss-dropdown")) return;
+        document.querySelectorAll(".ss-open").forEach((ss) => this._setOpen(ss, false));
+      },
+      true,
+    );
   },
 
   /* ---- interne ---- */
+
+  /** Positionne le dropdown (position:fixed) sous son contrôle — recalculé
+      à chaque ouverture puisque le scroll ferme le menu (cf. init). */
+  _position(ss) {
+    const control = ss.querySelector(".ss-control");
+    const dd = ss.querySelector(".ss-dropdown");
+    const r = control.getBoundingClientRect();
+    dd.style.top = `${r.bottom + 4}px`;
+    dd.style.left = `${r.left}px`;
+    dd.style.width = `${r.width}px`;
+  },
 
   _select(ss, value) {
     const input = ss.querySelector('input[type="hidden"]');
@@ -229,6 +252,7 @@ const SingleSelect = {
     const dd = ss.querySelector(".ss-dropdown");
     const control = ss.querySelector(".ss-control");
     if (!dd || dd.hidden === !open) return; // pas de changement d'état, rien à faire
+    if (open) this._position(ss);
     dd.hidden = !open;
     ss.classList.toggle("ss-open", open);
     if (control) control.setAttribute("aria-expanded", String(open));

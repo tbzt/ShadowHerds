@@ -218,14 +218,16 @@
   opacity: 1;
 }
 
-/* Menu déroulant */
+/* Menu déroulant. position:fixed + coordonnées posées en JS
+   (SingleSelect/MultiSelect._position) au moment de l'ouverture :
+   un conteneur ancêtre à overflow:auto/hidden (zone repliable, modale
+   scrollable...) le clipperait sinon, quelle que soit sa position dans
+   la pile — vérifié en conditions réelles sur les catalogues Sorts/
+   Pouvoirs de la modale d'édition. */
 .ms-dropdown,
 .ss-dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  z-index: var(--z-card);
+  position: fixed;
+  z-index: var(--z-popover);
   background: var(--bg-card);
   border: 1px solid var(--accent);
   border-radius: 3px;

@@ -46,6 +46,15 @@ details[open] > summary.modal-section-title::before {
   transition: none;
 }
 
+/* Sans transition, l'overflow:hidden hérité de pnj-card.css ne sert plus qu'à
+   masquer l'état replié — pas à clipper une animation. Zone dépliée : on le
+   repasse en visible pour que les dropdowns (SingleSelect des catalogues
+   Sorts/Pouvoirs notamment) puissent déborder de la zone au lieu d'être
+   rognés/inatteignables. Zone repliée : overflow:hidden reste actif. */
+#edit-modal .card-zone:not(.zone-collapsed) .zone-body-inner {
+  overflow: visible;
+}
+
 /* 2) Rythme de séparation UNIFORME (ME2c). Sur la carte, les zones se suivent
    avec un filet-haut ; dans la modale elles cohabitent avec des .modal-section
    à filet-bas + grande marge → double filet SECT↔ZONE et collage ZONE↔SECT.
