@@ -3,14 +3,14 @@
 /* ============================================================
    ACTOR — accesseurs de valeurs d'acteur (attributs, compétences).
 
-   SEAM de la refonte du modèle d'acteur (PLANS/PLAN_REFONTE_ACTEUR.md).
+   SEAM de la refonte du modèle d'acteur.
    But : découpler les 27 lecteurs de `pnj.attrs.X` de la FORME stockée,
    pour pouvoir plus tard basculer le plat `5` vers un `Trait {base,mods,
    total}` à un seul endroit — ici — sans toucher les lecteurs.
 
-   VAGUE V2 (active) : le `Trait {base, mods, total}` est la forme cible.
-   `_num()` reste tolérant (nombre plat OU Trait), donc les ~35 lecteurs
-   migrés en V1 sont transparents à la bascule. Le `Mod` porte sa source :
+   Le `Trait {base, mods, total}` est la forme cible (active). `_num()`
+   reste tolérant (nombre plat OU Trait), donc les ~35 lecteurs déjà migrés
+   sont transparents à la bascule. Le `Mod` porte sa source :
      Mod = { value, source, sourceUuid?, type?, isMultiplier? }
    `total` = (base + Σ mods additifs) × Π multiplicateurs ; le clamp par
    métatype et les dérivées restent produits par recalc côté édition.
@@ -20,7 +20,7 @@
 const Actor = {
   /** Coerce une valeur d'acteur en NOMBRE, quelle que soit sa forme :
       - nombre plat (forme legacy) → tel quel ;
-      - Trait `{base, mods, total}` (forme cible V2) → son `total`. */
+      - Trait `{base, mods, total}` (forme cible) → son `total`. */
   _num(v) {
     if (v && typeof v === "object") return v.total ?? v.base ?? 0;
     return v ?? 0;

@@ -31,16 +31,16 @@
    les chaînes de `equipPools` restent INCHANGÉES, et les PNJ persistés
    ne changent pas de forme (contrainte Failsafe).
 
-   DÉGRADATION GRACIEUSE (garantie d'iso-comportement, V1). Tant qu'un
+   DÉGRADATION GRACIEUSE (garantie d'iso-comportement). Tant qu'un
    `profile` ne fournit pas une table (poids de tier, affinité…), la
    fonction correspondante renvoie un poids neutre (1). Un `profile`
    vide ⇒ tous poids = 1 ⇒ `weightedPick` == tirage uniforme actuel
-   (`Utils.rand`). Aucune sortie de génération ne change tant que V2/V3
-   n'a pas autoré de profil d'édition.
+   (`Utils.rand`). Aucune sortie de génération ne change tant qu'un profil
+   d'édition n'a pas été autoré.
 
    ------------------------------------------------------------
    CONTRAT — forme d'un `profile` d'édition (tout est optionnel ;
-   l'absence d'une table = neutre). Autoré en V2 (SR5) / V3 (SR6).
+   l'absence d'une table = neutre). Autoré par édition (SR5, SR6…).
 
    profile = {
      // proRating → clé de tranche (pour choisir la ligne de poids).
@@ -108,7 +108,7 @@ const LoadoutEngine = {
   },
 
   /* ---- Résolution de métadonnée (sidecar `profile`, items tolérants) ----
-     Un item peut être une chaîne legacy ou l'objet polymorphe #63
+     Un item peut être une chaîne legacy ou l'objet polymorphe
      ({str, cat, rating}) ; on lit via ItemResolver. La catégorie de
      tirage (`cat`) est fournie par le slot, l'override par sous-chaîne
      l'emporte sur le défaut de catégorie. */
@@ -215,7 +215,7 @@ const LoadoutEngine = {
   },
 
   /** Tire UN candidat pondéré par rareté × affinité parmi `candidates`
-      (`[{item, cat}]`). GARANTIE ISO (V1) : `profile` vide ⇒ tous les poids
+      (`[{item, cat}]`). GARANTIE ISO : `profile` vide ⇒ tous les poids
       valent 1 ⇒ tirage uniforme, identique à `Utils.rand`. Renvoie l'item
       (pas l'enveloppe). null si aucun candidat éligible. */
   weightedPick(candidates, ctx, profile) {
@@ -272,7 +272,7 @@ const LoadoutEngine = {
 
   /** Orchestre tous les slots d'un `profile` et renvoie la liste d'items
       (à pousser dans `pnj.equip`). Consommé par les modules d'édition en
-      V2/V3, en remplacement du corps de `buildLoadout`. Sans `slots`
+      remplacement du corps de `buildLoadout`. Sans `slots`
       autorés, renvoie [] (le module garde alors son ancien chemin). */
   pick(equipPools, profile, ctx) {
     if (!profile || !Array.isArray(profile.slots)) return [];

@@ -12,7 +12,7 @@
    ============================================================ */
 const Contacts = {
   /** Affiche le formulaire dirigé adapté à l'édition courante.
-      Dispatch structurel accepté (issue #14) : Anarchy (atout+RR) et
+      Dispatch structurel accepté : Anarchy (atout+RR) et
       SR5/SR6 (Influence/Loyauté) sont deux templates complets, pas une
       valeur scalaire — cf. ContactGen.generate(). */
   renderForm() {

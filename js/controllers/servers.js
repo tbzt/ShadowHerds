@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   SERVEURS & CI — bibliothèque et génération (issue #14).
+   SERVEURS & CI — bibliothèque et génération.
    Panneau « Matrice » : bibliothèque de serveurs avec groupes
    (socle Collection, comme Shadows/ContactsBook), génération
    dirigée ou aléatoire, édition de serveur, spider lié. Deux
@@ -152,7 +152,7 @@ const Servers = Object.assign(
         sculpture: Matrix.pickSculpture(profile.sev),
         spider: null,
         notes: "",
-        // R2-B : plus d'`intrusion` ici — le serveur redevient une pure
+        // Plus d'`intrusion` ici — le serveur redevient une pure
         // définition, l'état vivant vit scène-scopé (Encounter.state.matrix),
         // créé à la volée par Intrusion._state.
       };
@@ -348,7 +348,7 @@ const Servers = Object.assign(
       const srv = this.find(id);
       if (!srv || key === "patrouilleuse") return;
       srv.icList = srv.icList.filter((k) => k !== key);
-      // R2-B : l'état vivant de ce serveur (s'il y en a un) vit scène-scopé,
+      // L'état vivant de ce serveur (s'il y en a un) vit scène-scopé,
       // pas sur srv — nettoyé là où il se trouve réellement.
       const intr =
         typeof Encounter !== "undefined" && Encounter.state && Encounter.state.matrix
@@ -435,11 +435,11 @@ const Servers = Object.assign(
       const panel = document.getElementById("app");
       if (!panel) return;
 
-      // K3 : le tiroir Matrice du tracker de combat (cf. Encounter) est hors
+      // Le tiroir Matrice du tracker de combat (cf. Encounter) est hors
       // de #app (overlay au même niveau qu'#encounter-overlay) mais réutilise
       // verbatim ServerRenderer.intrusionPanel — même délégation posée sur
       // les deux conteneurs plutôt qu'une 2ᵉ copie du switch (audit
-      // intrusion.js pré-K3 : la logique existait déjà, on ne la duplique pas).
+      // intrusion.js : la logique existait déjà, on ne la duplique pas).
       const onClick = (e) => {
         const el = e.target.closest("[data-action]");
         if (!el) return;
@@ -545,7 +545,7 @@ const Servers = Object.assign(
       panel.addEventListener("click", onClick);
       const matrixDrawer = document.getElementById("matrix-drawer-overlay");
       if (matrixDrawer) matrixDrawer.addEventListener("click", onClick);
-      // K6 : colonne Matrice dockée (≥1100px) — 3ᵉ montage du même contenu
+      // Colonne Matrice dockée (≥1100px) — 3ᵉ montage du même contenu
       // (intrusionPanel), même délégation que le tiroir mobile plutôt qu'une
       // 3ᵉ copie du switch.
       const matrixDock = document.getElementById("encounter-matrix-dock");
@@ -554,7 +554,7 @@ const Servers = Object.assign(
       const onChange = (e) => {
         const noteEl = e.target.closest('[data-action="edit-note"]');
         if (noteEl) return this.editNote(noteEl.dataset.id, noteEl.value);
-        // R2-B : sélecteur multi-serveur du tiroir Matrice.
+        // Sélecteur multi-serveur du tiroir Matrice.
         const switchEl = e.target.closest('[data-action="switch-matrix-server"]');
         if (switchEl) Encounter.linkServer(switchEl.value);
       };

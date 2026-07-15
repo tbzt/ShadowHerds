@@ -1,13 +1,13 @@
 "use strict";
 
 /* ============================================================
-   TRACKER D'INTRUSION — état de run en direct (issue #14).
+   TRACKER D'INTRUSION — état de run en direct.
    Sépare l'état vivant d'une intrusion matricielle (tours, CI
    déployées, Score de Surveillance, marks, Surveillance du DIEU)
    de la génération/persistance des serveurs (js/controllers/servers.js).
 
-   R2-B : cet état vivant est scène-scopée (`Encounter.state.matrix
-   {serverId → intrusion}`, D-R2-1/D-R2-2) — plus `srv.intrusion`, qui
+   Cet état vivant est scène-scopée (`Encounter.state.matrix
+   {serverId → intrusion}`) — plus `srv.intrusion`, qui
    ne redevient qu'une définition. Ce module ne possède toujours aucune
    donnée : il lit et mute l'état renvoyé par `Encounter.intrusionFor(id)`,
    puis délègue la persistance à `Encounter._commit()` (source unique de
@@ -37,7 +37,7 @@ const Intrusion = {
   },
 
   /** Serveur (définition), pour les besoins (édition, icList, indice…) des
-      mutateurs ci-dessous — jamais muté ici (R2-B : plus d'`intrusion` sur
+      mutateurs ci-dessous — jamais muté ici (plus d'`intrusion` sur
       l'objet serveur). */
   _get(id) {
     return Servers.find(id) || null;
@@ -55,7 +55,7 @@ const Intrusion = {
   /** Persiste la scène (source unique de l'état vivant) + rend le panneau
       Serveurs, qui affiche aussi cet état — factorisé pour ne pas dupliquer
       15 fois le même couple d'appels. `Encounter._commit()` recouvre déjà
-      le rendu du tiroir/dock (R2-B : plus besoin du pont `notifyServerChanged`,
+      le rendu du tiroir/dock (plus besoin du pont `notifyServerChanged`,
       l'écriture a déjà eu lieu sur `state.matrix`). */
   _persist() {
     Servers.save();
@@ -114,10 +114,10 @@ const Intrusion = {
           const label = Servers.icCatalog(srv.edition)[next]?.label || next;
           Debug.log("servers", "CI déployée", { server: srv.name, turn: intr.turn, ic: next });
           toast(`Le serveur déploie : ${label}.`);
-          // R2-C : la CI déployée rejoint l'ordre d'initiative sans second
+          // La CI déployée rejoint l'ordre d'initiative sans second
           // geste (« zéro clic »), pour N'IMPORTE QUEL serveur de la scène —
           // plus de pont conditionnel `serverId === id` (plusieurs serveurs
-          // actifs en parallèle, R2-B). launchIC est idempotent (no-op si la
+          // actifs en parallèle). launchIC est idempotent (no-op si la
           // CI y est déjà) et toaste « rejoint l'init ».
           if (typeof Encounter !== "undefined" && Encounter.state) {
             Encounter.launchIC(id, next);
@@ -273,7 +273,7 @@ const Intrusion = {
 
   /** SR6 : niveau d'accès obtenu sur ce serveur (0 Invité/1 Utilisateur/
       2 Administrateur, p.179) — miroir des marks SR5, gagné via Forcer
-      l'accès / Sonder l'accès (M7, côté decker). */
+      l'accès / Sonder l'accès (côté decker). */
   setAccess(id, delta) {
     const intr = this._state(id);
     if (!intr) return;

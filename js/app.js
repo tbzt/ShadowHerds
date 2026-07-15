@@ -14,18 +14,18 @@ const App = {
   editionModule: null,
 
   /* ============================================================
-     CONTEXT — vérité unique « où suis-je ? » (R3-A, doctrine
+     CONTEXT — vérité unique « où suis-je ? » (doctrine
      Campagne › Run › Scène). Pointeur édition-scopé PERSISTÉ :
      { dossier, scene }. Les trois échelles (campagne/run/scène) se
      DÉRIVENT à la demande de la chaîne de parents Dossiers + du
      `kind` (trail()) ; jamais stockées séparément → aucune
      divergence possible.
 
-     Adaptateur progressif (D-R3-1) : cette source unique s'ajoute
+     Adaptateur progressif : cette source unique s'ajoute
      AU-DESSUS des pointeurs existants (`DossierBar.current`,
      `Encounter.activeDossierId`), qui restent lus tels quels par le
-     code en place ; seules les surfaces neuves (fil d'Ariane R3-B,
-     sélecteur R3-C, perche « Reprendre » R3-D) liront ici. Rien à
+     code en place ; seules les surfaces neuves (fil d'Ariane,
+     sélecteur, perche « Reprendre ») liront ici. Rien à
      migrer dans `storage.js` : clé neuve « context », pas de
      `SCHEMA_VERSION`. */
   context: {
@@ -39,7 +39,7 @@ const App = {
         aligne le dossier en focus sur `DossierBar`, et RÉHYDRATE le pointeur
         volatil `Encounter.activeDossierId` depuis `scene`. C'est cette
         réhydratation qui fait « survivre la scène au rechargement » (la
-        scène elle-même vit déjà dans `encounter_current`) — socle de R3-D.
+        scène elle-même vit déjà dans `encounter_current`).
         Appelé après Dossiers + Encounter chargés. */
     load() {
       const saved = Storage.get(this._KEY, {}) || {};
@@ -52,7 +52,7 @@ const App = {
       // unique — y compris pour EFFACER un reliquat d'une autre édition (le
       // contexte est édition-scopé, ces pointeurs sont mémoire de module et
       // collants d'une édition à l'autre). `activeDossierId` réhydraté ici fait
-      // survivre la scène au reload (socle R3-D) ; on écrit `current` + on
+      // survivre la scène au reload ; on écrit `current` + on
       // ré-applique la destination sans `notify()` (le panneau sera rendu frais
       // par `showPanel`, éviter la propagation à mi-bascule d'édition).
       Encounter.activeDossierId = this.scene;
@@ -62,7 +62,7 @@ const App = {
     },
     _save() {
       Storage.set(this._KEY, { dossier: this.dossier, scene: this.scene });
-      this.render(); // R3-B : le fil d'Ariane reflète tout changement de contexte
+      this.render(); // le fil d'Ariane reflète tout changement de contexte
     },
 
     /** Pose le dossier en focus (appelé par `DossierBar.select`). `"all"` → null. */
@@ -84,7 +84,7 @@ const App = {
 
     /** Fil d'Ariane : chaîne d'échelles de la racine au dossier en focus,
         taguée par `kind`, suivie de la scène vivante si présente. Dérivé à la
-        demande, jamais stocké. Consommé par R3-B (locator) et R3-C
+        demande, jamais stocké. Consommé par le fil d'Ariane (locator) et le sélecteur
         (sélecteur). Renvoie `[{ scale, id, name, live? }]`,
         `scale ∈ campaign|run|folder|scene`. */
     trail() {
@@ -109,7 +109,7 @@ const App = {
       return out;
     },
 
-    /** R3-B — fil d'Ariane : rend `trail()` dans la topbar (`#topbar-locator`).
+    /** Fil d'Ariane : rend `trail()` dans la topbar (`#topbar-locator`).
         Chips cliquables : une échelle dossier remet le focus dessus (hub) ; la
         scène vivante rouvre le tracker (`● En cours`). Vide → innerHTML vide,
         masqué par CSS (`:empty`). Appelé à chaque changement de contexte
@@ -119,7 +119,7 @@ const App = {
       if (!el) return;
       const trail = this.trail();
       // La rangée s'affiche dès qu'un contexte est en focus OU qu'un dossier
-      // existe (le sélecteur R3-C a alors une cible) ; sinon masquée (:empty).
+      // existe (le sélecteur a alors une cible) ; sinon masquée (:empty).
       const hasDossiers =
         typeof Dossiers !== "undefined" && Dossiers.list().some((d) => d.name !== Collection.FAV_GROUP);
       if (!trail.length && !hasDossiers) {
@@ -128,7 +128,7 @@ const App = {
       }
       const esc = CardRenderer._esc;
       const ICON = { campaign: "❖", run: "◆", folder: "▸" };
-      // Entrée GLOBALE du sélecteur de contexte (R3-C) en tête du fil d'Ariane :
+      // Entrée GLOBALE du sélecteur de contexte en tête du fil d'Ariane :
       // « où suis-je » (chips) + « aller ailleurs » (sélecteur) dans la même
       // rangée, comme la doctrine les veut indissociables.
       const parts = [ContextSelector.triggerHtml("Contexte")];
@@ -217,31 +217,31 @@ const App = {
     return this._modules[ed] ? this._modules[ed]() : null;
   },
 
-  /* ---- Chargement conditionnel des assets d'édition (CH-P1b/P2) ----
+  /* ---- Chargement conditionnel des assets d'édition ----
      L'écran de choix n'a besoin d'aucun module d'édition ni du gros catalogue
      de créatures : on les charge à la sélection, avant selectEdition (qui
      appelle buildForms → Creatures). Retire ~280 Ko d'éditions + 238 Ko de
      créatures + 3 thèmes inutiles du chargement initial. */
   _loadedAssets: new Set(),
   _EDITION_CSS: {
-    sr5: "css/theme-sr5.css?v=1126",
-    sr6: "css/theme-sr6.css?v=1126",
-    anarchy2: "css/theme-anarchy.css?v=1126",
-    anarchy1: "css/theme-anarchy1.css?v=1126",
+    sr5: "css/theme-sr5.css?v=1128",
+    sr6: "css/theme-sr6.css?v=1128",
+    anarchy2: "css/theme-anarchy.css?v=1128",
+    anarchy1: "css/theme-anarchy1.css?v=1128",
   },
   _EDITION_JS: {
-    sr5: ["js/editions/sr5.js?v=1126", "js/editions/sr5.foundry.js?v=1126", "js/editions/sr5.print.js?v=1126"],
-    sr6: ["js/editions/sr6.js?v=1126", "js/editions/sr6.foundry.js?v=1126", "js/editions/sr6.print.js?v=1126"],
+    sr5: ["js/editions/sr5.js?v=1128", "js/editions/sr5.foundry.js?v=1128", "js/editions/sr5.print.js?v=1128"],
+    sr6: ["js/editions/sr6.js?v=1128", "js/editions/sr6.foundry.js?v=1128", "js/editions/sr6.print.js?v=1128"],
     anarchy2: [
-      "js/editions/anarchy2.js?v=1126",
-      "js/editions/anarchy2.creation.js?v=1126",
-      "js/editions/anarchy2.foundry.js?v=1126",
-      "js/editions/anarchy2.print.js?v=1126",
+      "js/editions/anarchy2.js?v=1128",
+      "js/editions/anarchy2.creation.js?v=1128",
+      "js/editions/anarchy2.foundry.js?v=1128",
+      "js/editions/anarchy2.print.js?v=1128",
     ],
-    anarchy1: ["js/editions/anarchy1.js?v=1126", "js/editions/anarchy1.print.js?v=1126"],
+    anarchy1: ["js/editions/anarchy1.js?v=1128", "js/editions/anarchy1.print.js?v=1128"],
   },
   // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
-  _COMMON_JS: ["js/catalogs/creatures.js?v=1126"],
+  _COMMON_JS: ["js/catalogs/creatures.js?v=1128"],
   _loadCss(href) {
     if (!href || this._loadedAssets.has(href)) return;
     this._loadedAssets.add(href);
@@ -303,7 +303,7 @@ const App = {
     Servers.initPanel(); // charge + migre + câble la délégation serveur (#app)
     DossierBar.init(); // Dossiers chargés/synchronisés + destination courante
     Encounter.load();
-    this.context.load(); // R3-A : réhydrate { dossier, scene } + Encounter.activeDossierId
+    this.context.load(); // réhydrate { dossier, scene } + Encounter.activeDossierId
     DiceRoller.loadThreat();
     Gen.buildForms();
     Settings.render();
@@ -317,7 +317,7 @@ const App = {
     const hashPanel = this._panelFromHash();
     this.showPanel(hashPanel || "shadows", { updateHash: !hashPanel });
 
-    // Première présentation de la barre du haut (CH-V6-T1.7, N1) : une
+    // Première présentation de la barre du haut : une
     // seule fois, jamais répétée (Onboarding.dismiss pose le flag global).
     // Premier lancement (V9/G2) : orientation guidée qui mène au générateur ;
     // « Passer » définitif via tour_seen. Sinon, le coachmark topbar habituel.
@@ -417,7 +417,7 @@ const App = {
         DossierBar.render();
         break;
       case "play":
-        Play.initPanel(); // R3-E : colonne Campagne › Run › Scène
+        Play.initPanel(); // colonne Campagne › Run › Scène
         break;
       case "settings":
         Settings.render();
@@ -477,8 +477,8 @@ const App = {
     }
   },
 
-  /** Légende des symboles de l'Aide (?), sensible à l'édition (CH-V6-T1.4,
-      FIELD_STUDY REC-6) : la légende était figée « (SR5) » quelle que soit
+  /** Légende des symboles de l'Aide (?), sensible à l'édition : la légende
+      était figée « (SR5) » quelle que soit
       l'édition active — trompeur, pas juste démodé (« PA » change de sens
       entre SR5 et SR6, cf. js/editions/sr6.js). Lit editionModule.helpLegend
       (données déclarées dans js/editions/*), aucune branche d'édition ici. */
@@ -489,7 +489,7 @@ const App = {
     const entries = (this.editionModule && this.editionModule.helpLegend) || [];
     label.textContent = `Légende des symboles${this.editionModule ? " — " + this.editionModule.label : ""}`;
     const row = (e) => `<div class="shortcut-row"><span class="shortcut-keys">${e.keys}</span><span>${e.html}</span></div>`;
-    // K9 : section commune trans-édition des glyphes du cockpit de combat, à la
+    // Section commune trans-édition des glyphes du cockpit de combat, à la
     // suite de la légende d'édition. Possédée par le cockpit (EncounterRenderer,
     // couche 4 — appel descendant direct), pas dupliquée dans les 4 helpLegend.
     const cockpit = EncounterRenderer.cockpitLegend();
@@ -500,7 +500,7 @@ const App = {
 
   /* ---- Changer d'édition ---- */
   changeEdition() {
-    // Rassure au moment précis du changement (FIELD_STUDY REC-3) : le
+    // Rassure au moment précis du changement : le
     // cloisonnement des données par édition (storage.js) surprend sans
     // annonce — deux paniques et une perte de données réelles dans l'étude
     // terrain venaient de là, pas d'un bug.
@@ -534,7 +534,7 @@ const SHORTCUT_PANELS = {
   5: "matrix",
   6: "run",
   7: "settings",
-  8: "play", // R3-E : Jouer (8 pour ne pas décaler la mémoire des touches 1-7)
+  8: "play", // Jouer (8 pour ne pas décaler la mémoire des touches 1-7)
 };
 
 /* ============================================================
@@ -543,7 +543,7 @@ const SHORTCUT_PANELS = {
 document.addEventListener("DOMContentLoaded", () => {
   Storage.runMigrations();
   Sync.init(); // branche l'écoute des écritures (push auto si activé)
-  // CH-A6 : Utils (couche 1) ne référence jamais App directement — c'est App
+  // Utils (couche 1) ne référence jamais App directement — c'est App
   // qui lui injecte le résolveur, une seule fois au démarrage.
   Utils.init({ resolveEditionModule: (ed) => App.getEditionModule(ed) });
   // Persiste + re-rend une fiche modifiée par un jet (dés, Drain…). Partagé
@@ -655,16 +655,16 @@ document.addEventListener("DOMContentLoaded", () => {
         Tour.openWhatsNew();
         break;
       case "crumb-open":
-        // R3-B : une échelle du fil d'Ariane remet le focus sur son dossier
+        // Une échelle du fil d'Ariane remet le focus sur son dossier
         // (le hub s'y filtre). `DossierBar.select` miroite vers App.context.
         DossierBar.select(actionEl.dataset.id);
         App.showPanel("shadows");
         break;
       case "crumb-scene":
-        Encounter.open(); // R3-B : rouvre la scène vivante depuis le fil d'Ariane
+        Encounter.open(); // rouvre la scène vivante depuis le fil d'Ariane
         break;
       case "ctx-open":
-        // R3-C : entrée globale du sélecteur de contexte. Choisir → focus global
+        // Entrée globale du sélecteur de contexte. Choisir → focus global
         // (DossierBar.select, posé par le widget) + aller au hub s'y filtrer.
         ContextSelector.open(actionEl, () => App.showPanel("shadows"));
         break;
@@ -708,7 +708,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Palette de commandes (CH-Q7) : Ctrl/Cmd+K, capté AVANT les garde-fous
+    // Palette de commandes : Ctrl/Cmd+K, capté AVANT les garde-fous
     // (doit fonctionner même depuis un champ de saisie).
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
       e.preventDefault();

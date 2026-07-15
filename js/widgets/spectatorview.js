@@ -8,7 +8,7 @@
    branchée ici, on se contente de lire Encounter.state/_rows() —
    déjà enrichis (down/morale/gauge) par le tracker normal, aucune
    forme de moniteur par édition à connaître ici (conditionMonitor.gauge
-   est l'accesseur neutre, cf. K6).
+   est l'accesseur neutre).
    ============================================================ */
 const SpectatorView = {
   _active: false,

@@ -1,15 +1,15 @@
 "use strict";
 
 /* ============================================================
-   CONTEXT SELECTOR (R3-C) — sélecteur de contexte UNIQUE et réutilisable.
+   CONTEXT SELECTOR — sélecteur de contexte UNIQUE et réutilisable.
    ------------------------------------------------------------
    Doctrine « Campagne › Run › Scène » : « un sélecteur de contexte unique,
    identique partout (bloc-note, tracker, cartes) : il liste les dossiers /
-   runs / scènes actifs et y saute directement ». D-R3-3 tranché = liste
+   runs / scènes actifs et y saute directement ». Choix retenu : liste
    PLATE (pas un arbre à explorer), réutilisée telle quelle.
 
    Une seule vérité : choisir un contexte pose `App.context` via
-   `DossierBar.select` (le fil d'Ariane R3-B, le hub et le carnet suivent).
+   `DossierBar.select` (le fil d'Ariane, le hub et le carnet suivent).
    Le widget ne persiste rien lui-même ; il lit `Dossiers` + `App.context`.
 
    Usage : `ContextSelector.open(anchorEl, onPick)`. `onPick(id|null)` est

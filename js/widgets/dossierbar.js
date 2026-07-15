@@ -148,7 +148,7 @@ const DossierBar = {
   select(id) {
     this.current = id;
     this._applyCurrent();
-    // R3-A : miroir vers la vérité unique `App.context` (persistée). Réentrée
+    // Miroir vers la vérité unique `App.context` (persistée). Réentrée
     // inoffensive au boot (App.context.load → select → setDossier garde sur
     // l'égalité). Adaptateur progressif : `current` reste la source lue par le
     // code en place, `App.context` s'ajoute au-dessus.
@@ -161,7 +161,7 @@ const DossierBar = {
   render() {
     this.syncDossiers();
     for (const id of this._mounts) this._renderInto(id);
-    // R3-B : garde le fil d'Ariane en phase avec tout changement de la barre
+    // Garde le fil d'Ariane en phase avec tout changement de la barre
     // (renommage, suppression, comptes) — App.context détient le focus, la
     // barre en est un miroir d'affichage.
     if (typeof App !== "undefined" && App.context) App.context.render();
@@ -176,7 +176,7 @@ const DossierBar = {
       <span class="group-item-name">Tout</span>
       <span class="group-item-count">${this._countFor(null)}</span>
     </div>`;
-    // Favoris (CH-Q9) épinglé en tête, hors boucle des racines — dossier
+    // Favoris épinglé en tête, hors boucle des racines — dossier
     // réservé créé à la volée par syncDossiers() dès la première épingle.
     const fav = Dossiers.roots().find((d) => d.name === Collection.FAV_GROUP);
     if (fav) html += this._nodeHtml(fav, 0, true);

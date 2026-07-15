@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   CYBERDECK — matrice côté decker (M1, PLAN_MATRICE_CYBERDECK.md).
+   CYBERDECK — matrice côté decker.
    Miroir de js/rules/matrix.js (catalogues côté serveur) : ce module
    n'a pas de données propres par édition, il délègue tout le régime
    à App.getEditionModule(ed).cyberdeckModel (prohibition n°1). Le
@@ -10,11 +10,11 @@
    (prohibition n°2).
 
    Forme par édition (table CODIR 2026-07-13) :
-   - SR5/SR6 : 4 attributs ASDF/ACTF, réallouables (M2).
+   - SR5/SR6 : 4 attributs ASDF/ACTF, réallouables.
    - Anarchy 1re : Firewall seul + relance de N échecs.
    - Anarchy 2.0 : Attaque + Firewall + filtre de biofeedback en option.
    Le moniteur matriciel du deck et la réallocation en un tap sont
-   du ressort de M2 — ce module ne pose que le socle data (M1).
+   du ressort de la réallocation — ce module ne pose que le socle data.
    ============================================================ */
 const Cyberdeck = {
   /** Codes d'attributs matriciels communs (mêmes clés que Matrix.ATTR_KEYS,
@@ -52,14 +52,14 @@ const Cyberdeck = {
   label(edition) {
     return (this._model(edition) || {}).label || "Cyberdeck";
   },
-  /** M2 : libellé du coût de reconfiguration (SR5 = action gratuite p.229 ;
+  /** Libellé du coût de reconfiguration (SR5 = action gratuite p.229 ;
       SR6 = action mineure, coût imprimé non détaillé au-delà de « une
       action » p.185 — traité par défaut comme mineure, à confirmer). Vide en
       Anarchy (pas de réallocation, attrs fixes). */
   reallocCostLabel(edition) {
     return (this._model(edition) || {}).reallocCostLabel || "";
   },
-  /** M2 : taille du moniteur matriciel du deck. `null` = pas de moniteur de
+  /** Taille du moniteur matriciel du deck. `null` = pas de moniteur de
       deck séparé pour cette édition (Anarchy 2.0 : le biofeedback encaisse
       sur la Volonté du decker, pas sur un moniteur de deck — table CODIR). */
   monitorSize(edition, deck) {
@@ -84,7 +84,7 @@ const Cyberdeck = {
     };
   },
 
-  /** M7 : catalogue PLEIN des actions matricielles offensives de l'édition
+  /** Catalogue PLEIN des actions matricielles offensives de l'édition
       (entrées brutes {key, name, type, page, pool(deck), dv(deck)}), délégué au
       module d'édition (`cyberdeckModel.actions`, îlot — zéro `if (App.edition)`).
       Miroir de forme du catalogue de CI de matrix.js. Vide si l'édition n'a pas
@@ -164,7 +164,7 @@ const Cyberdeck = {
     };
   },
 
-  /** M7 : entrées de catalogue ÉQUIPÉES d'un deck. Défaut PARESSEUX : `loadout`
+  /** Entrées de catalogue ÉQUIPÉES d'un deck. Défaut PARESSEUX : `loadout`
       absent → toutes les actions (decks migrés/anciens = râtelier plein, aucune
       migration). Un `loadout` présent mais vide = aucune action (le decker a
       tout retiré volontairement — distinct de « absent »). */
@@ -175,7 +175,7 @@ const Cyberdeck = {
     return all.filter((a) => keep.has(a.key));
   },
 
-  /** M7 : actions équipées, RÉSOLUES pour ce deck (pool/VD calculés). Pool
+  /** Actions équipées, RÉSOLUES pour ce deck (pool/VD calculés). Pool
       simplifié = l'attribut du deck lié à la limite [crochets] de l'action
       (même simplification que rollAttack, qui ignore compétence + attribut
       cognitif — cohérent avec Intrusion.rollIC). La VD n'est chiffrée que pour
@@ -194,7 +194,7 @@ const Cyberdeck = {
     });
   },
 
-  /** M7 : descripteur d'un jet d'action (consommé par le dispatch deck-action).
+  /** Descripteur d'un jet d'action (consommé par le dispatch deck-action).
       Cherche dans le catalogue plein (une action peut être jouée même hors
       loadout affiché — le picker filtre l'affichage, pas la validité). `null`
       si la clé n'existe pas dans l'édition. Une action narrative (`pool null`,
@@ -214,7 +214,7 @@ const Cyberdeck = {
     return { pool, dv, label: a.name, type: a.type };
   },
 
-  /** M3→M7 : pool de l'attaque matricielle principale (le « pic de données »),
+  /** Pool de l'attaque matricielle principale (le « pic de données »),
       conservé pour compatibilité — délègue à la 1ʳᵉ action de type "attack" du
       catalogue. `null` si l'édition n'a pas d'attaque motorisée (Anarchy 1re).
       Même simplicité que Intrusion.rollIC : un seul pool, pas de test opposé. */
@@ -230,21 +230,21 @@ const Cyberdeck = {
     return { pool, dv, label: atk.name };
   },
 
-  /** M5 : pool de défense d'un appareil M4 PROTÉGÉ (SR5 p.236 — PAN/esclave :
+  /** Pool de défense d'un appareil protégé (SR5 p.236 — PAN/esclave :
       l'appareil esclave « utilise l'indice le plus avantageux entre le sien et
       celui de son maître », additionné du Firewall du maître ; SR6 n'a pas
       cette règle au livre — approximation par la même formule, arbitrage
       utilisateur/traducteur officiel 2026-07-14). Simplifié aux SEULS champs
       réellement trackés : ni la Volonté (`pnj.volonte` existe en chargen SR5
       mais n'est lue nulle part ailleurs dans le code, vérifié) ni un Firewall
-      propre à l'appareil (M4 n'a que l'Indice) ne sont fiables — pool =
+      propre à l'appareil (un simple appareil n'a que l'Indice) ne sont fiables — pool =
       Indice de l'appareil + Firewall du deck protecteur, tel quel. */
   rollDefense(deviceIndice, protectorDeck) {
     const fw = (protectorDeck && protectorDeck.attrs && protectorDeck.attrs.firewall) || 0;
     return { pool: (deviceIndice || 0) + fw, label: "Défense protégée" };
   },
 
-  /** M5 : « Protection active » Anarchy 2.0 (p.216-217) — un coéquipier
+  /** « Protection active » Anarchy 2.0 (p.216-217) — un coéquipier
       dépense une action pour un test Électronique (protection matricielle) +
       Logique, dont les succès se retranchent de ceux de l'attaquant (vaut
       aussi contre une tentative de brickage, p.217). La compétence
@@ -260,7 +260,7 @@ const Cyberdeck = {
     return { pool: fw + log, label: "Protection active" };
   },
 
-  /** M1 — migration : reconstruit un deck structuré à partir d'une ligne
+  /** Migration : reconstruit un deck structuré à partir d'une ligne
       d'équipement/atout héritée. Formes rencontrées dans les catalogues :
       "Cyberdeck (Attaque 4, Firewall 4)", "Cyberdeck Shiawase Cyber-5
       (Att 8, FW 7, DP 5)", "Cyberdeck Erika MCD-1 (Firewall 1, moniteur
@@ -307,7 +307,7 @@ const Cyberdeck = {
   hydrate(pnj, edition) {
     if (!pnj || pnj.cyberdeck) return pnj;
     const pools = [...(pnj.equip || []), ...(pnj.augs || []), ...(pnj.edges || [])];
-    const line = pools // #63 : item chaîne OU objet
+    const line = pools // item chaîne OU objet
       .map((s) => ItemResolver.itemStr(s))
       .find((s) => /cyberdeck/i.test(s));
     if (line) pnj.cyberdeck = this.parseLegacy(line, edition);

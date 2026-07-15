@@ -16,7 +16,7 @@ const DiceLog = {
   _expanded: new Set(),
 
   /** J2 : filtre actif — "all" | "alarm" | "pinned" | un nom de who | R3
-      `_ENCOUNTER_FILTER`. Session only (comme les facettes du Hub F1), reset
+      `_ENCOUNTER_FILTER`. Session only (comme les facettes du Hub), reset
       à chaque ouverture du panneau. */
   _filter: "all",
 
@@ -390,7 +390,7 @@ const DiceLog = {
   },
 
   /** J2 : rangée de puces Tout / Alarmes / <par personnage> — mêmes règles que
-      les facettes du Hub F1 (valeurs distinctes présentes, filtre session-only,
+      les facettes du Hub (valeurs distinctes présentes, filtre session-only,
       pas de branche App.edition, la sémantique cls est déjà neutre). */
   _renderFilters() {
     const box = document.getElementById("dice-log-filters");

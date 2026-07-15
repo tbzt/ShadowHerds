@@ -39,7 +39,7 @@ const Settings = {
     toast(`Réserve par défaut : ${n} dés.`);
   },
 
-  /* ---- CP4 : la section « Affichage des cartes » (radio layout + cases
+  /* ---- La section « Affichage des cartes » (radio layout + cases
      attributs/réserves MJ/équipement) a été retirée — remplacée par les vues
      de carte (lentilles) + le pli par zone, ajustables carte par carte
      (cardrenderer.js). L'ancien blob `cardDisplay` éventuellement présent
@@ -75,7 +75,7 @@ const Settings = {
 
   /* ---- Sauvegarde & synchronisation (GLOBAL, hors édition) ----
      L'UI se contente de piloter Sync ; toute la logique (pull/push,
-     conflits, providers) vit dans sync.js. Le rappel de sauvegarde (F3)
+     conflits, providers) vit dans sync.js. Le rappel de sauvegarde
      et la synchro partagent le même horodatage `lastAt`. */
   _syncSectionHTML() {
     const sc = Sync.cfg();

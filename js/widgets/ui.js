@@ -2,14 +2,14 @@
 
 /* ============================================================
    UI — interactions live (moniteurs, drogues, véhicules/drones liés).
-   L'invocation d'esprits vit dans SummonPanel (CH-A7 : UI était un
+   L'invocation d'esprits vit dans SummonPanel (UI était un
    fourre-tout mélangeant plusieurs domaines fonctionnels autonomes).
    ============================================================ */
 const UI = {
   /** Clic sur une case de moniteur. Mute TOUTES les copies vivantes de
       l'entité et persiste tous les stores concernés (`_entityCopies`/
-      `persistEntity`, motif F2) — corrige un bug latent trouvé en vérifiant
-      E3 : un PJ (léger ou complet) ne vit que dans `Characters`, jamais
+      `persistEntity`) — corrige un bug latent trouvé en vérifiant
+      Un PJ (léger ou complet) ne vit que dans `Characters`, jamais
       `Shadows` ; l'ancien `Shadows.save()` inconditionnel ne persistait
       donc jamais une case cochée sur un PJ (perdue au reload), et une
       entité à copies multiples (pool+biblio) ne mutait que la première
@@ -43,10 +43,10 @@ const UI = {
     if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(copies[0]);
   },
 
-  /** M2 (PLAN_MATRICE_CYBERDECK.md) : case du moniteur matriciel du DECK
+  /** Case du moniteur matriciel du DECK
       (`pnj.cyberdeck.filled`), distinct de toggleMonitor ci-dessus (qui ne
       connaît que des champs top-level `pnj.*Filled`). Même motif copies
-      multiples + persistEntity (F2) que le reste de cette section. */
+      multiples + persistEntity que le reste de cette section. */
   toggleDeckMonitor(pnjId, idx) {
     const copies = this._entityCopies(pnjId);
     if (!copies.length) return;
@@ -59,7 +59,7 @@ const UI = {
     CardRenderer.refresh(copies[0]);
   },
 
-  /** M2 : réallocation ASDF/ACTF en un tap — échange les valeurs de deux
+  /** Réallocation ASDF/ACTF en un tap — échange les valeurs de deux
       attributs matriciels du deck (SR5 : action gratuite p.229 ; SR6 :
       action mineure p.185 — cf. cyberdeckModel.reallocCostLabel).
       Masqué en Anarchy côté rendu (Cyberdeck.reallocatable() false), donc
@@ -79,9 +79,9 @@ const UI = {
     toast("Cyberdeck reconfiguré.");
   },
 
-  /** M3 : le decker vise un serveur (`pnj.cyberdeck.run.targetServerId`),
+  /** Le decker vise un serveur (`pnj.cyberdeck.run.targetServerId`),
       hors combat comme en scène — même motif copies multiples + persistEntity
-      (F2) que reallocDeck/toggleDeckMonitor ci-dessus. `serverId` vide
+      que reallocDeck/toggleDeckMonitor ci-dessus. `serverId` vide
       (option "Aucune") efface la cible. */
   setDeckTarget(pnjId, serverId) {
     const copies = this._entityCopies(pnjId);
@@ -96,7 +96,7 @@ const UI = {
   },
 
   /* ========================================================
-     JOURNAL DE FICHE (F2) — notes datées, empilées en tête.
+     JOURNAL DE FICHE — notes datées, empilées en tête.
      Champ ADDITIF `pnj.journal = [{ts, text}]` : voyage tel quel
      dans les exports (Backup sérialise les tableaux *_all en bloc)
      et est lu par la recherche plein-fiche (Utils.entityContent).

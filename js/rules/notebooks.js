@@ -5,7 +5,7 @@
    ------------------------------------------------------------
    Un carnet = UN document markdown par dossier (campagne/run) — pas d'arbre,
    pas de sous-blobs : « Run »/« Rencontre » vivent comme des TITRES `# ` dans
-   le texte (doctrine anti-parseur d'E8, conservée). Le carnet courant = le
+   le texte (doctrine anti-parseur, conservée). Le carnet courant = le
    dossier courant (DossierBar.current), résolu par l'appelant : ce module
    reste une FEUILLE, dépendances Storage + Utils seules, aucune connaissance
    de DossierBar.

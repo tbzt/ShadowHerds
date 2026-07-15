@@ -57,13 +57,13 @@ const DiceRoller = {
   _renderThreat() {
     const el = document.getElementById("threat-reserve-val");
     if (el) el.textContent = this._threat;
-    // K5 : miroir dans l'en-tête du cockpit — même source de vérité, écrite
+    // Miroir dans l'en-tête du cockpit — même source de vérité, écrite
     // une seule fois ici (topbar ET cockpit rafraîchis ensemble).
     const cockpit = document.getElementById("encounter-threat-val");
     if (cockpit) cockpit.textContent = this._threat;
   },
 
-  /* ---- API publique de la Réserve de menace (K5) : le cockpit de combat
+  /* ---- API publique de la Réserve de menace : le cockpit de combat
      mute la même valeur que le badge topbar, jamais une copie. ---- */
   threatValue() {
     return this._threat;
@@ -111,7 +111,7 @@ const DiceRoller = {
 
     // Clic sur n'importe quelle réserve marquée [data-roll] dans une carte
     document.addEventListener("click", (e) => {
-      // Replier/déplier une zone de carte (CP1 : pli par zone, sparse,
+      // Replier/déplier une zone de carte (pli par zone, sparse,
       // persisté sur pnj._zoneOpen — override qui gagne et reste, I4).
       const zoneEl = e.target.closest("[data-zone-toggle]");
       if (zoneEl) {
@@ -125,7 +125,7 @@ const DiceRoller = {
         return;
       }
 
-      // Appliquer une vue (lentille) — CP4 : écrit le pli des 4 zones +
+      // Appliquer une vue (lentille) : écrit le pli des 4 zones +
       // modules applicables en une fois (CardRenderer.applyView), devient
       // la nouvelle mémoire de la carte comme un pli manuel (I4).
       const lensEl = e.target.closest("[data-lens]");
@@ -220,7 +220,7 @@ const DiceRoller = {
       const edMod = App.getEditionModule(edition);
       if (edMod?.usesRiskPanel) {
         // Jet magique (Sorcellerie/Conjuration) → sujet au Drain sur
-        // complication (CH-M7d). Base du label = avant « · » (spécialité).
+        // complication. Base du label = avant « · » (spécialité).
         const skillBase = label.split(" · ")[0];
         const isMagic = !!(edMod.magicSkills && edMod.magicSkills.includes(skillBase));
         this.openRiskPanel(n, { label, detail, rr, adv: (rollPnj && rollPnj.drugAdv) || 0, who, pnjId, isMagic, spellName });
@@ -631,7 +631,7 @@ const DiceRoller = {
     return `<div class="die mini${hit ? " hit" : ""}${one ? " one" : ""}"><div class="die-face">${this._pips(value)}</div></div>`;
   },
 
-  /** Bloc « Drain » du résumé (CH-M7e) : jet de résistance (ses dés + succès)
+  /** Bloc « Drain » du résumé : jet de résistance (ses dés + succès)
       et dégâts encaissés (ou résisté). Rassemble tout le résultat du lancer de
       sort dans l'affichage de dés standard. `drain` = { res, dv, damage, type }. */
   _drainBlockHtml(drain) {
@@ -715,7 +715,7 @@ const DiceRoller = {
     const rerollHtml = opts.drain
       ? this._spellRerollButtons(res, opts)
       : this._rerollBtnHtml();
-    // Drain d'un sort (CH-M7e) : résumé compact dans le bandeau rapide.
+    // Drain d'un sort : résumé compact dans le bandeau rapide.
     let drainHtml = "";
     if (opts.drain) {
       const d = opts.drain;
@@ -759,11 +759,11 @@ const DiceRoller = {
     // Source de la relance : dernier résultat brut + son contexte.
     this._lastRoll = { res, opts };
 
-    // Drain par complication (Anarchy 2, CH-M7d) : appliqué ici pour couvrir
+    // Drain par complication (Anarchy 2) : appliqué ici pour couvrir
     // les deux rendus (overlay ET lancer rapide) et une seule fois (jamais
     // sur une relance — la complication d'origine est figée, déjà encaissée).
     this._applyAnarchyDrain(res, opts);
-    // Sort lancé via jet de risque (Anarchy 2, CH-M7e) : mémorise les succès
+    // Sort lancé via jet de risque (Anarchy 2) : mémorise les succès
     // sur le sort (présenté sur la carte, utile pour un sort maintenu).
     this._storeSpellCast(res, opts);
 
@@ -953,7 +953,7 @@ const DiceRoller = {
       ${opts.drain ? this._spellRerollButtons(res, opts) : this._rerollBtnHtml()}`;
   },
 
-  /** Ligne d'info d'une invocation (CH-M7e) : résistance de l'esprit et
+  /** Ligne d'info d'une invocation : résistance de l'esprit et
       succès nets = services obtenus. */
   _conjureInfoHtml(opts) {
     if (!opts.conjure) return "";
@@ -961,7 +961,7 @@ const DiceRoller = {
     return `<span class="dice-summary-breakdown">Esprit résiste : ${c.spiritHits} · Services : <strong>${c.netHits}</strong></span>`;
   },
 
-  /** Deux boutons de Seconde chance pour un lancer de sort (CH-M7e) : l'un
+  /** Deux boutons de Seconde chance pour un lancer de sort : l'un
       relance le jet de sort, l'autre la résistance au Drain (au choix du MJ,
       comme dans les règles). Chacun débite 1 point d'Edge, se désactive si
       la ressource manque, si cette partie a déjà été relancée, ou sur échec
@@ -1050,7 +1050,7 @@ const DiceRoller = {
       ${this._rerollBtnHtml()}`;
   },
 
-  /** Drain par complication (Anarchy 2, CH-M7d) : un jet magique
+  /** Drain par complication (Anarchy 2) : un jet magique
       (Sorcellerie/Conjuration, opts.isMagic) qui produit une complication
       inflige au lanceur l'effet de Drain via le contrat d'édition
       (drainOnComplication). Blessure encaissée + persistée (onPnjChanged) ;
@@ -1068,8 +1068,8 @@ const DiceRoller = {
     toast(drain.label);
   },
 
-  /** Mémorise le dernier jet d'un sort lancé via jet de risque (Anarchy 2,
-      CH-M7e) sur `sp._lastCast` — présenté sur la carte, effaçable, utile
+  /** Mémorise le dernier jet d'un sort lancé via jet de risque (Anarchy 2)
+      sur `sp._lastCast` — présenté sur la carte, effaçable, utile
       pour un sort maintenu. Même mémoire per-entité que `pnj.lastInit`. */
   _storeSpellCast(res, opts) {
     if (!opts.spellName || !opts.pnjId || res.init) return;

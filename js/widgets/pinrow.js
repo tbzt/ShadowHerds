@@ -1,9 +1,9 @@
 "use strict";
 
 /* ============================================================
-   RANGÉE D'ÉPINGLES (F5) — une rangée d'accès rapide, pas un système :
+   RANGÉE D'ÉPINGLES — une rangée d'accès rapide, pas un système :
    fiches du dossier ouvert (DossierBar.current) + fiches consultées via
-   la palette (CH-Q7) en session. État 100% en mémoire (aucune clé
+   la palette en session. État 100% en mémoire (aucune clé
    Storage) — s'efface au rechargement, comme le dossier ouvert lui-même.
 
    Insérée dans le shell (index.html, entre #topbar et #main-body) donc
@@ -65,7 +65,7 @@ const PinRow = {
     return out;
   },
 
-  /** E6 : l'équipe active (Characters.activeTeamMembers, E2 — tous les PJ
+  /** L'équipe active (Characters.activeTeamMembers — tous les PJ
       par défaut, ou le dossier désigné) est épinglée en permanence, pas
       seulement quand son dossier est ouvert : « toujours à portée de
       pouce ». Réutilise le calcul existant, aucun 2ᵉ concept d'équipe. */
@@ -98,7 +98,7 @@ const PinRow = {
 
     const label = DossierBar.currentNode()?.name;
     const chip = (e) => {
-      // E6 : avatar PJ constant (couleur+anneau+initiale), résolu une fois
+      // Avatar PJ constant (couleur+anneau+initiale), résolu une fois
       // par entrée — même entité que celle déjà chargée par PnjLookup
       // ci-dessus pour les entrées dossier ; retrouvée à la volée ici pour
       // team/consulted (listes courtes, coût négligeable).

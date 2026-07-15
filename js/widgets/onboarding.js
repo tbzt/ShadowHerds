@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   ONBOARDING (CH-V6-T1.7) — bulle de première présentation de la barre
+   ONBOARDING — bulle de première présentation de la barre
    du haut. Non-modale (pas de fond opaque, l'app reste utilisable
    dessous) : signale, ne guide pas de force (garde-fou COMITE_TERRAIN
    D4 — « tutoriel intrusif » écarté). Vue UNE SEULE FOIS, jamais

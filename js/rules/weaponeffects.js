@@ -2,7 +2,7 @@
 
 /* ============================================================
    WEAPON EFFECTS — effets d'objet motorisés sur un JET d'arme, en
-   CONTRIBUTIONS étiquetées par facette (refonte acteur, V3/V4).
+   CONTRIBUTIONS étiquetées par facette (refonte du modèle d'acteur).
 
    Généralisation du motif `Mod` (cf. actor.js) aux facettes d'un jet :
    un objet ne modifie pas que la VD — il peut toucher le POOL de dés, la
@@ -25,8 +25,8 @@
                    toujours.
    - source/page : provenance affichée + audit de collecte.
 
-   Le CATALOG ci-dessous est le socle N2 (V4). Il se peuple ensuite item
-   par item contre le PDF (V5, sous-agents) — SANS toucher ce moteur.
+   Le CATALOG ci-dessous est le socle N2. Il se peuple ensuite item par
+   item contre le PDF — SANS toucher ce moteur.
    ============================================================ */
 const WeaponEffects = {
   /* Prédicats de condition réutilisables. */
@@ -34,9 +34,9 @@ const WeaponEffects = {
     return /mains nues|unarmed|à mains nues/i.test(String(name || ""));
   },
 
-  /* Socle N2 (V4). perRating indexé par l'indice (index 0 = inutilisé).
+  /* Socle N2. perRating indexé par l'indice (index 0 = inutilisé).
      L'indice de l'item est lu par ItemResolver.itemRating (champ `.rating`
-     de la forme objet #63, ou « Indice N » dans le libellé). */
+     de la forme objet, ou « Indice N » dans le libellé). */
   CATALOG: [
     {
       // SR5 VF p.461, table « Attaques à mains nues » :
@@ -73,7 +73,7 @@ const WeaponEffects = {
       source: "Augmentation de densité osseuse",
       page: "SR6 p.299-300",
     },
-    // Fusion V5 (3e vague, anarchy2_gear.md p.148-149) : seul le volet VD
+    // Anarchy 2 (p.148-149) : seul le volet VD
     // est motorisable pour ce catalogue (BonusEngine._applyAnarchy ne lit
     // jamais pnj.equip, cf. journal § 8nonies) — le volet « case de
     // blessure » de ces objets reste hors schéma, non représenté ici.
@@ -161,7 +161,7 @@ const WeaponEffects = {
     if (!pnj) return out;
     const items = [...(pnj.equip || []), ...(pnj.augs || [])];
     for (const entry of this.CATALOG) {
-      // L'item porteur de l'effet (chaîne OU objet #63, avec son indice).
+      // L'item porteur de l'effet (chaîne OU objet, avec son indice).
       const carrier = items.find((it) => entry.match.test(ItemResolver.itemStr(it)));
       if (!carrier) continue;
       if (entry.conditional && !entry.conditional(weaponName, edition, pnj)) continue;

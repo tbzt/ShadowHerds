@@ -5,7 +5,7 @@
    rendu HTML), consommée par CardRenderer.
    ============================================================ */
 const ItemResolver = {
-  /* ---- #63 : item POLYMORPHE (chaîne legacy OU objet {str, cat, rating}) ----
+  /* ---- Item POLYMORPHE (chaîne legacy OU objet {str, cat, rating}) ----
      La catégorie du catalogue, jetée jusqu'ici à l'ajout, est préservée sur
      l'objet ; les lecteurs coercent via ces helpers (motif « seam », comme
      Actor pour les attributs). Tolérant : une chaîne reste une chaîne. */
@@ -20,7 +20,7 @@ const ItemResolver = {
   },
   /** Plage d'indice NON résolue dans un libellé catalogue (« Indice 1-4 »),
       ou null si l'indice est fixe/absent. Sert à décider si l'item a besoin
-      d'un stepper (#63) avant que son bonus (BonusEngine/WeaponEffects) ne
+      d'un stepper avant que son bonus (BonusEngine/WeaponEffects) ne
       s'active (`itemRating` renvoie null tant que le stepper n'a pas réglé
       `.rating`). */
   ratingRange(item) {
@@ -165,7 +165,7 @@ const ItemResolver = {
     const str = ItemResolver._flatPool(equipPools[key])[Number(idxStr)];
     if (!str) return false;
     if (!Array.isArray(pnj.equip)) pnj.equip = [];
-    // #63 : le SEAM (helpers itemStr/itemCat/itemRating + lecteurs tolérants,
+    // Le SEAM (helpers itemStr/itemCat/itemRating + lecteurs tolérants,
     // étendu à tous les consommateurs : export Foundry, vues d'impression,
     // recherche plein-fiche, matcher drogues/véhicules) est en place. On
     // n'émet un OBJET {str, cat:key, rating} que si l'indice est une plage
@@ -180,7 +180,7 @@ const ItemResolver = {
     return true;
   },
 
-  /** #63 : items d'augmentation (cyberware/bioware) affichables sous
+  /** Items d'augmentation (cyberware/bioware) affichables sous
       « Augmentations » — `pnj.augs` (généré, sans interface d'édition) +
       les items d'`pnj.equip` catégorisés via `augsKeys` (ajoutés depuis le
       catalogue, éditables dans EditModal). Source unique pour carte, vues

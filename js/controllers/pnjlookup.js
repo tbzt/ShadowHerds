@@ -5,7 +5,7 @@
    (génération transitoire, Ombres portées, contacts, spiders liés
    aux serveurs, PJ). Résolution publique unique, sans dépendance
    remontante : les consommateurs l'appellent, elle ne connaît
-   personne en retour. Étendue par la palette (CH-Q7) : `search`.
+   personne en retour. Étendue par la palette : `search`.
    ============================================================ */
 const PnjLookup = {
   /** Résolution unique par id, remplace Dice._lookupPnj, UI._findPNJ et
@@ -30,7 +30,7 @@ const PnjLookup = {
   },
 
   /** Recherche par nom/archétype à travers les bibliothèques sauvegardées
-      (CH-Q7, palette de commandes ; mentions `@`, E7). Résultats typés, bornés.
+      (palette de commandes ; mentions `@`). Résultats typés, bornés.
       Étend PnjLookup — jamais un résolveur concurrent (garde-fou CONTRIBUTING).
       Tri : les entités dont le NOM commence par la saisie d'abord — c'est ce
       qu'attend l'auteur qui tape « @N » pour retrouver « Nita ». */

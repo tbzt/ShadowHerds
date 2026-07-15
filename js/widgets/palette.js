@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   PALETTE DE COMMANDES (CH-Q7) — Ctrl/Cmd+K : trouver n'importe quelle
+   PALETTE DE COMMANDES — Ctrl/Cmd+K : trouver n'importe quelle
    entité sauvegardée par nom/archétype et y aller, sans connaître son
    rangement. Source unique : PnjLookup.search (pas de résolveur concurrent).
    ============================================================ */
@@ -9,7 +9,7 @@ const Palette = {
   _open: false,
   _sel: 0,
   _results: [],
-  _mode: "entity", // "entity" | "tag" (E7 — préfixe `#`)
+  _mode: "entity", // "entity" | "tag" (préfixe `#`)
 
   _TYPE_LABEL: { pnj: "PNJ", pj: "PJ", contact: "Contact", server: "Serveur" },
 
@@ -73,7 +73,7 @@ const Palette = {
   },
 
   /** Ouvre la Palette en mode mot-clé, `#tag` pré-rempli (clic sur une puce
-      `#`, E7). */
+      `#`). */
   openTag(tag) {
     this.open();
     const input = document.getElementById("palette-input");
@@ -145,7 +145,7 @@ const Palette = {
               <span class="palette-name">${Utils.escHtml(label)}</span>
             </div>`;
         }
-        // E6 : avatar PJ constant (couleur+anneau+initiale) — un aller-retour
+        // Avatar PJ constant (couleur+anneau+initiale) — un aller-retour
         // PnjLookup de plus par ligne, liste bornée à 30 résultats (search()).
         const avatar = r.type === "pj" ? CardRenderer._pcAvatar(PnjLookup.find(r.id)) : "";
         return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
@@ -179,7 +179,7 @@ const Palette = {
     Notepad.open();
   },
 
-  /** API publique : révèle une entité par id (clic sur une puce `@`, E7). */
+  /** API publique : révèle une entité par id (clic sur une puce `@`). */
   reveal(id) {
     const ent = PnjLookup.locate(id);
     if (ent) this._reveal(ent);

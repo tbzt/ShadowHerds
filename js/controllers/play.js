@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   PLAY — panneau « Jouer » (R3-E). Vue dédiée de la colonne
+   PLAY — panneau « Jouer ». Vue dédiée de la colonne
    Campagne › Run › Scène, pendant « monde Jouer » du hub
    « monde Créer ». Ne crée AUCUNE donnée : projette `Dossiers`
    (campagnes ❖ + runs ◆) + l'état vivant (`App.context.scene`,

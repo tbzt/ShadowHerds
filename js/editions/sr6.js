@@ -22,10 +22,10 @@ const EditionSR6 = {
   badgeLabel: "SR6",
   useMetavariants: true,
 
-  /* ---- Contrat commun édition (résorption des branches, issue #14) ---- */
+  /* ---- Contrat commun édition (résorption des branches) ---- */
   attributes: ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"],
   /** Légende des symboles affichée dans l'Aide (?), lue par
-      App._renderHelpLegend (CH-V6-T1.4, FIELD_STUDY REC-6) — la légende SR5
+      App._renderHelpLegend — la légende SR5
       était affichée telle quelle en SR6 alors que « PA » y désigne le
       Potentiel d'Actions (MAJ+MIN, cf. commentaire d'en-tête), pas la
       Pénétration d'Armure : collision de sigle, pas juste un vocabulaire
@@ -57,7 +57,7 @@ const EditionSR6 = {
     blockedBy: "glitch",
     costAttr: "ATO",
   },
-  /* ---- Action magique (CH-M7c) : lu par MagicAction via le contrat. ---- */
+  /* ---- Action magique : lu par MagicAction via le contrat. ---- */
   /** SR6 : pas de Puissance de sort à choisir — la VD est fixe (p.135-136). */
   spellUsesForce: false,
   spellSkill: "Sorcellerie",
@@ -77,7 +77,7 @@ const EditionSR6 = {
   },
   /** Type de dégâts du Drain (p.136 sort / p.150 invocation) : SR6 tranche sur
       les dégâts APRÈS résistance — Physique s'ils dépassent la Magie, sinon
-      Étourdissant. (Corrige CH-M7b, qui renvoyait toujours « stun ».) */
+      Étourdissant. (Corrige un cas qui renvoyait toujours « stun ».) */
   drainDamageType(ctx, pnj) {
     const mag = Actor.attr(pnj, "MAG");
     return (ctx.drainDamage || 0) > mag ? "physical" : "stun";
@@ -87,7 +87,7 @@ const EditionSR6 = {
       moniteur). Si le réglage separateMonitors était actif à la génération
       du PNJ (pnj.stunMon posé, cf. generate()), on bascule Phys/Étourd comme
       SR5. Renvoie `{ field, delta }` réellement appliqué (annulation d'une
-      Seconde chance sur le Drain, CH-M7e). */
+      Seconde chance sur le Drain). */
   applyDrainDamage(pnj, amount, type) {
     if (!amount) return { field: "physFilled", delta: 0 };
     if (pnj.stunMon !== undefined) {
@@ -120,14 +120,14 @@ const EditionSR6 = {
   initiativeFor(pnj) {
     return { base: pnj.initBase, dice: pnj.initDice };
   },
-  /** K4 : spec d'un combattant CI lancé dans l'initiative. Init du livre SR6 :
+  /** Spec d'un combattant CI lancé dans l'initiative. Init du livre SR6 :
       Traitement de données ×2 + 3D6 (p.188). La règle vit ici (prohibition
       n°1) ; repli sur l'indice si le serveur n'a pas d'attributs ASDF posés. */
   icCombatant(ic, srv) {
     const td = (srv.attrs && srv.attrs.dataProcessing) || srv.indice;
     return { name: ic.label, initBase: td * 2, initDice: 3 };
   },
-  /** K7 : budget d'actions du tour actif (vérifié Livre de base p.42) — 1 majeure
+  /** Budget d'actions du tour actif (vérifié Livre de base p.42) — 1 majeure
       + 1 mineure de base, +1 mineure par dé d'initiative (max 5 dés → 6 mineures).
       Lu par le tracker via l'API neutre, jamais une branche d'édition. */
   actionBudget(pnj) {
@@ -139,7 +139,7 @@ const EditionSR6 = {
   /** Règles de round pour le tracker de combat. SR6 : l'initiative est
       relancée à chaque round mais il n'y a plus de passes d'initiative
       (une seule passe par round, p.44) → `passDecrement: 0`. */
-  /** edgeTracker (K5) : SR6 pilote l'Atout en combat (rangée de 7 jetons sur
+  /** edgeTracker : SR6 pilote l'Atout en combat (rangée de 7 jetons sur
       la fiche active, gain plafonné à +2/tour de personnage, p.50). Le tracker
       lit ce drapeau, jamais une branche d'édition. */
   combatModel: { rerollEachRound: true, passDecrement: 0, edgeTracker: true },
@@ -185,7 +185,7 @@ const EditionSR6 = {
   /** Neutre : les drogues SR6 sont des équipements, pas des atouts au
       choix (concept propre à Anarchy 2.0 p.150). */
   drugModel: { matchAll: false },
-  /** Invocation d'esprits (issue #14) : SR6 invoque via Conjuration,
+  /** Invocation d'esprits : SR6 invoque via Conjuration,
       types = éléments classiques (Spirits.SR_TYPES). */
   spiritModel: { canSummon: true, types: () => Spirits.SR_TYPES },
   /** Réserves de dés et initiative des véhicules/drones liés : pas de
@@ -217,7 +217,7 @@ const EditionSR6 = {
       return { base: p * 2, dice: 4 };
     },
   },
-  /** E3 (chantier Équipe) : bloc « mécanique de table » du PJ léger.
+  /** Bloc « mécanique de table » du PJ léger.
       SR6 standard = UN SEUL moniteur d'état (champ `me`) — mais le réglage
       `separateMonitors` (cf. `settingsHTML` plus haut, option de table
       p.??) bascule vers deux pistes Phys/Étourd séparées, comme SR5.
@@ -259,7 +259,7 @@ const EditionSR6 = {
     model: "moniteur d'état unique (8 + CON/2), ou séparé Phys/Étourd (8+CON/2 / 8+VOL/2) si separateMonitors",
     fields: { primary: "me" },
     woundMalus(pnj) {
-      // Fusion V5 : Compensateur de dommages (p.301) ignore N cases pour
+      // Compensateur de dommages (p.301) ignore N cases pour
       // les modificateurs de blessure — mécanique identique à SR5.
       const ignore = Utils.woundBoxesIgnored(pnj);
       if (pnj.stunMon !== undefined) {
@@ -299,7 +299,7 @@ const EditionSR6 = {
       else if (entity.stunMon !== undefined) entity.physFilled = entity.physMon || 0;
       else entity.physFilled = entity.me || 0;
     },
-    /** K6 : résumé du moniteur pour la mini-jauge du cockpit — cases remplies
+    /** Résumé du moniteur pour la mini-jauge du cockpit — cases remplies
         / total, cumulées sur les deux pistes en mode séparé (comme SR5).
         total 0 = pas de moniteur, pas de jauge. */
     gauge(entity) {
@@ -313,7 +313,7 @@ const EditionSR6 = {
       }
       return { filled: entity.physFilled || 0, total: entity.me || 0 };
     },
-    /** K8 : résultat NET de dégâts appliqué au moniteur — unique par défaut,
+    /** Résultat NET de dégâts appliqué au moniteur — unique par défaut,
         ou piste Physique si `separateMonitors` (stunMon posé) ; `opts.type`
         ("phys"/"stun") ne sert qu'en mode séparé. */
     applyDamage(entity, n, opts) {
@@ -326,7 +326,7 @@ const EditionSR6 = {
       entity[field] = Utils.clamp(before + amount, 0, max ?? 99);
       return { field, applied: entity[field] - before };
     },
-    /** K8 : descripteur neutre — la bascule P/S n'apparaît qu'en mode
+    /** Descripteur neutre — la bascule P/S n'apparaît qu'en mode
         `separateMonitors` (sinon moniteur d'état unique, pas de type à choisir). */
     damageUI(entity) {
       const sep = entity && entity.stunMon !== undefined;
@@ -352,10 +352,10 @@ const EditionSR6 = {
     hasAttrs: true,
     indiceRange: [1, 12],
     profileKey: "sr5",
-    // M4 : brickage d'appareil — SR6 a le même moniteur matriciel d'appareil
+    // Brickage d'appareil — SR6 a le même moniteur matriciel d'appareil
     // que SR5 (8+Indice/2 arrondi sup., p.182) : cases cliquables + indice.
     deviceBricking: "monitor",
-    // R2-D : cf. sr5.js — taxonomie D-R2-4. `matrice`/`tasers` OUI (spécifique
+    // Cf. sr5.js — taxonomie tranchée. `matrice`/`tasers` OUI (spécifique
     // SR6) ; cyberware/equipSpecial restent NON par défaut (override regex).
     connectedByCat: {
       commlinks: true,
@@ -445,12 +445,12 @@ const EditionSR6 = {
     accessLevels: ["Invité", "Utilisateur", "Administrateur"],
   },
 
-  /* Régime cyberdeck SR6 (M1) — 4 attributs ACTF, réallouables. Reconfigurer
+  /* Régime cyberdeck SR6 — 4 attributs ACTF, réallouables. Reconfigurer
      les attributs matriciels (I) : Légale, action Mineure, aucun test, aucun
      accès nécessaire — échange les valeurs de deux attributs non nuls du
      persona matriciel, change aussi les programmes actifs (p.185). Confirmé
      au livre par l'utilisateur (traducteur officiel Anarchy, 2026-07-13).
-     Moniteur/Score Défensif : M2/M6. */
+     Moniteur/Score Défensif. */
   cyberdeckModel: {
     attrKeys: ["attack", "sleaze", "dataProcessing", "firewall"],
     reallocatable: true,
@@ -458,14 +458,14 @@ const EditionSR6 = {
     hasReroll: false,
     hasBiofeedbackFilter: false,
     label: "Cyberdeck",
-    /** M2 : moniteur du deck ≈ 8 + (Indice/2), comme SR5 (à confirmer au
+    /** Moniteur du deck ≈ 8 + (Indice/2), comme SR5 (à confirmer au
         livre) — même approximation « attribut le plus élevé = Indice ». */
     monitorSize(deck) {
       const vals = Object.values((deck && deck.attrs) || {});
       const top = vals.length ? Math.max(...vals) : 0;
       return 8 + Math.ceil(top / 2);
     },
-    /* M7 : catalogue d'actions matricielles OFFENSIVES. SR6 remplace les marks
+    /* Catalogue d'actions matricielles OFFENSIVES. SR6 remplace les marks
        par l'accès (Invité/Utilisateur/Admin), d'où « Forcer l'accès » (dépend
        de l'Attaque, p.183) et « Sonder l'accès » (dépend de la Corruption,
        p.186) au lieu des actions de markage SR5. Pool simplifié = attribut du
@@ -847,8 +847,8 @@ const EditionSR6 = {
     Minotaure: { CON: +6, AGI: -1, FOR: +4, CHA: -1 },
   },
 
-  /** Archétype utilisé pour un spider (decker de sécurité lié à un serveur,
-      issue #14) — toujours le même en SR6. */
+  /** Archétype utilisé pour un spider (decker de sécurité lié à un serveur)
+      — toujours le même en SR6. */
   spiderArchetype() {
     return "Decker freelance";
   },
@@ -2122,8 +2122,8 @@ const EditionSR6 = {
     bioware: [
       "Articulations améliorées [+1 AGI, bonus espaces étroits]",
       "Augmentation de densité osseuse [Indice 1-4, bonus VD/SO mains nues]",
-      // Fusion V5 (3e vague) : plage d'indice ajoutée au libellé pour que
-      // ItemResolver.ratingRange (#63) détecte l'item et propose le
+      // Plage d'indice ajoutée au libellé pour que
+      // ItemResolver.ratingRange détecte l'item et propose le
       // stepper — sans quoi l'indice ne peut jamais être résolu.
       "Orthoderme [Indice 1-4, bonus Score Défensif égal à l'indice]",
       "Phéromones optimisées [bonus Charisme social]",
@@ -2134,7 +2134,7 @@ const EditionSR6 = {
       "Glande suprathyroïdienne [+1 AGI/CON/RÉA, +25% FOR, appétit doublé]",
       "Extracteur de toxines [bonus résistance toxines]",
       "Filtre trachéal [bonus résistance toxines inhalées]",
-      // Fusion V5 (tranche 3) : Compensateur de dommages (p.301, absent du
+      // Compensateur de dommages (p.301, absent du
       // catalogue jusqu'ici) — ignore N cases pour les modificateurs de
       // blessure (motorisé dans conditionMonitor.woundMalus via
       // Utils.woundBoxesIgnored).

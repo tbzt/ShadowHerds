@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   ROSTER VIEW (D6b) — bascule Ombres entre cartes compactes (D6a)
+   ROSTER VIEW — bascule Ombres entre cartes compactes
    et ligne d'annuaire dense (CardRenderer.renderRow), pour consulter
    un long roster sans faire défiler des accordéons repliés. Préférence
    globale (toutes éditions), persistée via Storage.getGlobal — pas de

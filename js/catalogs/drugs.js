@@ -84,7 +84,7 @@ const Drugs = {
     // standard applique le Désavantage global (pnj.drugAdv, p.67).
     // V1 (Anarchistes p.75-77) : mêmes drogues de combat que la V2, en
     // Atout plutôt qu'équipement — alias volontaire, pas un placeholder
-    // (findings §13, données quasi identiques confirmées).
+    // (données quasi identiques confirmées).
     get anarchy1() { return this.anarchy2; },
     // Les regex de nom sont ancrées sur le nom SEUL (\b, pas de suffixe
     // obligatoire) : elles doivent reconnaître aussi bien le format des

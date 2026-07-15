@@ -87,7 +87,7 @@ const Gen = {
   _FILTERS_KEY: "gen_filters_collapsed",
 
   filtersCollapsed() {
-    // CH-C4 : replié par défaut (loi de Tesler) — générer un PNJ/bande
+    // Replié par défaut (loi de Tesler) — générer un PNJ/bande
     // aléatoire ne demande qu'un bouton. L'état est mémorisé : qui déplie une
     // fois garde les filtres ouverts ensuite.
     return Storage.getGlobal(this._FILTERS_KEY, true);
@@ -169,7 +169,7 @@ const Gen = {
 
     // Champ de puissance piloté par le module (summonPower.field : "tier"
     // pour la famille Anarchy, "force" pour SR) — jamais de branche sur
-    // l'id d'édition (issue #14).
+    // l'id d'édition.
     let powerField;
     if (ed.summonPower.field === "tier") {
       powerField = SingleSelect.create({
@@ -544,7 +544,7 @@ const Gen = {
     zone.prepend(CardRenderer.render(pnj, ["save", "discard", "edit"]));
   },
 
-  /** CH-Q8 : envoie toutes les fiches affichées au tracker de combat en un
+  /** Envoie toutes les fiches affichées au tracker de combat en un
       geste. Les membres sont déjà dans le pool → résolvables par PnjLookup. */
   addAllToEncounter() {
     const ids = [

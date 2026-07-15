@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   MARKDOWN EN LIGNE (E8-A2) — mise en forme légère des notes/journal.
+   MARKDOWN EN LIGNE — mise en forme légère des notes/journal.
    Opère sur du texte DÉJÀ ÉCHAPPÉ (Mentions.renderText l'applique aux
    segments de texte simple, jamais aux puces @/#) : n'émet que des balises
    sûres (<strong>/<em>/<code>), aucun href, aucun état, pas de DOM.

@@ -70,7 +70,7 @@ const Encounter = {
     return this.state.combatants.find((c) => c.pnjId === pnjId) || null;
   },
 
-  /** E3 : initiative pré-remplie depuis le bloc « mécanique de table » d'un
+  /** Initiative pré-remplie depuis le bloc « mécanique de table » d'un
       PJ léger (`pnj.initBase`, saisi une fois en début de campagne) — le MJ
       écrase à la volée, les joueurs annoncent, l'app propose. `null` pour
       toute entité sans ce champ (PNJ générés, PJ sans bloc renseigné). */
@@ -87,7 +87,7 @@ const Encounter = {
     toast("Ajouté au suivi de combat.");
   },
 
-  /** Ajout groupé (CH-Q8) : dédup, UN seul commit + UN seul toast. */
+  /** Ajout groupé : dédup, UN seul commit + UN seul toast. */
   addMany(ids) {
     let n = 0;
     for (const id of ids) {
@@ -105,7 +105,7 @@ const Encounter = {
     return n;
   },
 
-  /** PJ (E1) : un PJ ajouté depuis le tracker persiste désormais dans
+  /** PJ : un PJ ajouté depuis le tracker persiste désormais dans
       `Characters` (PJ léger, `Characters.addLight`) au lieu de rester
       jetable — même id que la bibliothèque, résolu par `PnjLookup` comme
       n'importe quelle entité. `kind:"pj"` reste posé pour la rétro-compat
@@ -159,10 +159,10 @@ const Encounter = {
     this._commit();
   },
 
-  /** E2 : « + Équipe » — l'équipe active (Characters.activeTeamMembers,
+  /** « + Équipe » — l'équipe active (Characters.activeTeamMembers,
       tous les PJ par défaut) rejoint la scène en un geste ; les membres déjà
       présents sont ignorés (même règle que _candidates()). Un PJ one-shot
-      inconnu de l'équipe passe par « Ajouter un PJ » (E1), juste à côté.
+      inconnu de l'équipe passe par « Ajouter un PJ », juste à côté.
       Après l'ajout, la rafale d'init prend le relais (EncounterRenderer,
       mode ordonné uniquement — narratif Anarchy : pas d'init, no-op). */
   addTeam() {
@@ -254,7 +254,7 @@ const Encounter = {
     Storage.set(this._STASH_KEY, map);
     this.state = this._empty();
     if (this.activeDossierId === dossierId) this.activeDossierId = null;
-    // R3-A : miroir vers la scène vivante d'App.context (persistée).
+    // Miroir vers la scène vivante d'App.context (persistée).
     if (typeof App !== "undefined" && App.context) App.context.setScene(this.activeDossierId);
     this._commit();
   },
@@ -268,7 +268,7 @@ const Encounter = {
     const bundle = map[dossierId];
     this.state = bundle ? structuredClone(bundle) : this._empty();
     this.activeDossierId = dossierId;
-    // R3-A : miroir vers la scène vivante d'App.context (persistée) → survit au reload.
+    // Miroir vers la scène vivante d'App.context (persistée) → survit au reload.
     if (typeof App !== "undefined" && App.context) App.context.setScene(dossierId);
     EncounterRenderer.resetActiveCard();
     this._commit();
@@ -311,7 +311,7 @@ const Encounter = {
   _rollInit(pnjId, silent) {
     const c = this._find(pnjId);
     if (!c) return false;
-    // K4 : CI matricielle — init du livre (base+dés stockés à la création,
+    // CI matricielle — init du livre (base+dés stockés à la création,
     // cf. icCombatant), relancée comme tout le monde en SR5/SR6. Pas de pnj
     // de pool ni d'overlay : jet direct via Dice. Narrative (Anarchy) → pas
     // d'init (initBase null), classée à la main comme les PNJ Anarchy.
@@ -333,7 +333,7 @@ const Encounter = {
     // silent (lancer groupé) : pas d'overlay de tirage — les N overlays
     // s'écraseraient et seul le dernier resterait visible ; les scores
     // s'affichent directement dans la liste du suivi.
-    // CH-M5 : le modificateur de blessure s'applique aussi au score
+    // Le modificateur de blessure s'applique aussi au score
     // d'initiative (SR5 p.171, SR6 — initiative modifiée par tout ce qui
     // affecte l'initiative physique) — réutilise le calcul déjà générique
     // Utils.woundMalus, aucune règle nouvelle à écrire ici.
@@ -435,7 +435,7 @@ const Encounter = {
   },
 
   /** Déplace le combattant actif (celui dont c'est le tour) d'un cran et
-      garde le tour sur lui — pilotage clavier ↑/↓ (CH-Q3). */
+      garde le tour sur lui — pilotage clavier ↑/↓. */
   moveActive(dir) {
     const cs = this.state.combatants;
     const i = this.state.turnIndex;
@@ -486,9 +486,9 @@ const Encounter = {
       Un combattant hors de combat ne joue plus (inéligible) et sera rendu en
       fond de liste, sans initiative. */
   _isDown(c) {
-    // K4 : une CI matricielle est « hors de combat » quand son moniteur
+    // Une CI matricielle est « hors de combat » quand son moniteur
     // matriciel est plein (source unique state.matrix[serverId].ics[key].down,
-    // gérée par Intrusion, R2-B) — jamais via combatDisposition (ce n'est
+    // gérée par Intrusion) — jamais via combatDisposition (ce n'est
     // pas une entité chair sans pnj de pool).
     if (c.kind === "matrix") {
       const st = this._matrixICState(c);
@@ -541,7 +541,7 @@ const Encounter = {
     const next = this._nextEligibleIndex(this.state.turnIndex);
     if (next !== -1) {
       this.state.turnIndex = next;
-      this._resetActions(next); // K7 : budget d'actions frais au début du tour
+      this._resetActions(next); // budget d'actions frais au début du tour
       this._commit();
       return;
     }
@@ -553,7 +553,7 @@ const Encounter = {
       this.state.pass++;
       cs.forEach((c) => (c.hasActed = false));
       this.state.turnIndex = this._firstEligibleIndex();
-      // K7 : nouvelle phase d'action SR5 → budget d'actions rechargé.
+      // Nouvelle phase d'action SR5 → budget d'actions rechargé.
       this._resetActions(this.state.turnIndex);
       this._commit();
       toast("Passe d'initiative " + this.state.pass);
@@ -571,10 +571,10 @@ const Encounter = {
     this.state.combatants.forEach((c) => {
       c.hasActed = false;
       c.delayed = false;
-      // K5 : compteur de gains d'Atout du tour remis à zéro à chaque round
+      // Compteur de gains d'Atout du tour remis à zéro à chaque round
       // (plafond +2/tour de personnage, SR6 p.50).
       c.edgeTurn = 0;
-      // K7 : budget d'actions rechargé pour tout le monde au nouveau round.
+      // Budget d'actions rechargé pour tout le monde au nouveau round.
       c.actionsUsed = {};
     });
     // SR5/SR6 : nouvelle initiative à chaque tour de combat. Anarchy
@@ -585,7 +585,7 @@ const Encounter = {
     }
     this.state.turnIndex = this._firstEligibleIndex();
     this._commit();
-    // K4 : rappel de cadence — l'hôte peut déployer une CI par tour de combat
+    // Rappel de cadence — l'hôte peut déployer une CI par tour de combat
     // (SR5 p.249, SR6 p.188). Rappel seulement si un serveur alerté est lié et
     // que l'édition a des CI chiffrées (hasAttrs) ; Anarchy déploie à sa façon.
     const srv = this._linkedServer();
@@ -604,7 +604,7 @@ const Encounter = {
     this.save();
   },
 
-  /** K5 : ajuste l'Atout de combat d'un combattant (SR6, 0-7). Le gain est
+  /** Ajuste l'Atout de combat d'un combattant (SR6, 0-7). Le gain est
       plafonné à +2 par tour de personnage (p.50) — avertissement NON bloquant
       (le MJ a toujours raison). Le compteur de gains (edgeTurn) est remis à
       zéro à chaque round (nextRound). L'Atout vit dans l'entrée de scène
@@ -626,7 +626,7 @@ const Encounter = {
     this._commit();
   },
 
-  /** K7 : consomme/rend les actions du tour actif (compteur par groupe :
+  /** Consomme/rend les actions du tour actif (compteur par groupe :
       majeure/mineure SR6, simple/complexe SR5, action Anarchy). Jeton tappable
       façon moniteur : taper le jeton d'index idx consomme jusqu'à idx+1 ; re-
       taper le dernier consommé le rend. Stocké c.actionsUsed[groupe] dans la
@@ -652,7 +652,7 @@ const Encounter = {
       (Ombres / Générateur / Matrice) et le met en surbrillance — réutilise
       UI.focusOwner tel quel, aucune logique de moniteur dupliquée ici. */
   focusCombatant(pnjId) {
-    // K4 : une CI matricielle n'a pas de fiche de pool — tap = ouvrir le
+    // Une CI matricielle n'a pas de fiche de pool — tap = ouvrir le
     // tiroir Matrice (là où elle vit vraiment), sans fermer le tracker.
     const c = this._find(pnjId);
     if (c && c.kind === "matrix") {
@@ -695,7 +695,7 @@ const Encounter = {
     if (!this._resetMonitors(pnj)) return;
     Shadows.save();
     CardRenderer.refresh(pnj);
-    // CH-M5 : le badge de malus de la ligne (calculé depuis le moniteur)
+    // Le badge de malus de la ligne (calculé depuis le moniteur)
     // resterait sinon périmé jusqu'au prochain rendu du tracker.
     this._render();
     toast("Moniteurs réinitialisés.");
@@ -716,7 +716,7 @@ const Encounter = {
     toast("Mis hors de combat.");
   },
 
-  /** K8 : ferme la boucle de réaction — 💥/✸ « Dégâts » applique un résultat
+  /** Ferme la boucle de réaction — 💥/✸ « Dégâts » applique un résultat
       NET (déjà résisté, le cockpit n'a pas la valeur d'attaque) au moniteur
       d'un combattant, via l'accesseur neutre conditionMonitor.applyDamage
       (jamais de branche d'édition ici, comme knockOut ci-dessus). `opts` porte
@@ -733,7 +733,7 @@ const Encounter = {
     return res;
   },
 
-  /* ---- M4 : bricker des armes (cibles matricielles) ----
+  /* ---- Bricker des armes (cibles matricielles) ----
      L'état de brickage est **de scène**, PAS sur le PNJ : il vit sur l'entrée
      combattant `c.devices` (comme `c.matrix` pour les CI), donc dans
      `Encounter.state.combatants`, sérialisé tel quel par Storage.set (interdit
@@ -836,7 +836,7 @@ const Encounter = {
     this._commit();
   },
 
-  /** M5 : désigne/retire le decker qui protège cet appareil de son Firewall
+  /** Désigne/retire le decker qui protège cet appareil de son Firewall
       (SR5 p.236 PAN/esclave ; A2 p.216-217 Protection active — SR6 approximé
       par analogie, arbitrage utilisateur). Ne crée PAS le descripteur si
       l'appareil n'est pas encore une cible (targetDevice d'abord) — protéger
@@ -849,7 +849,7 @@ const Encounter = {
     this._commit();
   },
 
-  /** M6 : Bruit (SR5 p.232/SR6 équivalent) — modificateur de scène, réglé à la
+  /** Bruit (SR5 p.232/SR6 équivalent) — modificateur de scène, réglé à la
       main par le MJ (distance/environnement ne sont pas des données trackées
       par l'app, cf. plan) et retranché des jets Matrice du decker (Piratage,
       duel, défense protégée). Scène-scopée comme `state.serverId` — pas sur
@@ -861,8 +861,8 @@ const Encounter = {
   },
 
   /** Pool après Bruit — plancher 0 (un pool négatif ne veut rien dire).
-      Utilisé par tout jet Matrice du decker (Piratage M3, duel M5a, défense
-      protégée M5b) ; jamais par les jets côté serveur (Intrusion.rollIC,
+      Utilisé par tout jet Matrice du decker (Piratage, duel, défense
+      protégée) ; jamais par les jets côté serveur (Intrusion.rollIC,
       hors périmètre de cette scène-ci). */
   _noisyPool(pool) {
     return Math.max(0, (pool || 0) - (this.state.noise || 0));
@@ -886,7 +886,7 @@ const Encounter = {
     }
     if (n) {
       Shadows.save();
-      this._render(); // CH-M5 : badges de malus de toutes les lignes à jour
+      this._render(); // badges de malus de toutes les lignes à jour
     }
     toast(
       n
@@ -895,11 +895,11 @@ const Encounter = {
     );
   },
 
-  /* ---- Matrice, scène-scopée (R2-B) ----
+  /* ---- Matrice, scène-scopée ----
      `state.matrix{serverId → intrusion}` porte l'état vivant (tours, CI
      déployées, surveillance) de TOUS les serveurs actifs dans la scène —
-     D-R2-1 (quitte `srv.intrusion`, qui ne redevient qu'une définition) +
-     D-R2-2 (plusieurs serveurs possibles, pas un `serverId` unique).
+     Quitte `srv.intrusion` (qui ne redevient qu'une définition) et
+     admet plusieurs serveurs possibles (pas un `serverId` unique).
      `state.serverId` garde un rôle plus étroit : le serveur actuellement
      AFFICHÉ dans le tiroir (porte 3 : quelle CI rejoint l'init par défaut),
      pas celui qui « possède » les données. */
@@ -915,7 +915,7 @@ const Encounter = {
 
   /** Serveurs ayant une intrusion en cours dans cette scène (au moins un
       champ non pristine) — alimente le sélecteur multi-serveur du tiroir
-      (R2-B, sous-ticket 3). */
+      (plusieurs serveurs en parallèle). */
   activeMatrixServerIds() {
     if (!this.state || !this.state.matrix) return [];
     return Object.keys(this.state.matrix).filter((id) => Servers.find(id));
@@ -925,10 +925,10 @@ const Encounter = {
     return this.state.serverId ? Servers.find(this.state.serverId) : null;
   },
 
-  /** R2-E : bascule le type de scène — Combat (init/roster, défaut) ↔
+  /** Bascule le type de scène — Combat (init/roster, défaut) ↔
       Matrice seule (moteur Matrice seul, pas d'initiative : le decker
       infiltre pendant que les autres négocient). Binaire volontairement
-      simple (D-R2-3 garde `motors` extensible pour un futur « Combat +
+      simple (`motors` extensible pour un futur « Combat +
       Matrice », non tranché ici — pas de sur-construction avant besoin
       réel). */
   toggleSceneType() {
@@ -969,8 +969,8 @@ const Encounter = {
     return Servers.data.all.filter((s) => s.id !== this.state.serverId);
   },
 
-  /** Affiche un serveur dans le tiroir (portes K3 : picker, « ⚔ Envoyer au
-      combat », implicite en K4, sélecteur multi-serveur). Ne « remplace »
+  /** Affiche un serveur dans le tiroir (picker, « ⚔ Envoyer au
+      combat », sélecteur multi-serveur). Ne « remplace »
       plus rien au sens data (chaque serveur garde son état dans
       `state.matrix`) — seule la porte 3 (quelle CI rejoint l'init par
       défaut) suit le serveur affiché, d'où une confirmation si une CI de
@@ -996,7 +996,7 @@ const Encounter = {
   },
 
   /** Cesse d'afficher le serveur courant dans le tiroir (l'intrusion, elle,
-      continue d'exister dans `state.matrix` — rien n'est perdu, R2-B).
+      continue d'exister dans `state.matrix` — rien n'est perdu).
       Confirmation informative seulement si une CI est en jeu, plus de
       `danger` : ce n'est plus une suppression de données. */
   async unlinkServer() {
@@ -1024,7 +1024,7 @@ const Encounter = {
       pose display:flex, .show (au rAF suivant) déclenche la transition —
       sans ce décalage, la feuille apparaîtrait déjà translatée à 0. */
   openMatrixDrawer() {
-    // K6 : quand la colonne Matrice dockée est visible (≥1100px, serveur
+    // Quand la colonne Matrice dockée est visible (≥1100px, serveur
     // lié), la Matrice est déjà à l'écran — pas de tiroir par-dessus, on
     // amène la colonne en vue (tap sur un jeton CI, « Ouvrir la Matrice »).
     const dock = document.getElementById("encounter-matrix-dock");
@@ -1052,10 +1052,10 @@ const Encounter = {
       .map((c) => c.matrix.icKey);
   },
 
-  /** K4/R2-C : une CI rejoint l'ordre d'initiative — automatiquement au
+  /** Une CI rejoint l'ordre d'initiative — automatiquement au
       déploiement (Intrusion.nextTurn, sans second geste, résout #1) ou à la
       demande explicite depuis le tiroir. Fonctionne pour N'IMPORTE QUEL
-      serveur de la scène, pas seulement celui affiché (R2-B : plusieurs
+      serveur de la scène, pas seulement celui affiché (plusieurs
       serveurs actifs en parallèle). Init du livre via icCombatant (module
       d'édition — prohibition n°1) ; l'état vivant (moniteur) reste dans
       `state.matrix[serverId]`, jamais copié. Insérée à sa place d'init sans
@@ -1111,7 +1111,7 @@ const Encounter = {
       // d'affichage minimal (nom + drapeau _adhoc) pour ne jamais le filtrer.
       pnj: PnjLookup.find(c.pnjId) || (c.name ? { id: c.pnjId, name: c.name, _adhoc: true } : null),
     }));
-    // K7-B : marque « PJ vs reste » une fois pour le rendu (console de réaction :
+    // Marque « PJ vs reste » une fois pour le rendu (console de réaction :
     // tour d'un PJ → faire réagir les PNJ). Déjà utilisé par le moral.
     rows.forEach((r) => (r.isPJ = this._isPJ(r)));
     return this._decorateDisposition(rows);
@@ -1141,7 +1141,7 @@ const Encounter = {
       });
       return rows;
     }
-    // K4 : les CI matricielles sont hors du groupe de moral (ni chair, ni
+    // Les CI matricielles sont hors du groupe de moral (ni chair, ni
     // PJ) — leur « down » vient du moniteur matriciel, pas de combatDisposition.
     const opp = rows.filter((r) => r.pnj && !this._isPJ(r) && r.kind !== "matrix");
     let oppDown = 0;
@@ -1162,7 +1162,7 @@ const Encounter = {
       const d = mod.combatDisposition(r.pnj, group);
       r.down = !!d.down;
       r.morale = this._isPJ(r) ? null : d.morale;
-      // K6 : résumé du moniteur pour la mini-jauge de la ligne (accesseur
+      // Résumé du moniteur pour la mini-jauge de la ligne (accesseur
       // neutre conditionMonitor.gauge — jamais de forme de moniteur ici).
       // total 0 (PJ ad-hoc, entité sans moniteur) = pas de jauge au rendu.
       const cm = mod.conditionMonitor;
@@ -1201,7 +1201,7 @@ const Encounter = {
     return intr ? Object.values(intr.ics || {}).filter((s) => s.active && !s.down).length : 0;
   },
 
-  /** R2-B (sous-ticket 3) : serveurs {id, name} avec une intrusion en cours
+  /** Serveurs {id, name} avec une intrusion en cours
       dans cette scène — alimente le sélecteur multi-serveur du tiroir
       (affiché seulement s'il y en a plus d'un ; sinon le titre suffit). */
   _activeMatrixServers() {
@@ -1218,14 +1218,14 @@ const Encounter = {
   _render() {
     const rows = this._rows();
     const model = this._model();
-    // K3 : auto-guérison si le serveur lié a été supprimé entre-temps (ex.
+    // Auto-guérison si le serveur lié a été supprimé entre-temps (ex.
     // depuis le panneau Serveurs) — jamais de référence pendante.
     if (this.state.serverId && !Servers.find(this.state.serverId)) {
       this.state.serverId = null;
       this.save();
     }
     // Garantit l'état d'intrusion scène-scopé avant le rendu (Intrusion._get,
-    // mutation idempotente, R2-B) sans jamais faire lire/muter Servers à
+    // mutation idempotente) sans jamais faire lire/muter Servers à
     // EncounterRenderer (qui reste un rendu pur — reçoit le serveur déjà
     // résolu).
     const srv = this.state.serverId ? Intrusion._get(this.state.serverId) : null;
@@ -1271,7 +1271,7 @@ const Encounter = {
   open() {
     const overlay = document.getElementById("encounter-overlay");
     overlay.classList.add("open");
-    // CH-M4 : dock latéral non bloquant ≥641px (le Hub reste utilisable
+    // Dock latéral non bloquant ≥641px (le Hub reste utilisable
     // derrière, ex. suivre une intrusion en cours) ; plein écran réel en
     // dessous (pas de place pour cohabiter) — aria-modal reflète lequel.
     overlay.setAttribute(
@@ -1432,10 +1432,10 @@ const Encounter = {
 
     this._initDrag(overlay);
 
-    // K3 : le tiroir Matrice est hors de #encounter-overlay (overlay séparé,
+    // Le tiroir Matrice est hors de #encounter-overlay (overlay séparé,
     // cf. index.html) — Servers._wire() y pose sa propre délégation pour le
     // contenu réutilisé d'intrusionPanel ; ici seulement les actions
-    // propres à Encounter (fermer, délier, lancer une CI). K6 : le même
+    // propres à Encounter (fermer, délier, lancer une CI). Le même
     // contenu est aussi monté dans la colonne dockée (#encounter-matrix-dock,
     // ≥1100px) — même handler sur les deux montages, mais cette fois nichée
     // DANS #encounter-overlay (contrairement au tiroir, overlay séparé) : un
@@ -1460,7 +1460,7 @@ const Encounter = {
           this.unlinkServer();
           break;
         case "launch-ic":
-          // K4 : « ⚔ Init » d'une CI du tiroir → elle rejoint l'ordre.
+          // « ⚔ Init » d'une CI du tiroir → elle rejoint l'ordre.
           // Les autres data-action du tiroir (next-turn, ic-box…) sont
           // gérées par la délégation de Servers._wire (contenu réutilisé).
           this.launchIC(el.dataset.id, el.dataset.k);
@@ -1481,7 +1481,7 @@ const Encounter = {
       // propagation : sans cette garde, ouvrir le ⋯ bulle jusqu'à la ligne
       // (focus-active en narratif) — double action parasite.
       if (e.target.closest("[data-card-menu-toggle]")) return;
-      // K6 : les clics dans la colonne Matrice dockée n'atteignent jamais ce
+      // Les clics dans la colonne Matrice dockée n'atteignent jamais ce
       // switch — drawerActions (posé sur #encounter-matrix-dock) coupe la
       // propagation avant qu'elle ne bulle jusqu'ici (cf. son commentaire).
       const el = e.target.closest("[data-action]");
@@ -1501,7 +1501,7 @@ const Encounter = {
           this.toggleAddPicker();
           break;
         case "toggle-rail": {
-          // K1 : bascule réglette compacte / liste complète — état de vue
+          // Bascule réglette compacte / liste complète — état de vue
           // éphémère (comme le menu ⋯ .card-menu[hidden]), pas de nouvelle clé Storage.
           const modal = document.querySelector(".encounter-modal");
           if (modal) modal.classList.toggle("rail-compact");
@@ -1511,11 +1511,11 @@ const Encounter = {
           this.toggleSceneType();
           break;
         case "edge-step":
-          // K5 : ±1 Atout du combattant actif (SR6).
+          // ±1 Atout du combattant actif (SR6).
           this.adjustEdge(id, parseInt(el.dataset.delta, 10) || 0);
           break;
         case "roll-ic":
-          // K9 : jet d'une CI (attaque/défense/encaissement/perception) depuis
+          // Jet d'une CI (attaque/défense/encaissement/perception) depuis
           // la fiche CI active ou la console de réaction — même moteur que le
           // tiroir (Intrusion.rollIC), aucun calcul de réserve dupliqué. Ces
           // boutons vivent dans #encounter-overlay (fiche active), hors de la
@@ -1523,23 +1523,23 @@ const Encounter = {
           Intrusion.rollIC(el.dataset.id, el.dataset.k, el.dataset.kind);
           break;
         case "react-expand":
-          // K9 : déplie/replie la fiche complète d'un PNJ dans la console de
+          // Déplie/replie la fiche complète d'un PNJ dans la console de
           // réaction (accordéon, vue éphémère). Le rendu vit au renderer ; ici,
           // aucune logique de combat.
           EncounterRenderer.toggleReactExpand(id);
           break;
         case "react-damage-toggle":
-          // K8 : déplie/replie les chips de dégâts d'une ligne de réaction
+          // Déplie/replie les chips de dégâts d'une ligne de réaction
           // (état de vue éphémère, comme react-expand ci-dessus).
           EncounterRenderer.toggleReactDamage(id);
           break;
         case "damage-type-toggle":
-          // K8 : bascule Physique/Étourdissant (SR5/SR6 séparé) avant d'appliquer
+          // Bascule Physique/Étourdissant (SR5/SR6 séparé) avant d'appliquer
           // un chip — vue seulement, aucune mutation du PNJ.
           EncounterRenderer.toggleDamageType(id);
           break;
         case "react-damage":
-          // K8 : applique un résultat NET de dégâts (chip) au moniteur —
+          // Applique un résultat NET de dégâts (chip) au moniteur —
           // conditionMonitor.applyDamage lu via Encounter, jamais de calcul ici.
           this.damageCombatant(id, parseInt(el.dataset.n, 10) || 0, {
             type: EncounterRenderer.reactDamageType(id),
@@ -1547,12 +1547,12 @@ const Encounter = {
           EncounterRenderer.toggleReactDamage(id, true);
           break;
         case "react-wound":
-          // K8 : Anarchy 2 — un cran de gravité, pas un nombre de cases.
+          // Anarchy 2 — un cran de gravité, pas un nombre de cases.
           this.damageCombatant(id, 1, { severity: el.dataset.sev });
           EncounterRenderer.toggleReactDamage(id, true);
           break;
         case "target-device":
-          // M4 : désigne une arme comme cible matricielle (brickable).
+          // Désigne une arme comme cible matricielle (brickable).
           this.targetDevice(id, el.dataset.label);
           break;
         case "untarget-device":
@@ -1562,19 +1562,19 @@ const Encounter = {
           this.reenableDevice(id, el.dataset.label);
           break;
         case "device-box":
-          // M4 : case du moniteur d'un appareil (SR5/SR6).
+          // Case du moniteur d'un appareil (SR5/SR6).
           this.deviceBox(id, el.dataset.label, parseInt(el.dataset.idx, 10) || 0);
           break;
         case "device-rating-step":
-          // M4 : ±1 Indice d'appareil (patron edge-step, pas de saisie clavier).
+          // ±1 Indice d'appareil (patron edge-step, pas de saisie clavier).
           this.deviceRatingStep(id, el.dataset.label, parseInt(el.dataset.delta, 10) || 0);
           break;
         case "device-narrative-toggle":
-          // M4 : Anarchy 2 — bascule « hors service » en un tap (régime narratif).
+          // Anarchy 2 — bascule « hors service » en un tap (régime narratif).
           this.deviceNarrativeToggle(id, el.dataset.label);
           break;
         case "device-protect": {
-          // M5 : désigne le decker protecteur — lit le <select> voisin (même
+          // Désigne le decker protecteur — lit le <select> voisin (même
           // rangée), jamais un data-* mutable au clic (valeur choisie à l'instant).
           // targetDevice d'abord (idempotent) : en narratif (A2), protéger une
           // arme peut être le tout premier geste sur elle, avant tout brickage —
@@ -1588,7 +1588,7 @@ const Encounter = {
           this.setDeviceProtector(id, el.dataset.label, null);
           break;
         case "device-defense": {
-          // M5 : jet de défense protégée (SR5/SR6 : Indice + Firewall du
+          // Jet de défense protégée (SR5/SR6 : Indice + Firewall du
           // protecteur ; A2 : Protection active, Firewall+Logique). Le MJ
           // interprète/retranche avant de cliquer les cases — jamais résolu
           // ici, même philosophie que le reste du cockpit.
@@ -1607,10 +1607,10 @@ const Encounter = {
           break;
         }
         case "decker-attack": {
-          // M5 : decker↔decker — attaquer un autre decker, c'est attaquer son
-          // propre pnj.cyberdeck (déjà modélisé M2). Aucune donnée neuve : le
+          // Decker↔decker — attaquer un autre decker, c'est attaquer son
+          // propre pnj.cyberdeck (déjà modélisé). Aucune donnée neuve : le
           // MJ encaisse en cliquant les cases du moniteur du decker CIBLÉ,
-          // déjà affiché sur sa propre carte (toggle-deck-monitor, M2).
+          // déjà affiché sur sa propre carte (toggle-deck-monitor).
           const sel = el.closest(".encounter-duel")?.querySelector("select");
           const targetId = sel && sel.value;
           const pnj = PnjLookup.find(id);
@@ -1622,16 +1622,16 @@ const Encounter = {
           break;
         }
         case "noise-step":
-          // M6 : ±1 Bruit (SR5 p.232) — modificateur de scène réglé à la
+          // ±1 Bruit (SR5 p.232) — modificateur de scène réglé à la
           // main (distance/environnement non trackés par l'app).
           this.stepNoise(parseInt(el.dataset.delta, 10) || 0);
           break;
         case "action-set":
-          // K7 : consomme/rend une action du tour actif (jeton tappable).
+          // Consomme/rend une action du tour actif (jeton tappable).
           this.setAction(id, el.dataset.key, parseInt(el.dataset.idx, 10) || 0);
           break;
         case "threat-step":
-          // K5 : ±1 Réserve de menace (Anarchy) — mute la source unique
+          // ±1 Réserve de menace (Anarchy) — mute la source unique
           // DiceRoller (le badge topbar et le miroir cockpit se synchronisent).
           DiceRoller.stepThreat(parseInt(el.dataset.delta, 10) || 0);
           break;
@@ -1652,7 +1652,7 @@ const Encounter = {
           this.addTeam();
           break;
         case "link-server":
-          // K3, porte 1 (picker) : lie un serveur à la scène, remplace
+          // Porte 1 (picker) : lie un serveur à la scène, remplace
           // aucun combattant — même panneau, destination différente.
           this.linkServer(id);
           this._renderPicker();
@@ -1725,7 +1725,7 @@ const Encounter = {
         case "flee-combatant":
           // Raccourci du drapeau « devrait fuir » : bascule hors de combat en
           // un tap (comme knockOut), réversible — pas un retrait définitif
-          // (issue #60 : le combattant qui fuit sort de la mêlée, il n'est
+          // (le combattant qui fuit sort de la mêlée, il n'est
           // pas rayé de la scène).
           this.knockOut(id);
           break;
@@ -1760,7 +1760,7 @@ const Encounter = {
       if (init) this.setInit(init.dataset.id, init.value);
     });
 
-    // E2 : rafale d'init après « + Équipe » — Entrée commit (blur → 'change'
+    // Rafale d'init après « + Équipe » — Entrée commit (blur → 'change'
     // ci-dessus, synchrone) puis enchaîne sur le prochain champ d'init PJ
     // vide (setTimeout 0 : laisse _commit()/_render() reconstruire le DOM
     // avant de chercher le prochain champ).
@@ -1777,7 +1777,7 @@ const Encounter = {
       const note = e.target.closest('[data-action="set-note"]');
       if (note) {
         this.setNote(note.dataset.id, note.value);
-        // K2 : la même note existe en double (ligne dépliée + fiche active) —
+        // La même note existe en double (ligne dépliée + fiche active) —
         // on garde l'autre champ en phase sans re-rendu complet (qui casserait
         // le focus/curseur de la saisie en cours, cf. setNote).
         document
@@ -1791,7 +1791,7 @@ const Encounter = {
       if (filter) EncounterRenderer.filterCandidates(filter.value);
     });
 
-    // Raccourcis clavier du tracker (CH-Q3), actifs seulement overlay ouvert.
+    // Raccourcis clavier du tracker, actifs seulement overlay ouvert.
     // En capture pour passer AVANT les raccourcis globaux d'app.js — sinon
     // « r » y déclenche le lanceur de dés au lieu de relancer l'init.
     // Garde-fous : jamais pendant une saisie (champ init/note) ni quand un

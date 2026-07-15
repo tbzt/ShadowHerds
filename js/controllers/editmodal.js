@@ -8,7 +8,7 @@ const EditModal = {
   // Instantané profond pris à l'ouverture : socle de « Annuler les
   // modifications » (revert) et du commit conditionnel à la fermeture.
   _snapshot: null,
-  _notesMode: "read", // "read" (puces @/#) | "edit" (jeton brut) — E7
+  _notesMode: "read", // "read" (puces @/#) | "edit" (jeton brut)
 
   open(id) {
     const pnj = PnjLookup.find(id);
@@ -30,11 +30,11 @@ const EditModal = {
         ? this._buildFormVehicle(pnj)
         : this._buildForm(pnj);
 
-    // E7 : autocomplétion @/# câblée par l'auto-attach délégué sur
+    // Autocomplétion @/# câblée par l'auto-attach délégué sur
     // `data-mentions` (Mentions.wireAuto) — plus de câblage explicite ici,
     // même si em-notes est régénéré à chaque open().
     const notesEl = document.getElementById("em-notes");
-    // E7 : le textarea est régénéré à chaque open() — repartir du mode
+    // Le textarea est régénéré à chaque open() — repartir du mode
     // Lire/Éditer par défaut selon le contenu, jamais garder l'état de la
     // fiche précédemment ouverte.
     this._notesMode = notesEl && notesEl.value.trim() ? "read" : "edit";
@@ -44,15 +44,15 @@ const EditModal = {
   },
 
   /** Bascule Lire (puces @/# cliquables) / Éditer (jeton brut) des notes
-      libres `em-notes` — même mécanique que le bloc-notes de séance. E7. */
+      libres `em-notes` — même mécanique que le bloc-notes de séance. */
   toggleNotesMode() {
     this._notesMode = this._notesMode === "read" ? "edit" : "read";
     this._syncNotesView();
     if (this._notesMode === "edit") document.getElementById("em-notes")?.focus();
   },
 
-  /** Bascule en édition depuis un clic dans le rendu, curseur en fin (E8-A1,
-      même mécanique que le bloc-notes de séance). */
+  /** Bascule en édition depuis un clic dans le rendu, curseur en fin
+      (même mécanique que le bloc-notes de séance). */
   _editNotesFromRead() {
     if (this._notesMode !== "read") return;
     this._notesMode = "edit";
@@ -80,7 +80,7 @@ const EditModal = {
   },
 
   /** Bloc « Notes » commun aux 3 gabarits (identité/véhicule/PJ léger/PNJ
-      complet) : textarea éditable + vue lecture (puces @/#) + bascule. E7 —
+      complet) : textarea éditable + vue lecture (puces @/#) + bascule —
       remplace la triplication du `<textarea id="em-notes">`. */
   _notesBlock(notes) {
     const esc = CardRenderer._esc;
@@ -228,7 +228,7 @@ const EditModal = {
     if (notesEl) v.notes = notesEl.value;
   },
 
-  /* ---- Formulaire minimal d'un PJ léger (E1) : ni attrs ni skills, jamais
+  /* ---- Formulaire minimal d'un PJ léger : ni attrs ni skills, jamais
      de branche d'édition — nom/joueur/couleur/notes seulement. ---- */
   _buildFormLight(pnj) {
     const esc = CardRenderer._esc;
@@ -274,7 +274,7 @@ const EditModal = {
     ${this._notesBlock(pnj.notes)}`;
   },
 
-  /** E5 : « Contacts liés » — repliée par défaut (`<details>`), générée
+  /** « Contacts liés » — repliée par défaut (`<details>`), générée
       depuis `Characters`/`ContactsBook` (mutation immédiate au clic, comme
       les compétences éditables — pas de champ à valider via Sauvegarder).
       Réutilise `SingleSelect` (picker existant) + le patron visuel
@@ -348,7 +348,7 @@ const EditModal = {
     if (details) details.outerHTML = this._buildContactLinksSection(pnj);
   },
 
-  /** E3 : section « Mécanique de table » — générée depuis le descripteur
+  /** Section « Mécanique de table » — générée depuis le descripteur
       neutre `pcTableBlock` (jamais `App.edition` ici), repliée par défaut
       (`<details>` natif, pas de JS de bascule à écrire) : le PJ nom-seul
       reste la norme, cette section n'existe que si le MJ l'ouvre. */
@@ -1557,7 +1557,7 @@ const EditModal = {
     // Connaissances (SR5/SR6, hasKnowledges) : nom, niveau, catégorie
     this._readKnowledges(pnj);
 
-    // Cyberdeck (M1) — lu seulement si la section a été montée (pnj.cyberdeck).
+    // Cyberdeck — lu seulement si la section a été montée (pnj.cyberdeck).
     if (pnj.cyberdeck) CyberdeckRenderer.readForm(pnj);
 
     // Suivi de campagne (optionnel, PJ seulement)
@@ -1576,7 +1576,7 @@ const EditModal = {
     if (!modal) return;
 
     modal.addEventListener("click", (e) => {
-      // E8-A1 : click-to-edit sur le rendu des notes — avant la délégation
+      // Click-to-edit sur le rendu des notes — avant la délégation
       // data-action (une puce @/# à l'intérieur reste prioritaire, cf. garde).
       if (
         e.target.closest("#em-notes-read") &&

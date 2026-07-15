@@ -249,7 +249,7 @@ const Magic = {
     // livre de base (seul le type d'esprit invocable change, narratif).
     // V1 : idem — 4 traditions supplémentaires listées en Anarchistes
     // (Hindouisme, Animisme, Magie du chaos, Traditions du peuple) sont
-    // purement narratives (findings §13), pas de mécanique de Drain propre
+    // purement narratives, pas de mécanique de Drain propre
     // à motoriser ici.
     anarchy1: [],
     anarchy2: [],
@@ -457,7 +457,7 @@ const Magic = {
     // une liste (on en tire `pick`), plus un Comportement imposé. Résolu par
     // Magic._resolveRrMentor() qui fixe les relances tirées (`chosen`) et
     // construit la description. Les relances sont appliquées par BonusEngine.
-    // ----- Anarchy 1re édition (findings §12/§13) : 6 esprits mentors
+    // ----- Anarchy 1re édition : 6 esprits mentors
     // cités (Aigle, Chat, Chien, Corbeau, Loup, Ours), mécanique simple
     // (comme SR5 : bonus « Tous » chiffrable ou null, pas de RR à choix).
     anarchy1: [
@@ -668,7 +668,7 @@ const Magic = {
   },
 
   /* ========================================================
-     DRAIN (CH-M3) — calcul générique, sans lecture d'édition :
+     DRAIN — calcul générique, sans lecture d'édition :
      le code de sort SR5 (« P-3 », « P+2 »…) est relatif à la Puissance,
      la VD SR6 est déjà une valeur fixe par sort (Content.spells.sr6).
      Chaque module d'édition décide ce qu'il passe en `base`.
@@ -694,7 +694,7 @@ const Magic = {
     return Math.max(0, (dv || 0) - (hits || 0));
   },
 
-  /** Réserve d'une action magique (CH-M7c) : compétence de Sorcellerie /
+  /** Réserve d'une action magique : compétence de Sorcellerie /
       Conjuration + Magie − malus de blessure. L'attribut est toujours Magie
       pour Lancement de sorts / Invocation / Conjuration (pas besoin de
       SkillCatalog). `skillName` vient du contrat d'édition (spellSkill /

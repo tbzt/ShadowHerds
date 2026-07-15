@@ -20,10 +20,10 @@ const EditionAnarchy2 = {
   badgeLabel: "ANARCHY 2E",
   isWip: false,
 
-  /* ---- Contrat commun édition (résorption des branches, issue #14) ---- */
+  /* ---- Contrat commun édition (résorption des branches) ---- */
   attributes: ["FOR", "AGI", "VOL", "LOG", "CHA"],
   /** Légende des symboles affichée dans l'Aide (?), lue par
-      App._renderHelpLegend (CH-V6-T1.4, FIELD_STUDY REC-6). Pas d'Init, PRE,
+      App._renderHelpLegend. Pas d'Init, PRE,
       PA ni modes de tir CC/SA/TR/TA (Anarchy 2 résout autrement — ordre
       narratif, cf. EncounterRenderer._narrativeNote) : légende propre,
       pas un sous-ensemble de celle de SR5/SR6. */
@@ -52,7 +52,7 @@ const EditionAnarchy2 = {
     blockedBy: null,
     costAttr: null,
   },
-  /* ---- Action magique (CH-M7c) : Drain déjà couvert par les complications
+  /* ---- Action magique : Drain déjà couvert par les complications
      du jet de risque (p.170), aucune VD séparée → tout neutre. ---- */
   spellUsesForce: false,
   spellSkill: null,
@@ -75,7 +75,7 @@ const EditionAnarchy2 = {
   /** Neutre : pas de Drain chiffré à appliquer (cf. drainDamageType). */
   applyDrainDamage() {},
 
-  /* ---- Drain par complication (CH-M7d, p.170) : le Drain d'Anarchy 2 n'est
+  /* ---- Drain par complication (p.170) : le Drain d'Anarchy 2 n'est
      pas une VD à résister mais un effet supplémentaire lors des complications
      d'un jet de risque magique. « Tous les tests de Sorcellerie et Conjuration
      sont sujets au drain » → magicSkills liste les compétences concernées
@@ -146,13 +146,13 @@ const EditionAnarchy2 = {
   initiativeFor() {
     return null;
   },
-  /** K4 : spec d'un combattant CI lancé dans l'initiative. Anarchy n'a pas
+  /** Spec d'un combattant CI lancé dans l'initiative. Anarchy n'a pas
       d'initiative chiffrée (ordre narratif) : jeton narratif sans init, comme
       les PNJ Anarchy. narrative:true → Encounter n'appelle pas Dice. */
   icCombatant(ic) {
     return { name: ic.label, narrative: true };
   },
-  /** K7 : budget d'actions par narration (vérifié p.65) — 1 action significative
+  /** Budget d'actions par narration (vérifié p.65) — 1 action significative
       (déplacement + annexes gratuits, non décomptés). Les points d'Anarchy
       accordent des actions en plus : au MJ d'incrémenter (jeton supplémentaire). */
   actionBudget() {
@@ -161,7 +161,7 @@ const EditionAnarchy2 = {
   /** Règles de round pour le tracker de combat. Anarchy 2.0 : pas d'initiative
       chiffrée, l'ordre est narratif (combativité, cf. p.180). narrative:true →
       le tracker passe en mode dépouillé (tap-to-grise), sans init/tri/réordre. */
-  /** threatReserve (K5) : miroir de la Réserve de menace (badge topbar) dans
+  /** threatReserve : miroir de la Réserve de menace (badge topbar) dans
       l'en-tête du cockpit — même source de vérité (DiceRoller._threat), aucun
       état doublé. Le tracker lit ce drapeau, jamais une branche d'édition. */
   combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: true },
@@ -227,7 +227,7 @@ const EditionAnarchy2 = {
     },
     initiative: null,
   },
-  /** E3 (chantier Équipe) : bloc « mécanique de table » du PJ léger. Pas
+  /** Bloc « mécanique de table » du PJ léger. Pas
       d'initiative chiffrée en A2 (ordre narratif). `threatLevel` réutilise
       TEL QUEL le champ déjà lu par `EncounterRenderer._rowNarrative` (badge
       de combativité sur la ligne narrative, p.180) — aucun champ concurrent.
@@ -278,7 +278,7 @@ const EditionAnarchy2 = {
     knockOut(entity) {
       entity.incapFilled = 1;
     },
-    /** K6 : résumé du moniteur pour la mini-jauge du cockpit — cases de
+    /** Résumé du moniteur pour la mini-jauge du cockpit — cases de
         blessure cochées / capacité totale, tous crans cumulés (mêmes tiers
         que applyWound, cf. _woundTiers : caps + bonus d'atouts inclus). */
     gauge(entity) {
@@ -290,7 +290,7 @@ const EditionAnarchy2 = {
       }
       return { filled, total };
     },
-    /** K8 : résultat NET de dégâts en Anarchy 2 = un cran de gravité, pas des
+    /** Résultat NET de dégâts en Anarchy 2 = un cran de gravité, pas des
         cases — délègue à applyWound (cascade p.68 incluse). `opts.severity`
         ("leger"/"grave"/"incap", défaut "leger"). `n` est ignoré : un dégât net
         en Anarchy 2 EST le cran, jamais un nombre de cases. */
@@ -299,7 +299,7 @@ const EditionAnarchy2 = {
       const applied = EditionAnarchy2.applyWound(entity, sev);
       return applied ? { field: `${applied.sev}Filled`, applied: 1, wound: applied } : { field: null, applied: 0 };
     },
-    /** K8 : descripteur neutre — pas de chips numériques, 3 niveaux de gravité
+    /** Descripteur neutre — pas de chips numériques, 3 niveaux de gravité
         (le MJ dit « c'est une blessure grave », l'app ne demande pas de cases). */
     damageUI() {
       return {
@@ -328,12 +328,12 @@ const EditionAnarchy2 = {
     hasAttrs: false,
     indiceRange: [2, 8],
     profileKey: "anarchy2",
-    // M4 : Anarchy 2.0 n'a pas de moniteur d'appareil ni d'indice, mais le
+    // Anarchy 2.0 n'a pas de moniteur d'appareil ni d'indice, mais le
     // verbe « rendre les Smartguns inopérants » est explicite au livre
     // (p.210) — régime NARRATIF : une simple bascule « hors service », sans
     // cases ni chiffre (arbitrage CODIR, reco Canon).
     deviceBricking: "narrative",
-    // R2-D : cf. sr5.js — taxonomie D-R2-4. Armes/Commlinks A2 hors
+    // Cf. sr5.js — taxonomie tranchée. Armes/Commlinks A2 hors
     // `equipPools` (structure typée par archétype) : résolus par le motif de
     // repli `Matrix._LABEL_CAT_RX`, pas cette table.
     connectedByCat: {
@@ -391,7 +391,7 @@ const EditionAnarchy2 = {
     },
   },
 
-  /* Régime cyberdeck Anarchy 2.0 (M1, p.62-64 & p.210) — Attaque + Firewall
+  /* Régime cyberdeck Anarchy 2.0 (p.62-64 & p.210) — Attaque + Firewall
      (1-5, améliorables par atout), + option filtre de biofeedback (repo).
      Pas de réallocation (Canon : Att/FW fixes). */
   cyberdeckModel: {
@@ -400,11 +400,11 @@ const EditionAnarchy2 = {
     hasReroll: false,
     hasBiofeedbackFilter: true,
     label: "Cyberdeck",
-    // Pas de monitorSize() ici (M2, table CODIR) : le biofeedback d'Anarchy
+    // Pas de monitorSize() ici : le biofeedback d'Anarchy
     // 2.0 encaisse sur la Volonté du decker (moniteur du PNJ), pas sur un
     // moniteur de deck séparé — Cyberdeck.monitorSize() renvoie null, le
     // cockpit n'affiche donc pas de moniteur de deck pour cette édition.
-    /* M7 : actions matricielles offensives — narratives (Anarchy est un jeu de
+    /* Actions matricielles offensives — narratives (Anarchy est un jeu de
        pool + narration, pas de VD chiffrée). Le Cybercombat (p.225) utilise
        l'Attaque pour infliger des dommages matriciels → action jouable
        (pool = Attaque, VD narrée par les succès). « Pirater la Matrice »
@@ -661,8 +661,8 @@ const EditionAnarchy2 = {
     return null;
   },
 
-  /** Archétype utilisé pour un spider (decker de sécurité lié à un serveur,
-      issue #14) — le meilleur decker disponible dépend de l'indice défendu. */
+  /** Archétype utilisé pour un spider (decker de sécurité lié à un serveur)
+      — le meilleur decker disponible dépend de l'indice défendu. */
   spiderArchetype(indice) {
     return indice >= 6 ? "Decker d'élite" : "Decker de sécurité";
   },

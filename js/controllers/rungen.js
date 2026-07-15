@@ -362,7 +362,7 @@ const RunGen = {
     });
   },
 
-  /** R3-E : « Faire une run » — promeut un topos (amorce générée) en RUN canon.
+  /** « Faire une run » — promeut un topos (amorce générée) en RUN canon.
       Crée (ou réutilise) un dossier typé `run` où ranger PNJ, contacts et
       serveurs de la prep, et relie le topos au dossier (la carte l'affiche
       ensuite au lieu du bouton — le topos ne reste plus sans lien visible une
@@ -406,7 +406,7 @@ const RunGen = {
     old.replaceWith(el);
   },
 
-  /* ---- Persistance des runs générées (CH-Q5, édition-scopée) ----
+  /* ---- Persistance des runs générées (édition-scopée) ----
      Miroir du pattern gen_pool : les runs survivent au F5 et au changement de
      panel, restaurées par initPanel(). Storage = source de vérité. */
   _RUNS_KEY: "gen_runs",

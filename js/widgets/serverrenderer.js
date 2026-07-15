@@ -1,14 +1,14 @@
 "use strict";
 
 /* ============================================================
-   SERVER RENDERER — HTML du panneau Matrice (issue #14).
+   SERVER RENDERER — HTML du panneau Matrice.
    Reçoit les serveurs et l'état d'édition en paramètres, ne lit
    ni ne modifie l'état persisté : la logique reste dans Servers
    (js/controllers/servers.js). Catalogues et règles délégués à
    Matrix (js/matrix.js), comme dans Servers.
    ============================================================ */
 const ServerRenderer = {
-  /** R2-B : état d'intrusion scène-scopé d'un serveur (`Encounter.state.
+  /** État d'intrusion scène-scopé d'un serveur (`Encounter.state.
       matrix`), lu ici pour l'affichage — remplace `srv.intrusion`. Un seul
       point de résolution plutôt que de faire percoler un paramètre `intr`
       dans les 4 fonctions de rendu ci-dessous (card/intrusionPanel/ssBlock/
@@ -78,8 +78,8 @@ const ServerRenderer = {
 
   /** Badges + seuils du serveur (indice, attributs ou régime sans attrs) —
       extrait de card() pour être réutilisé tel quel par le tiroir Matrice
-      du tracker (K3, matrixDrawerHeader) : même contenu, pas une deuxième
-      version. Dispatch structurel accepté (issue #14) : deux blocs complets
+      du tracker (matrixDrawerHeader) : même contenu, pas une deuxième
+      version. Dispatch structurel accepté : deux blocs complets
       (badges+seuils propres au régime vs Matrix.ATTR_KEYS+icThresholdsText
       SR5/SR6), pas une valeur scalaire — cf. Matrix.hasAttrs(). */
   statsHtml(srv) {
@@ -104,7 +104,7 @@ const ServerRenderer = {
       <div class="server-thresholds">CI : ${Matrix.use(srv.edition).icThresholdsText(srv)}</div>`;
   },
 
-  /** En-tête du tiroir Matrice (K3, cf. Encounter.state.serverId) : profil +
+  /** En-tête du tiroir Matrice (cf. Encounter.state.serverId) : profil +
       statsHtml, au-dessus du bloc intrusion complet (intrusionPanel, réutilisé
       verbatim). Pas une 2ᵉ carte serveur — juste le contexte utile en combat. */
   matrixDrawerHeader(srv) {
@@ -125,7 +125,7 @@ const ServerRenderer = {
     const catalog = Matrix.use(srv.edition).icCatalog();
 
     /* -- header + stats -- */
-    // Dispatch structurel accepté (issue #14) : deux blocs complets
+    // Dispatch structurel accepté : deux blocs complets
     // (badges+seuils propres au régime vs Matrix.ATTR_KEYS+icThresholdsText
     // SR5/SR6), pas une valeur scalaire — cf. Matrix.hasAttrs(). Le régime
     // hasAttrs:false n'est plus mono-édition (anarchy1 ≠ anarchy2, textes
@@ -168,7 +168,7 @@ const ServerRenderer = {
       : [
           { kind: "secondary", label: "Éditer", attrs: `data-action="toggle-edit" data-id="${srv.id}"` },
           { kind: "primary", icon: "⚡", label: intr.open ? "Fermer l'intrusion" : "Intrusion", attrs: `data-action="toggle-intrusion" data-id="${srv.id}"` },
-          // K3 : calque du « ⚔ Combat » des PNJ — porte 2 de liaison au tiroir
+          // Calque du « ⚔ Combat » des PNJ — porte 2 de liaison au tiroir
           // Matrice (Encounter.linkServer), même geste que pour un combattant.
           { kind: "menu", label: "⚔ Envoyer au combat", attrs: `data-action="send-to-encounter" data-id="${srv.id}"` },
           srv.spider
@@ -282,7 +282,7 @@ const ServerRenderer = {
   },
 
   /* ---- Bloc intrusion (tracker) ----
-     inEncounter (K4) : rendu dans le tiroir Matrice du tracker de combat —
+     inEncounter : rendu dans le tiroir Matrice du tracker de combat —
      ajoute « ⚔ Init » sur chaque CI active pas encore dans l'ordre
      (launchedKeys = clés déjà lancées, fournies par Encounter). Hors tracker
      (carte du panneau Serveurs), ces options n'apparaissent pas. */
@@ -340,7 +340,7 @@ const ServerRenderer = {
           }
         }
 
-        // K4 : « ⚔ Init » pour envoyer cette CI dans l'ordre d'initiative du
+        // « ⚔ Init » pour envoyer cette CI dans l'ordre d'initiative du
         // combat (seulement dans le tiroir, sur une CI déployée non détruite et
         // pas déjà en scène ; jamais la Patrouilleuse en veille).
         let launchBtn = "";
@@ -363,8 +363,8 @@ const ServerRenderer = {
       })
       .join("");
 
-    /* Bloc surveillance selon édition — dispatch structurel accepté
-       (issue #14) : DIEU (Anarchy) vs Score de Surveillance (SR5/SR6),
+    /* Bloc surveillance selon édition — dispatch structurel accepté :
+       DIEU (Anarchy) vs Score de Surveillance (SR5/SR6),
        deux modèles de règles complets. */
     const surveillance = Matrix.use(srv.edition).hasAttrs()
       ? this.ssBlock(srv)
@@ -406,7 +406,7 @@ const ServerRenderer = {
       )
       .join("");
 
-    // Dispatch structurel accepté (issue #14) : le mécanisme du Score de
+    // Dispatch structurel accepté : le mécanisme du Score de
     // Surveillance diffère entre SR5 (+2D6/15 min, marks) et SR6
     // (+1 par programme de hacking, accès illégaux maintenus, p.178/233).
     const sr5Extra =

@@ -18,7 +18,7 @@
    Un contact/PNJ/serveur peut appartenir à PLUSIEURS groupes.
    ============================================================ */
 const Collection = {
-  /** Nom de groupe réservé pour l'épingle rapide (CH-Q9) — un dossier
+  /** Nom de groupe réservé pour l'épingle rapide — un dossier
       transverse comme un autre, pinné en tête par DossierBar. */
   FAV_GROUP: "★ Favoris",
 
@@ -36,7 +36,7 @@ const Collection = {
    *                 imbriquée dans l'entité, pas sœur (ex : spider d'un serveur)
    *   footerSelector sélecteur CSS du footer de carte où ancrer le
    *                 déclencheur de groupes (défaut : ".pnj-card-footer")
-   *   combatEligible (CH-Q10) true si ces entités peuvent rejoindre le
+   *   combatEligible true si ces entités peuvent rejoindre le
    *                 suivi de combat — affiche le bouton dédié de la
    *                 barre de sélection multiple (Shadows/Characters).
    */
@@ -52,7 +52,7 @@ const Collection = {
       data: { all: [], groups: {} },
       currentGroup: "all",
       filterText: "",
-      _selected: new Set(), // CH-Q10 : ids sélectionnés, éphémère (pas de Storage)
+      _selected: new Set(), // ids sélectionnés, éphémère (pas de Storage)
 
       /* ---- Persistance ---- */
       load() {
@@ -121,7 +121,7 @@ const Collection = {
         toastUndo(labels.removed(entity), restore);
       },
 
-      /** Suppression en masse (CH-Q10) : même mécanique que remove() mais
+      /** Suppression en masse : même mécanique que remove() mais
           un seul snapshot fusionné + un seul toastUndo pour N entités
           (au lieu de N appels empilés qui s'écraseraient l'un l'autre). */
       removeMany(ids) {
@@ -169,7 +169,7 @@ const Collection = {
         );
       },
 
-      /* ---- Sélection multiple (CH-Q10) ---- */
+      /* ---- Sélection multiple ---- */
       toggleSelect(id, checked) {
         if (checked) this._selected.add(id);
         else this._selected.delete(id);
@@ -263,7 +263,7 @@ const Collection = {
         this.render();
       },
 
-      /** Déplace N entités vers un dossier en un seul save()+render() (CH-Q10),
+      /** Déplace N entités vers un dossier en un seul save()+render(),
           plutôt que d'enchaîner toggleGroup() qui re-rendrait à chaque id. */
       addManyToGroup(ids, groupKey) {
         if (!this.data.groups[groupKey]) this.data.groups[groupKey] = [];
@@ -452,7 +452,7 @@ const Collection = {
       /** Rend, dans un conteneur fourni, les entités dont l'id est listé
           (les plus récentes d'abord, comme la grille propre). Utilisé par
           le Hub pour composer une section par type dans une vue de dossier.
-          `context` (ex. "library", D6a) descend jusqu'au rendu de carte pour
+          `context` (ex. "library") descend jusqu'au rendu de carte pour
           adapter la densité à l'usage (consultation vs génération). */
       renderMembers(grid, ids, context) {
         const set = new Set(ids);
@@ -485,7 +485,7 @@ const Collection = {
         btn.innerHTML = `<span class="group-picker-trigger-icon">🏷</span><span class="group-picker-trigger-label">${CardRenderer._esc(gLabel)}</span>`;
         footer.prepend(btn);
 
-        // Épingle rapide (CH-Q9) : même groupe multi-appartenance que le
+        // Épingle rapide : même groupe multi-appartenance que le
         // bouton ci-dessus, juste une case réservée bascule en un clic —
         // aucun nouveau mécanisme de persistance.
         const pinned = groups.includes(Collection.FAV_GROUP);
@@ -521,7 +521,7 @@ const Collection = {
         footer.prepend(handle);
       },
 
-      /** Case à cocher de sélection multiple (CH-Q10), en coin de carte —
+      /** Case à cocher de sélection multiple, en coin de carte —
           la classe marqueur passe la carte en position:relative, générique
           quel que soit le renderer de carte utilisé par le domaine. */
       _appendSelectCheckbox(card, id) {

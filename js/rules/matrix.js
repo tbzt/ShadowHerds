@@ -1,8 +1,8 @@
 "use strict";
 
 /* ============================================================
-   MATRICE — catalogues de CI, profils d'indice et sculptures
-   (issue #14). Données/règles par édition, consommées via
+   MATRICE — catalogues de CI, profils d'indice et sculptures.
+   Données/règles par édition, consommées via
    Matrix.use(edition), sur le patron d'Infected/Metavariants.
    Le tracker d'intrusion (contrôleur) reste dans js/servers.js.
 
@@ -238,7 +238,7 @@ const Matrix = {
       },
     },
 
-    // Anarchy 1re édition (findings §6/§6b, sran_01 p.162-164+199) — GLACE
+    // Anarchy 1re édition (sran_01 p.162-164+199) — GLACE
     // À DÉS (pas de succès fixes) : statblock commun FW 6 · LOG 5 ·
     // Défense 11 · Hacking 8 · Pistage 8 · Moniteur (M) 11. Cybercombat :
     // Hacking+LOG vs LOG+Firewall (GLACE), dégâts (LOG/2)E. Les effets
@@ -316,7 +316,7 @@ const Matrix = {
     get sr6() {
       return this.sr5;
     },
-    // Anarchy 1re édition (findings §6b) — le « indice » est directement le
+    // Anarchy 1re édition — le « indice » est directement le
     // pool de défense en dés (pas une échelle 1-12 comme SR5/SR6).
     anarchy1: [
       { id: "artisanal", label: "Artisanal (bricolé, très bas de gamme ou daté)", indice: 4, sev: 0 },
@@ -334,7 +334,7 @@ const Matrix = {
       ["traqueuse", "blaster", "acide", "bloqueuse"],
       ["noire"],
     ],
-    // Anarchy 1re édition (findings §6b, 9 GLACE)
+    // Anarchy 1re édition (9 GLACE)
     anarchy1: [
       ["tueuse", "potdecolle", "crash"],
       ["traqueuse", "acide", "bloqueuse", "brouilleuse"],
@@ -478,7 +478,7 @@ const Matrix = {
     return this._model().hasAttrs;
   },
 
-  /** M4 : régime de brickage des appareils (armes) de l'édition, lu par le
+  /** Régime de brickage des appareils (armes) de l'édition, lu par le
       cockpit combat plutôt que de comparer l'édition (interdit n°1) :
       - "monitor"   → SR5/SR6 : vrai moniteur matriciel d'appareil (8+Indice/2)
       - "narrative" → Anarchy 2.0 : bascule « hors service » sans moniteur (le
@@ -488,13 +488,13 @@ const Matrix = {
     return this._model().deviceBricking || null;
   },
 
-  /** R2-D : dérive la catégorie d'équipement d'un item non taggé (#63) en le
+  /** Dérive la catégorie d'équipement d'un item non taggé en le
       retrouvant tel quel dans `equipPools` de l'édition — un item généré
       (Gen._generateOne) est toujours une chaîne littérale du catalogue,
       jamais reconstruite. Index construit une fois par édition (catalogues
       statiques, jamais invalidé). Ne résout rien pour l'équipement hors
       `equipPools` (armes/commlinks Anarchy 2, posés en dur par archétype —
-      cf. D-R2-4 et `_LABEL_CAT_RX` ci-dessous). */
+      cf. `_LABEL_CAT_RX` ci-dessous). */
   _catIndex: {},
   _resolveCat(str) {
     const mod = App.getEditionModule(this._edition);
@@ -526,7 +526,7 @@ const Matrix = {
   ],
 
   /** Électronique sans-fil noyée dans les catégories fourre-tout
-      (cyberware/equipSpecial/equipement, défaut NON — D-R2-4 « override
+      (cyberware/equipSpecial/equipement, défaut NON — « override
       obligatoire ») : reconnue par mot-clé plutôt que par tag item-par-item,
       cohérent avec le motif de parsing déjà en place (AnarchyAtouts,
       WeaponEffects). Jamais consultée hors ces catégories (une arme de
@@ -538,9 +538,9 @@ const Matrix = {
     /cyberjack|cyberdeck implant|commlink implant|yeux? cybern|oreilles? cybern|routeur interne|\bantenne\b|liaison satellite|scanner de fréquences|grappin dérivateur/i,
 
   /** Un appareil (arme/équipement) est-il une cible matricielle plausible ?
-      Ordre : mains nues (jamais) → override explicite (#63 `item.connected`)
+      Ordre : mains nues (jamais) → override explicite (`item.connected`)
       → libellé commlink/cyberdeck (repli hors `equipPools`) → smartgun
-      (toujours sans-fil) → catégorie résolue (#63 `cat` ou repli catalogue)
+      (toujours sans-fil) → catégorie résolue (`cat` ou repli catalogue)
       → sans-fil noyé dans cyberware/equipSpecial/equipement → table par
       catégorie de l'édition → défaut permissif (catégorie inconnue, jamais
       de faux négatif de brickage). Même fonction depuis R1d, jamais
@@ -560,7 +560,7 @@ const Matrix = {
     return true;
   },
 
-  /** M4 : Indice d'appareil par défaut d'une arme = 2 (« Moyen ») — vérifié
+  /** Indice d'appareil par défaut d'une arme = 2 (« Moyen ») — vérifié
       au livre, identique SR5 (p.425) et SR6 (p.258), les deux listent « armes »
       à l'indice 2. Le MJ ajuste ensuite par pas ± si l'arme est un modèle
       supérieur. Constante partagée : les deux régimes « monitor » s'accordent. */

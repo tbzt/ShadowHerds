@@ -1,10 +1,10 @@
 "use strict";
 
 /* ============================================================
-   MENTIONS & MOTS-CLÉS (E4 → E7) — autocomplétion `@` et `#` dans un
+   MENTIONS & MOTS-CLÉS — autocomplétion `@` et `#` dans un
    textarea, + rendu des puces cliquables (mode Lire des hôtes, cartes).
 
-   E7 — ancrage par ID. Une mention se stocke `@[nom](id)` : l'ID est la
+   Ancrage par ID. Une mention se stocke `@[nom](id)` : l'ID est la
    VÉRITÉ, le nom entre crochets n'est qu'un cache lisible/cherchable. Le
    rendu résout toujours l'id → nom COURANT (PnjLookup.locate) — d'où la
    propagation automatique du renommage (Nita → Nitao) SANS aucun hook.
@@ -15,13 +15,13 @@
    id) ; l'autocomplétion ne propose que les tags déjà employés.
 
    Candidats `@` résolus par PnjLookup.search — même source que la Palette
-   (CH-Q7), aucun résolveur concurrent. Deux hôtes (Notepad, EditModal
+  , aucun résolveur concurrent. Deux hôtes (Notepad, EditModal
    em-notes), un seul widget : Mentions.attach(textarea).
 
    Index (backlinks « Mentionné dans » par id, récolte des `#tags`) : calculé
    à la volée par un balayage unique des notes (bloc-notes de séance + champ
    `notes` et journal des entités sauvegardées) — pas d'index persistant,
-   volumes faibles (cf. plan E4/E7).
+   volumes faibles.
    ============================================================ */
 const Mentions = {
   _box: null,
@@ -61,7 +61,7 @@ const Mentions = {
     });
   },
 
-  /** E7 — auto-attach délégué : tout champ portant `data-mentions` (posé par
+  /** Auto-attach délégué : tout champ portant `data-mentions` (posé par
       le renderer) est câblé au focus, sans câblage explicite par hôte. Un
       nouveau champ (re-rendu, futur écran) est couvert automatiquement dès
       qu'il porte l'attribut. `attach()` reste idempotent, donc sans risque de
@@ -130,7 +130,7 @@ const Mentions = {
   _TYPE_LABEL: { pnj: "PNJ", pj: "PJ", contact: "Contact", server: "Serveur" },
 
   /** Réutilise .palette-row/.palette-type/.palette-name tels quels (même
-      vocabulaire visuel que la Palette, CH-Q7) — aucun nouveau composant. */
+      vocabulaire visuel que la Palette) — aucun nouveau composant. */
   _render() {
     const box = this._ensureBox();
     box.innerHTML = this._results
@@ -142,7 +142,7 @@ const Mentions = {
               <span class="palette-name">#${Utils.escHtml(r.tag)}</span>
             </div>`;
         }
-        // E6 : même avatar constant que la Palette (couleur+anneau+initiale).
+        // Même avatar constant que la Palette (couleur+anneau+initiale).
         const avatar = r.type === "pj" ? CardRenderer._pcAvatar(PnjLookup.find(r.id)) : "";
         return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
             <span class="palette-type">${this._TYPE_LABEL[r.type] || r.type}</span>
@@ -155,7 +155,7 @@ const Mentions = {
   },
 
   /** Ancrage sous le textarea (pas de calcul de position de curseur — scope
-      réduit, cf. plan E4). Sous 641px : ancré au-dessus du clavier virtuel
+      réduit). Sous 641px : ancré au-dessus du clavier virtuel
       via VisualViewport (meilleur effort — non simulable en preview headless,
       dégrade proprement en `bottom:0` sans l'API). */
   _position() {
@@ -215,7 +215,7 @@ const Mentions = {
 
   /** Rend un texte de note en HTML sûr : `@[nom](id)` → puce cliquable au nom
       COURANT (résolu par id → propagation du renommage), `#mot` → puce
-      mot-clé, le reste échappé. Un ancien `@Nom` nu (E4) reste du texte. Les
+      mot-clé, le reste échappé. Un ancien `@Nom` nu reste du texte. Les
       clics sont câblés par délégation côté hôte (`data-action`), jamais en
       inline. */
   renderText(text) {
@@ -231,7 +231,7 @@ const Mentions = {
         const ent = PnjLookup.locate(id);
         const name = ent ? ent.name : m[1];
         const dead = ent ? "" : " mention-chip--dead";
-        // Signature visuelle PJ (E6) : la puce reprend la couleur identifiante
+        // Signature visuelle PJ : la puce reprend la couleur identifiante
         // du PJ, résolue à chaque rendu — un changement de couleur se propage
         // au prochain affichage, comme le nom (aucun cache, aucun hook).
         const pcStyle =
@@ -285,7 +285,7 @@ const Mentions = {
   },
 
   /** Backlinks « Mentionné dans » d'une entité, par ID (robuste au renommage
-      et aux homonymes — E7). Dédupliqué par emplacement, exclut l'entité
+      et aux homonymes). Dédupliqué par emplacement, exclut l'entité
       elle-même. */
   backlinksFor(id) {
     if (!id) return [];
@@ -303,7 +303,7 @@ const Mentions = {
     return out;
   },
 
-  /** Emplacements de note portant `#tag` (récolte Palette, E7). */
+  /** Emplacements de note portant `#tag` (récolte Palette). */
   notesWithTag(tag) {
     const t = Utils.searchNorm(tag || "");
     if (!t) return [];

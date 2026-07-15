@@ -32,7 +32,7 @@ const EncounterRenderer = {
     const modal = document.querySelector(".encounter-modal");
     if (modal) modal.classList.toggle("is-narrative", narrative);
 
-    // R2-E : scène Matrice seule (state.motors sans "combat") — pas de
+    // Scène Matrice seule (state.motors sans "combat") — pas de
     // réglette d'init ni de liste vide à afficher, le tiroir Matrice
     // (toujours ouvert dans ce mode) est la surface principale.
     const matrixOnly = !(state.motors || []).includes("combat");
@@ -52,7 +52,7 @@ const EncounterRenderer = {
     // montrent le MÊME combattant. État de vue éphémère, aucune clé Storage.
     this._narrativeFocusId = narrative ? (this._narrativeFocus(rows) || {}).pnjId || null : null;
 
-    // K5 : miroir de la Réserve de menace dans l'en-tête (Anarchy) — visibilité
+    // Miroir de la Réserve de menace dans l'en-tête (Anarchy) — visibilité
     // pilotée par combatModel.threatReserve, valeur lue sur DiceRoller (source
     // unique). Pas de branche d'édition ici.
     const threatEl = document.getElementById("encounter-threat");
@@ -63,7 +63,7 @@ const EncounterRenderer = {
         if (val) val.textContent = DiceRoller.threatValue();
       }
     }
-    // CE1 : Bruit rejoint la Menace dans l'en-tête (ressources de scène, même
+    // Bruit rejoint la Menace dans l'en-tête (ressources de scène, même
     // patron id-driven) — un seul point d'affichage pour la fiche active
     // (SR5) et le narratif (A2), qui se partageaient jusqu'ici deux rendus.
     const noiseEl = document.getElementById("encounter-noise");
@@ -96,7 +96,7 @@ const EncounterRenderer = {
       : "";
     const html = liveHtml + downHtml;
 
-    // K1 : réglette compacte (rail de jetons, sœur de la liste complète —
+    // Réglette compacte (rail de jetons, sœur de la liste complète —
     // jamais reconstruite depuis elle, mêmes rows). Toujours rendue (même
     // vide), la visibilité rail/liste est purement CSS (cf. .rail-expanded).
     const rail = document.getElementById("encounter-rail");
@@ -118,10 +118,10 @@ const EncounterRenderer = {
       return;
     }
     // En narratif : compteur « X / N ont joué » + ligne expliquant le silence
-    // des actions chiffrées (REC-6 FIELD_STUDY — sans elle, l'absence d'init/tri
+    // des actions chiffrées (sans elle, l'absence d'init/tri
     // est lue comme une panne plutôt qu'une règle appliquée à la lettre).
     const progressHtml = narrative ? this._narrativeNote() + this._narrativeProgress(rows) : "";
-    // M4 : en narratif (Anarchy 2), le brickage n'a pas de fiche active où loger
+    // En narratif (Anarchy 2), le brickage n'a pas de fiche active où loger
     // — une bande dédiée en pied de liste (gate scène Matrice), avant l'action
     // de fin de scène. Vide (donc invisible) hors scène Matrice.
     const devicesHtml = narrative ? this._narrativeDevices(rows, state) : "";
@@ -190,11 +190,11 @@ const EncounterRenderer = {
     const status = r.down
       ? this._downBadge()
       : `<button type="button" class="encounter-nrow-status${hasActed ? " is-done" : ""}" data-action="narrative-toggle" data-id="${pnjId}" aria-pressed="${hasActed}" title="Marquer « joué »">${hasActed ? "Joué" : "À jouer"}</button>`;
-    // K10 : les actions rares (voir la fiche / hors de combat / réinitialiser /
+    // Les actions rares (voir la fiche / hors de combat / réinitialiser /
     // retirer) vivent derrière le menu ⋯ canonique (.card-kebab/.card-menu,
     // CardMenu.bindDelegation() déjà bindé au boot — aucun câblage neuf ici).
     // Pas de chips inline en narratif : le tap pleine-ligne reste le geste
-    // dominant (cf. décision C, PLAN_COCKPIT_COMBAT § K10).
+    // dominant.
     const menuItems = [
       canFocus
         ? { attrs: `data-action="focus-combatant" data-id="${pnjId}"`, label: "Voir la fiche" }
@@ -266,13 +266,13 @@ const EncounterRenderer = {
       véhicule liés), pnj.type (spirit/creature) ; PNJ par défaut. */
   _kindLabel(r) {
     if (r.kind === "pj") return "PJ";
-    if (r.kind === "matrix") return "CI"; // K4 : combattant matriciel (Matrice)
+    if (r.kind === "matrix") return "CI"; // combattant matriciel (Matrice)
     const p = r.pnj;
     if (p.kind === "drone") return "Drone";
     if (p.kind === "vehicule") return "Véhicule";
     if (p.type === "spirit") return "Esprit";
     if (p.type === "creature") return "Créature";
-    // E1 : un PJ (léger ou complet) ajouté depuis la bibliothèque `Characters`
+    // Un PJ (léger ou complet) ajouté depuis la bibliothèque `Characters`
     // n'a ni `kind:"pj"` (réservé au PJ ad-hoc historique) ni `type` distinctif
     // — sans ce test il retombait sur « PNJ », mislabeling visible partout où
     // ce badge est réutilisé (picker, carte active, ligne du tracker).
@@ -280,7 +280,7 @@ const EncounterRenderer = {
     return "PNJ";
   },
 
-  /** Mini-jauge de vie (K6) : résumé du moniteur en barre fine, non
+  /** Mini-jauge de vie : résumé du moniteur en barre fine, non
       interactive (les cases se cochent sur la fiche), visible en posture
       dock ≥641px (cf. CSS). Fraction remplie = dégâts encaissés, teinte
       --warning/--danger aux seuils ½ et ¾. Rien sans moniteur (gauge
@@ -325,7 +325,7 @@ const EncounterRenderer = {
     // Vague B : la note ne s'affiche en 2ᵉ ligne que si remplie ; sinon elle est
     // masquée (déclutter) et révélée à la demande via « ✎ Note » du menu ⋯.
     const hasNote = !!(note && note.trim());
-    // CH-M5 : même calcul générique que sur la fiche (Utils.woundMalus),
+    // Même calcul générique que sur la fiche (Utils.woundMalus),
     // affiché ici pour que le malus soit visible sans rouvrir la carte. Une CI
     // n'a pas de moniteur chair → pas de malus de blessure.
     const malus = isMatrix ? 0 : Utils.woundMalus(pnj, pnj.edition);
@@ -336,11 +336,11 @@ const EncounterRenderer = {
     const { alias, family, full } = Utils.parseName(pnj.name);
     const name = Utils.escHtml(alias || family || full);
     // PJ : avatar constant avant le nom — couleur + anneau + initiale du
-    // joueur (E6, CardRenderer._pcAvatar), jamais un indice isolé.
+    // joueur (CardRenderer._pcAvatar), jamais un indice isolé.
     const colorDot = r.isPJ ? CardRenderer._pcAvatar(pnj) : "";
     // Nom : bouton « voir la fiche » pour une entité résolvable ou une CI (qui
     // ouvre le tiroir Matrice) ; span inerte pour un PJ ad-hoc (pas de fiche).
-    // CE4 : nom compact affiché (alias/famille) ; le span inerte (pas d'autre
+    // Nom compact affiché (alias/famille) ; le span inerte (pas d'autre
     // affordance) porte le nom complet en title, le bouton garde son intitulé
     // d'action existant (title = geste, pas le nom).
     const nameHtml =
@@ -358,7 +358,7 @@ const EncounterRenderer = {
     // CH combat (Vague A) : ligne 2 étages responsive. Le jeton d'init ne porte
     // plus que le score (base + malus + score effectif de passe) ; les verbes
     // fréquents (✓/↩ ⚄ ⏸/▶) restent en chips inline, la gestion rare (▲▼✎☠✚✕)
-    // vit derrière le menu ⋯ canonique .card-menu (K10, _rowMenu).
+    // vit derrière le menu ⋯ canonique .card-menu (_rowMenu).
     // Vague D : hors de combat → jeton d'init remplacé par « — » (init retirée)
     // + badge ; « devrait fuir » → bandeau de moral avec action « Faire fuir ».
     // Vague B : steppers ±1 autour du champ (ajuster une init lancée sans
@@ -381,9 +381,9 @@ const EncounterRenderer = {
     const dragHandle = r.down
       ? ""
       : `<span class="encounter-drag-handle" title="Glisser pour réordonner" aria-hidden="true">⠿</span>`;
-    // K10 : verbes du tour (fréquents) en chips inline lisibles à toutes tailles
+    // Verbes du tour (fréquents) en chips inline lisibles à toutes tailles
     // de pointeur ; le reste (réordre, note, hors de combat, réinitialiser,
-    // retirer) derrière le menu ⋯ canonique (décision C, PLAN_COCKPIT_COMBAT § K10).
+    // retirer) derrière le menu ⋯ canonique.
     const actedChip = `<button class="encounter-chip encounter-acted-toggle${hasActed ? " is-done" : ""}" data-action="toggle-acted" data-id="${pnjId}" title="${hasActed ? "Marquer « pas encore joué »" : "Marquer « a joué »"}" aria-label="${hasActed ? "Marquer comme pas encore joué" : "Marquer comme a joué"}">${hasActed ? "↩" : "✓"}</button>`;
     const rollChip = `<button class="encounter-chip" data-action="roll-init" data-id="${pnjId}" title="Lancer l'initiative" aria-label="Lancer l'initiative">⚄</button>`;
     const delayChip = r.down
@@ -428,7 +428,7 @@ const EncounterRenderer = {
     </div>`;
   },
 
-  /** Jeton compact de la réglette K1 (ordonné) : init + nom tronqué, mêmes
+  /** Jeton compact de la réglette (ordonné) : init + nom tronqué, mêmes
       classes d'état que la ligne complète, mêmes tap-actions (focus-combatant,
       comme le nom de la ligne) — rien de nouveau côté contrôleur. */
   _token(r, isActive, outOfPass) {
@@ -441,7 +441,7 @@ const EncounterRenderer = {
     const initLabel = r.down ? "—" : r.delayed ? "⏸" : init == null ? "·" : String(init);
     const cls = [
       "encounter-token",
-      isMatrix && "is-matrix", // K4 : canal --accent2 (jeton CI)
+      isMatrix && "is-matrix", // canal --accent2 (jeton CI)
       isActive && "active-turn",
       r.hasActed && "has-acted",
       outOfPass && "out-of-pass",
@@ -450,7 +450,7 @@ const EncounterRenderer = {
     ]
       .filter(Boolean)
       .join(" ");
-    // K4 : une CI matricielle est _adhoc mais reste tappable (focusCombatant
+    // Une CI matricielle est _adhoc mais reste tappable (focusCombatant
     // ouvre le tiroir Matrice, pas une fiche de pool).
     const tappable = isMatrix || !pnj._adhoc;
     const action = tappable ? ` data-action="focus-combatant" data-id="${pnjId}"` : "";
@@ -476,7 +476,7 @@ const EncounterRenderer = {
     </button>`;
   },
 
-  /** Filtre de recherche du picker (CH-Q4). Conservé côté renderer, comme
+  /** Filtre de recherche du picker. Conservé côté renderer, comme
       _activeCardId : c'est de l'état de vue éphémère (le texte tapé dans le
       champ du picker), pas une préférence du contrôleur. Ré-appliqué après
       chaque reconstruction du panneau pour survivre aux _commit (ajout/
@@ -484,7 +484,7 @@ const EncounterRenderer = {
   _pickerQuery: "",
 
   /** Panneau d'ajout : PJ manuel + champ de filtre + entités résolvables non
-      encore en scène (générées, Ombres, spiders) + serveurs (K3, porte 1 de
+      encore en scène (générées, Ombres, spiders) + serveurs (porte 1 de
       liaison Matrice — même panneau, destination différente : state.serverId
       plutôt qu'un combattant). candidates: [pnj], servers: [srv]. */
   renderPicker(candidates, servers) {
@@ -536,7 +536,7 @@ const EncounterRenderer = {
     if (this._pickerQuery) this._applyPickerFilter();
   },
 
-  /** E2 : rafale d'init après « + Équipe » — focus le premier champ d'init PJ
+  /** Rafale d'init après « + Équipe » — focus le premier champ d'init PJ
       encore vide (`:placeholder-shown` ⇔ valeur vide, pas de calcul JS pour
       le détecter). Mode narratif Anarchy : aucun `[data-pj]` n'existe (pas
       d'init), le sélecteur ne trouve rien → no-op silencieux. */
@@ -595,8 +595,8 @@ const EncounterRenderer = {
   /** Contenu du wrapper live `.encounter-active-top` (rafraîchi à chaque
       `_render()`, indépendant du cache `_activeCardId`) : tout ce qui doit
       rester à jour au fil du tour sans re-rendre la fiche complète — bandeau
-      d'état (K2), pont decker→scène (M3), appareils matriciels (M4), duel
-      decker↔decker (M5a). */
+      d'état, pont decker→scène, appareils matriciels, duel
+      decker↔decker. */
   _activeTop(r, state) {
     return (
       this._activeBandeau(r) +
@@ -606,7 +606,7 @@ const EncounterRenderer = {
     );
   },
 
-  /** Bandeau d'état au-dessus de la fiche active (K2) : hors de
+  /** Bandeau d'état au-dessus de la fiche active : hors de
       combat/retardé/devrait fuir — mêmes badges que la ligne (_downBadge,
       _delayedBadge, _moraleBanner), rien de nouveau. Vide si le combattant
       est dans un état stable (cas le plus fréquent). */
@@ -620,9 +620,9 @@ const EncounterRenderer = {
     </div>`;
   },
 
-  /** M3 : pont entre le ciblage personnel d'un decker (DeckRun.target,
+  /** Pont entre le ciblage personnel d'un decker (DeckRun.target,
       cf. cyberdeckrenderer.js) et la Matrice contextuelle de la scène
-      (Encounter.state.serverId, K3). Le bloc deck du combattant actif
+      (Encounter.state.serverId). Le bloc deck du combattant actif
       affiche déjà sa cible (CardRenderer.render → CyberdeckRenderer.block) ;
       cette ligne ne fait qu'offrir de la promouvoir en un tap si elle
       diffère du serveur déjà lié — réutilise linkServer, aucune donnée neuve. */
@@ -637,9 +637,9 @@ const EncounterRenderer = {
     </div>`;
   },
 
-  /** M4 : « Appareils matriciels » — les armes du combattant deviennent des
+  /** « Appareils matriciels » — les armes du combattant deviennent des
       cibles brickables. Vit dans le wrapper live `.encounter-active-top` (posé
-      par M3), donc rafraîchi à chaque `_render()` (appliquer des dégâts au même
+      par le pont decker), donc rafraîchi à chaque `_render()` (appliquer des dégâts au même
       tour se voit immédiatement). Trois garde-fous, dans l'ordre :
       1. régime d'édition via Matrix.deviceBricking() — "monitor" (SR5/SR6) /
          "narrative" (A2) / null (A1, rien) — jamais un `if (App.edition)` ;
@@ -669,9 +669,9 @@ const EncounterRenderer = {
     </div>`;
   },
 
-  /** M5 : deckers présents dans la scène (PNJ avec `cyberdeck`), hors un id
-      donné — candidats « protecteur » (M5b, Firewall pour un allié) et cibles
-      du duel decker↔decker (M5a). Partagé par les deux usages. */
+  /** Deckers présents dans la scène (PNJ avec `cyberdeck`), hors un id
+      donné — candidats « protecteur » (Firewall pour un allié) et cibles
+      du duel decker↔decker. Partagé par les deux usages. */
   _deckersInScene(state, excludePnjId) {
     const out = [];
     for (const c of state.combatants) {
@@ -682,15 +682,15 @@ const EncounterRenderer = {
     return out;
   },
 
-  /** M5a : decker↔decker — attaquer un autre decker, c'est attaquer son propre
-      `pnj.cyberdeck` (déjà modélisé M2, moniteur + toggle-deck-monitor déjà
+  /** Decker↔decker — attaquer un autre decker, c'est attaquer son propre
+      `pnj.cyberdeck` (déjà modélisé, moniteur + toggle-deck-monitor déjà
       câblés sur sa carte). Zéro état neuf : un sélecteur éphémère (lu au clic,
       jamais persisté) + `⚔ Piratage` réutilisant Cyberdeck.rollAttack tel
       quel. Visible seulement si le combattant actif est lui-même decker ET
       qu'au moins un AUTRE decker CIBLABLE est présent dans la scène — combat
       uniquement (hors combat, « quel autre decker viser » n'a pas de sens).
       Cible filtrée sur `Cyberdeck.monitorSize` non nul (SR5/SR6) : Anarchy
-      2.0 n'a pas de moniteur de deck propre (M2, biofeedback → Volonté), donc
+      2.0 n'a pas de moniteur de deck propre (biofeedback → Volonté), donc
       rien où appliquer les dégâts — exclu explicitement, pas par accident (le
       combat A2 est de toute façon narratif, sans fiche active, mais ce garde
       reste correct si cette hypothèse change un jour). */
@@ -722,7 +722,7 @@ const EncounterRenderer = {
     });
   },
 
-  /** M4 — bande « Appareils matriciels » pour le tracker NARRATIF (Anarchy 2 :
+  /** Bande « Appareils matriciels » pour le tracker NARRATIF (Anarchy 2 :
       pas de fiche active où loger le brickage). Liste tous les combattants
       armés d'un coup (utile au MJ : « quel Smartgun est encore actif ? ») avec
       une bascule « hors service » en un tap par arme (régime narratif : ni
@@ -747,7 +747,7 @@ const EncounterRenderer = {
             const bricked = !!(devices[w] && devices[w].bricked);
             const idAttrs = `data-id="${r.pnj.id}" data-label="${esc(w)}"`;
             const toggle = `<button class="react-btn${bricked ? " is-off" : ""}" data-action="device-narrative-toggle" ${idAttrs} title="${bricked ? "Réparer" : "Rendre hors service"}">${esc(w)}${bricked ? " — hors service" : ""}</button>`;
-            // M5b : la protection peut être posée sur une arme jamais encore
+            // La protection peut être posée sur une arme jamais encore
             // ciblée (pas de bouton « Bricker » séparé en narratif) — d peut
             // être absent, _deviceProtection le traite comme non protégé.
             return `<span class="encounter-ndevice-chip">${toggle}${this._deviceProtection(r.pnj, w, devices[w] || {}, protectors)}</span>`;
@@ -769,7 +769,7 @@ const EncounterRenderer = {
   /** Une ligne « appareil » (arme) sur la fiche active (SR5/SR6, mode moniteur).
       Le régime narratif (Anarchy 2) ne passe jamais ici : sa combativité n'a
       pas de fiche active (renderActiveCard sort tôt) — il a sa propre bande,
-      _narrativeDevices, dans la liste. `protectors` (M5b) : deckers candidats
+      _narrativeDevices, dans la liste. `protectors` : deckers candidats
       pour protéger cet appareil de leur Firewall (liste déjà exclue de son
       propriétaire, cf. _deckersInScene) — vide si aucun protecteur possible. */
   _deviceRow(pnj, label, d, protectors) {
@@ -810,7 +810,7 @@ const EncounterRenderer = {
     </div>`;
   },
 
-  /** M5b : Firewall pour un allié — badge + jet de défense une fois protégé,
+  /** Firewall pour un allié — badge + jet de défense une fois protégé,
       sinon picker « Protéger » (SR5 p.236 PAN/esclave, SR6 approximé). Rien
       si aucun autre decker n'est présent dans la scène pour protéger. */
   _deviceProtection(pnj, label, d, protectors) {
@@ -833,9 +833,9 @@ const EncounterRenderer = {
     </span>`;
   },
 
-  /** CE2 : bandeau « économie du tour » — regroupe Atout (SR6) et budget
+  /** Bandeau « économie du tour » — regroupe Atout (SR6) et budget
       d'actions, les deux organes de portée « tour » (par opposition aux
-      ressources de scène du CE1, Bruit/Menace). Posé dans le wrapper live
+      ressources de scène, Bruit/Menace). Posé dans le wrapper live
       `.encounter-active-economy` (voir renderActiveCard), rafraîchi à chaque
       `_render()` comme `.encounter-active-top` — corrige le bug où un tap sur
       un jeton ne se voyait qu'au tour suivant (jetons hors du wrapper live
@@ -848,7 +848,7 @@ const EncounterRenderer = {
     return `<div class="encounter-economy">${edgeHtml}${actionsHtml}</div>`;
   },
 
-  /** Rangée Atout (K5, SR6) : compteur de combat 0-7 par combattant, stocké
+  /** Rangée Atout (SR6) : compteur de combat 0-7 par combattant, stocké
       dans l'entrée de scène (c.edge) — pas sur le PNJ (l'Atout dépensé/gagné
       est propre à la rencontre). ± via edge-step ; le plafond +2/tour est un
       avertissement non bloquant (Encounter.adjustEdge). */
@@ -864,7 +864,7 @@ const EncounterRenderer = {
     </div>`;
   },
 
-  /** Rangée budget d'actions (K7) du combattant actif : un groupe par type
+  /** Rangée budget d'actions du combattant actif : un groupe par type
       d'action de l'édition (majeure/mineure SR6, simple/complexe/gratuite SR5,
       action Anarchy). Jetons tappables façon moniteur (taper = consommer
       jusque-là ; re-taper le dernier = rendre). Le budget vient d'App.
@@ -886,7 +886,7 @@ const EncounterRenderer = {
     return `<div class="encounter-actions" title="Actions du tour (économie de l'édition — taper pour consommer)">${groups}</div>`;
   },
 
-  /** Note de scène éditable sous la fiche active (K2) : même champ que
+  /** Note de scène éditable sous la fiche active : même champ que
       c.note (déjà persisté par ligne), même action `set-note` — la
       délégation d'Encounter la reçoit qu'elle vienne de la ligne ou d'ici.
       Toujours visible (pas de masquage « vide » comme sur la ligne : c'est
@@ -902,13 +902,13 @@ const EncounterRenderer = {
       à côté de la liste. Rien pour un PJ ad-hoc (pas de fiche) ni une scène
       vide. actions=[] : pas de boutons sauvegarder/éditer/virer, la card
       reste malgré tout pleinement interactive (jets, moniteur, drogues…).
-      CH-C5 : chaque combattant entre en scène avec la zone Détails repliée
+      Chaque combattant entre en scène avec la zone Détails repliée
       (attributs/réserves/équipement) pour ne pas noyer le tour sous 65
       chiffres — Combat et Capacités restent à leur défaut (c'est justement ce
       qu'on regarde en combat). Levier per-carte, per-zone exposé (_zoneIsOpen
-      lit pnj._zoneOpen en priorité, CP1). Le MJ garde le .zone-toggle de la
+      lit pnj._zoneOpen en priorité). Le MJ garde le .zone-toggle de la
       carte pour déplier au besoin ; l'effet ne touche la carte du pool qu'à
-      son prochain rendu (compact = défaut CH-C1). */
+      son prochain rendu (compact = défaut). */
   /** Combattant « en focus » en narratif : le tap mémorisé (_narrativeFocusId,
       posé par render() tant qu'il est vivant) ou, par défaut, le premier
       « à jouer » (sinon le premier vivant). Null si aucun combattant vivant.
@@ -940,7 +940,7 @@ const EncounterRenderer = {
     const modeEnter = mode !== this._activeMode;
     this._activeMode = mode;
 
-    // K4 : combattant matriciel (CI) — fiche minimale, pas de fiche de pool.
+    // Combattant matriciel (CI) — fiche minimale, pas de fiche de pool.
     // Toujours re-rendue (le moniteur matriciel vit sur le serveur et change
     // au fil du combat) : on ne met pas en cache via _activeCardId.
     if (active && active.kind === "matrix") {
@@ -949,7 +949,7 @@ const EncounterRenderer = {
       return;
     }
 
-    // K7-B : tour d'un PJ (piloté par un joueur) — au lieu d'une fiche vide,
+    // Tour d'un PJ (piloté par un joueur) — au lieu d'une fiche vide,
     // une console de réaction pour faire réagir les PNJ non actifs (défense,
     // encaissement) vite et sans aller chercher leur carte. Toujours re-rendue
     // (l'état des PNJ change au fil du tour) : pas de cache _activeCardId.
@@ -961,7 +961,7 @@ const EncounterRenderer = {
 
     const pnj = active && active.pnj && !active.pnj._adhoc ? active.pnj : null;
     const id = pnj ? pnj.id : null;
-    // M3 : le bandeau (badges + pont decker→scène) doit rester à jour même
+    // Le bandeau (badges + pont decker→scène) doit rester à jour même
     // sans changement de combattant actif (ex. lier un serveur alors que
     // c'est toujours le tour du même decker) — recalculé à chaque appel, à
     // l'inverse de la fiche complète ci-dessous (coûteuse, gardée en cache
@@ -970,11 +970,11 @@ const EncounterRenderer = {
     // suivant (linkServer réussissait bel et bien, seul l'affichage mentait).
     if (pnj) {
       const top = box.querySelector(":scope > .encounter-active-top");
-      // M4 : les appareils matriciels (armes brickables) vivent aussi dans ce
+      // Les appareils matriciels (armes brickables) vivent aussi dans ce
       // wrapper live — appliquer des dégâts au même tour se voit sans attendre
       // le tour suivant (même raison que le pont decker ci-dessus).
       if (top) top.innerHTML = this._activeTop(active, state);
-      // CE2 : bandeau économie (Atout + Actions) — même traitement live que
+      // Bandeau économie (Atout + Actions) — même traitement live que
       // .encounter-active-top, hors du cache _activeCardId ci-dessous. Corrige
       // le bug où consommer un jeton ne se voyait qu'au tour suivant.
       const econ = box.querySelector(":scope > .encounter-active-economy");
@@ -990,13 +990,13 @@ const EncounterRenderer = {
       // dépliés, incarnation/détails repliés, cf. CardRenderer._VIEWS). Appliquée
       // sur un CLONE (pli superficiel de pnj + copie de _zoneOpen) : applyView
       // écrase les 4 zones + les modules à lenses, on ne veut pas que ce pli de
-      // combat devienne la mémoire de la carte bibliothèque (K2 ne touchait
-      // qu'un seul champ, applyView est plus large — cf. plan R1b).
+      // combat devienne la mémoire de la carte bibliothèque (l'ancien bandeau ne touchait
+      // qu'un seul champ, applyView est plus large).
       const combatPnj = { ...pnj, _zoneOpen: { ...pnj._zoneOpen } };
       CardRenderer.applyView(combatPnj, "combat");
-      // K2 : bandeau d'état (hors de combat/retardé/devrait fuir, réutilise
-      // les badges de la ligne) au-dessus de la carte ; CE2 : bandeau économie
-      // (Atout K5 + Actions K7) juste en dessous, au-dessus de la carte (portée
+      // Bandeau d'état (hors de combat/retardé/devrait fuir, réutilise
+      // les badges de la ligne) au-dessus de la carte ; bandeau économie
+      // (Atout + Actions) juste en dessous, au-dessus de la carte (portée
       // « tour », lisible avant de dérouler la fiche) ; note de scène éditable
       // sous la carte.
       box.innerHTML = `<div class="encounter-mode-head is-agir${modeEnter ? " mode-enter" : ""}">Agir · ${Utils.escHtml(pnj.name || "")}</div>
@@ -1007,7 +1007,7 @@ const EncounterRenderer = {
     }
   },
 
-  /** Fiche CI minimale (K4) : ce que le MJ regarde au tour d'une CI —
+  /** Fiche CI minimale : ce que le MJ regarde au tour d'une CI —
       A/S/T/F (si le serveur a des attributs), moniteur matriciel (lecture
       seule : la saisie de dégâts se fait dans le tiroir, où ic-box est
       câblé), pouvoir, lien vers le serveur parent (ouvre le tiroir). Pas
@@ -1022,7 +1022,7 @@ const EncounterRenderer = {
     }
     const M = Matrix.use(srv.edition);
     const ic = M.icCatalog()[m.icKey] || { label: r.name };
-    // R2-B : l'état vivant vit dans la scène (state.matrix), plus srv.intrusion.
+    // L'état vivant vit dans la scène (state.matrix), plus srv.intrusion.
     const intr = Encounter.state.matrix && Encounter.state.matrix[srv.id];
     const st = (intr && intr.ics[m.icKey]) || { dmg: 0, down: false };
     const size = M.icMonitorSize(srv.indice);
@@ -1038,7 +1038,7 @@ const EncounterRenderer = {
       const isPenalty = (i + 1) % 3 === 0;
       return `<div class="monitor-box${i < st.dmg ? " filled" : ""}${isPenalty ? " penalty" : ""}"></div>`;
     }).join("");
-    // K9 : jets de la CI directement sur la fiche active (avant, seul le tiroir
+    // Jets de la CI directement sur la fiche active (avant, seul le tiroir
     // les portait). Réutilise Intrusion.rollIC (aucun calcul de réserve dupliqué)
     // via data-action="roll-ic", câblé dans Encounter.init (overlay). Les glaces
     // Anarchy ont des succès fixes (hasAttrs=false) → pas de pastilles de jet.
@@ -1073,7 +1073,7 @@ const EncounterRenderer = {
       this._activeNote(r);
   },
 
-  /** Console de réaction (K7-B) : au tour d'un PJ, une ligne par PNJ vivant
+  /** Console de réaction : au tour d'un PJ, une ligne par PNJ vivant
       (hors PJ, hors CI matricielle, hors de combat) avec deux gros boutons —
       ⛉ Défense · ⛊ Encaisser. Les boutons portent `data-roll` (comme les
       pastilles des cartes) : le lancer passe par le handler global de
@@ -1083,7 +1083,7 @@ const EncounterRenderer = {
       a pas de tour actif → cette console ne s'affiche pas (renderActiveCard
       sort avant). */
   _renderReactionConsole(box, rows, active, modeEnter) {
-    // K7-B + K9 : PNJ chair ET CI matricielles actives (une CI attaquée par un
+    // PNJ chair ET CI matricielles actives (une CI attaquée par un
     // PJ doit pouvoir défendre/encaisser). PJ et combattants « down » exclus.
     const targets = rows.filter((r) => r.pnj && !r.isPJ && !r.down);
     if (!targets.length) {
@@ -1109,7 +1109,7 @@ const EncounterRenderer = {
 
   /** Ligne de réaction d'un PNJ chair : ⛉ Défense · ⛊ Encaisser (pools portés
       par la carte, via data-roll → DiceRoller) + chevron ▾ qui déplie la fiche
-      complète (K9). DA : glyphes Unicode monochromes (couleur du thème), jamais
+      complète. DA : glyphes Unicode monochromes (couleur du thème), jamais
       d'émoji couleur — même bloc que le ⛨ déjà en service. */
   _reactPnjRow(r) {
     const pnj = r.pnj;
@@ -1123,7 +1123,7 @@ const EncounterRenderer = {
     const soakBtn = soak >= 1
       ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${name}" data-roll-pnj="${pnj.id}" title="Résistance aux dommages (${soak} dés)" aria-label="Encaissement — ${name} (${soak} dés)"><span class="react-glyph" aria-hidden="true">⛊</span> ${soak}</button>`
       : `<span class="react-btn is-off" title="Pas de réserve d'encaissement"><span class="react-glyph" aria-hidden="true">⛊</span> —</span>`;
-    // K8 : « Dégâts » ferme la boucle ⛉→⛊→✸ — un résultat NET (déjà résisté),
+    // « Dégâts » ferme la boucle ⛉→⛊→✸ — un résultat NET (déjà résisté),
     // jamais un brut recalculé. damageUI() est lu sur le module d'édition
     // (jamais une branche ici) : chips numériques P/S (SR5/SR6) ou crans de
     // gravité (Anarchy 2, cf. _reactDamageChips).
@@ -1143,7 +1143,7 @@ const EncounterRenderer = {
       </div>${chipsBody}${expand ? `<div class="react-expand-body" data-expand-for="${pnj.id}" hidden></div>` : ""}`;
   },
 
-  /** K8 : panneau de chips de dégâts d'un PNJ, replié par défaut (déplié par
+  /** Panneau de chips de dégâts d'un PNJ, replié par défaut (déplié par
       toggleReactDamage). Édition-neutre : lit damageUI() sur le module. */
   _reactDamageChips(pnj) {
     const cm = App.editionModule && App.editionModule.conditionMonitor;
@@ -1171,7 +1171,7 @@ const EncounterRenderer = {
     return `<div class="react-damage-chips" data-damage-for="${pnj.id}" hidden>${typeToggle}${chips}</div>`;
   },
 
-  /** K8 : état de vue éphémère (aucune clé Storage) — type Phys/Étourd.
+  /** État de vue éphémère (aucune clé Storage) — type Phys/Étourd.
       sélectionné par PNJ pour le prochain chip appliqué. Purement transitoire
       (comme _activeCardId), reconstruit/oublié au fil des rendus. */
   _reactDamageTypes: {},
@@ -1213,7 +1213,7 @@ const EncounterRenderer = {
       btn.innerHTML = `${this._reactDamageTypes[pnjId] === "stun" ? "Étourd." : "Phys."} <svg class="icon icon-sm" aria-hidden="true"><use href="#ic-swap"></use></svg>`;
   },
 
-  /** Ligne de réaction d'une CI (K9) : mêmes glyphes ⛉/⛊, mais la réserve d'une
+  /** Ligne de réaction d'une CI : mêmes glyphes ⛉/⛊, mais la réserve d'une
       CI est dérivée (indice×2, +Firewall à l'encaissement) → data-action
       "roll-ic" vers Intrusion.rollIC, jamais data-roll. Glaces Anarchy (succès
       fixes) : boutons inactifs. Pas de chevron (la CI a sa fiche + le tiroir). */
@@ -1232,7 +1232,7 @@ const EncounterRenderer = {
       </div>`;
   },
 
-  /** K9 : déplie/replie la fiche complète d'un PNJ sous sa ligne de réaction.
+  /** Déplie/replie la fiche complète d'un PNJ sous sa ligne de réaction.
       Accordéon (board : un seul ouvert — perf mobile + charge cognitive) : on
       replie tout, puis on monte la carte demandée à la volée. Éphémère : aucun
       état persisté, reconstruit au prochain _render. La règle « le nom n'est
@@ -1279,7 +1279,7 @@ const EncounterRenderer = {
       { keys: "▾", html: "<strong>Déplier</strong> la fiche complète d'un PNJ en réaction." },
       { keys: "CI", html: "<strong>Contre-mesure d'Intrusion</strong> engagée dans l'initiative." },
       { keys: "🔗", html: "<strong>Lier</strong> un serveur (ou la cible d'un decker) à la scène." },
-      { keys: "🛡️", html: "<strong>Protéger</strong> un appareil ciblé avec le Firewall d'un decker allié (M5)." },
+      { keys: "🛡️", html: "<strong>Protéger</strong> un appareil ciblé avec le Firewall d'un decker allié." },
     ];
   },
 
@@ -1289,16 +1289,16 @@ const EncounterRenderer = {
     const box = document.getElementById("sidebar-encounter");
     if (!box) return;
 
-    // R3-D : « vivante » ne se limite pas aux combattants — une scène Matrice
+    // « Vivante » ne se limite pas aux combattants — une scène Matrice
     // seule (decker en intrusion, aucune CI déployée) est tout aussi vivante
     // (doctrine « moteurs de scène »). Rendu pur : dérive uniquement de
     // `state`/`rows` déjà reçus, ne touche jamais App/Storage.
     const hasMatrix = !!(state.serverId || (state.matrix && Object.keys(state.matrix).length));
     const visible = rows.some((r) => r.pnj) || hasMatrix;
     box.hidden = !visible;
-    // Perche « Reprendre » (R3-D) : allumée partout où la scène peut se
+    // Perche « Reprendre » : allumée partout où la scène peut se
     // rouvrir en un geste — topbar (desktop+mobile), sidebar, bottom-nav
-    // mobile. Un même badge pulsé (`.tb-crumb-live`, déjà établi R3-B) posé
+    // mobile. Un même badge pulsé (`.tb-crumb-live`, déjà établi) posé
     // dans les 3 boutons `data-action="encounter-open"` correspondants.
     const combatBtn = document.getElementById("topbar-combat-btn");
     if (combatBtn) combatBtn.classList.toggle("is-active", visible);
@@ -1327,21 +1327,21 @@ const EncounterRenderer = {
     }
   },
 
-  /** R3-D : bascule le badge de vie (`.tb-crumb-live`, pastille pulsée déjà
-      établie au fil d'Ariane R3-B) dans le bouton `id` s'il en porte un. */
+  /** Bascule le badge de vie (`.tb-crumb-live`, pastille pulsée déjà
+      établie au fil d'Ariane) dans le bouton `id` s'il en porte un. */
   _toggleLiveBadge(id, on) {
     const btn = document.getElementById(id);
     const badge = btn && btn.querySelector(".tb-crumb-live");
     if (badge) badge.hidden = !on;
   },
 
-  /** Bouton Matrice (barre pouce) + tiroir (K3). srv : serveur déjà résolu
+  /** Bouton Matrice (barre pouce) + tiroir. srv : serveur déjà résolu
       par Encounter (jamais lu ici — rendu pur), ou null si aucun lien.
       level : état dérivé 0-3 (Encounter.matrixState). activeCount : nombre
-      de CI actives (Encounter._activeICCount, R2-B — l'état vivant vit dans
+      de CI actives (Encounter._activeICCount — l'état vivant vit dans
       la scène, pas sur srv). Le contenu du tiroir réutilise verbatim
       ServerRenderer.intrusionPanel/matrixDrawerHeader — rien n'est recalculé
-      ici (cf. audit intrusion.js pré-K3). */
+      ici (cf. audit intrusion.js). */
   renderMatrix(srv, level, launchedKeys, activeCount, activeServers) {
     const btn = document.getElementById("encounter-matrix-btn");
     if (btn) {
@@ -1362,11 +1362,11 @@ const EncounterRenderer = {
 
     const drawerTitle = document.getElementById("matrix-drawer-title");
     if (drawerTitle) drawerTitle.textContent = srv ? "Matrice — " + srv.name : "Matrice";
-    // K6 : titre de la colonne dockée — même texte, second montage.
+    // Titre de la colonne dockée — même texte, second montage.
     const dockTitle = document.getElementById("matrix-dock-title");
     if (dockTitle) dockTitle.textContent = srv ? "Matrice — " + srv.name : "Matrice";
 
-    // R2-B (sous-ticket 3) : plusieurs serveurs peuvent tourner en parallèle
+    // Plusieurs serveurs peuvent tourner en parallèle
     // dans la scène (state.matrix) — un sélecteur n'apparaît que s'il y en a
     // plus d'un (sinon le titre suffit, rien de neuf à l'écran par défaut).
     const switcher =
@@ -1378,8 +1378,8 @@ const EncounterRenderer = {
           </select>`
         : "";
     // inEncounter + launchedKeys : ServerRenderer ajoute « ⚔ Init » sur chaque
-    // CI active pas encore dans l'ordre (K4). Le reste du contenu est le panneau
-    // d'intrusion réutilisé verbatim (K3). Calculé une fois, posé dans les deux
+    // CI active pas encore dans l'ordre. Le reste du contenu est le panneau
+    // d'intrusion réutilisé verbatim. Calculé une fois, posé dans les deux
     // montages (tiroir mobile/dock ≥1100px) — jamais recalculé deux fois.
     const html = srv
       ? switcher +
@@ -1391,7 +1391,7 @@ const EncounterRenderer = {
     const dockBody = document.getElementById("matrix-dock-body");
     if (dockBody) dockBody.innerHTML = html;
 
-    // K6 : colonne dockée visible seulement ≥1100px ET état ≥1 (état 0 = 2
+    // Colonne dockée visible seulement ≥1100px ET état ≥1 (état 0 = 2
     // colonnes, cf. CSS .encounter-modal.has-matrix-dock) — classe posée sur
     // le modal, jamais une media query seule (l'état prime sur la largeur).
     const modal = document.querySelector(".encounter-modal");

@@ -31,7 +31,8 @@ const EditionAnarchy1 = {
   /* ---- Contrat commun édition ---- */
   attributes: ["FOR", "AGI", "VOL", "LOG", "CHA", "CHC"],
   /** Légende des symboles affichée dans l'Aide (?), lue par
-      App._renderHelpLegend (CH-V6-T1.4, FIELD_STUDY REC-6). V1 ≈ un SR5
+
+  App._renderHelpLegend. V1 ≈ un SR5
       simplifié (cf. cardrenderer.anarchy1.js) mais SANS PRE ni PA sur les
       armes : weaponModel.accuracyLimit=false, et _resolveWeaponV1 ne pose
       que VD + portées (« Nom [VD XP, C OK · I −2] », imprimé au livre). */
@@ -44,7 +45,7 @@ const EditionAnarchy1 = {
   /** V1 n'a pas de panneau de Réduction de Risque (propre à Anarchy 2.0) :
       elle retombe sur les chemins « SR » des gates de Phase 1. */
   usesRiskPanel: false,
-  /** Les points d'Anarchy (réserve MJ, findings §9) réutilisent le panneau
+  /** Les points d'Anarchy (réserve MJ) réutilisent le panneau
       de réserve de menace existant — sémantique proche. */
   usesThreatReserve: true,
   /** Seconde chance via la Chance (CHC), comme en SR5 (p.58 V1). */
@@ -54,7 +55,7 @@ const EditionAnarchy1 = {
     blockedBy: "critGlitch",
     costAttr: "CHC",
   },
-  /* ---- Action magique (CH-M7c) : Anarchy n'a pas de Drain chiffré →
+  /* ---- Action magique : Anarchy n'a pas de Drain chiffré →
      tout neutre. MagicAction ne déclenche rien (spellSkill/conjureSkill null). ---- */
   spellUsesForce: false,
   spellSkill: null,
@@ -80,18 +81,18 @@ const EditionAnarchy1 = {
     label: "Dangerosité",
     options: ["Figurant", "Sbire", "Antagoniste", "Pro", "Terreur"],
   },
-  /** Initiative V1 (findings §8) : base = max(AGI, LOG), 2D6 (pas de passes
+  /** Initiative V1 : base = max(AGI, LOG), 2D6 (pas de passes
       d'initiative — combat narratif). */
   initiativeFor(pnj) {
     const attrs = pnj.attrs || {};
     return { base: Math.max(attrs.AGI || 0, attrs.LOG || 0), dice: 2 };
   },
-  /** K4 : spec d'un combattant CI lancé dans l'initiative. Comme Anarchy 2,
+  /** Spec d'un combattant CI lancé dans l'initiative. Comme Anarchy 2,
       combat narratif → jeton sans init chiffrée. */
   icCombatant(ic) {
     return { name: ic.label, narrative: true };
   },
-  /** K7 : budget d'actions par narration (vérifié p.155) — 1 action + déplacement
+  /** Budget d'actions par narration (vérifié p.155) — 1 action + déplacement
       gratuit. Atouts (Réflexes câblés) et points d'Anarchy ajoutent des actions :
       au MJ d'incrémenter. */
   actionBudget() {
@@ -100,7 +101,7 @@ const EditionAnarchy1 = {
   /** narrative:true — combat sans initiative chiffrée ni ordre figé (le livre
       A1 gère l'ordre par la narration). Le tracker bascule en mode dépouillé
       (pool de jetons qu'on éteint), cf. EncounterRenderer._rowNarrative. */
-  /** threatReserve (K5) : miroir de la Réserve de menace (badge topbar visible
+  /** threatReserve : miroir de la Réserve de menace (badge topbar visible
       aussi en A1, cf. CSS `[data-edition^="anarchy"]`) dans l'en-tête du
       cockpit — même source (DiceRoller._threat), pas d'état doublé. */
   combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: true },
@@ -111,7 +112,7 @@ const EditionAnarchy1 = {
   combatDisposition(pnj) {
     return { down: this.conditionMonitor.isDestroyed(pnj), morale: null };
   },
-  /** 3 puissances par esprit V1 (mineur/normal/majeur, findings §ESPRITS) —
+  /** 3 puissances par esprit V1 (mineur/normal/majeur) —
       field:"tier" réutilise le champ à 3 paliers déjà câblé côté générateur
       (Spirits.ANARCHY_TIERS). Table réelle des esprits : Lot 6. */
   summonPower: {
@@ -125,7 +126,7 @@ const EditionAnarchy1 = {
       comme en V2 — pas de correspondance universelle nécessaire ici. */
   drugModel: { matchAll: false },
 
-  /** E3 (chantier Équipe) : bloc « mécanique de table » du PJ léger. Pas
+  /** Bloc « mécanique de table » du PJ léger. Pas
       d'initiative chiffrée en A1 (narrative:true, ci-dessus) ni de règle de
       combativité imprimée (cf. combatDisposition ci-dessus) → aucun champ
       numérique à demander au joueur, seulement les moniteurs (mêmes champs
@@ -141,7 +142,7 @@ const EditionAnarchy1 = {
     monitorKind: "double",
   },
   /* ---- Moniteurs & combat ----
-     Deux moniteurs numériques P/E (findings §3), comme en SR5, mais taille
+     Deux moniteurs numériques P/E, comme en SR5, mais taille
      dérivée de FOR/VOL (pas CON/VOL) : phys = 8 + ⌈FOR/2⌉,
      étourd. = 8 + ⌈VOL/2⌉. Malus : −1 dé par ligne de 3 cases remplies
      (cumul phys+étourd.), non réglable (contrairement au woundMod SR5/SR6). */
@@ -153,7 +154,7 @@ const EditionAnarchy1 = {
       return Math.floor(total / 3);
     },
     spiritMonitor: null,
-    /** Drones V1 = Blindage/Résistance/Mobilité/Autopilote (findings §10),
+    /** Drones V1 = Blindage/Résistance/Mobilité/Autopilote,
         pas de seuils comme en V2. */
     vehicleFields: "total",
     isDestroyed(entity) {
@@ -167,7 +168,7 @@ const EditionAnarchy1 = {
       if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
       else entity.physFilled = entity.physMon || 0;
     },
-    /** K6 : résumé du moniteur pour la mini-jauge du cockpit — cases remplies
+    /** Résumé du moniteur pour la mini-jauge du cockpit — cases remplies
         / total, physique + étourdissement cumulés (mêmes champs que
         isDestroyed/knockOut). total 0 = pas de moniteur, pas de jauge. */
     gauge(entity) {
@@ -178,7 +179,7 @@ const EditionAnarchy1 = {
         total: (entity.physMon || 0) + (entity.stunMon || 0),
       };
     },
-    /** K8 : résultat NET de dégâts appliqué au moniteur (comme SR5, deux
+    /** Résultat NET de dégâts appliqué au moniteur (comme SR5, deux
         pistes Physique/Étourdissant, défaut Physique). */
     applyDamage(entity, n, opts) {
       const amount = Math.max(0, n || 0);
@@ -463,7 +464,7 @@ const EditionAnarchy1 = {
     },
   },
 
-  /** Drones V1 (findings §10) : Blindage/Résistance/Mobilité/Autopilote —
+  /** Drones V1 : Blindage/Résistance/Mobilité/Autopilote —
       pas de senseurs/autosoft distincts comme en SR5. */
   vehicleModel: {
     statFields: [
@@ -487,7 +488,7 @@ const EditionAnarchy1 = {
     },
   },
 
-  /* Régime Matrice V1 (findings §6/§6b) : le serveur lance un POOL DE
+  /* Régime Matrice V1 : le serveur lance un POOL DE
      DÉFENSE (4/6/8/10/12 dés selon le niveau de sécurité, +2 si sécurité
      physique) contre le Hacking du hacker ; les GLACE (9 types, effets
      cumulables) ont leur propre statblock à dés (FW 6 · LOG 5 · Défense 11
@@ -501,7 +502,7 @@ const EditionAnarchy1 = {
     hasAttrs: false,
     indiceRange: [4, 12],
     profileKey: "anarchy1",
-    // M4 : Anarchy 1re ne décrit pas le brickage d'appareil au texte — pas de
+    // Anarchy 1re ne décrit pas le brickage d'appareil au texte — pas de
     // régime (ni moniteur, ni bascule). `null` explicite : Matrix.deviceBricking()
     // renvoie null → la section « Appareils matriciels » ne s'affiche jamais.
     deviceBricking: null,
@@ -533,7 +534,7 @@ const EditionAnarchy1 = {
     icThresholdsText() {
       return null;
     },
-    /** Badge de carte serveur (findings §6b) : le pool de défense, pas
+    /** Badge de carte serveur : le pool de défense, pas
         d'Indice/Firewall séparés comme en Anarchy 2.0. */
     serverAttrs(srv) {
       return [{ label: "Pool de défense", value: srv.indice }];
@@ -554,7 +555,7 @@ const EditionAnarchy1 = {
     },
   },
 
-  /* Régime cyberdeck Anarchy 1re (M1, findings §6/§6b, sran_01 p.62-65) —
+  /* Régime cyberdeck Anarchy 1re (sran_01 p.62-65) —
      Firewall seul (pas d'ASDF) + relance de N échecs aux tests de Hacking
      (Erika 1 … Fairlight Excalibur 3). Pas de réallocation (Canon). */
   cyberdeckModel: {
@@ -563,7 +564,7 @@ const EditionAnarchy1 = {
     hasReroll: true,
     hasBiofeedbackFilter: false,
     label: "Cyberdeck",
-    /** M2 : moniteurs des 3 decks catalogués (findings §6, p.62-65) — Erika
+    /** Moniteurs des 3 decks catalogués (p.62-65) — Erika
         MCD-1 (FW1) 6 cases, Novatech Navigator (FW2) 9, Shiawase Cyber-5
         (FW3) 15. Pas de formule imprimée pour un Firewall hors de ces 3
         modèles : extrapolation linéaire documentée (6 + 3×(FW−1)) au-delà,
@@ -573,7 +574,7 @@ const EditionAnarchy1 = {
       const fw = (deck && deck.attrs && deck.attrs.firewall) || 1;
       return table[fw] ?? 6 + 3 * (fw - 1);
     },
-    // M7 : pas de catalogue `actions` (râtelier matriciel offensif) — décision
+    // Pas de catalogue `actions` (râtelier matriciel offensif) — décision
     // Canon. Le deck Anarchy 1re n'a qu'un Firewall (pas d'attribut Attaque
     // motorisé) et le livre ne décrit pas d'actions matricielles chiffrées côté
     // decker : Cyberdeck.catalog() renvoie donc [] et aucun bouton d'arsenal
@@ -597,7 +598,7 @@ const EditionAnarchy1 = {
   },
 
   /* ----
-     ATTRIBUTS PAR MÉTATYPE — table des indices max V1 (findings §1)
+     ATTRIBUTS PAR MÉTATYPE — table des indices max V1
      FOR/AGI/VOL/LOG/CHA/CHC
   ---- */
   attrRange: {
@@ -608,7 +609,7 @@ const EditionAnarchy1 = {
     Troll: { FOR: [1, 10], AGI: [1, 5], VOL: [1, 6], LOG: [1, 5], CHA: [1, 4], CHC: [1, 6] },
   },
 
-  /* Modificateurs plats métatype (findings §1, recoupés avec la règle de
+  /* Modificateurs plats métatype (recoupés avec la règle de
      substitution PNJ des statblocks §Règle : mêmes deltas). Chance −1 hors
      Humain (Humain +1) fait partie de cette même règle. Troll porte aussi
      Armure+3, appliqué à part dans generate() (hors attributs). */
@@ -621,11 +622,11 @@ const EditionAnarchy1 = {
   },
 
   /** Bonus de pool de défense quand le serveur gère aussi la sécurité
-      physique (accès/caméras, findings §6b). */
+      physique (accès/caméras). */
   secPhysBonus: 2,
 
   /* ---- Options du formulaire ----
-     Niveau de jeu V1 (findings §10) remplace le proRating SR5. */
+     Niveau de jeu V1 remplace le proRating SR5. */
   formOptions: {
     meta: ["Aléatoire", "Humain", "Elfe", "Nain", "Ork", "Troll"],
     gender: ["Aléatoire", "M", "F", "NB"],
@@ -1391,7 +1392,7 @@ const EditionAnarchy1 = {
 
     const { role, milieu } = Coherence.resolveTuple(edId, statBlockKey);
 
-    // Métavariantes (Anarchistes, findings §13) : une métavariante
+    // Métavariantes (Anarchistes) : une métavariante
     // remplace les plages de sa souche et porte ses traits raciaux —
     // même patron que sr5.js/sr6.js (Metavariants.use/resolve).
     Metavariants.use(edId);
@@ -1484,7 +1485,7 @@ const EditionAnarchy1 = {
     };
     pnj.attrs.ESS = statBlock.essence != null ? statBlock.essence : 6;
 
-    // Esprit mentor (Éveillés uniquement, findings §12/§13) : pas de
+    // Esprit mentor (Éveillés uniquement) : pas de
     // tradition motorisée en V1 (traditions.anarchy1 vide) — kind "shamanic"
     // fixe, cohérent avec l'absence de split Hermétique/Chamanique du livre.
     if (statBlock.awakened) {

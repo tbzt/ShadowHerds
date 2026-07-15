@@ -88,7 +88,7 @@ Object.assign(CardRenderer, {
     }
     html += "</div>";
 
-    // Moniteur d'état — dispatch structurel accepté (issue #14) : deux
+    // Moniteur d'état — dispatch structurel accepté : deux
     // blocs de rendu complets (seuils vs total cumulatif), pas une
     // valeur scalaire ; cf. conditionMonitor.vehicleFields.
     if (Mod.conditionMonitor.vehicleFields === "thresholds") {

@@ -2,13 +2,13 @@
 
 /* ============================================================
    CYBERDECK RENDERER — bloc deck sur la carte PNJ + section
-   d'édition (M1, PLAN_MATRICE_CYBERDECK.md). Miroir de
+   d'édition. Miroir de
    ServerRenderer côté serveur : reçoit le PNJ + son édition en
    paramètres, ne lit ni ne modifie rien lui-même — la donnée vit
    sur `pnj.cyberdeck` (structure posée par Cyberdeck.blank/parseLegacy
    et la migration Storage v4), les mutations passent par EditModal
    (comme le reste de la fiche). Le moniteur matriciel du deck et la
-   réallocation en un tap sont du ressort de M2 — ce module n'affiche
+   réallocation en un tap sont du ressort de la réallocation — ce module n'affiche
    que le socle : attributs, programmes, notes/particularités.
    ============================================================ */
 const CyberdeckRenderer = {
@@ -33,7 +33,7 @@ const CyberdeckRenderer = {
           })
           .join("")}</div>`
       : "";
-    // M2 : réallocation en un tap — bouton d'échange ⇄ entre attributs
+    // Réallocation en un tap — bouton d'échange ⇄ entre attributs
     // adjacents si réallouable (SR5/SR6). Rangée séparée de l'attr-grid
     // (plutôt qu'interfolée dedans) pour ne pas perturber sa grille
     // responsive existante (grid-auto-flow + repli 4/2 colonnes, cf.
@@ -55,8 +55,8 @@ const CyberdeckRenderer = {
     const biofeedbackHtml = Cyberdeck.hasBiofeedbackFilter(edition) && deck.biofeedbackFilter
       ? `<div class="cyberdeck-note">Filtre de biofeedback</div>`
       : "";
-    // M2 : moniteur matriciel du deck (rangées de 3, malus en marge — même
-    // patron que le moniteur de condition du cockpit combat, cf. K2/K6).
+    // Moniteur matriciel du deck (rangées de 3, malus en marge — même
+    // patron que le moniteur de condition du cockpit combat.
     // Absent si l'édition n'a pas de moniteur de deck séparé (Anarchy 2.0).
     const size = Cyberdeck.monitorSize(edition, deck);
     const monitorHtml = size
@@ -78,7 +78,7 @@ const CyberdeckRenderer = {
     </div>`;
   },
 
-  /** CP2 : râtelier Attaques unifié — l'arsenal matriciel (M7) rejoint les
+  /** Râtelier Attaques unifié — l'arsenal matriciel rejoint les
       armes/sorts en zone Combat au lieu de rester tapi dans Détails, à côté
       du reste du bloc deck. Vide si pas de decker ou pas de loadout. Appelé
       par les 4 renderers d'édition, juste après _weaponBlock/_spellsBlock. */
@@ -88,7 +88,7 @@ const CyberdeckRenderer = {
     return this._arsenalRow(pnj, edition, deck);
   },
 
-  /** M7 : râtelier d'actions matricielles offensives — l'« arsenal » du decker
+  /** Râtelier d'actions matricielles offensives — l'« arsenal » du decker
       (pic de données & co.). Miroir logique du râtelier d'armes d'un combattant
       physique, mais dérivé du catalogue d'édition (Cyberdeck.actions) filtré
       par le loadout du deck. Le pic de données (type "attack") est mis en avant
@@ -96,13 +96,13 @@ const CyberdeckRenderer = {
       mono-ligne (doctrine d'alignement : jamais un mur de boutons
       indifférenciés). Vide si l'édition n'a pas de râtelier (Anarchy 1re) ou si
       le loadout est vide. Rendu identique carte / cockpit (le bloc est réutilisé
-      en combat par Encounter.renderActiveCard). CP2 : déplacé en zone Combat,
+      en combat par Encounter.renderActiveCard). Déplacé en zone Combat,
       cf. combatArsenal() ci-dessus (plus appelé depuis block()). */
   _arsenalRow(pnj, edition, deck) {
     const esc = CardRenderer._esc;
     const acts = Cyberdeck.actions(edition, deck);
     if (!acts.length) return "";
-    // CP4 : même grammaire qu'une arme (et qu'un sort). Chaque action est une
+    // Même grammaire qu'une arme (et qu'un sort). Chaque action est une
     // `.weapon-line` — nom + VD en `.weapon-stat`, dés en badge `⚄` — au lieu
     // d'un bouton-pilule. La teinte « Matrice » (vert) vient de `.matrix-block`,
     // qui redéfinit --accent/--glow ; la ligne reprend donc tout le chrome des
@@ -137,8 +137,8 @@ const CyberdeckRenderer = {
     </div>`;
   },
 
-  /** M3 : cible du decker — picker de serveur + accès au tracker Matrice,
-      identique en scène de combat et hors combat (hub/biblio). Depuis M7, le
+  /** Cible du decker — picker de serveur + accès au tracker Matrice,
+      identique en scène de combat et hors combat (hub/biblio). Le
       jet d'attaque n'est plus un bouton unique ici : il vit dans le râtelier
       (`_arsenalRow`, actions nommées), indépendant de la cible (le serveur visé
       ne sert plus qu'à nommer la cible du jet, pas à débloquer l'attaque). */
@@ -174,7 +174,7 @@ const CyberdeckRenderer = {
 
   /** Section du formulaire EditModal (données brutes, un champ par attribut
       pertinent + programmes en texte libre). Montée seulement si
-      `pnj.cyberdeck` existe déjà (M1 : pas de bouton « ajouter un deck »,
+      `pnj.cyberdeck` existe déjà (pas de bouton « ajouter un deck »,
       cf. plan). */
   editSection(pnj) {
     const esc = CardRenderer._esc;
@@ -200,7 +200,7 @@ const CyberdeckRenderer = {
           <label><input type="checkbox" id="em-deck-biofeedback" ${deck.biofeedbackFilter ? "checked" : ""}> Filtre de biofeedback</label>
         </div>`
       : "";
-    // M7 : loadout curé — quelles actions matricielles ce decker garde
+    // Loadout curé — quelles actions matricielles ce decker garde
     // « équipées » dans son râtelier (prep, hors scène — cf. Croupier). Cases à
     // cocher (2-4 actions, pas un mur), pré-cochées selon le loadout courant ;
     // défaut = tout coché (loadout absent). Vide pour Anarchy 1re (catalogue []).
@@ -294,7 +294,7 @@ const CyberdeckRenderer = {
     }
     const biofeedbackEl = document.getElementById("em-deck-biofeedback");
     if (biofeedbackEl) deck.biofeedbackFilter = !!biofeedbackEl.checked;
-    // M7 : loadout curé — enregistre les clés d'actions cochées. Écrit un
+    // Loadout curé — enregistre les clés d'actions cochées. Écrit un
     // tableau EXPLICITE (même si tout est coché) dès que le picker est monté :
     // le choix devient persistant sur pnj.cyberdeck (objet déjà routé par
     // Storage, aucune nouvelle collection). Un decker jamais édité garde

@@ -13,11 +13,11 @@ const EditionSR5 = {
   badgeLabel: "SR5",
   useMetavariants: true,
 
-  /* ---- Contrat commun édition (résorption des branches, issue #14) ---- */
+  /* ---- Contrat commun édition (résorption des branches) ---- */
   attributes: ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"],
   /** Légende des symboles affichée dans l'Aide (?), lue par
       App._renderHelpLegend — jamais de branche d'édition côté app.js
-      (CH-V6-T1.4, FIELD_STUDY REC-6). Sens vérifiés au Livre de Règles
+      Sens vérifiés au Livre de Règles
       (chap. Combat) : CC Coup par Coup · SA Semi-Auto · TR Tir en Rafales ·
       TA Tir Automatique ; PRE plafonne les succès ; P physique / E étourdissant. */
   helpLegend: [
@@ -45,7 +45,7 @@ const EditionSR5 = {
     blockedBy: "critGlitch",
     costAttr: "CHC",
   },
-  /* ---- Action magique (CH-M7c) : sorts + invocation, tout lu par
+  /* ---- Action magique : sorts + invocation, tout lu par
      MagicAction via le contrat, jamais de branche d'édition côté widget. ---- */
   /** SR5 : la Puissance du sort est choisie par le lanceur (p.283). */
   spellUsesForce: true,
@@ -77,7 +77,7 @@ const EditionSR5 = {
       séparés en SR5), plafonnés à leur taille respective. Renvoie
       `{ field, delta }` — le champ touché et la quantité RÉELLEMENT ajoutée
       (après plafonnement), pour permettre d'annuler l'encaissement lors d'une
-      Seconde chance sur le Drain (CH-M7e). */
+      Seconde chance sur le Drain. */
   applyDrainDamage(pnj, amount, type) {
     const field = type === "physical" ? "physFilled" : "stunFilled";
     if (!amount) return { field, delta: 0 };
@@ -108,13 +108,13 @@ const EditionSR5 = {
   initiativeFor(pnj) {
     return { base: pnj.init, dice: pnj.initDice };
   },
-  /** K4 : spec d'un combattant CI lancé dans l'initiative (fiche CI minimale +
+  /** Spec d'un combattant CI lancé dans l'initiative (fiche CI minimale +
       jeton Matrice). Init du livre SR5 : indice de l'hôte ×2 + 4D6 (p.249).
       La règle vit ici (prohibition n°1) ; Encounter lit le spec neutre. */
   icCombatant(ic, srv) {
     return { name: ic.label, initBase: srv.indice * 2, initDice: 4 };
   },
-  /** K7 : budget d'actions par phase d'action (= passe d'init, déjà motorisée)
+  /** Budget d'actions par phase d'action (= passe d'init, déjà motorisée)
       — vérifié Livre de Règles p.164 : 2 actions simples OU 1 complexe, + 1
       gratuite. Le « ou » est laissé au jugement du MJ (deux rangées). */
   actionBudget() {
@@ -169,7 +169,7 @@ const EditionSR5 = {
       choix — matchItem() filtre déjà par source, pas de correspondance
       universelle nécessaire (concept propre à Anarchy 2.0 p.150). */
   drugModel: { matchAll: false },
-  /** Invocation d'esprits (issue #14) : SR5 invoque via Conjuration,
+  /** Invocation d'esprits : SR5 invoque via Conjuration,
       types = éléments classiques (Spirits.SR_TYPES). `types` est lazy
       car spirits.js (catalogs) charge après les modules d'édition. */
   spiritModel: { canSummon: true, types: () => Spirits.SR_TYPES },
@@ -201,7 +201,7 @@ const EditionSR5 = {
       return { base: p * 2, dice: 4 };
     },
   },
-  /** E3 (chantier Équipe) : bloc « mécanique de table » du PJ léger
+  /** Bloc « mécanique de table » du PJ léger
       (`pcLight`) — ce que le MJ demande dix fois par soirée, saisi une fois.
       Optionnel, jamais dérivé (le PJ léger n'a pas d'attributs) : chaque
       valeur est un nombre entré à la main. `monitorKind:"double"` réutilise
@@ -238,7 +238,7 @@ const EditionSR5 = {
     woundMalus(pnj) {
       const div = parseInt(Settings.get("woundMod", 3), 10);
       if (!div) return 0;
-      // Fusion V5 : le Compensateur de dommages (p.464) ignore N cases
+      // Le Compensateur de dommages (p.464) ignore N cases
       // (phys et/ou étourdissant) pour les modificateurs de blessure.
       const total = Math.max(
         0,
@@ -267,7 +267,7 @@ const EditionSR5 = {
       if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
       else entity.physFilled = entity.physMon || 0;
     },
-    /** K6 : résumé du moniteur pour la mini-jauge du cockpit — cases remplies
+    /** Résumé du moniteur pour la mini-jauge du cockpit — cases remplies
         / total, physique + étourdissement cumulés (mêmes champs que
         isDestroyed/knockOut). total 0 = pas de moniteur, pas de jauge. */
     gauge(entity) {
@@ -278,7 +278,7 @@ const EditionSR5 = {
         total: (entity.physMon || 0) + (entity.stunMon || 0),
       };
     },
-    /** K8 : résultat NET de dégâts (déjà résisté par le MJ hors app) appliqué au
+    /** Résultat NET de dégâts (déjà résisté par le MJ hors app) appliqué au
         moniteur — le cockpit n'a pas la valeur d'attaque, il ne fait que
         remplir des cases. `opts.type` = "phys" (défaut, arme physique) ou
         "stun" (bascule un tap dans le cockpit) — jamais recalculé ici, juste
@@ -292,7 +292,7 @@ const EditionSR5 = {
       entity[field] = Utils.clamp(before + amount, 0, max ?? 99);
       return { field, applied: entity[field] - before };
     },
-    /** K8 : descripteur neutre lu par le cockpit pour bâtir les chips de
+    /** Descripteur neutre lu par le cockpit pour bâtir les chips de
         dégâts — SR5 a deux pistes (Physique/Étourdissant), défaut Physique. */
     damageUI() {
       return { kind: "numeric", chips: [1, 2, 3, 5], hasType: true, defaultType: "phys" };
@@ -315,12 +315,12 @@ const EditionSR5 = {
     hasAttrs: true,
     indiceRange: [1, 12],
     profileKey: "sr5",
-    // M4 : régime de brickage des appareils (armes) — SR5 a un vrai moniteur
+    // Régime de brickage des appareils (armes) — SR5 a un vrai moniteur
     // matriciel d'appareil (8+Indice/2, p.229) : cases cliquables + indice.
     deviceBricking: "monitor",
-    // R2-D : table « connecté » par catégorie d'`equipPools` (dérivée par
+    // Table « connecté » par catégorie d'`equipPools` (dérivée par
     // Matrix._resolveCat, jamais besoin de tagger chaque item), taxonomie
-    // tranchée D-R2-4. cyberware/equipSpecial restent NON par défaut : le
+    // tranchée. cyberware/equipSpecial restent NON par défaut : le
     // sans-fil réel (cyberyeux/oreilles, cyberdeck implanté, antenne…) passe
     // par l'override regex de Matrix.deviceConnected, pas cette table.
     connectedByCat: {
@@ -408,10 +408,10 @@ const EditionSR5 = {
     },
   },
 
-  /* Régime cyberdeck SR5 (M1, PLAN_MATRICE_CYBERDECK.md) — lu par Cyberdeck
+  /* Régime cyberdeck SR5 — lu par Cyberdeck
      via App.editionModule.cyberdeckModel. 4 attributs ASDF réallouables par
-     action gratuite (p.229, réallocation motorisée en M2) ; moniteur du deck
-     et Limites d'attribut : M2/M6. */
+     action gratuite (p.229, réallocation motorisée) ; moniteur du deck
+     et Limites d'attribut. */
   cyberdeckModel: {
     attrKeys: ["attack", "sleaze", "dataProcessing", "firewall"],
     reallocatable: true,
@@ -419,7 +419,7 @@ const EditionSR5 = {
     hasReroll: false,
     hasBiofeedbackFilter: false,
     label: "Cyberdeck",
-    /** M2 : moniteur matriciel du deck = 8 + (Indice d'appareil / 2), p.229.
+    /** Moniteur matriciel du deck = 8 + (Indice d'appareil / 2), p.229.
         L'app ne porte pas de champ « Indice » séparé pour un deck (seulement
         ses 4 attributs) : approximation assumée = l'attribut le plus élevé,
         cohérent avec la fourchette officielle « Indice à Indice+3 » (p.441) où
@@ -429,7 +429,7 @@ const EditionSR5 = {
       const top = vals.length ? Math.max(...vals) : 0;
       return 8 + Math.ceil(top / 2);
     },
-    /* M7 : catalogue d'actions matricielles OFFENSIVES (colonne « ATTAQUE »
+    /* Catalogue d'actions matricielles OFFENSIVES (colonne « ATTAQUE »
        p.247, compétence Cybercombat). Pool simplifié = l'attribut du deck lié
        à la Limite entre crochets ([Attaque] → attack, [Corruption] → sleaze) ;
        VD chiffrée seulement pour le pic de données (VD = indice d'Attaque,
@@ -644,8 +644,8 @@ const EditionSR5 = {
   /* ---- Armure officielle par proRating ---- */
   armureByProf: { 0: 0, 1: 9, 2: 12, 3: 12, 4: 9, 5: 18, 6: 18 },
 
-  /** Archétype utilisé pour un spider (decker de sécurité lié à un serveur,
-      issue #14) — toujours le même en SR5. */
+  /** Archétype utilisé pour un spider (decker de sécurité lié à un serveur)
+      — toujours le même en SR5. */
   spiderArchetype() {
     return "Spécialiste contre-mesures";
   },

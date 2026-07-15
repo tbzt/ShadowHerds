@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   BLOC-NOTES DE SÉANCE (CH-M2) — scratchpad persistant du MJ (montants
+   BLOC-NOTES DE SÉANCE — scratchpad persistant du MJ (montants
    négociés, promesses, fils narratifs, alertes). Volontairement LÉGER :
    un simple textarea, pas un wiki. Overlay calqué sur le journal des jets
    (DiceLog) ; persistance globale via Storage, jamais localStorage direct.
@@ -9,7 +9,7 @@
 const Notepad = {
   _open: false,
   _saveTimer: null,
-  _mode: "read", // "read" (puces @/#) | "edit" (jeton brut) — E7
+  _mode: "read", // "read" (puces @/#) | "edit" (jeton brut)
   // R2 (Notebooks) : carnet courant, figé à l'ouverture (le panneau est un
   // overlay plein écran à backdrop bloquant — le dossier courant ne peut pas
   // changer pendant qu'il est ouvert, pas besoin de re-résoudre en direct).
@@ -48,14 +48,14 @@ const Notepad = {
     panel
       .querySelector('[data-action="toggle-mode"]')
       .addEventListener("click", () => this.toggleMode());
-    // R3-C : le titre EST le sélecteur de contexte (« select en haut du
+    // Le titre EST le sélecteur de contexte (« select en haut du
     // bloc-note »). Ouvrir le sélecteur unique ; changer de contexte recharge
     // le carnet sans fermer le panneau.
     panel
       .querySelector("#notepad-ctx")
       .addEventListener("click", (e) => this._openSelector(e.currentTarget));
 
-    // E8-A1 : click-to-edit — cible énorme (tout le rendu) plutôt que le ✎
+    // Click-to-edit — cible énorme (tout le rendu) plutôt que le ✎
     // minuscule. Garde puce : un clic sur @/# navigue (délégation document,
     // app.js). Garde sélection : sélectionner pour copier ne bascule pas.
     panel.querySelector("#notepad-read").addEventListener("click", (e) => {
@@ -70,7 +70,7 @@ const Notepad = {
       clearTimeout(this._saveTimer);
       this._saveTimer = setTimeout(() => this._save(ta.value), 400);
     });
-    // E7 : autocomplétion @/# (mentions.js) câblée par l'auto-attach délégué
+    // Autocomplétion @/# (mentions.js) câblée par l'auto-attach délégué
     // sur `data-mentions` (Mentions.wireAuto) — plus de câblage explicite ici.
 
     document.addEventListener("keydown", (e) => {
@@ -79,7 +79,7 @@ const Notepad = {
   },
 
   /** Bascule Lire (puces @/# cliquables) / Éditer (jeton brut, jamais tapé à
-      la main — toujours inséré par l'autocomplétion). E7. */
+      la main — toujours inséré par l'autocomplétion). */
   toggleMode() {
     const ta = document.getElementById("notepad-textarea");
     if (this._mode === "read") {
@@ -95,8 +95,7 @@ const Notepad = {
     }
   },
 
-  /** Bascule en édition depuis un clic dans le rendu, curseur en fin (E8-A1 —
-      décision A : on ajoute 90 % du temps, pas de mapping clic→offset). */
+  /** Bascule en édition depuis un clic dans le rendu, curseur en fin (décision A : on ajoute 90 % du temps, pas de mapping clic→offset). */
   _editFromRead() {
     if (this._mode !== "read") return;
     this._mode = "edit";
@@ -139,7 +138,7 @@ const Notepad = {
 
   open() {
     this._ensure();
-    // R3-C : le carnet courant dérive d'App.context (vérité unique du contexte),
+    // Le carnet courant dérive d'App.context (vérité unique du contexte),
     // résolu à l'ouverture puis re-résolu quand le sélecteur change de contexte
     // (_reloadForContext). "all"/aucun focus → carnet global.
     this._openDossierId =
@@ -156,7 +155,7 @@ const Notepad = {
     if (this._mode === "edit") ta.focus();
   },
 
-  /** R3-C : ouvre le sélecteur de contexte unique depuis le titre. On flush
+  /** Ouvre le sélecteur de contexte unique depuis le titre. On flush
       d'abord le carnet courant (sinon une frappe non encore débouncée
       s'écrirait dans le mauvais carnet après bascule). */
   _openSelector(trigger) {
@@ -166,7 +165,7 @@ const Notepad = {
     ContextSelector.open(trigger, () => this._reloadForContext());
   },
 
-  /** R3-C : recharge le carnet pour le contexte désormais courant (App.context),
+  /** Recharge le carnet pour le contexte désormais courant (App.context),
       sans fermer le panneau. */
   _reloadForContext() {
     this._openDossierId =

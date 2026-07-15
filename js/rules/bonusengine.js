@@ -25,56 +25,51 @@ const BonusEngine = {
     sr5: [
       ["Réflexes câblés 1", { initDice: 1 }],
       ["Réflexes câblés 2", { initDice: 2 }],
-      // Fusion V5 (sr5_cyberware.md item 1/2) : le volet REA manquait — le
-      // livre (p.458) augmente aussi la Réaction, pas seulement les dés
-      // d'init (déjà motorisés séparément via initAugPool).
+      // Le volet REA manquait — le livre (p.458) augmente aussi la Réaction,
+      // pas seulement les dés d'init (déjà motorisés séparément via
+      // initAugPool).
       ["Réflexes câblés 1", { attr: "REA", val: 1 }],
       ["Réflexes câblés 2", { attr: "REA", val: 2 }],
       ["Accroissement de réaction", { attr: "REA", val: 1 }],
-      // Correctif collecte V5 : « Tonification musculaire » = bioware AGI au
-      // livre (Muscle Toner, SR5 p.464), PAS FOR. Le +FOR était un bug (cf.
-      // sr5_bioware.md). ⚠ SR6 « Tonification musculaire 3 → FOR » non corrigé
-      // ici (hors périmètre de la collecte, à vérifier au livre SR6).
+      // « Tonification musculaire » = bioware AGI au livre (Muscle Toner,
+      // SR5 p.464), PAS FOR. Le +FOR était un bug. ⚠ SR6 « Tonification
+      // musculaire 3 → FOR » non corrigé ici (à vérifier au livre SR6).
       ["Tonification musculaire", { attr: "AGI", val: 1 }],
-      // Fusion V5 : Renforcement musculaire (bioware Muscle Augmentation, SR5
-      // p.463) = +INDICE Force — premier bonus indice-scalé (byRating).
+      // Renforcement musculaire (bioware Muscle Augmentation, SR5 p.463) =
+      // +INDICE Force — premier bonus indice-scalé (byRating).
       ["Renforcement musculaire", { attr: "FOR", byRating: true }],
       ["Armure dermique", { armor: 1 }],
-      // Fusion V5 (sr5_cyberware.md item 35) : Substitut musculaire = double
-      // attribut, le livre ajoute l'indice à FOR **et** AGI simultanément.
+      // Substitut musculaire = double attribut : le livre ajoute l'indice à
+      // FOR **et** AGI simultanément.
       ["Substitut musculaire", { attr: "FOR", byRating: true }],
       ["Substitut musculaire", { attr: "AGI", byRating: true }],
-      // Fusion V5 (sr5_bioware.md item 13) : Booster cérébral = +indice LOG
-      // (p.464). Décision utilisateur 2026-07-15 : LOG seul, le livre ne
-      // motorise pas l'INT malgré le libellé catalogue « bonus LOG/INT ».
+      // Booster cérébral = +indice LOG (p.464). Décision utilisateur
+      // 2026-07-15 : LOG seul, le livre ne motorise pas l'INT malgré le
+      // libellé catalogue « bonus LOG/INT ».
       ["Booster cérébral", { attr: "LOG", byRating: true }],
-      // Fusion V5 (sr5_bioware.md item 14) : Booster synaptique = +1 REA à
-      // l'indice 1 (seul indice existant pour ce volet, p.464). Le volet dés
-      // d'initiative reste motorisé séparément (initAugPool).
+      // Booster synaptique = +1 REA à l'indice 1 (seul indice existant pour
+      // ce volet, p.464). Le volet dés d'initiative reste motorisé séparément
+      // (initAugPool).
       ["Booster synaptique", { attr: "REA", val: 1 }],
-      // Fusion V5 (3e vague, sr5_bioware.md item 5) : Orthoderme = bonus
-      // d'armure égal à l'indice (p.462-463).
+      // Orthoderme = bonus d'armure égal à l'indice (p.462-463).
       ["Orthoderme", { armor: true, byRating: true }],
-      // Fusion V5 (3e vague, sr5_bioware.md item 6) : Phéromones optimisées
-      // = +indice à la Limite sociale (p.463). Le volet pool Comédie/
-      // Influence (bonus de dés, pas de Limite) reste hors schéma — non
-      // motorisé ici.
+      // Phéromones optimisées = +indice à la Limite sociale (p.463). Le volet
+      // pool Comédie/Influence (bonus de dés, pas de Limite) reste hors
+      // schéma — non motorisé ici.
       ["Phéromones optimisées", { limit: "soc", byRating: true }],
-      // Fusion V5 (3e vague, sr5_bioware.md item 12) : Amélioration
-      // mnémonique = +indice à la Limite mentale (p.464). Le volet pool
-      // Connaissances/langues reste hors schéma — non motorisé ici.
+      // Amélioration mnémonique = +indice à la Limite mentale (p.464). Le
+      // volet pool Connaissances/langues reste hors schéma — non motorisé ici.
       ["Amélioration mnémonique", { limit: "ment", byRating: true }],
-      // Fusion V5 (livres oubliés, oubli-sr5.md #4) : Articulations
-      // intelligentes (Chrome Flesh, cyberware) = +2 Limite physique, fixe.
-      // Débloqué par le puits Limite + le fix d'écrasement recalc (seau
-      // _limitMods).
+      // Articulations intelligentes (Chrome Flesh, cyberware) = +2 Limite
+      // physique, fixe. Débloqué par le puits Limite + le fix d'écrasement
+      // recalc (seau _limitMods).
       ["Articulations intelligentes", { limit: "phys", val: 2 }],
-      // Fusion V5 (livres oubliés, oubli-sr5.md #1) : Optimisation
-      // d'accroissement de réaction (Chrome Flesh p.171, optimisation
-      // génétique) = +1 au SCORE d'Initiative (fixe, « aucun bonus pour
-      // indices supérieurs »). PAS +1 REA (le livre dit Initiative). Passe
-      // par le seau _initMod (dérivée recalculée). Préfixe « Optimisation
-      // d'… » distinct de « Accroissement de réaction » (pas de collision).
+      // Optimisation d'accroissement de réaction (Chrome Flesh p.171,
+      // optimisation génétique) = +1 au SCORE d'Initiative (fixe, « aucun
+      // bonus pour indices supérieurs »). PAS +1 REA (le livre dit
+      // Initiative). Passe par le seau _initMod (dérivée recalculée). Préfixe
+      // « Optimisation d'… » distinct de « Accroissement de réaction » (pas
+      // de collision).
       ["Optimisation d'accroissement de réaction", { init: 1 }],
     ],
     sr6: [
@@ -85,31 +80,31 @@ const BonusEngine = {
       ["Tonification musculaire 3", { attr: "FOR", val: 3 }],
       ["Renforcement musculaire 3", { attr: "FOR", val: 3 }],
       // Préfixe resserré sur la forme crochets (item cyberware simple) pour
-      // ne pas capter les variantes parenthétiques ci-dessous (fusion V5).
+      // ne pas capter les variantes parenthétiques ci-dessous.
       ["Ossature renforcée [", { attr: "CON", val: 2 }],
       ["Substituts musculaires", { attr: "AGI", val: 2 }],
       ["Armure dermique 3", { sd: 3 }],
       ["Armure dermique 4", { sd: 4 }],
-      // Fusion V5 (3e vague, sr6_bioware.md) : Orthoderme = +indice au Score
-      // Défensif (p.299). Nécessite le libellé catalogue corrigé (sr6.js)
-      // pour porter « Indice 1-4 » et rendre le stepper opérant.
+      // Orthoderme = +indice au Score Défensif (p.299). Nécessite le libellé
+      // catalogue corrigé (sr6.js) pour porter « Indice 1-4 » et rendre le
+      // stepper opérant.
       ["Orthoderme", { sd: true, byRating: true }],
-      // Fusion V5 (3e vague, sr6_bioware.md) : Renforcement musculaire =
-      // +indice FOR (p.300). Préfixe resserré sur « [Indice » (forme
-      // catalogue manuelle, sr6.js) : la forme courte des statblocks générés
+      // Renforcement musculaire = +indice FOR (p.300). Préfixe resserré sur
+      // « [Indice » (forme catalogue manuelle, sr6.js) : la forme courte des
+      // statblocks générés
       // « Renforcement musculaire 3 [FOR+3] » est lue par ItemResolver.
       // itemRating comme un indice « 3 » via son repli sur la forme courte
       // (`\s([1-6])(?=\s*\[|$)`) — un préfixe générique collisionnerait avec
       // l'entrée fixe ci-dessus et compterait le bonus deux fois (vérifié en
       // navigateur : FOR 3→9 au lieu de 3→6 avant ce resserrement).
       ["Renforcement musculaire [Indice", { attr: "FOR", byRating: true }],
-      // Fusion V5 (3e vague, sr6.js:1812-1814, p.294-295) : trois variantes
-      // fixes, valeurs déjà dans le libellé catalogue.
+      // Trois variantes fixes (p.294-295), valeurs déjà dans le libellé
+      // catalogue.
       ["Ossature renforcée (plastique)", { attr: "CON", val: 1, sd: 1 }],
       ["Ossature renforcée (aluminium)", { attr: "CON", val: 2, sd: 1 }],
       ["Ossature renforcée (titane)", { attr: "CON", val: 2, sd: 2 }],
-      // Fusion V5 (livres oubliés, oubli-sr6.md #3) : Ossature renforcée TMG
-      // (Hantise astrale) — les 3 variantes (Plastique/Aluminium/Titane) ne
+      // Ossature renforcée TMG (Hantise astrale) — les 3 variantes
+      // (Plastique/Aluminium/Titane) ne
       // diffèrent qu'en Essence/coût, toutes +1 SD → une seule entrée. Le
       // préfixe « Ossature renforcée TMG » ne collisionne PAS avec les
       // matchers standard ci-dessus (« Ossature renforcée [ » et
@@ -117,8 +112,8 @@ const BonusEngine = {
       // porte l'un OU l'autre) → pas de double-comptage. Volet « dés de
       // défense » = pool distinct, non couvert (facette défense hors puits).
       ["Ossature renforcée TMG", { sd: 1 }],
-      // Fusion V5 (livres oubliés, oubli-sr6.md #1) : Move-by-wire (Corps à
-      // la carte p.39, indice 1-2) — « chaque point octroie +2 Réaction ET
+      // Move-by-wire (Corps à la carte p.39, indice 1-2) — « chaque point
+      // octroie +2 Réaction ET
       // +2 Agilité » → table littérale ×2 par indice (1→+2, 2→+4). Le volet
       // « +2 actions mineures mouvement » (économie d'action) est hors puits.
       // ⚠ Incompatible au livre avec toute autre augmentation de Réaction
@@ -126,12 +121,12 @@ const BonusEngine = {
       // pas les incompatibilités, il somme ce que le PNJ porte).
       ["Move-by-wire", { attr: "RÉA", perRating: [null, 2, 4] }],
       ["Move-by-wire", { attr: "AGI", perRating: [null, 2, 4] }],
-      // Fusion V5 (sr6_bioware.md) : Articulations améliorées = +1 AGI fixe
-      // (p.299 ; la remise d'Atout espaces étroits n'est pas motorisable, pas
-      // de champ pour ça dans BonusEngine).
+      // Articulations améliorées = +1 AGI fixe (p.299 ; la remise d'Atout
+      // espaces étroits n'est pas motorisable, pas de champ pour ça dans
+      // BonusEngine).
       ["Articulations améliorées", { attr: "AGI", val: 1 }],
-      // Fusion V5 (sr6_bioware.md) : Glande suprathyroïdienne = +1 fixe à
-      // AGI/CON/RÉA simultanément (p.300). La part FOR+25% est multiplicative,
+      // Glande suprathyroïdienne = +1 fixe à AGI/CON/RÉA simultanément
+      // (p.300). La part FOR+25% est multiplicative,
       // hors du schéma additif {attr,val} — non motorisée (signalée dans la
       // collecte).
       ["Glande suprathyroïdienne", { attr: "AGI", val: 1 }],
@@ -152,7 +147,7 @@ const BonusEngine = {
     // reconnu) plutôt qu'une somme — la provenance remonte jusqu'au Trait.
     const totals = { initDice: 0, initScore: 0, armor: 0, sd: 0, limits: {}, attrMods: [] };
     for (const item of items) {
-      const s = ItemResolver.itemStr(item); // #63 : item chaîne OU objet
+      const s = ItemResolver.itemStr(item); // item chaîne OU objet
       if (!s) continue;
       for (const [prefix, bonus] of table) {
         if (!s.startsWith(prefix)) continue;
@@ -161,15 +156,14 @@ const BonusEngine = {
         // recalculé (REA+INT) → passe par le seau `_initMod` (comme les
         // Limites), sinon écrasé par recalc.
         if (bonus.init) totals.initScore += bonus.init;
-        // Valeur à l'INDICE (collecte V5) : `byRating` = +indice ;
-        // `perRating[r]` = table littérale ; sinon la valeur fixe du champ.
-        // Un indice non résolu (plage « 1-4 ») → 0 (inactif jusqu'au
-        // stepper #63). Généralisé (fusion V5, 3e vague) au-delà de
-        // `attr` : `armor`/`sd` (booléens quand scalés) et `limit`.
+        // Valeur à l'INDICE : `byRating` = +indice ; `perRating[r]` = table
+        // littérale ; sinon la valeur fixe du champ. Un indice non résolu
+        // (plage « 1-4 ») → 0 (inactif jusqu'au stepper). Généralisé au-delà
+        // de `attr` : `armor`/`sd` (booléens quand scalés) et `limit`.
         let scaled = null;
         if (bonus.byRating || bonus.perRating) {
-          // #63 : lire l'indice sur l'ITEM d'origine (chaîne OU objet),
-          // pas sur `s` déjà aplati en chaîne — sinon `.rating` réglé par
+          // Lire l'indice sur l'ITEM d'origine (chaîne OU objet), pas sur
+          // `s` déjà aplati en chaîne — sinon `.rating` réglé par
           // le stepper (EditModal) est invisible ici.
           const r = ItemResolver.itemRating(item);
           scaled = r == null ? 0 : bonus.byRating ? r : bonus.perRating[r] || 0;
@@ -195,7 +189,7 @@ const BonusEngine = {
     let implanted = false;
     let external = false;
     for (const item of items) {
-      const s = ItemResolver.itemStr(item); // #63 : item chaîne OU objet
+      const s = ItemResolver.itemStr(item); // item chaîne OU objet
       if (!s || !/smartlink/i.test(s)) continue;
       if (/cybernétique|implant/i.test(s)) implanted = true;
       else external = true;
@@ -281,7 +275,7 @@ const BonusEngine = {
     pnj._limitMods = { phys: 0, ment: 0, soc: 0 };
     // Seau de mod du SCORE d'Initiative (dérivé REA+INT, recalculé) — même
     // logique que _limitMods (fix tranche 4) : reset ici, ré-appliqué par
-    // recalc. Fusion V5 : Optimisation d'accroissement de réaction (SR5).
+    // recalc. Optimisation d'accroissement de réaction (SR5).
     pnj._initMod = 0;
     const totals = this._collectCyberBonuses(pnj, edition);
     let attrsTouched = false;
@@ -293,8 +287,8 @@ const BonusEngine = {
     }
     if (totals.armor) pnj.armure = (pnj.armure || 0) + totals.armor;
     if (totals.sd) pnj.sdBase = (pnj.sdBase || 0) + totals.sd;
-    // Fusion V5 (3e vague) : bonus de Limite naturelle scalés à l'indice
-    // (Phéromones optimisées, Amélioration mnémonique). Accumulés dans le
+    // Bonus de Limite naturelle scalés à l'indice (Phéromones optimisées,
+    // Amélioration mnémonique). Accumulés dans le
     // seau `_limitMods` (ré-appliqué par recalc), PAS un `pnj.limX +=` qui
     // serait écrasé par le recalc suivant (fix tranche 4).
     for (const [k, v] of Object.entries(totals.limits)) {
@@ -460,7 +454,7 @@ const BonusEngine = {
     if (!pnj) return pnj;
     const EditionModule = App.getEditionModule(edition);
     // usesRiskPanel = famille Anarchy (RR, atouts, seuils) — jamais de
-    // branche `edition === "anarchy…"` ici (issue #14).
+    // branche `edition === "anarchy…"` ici.
     if (EditionModule && EditionModule.usesRiskPanel) {
       this._applyAnarchy(pnj);
       return pnj;

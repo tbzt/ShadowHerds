@@ -2,7 +2,7 @@
 
 /* ============================================================
    ACTOR EFFECTS — modificateurs SITUATIONNELS d'objet, au niveau du
-   personnage (refonte acteur, suite V4/collecte V5).
+   personnage (refonte du modèle d'acteur).
 
    Pendant « acteur » de WeaponEffects (qui, lui, est scopé à un JET
    d'arme) : ici on collecte les effets d'objet qui bonifient un test ou
@@ -21,7 +21,7 @@
 
    Un effet déclare : { match, scope, perRating?|value, conditional?,
    source, page }. Indice lu par ItemResolver.itemRating. Le CATALOG se
-   peuple ensuite item par item (fusion V5) sans toucher ce moteur.
+   peuple ensuite item par item sans toucher ce moteur.
    ============================================================ */
 const ActorEffects = {
   CATALOG: [
@@ -35,8 +35,8 @@ const ActorEffects = {
       perRating: [null, 1, 2, 3], source: "Amplification visuelle", page: "SR5 p.456" },
     { match: /amplification auditive/i, scope: "Limite — Perception auditive",
       perRating: [null, 1, 2, 3], source: "Amplification auditive", page: "SR5 p.456" },
-    // Fusion V5 (livres oubliés, oubli-sr6.md #2) : Système immunitaire
-    // renforcé (Corps à la carte p.60) « ajoute son indice à la Constitution
+    // Système immunitaire renforcé (Corps à la carte p.60) « ajoute son
+    // indice à la Constitution
     // LORS DES TESTS DE RÉSISTANCE AUX MALADIES » — CON SCOPÉ, pas global →
     // ActorEffects (affiché, pas baké), comme les Défenses immunitaires SR5.
     { match: /système immunitaire renforcé/i, scope: "Résistance aux maladies (CON)",
@@ -44,7 +44,7 @@ const ActorEffects = {
   ],
 
   /** Modificateurs situationnels portés par un PNJ → [{scope, value, source}].
-      Neutre par édition. Tolérant items chaîne/objet (#63). */
+      Neutre par édition. Tolérant items chaîne/objet. */
   forActor(pnj) {
     if (!pnj) return [];
     const items = [...(pnj.equip || []), ...(pnj.augs || [])];

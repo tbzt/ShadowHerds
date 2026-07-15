@@ -57,7 +57,7 @@ const _contactsCollection = Collection.create(
       return el;
     },
     // Rattachement en masse à un PJ (BulkBar) : les liens vivent côté PJ
-    // (Characters.contactLinks, E5), le contact n'est que la cible du lien.
+    // (Characters.contactLinks), le contact n'est que la cible du lien.
     pjLinkable: true,
   },
 );

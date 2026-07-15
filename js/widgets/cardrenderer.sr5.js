@@ -112,16 +112,16 @@ Object.assign(CardRenderer, {
     combatBody += this._drugRow(pnj, "sr5", deps);
     combatBody += this._vehicleChipRow(pnj, deps);
     combatBody += this._spiritChipRow(pnj, deps);
-    combatBody += CyberdeckRenderer.combatArsenal(pnj, "sr5"); // CP2 : râtelier Attaques unifié
+    combatBody += CyberdeckRenderer.combatArsenal(pnj, "sr5"); // râtelier Attaques unifié
     const combatSummary = init != null ? `Init ${init}+${initDice}D6` : "";
     html += this._zoneShell(pnj, "combat", combatBody, combatSummary);
-    html += this._modulesHtml(pnj, deps); // CP3 : modules conditionnels (Magie, Matrice), après Combat
+    html += this._modulesHtml(pnj, deps); // modules conditionnels (Magie, Matrice), après Combat
 
     // ---- ZONE CAPACITÉS ----
     let capBody = "";
     capBody += this._skillsSection(skills, malus5, { pnj });
     capBody += this._knowledgesSection(knowledges, pnj, malus5);
-    // Pouvoirs d'adepte : vivent désormais dans le module Magie (CP3).
+    // Pouvoirs d'adepte : vivent désormais dans le module Magie.
     if (traits && traits.length) capBody += this._listSection("Traits", traits);
     if (pnj.infectedPowers && pnj.infectedPowers.length)
       capBody += this._listSection("Pouvoirs (Infecté)", pnj.infectedPowers);
@@ -153,9 +153,9 @@ Object.assign(CardRenderer, {
       </div></div>`;
     }
     if (prefs.showGmPools) detailsBody += this._gmPoolsSR5(pnj);
-    // CP2 : inventaire consolidé (Porté + Augmentations en une section).
+    // inventaire consolidé (Porté + Augmentations en une section).
     detailsBody += this._equipSection(pnj, prefs.showEquipment ? gear : [], "sr5", deps, augsAll);
-    // Cyberdeck : vit désormais dans le module Matrice (CP3).
+    // Cyberdeck : vit désormais dans le module Matrice.
     html += this._zoneShell(pnj, "details", detailsBody, "attributs, jets de situation, équipement");
 
     html += "</div>";

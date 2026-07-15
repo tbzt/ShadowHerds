@@ -121,9 +121,9 @@ Object.assign(CardRenderer, {
       }
       combatBody += "</div>";
     }
-    // Sorts (CH-M7e) : en zone Combat, façon armes. Anarchy 2 lance via la
+    // Sorts : en zone Combat, façon armes. Anarchy 2 lance via la
     // compétence Sorcellerie (jet de risque) — le Drain est géré par
-    // complication (CH-M7d). Pool = Sorcellerie (val + attribut + RR).
+    // complication. Pool = Sorcellerie (val + attribut + RR).
     if (spells && spells.length) {
       const sorc = (skills || []).find((s) => s.name === "Sorcellerie");
       const riskPool = sorc ? sorc.val + Actor.attr(pnj, sorc.attr) : 0;
@@ -137,10 +137,10 @@ Object.assign(CardRenderer, {
     combatBody += this._armorChipRow(pnj);
     combatBody += this._vehicleChipRow(pnj, deps);
     combatBody += this._spiritChipRow(pnj, deps);
-    combatBody += CyberdeckRenderer.combatArsenal(pnj, pnj.edition); // CP2 : râtelier Attaques unifié
+    combatBody += CyberdeckRenderer.combatArsenal(pnj, pnj.edition); // râtelier Attaques unifié
     const combatSummary = threatLevel ? `Combativité ${threatLevel}` : "";
     html += this._zoneShell(pnj, "combat", combatBody, combatSummary);
-    html += this._modulesHtml(pnj, deps); // CP3 : modules conditionnels (Magie, Matrice), après Combat
+    html += this._modulesHtml(pnj, deps); // modules conditionnels (Magie, Matrice), après Combat
 
     // ---- ZONE CAPACITÉS ----
     let capBody = "";
@@ -256,7 +256,7 @@ Object.assign(CardRenderer, {
     }
     if (prefs.showEquipment && equip && equip.length)
       detailsBody += this._equipSection(pnj, equip, pnj.edition, deps);
-    // Cyberdeck : vit désormais dans le module Matrice (CP3).
+    // Cyberdeck : vit désormais dans le module Matrice.
     if (notes) {
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Notes</div>
         <div style="font-size:0.75rem;">${this._esc(notes)}</div></div>`;

@@ -90,7 +90,7 @@ const AnarchyAtouts = {
     if (!pnj) return out;
 
     for (const item of this._sources(pnj)) {
-      const raw = ItemResolver.itemStr(item); // #63 : chaîne OU objet
+      const raw = ItemResolver.itemStr(item); // chaîne OU objet
       if (!raw) continue;
       // Drogue non active → aucun effet (effet de scène, pas permanent).
       if (this._isInactiveDrug(pnj, item)) continue;

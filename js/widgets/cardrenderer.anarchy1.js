@@ -67,10 +67,10 @@ Object.assign(CardRenderer, {
     combatBody += this._drugRow(pnj, "anarchy1", deps);
     combatBody += this._vehicleChipRow(pnj, deps);
     combatBody += this._spiritChipRow(pnj, deps);
-    combatBody += CyberdeckRenderer.combatArsenal(pnj, "anarchy1"); // CP2 : râtelier Attaques unifié
+    combatBody += CyberdeckRenderer.combatArsenal(pnj, "anarchy1"); // râtelier Attaques unifié
     const combatSummary = init != null ? `Init ${init}+${initDice}D6` : "";
     html += this._zoneShell(pnj, "combat", combatBody, combatSummary);
-    html += this._modulesHtml(pnj, deps); // CP3 : modules conditionnels (Magie, Matrice), après Combat
+    html += this._modulesHtml(pnj, deps); // modules conditionnels (Magie, Matrice), après Combat
 
     // ---- ZONE CAPACITÉS ----
     let capBody = "";
@@ -90,7 +90,7 @@ Object.assign(CardRenderer, {
     }
     if (prefs.showEquipment && gear.length)
       detailsBody += this._equipSection(pnj, gear, "anarchy1", deps);
-    // Cyberdeck : vit désormais dans le module Matrice (CP3).
+    // Cyberdeck : vit désormais dans le module Matrice.
     html += this._zoneShell(pnj, "details", detailsBody, "attributs, équipement");
 
     html += "</div>";

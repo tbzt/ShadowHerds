@@ -1384,7 +1384,7 @@ const Metavariants = {
   },
 
   /* ============================================================
-     ANARCHY 1RE ÉDITION (Anarchistes, sran_03 p.79-87, findings §13)
+     ANARCHY 1RE ÉDITION (Anarchistes, sran_03 p.79-87)
      17 métavariantes citées, format V1 natif (6 attrs FOR/AGI/VOL/LOG/
      CHA/CHC). Le livre donne des MODIFICATEURS PLATS (pas des plages
      indépendantes comme SR5/SR6) : `ranges` ci-dessous = plage de la

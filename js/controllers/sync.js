@@ -96,7 +96,7 @@ const Sync = {
   },
   /** Nombre de jours entiers depuis la dernière sauvegarde (export ou
       synchro, même horodatage `lastAt`) ; null si jamais sauvegardé.
-      Partagé par le rappel de Paramètres et le bandeau du Hub (F3). */
+      Partagé par le rappel de Paramètres et le bandeau du Hub. */
   daysSinceSave() {
     const lastAt = this.cfg().lastAt;
     if (!lastAt) return null;
@@ -308,7 +308,7 @@ const Sync = {
   },
   _refreshSettings() {
     if (typeof Settings !== "undefined" && Settings.renderSyncStatus) Settings.renderSyncStatus();
-    // Le bandeau du Hub (F3) partage le même horodatage lastAt : le
+    // Le bandeau du Hub partage le même horodatage lastAt : le
     // rafraîchir ici évite qu'il reste affiché après une sauvegarde/synchro.
     if (typeof Hub !== "undefined" && Hub._renderSaveReminder) Hub._renderSaveReminder();
   },

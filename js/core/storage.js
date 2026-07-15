@@ -257,7 +257,7 @@ const Storage = {
     },
     {
       v: 4,
-      /** M1 (PLAN_MATRICE_CYBERDECK.md) : un decker ne portait son cyberdeck
+      /** Un decker ne portait son cyberdeck
           qu'en texte libre dans son équipement/ses atouts ("Cyberdeck
           (Attaque 4, Firewall 4)", "Cyberdeck Shiawase Cyber-5 (Att 8, FW 7,
           DP 5)", "Cyberdeck Erika MCD-1 (Firewall 1, …, relance 1 échec)").
@@ -412,10 +412,10 @@ const Storage = {
     },
     {
       v: 7,
-      /** R2-A (PLANS/PLAN_RECABLAGE_MASTER.md) : la scène gagne un ensemble de
-          moteurs actifs `motors: []` (D-R2-3 — extensible, pas un `type`
-          figé), préalable à R2-B/R2-E (intrusion en scène, scène Matrice
-          seule). Une scène déjà persistée sans ce champ tourne forcément en
+      /** La scène gagne un ensemble de moteurs actifs `motors: []`
+          (extensible, pas un `type` figé), préalable à l'intrusion en scène
+          et à la scène Matrice seule. Une scène déjà persistée sans ce champ
+          tourne forcément en
           combat classique : backfill `motors: ["combat"]` + `v: 2` (forme
           locale `Encounter._V`, distincte de ce schemaVersion global — cf.
           migration v2). Idempotente : ignore les scènes déjà à `v >= 2`. */
@@ -443,8 +443,8 @@ const Storage = {
     },
     {
       v: 8,
-      /** R2-B (PLANS/PLAN_RECABLAGE_MASTER.md, D-R2-1/D-R2-2) : l'état vivant
-          d'intrusion quitte `srv.intrusion` (Actif, un seul serveur affiché à
+      /** L'état vivant d'intrusion quitte `srv.intrusion` (Actif, un seul
+          serveur affiché à
           la fois) pour la scène : `state.matrix{serverId → intrusion}`, qui
           admet PLUSIEURS serveurs actifs en parallèle. Un serveur dont
           l'intrusion n'a jamais bougé (toujours à l'état neuf) n'a rien à

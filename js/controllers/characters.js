@@ -5,13 +5,13 @@
    ------------------------------------------------------------
    Panneau autonome (reste le point de CRÉATION, cf. CharGen), mais sa
    sidebar affiche désormais l'arbre de dossiers **transverse**
-   (DossierBar), le même que Ombres portées — CH-A3 polish : un PJ rangé
+   (DossierBar), le même que Ombres portées : un PJ rangé
    dans « Run 1 » y apparaît, qu'on vienne d'ici ou d'Ombres portées.
    Pas de `dom.sidebar` dans la config Collection ci-dessous : c'est
    `initPanel()` qui monte DossierBar sur #characters-group-list, la
    grille (`_renderGrid` du socle) continue de filtrer sur `currentGroup`,
    déjà tenu à jour par `DossierBar._applyCurrent()` (Characters fait
-   partie de `DossierBar._cols()` depuis CH-A3).
+   partie de `DossierBar._cols()`).
 
    Les entités stockées ont la forme d'un PNJ (cf.
    EditionAnarchy2.generate()) avec la couche PJ en plus (isPC,
@@ -47,7 +47,7 @@ const Characters = Object.assign(
       ...(pnj.keywords || []),
       // Suivi de campagne : motifs du registre (mentionnent runs/contacts).
       ...((pnj.campaign && pnj.campaign.ledger) || []).map((e) => e.reason),
-      // Recherche plein-fiche (F1) : compétences, équipement, sorts…
+      // Recherche plein-fiche : compétences, équipement, sorts…
       Utils.entityContent(pnj),
     ],
     renderCard: (pnj) => CardRenderer.render(pnj, ["edit", "remove-pj"]),
@@ -63,11 +63,11 @@ const Characters = Object.assign(
     },
 
     /** Palette d'accent des PJ légers — rotation, pas de branche d'édition.
-        Indice 1/3 de la DA (couleur constante partout, cf. E6) ; les indices
-        2-3 (forme sur l'avatar, initiale) arrivent au chantier E6. */
+        Indice 1/3 de la DA (couleur constante partout) ; les indices
+        2-3 (forme sur l'avatar, initiale) arrivent plus tard. */
     _PC_COLORS: ["#e0533d", "#3d90e0", "#3dbf6e", "#c9a13d", "#9d5fd6", "#3dc2c2"],
 
-    /** E1 : PJ léger — « un PJ = un nom », persistant, hors chargen. Entité
+    /** PJ léger — « un PJ = un nom », persistant, hors chargen. Entité
         volontairement squelette : CardRenderer/EditModal la détectent via
         `pcLight` et rendent un gabarit minimal commun (aucune branche
         `App.edition`, la fiche complète du chargen n'est pas concernée). */
@@ -109,7 +109,7 @@ const Characters = Object.assign(
       this.remove(id);
     },
 
-    /** E5 : liens contacts ↔ PJ qualifiés. `contactLinks` additif sur
+    /** Liens contacts ↔ PJ qualifiés. `contactLinks` additif sur
         l'entité PJ (vit dans `characters_all`, aucune nouvelle clé) — sens
         inverse (« Connu de » sur la fiche contact) calculé à la volée par
         `CardRenderer._contactKnownBy` (CO-b), jamais stocké côté contact (une seule source de
@@ -143,7 +143,7 @@ const Characters = Object.assign(
         refresh, en sautant silencieusement les liens déjà présents (pas de
         toast par doublon, contrairement au lien individuel `addContactLink`).
         Liens nus (relation/loyauté vides) — la qualification se fait côté PJ
-        (E5). Renvoie le nombre de liens réellement ajoutés. */
+        Renvoie le nombre de liens réellement ajoutés. */
     addContactLinks(pnjId, contactIds) {
       const pnj = this.data.all.find((p) => p.id === pnjId);
       if (!pnj || !Array.isArray(contactIds)) return 0;
@@ -163,7 +163,7 @@ const Characters = Object.assign(
       return added;
     },
 
-    /** E5+E2 : lie un ou plusieurs contacts à CHAQUE membre de l'équipe active
+    /** Lie un ou plusieurs contacts à CHAQUE membre de l'équipe active
         (activeTeamMembers → addContactLinks par membre, doublons sautés). Un
         seul geste côté carnet pour rattacher un fixer/indic à toute la table.
         Renvoie { members, added } pour le récap toast côté ContactsBook. */
@@ -174,7 +174,7 @@ const Characters = Object.assign(
       return { members: members.length, added };
     },
 
-    /** E2 : équipe active pour « + Équipe » (Encounter.addTeam). Référence
+    /** Équipe active pour « + Équipe » (Encounter.addTeam). Référence
         l'ID d'un dossier existant (Dossiers) — jamais son nom : un dossier
         renommé (DossierBar.renameDossier) cascade déjà le renommage dans
         `Characters.data.groups`, mais une clé stockée à part comme celle-ci
@@ -231,7 +231,7 @@ const Characters = Object.assign(
       btn.classList.toggle("is-active-team", !!node);
     },
 
-    /** Montage du panneau (CH-A3 polish) : la sidebar de dossiers est
+    /** Montage du panneau : la sidebar de dossiers est
         transverse (DossierBar), pas propre à Characters — même patron que
         Hub.initPanel(). `_renderSidebar()` du socle Collection est un no-op
         ici (pas de `dom.sidebar` dans la config) : c'est cette méthode qui

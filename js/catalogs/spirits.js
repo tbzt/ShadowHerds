@@ -208,8 +208,8 @@ const Spirits = {
      les Atouts au choix avec leurs valeurs mises à l'échelle de la
      puissance ; `fixedEdgeFor(ti)` l'Atout élémentaire toujours présent
      (absent pour Air, dont l'attaque élémentaire fait partie du choix).
-     Bêtes normal/majeur : non confirmés en source (findings §ESPRITS,
-     "à confirmer p.198") — extrapolés depuis le pas uniforme (+2/+2/+2/
+     Bêtes normal/majeur : non confirmés en source (à confirmer p.198) —
+     extrapolés depuis le pas uniforme (+2/+2/+2/
      +2/+2/+1 attrs, +4 DÉF, +1/+1 P/E) observé sur les 5 autres types. */
   ANARCHY1_TYPES: {
     air: {

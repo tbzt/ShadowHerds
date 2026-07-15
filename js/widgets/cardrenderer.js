@@ -69,14 +69,14 @@ const CardRenderer = {
       });
   },
 
-  /** Ligne d'annuaire (D6b) : consultation dense d'une longue bibliothèque
-      — la carte compacte (D6a) replie déjà les zones mais garde son en-tête
+  /** Ligne d'annuaire : consultation dense d'une longue bibliothèque
+      — la carte compacte replie déjà les zones mais garde son en-tête
       + accordéon (~480px/fiche mesuré), encore lourd à faire défiler pour
       15+ PNJ. Une ligne = nom · archétype · Défense/Encaissement (mêmes
       champs pré-calculés `pnj.defense`/`damageResist` que la carte, PAS de
       recalcul par édition — Anarchy 2 n'a pas ces champs, la pastille est
       simplement absente, cohérent avec son modèle narratif) · jauge de
-      moniteur condensée (réutilise `conditionMonitor.gauge`, K6, déjà
+      moniteur condensée (réutilise `conditionMonitor.gauge`, déjà
       partagé avec la mini-jauge du cockpit). Clic sur le nom = RosterView
       rouvre la carte complète (repli), pas de logique dupliquée ici. */
   renderRow(pnj, deps = CardRenderer.liveDeps()) {
@@ -198,7 +198,7 @@ const CardRenderer = {
     </div>`;
   },
 
-  /* ---- PJ léger (E1) — gabarit minimal commun, aucune branche d'édition :
+  /* ---- PJ léger — gabarit minimal commun, aucune branche d'édition :
      un PJ léger n'a ni attrs ni skills, seulement nom/joueur/couleur/notes. ---- */
   _headerLight(pnj) {
     return `<div class="pnj-card-header">
@@ -210,9 +210,9 @@ const CardRenderer = {
     </div>`;
   },
 
-  /** E6 : signature visuelle du PJ, CONSTANTE partout (tracker, PinRow,
+  /** Signature visuelle du PJ, CONSTANTE partout (tracker, PinRow,
       Palette, mentions, carte) — trois indices redondants (jamais un seul,
-      daltoniens) : couleur `pcColor` (E1) + anneau (forme, ce badge lui-même
+      daltoniens) : couleur `pcColor` + anneau (forme, ce badge lui-même
       n'existe QUE pour les PJ) + initiale du joueur (un PJ léger n'a jamais
       de portrait). `""` pour toute entité sans `pcColor` (PNJ) — aucune
       régression visuelle ailleurs. */
@@ -274,7 +274,7 @@ const CardRenderer = {
     return isAnarchy ? `Niveau ${c.level} · RR ${c.rr}` : `Infl ${c.influence} · Loy ${c.loyaute}`;
   },
 
-  /** Dispatch structurel accepté (issue #14) : deux blocs de stats complets
+  /** Dispatch structurel accepté : deux blocs de stats complets
       (atout+RR vs Influence/Loyauté), pas une valeur scalaire.
       CO-d : toujours interactif (dots cliquables, champs éditables), qu'on
       soit sur la carte du contact ou celle du PNJ déployé — contrairement à
@@ -323,7 +323,7 @@ const CardRenderer = {
     </div>`;
   },
 
-  /** E5 : sens inverse du lien PJ↔contact, calculé à la volée (jamais
+  /** Sens inverse du lien PJ↔contact, calculé à la volée (jamais
       stocké côté contact — source unique `pnj.contactLinks`). Toujours actif
       (pas de garde `deps.editable` : gestion de liens, pas édition de champ
       texte — la distinction D-edit-A ne porte que sur le second). */
@@ -409,10 +409,10 @@ const CardRenderer = {
     </div>`;
   },
 
-  /** E5 : « Contacts » du PJ léger — liens qualifiés (relation, loyauté),
+  /** « Contacts » du PJ léger — liens qualifiés (relation, loyauté),
       un contact supprimé depuis est filtré silencieusement (pas de cascade
-      destructive, cf. plan E5). Cliquable vers la fiche contact via
-      `Palette._reveal`, même navigation que les backlinks E4. */
+      destructive). Cliquable vers la fiche contact via
+      `Palette._reveal`, même navigation que les backlinks. */
   _contactLinksSection(pnj) {
     const links = pnj.contactLinks || [];
     const linkedIds = new Set(links.map((l) => l.contactId));
@@ -449,9 +449,9 @@ const CardRenderer = {
     </div>`;
   },
 
-  /** E4/E7 : « Mentionné dans » — backlinks calculés à la volée par Mentions
+  /** « Mentionné dans » — backlinks calculés à la volée par Mentions
       (bloc-notes de séance + notes/journal des autres entités mentionnant
-      cette fiche). Scan par ID depuis E7 (robuste au renommage/homonymes),
+      cette fiche). Scan par ID (robuste au renommage/homonymes),
       réutilise `.tag`/`.tag-clickable` tel quel (même patron que les tags
       cliquables du corps de carte, cf. `_contentTag`). */
   _backlinksSection(pnj) {
@@ -476,7 +476,7 @@ const CardRenderer = {
     </div>`;
   },
 
-  /** E7 : après un clic sur un chip « Mentionné dans », amène à l'écran
+  /** Après un clic sur un chip « Mentionné dans », amène à l'écran
       l'ENDROIT exact de la mention (l'entrée de journal ciblée, ou la carte
       source pour le champ `notes` — bloc unique). `_reveal` re-rend le panneau
       de façon asynchrone (délai variable PJ/Hub) : on attend l'apparition de
@@ -507,7 +507,7 @@ const CardRenderer = {
     tick();
   },
 
-  /** E3 : valeurs saisies du bloc « mécanique de table » (init/perception/
+  /** Valeurs saisies du bloc « mécanique de table » (init/perception/
       volonté/combativité…) — un `.tag` par valeur RENSEIGNÉE seulement
       (« vide par défaut » : rien n'apparaît tant que le MJ n'a rien saisi),
       réutilise `_listSection`/`.tag` tel quel, aucun nouveau composant. */
@@ -519,7 +519,7 @@ const CardRenderer = {
     return this._listSection("Mécanique de table", items);
   },
 
-  /** E3 : moniteurs du bloc de table — dispatch sur `monitorKind` (descripteur
+  /** Moniteurs du bloc de table — dispatch sur `monitorKind` (descripteur
       neutre posé par le module d'édition, jamais `App.edition` ici). Réutilise
       les moniteurs déjà motorisés pour les PNJ complets (`_monitorBoxes`,
       `_monitorBoxesAnarchy`) : même markup, même délégation `toggle-monitor`. */
@@ -631,7 +631,7 @@ const CardRenderer = {
       default:
         return '<div class="pnj-card-body">—</div>';
     }
-    // CP2 : Incarnation promue tout en haut du corps (juste après l'ouverture
+    // Incarnation promue tout en haut du corps (juste après l'ouverture
     // de pnj-card-body, donc juste après le header) — la saveur se regarde
     // avant le combat/les capacités, pas après (I2 : jamais déplacée ensuite,
     // seulement pliée/dépliée).
@@ -657,12 +657,12 @@ const CardRenderer = {
     return core;
   },
 
-  /* ---- Modules conditionnels (CP3) ------------------------------------
+  /* ---- Modules conditionnels ------------------------------------
      Un module = une zone à part entière, placée après Combat, qui n'existe
      QUE si applies(pnj) est vrai. Formalise ce qui vivait en vrac
      (_magicSection, CyberdeckRenderer.block planqué en Détails). Le glyphe
      sert l'onglet conditionnel de module phare (_currentViewKey/_lensSelector
-     ci-dessous, CP4). */
+     ci-dessous). */
   _MODULES: [
     {
       key: "magie",
@@ -738,7 +738,7 @@ const CardRenderer = {
       .join("");
   },
 
-  /** Module Magie (CP3) : tradition, esprit mentor, pouvoirs d'adepte —
+  /** Module Magie : tradition, esprit mentor, pouvoirs d'adepte —
       consolidés (vivaient éparpillés : "extra" de fin de carte + zone
       Capacités). *Scope* : la Résistance au Drain RESTE en zone Combat (un
       jet actif de combat doit rester à 1 tap, cf. coût d'interruption) —
@@ -759,7 +759,7 @@ const CardRenderer = {
     return html;
   },
 
-  /* ---- Vues (lentilles), CP4 ------------------------------------------
+  /* ---- Vues (lentilles) ------------------------------------------
      Une vue = un preset {zone→ouvert/fermé} (§4.2). C'est un VERBE, pas un
      état stocké : appliquer une vue ÉCRIT l'état de pli (pnj._zoneOpen,
      I4) — aucune 4ᵉ collection, aucun champ « vue active » persistant.
@@ -820,7 +820,7 @@ const CardRenderer = {
       par `.pnj-card.has-rail` — plus jamais dans le header (le glyphe ⚔ ne
       peut donc plus se lire comme le ✕ du coin-fermer). Présent dans TOUS les
       contextes de carte autonome, y compris le mur d'Ombres (le garde
-      `context:"library"` de CP4 est levé) ; la bande est réservée par carte,
+      `context:"library"` est levé) ; la bande est réservée par carte,
       à l'intérieur du footprint, donc aucune collision avec la colonne
       voisine du layout multi-colonnes. Hit-area ≥ 44 px (padding), délégation
       data-lens (jamais de <select> natif). Entités liées (véhicules/esprits)
@@ -867,7 +867,7 @@ const CardRenderer = {
   },
 
   /* ---- Habillage (âge, signe, manie, motivation, style, attitude) ----
-     Zone Incarnation (CP1/CP2) : « Portrait » reste le mot pour l'image IA,
+     Zone Incarnation : « Portrait » reste le mot pour l'image IA,
      le vocabulaire verrouillé de la ZONE est « Incarnation » (porté par le
      libellé du zone-toggle, cf. _ZONE_LABELS).
      PJ-b (dissolution de `_pcNarrativeZone`, Anarchy 2, p.50-51) : Mots-clés/
@@ -935,19 +935,19 @@ const CardRenderer = {
 
   /* ========================================================
      Cartes organisées par usage de jeu : zones Combat / Capacités /
-     Incarnation / Détails, chacune repliable (CP1). Préférences :
+     Incarnation / Détails, chacune repliable. Préférences :
      défaut global (Réglages) + surcharge PAR ZONE, PAR CARTE (carte de
      pli sparse mémorisée sur pnj._zoneOpen). Corps par édition dans les
      fichiers cardrenderer.sr5/sr6/anarchy.js.
      ======================================================== */
 
-  /** Préférences d'affichage, avec défaut ADAPTATIF (CH-C1). CP4 : recâblé
+  /** Préférences d'affichage, avec défaut ADAPTATIF. Recâblé
       sur le moteur de vues — plus de réglage global (les 3 cases attributs/
       Jets de situation/équipement et le levier layout ont été retirés des
       Réglages, remplacés par les vues + le pli par carte). L'ancien blob
       `cardDisplay` hérité n'est plus jamais lu (aucun crash, présentation
       pure). Reste le SEUL défaut adaptatif par contexte : bibliothèque
-      (consultation, D6a) → toujours compact ; sinon responsive (≤1024px). */
+      (consultation) → toujours compact ; sinon responsive (≤1024px). */
   _displayPrefs(deps) {
     const shows = { showGmPools: true, showAttributes: true, showEquipment: true };
     if (deps && deps.context === "library") return { layout: "compact", ...shows };
@@ -958,8 +958,8 @@ const CardRenderer = {
     return { layout: compact ? "compact" : "expanded", ...shows };
   },
 
-  /** Libellés verrouillés (CP1/CONTRIBUTING § Chrome de carte). Magie/Matrice
-      (CP3) reprennent le libellé de leur module (_MODULES), gardés ici aussi
+  /** Libellés verrouillés (CONTRIBUTING § Chrome de carte). Magie/Matrice
+      reprennent le libellé de leur module (_MODULES), gardés ici aussi
       pour que _zoneShell reste un point d'entrée unique. */
   _ZONE_LABELS: {
     combat: "Combat",
@@ -976,7 +976,7 @@ const CardRenderer = {
   /** Cette zone est-elle ouverte pour cette carte ? Résolution (I4) :
       1. override par carte, PAR ZONE (persisté, sparse) — gagne et reste.
       2. défaut de contexte (_displayPrefs).
-      Compat : l'ancien pnj._refOpen (booléen unique, pré-CP1) ne couvrait
+      Compat : l'ancien pnj._refOpen (booléen unique) ne couvrait
       que l'ex-Référence → lu comme repli pour la zone "details" seulement,
       tant qu'aucun override _zoneOpen.details n'existe. Présentation pure,
       aucun schemaVersion (comme _refOpen hier). */
@@ -1064,7 +1064,7 @@ const CardRenderer = {
             facetChips.push(`<span class="lim" title="${this._esc(list.map((c) => `${flbl} ${sign(c.value)} ${c.source}`).join(" · "))}">${flbl}${sign(sum)}</span>`);
         }
         const facetTxt = facetTxts.join(" · ");
-        // R2-D6 : une arme brickée en scène (Encounter.deviceState) perd sa
+        // Une arme brickée en scène (Encounter.deviceState) perd sa
         // pastille d'attaque — l'enforcement réel que R1d renvoyait ici.
         // Hors combat (ou hors participant), `dev` est null : aucun effet.
         const dev = deps.Encounter ? deps.Encounter.deviceState(pnj.id, s) : null;
@@ -1089,7 +1089,7 @@ const CardRenderer = {
     return `<div class="weapon-block">${rows}</div>`;
   },
 
-  /** Coquille de zone repliable (CP1) : bouton (libellé + résumé + chevron)
+  /** Coquille de zone repliable : bouton (libellé + résumé + chevron)
       + corps animé (`.zone-body`, fold CSS dans pnj-card.css). Zone/module
       vide = rien (I3) — pas de zone qui n'a aucun contenu à montrer. */
   _zoneShell(pnj, zoneKey, bodyHtml, summary = "") {
@@ -1160,7 +1160,7 @@ const CardRenderer = {
     }).join("");
   },
 
-  /** Malus cumulé en marge du moniteur (K2, grille du livre — SR6 p.43) :
+  /** Malus cumulé en marge du moniteur (grille du livre — SR6 p.43) :
       même valeur déjà calculée par chaque renderer (Utils.woundMalus), donc
       pas de nouveau calcul ici. Vide si aucun malus (cas le plus fréquent). */
   _monitorMalusBadge(malus) {
@@ -1192,7 +1192,7 @@ const CardRenderer = {
     const tags = skills
       .map((s) => {
         const n = Number(s.val);
-        // Fusion V5 tranche 2 : bonus de pool d'objet (SkillEffects) cuit
+        // Bonus de pool d'objet (SkillEffects) cuit
         // dans la réserve cliquable, avec sa source. Contributions
         // {value, source} — même vocabulaire que WeaponEffects.
         const contribs =
@@ -1257,7 +1257,7 @@ const CardRenderer = {
    */
   _knowledgesSection(knowledges, pnj, malus = 0) {
     if (!knowledges || !knowledges.length) return "";
-    // Fusion V5 : bonus de pool applicable à toute connaissance (Amélioration
+    // Bonus de pool applicable à toute connaissance (Amélioration
     // mnémonique). Blanket → résolu une fois, ajouté à chaque puce.
     const kContribs =
       pnj && typeof SkillEffects !== "undefined"
@@ -1328,13 +1328,13 @@ const CardRenderer = {
     return bits.join(" · ");
   },
 
-  /** Bloc de sorts lançables (CH-M7e), en zone Combat — rendu façon armes
+  /** Bloc de sorts lançables, en zone Combat — rendu façon armes
       (`.weapon-line` : nom + infos rapides + pastille de réserve, clic pour
       lancer). Le dernier jet (succès) est mémorisé sur `sp._lastCast` et
       présenté sur la ligne (utile pour un sort maintenu ; ✕ pour effacer).
       Éditions à VD (SR5/SR6/Anarchy1) : clic → `data-cast-spell` (MagicAction).
       Anarchy 2 (option `opts.viaRisk`) : clic → jet de risque Sorcellerie
-      (`data-roll`), le Drain étant géré par complication (CH-M7d). */
+      (`data-roll`), le Drain étant géré par complication. */
   _spellsBlock(pnj, spells, edition, opts = {}) {
     if (!spells || !spells.length) return "";
     const ed = App.getEditionModule(edition);
@@ -1471,7 +1471,7 @@ const CardRenderer = {
   },
 
   /** Section Équipement où les weapons (VD/PRE) deviennent lançables. */
-  /** CP2 : inventaire consolidé — équipement porté + augmentations en UNE
+  /** Inventaire consolidé — équipement porté + augmentations en UNE
       seule section (au lieu de deux fragments distincts). Sous-libellés
       (patron .ref-block/.ref-lbl, déjà utilisé pour Attributs en Détails)
       seulement si les deux groupes coexistent — sinon liste plate, pas de
@@ -1557,7 +1557,7 @@ const CardRenderer = {
   },
 
   /* ---- Journal de fiche (F2) ----
-     Notes datées, empilées en tête. CP1 : zone repliable comme les autres
+     Notes datées, empilées en tête. Zone repliable comme les autres
      (data-zone-toggle="journal", _zoneShell), plus de bouton de repli
      bespoke. Universel (tous types sauf entités liées/transitoires) —
      contrairement à Suivi (PJ-only), Journal reste un simple `_zoneShell`
@@ -1846,24 +1846,24 @@ const CardRenderer = {
           UI.toggleMonitor(id, actionEl.dataset.sev, Number(actionEl.dataset.idx));
           break;
         case "toggle-deck-monitor":
-          // M2 : case du moniteur matriciel du deck (pnj.cyberdeck.filled),
+          // Case du moniteur matriciel du deck (pnj.cyberdeck.filled),
           // distinct de toggle-monitor (champs top-level pnj.*Filled).
           UI.toggleDeckMonitor(id, Number(actionEl.dataset.idx));
           break;
         case "deck-realloc":
-          // M2 : réallocation ASDF/ACTF en un tap (SR5 action gratuite, SR6
+          // Réallocation ASDF/ACTF en un tap (SR5 action gratuite, SR6
           // action mineure — cf. Cyberdeck.reallocatable/cyberdeckModel).
           UI.reallocDeck(id, actionEl.dataset.from, actionEl.dataset.to);
           break;
         case "deck-open-matrix": {
-          // M3 : ouvre le tracker Matrice du serveur ciblé par ce decker —
+          // Ouvre le tracker Matrice du serveur ciblé par ce decker —
           // en scène si ce serveur y est déjà lié (reste dans le tracker de
           // combat), sinon via le panneau Serveurs (hors combat comme en
           // combat sur un serveur non lié).
           const pnj = PnjLookup.find(id);
           const srv = pnj && DeckRun.targetServer(pnj);
           if (!srv) break;
-          // R2-B : l'état vivant est scène-scopé (Encounter.state.matrix),
+          // L'état vivant est scène-scopé (Encounter.state.matrix),
           // plus srv.intrusion.
           const intr = typeof Encounter !== "undefined" ? Encounter.intrusionFor(srv.id) : null;
           if (intr) intr.open = true;
@@ -1877,9 +1877,9 @@ const CardRenderer = {
           break;
         }
         case "deck-attack": {
-          // M3 : jet de piratage — même forme que Intrusion.rollIC (un seul
+          // Jet de piratage — même forme que Intrusion.rollIC (un seul
           // pool, pas de test opposé calculé ; la formule livre reste à
-          // affiner en M4, cf. Cyberdeck.rollAttack). M6 : Bruit de scène
+          // affiner plus tard, cf. Cyberdeck.rollAttack). Bruit de scène
           // retranché si une scène de combat est active (hors combat, pas de
           // Bruit — l'action n'existe pas encore, cf. Encounter._noisyPool).
           const pnj = PnjLookup.find(id);
@@ -1892,9 +1892,9 @@ const CardRenderer = {
           break;
         }
         case "deck-action": {
-          // M7 : action matricielle offensive du râtelier (pic de données & co.).
+          // Action matricielle offensive du râtelier (pic de données & co.).
           // Même forme que deck-attack (Dice.computeRoll + DiceRoller.show +
-          // Bruit de scène M6), mais par action nommée, et INDÉPENDANTE de la
+          // Bruit de scène), mais par action nommée, et INDÉPENDANTE de la
           // cible (le serveur visé ne sert plus qu'à nommer la cible dans le
           // label). Une action narrative (pool null, ex. « Pirater la Matrice »
           // en Anarchy) devient un marqueur toast, sans jet de dés. Le MJ garde
@@ -2069,7 +2069,7 @@ const CardRenderer = {
       ContactsBook.editFlavor(card.dataset.id, flavorEl.dataset.contactFlavor, flavorEl.textContent.trim());
     });
 
-    // M3 : cible Matrice du decker (<select>, pas un clic — délégation change
+    // Cible Matrice du decker (<select>, pas un clic — délégation change
     // dédiée, même patron que MultiSelect._wire).
     document.addEventListener("change", (e) => {
       const el = e.target.closest('[data-action="deck-set-target"]');

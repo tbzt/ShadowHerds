@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   JET OPPOSÉ + SEUIL (CH-M3) — outil MJ libre, indépendant de tout
+   JET OPPOSÉ + SEUIL — outil MJ libre, indépendant de tout
    PNJ : deux réserves à comparer (test opposé, SR5 p.49 — pas de
    seuil sur un test opposé) ou une réserve seule face à un seuil
    fixé par le MJ. Panneau autonome (calqué sur Notepad/DiceLog),

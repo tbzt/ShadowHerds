@@ -7,7 +7,7 @@
    une seule vue organisée par DOSSIER. Pour la sélection courante
    (pilotée par DossierBar, partagée avec les écrans de génération),
    le contenu est sectionné automatiquement par type ; un filtre de
-   type isole une famille. Le hub est CONSULTATION SEULE (CH-C3) : la
+   type isole une famille. Le hub est CONSULTATION SEULE : la
    création vit dans les écrans dédiés (générateur, Contacts, Serveurs).
    Un bouton de création CONTEXTUEL y NAVIGUE selon la puce de type
    active — c'est le seul chemin mobile vers Contacts/Serveurs, absents
@@ -22,12 +22,12 @@ const Hub = {
   _type: "all", // all | pnj | contact | server
   _filter: "", // texte de recherche transverse (nom, archétype…)
   _wired: false,
-  // Bandeau de rappel de sauvegarde (F3) : masqué pour la session courante
+  // Bandeau de rappel de sauvegarde : masqué pour la session courante
   // seulement (pas de Storage — réapparaît à la prochaine ouverture, comme
   // le bandeau de reprise de brouillon de CharGen).
   _saveReminderDismissed: false,
   _SAVE_REMINDER_DAYS: 7,
-  // Puces de filtre auto (F1) : valeurs de facette sélectionnées, par axe.
+  // Puces de filtre auto : valeurs de facette sélectionnées, par axe.
   // État de SESSION (jamais persisté) ; réinitialisé à chaque render() (donc
   // au changement de dossier/type/mutation), conservé pendant la frappe et le
   // basculement d'une puce (qui passent par _renderMain).
@@ -83,7 +83,7 @@ const Hub = {
     this._renderMain(); // met aussi le libellé à jour (compte affiché)
   },
 
-  /** Bandeau discret (F3, FIELD_STUDY REC-3) : « le filet existe, il faut le
+  /** Bandeau discret : « le filet existe, il faut le
       tendre avant la chute » — jamais sauvegardé, ou dernière sauvegarde trop
       ancienne. Réutilise l'horodatage `lastAt` partagé avec la synchro
       (Sync.daysSinceSave) et l'action backup-export déjà câblée (app.js). */
@@ -212,7 +212,7 @@ const Hub = {
           : selected
           ? "Ce dossier est vide pour ce filtre."
           : "Générez du contenu (PNJ, contacts, serveurs) et rangez-le dans un dossier.";
-      // Onboarding léger (CH-U11) : « commencer ici » seulement à vide total
+      // Onboarding léger : « commencer ici » seulement à vide total
       // (nouvel utilisateur) — pas en recherche ni dans un dossier vide.
       // Réutilise l'action show-panel, aucun nouveau mécanisme.
       const cta =

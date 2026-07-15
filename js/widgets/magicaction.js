@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   ACTION MAGIQUE (CH-M7c) — lance un sort (et, via resolveConjuration,
+   ACTION MAGIQUE — lance un sort (et, via resolveConjuration,
    une invocation) de bout en bout : l'app roule le test de Lancement de
    sorts / Conjuration ELLE-MÊME (pool = compétence + Magie du PNJ),
    affiche les succès (= effet), résiste au Drain, en déduit le type
@@ -229,7 +229,7 @@ const MagicAction = {
     };
   },
 
-  /** Présente une invocation (parité avec les sorts, CH-M7e) : appelée par le
+  /** Présente une invocation (parité avec les sorts) : appelée par le
       panneau d'invocation APRÈS création de l'esprit. `conj` vient de
       resolveConjuration (jets conjRes/spiritRes/drain déjà loggés) ; `spirit`
       est l'esprit créé (ses services suivent les Secondes chances). */
@@ -393,7 +393,7 @@ const MagicAction = {
     return { res: drainRes, resistHits: drainRes.hits, drainDamage, type, applied };
   },
 
-  /** Résout une invocation (CH-M7c) : roule Conjuration (magicien) +
+  /** Résout une invocation : roule Conjuration (magicien) +
       résistance de l'esprit → services = succès nets, puis le Drain
       (VD = contrat sur les succès de l'esprit). Renvoie
       { netHits, casterHits, spiritHits, dv, resistHits, drainDamage, type },

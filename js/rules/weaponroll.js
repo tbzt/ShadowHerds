@@ -43,8 +43,8 @@ const WeaponRoll = {
       [/katana|épée|sabre|hache|couteau|lame|griffe|tranchant|crocs?|morsure|queue/i, "Combat rapproché"],
       [/matraque|massue|barre|bâton|télescopique|électro|gants?|poing|contondant|mains? nues/i, "Combat rapproché"],
     ],
-    // Catalogue d'armes V1 (findings §11) : mitrailleuses/canons →
-    // Armes lourdes ; arcs/arbalètes/grenades/armes de jet → Armes à
+    // Catalogue d'armes : mitrailleuses/canons → Armes lourdes ;
+    // arcs/arbalètes/grenades/armes de jet → Armes à
     // projectiles ; armes à feu classiques → Armes à feu ; le reste
     // (courtes, matraques, longues) → Corps à corps.
     anarchy1: [
@@ -126,7 +126,7 @@ const WeaponRoll = {
   /** Analyse une arme (chaîne ou objet) → { name, pre, vd }. */
   parse(weapon) {
     if (weapon && typeof weapon === "object") {
-      // #63 : item-objet {str, cat} → parse sa chaîne. Distinct de l'objet
+      // item-objet {str, cat} → parse sa chaîne. Distinct de l'objet
       // arme structuré {name, vd} (éditions à pnj.weapons).
       if (typeof weapon.str === "string") return WeaponRoll.parse(weapon.str);
       return { name: weapon.name || "", pre: null, vd: weapon.vd ?? null };
@@ -314,7 +314,7 @@ const WeaponRoll = {
     }
     const malus = Utils.woundMalus(pnj, edition);
 
-    // V3/V4 : effets d'objet motorisés, par FACETTE (pool/accuracy/dv/ap).
+    // Effets d'objet motorisés, par FACETTE (pool/accuracy/dv/ap).
     // Provenance étiquetée — le pool absorbe ses contributions, les autres
     // facettes sont portées telles quelles vers l'explication du jet.
     const fx =
@@ -367,7 +367,7 @@ const WeaponRoll = {
       return pnj.weapons || [];
     }
     return (pnj.equip || []).filter((e) => {
-      const s = ItemResolver.itemStr(e); // #63 : item chaîne OU objet
+      const s = ItemResolver.itemStr(e); // item chaîne OU objet
       return /\[/.test(s) && /(VD|PRE)/.test(s);
     });
   },

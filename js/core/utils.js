@@ -4,7 +4,7 @@
    UTILS
    ============================================================ */
 const Utils = {
-  /** Résolveur du module d'édition, injecté par App au démarrage (CH-A6).
+  /** Résolveur du module d'édition, injecté par App au démarrage.
       Utils (couche 1, socle) ne référence jamais App (couche 6) par son nom :
       la dépendance ne descend que dans un sens (CONTRIBUTING.md « cycle
       verrou ») — c'est App qui appelle Utils.init, jamais l'inverse. */
@@ -96,7 +96,7 @@ const Utils = {
     return editionModule ? editionModule.conditionMonitor.woundMalus(pnj) : 0;
   },
 
-  /** Fusion V5 : nombre de cases de dommages ignorées pour le calcul des
+  /** Nombre de cases de dommages ignorées pour le calcul des
       modificateurs de blessure, apporté par un « Compensateur de dommages »
       (SR5 p.464 / SR6 p.301, indice 1-12, mécanique identique). Neutre —
       le libellé est le même dans les deux éditions, l'APPLICATION vit dans
@@ -1553,7 +1553,7 @@ const Utils = {
 /* ============================================================
    TOAST
    ============================================================ */
-/** @param type (CH-V8) "warning" | "danger" | "info" | null — pose une classe
+/** @param type "warning" | "danger" | "info" | null — pose une classe
     modificatrice sur les tokens sémantiques déjà déclarés (--warning/--danger/
     --info) ; omis = apparence neutre existante, rétrocompatible. */
 function toast(msg, type = null, duration = 2400) {

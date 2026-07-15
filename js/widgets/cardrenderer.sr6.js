@@ -114,10 +114,10 @@ Object.assign(CardRenderer, {
     combatBody += this._drugRow(pnj, "sr6", deps);
     combatBody += this._vehicleChipRow(pnj, deps);
     combatBody += this._spiritChipRow(pnj, deps);
-    combatBody += CyberdeckRenderer.combatArsenal(pnj, "sr6"); // CP2 : râtelier Attaques unifié
+    combatBody += CyberdeckRenderer.combatArsenal(pnj, "sr6"); // râtelier Attaques unifié
     const combatSummary = initBase != null ? `Init ${initBase}+${initDice ?? 1}D6` : "";
     html += this._zoneShell(pnj, "combat", combatBody, combatSummary);
-    html += this._modulesHtml(pnj, deps); // CP3 : modules conditionnels (Magie, Matrice), après Combat
+    html += this._modulesHtml(pnj, deps); // modules conditionnels (Magie, Matrice), après Combat
 
     // ---- ZONE CAPACITÉS ----
     let capBody = "";
@@ -125,7 +125,7 @@ Object.assign(CardRenderer, {
     // Connaissances (édition d'origine ajoutée via EditModal — pas de
     // génération auto en SR6 aujourd'hui, cf. hasKnowledges du module).
     capBody += this._knowledgesSection(pnj.knowledges, pnj, malus6);
-    // Pouvoirs d'adepte : vivent désormais dans le module Magie (CP3).
+    // Pouvoirs d'adepte : vivent désormais dans le module Magie.
     if (traits && traits.length) capBody += this._listSection("Traits", traits);
     if (pnj.infectedPowers && pnj.infectedPowers.length)
       capBody += this._listSection("Pouvoirs (Infecté)", pnj.infectedPowers);
@@ -151,9 +151,9 @@ Object.assign(CardRenderer, {
       </div></div>`;
     }
     if (prefs.showGmPools) detailsBody += this._gmPoolsSR6(pnj);
-    // CP2 : inventaire consolidé (Porté + Augmentations en une section).
+    // inventaire consolidé (Porté + Augmentations en une section).
     detailsBody += this._equipSection(pnj, prefs.showEquipment ? gear : [], "sr6", deps, augsAll);
-    // Cyberdeck : vit désormais dans le module Matrice (CP3).
+    // Cyberdeck : vit désormais dans le module Matrice.
     html += this._zoneShell(pnj, "details", detailsBody, "attributs, jets de situation, équipement");
 
     html += "</div>";

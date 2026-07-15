@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   BARRE D'ACTIONS EN MASSE (CH-Q10) — panneau flottant non bloquant,
+   BARRE D'ACTIONS EN MASSE — panneau flottant non bloquant,
    ancré en bas d'écran (DOM créé à la volée comme Notepad), mais sans
    backdrop capteur : il doit coexister avec la grille qu'on sélectionne.
    Une seule collection « active » à la fois : la dernière dont la

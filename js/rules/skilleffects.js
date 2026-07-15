@@ -2,7 +2,7 @@
 
 /* ============================================================
    SKILL EFFECTS — bonus de POOL d'objet sur un jet de COMPÉTENCE
-   nommée (refonte acteur, fusion V5 tranche 2).
+   nommée (refonte du modèle d'acteur).
 
    Pendant « compétence » de WeaponEffects (scopé à un jet d'arme) et
    d'ActorEffects (modificateur situationnel affiché, jamais appliqué) :
@@ -33,7 +33,7 @@
    NEUTRE PAR ÉDITION (interdit n°1) : le scoping se fait par le nom de
    compétence propre à la taxonomie d'une édition (« Imposture » n'existe
    qu'en SR5 ; SR6 = « Escroquerie ») — pas de branche `App.edition`.
-   Le CATALOG se peuple item par item (fusion V5) sans toucher ce moteur.
+   Le CATALOG se peuple item par item sans toucher ce moteur.
    ============================================================ */
 const SkillEffects = {
   CATALOG: [
@@ -96,11 +96,11 @@ const SkillEffects = {
     },
     // --- Foci magiques (SR5 p.318) — motorisation du slot `focus` du
     // générateur. Un focus « lié » ajoute son indice à la réserve de dés du
-    // test magique visé. Consommé par la puce de compétence de la carte ET,
-    // depuis V2, par Magic.actionPool (jet réel d'incantation/invocation), qui
-    // lit désormais SkillEffects. Skills = noms SR5 (l'entrée SR6 viendra en
-    // V3 avec « Sorcellerie »/« Conjuration » — forSkill filtre par nom exact,
-    // donc pas de contamination croisée).
+    // test magique visé. Consommé par la puce de compétence de la carte ET
+    // par Magic.actionPool (jet réel d'incantation/invocation), qui lit
+    // SkillEffects. Skills = noms SR5 (l'entrée SR6 viendra avec
+    // « Sorcellerie »/« Conjuration » — forSkill filtre par nom exact, donc
+    // pas de contamination croisée).
     {
       match: /focus d'incantation/i,
       skills: ["Lancement de sorts"],
@@ -136,7 +136,7 @@ const SkillEffects = {
     // SR6 n'a pas de compétence Contresort séparée (Sorcellerie/Conjuration/
     // Astral seulement) ; le livre décrit le focus de pouvoir comme
     // contribuant à « tout test utilisant la Magie » — scope limité aux deux
-    // actions réellement motorisées par Magic.actionPool (V3).
+    // actions réellement motorisées par Magic.actionPool.
     {
       match: /focus de pouvoir/i,
       skills: ["Sorcellerie", "Conjuration"],
@@ -164,7 +164,7 @@ const SkillEffects = {
 
   /** Contributions de pool portées par les objets du PNJ pour une
       compétence ACTIVE nommée → [{value, source}]. Neutre par édition.
-      Tolérant items chaîne/objet (#63). Liste vide si rien ne s'applique. */
+      Tolérant items chaîne/objet. Liste vide si rien ne s'applique. */
   forSkill(pnj, skillName) {
     if (!pnj || !skillName) return [];
     const name = String(skillName).toLowerCase();

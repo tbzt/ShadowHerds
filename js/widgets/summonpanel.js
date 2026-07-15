@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   SUMMON PANEL — invocation d'esprits (extrait de UI, CH-A7 :
+   SUMMON PANEL — invocation d'esprits (extrait de UI :
    UI était un fourre-tout mélangeant moniteurs/véhicules/esprits ;
    l'invocation est un domaine fonctionnel complet et autonome).
    ============================================================ */
