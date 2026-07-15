@@ -16,9 +16,13 @@
    - target      : la FACETTE visée — "pool" | "accuracy" | "dv" | "ap".
    - perRating[] : table LITTÉRALE du livre indexée par l'indice
                    (perRating[r]) ; sinon `value` fixe.
-   - conditional : (weaponName) => bool — l'effet ne s'applique qu'à
-                   certaines armes (ex. « mains nues » pour la densité
-                   musculaire). Absent = toujours.
+   - conditional : (weaponName, edition, pnj) => bool — l'effet ne s'applique
+                   qu'à certaines armes (ex. « mains nues » pour la densité
+                   musculaire) ou n'est actif que sous condition d'état du
+                   PNJ (ex. drogue en cours d'effet, cf. AnarchyAtouts/Drugs).
+                   `pnj` est optionnel (absent des call sites hors jet réel) ;
+                   ne jamais y lire de donnée requise sans garde. Absent =
+                   toujours.
    - source/page : provenance affichée + audit de collecte.
 
    Le CATALOG ci-dessous est le socle N2 (V4). Il se peuple ensuite item
@@ -100,6 +104,38 @@ const WeaponEffects = {
       source: "Augmentation de densité osseuse",
       page: "SRAN2 p.148-149",
     },
+    // Drogues Anarchy 2 (SRAN2 p.159-160, GEAR_CATALOG.equipement) : VD
+    // temporaire, actif seulement pendant la phase « effet » du toggle
+    // (Drugs.state) — jamais permanent, contrairement aux entrées ci-dessus.
+    // Le porteur (carrier) reste l'item catalogue tel qu'ajouté (« Kamikaze
+    // [RR…, VD +1 en mêlée…] ») : le match ne dépend pas de l'état, seul le
+    // conditional gate l'application. « en mêlée » = toute arme de mêlée du
+    // catalogue officiel (mains nues incluses), lu via le module d'édition
+    // (jamais de liste d'armes en dur dans ce moteur neutre).
+    {
+      match: /^Kamikaze\b/i,
+      target: "dv",
+      value: 1,
+      conditional: (name, edition, pnj) =>
+        !!App.getEditionModule(edition)?.isMeleeWeapon?.(name) &&
+        !!pnj &&
+        typeof Drugs !== "undefined" &&
+        Drugs.state(pnj, "kamikaze") === "effect",
+      source: "Kamikaze (drogue)",
+      page: "SRAN2 p.159",
+    },
+    {
+      match: /^Nitro\b/i,
+      target: "dv",
+      value: 1,
+      conditional: (name, edition, pnj) =>
+        !!App.getEditionModule(edition)?.isMeleeWeapon?.(name) &&
+        !!pnj &&
+        typeof Drugs !== "undefined" &&
+        Drugs.state(pnj, "nitro") === "effect",
+      source: "Nitro (drogue)",
+      page: "SRAN2 p.159",
+    },
   ],
 
   /** Résout les effets d'objet pour un jet d'arme donné → contributions
@@ -113,7 +149,7 @@ const WeaponEffects = {
       // L'item porteur de l'effet (chaîne OU objet #63, avec son indice).
       const carrier = items.find((it) => entry.match.test(ItemResolver.itemStr(it)));
       if (!carrier) continue;
-      if (entry.conditional && !entry.conditional(weaponName, edition)) continue;
+      if (entry.conditional && !entry.conditional(weaponName, edition, pnj)) continue;
 
       let value = entry.value;
       if (entry.perRating) {

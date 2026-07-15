@@ -448,6 +448,15 @@ const EditionAnarchy2 = {
     Grenades: { type: "fixed", vd: 7, dmg: "P", ranges: "[OK/OK/Dés./–]" },
   },
 
+  /** true si `name` désigne une arme de mêlée du catalogue officiel (utilisé
+      par WeaponEffects pour gater les atouts « VD +N en mêlée » — Kamikaze,
+      Nitro — sans que le moteur neutre connaisse la liste des armes). */
+  isMeleeWeapon(name) {
+    const baseName = String(name || "").replace(/\s*\([^)]*\)\s*$/, "").trim();
+    const cat = this.WEAPON_CATALOG[name] || this.WEAPON_CATALOG[baseName];
+    return !!cat && cat.type === "melee";
+  },
+
   /** Résout une entrée d'arme (objet du statBlock) en {name, vd, ranges},
       en cherchant son nom dans le catalogue officiel (après avoir retiré
       un éventuel suffixe parenthésé, ex. "Mitraillette (sur Doberman)" →
