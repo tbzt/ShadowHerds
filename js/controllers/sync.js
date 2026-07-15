@@ -41,6 +41,7 @@ const Sync = {
     lastRevision: null,
     lastHash: null,
     lastAt: null,
+    lastExportAt: null,
   },
 
   _state: "idle", // idle | pulling | pushing | conflict | error
@@ -100,6 +101,15 @@ const Sync = {
     const lastAt = this.cfg().lastAt;
     if (!lastAt) return null;
     return Math.floor((Date.now() - new Date(lastAt).getTime()) / 86400000);
+  },
+  /** Nombre de jours entiers depuis la dernière ARCHIVE téléchargée
+      (export fichier uniquement, `lastExportAt`, distinct de `lastAt` qui
+      inclut aussi la synchro) ; null si jamais archivé. Un rappel de sync
+      cloud ne doit pas faire taire le besoin d'archive locale (#47). */
+  daysSinceExport() {
+    const lastExportAt = this.cfg().lastExportAt;
+    if (!lastExportAt) return null;
+    return Math.floor((Date.now() - new Date(lastExportAt).getTime()) / 86400000);
   },
 
   /* ---------- Cycle de vie ---------- */
@@ -286,6 +296,14 @@ const Sync = {
       même horodatage `lastAt` que la synchro, pour le rappel de sauvegarde. */
   noteLocalSave() {
     this._saveCfg({ lastAt: new Date().toISOString() });
+    this._refreshSettings();
+  },
+  /** Enregistre une ARCHIVE téléchargée réussie (export fichier uniquement,
+      jamais la synchro cloud) : `lastExportAt` distinct de `lastAt`, pour
+      le rappel d'archive locale (#47) — le rituel NAS/drive ne doit pas
+      être effacé par une simple synchro. */
+  noteLocalExport() {
+    this._saveCfg({ lastExportAt: new Date().toISOString() });
     this._refreshSettings();
   },
   _refreshSettings() {
