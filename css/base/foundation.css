@@ -607,6 +607,119 @@ select optgroup {
   }
 }
 
+/* Déclencheur du sélecteur de contexte (R3-C) — en tête du fil d'Ariane et
+   dans le bloc-note. Discret, s'accentue au survol/ouvert. */
+.ctx-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 3px var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background var(--dur-base),
+    border-color var(--dur-base),
+    color var(--dur-base);
+}
+.ctx-trigger:hover,
+.ctx-trigger[aria-expanded="true"] {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--glow);
+}
+.ctx-trigger-caret {
+  font-size: var(--fs-2xs);
+  opacity: 0.7;
+}
+/* Dans le bloc-note, le déclencheur EST le titre : il prend la place, les
+   boutons ✎/✕ restent à droite. */
+.notepad-ctx {
+  margin-right: auto;
+  min-width: 0;
+  max-width: 78%;
+}
+.notepad-ctx .ctx-trigger-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Popover : liste plate scrollable des contextes. */
+.ctx-selector {
+  position: fixed;
+  z-index: 1200;
+  min-width: 220px;
+  max-width: 340px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: var(--sp-1);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+.ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px var(--sp-2);
+  padding-left: calc(var(--sp-2) + var(--depth, 0) * 14px);
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-base);
+}
+.ctx-item:hover {
+  background: var(--glow);
+}
+.ctx-item.is-current {
+  color: var(--accent);
+}
+.ctx-item-check {
+  flex-shrink: 0;
+  width: 1em;
+  color: var(--accent);
+}
+.ctx-item-icon {
+  flex-shrink: 0;
+  opacity: 0.85;
+  font-size: var(--fs-xs);
+}
+.ctx-item-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ctx-item-live {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.ctx-empty {
+  padding: var(--sp-2);
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+}
+
 /* Spacer entre la marque et le reste : cale marque à gauche, dés + actions
    à droite → barre équilibrée au lieu de tout tassé à gauche. */
 .topbar-spacer {

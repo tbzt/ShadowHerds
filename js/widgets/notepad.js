@@ -29,7 +29,9 @@ const Notepad = {
     panel.setAttribute("aria-label", "Bloc-notes de séance");
     panel.innerHTML = `
       <div class="dice-log-head">
-        <span class="dice-log-title" id="notepad-title">Bloc-notes de séance</span>
+        <button class="ctx-trigger notepad-ctx" id="notepad-ctx" title="Changer de carnet (contexte)" aria-haspopup="listbox">
+          <span class="ctx-trigger-icon" aria-hidden="true">◇</span><span class="ctx-trigger-label" id="notepad-ctx-label">Bloc-notes de séance</span><span class="ctx-trigger-caret" aria-hidden="true">▾</span>
+        </button>
         <button class="btn-icon-tiny" data-action="toggle-mode" title="Lire / Éditer" aria-label="Lire / Éditer">✎</button>
         <button class="btn-icon-tiny" data-action="close" title="Fermer" aria-label="Fermer">✕</button>
       </div>
@@ -46,6 +48,12 @@ const Notepad = {
     panel
       .querySelector('[data-action="toggle-mode"]')
       .addEventListener("click", () => this.toggleMode());
+    // R3-C : le titre EST le sélecteur de contexte (« select en haut du
+    // bloc-note »). Ouvrir le sélecteur unique ; changer de contexte recharge
+    // le carnet sans fermer le panneau.
+    panel
+      .querySelector("#notepad-ctx")
+      .addEventListener("click", (e) => this._openSelector(e.currentTarget));
 
     // E8-A1 : click-to-edit — cible énorme (tout le rendu) plutôt que le ✎
     // minuscule. Garde puce : un clic sur @/# navigue (délégation document,
@@ -131,12 +139,11 @@ const Notepad = {
 
   open() {
     this._ensure();
-    // R2 : le carnet courant = le dossier courant (DossierBar), résolu une
-    // fois à l'ouverture. "all"/aucune sélection → carnet global.
+    // R3-C : le carnet courant dérive d'App.context (vérité unique du contexte),
+    // résolu à l'ouverture puis re-résolu quand le sélecteur change de contexte
+    // (_reloadForContext). "all"/aucun focus → carnet global.
     this._openDossierId =
-      typeof DossierBar !== "undefined" && DossierBar.current !== "all"
-        ? DossierBar.current
-        : null;
+      (typeof App !== "undefined" && App.context && App.context.dossier) || null;
     Notebooks.seedFromLegacyIfEmpty(this._openDossierId);
     const ta = document.getElementById("notepad-textarea");
     ta.value = Notebooks.get(this._openDossierId);
@@ -149,14 +156,37 @@ const Notepad = {
     if (this._mode === "edit") ta.focus();
   },
 
-  /** Affiche le nom du carnet courant en tête de panneau — sans ça, rien ne
-      distingue visuellement « je suis dans le carnet de cette run » d'un
-      bloc-notes global unique (R2). */
+  /** R3-C : ouvre le sélecteur de contexte unique depuis le titre. On flush
+      d'abord le carnet courant (sinon une frappe non encore débouncée
+      s'écrirait dans le mauvais carnet après bascule). */
+  _openSelector(trigger) {
+    const ta = document.getElementById("notepad-textarea");
+    if (ta) this._save(ta.value);
+    clearTimeout(this._saveTimer);
+    ContextSelector.open(trigger, () => this._reloadForContext());
+  },
+
+  /** R3-C : recharge le carnet pour le contexte désormais courant (App.context),
+      sans fermer le panneau. */
+  _reloadForContext() {
+    this._openDossierId =
+      (typeof App !== "undefined" && App.context && App.context.dossier) || null;
+    Notebooks.seedFromLegacyIfEmpty(this._openDossierId);
+    const ta = document.getElementById("notepad-textarea");
+    if (ta) ta.value = Notebooks.get(this._openDossierId);
+    this._mode = ta && ta.value.trim() ? "read" : "edit";
+    this._syncView();
+    this._updateTitle();
+    if (this._mode === "edit" && ta) ta.focus();
+  },
+
+  /** Affiche le nom du carnet courant dans le déclencheur de titre — sans ça,
+      rien ne distingue « je suis dans le carnet de cette run » du carnet global. */
   _updateTitle() {
-    const title = document.getElementById("notepad-title");
-    if (!title) return;
+    const label = document.getElementById("notepad-ctx-label");
+    if (!label) return;
     const name = this._openDossierId && Dossiers.nameOf(this._openDossierId);
-    title.textContent = name ? `Bloc-notes — ${name}` : "Bloc-notes de séance";
+    label.textContent = name ? `Bloc-notes — ${name}` : "Bloc-notes de séance";
   },
 
   close() {

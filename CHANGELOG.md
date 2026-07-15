@@ -12,6 +12,16 @@ commit.
 
 ## [Non publié]
 
+## [1.38.0] — 2026-07-15
+
+### Table
+- **Sélecteur de contexte partout** : un même sélecteur permet de sauter d'une
+  campagne / run / scène à l'autre en un geste — depuis le fil d'Ariane (en haut
+  de l'écran) comme depuis le bloc-notes. Dans le **bloc-notes**, le titre
+  devient ce sélecteur : on change de carnet (celui d'une autre run, le carnet
+  global…) **sans fermer** le panneau. La scène en cours est signalée, le
+  contexte courant coché.
+
 ## [1.37.0] — 2026-07-15
 
 ### Table

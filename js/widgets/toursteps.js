@@ -243,5 +243,10 @@ const TourSteps = {
       title: "Vous savez toujours où vous êtes",
       body: "Un fil d'Ariane « Campagne › Run › Scène » s'affiche en haut de l'écran dès qu'un dossier est en focus. Chaque niveau est cliquable pour y revenir, et une pastille « En cours » rouvre la scène qui tourne — plus moyen de perdre un combat ou une note dans les dossiers.",
     },
+    {
+      id: "wn-context-selector", anchor: "notepad-btn", tours: ["whatsnew"], since: "1.38.0", fallback: "center",
+      title: "Sauter d'un contexte à l'autre",
+      body: "Un même sélecteur de contexte est disponible en haut de l'écran (dans le fil d'Ariane) et dans le bloc-notes. Le titre du bloc-notes devient ce sélecteur : changez de carnet — celui d'une autre run, le carnet global — sans fermer le panneau.",
+    },
   ],
 };

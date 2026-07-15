@@ -8,7 +8,7 @@ const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.37.0",
+  VERSION: "1.38.0",
 
   edition: "none",
   editionModule: null,
@@ -118,19 +118,30 @@ const App = {
       const el = document.getElementById("topbar-locator");
       if (!el) return;
       const trail = this.trail();
-      if (!trail.length) {
+      // La rangée s'affiche dès qu'un contexte est en focus OU qu'un dossier
+      // existe (le sélecteur R3-C a alors une cible) ; sinon masquée (:empty).
+      const hasDossiers =
+        typeof Dossiers !== "undefined" && Dossiers.list().some((d) => d.name !== Collection.FAV_GROUP);
+      if (!trail.length && !hasDossiers) {
         el.innerHTML = "";
         return;
       }
       const esc = CardRenderer._esc;
       const ICON = { campaign: "❖", run: "◆", folder: "▸" };
-      const parts = trail.map((seg) => {
+      // Entrée GLOBALE du sélecteur de contexte (R3-C) en tête du fil d'Ariane :
+      // « où suis-je » (chips) + « aller ailleurs » (sélecteur) dans la même
+      // rangée, comme la doctrine les veut indissociables.
+      const parts = [ContextSelector.triggerHtml("Contexte")];
+      for (const seg of trail) {
         if (seg.scale === "scene") {
-          return `<button type="button" class="tb-crumb tb-crumb-scene is-live" data-action="crumb-scene" title="Reprendre la scène en cours : ${esc(seg.name)}"><span class="tb-crumb-live" aria-hidden="true"></span>En cours</button>`;
+          parts.push(`<button type="button" class="tb-crumb tb-crumb-scene is-live" data-action="crumb-scene" title="Reprendre la scène en cours : ${esc(seg.name)}"><span class="tb-crumb-live" aria-hidden="true"></span>En cours</button>`);
+        } else {
+          parts.push(`<button type="button" class="tb-crumb" data-action="crumb-open" data-id="${seg.id}" title="Aller à « ${esc(seg.name)} »"><span class="tb-crumb-icon" aria-hidden="true">${ICON[seg.scale] || "▸"}</span>${esc(seg.name)}</button>`);
         }
-        return `<button type="button" class="tb-crumb" data-action="crumb-open" data-id="${seg.id}" title="Aller à « ${esc(seg.name)} »"><span class="tb-crumb-icon" aria-hidden="true">${ICON[seg.scale] || "▸"}</span>${esc(seg.name)}</button>`;
-      });
-      el.innerHTML = parts.join('<span class="tb-crumb-sep" aria-hidden="true">›</span>');
+      }
+      const sep = '<span class="tb-crumb-sep" aria-hidden="true">›</span>';
+      // Séparateur après le déclencheur seulement s'il y a un chemin à afficher.
+      el.innerHTML = parts[0] + (trail.length ? sep + parts.slice(1).join(sep) : "");
     },
   },
 
@@ -634,6 +645,11 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
       case "crumb-scene":
         Encounter.open(); // R3-B : rouvre la scène vivante depuis le fil d'Ariane
+        break;
+      case "ctx-open":
+        // R3-C : entrée globale du sélecteur de contexte. Choisir → focus global
+        // (DossierBar.select, posé par le widget) + aller au hub s'y filtrer.
+        ContextSelector.open(actionEl, () => App.showPanel("shadows"));
         break;
       case "mention-open":
         Palette.reveal(actionEl.dataset.id);

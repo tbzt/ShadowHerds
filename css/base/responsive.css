@@ -315,6 +315,22 @@
     max-width: 22ch;
     padding: 5px var(--sp-2);
   }
+  /* Sélecteur de contexte (R3-C) : feuille basse pleine largeur sur mobile. */
+  .ctx-selector {
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    bottom: 0;
+    max-width: none;
+    max-height: 70vh;
+    border-radius: 12px 12px 0 0;
+    border-bottom: 0;
+    padding-bottom: var(--sp-4);
+  }
+  .ctx-item {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
   .topbar-logo {
     cursor: pointer;
   }
