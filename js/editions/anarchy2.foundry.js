@@ -564,9 +564,155 @@ const FoundryAnarchy2Export = {
   },
 };
 
+/* ============================================================
+   IMPORT FOUNDRY → ANARCHY 2 (miroir de FoundryAnarchy2Export)
+
+   Reconstruit un PNJ ShadowHerds depuis un acteur Foundry sra2
+   (`character`). Anarchy 2 n'a PAS de type d'acteur PNJ distinct
+   (tout est `character`) : on route par défaut vers les PJ, l'essentiel
+   des imports. Les compétences/métatype/feats sont des Items embarqués ;
+   chaque feat porte sa chaîne d'origine dans `description`, réinjectée
+   dans la bonne liste selon `featType`.
+   ============================================================ */
+const FoundryAnarchy2Import = {
+  _attrRev() {
+    if (this.__attrRev) return this.__attrRev;
+    const rev = {};
+    for (const [code, key] of Object.entries(FoundryAnarchy2Export.ATTR_MAP)) rev[key] = code;
+    return (this.__attrRev = rev);
+  },
+
+  /* slug sra2 → libellé FR canonique (1re entrée de SKILL_SLUG, hors
+     cas spéciaux « @astral » et alias multiples). */
+  _skillRev() {
+    if (this.__skillRev) return this.__skillRev;
+    const rev = {};
+    for (const [fr, slug] of Object.entries(FoundryAnarchy2Export.SKILL_SLUG)) {
+      if (slug.startsWith("@") || rev[slug]) continue;
+      rev[slug] = fr;
+    }
+    return (this.__skillRev = rev);
+  },
+
+  detect(actor) {
+    const s = actor.system;
+    if (!s || !s.attributes) return 0;
+    // Signature A2 : 5 attributs plats + armorLevel/maxEssence, pas de « body ».
+    if (s.attributes.body != null) return 0;
+    if (s.attributes.strength == null) return 0;
+    if (typeof s.armorLevel === "undefined" && typeof s.maxEssence === "undefined") return 1;
+    return 3; // signature forte
+  },
+
+  /* A2 n'a qu'un type d'acteur (`character`) : par défaut PJ (usage
+     principal). L'utilisateur peut re-router vers les Ombres au besoin. */
+  isPc() {
+    return true;
+  },
+
+  _trait(n) {
+    const v = Number(n) || 0;
+    return { base: v, mods: [], total: v };
+  },
+
+  /** Compétences depuis les Items `skill` (name/slug = slug sra2). */
+  _readSkills(actor) {
+    const out = [];
+    const rev = this._skillRev();
+    for (const item of actor.items || []) {
+      if (!item || item.type !== "skill") continue;
+      const slug = (item.system && item.system.slug) || item.name;
+      const val = Number(item.system && item.system.rating) || 0;
+      const name = rev[slug] || null;
+      if (!name) {
+        FoundryImport.note("compétence", slug);
+        continue;
+      }
+      if (val > 0) out.push({ name, val, spec: "" });
+    }
+    return out;
+  },
+
+  /** Réinjecte un feat dans la bonne liste ShadowHerds selon featType. */
+  _routeFeat(item, pnj) {
+    const sys = item.system || {};
+    const ft = sys.featType || "";
+    const desc = sys.description || item.name;
+    switch (ft) {
+      case "weapon":
+        pnj.weapons.push({ name: item.name });
+        break;
+      case "armor":
+      case "cyberdeck":
+      case "equipment":
+        pnj.equip.push(desc);
+        break;
+      case "spell":
+        pnj.spells.push(desc && desc !== item.name ? { name: item.name, desc } : item.name);
+        break;
+      case "awakened":
+        if (sys.adept) {
+          pnj.awakened = "adepte";
+          pnj.special = "Adepte";
+        } else {
+          pnj.awakened = /chaman/i.test(desc) ? "chamanique" : "hermétique";
+        }
+        break;
+      default:
+        // cyberware / adept-power / trait / contact… : chaînes d'edge.
+        pnj.edges.push(desc);
+    }
+  },
+
+  buildPnj(actor) {
+    const system = actor.system || {};
+    const rev = this._attrRev();
+    const at = system.attributes || {};
+    const attrs = {};
+    for (const [key, code] of Object.entries(rev)) attrs[code] = this._trait(at[key]);
+
+    // Métatype : Item `metatype` (name = libellé FR).
+    let meta = "";
+    for (const item of actor.items || []) {
+      if (item && item.type === "metatype") {
+        meta = item.name || "";
+        break;
+      }
+    }
+
+    const bio = system.bio || {};
+    const kw = system.keywords || {};
+    const pnj = {
+      name: actor.name || "PJ importé",
+      attrs,
+      meta,
+      gender: system.gender === "male" ? "M" : system.gender === "female" ? "F" : "",
+      archetype: kw.keyword1 || bio.gmDescription || "",
+      role: kw.keyword2 || "",
+      milieu: kw.keyword3 || "",
+      notes: [bio.background, bio.notes].filter(Boolean).join("\n"),
+      special: "Aucun",
+      awakened: null,
+      skills: this._readSkills(actor),
+      weapons: [],
+      equip: [],
+      edges: [],
+      spells: [],
+    };
+    for (const item of actor.items || []) {
+      if (item && item.type === "feat") this._routeFeat(item, pnj);
+    }
+    // Import A2 = PJ par défaut.
+    pnj.isPC = true;
+    pnj.player = "";
+    return pnj;
+  },
+};
+
 /* Auto-enregistrement sur le module d'édition Anarchy2 (chargé avant
-   nous). Le contrôleur neutre FoundryExport lira
-   App.editionModule.foundryExport ; absent pour SR6/Anarchy1. */
+   nous). FoundryExport lira foundryExport ; FoundryImport lira
+   foundryImport. */
 if (typeof EditionAnarchy2 !== "undefined") {
   EditionAnarchy2.foundryExport = FoundryAnarchy2Export;
+  EditionAnarchy2.foundryImport = FoundryAnarchy2Import;
 }

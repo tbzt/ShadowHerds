@@ -8,7 +8,7 @@ const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.44.2",
+  VERSION: "1.45.0",
 
   edition: "none",
   editionModule: null,
@@ -224,24 +224,24 @@ const App = {
      créatures + 3 thèmes inutiles du chargement initial. */
   _loadedAssets: new Set(),
   _EDITION_CSS: {
-    sr5: "css/theme-sr5.css?v=1124",
-    sr6: "css/theme-sr6.css?v=1124",
-    anarchy2: "css/theme-anarchy.css?v=1124",
-    anarchy1: "css/theme-anarchy1.css?v=1124",
+    sr5: "css/theme-sr5.css?v=1125",
+    sr6: "css/theme-sr6.css?v=1125",
+    anarchy2: "css/theme-anarchy.css?v=1125",
+    anarchy1: "css/theme-anarchy1.css?v=1125",
   },
   _EDITION_JS: {
-    sr5: ["js/editions/sr5.js?v=1124", "js/editions/sr5.foundry.js?v=1124", "js/editions/sr5.print.js?v=1124"],
-    sr6: ["js/editions/sr6.js?v=1124", "js/editions/sr6.foundry.js?v=1124", "js/editions/sr6.print.js?v=1124"],
+    sr5: ["js/editions/sr5.js?v=1125", "js/editions/sr5.foundry.js?v=1125", "js/editions/sr5.print.js?v=1125"],
+    sr6: ["js/editions/sr6.js?v=1125", "js/editions/sr6.foundry.js?v=1125", "js/editions/sr6.print.js?v=1125"],
     anarchy2: [
-      "js/editions/anarchy2.js?v=1124",
-      "js/editions/anarchy2.creation.js?v=1124",
-      "js/editions/anarchy2.foundry.js?v=1124",
-      "js/editions/anarchy2.print.js?v=1124",
+      "js/editions/anarchy2.js?v=1125",
+      "js/editions/anarchy2.creation.js?v=1125",
+      "js/editions/anarchy2.foundry.js?v=1125",
+      "js/editions/anarchy2.print.js?v=1125",
     ],
-    anarchy1: ["js/editions/anarchy1.js?v=1124", "js/editions/anarchy1.print.js?v=1124"],
+    anarchy1: ["js/editions/anarchy1.js?v=1125", "js/editions/anarchy1.print.js?v=1125"],
   },
   // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
-  _COMMON_JS: ["js/catalogs/creatures.js?v=1124"],
+  _COMMON_JS: ["js/catalogs/creatures.js?v=1125"],
   _loadCss(href) {
     if (!href || this._loadedAssets.has(href)) return;
     this._loadedAssets.add(href);
@@ -271,6 +271,14 @@ const App = {
     for (const src of [...this._COMMON_JS, ...(this._EDITION_JS[ed] || [])]) {
       await this._loadScript(src);
     }
+  },
+
+  /** Garantit que le module d'une édition (et ses compagnons .foundry/
+      .creation) est chargé, sans changer l'édition active. Utilisé par
+      FoundryImport pour détecter l'édition d'un fichier importé alors que
+      seule l'édition active est en mémoire (chargement à la demande). */
+  ensureEditionLoaded(ed) {
+    return this._loadEditionAssets(ed);
   },
 
   /* ---- Sélection d'édition ---- */
@@ -598,6 +606,9 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
       case "foundry-dossier":
         FoundryExport.exportDossier();
+        break;
+      case "foundry-import":
+        FoundryImport.openImportDialog();
         break;
       case "backup-import":
         Backup.openImportDialog();
