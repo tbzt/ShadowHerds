@@ -246,9 +246,15 @@ const DiceRoller = {
       res.limit = r.limit;
     }
     const approxTxt = r.approx ? " ~" : "";
+    // N2 : décompose le pool depuis `contributions` (compétence + attribut +
+    // spécialité + smartlink + effets d'objet − blessure) au lieu des seuls
+    // attribut+compétence — même source que le survol (cardrenderer._weaponBlock).
+    const detail = (r.contributions || [])
+      .map((c, i) => (i === 0 ? `${c.label} ${c.value}` : `${c.value >= 0 ? "+" : "−"} ${c.label} ${Math.abs(c.value)}`))
+      .join(" ");
     this.show(res, {
       label: `${r.weaponName} (${r.matchedSkill || r.skill}${approxTxt})`,
-      detail: `${Utils.attrFullName(r.attr)} ${r.attrVal} + ${r.matchedSkill || r.skill} ${r.skillVal}`,
+      detail,
       who: pnj.name || "",
       pnjId: pnj.id || "",
     });
