@@ -113,13 +113,7 @@ export const CardRenderer = {
       pnj,
     });
     const cm = App.getEditionModule(pnj.edition).conditionMonitor;
-    const gauge = cm && cm.gauge ? cm.gauge(pnj) : null;
-    let life = "";
-    if (gauge && gauge.total) {
-      const frac = Math.min(1, gauge.filled / gauge.total);
-      const tone = frac >= 0.75 ? " is-crit" : frac >= 0.5 ? " is-warn" : "";
-      life = `<div class="encounter-life roster-row-life" title="Moniteur : ${gauge.filled}/${gauge.total}" aria-hidden="true"><span class="encounter-life-fill${tone}" style="width:${Math.round(frac * 100)}%"></span></div>`;
-    }
+    const life = this.lifeBar(cm && cm.gauge ? cm.gauge(pnj) : null, "roster-row-life");
 
     el.innerHTML = `
       <button type="button" class="roster-row-name" data-action="roster-row-open" data-id="${pnj.id}">
@@ -1231,6 +1225,42 @@ export const CardRenderer = {
         `monitor-box ${isFilled ? "filled" : ""} ${isPenalty ? "penalty" : ""}`.trim();
       return `<div class="${cls}" data-action="toggle-monitor" data-id="${pnjId}" data-sev="${type}" data-idx="${i}"></div>`;
     }).join("");
+  },
+
+  /** Barre fine de moniteur (mini-jauge de vie), partagée par la ligne
+      d'annuaire, le cockpit (EncounterRenderer._lifeGauge) et tout consommateur
+      d'un descripteur `conditionMonitor.gauge`. Dessine AVEUGLÉMENT : largeur =
+      `frac`, teinte = `level`. L'édition a déjà tranché la gravité (y compris
+      l'inversion à seuils d'Anarchy 2 : 1 grave alarme plus que 2 légères).
+      Rien sans moniteur (`gauge` null : PJ ad-hoc, CI). */
+  lifeBar(gauge, extraClass = "") {
+    if (!gauge) return "";
+    const tone = gauge.level ? ` is-${gauge.level}` : "";
+    const cls = `encounter-life${extraClass ? ` ${extraClass}` : ""}`;
+    return `<div class="${cls}" title="Moniteur : ${gauge.label}" aria-hidden="true"><span class="encounter-life-fill${tone}" style="width:${Math.round(gauge.frac * 100)}%"></span></div>`;
+  },
+
+  /** Cases de moniteur en LECTURE SEULE (aucune interaction — pas de
+      data-action), dessinées à partir d'un descripteur `conditionMonitor.gauge`
+      selon sa FORME. Pour l'écran spectateur, qui est une projection :
+      - `ladder` → une rangée continue, pénalité toutes les 3 cases ;
+      - `tiers`  → segments par palier (2 légères | 1 grave | 1 incapacitante),
+        la gravité reste lisible au lieu d'un total aplati.
+      Rien sans moniteur. */
+  gaugeBoxes(gauge) {
+    if (!gauge) return "";
+    if (gauge.form === "tiers") {
+      return gauge.tiers
+        .map((t) =>
+          Array.from({ length: t.cap }, (_, i) =>
+            `<div class="${`monitor-box sev-${t.sev} ${i < t.filled ? "filled" : ""}`.trim()}"></div>`,
+          ).join(""),
+        )
+        .join(`<span class="monitor-gap"></span>`);
+    }
+    return Array.from({ length: gauge.total }, (_, i) =>
+      `<div class="${`monitor-box ${i < gauge.filled ? "filled" : ""} ${(i + 1) % 3 === 0 ? "penalty" : ""}`.trim()}"></div>`,
+    ).join("");
   },
 
   /** Malus cumulé en marge du moniteur (grille du livre — SR6 p.43) :

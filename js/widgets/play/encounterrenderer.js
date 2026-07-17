@@ -290,16 +290,13 @@ export const EncounterRenderer = {
 
   /** Mini-jauge de vie : résumé du moniteur en barre fine, non
       interactive (les cases se cochent sur la fiche), visible en posture
-      dock ≥641px (cf. CSS). Fraction remplie = dégâts encaissés, teinte
-      --warning/--danger aux seuils ½ et ¾. Rien sans moniteur (gauge
-      absente ou total 0 : PJ ad-hoc, CI matricielle) ni hors de combat
-      (la ligne porte déjà le badge ☠). */
+      dock ≥641px (cf. CSS). Délègue au rendu partagé `CardRenderer.lifeBar`
+      qui peint largeur+teinte depuis le descripteur `conditionMonitor.gauge`
+      (l'édition a tranché la gravité). Rien sans moniteur (gauge null : PJ
+      ad-hoc, CI matricielle) ni hors de combat (badge ☠ déjà présent). */
   _lifeGauge(r) {
-    const g = r.gauge;
-    if (r.down || !g || !g.total) return "";
-    const frac = Math.min(1, g.filled / g.total);
-    const tone = frac >= 0.75 ? " is-crit" : frac >= 0.5 ? " is-warn" : "";
-    return `<div class="encounter-life" title="Moniteur : ${g.filled}/${g.total}" aria-hidden="true"><span class="encounter-life-fill${tone}" style="width:${Math.round(frac * 100)}%"></span></div>`;
+    if (r.down) return "";
+    return CardRenderer.lifeBar(r.gauge);
   },
 
   /** Badge « hors de combat » (Vague D), partagé ordonné/narratif. */

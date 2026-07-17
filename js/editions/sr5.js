@@ -315,16 +315,17 @@ export const EditionSR5 = {
       if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
       else entity.physFilled = entity.physMon || 0;
     },
-    /** Résumé du moniteur pour la mini-jauge du cockpit — cases remplies
-        / total, physique + étourdissement cumulés (mêmes champs que
-        isDestroyed/knockOut). total 0 = pas de moniteur, pas de jauge. */
+    /** Descripteur de moniteur pour les jauges (barre fine + cases spectateur).
+        Forme ÉCHELLE (`Utils.ladderGauge`) : physique + étourdissement cumulés
+        (mêmes champs que isDestroyed/knockOut), l'alarme suit la fraction de
+        cases. `null` si pas de moniteur. */
     gauge(entity) {
       if (entity.type === "vehicle")
-        return { filled: entity.monFilled || 0, total: entity.monTotal || 0 };
-      return {
-        filled: (entity.physFilled || 0) + (entity.stunFilled || 0),
-        total: (entity.physMon || 0) + (entity.stunMon || 0),
-      };
+        return Utils.ladderGauge(entity.monFilled || 0, entity.monTotal || 0);
+      return Utils.ladderGauge(
+        (entity.physFilled || 0) + (entity.stunFilled || 0),
+        (entity.physMon || 0) + (entity.stunMon || 0),
+      );
     },
     /** Résultat NET de dégâts (déjà résisté par le MJ hors app) appliqué au
         moniteur — le cockpit n'a pas la valeur d'attaque, il ne fait que

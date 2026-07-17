@@ -12,7 +12,7 @@ commit.
 
 ## [Non publié]
 
-## [1.50.0] — 2026-07-17
+## [1.51.0] — 2026-07-17
 
 ### Système
 - **Formes complexes (SR5)** : les technomanciens connaissent et tissent
@@ -24,7 +24,7 @@ commit.
   SR6 et Anarchy 1re édition restent au plan (chantier Technomanciens T2,
   suite).
 
-## [1.49.1] — 2026-07-17
+## [1.50.1] — 2026-07-17
 
 ### Corrigé
 - **Sélecteur de Puissance/Niveau (sorts, invocations)** : au-delà de 8 crans (mage
@@ -33,6 +33,24 @@ commit.
   d'écran). Corrige au passage un bug latent d'Anarchy 1re édition : le sélecteur de
   puissance d'esprit rendait des boutons vides (chaînes nues au lieu de `{value,
   label}`), la Puissance choisie ne pouvait pas atteindre l'invocation.
+
+## [1.50.0] — 2026-07-17
+
+### Système
+- **Anarchy 2e édition : la mini-jauge de moniteur suit la gravité, plus le
+  nombre de cases.** La barre de vie (tracker de combat et écran joueur)
+  additionnait des paliers hétérogènes (légère / grave / incapacitante) : deux
+  blessures légères paraissaient plus alarmantes qu'une blessure grave, alors
+  que le livre (p.68) classe par gravité. La jauge suit désormais le **palier le
+  plus grave atteint** — une grave alarme plus que deux légères, une
+  incapacitante passe au rouge. Sur l'écran joueur, les cases retrouvent leurs
+  **paliers segmentés** (2 légères │ 1 grave │ 1 incapacitante) au lieu d'une
+  rangée aplatie. Les moniteurs en échelle (Shadowrun 5, 6, Anarchy 1re) ne
+  changent pas.
+- Dette technique résorbée en même temps : `conditionMonitor.gauge()` renvoie
+  désormais un descripteur **par forme** (échelle / seuils) que chaque édition
+  remplit et que les affichages dessinent sans le comprendre ; les deux barres
+  de vie dupliquées (fiche d'annuaire et tracker) convergent sur un seul rendu.
 
 ## [1.49.0] — 2026-07-17
 
