@@ -313,6 +313,11 @@ export const TourSteps = {
       title: "Formes complexes (SR5)",
       body: "Un technomancien SR5 connaît désormais des formes complexes (catalogue complet, 19 formes vérifiées au livre) et peut les tisser depuis sa carte : le test se roule, le Technodrain se résiste, les dégâts s'encaissent — même geste que lancer un sort. SR6 et Anarchy 1re édition suivront dans une prochaine mise à jour.",
     },
+    {
+      id: "wn-preroll-edge", anchor: "nav-combat", tours: ["whatsnew"], since: "1.52.0", fallback: "center",
+      title: "Dépenser son Edge avant le jet (SR5/SR6)",
+      body: "À activer dans Paramètres › Lanceur de dés. Une fois activé, lancer depuis une carte SR5/SR6 avec de l'Edge dépensable ouvre un panneau : « Repousser les limites » (SR5, ignore la Limite), « Prendre un risque » ou « Ajouter son rang d'Atout » (SR6, dés explosifs) — sinon « Lancer sans Edge ». L'Edge du personnage est débité. Le tap reste un lancer immédiat quand il n'y a pas d'Edge à dépenser.",
+    },
   ],
 };
 

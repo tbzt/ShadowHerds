@@ -12,7 +12,21 @@ commit.
 
 ## [Non publié]
 
-## [1.51.1] — 2026-07-17
+## [1.52.0] — 2026-07-17
+
+### Jouer
+- **Dépenser son Edge AVANT le jet (SR5 et SR6)** — nouveau, optionnel. À
+  activer dans Paramètres › Lanceur de dés (« Edge avant le jet »). Une fois
+  activé, lancer un jet depuis une carte SR5/SR6 dont le personnage a de l'Edge
+  dépensable ouvre un panneau : en SR5, **« Repousser les limites »** (1 point de
+  Chance → ajoute l'indice de Chance en dés à Règle des six **et ignore la
+  Limite**, *Livre de Règles* p.58) ; en SR6, **« Prendre un risque »** (1 Atout
+  → +1 dé) ou **« Ajouter son rang d'Atout »** (4 Atouts → +rang de dés à 6
+  explosifs, core p.50-51). Sinon « Lancer sans Edge ». L'app ne modélisait
+  jusqu'ici que l'Edge d'après jet (la seconde chance/relance) ; le panneau
+  débite l'Edge du bon personnage et neutralise le plafond de Précision quand
+  la règle le prévoit. Le tap reste un lancer immédiat dès qu'il n'y a pas
+  d'Edge à dépenser, et Anarchy garde sa prise de risque.
 
 ### Corrigé
 - **Scroll mono-ligne à barre cachée retiré (6 sites)** : un choix caché derrière un
