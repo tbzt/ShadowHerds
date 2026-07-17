@@ -126,3 +126,20 @@
   outline: none;
   border-color: var(--accent);
 }
+
+/* iOS zoome sur tout champ < 16px au focus : on neutralise. Même seuil technique
+   fixe que responsive.css (CH-V12) — littéral et volontairement non lié à
+   --fs-md, qui peut bouger pour des raisons de hiérarchie visuelle.
+
+   La garde est ici et non dans responsive.css (où elle est réunie pour les
+   autres champs) parce que responsive.css est chargé AVANT ce fichier : à
+   spécificité égale le dernier gagne, et les --fs-xs ci-dessus l'écrasaient.
+   Colocaliser la garde avec les règles qu'elle doit battre supprime la
+   dépendance à l'ordre des <link>. */
+@media (pointer: coarse) {
+  .contact-form select,
+  .contact-form input[type="text"],
+  .contact-form input[type="number"] {
+    font-size: 16px;
+  }
+}
