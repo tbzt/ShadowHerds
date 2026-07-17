@@ -1,0 +1,61 @@
+/* ============================================================
+   MENTIONS — puces @/# et autocomplétion (js/widgets/mentions.js)
+   #mentions-box réutilise .palette-row/.palette-type/.palette-name :
+   charger APRÈS palette.css.
+   ============================================================ */
+/* Puces de mention (E7) — @ (--accent) vs # (--accent2), même distinction de
+   canal que le reste de l'appli (cf. audit I2, canal --accent2 = décor). */
+.mention-chip,
+.tag-chip {
+  padding: 0 0.3em;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background var(--dur-base) ease;
+}
+.mention-chip {
+  /* Signature visuelle PJ (E6) : --mention-pc-color posée en inline par
+     Mentions.renderText pour un PJ, sinon retombe sur --accent (PNJ/contact/
+     serveur). Un seul et même canal pour la couleur ET le fond teinté. */
+  background: color-mix(in srgb, var(--mention-pc-color, var(--accent)) 15%, transparent);
+  color: var(--mention-pc-color, var(--accent));
+}
+.mention-chip:hover {
+  background: color-mix(in srgb, var(--mention-pc-color, var(--accent)) 28%, transparent);
+}
+.mention-chip--dead {
+  color: var(--text-dim);
+  background: transparent;
+  text-decoration: line-through;
+  cursor: default;
+}
+.mention-chip--dead:hover {
+  background: transparent;
+}
+.tag-chip {
+  background: color-mix(in srgb, var(--accent2) 15%, transparent);
+  color: var(--accent2);
+}
+.tag-chip:hover {
+  background: color-mix(in srgb, var(--accent2) 28%, transparent);
+}
+#mentions-box {
+  position: absolute;
+  z-index: var(--z-command);
+  max-height: 40vh;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+/* <641px : ancrée en bas de viewport (au-dessus du clavier virtuel quand
+   VisualViewport est disponible, cf. Mentions._position). */
+#mentions-box.mentions-mobile {
+  position: fixed;
+  left: 0.5rem;
+  right: 0.5rem;
+  top: auto;
+  width: auto !important;
+  max-height: 35vh;
+}
