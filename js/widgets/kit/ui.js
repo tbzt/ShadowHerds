@@ -38,16 +38,69 @@ export const UI = {
       incap: "incapFilled",
     };
     const field = fieldMap[type] || "monFilled";
+    const before = copies[0][field] || 0;
     for (const pnj of copies) {
       if (pnj[field] === undefined) pnj[field] = 0;
       pnj[field] = idx < pnj[field] ? idx : idx + 1;
     }
+    const after = copies[0][field] || 0;
 
     this.persistEntity(pnjId);
-    CardRenderer.refresh(copies[0]);
+    // V0-d : cocher une case ne change jamais la FORME du moniteur (total
+    // inchangé) — patcher les classes en place laisse enfin jouer la
+    // transition CSS de `.monitor-box`, écrasée jusqu'ici par le innerHTML
+    // complet de `CardRenderer.refresh()` à chaque coche.
+    this._patchMonitorDOM(copies[0], pnjId, type, idx, before, after);
     // Vague D : cocher/décocher un moniteur peut basculer « hors de combat » ou
     // le drapeau « devrait fuir » d'un combattant → rafraîchir le tracker.
     if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(copies[0]);
+  },
+
+  /** Patch chirurgical des cases + du malus, sur toutes les cartes vivantes
+      de l'entité (générateur + Ombres peuvent coexister, cf. refresh()).
+      Pulse + haptique seulement au FRANCHISSEMENT d'un palier de 3 (jamais
+      à la coche simple) — la case qui vient de faire basculer le malus. */
+  _patchMonitorDOM(pnj, pnjId, type, idx, before, after) {
+    // Le badge de malus n'existe que pour le moniteur phys/étourdissant
+    // (seuls sr5.js/sr6.js/anarchy1.js appellent _monitorMalusBadge) — un
+    // moniteur matriciel/persona/Anarchy 2 n'en a pas, ne pas lui en inventer un.
+    const tracksMalus = type === "phys" || type === "stun";
+    const malus = tracksMalus ? Utils.woundMalus(pnj, pnj.edition) : 0;
+    const palierCrossed = Math.floor(before / 3) !== Math.floor(after / 3);
+    document.querySelectorAll(`.pnj-card[data-id="${pnjId}"]`).forEach((card) => {
+      const boxes = card.querySelectorAll(`.monitor-box[data-id="${pnjId}"][data-sev="${type}"]`);
+      boxes.forEach((box, i) => box.classList.toggle("filled", i < after));
+      const malusEl = tracksMalus ? card.querySelector(".monitor-malus") : null;
+      if (malus > 0) {
+        if (malusEl) {
+          malusEl.textContent = `−${malus}D`;
+        } else if (boxes[0]) {
+          // Le badge n'existait pas encore (malus passe de 0 à >0) : même
+          // markup que CardRenderer._monitorMalusBadge, posé une fois.
+          const block = boxes[0].closest(".monitor-block");
+          if (block) {
+            const el = document.createElement("div");
+            el.className = "monitor-malus";
+            el.title = "Malus de blessure cumulé (déjà appliqué aux tests)";
+            el.textContent = `−${malus}D`;
+            block.appendChild(el);
+          }
+        }
+      } else if (malusEl) {
+        malusEl.remove();
+      }
+      if (palierCrossed) {
+        const box = card.querySelector(
+          `.monitor-box[data-id="${pnjId}"][data-sev="${type}"][data-idx="${idx}"]`,
+        );
+        if (box) {
+          box.classList.remove("rule-pulse");
+          void box.offsetWidth; // relance l'animation si déjà posée
+          box.classList.add("rule-pulse");
+        }
+      }
+    });
+    if (palierCrossed) Utils.haptic(12);
   },
 
   /** Case du moniteur matriciel du DECK

@@ -734,7 +734,10 @@
 .monitor-box {
   width: 16px;
   height: 16px;
-  border: 1px solid var(--border);
+  /* --border-ui (pas --border) : la case vide doit s'identifier comme un
+     contrôle (WCAG 1.4.11, ≥3:1 sur --bg-card) sans faire crier les
+     contours de carte, qui restent sur --border. */
+  border: 1px solid var(--border-ui);
   border-radius: 2px;
   cursor: pointer;
   background: var(--bg);
@@ -752,6 +755,21 @@
 }
 .monitor-box.penalty {
   border-color: var(--accent);
+}
+/* V0-d : pulse au franchissement d'un palier de malus (pas à la coche
+   simple) — déclenché en JS (ui.js toggleMonitor) uniquement quand l'index
+   franchit une frontière de 3. Échelle 1.18 : --ease-emphasized porte déjà
+   un dépassement (1.2), un pulse plus ample doublerait le rebond. */
+.monitor-box.rule-pulse {
+  animation: rule-pulse var(--dur-fast) var(--ease-emphasized) alternate 2;
+}
+@keyframes rule-pulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.18);
+  }
 }
 /* K2 : regroupement visuel par rangées de 3, fidèle à la grille du livre
    (SR6 p.43) — un espace un peu plus large toutes les 3 cases. Exclu des

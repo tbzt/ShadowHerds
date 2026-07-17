@@ -644,9 +644,15 @@
     height: 18px;
   }
 
-  .monitor-box {
-    width: 20px;
-    height: 20px;
+  /* Loi 4 (CIBLES TACTILES) : la case de moniteur est le geste le plus
+     fréquent du MJ — scopé à `[data-action]` pour ne PAS grossir le
+     moniteur de CI en lecture seule (play/encounterrenderer.js), qui n'est
+     jamais une cible. 24 = minimum WCAG 2.5.5/2.5.8 exact ; mesuré : 11
+     cases SR5 × 24 + 10 espacements × 4 = 304px, tiennent dans une carte
+     mobile sans repli. */
+  .monitor-box[data-action] {
+    width: 24px;
+    height: 24px;
     border-radius: 3px;
   }
   .monitor-boxes {

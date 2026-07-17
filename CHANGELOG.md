@@ -23,10 +23,17 @@ commit.
   des blessures). Les motifs, la typo et les coupes de coin ne changent pas —
   seule la teinte d'accent bouge, remontée en luminosité là où le livre est
   trop sombre pour un écran (accents mesurés, jamais estimés).
-- Dette de dette technique résorbée en même temps : les 4 thèmes ne portent
-  plus de couleurs recopiées en dur — tout passe par les tokens `--accent`/
+- Dette technique résorbée en même temps : les 4 thèmes ne portent plus de
+  couleurs recopiées en dur — tout passe par les tokens `--accent`/
   `--accent2`/`--border` du thème, qui suivent désormais une seule source par
   édition.
+- **La case de moniteur de condition passe à 24px au doigt** (20px ne
+  franchissait pas le minimum de cible tactile) et sa bordure au repos est
+  désormais visible sur la carte (contraste ≥3:1, nouveau token
+  `--border-ui`) — le MJ voit la piste, pas seulement les cases déjà cochées.
+  Cocher une case ne reconstruit plus toute la carte : la transition joue
+  enfin, et franchir un palier de blessure déclenche un discret pulse (+
+  vibration sur Android).
 
 ## [1.48.0] — 2026-07-17
 

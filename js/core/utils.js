@@ -129,6 +129,15 @@ export const Utils = {
     return best === Infinity ? 0 : best;
   },
 
+  /** Vibration courte (Android ; iOS Safari l'ignore silencieusement, le
+      visuel doit tenir seul) — couche 1, partagée par tout geste qui veut
+      un retour haptique bref (drag de scène, palier de moniteur…). */
+  haptic(ms) {
+    try {
+      if (navigator.vibrate) navigator.vibrate(ms);
+    } catch (_) {}
+  },
+
   /** Nombre de cases de dommages ignorées pour le calcul des
       modificateurs de blessure, apporté par un « Compensateur de dommages »
       (SR5 p.464 / SR6 p.301, indice 1-12, mécanique identique). Neutre —

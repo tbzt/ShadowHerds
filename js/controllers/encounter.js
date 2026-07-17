@@ -1314,13 +1314,6 @@ export const Encounter = {
      des cibles d'insertion. Fonctionne sur .encounter-row (ordonné) comme
      .encounter-nrow (narratif Anarchy). */
   _drag: null,
-  /** Vibration courte (Android ; iOS l'ignore silencieusement) — « clac » de
-      décollage/repose du sticker, bonus tactile, le visuel tient seul. */
-  _vibrate(ms) {
-    try {
-      if (navigator.vibrate) navigator.vibrate(ms);
-    } catch (_) {}
-  },
   _initDrag(overlay) {
     overlay.addEventListener("pointerdown", (e) => {
       const handle = e.target.closest(".encounter-drag-handle");
@@ -1331,7 +1324,7 @@ export const Encounter = {
       e.preventDefault();
       this._drag = { row, list, startY: e.clientY, lastY: e.clientY, before: null, line: null, raf: 0 };
       row.classList.add("dragging");
-      this._vibrate(12);
+      Utils.haptic(12);
       try {
         handle.setPointerCapture(e.pointerId);
       } catch (_) {}
@@ -1428,7 +1421,7 @@ export const Encounter = {
     row.classList.remove("dragging");
     row.style.removeProperty("--drag-dy");
     this._drag = null;
-    this._vibrate(16);
+    Utils.haptic(16);
     const ids = [...list.querySelectorAll(".encounter-row, .encounter-nrow")].map((r) => r.dataset.id);
     this.reorderByIds(ids); // → _commit → re-render (détruit ces nœuds)
     // La ligne re-rendue joue la « repose » du sticker (dépassement → 0).
