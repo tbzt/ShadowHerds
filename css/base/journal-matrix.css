@@ -23,21 +23,8 @@
 /* ============================================================
    MATRICE — SERVEURS & CI (panneau, cartes, tracker d'intrusion)
    ============================================================ */
-.contact-form input[type="text"] {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 0.4rem var(--sp-2);
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  text-transform: none;
-  letter-spacing: 0;
-}
-.contact-form input[type="text"]:focus {
-  outline: none;
-  border-color: var(--accent);
-}
+/* Le formulaire de serveur réutilise le composant .contact-form
+   (cf. contact-form.css) ; ici, seules ses spécificités Matrice. */
 .server-form-flags {
   align-items: center;
 }

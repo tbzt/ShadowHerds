@@ -1,0 +1,128 @@
+/* ============================================================
+   CONTACT-FORM — formulaire partagé contacts & serveurs
+   ------------------------------------------------------------
+   Composant sans propriétaire unique : habille js/controllers/contacts.js,
+   js/widgets/contactcreate.js et js/widgets/serverrenderer.js. D'où le nom du
+   composant plutôt que celui d'un module.
+
+   Regroupe trois blocs qui vivaient dans trois fichiers séparés
+   (backup-contactgen.css, journal-matrix.css « MATRICE », shadows-contacts.css) ;
+   ils sont recopiés tels quels, dans leur ordre de cascade d'origine
+   (shadows-contacts → backup-contactgen → journal-matrix).
+
+   ⚠ Dette repérée au regroupement, volontairement NON corrigée ici (ce chantier
+   déplace, il ne réécrit pas) : les blocs `select` et `input[type=text]` posent
+   `text-transform: none` / `letter-spacing: 0`, `input[type=number]` non — il
+   hérite donc de l'uppercase du <label>. À trancher séparément.
+   ============================================================ */
+
+/* Modale de création (ContactCreate) : champs numériques au même style que les
+   champs texte du formulaire de contact, astérisque de champ requis. */
+.contact-form input[type="number"] {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem var(--sp-2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+.contact-form input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.contacts-gen-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: var(--sp-3);
+}
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.contact-form-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.contact-form label {
+  flex: 1;
+  min-width: 130px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+.contact-form select {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem var(--sp-2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.contact-form select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.contact-form-cost {
+  font-size: var(--fs-sm);
+  color: var(--text);
+  padding-top: 0.15rem;
+}
+.contact-form-cost strong {
+  color: var(--accent);
+  font-family: var(--font-display);
+}
+.cost-sub {
+  display: block;
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  margin-top: 0.1rem;
+}
+.contact-form-hint {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  line-height: 1.45;
+  font-style: italic;
+}
+/* Posé par cardrenderer.js sur la carte, pas par le formulaire — vit ici par
+   parenté de nom. À déménager vers pnj-card.css si l'occasion se présente. */
+.contact-meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 0.1rem;
+}
+
+.contact-form input[type="text"] {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem var(--sp-2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.contact-form input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
