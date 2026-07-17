@@ -293,6 +293,11 @@ export const TourSteps = {
       title: "Persona incarné du technomancien",
       body: "Le module Matrice ⚡ d'un technomancien (SR5/SR6) affiche désormais son persona incarné : Attaque, Corruption, Traitement de données, Firewall, calculés depuis ses attributs mentaux et sa Résonance. En SR6, un bouton de reconfiguration répartit le pool de points bonus entre les 4 attributs. Les dommages matriciels encaissés rejoignent le moniteur étourdissant, comme au livre.",
     },
+    {
+      id: "wn-foundry-import-v2", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.48.0", fallback: "center",
+      title: "Import Foundry VTT : fiches réelles, contacts, identités, véhicules",
+      body: "L'import Foundry VTT (SR5) lit désormais les vraies fiches Foundry (identité, métatype, sorts, traits) au lieu de ne fonctionner que sur nos propres exports. Il importe aussi les identités (SIN, licences, styles de vie), les contacts, les véhicules liés et l'historique Karma/Nuyens/Réputation. Correctif au passage : la résistance au Drain d'un mage importé se calcule désormais sur les bons attributs.",
+    },
   ],
 };
 

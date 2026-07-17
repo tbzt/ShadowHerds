@@ -12,6 +12,26 @@ commit.
 
 ## [Non publié]
 
+## [1.48.0] — 2026-07-17
+
+### Import Foundry VTT
+- **L'import Foundry VTT (SR5) devient réellement fidèle aux fiches réelles.**
+  La vague 1 avait été validée sur un aller-retour de notre propre export et
+  tombait sur de vraies fiches SR5 : identité, métatype, magie spéciale et
+  sorts/traits en HTML brut ne se lisaient pas. Corrigé en confrontant le
+  code à des exports réels — le système Foundry SR5 range l'identité sous
+  des champs préfixés (`character*`) distincts du système SR6.
+- **Correctif de règle silencieux (SR5 et SR6)** : l'attribut de résistance
+  au Drain d'un mage importé n'était jamais posé (une chamane résistait en
+  Volonté + Logique au lieu de Volonté + Charisme). Il se dérive désormais
+  de l'item de tradition, avec reconnaissance par motif du nom de tradition
+  plutôt qu'égalité stricte (le catalogue Foundry SR5 nomme « Chamanisme »
+  ce que notre canon appelle « Chamanique »).
+- **Nouvelles données importées** : identités (SIN) avec licences et styles
+  de vie, contacts (rattachés au carnet de contacts), véhicules liés,
+  historique Karma/Nuyens et solde de réputation de départ, traits
+  positifs/négatifs, sous-groupement de l'équipement porté.
+
 ## [1.47.0] — 2026-07-17
 
 ### Fiche PNJ
