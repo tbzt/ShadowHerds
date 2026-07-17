@@ -147,13 +147,17 @@ export const CardRenderer = {
     const gIcon = { M: "♂", F: "♀", NB: "⚧" }[pnj.gender] || "";
     let badge = "";
 
-    const ratingBadge = App.getEditionModule(pnj.edition).ratingBadge;
-    if (ratingBadge.options) {
-      const tier = pnj[ratingBadge.field] || ratingBadge.options[0];
-      const tierClass = `rang-${tier.toLowerCase()}`;
-      badge = `<span class="pnj-rank-badge ${tierClass}" title="Rang tactique — poids du PNJ dans une scène">${tier}</span>`;
-    } else {
-      badge = `<span class="pnj-rank-badge" title="Niveau de professionnalisme">PRO&nbsp;${pnj[ratingBadge.field]}</span>`;
+    // Un PJ n'a pas de rang/professionnalisme de PNJ à afficher (D6, doctrine
+    // import Foundry) — vaut pour tout PJ, importé ou créé à la main.
+    if (!pnj.isPC) {
+      const ratingBadge = App.getEditionModule(pnj.edition).ratingBadge;
+      if (ratingBadge.options) {
+        const tier = pnj[ratingBadge.field] || ratingBadge.options[0];
+        const tierClass = `rang-${tier.toLowerCase()}`;
+        badge = `<span class="pnj-rank-badge ${tierClass}" title="Rang tactique — poids du PNJ dans une scène">${tier}</span>`;
+      } else {
+        badge = `<span class="pnj-rank-badge" title="Niveau de professionnalisme">PRO&nbsp;${pnj[ratingBadge.field]}</span>`;
+      }
     }
 
     const specialStr =
