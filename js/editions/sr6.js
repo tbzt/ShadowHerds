@@ -293,12 +293,11 @@ export const EditionSR6 = {
       // les modificateurs de blessure — mécanique identique à SR5.
       const ignore = Utils.woundBoxesIgnored(pnj);
       if (pnj.stunMon !== undefined) {
-        const total = Math.max(
-          0,
-          (pnj.physFilled || 0) + (pnj.stunFilled || 0) - ignore,
-        );
-        return Math.floor(total / 3);
+        // p.43 : -1 par rangée PLEINE, cumulé sur les deux moniteurs — donc
+        // par piste puis somme (cf. Utils.woundMalusTracks), pas sur le total.
+        return Utils.woundMalusTracks(pnj.physFilled, pnj.stunFilled, 3, ignore);
       }
+      // Moniteur d'état unique (`me`) : une seule piste, rien à répartir.
       return Math.floor(Math.max(0, (pnj.physFilled || 0) - ignore) / 3);
     },
     /** Moniteur d'un esprit invoqué : (Puissance/2)+8, p.224 — distinct

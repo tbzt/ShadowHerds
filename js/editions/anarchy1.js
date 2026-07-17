@@ -162,9 +162,16 @@ export const EditionAnarchy1 = {
   conditionMonitor: {
     model: "double physique+étourdissement, cases = 8 + FOR|VOL /2",
     fields: { primary: "physMon" },
+    /** p.156, « Lignes de dommages » : « chaque fois qu'une ligne est remplie,
+        sur le moniteur physique OU étourdissant, le personnage subit
+        immédiatement un modificateur cumulatif de -1 dé […] Les modificateurs
+        des moniteurs physique et étourdissant se cumulent. » → par piste puis
+        somme (cf. Utils.woundMalusTracks), jamais sur le total.
+        Pas de Compensateur de dommages en Anarchy 1 → aucun stock à répartir.
+        NON MODÉLISÉ : la même règle ajoute AUSSI un dé de complication par
+        ligne pleine (« remplacer un dé par un dé de complication »). */
     woundMalus(pnj) {
-      const total = (pnj.physFilled || 0) + (pnj.stunFilled || 0);
-      return Math.floor(total / 3);
+      return Utils.woundMalusTracks(pnj.physFilled, pnj.stunFilled, 3, 0);
     },
     spiritMonitor: null,
     /** Drones V1 = Blindage/Résistance/Mobilité/Autopilote,

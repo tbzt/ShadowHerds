@@ -266,13 +266,16 @@ export const EditionSR5 = {
     woundMalus(pnj) {
       const div = parseInt(Settings.get("woundMod", 3), 10);
       if (!div) return 0;
-      // Le Compensateur de dommages (p.464) ignore N cases
-      // (phys et/ou étourdissant) pour les modificateurs de blessure.
-      const total = Math.max(
-        0,
-        (pnj.physFilled || 0) + (pnj.stunFilled || 0) - Utils.woundBoxesIgnored(pnj),
+      // Chap. Dommages : « -1 par tranche de trois cases dans l'UN des
+      // moniteurs […] les modificateurs issus de CHACUN se cumulent » — donc
+      // par piste puis somme, jamais sur le total (cf. Utils.woundMalusTracks).
+      // Le Compensateur (p.464) fournit un stock de cases librement réparti.
+      return Utils.woundMalusTracks(
+        pnj.physFilled,
+        pnj.stunFilled,
+        div,
+        Utils.woundBoxesIgnored(pnj),
       );
-      return Math.floor(total / div);
     },
     /** Neutre : les esprits SR5 utilisent le moniteur générique basé sur
         CON (cf. spawn), pas de formule dédiée comme en SR6. */

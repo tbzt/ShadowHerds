@@ -96,6 +96,39 @@ export const Utils = {
     return editionModule ? editionModule.conditionMonitor.woundMalus(pnj) : 0;
   },
 
+  /** Malus de blessure d'un moniteur DOUBLE (physique + étourdissant).
+      La règle est la même dans les trois éditions à échelle, et elle compte
+      **par moniteur, puis cumule** — jamais sur la somme des deux :
+      - SR5, chap. Dommages : « -1 par tranche de trois cases de dommages
+        dans l'UN des moniteurs […] les modificateurs issus de CHACUN des
+        moniteurs se cumulent » ;
+      - SR6 p.43 : rangées de 3, -1 par rangée pleine, cumulé sur les deux ;
+      - Anarchy 1 p.156 : « chaque fois qu'une ligne est remplie, sur le
+        moniteur physique OU étourdissant […] les modificateurs se cumulent ».
+
+      Sommer d'abord puis diviser sur-pénalise dès que les deux restes
+      cumulent ≥ div (2 phys + 2 étourdi = 0 au livre, -1 si l'on somme).
+
+      `ignore` = cases neutralisées par le Compensateur de dommages, qui est
+      un STOCK librement réparti entre les deux pistes (SR5 p.464 : « physiques,
+      ou étourdissantes ou une combinaison des deux ») — et la répartition
+      change le résultat. On retient donc la plus favorable au porteur, comme
+      le livre l'y autorise, plutôt que d'imposer un ordre arbitraire. */
+  woundMalusTracks(physFilled, stunFilled, div, ignore = 0) {
+    if (!div) return 0;
+    const phys = Math.max(0, physFilled || 0);
+    const stun = Math.max(0, stunFilled || 0);
+    const stock = Math.max(0, ignore || 0);
+    let best = Infinity;
+    for (let onPhys = 0; onPhys <= Math.min(stock, phys); onPhys++) {
+      const onStun = Math.min(stock - onPhys, stun);
+      const malus =
+        Math.floor((phys - onPhys) / div) + Math.floor((stun - onStun) / div);
+      if (malus < best) best = malus;
+    }
+    return best === Infinity ? 0 : best;
+  },
+
   /** Nombre de cases de dommages ignorées pour le calcul des
       modificateurs de blessure, apporté par un « Compensateur de dommages »
       (SR5 p.464 / SR6 p.301, indice 1-12, mécanique identique). Neutre —

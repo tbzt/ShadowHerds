@@ -12,6 +12,21 @@ commit.
 
 ## [Non publié]
 
+## [1.46.1] — 2026-07-17
+
+### Jouer
+- **Modificateur de blessure corrigé** (SR5, SR6, Anarchy 1) : il était calculé
+  sur la **somme** des deux moniteurs, alors que les trois livres comptent
+  **par moniteur, puis cumulent** (SR5 chap. Dommages : « -1 par tranche de
+  trois cases dans l'un des moniteurs […] les modificateurs issus de chacun se
+  cumulent » ; SR6 p.43 ; Anarchy 1 p.156). L'app sur-pénalisait dès que les
+  deux restes s'additionnaient : un PNJ avec 2 cases physiques et 2
+  étourdissantes subissait −1 au lieu de 0. Tous les jets d'un PNJ blessé — armes,
+  magie, initiative — sont concernés. Le **Compensateur de dommages** est
+  désormais traité comme le livre le décrit (SR5 p.464) : un stock de cases
+  réparti entre les deux moniteurs, l'app retenant la répartition la plus
+  favorable au porteur. Anarchy 2 n'est pas concerné (moniteur à seuils).
+
 ## [1.46.0] — 2026-07-17
 
 ### Fiche PNJ
