@@ -434,6 +434,27 @@
   color: var(--bg);
   font-weight: 700;
 }
+/* Stepper (> AmplitudeSelector.PUCES_MAX crans, ex. Puissance de sort d'un
+   mage MAG ≥ 5) : mêmes boutons, valeur affichée entre les deux plutôt
+   qu'une rangée de N puces. Seuil décidé sur steps.length, jamais un media
+   query — cf. js/widgets/kit/amplitudeselector.js. */
+.summon-step-adjust {
+  min-width: 32px;
+  text-align: center;
+  font-weight: 700;
+}
+.summon-step-adjust:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.summon-step-value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text);
+  min-width: 1.6em;
+  text-align: center;
+}
 .summon-types {
   display: grid;
   grid-template-columns: 1fr 1fr;

@@ -12,6 +12,16 @@ commit.
 
 ## [Non publié]
 
+## [1.49.1] — 2026-07-17
+
+### Corrigé
+- **Sélecteur de Puissance/Niveau (sorts, invocations)** : au-delà de 8 crans (mage
+  Magie ≥ 5), la rangée de puces qui débordait devient un stepper compact
+  (`AmplitudeSelector`, seuil décidé sur le nombre de crans, jamais sur la largeur
+  d'écran). Corrige au passage un bug latent d'Anarchy 1re édition : le sélecteur de
+  puissance d'esprit rendait des boutons vides (chaînes nues au lieu de `{value,
+  label}`), la Puissance choisie ne pouvait pas atteindre l'invocation.
+
 ## [1.49.0] — 2026-07-17
 
 ### Système

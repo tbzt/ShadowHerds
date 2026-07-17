@@ -125,13 +125,17 @@ export const EditionAnarchy1 = {
   combatDisposition(pnj) {
     return { down: this.conditionMonitor.isDestroyed(pnj), morale: null };
   },
-  /** 3 puissances par esprit V1 (mineur/normal/majeur) —
-      field:"tier" réutilise le champ à 3 paliers déjà câblé côté générateur
-      (Spirits.ANARCHY_TIERS). Table réelle des esprits : Lot 6. */
+  /** 3 puissances par esprit V1 (mineur/normal/majeur), valeur numérique
+      0/1/2 — même domaine que `generate()` (`opts.tier ?? 1`, clampé 0-2,
+      anarchy1.js:382). Table réelle des esprits : Lot 6.
+      ⚠️ Corrigé 2026-07-17 : rendait des chaînes nues (`["mineur", …]`) au
+      lieu de `{value, label}` comme les 3 autres éditions — le
+      destructuring silencieux dans summonpanel.js produisait des boutons
+      vides (`data-power="undefined"`). */
   summonPower: {
     field: "tier",
     label: "Puissance",
-    steps: () => ["mineur", "normal", "majeur"],
+    steps: () => ["Mineur", "Normal", "Majeur"].map((label, i) => ({ value: i, label })),
   },
   skillModel: { shape: "simple", valRange: [0, 6], hasGroups: false },
   hasEdges: true,

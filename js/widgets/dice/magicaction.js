@@ -13,6 +13,7 @@
    dans le panneau. Coquille .risk-panel réutilisée.
    ============================================================ */
 import { Actor } from "../../rules/actor.js";
+import { AmplitudeSelector } from "../kit/amplitudeselector.js";
 import { Dice } from "../../rules/dice.js";
 import { DiceLog } from "./dicelog.js";
 import { DiceRoller } from "./diceroller.js";
@@ -115,12 +116,18 @@ export const MagicAction = {
     if (!ed.spellSkill) return; // édition sans mécanique de sort (Anarchy)
 
     const mag = Actor.attr(pnj, "MAG") || 1;
+    // Cadran d'amplitude (contrat d'amplitude, cf. AmplitudeSelector) : la
+    // Puissance choisie va de 1 à 2×Magie (plafond 12, SR5 p.283). Au-delà de
+    // 8 crans (mage MAG ≥ 5), le rendu bascule en stepper — jamais sur une
+    // media query, uniquement sur le nombre de crans.
+    const maxForce = Utils.clamp(mag * 2, 1, 12);
     this._cast = {
       pnjId,
       name: spellName,
       entry,
       edition: pnj.edition,
       force: Utils.clamp(mag, 1, 12),
+      forceSteps: Array.from({ length: maxForce }, (_, i) => ({ value: i + 1, label: String(i + 1) })),
     };
 
     if (!ed.spellUsesForce) {
@@ -132,13 +139,6 @@ export const MagicAction = {
     this._ensurePanel();
     document.getElementById("magic-title").textContent =
       `${pnj.name || "PNJ"} — ${spellName}`;
-    const maxForce = Utils.clamp(mag * 2, 1, 12);
-    document.getElementById("magic-force-steps").innerHTML = Array.from(
-      { length: maxForce },
-      (_, i) => i + 1,
-    )
-      .map((n) => `<button class="summon-step-btn" data-force="${n}">${n}</button>`)
-      .join("");
     this._syncPanel();
 
     const p = document.getElementById("magic-panel");
@@ -164,9 +164,8 @@ export const MagicAction = {
     if (!pnj) return;
     const ed = App.getEditionModule(c.edition);
 
-    document.querySelectorAll("#magic-force-steps .summon-step-btn").forEach((b) => {
-      b.classList.toggle("active", parseInt(b.dataset.force, 10) === c.force);
-    });
+    document.getElementById("magic-force-steps").innerHTML =
+      AmplitudeSelector.render(c.forceSteps, c.force, "force");
 
     const castPool = Magic.actionPool(pnj, ed.spellSkill, c.edition);
     const dv = ed.spellDrainValue(c.entry, c.force);

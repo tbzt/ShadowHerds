@@ -6,6 +6,7 @@
    l'invocation est un domaine fonctionnel complet et autonome).
    ============================================================ */
 import { Actor } from "../../rules/actor.js";
+import { AmplitudeSelector } from "../kit/amplitudeselector.js";
 import { CardRenderer } from "../card/cardrenderer.js";
 import { MagicAction } from "../dice/magicaction.js";
 import { Spirits } from "../../catalogs/spirits.js";
@@ -105,21 +106,17 @@ export const SummonPanel = {
 
   _sync() {
     const s = this._summon;
-    const powerEl = document.getElementById("summon-power-steps");
     const summonPower = App.getEditionModule(s.edition).summonPower;
-    powerEl.innerHTML = summonPower
-      .steps()
-      .map(
-        ({ value, label }) =>
-          `<button class="summon-step-btn${s[summonPower.field] === value ? " active" : ""}" data-power="${value}">${label}</button>`,
-      )
-      .join("");
-    document.getElementById("summon-service-steps").innerHTML = [1, 2, 3, 4, 5, 6]
-      .map(
-        (n) =>
-          `<button class="summon-step-btn${s.services === n ? " active" : ""}" data-services="${n}">${n}</button>`,
-      )
-      .join("");
+    document.getElementById("summon-power-steps").innerHTML = AmplitudeSelector.render(
+      summonPower.steps(),
+      s[summonPower.field],
+      "power",
+    );
+    document.getElementById("summon-service-steps").innerHTML = AmplitudeSelector.render(
+      [1, 2, 3, 4, 5, 6].map((n) => ({ value: n, label: String(n) })),
+      s.services,
+      "services",
+    );
     const types = Spirits.typesFor(s.edition);
     document.getElementById("summon-types").innerHTML = Object.entries(types)
       .map(
