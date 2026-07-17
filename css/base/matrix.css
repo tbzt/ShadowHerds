@@ -1,27 +1,11 @@
 /* ============================================================
-   JOURNAL DES JETS — nom du PNJ à l'origine du jet
-   ============================================================ */
-.dice-log-who {
-  color: var(--accent);
-  font-weight: 600;
-}
-.dice-log-who::after {
-  content: " ·";
-  color: var(--text-dim);
-  font-weight: 400;
-}
-.dice-summary-who {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 2px;
-}
-
-/* ============================================================
-   MATRICE — SERVEURS & CI (panneau, cartes, tracker d'intrusion)
+   MATRICE — serveurs, CI, tracker d'intrusion, Score de Surveillance
+   ------------------------------------------------------------
+   Habille js/widgets/serverrenderer.js, js/controllers/intrusion.js et
+   js/controllers/deckrun.js. Fichier unique assumé : les trois sujets
+   sont entrelacés dans l'original, les disséquer coûterait plus que le
+   gain. Le formulaire de serveur réutilise .contact-form
+   (cf. contact-form.css).
    ============================================================ */
 /* Le formulaire de serveur réutilise le composant .contact-form
    (cf. contact-form.css) ; ici, seules ses spécificités Matrice. */
@@ -591,4 +575,3 @@
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
 }
-

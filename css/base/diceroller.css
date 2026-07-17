@@ -83,3 +83,14 @@
   color: var(--text-dim);
   white-space: nowrap;
 }
+
+/* Nom du PNJ dans le résumé de jet (posé par diceroller.js:829). */
+.dice-summary-who {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 2px;
+}

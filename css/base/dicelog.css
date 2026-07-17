@@ -356,3 +356,14 @@
   font-size: var(--fs-2xs);
   padding: 1px 4px;
 }
+
+/* Nom du PNJ à l'origine du jet (posé par dicelog.js). */
+.dice-log-who {
+  color: var(--accent);
+  font-weight: 600;
+}
+.dice-log-who::after {
+  content: " ·";
+  color: var(--text-dim);
+  font-weight: 400;
+}
