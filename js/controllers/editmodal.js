@@ -14,6 +14,7 @@ import { CyberdeckRenderer } from "../widgets/card/cyberdeckrenderer.js";
 import { ItemResolver } from "../rules/itemresolver.js";
 import { Mentions } from "../widgets/journal/mentions.js";
 import { Metavariants } from "../rules/metavariants.js";
+import { PersonaRenderer } from "../widgets/card/personarenderer.js";
 import { PnjLookup } from "./pnjlookup.js";
 import { Shadows } from "./shadows.js";
 import { SingleSelect } from "../widgets/kit/singleselect.js";
@@ -799,6 +800,11 @@ export const EditModal = {
     html += `<div id="em-cyberdeck-section">${
       pnj.cyberdeck ? CyberdeckRenderer.editSection(pnj) : ""
     }</div>`;
+    // ---- Section : Persona incarné (répartition SR6 uniquement, cf.
+    // PersonaRenderer.editSection qui renvoie "" hors SR6) ----
+    html += `<div id="em-persona-section">${
+      pnj.persona ? PersonaRenderer.editSection(pnj) : ""
+    }</div>`;
 
     // ---- Section : Compétences (éditables + ajout) — zone Capacités ----
     {
@@ -1578,6 +1584,8 @@ export const EditModal = {
 
     // Cyberdeck — lu seulement si la section a été montée (pnj.cyberdeck).
     if (pnj.cyberdeck) CyberdeckRenderer.readForm(pnj);
+    // Persona incarné — lu seulement si la section a été montée (pnj.persona).
+    if (pnj.persona) PersonaRenderer.readForm(pnj);
 
     // Suivi de campagne (optionnel, PJ seulement)
     this._readCampaignSection(pnj);

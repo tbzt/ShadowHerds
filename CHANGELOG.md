@@ -12,6 +12,20 @@ commit.
 
 ## [Non publié]
 
+## [1.46.0] — 2026-07-17
+
+### Fiche PNJ
+- **Persona incarné du technomancien** (SR5/SR6) : le module Matrice ⚡
+  affiche enfin les attributs matriciels d'un technomancien — Attaque,
+  Corruption, Traitement de données, Firewall — calculés depuis ses
+  attributs mentaux et son indice de Résonance. En SR6, un pool de points
+  bonus égal à la Résonance se répartit entre les 4 attributs (bouton de
+  reconfiguration, comme pour un cyberdeck). Les dommages matriciels
+  encaissés par un persona rejoignent le moniteur étourdissant du
+  personnage, comme au livre. Correctif au passage : la génération SR5
+  bornait mal l'indice de Résonance, désormais plafonné à l'Essence du
+  personnage (p.252).
+
 ## [1.45.0] — 2026-07-16
 
 ### Bibliothèque

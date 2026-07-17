@@ -8,6 +8,7 @@
 import { Campaign } from "../../rules/campaign.js";
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Drugs } from "../../catalogs/drugs.js";
+import { PersonaRenderer } from "../card/personarenderer.js";
 import { Utils } from "../../core/utils.js";
 import { Vehicles } from "../../catalogs/vehicles.js";
 
@@ -83,6 +84,23 @@ export const UI = {
     this.persistEntity(pnjId);
     CardRenderer.refresh(copies[0]);
     toast("Cyberdeck reconfiguré.");
+  },
+
+  /** Réallocation du persona incarné (SR6 uniquement — Resonance.
+      redistributable) : déplace 1 point du pool bonus entre deux attributs
+      matriciels, borné au cap de chacun (js/rules/resonance.js). À la
+      différence du deck (échange de valeurs brutes), ici seul le DELTA
+      `pnj.persona.alloc` bouge — les attributs mentaux de base sont fixes. */
+  reallocPersona(pnjId, fromKey, toKey) {
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
+    for (const pnj of copies) {
+      if (!pnj.persona) continue;
+      PersonaRenderer.realloc(pnj, pnj.edition, fromKey, toKey);
+    }
+    this.persistEntity(pnjId);
+    CardRenderer.refresh(copies[0]);
+    toast("Persona reconfiguré.");
   },
 
   /** Le decker vise un serveur (`pnj.cyberdeck.run.targetServerId`),

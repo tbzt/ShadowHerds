@@ -161,7 +161,7 @@ export const Storage = {
       ajoutée à `_MIGRATIONS`. Publique (contrairement à `_MIGRATIONS`) : les
       paquets exportés (`Backup`) la tamponnent pour savoir, à l'import, s'ils
       ont besoin d'être migrés. Voir CONTRIBUTING.md § Versionner les schémas. */
-  SCHEMA_VERSION: 8,
+  SCHEMA_VERSION: 9,
 
   /** Chaîne de migrations de schéma, ordonnée par version croissante. Chaque
       `up()` mute le `localStorage` brut (pas de dépendance à `_edition`) et
@@ -512,6 +512,42 @@ export const Storage = {
         });
         if (migrated)
           Debug.warn("storage", "migration v8 (intrusionToScene)", { migrated });
+      },
+    },
+    {
+      v: 9,
+      /** Un technomancien (`special === "Technomancien"`, SR5/SR6) créé
+          avant ce chantier n'a pas de `pnj.persona` — contrairement au
+          cyberdeck (v4), il n'y a rien à parser depuis un texte libre : le
+          persona incarné se calcule depuis les attributs mentaux + RES
+          (js/rules/resonance.js), la seule structure à poser est la coquille
+          vide `{ alloc: {} }` qui portera un jour la répartition SR6 choisie
+          par le joueur. Idempotente : ignore les PNJ qui ont déjà un
+          `persona`. */
+      up() {
+        const suffixes = ["_shadows_all", "_characters_all", "_gen_pool"];
+        const keys = Object.keys(localStorage).filter(
+          (k) => k.startsWith("sr_pnj_v2_") && suffixes.some((s) => k.endsWith(s)),
+        );
+        let migrated = 0;
+        keys.forEach((k) => {
+          const raw = localStorage.getItem(k);
+          if (raw === null) return;
+          let list;
+          try { list = JSON.parse(raw); }
+          catch { return; }
+          if (!Array.isArray(list)) return;
+          let changed = false;
+          for (const pnj of list) {
+            if (!pnj || pnj.persona || pnj.special !== "Technomancien") continue;
+            pnj.persona = { alloc: {} };
+            changed = true;
+            migrated++;
+          }
+          if (changed) localStorage.setItem(k, JSON.stringify(list));
+        });
+        if (migrated)
+          Debug.warn("storage", "migration v9 (personaStructure)", { migrated });
       },
     },
   ],

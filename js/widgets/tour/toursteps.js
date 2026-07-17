@@ -288,6 +288,11 @@ export const TourSteps = {
       title: "Importer des PJ et PNJ depuis Foundry VTT",
       body: "Le menu ⋯ du hub propose désormais « Importer depuis Foundry VTT » : chargez un ou plusieurs fichiers d'acteur exportés de Foundry (SR5, SR6, Anarchy 2) et Shadow Herds crée les fiches en peuplant les bons champs — attributs, compétences, armes, équipement, sorts, atouts. L'édition est détectée automatiquement ; un PJ Foundry rejoint vos Personnages, un grunt vos Ombres. Les champs non modélisés sont signalés en console.",
     },
+    {
+      id: "wn-persona-vivant", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.46.0", fallback: "center",
+      title: "Persona incarné du technomancien",
+      body: "Le module Matrice ⚡ d'un technomancien (SR5/SR6) affiche désormais son persona incarné : Attaque, Corruption, Traitement de données, Firewall, calculés depuis ses attributs mentaux et sa Résonance. En SR6, un bouton de reconfiguration répartit le pool de points bonus entre les 4 attributs. Les dommages matriciels encaissés rejoignent le moniteur étourdissant, comme au livre.",
+    },
   ],
 };
 
