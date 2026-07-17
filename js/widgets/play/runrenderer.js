@@ -3,8 +3,8 @@
 /* ============================================================
    RUN RENDERER
    ============================================================ */
-import { CardRenderer } from "./card/cardrenderer.js";
-import { Dossiers } from "./dossiers.js";
+import { CardRenderer } from "../card/cardrenderer.js";
+import { Dossiers } from "../journal/dossiers.js";
 
 export const RunRenderer = {
   render(r) {

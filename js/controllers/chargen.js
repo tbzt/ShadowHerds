@@ -17,7 +17,7 @@
    ============================================================ */
 import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
-import { Dialog } from "../widgets/dialog.js";
+import { Dialog } from "../widgets/kit/dialog.js";
 import { Storage } from "../core/storage.js";
 import { Utils } from "../core/utils.js";
 

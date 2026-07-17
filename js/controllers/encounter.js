@@ -10,10 +10,10 @@
    ============================================================ */
 import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
-import { Dialog } from "../widgets/dialog.js";
+import { Dialog } from "../widgets/kit/dialog.js";
 import { Dice } from "../rules/dice.js";
-import { DiceRoller } from "../widgets/diceroller.js";
-import { EncounterRenderer } from "../widgets/encounterrenderer.js";
+import { DiceRoller } from "../widgets/dice/diceroller.js";
+import { EncounterRenderer } from "../widgets/play/encounterrenderer.js";
 import { Gen } from "./generator.js";
 import { Intrusion } from "./intrusion.js";
 import { Matrix } from "../rules/matrix.js";
@@ -21,7 +21,7 @@ import { PnjLookup } from "./pnjlookup.js";
 import { Servers } from "./servers.js";
 import { Shadows } from "./shadows.js";
 import { Storage } from "../core/storage.js";
-import { UI } from "../widgets/ui.js";
+import { UI } from "../widgets/kit/ui.js";
 import { Utils } from "../core/utils.js";
 
 export const Encounter = {

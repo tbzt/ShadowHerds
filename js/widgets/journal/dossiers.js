@@ -23,8 +23,8 @@
    que le référentiel des clés et sa hiérarchie. Feuille : ses
    seules dépendances sortantes sont Storage et Utils.
    ============================================================ */
-import { Storage } from "../core/storage.js";
-import { Utils } from "../core/utils.js";
+import { Storage } from "../../core/storage.js";
+import { Utils } from "../../core/utils.js";
 
 export const Dossiers = {
   _key: "dossiers",

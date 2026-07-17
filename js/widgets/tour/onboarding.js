@@ -8,7 +8,7 @@
    répétée : flag global (Storage.setGlobal), partagé entre éditions
    (la barre du haut est commune).
    ============================================================ */
-import { Storage } from "../core/storage.js";
+import { Storage } from "../../core/storage.js";
 
 export const Onboarding = {
   _KEY: "onboardingSeen",

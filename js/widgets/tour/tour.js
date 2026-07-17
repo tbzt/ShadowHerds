@@ -13,8 +13,8 @@
    Filtrage capacité (`step.capability`) : hook `_hasCapability`, neutre en G1
    (aucune étape à capacité) ; l'API résolue par l'édition arrive en G3.
    ============================================================ */
-import { Debug } from "../core/debug.js";
-import { Storage } from "../core/storage.js";
+import { Debug } from "../../core/debug.js";
+import { Storage } from "../../core/storage.js";
 import { TourSteps } from "./toursteps.js";
 
 export const Tour = {

@@ -12,9 +12,9 @@
    (si vivante/rangée), Focus (→ hub filtré), Voir le topos (prep).
    Délégation `data-action` (aucun onclick), neutre par édition.
    ============================================================ */
-import { Collection } from "../widgets/collection.js";
-import { DossierBar } from "../widgets/dossierbar.js";
-import { Dossiers } from "../widgets/dossiers.js";
+import { Collection } from "../widgets/collection/collection.js";
+import { DossierBar } from "../widgets/journal/dossierbar.js";
+import { Dossiers } from "../widgets/journal/dossiers.js";
 import { Encounter } from "./encounter.js";
 import { RunGen } from "./rungen.js";
 

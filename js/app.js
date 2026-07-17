@@ -4,10 +4,10 @@
    APP — Bootstrap, routing, sélecteur d'édition
    ============================================================ */
 import { CardRenderer } from "./widgets/card/cardrenderer.js";
-import { Collection } from "./widgets/collection.js";
-import { ContextSelector } from "./widgets/contextselector.js";
-import { DossierBar } from "./widgets/dossierbar.js";
-import { Dossiers } from "./widgets/dossiers.js";
+import { Collection } from "./widgets/collection/collection.js";
+import { ContextSelector } from "./widgets/journal/contextselector.js";
+import { DossierBar } from "./widgets/journal/dossierbar.js";
+import { Dossiers } from "./widgets/journal/dossiers.js";
 import { Encounter } from "./controllers/encounter.js";
 import { Storage } from "./core/storage.js";
 

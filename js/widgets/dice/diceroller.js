@@ -7,13 +7,13 @@
    S'appuie sur le moteur Dice (dice.js) pour le calcul,
    et sur DiceLog (dicelog.js) pour le journal.
    ============================================================ */
-import { Actor } from "../rules/actor.js";
-import { CardRenderer } from "./card/cardrenderer.js";
-import { Dice } from "../rules/dice.js";
+import { Actor } from "../../rules/actor.js";
+import { CardRenderer } from "../card/cardrenderer.js";
+import { Dice } from "../../rules/dice.js";
 import { DiceLog } from "./dicelog.js";
-import { Storage } from "../core/storage.js";
-import { Utils } from "../core/utils.js";
-import { WeaponRoll } from "../rules/weaponroll.js";
+import { Storage } from "../../core/storage.js";
+import { Utils } from "../../core/utils.js";
+import { WeaponRoll } from "../../rules/weaponroll.js";
 
 export const DiceRoller = {
   _animating: false,

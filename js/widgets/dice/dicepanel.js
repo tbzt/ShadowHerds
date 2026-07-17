@@ -8,7 +8,7 @@
    ============================================================ */
 import { DiceLog } from "./dicelog.js";
 import { DiceRoller } from "./diceroller.js";
-import { Utils } from "../core/utils.js";
+import { Utils } from "../../core/utils.js";
 
 export const DicePanel = {
   count: 6,

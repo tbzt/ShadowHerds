@@ -8,13 +8,13 @@
    Toutes les interactions sont câblées par Encounter (contrôleur),
    jamais ici.
    ============================================================ */
-import { CardRenderer } from "./card/cardrenderer.js";
-import { Cyberdeck } from "../rules/cyberdeck.js";
-import { DiceRoller } from "./diceroller.js";
-import { ItemResolver } from "../rules/itemresolver.js";
-import { Matrix } from "../rules/matrix.js";
+import { CardRenderer } from "../card/cardrenderer.js";
+import { Cyberdeck } from "../../rules/cyberdeck.js";
+import { DiceRoller } from "../dice/diceroller.js";
+import { ItemResolver } from "../../rules/itemresolver.js";
+import { Matrix } from "../../rules/matrix.js";
 import { ServerRenderer } from "./serverrenderer.js";
-import { Utils } from "../core/utils.js";
+import { Utils } from "../../core/utils.js";
 
 export const EncounterRenderer = {
   /** rows: [{ pnjId, init, hasActed, note, kind?, pnj }] — pnj peut être null

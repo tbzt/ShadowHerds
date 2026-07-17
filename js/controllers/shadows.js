@@ -9,10 +9,10 @@
    véhicules, esprits invoqués) qui suivent leur maître.
    ============================================================ */
 import { CardRenderer } from "../widgets/card/cardrenderer.js";
-import { Collection } from "../widgets/collection.js";
+import { Collection } from "../widgets/collection/collection.js";
 import { ContactsBook } from "./contactsbook.js";
 import { Gen } from "./generator.js";
-import { RosterView } from "../widgets/rosterview.js";
+import { RosterView } from "../widgets/collection/rosterview.js";
 import { Utils } from "../core/utils.js";
 
 export const Shadows = Object.assign(

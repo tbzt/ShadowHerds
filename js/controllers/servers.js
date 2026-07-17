@@ -11,17 +11,17 @@
    (tours, CI déployées, surveillance) est porté par le tracker
    Intrusion (js/controllers/intrusion.js). Le rendu HTML
    (formulaire, cartes, panneaux) vit dans
-   js/widgets/serverrenderer.js (ServerRenderer).
+   js/widgets/play/serverrenderer.js (ServerRenderer).
    ============================================================ */
 import { CardRenderer } from "../widgets/card/cardrenderer.js";
-import { Collection } from "../widgets/collection.js";
+import { Collection } from "../widgets/collection/collection.js";
 import { Debug } from "../core/debug.js";
-import { DossierBar } from "../widgets/dossierbar.js";
+import { DossierBar } from "../widgets/journal/dossierbar.js";
 import { Encounter } from "./encounter.js";
 import { Intrusion } from "./intrusion.js";
 import { Matrix } from "../rules/matrix.js";
-import { ServerRenderer } from "../widgets/serverrenderer.js";
-import { SidebarToggle } from "../widgets/sidebartoggle.js";
+import { ServerRenderer } from "../widgets/play/serverrenderer.js";
+import { SidebarToggle } from "../widgets/kit/sidebartoggle.js";
 import { Utils } from "../core/utils.js";
 
 export const Servers = Object.assign(

@@ -7,9 +7,9 @@
    fixé par le MJ. Panneau autonome (calqué sur Notepad/DiceLog),
    pas de persistance : c'est un scratch pad de jet, pas une donnée.
    ============================================================ */
-import { Dice } from "../rules/dice.js";
+import { Dice } from "../../rules/dice.js";
 import { DiceLog } from "./dicelog.js";
-import { Utils } from "../core/utils.js";
+import { Utils } from "../../core/utils.js";
 
 export const OpposedRoll = {
   _open: false,

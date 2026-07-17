@@ -14,8 +14,8 @@
    Backup.export().
    ============================================================ */
 import { Debug } from "../core/debug.js";
-import { Dialog } from "../widgets/dialog.js";
-import { DossierBar } from "../widgets/dossierbar.js";
+import { Dialog } from "../widgets/kit/dialog.js";
+import { DossierBar } from "../widgets/journal/dossierbar.js";
 import { PnjLookup } from "./pnjlookup.js";
 
 export const FoundryExport = {

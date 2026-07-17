@@ -366,7 +366,7 @@ export const Portrait = {
   },
 
   /* ---- Lightbox : clic sur une vignette → affichage en grand.
-     Même patron que ContentModal (js/widgets/contentmodal.js) : overlay
+     Même patron que ContentModal (js/widgets/kit/contentmodal.js) : overlay
      paresseux, fermeture au clic dehors / croix / Échap, délégation sur
      data-* (aucun onclick inline). ---- */
   _previewEl: null,

@@ -9,8 +9,8 @@
    publique (selectedIds/clearSelection/removeMany/addManyToGroup/_cfg) —
    jamais de branche par domaine ici.
    ============================================================ */
-import { Dialog } from "./dialog.js";
-import { Dossiers } from "./dossiers.js";
+import { Dialog } from "../kit/dialog.js";
+import { Dossiers } from "../journal/dossiers.js";
 import { SelectionMode } from "./selectionmode.js";
 
 export const BulkBar = {

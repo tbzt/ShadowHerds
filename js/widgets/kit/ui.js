@@ -5,11 +5,11 @@
    L'invocation d'esprits vit dans SummonPanel (UI était un
    fourre-tout mélangeant plusieurs domaines fonctionnels autonomes).
    ============================================================ */
-import { Campaign } from "../rules/campaign.js";
-import { CardRenderer } from "./card/cardrenderer.js";
-import { Drugs } from "../catalogs/drugs.js";
-import { Utils } from "../core/utils.js";
-import { Vehicles } from "../catalogs/vehicles.js";
+import { Campaign } from "../../rules/campaign.js";
+import { CardRenderer } from "../card/cardrenderer.js";
+import { Drugs } from "../../catalogs/drugs.js";
+import { Utils } from "../../core/utils.js";
+import { Vehicles } from "../../catalogs/vehicles.js";
 
 export const UI = {
   /** Clic sur une case de moniteur. Mute TOUTES les copies vivantes de

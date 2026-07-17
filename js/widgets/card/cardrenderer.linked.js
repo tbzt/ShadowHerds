@@ -4,7 +4,7 @@
    CARD RENDERER — entités liées : véhicules/drones et esprits.
    ============================================================ */
 import { Spirits } from "../../catalogs/spirits.js";
-import { UI } from "../ui.js";
+import { UI } from "../kit/ui.js";
 import { Vehicles } from "../../catalogs/vehicles.js";
 
 Object.assign(CardRenderer, {

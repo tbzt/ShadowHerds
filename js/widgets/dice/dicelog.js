@@ -5,8 +5,8 @@
    Alimenté par Dice._animate (dice.js) via DiceLog.record().
    ============================================================ */
 import { DicePanel } from "./dicepanel.js";
-import { Storage } from "../core/storage.js";
-import { Utils } from "../core/utils.js";
+import { Storage } from "../../core/storage.js";
+import { Utils } from "../../core/utils.js";
 
 export const DiceLog = {
   _open: false,

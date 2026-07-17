@@ -12,12 +12,12 @@
    Les deux jets partent au journal (DiceLog) ; le détail est présenté
    dans le panneau. Coquille .risk-panel réutilisée.
    ============================================================ */
-import { Actor } from "../rules/actor.js";
-import { Dice } from "../rules/dice.js";
+import { Actor } from "../../rules/actor.js";
+import { Dice } from "../../rules/dice.js";
 import { DiceLog } from "./dicelog.js";
 import { DiceRoller } from "./diceroller.js";
-import { Magic } from "../rules/magic.js";
-import { Utils } from "../core/utils.js";
+import { Magic } from "../../rules/magic.js";
+import { Utils } from "../../core/utils.js";
 
 export const MagicAction = {
   /** Hooks injectés par app.js (couche 6) : onPnjChanged(pnj). */

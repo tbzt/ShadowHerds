@@ -15,10 +15,10 @@ import { CyberdeckRenderer } from "./cyberdeckrenderer.js";
 import { Drugs } from "../../catalogs/drugs.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
 import { Magic } from "../../rules/magic.js";
-import { Mentions } from "../mentions.js";
+import { Mentions } from "../journal/mentions.js";
 import { SkillCatalog } from "../../rules/skillcatalog.js";
 import { SkillEffects } from "../../rules/skilleffects.js";
-import { UI } from "../ui.js";
+import { UI } from "../kit/ui.js";
 import { Utils } from "../../core/utils.js";
 import { WeaponRoll } from "../../rules/weaponroll.js";
 

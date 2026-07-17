@@ -9,7 +9,7 @@
 import { ContextSelector } from "./contextselector.js";
 import { Dossiers } from "./dossiers.js";
 import { Mentions } from "./mentions.js";
-import { Notebooks } from "../rules/notebooks.js";
+import { Notebooks } from "../../rules/notebooks.js";
 
 export const Notepad = {
   _open: false,

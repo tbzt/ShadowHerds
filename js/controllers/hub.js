@@ -19,8 +19,8 @@
    de création contextuel.
    ============================================================ */
 import { Coherence } from "../rules/coherence.js";
-import { DossierBar } from "../widgets/dossierbar.js";
-import { Dossiers } from "../widgets/dossiers.js";
+import { DossierBar } from "../widgets/journal/dossierbar.js";
+import { Dossiers } from "../widgets/journal/dossiers.js";
 import { RunGen } from "./rungen.js";
 import { Sync } from "./sync.js";
 import { Utils } from "../core/utils.js";

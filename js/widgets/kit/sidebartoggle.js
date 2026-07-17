@@ -7,7 +7,7 @@
    run). Préférence d'affichage globale (toutes éditions
    confondues), stockée hors du namespace Storage par édition.
    ============================================================ */
-import { Storage } from "../core/storage.js";
+import { Storage } from "../../core/storage.js";
 
 export const SidebarToggle = {
   _key: "sidebar_collapsed",

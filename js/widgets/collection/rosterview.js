@@ -7,8 +7,8 @@
    globale (toutes éditions), persistée via Storage.getGlobal — pas de
    localStorage direct (doctrine).
    ============================================================ */
-import { Storage } from "../core/storage.js";
-import { UI } from "./ui.js";
+import { Storage } from "../../core/storage.js";
+import { UI } from "../kit/ui.js";
 
 export const RosterView = {
   _key: "roster_row_view",

@@ -5,11 +5,11 @@
    UI était un fourre-tout mélangeant moniteurs/véhicules/esprits ;
    l'invocation est un domaine fonctionnel complet et autonome).
    ============================================================ */
-import { Actor } from "../rules/actor.js";
-import { CardRenderer } from "./card/cardrenderer.js";
-import { MagicAction } from "./magicaction.js";
-import { Spirits } from "../catalogs/spirits.js";
-import { Utils } from "../core/utils.js";
+import { Actor } from "../../rules/actor.js";
+import { CardRenderer } from "../card/cardrenderer.js";
+import { MagicAction } from "../dice/magicaction.js";
+import { Spirits } from "../../catalogs/spirits.js";
+import { Utils } from "../../core/utils.js";
 
 export const SummonPanel = {
   _summon: null, // état du panneau : { ownerId, force, tier, services }

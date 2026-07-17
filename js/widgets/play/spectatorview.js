@@ -10,8 +10,8 @@
    forme de moniteur par édition à connaître ici (conditionMonitor.gauge
    est l'accesseur neutre).
    ============================================================ */
-import { Storage } from "../core/storage.js";
-import { Utils } from "../core/utils.js";
+import { Storage } from "../../core/storage.js";
+import { Utils } from "../../core/utils.js";
 
 export const SpectatorView = {
   _active: false,

@@ -7,9 +7,9 @@
    (js/controllers/servers.js). Catalogues et règles délégués à
    Matrix (js/matrix.js), comme dans Servers.
    ============================================================ */
-import { CardRenderer } from "./card/cardrenderer.js";
-import { Matrix } from "../rules/matrix.js";
-import { Utils } from "../core/utils.js";
+import { CardRenderer } from "../card/cardrenderer.js";
+import { Matrix } from "../../rules/matrix.js";
+import { Utils } from "../../core/utils.js";
 
 export const ServerRenderer = {
   /** État d'intrusion scène-scopé d'un serveur (`Encounter.state.

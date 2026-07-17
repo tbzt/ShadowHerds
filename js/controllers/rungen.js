@@ -11,10 +11,10 @@
    - SR5 / SR6 : opérations corpo classiques, Big Ten, crime organisé
    - Anarchy    : types d\'opérations du livre + adaptations narratives
    ============================================================ */
-import { Dialog } from "../widgets/dialog.js";
-import { DossierBar } from "../widgets/dossierbar.js";
-import { Dossiers } from "../widgets/dossiers.js";
-import { RunRenderer } from "../widgets/runrenderer.js";
+import { Dialog } from "../widgets/kit/dialog.js";
+import { DossierBar } from "../widgets/journal/dossierbar.js";
+import { Dossiers } from "../widgets/journal/dossiers.js";
+import { RunRenderer } from "../widgets/play/runrenderer.js";
 import { Storage } from "../core/storage.js";
 import { Utils } from "../core/utils.js";
 

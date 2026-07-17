@@ -18,11 +18,11 @@
    Un contact/PNJ/serveur peut appartenir à PLUSIEURS groupes.
    ============================================================ */
 import { BulkBar } from "./bulkbar.js";
-import { CardRenderer } from "./card/cardrenderer.js";
-import { Dialog } from "./dialog.js";
-import { GroupPicker } from "./grouppicker.js";
-import { Storage } from "../core/storage.js";
-import { Utils } from "../core/utils.js";
+import { CardRenderer } from "../card/cardrenderer.js";
+import { Dialog } from "../kit/dialog.js";
+import { GroupPicker } from "../kit/grouppicker.js";
+import { Storage } from "../../core/storage.js";
+import { Utils } from "../../core/utils.js";
 
 export const Collection = {
   /** Nom de groupe réservé pour l'épingle rapide — un dossier

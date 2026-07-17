@@ -20,10 +20,10 @@
    Dépendances descendantes : Dossiers, Shadows/ContactsBook/Servers
    (lecture des comptes + pilotage de currentGroup), CardRenderer._esc.
    ============================================================ */
-import { CardRenderer } from "./card/cardrenderer.js";
-import { Collection } from "./collection.js";
-import { Dialog } from "./dialog.js";
-import { DiceLog } from "./dicelog.js";
+import { CardRenderer } from "../card/cardrenderer.js";
+import { Collection } from "../collection/collection.js";
+import { Dialog } from "../kit/dialog.js";
+import { DiceLog } from "../dice/dicelog.js";
 import { Dossiers } from "./dossiers.js";
 
 export const DossierBar = {

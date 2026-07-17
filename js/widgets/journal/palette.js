@@ -5,10 +5,10 @@
    entité sauvegardée par nom/archétype et y aller, sans connaître son
    rangement. Source unique : PnjLookup.search (pas de résolveur concurrent).
    ============================================================ */
-import { CardRenderer } from "./card/cardrenderer.js";
+import { CardRenderer } from "../card/cardrenderer.js";
 import { DossierBar } from "./dossierbar.js";
 import { Mentions } from "./mentions.js";
-import { Notebooks } from "../rules/notebooks.js";
+import { Notebooks } from "../../rules/notebooks.js";
 import { Notepad } from "./notepad.js";
 import { PinRow } from "./pinrow.js";
 
