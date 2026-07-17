@@ -129,6 +129,64 @@ export const Utils = {
     return best === Infinity ? 0 : best;
   },
 
+  /** Teinte d'alarme d'une jauge de vie proportionnelle (moniteur en
+      échelle : SR5/SR6/A1/véhicules) — convention d'affichage partagée,
+      seuils ½ (attention) et ¾ (critique). Couche 1 pour qu'elle vive en
+      UN seul endroit : les 3 éditions à échelle la lisent depuis leur
+      `gauge()`, le renderer ne fait que peindre le `level` renvoyé.
+      ⚠ NE convient PAS aux moniteurs à seuils (Anarchy 2) : là, l'alarme
+      dépend du palier le plus GRAVE atteint, pas de la fraction de cases —
+      chaque édition tranche sa règle dans `gauge()`. */
+  woundTone(frac) {
+    if (frac >= 0.75) return "crit";
+    if (frac >= 0.5) return "warn";
+    return "";
+  },
+
+  /** Descripteur de jauge en ÉCHELLE (`form:"ladder"`) — moniteur à cases
+      cumulées : SR5, SR6, Anarchy 1, véhicules/drones. Rempli par l'édition
+      dans `conditionMonitor.gauge()`, dessiné aveuglément par le renderer
+      (barre fine = `frac`+`level` ; cases = `filled`/`total`). `null` quand
+      il n'y a pas de moniteur (total 0 : PJ ad-hoc, CI matricielle) → le
+      renderer n'affiche rien. Miroir à seuils : `Utils.tiersGauge`. */
+  ladderGauge(filled, total) {
+    const t = Math.max(0, total || 0);
+    if (!t) return null;
+    const f = Utils.clamp(filled || 0, 0, t);
+    const frac = f / t;
+    return { form: "ladder", filled: f, total: t, frac, level: Utils.woundTone(frac), label: `${f} / ${t}` };
+  },
+
+  /** Descripteur de jauge à SEUILS (`form:"tiers"`) — moniteur par paliers de
+      gravité (Anarchy 2 : légère/grave/incapacitante). `tiers` porte la forme
+      réelle pour un rendu par segments ; `frac`+`level` classent par palier le
+      plus GRAVE atteint, jamais par le nombre de cases (2 légères < 1 grave —
+      cf. livre A2 p.68). Le renderer dessine sans comprendre la règle. */
+  tiersGauge(tiers) {
+    const list = (tiers || []).map((t) => ({
+      sev: t.sev,
+      label: t.label,
+      cap: Math.max(0, t.cap || 0),
+      filled: Utils.clamp(t.filled || 0, 0, Math.max(0, t.cap || 0)),
+    }));
+    if (!list.length) return null;
+    // Palier le plus grave atteint = dernier de la liste ayant au moins une
+    // case pleine (les tiers sont fournis du plus léger au plus grave).
+    let worstIdx = -1;
+    list.forEach((t, i) => {
+      if (t.filled > 0) worstIdx = i;
+    });
+    const last = list.length - 1;
+    // Fraction MONOTONE en gravité : chaque palier occupe une bande, sans
+    // qu'aucune quantité de léger ne franchisse la bande d'un cran plus grave.
+    // Alarme : dernier palier (incapacitante) → critique ; tout palier
+    // intermédiaire non-léger → attention ; léger seul → neutre.
+    const frac = worstIdx < 0 ? 0 : (worstIdx + 1) / list.length;
+    const level = worstIdx < 0 ? "" : worstIdx >= last ? "crit" : worstIdx >= 1 ? "warn" : "";
+    const label = worstIdx < 0 ? "indemne" : `blessure ${list[worstIdx].label}`;
+    return { form: "tiers", tiers: list, frac, level, label };
+  },
+
   /** Vibration courte (Android ; iOS Safari l'ignore silencieusement, le
       visuel doit tenir seul) — couche 1, partagée par tout geste qui veut
       un retour haptique bref (drag de scène, palier de moniteur…). */

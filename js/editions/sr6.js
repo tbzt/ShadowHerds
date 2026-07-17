@@ -328,19 +328,18 @@ export const EditionSR6 = {
       else if (entity.stunMon !== undefined) entity.physFilled = entity.physMon || 0;
       else entity.physFilled = entity.me || 0;
     },
-    /** Résumé du moniteur pour la mini-jauge du cockpit — cases remplies
-        / total, cumulées sur les deux pistes en mode séparé (comme SR5).
-        total 0 = pas de moniteur, pas de jauge. */
+    /** Descripteur de moniteur pour les jauges (barre fine + cases spectateur).
+        Forme ÉCHELLE (`Utils.ladderGauge`) : moniteur unique `me`, ou les deux
+        pistes cumulées en mode séparé (comme SR5). `null` si pas de moniteur. */
     gauge(entity) {
       if (entity.type === "vehicle")
-        return { filled: entity.monFilled || 0, total: entity.monTotal || 0 };
-      if (entity.stunMon !== undefined) {
-        return {
-          filled: (entity.physFilled || 0) + (entity.stunFilled || 0),
-          total: (entity.physMon || 0) + (entity.stunMon || 0),
-        };
-      }
-      return { filled: entity.physFilled || 0, total: entity.me || 0 };
+        return Utils.ladderGauge(entity.monFilled || 0, entity.monTotal || 0);
+      if (entity.stunMon !== undefined)
+        return Utils.ladderGauge(
+          (entity.physFilled || 0) + (entity.stunFilled || 0),
+          (entity.physMon || 0) + (entity.stunMon || 0),
+        );
+      return Utils.ladderGauge(entity.physFilled || 0, entity.me || 0);
     },
     /** Résultat NET de dégâts appliqué au moniteur — unique par défaut,
         ou piste Physique si `separateMonitors` (stunMon posé) ; `opts.type`

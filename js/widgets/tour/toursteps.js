@@ -303,6 +303,11 @@ export const TourSteps = {
       title: "Les couleurs des 4 éditions collent enfin aux livres",
       body: "Shadowrun 5 passe de l'ambre au rouge sang, Shadowrun 6 du cyan au magenta, Anarchy 1re éd. troque son duotone magenta/vert pour du bleu/or, et Anarchy 2e éd. devient ambre au lieu de rouge punk — chaque teinte a été relevée directement sur la couverture du livre. Motifs, typo et coupes de coin ne changent pas.",
     },
+    {
+      id: "wn-a2-gauge-gravity", anchor: "nav-combat", tours: ["whatsnew"], since: "1.50.0", fallback: "center",
+      title: "Anarchy 2 : la jauge de vie suit la gravité, pas le nombre",
+      body: "En Anarchy 2e éd., la mini-jauge de moniteur (tracker et écran joueur) classait par nombre de cases : deux blessures légères paraissaient plus graves qu'une blessure grave. Elle suit désormais le palier le plus grave atteint — une blessure grave alarme plus que deux légères. Sur l'écran joueur, les cases retrouvent aussi leurs paliers (légère / grave / incapacitante) au lieu d'une rangée aplatie. Les autres éditions ne changent pas.",
+    },
   ],
 };
 

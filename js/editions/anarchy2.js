@@ -289,17 +289,20 @@ export const EditionAnarchy2 = {
     knockOut(entity) {
       entity.incapFilled = 1;
     },
-    /** Résumé du moniteur pour la mini-jauge du cockpit — cases de
-        blessure cochées / capacité totale, tous crans cumulés (mêmes tiers
-        que applyWound, cf. _woundTiers : caps + bonus d'atouts inclus). */
+    /** Descripteur de moniteur pour les jauges — forme à SEUILS
+        (`Utils.tiersGauge`). Anarchy 2 classe par GRAVITÉ, pas par nombre de
+        cases : la barre et les cases du spectateur suivent le palier le plus
+        grave atteint (1 grave > 2 légères, cf. p.68). Les mêmes tiers que
+        `applyWound` (`_woundTiers` : caps + bonus d'atouts inclus). */
     gauge(entity) {
-      let filled = 0;
-      let total = 0;
-      for (const t of EditionAnarchy2._woundTiers(entity)) {
-        filled += entity[`${t.sev}Filled`] || 0;
-        total += t.cap;
-      }
-      return { filled, total };
+      return Utils.tiersGauge(
+        EditionAnarchy2._woundTiers(entity).map((t) => ({
+          sev: t.sev,
+          label: t.label,
+          cap: t.cap,
+          filled: entity[`${t.sev}Filled`] || 0,
+        })),
+      );
     },
     /** Résultat NET de dégâts en Anarchy 2 = un cran de gravité, pas des
         cases — délègue à applyWound (cascade p.68 incluse). `opts.severity`

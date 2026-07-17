@@ -1178,9 +1178,11 @@ export const Encounter = {
       const d = mod.combatDisposition(r.pnj, group);
       r.down = !!d.down;
       r.morale = this._isPJ(r) ? null : d.morale;
-      // Résumé du moniteur pour la mini-jauge de la ligne (accesseur
-      // neutre conditionMonitor.gauge — jamais de forme de moniteur ici).
-      // total 0 (PJ ad-hoc, entité sans moniteur) = pas de jauge au rendu.
+      // Descripteur de moniteur pour les jauges de la ligne (barre fine + cases
+      // du spectateur). `conditionMonitor.gauge` porte la FORME (échelle/seuils)
+      // remplie par l'édition ; le controller ne l'interprète pas, il la
+      // transmet aux renderers qui dessinent aveuglément. `null` (PJ ad-hoc,
+      // entité sans moniteur) = pas de jauge au rendu.
       const cm = mod.conditionMonitor;
       r.gauge = cm && cm.gauge ? cm.gauge(r.pnj) : null;
     }

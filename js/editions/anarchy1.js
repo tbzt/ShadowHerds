@@ -188,16 +188,16 @@ export const EditionAnarchy1 = {
       if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
       else entity.physFilled = entity.physMon || 0;
     },
-    /** Résumé du moniteur pour la mini-jauge du cockpit — cases remplies
-        / total, physique + étourdissement cumulés (mêmes champs que
-        isDestroyed/knockOut). total 0 = pas de moniteur, pas de jauge. */
+    /** Descripteur de moniteur pour les jauges (barre fine + cases spectateur).
+        Forme ÉCHELLE (`Utils.ladderGauge`) : physique + étourdissement cumulés
+        (comme SR5). `null` si pas de moniteur. */
     gauge(entity) {
       if (entity.type === "vehicle")
-        return { filled: entity.monFilled || 0, total: entity.monTotal || 0 };
-      return {
-        filled: (entity.physFilled || 0) + (entity.stunFilled || 0),
-        total: (entity.physMon || 0) + (entity.stunMon || 0),
-      };
+        return Utils.ladderGauge(entity.monFilled || 0, entity.monTotal || 0);
+      return Utils.ladderGauge(
+        (entity.physFilled || 0) + (entity.stunFilled || 0),
+        (entity.physMon || 0) + (entity.stunMon || 0),
+      );
     },
     /** Résultat NET de dégâts appliqué au moniteur (comme SR5, deux
         pistes Physique/Étourdissant, défaut Physique). */

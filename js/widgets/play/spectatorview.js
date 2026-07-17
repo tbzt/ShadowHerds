@@ -6,9 +6,9 @@
    2e onglet du MÊME appareil (#<edition>/spectateur, ouvert depuis
    Paramètres). Jamais d'écriture : aucune délégation data-action
    branchée ici, on se contente de lire Encounter.state/_rows() —
-   déjà enrichis (down/morale/gauge) par le tracker normal, aucune
-   forme de moniteur par édition à connaître ici (conditionMonitor.gauge
-   est l'accesseur neutre).
+   déjà enrichis (down/morale/gauge) par le tracker normal. La FORME du
+   moniteur (échelle/seuils) vit dans le descripteur `conditionMonitor.gauge` ;
+   `CardRenderer.gaugeBoxes` la dessine — ici on ne branche jamais sur l'édition.
    ============================================================ */
 import { Storage } from "../../core/storage.js";
 import { Utils } from "../../core/utils.js";
@@ -119,10 +119,12 @@ export const SpectatorView = {
 
   _row(r, isActive) {
     const name = Utils.escHtml(r.pnj?.name || r.name || "?");
-    const gauge =
-      r.gauge && r.gauge.total > 0
-        ? `<div class="monitor-boxes spectator-gauge">${CardRenderer._monitorBoxes(r.pnjId, "gauge", r.gauge.total, r.gauge.filled)}</div>`
-        : "";
+    // Cases dessinées selon la FORME du descripteur (échelle vs seuils) :
+    // en Anarchy 2 les paliers de gravité restent lisibles au lieu d'un total
+    // aplati. Lecture seule (projection) — CardRenderer.gaugeBoxes n'émet
+    // aucune interaction.
+    const boxes = CardRenderer.gaugeBoxes(r.gauge);
+    const gauge = boxes ? `<div class="monitor-boxes spectator-gauge">${boxes}</div>` : "";
     const cls = `spectator-row${isActive ? " is-active" : ""}${r.down ? " is-down" : ""}${r.hasActed ? " has-acted" : ""}`;
     // Identité (portrait + nom + type) à gauche, moniteur à droite : les joueurs
     // doivent savoir QUI est en jeu, pas seulement voir des cases.
