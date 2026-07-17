@@ -283,6 +283,19 @@ Contrat commun : `id`, `label`, `badgeLabel`, `formOptions`, `generate(opts)`,
 `printSheet`…). **Toute propriété qu'un consommateur lit doit exister dans les
 quatre modules** (valeur neutre si l'édition n'est pas concernée).
 
+Attention au revers de cette règle : **« valeur neutre » ne doit jamais vouloir dire
+« valeur qui efface une règle »**. Quand la forme commune ne peut exister qu'en
+écrasant ce qui distingue les éditions, c'est le contrat qu'il faut élargir, pas
+la règle qu'il faut aplatir. Contrevenant connu : `conditionMonitor.gauge()`
+renvoie `{filled, total}` (« accesseur neutre — jamais de forme de moniteur ici »),
+mais `anarchy2.gauge()` doit additionner des paliers hétérogènes (2 légères +
+1 grave + 1 incapacitante → total 4) pour s'y conformer. La barre du tracker
+(`js/widgets/play/encounterrenderer.js:297`) classe donc par nombre de blessures
+là où le livre classe par gravité : une blessure grave y paraît moins alarmante
+que deux légères. Le correctif n'est pas dans `gauge()`, il est dans le contrat —
+un descripteur que chaque édition remplit (échelle, ou paliers nommés). Cf.
+CONTRIBUTING.md, « Un accesseur neutre qui efface une règle est un bug de contrat ».
+
 ### b. `Collection.create(config)` — les collections persistées
 `Shadows` (PNJ), `ContactsBook` (contacts), `Servers` (serveurs) et `Characters`
 (PJ) sont **une instance de `Collection`** chacun. Le socle gère persistance,
