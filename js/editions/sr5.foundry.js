@@ -921,7 +921,6 @@ const FoundrySR5Import = {
         case "itemDevice":
         case "itemCyberdeck":
         case "itemAmmunition":
-        case "itemLifestyle":
           pnj.equip.push(item.name);
           break;
         case "itemSpell":
@@ -973,8 +972,49 @@ const FoundrySR5Import = {
           );
           break;
         }
+        case "itemSin": {
+          // pnj.identities (D1, Lot 5) : champ additif. `license` a DEUX
+          // formes sur une vraie fiche — tableau (Ayane/Nane) ou objet
+          // indexé {"0":…,"1":…} (Cisco/Mellon) — normalisée avant tout
+          // parcours (mine #1 du plan, un .map() naïf plante ou avale la
+          // moitié des licences).
+          const sys = item.system || {};
+          const rawLicense = sys.license;
+          const licenseList = Array.isArray(rawLicense)
+            ? rawLicense
+            : rawLicense && typeof rawLicense === "object"
+              ? Object.values(rawLicense)
+              : [];
+          pnj.identities.push({
+            name: item.name,
+            rating: this._num(sys.itemRating),
+            // Importé tel quel, jamais déduit (D3) : `nationality` contient
+            // parfois une corpo (« Lone Star », « Ares ») plutôt qu'une
+            // vraie nation — dérive de saisie assumée par le joueur.
+            nationality: sys.nationality || "",
+            legality: sys.legality || "",
+            price: this._num(sys.price),
+            licenses: licenseList
+              .map((l) => ({ name: (l && l.name) || "", rating: this._num(l && l.rating) }))
+              .filter((l) => l.name),
+            lifestyles: [],
+          });
+          break;
+        }
+        case "itemLifestyle": {
+          // Appariement par NOM en différé (buildPnj, après la boucle) —
+          // l'ordre des items Foundry ne garantit pas qu'un itemSin précède
+          // son itemLifestyle. Stash transitoire, purgé avant le retour.
+          const sys = item.system || {};
+          (pnj._rawLifestyles ||= []).push({
+            name: item.name,
+            type: sys.type || "",
+            city: sys.city || "",
+            linkedIdentity: (sys.linkedIdentity || "").trim(),
+          });
+          break;
+        }
         case "itemContact":
-        case "itemSin":
         case "itemMark":
           break; // hors modèle ShadowHerds, sans intérêt de fiche
         default:
@@ -1032,6 +1072,7 @@ const FoundrySR5Import = {
       powers: [],
       knowledges: [],
       traits: [],
+      identities: [], // Lot 5 (D1) : champ additif, cf. plan
     };
     // Réputation (Livre de Règles p.374) : streetCred/notoriety/publicAwareness
     // sont des TOTAUX déjà dérivés sur la fiche Foundry (pas un registre daté
@@ -1072,6 +1113,28 @@ const FoundrySR5Import = {
       pnj.isPC = true;
       pnj.player = "";
     }
+    // Styles de vie : linkedIdentity est un LIBELLÉ, jamais une clé
+    // étrangère (Failsafe — cf. plan, « Robert Wojciechowski » pend déjà sur
+    // une vraie fiche, absent des deux SIN de son propriétaire). Apparié par
+    // nom exact aux identités déjà lues ; orphelins (« sans SIN », vide, ou
+    // libellé pendant) dans un groupe à part, jamais perdus.
+    pnj.orphanLifestyles = [];
+    for (const raw of pnj._rawLifestyles || []) {
+      const { linkedIdentity, ...lifestyle } = raw;
+      const isNone = !linkedIdentity || /^sans\s+sin$/i.test(linkedIdentity);
+      const identity = !isNone && pnj.identities.find((idn) => idn.name === linkedIdentity);
+      if (identity) identity.lifestyles.push(lifestyle);
+      else {
+        pnj.orphanLifestyles.push(lifestyle);
+        if (!isNone) FoundryImport.note("style de vie (SIN introuvable)", `${lifestyle.name} → ${linkedIdentity}`);
+      }
+    }
+    delete pnj._rawLifestyles;
+    // Identité active (D2) : défaut = SIN de meilleur niveau, modifiable
+    // par le MJ (rendu carte).
+    if (pnj.identities.length) {
+      pnj.activeIdentity = pnj.identities.reduce((a, b) => (b.rating > a.rating ? b : a)).name;
+    }
     return pnj;
   },
 
@@ -1090,6 +1153,40 @@ const FoundrySR5Import = {
         metatype: sys.metatype || "",
         connection: this._num(sys.connection),
         loyalty: this._num(sys.loyalty),
+      });
+    }
+    return out;
+  },
+
+  /** Véhicules/drones (itemVehicle) d'un PNJ SR5 — extraction PURE, même
+      raison que readContacts (Shadows.data.all hors de portée d'un module
+      d'édition). `system.attributes` porte les stats chiffrées (handling/
+      speed/acceleration/body/armor/pilot/sensor), pas de texte à parser
+      contrairement à notre propre catalogue. Les gabarits jamais renseignés
+      Foundry (« Nouveau véhicule ou drone ») ont des attributs tous nuls —
+      sautés (rien à importer). Doublons exacts (ex. 3× "Suzuki Mirage"
+      identiques sur Ayane) dédoublonnés par nom+stats. */
+  readVehicles(actor) {
+    const out = [];
+    const seen = new Set();
+    for (const item of actor.items || []) {
+      if (!item || item.type !== "itemVehicle" || !item.name) continue;
+      const sys = item.system || {};
+      const a = sys.attributes || {};
+      if (!a.body && !a.handling && !a.speed) continue;
+      const stats = {
+        mania: this._num(a.handling), vitesse: this._num(a.speed), accel: this._num(a.acceleration),
+        structure: this._num(a.body), blindage: this._num(a.armor),
+        pilote: this._num(a.pilot), senseurs: this._num(a.sensor),
+      };
+      const dedupKey = `${item.name}::${JSON.stringify(stats)}`;
+      if (seen.has(dedupKey)) continue;
+      seen.add(dedupKey);
+      out.push({
+        name: item.name,
+        kind: /drone/i.test(sys.category || "") ? "drone" : "vehicle",
+        stats,
+        monTotal: this._num(sys.conditionMonitors && sys.conditionMonitors.condition),
       });
     }
     return out;

@@ -1557,6 +1557,43 @@ export const CardRenderer = {
     </div>`;
   },
 
+  /** Identités (SIN) — Lot 5 import Foundry, `pnj.identities` (D1, champ
+      additif). Une ligne par identité (nom · nationalité · niveau),
+      licences au pli (`<details>` natif, aucun JS neuf). Identité active
+      (D2) marquée ●. Styles de vie orphelins (`pnj.orphanLifestyles` —
+      « sans SIN » ou libellé pendant, Failsafe) en pied de section, jamais
+      perdus. Neutre : n'importe quelle édition peut peupler ces champs. */
+  _identitiesSection(pnj) {
+    const ids = pnj.identities || [];
+    const orphans = pnj.orphanLifestyles || [];
+    if (!ids.length && !orphans.length) return "";
+    const lifestylesHtml = (list) =>
+      list.length
+        ? `<div class="card-section-content">${list.map((l) => this._contentTag(l.city ? `${l.name} · ${l.city}` : l.name)).join("")}</div>`
+        : "";
+    const rows = ids
+      .map((idn) => {
+        const active = idn.name === pnj.activeIdentity ? "● " : "";
+        const bits = [idn.nationality, idn.rating != null ? `niv. ${idn.rating}` : ""].filter(Boolean).join(" · ");
+        const licenses = idn.licenses || [];
+        const licensesHtml = licenses.length
+          ? `<details class="identity-licenses"><summary>${licenses.length} licence${licenses.length > 1 ? "s" : ""}</summary>
+              ${licenses.map((l) => this._contentTag(l.rating ? `${l.name} ${l.rating}` : l.name)).join("")}
+            </details>`
+          : "";
+        return `<div class="identity-row">
+          <div class="identity-head">${active}<strong>${this._esc(idn.name)}</strong>${bits ? ` <span class="tag-stat">(${this._esc(bits)})</span>` : ""}</div>
+          ${lifestylesHtml(idn.lifestyles || [])}
+          ${licensesHtml}
+        </div>`;
+      })
+      .join("");
+    const orphanHtml = orphans.length
+      ? `<div class="identity-row identity-orphan"><div class="identity-head">Sans SIN</div>${lifestylesHtml(orphans)}</div>`
+      : "";
+    return `<div class="ref-block"><div class="ref-lbl">Identités</div>${rows}${orphanHtml}</div>`;
+  },
+
   /** Section « Modificateurs situationnels » : effets d'objet qui bonifient
       un test/une situation sans surface de jet dédiée (résistances, limites
       de Perception…). Visibles + sourcés, jamais auto-appliqués (garde-fou).

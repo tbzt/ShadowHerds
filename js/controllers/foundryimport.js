@@ -162,7 +162,18 @@ export const FoundryImport = {
       linkedContacts = this._linkContacts(pnj, chosen.cap.readContacts(actor), chosen.id);
     }
 
-    return { ok: true, edition: chosen.id, isPc, name: pnj.name, unresolved: unresolved.length, linkedContacts };
+    // Véhicules/drones (itemVehicle) : entités liées « qui suivent leur
+    // maître » (Shadows.data.all + ownerId, socle existant — cf.
+    // js/catalogs/vehicles.js) — PJ et PNJ tous deux propriétaires possibles.
+    let linkedVehicles = 0;
+    if (typeof chosen.cap.readVehicles === "function") {
+      linkedVehicles = this._spawnVehicles(pnj, chosen.cap.readVehicles(actor), chosen.id);
+    }
+
+    return {
+      ok: true, edition: chosen.id, isPc, name: pnj.name,
+      unresolved: unresolved.length, linkedContacts, linkedVehicles,
+    };
   },
 
   /** Apparie par nom (même édition) dans ContactsBook, crée sinon — même
@@ -198,6 +209,37 @@ export const FoundryImport = {
     return n;
   },
 
+  /** Construit une entité `type:"vehicle"` par véhicule extrait — même
+      forme que `Vehicles.spawn` (js/catalogs/vehicles.js), mais sans passer
+      par son parseur de texte catalogue : les stats Foundry sont déjà
+      chiffrées, structurées, il n'y a rien à reparser. `monTotal` vient du
+      moniteur déjà calculé côté Foundry (edition SR5 : vehicleFields
+      "total", pas de seuils à dériver). */
+  _spawnVehicles(pnj, vehicles, edition) {
+    if (!vehicles || !vehicles.length) return 0;
+    for (const v of vehicles) {
+      Shadows.data.all.push({
+        id: Utils.uid(),
+        type: "vehicle",
+        kind: v.kind,
+        edition,
+        name: v.name,
+        ownerId: pnj.id,
+        ownerName: pnj.name || "PNJ",
+        srcItem: `Foundry: ${v.name}`,
+        stats: { ...v.stats },
+        weapons: [],
+        rrNotes: null,
+        notes: "",
+        deployed: true,
+        monTotal: v.monTotal || 0,
+        monFilled: 0,
+      });
+    }
+    Shadows.save();
+    return vehicles.length;
+  },
+
   /** Point d'entrée (data-action="foundry-import") : ouvre un sélecteur de
       fichier(s) et importe chaque acteur Foundry. */
   async openImportDialog() {
@@ -228,6 +270,7 @@ export const FoundryImport = {
     let failed = 0;
     let unresolved = 0;
     let contactsLinked = 0;
+    let vehiclesSpawned = 0;
     for (const file of files) {
       let data;
       try {
@@ -249,6 +292,7 @@ export const FoundryImport = {
         else pnjCount++;
         unresolved += res.unresolved;
         contactsLinked += res.linkedContacts || 0;
+        vehiclesSpawned += res.linkedVehicles || 0;
       }
     }
     if (!pj && !pnjCount) {
@@ -261,6 +305,7 @@ export const FoundryImport = {
     const head = `${parts.join(" + ")} importé${pj + pnjCount > 1 ? "s" : ""} depuis Foundry`;
     const tail = [];
     if (contactsLinked) tail.push(`${contactsLinked} contact(s) lié(s)`);
+    if (vehiclesSpawned) tail.push(`${vehiclesSpawned} véhicule(s)/drone(s)`);
     if (unresolved) tail.push(`${unresolved} champ(s) non repris — voir console`);
     if (failed) tail.push(`${failed} échec(s)`);
     toast(tail.length ? `${head} · ${tail.join(" · ")}` : head, unresolved || failed ? "warning" : "success");

@@ -660,6 +660,29 @@
   color: var(--danger);
 }
 
+/* Identités (SIN, import Foundry, Lot 5) — une ligne par identité dans le
+   .ref-block « Identités ». <details> natif pour les licences au pli,
+   pas de nouveau widget. */
+.identity-row {
+  margin-bottom: var(--sp-2);
+}
+.identity-row:last-child {
+  margin-bottom: 0;
+}
+.identity-head {
+  font-size: var(--fs-sm);
+  color: var(--text);
+}
+.identity-licenses {
+  margin-top: 2px;
+}
+.identity-licenses summary {
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+
 /* Clichés — Anarchy */
 .cliche-list {
   display: flex;
