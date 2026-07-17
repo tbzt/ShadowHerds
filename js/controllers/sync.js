@@ -29,7 +29,7 @@ class SyncConflict extends Error {
 
 import { Backup } from "./backup.js";
 import { Debug } from "../core/debug.js";
-import { Dialog } from "../widgets/dialog.js";
+import { Dialog } from "../widgets/kit/dialog.js";
 import { Hub } from "./hub.js";
 import { Settings } from "./settings.js";
 import { Storage } from "../core/storage.js";

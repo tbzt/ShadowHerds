@@ -116,7 +116,7 @@ export const Coherence = {
 
   /* ========================================================
      MILIEUX — origine/faction. Dérivés des catégories déjà
-     posées par ProfCategories (js/widgets/profcategories.js).
+     posées par ProfCategories (js/widgets/kit/profcategories.js).
      skillOverlay : libellés « idéaux » (filtrés contre
      SkillCatalog[edition] avant usage, car les noms de spécialité
      entre parenthèses ne sont pas des clés du catalogue).

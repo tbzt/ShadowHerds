@@ -11,7 +11,7 @@
    via App.editionModule.printSheet(pnj) (js/editions/*.print.js).
    Aucune branche App.edition ici (prohibition #1).
    ============================================================ */
-import { DossierBar } from "../widgets/dossierbar.js";
+import { DossierBar } from "../widgets/journal/dossierbar.js";
 
 export const PrintSheet = {
   _root() {

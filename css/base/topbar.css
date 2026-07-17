@@ -1,0 +1,101 @@
+/* ============================================================
+   TOPBAR — boutons-icônes d'action + réserve de menace
+   Base = secondaire neutre ; le combat est mis en avant, les raccourcis
+   restent discrets (-quiet). #threat-reserve est propre à Anarchy 2.0.
+   ============================================================ */
+.topbar-action {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base),
+    background var(--dur-base);
+}
+.topbar-action:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* Combat : outil MJ majeur → liseré accent au repos pour ressortir de la
+   grappe d'icônes ; état actif plein quand une scène est en cours. */
+.topbar-action-combat {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.topbar-action-combat:hover {
+  background: var(--glow);
+}
+.topbar-action-combat.is-active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+/* Raccourcis : aide secondaire, volontairement discrète. */
+.topbar-action-quiet {
+  border-color: transparent;
+  opacity: 0.75;
+}
+.topbar-action-quiet:hover {
+  opacity: 1;
+}
+
+/* Réserve de menace (Anarchy 2.0) : badge topbar masqué par défaut,
+   révélé uniquement sous [data-edition^="anarchy"] (jamais via JS). */
+#threat-reserve {
+  display: none;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.35rem;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+[data-edition^="anarchy"] #threat-reserve {
+  display: flex;
+}
+.threat-reserve-lbl {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+#threat-reserve-val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-base);
+  min-width: 1ch;
+  text-align: center;
+  color: var(--accent);
+}
+.threat-reserve-step,
+.threat-reserve-reset {
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  line-height: 1;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base);
+}
+.threat-reserve-step:hover,
+.threat-reserve-reset:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}

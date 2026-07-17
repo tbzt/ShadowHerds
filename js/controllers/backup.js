@@ -15,7 +15,7 @@
    Le format est versionné pour rester lisible à l'avenir. Les clés
    localStorage sous-jacentes ont la forme sr_pnj_v2_<edition>_<clé>.
    ============================================================ */
-import { Dialog } from "../widgets/dialog.js";
+import { Dialog } from "../widgets/kit/dialog.js";
 import { Storage } from "../core/storage.js";
 import { Sync } from "./sync.js";
 

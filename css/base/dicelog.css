@@ -1,0 +1,369 @@
+/* ============================================================
+   DICE LOG — journal des jets (js/widgets/dicelog.js)
+   L'overlay et l'en-tête (.dice-log-head/.dice-log-title) sont RÉUTILISÉS
+   par le bloc-notes (notepad.css) : ne pas les déplacer là-bas.
+   ============================================================ */
+#dice-log-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-popover-backdrop);
+  background: transparent;
+}
+#dice-log-backdrop.open {
+  display: block;
+}
+#dice-log-panel {
+  position: fixed;
+  top: 58px;
+  right: 0.75rem;
+  width: min(360px, calc(100vw - 1.5rem));
+  max-height: min(60vh, 480px);
+  z-index: var(--z-popover);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 4px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition:
+    opacity var(--dur-base) ease,
+    transform var(--dur-base) ease;
+}
+#dice-log-panel.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.dice-log-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+.dice-log-title {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+/* « Résumé de séance » : bandeau repliable entre l'en-tête et les filtres,
+   recalculé sur tout l'historique. Replié par défaut ; l'en-tête reprend la
+   fonte mono/casse des autres en-têtes du panneau (dice-log-turn-header). */
+.dice-log-summary:empty {
+  display: none;
+}
+.dice-log-summary {
+  border-bottom: 1px solid var(--border);
+}
+.dice-log-summary-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  width: 100%;
+  padding: 0.45rem 0.8rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: left;
+}
+.dice-log-summary-chevron {
+  color: var(--accent);
+  display: inline-flex;
+  transition: transform var(--dur-fast);
+}
+.dice-log-summary-chevron.is-open {
+  transform: rotate(90deg);
+}
+.dice-log-summary-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-3);
+  padding: 0 0.8rem 0.6rem;
+}
+.dice-log-stat {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+.dice-log-stat b {
+  color: var(--text);
+  font-size: var(--fs-sm);
+  margin-right: 0.2em;
+}
+/* J2 : rangée de puces de filtre — réutilise .hub-facet-chip tel quel (même
+   pastille active/inactive que le Hub F1). Une seule ligne à toute largeur
+   (défilement horizontal si trop de personnages) plutôt qu'un retour à la ligne
+   qui casserait l'axe horizontal en « escalier » (cf. audit alignement) ;
+   align-items:center garantit un axe commun, les puces gardent leur largeur au
+   contenu. */
+.dice-log-filters {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dice-log-filters::-webkit-scrollbar {
+  display: none;
+}
+/* Les puces ne se compriment pas (sinon les noms longs s'écrasent) : elles
+   défilent. */
+.dice-log-filters > .hub-facet-chip {
+  flex: none;
+}
+.dice-log-filters:empty {
+  display: none;
+  border-bottom: none;
+}
+.dice-log-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.3rem 0;
+}
+/* J3 : en-tête de tour sticky — reste visible en tête de liste pendant le
+   défilement (repère « où en est-on », pas un vrai groupement collapsible). */
+.dice-log-turn-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-card);
+  padding: 0.3rem 0.8rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+}
+.dice-log-empty {
+  padding: 1.2rem 0.9rem;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  text-align: center;
+}
+.dice-log-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: var(--sp-2) 0.8rem;
+  border-left: 2px solid var(--border);
+  margin: 2px 0;
+  flex-wrap: wrap;
+}
+.dice-log-item.good {
+  border-left-color: var(--accent);
+}
+.dice-log-item.glitch {
+  border-left-color: var(--warning);
+}
+.dice-log-item.crit {
+  border-left-color: var(--danger);
+}
+.dice-log-item.zero {
+  border-left-color: var(--text-dim);
+}
+/* J1 : cartes pré-attentives — seules les ALARMES (crit/glitch, cf. sémantique
+   cls) se détachent en carte pleine (bordure + fond teinté + icône) ; le
+   reste garde la ligne compacte ci-dessus. */
+.dice-log-item.is-card {
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: 4px;
+  padding: 0.6rem 0.8rem;
+}
+.dice-log-item.crit.is-card {
+  border-left-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, var(--bg-card));
+}
+.dice-log-item.glitch.is-card {
+  border-left-color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 10%, var(--bg-card));
+}
+.dice-log-icon {
+  flex: none;
+  font-size: var(--fs-md);
+}
+.dice-log-item.crit .dice-log-icon {
+  color: var(--danger);
+}
+.dice-log-item.glitch .dice-log-icon {
+  color: var(--warning);
+}
+.dice-log-detail-btn {
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.dice-log-detail-btn:hover {
+  color: var(--accent);
+}
+/* CH-V7 : chevron ▸/▾ → sprite, pivote pour pointer vers le bas (déplié). */
+.dice-log-detail-btn .icon {
+  transition: transform var(--dur-fast);
+}
+.dice-log-detail-btn .icon.is-open {
+  transform: rotate(90deg);
+}
+/* J3 : pastille de flash — alarme (crit/glitch) ajoutée pendant que le
+   journal est fermé. #dice-log-btn est masqué <641px (cf. media query plus
+   bas), donc cette pastille n'existe de fait qu'à partir de 641px. */
+.dice-log-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: var(--warning);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+.dice-log-time {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+.dice-log-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.dice-log-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dice-log-label.dim {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+.dice-log-sub {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+}
+.dice-log-tag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.dice-log-tag.glitch {
+  color: var(--warning);
+}
+.dice-log-tag.crit {
+  color: var(--danger);
+}
+.dice-log-main {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.dice-log-item.crit .dice-log-main {
+  color: var(--danger);
+}
+.dice-log-item.zero .dice-log-main {
+  color: var(--text-dim);
+}
+.dice-log-main small {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 400;
+  color: var(--text-dim);
+  margin-left: 3px;
+  text-transform: uppercase;
+}
+/* J4 : épingler — exempte de la purge (cf. dicelog.js record()). Liseré
+   accent discret sur la ligne/carte, pastille pleine sur le bouton actif. */
+.dice-log-item.is-pinned {
+  border-left-color: var(--accent);
+}
+.dice-log-pin-btn {
+  align-self: flex-start;
+  flex: none;
+  background: transparent;
+  border: none;
+  padding: 0 0 0 0.4rem;
+  font-size: var(--fs-sm);
+  opacity: 0.35;
+  cursor: pointer;
+  filter: grayscale(1);
+}
+.dice-log-pin-btn:hover {
+  opacity: 0.7;
+}
+.dice-log-pin-btn.is-pinned {
+  opacity: 1;
+  filter: none;
+}
+.dice-log-note {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+}
+.dice-log-note-text {
+  font-family: var(--font-body);
+  font-size: var(--fs-2xs);
+  font-style: italic;
+  color: var(--text-dim);
+}
+.dice-log-note-form {
+  display: flex;
+}
+.dice-log-note-input {
+  width: 100%;
+  max-width: 220px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-2xs);
+  padding: 1px 4px;
+}
+
+/* Nom du PNJ à l'origine du jet (posé par dicelog.js). */
+.dice-log-who {
+  color: var(--accent);
+  font-weight: 600;
+}
+.dice-log-who::after {
+  content: " ·";
+  color: var(--text-dim);
+  font-weight: 400;
+}

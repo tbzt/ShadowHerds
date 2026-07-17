@@ -4,9 +4,9 @@
    SETTINGS — paramètres par édition, stockés via Storage
    ============================================================ */
 import { ContactsBook } from "./contactsbook.js";
-import { Dialog } from "../widgets/dialog.js";
-import { DicePanel } from "../widgets/dicepanel.js";
-import { DiceRoller } from "../widgets/diceroller.js";
+import { Dialog } from "../widgets/kit/dialog.js";
+import { DicePanel } from "../widgets/dice/dicepanel.js";
+import { DiceRoller } from "../widgets/dice/diceroller.js";
 import { Gen } from "./generator.js";
 import { Shadows } from "./shadows.js";
 import { Storage } from "../core/storage.js";

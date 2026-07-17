@@ -17,7 +17,7 @@
    ============================================================ */
 import { Debug } from "../core/debug.js";
 import { Dice } from "../rules/dice.js";
-import { DiceRoller } from "../widgets/diceroller.js";
+import { DiceRoller } from "../widgets/dice/diceroller.js";
 import { Encounter } from "./encounter.js";
 import { Matrix } from "../rules/matrix.js";
 import { Servers } from "./servers.js";

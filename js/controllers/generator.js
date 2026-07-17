@@ -17,15 +17,15 @@
    Un import statique ici le ramènerait dans le chargement initial et annulerait
    ce gain. Il est donc lu en global (pont window.Creatures posé par le module
    quand il arrive) — toujours après coup, jamais à l'évaluation de ce fichier. */
-import { CardRenderer } from "../widgets/cardrenderer.js";
+import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Coherence } from "../rules/coherence.js";
 import { Debug } from "../core/debug.js";
 import { Encounter } from "./encounter.js";
 import { Infected } from "../rules/infected.js";
 import { Metavariants } from "../rules/metavariants.js";
-import { MultiSelect } from "../widgets/multiselect.js";
-import { ProfCategories } from "../widgets/profcategories.js";
-import { SingleSelect } from "../widgets/singleselect.js";
+import { MultiSelect } from "../widgets/kit/multiselect.js";
+import { ProfCategories } from "../widgets/kit/profcategories.js";
+import { SingleSelect } from "../widgets/kit/singleselect.js";
 import { Spirits } from "../catalogs/spirits.js";
 import { Storage } from "../core/storage.js";
 import { Utils } from "../core/utils.js";

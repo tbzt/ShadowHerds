@@ -5,20 +5,20 @@
    ============================================================ */
 import { Actor } from "../rules/actor.js";
 import { Campaign } from "../rules/campaign.js";
-import { CardRenderer } from "../widgets/cardrenderer.js";
+import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
 import { ContactsBook } from "./contactsbook.js";
 import { Content } from "../rules/content.js";
 import { Cyberdeck } from "../rules/cyberdeck.js";
-import { CyberdeckRenderer } from "../widgets/cyberdeckrenderer.js";
+import { CyberdeckRenderer } from "../widgets/card/cyberdeckrenderer.js";
 import { ItemResolver } from "../rules/itemresolver.js";
-import { Mentions } from "../widgets/mentions.js";
+import { Mentions } from "../widgets/journal/mentions.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { PnjLookup } from "./pnjlookup.js";
 import { Shadows } from "./shadows.js";
-import { SingleSelect } from "../widgets/singleselect.js";
+import { SingleSelect } from "../widgets/kit/singleselect.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
-import { UI } from "../widgets/ui.js";
+import { UI } from "../widgets/kit/ui.js";
 import { Utils } from "../core/utils.js";
 import { Vehicles } from "../catalogs/vehicles.js";
 

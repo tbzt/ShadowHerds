@@ -63,13 +63,13 @@ const _contactsCollection = Collection.create(
 );
 // Capturé avant extension pour pouvoir envelopper le `load` du socle (CO-a).
 const _contactsBaseLoad = _contactsCollection.load;
-import { CardRenderer } from "../widgets/cardrenderer.js";
+import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
 import { Coherence } from "../rules/coherence.js";
-import { Collection } from "../widgets/collection.js";
+import { Collection } from "../widgets/collection/collection.js";
 import { ContactGen } from "./contactgen.js";
 import { Contacts } from "./contacts.js";
-import { DossierBar } from "../widgets/dossierbar.js";
+import { DossierBar } from "../widgets/journal/dossierbar.js";
 import { Flavor } from "../rules/flavor.js";
 import { Shadows } from "./shadows.js";
 

@@ -212,3 +212,20 @@
     align-self: stretch;
   }
 }
+
+/* Réglages : champ numérique */
+.settings-number-input {
+  width: 64px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-align: center;
+  padding: 0.3rem 0.4rem;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+}
+.settings-number-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
