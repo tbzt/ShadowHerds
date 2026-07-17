@@ -8,6 +8,9 @@
    ici, hors du contrôleur neutre PrintSheet). S'auto-enregistre sur
    EditionSR5.printSheet, lu par PrintSheet.
    ============================================================ */
+import { EditionSR5 } from "./sr5.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+
 const PrintSR5 = {
   _esc: (s) => CardRenderer._esc(s == null ? "" : String(s)),
 
@@ -126,6 +129,4 @@ const PrintSR5 = {
   },
 };
 
-if (typeof EditionSR5 !== "undefined") {
-  EditionSR5.printSheet = (pnj) => PrintSR5.build(pnj);
-}
+EditionSR5.printSheet = (pnj) => PrintSR5.build(pnj);

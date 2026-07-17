@@ -21,7 +21,20 @@
 
    Doit être chargé APRÈS js/editions/sr5.js dans index.html.
    ============================================================ */
-const EditionAnarchy1 = {
+import { Actor } from "../rules/actor.js";
+import { BonusEngine } from "../rules/bonusengine.js";
+import { Coherence } from "../rules/coherence.js";
+import { Content } from "../rules/content.js";
+import { Cyberdeck } from "../rules/cyberdeck.js";
+import { Flavor } from "../rules/flavor.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+import { Magic } from "../rules/magic.js";
+import { Metavariants } from "../rules/metavariants.js";
+import { Spirits } from "../catalogs/spirits.js";
+import { Utils } from "../core/utils.js";
+import { WeaponRoll } from "../rules/weaponroll.js";
+
+export const EditionAnarchy1 = {
   id: "anarchy1",
   label: "Anarchy 1re",
   badgeLabel: "ANARCHY 1RE",
@@ -1548,3 +1561,6 @@ const EditionAnarchy1 = {
     return pnj;
   },
 };
+
+// Pont couche 3 (migration modules ES) — retiré en fin de migration.
+window.EditionAnarchy1 = EditionAnarchy1;

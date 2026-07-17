@@ -12,6 +12,13 @@
    (p.52). Ce fichier est un barème pur, isolé pour rester facile à
    corriger si une valeur doit être ajustée après relecture du livre.
    ============================================================ */
+import { BonusEngine } from "../rules/bonusengine.js";
+import { Content } from "../rules/content.js";
+import { EditionAnarchy2 } from "./anarchy2.js";
+import { Flavor } from "../rules/flavor.js";
+import { Magic } from "../rules/magic.js";
+import { Utils } from "../core/utils.js";
+
 Object.assign(EditionAnarchy2, {
   creation: {
     /* ---- Coûts unitaires (récapitulatif p.83) ---- */

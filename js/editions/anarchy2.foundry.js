@@ -22,6 +22,11 @@
    présent dans EditionAnarchy2 (WEAPON_CATALOG/resolveWeapon), réutilisé
    tel quel — pas de duplication de la logique VD mêlée (FOR+bonus).
    ============================================================ */
+import { Actor } from "../rules/actor.js";
+import { EditionAnarchy2 } from "./anarchy2.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+import { Vehicles } from "../catalogs/vehicles.js";
+
 const FoundryAnarchy2Export = {
   /* ----------------------------------------------------------
      COMPÉTENCES — 16 slugs canoniques de sra2 (constants.ts
@@ -712,7 +717,5 @@ const FoundryAnarchy2Import = {
 /* Auto-enregistrement sur le module d'édition Anarchy2 (chargé avant
    nous). FoundryExport lira foundryExport ; FoundryImport lira
    foundryImport. */
-if (typeof EditionAnarchy2 !== "undefined") {
-  EditionAnarchy2.foundryExport = FoundryAnarchy2Export;
-  EditionAnarchy2.foundryImport = FoundryAnarchy2Import;
-}
+EditionAnarchy2.foundryExport = FoundryAnarchy2Export;
+EditionAnarchy2.foundryImport = FoundryAnarchy2Import;

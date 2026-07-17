@@ -28,6 +28,10 @@
    la variante scindée (dwarfWill/dwarfBody, trollBody/trollStr) plutôt
    que dwarf/troll bruts.
    ============================================================ */
+import { Actor } from "../rules/actor.js";
+import { EditionSR6 } from "./sr6.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+
 const FoundrySR6Export = {
   /* ----------------------------------------------------------
      COMPÉTENCES — 18 compétences canoniques SR6 (fusion groupe +
@@ -627,7 +631,5 @@ const FoundrySR6Import = {
 
 /* Auto-enregistrement sur le module d'édition SR6 (chargé avant nous).
    FoundryExport lira foundryExport ; FoundryImport lira foundryImport. */
-if (typeof EditionSR6 !== "undefined") {
-  EditionSR6.foundryExport = FoundrySR6Export;
-  EditionSR6.foundryImport = FoundrySR6Import;
-}
+EditionSR6.foundryExport = FoundrySR6Export;
+EditionSR6.foundryImport = FoundrySR6Import;

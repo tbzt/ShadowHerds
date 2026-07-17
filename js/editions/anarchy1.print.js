@@ -7,6 +7,9 @@
    bandeaux de section dorés, moniteurs à cercles. Compagnon de
    l'édition Anarchy 1, s'auto-enregistre sur EditionAnarchy1.printSheet.
    ============================================================ */
+import { EditionAnarchy1 } from "./anarchy1.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+
 const PrintAnarchy1 = {
   _esc: (s) => CardRenderer._esc(s == null ? "" : String(s)),
   _named(v) {
@@ -119,6 +122,4 @@ const PrintAnarchy1 = {
   },
 };
 
-if (typeof EditionAnarchy1 !== "undefined") {
-  EditionAnarchy1.printSheet = (pnj) => PrintAnarchy1.build(pnj);
-}
+EditionAnarchy1.printSheet = (pnj) => PrintAnarchy1.build(pnj);

@@ -14,7 +14,18 @@
    - PNJ "second rôle" : on utilise le nombre de succès moyen
    - PNJ "premier rôle" : on lance les dés + points d'Anarchy
    ============================================================ */
-const EditionAnarchy2 = {
+import { BonusEngine } from "../rules/bonusengine.js";
+import { Coherence } from "../rules/coherence.js";
+import { Content } from "../rules/content.js";
+import { Cyberdeck } from "../rules/cyberdeck.js";
+import { Flavor } from "../rules/flavor.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+import { Magic } from "../rules/magic.js";
+import { Spirits } from "../catalogs/spirits.js";
+import { Utils } from "../core/utils.js";
+import { WeaponRoll } from "../rules/weaponroll.js";
+
+export const EditionAnarchy2 = {
   id: "anarchy2",
   label: "Anarchy 2e",
   badgeLabel: "ANARCHY 2E",
@@ -4058,3 +4069,6 @@ const EditionAnarchy2 = {
     return pnj;
   },
 };
+
+// Pont couche 3 (migration modules ES) — retiré en fin de migration.
+window.EditionAnarchy2 = EditionAnarchy2;

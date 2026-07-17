@@ -9,6 +9,10 @@
    (□□/□/□) au-dessus des seuils de blessures. Deux colonnes.
    Compagnon de l'édition Anarchy 2, s'auto-enregistre sur printSheet.
    ============================================================ */
+import { AnarchyAtouts } from "../rules/anarchyatouts.js";
+import { EditionAnarchy2 } from "./anarchy2.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+
 const PrintAnarchy2 = {
   _esc: (s) => CardRenderer._esc(s == null ? "" : String(s)),
   _named(v) {
@@ -155,6 +159,4 @@ const PrintAnarchy2 = {
   },
 };
 
-if (typeof EditionAnarchy2 !== "undefined") {
-  EditionAnarchy2.printSheet = (pnj) => PrintAnarchy2.build(pnj);
-}
+EditionAnarchy2.printSheet = (pnj) => PrintAnarchy2.build(pnj);

@@ -16,7 +16,22 @@
    - Scores Offensifs (SO) sur les armes au lieu de VD seul
    ============================================================ */
 
-const EditionSR6 = {
+import { Actor } from "../rules/actor.js";
+import { BonusEngine } from "../rules/bonusengine.js";
+import { Coherence } from "../rules/coherence.js";
+import { Content } from "../rules/content.js";
+import { Cyberdeck } from "../rules/cyberdeck.js";
+import { Flavor } from "../rules/flavor.js";
+import { Infected } from "../rules/infected.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+import { LoadoutEngine } from "../rules/loadoutengine.js";
+import { Magic } from "../rules/magic.js";
+import { Metavariants } from "../rules/metavariants.js";
+import { Spirits } from "../catalogs/spirits.js";
+import { Utils } from "../core/utils.js";
+import { WeaponRoll } from "../rules/weaponroll.js";
+
+export const EditionSR6 = {
   id: "sr6",
   label: "Shadowrun 6e",
   badgeLabel: "SR6",
@@ -3019,3 +3034,6 @@ const EditionSR6 = {
     return pnj;
   },
 };
+
+// Pont couche 3 (migration modules ES) — retiré en fin de migration.
+window.EditionSR6 = EditionSR6;

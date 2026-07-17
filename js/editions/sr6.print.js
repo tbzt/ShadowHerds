@@ -7,6 +7,9 @@
    moniteur d'états entier. Compagnon de l'édition SR6, s'auto-
    enregistre sur EditionSR6.printSheet (lu par PrintSheet).
    ============================================================ */
+import { EditionSR6 } from "./sr6.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+
 const PrintSR6 = {
   _esc: (s) => CardRenderer._esc(s == null ? "" : String(s)),
   _named(v) {
@@ -128,6 +131,4 @@ const PrintSR6 = {
   },
 };
 
-if (typeof EditionSR6 !== "undefined") {
-  EditionSR6.printSheet = (pnj) => PrintSR6.build(pnj);
-}
+EditionSR6.printSheet = (pnj) => PrintSR6.build(pnj);

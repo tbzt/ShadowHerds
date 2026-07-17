@@ -19,6 +19,12 @@
    volontairement isolé : c'est aussi la brique réutilisable le jour
    d'une éventuelle structuration de `equip` ou d'une i18n.
    ============================================================ */
+import { Actor } from "../rules/actor.js";
+import { Content } from "../rules/content.js";
+import { EditionSR5 } from "./sr5.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+import { SkillCatalog } from "../rules/skillcatalog.js";
+
 const FoundrySR5Export = {
   /* ----------------------------------------------------------
      Métadonnées des 76 compétences du système Foundry
@@ -986,7 +992,5 @@ const FoundrySR5Import = {
 /* Auto-enregistrement sur le module d'édition SR5 (chargé avant nous).
    Le contrôleur neutre FoundryExport lira App.editionModule.foundryExport,
    FoundryImport lira App.editionModule.foundryImport. */
-if (typeof EditionSR5 !== "undefined") {
-  EditionSR5.foundryExport = FoundrySR5Export;
-  EditionSR5.foundryImport = FoundrySR5Import;
-}
+EditionSR5.foundryExport = FoundrySR5Export;
+EditionSR5.foundryImport = FoundrySR5Import;

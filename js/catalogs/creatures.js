@@ -18,7 +18,9 @@
    de lieu du générateur et la section "Description" de la card
    (lecture seule, cf. CardRenderer._creatureLoreSection).
    ============================================================ */
-const Creatures = {
+import { Utils } from "../core/utils.js";
+
+export const Creatures = {
   /* ---- Vocabulaire fermé des habitats (clé -> libellé filtre). ---- */
   HABITATS: {
     urbain: "Urbain",
@@ -3614,3 +3616,6 @@ const Creatures = {
     };
   },
 };
+
+// Pont couche 3 (migration modules ES) — retiré en fin de migration.
+window.Creatures = Creatures;

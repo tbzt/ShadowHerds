@@ -7,7 +7,23 @@
    PNJ de référence : p.382-388
    Contacts : p.388-394
    ============================================================ */
-const EditionSR5 = {
+import { Actor } from "../rules/actor.js";
+import { BonusEngine } from "../rules/bonusengine.js";
+import { Coherence } from "../rules/coherence.js";
+import { Content } from "../rules/content.js";
+import { Cyberdeck } from "../rules/cyberdeck.js";
+import { Flavor } from "../rules/flavor.js";
+import { Infected } from "../rules/infected.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+import { LoadoutEngine } from "../rules/loadoutengine.js";
+import { Magic } from "../rules/magic.js";
+import { Metavariants } from "../rules/metavariants.js";
+import { SkillCatalog } from "../rules/skillcatalog.js";
+import { Spirits } from "../catalogs/spirits.js";
+import { Utils } from "../core/utils.js";
+import { WeaponRoll } from "../rules/weaponroll.js";
+
+export const EditionSR5 = {
   id: "sr5",
   label: "Shadowrun 5e",
   badgeLabel: "SR5",
@@ -2962,3 +2978,6 @@ const EditionSR5 = {
     return pnj;
   },
 };
+
+// Pont couche 3 (migration modules ES) — retiré en fin de migration.
+window.EditionSR5 = EditionSR5;

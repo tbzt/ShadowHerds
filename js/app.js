@@ -250,10 +250,15 @@ const App = {
     l.href = href;
     document.head.appendChild(l);
   },
+  /** Injecte un module ES. `type="module"` est obligatoire : les fichiers
+      chargés ici (éditions + créatures) ont des `import`/`export`, illégaux
+      dans un script classique. Les modules sont dédupliqués par URL côté
+      navigateur, `_loadedAssets` évite juste de recréer la balise. */
   _loadScript(src) {
     return new Promise((resolve, reject) => {
       if (this._loadedAssets.has(src)) return resolve();
       const s = document.createElement("script");
+      s.type = "module";
       s.src = src;
       s.onload = () => {
         this._loadedAssets.add(src);
@@ -263,9 +268,10 @@ const App = {
       document.head.appendChild(s);
     });
   },
-  /** Charge (une seule fois) le thème + les scripts de l'édition. Séquentiel :
-      le fichier principal avant ses compagnons .foundry/.creation, qui font des
-      Object.assign sur le module et exigent qu'il existe déjà. */
+  /** Charge (une seule fois) le thème + les scripts de l'édition. L'ordre des
+      compagnons (.foundry/.print/.creation, qui greffent sur l'objet
+      d'édition) n'est plus une question de séquence : chacun `import`e son
+      édition, le graphe de modules garantit qu'elle existe. */
   async _loadEditionAssets(ed) {
     this._loadCss(this._EDITION_CSS[ed]);
     for (const src of [...this._COMMON_JS, ...(this._EDITION_JS[ed] || [])]) {
