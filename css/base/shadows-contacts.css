@@ -1099,3 +1099,27 @@ body.reordering .reorder-handle {
   color: var(--danger);
 }
 
+
+/* ============================================================
+   FILTRE DE GRILLE — recherche instantanée Ombres / Contacts
+   ============================================================ */
+.grid-filter {
+  margin-left: auto;
+  flex: 1 1 140px;
+  max-width: 240px;
+  min-width: 120px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  padding: 0.35rem 0.9rem;
+  font-size: var(--fs-sm);
+  transition: border-color var(--dur-base);
+}
+.grid-filter:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.grid-filter::placeholder {
+  color: var(--text-dim);
+}

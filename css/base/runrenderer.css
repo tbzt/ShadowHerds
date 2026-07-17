@@ -1,0 +1,53 @@
+/* ============================================================
+   RUN CARD — carte de run (js/widgets/runrenderer.js)
+   ============================================================ */
+.run-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  width: 320px;
+  overflow: hidden;
+  animation: cardIn 0.3s ease;
+}
+.run-card::before {
+  content: "";
+  display: block;
+  height: 2px;
+  background: var(--accent);
+}
+.run-card-header {
+  padding: var(--sp-3) var(--sp-4) 0.6rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.run-type {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text);
+  flex: 1;
+}
+.run-card-body {
+  padding: var(--sp-3) var(--sp-4);
+}
+.run-field {
+  margin-bottom: var(--sp-2);
+}
+.run-field-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 1px;
+}
+.run-field-val {
+  font-size: var(--fs-sm);
+  color: var(--text);
+}
+.run-complication {
+  color: var(--accent2) !important;
+}

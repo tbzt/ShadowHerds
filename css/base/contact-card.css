@@ -1,0 +1,103 @@
+/* ============================================================
+   CONTACTS & RUN
+   ============================================================ */
+/* CO-e (merge, reconciliation post rail-carnet) : chrome retargeté sur
+   `.pnj-card-frame` — `background`/`border`/`border-radius`/`overflow`/
+   `animation`/`break-inside`/`margin-bottom` sont désormais IDENTIQUES à
+   la coquille partagée `.pnj-card`/`.pnj-card-frame` (retirés, redondants).
+   Largeur fixe 290px abandonnée aussi : `#contacts-gen-grid` est la même
+   `.cards-zone` masonry que toutes les autres cartes, qui remplissent leur
+   colonne (`width:100%`, base `.pnj-card`) sans px figé. Seul un vrai delta
+   survit : l'accent2 (au lieu de l'accent générique) du liseré du haut,
+   retargeté sur le frame — plus forte spécificité que la règle de base,
+   ordre de chargement CSS non requis. */
+.contact-card .pnj-card-frame::before {
+  background: var(--accent2);
+}
+/* CO-e (nettoyage) : `.contact-card-body`/`.contact-name`/`.contact-role`
+   (padding + typographie bespoke de l'ex-`ContactRenderer`) retirées — le
+   contact utilise désormais les conteneurs/classes génériques partagés
+   avec le PNJ (`.pnj-card-body`, `.pnj-name`, `.pnj-meta`), convergence
+   voulue, pas une régression à rattraper. */
+.contact-desc {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  font-style: italic;
+  line-height: 1.5;
+  margin-bottom: var(--sp-2);
+}
+.contact-trait {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  line-height: 1.5;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+  margin-top: 6px;
+}
+
+/* Anarchy : bloc stats atout contact */
+.contact-anarchy-stats {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 6px var(--sp-2);
+  margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.contact-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.contact-stat-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  width: 42px;
+  flex-shrink: 0;
+}
+.contact-stat-val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  margin-left: auto;
+}
+.contact-rr {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent);
+  line-height: 1.4;
+}
+.contact-bonus {
+  font-size: var(--fs-2xs);
+  color: var(--accent2);
+  padding-top: 3px;
+  border-top: 1px solid var(--border);
+  margin-top: 2px;
+}
+
+/* Pastilles de niveau (Anarchy) */
+.niveau-dots {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.niveau-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+  transition:
+    background var(--dur-fast),
+    border-color var(--dur-fast);
+}
+.niveau-dot.filled {
+  background: var(--accent);
+  border-color: var(--accent);
+}

@@ -1,0 +1,261 @@
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+/* Groupes de réglages (CH-C6) : « Global » / « Cette édition » /
+   « Informations » — rend la PORTÉE de chaque réglage prévisible. */
+.settings-group-label {
+  max-width: 600px;
+  margin: var(--sp-5) 0 var(--sp-3);
+  padding-bottom: var(--sp-1);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.settings-group-label:first-child {
+  margin-top: 0;
+}
+.settings-detail summary {
+  cursor: pointer;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  margin-top: 0.3rem;
+}
+.settings-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1.25rem;
+  margin-bottom: var(--sp-4);
+  max-width: 600px;
+}
+.settings-section h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-md);
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+.settings-section p {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  margin-bottom: var(--sp-3);
+  line-height: 1.7;
+}
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color var(--dur-base);
+}
+.radio-label input[type="radio"] {
+  accent-color: var(--accent);
+}
+.radio-label:hover {
+  color: var(--text);
+}
+
+/* Maître-détail : rail de catégories (large écran) ↔ barre d'onglets
+   mono-ligne à défilement (mobile) — même liste, CSS adaptatif. */
+.settings-layout {
+  display: flex;
+  gap: var(--sp-5);
+  align-items: flex-start;
+}
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  flex: 0 0 184px;
+  width: 184px;
+}
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--dur-base),
+    color var(--dur-base);
+}
+.settings-nav-item:hover {
+  color: var(--text);
+  border-color: var(--border);
+}
+.settings-nav-item.is-active {
+  background: var(--glow);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.settings-nav-item.is-action {
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+}
+.settings-nav-sep {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: var(--sp-2) 0;
+}
+.settings-pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.settings-note {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-top: var(--sp-2);
+}
+.settings-link {
+  color: var(--accent);
+}
+.settings-link:hover {
+  text-decoration: underline;
+}
+.settings-section.is-danger {
+  border-color: var(--danger);
+}
+.settings-section.is-danger h3 {
+  color: var(--danger);
+}
+.settings-prose h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 0.9rem;
+}
+.settings-prose p {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  margin-bottom: 0.7rem;
+  line-height: 1.75;
+}
+.settings-prose ul {
+  margin: 0.4rem 0 0.8rem 1.2rem;
+}
+.settings-prose li {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  margin-bottom: 0.35rem;
+  line-height: 1.6;
+}
+.settings-prose strong {
+  color: var(--text);
+}
+.settings-prose > summary {
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-md);
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.settings-prose > summary::-webkit-details-marker {
+  display: none;
+}
+.settings-prose > summary::before {
+  content: "›";
+  display: inline-block;
+  margin-right: var(--sp-2);
+  transition: transform var(--dur-base);
+}
+.settings-prose[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+@media (max-width: 720px) {
+  .settings-layout {
+    flex-direction: column;
+  }
+  .settings-nav {
+    flex-direction: row;
+    width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow-x: auto;
+    gap: var(--sp-2);
+    padding-bottom: var(--sp-1);
+  }
+  .settings-nav-sep {
+    border-top: none;
+    border-left: 1px solid var(--border);
+    margin: 0 var(--sp-1);
+    align-self: stretch;
+  }
+}
+
+/* ============================================================
+   WELCOME
+   ============================================================ */
+.welcome-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: var(--sp-5);
+  max-width: 700px;
+}
+.welcome-card h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 0.9rem;
+}
+.welcome-card p {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  margin-bottom: 0.7rem;
+  line-height: 1.75;
+}
+.welcome-card ul {
+  margin: 0.4rem 0 0.8rem 1.2rem;
+}
+.welcome-card li {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  margin-bottom: 0.35rem;
+  line-height: 1.6;
+}
+.welcome-card strong {
+  color: var(--text);
+}
+.legal-notice {
+  margin-top: 1.25rem;
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  line-height: 1.9;
+}
