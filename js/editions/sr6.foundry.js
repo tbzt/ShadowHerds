@@ -571,9 +571,17 @@ const FoundrySR6Import = {
         case "poweradept":
           pnj.powers.push(desc ? { name: item.name, desc } : item.name);
           break;
-        case "quality":
-          pnj.traits.push(desc ? { name: item.name, desc } : item.name);
+        case "quality": {
+          // system.type "positive"/"negative", affiché tel quel, jamais
+          // validé (D5, même correctif que SR5).
+          const qType = (item.system || {}).type === "negative" ? "negative" : undefined;
+          pnj.traits.push(
+            desc || qType
+              ? { name: item.name, ...(desc && { desc }), ...(qType && { type: qType }) }
+              : item.name,
+          );
           break;
+        }
         case "knowledge":
         case "language":
           pnj.knowledges.push({ name: item.name, val: this._num((item.system || {}).rating) });

@@ -653,6 +653,12 @@
   margin: 2px 2px 2px 0;
   line-height: 1.6;
 }
+/* Trait typé négatif (import Foundry, D5) — même recette danger que
+   .wound-malus-badge, sobre : une bordure/couleur, pas un fond plein. */
+.tag-negative {
+  border-color: var(--danger);
+  color: var(--danger);
+}
 
 /* Clichés — Anarchy */
 .cliche-list {

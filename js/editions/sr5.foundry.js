@@ -937,9 +937,18 @@ const FoundrySR5Import = {
         case "itemLanguage":
           pnj.knowledges.push({ name: item.name, val: this._num((item.system || {}).rating) });
           break;
-        case "itemQuality":
-          pnj.traits.push(desc ? { name: item.name, desc } : item.name);
+        case "itemQuality": {
+          // system.type "positive"/"negative" — importé et affiché tel que
+          // le joueur l'a saisi, jamais validé (D5) : le champ ment déjà sur
+          // de vraies fiches (« Recherché » en positive chez Mellon/Nane).
+          const qType = (item.system || {}).type === "negative" ? "negative" : undefined;
+          pnj.traits.push(
+            desc || qType
+              ? { name: item.name, ...(desc && { desc }), ...(qType && { type: qType }) }
+              : item.name,
+          );
           break;
+        }
         case "itemTradition":
           // name déjà en FR sur une vraie fiche (ex. "Aborigène", absente de
           // TRADITION_MAP — 19ᵉ tradition du catalogue Foundry). La vérité

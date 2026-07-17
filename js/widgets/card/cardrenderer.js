@@ -1419,6 +1419,10 @@ export const CardRenderer = {
   _contentTag(item) {
     if (item && typeof item === "object" && item.name) {
       const name = this._esc(item.name);
+      // Trait typé négatif (import Foundry, D5 : affiché tel que saisi par
+      // le joueur, jamais validé — le champ ment parfois, ex. « Recherché »
+      // en positive chez Mellon/Nane).
+      const negClass = item.type === "negative" ? " tag-negative" : "";
       // Suffixe Drain (SR5/SR6) ou Seuil (Anarchy 2.0) pour les sorts.
       let suffix = "";
       if (item.drain != null) {
@@ -1436,11 +1440,11 @@ export const CardRenderer = {
         // problème d'apostrophes ou de guillemets dans le texte.
         const desc = this._esc(item.desc);
         const t = this._esc(item.name);
-        return `<span class="tag tag-clickable" role="button" tabindex="0"
+        return `<span class="tag tag-clickable${negClass}" role="button" tabindex="0"
           data-content-name="${t}" data-content-desc="${desc}"
           >${name}${suffix}<span class="tag-info">i</span></span>`;
       }
-      return `<span class="tag">${name}${suffix}</span>`;
+      return `<span class="tag${negClass}">${name}${suffix}</span>`;
     }
     return `<span class="tag">${this._esc(item)}</span>`;
   },
