@@ -8,18 +8,25 @@ donne la *carte*. À lire d'abord pour reprendre le code sans avoir à fouiller.
 
 ## 1. Le modèle mental en 30 secondes
 
-- **Vanilla JavaScript, aucun build.** Pas de bundler, pas de `npm`, pas d'ES
-  modules. On ouvre `index.html`, ça marche. Le déploiement est GitHub Pages
-  (site statique).
-- **Un fichier = un domaine = un objet global**, dont le nom correspond au nom
-  du fichier : `storage.js` déclare `Storage`, `weaponroll.js` déclare
-  `WeaponRoll`. C'est **le seul système de navigation** : le nom du fichier vous
-  dit le nom de l'objet, et inversement.
-- **L'ordre des `<script>` dans `index.html` fait office de résolution de
-  dépendances.** Un fichier peut appeler tout ce qui est chargé *avant* lui.
+- **Vanilla JavaScript, aucun build.** Pas de bundler, pas de `npm`, aucune
+  étape de compilation. On ouvre `index.html`, ça marche. Déploiement GitHub
+  Pages (site statique) : on édite un fichier, `git push`, terminé.
+- **Chaque fichier est un module ES natif.** Il `export`e son objet et
+  `import`e ses dépendances par URL relative explicite, en tête de fichier :
+  ```js
+  import { Utils } from "../core/utils.js";
+  export const Dice = { … };
+  ```
+  **Pour savoir de quoi dépend un fichier, lisez ses `import` — c'est écrit.**
+- **Un fichier = un domaine = un objet**, dont le nom correspond au nom du
+  fichier : `storage.js` exporte `Storage`, `weaponroll.js` exporte
+  `WeaponRoll`. Le nom du fichier vous dit le nom de l'objet, et inversement.
 - **Les dépendances ne descendent que vers le bas.** Une couche basse (socle) ne
   connaît jamais une couche haute (interface). C'est le verrou qui garde le
   projet démontable.
+- **Deux globals assumés** : `App` (point d'entrée + namespace, lu partout) et
+  `Debug` (confort de console). Le reste des `window.X = X` sont des **ponts de
+  migration temporaires** (cf. §10).
 - **100 % local.** Aucun serveur, aucun appel réseau (sauf portraits IA opt-in).
   Toute la persistance est dans le `localStorage`, derrière `Storage`.
 
@@ -27,9 +34,11 @@ donne la *carte*. À lire d'abord pour reprendre le code sans avoir à fouiller.
 
 ## 2. Les couches
 
-Les dossiers `js/` reflètent des couches de dépendance, chargées dans cet ordre.
-Une flèche `→` se lit « peut dépendre de » ; elle ne pointe **jamais** vers le
-haut.
+Les dossiers `js/` reflètent des couches de dépendance. Une flèche `→` se lit
+« peut dépendre de » ; elle ne pointe **jamais** vers le haut. Depuis le passage
+aux modules ES, l'ordre des `<script>` dans `index.html` **n'est plus
+load-bearing** (le graphe de modules résout tout seul) — il reste rangé par
+couche pour la lisibilité, rien de plus.
 
 ```
 6. Orchestration     js/app.js          App : bootstrap, routing, sélecteur d'édition
@@ -327,16 +336,20 @@ modules d'édition ni du gros catalogue de créatures (~280 Ko + 238 Ko) :
 
 - **Chargé par `index.html`** au boot : tout le socle, les règles, les widgets,
   les contrôleurs.
-- **Chargé à la sélection d'édition** (`App._loadEditionAssets`, séquentiel) :
-  le thème CSS de l'édition, son module principal + compagnons
-  (`_EDITION_JS`/`_EDITION_CSS`), et `creatures.js` (`_COMMON_JS`).
+- **Chargé à la sélection d'édition** (`App._loadEditionAssets`, qui injecte des
+  `<script type="module">`) : le thème CSS de l'édition, son module principal +
+  compagnons (`_EDITION_JS`/`_EDITION_CSS`), et `creatures.js` (`_COMMON_JS`).
 
 > ⚠️ **`creatures.js` n'est pas dans `index.html`** : le chercher là échoue. Il
 > est listé dans `App._COMMON_JS`.
 >
-> ⚠️ Ces chaînes `"js/…?v=NN"` dans `app.js` sont un **second gisement** de
-> `?v=` : `tools/bump_version.py` les met à jour aussi. Un oubli sert une
-> version en cache d'un module d'édition fraîchement modifié, silencieusement.
+> ⚠️ **Ne JAMAIS `import`er statiquement `Creatures` ni un `EditionX`** depuis un
+> fichier chargé au boot : l'import statique ramènerait ces ~518 Ko dans le
+> chargement initial et annulerait tout le bénéfice du différé. Ces deux-là se
+> lisent en global (`window.Creatures` / `window.EditionX`, posés par le module
+> à son arrivée), toujours depuis une méthode appelée *après* la sélection
+> d'édition — jamais à l'évaluation d'un module. C'est la seule entorse assumée
+> à la règle « importe ce que tu utilises », et elle est intentionnelle.
 
 ---
 
@@ -366,8 +379,32 @@ modules d'édition ni du gros catalogue de créatures (~280 Ko + 238 Ko) :
 | Présentation utilisateur | [README.md](README.md) |
 | Structure (grilles, composants, transitions) | `css/base/*.css` |
 | Habillage par édition (couleurs, typo) | `css/theme-*.css` (tokens `:root` surchargés par `[data-edition]`) |
-| Outils de build | `tools/bump_version.py`, `tools/merge_version.py` |
+| Outils de build | **aucun** — pas de bundler, pas de script de version, rien à lancer avant un commit |
 | Doctrine perso Claude↔utilisateur | `CLAUDE.md`, `CODIR.md` (gitignorés) |
+
+---
+
+## 10. Les ponts `window.X` — dette résiduelle assumée
+
+Chaque module se termine encore par une ligne du type :
+
+```js
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.CardRenderer = CardRenderer;
+```
+
+Ces **96 ponts** datent de la migration : ils rendaient un module visible depuis
+les scripts classiques pas encore convertis. **Il n'y a plus aucun script
+classique** — ils ne servent donc plus qu'à deux choses :
+
+1. les rares références en global nu que les `import` n'ont pas remplacées ;
+2. le confort de console (taper `CardRenderer.` dans les devtools).
+
+Les retirer est possible mais demande de vérifier, module par module, que chaque
+référence croisée passe bien par un `import` — un travail de fourmi à faire
+tranquillement, pas un préalable. **Deux ponts restent de toute façon
+volontaires** : `App` (§1) et `Debug`. Ne pas en ajouter de nouveau : un
+nouveau fichier `import`e ce dont il a besoin.
 
 ---
 

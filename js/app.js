@@ -3,7 +3,15 @@
 /* ============================================================
    APP — Bootstrap, routing, sélecteur d'édition
    ============================================================ */
-const App = {
+import { CardRenderer } from "./widgets/cardrenderer.js";
+import { Collection } from "./widgets/collection.js";
+import { ContextSelector } from "./widgets/contextselector.js";
+import { DossierBar } from "./widgets/dossierbar.js";
+import { Dossiers } from "./widgets/dossiers.js";
+import { Encounter } from "./controllers/encounter.js";
+import { Storage } from "./core/storage.js";
+
+export const App = {
   /** Version applicative (semver) — axe distinct du `schemaVersion` de
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
@@ -775,3 +783,9 @@ document.addEventListener("DOMContentLoaded", () => {
     App.selectEdition(edFromHash);
   }
 });
+
+/* Pont volontairement CONSERVÉ : `App` est le point d'entrée et le
+   namespace de l'app. ~50 modules le référencent en global nu ; l'importer
+   partout créerait autant de cycles app ↔ contrôleurs pour zéro gain de
+   lisibilité. Un seul global assumé, comme `Debug` pour la console. */
+window.App = App;

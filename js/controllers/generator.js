@@ -12,9 +12,13 @@
    La Profession utilise un multi-select à double niveau (catégorie
    → professions) via ProfCategories.
    ============================================================ */
+/* `Creatures` n'est VOLONTAIREMENT pas importé : creatures.js (238 Ko) est
+   chargé à la demande à la sélection d'édition (App._COMMON_JS), pas au boot.
+   Un import statique ici le ramènerait dans le chargement initial et annulerait
+   ce gain. Il est donc lu en global (pont window.Creatures posé par le module
+   quand il arrive) — toujours après coup, jamais à l'évaluation de ce fichier. */
 import { CardRenderer } from "../widgets/cardrenderer.js";
 import { Coherence } from "../rules/coherence.js";
-import { Creatures } from "../catalogs/creatures.js";
 import { Debug } from "../core/debug.js";
 import { Encounter } from "./encounter.js";
 import { Infected } from "../rules/infected.js";
