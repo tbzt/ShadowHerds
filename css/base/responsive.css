@@ -562,11 +562,14 @@
   .form-group input,
   .form-group select,
   .form-group textarea,
-  .contact-form select,
   .grid-filter,
   .dice-count-input {
     font-size: 16px;
   }
+  /* Les champs de `.contact-form` ont le même besoin, mais leur garde vit dans
+     contact-form.css : ce fichier-ci est chargé AVANT lui, et à spécificité
+     égale le dernier chargé gagne — la garde serait morte ici. Règle générale :
+     un composant qui pose lui-même une font-size < 16px porte sa propre garde. */
 
   /* ---- Lanceur topbar utilisable au doigt (iPad) ---- */
   .dice-count-step {
