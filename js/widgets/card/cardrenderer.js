@@ -673,6 +673,20 @@ export const CardRenderer = {
       const idx = core.lastIndexOf("</div>");
       if (idx !== -1) core = core.slice(0, idx) + situ + core.slice(idx);
     }
+    // Relations. Ces deux sections ne vivaient que dans `_bodyLight` : une
+    // fiche COMPLÈTE (chargen ou import Foundry) ne les a jamais montrées,
+    // alors que le lien existait bien en donnée et se voyait depuis l'autre
+    // bout (`_contactKnownBy`, côté contact). Ici plutôt que dans chaque
+    // module d'édition : les deux ne lisent que `contactLinks`/`Mentions`,
+    // donc un seul point d'ajout couvre les 4 éditions.
+    // « Contacts » est réservé aux PJ — son « ＋ » d'ajout rapide crée un
+    // lien `Characters.addContactLink`, et il s'affiche même sans contact.
+    // Les backlinks valent pour toute fiche (vides ⇒ chaîne vide).
+    const rel = (pnj.isPC ? this._contactLinksSection(pnj) : "") + this._backlinksSection(pnj);
+    if (rel) {
+      const idx = core.lastIndexOf("</div>");
+      if (idx !== -1) core = core.slice(0, idx) + rel + core.slice(idx);
+    }
     return core;
   },
 
