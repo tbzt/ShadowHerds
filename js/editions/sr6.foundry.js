@@ -535,9 +535,16 @@ const FoundrySR6Import = {
     return val ? `${item.name} [SD+${val}]` : item.name;
   },
 
-  _readItems(actor, pnj) {
+  /** `drainRev` (inverse de DRAIN_ATTR_MAP) est fourni par `buildPnj` :
+      la tradition SR6 vit sur un Item, pas sur `system.magic`. Dédoublonne
+      (type, nom) — même mine que SR5. */
+  _readItems(actor, pnj, drainRev) {
+    const seen = new Set();
     for (const item of actor.items || []) {
       if (!item || !item.name) continue;
+      const dedupKey = `${item.type}::${item.name}`;
+      if (seen.has(dedupKey)) continue;
+      seen.add(dedupKey);
       const desc = (item.system && item.system.description) || "";
       switch (item.type) {
         case "weapon":
@@ -570,6 +577,13 @@ const FoundrySR6Import = {
         case "knowledge":
         case "language":
           pnj.knowledges.push({ name: item.name, val: this._num((item.system || {}).rating) });
+          break;
+        case "tradition":
+          // name déjà en FR sur une vraie fiche (ex. "Chamanisme") ; la
+          // vérité de l'attribut de Drain est ici, jamais sur
+          // system.magic.drainAttribute (toujours "" sur une vraie fiche).
+          pnj.tradition = item.name;
+          pnj.traditionDrainAttr = drainRev[(item.system || {}).drainAttribute] || "";
           break;
         case "contact":
         case "sin":
@@ -606,7 +620,8 @@ const FoundrySR6Import = {
       archetype: bio.description || "",
       notes: bio.background || "",
       special: magicType === "adept" ? "Adepte" : isLt ? "Lieutenant" : "Aucun",
-      traditionDrainAttr: drainRev[(system.magic && system.magic.drainAttribute)] || "",
+      tradition: "",
+      traditionDrainAttr: "",
       skills: this._readSkills(system),
       equip: [],
       augs: [],
@@ -615,7 +630,7 @@ const FoundrySR6Import = {
       knowledges: [],
       traits: [],
     };
-    this._readItems(actor, pnj);
+    this._readItems(actor, pnj, drainRev);
     // Champs posés par generate() mais pas par recalc (cf. import SR5) :
     // évite « undefined » sur le badge PRO et le dé d'init de la carte.
     const maxSk = pnj.skills.reduce((m, s) => Math.max(m, s.val || 0), 0);
