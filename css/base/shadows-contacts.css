@@ -236,18 +236,15 @@
 }
 
 /* ---- Hub : chips de filtre-type ---- */
-/* Tablist Ombres : une seule ligne, axe commun (align-items:center) ; si trop
-   de types pour la largeur, on défile plutôt que de casser en escalier (même
-   registre que .dice-log-filters, cf. audit alignement). */
+/* Tablist Ombres : une seule ligne, axe commun (align-items:center). 5 types
+   fixes (jamais de liste dynamique à curer) ; si l'espace manque, défilement
+   à barre visible plutôt que masquée (loi 5, un choix caché n'existe pas). */
 .hub-type-chips {
   display: flex;
   align-items: center;
   gap: var(--sp-1);
   overflow-x: auto;
-  scrollbar-width: none;
-}
-.hub-type-chips::-webkit-scrollbar {
-  display: none;
+  scrollbar-width: thin;
 }
 .hub-type-chips > .hub-type-chip {
   flex: none;

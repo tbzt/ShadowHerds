@@ -12,6 +12,19 @@ commit.
 
 ## [Non publié]
 
+## [1.51.1] — 2026-07-17
+
+### Corrigé
+- **Scroll mono-ligne à barre cachée retiré (6 sites)** : un choix caché derrière un
+  défilement n'existe pas, et un fil d'Ariane qui se coupe en silence ment sur sa
+  seule fonction (nouvelle loi 5 de la grammaire d'interaction). Fil d'Ariane
+  (`#topbar-locator`) : au-delà de 3 échelles, les maillons intermédiaires se replient
+  derrière un `…` visible et cliquable au lieu de défiler hors champ. Puces
+  « personnage » du journal des jets (`.dice-log-filters`) : triées par activité,
+  seules les 5 plus actives restent visibles d'emblée, une puce `+N` déplie le reste.
+  `.hub-type-chips`, `.encounter-rail` : barre de défilement rendue visible (plus de
+  scrollbar masquée).
+
 ## [1.51.0] — 2026-07-17
 
 ### Système

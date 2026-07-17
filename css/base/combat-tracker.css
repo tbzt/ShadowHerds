@@ -775,10 +775,7 @@
     gap: 0.4rem;
     overflow-x: auto;
     padding: 0.2rem 0.1rem 0.5rem;
-    scrollbar-width: none;
-  }
-  .encounter-modal.rail-compact .encounter-rail::-webkit-scrollbar {
-    display: none;
+    scrollbar-width: thin;
   }
   .encounter-modal.rail-compact #encounter-list {
     display: none;

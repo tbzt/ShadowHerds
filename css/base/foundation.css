@@ -518,8 +518,12 @@ select optgroup {
   transform: rotate(180deg);
 }
 /* Fil d'Ariane (R3-B) : rangée fine autonome sous la topbar, localisation
-   « Campagne › Run › Scène » lue en continu depuis App.context. Pleine largeur,
-   mono-ligne scrollable (jamais de retour à la ligne) ; masquée quand vide. */
+   « Campagne › Run › Scène » lue en continu depuis App.context. Pleine largeur ;
+   masquée quand vide. Un fil d'Ariane qui se coupe en silence ment sur sa seule
+   fonction (loi 5) : au-delà de 3 maillons, `Locator.render` (js/app.js)
+   replie les intermédiaires derrière un `…` visible plutôt que de les faire
+   défiler hors champ. Le scroll qui reste (noms très longs) garde sa barre
+   visible, jamais cachée. */
 .topbar-locator {
   display: flex;
   align-items: center;
@@ -528,12 +532,9 @@ select optgroup {
   background: var(--bg-card);
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
-  scrollbar-width: none;
+  scrollbar-width: thin;
   white-space: nowrap;
   flex-shrink: 0;
-}
-.topbar-locator::-webkit-scrollbar {
-  display: none;
 }
 .topbar-locator:empty {
   display: none;

@@ -117,13 +117,12 @@
   padding: 0.5rem 0.8rem;
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
-  scrollbar-width: none;
-}
-.dice-log-filters::-webkit-scrollbar {
-  display: none;
+  scrollbar-width: thin;
 }
 /* Les puces ne se compriment pas (sinon les noms longs s'écrasent) : elles
-   défilent. */
+   défilent. Au-delà de WHO_VISIBLE_MAX personnages (dicelog.js), seuls les
+   plus actifs de la séance sont affichés d'emblée — une puce « +N » déplie
+   le reste (loi 5 : un choix caché derrière un défilement n'existe pas). */
 .dice-log-filters > .hub-facet-chip {
   flex: none;
 }

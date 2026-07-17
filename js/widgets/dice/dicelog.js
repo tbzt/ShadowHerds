@@ -28,6 +28,15 @@ export const DiceLog = {
       pour ne jamais collisionner avec un nom de personnage (`who`). */
   _ENCOUNTER_FILTER: "__encounter__",
 
+  /** Loi 5 (grammaire d'interaction) : nombre de puces « personnage » visibles
+      d'emblée dans `.dice-log-filters`, triées par activité — donnée de jeu
+      (les plus actifs de la séance), jamais un seuil de largeur d'écran. */
+  WHO_VISIBLE_MAX: 5,
+
+  /** Session only (comme `_filter`) : déplie la queue de puces « personnage »
+      au-delà de `WHO_VISIBLE_MAX`. Reset à chaque ouverture du panneau. */
+  _filtersExpanded: false,
+
   /** J3 : compteur d'alarmes (crit/glitch) ajoutées pendant que le panneau
       est fermé — session only, remis à zéro à l'ouverture. Alimente la
       pastille sur #dice-log-btn (≥641, seule largeur où il est visible) et
@@ -85,6 +94,9 @@ export const DiceLog = {
         this.refresh();
       } else if (btn.dataset.action === "log-filter") {
         this._filter = btn.dataset.filter;
+        this.refresh();
+      } else if (btn.dataset.action === "log-filters-more") {
+        this._filtersExpanded = !this._filtersExpanded;
         this.refresh();
       } else if (btn.dataset.action === "log-pin") {
         const entry = this.history.find((h) => String(h.t) === btn.dataset.t);
@@ -149,6 +161,7 @@ export const DiceLog = {
       typeof Encounter !== "undefined" && Encounter.activeDossierId
         ? this._ENCOUNTER_FILTER
         : "all";
+    this._filtersExpanded = false;
     this._unseen = 0;
     this._renderBadge();
     this.refresh();
@@ -403,7 +416,21 @@ export const DiceLog = {
       box.innerHTML = "";
       return;
     }
-    const whos = [...new Set(this.history.map((e) => e.who).filter(Boolean))];
+    // Loi 5 : les puces "personnage" sont un choix, pas un contenu qui se lit
+    // — au-delà de WHO_VISIBLE_MAX on ne fait pas défiler la queue hors champ,
+    // on montre les plus actifs (comptage réel, pas l'ordre d'apparition) et
+    // une puce "+N" déplie le reste au clic (session only, comme `_filter`).
+    const counts = new Map();
+    for (const e of this.history) {
+      if (!e.who) continue;
+      counts.set(e.who, (counts.get(e.who) || 0) + 1);
+    }
+    const whosByActivity = [...counts.keys()].sort((a, b) => counts.get(b) - counts.get(a));
+    const hiddenCount = Math.max(0, whosByActivity.length - this.WHO_VISIBLE_MAX);
+    const whos =
+      hiddenCount && !this._filtersExpanded
+        ? whosByActivity.slice(0, this.WHO_VISIBLE_MAX)
+        : whosByActivity;
     const chip = (filter, label) =>
       `<button class="hub-facet-chip${this._filter === filter ? " active" : ""}" data-action="log-filter" data-filter="${Utils.escHtml(filter)}">${Utils.escHtml(label)}</button>`;
     const hasPinned = this.history.some((e) => e.pinned);
@@ -411,12 +438,16 @@ export const DiceLog = {
     // (Encounter.restore) — filtre session-only, aucun 2ᵉ mécanisme
     // d'historique (garde-fou c), réutilise `_filter` comme les autres puces.
     const activeDossierId = typeof Encounter !== "undefined" ? Encounter.activeDossierId : null;
+    const moreChip = hiddenCount
+      ? `<button class="hub-facet-chip" data-action="log-filters-more">${this._filtersExpanded ? "Réduire" : `+${hiddenCount}`}</button>`
+      : "";
     box.innerHTML =
       chip("all", "Tout") +
       chip("alarm", "Alarmes") +
       (hasPinned ? chip("pinned", "📌 Épinglés") : "") +
       (activeDossierId ? chip(this._ENCOUNTER_FILTER, "🎬 Cette rencontre") : "") +
-      whos.map((w) => chip(w, w)).join("");
+      whos.map((w) => chip(w, w)).join("") +
+      moreChip;
   },
 
   /** Re-rend la liste (appelé après chaque jet si le panneau existe). */

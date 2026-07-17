@@ -16,7 +16,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.51.0",
+  VERSION: "1.51.1",
 
   edition: "none",
   editionModule: null,
@@ -136,16 +136,35 @@ export const App = {
       }
       const esc = CardRenderer._esc;
       const ICON = { campaign: "❖", run: "◆", folder: "▸" };
+      const crumbHtml = (seg) =>
+        seg.scale === "scene"
+          ? `<button type="button" class="tb-crumb tb-crumb-scene is-live" data-action="crumb-scene" title="Reprendre la scène en cours : ${esc(seg.name)}"><span class="tb-crumb-live" aria-hidden="true"></span>En cours</button>`
+          : `<button type="button" class="tb-crumb" data-action="crumb-open" data-id="${seg.id}" title="Aller à « ${esc(seg.name)} »"><span class="tb-crumb-icon" aria-hidden="true">${ICON[seg.scale] || "▸"}</span>${esc(seg.name)}</button>`;
+      // Loi 5 : un fil d'Ariane qui se coupe en silence ment sur sa seule
+      // fonction. Au-delà de LOCATOR_MAX maillons (donnée : profondeur du
+      // chemin, jamais la largeur d'écran), on replie les intermédiaires
+      // derrière un `…` visible plutôt que de les laisser défiler hors champ —
+      // racine (orientation) + les 2 derniers (parent immédiat + position
+      // courante) restent toujours affichés. Le `…` réutilise `ctx-open`
+      // (même sélecteur que le déclencheur « Contexte », qui liste tout) :
+      // aucun 2e mécanisme de navigation.
+      const LOCATOR_MAX = 3;
+      let segs = trail;
+      let collapsedCount = 0;
+      if (trail.length > LOCATOR_MAX) {
+        collapsedCount = trail.length - 3;
+        segs = [trail[0], null, trail[trail.length - 2], trail[trail.length - 1]];
+      }
       // Entrée GLOBALE du sélecteur de contexte en tête du fil d'Ariane :
       // « où suis-je » (chips) + « aller ailleurs » (sélecteur) dans la même
       // rangée, comme la doctrine les veut indissociables.
       const parts = [ContextSelector.triggerHtml("Contexte")];
-      for (const seg of trail) {
-        if (seg.scale === "scene") {
-          parts.push(`<button type="button" class="tb-crumb tb-crumb-scene is-live" data-action="crumb-scene" title="Reprendre la scène en cours : ${esc(seg.name)}"><span class="tb-crumb-live" aria-hidden="true"></span>En cours</button>`);
-        } else {
-          parts.push(`<button type="button" class="tb-crumb" data-action="crumb-open" data-id="${seg.id}" title="Aller à « ${esc(seg.name)} »"><span class="tb-crumb-icon" aria-hidden="true">${ICON[seg.scale] || "▸"}</span>${esc(seg.name)}</button>`);
-        }
+      for (const seg of segs) {
+        parts.push(
+          seg
+            ? crumbHtml(seg)
+            : `<button type="button" class="tb-crumb" data-action="ctx-open" title="${collapsedCount} étape${collapsedCount > 1 ? "s" : ""} intermédiaire${collapsedCount > 1 ? "s" : ""} masquée${collapsedCount > 1 ? "s" : ""} — voir tout">…</button>`,
+        );
       }
       const sep = '<span class="tb-crumb-sep" aria-hidden="true">›</span>';
       // Séparateur après le déclencheur seulement s'il y a un chemin à afficher.
