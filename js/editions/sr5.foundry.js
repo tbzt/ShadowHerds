@@ -143,6 +143,18 @@ const FoundrySR5Export = {
     "Cabalisme": "qabbalism",
   },
 
+  /* pnj.meta (libellé FR, cf. EditionSR5.generate() → meta:"Humain" etc.)
+     ↔ CONFIG.SR5.metatypes (scripts/config.js du système Foundry). Les 5
+     métatypes jouables, mappés 1:1 (métavariantes restent en texte libre
+     dans `metatypeVariant`, non couvertes ici). */
+  METATYPE_MAP: {
+    "Humain": "human",
+    "Elfe": "elf",
+    "Nain": "dwarf",
+    "Ork": "ork",
+    "Troll": "troll",
+  },
+
   /* Classification catégorie/sous-type Foundry (weaponCategories +
      rangedWeaponTypes/meleeWeaponTypes de scripts/config.js), calée sur les
      noms exacts du catalogue equipPools (js/editions/sr5.js) ; au-delà,
@@ -881,10 +893,16 @@ const FoundrySR5Import = {
     return val ? `${item.name} [${val}]` : item.name;
   },
 
-  /** Répartit les Items embarqués dans les listes du PNJ. */
+  /** Répartit les Items embarqués dans les listes du PNJ. Certaines fiches
+      réelles portent jusqu'à 7 couples (type, nom) dupliqués par acteur
+      (mine connue, cf. PLAN_IMPORT_FOUNDRY.md) → sautés en silence. */
   _readItems(actor, pnj) {
+    const seen = new Set();
     for (const item of actor.items || []) {
       if (!item || !item.name) continue;
+      const dedupKey = `${item.type}::${item.name}`;
+      if (seen.has(dedupKey)) continue;
+      seen.add(dedupKey);
       const desc = (item.system && item.system.description) || "";
       switch (item.type) {
         case "itemWeapon":
@@ -922,6 +940,14 @@ const FoundrySR5Import = {
         case "itemQuality":
           pnj.traits.push(desc ? { name: item.name, desc } : item.name);
           break;
+        case "itemTradition":
+          // name déjà en FR sur une vraie fiche (ex. "Aborigène", absente de
+          // TRADITION_MAP — 19ᵉ tradition du catalogue Foundry). La vérité
+          // de l'attribut de Drain vit ici, jamais sur system.magic.tradition
+          // (toujours "" sur une vraie fiche, même piège que SR6).
+          pnj.tradition = item.name;
+          pnj.traditionDrainAttr = this._attrRev()[(item.system || {}).drainAttribute] || null;
+          break;
         case "itemContact":
         case "itemSin":
         case "itemMark":
@@ -952,19 +978,30 @@ const FoundrySR5Import = {
 
     const bio = system.biography || {};
     const magicType = (system.magic && system.magic.magicType) || "";
-    const tradRev = {};
-    for (const [fr, key] of Object.entries(FoundrySR5Export.TRADITION_MAP)) tradRev[key] = fr;
+    const metaRev = {};
+    for (const [fr, key] of Object.entries(FoundrySR5Export.METATYPE_MAP)) metaRev[key] = fr;
+
+    // Identité : les vraies fiches Foundry rangent tout sous des clés
+    // préfixées `character*` (vérifié sur 6 fiches réelles) — `bio.gender`/
+    // `bio.description` etc. sont ceux de NOTRE export, jamais présents sur
+    // un acteur venu du système Foundry lui-même.
+    const rawMeta = bio.characterMetatype || bio.metatype || "";
+    const meta = metaRev[rawMeta] || rawMeta;
+    if (rawMeta && !metaRev[rawMeta]) FoundryImport.note("métatype", rawMeta);
+    const rawGender = bio.characterGender || bio.gender || "";
+    const gender = rawGender === "male" ? "M" : rawGender === "female" ? "F" : rawGender ? "NB" : "";
 
     const pnj = {
       name: actor.name || "PNJ importé",
       attrs,
-      meta: bio.characterMetatype || bio.metatype || "",
-      metavariant: bio.metatypeVariant || "",
-      gender: bio.gender === "male" ? "M" : bio.gender === "female" ? "F" : "",
-      archetype: bio.description || "",
-      notes: [bio.background, bio.notes].filter(Boolean).join("\n"),
-      special: magicType === "adept" ? "Adepte" : "Aucun",
-      tradition: tradRev[(system.magic && system.magic.tradition)] || "",
+      meta,
+      metavariant: bio.characterMetatypeVariant || bio.metatypeVariant || "",
+      gender,
+      archetype: system.description || bio.description || "",
+      notes: [system.characterBackground, bio.background, bio.notes].filter(Boolean).join("\n"),
+      special: "Aucun",
+      tradition: null,
+      traditionDrainAttr: null,
       skills: this._readSkills(system),
       equip: [],
       augs: [],
@@ -973,7 +1010,25 @@ const FoundrySR5Import = {
       knowledges: [],
       traits: [],
     };
+    // La tradition (nom FR + attribut de Drain) vit sur l'item itemTradition
+    // (jamais sur system.magic.tradition, toujours "" sur une vraie fiche),
+    // donc `pnj.tradition` n'est connu qu'APRÈS avoir lu les items — `special`
+    // (qui en dépend pour Chaman/Mage Aztechnology) est calculé juste après.
     this._readItems(actor, pnj);
+    // Comparaison par motif, pas égalité stricte : le catalogue de traditions
+    // du système Foundry SR5 a ses PROPRES libellés FR, qui divergent du
+    // canon ShadowHerds (vérifié sur fiche réelle : item nommé "Chamanisme",
+    // pas "Chamanique" — Magic.traditions.sr5, js/rules/magic.js:55).
+    const tradFr = pnj.tradition || "";
+    const isChaman = /chaman/i.test(tradFr);
+    const isAztec = /aztec|azt[eè]qu?e/i.test(tradFr);
+    const isHermetic = /herm[eé]tiq|hermeticism/i.test(tradFr);
+    if (magicType === "adept") pnj.special = "Adepte";
+    else if (magicType === "magician") {
+      pnj.special = isChaman ? "Chaman" : isAztec ? "Mage Aztechnology" : "Mage hermétique";
+      if (tradFr && !isChaman && !isAztec && !isHermetic)
+        FoundryImport.note("tradition (repli Mage hermétique)", tradFr);
+    } else if ((attrs.RES && attrs.RES.total) > 0) pnj.special = "Technomancien";
     // Champs posés par generate() mais pas par recalc : sans eux la carte
     // affiche « undefined » (badge PRO, dé d'init). proRating ≈ meilleure
     // compétence (proxy de professionnalisme, échelle 1-6) ; dé d'init
