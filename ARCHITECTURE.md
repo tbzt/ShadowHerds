@@ -59,8 +59,8 @@ couche pour la lisibilité, rien de plus.
 ```
 
 **Règle de placement d'un nouveau fichier :** il va dans le dossier de sa couche,
-et son `<script>` s'insère au bon rang dans `index.html`. S'il touche un `.js`
-chargé par la page, lancer `tools/bump_version.py` avant de committer (voir §7).
+et son `<script>` s'insère au bon rang dans `index.html`. Rien d'autre à faire
+avant de committer : il n'y a plus de cache-bust à propager (voir §6).
 
 ---
 
@@ -315,17 +315,23 @@ clic sur [data-roll] dans la carte
 
 ---
 
-## 6. Persistance & versionnage — les quatre nombres à ne pas confondre
+## 6. Persistance & versionnage — les trois nombres à ne pas confondre
 
 | Nom | Détenu par | Ce qu'il versionne | Quand il bouge |
 |---|---|---|---|
 | **Époque de stockage** (`v2` du préfixe) | `storage.js` | Le *namespace* des clés | Quasi jamais (reset total incompatible). |
 | **`schemaVersion`** | `storage.js` | La *forme* des valeurs JSON | À chaque évolution de contenu persisté ; migrations en chaîne ordonnée. |
 | **`App.VERSION`** (semver) | `app.js` | La *release* visible utilisateur | MINOR = capacité neuve (+ CHANGELOG + visite) ; PATCH = correctif ; MAJOR = rupture. |
-| **`?v=NN`** (cache-bust) | `index.html` + `_EDITION_JS`/`_EDITION_CSS` | Rien de sémantique : force le rechargement navigateur | À chaque `.js`/`.css` touché, via `tools/bump_version.py`. Jamais à la main. |
+
+Il n'y a **pas de quatrième nombre** : le cache-bust `?v=NN` et son outillage
+(`tools/bump_version.py`) ont été retirés en juillet 2026. Le cache est géré par
+les en-têtes HTTP de GitHub Pages (`max-age=600` + `ETag`) : un fichier modifié
+se propage seul en ≤ 10 min, aucun geste avant de committer. En dev local,
+`python -m http.server` n'envoie aucun en-tête de cache → **Ctrl+Shift+R** après
+édition.
 
 Détail complet dans [CONTRIBUTING.md](CONTRIBUTING.md) §§ « Versionner les
-schémas » et « Cache-busting `?v=` ».
+schémas » et « Cache (plus de `?v=`) ».
 
 ---
 
