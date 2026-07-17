@@ -176,7 +176,10 @@ export const DiceRoller = {
         const pnj = this._hooks.resolve(wEl.getAttribute("data-roll-pnj"));
         const edition = wEl.getAttribute("data-roll-edition") || "sr5";
         const weapon = wEl.getAttribute("data-roll-weapon");
-        if (pnj) this.rollWeapon(pnj, weapon, edition);
+        // Edge pré-jet (mode panneau) : intercepte avant de lancer si le PNJ a
+        // des options d'Edge abordables ; sinon jet direct (geste inchangé).
+        if (pnj && !this._maybePreRoll(pnj, (edge) => this.rollWeapon(pnj, weapon, edition, edge)))
+          this.rollWeapon(pnj, weapon, edition);
         return;
       }
 
@@ -233,7 +236,10 @@ export const DiceRoller = {
         const isMagic = !!(edMod.magicSkills && edMod.magicSkills.includes(skillBase));
         this.openRiskPanel(n, { label, detail, rr, adv: (rollPnj && rollPnj.drugAdv) || 0, who, pnjId, isMagic, spellName });
       } else {
-        this.rollPool(n, { label, detail, who, pnjId });
+        const opts = { label, detail, who, pnjId };
+        // Edge pré-jet (mode panneau) : intercepte si options abordables.
+        if (!this._maybePreRoll(rollPnj, (edge) => this.rollPool(n, opts, edge)))
+          this.rollPool(n, opts);
       }
     });
 
@@ -241,13 +247,17 @@ export const DiceRoller = {
     this._ensureRiskPanel();
   },
 
-  /** Lance l'attaque d'une arme SR5/SR6 (pool résolu, limite SR5). */
-  rollWeapon(pnj, weapon, edition) {
+  /** Lance l'attaque d'une arme SR5/SR6 (pool résolu, limite SR5). `edge` =
+      option d'Edge pré-jet déjà résolue+débitée ({ dice, explode, ignoreLimit,
+      label } ; cf. _spendPreRollEdge), sinon jet nu. « Repousser les limites »
+      (ignoreLimit) neutralise le plafond de Précision. */
+  rollWeapon(pnj, weapon, edition, edge = null) {
     const r = WeaponRoll.resolvePool(pnj, weapon, edition);
     if (!r) return;
-    const res = Dice.computeRoll(r.pool);
-    // Plafonnement à la Précision (SR5) : la limite mord si hits > limite
-    if (r.limit != null && res.hits > r.limit) {
+    const res = this._computeWithEdge(r.pool, edge);
+    // Plafonnement à la Précision (SR5) : la limite mord si hits > limite —
+    // sauf si l'Edge l'ignore (« Repousser les limites »).
+    if (r.limit != null && !(edge && edge.ignoreLimit) && res.hits > r.limit) {
       res.cappedFrom = res.hits;
       res.hits = r.limit;
       res.limited = true;
@@ -262,10 +272,39 @@ export const DiceRoller = {
       .join(" ");
     this.show(res, {
       label: `${r.weaponName} (${r.matchedSkill || r.skill}${approxTxt})`,
-      detail,
+      detail: this._appendEdgeDetail(detail, edge),
       who: pnj.name || "",
       pnjId: pnj.id || "",
     });
+  },
+
+  /** Jet nu ou avec dés d'Edge pré-jet, selon `edge` — un seul point de
+      bascule pour rollWeapon/rollPool (jamais deux fois la même condition). */
+  _computeWithEdge(pool, edge) {
+    return edge && edge.dice
+      ? Dice.computeRollWithEdge(pool, edge.dice, edge.explode)
+      : Dice.computeRoll(pool);
+  },
+
+  /** Ajoute la mention d'Edge au décompte affiché (« … · +4 Repousser les
+      limites »). Sobre : rien si pas d'Edge. */
+  _appendEdgeDetail(detail, edge) {
+    if (!edge || !edge.dice) return detail;
+    const tag = `+${edge.dice} ${edge.label}`;
+    return detail ? `${detail} · ${tag}` : tag;
+  },
+
+  /** Débite l'Edge pré-jet choisi sur le PNJ (Actor.spend, comme la relance)
+      et re-rend sa carte. Renvoie l'option enrichie ({ dice, explode,
+      ignoreLimit, label }) prête pour rollWeapon/rollPool, ou null si le PNJ
+      ne peut pas payer (garde-fou — l'UI ne propose déjà que l'affordable). */
+  _spendPreRollEdge(pnj, opt) {
+    if (!pnj || !opt) return null;
+    const have = Actor.attr(pnj, opt.costAttr);
+    if (have == null || have < opt.cost) return null;
+    Actor.spend(pnj, opt.costAttr, opt.cost);
+    this._hooks.onPnjChanged(pnj);
+    return { dice: opt.dice, explode: opt.explode, ignoreLimit: opt.ignoreLimit, label: opt.label };
   },
 
   /** Stepper −/＋ du compteur de dés topbar. */
@@ -316,11 +355,13 @@ export const DiceRoller = {
   },
 
   /* ---- Lancer d'une réserve depuis une carte ---- */
-  rollPool(n, opts = {}) {
-    const res = Dice.computeRoll(n);
+  /** `edge` = option d'Edge pré-jet déjà résolue+débitée, sinon jet nu. Une
+      réserve n'a pas de Limite modélisée → `ignoreLimit` est inerte ici. */
+  rollPool(n, opts = {}, edge = null) {
+    const res = this._computeWithEdge(n, edge);
     this.show(res, {
       label: opts.label || "",
-      detail: opts.detail || "",
+      detail: this._appendEdgeDetail(opts.detail || "", edge),
       who: opts.who || "",
       pnjId: opts.pnjId || "",
     });
@@ -863,6 +904,112 @@ export const DiceRoller = {
         affordable: budget >= o.cost && dice > 0,
       };
     });
+  },
+
+  /** Mode de surface de l'Edge pré-jet (préférence par appareil, cf. vague 3) :
+      "panel" = panneau pré-jet ; "pill"/"off" = pas d'interception ici (le tap
+      lance nu, la surface pastille viendra plus tard). Défaut "off" → aucun
+      geste alourdi tant que l'utilisateur n'a rien choisi. */
+  _preRollMode() {
+    const p = this._hooks.getPrefs ? this._hooks.getPrefs() : null;
+    return (p && p.preRollEdge) || "off";
+  },
+
+  /** Interception pré-jet : en mode "panel", si le PNJ a des options d'Edge
+      ABORDABLES, ouvre le panneau et renvoie true (le jet part depuis le
+      panneau via `doRoll`). Sinon false → l'appelant lance normalement. Le tap
+      nu reste un lancer immédiat dès qu'aucune option n'est disponible. */
+  _maybePreRoll(pnj, doRoll) {
+    if (this._preRollMode() !== "panel" || !pnj) return false;
+    const options = this.preRollEdgeOptions(pnj).filter((o) => o.affordable);
+    if (!options.length) return false;
+    this.openPreRollPanel({ pnj, options, doRoll });
+    return true;
+  },
+
+  _ensurePreRollPanel() {
+    if (document.getElementById("preroll-panel")) return;
+    const p = document.createElement("div");
+    p.id = "preroll-panel";
+    p.className = "risk-panel-overlay"; // réutilise le gabarit du panneau de risque
+    p.setAttribute("hidden", "");
+    p.innerHTML = `
+      <div class="risk-panel" role="dialog" aria-label="Edge avant le jet">
+        <div class="risk-panel-head">
+          <span class="risk-panel-title" id="preroll-title">Avant de lancer</span>
+          <button class="risk-panel-close" id="preroll-close" aria-label="Fermer">✕</button>
+        </div>
+        <div class="risk-panel-pool" id="preroll-pool"></div>
+        <div id="preroll-options"></div>
+        <button class="risk-roll-btn" id="preroll-plain">Lancer sans Edge</button>
+      </div>`;
+    document.body.appendChild(p);
+
+    // Fond ou croix = annuler (aucun jet — le tap est resté en suspens).
+    p.addEventListener("click", (e) => {
+      if (e.target === p) this._closePreRollPanel();
+    });
+    document.getElementById("preroll-close").addEventListener("click", () => this._closePreRollPanel());
+
+    // Choisir une option = débiter puis lancer avec l'Edge.
+    document.getElementById("preroll-options").addEventListener("click", (e) => {
+      const b = e.target.closest(".risk-level-btn");
+      if (!b || !this._preRoll) return;
+      const opt = this._preRoll.options[parseInt(b.dataset.idx, 10)];
+      const doRoll = this._preRoll.doRoll;
+      const edge = this._spendPreRollEdge(this._preRoll.pnj, opt);
+      this._closePreRollPanel();
+      doRoll(edge); // edge null si le débit a échoué (garde-fou) → jet nu
+    });
+
+    // Lancer sans Edge.
+    document.getElementById("preroll-plain").addEventListener("click", () => {
+      const doRoll = this._preRoll && this._preRoll.doRoll;
+      this._closePreRollPanel();
+      if (doRoll) doRoll(null);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !document.getElementById("preroll-panel").hasAttribute("hidden"))
+        this._closePreRollPanel();
+    });
+  },
+
+  /** Ouvre le panneau pré-jet pour un contexte { pnj, options, doRoll }.
+      `doRoll(edge|null)` réalise le jet réel (rollPool/rollWeapon) — le panneau
+      ne connaît ni l'arme ni la réserve, juste comment relancer. */
+  openPreRollPanel(ctx) {
+    this._ensurePreRollPanel();
+    this._preRoll = ctx;
+    const budget = ctx.options[0] ? `${ctx.options[0].budget} ${ctx.options[0].costAttr}` : "";
+    document.getElementById("preroll-title").textContent = ctx.pnj.name
+      ? `${ctx.pnj.name} — avant de lancer`
+      : "Avant de lancer";
+    document.getElementById("preroll-pool").innerHTML = budget
+      ? `Edge disponible : <strong>${Utils.escHtml(budget)}</strong>`
+      : "";
+    document.getElementById("preroll-options").innerHTML = ctx.options
+      .map(
+        (o, i) =>
+          `<button class="risk-level-btn" data-idx="${i}">
+             <span class="risk-level-name">${Utils.escHtml(o.label)}</span>
+             <span class="risk-level-sub">${Utils.escHtml(o.hint)}</span>
+           </button>`,
+      )
+      .join("");
+    const p = document.getElementById("preroll-panel");
+    p.removeAttribute("hidden");
+    void p.offsetWidth;
+    p.classList.add("show");
+  },
+
+  _closePreRollPanel() {
+    const p = document.getElementById("preroll-panel");
+    this._preRoll = null;
+    if (!p) return;
+    p.classList.remove("show");
+    clearTimeout(p._t);
+    p._t = setTimeout(() => p.setAttribute("hidden", ""), 200);
   },
 
   /* ========================================================

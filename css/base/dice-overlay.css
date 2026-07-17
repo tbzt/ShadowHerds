@@ -899,6 +899,22 @@ input[type="range"]#risk-dice-slider {
   transform: scale(0.98);
 }
 
+/* Panneau Edge PRÉ-jet (V1) — réutilise le gabarit du panneau de risque
+   (.risk-panel*, .risk-level-btn, .risk-roll-btn), mais les options sont une
+   LISTE verticale pleine largeur : leurs libellés + indices (« Repousser les
+   limites · 1 Chance · +indice… ») sont plus longs que les 4 chips de risque,
+   la grille 4-colonnes du risque les tasserait. */
+#preroll-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+#preroll-options .risk-level-btn {
+  align-items: flex-start;
+  text-align: left;
+  cursor: pointer;
+}
+
 /* ============================================================
    DÉ D'INITIATIVE — neutre (somme, pas de succès)
    ============================================================ */
