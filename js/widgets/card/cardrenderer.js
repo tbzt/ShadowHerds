@@ -16,6 +16,7 @@ import { Drugs } from "../../catalogs/drugs.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
 import { Magic } from "../../rules/magic.js";
 import { Mentions } from "../journal/mentions.js";
+import { PersonaRenderer } from "./personarenderer.js";
 import { SkillCatalog } from "../../rules/skillcatalog.js";
 import { SkillEffects } from "../../rules/skilleffects.js";
 import { UI } from "../kit/ui.js";
@@ -697,8 +698,12 @@ export const CardRenderer = {
       key: "matrice",
       label: "Matrice",
       glyph: "⚡",
-      applies: (pnj) => !!pnj.cyberdeck,
-      render: (pnj, deps) => CyberdeckRenderer.block(pnj, pnj.edition, deps),
+      // Decker ET technomancien partagent ce module (même glyphe ⚡, même
+      // zone) : deck OU persona incarné, jamais les deux à la fois en
+      // pratique, mais le rendu concatène les deux blocs sans hypothèse.
+      applies: (pnj) => !!(pnj.cyberdeck || pnj.persona),
+      render: (pnj, deps) =>
+        CyberdeckRenderer.block(pnj, pnj.edition, deps) + PersonaRenderer.block(pnj, pnj.edition, deps),
       lenses: ["fiche", "combat"],
     },
     {
@@ -1938,6 +1943,11 @@ export const CardRenderer = {
           // Réallocation ASDF/ACTF en un tap (SR5 action gratuite, SR6
           // action mineure — cf. Cyberdeck.reallocatable/cyberdeckModel).
           UI.reallocDeck(id, actionEl.dataset.from, actionEl.dataset.to);
+          break;
+        case "persona-realloc":
+          // Réallocation du pool bonus du persona incarné (SR6 — cf.
+          // Resonance.redistributable/technoModel).
+          UI.reallocPersona(id, actionEl.dataset.from, actionEl.dataset.to);
           break;
         case "deck-open-matrix": {
           // Ouvre le tracker Matrice du serveur ciblé par ce decker —

@@ -27,6 +27,7 @@ import { ItemResolver } from "../rules/itemresolver.js";
 import { LoadoutEngine } from "../rules/loadoutengine.js";
 import { Magic } from "../rules/magic.js";
 import { Metavariants } from "../rules/metavariants.js";
+import { Resonance } from "../rules/resonance.js";
 import { Spirits } from "../catalogs/spirits.js";
 import { Utils } from "../core/utils.js";
 import { WeaponRoll } from "../rules/weaponroll.js";
@@ -193,6 +194,20 @@ export const EditionSR6 = {
       (magie narrative, pas d'attribut). Gate EditModal — MAG toujours
       affiché (0 par défaut, éditable) + verrouille Sorts/Pouvoirs à 0. */
   magicAttr: "MAG",
+  /** Attribut RES chiffré, jumeau de magicAttr — même gate EditModal. */
+  resonanceAttr: "RES",
+  /** Régime persona SR6 — lu par Resonance via App.editionModule.technoModel.
+      Mappage attributs mentaux → matriciels identique à SR5 (p.191, table
+      « Équivalences des attributs mentaux/matriciels »), PLUS un pool de
+      points bonus égal à la Résonance, répartissable par le joueur
+      (`redistributable: true`) : cap ⌈50 % de l'attribut mental de base⌉,
+      max +4 par attribut (p.191). */
+  technoModel: {
+    label: "Résonance",
+    resonanceAttr: "RES",
+    livingPersona: true,
+    redistributable: true,
+  },
   /** Connaissances éditables à la main (nom libre + catégorie →
       Logique/Intuition, cf. SkillCatalog.knowledgeCategories) — modèle
       absent en Anarchy (pas de pool de connaissances chiffré). */
@@ -2946,6 +2961,7 @@ export const EditionSR6 = {
     BonusEngine.apply(pnj, "sr6");
     Flavor.apply(pnj);
     Cyberdeck.hydrate(pnj, "sr6");
+    Resonance.hydrate(pnj, "sr6");
     return pnj;
   },
 

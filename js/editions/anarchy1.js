@@ -610,6 +610,29 @@ export const EditionAnarchy1 = {
     ],
   },
 
+  /* Régime technomancien Anarchy 1re — pas de formalisme SR5/SR6 (4
+     attributs matriciels dérivés + Résonance chiffrée) : le cœur A1 n'a
+     aucun technomancien joueur, et *Anarchistes* (supplément, T5) modélise
+     la Résonance comme un Atout narratif (« Technomancie N »), pas un
+     attribut. `livingPersona: null` → Resonance ne rend aucun bloc persona
+     pour cette édition (même polymorphisme que technoModel: null en A2,
+     en moins radical : A1 aura bien des technomanciens, juste pas ce
+     formalisme). `essenceResonanceMalus` = table p.150 (vérifiée au livre,
+     partagée avec la Magie), conservée ici comme donnée d'édition en
+     attendant son consommateur (le duel Matrice, T6 — aucun test de
+     Résonance n'est encore lancé côté A1). */
+  technoModel: {
+    label: "Résonance",
+    resonanceAttr: null,
+    livingPersona: null,
+    essenceResonanceMalus: [
+      { min: 5.5, max: 6, malus: 0 },
+      { min: 3.5, max: 5, malus: -1 },
+      { min: 1.5, max: 3, malus: -2 },
+      { min: 0.5, max: 1, malus: -3 },
+    ],
+  },
+
   /* ----
      ATTRIBUTS PAR MÉTATYPE — table des indices max V1
      FOR/AGI/VOL/LOG/CHA/CHC

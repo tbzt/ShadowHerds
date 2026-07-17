@@ -430,6 +430,11 @@ export const EditionAnarchy2 = {
     ],
   },
 
+  /* Pas de technomancien en Anarchy 2.0 — verdict argumenté au CODIR
+     2026-07-17 (retiré du jeu, pas « non détaillé »), confirmé par
+     l'absence totale du mot Résonance dans les 2 livres A2. */
+  technoModel: null,
+
   /* ========================================================
      CATALOGUE D'ARMES OFFICIEL (Shadowrun : Anarchy 2.0, p.141-144)
      ------------------------------------------------------

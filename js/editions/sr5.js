@@ -18,6 +18,7 @@ import { ItemResolver } from "../rules/itemresolver.js";
 import { LoadoutEngine } from "../rules/loadoutengine.js";
 import { Magic } from "../rules/magic.js";
 import { Metavariants } from "../rules/metavariants.js";
+import { Resonance } from "../rules/resonance.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
 import { Spirits } from "../catalogs/spirits.js";
 import { Utils } from "../core/utils.js";
@@ -177,6 +178,17 @@ export const EditionSR5 = {
       Gate EditModal — MAG toujours affiché (0 par défaut, éditable) +
       verrouille Sorts/Pouvoirs à 0. */
   magicAttr: "MAG",
+  /** Attribut RES chiffré, jumeau de magicAttr — même gate EditModal. */
+  resonanceAttr: "RES",
+  /** Régime persona SR5 — lu par Resonance via App.editionModule.technoModel.
+      Mappage DIRECT attributs mentaux → matriciels (p.252, table
+      « Persona incarné »), aucun point bonus à répartir (contrairement à
+      SR6) : `redistributable` absent/false. */
+  technoModel: {
+    label: "Résonance",
+    resonanceAttr: "RES",
+    livingPersona: true,
+  },
   /** Connaissances éditables à la main (nom libre + catégorie →
       Logique/Intuition, cf. SkillCatalog.knowledgeCategories) — modèle
       absent en Anarchy (pas de pool de connaissances chiffré). */
@@ -1464,8 +1476,6 @@ export const EditionSR5 = {
       "Lumière",
       "Armure",
       "Clairvoyance",
-      "Magie rituelle",
-      "Initiation astrale",
     ],
   },
 
@@ -2617,7 +2627,12 @@ export const EditionSR5 = {
       attrs.MAG = Utils.clamp(proRating + Utils.randInt(1, 2), 1, 6);
     }
     if (special === "Technomancien") {
-      attrs.RES = Utils.clamp(proRating + Utils.randInt(1, 2), 1, 6);
+      // Plafond RES ≤ ⌊Essence⌋ (p.252) — attrs.ESS déjà posé ci-dessus.
+      attrs.RES = Utils.clamp(
+        Math.min(proRating + Utils.randInt(1, 2), Math.floor(attrs.ESS)),
+        1,
+        6,
+      );
     }
     if (special === "Decker") {
       attrs.ESS = Utils.clamp(6 - Utils.randInt(1, 2), 3, 6);
@@ -2800,6 +2815,7 @@ export const EditionSR5 = {
     BonusEngine.apply(pnj, "sr5");
     Flavor.apply(pnj);
     Cyberdeck.hydrate(pnj, "sr5");
+    Resonance.hydrate(pnj, "sr5");
     return pnj;
   },
 
