@@ -48,6 +48,9 @@ couche pour la lisibilité, rien de plus.
         ↑
 4. Rendu / widgets   js/widgets/        reçoivent des données → produisent du HTML
                                         et des interactions ; ne persistent rien
+                                        (7 tiroirs de rangement : card, dice,
+                                        journal, kit, collection, play, tour —
+                                        sans hiérarchie entre eux, cf. §3)
         ↑
 3b. Catalogues liés  js/catalogs/       drones, esprits, créatures, drogues
         ↑
@@ -148,36 +151,28 @@ Un widget reçoit des données et produit du HTML + des interactions par
 délégation (`data-*`). **Il ne persiste rien, ne modifie pas les données, ne lit
 pas l'état des contrôleurs.**
 
-**Socle de cartes & collections**
+Les 45 fichiers sont rangés en **sept tiroirs**. Attention à ce qu'ils sont :
+des **tiroirs de rangement, pas des sous-couches**. Il n'y a aucune hiérarchie
+entre eux, et le graphe interne comporte des cycles assumés
+(`cardrenderer ↔ cardfooter`, `dicelog ↔ dicepanel`, `palette ↔ pinrow`,
+`selectionmode ↔ bulkbar`), plus un `kit/ui.js` qui dépend de
+`card/cardrenderer.js`. `widgets/` reste la couche 4 d'un seul tenant : la seule
+règle de dépendance qui vaille est celle du §2, entre couches.
+
+Pour placer un nouveau widget : le tiroir de son sujet ; à défaut, `kit/`.
+
+**`card/` — rendu de carte** (10)
 | Fichier | Objet | Responsabilité |
 |---|---|---|
-| `collection.js` | `Collection` | **Socle des collections persistées avec groupes.** `Collection.create(config)` sert Shadows, ContactsBook, Servers, Characters (voir §4). |
-| `grouppicker.js` | `GroupPicker` | Popover d'appartenance multi-groupes, partagé par toutes les collections. |
 | `cardrenderer.js` | `CardRenderer` | Rend une carte PNJ et gère son rafraîchissement. Corps par édition greffés en `Object.assign` (fichiers ci-dessous). |
 | `cardrenderer.sr5.js` / `.sr6.js` / `.anarchy.js` / `.anarchy1.js` | ↳ `CardRenderer` | Corps de carte spécifiques par édition. |
 | `cardrenderer.linked.js` | ↳ `CardRenderer` | Rendu des entités liées (véhicules, esprits). |
 | `cardfooter.js` | `CardFooter` | Mise en page **unique** du pied de toute carte (le domaine décrit ses actions, le socle les positionne). |
 | `cardmenu.js` | `CardMenu` | Popover de débordement `⋯` d'un pied de carte. |
-| `serverrenderer.js` | `ServerRenderer` | HTML du panneau Matrice (serveurs). |
+| `breakdown.js` | `Breakdown` | Popover d'explication décomposée d'une réserve (Défense, Encaissement…). |
 | `cyberdeckrenderer.js` | `CyberdeckRenderer` | Bloc deck sur la carte PNJ (miroir de ServerRenderer). |
-| `encounterrenderer.js` | `EncounterRenderer` | Rendu **pur** du tracker de combat. |
-| `runrenderer.js` | `RunRenderer` | Rendu d'une amorce de run. |
-| `rosterview.js` | `RosterView` | Bascule Ombres cartes ↔ annuaire dense. |
 
-**Modes & interactions transverses**
-| Fichier | Objet | Responsabilité |
-|---|---|---|
-| `contentmodal.js` | `ContentModal` | **Le modèle de délégation d'événements** : un écouteur global sur `data-*`, aucun nom d'objet figé dans le HTML. |
-| `dialog.js` | `Dialog` | Remplace `prompt()`/`confirm()` natifs par des modales thémées. |
-| `selectionmode.js` | `SelectionMode` | Mode sélection multiple (révèle cases + gouttière via classe `selecting` sur `<body>`). |
-| `reordermode.js` | `ReorderMode` | Mode réorganiser (poignées de glisser-déposer, classe `reordering`). |
-| `bulkbar.js` | `BulkBar` | Barre d'actions en masse (panneau flottant non bloquant). |
-| `multiselect.js` | `MultiSelect` | Filtre « ajouter / enlever » (choix multiples en puces). Remplace un `<select>` natif. |
-| `singleselect.js` | `SingleSelect` | Menu déroulant stylé à choix unique. |
-| `profcategories.js` | `ProfCategories` | Regroupement des professions par archétype (filtre double niveau). |
-| `sidebartoggle.js` | `SidebarToggle` | Repli/ouverture des sidebars de dossiers. |
-
-**Dés & outils MJ**
+**`dice/` — dés & jets** (5)
 | Fichier | Objet | Responsabilité |
 |---|---|---|
 | `diceroller.js` | `DiceRoller` | UI de lancer (overlay d'animation, panneau de risque Anarchy, câblage `[data-roll]`). |
@@ -185,11 +180,8 @@ pas l'état des contrôleurs.**
 | `dicelog.js` | `DiceLog` | Journal des jets de la session. |
 | `opposedroll.js` | `OpposedRoll` | Jet opposé + seuil (outil MJ libre). |
 | `magicaction.js` | `MagicAction` | Lance un sort / une invocation de bout en bout. |
-| `summonpanel.js` | `SummonPanel` | Invocation d'esprits (domaine autonome extrait de `UI`). |
-| `breakdown.js` | `Breakdown` | Popover d'explication décomposée d'une réserve (Défense, Encaissement…). |
-| `notepad.js` | `Notepad` | Bloc-notes de séance (scratchpad persistant, volontairement léger). |
 
-**Dossiers, contexte & journal**
+**`journal/` — dossiers, contexte, notes** (8)
 | Fichier | Objet | Responsabilité |
 |---|---|---|
 | `dossiers.js` | `Dossiers` | Registre transverse de regroupement narratif (arbre plat à `parentId`). |
@@ -199,16 +191,45 @@ pas l'état des contrôleurs.**
 | `palette.js` | `Palette` | Palette de commandes (Ctrl/Cmd+K), source unique `PnjLookup.search`. |
 | `mentions.js` | `Mentions` | Autocomplétion `@`/`#` + rendu des puces (ancrage par ID). |
 | `markdown.js` | `Markdown` | Mise en forme légère des notes (opère sur du texte déjà échappé). |
+| `notepad.js` | `Notepad` | Bloc-notes de séance (scratchpad persistant, volontairement léger). |
 
-**Divers UI**
+**`kit/` — primitives d'interface** (8)
 | Fichier | Objet | Responsabilité |
 |---|---|---|
-| `ui.js` | `UI` | Interactions live restantes (moniteurs, drogues, liens). *Ex-fourre-tout en cours de dégraissage.* |
-| `contactcreate.js` | `ContactCreate` | Modale de création rapide d'un contact depuis une fiche PJ. |
+| `contentmodal.js` | `ContentModal` | **Le modèle de délégation d'événements** : un écouteur global sur `data-*`, aucun nom d'objet figé dans le HTML. |
+| `dialog.js` | `Dialog` | Remplace `prompt()`/`confirm()` natifs par des modales thémées. |
+| `grouppicker.js` | `GroupPicker` | Popover d'appartenance multi-groupes, partagé par toutes les collections. |
+| `multiselect.js` | `MultiSelect` | Filtre « ajouter / enlever » (choix multiples en puces). Remplace un `<select>` natif. |
+| `singleselect.js` | `SingleSelect` | Menu déroulant stylé à choix unique. |
+| `profcategories.js` | `ProfCategories` | Regroupement des professions par archétype (filtre double niveau). |
+| `sidebartoggle.js` | `SidebarToggle` | Repli/ouverture des sidebars de dossiers. |
+| `ui.js` | `UI` | Interactions live restantes (moniteurs, drogues, liens). *Ex-fourre-tout en cours de dégraissage ; dépend de `card/`, d'où « pas de sous-couches ».* |
+
+**`collection/` — collections & modes de masse** (5)
+| Fichier | Objet | Responsabilité |
+|---|---|---|
+| `collection.js` | `Collection` | **Socle des collections persistées avec groupes.** `Collection.create(config)` sert Shadows, ContactsBook, Servers, Characters (voir §4). |
+| `selectionmode.js` | `SelectionMode` | Mode sélection multiple (révèle cases + gouttière via classe `selecting` sur `<body>`). |
+| `reordermode.js` | `ReorderMode` | Mode réorganiser (poignées de glisser-déposer, classe `reordering`). |
+| `bulkbar.js` | `BulkBar` | Barre d'actions en masse (panneau flottant non bloquant). |
+| `rosterview.js` | `RosterView` | Bascule Ombres cartes ↔ annuaire dense. |
+
+**`play/` — écrans de jeu** (6)
+| Fichier | Objet | Responsabilité |
+|---|---|---|
+| `encounterrenderer.js` | `EncounterRenderer` | Rendu **pur** du tracker de combat. |
+| `serverrenderer.js` | `ServerRenderer` | HTML du panneau Matrice (serveurs). |
+| `runrenderer.js` | `RunRenderer` | Rendu d'une amorce de run. |
+| `summonpanel.js` | `SummonPanel` | Invocation d'esprits (domaine autonome extrait de `UI`). |
 | `spectatorview.js` | `SpectatorView` | Écran joueur (rendu lecture seule de l'initiative, 2e onglet). |
-| `onboarding.js` | `Onboarding` | Bulle de première présentation de la barre du haut (vue une fois). |
+| `contactcreate.js` | `ContactCreate` | Modale de création rapide d'un contact depuis une fiche PJ. |
+
+**`tour/` — visite guidée & accueil** (3)
+| Fichier | Objet | Responsabilité |
+|---|---|---|
 | `tour.js` | `Tour` | Moteur générique de visite guidée (zéro contenu, zéro édition). |
 | `toursteps.js` | `TourSteps` | Manifeste déclaratif de la visite (données pures). |
+| `onboarding.js` | `Onboarding` | Bulle de première présentation de la barre du haut (vue une fois). |
 
 ### Couche 5 — Contrôleurs (`js/controllers/`)
 
@@ -383,10 +404,37 @@ modules d'édition ni du gros catalogue de créatures (~280 Ko + 238 Ko) :
 | Règles d'architecture (doctrine) | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | Changelog public (capacités livrées) | [CHANGELOG.md](CHANGELOG.md) |
 | Présentation utilisateur | [README.md](README.md) |
-| Structure (grilles, composants, transitions) | `css/base/*.css` |
+| Structure (grilles, composants, transitions) | `css/base/*.css` — **un fichier = le nom du module JS qu'il habille** (voir ci-dessous) |
 | Habillage par édition (couleurs, typo) | `css/theme-*.css` (tokens `:root` surchargés par `[data-edition]`) |
 | Outils de build | **aucun** — pas de bundler, pas de script de version, rien à lancer avant un commit |
 | Doctrine perso Claude↔utilisateur | `CLAUDE.md`, `CODIR.md` (gitignorés) |
+
+### La règle de nommage du CSS
+
+**Un fichier de `css/base/` porte le nom du module JS qu'il habille.**
+`intrusion.js` → `intrusion.css`. À défaut de propriétaire unique, le nom du
+composant (`contact-form.css`, partagé par trois modules) ou de la zone
+(`foundation.css`, `responsive.css`, `print.css`).
+
+**Un nom composite est interdit** : `a-et-b.css` est l'aveu d'un fourre-tout.
+Le dossier en a compté quatre (`backup-contactgen`, `journal-matrix`,
+`topbar-dice-quick`, `settings-misc`) ; pour styler le tracker d'intrusion, rien
+ne disait d'ouvrir `journal-matrix.css`. La taille, elle, n'est pas un défaut :
+`combat-tracker.css` fait 1778 lignes et son nom dit vrai.
+
+Deux pièges, appris en rangeant :
+
+- **L'ordre des `<link>` est load-bearing.** À spécificité égale, le dernier
+  déclaré gagne — et une cascade cassée ne produit *aucune* erreur console,
+  contrairement à un import JS. En déplaçant des règles entre fichiers, vérifier
+  qu'aucun sélecteur concurrent ne vit entre l'ancien et le nouveau rang. Deux
+  ordres sont aujourd'hui délibérés et commentés dans `index.html` :
+  `dicelog` avant `notepad` (en-tête partagé), `palette` avant `mentions`
+  (`#mentions-box` réutilise `.palette-row`).
+- **En dev local, le cache ment.** `python -m http.server` n'envoie aucun
+  en-tête ; un fichier *modifié* est resservi périmé alors qu'un fichier *neuf*
+  arrive frais — de quoi conclure à une régression qui n'existe pas, ou à un
+  succès qui n'en est pas un. Ctrl+Shift+R, ou changer de port.
 
 ---
 
