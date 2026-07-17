@@ -8,7 +8,7 @@
    Toutes les interactions sont câblées par Encounter (contrôleur),
    jamais ici.
    ============================================================ */
-import { CardRenderer } from "./cardrenderer.js";
+import { CardRenderer } from "./card/cardrenderer.js";
 import { Cyberdeck } from "../rules/cyberdeck.js";
 import { DiceRoller } from "./diceroller.js";
 import { ItemResolver } from "../rules/itemresolver.js";

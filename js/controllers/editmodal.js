@@ -5,12 +5,12 @@
    ============================================================ */
 import { Actor } from "../rules/actor.js";
 import { Campaign } from "../rules/campaign.js";
-import { CardRenderer } from "../widgets/cardrenderer.js";
+import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
 import { ContactsBook } from "./contactsbook.js";
 import { Content } from "../rules/content.js";
 import { Cyberdeck } from "../rules/cyberdeck.js";
-import { CyberdeckRenderer } from "../widgets/cyberdeckrenderer.js";
+import { CyberdeckRenderer } from "../widgets/card/cyberdeckrenderer.js";
 import { ItemResolver } from "../rules/itemresolver.js";
 import { Mentions } from "../widgets/mentions.js";
 import { Metavariants } from "../rules/metavariants.js";

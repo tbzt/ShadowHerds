@@ -10,7 +10,7 @@
    un seul panneau flottant réutilisé, ancré au déclencheur sur
    desktop/tablette, promu en bottom-sheet sur mobile.
    ============================================================ */
-import { Utils } from "../core/utils.js";
+import { Utils } from "../../core/utils.js";
 
 export const Breakdown = {
   _resolve: null,

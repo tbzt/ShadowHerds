@@ -19,7 +19,7 @@
    App.editionModule.creation.buildCharacter() — voir
    js/controllers/chargen.js.
    ============================================================ */
-import { CardRenderer } from "../widgets/cardrenderer.js";
+import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Collection } from "../widgets/collection.js";
 import { Dialog } from "../widgets/dialog.js";
 import { DossierBar } from "../widgets/dossierbar.js";

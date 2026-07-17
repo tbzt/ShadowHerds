@@ -8,7 +8,7 @@
    PnjLookup à chaque rendu. Le rendu (pur) est délégué à
    EncounterRenderer.
    ============================================================ */
-import { CardRenderer } from "../widgets/cardrenderer.js";
+import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
 import { Dialog } from "../widgets/dialog.js";
 import { Dice } from "../rules/dice.js";

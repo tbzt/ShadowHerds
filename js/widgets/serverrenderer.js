@@ -7,7 +7,7 @@
    (js/controllers/servers.js). Catalogues et règles délégués à
    Matrix (js/matrix.js), comme dans Servers.
    ============================================================ */
-import { CardRenderer } from "./cardrenderer.js";
+import { CardRenderer } from "./card/cardrenderer.js";
 import { Matrix } from "../rules/matrix.js";
 import { Utils } from "../core/utils.js";
 

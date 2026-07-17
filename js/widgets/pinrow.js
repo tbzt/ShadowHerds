@@ -11,7 +11,7 @@
    ni position:fixed. Réutilise Palette._reveal pour la navigation — pas
    de 2ᵉ résolveur nom→panneau.
    ============================================================ */
-import { CardRenderer } from "./cardrenderer.js";
+import { CardRenderer } from "./card/cardrenderer.js";
 import { DossierBar } from "./dossierbar.js";
 import { Palette } from "./palette.js";
 

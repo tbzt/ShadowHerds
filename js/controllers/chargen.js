@@ -15,7 +15,7 @@
    délégation scopée à #chargen-overlay — même esprit que le
    pattern ContentModal/Collection, pas de onclick inline.
    ============================================================ */
-import { CardRenderer } from "../widgets/cardrenderer.js";
+import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
 import { Dialog } from "../widgets/dialog.js";
 import { Storage } from "../core/storage.js";

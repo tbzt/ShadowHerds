@@ -8,7 +8,7 @@
    sauvegarde depuis le générateur et entités liées (drones,
    véhicules, esprits invoqués) qui suivent leur maître.
    ============================================================ */
-import { CardRenderer } from "../widgets/cardrenderer.js";
+import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Collection } from "../widgets/collection.js";
 import { ContactsBook } from "./contactsbook.js";
 import { Gen } from "./generator.js";

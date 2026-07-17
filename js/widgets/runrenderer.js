@@ -3,7 +3,7 @@
 /* ============================================================
    RUN RENDERER
    ============================================================ */
-import { CardRenderer } from "./cardrenderer.js";
+import { CardRenderer } from "./card/cardrenderer.js";
 import { Dossiers } from "./dossiers.js";
 
 export const RunRenderer = {

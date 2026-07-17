@@ -8,7 +8,7 @@
    et sur DiceLog (dicelog.js) pour le journal.
    ============================================================ */
 import { Actor } from "../rules/actor.js";
-import { CardRenderer } from "./cardrenderer.js";
+import { CardRenderer } from "./card/cardrenderer.js";
 import { Dice } from "../rules/dice.js";
 import { DiceLog } from "./dicelog.js";
 import { Storage } from "../core/storage.js";

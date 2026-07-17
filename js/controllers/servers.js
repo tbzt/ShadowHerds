@@ -13,7 +13,7 @@
    (formulaire, cartes, panneaux) vit dans
    js/widgets/serverrenderer.js (ServerRenderer).
    ============================================================ */
-import { CardRenderer } from "../widgets/cardrenderer.js";
+import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Collection } from "../widgets/collection.js";
 import { Debug } from "../core/debug.js";
 import { DossierBar } from "../widgets/dossierbar.js";

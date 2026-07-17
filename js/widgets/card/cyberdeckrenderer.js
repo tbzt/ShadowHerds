@@ -12,8 +12,8 @@
    que le socle : attributs, programmes, notes/particularités.
    ============================================================ */
 import { CardRenderer } from "./cardrenderer.js";
-import { Cyberdeck } from "../rules/cyberdeck.js";
-import { Utils } from "../core/utils.js";
+import { Cyberdeck } from "../../rules/cyberdeck.js";
+import { Utils } from "../../core/utils.js";
 
 export const CyberdeckRenderer = {
   /** Bloc lecture seule sur la carte (cardrenderer.<edition>.js, juste après

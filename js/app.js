@@ -3,7 +3,7 @@
 /* ============================================================
    APP — Bootstrap, routing, sélecteur d'édition
    ============================================================ */
-import { CardRenderer } from "./widgets/cardrenderer.js";
+import { CardRenderer } from "./widgets/card/cardrenderer.js";
 import { Collection } from "./widgets/collection.js";
 import { ContextSelector } from "./widgets/contextselector.js";
 import { DossierBar } from "./widgets/dossierbar.js";

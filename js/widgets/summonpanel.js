@@ -6,7 +6,7 @@
    l'invocation est un domaine fonctionnel complet et autonome).
    ============================================================ */
 import { Actor } from "../rules/actor.js";
-import { CardRenderer } from "./cardrenderer.js";
+import { CardRenderer } from "./card/cardrenderer.js";
 import { MagicAction } from "./magicaction.js";
 import { Spirits } from "../catalogs/spirits.js";
 import { Utils } from "../core/utils.js";

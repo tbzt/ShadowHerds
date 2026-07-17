@@ -18,7 +18,7 @@
    (recharger le carnet, aller au hub…). Popover ancré, fermé au clic-dehors
    ou Échap. Rendu neutre par édition (aucun `App.edition`).
    ============================================================ */
-import { CardRenderer } from "./cardrenderer.js";
+import { CardRenderer } from "./card/cardrenderer.js";
 import { Collection } from "./collection.js";
 import { DossierBar } from "./dossierbar.js";
 import { Dossiers } from "./dossiers.js";

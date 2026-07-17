@@ -13,7 +13,7 @@
    groupsOf, toggleGroup, save, render). Câblage interne par
    délégation, sans aucun handler inline.
    ============================================================ */
-import { CardRenderer } from "./cardrenderer.js";
+import { CardRenderer } from "./card/cardrenderer.js";
 import { Dialog } from "./dialog.js";
 import { Dossiers } from "./dossiers.js";
 

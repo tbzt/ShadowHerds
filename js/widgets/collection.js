@@ -18,7 +18,7 @@
    Un contact/PNJ/serveur peut appartenir à PLUSIEURS groupes.
    ============================================================ */
 import { BulkBar } from "./bulkbar.js";
-import { CardRenderer } from "./cardrenderer.js";
+import { CardRenderer } from "./card/cardrenderer.js";
 import { Dialog } from "./dialog.js";
 import { GroupPicker } from "./grouppicker.js";
 import { Storage } from "../core/storage.js";

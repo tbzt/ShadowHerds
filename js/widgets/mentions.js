@@ -23,7 +23,7 @@
    `notes` et journal des entités sauvegardées) — pas d'index persistant,
    volumes faibles.
    ============================================================ */
-import { CardRenderer } from "./cardrenderer.js";
+import { CardRenderer } from "./card/cardrenderer.js";
 import { Dossiers } from "./dossiers.js";
 import { Markdown } from "./markdown.js";
 import { Notebooks } from "../rules/notebooks.js";

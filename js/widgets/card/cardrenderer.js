@@ -8,19 +8,19 @@
    (cardrenderer.sr5.js, .sr6.js, .anarchy.js, .linked.js) qui
    étendent cet objet — même patron que les modules d'édition.
    ============================================================ */
-import { Actor } from "../rules/actor.js";
-import { ActorEffects } from "../rules/actoreffects.js";
+import { Actor } from "../../rules/actor.js";
+import { ActorEffects } from "../../rules/actoreffects.js";
 import { CardFooter } from "./cardfooter.js";
 import { CyberdeckRenderer } from "./cyberdeckrenderer.js";
-import { Drugs } from "../catalogs/drugs.js";
-import { ItemResolver } from "../rules/itemresolver.js";
-import { Magic } from "../rules/magic.js";
-import { Mentions } from "./mentions.js";
-import { SkillCatalog } from "../rules/skillcatalog.js";
-import { SkillEffects } from "../rules/skilleffects.js";
-import { UI } from "./ui.js";
-import { Utils } from "../core/utils.js";
-import { WeaponRoll } from "../rules/weaponroll.js";
+import { Drugs } from "../../catalogs/drugs.js";
+import { ItemResolver } from "../../rules/itemresolver.js";
+import { Magic } from "../../rules/magic.js";
+import { Mentions } from "../mentions.js";
+import { SkillCatalog } from "../../rules/skillcatalog.js";
+import { SkillEffects } from "../../rules/skilleffects.js";
+import { UI } from "../ui.js";
+import { Utils } from "../../core/utils.js";
+import { WeaponRoll } from "../../rules/weaponroll.js";
 
 export const CardRenderer = {
   /** Dépendances de rendu par défaut, lues depuis les globals de l'app.
@@ -1005,7 +1005,7 @@ export const CardRenderer = {
       opts = { title, glyph, key, pnj } — key+pnj posent le détail décomposé
       sur la pastille ELLE-MÊME (data-explain), un seul contrôle : clic/tap
       lance (inchangé), survol desktop ou appui long tactile ouvre le
-      décompte (Breakdown, js/widgets/breakdown.js). Le résultat du jet
+      décompte (Breakdown, js/widgets/card/breakdown.js). Le résultat du jet
       porte aussi le détail (data-roll-detail, déjà affiché par
       diceroller.js). */
   _rollPill(label, value, opts = {}) {
