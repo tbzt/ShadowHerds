@@ -22,7 +22,7 @@
    La sélection est lue à la volée depuis le DOM ; aucun état JS
    à synchroniser. Une sélection vide signifie « Aléatoire / tout ».
    ============================================================ */
-const MultiSelect = {
+export const MultiSelect = {
   _bound: false,
 
   /**
@@ -282,3 +282,6 @@ const MultiSelect = {
       .replace(/>/g, "&gt;");
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.MultiSelect = MultiSelect;

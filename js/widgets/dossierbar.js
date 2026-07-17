@@ -20,7 +20,13 @@
    Dépendances descendantes : Dossiers, Shadows/ContactsBook/Servers
    (lecture des comptes + pilotage de currentGroup), CardRenderer._esc.
    ============================================================ */
-const DossierBar = {
+import { CardRenderer } from "./cardrenderer.js";
+import { Collection } from "./collection.js";
+import { Dialog } from "./dialog.js";
+import { DiceLog } from "./dicelog.js";
+import { Dossiers } from "./dossiers.js";
+
+export const DossierBar = {
   current: "all", // id de dossier, ou "all"
   _mounts: [], // ids de conteneurs où rendre l'arbre
   _listeners: [], // rappelés à chaque changement (hub, grilles de génération)
@@ -448,3 +454,6 @@ const DossierBar = {
     toast(`Rencontre « ${Dossiers.nameOf(dossierId) || "?"} » rangée.`);
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.DossierBar = DossierBar;

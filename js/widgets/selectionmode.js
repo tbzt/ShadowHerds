@@ -12,7 +12,10 @@
    État transient (jamais persisté). Ne connaît des collections
    que l'API publique de BulkBar (sortie = vidage de la sélection).
    ============================================================ */
-const SelectionMode = {
+import { BulkBar } from "./bulkbar.js";
+import { ReorderMode } from "./reordermode.js";
+
+export const SelectionMode = {
   _wired: false,
   _lpTimer: null,
   _LONG_PRESS_MS: 500,
@@ -98,3 +101,6 @@ const SelectionMode = {
       });
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.SelectionMode = SelectionMode;

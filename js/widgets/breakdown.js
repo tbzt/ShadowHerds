@@ -10,7 +10,9 @@
    un seul panneau flottant réutilisé, ancré au déclencheur sur
    desktop/tablette, promu en bottom-sheet sur mobile.
    ============================================================ */
-const Breakdown = {
+import { Utils } from "../core/utils.js";
+
+export const Breakdown = {
   _resolve: null,
   _el: null,
   _trigger: null,
@@ -168,3 +170,6 @@ const Breakdown = {
     el.style.left = Math.max(8, left) + "px";
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.Breakdown = Breakdown;

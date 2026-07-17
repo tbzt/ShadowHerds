@@ -8,7 +8,9 @@
    répétée : flag global (Storage.setGlobal), partagé entre éditions
    (la barre du haut est commune).
    ============================================================ */
-const Onboarding = {
+import { Storage } from "../core/storage.js";
+
+export const Onboarding = {
   _KEY: "onboardingSeen",
 
   _ensure() {
@@ -45,3 +47,6 @@ const Onboarding = {
     if (b) b.hidden = true;
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.Onboarding = Onboarding;

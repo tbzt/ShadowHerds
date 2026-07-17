@@ -7,7 +7,11 @@
    fixé par le MJ. Panneau autonome (calqué sur Notepad/DiceLog),
    pas de persistance : c'est un scratch pad de jet, pas une donnée.
    ============================================================ */
-const OpposedRoll = {
+import { Dice } from "../rules/dice.js";
+import { DiceLog } from "./dicelog.js";
+import { Utils } from "../core/utils.js";
+
+export const OpposedRoll = {
   _open: false,
 
   _ensure() {
@@ -102,8 +106,17 @@ const OpposedRoll = {
   },
 };
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => OpposedRoll.init());
-} else {
+/* Auto-init APRÈS le reste des scripts : `init()` dépend de modules de
+   couche haute (Settings…) chargés plus loin dans index.html. Ne pas
+   tester `readyState === "loading"` — il vaut déjà "interactive" quand
+   les scripts différés s'exécutent, l'init partait donc trop tôt.
+   DOMContentLoaded, lui, ne se déclenche qu'une fois TOUS les scripts
+   différés exécutés. */
+if (document.readyState === "complete") {
   OpposedRoll.init();
+} else {
+  document.addEventListener("DOMContentLoaded", () => OpposedRoll.init(), { once: true });
 }
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.OpposedRoll = OpposedRoll;

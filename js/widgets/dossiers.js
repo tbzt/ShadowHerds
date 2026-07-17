@@ -23,7 +23,10 @@
    que le référentiel des clés et sa hiérarchie. Feuille : ses
    seules dépendances sortantes sont Storage et Utils.
    ============================================================ */
-const Dossiers = {
+import { Storage } from "../core/storage.js";
+import { Utils } from "../core/utils.js";
+
+export const Dossiers = {
   _key: "dossiers",
   _tree: [],
 
@@ -167,3 +170,6 @@ const Dossiers = {
     return { nodes, keyMap };
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.Dossiers = Dossiers;

@@ -10,7 +10,9 @@
    jeux de contrôles de carte sur le même repos visuel.
    État transient (jamais persisté).
    ============================================================ */
-const ReorderMode = {
+import { SelectionMode } from "./selectionmode.js";
+
+export const ReorderMode = {
   _wired: false,
 
   bindDelegation() {
@@ -55,3 +57,6 @@ const ReorderMode = {
       });
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.ReorderMode = ReorderMode;

@@ -3,7 +3,10 @@
 /* ============================================================
    RUN RENDERER
    ============================================================ */
-const RunRenderer = {
+import { CardRenderer } from "./cardrenderer.js";
+import { Dossiers } from "./dossiers.js";
+
+export const RunRenderer = {
   render(r) {
     const el = document.createElement("div");
     el.className = "run-card";
@@ -64,3 +67,6 @@ const RunRenderer = {
     return `<button class="card-action-btn" data-action="${action}" data-dossier="${r.dossierId}">${label}</button>`;
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.RunRenderer = RunRenderer;

@@ -11,7 +11,11 @@
    réallocation en un tap sont du ressort de la réallocation — ce module n'affiche
    que le socle : attributs, programmes, notes/particularités.
    ============================================================ */
-const CyberdeckRenderer = {
+import { CardRenderer } from "./cardrenderer.js";
+import { Cyberdeck } from "../rules/cyberdeck.js";
+import { Utils } from "../core/utils.js";
+
+export const CyberdeckRenderer = {
   /** Bloc lecture seule sur la carte (cardrenderer.<edition>.js, juste après
       la section Équipement). `null`/vide si le PNJ n'a pas de deck structuré
       (pas de decker, ou pas encore migré/généré). */
@@ -319,3 +323,6 @@ const CyberdeckRenderer = {
     deck.programs = [...checked, ...custom];
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.CyberdeckRenderer = CyberdeckRenderer;

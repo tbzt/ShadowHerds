@@ -5,7 +5,13 @@
    L'invocation d'esprits vit dans SummonPanel (UI était un
    fourre-tout mélangeant plusieurs domaines fonctionnels autonomes).
    ============================================================ */
-const UI = {
+import { Campaign } from "../rules/campaign.js";
+import { CardRenderer } from "./cardrenderer.js";
+import { Drugs } from "../catalogs/drugs.js";
+import { Utils } from "../core/utils.js";
+import { Vehicles } from "../catalogs/vehicles.js";
+
+export const UI = {
   /** Clic sur une case de moniteur. Mute TOUTES les copies vivantes de
       l'entité et persiste tous les stores concernés (`_entityCopies`/
       `persistEntity`) — corrige un bug latent trouvé en vérifiant
@@ -360,3 +366,6 @@ const UI = {
     return src.filter((i) => Vehicles.matchItem(i, pnj.edition));
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.UI = UI;

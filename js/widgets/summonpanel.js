@@ -5,7 +5,13 @@
    UI était un fourre-tout mélangeant moniteurs/véhicules/esprits ;
    l'invocation est un domaine fonctionnel complet et autonome).
    ============================================================ */
-const SummonPanel = {
+import { Actor } from "../rules/actor.js";
+import { CardRenderer } from "./cardrenderer.js";
+import { MagicAction } from "./magicaction.js";
+import { Spirits } from "../catalogs/spirits.js";
+import { Utils } from "../core/utils.js";
+
+export const SummonPanel = {
   _summon: null, // état du panneau : { ownerId, force, tier, services }
 
   /** Panneau d'invocation singleton (pattern du panneau de risque). */
@@ -224,3 +230,6 @@ const SummonPanel = {
     if (owner) CardRenderer.refresh(owner);
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.SummonPanel = SummonPanel;

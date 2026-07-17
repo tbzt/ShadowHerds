@@ -7,7 +7,11 @@
    (js/controllers/servers.js). Catalogues et règles délégués à
    Matrix (js/matrix.js), comme dans Servers.
    ============================================================ */
-const ServerRenderer = {
+import { CardRenderer } from "./cardrenderer.js";
+import { Matrix } from "../rules/matrix.js";
+import { Utils } from "../core/utils.js";
+
+export const ServerRenderer = {
   /** État d'intrusion scène-scopé d'un serveur (`Encounter.state.
       matrix`), lu ici pour l'affichage — remplace `srv.intrusion`. Un seul
       point de résolution plutôt que de faire percoler un paramètre `intr`
@@ -503,3 +507,6 @@ const ServerRenderer = {
       </div>`;
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.ServerRenderer = ServerRenderer;

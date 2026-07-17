@@ -16,7 +16,7 @@
    l'édition (usesRiskPanel), comme ContactGen.generate — aucune branche
    App.edition (prohibition #1).
    ============================================================ */
-const ContactCreate = {
+export const ContactCreate = {
   _el: null,
   _pjId: null,
   _pjEdition: null,
@@ -180,3 +180,6 @@ const ContactCreate = {
     this._pjEdition = null;
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.ContactCreate = ContactCreate;

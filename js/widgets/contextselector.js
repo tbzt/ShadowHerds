@@ -18,7 +18,12 @@
    (recharger le carnet, aller au hub…). Popover ancré, fermé au clic-dehors
    ou Échap. Rendu neutre par édition (aucun `App.edition`).
    ============================================================ */
-const ContextSelector = {
+import { CardRenderer } from "./cardrenderer.js";
+import { Collection } from "./collection.js";
+import { DossierBar } from "./dossierbar.js";
+import { Dossiers } from "./dossiers.js";
+
+export const ContextSelector = {
   _el: null, // popover monté (unique, réutilisé)
   _onPick: null, // callback de l'ouverture courante
   _outside: null, // handler clic-dehors courant (retiré à la fermeture)
@@ -154,3 +159,6 @@ const ContextSelector = {
     document.removeEventListener("keydown", this._onKey);
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.ContextSelector = ContextSelector;

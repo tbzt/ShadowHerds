@@ -8,7 +8,21 @@
    (cardrenderer.sr5.js, .sr6.js, .anarchy.js, .linked.js) qui
    étendent cet objet — même patron que les modules d'édition.
    ============================================================ */
-const CardRenderer = {
+import { Actor } from "../rules/actor.js";
+import { ActorEffects } from "../rules/actoreffects.js";
+import { CardFooter } from "./cardfooter.js";
+import { CyberdeckRenderer } from "./cyberdeckrenderer.js";
+import { Drugs } from "../catalogs/drugs.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+import { Magic } from "../rules/magic.js";
+import { Mentions } from "./mentions.js";
+import { SkillCatalog } from "../rules/skillcatalog.js";
+import { SkillEffects } from "../rules/skilleffects.js";
+import { UI } from "./ui.js";
+import { Utils } from "../core/utils.js";
+import { WeaponRoll } from "../rules/weaponroll.js";
+
+export const CardRenderer = {
   /** Dépendances de rendu par défaut, lues depuis les globals de l'app.
       Point de câblage unique : le reste du renderer ne lit plus aucun de
       ces modules directement, tout arrive via le paramètre `deps`. */
@@ -2092,3 +2106,6 @@ const CardRenderer = {
     });
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.CardRenderer = CardRenderer;

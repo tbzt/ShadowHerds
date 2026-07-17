@@ -17,7 +17,14 @@
 
    Un contact/PNJ/serveur peut appartenir à PLUSIEURS groupes.
    ============================================================ */
-const Collection = {
+import { BulkBar } from "./bulkbar.js";
+import { CardRenderer } from "./cardrenderer.js";
+import { Dialog } from "./dialog.js";
+import { GroupPicker } from "./grouppicker.js";
+import { Storage } from "../core/storage.js";
+import { Utils } from "../core/utils.js";
+
+export const Collection = {
   /** Nom de groupe réservé pour l'épingle rapide — un dossier
       transverse comme un autre, pinné en tête par DossierBar. */
   FAV_GROUP: "★ Favoris",
@@ -762,3 +769,6 @@ const Collection = {
     removed: (e) => `${e.name} supprimé.`,
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.Collection = Collection;

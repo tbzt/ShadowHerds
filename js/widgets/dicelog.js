@@ -4,7 +4,11 @@
    DICE LOG — journal des jets de la session
    Alimenté par Dice._animate (dice.js) via DiceLog.record().
    ============================================================ */
-const DiceLog = {
+import { DicePanel } from "./dicepanel.js";
+import { Storage } from "../core/storage.js";
+import { Utils } from "../core/utils.js";
+
+export const DiceLog = {
   _open: false,
 
   /* ---- Journal des jets (persistant, plus récent en premier) ---- */
@@ -529,3 +533,6 @@ if (document.readyState === "loading") {
 } else {
   DiceLog.init();
 }
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.DiceLog = DiceLog;

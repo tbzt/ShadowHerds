@@ -8,7 +8,7 @@
    Volontairement restreint (décision B du plan) : pas de titres `#`
    (collision #tag), pas de liens `[]()` (collision @[nom](id) + XSS href).
    ============================================================ */
-const Markdown = {
+export const Markdown = {
   /** Applique gras/italique/code à une ligne de texte échappé. Les regex
       sont bornées à `[^\n]` : jamais de mise en forme traversant une ligne. */
   inline(escaped) {
@@ -19,3 +19,6 @@ const Markdown = {
       .replace(/_([^\n_]+)_/g, "<em>$1</em>");
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.Markdown = Markdown;

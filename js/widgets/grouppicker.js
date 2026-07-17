@@ -13,7 +13,11 @@
    groupsOf, toggleGroup, save, render). Câblage interne par
    délégation, sans aucun handler inline.
    ============================================================ */
-const GroupPicker = {
+import { CardRenderer } from "./cardrenderer.js";
+import { Dialog } from "./dialog.js";
+import { Dossiers } from "./dossiers.js";
+
+export const GroupPicker = {
   _collection: null,
   _id: null,
 
@@ -157,3 +161,6 @@ const GroupPicker = {
     });
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.GroupPicker = GroupPicker;

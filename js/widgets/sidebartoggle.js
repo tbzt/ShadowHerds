@@ -7,7 +7,9 @@
    run). Préférence d'affichage globale (toutes éditions
    confondues), stockée hors du namespace Storage par édition.
    ============================================================ */
-const SidebarToggle = {
+import { Storage } from "../core/storage.js";
+
+export const SidebarToggle = {
   _key: "sidebar_collapsed",
   _mobileBreakpoint: 640,
   _panels: ["shadows", "characters", "generator", "contacts", "matrix", "run"],
@@ -75,8 +77,17 @@ const SidebarToggle = {
 };
 
 // Initialisation au chargement du DOM
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => SidebarToggle.init());
-} else {
+/* Auto-init APRÈS le reste des scripts : `init()` dépend de modules de
+   couche haute (Settings…) chargés plus loin dans index.html. Ne pas
+   tester `readyState === "loading"` — il vaut déjà "interactive" quand
+   les scripts différés s'exécutent, l'init partait donc trop tôt.
+   DOMContentLoaded, lui, ne se déclenche qu'une fois TOUS les scripts
+   différés exécutés. */
+if (document.readyState === "complete") {
   SidebarToggle.init();
+} else {
+  document.addEventListener("DOMContentLoaded", () => SidebarToggle.init(), { once: true });
 }
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.SidebarToggle = SidebarToggle;

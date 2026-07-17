@@ -7,7 +7,15 @@
    S'appuie sur le moteur Dice (dice.js) pour le calcul,
    et sur DiceLog (dicelog.js) pour le journal.
    ============================================================ */
-const DiceRoller = {
+import { Actor } from "../rules/actor.js";
+import { CardRenderer } from "./cardrenderer.js";
+import { Dice } from "../rules/dice.js";
+import { DiceLog } from "./dicelog.js";
+import { Storage } from "../core/storage.js";
+import { Utils } from "../core/utils.js";
+import { WeaponRoll } from "../rules/weaponroll.js";
+
+export const DiceRoller = {
   _animating: false,
 
   /** Dernier résultat brut affiché (res + opts), source des relances
@@ -1081,3 +1089,6 @@ const DiceRoller = {
     this._hooks.onPnjChanged(pnj);
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.DiceRoller = DiceRoller;

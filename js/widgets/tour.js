@@ -13,7 +13,11 @@
    Filtrage capacité (`step.capability`) : hook `_hasCapability`, neutre en G1
    (aucune étape à capacité) ; l'API résolue par l'édition arrive en G3.
    ============================================================ */
-const Tour = {
+import { Debug } from "../core/debug.js";
+import { Storage } from "../core/storage.js";
+import { TourSteps } from "./toursteps.js";
+
+export const Tour = {
   _steps: [],
   _i: 0,
   _active: false,
@@ -333,9 +337,15 @@ const Tour = {
   },
 };
 
-/* Garde-fou dev (G4) : signale au chargement toute étape à ancre absente. */
-if (typeof window !== "undefined") {
-  if (document.readyState === "loading")
-    document.addEventListener("DOMContentLoaded", () => Tour._auditAnchors());
-  else Tour._auditAnchors();
+/* Garde-fou dev : signale au chargement toute étape à ancre absente. Attend
+   DOMContentLoaded, seul moment où TOUS les scripts différés ont tourné et
+   où les ancres existent (`readyState` vaut déjà "interactive" pendant
+   l'exécution des scripts différés — trop tôt). */
+if (document.readyState === "complete") {
+  Tour._auditAnchors();
+} else {
+  document.addEventListener("DOMContentLoaded", () => Tour._auditAnchors(), { once: true });
 }
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.Tour = Tour;

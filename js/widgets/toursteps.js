@@ -10,7 +10,7 @@
    try = ESSAYEZ (optionnel). Ancres = clés `data-tour` (sidebar ET bottom-nav) ;
    `fallback` quand l'ancre est masquée : "center" (carte centrée) | "skip".
    ============================================================ */
-const TourSteps = {
+export const TourSteps = {
   steps: [
     {
       id: "lib", anchor: "nav-shadows", tours: ["full"], since: "1.0.0", fallback: "center",
@@ -290,3 +290,6 @@ const TourSteps = {
     },
   ],
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.TourSteps = TourSteps;

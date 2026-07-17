@@ -12,7 +12,14 @@
    Les deux jets partent au journal (DiceLog) ; le détail est présenté
    dans le panneau. Coquille .risk-panel réutilisée.
    ============================================================ */
-const MagicAction = {
+import { Actor } from "../rules/actor.js";
+import { Dice } from "../rules/dice.js";
+import { DiceLog } from "./dicelog.js";
+import { DiceRoller } from "./diceroller.js";
+import { Magic } from "../rules/magic.js";
+import { Utils } from "../core/utils.js";
+
+export const MagicAction = {
   /** Hooks injectés par app.js (couche 6) : onPnjChanged(pnj). */
   _hooks: null,
 
@@ -432,3 +439,6 @@ const MagicAction = {
     };
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.MagicAction = MagicAction;

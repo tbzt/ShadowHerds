@@ -7,7 +7,10 @@
    globale (toutes éditions), persistée via Storage.getGlobal — pas de
    localStorage direct (doctrine).
    ============================================================ */
-const RosterView = {
+import { Storage } from "../core/storage.js";
+import { UI } from "./ui.js";
+
+export const RosterView = {
   _key: "roster_row_view",
   _on: false,
   _wired: false,
@@ -67,3 +70,6 @@ const RosterView = {
       });
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.RosterView = RosterView;

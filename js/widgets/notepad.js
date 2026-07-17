@@ -6,7 +6,12 @@
    un simple textarea, pas un wiki. Overlay calqué sur le journal des jets
    (DiceLog) ; persistance globale via Storage, jamais localStorage direct.
    ============================================================ */
-const Notepad = {
+import { ContextSelector } from "./contextselector.js";
+import { Dossiers } from "./dossiers.js";
+import { Mentions } from "./mentions.js";
+import { Notebooks } from "../rules/notebooks.js";
+
+export const Notepad = {
   _open: false,
   _saveTimer: null,
   _mode: "read", // "read" (puces @/#) | "edit" (jeton brut)
@@ -205,3 +210,6 @@ if (document.readyState === "loading") {
 } else {
   Notepad.init();
 }
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.Notepad = Notepad;

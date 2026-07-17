@@ -18,7 +18,7 @@
    classes .modal-overlay / .modal, donc hérite du thème sans
    surcharge par édition.
    ============================================================ */
-const Dialog = {
+export const Dialog = {
   _el: null,
   _resolve: null,
   _mode: null, // "prompt" | "confirm"
@@ -169,3 +169,6 @@ const Dialog = {
     if (resolve) resolve(value);
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.Dialog = Dialog;

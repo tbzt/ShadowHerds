@@ -10,7 +10,10 @@
    forme de moniteur par édition à connaître ici (conditionMonitor.gauge
    est l'accesseur neutre).
    ============================================================ */
-const SpectatorView = {
+import { Storage } from "../core/storage.js";
+import { Utils } from "../core/utils.js";
+
+export const SpectatorView = {
   _active: false,
   _bound: false,
 
@@ -133,3 +136,6 @@ const SpectatorView = {
     </div>`;
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.SpectatorView = SpectatorView;

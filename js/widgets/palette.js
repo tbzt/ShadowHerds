@@ -5,7 +5,14 @@
    entité sauvegardée par nom/archétype et y aller, sans connaître son
    rangement. Source unique : PnjLookup.search (pas de résolveur concurrent).
    ============================================================ */
-const Palette = {
+import { CardRenderer } from "./cardrenderer.js";
+import { DossierBar } from "./dossierbar.js";
+import { Mentions } from "./mentions.js";
+import { Notebooks } from "../rules/notebooks.js";
+import { Notepad } from "./notepad.js";
+import { PinRow } from "./pinrow.js";
+
+export const Palette = {
   _open: false,
   _sel: 0,
   _results: [],
@@ -208,3 +215,6 @@ const Palette = {
     }, 0);
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.Palette = Palette;

@@ -6,7 +6,11 @@
    l'animation plein écran existante (DiceRoller.rollPool → show),
    ou par le panneau de prise de risque en Anarchy 2.0.
    ============================================================ */
-const DicePanel = {
+import { DiceLog } from "./dicelog.js";
+import { DiceRoller } from "./diceroller.js";
+import { Utils } from "../core/utils.js";
+
+export const DicePanel = {
   count: 6,
   _holdTimer: null,
   _holdInterval: null,
@@ -124,8 +128,17 @@ const DicePanel = {
 };
 
 // Initialisation au chargement du DOM
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => DicePanel.init());
-} else {
+/* Auto-init APRÈS le reste des scripts : `init()` dépend de modules de
+   couche haute (Settings…) chargés plus loin dans index.html. Ne pas
+   tester `readyState === "loading"` — il vaut déjà "interactive" quand
+   les scripts différés s'exécutent, l'init partait donc trop tôt.
+   DOMContentLoaded, lui, ne se déclenche qu'une fois TOUS les scripts
+   différés exécutés. */
+if (document.readyState === "complete") {
   DicePanel.init();
+} else {
+  document.addEventListener("DOMContentLoaded", () => DicePanel.init(), { once: true });
 }
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.DicePanel = DicePanel;

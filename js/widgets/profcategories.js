@@ -10,7 +10,7 @@
    ceux de formOptions.profession de chaque édition, car la
    génération s'appuie dessus (pools de compétences / profils).
    ============================================================ */
-const ProfCategories = {
+export const ProfCategories = {
   /* ---- SR5 ---- */
   sr5: [
     {
@@ -366,3 +366,6 @@ const ProfCategories = {
     return result;
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.ProfCategories = ProfCategories;

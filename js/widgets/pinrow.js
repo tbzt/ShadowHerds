@@ -11,7 +11,11 @@
    ni position:fixed. Réutilise Palette._reveal pour la navigation — pas
    de 2ᵉ résolveur nom→panneau.
    ============================================================ */
-const PinRow = {
+import { CardRenderer } from "./cardrenderer.js";
+import { DossierBar } from "./dossierbar.js";
+import { Palette } from "./palette.js";
+
+export const PinRow = {
   _MAX_CONSULTED: 12,
   _consulted: [], // [{id, type, name}], plus récent en tête
   _collapsed: false,
@@ -119,8 +123,17 @@ const PinRow = {
   },
 };
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => PinRow.init());
-} else {
+/* Auto-init APRÈS le reste des scripts : `init()` dépend de modules de
+   couche haute (Settings…) chargés plus loin dans index.html. Ne pas
+   tester `readyState === "loading"` — il vaut déjà "interactive" quand
+   les scripts différés s'exécutent, l'init partait donc trop tôt.
+   DOMContentLoaded, lui, ne se déclenche qu'une fois TOUS les scripts
+   différés exécutés. */
+if (document.readyState === "complete") {
   PinRow.init();
+} else {
+  document.addEventListener("DOMContentLoaded", () => PinRow.init(), { once: true });
 }
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.PinRow = PinRow;

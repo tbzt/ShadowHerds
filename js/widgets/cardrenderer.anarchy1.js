@@ -8,6 +8,11 @@
    pas de RR/seuils comme cardrenderer.anarchy.js — V2). Modelé sur
    _bodySR5 (cardrenderer.sr5.js), pas sur _bodyAnarchy (V2).
    ============================================================ */
+import { Actor } from "../rules/actor.js";
+import { CyberdeckRenderer } from "./cyberdeckrenderer.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+import { Utils } from "../core/utils.js";
+
 Object.assign(CardRenderer, {
   _bodyAnarchy1(pnj, deps) {
     const {

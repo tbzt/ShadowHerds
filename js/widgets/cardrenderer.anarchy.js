@@ -3,6 +3,10 @@
 /* ============================================================
    CARD RENDERER — corps de carte Anarchy 2e édition.
    ============================================================ */
+import { Actor } from "../rules/actor.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+import { Utils } from "../core/utils.js";
+
 Object.assign(CardRenderer, {
   /** Tags cliquables des armures optionnelles, dans la zone Combat. */
   _armorChipRow(pnj) {

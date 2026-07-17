@@ -13,7 +13,9 @@
    sont en texte seul. Le renderer reste maître de QUELLES actions
    existent ; il n'en choisit pas la disposition.
    ============================================================ */
-const CardFooter = {
+import { CardRenderer } from "./cardrenderer.js";
+
+export const CardFooter = {
   /**
    * @param {Array<Object>} actions  descripteurs, dans l'ordre voulu :
    *   { kind:"primary"|"secondary"|"menu", label, attrs,
@@ -64,3 +66,6 @@ const CardFooter = {
     </div>`;
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.CardFooter = CardFooter;

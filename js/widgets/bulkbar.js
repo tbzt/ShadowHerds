@@ -9,7 +9,11 @@
    publique (selectedIds/clearSelection/removeMany/addManyToGroup/_cfg) —
    jamais de branche par domaine ici.
    ============================================================ */
-const BulkBar = {
+import { Dialog } from "./dialog.js";
+import { Dossiers } from "./dossiers.js";
+import { SelectionMode } from "./selectionmode.js";
+
+export const BulkBar = {
   _col: null,
 
   _ensure() {
@@ -191,3 +195,6 @@ const BulkBar = {
     col.clearSelection();
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.BulkBar = BulkBar;

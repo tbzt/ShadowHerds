@@ -9,7 +9,7 @@
    aucune action métier. Un seul menu ouvert à la fois ; clic
    ailleurs ou Échap → fermeture.
    ============================================================ */
-const CardMenu = {
+export const CardMenu = {
   _wired: false,
 
   bindDelegation() {
@@ -50,3 +50,6 @@ const CardMenu = {
     });
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.CardMenu = CardMenu;

@@ -3,6 +3,10 @@
 /* ============================================================
    CARD RENDERER — corps de carte Shadowrun 6e.
    ============================================================ */
+import { CyberdeckRenderer } from "./cyberdeckrenderer.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+import { Utils } from "../core/utils.js";
+
 Object.assign(CardRenderer, {
   _gmPoolsSR6(pnj) {
     // Défense, Encaissement et Drain sont dans la zone Combat.

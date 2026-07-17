@@ -3,6 +3,10 @@
 /* ============================================================
    CARD RENDERER — corps de carte Shadowrun 5e.
    ============================================================ */
+import { CyberdeckRenderer } from "./cyberdeckrenderer.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+import { Utils } from "../core/utils.js";
+
 Object.assign(CardRenderer, {
   _gmPoolsSR5(pnj) {
     // Défense et Encaissement sont remontés dans la zone Combat ;

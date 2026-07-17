@@ -38,7 +38,7 @@
    n'écrase l'autre. La recherche se réinitialise à la fermeture du
    dropdown (repart propre à chaque ouverture).
    ============================================================ */
-const SingleSelect = {
+export const SingleSelect = {
   _bound: false,
   // #62 : en dessous, la recherche n'apporte rien (liste déjà courte d'un
   // coup d'œil) — évite d'alourdir les petits pickers (genre, habitat…).
@@ -277,3 +277,6 @@ const SingleSelect = {
       .replace(/>/g, "&gt;");
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.SingleSelect = SingleSelect;

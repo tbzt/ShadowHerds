@@ -5,7 +5,7 @@
    (arme, sort, pouvoir, trait). Modale légère, fermeture au clic
    en dehors, sur la croix, ou avec Échap.
    ============================================================ */
-const ContentModal = {
+export const ContentModal = {
   _el: null,
   _delegated: false,
 
@@ -68,3 +68,6 @@ const ContentModal = {
     if (this._el) this._el.classList.remove("visible");
   },
 };
+
+// Pont couche 4 (migration modules ES) — retiré en fin de migration.
+window.ContentModal = ContentModal;
