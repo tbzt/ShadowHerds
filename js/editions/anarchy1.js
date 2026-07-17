@@ -68,6 +68,11 @@ export const EditionAnarchy1 = {
     blockedBy: "critGlitch",
     costAttr: "CHC",
   },
+  /** Pas d'Edge PRÉ-jet motorisé : Anarchy 1re n'expose pas de « Repousser
+      les limites » vérifié au livre, et sa relance passe déjà par la réserve
+      de menace (Points d'Anarchy). Neutre `null` — le lanceur n'offre aucune
+      option pré-jet, comme Anarchy 2.0. */
+  preRollEdge: null,
   /* ---- Action magique : Anarchy n'a pas de Drain chiffré →
      tout neutre. MagicAction ne déclenche rien (spellSkill/conjureSkill null). ---- */
   spellUsesForce: false,

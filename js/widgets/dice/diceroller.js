@@ -831,6 +831,41 @@ export const DiceRoller = {
   },
 
   /* ========================================================
+     EDGE PRÉ-JET (« Repousser les limites » SR5 / « Prendre un risque » +
+     « Ajouter son rang d'Atout » SR6) — miroir amont de la relance.
+     ======================================================== */
+
+  /** Options d'Edge PRÉ-jet disponibles pour un PNJ, selon l'édition active
+      (contrat neutre preRollEdge, jamais de branche d'édition ici). Résout
+      `dice` (`"rating"` → valeur de l'attribut de coût) et l'accessibilité
+      selon le budget Edge (Actor.attr(costAttr)). Renvoie `[]` si l'édition
+      n'a pas d'Edge pré-jet (A1/A2), si le PNJ n'a pas d'attributs (lancer
+      libre), ou si le budget est nul. Fonction pure (lecture seule) — le débit
+      et le jet viennent des surfaces (vagues suivantes). */
+  preRollEdgeOptions(pnj) {
+    const mod = pnj ? App.getEditionModule(pnj.edition) : App.editionModule;
+    const spec = mod && mod.preRollEdge;
+    if (!spec || !pnj || !pnj.attrs) return [];
+    const budget = Actor.attr(pnj, spec.costAttr);
+    if (budget == null) return [];
+    return (spec.options || []).map((o) => {
+      const dice = o.dice === "rating" ? Actor.attr(pnj, spec.costAttr) || 0 : o.dice || 0;
+      return {
+        id: o.id,
+        label: o.label,
+        cost: o.cost,
+        dice,
+        explode: !!o.explode,
+        ignoreLimit: !!o.ignoreLimit,
+        hint: o.hint || "",
+        costAttr: spec.costAttr,
+        budget,
+        affordable: budget >= o.cost && dice > 0,
+      };
+    });
+  },
+
+  /* ========================================================
      RELANCE (« Seconde chance » / « Relancer tous les dés »)
      ======================================================== */
 

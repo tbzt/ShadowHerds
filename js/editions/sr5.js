@@ -62,6 +62,28 @@ export const EditionSR5 = {
     blockedBy: "critGlitch",
     costAttr: "CHC",
   },
+  /** Edge PRÉ-jet « Repousser les limites » (p.58) : dépenser 1 point de
+      Chance AVANT le jet pour ajouter son indice de Chance en dés à Règle des
+      six ET ignorer toute Limite. Contrat neutre miroir de rerollAction, lu
+      par le lanceur (DiceRoller.preRollEdgeOptions), jamais de branche
+      d'édition. `dice:"rating"` = valeur de l'attribut de coût (`costAttr`),
+      résolue par le lanceur ; `explode` = Règle des six ; `ignoreLimit` ne
+      mord que là où une Limite existe (rollWeapon). `null` si l'édition n'a
+      pas d'Edge pré-jet par PNJ. */
+  preRollEdge: {
+    costAttr: "CHC",
+    options: [
+      {
+        id: "pushLimit",
+        label: "Repousser les limites",
+        cost: 1,
+        dice: "rating",
+        explode: true,
+        ignoreLimit: true,
+        hint: "1 Chance · +indice, Règle des six, ignore la Limite",
+      },
+    ],
+  },
   /* ---- Action magique : sorts + invocation, tout lu par
      MagicAction via le contrat, jamais de branche d'édition côté widget. ---- */
   /** SR5 : la Puissance du sort est choisie par le lanceur (p.283). */

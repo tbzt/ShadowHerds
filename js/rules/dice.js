@@ -28,6 +28,57 @@ export const Dice = {
     return { n, faces, extra: [], hits, ones, glitch, critGlitch };
   },
 
+  /**
+   * Jet avec dés d'Edge PRÉ-jet (SR5 « Repousser les limites », p.58 / SR6
+   * « Prendre un risque » et « Ajouter son rang d'Atout », p.50-51). Le pool
+   * de base se lance normalement ; on AJOUTE `edgeDice` dés. Si `explode`, ces
+   * dés d'Edge — et EUX SEULS — suivent la Règle des six : un 6 compte comme un
+   * succès ET se relance en cascade (SR5 : « seuls vos dés de Chance utilisent
+   * la Règle des six »). Les relances d'explosion vont dans `extra` et
+   * n'apportent que des succès ; la bévue se compte sur les dés INITIAUX
+   * (base + Edge), jamais sur les explosions. Le plafond de Limite éventuel
+   * (SR5) est géré par l'appelant (rollWeapon), pas ici — « Repousser les
+   * limites » l'ignore de toute façon.
+   */
+  computeRollWithEdge(normalPool, edgeDice, explode = false) {
+    normalPool = Utils.clamp(normalPool | 0, 0, 60);
+    edgeDice = Utils.clamp(edgeDice | 0, 0, 60);
+    const faces = [];
+    const extra = [];
+    let hits = 0;
+    let ones = 0;
+    const tally = (v) => {
+      if (v >= 5) hits++;
+      if (v === 1) ones++;
+    };
+    // Dés de base : jamais d'explosion.
+    for (let i = 0; i < normalPool; i++) {
+      const v = Utils.randInt(1, 6);
+      faces.push(v);
+      tally(v);
+    }
+    // Dés d'Edge : comptés dans les dés initiaux (donc la bévue), puis Règle
+    // des six si `explode`. Garde-fou de cascade (RNG dégénéré / mock).
+    for (let i = 0; i < edgeDice; i++) {
+      const v = Utils.randInt(1, 6);
+      faces.push(v);
+      tally(v);
+      if (explode && v === 6) {
+        let r = Utils.randInt(1, 6);
+        for (let guard = 0; guard < 100; guard++) {
+          extra.push(r);
+          if (r >= 5) hits++; // les explosions n'apportent que des succès
+          if (r !== 6) break;
+          r = Utils.randInt(1, 6);
+        }
+      }
+    }
+    const n = normalPool + edgeDice;
+    const glitch = ones > Math.floor(n / 2);
+    const critGlitch = glitch && hits === 0;
+    return { n, faces, extra, hits, ones, glitch, critGlitch, edgeDice, edgeExplode: !!explode };
+  },
+
   /* ========================================================
      ANARCHY 2.0 — RÈGLE DE RISQUE STANDARD
 

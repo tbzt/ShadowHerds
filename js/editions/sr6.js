@@ -73,6 +73,34 @@ export const EditionSR6 = {
     blockedBy: "glitch",
     costAttr: "ATO",
   },
+  /** Edge PRÉ-jet (Atout, p.50-51) : deux dépenses « avant le jet ». *Prendre
+      un risque* (1 Atout → +1 dé libre, sans explosion) et *Ajouter son rang
+      d'Atout* (4 Atouts → +rang de dés à 6 explosifs). Contrat neutre miroir
+      de rerollAction, lu par DiceRoller.preRollEdgeOptions. SR6 n'a pas de
+      Limite → `ignoreLimit:false`. `dice:"rating"` = valeur de `costAttr`. */
+  preRollEdge: {
+    costAttr: "ATO",
+    options: [
+      {
+        id: "takeRisk",
+        label: "Prendre un risque",
+        cost: 1,
+        dice: 1,
+        explode: false,
+        ignoreLimit: false,
+        hint: "1 Atout · +1 dé libre",
+      },
+      {
+        id: "edgeRating",
+        label: "Ajouter son rang d'Atout",
+        cost: 4,
+        dice: "rating",
+        explode: true,
+        ignoreLimit: false,
+        hint: "4 Atouts · +rang, 6 explosifs",
+      },
+    ],
+  },
   /* ---- Action magique : lu par MagicAction via le contrat. ---- */
   /** SR6 : pas de Puissance de sort à choisir — la VD est fixe (p.135-136). */
   spellUsesForce: false,

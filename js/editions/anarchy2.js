@@ -63,6 +63,10 @@ export const EditionAnarchy2 = {
     blockedBy: null,
     costAttr: null,
   },
+  /** Pas d'Edge PRÉ-jet par PNJ : en Anarchy 2.0 la décision pré-jet EST la
+      prise de risque, déjà portée par le panneau de risque (usesRiskPanel).
+      Neutre `null` — aucune option pré-jet supplémentaire à offrir. */
+  preRollEdge: null,
   /* ---- Action magique : Drain déjà couvert par les complications
      du jet de risque (p.170), aucune VD séparée → tout neutre. ---- */
   spellUsesForce: false,
