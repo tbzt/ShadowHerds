@@ -1,6 +1,7 @@
 /* ============================================================
    THÈME SHADOWRUN 6E ÉDITION — « Interface corpo »
-   Palette : cyan électrique #00c8ff / violet #7b2fff
+   Palette : magenta #E24FA8 / violet #7b2fff (réalignée sur le
+   livre le 2026-07-17 — le cyan #00c8ff n'était pas la couverture)
    Fond : noir bleuté #060a0e
    Typo : Chakra Petch (techno, angles coupés) + Share Tech Mono
    Identité : épuré, coins coupés nets, fines barres néon, pilules
@@ -9,19 +10,22 @@
   --bg: #060a0e;
   --bg-card: #090e14;
   --bg-mid: #0a1018;
-  --accent: #00c8ff;
+  --accent: #e24fa8;
   --accent2: #7b2fff;
   --text: #bbd4e8;
   --text-dim: #6e8aa6;
   --border: #0e2030;
-  --glow: rgba(0, 200, 255, 0.1);
+  /* Bordure de contrôle (case de moniteur, etc.) : teinte de l'édition,
+     saturation basse, valeur minimale franchissant 3:1 sur --bg-card. */
+  --border-ui: #78566b;
+  --glow: color-mix(in srgb, var(--accent) 10%, transparent);
   /* Canaux de calque (cf. theme-sr5.css) : Matrice vert, Magie violet. */
   --accent-matrix: #2fbf74;
   --glow-matrix: rgba(47, 191, 116, 0.14);
   --accent-magic: #9a6bff;
   --glow-magic: rgba(154, 107, 255, 0.14);
   --badge: #001a2e;
-  --scan: rgba(0, 200, 255, 0.07);
+  --scan: color-mix(in srgb, var(--accent) 7%, transparent);
 
   --font-display: "Chakra Petch", sans-serif;
   --title-transform: uppercase;
@@ -41,9 +45,9 @@
   color: #7da8c8;
 }
 
-/* ---- Topbar : ligne nette + barre cyan ---- */
+/* ---- Topbar : ligne nette + barre magenta ---- */
 [data-edition="sr6"] #topbar {
-  border-bottom: 1px solid #0e2030;
+  border-bottom: 1px solid var(--border);
   position: relative;
 }
 [data-edition="sr6"] #topbar::after {
@@ -53,22 +57,22 @@
   bottom: -1px;
   width: 90px;
   height: 2px;
-  background: #00c8ff;
+  background: var(--accent);
 }
 
 /* ---- Sidebar : épurée, accent violet sur actif ---- */
 [data-edition="sr6"] #sidebar {
-  border-right: 1px solid #0e2030;
+  border-right: 1px solid var(--border);
 }
 [data-edition="sr6"] .nav-section-label {
-  color: #7b2fff;
+  color: var(--accent2);
 }
 [data-edition="sr6"] .nav-btn.active {
-  background: rgba(0, 200, 255, 0.07);
-  border-left-color: #00c8ff;
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  border-left-color: var(--accent);
 }
 [data-edition="sr6"] .nav-btn.active .nav-icon {
-  color: #7b2fff;
+  color: var(--accent2);
 }
 
 /* ---- Contenu : double reflet néon discret ---- */
@@ -76,25 +80,25 @@
   background-image:
     radial-gradient(
       ellipse at 15% 85%,
-      rgba(123, 47, 255, 0.06) 0%,
+      color-mix(in srgb, var(--accent2) 6%, transparent) 0%,
       transparent 50%
     ),
     radial-gradient(
       ellipse at 88% 8%,
-      rgba(0, 200, 255, 0.06) 0%,
+      color-mix(in srgb, var(--accent) 6%, transparent) 0%,
       transparent 50%
     );
 }
 
-/* ---- Titres de panel : fine barre cyan, pas de bloc ---- */
+/* ---- Titres de panel : fine barre magenta, pas de bloc ---- */
 [data-edition="sr6"] .panel-title {
-  border-bottom: 1px solid #0e2030;
+  border-bottom: 1px solid var(--border);
   position: relative;
 }
 [data-edition="sr6"] .panel-title::before {
   width: 4px;
   height: 1em;
-  background: #00c8ff;
+  background: var(--accent);
   border-radius: 0;
 }
 [data-edition="sr6"] .panel-title::after {
@@ -104,16 +108,16 @@
   bottom: -1px;
   width: 56px;
   height: 2px;
-  background: #7b2fff;
+  background: var(--accent2);
 }
 
 /* ---- Cartes PNJ : coin coupé, liseré bicolore ---- */
 [data-edition="sr6"] .pnj-card-frame::before {
-  background: linear-gradient(90deg, #00c8ff 0%, #7b2fff 100%);
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
   height: 2px;
 }
 [data-edition="sr6"] .pnj-card-header {
-  border-bottom: 1px solid #0e2030;
+  border-bottom: 1px solid var(--border);
   position: relative;
 }
 [data-edition="sr6"] .pnj-card-header::after {
@@ -123,7 +127,7 @@
   bottom: -1px;
   width: 42px;
   height: 2px;
-  background: #00c8ff;
+  background: var(--accent);
 }
 [data-edition="sr6"] .pnj-name {
   color: #cfe6f5;
@@ -132,9 +136,9 @@
 
 /* ---- Badge : pilule corpo ---- */
 [data-edition="sr6"] .pnj-rank-badge {
-  background: #001a2e;
-  color: #00c8ff;
-  border: 1px solid rgba(0, 200, 255, 0.3);
+  background: var(--badge);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
   border-radius: 12px;
   font-weight: 600;
 }
@@ -152,13 +156,13 @@
 
 /* ---- Défenses d'attribut — teinte violette ---- */
 [data-edition="sr6"] .def-attr .attr-value {
-  color: #7b2fff;
+  color: var(--accent2);
 }
 [data-edition="sr6"] .def-attr .attr-label {
   color: #5a2acc;
 }
 [data-edition="sr6"] .def-section .card-section-label {
-  color: #7b2fff;
+  color: var(--accent2);
 }
 
 /* ---- Moniteur unique SR6 ---- */
@@ -167,7 +171,7 @@
   border-color: #006e9e;
 }
 [data-edition="sr6"] .monitor-box.penalty {
-  border-color: #00c8ff;
+  border-color: var(--accent);
 }
 
 /* ---- Boutons : nets, légère majuscule ---- */
@@ -177,14 +181,14 @@
   letter-spacing: 0.1em;
 }
 
-/* ---- Métavariante en surbrillance cyan ---- */
+/* ---- Métavariante en surbrillance magenta ---- */
 [data-edition="sr6"] .pnj-metavariant {
-  color: #00c8ff;
+  color: var(--accent);
 }
 
 /* ---- Empty state : coin coupé net, fine barre néon ---- */
 [data-edition="sr6"] .empty-state {
-  border: 1px solid #0e2030;
+  border: 1px solid var(--border);
   border-radius: 3px;
   clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
   position: relative;
@@ -196,20 +200,20 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, #00c8ff 0%, #7b2fff 100%);
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
 }
 [data-edition="sr6"] .empty-state-title {
-  color: #00c8ff;
+  color: var(--accent);
 }
 
 /* ---- Modale : coin coupé net, fine barre néon ---- */
 [data-edition="sr6"] .modal {
   border-radius: 3px;
-  border-top: 1px solid #0e2030;
+  border-top: 1px solid var(--border);
   clip-path: var(--card-clip);
 }
 [data-edition="sr6"] .modal-header {
-  border-bottom: 1px solid #0e2030;
+  border-bottom: 1px solid var(--border);
   position: relative;
 }
 [data-edition="sr6"] .modal-header::after {
@@ -219,14 +223,14 @@
   bottom: -1px;
   width: 56px;
   height: 2px;
-  background: #00c8ff;
+  background: var(--accent);
 }
 [data-edition="sr6"] .modal-title {
-  color: #00c8ff;
+  color: var(--accent);
 }
 [data-edition="sr6"] .modal-close:hover {
-  border-color: #7b2fff;
-  color: #7b2fff;
+  border-color: var(--accent2);
+  color: var(--accent2);
 }
 
 /* ---- Formulaires : champs épurés, arrondis doux ---- */
@@ -241,10 +245,10 @@
 [data-edition="sr6"] .form-group input:focus,
 [data-edition="sr6"] .form-group select:focus,
 [data-edition="sr6"] .form-group textarea:focus {
-  border-color: #00c8ff;
+  border-color: var(--accent);
 }
 
-/* ---- Sidebar : survol cyan ---- */
+/* ---- Sidebar : survol magenta ---- */
 [data-edition="sr6"] .nav-btn:hover {
-  background: rgba(0, 200, 255, 0.05);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
 }

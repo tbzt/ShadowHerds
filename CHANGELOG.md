@@ -12,6 +12,22 @@ commit.
 
 ## [Non publié]
 
+## [1.49.0] — 2026-07-17
+
+### Système
+- **Les 4 identités visuelles sont réalignées sur la couverture de leur livre**
+  (relevé PDF, pas d'interprétation) : Shadowrun 5 passe de l'ambre au
+  **rouge sang**, Shadowrun 6 du cyan au **magenta**, Anarchy 1re éd. du
+  duotone magenta/vert au **duotone bleu/or**. Anarchy 2e éd. passe du rouge
+  punk à l'**ambre**, sa vraie couleur de marque (le rouge du livre est celui
+  des blessures). Les motifs, la typo et les coupes de coin ne changent pas —
+  seule la teinte d'accent bouge, remontée en luminosité là où le livre est
+  trop sombre pour un écran (accents mesurés, jamais estimés).
+- Dette de dette technique résorbée en même temps : les 4 thèmes ne portent
+  plus de couleurs recopiées en dur — tout passe par les tokens `--accent`/
+  `--accent2`/`--border` du thème, qui suivent désormais une seule source par
+  édition.
+
 ## [1.48.0] — 2026-07-17
 
 ### Import Foundry VTT

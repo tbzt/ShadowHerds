@@ -1,6 +1,8 @@
 /* ============================================================
    THÈME SHADOWRUN ANARCHY 2E ÉDITION — « Fanzine punk »
-   Palette : rouge punk #ff3c3c / orange vif #ff8800
+   Palette : ambre #F0B800 / orange vif #ff8800 (réaligné sur le
+   livre le 2026-07-17 — le rouge punk #ff3c3c n'était pas la
+   couverture ; --accent2 orange reste inchangé, déjà cohérent)
    Fond : noir chaud #0c0806
    Typo : Saira Condensed (titres) + Permanent Marker (noms) + STM
    Identité : brut, asymétrique, bordures épaisses, autocollants
@@ -9,19 +11,23 @@
   --bg: #0c0806;
   --bg-card: #130c08;
   --bg-mid: #180f0a;
-  --accent: #ff3c3c;
+  --bg-header: #1a0d06;
+  --accent: #f0b800;
   --accent2: #ff8800;
   --text: #e8d0c0;
   --text-dim: #a07452;
   --border: #2a1008;
-  --glow: rgba(255, 60, 60, 0.12);
+  /* Bordure de contrôle (case de moniteur, etc.) : teinte de l'édition,
+     saturation basse, valeur minimale franchissant 3:1 sur --bg-card. */
+  --border-ui: #665f49;
+  --glow: color-mix(in srgb, var(--accent) 12%, transparent);
   /* Canaux de calque (cf. theme-sr5.css) : Matrice vert, Magie violet. */
   --accent-matrix: #2fbf74;
   --glow-matrix: rgba(47, 191, 116, 0.14);
   --accent-magic: #9a6bff;
   --glow-magic: rgba(154, 107, 255, 0.14);
   --badge: #1e0800;
-  --scan: rgba(255, 60, 60, 0.07);
+  --scan: color-mix(in srgb, var(--accent) 7%, transparent);
 
   --font-display: "Saira Condensed", sans-serif;
   --title-transform: uppercase;
@@ -41,8 +47,8 @@
 
 /* ---- Topbar : bandeau brut + liseré orange épais ---- */
 [data-edition^="anarchy"] #topbar {
-  border-bottom: 3px solid #ff8800;
-  background: #1a0d06;
+  border-bottom: 3px solid var(--accent2);
+  background: var(--bg-header);
 }
 [data-edition^="anarchy"] .topbar-logo {
   font-weight: 700;
@@ -50,17 +56,17 @@
 
 /* ---- Sidebar : tranchante ---- */
 [data-edition^="anarchy"] #sidebar {
-  border-right: 3px solid #2a1008;
+  border-right: 3px solid var(--border);
 }
 [data-edition^="anarchy"] .nav-section-label {
-  color: #ff8800;
+  color: var(--accent2);
   font-weight: 700;
 }
 [data-edition^="anarchy"] .nav-btn {
   font-weight: 600;
 }
 [data-edition^="anarchy"] .nav-btn.active {
-  background: rgba(255, 60, 60, 0.08);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
   border-left-width: 4px;
 }
 
@@ -69,25 +75,25 @@
   background-image:
     radial-gradient(
       ellipse at 88% 88%,
-      rgba(255, 136, 0, 0.05) 0%,
+      color-mix(in srgb, var(--accent2) 5%, transparent) 0%,
       transparent 45%
     ),
     radial-gradient(
       ellipse at 12% 10%,
-      rgba(255, 60, 60, 0.05) 0%,
+      color-mix(in srgb, var(--accent) 5%, transparent) 0%,
       transparent 45%
     );
 }
 
-/* ---- Titres de panel : bloc orange franc ---- */
+/* ---- Titres de panel : bloc ambré franc ---- */
 [data-edition^="anarchy"] .panel-title {
   font-weight: 700;
-  border-bottom: 2px solid #ff8800;
+  border-bottom: 2px solid var(--accent2);
 }
 [data-edition^="anarchy"] .panel-title::before {
   width: 5px;
   height: 1.1em;
-  background: #ff3c3c;
+  background: var(--accent);
   border-radius: 0;
 }
 
@@ -96,12 +102,12 @@
   border-width: 2px;
 }
 [data-edition^="anarchy"] .pnj-card-frame::before {
-  background: #ff8800;
+  background: var(--accent2);
   height: 3px;
 }
 [data-edition^="anarchy"] .pnj-card-header {
   background: #1e0c04;
-  border-bottom: 3px solid #ff8800;
+  border-bottom: 3px solid var(--accent2);
 }
 /* Nom au feutre punk */
 [data-edition^="anarchy"] .pnj-name {
@@ -121,7 +127,7 @@
 
 /* ---- Labels de section : orange brut ---- */
 [data-edition^="anarchy"] .card-section-label {
-  color: #ff8800;
+  color: var(--accent2);
   font-weight: 700;
 }
 
@@ -132,7 +138,7 @@
   border-radius: 0;
 }
 [data-edition^="anarchy"] .attr-cell:not(:first-child) {
-  border-left: 2px solid #ff8800;
+  border-left: 2px solid var(--accent2);
 }
 
 /* ---- Boutons : brutaux ---- */
@@ -146,7 +152,7 @@
 
 /* ---- Métavariante (Anarchy n'en a pas, mais cohérence) ---- */
 [data-edition^="anarchy"] .pnj-metavariant {
-  color: #ff8800;
+  color: var(--accent2);
 }
 
 /* ============================================================
@@ -161,18 +167,18 @@
 }
 [data-edition^="anarchy"] .pnj-rank-badge.rang-lieutenant {
   color: var(--accent2);
-  border-color: rgba(255, 136, 0, 0.3);
-  background: rgba(255, 136, 0, 0.06);
+  border-color: color-mix(in srgb, var(--accent2) 30%, transparent);
+  background: color-mix(in srgb, var(--accent2) 6%, transparent);
 }
 [data-edition^="anarchy"] .pnj-rank-badge.rang-boss {
   color: var(--accent);
-  border-color: rgba(255, 60, 60, 0.4);
-  background: rgba(255, 60, 60, 0.08);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
-/* Clichés — boss en orange */
+/* Clichés — boss en ambre */
 [data-edition^="anarchy"] .cliche-item.boss-cliche {
-  border-color: rgba(255, 136, 0, 0.2);
+  border-color: color-mix(in srgb, var(--accent2) 20%, transparent);
 }
 [data-edition^="anarchy"] .cliche-dice {
   color: var(--accent);
@@ -184,18 +190,18 @@
   border-color: #9e2200;
 }
 [data-edition^="anarchy"] .monitor-box.sev-grave {
-  border-color: #ff8800;
+  border-color: var(--accent2);
 }
 [data-edition^="anarchy"] .monitor-box.sev-grave.filled {
-  background: #ff8800;
-  border-color: #ff8800;
+  background: var(--accent2);
+  border-color: var(--accent2);
 }
 [data-edition^="anarchy"] .monitor-box.sev-incap {
-  border-color: #ff3c3c;
+  border-color: var(--accent);
 }
 [data-edition^="anarchy"] .monitor-box.sev-incap.filled {
-  background: #ff3c3c;
-  border-color: #ff3c3c;
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 /* Narcos */
@@ -299,12 +305,12 @@
 
 /* ---- Empty state : bordure brute asymétrique, façon fanzine ---- */
 [data-edition^="anarchy"] .empty-state {
-  border: 2px dashed #ff8800;
+  border: 2px dashed var(--accent2);
   border-left-width: 4px;
   border-radius: 0;
 }
 [data-edition^="anarchy"] .empty-state-title {
-  color: #ff3c3c;
+  color: var(--accent);
   transform: rotate(-1deg);
   display: inline-block;
 }
@@ -312,21 +318,21 @@
 /* ---- Modale : bordure brute épaisse ---- */
 [data-edition^="anarchy"] .modal {
   border-radius: 0;
-  border: 2px solid #2a1008;
-  border-top: 3px solid #ff8800;
+  border: 2px solid var(--border);
+  border-top: 3px solid var(--accent2);
 }
 [data-edition^="anarchy"] .modal-header {
-  border-bottom: 2px solid #ff8800;
-  background: #1a0d06;
+  border-bottom: 2px solid var(--accent2);
+  background: var(--bg-header);
 }
 [data-edition^="anarchy"] .modal-title {
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #ff8800;
+  color: var(--accent2);
 }
 [data-edition^="anarchy"] .modal-close:hover {
-  border-color: #ff3c3c;
-  color: #ff3c3c;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* ---- Formulaires : champs brutaux ---- */
@@ -343,10 +349,10 @@
 [data-edition^="anarchy"] .form-group input:focus,
 [data-edition^="anarchy"] .form-group select:focus,
 [data-edition^="anarchy"] .form-group textarea:focus {
-  border-color: #ff8800;
+  border-color: var(--accent2);
 }
 
-/* ---- Sidebar : survol rouge punk ---- */
+/* ---- Sidebar : survol ambré ---- */
 [data-edition^="anarchy"] .nav-btn:hover {
-  background: rgba(255, 60, 60, 0.05);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
 }

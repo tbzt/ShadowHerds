@@ -1,6 +1,7 @@
 /* ============================================================
    THÈME SHADOWRUN 5E ÉDITION — « Dossier classifié »
-   Palette : ambre chaud #d4820a / rouge sang #8b1a1a
+   Palette : rouge sang #D9646D / oxblood #8b1a1a (réalignée sur le
+   livre le 2026-07-17 — l'ambre #d4820a n'était pas la couverture)
    Fond : anthracite profond #080608
    Typo : Oswald (condensée, officielle) + Share Tech Mono
    Identité : coins biseautés, liserés sang, tampons, grain ambré
@@ -9,12 +10,16 @@
   --bg: #080608;
   --bg-card: #0f0c0a;
   --bg-mid: #140f0a;
-  --accent: #d4820a;
+  --bg-header: #140a08;
+  --accent: #d9646d;
   --accent2: #8b1a1a;
   --text: #d8cfc0;
   --text-dim: #9c8568;
   --border: #2a1e14;
-  --glow: rgba(212, 130, 10, 0.12);
+  /* Bordure de contrôle (case de moniteur, etc.) : teinte de l'édition,
+     saturation basse, valeur minimale franchissant 3:1 sur --bg-card. */
+  --border-ui: #785659;
+  --glow: color-mix(in srgb, var(--accent) 12%, transparent);
   /* Canaux de calque (transverses aux 4 éditions) : Matrice = vert phosphore,
      Magie = violet arcane. Teintent les blocs .matrix-block / .spell-block. */
   --accent-matrix: #2fbf74;
@@ -22,7 +27,10 @@
   --accent-magic: #9a6bff;
   --glow-magic: rgba(154, 107, 255, 0.14);
   --badge: #1a0a00;
-  --scan: rgba(212, 130, 10, 0.08);
+  --scan: color-mix(in srgb, var(--accent) 8%, transparent);
+  /* Teintes hors système de température (un-off, non dérivées de l'accent) */
+  --title-tint: #c0a070;
+  --label-tint: #b0501a;
 
   --font-display: "Oswald", sans-serif;
   --title-transform: uppercase;
@@ -39,34 +47,34 @@
 
 /* ---- Écran d'accueil ---- */
 [data-edition="sr5"] .edition-title {
-  color: #c0a070;
+  color: var(--title-tint);
 }
 /* ---- Topbar : barre de classification ---- */
 [data-edition="sr5"] #topbar {
-  border-bottom: 2px solid #8b1a1a;
-  background: linear-gradient(180deg, #140a08 0%, #0f0c0a 100%);
+  border-bottom: 2px solid var(--accent2);
+  background: linear-gradient(180deg, var(--bg-header) 0%, var(--bg-card) 100%);
 }
 [data-edition="sr5"] .topbar-logo::before {
   content: "» ";
-  color: #8b1a1a;
+  color: var(--accent2);
 }
 [data-edition="sr5"] .topbar-logo::after {
   content: " «";
-  color: #8b1a1a;
+  color: var(--accent2);
 }
 
 /* ---- Sidebar : onglets de classeur ---- */
 [data-edition="sr5"] #sidebar {
-  border-right: 2px solid #2a1e14;
+  border-right: 2px solid var(--border);
 }
 [data-edition="sr5"] .nav-section-label {
-  color: #8b1a1a;
-  border-bottom: 1px solid #2a1e14;
+  color: var(--accent2);
+  border-bottom: 1px solid var(--border);
   margin: 0 var(--sp-2);
   padding-left: var(--sp-2);
 }
 [data-edition="sr5"] .nav-btn.active {
-  background: rgba(212, 130, 10, 0.08);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
   border-left-width: 3px;
 }
 
@@ -75,12 +83,12 @@
   background-image:
     radial-gradient(
       ellipse at 80% 15%,
-      rgba(212, 130, 10, 0.05) 0%,
+      color-mix(in srgb, var(--accent) 5%, transparent) 0%,
       transparent 55%
     ),
     radial-gradient(
       ellipse at 10% 90%,
-      rgba(139, 26, 26, 0.05) 0%,
+      color-mix(in srgb, var(--accent2) 5%, transparent) 0%,
       transparent 55%
     );
 }
@@ -92,18 +100,18 @@
   background: transparent;
   border-top: 0.6em solid transparent;
   border-bottom: 0.6em solid transparent;
-  border-left: 0.6em solid #8b1a1a;
+  border-left: 0.6em solid var(--accent2);
   border-radius: 0;
 }
 
 /* ---- Cartes PNJ : en-tête biseauté, liseré sang ---- */
 [data-edition="sr5"] .pnj-card-frame::before {
-  background: linear-gradient(90deg, #d4820a 0%, #8b1a1a 100%);
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
   height: 3px;
 }
 [data-edition="sr5"] .pnj-card-header {
-  background: linear-gradient(180deg, #140a08 0%, transparent 100%);
-  border-bottom: 2px solid #8b1a1a;
+  background: linear-gradient(180deg, var(--bg-header) 0%, transparent 100%);
+  border-bottom: 2px solid var(--accent2);
   clip-path: var(--hd-clip);
 }
 [data-edition="sr5"] .pnj-name {
@@ -113,16 +121,16 @@
 
 /* ---- Badge de pro : tampon encadré ---- */
 [data-edition="sr5"] .pnj-rank-badge {
-  background: #1a0a00;
-  border: 1px solid #8b1a1a;
-  color: #d4820a;
+  background: var(--badge);
+  border: 1px solid var(--accent2);
+  color: var(--accent);
   border-radius: 0;
 }
 
 /* ---- Labels de section : rouge classifié ---- */
 [data-edition="sr5"] .card-section-label {
-  color: #b0501a;
-  border-bottom-color: #2a1e14;
+  color: var(--label-tint);
+  border-bottom-color: var(--border);
 }
 
 /* ---- Attributs : cellules anguleuses ---- */
@@ -130,12 +138,12 @@
   border-radius: 0;
 }
 [data-edition="sr5"] .attr-cell.primary {
-  border-color: rgba(212, 130, 10, 0.35);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 /* ---- Limites — couleur secondaire ---- */
 [data-edition="sr5"] .limite-cell .attr-label {
-  color: #8b1a1a;
+  color: var(--accent2);
 }
 [data-edition="sr5"] .limite-cell .attr-value {
   color: #c0392b;
@@ -143,15 +151,15 @@
 
 /* ---- Moniteurs séparés SR5 ---- */
 [data-edition="sr5"] .monitor-phys .monitor-box.filled {
-  background: #8b1a1a;
-  border-color: #8b1a1a;
+  background: var(--accent2);
+  border-color: var(--accent2);
 }
 [data-edition="sr5"] .monitor-stun .monitor-box.filled {
   background: #5a4000;
   border-color: #8a6200;
 }
 [data-edition="sr5"] .monitor-phys .monitor-box.penalty {
-  border-color: #d4820a;
+  border-color: var(--accent);
 }
 [data-edition="sr5"] .monitor-stun .monitor-box.penalty {
   border-color: #a06000;
@@ -167,12 +175,12 @@
 
 /* ---- Métavariante en surbrillance ambrée ---- */
 [data-edition="sr5"] .pnj-metavariant {
-  color: #d4820a;
+  color: var(--accent);
 }
 
 /* ---- Empty state : dossier vide, coin biseauté façon tampon ---- */
 [data-edition="sr5"] .empty-state {
-  border: 1px solid #2a1e14;
+  border: 1px solid var(--border);
   border-radius: 0;
   clip-path: polygon(0 0, 100% 0, 100% 100%, 18px 100%, 0 calc(100% - 14px));
   position: relative;
@@ -184,27 +192,27 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, #d4820a 0%, #8b1a1a 100%);
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
 }
 [data-edition="sr5"] .empty-state-title {
-  color: #b0501a;
+  color: var(--label-tint);
 }
 
 /* ---- Modale : en-tête biseauté façon dossier, coins droits ---- */
 [data-edition="sr5"] .modal {
   border-radius: 0;
-  border-top: 2px solid #8b1a1a;
+  border-top: 2px solid var(--accent2);
 }
 [data-edition="sr5"] .modal-header {
   clip-path: var(--hd-clip);
-  background: linear-gradient(180deg, #140a08 0%, transparent 100%);
+  background: linear-gradient(180deg, var(--bg-header) 0%, transparent 100%);
 }
 [data-edition="sr5"] .modal-title {
-  color: #d4820a;
+  color: var(--accent);
 }
 [data-edition="sr5"] .modal-close:hover {
-  border-color: #8b1a1a;
-  color: #8b1a1a;
+  border-color: var(--accent2);
+  color: var(--accent2);
 }
 
 /* ---- Formulaires : champs anguleux façon fiche administrative ---- */
@@ -220,10 +228,10 @@
 [data-edition="sr5"] .form-group input:focus,
 [data-edition="sr5"] .form-group select:focus,
 [data-edition="sr5"] .form-group textarea:focus {
-  border-color: #d4820a;
+  border-color: var(--accent);
 }
 
 /* ---- Sidebar : survol ambré ---- */
 [data-edition="sr5"] .nav-btn:hover {
-  background: rgba(212, 130, 10, 0.05);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
 }

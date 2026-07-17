@@ -298,6 +298,11 @@ export const TourSteps = {
       title: "Import Foundry VTT : fiches réelles, contacts, identités, véhicules",
       body: "L'import Foundry VTT (SR5) lit désormais les vraies fiches Foundry (identité, métatype, sorts, traits) au lieu de ne fonctionner que sur nos propres exports. Il importe aussi les identités (SIN, licences, styles de vie), les contacts, les véhicules liés et l'historique Karma/Nuyens/Réputation. Correctif au passage : la résistance au Drain d'un mage importé se calcule désormais sur les bons attributs.",
     },
+    {
+      id: "wn-theme-realign", anchor: "edition-badge", tours: ["whatsnew"], since: "1.49.0", fallback: "center",
+      title: "Les couleurs des 4 éditions collent enfin aux livres",
+      body: "Shadowrun 5 passe de l'ambre au rouge sang, Shadowrun 6 du cyan au magenta, Anarchy 1re éd. troque son duotone magenta/vert pour du bleu/or, et Anarchy 2e éd. devient ambre au lieu de rouge punk — chaque teinte a été relevée directement sur la couverture du livre. Motifs, typo et coupes de coin ne changent pas.",
+    },
   ],
 };
 

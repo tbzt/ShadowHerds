@@ -1,7 +1,9 @@
 /* ============================================================
    THÈME SHADOWRUN ANARCHY 1RE ÉDITION — « Zine à risographie »
-   Palette : magenta fluo #ff2fb0 / vert acide #9fff3c (duotone,
-   comme une impression risographe deux couleurs mal calée)
+   Palette : bleu #3A8FD0 / or #C89A2E (duotone, réaligné sur le livre
+   le 2026-07-17 — magenta/vert acide n'étaient pas la couverture ;
+   bleu + or restent une combinaison risographe classique, le
+   décalage d'impression --scan reste en or)
    Fond : noir violacé #0a0710
    Typo : Share Tech Mono (titres ET noms) — machine à écrire /
    terminal, pas de Permanent Marker (identité V2)
@@ -15,19 +17,22 @@
   --bg: #0a0710;
   --bg-card: #120b1a;
   --bg-mid: #170e20;
-  --accent: #ff2fb0;
-  --accent2: #9fff3c;
+  --accent: #3a8fd0;
+  --accent2: #c89a2e;
   --text: #dccbe8;
   --text-dim: #8a72a0;
   --border: #241030;
-  --glow: rgba(255, 47, 176, 0.12);
+  /* Bordure de contrôle (case de moniteur, etc.) : teinte de l'édition,
+     saturation basse, valeur minimale franchissant 3:1 sur --bg-card. */
+  --border-ui: #516370;
+  --glow: color-mix(in srgb, var(--accent) 12%, transparent);
   /* Canaux de calque (cf. theme-sr5.css) : Matrice vert, Magie violet. */
   --accent-matrix: #2fbf74;
   --glow-matrix: rgba(47, 191, 116, 0.14);
   --accent-magic: #9a6bff;
   --glow-magic: rgba(154, 107, 255, 0.14);
   --badge: #1a0524;
-  --scan: rgba(159, 255, 60, 0.06);
+  --scan: color-mix(in srgb, var(--accent2) 6%, transparent);
 
   --font-display: "Share Tech Mono", monospace;
   --title-transform: uppercase;
@@ -45,9 +50,9 @@
   color: #7a5c94;
 }
 
-/* ---- Topbar : liseré vert acide fin (pas le bandeau brut V2) ---- */
+/* ---- Topbar : liseré or fin (pas le bandeau brut V2) ---- */
 [data-edition="anarchy1"] #topbar {
-  border-bottom: 1px solid #9fff3c;
+  border-bottom: 1px solid var(--accent2);
   background: #150c1c;
 }
 [data-edition="anarchy1"] .topbar-logo {
@@ -57,36 +62,36 @@
 
 /* ---- Sidebar ---- */
 [data-edition="anarchy1"] #sidebar {
-  border-right: 1px solid #241030;
+  border-right: 1px solid var(--border);
 }
 [data-edition="anarchy1"] .nav-section-label {
-  color: #9fff3c;
+  color: var(--accent2);
   font-family: var(--font-display);
 }
 [data-edition="anarchy1"] .nav-btn.active {
-  background: rgba(255, 47, 176, 0.08);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
   border-left-width: 2px;
-  border-left-color: #ff2fb0;
+  border-left-color: var(--accent);
 }
 [data-edition="anarchy1"] .nav-btn:hover {
-  background: rgba(159, 255, 60, 0.05);
+  background: color-mix(in srgb, var(--accent2) 5%, transparent);
 }
 
 /* ---- Contenu : grain léger plutôt que taches street ---- */
 [data-edition="anarchy1"] #content {
   background-image:
-    radial-gradient(ellipse at 85% 90%, rgba(159, 255, 60, 0.04) 0%, transparent 45%),
-    radial-gradient(ellipse at 15% 8%, rgba(255, 47, 176, 0.05) 0%, transparent 45%);
+    radial-gradient(ellipse at 85% 90%, color-mix(in srgb, var(--accent2) 4%, transparent) 0%, transparent 45%),
+    radial-gradient(ellipse at 15% 8%, color-mix(in srgb, var(--accent) 5%, transparent) 0%, transparent 45%);
 }
 
-/* ---- Titres de panel : filet vert, pas de bloc orange ---- */
+/* ---- Titres de panel : filet or, pas de bloc orange ---- */
 [data-edition="anarchy1"] .panel-title {
   font-family: var(--font-display);
-  border-bottom: 1px solid #9fff3c;
+  border-bottom: 1px solid var(--accent2);
 }
 [data-edition="anarchy1"] .panel-title::before {
   width: 3px;
-  background: #ff2fb0;
+  background: var(--accent);
   border-radius: 0;
 }
 
@@ -95,12 +100,12 @@
   border-width: 1px;
 }
 [data-edition="anarchy1"] .pnj-card-frame::before {
-  background: #9fff3c;
+  background: var(--accent2);
   height: 1px;
 }
 [data-edition="anarchy1"] .pnj-card-header {
   background: #170e20;
-  border-bottom: 1px solid #9fff3c;
+  border-bottom: 1px solid var(--accent2);
 }
 /* Nom en machine à écrire, léger décalage bicolore façon impression
    risographe mal calée (au lieu du feutre Permanent Marker V2). */
@@ -110,8 +115,8 @@
   letter-spacing: 0.01em;
   color: #f0e4fa;
   text-shadow:
-    1px 0 rgba(255, 47, 176, 0.55),
-    -1px 0 rgba(159, 255, 60, 0.4);
+    1px 0 color-mix(in srgb, var(--accent) 55%, transparent),
+    -1px 0 color-mix(in srgb, var(--accent2) 40%, transparent);
 }
 
 /* ---- Badge de rang : tampon droit, pas de sticker incliné ---- */
@@ -123,19 +128,19 @@
   border-width: 3px;
 }
 
-/* ---- Labels de section : vert acide ---- */
+/* ---- Labels de section : or ---- */
 [data-edition="anarchy1"] .card-section-label {
-  color: #9fff3c;
+  color: var(--accent2);
   font-family: var(--font-display);
   font-weight: 400;
 }
 
-/* ---- Attributs : filet vert fin (pas orange épais) ---- */
+/* ---- Attributs : filet or fin (pas orange épais) ---- */
 [data-edition="anarchy1"] .attr-cell {
   border-radius: 0;
 }
 [data-edition="anarchy1"] .attr-cell:not(:first-child) {
-  border-left: 1px solid #9fff3c;
+  border-left: 1px solid var(--accent2);
 }
 
 /* ---- Boutons : crochets terminal [ TEXTE ] plutôt que pavés ---- */
@@ -159,32 +164,32 @@
 
 /* ---- Empty state : cadre net, pas de rotation ---- */
 [data-edition="anarchy1"] .empty-state {
-  border: 1px dashed #9fff3c;
+  border: 1px dashed var(--accent2);
   border-left-width: 2px;
   border-radius: 0;
 }
 [data-edition="anarchy1"] .empty-state-title {
-  color: #ff2fb0;
+  color: var(--accent);
   transform: none;
 }
 
-/* ---- Modale : bordure fine vert acide ---- */
+/* ---- Modale : bordure fine or ---- */
 [data-edition="anarchy1"] .modal {
   border-radius: 0;
-  border: 1px solid #241030;
-  border-top: 2px solid #9fff3c;
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent2);
 }
 [data-edition="anarchy1"] .modal-header {
-  border-bottom: 1px solid #9fff3c;
+  border-bottom: 1px solid var(--accent2);
   background: #150c1c;
 }
 [data-edition="anarchy1"] .modal-title {
   letter-spacing: 0.03em;
-  color: #9fff3c;
+  color: var(--accent2);
 }
 [data-edition="anarchy1"] .modal-close:hover {
-  border-color: #ff2fb0;
-  color: #ff2fb0;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* ---- Formulaires ---- */
@@ -201,10 +206,10 @@
 [data-edition="anarchy1"] .form-group input:focus,
 [data-edition="anarchy1"] .form-group select:focus,
 [data-edition="anarchy1"] .form-group textarea:focus {
-  border-color: #9fff3c;
+  border-color: var(--accent2);
 }
 
 /* ---- Métavariante (non utilisée en V1, cohérence de secours) ---- */
 [data-edition="anarchy1"] .pnj-metavariant {
-  color: #9fff3c;
+  color: var(--accent2);
 }
