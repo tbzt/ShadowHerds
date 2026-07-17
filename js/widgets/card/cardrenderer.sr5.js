@@ -60,6 +60,7 @@ Object.assign(CardRenderer, {
       knowledges,
       equip,
       spells,
+      complexForms,
       traits,
     } = pnj;
 
@@ -113,6 +114,7 @@ Object.assign(CardRenderer, {
 
     combatBody += this._weaponBlock(pnj, weapons, "sr5", deps);
     combatBody += this._spellsBlock(pnj, spells, "sr5");
+    combatBody += this._complexFormsBlock(pnj, complexForms, "sr5");
     combatBody += this._drugRow(pnj, "sr5", deps);
     combatBody += this._vehicleChipRow(pnj, deps);
     combatBody += this._spiritChipRow(pnj, deps);

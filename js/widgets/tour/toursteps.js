@@ -303,6 +303,11 @@ export const TourSteps = {
       title: "Les couleurs des 4 éditions collent enfin aux livres",
       body: "Shadowrun 5 passe de l'ambre au rouge sang, Shadowrun 6 du cyan au magenta, Anarchy 1re éd. troque son duotone magenta/vert pour du bleu/or, et Anarchy 2e éd. devient ambre au lieu de rouge punk — chaque teinte a été relevée directement sur la couverture du livre. Motifs, typo et coupes de coin ne changent pas.",
     },
+    {
+      id: "wn-complex-forms-sr5", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.50.0", fallback: "center",
+      title: "Formes complexes (SR5)",
+      body: "Un technomancien SR5 connaît désormais des formes complexes (catalogue complet, 19 formes vérifiées au livre) et peut les tisser depuis sa carte : le test se roule, le Technodrain se résiste, les dégâts s'encaissent — même geste que lancer un sort. SR6 et Anarchy 1re édition suivront dans une prochaine mise à jour.",
+    },
   ],
 };
 

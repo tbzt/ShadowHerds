@@ -938,6 +938,16 @@ export const EditModal = {
         <input type="number" id="em-attr-${magicAttr}" value="${Actor.attr(pnj, magicAttr)}" min="0" max="12">
       </div>`;
     }
+    // RES toujours affiché, même patron que MAG ci-dessus (T2) : un
+    // technomancien se pose en éditant RES > 0 sans être passé par le
+    // générateur, exactement comme un magicien se pose via MAG > 0.
+    const resonanceAttr = App.getEditionModule(pnj.edition).resonanceAttr;
+    if (resonanceAttr) {
+      html += `<div class="form-group">
+        <label>${resonanceAttr}</label>
+        <input type="number" id="em-attr-${resonanceAttr}" value="${Actor.attr(pnj, resonanceAttr)}" min="0" max="12">
+      </div>`;
+    }
     // Ressource de relance (Chance SR5 / Atout SR6), clé portée par le
     // module d'édition — jamais de nom d'attribut figé côté contrôleur.
     const edgeKey = App.getEditionModule(pnj.edition).rerollAction?.costAttr;
@@ -989,6 +999,27 @@ export const EditModal = {
         ${this._spellCatalogControls(pnj)}`;
         html += this._zone("Sorts", spellsBody, {
           summary: this._zoneCount((pnj.spells || []).length, "sort", "sorts"),
+          collapsed: true,
+        });
+      }
+    }
+
+    // ---- Section : Formes complexes (T2) — même verrou que Sorts, sur RES
+    // au lieu de MAG. Montée si l'édition a un catalogue de formes. ----
+    const resLocked =
+      resonanceAttr && Actor.attr(pnj, resonanceAttr) <= 0
+        ? { hint: `Nécessite de la Résonance (${resonanceAttr} > 0).` }
+        : null;
+    if (App.getEditionModule(pnj.edition).complexFormCatalog?.() && pnj.type !== "spirit") {
+      if (resLocked && !(pnj.complexForms || []).length) {
+        html += this._zoneLocked("Formes complexes", resLocked.hint);
+      } else {
+        const formsBody = `<div id="em-complex-forms-list" class="em-skills-list">
+          ${this._complexFormRows(pnj)}
+        </div>
+        ${this._complexFormCatalogControls(pnj)}`;
+        html += this._zone("Formes complexes", formsBody, {
+          summary: this._zoneCount((pnj.complexForms || []).length, "forme", "formes"),
           collapsed: true,
         });
       }
@@ -1596,6 +1627,83 @@ export const EditModal = {
     );
   },
 
+  /* ---- Formes complexes (T2), même patron que les Sorts ci-dessus. ---- */
+
+  _complexFormRows(pnj) {
+    const esc = CardRenderer._esc;
+    return (pnj.complexForms || [])
+      .map((f, i) => {
+        const detail = [Content.complexFormCatLabels[f.cat] || f.cat, f.vt != null ? `VT ${f.vt}` : null]
+          .filter(Boolean)
+          .join(", ");
+        return `<div class="em-skill-row" data-idx="${i}">
+          <span class="em-skill-name" title="${esc(f.desc || "")}">${esc(f.name)}${detail ? ` — ${esc(detail)}` : ""}</span>
+          <button type="button" class="em-skill-del" title="Retirer"
+            data-action="remove-complex-form">×</button>
+        </div>`;
+      })
+      .join("");
+  },
+
+  /* Sélecteur groupé « ＋ Catalogue » + sélecteur d'attribut (Dispersion/
+     Injection uniquement — ignoré par les autres entrées, cf.
+     Content._resolveComplexForm). Monté seulement si l'édition expose un
+     catalogue de formes (complexFormCatalog() ≠ null). */
+  _complexFormCatalogControls(pnj) {
+    const catalog = App.getEditionModule(pnj.edition).complexFormCatalog?.();
+    if (!catalog || !catalog.length) return "";
+    return `<div class="em-add-skill">
+      ${SingleSelect.create({
+        id: "em-complex-form-catalog",
+        label: "",
+        groups: catalog.map((g) => ({
+          category: g.category,
+          items: g.items.map((it) => ({ value: it.id, label: it.label })),
+        })),
+        value: "",
+        placeholder: "＋ Catalogue…",
+      })}
+      ${SingleSelect.create({
+        id: "em-complex-form-attr",
+        label: "",
+        options: Object.entries(Content.MATRIX_ATTR_LABELS).map(([value, label]) => ({ value, label })),
+        value: "attack",
+        placeholder: "Attribut (Dispersion/Injection)…",
+      })}
+      <button type="button" class="em-add-skill-btn" data-action="add-complex-form-item">Ajouter</button>
+    </div>`;
+  },
+
+  addComplexFormItem() {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj) return;
+    const sel = document.getElementById("em-complex-form-catalog");
+    const id = sel?.value;
+    if (!id) return;
+    const attr = document.getElementById("em-complex-form-attr")?.value;
+    this._readForm(pnj);
+    App.getEditionModule(pnj.edition).addComplexFormItem(pnj, id, attr);
+    this._rerenderComplexForms(pnj);
+    SingleSelect.reset("em-complex-form-catalog");
+  },
+
+  removeComplexForm(i) {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj || !pnj.complexForms) return;
+    this._readForm(pnj);
+    pnj.complexForms.splice(i, 1);
+    this._rerenderComplexForms(pnj);
+  },
+
+  _rerenderComplexForms(pnj) {
+    const list = document.getElementById("em-complex-forms-list");
+    if (list) list.innerHTML = this._complexFormRows(pnj);
+    this._refreshZoneSummary(
+      "em-complex-forms-list",
+      this._zoneCount((pnj.complexForms || []).length, "forme", "formes"),
+    );
+  },
+
   /* ---- Pouvoirs d'adepte (objets structurés, add/retrait via catalogue seulement) ---- */
 
   _powerRows(pnj) {
@@ -1751,19 +1859,22 @@ export const EditModal = {
     // via le module d'édition.
     const edgeKey = edModuleForm.rerollAction?.costAttr;
     const magicAttrKey = edModuleForm.magicAttr;
+    const resonanceAttrKey = edModuleForm.resonanceAttr;
     const allAttrKeys = [
       ...edModuleForm.attributes,
       ...(magicAttrKey ? [magicAttrKey] : []),
+      ...(resonanceAttrKey ? [resonanceAttrKey] : []),
       ...(edgeKey ? [edgeKey] : []),
     ];
     for (const k of allAttrKeys) {
       const el = document.getElementById(`em-attr-${k}`);
-      // MAG : lu même si pnj.attrs.MAG n'existait pas encore (le champ est
+      // MAG/RES : lus même si l'attribut n'existait pas encore (le champ est
       // TOUJOURS rendu pour l'édition, cf. _buildForm) — sinon impossible de
-      // faire naître un magicien depuis 0. Les autres attrs gardent la garde
-      // (le champ n'existe que si l'attribut existe déjà, cf. rendu).
-      if (el && (pnj.attrs[k] !== undefined || k === magicAttrKey)) {
-        const [lo, hi] = k === edgeKey ? [0, 7] : k === magicAttrKey ? [0, 12] : [1, 12];
+      // faire naître un magicien/technomancien depuis 0. Les autres attrs
+      // gardent la garde (le champ n'existe que si l'attribut existe déjà).
+      if (el && (pnj.attrs[k] !== undefined || k === magicAttrKey || k === resonanceAttrKey)) {
+        const [lo, hi] =
+          k === edgeKey ? [0, 7] : k === magicAttrKey || k === resonanceAttrKey ? [0, 12] : [1, 12];
         const raw = parseInt(el.value, 10);
         // Édition manuelle : pose la BASE du Trait (le total est recalculé,
         // mods d'équipement préservés). Fallback = base courante si NaN.
@@ -1884,6 +1995,14 @@ export const EditModal = {
         case "remove-spell": {
           const row = el.closest("[data-idx]");
           if (row) this.removeSpell(parseInt(row.dataset.idx, 10));
+          break;
+        }
+        case "add-complex-form-item":
+          this.addComplexFormItem();
+          break;
+        case "remove-complex-form": {
+          const row = el.closest("[data-idx]");
+          if (row) this.removeComplexForm(parseInt(row.dataset.idx, 10));
           break;
         }
         case "add-power-item":

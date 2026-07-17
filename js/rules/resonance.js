@@ -23,6 +23,7 @@
    moniteur de persona séparé, contrairement au deck.
    ============================================================ */
 import { Actor } from "./actor.js";
+import { Utils } from "../core/utils.js";
 
 export const Resonance = {
   /** Mêmes clés/badges/labels que Cyberdeck.ATTR_KEYS — un attribut
@@ -89,6 +90,25 @@ export const Resonance = {
       out[a.key] = base + bonus;
     }
     return out;
+  },
+
+  /** Réserve d'une action de Résonance (tissage de forme complexe,
+      compilation…) : compétence + Résonance − malus de blessure, mirroir
+      exact de `Magic.actionPool` (même malus, mêmes bonus `SkillEffects`),
+      seule différence : l'attribut est la Résonance du module d'édition
+      (`resonanceAttr`), pas la Magie — un technomancien n'a pas de MAG. */
+  actionPool(pnj, skillName, edition) {
+    if (!skillName) return 0;
+    const m = this._model(edition);
+    const sk = (pnj.skills || []).find((s) => s && s.name === skillName);
+    const skillVal = sk ? Number(sk.val) || 0 : 0;
+    const res = Actor.attr(pnj, (m && m.resonanceAttr) || "RES");
+    const malus = Utils.woundMalus(pnj, edition);
+    const foci =
+      typeof SkillEffects !== "undefined"
+        ? SkillEffects.forSkill(pnj, skillName).reduce((sum, e) => sum + (e.value || 0), 0)
+        : 0;
+    return Math.max(0, skillVal + res + foci - malus);
   },
 
   /** Structure `pnj.persona` pour un technomancien qui n'en a pas encore

@@ -103,6 +103,23 @@ export const EditionSR5 = {
     pnj[field] = Utils.clamp(before + amount, 0, max ?? 99);
     return { field, delta: pnj[field] - before };
   },
+  /* ---- Tissage de forme complexe (T2) : même flux que sorts/invocation
+     (MagicAction, kind:"complexForm"), mirroir exact des 3 clés ci-dessus
+     mais scopé Résonance au lieu de Magie — un technomancien n'a pas MAG. ---- */
+  /** Compétence utilisée pour tisser une forme complexe (p.252). */
+  technoFormSkill: "Logiciels",
+  /** VT d'une forme (p.252) : Niveau + code de l'entrée (« N+2 »…), min 2 —
+      `Magic.parseDrainMod` ignore la lettre, seul le modificateur signé
+      compte : fonctionne tel quel sur "N±x" comme sur "P±x". */
+  technoDrainValue(entry, level) {
+    return Magic.drainValue(level, Magic.parseDrainMod(entry.vt));
+  },
+  /** Type de dégâts du Technodrain (p.252) : physique si les succès au
+      tissage dépassent la Résonance, sinon étourdissant. */
+  technoDrainType(ctx, pnj) {
+    const res = Actor.attr(pnj, "RES");
+    return (ctx.castHits || 0) > res ? "physical" : "stun";
+  },
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
   /** Réglage propre à SR5 remonté ici (prohibition n°1 : plus de
       `if (ed==='sr5')` dans settings.js). Reçoit le contrôleur Settings (S)
@@ -2259,6 +2276,13 @@ export const EditionSR5 = {
   addSpellItem(pnj, id) {
     Content.addSpellItem(pnj, this.id, id);
   },
+  /* Formes complexes (T2) : même patron délégué que les sorts ci-dessus. */
+  complexFormCatalog() {
+    return Content.complexFormCatalogFor(this.id);
+  },
+  addComplexFormItem(pnj, id, attr) {
+    Content.addComplexFormItem(pnj, this.id, id, attr);
+  },
   powerCatalog() {
     return Content.powerCatalogFor(this.id);
   },
@@ -2684,6 +2708,8 @@ export const EditionSR5 = {
     const drainResist = tradition
       ? attrs.VOL + (attrs[tradition.drainAttr] || 0)
       : null;
+    // Résistance au Technodrain (T2, p.252) : Résonance + Volonté.
+    const technoDrainResist = special === "Technomancien" ? attrs.RES + attrs.VOL : null;
 
     // Réserves utiles au MJ (SR5, LdB p.174 & p.189)
     const armure = this.armureByProf[archetypeIdx] || 0;
@@ -2743,6 +2769,14 @@ export const EditionSR5 = {
       );
     }
 
+    // Formes complexes (T2) — seulement pour les technomanciens ; connues
+    // max RES×2 (p.252), plafond appliqué après le tirage (pickComplexForms
+    // ne le connaît pas, il est propre à SR5).
+    const complexFormsList =
+      special === "Technomancien"
+        ? Content.pickComplexForms("sr5", proRating).slice(0, Math.max(1, attrs.RES * 2))
+        : [];
+
     // Pouvoirs d'adepte — seulement pour les adeptes
     const powers =
       special === "Adepte"
@@ -2782,6 +2816,7 @@ export const EditionSR5 = {
       init,
       initDice,
       drainResist,
+      technoDrainResist,
       tradition: tradition ? tradition.name : null,
       traditionDrainAttr: tradition ? tradition.drainAttr : null,
       traditionDesc: tradition ? tradition.desc : null,
@@ -2803,6 +2838,7 @@ export const EditionSR5 = {
       equip,
       augs,
       spells: spellsList,
+      complexForms: complexFormsList,
       powers,
       traits,
       infected: infected ? infected.name : null,
@@ -2986,6 +3022,10 @@ export const EditionSR5 = {
       : ["Mage hermétique", "Chaman"].includes(pnj.special)
         ? A("VOL") + A("LOG") // fallback anciens PNJ sans tradition
         : null;
+    // Résistance au Technodrain (T2) : Résonance + Volonté (p.252), même
+    // patron que drainResist ci-dessus — RES n'existe que sur un
+    // Technomancien (attrs.RES posé en génération, cf. ligne ~2634).
+    pnj.technoDrainResist = pnj.special === "Technomancien" ? A("RES") + A("VOL") : null;
     const armure = pnj.armure || 0;
     pnj.defense = A("REA") + A("INT");
     pnj.damageResist = A("CON") + armure;

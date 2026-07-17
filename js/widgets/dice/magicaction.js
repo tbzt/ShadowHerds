@@ -18,6 +18,7 @@ import { Dice } from "../../rules/dice.js";
 import { DiceLog } from "./dicelog.js";
 import { DiceRoller } from "./diceroller.js";
 import { Magic } from "../../rules/magic.js";
+import { Resonance } from "../../rules/resonance.js";
 import { Utils } from "../../core/utils.js";
 
 export const MagicAction = {
@@ -43,26 +44,36 @@ export const MagicAction = {
         return;
       }
       // ✕ : efface le dernier jet mémorisé (prioritaire, ne lance pas).
-      const clr = e.target.closest("[data-spell-clear]");
+      const clr = e.target.closest("[data-spell-clear], [data-form-clear]");
       if (clr) {
-        this._clearLastCast(clr.getAttribute("data-roll-pnj"), clr.getAttribute("data-spell-clear"));
+        const isForm = clr.hasAttribute("data-form-clear");
+        this._clearLastCast(
+          clr.getAttribute("data-roll-pnj"),
+          clr.getAttribute(isForm ? "data-form-clear" : "data-spell-clear"),
+          isForm ? "complexForm" : "spell",
+        );
         return;
       }
-      // ⓘ : détails du sort — laissé à ContentModal, ne pas lancer.
+      // ⓘ : détails du sort/forme — laissé à ContentModal, ne pas lancer.
       if (e.target.closest("[data-content-name]")) return;
-      const b = e.target.closest("[data-cast-spell]");
-      if (!b) return;
-      this.castSpell(b.getAttribute("data-roll-pnj"), b.getAttribute("data-cast-spell"));
+      const bs = e.target.closest("[data-cast-spell]");
+      if (bs) {
+        this.castSpell(bs.getAttribute("data-roll-pnj"), bs.getAttribute("data-cast-spell"));
+        return;
+      }
+      const bf = e.target.closest("[data-cast-form]");
+      if (bf) this.castComplexForm(bf.getAttribute("data-roll-pnj"), bf.getAttribute("data-cast-form"));
     });
   },
 
-  /** Efface le dernier jet mémorisé d'un sort (sort maintenu terminé). */
-  _clearLastCast(pnjId, name) {
+  /** Efface le dernier jet mémorisé d'un sort/d'une forme (maintenu terminé). */
+  _clearLastCast(pnjId, name, kind = "spell") {
     const pnj = PnjLookup.find(pnjId);
     if (!pnj) return;
-    const sp = (pnj.spells || []).find((s) => s && s.name === name);
-    if (sp && sp._lastCast) {
-      delete sp._lastCast;
+    const list = kind === "complexForm" ? pnj.complexForms : pnj.spells;
+    const entry = (list || []).find((s) => s && s.name === name);
+    if (entry && entry._lastCast) {
+      delete entry._lastCast;
       this._hooks.onPnjChanged(pnj);
     }
   },
@@ -122,6 +133,7 @@ export const MagicAction = {
     // media query, uniquement sur le nombre de crans.
     const maxForce = Utils.clamp(mag * 2, 1, 12);
     this._cast = {
+      kind: "spell",
       pnjId,
       name: spellName,
       entry,
@@ -139,6 +151,45 @@ export const MagicAction = {
     this._ensurePanel();
     document.getElementById("magic-title").textContent =
       `${pnj.name || "PNJ"} — ${spellName}`;
+    document.getElementById("magic-force-row").querySelector(".summon-row-label").textContent = "Puissance";
+    document.getElementById("magic-roll-btn").textContent = "Lancer le sort";
+    this._syncPanel();
+
+    const p = document.getElementById("magic-panel");
+    p.removeAttribute("hidden");
+    void p.offsetWidth;
+    p.classList.add("show");
+  },
+
+  /** Tisse une forme complexe d'un PNJ (mirroir exact de `castSpell`,
+      kind:"complexForm") : Niveau à choisir (1 à Résonance×3, p.252),
+      panneau réutilisé, pool/VD/type de Technodrain lus sur le contrat au
+      lieu de spellSkill/spellDrainValue/drainDamageType. */
+  castComplexForm(pnjId, formName) {
+    const pnj = PnjLookup.find(pnjId);
+    if (!pnj) return;
+    const entry = (pnj.complexForms || []).find((f) => f && f.name === formName);
+    if (!entry || entry.vt == null || entry.manualTest) return;
+    const ed = App.getEditionModule(pnj.edition);
+    if (!ed.technoFormSkill) return; // édition sans formes complexes motorisées
+
+    const res = Actor.attr(pnj, ed.resonanceAttr || "RES") || 1;
+    const maxLevel = Utils.clamp(res * 3, 1, 12);
+    this._cast = {
+      kind: "complexForm",
+      pnjId,
+      name: formName,
+      entry,
+      edition: pnj.edition,
+      force: Utils.clamp(res, 1, 12),
+      forceSteps: Array.from({ length: maxLevel }, (_, i) => ({ value: i + 1, label: String(i + 1) })),
+    };
+
+    this._ensurePanel();
+    document.getElementById("magic-title").textContent =
+      `${pnj.name || "PNJ"} — ${formName}`;
+    document.getElementById("magic-force-row").querySelector(".summon-row-label").textContent = "Niveau";
+    document.getElementById("magic-roll-btn").textContent = "Tisser la forme";
     this._syncPanel();
 
     const p = document.getElementById("magic-panel");
@@ -167,12 +218,19 @@ export const MagicAction = {
     document.getElementById("magic-force-steps").innerHTML =
       AmplitudeSelector.render(c.forceSteps, c.force, "force");
 
-    const castPool = Magic.actionPool(pnj, ed.spellSkill, c.edition);
-    const dv = ed.spellDrainValue(c.entry, c.force);
-    const forceTxt = ed.spellUsesForce ? ` · Puissance ${c.force}` : "";
+    const isForm = c.kind === "complexForm";
+    const skill = isForm ? ed.technoFormSkill : ed.spellSkill;
+    const attrLabel = isForm ? Resonance.label(c.edition) : "Magie";
+    const castPool = isForm
+      ? Resonance.actionPool(pnj, skill, c.edition)
+      : Magic.actionPool(pnj, skill, c.edition);
+    const dv = isForm ? ed.technoDrainValue(c.entry, c.force) : ed.spellDrainValue(c.entry, c.force);
+    const resist = isForm ? pnj.technoDrainResist : pnj.drainResist;
+    const forceLabel = isForm ? "Niveau" : "Puissance";
+    const forceTxt = !isForm && !ed.spellUsesForce ? "" : ` · ${forceLabel} ${c.force}`;
     document.getElementById("magic-forecast").innerHTML =
-      `<span>${Utils.escHtml(ed.spellSkill)} + Magie : <strong>${castPool}</strong> dés${forceTxt}</span>` +
-      `<span class="magic-forecast-note">Drain VD ${dv} — résistance ${Math.max(0, (pnj.drainResist || 0) - Utils.woundMalus(pnj, c.edition))} dés</span>`;
+      `<span>${Utils.escHtml(skill)} + ${Utils.escHtml(attrLabel)} : <strong>${castPool}</strong> dés${forceTxt}</span>` +
+      `<span class="magic-forecast-note">${isForm ? "Technodrain VT" : "Drain VD"} ${dv} — résistance ${Math.max(0, (resist || 0) - Utils.woundMalus(pnj, c.edition))} dés</span>`;
   },
 
   /** Lance le sort et présente le résultat via l'affichage de dés STANDARD
@@ -187,27 +245,34 @@ export const MagicAction = {
     const ed = App.getEditionModule(c.edition);
     this._close(); // le résultat passe par l'affichage de dés, pas le panneau
 
-    // 1) Test de Lancement de sorts (l'app le roule) → succès = effet. Mémorise
-    // le dernier jet sur le sort (persisté ; utile pour un sort maintenu).
-    const castRes = Dice.computeRoll(Magic.actionPool(pnj, ed.spellSkill, c.edition));
+    // 1) Test de Lancement de sorts / Tissage (l'app le roule) → succès =
+    // effet. Mémorise le dernier jet sur l'entrée (persisté ; utile pour un
+    // sort/forme maintenu).
+    const isForm = c.kind === "complexForm";
+    const skill = isForm ? ed.technoFormSkill : ed.spellSkill;
+    const castPool = isForm
+      ? Resonance.actionPool(pnj, skill, c.edition)
+      : Magic.actionPool(pnj, skill, c.edition);
+    const castRes = Dice.computeRoll(castPool);
     c.entry._lastCast = { hits: castRes.hits };
 
-    // 2) Drain (VD du contrat) : résiste (jet loggé), encaisse (met à jour la
-    // carte). Résolu AVANT l'affichage pour le présenter dans le même overlay.
-    const dv = ed.spellDrainValue(c.entry, c.force);
+    // 2) Drain/Technodrain (VD/VT du contrat) : résiste (jet loggé), encaisse
+    // (met à jour la carte). Résolu AVANT l'affichage pour le présenter dans
+    // le même overlay.
+    const dv = isForm ? ed.technoDrainValue(c.entry, c.force) : ed.spellDrainValue(c.entry, c.force);
     const drain = this._resolveDrain(pnj, ed, {
       dv,
-      kind: "spell",
+      kind: c.kind,
       castHits: castRes.hits,
       force: c.force,
       label: c.name,
     });
 
     // Contexte du lancer courant : source des Secondes chances. Modèle
-    // UNIFIÉ sort / invocation — `kind` distingue, `main` est le jet du
-    // lanceur (Lancement de sorts OU Conjuration), `drain` porte le Drain.
+    // UNIFIÉ sort / invocation / forme complexe — `kind` distingue, `main`
+    // est le jet du lanceur, `drain` porte le Drain/Technodrain.
     this._resolved = {
-      kind: "spell",
+      kind: c.kind,
       pnjId: c.pnjId,
       edition: c.edition,
       force: c.force,
@@ -258,7 +323,9 @@ export const MagicAction = {
   /** Libellé du jet de Drain / titre du lancer selon le type. */
   _label() {
     const r = this._resolved;
-    return r.kind === "conjuration" ? "Invocation" : `Sort — ${r.entry.name}`;
+    if (r.kind === "conjuration") return "Invocation";
+    if (r.kind === "complexForm") return `Forme — ${r.entry.name}`;
+    return `Sort — ${r.entry.name}`;
   },
 
   /** (Ré)affiche le lancer courant via l'affichage de dés standard.
@@ -326,9 +393,9 @@ export const MagicAction = {
       }
     } else {
       r.entry._lastCast = { hits: r.main.hits };
-      // Type de Drain revu (SR5 : selon les succès du sort) — corrige le moniteur.
-      const newType = ed.drainDamageType(
-        { kind: "spell", castHits: r.main.hits, drainDamage: r.drain.damage, force: r.force },
+      // Type de Drain/Technodrain revu (selon les succès) — corrige le moniteur.
+      const newType = (r.kind === "complexForm" ? ed.technoDrainType : ed.drainDamageType)(
+        { kind: r.kind, castHits: r.main.hits, drainDamage: r.drain.damage, force: r.force },
         pnj,
       );
       if (newType !== r.drain.type) {
@@ -359,7 +426,7 @@ export const MagicAction = {
     // 2) Relance la résistance, recalcule dégâts + type, réapplique.
     const newRes = Dice.rerollMisses(r.drain.res);
     const newDamage = Magic.resolveDrainDamage(r.drain.dv, newRes.hits);
-    const newType = ed.drainDamageType(
+    const newType = (r.kind === "complexForm" ? ed.technoDrainType : ed.drainDamageType)(
       { kind: r.kind, castHits: r.main.hits, drainDamage: newDamage, force: r.force },
       pnj,
     );
@@ -374,26 +441,30 @@ export const MagicAction = {
       drainRerolled: true,
     };
     DiceLog.record(newRes, {
-      label: `Résistance au Drain — ${this._label().replace(/^Sort — /, "")}`,
+      label: `Résistance au ${r.kind === "complexForm" ? "Technodrain" : "Drain"} — ${this._label().replace(/^(Sort|Forme) — /, "")}`,
       who: pnj.name || "",
     });
     this._hooks.onPnjChanged(pnj);
     this._present(false); // le jet principal n'a pas changé → seul le Drain re-loggé
   },
 
-  /** Résout le Drain d'une action magique et l'encaisse (partagé sorts /
-      invocation) : roule la résistance au Drain du PNJ (loggée), calcule les
-      dégâts + le type (contrat d'édition), applique sur le bon moniteur.
-      Renvoie { resistHits, drainDamage, type }. */
+  /** Résout le Drain/Technodrain d'une action magique et l'encaisse
+      (partagé sorts / invocation / formes complexes) : roule la résistance
+      du PNJ (loggée), calcule les dégâts + le type (contrat d'édition),
+      applique sur le bon moniteur. Renvoie { resistHits, drainDamage, type }. */
   _resolveDrain(pnj, ed, { dv, kind, castHits, force, label }) {
-    const drainPool = Math.max(0, (pnj.drainResist || 0) - Utils.woundMalus(pnj, pnj.edition));
+    const isForm = kind === "complexForm";
+    const resistBase = isForm ? pnj.technoDrainResist : pnj.drainResist;
+    const drainPool = Math.max(0, (resistBase || 0) - Utils.woundMalus(pnj, pnj.edition));
     const drainRes = Dice.computeRoll(drainPool);
     DiceLog.record(drainRes, {
-      label: `Résistance au Drain — ${label}`,
+      label: `Résistance au ${isForm ? "Technodrain" : "Drain"} — ${label}`,
       who: pnj.name || "",
     });
     const drainDamage = Magic.resolveDrainDamage(dv, drainRes.hits);
-    const type = ed.drainDamageType({ kind, castHits, drainDamage, force }, pnj);
+    const type = isForm
+      ? ed.technoDrainType({ kind, castHits, drainDamage, force }, pnj)
+      : ed.drainDamageType({ kind, castHits, drainDamage, force }, pnj);
     const applied = ed.applyDrainDamage(pnj, drainDamage, type);
     this._hooks.onPnjChanged(pnj);
     return { res: drainRes, resistHits: drainRes.hits, drainDamage, type, applied };

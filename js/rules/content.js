@@ -2944,6 +2944,187 @@ export const Content = {
   },
 
   /* ========================================================
+     FORMES COMPLEXES — technomanciens (T2, chantier Technomanciens)
+
+     Sources : REFERENCE/effects/technomanciens/{formes_sr5_core,
+     formes_sr5_datatrails}.md (campagne d'extraction vérifiée au livre,
+     2026-07-17, chaque forme tamponnée VÉRIFIÉ). SR5 uniquement pour
+     l'instant (Livre de Règles p.254-256, 14 formes + Data Trails p.62,
+     +5) — SR6 (39, dont un 3ᵉ régime de coût « Succès ») et Anarchy 1
+     (17, régime Atout via anarchyatouts.js) restent au plan.
+
+     Entrée : { name, cat, vt, proRatingMin, desc }.
+       vt   = code de Valeur de Drain SR5, relatif au Niveau (« N+2 »…) —
+              même patron que `drain: "P-3"` chez les sorts, consommé tel
+              quel par Magic.parseDrainMod/Magic.drainValue (aucune
+              modification requise, le "N" n'est qu'une lettre, seul le
+              modificateur signé est extrait). VT minimum 2 après ce calcul.
+       cat  = facette D'INTERFACE, PAS une catégorie du livre : les formes
+              complexes n'ont AUCUNE taxonomie officielle (contrairement
+              aux 5 catégories de sorts). Regroupement propre au projet
+              pour naviguer 19 entrées, à ne jamais présenter comme un
+              concept canon.
+       proRatingMin = curation éditoriale du projet (comme pour les sorts),
+              pas une donnée du livre.
+       gen  = omis ici (défaut : générable) — les 19 entrées SR5 (cœur +
+              Data Trails) sont toutes dans le pool de génération par
+              arbitrage (« cœur + suppléments curés »). Le champ existe
+              pour une future curation SR6 (Hacker vaillant, 24 formes,
+              périmètre plus large que le cœur).
+       attrs = uniquement Dispersion/Injection : la forme regroupe 4
+              formes distinctes (une par attribut matriciel), texte du
+              livre à l'appui — développée à la sélection, pas 4 entrées
+              dupliquées.
+       manualTest = uniquement FAQ : seule entrée dont le test EFFECTIF
+              n'est pas « Logiciels + Résonance [Niveau] » (ici Informatique
+              + Intuition [Niveau], +Niveau/2 dés) — exception nommée au
+              livre, pas modélisée dans le moteur de jet pour une seule
+              entrée sur 19 (le MJ la lance à la main, comme les formes SR6
+              « Édition/Émulation/Marionnettiste » dont le livre ne nomme
+              aucun test).
+     ======================================================== */
+  complexForms: {
+    sr5: [
+      {
+        name: "Bombe d'interférences",
+        cat: "furtivite",
+        vt: "N+2",
+        proRatingMin: 2,
+        desc: "Cache le persona des icônes qui l'ont repéré : test opposé contre Intuition + Traitement de données de chaque icône adverse, celles qui échouent perdent le technomancien de vue (sauf si elles l'avaient déjà marké). Cible personnel, durée Immédiate.",
+      },
+      {
+        name: "Canal de résonance",
+        cat: "utilitaire",
+        vt: "N-1",
+        proRatingMin: 1,
+        desc: "Ouvre un canal de communication par résonance plutôt que par la Matrice classique. Chaque succès excédentaire réduit de 1 l'indice de bruit dû à la distance. Cible appareil, durée Maintenue.",
+      },
+      {
+        name: "Dispersion de [Attribut matriciel]",
+        cat: "attaque",
+        vt: "N+1",
+        proRatingMin: 2,
+        attrs: ["attack", "sleaze", "dataProcessing", "firewall"],
+        desc: "Réduit d'un nombre de points égal aux succès excédentaires l'un des quatre attributs matriciels de la cible (au choix, une forme par attribut, jamais sous 1). Test opposé contre Volonté + Firewall. Cible appareil, durée Maintenue.",
+      },
+      {
+        name: "Édition",
+        cat: "manipulation",
+        vt: "N+2",
+        proRatingMin: 1,
+        desc: "Imprègne un fichier de résonance pour en manipuler le contenu — ou le protéger (mêmes succès que l'action « éditer un fichier »). Test opposé contre Intuition + Traitement de données du propriétaire. Cible fichier, durée Persistante.",
+      },
+      {
+        name: "Grille transcendante",
+        cat: "utilitaire",
+        vt: "N-3",
+        proRatingMin: 2,
+        desc: "Connecte le technomancien à toutes les grilles accessibles depuis sa position, sans pénalité (même publique), pour 1 minute par succès obtenu. Cible personnel, durée Immédiate.",
+      },
+      {
+        name: "Indic",
+        cat: "attaque",
+        vt: "N-2",
+        proRatingMin: 2,
+        desc: "Imite des rapports d'activité illégale : augmente le Score de Surveillance de la cible de 1 par succès obtenu (sans effet si elle n'en a pas déjà un). Cible persona, durée Persistante.",
+      },
+      {
+        name: "Injection de [Attribut matriciel]",
+        cat: "soutien",
+        vt: "N+1",
+        proRatingMin: 2,
+        attrs: ["attack", "sleaze", "dataProcessing", "firewall"],
+        desc: "Booste l'un des quatre attributs matriciels de l'appareil ciblé d'un nombre de points égal aux succès obtenus (plafonné au double de l'indice normal, +4 maximum). Une seule injection à la fois par attribut. Cible appareil, durée Maintenue.",
+      },
+      {
+        name: "Marionnettiste",
+        cat: "attaque",
+        vt: "N+4",
+        proRatingMin: 3,
+        desc: "Impose une action matricielle à la cible (1 succès excédentaire pour une gratuite, 2 pour une simple, 3 pour une complexe) : elle l'exécute à sa prochaine action disponible. Test opposé contre Volonté + Firewall. Cible appareil, durée Immédiate.",
+      },
+      {
+        name: "Nettoyeuse",
+        cat: "furtivite",
+        vt: "N+1",
+        proRatingMin: 1,
+        desc: "Efface les traces d'activité illégale : réduit le Score de Surveillance de la cible de 1 par succès obtenu. Cible persona, durée Persistante.",
+      },
+      {
+        name: "Pic de résonance",
+        cat: "combat",
+        vt: "N",
+        proRatingMin: 2,
+        desc: "Envoie un pic de résonance brute sur la cible : une case de dommage matriciel par succès excédentaire, aucune résistance possible. Test opposé contre Volonté + Firewall. Cible appareil, durée Immédiate.",
+      },
+      {
+        name: "Suture",
+        cat: "soutien",
+        vt: "N-2",
+        proRatingMin: 1,
+        desc: "Reconstitue la trame de résonance d'un sprite : efface une case de dommage matriciel par succès obtenu. Cible sprite, durée Persistante.",
+      },
+      {
+        name: "Tempête d'impulsion",
+        cat: "attaque",
+        vt: "N",
+        proRatingMin: 2,
+        desc: "Encercle la cible de signaux de résonance : augmente son indice de bruit de 1 par succès excédentaire. Test opposé contre Logique + Traitement de données. Cible persona, durée Maintenue.",
+      },
+      {
+        name: "Voile de résonance",
+        cat: "manipulation",
+        vt: "N-1",
+        proRatingMin: 2,
+        desc: "Fait croire à la cible qu'un événement matriciel vient de se produire ; il lui faut un test de perception matricielle (seuil = succès excédentaires) pour percer l'illusion. Test opposé contre Intuition + Traitement de données. Cible appareil, durée Maintenue.",
+      },
+      {
+        name: "Voile d'interférences",
+        cat: "furtivite",
+        vt: "N-1",
+        proRatingMin: 3,
+        desc: "Cache le technomancien du DIEU : tant qu'elle est maintenue (et sans changer de grille), son Score de Surveillance n'augmente plus avec le temps — mais continue de monter pour toute action illégale. Seuil 1 en grille publique, 2 sinon. Cible persona, durée Maintenue.",
+      },
+      {
+        name: "Bac à glace",
+        cat: "utilitaire",
+        vt: "N-3",
+        proRatingMin: 2,
+        desc: "Scanne le serveur occupé et affiche une liste de CI déployables, aussi longue que le nombre de succès obtenus. Test opposé contre Indice Serveur + Corruption. Cible serveur, durée Immédiate. (Data Trails p.62)",
+      },
+      {
+        name: "Derezz",
+        cat: "combat",
+        vt: "N-1",
+        proRatingMin: 3,
+        desc: "Attaque directe façon pic à glace : une case de dommage matriciel par succès excédentaire, plus 1 point de Firewall en moins tant que l'appareil n'est pas rebooté (ne cumule pas entre lancers). Test opposé contre Volonté + Firewall. Cible persona, durée Immédiate. (Data Trails p.62)",
+      },
+      {
+        name: "FAQ",
+        cat: "utilitaire",
+        vt: "N-3",
+        proRatingMin: 1,
+        manualTest: true,
+        desc: "Scanne la Matrice pour des informations sur l'appareil possédé ou le serveur occupé — le MJ dose les révélations selon les succès (6 pour les plus obscures). Test Informatique + Intuition [Niveau], +Niveau/2 dés (exception au patron habituel, jet non motorisé). Cible appareil, durée Persistante. (Data Trails p.62)",
+      },
+      {
+        name: "Mark leurres",
+        cat: "furtivite",
+        vt: "N-1",
+        proRatingMin: 2,
+        desc: "Leurre une CI pendant un nombre de Passes d'Initiative égal aux succès excédentaires : elle ignore le technomancien et traite ses autres marks comme hostiles (sans effet si aucun mark posé). Test opposé contre Volonté + Firewall. Cible CI, durée Persistante. (Data Trails p.62)",
+      },
+      {
+        name: "Redondance",
+        cat: "soutien",
+        vt: "N-3",
+        proRatingMin: 1,
+        desc: "Ajoute des cases temporaires au moniteur de dommages matriciels d'un appareil, en nombre égal aux succès obtenus. Cible appareil, durée Maintenue. (Data Trails p.62)",
+      },
+    ],
+  },
+
+  /* ========================================================
      POUVOIRS D'ADEPTE — SR5 & SR6
      ======================================================== */
   /* Liste complète vérifiée dans les livres officiels (SR6 p.158-161, SR5
@@ -3740,6 +3921,83 @@ export const Content = {
     if (!entry) return;
     pnj.spells = pnj.spells || [];
     pnj.spells.push(entry);
+  },
+
+  /* ---- Formes complexes (technomanciens, T2) — mêmes 3 gestes que les
+     sorts (catalogue/pick/add), jumelés ici plutôt qu'éclatés dans le
+     fichier pour une nouvelle donnée. Voir le commentaire sur
+     `complexForms` plus haut pour le détail des champs. ---- */
+
+  complexFormCatLabels: {
+    combat: "Combat",
+    attaque: "Attaque",
+    furtivite: "Furtivité",
+    manipulation: "Manipulation",
+    soutien: "Soutien",
+    utilitaire: "Utilitaire",
+  },
+
+  MATRIX_ATTR_LABELS: {
+    attack: "Attaque",
+    sleaze: "Corruption",
+    dataProcessing: "Traitement de données",
+    firewall: "Firewall",
+  },
+
+  /** Résout une entrée paramétrée (Dispersion/Injection) vers une forme
+      concrète : `attr` fourni (édition manuelle) ou tiré au sort
+      (génération). Les entrées non paramétrées passent inchangées. */
+  _resolveComplexForm(entry, attr) {
+    if (!entry.attrs) return entry;
+    const a = entry.attrs.includes(attr) ? attr : entry.attrs[Utils.randInt(0, entry.attrs.length - 1)];
+    const label = this.MATRIX_ATTR_LABELS[a] || a;
+    // Élision ("d'Attaque", pas "de Attaque") : seul "Attaque" démarre par
+    // une voyelle parmi les 4 labels, mais autant traiter le cas plutôt que
+    // de le laisser passer en fausse note pour la seule qui l'a.
+    const article = /^[aeiouéèêà]/i.test(label) ? `d'${label}` : `de ${label}`;
+    return { ...entry, attr: a, name: entry.name.replace("de [Attribut matriciel]", article) };
+  },
+
+  /** Catalogue de formes complexes groupé par `cat` (facette d'interface,
+      cf. commentaire sur `complexForms`), pour un sélecteur manuel
+      (EditModal). `null` si l'édition n'a pas de formes cataloguées
+      (SR6/Anarchy 1 : à venir : Anarchy 2 : jamais, verdict d'absence). */
+  complexFormCatalogFor(ed) {
+    ed = this._ed(ed);
+    const list = this.complexForms[ed];
+    if (!list || !list.length) return null;
+    const byCat = new Map();
+    for (const f of list) {
+      if (!byCat.has(f.cat)) byCat.set(f.cat, []);
+      byCat.get(f.cat).push({ id: f.name, label: f.name, attrs: f.attrs || null });
+    }
+    return [...byCat.entries()].map(([cat, items]) => ({
+      category: this.complexFormCatLabels[cat] || cat,
+      items,
+    }));
+  },
+
+  /** Choisit des formes complexes cohérentes pour un technomancien généré
+      (mirroir `pickSorts`). `gen: false` (absent ici, réservé aux futures
+      curations SR6/A1) exclut une entrée du tirage sans la retirer du
+      catalogue exhaustif — asymétrie catalogue/générateur voulue. */
+  pickComplexForms(ed, proRating) {
+    ed = this._ed(ed);
+    const list = this.complexForms[ed] || [];
+    const eligible = list.filter((f) => proRating >= f.proRatingMin && f.gen !== false);
+    if (!eligible.length) return [];
+    const n = Utils.clamp(2 + Math.floor(proRating / 2), 2, 6);
+    return this._sample(eligible, Math.min(n, eligible.length)).map((f) => this._resolveComplexForm(f));
+  },
+
+  /** Ajoute une forme du catalogue à `pnj.complexForms` par son nom.
+      `attr` requis pour Dispersion/Injection (ignoré sinon). */
+  addComplexFormItem(pnj, ed, name, attr) {
+    ed = this._ed(ed);
+    const entry = (this.complexForms[ed] || []).find((f) => f.name === name);
+    if (!entry) return;
+    pnj.complexForms = pnj.complexForms || [];
+    pnj.complexForms.push(this._resolveComplexForm(entry, attr));
   },
 
   /** Catalogue plat de pouvoirs d'adepte (pas de catégorie dans

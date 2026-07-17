@@ -982,13 +982,15 @@ export const DiceRoller = {
     const attr = action.costAttr;
     const edge = Actor.attr(pnj, attr);
     const hint = `<span class="dice-reroll-hint">${Utils.escHtml(attr)} ${edge}</span>`;
-    // Libellé du jet principal selon le type d'action magique.
-    const mainLabel = opts.kind === "conjuration" ? "Conjuration" : "sort";
+    // Libellé du jet principal selon le type d'action magique/de Résonance.
+    const mainLabel =
+      opts.kind === "conjuration" ? "Conjuration" : opts.kind === "complexForm" ? "forme" : "sort";
+    const drainLabel = opts.kind === "complexForm" ? "Technodrain" : "Drain";
     const mainDis = edge <= 0 || d.mainRerolled || mainRes.critGlitch;
     const drainDis = edge <= 0 || d.drainRerolled || d.res.critGlitch;
     return `<div class="dice-spell-rerolls">
       <button class="dice-reroll-btn" data-action="reroll-cast"${mainDis ? " disabled" : ""}>↻ ${Utils.escHtml(action.label)} — ${mainLabel}${hint}</button>
-      <button class="dice-reroll-btn" data-action="reroll-drain"${drainDis ? " disabled" : ""}>↻ ${Utils.escHtml(action.label)} — Drain${hint}</button>
+      <button class="dice-reroll-btn" data-action="reroll-drain"${drainDis ? " disabled" : ""}>↻ ${Utils.escHtml(action.label)} — ${drainLabel}${hint}</button>
     </div>`;
   },
 

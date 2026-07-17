@@ -17,6 +17,7 @@ import { ItemResolver } from "../../rules/itemresolver.js";
 import { Magic } from "../../rules/magic.js";
 import { Mentions } from "../journal/mentions.js";
 import { PersonaRenderer } from "./personarenderer.js";
+import { Resonance } from "../../rules/resonance.js";
 import { SkillCatalog } from "../../rules/skillcatalog.js";
 import { SkillEffects } from "../../rules/skilleffects.js";
 import { UI } from "../kit/ui.js";
@@ -1450,6 +1451,53 @@ export const CardRenderer = {
       .join("");
     return `<div class="weapon-block spell-block">
       <div class="zone-eyebrow">Sorts</div>
+      ${rows}
+    </div>`;
+  },
+
+  /** Bloc de formes complexes lançables (T2), mirroir exact de
+      `_spellsBlock` — pool via `Resonance.actionPool` (RES, pas Magie),
+      VT via `technoFormSkill`. `manualTest` (ex. FAQ SR5, seule entrée dont
+      le test ne suit pas le patron Logiciels+Résonance) : pas de clic, ⓘ
+      seulement, comme les formes SR6 sans test nommé au livre. */
+  _complexFormsBlock(pnj, forms, edition) {
+    if (!forms || !forms.length) return "";
+    const ed = App.getEditionModule(edition);
+    const canCast = ed.technoFormSkill && pnj.technoDrainResist != null;
+    const rows = forms
+      .map((f) => {
+        const name = (f && f.name) || String(f);
+        const info = f && f.vt != null ? `VT ${f.vt}` : "";
+        const infoBtn =
+          f && f.desc
+            ? `<span class="spell-info" role="button" tabindex="0" data-content-name="${this._esc(name)}" data-content-desc="${this._esc(f.desc)}" title="Détails de la forme">ⓘ</span>`
+            : "";
+        const last = f && f._lastCast;
+        const lastHtml = last
+          ? `<span class="spell-last" title="Dernier jet : ${last.hits} succès (suivi d'une forme maintenue)">→ <strong>${last.hits}</strong><span class="spell-last-clear" data-form-clear="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" title="Effacer le dernier jet">✕</span></span>`
+          : "";
+
+        let castAttr = "";
+        let poolBadge = "";
+        if (canCast && f && !f.manualTest) {
+          castAttr = `data-cast-form="${this._esc(name)}"`;
+          const pool = Resonance.actionPool(pnj, ed.technoFormSkill, edition);
+          poolBadge = pool ? `<span class="weapon-pool">⚄${pool}</span>` : "";
+        }
+        const rollable = !!castAttr;
+        const lineCls = `weapon-line spell-line${rollable ? " weapon-rollable rollable" : ""}`;
+        return `<div class="${lineCls}" ${castAttr} data-roll-pnj="${pnj.id}">
+          <div class="spell-main">
+            <div class="weapon-name">${this._esc(name)} ${infoBtn}</div>
+            ${info ? `<div class="weapon-stat">${this._esc(info)}</div>` : ""}
+          </div>
+          ${poolBadge}
+          ${lastHtml}
+        </div>`;
+      })
+      .join("");
+    return `<div class="weapon-block spell-block">
+      <div class="zone-eyebrow">Formes complexes</div>
       ${rows}
     </div>`;
   },

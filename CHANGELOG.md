@@ -12,6 +12,18 @@ commit.
 
 ## [Non publié]
 
+## [1.50.0] — 2026-07-17
+
+### Système
+- **Formes complexes (SR5)** : les technomanciens connaissent et tissent
+  désormais des formes complexes (19 formes vérifiées au livre — *Livre de
+  Règles* p.254-256 + *Data Trails* p.62), au catalogue complet et motorisées
+  au tirage comme les sorts. Tisser une forme roule le test (Logiciels +
+  Résonance), résiste au Technodrain et encaisse les dégâts sur le bon
+  moniteur — même flux que le lancer de sort, chiffres vérifiés au livre.
+  SR6 et Anarchy 1re édition restent au plan (chantier Technomanciens T2,
+  suite).
+
 ## [1.49.1] — 2026-07-17
 
 ### Corrigé
