@@ -48,6 +48,27 @@
   #content {
     padding: 1.25rem var(--sp-4);
   }
+
+  /* ---- Topbar : même repli qu'en mobile (@media 640px ci-dessous), sans le
+     volet masquage. En dessous de 640px, dice-roller et le bouton journal
+     sont masqués car remplacés par le FAB dés (#dice-fab) — mais le FAB ne
+     s'active que dans ce bloc-là. En tablette il n'existe pas de remplaçant,
+     donc on garde tous les contrôles visibles et on se contente de les
+     laisser passer à la ligne : mesuré, ça suffit à supprimer le débordement
+     horizontal de #topbar sans rien retirer. */
+  #topbar {
+    height: auto;
+    flex-wrap: wrap;
+    row-gap: var(--sp-2);
+    padding-top: var(--sp-2);
+    padding-bottom: var(--sp-2);
+    overflow-x: hidden;
+  }
+  .topbar-actions {
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
 }
 
 /* ============================================================
