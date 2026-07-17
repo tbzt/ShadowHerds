@@ -653,11 +653,13 @@ export const CardRenderer = {
     // Incarnation promue tout en haut du corps (juste après l'ouverture
     // de pnj-card-body, donc juste après le header) — la saveur se regarde
     // avant le combat/les capacités, pas après (I2 : jamais déplacée ensuite,
-    // seulement pliée/dépliée).
-    const flavor = this._flavorSection(pnj, deps);
-    if (flavor) {
+    // seulement pliée/dépliée). Les modules `placement:"top"` (Identités) la
+    // suivent immédiatement : « qui je prétends être » se lit juste après
+    // « qui je suis », par la même promotion — pas un second mécanisme.
+    const top = this._flavorSection(pnj, deps) + this._topModulesHtml(pnj, deps);
+    if (top) {
       const openIdx = core.indexOf(">") + 1;
-      core = core.slice(0, openIdx) + flavor + core.slice(openIdx);
+      core = core.slice(0, openIdx) + top + core.slice(openIdx);
     }
     // Injecter traits raciaux + lore créature (habillage neutre, hors modules)
     const extra = this._metaTraitsSection(pnj) + this._creatureLoreSection(pnj);
@@ -721,6 +723,28 @@ export const CardRenderer = {
       lenses: ["fiche", "combat"],
     },
     {
+      key: "identites",
+      label: "Identités",
+      // ▤ : aucun glyphe « carte d'identité » n'existait dans le vocabulaire
+      // établi (⚔⛉⛊◎⚡✸✦❖◈ tous pris ou hors-sujet), et le seul vrai de
+      // l'Unicode — 🪪 — est un emoji en couleur qui jurerait dans le rail
+      // en trait. ▤ (carré rempli de lignes) lit « carte + lignes de texte ».
+      glyph: "▤",
+      // Promue en haut, juste après Incarnation (cf. `_bodyFor`) : la SIN est
+      // de la couverture, pas une action de combat — mais elle se lit avec le
+      // personnage, pas au pied de la carte. `lenses` inclut "incarner" pour
+      // la même raison ; jamais "combat".
+      placement: "top",
+      // Gardée par la DONNÉE, pas par `isPC` (I3 : aucune zone vide). Le bloc
+      // est neutre — n'importe quelle édition peut peupler ces champs, même si
+      // seul l'import Foundry SR5 le fait aujourd'hui. C'est la MODALE qui
+      // offre toujours la section : c'est là qu'on crée la donnée.
+      applies: (pnj) => !!((pnj.identities || []).length || (pnj.orphanLifestyles || []).length),
+      render: (pnj) => CardRenderer._identitiesSection(pnj),
+      summary: (pnj) => CardRenderer._identitiesSummary(pnj),
+      lenses: ["fiche", "incarner"],
+    },
+    {
       key: "suivi",
       label: "Suivi",
       // ❖ libre dans cockpitLegend (V7 glyphes→sprite) — pas un emoji neuf.
@@ -757,12 +781,22 @@ export const CardRenderer = {
     },
   ],
 
-  /** Rend les modules d'action applicables (placement après Combat, exclut
-      les modules "foot" comme Suivi), chacun dans sa propre coquille de zone
-      (I3 : aucun module vide). Appelé par les 4 corps d'édition juste après
-      la zone Combat. */
+  /** Rend les modules d'action applicables, chacun dans sa propre coquille de
+      zone (I3 : aucun module vide). Appelé par les 4 corps d'édition juste
+      après la zone Combat. Un module d'action est celui qui NE déclare AUCUN
+      placement : le filtre est `!m.placement`, jamais une liste des placements
+      à exclure — sinon chaque nouveau placement ("top", Identités) s'ajouterait
+      ici en double, en plus de son emplacement voulu. */
   _modulesHtml(pnj, deps) {
-    return CardRenderer._MODULES.filter((m) => m.placement !== "foot" && m.applies(pnj))
+    return CardRenderer._MODULES.filter((m) => !m.placement && m.applies(pnj))
+      .map((m) => this._zoneShell(pnj, m.key, m.render(pnj, deps), m.summary ? m.summary(pnj) : ""))
+      .join("");
+  },
+
+  /** Rend les modules "top" (Identités) — promus en haut du corps par
+      `_bodyFor`, juste après Incarnation, jamais après Combat. */
+  _topModulesHtml(pnj, deps) {
+    return CardRenderer._MODULES.filter((m) => m.placement === "top" && m.applies(pnj))
       .map((m) => this._zoneShell(pnj, m.key, m.render(pnj, deps), m.summary ? m.summary(pnj) : ""))
       .join("");
   },
@@ -1002,6 +1036,7 @@ export const CardRenderer = {
     combat: "Combat",
     capacites: "Capacités",
     incarnation: "Incarnation",
+    identites: "Identités",
     details: "Détails",
     magie: "Magie",
     matrice: "Matrice",
@@ -1576,12 +1611,25 @@ export const CardRenderer = {
     </div>`;
   },
 
+  /** Résumé de la zone Identités porté par l'en-tête repliée : l'identité
+      active d'abord (c'est ce qu'on joue), le nombre de SIN ensuite. Un PJ
+      qui n'a que des styles de vie orphelins n'a pas de SIN à nommer. */
+  _identitiesSummary(pnj) {
+    const ids = pnj.identities || [];
+    if (!ids.length) return (pnj.orphanLifestyles || []).length ? "sans SIN" : "";
+    const active = ids.find((i) => i.name === pnj.activeIdentity) || ids[0];
+    return `${active.name}${ids.length > 1 ? ` · ${ids.length} SIN` : ""}`;
+  },
+
   /** Identités (SIN) — Lot 5 import Foundry, `pnj.identities` (D1, champ
       additif). Une ligne par identité (nom · nationalité · niveau),
       licences au pli (`<details>` natif, aucun JS neuf). Identité active
       (D2) marquée ●. Styles de vie orphelins (`pnj.orphanLifestyles` —
       « sans SIN » ou libellé pendant, Failsafe) en pied de section, jamais
-      perdus. Neutre : n'importe quelle édition peut peupler ces champs. */
+      perdus. Neutre : n'importe quelle édition peut peupler ces champs.
+      Rend le CONTENU nu : c'est une zone à part entière (module `identites`),
+      son en-tête et son pli viennent de `_zoneShell` — plus le `.ref-block`
+      enterré en bas de Détails qui disparaissait avec lui. */
   _identitiesSection(pnj) {
     const ids = pnj.identities || [];
     const orphans = pnj.orphanLifestyles || [];
@@ -1610,7 +1658,7 @@ export const CardRenderer = {
     const orphanHtml = orphans.length
       ? `<div class="identity-row identity-orphan"><div class="identity-head">Sans SIN</div>${lifestylesHtml(orphans)}</div>`
       : "";
-    return `<div class="ref-block"><div class="ref-lbl">Identités</div>${rows}${orphanHtml}</div>`;
+    return `${rows}${orphanHtml}`;
   },
 
   /** Section « Modificateurs situationnels » : effets d'objet qui bonifient

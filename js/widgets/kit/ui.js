@@ -271,6 +271,133 @@ export const UI = {
     this.refreshEntityCard(pnjId);
   },
 
+  /* ---- Identités (SIN) — mutations structurelles depuis l'édition -------
+     Même patron que les compteurs libres ci-dessus : mutation de TOUTES les
+     copies vivantes (`_entityCopies`) puis `persistEntity`, jamais un
+     `Store.save()` ciblé — un PJ ne vit que dans `Characters`, un PNJ généré
+     vit en pool ET en bibliothèque. Aucune branche d'édition : `identities`
+     est un champ neutre (seul l'import Foundry SR5 le peuple aujourd'hui).
+     ---------------------------------------------------------------------- */
+
+  /** Conteneur de styles de vie : la SIN d'indice `idx`, ou les orphelins
+      (« sans SIN ») quand `idx` est `null`. Adresser les deux pareil évite
+      de doubler chaque ajout/retrait/déplacement. */
+  _lifestyleHost(pnj, idx) {
+    if (idx === null || idx === undefined) {
+      if (!Array.isArray(pnj.orphanLifestyles)) pnj.orphanLifestyles = [];
+      return pnj.orphanLifestyles;
+    }
+    const idn = (pnj.identities || [])[idx];
+    if (!idn) return null;
+    if (!Array.isArray(idn.lifestyles)) idn.lifestyles = [];
+    return idn.lifestyles;
+  },
+
+  addIdentity(pnjId, name) {
+    const n = (name || "").trim();
+    if (!n) return;
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
+    for (const c of copies) {
+      if (!Array.isArray(c.identities)) c.identities = [];
+      c.identities.push({ name: n, nationality: "", rating: null, licenses: [], lifestyles: [] });
+      // Première SIN d'une fiche = celle qu'on joue, sinon la carte n'aurait
+      // aucune identité active à marquer ●.
+      if (!c.activeIdentity) c.activeIdentity = n;
+    }
+    this.persistEntity(pnjId);
+    this.refreshEntityCard(pnjId);
+  },
+
+  /** Supprime une SIN. Ses styles de vie ne partent PAS avec elle : ils
+      redeviennent orphelins (« sans SIN »), comme à l'import quand le lien
+      pend (Failsafe) — on ne détruit jamais une donnée que l'utilisateur n'a
+      pas explicitement visée. */
+  removeIdentity(pnjId, idx) {
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
+    for (const c of copies) {
+      const ids = c.identities || [];
+      const gone = ids[idx];
+      if (!gone) continue;
+      const orphans = this._lifestyleHost(c, null);
+      orphans.push(...(gone.lifestyles || []));
+      ids.splice(idx, 1);
+      if (c.activeIdentity === gone.name) c.activeIdentity = ids.length ? ids[0].name : null;
+    }
+    this.persistEntity(pnjId);
+    this.refreshEntityCard(pnjId);
+  },
+
+  setActiveIdentity(pnjId, name) {
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
+    for (const c of copies) c.activeIdentity = name;
+    this.persistEntity(pnjId);
+    this.refreshEntityCard(pnjId);
+  },
+
+  addLicense(pnjId, idx, name) {
+    const n = (name || "").trim();
+    if (!n) return;
+    const copies = this._entityCopies(pnjId);
+    for (const c of copies) {
+      const idn = (c.identities || [])[idx];
+      if (!idn) continue;
+      if (!Array.isArray(idn.licenses)) idn.licenses = [];
+      idn.licenses.push({ name: n, rating: null });
+    }
+    this.persistEntity(pnjId);
+    this.refreshEntityCard(pnjId);
+  },
+
+  removeLicense(pnjId, idx, lidx) {
+    const copies = this._entityCopies(pnjId);
+    for (const c of copies) {
+      const idn = (c.identities || [])[idx];
+      if (idn && Array.isArray(idn.licenses)) idn.licenses.splice(lidx, 1);
+    }
+    this.persistEntity(pnjId);
+    this.refreshEntityCard(pnjId);
+  },
+
+  addLifestyle(pnjId, idx, name) {
+    const n = (name || "").trim();
+    if (!n) return;
+    const copies = this._entityCopies(pnjId);
+    for (const c of copies) {
+      const host = this._lifestyleHost(c, idx);
+      if (host) host.push({ name: n, city: "" });
+    }
+    this.persistEntity(pnjId);
+    this.refreshEntityCard(pnjId);
+  },
+
+  removeLifestyle(pnjId, idx, lidx) {
+    const copies = this._entityCopies(pnjId);
+    for (const c of copies) {
+      const host = this._lifestyleHost(c, idx);
+      if (host) host.splice(lidx, 1);
+    }
+    this.persistEntity(pnjId);
+    this.refreshEntityCard(pnjId);
+  },
+
+  /** Rattache un style de vie à une autre SIN (ou à « sans SIN »). Déplace
+      l'objet tel quel : c'est le rattachement qui change, pas le style de vie. */
+  moveLifestyle(pnjId, fromIdx, lidx, toIdx) {
+    const copies = this._entityCopies(pnjId);
+    for (const c of copies) {
+      const from = this._lifestyleHost(c, fromIdx);
+      const to = this._lifestyleHost(c, toIdx);
+      if (!from || !to || from === to) continue;
+      const [moved] = from.splice(lidx, 1);
+      if (moved) to.push(moved);
+    }
+    this.persistEntity(pnjId);
+    this.refreshEntityCard(pnjId);
+  },
+
   /** Clic sur le tag d'une drogue : fait avancer le cycle idle → effet →
       contrecoup → idle (cf. js/drugs.js). */
   cycleDrug(pnjId, edition, drugId) {

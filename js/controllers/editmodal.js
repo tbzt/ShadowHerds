@@ -470,6 +470,227 @@ export const EditModal = {
     }
   },
 
+  /* ---- Identités (SIN) -------------------------------------------------
+     Contrepartie éditable de la zone « Identités » de la carte. Deux
+     asymétries assumées avec elle :
+       — la CARTE est gardée par la donnée (aucune zone vide, I3) ; la MODALE
+         est toujours offerte, c'est ici qu'on CRÉE la première SIN ;
+       — le libellé porte « (SIN) » : la section « Identité » juste au-dessus,
+         c'est le nom/métatype du personnage. Deux mots à un `s` près.
+     Structure et patron 1:1 avec `_buildCampaignSection` : `<details>` natif,
+     lignes à `data-action`, mutation immédiate via `UI.*`, champs texte relus
+     à la fermeture. Aucun widget neuf.
+     ---------------------------------------------------------------------- */
+
+  /** Lignes de styles de vie d'un hôte (`i` = indice de SIN, ou "none" pour
+      les orphelins). Le <select> rattache à une autre SIN — c'est le seul
+      endroit où l'on peut réparer un lien pendant venu de l'import. */
+  _lifestyleRows(list, host, ids) {
+    const esc = CardRenderer._esc;
+    return (list || [])
+      .map((l, li) => {
+        const opts =
+          ids
+            .map(
+              (idn, i) =>
+                `<option value="${i}"${String(i) === String(host) ? " selected" : ""}>${esc(idn.name || "(sans nom)")}</option>`,
+            )
+            .join("") + `<option value="none"${host === "none" ? " selected" : ""}>Sans SIN</option>`;
+        return `<div class="em-id-sub-row">
+          <input type="text" id="em-id-ls-name-${host}-${li}" value="${esc(l.name || "")}" placeholder="Style de vie" aria-label="Style de vie">
+          <input type="text" id="em-id-ls-city-${host}-${li}" value="${esc(l.city || "")}" placeholder="Ville" aria-label="Ville">
+          <select data-action="id-ls-move" data-host="${host}" data-lidx="${li}" aria-label="Rattacher à">${opts}</select>
+          <button type="button" class="em-skill-del" data-action="id-ls-remove" data-host="${host}" data-lidx="${li}" title="Retirer ce style de vie" aria-label="Retirer">×</button>
+        </div>`;
+      })
+      .join("");
+  },
+
+  _buildIdentitiesSection(pnj, open) {
+    const esc = CardRenderer._esc;
+    const ids = pnj.identities || [];
+    const orphans = pnj.orphanLifestyles || [];
+
+    const blocks = ids
+      .map((idn, i) => {
+        const isActive = idn.name === pnj.activeIdentity;
+        const licenses = (idn.licenses || [])
+          .map(
+            (l, li) => `<div class="em-id-sub-row">
+              <input type="text" id="em-id-lic-name-${i}-${li}" value="${esc(l.name || "")}" placeholder="Licence" aria-label="Licence">
+              <input type="number" id="em-id-lic-rating-${i}-${li}" value="${l.rating ?? ""}" min="1" max="6" placeholder="Niv." aria-label="Indice de la licence">
+              <button type="button" class="em-skill-del" data-action="id-lic-remove" data-idx="${i}" data-lidx="${li}" title="Retirer cette licence" aria-label="Retirer">×</button>
+            </div>`,
+          )
+          .join("");
+        return `<div class="em-id-block">
+          <div class="em-id-head">
+            <button type="button" class="em-id-active${isActive ? " is-active" : ""}" data-action="id-set-active" data-idx="${i}"
+              title="${isActive ? "Identité jouée" : "Jouer cette identité"}" aria-label="Jouer cette identité" aria-pressed="${isActive}">${isActive ? "●" : "○"}</button>
+            <input type="text" id="em-id-name-${i}" value="${esc(idn.name || "")}" placeholder="Nom sur la SIN" aria-label="Nom sur la SIN">
+            <input type="text" id="em-id-nat-${i}" value="${esc(idn.nationality || "")}" placeholder="Nationalité" aria-label="Nationalité">
+            <input type="number" id="em-id-rating-${i}" value="${idn.rating ?? ""}" min="1" max="6" placeholder="Niv." aria-label="Niveau de la SIN">
+            <button type="button" class="em-skill-del" data-action="id-remove" data-idx="${i}" title="Supprimer cette identité" aria-label="Supprimer">×</button>
+          </div>
+          <div class="em-id-subs">
+            <div class="modal-section-hint">Licences</div>
+            ${licenses}
+            <div class="em-id-add-row">
+              <input type="text" id="em-id-newlic-${i}" placeholder="Nouvelle licence" aria-label="Nouvelle licence">
+              <button type="button" class="btn-secondary" data-action="id-lic-add" data-idx="${i}">＋</button>
+            </div>
+            <div class="modal-section-hint">Styles de vie</div>
+            ${this._lifestyleRows(idn.lifestyles, String(i), ids)}
+            <div class="em-id-add-row">
+              <input type="text" id="em-id-newls-${i}" placeholder="Nouveau style de vie" aria-label="Nouveau style de vie">
+              <button type="button" class="btn-secondary" data-action="id-ls-add" data-idx="${i}">＋</button>
+            </div>
+          </div>
+        </div>`;
+      })
+      .join("");
+
+    // Bloc orphelins : n'existe QUE s'il y a des orphelins — mais on peut
+    // toujours en créer un depuis le <select> d'un style de vie rattaché.
+    const orphanBlock = orphans.length
+      ? `<div class="em-id-block em-id-block-orphan">
+          <div class="em-id-head"><span class="em-id-orphan-lbl">Sans SIN</span></div>
+          <div class="em-id-subs">${this._lifestyleRows(orphans, "none", ids)}</div>
+        </div>`
+      : "";
+
+    return `<details class="modal-section em-identities-section"${open ? " open" : ""}>
+      <summary class="modal-section-title">Identités (SIN)</summary>
+      <p class="modal-section-hint">Fausses identités, licences qu'elles portent et styles de vie qu'elles paient. ● marque celle que le personnage joue en ce moment.</p>
+      ${blocks}
+      ${orphanBlock}
+      <div class="em-id-add-row em-id-add-identity">
+        <input type="text" id="em-id-newname" placeholder="Nouvelle identité" aria-label="Nom de la nouvelle identité">
+        <button type="button" class="btn-secondary" data-action="id-add">＋ Ajouter</button>
+      </div>
+    </details>`;
+  },
+
+  /** Relit les champs texte de la section. `activeIdentity` est une RÉFÉRENCE
+      PAR NOM (posée par l'import Foundry, `sr5.foundry.js`) : renommer une SIN
+      la casserait silencieusement — le ● disparaîtrait de la ligne et le résumé
+      de la carte retomberait sur `ids[0]`, donc afficherait la MAUVAISE
+      identité comme jouée, sans rien signaler. On capture donc l'indice actif
+      AVANT de renommer et on réécrit le nom APRÈS. */
+  _readIdentitiesSection(pnj) {
+    const ids = pnj.identities || [];
+    if (!ids.length && !(pnj.orphanLifestyles || []).length) return;
+    const val = (id) => document.getElementById(id)?.value;
+    const num = (id) => {
+      const v = val(id);
+      if (v === undefined || v === "") return null;
+      const n = parseInt(v, 10);
+      return Number.isFinite(n) ? n : null;
+    };
+    const activeIdx = ids.findIndex((i) => i.name === pnj.activeIdentity);
+
+    ids.forEach((idn, i) => {
+      const n = val(`em-id-name-${i}`);
+      if (n !== undefined && n.trim()) idn.name = n.trim();
+      const nat = val(`em-id-nat-${i}`);
+      if (nat !== undefined) idn.nationality = nat.trim();
+      if (document.getElementById(`em-id-rating-${i}`)) idn.rating = num(`em-id-rating-${i}`);
+      (idn.licenses || []).forEach((l, li) => {
+        const ln = val(`em-id-lic-name-${i}-${li}`);
+        if (ln !== undefined && ln.trim()) l.name = ln.trim();
+        if (document.getElementById(`em-id-lic-rating-${i}-${li}`)) l.rating = num(`em-id-lic-rating-${i}-${li}`);
+      });
+      this._readLifestyleRows(idn.lifestyles, String(i));
+    });
+    this._readLifestyleRows(pnj.orphanLifestyles, "none");
+
+    if (activeIdx >= 0 && ids[activeIdx]) pnj.activeIdentity = ids[activeIdx].name;
+  },
+
+  _readLifestyleRows(list, host) {
+    (list || []).forEach((l, li) => {
+      const n = document.getElementById(`em-id-ls-name-${host}-${li}`);
+      if (n && n.value.trim()) l.name = n.value.trim();
+      const c = document.getElementById(`em-id-ls-city-${host}-${li}`);
+      if (c) l.city = c.value.trim();
+    });
+  },
+
+  /** Toute action structurelle relit d'abord les champs texte : sans ça, le
+      re-rendu de la section écraserait une saisie en cours (on tape un nom,
+      on clique ＋ ailleurs, le nom est perdu). */
+  _identityAction(mutate) {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj) return;
+    this._readIdentitiesSection(pnj);
+    mutate(pnj);
+    this._rerenderIdentitiesSection(pnj);
+  },
+
+  _hostIdx(host) {
+    return host === "none" ? null : parseInt(host, 10);
+  },
+
+  addIdentity() {
+    const el = document.getElementById("em-id-newname");
+    const name = el && el.value.trim();
+    if (!name) {
+      toast("Nommez l'identité.", "warning");
+      return;
+    }
+    this._identityAction((pnj) => UI.addIdentity(pnj.id, name));
+  },
+
+  removeIdentity(idx) {
+    this._identityAction((pnj) => UI.removeIdentity(pnj.id, idx));
+  },
+
+  setActiveIdentity(idx) {
+    this._identityAction((pnj) => {
+      const idn = (pnj.identities || [])[idx];
+      if (idn) UI.setActiveIdentity(pnj.id, idn.name);
+    });
+  },
+
+  addLicense(idx) {
+    const el = document.getElementById(`em-id-newlic-${idx}`);
+    const name = el && el.value.trim();
+    if (!name) {
+      toast("Nommez la licence.", "warning");
+      return;
+    }
+    this._identityAction((pnj) => UI.addLicense(pnj.id, idx, name));
+  },
+
+  removeLicense(idx, lidx) {
+    this._identityAction((pnj) => UI.removeLicense(pnj.id, idx, lidx));
+  },
+
+  addLifestyle(idx) {
+    const el = document.getElementById(`em-id-newls-${idx}`);
+    const name = el && el.value.trim();
+    if (!name) {
+      toast("Nommez le style de vie.", "warning");
+      return;
+    }
+    this._identityAction((pnj) => UI.addLifestyle(pnj.id, idx, name));
+  },
+
+  removeLifestyle(host, lidx) {
+    this._identityAction((pnj) => UI.removeLifestyle(pnj.id, this._hostIdx(host), lidx));
+  },
+
+  moveLifestyle(host, lidx, toHost) {
+    this._identityAction((pnj) =>
+      UI.moveLifestyle(pnj.id, this._hostIdx(host), lidx, this._hostIdx(toHost)),
+    );
+  },
+
+  _rerenderIdentitiesSection(pnj) {
+    const details = document.querySelector("#modal-form-body .em-identities-section");
+    if (details) details.outerHTML = this._buildIdentitiesSection(pnj, true);
+  },
+
   /** Suivi de campagne (optionnel) — réglage des soldes courants depuis
       l'édition. Repliée (`<details>` natif), présente uniquement pour un PJ.
       Générée depuis `Campaign.tracks` (devises + réputation d'édition +
@@ -887,6 +1108,9 @@ export const EditModal = {
         zoneClass: "em-augmentations-section",
       },
     );
+
+    // ---- Section : Identités (SIN) ----
+    html += this._buildIdentitiesSection(pnj);
 
     // ---- Section : Suivi de campagne (optionnel, PJ seulement) ----
     html += this._buildCampaignSection(pnj);
@@ -1587,6 +1811,9 @@ export const EditModal = {
     // Persona incarné — lu seulement si la section a été montée (pnj.persona).
     if (pnj.persona) PersonaRenderer.readForm(pnj);
 
+    // Identités (SIN)
+    this._readIdentitiesSection(pnj);
+
     // Suivi de campagne (optionnel, PJ seulement)
     this._readCampaignSection(pnj);
 
@@ -1688,6 +1915,27 @@ export const EditModal = {
         case "camp-track-remove":
           this.removeCampaignTrack(el.dataset.key);
           break;
+        case "id-add":
+          this.addIdentity();
+          break;
+        case "id-remove":
+          this.removeIdentity(parseInt(el.dataset.idx, 10));
+          break;
+        case "id-set-active":
+          this.setActiveIdentity(parseInt(el.dataset.idx, 10));
+          break;
+        case "id-lic-add":
+          this.addLicense(parseInt(el.dataset.idx, 10));
+          break;
+        case "id-lic-remove":
+          this.removeLicense(parseInt(el.dataset.idx, 10), parseInt(el.dataset.lidx, 10));
+          break;
+        case "id-ls-add":
+          this.addLifestyle(parseInt(el.dataset.idx, 10));
+          break;
+        case "id-ls-remove":
+          this.removeLifestyle(el.dataset.host, parseInt(el.dataset.lidx, 10));
+          break;
         case "em-zone-toggle": {
           // Pli ÉPHÉMÈRE (D-a) : bascule la classe DOM, aucune persistance,
           // aucune mutation de pnj (surtout PAS pnj._zoneOpen, réservé à la
@@ -1705,6 +1953,14 @@ export const EditModal = {
       if (e.target.classList.contains("em-color-custom-input")) {
         this.pickCustomColor(e.target.value);
       }
+    });
+    // Rattacher un style de vie à une autre SIN : un <select> émet `change`,
+    // jamais `click` — il ne peut donc pas passer par le switch d'actions
+    // ci-dessus (même raison que la cible Matrice du decker, cf. cardrenderer).
+    modal.addEventListener("change", (e) => {
+      const sel = e.target.closest('[data-action="id-ls-move"]');
+      if (!sel) return;
+      this.moveLifestyle(sel.dataset.host, parseInt(sel.dataset.lidx, 10), sel.value);
     });
   },
 };

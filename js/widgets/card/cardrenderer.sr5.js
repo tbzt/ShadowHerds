@@ -159,7 +159,8 @@ Object.assign(CardRenderer, {
     if (prefs.showGmPools) detailsBody += this._gmPoolsSR5(pnj);
     // inventaire consolidé (Porté + Augmentations en une section).
     detailsBody += this._equipSection(pnj, prefs.showEquipment ? gear : [], "sr5", deps, augsAll);
-    detailsBody += this._identitiesSection(pnj); // Lot 5 import Foundry (SIN)
+    // Identités (SIN) : vit désormais dans le module `identites`, promu en
+    // haut de carte — et n'est plus SR5-only (le champ est neutre).
     // Cyberdeck : vit désormais dans le module Matrice.
     html += this._zoneShell(pnj, "details", detailsBody, "attributs, jets de situation, équipement");
 

@@ -12,6 +12,28 @@ commit.
 
 ## [Non publié]
 
+## [1.47.0] — 2026-07-17
+
+### Fiche PNJ
+- **Les identités (SIN) deviennent une zone à part entière**, promue en haut de
+  la carte juste après Incarnation — « qui je prétends être » se lit désormais
+  avec « qui je suis », au lieu d'être enterré en bas des Détails et de
+  disparaître avec eux. En-tête repliable, résumé qui annonce l'identité jouée
+  et le nombre de SIN, pli mémorisé par carte ; ouverte en vue Fiche et
+  Incarner, fermée en Combat.
+- **Les identités sont entièrement éditables** depuis la section « Identités
+  (SIN) » du mode édition : nom, nationalité, niveau, identité jouée (●),
+  ajout et suppression — ainsi que les licences (nom + indice) et les styles de
+  vie (nom + ville) portés par chaque SIN. Un style de vie peut être rattaché à
+  une autre identité ou passé « sans SIN », ce qui permet enfin de réparer à la
+  main un lien resté pendant à l'import Foundry. Supprimer une identité ne
+  détruit jamais ses styles de vie : ils redeviennent « sans SIN ».
+  La zone n'apparaît sur une carte que si le personnage a des identités, mais
+  la section d'édition est toujours offerte — c'est là qu'on crée la première.
+  Correctif au passage : l'identité jouée était référencée **par son nom**, si
+  bien que la renommer aurait fait afficher silencieusement la mauvaise
+  identité comme active.
+
 ## [1.46.1] — 2026-07-17
 
 ### Jouer

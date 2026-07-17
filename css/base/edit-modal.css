@@ -282,3 +282,113 @@ details[open] > summary.modal-section-title::before {
   cursor: pointer;
   opacity: 0;
 }
+
+/* ---- Identités (SIN) ----------------------------------------------------
+   Listes à DEUX niveaux (une SIN porte ses licences et ses styles de vie) —
+   la seule de la modale. Le second niveau est marqué par un filet vertical
+   plutôt qu'un encadré : c'est un rattachement, pas une boîte de plus. */
+.em-id-block {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+.em-id-head {
+  display: grid;
+  grid-template-columns: 28px 1fr minmax(90px, 1fr) 56px 28px;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.em-id-block-orphan .em-id-head {
+  grid-template-columns: 1fr;
+}
+.em-id-orphan-lbl {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+/* ● / ○ : bascule, pas une suppression — jamais la teinte danger de
+   `.em-skill-del`. Cible ≥ 24px (WCAG), comme les cases de moniteur. */
+.em-id-active {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  line-height: 1;
+  min-height: 24px;
+  padding: 2px 0;
+  transition: all var(--dur-base);
+}
+.em-id-active:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.em-id-active.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.em-id-subs {
+  border-left: 2px solid var(--border);
+  margin: var(--sp-2) 0 0 var(--sp-2);
+  padding-left: var(--sp-3);
+}
+.em-id-sub-row {
+  display: grid;
+  grid-template-columns: 1fr minmax(70px, 0.8fr) minmax(90px, 0.9fr) 28px;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+/* Licence = nom + indice + retrait (pas de <select> de rattachement). */
+.em-id-sub-row:has(> input[type="number"]) {
+  grid-template-columns: 1fr 70px 28px;
+}
+.em-id-add-row {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  margin-bottom: var(--sp-2);
+}
+.em-id-add-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.em-id-add-identity {
+  margin-top: var(--sp-3);
+}
+.em-id-head input,
+.em-id-sub-row input,
+.em-id-sub-row select,
+.em-id-add-row input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-xs);
+  min-width: 0;
+}
+.em-id-head input:focus,
+.em-id-sub-row input:focus,
+.em-id-sub-row select:focus,
+.em-id-add-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Écran étroit : les colonnes se cassent plutôt que d'écraser les champs. */
+@media (max-width: 560px) {
+  .em-id-head,
+  .em-id-sub-row,
+  .em-id-sub-row:has(> input[type="number"]) {
+    grid-template-columns: 1fr 1fr;
+  }
+  .em-id-active,
+  .em-id-head .em-skill-del,
+  .em-id-sub-row .em-skill-del {
+    grid-column: auto;
+  }
+}

@@ -660,9 +660,10 @@
   color: var(--danger);
 }
 
-/* Identités (SIN, import Foundry, Lot 5) — une ligne par identité dans le
-   .ref-block « Identités ». <details> natif pour les licences au pli,
-   pas de nouveau widget. */
+/* Identités (SIN, import Foundry, Lot 5) — une ligne par identité dans la
+   zone « Identités » (module `identites`, promu en haut de carte ; l'en-tête
+   et le pli viennent de .card-zone/.zone-toggle, plus d'un .ref-block).
+   <details> natif pour les licences au pli, pas de nouveau widget. */
 .identity-row {
   margin-bottom: var(--sp-2);
 }
