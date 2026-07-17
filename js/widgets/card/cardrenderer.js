@@ -1491,37 +1491,62 @@ export const CardRenderer = {
   /** Section Équipement où les weapons (VD/PRE) deviennent lançables. */
   /** Inventaire consolidé — équipement porté + augmentations en UNE
       seule section (au lieu de deux fragments distincts). Sous-libellés
-      (patron .ref-block/.ref-lbl, déjà utilisé pour Attributs en Détails)
-      seulement si les deux groupes coexistent — sinon liste plate, pas de
-      sous-titre qui ne distingue rien (minimalisme). `augs` optionnel. */
+      (patron .ref-block/.ref-lbl, déjà utilisé pour Attributs en Détails —
+      des FRÈRES avec bordure-bas, jamais imbriqués) seulement s'il y a
+      plusieurs groupes — sinon liste plate, pas de sous-titre qui ne
+      distingue rien (minimalisme). `augs` optionnel. Le « Porté » se
+      sous-groupe à son tour en Armes/Divers, même règle : un PJ importé de
+      Foundry (Cisco, 29 armes + 8 armures + 25 objets dans une seule liste
+      plate, SR5 n'a pas de pnj.weapons séparé) devient lisible sans nouveau
+      composant. */
   _equipSection(pnj, items, edition, deps, augs) {
-    const tags = (items || [])
-      .map((i) => {
-        const s = ItemResolver.itemStr(i); // #63 : item chaîne OU objet
-        // Les drogues sont pilotées depuis leur tag dans la zone Combat
-        // (this._drugRow) — ici, texte simple pour éviter le doublon.
-        if (deps.Drugs && deps.Drugs.matchItem(s, edition, "equip"))
-          return this._contentTag(s);
-        const isWeapon = /\[/.test(s) && /(VD|PRE)/.test(s);
-        if (!isWeapon) return this._contentTag(s);
-        const r = deps.WeaponRoll ? deps.WeaponRoll.resolvePool(pnj, s, edition) : null;
-        if (!r) return this._contentTag(s);
-        const limTxt = r.limit != null ? ` · lim ${r.limit}` : "";
-        const approxTxt = r.approx ? " ~" : "";
-        const smartTxt = r.smartBonus ? ` · +${r.smartBonus} smartlink` : "";
-        const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill}${approxTxt} ${r.skillVal} + ${r.attr} ${r.attrVal})${limTxt}${smartTxt} — cliquer pour lancer`;
-        return `<span class="tag weapon-rollable rollable" data-roll-weapon="${this._esc(s)}" data-roll-pnj="${pnj.id}" data-roll-edition="${edition}" title="${this._esc(title)}">${this._esc(s)}<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="weapon-lim">▸${r.limit}</span>` : ""}</span></span>`;
-      })
-      .join("");
+    const weaponTags = [];
+    const otherTags = [];
+    for (const i of items || []) {
+      const s = ItemResolver.itemStr(i); // #63 : item chaîne OU objet
+      // Les drogues sont pilotées depuis leur tag dans la zone Combat
+      // (this._drugRow) — ici, texte simple pour éviter le doublon.
+      if (deps.Drugs && deps.Drugs.matchItem(s, edition, "equip")) {
+        otherTags.push(this._contentTag(s));
+        continue;
+      }
+      const isWeapon = /\[/.test(s) && /(VD|PRE)/.test(s);
+      if (!isWeapon) {
+        otherTags.push(this._contentTag(s));
+        continue;
+      }
+      const r = deps.WeaponRoll ? deps.WeaponRoll.resolvePool(pnj, s, edition) : null;
+      if (!r) {
+        weaponTags.push(this._contentTag(s));
+        continue;
+      }
+      const limTxt = r.limit != null ? ` · lim ${r.limit}` : "";
+      const approxTxt = r.approx ? " ~" : "";
+      const smartTxt = r.smartBonus ? ` · +${r.smartBonus} smartlink` : "";
+      const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill}${approxTxt} ${r.skillVal} + ${r.attr} ${r.attrVal})${limTxt}${smartTxt} — cliquer pour lancer`;
+      weaponTags.push(`<span class="tag weapon-rollable rollable" data-roll-weapon="${this._esc(s)}" data-roll-pnj="${pnj.id}" data-roll-edition="${edition}" title="${this._esc(title)}">${this._esc(s)}<span class="weapon-pool">⚄${r.pool}${r.limit != null ? `<span class="weapon-lim">▸${r.limit}</span>` : ""}</span></span>`);
+    }
+    const weaponsHtml = weaponTags.join("");
+    const othersHtml = otherTags.join("");
     const augsHtml = (augs || []).length
       ? augs.map((a) => this._contentTag(ItemResolver.itemStr(a))).join("")
       : "";
-    if (!tags && !augsHtml) return "";
+    if (!weaponsHtml && !othersHtml && !augsHtml) return "";
+
+    const bothPorté = weaponsHtml && othersHtml;
+    const groups = [
+      bothPorté && { label: "Armes", html: weaponsHtml },
+      bothPorté && { label: "Divers", html: othersHtml },
+      !bothPorté && (weaponsHtml || othersHtml) && { label: "Porté", html: weaponsHtml || othersHtml },
+      augsHtml && { label: "Augmentations", html: augsHtml },
+    ].filter(Boolean);
+
     const body =
-      tags && augsHtml
-        ? `<div class="ref-block"><div class="ref-lbl">Porté</div><div class="card-section-content">${tags}</div></div>
-           <div class="ref-block"><div class="ref-lbl">Augmentations</div><div class="card-section-content">${augsHtml}</div></div>`
-        : `<div class="card-section-content">${tags || augsHtml}</div>`;
+      groups.length > 1
+        ? groups
+            .map((g) => `<div class="ref-block"><div class="ref-lbl">${g.label}</div><div class="card-section-content">${g.html}</div></div>`)
+            .join("")
+        : `<div class="card-section-content">${groups[0].html}</div>`;
     return `<div class="card-section">
       <div class="card-section-label">Équipement</div>
       ${body}
