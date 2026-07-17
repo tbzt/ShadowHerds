@@ -15,7 +15,15 @@
    Les catalogues/règles de CI restent délégués à Matrix, comme
    dans Servers.
    ============================================================ */
-const Intrusion = {
+import { Debug } from "../core/debug.js";
+import { Dice } from "../rules/dice.js";
+import { DiceRoller } from "../widgets/diceroller.js";
+import { Encounter } from "./encounter.js";
+import { Matrix } from "../rules/matrix.js";
+import { Servers } from "./servers.js";
+import { Utils } from "../core/utils.js";
+
+export const Intrusion = {
   /** État neuf d'une intrusion (forme de l'objet `state.matrix[serverId]`). */
   newState() {
     return {
@@ -308,3 +316,6 @@ const Intrusion = {
     toast("Reboot + 1 h hors ligne : malus DIEU effacés, tous les accès sont perdus.");
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.Intrusion = Intrusion;

@@ -7,7 +7,14 @@
    remontante : les consommateurs l'appellent, elle ne connaît
    personne en retour. Étendue par la palette : `search`.
    ============================================================ */
-const PnjLookup = {
+import { Characters } from "./characters.js";
+import { ContactsBook } from "./contactsbook.js";
+import { Gen } from "./generator.js";
+import { Servers } from "./servers.js";
+import { Shadows } from "./shadows.js";
+import { Utils } from "../core/utils.js";
+
+export const PnjLookup = {
   /** Résolution unique par id, remplace Dice._lookupPnj, UI._findPNJ et
       EditModal._find (périmètres divergents, supprimés).
       Ordre de priorité (coût de recherche : cas le plus fréquent d'abord) :
@@ -89,3 +96,6 @@ const PnjLookup = {
     );
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.PnjLookup = PnjLookup;

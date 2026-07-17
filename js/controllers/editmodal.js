@@ -3,7 +3,26 @@
 /* ============================================================
    EDIT MODAL — édition avancée d'un PNJ sauvegardé
    ============================================================ */
-const EditModal = {
+import { Actor } from "../rules/actor.js";
+import { Campaign } from "../rules/campaign.js";
+import { CardRenderer } from "../widgets/cardrenderer.js";
+import { Characters } from "./characters.js";
+import { ContactsBook } from "./contactsbook.js";
+import { Content } from "../rules/content.js";
+import { Cyberdeck } from "../rules/cyberdeck.js";
+import { CyberdeckRenderer } from "../widgets/cyberdeckrenderer.js";
+import { ItemResolver } from "../rules/itemresolver.js";
+import { Mentions } from "../widgets/mentions.js";
+import { Metavariants } from "../rules/metavariants.js";
+import { PnjLookup } from "./pnjlookup.js";
+import { Shadows } from "./shadows.js";
+import { SingleSelect } from "../widgets/singleselect.js";
+import { SkillCatalog } from "../rules/skillcatalog.js";
+import { UI } from "../widgets/ui.js";
+import { Utils } from "../core/utils.js";
+import { Vehicles } from "../catalogs/vehicles.js";
+
+export const EditModal = {
   currentId: null,
   // Instantané profond pris à l'ouverture : socle de « Annuler les
   // modifications » (revert) et du commit conditionnel à la fermeture.
@@ -1682,8 +1701,15 @@ const EditModal = {
   },
 };
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => EditModal.init());
-} else {
+/* Auto-init APRÈS le reste des scripts. Ne pas tester
+   `readyState === "loading"` : il vaut déjà "interactive" quand les
+   scripts différés s'exécutent, l'init partirait trop tôt.
+   DOMContentLoaded ne se déclenche qu'une fois TOUS exécutés. */
+if (document.readyState === "complete") {
   EditModal.init();
+} else {
+  document.addEventListener("DOMContentLoaded", () => EditModal.init(), { once: true });
 }
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.EditModal = EditModal;

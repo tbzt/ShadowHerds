@@ -11,7 +11,9 @@
    (_entityCopies/persistEntity — un decker vit en
    plusieurs copies pool+biblio comme tout PNJ).
    ============================================================ */
-const DeckRun = {
+import { Servers } from "./servers.js";
+
+export const DeckRun = {
   /** Garantit `pnj.cyberdeck.run` (créé à la volée si absent). */
   _ensure(pnj) {
     if (!pnj || !pnj.cyberdeck) return null;
@@ -31,3 +33,6 @@ const DeckRun = {
     return id ? Servers.find(id) : null;
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.DeckRun = DeckRun;

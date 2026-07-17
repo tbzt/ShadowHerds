@@ -12,7 +12,21 @@
    La Profession utilise un multi-select à double niveau (catégorie
    → professions) via ProfCategories.
    ============================================================ */
-const Gen = {
+import { CardRenderer } from "../widgets/cardrenderer.js";
+import { Coherence } from "../rules/coherence.js";
+import { Creatures } from "../catalogs/creatures.js";
+import { Debug } from "../core/debug.js";
+import { Encounter } from "./encounter.js";
+import { Infected } from "../rules/infected.js";
+import { Metavariants } from "../rules/metavariants.js";
+import { MultiSelect } from "../widgets/multiselect.js";
+import { ProfCategories } from "../widgets/profcategories.js";
+import { SingleSelect } from "../widgets/singleselect.js";
+import { Spirits } from "../catalogs/spirits.js";
+import { Storage } from "../core/storage.js";
+import { Utils } from "../core/utils.js";
+
+export const Gen = {
   /** PNJ générés non encore sauvegardés (zone de génération) */
   pool: [],
 
@@ -661,8 +675,15 @@ const Gen = {
   },
 };
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => Gen.init());
-} else {
+/* Auto-init APRÈS le reste des scripts. Ne pas tester
+   `readyState === "loading"` : il vaut déjà "interactive" quand les
+   scripts différés s'exécutent, l'init partirait trop tôt.
+   DOMContentLoaded ne se déclenche qu'une fois TOUS exécutés. */
+if (document.readyState === "complete") {
   Gen.init();
+} else {
+  document.addEventListener("DOMContentLoaded", () => Gen.init(), { once: true });
 }
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.Gen = Gen;

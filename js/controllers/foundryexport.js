@@ -13,7 +13,12 @@
    fichier), sérialiser et télécharger — même idiome Blob que
    Backup.export().
    ============================================================ */
-const FoundryExport = {
+import { Debug } from "../core/debug.js";
+import { Dialog } from "../widgets/dialog.js";
+import { DossierBar } from "../widgets/dossierbar.js";
+import { PnjLookup } from "./pnjlookup.js";
+
+export const FoundryExport = {
   /* ---- Diagnostic des mappings non résolus (socle partagé) ----
      Les modules d'édition appellent FoundryExport.note(...) à leurs points
      de repli LOSSY : compétence droppée, catégorie d'arme devinée, métatype
@@ -154,3 +159,6 @@ const FoundryExport = {
     toast(parts.join(" · "), unresolved || failed ? "warning" : "success");
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.FoundryExport = FoundryExport;

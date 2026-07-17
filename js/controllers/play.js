@@ -12,7 +12,13 @@
    (si vivante/rangée), Focus (→ hub filtré), Voir le topos (prep).
    Délégation `data-action` (aucun onclick), neutre par édition.
    ============================================================ */
-const Play = {
+import { Collection } from "../widgets/collection.js";
+import { DossierBar } from "../widgets/dossierbar.js";
+import { Dossiers } from "../widgets/dossiers.js";
+import { Encounter } from "./encounter.js";
+import { RunGen } from "./rungen.js";
+
+export const Play = {
   _wired: false,
 
   initPanel() {
@@ -132,3 +138,6 @@ const Play = {
     </div>`;
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.Play = Play;

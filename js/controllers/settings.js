@@ -3,7 +3,17 @@
 /* ============================================================
    SETTINGS — paramètres par édition, stockés via Storage
    ============================================================ */
-const Settings = {
+import { ContactsBook } from "./contactsbook.js";
+import { Dialog } from "../widgets/dialog.js";
+import { DicePanel } from "../widgets/dicepanel.js";
+import { DiceRoller } from "../widgets/diceroller.js";
+import { Gen } from "./generator.js";
+import { Shadows } from "./shadows.js";
+import { Storage } from "../core/storage.js";
+import { Sync } from "./sync.js";
+import { Utils } from "../core/utils.js";
+
+export const Settings = {
   get(key, fallback = null) {
     return Storage.get(`settings_${key}`, fallback);
   },
@@ -468,3 +478,6 @@ const Settings = {
     toast("Atomisé. Table rase.");
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.Settings = Settings;

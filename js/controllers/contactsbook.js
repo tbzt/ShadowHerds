@@ -63,7 +63,17 @@ const _contactsCollection = Collection.create(
 );
 // Capturé avant extension pour pouvoir envelopper le `load` du socle (CO-a).
 const _contactsBaseLoad = _contactsCollection.load;
-const ContactsBook = Object.assign(_contactsCollection, {
+import { CardRenderer } from "../widgets/cardrenderer.js";
+import { Characters } from "./characters.js";
+import { Coherence } from "../rules/coherence.js";
+import { Collection } from "../widgets/collection.js";
+import { ContactGen } from "./contactgen.js";
+import { Contacts } from "./contacts.js";
+import { DossierBar } from "../widgets/dossierbar.js";
+import { Flavor } from "../rules/flavor.js";
+import { Shadows } from "./shadows.js";
+
+export const ContactsBook = Object.assign(_contactsCollection, {
     /* ---- Normalisation à la lecture (CO-a, carte Contact) : les contacts
        déjà sauvegardés n'ont pas de `type`. On rétro-pose `type:"contact"`
        en mémoire pour que la garde `CardRenderer.isContact` (consommée à
@@ -293,3 +303,6 @@ const ContactsBook = Object.assign(_contactsCollection, {
     },
   },
 );
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.ContactsBook = ContactsBook;

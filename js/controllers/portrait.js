@@ -8,7 +8,7 @@
    ne lit que des champs génériques (meta, gender, archetype, role...),
    jamais App.edition.
    ============================================================ */
-const Portrait = {
+export const Portrait = {
   PROMPT_SUFFIX:
     "cyberpunk digital painting, dramatic rim lighting, muted teal and magenta palette, highly detailed, concept art style",
 
@@ -423,3 +423,6 @@ const Portrait = {
     if (this._previewEl) this._previewEl.classList.remove("visible");
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.Portrait = Portrait;

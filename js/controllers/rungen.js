@@ -11,7 +11,14 @@
    - SR5 / SR6 : opérations corpo classiques, Big Ten, crime organisé
    - Anarchy    : types d\'opérations du livre + adaptations narratives
    ============================================================ */
-const RunGen = {
+import { Dialog } from "../widgets/dialog.js";
+import { DossierBar } from "../widgets/dossierbar.js";
+import { Dossiers } from "../widgets/dossiers.js";
+import { RunRenderer } from "../widgets/runrenderer.js";
+import { Storage } from "../core/storage.js";
+import { Utils } from "../core/utils.js";
+
+export const RunGen = {
   /* ---- Types de missions communs ---- */
   typesCommuns: [
     // Extraction
@@ -452,3 +459,6 @@ const RunGen = {
     document.getElementById("run-list").innerHTML = "";
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.RunGen = RunGen;

@@ -10,7 +10,9 @@
    Contacts SR5/SR6 : Influence (1-12) + Loyauté (1-6)
    Contacts Anarchy : atout à niveau (0-6), RR sur Réseau
    ============================================================ */
-const Contacts = {
+import { ContactGen } from "./contactgen.js";
+
+export const Contacts = {
   /** Affiche le formulaire dirigé adapté à l'édition courante.
       Dispatch structurel accepté : Anarchy (atout+RR) et
       SR5/SR6 (Influence/Loyauté) sont deux templates complets, pas une
@@ -129,3 +131,6 @@ const Contacts = {
     });
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.Contacts = Contacts;

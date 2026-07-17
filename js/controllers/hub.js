@@ -18,7 +18,14 @@
    porte que le filtre de type, le libellé, la grille et le bouton
    de création contextuel.
    ============================================================ */
-const Hub = {
+import { Coherence } from "../rules/coherence.js";
+import { DossierBar } from "../widgets/dossierbar.js";
+import { Dossiers } from "../widgets/dossiers.js";
+import { RunGen } from "./rungen.js";
+import { Sync } from "./sync.js";
+import { Utils } from "../core/utils.js";
+
+export const Hub = {
   _type: "all", // all | pnj | contact | server
   _filter: "", // texte de recherche transverse (nom, archétype…)
   _wired: false,
@@ -371,3 +378,6 @@ const Hub = {
     });
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.Hub = Hub;

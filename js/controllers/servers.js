@@ -13,7 +13,18 @@
    (formulaire, cartes, panneaux) vit dans
    js/widgets/serverrenderer.js (ServerRenderer).
    ============================================================ */
-const Servers = Object.assign(
+import { CardRenderer } from "../widgets/cardrenderer.js";
+import { Collection } from "../widgets/collection.js";
+import { Debug } from "../core/debug.js";
+import { DossierBar } from "../widgets/dossierbar.js";
+import { Encounter } from "./encounter.js";
+import { Intrusion } from "./intrusion.js";
+import { Matrix } from "../rules/matrix.js";
+import { ServerRenderer } from "../widgets/serverrenderer.js";
+import { SidebarToggle } from "../widgets/sidebartoggle.js";
+import { Utils } from "../core/utils.js";
+
+export const Servers = Object.assign(
   Collection.create({
     key: "servers",
     storageKeys: { all: "servers_all", groups: "servers_groups" },
@@ -570,3 +581,6 @@ const Servers = Object.assign(
     },
   },
 );
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.Servers = Servers;

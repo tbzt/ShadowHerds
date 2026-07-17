@@ -20,7 +20,10 @@
    SR5 / SR6 : on génère un contact pertinent en filtrant par
    grand métier, métatype et genre, plutôt qu'au hasard.
    ============================================================ */
-const ContactGen = {
+import { Flavor } from "../rules/flavor.js";
+import { Utils } from "../core/utils.js";
+
+export const ContactGen = {
   /* ---- Les 10 Réseaux officiels d'Anarchy 2.0 (p.163) ---- */
   NETWORKS: [
     { id: "corporatiste", label: "Corporatiste", desc: "Employés et cadres des AAA et corpos locales : informations corporatistes et politiques, parfois du matériel, rarement des services." },
@@ -1001,3 +1004,6 @@ const ContactGen = {
     return Utils.rand(pool.length ? pool : catalogue);
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.ContactGen = ContactGen;

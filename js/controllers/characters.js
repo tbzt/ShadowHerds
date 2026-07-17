@@ -19,7 +19,15 @@
    App.editionModule.creation.buildCharacter() — voir
    js/controllers/chargen.js.
    ============================================================ */
-const Characters = Object.assign(
+import { CardRenderer } from "../widgets/cardrenderer.js";
+import { Collection } from "../widgets/collection.js";
+import { Dialog } from "../widgets/dialog.js";
+import { DossierBar } from "../widgets/dossierbar.js";
+import { Dossiers } from "../widgets/dossiers.js";
+import { Storage } from "../core/storage.js";
+import { Utils } from "../core/utils.js";
+
+export const Characters = Object.assign(
   Collection.create({
     key: "characters",
     combatEligible: true,
@@ -273,3 +281,6 @@ const Characters = Object.assign(
     },
   },
 );
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.Characters = Characters;

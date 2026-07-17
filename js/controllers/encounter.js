@@ -8,7 +8,23 @@
    PnjLookup à chaque rendu. Le rendu (pur) est délégué à
    EncounterRenderer.
    ============================================================ */
-const Encounter = {
+import { CardRenderer } from "../widgets/cardrenderer.js";
+import { Characters } from "./characters.js";
+import { Dialog } from "../widgets/dialog.js";
+import { Dice } from "../rules/dice.js";
+import { DiceRoller } from "../widgets/diceroller.js";
+import { EncounterRenderer } from "../widgets/encounterrenderer.js";
+import { Gen } from "./generator.js";
+import { Intrusion } from "./intrusion.js";
+import { Matrix } from "../rules/matrix.js";
+import { PnjLookup } from "./pnjlookup.js";
+import { Servers } from "./servers.js";
+import { Shadows } from "./shadows.js";
+import { Storage } from "../core/storage.js";
+import { UI } from "../widgets/ui.js";
+import { Utils } from "../core/utils.js";
+
+export const Encounter = {
   _KEY: "encounter_current",
 
   /** Version de la FORME de l'état persisté (round/pass/turnIndex/combatants/
@@ -1837,8 +1853,15 @@ const Encounter = {
   },
 };
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => Encounter.init());
-} else {
+/* Auto-init APRÈS le reste des scripts. Ne pas tester
+   `readyState === "loading"` : il vaut déjà "interactive" quand les
+   scripts différés s'exécutent, l'init partirait trop tôt.
+   DOMContentLoaded ne se déclenche qu'une fois TOUS exécutés. */
+if (document.readyState === "complete") {
   Encounter.init();
+} else {
+  document.addEventListener("DOMContentLoaded", () => Encounter.init(), { once: true });
 }
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.Encounter = Encounter;

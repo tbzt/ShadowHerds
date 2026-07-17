@@ -8,7 +8,14 @@
    sauvegarde depuis le générateur et entités liées (drones,
    véhicules, esprits invoqués) qui suivent leur maître.
    ============================================================ */
-const Shadows = Object.assign(
+import { CardRenderer } from "../widgets/cardrenderer.js";
+import { Collection } from "../widgets/collection.js";
+import { ContactsBook } from "./contactsbook.js";
+import { Gen } from "./generator.js";
+import { RosterView } from "../widgets/rosterview.js";
+import { Utils } from "../core/utils.js";
+
+export const Shadows = Object.assign(
   Collection.create({
     key: "shadows",
     combatEligible: true,
@@ -144,3 +151,6 @@ const Shadows = Object.assign(
     },
   },
 );
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.Shadows = Shadows;

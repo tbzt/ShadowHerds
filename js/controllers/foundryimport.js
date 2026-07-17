@@ -27,7 +27,11 @@
    reste est signalé via `note()` (même doctrine que l'export —
    perte volontaire vers le modèle simple, cf. storage.js).
    ============================================================ */
-const FoundryImport = {
+import { Characters } from "./characters.js";
+import { Debug } from "../core/debug.js";
+import { Utils } from "../core/utils.js";
+
+export const FoundryImport = {
   /* Éditions dotées d'une capacité d'import (Anarchy1 exclue, comme
      l'export). Ordre = ordre de préférence en cas d'égalité de score. */
   _EDITIONS: ["sr5", "sr6", "anarchy2"],
@@ -213,3 +217,6 @@ const FoundryImport = {
     toast(tail.length ? `${head} · ${tail.join(" · ")}` : head, unresolved || failed ? "warning" : "success");
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.FoundryImport = FoundryImport;

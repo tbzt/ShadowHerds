@@ -15,7 +15,13 @@
    délégation scopée à #chargen-overlay — même esprit que le
    pattern ContentModal/Collection, pas de onclick inline.
    ============================================================ */
-const CharGen = {
+import { CardRenderer } from "../widgets/cardrenderer.js";
+import { Characters } from "./characters.js";
+import { Dialog } from "../widgets/dialog.js";
+import { Storage } from "../core/storage.js";
+import { Utils } from "../core/utils.js";
+
+export const CharGen = {
   STEPS: ["concept", "attrs", "skills", "edges", "gear", "narrative", "contacts", "review"],
   STEP_LABELS: {
     concept: "Concept",
@@ -926,3 +932,6 @@ const CharGen = {
     });
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.CharGen = CharGen;

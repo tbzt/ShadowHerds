@@ -15,7 +15,11 @@
    Le format est versionné pour rester lisible à l'avenir. Les clés
    localStorage sous-jacentes ont la forme sr_pnj_v2_<edition>_<clé>.
    ============================================================ */
-const Backup = {
+import { Dialog } from "../widgets/dialog.js";
+import { Storage } from "../core/storage.js";
+import { Sync } from "./sync.js";
+
+export const Backup = {
   FORMAT: "shadowherds-backup",
   VERSION: 1,
   EDITIONS: ["sr5", "sr6", "anarchy2", "anarchy1"],
@@ -456,3 +460,6 @@ const Backup = {
     this._closeDialog();
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.Backup = Backup;

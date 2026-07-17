@@ -27,7 +27,14 @@ class SyncConflict extends Error {
   }
 }
 
-const Sync = {
+import { Backup } from "./backup.js";
+import { Debug } from "../core/debug.js";
+import { Dialog } from "../widgets/dialog.js";
+import { Hub } from "./hub.js";
+import { Settings } from "./settings.js";
+import { Storage } from "../core/storage.js";
+
+export const Sync = {
   _CFG_KEY: "sync",
   PUSH_DEBOUNCE_MS: 15000,
   POLL_INTERVAL_MS: 45000, // récupération périodique quand l'app est visible
@@ -558,3 +565,6 @@ const Sync = {
     },
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.Sync = Sync;

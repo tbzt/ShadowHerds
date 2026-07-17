@@ -11,7 +11,9 @@
    via App.editionModule.printSheet(pnj) (js/editions/*.print.js).
    Aucune branche App.edition ici (prohibition #1).
    ============================================================ */
-const PrintSheet = {
+import { DossierBar } from "../widgets/dossierbar.js";
+
+export const PrintSheet = {
   _root() {
     return document.getElementById("print-root");
   },
@@ -70,3 +72,6 @@ const PrintSheet = {
     document.documentElement.classList.toggle("print-preview", on);
   },
 };
+
+// Pont couche 5 (migration modules ES) — retiré en fin de migration.
+window.PrintSheet = PrintSheet;
