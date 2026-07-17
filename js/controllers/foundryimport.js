@@ -28,7 +28,10 @@
    perte volontaire vers le modèle simple, cf. storage.js).
    ============================================================ */
 import { Characters } from "./characters.js";
+import { ContactGen } from "./contactgen.js";
+import { ContactsBook } from "./contactsbook.js";
 import { Debug } from "../core/debug.js";
+import { Shadows } from "./shadows.js";
 import { Utils } from "../core/utils.js";
 
 export const FoundryImport = {
@@ -149,7 +152,50 @@ export const FoundryImport = {
     col.render();
     if (typeof col.renderLabel === "function") col.renderLabel();
 
-    return { ok: true, edition: chosen.id, isPc, name: pnj.name, unresolved: unresolved.length };
+    // Contacts (itemContact SR5, PJ seulement — cf. Characters.addContactLink)
+    // : après le push, pnj.id existe déjà dans Characters.data.all (requis
+    // pour lier). Extraction pure côté édition (readContacts), création/
+    // liaison ici (ContactsBook/Characters sont hors de portée d'un module
+    // d'édition — couche 3 ne descend pas vers la couche 5).
+    let linkedContacts = 0;
+    if (isPc && typeof chosen.cap.readContacts === "function") {
+      linkedContacts = this._linkContacts(pnj, chosen.cap.readContacts(actor), chosen.id);
+    }
+
+    return { ok: true, edition: chosen.id, isPc, name: pnj.name, unresolved: unresolved.length, linkedContacts };
+  },
+
+  /** Apparie par nom (même édition) dans ContactsBook, crée sinon — même
+      geste que la création manuelle (`ContactGen.buildManual`, réutilisé
+      tel quel : gère déjà le clamp par édition, Anarchy compris). Lie via
+      le même schéma que `Characters.addContactLink` (contactId/relation/
+      loyalty), sans son toast par doublon — silencieux pendant un import
+      groupé. Une seule sauvegarde groupée en sortie. */
+  _linkContacts(pnj, contacts, edition) {
+    if (!contacts || !contacts.length) return 0;
+    let n = 0;
+    for (const c of contacts) {
+      if (!c.name) continue;
+      let contact = ContactsBook.data.all.find(
+        (x) => x.edition === edition && x.name.toLowerCase() === c.name.toLowerCase(),
+      );
+      if (!contact) {
+        contact = ContactGen.buildManual(edition, {
+          name: c.name, role: c.role, metatype: c.metatype,
+          influence: c.connection, loyaute: c.loyalty, level: c.connection, rr: 1,
+        });
+        ContactsBook.data.all.push(contact);
+      }
+      if (!Array.isArray(pnj.contactLinks)) pnj.contactLinks = [];
+      if (pnj.contactLinks.some((l) => l.contactId === contact.id)) continue;
+      pnj.contactLinks.push({ contactId: contact.id, relation: c.role || "", loyalty: c.loyalty || null });
+      n++;
+    }
+    if (n) {
+      ContactsBook.save();
+      Characters.save();
+    }
+    return n;
   },
 
   /** Point d'entrée (data-action="foundry-import") : ouvre un sélecteur de
@@ -181,6 +227,7 @@ export const FoundryImport = {
     let pnjCount = 0;
     let failed = 0;
     let unresolved = 0;
+    let contactsLinked = 0;
     for (const file of files) {
       let data;
       try {
@@ -201,6 +248,7 @@ export const FoundryImport = {
         if (res.isPc) pj++;
         else pnjCount++;
         unresolved += res.unresolved;
+        contactsLinked += res.linkedContacts || 0;
       }
     }
     if (!pj && !pnjCount) {
@@ -212,6 +260,7 @@ export const FoundryImport = {
     if (pnjCount) parts.push(`${pnjCount} PNJ`);
     const head = `${parts.join(" + ")} importé${pj + pnjCount > 1 ? "s" : ""} depuis Foundry`;
     const tail = [];
+    if (contactsLinked) tail.push(`${contactsLinked} contact(s) lié(s)`);
     if (unresolved) tail.push(`${unresolved} champ(s) non repris — voir console`);
     if (failed) tail.push(`${failed} échec(s)`);
     toast(tail.length ? `${head} · ${tail.join(" · ")}` : head, unresolved || failed ? "warning" : "success");

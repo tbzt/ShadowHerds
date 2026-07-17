@@ -1074,6 +1074,26 @@ const FoundrySR5Import = {
     }
     return pnj;
   },
+
+  /** Contacts (itemContact) d'un PJ SR5 — extraction PURE (pas de création
+      ni de liaison ici : ContactsBook/Characters sont hors de portée d'un
+      module d'édition, couche 3 ne descend pas vers la couche 5). Le
+      contrôleur neutre (foundryimport.js) apparie et lie. */
+  readContacts(actor) {
+    const out = [];
+    for (const item of actor.items || []) {
+      if (!item || item.type !== "itemContact" || !item.name) continue;
+      const sys = item.system || {};
+      out.push({
+        name: item.name,
+        role: sys.type || "",
+        metatype: sys.metatype || "",
+        connection: this._num(sys.connection),
+        loyalty: this._num(sys.loyalty),
+      });
+    }
+    return out;
+  },
 };
 
 /* Auto-enregistrement sur le module d'édition SR5 (chargé avant nous).
