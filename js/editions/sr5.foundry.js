@@ -20,6 +20,7 @@
    d'une éventuelle structuration de `equip` ou d'une i18n.
    ============================================================ */
 import { Actor } from "../rules/actor.js";
+import { Campaign } from "../rules/campaign.js";
 import { Content } from "../rules/content.js";
 import { EditionSR5 } from "./sr5.js";
 import { ItemResolver } from "../rules/itemresolver.js";
@@ -957,11 +958,24 @@ const FoundrySR5Import = {
           pnj.tradition = item.name;
           pnj.traditionDrainAttr = this._attrRev()[(item.system || {}).drainAttribute] || null;
           break;
+        case "itemKarma":
+        case "itemNuyen": {
+          // Registre daté 1:1 avec Campaign.entry — amount toujours positif,
+          // type "gain"/"loss" porte le signe. Tous les `date` valent 0 sur
+          // une vraie fiche : Campaign.entry tamponne Date.now() (date
+          // d'import, pas une fausse chronologie), le libellé le dit.
+          const res = item.type === "itemKarma" ? "karma" : "nuyen";
+          const sys = item.system || {};
+          const amount = this._num(sys.amount);
+          const delta = sys.type === "loss" ? -amount : amount;
+          Campaign.ensure(pnj).ledger.push(
+            Campaign.entry(res, delta, `${item.name} (importé de Foundry)`),
+          );
+          break;
+        }
         case "itemContact":
         case "itemSin":
         case "itemMark":
-        case "itemKarma":
-        case "itemNuyen":
           break; // hors modèle ShadowHerds, sans intérêt de fiche
         default:
           FoundryImport.note("item", `${item.name} (${item.type})`);
@@ -1019,6 +1033,15 @@ const FoundrySR5Import = {
       knowledges: [],
       traits: [],
     };
+    // Réputation (Livre de Règles p.374) : streetCred/notoriety/publicAwareness
+    // sont des TOTAUX déjà dérivés sur la fiche Foundry (pas un registre daté
+    // comme Karma/Nuyen) → une seule écriture de solde de départ par piste,
+    // seulement si non nulle (pas de bruit sur un PNJ sans historique).
+    const REP_MAP = { streetCred: "cred", notoriety: "rumeur", publicAwareness: "renommee" };
+    for (const [foundryKey, res] of Object.entries(REP_MAP)) {
+      const val = this._num(system[foundryKey]);
+      if (val) Campaign.ensure(pnj).ledger.push(Campaign.entry(res, val, "Solde importé de Foundry"));
+    }
     // La tradition (nom FR + attribut de Drain) vit sur l'item itemTradition
     // (jamais sur system.magic.tradition, toujours "" sur une vraie fiche),
     // donc `pnj.tradition` n'est connu qu'APRÈS avoir lu les items — `special`
