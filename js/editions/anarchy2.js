@@ -232,8 +232,8 @@ export const EditionAnarchy2 = {
         libellés d'équipement Anarchy auto-descriptifs, pas de
         pilote/senseurs/accel distincts (cf. commentaire de fichier). */
     statFields: [
-      ["autopilote", "Autopilote"], ["structure", "Structure"],
-      ["mania", "Maniabilité"], ["vitesse", "Vitesse"], ["blindage", "Blindage"],
+      ["autopilote", "Auto"], ["structure", "Str"],
+      ["mania", "Man"], ["vitesse", "Vit"], ["blindage", "Blind"],
     ],
     /** Neutre : pas d'autosoft distinct de l'autopilote en Anarchy 2.0. */
     formExtraFields: [],

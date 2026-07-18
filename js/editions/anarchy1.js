@@ -50,10 +50,22 @@ export const EditionAnarchy1 = {
       armes : weaponModel.accuracyLimit=false, et _resolveWeaponV1 ne pose
       que VD + portées (« Nom [VD XP, C OK · I −2] », imprimé au livre). */
   helpLegend: [
-    { keys: "⚄ N", html: "Réserve de dés <strong>cliquable</strong> — un clic lance le test à N dés." },
-    { keys: "Init", html: "Initiative : score de base + dés d'initiative (ex. 8+2D6)." },
-    { keys: "VD", html: "Valeur de Dégâts — <strong>P</strong> physique, <strong>E</strong> étourdissant (imprimée au livre, pas recalculée)." },
-    { keys: "Portées", html: "<strong>C</strong> Courte · <strong>I</strong> Intermédiaire · <strong>L</strong> Longue — « OK » sans malus, sinon le malus de dés est indiqué (ex. « I −2 »)." },
+    {
+      keys: "⚄ N",
+      html: "Réserve de dés <strong>cliquable</strong> — un clic lance le test à N dés.",
+    },
+    {
+      keys: "Init",
+      html: "Initiative : score de base + dés d'initiative (ex. 8+2D6).",
+    },
+    {
+      keys: "VD",
+      html: "Valeur de Dégâts — <strong>P</strong> physique, <strong>E</strong> étourdissant (imprimée au livre, pas recalculée).",
+    },
+    {
+      keys: "Portées",
+      html: "<strong>C</strong> Courte · <strong>I</strong> Intermédiaire · <strong>L</strong> Longue — « OK » sans malus, sinon le malus de dés est indiqué (ex. « I −2 »).",
+    },
   ],
   /** V1 n'a pas de panneau de Réduction de Risque (propre à Anarchy 2.0) :
       elle retombe sur les chemins « SR » des gates de Phase 1. */
@@ -122,7 +134,12 @@ export const EditionAnarchy1 = {
   /** threatReserve : miroir de la Réserve de menace (badge topbar visible
       aussi en A1, cf. CSS `[data-edition^="anarchy"]`) dans l'en-tête du
       cockpit — même source (DiceRoller._threat), pas d'état doublé. */
-  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: true },
+  combatModel: {
+    rerollEachRound: false,
+    passDecrement: 0,
+    narrative: true,
+    threatReserve: true,
+  },
   /** Disposition de combat (Vague D) : Anarchy 1 n'a PAS de règle de combativité
       imprimée (seulement « Dangerosité », niveaux de dés) → morale toujours null
       (pas de drapeau « devrait fuir »). Seul « hors de combat » (moniteur
@@ -140,7 +157,8 @@ export const EditionAnarchy1 = {
   summonPower: {
     field: "tier",
     label: "Puissance",
-    steps: () => ["Mineur", "Normal", "Majeur"].map((label, i) => ({ value: i, label })),
+    steps: () =>
+      ["Mineur", "Normal", "Majeur"].map((label, i) => ({ value: i, label })),
   },
   skillModel: { shape: "simple", valRange: [0, 6], hasGroups: false },
   hasEdges: true,
@@ -193,8 +211,13 @@ export const EditionAnarchy1 = {
     vehicleFields: "total",
     isDestroyed(entity) {
       if (entity.type === "vehicle")
-        return (entity.monTotal || 0) > 0 && (entity.monFilled || 0) >= entity.monTotal;
-      return (entity.physMon || 0) > 0 && (entity.physFilled || 0) >= entity.physMon;
+        return (
+          (entity.monTotal || 0) > 0 &&
+          (entity.monFilled || 0) >= entity.monTotal
+        );
+      return (
+        (entity.physMon || 0) > 0 && (entity.physFilled || 0) >= entity.physMon
+      );
     },
     /** Mise hors de combat immédiate (Vague C) : remplit le moniteur physique
         (ou total pour un véhicule). Réversible par _resetMonitors (✚). */
@@ -225,7 +248,12 @@ export const EditionAnarchy1 = {
       return { field, applied: entity[field] - before };
     },
     damageUI() {
-      return { kind: "numeric", chips: [1, 2, 3, 5], hasType: true, defaultType: "phys" };
+      return {
+        kind: "numeric",
+        chips: [1, 2, 3, 5],
+        hasType: true,
+        defaultType: "phys",
+      };
     },
   },
 
@@ -275,9 +303,13 @@ export const EditionAnarchy1 = {
       "Canons/Lanceurs [12P, tous rangs]",
     ],
     armures: {
-      legere: ["Armure légère [Armure 6, veste synthécuir/costume Actioner, +1 point de compétence]"],
+      legere: [
+        "Armure légère [Armure 6, veste synthécuir/costume Actioner, +1 point de compétence]",
+      ],
       moyenne: ["Armure moyenne [Armure 9, gilet/armure corporelle]"],
-      lourde: ["Armure lourde [Armure 12, veste/armure corporelle, -1 point de compétence]"],
+      lourde: [
+        "Armure lourde [Armure 12, veste/armure corporelle, -1 point de compétence]",
+      ],
     },
     // Cyberdecks (Anarchy 1re, p.68). Un seul attribut tracké = Firewall ;
     // les modèles nommés illustrent chaque palier. Le préfixe « Cyberdeck »
@@ -408,7 +440,8 @@ export const EditionAnarchy1 = {
       const pick = (v) => (Array.isArray(v) ? v[ti] : v);
 
       const attrs = {};
-      for (const [k, triple] of Object.entries(t.attrs)) attrs[k] = pick(triple);
+      for (const [k, triple] of Object.entries(t.attrs))
+        attrs[k] = pick(triple);
       attrs.ESS = 6;
 
       const immunite = [1, 3, 5][ti];
@@ -512,18 +545,31 @@ export const EditionAnarchy1 = {
       pas de senseurs/autosoft distincts comme en SR5. */
   vehicleModel: {
     statFields: [
-      ["autopilote", "Autopilote"],
-      ["mobilite", "Mobilité"],
-      ["resistance", "Résistance"],
-      ["blindage", "Blindage"],
+      ["autopilote", "Auto"],
+      ["mobilite", "Mobi"],
+      ["resistance", "Rés"],
+      ["blindage", "Blind"],
     ],
     formExtraFields: [],
     pools(v) {
       const s = v.stats || {};
       return [
-        { label: "Attaque", pool: s.autopilote || 0, title: "Autopilote", weaponOnly: true },
-        { label: "Défense", pool: (s.autopilote || 0) + (s.mobilite || 0), title: "Autopilote + Mobilité" },
-        { label: "Encaissement", pool: (s.resistance || 0) + (s.blindage || 0), title: "Résistance + Blindage" },
+        {
+          label: "Attaque",
+          pool: s.autopilote || 0,
+          title: "Autopilote",
+          weaponOnly: true,
+        },
+        {
+          label: "Défense",
+          pool: (s.autopilote || 0) + (s.mobilite || 0),
+          title: "Autopilote + Mobilité",
+        },
+        {
+          label: "Encaissement",
+          pool: (s.resistance || 0) + (s.blindage || 0),
+          title: "Résistance + Blindage",
+        },
       ];
     },
     initiative(v) {
@@ -573,7 +619,11 @@ export const EditionAnarchy1 = {
       return 0;
     },
     pickCount(indice, candLen) {
-      return Utils.clamp(1 + Math.round(indice / 6) + Utils.randInt(-1, 1), 1, candLen);
+      return Utils.clamp(
+        1 + Math.round(indice / 6) + Utils.randInt(-1, 1),
+        1,
+        candLen,
+      );
     },
     icThresholdsText() {
       return null;
@@ -669,11 +719,46 @@ export const EditionAnarchy1 = {
      FOR/AGI/VOL/LOG/CHA/CHC
   ---- */
   attrRange: {
-    Humain: { FOR: [1, 6], AGI: [1, 6], VOL: [1, 6], LOG: [1, 6], CHA: [1, 6], CHC: [1, 7] },
-    Elfe: { FOR: [1, 6], AGI: [1, 7], VOL: [1, 6], LOG: [1, 6], CHA: [1, 8], CHC: [1, 6] },
-    Nain: { FOR: [1, 8], AGI: [1, 6], VOL: [1, 7], LOG: [1, 6], CHA: [1, 6], CHC: [1, 6] },
-    Ork: { FOR: [1, 8], AGI: [1, 6], VOL: [1, 6], LOG: [1, 6], CHA: [1, 5], CHC: [1, 6] },
-    Troll: { FOR: [1, 10], AGI: [1, 5], VOL: [1, 6], LOG: [1, 5], CHA: [1, 4], CHC: [1, 6] },
+    Humain: {
+      FOR: [1, 6],
+      AGI: [1, 6],
+      VOL: [1, 6],
+      LOG: [1, 6],
+      CHA: [1, 6],
+      CHC: [1, 7],
+    },
+    Elfe: {
+      FOR: [1, 6],
+      AGI: [1, 7],
+      VOL: [1, 6],
+      LOG: [1, 6],
+      CHA: [1, 8],
+      CHC: [1, 6],
+    },
+    Nain: {
+      FOR: [1, 8],
+      AGI: [1, 6],
+      VOL: [1, 7],
+      LOG: [1, 6],
+      CHA: [1, 6],
+      CHC: [1, 6],
+    },
+    Ork: {
+      FOR: [1, 8],
+      AGI: [1, 6],
+      VOL: [1, 6],
+      LOG: [1, 6],
+      CHA: [1, 5],
+      CHC: [1, 6],
+    },
+    Troll: {
+      FOR: [1, 10],
+      AGI: [1, 5],
+      VOL: [1, 6],
+      LOG: [1, 5],
+      CHA: [1, 4],
+      CHC: [1, 6],
+    },
   },
 
   /* Modificateurs plats métatype (recoupés avec la règle de
@@ -890,7 +975,12 @@ export const EditionAnarchy1 = {
         { name: "Mains nues", dmg: 2, dmgType: "E" },
         { name: "Poing américain/Couteau", dmg: 3, dmgType: "P" },
         { name: "Pistolet léger", dmg: 5, dmgType: "P", ranges: "C OK · I −2" },
-        { name: "Mitraillette (sur Doberman)", dmg: 6, dmgType: "P", ranges: "C OK · I OK" },
+        {
+          name: "Mitraillette (sur Doberman)",
+          dmg: 6,
+          dmgType: "P",
+          ranges: "C OK · I OK",
+        },
       ],
       armor: 9,
     },
@@ -908,7 +998,12 @@ export const EditionAnarchy1 = {
       edges: ["Datajack"],
       weapons: [
         { name: "Mains nues", dmg: 1, dmgType: "E" },
-        { name: "Yamaha Pulsar (taser)", dmg: 6, dmgType: "E", ranges: "C OK · I −4" },
+        {
+          name: "Yamaha Pulsar (taser)",
+          dmg: 6,
+          dmgType: "E",
+          ranges: "C OK · I −4",
+        },
       ],
       armor: 0,
     },
@@ -930,7 +1025,12 @@ export const EditionAnarchy1 = {
       ],
       weapons: [
         { name: "Mains nues", dmg: 1, dmgType: "E" },
-        { name: "Yamaha Pulsar (taser)", dmg: 6, dmgType: "E", ranges: "C OK · I −4" },
+        {
+          name: "Yamaha Pulsar (taser)",
+          dmg: 6,
+          dmgType: "E",
+          ranges: "C OK · I −4",
+        },
       ],
       armor: 0,
     },
@@ -952,7 +1052,12 @@ export const EditionAnarchy1 = {
       weapons: [
         { name: "Mains nues", dmg: 2, dmgType: "E" },
         { name: "Électromatraque", dmg: 7, dmgType: "E" },
-        { name: "Ares Predator V (pistolet lourd)", dmg: 6, dmgType: "P", ranges: "C OK · I −2" },
+        {
+          name: "Ares Predator V (pistolet lourd)",
+          dmg: 6,
+          dmgType: "P",
+          ranges: "C OK · I −2",
+        },
       ],
       armor: 9,
     },
@@ -978,8 +1083,18 @@ export const EditionAnarchy1 = {
       weapons: [
         { name: "Mains nues", dmg: 2, dmgType: "E" },
         { name: "Électromatraque", dmg: 7, dmgType: "E" },
-        { name: "Ares Predator V (pistolet lourd)", dmg: 6, dmgType: "P", ranges: "C OK · I −2" },
-        { name: "Colt M23 (fusil d'assaut)", dmg: 8, dmgType: "P", ranges: "C OK · I OK · L −2" },
+        {
+          name: "Ares Predator V (pistolet lourd)",
+          dmg: 6,
+          dmgType: "P",
+          ranges: "C OK · I −2",
+        },
+        {
+          name: "Colt M23 (fusil d'assaut)",
+          dmg: 8,
+          dmgType: "P",
+          ranges: "C OK · I OK · L −2",
+        },
       ],
       armor: 9,
     },
@@ -1046,7 +1161,12 @@ export const EditionAnarchy1 = {
       ],
       weapons: [
         { name: "Mains nues", dmg: 2, dmgType: "E" },
-        { name: "Colt America L36 (pistolet léger)", dmg: 5, dmgType: "P", ranges: "C OK · I −2" },
+        {
+          name: "Colt America L36 (pistolet léger)",
+          dmg: 5,
+          dmgType: "P",
+          ranges: "C OK · I −2",
+        },
       ],
       armor: 6,
     },
@@ -1077,10 +1197,30 @@ export const EditionAnarchy1 = {
       ],
       weapons: [
         { name: "Mains nues", dmg: 2, dmgType: "E" },
-        { name: "Colt Government 2066 (pistolet lourd)", dmg: 6, dmgType: "P", ranges: "C OK · I −2" },
-        { name: "Fusil d'assaut (Doberman)", dmg: 8, dmgType: "P", ranges: "C OK · I OK · L −2" },
-        { name: "Mitrailleuse (Steel Lynx)", dmg: 8, dmgType: "P", ranges: "C OK · I OK · L OK" },
-        { name: "Mitraillette (Roto-drone)", dmg: 6, dmgType: "P", ranges: "C OK · I OK" },
+        {
+          name: "Colt Government 2066 (pistolet lourd)",
+          dmg: 6,
+          dmgType: "P",
+          ranges: "C OK · I −2",
+        },
+        {
+          name: "Fusil d'assaut (Doberman)",
+          dmg: 8,
+          dmgType: "P",
+          ranges: "C OK · I OK · L −2",
+        },
+        {
+          name: "Mitrailleuse (Steel Lynx)",
+          dmg: 8,
+          dmgType: "P",
+          ranges: "C OK · I OK · L OK",
+        },
+        {
+          name: "Mitraillette (Roto-drone)",
+          dmg: 6,
+          dmgType: "P",
+          ranges: "C OK · I OK",
+        },
       ],
       armor: 6,
     },
@@ -1106,9 +1246,24 @@ export const EditionAnarchy1 = {
       weapons: [
         { name: "Mains nues", dmg: 3, dmgType: "E" },
         { name: "Électromatraque", dmg: 7, dmgType: "E" },
-        { name: "Ares Predator V (pistolet lourd)", dmg: 6, dmgType: "P", ranges: "C OK · I −2" },
-        { name: "Colt M23 (fusil d'assaut)", dmg: 8, dmgType: "P", ranges: "C OK · I OK · L −2" },
-        { name: "Stoner-Ares M202 (mitrailleuse)", dmg: 8, dmgType: "P", ranges: "C OK · I OK · L OK" },
+        {
+          name: "Ares Predator V (pistolet lourd)",
+          dmg: 6,
+          dmgType: "P",
+          ranges: "C OK · I −2",
+        },
+        {
+          name: "Colt M23 (fusil d'assaut)",
+          dmg: 8,
+          dmgType: "P",
+          ranges: "C OK · I OK · L −2",
+        },
+        {
+          name: "Stoner-Ares M202 (mitrailleuse)",
+          dmg: 8,
+          dmgType: "P",
+          ranges: "C OK · I OK · L OK",
+        },
       ],
       armor: 12,
     },
@@ -1176,7 +1331,12 @@ export const EditionAnarchy1 = {
       ],
       weapons: [
         { name: "Mains nues", dmg: 1, dmgType: "E" },
-        { name: "Colt America L36 (pistolet léger)", dmg: 5, dmgType: "P", ranges: "C OK · I −2" },
+        {
+          name: "Colt America L36 (pistolet léger)",
+          dmg: 5,
+          dmgType: "P",
+          ranges: "C OK · I −2",
+        },
       ],
       armor: 6,
     },
@@ -1206,15 +1366,35 @@ export const EditionAnarchy1 = {
       ],
       weapons: [
         { name: "Mains nues", dmg: 2, dmgType: "E" },
-        { name: "Colt Government 2066 (pistolet lourd)", dmg: 6, dmgType: "P", ranges: "C OK · I −2" },
-        { name: "Fusil d'assaut (drone)", dmg: 8, dmgType: "P", ranges: "C OK · I OK · L −2" },
-        { name: "Mitrailleuse (drone)", dmg: 8, dmgType: "P", ranges: "C OK · I OK · L OK" },
-        { name: "Mitraillette (drone)", dmg: 6, dmgType: "P", ranges: "C OK · I OK" },
+        {
+          name: "Colt Government 2066 (pistolet lourd)",
+          dmg: 6,
+          dmgType: "P",
+          ranges: "C OK · I −2",
+        },
+        {
+          name: "Fusil d'assaut (drone)",
+          dmg: 8,
+          dmgType: "P",
+          ranges: "C OK · I OK · L −2",
+        },
+        {
+          name: "Mitrailleuse (drone)",
+          dmg: 8,
+          dmgType: "P",
+          ranges: "C OK · I OK · L OK",
+        },
+        {
+          name: "Mitraillette (drone)",
+          dmg: 6,
+          dmgType: "P",
+          ranges: "C OK · I OK",
+        },
       ],
       armor: 6,
     },
 
-    "Soldat": {
+    Soldat: {
       label: "Soldat",
       tier: "Antagoniste",
       attrs: { FOR: 4, AGI: 5, VOL: 5, LOG: 3, CHA: 2, CHC: 2 },
@@ -1235,8 +1415,18 @@ export const EditionAnarchy1 = {
         { name: "Mains nues", dmg: 2, dmgType: "E" },
         { name: "Couteau de combat", dmg: 3, dmgType: "P" },
         { name: "Pistolet lourd", dmg: 6, dmgType: "P", ranges: "C OK · I −2" },
-        { name: "Fusil d'assaut", dmg: 8, dmgType: "P", ranges: "C OK · I OK · L −2" },
-        { name: "Aztechnology Striker (lance-roquettes)", dmg: 12, dmgType: "P", ranges: "C OK · I OK · L OK" },
+        {
+          name: "Fusil d'assaut",
+          dmg: 8,
+          dmgType: "P",
+          ranges: "C OK · I OK · L −2",
+        },
+        {
+          name: "Aztechnology Striker (lance-roquettes)",
+          dmg: 12,
+          dmgType: "P",
+          ranges: "C OK · I OK · L OK",
+        },
       ],
       armor: 12,
     },
@@ -1263,8 +1453,18 @@ export const EditionAnarchy1 = {
         { name: "Mains nues", dmg: 3, dmgType: "E" },
         { name: "Couteau de combat", dmg: 4, dmgType: "P" },
         { name: "Pistolet lourd", dmg: 6, dmgType: "P", ranges: "C OK · I −2" },
-        { name: "Fusil d'assaut", dmg: 8, dmgType: "P", ranges: "C OK · I OK · L −2" },
-        { name: "Grenade à fragmentation", dmg: 12, dmgType: "P", ranges: "C OK · I OK" },
+        {
+          name: "Fusil d'assaut",
+          dmg: 8,
+          dmgType: "P",
+          ranges: "C OK · I OK · L −2",
+        },
+        {
+          name: "Grenade à fragmentation",
+          dmg: 12,
+          dmgType: "P",
+          ranges: "C OK · I OK",
+        },
       ],
       armor: 15,
     },
@@ -1284,11 +1484,18 @@ export const EditionAnarchy1 = {
         { name: "Négociation", val: 4, attr: "CHA" },
         { name: "Véhicules terrestres", val: 2, attr: "AGI" },
       ],
-      edges: ["Phéromones optimisées (bioware, relance 2 dés Charisme rencontres)"],
+      edges: [
+        "Phéromones optimisées (bioware, relance 2 dés Charisme rencontres)",
+      ],
       weapons: [
         { name: "Mains nues", dmg: 2, dmgType: "E" },
         { name: "Électromatraque", dmg: 7, dmgType: "E" },
-        { name: "Ares Predator V (pistolet lourd)", dmg: 6, dmgType: "P", ranges: "C OK · I −2" },
+        {
+          name: "Ares Predator V (pistolet lourd)",
+          dmg: 6,
+          dmgType: "P",
+          ranges: "C OK · I −2",
+        },
       ],
       armor: 6,
     },
@@ -1315,7 +1522,12 @@ export const EditionAnarchy1 = {
       weapons: [
         { name: "Mains nues", dmg: 2, dmgType: "E" },
         { name: "Matraque", dmg: 5, dmgType: "P" },
-        { name: "Ruger Super Warhawk (pistolet lourd)", dmg: 6, dmgType: "P", ranges: "C OK · I −2" },
+        {
+          name: "Ruger Super Warhawk (pistolet lourd)",
+          dmg: 6,
+          dmgType: "P",
+          ranges: "C OK · I −2",
+        },
       ],
       armor: 6,
     },
@@ -1361,7 +1573,7 @@ export const EditionAnarchy1 = {
       armor: 9,
     },
 
-    "Cambrioleur": {
+    Cambrioleur: {
       label: "Cambrioleur",
       tier: "Sbire",
       attrs: { FOR: 2, AGI: 4, VOL: 2, LOG: 3, CHA: 2, CHC: 3 },
@@ -1371,7 +1583,9 @@ export const EditionAnarchy1 = {
         { name: "Corps à corps", val: 2, attr: "AGI" },
         { name: "Comédie", val: 1, attr: "CHA" },
       ],
-      edges: ["Kit d'intrusion optimisé (relance 1 échec Furtivité en intrusion)"],
+      edges: [
+        "Kit d'intrusion optimisé (relance 1 échec Furtivité en intrusion)",
+      ],
       weapons: [
         { name: "Mains nues", dmg: 1, dmgType: "E" },
         { name: "Poing américain/Couteau", dmg: 2, dmgType: "P" },
@@ -1433,7 +1647,9 @@ export const EditionAnarchy1 = {
         { name: "Véhicules terrestres", val: 2, attr: "AGI" },
         { name: "Négociation", val: 1, attr: "CHA" },
       ],
-      edges: ["Kit d'outils spécialisé (relance 1 échec Ingénierie/Électronique)"],
+      edges: [
+        "Kit d'outils spécialisé (relance 1 échec Ingénierie/Électronique)",
+      ],
       weapons: [
         { name: "Mains nues", dmg: 1, dmgType: "E" },
         { name: "Pistolet léger", dmg: 5, dmgType: "P", ranges: "C OK · I −2" },
@@ -1468,7 +1684,8 @@ export const EditionAnarchy1 = {
       (opts.meta === "Aléatoire" ? Metavariants.randomMeta() : opts.meta);
     const mv = statBlock.fixedMeta ? null : Metavariants.resolve(meta);
     const baseMetatype = mv ? mv.baseMetatype : meta;
-    const gender = opts.gender === "Aléatoire" ? Utils.randGender() : opts.gender;
+    const gender =
+      opts.gender === "Aléatoire" ? Utils.randGender() : opts.gender;
 
     // Attributs : variance ±1 (comme SR5/anarchy2), repondération par rôle,
     // puis substitution de métatype (statblocks §Règle) si l'archétype
@@ -1480,7 +1697,8 @@ export const EditionAnarchy1 = {
       attrs[k] = Math.max(1, statBlock.attrs[k] + Utils.randInt(-1, 1));
     }
     const roleAttrs = Coherence.reweightAttrs(attrs, role, 1);
-    for (const k of Object.keys(roleAttrs)) attrs[k] = Math.max(1, roleAttrs[k]);
+    for (const k of Object.keys(roleAttrs))
+      attrs[k] = Math.max(1, roleAttrs[k]);
 
     let armorBonus = 0;
     if (!statBlock.fixedMeta && baseMetatype !== "Humain") {
@@ -1491,14 +1709,19 @@ export const EditionAnarchy1 = {
     } else if (baseMetatype === "Humain" && !statBlock.fixedMeta) {
       attrs.CHC = (attrs.CHC || 0) + (this.metaMod.Humain.CHC || 0);
     }
-    const range = (mv && mv.ranges) || this.attrRange[baseMetatype] || this.attrRange.Humain;
+    const range =
+      (mv && mv.ranges) ||
+      this.attrRange[baseMetatype] ||
+      this.attrRange.Humain;
     for (const k of Object.keys(attrs)) {
       if (range[k]) attrs[k] = Utils.clamp(attrs[k], range[k][0], range[k][1]);
     }
 
     const chosenEdges = [];
     if (statBlock.edgeChoices > 0 && statBlock.edgeOptions?.length) {
-      const shuffled = [...statBlock.edgeOptions].sort(() => Math.random() - 0.5);
+      const shuffled = [...statBlock.edgeOptions].sort(
+        () => Math.random() - 0.5,
+      );
       chosenEdges.push(...shuffled.slice(0, statBlock.edgeChoices));
     }
 
@@ -1508,7 +1731,9 @@ export const EditionAnarchy1 = {
     // sorts vivent dans leur zone Combat, plus dans les edgeOptions.
     const chosenSpells = [...(statBlock.spells || [])];
     if (statBlock.spellChoices > 0 && statBlock.spellOptions?.length) {
-      const shuffled = [...statBlock.spellOptions].sort(() => Math.random() - 0.5);
+      const shuffled = [...statBlock.spellOptions].sort(
+        () => Math.random() - 0.5,
+      );
       chosenSpells.push(...shuffled.slice(0, statBlock.spellChoices));
     }
     const spells = chosenSpells.map((e) => this._enrichSpell(e));
@@ -1520,7 +1745,9 @@ export const EditionAnarchy1 = {
       name:
         opts.name && opts.name.trim()
           ? opts.name.trim()
-          : Utils.genName(opts.originPool !== "Aléatoire" ? opts.originPool : null),
+          : Utils.genName(
+              opts.originPool !== "Aléatoire" ? opts.originPool : null,
+            ),
       meta: baseMetatype,
       metavariant: mv ? mv.name : null,
       metaFamily: mv ? mv.family : null,

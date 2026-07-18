@@ -48,13 +48,34 @@ export const EditionSR6 = {
       démodé. SO (Score Offensif) remplace PRE — SR6 n'a pas de limite de
       précision (weaponModel.accuracyLimit=false). */
   helpLegend: [
-    { keys: "⚄ N", html: "Réserve de dés <strong>cliquable</strong> — un clic lance le test à N dés." },
-    { keys: "Init", html: "Initiative : score de base + dés d'initiative (ex. 8+2D6)." },
-    { keys: "SD", html: "Score Défensif du PNJ (remplace les Limites de SR5)." },
-    { keys: "SO", html: "Score Offensif de l'arme (remplace la Précision de SR5 — pas de limite en SR6)." },
-    { keys: "VD", html: "Valeur de Dégâts — <strong>P</strong> physique, <strong>E</strong> étourdissant." },
-    { keys: "PA", html: "<strong>Potentiel d'Actions</strong> (Majeures + Mineures par round) — ⚠ sens différent de SR5, où PA désigne la Pénétration d'Armure." },
-    { keys: "Modes", html: "<strong>CC</strong> Coup par Coup · <strong>SA</strong> Semi-Auto · <strong>TR</strong> Tir en Rafales · <strong>TA</strong> Tir Automatique." },
+    {
+      keys: "⚄ N",
+      html: "Réserve de dés <strong>cliquable</strong> — un clic lance le test à N dés.",
+    },
+    {
+      keys: "Init",
+      html: "Initiative : score de base + dés d'initiative (ex. 8+2D6).",
+    },
+    {
+      keys: "SD",
+      html: "Score Défensif du PNJ (remplace les Limites de SR5).",
+    },
+    {
+      keys: "SO",
+      html: "Score Offensif de l'arme (remplace la Précision de SR5 — pas de limite en SR6).",
+    },
+    {
+      keys: "VD",
+      html: "Valeur de Dégâts — <strong>P</strong> physique, <strong>E</strong> étourdissant.",
+    },
+    {
+      keys: "PA",
+      html: "<strong>Potentiel d'Actions</strong> (Majeures + Mineures par round) — ⚠ sens différent de SR5, où PA désigne la Pénétration d'Armure.",
+    },
+    {
+      keys: "Modes",
+      html: "<strong>CC</strong> Coup par Coup · <strong>SA</strong> Semi-Auto · <strong>TR</strong> Tir en Rafales · <strong>TA</strong> Tir Automatique.",
+    },
   ],
   /** Neutre : SR6 utilise le lanceur de dés classique, pas le panneau
       de prise de risque (propre à Anarchy 2.0). */
@@ -144,13 +165,34 @@ export const EditionSR6 = {
         const n = parseInt(tok, 10);
         return Number.isFinite(n) ? n : null;
       };
-      if (unarmed || (fam === "melee" && (!parsed.so || parsed.so[0] == null))) {
-        return { isRanged: false, bands: [{ key: "melee", label: "Mêlée (mains nues)", so: FOR + Actor.attr(pnj, "RÉA") }] };
+      if (
+        unarmed ||
+        (fam === "melee" && (!parsed.so || parsed.so[0] == null))
+      ) {
+        return {
+          isRanged: false,
+          bands: [
+            {
+              key: "melee",
+              label: "Mêlée (mains nues)",
+              so: FOR + Actor.attr(pnj, "RÉA"),
+            },
+          ],
+        };
       }
       if (fam !== "ranged") {
         // Mêlée : seule la 1ʳᵉ bande porte le SO de l'arme (+FOR déjà résolu).
         const so = parsed.so ? resolve(parsed.so[0]) : null;
-        return { isRanged: false, bands: [{ key: "melee", label: "Mêlée", so: so != null ? so : FOR + Actor.attr(pnj, "RÉA") }] };
+        return {
+          isRanged: false,
+          bands: [
+            {
+              key: "melee",
+              label: "Mêlée",
+              so: so != null ? so : FOR + Actor.attr(pnj, "RÉA"),
+            },
+          ],
+        };
       }
       const bands = this.rangeBands.map((b, i) => ({
         key: b.key,
@@ -238,7 +280,11 @@ export const EditionSR6 = {
   complexFormCatalog() {
     return Content.complexFormCatalogFor(this.id);
   },
-  ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
+  ratingBadge: {
+    field: "proRating",
+    label: "Professionnalisme",
+    options: null,
+  },
   /** Réglage propre à SR6 remonté ici (prohibition n°1). Reçoit Settings (S). */
   settingsHTML(S) {
     const sep = S.get("separateMonitors", false);
@@ -270,7 +316,11 @@ export const EditionSR6 = {
   actionBudget(pnj) {
     return [
       { key: "major", label: "Majeure", total: 1 },
-      { key: "minor", label: "Mineures", total: Math.min(1 + (pnj.initDice || 1), 6) },
+      {
+        key: "minor",
+        label: "Mineures",
+        total: Math.min(1 + (pnj.initDice || 1), 6),
+      },
     ];
   },
   /** Règles de round pour le tracker de combat. SR6 : l'initiative est
@@ -293,9 +343,12 @@ export const EditionSR6 = {
     let flee = false;
     if (group && group.total) {
       const frac = group.down / group.total;
-      if (pr <= 0) flee = group.down >= 1; // 0 : un neutralisé → les autres fuient
-      else if (pr <= 4) flee = frac > 0.25; // 1-4 : > ¼ perdus → retraite
-      else if (pr <= 7) flee = frac > 0.5; // 5-7 : > ½ → retraite en tirant
+      if (pr <= 0)
+        flee = group.down >= 1; // 0 : un neutralisé → les autres fuient
+      else if (pr <= 4)
+        flee = frac > 0.25; // 1-4 : > ¼ perdus → retraite
+      else if (pr <= 7)
+        flee = frac > 0.5; // 5-7 : > ½ → retraite en tirant
       else flee = false; // 8-10 : élite, ne cède jamais
     }
     if (flee) return { down: false, morale: "flee" };
@@ -307,7 +360,8 @@ export const EditionSR6 = {
   summonPower: {
     field: "force",
     label: "Puissance",
-    steps: () => [2, 3, 4, 5, 6, 7, 8].map((n) => ({ value: n, label: String(n) })),
+    steps: () =>
+      [2, 3, 4, 5, 6, 7, 8].map((n) => ({ value: n, label: String(n) })),
   },
   skillModel: { shape: "simple", valRange: [1, 12], hasGroups: false },
   hasEdges: false,
@@ -346,9 +400,13 @@ export const EditionSR6 = {
   vehicleModel: {
     /** Champs de stats affichés en pills (card) et édités (modal). */
     statFields: [
-      ["mania", "Maniabilité"], ["vitesse", "Vitesse"], ["accel", "Accél"],
-      ["structure", "Structure"], ["blindage", "Blindage"],
-      ["pilote", "Autopilote"], ["senseurs", "Senseurs"],
+      ["mania", "Man"],
+      ["vitesse", "Vit"],
+      ["accel", "Acc"],
+      ["structure", "Str"],
+      ["blindage", "Blind"],
+      ["pilote", "Auto"],
+      ["senseurs", "Sens"],
     ],
     /** Champ supplémentaire édité (pas affiché en pill) : autosoft
         d'attaque autonome, distinct de l'autopilote (Riggers p.203-208). */
@@ -357,10 +415,27 @@ export const EditionSR6 = {
       const s = v.stats || {};
       const autosoft = s.autosoft || s.pilote || s.autopilote || 0;
       return [
-        { label: "Attaque", pool: autosoft + (s.senseurs || 0), title: "Autosoft Acquisition + Senseurs", weaponOnly: true },
-        { label: "Défense", pool: (s.pilote || 0) + autosoft, title: "Autopilote + autosoft Évasion" },
-        { label: "Perception", pool: autosoft + (s.senseurs || 0), title: "Autosoft Acuité + Senseurs" },
-        { label: "Encaissement", pool: s.structure || 0, title: "Résistance aux dommages : Structure" },
+        {
+          label: "Attaque",
+          pool: autosoft + (s.senseurs || 0),
+          title: "Autosoft Acquisition + Senseurs",
+          weaponOnly: true,
+        },
+        {
+          label: "Défense",
+          pool: (s.pilote || 0) + autosoft,
+          title: "Autopilote + autosoft Évasion",
+        },
+        {
+          label: "Perception",
+          pool: autosoft + (s.senseurs || 0),
+          title: "Autosoft Acuité + Senseurs",
+        },
+        {
+          label: "Encaissement",
+          pool: s.structure || 0,
+          title: "Résistance aux dommages : Structure",
+        },
       ];
     },
     initiative(v) {
@@ -397,7 +472,8 @@ export const EditionSR6 = {
       { key: "perception", label: "Perception", kind: "number" },
       { key: "volonte", label: "Volonté", kind: "number" },
     ],
-    monitorKind: () => (Settings.get("separateMonitors", false) ? "double" : "single"),
+    monitorKind: () =>
+      Settings.get("separateMonitors", false) ? "double" : "single",
     monitorMaxKey: "me",
   },
   /** Malus de dés dû aux effets MAINTENUS : −2 dés à tout test d'action par
@@ -414,7 +490,8 @@ export const EditionSR6 = {
       présence de `stunMon` plutôt que de relire le réglage courant, pour
       rester fidèle au modèle figé à la génération du PNJ. */
   conditionMonitor: {
-    model: "moniteur d'état unique (8 + CON/2), ou séparé Phys/Étourd (8+CON/2 / 8+VOL/2) si separateMonitors",
+    model:
+      "moniteur d'état unique (8 + CON/2), ou séparé Phys/Étourd (8+CON/2 / 8+VOL/2) si separateMonitors",
     fields: { primary: "me" },
     woundMalus(pnj) {
       // Compensateur de dommages (p.301) ignore N cases pour
@@ -423,7 +500,12 @@ export const EditionSR6 = {
       if (pnj.stunMon !== undefined) {
         // p.43 : -1 par rangée PLEINE, cumulé sur les deux moniteurs — donc
         // par piste puis somme (cf. Utils.woundMalusTracks), pas sur le total.
-        return Utils.woundMalusTracks(pnj.physFilled, pnj.stunFilled, 3, ignore);
+        return Utils.woundMalusTracks(
+          pnj.physFilled,
+          pnj.stunFilled,
+          3,
+          ignore,
+        );
       }
       // Moniteur d'état unique (`me`) : une seule piste, rien à répartir.
       return Math.floor(Math.max(0, (pnj.physFilled || 0) - ignore) / 3);
@@ -443,9 +525,15 @@ export const EditionSR6 = {
         cohérent avec SR5, seul le Physique compte pour la destruction. */
     isDestroyed(entity) {
       if (entity.type === "vehicle")
-        return (entity.monTotal || 0) > 0 && (entity.monFilled || 0) >= entity.monTotal;
+        return (
+          (entity.monTotal || 0) > 0 &&
+          (entity.monFilled || 0) >= entity.monTotal
+        );
       if (entity.stunMon !== undefined)
-        return (entity.physMon || 0) > 0 && (entity.physFilled || 0) >= entity.physMon;
+        return (
+          (entity.physMon || 0) > 0 &&
+          (entity.physFilled || 0) >= entity.physMon
+        );
       return (entity.me || 0) > 0 && (entity.physFilled || 0) >= entity.me;
     },
     /** Mise hors de combat immédiate (Vague C) : remplit le moniteur unique
@@ -453,7 +541,8 @@ export const EditionSR6 = {
         Réversible par _resetMonitors (✚). */
     knockOut(entity) {
       if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
-      else if (entity.stunMon !== undefined) entity.physFilled = entity.physMon || 0;
+      else if (entity.stunMon !== undefined)
+        entity.physFilled = entity.physMon || 0;
       else entity.physFilled = entity.me || 0;
     },
     /** Descripteur de moniteur pour les jauges (barre fine + cases spectateur).
@@ -477,7 +566,8 @@ export const EditionSR6 = {
       const sep = entity.stunMon !== undefined;
       const type = sep && opts && opts.type === "stun" ? "stun" : "phys";
       const field = type === "stun" ? "stunFilled" : "physFilled";
-      const max = type === "stun" ? entity.stunMon : sep ? entity.physMon : entity.me;
+      const max =
+        type === "stun" ? entity.stunMon : sep ? entity.physMon : entity.me;
       const before = entity[field] || 0;
       entity[field] = Utils.clamp(before + amount, 0, max ?? 99);
       return { field, applied: entity[field] - before };
@@ -486,7 +576,12 @@ export const EditionSR6 = {
         `separateMonitors` (sinon moniteur d'état unique, pas de type à choisir). */
     damageUI(entity) {
       const sep = entity && entity.stunMon !== undefined;
-      return { kind: "numeric", chips: [1, 2, 3, 5], hasType: sep, defaultType: "phys" };
+      return {
+        kind: "numeric",
+        chips: [1, 2, 3, 5],
+        hasType: sep,
+        defaultType: "phys",
+      };
     },
   },
   /** Résolution du jet d'arme (WeaponRoll) : synergie smartgun/smartlink
@@ -563,7 +658,11 @@ export const EditionSR6 = {
       return illUser * 1 + illAdmin * 3;
     },
     pickCount(indice, candLen) {
-      return Utils.clamp(2 + Math.ceil(indice / 3) + Utils.randInt(-1, 1), 2, candLen);
+      return Utils.clamp(
+        2 + Math.ceil(indice / 3) + Utils.randInt(-1, 1),
+        2,
+        candLen,
+      );
     },
     icThresholdsText(srv) {
       const a = srv.attrs || {};
@@ -633,14 +732,38 @@ export const EditionSR6 = {
        deck concerné ; VD chiffrée pour le pic de données (p.184, même modèle de
        dommages matriciels que SR5, VD = indice d'Attaque). */
     actions: [
-      { key: "spike", name: "Pic de données", type: "attack", page: 184,
-        pool: (d) => (d.attrs || {}).attack || 0, dv: (d) => (d.attrs || {}).attack || 0 },
-      { key: "forceaccess", name: "Forcer l'accès", type: "access", page: 183,
-        pool: (d) => (d.attrs || {}).attack || 0, dv: () => null },
-      { key: "probeaccess", name: "Sonder l'accès", type: "access", page: 186,
-        pool: (d) => (d.attrs || {}).sleaze || 0, dv: () => null },
-      { key: "crash", name: "Planter un programme", type: "crash", page: 184,
-        pool: (d) => (d.attrs || {}).attack || 0, dv: () => null },
+      {
+        key: "spike",
+        name: "Pic de données",
+        type: "attack",
+        page: 184,
+        pool: (d) => (d.attrs || {}).attack || 0,
+        dv: (d) => (d.attrs || {}).attack || 0,
+      },
+      {
+        key: "forceaccess",
+        name: "Forcer l'accès",
+        type: "access",
+        page: 183,
+        pool: (d) => (d.attrs || {}).attack || 0,
+        dv: () => null,
+      },
+      {
+        key: "probeaccess",
+        name: "Sonder l'accès",
+        type: "access",
+        page: 186,
+        pool: (d) => (d.attrs || {}).sleaze || 0,
+        dv: () => null,
+      },
+      {
+        key: "crash",
+        name: "Planter un programme",
+        type: "crash",
+        page: 184,
+        pool: (d) => (d.attrs || {}).attack || 0,
+        dv: () => null,
+      },
     ],
     /* Programmes matriciels (chapitre Matrice, p.187 ; collecte 2026-07-15).
        La plupart des effets SR6 touchent des actions non codées (Crypter/Éditer/
@@ -652,21 +775,46 @@ export const EditionSR6 = {
       { key: "configurateur", name: "Configurateur", page: 187, effect: null }, // config alternative rechargeable
       { key: "cryptage", name: "Cryptage", page: 187, effect: null }, // +2 dés « Crypter un fichier » (action non codée)
       { key: "editeur", name: "Éditeur", page: 187, effect: null }, // remise d'Atout sur « Éditer un fichier »
-      { key: "machine-virtuelle", name: "Machine virtuelle", page: 187, effect: null }, // +2 emplacements, +1 case dégât non résistée
+      {
+        key: "machine-virtuelle",
+        name: "Machine virtuelle",
+        page: 187,
+        effect: null,
+      }, // +2 emplacements, +1 case dégât non résistée
       { key: "navigateur", name: "Navigateur", page: 187, effect: null }, // remise d'Atout sur les recherches
-      { key: "nettoyeur-signal", name: "Nettoyeur de signal", page: 187, effect: null }, // −2 Bruit
+      {
+        key: "nettoyeur-signal",
+        name: "Nettoyeur de signal",
+        page: 187,
+        effect: null,
+      }, // −2 Bruit
       { key: "surveillance", name: "Surveillance", page: 187, effect: null }, // affiche le Score de Surveillance
-      { key: "toolbox", name: "Toolbox", page: 187, effect: { attr: { dataProcessing: 1 } } }, // +1 Traitement de données
+      {
+        key: "toolbox",
+        name: "Toolbox",
+        page: 187,
+        effect: { attr: { dataProcessing: 1 } },
+      }, // +1 Traitement de données
       { key: "armure", name: "Armure", page: 187, effect: null }, // +2 Score Défensif (non stocké comme attribut de deck)
       { key: "biofeedback", name: "Biofeedback", page: 187, effect: null }, // change le type de dégâts (lié à Attaque)
       { key: "blackout", name: "Blackout", page: 187, effect: null }, // dégâts étourdissants (lié à Attaque)
       { key: "decryptage", name: "Décryptage", page: 187, effect: null }, // +2 dés « Décrypter un fichier » (action non codée)
       { key: "desamorcage", name: "Désamorçage", page: 187, effect: null }, // encaisser une bombe avec Indice/CON
       { key: "exploitation", name: "Exploitation", page: 187, effect: null }, // +2 Score Offensif (non stocké comme attribut de deck)
-      { key: "filtre-biofeedback", name: "Filtre de biofeedback", page: 187, effect: null }, // encaisser le biofeedback avec Indice/CON
+      {
+        key: "filtre-biofeedback",
+        name: "Filtre de biofeedback",
+        page: 187,
+        effect: null,
+      }, // encaisser le biofeedback avec Indice/CON
       { key: "fork", name: "Fork", page: 187, effect: null }, // touche deux cibles en une action
       { key: "furtivite", name: "Furtivité", page: 187, effect: null }, // remise d'Atout sur « Se cacher »
-      { key: "overclock", name: "Overclock", page: 187, effect: { poolAll: 2 } }, // +2 dés à une action matricielle
+      {
+        key: "overclock",
+        name: "Overclock",
+        page: 187,
+        effect: { poolAll: 2 },
+      }, // +2 dés à une action matricielle
       { key: "traceur", name: "Traceur", page: 187, effect: null }, // remise d'Atout sur « Traquer une icône »
       { key: "verrouillage", name: "Verrouillage", page: 187, effect: null }, // verrouillage de connexion sur dégât
     ],
@@ -1128,7 +1276,20 @@ export const EditionSR6 = {
       "Minotaure",
     ],
     gender: ["Aléatoire", "M", "F", "NB"],
-    proRating: ["Aléatoire", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+    proRating: [
+      "Aléatoire",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+    ],
     archetype: [
       "Aléatoire",
       // Bas de l'échelle
@@ -1969,7 +2130,7 @@ export const EditionSR6 = {
       "Fusil d'Assaut Esprit/Dassault PAPOP IV [VD=4P, Mode=SA/TR/TA, SO=6/(1)/8/7/2, Capacité=4c(c)]",
       "Fusil d'Assaut Esprit/Dassault PAPOP IV (Lance-grenade) [VD=--, Mode=CC, SO=4/10/6/2/--, Capacité=6(c)]",
       "Fusil de Précision PGM Hecate III F3 [VD=6P, Mode=SA, SO=2/8/10/16/14, Capacité=4c(c)]",
-      "Canon d'Assaut GIAT Industries CCT \"Ultima Ratio\" [VD=7P, Mode=SA/TR, SO=1/9/10/10/6, Capacité=12(c)]",
+      'Canon d\'Assaut GIAT Industries CCT "Ultima Ratio" [VD=7P, Mode=SA/TR, SO=1/9/10/10/6, Capacité=12(c)]',
       "Esprit Gladius (Mitrailleuse) [VD=5A, Mode=SA/TR/TA, SO=10/12/7/--/--, Capacité=30(c)]",
       "Esprit Pugio [VD=3P, Mode=SA, SO=11/9/5/--/--, Capacité=14(c)]",
       "Esprit Spatha [VD=5P, Mode=SA/TR/TA, SO=8/12/7/5/--, Capacité=35(c)]",
@@ -2033,34 +2194,34 @@ export const EditionSR6 = {
         "Manteau renforcé [SD+3]",
         "Costume Actioneer [SD+2]",
         "Combinaison Urban Explorer [SD+3]",
-      "Armure Militaire Seper Armatura [SD+9 (Défense), Score Social=-8]",
-      "Casque Seper Armatura [SD+2 (Défense), Score Social=4]",
-      "Camps de Luca (costume) [SD+3 (Défense), Score Social=+10]",
-      "Chanel (robe et tailleur) [SD+1 (Défense), Score Social=+10]",
-      "Dior (ensemble) [SD+2 (Défense), Score Social=+6]",
-      "Yves Saint-Laurent (costume et tailleur) [SD+3 (Défense), Score Social=+5]",
-      "Ares « Bug Stomper » MK II Armor [SD+8, Cap. 12]",
-      "Casque [SD+2, Cap. 6]",
-      "Armure anti-meurtre [SD+6]",
-      "Armure de classe militaire [SD+8]",
-      "Armure de sécurité [SD+6]",
-      "Armure Parashield « Protection mystique » [SD+5]",
-      "Armure SecureTech Invisi-Shield [SD+6]",
-      "Gilet pare-balles tactique SEM [SD+4]",
-      "Masque balistique [SD+2]",
-      "Securetech SkinShield [SD+3]",
-      "Système d'équipement modulaire (SEM) [SD+variab, modulable]",
-      "Système de Renfort d'Armure Securetech (SRA) [SD+2]",
-      "Tenues de service standard (TSS) [SD+3]",
-      "Armure ReaLeather [Style rue, SD+1]",
-      "Collection NightShade & Moonsilver [Vêtements armantés]",
-      "Collections Ares Victory [Combat style]",
-      "Costume/robe Armanté [SD+2]",
-      "Costumes Mortimer of London [SD+1–2]",
-      "CycleWear [Modulaire]",
-      "Manteaux Mortimer of London [SD+1]",
-      "Vashon Island [Prestige]",
-      "Système de camouflage d'armure au ruthénium [Dissimulation +1]",
+        "Armure Militaire Seper Armatura [SD+9 (Défense), Score Social=-8]",
+        "Casque Seper Armatura [SD+2 (Défense), Score Social=4]",
+        "Camps de Luca (costume) [SD+3 (Défense), Score Social=+10]",
+        "Chanel (robe et tailleur) [SD+1 (Défense), Score Social=+10]",
+        "Dior (ensemble) [SD+2 (Défense), Score Social=+6]",
+        "Yves Saint-Laurent (costume et tailleur) [SD+3 (Défense), Score Social=+5]",
+        "Ares « Bug Stomper » MK II Armor [SD+8, Cap. 12]",
+        "Casque [SD+2, Cap. 6]",
+        "Armure anti-meurtre [SD+6]",
+        "Armure de classe militaire [SD+8]",
+        "Armure de sécurité [SD+6]",
+        "Armure Parashield « Protection mystique » [SD+5]",
+        "Armure SecureTech Invisi-Shield [SD+6]",
+        "Gilet pare-balles tactique SEM [SD+4]",
+        "Masque balistique [SD+2]",
+        "Securetech SkinShield [SD+3]",
+        "Système d'équipement modulaire (SEM) [SD+variab, modulable]",
+        "Système de Renfort d'Armure Securetech (SRA) [SD+2]",
+        "Tenues de service standard (TSS) [SD+3]",
+        "Armure ReaLeather [Style rue, SD+1]",
+        "Collection NightShade & Moonsilver [Vêtements armantés]",
+        "Collections Ares Victory [Combat style]",
+        "Costume/robe Armanté [SD+2]",
+        "Costumes Mortimer of London [SD+1–2]",
+        "CycleWear [Modulaire]",
+        "Manteaux Mortimer of London [SD+1]",
+        "Vashon Island [Prestige]",
+        "Système de camouflage d'armure au ruthénium [Dissimulation +1]",
       ],
       lourde: [
         "Armure corporelle intégrale [SD+5]",
@@ -2559,7 +2720,13 @@ export const EditionSR6 = {
   /** Palier de matériel selon le professionnalisme — mêmes seuils que le
       tirage de commlink ci-dessous, réutilisé pour les cyberdecks. */
   _deckTier(proRating) {
-    return proRating <= 1 ? "bas" : proRating <= 3 ? "moyen" : proRating <= 5 ? "haut" : "elite";
+    return proRating <= 1
+      ? "bas"
+      : proRating <= 3
+        ? "moyen"
+        : proRating <= 5
+          ? "haut"
+          : "elite";
   },
 
   /* ----
@@ -2595,7 +2762,13 @@ export const EditionSR6 = {
      vérifié un par un (non chiffrées dans la même table).
   ---- */
   loadoutProfile: {
-    proRatingBuckets: [[1, "grouille"], [3, "amateur"], [5, "pro"], [7, "vet"], [Infinity, "elite"]],
+    proRatingBuckets: [
+      [1, "grouille"],
+      [3, "amateur"],
+      [5, "pro"],
+      [7, "vet"],
+      [Infinity, "elite"],
+    ],
     tierWeights: {
       grouille: { courant: 85, pro: 15, militaire: 0, blackops: 0 },
       amateur: { courant: 55, pro: 40, militaire: 5, blackops: 0 },
@@ -2604,20 +2777,31 @@ export const EditionSR6 = {
       elite: { courant: 5, pro: 25, militaire: 50, blackops: 20 },
     },
     tierByCat: {
-      pistoletsPoche: "courant", pistoletsLegers: "courant", pistoletsAutomatiques: "courant",
-      pistoletsLourds: "pro", mitraillettes: "pro", shotguns: "pro", tasers: "courant",
+      pistoletsPoche: "courant",
+      pistoletsLegers: "courant",
+      pistoletsAutomatiques: "courant",
+      pistoletsLourds: "pro",
+      mitraillettes: "pro",
+      shotguns: "pro",
+      tasers: "courant",
       // fusils/snipersLourds : "pro" — RECALIBRÉ V4 (était "militaire" pour
       // snipersLourds, contredit par le Dispo réel 4-6 des fusils de
       // précision du livre ; voir AK-97 override ci-dessous pour l'outlier
       // bas de gamme au sein de "fusils").
-      fusils: "pro", snipersLourds: "pro",
+      fusils: "pro",
+      snipersLourds: "pro",
       // Ordnance militaire : tierée par nature de l'équipement (légalité
       // (I), corpo/gouv/sécu uniquement) plutôt que par indice numérique
       // vérifié item par item — ces catégories ne sont pas dans la même
       // table chiffrée que les armes à feu standard.
-      armesSpeciales: "militaire", roquettes: "militaire", explosifs: "militaire",
-      grenades: "militaire", meleeWeapons: "courant",
-      cyberware: "pro", bioware: "pro", equipSpecial: "courant",
+      armesSpeciales: "militaire",
+      roquettes: "militaire",
+      explosifs: "militaire",
+      grenades: "militaire",
+      meleeWeapons: "courant",
+      cyberware: "pro",
+      bioware: "pro",
+      equipSpecial: "courant",
       fociCaster: "pro",
     },
     tierByItem: {
@@ -2643,7 +2827,10 @@ export const EditionSR6 = {
       fociCaster: ["magical", "mage", "chamane"],
     },
     affinity: {
-      combattant: { tags: { combattant: 3 }, cats: { fusils: 2, pistoletsLourds: 2 } },
+      combattant: {
+        tags: { combattant: 3 },
+        cats: { fusils: 2, pistoletsLourds: 2 },
+      },
       adepte: { tags: { melee: 4, magical: 3 }, cats: { meleeWeapons: 3 } },
       mage: { tags: { magical: 4, mage: 3 } },
       chamane: { tags: { magical: 4, chamane: 3 } },
@@ -2666,7 +2853,11 @@ export const EditionSR6 = {
     const profile = this.loadoutProfile;
     const ctx = { proRating: p, role, milieu, archetype, awakened };
     const pick = (cats) =>
-      LoadoutEngine.weightedPick(LoadoutEngine.gatherCandidates(pools, cats), ctx, profile);
+      LoadoutEngine.weightedPick(
+        LoadoutEngine.gatherCandidates(pools, cats),
+        ctx,
+        profile,
+      );
 
     // Commlink / armure : pools sous-bucketés, déjà tierés par prof — inchangés.
     const commlink =
@@ -2691,30 +2882,49 @@ export const EditionSR6 = {
     // (proRating→tier) + l'affinité (militaire→heavy/sniper) remplacent les
     // anciens seuils de prof ET les listes isSniper/isHeavy en dur.
     const primaryWeapon = pick([
-      "pistoletsPoche", "pistoletsLegers", "pistoletsAutomatiques", "pistoletsLourds",
-      "mitraillettes", "shotguns", "fusils", "snipersLourds", "armesSpeciales",
+      "pistoletsPoche",
+      "pistoletsLegers",
+      "pistoletsAutomatiques",
+      "pistoletsLourds",
+      "mitraillettes",
+      "shotguns",
+      "fusils",
+      "snipersLourds",
+      "armesSpeciales",
     ]);
 
     const result = [commlink, primaryWeapon];
     result.push("Mains nues [VD 2E, SO FOR+RÉA/–/–/–/–]");
 
     // Arme supplémentaire cohérente (aléa d'arsenal) — via le moteur.
-    const secondaryWeapon = pick(["meleeWeapons", "pistoletsLegers", "pistoletsAutomatiques"]);
-    if (Utils.randBool(0.6) && secondaryWeapon && secondaryWeapon !== primaryWeapon) {
+    const secondaryWeapon = pick([
+      "meleeWeapons",
+      "pistoletsLegers",
+      "pistoletsAutomatiques",
+    ]);
+    if (
+      Utils.randBool(0.6) &&
+      secondaryWeapon &&
+      secondaryWeapon !== primaryWeapon
+    ) {
       result.push(secondaryWeapon);
     }
 
     // Arme de mêlée : l'affinité de rôle/milieu (adepte, gang, crime organisé)
     // remplace l'ancienne liste isMelee en dur.
-    const meleeAffinity = role === "adepte" || milieu === "gang" || milieu === "crime";
-    if (meleeAffinity || Utils.randBool(0.35)) result.push(pick(["meleeWeapons"]));
+    const meleeAffinity =
+      role === "adepte" || milieu === "gang" || milieu === "crime";
+    if (meleeAffinity || Utils.randBool(0.35))
+      result.push(pick(["meleeWeapons"]));
 
     // Électromatraque : pick déterministe conservé (pas de problème de
     // rareté — l'électromatraque EST le standard non-létal SR6, cf. p.157 —
     // seul le déclencheur passe de l'archétype nommé au rôle/milieu résolu.
     const policeLike = milieu === "police" || milieu === "securite_corpo";
     if (policeLike) {
-      const shockBaton = pools.meleeWeapons.find((w) => w.startsWith("Électromatraque"));
+      const shockBaton = pools.meleeWeapons.find((w) =>
+        w.startsWith("Électromatraque"),
+      );
       if (shockBaton) result.push(shockBaton);
     }
 
@@ -2722,7 +2932,8 @@ export const EditionSR6 = {
     // Mundain aguerri : une source d'init variée (dés selon la cote), puis un
     // cyber de saveur à haute cote. Le plafond 5D6 est appliqué par BonusEngine.
     if (!awakened && p >= 3) result.push(EditionSR6.initAugFor(p));
-    if (!awakened && p >= 6) result.push(pick(["cyberware"]) || Utils.rand(pools.cyberware));
+    if (!awakened && p >= 6)
+      result.push(pick(["cyberware"]) || Utils.rand(pools.cyberware));
     if (p >= 4 && Utils.randBool(0.4))
       result.push(pick(["equipSpecial"]) || Utils.rand(pools.equipSpecial));
 
@@ -2745,7 +2956,10 @@ export const EditionSR6 = {
       // cas en SR5 malgré le terme livre « Force »/« Puissance » selon
       // l'édition ; le libellé affiché reste « Focus de pouvoir », le mot
       // clé parseur est invisible à la table).
-      if (focus) result.push(`${focus} (indice ${Utils.clamp(1 + Math.floor(p / 3), 1, 6)})`);
+      if (focus)
+        result.push(
+          `${focus} (indice ${Utils.clamp(1 + Math.floor(p / 3), 1, 6)})`,
+        );
     }
 
     // Drones et véhicules : riggers (stats du catalogue js/vehicles.js) — le
@@ -2772,7 +2986,11 @@ export const EditionSR6 = {
           ]),
         );
       result.push(
-        Utils.rand(["Fourgon GMC Bulldog Step-Van", "Ares Roadmaster", "Toyota Gopher"]),
+        Utils.rand([
+          "Fourgon GMC Bulldog Step-Van",
+          "Ares Roadmaster",
+          "Toyota Gopher",
+        ]),
       );
     }
 
@@ -2782,7 +3000,8 @@ export const EditionSR6 = {
   /* ---- Génération principale ---- */
   generate(opts) {
     Metavariants.use("sr6");
-    let meta = opts.meta === "Aléatoire" ? Metavariants.randomMeta() : opts.meta;
+    let meta =
+      opts.meta === "Aléatoire" ? Metavariants.randomMeta() : opts.meta;
 
     // Résolution métavariante SR6 (Compagnon du Sixième Monde)
     const mv = Metavariants.resolve(meta);
@@ -2790,9 +3009,17 @@ export const EditionSR6 = {
     // la résolution métavariante habituelle : un Infecté n'est pas *en
     // plus* une métavariante aléatoire.
     const infected = !mv ? Infected.use("sr6").resolve(meta) : null;
-    const baseMetatype = mv ? mv.baseMetatype : infected ? infected.baseMetatype : meta;
+    const baseMetatype = mv
+      ? mv.baseMetatype
+      : infected
+        ? infected.baseMetatype
+        : meta;
     let originPoolOverride = null;
-    if (mv && mv.originPools && (!opts.originPool || opts.originPool === "Aléatoire")) {
+    if (
+      mv &&
+      mv.originPools &&
+      (!opts.originPool || opts.originPool === "Aléatoire")
+    ) {
       originPoolOverride = Utils.rand(mv.originPools);
     }
     const effectiveOrigin =
@@ -2809,7 +3036,9 @@ export const EditionSR6 = {
 
     const archetypeList = this.formOptions.archetype.slice(1);
     const archetype =
-      opts.archetype === "Aléatoire" ? Utils.rand(archetypeList) : opts.archetype;
+      opts.archetype === "Aléatoire"
+        ? Utils.rand(archetypeList)
+        : opts.archetype;
 
     // Cohérence : rôle/milieu résolus depuis l'archétype (ProfCategories +
     // mots-clés), pour piocher des attributs/compétences variés mais
@@ -2842,7 +3071,10 @@ export const EditionSR6 = {
 
     // Un archétype matriciel implique la spécialisation Decker (cyberdeck),
     // sauf spécialisation déjà fixée — même patron que sr5.js.
-    if (special === "Aucun" && (role === "decker" || /matriciel/i.test(archetype)))
+    if (
+      special === "Aucun" &&
+      (role === "decker" || /matriciel/i.test(archetype))
+    )
       special = "Decker";
 
     // V3 : même réconciliation pour le rigger (cf. V2b sr5.js) — seul le
@@ -2886,7 +3118,11 @@ export const EditionSR6 = {
     // dans les mêmes bornes de métatype, pour varier sans sortir du cadre.
     const roleAttrs = Coherence.reweightAttrs(attrs, role, 1, { REA: "RÉA" });
     for (const k of Object.keys(roleAttrs)) {
-      attrs[k] = Utils.clamp(roleAttrs[k], range[k]?.[0] ?? 1, range[k]?.[1] ?? 6);
+      attrs[k] = Utils.clamp(
+        roleAttrs[k],
+        range[k]?.[0] ?? 1,
+        range[k]?.[1] ?? 6,
+      );
     }
 
     // Attributs spéciaux — MAG/RES seulement si profession explicitement magique ou special magique
@@ -2916,7 +3152,9 @@ export const EditionSR6 = {
     // plage), toujours borné par attrRange. Ressource de relance « Relancer
     // les ratés ».
     const atoR = this.attrRange[baseMetatype]?.ATO || [1, 6];
-    const atoCenter = atoR[0] + Math.round((atoR[1] - atoR[0]) * Utils.clamp(p / 10, 0, 1) * 0.6);
+    const atoCenter =
+      atoR[0] +
+      Math.round((atoR[1] - atoR[0]) * Utils.clamp(p / 10, 0, 1) * 0.6);
     attrs.ATO = Utils.clamp(atoCenter + Utils.randInt(0, 1), atoR[0], atoR[1]);
 
     // Moniteur d'état : unique (me, standard SR6) par défaut, ou séparé
@@ -3021,7 +3259,10 @@ export const EditionSR6 = {
     // (p.191). Le pool de génération = cœur (Hacker vaillant est `gen: false`).
     const complexFormsList =
       special === "Technomancien"
-        ? Content.pickComplexForms("sr6", p).slice(0, Math.max(1, attrs.RES * 2))
+        ? Content.pickComplexForms("sr6", p).slice(
+            0,
+            Math.max(1, attrs.RES * 2),
+          )
         : [];
 
     // Trait de couleur cohérent (parfois)
@@ -3030,7 +3271,14 @@ export const EditionSR6 = {
       : [];
 
     // Équipement — pas de cyberware pour un Éveillé (coût en Essence)
-    const equip = this.buildLoadout(archetype, p, awakened, role, milieu, special);
+    const equip = this.buildLoadout(
+      archetype,
+      p,
+      awakened,
+      role,
+      milieu,
+      special,
+    );
     if (infected) equip.push(...infected.naturalWeapons);
     if (mv && mv.naturalWeapons) equip.push(...mv.naturalWeapons);
 
@@ -3041,7 +3289,10 @@ export const EditionSR6 = {
     // catalogue réel (equipPools.cyberware), pas de string inventée.
     const augs =
       special === "Decker"
-        ? ["Datajack", Utils.rand(this.equipPools.cyberdecks[this._deckTier(p)])]
+        ? [
+            "Datajack",
+            Utils.rand(this.equipPools.cyberdecks[this._deckTier(p)]),
+          ]
         : special === "Rigger"
           ? ["Câblage de contrôle [Rigger]"]
           : !awakened && p >= 5
