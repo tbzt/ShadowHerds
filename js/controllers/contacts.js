@@ -40,12 +40,23 @@ export const Contacts = {
       });
   },
 
+  /** Sélecteur de métatype dirigé : le picker GROUPÉ de l'édition courante
+      (souches + toutes les métavariantes), MÊME source que le générateur PNJ
+      et EditModal (editionModule.metaOptions()) — plus jamais la liste plate
+      de 5 recopiée. `placeholder:"Aléatoire"` + valeur vide = tirage libre,
+      relu tel quel par generate() (input caché #cg-meta, "" → _resolveMeta).
+      Repli sur les 5 souches si un module n'expose pas metaOptions(). */
+  _metaSelect() {
+    const mod = App.editionModule;
+    const cfg = (mod && mod.metaOptions && mod.metaOptions()) || {
+      options: ["Humain", "Elfe", "Nain", "Ork", "Troll"].map((m) => ({ value: m, label: m })),
+    };
+    return SingleSelect.create({ id: "cg-meta", label: "Métatype", placeholder: "Aléatoire", value: "", ...cfg });
+  },
+
   _formAnarchy() {
     const nets = ContactGen.NETWORKS.map(
       (n) => `<option value="${n.id}">${n.label}</option>`,
-    ).join("");
-    const metas = ContactGen.METATYPES.map(
-      (m) => `<option value="${m}">${m}</option>`,
     ).join("");
     return `
       <div class="contact-form">
@@ -68,9 +79,7 @@ export const Contacts = {
               <option value="3">RR 3</option>
             </select>
           </label>
-          <label>Métatype
-            <select id="cg-meta">${metas}</select>
-          </label>
+          ${this._metaSelect()}
         </div>
         <div class="contact-form-cost" id="cg-cost"></div>
         <div class="contact-form-hint" id="cg-net-desc"></div>
@@ -84,18 +93,13 @@ export const Contacts = {
         (c) => `<option value="${c.id}">${c.label}</option>`,
       ),
     ].join("");
-    const metas = ContactGen.METATYPES.map(
-      (m) => `<option value="${m}">${m}</option>`,
-    ).join("");
     return `
       <div class="contact-form">
         <div class="contact-form-row">
           <label>Grand métier
             <select id="cg-category">${cats}</select>
           </label>
-          <label>Métatype
-            <select id="cg-meta">${metas}</select>
-          </label>
+          ${this._metaSelect()}
         </div>
       </div>`;
   },

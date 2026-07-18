@@ -16,7 +16,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.61.0",
+  VERSION: "1.62.0",
 
   edition: "none",
   editionModule: null,
@@ -605,6 +605,7 @@ document.addEventListener("DOMContentLoaded", () => {
   CardMenu.bindDelegation();
   Breakdown.init({ resolve: (id) => PnjLookup.find(id) });
   ContactCreate.bindDelegation();
+  ContactEdit.bindDelegation();
   SelectionMode.bindDelegation();
   RosterView.init();
   RosterView.bindDelegation();

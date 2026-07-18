@@ -758,6 +758,19 @@ export const ContactGen = {
     return `Réseau (${n ? n.label.toLowerCase() : networkId})`;
   },
 
+  /** Recalcule les champs DÉRIVÉS d'un contact Anarchy après édition du Réseau,
+      de la Portée ou de la RR : `domaine` et `atoutCost` ne sont pas des champs
+      libres mais le produit de (networkId, scope, rr) — MÊME dérivation qu'à la
+      génération (generateAnarchy). `role_tags` suit le réseau (milieu de
+      déploiement, flavor). No-op hors Anarchy : lecture neutre du module via
+      `usesRiskPanel`, jamais un if(App.edition===…) (prohibition #1). */
+  recomputeAnarchyDerived(c) {
+    if (!c || !App.getEditionModule(c.edition)?.usesRiskPanel) return;
+    c.domaine = this.domaineLabel(c.networkId, c.scope);
+    c.atoutCost = this.atoutCost(c.rr, c.scope);
+    c.role_tags = this._roleTags(c.networkId);
+  },
+
   /* ---- Grands métiers SR (catégories de contacts) ----
      Chaque catégorie pointe vers des mots-clés de rôle pour filtrer
      le catalogue existant, et un Réseau Anarchy équivalent. */
@@ -770,10 +783,6 @@ export const ContactGen = {
     { id: "matrice", label: "Matrice & tech", roles: ["decker", "hacker", "paradis numérique", "rigger", "mécanicien", "pilote"] },
     { id: "media", label: "Médias & savoir", roles: ["journaliste", "professeur", "enquêteur"] },
   ],
-
-  /* ---- Métatypes proposés ---- */
-  METATYPES: ["Aléatoire", "Humain", "Ork", "Elfe", "Nain", "Troll"],
-  GENDERS: ["Aléatoire", "Homme", "Femme"],
 
   /** Correspondance tag de contact (réseau Anarchy via _roleTags, ou
       categoryId SR via SR_CATEGORIES) → milieu Coherence. Sert à déployer un

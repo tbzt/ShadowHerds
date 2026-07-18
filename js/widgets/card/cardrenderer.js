@@ -404,6 +404,10 @@ export const CardRenderer = {
     if (!deployed) {
       acts.push({ kind: "primary", icon: "⇲", label: "Déployer", attrs: `data-action="contact-deploy" data-id="${id}"` });
     }
+    // Éditer : la carte contact reste éditable en ligne (nom/rôle/trait/
+    // Influence…), mais le métatype n'y est pas modifiable — la modale le
+    // couvre (et regroupe l'édition, parité avec PNJ/PJ/serveur/véhicule).
+    acts.push({ kind: "secondary", label: "Éditer", attrs: `data-action="contact-edit" data-id="${id}"` });
     if (this._portraitEnabled(pnj, deps)) {
       acts.push({ kind: "menu", label: "Portrait IA", attrs: `data-action="contact-generate-portrait" data-id="${id}"` });
     }
@@ -2323,6 +2327,9 @@ export const CardRenderer = {
           break;
         case "contact-deploy":
           ContactsBook.deployPNJ(id);
+          break;
+        case "contact-edit":
+          ContactEdit.open(id);
           break;
         case "contact-goto-pj":
           Palette._reveal({ id: actionEl.dataset.pjId, name: actionEl.dataset.pjName, type: "pj" });

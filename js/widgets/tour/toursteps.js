@@ -358,6 +358,11 @@ export const TourSteps = {
       title: "Journal des jets : la texture de votre édition",
       body: "Le journal des jets montre maintenant ce qui a fait compter le jet, propre à chaque livre, au lieu d'un tag gris uniforme. En SR5, la Limite qui plafonne les succès s'affiche « Précision 6→3 ». La ressource dépensée avant le jet s'affiche avec son nom d'édition — « +2 Atout · 2×6↯ » en SR6, « +2 Chance… » en SR5 (Repousser les limites) : dés ajoutés et six explosifs, jusqu'ici invisibles. En Anarchy, la complication montre sa gravité sur une échelle (◆◇◇ mineure → ◆◆◆ désastre). L'export texte reprend ces textures ; les jets déjà enregistrés restent lisibles.",
     },
+    {
+      id: "wn-contact-edit", anchor: "nav-contacts", tours: ["whatsnew"], since: "1.62.0", fallback: "center",
+      title: "Éditer un contact",
+      body: "Chaque fiche de contact a maintenant un bouton « Éditer » (comme les PNJ, PJ, serveurs et véhicules) : une modale y regroupe le nom, le rôle, le trait, la description, l'Influence/Loyauté (ou Niveau/RR en Anarchy 2) et surtout le métatype, qui n'était modifiable nulle part une fois le contact créé. Au passage, la génération et la création de contact proposent désormais la liste de métatypes complète de l'édition — les 5 souches et toutes les métavariantes (Troll Cyclope, Ork Hobgobelin…), comme le générateur de PNJ.",
+    },
   ],
 };
 

@@ -104,9 +104,21 @@ export const ContactCreate = {
       niveau dépendent de l'édition du PJ via `usesRiskPanel` (Niveau/RR pour
       Anarchy 2, Influence/Loyauté sinon) — même dispatch que ContactGen. */
   _form(pj) {
-    const metas = ContactGen.METATYPES.map(
-      (m) => `<option value="${m}">${m}</option>`,
-    ).join("");
+    // Métatype : picker GROUPÉ de l'édition du PJ (souches + métavariantes),
+    // même source que le générateur et EditModal — jamais la liste plate de 5.
+    // `placeholder:"Aléatoire"` + valeur vide = tirage libre (buildManual →
+    // _resolveMeta). Repli sur les 5 souches si pas de metaOptions().
+    const mod = App.getEditionModule(pj.edition);
+    const metaCfg = (mod && mod.metaOptions && mod.metaOptions()) || {
+      options: ["Humain", "Elfe", "Nain", "Ork", "Troll"].map((m) => ({ value: m, label: m })),
+    };
+    const metaSelect = SingleSelect.create({
+      id: "cc-meta",
+      label: "Métatype",
+      placeholder: "Aléatoire",
+      value: "",
+      ...metaCfg,
+    });
     const ratings = App.getEditionModule(pj.edition)?.usesRiskPanel
       ? `<label>Niveau
            <input type="number" id="cc-level" min="0" max="6" placeholder="1">
@@ -126,9 +138,7 @@ export const ContactCreate = {
           <label>Nom <span class="cc-req">*</span>
             <input type="text" id="cc-name" placeholder="Nom du contact" autocomplete="off">
           </label>
-          <label>Métatype
-            <select id="cc-meta">${metas}</select>
-          </label>
+          ${metaSelect}
         </div>
         <div class="contact-form-row">
           <label>Rôle / métier

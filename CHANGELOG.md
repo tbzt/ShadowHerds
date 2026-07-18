@@ -12,6 +12,24 @@ commit.
 
 ## [Non publié]
 
+## [1.62.0] — 2026-07-18
+
+### Ajouté
+- **Édition des contacts** : chaque fiche de contact a désormais un bouton
+  **« Éditer »** (comme les PNJ, PJ, serveurs et véhicules) ouvrant une modale
+  qui regroupe l'édition — nom, rôle, trait, description, Influence/Loyauté (ou
+  Niveau/RR en Anarchy 2), et surtout le **métatype**, qui n'était jusqu'ici
+  modifiable nulle part une fois le contact créé. En **Anarchy 2**, le **Réseau**
+  et la **Portée** sont également éditables : le domaine et le coût d'atout se
+  recalculent automatiquement (avec un aperçu en direct dans la modale).
+
+### Modifié
+- **Liste de métatypes des contacts complète** : la génération et la création
+  de contact proposent maintenant la **liste groupée complète de l'édition**
+  (les 5 souches **et toutes les métavariantes** : Troll Cyclope, Ork
+  Hobgobelin, métaconsciences…), la même que le générateur de PNJ, au lieu des
+  5 souches seules.
+
 ## [1.61.0] — 2026-07-18
 
 ### Interface

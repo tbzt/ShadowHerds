@@ -72,6 +72,7 @@ import { Contacts } from "./contacts.js";
 import { DossierBar } from "../widgets/journal/dossierbar.js";
 import { Flavor } from "../rules/flavor.js";
 import { Shadows } from "./shadows.js";
+import { Utils } from "../core/utils.js";
 
 export const ContactsBook = Object.assign(_contactsCollection, {
     /* ---- Normalisation à la lecture (CO-a, carte Contact) : les contacts
@@ -200,6 +201,34 @@ export const ContactsBook = Object.assign(_contactsCollection, {
         }
         this.save();
       }
+    },
+
+    /* ---- Édition en lot (modale ContactEdit) ----
+       Applique plusieurs champs d'un coup puis persiste une seule fois. Les
+       champs numériques (bornés comme buildManual) ignorent une valeur vide —
+       le gabarit d'édition n'expose qu'un des deux jeux (Influence/Loyauté OU
+       Niveau/RR), l'autre arrive en "". Le rafraîchissement de la carte est à
+       la charge de l'appelant (UI.refreshEntityCard), comme editField. */
+    updateContact(id, fields) {
+      const c = this.data.all.find((x) => x.id === id);
+      if (!c) return;
+      const NUM = { influence: [1, 12], loyaute: [1, 6], level: [0, 6], rr: [1, 3] };
+      for (const [k, v] of Object.entries(fields)) {
+        if (v === undefined) continue;
+        if (NUM[k]) {
+          const s = String(v).trim();
+          if (s === "") continue; // champ hors gabarit courant : on n'écrase pas
+          const n = parseInt(s, 10);
+          if (Number.isFinite(n)) c[k] = Utils.clamp(n, NUM[k][0], NUM[k][1]);
+        } else {
+          c[k] = typeof v === "string" ? v.trim() : v;
+        }
+      }
+      // Champs dérivés Anarchy (domaine/coût d'atout/tags) : jamais saisis
+      // directement, toujours recalculés depuis networkId/scope/rr — corrige
+      // aussi le coût d'atout qui, sinon, resterait périmé après édition de RR.
+      ContactGen.recomputeAnarchyDerived(c);
+      this.save();
     },
 
     /* ---- Édition du portrait (flavor) ---- */
