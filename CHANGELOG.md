@@ -12,6 +12,25 @@ commit.
 
 ## [Non publié]
 
+## [1.60.0] — 2026-07-18
+
+### Ajouté
+- **Progression ésotérique — Initiation (magiciens/adeptes) et Submersion
+  (technomanciens).** Un PNJ peut désormais être **initié** ou **submergé** :
+  un grade motorisé (coût en Karma SR5/SR6, en niveau d'Atout pour Anarchy 1)
+  et des acquis choisis dans un catalogue **exhaustif et vérifié au livre**
+  (~105 métamagies + ~55 échos, cœurs + suppléments *Grimoire des ombres*,
+  *Voies occultes*, *Data Trails*, *Hacker vaillant*, *Anarchistes*). Un badge
+  de grade s'affiche sur la carte (module Magie pour l'Initiation, module
+  Matrice pour la Submersion) ; l'édition se fait depuis la fiche (« Devenir
+  initié/submergé », stepper de grade, catalogue d'ajout groupé par
+  magicien/adepte). La magie du sang/toxique et les échos dissonants sont
+  accessibles en **régime PNJ uniquement**, jamais pour un PJ. Le générateur
+  produit désormais des initiés/submergés complets (grade + acquis, jamais
+  un simple nom) — corrige au passage un vieux défaut de SR5 où l'archétype
+  « Initié hermétique » ne portait qu'une étiquette sans aucune mécanique.
+  Anarchy 2 n'a ni Initiation ni Submersion (absence assumée du livre).
+
 ## [1.59.0] — 2026-07-18
 
 ### Interface
