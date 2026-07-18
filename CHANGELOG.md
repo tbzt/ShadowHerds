@@ -12,6 +12,25 @@ commit.
 
 ## [Non publié]
 
+## [1.60.0] — 2026-07-18
+
+### Système
+- **Compiler des sprites (technomanciens SR5 et SR6)** : depuis la carte d'un
+  technomancien, un bouton « ◈ Sprite » ouvre le rail de compilation (le même
+  que l'invocation d'esprit, en vocabulaire technomancien — Compiler, Niveau,
+  tâches). On choisit le Niveau et le type ; l'app **roule le test de
+  compilation** (Compilation/Technomancie + Résonance contre la résistance du
+  sprite) : les succès nets deviennent les **tâches** dues, et le
+  **Technodrain** est résisté et encaissé automatiquement (VD au livre —
+  2 × succès du sprite en SR5, succès du sprite en SR6 ; physique selon le
+  Niveau/les dégâts et la Résonance). Le sprite apparaît en fiche liée sous le
+  technomancien : attributs matriciels (Attaque/Corruption/Traitement de
+  données/Firewall), moniteur matriciel, pouvoirs. On marque ses tâches
+  rendues, on peut l'**inscrire** (permanent) ou le **renvoyer** à la
+  Résonance. En Anarchy 1re édition, les sprites se compilent aussi (par
+  palier Mineur/Normal/Majeur), sans jet automatisé — fidèle au ton narratif
+  de l'édition. (Anarchy 2 n'a pas de technomanciens.)
+
 ## [1.59.0] — 2026-07-18
 
 ### Système

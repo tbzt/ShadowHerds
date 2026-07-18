@@ -2052,14 +2052,15 @@ export const CardRenderer = {
     }
     // Sprite compilé : « Renvoyer » (retour à la Résonance, non permanent —
     // vocabulaire technomancien) en primaire terminal ; Éditer en secondaire.
+    // Inscrire/Libérer (SR : sprite permanent vs éphémère) en débordement.
     if (pnj.type === "sprite" && pnj.ownerId) {
-      return CardFooter.render(
-        [
-          { kind: "secondary", label: "Éditer", attrs: `data-action="edit-open" data-id="${id}"` },
-          { kind: "primary", danger: true, icon: "⏏", label: "Renvoyer", attrs: `data-action="dismiss-sprite" data-id="${id}"` },
-        ],
-        { savedActions: saved },
-      );
+      const acts = [
+        { kind: "secondary", label: "Éditer", attrs: `data-action="edit-open" data-id="${id}"` },
+        { kind: "primary", danger: true, icon: "⏏", label: "Renvoyer", attrs: `data-action="dismiss-sprite" data-id="${id}"` },
+      ];
+      if (pnj.regime === "sr")
+        acts.push({ kind: "menu", label: pnj.registered ? "Libérer (désinscrire)" : "Inscrire", attrs: `data-action="toggle-sprite-inscribe" data-id="${id}"` });
+      return CardFooter.render(acts, { savedActions: saved });
     }
 
     const has = (k) => actions.includes(k);
@@ -2236,6 +2237,9 @@ export const CardRenderer = {
           break;
         case "dismiss-sprite":
           SummonPanel.dismissSprite(id);
+          break;
+        case "toggle-sprite-inscribe":
+          SummonPanel.toggleInscribe(id);
           break;
         case "toggle-spirit-fold":
           SummonPanel.toggleFold(id);

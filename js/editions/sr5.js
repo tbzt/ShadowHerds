@@ -297,6 +297,15 @@ export const EditionSR5 = {
       label: "Niveau",
       steps: () => [1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({ value: n, label: String(n) })),
     },
+    /** Résolution du jet de compilation (T3c, Livre de Règles p.252-254),
+        structure identique à l'invocation : le technomancien jette
+        Compilation + Résonance, le sprite oppose **Niveau** dés ; succès nets
+        = tâches dues. VD de Technodrain = **2 × succès du sprite** (min 2),
+        résistée RES+VOL (pnj.technoDrainResist), physique si Niveau > RES
+        (via technoDrainType, castHits = Niveau). */
+    compileSkill: "Compilation",
+    compileOpposeDice: (level) => level,
+    compileFading: (spriteHits) => Math.max(2, 2 * spriteHits),
   },
   /** Réserves de dés et initiative des véhicules/drones liés (js/catalogs/
       vehicles.js) : Autopilote + autosoft, limite de précision inexistante

@@ -214,11 +214,28 @@ export const SummonPanel = {
     const s = this._summon;
     const owner = PnjLookup.find(s.ownerId);
     if (!owner) return;
+    const isTier = s.power.field === "tier";
+    const level = isTier ? null : s[s.power.field];
     this._close();
 
-    const opts = { tasks: s.services };
-    if (s.power.field === "tier") opts.tier = s[s.power.field];
-    else opts.level = s[s.power.field];
+    // SR5/SR6 : l'app roule la compilation (tâches = succès nets) + le
+    // Technodrain. Anarchy 1 : compilation narrative (comme ses esprits) →
+    // tâches choisies à la main, pas de jet motorisé.
+    const comp = level != null ? MagicAction.resolveCompilation(owner, level) : null;
+    let tasks = s.services;
+    if (comp) {
+      tasks = comp.netHits;
+      // Compilation ratée (0 succès net) : pas de sprite, mais le Technodrain
+      // a déjà été encaissé (livre : on résiste, succès ou non).
+      if (comp.netHits < 1) {
+        CardRenderer.refresh(owner);
+        MagicAction.presentCompilation(owner, level, comp, null);
+        toast(`Compilation ratée (0 succès net). ${this._fadingToast(comp)}`);
+        return;
+      }
+    }
+
+    const opts = isTier ? { tier: s[s.power.field] } : { level, tasks };
     const sprite = Sprites.spawn(owner, typeKey, opts);
     if (!sprite) return;
 
@@ -239,7 +256,19 @@ export const SummonPanel = {
       setTimeout(() => card.classList.remove("vehicle-deploying"), 700);
     }
     CardRenderer.refresh(owner);
-    toast(`Sprite compilé : ${sprite.tasks} tâche${sprite.tasks > 1 ? "s" : ""}.`);
+    if (comp) {
+      MagicAction.presentCompilation(owner, level, comp, sprite);
+      toast(`Sprite compilé : ${sprite.tasks} tâche${sprite.tasks > 1 ? "s" : ""}. ${this._fadingToast(comp)}`);
+    } else {
+      toast(`Sprite compilé : ${sprite.tasks} tâche${sprite.tasks > 1 ? "s" : ""}.`);
+    }
+  },
+
+  /** Résumé lisible du Technodrain d'une compilation pour un toast. */
+  _fadingToast(comp) {
+    if (!comp || !comp.drainDamage) return "Technodrain résisté.";
+    const t = comp.type === "physical" ? "Physique" : "Étourdissant";
+    return `Technodrain : ${comp.drainDamage} case${comp.drainDamage > 1 ? "s" : ""} (${t}).`;
   },
 
   /** Pip de service : marque les services rendus (clic = bascule). */
@@ -258,6 +287,18 @@ export const SummonPanel = {
     sp.tasksUsed = idx < (sp.tasksUsed || 0) ? idx : idx + 1;
     Shadows.save();
     CardRenderer.refresh(sp);
+  },
+
+  /** Inscrit / libère un sprite (SR : inscrit = permanent, plusieurs
+      possibles ; non inscrit = éphémère, un seul). Bascule l'état `registered`
+      ratifié au cadrage T3. */
+  toggleInscribe(spriteId) {
+    const sp = PnjLookup.find(spriteId);
+    if (!sp || sp.type !== "sprite") return;
+    sp.registered = !sp.registered;
+    Shadows.save();
+    CardRenderer.refresh(sp);
+    toast(sp.registered ? "Sprite inscrit (permanent)." : "Sprite libéré (éphémère).");
   },
 
   /** Renvoie un sprite (retour à la Résonance) : masque sa fiche sans perdre

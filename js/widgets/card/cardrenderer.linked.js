@@ -231,7 +231,8 @@ Object.assign(CardRenderer, {
   /** En-tête d'un sprite compilé (miroir de `_headerSpirit`). */
   _headerSprite(sp) {
     const destroyed = App.getEditionModule(sp.edition).conditionMonitor?.isDestroyed?.(sp);
-    const badgeTxt = sp.regime === "anarchy1" ? this._esc(sp.tier || "Sprite") : `Niv ${sp.level}`;
+    const lvl = sp.regime === "anarchy1" ? this._esc(sp.tier || "Sprite") : `Niv ${sp.level}`;
+    const badgeTxt = sp.registered ? `${lvl} · inscrit` : lvl;
     const badge = destroyed
       ? '<span class="pnj-rank-badge vehicle-badge destroyed">☠ Détruit</span>'
       : `<span class="pnj-rank-badge vehicle-badge">${badgeTxt}</span>`;

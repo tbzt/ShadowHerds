@@ -414,6 +414,14 @@ export const EditionSR6 = {
       label: "Niveau",
       steps: () => [1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({ value: n, label: String(n) })),
     },
+    /** Jet de compilation (T3c, Livre de base p.193) : Technomancie +
+        Résonance contre **Niveau × 2** ; succès nets = tâches. Technodrain =
+        **succès du sprite** (pas ×2 comme SR5), résisté VOL+LOG
+        (pnj.technoDrainResist), physique si dégâts après résistance > RES
+        (technoDrainType SR6, régime dégâts). */
+    compileSkill: "Technomancie",
+    compileOpposeDice: (level) => level * 2,
+    compileFading: (spriteHits) => spriteHits,
   },
   /** Réserves de dés et initiative des véhicules/drones liés : pas de
       distinction Attaque/Capteurs séparée sur l'Autopilote (Score
