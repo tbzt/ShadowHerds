@@ -12,6 +12,18 @@ commit.
 
 ## [Non publié]
 
+## [1.64.0] — 2026-07-18
+
+### Interface
+- **Générateur — polish tactile et lisibilité des filtres.** Le bouton
+  « Générer » atteint désormais **44px de hauteur sur écran tactile**
+  (mesuré à 35,6px auparavant, sous la cible de 44px) — desktop inchangé.
+  Les **9 filtres** du formulaire (Nom, Origine, Métatype, Genre,
+  Rang/Professionnalisme, Profession, Spécialisation, Rôle, Milieu) sont
+  regroupés sous trois repères de lecture — **Identité · Métier ·
+  Composition** — communs aux quatre éditions ; aucune variable de
+  génération ajoutée, seulement un repère visuel.
+
 ## [1.63.0] — 2026-07-18
 
 ### Ajouté

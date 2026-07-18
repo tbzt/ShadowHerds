@@ -67,6 +67,25 @@
   gap: var(--sp-4);
   margin-bottom: 1.25rem;
 }
+/* V5 polish : les 9 filtres du générateur tombaient en une seule cascade non
+   groupée. Ces libellés prennent toute la largeur de la grille (.gen-form
+   reste la seule grille réelle : .gen-filters/.entity-fields sont
+   display:contents) pour former 3 clusters visuels — aucun champ neuf, aucune
+   variable de génération, juste un repère de lecture. */
+.gen-form-group-label {
+  grid-column: 1 / -1;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.2rem;
+  margin-top: 0.4rem;
+}
+.gen-form-group-label:first-child {
+  margin-top: 0;
+}
 .form-group {
   display: flex;
   flex-direction: column;
@@ -345,6 +364,12 @@
     padding-block: var(--sp-2);
     background: var(--bg);
     box-shadow: 0 -8px 12px -8px var(--bg);
+  }
+  /* V5 polish : mesuré à 38,6px en tactile (padding seul) — sous les 44px de
+     cible tactile. Le CTA le plus fréquent de l'écran mérite sa propre cible,
+     pas seulement la rangée qui le porte. */
+  .gen-actions > button {
+    min-height: 44px;
   }
 }
 /* #54 : le nombre à générer, variable de génération posée à côté de « Générer ». */

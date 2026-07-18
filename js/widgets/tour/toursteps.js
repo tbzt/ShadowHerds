@@ -368,6 +368,11 @@ export const TourSteps = {
       title: "Glissez une carte dans un dossier",
       body: "En mode « Sélectionner », tirez une fiche vers la gauche (souris ou doigt) : un rail de dossiers apparaît. Survolez-en un pour déplier ses sous-groupes, lâchez sur le bon pour y ranger la fiche. Si des fiches sont cochées et que vous tirez l'une d'elles, tout le lot suit. C'est le pendant gestuel du bouton « Déplacer vers » de la barre de sélection.",
     },
+    {
+      id: "wn-generator-touch-groups", anchor: "nav-generator", tours: ["whatsnew"], since: "1.64.0", fallback: "center",
+      title: "Générateur : filtres regroupés et bouton tactile",
+      body: "Les neuf filtres du générateur de PNJ sont maintenant regroupés sous trois repères — Identité, Métier, Composition — plutôt qu'une seule cascade de champs. Le bouton « Générer » atteint aussi sa pleine cible tactile (44px) sur smartphone/tablette, là où il restait un peu court.",
+    },
   ],
 };
 

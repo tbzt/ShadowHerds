@@ -259,6 +259,12 @@ export const Gen = {
     const fo = ed.formOptions;
     let html = "";
 
+    // V5 polish : les 9 filtres tombaient en une cascade non groupée. Trois
+    // clusters visuels seulement (aucune variable de génération neuve) —
+    // chaque groupe a toujours ≥2 champs aux 4 éditions (special/tier sont
+    // conditionnels, jamais le groupe entier).
+    html += this._groupLabel("Identité");
+
     if (!opts.hideName) {
       html += `<div class="form-group">
         <label>Nom</label>
@@ -301,6 +307,8 @@ export const Gen = {
       options: this._strip(fo.gender),
     });
 
+    html += this._groupLabel("Métier");
+
     if (fo.tier) {
       html += MultiSelect.create({
         id: `${prefix}-rang`,
@@ -329,11 +337,6 @@ export const Gen = {
       hint: "Le métier du PNJ (decker, samouraï…) — fixe compétences et équipement.",
     });
 
-    // Composition libre (facultative) — contraint le tirage « Aléatoire »
-    // de Profession à un rôle/milieu cohérent (js/rules/coherence.js),
-    // sans remplacer les professions nommées ci-dessus.
-    html += this._roleMilieuHTML(prefix);
-
     if (fo.special) {
       html += MultiSelect.create({
         id: `${prefix}-special`,
@@ -344,7 +347,20 @@ export const Gen = {
       });
     }
 
+    html += this._groupLabel("Composition");
+
+    // Composition libre (facultative) — contraint le tirage « Aléatoire »
+    // de Profession à un rôle/milieu cohérent (js/rules/coherence.js),
+    // sans remplacer les professions nommées ci-dessus.
+    html += this._roleMilieuHTML(prefix);
+
     return html;
+  },
+
+  /** V5 polish : en-tête de cluster dans la grille `.gen-form` (span pleine
+      largeur). Pure repère visuel — aucun champ, aucune valeur soumise. */
+  _groupLabel(text) {
+    return `<div class="gen-form-group-label">${text}</div>`;
   },
 
   /** Retire les marqueurs « Aléatoire » / « Aucun » d'une liste. */
