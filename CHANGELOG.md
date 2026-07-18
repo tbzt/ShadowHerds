@@ -12,6 +12,16 @@ commit.
 
 ## [Non publié]
 
+## [1.63.0] — 2026-07-18
+
+### Ajouté
+- **Glisser une carte dans un dossier** : en mode **Sélectionner**, tirez une
+  fiche (PNJ, PJ, contact, serveur…) vers la gauche — ou toute la sélection si
+  la fiche tirée en fait partie. Un rail de dossiers apparaît ; survolez-en un
+  pour **déplier ses sous-groupes**, lâchez sur le bon pour y ranger. C'est le
+  pendant gestuel du bouton « Déplacer vers » de la barre de sélection, qui
+  reste le canal découvrable et clavier.
+
 ## [1.62.0] — 2026-07-18
 
 ### Ajouté

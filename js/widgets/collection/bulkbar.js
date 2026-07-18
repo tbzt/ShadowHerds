@@ -168,9 +168,8 @@ export const BulkBar = {
 
   _moveTo(name) {
     if (!this._col || !name) return;
-    this._col.addManyToGroup(this._col.selectedIds(), name);
-    toast(`Déplacé vers « ${name} ».`);
-    this._col.clearSelection();
+    // Chemin d'écriture unique, partagé avec le glisser-déposer (FileRail).
+    this._col.fileInto(this._col.selectedIds(), name);
   },
 
   async _delete() {

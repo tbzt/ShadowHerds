@@ -20,6 +20,7 @@
 import { BulkBar } from "./bulkbar.js";
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Dialog } from "../kit/dialog.js";
+import { FileRail } from "./filerail.js";
 import { GroupPicker } from "../kit/grouppicker.js";
 import { Storage } from "../../core/storage.js";
 import { Utils } from "../../core/utils.js";
@@ -278,6 +279,17 @@ export const Collection = {
         for (const id of ids) if (!arr.includes(id)) arr.push(id);
         this.save();
         this.render();
+      },
+
+      /** Range N entités dans un dossier (par nom), avec accusé et vidage de
+          la sélection : chemin d'écriture UNIQUE partagé par la barre de
+          sélection (BulkBar « Déplacer vers ») et le glisser-déposer vers le
+          rail (FileRail). Une seule vérité, pas deux copies divergentes. */
+      fileInto(ids, groupKey) {
+        if (!ids || !ids.length || !groupKey) return;
+        this.addManyToGroup(ids, groupKey);
+        toast(`Déplacé vers « ${groupKey} ».`);
+        this.clearSelection();
       },
 
       groupsOf(id) {
@@ -601,6 +613,7 @@ export const Collection = {
 
         this._initReorderDrag();
         this._wireReorderKeys();
+        this._initFileDrag();
       },
 
       /* ---- Réorganisation manuelle (Vague B1) ----
@@ -749,6 +762,172 @@ export const Collection = {
             .querySelector(`[data-reorder-id="${CSS.escape(id)}"] .reorder-handle`)
             ?.focus();
         });
+      },
+
+      /* ---- Glisser une carte vers un dossier (rail FileRail) ----
+         Vit DANS le mode Sélection (body.selecting) : on tire une carte —
+         ou toute la sélection si la carte tirée en fait partie — vers la
+         gauche, le rail des dossiers apparaît et on lâche sur le bon. Même
+         moteur Pointer Events que la réorganisation ci-dessus, mais saisi
+         sur le CORPS de carte (pas une poignée) : la désambiguïsation
+         tap/défilement/glisser se fait au seuil et à l'appui maintenu, pour
+         ne pas voler le défilement vertical au tactile.
+         Enrichissement progressif du geste « Déplacer vers » de BulkBar
+         (canal découvrable + clavier) ; le lâcher route vers fileInto. */
+      _initFileDrag() {
+        // Délégué sur document, comme les écouteurs click/change/input de
+        // _wire() : les cartes de cette collection peuvent être rendues hors
+        // de sa grille propre (sections du Hub, écrans de génération), là où
+        // un écouteur lié au grid ne les atteindrait jamais. On filtre par
+        // appartenance (data-collection porté par les contrôles de la carte).
+        document.addEventListener("pointerdown", (e) => {
+          if (!document.body.classList.contains("selecting")) return;
+          // Jamais depuis un contrôle : case, poignée ⠿, boutons de pied,
+          // menu ⋯. Ceux-là gardent leur geste propre (cocher, réordonner…).
+          if (
+            e.target.closest(
+              "input, button, a, label, select, textarea, .card-menu, .reorder-handle",
+            )
+          )
+            return;
+          const card = e.target.closest(".bulk-selectable[data-reorder-id]");
+          if (!card) return;
+          // N'agir que sur les cartes de CETTE collection (le data-collection
+          // des contrôles de pied/case identifie le propriétaire).
+          const owner = card.querySelector("[data-collection]");
+          if (!owner || owner.dataset.collection !== this.key) return;
+
+          const id = card.dataset.reorderId;
+          const pid = e.pointerId;
+          const touch = e.pointerType === "touch";
+          const startX = e.clientX;
+          const startY = e.clientY;
+          let armed = false;
+
+          const arm = () => {
+            if (armed) return;
+            armed = true;
+            clearTimeout(holdTimer);
+            // Charge utile : la sélection entière si la carte tirée en fait
+            // partie, sinon cette seule carte (« un par un »).
+            const ids =
+              this._selected.size && this._selected.has(id)
+                ? this.selectedIds()
+                : [id];
+            this._fdrag = { card, ids };
+            card.classList.add("file-drag-src");
+            card.style.touchAction = "none"; // fige le défilement une fois saisi
+            try {
+              card.setPointerCapture(pid);
+            } catch (_) {}
+            this._fileDragStart(ids, startX, startY);
+          };
+
+          // Tactile : armé au maintien immobile (~160 ms) — un swipe défile
+          // encore. Souris/stylet : armé au premier franchissement de seuil.
+          const holdTimer = touch ? setTimeout(arm, 160) : null;
+
+          const move = (ev) => {
+            if (!armed) {
+              const dist = Math.hypot(ev.clientX - startX, ev.clientY - startY);
+              if (touch) {
+                if (dist > 12) {
+                  clearTimeout(holdTimer); // c'était un défilement
+                  cleanup();
+                }
+              } else if (dist > 6) {
+                arm();
+              }
+              return;
+            }
+            ev.preventDefault();
+            this._fileDragMove(ev);
+          };
+          const up = (ev) => {
+            clearTimeout(holdTimer);
+            if (armed) this._fileDragEnd(ev);
+            cleanup();
+          };
+          const cleanup = () => {
+            try {
+              card.releasePointerCapture(pid);
+            } catch (_) {}
+            document.removeEventListener("pointermove", move);
+            document.removeEventListener("pointerup", up);
+            document.removeEventListener("pointercancel", up);
+          };
+          document.addEventListener("pointermove", move);
+          document.addEventListener("pointerup", up);
+          document.addEventListener("pointercancel", up);
+        });
+      },
+      _fileDragStart(ids, x, y) {
+        FileRail.show();
+        const ghost = document.createElement("div");
+        ghost.className = "file-drag-ghost";
+        let label;
+        if (ids.length === 1) {
+          const e = this.data.all.find((x2) => x2.id === ids[0]);
+          label = e ? e.name : "1 carte";
+        } else {
+          label = `${ids.length} cartes`;
+        }
+        ghost.innerHTML = `<span class="file-drag-ghost-count">${ids.length}</span><span class="file-drag-ghost-label">${CardRenderer._esc(label)}</span>`;
+        document.body.appendChild(ghost);
+        this._fdrag.ghost = ghost;
+        this._positionGhost(x, y);
+      },
+      _positionGhost(x, y) {
+        const g = this._fdrag && this._fdrag.ghost;
+        if (!g) return;
+        g.style.left = `${x}px`;
+        g.style.top = `${y}px`;
+      },
+      _fileDragMove(ev) {
+        if (!this._fdrag) return;
+        this._positionGhost(ev.clientX, ev.clientY);
+        const target = FileRail.hover(ev.clientX, ev.clientY);
+        this._fdrag.ghost.classList.toggle("over-target", !!target);
+      },
+      _fileDragEnd(ev) {
+        if (!this._fdrag) return;
+        const { card, ids, ghost } = this._fdrag;
+        const drop = FileRail.dropTarget(ev.clientX, ev.clientY);
+        if (drop) {
+          FileRail.pulse(drop.el);
+          this._absorbGhost(ghost, drop.el);
+          this.fileInto(ids, drop.name); // écrit + accuse + vide la sélection
+        } else {
+          this._dismissGhost(ghost);
+        }
+        card.classList.remove("file-drag-src");
+        card.style.touchAction = "";
+        FileRail.hide();
+        this._fdrag = null;
+      },
+      /** Le fantôme file vers la cible puis disparaît (cosmétique — l'écriture
+          a déjà eu lieu). prefers-reduced-motion éteint les --dur-*, la fin
+          de transition arrive alors quasi immédiatement (garde-fou setTimeout). */
+      _absorbGhost(ghost, targetEl) {
+        const box = targetEl.getBoundingClientRect();
+        ghost.classList.add("absorbing");
+        ghost.style.left = `${box.left + box.width / 2}px`;
+        ghost.style.top = `${box.top + box.height / 2}px`;
+        this._killGhost(ghost);
+      },
+      _dismissGhost(ghost) {
+        ghost.classList.add("dismiss");
+        this._killGhost(ghost);
+      },
+      _killGhost(ghost) {
+        let done = false;
+        const fin = () => {
+          if (done) return;
+          done = true;
+          ghost.remove();
+        };
+        ghost.addEventListener("transitionend", fin, { once: true });
+        setTimeout(fin, 400);
       },
     };
 
