@@ -333,6 +333,11 @@ export const TourSteps = {
       title: "SR6 : gagner l'Atout avant le jet (SO vs SD)",
       body: "En Shadowrun 6, quand vous lancez une attaque à l'arme d'un PNJ, le panneau « avant de lancer » vous laisse désormais comparer le Score Offensif de l'arme (par bande de Portée pour les armes à distance, SO+Force en mêlée) au Score Défensif de la cible : si l'écart atteint 4, le camp le plus haut gagne 1 point d'Atout, crédité automatiquement à l'attaquant (plafond de réserve appliqué). Le SD se saisit à la main et reste optionnel. Le panneau « avant le jet » est maintenant activé par défaut (réglable dans Paramètres › Lanceur de dés).",
     },
+    {
+      id: "wn-sustain-effects", anchor: "nav-combat", tours: ["whatsnew"], since: "1.56.0", fallback: "center",
+      title: "Maintien des sorts et des formes complexes",
+      body: "Après avoir lancé un sort (ou tissé une forme complexe), cliquez sur le nombre de succès affiché pour marquer l'effet maintenu (pastille ⟳) ; re-cliquez, ou utilisez le ✕, pour l'arrêter. Chaque effet maintenu impose −2 dés à tous les tests du PNJ, cumulatif — les réserves de la carte, du tracker et des panneaux s'ajustent toutes seules, et un badge « ⟳ ×N · −N » près du moniteur donne le total d'un coup d'œil. Fidèle aux livres (SR5 p.284/253, SR6 p.136/129) ; sans effet en Anarchy.",
+    },
   ],
 };
 

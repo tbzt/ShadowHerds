@@ -12,6 +12,19 @@ commit.
 
 ## [Non publié]
 
+## [1.56.0] — 2026-07-18
+
+### Ajouté
+- **Maintien des sorts et des formes complexes — état vivant et malus
+  automatique.** Le nombre de succès affiché après un lancer devient un
+  **contrôle** : on clique dessus pour marquer le sort (ou la forme complexe)
+  **maintenu** (pastille `⟳`), on re-clique pour l'arrêter, et le ✕ (fin du
+  dernier jet) met fin au maintien du même geste. Chaque effet maintenu impose
+  **−2 dés à tous les tests** du PNJ, **cumulatif** (SR5 p.284/p.253, SR6
+  p.136/p.129) : les réserves de la carte, du tracker et des panneaux s'ajustent
+  automatiquement, et un badge **« ⟳ ×N · −N »** près du moniteur donne le total
+  d'un coup d'œil. Sans effet en Anarchy (pas de règle de maintien chiffré).
+
 ## [1.55.0] — 2026-07-18
 
 ### Ajouté
