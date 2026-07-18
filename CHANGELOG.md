@@ -12,6 +12,24 @@ commit.
 
 ## [Non publié]
 
+## [1.54.0] — 2026-07-18
+
+### Import Foundry VTT
+- **L'import Foundry VTT gère désormais les fiches SR6 aussi richement que
+  les SR5.** SR6 est un système Foundry distinct de SR5 (rien ne se
+  transpose) : l'import lit maintenant, sur une vraie fiche SR6, l'historique
+  Karma/Nuyens (registre daté), la réputation (piste signée propre à SR6),
+  les contacts (rattachés au carnet), les identités (SIN) avec leurs licences
+  et styles de vie, et les véhicules/drones liés (identité seule — les stats
+  d'un véhicule SR6 vivent sur un acteur séparé absent de l'export).
+- **Correctif : les descriptions d'items ne se perdaient plus en SR6.** Sur
+  une vraie fiche SR6, la description d'un sort, pouvoir ou trait est rangée
+  sous `info.description` — l'import la cherchait au mauvais endroit et
+  l'importait vide. Les effets de jeu sont désormais repris.
+- **Descriptions HTML aplaties en texte propre (SR5 et SR6)** : les
+  descriptions venues de Foundry arrivaient avec leurs balises HTML et leurs
+  entités (`&eacute;`…) ; elles sont maintenant décodées en texte lisible.
+
 ## [1.53.0] — 2026-07-18
 
 ### Jouer

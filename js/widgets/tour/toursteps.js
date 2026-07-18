@@ -323,6 +323,11 @@ export const TourSteps = {
       title: "Edge avant le jet : pastille",
       body: "Nouveau 3ᵉ choix dans Paramètres › Lanceur de dés (« Pastille sur la carte »). Au lieu d'un panneau qui s'ouvre à chaque jet, une petite pastille « Edge » distincte apparaît à côté des jets où le personnage peut dépenser de l'Edge/Atout (Défense, Encaissement, Drain, armes). Le tap normal reste un lancer immédiat ; toucher « Edge » ouvre le petit choix (Repousser les limites / Prendre un risque / Ajouter son rang d'Atout selon l'édition) avant de lancer.",
     },
+    {
+      id: "wn-foundry-import-sr6", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.54.0", fallback: "center",
+      title: "Import Foundry : les fiches SR6 aussi",
+      body: "L'import Foundry VTT reprend maintenant, sur une vraie fiche SR6, l'historique Karma/Nuyens, la réputation, les contacts (rattachés au carnet), les identités (SIN) avec licences et styles de vie, et les véhicules/drones liés. Les descriptions de sorts, pouvoirs et traits, qui se perdaient en SR6, sont enfin reprises — et le HTML des descriptions (SR5 comme SR6) est aplati en texte propre.",
+    },
   ],
 };
 
