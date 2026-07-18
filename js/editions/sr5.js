@@ -260,6 +260,15 @@ export const EditionSR5 = {
     resonanceAttr: "RES",
     livingPersona: true,
   },
+  /** Régime Initiation/Submersion SR5, lu par Esoteric via
+      App.editionModule.esotericModel[voie]. Coût Karma p.257 (Initiation
+      ET Submersion, même table — le livre renvoie l'une à l'autre) :
+      10 + (Grade × 3). Délai (mois/épreuves) NON motorisé (arbitrage 4
+      du plan — trop de variantes de réduction pour un chiffre unique). */
+  esotericModel: {
+    initiation: { attr: "MAG", acquisLabel: "Métamagie", costLabel: "Karma", cost: (grade) => 10 + grade * 3 },
+    submersion: { attr: "RES", acquisLabel: "Écho", costLabel: "Karma", cost: (grade) => 10 + grade * 3 },
+  },
   /** Connaissances éditables à la main (nom libre + catégorie →
       Logique/Intuition, cf. SkillCatalog.knowledgeCategories) — modèle
       absent en Anarchy (pas de pool de connaissances chiffré). */

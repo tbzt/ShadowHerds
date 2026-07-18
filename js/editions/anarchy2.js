@@ -451,6 +451,11 @@ export const EditionAnarchy2 = {
      l'absence totale du mot Résonance dans les 2 livres A2. */
   technoModel: null,
 
+  /* Pas de progression ésotérique en Anarchy 2.0 : ni Initiation ni
+     Submersion (les deux verdicts d'absence se confirment mutuellement,
+     cf. plan § A2). */
+  esotericModel: null,
+
   /* ========================================================
      CATALOGUE D'ARMES OFFICIEL (Shadowrun : Anarchy 2.0, p.141-144)
      ------------------------------------------------------

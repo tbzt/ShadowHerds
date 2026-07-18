@@ -13,6 +13,7 @@ import { ActorEffects } from "../../rules/actoreffects.js";
 import { CardFooter } from "./cardfooter.js";
 import { CyberdeckRenderer } from "./cyberdeckrenderer.js";
 import { Drugs } from "../../catalogs/drugs.js";
+import { Esoteric } from "../../rules/esoteric.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
 import { Magic } from "../../rules/magic.js";
 import { Mentions } from "../journal/mentions.js";
@@ -703,7 +704,13 @@ export const CardRenderer = {
       // pour la magie ailleurs dans l'app (esprit mentor, badge Éveillé,
       // invocation d'esprit) : réutilisé, pas inventé (feedback_glyph_vocabulary).
       glyph: "✦",
-      applies: (pnj) => !!(pnj.tradition || pnj.mentorSpirit || (pnj.powers && pnj.powers.length)),
+      applies: (pnj) =>
+        !!(
+          pnj.tradition ||
+          pnj.mentorSpirit ||
+          (pnj.powers && pnj.powers.length) ||
+          (pnj.esoteric && pnj.esoteric.voie === "initiation")
+        ),
       render: (pnj) => CardRenderer._magieModule(pnj),
       lenses: ["fiche", "combat"],
     },
@@ -714,7 +721,8 @@ export const CardRenderer = {
       // Decker ET technomancien partagent ce module (même glyphe ⚡, même
       // zone) : deck OU persona incarné, jamais les deux à la fois en
       // pratique, mais le rendu concatène les deux blocs sans hypothèse.
-      applies: (pnj) => !!(pnj.cyberdeck || pnj.persona),
+      applies: (pnj) =>
+        !!(pnj.cyberdeck || pnj.persona || (pnj.esoteric && pnj.esoteric.voie === "submersion")),
       render: (pnj, deps) =>
         CyberdeckRenderer.block(pnj, pnj.edition, deps) + PersonaRenderer.block(pnj, pnj.edition, deps),
       lenses: ["fiche", "combat"],
@@ -813,6 +821,9 @@ export const CardRenderer = {
       déviation assumée de la table doctrine §4.3. */
   _magieModule(pnj) {
     let html = "";
+    if (pnj.esoteric && pnj.esoteric.voie === "initiation") {
+      html += this._esotericBadge(pnj);
+    }
     if (pnj.tradition) {
       html += this._listSection("Tradition", [
         { name: pnj.tradition, desc: pnj.traditionDesc },
@@ -825,6 +836,22 @@ export const CardRenderer = {
       html += this._listSection("Pouvoirs d'adepte", pnj.powers);
     }
     return html;
+  },
+
+  /** Badge grade Initiation/Submersion (P2, socle Esoteric). Partagé entre
+      le module Magie (Initiation) et le bloc PersonaRenderer (Submersion,
+      module Matrice) — même mécanique de règle, cf. esoteric.js. Lecture
+      seule ici : le choix d'acquis (métamagies/échos) vit au catalogue
+      (P3/P4), pas dans ce badge. */
+  _esotericBadge(pnj) {
+    const edition = pnj.edition;
+    const label = Esoteric.summaryLabel(pnj, edition);
+    if (!label) return "";
+    const nextCost = Esoteric.nextCostLabel(pnj, edition);
+    const title = nextCost ? `Grade suivant : ${nextCost}` : "";
+    return `<div class="ref-block esoteric-badge">
+      <div class="ref-lbl" ${title ? `title="${this._esc(title)}"` : ""}>${this._esc(label)}</div>
+    </div>`;
   },
 
   /* ---- Vues (lentilles) ------------------------------------------

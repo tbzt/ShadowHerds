@@ -18,13 +18,18 @@ import { Utils } from "../../core/utils.js";
 
 export const PersonaRenderer = {
   /** Bloc lecture seule sur la carte (module Matrice, juste après le
-      bloc Cyberdeck le cas échéant). `""` si le PNJ n'a pas de persona
-      structuré (pas de technomancien, ou pas encore hydraté). */
+      bloc Cyberdeck le cas échéant). `""` si le PNJ n'a NI persona NI
+      progression de Submersion (pas de technomancien, ou pas encore
+      hydraté) — un submergé A1 (pas de persona chiffré, cf. technoModel
+      A1) doit quand même voir son badge de grade. */
   block(pnj, edition, deps) {
-    if (!pnj.persona) return "";
+    const submerged = !!(pnj.esoteric && pnj.esoteric.voie === "submersion");
+    if (!pnj.persona && !submerged) return "";
     const esc = (deps && deps.CardRenderer && deps.CardRenderer._esc) || CardRenderer._esc;
+    const badge = submerged ? CardRenderer._esotericBadge(pnj) : "";
+    if (!pnj.persona) return badge;
     const keys = Resonance.attrKeys(edition);
-    if (!keys.length) return "";
+    if (!keys.length) return badge;
     const persona = Resonance.livingPersona(pnj, edition);
     const attrsHtml = `<div class="attr-grid">${keys
       .map((k) => CardRenderer._attrCell(k.badge, persona[k.key], "", { roll: false }))
@@ -39,7 +44,7 @@ export const PersonaRenderer = {
           )
           .join("")}</div>`
       : "";
-    return `<div class="ref-block persona-block">
+    return `${badge}<div class="ref-block persona-block">
       <div class="ref-lbl">${esc(Resonance.label(edition))} · Indice ${persona.deviceRating}</div>
       ${attrsHtml}
       ${reallocHtml}

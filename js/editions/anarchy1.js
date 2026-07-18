@@ -26,6 +26,7 @@ import { BonusEngine } from "../rules/bonusengine.js";
 import { Coherence } from "../rules/coherence.js";
 import { Content } from "../rules/content.js";
 import { Cyberdeck } from "../rules/cyberdeck.js";
+import { Esoteric } from "../rules/esoteric.js";
 import { Flavor } from "../rules/flavor.js";
 import { ItemResolver } from "../rules/itemresolver.js";
 import { Magic } from "../rules/magic.js";
@@ -712,6 +713,21 @@ export const EditionAnarchy1 = {
       { min: 1.5, max: 3, malus: -2 },
       { min: 0.5, max: 1, malus: -3 },
     ],
+  },
+
+  /** Régime Initiation/Submersion A1, lu par Esoteric via
+      App.editionModule.esotericModel[voie]. Cas inédit (cf. plan) : le
+      cœur A1 n'a AUCUNE progression ésotérique (p.75-77, Atouts+Karma
+      seulement) — c'est *Anarchistes* qui l'apporte entièrement, en
+      totalité, sous forme d'« Atout unique dont le niveau augmente avec
+      le grade » (p.28-31 Initiation, p.68-70 Submersion : MÊME phrase de
+      règle pour les deux). D'où `costLabel: "Niveau d'Atout"` — pas de
+      Karma dédié à ce palier en A1, contrairement à SR5/SR6. `attr: null`
+      en Submersion : A1 n'a pas de RES chiffrée (Résonance = Atout
+      narratif « Technomancie N », cf. technoModel ci-dessus). */
+  esotericModel: {
+    initiation: { attr: "MAG", acquisLabel: "Métamagie", costLabel: "Niveau d'Atout", cost: (grade) => Esoteric.atoutLevel(grade) },
+    submersion: { attr: null, acquisLabel: "Écho", costLabel: "Niveau d'Atout", cost: (grade) => Esoteric.atoutLevel(grade) },
   },
 
   /* ----
