@@ -4,6 +4,7 @@
    CARD RENDERER — corps de carte Shadowrun 6e.
    ============================================================ */
 import { CyberdeckRenderer } from "./cyberdeckrenderer.js";
+import { PersonaRenderer } from "./personarenderer.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
 import { Utils } from "../../core/utils.js";
 
@@ -131,6 +132,7 @@ Object.assign(CardRenderer, {
     combatBody += this._spiritChipRow(pnj, deps);
     combatBody += this._spriteCompileRow(pnj, deps);
     combatBody += CyberdeckRenderer.combatArsenal(pnj, "sr6"); // râtelier Attaques unifié
+    combatBody += PersonaRenderer.combatArsenal(pnj, "sr6"); // râtelier matriciel du technomancien
     const combatSummary = initBase != null ? `Init ${initBase}+${initDice ?? 1}D6` : "";
     html += this._zoneShell(pnj, "combat", combatBody, combatSummary);
     html += this._modulesHtml(pnj, deps); // modules conditionnels (Magie, Matrice), après Combat

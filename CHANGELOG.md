@@ -12,6 +12,20 @@ commit.
 
 ## [Non publié]
 
+## [1.68.0] — 2026-07-18
+
+### Technomanciens (Matrice)
+- **Le persona incarné d'un technomancien attaque désormais dans la Matrice.**
+  Le module Matrice ⚡ d'un technomancien (SR5/SR6) porte, en zone Combat, un
+  râtelier d'actions matricielles offensives — miroir de celui du cyberdeck
+  d'un decker (Pic de données, Planter un programme, Effacer une mark, Hacker à
+  la volée…). Ce sont les **mêmes** actions matricielles que celles d'un decker,
+  jouées **par la Résonance** : leurs réserves de dés sont dérivées du persona
+  vivant (Attaque, Corruption, Traitement de données, Firewall), pas d'un
+  matériel. Un tap lance le jet ; la valeur de dégâts est affichée mais jamais
+  appliquée d'office (le meneur arbitre le test opposé). Anarchy 1re/2.0 : sans
+  effet (pas de persona chiffré au livre).
+
 ## [1.67.1] — 2026-07-18
 
 ### Corrigé

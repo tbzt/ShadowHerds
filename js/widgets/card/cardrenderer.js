@@ -2251,6 +2251,28 @@ export const CardRenderer = {
           DiceRoller.show(res, { label, who: pnj.name });
           break;
         }
+        case "persona-action": {
+          // Action matricielle du technomancien — même forme que deck-action
+          // (Dice.computeRoll + DiceRoller.show + Bruit de scène), mais pools
+          // tirés du persona vivant (Resonance.rollAction). Actions universelles
+          // jouées « par la Résonance » (SR5 p.252) ; VD affichée, jamais
+          // appliquée d'office (le MJ tranche le test opposé). Cible ignorée
+          // en T6-a (le persona n'a pas encore de ciblage de serveur).
+          const pnj = PnjLookup.find(id);
+          if (!pnj) break;
+          const act = Resonance.rollAction(pnj, pnj.edition, actionEl.dataset.key);
+          if (!act) break;
+          const dvTxt = act.dv != null ? ` (VD ${act.dv})` : "";
+          const label = `${act.label}${dvTxt} — ${pnj.name}`;
+          if (act.pool == null) {
+            toast(label);
+            break;
+          }
+          const pool = typeof Encounter !== "undefined" ? Encounter._noisyPool(act.pool) : act.pool;
+          const res = Dice.computeRoll(pool);
+          DiceRoller.show(res, { label, who: pnj.name });
+          break;
+        }
         case "cycle-drug":
           UI.cycleDrug(id, actionEl.dataset.edition, actionEl.dataset.drug);
           break;

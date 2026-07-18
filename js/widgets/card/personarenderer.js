@@ -51,6 +51,54 @@ export const PersonaRenderer = {
     </div>`;
   },
 
+  /** Râtelier d'actions matricielles du persona — miroir de
+      `CyberdeckRenderer.combatArsenal`, appelé par les renderers d'édition en
+      zone Combat juste après le râtelier du deck. Vide si le PNJ n'a pas de
+      persona chiffré (pas de technomancien, ou édition sans livingPersona). */
+  combatArsenal(pnj, edition) {
+    if (!pnj.persona) return "";
+    return this._arsenalRow(pnj, edition);
+  },
+
+  /** Barre des actions offensives, VOILÉE Résonance (le technomancien joue les
+      MÊMES actions matricielles qu'un decker — cf. Resonance.actions — mais par
+      la Résonance : bandeau « Résonance », pools tirés du persona vivant). Même
+      grammaire d'affichage que le râtelier du deck (`.matrix-block`, une action
+      = une `.weapon-line`, pic de données en tête, le reste replié) : on reprend
+      tout le chrome Matrice sans dupliquer de CSS. `data-action="persona-action"`
+      route vers `Resonance.rollAction`. Les actions sont indépendantes de la
+      cible (le serveur ne sert qu'à nommer, cf. dispatch) : pas de picker ici. */
+  _arsenalRow(pnj, edition) {
+    const esc = CardRenderer._esc;
+    const acts = Resonance.actions(pnj, edition);
+    if (!acts.length) return "";
+    const line = (a) => {
+      const rollable = a.pool != null;
+      const poolBadge = rollable ? `<span class="weapon-pool">⚄${a.pool}</span>` : "";
+      const dvTxt = a.dv != null ? `VD ${a.dv}` : "";
+      const title = `${a.name}${a.dv != null ? ` · VD ${a.dv}` : ""}${rollable ? ` · ${a.pool} dés` : ""} (p.${a.page})`;
+      return `<div class="weapon-line matrix-line${rollable ? " weapon-rollable rollable" : ""}" data-action="persona-action" data-id="${pnj.id}" data-key="${esc(a.key)}" title="${esc(title)}">
+        <div><div class="weapon-name">${esc(a.name)}</div>${dvTxt ? `<div class="weapon-stat">${dvTxt}</div>` : ""}</div>
+        ${poolBadge}
+      </div>`;
+    };
+    const primary = acts.filter((a) => a.type === "attack").map(line).join("");
+    const rest = acts.filter((a) => a.type !== "attack");
+    let restHtml = "";
+    if (rest.length) {
+      const n = rest.length;
+      restHtml = `<details class="cyberdeck-more">
+        <summary class="cyberdeck-more-summary"><span class="cyberdeck-more-dots">⋯</span> ${n} autre${n > 1 ? "s" : ""} action${n > 1 ? "s" : ""}</summary>
+        <div class="cyberdeck-more-body">${rest.map(line).join("")}</div>
+      </details>`;
+    }
+    return `<div class="weapon-block matrix-block">
+      <div class="zone-eyebrow">Résonance</div>
+      ${primary}
+      ${restHtml}
+    </div>`;
+  },
+
   /** Déplace 1 point d'`alloc` d'un attribut vers l'autre, borné au cap
       de chacun (reallocCap). Appelé par le handler `data-action=
       "persona-realloc"` (délégation, comme `deck-realloc`). */

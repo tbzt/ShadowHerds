@@ -23,6 +23,7 @@
    moniteur de persona séparé, contrairement au deck.
    ============================================================ */
 import { Actor } from "./actor.js";
+import { Cyberdeck } from "./cyberdeck.js";
 import { Utils } from "../core/utils.js";
 
 export const Resonance = {
@@ -109,6 +110,37 @@ export const Resonance = {
         ? SkillEffects.forSkill(pnj, skillName).reduce((sum, e) => sum + (e.value || 0), 0)
         : 0;
     return Math.max(0, skillVal + res + foci - malus);
+  },
+
+  /** Pseudo-deck exposant le persona vivant comme un cyberdeck aux yeux du
+      catalogue d'actions matricielles : les fonctions `pool(d)=>d.attrs.attack`
+      du module lisent `d.attrs`. Le persona n'a ni programmes ni loadout —
+      `Cyberdeck` retombe alors sur ses défauts (aucun bonus de programme,
+      râtelier plein), ce qui est exactement le régime voulu. `null` si
+      l'édition n'a pas de persona chiffré (Anarchy) ou si le PNJ n'en a pas. */
+  _asDeck(pnj, edition) {
+    const attrs = this.livingPersona(pnj, edition);
+    return Object.keys(attrs).length ? { attrs } : null;
+  },
+
+  /** Actions matricielles offensives du technomancien. La LISTE d'actions
+      (pic de données & co.) est UNIVERSELLE — deckers et technomanciens jouent
+      les mêmes actions matricielles (SR5 p.252 : le technomancien agit par la
+      Résonance, pas avec un autre répertoire). On emprunte donc le catalogue
+      d'édition `cyberdeckModel.actions` via la façade `Cyberdeck` (zéro
+      duplication de données, zéro `if (App.edition)`), en substituant les
+      attributs du deck par ceux du persona vivant. Vide si pas de persona. */
+  actions(pnj, edition) {
+    const deck = this._asDeck(pnj, edition);
+    return deck ? Cyberdeck.actions(edition, deck) : [];
+  },
+
+  /** Descripteur d'un jet d'action du persona (consommé par le dispatch
+      `persona-action`) — miroir de `Cyberdeck.rollAction`, attributs du
+      persona. `null` si pas de persona ou clé inconnue. */
+  rollAction(pnj, edition, key) {
+    const deck = this._asDeck(pnj, edition);
+    return deck ? Cyberdeck.rollAction(edition, deck, key) : null;
   },
 
   /** Structure `pnj.persona` pour un technomancien qui n'en a pas encore

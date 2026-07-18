@@ -388,6 +388,11 @@ export const TourSteps = {
       title: "« Jouer » : le poste de commandement de la run",
       body: "La run que vous jouez est désormais sortie en tête de « Jouer » et rassemble tout pour la séance : la scène vivante (round, moteur ⚔/⚡, barre de vie par combattant, sans ouvrir le tracker), la présence de chaque participant (un tap : RV ou astral, selon sa capacité — RA par défaut), l'horloge d'intrusion quand un serveur est en jeu (alerte, tour, CI), le topos condensé (objectif, complication, mandant, lieu, paie), le casting préparé (tap pour consulter, ⚔ pour envoyer un PNJ en scène, ⚡ pour mettre un serveur en jeu) et un accès direct à votre carnet de notes. Vos autres runs restent listées en dessous.",
     },
+    {
+      id: "wn-persona-combat", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.68.0", fallback: "center",
+      title: "Le technomancien attaque dans la Matrice",
+      body: "Le persona incarné d'un technomancien (SR5/SR6) porte désormais son propre râtelier d'actions matricielles, en zone Combat, comme le cyberdeck d'un decker : Pic de données, Planter un programme, Effacer une mark… Ce sont les mêmes actions que celles d'un decker — le technomancien les joue par la Résonance : leurs réserves de dés sont tirées de son persona vivant (Attaque, Corruption, Traitement de données, Firewall) et non d'un deck. Un tap lance le jet ; la VD est affichée, jamais appliquée d'office.",
+    },
   ],
 };
 
