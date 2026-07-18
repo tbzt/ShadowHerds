@@ -3601,6 +3601,883 @@ export const Content = {
   },
 
   /* ========================================================
+     MÉTAMAGIES (P3, PLAN_PROGRESSION_ESOTERIQUE.md) — catalogue
+     EXHAUSTIF (~105 entrées VF, REFERENCE/effects/metamagie/INDEX.md),
+     clés sr5/sr6/anarchy1 (A1 : cœur vide, tout vient d'*Anarchistes*,
+     cf. esotericModel A1). Pas de clé anarchy2 (verdict d'absence).
+
+     Champs : name · pour ("magicien"|"adepte"|"les deux") — CANON ici
+       (contrairement à `cat` des formes complexes, facette d'interface
+       pure) : le livre distingue vraiment les métamagies pour adeptes,
+       cf. amendement CODIR (Silk). · page/source · desc (résumé fidèle
+       de l'effet, pas une citation du livre) · prereq (optionnel, nom
+       d'une autre métamagie du catalogue ou capacité externe non
+       modélisée, en texte libre).
+     gen = omis (défaut : générable) sauf `false` explicite. Curation :
+       les 9 cœurs de chaque édition sont toujours générables ; dans les
+       suppléments, une entrée passe `gen:false` UNIQUEMENT si son
+       `prereq` nomme une AUTRE métamagie du même catalogue (chaîne que
+       le générateur ne peut pas garantir sans aussi poser le
+       prérequis) — pas une curation de goût, une règle mécanique.
+     antagonist = magie du sang/toxique (SR5 *Grimoire*, A1
+       *Anarchistes*) — régime PNJ, câblé en P5. Restent DANS ce
+       catalogue (mêmes sources, même effort d'extraction) plutôt que
+       dans une collection à part, comme le contenu dissonant
+       technomancien.
+     titreReconstitue = SR6 seulement, la métamagie sans titre visible
+       de *Voies occultes* p.118 (coquille du livre, pas un artefact
+       d'extraction) — nom reconstitué d'après son effet, marqueur
+       RENDU à l'affichage (cf. amendement CODIR Canon), jamais silencieux.
+     ======================================================== */
+  metamagics: {
+    sr5: [
+      // ---- Cœur, Livre de Règles p.328-329 (9, toujours générables) ----
+      {
+        name: "Activation",
+        pour: "les deux",
+        page: 328,
+        desc: "Rend un sort maintenu autonome (boucle magique) : action complexe + dépense de 1 à Puissance points de Karma, le sort devient permanent avec un bonus contre la Dissipation égal au Karma dépensé.",
+      },
+      {
+        name: "Bouclier",
+        pour: "les deux",
+        page: 328,
+        desc: "Ajoute des dés égaux au grade d'initié à la réserve de défense contre les sorts (pas utilisables pour le Contresort/la Dissipation).",
+      },
+      {
+        name: "Camouflage",
+        pour: "les deux",
+        page: 328,
+        desc: "Change l'apparence de son aura (indice de Magie apparent différent, ou aura non-Éveillée) ; test opposé Magie+grade contre Observation astrale de l'observateur. Camoufle aussi un nombre de focus liés égal au grade.",
+      },
+      {
+        name: "Centrage",
+        pour: "les deux",
+        page: 328,
+        desc: "Ajoute des dés égaux au grade à la résistance au Drain, via une activité de concentration propre à la tradition (action gratuite, impossible si empêchée).",
+      },
+      {
+        name: "Centrage d'adepte",
+        pour: "adepte",
+        page: 328,
+        desc: "Réduit du grade d'initié les modificateurs négatifs sur les compétences physiques/combat, via une action de concentration gratuite.",
+      },
+      {
+        name: "Façonnage de sorts",
+        pour: "les deux",
+        page: 329,
+        desc: "Pour chaque -1 dé accepté au Lancement, agrandit d'1 m le rayon d'un sort de zone ou y crée une bulle protégée d'1 m — plafonné à l'indice de Magie.",
+      },
+      {
+        name: "Fixation",
+        pour: "les deux",
+        page: 329,
+        desc: "Ralentit la dégradation d'une préparation alchimique en y instillant 1 à Potentiel points de Karma (perte de Potentiel au jour au lieu de à l'heure), plus bonus contre la séparation égal au Karma dépensé.",
+      },
+      {
+        name: "Point de pouvoir",
+        pour: "adepte",
+        page: 329,
+        desc: "Au lieu d'apprendre une métamagie à un grade, l'adepte/adepte-mystique gagne un point de pouvoir — répétable à chaque grade.",
+      },
+      {
+        name: "Signature flexible",
+        pour: "les deux",
+        page: 329,
+        desc: "Altère sa signature astrale à volonté : déguiser, contrefaire une signature déjà observée, ou réduire sa propre durée d'un nombre d'heures égal au grade.",
+      },
+      // ---- Grimoire des ombres (+34 standard, hors magie du sang/toxique → P5) ----
+      {
+        name: "Liaison sympathique",
+        pour: "magicien",
+        page: 146,
+        source: "Grimoire des ombres",
+        desc: "Autorise les liens sympathiques/symboliques (objet petit et transportable) pour les rituels à mot-clé « lien matériel » : +2 à la Puissance du sort pour un lien sympathique, +4 pour un lien symbolique.",
+      },
+      {
+        name: "Psychométrie",
+        pour: "magicien",
+        page: 149,
+        source: "Grimoire des ombres",
+        desc: "Lit un objet par test d'Observation astrale + Intuition + grade [Astral] (-2 dés aux autres actions pendant la lecture) : table de résultats par succès, du rien à des visions cohérentes détaillées.",
+      },
+      {
+        name: "Sens du danger",
+        pour: "magicien",
+        page: 147,
+        source: "Grimoire des ombres",
+        desc: "Identique au pouvoir d'adepte du même nom mais utilise le grade d'initié ; métamagie et pouvoir ne se cumulent pas, seul le plus élevé s'applique.",
+      },
+      {
+        name: "Canalisation",
+        pour: "magicien",
+        page: 148,
+        source: "Grimoire des ombres",
+        desc: "Autorise un esprit invoqué à posséder le magicien au lieu de rester astral : contrôle partageable au prix d'un service, résistance mana par l'attribut mental le plus faible des deux, l'esprit ne peut partir tant qu'il doit des services.",
+      },
+      {
+        name: "Exorcisme",
+        pour: "les deux",
+        page: 150,
+        source: "Grimoire des ombres",
+        desc: "Extrait un esprit possédant un réceptacle : test opposé Volonté+Charisme contre Puissance×2, succès cumulés jusqu'à Puissance nécessaires, Drain = double des succès de l'esprit par tentative.",
+      },
+      {
+        name: "Camouflage étendu",
+        pour: "les deux",
+        page: 149,
+        source: "Grimoire des ombres",
+        prereq: "Camouflage",
+        gen: false,
+        desc: "Étend Camouflage aux sorts maintenus/activés, objets harmonisés/imprégnés et préparations alchimiques, jusqu'à un nombre égal au grade d'initiation.",
+      },
+      {
+        name: "Fluctuation",
+        pour: "les deux",
+        page: 150,
+        source: "Grimoire des ombres",
+        prereq: "Signature flexible",
+        gen: false,
+        desc: "Fait fluctuer son aura pour brouiller temporairement tout lien mystique (rituels, focus liés, sorts actifs...) — sans danger (Magie) heures/24h, risques croissants au-delà (rupture d'harmonisation puis conséquences permanentes).",
+      },
+      {
+        name: "Absorption",
+        pour: "magicien",
+        page: 152,
+        source: "Grimoire des ombres",
+        prereq: "Bouclier",
+        gen: false,
+        desc: "Siphonne la puissance d'un sort de Combat ciblant le magicien (test Contresort+Magie [Puissance]) : chaque succès réduit la Puissance de 1 et crée une charge mana réduisant la VD du prochain sort lancé.",
+      },
+      {
+        name: "Renvoi",
+        pour: "magicien",
+        page: 152,
+        source: "Grimoire des ombres",
+        prereq: "Bouclier",
+        gen: false,
+        desc: "Transforme la réserve de défense contre les sorts en action offensive contre un lanceur visible (1 dé de réserve consommé par action) ; débloque Renvoyer un sort, Dévier un sort et Grand renvoi.",
+      },
+      {
+        name: "Renvoyer un sort",
+        pour: "magicien",
+        page: 153,
+        source: "Grimoire des ombres",
+        prereq: "Renvoi",
+        gen: false,
+        desc: "Test Contresort+Magie [Astrale] contre le Lancement adverse : en cas de succès le sort revient à moitié Puissance sur le lanceur (Drain précipité à moitié Puissance dans tous les cas).",
+      },
+      {
+        name: "Dévier un sort",
+        pour: "magicien",
+        page: 153,
+        source: "Grimoire des ombres",
+        prereq: "Renvoi",
+        gen: false,
+        desc: "Contre un sort indirect visant un protégé : chaque succès excédentaire du test Contresort+Magie [Astrale] ajoute un dé de déviation à l'attaque.",
+      },
+      {
+        name: "Grand renvoi",
+        pour: "magicien",
+        page: 154,
+        source: "Grimoire des ombres",
+        prereq: "Renvoi",
+        gen: false,
+        desc: "Comme Renvoyer un sort mais à pleine Puissance (zone conservée si le sort d'origine en avait une), même coût de Drain.",
+      },
+      {
+        name: "Ancrage",
+        pour: "magicien",
+        page: 154,
+        source: "Grimoire des ombres",
+        prereq: "Activation",
+        gen: false,
+        desc: "Attache un sort maintenable à un construct astral qui le relâche sur déclencheur défini (1 Karma/point de Puissance à la création) ; nombre d'ancres actives = grade d'initiation.",
+      },
+      {
+        name: "Rituel efficace",
+        pour: "magicien",
+        page: 155,
+        source: "Grimoire des ombres",
+        desc: "Réduit de moitié la durée de tout rituel dont l'initié est le leader, au prix de +2 au Drain à la complétion.",
+      },
+      {
+        name: "Grand rituel",
+        pour: "magicien",
+        page: 155,
+        source: "Grimoire des ombres",
+        desc: "Un magicien participe à un rituel en ajoutant son indice de Magie à la Puissance (au lieu de dés) ; +2 au Drain de scellement si utilisée par le leader, un seul utilisateur par rituel.",
+      },
+      {
+        name: "Sort pénétrant",
+        pour: "magicien",
+        page: 156,
+        source: "Grimoire des ombres",
+        desc: "Avant de lancer un sort de Combat : -1 VD par point de PA ajouté (dommages minimum 1), Drain +1 par point, jusqu'à la Puissance du sort.",
+      },
+      {
+        name: "Purification",
+        pour: "magicien",
+        page: 157,
+        source: "Grimoire des ombres",
+        desc: "Test opposé Contresort+Magie+grade [Astral] contre le champ magique local : chaque succès excédentaire le réduit de 1 ou prolonge l'effet, Drain = champ magique naturel.",
+      },
+      {
+        name: "Sensation",
+        pour: "magicien",
+        page: 157,
+        source: "Grimoire des ombres",
+        desc: "Perçoit le champ magique ambiant (puissance, orientation, variations) via l'action Observer en détails, sans perception astrale — insensible aux formes/sorts/esprits/focus.",
+      },
+      {
+        name: "Infusion",
+        pour: "adepte",
+        page: 156,
+        source: "Grimoire des ombres",
+        prereq: "Centrage d'adepte",
+        gen: false,
+        desc: "Ajoute 0,5 point de pouvoir par grade d'initiation à un pouvoir d'adepte existant (Magie tours de combat), puis Drain étourdissant = 4× le coût total amélioré.",
+      },
+      {
+        name: "Modelage du Qi",
+        pour: "adepte",
+        page: 156,
+        source: "Grimoire des ombres",
+        prereq: "Centrage d'adepte",
+        gen: false,
+        desc: "Réattribue temporairement du qi investi d'un pouvoir à un autre (0,25 point/grade, plafonné à l'indice de Magie, Magie minutes) puis Drain étourdissant = 4× l'augmentation.",
+      },
+      {
+        name: "Prédateur alpha",
+        pour: "adepte",
+        page: 158,
+        source: "Grimoire des ombres",
+        prereq: "Voie de la bête (qualité)",
+        desc: "Tout animal attaquant l'adepte doit réussir un test opposé Volonté+Intuition contre (Magie+Intuition+grade) — échec = pas d'attaque sur l'adepte (peut viser ses alliés).",
+      },
+      {
+        name: "Forme totémique [animal]",
+        pour: "adepte",
+        page: 159,
+        source: "Grimoire des ombres",
+        prereq: "Harmoniser [animal]",
+        desc: "Après 20 min de préparation, test Arcanes+Magie [Mentale 2] pour se transformer en forme animale liée (attributs physiques de l'animal, mentaux conservés) ; retour risqué si prolongé.",
+      },
+      {
+        name: "Artiste hypnotique",
+        pour: "adepte",
+        page: 159,
+        source: "Grimoire des ombres",
+        desc: "Test opposé Représentation+Charisme [Magie] contre Volonté+Charisme des cibles présentes : succès = cibles captivées (Charisme×10) minutes, interrompu par une distraction significative.",
+      },
+      {
+        name: "Prouesse surnaturelle",
+        pour: "adepte",
+        page: 160,
+        source: "Grimoire des ombres",
+        desc: "Substitue un attribut physique par (Magie+grade) pour un test, (grade+1) fois/jour ; non cumulable avec Augmentation d'attribut.",
+      },
+      {
+        name: "Immobilité du vide",
+        pour: "adepte",
+        page: 160,
+        source: "Grimoire des ombres",
+        desc: "Après 5 min d'immobilité méditative : +(1+grade) dés de résistance aux sorts de Détection/rituels visant l'adepte, tenable 8h, interrompu par action/déplacement/dommage.",
+      },
+      {
+        name: "Aura féérique",
+        pour: "adepte",
+        page: 160,
+        source: "Grimoire des ombres",
+        desc: "Test opposé Magie+Intuition+grade contre Volonté+Intuition : succès = la cible perçoit une version idéalisée de l'adepte (illusion 24h) qui peut alors se substituer au Charisme envers elle.",
+      },
+      {
+        name: "Diable beau-parleur",
+        pour: "adepte",
+        page: 160,
+        source: "Grimoire des ombres",
+        prereq: "Voix de commandement (pouvoir d'adepte)",
+        desc: "En cas de réussite de Voix de commandement, la cible continue d'exécuter l'action une minute avant de réaliser ce qu'elle fait — inutilisable en combat, Drain étourdissant = succès de la cible.",
+      },
+      {
+        name: "Présence",
+        pour: "adepte",
+        page: 161,
+        source: "Grimoire des ombres",
+        desc: "Ajoute le grade d'initiation à une compétence sociale choisie une fois pour toutes, uniquement quand elle est utilisée sur autrui (jamais pour résister).",
+      },
+      {
+        name: "Domaine du spirituel",
+        pour: "adepte",
+        page: 161,
+        source: "Grimoire des ombres",
+        desc: "Réduit de (1+grade) les pénalités dues à un champ magique orienté religion/spiritualité.",
+      },
+      {
+        name: "Domaine du guerrier",
+        pour: "adepte",
+        page: 162,
+        source: "Grimoire des ombres",
+        desc: "Réduit de (1+grade) les pénalités dues à un champ magique orienté violence/guerre.",
+      },
+      {
+        name: "Maître du Taijiquan",
+        pour: "adepte",
+        page: 162,
+        source: "Grimoire des ombres",
+        prereq: "Contre-attaque (pouvoir d'adepte)",
+        desc: "Quand Contre-attaque bloque plusieurs adversaires, redirige l'attaque vers un autre adversaire qui se défend avec les succès du test de Contre-attaque de l'adepte.",
+      },
+      {
+        name: "Qi brûlant",
+        pour: "adepte",
+        page: 163,
+        source: "Grimoire des ombres",
+        prereq: "Focus vivant (pouvoir d'adepte)",
+        desc: "Autorise l'usage de focus de qi de Puissance supérieure à la Magie de l'adepte : Drain étourdissant non résisté égal à la différence (physique si elle dépasse le double de la Magie).",
+      },
+      {
+        name: "Célérité digitale",
+        pour: "adepte",
+        page: 163,
+        source: "Grimoire des ombres",
+        prereq: "Doigts de fée (pouvoir d'adepte)",
+        desc: "-1 dé aux tests de Perception des cibles/observateurs par niveau de Doigts de fée, lors d'escamotage/pickpocket.",
+      },
+      {
+        name: "Maître des neuf chakras",
+        pour: "adepte",
+        page: 163,
+        source: "Grimoire des ombres",
+        prereq: "Frappe névralgique (pouvoir d'adepte)",
+        desc: "Comme Frappe névralgique mais réduit temporairement la Magie de la cible au lieu de ses dégâts ; à 0, la cible perd tout accès à ses capacités magiques/pouvoirs jusqu'à récupération.",
+      },
+      // ---- Magie du sang / toxique (Grimoire) — régime PNJ, câblage en P5 ----
+      {
+        name: "Sacrifice",
+        pour: "magicien",
+        page: 89,
+        source: "Grimoire des ombres",
+        antagonist: true,
+        desc: "Génère des Points de magie du sang en infligeant des dommages de mêlée à un être vivant : +1 Puissance de sort par point, -1 Drain par point, ou stockage/invocation d'esprit du Sang. Définit le « magicien du sang ».",
+      },
+      {
+        name: "Cannibalisme",
+        pour: "adepte",
+        page: 90,
+        source: "Grimoire des ombres",
+        prereq: "Sacrifice",
+        antagonist: true,
+        desc: "Comme Sacrifice mais augmente un attribut physique de 1 par tranche de 3 points de dommages infligés, dure (Magie×grade) tours de combat.",
+      },
+      {
+        name: "Saignée de pouvoir",
+        pour: "adepte",
+        page: 90,
+        source: "Grimoire des ombres",
+        prereq: "Cannibalisme",
+        antagonist: true,
+        desc: "Comme Cannibalisme mais siphonne un pouvoir d'adepte de la victime au lieu d'augmenter un attribut, même durée.",
+      },
+      {
+        name: "Corruption",
+        pour: "magicien",
+        page: 87,
+        source: "Grimoire des ombres",
+        antagonist: true,
+        desc: "Pervertit un esprit en version toxique via un test de Bannissement (bonus = grade d'initiation) ; réduire ses services à 0 juste après un test d'Invocation réussi le transforme immédiatement.",
+      },
+      {
+        name: "Souillure",
+        pour: "magicien",
+        page: 87,
+        source: "Grimoire des ombres",
+        antagonist: true,
+        desc: "Augmente le champ magique d'une zone (miroir inversé de Purification), mêmes règles.",
+      },
+    ],
+    sr6: [
+      // ---- Cœur, p.170-171 (9, toujours générables) ----
+      {
+        name: "Activation",
+        pour: "les deux",
+        page: 169,
+        desc: "Crée une boucle magique entretenant un sort maintenu sans le lanceur : action majeure + Karma (min. 1, jusqu'aux succès du test) pendant que le sort est maintenu.",
+      },
+      {
+        name: "Bouclier",
+        pour: "magicien",
+        page: 170,
+        desc: "Ajoute des dés égaux au grade d'initié à la réserve de Défense augmentée contre les sorts (non utilisables pour un autre Contresort).",
+      },
+      {
+        name: "Camouflage",
+        pour: "magicien",
+        page: 170,
+        desc: "Modifie l'apparence de son aura (illusion d'aura non-Éveillée ou de rang/grade différent) ; test opposé Magie+grade contre Observation astrale. Interdite à vie par le Trait négatif « Balise astrale ».",
+      },
+      {
+        name: "Concentration",
+        pour: "magicien",
+        page: 170,
+        desc: "Ajoute des dés égaux au grade d'initié à la résistance au Drain, via une action mineure de concentration propre à la tradition.",
+      },
+      {
+        name: "Concentration d'adepte",
+        pour: "adepte",
+        page: 170,
+        desc: "Surmonte les pénalités de mauvaises conditions via une action de Concentration : les adversaires ne gagnent pas d'Atout pour l'environnement ce tour ni le suivant.",
+      },
+      {
+        name: "Façonnage de sorts",
+        pour: "magicien",
+        page: 170,
+        desc: "Pour chaque -1 dé au Lancement, modifie d'1 m le rayon d'un sort de zone ou y crée une bulle non affectée — plafonné au rang de Magie, sans toucher la Valeur de Drain.",
+      },
+      {
+        name: "Fixation",
+        pour: "magicien",
+        page: 170,
+        desc: "Infuse 1 à Potentiel points de Karma dans une préparation alchimique : dégradation ralentie ([Potentiel×2] heures par point au lieu d'1h) + bonus contre la dissociation égal au Karma dépensé.",
+      },
+      {
+        name: "Point de pouvoir",
+        pour: "adepte",
+        page: 170,
+        desc: "Gagner un point de pouvoir au lieu d'une métamagie à un grade — répétable à volonté.",
+      },
+      {
+        name: "Signature modulable",
+        pour: "magicien",
+        page: 170,
+        desc: "Modifie à volonté sa signature astrale : déguiser, imiter une signature déjà observée, ou réduire sa propre longévité d'un nombre d'heures égal au grade.",
+      },
+      // ---- Voies occultes (+23 : 16 magicien + 6 adepte + 1 sang) ----
+      {
+        name: "Camouflage étendu",
+        pour: "magicien",
+        page: 114,
+        source: "Voies occultes",
+        prereq: "Camouflage",
+        gen: false,
+        desc: "Étend Camouflage aux sorts maintenus/activés et préparations alchimiques détenues, jusqu'à un nombre égal au grade d'initié.",
+      },
+      {
+        name: "Changement de paradigme",
+        pour: "magicien",
+        page: 114,
+        source: "Voies occultes",
+        desc: "Abandonne sa tradition actuelle pour en choisir une nouvelle (perd l'accès à l'ancienne) ; sélectionnable plusieurs fois, souvent accompagnée d'un changement d'esprit mentor.",
+      },
+      {
+        name: "Divination",
+        pour: "magicien",
+        page: 115,
+        source: "Voies occultes",
+        desc: "1 point d'Atout gratuit avant un test de Surprise, accès aux rituels Augure/Cléromancie ; étude astrale d'un sujet pour entrevoir un événement futur lié (test Astral+Magie+grade).",
+      },
+      {
+        name: "Forme astrale améliorée",
+        pour: "magicien",
+        page: 116,
+        source: "Voies occultes",
+        desc: "Ajoute son grade (en heures) à la durée de projection astrale sûre ; réveil différé d'une minute (Inconscient) au retour dans le corps.",
+      },
+      {
+        name: "Forme astrale renforcée",
+        pour: "magicien",
+        page: 116,
+        source: "Voies occultes",
+        desc: "Ajoute (grade/2, arrondi inférieur, min 1) à la Volonté pour résister aux dommages en combat astral.",
+      },
+      {
+        name: "Psychométrie",
+        pour: "magicien",
+        page: 116,
+        source: "Voies occultes",
+        desc: "Lit les empreintes astrales d'un objet/lieu (test Astral+Intuition+grade contre seuil de table) ; -4 dés à toute autre action pendant l'examen (~1D6 min).",
+      },
+      {
+        name: "Purification",
+        pour: "magicien",
+        page: 117,
+        source: "Voies occultes",
+        desc: "Nettoie les empreintes astrales ou allège un creux mana (test Astral+Magie+grade contre seuil de table) ; réduit le creux d'un niveau par tranche de 2 succès nets.",
+      },
+      {
+        name: "Sensation",
+        pour: "magicien",
+        page: 117,
+        source: "Voies occultes",
+        desc: "Perçoit les flux/creux/vides mana ambiants dans un rayon de [grade] km (test Perception+Intuition [4]) ; détecte aussi astralement formes/sorts/barrières/esprits/focus proches.",
+      },
+      {
+        name: "Adjuration",
+        pour: "magicien",
+        page: 117,
+        source: "Voies occultes",
+        desc: "Permet d'invoquer des esprits sous forme majeure : après l'invocation, test opposé Conjuration+Magie+grade contre (Puissance×2) qui ajoute ses succès nets à ceux de l'invocation.",
+      },
+      {
+        name: "Maîtrise du Lien d'esprit",
+        pour: "magicien",
+        page: 118,
+        source: "Voies occultes",
+        prereq: "Adjuration",
+        titreReconstitue: true,
+        desc: "Titre absent du livre (coquille p.118, reconstitué d'après l'effet) : un maître invocateur contrôle par Lien d'esprit un groupe d'esprits de Puissance combinée égale à (Magie+grade)×4.",
+      },
+      {
+        name: "Canalisation",
+        pour: "magicien",
+        page: 118,
+        source: "Voies occultes",
+        desc: "Autorise un esprit invoqué à posséder le magicien (test Conjuration+Magie+grade contre Puissance×2) : accès à ses pouvoirs et immunité aux armes normales, limité à (Magie×2) heures.",
+      },
+      {
+        name: "Canalisation d'esprits majeurs",
+        pour: "magicien",
+        page: 119,
+        source: "Voies occultes",
+        prereq: "Adjuration",
+        gen: false,
+        desc: "Étend Canalisation aux esprits sous forme majeure (impossible sans l'avoir d'abord adjuré).",
+      },
+      {
+        name: "Exorcisme",
+        pour: "les deux",
+        page: 119,
+        source: "Voies occultes",
+        desc: "Extrait un esprit possédant un réceptacle : test opposé Volonté+Charisme+grade contre (Puissance×2), Drain = double des succès nets de l'esprit par tentative.",
+      },
+      {
+        name: "Absorption",
+        pour: "magicien",
+        page: 119,
+        source: "Voies occultes",
+        prereq: "Bouclier",
+        gen: false,
+        desc: "Sous Défense augmentée, absorbe le mana d'un sort ciblant l'initié (test Sorcellerie+Magie+grade) : chaque succès annule un succès du lanceur, crée une charge mana qui expire en Drain après (grade) rounds.",
+      },
+      {
+        name: "Renvoi",
+        pour: "magicien",
+        page: 120,
+        source: "Voies occultes",
+        prereq: "Bouclier",
+        gen: false,
+        desc: "Sous Défense augmentée, renvoie un sort à son lanceur (test opposé Sorcellerie+Magie+grade) ; le lanceur résiste à un Drain égal au sort renvoyé +1. Inefficace sur les sorts de Combat indirects.",
+      },
+      {
+        name: "Rupture",
+        pour: "magicien",
+        page: 120,
+        source: "Voies occultes",
+        prereq: "Bouclier",
+        gen: false,
+        desc: "Détecte un Envoi ciblant l'initié à (grade) mètres — test Astral+Intuition+grade contre un seuil dégressif selon le temps de rituel déjà écoulé (-6 si endormi).",
+      },
+      {
+        name: "Création sécurisée d'artefacts",
+        pour: "magicien",
+        page: 121,
+        source: "Voies occultes",
+        desc: "Réduit de (grade×0,1) la perte d'Essence en cas d'échec critique lors de la création d'un focus (Étape 5).",
+      },
+      {
+        name: "Thaumaturgie appliquée",
+        pour: "magicien",
+        page: 121,
+        source: "Voies occultes",
+        gen: false,
+        desc: "Entrée de saveur : titre de cursus universitaire (contexte Seattle University) sans « Informations de jeu » associées dans le livre — aucun effet mécanique, listée pour fidélité VF.",
+      },
+      {
+        name: "Liaison sympathique",
+        pour: "magicien",
+        page: 121,
+        source: "Voies occultes",
+        desc: "Élargit les liens sympathiques/matériels utilisables pour un rituel « lien matériel » (objet à valeur sentimentale) ; +2 au seuil pour un lien sympathique plutôt que matériel classique.",
+      },
+      {
+        name: "Rites avancés",
+        pour: "magicien",
+        page: 122,
+        source: "Voies occultes",
+        desc: "Le maître d'une équipe de rituel qui la connaît supprime le malus de tradition mixte pour toute l'équipe (sinon, seul l'initié en profite).",
+      },
+      {
+        name: "Rituel efficace",
+        pour: "magicien",
+        page: 122,
+        source: "Voies occultes",
+        desc: "Réduit de moitié la durée d'un rituel dont l'initié est le maître.",
+      },
+      {
+        name: "Harmonie avec les animaux",
+        pour: "adepte",
+        page: 82,
+        source: "Voies occultes",
+        prereq: "Empathie animale (pouvoir d'adepte)",
+        desc: "Lie une créature amicale (coût = 15−Essence en Karma) : sens partagés à (Magie×100) m, +1 dé de Furtivité par niveau d'Initiation quand accompagné.",
+      },
+      {
+        name: "Harmonie avec les objets",
+        pour: "adepte",
+        page: 82,
+        source: "Voies occultes",
+        desc: "Harmonise un objet/véhicule/arme en extension du corps (coût en Karma selon table) ; jusqu'à (grade) objets harmonisés, un seul actif par test.",
+      },
+      {
+        name: "Infusion",
+        pour: "adepte",
+        page: 82,
+        source: "Voies occultes",
+        prereq: "Concentration d'adepte",
+        gen: false,
+        desc: "Ajoute 0,5 point de pouvoir temporaire par grade à un pouvoir existant (Magie rounds), puis Drain étourdissant égal à l'indice de Magie.",
+      },
+      {
+        name: "Projection astrale",
+        pour: "adepte",
+        page: 82,
+        source: "Voies occultes",
+        prereq: "Perception astrale (pouvoir d'adepte)",
+        desc: "Se projette pleinement dans l'astral (tous pouvoirs utilisables) mais perd de l'Essence plus vite (accéléré au-delà de Magie×2 heures).",
+      },
+      {
+        name: "Trouver sa voie",
+        pour: "adepte",
+        page: 83,
+        source: "Voies occultes",
+        desc: "Choisit une Voie d'adepte sans dépenser de Karma lors d'une initiation (première voie ou réorientation, perdant les avantages de l'ancienne).",
+      },
+      {
+        name: "Virtuose",
+        pour: "adepte",
+        page: 83,
+        source: "Voies occultes",
+        prereq: "Performance captivante (pouvoir d'adepte)",
+        gen: false,
+        desc: "Crée une œuvre d'art comptant comme Performance captivante pour tout spectateur sans coûter d'action ; peut servir de telesma ou de lien matériel.",
+      },
+      {
+        name: "Sacrifice",
+        pour: "les deux",
+        page: 150,
+        source: "Voies occultes",
+        desc: "Ouvre la voie de la magie du sang : inflige des dommages physiques à une victime pour générer des Points de magie du sang réutilisables (magie de vie ou de mort, chacune avec ses propres risques).",
+      },
+    ],
+    anarchy1: [
+      // ---- *Anarchistes* (+20 standard) — le cœur A1 n'a rien
+      //      (cf. esotericModel), tout vient d'ici. Premier grade =
+      //      Camouflage accordée automatiquement (règle du grade, notée
+      //      pour mémoire, pas modélisée comme gen:false ici : le
+      //      générateur peut toujours la tirer normalement au grade 1). ----
+      {
+        name: "Camouflage",
+        pour: "les deux",
+        page: 29,
+        source: "Anarchistes",
+        desc: "Altère son aura (plus fort/faible/sans capacité magique) ou imite une créature/personne dont l'aura a été observée ; en jeu, test de Comédie. Accordée automatiquement au grade 1.",
+      },
+      {
+        name: "Camouflage étendu",
+        pour: "les deux",
+        page: 29,
+        source: "Anarchistes",
+        prereq: "Camouflage",
+        gen: false,
+        desc: "Dissimule/altère l'aura d'un nombre d'objets égal à Volonté+grade, via un test de Comédie.",
+      },
+      {
+        name: "Absorption",
+        pour: "les deux",
+        page: 29,
+        source: "Anarchistes",
+        desc: "Siphonne une partie du mana d'un sort ciblant le personnage (test de contresort par Narration, sans dépenser de point d'Anarchy), réduisant sa puissance.",
+      },
+      {
+        name: "Activation",
+        pour: "magicien",
+        page: 29,
+        source: "Anarchistes",
+        desc: "Replie le mana d'un sort sur lui-même (1 point d'Anarchy) pour le maintenir toute la séance sans pénalité ni attention continue — reste contrable.",
+      },
+      {
+        name: "Augmentation de puissance",
+        pour: "les deux",
+        page: 29,
+        source: "Anarchistes",
+        desc: "+1 dé (Sorcellerie, Conjuration ou Combat astral) ou relance de 1 échec sur l'un de ces tests — 6 variantes, chacune cumulable jusqu'à 3 fois.",
+      },
+      {
+        name: "Bouclier",
+        pour: "les deux",
+        page: 29,
+        source: "Anarchistes",
+        desc: "+1 dé aux tests de résistance aux sorts, pour soi et les personnes choisies à portée courte — cumulable jusqu'à 3 fois.",
+      },
+      {
+        name: "Canalisation",
+        pour: "magicien",
+        page: 29,
+        source: "Anarchistes",
+        desc: "Garde le contrôle de son corps quand possédé par un esprit invoqué en réceptacle (traditions de possession).",
+      },
+      {
+        name: "Centrage",
+        pour: "les deux",
+        page: 29,
+        source: "Anarchistes",
+        desc: "Ignore 1 dé de malus au lancement de sort par achat, via une activité rituelle propre à la tradition — cumulable jusqu'à 3 fois.",
+      },
+      {
+        name: "Cognition",
+        pour: "adepte",
+        page: 29,
+        source: "Anarchistes",
+        desc: "Permute jusqu'à 2 points d'un attribut mental vers un autre pour un nombre de Narrations égal au niveau d'Atout ; Drain = 2 dés de complication par point échangé.",
+      },
+      {
+        name: "Contrôle somatique",
+        pour: "adepte",
+        page: 29,
+        source: "Anarchistes",
+        prereq: "Cognition",
+        gen: false,
+        desc: "Comme Cognition mais sur les attributs physiques (plus fort/rapide temporairement).",
+      },
+      {
+        name: "Exorcisme",
+        pour: "les deux",
+        page: 29,
+        source: "Anarchistes",
+        desc: "Emploie les techniques de bannissement sur un esprit de possession présent dans une personne ou un lieu.",
+      },
+      {
+        name: "Extension du contrôle",
+        pour: "magicien",
+        page: 29,
+        source: "Anarchistes",
+        desc: "Invoque et contrôle un esprit supplémentaire.",
+      },
+      {
+        name: "Façonnage de sort",
+        pour: "magicien",
+        page: 29,
+        source: "Anarchistes",
+        desc: "Exclut de la zone d'effet d'un sortilège un nombre de cibles égal à la Volonté du lanceur.",
+      },
+      {
+        name: "Harmonisation animale",
+        pour: "adepte",
+        page: 29,
+        source: "Anarchistes",
+        desc: "Lie un animal ordinaire (lien d'amitié + rituel) : portée grade×10 m, sens partagés, communication télépathique bas niveau, Drain si l'animal est blessé pendant l'usage.",
+      },
+      {
+        name: "Harmonisation à un objet",
+        pour: "adepte",
+        page: 30,
+        source: "Anarchistes",
+        desc: "Compréhension intuitive d'un objet familier : relance d'un échec sur ses tests d'utilisation ; choisissable jusqu'à 3 fois par objet, pour jusqu'à 3 objets.",
+      },
+      {
+        name: "Invocation supérieure",
+        pour: "magicien",
+        page: 29,
+        source: "Anarchistes",
+        desc: "Invoque un esprit sous forme majeure sans perte de puissance au voyage ; ces esprits ne rendent pas service, ils négocient leur aide.",
+      },
+      {
+        name: "Octroi de pouvoir à un animal",
+        pour: "adepte",
+        page: 29,
+        source: "Anarchistes",
+        prereq: "Harmonisation animale",
+        gen: false,
+        desc: "Prête temporairement un pouvoir maîtrisé à un animal harmonisé (1 Narration, perd l'usage du pouvoir le temps du prêt).",
+      },
+      {
+        name: "Psychométrie",
+        pour: "les deux",
+        page: 29,
+        source: "Anarchistes",
+        desc: "Lit la charge émotionnelle d'un lieu/objet touché : 1 information par succès de Perception, 1 Narration par information, concentration exclusive requise.",
+      },
+      {
+        name: "Renvoi",
+        pour: "les deux",
+        page: 29,
+        source: "Anarchistes",
+        desc: "Renvoie un sort ciblant le personnage (comme le contresort) : les succès excédentaires deviennent des succès de Lancement du sort renvoyé sur le lanceur d'origine.",
+      },
+      {
+        name: "Sorts pénétrants",
+        pour: "magicien",
+        page: 29,
+        source: "Anarchistes",
+        desc: "Octroie Contournement d'armure à un sortilège de combat physique, en échange de -1 VD.",
+      },
+      // ---- Magie du sang / toxique — régime PNJ, câblage en P5 ----
+      {
+        name: "Sacrifice",
+        pour: "les deux",
+        page: 115,
+        source: "Anarchistes",
+        prereq: "être sur la voie de l'Initiation, enseignement obligatoire par un mentor",
+        antagonist: true,
+        desc: "Attaque de mêlée tranchante générant des points de sang par case de dommage : +1 dé/relance de lancement par point, -1 Drain, invocation d'esprit du sang, ou stockage en Athamé.",
+      },
+      {
+        name: "Invocation supérieure (Voie du sang)",
+        pour: "magicien",
+        page: 116,
+        source: "Anarchistes",
+        prereq: "Sacrifice",
+        antagonist: true,
+        desc: "Variante de Sacrifice : invoque des esprits du sang sous forme majeure, nécessite la mort de la victime du Sacrifice.",
+      },
+      {
+        name: "Cannibalisme",
+        pour: "adepte",
+        page: 116,
+        source: "Anarchistes",
+        prereq: "Sacrifice",
+        antagonist: true,
+        desc: "Consomme le sang/chair récoltée par Sacrifice : +1 dé ou relance sur un attribut physique par point absorbé, pour (Volonté×grade) Narrations.",
+      },
+      {
+        name: "Saignée de pouvoir",
+        pour: "adepte",
+        page: 116,
+        source: "Anarchistes",
+        prereq: "Cannibalisme",
+        antagonist: true,
+        desc: "En utilisant Cannibalisme, dépense 3 points de sang pour acquérir un pouvoir de la victime, pour (Volonté×grade) Narrations.",
+      },
+      {
+        name: "Corruption",
+        pour: "magicien",
+        page: 109,
+        source: "Anarchistes",
+        antagonist: true,
+        desc: "S'il bannit un esprit avec succès, celui-ci se transforme en version corrompue sous son contrôle et le soigne de ses dommages étourdissants dus au bannissement.",
+      },
+      {
+        name: "Souillure",
+        pour: "magicien",
+        page: 109,
+        source: "Anarchistes",
+        antagonist: true,
+        desc: "Aligne un champ magique existant pour des dés d'imprévu, ou en crée un aligné d'un dé de puissance.",
+      },
+    ],
+  },
+
+  /* ========================================================
      POUVOIRS D'ADEPTE — SR5 & SR6
      ======================================================== */
   /* Liste complète vérifiée dans les livres officiels (SR6 p.158-161, SR5
@@ -4475,6 +5352,69 @@ export const Content = {
     if (!entry) return;
     pnj.complexForms = pnj.complexForms || [];
     pnj.complexForms.push(this._resolveComplexForm(entry, attr));
+  },
+
+  /** Libellés de la facette CANON `pour` (magicien/adepte/les deux) —
+      cf. amendement CODIR (Silk) dans le plan : contrairement à `cat`
+      des formes complexes, ce n'est pas une facette d'interface, c'est
+      la distinction du livre. Groupement de catalogue uniquement, pas
+      un filtre appliqué automatiquement (le MJ choisit). */
+  metamagicPourLabels: {
+    magicien: "Magicien",
+    adepte: "Adepte",
+    "les deux": "Magicien & adepte",
+  },
+
+  /** Catalogue de métamagies groupé par `pour`, pour un sélecteur manuel
+      (EditModal/carte). Exclut le contenu antagoniste (régime PNJ, P5 :
+      ce catalogue est le picker PJ/standard) — `null` si l'édition n'a
+      pas de voie Initiation (A2). Le marqueur `titreReconstitue` est
+      porté dans l'item pour un rendu dédié (jamais silencieux, cf.
+      amendement CODIR Canon). */
+  metamagicCatalogFor(ed) {
+    ed = this._ed(ed);
+    const list = (this.metamagics[ed] || []).filter((m) => !m.antagonist);
+    if (!list.length) return null;
+    const byPour = new Map();
+    for (const m of list) {
+      if (!byPour.has(m.pour)) byPour.set(m.pour, []);
+      byPour.get(m.pour).push({ id: m.name, label: m.name, titreReconstitue: !!m.titreReconstitue });
+    }
+    return [...byPour.entries()].map(([pour, items]) => ({
+      category: this.metamagicPourLabels[pour] || pour,
+      items,
+    }));
+  },
+
+  /** Entrée complète d'une métamagie par nom (toutes éditions confondues
+      dans le résultat null-safe : cherche dans l'édition demandée
+      seulement). Sert au rendu de la description (ⓘ) sur la carte. */
+  metamagicFor(ed, name) {
+    ed = this._ed(ed);
+    return (this.metamagics[ed] || []).find((m) => m.name === name) || null;
+  },
+
+  /** Choisit `n` métamagies éligibles à la génération (cœur + suppléments
+      curés, cf. commentaire sur `metamagics` : `gen:false` = chaîne de
+      prérequis non garantie), jamais de contenu antagoniste (régime
+      PNJ). Utilisé par le générateur (P6) pour peupler `pnj.esoteric.acquis`. */
+  pickMetamagics(ed, n) {
+    ed = this._ed(ed);
+    const eligible = (this.metamagics[ed] || []).filter((m) => !m.antagonist && m.gen !== false);
+    if (!eligible.length) return [];
+    return this._sample(eligible, Math.min(n, eligible.length)).map((m) => m.name);
+  },
+
+  /** Ajoute une métamagie du catalogue à `pnj.esoteric.acquis` (par nom,
+      comme les échos — cf. esoteric.js). Ne crée pas `pnj.esoteric` :
+      appelant responsable de l'avoir déjà posé (voie/grade choisis
+      avant l'acquis, jamais l'inverse). */
+  addMetamagicItem(pnj, ed, name) {
+    ed = this._ed(ed);
+    const entry = this.metamagicFor(ed, name);
+    if (!entry || !pnj.esoteric) return;
+    pnj.esoteric.acquis = pnj.esoteric.acquis || [];
+    if (!pnj.esoteric.acquis.includes(name)) pnj.esoteric.acquis.push(name);
   },
 
   /** Catalogue plat de pouvoirs d'adepte (pas de catégorie dans
