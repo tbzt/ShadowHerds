@@ -140,10 +140,22 @@ export const WeaponRoll = {
     const name = (str.split("[")[0] || "").trim();
     const preMatch = str.match(/PRE\s*(\d+)/i);
     const vdMatch = str.match(/VD\s*(\d+)/i);
+    // Bandes de Score Offensif SR6 (`SO 10/10/8/-/-` à distance, `SO 6+FOR/…`
+    // en mêlée) : tokens BRUTS par bande de Portée, `-`/`–`/`—`/vide → null
+    // (hors portée). Le sens (« +FOR » en mêlée, choix de bande) est résolu
+    // par le module d'édition, pas ici — parse ne fait qu'extraire.
+    const soMatch = str.match(/SO\s+([^,\]]+)/i);
+    const so = soMatch
+      ? soMatch[1].split("/").map((t) => {
+          const v = t.trim();
+          return v === "" || v === "-" || v === "–" || v === "—" ? null : v;
+        })
+      : null;
     return {
       name,
       pre: preMatch ? parseInt(preMatch[1], 10) : null,
       vd: vdMatch ? parseInt(vdMatch[1], 10) : null,
+      so,
     };
   },
 
@@ -154,6 +166,13 @@ export const WeaponRoll = {
       if (re.test(weaponName)) return skill;
     }
     return this.FALLBACK_SKILL[edition] || "Armes à feu";
+  },
+
+  /** Famille de combat d'une ARME (via sa compétence canonique) :
+      'ranged' | 'melee' | null. Public — lu par le module d'édition pour
+      décider mêlée (SO+FOR) vs distance (bandes de Portée). */
+  combatFamily(weaponName, edition) {
+    return this._combatFamily(this.skillFor(weaponName, edition));
   },
 
   /** Nom de compétence sans suffixe de groupe « (GC) » ni parenthèses. */

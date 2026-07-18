@@ -101,6 +101,66 @@ export const EditionSR6 = {
       },
     ],
   },
+  /** Gain d'Atout AVANT le jet (SR6 core p.109-112) — propre à SR6, absent
+      des autres éditions (clé non définie → pas d'étape de gain, lu par
+      DiceRoller.preRollGainSpec). On compare le Score Offensif de l'ARME de
+      l'attaquant au Score Défensif de la cible : si l'un dépasse l'autre d'au
+      moins 4, le camp le plus haut gagne 1 point d'Atout (plafond 2/tour,
+      réserve max 7). Le SO varie selon la bande de Portée (armes à distance) ;
+      en mêlée il vaut SO_arme + Force, à mains nues Force + Réaction (p.112).
+      Contrat : `offense(pnj, weapon)` renvoie les SO du lanceur ; le panneau
+      saisit le SD adverse et motive le crédit. */
+  preRollGain: {
+    costAttr: "ATO",
+    max: 7,
+    perTurn: 2,
+    threshold: 4,
+    rangeBands: [
+      { key: "contact", label: "Contact" },
+      { key: "courte", label: "Courte" },
+      { key: "moyenne", label: "Moyenne" },
+      { key: "longue", label: "Longue" },
+      { key: "extreme", label: "Extrême" },
+    ],
+    defaultBand: 2, // Moyenne
+    /** SO du lanceur pour cette arme.
+        → { isRanged, bands:[{key,label,so}] } : à distance = un SO par bande de
+        Portée (null = hors portée) ; en mêlée/mains nues = une seule entrée.
+        Le module RÉSOUT ce que `WeaponRoll.parse` n'a fait qu'extraire (tokens
+        bruts « 6+FOR », « 10 », null). */
+    offense(pnj, weapon) {
+      const parsed = WeaponRoll.parse(weapon);
+      const name = parsed.name || String(weapon || "");
+      const FOR = Actor.attr(pnj, "FOR");
+      const fam = WeaponRoll.combatFamily(name, "sr6");
+      // Vraies mains nues (FOR + RÉA) — surtout PAS « coup de poing américain »
+      // (arme à SO 6+FOR, résolue par la branche mêlée ci-dessous).
+      const unarmed = /mains? nues/i.test(name);
+      // Résout un token de SO : « 6+FOR » → 6 + Force ; « 10 »/« 1* » → nombre.
+      const resolve = (tok) => {
+        if (tok == null) return null;
+        const m = String(tok).match(/(\d+)\s*\+\s*FOR/i);
+        if (m) return parseInt(m[1], 10) + FOR;
+        const n = parseInt(tok, 10);
+        return Number.isFinite(n) ? n : null;
+      };
+      if (unarmed || (fam === "melee" && (!parsed.so || parsed.so[0] == null))) {
+        return { isRanged: false, bands: [{ key: "melee", label: "Mêlée (mains nues)", so: FOR + Actor.attr(pnj, "RÉA") }] };
+      }
+      if (fam !== "ranged") {
+        // Mêlée : seule la 1ʳᵉ bande porte le SO de l'arme (+FOR déjà résolu).
+        const so = parsed.so ? resolve(parsed.so[0]) : null;
+        return { isRanged: false, bands: [{ key: "melee", label: "Mêlée", so: so != null ? so : FOR + Actor.attr(pnj, "RÉA") }] };
+      }
+      const bands = this.rangeBands.map((b, i) => ({
+        key: b.key,
+        label: b.label,
+        so: parsed.so ? resolve(parsed.so[i]) : null,
+      }));
+      return { isRanged: true, bands };
+    },
+  },
+
   /* ---- Action magique : lu par MagicAction via le contrat. ---- */
   /** SR6 : pas de Puissance de sort à choisir — la VD est fixe (p.135-136). */
   spellUsesForce: false,
@@ -398,6 +458,11 @@ export const EditionSR6 = {
     accuracyLimit: false,
     specMechanic: "diceBonus",
     source: "equip",
+    // SR6 renomme la Précision en Score Offensif (SO) ; le libellé de facette
+    // remonte ici pour ne pas laisser fuir le mot SR5 dans le rendu neutre.
+    // « PA » reste tel quel (Pénétration d'Armure de la facette d'objet) — à
+    // ne pas confondre avec le Potentiel d'Actions, cf. helpLegend.
+    facetLabels: { accuracy: "SO" },
   },
 
   /* Régime Matrice SR6 — lu par Matrix via App.editionModule.matrixModel.
