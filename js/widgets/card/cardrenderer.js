@@ -32,7 +32,7 @@ export const CardRenderer = {
       `DiceRoller` en bare global (pont window, pas d'import ES) : diceroller.js
       importe déjà CardRenderer, un import direct créerait un cycle. */
   liveDeps() {
-    return { Settings, Drugs, Vehicles, Spirits, WeaponRoll, UI, Encounter, DiceRoller };
+    return { Settings, Drugs, Vehicles, Spirits, Sprites, WeaponRoll, UI, Encounter, DiceRoller };
   },
 
   /** Rend une card PNJ et retourne l'élément DOM.
@@ -143,6 +143,7 @@ export const CardRenderer = {
     if (pnj.pcLight) return this._headerLight(pnj);
     if (pnj.type === "vehicle") return this._headerVehicle(pnj);
     if (pnj.type === "spirit") return this._headerSpirit(pnj);
+    if (pnj.type === "sprite") return this._headerSprite(pnj);
     const gIcon = { M: "♂", F: "♀", NB: "⚧" }[pnj.gender] || "";
     let badge = "";
 
@@ -621,6 +622,9 @@ export const CardRenderer = {
     if (this.isContact(pnj)) return this._bodyContact(pnj, deps);
     if (pnj.pcLight) return this._bodyLight(pnj);
     if (pnj.type === "vehicle") return this._bodyVehicle(pnj, deps);
+    // Sprite compilé : entité MATRICIELLE (attrs A/C/T/D/F), corps dédié —
+    // pas le corps physique d'édition (un sprite n'a pas de FOR). Cf. T3b.
+    if (pnj.type === "sprite") return this._bodySprite(pnj, deps);
     // Les esprits sont des objets PNJ standards : le corps d'édition les
     // rend tel quel (jets, moniteurs, RR). Seule la barre de services est
     // injectée en tête.
@@ -2077,6 +2081,18 @@ export const CardRenderer = {
         acts.push({ kind: "menu", label: "Portrait IA", attrs: `data-action="generate-portrait" data-id="${id}"` });
       return CardFooter.render(acts, { savedActions: saved });
     }
+    // Sprite compilé : « Renvoyer » (retour à la Résonance, non permanent —
+    // vocabulaire technomancien) en primaire terminal ; Éditer en secondaire.
+    // Inscrire/Libérer (SR : sprite permanent vs éphémère) en débordement.
+    if (pnj.type === "sprite" && pnj.ownerId) {
+      const acts = [
+        { kind: "secondary", label: "Éditer", attrs: `data-action="edit-open" data-id="${id}"` },
+        { kind: "primary", danger: true, icon: "⏏", label: "Renvoyer", attrs: `data-action="dismiss-sprite" data-id="${id}"` },
+      ];
+      if (pnj.regime === "sr")
+        acts.push({ kind: "menu", label: pnj.registered ? "Libérer (désinscrire)" : "Inscrire", attrs: `data-action="toggle-sprite-inscribe" data-id="${id}"` });
+      return CardFooter.render(acts, { savedActions: saved });
+    }
 
     const has = (k) => actions.includes(k);
     const acts = [];
@@ -2148,7 +2164,12 @@ export const CardRenderer = {
           UI.toggleArmorOption(id, Number(actionEl.dataset.idx));
           break;
         case "open-summon":
-          SummonPanel.open(id);
+          // Rail unique paramétré par kind (esprit | sprite) — un seul panneau,
+          // vocabulaire distinct lu au contrat (arbitrage Canon, T3b).
+          SummonPanel.open(id, actionEl.dataset.kind || "spirit");
+          break;
+        case "toggle-sprite-task":
+          SummonPanel.toggleTask(id, Number(actionEl.dataset.idx));
           break;
         case "toggle-monitor":
           UI.toggleMonitor(id, actionEl.dataset.sev, Number(actionEl.dataset.idx));
@@ -2244,6 +2265,12 @@ export const CardRenderer = {
           break;
         case "dismiss-spirit":
           SummonPanel.dismissSpirit(id);
+          break;
+        case "dismiss-sprite":
+          SummonPanel.dismissSprite(id);
+          break;
+        case "toggle-sprite-inscribe":
+          SummonPanel.toggleInscribe(id);
           break;
         case "toggle-spirit-fold":
           SummonPanel.toggleFold(id);

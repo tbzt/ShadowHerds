@@ -30,6 +30,7 @@ import { Magic } from "../rules/magic.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { Resonance } from "../rules/resonance.js";
 import { Spirits } from "../catalogs/spirits.js";
+import { Sprites } from "../catalogs/sprites.js";
 import { Utils } from "../core/utils.js";
 import { WeaponRoll } from "../rules/weaponroll.js";
 
@@ -373,6 +374,14 @@ export const EditionSR6 = {
   magicAttr: "MAG",
   /** Attribut RES chiffré, jumeau de magicAttr — même gate EditModal. */
   resonanceAttr: "RES",
+  /** Verrou d'accès arcanique pour l'EditModal (contrat neutre, cf. sr5.js).
+      `discipline` ∈ {"magic","resonance"}. Gate sur l'attribut chiffré. */
+  arcaneLock(pnj, discipline) {
+    const attr = discipline === "resonance" ? this.resonanceAttr : this.magicAttr;
+    if (!attr || Actor.attr(pnj, attr) > 0) return null;
+    const what = discipline === "resonance" ? "de la Résonance" : "de la Magie";
+    return { hint: `Nécessite ${what} (${attr} > 0).` };
+  },
   /** Régime persona SR6 — lu par Resonance via App.editionModule.technoModel.
       Mappage attributs mentaux → matriciels identique à SR5 (p.191, table
       « Équivalences des attributs mentaux/matriciels »), PLUS un pool de
@@ -404,6 +413,27 @@ export const EditionSR6 = {
   /** Invocation d'esprits : SR6 invoque via Conjuration,
       types = éléments classiques (Spirits.SR_TYPES). */
   spiritModel: { canSummon: true, types: () => Spirits.SR_TYPES },
+  /** Compilation de sprites (T3) : mêmes profils chiffrés qu'en SR5
+      (attrs matriciels ligne pour ligne), compétences Électronique/
+      Piratage, +5 types de Hacker vaillant. Régime « sr ». */
+  spriteModel: {
+    regime: "sr",
+    skillKey: "skillsSR6",
+    types: () => ({ ...Sprites.SR_TYPES, ...Sprites.SR6_TYPES }),
+    compilePower: {
+      field: "level",
+      label: "Niveau",
+      steps: () => [1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({ value: n, label: String(n) })),
+    },
+    /** Jet de compilation (T3c, Livre de base p.193) : Technomancie +
+        Résonance contre **Niveau × 2** ; succès nets = tâches. Technodrain =
+        **succès du sprite** (pas ×2 comme SR5), résisté VOL+LOG
+        (pnj.technoDrainResist), physique si dégâts après résistance > RES
+        (technoDrainType SR6, régime dégâts). */
+    compileSkill: "Technomancie",
+    compileOpposeDice: (level) => level * 2,
+    compileFading: (spriteHits) => spriteHits,
+  },
   /** Réserves de dés et initiative des véhicules/drones liés : pas de
       distinction Attaque/Capteurs séparée sur l'Autopilote (Score
       Offensif direct via autosoft + Senseurs), Encaissement = Structure

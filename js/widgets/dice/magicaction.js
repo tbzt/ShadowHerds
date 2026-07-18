@@ -560,6 +560,59 @@ export const MagicAction = {
       type: drain.type,
     };
   },
+
+  /** Résout une compilation de sprite (T3c) — miroir EXACT de
+      resolveConjuration, scopé Résonance : le technomancien jette
+      compileSkill + RES, le sprite oppose `compileOpposeDice(level)` dés,
+      succès nets = tâches. Le Technodrain (VD = `compileFading(succès du
+      sprite)`) est résisté et encaissé par `_resolveDrain` (kind
+      "complexForm" → technoDrainResist + technoDrainType). `castHits = level`
+      porte la règle physique SR5 (Niveau > RES) ; SR6 est en régime dégâts.
+      `null` si l'édition n'a pas de jet chiffré (Anarchy 1 : compilation
+      narrative, comme ses esprits). N'engendre PAS le sprite. */
+  resolveCompilation(owner, level) {
+    const ed = App.getEditionModule(owner.edition);
+    const sm = ed.spriteModel;
+    if (!sm || !sm.compileSkill) return null;
+    const compRes = Dice.computeRoll(Resonance.actionPool(owner, sm.compileSkill, owner.edition));
+    DiceLog.record(compRes, { label: `Compilation (Niveau ${level})`, who: owner.name || "" });
+    const spriteRes = Dice.computeRoll(sm.compileOpposeDice(level));
+    DiceLog.record(spriteRes, {
+      label: `Résistance du sprite (Niveau ${level})`,
+      who: owner.name || "",
+    });
+    const netHits = Math.max(0, compRes.hits - spriteRes.hits);
+    const dv = sm.compileFading(spriteRes.hits);
+    const drain = this._resolveDrain(owner, ed, {
+      dv,
+      kind: "complexForm",
+      castHits: level,
+      force: level,
+      label: "Compilation",
+    });
+    return {
+      netHits,
+      casterHits: compRes.hits,
+      spriteHits: spriteRes.hits,
+      dv,
+      compRes,
+      drain,
+      drainDamage: drain.drainDamage,
+      type: drain.type,
+    };
+  },
+
+  /** Présente le jet de compilation via l'affichage de dés standard (le
+      Technodrain est déjà encaissé + journalisé par resolveCompilation ; la
+      Seconde chance sur le jet de compilation est un raffinement futur). */
+  presentCompilation(owner, level, comp, sprite) {
+    DiceRoller.show(comp.compRes, {
+      label: sprite
+        ? `Compilation — ${sprite.name} (Niveau ${level})`
+        : `Compilation ratée (Niveau ${level})`,
+      who: owner.name || "",
+    });
+  },
 };
 
 // Pont couche 4 (migration modules ES) — retiré en fin de migration.

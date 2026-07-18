@@ -22,6 +22,7 @@ import { Metavariants } from "../rules/metavariants.js";
 import { Resonance } from "../rules/resonance.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
 import { Spirits } from "../catalogs/spirits.js";
+import { Sprites } from "../catalogs/sprites.js";
 import { Utils } from "../core/utils.js";
 import { WeaponRoll } from "../rules/weaponroll.js";
 
@@ -253,6 +254,17 @@ export const EditionSR5 = {
   magicAttr: "MAG",
   /** Attribut RES chiffré, jumeau de magicAttr — même gate EditModal. */
   resonanceAttr: "RES",
+  /** Verrou d'accès arcanique pour l'EditModal (contrat neutre lu par
+      editmodal.js — prohibition n°1 : le contrôleur ne lit plus l'attribut
+      d'édition lui-même). `discipline` ∈ {"magic","resonance"}. SR5/SR6 :
+      gate sur l'attribut chiffré (MAG/RES > 0, débloqué en le posant dans la
+      même modale). Renvoie `null` si accessible, `{hint}` si verrouillé. */
+  arcaneLock(pnj, discipline) {
+    const attr = discipline === "resonance" ? this.resonanceAttr : this.magicAttr;
+    if (!attr || Actor.attr(pnj, attr) > 0) return null;
+    const what = discipline === "resonance" ? "de la Résonance" : "de la Magie";
+    return { hint: `Nécessite ${what} (${attr} > 0).` };
+  },
   /** Régime persona SR5 — lu par Resonance via App.editionModule.technoModel.
       Mappage DIRECT attributs mentaux → matriciels (p.252, table
       « Persona incarné »), aucun point bonus à répartir (contrairement à
@@ -283,6 +295,29 @@ export const EditionSR5 = {
       types = éléments classiques (Spirits.SR_TYPES). `types` est lazy
       car spirits.js (catalogs) charge après les modules d'édition. */
   spiritModel: { canSummon: true, types: () => Spirits.SR_TYPES },
+  /** Compilation de sprites (T3) : régime « sr » (Niveau + 4 attributs
+      matriciels), 5 types du cœur, compétences SR5 par type. Lu par
+      Sprites via App.editionModule.spriteModel (aucune branche d'édition). */
+  spriteModel: {
+    regime: "sr",
+    skillKey: "skillsSR5",
+    types: () => Sprites.SR_TYPES,
+    /** Amplitude de compilation (jumeau de summonPower, vocabulaire techno). */
+    compilePower: {
+      field: "level",
+      label: "Niveau",
+      steps: () => [1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({ value: n, label: String(n) })),
+    },
+    /** Résolution du jet de compilation (T3c, Livre de Règles p.252-254),
+        structure identique à l'invocation : le technomancien jette
+        Compilation + Résonance, le sprite oppose **Niveau** dés ; succès nets
+        = tâches dues. VD de Technodrain = **2 × succès du sprite** (min 2),
+        résistée RES+VOL (pnj.technoDrainResist), physique si Niveau > RES
+        (via technoDrainType, castHits = Niveau). */
+    compileSkill: "Compilation",
+    compileOpposeDice: (level) => level,
+    compileFading: (spriteHits) => Math.max(2, 2 * spriteHits),
+  },
   /** Réserves de dés et initiative des véhicules/drones liés (js/catalogs/
       vehicles.js) : Autopilote + autosoft, limite de précision inexistante
       ici (pas de PRE sur un drone). */

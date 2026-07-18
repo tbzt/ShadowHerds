@@ -373,6 +373,16 @@ export const TourSteps = {
       title: "Générateur : filtres regroupés et bouton tactile",
       body: "Les neuf filtres du générateur de PNJ sont maintenant regroupés sous trois repères — Identité, Métier, Composition — plutôt qu'une seule cascade de champs. Le bouton « Générer » atteint aussi sa pleine cible tactile (44px) sur smartphone/tablette, là où il restait un peu court.",
     },
+    {
+      id: "wn-technomancien-a1-gen", anchor: "nav-generator", tours: ["whatsnew"], since: "1.65.0", fallback: "center",
+      title: "Générer un technomancien (Anarchy 1re)",
+      body: "Le générateur d'Anarchy 1re édition propose enfin des technomanciens : le Techno-ganger (Sbire) et le Technomancien de sécurité (Antagoniste), tirés au livre (Anarchistes p.147). Ils arrivent avec leur Pic de résonance et quelques formes complexes, et se rangent dans les bons milieux. Au passage, dans l'édition d'un PNJ, les sections Sorts et Formes complexes ne s'affichent en Anarchy que pour les personnages concernés (Éveillés / Émergés), plus proprement qu'avant.",
+    },
+    {
+      id: "wn-sprites-compile", anchor: "nav-combat", tours: ["whatsnew"], since: "1.66.0", fallback: "center",
+      title: "Compiler des sprites",
+      body: "Les technomanciens compilent désormais leurs sprites. Sur la carte, le bouton « ◈ Sprite » ouvre le rail de compilation (même geste que l'invocation d'un esprit, en vocabulaire techno) : choisissez le Niveau et le type, l'app roule le test — les succès nets deviennent les tâches dues et le Technodrain est encaissé automatiquement. Le sprite apparaît en fiche liée avec ses attributs matriciels et son moniteur ; on marque ses tâches, on l'inscrit (permanent) ou on le renvoie. En SR5, SR6 et Anarchy 1 (par palier, sans jet) ; Anarchy 2 n'a pas de technomanciens.",
+    },
   ],
 };
 

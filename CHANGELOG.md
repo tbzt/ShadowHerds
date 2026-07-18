@@ -12,6 +12,44 @@ commit.
 
 ## [Non publié]
 
+## [1.66.0] — 2026-07-18
+
+### Système
+- **Compiler des sprites (technomanciens SR5 et SR6)** : depuis la carte d'un
+  technomancien, un bouton « ◈ Sprite » ouvre le rail de compilation (le même
+  que l'invocation d'esprit, en vocabulaire technomancien — Compiler, Niveau,
+  tâches). On choisit le Niveau et le type ; l'app **roule le test de
+  compilation** (Compilation/Technomancie + Résonance contre la résistance du
+  sprite) : les succès nets deviennent les **tâches** dues, et le
+  **Technodrain** est résisté et encaissé automatiquement (VD au livre —
+  2 × succès du sprite en SR5, succès du sprite en SR6 ; physique selon le
+  Niveau/les dégâts et la Résonance). Le sprite apparaît en fiche liée sous le
+  technomancien : attributs matriciels (Attaque/Corruption/Traitement de
+  données/Firewall), moniteur matriciel, pouvoirs. On marque ses tâches
+  rendues, on peut l'**inscrire** (permanent) ou le **renvoyer** à la
+  Résonance. En Anarchy 1re édition, les sprites se compilent aussi (par
+  palier Mineur/Normal/Majeur), sans jet automatisé — fidèle au ton narratif
+  de l'édition. (Anarchy 2 n'a pas de technomanciens.)
+
+## [1.65.0] — 2026-07-18
+
+### Système
+- **PNJ technomanciens en Anarchy 1re édition** : le générateur propose deux
+  nouveaux profils vérifiés au livre (*Anarchistes* p.147) — le **Techno-ganger**
+  (Sbire : Hacking 8, Technomancie 9) et le **Technomancien de sécurité**
+  (Antagoniste : Hacking 11, Technomancie 11, Pistage matriciel). Chacun est
+  généré avec sa forme complexe signature (**Pic de résonance**) et quelques
+  formes du livre de base, et prend sa place cohérente dans les milieux Gangs /
+  Sécurité corpo.
+- **Sections magiques mieux ciblées en Anarchy (1re et 2e édition)** : dans
+  l'édition d'un PNJ, les zones **Sorts** et **Formes complexes** ne s'affichent
+  plus, éditables, que sur les personnages concernés — les Éveillés (compétence
+  de Sorcellerie/Conjuration) pour les sorts, les Émergés (compétence
+  Technomancie) pour les formes complexes. Sur un PNJ mundane, la zone est
+  montrée verrouillée avec la raison, plutôt qu'ouverte sur du vide. Un PNJ qui
+  possède déjà des sorts ou des formes garde toujours sa zone éditable (aucune
+  donnée cachée).
+
 ## [1.64.0] — 2026-07-18
 
 ### Interface

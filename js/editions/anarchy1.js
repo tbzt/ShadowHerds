@@ -32,6 +32,7 @@ import { ItemResolver } from "../rules/itemresolver.js";
 import { Magic } from "../rules/magic.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { Spirits } from "../catalogs/spirits.js";
+import { Sprites } from "../catalogs/sprites.js";
 import { Utils } from "../core/utils.js";
 import { WeaponRoll } from "../rules/weaponroll.js";
 
@@ -438,6 +439,21 @@ export const EditionAnarchy1 = {
     Content.addEchoItem(pnj, this.id, id);
   },
 
+  /** Compilation de sprites (T3) : régime « anarchy1 » (3 paliers Mineur/
+      Normal/Majeur, entité LOG-centrée, Firewall = Logique, moniteur
+      9/10/11). Sprites._spawnAnarchy1 lit ce régime ; les données vivent
+      dans le catalogue (Sprites.ANARCHY1_*). */
+  spriteModel: {
+    regime: "anarchy1",
+    types: () => Sprites.ANARCHY1_TYPES,
+    /** Palier de compilation (Mineur/Normal/Majeur), pas un Niveau chiffré. */
+    compilePower: {
+      field: "tier",
+      label: "Palier",
+      steps: () => ["Mineur", "Normal", "Majeur"].map((label, i) => ({ value: i, label })),
+    },
+  },
+
   /** Invocation d'esprits V1 (6 types × 3 puissances, statblocks
       §ESPRITS). `types`/`spawn` référencent Spirits en lazy (spirits.js
       charge après les modules d'édition, même pattern que sr5/anarchy2). */
@@ -718,6 +734,24 @@ export const EditionAnarchy1 = {
      partagée avec la Magie), conservée ici comme donnée d'édition en
      attendant son consommateur (le duel Matrice, T6 — aucun test de
      Résonance n'est encore lancé côté A1). */
+  /** Anarchy n'a pas d'attribut MAG/RES chiffré (magie et résonance
+      narratives) : le marqueur d'accès est la COMPÉTENCE. Le livre identifie
+      l'Éveillé par Sorcellerie/Conjuration et l'Émergé par Technomancie
+      (skillcatalog : « Technomancie réservée aux Émergés »). `arcaneLock` lit
+      ces listes → ferme la réserve Silk (sorts ET formes complexes ne
+      s'affichent plus dans l'EditModal que sur les porteurs de la compétence,
+      pas sur chaque PNJ mundane). Débloqué en ajoutant la compétence dans la
+      section Compétences de la même modale — parité avec « poser MAG > 0 »
+      côté SR5/SR6. */
+  magicSkills: ["Sorcellerie", "Conjuration"],
+  resonanceSkills: ["Technomancie"],
+  arcaneLock(pnj, discipline) {
+    const skills = discipline === "resonance" ? this.resonanceSkills : this.magicSkills;
+    if ((skills || []).some((n) => Actor.skillRank(pnj, n) > 0)) return null;
+    return discipline === "resonance"
+      ? { hint: "Réservé aux technomanciens émergés (compétence Technomancie)." }
+      : { hint: "Réservé aux personnages éveillés (compétence magique)." };
+  },
   technoModel: {
     label: "Résonance",
     resonanceAttr: null,
@@ -1014,6 +1048,74 @@ export const EditionAnarchy1 = {
         },
       ],
       armor: 9,
+    },
+
+    /* ---- Technomanciens (T5) — deux statblocks vérifiés dans *Anarchistes*
+       p.147 (section « TECHNOMANCIENS »). Ils portent la compétence
+       **Technomancie** : c'est le marqueur qui débloque la section Formes
+       complexes de l'EditModal (cf. `arcaneLock`/`resonanceSkills`). Les formes
+       sont rattachées en génération (même patron que les sorts : `complexForms`
+       fixe + tirage dans `complexFormOptions`). Le livre laisse l'/les Atout(s)
+       « au choix » (profil ouvert) — non fabriqué ici ; les Atouts de sprite
+       viendront avec T3. La spécialisation « Pistage matriciel +2 » du profil
+       de sécurité n'est pas mécanisée (les spés A1 ne le sont pas) — notée. ---- */
+    "Techno-ganger": {
+      label: "Techno-ganger",
+      tier: "Sbire",
+      attrs: { FOR: 3, AGI: 3, VOL: 3, LOG: 5, CHA: 2, CHC: 3 },
+      essence: 6,
+      skills: [
+        { name: "Hacking", val: 8, attr: "LOG" }, // 3 + LOG 5
+        { name: "Technomancie", val: 9, attr: "LOG" }, // 4 + LOG 5
+        { name: "Corps à corps", val: 3, attr: "AGI" },
+        { name: "Armes à feu", val: 3, attr: "AGI" },
+      ],
+      edges: ["Atout au choix (profil ouvert du MJ, Anarchistes p.147)"],
+      complexForms: ["Pic de résonance"], // 5P, signature du profil
+      complexFormOptions: [
+        "Dispersion",
+        "Bombe d'interférences",
+        "Infusion",
+        "Nettoyeuse",
+        "Suture",
+        "Tempête d'impulsions",
+      ],
+      complexFormChoices: 1,
+      weapons: [
+        { name: "Mains nues", dmg: 2, dmgType: "E" },
+        { name: "Pistolet léger", dmg: 5, dmgType: "P", ranges: "C OK · I −2" },
+      ],
+      armor: 9,
+    },
+
+    "Technomancien de sécurité": {
+      label: "Technomancien de sécurité",
+      tier: "Antagoniste",
+      attrs: { FOR: 3, AGI: 3, VOL: 4, LOG: 6, CHA: 3, CHC: 3 },
+      essence: 6,
+      skills: [
+        { name: "Hacking", val: 11, attr: "LOG" }, // 5 + LOG 6
+        { name: "Technomancie", val: 11, attr: "LOG" }, // 5 + LOG 6
+        { name: "Pistage", val: 9, attr: "LOG" }, // 3 + LOG 6, spé. matriciel +2 (non mécanisée)
+        { name: "Armes à feu", val: 4, attr: "AGI" },
+        { name: "Corps à corps", val: 3, attr: "AGI" },
+      ],
+      edges: ["Deux Atouts au choix (profil ouvert du MJ, Anarchistes p.147)"],
+      complexForms: ["Pic de résonance"], // 6P, signature du profil
+      complexFormOptions: [
+        "Dispersion",
+        "Bombe d'interférences",
+        "Infusion",
+        "Nettoyeuse",
+        "Suture",
+        "Tempête d'impulsions",
+      ],
+      complexFormChoices: 2,
+      weapons: [
+        { name: "Mains nues", dmg: 2, dmgType: "E" },
+        { name: "Pistolet lourd", dmg: 6, dmgType: "P", ranges: "C OK · I OK" },
+      ],
+      armor: 12,
     },
 
     "Employé corporatiste": {
@@ -1769,6 +1871,20 @@ export const EditionAnarchy1 = {
     }
     const spells = chosenSpells.map((e) => this._enrichSpell(e));
 
+    // Formes complexes (technomanciens A1, T5) : même patron que les sorts —
+    // formes fixes du profil + N tirées du pool. Display-only comme les sorts
+    // A1 (non motorisées). Rattachées seulement si le profil en a (statblocks
+    // technomanciens) : un PNJ mundane n'a pas la clé (additif, cf. gate
+    // `arcaneLock` sur la compétence Technomancie).
+    const chosenForms = [...(statBlock.complexForms || [])];
+    if (statBlock.complexFormChoices > 0 && statBlock.complexFormOptions?.length) {
+      const shuffled = [...statBlock.complexFormOptions].sort(
+        () => Math.random() - 0.5,
+      );
+      chosenForms.push(...shuffled.slice(0, statBlock.complexFormChoices));
+    }
+    const complexForms = chosenForms.map((n) => this._enrichComplexForm(n));
+
     const armor = (statBlock.armor || 0) + armorBonus;
     const pnj = {
       id: Utils.uid(),
@@ -1809,6 +1925,7 @@ export const EditionAnarchy1 = {
       notes: "",
     };
     pnj.attrs.ESS = statBlock.essence != null ? statBlock.essence : 6;
+    if (complexForms.length) pnj.complexForms = complexForms; // technomanciens seuls
 
     // Esprit mentor (Éveillés uniquement) : pas de
     // tradition motorisée en V1 (traditions.anarchy1 vide) — kind "shamanic"
@@ -1853,6 +1970,17 @@ export const EditionAnarchy1 = {
     return found
       ? { name, cat: found.cat, niveau: found.niveau, desc: found.desc, note }
       : { name, note };
+  },
+
+  /** Enrichit une forme complexe de statBlock (nom) avec sa fiche catalogue
+      (cat/vt/desc, Content.complexForms.anarchy1). Copie (spread) pour que le
+      PNJ généré possède la sienne, jamais la référence partagée du catalogue.
+      Forme inconnue → renvoyée en {name} nu, sans planter le rendu. */
+  _enrichComplexForm(name) {
+    const found = (Content.complexForms.anarchy1 || []).find(
+      (f) => f.name === name,
+    );
+    return found ? { ...found } : { name };
   },
 
   /** Décompose une réserve dérivée en contributions nommées {label,value}

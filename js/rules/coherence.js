@@ -154,7 +154,11 @@ export const Coherence = {
     [/mage|hermétique|aztechnology/i, "mage"],
     [/chaman/i, "chamane"],
     [/adepte/i, "adepte"],
-    [/decker|hack/i, "decker"],
+    // Opérateurs matriciels → même bucket de cohérence « decker » (rôle
+    // interne de pondération, pas une affirmation canon). `technoman` +
+    // `techno-` couvrent Technomancien/Techno-ganger sans capter
+    // « technicien » (qui garde son propre rôle plus bas).
+    [/decker|hack|technoman|techno-/i, "decker"],
     [/rigger|pilote|go-ganger/i, "rigger"],
     [/technicien|mécanicien|ingénieur|matériel/i, "technicien"],
     [/détective|espion|cambrioleur|assassin|passeur|coyote|sans-abri/i, "infiltrateur"],
