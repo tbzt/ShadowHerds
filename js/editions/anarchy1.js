@@ -430,6 +430,12 @@ export const EditionAnarchy1 = {
   spriteModel: {
     regime: "anarchy1",
     types: () => Sprites.ANARCHY1_TYPES,
+    /** Palier de compilation (Mineur/Normal/Majeur), pas un Niveau chiffré. */
+    compilePower: {
+      field: "tier",
+      label: "Palier",
+      steps: () => ["Mineur", "Normal", "Majeur"].map((label, i) => ({ value: i, label })),
+    },
   },
 
   /** Invocation d'esprits V1 (6 types × 3 puissances, statblocks

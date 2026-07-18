@@ -10,6 +10,7 @@ import { AmplitudeSelector } from "../kit/amplitudeselector.js";
 import { CardRenderer } from "../card/cardrenderer.js";
 import { MagicAction } from "../dice/magicaction.js";
 import { Spirits } from "../../catalogs/spirits.js";
+import { Sprites } from "../../catalogs/sprites.js";
 import { Utils } from "../../core/utils.js";
 
 export const SummonPanel = {
@@ -52,8 +53,7 @@ export const SummonPanel = {
     document.getElementById("summon-power-steps").addEventListener("click", (e) => {
       const b = e.target.closest("[data-power]");
       if (!b) return;
-      const summonField = App.getEditionModule(this._summon.edition).summonPower.field;
-      this._summon[summonField] = parseInt(b.dataset.power, 10);
+      this._summon[this._summon.power.field] = parseInt(b.dataset.power, 10);
       this._sync();
     });
     document.getElementById("summon-service-steps").addEventListener("click", (e) => {
@@ -69,26 +69,38 @@ export const SummonPanel = {
     });
   },
 
-  open(ownerId) {
+  /** Ouvre le rail. `kind` = "spirit" (invocation) ou "sprite" (compilation) :
+      un seul panneau, vocabulaire et contrat lus selon le kind (arbitrage
+      Canon — pas de SpritePanel parallèle). */
+  open(ownerId, kind = "spirit") {
     const owner = PnjLookup.find(ownerId);
     if (!owner) return;
     this._ensure();
+    const ed = App.getEditionModule(owner.edition);
+    const isSprite = kind === "sprite";
+    const power = isSprite ? ed.spriteModel.compilePower : ed.summonPower;
+    const defaultPow = isSprite
+      ? Utils.clamp(Actor.attr(owner, "RES") || 4, 1, 8)
+      : Utils.clamp(Actor.attr(owner, "MAG") || 4, 1, 12);
     this._summon = {
       ownerId,
       edition: owner.edition,
-      force: Utils.clamp(Actor.attr(owner, "MAG") || 4, 1, 12),
-      tier: 1,
+      kind,
+      isSprite,
+      power,
+      [power.field]: power.field === "tier" ? 1 : defaultPow,
       services: 3,
     };
     document.getElementById("summon-title").textContent =
-      `Invoquer — ${owner.name || "PNJ"}`;
-    const ed = App.getEditionModule(owner.edition);
-    document.getElementById("summon-power-label").textContent =
-      ed.summonPower.label;
-    // Services choisis à la main uniquement là où l'invocation n'est pas
-    // chiffrée (Anarchy) ; en SR5/SR6 ils découlent des succès nets du jet.
+      `${isSprite ? "Compiler" : "Invoquer"} — ${owner.name || "PNJ"}`;
+    document.getElementById("summon-power-label").textContent = power.label;
+    // Tâches/services choisis à la main quand la mécanique n'est pas chiffrée :
+    // esprit SR (conjureSkill) → masqué (succès nets) ; sprite → visible en T3b
+    // (le jet de compilation viendra en T3c). Libellé adapté au kind.
     document.getElementById("summon-service-row").style.display =
-      ed.conjureSkill ? "none" : "";
+      !isSprite && ed.conjureSkill ? "none" : "";
+    document.querySelector("#summon-service-row .summon-row-label").textContent =
+      isSprite ? "Tâches" : "Services";
     this._sync();
     const p = document.getElementById("summon-panel");
     p.removeAttribute("hidden");
@@ -106,10 +118,9 @@ export const SummonPanel = {
 
   _sync() {
     const s = this._summon;
-    const summonPower = App.getEditionModule(s.edition).summonPower;
     document.getElementById("summon-power-steps").innerHTML = AmplitudeSelector.render(
-      summonPower.steps(),
-      s[summonPower.field],
+      s.power.steps(),
+      s[s.power.field],
       "power",
     );
     document.getElementById("summon-service-steps").innerHTML = AmplitudeSelector.render(
@@ -117,11 +128,12 @@ export const SummonPanel = {
       s.services,
       "services",
     );
-    const types = Spirits.typesFor(s.edition);
+    const types = s.isSprite ? Sprites.typesFor(s.edition) : Spirits.typesFor(s.edition);
+    const icon = s.isSprite ? "◈" : "✦";
     document.getElementById("summon-types").innerHTML = Object.entries(types)
       .map(
         ([key, t]) =>
-          `<button class="summon-type-btn" data-spirit-type="${key}">✦ ${t.label}</button>`,
+          `<button class="summon-type-btn" data-spirit-type="${key}">${icon} ${t.label}</button>`,
       )
       .join("");
   },
@@ -138,6 +150,7 @@ export const SummonPanel = {
     const s = this._summon;
     const owner = PnjLookup.find(s.ownerId);
     if (!owner) return;
+    if (s.isSprite) return this._doCompile(typeKey);
     const ed = App.getEditionModule(owner.edition);
 
     // SR5/SR6 : l'app roule l'invocation (services = succès nets) + le Drain.
@@ -193,6 +206,42 @@ export const SummonPanel = {
     }
   },
 
+  /** Compile un sprite (T3b) : compilation MANUELLE (Niveau/palier + type +
+      tâches choisis à la main) ; le jet de compilation opposé et le
+      Technodrain viendront en T3c. Place la fiche liée sous le technomancien,
+      même geste que l'invocation. */
+  _doCompile(typeKey) {
+    const s = this._summon;
+    const owner = PnjLookup.find(s.ownerId);
+    if (!owner) return;
+    this._close();
+
+    const opts = { tasks: s.services };
+    if (s.power.field === "tier") opts.tier = s[s.power.field];
+    else opts.level = s[s.power.field];
+    const sprite = Sprites.spawn(owner, typeKey, opts);
+    if (!sprite) return;
+
+    const inShadows = Shadows.data.all.some((p) => p.id === owner.id);
+    if (inShadows) {
+      Shadows.data.all.push(sprite);
+      Shadows.save();
+    } else {
+      Gen.pool.push(sprite);
+    }
+    const ownerCard =
+      document.querySelector(`.panel.active .pnj-card[data-id="${owner.id}"]`) ||
+      document.querySelector(`.pnj-card[data-id="${owner.id}"]`);
+    if (ownerCard) {
+      const card = CardRenderer.render(sprite, inShadows ? ["remove"] : ["discard"]);
+      card.classList.add("vehicle-card", "spirit-card", "sprite-card", "vehicle-deploying");
+      ownerCard.insertAdjacentElement("afterend", card);
+      setTimeout(() => card.classList.remove("vehicle-deploying"), 700);
+    }
+    CardRenderer.refresh(owner);
+    toast(`Sprite compilé : ${sprite.tasks} tâche${sprite.tasks > 1 ? "s" : ""}.`);
+  },
+
   /** Pip de service : marque les services rendus (clic = bascule). */
   toggleService(spiritId, idx) {
     const sp = PnjLookup.find(spiritId);
@@ -202,12 +251,35 @@ export const SummonPanel = {
     CardRenderer.refresh(sp);
   },
 
+  /** Pip de tâche d'un sprite (miroir de toggleService, lexique « tâche »). */
+  toggleTask(spriteId, idx) {
+    const sp = PnjLookup.find(spriteId);
+    if (!sp || sp.type !== "sprite") return;
+    sp.tasksUsed = idx < (sp.tasksUsed || 0) ? idx : idx + 1;
+    Shadows.save();
+    CardRenderer.refresh(sp);
+  },
+
+  /** Renvoie un sprite (retour à la Résonance) : masque sa fiche sans perdre
+      son état, comme dismissSpirit pour un esprit. */
+  dismissSprite(spriteId) {
+    const sp = PnjLookup.find(spriteId);
+    if (!sp || sp.type !== "sprite") return;
+    sp.deployed = false;
+    document
+      .querySelectorAll(`.pnj-card[data-id="${sp.id}"]`)
+      .forEach((card) => card.remove());
+    Shadows.save();
+    const owner = PnjLookup.find(sp.ownerId);
+    if (owner) CardRenderer.refresh(owner);
+  },
+
   /** Replie/déplie la fiche d'un esprit sur place : masque son corps sans
       le congédier (l'esprit reste actif dans le pool). Purement visuel,
       distinct de dismissSpirit qui retire la fiche du plateau. */
   toggleFold(spiritId) {
     const sp = PnjLookup.find(spiritId);
-    if (!sp || sp.type !== "spirit") return;
+    if (!sp || (sp.type !== "spirit" && sp.type !== "sprite")) return;
     sp.collapsed = !sp.collapsed;
     Shadows.save();
     CardRenderer.refresh(sp);

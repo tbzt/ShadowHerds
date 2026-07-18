@@ -409,6 +409,11 @@ export const EditionSR6 = {
     regime: "sr",
     skillKey: "skillsSR6",
     types: () => ({ ...Sprites.SR_TYPES, ...Sprites.SR6_TYPES }),
+    compilePower: {
+      field: "level",
+      label: "Niveau",
+      steps: () => [1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({ value: n, label: String(n) })),
+    },
   },
   /** Réserves de dés et initiative des véhicules/drones liés : pas de
       distinction Attaque/Capteurs séparée sur l'Autopilote (Score

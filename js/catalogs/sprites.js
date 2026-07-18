@@ -245,7 +245,7 @@ export const Sprites = {
       archetype: `${t.label} (Niveau ${N})`,
       matrix,
       matrixMonitor: Math.floor(N / 2) + 8, // moniteur matriciel (INDEX §sprites)
-      matrixFilled: 0,
+      matFilled: 0, // moniteur matriciel (fieldMap UI.toggleMonitor: type "mat")
       skills,
       powers: t.powers.map((p) => ({ name: p })),
       initBase: N * 2 + (t.initMod || 0),
@@ -302,7 +302,7 @@ export const Sprites = {
       weapons: [{ name: "Cybercombat", vd: at(S.weaponVd), dmgType: "E", ranges: "[OK/–/–/–]" }],
       edges: [type.edge(at(S.typeBonus))],
       matrixMonitor: at(S.monitor),
-      matrixFilled: 0,
+      matFilled: 0, // moniteur matriciel (fieldMap UI.toggleMonitor: type "mat")
       initDice: 2,
       notes: "",
       deployed: true,

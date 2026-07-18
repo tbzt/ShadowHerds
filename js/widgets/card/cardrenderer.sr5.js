@@ -127,6 +127,7 @@ Object.assign(CardRenderer, {
     combatBody += this._drugRow(pnj, "sr5", deps);
     combatBody += this._vehicleChipRow(pnj, deps);
     combatBody += this._spiritChipRow(pnj, deps);
+    combatBody += this._spriteCompileRow(pnj, deps);
     combatBody += CyberdeckRenderer.combatArsenal(pnj, "sr5"); // râtelier Attaques unifié
     const combatSummary = init != null ? `Init ${init}+${initDice}D6` : "";
     html += this._zoneShell(pnj, "combat", combatBody, combatSummary);

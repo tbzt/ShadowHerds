@@ -3,6 +3,7 @@
 /* ============================================================
    CARD RENDERER — entités liées : véhicules/drones et esprits.
    ============================================================ */
+import { Resonance } from "../../rules/resonance.js";
 import { Spirits } from "../../catalogs/spirits.js";
 import { UI } from "../kit/ui.js";
 import { Vehicles } from "../../catalogs/vehicles.js";
@@ -216,6 +217,128 @@ Object.assign(CardRenderer, {
       <span class="tag vehicle-chip spirit-chip${active ? " deployed" : ""}${destroyed ? " destroyed" : ""}" role="button" tabindex="0"
         data-action="open-summon" data-id="${pnj.id}"
         title="Invoquer un esprit lié à ce PNJ">✦ Esprit${state}</span>
+    </div>`;
+  },
+
+  /* ============================================================
+     SPRITES COMPILÉS (T3b) — entité MATRICIELLE liée à un
+     technomancien. ⚠️ À ne pas confondre avec les méthodes
+     `_*Spirit`/`_spirit*` ci-dessus (ESPRIT du mage) : ici c'est
+     le SPRITE du technomancien, vocabulaire distinct (Compiler /
+     Niveau / tâches / Renvoyer). Glyphe ◈ (esprit = ✦).
+     ============================================================ */
+
+  /** En-tête d'un sprite compilé (miroir de `_headerSpirit`). */
+  _headerSprite(sp) {
+    const destroyed = App.getEditionModule(sp.edition).conditionMonitor?.isDestroyed?.(sp);
+    const badgeTxt = sp.regime === "anarchy1" ? this._esc(sp.tier || "Sprite") : `Niv ${sp.level}`;
+    const badge = destroyed
+      ? '<span class="pnj-rank-badge vehicle-badge destroyed">☠ Détruit</span>'
+      : `<span class="pnj-rank-badge vehicle-badge">${badgeTxt}</span>`;
+    const metaLine = sp.ownerId
+      ? `<span class="vehicle-owner-link" role="button" tabindex="0"
+          data-action="focus-owner" data-id="${sp.ownerId}"
+          title="Retrouver ${this._esc(sp.ownerName)}">↳ compilé par ${this._esc(sp.ownerName)}</span>`
+      : `<span>Sprite libre — non compilé</span>`;
+    const foldBtn = `<button class="spirit-fold-btn" data-action="toggle-spirit-fold" data-id="${sp.id}"
+        title="${sp.collapsed ? "Déplier la fiche" : "Replier la fiche"}"
+        aria-label="${sp.collapsed ? "Déplier la fiche" : "Replier la fiche"}"
+        aria-expanded="${sp.collapsed ? "false" : "true"}"><svg class="icon${sp.collapsed ? "" : " is-open"}" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>`;
+    return `<div class="pnj-card-header vehicle-header spirit-header sprite-header${destroyed ? " destroyed" : ""}">
+      <div class="pnj-header-left">
+        <div class="pnj-name">◈ ${this._esc(sp.name)}</div>
+        <div class="pnj-meta">${metaLine}</div>
+      </div>
+      ${foldBtn}
+      ${badge}
+    </div>`;
+  },
+
+  /** Barre de tâches d'un sprite (miroir de `_spiritServicesBar`, lexique
+      « tâches » côté technomancien). Sprite libre → aucune tâche due. */
+  _spriteTasksBar(sp) {
+    if (!sp.ownerId) return "";
+    const total = sp.tasks || 0;
+    const used = sp.tasksUsed || 0;
+    const pips = Array.from({ length: total }, (_, i) => {
+      const cls = i < used ? "service-pip used" : "service-pip";
+      return `<span class="${cls}" data-action="toggle-sprite-task" data-id="${sp.id}" data-idx="${i}" title="Tâche ${i + 1}${i < used ? " (rendue)" : ""}"></span>`;
+    }).join("");
+    return `<div class="spirit-services" title="Tâches dues par le sprite — cliquer pour en marquer une rendue">
+      <span class="spirit-services-label">Tâches</span>
+      <span class="spirit-services-pips">${pips}</span>
+      <span class="spirit-services-count">${total - used}/${total}</span>
+    </div>`;
+  },
+
+  /** Corps de carte d'un sprite : entité matricielle, PAS le corps physique
+      d'édition (veto Kernel). SR5/SR6 : 4 attributs matriciels (clés persona
+      A/C/T/F, cf. Resonance.ATTR_KEYS) ; Anarchy 1 : LOG-centré, Firewall =
+      Logique. Moniteur matriciel commun (type "mat", réserve la mécanique
+      toggle-monitor existante). */
+  _bodySprite(sp, deps) {
+    const esc = this._esc;
+    let html = '<div class="pnj-card-body vehicle-body sprite-body">';
+    html += this._spriteTasksBar(sp);
+    html += '<div class="combat-zone">';
+    html += this._zoneEyebrow("Sprite — matrice");
+
+    if (sp.regime === "anarchy1") {
+      html += `<div class="attr-grid">
+        ${this._attrCell("LOG", sp.attrs.LOG)}
+        ${this._attrCell("Déf", sp.defense)}
+        ${this._attrCell("FW", sp.firewall)}
+      </div>`;
+    } else {
+      const cells = Resonance.ATTR_KEYS.map((k) =>
+        this._attrCell(k.badge, (sp.matrix || {})[k.key], "", { roll: false }),
+      ).join("");
+      html += `<div class="attr-grid" title="Attaque · Corruption · Traitement de données · Firewall">${cells}</div>`;
+      if (sp.initBase != null) {
+        html += '<div class="combat-row">' + this._initPill(sp.initBase, sp.initDice || 4, sp) + "</div>";
+      }
+    }
+
+    // Compétences (rang) — tags simples, non rollables en T3b (le duel
+    // matriciel motorisé viendra en T6).
+    const skills = (sp.skills || [])
+      .map((s) => `<span class="tag">${esc(s.name)} ${s.val}</span>`)
+      .join("");
+    if (skills) html += `<div class="tag-row sprite-skills">${skills}</div>`;
+
+    // Arme de cybercombat (Anarchy 1) / pouvoirs (SR).
+    const notes = [];
+    for (const w of sp.weapons || []) notes.push(`${esc(w.name)} — VD ${w.vd}${w.dmgType || ""}`);
+    for (const p of sp.powers || []) notes.push(esc(p.name));
+    for (const e of sp.edges || []) notes.push(esc(e));
+    if (sp.special) notes.push(esc(sp.special));
+    if (notes.length)
+      html += `<div class="sprite-notes">${notes.map((n) => `<div class="sprite-note">${n}</div>`).join("")}</div>`;
+
+    // Moniteur matriciel (case unique, mécanique toggle-monitor type "mat").
+    html += `<div class="monitor-block sprite-monitor">
+      <div class="monitor-label">Moniteur matriciel</div>
+      <div class="monitor-boxes">${this._monitorBoxes(sp.id, "mat", sp.matrixMonitor || 8, sp.matFilled || 0)}</div>
+    </div>`;
+
+    html += "</div></div>";
+    return html;
+  },
+
+  /** Chip « Compiler » dans la zone Combat du technomancien (miroir de
+      `_spiritChipRow`, kind:"sprite"). Réutilise le rail via open-summon +
+      data-kind. Seuls les Émergés (Sprites.canCompile) le voient. */
+  _spriteCompileRow(pnj, deps) {
+    if (!deps.Sprites || !deps.Sprites.canCompile(pnj)) return "";
+    const linked = deps.Sprites.linkedTo(pnj.id).filter((sp) => sp.deployed);
+    const active = linked.length;
+    const state = active
+      ? `<span class="vehicle-chip-state on">● ${active}</span>`
+      : '<span class="vehicle-chip-state"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> compiler</span>';
+    return `<div class="combat-drugs sprite-chips">
+      <span class="tag vehicle-chip spirit-chip sprite-chip${active ? " deployed" : ""}" role="button" tabindex="0"
+        data-action="open-summon" data-kind="sprite" data-id="${pnj.id}"
+        title="Compiler un sprite lié à ce technomancien">◈ Sprite${state}</span>
     </div>`;
   },
 });

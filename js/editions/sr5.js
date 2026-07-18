@@ -291,6 +291,12 @@ export const EditionSR5 = {
     regime: "sr",
     skillKey: "skillsSR5",
     types: () => Sprites.SR_TYPES,
+    /** Amplitude de compilation (jumeau de summonPower, vocabulaire techno). */
+    compilePower: {
+      field: "level",
+      label: "Niveau",
+      steps: () => [1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({ value: n, label: String(n) })),
+    },
   },
   /** Réserves de dés et initiative des véhicules/drones liés (js/catalogs/
       vehicles.js) : Autopilote + autosoft, limite de précision inexistante
