@@ -915,6 +915,169 @@ input[type="range"]#risk-dice-slider {
   cursor: pointer;
 }
 
+/* Gain d'Atout SR6 (SO vs SD) — section conditionnelle au-dessus des options
+   de dépense. Réutilise les tokens du panneau de risque. */
+#preroll-gain[hidden] {
+  display: none;
+}
+#preroll-gain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: var(--sp-2) 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.preroll-gain-head {
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.preroll-gain-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: flex-end;
+}
+.preroll-gain-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+/* Le SD réutilise le stepper du compteur de dés (.dice-count-*) ; seul le
+   sélecteur de Portée garde le style de champ générique. */
+.preroll-gain-field select {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text);
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: var(--sp-1) var(--sp-2);
+}
+.preroll-gain-static {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text);
+}
+.preroll-gain-verdict {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+/* Bouton en file après le SD (gain de place vertical) : rangée, hauteur
+   alignée sur les steppers (28px), collé au bas de la rangée. C'est l'ACTION
+   PRIMAIRE → accent-plein quand elle est actionnable (fantôme dim sinon, pour
+   que « le bouton s'allume » soit le signal du franchissement). COMPACT
+   volontairement (pas la typo display du gros bouton de lancer) : il doit
+   tenir SUR LA MÊME LIGNE que le SD, pas passer dessous. */
+.preroll-gain-btn {
+  cursor: pointer;
+  flex-direction: row;
+  align-self: flex-end;
+  height: 28px;
+  padding: 0 var(--sp-2);
+  white-space: nowrap;
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  transition:
+    filter var(--dur-fast),
+    opacity var(--dur-fast),
+    transform var(--dur-fast);
+}
+.preroll-gain-btn:hover:not(:disabled) {
+  filter: brightness(1.12);
+  border-color: var(--accent);
+}
+/* Feel au tap (appareil MJ tablette/téléphone) : enfoncement immédiat, même
+   vocabulaire que .rollable:active — sans lui le clic ne « répond » pas. */
+.preroll-gain-btn:not(:disabled):active {
+  transform: scale(0.95);
+  filter: brightness(0.92);
+}
+#preroll-gain .dice-count-step {
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base),
+    transform var(--dur-fast);
+}
+#preroll-gain .dice-count-step:active {
+  transform: scale(0.88);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.preroll-gain-btn:disabled {
+  background: var(--bg-mid);
+  color: var(--text-dim);
+  border-color: var(--border);
+  opacity: 0.55;
+  cursor: default;
+}
+/* Après un gain : le bouton acte (« ✓ Gagné ») — accent en CONTOUR, plus le
+   plein qui appelle au clic. Reste cliquable (2ᵉ Atout possible), mais discret.
+   Ne s'applique pas si le bouton est aussi désactivé (l'état inactif prime). */
+.preroll-gain-btn.is-gained:not(:disabled) {
+  background: transparent;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.preroll-gain-btn.is-gained:not(:disabled):hover {
+  filter: none;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.preroll-gain-note {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  opacity: 0.85;
+}
+/* Le nombre d'Atout clignote en accent quand il vient de monter — retour
+   visuel du gain (tient seul là où l'haptique est ignorée, ex. iOS). */
+#preroll-pool.atout-bumped strong {
+  display: inline-block;
+  animation: atout-bump 0.45s var(--ease-emphasized);
+}
+@keyframes atout-bump {
+  0% {
+    transform: scale(1);
+    color: var(--text);
+    text-shadow: none;
+  }
+  35% {
+    transform: scale(1.35);
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--glow);
+  }
+  100% {
+    transform: scale(1);
+    color: var(--text);
+    text-shadow: none;
+  }
+}
+/* Smartphone (≤640px, breakpoint mobile du projet) : le bouton passe DESSOUS
+   et prend toute la largeur (gros bouton tapable), Portée + SD restent au-
+   dessus. `flex-basis:100%` force le retour à la ligne dans la rangée wrap. */
+@media (max-width: 640px) {
+  .preroll-gain-btn {
+    flex: 1 0 100%;
+    width: 100%;
+    height: 34px;
+    justify-content: center;
+  }
+}
+
 /* ============================================================
    DÉ D'INITIATIVE — neutre (somme, pas de succès)
    ============================================================ */

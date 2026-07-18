@@ -1133,10 +1133,13 @@ export const CardRenderer = {
         });
         // Facettes d'objet motorisées, GÉNÉRALES : VD, précision, PA (chaque
         // facette résolue par WeaponEffects porte ses contributions étiquetées).
+        // Les LIBELLÉS viennent du module (prohibition n°1) : SR6 renomme
+        // Précision → SO (weaponModel.facetLabels), les mots SR5 ne fuient plus.
+        const fl = (App.getEditionModule(edition)?.weaponModel || {}).facetLabels || {};
         const FACETS = [
-          ["dvContributions", "VD"],
-          ["accuracyContributions", "Prec"],
-          ["apContributions", "PA"],
+          ["dvContributions", fl.dv || "VD"],
+          ["accuracyContributions", fl.accuracy || "Prec"],
+          ["apContributions", fl.ap || "PA"],
         ];
         const facetChips = [];
         const facetTxts = [];
