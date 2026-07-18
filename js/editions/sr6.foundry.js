@@ -32,6 +32,7 @@ import { Actor } from "../rules/actor.js";
 import { Campaign } from "../rules/campaign.js";
 import { EditionSR6 } from "./sr6.js";
 import { ItemResolver } from "../rules/itemresolver.js";
+import { Utils } from "../core/utils.js";
 
 const FoundrySR6Export = {
   /* ----------------------------------------------------------
@@ -489,29 +490,16 @@ const FoundrySR6Import = {
     return Number(node.base ?? node.total ?? node.value ?? node.rating ?? 0) || 0;
   },
 
-  /** HTML d'un champ Foundry → texte lisible : décode les entités et retire
-      les balises via un DOMParser inerte (pas d'exécution), en préservant les
-      fins de bloc (sinon `<p>…</p><p>…</p>` colle « …round.Chaque… »). */
-  _text(html) {
-    const str = String(html || "");
-    if (!str) return "";
-    if (!/[<&]/.test(str)) return str.trim();
-    const withBreaks = str.replace(/<\/(p|div|li|h[1-6])>|<br\s*\/?>/gi, "\n");
-    const doc = new DOMParser().parseFromString(withBreaks, "text/html");
-    const text = (doc.body && doc.body.textContent) || "";
-    return text.replace(/[ \t]+/g, " ").replace(/\s*\n\s*/g, "\n").replace(/\n{2,}/g, "\n").trim();
-  },
-
   /** Texte d'un item SR6. La vraie fiche range la description sous
       `system.info.description` (HTML) — `system.description` À PLAT n'existe
       que sur NOTRE propre export (repli de compat, sinon on perdait toute
       description sur une fiche venue du système, même classe de bug que la
       vague 1). Priorité aux effets de jeu (texte mécanique) sur l'ambiance
-      (plan Lot 0 « Commun »), puis décodage HTML. */
+      (plan Lot 0 « Commun »), puis décodage HTML via le helper neutre partagé. */
   _itemDesc(item) {
     const s = item.system || {};
     const info = s.info || {};
-    return this._text(info.gameEffects || info.description || s.description || "");
+    return Utils.htmlToText(info.gameEffects || info.description || s.description || "");
   },
 
   _readSkills(system) {

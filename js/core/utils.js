@@ -1648,6 +1648,21 @@ export const Utils = {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
   },
+
+  /** HTML → texte lisible : décode les entités et retire les balises via un
+      DOMParser inerte (aucune exécution de script), en préservant les fins de
+      bloc — sinon `<p>…</p><p>…</p>` collerait « …fin.Début… ». Neutre :
+      partagé par l'import Foundry SR5/SR6 pour aplatir les descriptions HTML
+      des items venus d'une vraie fiche. */
+  htmlToText(html) {
+    const str = String(html == null ? "" : html);
+    if (!str) return "";
+    if (!/[<&]/.test(str)) return str.trim();
+    const withBreaks = str.replace(/<\/(p|div|li|h[1-6])>|<br\s*\/?>/gi, "\n");
+    const doc = new DOMParser().parseFromString(withBreaks, "text/html");
+    const text = (doc.body && doc.body.textContent) || "";
+    return text.replace(/[ \t]+/g, " ").replace(/\s*\n\s*/g, "\n").replace(/\n{2,}/g, "\n").trim();
+  },
 };
 
 /* ============================================================

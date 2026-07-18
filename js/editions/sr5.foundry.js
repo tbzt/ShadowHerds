@@ -25,6 +25,7 @@ import { Content } from "../rules/content.js";
 import { EditionSR5 } from "./sr5.js";
 import { ItemResolver } from "../rules/itemresolver.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
+import { Utils } from "../core/utils.js";
 
 const FoundrySR5Export = {
   /* ----------------------------------------------------------
@@ -904,7 +905,11 @@ const FoundrySR5Import = {
       const dedupKey = `${item.type}::${item.name}`;
       if (seen.has(dedupKey)) continue;
       seen.add(dedupKey);
-      const desc = (item.system && item.system.description) || "";
+      // La vraie fiche SR5 range la description à `system.description` À PLAT
+      // (contrairement à SR6, niché sous `info.description`) — bon champ, mais
+      // en HTML brut : aplati en texte via le helper neutre partagé (entités
+      // décodées, balises retirées, fins de bloc préservées).
+      const desc = Utils.htmlToText(item.system && item.system.description);
       switch (item.type) {
         case "itemWeapon":
           pnj.equip.push(this._weaponStr(item));
