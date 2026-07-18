@@ -47,6 +47,7 @@ export const Dice = {
     const extra = [];
     let hits = 0;
     let ones = 0;
+    let edgeSixes = 0; // dés d'Edge ayant fait 6 (déclencheurs de la Règle des six)
     const tally = (v) => {
       if (v >= 5) hits++;
       if (v === 1) ones++;
@@ -64,6 +65,7 @@ export const Dice = {
       faces.push(v);
       tally(v);
       if (explode && v === 6) {
+        edgeSixes++;
         let r = Utils.randInt(1, 6);
         for (let guard = 0; guard < 100; guard++) {
           extra.push(r);
@@ -76,7 +78,7 @@ export const Dice = {
     const n = normalPool + edgeDice;
     const glitch = ones > Math.floor(n / 2);
     const critGlitch = glitch && hits === 0;
-    return { n, faces, extra, hits, ones, glitch, critGlitch, edgeDice, edgeExplode: !!explode };
+    return { n, faces, extra, hits, ones, glitch, critGlitch, edgeDice, edgeExplode: !!explode, edgeSixes };
   },
 
   /* ========================================================

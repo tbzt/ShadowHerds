@@ -12,6 +12,24 @@ commit.
 
 ## [Non publié]
 
+## [1.61.0] — 2026-07-18
+
+### Interface
+- **Journal des jets — trois textures par édition** : le journal montre désormais
+  *ce qui a fait compter le jet*, propre à chaque livre, au lieu d'un tag gris
+  uniforme.
+  - **SR5** : la **Limite** qui plafonne les succès s'affiche en pastille
+    « Précision 6→3 » (à la teinte de l'édition), au lieu d'un simple « Limité ».
+  - **SR6** (Atout) et **SR5** (« Repousser les limites », Chance) : la ressource
+    dépensée avant le jet s'affiche « +2 Atout · 2×6↯ » (ou « +2 Chance… ») — dés
+    ajoutés et six explosifs, jusqu'ici invisibles dans le journal. Le terme suit
+    l'édition (Chance en SR5, Atout en SR6).
+  - **Anarchy** : la **complication** montre sa gravité sur une échelle
+    (◆◇◇ mineure → ◆◆◆ désastre), en ambre puis rouge.
+  - L'export texte du journal reprend ces textures. Aucune migration de données :
+    les jets déjà enregistrés restent lisibles, la texture n'apparaît que sur les
+    nouveaux jets.
+
 ## [1.60.0] — 2026-07-18
 
 ### Ajouté

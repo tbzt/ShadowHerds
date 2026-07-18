@@ -196,8 +196,10 @@ export const DiceLog = {
     const lines = this.history.map((e) => {
       const who = e.who ? `${e.who} · ` : "";
       const label = e.label || "Jet libre";
+      const tex = this._textureText(e.texture);
+      const texStr = tex ? ` {${tex}}` : "";
       const tag = e.tag ? ` [${e.tag}]` : "";
-      return `${stamp(e.t)} — ${who}${label} : ${e.main} ${e.unit || ""} (${e.sub})${tag}`
+      return `${stamp(e.t)} — ${who}${label} : ${e.main} ${e.unit || ""} (${e.sub})${texStr}${tag}`
         .replace(/\s+/g, " ")
         .trim();
     });
@@ -253,12 +255,12 @@ export const DiceLog = {
       const advSuf = res.adv === 1 ? " · avantage" : res.adv === -1 ? " · désavantage" : "";
       const detailPfx = opts.detail ? `${opts.detail} = ` : "";
       e.sub = `${detailPfx}${res.pool} dés · ${res.riskDice} de risque${advSuf}`;
-      const compLabel = {
-        minor: "Complication mineure",
-        critical: "Complication critique",
-        disaster: "Désastre",
-      }[res.complication];
-      e.tag = compLabel || "";
+      // V6 : la gravité de complication EST la texture d'édition d'Anarchy
+      // (échelle mineure→critique→désastre), pas un tag string parmi d'autres.
+      // Lue du champ neutre `res.complication` (aucune branche App.edition).
+      if (res.complication && res.complication !== "none") {
+        e.texture = { kind: "complication", sev: res.complication };
+      }
       e.cls =
         res.complication === "none"
           ? res.hits > 0
@@ -271,15 +273,30 @@ export const DiceLog = {
       e.main = String(res.hits);
       e.unit = `succès`;
       e.sub = opts.detail ? `${opts.detail} = ${res.n} dés` : `${res.n} dés`;
+      // V6 : textures d'édition, lues de champs neutres de `res` (aucune branche
+      // App.edition). La Limite (`limited`) n'est posée que sur le chemin SR5
+      // (plafond de Précision) ; l'Edge pré-jet (`edgeDice`) sur SR5 « Repousser
+      // les limites » ET SR6 — c'est le PHÉNOMÈNE (Edge dépensé + six explosifs)
+      // qui porte le sens, pas l'édition. Orthogonales aux tags d'ALARME
+      // (bévue/échec critique) qui, eux, portent la sémantique cls.
+      if (res.limited) {
+        e.texture = { kind: "limit", from: res.cappedFrom, to: res.limit };
+      } else if (res.edgeDice) {
+        // Terme VF de la ressource, fourni par le module d'édition (« Chance »
+        // en SR5, « Atout » en SR6) — jamais « Edge », jamais une branche
+        // App.edition. Capturé au jet (mono-édition) ; repli sur l'abréviation
+        // du contrat si `resourceLabel` est absent.
+        const spec = (typeof App !== "undefined" && App.editionModule && App.editionModule.preRollEdge) || null;
+        const term = (spec && (spec.resourceLabel || spec.costAttr)) || "";
+        e.texture = { kind: "edge", dice: res.edgeDice, sixes: res.edgeSixes || 0, term };
+      }
       e.tag = res.critGlitch
         ? "Échec critique"
         : res.glitch
           ? "Bévue"
-          : res.limited
-            ? `Limité (${res.cappedFrom}→${res.limit})`
-            : res.threshold != null
-              ? `Seuil ${res.threshold} ${res.hits >= res.threshold ? "atteint" : "manqué"}`
-              : "";
+          : res.threshold != null
+            ? `Seuil ${res.threshold} ${res.hits >= res.threshold ? "atteint" : "manqué"}`
+            : "";
       e.cls = res.critGlitch
         ? "crit"
         : res.glitch
@@ -500,6 +517,44 @@ export const DiceLog = {
     list.innerHTML = parts.join("");
   },
 
+  /** V6 : texture d'édition d'un jet, en clair (export texte). Chaque édition a
+      sa propre « chose qui a fait compter le jet » : la Limite plafonne (SR5),
+      l'Edge dépensé ajoute des dés à six explosifs (SR5/SR6), la complication a
+      une gravité (Anarchy). Descripteur neutre `e.texture` construit dans
+      record() — ici on n'interprète que ses champs, aucune branche App.edition. */
+  _textureText(tx) {
+    if (!tx) return "";
+    if (tx.kind === "limit") return `Précision ${tx.from}→${tx.to}`;
+    if (tx.kind === "edge") return `+${tx.dice} ${tx.term || ""}`.trim() + (tx.sixes ? ` · ${tx.sixes}×6` : "");
+    if (tx.kind === "complication") {
+      return { minor: "Complication mineure", critical: "Complication critique", disaster: "Désastre" }[tx.sev] || "";
+    }
+    return "";
+  },
+
+  /** V6 : rendu HTML de la texture (pastille teintée). Limite/Edge prennent la
+      teinte d'édition (`--accent`, dont la valeur suit le livre actif) ; la
+      complication prend la couleur de sa gravité (ambre → rouge). */
+  _textureHtml(tx) {
+    if (!tx) return "";
+    if (tx.kind === "limit") {
+      return `<span class="dice-log-texture is-limit"><span class="dice-log-texture-mark" aria-hidden="true">⊟</span>Précision ${tx.from}→${tx.to}</span>`;
+    }
+    if (tx.kind === "edge") {
+      const term = tx.term ? ` ${tx.term}` : "";
+      const six = tx.sixes ? ` · ${tx.sixes}×6<span class="dice-log-texture-mark" aria-hidden="true">↯</span>` : "";
+      return `<span class="dice-log-texture is-edge">+${tx.dice}${term}${six}</span>`;
+    }
+    if (tx.kind === "complication") {
+      const lvl = { minor: 1, critical: 2, disaster: 3 }[tx.sev] || 0;
+      const word = { minor: "mineure", critical: "critique", disaster: "désastre" }[tx.sev] || "";
+      let dots = "";
+      for (let i = 0; i < 3; i++) dots += i < lvl ? "◆" : "◇";
+      return `<span class="dice-log-texture is-complication sev-${tx.sev}"><span class="dice-log-texture-dots" aria-hidden="true">${dots}</span>${word}</span>`;
+    }
+    return "";
+  },
+
   /** Rendu d'une entrée (extrait de refresh en J3 pour intercaler les
       en-têtes de tour sans dupliquer le HTML de la carte/ligne). */
   _itemHtml(e, fmt, ICON) {
@@ -515,6 +570,10 @@ export const DiceLog = {
     const tag = e.tag
       ? `<span class="dice-log-tag ${e.cls}">${Utils.escHtml(e.tag)}</span>`
       : "";
+    // V6 : texture d'édition (pastille) — « ce qui a fait compter le jet » selon
+    // le livre. Aucune donnée d'utilisateur (chiffres/gravité issus de `res`),
+    // pas de délégation : c'est une signature en lecture seule.
+    const texture = this._textureHtml(e.texture);
     const icon = isCard ? `<span class="dice-log-icon" aria-hidden="true">${ICON[e.cls]}</span>` : "";
     // Détail replié par défaut : bouton "▸ Détail" à la place du sub brut,
     // le pool complet reste à un tap (outil de confiance à la demande).
@@ -551,6 +610,7 @@ export const DiceLog = {
         ${label}
         ${detail}
         ${note}
+        ${texture}
         ${tag}
       </div>
       <span class="dice-log-main">${e.main}<small>${e.unit || ""}</small></span>

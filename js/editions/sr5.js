@@ -88,6 +88,7 @@ export const EditionSR5 = {
       pas d'Edge pré-jet par PNJ. */
   preRollEdge: {
     costAttr: "CHC",
+    resourceLabel: "Chance", // nom VF de la ressource (jamais « Edge ») — lu par le journal des jets
     options: [
       {
         id: "pushLimit",

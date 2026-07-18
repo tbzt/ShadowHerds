@@ -102,6 +102,7 @@ export const EditionSR6 = {
       Limite → `ignoreLimit:false`. `dice:"rating"` = valeur de `costAttr`. */
   preRollEdge: {
     costAttr: "ATO",
+    resourceLabel: "Atout", // nom VF de la ressource (jamais « Edge ») — lu par le journal des jets
     options: [
       {
         id: "takeRisk",

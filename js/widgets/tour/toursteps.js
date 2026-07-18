@@ -353,6 +353,11 @@ export const TourSteps = {
       title: "L'interface prend de la profondeur (Réalité augmentée)",
       body: "L'app gagne du relief : les cartes se détachent enfin du fond, un liseré capte la lumière, et le survol les soulève. Le générateur inaugure la peau « Réalité augmentée » — un chrome cyan (grille de scan, tag //AR) qui reste constant quand l'accent d'édition, lui, change de livre en livre. L'écran de choix d'édition adopte enfin les couleurs réalignées des quatre livres. Et l'apparition d'un PNJ généré se fait en douceur, sans à-coup.",
     },
+    {
+      id: "wn-dicelog-textures", anchor: "nav-combat", tours: ["whatsnew"], since: "1.61.0", fallback: "center",
+      title: "Journal des jets : la texture de votre édition",
+      body: "Le journal des jets montre maintenant ce qui a fait compter le jet, propre à chaque livre, au lieu d'un tag gris uniforme. En SR5, la Limite qui plafonne les succès s'affiche « Précision 6→3 ». La ressource dépensée avant le jet s'affiche avec son nom d'édition — « +2 Atout · 2×6↯ » en SR6, « +2 Chance… » en SR5 (Repousser les limites) : dés ajoutés et six explosifs, jusqu'ici invisibles. En Anarchy, la complication montre sa gravité sur une échelle (◆◇◇ mineure → ◆◆◆ désastre). L'export texte reprend ces textures ; les jets déjà enregistrés restent lisibles.",
+    },
   ],
 };
 
