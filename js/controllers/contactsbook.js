@@ -12,12 +12,12 @@ const _contactsCollection = Collection.create(
   {
     key: "contacts",
     storageKeys: { all: "contacts_all", groups: "contacts_groups" },
-    // dragGrid (Vague B1) : dom.grid n'est jamais monté dans le DOM (les
-    // contacts ne s'affichent QUE via l'écran de génération, cf.
-    // _renderGenGrid) — le glisser-déposer doit viser le conteneur réel.
+    // dom.grid n'est jamais monté dans le DOM (les contacts ne s'affichent QUE
+    // via l'écran de génération, cf. _renderGenGrid, ou le Hub) : le
+    // glisser-déposer B1 est délégué sur `document` et dérive sa grille du
+    // parent réel de la carte, il n'a donc pas besoin d'un id de conteneur.
     dom: {
       grid: "contacts-grid",
-      dragGrid: "contacts-gen-grid",
       sidebar: "contacts-group-list",
       label: "contacts-group-label",
     },

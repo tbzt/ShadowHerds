@@ -12,6 +12,18 @@ commit.
 
 ## [Non publié]
 
+## [1.67.1] — 2026-07-18
+
+### Corrigé
+- **Réordonner ses fiches depuis le Hub (« Ombres portées »)** fonctionne à
+  nouveau : la poignée ⠿ et les flèches ↑/↓ étaient visibles sur les cartes
+  d'Ombres, de contacts et de serveurs affichées dans la vue de consultation,
+  mais le glisser et le clavier y restaient inertes (le mécanisme était lié à
+  une grille de génération absente de cet écran — les Ombres n'ont même pas de
+  grille propre). Le glisser-déposer est désormais délégué sur la page entière,
+  comme le reste des interactions de carte, et agit dans n'importe quel
+  conteneur où la fiche est rendue.
+
 ## [1.67.0] — 2026-07-18
 
 ### Jouer
@@ -98,7 +110,6 @@ commit.
   pour **déplier ses sous-groupes**, lâchez sur le bon pour y ranger. C'est le
   pendant gestuel du bouton « Déplacer vers » de la barre de sélection, qui
   reste le canal découvrable et clavier.
-
 ## [1.62.0] — 2026-07-18
 
 ### Ajouté

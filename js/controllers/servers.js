@@ -28,11 +28,11 @@ export const Servers = Object.assign(
   Collection.create({
     key: "servers",
     storageKeys: { all: "servers_all", groups: "servers_groups" },
-    // dragGrid (Vague B1) : dom.grid n'est jamais monté (mêmes raisons que
-    // ContactsBook) — le glisser-déposer vise l'écran de génération réel.
+    // dom.grid n'est jamais monté (mêmes raisons que ContactsBook) : le
+    // glisser-déposer B1, délégué sur `document`, dérive sa grille du parent
+    // réel de la carte et n'a pas besoin d'un id de conteneur.
     dom: {
       grid: "servers-grid",
-      dragGrid: "servers-gen-grid",
       sidebar: "servers-group-list",
       label: "servers-group-label",
     },

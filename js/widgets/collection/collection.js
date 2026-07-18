@@ -675,19 +675,31 @@ export const Collection = {
         this.render();
         if (typeof this.refreshGrid === "function") this.refreshGrid();
       },
-      /** Conteneur réellement visible où glisser (Contacts/Servers y
-          affichent leurs cartes hors de dom.grid, cf. dragGrid). */
-      _dragGridEl() {
-        return document.getElementById(config.dom.dragGrid || config.dom.grid);
+      /** Cette carte appartient-elle à MA collection ? Chaque carte porte au
+          moins un descendant `[data-collection]` (poignée de groupes ou case
+          de sélection, cf. _appendGroupTrigger/_appendSelectCheckbox) : c'est
+          l'ancre d'appartenance déjà utilisée par la délégation de _wire. */
+      _ownsCard(card) {
+        return (
+          card.querySelector("[data-collection]")?.dataset.collection ===
+          this.key
+        );
       },
+      /* Réorganisation déléguée sur `document`, comme les écouteurs de _wire
+         (clic/change/input) : les cartes sont rendues dans des conteneurs qui
+         ne sont pas toujours montés (Shadows n'a pas de grille propre, elle
+         est composée par le Hub ; Contacts/Servers affichent hors de dom.grid)
+         — se lier à un élément de grille précis laissait le glisser mort dans
+         ces vues. La grille de travail (voisines à réordonner) est dérivée du
+         parent réel de la carte saisie. */
       _initReorderDrag() {
-        const grid = this._dragGridEl();
-        if (!grid) return;
-        grid.addEventListener("pointerdown", (e) => {
+        document.addEventListener("pointerdown", (e) => {
           const handle = e.target.closest(".reorder-handle");
           if (!handle) return;
           const card = handle.closest("[data-reorder-id]");
-          if (!card) return;
+          if (!card || !this._ownsCard(card)) return;
+          const grid = card.parentElement;
+          if (!grid) return;
           e.preventDefault();
           this._rdrag = { card, grid };
           card.classList.add("dragging");
@@ -743,13 +755,13 @@ export const Collection = {
       /** Flèches ↑/↓ sur la poignée focus (a11y — Vector) : canal de base,
           le glisser est l'enrichissement progressif par-dessus. */
       _wireReorderKeys() {
-        const grid = this._dragGridEl();
-        if (!grid) return;
-        grid.addEventListener("keydown", (e) => {
+        document.addEventListener("keydown", (e) => {
           if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
           const handle = e.target.closest(".reorder-handle");
           if (!handle) return;
-          const id = handle.closest("[data-reorder-id]")?.dataset.reorderId;
+          const card = handle.closest("[data-reorder-id]");
+          if (!card || !this._ownsCard(card)) return;
+          const id = card.dataset.reorderId;
           if (!id) return;
           e.preventDefault();
           if (e.key === "ArrowUp") this.moveUp(id);
@@ -792,10 +804,9 @@ export const Collection = {
             return;
           const card = e.target.closest(".bulk-selectable[data-reorder-id]");
           if (!card) return;
-          // N'agir que sur les cartes de CETTE collection (le data-collection
-          // des contrôles de pied/case identifie le propriétaire).
-          const owner = card.querySelector("[data-collection]");
-          if (!owner || owner.dataset.collection !== this.key) return;
+          // N'agir que sur les cartes de CETTE collection (même ancre
+          // d'appartenance que la réorganisation, cf. _ownsCard).
+          if (!this._ownsCard(card)) return;
 
           const id = card.dataset.reorderId;
           const pid = e.pointerId;
