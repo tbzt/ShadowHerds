@@ -1822,6 +1822,17 @@ export const EditionAnarchy1 = {
     BonusEngine.apply(pnj, edId);
     Flavor.apply(pnj);
     Cyberdeck.hydrate(pnj, edId);
+
+    // Progression ésotérique (P6) : chance croissante avec le palier
+    // d'être déjà initié — A1 n'a pas de proRating numérique (statblocks
+    // à tier textuel), d'où ce mappage grossier vers l'échelle 0-6
+    // attendue par rollForGeneration. Pas de Submersion ici : aucun
+    // statblock A1 du jeu ne porte de RES chiffrée (technoModel.
+    // livingPersona: null pour cette édition, cf. anarchy1.js).
+    if (statBlock.awakened) {
+      const tierProRating = { Figurant: 0, Sbire: 1, Pro: 3, Antagoniste: 5 }[statBlock.tier] ?? 1;
+      Esoteric.rollForGeneration(pnj, edId, "initiation", { proRating: tierProRating });
+    }
     return pnj;
   },
 

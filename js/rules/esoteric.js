@@ -27,6 +27,9 @@
    campagne d'extraction P0 (focalisée métamagies), mais c'est le
    canon documenté des deux livres de base, pas une supposition.
    ============================================================ */
+import { Content } from "./content.js";
+import { Utils } from "../core/utils.js";
+
 export const Esoteric = {
   VOIES: ["initiation", "submersion"],
 
@@ -135,6 +138,29 @@ export const Esoteric = {
     const cost = this.cost(edition, voie, nextGrade);
     if (cost == null) return "";
     return `${cost} ${this.costLabel(edition, voie)}`;
+  },
+
+  /** P6 (génération) — pose une progression ésotérique COMPLÈTE (grade +
+      acquis), jamais un simple label. Restitue l'intention perdue par le
+      fourre-tout retiré en P1 (« Initié hermétique » ne portait qu'un
+      nom, aucune mécanique) : `forced` est le cas de cet archétype et de
+      ses équivalents nommés dans les autres éditions. Hors ce cas,
+      variété assumée du projet (pas une règle du livre) : un Éveillé/
+      technomancien généré a une chance croissante avec `proRating`
+      d'être déjà initié/submergé — un run n'est pas peuplé que de
+      débutants.
+      N'écrase JAMAIS un `pnj.esoteric` déjà posé (idempotent, comme les
+      autres hydratations de génération). Un acquis par grade (règle du
+      livre : « chaque grade, une métamagie/un écho »). */
+  rollForGeneration(pnj, edition, voie, { forced = false, proRating = 0 } = {}) {
+    if (!pnj || pnj.esoteric || !this.voieAvailable(edition, voie)) return;
+    const chance = forced ? 1 : Utils.clamp(0.05 + proRating * 0.05, 0, 0.4);
+    if (Math.random() > chance) return;
+    const grade = Utils.clamp(1 + Math.floor(proRating / 2), 1, forced ? 4 : 3);
+    pnj.esoteric = this.blank(voie);
+    pnj.esoteric.grade = grade;
+    pnj.esoteric.acquis =
+      voie === "submersion" ? Content.pickEchoes(edition, grade) : Content.pickMetamagics(edition, grade);
   },
 };
 

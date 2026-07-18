@@ -12,6 +12,7 @@ import { BonusEngine } from "../rules/bonusengine.js";
 import { Coherence } from "../rules/coherence.js";
 import { Content } from "../rules/content.js";
 import { Cyberdeck } from "../rules/cyberdeck.js";
+import { Esoteric } from "../rules/esoteric.js";
 import { Flavor } from "../rules/flavor.js";
 import { Infected } from "../rules/infected.js";
 import { ItemResolver } from "../rules/itemresolver.js";
@@ -3137,6 +3138,20 @@ export const EditionSR5 = {
     Flavor.apply(pnj);
     Cyberdeck.hydrate(pnj, "sr5");
     Resonance.hydrate(pnj, "sr5");
+
+    // Progression ésotérique (P6) : « Initié hermétique » restitue enfin
+    // l'intention perdue par le fourre-tout retiré en P1 — un GRADE et des
+    // MÉTAMAGIES, pas un nom. Les autres Éveillés/technomanciens ont une
+    // chance croissante avec proRating d'être déjà initiés/submergés
+    // (variété du générateur, pas une règle du livre).
+    if (awakened) {
+      Esoteric.rollForGeneration(pnj, "sr5", "initiation", {
+        forced: archetype.includes("Initié"),
+        proRating,
+      });
+    } else if (special === "Technomancien") {
+      Esoteric.rollForGeneration(pnj, "sr5", "submersion", { proRating });
+    }
     return pnj;
   },
 

@@ -21,6 +21,7 @@ import { BonusEngine } from "../rules/bonusengine.js";
 import { Coherence } from "../rules/coherence.js";
 import { Content } from "../rules/content.js";
 import { Cyberdeck } from "../rules/cyberdeck.js";
+import { Esoteric } from "../rules/esoteric.js";
 import { Flavor } from "../rules/flavor.js";
 import { Infected } from "../rules/infected.js";
 import { ItemResolver } from "../rules/itemresolver.js";
@@ -3379,6 +3380,16 @@ export const EditionSR6 = {
     Flavor.apply(pnj);
     Cyberdeck.hydrate(pnj, "sr6");
     Resonance.hydrate(pnj, "sr6");
+
+    // Progression ésotérique (P6) : chance croissante avec le
+    // professionnalisme d'être déjà initié/submergé — variété du
+    // générateur, pas une règle du livre (aucun archétype SR6 nommé
+    // « Initié » à restituer, contrairement à SR5).
+    if (awakened) {
+      Esoteric.rollForGeneration(pnj, "sr6", "initiation", { proRating: p });
+    } else if (special === "Technomancien") {
+      Esoteric.rollForGeneration(pnj, "sr6", "submersion", { proRating: p });
+    }
     return pnj;
   },
 
