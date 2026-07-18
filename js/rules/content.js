@@ -4835,6 +4835,25 @@ export const Content = {
   },
 
   /* ========================================================
+     COURANTS DE DISSONANCE (P5, SR5 *Data Trails* p.170) — matière de
+     fond pour un technomancien dissonant (régime PNJ, comme les échos
+     dissonants ci-dessus). Pas un mécanisme chiffré (le livre ne leur
+     donne aucune règle propre, juste une identité/motivation) : simple
+     référence pour écrire un antagoniste, pas un champ motorisé sur
+     pnj — même statut que les 7 sociétés magiques SR5 (Grimoire des
+     ombres), citées en commentaire mais non câblées en UI.
+     ======================================================== */
+  dissonanceCourants: {
+    sr5: [
+      { name: "Cyberdarwinistes", desc: "« Les forts doivent régner » : utilisent la Dissonance comme expression de puissance pour soumettre le monde." },
+      { name: "Discordiens", desc: "Traitent les technomanciens (utilisateurs de Résonance) de « Caïnites », traîtres méritant l'éradication." },
+      { name: "Ex Pacis", desc: "Culte apocalyptique fondé par Pax (première dissonante) ; vise l'annihilation de toute existence pour « passer à un monde suivant »." },
+      { name: "Kauchemars", desc: "Le moins malveillant, esprit farceur façon Electric Knights mais plus cruel ; déformation macabre des serveurs et de la RA." },
+      { name: "Sublimes", desc: "Complexe de supériorité sévère : voient la métahumanité comme un outil, s'estiment une étape supérieure de l'évolution." },
+    ],
+  },
+
+  /* ========================================================
      POUVOIRS D'ADEPTE — SR5 & SR6
      ======================================================== */
   /* Liste complète vérifiée dans les livres officiels (SR6 p.158-161, SR5
@@ -5723,24 +5742,38 @@ export const Content = {
   },
 
   /** Catalogue de métamagies groupé par `pour`, pour un sélecteur manuel
-      (EditModal/carte). Exclut le contenu antagoniste (régime PNJ, P5 :
-      ce catalogue est le picker PJ/standard) — `null` si l'édition n'a
-      pas de voie Initiation (A2). Le marqueur `titreReconstitue` est
-      porté dans l'item pour un rendu dédié (jamais silencieux, cf.
-      amendement CODIR Canon). */
-  metamagicCatalogFor(ed) {
+      (EditModal/carte). Exclut le contenu antagoniste par défaut (régime
+      PNJ, P5) — `null` si l'édition n'a pas de voie Initiation (A2). Le
+      marqueur `titreReconstitue` est porté dans l'item pour un rendu
+      dédié (jamais silencieux, cf. amendement CODIR Canon).
+      `includeAntagonist` (P5) : réservé à l'édition d'un PNJ, JAMAIS
+      d'un PJ (magie du sang/toxique = matière à antagoniste, pas une
+      option de progression standard, cf. plan § P5) — le groupe dédié
+      porte le marqueur `antagonist` pour un rendu distinct (jamais
+      mélangé silencieusement au reste du catalogue). */
+  metamagicCatalogFor(ed, includeAntagonist = false) {
     ed = this._ed(ed);
-    const list = (this.metamagics[ed] || []).filter((m) => !m.antagonist);
-    if (!list.length) return null;
+    const all = this.metamagics[ed] || [];
+    const list = all.filter((m) => !m.antagonist);
+    if (!list.length && !includeAntagonist) return null;
     const byPour = new Map();
     for (const m of list) {
       if (!byPour.has(m.pour)) byPour.set(m.pour, []);
       byPour.get(m.pour).push({ id: m.name, label: m.name, titreReconstitue: !!m.titreReconstitue });
     }
-    return [...byPour.entries()].map(([pour, items]) => ({
+    const groups = [...byPour.entries()].map(([pour, items]) => ({
       category: this.metamagicPourLabels[pour] || pour,
       items,
     }));
+    if (includeAntagonist) {
+      const antagonistItems = all
+        .filter((m) => m.antagonist)
+        .map((m) => ({ id: m.name, label: m.name, antagonist: true }));
+      if (antagonistItems.length) {
+        groups.push({ category: "Régime PNJ (magie du sang/toxique)", items: antagonistItems, antagonist: true });
+      }
+    }
+    return groups.length ? groups : null;
   },
 
   /** Entrée complète d'une métamagie par nom (toutes éditions confondues
@@ -5776,13 +5809,21 @@ export const Content = {
 
   /** Catalogue plat d'échos (pas de facette `pour` — la Submersion n'a
       qu'un seul profil, contrairement à l'Initiation magicien/adepte).
-      Exclut le contenu antagoniste (régime PNJ, P5). `null` si l'édition
-      n'a pas de voie Submersion (A2, ou A1 sans T1 chargé). */
-  echoCatalogFor(ed) {
+      Exclut le contenu dissonant par défaut (régime PNJ, P5). `null` si
+      l'édition n'a pas de voie Submersion (A2, ou A1 sans T1 chargé).
+      `includeAntagonist` (P5) : réservé à l'édition d'un PNJ dissonant,
+      jamais un PJ — cf. metamagicCatalogFor pour le même arbitrage. */
+  echoCatalogFor(ed, includeAntagonist = false) {
     ed = this._ed(ed);
-    const list = (this.echoes[ed] || []).filter((e) => !e.antagonist);
-    if (!list.length) return null;
-    return list.map((e) => ({ id: e.name, label: e.name }));
+    const all = this.echoes[ed] || [];
+    const list = all.filter((e) => !e.antagonist);
+    const items = list.map((e) => ({ id: e.name, label: e.name }));
+    if (includeAntagonist) {
+      for (const e of all) {
+        if (e.antagonist) items.push({ id: e.name, label: e.name, antagonist: true });
+      }
+    }
+    return items.length ? items : null;
   },
 
   /** Entrée complète d'un écho par nom, pour le rendu de description (ⓘ). */

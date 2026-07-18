@@ -1832,13 +1832,18 @@ export const EditModal = {
 
   /* Sélecteur « ＋ Catalogue » — groupé par `pour` pour l'Initiation
      (facette canon, cf. metamagicCatalogFor), plat pour la Submersion
-     (un écho ne distingue pas magicien/adepte). */
+     (un écho ne distingue pas magicien/adepte). Contenu antagoniste
+     (magie du sang/toxique, échos dissonants — P5) inclus UNIQUEMENT
+     pour un PNJ, jamais un PJ : « régime PNJ, pas option PJ », cf.
+     plan § P5 — la matière à antagoniste n'est pas une progression
+     de personnage joueur standard. */
   _esotericCatalogControls(pnj) {
     const mod = App.getEditionModule(pnj.edition);
     const submersion = pnj.esoteric.voie === "submersion";
-    const catalog = submersion ? mod.echoCatalog?.() : mod.metamagicCatalog?.();
+    const includeAntagonist = !pnj.isPC;
+    const catalog = submersion ? mod.echoCatalog?.(includeAntagonist) : mod.metamagicCatalog?.(includeAntagonist);
     if (!catalog || !catalog.length) return "";
-    const label = (it) => (it.titreReconstitue ? `${it.label} *` : it.label);
+    const label = (it) => (it.titreReconstitue ? `${it.label} *` : it.antagonist ? `⚠ ${it.label}` : it.label);
     return `<div class="em-add-skill">
       ${SingleSelect.create({
         id: "em-esoteric-catalog",

@@ -425,14 +425,14 @@ export const EditionAnarchy1 = {
   /* Métamagies/échos (P3/P4) : le catalogue A1 vient tout entier
      d'*Anarchistes* (cœur vide) — même patron délégué que les autres
      éditions, cf. esotericModel A1 pour le pourquoi. */
-  metamagicCatalog() {
-    return Content.metamagicCatalogFor(this.id);
+  metamagicCatalog(includeAntagonist = false) {
+    return Content.metamagicCatalogFor(this.id, includeAntagonist);
   },
   addMetamagicItem(pnj, id) {
     Content.addMetamagicItem(pnj, this.id, id);
   },
-  echoCatalog() {
-    return Content.echoCatalogFor(this.id);
+  echoCatalog(includeAntagonist = false) {
+    return Content.echoCatalogFor(this.id, includeAntagonist);
   },
   addEchoItem(pnj, id) {
     Content.addEchoItem(pnj, this.id, id);

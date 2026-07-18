@@ -2465,14 +2465,14 @@ export const EditionSR5 = {
   },
   /* Métamagies/échos (P3/P4) : même patron délégué, catalogue partagé
      via Content.metamagics/echoes. */
-  metamagicCatalog() {
-    return Content.metamagicCatalogFor(this.id);
+  metamagicCatalog(includeAntagonist = false) {
+    return Content.metamagicCatalogFor(this.id, includeAntagonist);
   },
   addMetamagicItem(pnj, id) {
     Content.addMetamagicItem(pnj, this.id, id);
   },
-  echoCatalog() {
-    return Content.echoCatalogFor(this.id);
+  echoCatalog(includeAntagonist = false) {
+    return Content.echoCatalogFor(this.id, includeAntagonist);
   },
   addEchoItem(pnj, id) {
     Content.addEchoItem(pnj, this.id, id);
