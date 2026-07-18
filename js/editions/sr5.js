@@ -495,6 +495,40 @@ export const EditionSR5 = {
     source: "equip",
   },
 
+  /* Ordre d'affichage des armes sur la carte (léger → lourd), lu par
+     `weaponCategoryRank`. Ce sont les clés d'`equipPools` : aucune
+     nouvelle taxonomie, juste l'ordre où le catalogue les déclare déjà. */
+  _WEAPON_CATEGORY_ORDER: [
+    "meleeWeapons",
+    "armesExotiques",
+    "pistoletsPoche",
+    "pistoletsLegers",
+    "pistoletsLourds",
+    "mitraillettes",
+    "fusilsAssaut",
+    "shotguns",
+    "snipers",
+    "mitrailleuses",
+    "armesSpeciales",
+  ],
+
+  /** Rang de tri d'une arme pour l'affichage carte (Mains nues → mêlée →
+      pistolets → armes d'épaule → lourd). Plus petit = affiché plus tôt.
+      Match direct dans `equipPools` (les armes du catalogue sont poussées
+      telles quelles dans `pnj.equip`) ; repli par famille de combat pour
+      un nom hors catalogue (import, arme custom). */
+  weaponCategoryRank(name) {
+    if (WeaponRoll.isUnarmed(name)) return -1;
+    for (let i = 0; i < this._WEAPON_CATEGORY_ORDER.length; i++) {
+      const key = this._WEAPON_CATEGORY_ORDER[i];
+      const idx = (this.equipPools[key] || []).indexOf(name);
+      if (idx !== -1) return i * 1000 + idx;
+    }
+    const tail = this._WEAPON_CATEGORY_ORDER.length * 1000;
+    const family = WeaponRoll.combatFamily(name, "sr5");
+    return family === "melee" ? tail : tail + 100000;
+  },
+
   /* Régime Matrice SR5 — lu par Matrix via App.editionModule.matrixModel
      (jamais de branche `_edition === "sr5"` dans js/rules/matrix.js). CI à
      jets de dés, attributs ASDF, Score de Surveillance. */

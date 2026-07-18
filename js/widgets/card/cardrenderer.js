@@ -1146,6 +1146,17 @@ export const CardRenderer = {
   /** Bloc d'armes lançables, sorti dans la zone Combat. */
   _weaponBlock(pnj, weapons, edition, deps) {
     if (!weapons.length) return "";
+    // Rangé par catégorie (Mains nues → mêlée → pistolets → armes d'épaule
+    // → lourd), rang lu depuis le module d'édition — jamais de taxonomie
+    // ici (prohibition n°1). Tri stable, calcul du rang une fois par arme.
+    // Le rang matche par égalité exacte contre `equipPools` (#2), qui stocke
+    // la chaîne COMPLÈTE avec crochets — passer le nom seul (sans crochets)
+    // ferait manquer tous les matches catalogue et retomberait sur le repli.
+    const ed = App.getEditionModule(edition);
+    weapons = weapons
+      .map((w) => ({ w, rank: ed.weaponCategoryRank(ItemResolver.itemStr(w)) }))
+      .sort((a, b) => a.rank - b.rank)
+      .map(({ w }) => w);
     const rows = weapons
       .map((w) => {
         const s = ItemResolver.itemStr(w); // #63 : item chaîne OU objet

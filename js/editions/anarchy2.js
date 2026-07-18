@@ -523,6 +523,18 @@ export const EditionAnarchy2 = {
     return !!cat && cat.type === "melee";
   },
 
+  /** Rang de tri d'une arme pour l'affichage carte (Mains nues → mêlée →
+      pistolets → armes d'épaule → lourd). Plus petit = affiché plus tôt.
+      Aucune taxonomie à écrire : `WEAPON_CATALOG` déclare déjà ses armes
+      dans cet ordre (p.141-144) — on lit juste l'index de sa clé. Une
+      arme hors catalogue (ex. attaque Matrice) atterrit tout à la fin. */
+  weaponCategoryRank(name) {
+    const baseName = String(name || "").replace(/\s*\([^)]*\)\s*$/, "").trim();
+    const keys = Object.keys(this.WEAPON_CATALOG);
+    const idx = keys.includes(name) ? keys.indexOf(name) : keys.indexOf(baseName);
+    return idx === -1 ? Infinity : idx;
+  },
+
   /** Résout une entrée d'arme (objet du statBlock) en {name, vd, ranges},
       en cherchant son nom dans le catalogue officiel (après avoir retiré
       un éventuel suffixe parenthésé, ex. "Mitraillette (sur Doberman)" →

@@ -268,6 +268,28 @@ export const EditionAnarchy1 = {
     source: "equip",
   },
 
+  /* Ordre d'affichage des armes sur la carte (léger → lourd), lu par
+     `weaponCategoryRank`. Ce sont les clés d'`equipPools` : aucune
+     nouvelle taxonomie, juste l'ordre où le catalogue les déclare déjà
+     (`armesCorpsACorps` commence même déjà par « Mains nues »). */
+  _WEAPON_CATEGORY_ORDER: ["armesCorpsACorps", "armesProjectiles", "armesFeu", "armesLourdes"],
+
+  /** Rang de tri d'une arme pour l'affichage carte (Mains nues → mêlée →
+      armes à feu → lourd). Plus petit = affiché plus tôt. Match direct
+      dans `equipPools` ; repli par famille de combat pour un nom hors
+      catalogue (import, arme custom). */
+  weaponCategoryRank(name) {
+    if (WeaponRoll.isUnarmed(name)) return -1;
+    for (let i = 0; i < this._WEAPON_CATEGORY_ORDER.length; i++) {
+      const key = this._WEAPON_CATEGORY_ORDER[i];
+      const idx = (this.equipPools[key] || []).indexOf(name);
+      if (idx !== -1) return i * 1000 + idx;
+    }
+    const tail = this._WEAPON_CATEGORY_ORDER.length * 1000;
+    const family = WeaponRoll.combatFamily(name, "anarchy1");
+    return family === "melee" ? tail : tail + 100000;
+  },
+
   /* ---- Catalogue d'équipement (armes/armures/gear, p.71-77) ----
      Même socle que SR5/SR6 : `equipPools` + `_equipLabels`, ItemResolver
      aplatit et résout (id "clé::index"). Armes = chaînes poussées dans

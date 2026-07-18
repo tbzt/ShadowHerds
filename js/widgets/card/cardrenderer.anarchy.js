@@ -116,7 +116,13 @@ Object.assign(CardRenderer, {
     // Armes (lançables, ouvrent le panneau de risque RR)
     if (weapons && weapons.length) {
       combatBody += `<div class="weapon-block">`;
-      for (const a of weapons) {
+      // Rangé par catégorie (Mains nues → mêlée → pistolets → armes
+      // d'épaule → lourd), rang lu depuis WEAPON_CATALOG (prohibition n°1).
+      const ed = App.getEditionModule(pnj.edition);
+      const sortedWeapons = weapons
+        .slice()
+        .sort((a, b) => ed.weaponCategoryRank(a.name) - ed.weaponCategoryRank(b.name));
+      for (const a of sortedWeapons) {
         const noteStr = a.note
           ? ` <em style="color:var(--text-dim);font-size:0.58rem;">(${this._esc(a.note)})</em>`
           : "";

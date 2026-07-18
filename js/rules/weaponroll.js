@@ -204,6 +204,14 @@ export const WeaponRoll = {
     "mains nues": /mains? nues|poing/i,
   },
 
+  /** Arme à mains nues (poing américain compris) — utilisé par les modules
+      d'édition pour faire flotter ces armes en tête du tri d'affichage,
+      quelle que soit l'édition. Réutilise la regex de SPEC_KEYWORDS,
+      source unique du motif « mains nues ». */
+  isUnarmed(weaponName) {
+    return this.SPEC_KEYWORDS["mains nues"].test(String(weaponName || ""));
+  },
+
   /** L'arme `weaponName` relève-t-elle de la spécialisation `spec` ? */
   _specMatchesWeapon(spec, weaponName) {
     if (!spec || typeof spec !== "string") return false;
