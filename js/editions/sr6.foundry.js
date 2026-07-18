@@ -29,6 +29,7 @@
    que dwarf/troll bruts.
    ============================================================ */
 import { Actor } from "../rules/actor.js";
+import { Campaign } from "../rules/campaign.js";
 import { EditionSR6 } from "./sr6.js";
 import { ItemResolver } from "../rules/itemresolver.js";
 
@@ -593,9 +594,73 @@ const FoundrySR6Import = {
           pnj.tradition = item.name;
           pnj.traditionDrainAttr = drainRev[(item.system || {}).drainAttribute] || "";
           break;
-        case "contact":
-        case "sin":
+        case "karma":
+        case "nuyen": {
+          // Registre daté 1:1 avec Campaign.entry, même forme que SR5 : amount
+          // toujours positif, le `type` "gain"/"loss" (CONFIG.SR6.transactions
+          // Types) porte le signe. Les `date` valent "" sur une vraie fiche →
+          // Campaign.entry tamponne la date d'import ; le libellé le dit, pas de
+          // fausse chronologie.
+          const res = item.type === "karma" ? "karma" : "nuyen";
+          const s = item.system || {};
+          const amount = this._num(s.amount);
+          Campaign.ensure(pnj).ledger.push(
+            Campaign.entry(res, s.type === "loss" ? -amount : amount, `${item.name} (importé de Foundry)`),
+          );
           break;
+        }
+        case "reputation": {
+          // SR6 n'a pas la triade SR5 (cred/rumeur/renommée) : une piste signée
+          // unique `reputation` (EditionSR6.reputationTracks). Le rang est un
+          // solde déjà dérivé (rating.base), donc une seule écriture de départ,
+          // seulement si non nulle. La piste `pression` n'a aucune source Foundry.
+          const val = this._num((item.system || {}).rating);
+          if (val) Campaign.ensure(pnj).ledger.push(
+            Campaign.entry("reputation", val, `${item.name} (importé de Foundry)`),
+          );
+          break;
+        }
+        case "sin": {
+          // pnj.identities (D1) : champ additif. Côté SR6, les licences sont des
+          // `accessories` (nom+rang) ; le SIN porte `rating`, `nationality` à
+          // plat et `legality`/`price` sous `goods` (nesting confirmé au
+          // datamodel du système + fixture réel).
+          const s = item.system || {};
+          const goods = s.goods || {};
+          const accessories = Array.isArray(s.accessories) ? s.accessories : [];
+          pnj.identities.push({
+            name: item.name,
+            rating: this._num(s.rating),
+            // Importé tel quel, jamais déduit (D3) : `nationality` peut porter
+            // une corpo plutôt qu'une nation — dérive de saisie assumée.
+            nationality: s.nationality || "",
+            legality: goods.legality || "",
+            price: this._num(goods.price),
+            licenses: accessories
+              .map((l) => ({ name: (l && l.name) || "", rating: this._num(l && l.rating) }))
+              .filter((l) => l.name),
+            lifestyles: [],
+          });
+          break;
+        }
+        case "lifestyle": {
+          // Appariement par NOM en différé (buildPnj, après la boucle) — l'ordre
+          // des items ne garantit pas qu'un `sin` précède son `lifestyle`. Côté
+          // SR6, la ville est nichée (`address.city`), le `type` est une clé
+          // (streets/low/…), et `linkedIdentity` reste un LIBELLÉ, jamais promu
+          // en clé étrangère (Failsafe, miroir SR5).
+          const s = item.system || {};
+          (pnj._rawLifestyles ||= []).push({
+            name: item.name,
+            type: s.type || "",
+            city: (s.address || {}).city || "",
+            linkedIdentity: (s.linkedIdentity || "").trim(),
+          });
+          break;
+        }
+        case "contact":
+        case "vehicle":
+          break; // extraits à part (readContacts / readVehicles), pas dans la boucle d'items
         default:
           FoundryImport.note("item", `${item.name} (${item.type})`);
       }
@@ -637,6 +702,7 @@ const FoundrySR6Import = {
       powers: [],
       knowledges: [],
       traits: [],
+      identities: [], // Lot 5 (D1) : champ additif, miroir SR5
     };
     this._readItems(actor, pnj, drainRev);
     // Champs posés par generate() mais pas par recalc (cf. import SR5) :
@@ -648,7 +714,72 @@ const FoundrySR6Import = {
       pnj.isPC = true;
       pnj.player = "";
     }
+    // Styles de vie : `linkedIdentity` est un LIBELLÉ, jamais une clé étrangère
+    // (Failsafe, miroir SR5). Apparié par nom exact aux SIN déjà lus ; orphelins
+    // (« sans SIN », vide, ou libellé pendant) dans un groupe à part, jamais perdus.
+    pnj.orphanLifestyles = [];
+    for (const raw of pnj._rawLifestyles || []) {
+      const { linkedIdentity, ...lifestyle } = raw;
+      const isNone = !linkedIdentity || /^sans\s+sin$/i.test(linkedIdentity);
+      const identity = !isNone && pnj.identities.find((idn) => idn.name === linkedIdentity);
+      if (identity) identity.lifestyles.push(lifestyle);
+      else {
+        pnj.orphanLifestyles.push(lifestyle);
+        if (!isNone) FoundryImport.note("style de vie (SIN introuvable)", `${lifestyle.name} → ${linkedIdentity}`);
+      }
+    }
+    delete pnj._rawLifestyles;
+    // Identité active (D2) : défaut = SIN de meilleur niveau, modifiable par le MJ.
+    if (pnj.identities.length) {
+      pnj.activeIdentity = pnj.identities.reduce((a, b) => (b.rating > a.rating ? b : a)).name;
+    }
     return pnj;
+  },
+
+  /** Contacts (item `contact`) d'un PJ SR6 — extraction PURE (création/liaison
+      dans le contrôleur neutre : ContactsBook/Characters sont couche 5, hors de
+      portée d'un module d'édition). Miroir de readContacts SR5 ; côté SR6 le
+      rôle est sur `type`, et le métatype sous `biography` (le partiel de
+      biographie d'acteur est réutilisé par l'item contact). */
+  readContacts(actor) {
+    const out = [];
+    for (const item of actor.items || []) {
+      if (!item || item.type !== "contact" || !item.name) continue;
+      const s = item.system || {};
+      out.push({
+        name: item.name,
+        role: s.type || "",
+        metatype: (s.biography || {}).metatype || "",
+        connection: this._num(s.connection),
+        loyalty: this._num(s.loyalty),
+      });
+    }
+    return out;
+  },
+
+  /** Véhicules/drones (item `vehicle`) d'un PJ/PNJ SR6 — extraction PURE.
+      ⚠ Contrairement à SR5, l'item véhicule SR6 est « spartan » : AUCUNE stat
+      (Maniabilité/Structure/moniteur) ne vit dessus — elles sont sur un acteur
+      sidekick séparé, absent de l'export d'un personnage (vérifié au datamodel
+      du système : sidekickPartialItemModel + commentaire « all operational
+      state lives on the sidekick actor »). On n'importe donc que l'identité
+      (nom + type) ; le MJ complète les stats à la main. `_spawnVehicles`
+      (contrôleur neutre) tolère `stats:{}` / `monTotal:0`. Dédoublonné par nom. */
+  readVehicles(actor) {
+    const out = [];
+    const seen = new Set();
+    for (const item of actor.items || []) {
+      if (!item || item.type !== "vehicle" || !item.name) continue;
+      if (seen.has(item.name)) continue;
+      seen.add(item.name);
+      out.push({
+        name: item.name,
+        kind: (item.system || {}).type === "drone" ? "drone" : "vehicle",
+        stats: {},
+        monTotal: 0,
+      });
+    }
+    return out;
   },
 };
 
