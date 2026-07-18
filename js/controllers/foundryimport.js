@@ -31,6 +31,7 @@ import { Characters } from "./characters.js";
 import { ContactGen } from "./contactgen.js";
 import { ContactsBook } from "./contactsbook.js";
 import { Debug } from "../core/debug.js";
+import { Dialog } from "../widgets/kit/dialog.js";
 import { Shadows } from "./shadows.js";
 import { Utils } from "../core/utils.js";
 
@@ -109,10 +110,36 @@ export const FoundryImport = {
     });
   },
 
+  /** PJ homonyme (D4) : cherche un PJ déjà présent portant le même nom
+      (insensible à la casse/aux espaces — un joueur ne réimporte jamais
+      sous un nom légèrement différent). Édition non comparée : c'est le
+      même personnage qui compte, pas le système sous lequel il est rangé. */
+  _findHomonym(name) {
+    const n = (name || "").trim().toLowerCase();
+    if (!n) return null;
+    return Characters.data.all.find((p) => (p.name || "").trim().toLowerCase() === n) || null;
+  },
+
+  /** Demande l'arbitrage (D4) : écraser/ignorer/dupliquer. Résout la valeur
+      choisie, ou "skip" si annulée (croix/Échap) — le repli le plus sûr,
+      celui qui ne touche à rien. */
+  async _askHomonym(name) {
+    const choice = await Dialog.choose({
+      title: "PJ déjà présent",
+      message: `Un PJ nommé « ${name} » existe déjà dans la bibliothèque. Que faire ?`,
+      options: [
+        { value: "overwrite", label: "Écraser", danger: true },
+        { value: "skip", label: "Ignorer", primary: true },
+        { value: "duplicate", label: "Dupliquer" },
+      ],
+    });
+    return choice || "skip";
+  },
+
   /** Construit le PNJ ShadowHerds à partir d'un acteur Foundry et l'ajoute
       à la bonne collection. Renvoie un récap sans toaster (l'appelant
       décide du message). */
-  _importActor(actor, caps) {
+  async _importActor(actor, caps) {
     if (!actor || typeof actor !== "object" || !actor.system) {
       return { ok: false, reason: "invalid" };
     }
@@ -142,6 +169,15 @@ export const FoundryImport = {
     this._session = null;
 
     const isPc = chosen.cap.isPc(actor);
+    if (isPc) {
+      const homonym = this._findHomonym(pnj.name);
+      if (homonym) {
+        const choice = await this._askHomonym(pnj.name);
+        if (choice === "skip") return { ok: false, reason: "skipped", name: pnj.name };
+        if (choice === "overwrite") Characters.remove(homonym.id);
+        // "duplicate" : rien à faire, le PJ neuf s'ajoute à côté.
+      }
+    }
     const col = isPc ? Characters : Shadows;
     if (isPc && typeof Characters.add === "function") {
       Characters.data.all.push(pnj); // add() toaste ; on veut un récap groupé
@@ -268,6 +304,7 @@ export const FoundryImport = {
     let pj = 0;
     let pnjCount = 0;
     let failed = 0;
+    let skipped = 0;
     let unresolved = 0;
     let contactsLinked = 0;
     let vehiclesSpawned = 0;
@@ -283,9 +320,10 @@ export const FoundryImport = {
       // Foundry exporte un acteur par fichier, mais on tolère un tableau.
       const actors = Array.isArray(data) ? data : [data];
       for (const actor of actors) {
-        const res = this._importActor(actor, caps);
+        const res = await this._importActor(actor, caps);
         if (!res.ok) {
-          failed++;
+          if (res.reason === "skipped") skipped++;
+          else failed++;
           continue;
         }
         if (res.isPc) pj++;
@@ -296,7 +334,8 @@ export const FoundryImport = {
       }
     }
     if (!pj && !pnjCount) {
-      toast("Aucun acteur Foundry n'a pu être importé (format non reconnu).", "warning");
+      if (skipped) toast(`${skipped} PJ ignoré(s) (déjà présent)`, "warning");
+      else toast("Aucun acteur Foundry n'a pu être importé (format non reconnu).", "warning");
       return;
     }
     const parts = [];
@@ -307,6 +346,7 @@ export const FoundryImport = {
     if (contactsLinked) tail.push(`${contactsLinked} contact(s) lié(s)`);
     if (vehiclesSpawned) tail.push(`${vehiclesSpawned} véhicule(s)/drone(s)`);
     if (unresolved) tail.push(`${unresolved} champ(s) non repris — voir console`);
+    if (skipped) tail.push(`${skipped} ignoré(s) (déjà présent)`);
     if (failed) tail.push(`${failed} échec(s)`);
     toast(tail.length ? `${head} · ${tail.join(" · ")}` : head, unresolved || failed ? "warning" : "success");
   },

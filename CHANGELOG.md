@@ -12,6 +12,15 @@ commit.
 
 ## [Non publié]
 
+## [1.54.1] — 2026-07-18
+
+### Correctif
+- **Réimporter un PJ Foundry ne le duplique plus en silence.** L'import
+  détecte désormais un PJ déjà présent sous le même nom et propose
+  d'écraser, ignorer ou dupliquer, au lieu d'empiler une copie à chaque
+  réimport (clôt le dédoublonnage PJ homonyme laissé ouvert par l'import
+  Foundry 1.54.0).
+
 ## [1.54.0] — 2026-07-18
 
 ### Import Foundry VTT

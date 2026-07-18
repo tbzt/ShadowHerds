@@ -12,6 +12,9 @@
         -> Promise<string|null>   (null si annulé)
      Dialog.confirm({ title, message, danger })
         -> Promise<boolean>
+     Dialog.choose({ title, message, options: [{value,label,danger?,primary?}] })
+        -> Promise<string|null>   (null si annulé — le pied se reconstruit
+           entièrement, pas de bouton fixe « confirm » à réutiliser)
 
    Câblage par délégation, fermeture au clic en dehors, sur la
    croix, avec Échap (annule) ou Entrée (valide). Réutilise les
@@ -57,6 +60,8 @@ export const Dialog = {
       if (!btn) return;
       if (btn.dataset.dialogAction === "cancel") this._settle(null);
       else if (btn.dataset.dialogAction === "confirm") this._commit();
+      else if (btn.dataset.dialogAction === "choose")
+        this._settle(btn.dataset.dialogValue);
     });
 
     // Clavier : capture pour passer AVANT les raccourcis globaux d'app.js.
@@ -93,6 +98,7 @@ export const Dialog = {
     confirmLabel = "Valider",
   } = {}) {
     const overlay = this._ensure();
+    this._restoreFooter();
     this._mode = "prompt";
     overlay.querySelector('[data-dialog="title"]').textContent = title;
     const labelEl = overlay.querySelector('[data-dialog="label"]');
@@ -123,6 +129,7 @@ export const Dialog = {
     danger = false,
   } = {}) {
     const overlay = this._ensure();
+    this._restoreFooter();
     this._mode = "confirm";
     overlay.querySelector('[data-dialog="title"]').textContent = title;
     overlay.querySelector('[data-dialog="label"]').style.display = "none";
@@ -135,6 +142,47 @@ export const Dialog = {
     confirmBtn.classList.toggle("danger-btn", !!danger);
 
     return this._open(() => confirmBtn.focus()).then((v) => v !== null);
+  },
+
+  /** Modale à choix multiples (≥3 issues, ex. PJ homonyme à l'import :
+      écraser/ignorer/dupliquer). Résout avec `option.value` du bouton cliqué,
+      ou null si annulée (croix/Échap/clic hors modale — traité par l'appelant
+      comme le choix le plus sûr). Pied entièrement reconstruit : pas de
+      bouton fixe « confirm » à détourner. */
+  choose({ title = "", message = "", options = [] } = {}) {
+    const overlay = this._ensure();
+    this._mode = "choose";
+    overlay.querySelector('[data-dialog="title"]').textContent = title;
+    overlay.querySelector('[data-dialog="label"]').style.display = "none";
+    overlay.querySelector('[data-dialog="input"]').style.display = "none";
+    const msgEl = overlay.querySelector('[data-dialog="message"]');
+    msgEl.textContent = message;
+    msgEl.style.display = message ? "" : "none";
+    const footer = overlay.querySelector(".modal-footer");
+    footer.innerHTML = "";
+    for (const opt of options) {
+      const btn = document.createElement("button");
+      btn.className = opt.danger
+        ? "danger-btn"
+        : opt.primary
+          ? "btn-primary"
+          : "btn-secondary";
+      btn.textContent = opt.label;
+      btn.dataset.dialogAction = "choose";
+      btn.dataset.dialogValue = opt.value;
+      footer.appendChild(btn);
+    }
+    return this._open(() => footer.querySelector("button")?.focus());
+  },
+
+  /** Le pied est reconstruit par `choose()` (boutons dynamiques) : le
+      remettre à sa forme statique Annuler/Valider avant tout prompt/confirm. */
+  _restoreFooter() {
+    const footer = this._el.querySelector(".modal-footer");
+    if (footer.querySelector('[data-dialog="confirm-btn"]')) return;
+    footer.innerHTML = `
+      <button class="btn-secondary" data-dialog-action="cancel">Annuler</button>
+      <button class="btn-primary" data-dialog-action="confirm" data-dialog="confirm-btn">Valider</button>`;
   },
 
   _open(afterShow) {

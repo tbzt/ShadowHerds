@@ -164,4 +164,9 @@
   font-size: var(--fs-base);
   line-height: 1.5;
 }
+/* Dialog.choose() peut poser 3+ boutons (ex. PJ homonyme) : le pied fixe
+   à 2 boutons ne prévoyait pas le débordement. */
+.dialog-modal .modal-footer {
+  flex-wrap: wrap;
+}
 
