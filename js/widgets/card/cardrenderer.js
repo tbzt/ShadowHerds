@@ -1654,7 +1654,12 @@ export const CardRenderer = {
       Foundry (Cisco, 29 armes + 8 armures + 25 objets dans une seule liste
       plate, SR5 n'a pas de pnj.weapons séparé) devient lisible sans nouveau
       composant. */
-  _equipSection(pnj, items, edition, deps, augs) {
+  _equipSection(pnj, items, edition, deps, augs, decorate) {
+    // `decorate(itemStr)` (optionnel) : HTML additionnel accolé à un tag
+    // d'item, fourni par l'édition appelante — garde `_equipSection` neutre
+    // (aucune dépendance à une règle d'édition ici). Utilisé par Anarchy 2
+    // pour un badge « Points d'Anarchy de scène ».
+    const deco = typeof decorate === "function" ? decorate : () => "";
     const weaponTags = [];
     const otherTags = [];
     for (const i of items || []) {
@@ -1662,12 +1667,12 @@ export const CardRenderer = {
       // Les drogues sont pilotées depuis leur tag dans la zone Combat
       // (this._drugRow) — ici, texte simple pour éviter le doublon.
       if (deps.Drugs && deps.Drugs.matchItem(s, edition, "equip")) {
-        otherTags.push(this._contentTag(s));
+        otherTags.push(this._contentTag(s) + deco(s));
         continue;
       }
       const isWeapon = /\[/.test(s) && /(VD|PRE)/.test(s);
       if (!isWeapon) {
-        otherTags.push(this._contentTag(s));
+        otherTags.push(this._contentTag(s) + deco(s));
         continue;
       }
       const r = deps.WeaponRoll ? deps.WeaponRoll.resolvePool(pnj, s, edition) : null;
@@ -1684,7 +1689,7 @@ export const CardRenderer = {
     const weaponsHtml = weaponTags.join("");
     const othersHtml = otherTags.join("");
     const augsHtml = (augs || []).length
-      ? augs.map((a) => this._contentTag(ItemResolver.itemStr(a))).join("")
+      ? augs.map((a) => { const s = ItemResolver.itemStr(a); return this._contentTag(s) + deco(s); }).join("")
       : "";
     if (!weaponsHtml && !othersHtml && !augsHtml) return "";
 

@@ -8,6 +8,7 @@
    Toutes les interactions sont câblées par Encounter (contrôleur),
    jamais ici.
    ============================================================ */
+import { AnarchyAtouts } from "../../rules/anarchyatouts.js";
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Cyberdeck } from "../../rules/cyberdeck.js";
 import { DiceRoller } from "../dice/diceroller.js";
@@ -848,9 +849,39 @@ export const EncounterRenderer = {
       (Pass C, différée). */
   _activeEconomy(r, model) {
     const edgeHtml = model && model.edgeTracker ? this._activeEdge(r) : "";
+    const anarchyHtml = model && model.anarchyPoints ? this._activeAnarchy(r) : "";
     const actionsHtml = App.editionModule && App.editionModule.actionBudget ? this._activeActions(r) : "";
-    if (!edgeHtml && !actionsHtml) return "";
-    return `<div class="encounter-economy">${edgeHtml}${actionsHtml}</div>`;
+    if (!edgeHtml && !anarchyHtml && !actionsHtml) return "";
+    return `<div class="encounter-economy">${edgeHtml}${anarchyHtml}${actionsHtml}</div>`;
+  },
+
+  /** Rangée Points d'Anarchy (Anarchy 2.0) : compteur de scène par combattant,
+      stocké dans l'entrée de scène (c.anarchyPoints) — pas sur le PNJ (propre
+      à la scène, repart à zéro à la scène suivante). Jumelle de _activeEdge.
+      « ⟳ Crédit de scène » ajoute d'un coup le montant octroyé par les atouts/
+      drogues actives (AnarchyAtouts), une seule fois (c.anarchyCredited). Un
+      badge rappelle « +1 action/narration » quand un atout l'octroie —
+      indicateur seul (le MJ prend l'action via le budget d'actions). */
+  _activeAnarchy(r) {
+    const ap = r.anarchyPoints || 0;
+    const atouts = r.pnj ? AnarchyAtouts.collect(r.pnj) : null;
+    const grant = atouts ? atouts.anarchyPerScene : 0;
+    const credited = !!r.anarchyCredited;
+    const creditBtn =
+      grant > 0
+        ? `<button class="btn-icon-tiny encounter-anarchy-credit" data-action="anarchy-credit" data-id="${r.pnjId}"${credited ? " disabled" : ""} title="${credited ? "Points de scène déjà crédités" : `Créditer +${grant} (atouts/drogues actives) pour cette scène`}" aria-label="Créditer les Points d'Anarchy de scène">⟳ +${grant}</button>`
+        : "";
+    const narration =
+      atouts && atouts.narrationAction
+        ? `<span class="encounter-anarchy-narration" title="Un atout octroie +1 action par narration (le MJ la prend via le budget d'actions)">+1 action/narration</span>`
+        : "";
+    return `<div class="encounter-anarchy" title="Points d'Anarchy de scène (Anarchy 2.0 — atouts p.77, drogues p.159)">
+      <span class="encounter-anarchy-lbl">Points d'Anarchy</span>
+      <button class="btn-icon-tiny" data-action="anarchy-step" data-delta="-1" data-id="${r.pnjId}" aria-label="Points d'Anarchy −1">−</button>
+      <span class="encounter-anarchy-val">${ap}</span>
+      <button class="btn-icon-tiny" data-action="anarchy-step" data-delta="1" data-id="${r.pnjId}" aria-label="Points d'Anarchy +1">＋</button>
+      ${creditBtn}${narration}
+    </div>`;
   },
 
   /** Rangée Atout (SR6) : compteur de combat 0-7 par combattant, stocké

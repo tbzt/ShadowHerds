@@ -328,6 +328,11 @@ export const TourSteps = {
       title: "Import Foundry : les fiches SR6 aussi",
       body: "L'import Foundry VTT reprend maintenant, sur une vraie fiche SR6, l'historique Karma/Nuyens, la réputation, les contacts (rattachés au carnet), les identités (SIN) avec licences et styles de vie, et les véhicules/drones liés. Les descriptions de sorts, pouvoirs et traits, qui se perdaient en SR6, sont enfin reprises — et le HTML des descriptions (SR5 comme SR6) est aplati en texte propre.",
     },
+    {
+      id: "wn-anarchy-points", anchor: "nav-play", tours: ["whatsnew"], since: "1.56.0", fallback: "center",
+      title: "Anarchy 2 : Points d'Anarchy de scène",
+      body: "Les augmentations et drogues qui octroient des Points d'Anarchy « par scène » (Réflexes câblés, Move-by-wire, Jazz, Kamikaze…) sont désormais motorisées. En scène, le bandeau d'économie de la fiche active affiche une rangée « Points d'Anarchy » par participant : ± à la main, et un bouton « ⟳ Crédit de scène » qui ajoute d'un coup le total octroyé (une seule fois par scène). Un badge « ◆ » sur l'augmentation dans la fiche rappelle qui en génère, et « +1 action/narration » est signalé quand un atout l'accorde. Les points sont propres à la scène et repartent à zéro à la suivante.",
+    },
   ],
 };
 

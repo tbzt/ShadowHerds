@@ -1246,6 +1246,52 @@
   font-size: var(--fs-xs);
   color: var(--accent);
 }
+/* Pass C : rangée Points d'Anarchy de scène (Anarchy 2.0) — jumelle de
+   .encounter-edge, même grammaire. Habillage par tokens (thème anarchy2). */
+.encounter-anarchy {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.6rem 0;
+  flex-wrap: wrap;
+}
+.encounter-anarchy-lbl {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.encounter-anarchy-val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--accent);
+  min-width: 1.2em;
+  text-align: center;
+}
+.encounter-anarchy-credit {
+  font-size: var(--fs-2xs);
+}
+.encounter-anarchy-credit[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+.encounter-anarchy-narration {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.04em;
+  color: var(--accent2);
+  border: 1px solid color-mix(in srgb, var(--accent2) 40%, transparent);
+  border-radius: 999px;
+  padding: 0.05rem 0.4rem;
+}
+/* Badge de rappel sur l'item d'équipement qui octroie des points de scène. */
+.anarchy-point-badge {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent);
+  white-space: nowrap;
+}
 /* K7 : rangée budget d'actions du tour actif (jetons tappables par groupe). */
 .encounter-actions {
   display: flex;

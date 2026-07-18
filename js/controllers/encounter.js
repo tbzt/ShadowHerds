@@ -8,6 +8,7 @@
    PnjLookup à chaque rendu. Le rendu (pur) est délégué à
    EncounterRenderer.
    ============================================================ */
+import { AnarchyAtouts } from "../rules/anarchyatouts.js";
 import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
 import { Dialog } from "../widgets/kit/dialog.js";
@@ -638,6 +639,38 @@ export const Encounter = {
     }
     // La rangée Atout vit dans la fiche active mise en cache par _activeCardId :
     // forcer sa reconstruction pour que les jetons reflètent la nouvelle valeur.
+    EncounterRenderer._activeCardId = null;
+    this._commit();
+  },
+
+  /** Ajuste les Points d'Anarchy de scène d'un combattant (Anarchy 2.0,
+      atouts p.77 / drogues p.159). Jumelle de adjustEdge : la ressource vit
+      dans l'entrée de scène (c.anarchyPoints), jamais sur le PNJ — elle est
+      propre à la scène et repart à zéro à la scène suivante (nouvel état).
+      Borne basse 0, pas de plafond règle (le MJ a toujours raison). */
+  adjustAnarchyPoints(pnjId, delta) {
+    const c = this._find(pnjId);
+    if (!c) return;
+    const before = c.anarchyPoints || 0;
+    const next = Math.max(0, before + delta);
+    if (next === before) return;
+    c.anarchyPoints = next;
+    EncounterRenderer._activeCardId = null;
+    this._commit();
+  },
+
+  /** Crédite en une fois les Points d'Anarchy octroyés par les atouts/drogues
+      actives du combattant pour la scène en cours (montant = collecteur
+      AnarchyAtouts). IDEMPOTENT : le drapeau c.anarchyCredited empêche qu'un
+      re-rendu ou une réouverture de scène ne recrédite (garde-fou Failsafe).
+      Le geste reste MANUEL (tap du MJ, qui seul sait quand la scène commence). */
+  creditAnarchyScene(pnjId) {
+    const c = this._find(pnjId);
+    if (!c || !c.pnj || c.anarchyCredited) return;
+    const amount = AnarchyAtouts.collect(c.pnj).anarchyPerScene || 0;
+    if (amount <= 0) return;
+    c.anarchyPoints = (c.anarchyPoints || 0) + amount;
+    c.anarchyCredited = true;
     EncounterRenderer._activeCardId = null;
     this._commit();
   },
@@ -1524,6 +1557,15 @@ export const Encounter = {
         case "edge-step":
           // ±1 Atout du combattant actif (SR6).
           this.adjustEdge(id, parseInt(el.dataset.delta, 10) || 0);
+          break;
+        case "anarchy-step":
+          // ±1 Point d'Anarchy de scène du combattant actif (Anarchy 2.0).
+          this.adjustAnarchyPoints(id, parseInt(el.dataset.delta, 10) || 0);
+          break;
+        case "anarchy-credit":
+          // Crédite en une fois les Points d'Anarchy de scène octroyés par
+          // les atouts/drogues actives (idempotent, geste manuel du MJ).
+          this.creditAnarchyScene(id);
           break;
         case "roll-ic":
           // Jet d'une CI (attaque/défense/encaissement/perception) depuis

@@ -69,6 +69,27 @@ export const AnarchyAtouts = {
     return [].concat(pnj.equip || [], pnj.augs || []);
   },
 
+  /** Points d'Anarchy de scène octroyés par un libellé d'atout (0 si aucun).
+      Match « +N point(s) d'Anarchy par scène[ d'action] » (cyberware p.77 :
+      Amplificateur de réaction / Réflexes câblés / Move-by-wire ; drogues
+      p.159 : Cram / Jazz / Kamikaze / Nitro). Ignore la tournure
+      conditionnelle « +1 point d'Anarchy … en piratage RV » (pas « par
+      scène » → crédit contextuel, non motorisé). Accesseur public : réutilisé
+      par le badge de carte. */
+  scenePoints(text) {
+    const m = String(text || "").match(
+      /\+\s*(\d+)\s+points?\s+d[’']Anarchy\s+par\s+sc[èe]ne/i,
+    );
+    return m ? parseInt(m[1], 10) : 0;
+  },
+
+  /** true si le libellé octroie « +N action par narration » (p.77 : Réflexes
+      câblés / Move-by-wire ; drogue Jazz). Indicateur seul (le MJ prend
+      l'action via le budget existant) — pas mécanisé. */
+  grantsNarrationAction(text) {
+    return /\+\s*\d+\s+actions?\s+par\s+narration/i.test(String(text || ""));
+  },
+
   /** true si l'item est une drogue INACTIVE (idle/contrecoup) : ses
       effets d'atout (RR/VD…) ne s'appliquent que pendant l'« effet ».
       Un item non-drogue (atout permanent) contribue toujours. */
@@ -91,6 +112,8 @@ export const AnarchyAtouts = {
       armor: 0,
       legerBonus: 0,
       graveBonus: 0,
+      anarchyPerScene: 0, // Points d'Anarchy octroyés par scène (p.77 / p.159)
+      narrationAction: false, // « +1 action par narration » présent (indicateur)
     };
     if (!pnj) return out;
 
@@ -135,6 +158,12 @@ export const AnarchyAtouts = {
         out.legerBonus += 1;
       if (/\+\s*1\s+(?:case\s+de\s+)?blessure\s+grave/i.test(raw))
         out.graveBonus += 1;
+
+      // ---- Points d'Anarchy de scène + action de narration (p.77 / p.159) ----
+      // Gaté comme le reste : une drogue inactive a déjà fait `continue`
+      // ci-dessus, donc Jazz/Cram/… ne comptent que pendant leur « effet ».
+      out.anarchyPerScene += this.scenePoints(raw);
+      if (this.grantsNarrationAction(raw)) out.narrationAction = true;
     }
 
     return out;

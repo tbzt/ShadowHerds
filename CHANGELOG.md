@@ -12,6 +12,26 @@ commit.
 
 ## [Non publié]
 
+## [1.56.0] — 2026-07-18
+
+### Ajouté
+- **Anarchy 2.0 — Points d'Anarchy de scène motorisés (atouts p.77, drogues
+  p.159).** Les augmentations et drogues qui octroient des Points d'Anarchy
+  « par scène » (Amplificateur de réaction, Réflexes câblés Ares/Evo,
+  Move-by-wire, Jazz, Kamikaze, Cram, Nitro…) sont désormais reconnues. En
+  scène, le bandeau d'économie de la fiche active affiche une rangée **Points
+  d'Anarchy** par participant : ajustement ±, et un bouton **« ⟳ Crédit de
+  scène »** qui crédite d'un coup le total octroyé par les atouts/drogues
+  actives — **une seule fois par scène** (idempotent). Le compteur vit dans la
+  scène (propre à la rencontre, remis à zéro à la scène suivante), jamais sur
+  le PNJ. Un badge **◆** sur l'augmentation, dans la fiche, rappelle qui en
+  génère ; **« +1 action par narration »** est signalé quand un atout
+  l'accorde (le meneur prend l'action via le budget d'actions existant).
+
+> Note de version : numéro provisoire. Développé en parallèle d'une feature
+> SR6 (« gain d'Atout avant le jet ») qui revendique 1.55.0 — à réconcilier au
+> merge (motif du double-bump).
+
 ## [1.54.2] — 2026-07-18
 
 ### Correctif

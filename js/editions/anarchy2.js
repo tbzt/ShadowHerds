@@ -178,8 +178,12 @@ export const EditionAnarchy2 = {
       le tracker passe en mode dépouillé (tap-to-grise), sans init/tri/réordre. */
   /** threatReserve : miroir de la Réserve de menace (badge topbar) dans
       l'en-tête du cockpit — même source de vérité (DiceRoller._threat), aucun
-      état doublé. Le tracker lit ce drapeau, jamais une branche d'édition. */
-  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: true },
+      état doublé. Le tracker lit ce drapeau, jamais une branche d'édition.
+      anarchyPoints : Anarchy 2.0 dispose d'une économie de Points d'Anarchy
+      par scène (atouts p.77, drogues p.159) — le bandeau d'économie affiche
+      une rangée par participant (jumelle de l'Atout SR6 `edgeTracker`),
+      stockée dans l'entrée de scène. Drapeau de CAPACITÉ, lu à l'aveugle. */
+  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: true, anarchyPoints: true },
   /** Disposition de combat (Vague D) : { down, morale }. Anarchy 2.0 COMBATIVITÉ
       (p.180) — champ threatLevel (nulle/faible/forte/extrême). Déclencheur
       individuel (1re blessure légère/grave, ou incapacité) OU proportion

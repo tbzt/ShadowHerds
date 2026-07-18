@@ -8,6 +8,17 @@ import { ItemResolver } from "../../rules/itemresolver.js";
 import { Utils } from "../../core/utils.js";
 
 Object.assign(CardRenderer, {
+  /** Badge de rappel « Points d'Anarchy de scène » accolé à un item
+      d'équipement (cyberware p.77 / drogue p.159) qui en octroie. Décorateur
+      passé à `_equipSection` — rend le MJ conscient, sur la fiche, que ce PNJ
+      génère des points en scène (le compteur vivant est dans le cockpit).
+      Neutre : `scenePoints` renvoie 0 pour tout item non concerné. */
+  _anarchyPointBadge(s) {
+    const n = AnarchyAtouts.scenePoints(s);
+    if (n <= 0) return "";
+    return ` <span class="anarchy-point-badge" title="Octroie +${n} point${n > 1 ? "s" : ""} d'Anarchy par scène (crédit au tap dans le cockpit)">◆+${n}</span>`;
+  },
+
   /** Tags cliquables des armures optionnelles, dans la zone Combat. */
   _armorChipRow(pnj) {
     const opts = ItemResolver.armorOptions(pnj);
@@ -259,7 +270,9 @@ Object.assign(CardRenderer, {
         <div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, Actor.attr(pnj, k), "", { roll: true, edition: pnj.edition, rr: atouts ? atouts.attrRR[k] || 0 : 0 })).join("")}</div></div>`;
     }
     if (prefs.showEquipment && equip && equip.length)
-      detailsBody += this._equipSection(pnj, equip, pnj.edition, deps);
+      detailsBody += this._equipSection(pnj, equip, pnj.edition, deps, undefined, (s) =>
+        this._anarchyPointBadge(s),
+      );
     // Cyberdeck : vit désormais dans le module Matrice.
     if (notes) {
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Notes</div>
