@@ -170,6 +170,24 @@ export const DiceRoller = {
         return;
       }
 
+      // Affordance Edge pré-jet en mode « pastille » (V1 vague 3b) : contrôle
+      // DISTINCT du tap nu (loi 3), posé par CardRenderer._edgePrerollHtml
+      // seulement si une option est abordable. Ouvre TOUJOURS le panneau
+      // (jamais d'auto-interception ici, à la différence du mode « panel ») —
+      // vérifié en premier car le bouton peut être NESTÉ dans une ligne
+      // d'arme ([data-roll-weapon]), qui ne doit alors pas lancer nu.
+      const prEl = e.target.closest("[data-preroll-open]");
+      if (prEl) {
+        e.stopPropagation();
+        const rollEl = this._rollElementFor(prEl);
+        const ctx = rollEl && this._resolveRollContext(rollEl);
+        if (ctx) {
+          const options = this.preRollEdgeOptions(ctx.pnj).filter((o) => o.affordable);
+          if (options.length) this.openPreRollPanel({ pnj: ctx.pnj, options, doRoll: ctx.doRoll });
+        }
+        return;
+      }
+
       // Arme SR5/SR6 : on résout le pool depuis le PNJ et on lance
       const wEl = e.target.closest("[data-roll-weapon]");
       if (wEl) {
@@ -906,13 +924,22 @@ export const DiceRoller = {
     });
   },
 
-  /** Mode de surface de l'Edge pré-jet (préférence par appareil, cf. vague 3) :
-      "panel" = panneau pré-jet ; "pill"/"off" = pas d'interception ici (le tap
-      lance nu, la surface pastille viendra plus tard). Défaut "off" → aucun
-      geste alourdi tant que l'utilisateur n'a rien choisi. */
+  /** Mode de surface de l'Edge pré-jet (préférence par appareil) : "panel" =
+      panneau qui intercepte automatiquement le tap ; "pill" = affordance
+      distincte à côté de la pastille, le tap nu reste un lancer immédiat ;
+      "off" = rien. Défaut "off" → aucun geste alourdi tant que l'utilisateur
+      n'a rien choisi. */
   _preRollMode() {
     const p = this._hooks.getPrefs ? this._hooks.getPrefs() : null;
     return (p && p.preRollEdge) || "off";
+  },
+
+  /** Alias public de `_preRollMode`, lu par CardRenderer via `deps` (jamais
+      importé — diceroller.js importe déjà CardRenderer, un import inverse
+      créerait un cycle ; le pont est `window.DiceRoller`, cf. cardrenderer.js
+      `liveDeps()`) pour savoir si l'affordance pastille doit être dessinée. */
+  preRollMode() {
+    return this._preRollMode();
   },
 
   /** Interception pré-jet : en mode "panel", si le PNJ a des options d'Edge
@@ -925,6 +952,53 @@ export const DiceRoller = {
     if (!options.length) return false;
     this.openPreRollPanel({ pnj, options, doRoll });
     return true;
+  },
+
+  /** Depuis l'affordance pastille (bouton `[data-preroll-open]`), retrouve
+      l'élément lançable voisin dont il faut lire les données — DEUX gabarits
+      possibles : NESTÉ (ligne d'arme : le bouton est un enfant de
+      `[data-roll-weapon]`, la ligne entière est cliquable) ou SIBLING
+      (pastille de réserve `_rollPill` : le bouton suit `[data-roll]`, pas
+      dedans). Aucune donnée dupliquée sur le bouton lui-même. */
+  _rollElementFor(btn) {
+    const anc = btn.closest("[data-roll-weapon], [data-roll]");
+    if (anc) return anc;
+    const prev = btn.previousElementSibling;
+    if (prev && (prev.hasAttribute("data-roll-weapon") || prev.hasAttribute("data-roll"))) return prev;
+    return null;
+  },
+
+  /** Résout { pnj, doRoll } depuis un élément lançable ([data-roll-weapon]
+      ou [data-roll]), pour l'ouverture FORCÉE du panneau depuis l'affordance
+      pastille. Miroir en lecture seule de la logique déjà inline dans le
+      dispatch principal (ligne ~174+) — volontairement PAS partagé avec elle
+      : le chemin `[data-roll]` nu y roule même sans pnj résolu (FAB
+      générique), ce que l'affordance pastille ne doit jamais faire (elle
+      n'existe que si `preRollEdgeOptions(pnj)` a déjà trouvé un pnj). */
+  _resolveRollContext(el) {
+    if (el.hasAttribute("data-roll-weapon")) {
+      const pnj = this._hooks.resolve(el.getAttribute("data-roll-pnj"));
+      if (!pnj) return null;
+      const edition = el.getAttribute("data-roll-edition") || "sr5";
+      const weapon = el.getAttribute("data-roll-weapon");
+      return { pnj, doRoll: (edge) => this.rollWeapon(pnj, weapon, edition, edge) };
+    }
+    if (el.hasAttribute("data-roll")) {
+      const n = parseInt(el.getAttribute("data-roll"), 10);
+      if (!n || n < 1) return null;
+      const holder = el.closest(".pnj-card");
+      const pnjId = el.getAttribute("data-roll-pnj") || (holder && holder.dataset.id) || "";
+      const pnj = this._hooks.resolve(pnjId);
+      if (!pnj) return null;
+      const opts = {
+        label: el.getAttribute("data-roll-label") || "",
+        detail: el.getAttribute("data-roll-detail") || "",
+        who: pnj.name || "",
+        pnjId,
+      };
+      return { pnj, doRoll: (edge) => this.rollPool(n, opts, edge) };
+    }
+    return null;
   },
 
   _ensurePreRollPanel() {

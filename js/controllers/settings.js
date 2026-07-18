@@ -27,9 +27,10 @@ export const Settings = {
   _diceDefaults: {
     quickRoll: false,
     defaultCount: 6,
-    // Surface de l'Edge PRÉ-jet (SR5/SR6) : "off" (aucun) ou "panel" (panneau
-    // avant le jet). Par appareil, non synchronisé. Défaut "off" — le tap
-    // reste un lancer immédiat tant que le MJ n'active pas l'option.
+    // Surface de l'Edge PRÉ-jet (SR5/SR6) : "off" (aucun), "panel" (panneau
+    // avant le jet) ou "pill" (mini-menu ancré à la pastille roulable). Par
+    // appareil, non synchronisé. Défaut "off" — le tap reste un lancer
+    // immédiat tant que le MJ n'active pas l'option.
     preRollEdge: "off",
   },
   getDicePrefs() {
@@ -53,9 +54,18 @@ export const Settings = {
     toast(`Réserve par défaut : ${n} dés.`);
   },
   setDicePreRollEdge(mode) {
-    const m = mode === "panel" ? "panel" : "off";
+    const m = mode === "panel" ? "panel" : mode === "pill" ? "pill" : "off";
     this.setDicePrefs({ preRollEdge: m });
-    toast(m === "panel" ? "Edge avant le jet : panneau activé." : "Edge avant le jet désactivé.");
+    // "pill" change l'affordance dessinée sur les cartes (mini-menu) — les
+    // autres modes n'affectent que l'interception au clic, rien à re-rendre.
+    this._refreshVisibleCards();
+    toast(
+      m === "panel"
+        ? "Edge avant le jet : panneau activé."
+        : m === "pill"
+          ? "Edge avant le jet : pastille activée."
+          : "Edge avant le jet désactivé.",
+    );
   },
 
   /* ---- La section « Affichage des cartes » (radio layout + cases
@@ -288,12 +298,13 @@ export const Settings = {
           <div class="display-pref-row">
             <label for="dp_preRollEdge">Edge avant le jet (SR5/SR6)</label>
             <select id="dp_preRollEdge" data-action="set-preroll-edge">
-              <option value="off" ${dp.preRollEdge !== "panel" ? "selected" : ""}>Désactivé</option>
+              <option value="off" ${dp.preRollEdge !== "panel" && dp.preRollEdge !== "pill" ? "selected" : ""}>Désactivé</option>
               <option value="panel" ${dp.preRollEdge === "panel" ? "selected" : ""}>Panneau avant le jet</option>
+              <option value="pill" ${dp.preRollEdge === "pill" ? "selected" : ""}>Pastille sur la carte</option>
             </select>
           </div>
         </div>
-        <p class="settings-note">Quand c'est activé, un jet lancé depuis une carte SR5/SR6 dont le personnage a de l'Edge dépensable ouvre un panneau : « Repousser les limites » (SR5) ou « Prendre un risque » / « Ajouter son rang d'Atout » (SR6), sinon « Lancer sans Edge ». Le tap reste un lancer immédiat dès qu'il n'y a pas d'Edge à dépenser.</p>
+        <p class="settings-note">Quand c'est activé, un jet lancé depuis une carte SR5/SR6 dont le personnage a de l'Edge dépensable ouvre un panneau (« Panneau ») ou affiche un petit menu à côté de la pastille lançable (« Pastille ») : « Repousser les limites » (SR5) ou « Prendre un risque » / « Ajouter son rang d'Atout » (SR6), sinon lancer sans Edge. Le tap nu reste un lancer immédiat dès qu'il n'y a pas d'Edge à dépenser.</p>
       </div>
       <div class="settings-section">
         <h3>Portrait IA</h3>

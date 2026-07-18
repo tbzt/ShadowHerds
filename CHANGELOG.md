@@ -12,6 +12,21 @@ commit.
 
 ## [Non publié]
 
+## [1.53.0] — 2026-07-18
+
+### Jouer
+- **Edge avant le jet — surface « pastille » (SR5/SR6)** — 3ᵉ choix du réglage
+  Paramètres › Lanceur de dés (« Pastille sur la carte »), à côté de
+  « Panneau ». Là où le panneau intercepte automatiquement chaque jet, la
+  pastille ajoute un petit contrôle **distinct** « Edge » à côté d'un jet
+  lançable (Défense, Encaissement, Drain, armes) seulement quand le
+  personnage a une option d'Edge/Atout abordable. Le tap normal reste un
+  lancer immédiat ; toucher « Edge » ouvre le même petit choix qu'en mode
+  panneau (« Repousser les limites » SR5, « Prendre un risque » /
+  « Ajouter son rang d'Atout » SR6) avant de lancer. Vague 3b du chantier
+  Edge pré-jet, différée lors de la livraison de la vague 3a
+  (`PLANS/PLAN_LANCEUR_PREJET_EDGE.md`).
+
 ## [1.52.0] — 2026-07-17
 
 ### Jouer

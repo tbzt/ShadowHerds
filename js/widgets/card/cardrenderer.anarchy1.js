@@ -45,6 +45,7 @@ Object.assign(CardRenderer, {
         title: "Résistance au Drain",
         key: "drainResist",
         pnj,
+        deps,
       });
     if (pnj.defense != null)
       combatBody += this._rollPill("Défense", Math.max(0, pnj.defense - malus), {
@@ -52,6 +53,7 @@ Object.assign(CardRenderer, {
         glyph: "⛉",
         key: "defense",
         pnj,
+        deps,
       });
     combatBody += "</div>";
 

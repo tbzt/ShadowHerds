@@ -71,17 +71,20 @@ Object.assign(CardRenderer, {
         title: "Résistance au Drain",
         key: "drainResist",
         pnj,
+        deps,
       });
     combatBody += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus6), {
       title: "Test de défense : Réaction + Intuition",
       glyph: "⛉",
       key: "defense",
       pnj,
+      deps,
     });
     combatBody += this._rollPill("Encaissement", pnj.damageResist, {
       title: "Résistance aux dommages : Constitution seule (l'armure est un Score Défensif séparé, non affectée par le malus de blessure)",
       glyph: "⛊",
       key: "damageResist",
+      deps,
       pnj,
     });
     combatBody += `<span class="stat-pill" title="Score Défensif">SD <strong>${sdBase ?? "?"}</strong></span>`;

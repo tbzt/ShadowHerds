@@ -318,6 +318,11 @@ export const TourSteps = {
       title: "Dépenser son Edge avant le jet (SR5/SR6)",
       body: "À activer dans Paramètres › Lanceur de dés. Une fois activé, lancer depuis une carte SR5/SR6 avec de l'Edge dépensable ouvre un panneau : « Repousser les limites » (SR5, ignore la Limite), « Prendre un risque » ou « Ajouter son rang d'Atout » (SR6, dés explosifs) — sinon « Lancer sans Edge ». L'Edge du personnage est débité. Le tap reste un lancer immédiat quand il n'y a pas d'Edge à dépenser.",
     },
+    {
+      id: "wn-preroll-edge-pill", anchor: "nav-settings", tours: ["whatsnew"], since: "1.53.0", fallback: "center",
+      title: "Edge avant le jet : pastille",
+      body: "Nouveau 3ᵉ choix dans Paramètres › Lanceur de dés (« Pastille sur la carte »). Au lieu d'un panneau qui s'ouvre à chaque jet, une petite pastille « Edge » distincte apparaît à côté des jets où le personnage peut dépenser de l'Edge/Atout (Défense, Encaissement, Drain, armes). Le tap normal reste un lancer immédiat ; toucher « Edge » ouvre le petit choix (Repousser les limites / Prendre un risque / Ajouter son rang d'Atout selon l'édition) avant de lancer.",
+    },
   ],
 };
 

@@ -27,9 +27,11 @@ import { WeaponRoll } from "../../rules/weaponroll.js";
 export const CardRenderer = {
   /** Dépendances de rendu par défaut, lues depuis les globals de l'app.
       Point de câblage unique : le reste du renderer ne lit plus aucun de
-      ces modules directement, tout arrive via le paramètre `deps`. */
+      ces modules directement, tout arrive via le paramètre `deps`.
+      `DiceRoller` en bare global (pont window, pas d'import ES) : diceroller.js
+      importe déjà CardRenderer, un import direct créerait un cycle. */
   liveDeps() {
-    return { Settings, Drugs, Vehicles, Spirits, WeaponRoll, UI, Encounter };
+    return { Settings, Drugs, Vehicles, Spirits, WeaponRoll, UI, Encounter, DiceRoller };
   },
 
   /** Rend une card PNJ et retourne l'élément DOM.
@@ -1055,15 +1057,16 @@ export const CardRenderer = {
   },
 
   /** Pastille de réserve lançable (Défense, Encaissement…).
-      opts = { title, glyph, key, pnj } — key+pnj posent le détail décomposé
-      sur la pastille ELLE-MÊME (data-explain), un seul contrôle : clic/tap
-      lance (inchangé), survol desktop ou appui long tactile ouvre le
+      opts = { title, glyph, key, pnj, deps } — key+pnj posent le détail
+      décomposé sur la pastille ELLE-MÊME (data-explain), un seul contrôle :
+      clic/tap lance (inchangé), survol desktop ou appui long tactile ouvre le
       décompte (Breakdown, js/widgets/card/breakdown.js). Le résultat du jet
       porte aussi le détail (data-roll-detail, déjà affiché par
-      diceroller.js). */
+      diceroller.js). `deps` (si fourni avec `pnj`) ajoute l'affordance Edge
+      pré-jet en mode « pastille » (V1 vague 3b), sibling distinct du tap nu. */
   _rollPill(label, value, opts = {}) {
     if (value == null) return "";
-    const { title, glyph, key, pnj } = opts;
+    const { title, glyph, key, pnj, deps } = opts;
     const glyphHtml = glyph
       ? `<span class="pill-glyph" aria-hidden="true">${glyph}</span> `
       : "";
@@ -1082,7 +1085,23 @@ export const CardRenderer = {
       detailAttr = ` data-roll-detail="${this._esc(detail)}"`;
       explainAttr = ` data-explain="${key}" data-explain-pnj="${this._esc(pnj.id)}"`;
     }
-    return `<span class="stat-pill rollable combat-pill" data-roll="${value}" data-roll-label="${this._esc(label)}"${detailAttr}${explainAttr} title="${this._esc(title || label)}">${glyphHtml}${this._esc(label)} <strong>${value}</strong></span>`;
+    const pillHtml = `<span class="stat-pill rollable combat-pill" data-roll="${value}" data-roll-label="${this._esc(label)}"${detailAttr}${explainAttr} title="${this._esc(title || label)}">${glyphHtml}${this._esc(label)} <strong>${value}</strong></span>`;
+    return pillHtml + (pnj && deps ? this._edgePrerollHtml(pnj, deps) : "");
+  },
+
+  /** Affordance Edge pré-jet (V1 vague 3b) : petit contrôle DISTINCT, posé en
+      sibling juste après une pastille/ligne lançable, jamais dans le même
+      contrôle qu'elle (le tap nu de la pastille reste un lancer immédiat,
+      loi 3). N'existe que si le réglage « pastille » est actif ET qu'au
+      moins une option d'Edge pré-jet (contrat neutre preRollEdge) est
+      abordable pour ce PNJ — sinon "" (aucune pastille orpheline). Au clic,
+      diceroller.js résout le vrai jet depuis l'élément lançable voisin
+      (`_resolveRollContext`), jamais depuis un attribut dupliqué ici. */
+  _edgePrerollHtml(pnj, deps) {
+    if (!deps.DiceRoller || deps.DiceRoller.preRollMode() !== "pill") return "";
+    const options = deps.DiceRoller.preRollEdgeOptions(pnj);
+    if (!options.some((o) => o.affordable)) return "";
+    return ` <button type="button" class="edge-preroll" data-preroll-open aria-label="Edge avant le jet" title="Edge avant le jet">Edge</button>`;
   },
 
   _zoneEyebrow(label) {
@@ -1149,7 +1168,7 @@ export const CardRenderer = {
             : `data-roll-weapon="${this._esc(s)}" data-roll-edition="${edition}"`;
         return `<div class="weapon-line${bricked ? " is-bricked" : " weapon-rollable rollable"}" ${dataAttr} ${bricked ? "" : `data-roll-pnj="${pnj.id}"`} title="${this._esc(title)}">
           <div><div class="weapon-name">${this._esc(name)}</div><div class="weapon-stat">${this._esc(stat)}</div></div>
-          ${poolBadge}
+          ${poolBadge}${bricked ? "" : this._edgePrerollHtml(pnj, deps)}
         </div>`;
       })
       .join("");

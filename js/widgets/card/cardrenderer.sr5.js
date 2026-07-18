@@ -85,18 +85,21 @@ Object.assign(CardRenderer, {
         title: "Résistance au Drain",
         key: "drainResist",
         pnj,
+        deps,
       });
     combatBody += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus5), {
       title: "Test de défense : Réaction + Intuition",
       glyph: "⛉",
       key: "defense",
       pnj,
+      deps,
     });
     combatBody += this._rollPill("Encaissement", pnj.damageResist, {
       title: "Résistance aux dommages : Constitution + armure (non affectée par le malus de blessure)",
       glyph: "⛊",
       key: "damageResist",
       pnj,
+      deps,
     });
     combatBody += "</div>";
 

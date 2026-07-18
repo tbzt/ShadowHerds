@@ -972,6 +972,41 @@ input[type="range"]#risk-dice-slider {
   opacity: 0.85;
   font-size: var(--fs-2xs);
 }
+
+/* Affordance Edge PRÉ-jet en mode « pastille » (V1 vague 3b) — contrôle
+   DISTINCT posé à côté d'une pastille/ligne lançable (jamais dedans, le tap
+   nu de la pastille reste un lancer immédiat, loi 3). Sobre, typographique
+   (« Edge »), pas un nouveau glyphe : aucun symbole établi (⚔⛉⛊◎⚡✸) ne porte
+   ce concept, cf. vocabulaire de glyphes existant. Cible tactile ≥24px
+   (doctrine V0-c). */
+.edge-preroll {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 3px;
+  border: 1px solid var(--border-ui);
+  background: transparent;
+  color: var(--accent2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast),
+    box-shadow var(--dur-fast),
+    transform var(--dur-fast);
+}
+.edge-preroll:hover {
+  border-color: var(--accent2);
+  box-shadow: 0 0 8px var(--glow);
+}
+.edge-preroll:active {
+  transform: scale(0.95);
+}
 /* dans la liste d'armes Anarchy, le badge s'aligne à droite */
 .anarchy-skill-row.weapon-rollable .anarchy-skill-pool {
   display: inline-flex;
