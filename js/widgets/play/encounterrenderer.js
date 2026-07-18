@@ -626,14 +626,17 @@ export const EncounterRenderer = {
     </div>`;
   },
 
-  /** Pont entre le ciblage personnel d'un decker (DeckRun.target,
-      cf. cyberdeckrenderer.js) et la Matrice contextuelle de la scène
-      (Encounter.state.serverId). Le bloc deck du combattant actif
-      affiche déjà sa cible (CardRenderer.render → CyberdeckRenderer.block) ;
-      cette ligne ne fait qu'offrir de la promouvoir en un tap si elle
-      diffère du serveur déjà lié — réutilise linkServer, aucune donnée neuve. */
+  /** Pont entre le ciblage personnel d'un runner (DeckRun.target,
+      cf. cyberdeckrenderer.js / personarenderer.js) et la Matrice
+      contextuelle de la scène (Encounter.state.serverId). Le bloc
+      matriciel du combattant actif affiche déjà sa cible (CardRenderer.render
+      → Cyberdeck/PersonaRenderer.block) ; cette ligne ne fait qu'offrir de la
+      promouvoir en un tap si elle diffère du serveur déjà lié — réutilise
+      linkServer, aucune donnée neuve. Gate host-générique (DeckRun._host) : un
+      technomancien ciblant un serveur (persona.run) le promeut comme un
+      decker (T6a). */
   _activeDeckerLink(r, state) {
-    if (!r.pnj || r.pnj._adhoc || !r.pnj.cyberdeck) return "";
+    if (!r.pnj || r.pnj._adhoc || !DeckRun._host(r.pnj)) return "";
     const targetId = DeckRun.target(r.pnj);
     if (!targetId || targetId === state.serverId) return "";
     const srv = Servers.find(targetId);

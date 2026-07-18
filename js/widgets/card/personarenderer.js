@@ -48,6 +48,33 @@ export const PersonaRenderer = {
       <div class="ref-lbl">${esc(Resonance.label(edition))} · Indice ${persona.deviceRating}</div>
       ${attrsHtml}
       ${reallocHtml}
+      ${this._targetRow(pnj)}
+    </div>`;
+  },
+
+  /** Cible Matrice du technomancien — même picker de serveur + accès au
+      tracker que le decker (miroir de `CyberdeckRenderer._targetRow`), mais
+      posé sur le persona. L'état de ciblage est host-générique (`DeckRun`
+      lit `persona.run ∥ cyberdeck.run` depuis T6a) → on réutilise les MÊMES
+      `data-action` (`deck-set-target`/`deck-open-matrix`), zéro handler neuf :
+      le technomancien devient un runner ciblé exactement comme le decker.
+      `DeckRun`/`Servers` en globals de pont, comme le fait le renderer de
+      deck (pas d'import ES ici). */
+  _targetRow(pnj) {
+    const esc = CardRenderer._esc;
+    const targetId = DeckRun.target(pnj);
+    const servers = (Servers.data && Servers.data.all) || [];
+    const options =
+      `<option value="">Aucune cible</option>` +
+      servers
+        .map((s) => `<option value="${s.id}" ${s.id === targetId ? "selected" : ""}>${esc(s.name)}</option>`)
+        .join("");
+    const openBtn = targetId
+      ? `<button type="button" class="cyberdeck-swap" data-action="deck-open-matrix" data-id="${pnj.id}" title="Ouvrir la Matrice de ce serveur">⚡ Ouvrir la Matrice</button>`
+      : "";
+    return `<div class="cyberdeck-target">
+      <select class="cyberdeck-target-select" data-action="deck-set-target" data-id="${pnj.id}" aria-label="Serveur ciblé">${options}</select>
+      ${openBtn}
     </div>`;
   },
 

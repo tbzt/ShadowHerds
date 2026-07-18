@@ -2267,14 +2267,18 @@ export const CardRenderer = {
           // (Dice.computeRoll + DiceRoller.show + Bruit de scène), mais pools
           // tirés du persona vivant (Resonance.rollAction). Actions universelles
           // jouées « par la Résonance » (SR5 p.252) ; VD affichée, jamais
-          // appliquée d'office (le MJ tranche le test opposé). Cible ignorée
-          // en T6-a (le persona n'a pas encore de ciblage de serveur).
+          // appliquée d'office (le MJ tranche le test opposé). Depuis T6a le
+          // persona cible un serveur (persona.run, via le picker de sa carte) :
+          // le serveur visé ne sert qu'à NOMMER la cible dans le label, comme
+          // pour le decker — l'action reste indépendante de la cible.
           const pnj = PnjLookup.find(id);
           if (!pnj) break;
           const act = Resonance.rollAction(pnj, pnj.edition, actionEl.dataset.key);
           if (!act) break;
+          const srv = DeckRun.targetServer(pnj);
+          const vs = srv ? ` vs ${srv.name}` : "";
           const dvTxt = act.dv != null ? ` (VD ${act.dv})` : "";
-          const label = `${act.label}${dvTxt} — ${pnj.name}`;
+          const label = `${act.label}${dvTxt} — ${pnj.name}${vs}`;
           if (act.pool == null) {
             toast(label);
             break;

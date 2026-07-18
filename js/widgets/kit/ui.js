@@ -156,7 +156,8 @@ export const UI = {
     toast("Persona reconfiguré.");
   },
 
-  /** Le decker vise un serveur (`pnj.cyberdeck.run.targetServerId`),
+  /** Le runner vise un serveur (`<hôte>.run.targetServerId`, hôte =
+      cyberdeck d'un decker ou persona d'un technomancien depuis T6a),
       hors combat comme en scène — même motif copies multiples + persistEntity
       que reallocDeck/toggleDeckMonitor ci-dessus. `serverId` vide
       (option "Aucune") efface la cible. */
@@ -165,7 +166,7 @@ export const UI = {
     if (!copies.length) return;
     const id = serverId || null;
     for (const pnj of copies) {
-      if (!pnj.cyberdeck) continue;
+      if (!DeckRun._host(pnj)) continue;
       DeckRun._ensure(pnj).targetServerId = id;
     }
     this.persistEntity(pnjId);
