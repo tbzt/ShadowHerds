@@ -12,6 +12,18 @@ commit.
 
 ## [Non publié]
 
+## [1.54.2] — 2026-07-18
+
+### Correctif
+- **Fiche véhicule/drone lié : les stats propres de l'engin (Maniabilité,
+  Vitesse, Accél, Structure, Blindage, Autopilote, Senseurs) s'affichent en
+  grille d'attributs**, avec libellés entiers et valeur mise en avant — le
+  même rendu que les attributs d'un PNJ. Elles étaient tronquées à cinq
+  lettres dans des pastilles identiques à celles des compétences (« Autop /
+  Struc / Mania »…), ce qui les faisait lire comme des jets. Les réserves de
+  jet du véhicule (Attaque / Défense / Encaissement) restent des pastilles
+  cliquables en dessous.
+
 ## [1.54.1] — 2026-07-18
 
 ### Correctif

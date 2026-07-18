@@ -68,14 +68,16 @@ Object.assign(CardRenderer, {
     html += '<div class="combat-zone">';
     html += this._zoneEyebrow(v.kind === "drone" ? "Drone" : "Véhicule");
 
-    // Pills de stats brutes
-    const statDefs = Mod.vehicleModel.statFields.map(([key, label]) => [label, s[key]]);
-    html += '<div class="combat-row vehicle-stats">';
-    for (const [label, val] of statDefs) {
-      if (val == null) continue;
-      html += `<span class="stat-pill" title="${label}">${label.slice(0, 5)} <strong>${val}</strong></span>`;
-    }
-    html += "</div>";
+    // Attributs du véhicule (Autopilote/Structure/Maniabilité…) — même
+    // présentation que les attributs d'un PNJ (grille `_attrCell`), pas des
+    // chips de compétence : ce sont les attributs propres de l'engin, le
+    // libellé entier reste lisible et la valeur est mise en avant. Les vraies
+    // réserves de jet (`Vehicles.pools`) restent en pills cliquables dessous.
+    const cells = Mod.vehicleModel.statFields
+      .filter(([key]) => s[key] != null)
+      .map(([key, label]) => this._attrCell(label, s[key]))
+      .join("");
+    if (cells) html += `<div class="attr-grid vehicle-stats">${cells}</div>`;
 
     // Réserves de dés (jets cliquables) + initiative SR5/SR6
     const edAttr = App.getEditionModule(v.edition)?.usesRiskPanel ? ` data-roll-edition="${v.edition}"` : "";
