@@ -1,0 +1,81 @@
+/* ============================================================
+   ARO — chrome « système AR » (refonte DA « Réalité augmentée »)
+   ------------------------------------------------------------
+   Utilitaires RÉUTILISABLES et OPT-IN : un écran gagne la lecture
+   « overlay AR » en posant une classe, sans que le chrome soit
+   recopié écran par écran (Kernel). Tout roule sur le token --aro
+   (foundation.css ; teal en A1) — AUCUNE couleur en dur (Chrome).
+   DOM-free (pseudo-éléments + background), aucun nœud ajouté, aucun
+   flou, aucune animation au repos → perf/lisibilité (Vector, Silk).
+   Cf. PLAN_REFONTE_DA.md § 1 bis.
+   ============================================================ */
+
+/* Tag « //AR » devant un titre — le titre devient un libellé d'overlay.
+   Élément inline réel (un <span>), PAS un ::before : le ::before de
+   .panel-title est déjà pris par la barre d'accent d'édition. Le tag se
+   glisse ainsi entre la barre et le texte, sans collision de cascade. */
+.aro-tag {
+  color: var(--aro);
+  font-family: var(--font-mono);
+  font-size: 0.5em;
+  letter-spacing: 0.1em;
+  vertical-align: 0.35em;
+  margin: 0 0.15em 0 0.4em;
+}
+
+/* Grille de scan — fond discret derrière le contenu (peint sur le
+   background de l'élément : le contenu passe naturellement au-dessus,
+   pas de jeu de z-index). --aro-line dérive de --aro (suit l'édition). */
+.aro-grid {
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 29px, var(--aro-line) 29px 30px),
+    repeating-linear-gradient(90deg, transparent 0 29px, var(--aro-line) 29px 30px);
+}
+
+/* Cadre HUD — 4 coins en équerre, dessinés en background sur ::after
+   (aucun nœud). Les marques vivent aux coins, hors du flux de lecture.
+   ⚠ RÉSERVÉ AUX ÉLÉMENTS BORNÉS (carte, en-tête, panneau non défilant) :
+   sur un conteneur qui défile (overflow:auto), le ::after absolu flotte
+   par-dessus le contenu et lit comme un bug. Ne pas poser sur .shadows-main
+   & consorts. Pour framer un écran entier : un overlay fixe dédié. */
+.aro-frame {
+  position: relative;
+}
+.aro-frame::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.55;
+  background-image:
+    linear-gradient(var(--aro), var(--aro)), linear-gradient(var(--aro), var(--aro)),
+    linear-gradient(var(--aro), var(--aro)), linear-gradient(var(--aro), var(--aro)),
+    linear-gradient(var(--aro), var(--aro)), linear-gradient(var(--aro), var(--aro)),
+    linear-gradient(var(--aro), var(--aro)), linear-gradient(var(--aro), var(--aro));
+  background-repeat: no-repeat;
+  background-size:
+    16px 2px, 2px 16px, 16px 2px, 2px 16px,
+    16px 2px, 2px 16px, 16px 2px, 2px 16px;
+  background-position:
+    left top, left top,
+    right top, right top,
+    left bottom, left bottom,
+    right bottom, right bottom;
+}
+
+/* Crochet HUD sur une carte (coin haut-droit) — utilitaire prêt pour la
+   propagation W3 (cartes PNJ / tracker). Opt-in, ne s'applique nulle part
+   tant qu'aucun écran ne pose la classe. */
+.aro-card::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 13px;
+  height: 13px;
+  border-top: 2px solid var(--aro);
+  border-right: 2px solid var(--aro);
+  opacity: 0.7;
+  pointer-events: none;
+}

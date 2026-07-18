@@ -49,6 +49,32 @@
   --sp-6: 2rem; /* 32px */
   --sp-8: 3rem; /* 48px */
 
+  /* ---- Élévation & surfaces (refonte DA « ARO » — figure/fond) ----
+     L'app était mesurée PLATE : 0 token d'ombre, --bg-card à ~2 pts de --bg.
+     --elev-* = ombres neutres (le fond est sombre, l'ombre seule ne détache
+     pas : la carte doit être plus CLAIRE que la page → --bg-raised, posé par
+     thème). --edge-hi = liseré haut discret (matière, pas couleur d'édition).
+     Cartes biseautées (--card-clip) : utiliser filter:drop-shadow au survol,
+     pas box-shadow (le clip/overflow rognait le glow — bug latent réparé). */
+  --elev-1: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --elev-2: 0 14px 28px rgba(0, 0, 0, 0.62);
+  --edge-hi: rgba(255, 255, 255, 0.05);
+  --bg-raised: #12161c; /* fallback neutre ; chaque theme-*.css pose sa teinte */
+
+  /* ---- Rayons ---- échelle cohérente (remplace les 2/3/4/10px ad hoc au
+     fil des reprises ; les cartes gardent leur biseau --card-clip). */
+  --radius: 8px;
+  --radius-lg: 12px;
+
+  /* ---- Token « système AR » (refonte DA « ARO ») ----
+     --aro = le chrome de l'overlay AR (cadre HUD, grille de scan, crochets,
+     tag //AR). CONSTANT par édition (la signature qui unifie l'app), là où
+     --accent VARIE par livre. Défaut cyan ; theme-anarchy1.css le décale vers
+     le teal (l'accent A1 est déjà bleu). --aro-line/--aro-dim en dérivent. */
+  --aro: #3fd0e2;
+  --aro-line: color-mix(in srgb, var(--aro) 6%, transparent);
+  --aro-dim: color-mix(in srgb, var(--aro) 55%, transparent);
+
   /* ---- Tokens de mouvement ---- 3 durées + 2 courbes ; centralise le
      respect de prefers-reduced-motion. --ease-emphasized est la courbe
      à léger dépassement déjà utilisée pour les feuilles basses. */
@@ -149,13 +175,17 @@ select optgroup {
   0% { background-position: 0 0, 0 0; }
   100% { background-position: 0 560px, 560px 0; }
 }
+/* filter:drop-shadow au lieu de box-shadow : la carte d'édition SR6 est
+   biseautée (clip-path) → le box-shadow du glow était rogné (invisible). Le
+   drop-shadow suit la forme ; équivalent visuel sur les cartes non biseautées
+   (balayage du bug d'ombre rognée, refonte ARO). */
 @keyframes edition-glow-breathe {
-  0%, 100% { box-shadow: 0 0 6px 0 var(--glow); }
-  50% { box-shadow: 0 0 26px 3px var(--glow); }
+  0%, 100% { filter: drop-shadow(0 0 5px var(--glow)); }
+  50% { filter: drop-shadow(0 0 20px var(--glow)); }
 }
 @keyframes edition-glow-breathe-strong {
-  0%, 100% { box-shadow: 0 0 10px 1px var(--glow); }
-  50% { box-shadow: 0 0 34px 5px var(--glow); }
+  0%, 100% { filter: drop-shadow(0 0 8px var(--glow)); }
+  50% { filter: drop-shadow(0 0 26px var(--glow)); }
 }
 @keyframes edition-flicker {
   0%, 89%, 100% { opacity: 1; }
@@ -266,42 +296,49 @@ select optgroup {
    calme au repos, batterie ménagée sur tablette, captures stabilisées.
    prefers-reduced-motion coupe déjà ces animations plus bas (l.~353). */
 .edition-card[data-ed="sr5"] {
-  --glow: rgba(212, 130, 10, 0.35);
-  border-color: #3a2a10;
-  background: #100c08;
+  --ed-accent: #d9646d; /* réaligné sur le livre (V0-a) — la landing dérive tout de cet accent */
+  --glow: color-mix(in srgb, var(--ed-accent) 32%, transparent);
+  border-color: color-mix(in srgb, var(--ed-accent) 22%, #0b0b0b);
+  background: #0f0c0a;
   animation: edition-glow-breathe 4s ease-in-out 1;
 }
 .edition-card[data-ed="sr5"]:hover {
-  border-color: #d4820a;
+  border-color: var(--ed-accent);
 }
 
 .edition-card[data-ed="sr6"] {
-  --glow: rgba(0, 200, 255, 0.35);
-  border-color: #0a3a4a;
-  background: #080e14;
+  --ed-accent: #e24fa8;
+  --glow: color-mix(in srgb, var(--ed-accent) 32%, transparent);
+  border-color: color-mix(in srgb, var(--ed-accent) 22%, #0b0b0b);
+  background: #090e14;
   clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
   animation: edition-glow-breathe 3.2s ease-in-out 1;
 }
 .edition-card[data-ed="sr6"]:hover {
-  border-color: #00c8ff;
+  border-color: var(--ed-accent);
 }
 
 .edition-card[data-ed="anarchy1"] {
-  --glow: rgba(156, 74, 58, 0.3);
-  border-color: #4a2620;
-  background: #0d0808;
+  --ed-accent: #3a8fd0;
+  --glow: color-mix(in srgb, var(--ed-accent) 30%, transparent);
+  border-color: color-mix(in srgb, var(--ed-accent) 22%, #0b0b0b);
+  background: #120b1a;
   /* Flicker en boucle retiré (néon permanent) ; une seule pulsation d'accueil. */
   animation: edition-glow-breathe 5s ease-in-out 1;
 }
 .edition-card[data-ed="anarchy1"]:hover {
-  border-color: #9c4a3a;
+  border-color: var(--ed-accent);
 }
 
 .edition-card[data-ed="anarchy2"] {
-  --glow: rgba(255, 60, 60, 0.4);
-  border: 2px solid #ff3c3c;
-  background: #150806;
+  --ed-accent: #f0b800;
+  --glow: color-mix(in srgb, var(--ed-accent) 34%, transparent);
+  border: 2px solid color-mix(in srgb, var(--ed-accent) 70%, #0b0b0b);
+  background: #130c08;
   animation: edition-glow-breathe-strong 2.6s ease-in-out 1;
+}
+.edition-card[data-ed="anarchy2"]:hover {
+  border-color: var(--ed-accent);
 }
 
 .ed-scan {
@@ -310,7 +347,7 @@ select optgroup {
   right: 0;
   top: 0;
   height: 40%;
-  background: linear-gradient(180deg, transparent, rgba(0, 200, 255, 0.12), transparent);
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--ed-accent) 14%, transparent), transparent);
   /* Un seul balayage d'accueil, puis la barre sort du cadre et reste au repos. */
   animation: edition-scan-sweep 3.2s linear 1 forwards;
   pointer-events: none;
@@ -326,22 +363,22 @@ select optgroup {
 .edition-card[data-ed="sr5"] .ed-word {
   font-family: "Oswald", sans-serif;
   font-style: italic;
-  color: #d4820a;
+  color: var(--ed-accent);
 }
 .edition-card[data-ed="sr6"] .ed-word {
   font-family: "Chakra Petch", sans-serif;
   font-size: var(--fs-base);
-  color: #00c8ff;
+  color: var(--ed-accent);
 }
 .edition-card[data-ed^="anarchy"] .ed-word {
   font-family: "Saira Condensed", sans-serif;
   font-size: var(--fs-lg);
 }
 .edition-card[data-ed="anarchy1"] .ed-word {
-  color: #9c4a3a;
+  color: var(--ed-accent);
 }
 .edition-card[data-ed="anarchy2"] .ed-word {
-  color: #ff3c3c;
+  color: var(--ed-accent);
 }
 
 .ed-bar {
@@ -353,17 +390,17 @@ select optgroup {
   opacity: 0.6;
 }
 .edition-card[data-ed="sr5"] .ed-bar {
-  background: #d4820a;
+  background: var(--ed-accent);
 }
 .edition-card[data-ed="sr6"] .ed-bar {
-  background: #00c8ff;
+  background: var(--ed-accent);
 }
 .edition-card[data-ed="anarchy1"] .ed-bar {
-  background: #9c4a3a;
+  background: var(--ed-accent);
   opacity: 0.5;
 }
 .edition-card[data-ed="anarchy2"] .ed-bar {
-  background: #ff3c3c;
+  background: var(--ed-accent);
   opacity: 0.8;
 }
 
@@ -376,16 +413,16 @@ select optgroup {
   font-family: var(--font-mono);
 }
 .edition-card[data-ed="sr5"] .ed-sub {
-  color: #a77b35;
+  color: color-mix(in srgb, var(--ed-accent) 72%, #6a6a6a);
 }
 .edition-card[data-ed="sr6"] .ed-sub {
-  color: #2a95b5;
+  color: color-mix(in srgb, var(--ed-accent) 72%, #6a6a6a);
 }
 .edition-card[data-ed="anarchy1"] .ed-sub {
-  color: #a8705f;
+  color: color-mix(in srgb, var(--ed-accent) 72%, #6a6a6a);
 }
 .edition-card[data-ed="anarchy2"] .ed-sub {
-  color: #ff8a8a;
+  color: color-mix(in srgb, var(--ed-accent) 72%, #6a6a6a);
 }
 
 .ed-wip {

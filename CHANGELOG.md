@@ -12,6 +12,14 @@ commit.
 
 ## [Non publié]
 
+## [1.59.0] — 2026-07-18
+
+### Interface
+- **L'interface prend de la profondeur** : les cartes (PNJ, contacts, serveurs, roster…) se détachent désormais du fond — surface élevée, liseré de lumière, et un soulèvement au survol (qui répare au passage une ombre de survol qui n'apparaissait jamais, rognée par la découpe des cartes). Contraste vérifié aux quatre éditions (AA).
+- **Peau « Réalité augmentée » (générateur)** : un chrome cyan constant — grille de scan, tag `//AR` — pose une lecture d'overlay AR, indépendante de l'accent d'édition qui, lui, varie par livre (nouveau jeton `--aro`, décalé vers le teal en Anarchy 1re pour rester distinct de l'accent bleu).
+- **Écran de choix d'édition réaligné** : les quatre cartes adoptent enfin les couleurs des livres, comme le reste de l'app depuis la 1.49.0.
+- **Apparition des PNJ générés** adoucie : un fondu en place, sans l'à-coup façon glitch de l'ancien glissement.
+
 ## [1.58.0] — 2026-07-18
 
 ### Système

@@ -11,11 +11,12 @@
   --bg: #0c0806;
   --bg-card: #130c08;
   --bg-mid: #180f0a;
+  --bg-raised: #241811; /* surface élevée (cartes) — plus claire que --bg pour le figure/fond */
   --bg-header: #1a0d06;
   --accent: #f0b800;
   --accent2: #ff8800;
   --text: #e8d0c0;
-  --text-dim: #a07452;
+  --text-dim: #ab7f5c; /* remonté (était #a07452) : AA ≥4.5 sur la carte élevée --bg-raised (refonte ARO) */
   --border: #2a1008;
   /* Bordure de contrôle (case de moniteur, etc.) : teinte de l'édition,
      saturation basse, valeur minimale franchissant 3:1 sur --bg-card. */

@@ -41,19 +41,26 @@
   width: 100%;
   min-width: 0;
   position: relative;
-  animation: cardIn 0.3s ease;
+  /* « Materialize » en place (opacity + scale) au lieu d'un translateY : dans
+     la grille multi-colonnes, un glissement vertical se battait avec le
+     réagencement des colonnes → lecture « glitch/bug ». Le scale pivote sur
+     place, aucun décalage. Durée tokenisée → coupée en prefers-reduced-motion. */
+  animation: cardIn var(--dur-slow) var(--ease-standard);
   break-inside: avoid;
   -webkit-column-break-inside: avoid;
   margin-bottom: var(--sp-4);
 }
 .pnj-card-frame {
   position: relative;
-  background: var(--bg-card);
+  background: var(--bg-raised);
   border: 1px solid var(--border);
   border-radius: 4px;
   overflow: hidden;
   clip-path: var(--card-clip);
-  transition: box-shadow var(--dur-base);
+  /* Liseré haut discret : la carte « prend le jour » → figure/fond sans coût
+     (surface élevée --bg-raised + ce highlight, aucun shadow au repos). */
+  box-shadow: inset 0 1px 0 var(--edge-hi);
+  transition: filter var(--dur-base);
 }
 /* La bande droite réservée n'existe que si un rail y vit (pas sur les
    entités liées, I7) — pas de bande vide sinon. */
@@ -61,13 +68,16 @@
   margin-right: var(--rail-w);
 }
 .pnj-card:hover .pnj-card-frame {
-  box-shadow: 0 0 16px var(--glow);
+  /* Le glow de survol était ROGNÉ par clip-path + overflow:hidden (box-shadow
+     jamais visible) : filter:drop-shadow suit la forme biseautée → la carte se
+     soulève ET luit. Élévation au survol seulement (1 carte à la fois → perf). */
+  filter: drop-shadow(var(--elev-2)) drop-shadow(0 0 7px var(--glow));
 }
 
 @keyframes cardIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: scale(0.97);
   }
   to {
     opacity: 1;

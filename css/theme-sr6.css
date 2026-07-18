@@ -10,6 +10,7 @@
   --bg: #060a0e;
   --bg-card: #090e14;
   --bg-mid: #0a1018;
+  --bg-raised: #111b28; /* surface élevée (cartes) — plus claire que --bg pour le figure/fond */
   --accent: #e24fa8;
   --accent2: #7b2fff;
   --text: #bbd4e8;

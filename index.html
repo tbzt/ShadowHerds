@@ -11,6 +11,7 @@
   <!-- base.css scindé par domaine (charge répartie) : l'ordre ci-dessous
        reproduit l'ordre exact de l'ancien fichier plat, cascade inchangée. -->
   <link rel="stylesheet" href="css/base/foundation.css">
+  <link rel="stylesheet" href="css/base/aro.css">
   <link rel="stylesheet" href="css/base/forms.css">
   <link rel="stylesheet" href="css/base/pnj-card.css">
   <link rel="stylesheet" href="css/base/shadows-contacts.css">
@@ -489,7 +490,7 @@
 
         <!-- GÉNÉRATEUR PNJ -->
         <div class="panel" id="panel-generator">
-          <div class="panel-title">Générateur de PNJ</div>
+          <div class="panel-title"><span class="aro-tag">//AR</span>Générateur de PNJ</div>
           <div class="shadows-layout" data-sidebar="generator">
             <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="generator"></div>
             <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="generator" title="Afficher les dossiers"
@@ -506,7 +507,7 @@
               </div>
               <div id="gen-dossier-list"></div>
             </aside>
-            <div class="shadows-main">
+            <div class="shadows-main aro-grid">
               <!-- Générateur unique : le nombre est une variable de génération
                    (1 = un PNJ, N = une bande). Plus d'onglet individuel/groupe. -->
               <div class="gen-form" id="gen-form-single"></div>

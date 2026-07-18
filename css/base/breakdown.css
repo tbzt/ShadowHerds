@@ -16,7 +16,9 @@
   clip-path: var(--card-clip);
   border-radius: 8px;
   padding: var(--sp-3);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  /* clip-path rognait ce box-shadow (ombre morte) : filter:drop-shadow suit la
+     forme biseautée (balayage du bug d'ombre rognée, refonte ARO). */
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.45));
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   color: var(--text-dim);

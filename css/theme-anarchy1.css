@@ -17,10 +17,12 @@
   --bg: #0a0710;
   --bg-card: #120b1a;
   --bg-mid: #170e20;
+  --bg-raised: #1e1532; /* surface élevée (cartes) — plus claire que --bg pour le figure/fond */
+  --aro: #38c0c0; /* chrome AR décalé vers le teal : l'accent A1 est déjà bleu (#3a8fd0) */
   --accent: #3a8fd0;
   --accent2: #c89a2e;
   --text: #dccbe8;
-  --text-dim: #8a72a0;
+  --text-dim: #9880ac; /* remonté (était #8a72a0) : AA ≥4.5 sur la carte élevée --bg-raised (refonte ARO) */
   --border: #241030;
   /* Bordure de contrôle (case de moniteur, etc.) : teinte de l'édition,
      saturation basse, valeur minimale franchissant 3:1 sur --bg-card. */

@@ -348,6 +348,11 @@ export const TourSteps = {
       title: "Formes complexes (SR6 et Anarchy 1re)",
       body: "Les technomanciens ont désormais leurs formes complexes en SR6 et Anarchy 1re, après SR5. En SR6 (39 formes) on les tisse depuis la carte : le test se roule (Électronique + Résonance, ou Piratage pour Pic de Résonance), le Technodrain se résiste (Volonté + Logique), les dégâts s'encaissent — même geste qu'un sort. En Anarchy 1 (18 formes), fidèle au jeu, ce sont des Atouts narratifs : chaque forme montre son niveau d'Atout et son effet, sans jet automatisé. Les trois éditions concernées sont couvertes (Anarchy 2 n'en a pas au livre).",
     },
+    {
+      id: "wn-aro-depth", anchor: "nav-generator", tours: ["whatsnew"], since: "1.59.0", fallback: "center",
+      title: "L'interface prend de la profondeur (Réalité augmentée)",
+      body: "L'app gagne du relief : les cartes se détachent enfin du fond, un liseré capte la lumière, et le survol les soulève. Le générateur inaugure la peau « Réalité augmentée » — un chrome cyan (grille de scan, tag //AR) qui reste constant quand l'accent d'édition, lui, change de livre en livre. L'écran de choix d'édition adopte enfin les couleurs réalignées des quatre livres. Et l'apparition d'un PNJ généré se fait en douceur, sans à-coup.",
+    },
   ],
 };
 
