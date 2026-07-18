@@ -31,6 +31,7 @@ import { ItemResolver } from "../rules/itemresolver.js";
 import { Magic } from "../rules/magic.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { Spirits } from "../catalogs/spirits.js";
+import { Sprites } from "../catalogs/sprites.js";
 import { Utils } from "../core/utils.js";
 import { WeaponRoll } from "../rules/weaponroll.js";
 
@@ -420,6 +421,15 @@ export const EditionAnarchy1 = {
      Atouts). */
   powerCatalog() {
     return null;
+  },
+
+  /** Compilation de sprites (T3) : régime « anarchy1 » (3 paliers Mineur/
+      Normal/Majeur, entité LOG-centrée, Firewall = Logique, moniteur
+      9/10/11). Sprites._spawnAnarchy1 lit ce régime ; les données vivent
+      dans le catalogue (Sprites.ANARCHY1_*). */
+  spriteModel: {
+    regime: "anarchy1",
+    types: () => Sprites.ANARCHY1_TYPES,
   },
 
   /** Invocation d'esprits V1 (6 types × 3 puissances, statblocks

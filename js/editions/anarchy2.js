@@ -238,6 +238,10 @@ export const EditionAnarchy2 = {
       indépendants, cf. statBlocks) ; `canSummon: false` documenté.
       `types` reste fourni pour les esprits libres du générateur. */
   spiritModel: { canSummon: false, types: () => Spirits.ANARCHY_TYPES },
+  /** Pas de sprites en Anarchy 2 : les technomanciens sont retirés du jeu
+      (comme technoModel/complexForms). `null` → Sprites.canCompile renvoie
+      false, aucun rail de compilation exposé. */
+  spriteModel: null,
   /** Véhicules/drones liés (p.230) : l'Autopilote seul sert de réserve
       en autonome, pas d'initiative autonome distincte documentée dans
       le livre — neutre `initiative: null`. */

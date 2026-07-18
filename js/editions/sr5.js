@@ -21,6 +21,7 @@ import { Metavariants } from "../rules/metavariants.js";
 import { Resonance } from "../rules/resonance.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
 import { Spirits } from "../catalogs/spirits.js";
+import { Sprites } from "../catalogs/sprites.js";
 import { Utils } from "../core/utils.js";
 import { WeaponRoll } from "../rules/weaponroll.js";
 
@@ -283,6 +284,14 @@ export const EditionSR5 = {
       types = éléments classiques (Spirits.SR_TYPES). `types` est lazy
       car spirits.js (catalogs) charge après les modules d'édition. */
   spiritModel: { canSummon: true, types: () => Spirits.SR_TYPES },
+  /** Compilation de sprites (T3) : régime « sr » (Niveau + 4 attributs
+      matriciels), 5 types du cœur, compétences SR5 par type. Lu par
+      Sprites via App.editionModule.spriteModel (aucune branche d'édition). */
+  spriteModel: {
+    regime: "sr",
+    skillKey: "skillsSR5",
+    types: () => Sprites.SR_TYPES,
+  },
   /** Réserves de dés et initiative des véhicules/drones liés (js/catalogs/
       vehicles.js) : Autopilote + autosoft, limite de précision inexistante
       ici (pas de PRE sur un drone). */

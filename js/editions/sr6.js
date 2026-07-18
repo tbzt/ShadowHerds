@@ -29,6 +29,7 @@ import { Magic } from "../rules/magic.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { Resonance } from "../rules/resonance.js";
 import { Spirits } from "../catalogs/spirits.js";
+import { Sprites } from "../catalogs/sprites.js";
 import { Utils } from "../core/utils.js";
 import { WeaponRoll } from "../rules/weaponroll.js";
 
@@ -401,6 +402,14 @@ export const EditionSR6 = {
   /** Invocation d'esprits : SR6 invoque via Conjuration,
       types = éléments classiques (Spirits.SR_TYPES). */
   spiritModel: { canSummon: true, types: () => Spirits.SR_TYPES },
+  /** Compilation de sprites (T3) : mêmes profils chiffrés qu'en SR5
+      (attrs matriciels ligne pour ligne), compétences Électronique/
+      Piratage, +5 types de Hacker vaillant. Régime « sr ». */
+  spriteModel: {
+    regime: "sr",
+    skillKey: "skillsSR6",
+    types: () => ({ ...Sprites.SR_TYPES, ...Sprites.SR6_TYPES }),
+  },
   /** Réserves de dés et initiative des véhicules/drones liés : pas de
       distinction Attaque/Capteurs séparée sur l'Autopilote (Score
       Offensif direct via autosoft + Senseurs), Encaissement = Structure
