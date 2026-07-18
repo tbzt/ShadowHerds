@@ -108,6 +108,7 @@ Object.assign(CardRenderer, {
           <div class="monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, stunFilled ?? 0)}</div>
         </div>
         ${this._monitorMalusBadge(wound6)}
+        ${this._sustainBadge(pnj, "sr6")}
       </div>`;
     } else {
       const monTotal = me ?? 9;
@@ -117,6 +118,7 @@ Object.assign(CardRenderer, {
           <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "phys", monTotal, physFilled ?? 0)}</div>
         </div>
         ${this._monitorMalusBadge(wound6)}
+        ${this._sustainBadge(pnj, "sr6")}
       </div>`;
     }
 

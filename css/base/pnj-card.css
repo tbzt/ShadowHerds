@@ -823,6 +823,18 @@
   font-weight: 700;
   color: var(--accent);
 }
+/* Effets maintenus : jumeau du badge de blessure, mais teinte distincte — un
+   coût auto-imposé (−2/effet, déjà appliqué aux réserves), pas une blessure. */
+.monitor-block:has(.monitor-phys) .sustain-malus {
+  flex-basis: 100%;
+}
+.sustain-malus {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--warning);
+}
 
 /* Card footer */
 /* ---- Journal de fiche (F2) — zone repliable comme les autres (CP1) ----

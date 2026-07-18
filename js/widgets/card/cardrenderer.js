@@ -1290,6 +1290,19 @@ export const CardRenderer = {
     return `<div class="monitor-malus" title="Malus de blessure cumulé (déjà appliqué aux tests)">−${malus}D</div>`;
   },
 
+  /** Badge « effets maintenus » — jumeau du badge de blessure : combien de
+      sorts/formes le PNJ maintient et le malus de pool qui en découle
+      (−2/effet, déjà appliqué à TOUTES les réserves via Utils.dicePenalty).
+      Un coup d'œil suffit pour « ce PNJ est à −N ». Vide si aucun effet
+      maintenu, ou si l'édition n'a pas la règle (Anarchy : sustainMalus = 0). */
+  _sustainBadge(pnj, edition) {
+    const n = Utils.sustainedCount(pnj);
+    if (!n) return "";
+    const malus = Utils.sustainMalus(pnj, edition);
+    if (!malus) return "";
+    return `<div class="sustain-malus" title="${n} effet(s) maintenu(s) — −${malus} dés à tous les tests (déjà appliqué aux réserves)">⟳ ×${n} · −${malus}D</div>`;
+  },
+
   /**
    * @param {Object} [opts]
    * @param {string} [opts.label] - libellé de section (ex. "Connaissances")

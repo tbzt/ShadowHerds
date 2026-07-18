@@ -118,6 +118,7 @@ Object.assign(CardRenderer, {
         <div class="monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, stunFilled)}</div>
       </div>
       ${this._monitorMalusBadge(wound5)}
+      ${this._sustainBadge(pnj, "sr5")}
     </div>`;
 
     combatBody += this._weaponBlock(pnj, weapons, "sr5", deps);
