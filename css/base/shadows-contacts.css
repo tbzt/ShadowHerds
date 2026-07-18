@@ -351,11 +351,13 @@
 
 /* ---- Panneau « Jouer » (R3-E) : lignes de run + état vide ---- */
 .play-run {
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+.play-run-head {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  padding: var(--sp-2) 0;
-  border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
 }
 .play-run-name {
@@ -400,6 +402,301 @@
   font-size: var(--fs-2xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+/* Cockpit V4 — projection lecture seule de la scène vivante sous la ligne de
+   run. Habillage par tokens uniquement (accent d'édition, moniteur sémantique) :
+   aucune couleur en dur, aucune règle par édition. */
+.play-scene {
+  margin: var(--sp-2) 0 2px;
+  padding: var(--sp-2);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  border-radius: 4px;
+  background: var(--bg-mid);
+}
+.play-scene.is-stashed {
+  border-left-color: var(--border-ui, var(--border));
+  background: transparent;
+}
+.play-scene-meta {
+  margin-bottom: 6px;
+}
+/* Grammaire de ligne de moteur PARTAGÉE (Combat ET Matrice) : GAUCHE = moteur
+   (accent), DROITE = pendule (dim). `.play-scene-meta` et `.play-mx-row` la
+   portent toutes deux → les deux lignes se lisent à l'identique. */
+.play-motor-line {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.play-motor-name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-xs);
+  color: var(--accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.play-motor-bits {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: var(--fs-2xs);
+}
+.play-motor-clock {
+  color: var(--text-dim);
+}
+.play-roster {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 4px var(--sp-3);
+}
+.play-fighter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.play-fighter-name {
+  flex-shrink: 0;
+  width: 5.5em;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.encounter-life.play-life {
+  flex: 1;
+  margin-top: 0;
+}
+.play-stash-note {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+
+/* V4-b — Poste de commandement de la run courante. Carte-héros : la run jouée
+   « ce soir » sortie en grand au-dessus de l'index. Scène = chaud (--accent),
+   prep (topos/casting) = froid (--border-ui). Tokens only. */
+.play-command {
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-3);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--bg-card);
+}
+.play-command-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-2);
+}
+.play-command-name {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-display, inherit);
+  font-size: var(--fs-lg);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color var(--dur-base);
+}
+.play-command-name:hover {
+  color: var(--accent);
+}
+.play-command-actions {
+  display: inline-flex;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+.play-scene.is-idle {
+  border-left-color: var(--border-ui, var(--border));
+  background: transparent;
+}
+
+/* Topos condensé — froid, tabulaire, lisible d'un coup d'œil. */
+.play-topos {
+  margin-top: var(--sp-2);
+  padding: var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-mid);
+}
+.play-topos-row {
+  display: flex;
+  gap: var(--sp-2);
+  padding: 1px 0;
+  font-size: var(--fs-xs);
+}
+.play-topos-k {
+  flex-shrink: 0;
+  width: 6.5em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.play-topos-v {
+  color: var(--text);
+  min-width: 0;
+}
+.play-topos-pay {
+  margin-top: 3px;
+  font-size: var(--fs-2xs);
+  color: var(--accent);
+}
+
+/* Casting préparé — puces actionnables (consulter · ⚔ envoyer en scène). */
+.play-cast {
+  margin-top: var(--sp-2);
+}
+.play-cast-label {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 5px;
+}
+.play-cast-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.play-cast-chip {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--border-ui, var(--border));
+  border-radius: 4px;
+  overflow: hidden;
+}
+.play-cast-name {
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  min-height: 32px;
+  transition: background var(--dur-base), color var(--dur-base);
+}
+.play-cast-name:hover {
+  background: var(--glow);
+  color: var(--accent);
+}
+.play-cast-add {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0 6px;
+  border: 0;
+  border-left: 1px solid var(--border-ui, var(--border));
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  transition: background var(--dur-base);
+}
+.play-cast-add:hover {
+  background: var(--glow);
+}
+.play-cast-in {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border-left: 1px solid var(--border-ui, var(--border));
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+@media (pointer: coarse) {
+  .play-cast-name,
+  .play-cast-add {
+    min-height: 44px;
+  }
+  .play-cast-add {
+    min-width: 44px;
+  }
+}
+
+/* Horloge d'intrusion (V4-b · b) — moteur Matrice de la scène en projection.
+   Un serveur en jeu = une ligne tappable (→ tiroir Matrice). Tokens only. */
+.play-matrix {
+  margin-top: var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.play-mx-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: 32px;
+  padding: 4px var(--sp-2);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  border-radius: 4px;
+  background: var(--bg-mid);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-base);
+}
+.play-mx-row:hover {
+  background: var(--glow);
+}
+.play-mx-alert {
+  color: var(--warning);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+@media (pointer: coarse) {
+  .play-mx-row {
+    min-height: 44px;
+  }
+}
+
+/* Bascule de présence (RA/RV/astral) sur une ligne de roster — un seul bouton,
+   le mode pertinent selon la capacité. Éteint = contour discret (le PJ est en
+   RA, état par défaut) ; allumé = accent plein. Tokens only. */
+.play-presence {
+  flex-shrink: 0;
+  min-height: 26px;
+  padding: 2px 8px;
+  border: 1px solid var(--border-ui, var(--border));
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background var(--dur-base), color var(--dur-base), border-color var(--dur-base);
+}
+.play-presence:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.play-presence.is-on {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--bg);
+}
+@media (pointer: coarse) {
+  .play-presence {
+    min-height: 32px;
+  }
 }
 .play-empty-note {
   padding: var(--sp-2) 0;

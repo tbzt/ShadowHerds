@@ -12,6 +12,33 @@ commit.
 
 ## [Non publié]
 
+## [1.67.0] — 2026-07-18
+
+### Jouer
+- **« Jouer » devient le poste de commandement de la run en cours.** La run que
+  vous jouez (celle de votre contexte) est sortie en tête, en grand, et
+  rassemble tout ce qu'il faut sous la main pendant la séance :
+  - **la scène vivante** — round (et passe), moteur actif (⚔ Combat / ⚡ Matrice)
+    et une barre de vie par combattant, sans ouvrir le tracker ; une run rangée
+    affiche un résumé de sa rencontre ;
+  - **la présence de chaque participant** — un bouton par combattant dit d'un tap
+    s'il est en **RV** ou en **astral** (RA par défaut). Le mode proposé suit la
+    capacité : seuls les Éveillés (et les esprits, astraux par nature) peuvent
+    passer en astral, les autres en RV ;
+  - **l'horloge d'intrusion** — quand un serveur est en jeu, son état de pression
+    (alerte, tour, CI déployées) se lit d'un coup d'œil ; un tap ouvre le tiroir
+    Matrice pour le détail (Surveillance, marks) ;
+  - **le topos condensé** — objectif, complication, mandant, lieu, paie — l'essentiel
+    « pourquoi on est là / ce qui peut mal tourner » d'un coup d'œil ;
+  - **le casting préparé** — les PNJ, contacts et serveurs rangés dans la run :
+    un tap pour consulter une fiche, un bouton ⚔ pour **envoyer un PNJ dans la
+    scène**, un bouton ⚡ pour **mettre un serveur en jeu** (moteur Matrice) ;
+  - **les notes** — un bouton ouvre votre carnet de séance déjà positionné sur
+    cette run.
+
+  Vos autres runs restent listées en dessous. La vue projette et délègue : elle
+  ne recopie ni ne modifie aucune donnée.
+
 ## [1.66.0] — 2026-07-18
 
 ### Système

@@ -121,9 +121,14 @@ export const DossierBar = {
     return [...set];
   },
 
-  /** Ids des membres d'une collection pour la sélection courante. */
-  memberIds(col) {
-    return this._idsForNames(col, this.currentNames());
+  /** Ids des membres d'une collection pour la sélection courante — ou pour un
+      dossier DONNÉ (`dossierId`), sans changer la sélection courante : le
+      poste de commandement « Jouer » (V4-b) liste le casting d'une run précise
+      qui n'est pas forcément le dossier ouvert. Défaut = comportement
+      historique (sélection courante), donc additif pour tous les appelants. */
+  memberIds(col, dossierId = this.current) {
+    const names = dossierId === "all" ? null : this._namesUnder(dossierId);
+    return this._idsForNames(col, names);
   },
 
   _countFor(names) {

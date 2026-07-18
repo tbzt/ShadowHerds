@@ -298,6 +298,19 @@ export const Encounter = {
     return Object.prototype.hasOwnProperty.call(map, dossierId);
   },
 
+  /** Résumé STATIQUE d'une rencontre rangée (cockpit V4) : lit le bundle du
+      dossier sans le restaurer — `{ count, round }` (combattants + round au
+      moment du rangement). `null` si aucun bundle. Le format de clé du stash
+      reste privé à ce module (prohibition n°2) : le cockpit ne reconstruit
+      jamais `_STASH_KEY`, il passe par cet accesseur en LECTURE SEULE. */
+  stashSummary(dossierId) {
+    if (!dossierId) return null;
+    const map = Storage.get(this._STASH_KEY, {});
+    const bundle = map[dossierId];
+    if (!bundle) return null;
+    return { count: (bundle.combatants || []).length, round: bundle.round || 1 };
+  },
+
   /* ---- Initiative ---- */
   setInit(pnjId, value) {
     const c = this._find(pnjId);
@@ -468,6 +481,18 @@ export const Encounter = {
     const c = this._find(pnjId);
     if (!c) return;
     c.hasActed = !!acted;
+    this._commit();
+  },
+
+  /** Présence d'un participant (RA/RV/astral) — état de SCÈNE, vit sur l'entrée
+      combattant (`c.presence`), jamais sur la fiche PJ (K8/Failsafe). Valeur
+      libre ("ar" | "vr" | "astral") posée par le cockpit selon la capacité de
+      l'entité (le contrôle n'affiche que le mode pertinent). Additif : une
+      scène d'avant ce champ le lit `undefined` = RA implicite. */
+  setPresence(pnjId, value) {
+    const c = this._find(pnjId);
+    if (!c) return;
+    c.presence = value;
     this._commit();
   },
 
@@ -968,6 +993,29 @@ export const Encounter = {
   activeMatrixServerIds() {
     if (!this.state || !this.state.matrix) return [];
     return Object.keys(this.state.matrix).filter((id) => Servers.find(id));
+  },
+
+  /** Résumé NEUTRE du moteur Matrice de la scène (cockpit V4-b, lecture seule) :
+      un descripteur par serveur en jeu — `{ id, name, alerted, turn, activeIC }`.
+      Volontairement limité aux champs dont le sens est le MÊME dans les quatre
+      éditions ; le Score de Surveillance / les marks / la Surveillance du DIEU
+      (dont le sens varie par édition) restent rendus par le tiroir, via l'API
+      d'édition — jamais reprojetés à plat ici. `[]` hors intrusion. */
+  matrixMotorSummary() {
+    return this.activeMatrixServerIds()
+      .map((id) => {
+        const srv = Servers.find(id);
+        const intr = this.state.matrix[id];
+        if (!srv || !intr) return null;
+        return {
+          id,
+          name: srv.name,
+          alerted: !!intr.alerted,
+          turn: intr.turn || 0,
+          activeIC: Object.values(intr.ics || {}).filter((s) => s.active && !s.down).length,
+        };
+      })
+      .filter(Boolean);
   },
 
   _linkedServer() {

@@ -383,6 +383,11 @@ export const TourSteps = {
       title: "Compiler des sprites",
       body: "Les technomanciens compilent désormais leurs sprites. Sur la carte, le bouton « ◈ Sprite » ouvre le rail de compilation (même geste que l'invocation d'un esprit, en vocabulaire techno) : choisissez le Niveau et le type, l'app roule le test — les succès nets deviennent les tâches dues et le Technodrain est encaissé automatiquement. Le sprite apparaît en fiche liée avec ses attributs matriciels et son moniteur ; on marque ses tâches, on l'inscrit (permanent) ou on le renvoie. En SR5, SR6 et Anarchy 1 (par palier, sans jet) ; Anarchy 2 n'a pas de technomanciens.",
     },
+    {
+      id: "wn-play-cockpit", anchor: "nav-play", tours: ["whatsnew"], since: "1.67.0", fallback: "center",
+      title: "« Jouer » : le poste de commandement de la run",
+      body: "La run que vous jouez est désormais sortie en tête de « Jouer » et rassemble tout pour la séance : la scène vivante (round, moteur ⚔/⚡, barre de vie par combattant, sans ouvrir le tracker), la présence de chaque participant (un tap : RV ou astral, selon sa capacité — RA par défaut), l'horloge d'intrusion quand un serveur est en jeu (alerte, tour, CI), le topos condensé (objectif, complication, mandant, lieu, paie), le casting préparé (tap pour consulter, ⚔ pour envoyer un PNJ en scène, ⚡ pour mettre un serveur en jeu) et un accès direct à votre carnet de notes. Vos autres runs restent listées en dessous.",
+    },
   ],
 };
 
