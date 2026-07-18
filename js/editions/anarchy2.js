@@ -14,6 +14,7 @@
    - PNJ "second rôle" : on utilise le nombre de succès moyen
    - PNJ "premier rôle" : on lance les dés + points d'Anarchy
    ============================================================ */
+import { Actor } from "../rules/actor.js";
 import { BonusEngine } from "../rules/bonusengine.js";
 import { Coherence } from "../rules/coherence.js";
 import { Content } from "../rules/content.js";
@@ -96,6 +97,19 @@ export const EditionAnarchy2 = {
      sont sujets au drain » → magicSkills liste les compétences concernées
      (donnée d'édition, lue par DiceRoller sans branche). ---- */
   magicSkills: ["Sorcellerie", "Conjuration"],
+
+  /** Verrou d'accès arcanique pour l'EditModal (contrat neutre, cf. sr5.js).
+      A2 : magie narrative (pas d'attribut MAG) → gate sur la COMPÉTENCE, comme
+      A1. Réutilise `magicSkills` déjà déclaré ci-dessus. Pas de technomancien
+      en A2 (retirés du jeu) → aucun `resonanceSkills` et aucun catalogue de
+      formes : la branche "resonance" n'est jamais atteinte (elle retombe sur
+      la liste vide → verrou, jamais observé). Ferme le même bruit qu'en A1 :
+      la section Sorts ne s'affiche plus que sur les PNJ éveillés. */
+  arcaneLock(pnj, discipline) {
+    const skills = discipline === "resonance" ? this.resonanceSkills : this.magicSkills;
+    if ((skills || []).some((n) => Actor.skillRank(pnj, n) > 0)) return null;
+    return { hint: "Réservé aux personnages éveillés (compétence magique)." };
+  },
 
   /** Moniteur de blessures Anarchy 2 : gravité croissante + cap de chaque cran
       (2 légères / 1 grave / 1 incapacitante, p.68, `+ *CapBonus` par Atout). */

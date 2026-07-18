@@ -251,6 +251,17 @@ export const EditionSR5 = {
   magicAttr: "MAG",
   /** Attribut RES chiffré, jumeau de magicAttr — même gate EditModal. */
   resonanceAttr: "RES",
+  /** Verrou d'accès arcanique pour l'EditModal (contrat neutre lu par
+      editmodal.js — prohibition n°1 : le contrôleur ne lit plus l'attribut
+      d'édition lui-même). `discipline` ∈ {"magic","resonance"}. SR5/SR6 :
+      gate sur l'attribut chiffré (MAG/RES > 0, débloqué en le posant dans la
+      même modale). Renvoie `null` si accessible, `{hint}` si verrouillé. */
+  arcaneLock(pnj, discipline) {
+    const attr = discipline === "resonance" ? this.resonanceAttr : this.magicAttr;
+    if (!attr || Actor.attr(pnj, attr) > 0) return null;
+    const what = discipline === "resonance" ? "de la Résonance" : "de la Magie";
+    return { hint: `Nécessite ${what} (${attr} > 0).` };
+  },
   /** Régime persona SR5 — lu par Resonance via App.editionModule.technoModel.
       Mappage DIRECT attributs mentaux → matriciels (p.252, table
       « Persona incarné »), aucun point bonus à répartir (contrairement à

@@ -974,17 +974,14 @@ export const EditModal = {
       });
     }
 
-    // Verrou magie (nouveau) : si l'édition porte un MAG chiffré et que ce
-    // PNJ a 0 (non magicien), Sorts/Pouvoirs sont inutiles à catalogeur —
-    // verrouillés (grisés, catalogue caché) plutôt que masqués : le MJ VOIT
-    // que la capacité existe et pourquoi elle est inaccessible (poser MAG >
-    // 0 la débloque). Garde-fou Failsafe : si des sorts/pouvoirs existent
-    // déjà malgré MAG=0 (édition manuelle antérieure, import…), la zone
+    // Verrou magie : le module d'édition décide (contrat `arcaneLock`,
+    // prohibition n°1) — attribut chiffré en SR5/SR6 (MAG > 0), compétence en
+    // Anarchy (Éveillé = Sorcellerie/Conjuration). Verrouillé (grisé, catalogue
+    // caché) plutôt que masqué : le MJ VOIT que la capacité existe et pourquoi
+    // elle est inaccessible. Garde-fou Failsafe : si des sorts/pouvoirs existent
+    // déjà malgré le verrou (édition manuelle antérieure, import…), la zone
     // reste normale/éditable — jamais de donnée cachée ou perdue.
-    const magLocked =
-      magicAttr && Actor.attr(pnj, magicAttr) <= 0
-        ? { hint: `Nécessite de la Magie (${magicAttr} > 0).` }
-        : null;
+    const magLocked = App.getEditionModule(pnj.edition).arcaneLock(pnj, "magic");
 
     // ---- Section : Sorts (montée si l'édition a un catalogue de sorts).
     // Hors esprits. Objets structurés (add/retrait via catalogue seulement,
@@ -1004,12 +1001,10 @@ export const EditModal = {
       }
     }
 
-    // ---- Section : Formes complexes (T2) — même verrou que Sorts, sur RES
-    // au lieu de MAG. Montée si l'édition a un catalogue de formes. ----
-    const resLocked =
-      resonanceAttr && Actor.attr(pnj, resonanceAttr) <= 0
-        ? { hint: `Nécessite de la Résonance (${resonanceAttr} > 0).` }
-        : null;
+    // ---- Section : Formes complexes (T2) — même verrou que Sorts, discipline
+    // "resonance" (attribut RES en SR5/SR6, compétence Technomancie en Anarchy 1 —
+    // ferme la réserve Silk : ne s'affiche plus que sur les Émergés). ----
+    const resLocked = App.getEditionModule(pnj.edition).arcaneLock(pnj, "resonance");
     if (App.getEditionModule(pnj.edition).complexFormCatalog?.() && pnj.type !== "spirit") {
       if (resLocked && !(pnj.complexForms || []).length) {
         html += this._zoneLocked("Formes complexes", resLocked.hint);

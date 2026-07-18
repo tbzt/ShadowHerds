@@ -293,12 +293,14 @@ export const ProfCategories = {
         "Ganger éveillé",
         "Ganger decker",
         "Ganger rigger",
+        "Techno-ganger",
       ],
     },
     {
       cat: "Sécurité corpo",
       items: [
         "Employé corporatiste",
+        "Technomancien de sécurité",
         "Cadre corporatiste",
         "Agent de sécurité / Flic des rues",
         "Officier de sécurité ou police",

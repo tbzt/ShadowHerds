@@ -348,6 +348,11 @@ export const TourSteps = {
       title: "Formes complexes (SR6 et Anarchy 1re)",
       body: "Les technomanciens ont désormais leurs formes complexes en SR6 et Anarchy 1re, après SR5. En SR6 (39 formes) on les tisse depuis la carte : le test se roule (Électronique + Résonance, ou Piratage pour Pic de Résonance), le Technodrain se résiste (Volonté + Logique), les dégâts s'encaissent — même geste qu'un sort. En Anarchy 1 (18 formes), fidèle au jeu, ce sont des Atouts narratifs : chaque forme montre son niveau d'Atout et son effet, sans jet automatisé. Les trois éditions concernées sont couvertes (Anarchy 2 n'en a pas au livre).",
     },
+    {
+      id: "wn-technomancien-a1-gen", anchor: "nav-generator", tours: ["whatsnew"], since: "1.59.0", fallback: "center",
+      title: "Générer un technomancien (Anarchy 1re)",
+      body: "Le générateur d'Anarchy 1re édition propose enfin des technomanciens : le Techno-ganger (Sbire) et le Technomancien de sécurité (Antagoniste), tirés au livre (Anarchistes p.147). Ils arrivent avec leur Pic de résonance et quelques formes complexes, et se rangent dans les bons milieux. Au passage, dans l'édition d'un PNJ, les sections Sorts et Formes complexes ne s'affichent en Anarchy que pour les personnages concernés (Éveillés / Émergés), plus proprement qu'avant.",
+    },
   ],
 };
 

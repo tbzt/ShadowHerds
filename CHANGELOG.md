@@ -12,6 +12,25 @@ commit.
 
 ## [Non publié]
 
+## [1.59.0] — 2026-07-18
+
+### Système
+- **PNJ technomanciens en Anarchy 1re édition** : le générateur propose deux
+  nouveaux profils vérifiés au livre (*Anarchistes* p.147) — le **Techno-ganger**
+  (Sbire : Hacking 8, Technomancie 9) et le **Technomancien de sécurité**
+  (Antagoniste : Hacking 11, Technomancie 11, Pistage matriciel). Chacun est
+  généré avec sa forme complexe signature (**Pic de résonance**) et quelques
+  formes du livre de base, et prend sa place cohérente dans les milieux Gangs /
+  Sécurité corpo.
+- **Sections magiques mieux ciblées en Anarchy (1re et 2e édition)** : dans
+  l'édition d'un PNJ, les zones **Sorts** et **Formes complexes** ne s'affichent
+  plus, éditables, que sur les personnages concernés — les Éveillés (compétence
+  de Sorcellerie/Conjuration) pour les sorts, les Émergés (compétence
+  Technomancie) pour les formes complexes. Sur un PNJ mundane, la zone est
+  montrée verrouillée avec la raison, plutôt qu'ouverte sur du vide. Un PNJ qui
+  possède déjà des sorts ou des formes garde toujours sa zone éditable (aucune
+  donnée cachée).
+
 ## [1.58.0] — 2026-07-18
 
 ### Système
