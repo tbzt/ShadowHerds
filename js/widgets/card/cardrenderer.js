@@ -1536,7 +1536,7 @@ export const CardRenderer = {
     const rows = forms
       .map((f) => {
         const name = (f && f.name) || String(f);
-        const info = f && f.vt != null ? `VT ${f.vt}` : "";
+        const info = f && f.vt != null ? `${ed.technoCostLabel || "VT"} ${f.vt}` : "";
         const infoBtn =
           f && f.desc
             ? `<span class="spell-info" role="button" tabindex="0" data-content-name="${this._esc(name)}" data-content-desc="${this._esc(f.desc)}" title="Détails de la forme">ⓘ</span>`
@@ -1554,7 +1554,7 @@ export const CardRenderer = {
         let poolBadge = "";
         if (canCast && f && !f.manualTest) {
           castAttr = `data-cast-form="${this._esc(name)}"`;
-          const pool = Resonance.actionPool(pnj, ed.technoFormSkill, edition);
+          const pool = Resonance.actionPool(pnj, f.skill || ed.technoFormSkill, edition);
           poolBadge = pool ? `<span class="weapon-pool">⚄${pool}</span>` : "";
         }
         const rollable = !!castAttr;

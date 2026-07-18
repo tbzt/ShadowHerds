@@ -374,6 +374,16 @@ export const EditionAnarchy1 = {
     pnj.spells = pnj.spells || [];
     pnj.spells.push(this._enrichSpell(id));
   },
+  /* Formes complexes (T2 A1) : comme les sorts A1, ce sont des Atouts
+     narratifs NON motorisés (pas de `technoFormSkill` → aucun jet, affichage
+     seul, MagicAction ne déclenche rien). Le catalogue est partagé
+     (Content.complexFormCatalogFor) ; `addComplexFormItem` générique côté
+     Content suffit (pas de forme enrichie propre comme les sorts). Le champ
+     `vt` porte ici le NIVEAU D'ATOUT (« 2/3/4 »…), affiché « Atout … ». */
+  technoCostLabel: "Atout",
+  complexFormCatalog() {
+    return Content.complexFormCatalogFor(this.id);
+  },
   /* Pas de pouvoirs d'adepte séparés en Anarchy (mécanique fondue dans les
      Atouts). */
   powerCatalog() {

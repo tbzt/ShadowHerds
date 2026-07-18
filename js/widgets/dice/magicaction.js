@@ -212,6 +212,11 @@ export const MagicAction = {
       forceSteps: Array.from({ length: maxLevel }, (_, i) => ({ value: i + 1, label: String(i + 1) })),
     };
 
+    if (!ed.technoFormUsesLevel) {
+      this._doCast(); // SR6 : pas de Niveau à choisir → tissage direct
+      return;
+    }
+
     this._ensurePanel();
     document.getElementById("magic-title").textContent =
       `${pnj.name || "PNJ"} — ${formName}`;
@@ -246,18 +251,24 @@ export const MagicAction = {
       AmplitudeSelector.render(c.forceSteps, c.force, "force");
 
     const isForm = c.kind === "complexForm";
-    const skill = isForm ? ed.technoFormSkill : ed.spellSkill;
+    // Le panneau ne s'ouvre que pour les formes à Niveau (SR5) : `ctx.castHits`
+    // n'y sert pas (0), il n'existe qu'au moment du jet (régime « succès » SR6,
+    // qui tisse direct sans panneau). Pic de Résonance déroge sur la compétence.
+    const skill = isForm ? c.entry.skill || ed.technoFormSkill : ed.spellSkill;
     const attrLabel = isForm ? Resonance.label(c.edition) : "Magie";
     const castPool = isForm
       ? Resonance.actionPool(pnj, skill, c.edition)
       : Magic.actionPool(pnj, skill, c.edition);
-    const dv = isForm ? ed.technoDrainValue(c.entry, c.force) : ed.spellDrainValue(c.entry, c.force);
+    const dv = isForm
+      ? ed.technoDrainValue(c.entry, { level: c.force, castHits: 0 })
+      : ed.spellDrainValue(c.entry, c.force);
     const resist = isForm ? pnj.technoDrainResist : pnj.drainResist;
     const forceLabel = isForm ? "Niveau" : "Puissance";
     const forceTxt = !isForm && !ed.spellUsesForce ? "" : ` · ${forceLabel} ${c.force}`;
+    const costLabel = isForm ? ed.technoCostLabel || "VT" : "Drain VD";
     document.getElementById("magic-forecast").innerHTML =
       `<span>${Utils.escHtml(skill)} + ${Utils.escHtml(attrLabel)} : <strong>${castPool}</strong> dés${forceTxt}</span>` +
-      `<span class="magic-forecast-note">${isForm ? "Technodrain VT" : "Drain VD"} ${dv} — résistance ${Math.max(0, (resist || 0) - Utils.dicePenalty(pnj, c.edition))} dés</span>`;
+      `<span class="magic-forecast-note">${costLabel} ${dv} — résistance ${Math.max(0, (resist || 0) - Utils.dicePenalty(pnj, c.edition))} dés</span>`;
   },
 
   /** Lance le sort et présente le résultat via l'affichage de dés STANDARD
@@ -276,7 +287,7 @@ export const MagicAction = {
     // effet. Mémorise le dernier jet sur l'entrée (persisté ; utile pour un
     // sort/forme maintenu).
     const isForm = c.kind === "complexForm";
-    const skill = isForm ? ed.technoFormSkill : ed.spellSkill;
+    const skill = isForm ? c.entry.skill || ed.technoFormSkill : ed.spellSkill;
     const castPool = isForm
       ? Resonance.actionPool(pnj, skill, c.edition)
       : Magic.actionPool(pnj, skill, c.edition);
@@ -286,7 +297,9 @@ export const MagicAction = {
     // 2) Drain/Technodrain (VD/VT du contrat) : résiste (jet loggé), encaisse
     // (met à jour la carte). Résolu AVANT l'affichage pour le présenter dans
     // le même overlay.
-    const dv = isForm ? ed.technoDrainValue(c.entry, c.force) : ed.spellDrainValue(c.entry, c.force);
+    const dv = isForm
+      ? ed.technoDrainValue(c.entry, { level: c.force, castHits: castRes.hits })
+      : ed.spellDrainValue(c.entry, c.force);
     const drain = this._resolveDrain(pnj, ed, {
       dv,
       kind: c.kind,
@@ -420,15 +433,27 @@ export const MagicAction = {
       }
     } else {
       r.entry._lastCast = { hits: r.main.hits };
-      // Type de Drain/Technodrain revu (selon les succès) — corrige le moniteur.
-      const newType = (r.kind === "complexForm" ? ed.technoDrainType : ed.drainDamageType)(
-        { kind: r.kind, castHits: r.main.hits, drainDamage: r.drain.damage, force: r.force },
+      const isForm = r.kind === "complexForm";
+      // Régime « succès » (SR6, Hacker vaillant) : le Technodrain VAUT les
+      // succès du tissage → un nouveau jet principal le change, donc les dégâts
+      // avec. VT à Niveau (SR5) ou fixe : `technoDrainValue` ignore castHits,
+      // newDv === dv, ce bloc est un no-op (comportement SR5 inchangé).
+      const newDv = isForm
+        ? ed.technoDrainValue(r.entry, { level: r.force, castHits: r.main.hits })
+        : r.drain.dv;
+      const newDamage =
+        newDv !== r.drain.dv ? Magic.resolveDrainDamage(newDv, r.drain.res.hits) : r.drain.damage;
+      // Type revu (selon les succès en SR5, selon la VD en SR6) — corrige le moniteur.
+      const newType = (isForm ? ed.technoDrainType : ed.drainDamageType)(
+        { kind: r.kind, castHits: r.main.hits, drainDamage: newDamage, force: r.force },
         pnj,
       );
-      if (newType !== r.drain.type) {
+      if (newDv !== r.drain.dv || newType !== r.drain.type) {
         this._revertDrain(pnj, r.drain.applied);
+        r.drain.dv = newDv;
+        r.drain.damage = newDamage;
         r.drain.type = newType;
-        r.drain.applied = ed.applyDrainDamage(pnj, r.drain.damage, newType);
+        r.drain.applied = ed.applyDrainDamage(pnj, newDamage, newType);
       }
     }
     this._hooks.onPnjChanged(pnj);

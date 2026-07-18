@@ -205,6 +205,39 @@ export const EditionSR6 = {
     pnj.physFilled = Utils.clamp(before + amount, 0, pnj.me ?? 99);
     return { field: "physFilled", delta: pnj.physFilled - before };
   },
+  /* ---- Tissage de forme complexe (T2 SR6) : même flux que SR5 (MagicAction,
+     kind:"complexForm"), mais trois différences de RÈGLE portées ici, jamais
+     par une branche côté widget (p.191-193) :
+     - pas de Niveau (technoFormUsesLevel:false → tissage direct, sans panneau) ;
+     - Technodrain FIXE (nombre sur l'entrée) ou « succès » (Hacker vaillant,
+       p.63 : le coût vaut le nombre de succès du tissage) ;
+     - résistance Volonté + Logique (posée en generate/recalc, pas RES+VOL) ;
+     - physique si VD APRÈS résistance > RES (comme le Drain des sorts SR6). ---- */
+  /** Score Offensif d'une forme = Électronique + Résonance (p.191). Pic de
+      Résonance déroge (Piratage) via `entry.skill`, lu par MagicAction. */
+  technoFormSkill: "Électronique",
+  /** SR6 : aucune forme n'a de Niveau (p.192) → pas de sélecteur, tissage
+      direct (jumeau de `spellUsesForce: false`). */
+  technoFormUsesLevel: false,
+  technoCostLabel: "Technodrain",
+  /** Technodrain d'une forme SR6 : valeur fixe (nombre sur l'entrée) ou, pour
+      le régime « succès » de Hacker vaillant (p.63), le nombre de succès du
+      tissage (`ctx.castHits` — total, pas les nets). `ctx.level` est ignoré
+      (SR6 n'a pas de Niveau). */
+  technoDrainValue(entry, ctx) {
+    return entry.vt === "succès" ? ctx.castHits || 0 : Number(entry.vt) || 0;
+  },
+  /** Type de dégâts du Technodrain (p.191) : SR6 tranche sur la VD APRÈS
+      résistance — Physique si elle dépasse la Résonance, sinon Étourdissant
+      (même logique que le Drain des sorts SR6, RES au lieu de MAG). */
+  technoDrainType(ctx, pnj) {
+    const res = Actor.attr(pnj, "RES");
+    return (ctx.drainDamage || 0) > res ? "physical" : "stun";
+  },
+  /** Catalogue de formes complexes pour l'EditModal (mirroir sr5). */
+  complexFormCatalog() {
+    return Content.complexFormCatalogFor(this.id);
+  },
   ratingBadge: { field: "proRating", label: "Professionnalisme", options: null },
   /** Réglage propre à SR6 remonté ici (prohibition n°1). Reçoit Settings (S). */
   settingsHTML(S) {
@@ -2930,6 +2963,10 @@ export const EditionSR6 = {
     const drainResist = tradition
       ? attrs.VOL + (attrs[tradition.drainAttr] || 0)
       : null;
+    // Résistance au Technodrain (T2, p.191) : Volonté + Logique — propre au
+    // technomancien, distincte du Drain magique (RES+VOL en SR5, VOL+LOG ici).
+    const technoDrainResist =
+      special === "Technomancien" ? attrs.VOL + attrs.LOG : null;
 
     // Compétences — le pool figé du livre reste le plancher, le rôle/milieu
     // résolu ajoute de la variété cohérente autour (cf. coherence.js).
@@ -2978,6 +3015,13 @@ export const EditionSR6 = {
     const powers =
       special === "Adepte"
         ? Content.pickPouvoirs("sr6", p, p >= 4 ? 3 : 2)
+        : [];
+
+    // Formes complexes (T2) — technomanciens seulement ; connues max RES×2
+    // (p.191). Le pool de génération = cœur (Hacker vaillant est `gen: false`).
+    const complexFormsList =
+      special === "Technomancien"
+        ? Content.pickComplexForms("sr6", p).slice(0, Math.max(1, attrs.RES * 2))
         : [];
 
     // Trait de couleur cohérent (parfois)
@@ -3034,6 +3078,7 @@ export const EditionSR6 = {
       defense,
       damageResist,
       drainResist,
+      technoDrainResist,
       tradition: tradition ? tradition.name : null,
       traditionDrainAttr: tradition ? tradition.drainAttr : null,
       traditionDesc: tradition ? tradition.desc : null,
@@ -3043,6 +3088,7 @@ export const EditionSR6 = {
       memory,
       skills,
       spells,
+      complexForms: complexFormsList,
       powers,
       traits,
       equip,
@@ -3145,6 +3191,8 @@ export const EditionSR6 = {
     } else {
       pnj.drainResist = null;
     }
+    pnj.technoDrainResist =
+      pnj.special === "Technomancien" ? A("VOL") + A("LOG") : null;
     return pnj;
   },
 };

@@ -3122,6 +3122,482 @@ export const Content = {
         desc: "Ajoute des cases temporaires au moniteur de dommages matriciels d'un appareil, en nombre égal aux succès obtenus. Cible appareil, durée Maintenue. (Data Trails p.62)",
       },
     ],
+    /* SR6 (p.191-193, 15 formes du cœur) + Hacker vaillant (24 formes).
+       Trois différences de régime avec SR5, toutes portées par la donnée,
+       aucune branche d'édition (le module sr6 interprète `vt` à sa façon) :
+       - AUCUN Niveau : le Technodrain est FIXE (nombre) — sauf le 3ᵉ régime
+         « succès » de Hacker vaillant, où il vaut le nombre de succès du
+         tissage (encart p.63 : total, pas les nets ; plafonnable au choix du
+         joueur, laissé au MJ). `vt` porte donc un nombre OU la chaîne "succès".
+       - Résistance = Volonté + Logique (posée en generate/recalc), pas RES+VOL.
+       - Physique si VD APRÈS résistance > RES (cf. sr6.technoDrainType).
+       Curation catalogue/générateur (1ʳᵉ mise en œuvre du prédicat `gen`) : le
+       cœur (15) est générable ; les 24 de Hacker vaillant sont `gen: false`
+       (catalogue exhaustif, hors pool de génération — un supplément dédié).
+       `manualTest` : formes sans jet nommé au livre (Édition/Émulation/
+       Marionnettiste), à pool dérogatoire (Accumulation = Électronique+Logique)
+       ou à coût contextuel non chiffrable (Détricoter = indice de cryptage) —
+       catalogue + ⓘ seuls, comme FAQ en SR5. */
+    sr6: [
+      {
+        name: "Bombe d'interférences",
+        cat: "furtivite",
+        vt: 6,
+        proRatingMin: 2,
+        desc: "Effectuée contre toutes les cibles pouvant vous détecter (test opposé contre Intuition + Traitement de données de chacune) : celle qui n'obtient aucun succès net ne vous perçoit plus et doit réussir Percevoir la Matrice pour vous relocaliser avant d'agir contre vous. Durée Instantanée.",
+      },
+      {
+        name: "Canal de Résonance",
+        cat: "utilitaire",
+        vt: 2,
+        proRatingMin: 1,
+        desc: "Chaque succès réduit votre niveau de Bruit de 1 point. Durée Maintenue.",
+      },
+      {
+        name: "Dispersion de [Attribut matriciel]",
+        cat: "attaque",
+        vt: 4,
+        proRatingMin: 2,
+        attrs: ["attack", "sleaze", "dataProcessing", "firewall"],
+        desc: "Chaque succès net réduit de 1 l'attribut matriciel visé (min 1). Test opposé contre Volonté + Firewall. Achetable plusieurs fois, une par attribut. Durée Maintenue.",
+      },
+      {
+        name: "Édition",
+        cat: "manipulation",
+        vt: 3,
+        proRatingMin: 1,
+        manualTest: true,
+        desc: "Permet d'utiliser l'action « Éditer un fichier » même sans le bon niveau d'accès (le fichier doit avoir été détecté). Le livre ne nomme aucun jet dédié (jet non motorisé). Durée Persistante.",
+      },
+      {
+        name: "Émulation (programme)",
+        cat: "utilitaire",
+        vt: 0,
+        proRatingMin: 1,
+        manualTest: true,
+        desc: "Fait tourner un cyberprogramme (ou les autosofts d'indice = Traitement de données courant). Achetable plusieurs fois, un programme différent à chaque fois. Aucun jet indiqué (Technodrain 0). Durée Maintenue.",
+      },
+      {
+        name: "Indic",
+        cat: "attaque",
+        vt: 3,
+        proRatingMin: 2,
+        desc: "Chaque succès augmente de 1 le Score de Surveillance de la cible. Durée Persistante.",
+      },
+      {
+        name: "Infusion de [Attribut matriciel]",
+        cat: "soutien",
+        vt: 4,
+        proRatingMin: 2,
+        attrs: ["attack", "sleaze", "dataProcessing", "firewall"],
+        desc: "Test simple (seuil 4) : chaque succès net augmente de 1 l'attribut visé, jusqu'au double du rang normal (max rang + 4). Achetable plusieurs fois, une par attribut. Durée Maintenue.",
+      },
+      {
+        name: "Marionnettiste",
+        cat: "attaque",
+        vt: 5,
+        proRatingMin: 3,
+        manualTest: true,
+        desc: "Permet d'utiliser l'action « Contrôler un appareil » même sans le bon niveau d'accès (l'appareil doit avoir été détecté). Le livre ne nomme aucun jet dédié. Durée Maintenue.",
+      },
+      {
+        name: "Nettoyeuse",
+        cat: "furtivite",
+        vt: 2,
+        proRatingMin: 1,
+        desc: "Chaque succès réduit votre Score de Surveillance de 1. Durée Persistante.",
+      },
+      {
+        name: "Persona miroir",
+        cat: "furtivite",
+        vt: 3,
+        proRatingMin: 2,
+        desc: "Crée un persona proxy à votre image ; les succès fixent son indice. Pour percer la supercherie, l'adversaire doit réussir Percevoir la Matrice (seuil = cet indice) ; sinon il cible le proxy. Durée Maintenue.",
+      },
+      {
+        name: "Pic de Résonance",
+        cat: "combat",
+        vt: 4,
+        proRatingMin: 2,
+        skill: "Piratage",
+        desc: "Chaque succès net inflige une case de dommages matriciels non résistés. Test opposé (Piratage + Résonance) contre Volonté + Firewall — seule forme du chapitre bâtie sur Piratage, pas Électronique (explicite au livre). Durée Instantanée.",
+      },
+      {
+        name: "Suture",
+        cat: "soutien",
+        vt: 4,
+        proRatingMin: 1,
+        desc: "Chaque succès net permet à une entité purement matricielle de récupérer 1 case de dommages matriciels. Durée Persistante.",
+      },
+      {
+        name: "Tempête d'impulsions",
+        cat: "attaque",
+        vt: 3,
+        proRatingMin: 2,
+        desc: "Chaque succès net augmente le Bruit de la cible de 1. Test opposé contre Logique + Traitement de données. Durée Instantanée.",
+      },
+      {
+        name: "Voile d'interférences",
+        cat: "furtivite",
+        vt: 3,
+        proRatingMin: 3,
+        desc: "Tant que maintenue, la cible n'augmente plus son Score de Surveillance en maintenant un accès illégal (le SS continue en revanche de monter pour les actions illégales). Test opposé contre Volonté/Firewall + Firewall du serveur. Durée Maintenue.",
+      },
+      {
+        name: "Voile de Résonance",
+        cat: "manipulation",
+        vt: 4,
+        proRatingMin: 2,
+        desc: "Crée l'illusion sensorielle complète d'un élément matriciel ; même en la soupçonnant, la cible doit réussir Percevoir la Matrice (seuil = succès nets) pour ne pas y croire. Test opposé contre Intuition + Traitement de données. Durée Maintenue.",
+      },
+      {
+        name: "Absorbeur de bombe matricielle",
+        cat: "soutien",
+        vt: 3,
+        proRatingMin: 2,
+        gen: false,
+        desc: "Réduit l'indice d'une bombe matricielle déclenchée pendant la maintenance, du nombre de succès ; à 0 ou moins la bombe est absorbée sans dégât. Durée Maintenue. (Hacker vaillant p.62-63)",
+      },
+      {
+        name: "Accumulation de puissance",
+        cat: "utilitaire",
+        vt: "succès",
+        proRatingMin: 2,
+        gen: false,
+        manualTest: true,
+        desc: "Test Électronique + LOGIQUE (pool dérogatoire, jet non motorisé) : gagne 1 point d'Atout par tranche de 2 succès pleins pour booster la prochaine action/forme ; l'Atout restant est perdu après résolution. Technodrain = succès du test. Durée Maintenue. (Hacker vaillant p.63)",
+      },
+      {
+        name: "Amélioration d'autosofts",
+        cat: "soutien",
+        vt: "succès",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Ajoute 1 dé bonus par tranche de 2 succès à chaque test réalisé via un autosoft de l'appareil ciblé, tant que la forme est active. Technodrain = succès. Durée Maintenue. (Hacker vaillant p.63)",
+      },
+      {
+        name: "Amplificateur de smartgun",
+        cat: "soutien",
+        vt: "succès",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Augmente le Score Offensif des armes smartgun / M-TOC ciblés d'un montant égal aux succès, tant que maintenue (mode sans-fil requis). Technodrain = succès. Durée Maintenue. (Hacker vaillant p.63)",
+      },
+      {
+        name: "Analyse de menace",
+        cat: "soutien",
+        vt: "succès",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Cible un M-TOC : augmente le SD de chaque personnage/drone enregistré de 1 par succès (nécessite IND ou interface RA). Technodrain = succès. Durée Maintenue. (Hacker vaillant p.63)",
+      },
+      {
+        name: "Arc réactif",
+        cat: "combat",
+        vt: 3,
+        proRatingMin: 2,
+        gen: false,
+        desc: "Si vous subissez des dommages matriciels (Pic de données/Résonance ou CI) pendant la maintenance, renvoie à l'attaquant des dommages matriciels égaux aux succès du test initial ; la forme disparaît ensuite. Durée Maintenue. (Hacker vaillant p.63)",
+      },
+      {
+        name: "Attribution d'Attaque",
+        cat: "soutien",
+        vt: "succès",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Donne à un persona volontaire un attribut d'Attaque égal aux succès (remplace un attribut moindre) et débloque ses actions matricielles d'Attaque. Incompatible avec Infusion d'Attaque. Technodrain = succès. Durée Maintenue. (Hacker vaillant p.63)",
+      },
+      {
+        name: "Attribution de Corruption",
+        cat: "soutien",
+        vt: "succès",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Symétrique d'Attribution d'Attaque pour l'attribut Corruption ; débloque les actions illégales liées à la Corruption. Incompatible avec Infusion de Corruption. Technodrain = succès. Durée Maintenue. (Hacker vaillant p.63)",
+      },
+      {
+        name: "Automate illuminé",
+        cat: "manipulation",
+        vt: "succès",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Augmente l'Autopilote et/ou les Senseurs d'un appareil (max double de l'origine) ; l'appareil devient très réactif et peut se montrer arrogant (Escroquerie/Influence pour le raisonner). Technodrain = succès. Durée Maintenue. (Hacker vaillant p.63-64)",
+      },
+      {
+        name: "BTL IRL",
+        cat: "manipulation",
+        vt: 4,
+        proRatingMin: 3,
+        gen: false,
+        desc: "Cible augmentée (seuil = 6 − Essence) : bonus de Perception égal aux succès nets mais pénalité en Influence/Escroquerie ; sur complication/échec critique/1 au dé libre, la forme cesse et la cible subit 1D6 dommages Physiques de biofeedback. Durée Maintenue. (Hacker vaillant p.64)",
+      },
+      {
+        name: "Bulle de protection",
+        cat: "soutien",
+        vt: "succès",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Par tranche de 2 succès, la cible connectée gagne 1 dé bonus pour résister aux formes complexes et pouvoirs de sprite. Détectable seulement via Percevoir la Matrice par une entité à Résonance. Technodrain = succès. Durée Maintenue. (Hacker vaillant p.64)",
+      },
+      {
+        name: "Câbles de Résonance",
+        cat: "utilitaire",
+        vt: 2,
+        proRatingMin: 2,
+        gen: false,
+        desc: "Établit une connexion directe même avec un appareil au sans-fil coupé (seuil = 2 + niveau de Bruit, contact visuel continu requis) ; sur un personnage, accès à tous ses appareils. Durée Maintenue. (Hacker vaillant p.64)",
+      },
+      {
+        name: "Cyber-saturation",
+        cat: "combat",
+        vt: "succès",
+        proRatingMin: 3,
+        gen: false,
+        desc: "Cible un personnage à cyberware sans-fil actif : test opposé contre Constitution + Essence, 1 case de dommages Physiques par succès net (réductible par CON) et son cyberware asservi cesse un round. Technodrain = succès. Durée Instantanée. (Hacker vaillant p.64)",
+      },
+      {
+        name: "Détricoter le cryptage",
+        cat: "utilitaire",
+        vt: "indice de cryptage",
+        proRatingMin: 2,
+        gen: false,
+        manualTest: true,
+        desc: "Retire le cryptage d'un fichier détecté sans hausser le Score de Surveillance si le cryptage n'obtient aucun succès net. Test opposé Électronique (Logiciels) + Résonance contre indice de cryptage × 2 ; Technodrain = indice de cryptage (contextuel, jet non motorisé). Durée Persistante. (Hacker vaillant p.64-65)",
+      },
+      {
+        name: "Émulateur de serveur",
+        cat: "manipulation",
+        vt: 6,
+        proRatingMin: 3,
+        gen: false,
+        desc: "La cible (persona/CI d'un serveur) interagit avec une illusion du serveur et échoue silencieusement ses actions matricielles en croyant réussir, jusqu'à une vérification d'erreurs ou un échec plus net que le test initial. Test opposé contre Intuition + Firewall. Durée Maintenue. (Hacker vaillant p.65)",
+      },
+      {
+        name: "Fusion avec la machine",
+        cat: "soutien",
+        vt: "succès",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Cible à câblage de contrôle : par tranche de 2 succès, 1 dé bonus à ses tests de Pilotage, Ingénierie et défense tant qu'elle est en plongée et la forme maintenue. Technodrain = succès. Durée Maintenue. (Hacker vaillant p.65-66)",
+      },
+      {
+        name: "Historique",
+        cat: "utilitaire",
+        vt: 2,
+        proRatingMin: 2,
+        gen: false,
+        desc: "Sur succès nets, liste les actions matricielles de l'appareil sur les dernières 24 h (1 tranche par succès net), cibles identifiées seulement, sans le détail du contenu. Test opposé contre Volonté (ou indice) + Firewall. Durée Instantanée. (Hacker vaillant p.65-66)",
+      },
+      {
+        name: "Maquillage de données",
+        cat: "furtivite",
+        vt: 2,
+        proRatingMin: 2,
+        gen: false,
+        desc: "Maquille l'apparence/les attributs d'une icône (persona, appareil, CI, fichier, sprite…) ou simule un persona sur un appareil. Percevoir la Matrice ne révèle le maquillage que si son total de succès dépasse le vôtre. Durée Maintenue. (Hacker vaillant p.66)",
+      },
+      {
+        name: "Marionnette",
+        cat: "attaque",
+        vt: 6,
+        proRatingMin: 3,
+        gen: false,
+        desc: "Prend le contrôle du corps de la cible via son cyberware (test opposé contre Volonté + Firewall) ; chaque action forcée coûte majeure + mineure et réduit d'1 les succès nets restants. Le sans-fil coupé protège. Durée Maintenue. (Hacker vaillant p.66)",
+      },
+      {
+        name: "Overclocking de cyberjack",
+        cat: "soutien",
+        vt: "succès",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Chaque succès ajoute 1 à l'initiative matricielle de la cible (ajout direct au résultat du jet, pas un dé d'init), tant que maintenue. Technodrain = succès. Durée Maintenue. (Hacker vaillant p.66-67)",
+      },
+      {
+        name: "Pic à glace",
+        cat: "combat",
+        vt: 4,
+        proRatingMin: 3,
+        gen: false,
+        desc: "Cible une CI : inflige des dommages matriciels égaux à l'attribut Attaque + succès nets (test opposé contre indice serveur × 2). Si la CI plante, la durée passe à Maintenue et le serveur ne peut relancer cet exemplaire tant que la forme est maintenue. Durée Instantanée/Maintenue. (Hacker vaillant p.67)",
+      },
+      {
+        name: "Renforcement du cyberware",
+        cat: "soutien",
+        vt: 3,
+        proRatingMin: 3,
+        gen: false,
+        desc: "Cible augmentée (seuil = 6 − Essence) : immunise ses augmentations à la suralimentation tant que maintenue, et annule une suralimentation en cours à l'activation. Durée Maintenue. (Hacker vaillant p.67)",
+      },
+      {
+        name: "Rétablissement de la continuité",
+        cat: "soutien",
+        vt: "succès",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Répare les dommages matriciels des logiciels (agents distants, IA, faune matricielle, CI) — 1 case par succès. Sans effet sur les appareils ou les sprites. Technodrain = succès. Durée Persistante. (Hacker vaillant p.67)",
+      },
+      {
+        name: "Technorégénération",
+        cat: "soutien",
+        vt: "succès",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Équivalent du sort de Soins pour l'électronique : répare 1 case de dommages matriciels par succès (appareils uniquement). L'appareil réparé fonctionne de façon erratique (1 dé libre en remplacement) jusqu'à réparation matérielle. Technodrain = succès. Durée Persistante. (Hacker vaillant p.67)",
+      },
+    ],
+    /* Anarchy 1re (cœur p.68, 7 formes) + Anarchistes (p.66, +10 +1 gratuite).
+       Régime RADICALEMENT différent (arbitrage Kernel confirmé au code) : une
+       forme complexe A1 n'est PAS motorisée — elle est un Atout narratif, comme
+       les SORTS d'Anarchy (`spellSkill: null` → aucun jet). On la range donc en
+       `pnj.complexForms` et on l'affiche, exactement comme les sorts A1 ; la
+       « voie via anarchyatouts.js » du plan ne tient pas (ce module ne collecte
+       que des RR de dés parsés dans le texte d'un Atout, pas des actions).
+       Le coût tokenisé (champ `vt`, comme SR5/SR6) porte ici le NIVEAU D'ATOUT
+       à payer (« 2/3/4 », « 1 »…), affiché « Atout … » (anarchy1.technoCostLabel) ;
+       `vt: null` pour Marionnettiste, gratuite (aucun Atout requis). Curation :
+       cœur générable, Anarchistes `gen: false` (préparé pour T5, la génération
+       de technos A1 n'existant pas encore). Coquille tranchée : « Pic de
+       résonance » (un N — le livre imprime « résonnance » p.68, faute corrigée
+       par Anarchistes lui-même). */
+    anarchy1: [
+      {
+        name: "Dispersion",
+        cat: "attaque",
+        vt: "2/3/4",
+        proRatingMin: 1,
+        desc: "Réduit de 1/2/3 dés (selon le niveau d'Atout) la réserve d'un adversaire pour ses tests matriciels liés à la Logique, hors cybercombat. Forme d'effet (Atout, pas de jet à chaque usage).",
+      },
+      {
+        name: "Bombe d'interférences",
+        cat: "furtivite",
+        vt: "2",
+        proRatingMin: 1,
+        desc: "Rend invisible dans la Matrice pour deux Narrations, mais les interférences alertent toutes les icônes de la zone. Forme d'effet.",
+      },
+      {
+        name: "Infusion",
+        cat: "soutien",
+        vt: "2/3/4",
+        proRatingMin: 1,
+        desc: "Augmente de 1/2/3 dés (selon le niveau d'Atout) la réserve de la cible pour ses tests matriciels liés à la Logique, hors cybercombat (inverse de Dispersion, bénéficie un allié). Forme d'effet.",
+      },
+      {
+        name: "Nettoyeuse",
+        cat: "furtivite",
+        vt: "2/3/4",
+        proRatingMin: 1,
+        desc: "Les 1/2/3 prochaines actions matricielles illégales du technomancien ne risquent pas de lui faire gagner de point de surveillance (DIEU). Forme d'effet.",
+      },
+      {
+        name: "Pic de résonance",
+        cat: "combat",
+        vt: "1",
+        proRatingMin: 1,
+        desc: "Dommages matriciels 5P, Défense Logique + Firewall (test opposé de cybercombat, succès excédentaires ajoutés aux dommages). Forme de combat. (Le livre imprime « résonnance » p.68 — coquille, graphie corrigée « résonance ».)",
+      },
+      {
+        name: "Suture",
+        cat: "soutien",
+        vt: "2/3/4",
+        proRatingMin: 1,
+        desc: "Soigne une case de dommages matriciels par succès (test simple Technomancie + Logique). Niveau 2 : un sprite ; niveau 3 : + agents et IA ; niveau 4 : + les appareils (version étendue, Anarchistes p.66). Forme d'effet.",
+      },
+      {
+        name: "Tempête d'impulsions",
+        cat: "attaque",
+        vt: "3/4/5",
+        proRatingMin: 2,
+        desc: "Force les cibles de la zone d'effet à relancer 1/2/3 succès (selon le niveau d'Atout) sur leurs tests de Hacking ou de Technomancie. Forme d'effet.",
+      },
+      {
+        name: "Arc réactif",
+        cat: "combat",
+        vt: "2/3/4",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Tant que maintenue, inflige 1/2/3 cases de dommages matriciels à tout adversaire qui touche la cible en cybercombat. Forme d'effet. (Anarchistes p.66)",
+      },
+      {
+        name: "BTL IRL",
+        cat: "soutien",
+        vt: "2",
+        proRatingMin: 2,
+        gen: false,
+        desc: "+3 dés aux tests de Perception basés sur un équipement cybernétique, mais impose de relancer un succès aux tests de Comédie et de Négociation. Forme d'effet. (Anarchistes p.66)",
+      },
+      {
+        name: "Bulle de protection",
+        cat: "soutien",
+        vt: "2/3/4",
+        proRatingMin: 2,
+        gen: false,
+        desc: "+1/2/3 dés (selon le niveau d'Atout) aux tests de défense contre les formes complexes et de cybercombat contre les sprites. Forme d'effet. (Anarchistes p.66)",
+      },
+      {
+        name: "Ciblage de GLACE",
+        cat: "utilitaire",
+        vt: "1",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Empêche un serveur de relancer une GLACE qui vient d'être vaincue, tant que la forme est maintenue. Forme d'effet. (Anarchistes p.66)",
+      },
+      {
+        name: "Cyber-saturation",
+        cat: "combat",
+        vt: "2/3/4",
+        proRatingMin: 3,
+        gen: false,
+        desc: "Dommages 5P/6P/7P CA (selon le niveau d'Atout) à une cible possédant au moins un équipement cybernétique, Défense Logique + Firewall. Forme de combat. (Anarchistes p.66)",
+      },
+      {
+        name: "Historique",
+        cat: "utilitaire",
+        vt: "1",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Récupère l'historique des actions (pas les données) d'un appareil ; test Technomancie + Logique contre la défense matricielle de l'appareil. Forme d'effet. (Anarchistes p.66)",
+      },
+      {
+        name: "Infusion d'autopilote",
+        cat: "soutien",
+        vt: "2/3/4",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Augmente l'Autopilote d'un drone/véhicule de 1/2/3 (selon le niveau d'Atout) tant que maintenue. Forme d'effet. (Anarchistes p.66)",
+      },
+      {
+        name: "Infusion de cyberware",
+        cat: "soutien",
+        vt: "2",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Augmente le niveau d'un Atout cyberware de 1 tant que maintenue. Forme d'effet. (Anarchistes p.66)",
+      },
+      {
+        name: "Maquillage de données",
+        cat: "furtivite",
+        vt: "2/3/4",
+        proRatingMin: 2,
+        gen: false,
+        desc: "Fait passer une icône pour autre chose ; test Électronique + Logique + 1/2/3 dés (selon le niveau d'Atout) contre la Perception matricielle des cibles. Forme d'effet. (Anarchistes p.66)",
+      },
+      {
+        name: "Overclock",
+        cat: "utilitaire",
+        vt: "2/3/4",
+        proRatingMin: 3,
+        gen: false,
+        desc: "En VR uniquement : niveau 2 = +1 point d'Anarchy/Scène ; niveau 3 = +1 attaque/Narration et +1 point d'Anarchy/Scène ; niveau 4 = +1 attaque/Narration et +2 points d'Anarchy/Scène. Forme d'effet. (Anarchistes p.66)",
+      },
+      {
+        name: "Marionnettiste",
+        cat: "manipulation",
+        vt: null,
+        proRatingMin: 1,
+        gen: false,
+        desc: "Forme gratuite — aucun Atout requis, tout Émergé la maîtrise nativement. Effectue une action matricielle sans le niveau d'accès requis (test Technomancie + Logique contre la défense de l'appareil, +3 dés par niveau d'accès manquant) ; indétectable pour le DIEU. Impose 2 dés de complication de technodrain. (Anarchistes p.68)",
+      },
+    ],
   },
 
   /* ========================================================
@@ -3978,9 +4454,10 @@ export const Content = {
   },
 
   /** Choisit des formes complexes cohérentes pour un technomancien généré
-      (mirroir `pickSorts`). `gen: false` (absent ici, réservé aux futures
-      curations SR6/A1) exclut une entrée du tirage sans la retirer du
-      catalogue exhaustif — asymétrie catalogue/générateur voulue. */
+      (mirroir `pickSorts`). `gen: false` exclut une entrée du tirage sans la
+      retirer du catalogue exhaustif — asymétrie catalogue/générateur voulue,
+      mise en œuvre d'abord en SR6 (cœur générable, Hacker vaillant catalogue
+      seul). */
   pickComplexForms(ed, proRating) {
     ed = this._ed(ed);
     const list = this.complexForms[ed] || [];

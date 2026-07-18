@@ -130,11 +130,19 @@ export const EditionSR5 = {
      mais scopé Résonance au lieu de Magie — un technomancien n'a pas MAG. ---- */
   /** Compétence utilisée pour tisser une forme complexe (p.252). */
   technoFormSkill: "Logiciels",
+  /** SR5 : la forme complexe a un Niveau, choisi au tissage (1 à RES×3, p.252)
+      — jumeau de `spellUsesForce`. Le panneau de MagicAction s'ouvre pour le
+      choisir. (SR6 : formes sans Niveau → `false`, tissage direct.) */
+  technoFormUsesLevel: true,
+  /** Libellé du coût affiché sous la forme (le livre nomme l'objet) : SR5 = VT
+      (Valeur de Tissage), SR6 = Technodrain. Lu par les renderers, neutre. */
+  technoCostLabel: "VT",
   /** VT d'une forme (p.252) : Niveau + code de l'entrée (« N+2 »…), min 2 —
       `Magic.parseDrainMod` ignore la lettre, seul le modificateur signé
-      compte : fonctionne tel quel sur "N±x" comme sur "P±x". */
-  technoDrainValue(entry, level) {
-    return Magic.drainValue(level, Magic.parseDrainMod(entry.vt));
+      compte : fonctionne tel quel sur "N±x" comme sur "P±x". `ctx.level` est
+      le Niveau choisi (SR6 lit `ctx.castHits` pour son régime « succès »). */
+  technoDrainValue(entry, ctx) {
+    return Magic.drainValue(ctx.level, Magic.parseDrainMod(entry.vt));
   },
   /** Type de dégâts du Technodrain (p.252) : physique si les succès au
       tissage dépassent la Résonance, sinon étourdissant. */

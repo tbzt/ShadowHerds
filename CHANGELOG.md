@@ -12,6 +12,28 @@ commit.
 
 ## [Non publié]
 
+## [1.58.0] — 2026-07-18
+
+### Système
+- **Formes complexes (SR6 et Anarchy 1re édition)** : les technomanciens
+  disposent désormais de leurs formes complexes dans les deux éditions qui les
+  détaillent, complétant celles déjà livrées pour SR5.
+  - **SR6** : 39 formes vérifiées au livre (*Livre de base* p.191-193 +
+    *Hacker vaillant*), au catalogue complet ; le cœur (15) est tiré à la
+    génération, les 24 de *Hacker vaillant* restent au catalogue. Tisser une
+    forme roule le test (Électronique + Résonance ; **Piratage** pour Pic de
+    Résonance), résiste au Technodrain (Volonté + Logique) et encaisse les
+    dégâts sur le bon moniteur — même flux que le lancer de sort. Le Technodrain
+    est fixe ou, pour certaines formes de *Hacker vaillant*, égal au nombre de
+    succès du tissage (3ᵉ régime de coût).
+  - **Anarchy 1re édition** : 18 formes vérifiées au livre (*Anarchy* p.68 +
+    *Anarchistes*), au catalogue complet et éditables sur la fiche comme les
+    sorts Anarchy. Fidèle au jeu, ce sont des **Atouts narratifs non chiffrés**
+    (pas de jet automatisé — Anarchy reste narratif) : chaque forme affiche son
+    niveau d'Atout et son effet.
+  - Les formes complexes couvrent désormais les **trois éditions concernées**
+    (SR5, SR6, Anarchy 1) — Anarchy 2 en est dépourvue au livre.
+
 ## [1.57.0] — 2026-07-18
 
 ### Ajouté
@@ -113,7 +135,6 @@ commit.
   « Ajouter son rang d'Atout » SR6) avant de lancer. Vague 3b du chantier
   Edge pré-jet, différée lors de la livraison de la vague 3a
   (`PLANS/PLAN_LANCEUR_PREJET_EDGE.md`).
-
 ## [1.52.0] — 2026-07-17
 
 ### Jouer

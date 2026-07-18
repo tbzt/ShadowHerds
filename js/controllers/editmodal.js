@@ -1631,9 +1631,10 @@ export const EditModal = {
 
   _complexFormRows(pnj) {
     const esc = CardRenderer._esc;
+    const costLabel = App.getEditionModule(pnj.edition).technoCostLabel || "VT";
     return (pnj.complexForms || [])
       .map((f, i) => {
-        const detail = [Content.complexFormCatLabels[f.cat] || f.cat, f.vt != null ? `VT ${f.vt}` : null]
+        const detail = [Content.complexFormCatLabels[f.cat] || f.cat, f.vt != null ? `${costLabel} ${f.vt}` : null]
           .filter(Boolean)
           .join(", ");
         return `<div class="em-skill-row" data-idx="${i}">
