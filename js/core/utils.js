@@ -96,6 +96,25 @@ export const Utils = {
     return editionModule ? editionModule.conditionMonitor.woundMalus(pnj) : 0;
   },
 
+  /** Malus de dés dû aux effets (sorts / formes complexes) MAINTENUS — règle
+      propre à chaque édition (cf. `sustainMalus` des modules : −2 par effet
+      maintenu en SR5/SR6, cf. livre SR5 p.284/p.253 et SR6 p.136/p.129 ; 0 en
+      Anarchy). Renvoie 0 si l'édition n'expose pas la mécanique. */
+  sustainMalus(pnj, edition) {
+    if (!pnj || !this._resolveEditionModule) return 0;
+    const editionModule = this._resolveEditionModule(edition);
+    return editionModule && editionModule.sustainMalus ? editionModule.sustainMalus(pnj) : 0;
+  },
+
+  /** Malus de dés SITUATIONNEL TOTAL d'un acteur = blessure + effets maintenus.
+      Ces deux pénalités frappent TOUS les tests du PNJ, elles se cumulent, et
+      chaque site de jet doit retrancher la même chose : c'est ce point unique.
+      ⚠ Le badge de blessure, lui, lit `woundMalus` SEUL — il nomme sa source ;
+      un badge de maintien distinct nomme la sienne. */
+  dicePenalty(pnj, edition) {
+    return this.woundMalus(pnj, edition) + this.sustainMalus(pnj, edition);
+  },
+
   /** Malus de blessure d'un moniteur DOUBLE (physique + étourdissant).
       La règle est la même dans les trois éditions à échelle, et elle compte
       **par moniteur, puis cumule** — jamais sur la somme des deux :

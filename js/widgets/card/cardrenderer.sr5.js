@@ -74,7 +74,12 @@ Object.assign(CardRenderer, {
     const augsAll = ItemResolver.augItems(pnj, augsKeys);
     let html = `<div class="pnj-card-body">`;
 
-    const malus5 = Utils.woundMalus(pnj, "sr5");
+    // Deux pénalités distinctes : `wound5` (blessure seule) NE sert QUE le
+    // badge de moniteur, qui nomme sa source ; `malus5` (blessure + effets
+    // maintenus) s'applique à toutes les RÉSERVES affichées (Drain, Défense,
+    // compétences…). Voir Utils.dicePenalty.
+    const wound5 = Utils.woundMalus(pnj, "sr5");
+    const malus5 = Utils.dicePenalty(pnj, "sr5");
 
     // ---- ZONE COMBAT ----
     let combatBody = '<div class="combat-row">';
@@ -112,7 +117,7 @@ Object.assign(CardRenderer, {
         <span class="monitor-label" title="Étourdissant">E</span>
         <div class="monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, stunFilled)}</div>
       </div>
-      ${this._monitorMalusBadge(malus5)}
+      ${this._monitorMalusBadge(wound5)}
     </div>`;
 
     combatBody += this._weaponBlock(pnj, weapons, "sr5", deps);

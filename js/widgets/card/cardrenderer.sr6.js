@@ -60,7 +60,11 @@ Object.assign(CardRenderer, {
     const augsAll = ItemResolver.augItems(pnj, augsKeys);
     let html = `<div class="pnj-card-body">`;
 
-    const malus6 = Utils.woundMalus(pnj, "sr6");
+    // Deux pénalités distinctes : `wound6` (blessure seule) NE sert QUE le
+    // badge de moniteur ; `malus6` (blessure + effets maintenus) s'applique à
+    // toutes les réserves affichées. Voir Utils.dicePenalty.
+    const wound6 = Utils.woundMalus(pnj, "sr6");
+    const malus6 = Utils.dicePenalty(pnj, "sr6");
 
     // ---- ZONE COMBAT ----
     let combatBody = '<div class="combat-row">';
@@ -103,7 +107,7 @@ Object.assign(CardRenderer, {
           <span class="monitor-label" title="Étourdissant">E</span>
           <div class="monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, stunFilled ?? 0)}</div>
         </div>
-        ${this._monitorMalusBadge(malus6)}
+        ${this._monitorMalusBadge(wound6)}
       </div>`;
     } else {
       const monTotal = me ?? 9;
@@ -112,7 +116,7 @@ Object.assign(CardRenderer, {
           <span class="monitor-label">État</span>
           <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "phys", monTotal, physFilled ?? 0)}</div>
         </div>
-        ${this._monitorMalusBadge(malus6)}
+        ${this._monitorMalusBadge(wound6)}
       </div>`;
     }
 

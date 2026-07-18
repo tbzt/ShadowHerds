@@ -230,7 +230,7 @@ export const MagicAction = {
     const forceTxt = !isForm && !ed.spellUsesForce ? "" : ` · ${forceLabel} ${c.force}`;
     document.getElementById("magic-forecast").innerHTML =
       `<span>${Utils.escHtml(skill)} + ${Utils.escHtml(attrLabel)} : <strong>${castPool}</strong> dés${forceTxt}</span>` +
-      `<span class="magic-forecast-note">${isForm ? "Technodrain VT" : "Drain VD"} ${dv} — résistance ${Math.max(0, (resist || 0) - Utils.woundMalus(pnj, c.edition))} dés</span>`;
+      `<span class="magic-forecast-note">${isForm ? "Technodrain VT" : "Drain VD"} ${dv} — résistance ${Math.max(0, (resist || 0) - Utils.dicePenalty(pnj, c.edition))} dés</span>`;
   },
 
   /** Lance le sort et présente le résultat via l'affichage de dés STANDARD
@@ -455,7 +455,7 @@ export const MagicAction = {
   _resolveDrain(pnj, ed, { dv, kind, castHits, force, label }) {
     const isForm = kind === "complexForm";
     const resistBase = isForm ? pnj.technoDrainResist : pnj.drainResist;
-    const drainPool = Math.max(0, (resistBase || 0) - Utils.woundMalus(pnj, pnj.edition));
+    const drainPool = Math.max(0, (resistBase || 0) - Utils.dicePenalty(pnj, pnj.edition));
     const drainRes = Dice.computeRoll(drainPool);
     DiceLog.record(drainRes, {
       label: `Résistance au ${isForm ? "Technodrain" : "Drain"} — ${label}`,

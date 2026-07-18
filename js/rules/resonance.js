@@ -103,7 +103,7 @@ export const Resonance = {
     const sk = (pnj.skills || []).find((s) => s && s.name === skillName);
     const skillVal = sk ? Number(sk.val) || 0 : 0;
     const res = Actor.attr(pnj, (m && m.resonanceAttr) || "RES");
-    const malus = Utils.woundMalus(pnj, edition);
+    const malus = Utils.dicePenalty(pnj, edition);
     const foci =
       typeof SkillEffects !== "undefined"
         ? SkillEffects.forSkill(pnj, skillName).reduce((sum, e) => sum + (e.value || 0), 0)

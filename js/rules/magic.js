@@ -708,7 +708,7 @@ export const Magic = {
     const sk = (pnj.skills || []).find((s) => s && s.name === skillName);
     const skillVal = sk ? Number(sk.val) || 0 : 0;
     const mag = Actor.attr(pnj, "MAG");
-    const malus = Utils.woundMalus(pnj, edition);
+    const malus = Utils.dicePenalty(pnj, edition);
     // Bonus de pool d'objet sur la compétence magique (foci d'incantation /
     // d'invocation / de contresort / de puissance) — MÊME source que la puce
     // de compétence de la carte (SkillEffects.forSkill), pour que le JET réel

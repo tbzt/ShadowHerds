@@ -317,7 +317,7 @@ export const WeaponRoll = {
         ? weaponModel.smartlinkBonus.implanted
         : weaponModel.smartlinkBonus.external;
     }
-    const malus = Utils.woundMalus(pnj, edition);
+    const malus = Utils.dicePenalty(pnj, edition);
 
     // Effets d'objet motorisés, par FACETTE (pool/accuracy/dv/ap).
     // Provenance étiquetée — le pool absorbe ses contributions, les autres
