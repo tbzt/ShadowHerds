@@ -115,6 +115,21 @@ export const Utils = {
     return this.woundMalus(pnj, edition) + this.sustainMalus(pnj, edition);
   },
 
+  /** Nombre d'effets (sorts + formes complexes) actuellement MAINTENUS par un
+      PNJ : un effet est maintenu quand son dernier lancer porte le flag
+      (`_lastCast.sustained`, posé par MagicAction._toggleSustain). Neutre par
+      édition — le mapping compte→dés est porté par `sustainMalus` de chaque
+      module (−2/effet en SR5/SR6, 0 en Anarchy). */
+  sustainedCount(pnj) {
+    if (!pnj) return 0;
+    let n = 0;
+    for (const list of [pnj.spells, pnj.complexForms]) {
+      if (!Array.isArray(list)) continue;
+      for (const e of list) if (e && e._lastCast && e._lastCast.sustained) n++;
+    }
+    return n;
+  },
+
   /** Malus de blessure d'un moniteur DOUBLE (physique + étourdissant).
       La règle est la même dans les trois éditions à échelle, et elle compte
       **par moniteur, puis cumule** — jamais sur la somme des deux :

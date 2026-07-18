@@ -1470,8 +1470,12 @@ export const CardRenderer = {
             ? `<span class="spell-info" role="button" tabindex="0" data-content-name="${this._esc(name)}" data-content-desc="${this._esc(sp.desc)}" title="Détails du sort">ⓘ</span>`
             : "";
         const last = sp && sp._lastCast;
+        const sustained = !!(last && last.sustained);
         const lastHtml = last
-          ? `<span class="spell-last" title="Dernier jet : ${last.hits} succès (suivi d'un sort maintenu)">→ <strong>${last.hits}</strong><span class="spell-last-clear" data-spell-clear="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" title="Effacer le dernier jet">✕</span></span>`
+          ? `<span class="spell-last${sustained ? " is-sustained" : ""}">` +
+            `<span class="spell-sustain" data-spell-sustain="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" tabindex="0" aria-pressed="${sustained}" title="${sustained ? "Sort maintenu (−2 dés à tous les tests) — cliquer pour arrêter" : `Dernier jet : ${last.hits} succès — cliquer pour maintenir (−2 dés à tous les tests)`}">${sustained ? "⟳" : "→"} <strong>${last.hits}</strong></span>` +
+            `<span class="spell-last-clear" data-spell-clear="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" title="${sustained ? "Fin du maintien" : "Effacer le dernier jet"}">✕</span>` +
+            `</span>`
           : "";
 
         let castAttr = "";
@@ -1522,8 +1526,12 @@ export const CardRenderer = {
             ? `<span class="spell-info" role="button" tabindex="0" data-content-name="${this._esc(name)}" data-content-desc="${this._esc(f.desc)}" title="Détails de la forme">ⓘ</span>`
             : "";
         const last = f && f._lastCast;
+        const sustained = !!(last && last.sustained);
         const lastHtml = last
-          ? `<span class="spell-last" title="Dernier jet : ${last.hits} succès (suivi d'une forme maintenue)">→ <strong>${last.hits}</strong><span class="spell-last-clear" data-form-clear="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" title="Effacer le dernier jet">✕</span></span>`
+          ? `<span class="spell-last${sustained ? " is-sustained" : ""}">` +
+            `<span class="spell-sustain" data-form-sustain="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" tabindex="0" aria-pressed="${sustained}" title="${sustained ? "Forme complexe maintenue (−2 dés à tous les tests) — cliquer pour arrêter" : `Dernier jet : ${last.hits} succès — cliquer pour maintenir (−2 dés à tous les tests)`}">${sustained ? "⟳" : "→"} <strong>${last.hits}</strong></span>` +
+            `<span class="spell-last-clear" data-form-clear="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" title="${sustained ? "Fin du maintien" : "Effacer le dernier jet"}">✕</span>` +
+            `</span>`
           : "";
 
         let castAttr = "";

@@ -296,6 +296,13 @@ export const EditionSR5 = {
     ],
     monitorKind: "double",
   },
+  /** Malus de dés dû aux effets MAINTENUS : −2 dés à TOUS les tests par sort
+      (p.284, « Étape 7 ») OU forme complexe (p.253, « Tissage ») maintenu,
+      cumulatif. Le compte (effets marqués) est neutre — Utils.sustainedCount —,
+      le mapping −2/effet est la règle SR5. */
+  sustainMalus(pnj) {
+    return Utils.sustainedCount(pnj) * 2;
+  },
   /** Malus de dés lié aux cases de moniteur remplies : −1D par tranche de
       `woundMod` cases (physique + étourdissement cumulés), réglable en
       Réglages (défaut 3, désactivable à 0). */

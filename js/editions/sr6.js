@@ -307,6 +307,13 @@ export const EditionSR6 = {
     monitorKind: () => (Settings.get("separateMonitors", false) ? "double" : "single"),
     monitorMaxKey: "me",
   },
+  /** Malus de dés dû aux effets MAINTENUS : −2 dés à tout test d'action par
+      sort (p.136, « Coûts de maintien ») OU forme complexe (p.129) maintenu,
+      cumulatif. Compte neutre (Utils.sustainedCount), mapping −2/effet propre
+      à SR6. */
+  sustainMalus(pnj) {
+    return Utils.sustainedCount(pnj) * 2;
+  },
   /** Malus de dés lié aux cases de moniteur remplies : −1D par tranche de
       3 cases. Modèle par défaut = moniteur d'état unique (8 + CON/2), mais
       un PNJ généré avec separateMonitors actif porte physMon/stunMon (comme
