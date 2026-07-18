@@ -489,6 +489,31 @@ const FoundrySR6Import = {
     return Number(node.base ?? node.total ?? node.value ?? node.rating ?? 0) || 0;
   },
 
+  /** HTML d'un champ Foundry → texte lisible : décode les entités et retire
+      les balises via un DOMParser inerte (pas d'exécution), en préservant les
+      fins de bloc (sinon `<p>…</p><p>…</p>` colle « …round.Chaque… »). */
+  _text(html) {
+    const str = String(html || "");
+    if (!str) return "";
+    if (!/[<&]/.test(str)) return str.trim();
+    const withBreaks = str.replace(/<\/(p|div|li|h[1-6])>|<br\s*\/?>/gi, "\n");
+    const doc = new DOMParser().parseFromString(withBreaks, "text/html");
+    const text = (doc.body && doc.body.textContent) || "";
+    return text.replace(/[ \t]+/g, " ").replace(/\s*\n\s*/g, "\n").replace(/\n{2,}/g, "\n").trim();
+  },
+
+  /** Texte d'un item SR6. La vraie fiche range la description sous
+      `system.info.description` (HTML) — `system.description` À PLAT n'existe
+      que sur NOTRE propre export (repli de compat, sinon on perdait toute
+      description sur une fiche venue du système, même classe de bug que la
+      vague 1). Priorité aux effets de jeu (texte mécanique) sur l'ambiance
+      (plan Lot 0 « Commun »), puis décodage HTML. */
+  _itemDesc(item) {
+    const s = item.system || {};
+    const info = s.info || {};
+    return this._text(info.gameEffects || info.description || s.description || "");
+  },
+
   _readSkills(system) {
     const out = [];
     const rev = this._skillRev();
@@ -546,7 +571,7 @@ const FoundrySR6Import = {
       const dedupKey = `${item.type}::${item.name}`;
       if (seen.has(dedupKey)) continue;
       seen.add(dedupKey);
-      const desc = (item.system && item.system.description) || "";
+      const desc = this._itemDesc(item);
       switch (item.type) {
         case "weapon":
           pnj.equip.push(this._weaponStr(item));
