@@ -683,6 +683,28 @@
 .spell-last strong {
   font-size: var(--fs-sm);
 }
+/* Le nombre de succès est un CONTRÔLE : cliquer bascule le MAINTIEN du sort/
+   de la forme (−2 dés à tous les tests). Loi 1 — il s'annonce au repos par un
+   contour, jamais au seul survol. */
+.spell-sustain {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  padding: 0 5px;
+  border: 1px solid var(--border-ui, var(--border));
+  border-radius: 999px;
+}
+.spell-sustain:hover {
+  border-color: var(--accent);
+}
+/* État MAINTENU : pastille teintée + glyphe ⟳ (color-mix pour tenir le
+   contraste dans les 4 thèmes sans inverser la couleur du texte). */
+.spell-last.is-sustained .spell-sustain {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
 .spell-last-clear {
   cursor: pointer;
   color: var(--text-dim);

@@ -183,7 +183,9 @@ export const DiceRoller = {
         const ctx = rollEl && this._resolveRollContext(rollEl);
         if (ctx) {
           const options = this.preRollEdgeOptions(ctx.pnj).filter((o) => o.affordable);
-          if (options.length) this.openPreRollPanel({ pnj: ctx.pnj, options, doRoll: ctx.doRoll });
+          const gain = ctx.weapon ? this._buildGainCtx(ctx.pnj, ctx.weapon) : null;
+          if (options.length || gain)
+            this.openPreRollPanel({ pnj: ctx.pnj, options, doRoll: ctx.doRoll, gain });
         }
         return;
       }
@@ -196,7 +198,7 @@ export const DiceRoller = {
         const weapon = wEl.getAttribute("data-roll-weapon");
         // Edge pré-jet (mode panneau) : intercepte avant de lancer si le PNJ a
         // des options d'Edge abordables ; sinon jet direct (geste inchangé).
-        if (pnj && !this._maybePreRoll(pnj, (edge) => this.rollWeapon(pnj, weapon, edition, edge)))
+        if (pnj && !this._maybePreRoll(pnj, (edge) => this.rollWeapon(pnj, weapon, edition, edge), weapon))
           this.rollWeapon(pnj, weapon, edition);
         return;
       }
@@ -924,6 +926,36 @@ export const DiceRoller = {
     });
   },
 
+  /** Spéc de gain d'Atout PRÉ-jet de l'édition (SR6 uniquement — clé
+      `preRollGain`, absente ailleurs → renvoie null, aucune étape de gain). */
+  preRollGainSpec(pnj) {
+    const mod = pnj ? App.getEditionModule(pnj.edition) : App.editionModule;
+    return (mod && mod.preRollGain) || null;
+  },
+
+  /** Contexte de gain pour une attaque à l'arme, ou null si l'édition n'a pas
+      de gain d'Atout ou si l'arme n'a pas de SO exploitable. bandIdx = bande de
+      Portée par défaut (Moyenne) à distance, 0 en mêlée ; sd saisi au panneau. */
+  _buildGainCtx(pnj, weapon) {
+    const spec = this.preRollGainSpec(pnj);
+    if (!spec || !weapon) return null;
+    const offense = spec.offense(pnj, weapon);
+    if (!offense || !offense.bands || !offense.bands.length) return null;
+    return { spec, offense, bandIdx: offense.isRanged ? spec.defaultBand : 0, sd: "", gained: 0 };
+  },
+
+  /** Bandeau « Atout disponible » : lu directement sur l'attribut de coût de
+      l'édition (preRollGain ou preRollEdge), pour rester juste même quand
+      aucune option de dépense n'est abordable (panneau ouvert pour gagner). */
+  _panelBudgetText(pnj) {
+    const mod = App.getEditionModule(pnj.edition);
+    const attr =
+      (mod.preRollGain && mod.preRollGain.costAttr) ||
+      (mod.preRollEdge && mod.preRollEdge.costAttr) ||
+      null;
+    return attr ? `${Actor.attr(pnj, attr)} ${attr}` : "";
+  },
+
   /** Mode de surface de l'Edge pré-jet (préférence par appareil) : "panel" =
       panneau qui intercepte automatiquement le tap ; "pill" = affordance
       distincte à côté de la pastille, le tap nu reste un lancer immédiat ;
@@ -946,11 +978,14 @@ export const DiceRoller = {
       ABORDABLES, ouvre le panneau et renvoie true (le jet part depuis le
       panneau via `doRoll`). Sinon false → l'appelant lance normalement. Le tap
       nu reste un lancer immédiat dès qu'aucune option n'est disponible. */
-  _maybePreRoll(pnj, doRoll) {
+  _maybePreRoll(pnj, doRoll, weapon = null) {
     if (this._preRollMode() !== "panel" || !pnj) return false;
     const options = this.preRollEdgeOptions(pnj).filter((o) => o.affordable);
-    if (!options.length) return false;
-    this.openPreRollPanel({ pnj, options, doRoll });
+    const gain = weapon ? this._buildGainCtx(pnj, weapon) : null;
+    // Ouvre si une dépense est possible OU si l'attaque permet de GAGNER de
+    // l'Atout (SR6) — sinon le tap reste un lancer immédiat (geste inchangé).
+    if (!options.length && !gain) return false;
+    this.openPreRollPanel({ pnj, options, doRoll, gain });
     return true;
   },
 
@@ -981,7 +1016,7 @@ export const DiceRoller = {
       if (!pnj) return null;
       const edition = el.getAttribute("data-roll-edition") || "sr5";
       const weapon = el.getAttribute("data-roll-weapon");
-      return { pnj, doRoll: (edge) => this.rollWeapon(pnj, weapon, edition, edge) };
+      return { pnj, weapon, doRoll: (edge) => this.rollWeapon(pnj, weapon, edition, edge) };
     }
     if (el.hasAttribute("data-roll")) {
       const n = parseInt(el.getAttribute("data-roll"), 10);
@@ -1014,6 +1049,7 @@ export const DiceRoller = {
           <button class="risk-panel-close" id="preroll-close" aria-label="Fermer">✕</button>
         </div>
         <div class="risk-panel-pool" id="preroll-pool"></div>
+        <div id="preroll-gain" hidden></div>
         <div id="preroll-options"></div>
         <button class="risk-roll-btn" id="preroll-plain">Lancer sans Edge</button>
       </div>`;
@@ -1043,6 +1079,33 @@ export const DiceRoller = {
       if (doRoll) doRoll(null);
     });
 
+    // Gain d'Atout SR6 (section conditionnelle) : Portée (change) + SD (input)
+    // recalculent le verdict SANS re-rendre les champs (le focus/curseur du SD
+    // reste) ; le bouton crédite le lanceur.
+    const gainEl = document.getElementById("preroll-gain");
+    gainEl.addEventListener("change", (e) => {
+      const sel = e.target.closest("[data-preroll-band]");
+      if (sel && this._preRoll && this._preRoll.gain) {
+        this._preRoll.gain.bandIdx = parseInt(sel.value, 10) || 0;
+        this._updateGainVerdict();
+      }
+    });
+    gainEl.addEventListener("input", (e) => {
+      const inp = e.target.closest("[data-preroll-sd]");
+      if (inp && this._preRoll && this._preRoll.gain) {
+        this._preRoll.gain.sd = inp.value;
+        this._updateGainVerdict();
+      }
+    });
+    gainEl.addEventListener("click", (e) => {
+      const step = e.target.closest("[data-preroll-sd-step]");
+      if (step) {
+        this._stepSd(parseInt(step.getAttribute("data-preroll-sd-step"), 10) || 0);
+        return;
+      }
+      if (e.target.closest("[data-preroll-gain]")) this._applyGain();
+    });
+
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && !document.getElementById("preroll-panel").hasAttribute("hidden"))
         this._closePreRollPanel();
@@ -1055,14 +1118,30 @@ export const DiceRoller = {
   openPreRollPanel(ctx) {
     this._ensurePreRollPanel();
     this._preRoll = ctx;
-    const budget = ctx.options[0] ? `${ctx.options[0].budget} ${ctx.options[0].costAttr}` : "";
     document.getElementById("preroll-title").textContent = ctx.pnj.name
       ? `${ctx.pnj.name} — avant de lancer`
       : "Avant de lancer";
+    this._renderSpendOptions();
+    this._renderGainSection();
+    const p = document.getElementById("preroll-panel");
+    p.removeAttribute("hidden");
+    void p.offsetWidth;
+    p.classList.add("show");
+  },
+
+  /** (Re)rend le bandeau de budget + la liste des options de DÉPENSE d'Edge.
+      Rappelé après un gain d'Atout (budget accru → plus d'options abordables).
+      Le budget est lu directement sur l'attribut de coût (pas sur options[0])
+      pour rester juste quand la liste est vide (panneau ouvert pour gagner). */
+  _renderSpendOptions() {
+    const ctx = this._preRoll;
+    if (!ctx) return;
+    const budget = this._panelBudgetText(ctx.pnj);
+    const label = ctx.gain ? "Atout disponible" : "Edge disponible";
     document.getElementById("preroll-pool").innerHTML = budget
-      ? `Edge disponible : <strong>${Utils.escHtml(budget)}</strong>`
+      ? `${label} : <strong>${Utils.escHtml(budget)}</strong>`
       : "";
-    document.getElementById("preroll-options").innerHTML = ctx.options
+    document.getElementById("preroll-options").innerHTML = (ctx.options || [])
       .map(
         (o, i) =>
           `<button class="risk-level-btn" data-idx="${i}">
@@ -1071,10 +1150,141 @@ export const DiceRoller = {
            </button>`,
       )
       .join("");
-    const p = document.getElementById("preroll-panel");
-    p.removeAttribute("hidden");
-    void p.offsetWidth;
-    p.classList.add("show");
+  },
+
+  /** Rend la section « gagner l'Atout » (SR6) : sélecteur de Portée pour les
+      armes à distance (SO par bande), SO figé en mêlée, champ SD optionnel,
+      verdict et bouton de crédit. Masquée si le contexte n'a pas de gain. */
+  _renderGainSection() {
+    const el = document.getElementById("preroll-gain");
+    if (!el) return;
+    const g = this._preRoll && this._preRoll.gain;
+    if (!g) {
+      el.hidden = true;
+      el.innerHTML = "";
+      return;
+    }
+    el.hidden = false;
+    const bandControl = g.offense.isRanged
+      ? `<label class="preroll-gain-field">Portée
+           <select data-preroll-band>
+             ${g.offense.bands
+               .map(
+                 (b, i) =>
+                   `<option value="${i}"${i === g.bandIdx ? " selected" : ""}${b.so == null ? " disabled" : ""}>${Utils.escHtml(b.label)}${b.so != null ? ` · SO ${b.so}` : " · —"}</option>`,
+               )
+               .join("")}
+           </select>
+         </label>`
+      : `<span class="preroll-gain-static">${Utils.escHtml(g.offense.bands[0].label)} · SO <strong>${g.offense.bands[0].so ?? "—"}</strong></span>`;
+    el.innerHTML = `
+      <div class="preroll-gain-head">Gagner l'Atout — SO de l'arme vs SD de la cible</div>
+      <div class="preroll-gain-row">
+        ${bandControl}
+        <label class="preroll-gain-field">SD cible
+          <span class="dice-count-group">
+            <button class="dice-count-step" data-preroll-sd-step="-1" tabindex="-1" aria-label="Baisser le SD">−</button>
+            <input class="dice-count-input" type="number" inputmode="numeric" min="0" data-preroll-sd placeholder="—" value="${Utils.escHtml(String(g.sd || ""))}">
+            <button class="dice-count-step" data-preroll-sd-step="1" tabindex="-1" aria-label="Monter le SD">＋</button>
+          </span>
+        </label>
+        <button class="risk-level-btn preroll-gain-btn" data-preroll-gain disabled>+1 Atout</button>
+      </div>
+      <div class="preroll-gain-verdict" data-preroll-verdict></div>
+      <div class="preroll-gain-note">Règle : 2 Atout gagnés max par tour · réserve max ${g.spec.max}.</div>`;
+    this._updateGainVerdict();
+  },
+
+  /** Écart SO/SD courant → { so, sd, text, canGain }. Le crédit auto ne vise
+      que le lanceur (attaquant) ; la symétrie « cible » est affichée, pas
+      créditée (piste ultérieure : sélecteur de cible). */
+  _gainState() {
+    const g = this._preRoll && this._preRoll.gain;
+    if (!g) return null;
+    const band = g.offense.bands[g.bandIdx] || g.offense.bands[0];
+    const so = band ? band.so : null;
+    const hasSd = g.sd !== "" && g.sd != null && Number.isFinite(Number(g.sd));
+    const sd = hasSd ? Number(g.sd) : null;
+    let text;
+    let canGain = false;
+    if (so == null) {
+      text = "Hors de portée à cette distance — aucun SO.";
+    } else if (!hasSd) {
+      text = "Saisis le SD de la cible pour comparer.";
+    } else {
+      const d = so - sd;
+      const t = g.spec.threshold;
+      if (d >= t) {
+        text = `SO ${so} − SD ${sd} = ${d} (≥ ${t}) → l'attaquant gagne 1 Atout.`;
+        canGain = true;
+      } else if (-d >= t) {
+        text = `SD ${sd} − SO ${so} = ${-d} (≥ ${t}) → la cible gagnerait 1 Atout.`;
+      } else {
+        text = `Écart ${Math.abs(d)} (< ${t}) → aucun gain.`;
+      }
+    }
+    return { so, sd, text, canGain };
+  },
+
+  /** Stepper −/＋ du SD cible : part de 0 quand le champ est vide, plancher à
+      0. Écrit la valeur dans l'input (pas de re-rendu) puis rafraîchit le
+      verdict. Le champ reste éditable au clavier en parallèle. */
+  _stepSd(delta) {
+    const g = this._preRoll && this._preRoll.gain;
+    if (!g) return;
+    const cur = g.sd === "" || g.sd == null ? 0 : parseInt(g.sd, 10) || 0;
+    g.sd = String(Math.max(0, cur + delta));
+    const inp = document.querySelector("[data-preroll-sd]");
+    if (inp) inp.value = g.sd;
+    this._updateGainVerdict();
+  },
+
+  /** Met à jour le verdict + l'état du bouton SANS re-rendre les champs (le
+      focus/curseur du SD saisi reste). */
+  _updateGainVerdict() {
+    const st = this._gainState();
+    if (!st) return;
+    const g = this._preRoll && this._preRoll.gain;
+    const v = document.querySelector("[data-preroll-verdict]");
+    if (v) v.textContent = st.text;
+    const b = document.querySelector("[data-preroll-gain]");
+    if (b) {
+      b.disabled = !st.canGain;
+      // Une fois l'Atout gagné, le bouton acte le gain : libellé « ✓ Gagné » et
+      // peau discrète (`.is-gained`) — reste cliquable (2/tour possible) mais
+      // n'invite plus au clic. Reset au (ré)ouverture du panneau (gained:0).
+      const gained = (g && g.gained) || 0;
+      b.classList.toggle("is-gained", gained > 0);
+      b.textContent = gained > 0 ? "✓ Gagné" : "+1 Atout";
+    }
+  },
+
+  /** Crédite 1 Atout au lanceur (clamp au plafond de réserve), re-rend sa carte
+      et rafraîchit les options de dépense (budget accru). Le panneau reste
+      ouvert : la boucle SR6 est « gagner puis dépenser ». */
+  _applyGain() {
+    const st = this._gainState();
+    const g = this._preRoll && this._preRoll.gain;
+    if (!st || !st.canGain || !g) return;
+    Actor.gain(this._preRoll.pnj, g.spec.costAttr, 1, g.spec.max);
+    g.gained = (g.gained || 0) + 1; // acté → le bouton passe en état « gagné »
+    Utils.haptic(12); // confirme le tap (Android ; le visuel tient seul sinon)
+    this._hooks.onPnjChanged(this._preRoll.pnj);
+    this._preRoll.options = this.preRollEdgeOptions(this._preRoll.pnj).filter((o) => o.affordable);
+    this._renderSpendOptions();
+    this._pulseBudget(); // le nombre d'Atout qui monte clignote → « c'est fait »
+    this._updateGainVerdict();
+  },
+
+  /** Fait clignoter le nombre d'Atout du bandeau après un gain — le retour
+      visuel qui manquait (sans lui, le clic ne « répond » pas et on
+      double-clique). Rejoué à chaque gain (retire/repose la classe). */
+  _pulseBudget() {
+    const pool = document.getElementById("preroll-pool");
+    if (!pool) return;
+    pool.classList.remove("atout-bumped");
+    void pool.offsetWidth;
+    pool.classList.add("atout-bumped");
   },
 
   _closePreRollPanel() {

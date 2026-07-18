@@ -12,7 +12,7 @@ commit.
 
 ## [Non publié]
 
-## [1.56.0] — 2026-07-18
+## [1.57.0] — 2026-07-18
 
 ### Ajouté
 - **Anarchy 2.0 — Points d'Anarchy de scène motorisés (atouts p.77, drogues
@@ -28,9 +28,37 @@ commit.
   génère ; **« +1 action par narration »** est signalé quand un atout
   l'accorde (le meneur prend l'action via le budget d'actions existant).
 
-> Note de version : numéro provisoire. Développé en parallèle d'une feature
-> SR6 (« gain d'Atout avant le jet ») qui revendique 1.55.0 — à réconcilier au
-> merge (motif du double-bump).
+## [1.56.0] — 2026-07-18
+
+### Ajouté
+- **Maintien des sorts et des formes complexes — état vivant et malus
+  automatique.** Le nombre de succès affiché après un lancer devient un
+  **contrôle** : on clique dessus pour marquer le sort (ou la forme complexe)
+  **maintenu** (pastille `⟳`), on re-clique pour l'arrêter, et le ✕ (fin du
+  dernier jet) met fin au maintien du même geste. Chaque effet maintenu impose
+  **−2 dés à tous les tests** du PNJ, **cumulatif** (SR5 p.284/p.253, SR6
+  p.136/p.129) : les réserves de la carte, du tracker et des panneaux s'ajustent
+  automatiquement, et un badge **« ⟳ ×N · −N »** près du moniteur donne le total
+  d'un coup d'œil. Sans effet en Anarchy (pas de règle de maintien chiffré).
+
+## [1.55.0] — 2026-07-18
+
+### Ajouté
+- **SR6 — gain d'Atout avant le jet (Score Offensif vs Score Défensif).**
+  Lancer une attaque à l'arme d'un PNJ SR6 ouvre le panneau « avant de
+  lancer » avec une étape de gain : on compare le **SO de l'arme** — par
+  **bande de Portée** pour les armes à distance (Contact → Extrême), **SO +
+  Force** en mêlée, **Force + Réaction** à mains nues — au **Score Défensif**
+  de la cible (saisi à la main, optionnel). Si l'écart atteint 4, le camp le
+  plus haut gagne 1 point d'Atout ; le crédit est appliqué **automatiquement à
+  l'attaquant** (la symétrie côté cible est affichée mais pas créditée), avec
+  **clamp au plafond de réserve** (7). Le SO n'était pas exploité côté carte
+  SR6 (la couche de combat était modelée SR5) ; il est désormais lu depuis le
+  catalogue et l'étiquette de facette Précision devient **SO** en SR6.
+- **Le panneau « Edge avant le jet » est activé par défaut** (`Panneau`) —
+  il ne s'ouvre que quand une dépense d'Edge/Atout est possible ou (SR6)
+  quand une attaque permet d'en gagner ; réglable dans **Paramètres ›
+  Lanceur de dés** (retour possible à « Désactivé »).
 
 ## [1.54.2] — 2026-07-18
 

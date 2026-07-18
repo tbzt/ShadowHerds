@@ -54,6 +54,17 @@ export const MagicAction = {
         );
         return;
       }
+      // Clic sur les succès = bascule du maintien (prioritaire, ne lance pas).
+      const sus = e.target.closest("[data-spell-sustain], [data-form-sustain]");
+      if (sus) {
+        const isForm = sus.hasAttribute("data-form-sustain");
+        this._toggleSustain(
+          sus.getAttribute("data-roll-pnj"),
+          sus.getAttribute(isForm ? "data-form-sustain" : "data-spell-sustain"),
+          isForm ? "complexForm" : "spell",
+        );
+        return;
+      }
       // ⓘ : détails du sort/forme — laissé à ContentModal, ne pas lancer.
       if (e.target.closest("[data-content-name]")) return;
       const bs = e.target.closest("[data-cast-spell]");
@@ -76,6 +87,22 @@ export const MagicAction = {
       delete entry._lastCast;
       this._hooks.onPnjChanged(pnj);
     }
+  },
+
+  /** Bascule le maintien du dernier effet lancé (sort/forme complexe). On ne
+      maintient qu'un effet effectivement LANCÉ (`_lastCast` présent) — le flag
+      vit DANS `_lastCast`, donc le ✕ (efface le dernier jet) met fin au
+      maintien du même geste. Le compte des effets maintenus en dérive
+      (`Utils.sustainedCount`) et pilote le malus de −2/effet à tous les tests
+      (`Utils.dicePenalty`). */
+  _toggleSustain(pnjId, name, kind = "spell") {
+    const pnj = PnjLookup.find(pnjId);
+    if (!pnj) return;
+    const list = kind === "complexForm" ? pnj.complexForms : pnj.spells;
+    const entry = (list || []).find((s) => s && s.name === name);
+    if (!entry || !entry._lastCast) return;
+    entry._lastCast.sustained = !entry._lastCast.sustained;
+    this._hooks.onPnjChanged(pnj);
   },
 
   _ensurePanel() {
@@ -230,7 +257,7 @@ export const MagicAction = {
     const forceTxt = !isForm && !ed.spellUsesForce ? "" : ` · ${forceLabel} ${c.force}`;
     document.getElementById("magic-forecast").innerHTML =
       `<span>${Utils.escHtml(skill)} + ${Utils.escHtml(attrLabel)} : <strong>${castPool}</strong> dés${forceTxt}</span>` +
-      `<span class="magic-forecast-note">${isForm ? "Technodrain VT" : "Drain VD"} ${dv} — résistance ${Math.max(0, (resist || 0) - Utils.woundMalus(pnj, c.edition))} dés</span>`;
+      `<span class="magic-forecast-note">${isForm ? "Technodrain VT" : "Drain VD"} ${dv} — résistance ${Math.max(0, (resist || 0) - Utils.dicePenalty(pnj, c.edition))} dés</span>`;
   },
 
   /** Lance le sort et présente le résultat via l'affichage de dés STANDARD
@@ -455,7 +482,7 @@ export const MagicAction = {
   _resolveDrain(pnj, ed, { dv, kind, castHits, force, label }) {
     const isForm = kind === "complexForm";
     const resistBase = isForm ? pnj.technoDrainResist : pnj.drainResist;
-    const drainPool = Math.max(0, (resistBase || 0) - Utils.woundMalus(pnj, pnj.edition));
+    const drainPool = Math.max(0, (resistBase || 0) - Utils.dicePenalty(pnj, pnj.edition));
     const drainRes = Dice.computeRoll(drainPool);
     DiceLog.record(drainRes, {
       label: `Résistance au ${isForm ? "Technodrain" : "Drain"} — ${label}`,

@@ -168,6 +168,11 @@ export const EditionAnarchy1 = {
      dérivée de FOR/VOL (pas CON/VOL) : phys = 8 + ⌈FOR/2⌉,
      étourd. = 8 + ⌈VOL/2⌉. Malus : −1 dé par ligne de 3 cases remplies
      (cumul phys+étourd.), non réglable (contrairement au woundMod SR5/SR6). */
+  /** Neutre : Anarchy n'a pas la règle SR5/SR6 du −2 dés par effet maintenu
+      (les effets persistants s'y gèrent en fiction, pas en malus chiffré). */
+  sustainMalus() {
+    return 0;
+  },
   conditionMonitor: {
     model: "double physique+étourdissement, cases = 8 + FOR|VOL /2",
     fields: { primary: "physMon" },

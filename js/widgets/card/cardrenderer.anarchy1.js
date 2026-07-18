@@ -34,7 +34,11 @@ Object.assign(CardRenderer, {
     const { weapons, gear } = ItemResolver.splitEquip(equip);
     let html = `<div class="pnj-card-body">`;
 
-    const malus = Utils.woundMalus(pnj, "anarchy1");
+    // `wound` (blessure seule) → badge de moniteur ; `malus` → réserves. En
+    // Anarchy les deux coïncident (pas de règle d'effet maintenu, dicePenalty
+    // n'ajoute rien), mais on garde l'invariant universel pools/badge.
+    const wound = Utils.woundMalus(pnj, "anarchy1");
+    const malus = Utils.dicePenalty(pnj, "anarchy1");
 
     // ---- ZONE COMBAT ----
     let combatBody = '<div class="combat-row">';
@@ -66,7 +70,7 @@ Object.assign(CardRenderer, {
         <span class="monitor-label" title="Étourdissant">E</span>
         <div class="monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, stunFilled)}</div>
       </div>
-      ${this._monitorMalusBadge(malus)}
+      ${this._monitorMalusBadge(wound)}
     </div>`;
 
     combatBody += this._weaponBlock(pnj, weapons, "anarchy1", deps);

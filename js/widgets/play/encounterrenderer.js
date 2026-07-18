@@ -1150,7 +1150,7 @@ export const EncounterRenderer = {
   _reactPnjRow(r) {
     const pnj = r.pnj;
     const name = Utils.escHtml(pnj.name || "");
-    const malus = Utils.woundMalus(pnj, pnj.edition);
+    const malus = Utils.dicePenalty(pnj, pnj.edition);
     const def = Math.max(0, (pnj.defense || 0) - malus);
     const soak = pnj.damageResist || 0;
     const defBtn = def >= 1

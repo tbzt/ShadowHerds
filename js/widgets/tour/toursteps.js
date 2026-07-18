@@ -329,7 +329,17 @@ export const TourSteps = {
       body: "L'import Foundry VTT reprend maintenant, sur une vraie fiche SR6, l'historique Karma/Nuyens, la réputation, les contacts (rattachés au carnet), les identités (SIN) avec licences et styles de vie, et les véhicules/drones liés. Les descriptions de sorts, pouvoirs et traits, qui se perdaient en SR6, sont enfin reprises — et le HTML des descriptions (SR5 comme SR6) est aplati en texte propre.",
     },
     {
-      id: "wn-anarchy-points", anchor: "nav-play", tours: ["whatsnew"], since: "1.56.0", fallback: "center",
+      id: "wn-sr6-atout-gain", anchor: "nav-combat", tours: ["whatsnew"], since: "1.55.0", fallback: "center",
+      title: "SR6 : gagner l'Atout avant le jet (SO vs SD)",
+      body: "En Shadowrun 6, quand vous lancez une attaque à l'arme d'un PNJ, le panneau « avant de lancer » vous laisse désormais comparer le Score Offensif de l'arme (par bande de Portée pour les armes à distance, SO+Force en mêlée) au Score Défensif de la cible : si l'écart atteint 4, le camp le plus haut gagne 1 point d'Atout, crédité automatiquement à l'attaquant (plafond de réserve appliqué). Le SD se saisit à la main et reste optionnel. Le panneau « avant le jet » est maintenant activé par défaut (réglable dans Paramètres › Lanceur de dés).",
+    },
+    {
+      id: "wn-sustain-effects", anchor: "nav-combat", tours: ["whatsnew"], since: "1.56.0", fallback: "center",
+      title: "Maintien des sorts et des formes complexes",
+      body: "Après avoir lancé un sort (ou tissé une forme complexe), cliquez sur le nombre de succès affiché pour marquer l'effet maintenu (pastille ⟳) ; re-cliquez, ou utilisez le ✕, pour l'arrêter. Chaque effet maintenu impose −2 dés à tous les tests du PNJ, cumulatif — les réserves de la carte, du tracker et des panneaux s'ajustent toutes seules, et un badge « ⟳ ×N · −N » près du moniteur donne le total d'un coup d'œil. Fidèle aux livres (SR5 p.284/253, SR6 p.136/129) ; sans effet en Anarchy.",
+    },
+    {
+      id: "wn-anarchy-points", anchor: "nav-play", tours: ["whatsnew"], since: "1.57.0", fallback: "center",
       title: "Anarchy 2 : Points d'Anarchy de scène",
       body: "Les augmentations et drogues qui octroient des Points d'Anarchy « par scène » (Réflexes câblés, Move-by-wire, Jazz, Kamikaze…) sont désormais motorisées. En scène, le bandeau d'économie de la fiche active affiche une rangée « Points d'Anarchy » par participant : ± à la main, et un bouton « ⟳ Crédit de scène » qui ajoute d'un coup le total octroyé (une seule fois par scène). Un badge « ◆ » sur l'augmentation dans la fiche rappelle qui en génère, et « +1 action/narration » est signalé quand un atout l'accorde. Les points sont propres à la scène et repartent à zéro à la suivante.",
     },

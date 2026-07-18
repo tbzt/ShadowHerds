@@ -270,6 +270,11 @@ export const EditionAnarchy2 = {
     ],
     monitorKind: "anarchy",
   },
+  /** Neutre : Anarchy n'a pas la règle SR5/SR6 du −2 dés par effet maintenu
+      (les effets persistants s'y gèrent en fiction, pas en malus chiffré). */
+  sustainMalus() {
+    return 0;
+  },
   /** Anarchy 2.0 n'a pas de malus de dés lié aux cases remplies (le
       moniteur fonctionne par seuils de blessure — cf. statBlocks — pas par
       malus cumulatif). Neutre documenté : pas de champ "primary" unique

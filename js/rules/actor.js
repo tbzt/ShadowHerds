@@ -100,6 +100,22 @@ export const Actor = {
     }
   },
 
+  /** Crédite n points d'un attribut-ressource (Atout SR6 gagné avant le jet),
+      plafonné à `max` s'il est fourni (réserve max 7 en SR6, p.51). Miroir de
+      `spend` : agit sur la base, recalcule le total, tolère la forme legacy. */
+  gain(pnj, key, n = 1, max = null) {
+    const v = pnj.attrs[key];
+    const cur = this._isTrait(v) ? v.base : v ?? 0;
+    let next = cur + n;
+    if (max != null) next = Math.min(next, max);
+    if (this._isTrait(v)) {
+      v.base = next;
+      this._recompute(v);
+    } else {
+      pnj.attrs[key] = next;
+    }
+  },
+
   /** Ajoute un Mod étiqueté sur un attribut (bonus d'équipement/trait) et
       recalcule le total. Enveloppe l'attribut au passage. */
   addMod(pnj, key, mod) {

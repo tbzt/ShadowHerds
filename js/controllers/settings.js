@@ -29,9 +29,11 @@ export const Settings = {
     defaultCount: 6,
     // Surface de l'Edge PRÉ-jet (SR5/SR6) : "off" (aucun), "panel" (panneau
     // avant le jet) ou "pill" (mini-menu ancré à la pastille roulable). Par
-    // appareil, non synchronisé. Défaut "off" — le tap reste un lancer
-    // immédiat tant que le MJ n'active pas l'option.
-    preRollEdge: "off",
+    // appareil, non synchronisé. Défaut "panel" (depuis V3) — le panneau ne
+    // s'ouvre QUE quand une dépense d'Edge est abordable OU (SR6) quand une
+    // attaque permet de gagner de l'Atout ; sinon le tap reste un lancer
+    // immédiat. Le MJ peut revenir à "off" dans les Paramètres.
+    preRollEdge: "panel",
   },
   getDicePrefs() {
     return { ...this._diceDefaults, ...Storage.getGlobal(this._DICE_KEY, {}) };

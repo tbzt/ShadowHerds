@@ -1133,10 +1133,13 @@ export const CardRenderer = {
         });
         // Facettes d'objet motorisées, GÉNÉRALES : VD, précision, PA (chaque
         // facette résolue par WeaponEffects porte ses contributions étiquetées).
+        // Les LIBELLÉS viennent du module (prohibition n°1) : SR6 renomme
+        // Précision → SO (weaponModel.facetLabels), les mots SR5 ne fuient plus.
+        const fl = (App.getEditionModule(edition)?.weaponModel || {}).facetLabels || {};
         const FACETS = [
-          ["dvContributions", "VD"],
-          ["accuracyContributions", "Prec"],
-          ["apContributions", "PA"],
+          ["dvContributions", fl.dv || "VD"],
+          ["accuracyContributions", fl.accuracy || "Prec"],
+          ["apContributions", fl.ap || "PA"],
         ];
         const facetChips = [];
         const facetTxts = [];
@@ -1288,6 +1291,19 @@ export const CardRenderer = {
   _monitorMalusBadge(malus) {
     if (!(malus > 0)) return "";
     return `<div class="monitor-malus" title="Malus de blessure cumulé (déjà appliqué aux tests)">−${malus}D</div>`;
+  },
+
+  /** Badge « effets maintenus » — jumeau du badge de blessure : combien de
+      sorts/formes le PNJ maintient et le malus de pool qui en découle
+      (−2/effet, déjà appliqué à TOUTES les réserves via Utils.dicePenalty).
+      Un coup d'œil suffit pour « ce PNJ est à −N ». Vide si aucun effet
+      maintenu, ou si l'édition n'a pas la règle (Anarchy : sustainMalus = 0). */
+  _sustainBadge(pnj, edition) {
+    const n = Utils.sustainedCount(pnj);
+    if (!n) return "";
+    const malus = Utils.sustainMalus(pnj, edition);
+    if (!malus) return "";
+    return `<div class="sustain-malus" title="${n} effet(s) maintenu(s) — −${malus} dés à tous les tests (déjà appliqué aux réserves)">⟳ ×${n} · −${malus}D</div>`;
   },
 
   /**
@@ -1470,8 +1486,12 @@ export const CardRenderer = {
             ? `<span class="spell-info" role="button" tabindex="0" data-content-name="${this._esc(name)}" data-content-desc="${this._esc(sp.desc)}" title="Détails du sort">ⓘ</span>`
             : "";
         const last = sp && sp._lastCast;
+        const sustained = !!(last && last.sustained);
         const lastHtml = last
-          ? `<span class="spell-last" title="Dernier jet : ${last.hits} succès (suivi d'un sort maintenu)">→ <strong>${last.hits}</strong><span class="spell-last-clear" data-spell-clear="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" title="Effacer le dernier jet">✕</span></span>`
+          ? `<span class="spell-last${sustained ? " is-sustained" : ""}">` +
+            `<span class="spell-sustain" data-spell-sustain="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" tabindex="0" aria-pressed="${sustained}" title="${sustained ? "Sort maintenu (−2 dés à tous les tests) — cliquer pour arrêter" : `Dernier jet : ${last.hits} succès — cliquer pour maintenir (−2 dés à tous les tests)`}">${sustained ? "⟳" : "→"} <strong>${last.hits}</strong></span>` +
+            `<span class="spell-last-clear" data-spell-clear="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" title="${sustained ? "Fin du maintien" : "Effacer le dernier jet"}">✕</span>` +
+            `</span>`
           : "";
 
         let castAttr = "";
@@ -1522,8 +1542,12 @@ export const CardRenderer = {
             ? `<span class="spell-info" role="button" tabindex="0" data-content-name="${this._esc(name)}" data-content-desc="${this._esc(f.desc)}" title="Détails de la forme">ⓘ</span>`
             : "";
         const last = f && f._lastCast;
+        const sustained = !!(last && last.sustained);
         const lastHtml = last
-          ? `<span class="spell-last" title="Dernier jet : ${last.hits} succès (suivi d'une forme maintenue)">→ <strong>${last.hits}</strong><span class="spell-last-clear" data-form-clear="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" title="Effacer le dernier jet">✕</span></span>`
+          ? `<span class="spell-last${sustained ? " is-sustained" : ""}">` +
+            `<span class="spell-sustain" data-form-sustain="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" tabindex="0" aria-pressed="${sustained}" title="${sustained ? "Forme complexe maintenue (−2 dés à tous les tests) — cliquer pour arrêter" : `Dernier jet : ${last.hits} succès — cliquer pour maintenir (−2 dés à tous les tests)`}">${sustained ? "⟳" : "→"} <strong>${last.hits}</strong></span>` +
+            `<span class="spell-last-clear" data-form-clear="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" title="${sustained ? "Fin du maintien" : "Effacer le dernier jet"}">✕</span>` +
+            `</span>`
           : "";
 
         let castAttr = "";
