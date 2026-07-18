@@ -11,6 +11,7 @@ import { ContactsBook } from "./contactsbook.js";
 import { Content } from "../rules/content.js";
 import { Cyberdeck } from "../rules/cyberdeck.js";
 import { CyberdeckRenderer } from "../widgets/card/cyberdeckrenderer.js";
+import { Esoteric } from "../rules/esoteric.js";
 import { ItemResolver } from "../rules/itemresolver.js";
 import { Mentions } from "../widgets/journal/mentions.js";
 import { Metavariants } from "../rules/metavariants.js";
@@ -1058,6 +1059,13 @@ export const EditModal = {
       pnj.persona ? PersonaRenderer.editSection(pnj) : ""
     }</div>`;
 
+    // ---- Section : Progression ésotérique (P2-P4) — Initiation/Submersion,
+    // montée si l'édition a le concept (esotericModel ≠ null, A2 exclu).
+    // Hors esprits. ----
+    if (Esoteric.available(pnj.edition) && pnj.type !== "spirit") {
+      html += `<div id="em-esoteric-section">${this._esotericSection(pnj)}</div>`;
+    }
+
     // ---- Section : Compétences (éditables + ajout) — zone Capacités ----
     {
       const rowFn =
@@ -1766,6 +1774,144 @@ export const EditModal = {
     );
   },
 
+  /* ---- Progression ésotérique (P2-P4, Initiation/Submersion) — UN moteur
+     (esoteric.js), deux catalogues (metamagics/echoes selon la voie),
+     même mécanique de grade+acquis que le livre lui-même fusionne.
+     Toute la section se re-rend en bloc (_rerenderEsoteric) plutôt que
+     par liste ciblée : la structure change de forme entre "pas encore
+     initié" (boutons de départ) et "initié" (grade+acquis), contrairement
+     aux autres zones qui ne font qu'ajouter/retirer une ligne. ---- */
+
+  _esotericSection(pnj) {
+    const edition = pnj.edition;
+    if (!pnj.esoteric) {
+      const starters = Esoteric.VOIES.filter((v) => Esoteric.voieAvailable(edition, v))
+        .map(
+          (v) =>
+            `<button type="button" class="em-add-skill-btn" data-action="esoteric-start" data-voie="${v}">＋ Devenir ${Esoteric.agentLabel(v).toLowerCase()}</button>`,
+        )
+        .join(" ");
+      if (!starters) return "";
+      return this._zone("Initiation / Submersion", `<div class="em-add-skill">${starters}</div>`, {
+        collapsed: true,
+      });
+    }
+    const voie = pnj.esoteric.voie;
+    const esc = CardRenderer._esc;
+    const nextCost = Esoteric.nextCostLabel(pnj, edition);
+    const body = `<div class="em-esoteric-grade">
+        <span>${esc(Esoteric.agentLabel(voie))} — grade <strong>${Esoteric.grade(pnj)}</strong></span>
+        <button type="button" class="em-skill-del" data-action="esoteric-grade-dec" title="Réduire le grade">−</button>
+        <button type="button" class="em-add-skill-btn" data-action="esoteric-grade-inc" title="${nextCost ? `Coût du grade suivant : ${esc(nextCost)}` : ""}">+ Grade</button>
+        <button type="button" class="em-skill-del" data-action="esoteric-remove" title="Retirer la progression">✕</button>
+      </div>
+      <div id="em-esoteric-acquis-list" class="em-skills-list">${this._esotericAcquisRows(pnj)}</div>
+      ${this._esotericCatalogControls(pnj)}`;
+    const acquisLabel = Esoteric.acquisLabel(edition, voie).toLowerCase();
+    return this._zone(`${Esoteric.label(voie)} (${acquisLabel}s)`, body, {
+      summary: this._zoneCount(Esoteric.acquis(pnj).length, acquisLabel, `${acquisLabel}s`),
+      collapsed: true,
+    });
+  },
+
+  _esotericAcquisRows(pnj) {
+    const esc = CardRenderer._esc;
+    const ed = pnj.edition;
+    const lookup = pnj.esoteric.voie === "submersion" ? Content.echoFor.bind(Content) : Content.metamagicFor.bind(Content);
+    return Esoteric.acquis(pnj)
+      .map((name, i) => {
+        const entry = lookup(ed, name);
+        const label = entry && entry.titreReconstitue ? `${name} *` : name;
+        return `<div class="em-skill-row" data-idx="${i}">
+          <span class="em-skill-name" title="${esc((entry && entry.desc) || "")}">${esc(label)}</span>
+          <button type="button" class="em-skill-del" title="Retirer" data-action="esoteric-acquis-remove">×</button>
+        </div>`;
+      })
+      .join("");
+  },
+
+  /* Sélecteur « ＋ Catalogue » — groupé par `pour` pour l'Initiation
+     (facette canon, cf. metamagicCatalogFor), plat pour la Submersion
+     (un écho ne distingue pas magicien/adepte). */
+  _esotericCatalogControls(pnj) {
+    const mod = App.getEditionModule(pnj.edition);
+    const submersion = pnj.esoteric.voie === "submersion";
+    const catalog = submersion ? mod.echoCatalog?.() : mod.metamagicCatalog?.();
+    if (!catalog || !catalog.length) return "";
+    const label = (it) => (it.titreReconstitue ? `${it.label} *` : it.label);
+    return `<div class="em-add-skill">
+      ${SingleSelect.create({
+        id: "em-esoteric-catalog",
+        label: "",
+        ...(submersion
+          ? { options: catalog.map((it) => ({ value: it.id, label: label(it) })) }
+          : { groups: catalog.map((g) => ({ category: g.category, items: g.items.map((it) => ({ value: it.id, label: label(it) })) })) }),
+        value: "",
+        placeholder: "＋ Catalogue…",
+      })}
+      <button type="button" class="em-add-skill-btn" data-action="esoteric-acquis-add">Ajouter</button>
+    </div>`;
+  },
+
+  startEsoteric(voie) {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj) return;
+    this._readForm(pnj);
+    pnj.esoteric = Esoteric.blank(voie);
+    this._rerenderEsoteric(pnj);
+  },
+
+  removeEsoteric() {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj || !pnj.esoteric) return;
+    this._readForm(pnj);
+    pnj.esoteric = null;
+    this._rerenderEsoteric(pnj);
+  },
+
+  incEsotericGrade() {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj || !pnj.esoteric) return;
+    this._readForm(pnj);
+    pnj.esoteric.grade = (pnj.esoteric.grade || 0) + 1;
+    this._rerenderEsoteric(pnj);
+  },
+
+  decEsotericGrade() {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj || !pnj.esoteric) return;
+    this._readForm(pnj);
+    pnj.esoteric.grade = Math.max(0, (pnj.esoteric.grade || 0) - 1);
+    this._rerenderEsoteric(pnj);
+  },
+
+  addEsotericAcquis() {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj || !pnj.esoteric) return;
+    const sel = document.getElementById("em-esoteric-catalog");
+    const id = sel?.value;
+    if (!id) return;
+    this._readForm(pnj);
+    const mod = App.getEditionModule(pnj.edition);
+    if (pnj.esoteric.voie === "submersion") mod.addEchoItem(pnj, id);
+    else mod.addMetamagicItem(pnj, id);
+    this._rerenderEsoteric(pnj);
+    SingleSelect.reset("em-esoteric-catalog");
+  },
+
+  removeEsotericAcquis(i) {
+    const pnj = PnjLookup.find(this.currentId);
+    if (!pnj || !pnj.esoteric || !pnj.esoteric.acquis) return;
+    this._readForm(pnj);
+    pnj.esoteric.acquis.splice(i, 1);
+    this._rerenderEsoteric(pnj);
+  },
+
+  _rerenderEsoteric(pnj) {
+    const section = document.getElementById("em-esoteric-section");
+    if (section) section.innerHTML = this._esotericSection(pnj);
+  },
+
   /* ---- Atouts (texte libre + catalogue dédupliqué qui ajoute une ligne) ---- */
 
   /* Sélecteur plat « ＋ Catalogue » — monté seulement si l'édition expose un
@@ -2017,6 +2163,26 @@ export const EditModal = {
         case "add-edge-item":
           this.addEdgeItem();
           break;
+        case "esoteric-start":
+          this.startEsoteric(el.dataset.voie);
+          break;
+        case "esoteric-remove":
+          this.removeEsoteric();
+          break;
+        case "esoteric-grade-inc":
+          this.incEsotericGrade();
+          break;
+        case "esoteric-grade-dec":
+          this.decEsotericGrade();
+          break;
+        case "esoteric-acquis-add":
+          this.addEsotericAcquis();
+          break;
+        case "esoteric-acquis-remove": {
+          const row = el.closest("[data-idx]");
+          if (row) this.removeEsotericAcquis(parseInt(row.dataset.idx, 10));
+          break;
+        }
         case "pick-pc-color":
           this.pickColor(el.dataset.color);
           break;

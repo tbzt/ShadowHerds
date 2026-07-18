@@ -2725,6 +2725,19 @@ export const EditionSR6 = {
   addPowerItem(pnj, id) {
     Content.addPowerItem(pnj, this.id, id);
   },
+  /* Métamagies/échos (P3/P4) : même patron délégué. */
+  metamagicCatalog() {
+    return Content.metamagicCatalogFor(this.id);
+  },
+  addMetamagicItem(pnj, id) {
+    Content.addMetamagicItem(pnj, this.id, id);
+  },
+  echoCatalog() {
+    return Content.echoCatalogFor(this.id);
+  },
+  addEchoItem(pnj, id) {
+    Content.addEchoItem(pnj, this.id, id);
+  },
 
   /** Palier de matériel selon le professionnalisme — mêmes seuils que le
       tirage de commlink ci-dessous, réutilisé pour les cyberdecks. */

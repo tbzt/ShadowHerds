@@ -4478,6 +4478,363 @@ export const Content = {
   },
 
   /* ========================================================
+     ÉCHOS (P4, PLAN_PROGRESSION_ESOTERIQUE.md) — acquis de
+     Submersion, miroir exact des métamagies (même mécanique de
+     grade, cf. esoteric.js). Clés sr5/sr6/anarchy1, pas d'anarchy2
+     (technomanciens retirés du jeu, verdict d'absence confirmé
+     doublement). REFERENCE/effects/technomanciens/INDEX.md.
+
+     Mêmes champs que `metamagics`, sans `pour` (un écho ne
+     distingue pas magicien/adepte — la Submersion n'a qu'un seul
+     profil). `antagonist` = échos dissonants (SR5 *Data Trails*
+     p.171) — régime PNJ, câblage en P5, comme la magie du sang/
+     toxique. `gen:false` sur les 5 échos cœur SR5 (p.260) : la
+     campagne d'extraction n'a PAS produit de texte d'effet vérifié
+     pour ceux-ci (gap de recherche, pas une curation) — noms et
+     cumul relevés au livre, mécanique non affichée tant qu'elle
+     n'est pas vérifiée (mieux vaut un trou visible qu'un faux canon).
+     `Sprite allié` (A1) est un Atout DISTINCT de la Submersion (le
+     livre le dit explicitement) — n'est donc pas un écho, absent
+     de cette liste par fidélité au texte.
+     ======================================================== */
+  echoes: {
+    sr5: [
+      // ---- Cœur p.260 (5) — gap de recherche, cf. commentaire ci-dessus ----
+      {
+        name: "Neurofiltre",
+        page: 260,
+        gen: false,
+        desc: "Effet non détaillé dans la campagne d'extraction (nom + cumul ×2 relevés p.260) — à vérifier au livre avant usage en jeu.",
+      },
+      {
+        name: "Overclocking",
+        page: 260,
+        gen: false,
+        desc: "Effet non détaillé dans la campagne d'extraction (nom relevé p.260) — à vérifier au livre avant usage en jeu.",
+      },
+      {
+        name: "Possession de la machine",
+        page: 260,
+        gen: false,
+        desc: "Effet non détaillé dans la campagne d'extraction (nom + cumul ×3 relevés p.260) — sert de prérequis à IRHM (Data Trails). À vérifier au livre avant usage en jeu.",
+      },
+      {
+        name: "[Programme] de résonance",
+        page: 260,
+        gen: false,
+        desc: "Effet non détaillé dans la campagne d'extraction (nom relevé p.260) — à vérifier au livre avant usage en jeu.",
+      },
+      {
+        name: "Upgrade de [attribut matriciel]",
+        page: 260,
+        gen: false,
+        desc: "Effet non détaillé dans la campagne d'extraction (nom + cumul ×2/attribut relevés p.260) — à vérifier au livre avant usage en jeu.",
+      },
+      // ---- Data Trails (+7 standards) ----
+      {
+        name: "Chevaucher la Résonance",
+        page: 63,
+        source: "Data Trails",
+        desc: "En connexion secondaire (commlink/cyberdeck plutôt que persona incarné), reste suivi par la Matrice pour les actions de Résonance — sauf compiler/inscrire un sprite ou tisser une forme complexe.",
+      },
+      {
+        name: "Cri de Résonance",
+        page: 63,
+        source: "Data Trails",
+        desc: "Augmente le Bruit de 2 par point de Résonance dans un rayon de 10 m (lui compris), activable/désactivable en action gratuite.",
+      },
+      {
+        name: "Interface épidermique",
+        page: 63,
+        source: "Data Trails",
+        desc: "Connexion directe avec tout appareil touché ; deux porteurs de cet écho peuvent communiquer mentalement.",
+      },
+      {
+        name: "IRHM",
+        page: 63,
+        source: "Data Trails",
+        prereq: "Possession de la machine",
+        desc: "Plonge dans un appareil sans module d'interface de rigging installé ; +2 dés aux tests de véhicule pendant la plongée.",
+      },
+      {
+        name: "MRCF",
+        page: 63,
+        source: "Data Trails",
+        prereq: "avoir déjà submergé au moins une fois",
+        desc: "Met en sourdine la perception des blessures : donne les avantages/inconvénients d'un filtre antalgique sans bioware.",
+      },
+      {
+        name: "Mathémagique",
+        page: 63,
+        source: "Data Trails",
+        desc: "Augmente la Limite mentale de 2 pour les actions centrées sur les mathématiques (Cryptage, Décryptage...).",
+      },
+      {
+        name: "Rêveur éveillé",
+        page: 63,
+        source: "Data Trails",
+        desc: "Actions gratuites de perception à volonté, dans la Matrice et dans le monde réel, en travaillant en RV.",
+      },
+      {
+        name: "Silence",
+        page: 63,
+        source: "Data Trails",
+        desc: "Réduit le Bruit de 2 dans un rayon de 10 m par point de Résonance, activable/désactivable en action gratuite.",
+      },
+      // ---- Échos dissonants (Data Trails p.171) — régime PNJ, câblage P5 ----
+      {
+        name: "Contamination",
+        page: 171,
+        source: "Data Trails",
+        antagonist: true,
+        desc: "Crée un bassin de dissonance temporaire (test étendu Résonance+Logiciel+grade) ou subvertit un puits de résonance existant ; le bassin disparaît après (grade) heures.",
+      },
+      {
+        name: "Pryon",
+        page: 171,
+        source: "Data Trails",
+        antagonist: true,
+        desc: "Propage par contact physique les virus spasmes noirs ou dysphorie, au choix à chaque contact.",
+      },
+      {
+        name: "Siphon",
+        page: 171,
+        source: "Data Trails",
+        antagonist: true,
+        desc: "Attaque directe de la connexion simsens (Cybercombat+Logique contre Volonté+Firewall) : 3+ succès nets = éjection avec choc, sinon désorientation -2 dés pendant (grade) Passes d'Initiative. RV uniquement.",
+      },
+    ],
+    sr6: [
+      // ---- Cœur p.197 (7) ----
+      {
+        name: "Amélioration d'attribut matriciel",
+        page: 197,
+        desc: "Améliore d'1 point un attribut matriciel du persona incarné — choisissable plusieurs fois, max +2 par attribut.",
+      },
+      {
+        name: "Esprit machine",
+        page: 197,
+        desc: "Bénéfice d'un câblage de contrôle d'indice 1 — non cumulable.",
+      },
+      {
+        name: "Liaison dermique",
+        page: 197,
+        desc: "Connexion à un appareil par simple contact, comme une IND — non cumulable.",
+      },
+      {
+        name: "Lien de Résonance",
+        page: 197,
+        desc: "Lien empathique unidirectionnel avec un autre technomancien choisi (humeur, stress, danger) ; bidirectionnel si les deux le prennent. Cumul non précisé au livre.",
+      },
+      {
+        name: "Neurofiltre",
+        page: 197,
+        desc: "+1 dé de résistance aux dommages de biofeedback — sélectionnable deux fois (max +2).",
+      },
+      {
+        name: "Overclocking",
+        page: 197,
+        desc: "Action mineure supplémentaire + 1D6 en initiative, en RV hot-sim. Cumul non précisé au livre.",
+      },
+      {
+        name: "Réseau vivant",
+        page: 197,
+        desc: "Le persona incarné fonctionne comme appareil maître d'un PAN, indice d'appareil = Résonance — non cumulable.",
+      },
+      // ---- Hacker vaillant (+18) ----
+      {
+        name: "Amplificateur matriciel",
+        page: 68,
+        source: "Hacker vaillant",
+        desc: "Réduit le Bruit du grade de submersion sur soi + appareils dans 100 m (action majeure) ; technodrain croissant par tour maintenu, alerte le DIEU.",
+      },
+      {
+        name: "Canal de sprites",
+        page: 67,
+        source: "Hacker vaillant",
+        desc: "Autorise l'inscription permanente de sprites (libres/alliés) ; +grade de submersion à la résistance au technodrain de compilation/inscription.",
+      },
+      {
+        name: "Codage de construct",
+        page: 67,
+        source: "Hacker vaillant",
+        prereq: "Liaison dermique",
+        gen: false,
+        desc: "Débloque la création de constructs (objets physiques encodant des enchevêtrements Résonance/Matrice).",
+      },
+      {
+        name: "Console de commande incarnée",
+        page: 67,
+        source: "Hacker vaillant",
+        prereq: "Esprit machine, Réseau vivant",
+        gen: false,
+        desc: "Le Réseau vivant fonctionne comme une CCR d'indice = Résonance, limité aux autosofts gérés par le persona incarné.",
+      },
+      {
+        name: "Cri dissonant",
+        page: 67,
+        source: "Hacker vaillant",
+        desc: "Augmente le bruit matriciel (100 m) d'un niveau par succès (test Résonance+grade) ; technodrain croissant par tour maintenu, alerte le DIEU, +1 Pression d'équipe si témoin externe.",
+      },
+      {
+        name: "Cyberadepte",
+        page: 68,
+        source: "Hacker vaillant",
+        desc: "Débloque la voie de traits « cyberadepte » : les augmentations peuvent être affectées par la Résonance.",
+      },
+      {
+        name: "Émulateur de logiciel",
+        page: 68,
+        source: "Hacker vaillant",
+        prereq: "Réseau vivant",
+        gen: false,
+        desc: "Le persona incarné fait tourner applications/autosofts (indice ≤6) via (Résonance/2) emplacements ; absorption par test étendu, 1 Karma en cas de réussite.",
+      },
+      {
+        name: "Erreur de syntaxe",
+        page: 68,
+        source: "Hacker vaillant",
+        desc: "+grade de submersion en dés de défense pour une icône visée par une action connue ; peut aussi réduire les succès nets d'une forme/pouvoir maintenu(e) via test opposé.",
+      },
+      {
+        name: "Liaison distante",
+        page: 68,
+        source: "Hacker vaillant",
+        prereq: "Liaison dermique",
+        gen: false,
+        desc: "Connexion sans-fil équivalente à une connexion directe sur une cible visible, portée en mètres = grade de submersion.",
+      },
+      {
+        name: "Lien de sprite",
+        page: 69,
+        source: "Hacker vaillant",
+        desc: "Dépenser un service pour l'assistance d'un sprite en test d'équipe ne coûte pas d'action ; transfère aussi des dommages de technodrain à un sprite (coût en Réputation).",
+      },
+      {
+        name: "Maître-esprit machine",
+        page: 69,
+        source: "Hacker vaillant",
+        prereq: "Esprit machine",
+        gen: false,
+        desc: "Câblage de contrôle d'indice 2 — non cumulable, remplace/étend Esprit machine.",
+      },
+      {
+        name: "Méga-sprite",
+        page: 69,
+        source: "Hacker vaillant",
+        desc: "Réinscription améliorant un sprite (attribut matriciel +1 ou pouvoir d'une autre catégorie par succès) — temporaire sur un sprite tiers, permanent sur le sien, usages limités au grade de submersion.",
+      },
+      {
+        name: "Nouveau type de sprite",
+        page: 69,
+        source: "Hacker vaillant",
+        desc: "Débloque la compilation/inscription des sprites assassin, musical, protecteur, polyvalent et primal.",
+      },
+      {
+        name: "Pouvoir de la Résonance",
+        page: 69,
+        source: "Hacker vaillant",
+        desc: "Donne accès à un pouvoir de sprite au choix, utilisant la Résonance à la place de l'indice du sprite — choisissable plusieurs fois (un pouvoir différent à chaque fois).",
+      },
+      {
+        name: "Réseau transcendant",
+        page: 69,
+        source: "Hacker vaillant",
+        prereq: "Réseau vivant",
+        gen: false,
+        desc: "Le persona incarné devient un M-TOC vivant : réserve d'Atout partagée (= grade de submersion) pour tout le réseau connecté.",
+      },
+      {
+        name: "Serveur incarné",
+        page: 69,
+        source: "Hacker vaillant",
+        prereq: "Réseau transcendant",
+        gen: false,
+        desc: "Transforme le persona incarné en équivalent serveur (indice = Résonance) via test étendu ; rupture de concentration = biofeedback lourd + choc d'éjection pour tous les connectés.",
+      },
+      {
+        name: "Sprites hybrides",
+        page: 69,
+        source: "Hacker vaillant",
+        desc: "À la compilation, utilise des succès nets (au lieu de services) pour attribuer une compétence/pouvoir d'une autre catégorie de sprite.",
+      },
+      {
+        name: "Symbiose avec les sprites",
+        page: 70,
+        source: "Hacker vaillant",
+        prereq: "Canal de sprites",
+        gen: false,
+        desc: "Fusionne le persona incarné avec son sprite allié : bonus d'attribut matriciel du sprite, dés bonus de compétence, usage de ses pouvoirs ; les dommages matriciels frappent le symbiote à sa place.",
+      },
+    ],
+    anarchy1: [
+      // ---- Submersion, *Anarchistes* p.69-70 (10 échos standards) ----
+      {
+        name: "Augmentation de puissance (tisser des formes complexes)",
+        page: 69,
+        source: "Anarchistes",
+        desc: "+1 dé aux tests de Technomancie pour tisser des formes complexes — cumulable jusqu'à 3 fois.",
+      },
+      {
+        name: "Augmentation de puissance (compiler un sprite)",
+        page: 69,
+        source: "Anarchistes",
+        desc: "+1 dé aux tests de Technomancie pour compiler un sprite — cumulable jusqu'à 3 fois.",
+      },
+      {
+        name: "Augmentation de puissance (relance — tisser des formes complexes)",
+        page: 69,
+        source: "Anarchistes",
+        desc: "Relance un échec aux tests de Technomancie pour tisser des formes complexes — cumulable jusqu'à 3 fois.",
+      },
+      {
+        name: "Augmentation de puissance (relance — compiler un sprite)",
+        page: 69,
+        source: "Anarchistes",
+        desc: "Relance un échec aux tests de Technomancie pour compiler un sprite — cumulable jusqu'à 3 fois.",
+      },
+      {
+        name: "Amplificateur matriciel",
+        page: 69,
+        source: "Anarchistes",
+        desc: "Réduit les malus de bruit matriciel de 1 par achat ; permet de garder une connexion malgré un niveau de bruit normalement bloquant — cumulable jusqu'à 3 fois.",
+      },
+      {
+        name: "Console de commande incarnée",
+        page: 69,
+        source: "Anarchistes",
+        desc: "Contrôle plusieurs drones comme une console de commande pour rigger ; chaque niveau supplémentaire l'améliore.",
+      },
+      {
+        name: "Esprit machine",
+        page: 69,
+        source: "Anarchistes",
+        desc: "+1 dé pour les actions de véhicule en RV, comme un câblage de contrôle ; chaque niveau supplémentaire l'améliore.",
+      },
+      {
+        name: "Liaison dermique",
+        page: 69,
+        source: "Anarchistes",
+        desc: "Connexion directe à un appareil par simple contact — écho unique, non cumulable.",
+      },
+      {
+        name: "Liaison distante",
+        page: 69,
+        source: "Anarchistes",
+        prereq: "Liaison dermique",
+        gen: false,
+        desc: "Connexion directe à distance courte avec un appareil (sa connexion sans fil doit être activée) — non cumulable.",
+      },
+      {
+        name: "Neurofiltre",
+        page: 69,
+        source: "Anarchistes",
+        desc: "Réduit de 1 les dommages de biofeedback (Étourdissant/Physique en RV) par achat — cumulable jusqu'à 3 fois.",
+      },
+    ],
+  },
+
+  /* ========================================================
      POUVOIRS D'ADEPTE — SR5 & SR6
      ======================================================== */
   /* Liste complète vérifiée dans les livres officiels (SR6 p.158-161, SR5
@@ -5412,6 +5769,45 @@ export const Content = {
   addMetamagicItem(pnj, ed, name) {
     ed = this._ed(ed);
     const entry = this.metamagicFor(ed, name);
+    if (!entry || !pnj.esoteric) return;
+    pnj.esoteric.acquis = pnj.esoteric.acquis || [];
+    if (!pnj.esoteric.acquis.includes(name)) pnj.esoteric.acquis.push(name);
+  },
+
+  /** Catalogue plat d'échos (pas de facette `pour` — la Submersion n'a
+      qu'un seul profil, contrairement à l'Initiation magicien/adepte).
+      Exclut le contenu antagoniste (régime PNJ, P5). `null` si l'édition
+      n'a pas de voie Submersion (A2, ou A1 sans T1 chargé). */
+  echoCatalogFor(ed) {
+    ed = this._ed(ed);
+    const list = (this.echoes[ed] || []).filter((e) => !e.antagonist);
+    if (!list.length) return null;
+    return list.map((e) => ({ id: e.name, label: e.name }));
+  },
+
+  /** Entrée complète d'un écho par nom, pour le rendu de description (ⓘ). */
+  echoFor(ed, name) {
+    ed = this._ed(ed);
+    return (this.echoes[ed] || []).find((e) => e.name === name) || null;
+  },
+
+  /** Choisit `n` échos éligibles à la génération (mêmes règles gen que
+      pickMetamagics), jamais de contenu dissonant. Utilisé par le
+      générateur (P6) pour peupler `pnj.esoteric.acquis` d'un submergé. */
+  pickEchoes(ed, n) {
+    ed = this._ed(ed);
+    const eligible = (this.echoes[ed] || []).filter((e) => !e.antagonist && e.gen !== false);
+    if (!eligible.length) return [];
+    return this._sample(eligible, Math.min(n, eligible.length)).map((e) => e.name);
+  },
+
+  /** Ajoute un écho du catalogue à `pnj.esoteric.acquis` (même patron
+      qu'addMetamagicItem — un seul champ `acquis` porte les deux voies,
+      cf. esoteric.js : la voie stockée détermine juste quel catalogue
+      le MJ voit dans le sélecteur, pas la forme de la donnée). */
+  addEchoItem(pnj, ed, name) {
+    ed = this._ed(ed);
+    const entry = this.echoFor(ed, name);
     if (!entry || !pnj.esoteric) return;
     pnj.esoteric.acquis = pnj.esoteric.acquis || [];
     if (!pnj.esoteric.acquis.includes(name)) pnj.esoteric.acquis.push(name);

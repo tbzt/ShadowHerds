@@ -2463,6 +2463,20 @@ export const EditionSR5 = {
   addPowerItem(pnj, id) {
     Content.addPowerItem(pnj, this.id, id);
   },
+  /* Métamagies/échos (P3/P4) : même patron délégué, catalogue partagé
+     via Content.metamagics/echoes. */
+  metamagicCatalog() {
+    return Content.metamagicCatalogFor(this.id);
+  },
+  addMetamagicItem(pnj, id) {
+    Content.addMetamagicItem(pnj, this.id, id);
+  },
+  echoCatalog() {
+    return Content.echoCatalogFor(this.id);
+  },
+  addEchoItem(pnj, id) {
+    Content.addEchoItem(pnj, this.id, id);
+  },
 
   /* ----
      RÈGLE DE SÉLECTION D'ÉQUIPEMENT

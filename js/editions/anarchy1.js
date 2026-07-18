@@ -422,6 +422,21 @@ export const EditionAnarchy1 = {
   powerCatalog() {
     return null;
   },
+  /* Métamagies/échos (P3/P4) : le catalogue A1 vient tout entier
+     d'*Anarchistes* (cœur vide) — même patron délégué que les autres
+     éditions, cf. esotericModel A1 pour le pourquoi. */
+  metamagicCatalog() {
+    return Content.metamagicCatalogFor(this.id);
+  },
+  addMetamagicItem(pnj, id) {
+    Content.addMetamagicItem(pnj, this.id, id);
+  },
+  echoCatalog() {
+    return Content.echoCatalogFor(this.id);
+  },
+  addEchoItem(pnj, id) {
+    Content.addEchoItem(pnj, this.id, id);
+  },
 
   /** Invocation d'esprits V1 (6 types × 3 puissances, statblocks
       §ESPRITS). `types`/`spawn` référencent Spirits en lazy (spirits.js
