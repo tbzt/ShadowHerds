@@ -112,7 +112,10 @@ export const Esoteric = {
       voie se STOCKE sur décision explicite (édition/génération), jamais
       dérivée d'un attribut — cf. amendement CODIR (veto Kernel) : un
       PNJ peut porter MAG et RES à la fois, dériver casserait ce choix
-      assumé de la refonte du modèle d'acteur. */
+      assumé de la refonte du modèle d'acteur. Le veto tient (aucune
+      exclusion dure) ; depuis 2026-07-18 la coexistence MAG+RES est
+      seulement SIGNALÉE en édition (avertissement souple, EditModal),
+      jamais bloquée ni corrigée automatiquement. */
   blank(voie) {
     return { voie, grade: 0, acquis: [] };
   },

@@ -149,6 +149,14 @@ export const EditModal = {
 
     const edModule = App.getEditionModule(pnj.edition);
     if (edModule && edModule.recalc) edModule.recalc(pnj);
+    // Avertissement souple XOR Magie/Résonance : on laisse passer (veto CODIR)
+    // mais on signale au save que le PNJ cumule les deux natures — attrape le
+    // conflit à l'instant où le MJ le crée (le rendu de la modale l'attrape à
+    // l'ouverture d'une fiche déjà en conflit).
+    const mAttr = edModule?.magicAttr;
+    const rAttr = edModule?.resonanceAttr;
+    if (mAttr && rAttr && Actor.attr(pnj, mAttr) > 0 && Actor.attr(pnj, rAttr) > 0)
+      toast(`${pnj.name} : ${mAttr} et ${rAttr} cumulés (Éveillé + Émergé).`, "warning");
     // Esprit : moniteur dédié si l'édition en expose un (SR6 p.224),
     // neutre (null) en SR5/Anarchy — cf. conditionMonitor.spiritMonitor.
     if (pnj.type === "spirit" && pnj.force && edModule.conditionMonitor.spiritMonitor) {
@@ -948,6 +956,22 @@ export const EditModal = {
         <label>${resonanceAttr}</label>
         <input type="number" id="em-attr-${resonanceAttr}" value="${Actor.attr(pnj, resonanceAttr)}" min="0" max="12">
       </div>`;
+    }
+    // Avertissement souple XOR Magie/Résonance (décision utilisateur
+    // 2026-07-18) : les livres traitent Éveillé et Émergé comme exclusifs, mais
+    // le veto CODIR (Esoteric.blank) autorise volontairement la coexistence. On
+    // SIGNALE l'anomalie à l'ouverture d'une fiche qui la porte déjà — jamais
+    // de reset d'attribut. Le pendant « au moment où on la crée » est un toast
+    // au save (cf. update()).
+    if (
+      magicAttr &&
+      resonanceAttr &&
+      Actor.attr(pnj, magicAttr) > 0 &&
+      Actor.attr(pnj, resonanceAttr) > 0
+    ) {
+      html += `<p class="form-group" style="color:var(--warning);font-size:.85em;">
+        ⚠ Ce personnage porte à la fois ${magicAttr} et ${resonanceAttr} — un être est normalement soit Éveillé, soit Émergé, jamais les deux.
+      </p>`;
     }
     // Ressource de relance (Chance SR5 / Atout SR6), clé portée par le
     // module d'édition — jamais de nom d'attribut figé côté contrôleur.

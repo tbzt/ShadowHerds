@@ -3368,6 +3368,43 @@ export const EditionSR5 = {
     }
   },
 
+  /** Perte d'Essence → réduction Magie/Résonance (invariant de recalc).
+      Livre VF : Magie « diminuée de la perte totale d'Essence arrondie au
+      supérieur » (p.280) ; Résonance « max naturel = ⌊Essence⌋, −1 par point
+      entier franchi » (p.252). Les deux libellés coïncident numériquement dès
+      que l'Essence naturelle vaut 6 (identité ⌈6−E⌉ = 6−⌊E⌋), mais on garde
+      les deux expressions citées séparément — ne pas aplatir la distinction
+      des livres dans un accesseur unique. Appliqué en MOD étiqueté
+      `source:"essence"` (réversible : Essence restaurée → mod retiré au recalc
+      suivant), jamais en écrasant la base. Ne descend jamais l'attribut sous 0
+      (« réduit à zéro » = grillé, p.280) et n'agit que sur un MAG/RES déjà
+      présent (un mondain n'a pas de Magie à réduire). */
+  _applyEssencePenalty(pnj) {
+    if (!pnj || !pnj.attrs) return;
+    // Essence naturelle d'un métahumain SR5 = 6 (p.53). Les souches à Essence
+    // de départ < 6 (cyborg) ne sont jamais Éveillées → référence 6 sûre.
+    const essMax = 6;
+    const essNow = pnj.attrs.ESS != null ? Actor.attr(pnj, "ESS") : essMax;
+    const loss = Math.max(0, essMax - essNow);
+    const magPenalty = Math.ceil(loss); // Magie : perte totale ⌈⌉ (p.280)
+    const resPenalty = essMax - Math.floor(essNow); // Résonance : 6−⌊Ess⌋ (p.252)
+    const apply = (key, penalty) => {
+      const raw = pnj.attrs[key];
+      if (raw == null) return; // attribut absent : PNJ non concerné
+      const t = Actor.trait(raw);
+      // Idempotence : recalc est rejoué à chaque édition — on retire notre mod
+      // précédent avant d'en reposer un (sinon il s'empilerait).
+      t.mods = t.mods.filter((m) => !(m && m.source === "essence"));
+      const eff = Math.min(Math.max(0, penalty), t.base); // total ≥ 0
+      if (eff > 0)
+        t.mods.push({ value: -eff, source: "essence", type: "essence" });
+      Actor._recompute(t);
+      pnj.attrs[key] = t;
+    };
+    apply(this.magicAttr, magPenalty);
+    apply(this.resonanceAttr, resPenalty);
+  },
+
   recalc(pnj) {
     const { proRating } = pnj;
     // Chance : init douce pour les PNJ sauvegardés avant l'ajout du champ
@@ -3375,6 +3412,9 @@ export const EditionSR5 = {
     if (pnj.attrs && pnj.attrs.CHC == null)
       pnj.attrs.CHC = this.attrRange[pnj.meta]?.CHC?.[0] ?? 3;
     Actor.refreshAttrs(pnj); // Trait : total = base + Σ mods, avant les dérivées
+    // Invariant Essence↔MAG/RES appliqué APRÈS le refresh (ESS à jour) et
+    // AVANT les dérivées qui lisent RES (technoDrainResist plus bas).
+    this._applyEssencePenalty(pnj);
     const A = (k) => Actor.attr(pnj, k);
     // Seau de mods de Limite (BonusEngine : Phéromones→soc, Amélioration
     // mnémonique→ment, traits→phys…). Ré-ajouté APRÈS la formule de base à

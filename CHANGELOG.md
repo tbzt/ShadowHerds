@@ -12,6 +12,22 @@ commit.
 
 ## [Non publié]
 
+## [1.69.0] — 2026-07-18
+
+### Magie, Résonance & Essence (SR5)
+- **La perte d'Essence réduit désormais la Magie et la Résonance.** Quand un
+  personnage SR5 descend sous 6 d'Essence (implants, greffes), son attribut de
+  Magie — ou de Résonance — baisse en conséquence, exactement comme au livre :
+  la Magie perd la totalité de la perte d'Essence *arrondie au supérieur*
+  (p.280), la Résonance suit son maximum naturel `⌊Essence⌋` (p.252). La baisse
+  est réversible (retirer l'implant restaure l'attribut) et ne descend jamais
+  l'attribut sous zéro.
+- **Alerte quand un PNJ cumule Magie et Résonance.** Un être est normalement
+  soit Éveillé, soit Émergé, jamais les deux : l'éditeur signale désormais le
+  cas (à l'ouverture d'une fiche concernée et au moment où on le crée) par un
+  avertissement — sans jamais bloquer ni corriger d'office, la coexistence
+  restant permise pour les cas particuliers.
+
 ## [1.68.0] — 2026-07-18
 
 ### Technomanciens (Matrice)
