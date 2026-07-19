@@ -174,6 +174,11 @@ export const EncounterRenderer = {
     const devicesHtml = narrative ? this._narrativeDevices(rows, state) : "";
     // Action de fin de scène rendue en pied de liste (le tracker n'a pas de
     // barre d'outils modifiable ici) : réinitialise tous les moniteurs.
+    // Lot 6 (feel) : on capture les positions des lignes AVANT le re-render, et
+    // on rejoue leur glissement APRÈS (FLIP) — le réordonnancement de la file
+    // au « Tour suivant » devient un MOUVEMENT lisible, pas un saut (contrepartie
+    // assumée de la décision B).
+    const flipPrev = this._captureRowPositions(list);
     list.innerHTML =
       progressHtml +
       html +
@@ -181,6 +186,52 @@ export const EncounterRenderer = {
       `<div class="encounter-scene-actions">
         <button class="btn-secondary btn-small" data-action="heal-all" title="Réinitialiser les moniteurs de tous les combattants">⛨ Fin de scène — tout soigner</button>
       </div>`;
+    this._playFlip(list, flipPrev);
+  },
+
+  /** FLIP (First-Last-Invert-Play) du réordonnancement de la file (Lot 6) : le
+      glissement des lignes EST le retour visuel de l'avancement du tour. Capture
+      les positions AVANT le re-render (par data-id) ; _playFlip mesure APRÈS,
+      inverse l'écart en transform puis le relâche en transition. Seules les
+      lignes qui ont BOUGÉ s'animent (dy≈0 → rien) : un refresh sans réordre
+      (note, coche) ne déclenche aucun mouvement. transform/opacity seuls,
+      ≤ --dur-base, coupé sous prefers-reduced-motion. */
+  _captureRowPositions(list) {
+    const map = new Map();
+    if (!list) return map;
+    list
+      .querySelectorAll(".encounter-row[data-id], .encounter-nrow[data-id]")
+      .forEach((el) => map.set(el.dataset.id, el.getBoundingClientRect().top));
+    return map;
+  },
+  _playFlip(list, prev) {
+    if (!list || !prev || !prev.size) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const moved = [];
+    list.querySelectorAll(".encounter-row[data-id], .encounter-nrow[data-id]").forEach((el) => {
+      const oldTop = prev.get(el.dataset.id);
+      if (oldTop == null) return;
+      const dy = oldTop - el.getBoundingClientRect().top;
+      if (Math.abs(dy) < 1) return;
+      // Invert : replace la ligne à son ancienne position, sans transition.
+      el.style.transition = "none";
+      el.style.transform = `translateY(${dy}px)`;
+      moved.push(el);
+    });
+    if (!moved.length) return;
+    void list.offsetHeight; // ancre l'état inversé avant de relâcher
+    requestAnimationFrame(() => {
+      moved.forEach((el) => {
+        el.style.transition = "transform var(--dur-base) var(--ease-standard)";
+        el.style.transform = "";
+        const clear = () => {
+          el.style.transition = "";
+          el.style.transform = "";
+          el.removeEventListener("transitionend", clear);
+        };
+        el.addEventListener("transitionend", clear);
+      });
+    });
   },
 
   /** Ligne statique : Anarchy n'a pas d'initiative chiffrée, l'ordre est
