@@ -48,6 +48,7 @@ export const RunRenderer = {
             : `<button class="card-action-btn" data-action="run-to-dossier"
                  data-run-name="${CardRenderer._esc(r.type)}" title="Promouvoir ce topos en run canon">＋ Faire une run</button>`
         }
+        <button class="card-action-btn" data-action="edit-run" title="Éditer ce topos">✎ Éditer</button>
         ${this._rencontreBtn(r)}
         ${this._castBtn(r)}
         <button class="card-action-btn danger" data-action="discard-run">Virer</button>

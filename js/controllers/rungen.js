@@ -32,6 +32,7 @@ export const RunGen = {
     zone.innerHTML = `
       <div class="gen-actions">
         <button class="btn-primary"   data-action="add-one">Générer un topos</button>
+        <button class="btn-secondary" data-action="add-blank">Topos vierge</button>
         <button class="btn-secondary" data-action="clear-all">Effacer tout</button>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:1rem;" id="run-list"></div>`;
@@ -49,6 +50,14 @@ export const RunGen = {
         case "add-one":
           this.addOne();
           break;
+        case "add-blank":
+          this.addBlank();
+          break;
+        case "edit-run": {
+          const card = actionEl.closest(".run-card");
+          if (card) ToposEdit.open(card.dataset.id);
+          break;
+        }
         case "clear-all":
           this.clearAll();
           break;
@@ -226,6 +235,36 @@ export const RunGen = {
     this._runs.unshift(run);
     this._save();
     this._renderCard(run, true);
+  },
+
+  /** Crée un topos VIERGE (champs plats vides) et ouvre l'éditeur dessus — pour
+      le MJ qui écrit son amorce à la main plutôt que de la générer. Aucune clé
+      structurée → pas de casting auto (le MJ compose tout). */
+  addBlank() {
+    const run = {
+      id: Utils.uid(),
+      type: "",
+      client: "",
+      lieu: "",
+      complication: "",
+      objectif2: "",
+      payment: "",
+      difficulte: "",
+    };
+    this._runs.unshift(run);
+    this._save();
+    this._renderCard(run, true);
+    ToposEdit.open(run.id);
+  },
+
+  /** Applique les champs édités (ToposEdit) à un topos et persiste. Ne touche
+      qu'aux libellés plats ; les clés structurées de génération sont conservées. */
+  updateTopos(id, fields) {
+    const run = this._runs.find((r) => r.id === id);
+    if (!run) return;
+    Object.assign(run, fields);
+    this._save();
+    this._refreshCard(id);
   },
   clearAll() {
     this._runs = [];
