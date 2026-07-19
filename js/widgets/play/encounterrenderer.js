@@ -88,31 +88,69 @@ export const EncounterRenderer = {
     const list = document.getElementById("encounter-list");
     if (!list) return;
 
-    // rows est 1:1 avec state.combatants (même ordre) : l'index brut vaut le
-    // turnIndex. On rend chaque ligne visible en conservant cet index réel.
-    // Vague D : les combattants hors de combat (r.down) sont poussés en fond de
-    // liste, sous un séparateur, sans initiative — ils ne rejouent plus.
-    const renderOne = (r, i) =>
-      narrative
-        ? this._rowNarrative(r)
-        : this._row(r, i === state.turnIndex, this._outOfPass(r, state, model), this._effectiveInit(r, state, model));
+    // rows est 1:1 avec state.combatants (même ordre init) : l'index brut vaut
+    // le turnIndex — conservé pour repérer l'actif. Les hors-combat (r.down)
+    // restent poussés en bas, sous un séparateur, sans initiative.
     const visible = rows.map((r, i) => ({ r, i })).filter((x) => x.r.pnj);
-    const liveHtml = visible.filter((x) => !x.r.down).map((x) => renderOne(x.r, x.i)).join("");
+    const liveList = visible.filter((x) => !x.r.down);
     const downList = visible.filter((x) => x.r.down);
+
+    // Ordre d'AFFICHAGE (option B — décision D1) : en mode ordonné, l'effectif
+    // est une FILE — l'actif en tête, puis la suite du tour (rotation à partir
+    // du turnIndex, avec bouclage). C'est un pur réordonnancement de VUE :
+    // state.combatants et turnIndex sont INTACTS (les data-id restent valides),
+    // la file se recompose seule au « Tour suivant ». Une seule règle d'ordre
+    // pour mobile ET desktop. En narratif (Anarchy, sans initiative), l'ordre
+    // reste manuel (glisser) — pas de rotation.
+    let liveQueue = liveList;
+    if (!narrative) {
+      const startPos = Math.max(0, liveList.findIndex((x) => x.i === state.turnIndex));
+      liveQueue = liveList.slice(startPos).concat(liveList.slice(0, startPos));
+    }
+
+    // ---- Liste principale ----
+    let liveHtml;
+    if (narrative) {
+      liveHtml = liveQueue.map((x) => this._rowNarrative(x.r)).join("");
+    } else {
+      // L'actif en pleine ligne ; les combattants en attente en variante
+      // COMPACTE (file scannable, cf. .encounter-row.compact), sous un
+      // séparateur « ordre du tour ».
+      const active = liveQueue[0];
+      const activeHtml = active
+        ? this._row(active.r, true, this._outOfPass(active.r, state, model), this._effectiveInit(active.r, state, model), false)
+        : "";
+      const waiting = liveQueue.slice(1);
+      const waitingHtml = waiting.length
+        ? `<div class="encounter-queue-sep">En attente · ordre du tour<span class="encounter-queue-count">${waiting.length}</span></div>` +
+          waiting
+            .map((x) => this._row(x.r, false, this._outOfPass(x.r, state, model), this._effectiveInit(x.r, state, model), true))
+            .join("")
+        : "";
+      liveHtml = activeHtml + waitingHtml;
+    }
     const downHtml = downList.length
       ? `<div class="encounter-downsep">Hors de combat · sans initiative</div>` +
-        downList.map((x) => renderOne(x.r, x.i)).join("")
+        downList
+          .map((x) =>
+            narrative
+              ? this._rowNarrative(x.r)
+              : this._row(x.r, false, this._outOfPass(x.r, state, model), this._effectiveInit(x.r, state, model), false),
+          )
+          .join("")
       : "";
     const html = liveHtml + downHtml;
 
     // Réglette compacte (rail de jetons, sœur de la liste complète —
     // jamais reconstruite depuis elle, mêmes rows). Toujours rendue (même
-    // vide), la visibilité rail/liste est purement CSS (cf. .rail-expanded).
+    // vide), la visibilité rail/liste est purement CSS. Ordonné : MÊME file
+    // que la liste (rotation comprise), les hors-combat en fin.
     const rail = document.getElementById("encounter-rail");
     if (rail) {
       const railHtml = narrative
         ? visible.map((x) => this._tokenNarrative(x.r)).join("")
-        : visible
+        : liveQueue
+            .concat(downList)
             .map((x) => this._token(x.r, x.i === state.turnIndex, this._outOfPass(x.r, state, model)))
             .join("");
       rail.innerHTML =
@@ -214,6 +252,7 @@ export const EncounterRenderer = {
       pnj._adhoc
         ? null
         : { attrs: `data-action="heal-combatant" data-id="${pnjId}"`, label: "Réinitialiser les moniteurs" },
+      this._dismissMenuItem(r),
       { attrs: `data-action="remove-combatant" data-id="${pnjId}"`, label: "Retirer du combat", danger: true },
     ].filter(Boolean);
     return `<div class="encounter-nrow${hasActed ? " has-acted" : ""}${r.down ? " down" : ""}${isFocused ? " is-focused" : ""}" data-action="focus-active" data-id="${pnjId}" role="button" tabindex="0" aria-current="${isFocused ? "true" : "false"}" title="Toucher pour voir ses actions">
@@ -280,6 +319,7 @@ export const EncounterRenderer = {
     if (p.kind === "drone") return "Drone";
     if (p.kind === "vehicule") return "Véhicule";
     if (p.type === "spirit") return "Esprit";
+    if (p.type === "sprite") return "Sprite"; // entité matricielle (technomancien)
     if (p.type === "creature") return "Créature";
     // Un PJ (léger ou complet) ajouté depuis la bibliothèque `Characters`
     // n'a ni `kind:"pj"` (réservé au PJ ad-hoc historique) ni `type` distinctif
@@ -298,6 +338,21 @@ export const EncounterRenderer = {
   _lifeGauge(r) {
     if (r.down) return "";
     return CardRenderer.lifeBar(r.gauge);
+  },
+
+  /** Item de menu ⋯ « Renvoyer » (T6b) pour un combattant esprit/sprite : la
+      cible est connue (cette ligne), le lanceur est choisi via SummonPanel.
+      Gated sur le verbe motorisé de l'édition (banishSkill / decompileSkill) —
+      `null` sinon (ligne chair, PJ ad-hoc, hors de combat, édition narrative). */
+  _dismissMenuItem(r) {
+    const p = r.pnj;
+    if (!p || p._adhoc || r.down) return null;
+    const ed = App.getEditionModule(p.edition);
+    if (p.type === "spirit" && ed && ed.banishSkill)
+      return { attrs: `data-action="banish-combatant" data-id="${r.pnjId}"`, label: "Bannir (esprit adverse)" };
+    if (p.type === "sprite" && ed && ed.spriteModel && ed.spriteModel.decompileSkill)
+      return { attrs: `data-action="decompile-combatant" data-id="${r.pnjId}"`, label: "Décompiler (sprite adverse)" };
+    return null;
   },
 
   /** Badge « hors de combat » (Vague D), partagé ordonné/narratif. */
@@ -324,7 +379,7 @@ export const EncounterRenderer = {
     </div>`;
   },
 
-  _row(r, isActive, outOfPass, effectiveInit) {
+  _row(r, isActive, outOfPass, effectiveInit, compact) {
     const { pnjId, init, hasActed, note, pnj } = r;
     const isMatrix = r.kind === "matrix";
     const initVal = init == null ? "" : String(init);
@@ -382,11 +437,6 @@ export const EncounterRenderer = {
         ${malusHtml}
         ${effHtml}
       </div>`;
-    // Vague C1 : poignée de glisse (Pointer Events, souris + tactile) pour
-    // réordonner à la main. Pas sur les lignes hors de combat (épinglées en bas).
-    const dragHandle = r.down
-      ? ""
-      : `<span class="encounter-drag-handle" title="Glisser pour réordonner" aria-hidden="true">⠿</span>`;
     // Verbes du tour (fréquents) en chips inline lisibles à toutes tailles
     // de pointeur ; le reste (réordre, note, hors de combat, réinitialiser,
     // retirer) derrière le menu ⋯ canonique.
@@ -407,10 +457,10 @@ export const EncounterRenderer = {
       pnj._adhoc
         ? null
         : { attrs: `data-action="heal-combatant" data-id="${pnjId}"`, label: "Réinitialiser les moniteurs" },
+      this._dismissMenuItem(r),
       { attrs: `data-action="remove-combatant" data-id="${pnjId}"`, label: "Retirer du combat", danger: true },
     ].filter(Boolean);
-    return `<div class="encounter-row${isMatrix ? " is-matrix" : ""}${isActive ? " active-turn" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}${r.down ? " down" : ""}${r.delayed && !r.down ? " delayed" : ""}" data-id="${pnjId}">
-      ${dragHandle}
+    return `<div class="encounter-row${isMatrix ? " is-matrix" : ""}${isActive ? " active-turn" : ""}${compact ? " compact" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}${r.down ? " down" : ""}${r.delayed && !r.down ? " delayed" : ""}" data-id="${pnjId}">
       ${initZone}
       <div class="encounter-main">
         <div class="encounter-name-row">

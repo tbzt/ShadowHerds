@@ -142,6 +142,45 @@
 .encounter-row.has-acted {
   opacity: 0.55;
 }
+/* File d'attente (option B, D1) : les combattants EN ATTENTE derrière l'actif
+   passent en variante COMPACTE — une file scannable. On masque ce qui n'aide
+   pas à repérer « qui joue ensuite » (steppers d'init, malus/score de passe,
+   chips + menu ⋯, note, bandeau de moral) ; restent le score d'init, le nom
+   (toujours cliquable → fiche) et la jauge de vie. Tout revient quand la ligne
+   redevient active (pleine ligne). */
+.encounter-row.compact {
+  padding: 0.4rem 0.6rem;
+}
+.encounter-row.compact .encounter-init-step,
+.encounter-row.compact .encounter-init-eff,
+.encounter-row.compact .wound-malus-badge,
+.encounter-row.compact .encounter-controls,
+.encounter-row.compact .encounter-flee,
+.encounter-row.compact .encounter-note {
+  display: none;
+}
+.encounter-row.compact .encounter-init {
+  min-width: 2.2rem;
+  padding: 0.15rem 0.25rem;
+}
+/* Séparateur « ordre du tour » entre l'actif et la file en attente. */
+.encounter-queue-sep {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border);
+  padding-top: var(--sp-2);
+  margin: var(--sp-2) 0 var(--sp-1);
+}
+.encounter-queue-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  opacity: 0.7;
+}
 /* Jeton d'initiative : bloc compact (score de base + malus + score effectif
    de passe), séparé visuellement du nom. Le lancer ⚄ par ligne a migré dans
    le menu ⋯ pour dégager la ligne. */
