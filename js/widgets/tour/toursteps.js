@@ -393,6 +393,11 @@ export const TourSteps = {
       title: "Le technomancien attaque dans la Matrice",
       body: "Le persona incarné d'un technomancien (SR5/SR6) porte désormais son propre râtelier d'actions matricielles, en zone Combat, comme le cyberdeck d'un decker : Pic de données, Planter un programme, Effacer une mark… Ce sont les mêmes actions que celles d'un decker — le technomancien les joue par la Résonance : leurs réserves de dés sont tirées de son persona vivant (Attaque, Corruption, Traitement de données, Firewall) et non d'un deck. Un tap lance le jet ; la VD est affichée, jamais appliquée d'office.",
     },
+    {
+      id: "wn-backup-live-scene", anchor: "nav-settings", tours: ["whatsnew"], since: "1.70.0", fallback: "center",
+      title: "Reprendre un combat sur un autre appareil",
+      body: "Exporter puis importer une sauvegarde emporte désormais la scène de combat/Matrice vivante (round, initiative, combattants) et les runs générées : commencer un combat sur l'ordinateur et le finir sur le téléphone est enfin possible. En fusion, la scène importée ne remplace jamais un combat déjà engagé sur l'appareil qui reçoit l'import — seul « Remplacer tout » le peut.",
+    },
   ],
 };
 

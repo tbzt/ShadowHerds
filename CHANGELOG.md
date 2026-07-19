@@ -12,6 +12,24 @@ commit.
 
 ## [Non publié]
 
+## [1.70.0] — 2026-07-19
+
+### Sauvegarde
+- **Reprendre un combat en cours sur un autre appareil.** Exporter puis
+  importer une sauvegarde emporte désormais la scène de combat/Matrice
+  vivante (round, initiative, combattants) et les runs générées — commencer
+  un combat sur l'ordinateur et le finir sur le téléphone n'exigeait
+  jusqu'ici aucune de ces deux données. En fusion, la scène importée ne
+  remplace jamais un combat déjà engagé sur l'appareil qui reçoit
+  l'import ; seul « Remplacer tout » le peut, en connaissance de cause.
+- **Correctif : la fusion ne perd plus les rencontres rangées et les
+  carnets de notes.** Importer une sauvegarde en mode « Fusionner »
+  (le bouton non destructif) ignorait silencieusement les rencontres déjà
+  rangées par dossier et les carnets de notes du paquet importé — seul
+  « Remplacer tout » les restaurait. Corrigé : la fusion les ajoute
+  désormais, dossier par dossier, sans jamais écraser ce qui existe déjà
+  localement.
+
 ## [1.69.0] — 2026-07-18
 
 ### Magie, Résonance & Essence (SR5)
