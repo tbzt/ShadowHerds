@@ -166,14 +166,13 @@
 /* V7 — actions DÉPLIÉES de la ligne de l'actif : un petit tableau de bord dans
    l'espace vide sous la jauge de vie du combattant en focus (les lignes en
    attente gardent leur ⋯). Mêmes actions que le menu, en boutons visibles. */
-.encounter-lead-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-  margin-top: 0.35rem;
-}
 /* Icônes monochromes calquées sur les chips (✓/⚄/⏸) : carrées, contour discret
-   au repos, accent au survol. Tiennent sur une seule ligne. */
+   au repos, accent au survol. Rendues dans .encounter-controls, à la suite des
+   chips → une seule rangée alignée. La 1ʳᵉ (is-first) est séparée par une fine
+   marge : verbes fréquents (chips) à gauche, actions dépliées à droite. */
+.encounter-lead-action.is-first {
+  margin-left: 0.5rem;
+}
 .encounter-lead-action {
   flex: none;
   display: inline-flex;

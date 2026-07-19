@@ -356,14 +356,17 @@ export const EncounterRenderer = {
   _leadActionBar(items) {
     if (!items || !items.length) return "";
     const esc = Utils.escHtml;
-    // Icônes monochromes (une seule ligne, comme les chips ✓/⚄/⏸) — le libellé
-    // complet reste en title + aria-label pour la découvrabilité/accessibilité.
-    return `<div class="encounter-lead-actions">${items
+    // Icônes monochromes rendues DIRECTEMENT dans .encounter-controls, à la suite
+    // des chips ✓/⚄/⏸ (mêmes carrés 32px) → une seule rangée alignée. Le libellé
+    // complet reste en title + aria-label (découvrabilité + accessibilité). Une
+    // fine séparation visuelle (première icône) distingue « verbes fréquents »
+    // (chips) et « actions dépliées ». Pas de wrapper : alignement flex direct.
+    return items
       .map(
-        (a) =>
-          `<button type="button" class="encounter-lead-action${a.danger ? " is-danger" : ""}" ${a.attrs} title="${esc(a.label)}" aria-label="${esc(a.label)}">${a.glyph || "•"}</button>`,
+        (a, i) =>
+          `<button type="button" class="encounter-lead-action${a.danger ? " is-danger" : ""}${i === 0 ? " is-first" : ""}" ${a.attrs} title="${esc(a.label)}" aria-label="${esc(a.label)}">${a.glyph || "•"}</button>`,
       )
-      .join("")}</div>`;
+      .join("");
   },
 
   /** Suffixe « · Passe N » (SR5 uniquement) — partagé entre le titre du
@@ -563,13 +566,14 @@ export const EncounterRenderer = {
         ${this._moraleBanner(r)}
         <input type="text" class="encounter-note${hasNote ? "" : " is-empty"}" placeholder="Note…" value="${Utils.escHtml(note || "")}"
           data-action="set-note" data-id="${pnjId}">
-        ${isLead ? this._leadActionBar(menuItems) : ""}
       </div>
       <div class="encounter-controls">
         ${actedChip}
         ${rollChip}
         ${delayChip}
-        ${isLead ? "" : this._rowMenu(menuItems)}
+        ${isLead
+          ? this._leadActionBar(menuItems.filter((a) => !/data-action="move-(up|down)"/.test(a.attrs)))
+          : this._rowMenu(menuItems)}
       </div>
     </div>`;
   },
