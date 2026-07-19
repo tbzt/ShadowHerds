@@ -20,6 +20,14 @@ export const Palette = {
 
   _TYPE_LABEL: { pnj: "PNJ", pj: "PJ", contact: "Contact", server: "Serveur" },
 
+  /** Extrait de contexte (« zoom ») : la ligne où le terme a été trouvé, terme
+      surligné. Rien si le résultat ne porte pas d'`excerpt` (entités pures). */
+  _snippetHtml(r) {
+    if (!r || !r.excerpt) return "";
+    const e = r.excerpt;
+    return `<span class="palette-snippet">${Utils.escHtml(e.before)}<mark>${Utils.escHtml(e.hit)}</mark>${Utils.escHtml(e.after)}</span>`;
+  },
+
   _ensure() {
     if (document.getElementById("palette-overlay")) return;
 
@@ -133,7 +141,7 @@ export const Palette = {
           const label = r.kind === "notepad" ? r.label : r.name;
           return `<div class="palette-row${i === this._sel ? " sel" : ""}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
               <span class="palette-type">${r.kind === "notepad" ? "Bloc-notes" : this._TYPE_LABEL[r.type] || r.type}</span>
-              <span class="palette-name">${Utils.escHtml(label)}</span>
+              <div class="palette-main"><span class="palette-name">${Utils.escHtml(label)}</span>${this._snippetHtml(r)}</div>
             </div>`;
         })
         .join("");
@@ -149,7 +157,7 @@ export const Palette = {
           const label = r.kind === "notepad" ? r.label : r.name;
           return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
               <span class="palette-type">${r.kind === "notepad" ? "Bloc-notes" : this._TYPE_LABEL[r.type] || r.type}</span>
-              <span class="palette-name">${Utils.escHtml(label)}</span>
+              <div class="palette-main"><span class="palette-name">${Utils.escHtml(label)}</span>${this._snippetHtml(r)}</div>
             </div>`;
         }
         // Avatar PJ constant (couleur+anneau+initiale) — un aller-retour
@@ -157,7 +165,7 @@ export const Palette = {
         const avatar = r.type === "pj" ? CardRenderer._pcAvatar(PnjLookup.find(r.id)) : "";
         return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
             <span class="palette-type">${this._TYPE_LABEL[r.type] || r.type}</span>
-            <span class="palette-name">${avatar}${Utils.escHtml(r.name)}</span>
+            <div class="palette-main"><span class="palette-name">${avatar}${Utils.escHtml(r.name)}</span></div>
           </div>`;
       })
       .join("");
@@ -168,7 +176,12 @@ export const Palette = {
     const r = this._results[this._sel];
     if (!r) return;
     if (r.kind === "notepad") {
-      this._openNotebook(r.dossierId);
+      // Ancre de défilement : le terme exact trouvé (excerpt) ou, à défaut, le
+      // texte tapé sans le `#` — pour « atterrir » sur la ligne dans le carnet.
+      const anchor = r.excerpt
+        ? r.excerpt.hit
+        : document.getElementById("palette-input").value.replace(/^#/, "").trim();
+      this._openNotebook(r.dossierId, anchor);
       return;
     }
     // #61 : un résultat "note" en mode entité a la même forme _locOut("entity")
@@ -180,10 +193,10 @@ export const Palette = {
       atterrissait toujours dans le carnet du dossier courant, ignorant celui
       où la note a été trouvée). `dossierId` est `Notebooks._GLOBAL` pour le
       bloc-notes de séance, sinon un vrai id de dossier. */
-  _openNotebook(dossierId) {
+  _openNotebook(dossierId, anchor) {
     this.close();
     DossierBar.select(dossierId === Notebooks._GLOBAL ? "all" : dossierId);
-    Notepad.open();
+    Notepad.open({ scrollTo: anchor });
   },
 
   /** API publique : révèle une entité par id (clic sur une puce `@`). */
@@ -202,6 +215,7 @@ export const Palette = {
       setTimeout(() => {
         const f = document.querySelector('#panel-characters input[data-action="filter"]');
         if (f) { f.value = r.name; f.dispatchEvent(new Event("input", { bubbles: true })); }
+        this._flashEntity(r.id);
       }, 40);
       return;
     }
@@ -212,7 +226,24 @@ export const Palette = {
     setTimeout(() => {
       const f = document.querySelector("#panel-shadows [data-hub-filter]");
       if (f) f.value = r.name;
+      this._flashEntity(r.id);
     }, 0);
+  },
+
+  /** Amène la carte cible à l'écran (« en haut ») + flash bref — réutilise le
+      helper partagé `UI.flashCard` (même anim `.card-flash` que les liens
+      « lié à »). Le filtre re-rend le panneau de façon asynchrone (délai
+      variable PJ/Hub) : on attend l'apparition de la carte par reprise bornée
+      (~20 × 30 ms) plutôt qu'un délai fixe qui pourrait la manquer. */
+  _flashEntity(id) {
+    if (typeof UI === "undefined" || !UI.flashCard) return;
+    let tries = 20;
+    const tick = () => {
+      const card = document.querySelector(`.panel.active .pnj-card[data-id="${id}"]`);
+      if (card) { UI.flashCard(id, "start"); return; }
+      if (--tries > 0) setTimeout(tick, 30);
+    };
+    tick();
   },
 };
 

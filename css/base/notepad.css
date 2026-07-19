@@ -82,6 +82,24 @@
 .notepad-read-empty {
   color: var(--text-dim);
 }
+/* « Atterrir en haut » : surbrillance brève de la ligne trouvée quand le
+   carnet est ouvert depuis la Palette. Anim sur box-shadow/background
+   (composés, pas de reflow) ; token d'accent, jamais de couleur en dur. */
+.notepad-flash {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: inherit;
+  border-radius: 2px;
+  animation: notepad-flash 1.3s ease-out;
+}
+@keyframes notepad-flash {
+  0%,
+  35% {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 3px transparent;
+  }
+}
 @media (max-width: 640px) {
   #notepad-backdrop.open {
     background: rgba(0, 0, 0, 0.55);

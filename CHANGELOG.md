@@ -12,6 +12,24 @@ commit.
 
 ## [Non publié]
 
+## [1.74.0] — 2026-07-19
+
+### La recherche et les notes, façon messagerie
+
+- **La recherche `Ctrl/Cmd+K` montre le contexte.** Quand un résultat vient d'une
+  note (bloc-notes ou fiche), la palette affiche désormais la ligne où le terme a
+  été trouvé, le mot surligné — plus besoin d'ouvrir pour savoir de quoi il s'agit.
+- **Cliquer une mention amène droit dessus.** Ouvrir une note depuis la palette
+  fait défiler le carnet jusqu'à la ligne trouvée et la met brièvement en
+  surbrillance ; cliquer une puce `@` amène la fiche de l'entité à l'écran, en
+  haut, avec un flash — au lieu de seulement poser un filtre.
+- **Emojis `:raccourci:`.** Dans une note, taper `:feu`, `:sang`, `:nuyen`… propose
+  l'emoji correspondant (raccourcis français et anglais), inséré d'un ↵ — comme sur
+  Discord, sans aucune connexion externe.
+- **Commandes `/` en début de ligne.** `/date` et `/heure` insèrent l'horodatage ;
+  `/scène` et `/run` insèrent le nom du contexte de jeu en cours. Le menu ne surgit
+  qu'en début de ligne, pour ne jamais gêner la frappe courante.
+
 ## [1.73.1] — 2026-07-19
 
 ### Correctifs

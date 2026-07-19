@@ -66,6 +66,16 @@
   padding: 0.1rem 0.3rem;
   text-align: center;
 }
+/* Colonne nom + extrait (« zoom ») : le nom sur une ligne, l'extrait de
+   contexte dessous. Empile dans la rangée flex sans casser l'alignement de la
+   pastille de type. */
+.palette-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 .palette-name {
   flex: 1;
   min-width: 0;
@@ -73,6 +83,31 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text);
+}
+/* Extrait de contexte : la ligne où le terme a été trouvé, atténuée, sur une
+   seule ligne ellipsée ; le terme surligné par un token d'accent (jamais une
+   couleur en dur). */
+.palette-snippet {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+}
+.palette-snippet mark {
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
+  color: var(--text);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+/* Pastille de type détournée en porte-emoji (mode `:` de #mentions-box) :
+   l'emoji remplace le libellé de type, centré, sans texte en capitales. */
+.palette-type.palette-emoji {
+  font-size: var(--fs-md);
+  letter-spacing: normal;
+  text-transform: none;
+  padding: 0 0.2rem;
 }
 .palette-empty {
   padding: 1rem;

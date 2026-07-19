@@ -141,7 +141,7 @@ export const Notepad = {
     this._open ? this.close() : this.open();
   },
 
-  open() {
+  open(opts = {}) {
     this._ensure();
     // Le carnet courant dérive d'App.context (vérité unique du contexte),
     // résolu à l'ouverture puis re-résolu quand le sélecteur change de contexte
@@ -157,7 +157,43 @@ export const Notepad = {
     document.getElementById("notepad-backdrop").classList.add("open");
     document.getElementById("notepad-panel").classList.add("open");
     this._open = true;
-    if (this._mode === "edit") ta.focus();
+    // « Atterrir en haut » : ouvert depuis la Palette avec une ancre, on amène
+    // la ligne trouvée en tête du carnet (mode Lire) + flash bref.
+    if (opts.scrollTo && this._mode === "read") this._scrollToText(opts.scrollTo);
+    else if (this._mode === "edit") ta.focus();
+  },
+
+  /** Amène la 1ʳᵉ occurrence de `needle` (texte brut) en haut du rendu Lire +
+      flash. Balaye les nœuds texte (le rendu mêle texte et puces @/#, mais
+      un extrait plein-texte tombe dans un nœud texte contigu). Le `<mark>` est
+      retiré après l'anim — la vue Lire est de toute façon reconstruite au
+      prochain `_syncView`. */
+  _scrollToText(needle) {
+    const read = document.getElementById("notepad-read");
+    if (!read || !needle) return;
+    const walker = document.createTreeWalker(read, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      const i = node.nodeValue.indexOf(needle);
+      if (i < 0) continue;
+      const range = document.createRange();
+      range.setStart(node, i);
+      range.setEnd(node, i + needle.length);
+      const mark = document.createElement("mark");
+      mark.className = "notepad-flash";
+      try {
+        range.surroundContents(mark);
+      } catch (_) {
+        return; // sélection à cheval sur plusieurs nœuds : on renonce proprement
+      }
+      mark.scrollIntoView({ block: "start" });
+      setTimeout(() => {
+        if (!mark.parentNode) return;
+        mark.replaceWith(...mark.childNodes);
+        read.normalize();
+      }, 1400);
+      return;
+    }
   },
 
   /** Ouvre le sélecteur de contexte unique depuis le titre. On flush

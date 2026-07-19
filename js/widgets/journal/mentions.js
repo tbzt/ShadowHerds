@@ -25,6 +25,7 @@
    ============================================================ */
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Dossiers } from "./dossiers.js";
+import { Emoji } from "./emoji.js";
 import { Markdown } from "./markdown.js";
 import { Notebooks } from "../../rules/notebooks.js";
 import { Utils } from "../../core/utils.js";
@@ -33,9 +34,32 @@ export const Mentions = {
   _box: null,
   _target: null,
   _match: null, // { start, end, query }
-  _mode: null, // "@" (entités) | "#" (mots-clés)
+  _mode: null, // "@" entités | "#" mots-clés | ":" emojis | "/" commandes
   _results: [],
   _sel: 0,
+
+  /** Registre des `/commandes` (façon Discord). Un seul endroit, extensible.
+      `run()` renvoie le TEXTE à insérer (jamais de branche `App.edition` : le
+      contexte se lit dans `App.context`, vérité unique). */
+  _COMMANDS: [
+    { id: "date", label: "/date", hint: "Date du jour", run: () => new Date().toLocaleDateString("fr-FR") },
+    { id: "heure", label: "/heure", hint: "Heure", run: () => new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) },
+    { id: "scene", label: "/scène", hint: "Insérer la scène courante", run: () => Mentions._ctxLabel("scene") },
+    { id: "run", label: "/run", hint: "Insérer la run courante", run: () => Mentions._ctxLabel("run") },
+  ],
+
+  /** Libellé lisible du contexte courant (App.context.trail), sans id (une run
+      ou une scène n'est pas une entité PnjLookup — un texte, pas une puce). */
+  _ctxLabel(scale) {
+    const names = { scene: "Scène", run: "Run" };
+    let seg = null;
+    try {
+      seg = (App.context.trail() || []).find((s) => s.scale === scale) || null;
+    } catch (_) {
+      seg = null;
+    }
+    return `[${names[scale]} : ${seg ? seg.name : "—"}]`;
+  },
 
   _ensureBox() {
     if (this._box) return this._box;
@@ -99,6 +123,20 @@ export const Mentions = {
       this._open(textarea, pos, hash[1], "#");
       return;
     }
+    // `/commande` : DÉBUT DE LIGNE seulement (façon Discord), jamais au milieu
+    // d'une phrase — sinon un « et/ou » ou une URL déclencherait le menu.
+    const slash = before.match(/(?:^|\n)\/(\w*)$/);
+    if (slash) {
+      this._open(textarea, pos, slash[1], "/");
+      return;
+    }
+    // `:shortcode` emoji : au moins un caractère tapé (un `:` seul ne déclenche
+    // rien — évite de surgir sur « 12:30 » ou « note: »).
+    const emoji = before.match(/(?:^|\s):([a-z0-9_]+)$/i);
+    if (emoji) {
+      this._open(textarea, pos, emoji[1], ":");
+      return;
+    }
     this._close();
   },
 
@@ -110,8 +148,21 @@ export const Mentions = {
     this._results =
       mode === "#"
         ? this.usedTags(query)
-        : PnjLookup.search(query).slice(0, 8);
+        : mode === ":"
+          ? Emoji.search(query)
+          : mode === "/"
+            ? this._commands(query)
+            : PnjLookup.search(query).slice(0, 8);
     this._results.length ? this._render() : this._close();
+  },
+
+  /** Commandes dont l'id ou le libellé commence par `query` (autocomplétion
+      `/`). Insensible casse/accents (id sans accent : `scene` couvre « /scène »). */
+  _commands(query) {
+    const q = Utils.searchNorm(query || "");
+    return this._COMMANDS.filter(
+      (c) => !q || Utils.searchNorm(c.id).startsWith(q) || Utils.searchNorm(c.label.slice(1)).startsWith(q),
+    );
   },
 
   _onKeydown(e) {
@@ -146,6 +197,18 @@ export const Mentions = {
           return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
               <span class="palette-type">Mot-clé</span>
               <span class="palette-name">#${Utils.escHtml(r.tag)}</span>
+            </div>`;
+        }
+        if (this._mode === ":") {
+          return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+              <span class="palette-type palette-emoji">${r.char}</span>
+              <span class="palette-name">:${Utils.escHtml(r.shortcode)}:</span>
+            </div>`;
+        }
+        if (this._mode === "/") {
+          return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+              <span class="palette-type">${Utils.escHtml(r.label)}</span>
+              <span class="palette-name">${Utils.escHtml(r.hint)}</span>
             </div>`;
         }
         // Même avatar constant que la Palette (couleur+anneau+initiale).
@@ -195,7 +258,11 @@ export const Mentions = {
     const insert =
       this._mode === "#"
         ? `#${r.tag} `
-        : `@[${this._label(r.name)}](${r.id}) `;
+        : this._mode === ":"
+          ? `${r.char} `
+          : this._mode === "/"
+            ? `${r.run()} `
+            : `@[${this._label(r.name)}](${r.id}) `;
     ta.value = `${before}${insert}${after}`;
     const caret = before.length + insert.length;
     ta.focus();
@@ -290,6 +357,46 @@ export const Mentions = {
       : { kind: "notepad", label: loc.label, dossierId: loc.dossierId };
   },
 
+  /** Position (indices dans le texte ORIGINAL) de la 1ʳᵉ occurrence de `query`,
+      insensible casse/accents. Balaye caractère par caractère en maintenant une
+      carte normalisé→original (searchNorm passe par NFD, donc les longueurs
+      diffèrent — un simple indexOf sur le texte normalisé mentirait sur la
+      position). `null` si absente. */
+  _normMatch(text, query) {
+    const q = Utils.searchNorm(query || "");
+    if (!q) return null;
+    let norm = "";
+    const map = []; // map[i] = index d'origine du i-ᵉ caractère normalisé
+    for (let i = 0; i < text.length; i++) {
+      const n = Utils.searchNorm(text[i]);
+      for (let k = 0; k < n.length; k++) {
+        norm += n[k];
+        map.push(i);
+      }
+    }
+    const idx = norm.indexOf(q);
+    if (idx < 0) return null;
+    return { start: map[idx], end: map[idx + q.length - 1] + 1 };
+  },
+
+  /** Extrait de contexte autour de `[start,end)` (« zoom » de la Palette) :
+      la LIGNE du match, rognée à ~PAD caractères de part et d'autre, terme
+      isolé dans `hit`. `…` marque une troncature intra-ligne. */
+  _excerpt(text, start, end) {
+    const PAD = 40;
+    let from = Math.max(0, start - PAD);
+    let to = Math.min(text.length, end + PAD);
+    const nlBefore = text.lastIndexOf("\n", start - 1);
+    if (nlBefore >= from) from = nlBefore + 1;
+    const nlAfter = text.indexOf("\n", end);
+    if (nlAfter >= 0 && nlAfter < to) to = nlAfter;
+    return {
+      before: (from > 0 && text[from - 1] !== "\n" ? "…" : "") + text.slice(from, start),
+      hit: text.slice(start, end),
+      after: text.slice(end, to) + (to < text.length && text[to] !== "\n" ? "…" : ""),
+    };
+  },
+
   /** Backlinks « Mentionné dans » d'une entité, par ID (robuste au renommage
       et aux homonymes). Dédupliqué par emplacement, exclut l'entité
       elle-même. */
@@ -319,18 +426,19 @@ export const Mentions = {
     this._scanNotes((text, loc) => {
       re.lastIndex = 0;
       let m;
-      let hit = false;
+      let hitAt = -1;
       while ((m = re.exec(text))) {
         if (Utils.searchNorm(m[1]) === t) {
-          hit = true;
+          hitAt = text.indexOf("#", m.index); // début du `#` (m.index inclut l'espace)
           break;
         }
       }
-      if (!hit) return;
+      if (hitAt < 0) return;
       const key = loc.kind === "entity" ? `e:${loc.id}` : "n";
       if (seen.has(key)) return;
       seen.add(key);
-      out.push(this._locOut(loc));
+      const tagLen = text.slice(hitAt).match(/^#[^\s#]+/)[0].length;
+      out.push({ ...this._locOut(loc), excerpt: this._excerpt(text, hitAt, hitAt + tagLen) });
     });
     return out;
   },
@@ -344,11 +452,12 @@ export const Mentions = {
     const out = [];
     const seen = new Set();
     this._scanNotes((text, loc) => {
-      if (!Utils.searchNorm(text).includes(q)) return;
+      const at = this._normMatch(text, query);
+      if (!at) return;
       const key = loc.kind === "entity" ? `e:${loc.id}` : `n:${loc.dossierId}`;
       if (seen.has(key)) return;
       seen.add(key);
-      out.push(this._locOut(loc));
+      out.push({ ...this._locOut(loc), excerpt: this._excerpt(text, at.start, at.end) });
     });
     return out;
   },

@@ -489,7 +489,7 @@ export const UI = {
     const existing = Vehicles.linkedTo(ownerId, srcItem);
     const alreadyShown = existing.filter((v) => v.deployed);
     if (alreadyShown.length) {
-      this._flashCard(alreadyShown[0].id);
+      this.flashCard(alreadyShown[0].id);
       return;
     }
 
@@ -543,15 +543,18 @@ export const UI = {
 
   /** Badge « lié à » : scroll + flash de la carte du propriétaire. */
   focusOwner(ownerId) {
-    this._flashCard(ownerId);
+    this.flashCard(ownerId);
   },
 
-  _flashCard(id) {
+  /** Amène une carte à l'écran (`block` : "center" par défaut, "start" pour
+      « en haut ») + flash `.card-flash`. Sans effet si la carte n'est pas
+      (encore) rendue. Partagé par les liens « lié à » et la Palette. */
+  flashCard(id, block = "center") {
     const card =
       document.querySelector(`.panel.active .pnj-card[data-id="${id}"]`) ||
       document.querySelector(`.pnj-card[data-id="${id}"]`);
     if (!card) return;
-    card.scrollIntoView({ behavior: "smooth", block: "center" });
+    card.scrollIntoView({ behavior: "smooth", block });
     card.classList.add("card-flash");
     setTimeout(() => card.classList.remove("card-flash"), 1200);
   },
