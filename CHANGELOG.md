@@ -12,6 +12,42 @@ commit.
 
 ## [Non publié]
 
+## [1.73.0] — 2026-07-19
+
+### Créer une run et la lancer, sans détour
+
+- **Le « ＋ » de la barre de dossiers crée un dossier déjà typé.** Il demande
+  d'abord le type — ◆ Run, ❖ Campagne ou dossier simple — puis le nom, au lieu de
+  créer un dossier neutre à typer ensuite via le menu « ⋯ ». La run apparaît
+  aussitôt dans « Jouer ».
+- **« Lancer la scène » depuis « Jouer ».** Une run sans scène en cours offre enfin
+  un bouton pour démarrer la rencontre — plus besoin de passer par la bibliothèque.
+  Les trois états partagent le même geste : Reprendre (scène vivante), Ouvrir
+  (rangée) ou Lancer (aucune encore).
+
+### Des topos cohérents, éditables, et leur casting
+
+- **Le générateur de topos monte un vrai conflit.** Il ne tire plus objectif,
+  mandant, lieu et complication indépendamment : un mandant vise un rival dont un
+  site est le lieu, d'où découlent la sécurité, l'objectif et la difficulté — le
+  tout nourri par le décor de Seattle (districts, factions, rivalités corpo). Fini
+  le « Ares embauche mais la sécurité est celle d'un rival ».
+- **Éditer un topos, ou en écrire un vierge.** Un bouton « ✎ Éditer » sur la carte
+  ouvre une modale sur tous les champs ; « Topos vierge » crée une amorce vide à
+  remplir à la main.
+- **« ⚔ Casting » peuple la run.** Sur un topos promu en run, un geste génère les
+  PNJ d'opposition cohérents avec l'amorce (la sécurité de la cible + le rôle
+  imposé par la difficulté, calés sur la menace du lieu) et les range dans le
+  dossier de la run.
+
+### Un plan de lieu, en image
+
+- **« 🗺 Plan du lieu » sur un topos.** Quand les images IA sont activées
+  (Réglages), un topos dont le lieu s'y prête peut générer un plan/blueprint de son
+  décor via Pollinations ; une vignette le réaffiche en grand. Portraits et plans
+  de lieu partagent désormais le même réglage (« Images IA ») et la même file
+  d'attente.
+
 ## [1.72.0] — 2026-07-19
 
 ### Suivi de combat — le cockpit rezoné (Tracker V7)

@@ -403,6 +403,21 @@ export const TourSteps = {
       title: "Le suivi de combat, en grand",
       body: "Le tracker devient un véritable écran à quatre zones. L'effectif est une file : l'actif en tête, la suite du tour dessous, et au « Tour suivant » la liste glisse au lieu de sauter. Sa console suit le principe « Agir produit / Réagir subit » — au tour d'un PNJ, ses attaques (armes, sorts, compétences) sans moniteur ; au tour d'un PJ, une console froide où les PNJ se défendent, encaissent, et se font bricker leur matos. Sur téléphone, la console remonte en tête.",
     },
+    {
+      id: "wn-run-create-launch", anchor: "nav-play", tours: ["whatsnew"], since: "1.73.0", fallback: "center",
+      title: "Créer une run et la lancer, sans détour",
+      body: "Le bouton « ＋ » de la barre de dossiers demande d'abord le type — ◆ Run, ❖ Campagne ou dossier simple — et crée le dossier déjà typé, sans passer par le menu « ⋯ ». Et dans « Jouer », une run sans scène offre enfin un bouton « Lancer la scène » : plus besoin de passer par la bibliothèque pour démarrer une rencontre.",
+    },
+    {
+      id: "wn-topos-coherent-edit-cast", anchor: "nav-run", tours: ["whatsnew"], since: "1.73.0", fallback: "center",
+      title: "Des topos cohérents, éditables, et leur casting",
+      body: "Le générateur de topos ne tire plus ses champs au hasard : il monte un vrai conflit — un mandant vise un rival dont un site est le lieu, d'où découlent la sécurité, l'objectif et la difficulté — nourri par Seattle. Un bouton « ✎ Éditer » retouche n'importe quel champ, « Topos vierge » vous laisse écrire votre amorce à la main, et « ⚔ Casting » génère les PNJ d'opposition cohérents avec le topos et les range dans la run.",
+    },
+    {
+      id: "wn-topos-map", anchor: "nav-run", tours: ["whatsnew"], since: "1.73.0", fallback: "center",
+      title: "Un plan de lieu, en image",
+      body: "Si les images IA sont activées (Réglages), un topos dont le lieu s'y prête porte un bouton « 🗺 Plan du lieu » qui génère un plan/blueprint du décor via Pollinations et le garde sur le topos — une vignette le réaffiche ensuite en grand. Portraits et plans partagent désormais le même réglage et la même file d'attente.",
+    },
   ],
 };
 
