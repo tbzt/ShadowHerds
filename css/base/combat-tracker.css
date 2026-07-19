@@ -172,16 +172,21 @@
   gap: 0.3rem;
   margin-top: 0.35rem;
 }
+/* Icônes monochromes calquées sur les chips (✓/⚄/⏸) : carrées, contour discret
+   au repos, accent au survol. Tiennent sur une seule ligne. */
 .encounter-lead-action {
-  font-family: var(--font-mono);
-  font-size: var(--fs-2xs);
-  letter-spacing: 0.02em;
-  padding: 0.25rem 0.55rem;
-  min-height: 30px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 3px;
   background: transparent;
-  color: var(--text-dim);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  line-height: 1;
   cursor: pointer;
 }
 .encounter-lead-action:hover {
@@ -839,7 +844,9 @@
     font-size: var(--fs-lg);
   }
   .encounter-lead-action {
+    min-width: 40px;
     min-height: 40px;
+    font-size: var(--fs-md);
   }
 }
 

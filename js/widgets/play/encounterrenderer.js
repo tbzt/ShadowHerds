@@ -356,10 +356,12 @@ export const EncounterRenderer = {
   _leadActionBar(items) {
     if (!items || !items.length) return "";
     const esc = Utils.escHtml;
+    // Icônes monochromes (une seule ligne, comme les chips ✓/⚄/⏸) — le libellé
+    // complet reste en title + aria-label pour la découvrabilité/accessibilité.
     return `<div class="encounter-lead-actions">${items
       .map(
         (a) =>
-          `<button type="button" class="encounter-lead-action${a.danger ? " is-danger" : ""}" ${a.attrs}>${esc(a.label)}</button>`,
+          `<button type="button" class="encounter-lead-action${a.danger ? " is-danger" : ""}" ${a.attrs} title="${esc(a.label)}" aria-label="${esc(a.label)}">${a.glyph || "•"}</button>`,
       )
       .join("")}</div>`;
   },
@@ -427,9 +429,9 @@ export const EncounterRenderer = {
     if (!p || p._adhoc || r.down) return null;
     const ed = App.getEditionModule(p.edition);
     if (p.type === "spirit" && ed && ed.banishSkill)
-      return { attrs: `data-action="banish-combatant" data-id="${r.pnjId}"`, label: "Bannir (esprit adverse)" };
+      return { attrs: `data-action="banish-combatant" data-id="${r.pnjId}"`, label: "Bannir (esprit adverse)", glyph: "✦" };
     if (p.type === "sprite" && ed && ed.spriteModel && ed.spriteModel.decompileSkill)
-      return { attrs: `data-action="decompile-combatant" data-id="${r.pnjId}"`, label: "Décompiler (sprite adverse)" };
+      return { attrs: `data-action="decompile-combatant" data-id="${r.pnjId}"`, label: "Décompiler (sprite adverse)", glyph: "◈" };
     return null;
   },
 
@@ -525,18 +527,21 @@ export const EncounterRenderer = {
       : r.delayed
         ? `<button class="encounter-chip" data-action="act-now-combatant" data-id="${pnjId}" title="Agir maintenant" aria-label="Agir maintenant">▶</button>`
         : `<button class="encounter-chip" data-action="delay-combatant" data-id="${pnjId}" title="Retarder l'action (tenir son tour)" aria-label="Retarder l'action">⏸</button>`;
+    // `glyph` : icône monochrome pour la barre dépliée de l'actif (_leadAction
+    // Bar, une seule ligne comme les chips) ; `label` reste le texte du menu ⋯
+    // (lignes en attente/hors-combat) et le title/aria-label de l'icône.
     const menuItems = [
-      { attrs: `data-action="move-up" data-id="${pnjId}"`, label: "Monter dans l'ordre" },
-      { attrs: `data-action="move-down" data-id="${pnjId}"`, label: "Descendre dans l'ordre" },
-      hasNote ? null : { attrs: `data-action="note-toggle" data-id="${pnjId}"`, label: "Ajouter une note" },
+      { attrs: `data-action="move-up" data-id="${pnjId}"`, label: "Monter dans l'ordre", glyph: "↑" },
+      { attrs: `data-action="move-down" data-id="${pnjId}"`, label: "Descendre dans l'ordre", glyph: "↓" },
+      hasNote ? null : { attrs: `data-action="note-toggle" data-id="${pnjId}"`, label: "Ajouter une note", glyph: "✎" },
       pnj._adhoc || r.down
         ? null
-        : { attrs: `data-action="knockout-combatant" data-id="${pnjId}"`, label: "Hors de combat" },
+        : { attrs: `data-action="knockout-combatant" data-id="${pnjId}"`, label: "Hors de combat", glyph: "☠" },
       pnj._adhoc
         ? null
-        : { attrs: `data-action="heal-combatant" data-id="${pnjId}"`, label: "Réinitialiser les moniteurs" },
+        : { attrs: `data-action="heal-combatant" data-id="${pnjId}"`, label: "Réinitialiser les moniteurs", glyph: "⛨" },
       this._dismissMenuItem(r),
-      { attrs: `data-action="remove-combatant" data-id="${pnjId}"`, label: "Retirer du combat", danger: true },
+      { attrs: `data-action="remove-combatant" data-id="${pnjId}"`, label: "Retirer du combat", danger: true, glyph: "✕" },
     ].filter(Boolean);
     // La ligne PLEINE de l'actif (isActive, pas hors-combat) est le combattant
     // EN FOCUS : elle a de la place sous sa jauge de vie → ses actions rares
