@@ -309,13 +309,13 @@ export const Settings = {
         <p class="settings-note">Quand c'est activé, un jet lancé depuis une carte SR5/SR6 dont le personnage a de l'Edge dépensable ouvre un panneau (« Panneau ») ou affiche un petit menu à côté de la pastille lançable (« Pastille ») : « Repousser les limites » (SR5) ou « Prendre un risque » / « Ajouter son rang d'Atout » (SR6), sinon lancer sans Edge. Le tap nu reste un lancer immédiat dès qu'il n'y a pas d'Edge à dépenser.</p>
       </div>
       <div class="settings-section">
-        <h3>Portrait IA</h3>
+        <h3>Images IA</h3>
         <div class="display-pref-row">
-          <label for="pg_enabled">Portrait IA (Pollinations) sur les cartes</label>
+          <label for="pg_enabled">Images IA (Pollinations) : portraits et plans de lieu</label>
           <input type="checkbox" id="pg_enabled" ${pg.enabled ? "checked" : ""}
             data-action="toggle-portrait-gen">
         </div>
-        <p class="settings-note">Génère un portrait au clic sur une carte PNJ, esprit, créature ou contact. Nécessite une connexion internet ; le prompt part vers un service tiers.</p>
+        <p class="settings-note">Génère un portrait au clic sur une carte PNJ, esprit, créature ou contact, et un plan de lieu depuis un topos. Nécessite une connexion internet ; le prompt part vers un service tiers.</p>
         <div class="form-group" style="margin-top:0.6rem;">
           <label for="pg_token">Token personnel Pollinations (optionnel)</label>
           <input type="password" id="pg_token" value="${CardRenderer._esc(pg.token)}"

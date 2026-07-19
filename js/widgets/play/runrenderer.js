@@ -51,6 +51,7 @@ export const RunRenderer = {
         <button class="card-action-btn" data-action="edit-run" title="Éditer ce topos">✎ Éditer</button>
         ${this._rencontreBtn(r)}
         ${this._castBtn(r)}
+        ${this._planBtn(r)}
         <button class="card-action-btn danger" data-action="discard-run">Virer</button>
       </div>`;
     return el;
@@ -75,6 +76,20 @@ export const RunRenderer = {
   _castBtn(r) {
     if (!r.dossierId || !r.securityProfile) return "";
     return `<button class="card-action-btn" data-action="run-cast" title="Générer les PNJ d'opposition et les ranger dans la run">⚔ Casting</button>`;
+  },
+
+  /** « Plan du lieu » (Lot 4) — opt-in Images IA actif ET site à plan utile
+      (tag `planUtile` posé à la génération, 3a). Si un plan existe déjà, vignette
+      cliquable réutilisant la lightbox de Portrait (`data-portrait-preview`) ;
+      sinon bouton de génération. Rien pour un topos vierge (pas de `planUtile`). */
+  _planBtn(r) {
+    const enabled =
+      typeof Settings !== "undefined" && Settings.getPortraitSettings().enabled;
+    if (!enabled || !r.planUtile) return "";
+    if (r.planUrl) {
+      return `<button class="card-action-btn" data-portrait-preview="${CardRenderer._esc(r.planUrl)}" title="Voir le plan du lieu">🗺 Plan</button>`;
+    }
+    return `<button class="card-action-btn" data-action="run-plan" title="Générer un plan du lieu (IA)">🗺 Plan du lieu</button>`;
   },
 };
 

@@ -58,6 +58,11 @@ export const RunGen = {
           if (card) ToposEdit.open(card.dataset.id);
           break;
         }
+        case "run-plan": {
+          const card = actionEl.closest(".run-card");
+          if (card) this.generatePlan(card.dataset.id, actionEl);
+          break;
+        }
         case "clear-all":
           this.clearAll();
           break;
@@ -265,6 +270,33 @@ export const RunGen = {
     Object.assign(run, fields);
     this._save();
     this._refreshCard(id);
+  },
+
+  /** « Plan du lieu » (Lot 4) — génère une image de plan (blueprint) du lieu du
+      topos via Pollinations et la stocke sur le topos (`planUrl`). Opt-in Images
+      IA (Settings) ; le bouton n'apparaît que sur un site à `planUtile` (3a).
+      RunGen ne connaît pas la plomberie : file d'attente partagée + token gérés
+      par Pollinations, token lu par l'appelant dans Settings. */
+  generatePlan(runId, btn) {
+    const run = this._runs.find((r) => r.id === runId);
+    if (!run || !run.lieu) return;
+    const prompt =
+      `top-down architectural floor plan blueprint of ${run.lieu}, ` +
+      `schematic layout, labeled rooms, clean technical linework, ` +
+      `Shadowrun cyberpunk facility, blue and white blueprint style`;
+    Pollinations.generate({
+      prompt,
+      width: 768,
+      height: 512,
+      token: Settings.getPortraitSettings().token,
+      btn,
+      label: "Plan du lieu",
+      onSuccess: (url) => {
+        run.planUrl = url;
+        this._save();
+        this._refreshCard(runId);
+      },
+    });
   },
   clearAll() {
     this._runs = [];

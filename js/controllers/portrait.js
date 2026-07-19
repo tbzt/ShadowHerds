@@ -216,133 +216,25 @@ export const Portrait = {
       .trim();
   },
 
-  _url(entity) {
-    const prompt = `${this._describe(entity)}, ${this.PROMPT_SUFFIX}`;
-    return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=512&nologo=true`;
+  /** Prompt de portrait = description de l'entité + suffixe de DA. */
+  _prompt(entity) {
+    return `${this._describe(entity)}, ${this.PROMPT_SUFFIX}`;
   },
 
-  /** Précharge l'URL via une balise <img> — Pollinations bloque les
-      requêtes fetch() « nues » derrière une vérification anti-bot
-      (Cloudflare Turnstile) que la balise <img> ne déclenche pas ; on
-      valide donc par chargement réel plutôt que par fetch(). Retourne
-      l'URL telle quelle : c'est elle qui sera stockée et réaffichée. */
-  _loadViaImg(url) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const timer = setTimeout(() => {
-        img.onload = img.onerror = null;
-        reject(new Error("Délai dépassé — le service est peut-être surchargé."));
-      }, 20000);
-      img.onload = () => {
-        clearTimeout(timer);
-        resolve(url);
-      };
-      img.onerror = () => {
-        clearTimeout(timer);
-        reject(new Error("Génération impossible (limite de requêtes atteinte ?)."));
-      };
-      img.src = url;
-    });
-  },
-
-  /** Avec un token personnel (Réglages), on passe par fetch() + header
-      Authorization — <img> ne peut pas porter de header. La réponse est
-      convertie en data URL (pas un blob: URL, qui ne survivrait pas à un
-      rechargement de page) pour rester stockable comme les URLs directes. */
-  async _loadViaToken(url, token) {
-    let resp;
-    try {
-      resp = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-    } catch {
-      throw new Error("Génération impossible — vérifiez la connexion.");
-    }
-    if (!resp.ok) {
-      throw new Error(`Pollinations a répondu ${resp.status} (token invalide ?).`);
-    }
-    const blob = await resp.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error("Réponse illisible."));
-      reader.readAsDataURL(blob);
-    });
-  },
-
-  /** Résout l'URL finale à stocker pour un portrait — chemin token ou
-      chemin anonyme selon Settings.getPortraitSettings().token. */
-  _resolve(url) {
-    const token = Settings.getPortraitSettings().token;
-    return token ? this._loadViaToken(url, token) : this._loadViaImg(url);
-  },
-
-  _startLoading(btn, label = "Génération…") {
-    if (!btn) return;
-    btn.disabled = true;
-    if (btn.dataset.origLabel === undefined) btn.dataset.origLabel = btn.textContent;
-    btn.textContent = label;
-  },
-  _stopLoading(btn) {
-    if (!btn) return;
-    btn.disabled = false;
-    btn.textContent = btn.dataset.origLabel || "Portrait IA";
-    delete btn.dataset.origLabel;
-  },
-
-  /* ---- File d'attente — Pollinations (anonyme) n'accepte qu'une requête
-     à la fois par IP ("Queue full", cf. tests manuels). Empiler plusieurs
-     clics "Portrait IA" plutôt que de les lancer en parallèle évite
-     l'échec immédiat ; un échec malgré tout (surcharge du service) est
-     retenté automatiquement avant de déranger l'utilisateur. */
-  _queue: [],
-  _processing: false,
-  _MAX_ATTEMPTS: 3,
-  _RETRY_DELAY_MS: 4000,
-
-  _enqueue(job) {
-    const idle = !this._processing && this._queue.length === 0;
-    this._queue.push(job);
-    this._startLoading(job.btn, idle ? "Génération…" : `En file (${this._queue.length})…`);
-    this._processQueue();
-  },
-
-  async _processQueue() {
-    if (this._processing) return;
-    this._processing = true;
-    while (this._queue.length) {
-      const job = this._queue.shift();
-      await this._runJob(job);
-    }
-    this._processing = false;
-  },
-
-  async _runJob(job, attempt = 1) {
-    this._startLoading(job.btn, attempt > 1 ? `Nouvel essai (${attempt}/${this._MAX_ATTEMPTS})…` : "Génération…");
-    try {
-      const resolvedUrl = await this._resolve(job.url);
-      job.onSuccess(resolvedUrl);
-    } catch (e) {
-      if (attempt < this._MAX_ATTEMPTS) {
-        await new Promise((r) => setTimeout(r, this._RETRY_DELAY_MS * attempt));
-        return this._runJob(job, attempt + 1);
-      }
-      toast(`${job.label} — ${e.message}`);
-      this._stopLoading(job.btn);
-    }
-  },
-
-  /** PNJ, esprit ou créature (tous résolus via PnjLookup, tous persistés
-      via Shadows.save() — même convention que les autres callers de
-      PnjLookup.find, ex. UI.cycleDrug). */
+  /** PNJ, esprit ou créature (résolus via PnjLookup, persistés via
+      Shadows.save()). Génération déléguée à `Pollinations` (file d'attente
+      partagée, token/anonyme, retries) ; Portrait ne garde que le prompt et la
+      persistance du résultat. */
   generateForPnj(id, btn) {
     const pnj = PnjLookup.find(id);
     if (!pnj) return;
-    const url = this._url(pnj);
-    this._enqueue({
+    Pollinations.generate({
+      prompt: this._prompt(pnj),
+      token: Settings.getPortraitSettings().token,
       btn,
-      url,
       label: pnj.name || "PNJ",
-      onSuccess: (resolvedUrl) => {
-        pnj.portraitUrl = resolvedUrl;
+      onSuccess: (url) => {
+        pnj.portraitUrl = url;
         Shadows.save();
         CardRenderer.refresh(pnj);
       },
@@ -353,13 +245,13 @@ export const Portrait = {
   generateForContact(id, btn) {
     const c = ContactsBook.data.all.find((x) => x.id === id);
     if (!c) return;
-    const url = this._url(c);
-    this._enqueue({
+    Pollinations.generate({
+      prompt: this._prompt(c),
+      token: Settings.getPortraitSettings().token,
       btn,
-      url,
       label: c.name || "Contact",
-      onSuccess: (resolvedUrl) => {
-        ContactsBook.editField(id, "portraitUrl", resolvedUrl);
+      onSuccess: (url) => {
+        ContactsBook.editField(id, "portraitUrl", url);
         ContactsBook.render();
       },
     });
