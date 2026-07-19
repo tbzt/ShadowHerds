@@ -1050,6 +1050,23 @@
   width: 100%;
 }
 
+/* V7 — console « Agir » recomposée : blocs d'offense (CardRenderer.offenseBlocks)
+   réutilisant le balisage de la carte (weapon-line, sorts, skill-tag…), sans le
+   bloc moniteur. .offense-state = fine ligne d'état R1 (maintien ⟳ / drogues)
+   réémise en tête des blocs. */
+.encounter-offense {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem 0.6rem 0;
+}
+.offense-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 /* ---- M4 : appareils matriciels (armes brickables) sur la fiche active.
    Réutilise .react-btn / .btn-icon-tiny / .monitor-box existants ; ce bloc
    ne pose que le conteneur et l'état « hors service ». ---- */
