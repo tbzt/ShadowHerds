@@ -618,6 +618,7 @@ export const Encounter = {
       c.edgeTurn = 0;
       // Budget d'actions rechargé pour tout le monde au nouveau round.
       c.actionsUsed = {};
+      c.narrationBonus = false;
     });
     // SR5/SR6 : nouvelle initiative à chaque tour de combat. Anarchy
     // (rerollEachRound:false) conserve l'ordre rangé à la main.
@@ -700,6 +701,21 @@ export const Encounter = {
     this._commit();
   },
 
+  /** Bascule le bonus « +1 action par narration » (p.77, atouts/drogues
+      Anarchy 2.0) pour le tour en cours du combattant actif. Stocké dans
+      l'entrée de scène (c.narrationBonus), jamais sur le PNJ — geste MANUEL
+      du MJ (lui seul sait quand une narration mérite le bonus), remis à zéro
+      au tour suivant comme le reste du budget d'actions (cf. _resetActions/
+      nextRound). Lu par EncounterRenderer._activeActions pour ajouter un
+      jeton d'action supplémentaire. */
+  grantNarrationAction(pnjId) {
+    const c = this._find(pnjId);
+    if (!c) return;
+    c.narrationBonus = !c.narrationBonus;
+    EncounterRenderer._activeCardId = null;
+    this._commit();
+  },
+
   /** Consomme/rend les actions du tour actif (compteur par groupe :
       majeure/mineure SR6, simple/complexe SR5, action Anarchy). Jeton tappable
       façon moniteur : taper le jeton d'index idx consomme jusqu'à idx+1 ; re-
@@ -716,10 +732,15 @@ export const Encounter = {
   },
 
   /** Remet à zéro le budget d'actions d'un combattant : appelé au début de son
-      tour (nextTurn / nouvelle passe / nouveau round), jamais en cours de tour. */
+      tour (nextTurn / nouvelle passe / nouveau round), jamais en cours de tour.
+      Le bonus de narration ne se reporte jamais d'un tour à l'autre (le MJ
+      l'accorde à nouveau si une narration le mérite encore). */
   _resetActions(i) {
     const c = this.state.combatants[i];
-    if (c) c.actionsUsed = {};
+    if (c) {
+      c.actionsUsed = {};
+      c.narrationBonus = false;
+    }
   },
 
   /** Ferme l'overlay, bascule sur le panel où vit réellement ce PNJ
@@ -1614,6 +1635,11 @@ export const Encounter = {
           // Crédite en une fois les Points d'Anarchy de scène octroyés par
           // les atouts/drogues actives (idempotent, geste manuel du MJ).
           this.creditAnarchyScene(id);
+          break;
+        case "narration-bonus":
+          // Bascule le bonus « +1 action par narration » pour le tour en
+          // cours (Anarchy 2.0, geste manuel du MJ).
+          this.grantNarrationAction(id);
           break;
         case "roll-ic":
           // Jet d'une CI (attaque/défense/encaissement/perception) depuis

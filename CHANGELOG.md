@@ -12,6 +12,15 @@ commit.
 
 ## [Non publié]
 
+## [1.73.1] — 2026-07-19
+
+### Correctifs
+
+- **Le bonus « +1 action par narration » (Anarchy 2.0) est maintenant mécanisé.** Le badge du bandeau
+  Points d'Anarchy devient un bouton : activé par le MJ pour le tour en cours, il ajoute un vrai
+  jeton au budget d'actions du combattant actif, au lieu d'être un simple rappel textuel. Remis à
+  zéro au tour suivant comme le reste du budget.
+
 ## [1.73.0] — 2026-07-19
 
 ### Créer une run et la lancer, sans détour

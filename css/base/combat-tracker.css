@@ -1531,9 +1531,21 @@
   font-size: var(--fs-2xs);
   letter-spacing: 0.04em;
   color: var(--accent2);
+  background: transparent;
   border: 1px solid color-mix(in srgb, var(--accent2) 40%, transparent);
   border-radius: 999px;
   padding: 0.05rem 0.4rem;
+  cursor: pointer;
+}
+.encounter-anarchy-narration:hover {
+  border-color: var(--accent2);
+}
+/* Bonus de narration activé pour ce tour : badge plein (jumeau visuel de
+   .action-token.used) — un jeton d'action supplémentaire apparaît en dessous. */
+.encounter-anarchy-narration.is-active {
+  color: var(--bg);
+  background: var(--accent2);
+  border-color: var(--accent2);
 }
 /* Badge de rappel sur l'item d'équipement qui octroie des points de scène. */
 .anarchy-point-badge {

@@ -1019,9 +1019,11 @@ export const EncounterRenderer = {
       stocké dans l'entrée de scène (c.anarchyPoints) — pas sur le PNJ (propre
       à la scène, repart à zéro à la scène suivante). Jumelle de _activeEdge.
       « ⟳ Crédit de scène » ajoute d'un coup le montant octroyé par les atouts/
-      drogues actives (AnarchyAtouts), une seule fois (c.anarchyCredited). Un
-      badge rappelle « +1 action/narration » quand un atout l'octroie —
-      indicateur seul (le MJ prend l'action via le budget d'actions). */
+      drogues actives (AnarchyAtouts), une seule fois (c.anarchyCredited). Le
+      bouton « +1 action/narration » (quand un atout l'octroie) BASCULE le
+      bonus de tour (c.narrationBonus, Encounter.grantNarrationAction) — lu par
+      _activeActions pour ajouter un jeton d'action réel, remis à zéro au tour
+      suivant (geste MANUEL : le MJ seul sait quand une narration le mérite). */
   _activeAnarchy(r) {
     const ap = r.anarchyPoints || 0;
     const atouts = r.pnj ? AnarchyAtouts.collect(r.pnj) : null;
@@ -1031,9 +1033,10 @@ export const EncounterRenderer = {
       grant > 0
         ? `<button class="btn-icon-tiny encounter-anarchy-credit" data-action="anarchy-credit" data-id="${r.pnjId}"${credited ? " disabled" : ""} title="${credited ? "Points de scène déjà crédités" : `Créditer +${grant} (atouts/drogues actives) pour cette scène`}" aria-label="Créditer les Points d'Anarchy de scène">⟳ +${grant}</button>`
         : "";
+    const narrationActive = !!r.narrationBonus;
     const narration =
       atouts && atouts.narrationAction
-        ? `<span class="encounter-anarchy-narration" title="Un atout octroie +1 action par narration (le MJ la prend via le budget d'actions)">+1 action/narration</span>`
+        ? `<button class="encounter-anarchy-narration${narrationActive ? " is-active" : ""}" data-action="narration-bonus" data-id="${r.pnjId}" title="Un atout octroie +1 action par narration — active le bonus pour ce tour" aria-pressed="${narrationActive}">+1 action/narration</button>`
         : "";
     return `<div class="encounter-anarchy" title="Points d'Anarchy de scène (Anarchy 2.0 — atouts p.77, drogues p.159)">
       <span class="encounter-anarchy-lbl">Points d'Anarchy</span>
@@ -1064,10 +1067,17 @@ export const EncounterRenderer = {
       d'action de l'édition (majeure/mineure SR6, simple/complexe/gratuite SR5,
       action Anarchy). Jetons tappables façon moniteur (taper = consommer
       jusque-là ; re-taper le dernier = rendre). Le budget vient d'App.
-      editionModule.actionBudget(pnj) ; l'usage est stocké c.actionsUsed. */
+      editionModule.actionBudget(pnj) ; l'usage est stocké c.actionsUsed.
+      Si le MJ a activé le bonus « +1 action/narration » (r.narrationBonus,
+      cf. _activeAnarchy), le dernier groupe du budget gagne un jeton
+      supplémentaire — extension par état (jamais un `if App.edition`, le
+      flag ne s'active que sur les PNJ Anarchy 2.0 dotés de l'atout). */
   _activeActions(r) {
-    const budget = App.editionModule.actionBudget(r.pnj);
-    if (!budget || !budget.length) return "";
+    const rawBudget = App.editionModule.actionBudget(r.pnj);
+    if (!rawBudget || !rawBudget.length) return "";
+    const budget = r.narrationBonus
+      ? rawBudget.map((g, i) => (i === rawBudget.length - 1 ? { ...g, total: g.total + 1 } : g))
+      : rawBudget;
     const used = r.actionsUsed || {};
     const groups = budget
       .map((g) => {
