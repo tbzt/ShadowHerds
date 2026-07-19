@@ -479,7 +479,9 @@
    Le tiroir Matrice devient la surface principale : liste/réglette d'init,
    « Ajouter », « Lancer & classer », « Round/Tour suivant » n'ont plus de
    sens (aucun combattant chair requis) — remplacés par une note qui pointe
-   vers le tiroir ⚡. */
+   vers le tiroir ⚡ ET un bouton primaire de retour (le seul chemin de
+   sortie ne doit pas être planqué dans le menu ⋯, cf. retour utilisateur
+   mobile : « je peux plus revenir en arrière »). */
 .encounter-modal.is-matrix-only .encounter-list,
 .encounter-modal.is-matrix-only .encounter-rail,
 .encounter-modal.is-matrix-only .encounter-toolbar [data-action="toggle-add-picker"],
@@ -494,6 +496,13 @@
   color: var(--text-dim);
   font-size: var(--fs-sm);
   text-align: center;
+}
+.encounter-matrix-only-note p {
+  margin: 0 0 var(--sp-2);
+}
+.encounter-matrix-only-note .btn-primary {
+  min-height: 44px;
+  width: 100%;
 }
 /* Rappel du silence des actions chiffrées en narratif (T1.5 FIELD_STUDY REC-6) —
    même registre discret que .encounter-progress, posée juste au-dessus. */
