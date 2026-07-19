@@ -748,16 +748,24 @@
       </div>
       <div class="modal-body encounter-body">
         <div class="encounter-main-col">
+          <!-- V7 : barre d'outils sur UNE ligne — les deux actions primaires
+               (Ajouter · Initiative) en clair, le reste replié dans ⋯ (menu
+               canonique .card-menu, CardMenu déjà bindé au boot). « Lancer &
+               classer » → « Initiative » (plus court). -->
           <div class="encounter-toolbar">
             <button class="btn-secondary btn-small" id="encounter-add-toggle" data-action="toggle-add-picker" title="Ajouter un combattant" aria-expanded="false">➕ Ajouter</button>
-            <button class="btn-secondary btn-small" data-action="roll-and-sort" title="Lancer l'initiative de tous et classer">⚄ Lancer &amp; classer</button>
-            <button class="btn-secondary btn-small" data-action="next-round">Round suivant</button>
-            <!-- K1 : rail compact (mobile) vs liste complète (drag, menu ⋯) — bascule de classe, masqué ≥641px (cf. CSS). -->
-            <button class="btn-secondary btn-small encounter-rail-toggle" data-action="toggle-rail" title="Basculer réglette compacte / liste complète">☰ Réglette/Liste</button>
-            <!-- R2-E : scène Matrice autonome (moteur Matrice seul, pas d'initiative)
-                 — bascule state.motors, cf. Encounter.toggleSceneType. -->
-            <button class="btn-secondary btn-small" id="encounter-scene-type-toggle" data-action="toggle-scene-type" title="Basculer entre scène de combat et scène Matrice seule (decker qui infiltre pendant que les autres négocient)">⚡ Scène Matrice</button>
-            <button class="danger-btn btn-small" data-action="clear-encounter">Vider la scène</button>
+            <button class="btn-secondary btn-small" data-action="roll-and-sort" title="Lancer l'initiative de tous et classer">⚄ Initiative</button>
+            <div class="encounter-toolbar-more">
+              <button type="button" class="card-kebab" data-card-menu-toggle aria-haspopup="true" aria-expanded="false" aria-label="Plus d'actions">⋯</button>
+              <div class="card-menu" role="menu" hidden>
+                <button type="button" role="menuitem" class="card-menu-item" data-action="next-round">↻ Round suivant</button>
+                <!-- K1 : rail compact (mobile) vs liste complète — bascule de classe. -->
+                <button type="button" role="menuitem" class="card-menu-item" data-action="toggle-rail" title="Basculer réglette compacte / liste complète">☰ Réglette / Liste</button>
+                <!-- R2-E : scène Matrice autonome (moteur Matrice seul, pas d'initiative). -->
+                <button type="button" role="menuitem" class="card-menu-item" id="encounter-scene-type-toggle" data-action="toggle-scene-type" title="Basculer entre scène de combat et scène Matrice seule (decker qui infiltre pendant que les autres négocient)">⚡ Scène Matrice</button>
+                <button type="button" role="menuitem" class="card-menu-item danger" data-action="clear-encounter">Vider la scène</button>
+              </div>
+            </div>
           </div>
           <div id="encounter-add-panel" class="encounter-add-panel" hidden></div>
           <!-- K1 : réglette compacte (rail de jetons, sous 641px par défaut) — sœur de la liste complète, jamais les deux visibles à la fois. -->

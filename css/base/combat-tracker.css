@@ -63,6 +63,15 @@
     max-height: 100%;
     overflow-y: auto;
   }
+  /* La console est une COLONNE de côté seulement sur écran large. En pile
+     (< 641px) elle prend toute la largeur (cf. bloc mobile) — ce dimensionnement
+     vit donc ici, PAS dans la règle de base (sinon, à specificité égale mais
+     déclarée plus bas, il l'emportait aussi sur mobile → console bridée à
+     380px = le défaut « moche » signalé). */
+  .encounter-active-card {
+    flex: 0 0 380px;
+    max-width: 400px;
+  }
 }
 
 /* Zone « Instrument » : bandeau de scène en surface haute (--bg-raised),
@@ -83,34 +92,25 @@
   opacity: 0.5;
   pointer-events: none;
 }
-/* Barre d'outils : grille à colonnes égales (jamais un flex-wrap qui casse en
-   « mur de briques » de largeurs inégales, cf. audit alignement). Seules les 3
-   actions d'ordre (Ajouter/Lancer & classer/Round, R1c : « ↓ Trier » retiré,
-   redondant avec Lancer & classer) peuplent la grille — 2 colonnes sous 641px
-   (2 rangées, la 2ᵉ à une seule case), 4 colonnes au-delà (1 rangée, une case
-   vide). Le bouton de vue (Réglette/Liste) et l'action destructrice (Vider)
-   traversent toute la largeur en rangée propre : la grille reste toujours
-   remplie quel que soit le nombre de boutons visibles (narratif Anarchy
-   compris), et le « Vider » est nettement détaché des actions courantes. */
+/* Barre d'outils sur UNE ligne (V7) : les deux actions primaires (Ajouter ·
+   Initiative) en clair, tout le reste replié dans ⋯ (poussé à droite). Fini la
+   grille empilée « en briques » ; comme il n'y a que 2 items visibles + le ⋯,
+   aucun mur de briques ni scroll (doctrine alignement respectée). */
 .encounter-toolbar {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--sp-2);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   margin-bottom: var(--sp-4);
 }
-@media (min-width: 641px) {
-  .encounter-toolbar {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
+/* Ajouter = action primaire, teintée accent. */
+.encounter-toolbar [data-action="toggle-add-picker"] {
+  border-color: var(--accent);
+  color: var(--accent);
 }
-.encounter-toolbar .encounter-rail-toggle,
-.encounter-toolbar [data-action="clear-encounter"] {
-  grid-column: 1 / -1;
-}
-/* En narratif (Anarchy) la grille n'a plus qu'« Ajouter » : on l'étire aussi
-   pour ne pas laisser une demi-cellule vide. */
-.encounter-modal.is-narrative .encounter-toolbar [data-action="toggle-add-picker"] {
-  grid-column: 1 / -1;
+/* ⋯ (actions secondaires) poussé à droite ; ancre le popover .card-menu. */
+.encounter-toolbar-more {
+  position: relative;
+  margin-left: auto;
 }
 .encounter-list {
   display: flex;
@@ -1067,8 +1067,6 @@
 
 /* ---- Zone « Console » du combattant actif, à côté de l'effectif ---- */
 .encounter-active-card {
-  flex: 0 0 380px;
-  max-width: 400px;
   max-height: 80vh;
   overflow-y: auto;
   border: 1px solid var(--border);
