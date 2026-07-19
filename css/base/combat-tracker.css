@@ -1,39 +1,53 @@
 /* ---- Suivi de combat (Encounter) ---- */
+/* Tracker V7 — le suivi de combat est un ÉCRAN, plus un tiroir (correction
+   d'ALTITUDE : fiche PNJ / Hub / Générateur sont devenus des écrans pleins ;
+   le tracker restait un dock droit bridé à 720px). Modale large et haute,
+   CENTRÉE, qui assume de couvrir le Hub (décision D4) : le voile sombre par
+   défaut de .modal-overlay reprend le dessus — l'ancien dock non bloquant
+   (CH-M4 : overlay transparent, Hub cliquable derrière) est RETIRÉ, son
+   bénéfice remplacé par le dock Matrice intégré. Sous 641px : plein écran,
+   comportement par défaut de .modal inchangé. */
 .encounter-modal {
-  width: min(1100px, 96vw);
+  width: min(1200px, 96vw);
+  max-height: 94vh;
 }
-/* CH-M4 : dock latéral non bloquant sur desktop/tablette — le voile
-   plein écran de .modal-overlay devient transparent et ne capte plus le
-   clic (le Hub derrière, ex. l'onglet Matrice, reste utilisable pendant
-   le combat) ; seul le panneau lui-même reste interactif. Sous 641px,
-   .modal-overlay/.modal gardent leur comportement plein écran existant
-   (pas de place pour cohabiter). */
-@media (min-width: 641px) {
-  #encounter-overlay {
-    background: transparent;
-    pointer-events: none;
-    align-items: stretch;
-    justify-content: flex-end;
-  }
-  #encounter-overlay .encounter-modal {
-    pointer-events: auto;
-    width: min(720px, 92vw);
-    max-height: none;
-    height: 100%;
-    border-radius: 0;
-    border-right: none;
-    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.4);
-  }
-}
+/* Corps = les 4 surfaces détachées par des gouttières (--sp-4) : Effectif
+   (.encounter-main-col) · Console (#encounter-active-card) · Dock Matrice
+   (#encounter-matrix-dock) ; l'Instrument est le bandeau .modal-header. */
 .encounter-body {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   gap: var(--sp-4);
 }
+/* Zone « Effectif » : surface froide et scannable (--bg-mid), détachée. Ses
+   lignes passent en --bg-card (cf. .encounter-row) pour ressortir du fond. */
 .encounter-main-col {
   flex: 1 1 320px;
   min-width: 0;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-3);
+}
+
+/* Zone « Instrument » : bandeau de scène en surface haute (--bg-raised),
+   coiffé d'un filet --aro (signature AR de l'overlay). Le header est déjà
+   position:sticky → contexte de positionnement pour le ::before, on ne
+   touche pas à sa position. Scopé à la modale de combat. */
+.encounter-modal .modal-header {
+  background: var(--bg-raised);
+}
+.encounter-modal .modal-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--aro);
+  opacity: 0.5;
+  pointer-events: none;
 }
 /* Barre d'outils : grille à colonnes égales (jamais un flex-wrap qui casse en
    « mur de briques » de largeurs inégales, cf. audit alignement). Seules les 3
@@ -75,8 +89,8 @@
   gap: var(--sp-3);
   padding: var(--sp-2) 0.6rem;
   border: 1px solid var(--border);
-  border-radius: 3px;
-  background: var(--bg-mid);
+  border-radius: 6px;
+  background: var(--bg-card);
   /* Vague B2 : seule la retombée du glisser anime (transform/box-shadow) —
      bref et tokenisé, le cockpit reste sec (Croupier), rien d'autre ne
      transitionne ici. */
@@ -88,7 +102,7 @@
    simple bordore fine — repérable d'un coup d'œil sur petit écran sombre. */
 .encounter-row.active-turn {
   border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, var(--bg-mid));
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-card));
   box-shadow: inset 3px 0 0 var(--accent);
 }
 .encounter-row.has-acted {
@@ -383,7 +397,7 @@
   min-height: 48px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  background: var(--bg-mid);
+  background: var(--bg-card);
   color: var(--text);
   cursor: pointer;
   /* Vague B2 : même retombée de glisser que .encounter-row (transform/
@@ -907,15 +921,41 @@
   font-weight: 700;
 }
 
-/* ---- Fiche du combattant actif, à côté de la liste ---- */
+/* ---- Zone « Console » du combattant actif, à côté de l'effectif ---- */
 .encounter-active-card {
-  flex: 0 0 300px;
-  max-width: 320px;
-  max-height: 70vh;
+  flex: 0 0 380px;
+  max-width: 400px;
+  max-height: 80vh;
   overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
 }
 .encounter-active-card[hidden] {
   display: none;
+}
+/* Température par le TOUR (« Agir produit / Réagir subit », D2). Le hook est
+   le bandeau de mode déjà posé par renderActiveCard (.is-agir / .is-react) :
+   coloration de toute la console via :has(), aucun JS. Agir = lavis chaud
+   --accent + halo ; Réagir = acier froid --cold plat. Rouvre assumé le « pas
+   de 3ᵉ couleur » du polish K (--cold est sémantique hors accent d'édition). */
+.encounter-active-card:has(.encounter-mode-head.is-agir) {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 10%, var(--bg)) 0%,
+    var(--bg) 30%
+  );
+  box-shadow:
+    inset 0 0 50px color-mix(in srgb, var(--accent) 8%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.encounter-active-card:has(.encounter-mode-head.is-react) {
+  border-color: color-mix(in srgb, var(--cold) 40%, var(--border));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cold) 12%, var(--bg)) 0%,
+    color-mix(in srgb, var(--cold) 5%, var(--bg)) 100%
+  );
 }
 /* K2 : « vue combat » — l'init ne se regarde plus sur la fiche active (elle
    vit dans la réglette/liste, cf. K1) ; les attributs sont déjà repliés par
@@ -1340,12 +1380,13 @@
   gap: 0.4rem;
   padding: 0.6rem;
 }
-/* ── Polish DA « deux températures » (Agir vs Réagir) ────────────────────────
-   Le mode est piloté par le tour (jamais un réglage manuel) : Agir = fiche
-   CHAUDE (--accent), Réagir = rack FROID, distingué par la *forme* (fond/glyphes
-   neutres), pas par un 3e accent (Matrice=--accent2 réservé). Bandeau d'une
-   ligne nommant le mode + le combattant actif → tue l'erreur de mode. Le rouge
-   (--danger) reste au seul contrôle Dégâts (« le rouge se mérite »). */
+/* ── Deux températures (Agir vs Réagir), durcies en V7 ───────────────────────
+   Le mode est piloté par le tour (jamais un réglage manuel) : Agir = console
+   CHAUDE (--accent + halo), Réagir = console FROIDE (--cold, acier). V7 rouvre
+   assumé le « pas de 3e accent » du polish K : --cold est sémantique HORS accent
+   d'édition (comme --danger), pas une 5e identité (Matrice=--accent2 réservé).
+   Bandeau d'une ligne nommant le mode + le combattant actif → tue l'erreur de
+   mode. Le rouge (--danger) reste au seul contrôle Dégâts (« le rouge se mérite »). */
 .encounter-mode-head {
   display: flex;
   align-items: center;
@@ -1365,17 +1406,16 @@
 }
 .encounter-mode-head.is-agir {
   color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-  border-left: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-bottom: 2px solid var(--accent);
 }
 .encounter-mode-head.is-agir::before {
   content: "⚔";
 }
 .encounter-mode-head.is-react {
-  color: var(--text-dim);
-  background: color-mix(in srgb, var(--text) 4%, transparent);
-  border-left: 2px solid var(--border);
-  margin-bottom: 0.2rem;
+  color: var(--cold);
+  background: color-mix(in srgb, var(--cold) 12%, transparent);
+  border-bottom: 2px solid var(--cold);
 }
 .encounter-mode-head.is-react::before {
   content: "⛉";
@@ -1388,14 +1428,20 @@
    garde --danger (« le rouge se mérite ») malgré la spécificité (0,2,0) de ce
    sélecteur scopé, qui sinon écraserait les règles danger (0,1,0) plus bas. */
 .encounter-react .react-btn:not(.react-btn-danger) {
-  border-color: var(--border);
+  border-color: color-mix(in srgb, var(--cold) 45%, var(--border));
 }
 .encounter-react .react-btn:not(.react-btn-danger):hover {
-  border-color: var(--text-dim);
-  background: var(--bg-mid);
+  border-color: var(--cold);
+  background: color-mix(in srgb, var(--cold) 10%, var(--bg-card));
 }
 .encounter-react .react-glyph:not(.react-glyph-danger) {
-  color: var(--text);
+  color: var(--cold);
+}
+/* Lignes de réaction : liseré froid discret (« acier »), le fond gradient de la
+   console porte le reste de la température. */
+.encounter-react .react-row {
+  border-color: color-mix(in srgb, var(--cold) 25%, var(--border));
+  background: color-mix(in srgb, var(--cold) 6%, var(--bg-card));
 }
 
 /* Bascule fiche↔rack : fondu-glissé ≤200 ms joué UNIQUEMENT au changement de
@@ -1598,13 +1644,10 @@
 .encounter-matrix-dock {
   display: none;
 }
+/* V7 : la modale est large en toutes circonstances (l'ancien élargissement
+   conditionnel à .has-matrix-dock a disparu — le tracker est un écran). Le dock
+   ne fait plus que gérer sa VISIBILITÉ (≥1100px + serveur lié). */
 @media (min-width: 1100px) {
-  /* #encounter-overlay .encounter-modal (spécificité ID, cf. @media 641px
-     plus haut) l'emporterait sur .encounter-modal.has-matrix-dock seul —
-     même préfixe ID ici pour gagner la cascade. */
-  #encounter-overlay .encounter-modal.has-matrix-dock {
-    width: min(1100px, 94vw);
-  }
   .encounter-modal.has-matrix-dock .encounter-matrix-dock {
     display: flex;
     flex-direction: column;
@@ -1612,8 +1655,13 @@
     max-width: 340px;
     max-height: 100%;
     overflow-y: auto;
-    padding-left: var(--sp-4);
-    border-left: 1px solid color-mix(in srgb, var(--accent2) 45%, var(--border));
+    /* Zone 4/4 — Dock Matrice détaché (canal --accent2), comme les 3 autres
+       surfaces : carte propre (--bg-card + liseré accent2 + rayon), plus un
+       simple filet gauche. */
+    background: var(--bg-card);
+    border: 1px solid color-mix(in srgb, var(--accent2) 45%, var(--border));
+    border-radius: var(--radius-lg);
+    padding: var(--sp-3);
   }
 }
 /* Dans la colonne dockée (320px), les libellés longs de moniteur (ex. Anarchy
