@@ -12,6 +12,27 @@ commit.
 
 ## [Non publié]
 
+## [1.72.0] — 2026-07-19
+
+### Suivi de combat — le cockpit rezoné (Tracker V7)
+
+- **Le suivi de combat est un écran, plus un tiroir.** Il s'ouvre en grand,
+  centré, structuré en quatre surfaces détachées : le bandeau de scène, l'effectif,
+  la console du combattant actif et le dock Matrice. Fini le panneau plat bridé à
+  720 px sur le côté — chaque zone respire et se lit d'un coup d'œil.
+- **L'effectif est une file.** Le combattant qui joue est en tête, la suite du tour
+  défile dessous en lignes compactes, les hors-combat en bas. Au « Tour suivant »,
+  la file glisse : l'actif descend, le suivant remonte — le réordonnancement animé
+  EST le retour visuel de l'avancement. Même règle sur téléphone, où la console
+  remonte en tête pour voir les actions de l'actif sans dérouler tout l'effectif.
+- **« Agir produit / Réagir subit ».** Au tour d'un PNJ, sa console montre ce qu'il
+  PRODUIT — Actions, Armes, Sorts · Matrice · Pouvoirs, Compétences — sans grille de
+  moniteur (le malus est déjà dans les réserves, la vie dans l'effectif) ; l'état
+  maintenu (⟳) et les drogues restent visibles. Au tour d'un PJ, la console passe au
+  froid acier et montre ce que les PNJ SUBISSENT : défense, encaissement, et le
+  **brickage** de leur matos (le decker attaque leurs appareils à son tour, plus au
+  leur). Compétences triées par ordre alphabétique pour le repérage.
+
 ## [1.71.0] — 2026-07-19
 
 ### Matrice & Magie

@@ -398,6 +398,11 @@ export const TourSteps = {
       title: "Reprendre un combat sur un autre appareil",
       body: "Exporter puis importer une sauvegarde emporte désormais la scène de combat/Matrice vivante (round, initiative, combattants) et les runs générées : commencer un combat sur l'ordinateur et le finir sur le téléphone est enfin possible. En fusion, la scène importée ne remplace jamais un combat déjà engagé sur l'appareil qui reçoit l'import — seul « Remplacer tout » le peut.",
     },
+    {
+      id: "wn-tracker-v7", anchor: "nav-combat", tours: ["whatsnew"], since: "1.72.0", fallback: "center",
+      title: "Le suivi de combat, en grand",
+      body: "Le tracker devient un véritable écran à quatre zones. L'effectif est une file : l'actif en tête, la suite du tour dessous, et au « Tour suivant » la liste glisse au lieu de sauter. Sa console suit le principe « Agir produit / Réagir subit » — au tour d'un PNJ, ses attaques (armes, sorts, compétences) sans moniteur ; au tour d'un PJ, une console froide où les PNJ se défendent, encaissent, et se font bricker leur matos. Sur téléphone, la console remonte en tête.",
+    },
   ],
 };
 
