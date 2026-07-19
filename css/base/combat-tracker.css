@@ -836,6 +836,13 @@
     flex: 1 1 100%;
     max-width: 100%;
     max-height: none;
+    /* V7 Lot 5 — file mobile : la CONSOLE remonte EN TÊTE (order négatif), au-
+       dessus de l'effectif. Son bandeau de mode nomme déjà l'actif (« Agir ·
+       Nom »), donc l'info vive (les actions du combattant qui joue) occupe le
+       haut — fini le scroll de tout l'effectif avant de voir ses actions. La
+       file (actif + attente) et la barre « Tour suivant » suivent dans
+       .encounter-main-col. Pur ordre CSS, aucune bougé DOM (R2 tranché). */
+    order: -1;
   }
 }
 
