@@ -171,6 +171,76 @@ export const Portrait = {
     infiltrateur: "dark stealth-oriented clothing",
   },
 
+  /* Augmentations VISIBLES (la chrome, signature de Shadowrun) tirées de
+     pnj.augs ET de la cyberware rangée dans equip (ItemResolver.augItems,
+     clés d'aug lues sur le module d'édition via App.getEditionModule —
+     accesseur neutre, jamais une branche `if (App.edition === …)`).
+     Volontairement PARTIEL : seules les augmentations qui se VOIENT sur un
+     portrait comptent. Les augmentations internes (réflexes câblés, boosters
+     synaptiques, densité osseuse/musculaire, accroissement de réaction…) ne
+     changent rien à l'image → exclues, comme manie/motivation le sont du
+     flavor. Descripteurs FRANCS (pas de "subtle"/"small", qui disparaissent
+     au rendu — cf. note _METATYPE_TRAITS). Table de paires [regex FR → repère
+     visuel EN] : les libellés du catalogue sont en français (« Yeux
+     cybernétiques », « Bras cybernétique [remplacement…] »), on matche des
+     sous-chaînes. Ordre important : les lames avant les membres (un
+     « Bras-tronçonneuse » doit ressortir comme lame, pas comme simple bras),
+     un seul repère retenu par item (premier match). */
+  _AUGMENT_LOOK: [
+    [/yeux cyber|cyber-?yeux/i, "glowing cybernetic eyes with visible metallic optical implants"],
+    [/oreilles? cyber/i, "cybernetic ear implants"],
+    [/datajack|prise de données/i, "a datajack port on the temple with a thin trailing cable"],
+    [/lame rétractable|éperons?|égide de poignet|tronçonneuse/i, "retractable blade spurs extending from the forearm"],
+    [/bras cyber|avant-bras cyber|main cyber|bras entier cyber|bras simien/i, "a chrome cybernetic arm"],
+    [/jambe cyber|bas de jambe/i, "a chrome cybernetic leg"],
+    [/crâne cyber/i, "partially exposed cybernetic skull plating"],
+    [/armure dermique|blindage dermique/i, "visible subdermal armor plating under the skin"],
+  ],
+  _MAX_AUGMENT_CUES: 3,
+
+  /** Repères visuels de chrome pour un PNJ. augItems (socle ItemResolver)
+      fusionne pnj.augs + la cyberware d'equip selon les AUGS_KEYS de
+      l'édition (undefined en Anarchy → retombe sur pnj.augs, souvent vide).
+      Dédoublonne et plafonne pour ne pas noyer le prompt. */
+  _augmentDetails(entity) {
+    const items = ItemResolver.augItems(
+      entity,
+      App.getEditionModule(entity.edition)?.AUGS_KEYS,
+    );
+    const cues = [];
+    for (const it of items) {
+      const s = ItemResolver.itemStr(it);
+      for (const [re, cue] of this._AUGMENT_LOOK) {
+        if (re.test(s) && !cues.includes(cue)) {
+          cues.push(cue);
+          break;
+        }
+      }
+      if (cues.length >= this._MAX_AUGMENT_CUES) break;
+    }
+    return cues.join(", ");
+  },
+
+  /** Mots-clés descriptifs d'un PJ (Anarchy : pnj.keywords, saisis à la
+      création). Texte libre FR laissé tel quel (le modèle le tolère), mais on
+      retire celui qui répète le métatype (souvent keywords[0], déjà rendu par
+      _METATYPE_TRAITS) et on plafonne à 3 pour borner la longueur du prompt. */
+  _keywordDetails(entity) {
+    if (!Array.isArray(entity.keywords) || !entity.keywords.length) return "";
+    const metaLabel = String(entity.meta || "").toLowerCase();
+    const seen = new Set();
+    const out = [];
+    for (const k of entity.keywords) {
+      const t = String(k || "").trim();
+      const low = t.toLowerCase();
+      if (!t || low === metaLabel || seen.has(low)) continue;
+      seen.add(low);
+      out.push(t);
+      if (out.length >= 3) break;
+    }
+    return out.join(", ");
+  },
+
   /** Construit la description (sans le suffixe de DA) selon le type
       d'entité. Les esprits/créatures sont des objets PNJ (pnj.type),
       les contacts sont des objets distincts (role/metatype/trait). */
@@ -209,9 +279,11 @@ export const Portrait = {
     const archetype = entity.archetype || "";
     const appearance = this._appearanceFor(entity);
     const roleLook = this._ROLE_LOOK[entity.role] || "";
+    const augs = this._augmentDetails(entity);
+    const keywords = this._keywordDetails(entity);
     const look = this._MILIEU_LOOK[entity.milieu] || "";
     const flavor = this._flavorDetails(entity);
-    return `portrait of a ${gender} ${archetype}, ${meta}${appearance ? `, ${appearance}` : ""}${roleLook ? `, ${roleLook}` : ""}${look ? `, ${look}` : ""}${flavor ? `, ${flavor}` : ""}`
+    return `portrait of a ${gender} ${archetype}, ${meta}${appearance ? `, ${appearance}` : ""}${roleLook ? `, ${roleLook}` : ""}${augs ? `, ${augs}` : ""}${keywords ? `, ${keywords}` : ""}${look ? `, ${look}` : ""}${flavor ? `, ${flavor}` : ""}`
       .replace(/\s+/g, " ")
       .trim();
   },
