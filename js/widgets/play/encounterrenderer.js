@@ -108,26 +108,28 @@ export const EncounterRenderer = {
       liveQueue = liveList.slice(startPos).concat(liveList.slice(0, startPos));
     }
 
-    // ---- Liste principale ----
-    let liveHtml;
+    // ---- File : la ligne de l'ACTIF (leadHtml) est isolée du RESTE (restHtml =
+    // file d'attente + hors-combat) pour que la console puisse s'intercaler
+    // entre les deux sur mobile ([actif][console][attente], cf. maquette). En
+    // ordonné : l'actif en pleine ligne, la file en attente en COMPACT sous un
+    // séparateur « ordre du tour ». En narratif : pas d'actif isolé (ordre
+    // manuel) — tout va dans le reste.
+    let leadHtml = "";
+    let waitingHtml;
     if (narrative) {
-      liveHtml = liveQueue.map((x) => this._rowNarrative(x.r)).join("");
+      waitingHtml = liveQueue.map((x) => this._rowNarrative(x.r)).join("");
     } else {
-      // L'actif en pleine ligne ; les combattants en attente en variante
-      // COMPACTE (file scannable, cf. .encounter-row.compact), sous un
-      // séparateur « ordre du tour ».
       const active = liveQueue[0];
-      const activeHtml = active
+      leadHtml = active
         ? this._row(active.r, true, this._outOfPass(active.r, state, model), this._effectiveInit(active.r, state, model), false)
         : "";
       const waiting = liveQueue.slice(1);
-      const waitingHtml = waiting.length
+      waitingHtml = waiting.length
         ? `<div class="encounter-queue-sep">En attente · ordre du tour<span class="encounter-queue-count">${waiting.length}</span></div>` +
           waiting
             .map((x) => this._row(x.r, false, this._outOfPass(x.r, state, model), this._effectiveInit(x.r, state, model), true))
             .join("")
         : "";
-      liveHtml = activeHtml + waitingHtml;
     }
     const downHtml = downList.length
       ? `<div class="encounter-downsep">Hors de combat · sans initiative</div>` +
@@ -139,7 +141,8 @@ export const EncounterRenderer = {
           )
           .join("")
       : "";
-    const html = liveHtml + downHtml;
+    const restHtml = waitingHtml + downHtml;
+    const html = leadHtml + restHtml;
 
     // Réglette compacte (rail de jetons, sœur de la liste complète —
     // jamais reconstruite depuis elle, mêmes rows). Toujours rendue (même
@@ -157,7 +160,9 @@ export const EncounterRenderer = {
         railHtml || `<div class="encounter-rail-empty">Aucun combattant</div>`;
     }
 
+    const activeLead = document.getElementById("encounter-active-lead");
     if (!html) {
+      if (activeLead) activeLead.innerHTML = "";
       list.innerHTML = `<div class="empty-state">
         <span class="empty-state-title">Aucun combattant</span>
         Ajoutez des combattants avec « ➕ Ajouter » ou depuis leur carte (bouton « ⚔ Combat »).
@@ -178,15 +183,21 @@ export const EncounterRenderer = {
     // on rejoue leur glissement APRÈS (FLIP) — le réordonnancement de la file
     // au « Tour suivant » devient un MOUVEMENT lisible, pas un saut (contrepartie
     // assumée de la décision B).
-    const flipPrev = this._captureRowPositions(list);
+    // FLIP capturé sur le PARENT (main-col) : il couvre à la fois la ligne de
+    // l'actif (#encounter-active-lead) et la file (#encounter-list), donc une
+    // ligne qui passe de l'une à l'autre au « Tour suivant » glisse au lieu de
+    // sauter, même à travers les deux conteneurs.
+    const flipRoot = list.parentElement || list;
+    const flipPrev = this._captureRowPositions(flipRoot);
+    if (activeLead) activeLead.innerHTML = leadHtml;
     list.innerHTML =
       progressHtml +
-      html +
+      restHtml +
       devicesHtml +
       `<div class="encounter-scene-actions">
         <button class="btn-secondary btn-small" data-action="heal-all" title="Réinitialiser les moniteurs de tous les combattants">⛨ Fin de scène — tout soigner</button>
       </div>`;
-    this._playFlip(list, flipPrev);
+    this._playFlip(flipRoot, flipPrev);
   },
 
   /** FLIP (First-Last-Invert-Play) du réordonnancement de la file (Lot 6) : le

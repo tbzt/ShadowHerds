@@ -830,19 +830,49 @@
   .encounter-controls {
     margin-left: auto;
   }
-  /* K1 : la fiche du combattant actif prend tout l'écran sous le rail —
-     plus de largeur bridée à 300/320px comme dans le dock desktop. */
+  /* V7 — file mobile FIDÈLE à la maquette : [barre d'outils][ACTIF][console]
+     [file d'attente][hors-combat][Tour suivant]. La colonne effectif est
+     DISSOUTE (display:contents) → ses enfants (barre d'outils, ligne de
+     l'actif isolée #encounter-active-lead, liste d'attente) et la console
+     (sœur hors colonne) deviennent frères dans .encounter-body, donc
+     intercalables par `order`. Corps en colonne unique, pleine largeur. */
+  .encounter-body {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .encounter-main-col {
+    display: contents;
+  }
+  .encounter-toolbar {
+    order: 1;
+  }
+  #encounter-add-panel {
+    order: 2;
+  }
+  .encounter-rail {
+    order: 3;
+  }
+  #encounter-active-lead {
+    order: 4;
+  }
+  /* La console s'intercale ENTRE l'actif et la file d'attente (le cœur du fix). */
   .encounter-active-card {
-    flex: 1 1 100%;
+    order: 5;
+    flex: 1 1 auto;
     max-width: 100%;
     max-height: none;
-    /* V7 Lot 5 — file mobile : la CONSOLE remonte EN TÊTE (order négatif), au-
-       dessus de l'effectif. Son bandeau de mode nomme déjà l'actif (« Agir ·
-       Nom »), donc l'info vive (les actions du combattant qui joue) occupe le
-       haut — fini le scroll de tout l'effectif avant de voir ses actions. La
-       file (actif + attente) et la barre « Tour suivant » suivent dans
-       .encounter-main-col. Pur ordre CSS, aucune bougé DOM (R2 tranché). */
-    order: -1;
+  }
+  #encounter-list {
+    order: 6;
+  }
+  #encounter-matrix-only-note {
+    order: 6;
+  }
+  .encounter-turn-bar {
+    order: 7;
+  }
+  .encounter-matrix-dock {
+    order: 8;
   }
 }
 
@@ -871,6 +901,7 @@
     padding: 0.2rem 0.1rem 0.5rem;
     scrollbar-width: thin;
   }
+  .encounter-modal.rail-compact #encounter-active-lead,
   .encounter-modal.rail-compact #encounter-list {
     display: none;
   }

@@ -762,6 +762,11 @@
           <div id="encounter-add-panel" class="encounter-add-panel" hidden></div>
           <!-- K1 : réglette compacte (rail de jetons, sous 641px par défaut) — sœur de la liste complète, jamais les deux visibles à la fois. -->
           <div id="encounter-rail" class="encounter-rail"></div>
+          <!-- V7 : la ligne de l'ACTIF est isolée ici (hors #encounter-list) pour
+               que la console puisse s'intercaler entre elle et la file d'attente
+               sur mobile ([actif][console][attente], cf. maquette). Sur desktop
+               elle coule simplement en tête de l'effectif, avant la file. -->
+          <div id="encounter-active-lead" class="encounter-active-lead"></div>
           <div id="encounter-list" class="encounter-list"></div>
           <!-- R2-E : scène Matrice seule — remplace la liste/réglette d'init
                (vides et hors-sujet ici), cf. .encounter-modal.is-matrix-only. -->
@@ -912,6 +917,7 @@
   <script type="module" src="js/rules/content.js"></script>
   <script type="module" src="js/rules/magic.js"></script>
   <script type="module" src="js/rules/coherence.js"></script>
+  <script type="module" src="js/rules/toposcatalog.js"></script>
   <script type="module" src="js/rules/campaign.js"></script>
   <script type="module" src="js/rules/notebooks.js"></script>
   <!-- js/editions/* chargés à la sélection d'édition (App._loadEditionAssets, CH-P1b). -->
