@@ -49,6 +49,7 @@ export const RunRenderer = {
                  data-run-name="${CardRenderer._esc(r.type)}" title="Promouvoir ce topos en run canon">＋ Faire une run</button>`
         }
         ${this._rencontreBtn(r)}
+        ${this._castBtn(r)}
         <button class="card-action-btn danger" data-action="discard-run">Virer</button>
       </div>`;
     return el;
@@ -65,6 +66,14 @@ export const RunRenderer = {
       ? "⏹ Fermer la rencontre"
       : `▶ ${Encounter.hasStash(r.dossierId) ? "Rouvrir" : "Ouvrir"} la rencontre`;
     return `<button class="card-action-btn" data-action="${action}" data-dossier="${r.dossierId}">${label}</button>`;
+  },
+
+  /** « Générer le casting » (Lot 3b) — seulement sur un topos promu en run
+      (`dossierId`) et porteur d'un profil de sécurité (topos généré ≥ 3a) :
+      RunGen produit alors les PNJ d'opposition et les range dans la run. */
+  _castBtn(r) {
+    if (!r.dossierId || !r.securityProfile) return "";
+    return `<button class="card-action-btn" data-action="run-cast" title="Générer les PNJ d'opposition et les ranger dans la run">⚔ Casting</button>`;
   },
 };
 

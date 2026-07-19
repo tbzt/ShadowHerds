@@ -528,6 +528,33 @@ export const Gen = {
     zone.prepend(card);
   },
 
+  /** Génère un PNJ pour un RÔLE de la taxonomie Coherence (combattant, mage,
+      decker, rigger, social…), hors formulaire — utilisé par le casting de
+      topos (RunGen.castForRun). Réutilise le moteur de cohérence role→archétype
+      déjà en place (aucune table nouvelle). Le PNJ entre dans le pool (persisté)
+      pour que Shadows.savePNJ(id) puisse le ranger. Retourne le PNJ, ou null. */
+  generateForRole(role, { proRating = "Aléatoire", tier = "Aléatoire" } = {}) {
+    const ed = App.editionModule || this.edition;
+    if (!ed) return null;
+    const archetype =
+      Coherence.pickArchetype(ed.id, this._strip(ed.formOptions.archetype), { role }) ||
+      "Aléatoire";
+    const pnj = ed.generate({
+      name: "",
+      originPool: "Aléatoire",
+      meta: "Aléatoire",
+      gender: "Aléatoire",
+      proRating,
+      tier,
+      archetype,
+      special: "Aucun",
+    });
+    if (!pnj) return null;
+    this.pool.push(pnj);
+    this._savePool();
+    return pnj;
+  },
+
   _generateFreeSpirit() {
     const edId = this.edition.id;
     const types = Spirits.typesFor(edId);

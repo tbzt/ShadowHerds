@@ -64,6 +64,11 @@ export const RunGen = {
           this.toDossier(card.dataset.id, actionEl.dataset.runName);
           break;
         }
+        case "run-cast": {
+          const card = actionEl.closest(".run-card");
+          this.castForRun(card.dataset.id);
+          break;
+        }
         // R4 : miroir du geste « rencontre » de dossierbar sur la carte de
         // run (même dossierId, mêmes méthodes — aucune logique dupliquée).
         case "open-rencontre":
@@ -107,6 +112,66 @@ export const RunGen = {
       this._refreshCard(runId);
     }
     toast(`Run « ${name} » créée — rangez-y votre prep.`);
+  },
+
+  /* Casting du topos (Lot 3b) : catégorie de rôle du profil de sécurité →
+     taxonomie Coherence consommée par Gen.generateForRole. `spirit` est
+     volontairement absent (un esprit n'est pas un PNJ : invocation séparée),
+     donc le slot est ignoré au casting. */
+  _CAT_TO_ROLE: {
+    grunt: "combattant",
+    mage: "mage",
+    decker: "decker",
+    rigger: "rigger",
+    leader: "social",
+    runner_rival: "combattant",
+  },
+
+  /** « Générer le casting » — produit les PNJ d'opposition cohérents avec le
+      topos (profil de sécurité de la cible + rôle injecté par la difficulté),
+      calés en nombre sur la menace du district, et les range dans le dossier de
+      la run. Génération déléguée à `Gen.generateForRole` ; rangement à `Shadows`
+      (via `currentGroup`) — RunGen n'écrit ni la fiche ni le storage lui-même.
+      Le casting apparaît ensuite dans le poste de commandement de « Jouer »
+      (qui lit déjà `DossierBar.memberIds`). */
+  castForRun(runId) {
+    const run = this._runs.find((r) => r.id === runId);
+    if (!run || !run.dossierId) {
+      toast("Faites d'abord une run (dossier) pour y ranger le casting.", "warning");
+      return;
+    }
+    const prof = ToposCatalog.securityProfiles[run.securityProfile];
+    if (!prof) {
+      toast("Topos sans profil de sécurité — régénérez-le.", "warning");
+      return;
+    }
+    const dossierName = Dossiers.nameOf(run.dossierId);
+    if (!dossierName) {
+      toast("Dossier de la run introuvable.", "warning");
+      return;
+    }
+    // Slots = profil de la cible (+ un extra si district très surveillé) + le
+    // rôle injecté par la difficulté ; on traduit en rôles Coherence (spirit
+    // filtré car non-PNJ).
+    const cats = prof.roles.map((r) => r.cat);
+    const menace = ToposCatalog.districts.find((d) => d.key === run.district)?.menace || 3;
+    if (menace >= 4) cats.push("grunt");
+    if (run.injectedRole) cats.push(run.injectedRole);
+    const roles = cats.map((c) => this._CAT_TO_ROLE[c]).filter(Boolean);
+    if (!roles.length) return;
+
+    const prevGroup = Shadows.currentGroup;
+    Shadows.currentGroup = dossierName; // Shadows.savePNJ classe dans ce dossier
+    let n = 0;
+    for (const role of roles) {
+      const pnj = Gen.generateForRole(role);
+      if (pnj) {
+        Shadows.savePNJ(pnj.id);
+        n++;
+      }
+    }
+    Shadows.currentGroup = prevGroup;
+    toast(`Casting généré : ${n} PNJ rangé${n > 1 ? "s" : ""} dans « ${dossierName} ».`);
   },
 
   /** Ré-affiche une seule carte de run après mutation (évite un re-render

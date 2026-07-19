@@ -208,27 +208,30 @@ export const ToposCatalog = {
     { label: "Un journaliste avec drone documente tout en direct", role: null },
   ],
 
-  /* ---- PROFILS DE SÉCURITÉ → casting (rôles indicatifs, Lot 3b). ---- */
+  /* ---- PROFILS DE SÉCURITÉ → casting (Lot 3b). Chaque rôle porte une
+     CATÉGORIE coarse (`cat`) que RunGen traduit vers la taxonomie Coherence
+     (grunt→combattant, mage, decker, rigger, leader→social) ; `spirit` n'est
+     pas un PNJ (chemin d'invocation séparé) et est ignoré au casting. ---- */
   securityProfiles: {
-    knight_errant: { label: "Knight Errant", roles: ["Garde Knight Errant", "Drone de combat", "Chef de la sécurité"] },
-    lone_star: { label: "Lone Star", roles: ["Patrouilleur Lone Star", "Agent corruptible", "Drone de surveillance"] },
-    blood_mages: { label: "Sécurité aztèque + mages de sang", roles: ["Garde corpo", "Mage de sang", "Adepte de sécurité"] },
-    zone_zero: { label: "MCT « zone-zéro »", roles: ["Drone tueur", "Mage corpo", "CI mortelle"] },
-    horizon_soft: { label: "Sécurité douce Horizon", roles: ["Agent en civil", "Spin doctor", "Rigger de drones-caméras"] },
-    red_samurai: { label: "Samouraïs rouges Renraku", roles: ["Samouraï rouge", "Decker de sécurité", "CI"] },
-    corpo_gen: { label: "Sécurité corpo sous contrat", roles: ["Garde sous contrat", "Mage de sécurité", "Decker"] },
-    militaire: { label: "Forces armées / Garde du métroplexe", roles: ["Soldat", "Para-créature de la Garde", "Officier"] },
-    mafia: { label: "Soldats de la Mafia", roles: ["Soldat mafieux", "Capo", "Go-ganger affilié"] },
-    yakuza: { label: "Yakuza", roles: ["Yakuza", "Mage de combat (wuxing)", "Decker"] },
-    vory: { label: "Vory", roles: ["Homme de main du Vory", "Tireur aux armes lourdes"] },
-    gang: { label: "Gang de rue", roles: ["Ganger", "Chef de gang", "Adepte ou shaman de rue"] },
-    goules: { label: "Goules (Tamanous)", roles: ["Goule", "Voleur de corps"] },
-    koshari: { label: "Koshari", roles: ["Homme de main koshari", "Maître-chanteur"] },
-    dragon_circle: { label: "Cercle d'un dragon", roles: ["Garde changeling", "Esprit lié", "Sbire dévoué"] },
-    humanis: { label: "Milice Humanis", roles: ["Milicien Humanis", "Sympathisant armé"] },
-    toxic_shamans: { label: "Chamans toxiques", roles: ["Chaman toxique", "Esprit toxique"] },
-    bioaug: { label: "Sécurité Evo (bio-augmentés)", roles: ["Garde bio-augmenté", "Mage corpo"] },
-    vigilants: { label: "Voisins Vigilants", roles: ["Vigilant à pied", "Patrouilleur motorisé"] },
+    knight_errant: { label: "Knight Errant", roles: [{ cat: "grunt", label: "Garde Knight Errant" }, { cat: "rigger", label: "Drone de combat" }, { cat: "leader", label: "Chef de la sécurité" }] },
+    lone_star: { label: "Lone Star", roles: [{ cat: "grunt", label: "Patrouilleur Lone Star" }, { cat: "grunt", label: "Agent corruptible" }, { cat: "rigger", label: "Drone de surveillance" }] },
+    blood_mages: { label: "Sécurité aztèque + mages de sang", roles: [{ cat: "grunt", label: "Garde corpo" }, { cat: "mage", label: "Mage de sang" }, { cat: "grunt", label: "Adepte de sécurité" }] },
+    zone_zero: { label: "MCT « zone-zéro »", roles: [{ cat: "rigger", label: "Drone tueur" }, { cat: "mage", label: "Mage corpo" }, { cat: "decker", label: "CI mortelle" }] },
+    horizon_soft: { label: "Sécurité douce Horizon", roles: [{ cat: "grunt", label: "Agent en civil" }, { cat: "leader", label: "Spin doctor" }, { cat: "rigger", label: "Rigger de drones-caméras" }] },
+    red_samurai: { label: "Samouraïs rouges Renraku", roles: [{ cat: "grunt", label: "Samouraï rouge" }, { cat: "decker", label: "Decker de sécurité" }, { cat: "decker", label: "CI" }] },
+    corpo_gen: { label: "Sécurité corpo sous contrat", roles: [{ cat: "grunt", label: "Garde sous contrat" }, { cat: "mage", label: "Mage de sécurité" }, { cat: "decker", label: "Decker" }] },
+    militaire: { label: "Forces armées / Garde du métroplexe", roles: [{ cat: "grunt", label: "Soldat" }, { cat: "grunt", label: "Fantassin lourd" }, { cat: "leader", label: "Officier" }] },
+    mafia: { label: "Soldats de la Mafia", roles: [{ cat: "grunt", label: "Soldat mafieux" }, { cat: "leader", label: "Capo" }, { cat: "grunt", label: "Go-ganger affilié" }] },
+    yakuza: { label: "Yakuza", roles: [{ cat: "grunt", label: "Yakuza" }, { cat: "mage", label: "Mage de combat (wuxing)" }, { cat: "decker", label: "Decker" }] },
+    vory: { label: "Vory", roles: [{ cat: "grunt", label: "Homme de main du Vory" }, { cat: "grunt", label: "Tireur aux armes lourdes" }] },
+    gang: { label: "Gang de rue", roles: [{ cat: "grunt", label: "Ganger" }, { cat: "leader", label: "Chef de gang" }, { cat: "mage", label: "Shaman de rue" }] },
+    goules: { label: "Goules (Tamanous)", roles: [{ cat: "grunt", label: "Goule" }, { cat: "grunt", label: "Voleur de corps" }] },
+    koshari: { label: "Koshari", roles: [{ cat: "grunt", label: "Homme de main koshari" }, { cat: "leader", label: "Maître-chanteur" }] },
+    dragon_circle: { label: "Cercle d'un dragon", roles: [{ cat: "grunt", label: "Garde changeling" }, { cat: "spirit", label: "Esprit lié" }, { cat: "grunt", label: "Sbire dévoué" }] },
+    humanis: { label: "Milice Humanis", roles: [{ cat: "grunt", label: "Milicien Humanis" }, { cat: "grunt", label: "Sympathisant armé" }] },
+    toxic_shamans: { label: "Chamans toxiques", roles: [{ cat: "mage", label: "Chaman toxique" }, { cat: "spirit", label: "Esprit toxique" }] },
+    bioaug: { label: "Sécurité Evo (bio-augmentés)", roles: [{ cat: "grunt", label: "Garde bio-augmenté" }, { cat: "mage", label: "Mage corpo" }] },
+    vigilants: { label: "Voisins Vigilants", roles: [{ cat: "grunt", label: "Vigilant à pied" }, { cat: "grunt", label: "Patrouilleur motorisé" }] },
   },
 
   /* ---- OBJECTIF SECONDAIRE (bonus optionnel ; ~1/5 nul). ---- */
