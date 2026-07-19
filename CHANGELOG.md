@@ -12,6 +12,29 @@ commit.
 
 ## [Non publié]
 
+## [1.71.0] — 2026-07-19
+
+### Matrice & Magie
+- **Les sprites se battent dans le tracker.** Un sprite compilé ajouté au
+  suivi de combat tombe désormais « hors de combat » quand son moniteur
+  matriciel est plein (badge ☠, jauge de vie, mise hors de combat), au lieu
+  de rester invulnérable — comme n'importe quel combattant.
+- **Bannir un esprit / décompiler un sprite.** Nouveau geste offensif, en
+  miroir de l'invocation et de la compilation : le magicien bannit un esprit
+  adverse (« ✦ Bannir ») et le technomancien décompile un sprite adverse
+  (« ◈ Décompiler »), depuis leur carte (choisir la cible) ou depuis le
+  tracker sur la cible (choisir le lanceur, menu ⋯). Test opposé vérifié au
+  livre par édition (SR5 p.259/303, SR6 p.151/194, Anarchy 1) : chaque succès
+  net retire un service/une tâche — à zéro l'entité repart au plan / à la
+  Résonance — ou inflige des dégâts matriciels (Anarchy 1) ; le Drain
+  éventuel est encaissé automatiquement. Les esprits gagnent un état « lié »
+  (SR5 : renforce leur résistance au bannissement).
+- **Asymétries de règle du duel matriciel.** SR5 : le tracker d'intrusion
+  rappelle que les actions de Résonance d'un technomancien sont hors Score de
+  Surveillance et sans mark (p.252). SR6 : quand une intrusion converge alors
+  que des sprites sont en jeu, le bandeau de convergence nomme les
+  technomanciens dont la position physique est révélée (p.195).
+
 ## [1.70.0] — 2026-07-19
 
 ### Sauvegarde

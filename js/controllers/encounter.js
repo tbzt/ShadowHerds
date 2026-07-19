@@ -1836,6 +1836,14 @@ export const Encounter = {
         case "knockout-combatant":
           this.knockOut(id);
           break;
+        case "banish-combatant":
+          // Renvoi hostile (T6b) depuis la cible : l'esprit est connu, on
+          // choisit le magicien qui bannit (SummonPanel gère le picker + jet).
+          SummonPanel.openDismiss("spirit", { targetId: id });
+          break;
+        case "decompile-combatant":
+          SummonPanel.openDismiss("sprite", { targetId: id });
+          break;
         case "delay-combatant":
           this.delayCombatant(id);
           break;

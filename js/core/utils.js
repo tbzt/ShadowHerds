@@ -191,6 +191,22 @@ export const Utils = {
     return { form: "ladder", filled: f, total: t, frac, level: Utils.woundTone(frac), label: `${f} / ${t}` };
   },
 
+  /* ---- Moniteur MATRICIEL (sprite, persona) : une piste unique
+     `matFilled`/`matrixMonitor`, identique dans les quatre éditions (sa TAILLE
+     est déjà tranchée par l'édition au spawn). Ces helpers portent la logique
+     universelle « plein = détruit » / jauge, appelés par la branche
+     `entity.type === "sprite"` de chaque `conditionMonitor` (miroir du cas
+     `vehicle`) — jamais une branche `App.edition`. ---- */
+  matrixDestroyed(entity) {
+    return (entity.matrixMonitor || 0) > 0 && (entity.matFilled || 0) >= entity.matrixMonitor;
+  },
+  matrixGauge(entity) {
+    return Utils.ladderGauge(entity.matFilled || 0, entity.matrixMonitor || 0);
+  },
+  matrixKnockOut(entity) {
+    entity.matFilled = entity.matrixMonitor || 0;
+  },
+
   /** Descripteur de jauge à SEUILS (`form:"tiers"`) — moniteur par paliers de
       gravité (Anarchy 2 : légère/grave/incapacitante). `tiers` porte la forme
       réelle pour un rendu par segments ; `frac`+`level` classent par palier le

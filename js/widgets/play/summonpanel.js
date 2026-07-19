@@ -326,6 +326,198 @@ export const SummonPanel = {
     CardRenderer.refresh(sp);
   },
 
+  /** Lie/délie un esprit (SR5/SR6) : lié = invocation durable → au
+      bannissement, la Magie de l'invocateur s'ajoute à l'opposition (SR5
+      p.303). Miroir de toggleInscribe (sprite). */
+  toggleBind(spiritId) {
+    const sp = PnjLookup.find(spiritId);
+    if (!sp || sp.type !== "spirit") return;
+    sp.bound = !sp.bound;
+    Shadows.save();
+    CardRenderer.refresh(sp);
+    toast(sp.bound ? "Esprit lié (invocation durable)." : "Esprit non lié.");
+  },
+
+  /* ============================================================
+     RENVOI HOSTILE (T6b) — bannir un esprit / décompiler un sprite.
+     Inverse offensif de l'invocation/compilation. Deux points d'entrée qui
+     convergent sur `attemptDismiss` : depuis la carte du lanceur (data-action
+     open-dismiss → choisir la cible) ou depuis le tracker sur la cible
+     (menu ⋯ → choisir le lanceur). Vocabulaire de glyphes réutilisé (✦ esprit
+     / ◈ sprite), pas de nouvel emoji.
+     ============================================================ */
+
+  /** Un PNJ peut-il bannir (esprit) / décompiler (sprite) dans son édition ?
+      Le verbe doit être motorisé (banishSkill / spriteModel.decompileSkill) et
+      le PNJ maîtriser la discipline (arcaneLock). */
+  _canDismiss(pnj, kind) {
+    if (!pnj || pnj.type) return false;
+    const ed = App.getEditionModule(pnj.edition);
+    if (!ed) return false;
+    if (kind === "sprite")
+      return !!(ed.spriteModel && ed.spriteModel.decompileSkill) &&
+        ed.arcaneLock(pnj, "resonance") === null;
+    return !!ed.banishSkill && ed.arcaneLock(pnj, "magic") === null;
+  },
+
+  /** Cibles déployées (esprits ou sprites) présentes en jeu. */
+  _dismissTargets(kind) {
+    const pools = [Gen.pool || [], Shadows.data ? Shadows.data.all : []];
+    const seen = new Set();
+    const out = [];
+    for (const pool of pools)
+      for (const e of pool)
+        if (e && e.type === kind && e.deployed !== false && !seen.has(e.id)) {
+          seen.add(e.id);
+          out.push(e);
+        }
+    return out;
+  },
+
+  /** Lanceurs éligibles (magiciens pour l'esprit, technomanciens pour le
+      sprite) résolvables dans les pools joués. */
+  _dismissCasters(kind) {
+    const pools = [
+      Gen.pool || [],
+      Shadows.data ? Shadows.data.all : [],
+      typeof Characters !== "undefined" ? Characters.data.all : [],
+    ];
+    const seen = new Set();
+    const out = [];
+    for (const pool of pools)
+      for (const e of pool)
+        if (e && !seen.has(e.id) && this._canDismiss(e, kind)) {
+          seen.add(e.id);
+          out.push(e);
+        }
+    return out;
+  },
+
+  /** Point d'entrée : `{casterId}` (carte du lanceur → choisir la cible) ou
+      `{targetId}` (tracker sur la cible → choisir le lanceur). Auto-résout si
+      un seul candidat. */
+  openDismiss(kind, opts = {}) {
+    const isSprite = kind === "sprite";
+    const verb = isSprite ? "Décompiler" : "Bannir";
+    const noun = isSprite ? "sprite" : "esprit";
+    const pick = (list, title, message, onPick) => {
+      if (!list.length) return null;
+      if (list.length === 1) return onPick(list[0].id);
+      Dialog.choose({
+        title,
+        message,
+        options: list.map((e) => ({
+          value: e.id,
+          label: e.ownerName ? `${e.name || "Sans nom"} — ${e.ownerName}` : e.name || "Sans nom",
+        })),
+      }).then((id) => id && onPick(id));
+    };
+    if (opts.casterId) {
+      const targets = this._dismissTargets(kind).filter((t) => t.id !== opts.casterId);
+      if (!targets.length)
+        return toast(isSprite ? "Aucun sprite en jeu à décompiler." : "Aucun esprit en jeu à bannir.", "warning");
+      return pick(targets, `${verb} — cible`, `Quel ${noun} viser ?`, (id) =>
+        this.attemptDismiss(opts.casterId, id, kind),
+      );
+    }
+    if (opts.targetId) {
+      const casters = this._dismissCasters(kind).filter((c) => c.id !== opts.targetId);
+      if (!casters.length)
+        return toast(isSprite ? "Aucun technomancien pour décompiler." : "Aucun magicien pour bannir.", "warning");
+      return pick(casters, `${verb} — lanceur`, `Qui ${isSprite ? "décompile" : "bannit"} ?`, (casterId) =>
+        this.attemptDismiss(casterId, opts.targetId, kind),
+      );
+    }
+  },
+
+  /** Réduit les services (esprit) / tâches (sprite) restants de `n` ; renvoie
+      `true` si épuisés (l'entité repart au plan / à la Résonance). */
+  _reduceDismiss(target, n) {
+    const isSprite = target.type === "sprite";
+    const totalKey = isSprite ? "tasks" : "services";
+    const usedKey = isSprite ? "tasksUsed" : "servicesUsed";
+    const total = target[totalKey] || 0;
+    const used = target[usedKey] || 0;
+    if (n <= 0) return false;
+    target[usedKey] = Math.min(total, used + n);
+    return total - used - n <= 0;
+  },
+
+  /** Retire définitivement une entité renvoyée : replie sa fiche, la sort du
+      tracker, rafraîchit son propriétaire d'origine. */
+  _finishDismiss(target) {
+    target.deployed = false;
+    document.querySelectorAll(`.pnj-card[data-id="${target.id}"]`).forEach((c) => c.remove());
+    Shadows.save();
+    if (typeof Encounter !== "undefined") Encounter.remove(target.id);
+    const owner = target.ownerId ? PnjLookup.find(target.ownerId) : null;
+    if (owner) CardRenderer.refresh(owner);
+  },
+
+  /** Résout un renvoi : jet opposé (MagicAction) → réduit services/tâches (SR)
+      ou applique des dégâts matriciels (Anarchy 1) → retire la fiche si
+      épuisée. Le Drain éventuel est déjà encaissé par le résolveur. */
+  attemptDismiss(casterId, targetId, kind) {
+    const caster = PnjLookup.find(casterId);
+    const target = PnjLookup.find(targetId);
+    if (!caster || !target) return;
+    const isSprite = kind === "sprite";
+    const verb = isSprite ? "Décompilation" : "Bannissement";
+    const unit = isSprite ? "tâche" : "service";
+    const res = isSprite
+      ? MagicAction.resolveDecompilation(caster, target)
+      : MagicAction.resolveBanishment(caster, target);
+
+    // Édition sans verbe motorisé (ne devrait pas arriver via les affordances
+      // gatées, mais robuste) : renvoi narratif d'un service/tâche.
+    if (!res) {
+      const depleted = this._reduceDismiss(target, 1);
+      Shadows.save();
+      CardRenderer.refresh(target);
+      toast(`${verb} narratif : 1 ${unit} retiré.`);
+      if (depleted) this._finishDismiss(target);
+      return;
+    }
+
+    let depleted = false;
+    if (res.effect === "damage") {
+      target.matFilled = Utils.clamp(
+        (target.matFilled || 0) + (res.dmgBoxes || 0),
+        0,
+        target.matrixMonitor || 0,
+      );
+      depleted = (target.matrixMonitor || 0) > 0 && target.matFilled >= target.matrixMonitor;
+    } else if (res.netHits > 0) {
+      depleted = this._reduceDismiss(target, res.netHits);
+    }
+    Shadows.save();
+    CardRenderer.refresh(target);
+    CardRenderer.refresh(caster); // le Drain a pu toucher le lanceur
+
+    const success = res.effect === "damage" ? res.dmgBoxes > 0 : res.netHits > 0;
+    MagicAction.presentDismissal(
+      caster,
+      res,
+      `${verb} — ${target.name}${success ? "" : " (échec)"}`,
+    );
+    const effTxt =
+      res.effect === "damage"
+        ? success
+          ? `${res.dmgBoxes} case${res.dmgBoxes > 1 ? "s" : ""} matricielle${res.dmgBoxes > 1 ? "s" : ""}`
+          : "aucun succès net"
+        : success
+          ? `${res.netHits} ${unit}${res.netHits > 1 ? "s" : ""} retiré${res.netHits > 1 ? "s" : ""}`
+          : "aucun succès net";
+    const fate = depleted ? (isSprite ? " — sprite décompilé !" : " — esprit banni !") : "";
+    const drainTxt = res.drainDamage
+      ? ` Drain : ${res.drainDamage} (${res.type === "physical" ? "Phys." : "Étourd."}).`
+      : res.dv
+        ? " Drain résisté."
+        : "";
+    toast(`${verb} : ${effTxt}${fate}.${drainTxt}`);
+    if (depleted) this._finishDismiss(target);
+  },
+
   /** Congédie un esprit : masque sa fiche sans perdre son état (services
       rendus, moniteur, notes...) — l'esprit reste dans le pool. */
   dismissSpirit(spiritId) {

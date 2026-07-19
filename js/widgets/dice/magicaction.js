@@ -613,6 +613,124 @@ export const MagicAction = {
       who: owner.name || "",
     });
   },
+
+  /* ============================================================
+     SOCLE « RENVOI » (T6b) — bannir un esprit / décompiler un sprite.
+     Inverse hostile de l'invocation / compilation, en miroir EXACT :
+     resolveBanishment ↔ resolveConjuration, resolveDecompilation ↔
+     resolveCompilation. Les deux réduisent services/tâches de la cible par
+     les succès nets et encaissent un Drain via `_resolveDrain` (kind
+     "conjuration" pour la magie, "complexForm" pour la résonance). L'entité
+     visée est l'esprit/sprite ADVERSE ; l'invocateur/compilateur d'origine
+     (target.ownerId) ne fournit que le bonus d'opposition « si lié/inscrit ».
+     ============================================================ */
+
+  /** Résout un bannissement (esprit) — miroir de resolveConjuration. Renvoie
+      { netHits, casterHits, spiritHits, dv, roll, drain, drainDamage, type },
+      ou `null` si l'édition n'a pas de bannissement chiffré (Anarchy : renvoi
+      narratif, comme l'invocation). Ne retire PAS les services — c'est le
+      geste UI (_doBanish) qui décide selon netHits. */
+  resolveBanishment(caster, spirit) {
+    const ed = App.getEditionModule(caster.edition);
+    if (!ed.banishSkill) return null;
+    const roll = Dice.computeRoll(Magic.actionPool(caster, ed.banishSkill, caster.edition));
+    DiceLog.record(roll, { label: `Bannissement — ${spirit.name || "esprit"}`, who: caster.name || "" });
+    // Opposition = Puissance (+ Magie de l'invocateur d'origine si l'esprit est
+    // lié, SR5 ; ignoré en SR6). `bound` posé sur l'esprit (miroir de sprite
+    // `registered`) ; l'invocateur d'origine = spirit.ownerId (0 si absent).
+    const owner = spirit.ownerId ? PnjLookup.find(spirit.ownerId) : null;
+    const ownerMag = owner ? Actor.attr(owner, "MAG") : 0;
+    const spiritRes = Dice.computeRoll(ed.banishOppose(spirit, ownerMag));
+    DiceLog.record(spiritRes, {
+      label: `Résistance de l'esprit (Puissance ${spirit.force})`,
+      who: caster.name || "",
+    });
+    const netHits = Math.max(0, roll.hits - spiritRes.hits);
+    const dv = ed.banishDrainValue(spiritRes.hits);
+    const drain = this._resolveDrain(caster, ed, {
+      dv,
+      kind: "conjuration",
+      castHits: roll.hits,
+      force: spirit.force,
+      label: "Bannissement",
+    });
+    return {
+      netHits,
+      casterHits: roll.hits,
+      spiritHits: spiritRes.hits,
+      dv,
+      roll,
+      drain,
+      drainDamage: drain.drainDamage,
+      type: drain.type,
+    };
+  },
+
+  /** Résout une décompilation (sprite) — miroir de resolveCompilation. Deux
+      régimes d'effet portés par `spriteModel.decompileEffect` : "tasks"
+      (SR5/SR6, succès nets → tâches retirées, appliqué par l'UI) ou "damage"
+      (Anarchy 1, `dmgBoxes` cases sur le moniteur matriciel). Technodrain
+      seulement si `decompileFading` (SR5 ; null en SR6/A1). Renvoie
+      { netHits, casterHits, spriteHits, effect, dmgBoxes, dv, roll, drain,
+      drainDamage, type } ou `null` si l'édition n'a pas de décompilation
+      chiffrée (A2 : pas de sprite). */
+  resolveDecompilation(caster, sprite) {
+    const ed = App.getEditionModule(caster.edition);
+    const sm = ed.spriteModel;
+    if (!sm || !sm.decompileSkill) return null;
+    // Réserve du décompilateur : Résonance.actionPool (SR) ou override d'édition
+    // (Anarchy 1 = Technomancie + Logique, faute de Résonance).
+    const pool = sm.decompilePool
+      ? sm.decompilePool(caster)
+      : Resonance.actionPool(caster, sm.decompileSkill, caster.edition);
+    const roll = Dice.computeRoll(pool);
+    DiceLog.record(roll, { label: `Décompilation — ${sprite.name || "sprite"}`, who: caster.name || "" });
+    const owner = sprite.ownerId ? PnjLookup.find(sprite.ownerId) : null;
+    const ownerRes = owner ? Actor.attr(owner, "RES") : 0;
+    const spriteRes = Dice.computeRoll(sm.decompileOppose(sprite, ownerRes));
+    DiceLog.record(spriteRes, {
+      label: `Résistance du sprite (${sprite.tier || "Niveau " + (sprite.level || 0)})`,
+      who: caster.name || "",
+    });
+    const netHits = Math.max(0, roll.hits - spriteRes.hits);
+    const dmgBoxes =
+      sm.decompileEffect === "damage" && sm.decompileDamage && netHits > 0
+        ? sm.decompileDamage(caster, netHits)
+        : 0;
+    // Technodrain SR5 = 2 × succès du sprite (min 2), résisté RES+VOL, physique
+    // si la VD dépasse la RES (règle générale de Technodrain, castHits = dv).
+    let drain = null;
+    let dv = 0;
+    if (sm.decompileFading) {
+      dv = sm.decompileFading(spriteRes.hits);
+      drain = this._resolveDrain(caster, ed, {
+        dv,
+        kind: "complexForm",
+        castHits: dv,
+        force: sprite.level,
+        label: "Décompilation",
+      });
+    }
+    return {
+      netHits,
+      casterHits: roll.hits,
+      spriteHits: spriteRes.hits,
+      effect: sm.decompileEffect,
+      dmgBoxes,
+      dv,
+      roll,
+      drain,
+      drainDamage: drain ? drain.drainDamage : 0,
+      type: drain ? drain.type : null,
+    };
+  },
+
+  /** Présente un jet de renvoi (bannissement/décompilation) via l'affichage de
+      dés standard — le Drain éventuel est déjà encaissé + journalisé par le
+      résolveur. */
+  presentDismissal(caster, res, label) {
+    DiceRoller.show(res.roll, { label, who: caster.name || "" });
+  },
 };
 
 // Pont couche 4 (migration modules ES) — retiré en fin de migration.

@@ -224,6 +224,19 @@ export const EditionSR6 = {
   spiritResistPool(force) {
     return force * 2;
   },
+  /** Bannissement (p.151) — inverse de l'invocation, socle « Renvoi » partagé
+      avec la décompilation. Test opposé Conjuration + Magie contre Puissance ×
+      2 (pas de bonus de lien en SR6, contrairement à SR5) ; chaque succès net
+      retire un service ; Drain = 2 × succès de l'esprit (≠ invocation, non
+      doublée en SR6 — vérifié p.150/151), physique si dégâts après résistance
+      > Magie (drainDamageType). `ownerMag` ignoré (pas de clause de lien). */
+  banishSkill: "Conjuration",
+  banishOppose(spirit) {
+    return (spirit.force || 0) * 2;
+  },
+  banishDrainValue(spiritHits) {
+    return Magic.drainValue(spiritHits * 2, 0);
+  },
   /** Type de dégâts du Drain (p.136 sort / p.150 invocation) : SR6 tranche sur
       les dégâts APRÈS résistance — Physique s'ils dépassent la Magie, sinon
       Étourdissant. (Corrige un cas qui renvoyait toujours « stun ».) */
@@ -433,6 +446,17 @@ export const EditionSR6 = {
     compileSkill: "Technomancie",
     compileOpposeDice: (level) => level * 2,
     compileFading: (spriteHits) => spriteHits,
+    /** Décompilation (p.194) — inverse de la compilation, jumeau du
+        bannissement. Test opposé Technomancie + Résonance contre Niveau du
+        sprite (+ Résonance du compilateur si inscrit — noter : Niveau simple,
+        pas ×2 comme la compilation) ; chaque succès net retire une tâche.
+        **Aucun Technodrain** (ni règle ni exemple ne l'évoquent, p.194) →
+        `decompileFading: null`, asymétrie assumée avec le bannissement SR6. */
+    decompileSkill: "Technomancie",
+    decompileOppose: (sprite, ownerRes) =>
+      (sprite.level || 0) + (sprite.registered ? ownerRes || 0 : 0),
+    decompileEffect: "tasks",
+    decompileFading: null,
   },
   /** Réserves de dés et initiative des véhicules/drones liés : pas de
       distinction Attaque/Capteurs séparée sur l'Autopilote (Score
@@ -565,6 +589,9 @@ export const EditionSR6 = {
         PNJ dont la piste Physique (physMon) est pleine en mode séparé —
         cohérent avec SR5, seul le Physique compte pour la destruction. */
     isDestroyed(entity) {
+      // Sprite = entité matricielle : moniteur `matFilled`/`matrixMonitor`
+      // (universel, cf. Utils.matrixDestroyed), jamais le moniteur chair.
+      if (entity.type === "sprite") return Utils.matrixDestroyed(entity);
       if (entity.type === "vehicle")
         return (
           (entity.monTotal || 0) > 0 &&
@@ -578,10 +605,11 @@ export const EditionSR6 = {
       return (entity.me || 0) > 0 && (entity.physFilled || 0) >= entity.me;
     },
     /** Mise hors de combat immédiate (Vague C) : remplit le moniteur unique
-        (ou la piste Physique en mode séparé, ou total pour un véhicule).
-        Réversible par _resetMonitors (✚). */
+        (ou la piste Physique en mode séparé, total pour un véhicule, matriciel
+        pour un sprite). Réversible par _resetMonitors (✚). */
     knockOut(entity) {
-      if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
+      if (entity.type === "sprite") Utils.matrixKnockOut(entity);
+      else if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
       else if (entity.stunMon !== undefined)
         entity.physFilled = entity.physMon || 0;
       else entity.physFilled = entity.me || 0;
@@ -590,6 +618,7 @@ export const EditionSR6 = {
         Forme ÉCHELLE (`Utils.ladderGauge`) : moniteur unique `me`, ou les deux
         pistes cumulées en mode séparé (comme SR5). `null` si pas de moniteur. */
     gauge(entity) {
+      if (entity.type === "sprite") return Utils.matrixGauge(entity);
       if (entity.type === "vehicle")
         return Utils.ladderGauge(entity.monFilled || 0, entity.monTotal || 0);
       if (entity.stunMon !== undefined)
@@ -766,6 +795,11 @@ export const EditionSR6 = {
     convergenceText() {
       return "l'appareil de la dernière action illégale est brické, éjection avec choc, localisation signalée aux autorités (p.178).";
     },
+    /** T6c — asymétrie SR6 (p.195) : un sprite accumule un SS comme toute
+        entité matricielle ; à la Convergence il disparaît ET révèle la
+        position physique du technomancien qui l'a compilé. Le bandeau de
+        convergence nomme alors les compilateurs de sprites en jeu. */
+    spriteConvergenceReveal: true,
     attrLimit() {
       return null;
     },

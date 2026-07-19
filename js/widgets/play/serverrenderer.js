@@ -438,10 +438,26 @@ export const ServerRenderer = {
             <small>(SD cible ${Matrix.use(srv.edition).defenseScore(srv)})</small>
           </span>`;
 
+    const M = Matrix.use(srv.edition);
+    // T6c (SR6 p.195) : à la Convergence, un sprite disparaît et révèle la
+    // position physique du technomancien qui l'a compilé → nommer les
+    // compilateurs de sprites en jeu, exposés par cette convergence.
+    let convergenceExtra = "";
+    if (ss >= 40 && M.spriteConvergenceReveal()) {
+      const owners = typeof Sprites !== "undefined" ? Sprites.deployedOwners() : [];
+      if (owners.length)
+        convergenceExtra = ` <b>Sprite${owners.length > 1 ? "s" : ""} en jeu : la position physique de ${owners.map((o) => esc(o.name)).join(", ")} est révélée (p.195).</b>`;
+    }
     const convergence =
       ss >= 40
-        ? `<div class="ss-convergence">☠ CONVERGENCE — ${Matrix.use(srv.edition).convergenceText()}</div>`
+        ? `<div class="ss-convergence">☠ CONVERGENCE — ${M.convergenceText()}${convergenceExtra}</div>`
         : "";
+    // T6c (SR5 p.252) : rappel que les actions de Résonance d'un technomancien
+    // sont hors SS et sans mark (ses actions matricielles standard, elles, comptent).
+    const resonanceNote = M.resonanceOSNote();
+    const resonanceHint = resonanceNote
+      ? `<div class="ss-effects">⚡ ${esc(resonanceNote)}</div>`
+      : "";
 
     return `
       <div class="ss-block">
@@ -463,6 +479,7 @@ export const ServerRenderer = {
         </div>
         <div class="ss-actions">${sr5Extra}</div>
         ${convergence}
+        ${resonanceHint}
         ${log ? `<div class="ss-log">${log}</div>` : ""}
       </div>`;
   },

@@ -1075,23 +1075,27 @@ export const EncounterRenderer = {
     box.innerHTML = "";
     box.hidden = !pnj;
     if (pnj) {
-      // R1b : la fiche active s'ouvre en vue Combat (moniteurs+attaques
-      // dépliés, incarnation/détails repliés, cf. CardRenderer._VIEWS). Appliquée
-      // sur un CLONE (pli superficiel de pnj + copie de _zoneOpen) : applyView
-      // écrase les 4 zones + les modules à lenses, on ne veut pas que ce pli de
-      // combat devienne la mémoire de la carte bibliothèque (l'ancien bandeau ne touchait
-      // qu'un seul champ, applyView est plus large).
-      const combatPnj = { ...pnj, _zoneOpen: { ...pnj._zoneOpen } };
-      CardRenderer.applyView(combatPnj, "combat");
-      // Bandeau d'état (hors de combat/retardé/devrait fuir, réutilise
-      // les badges de la ligne) au-dessus de la carte ; bandeau économie
-      // (Atout + Actions) juste en dessous, au-dessus de la carte (portée
-      // « tour », lisible avant de dérouler la fiche) ; note de scène éditable
-      // sous la carte.
+      // V7 — « Agir produit » : la console montre l'OFFENSE (② Armes → ③ Sorts·
+      // Matrice·Pouvoirs → ④ Compétences, cf. CardRenderer.offenseBlocks), PAS
+      // la fiche complète ni le bloc moniteur (il ne subit rien à son tour ; le
+      // malus est cuit dans les réserves, la vie est dans l'effectif). ① Actions
+      // = _activeEconomy (posé juste au-dessus). L'état maintenu ⟳ / les drogues
+      // (R1) sont réémis en tête des blocs par offenseBlocks. Rollables câblés
+      // par la délégation document-level (DiceRoller), inchangée.
       box.innerHTML = `<div class="encounter-mode-head is-agir${modeEnter ? " mode-enter" : ""}">Agir · ${Utils.escHtml(pnj.name || "")}</div>
         <div class="encounter-active-top">${this._activeTop(active, state)}</div>
         <div class="encounter-active-economy">${this._activeEconomy(active, model)}</div>`;
-      box.appendChild(CardRenderer.render(combatPnj, [], CardRenderer.liveDeps()));
+      const offense = CardRenderer.offenseBlocks(pnj, CardRenderer.liveDeps());
+      if (offense != null) {
+        box.insertAdjacentHTML("beforeend", `<div class="encounter-offense">${offense}</div>`);
+      } else {
+        // anarchy2 (offense sur mesure, pas encore recomposée) : repli sur la
+        // fiche complète en vue Combat, comme avant V7 — sur un CLONE (applyView
+        // écrit le pli, on ne veut pas polluer la carte bibliothèque).
+        const combatPnj = { ...pnj, _zoneOpen: { ...pnj._zoneOpen } };
+        CardRenderer.applyView(combatPnj, "combat");
+        box.appendChild(CardRenderer.render(combatPnj, [], CardRenderer.liveDeps()));
+      }
       box.insertAdjacentHTML("beforeend", this._activeNote(active));
     }
   },

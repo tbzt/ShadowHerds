@@ -176,6 +176,23 @@ export const Sprites = {
     return ed.arcaneLock(pnj, "resonance") === null;
   },
 
+  /** T6c (SR6 p.195) — technomanciens exposés par leurs sprites déployés : à la
+      Convergence, la position physique du compilateur d'un sprite en jeu est
+      révélée. Renvoie les {id,name} uniques des propriétaires de sprites
+      déployés (pool + biblio). Lu par le bandeau de convergence de l'intrusion. */
+  deployedOwners() {
+    const pools = [Gen.pool || [], Shadows.data ? Shadows.data.all : []];
+    const seen = new Set();
+    const out = [];
+    for (const pool of pools)
+      for (const e of pool)
+        if (e && e.type === "sprite" && e.deployed !== false && e.ownerId && !seen.has(e.ownerId)) {
+          seen.add(e.ownerId);
+          out.push({ id: e.ownerId, name: e.ownerName || "Technomancien" });
+        }
+    return out;
+  },
+
   /** Sprites actuellement liés à un compilateur (mêmes 2 copies que les
       esprits : pool de génération + bibliothèque). */
   linkedTo(ownerId) {

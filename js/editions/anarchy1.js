@@ -212,6 +212,9 @@ export const EditionAnarchy1 = {
         pas de seuils comme en V2. */
     vehicleFields: "total",
     isDestroyed(entity) {
+      // Sprite = entité matricielle : moniteur `matFilled`/`matrixMonitor`
+      // (universel, cf. Utils.matrixDestroyed), jamais le moniteur chair.
+      if (entity.type === "sprite") return Utils.matrixDestroyed(entity);
       if (entity.type === "vehicle")
         return (
           (entity.monTotal || 0) > 0 &&
@@ -222,15 +225,18 @@ export const EditionAnarchy1 = {
       );
     },
     /** Mise hors de combat immédiate (Vague C) : remplit le moniteur physique
-        (ou total pour un véhicule). Réversible par _resetMonitors (✚). */
+        (ou total pour un véhicule, matriciel pour un sprite). Réversible par
+        _resetMonitors (✚). */
     knockOut(entity) {
-      if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
+      if (entity.type === "sprite") Utils.matrixKnockOut(entity);
+      else if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
       else entity.physFilled = entity.physMon || 0;
     },
     /** Descripteur de moniteur pour les jauges (barre fine + cases spectateur).
         Forme ÉCHELLE (`Utils.ladderGauge`) : physique + étourdissement cumulés
         (comme SR5). `null` si pas de moniteur. */
     gauge(entity) {
+      if (entity.type === "sprite") return Utils.matrixGauge(entity);
       if (entity.type === "vehicle")
         return Utils.ladderGauge(entity.monFilled || 0, entity.monTotal || 0);
       return Utils.ladderGauge(
@@ -474,6 +480,24 @@ export const EditionAnarchy1 = {
       label: "Palier",
       steps: () => ["Mineur", "Normal", "Majeur"].map((label, i) => ({ value: i, label })),
     },
+    /** Décompilation (Anarchistes) — régime « dégâts » (≠ SR : pas de tâches en
+        A1). Attaque façon cybercombat : Technomancie + Logique du décompilateur
+        contre Logique + Logique du sprite (2 × LOG) ; victoire → (Logique du
+        décompilateur) + succès excédentaires de cases de dommages sur le
+        moniteur matriciel. Aucun Technodrain. La compilation A1 reste manuelle
+        (pas de compileSkill), mais la décompilation est bien chiffrée au livre.
+        `decompilePool` : A1 n'a pas de Résonance (resonanceAttr null) → réserve
+        montée à la main (Technomancie + Logique), pas via Resonance.actionPool. */
+    decompileSkill: "Technomancie",
+    decompilePool(pnj) {
+      const sk = (pnj.skills || []).find((s) => s && s.name === "Technomancie");
+      const skillVal = sk ? Number(sk.val) || 0 : 0;
+      return Math.max(0, skillVal + Actor.attr(pnj, "LOG") - Utils.dicePenalty(pnj, "anarchy1"));
+    },
+    decompileOppose: (sprite) => 2 * ((sprite.attrs && sprite.attrs.LOG) || sprite.firewall || 0),
+    decompileEffect: "damage",
+    decompileDamage: (pnj, netHits) => Actor.attr(pnj, "LOG") + Math.max(0, netHits),
+    decompileFading: null,
   },
 
   /** Invocation d'esprits V1 (6 types × 3 puissances, statblocks

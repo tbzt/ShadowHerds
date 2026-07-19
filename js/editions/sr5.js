@@ -122,6 +122,20 @@ export const EditionSR5 = {
   spiritResistPool(force) {
     return force;
   },
+  /** Bannissement (p.303) — inverse de l'invocation, socle « Renvoi » partagé
+      avec la décompilation (spriteModel.decompile*). Test opposé Bannissement +
+      Magie [limite Astrale] contre Puissance de l'esprit (+ Magie de
+      l'invocateur si l'esprit est lié) ; chaque succès net retire un service ;
+      Drain = 2 × succès de l'esprit (min 2), physique si Puissance > Magie
+      (même comparateur que l'invocation → drainDamageType kind:"conjuration").
+      A2 : `banishSkill` absent → renvoi narratif (le résolveur retourne null). */
+  banishSkill: "Bannissement",
+  banishOppose(spirit, ownerMag) {
+    return (spirit.force || 0) + (spirit.bound ? ownerMag || 0 : 0);
+  },
+  banishDrainValue(spiritHits) {
+    return Magic.drainValue(spiritHits * 2, 0);
+  },
   /** Type de dégâts du Drain (p.283 sort / p.303 invocation) : SR5 compare une
       valeur connue AVANT la résistance — succès du sort, ou Puissance de
       l'esprit pour une invocation. Physique si elle dépasse la Magie. */
@@ -317,6 +331,17 @@ export const EditionSR5 = {
     compileSkill: "Compilation",
     compileOpposeDice: (level) => level,
     compileFading: (spriteHits) => Math.max(2, 2 * spriteHits),
+    /** Décompilation (p.259) — inverse de la compilation, jumeau du
+        bannissement d'esprit (banishSkill). Test opposé Décompilation +
+        Résonance [limite Sociale] contre Niveau du sprite (+ Résonance du
+        compilateur si le sprite est inscrit) ; chaque succès net retire une
+        tâche (`decompileEffect:"tasks"`) ; Technodrain = 2 × succès du sprite
+        (min 2), résisté RES+VOL. */
+    decompileSkill: "Décompilation",
+    decompileOppose: (sprite, ownerRes) =>
+      (sprite.level || 0) + (sprite.registered ? ownerRes || 0 : 0),
+    decompileEffect: "tasks",
+    decompileFading: (spriteHits) => Math.max(2, 2 * spriteHits),
   },
   /** Réserves de dés et initiative des véhicules/drones liés (js/catalogs/
       vehicles.js) : Autopilote + autosoft, limite de précision inexistante
@@ -432,6 +457,9 @@ export const EditionSR5 = {
         esprit dont le moniteur physique (physMon, cf. spirits.js:_spawnSR)
         est plein. */
     isDestroyed(entity) {
+      // Sprite = entité matricielle : moniteur `matFilled`/`matrixMonitor`
+      // (universel, cf. Utils.matrixDestroyed), jamais le moniteur chair.
+      if (entity.type === "sprite") return Utils.matrixDestroyed(entity);
       if (entity.type === "vehicle")
         return (
           (entity.monTotal || 0) > 0 &&
@@ -442,10 +470,11 @@ export const EditionSR5 = {
       );
     },
     /** Mise hors de combat immédiate (Vague C) : remplit le moniteur physique
-        (ou total pour un véhicule) → isDestroyed devient vrai. Réversible par
-        _resetMonitors (bouton ✚). Inverse de isDestroyed. */
+        (ou total pour un véhicule, matriciel pour un sprite) → isDestroyed
+        devient vrai. Réversible par _resetMonitors (bouton ✚). */
     knockOut(entity) {
-      if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
+      if (entity.type === "sprite") Utils.matrixKnockOut(entity);
+      else if (entity.type === "vehicle") entity.monFilled = entity.monTotal || 0;
       else entity.physFilled = entity.physMon || 0;
     },
     /** Descripteur de moniteur pour les jauges (barre fine + cases spectateur).
@@ -453,6 +482,7 @@ export const EditionSR5 = {
         (mêmes champs que isDestroyed/knockOut), l'alarme suit la fraction de
         cases. `null` si pas de moniteur. */
     gauge(entity) {
+      if (entity.type === "sprite") return Utils.matrixGauge(entity);
       if (entity.type === "vehicle")
         return Utils.ladderGauge(entity.monFilled || 0, entity.monTotal || 0);
       return Utils.ladderGauge(
@@ -624,6 +654,11 @@ export const EditionSR5 = {
     },
     convergenceText() {
       return "VD 12 dommages matriciels, reboot forcé (perte des marks, éjection, choc en RV). Dans un serveur : 3 marks posées + déploiement de CI ; le demi-DIEU converge à la sortie (p.233, 249).";
+    },
+    /** T6c — actions de Résonance du technomancien : hors SS, sans mark
+        (p.252). Ses actions matricielles STANDARD suivent le SS normalement. */
+    resonanceOSNote() {
+      return "Technomancien — ses actions de Résonance (compiler/décompiler, formes complexes, pouvoirs) sont hors Score de Surveillance et sans mark (p.252) ; seules ses actions matricielles standard comptent au SS.";
     },
     attrLimit(kind, srv) {
       const a = srv.attrs || {};

@@ -641,6 +641,23 @@ export const Matrix = {
     return this._model().convergenceText();
   },
 
+  /** T6c — asymétrie SR5 (p.252) : les actions de Résonance d'un technomancien
+      ne sont PAS comptabilisées au Score de Surveillance et ne nécessitent
+      aucune mark (ses actions matricielles standard, elles, suivent les règles
+      du SS). Note citée affichée dans le bloc SS. `null` hors SR5. */
+  resonanceOSNote() {
+    const m = this._model();
+    return m.resonanceOSNote ? m.resonanceOSNote() : null;
+  },
+
+  /** T6c — asymétrie SR6 (p.195) : à la Convergence, un sprite disparaît ET la
+      position physique du technomancien qui l'a compilé est révélée. `true`
+      seulement là où la règle existe (SR6), pour enrichir le bandeau de
+      convergence du nom des compilateurs exposés. */
+  spriteConvergenceReveal() {
+    return !!this._model().spriteConvergenceReveal;
+  },
+
   /** Limite (cap) d'un jet de CI selon l'attribut de serveur concerné
       (SR5 uniquement : Attaque pour l'attaque, Traitement de données
       pour la perception — SR6 n'a pas de limite, neutre : null). */

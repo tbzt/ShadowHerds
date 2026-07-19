@@ -441,6 +441,10 @@ export const Spirits = {
       force: P,
       services: free ? 0 : Utils.clamp(opts.services ?? 3, 1, 12),
       servicesUsed: 0,
+      // Lié (SR5/SR6) : esprit invoqué durablement — au bannissement, ajoute la
+      // Magie de l'invocateur à l'opposition (SR5 p.303). Miroir de `registered`
+      // du sprite ; basculé à la main (SummonPanel.toggleBind).
+      bound: false,
       meta: "Esprit",
       gender: "NB",
       archetype: `${t.label} (Puissance ${P})`,

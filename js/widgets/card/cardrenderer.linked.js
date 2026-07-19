@@ -200,24 +200,37 @@ Object.assign(CardRenderer, {
     </div>`;
   },
 
-  /** Chip « Invoquer » dans la zone Combat des conjurateurs. */
+  /** Chips « Invoquer » (produire) et « Bannir » (renvoi hostile) dans la zone
+      Combat des conjurateurs. Le glyphe ✦ (domaine esprit) est réutilisé pour
+      les deux verbes ; « Agir produit » — les deux affordances vivent sur la
+      carte du lanceur, donc aussi dans l'Agir du tracker (même renderer). */
   _spiritChipRow(pnj, deps) {
-    if (!deps.Spirits || !deps.Spirits.canSummon(pnj)) return "";
-    const linked = deps.Spirits.linkedTo(pnj.id).filter((sp) => sp.deployed);
-    const active = linked.length;
-    const destroyed = linked.some((sp) =>
-      App.getEditionModule(sp.edition).conditionMonitor.isDestroyed(sp),
-    );
-    const state = destroyed
-      ? '<span class="vehicle-chip-state destroyed">☠ détruit</span>'
-      : active
-        ? `<span class="vehicle-chip-state on">● ${active}</span>`
-        : '<span class="vehicle-chip-state"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> invoquer</span>';
-    return `<div class="combat-drugs spirit-chips">
-      <span class="tag vehicle-chip spirit-chip${active ? " deployed" : ""}${destroyed ? " destroyed" : ""}" role="button" tabindex="0"
+    const ed = App.getEditionModule(pnj.edition);
+    const canSummon = !!(deps.Spirits && deps.Spirits.canSummon(pnj));
+    const canBanish = !!(ed && ed.banishSkill) && ed.arcaneLock(pnj, "magic") === null;
+    if (!canSummon && !canBanish) return "";
+    let chips = "";
+    if (canSummon) {
+      const linked = deps.Spirits.linkedTo(pnj.id).filter((sp) => sp.deployed);
+      const active = linked.length;
+      const destroyed = linked.some((sp) =>
+        App.getEditionModule(sp.edition).conditionMonitor.isDestroyed(sp),
+      );
+      const state = destroyed
+        ? '<span class="vehicle-chip-state destroyed">☠ détruit</span>'
+        : active
+          ? `<span class="vehicle-chip-state on">● ${active}</span>`
+          : '<span class="vehicle-chip-state"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> invoquer</span>';
+      chips += `<span class="tag vehicle-chip spirit-chip${active ? " deployed" : ""}${destroyed ? " destroyed" : ""}" role="button" tabindex="0"
         data-action="open-summon" data-id="${pnj.id}"
-        title="Invoquer un esprit lié à ce PNJ">✦ Esprit${state}</span>
-    </div>`;
+        title="Invoquer un esprit lié à ce PNJ">✦ Esprit${state}</span>`;
+    }
+    if (canBanish) {
+      chips += `<span class="tag vehicle-chip spirit-chip" role="button" tabindex="0"
+        data-action="open-dismiss" data-kind="spirit" data-id="${pnj.id}"
+        title="Bannir un esprit adverse (test opposé de Bannissement)">✦ Bannir</span>`;
+    }
+    return `<div class="combat-drugs spirit-chips">${chips}</div>`;
   },
 
   /* ============================================================
@@ -330,16 +343,28 @@ Object.assign(CardRenderer, {
       `_spiritChipRow`, kind:"sprite"). Réutilise le rail via open-summon +
       data-kind. Seuls les Émergés (Sprites.canCompile) le voient. */
   _spriteCompileRow(pnj, deps) {
-    if (!deps.Sprites || !deps.Sprites.canCompile(pnj)) return "";
-    const linked = deps.Sprites.linkedTo(pnj.id).filter((sp) => sp.deployed);
-    const active = linked.length;
-    const state = active
-      ? `<span class="vehicle-chip-state on">● ${active}</span>`
-      : '<span class="vehicle-chip-state"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> compiler</span>';
-    return `<div class="combat-drugs sprite-chips">
-      <span class="tag vehicle-chip spirit-chip sprite-chip${active ? " deployed" : ""}" role="button" tabindex="0"
+    const ed = App.getEditionModule(pnj.edition);
+    const canCompile = !!(deps.Sprites && deps.Sprites.canCompile(pnj));
+    const canDecompile =
+      !!(ed && ed.spriteModel && ed.spriteModel.decompileSkill) &&
+      ed.arcaneLock(pnj, "resonance") === null;
+    if (!canCompile && !canDecompile) return "";
+    let chips = "";
+    if (canCompile) {
+      const linked = deps.Sprites.linkedTo(pnj.id).filter((sp) => sp.deployed);
+      const active = linked.length;
+      const state = active
+        ? `<span class="vehicle-chip-state on">● ${active}</span>`
+        : '<span class="vehicle-chip-state"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> compiler</span>';
+      chips += `<span class="tag vehicle-chip spirit-chip sprite-chip${active ? " deployed" : ""}" role="button" tabindex="0"
         data-action="open-summon" data-kind="sprite" data-id="${pnj.id}"
-        title="Compiler un sprite lié à ce technomancien">◈ Sprite${state}</span>
-    </div>`;
+        title="Compiler un sprite lié à ce technomancien">◈ Sprite${state}</span>`;
+    }
+    if (canDecompile) {
+      chips += `<span class="tag vehicle-chip spirit-chip sprite-chip" role="button" tabindex="0"
+        data-action="open-dismiss" data-kind="sprite" data-id="${pnj.id}"
+        title="Décompiler un sprite adverse (test opposé)">◈ Décompiler</span>`;
+    }
+    return `<div class="combat-drugs sprite-chips">${chips}</div>`;
   },
 });

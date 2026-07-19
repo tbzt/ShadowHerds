@@ -698,6 +698,51 @@ export const CardRenderer = {
     return core;
   },
 
+  /** Blocs d'OFFENSE du combattant actif, pour la console « Agir » du tracker
+      (V7, principe « Agir produit / Réagir subit ») — ce que le PNJ PRODUIT à
+      son tour, SANS moniteur (il ne subit rien sur son tour : le malus de
+      blessure est déjà cuit dans les réserves affichées, la vie est dans
+      l'effectif) : ② Armes → ③ Sorts · Matrice · Pouvoirs → ④ Compétences.
+      ① Actions (économie du tour) est posé à part par le tracker (_activeEconomy).
+      Réutilise les mêmes helpers de bloc que les corps d'édition (sr5/sr6/
+      anarchy1) → édition-fidèle sans dupliquer leur rendu, et sans nouvelle
+      branche `App.edition` (dispatch par la DONNÉE du pnj). R1 : l'état
+      MAINTENU (⟳ ×N) et les drogues actives — seuls états hors des 4 blocs,
+      portés jusqu'ici par le bloc moniteur retiré — sont réémis en tête (fine
+      ligne d'état), jamais perdus. anarchy2 rend armes/compétences avec un
+      balisage sur mesure (weapon-line/skill-tag, sorts au jet de risque) : il
+      renvoie `null` → le tracker garde la fiche complète en attendant son
+      propre constructeur d'offense. */
+  offenseBlocks(pnj, deps = CardRenderer.liveDeps()) {
+    if (!pnj || pnj._adhoc || pnj.edition === "anarchy2") return null;
+    const ed = pnj.edition;
+    const { weapons } = ItemResolver.splitEquip(pnj.equip || []);
+    const malus = Utils.dicePenalty(pnj, ed);
+    let html = "";
+    // R1 — état maintenu (⟳ ×N · −ND) + drogues actives, réémis même sans la
+    // fiche complète (ils vivaient dans le bloc moniteur / la zone Combat).
+    const state = this._sustainBadge(pnj, ed) + this._drugRow(pnj, ed, deps);
+    if (state) html += `<div class="offense-state">${state}</div>`;
+    // ② Armes
+    html += this._weaponBlock(pnj, weapons, ed, deps);
+    // ③ Sorts · Matrice · Pouvoirs — capacités ACTIVES (mage=Sorts, techno=
+    // formes/persona, decker=râtelier Matrice, adepte=Pouvoirs) ; le Drain vit
+    // avec le sort (_spellsBlock).
+    html += this._spellsBlock(pnj, pnj.spells, ed);
+    html += this._complexFormsBlock(pnj, pnj.complexForms, ed);
+    html += CyberdeckRenderer.combatArsenal(pnj, ed);
+    html += PersonaRenderer.combatArsenal(pnj, ed);
+    if (pnj.powers && pnj.powers.length)
+      html += this._listSection("Pouvoirs d'adepte", pnj.powers);
+    // ④ Compétences — jets génériques, triés ALPHABÉTIQUEMENT (D5 : repérage,
+    // pas réserve décroissante) ; ② Armes et ③ capacités gardent l'ordre métier.
+    const skills = (pnj.skills || [])
+      .slice()
+      .sort((a, b) => (a.name || "").localeCompare(b.name || "", "fr"));
+    html += this._skillsSection(skills, malus, { pnj });
+    return html;
+  },
+
   /* ---- Modules conditionnels ------------------------------------
      Un module = une zone à part entière, placée après Combat, qui n'existe
      QUE si applies(pnj) est vrai. Formalise ce qui vivait en vrac
@@ -1373,6 +1418,13 @@ export const CardRenderer = {
     if (!skills || !skills.length) return "";
     const { label = "Compétences", extraClass = "", pnj = null } = opts;
     const malusTxt = malus > 0 ? ` (malus blessure −${malus})` : "";
+    // PNJ porté explicitement par le tag (pas seulement déduit de la carte
+    // englobante `.pnj-card` par la délégation) : sans lui, un jet de compétence
+    // lancé HORS d'une carte — ex. la console « Agir » du tracker V7, qui monte
+    // ces tags via CardRenderer.offenseBlocks sans coquille de carte — perdait
+    // l'attribution (Edge pré-jet, journal). Inoffensif dans la carte : la
+    // délégation préfère cet attribut, qui vaut le `.pnj-card` englobant.
+    const pnjAttr = pnj ? ` data-roll-pnj="${pnj.id}"` : "";
     const tags = skills
       .map((s) => {
         const n = Number(s.val);
@@ -1390,7 +1442,7 @@ export const CardRenderer = {
         const eff = Number.isFinite(n) ? Math.max(0, n + bonus - malus) : n;
         const rollable = Number.isFinite(eff) && eff >= 1;
         const rollAttrs = rollable
-          ? ` data-roll="${eff}" data-roll-label="${this._esc(s.name)}"${srcTxt ? ` data-roll-detail="${this._esc(s.name + " " + eff + srcTxt)}"` : ""} title="Lancer ${eff} dés — ${this._esc(s.name)}${malusTxt}${this._esc(srcTxt)}"`
+          ? ` data-roll="${eff}"${pnjAttr} data-roll-label="${this._esc(s.name)}"${srcTxt ? ` data-roll-detail="${this._esc(s.name + " " + eff + srcTxt)}"` : ""} title="Lancer ${eff} dés — ${this._esc(s.name)}${malusTxt}${this._esc(srcTxt)}"`
           : "";
         let html = this._rollableTag(
           rollable,
@@ -1404,7 +1456,7 @@ export const CardRenderer = {
           const specN = Number.isFinite(n) ? Math.max(0, n + 2 + bonus - malus) : null;
           const specRollable = !!(specN && specN >= 1);
           const specRoll = specRollable
-            ? ` data-roll="${specN}" data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" title="Spécialité ${this._esc(s.spec)} : ${specN} dés (+2)${malusTxt}${this._esc(srcTxt)}"`
+            ? ` data-roll="${specN}"${pnjAttr} data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" title="Spécialité ${this._esc(s.spec)} : ${specN} dés (+2)${malusTxt}${this._esc(srcTxt)}"`
             : ` title="Spécialité ${this._esc(s.spec)} : +2 dés${malusTxt}"`;
           html += this._rollableTag(
             specRollable,
@@ -2088,6 +2140,11 @@ export const CardRenderer = {
         { kind: "secondary", label: "Éditer", attrs: `data-action="edit-open" data-id="${id}"` },
         { kind: "primary", danger: true, icon: "⏏", label: "Ranger", attrs: `data-action="dismiss-spirit" data-id="${id}"` },
       ];
+      // Lié / Non lié (SR5/SR6) : mirroir d'Inscrire (sprite) — un esprit lié
+      // ajoute la Magie de l'invocateur à l'opposition au bannissement (SR5).
+      // Seulement là où le bannissement est motorisé (banishSkill).
+      if (App.getEditionModule(pnj.edition)?.banishSkill)
+        acts.push({ kind: "menu", label: pnj.bound ? "Délier" : "Lier (invocation durable)", attrs: `data-action="toggle-spirit-bind" data-id="${id}"` });
       if (this._portraitEnabled(pnj, deps))
         acts.push({ kind: "menu", label: "Portrait IA", attrs: `data-action="generate-portrait" data-id="${id}"` });
       return CardFooter.render(acts, { savedActions: saved });
@@ -2178,6 +2235,14 @@ export const CardRenderer = {
           // Rail unique paramétré par kind (esprit | sprite) — un seul panneau,
           // vocabulaire distinct lu au contrat (arbitrage Canon, T3b).
           SummonPanel.open(id, actionEl.dataset.kind || "spirit");
+          break;
+        case "open-dismiss":
+          // Renvoi hostile (T6b) : depuis la carte du lanceur → choisir la
+          // cible. `id` = lanceur ; kind esprit (bannir) | sprite (décompiler).
+          SummonPanel.openDismiss(actionEl.dataset.kind || "spirit", { casterId: id });
+          break;
+        case "toggle-spirit-bind":
+          SummonPanel.toggleBind(id);
           break;
         case "toggle-sprite-task":
           SummonPanel.toggleTask(id, Number(actionEl.dataset.idx));
