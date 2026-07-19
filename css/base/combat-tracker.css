@@ -31,6 +31,40 @@
   padding: var(--sp-3);
 }
 
+/* V7 — sur écran (≥641px) la modale est une COLONNE à hauteur STABLE : le
+   corps prend la place restante et ce sont les 3 zones qui défilent en
+   interne, plus la modale entière. Deux effets voulus : (1) la Console garde
+   une taille FIXE entre Agir et Réagir — seul le bloc intérieur change, l'œil
+   ne saute plus ; (2) elle réserve une grande surface stable pour une future
+   refonte de Réagir. Sous 641px : comportement par défaut (la modale défile,
+   les zones s'empilent — la file mobile viendra au Lot 5). */
+@media (min-width: 641px) {
+  .encounter-modal {
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+    overflow: hidden;
+  }
+  .encounter-modal .modal-header {
+    flex: none;
+  }
+  .encounter-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    overflow: hidden;
+  }
+  /* Zones bornées par la hauteur du corps → défilement interne (la barre
+     « Tour suivant », collée en bas de l'Effectif, reste ainsi visible). */
+  .encounter-main-col,
+  .encounter-active-card {
+    min-height: 0;
+    max-height: 100%;
+    overflow-y: auto;
+  }
+}
+
 /* Zone « Instrument » : bandeau de scène en surface haute (--bg-raised),
    coiffé d'un filet --aro (signature AR de l'overlay). Le header est déjà
    position:sticky → contexte de positionnement pour le ::before, on ne
