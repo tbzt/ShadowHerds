@@ -67,7 +67,6 @@ import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
 import { Coherence } from "../rules/coherence.js";
 import { Collection } from "../widgets/collection/collection.js";
-import { ContactGen } from "./contactgen.js";
 import { Contacts } from "./contacts.js";
 import { DossierBar } from "../widgets/journal/dossierbar.js";
 import { Flavor } from "../rules/flavor.js";
@@ -119,12 +118,12 @@ export const ContactsBook = Object.assign(_contactsCollection, {
     /* ---- Créer un contact saisi à la main ----
        Ajout rapide depuis une fiche PJ (ContactCreate) : crée un vrai contact
        du carnet à partir des champs saisis (seul le nom est requis, cf.
-       ContactGen.buildManual), le range dans le dossier courant si applicable
+       Contacts.buildManual), le range dans le dossier courant si applicable
        (même logique que generate()), persiste, et le renvoie pour que
        l'appelant le lie au PJ (Characters.addContactLink). Pas de zone d'essai/
        undo ici : la création est intentionnelle, pas un tirage à écarter. */
     createManual(fields, edition = App.edition) {
-      const c = ContactGen.buildManual(edition, fields);
+      const c = Contacts.buildManual(edition, fields);
       this.data.all.push(c);
       const group =
         this.currentGroup && this.currentGroup !== "all" ? this.currentGroup : null;
@@ -227,7 +226,7 @@ export const ContactsBook = Object.assign(_contactsCollection, {
       // Champs dérivés Anarchy (domaine/coût d'atout/tags) : jamais saisis
       // directement, toujours recalculés depuis networkId/scope/rr — corrige
       // aussi le coût d'atout qui, sinon, resterait périmé après édition de RR.
-      ContactGen.recomputeAnarchyDerived(c);
+      Contacts.recomputeAnarchyDerived(c);
       this.save();
     },
 
@@ -257,7 +256,7 @@ export const ContactsBook = Object.assign(_contactsCollection, {
 
     /* ---- Déployer un PNJ complet depuis un contact ----
        Le vocabulaire des contacts ne correspond pas aux archétypes nommés
-       du générateur : on ne mappe que le milieu (ContactGen.milieuForContact,
+       du générateur : on ne mappe que le milieu (Contacts.milieuForContact,
        depuis le tag réseau/catégorie du contact) et on laisse Coherence
        choisir un archétype cohérent, comme la « composition libre » du
        Générateur. Le PNJ va directement aux Ombres (data.all de Shadows,
@@ -273,7 +272,7 @@ export const ContactsBook = Object.assign(_contactsCollection, {
       }
       const ed = App.editionModule;
       if (!ed) return;
-      const milieu = ContactGen.milieuForContact(c);
+      const milieu = Contacts.milieuForContact(c);
       const archetype =
         Coherence.pickArchetype(App.edition, ed.formOptions.archetype, { milieu }) ||
         "Aléatoire";

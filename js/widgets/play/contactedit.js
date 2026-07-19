@@ -171,11 +171,11 @@ export const ContactEdit = {
   },
 
   /** Bloc de champs Anarchy 2 : Réseau + Portée pilotent le domaine et le coût
-      d'atout (dérivés, recalculés au save par ContactGen.recomputeAnarchyDerived),
+      d'atout (dérivés, recalculés au save par Contacts.recomputeAnarchyDerived),
       puis Niveau + RR, et une ligne d'aperçu VIVANT du domaine/coût. Selects
       natifs, comme le formulaire de génération (cg-network/cg-scope). */
   _anarchyFields(c, esc) {
-    const nets = ContactGen.NETWORKS.map(
+    const nets = Contacts.NETWORKS.map(
       (n) => `<option value="${n.id}"${n.id === c.networkId ? " selected" : ""}>${esc(n.label)}</option>`,
     ).join("");
     return `
@@ -212,8 +212,8 @@ export const ContactEdit = {
     const scope = this._val("#ce-scope");
     const rr = parseInt(this._val("#ce-rr"), 10) || 0;
     host.textContent =
-      `Domaine : ${ContactGen.domaineLabel(net, scope)} · ` +
-      `Coût d'atout : ${ContactGen.atoutCost(rr, scope)} pts — ` +
+      `Domaine : ${Contacts.domaineLabel(net, scope)} · ` +
+      `Coût d'atout : ${Contacts.atoutCost(rr, scope)} pts — ` +
       `recalculés d'après le Réseau, la Portée et la RR.`;
   },
 

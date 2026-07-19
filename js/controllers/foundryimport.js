@@ -28,7 +28,7 @@
    perte volontaire vers le modèle simple, cf. storage.js).
    ============================================================ */
 import { Characters } from "./characters.js";
-import { ContactGen } from "./contactgen.js";
+import { Contacts } from "./contacts.js";
 import { ContactsBook } from "./contactsbook.js";
 import { Debug } from "../core/debug.js";
 import { Dialog } from "../widgets/kit/dialog.js";
@@ -213,7 +213,7 @@ export const FoundryImport = {
   },
 
   /** Apparie par nom (même édition) dans ContactsBook, crée sinon — même
-      geste que la création manuelle (`ContactGen.buildManual`, réutilisé
+      geste que la création manuelle (`Contacts.buildManual`, réutilisé
       tel quel : gère déjà le clamp par édition, Anarchy compris). Lie via
       le même schéma que `Characters.addContactLink` (contactId/relation/
       loyalty), sans son toast par doublon — silencieux pendant un import
@@ -227,7 +227,7 @@ export const FoundryImport = {
         (x) => x.edition === edition && x.name.toLowerCase() === c.name.toLowerCase(),
       );
       if (!contact) {
-        contact = ContactGen.buildManual(edition, {
+        contact = Contacts.buildManual(edition, {
           name: c.name, role: c.role, metatype: c.metatype,
           influence: c.connection, loyaute: c.loyalty, level: c.connection, rr: 1,
         });

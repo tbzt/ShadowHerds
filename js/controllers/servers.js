@@ -1,11 +1,12 @@
 "use strict";
 
 /* ============================================================
-   SERVEURS & CI — bibliothèque et génération.
-   Panneau « Matrice » : bibliothèque de serveurs avec groupes
-   (socle Collection, comme Shadows/ContactsBook), génération
-   dirigée ou aléatoire, édition de serveur, spider lié. Deux
-   responsabilités : génération et persistance (via Collection).
+   SERVEURS & CI — bibliothèque et panneau « Matrice ».
+   Bibliothèque de serveurs avec groupes (socle Collection, comme
+   Shadows/ContactsBook), panneau de génération, édition de serveur,
+   spider lié. La fabrication d'un objet serveur (données + règles de
+   génération) est déléguée à ServerGen (js/controllers/servergen.js) ;
+   ce fichier lit le formulaire, persiste et rend.
    Les catalogues de CI/profils/sculptures par édition vivent dans
    js/matrix.js (Matrix.use(edition)). L'état de run en direct
    (tours, CI déployées, surveillance) est porté par le tracker
@@ -20,6 +21,7 @@ import { DossierBar } from "../widgets/journal/dossierbar.js";
 import { Encounter } from "./encounter.js";
 import { Intrusion } from "./intrusion.js";
 import { Matrix } from "../rules/matrix.js";
+import { ServerGen } from "./servergen.js";
 import { ServerRenderer } from "../widgets/play/serverrenderer.js";
 import { SidebarToggle } from "../widgets/kit/sidebartoggle.js";
 import { Utils } from "../core/utils.js";
@@ -105,80 +107,33 @@ export const Servers = Object.assign(
     /* ========================================================
        GÉNÉRATION
        ======================================================== */
-    /** Crée un serveur depuis le formulaire du panneau. */
+    /** Crée un serveur depuis le formulaire du panneau : lit les champs,
+        délègue la fabrication à ServerGen, puis persiste (addServer). */
     createFromForm() {
       const ed = this._edition();
-      const profiles = this.profiles(ed);
+      const srv = ServerGen.generate(ed, {
+        profileId: (document.getElementById("srv-profile") || {}).value || "random",
+        indiceSel: (document.getElementById("srv-indice") || {}).value || "auto",
+        secPhys: !!(document.getElementById("srv-secphys") || {}).checked,
+        icChoices: Array.from(
+          document.querySelectorAll("#srv-ic-choices input:checked"),
+        ).map((el) => el.value),
+        name: (document.getElementById("srv-name") || {}).value || "",
+        withSpider: !!(document.getElementById("srv-spider") || {}).checked,
+      });
+      this.addServer(srv);
+    },
 
-      const profSel = (document.getElementById("srv-profile") || {}).value || "random";
-      const profile =
-        profSel === "random"
-          ? Utils.rand(profiles)
-          : profiles.find((p) => p.id === profSel) || Utils.rand(profiles);
-
-      let indice;
-      const indSel = (document.getElementById("srv-indice") || {}).value || "auto";
-      if (indSel === "auto") {
-        indice =
-          profile.indice != null ? profile.indice : Utils.randInt(profile.min, profile.max);
-      } else {
-        indice = parseInt(indSel, 10);
-      }
-      const Mod = App.getEditionModule(ed);
-      const secPhys =
-        !!(Mod && Mod.secPhysBonus) &&
-        !!(document.getElementById("srv-secphys") || {}).checked;
-      if (secPhys) indice += Mod.secPhysBonus;
-
-      // Attributs ASDF (SR5/SR6) : indice à indice+3 répartis au hasard
-      let attrs = null;
-      if (Mod?.matrixModel?.hasAttrs) {
-        const vals = [indice, indice + 1, indice + 2, indice + 3].sort(
-          () => Math.random() - 0.5,
-        );
-        attrs = Object.fromEntries(Matrix.ATTR_KEYS.map((ak, i) => [ak.key, vals[i]]));
-      }
-
-      // Liste des CI : sélection manuelle si des cases sont cochées, sinon auto
-      const checked = Array.from(
-        document.querySelectorAll("#srv-ic-choices input:checked"),
-      ).map((el) => el.value);
-      const icList = checked.length
-        ? ["patrouilleuse", ...checked.filter((k) => k !== "patrouilleuse")]
-        : Matrix.use(ed).pickICs(indice, profile.sev);
-
-      const nameInput = (document.getElementById("srv-name") || {}).value || "";
-      const name = nameInput.trim() || Matrix.makeName(profile.sev);
-
-      const srv = {
-        id: Utils.uid(),
-        edition: ed,
-        name,
-        profile: profile.label,
-        indice,
-        sev: profile.sev,
-        secPhys,
-        attrs,
-        icList,
-        sculpture: Matrix.pickSculpture(profile.sev),
-        spider: null,
-        notes: "",
-        // Plus d'`intrusion` ici — le serveur redevient une pure
-        // définition, l'état vivant vit scène-scopé (Encounter.state.matrix),
-        // créé à la volée par Intrusion._state.
-      };
-
-      if ((document.getElementById("srv-spider") || {}).checked) {
-        srv.spider = this._makeSpider(srv);
-      }
-
+    /** Range un serveur fabriqué dans la bibliothèque (dossier courant),
+        persiste et rafraîchit. */
+    addServer(srv) {
       Debug.log("servers", "serveur créé", {
         name: srv.name,
         edition: srv.edition,
         profile: srv.profile,
         indice: srv.indice,
         sev: srv.sev,
-        secPhys,
+        secPhys: srv.secPhys,
         ics: srv.icList,
         spider: !!srv.spider,
       });
@@ -193,37 +148,11 @@ export const Servers = Object.assign(
       toast(`✓ ${srv.name} (indice ${srv.indice}) créé.`);
     },
 
-    /* ---- Spider (decker de sécurité lié) ---- */
-    _spiderOpts(srv) {
-      const Mod = App.getEditionModule(srv.edition);
-      const opts = {
-        meta: "Aléatoire",
-        gender: "Aléatoire",
-        archetype: Mod.spiderArchetype(srv.indice),
-        tier: "Aléatoire",
-        special: Mod.spiderSpecial,
-      };
-      // Rating du spider dérivé de l'indice serveur (SR5/SR6 uniquement :
-      // Anarchy n'a pas de champ de rating numérique, cf. ratingBadge).
-      if (Mod.ratingBadge.field !== "tier") {
-        opts[Mod.ratingBadge.field] = String(Utils.clamp(Math.ceil(srv.indice / 2), 2, 6));
-      }
-      return opts;
-    },
-
-    _makeSpider(srv) {
-      const Mod = App.getEditionModule(srv.edition);
-      if (!Mod || !Mod.generate) return null;
-      const pnj = Mod.generate(this._spiderOpts(srv));
-      pnj.archetype = `Spider — ${pnj.archetype}`;
-      pnj.ownerName = srv.name;
-      return pnj;
-    },
-
+    /* ---- Spider (decker de sécurité lié) — fabrication déléguée à ServerGen ---- */
     addSpider(id) {
       const srv = this.find(id);
       if (!srv) return;
-      srv.spider = this._makeSpider(srv);
+      srv.spider = ServerGen.makeSpider(srv);
       this.save();
       this.render();
       if (srv.spider) toast(`Spider ${srv.spider.name} en poste sur ${srv.name}.`);
@@ -321,10 +250,7 @@ export const Servers = Object.assign(
       this._commitEdit(id);
       const srv = this.find(id);
       if (!srv || !Matrix.use(srv.edition).hasAttrs()) return;
-      const vals = [srv.indice, srv.indice + 1, srv.indice + 2, srv.indice + 3].sort(
-        () => Math.random() - 0.5,
-      );
-      srv.attrs = Object.fromEntries(Matrix.ATTR_KEYS.map((ak, i) => [ak.key, vals[i]]));
+      srv.attrs = ServerGen.rollAttrs(srv.indice);
       this.save();
       this.render();
     },
