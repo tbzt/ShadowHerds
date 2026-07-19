@@ -166,6 +166,23 @@
 /* V7 — actions DÉPLIÉES de la ligne de l'actif : un petit tableau de bord dans
    l'espace vide sous la jauge de vie du combattant en focus (les lignes en
    attente gardent leur ⋯). Mêmes actions que le menu, en boutons visibles. */
+/* La ligne de l'ACTIF porte beaucoup de glyphes (chips + actions dépliées) :
+   pour qu'ils ne CHEVAUCHENT jamais le nom quand la largeur baisse, la ligne
+   peut passer sur DEUX rangs. Le nom garde une largeur minimale (min-width) →
+   dès que les glyphes ne tiennent plus à côté sans le toucher, tout le bloc de
+   contrôles bascule en 2ᵉ ligne (aligné à droite), au lieu de tronquer le nom
+   ou de le chevaucher. */
+.encounter-row.active-turn {
+  flex-wrap: wrap;
+  row-gap: 0.4rem;
+}
+.encounter-row.active-turn .encounter-main {
+  min-width: 8rem;
+}
+.encounter-row.active-turn .encounter-controls {
+  margin-left: auto;
+}
+
 /* Icônes monochromes calquées sur les chips (✓/⚄/⏸) : carrées, contour discret
    au repos, accent au survol. Rendues dans .encounter-controls, à la suite des
    chips → une seule rangée alignée. La 1ʳᵉ (is-first) est séparée par une fine
