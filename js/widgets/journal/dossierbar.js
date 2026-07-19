@@ -273,10 +273,41 @@ export const DossierBar = {
 
   /* ---- CRUD (cascade sur les collections, jointure par nom) ---- */
   addDossier() {
-    Dialog.prompt({
+    // 1b : le « + » demande d'abord le TYPE — la structure Campagne › Run ›
+    // Scène veut du typé par défaut — puis le nom, et crée le dossier DÉJÀ
+    // typé (au lieu de « créer neutre puis typer via ⋯ »). La création reste
+    // côté Dossiers (propriétaire de l'arbre) ; « Jouer » n'y touche pas.
+    Dialog.choose({
       title: "Nouveau dossier",
-      label: "Nom du dossier",
-      placeholder: "ex. Run Aztechnology, Équipe A…",
+      message: "Quel type ?",
+      options: [
+        { value: "run", label: "◆ Nouvelle run", primary: true },
+        { value: "campaign", label: "❖ Nouvelle campagne" },
+        { value: "plain", label: "Dossier simple" },
+      ],
+    }).then((choice) => {
+      if (!choice) return;
+      this._createDossier(choice === "plain" ? null : choice);
+    });
+  },
+
+  /** Prompte le nom puis crée un dossier, optionnellement typé run/campaign
+      (jointure par nom inchangée). Appelé par le choix de type du « + ». */
+  _createDossier(kind) {
+    Dialog.prompt({
+      title:
+        kind === "campaign"
+          ? "Nouvelle campagne"
+          : kind === "run"
+            ? "Nouvelle run"
+            : "Nouveau dossier",
+      label: `Nom ${kind === "campaign" ? "de la campagne" : kind === "run" ? "de la run" : "du dossier"}`,
+      placeholder:
+        kind === "run"
+          ? "ex. Extraction Aztechnology…"
+          : kind === "campaign"
+            ? "ex. Chronique de Seattle…"
+            : "ex. Équipe A…",
       confirmLabel: "Créer",
     }).then((name) => {
       if (!name || !name.trim()) return;
@@ -285,9 +316,11 @@ export const DossierBar = {
         toast("Ce dossier existe déjà.", "warning");
         return;
       }
-      const d = Dossiers.add(clean);
+      const d = Dossiers.add(clean, null, kind);
       if (d) this.select(d.id);
-      toast(`Dossier « ${clean} » créé.`);
+      toast(
+        `« ${clean} » créé${kind ? "e" : ""}${kind === "run" ? " (run ◆)" : kind === "campaign" ? " (campagne ❖)" : ""}.`,
+      );
     });
   },
 
