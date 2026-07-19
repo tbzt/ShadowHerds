@@ -1082,6 +1082,25 @@
   letter-spacing: 0.04em;
   color: var(--text-dim);
 }
+/* V7 Lot 4 — bloc 🔌 des appareils brickables dans la console Réagir : canal
+   Matrice (--accent2), détaché du froid --cold des lignes de réaction — c'est
+   une cible matricielle (le decker la brique), pas une réaction chair. */
+.encounter-react-devices {
+  border: 1px solid color-mix(in srgb, var(--accent2) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent2) 5%, var(--bg-card));
+  border-radius: var(--radius);
+  padding: 0.5rem 0.6rem;
+  margin-top: 0.2rem;
+}
+.encounter-react-devices .encounter-devices-lbl {
+  color: var(--accent2);
+}
+.encounter-device-owner {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-top: 0.25rem;
+}
 .encounter-device-row {
   display: flex;
   flex-wrap: wrap;

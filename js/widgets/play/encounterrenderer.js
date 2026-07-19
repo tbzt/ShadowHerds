@@ -654,10 +654,13 @@ export const EncounterRenderer = {
       d'état, pont decker→scène, appareils matriciels, duel
       decker↔decker. */
   _activeTop(r, state) {
+    // V7 Lot 4 — le BRICKAGE a quitté Agir : une arme brickée, le PNJ la SUBIT
+    // (le PJ decker l'attaque à SON tour) → le bloc 🔌 vit dans la console
+    // Réagir (_reactDevices). Le duel decker↔decker RESTE ici : c'est l'offense
+    // d'un PNJ decker à son propre tour.
     return (
       this._activeBandeau(r) +
       this._activeDeckerLink(r, state) +
-      this._activeDevices(r, state) +
       this._deckerDuel(r, state)
     );
   },
@@ -708,23 +711,33 @@ export const EncounterRenderer = {
       3. au moins une arme (ItemResolver, même extraction que la carte).
       L'état vit sur l'entrée combattant `r.devices` (= `c.devices`, copié par
       `_rows`), scène-scopé — cf. Encounter.targetDevice. */
-  _activeDevices(r, state) {
-    const pnj = r.pnj;
-    if (!pnj || pnj._adhoc) return "";
-    // Fiche active = éditions à tour actif (SR5/SR6) → seul le régime "monitor"
-    // s'y affiche. Le narratif (A2) passe par _narrativeDevices (pas de fiche).
-    if (Matrix.use(pnj.edition).deviceBricking() !== "monitor") return "";
+  /** V7 Lot 4 — appareils matriciels CIBLABLES dans la console Réagir : au tour
+      d'un PJ (souvent le decker), les armes connectées des PNJ qui réagissent
+      deviennent des cibles de brickage (le PNJ les SUBIT). Un bloc 🔌 unique,
+      groupé par propriétaire, après les lignes de réaction. Reprend le régime
+      d'édition (Matrix.deviceBricking()==="monitor", jamais un `if App.edition`),
+      le gate contexte Matrice (Silk), l'exclusion des mains nues (deviceConnected)
+      et l'état scène-scopé r.devices — exactement l'ancien _activeDevices, mais
+      itéré sur les combattants qui réagissent au lieu de l'actif. */
+  _reactDevices(targets, state) {
     if (!this._matrixSceneActive(state)) return "";
-    // R1d : mains nues exclues des cibles matricielles (stopgap D-R1d,
-    // Matrix.deviceConnected — jamais un test ad hoc ici).
-    const weapons = ItemResolver.splitEquip(pnj.equip).weapons.filter((w) => Matrix.deviceConnected(w));
-    if (!weapons.length) return "";
-    const devices = r.devices || {};
-    const protectors = this._deckersInScene(state, pnj.id);
-    const rows = weapons.map((w) => this._deviceRow(pnj, w, devices[w], protectors)).join("");
-    return `<div class="encounter-devices">
-      <div class="encounter-devices-lbl">Appareils matriciels</div>
-      ${rows}
+    const blocks = [];
+    for (const r of targets) {
+      const pnj = r.pnj;
+      if (!pnj || pnj._adhoc) continue;
+      if (Matrix.use(pnj.edition).deviceBricking() !== "monitor") continue;
+      // R1d : mains nues exclues des cibles matricielles (Matrix.deviceConnected).
+      const weapons = ItemResolver.splitEquip(pnj.equip).weapons.filter((w) => Matrix.deviceConnected(w));
+      if (!weapons.length) continue;
+      const devices = r.devices || {};
+      const protectors = this._deckersInScene(state, pnj.id);
+      const rows = weapons.map((w) => this._deviceRow(pnj, w, devices[w], protectors)).join("");
+      blocks.push(`<div class="encounter-device-owner">${Utils.escHtml(pnj.name || "")}</div>${rows}`);
+    }
+    if (!blocks.length) return "";
+    return `<div class="encounter-devices encounter-react-devices">
+      <div class="encounter-devices-lbl">🔌 Appareils matriciels ciblables — le decker les brique</div>
+      ${blocks.join("")}
     </div>`;
   },
 
@@ -1044,7 +1057,7 @@ export const EncounterRenderer = {
     // (l'état des PNJ change au fil du tour) : pas de cache _activeCardId.
     if (active && active.isPJ) {
       this._activeCardId = null;
-      this._renderReactionConsole(box, rows, active, modeEnter);
+      this._renderReactionConsole(box, rows, active, modeEnter, state);
       return;
     }
 
@@ -1175,7 +1188,7 @@ export const EncounterRenderer = {
       non réduit, cf. carte). Édition-neutre. En mode narratif (Anarchy) il n'y
       a pas de tour actif → cette console ne s'affiche pas (renderActiveCard
       sort avant). */
-  _renderReactionConsole(box, rows, active, modeEnter) {
+  _renderReactionConsole(box, rows, active, modeEnter, state) {
     // PNJ chair ET CI matricielles actives (une CI attaquée par un
     // PJ doit pouvoir défendre/encaisser). PJ et combattants « down » exclus.
     const targets = rows.filter((r) => r.pnj && !r.isPJ && !r.down);
@@ -1187,6 +1200,9 @@ export const EncounterRenderer = {
     const rowsHtml = targets
       .map((r) => (r.kind === "matrix" ? this._reactMatrixRow(r) : this._reactPnjRow(r)))
       .join("");
+    // V7 Lot 4 — bloc 🔌 des appareils brickables (le decker attaque le matos
+    // PNJ à son tour), après les lignes de réaction. Vide hors scène Matrice.
+    const devicesHtml = this._reactDevices(targets, state || Encounter.state || {});
     // Polish DA : bandeau de mode FROID nommant le PJ actif (tue l'erreur de
     // mode — persona Tom : « à qui c'est le tour »). Édition-neutre : lit le nom
     // du combattant, aucun App.edition.
@@ -1197,6 +1213,7 @@ export const EncounterRenderer = {
     box.innerHTML = `<div class="encounter-react${modeEnter ? " mode-enter" : ""}">
       <div class="encounter-mode-head is-react">Réagir · ${pjName} agit — faites réagir les PNJ</div>
       ${rowsHtml}
+      ${devicesHtml}
     </div>`;
   },
 
