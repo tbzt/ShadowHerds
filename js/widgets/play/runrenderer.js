@@ -78,18 +78,24 @@ export const RunRenderer = {
     return `<button class="card-action-btn" data-action="run-cast" title="Générer les PNJ d'opposition et les ranger dans la run">⚔ Casting</button>`;
   },
 
-  /** « Plan du lieu » (Lot 4) — opt-in Images IA actif ET site à plan utile
-      (tag `planUtile` posé à la génération, 3a). Si un plan existe déjà, vignette
-      cliquable réutilisant la lightbox de Portrait (`data-portrait-preview`) ;
-      sinon bouton de génération. Rien pour un topos vierge (pas de `planUtile`). */
+  /** Boutons « plan » d'un site à plan utile (tag `planUtile`, 3a) ; rien pour
+      un topos vierge. Deux chemins :
+      - « Plan tactique » (MapGen) : plan CONSTRUIT, gratuit, instantané, hors
+        opt-in IA — toujours proposé. Déterministe par graine, régénéré à
+        l'affichage (`run-map` → RunGen.showMap).
+      - « Ambiance » (Pollinations, Lot 4) : image d'ambiance IA, seulement si
+        l'opt-in Images IA est actif ; vignette cliquable si déjà générée. */
   _planBtn(r) {
-    const enabled =
+    if (!r.planUtile) return "";
+    let out = `<button class="card-action-btn" data-action="run-map" title="Plan tactique du lieu (généré, gratuit)">🗺 Plan tactique</button>`;
+    const aiEnabled =
       typeof Settings !== "undefined" && Settings.getPortraitSettings().enabled;
-    if (!enabled || !r.planUtile) return "";
-    if (r.planUrl) {
-      return `<button class="card-action-btn" data-portrait-preview="${CardRenderer._esc(r.planUrl)}" title="Voir le plan du lieu">🗺 Plan</button>`;
+    if (aiEnabled) {
+      out += r.planUrl
+        ? `<button class="card-action-btn" data-portrait-preview="${CardRenderer._esc(r.planUrl)}" title="Voir l'ambiance générée">✨ Ambiance</button>`
+        : `<button class="card-action-btn" data-action="run-plan" title="Générer une ambiance du lieu (IA)">✨ Ambiance</button>`;
     }
-    return `<button class="card-action-btn" data-action="run-plan" title="Générer un plan du lieu (IA)">🗺 Plan du lieu</button>`;
+    return out;
   },
 };
 

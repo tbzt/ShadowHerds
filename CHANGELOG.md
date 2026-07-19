@@ -12,6 +12,21 @@ commit.
 
 ## [Non publié]
 
+## [1.75.0] — 2026-07-19
+
+### Un plan tactique du lieu, construit et jouable
+
+- **« Plan tactique » : un vrai plan de bâtiment, gratuit et instantané.** Sur un
+  topos à lieu jouable, un nouveau bouton 🗺 génère un plan *construit* — murs,
+  pièces nommées, couloir central, portes à battant, grille tactique (case ≈ 2 m) —
+  au lieu d'une image d'ambiance. L'objectif et l'entrée sont repérés, le mobilier
+  varie selon le type de pièce (bureaux, salle serveur, laboratoire, quai…). Le plan
+  est propre au run et se régénère à l'identique — rien à stocker.
+- **Teinté par l'édition.** Le liseré et l'objectif prennent l'accent de l'édition
+  active (sang, magenta, bleu, ambre) ; le corps du plan reste sombre et lisible.
+- L'ancien « Plan du lieu » (image d'ambiance générée par IA) reste disponible sous
+  « ✨ Ambiance » quand les images IA sont activées dans les paramètres.
+
 ## [1.74.0] — 2026-07-19
 
 ### La recherche et les notes, façon messagerie

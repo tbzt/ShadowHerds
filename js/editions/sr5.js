@@ -29,6 +29,9 @@ import { WeaponRoll } from "../rules/weaponroll.js";
 export const EditionSR5 = {
   id: "sr5",
   label: "Shadowrun 5e",
+  // Accent DA lu par le générateur de plan de lieu (MapGen) — liseré + objectif.
+  // Le corps du plan reste blueprint sombre ; seul cet accent teinte la scène.
+  mapAccent: "#e0464f",
   badgeLabel: "SR5",
   useMetavariants: true,
 

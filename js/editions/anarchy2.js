@@ -29,6 +29,8 @@ import { WeaponRoll } from "../rules/weaponroll.js";
 export const EditionAnarchy2 = {
   id: "anarchy2",
   label: "Anarchy 2e",
+  // Accent DA lu par le générateur de plan de lieu (MapGen) — liseré + objectif.
+  mapAccent: "#f0a63a",
   badgeLabel: "ANARCHY 2E",
   isWip: false,
 

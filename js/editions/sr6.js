@@ -37,6 +37,8 @@ import { WeaponRoll } from "../rules/weaponroll.js";
 export const EditionSR6 = {
   id: "sr6",
   label: "Shadowrun 6e",
+  // Accent DA lu par le générateur de plan de lieu (MapGen) — liseré + objectif.
+  mapAccent: "#d64bd6",
   badgeLabel: "SR6",
   useMetavariants: true,
 

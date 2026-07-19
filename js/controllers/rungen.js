@@ -63,6 +63,11 @@ export const RunGen = {
           if (card) this.generatePlan(card.dataset.id, actionEl);
           break;
         }
+        case "run-map": {
+          const card = actionEl.closest(".run-card");
+          if (card) this.showMap(card.dataset.id);
+          break;
+        }
         case "clear-all":
           this.clearAll();
           break;
@@ -297,6 +302,32 @@ export const RunGen = {
         this._refreshCard(runId);
       },
     });
+  },
+
+  /** « Plan tactique » — plan de lieu CONSTRUIT par MapGen (procédural, gratuit,
+      hors opt-in IA, à la différence de generatePlan/Pollinations). Déterministe :
+      on ne persiste que `mapSeed` (le `siteType` est déjà sur le topos) ; le SVG se
+      régénère à l'identique à chaque affichage — rien de lourd à stocker. Rendu
+      dans la lightbox de Portrait (un data URL SVG dans le même <img>). L'accent
+      DA est lu sur le module d'édition (jamais `if (App.edition === …)`). */
+  showMap(runId) {
+    const run = this._runs.find((r) => r.id === runId);
+    if (!run) return;
+    if (!run.mapSeed) {
+      run.mapSeed = Utils.uid();
+      this._save();
+    }
+    const accent =
+      (App.editionModule && App.editionModule.mapAccent) || "#35e0e6";
+    const svg = MapGen.build({
+      siteType: run.siteType,
+      seed: run.mapSeed,
+      accent,
+      title: run.lieu || "Plan du lieu",
+      subtitle: [run.type, run.client].filter(Boolean).join(" · "),
+      lieu: run.lieu || "",
+    });
+    Portrait.showPreview(MapGen.dataUrl(svg));
   },
   clearAll() {
     this._runs = [];

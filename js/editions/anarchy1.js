@@ -39,6 +39,8 @@ import { WeaponRoll } from "../rules/weaponroll.js";
 export const EditionAnarchy1 = {
   id: "anarchy1",
   label: "Anarchy 1re",
+  // Accent DA lu par le générateur de plan de lieu (MapGen) — liseré + objectif.
+  mapAccent: "#3d9be0",
   badgeLabel: "ANARCHY 1RE",
   isWip: false,
   useMetavariants: true,
