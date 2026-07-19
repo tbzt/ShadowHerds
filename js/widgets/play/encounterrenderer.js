@@ -348,6 +348,22 @@ export const EncounterRenderer = {
         .join("")}</div>`;
   },
 
+  /** Barre d'actions DÉPLIÉE de la ligne de l'actif (V7) : les mêmes items que
+      le menu ⋯ (mêmes `data-action` → délégation d'Encounter inchangée), mais
+      en boutons VISIBLES, pour occuper l'espace vide sous la jauge de vie du
+      combattant en focus. Rendu seulement pour la ligne pleine de l'actif
+      (_row, isLead) ; les lignes en attente/hors-combat gardent le ⋯. */
+  _leadActionBar(items) {
+    if (!items || !items.length) return "";
+    const esc = Utils.escHtml;
+    return `<div class="encounter-lead-actions">${items
+      .map(
+        (a) =>
+          `<button type="button" class="encounter-lead-action${a.danger ? " is-danger" : ""}" ${a.attrs}>${esc(a.label)}</button>`,
+      )
+      .join("")}</div>`;
+  },
+
   /** Suffixe « · Passe N » (SR5 uniquement) — partagé entre le titre du
       modal et le résumé sidebar pour ne pas dupliquer la condition. */
   _passSuffix(state, model) {
@@ -522,6 +538,12 @@ export const EncounterRenderer = {
       this._dismissMenuItem(r),
       { attrs: `data-action="remove-combatant" data-id="${pnjId}"`, label: "Retirer du combat", danger: true },
     ].filter(Boolean);
+    // La ligne PLEINE de l'actif (isActive, pas hors-combat) est le combattant
+    // EN FOCUS : elle a de la place sous sa jauge de vie → ses actions rares
+    // (celles derrière le ⋯ des lignes en attente) y sont DÉPLIÉES en un petit
+    // tableau de bord, et le ⋯ disparaît de cette ligne. Les lignes compactes
+    // (en attente) et hors-combat gardent le menu ⋯.
+    const isLead = isActive && !r.down;
     return `<div class="encounter-row${isMatrix ? " is-matrix" : ""}${isActive ? " active-turn" : ""}${compact ? " compact" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}${r.down ? " down" : ""}${r.delayed && !r.down ? " delayed" : ""}" data-id="${pnjId}">
       ${initZone}
       <div class="encounter-main">
@@ -536,12 +558,13 @@ export const EncounterRenderer = {
         ${this._moraleBanner(r)}
         <input type="text" class="encounter-note${hasNote ? "" : " is-empty"}" placeholder="Note…" value="${Utils.escHtml(note || "")}"
           data-action="set-note" data-id="${pnjId}">
+        ${isLead ? this._leadActionBar(menuItems) : ""}
       </div>
       <div class="encounter-controls">
         ${actedChip}
         ${rollChip}
         ${delayChip}
-        ${this._rowMenu(menuItems)}
+        ${isLead ? "" : this._rowMenu(menuItems)}
       </div>
     </div>`;
   },

@@ -163,6 +163,36 @@
   min-width: 2.2rem;
   padding: 0.15rem 0.25rem;
 }
+/* V7 — actions DÉPLIÉES de la ligne de l'actif : un petit tableau de bord dans
+   l'espace vide sous la jauge de vie du combattant en focus (les lignes en
+   attente gardent leur ⋯). Mêmes actions que le menu, en boutons visibles. */
+.encounter-lead-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+.encounter-lead-action {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.02em;
+  padding: 0.25rem 0.55rem;
+  min-height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.encounter-lead-action:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.encounter-lead-action.is-danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
 /* Séparateur « ordre du tour » entre l'actif et la file en attente. */
 .encounter-queue-sep {
   display: flex;
@@ -807,6 +837,9 @@
   .encounter-drag-handle {
     padding: 0 0.5rem;
     font-size: var(--fs-lg);
+  }
+  .encounter-lead-action {
+    min-height: 40px;
   }
 }
 
