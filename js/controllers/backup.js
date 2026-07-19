@@ -14,6 +14,13 @@
 
    Le format est versionné pour rester lisible à l'avenir. Les clés
    localStorage sous-jacentes ont la forme sr_pnj_v2_<edition>_<clé>.
+
+   Contrat de l'enveloppe (format/version/schemaVersion/data), clés
+   incluses et règle d'évolution figée : ARCHITECTURE.md § 6
+   « Le paquet exporté (Backup) — contrat gelé ». `encounter_current` (la
+   scène vivante) est incluse pour couvrir la reprise d'une scène en cours
+   sur un autre appareil (ordinateur → téléphone) — voir la règle de
+   fusion dédiée sur `_mergeEdition`, distincte des autres clés.
    ============================================================ */
 import { Dialog } from "../widgets/kit/dialog.js";
 import { Storage } from "../core/storage.js";
@@ -35,6 +42,8 @@ export const Backup = {
     "dossiers", // arbre de dossiers (structure {id,name,parentId}) — CH sync
     "encounter_by_dossier", // R1 (Ranger la run) : rencontres rangées par dossier
     "notebooks", // R2 (Ranger la run) : carnets de notes par dossier
+    "gen_runs", // runs générées, rattachées aux dossiers (RunGen)
+    "encounter_current", // la scène VIVANTE (round/init/combattants) — reprise sur un autre appareil
   ],
 
   /* ---- Construction du paquet exportable ---- */
@@ -239,12 +248,18 @@ export const Backup = {
     return Storage.getFromEdition(edition, key, fallback);
   },
 
-  /** Fusion : ajoute les éléments dont l'id est absent, fusionne les groupes. */
+  /** Fusion : ajoute les éléments dont l'id est absent, fusionne les
+      groupes, complète les cartes qui n'existent pas encore localement —
+      ne retire ni n'écrase jamais rien de local (le mode destructeur est
+      "replace", pas "merge"). Couvre les 11 clés de `KEYS` en 4 formes :
+      listes par id, groupes (unions), cartes id→valeur (`encounter_by_dossier`,
+      `notebooks.entries`), et l'état singleton `encounter_current`
+      (règle dédiée : voir plus bas, pas une simple carte). */
   _mergeEdition(edition, incoming) {
     // TODO: reads internal structures {all, groups} of Shadows, ContactsBook, Servers
     // This tight coupling should be addressed in sprint 3 (linked entities roadmap)
-    // PNJ, contacts, personnages, dossiers : fusion par id (chaque élément a un id)
-    for (const listKey of ["shadows_all", "contacts_all", "servers_all", "characters_all", "dossiers"]) {
+    // PNJ, contacts, personnages, dossiers, runs : fusion par id (chaque élément a un id)
+    for (const listKey of ["shadows_all", "contacts_all", "servers_all", "characters_all", "dossiers", "gen_runs"]) {
       if (!Array.isArray(incoming[listKey])) continue;
       const current = this._readRaw(edition, listKey, []);
       const byId = new Set(current.map((x) => x && x.id));
@@ -272,6 +287,50 @@ export const Backup = {
       }
       this._writeRaw(edition, groupKey, current);
     }
+
+    // Rencontres rangées par dossier : carte dossierId→scène, un dossier
+    // absent localement est ajouté ; un dossier déjà rangé localement garde
+    // SA version (même politique "additif" que les listes ci-dessus, pas de
+    // fusion du contenu de la scène elle-même).
+    if (incoming.encounter_by_dossier && typeof incoming.encounter_by_dossier === "object") {
+      const current = this._readRaw(edition, "encounter_by_dossier", {});
+      this._writeRaw(edition, "encounter_by_dossier", this._mergeMapAdditive(current, incoming.encounter_by_dossier));
+    }
+
+    // Carnets : même politique, appliquée à `entries` (le sous-objet réel,
+    // `version` reste celle en place localement).
+    if (incoming.notebooks && typeof incoming.notebooks.entries === "object") {
+      const current = this._readRaw(edition, "notebooks", { version: 1, entries: {} });
+      current.entries = this._mergeMapAdditive(current.entries || {}, incoming.notebooks.entries);
+      this._writeRaw(edition, "notebooks", current);
+    }
+
+    // Scène vivante : ce n'est PAS une collection (un seul état par
+    // édition), donc pas de fusion élément par élément possible. Reprise
+    // ordinateur→téléphone : si le combat en cours est déjà entamé sur CET
+    // appareil (des combattants y sont engagés), on ne l'écrase jamais en
+    // fusion — seul "replace" le peut, en connaissance de cause. Un
+    // appareil sans combat en cours (aucun combattant, y compris jamais
+    // initialisé) accueille la scène importée telle quelle.
+    if (incoming.encounter_current && typeof incoming.encounter_current === "object") {
+      const current = this._readRaw(edition, "encounter_current", null);
+      const localIsPristine = !current || !Array.isArray(current.combatants) || current.combatants.length === 0;
+      if (localIsPristine) {
+        this._writeRaw(edition, "encounter_current", incoming.encounter_current);
+      }
+    }
+  },
+
+  /** Carte id/clé→valeur : ajoute chaque clé absente de `current`, ne
+      touche jamais une clé déjà présente (même politique additive que la
+      fusion de listes par id — "local wins" sur un conflit). Utilisé pour
+      les cartes gardées globalement en un seul niveau (dossierId→…). */
+  _mergeMapAdditive(current, incoming) {
+    const out = { ...current };
+    for (const [key, value] of Object.entries(incoming)) {
+      if (!(key in out)) out[key] = value;
+    }
+    return out;
   },
 
   /** Recharge les collections en mémoire pour refléter l'import/la synchro. */

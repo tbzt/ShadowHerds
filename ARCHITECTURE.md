@@ -367,6 +367,97 @@ se propage seul en ≤ 10 min, aucun geste avant de committer. En dev local,
 Détail complet dans [CONTRIBUTING.md](CONTRIBUTING.md) §§ « Versionner les
 schémas » et « Cache (plus de `?v=`) ».
 
+### Le paquet exporté (`Backup`) — contrat gelé
+
+Le `.json` téléchargé par « Exporter » (lu par « Importer ») est un **contrat
+implicite avec l'extérieur** : plusieurs meneurs le versionnent eux-mêmes
+(git, NAS) ou en scriptent le tri — casser sa forme en silence casse leur
+outillage (constat terrain, `AUDITS/COMITE_TERRAIN.md` § N3/DA5). Forme
+figée par `Backup.build()` (`js/controllers/backup.js`) :
+
+```json
+{
+  "format": "shadowherds-backup",
+  "version": 1,
+  "schemaVersion": 9,
+  "exportedAt": "2026-07-19T12:00:00.000Z",
+  "app": "ShadowHerds",
+  "data": {
+    "sr5": { "shadows_all": [ /* … */ ], "shadows_groups": { /* … */ } },
+    "sr6": { "…": "…" }
+  }
+}
+```
+
+**Enveloppe** (à ne pas confondre avec les trois nombres du tableau
+ci-dessus, qui versionnent le `localStorage` — ceux-ci versionnent le
+*paquet exporté*) :
+- `format` — littéral fixe `"shadowherds-backup"`. `validate()` refuse un
+  fichier qui le porte avec une autre valeur ; un fichier qui ne le porte
+  **pas du tout** est accepté (paquet antérieur à l'ajout du champ).
+- `version` — version de l'**enveloppe** (les 6 clés de premier niveau
+  elles-mêmes), `Backup.VERSION`. N'a jamais bougé depuis sa création et
+  n'est **actuellement lu nulle part à l'import** (`validate()` ne le
+  vérifie pas) — décoratif tant que la forme de l'enveloppe elle-même ne
+  change pas. Ajouter une édition ou une clé dans `data` ne la fait **pas**
+  bouger, seul un renommage/retrait de `format`/`schemaVersion`/
+  `exportedAt`/`app`/`data` le justifierait.
+- `schemaVersion` — copie de `Storage.SCHEMA_VERSION` au moment de l'export.
+  Gouverne la migration de `data` à l'import (`Backup._migrate`, miroir
+  volontairement partiel de `Storage._MIGRATIONS` : seules les migrations
+  qui changent la forme d'une clé listée dans `Backup.KEYS` ont besoin d'une
+  contrepartie ici). Un paquet plus récent que l'app qui importe est
+  **refusé**, jamais ingéré à l'aveugle (`validate()`).
+- `data` — objet clé par **édition** (`sr5`/`sr6`/`anarchy2`/`anarchy1`),
+  éditions vides omises. Chaque bucket ne contient que les clés de
+  `Backup.KEYS` (13 aujourd'hui) : `shadows_all`/`shadows_groups`/
+  `characters_all`/`characters_groups`/`contacts_all`/`contacts_groups`/
+  `servers_all`/`servers_groups`/`dossiers`/`encounter_by_dossier`/
+  `notebooks`/`gen_runs`/`encounter_current`.
+
+**Ce qui n'est jamais dans le paquet, vérifié par inventaire des clés
+`Storage` par édition** :
+- Réglages d'appareil (globaux, `sr_pnj_v2_global_*`) — `dicePrefs`, config
+  synchro, `tour_seen*`, `schemaVersion` lui-même : par conception, l'export
+  ne porte que des données de campagne, jamais des préférences locales.
+- Scratch/éphémère par édition, exclusion volontaire : `gen_pool` (pool du
+  générateur, PNJ pas encore rangés), `chargen_draft` (brouillon de création
+  PJ en cours), `characters_team` (référence "mon équipe" au Hub),
+  `threat_reserve` (réserve de Menace Anarchy), `context` (position de
+  navigation Campagne/Run/Scène — redevient trivial à retrouver au premier
+  clic, contrairement aux clés ci-dessus).
+
+**`encounter_current` — cas particulier, ajoutée pour couvrir la reprise
+d'une scène en cours sur un autre appareil** (ordinateur → téléphone,
+demande utilisateur explicite) : c'est un **singleton** par édition (un
+seul combat vivant à la fois), pas une collection — la fusion "ajoute ce
+qui manque" des autres clés n'a pas de sens ici, un combat ne se
+*fusionne* pas avec un autre. Règle retenue dans `_mergeEdition` : la scène
+importée **remplace** la locale **seulement si la locale est vierge**
+(aucun combattant engagé, y compris jamais initialisée) — protège le
+combat en cours sur l'appareil qui importe ; **écraser un combat déjà
+engagé exige le mode "Remplacer tout"**, en connaissance de cause (c'est le
+seul mode qui l'a toujours fait, sans distinction). C'est la seule des 13
+clés à ne pas suivre la politique additive générale ci-dessous.
+
+**Règle de gel, pour toute évolution future** : ajouter une clé à
+`Backup.KEYS` est **additif** — rétro-compatible, un vieil importeur ignore
+simplement une clé qu'il ne connaît pas (`replace` comme `_mergeEdition`
+itèrent sur `this.KEYS`, jamais sur les clés du paquet reçu). Changer la
+**forme** d'une clé déjà publiée doit passer par un incrément de
+`Storage.SCHEMA_VERSION` (chaîne de migrations, ci-dessus) **et**, si la
+forme exportée en est affectée, une entrée miroir dans `Backup._migrate`.
+Ne jamais muter silencieusement le contenu d'une clé déjà exportée.
+`_mergeEdition` couvre maintenant les 13 clés sous 4 formes : listes par id
+(dont `gen_runs`), groupes (unions), cartes id→valeur additives
+(`encounter_by_dossier`, `notebooks.entries` — un dossier déjà présent
+localement garde SA version, seul un dossier absent est ajouté), et le
+singleton `encounter_current` ci-dessus. **Corrigé le 2026-07-19** : avant
+cette date, `_mergeEdition` ne couvrait que 9 des 11 clés existantes —
+`encounter_by_dossier` et `notebooks` importés en mode Fusionner étaient
+silencieusement perdus (vérifié au navigateur avant correction :
+`Backup.apply(pkg,"merge")` laissait ces deux clés inchangées).
+
 ---
 
 ## 7. Chargement : initial vs différé
