@@ -27,6 +27,12 @@
   --success: #2ecc71;
   --warning: #e0a516;
   --info: #3aa0e0;
+  /* --cold = froid acier de la console « Réagir » (tracker V7). Sémantique
+     HORS accent d'édition (comme --danger/--success) : « Agir produit » porte
+     l'accent chaud + halo, « Réagir subit » ce gris-bleu plat et tactique.
+     Rouvre assumé le « pas de 3ᵉ couleur » du polish K (jugé trop discret).
+     combat-tracker.css en dérive ses mélanges (color-mix), comme --aro. */
+  --cold: #5c8299;
 
   /* ---- Échelle typographique ----
      8 pas, plancher à 10px (--fs-2xs) : la plus petite taille lisible en
