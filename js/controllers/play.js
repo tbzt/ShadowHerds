@@ -177,10 +177,16 @@ export const Play = {
       ? `<span class="play-live" title="Scène en cours"><span class="tb-crumb-live" aria-hidden="true"></span>En cours</span>`
       : "";
     // Reprendre : proposé si une scène tourne (live) ou a été rangée (stashed).
-    const resumeBtn =
-      live || stashed
-        ? `<button class="btn-secondary btn-small" data-action="play-resume" data-dossier="${run.id}">${live ? "Reprendre la scène" : "Ouvrir la rencontre"}</button>`
-        : "";
+    // 1a : toujours un bouton — la scène se REPREND (vivante), se ROUVRE
+    // (rangée) ou se LANCE (aucune scène encore jouée). Les trois délèguent à
+    // DossierBar.openRencontre ; Encounter.restore initialise une scène vierge
+    // liée au dossier quand aucun stash n'existe (rien créé ici — délégation).
+    const resumeLabel = live
+      ? "Reprendre la scène"
+      : stashed
+        ? "Ouvrir la rencontre"
+        : "Lancer la scène";
+    const resumeBtn = `<button class="btn-secondary btn-small" data-action="play-resume" data-dossier="${run.id}">${resumeLabel}</button>`;
     const toposBtn = hasTopos
       ? `<button class="btn-secondary btn-small" data-action="show-panel" data-panel="run">Voir le topos</button>`
       : "";
@@ -292,10 +298,16 @@ export const Play = {
   _runCommandHtml(run) {
     const live = App.context && App.context.scene === run.id;
     const stashed = Encounter.hasStash(run.id);
-    const resumeBtn =
-      live || stashed
-        ? `<button class="btn-secondary btn-small" data-action="play-resume" data-dossier="${run.id}">${live ? "Reprendre la scène" : "Ouvrir la rencontre"}</button>`
-        : "";
+    // 1a : toujours un bouton — la scène se REPREND (vivante), se ROUVRE
+    // (rangée) ou se LANCE (aucune scène encore jouée). Les trois délèguent à
+    // DossierBar.openRencontre ; Encounter.restore initialise une scène vierge
+    // liée au dossier quand aucun stash n'existe (rien créé ici — délégation).
+    const resumeLabel = live
+      ? "Reprendre la scène"
+      : stashed
+        ? "Ouvrir la rencontre"
+        : "Lancer la scène";
+    const resumeBtn = `<button class="btn-secondary btn-small" data-action="play-resume" data-dossier="${run.id}">${resumeLabel}</button>`;
     // Corps de scène : vivante (projection) · rangée (résumé) · aucune (invite).
     const scene = live
       ? this._liveSceneHtml()
