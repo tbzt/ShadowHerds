@@ -2038,6 +2038,10 @@ kbd {
   padding: var(--sp-3) var(--sp-4);
   border: 1px solid var(--border);
   border-radius: 6px;
+  /* Signature de coin coupé de l'édition (SR6 la porte ; les autres retombent
+     sur --card-clip: none → coins arrondis par défaut, honnête à chaque livre).
+     Premier usage projeté du token, jamais une forme codée en dur. */
+  clip-path: var(--card-clip);
   background: var(--bg-mid);
 }
 .spectator-row.is-active {
@@ -2096,5 +2100,22 @@ kbd {
 .spectator-gauge {
   flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 5px;
+}
+/* Moniteur à l'échelle PROJECTEUR : la case fait 16px sur la carte du MJ, trop
+   petite lue à distance. On l'agrandit — la FORME reste celle du descripteur
+   (ladder + marque de pénalité toutes les 3 cases / tiers A2 + paliers de
+   gravité) : on ne redessine pas la règle, on lui donne l'échelle d'un écran de
+   scène. Curseur neutre : la projection est en lecture seule (pas de pointer). */
+.spectator-gauge .monitor-box {
+  width: 22px;
+  height: 22px;
+  cursor: default;
+}
+/* Séparateur de paliers A2 à l'échelle projecteur : 3 classes pour dépasser la
+   règle de thème `[data-edition^="anarchy"] .monitor-gap` (largeur 6px, même
+   spécificité, chargée après) — sinon la règle serait morte. */
+.monitor-boxes.spectator-gauge .monitor-gap {
+  width: 10px;
 }
 
