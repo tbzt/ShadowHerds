@@ -18,6 +18,7 @@ import { EncounterRenderer } from "../widgets/play/encounterrenderer.js";
 import { Gen } from "./generator.js";
 import { Intrusion } from "./intrusion.js";
 import { Matrix } from "../rules/matrix.js";
+import { Nudge } from "../widgets/tour/nudge.js";
 import { PnjLookup } from "./pnjlookup.js";
 import { Servers } from "./servers.js";
 import { Shadows } from "./shadows.js";
@@ -1364,6 +1365,44 @@ export const Encounter = {
     this.save();
     this._render();
     this._renderPicker();
+    this._maybeNudgePreRollEdge();
+  },
+
+  /** VIS-1 (co-MJ) — Lot 1. Quand la scène vivante compte un participant capable
+      de dépenser sa ressource AVANT un jet (Chance SR5 / Atout SR6 ; rien en
+      Anarchy) ET que le pré-jet est actif (défaut « panel » depuis V3), EXPLIQUE
+      une fois cette affordance — un panneau/une pastille s'ouvre au lancer depuis
+      la carte — en rappelant qu'elle est désactivable dans les Paramètres. Le
+      panneau s'auto-annonce déjà ; le nudge le pré-explique et dit comment le
+      couper, ce que le panneau ne fait pas. Capacité lue par contrat neutre
+      `DiceRoller.preRollEdgeOptions` (0 branche d'édition) : un combattant
+      ad-hoc/sans attrs (minuteur « ALARME », ligne libre) renvoie `[]` → jamais
+      candidat, garde-fou « combattant qui n'en est pas » préservé. Rien à
+      expliquer si le MJ a déjà coupé le pré-jet (« off »). Gardes chères-en-dernier :
+      pas de scan une fois vu (appelé à chaque `_commit`). Le throttle « 1
+      nudge/scène » (réarmé par `App.context.setScene`) fait passer open-spectator
+      d'abord ; ce nudge suit à une scène ultérieure. */
+  _maybeNudgePreRollEdge() {
+    if (!this.activeDossierId) return; // pas de scène vivante
+    if (Nudge.seen("preroll-edge")) return; // déjà expliqué une fois
+    if (DiceRoller.preRollMode() === "off") return; // MJ a coupé → rien à expliquer
+    let cand = null;
+    for (const c of this.state.combatants) {
+      const pnj = PnjLookup.find(c.pnjId);
+      if (pnj && DiceRoller.preRollEdgeOptions(pnj).some((o) => o.affordable)) {
+        cand = pnj;
+        break;
+      }
+    }
+    if (!cand) return;
+    const res =
+      (App.getEditionModule(cand.edition).preRollEdge || {}).resourceLabel || "Edge";
+    Nudge.offer("preroll-edge", {
+      anchor: "nav-combat",
+      title: `${res} avant le jet`,
+      body: `${cand.name} peut améliorer un jet avant de lancer (${res}) : un panneau s'ouvre au lancer depuis sa carte (repousser une limite, dés explosifs…). Désactivable dans Paramètres › Lanceur de dés.`,
+      cta: { label: "Voir les réglages", run: () => App.showPanel("settings") },
+    });
   },
 
   /** Ne (re)rend le panneau d'ajout que s'il est ouvert : évite de recalculer

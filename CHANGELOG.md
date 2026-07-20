@@ -12,6 +12,16 @@ commit.
 
 ## [Non publié]
 
+## [1.77.1] — 2026-07-20
+
+### Le co-MJ explique le pré-jet d'Edge
+
+- **Astuce en scène.** Quand une scène compte un personnage capable de dépenser
+  sa Chance (SR5) ou son Atout (SR6) avant un jet, le co-MJ l'explique une fois :
+  un panneau s'ouvre au lancer depuis sa carte pour repousser une limite ou
+  ajouter des dés explosifs, et l'astuce rappelle que c'est désactivable dans
+  Paramètres › Lanceur de dés. Rien en Anarchy (pas de pré-jet).
+
 ## [1.77.0] — 2026-07-20
 
 ### Le calcul des réserves de situation, expliqué à la demande
