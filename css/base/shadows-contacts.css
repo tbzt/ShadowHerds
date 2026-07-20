@@ -524,6 +524,44 @@
   background: transparent;
 }
 
+/* VIS-8 étape 2 — « sourcil » discret qui nomme le moment de jeu
+   (Avant / Pendant / Après). Réutilise la grammaire d'étiquette froide de
+   `.play-topos-k` (dim, capitales, interlettrage) : nomme le flux sans ajouter
+   de chrome lourd. Le `when` porte le moment, le `hint` ce qu'on y fait. */
+.play-moment {
+  margin-top: var(--sp-2);
+}
+.play-moment-label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+  margin-bottom: 2px;
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.play-moment-when {
+  color: var(--text-dim);
+  font-weight: 600;
+}
+.play-moment-hint {
+  color: var(--text-dim);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+.play-apres {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+.play-apres-note {
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  min-width: 0;
+}
+
 /* Topos condensé — froid, tabulaire, lisible d'un coup d'œil. */
 .play-topos {
   margin-top: var(--sp-2);

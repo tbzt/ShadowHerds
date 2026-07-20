@@ -329,20 +329,48 @@ export const Play = {
       : stashed
         ? this._stashSummaryHtml(run.id)
         : `<div class="play-scene is-idle"><span class="play-stash-note">Aucune scène en cours — préparez, puis lancez le combat.</span></div>`;
+
+    // VIS-8 étape 2 — les trois MOMENTS DE JEU. Les zones existaient déjà ; on
+    // les NOMME et on les ordonne, sans rien inventer (topos+casting = Avant ;
+    // scène+intrusion = Pendant ; débrief = Après). Le vivant garde sa perche
+    // privilégiée (doctrine Campagne›Run›Scène) : quand une scène tourne,
+    // « Pendant » passe en tête ; à l'arrêt, « Avant » (la prépa) ouvre la lecture.
+    const avant = this._toposGlanceHtml(run.id) + this._castHtml(run.id);
+    const avantZone = avant ? this._momentHtml("Avant", "la prépa", avant) : "";
+    const pendantZone = this._momentHtml("Pendant", "la scène", scene + this._matrixClockHtml());
+    const apresZone = this._momentHtml(
+      "Après",
+      "la clôture",
+      `<div class="play-apres">
+        <button class="btn-secondary btn-small" data-action="play-debrief" data-dossier="${run.id}" title="Débrief : ce que ce run a laissé (paie, karma, réputation, retombées)">✓ Débrief</button>
+        <span class="play-apres-note">Ce que ce run a laissé : paie, karma, réputation, retombées.</span>
+      </div>`,
+    );
+    const moments = live
+      ? pendantZone + avantZone + apresZone
+      : avantZone + pendantZone + apresZone;
+
     return `<div class="play-command">
       <div class="play-command-head">
         <span class="play-run-icon" aria-hidden="true">◆</span>
         <button class="play-command-name" data-action="play-focus" data-dossier="${run.id}" title="Ouvrir « ${CardRenderer._esc(run.name)} » dans la bibliothèque">${CardRenderer._esc(run.name)}</button>
         <span class="play-command-actions">
           <button class="btn-secondary btn-small" data-action="play-notes" data-dossier="${run.id}" title="Ouvrir le carnet de ce run">✎ Notes</button>
-          <button class="btn-secondary btn-small" data-action="play-debrief" data-dossier="${run.id}" title="Débrief : ce que ce run a laissé (paie, karma, réputation, retombées)">✓ Débrief</button>
           ${resumeBtn}
         </span>
       </div>
-      ${scene}
-      ${this._matrixClockHtml()}
-      ${this._toposGlanceHtml(run.id)}
-      ${this._castHtml(run.id)}
+      ${moments}
+    </div>`;
+  },
+
+  /** VIS-8 étape 2 — enveloppe une zone du poste de commandement d'un
+      « sourcil » discret qui NOMME le moment de jeu (Avant / Pendant / Après).
+      `when` = le moment, `hint` = ce qu'on y fait. Pur habillage : aucune
+      donnée, aucune logique — le contenu reste projeté/délégué par l'appelant. */
+  _momentHtml(when, hint, inner) {
+    return `<div class="play-moment">
+      <div class="play-moment-label"><span class="play-moment-when">${when}</span><span class="play-moment-hint">${hint}</span></div>
+      ${inner}
     </div>`;
   },
 

@@ -12,6 +12,19 @@ commit.
 
 ## [Non publié]
 
+## [1.80.2] — 2026-07-20
+
+### Modifié
+
+- **Le poste de « Jouer » se lit par moments de jeu.** Le poste de commandement
+  du run en cours nomme désormais ses zones — **Avant** (le topos et le casting
+  préparés), **Pendant** (la scène et l'horloge d'intrusion), **Après** (le
+  débrief) — d'un sourcil discret. Quand une scène tourne, *Pendant* passe en
+  tête (le vivant garde sa perche) ; à l'arrêt, *Avant* ouvre la lecture. Rien
+  de neuf n'est ajouté : les zones existaient, elles sont juste nommées et
+  ordonnées, et le bouton « ✓ Débrief » rejoint son moment (*Après*). Deuxième
+  étape, par convergence, du chantier « la séance comme objet primaire ».
+
 ## [1.80.1] — 2026-07-20
 
 ### Modifié
