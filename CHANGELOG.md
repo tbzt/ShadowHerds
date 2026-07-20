@@ -24,6 +24,18 @@ commit.
   d'honneur ») était placée dans l'archétype, affiché inline sous le nom. Elle est
   désormais rangée dans les notes ; le header ne montre que métatype et éveil.
 
+## [1.78.3] — 2026-07-20
+
+### Le pont « Créer → Retrouver »
+
+- **« Rangé dans Ombres portées », avec le lien.** Quand vous sauvegardez un PNJ
+  généré, le message nomme désormais sa destination en toutes lettres — la
+  bibliothèque « Ombres portées » — et offre un bouton **Voir** qui vous y mène
+  directement. Fini le « où est passé ce que je viens de créer ? ».
+- **Le bouton « PNJ » se dit atelier.** Dans la navigation, il porte un
+  sous-titre discret « générer » : on crée ici, et le résultat va se ranger dans
+  « Ombres portées ».
+
 ## [1.78.2] — 2026-07-20
 
 ### Revoir les astuces du co-MJ

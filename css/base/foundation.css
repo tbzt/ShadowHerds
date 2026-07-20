@@ -1000,6 +1000,24 @@ select optgroup {
   color: var(--text);
   background: rgba(255, 255, 255, 0.03);
 }
+/* VIS-2 — sous-libellé de wayfinding : dit qu'un bouton d'objet est un ATELIER
+   (« PNJ » → « générer »), pour que le geste de création se rattache à sa
+   bibliothèque de destination (« Ombres portées »). Empilé sous le libellé,
+   casse basse, ton discret : une note, pas un second bouton. */
+.nav-label--sub {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.nav-label--sub::after {
+  content: attr(data-sub);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+  color: var(--text-dim);
+}
 .nav-btn.active {
   color: var(--accent);
   border-left-color: var(--accent);

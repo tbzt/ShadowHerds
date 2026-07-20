@@ -1732,11 +1732,10 @@ export function toast(msg, type = null, duration = 2400) {
   el._timer = setTimeout(() => el.classList.remove("show"), duration);
 }
 
-/** Variante de toast avec un bouton « Annuler » qui appelle onUndo() puis
-    ferme le toast. Sert de filet de sécurité aux suppressions (Collection,
-    générateur). Durée plus longue (6 s) pour laisser le temps de réagir.
-    Le bouton est câblé en JS (pas de handler inline). */
-export function toastUndo(msg, onUndo, duration = 6000) {
+/** Toast doté d'un unique bouton d'action câblé en JS (pas de handler inline).
+    Socle commun à `toastUndo` (filet « Annuler ») et au pont « Voir » de VIS-2
+    (« rangé dans Ombres portées → Voir »). Le clic exécute onAction() puis ferme. */
+export function toastAction(msg, label, onAction, duration = 4000) {
   const el = document.getElementById("toast");
   if (!el) return;
   clearTimeout(el._timer);
@@ -1748,16 +1747,23 @@ export function toastUndo(msg, onUndo, duration = 6000) {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "toast-undo";
-  btn.textContent = "Annuler";
+  btn.textContent = label;
   const hide = () => el.classList.remove("show");
   btn.addEventListener("click", () => {
     clearTimeout(el._timer);
     hide();
-    onUndo();
+    onAction();
   });
   el.append(span, btn);
   el.classList.add("show");
   el._timer = setTimeout(hide, duration);
+}
+
+/** Variante de toast avec un bouton « Annuler » qui appelle onUndo() puis
+    ferme le toast. Sert de filet de sécurité aux suppressions (Collection,
+    générateur). Durée plus longue (6 s) pour laisser le temps de réagir. */
+export function toastUndo(msg, onUndo, duration = 6000) {
+  toastAction(msg, "Annuler", onUndo, duration);
 }
 
 // Pont couche 1 (voir PLANS/PLAN_MODULES_ES.md) : ces trois exports restent
@@ -1766,4 +1772,5 @@ export function toastUndo(msg, onUndo, duration = 6000) {
 // en `import`. Retiré en fin de migration (Phase 6).
 window.Utils = Utils;
 window.toast = toast;
+window.toastAction = toastAction;
 window.toastUndo = toastUndo;

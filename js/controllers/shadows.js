@@ -96,7 +96,13 @@ export const Shadows = Object.assign(
       }
       this.save();
       this.render();
-      toast(`✓ ${pnj.name} ajouté aux Ombres.`);
+      // Pont « Créer → Retrouver » (VIS-2) : nommer la destination en toutes
+      // lettres (le mot de nav « Ombres portées », jamais « les Ombres ») et
+      // offrir le lien qui y mène — supprime la désorientation « où est passé
+      // ce que je viens de créer ? ».
+      toastAction(`${pnj.name} — rangé dans Ombres portées.`, "Voir", () =>
+        App.showPanel("shadows"),
+      );
 
       // Basculer la card du générateur en mode « sauvegardé » : on change
       // ses actions (data-saved-actions) puis on rafraîchit — refresh()
