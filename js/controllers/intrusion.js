@@ -173,20 +173,21 @@ export const Intrusion = {
     this._persist();
   },
 
-  /* ---- Jets des CI (SR5/SR6 — les glaces Anarchy ont des succès
-     fixes et ne lancent jamais les dés, p.223) ----
-     SR5 p.249 : attaque = indice×2 [Attaque] ; encaissement =
-     indice + Firewall (règle des appareils p.229, attributs du
-     serveur). La VF ne détaille pas la réserve de défense : on
-     applique l'usage indice×2. SR6 p.188 : toutes les CI utilisent
-     indice×2 pour la majorité de leurs jets. */
+  /* ---- Jets d'une CH liée à un serveur ----
+     Réserve/limite/suffixe délégués à `Matrix.icCombat` (source unique par
+     édition, prohibition n°1). SR5/SR6 (dés ∝ indice) et Anarchy 1re (dés à
+     statblock fixe) renvoient `roll:true` → on lance. Anarchy 2.0 (succès
+     fixes, p.223) renvoie `roll:false` → rien à lancer (le cockpit affiche la
+     valeur). Un geste inexistant (Anarchy n'a pas de jet d'encaissement,
+     p.156) renvoie `null`. */
   rollIC(id, key, kind) {
     const srv = Servers.find(id);
-    const M = Matrix.use(srv && srv.edition);
-    if (!srv || !M.hasAttrs()) return;
+    if (!srv) return;
+    const M = Matrix.use(srv.edition);
     const ic = Servers.icCatalog(srv.edition)[key];
     const name = ic ? ic.label : key;
-    const spec = M.icRollSpec(kind, srv);
+    const spec = M.icCombat(kind, srv, ic);
+    if (!spec || !spec.roll) return;
     const res = Dice.computeRoll(spec.pool);
     if (spec.limit != null && res.hits > spec.limit) {
       res.cappedFrom = res.hits;

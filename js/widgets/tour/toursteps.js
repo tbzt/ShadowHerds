@@ -458,6 +458,11 @@ export const TourSteps = {
       title: "Un coup d'œil sans quitter Jouer",
       body: "Consulter un PNJ du casting depuis « Jouer » ouvre désormais sa fiche en surimpression, par-dessus votre poste de commandement — au lieu de vous éjecter vers la bibliothèque. La fiche est complète et éditable ; les flèches ‹ › feuillettent le reste du casting sans jamais refermer. Vous ne quittez plus la scène pour jeter un œil.",
     },
+    {
+      id: "wn-ic-combat-values", anchor: "nav-combat", tours: ["whatsnew"], since: "1.85.0", fallback: "center",
+      title: "Une CI qui se défend et attaque, partout",
+      body: "Dans le suivi de combat, une contre-mesure d'intrusion montre enfin sa défense quand un decker l'attaque (bloc « Réagir »), et son attaque sur sa fiche — au lieu des boutons « — » inertes qu'affichait Anarchy. Chaque édition garde ses règles : Anarchy 2.0 affiche ses succès fixes en valeurs (défense/attaque = indice, Firewall 1), Anarchy 1re lance le statblock du livre (attaque 8, défense 11, Tueuse +2, Noire en physique), SR5/SR6 gardent leurs jets de dés — avec deux corrections au livre au passage (encaissement SR6 en indice×2, défense SR5 en indice + Firewall).",
+    },
   ],
 };
 

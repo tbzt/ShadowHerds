@@ -12,6 +12,25 @@ commit.
 
 ## [Non publié]
 
+## [1.85.0] — 2026-07-21
+
+### Ajouté
+
+- **Une contre-mesure d'intrusion se défend et attaque depuis le suivi de
+  combat, dans toutes les éditions.** Quand un PJ decker s'en prend à une CI (bloc
+  « Réagir »), la glace montre enfin sa **défense** ; sur sa fiche active, son
+  **attaque** devient lisible au lieu d'être noyée dans le texte de son pouvoir.
+  Le régime de chaque édition est respecté : **Anarchy 2.0** affiche ses **succès
+  fixes** en valeurs (défense/attaque = indice, encaissement = Firewall 1) ;
+  **Anarchy 1re** motorise le **statblock du livre** de la GLACE (attaque 8,
+  défense 11, perception 10, Tueuse +2 en cybercombat, Noire en dégâts physiques)
+  en jets cliquables — là où le tracker n'offrait que des boutons « — » inertes ;
+  **SR5/SR6** gardent leurs pastilles de dés. Deux corrections de règles au
+  passage : l'encaissement d'une CI **SR6** suit la convention indice×2 (et non
+  indice + Firewall, absent du livre p.180/188), et la défense d'une CI **SR5**
+  passe à indice + Firewall (l'indice de serveur remplace l'attribut mental
+  absent, p.238 ; l'encaissement indice + Firewall reste correct, p.229).
+
 ## [1.84.0] — 2026-07-21
 
 ### Ajouté

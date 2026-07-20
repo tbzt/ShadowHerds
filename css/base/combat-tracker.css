@@ -1726,6 +1726,15 @@
   border-style: dashed;
   cursor: default;
 }
+/* Pastille de VALEUR d'une CH à succès fixes (Anarchy 2.0) : le nombre EST
+   l'information (succès fixes / Firewall), il n'y a pas de dés à lancer. Lisible
+   comme une stat — distincte du bouton cliquable (pas de hover) et du .is-off
+   grisé (ici pleinement lisible). */
+.react-btn.is-value {
+  cursor: default;
+  border-style: solid;
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-card));
+}
 /* Glyphe des boutons de réaction (DA : glyphes Unicode monochromes, jamais
    d'émoji couleur — ⛉ dévier / ⛊ absorber, hérite de la couleur du thème). */
 .react-glyph {

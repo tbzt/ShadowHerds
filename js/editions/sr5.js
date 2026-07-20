@@ -603,6 +603,21 @@ export const EditionSR5 = {
     icMonitorSize(indice) {
       return 8 + Math.ceil(indice / 2);
     },
+    /** Descripteur de combat d'une CH (SR5), lu par le cockpit + les handlers de
+        jet via Matrix.icCombat. Attaque/perception = indice×2 (+ limite
+        d'attribut, p.249). Défense ET encaissement = indice + Firewall : le
+        livre n'a pas de ligne de défense dédiée → l'indice de serveur remplace
+        l'attribut mental manquant (Volonté/Intuition, p.238), et la résistance
+        aux dommages matriciels est « indice d'appareil + Firewall » (p.229). */
+    icCombat(kind, host) {
+      const i = host.indice;
+      const fw = i + ((host.attrs && host.attrs.firewall) || 0);
+      if (kind === "atk") return { roll: true, pool: i * 2, limit: this.attrLimit("atk", host), suffix: "attaque" };
+      if (kind === "def") return { roll: true, pool: fw, limit: null, suffix: "défense (indice + Firewall)" };
+      if (kind === "soak") return { roll: true, pool: fw, limit: null, suffix: "encaissement (indice + Firewall)" };
+      if (kind === "per") return { roll: true, pool: i * 2, limit: this.attrLimit("per", host), suffix: "perception matricielle" };
+      return null;
+    },
     maxActiveIC(indice) {
       return indice;
     },

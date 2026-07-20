@@ -17,7 +17,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.84.0",
+  VERSION: "1.85.0",
 
   edition: "none",
   editionModule: null,

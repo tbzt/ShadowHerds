@@ -394,6 +394,20 @@ export const EditionAnarchy2 = {
     icMonitorSize() {
       return 4;
     },
+    /** Descripteur de combat d'une CH (Anarchy 2.0), lu par le cockpit via
+        Matrix.icCombat. Régime à SUCCÈS FIXES (`roll:false` → le cockpit affiche
+        une valeur, jamais une pastille de dés) : attaque ET défense = indice du
+        serveur (test opposé, p.223, 225). L'encaissement n'est pas un jet — la VD
+        du decker est comparée au Firewall de la glace, fixé à 1 (fragile, p.223).
+        Perception : seulement la Patrouilleuse (`watch`), sinon absente. */
+    icCombat(kind, host, ic) {
+      const i = host.indice;
+      if (kind === "atk") return { roll: false, value: i, suffix: "succès fixes (attaque)" };
+      if (kind === "def") return { roll: false, value: i, suffix: "succès fixes (défense)" };
+      if (kind === "soak") return { roll: false, value: 1, suffix: "Firewall (VD − 1)" };
+      if (kind === "per") return ic && ic.watch ? { roll: false, value: i, suffix: "perception (succès fixes)" } : null;
+      return null;
+    },
     maxActiveIC() {
       return Infinity;
     },
