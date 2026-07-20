@@ -12,6 +12,15 @@ commit.
 
 ## [Non publié]
 
+## [1.78.1] — 2026-07-20
+
+### Le co-MJ explique le maintien de sort
+
+- **Astuce ⟳.** La première fois qu'un personnage maintient un sort ou une forme
+  complexe (SR5/SR6), le co-MJ l'explique une fois : chaque effet maintenu coûte
+  −2 dés à tous ses tests, cumulatif, et le badge « ⟳ ×N · −N » près du moniteur
+  en donne le total. Rien en Anarchy (pas de malus de maintien).
+
 ## [1.78.0] — 2026-07-20
 
 ### Clarté topos↔run + nom du plan de lieu

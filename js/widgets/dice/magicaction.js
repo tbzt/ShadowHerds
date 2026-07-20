@@ -18,6 +18,7 @@ import { Dice } from "../../rules/dice.js";
 import { DiceLog } from "./dicelog.js";
 import { DiceRoller } from "./diceroller.js";
 import { Magic } from "../../rules/magic.js";
+import { Nudge } from "../tour/nudge.js";
 import { Resonance } from "../../rules/resonance.js";
 import { Utils } from "../../core/utils.js";
 
@@ -103,6 +104,19 @@ export const MagicAction = {
     if (!entry || !entry._lastCast) return;
     entry._lastCast.sustained = !entry._lastCast.sustained;
     this._hooks.onPnjChanged(pnj);
+    // VIS-1 (co-MJ) — Lot 2 : au 1er effet réellement MAINTENU qui impose un
+    // vrai malus (magnitude −2/effet SR5/SR6 ; `Utils.sustainMalus` neutre
+    // renvoie 0 en Anarchy → pas de nudge), explique la pastille ⟳ une fois.
+    // Hors scène et déclenché par une action délibérée → `throttled: false` (le
+    // budget scène-borné le bloquerait). Info seule (pas de CTA).
+    if (entry._lastCast.sustained && Utils.sustainMalus(pnj, pnj.edition) > 0) {
+      Nudge.offer("sustain-badge", {
+        title: "Effet maintenu ⟳",
+        body: `Un effet maintenu coûte −2 dés à TOUS les tests de ${pnj.name}, cumulatif par effet. Le badge « ⟳ ×N · −N » près du moniteur donne le total ; re-cliquez le nombre de succès (ou le ✕ du jet) pour l'arrêter.`,
+        dismissLabel: "Compris",
+        throttled: false,
+      });
+    }
   },
 
   _ensurePanel() {

@@ -54,11 +54,18 @@ export const Nudge = {
 
   /** Offre un nudge, une seule fois. No-op si désactivé, déjà vu, throttle
       épuisé, ou un nudge déjà ouvert. `cta` = { label, run } (run : closure
-      exécutée au tap ; le CTA fait l'action, il ne désigne pas un contrôle). */
-  offer(id, { anchor, title, body, cta } = {}) {
-    if (!this._enabled || this._open || this._shownThisScene) return;
+      exécutée au tap ; le CTA fait l'action, il ne désigne pas un contrôle).
+      `dismissLabel` : libellé du bouton de sortie (défaut « Plus tard » avec CTA,
+      « Compris » sans). `throttled` (défaut true) : soumis au budget « 1
+      nudge/scène ». Un nudge déclenché par une action délibérée HORS scène (ex.
+      maintien de sort) passe `throttled: false` — le throttle scène-borné le
+      bloquerait sinon indéfiniment ; il respecte toujours `_open` et « vu une
+      fois », donc jamais d'empilement ni de répétition. */
+  offer(id, { anchor, title, body, cta, dismissLabel, throttled = true } = {}) {
+    if (!this._enabled || this._open) return;
+    if (throttled && this._shownThisScene) return;
     if (!id || this.seen(id)) return;
-    this._show(id, { anchor, title, body, cta });
+    this._show(id, { anchor, title, body, cta, dismissLabel, throttled });
   },
 
   _markSeen(id) {
@@ -67,7 +74,7 @@ export const Nudge = {
     Storage.setGlobal(this._LEDGER, m);
   },
 
-  _show(id, { anchor, title, body, cta }) {
+  _show(id, { anchor, title, body, cta, dismissLabel, throttled = true }) {
     this._ensureRoot();
     const q = (s) => this._root.querySelector(s);
     q(".nudge-title").textContent = title || "";
@@ -81,11 +88,15 @@ export const Nudge = {
       this._cta = null;
       ctaBtn.hidden = true;
     }
+    // Bouton de sortie : « Plus tard » quand une action est à différer,
+    // « Compris » pour un nudge purement informatif.
+    q('.nudge-actions [data-action="nudge-dismiss"]').textContent =
+      dismissLabel || (cta && cta.run ? "Plus tard" : "Compris");
     this._anchor = anchor || null;
     this._place();
     this._root.hidden = false;
     this._open = id;
-    this._shownThisScene = true;
+    if (throttled) this._shownThisScene = true; // les nudges hors scène ne consomment pas le budget
     this._markSeen(id); // T1 : marquer vu À L'AFFICHAGE
   },
 
