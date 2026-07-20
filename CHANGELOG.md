@@ -12,6 +12,26 @@ commit.
 
 ## [Non publié]
 
+## [1.83.0] — 2026-07-21
+
+### Ajouté
+
+- **Un technomancien à générer (SR6).** Le générateur propose deux archétypes
+  technomanciens nommés, sourcés d'*Anarchistes* : **« Techno-ganger (émergé) »**
+  (chez les gangs) et **« Technomancien de sécurité »** (côté sécurité corpo).
+  Toute la machinerie persona / sprites / formes complexes / technodrain existait
+  déjà, mais n'avait aucune porte d'entrée de génération : il fallait connaître la
+  spécialisation « Technomancien » et la cocher à la main. Elle est désormais
+  proposée par son métier, comme un decker ou un chaman.
+
+### Corrigé
+
+- **Un technomancien généré ne reçoit plus d'augmentation qui grignote sa
+  Résonance (SR6).** Comme un Éveillé perd de la Magie en perdant de l'Essence, un
+  technomancien perd de la Résonance : le générateur ne lui attribue donc plus
+  automatiquement de réflexes câblés ni de cyberware de saveur (aux professionnalismes
+  élevés). Vaut pour tout technomancien, y compris ceux créés via la spécialisation.
+
 ## [1.82.0] — 2026-07-20
 
 ### Ajouté

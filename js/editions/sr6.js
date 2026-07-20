@@ -1416,10 +1416,12 @@ export const EditionSR6 = {
       "Ganger Halloweeners",
       "Ganger Ancients",
       "Magogang (éveillé)",
+      "Techno-ganger (émergé)",
       // Sécurité corpo
       "Agent de sécurité corpo",
       "Garde corpo (patrouille)",
       "Rigger de sécurité",
+      "Technomancien de sécurité",
       "Agent de sécurité Renraku",
       "Samouraï rouge Renraku",
       "Agent de sécurité Ares",
@@ -1565,6 +1567,17 @@ export const EditionSR6 = {
       "Perception",
       "Sorcellerie",
     ],
+    // Technomancien de rue — cœur matriciel (Électronique/Piratage) sur un
+    // fond de ganger ; specialSkills.Technomancien ajoute la Résonance
+    // (Compilation/Décompilation/Cybercombat). Base = compétences SR6 réelles.
+    "Techno-ganger (émergé)": [
+      "Armes à feu",
+      "Athlétisme",
+      "Combat rapproché",
+      "Électronique",
+      "Intimidation",
+      "Piratage",
+    ],
     "Agent de sécurité corpo": [
       "Armes à feu",
       "Athlétisme",
@@ -1592,6 +1605,16 @@ export const EditionSR6 = {
       "Ingénierie",
       "Perception",
       "Pilotage",
+      "Piratage",
+    ],
+    // Antagoniste matriciel corpo (Anarchistes) — profil sécurité + intrusion ;
+    // la Résonance vient de specialSkills.Technomancien.
+    "Technomancien de sécurité": [
+      "Armes à feu",
+      "Athlétisme",
+      "Électronique",
+      "Ingénierie",
+      "Perception",
       "Piratage",
     ],
     "Agent de sécurité Renraku": [
@@ -2977,6 +3000,11 @@ export const EditionSR6 = {
     const pools = this.equipPools;
     const profile = this.loadoutProfile;
     const ctx = { proRating: p, role, milieu, archetype, awakened };
+    // Un technomancien est aussi sensible à l'Essence qu'un Éveillé : chaque
+    // point perdu réduit sa Résonance (comme la MAG). On ne lui génère donc
+    // ni augmentation d'initiative ni cyberware de saveur — même garde que
+    // l'Éveillé pour tout matériel qui grignote l'Essence.
+    const essenceSensitive = awakened || special === "Technomancien";
     const pick = (cats) =>
       LoadoutEngine.weightedPick(
         LoadoutEngine.gatherCandidates(pools, cats),
@@ -3056,8 +3084,8 @@ export const EditionSR6 = {
     result.push(armure);
     // Mundain aguerri : une source d'init variée (dés selon la cote), puis un
     // cyber de saveur à haute cote. Le plafond 5D6 est appliqué par BonusEngine.
-    if (!awakened && p >= 3) result.push(EditionSR6.initAugFor(p));
-    if (!awakened && p >= 6)
+    if (!essenceSensitive && p >= 3) result.push(EditionSR6.initAugFor(p));
+    if (!essenceSensitive && p >= 6)
       result.push(pick(["cyberware"]) || Utils.rand(pools.cyberware));
     if (p >= 4 && Utils.randBool(0.4))
       result.push(pick(["equipSpecial"]) || Utils.rand(pools.equipSpecial));
@@ -3192,6 +3220,13 @@ export const EditionSR6 = {
       if (archetype.includes("Chaman")) special = "Chaman";
       else if (archetype.includes("Adepte")) special = "Adepte";
       else if (archetype.includes("Mage")) special = "Mage hermétique";
+      // Émergés nommés (Techno-ganger, Technomancien de sécurité) : router
+      // vers la persona/formes complexes AVANT l'override decker ci-dessous —
+      // sans quoi Coherence.resolveRole (technoman/techno- → "decker") les
+      // aplatirait en deckers à cyberdeck, sans Résonance. Ne capte pas
+      // « Technicien » (« techni », pas « techno »).
+      else if (/technoman|techno-ganger/i.test(archetype))
+        special = "Technomancien";
     }
 
     // Un archétype matriciel implique la spécialisation Decker (cyberdeck),
@@ -3420,7 +3455,7 @@ export const EditionSR6 = {
           ]
         : special === "Rigger"
           ? ["Câblage de contrôle [Rigger]"]
-          : !awakened && p >= 5
+          : !awakened && special !== "Technomancien" && p >= 5
             ? [Utils.rand(this.equipPools.cyberware)]
             : [];
 

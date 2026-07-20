@@ -448,6 +448,11 @@ export const TourSteps = {
       title: "Une CI comme combattante à part entière",
       body: "Le suivi de combat gagne un bouton « ＋ CI » : choisissez une contre-mesure (CI Noire, Tueuse…) et son indice, elle rejoint l'initiative avec son score du livre, son moniteur et ses jets — plus besoin de bricoler une ligne « CI NOIRE » à l'init saisie à la main. Et quand un serveur est lié et en alerte, « Round suivant » du combat déploie désormais la CI du tour tout seul (les deux horloges sont enfin synchronisées, et l'intrusion parle le même « Round » que le combat).",
     },
+    {
+      id: "wn-techno-archetype-sr6", anchor: "nav-generator", tours: ["whatsnew"], since: "1.83.0", fallback: "center",
+      title: "Un technomancien à générer (SR6)",
+      body: "Le générateur SR6 propose enfin deux technomanciens nommés — « Techno-ganger (émergé) » chez les gangs, « Technomancien de sécurité » côté corpo — sourcés d'Anarchistes. La machinerie persona / sprites / formes complexes, jusqu'ici accessible seulement en cochant la spécialisation, a désormais sa porte d'entrée directe. Bonus : un technomancien généré ne reçoit plus d'augmentation qui grignoterait sa Résonance.",
+    },
   ],
 };
 

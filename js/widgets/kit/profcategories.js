@@ -141,6 +141,7 @@ export const ProfCategories = {
         "Ganger Halloweeners",
         "Ganger Ancients",
         "Magogang (éveillé)",
+        "Techno-ganger (émergé)",
       ],
     },
     {
@@ -149,6 +150,7 @@ export const ProfCategories = {
         "Agent de sécurité corpo",
         "Garde corpo (patrouille)",
         "Rigger de sécurité",
+        "Technomancien de sécurité",
         "Agent de sécurité Renraku",
         "Samouraï rouge Renraku",
         "Agent de sécurité Ares",
