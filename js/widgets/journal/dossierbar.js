@@ -482,14 +482,24 @@ export const DossierBar = {
     toast(`Rencontre « ${Dossiers.nameOf(dossierId) || "?"} » ouverte.`);
   },
 
-  /** Fermer la rencontre : snapshot (R1) + retrait du contexte actif. */
+  /** Fermer la rencontre : snapshot (R1) + retrait du contexte actif. Sur un
+      run, offre le débrief (VIS-7) au moment naturel — proposé, jamais imposé
+      (toastAction, socle VIS-2 ; Debrief lu en global pour éviter un cycle
+      d'import dossierbar ↔ debrief). */
   closeRencontre(dossierId) {
     if (!dossierId) return;
     Encounter.stash(dossierId);
     if (DiceLog._filter === DiceLog._ENCOUNTER_FILTER) DiceLog._filter = "all";
     Encounter.close();
     this.render();
-    toast(`Rencontre « ${Dossiers.nameOf(dossierId) || "?"} » rangée.`);
+    const name = Dossiers.nameOf(dossierId) || "?";
+    if (Dossiers.kindOf(dossierId) === "run" && typeof Debrief !== "undefined") {
+      toastAction(`Rencontre « ${name} » rangée.`, "Débriefer", () =>
+        Debrief.open(dossierId),
+      );
+    } else {
+      toast(`Rencontre « ${name} » rangée.`);
+    }
   },
 };
 

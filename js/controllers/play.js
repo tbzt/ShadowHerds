@@ -13,6 +13,7 @@
    Délégation `data-action` (aucun onclick), neutre par édition.
    ============================================================ */
 import { Collection } from "../widgets/collection/collection.js";
+import { Debrief } from "./debrief.js";
 import { DossierBar } from "../widgets/journal/dossierbar.js";
 import { Dossiers } from "../widgets/journal/dossiers.js";
 import { Encounter } from "./encounter.js";
@@ -57,6 +58,12 @@ export const Play = {
           // n'édite jamais les notes lui-même (source unique Notebooks).
           DossierBar.select(id);
           Notepad.open();
+          break;
+        case "play-debrief":
+          // VIS-7 — clore la boucle : « qu'est-ce que ce run a laissé ? ».
+          // Délégué à Debrief (paie/karma/réputation → Campaign, retombées →
+          // Notebooks). Jouer ne possède aucune de ces données.
+          Debrief.open(id);
           break;
         case "play-cast-consult":
           // Consulter une fiche du casting : réutilise le résolveur public de la
@@ -328,6 +335,7 @@ export const Play = {
         <button class="play-command-name" data-action="play-focus" data-dossier="${run.id}" title="Ouvrir « ${CardRenderer._esc(run.name)} » dans la bibliothèque">${CardRenderer._esc(run.name)}</button>
         <span class="play-command-actions">
           <button class="btn-secondary btn-small" data-action="play-notes" data-dossier="${run.id}" title="Ouvrir le carnet de ce run">✎ Notes</button>
+          <button class="btn-secondary btn-small" data-action="play-debrief" data-dossier="${run.id}" title="Débrief : ce que ce run a laissé (paie, karma, réputation, retombées)">✓ Débrief</button>
           ${resumeBtn}
         </span>
       </div>

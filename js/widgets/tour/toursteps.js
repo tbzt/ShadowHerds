@@ -433,6 +433,11 @@ export const TourSteps = {
       title: "Votre premier run, guidé",
       body: "Quand aucun run n'existe encore, « Jouer » n'affiche plus « Rien à jouer » : un bouton « ＋ Créer mon premier run » demande un nom, crée le run et le met aussitôt en contexte — dès lors, tout ce que vous rangez ou générez s'y range. Et promouvoir un topos en run le focalise directement, en proposant d'un clic de générer le casting d'opposition.",
     },
+    {
+      id: "wn-debrief-seance", anchor: "nav-play", tours: ["whatsnew"], since: "1.80.0", fallback: "center",
+      title: "Le débrief de séance",
+      body: "À la fin d'un run, un bouton « ✓ Débrief » (et une proposition quand vous rangez la rencontre) demande « qu'est-ce que ce run a laissé ? ». Vous ratifiez la paie, le karma et la réputation — la triade SR5, la Réputation et la Pression SR6, rien d'imposé pour Anarchy — appliqués d'un coup à toute l'équipe ; contact grillé, faveur due ou corpo fâchée rejoignent le carnet du run, datés. Tout dérive du registre de campagne existant : les soldes des fiches bougent, rien n'est stocké en double, chaque écriture reste annulable.",
+    },
   ],
 };
 

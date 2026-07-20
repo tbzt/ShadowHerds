@@ -12,6 +12,23 @@ commit.
 
 ## [Non publié]
 
+## [1.80.0] — 2026-07-20
+
+### Ajouté
+
+- **Débrief de séance — la boucle du run se referme.** À la fin d'un run, un
+  bouton « ✓ Débrief » sur le poste de commandement de « Jouer » (et une
+  proposition « Débriefer » quand vous rangez la rencontre) ouvre un écran de
+  clôture : *« qu'est-ce que ce run a laissé ? »*. Vous **ratifiez** la paie
+  (pré-remplie depuis le topos), le karma et la réputation qui bouge — la triade
+  Crédibilité/Rumeur/Renommée en SR5, la Réputation et la Pression en SR6, rien
+  d'imposé pour Anarchy — appliqués d'un coup à **toute l'équipe** (les PJ rangés
+  dans le run et sa campagne). Contact grillé, faveur due, corpo fâchée : notés
+  dans le **carnet du run**, datés. Tout **dérive du registre de campagne
+  existant** — les soldes des fiches bougent, rien n'est stocké en double, et
+  chaque écriture reste annulable depuis la fiche. Le run suivant repart d'un
+  état, plus d'une page blanche.
+
 ## [1.79.2] — 2026-07-20
 
 ### Correctif

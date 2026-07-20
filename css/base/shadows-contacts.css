@@ -1412,3 +1412,118 @@ body.reordering .reorder-handle {
   color: var(--danger);
 }
 
+/* ============================================================
+   DÉBRIEF DE SÉANCE (VIS-7) — clôture de run. Réutilise la coquille
+   .modal-overlay/.modal (thème par édition hérité) ; tokens uniquement.
+   ============================================================ */
+/* Spécificité renforcée : .modal (modal-core.css) est chargé APRÈS ce fichier
+   et fixe width:min(680px,94vw) ; à spécificité égale il gagnerait. Le
+   sélecteur descendant (0,2,0) passe devant, quel que soit l'ordre de charge. */
+.debrief-overlay .debrief-modal {
+  width: min(480px, 94vw);
+}
+.debrief-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 0.85rem;
+}
+.debrief-run {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+.debrief-sub {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+.debrief-team {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+.debrief-chip {
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: var(--fs-sm);
+  color: var(--text);
+  background: var(--bg-mid);
+}
+.debrief-warn {
+  margin: 0 0 0.85rem;
+  padding: 0.5rem 0.65rem;
+  border-left: 2px solid var(--warning);
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+}
+.debrief-section-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0.6rem 0 0.4rem;
+}
+.debrief-team-count {
+  color: var(--text-dim);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.debrief-tracks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.debrief-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.debrief-row-label {
+  color: var(--text);
+  font-size: var(--fs-base);
+}
+.debrief-glyph {
+  color: var(--text-dim);
+}
+.debrief-input {
+  width: 7rem;
+  text-align: right;
+  padding: 0.3rem 0.5rem;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-size: var(--fs-base);
+}
+.debrief-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.debrief-hint {
+  margin: 0 0 0.5rem;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+.debrief-notes {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-base);
+  resize: vertical;
+}
+.debrief-notes:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
