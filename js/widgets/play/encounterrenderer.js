@@ -1258,11 +1258,11 @@ export const EncounterRenderer = {
       const isPenalty = (i + 1) % 3 === 0;
       return `<div class="monitor-box${i < st.dmg ? " filled" : ""}${isPenalty ? " penalty" : ""}" data-action="ic-box" data-id="${r.pnjId}" data-n="${i + 1}" role="button" tabindex="0" aria-label="Case ${i + 1} du moniteur — ${Utils.escHtml(label)}"></div>`;
     }).join("");
-    // Combat de la CH directement sur la fiche active, via Matrix.icCombat
+    // Combat de la CI directement sur la fiche active, via Matrix.icCombat
     // (_icCombatChips) : pastilles de jet (SR5/SR6/Anarchy 1re) ou pastilles de
     // VALEUR à succès fixes (Anarchy 2.0). data-action="roll-ic" câblé dans
-    // Encounter.init (overlay). CH autonome : data-id = id du combattant (jet
-    // local) ; CH liée : data-id = id du serveur.
+    // Encounter.init (overlay). CI autonome : data-id = id du combattant (jet
+    // local) ; CI liée : data-id = id du serveur.
     const rollId = srv ? srv.id : r.pnjId;
     const combatHtml = this._icCombatChips(M, host, ic, m.icKey, rollId, label, [
       ["atk", "⚔", "Attaque"],
@@ -1439,7 +1439,7 @@ export const EncounterRenderer = {
       btn.innerHTML = `${this._reactDamageTypes[pnjId] === "stun" ? "Étourd." : "Phys."} <svg class="icon icon-sm" aria-hidden="true"><use href="#ic-swap"></use></svg>`;
   },
 
-  /** Pastilles de combat d'une CH (fiche active ET console Réagir), pilotées par
+  /** Pastilles de combat d'une CI (fiche active ET console Réagir), pilotées par
       Matrix.icCombat (source unique par édition, prohibition n°1) :
         • geste à dés (SR5/SR6, Anarchy 1re statblock) → bouton cliquable
           data-action="roll-ic" (→ Intrusion.rollIC / Encounter._rollBareIC) ;
@@ -1463,14 +1463,14 @@ export const EncounterRenderer = {
       .join("");
   },
 
-  /** Ligne de réaction d'une CH : au tour d'un PJ, la CH montre sa Défense (et
+  /** Ligne de réaction d'une CI : au tour d'un PJ, la CI montre sa Défense (et
       son Encaissement si l'édition en a un) — bouton de jet (SR5/SR6/Anarchy 1re)
       ou pastille de valeur à succès fixes (Anarchy 2.0). Délègue tout à
-      `_icCombatChips`. Pas de chevron (la CH a sa fiche + le tiroir). */
+      `_icCombatChips`. Pas de chevron (la CI a sa fiche + le tiroir). */
   _reactMatrixRow(r) {
     const m = r.matrix || {};
-    // CH autonome (VIS-10) : pas de serveur — édition/jets portés par le
-    // combattant, data-id = son id (jet local). CH liée : data-id = serveur.
+    // CI autonome (VIS-10) : pas de serveur — édition/jets portés par le
+    // combattant, data-id = son id (jet local). CI liée : data-id = serveur.
     const srv = m.serverId ? Servers.find(m.serverId) : null;
     const edition = srv ? srv.edition : m.edition;
     const M = edition ? Matrix.use(edition) : null;
@@ -1482,7 +1482,7 @@ export const EncounterRenderer = {
       ["def", "⛉", "Défense"],
       ["soak", "⛊", "Encaisser"],
     ]);
-    // Repli défensif si l'édition n'expose pas de régime de combat de CH.
+    // Repli défensif si l'édition n'expose pas de régime de combat de CI.
     const buttons =
       chips ||
       `<span class="react-btn is-off" title="Pas de réserve de défense"><span class="react-glyph" aria-hidden="true">⛉</span> —</span>`;

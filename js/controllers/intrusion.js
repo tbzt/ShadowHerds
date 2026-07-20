@@ -173,7 +173,7 @@ export const Intrusion = {
     this._persist();
   },
 
-  /* ---- Jets d'une CH liée à un serveur ----
+  /* ---- Jets d'une CI liée à un serveur ----
      Réserve/limite/suffixe délégués à `Matrix.icCombat` (source unique par
      édition, prohibition n°1). SR5/SR6 (dés ∝ indice) et Anarchy 1re (dés à
      statblock fixe) renvoient `roll:true` → on lance. Anarchy 2.0 (succès

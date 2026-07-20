@@ -680,7 +680,7 @@ export const Matrix = {
     return this._model().attrLimit(kind, srv);
   },
 
-  /** Descripteur de combat d'une CH pour un geste (atk/def/soak/per), lu par le
+  /** Descripteur de combat d'une CI pour un geste (atk/def/soak/per), lu par le
       cockpit (fiche active + console Réagir) ET les handlers de jet
       (`Intrusion.rollIC`, `Encounter._rollBareIC`). Forme uniforme,
       édition-neutre (prohibition n°1 — chaque régime vit dans son modèle

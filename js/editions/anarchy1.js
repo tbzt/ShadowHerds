@@ -687,7 +687,7 @@ export const EditionAnarchy1 = {
         (soit LOG 5 + Firewall 6), Perception matricielle = LOG + LOG = 10.
         Valeurs FIXES (indépendantes de l'indice/sécurité du serveur). */
     icStatblock: { atk: 8, def: 11, per: 10 },
-    /** Descripteur de combat d'une CH (Anarchy 1re), lu par le cockpit + les
+    /** Descripteur de combat d'une CI (Anarchy 1re), lu par le cockpit + les
         handlers de jet via Matrix.icCombat. Régime à DÉS mais statblock FIXE
         (ni succès fixes ∝ indice comme A2, ni ASDF comme SR). Modificateurs de
         type (p.200) : Tueuse = +2 dés en cybercombat (`ic.atkBonus`), Glace

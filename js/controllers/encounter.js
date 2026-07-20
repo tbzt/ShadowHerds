@@ -1321,7 +1321,7 @@ export const Encounter = {
     this._commit();
   },
 
-  /** Jet d'une CH AUTONOME (VIS-10) — pas de serveur à interroger. Réserve,
+  /** Jet d'une CI AUTONOME (VIS-10) — pas de serveur à interroger. Réserve,
       limite et suffixe via `Matrix.icCombat` (source unique partagée avec
       `Intrusion.rollIC`), sur l'hôte synthétique. `roll:false` (A2 succès fixes)
       ou `null` (geste absent, ex. encaissement Anarchy) → rien à lancer. */
@@ -1799,8 +1799,8 @@ export const Encounter = {
           this.grantNarrationAction(id);
           break;
         case "roll-ic": {
-          // Jet d'une CH (attaque/défense/encaissement/perception) depuis la
-          // fiche CH active ou la console de réaction — même moteur, réserve
+          // Jet d'une CI (attaque/défense/encaissement/perception) depuis la
+          // fiche CI active ou la console de réaction — même moteur, réserve
           // partagée (Matrix.icCombat), aucun calcul dupliqué. Ces boutons
           // vivent dans #encounter-overlay, hors de la délégation #app de
           // Servers._wire → câblés ici. CI autonome (VIS-10) : `data-id` est

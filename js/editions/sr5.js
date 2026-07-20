@@ -603,7 +603,7 @@ export const EditionSR5 = {
     icMonitorSize(indice) {
       return 8 + Math.ceil(indice / 2);
     },
-    /** Descripteur de combat d'une CH (SR5), lu par le cockpit + les handlers de
+    /** Descripteur de combat d'une CI (SR5), lu par le cockpit + les handlers de
         jet via Matrix.icCombat. Attaque/perception = indice×2 (+ limite
         d'attribut, p.249). Défense ET encaissement = indice + Firewall : le
         livre n'a pas de ligne de défense dédiée → l'indice de serveur remplace

@@ -394,7 +394,7 @@ export const EditionAnarchy2 = {
     icMonitorSize() {
       return 4;
     },
-    /** Descripteur de combat d'une CH (Anarchy 2.0), lu par le cockpit via
+    /** Descripteur de combat d'une CI (Anarchy 2.0), lu par le cockpit via
         Matrix.icCombat. Régime à SUCCÈS FIXES (`roll:false` → le cockpit affiche
         une valeur, jamais une pastille de dés) : attaque ET défense = indice du
         serveur (test opposé, p.223, 225). L'encaissement n'est pas un jet — la VD

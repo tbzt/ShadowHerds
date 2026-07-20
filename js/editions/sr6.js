@@ -748,12 +748,12 @@ export const EditionSR6 = {
     icMonitorSize(indice) {
       return 8 + Math.ceil(indice / 2);
     },
-    /** Descripteur de combat d'une CH (SR6), lu par le cockpit + les handlers de
-        jet via Matrix.icCombat. « Toutes les CH utilisent indice×2 pour la
+    /** Descripteur de combat d'une CI (SR6), lu par le cockpit + les handlers de
+        jet via Matrix.icCombat. « Toutes les CI utilisent indice×2 pour la
         majorité de leurs jets » (p.188) → attaque/défense/perception = indice×2.
         Encaissement = indice×2 aussi : on résiste aux dommages matriciels « avec
-        Firewall » (p.180), sans règle de soak dédiée aux CH → on applique la
-        convention CH indice×2 (et NON indice + Firewall, qui n'est pas au livre). */
+        Firewall » (p.180), sans règle de soak dédiée aux CI → on applique la
+        convention CI indice×2 (et NON indice + Firewall, qui n'est pas au livre). */
     icCombat(kind, host) {
       const i = host.indice;
       if (kind === "atk") return { roll: true, pool: i * 2, limit: this.attrLimit("atk", host), suffix: "attaque" };
