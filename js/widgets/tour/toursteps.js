@@ -428,6 +428,11 @@ export const TourSteps = {
       title: "Le calcul des réserves, à la demande",
       body: "Les réserves de situation d'une fiche (Sang-froid, Surprise, Intentions, Mémoire, Port) affichent désormais leur décompte comme les pastilles de combat : survolez-les (ou appui long au doigt) pour voir la source de chaque dé — « Sang-froid 8 = Volonté 5 + Charisme 3 » — sans rien changer au jet.",
     },
+    {
+      id: "wn-first-run-guided", anchor: "nav-play", tours: ["whatsnew"], since: "1.79.0", fallback: "center",
+      title: "Votre premier run, guidé",
+      body: "Quand aucun run n'existe encore, « Jouer » n'affiche plus « Rien à jouer » : un bouton « ＋ Créer mon premier run » demande un nom, crée le run et le met aussitôt en contexte — dès lors, tout ce que vous rangez ou générez s'y range. Et promouvoir un topos en run le focalise directement, en proposant d'un clic de générer le casting d'opposition.",
+    },
   ],
 };
 

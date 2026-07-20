@@ -130,7 +130,23 @@ export const RunGen = {
       this._save();
       this._refreshCard(runId);
     }
-    toast(`Run « ${name} » créé — rangez-y votre prep.`);
+    // VIS-3 (annexe B a) : le run tout juste promu devient le contexte courant
+    // (focus + destination de rangement + fil d'Ariane) — sinon il fallait
+    // aller le focaliser à la main pour que « Jouer » l'affiche en tête.
+    if (dossier) DossierBar.select(dossier.id);
+    // VIS-3 (annexe B b) : le casting est PROPOSÉ, pas imposé (informer jamais
+    // décider). Un topos porteur d'un profil de sécurité offre un bouton qui
+    // génère les PNJ d'opposition d'un clic ; sinon, simple confirmation.
+    if (run && run.dossierId && run.securityProfile) {
+      toastAction(
+        `Run « ${name} » créé — rangez-y votre prep.`,
+        "Générer le casting",
+        () => this.castForRun(runId),
+        6000,
+      );
+    } else {
+      toast(`Run « ${name} » créé — rangez-y votre prep.`);
+    }
   },
 
   /* Casting du topos (Lot 3b) : catégorie de rôle du profil de sécurité →

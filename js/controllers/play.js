@@ -39,6 +39,14 @@ export const Play = {
           // geste, réutilise la mécanique de la barre de dossiers (R4).
           DossierBar.openRencontre(id);
           break;
+        case "play-first-run":
+          // VIS-3 — crée le premier run (dossier typé « run ») et le pose EN
+          // CONTEXTE : DossierBar.select rend le run destination de rangement
+          // (currentGroup) + focus (App.context) + fil d'Ariane. render() fait
+          // alors apparaître son poste de commandement. Aucune donnée de jeu
+          // n'est fabriquée — juste la maille où ranger la prep.
+          this._createFirstRun();
+          break;
         case "play-focus":
           DossierBar.select(id);
           App.showPanel("shadows");
@@ -432,14 +440,40 @@ export const Play = {
     </div>`;
   },
 
+  /** VIS-3 — état vide GUIDÉ : au lieu de constater le vide, il enseigne la
+      spine une fois. Le run est la maille où tout se range ; le créer d'un
+      geste (nommer) le pose EN CONTEXTE (DossierBar.select → destination de
+      classement + fil d'Ariane), et le poste de commandement du run vide prend
+      alors le relais (invite « Lancer la scène »). Les deux anciens chemins
+      (topos / bibliothèque) restent offerts, en second. */
+  /** VIS-3 — crée le run guidé depuis l'état vide : demande le nom, crée le
+      dossier typé « run », le focalise (destination + contexte), re-rend le
+      poste de commandement. Ne fabrique aucune fiche ni scène — la maille
+      seulement. */
+  async _createFirstRun() {
+    const input = await Dialog.prompt({
+      title: "Créer un run",
+      label: "Nom du run",
+      value: "",
+      confirmLabel: "Créer le run",
+    });
+    if (input === null || !input.trim()) return;
+    const name = input.trim();
+    const dossier = Dossiers.add(name, null, "run");
+    if (!dossier) return;
+    DossierBar.select(dossier.id);
+    this.render();
+    toast(`Run « ${name} » créé — ce que vous rangez ou générez ira dedans.`);
+  },
+
   _emptyHtml() {
     return `<div class="play-onboard">
-      <p class="play-onboard-lead">Rien à jouer pour l'instant.</p>
-      <p>La colonne <strong>Campagne › Run › Scène</strong> se remplit dès que vous typez un dossier en campagne / run (menu ⋯ d'un dossier), ou que vous <strong>faites un run</strong> depuis un topos.</p>
+      <p class="play-onboard-lead">Votre première séance commence par un run.</p>
+      <p>Créons-le — <strong>nommez-le</strong>, et tout ce que vous préparez (PNJ, contacts, notes) s'y rangera. C'est la maille <strong>Campagne › Run › Scène</strong> autour de laquelle tourne la table.</p>
       <div class="play-onboard-cta">
-        <button class="btn-primary btn-small" data-action="show-panel" data-panel="run">Générer un topos</button>
-        <button class="btn-secondary btn-small" data-action="show-panel" data-panel="shadows">Ouvrir la bibliothèque</button>
+        <button class="btn-primary btn-small" data-action="play-first-run">＋ Créer mon premier run</button>
       </div>
+      <p class="play-onboard-alt">Vous préférez partir d'une amorce ? <button class="linklike" data-action="show-panel" data-panel="run">Générer un topos</button> · <button class="linklike" data-action="show-panel" data-panel="shadows">Ouvrir la bibliothèque</button></p>
     </div>`;
   },
 };

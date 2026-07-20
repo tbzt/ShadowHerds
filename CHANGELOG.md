@@ -24,6 +24,22 @@ commit.
   d'honneur ») était placée dans l'archétype, affiché inline sous le nom. Elle est
   désormais rangée dans les notes ; le header ne montre que métatype et éveil.
 
+## [1.79.0] — 2026-07-20
+
+### Votre premier run, guidé
+
+- **« Jouer » enseigne la spine plutôt que de constater le vide.** Quand aucun
+  run n'existe encore, le poste « Jouer » n'affiche plus « Rien à jouer » mais
+  invite à créer sa première séance : un bouton **« ＋ Créer mon premier run »**
+  demande un nom, crée le run et le pose aussitôt en contexte — dès lors, tout ce
+  que vous rangez ou générez (PNJ, contacts, notes) s'y range. La colonne
+  **Campagne › Run › Scène** prend le relais avec son poste de commandement.
+- **« Faire un run » focalise et propose le casting.** Promouvoir un topos en run
+  le met désormais directement en contexte (plus besoin d'aller le focaliser à la
+  main pour que « Jouer » l'affiche). Si le topos porte un profil de sécurité, le
+  message de confirmation offre un bouton **« Générer le casting »** qui produit
+  les PNJ d'opposition d'un clic — proposé, jamais imposé.
+
 ## [1.78.3] — 2026-07-20
 
 ### Le pont « Créer → Retrouver »
