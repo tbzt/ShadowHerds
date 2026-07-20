@@ -102,17 +102,17 @@ export const RunGen = {
     });
   },
 
-  /** « Faire une run » — promeut un topos (amorce générée) en RUN canon.
+  /** « Faire un run » — promeut un topos (amorce générée) en RUN canon.
       Crée (ou réutilise) un dossier typé `run` où ranger PNJ, contacts et
       serveurs de la prep, et relie le topos au dossier (la carte l'affiche
       ensuite au lieu du bouton — le topos ne reste plus sans lien visible une
       fois promu). Le nom est proposé d'après le topos, éditable. */
   async toDossier(runId, suggested) {
     const input = await Dialog.prompt({
-      title: "Faire une run",
-      label: "Nom de la run",
+      title: "Faire un run",
+      label: "Nom du run",
       value: suggested || "Run",
-      confirmLabel: "Faire la run",
+      confirmLabel: "Faire le run",
     });
     if (input === null || !input.trim()) return;
     const name = input.trim();
@@ -130,7 +130,7 @@ export const RunGen = {
       this._save();
       this._refreshCard(runId);
     }
-    toast(`Run « ${name} » créée — rangez-y votre prep.`);
+    toast(`Run « ${name} » créé — rangez-y votre prep.`);
   },
 
   /* Casting du topos (Lot 3b) : catégorie de rôle du profil de sécurité →
@@ -148,15 +148,15 @@ export const RunGen = {
 
   /** « Générer le casting » — produit les PNJ d'opposition cohérents avec le
       topos (profil de sécurité de la cible + rôle injecté par la difficulté),
-      calés en nombre sur la menace du district, et les range dans le dossier de
-      la run. Génération déléguée à `Gen.generateForRole` ; rangement à `Shadows`
+      calés en nombre sur la menace du district, et les range dans le dossier du
+      run. Génération déléguée à `Gen.generateForRole` ; rangement à `Shadows`
       (via `currentGroup`) — RunGen n'écrit ni la fiche ni le storage lui-même.
       Le casting apparaît ensuite dans le poste de commandement de « Jouer »
       (qui lit déjà `DossierBar.memberIds`). */
   castForRun(runId) {
     const run = this._runs.find((r) => r.id === runId);
     if (!run || !run.dossierId) {
-      toast("Faites d'abord une run (dossier) pour y ranger le casting.", "warning");
+      toast("Faites d'abord un run (dossier) pour y ranger le casting.", "warning");
       return;
     }
     const prof = ToposCatalog.securityProfiles[run.securityProfile];
@@ -166,7 +166,7 @@ export const RunGen = {
     }
     const dossierName = Dossiers.nameOf(run.dossierId);
     if (!dossierName) {
-      toast("Dossier de la run introuvable.", "warning");
+      toast("Dossier du run introuvable.", "warning");
       return;
     }
     // Slots = profil de la cible (+ un extra si district très surveillé) + le
@@ -206,7 +206,7 @@ export const RunGen = {
     old.replaceWith(el);
   },
 
-  /* ---- Persistance des runs générées (édition-scopée) ----
+  /* ---- Persistance des runs générés (édition-scopée) ----
      Miroir du pattern gen_pool : les runs survivent au F5 et au changement de
      panel, restaurées par initPanel(). Storage = source de vérité. */
   _RUNS_KEY: "gen_runs",
@@ -214,11 +214,11 @@ export const RunGen = {
   _save() {
     Storage.set(this._RUNS_KEY, this._runs);
   },
-  /** Runs rattachées à un dossier, par id (R0 — stable au renommage). Lit
+  /** Runs rattachés à un dossier, par id (R0 — stable au renommage). Lit
       Storage frais — utilisable depuis n'importe quel panneau (le Hub
       notamment), sans dépendre de `_runs`, qui n'est restauré qu'à
-      l'ouverture du panneau Run. Fallback `dossierName` pour une run pas
-      encore migrée (la migration storage.js v5 couvre le cas normal ; ce
+      l'ouverture du panneau Run. Fallback `dossierName` pour un run pas
+      encore migré (la migration storage.js v5 couvre le cas normal ; ce
       filet couvre une écriture concurrente entre le boot et la migration). */
   forDossier(id) {
     if (!id) return [];
@@ -327,7 +327,10 @@ export const RunGen = {
       subtitle: [run.type, run.client].filter(Boolean).join(" · "),
       lieu: run.lieu || "",
     });
-    Portrait.showPreview(MapGen.dataUrl(svg));
+    Portrait.showPreview(
+      MapGen.dataUrl(svg),
+      `Plan tactique — ${run.lieu || "lieu inconnu"}`,
+    );
   },
   clearAll() {
     this._runs = [];

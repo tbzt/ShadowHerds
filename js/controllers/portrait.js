@@ -341,7 +341,7 @@ export const Portrait = {
     this._previewDelegated = true;
     document.addEventListener("click", (e) => {
       const el = e.target.closest("[data-portrait-preview]");
-      if (el) this.showPreview(el.dataset.portraitPreview);
+      if (el) this.showPreview(el.dataset.portraitPreview, el.dataset.portraitCaption);
     });
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
@@ -352,7 +352,7 @@ export const Portrait = {
       const el = e.target.closest && e.target.closest("[data-portrait-preview]");
       if (el) {
         e.preventDefault();
-        this.showPreview(el.dataset.portraitPreview);
+        this.showPreview(el.dataset.portraitPreview, el.dataset.portraitCaption);
       }
     });
   },
@@ -365,6 +365,7 @@ export const Portrait = {
       <div class="portrait-preview-box">
         <button class="portrait-preview-close" aria-label="Fermer">&times;</button>
         <img class="portrait-preview-img" alt="Portrait généré">
+        <div class="portrait-preview-caption"></div>
       </div>`;
     document.body.appendChild(overlay);
     overlay.addEventListener("click", (e) => {
@@ -377,9 +378,16 @@ export const Portrait = {
     return overlay;
   },
 
-  showPreview(url) {
+  /** `caption` (optionnel) : légende visible sous l'image — sert notamment à
+      nommer un plan de lieu généré (mapgen/Pollinations), qui n'a sinon aucun
+      nom affiché une fois ouvert en grand. Absent = pas de légende (portraits
+      PNJ/PJ, comportement historique inchangé). */
+  showPreview(url, caption) {
     const el = this._ensurePreview();
     el.querySelector(".portrait-preview-img").src = url;
+    const cap = el.querySelector(".portrait-preview-caption");
+    cap.textContent = caption || "";
+    cap.style.display = caption ? "" : "none";
     el.classList.add("visible");
   },
 

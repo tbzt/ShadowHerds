@@ -19,6 +19,7 @@ export const RunRenderer = {
     el.innerHTML = `
       <div class="run-card-header">
         <div class="run-type">${CardRenderer._esc(r.type)}</div>
+        ${this._stateBadge(r)}
         <span class="pnj-rank-badge">${r.difficulte}</span>
       </div>
       <div class="run-card-body">
@@ -42,11 +43,11 @@ export const RunRenderer = {
       <div class="pnj-card-footer">
         ${
           r.dossierId || r.dossierName
-            ? `<span class="pnj-rank-badge" title="Rangée dans ce dossier">📁 ${CardRenderer._esc(
+            ? `<span class="pnj-rank-badge" title="Rangé dans ce dossier">📁 ${CardRenderer._esc(
                 (r.dossierId && Dossiers.nameOf(r.dossierId)) || r.dossierName,
               )}</span>`
             : `<button class="card-action-btn" data-action="run-to-dossier"
-                 data-run-name="${CardRenderer._esc(r.type)}" title="Promouvoir ce topos en run canon">＋ Faire une run</button>`
+                 data-run-name="${CardRenderer._esc(r.type)}" title="Promouvoir ce topos en run canon">＋ Faire un run</button>`
         }
         <button class="card-action-btn" data-action="edit-run" title="Éditer ce topos">✎ Éditer</button>
         ${this._rencontreBtn(r)}
@@ -57,9 +58,18 @@ export const RunRenderer = {
     return el;
   },
 
+  /** Distingue au premier coup d'œil un topos encore libre d'un run canon
+      (`dossierId` posé par `RunGen.toDossier`) — même carte, deux états, sinon
+      rien ne les sépare visuellement avant le footer (bouton vs badge 📁). */
+  _stateBadge(r) {
+    return r.dossierId || r.dossierName
+      ? `<span class="run-state-badge is-run" title="Promu en run canon">Run</span>`
+      : `<span class="run-state-badge" title="Pas encore promu en run">Topos</span>`;
+  },
+
   /** R4 : miroir du geste « rencontre » de dossierbar (même dossierId, mêmes
-      méthodes DossierBar.open/closeRencontre) — seulement pour une run
-      rangée dans un dossier réellement typé « run ». */
+      méthodes DossierBar.open/closeRencontre) — seulement pour un run
+      rangé dans un dossier réellement typé « run ». */
   _rencontreBtn(r) {
     if (!r.dossierId || Dossiers.kindOf(r.dossierId) !== "run") return "";
     const active = Encounter.activeDossierId === r.dossierId;
@@ -72,10 +82,10 @@ export const RunRenderer = {
 
   /** « Générer le casting » (Lot 3b) — seulement sur un topos promu en run
       (`dossierId`) et porteur d'un profil de sécurité (topos généré ≥ 3a) :
-      RunGen produit alors les PNJ d'opposition et les range dans la run. */
+      RunGen produit alors les PNJ d'opposition et les range dans le run. */
   _castBtn(r) {
     if (!r.dossierId || !r.securityProfile) return "";
-    return `<button class="card-action-btn" data-action="run-cast" title="Générer les PNJ d'opposition et les ranger dans la run">⚔ Casting</button>`;
+    return `<button class="card-action-btn" data-action="run-cast" title="Générer les PNJ d'opposition et les ranger dans le run">⚔ Casting</button>`;
   },
 
   /** Boutons « plan » d'un site à plan utile (tag `planUtile`, 3a) ; rien pour
@@ -92,7 +102,7 @@ export const RunRenderer = {
       typeof Settings !== "undefined" && Settings.getPortraitSettings().enabled;
     if (aiEnabled) {
       out += r.planUrl
-        ? `<button class="card-action-btn" data-portrait-preview="${CardRenderer._esc(r.planUrl)}" title="Voir l'ambiance générée">✨ Ambiance</button>`
+        ? `<button class="card-action-btn" data-portrait-preview="${CardRenderer._esc(r.planUrl)}" data-portrait-caption="${CardRenderer._esc(`Ambiance — ${r.lieu || "lieu inconnu"}`)}" title="Voir l'ambiance générée">✨ Ambiance</button>`
         : `<button class="card-action-btn" data-action="run-plan" title="Générer une ambiance du lieu (IA)">✨ Ambiance</button>`;
     }
     return out;

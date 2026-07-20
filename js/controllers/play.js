@@ -35,7 +35,7 @@ export const Play = {
       const id = el.dataset.dossier;
       switch (el.dataset.action) {
         case "play-resume":
-          // Rouvre la scène de cette run (restaure + focus + tracker) — un seul
+          // Rouvre la scène de ce run (restaure + focus + tracker) — un seul
           // geste, réutilise la mécanique de la barre de dossiers (R4).
           DossierBar.openRencontre(id);
           break;
@@ -44,7 +44,7 @@ export const Play = {
           App.showPanel("shadows");
           break;
         case "play-notes":
-          // Notes de CETTE run : poser le contexte sur la run (App.context.dossier
+          // Notes de CE run : poser le contexte sur le run (App.context.dossier
           // = carnet courant) puis DÉLÉGUER au Notepad — le poste de commandement
           // n'édite jamais les notes lui-même (source unique Notebooks).
           DossierBar.select(id);
@@ -103,9 +103,9 @@ export const Play = {
       return;
     }
 
-    // Poste de commandement (V4-b) : la run COURANTE (contexte, cf. doctrine
-    // « le vivant a une perche privilégiée ») est sortie en tête, en grand ;
-    // les autres restent l'index. `null` si le MJ n'a aucune run en contexte.
+    // Poste de commandement (V4-b) : le run COURANT (contexte, cf. doctrine
+    // « le vivant a une perche privilégiée ») est sorti en tête, en grand ;
+    // les autres restent l'index. `null` si le MJ n'a aucun run en contexte.
     const heroId = this._currentRunId();
     const hero = heroId ? Dossiers.get(heroId) : null;
 
@@ -115,13 +115,13 @@ export const Play = {
     for (const camp of campaigns) {
       const runs = Dossiers.children(camp.id).filter((d) => d.kind === "run");
       const others = runs.filter((r) => r.id !== heroId);
-      // Une run dont la seule occurrence est le poste de commandement ci-dessus
-      // n'est pas « absente » : on renvoie vers le haut plutôt que « Aucune run ».
+      // Un run dont la seule occurrence est le poste de commandement ci-dessus
+      // n'est pas « absent » : on renvoie vers le haut plutôt que « Aucun run ».
       const inner = others.length
         ? others.map((r) => this._runRow(r)).join("")
         : runs.length
-          ? `<div class="play-empty-note">Run en cours affichée ci-dessus ↑</div>`
-          : `<div class="play-empty-note">Aucune run — « Faire une run » depuis un topos la rangera ici.</div>`;
+          ? `<div class="play-empty-note">Run en cours affiché ci-dessus ↑</div>`
+          : `<div class="play-empty-note">Aucun run — « Faire un run » depuis un topos le rangera ici.</div>`;
       html += this._sectionHtml(
         `❖ ${CardRenderer._esc(camp.name)}`,
         `${runs.length} run${runs.length > 1 ? "s" : ""}`,
@@ -139,9 +139,9 @@ export const Play = {
     box.innerHTML = html;
   },
 
-  /** La run « courante » qui mérite le poste de commandement : le contexte
-      choisi par le MJ d'abord (`App.context.dossier` s'il pointe une run),
-      sinon la run qui porte la scène vivante (`App.context.scene`). `null` si
+  /** Le run « courant » qui mérite le poste de commandement : le contexte
+      choisi par le MJ d'abord (`App.context.dossier` s'il pointe un run),
+      sinon le run qui porte la scène vivante (`App.context.scene`). `null` si
       aucun contexte de run — l'écran reste alors le simple index. */
   _currentRunId() {
     const ctx = typeof App !== "undefined" && App.context;
@@ -192,7 +192,7 @@ export const Play = {
       : "";
 
     // Corps projeté : le vivant a la priorité (scène active) ; sinon le résumé
-    // rangé ; sinon rien (run préparée sans scène encore jouée).
+    // rangé ; sinon rien (run préparé sans scène encore jouée).
     const body = live ? this._liveSceneHtml() : stashed ? this._stashSummaryHtml(run.id) : "";
 
     return `<div class="play-run${live ? " is-live" : ""}">
@@ -290,7 +290,7 @@ export const Play = {
     </div>`;
   },
 
-  /** V4-b — Poste de commandement de la run COURANTE : un seul lieu pour la
+  /** V4-b — Poste de commandement du run COURANT : un seul lieu pour la
       séance. Empile scène vivante (cockpit V4) + topos condensé + casting
       préparé + accès aux notes. Tout est PROJETÉ/DÉLÉGUÉ (RunGen, DossierBar,
       Encounter, Notebooks via Notepad) — Jouer n'est propriétaire d'aucune de
@@ -319,7 +319,7 @@ export const Play = {
         <span class="play-run-icon" aria-hidden="true">◆</span>
         <button class="play-command-name" data-action="play-focus" data-dossier="${run.id}" title="Ouvrir « ${CardRenderer._esc(run.name)} » dans la bibliothèque">${CardRenderer._esc(run.name)}</button>
         <span class="play-command-actions">
-          <button class="btn-secondary btn-small" data-action="play-notes" data-dossier="${run.id}" title="Ouvrir le carnet de cette run">✎ Notes</button>
+          <button class="btn-secondary btn-small" data-action="play-notes" data-dossier="${run.id}" title="Ouvrir le carnet de ce run">✎ Notes</button>
           ${resumeBtn}
         </span>
       </div>
@@ -362,7 +362,7 @@ export const Play = {
   /** Topos condensé (lu de `RunGen.forDossier`, jamais recopié) : l'essentiel
       « pourquoi on est là / ce qui peut mal tourner » sans ouvrir le panneau
       Topos. Le `type` du topos EST l'objectif principal ; `client` le mandant.
-      Vide si la run n'a pas de topos rattaché. */
+      Vide si le run n'a pas de topos rattaché. */
   _toposGlanceHtml(runId) {
     const topoi = typeof RunGen !== "undefined" ? RunGen.forDossier(runId) : [];
     if (!topoi.length) return "";
@@ -383,12 +383,12 @@ export const Play = {
     </div>`;
   },
 
-  /** Casting préparé : les entités rangées DANS cette run (DossierBar.memberIds
-      scopé sur la run, pas sur le dossier ouvert). Chaque puce : tap = consulter
+  /** Casting préparé : les entités rangées DANS ce run (DossierBar.memberIds
+      scopé sur le run, pas sur le dossier ouvert). Chaque puce : tap = consulter
       (Palette.reveal) ; les PNJ/PJ portent un ⚔ « envoyer en scène »
       (Encounter.add) — le geste-roi du MJ. Contacts/serveurs = consultation
       seule (un contact n'est pas un combattant ; un serveur rejoint la scène par
-      le moteur Matrice, hors de ce geste). Vide si la run n'a rien de rangé. */
+      le moteur Matrice, hors de ce geste). Vide si le run n'a rien de rangé. */
   _castHtml(runId) {
     // `mode` : "scene" → PNJ/PJ, ⚔ envoyer au combat · "server" → serveur, ⚡ mettre
     // en jeu (moteur Matrice) · null → contact (consultation seule, pas un
@@ -435,7 +435,7 @@ export const Play = {
   _emptyHtml() {
     return `<div class="play-onboard">
       <p class="play-onboard-lead">Rien à jouer pour l'instant.</p>
-      <p>La colonne <strong>Campagne › Run › Scène</strong> se remplit dès que vous typez un dossier en campagne / run (menu ⋯ d'un dossier), ou que vous <strong>faites une run</strong> depuis un topos.</p>
+      <p>La colonne <strong>Campagne › Run › Scène</strong> se remplit dès que vous typez un dossier en campagne / run (menu ⋯ d'un dossier), ou que vous <strong>faites un run</strong> depuis un topos.</p>
       <div class="play-onboard-cta">
         <button class="btn-primary btn-small" data-action="show-panel" data-panel="run">Générer un topos</button>
         <button class="btn-secondary btn-small" data-action="show-panel" data-panel="shadows">Ouvrir la bibliothèque</button>

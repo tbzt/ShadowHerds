@@ -203,6 +203,13 @@
 .portrait-preview-close:hover {
   color: var(--accent);
 }
+.portrait-preview-caption {
+  margin-top: var(--sp-2);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
 
 /* ---- Compétences : tags compacts unifiés sur les 3 éditions ---- */
 .skill-tag {
