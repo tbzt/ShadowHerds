@@ -123,7 +123,17 @@ export const Breakdown = {
     this._trigger = null;
   },
 
-  _LABELS: { defense: "Défense", damageResist: "Encaissement", drainResist: "Drain" },
+  _LABELS: {
+    defense: "Défense",
+    damageResist: "Encaissement",
+    drainResist: "Drain",
+    // Jets de situation (Lot D) — titres alignés sur les libellés de pastille.
+    composure: "Sang-froid",
+    surprise: "Surprise",
+    judgeIntentions: "Intentions",
+    memory: "Mémoire",
+    liftCarry: "Port",
+  },
 
   _render(trigger, key, bd) {
     this.close();

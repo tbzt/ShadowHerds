@@ -17,22 +17,29 @@ Object.assign(CardRenderer, {
         "Sang-froid",
         pnj.composure,
         "Sang-froid : Volonté + Charisme",
+        { key: "composure", pnj },
       ),
       this._gmPoolRow(
         "Surprise",
         pnj.surprise,
         "Surprise : Réaction + Intuition",
+        { key: "surprise", pnj },
       ),
       this._gmPoolRow(
         "Intentions",
         pnj.judgeIntentions,
         "Jauger les intentions : Intuition + Charisme",
+        { key: "judgeIntentions", pnj },
       ),
-      this._gmPoolRow("Mémoire", pnj.memory, "Mémoire : Logique + Volonté"),
+      this._gmPoolRow("Mémoire", pnj.memory, "Mémoire : Logique + Volonté", {
+        key: "memory",
+        pnj,
+      }),
       this._gmPoolRow(
         "Port",
         pnj.liftCarry,
         "Soulever / porter : Force + Constitution",
+        { key: "liftCarry", pnj },
       ),
     ]
       .filter(Boolean)

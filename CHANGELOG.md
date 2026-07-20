@@ -12,6 +12,20 @@ commit.
 
 ## [Non publié]
 
+## [1.77.0] — 2026-07-20
+
+### Le calcul des réserves de situation, expliqué à la demande
+
+- **Décompte sur les Jets de situation.** Les réserves Sang-froid, Surprise,
+  Intentions, Mémoire et Port (fiches SR5 et SR6) reçoivent la même explication
+  décomposée que les pastilles de combat : au survol (ou appui long tactile),
+  un panneau montre la source de chaque dé — « Sang-froid 8 = Volonté 5 +
+  Charisme 3 » — et le décompte apparaît aussi dans le résultat du jet. Aucune
+  nouvelle pastille, aucun changement du lancer : on explique l'existant.
+- **Correctif.** Sur ces mêmes pastilles, le curseur affichait un « ? » d'aide
+  alors qu'un clic lance le jet ; il indique désormais correctement qu'on peut
+  lancer.
+
 ## [1.76.0] — 2026-07-20
 
 ### Un co-MJ qui souffle la bonne fonction au bon moment

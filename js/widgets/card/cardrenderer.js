@@ -1070,7 +1070,7 @@ export const CardRenderer = {
   },
 
   /* ---- Réserves de dés utiles au MJ ---- */
-  _gmPoolRow(label, value, title) {
+  _gmPoolRow(label, value, title, opts = {}) {
     if (value == null) return "";
     const n = Number(value);
     const rollAttrs =
@@ -1078,7 +1078,13 @@ export const CardRenderer = {
         ? ` data-roll="${n}" data-roll-label="${this._esc(label)}"`
         : "";
     const rollableCls = Number.isFinite(n) && n >= 1 ? " rollable" : "";
-    return `<span class="stat-pill gm-pool${rollableCls}" title="${this._esc(title)}"${rollAttrs}>${label}&nbsp;<strong>${value}</strong></span>`;
+    // Même décompte ⓘ que les pastilles de combat (Lot D) : survol desktop /
+    // appui long tactile → panneau reserveBreakdown, sur la pastille
+    // elle-même. "" si l'édition ne décompose pas la clé → aucune affordance
+    // orpheline (Anarchy sur ces réserves).
+    const explain =
+      opts.key && opts.pnj ? this._breakdownAttrs(opts.pnj, opts.key) : "";
+    return `<span class="stat-pill gm-pool${rollableCls}" title="${this._esc(title)}"${rollAttrs}${explain}>${label}&nbsp;<strong>${value}</strong></span>`;
   },
 
   /* ========================================================
@@ -1144,28 +1150,34 @@ export const CardRenderer = {
       porte aussi le détail (data-roll-detail, déjà affiché par
       diceroller.js). `deps` (si fourni avec `pnj`) ajoute l'affordance Edge
       pré-jet en mode « pastille » (V1 vague 3b), sibling distinct du tap nu. */
+  /** Attributs de décompte (data-roll-detail + data-explain) d'une réserve
+      motorisée par reserveBreakdown — partagés par _rollPill (combat) et
+      _gmPoolRow (jets de situation), jamais dupliqués. La chaîne plate
+      data-roll-detail est celle que diceroller pose dans le résultat du jet ;
+      data-explain/-pnj ouvre le panneau Breakdown (survol/appui long, sur la
+      pastille même). "" si l'édition ne décompose pas la clé. */
+  _breakdownAttrs(pnj, key) {
+    const ed = key && pnj ? App.getEditionModule(pnj.edition) : null;
+    const bd = ed && ed.reserveBreakdown ? ed.reserveBreakdown(pnj, key) : null;
+    if (!bd || !bd.length) return "";
+    const detail = bd
+      .map((c, i) =>
+        i === 0
+          ? `${c.label} ${c.value}`
+          : `${c.value >= 0 ? "+" : "−"} ${c.label} ${Math.abs(c.value)}`,
+      )
+      .join(" ");
+    return ` data-roll-detail="${this._esc(detail)}" data-explain="${key}" data-explain-pnj="${this._esc(pnj.id)}"`;
+  },
+
   _rollPill(label, value, opts = {}) {
     if (value == null) return "";
     const { title, glyph, key, pnj, deps } = opts;
     const glyphHtml = glyph
       ? `<span class="pill-glyph" aria-hidden="true">${glyph}</span> `
       : "";
-    let detailAttr = "";
-    let explainAttr = "";
-    const ed = key && pnj ? App.getEditionModule(pnj.edition) : null;
-    const bd = ed && ed.reserveBreakdown ? ed.reserveBreakdown(pnj, key) : null;
-    if (bd && bd.length) {
-      const detail = bd
-        .map((c, i) =>
-          i === 0
-            ? `${c.label} ${c.value}`
-            : `${c.value >= 0 ? "+" : "−"} ${c.label} ${Math.abs(c.value)}`,
-        )
-        .join(" ");
-      detailAttr = ` data-roll-detail="${this._esc(detail)}"`;
-      explainAttr = ` data-explain="${key}" data-explain-pnj="${this._esc(pnj.id)}"`;
-    }
-    const pillHtml = `<span class="stat-pill rollable combat-pill" data-roll="${value}" data-roll-label="${this._esc(label)}"${detailAttr}${explainAttr} title="${this._esc(title || label)}">${glyphHtml}${this._esc(label)} <strong>${value}</strong></span>`;
+    const explain = key && pnj ? this._breakdownAttrs(pnj, key) : "";
+    const pillHtml = `<span class="stat-pill rollable combat-pill" data-roll="${value}" data-roll-label="${this._esc(label)}"${explain} title="${this._esc(title || label)}">${glyphHtml}${this._esc(label)} <strong>${value}</strong></span>`;
     return pillHtml + (pnj && deps ? this._edgePrerollHtml(pnj, deps) : "");
   },
 

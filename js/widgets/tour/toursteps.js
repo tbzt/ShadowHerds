@@ -423,6 +423,11 @@ export const TourSteps = {
       title: "Un co-MJ qui souffle au bon moment",
       body: "ShadowHerds commence à proposer, une seule fois et quand ça sert, une fonction déjà présente — sans décider à votre place. Première astuce : au lancement d'une scène, une bulle propose d'ouvrir l'écran joueurs ; à couper d'un coup dans Paramètres › Général.",
     },
+    {
+      id: "wn-reserves-situation-explain", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.77.0", fallback: "center",
+      title: "Le calcul des réserves, à la demande",
+      body: "Les réserves de situation d'une fiche (Sang-froid, Surprise, Intentions, Mémoire, Port) affichent désormais leur décompte comme les pastilles de combat : survolez-les (ou appui long au doigt) pour voir la source de chaque dé — « Sang-froid 8 = Volonté 5 + Charisme 3 » — sans rien changer au jet.",
+    },
   ],
 };
 

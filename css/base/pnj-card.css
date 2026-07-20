@@ -538,7 +538,10 @@
 .gm-pools-section .stat-pill.gm-pool {
   background: color-mix(in srgb, var(--accent) 6%, var(--bg));
   border-color: color-mix(in srgb, var(--accent) 18%, var(--border));
-  cursor: help;
+  /* Pas de `cursor: help` ici : ces pastilles sont lançables (`.gm-pool.rollable`
+     → cursor:pointer, dice-overlay.css) et, depuis le Lot D, portent le décompte
+     ⓘ au survol/appui long. Le `help` (0,3,0) écrasait le `pointer` (0,2,0) et
+     affichait un « ? » alors que le clic LANCE — curseur menteur, retiré. */
 }
 
 /* Limites SR5 (Phys/Ment/Soc) et référence SR6 (ME) — mêmes filets
