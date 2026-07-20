@@ -54,8 +54,8 @@ const PAL = {
 };
 
 /* ---- Mobilier — variantes seedées par type de pièce ---- */
-function r(x, y, w, h, extra) {
-  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5" fill="${PAL.furnFill}" stroke="${PAL.furnStroke}" stroke-width="1"${extra ? " " + extra : ""}/>`;
+function r(x, y, w, h) {
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5" fill="${PAL.furnFill}" stroke="${PAL.furnStroke}" stroke-width="1"/>`;
 }
 function c(x, y, rad) {
   return `<circle cx="${x}" cy="${y}" r="${rad}" fill="none" stroke="${PAL.furnStroke}" stroke-width="1"/>`;
@@ -73,7 +73,7 @@ const FURN = {
   securite(f, rng) { let s = "", n = Math.max(3, Math.floor((f.w - 20) / 18)); for (let i = 0; i < n; i++) s += r(f.x + 10 + i * 18, f.y + 10, 14, 12); s += r(f.x + 12, f.y + f.h - 22, f.w - 24, 12); return s; },
   repos(f, rng) { let s = ""; if (rng() < 0.5) { s += r(f.x + 12, f.y + 12, 44, 22); if (f.w > 110) s += r(f.x + f.w - 56, f.y + 12, 44, 22); s += r(f.x + f.w / 2 - 16, f.y + f.h - 30, 32, 18); } else { for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) { let x = f.x + 16 + i * (f.w - 56), y = f.y + 14 + j * 30; s += r(x, y, 40, 22); } } return s; },
   stockage(f, rng) { let s = "", cs = 20, cols = Math.floor((f.w - 12) / cs), rows = Math.floor((f.h - 12) / cs); for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) { if (rng() < 0.35) continue; s += r(f.x + 8 + i * cs, f.y + 8 + j * cs, cs - 6, cs - 6); } return s; },
-  quai(f, rng) { let s = r(f.x + 8, f.y + 8, f.w - 16, 16, `fill="none" stroke="${PAL.entry}" stroke-dasharray="4 4"`), cs = 22; for (let i = 0; i < Math.floor((f.w - 16) / cs); i++) for (let j = 0; j < Math.floor((f.h - 38) / cs); j++) { if (rng() < 0.45) continue; s += r(f.x + 10 + i * cs, f.y + 32 + j * cs, cs - 8, cs - 8); } return s; },
+  quai(f, rng) { let s = `<rect x="${f.x + 8}" y="${f.y + 8}" width="${f.w - 16}" height="16" rx="1.5" fill="none" stroke="${PAL.entry}" stroke-dasharray="4 4"/>`, cs = 22; for (let i = 0; i < Math.floor((f.w - 16) / cs); i++) for (let j = 0; j < Math.floor((f.h - 38) / cs); j++) { if (rng() < 0.45) continue; s += r(f.x + 10 + i * cs, f.y + 32 + j * cs, cs - 8, cs - 8); } return s; },
   bar(f, rng) { let s = `<path d="M${f.x + 10} ${f.y + 10} h${Math.min(f.w - 32, 72)} v${Math.min(f.h - 32, 44)}" fill="none" stroke="${PAL.furnStroke}" stroke-width="3"/>`; for (let i = 0; i < 4; i++) s += c(f.x + 18 + i * 16, f.y + f.h - 18, 3.5); s += r(f.x + f.w - 40, f.y + f.h - 34, 26, 22); return s; },
   sanitaire(f, rng) { let s = "", n = Math.max(2, Math.floor((f.w - 12) / 22)); for (let i = 0; i < n; i++) s += r(f.x + 8 + i * 22, f.y + 10, 17, f.h * 0.38); return s; },
   couloir() { return ""; },
