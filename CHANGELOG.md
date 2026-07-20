@@ -12,6 +12,19 @@ commit.
 
 ## [Non publié]
 
+## [1.78.0] — 2026-07-20
+
+### Clarté topos↔run + nom du plan de lieu
+
+- **Badge d'état sur la carte de run.** « Topos » tant qu'il n'est pas encore
+  promu (`＋ Faire un run`), « Run » une fois rangé dans un dossier — les deux
+  états partageaient jusqu'ici le même gabarit sans rien pour les distinguer
+  au premier coup d'œil.
+- **Le plan de lieu généré porte enfin un nom.** Plan tactique (mapgen) et
+  Ambiance (Pollinations) affichent une légende « Plan tactique — {lieu} » /
+  « Ambiance — {lieu} » sous l'image en grand, au lieu d'ouvrir une simple
+  image anonyme.
+
 ## [1.77.1] — 2026-07-20
 
 ### Le co-MJ explique le pré-jet d'Edge
@@ -93,13 +106,13 @@ commit.
 
 ## [1.73.0] — 2026-07-19
 
-### Créer une run et la lancer, sans détour
+### Créer un run et le lancer, sans détour
 
 - **Le « ＋ » de la barre de dossiers crée un dossier déjà typé.** Il demande
   d'abord le type — ◆ Run, ❖ Campagne ou dossier simple — puis le nom, au lieu de
-  créer un dossier neutre à typer ensuite via le menu « ⋯ ». La run apparaît
+  créer un dossier neutre à typer ensuite via le menu « ⋯ ». Le run apparaît
   aussitôt dans « Jouer ».
-- **« Lancer la scène » depuis « Jouer ».** Une run sans scène en cours offre enfin
+- **« Lancer la scène » depuis « Jouer ».** Un run sans scène en cours offre enfin
   un bouton pour démarrer la rencontre — plus besoin de passer par la bibliothèque.
   Les trois états partagent le même geste : Reprendre (scène vivante), Ouvrir
   (rangée) ou Lancer (aucune encore).
@@ -114,10 +127,10 @@ commit.
 - **Éditer un topos, ou en écrire un vierge.** Un bouton « ✎ Éditer » sur la carte
   ouvre une modale sur tous les champs ; « Topos vierge » crée une amorce vide à
   remplir à la main.
-- **« ⚔ Casting » peuple la run.** Sur un topos promu en run, un geste génère les
+- **« ⚔ Casting » peuple le run.** Sur un topos promu en run, un geste génère les
   PNJ d'opposition cohérents avec l'amorce (la sécurité de la cible + le rôle
   imposé par la difficulté, calés sur la menace du lieu) et les range dans le
-  dossier de la run.
+  dossier du run.
 
 ### Un plan de lieu, en image
 
@@ -234,11 +247,11 @@ commit.
 ## [1.67.0] — 2026-07-18
 
 ### Jouer
-- **« Jouer » devient le poste de commandement de la run en cours.** La run que
-  vous jouez (celle de votre contexte) est sortie en tête, en grand, et
+- **« Jouer » devient le poste de commandement du run en cours.** Le run que
+  vous jouez (celui de votre contexte) est sorti en tête, en grand, et
   rassemble tout ce qu'il faut sous la main pendant la séance :
   - **la scène vivante** — round (et passe), moteur actif (⚔ Combat / ⚡ Matrice)
-    et une barre de vie par combattant, sans ouvrir le tracker ; une run rangée
+    et une barre de vie par combattant, sans ouvrir le tracker ; un run rangé
     affiche un résumé de sa rencontre ;
   - **la présence de chaque participant** — un bouton par combattant dit d'un tap
     s'il est en **RV** ou en **astral** (RA par défaut). Le mode proposé suit la
@@ -249,13 +262,13 @@ commit.
     Matrice pour le détail (Surveillance, marks) ;
   - **le topos condensé** — objectif, complication, mandant, lieu, paie — l'essentiel
     « pourquoi on est là / ce qui peut mal tourner » d'un coup d'œil ;
-  - **le casting préparé** — les PNJ, contacts et serveurs rangés dans la run :
+  - **le casting préparé** — les PNJ, contacts et serveurs rangés dans le run :
     un tap pour consulter une fiche, un bouton ⚔ pour **envoyer un PNJ dans la
     scène**, un bouton ⚡ pour **mettre un serveur en jeu** (moteur Matrice) ;
   - **les notes** — un bouton ouvre votre carnet de séance déjà positionné sur
-    cette run.
+    ce run.
 
-  Vos autres runs restent listées en dessous. La vue projette et délègue : elle
+  Vos autres runs restent listés en dessous. La vue projette et délègue : elle
   ne recopie ni ne modifie aucune donnée.
 
 ## [1.66.0] — 2026-07-18
@@ -739,9 +752,9 @@ commit.
   lit désormais en deux mondes — **Créer** (vos actifs : Personnages, PNJ,
   Contacts, Serveurs, Topos) et **Jouer** (un nouvel écran listant vos
   campagnes et runs, avec la scène en cours signalée « ● En cours » et un geste
-  pour la reprendre, focaliser une run dans la bibliothèque, ou voir son topos).
+  pour la reprendre, focaliser un run dans la bibliothèque, ou voir son topos).
 - **Le générateur de missions devient « Topos »** : il produit des *amorces*
-  de mission ; « Faire une run » promeut un topos en run (le mot canon « run »
+  de mission ; « Faire un run » promeut un topos en run (le mot canon « run »
   reste réservé à la mission jouée). Désambiguïse « générer » vs « jouer ».
 
 ## [1.40.0] — 2026-07-15
@@ -769,7 +782,7 @@ commit.
 - **Sélecteur de contexte partout** : un même sélecteur permet de sauter d'une
   campagne / run / scène à l'autre en un geste — depuis le fil d'Ariane (en haut
   de l'écran) comme depuis le bloc-notes. Dans le **bloc-notes**, le titre
-  devient ce sélecteur : on change de carnet (celui d'une autre run, le carnet
+  devient ce sélecteur : on change de carnet (celui d'un autre run, le carnet
   global…) **sans fermer** le panneau. La scène en cours est signalée, le
   contexte courant coché.
 
@@ -1051,7 +1064,7 @@ commit.
 ### Organiser
 - **Campagnes et runs** : un dossier peut désormais être marqué « Campagne »
   ou « Run » (menu « ⋯ » de la barre de dossiers, ou automatiquement via
-  « Ranger la run »). Une run affiche un raccourci vers sa prep générée ;
+  « Ranger la run »). Un run affiche un raccourci vers sa prep générée ;
   une campagne, le nombre de runs qu'elle contient. Purement organisationnel
   — un dossier non marqué se comporte exactement comme avant.
 

@@ -123,7 +123,7 @@ export const DossierBar = {
 
   /** Ids des membres d'une collection pour la sélection courante — ou pour un
       dossier DONNÉ (`dossierId`), sans changer la sélection courante : le
-      poste de commandement « Jouer » (V4-b) liste le casting d'une run précise
+      poste de commandement « Jouer » (V4-b) liste le casting d'un run précis
       qui n'est pas forcément le dossier ouvert. Défaut = comportement
       historique (sélection courante), donc additif pour tous les appelants. */
   memberIds(col, dossierId = this.current) {
@@ -281,7 +281,7 @@ export const DossierBar = {
       title: "Nouveau dossier",
       message: "Quel type ?",
       options: [
-        { value: "run", label: "◆ Nouvelle run", primary: true },
+        { value: "run", label: "◆ Nouveau run", primary: true },
         { value: "campaign", label: "❖ Nouvelle campagne" },
         { value: "plain", label: "Dossier simple" },
       ],
@@ -299,9 +299,9 @@ export const DossierBar = {
         kind === "campaign"
           ? "Nouvelle campagne"
           : kind === "run"
-            ? "Nouvelle run"
+            ? "Nouveau run"
             : "Nouveau dossier",
-      label: `Nom ${kind === "campaign" ? "de la campagne" : kind === "run" ? "de la run" : "du dossier"}`,
+      label: `Nom ${kind === "campaign" ? "de la campagne" : kind === "run" ? "du run" : "du dossier"}`,
       placeholder:
         kind === "run"
           ? "ex. Extraction Aztechnology…"
@@ -319,7 +319,7 @@ export const DossierBar = {
       const d = Dossiers.add(clean, null, kind);
       if (d) this.select(d.id);
       toast(
-        `« ${clean} » créé${kind ? "e" : ""}${kind === "run" ? " (run ◆)" : kind === "campaign" ? " (campagne ❖)" : ""}.`,
+        `« ${clean} » créé${kind === "campaign" ? "e" : ""}${kind === "run" ? " (run ◆)" : kind === "campaign" ? " (campagne ❖)" : ""}.`,
       );
     });
   },
@@ -393,7 +393,7 @@ export const DossierBar = {
       kind === "campaign"
         ? `« ${d.name} » est une campagne.`
         : kind === "run"
-          ? `« ${d.name} » est une run.`
+          ? `« ${d.name} » est un run.`
           : `Type retiré de « ${d.name} ».`,
     );
   },

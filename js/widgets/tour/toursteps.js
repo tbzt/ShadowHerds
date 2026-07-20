@@ -41,7 +41,7 @@ export const TourSteps = {
     {
       id: "run", anchor: "nav-run", tours: ["full"], since: "1.0.0", fallback: "center",
       title: "Topos",
-      body: "Une amorce de mission en un clic : mandant, lieu, complication, objectif, paiement. Quand les joueurs partent où vous ne l'aviez pas prévu — puis « Faire une run » pour la promouvoir en vraie run.",
+      body: "Une amorce de mission en un clic : mandant, lieu, complication, objectif, paiement. Quand les joueurs partent où vous ne l'aviez pas prévu — puis « Faire un run » pour la promouvoir en vrai run.",
     },
     {
       id: "combat", anchor: "nav-combat", tours: ["full"], since: "1.0.0", fallback: "center",
@@ -116,7 +116,7 @@ export const TourSteps = {
     {
       id: "wn-campaign-folders", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.11.0", fallback: "center",
       title: "Ranger vos dossiers en campagnes et runs",
-      body: "Un dossier peut être marqué « Campagne » ou « Run » depuis le menu « ⋯ » de la barre de dossiers — automatique quand vous « Rangez la run ». Une run pointe vers sa prep générée, une campagne compte ses runs.",
+      body: "Un dossier peut être marqué « Campagne » ou « Run » depuis le menu « ⋯ » de la barre de dossiers — automatique quand vous « Rangez le run ». Un run pointe vers sa prep générée, une campagne compte ses runs.",
     },
     {
       id: "wn-spell-power-edge-catalog", anchor: "nav-generator", tours: ["whatsnew"], since: "1.13.0", fallback: "center",
@@ -246,7 +246,7 @@ export const TourSteps = {
     {
       id: "wn-context-selector", anchor: "notepad-btn", tours: ["whatsnew"], since: "1.38.0", fallback: "center",
       title: "Sauter d'un contexte à l'autre",
-      body: "Un même sélecteur de contexte est disponible en haut de l'écran (dans le fil d'Ariane) et dans le bloc-notes. Le titre du bloc-notes devient ce sélecteur : changez de carnet — celui d'une autre run, le carnet global — sans fermer le panneau.",
+      body: "Un même sélecteur de contexte est disponible en haut de l'écran (dans le fil d'Ariane) et dans le bloc-notes. Le titre du bloc-notes devient ce sélecteur : changez de carnet — celui d'un autre run, le carnet global — sans fermer le panneau.",
     },
     {
       id: "wn-live-scene-badge", anchor: "nav-combat", tours: ["whatsnew"], since: "1.39.0", fallback: "center",
@@ -385,8 +385,8 @@ export const TourSteps = {
     },
     {
       id: "wn-play-cockpit", anchor: "nav-play", tours: ["whatsnew"], since: "1.67.0", fallback: "center",
-      title: "« Jouer » : le poste de commandement de la run",
-      body: "La run que vous jouez est désormais sortie en tête de « Jouer » et rassemble tout pour la séance : la scène vivante (round, moteur ⚔/⚡, barre de vie par combattant, sans ouvrir le tracker), la présence de chaque participant (un tap : RV ou astral, selon sa capacité — RA par défaut), l'horloge d'intrusion quand un serveur est en jeu (alerte, tour, CI), le topos condensé (objectif, complication, mandant, lieu, paie), le casting préparé (tap pour consulter, ⚔ pour envoyer un PNJ en scène, ⚡ pour mettre un serveur en jeu) et un accès direct à votre carnet de notes. Vos autres runs restent listées en dessous.",
+      title: "« Jouer » : le poste de commandement du run",
+      body: "Le run que vous jouez est désormais sorti en tête de « Jouer » et rassemble tout pour la séance : la scène vivante (round, moteur ⚔/⚡, barre de vie par combattant, sans ouvrir le tracker), la présence de chaque participant (un tap : RV ou astral, selon sa capacité — RA par défaut), l'horloge d'intrusion quand un serveur est en jeu (alerte, tour, CI), le topos condensé (objectif, complication, mandant, lieu, paie), le casting préparé (tap pour consulter, ⚔ pour envoyer un PNJ en scène, ⚡ pour mettre un serveur en jeu) et un accès direct à votre carnet de notes. Vos autres runs restent listés en dessous.",
     },
     {
       id: "wn-persona-combat", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.68.0", fallback: "center",
@@ -396,7 +396,7 @@ export const TourSteps = {
     {
       id: "wn-backup-live-scene", anchor: "nav-settings", tours: ["whatsnew"], since: "1.70.0", fallback: "center",
       title: "Reprendre un combat sur un autre appareil",
-      body: "Exporter puis importer une sauvegarde emporte désormais la scène de combat/Matrice vivante (round, initiative, combattants) et les runs générées : commencer un combat sur l'ordinateur et le finir sur le téléphone est enfin possible. En fusion, la scène importée ne remplace jamais un combat déjà engagé sur l'appareil qui reçoit l'import — seul « Remplacer tout » le peut.",
+      body: "Exporter puis importer une sauvegarde emporte désormais la scène de combat/Matrice vivante (round, initiative, combattants) et les runs générés : commencer un combat sur l'ordinateur et le finir sur le téléphone est enfin possible. En fusion, la scène importée ne remplace jamais un combat déjà engagé sur l'appareil qui reçoit l'import — seul « Remplacer tout » le peut.",
     },
     {
       id: "wn-tracker-v7", anchor: "nav-combat", tours: ["whatsnew"], since: "1.72.0", fallback: "center",
@@ -405,13 +405,13 @@ export const TourSteps = {
     },
     {
       id: "wn-run-create-launch", anchor: "nav-play", tours: ["whatsnew"], since: "1.73.0", fallback: "center",
-      title: "Créer une run et la lancer, sans détour",
-      body: "Le bouton « ＋ » de la barre de dossiers demande d'abord le type — ◆ Run, ❖ Campagne ou dossier simple — et crée le dossier déjà typé, sans passer par le menu « ⋯ ». Et dans « Jouer », une run sans scène offre enfin un bouton « Lancer la scène » : plus besoin de passer par la bibliothèque pour démarrer une rencontre.",
+      title: "Créer un run et le lancer, sans détour",
+      body: "Le bouton « ＋ » de la barre de dossiers demande d'abord le type — ◆ Run, ❖ Campagne ou dossier simple — et crée le dossier déjà typé, sans passer par le menu « ⋯ ». Et dans « Jouer », un run sans scène offre enfin un bouton « Lancer la scène » : plus besoin de passer par la bibliothèque pour démarrer une rencontre.",
     },
     {
       id: "wn-topos-coherent-edit-cast", anchor: "nav-run", tours: ["whatsnew"], since: "1.73.0", fallback: "center",
       title: "Des topos cohérents, éditables, et leur casting",
-      body: "Le générateur de topos ne tire plus ses champs au hasard : il monte un vrai conflit — un mandant vise un rival dont un site est le lieu, d'où découlent la sécurité, l'objectif et la difficulté — nourri par Seattle. Un bouton « ✎ Éditer » retouche n'importe quel champ, « Topos vierge » vous laisse écrire votre amorce à la main, et « ⚔ Casting » génère les PNJ d'opposition cohérents avec le topos et les range dans la run.",
+      body: "Le générateur de topos ne tire plus ses champs au hasard : il monte un vrai conflit — un mandant vise un rival dont un site est le lieu, d'où découlent la sécurité, l'objectif et la difficulté — nourri par Seattle. Un bouton « ✎ Éditer » retouche n'importe quel champ, « Topos vierge » vous laisse écrire votre amorce à la main, et « ⚔ Casting » génère les PNJ d'opposition cohérents avec le topos et les range dans le run.",
     },
     {
       id: "wn-topos-map", anchor: "nav-run", tours: ["whatsnew"], since: "1.73.0", fallback: "center",
