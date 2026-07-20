@@ -543,6 +543,21 @@
 .play-moment-when {
   color: var(--text-dim);
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+/* VIS-13 Lot C — tick d'accent devant le moment : file Avant/Pendant/Après
+   comme une colonne dans l'encre de l'édition. Rime discrète avec la barre
+   `inset var(--accent)` de la rangée active du spectateur (Lot A) — même token,
+   même geste, sans transformer la surface de travail en scène (retenue). */
+.play-moment-when::before {
+  content: "";
+  width: 2px;
+  height: 0.85em;
+  border-radius: 1px;
+  background: var(--accent);
+  opacity: 0.85;
 }
 .play-moment-hint {
   color: var(--text-dim);
