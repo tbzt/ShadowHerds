@@ -48,6 +48,16 @@ export const Nudge = {
     this._shownThisScene = false;
   },
 
+  /** « Revoir les astuces » (Paramètres) : vide le ledger — toutes les astuces
+      déjà vues réapparaîtront à leur prochain déclencheur. Réarme aussi le budget
+      de scène pour qu'un nudge puisse surgir sans attendre la scène suivante.
+      Contrepartie assumée du marquage « à l'affichage » (une astuce entr'aperçue
+      était sinon brûlée). */
+  reset() {
+    Storage.setGlobal(this._LEDGER, {});
+    this._shownThisScene = false;
+  },
+
   seen(id) {
     return !!(Storage.getGlobal(this._LEDGER, {}) || {})[id];
   },

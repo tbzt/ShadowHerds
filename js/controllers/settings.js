@@ -83,6 +83,10 @@ export const Settings = {
     Nudge.setEnabled(!!on);
     toast(on ? "Astuces du co-MJ activées." : "Astuces du co-MJ désactivées.");
   },
+  resetCoachTips() {
+    Nudge.reset();
+    toast("Astuces réinitialisées — elles réapparaîtront au bon moment.");
+  },
 
   /* ---- La section « Affichage des cartes » (radio layout + cases
      attributs/réserves MJ/équipement) a été retirée — remplacée par les vues
@@ -307,6 +311,10 @@ export const Settings = {
               data-action="set-coach-tips">
           </div>
         </div>
+        <div class="display-prefs" style="margin-top:0.6rem;">
+          <button class="btn-secondary" data-action="reset-coach-tips">Revoir les astuces</button>
+        </div>
+        <p class="settings-note">Réaffiche les astuces déjà vues : elles réapparaîtront au moment utile.</p>
       </div>
       <div class="settings-section">
         <h3>Lanceur de dés</h3>
@@ -498,6 +506,7 @@ export const Settings = {
       const el = e.target.closest("[data-action]");
       if (!el) return;
       if (el.dataset.action === "atomize") this.atomize();
+      else if (el.dataset.action === "reset-coach-tips") this.resetCoachTips();
       else if (el.dataset.action === "sync-now") this.syncNow();
       else if (el.dataset.action === "open-spectator") this.openSpectator();
       else if (el.dataset.action === "settings-cat") {

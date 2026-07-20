@@ -12,6 +12,15 @@ commit.
 
 ## [Non publié]
 
+## [1.78.2] — 2026-07-20
+
+### Revoir les astuces du co-MJ
+
+- **Bouton « Revoir les astuces ».** Paramètres › Général › Assistant (co-MJ) :
+  un bouton réinitialise les astuces contextuelles déjà vues — elles
+  réapparaîtront à leur prochain moment utile. Chaque astuce n'apparaissant
+  qu'une fois, c'est le moyen de la revoir sans tout réinitialiser.
+
 ## [1.78.1] — 2026-07-20
 
 ### Le co-MJ explique le maintien de sort
