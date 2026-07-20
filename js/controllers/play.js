@@ -12,6 +12,7 @@
    (si vivante/rangée), Focus (→ hub filtré), Voir le topos (prep).
    Délégation `data-action` (aucun onclick), neutre par édition.
    ============================================================ */
+import { CardPeek } from "../widgets/card/cardpeek.js";
 import { Collection } from "../widgets/collection/collection.js";
 import { Debrief } from "./debrief.js";
 import { DossierBar } from "../widgets/journal/dossierbar.js";
@@ -87,11 +88,32 @@ export const Play = {
           // le bouton `el` sert de cible de spinner (géré par Pollinations).
           RunGen.generatePlan(el.dataset.id, el);
           break;
-        case "play-cast-consult":
-          // Consulter une fiche du casting : réutilise le résolveur public de la
-          // palette (id → panneau), aucun 2ᵉ résolveur nom→fiche.
-          Palette.reveal(el.dataset.id);
+        case "play-cast-consult": {
+          // VIS-14 — coup d'œil intra-Jouer : PNJ/PJ/contact s'ouvrent en
+          // OVERLAY (CardPeek, que CardRenderer sait rendre) SANS quitter Jouer,
+          // et prev/next feuillette le casting consultable. Le serveur, hors
+          // CardRenderer, garde la révélation Hub classique (Palette.reveal) —
+          // on ne touche que le chemin des fiches. Les frères = les fiches
+          // consultables rendues, dans leur ordre d'affichage (serveurs exclus).
+          const cid = el.dataset.id;
+          const loc = PnjLookup.locate(cid);
+          if (loc && loc.type !== "server") {
+            const siblings = [
+              ...document
+                .getElementById("play-content")
+                .querySelectorAll('[data-action="play-cast-consult"]'),
+            ]
+              .map((b) => b.dataset.id)
+              .filter((sid) => {
+                const l = PnjLookup.locate(sid);
+                return l && l.type !== "server";
+              });
+            CardPeek.open(cid, { siblings });
+          } else {
+            Palette.reveal(cid);
+          }
           break;
+        }
         case "play-cast-toscene":
           // Envoyer un participant préparé dans la scène vivante — délégué à
           // Encounter.add (toast interne, dédup). Re-rendu pour l'état « en scène ».

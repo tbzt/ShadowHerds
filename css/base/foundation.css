@@ -112,6 +112,7 @@
   --z-bottom-nav: 400;
   --z-sidebar-backdrop: 440;
   --z-sidebar: 450;
+  --z-peek: 490; /* coup d'œil (CardPeek) : au-dessus du panneau, SOUS le modal d'édition qu'il ouvre */
   --z-modal: 500;
   --z-popover-backdrop: 540;
   --z-popover: 550;

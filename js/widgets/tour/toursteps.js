@@ -453,6 +453,11 @@ export const TourSteps = {
       title: "Un technomancien à générer (SR6)",
       body: "Le générateur SR6 propose enfin deux technomanciens nommés — « Techno-ganger (émergé) » chez les gangs, « Technomancien de sécurité » côté corpo — sourcés d'Anarchistes. La machinerie persona / sprites / formes complexes, jusqu'ici accessible seulement en cochant la spécialisation, a désormais sa porte d'entrée directe. Bonus : un technomancien généré ne reçoit plus d'augmentation qui grignoterait sa Résonance.",
     },
+    {
+      id: "wn-card-peek", anchor: "nav-play", tours: ["whatsnew"], since: "1.84.0", fallback: "center",
+      title: "Un coup d'œil sans quitter Jouer",
+      body: "Consulter un PNJ du casting depuis « Jouer » ouvre désormais sa fiche en surimpression, par-dessus votre poste de commandement — au lieu de vous éjecter vers la bibliothèque. La fiche est complète et éditable ; les flèches ‹ › feuillettent le reste du casting sans jamais refermer. Vous ne quittez plus la scène pour jeter un œil.",
+    },
   ],
 };
 

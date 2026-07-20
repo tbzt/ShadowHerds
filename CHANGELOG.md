@@ -12,6 +12,20 @@ commit.
 
 ## [Non publié]
 
+## [1.84.0] — 2026-07-21
+
+### Ajouté
+
+- **Le coup d'œil : consulter une fiche sans quitter « Jouer ».** Cliquer sur un
+  PNJ, un PJ ou un contact du casting depuis le poste de commandement ouvre sa
+  fiche **en surimpression**, par-dessus la scène, au lieu de basculer vers la
+  bibliothèque et de perdre sa place. La fiche est complète et **éditable**
+  (Éditer / Supprimer écrivent bien dans la collection propriétaire), et deux
+  flèches **‹ ›** feuillettent le reste du casting sans jamais refermer — *N*
+  allers-retours deviennent une seule ouverture. On ne quitte plus jamais la
+  scène pour jeter un œil. Les serveurs, eux, gardent leur révélation habituelle
+  vers la bibliothèque.
+
 ## [1.83.0] — 2026-07-21
 
 ### Ajouté

@@ -150,6 +150,73 @@
   color: var(--accent);
 }
 
+/* ---- Coup d'œil (CardPeek, VIS-14) : une VRAIE fiche en overlay ----
+   Réutilise la coquille `.content-modal-overlay` (backdrop + centrage +
+   fondu) ; ici on ne surcharge que le z-index (sous le modal d'édition
+   qu'un « Éditer » peut ouvrir) et on habille le cadre porteur de carte. */
+.card-peek-overlay {
+  z-index: var(--z-peek);
+}
+.card-peek {
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  width: min(560px, 100%);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 0 40px var(--glow),
+    0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: modalPop 0.18s ease;
+}
+.card-peek-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+.card-peek-title {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  color: var(--accent);
+  font-size: var(--fs-lg);
+  letter-spacing: var(--title-spacing);
+  text-transform: var(--title-transform);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-peek-nav,
+.card-peek-close {
+  /* Cible tactile ≥ 44px (Vector / WCAG 2.5.8) — le geste avant tout. */
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: var(--fs-xl);
+  line-height: 1;
+  padding: 0;
+  transition: color var(--dur-base);
+}
+.card-peek-nav:hover,
+.card-peek-close:hover {
+  color: var(--accent);
+}
+.card-peek-nav[hidden] {
+  display: none;
+}
+.card-peek-body {
+  overflow-y: auto;
+  padding: var(--sp-3);
+}
+
 /* ---- Vignette de portrait IA : agrandissement au clic ---- */
 .pnj-portrait-thumb,
 .contact-portrait-thumb {
