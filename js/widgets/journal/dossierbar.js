@@ -138,6 +138,20 @@ export const DossierBar = {
     );
   },
 
+  /** VIS-9 — miroir « Rangé dans » : nœuds Dossiers qui contiennent l'entité
+      `id`, quelle que soit sa collection. Lecture seule, aucune donnée neuve :
+      l'appartenance est jointe PAR NOM (comme tout ce module), donc on récolte
+      les noms de groupes via `groupsOf` sur chaque collection puis on mappe
+      vers les nœuds du registre. Un groupe sans nœud correspondant (cas
+      théorique avant syncDossiers) est simplement ignoré par le filtre. */
+  dossiersOf(id) {
+    const names = new Set();
+    for (const col of this._cols()) {
+      for (const name of col.groupsOf(id)) names.add(name);
+    }
+    return Dossiers.list().filter((d) => names.has(d.name));
+  },
+
   /** Nombre total d'entités (tous types) dans la sélection courante. */
   count() {
     return this._countFor(this.currentNames());

@@ -12,6 +12,17 @@ commit.
 
 ## [Non publié]
 
+## [1.81.0] — 2026-07-20
+
+### Ajouté
+
+- **« Rangé dans » sur la fiche.** Chaque fiche affiche désormais les dossiers
+  où elle est classée — le miroir organisationnel de « Mentionné dans » (qui,
+  lui, recense les mentions narratives). Un clic sur un dossier le sélectionne
+  et ouvre la bibliothèque filtrée dessus ; la pastille ❖/◆ signale campagne
+  ou run. Aucune donnée neuve : l'appartenance multi-dossiers existait déjà,
+  on ne fait qu'en montrer le sens inverse depuis la fiche.
+
 ## [1.80.3] — 2026-07-20
 
 ### Modifié

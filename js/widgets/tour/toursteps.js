@@ -438,6 +438,11 @@ export const TourSteps = {
       title: "Le débrief de séance",
       body: "À la fin d'un run, un bouton « ✓ Débrief » (et une proposition quand vous rangez la rencontre) demande « qu'est-ce que ce run a laissé ? ». Vous ratifiez la paie, le karma et la réputation — la triade SR5, la Réputation et la Pression SR6, rien d'imposé pour Anarchy — appliqués d'un coup à toute l'équipe ; contact grillé, faveur due ou corpo fâchée rejoignent le carnet du run, datés. Tout dérive du registre de campagne existant : les soldes des fiches bougent, rien n'est stocké en double, chaque écriture reste annulable.",
     },
+    {
+      id: "wn-dossiers-mirror", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.81.0", fallback: "center",
+      title: "« Rangé dans » sur la fiche",
+      body: "Chaque fiche montre désormais les dossiers où elle est classée — le miroir de « Mentionné dans », côté organisation plutôt que narration. Un clic sur un dossier le sélectionne et ouvre la bibliothèque filtrée dessus ; la pastille ❖/◆ signale campagne ou run. Rien de neuf à saisir : l'appartenance multi-dossiers existait déjà, on n'en montre que le sens inverse.",
+    },
   ],
 };
 

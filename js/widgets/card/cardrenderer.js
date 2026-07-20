@@ -428,6 +428,7 @@ export const CardRenderer = {
       }
       ${this._contactLinksSection(pnj)}
       ${this._backlinksSection(pnj)}
+      ${this._dossiersSection(pnj)}
     </div>`;
   },
 
@@ -494,6 +495,29 @@ export const CardRenderer = {
       .join("");
     return `<div class="card-section">
       <div class="card-section-label">Mentionné dans</div>
+      <div class="card-section-content">${items}</div>
+    </div>`;
+  },
+
+  /** VIS-9 « Rangé dans » — pendant de « Mentionné dans » côté ORGANISATION :
+      les dossiers où la fiche est classée (appartenance multi-dossiers). Aucune
+      donnée neuve — `DossierBar.dossiersOf` ne fait qu'exposer le sens inverse
+      de l'appartenance déjà portée par les collections. Chips identiques aux
+      backlinks (`.tag`/`.tag-clickable`, même patron) ; la pastille ❖/◆ signale
+      campagne/run comme dans la barre de dossiers. Vide ⇒ chaîne vide. */
+  _dossiersSection(pnj) {
+    if (typeof DossierBar === "undefined") return "";
+    const nodes = DossierBar.dossiersOf(pnj.id);
+    if (!nodes.length) return "";
+    const items = nodes
+      .map((d) => {
+        const kindIcon =
+          d.kind === "campaign" ? "❖ " : d.kind === "run" ? "◆ " : "";
+        return `<span class="tag tag-clickable" role="button" tabindex="0" data-action="goto-dossier" data-dossier="${this._esc(d.id)}">${kindIcon}${this._esc(d.name)}</span>`;
+      })
+      .join("");
+    return `<div class="card-section">
+      <div class="card-section-label">Rangé dans</div>
       <div class="card-section-content">${items}</div>
     </div>`;
   },
@@ -690,7 +714,10 @@ export const CardRenderer = {
     // « Contacts » est réservé aux PJ — son « ＋ » d'ajout rapide crée un
     // lien `Characters.addContactLink`, et il s'affiche même sans contact.
     // Les backlinks valent pour toute fiche (vides ⇒ chaîne vide).
-    const rel = (pnj.isPC ? this._contactLinksSection(pnj) : "") + this._backlinksSection(pnj);
+    const rel =
+      (pnj.isPC ? this._contactLinksSection(pnj) : "") +
+      this._backlinksSection(pnj) +
+      this._dossiersSection(pnj);
     if (rel) {
       const idx = core.lastIndexOf("</div>");
       if (idx !== -1) core = core.slice(0, idx) + rel + core.slice(idx);
@@ -2424,6 +2451,14 @@ export const CardRenderer = {
           break;
         case "mention-goto-notepad":
           Notepad.open();
+          break;
+        case "goto-dossier":
+          // VIS-9 — depuis « Rangé dans », révéler le dossier : le sélectionner
+          // (miroir vers App.context via DossierBar.select) puis aller à la
+          // bibliothèque filtrée. Même geste que le pont Créer→Retrouver
+          // (cf. app.js `create-goto`).
+          DossierBar.select(actionEl.dataset.dossier);
+          App.showPanel("shadows");
           break;
         case "mention-goto": {
           const { id: mid, name: mname, type: mtype, slot: mslot, ts: mts } = actionEl.dataset;
