@@ -148,20 +148,33 @@ export const Tour = {
     const versions = Object.keys(byVer).sort((a, b) => (this._semverGt(a, b) ? -1 : 1));
     const esc = (t) =>
       String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-    const rows = versions
-      .map(
-        (v) =>
-          `<div class="wn-group"><div class="wn-ver">v${esc(v)}</div>` +
-          byVer[v]
-            .map(
-              (s) =>
-                `<div class="wn-row"><div class="wn-txt"><strong>${esc(s.title)}</strong><span>${esc(s.body)}</span></div>` +
-                `<button class="btn-secondary btn-small" data-action="wn-demo" data-step="${esc(s.id)}">Montre-moi</button></div>`,
-            )
-            .join("") +
-          `</div>`,
-      )
-      .join("");
+    const groupHtml = (v) =>
+      `<div class="wn-group"><div class="wn-ver">v${esc(v)}</div>` +
+      byVer[v]
+        .map(
+          (s) =>
+            `<div class="wn-row"><div class="wn-txt"><strong>${esc(s.title)}</strong><span>${esc(s.body)}</span></div>` +
+            `<button class="btn-secondary btn-small" data-action="wn-demo" data-step="${esc(s.id)}">Montre-moi</button></div>`,
+        )
+        .join("") +
+      `</div>`;
+    // Pli par récence (VIS-6) : les versions les plus récentes en entier, le
+    // reste replié dans une disclosure native (`<details>`, aucun handler
+    // inline) — le retour d'une longue absence n'ouvre plus un mur de dizaines
+    // de cartes équivalentes. Le cas courant (≤ HEAD versions sautées) ne
+    // déclenche aucun pli et se rend exactement comme avant.
+    const HEAD = 3;
+    const head = versions.slice(0, HEAD);
+    const tail = versions.slice(HEAD);
+    let rows = head.map(groupHtml).join("");
+    if (tail.length) {
+      const older = tail.reduce((a, v) => a + byVer[v].length, 0);
+      const plur = older > 1 ? "s" : "";
+      rows +=
+        `<details class="wn-more"><summary class="wn-more-sum">${older} nouveauté${plur} plus ancienne${plur}</summary>` +
+        tail.map(groupHtml).join("") +
+        `</details>`;
+    }
     let root = document.getElementById("whatsnew-root");
     if (!root) {
       root = document.createElement("div");

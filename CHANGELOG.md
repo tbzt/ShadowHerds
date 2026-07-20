@@ -12,6 +12,16 @@ commit.
 
 ## [Non publié]
 
+## [1.79.2] — 2026-07-20
+
+### Correctif
+
+- **« Quoi de neuf » ne déverse plus un mur de cartes.** Au retour d'une longue
+  absence, le panneau montre les **trois versions les plus récentes** en entier
+  et replie le reste dans un « ▸ N nouveautés plus anciennes » (disclosure
+  fermée par défaut). Le cas courant — une ou deux versions sautées — est
+  inchangé. (VIS-6)
+
 ## [1.79.1] — 2026-07-20
 
 ### Correctif

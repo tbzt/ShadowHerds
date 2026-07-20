@@ -46,6 +46,15 @@
 .wn-txt strong { display: block; color: var(--text); font-size: var(--fs-base); }
 .wn-txt span { display: block; color: var(--text-dim); font-size: var(--fs-sm); line-height: 1.4; }
 .wn-row .btn-small { flex: none; }
+/* Pli par récence (VIS-6) : disclosure des versions plus anciennes, calée sur
+   le style mono discret de .wn-ver. Marqueur natif retiré au profit d'un
+   chevron piloté par [open]. */
+.wn-more { margin-top: 12px; }
+.wn-more > summary { cursor: pointer; list-style: none; user-select: none; font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.12em; color: var(--text-dim); padding: 8px 0; border-top: 1px solid var(--border); }
+.wn-more > summary::-webkit-details-marker { display: none; }
+.wn-more > summary::before { content: "\25B8 "; color: var(--accent); }
+.wn-more[open] > summary::before { content: "\25BE "; }
+.wn-more > summary:hover { color: var(--text); }
 .wn-foot { padding: 12px 16px; border-top: 1px solid var(--border); text-align: right; }
 @media (max-width: 640px) {
   .wn-panel { left: 0; right: 0; bottom: 0; top: auto; transform: none; width: 100%; max-width: none; max-height: 85vh; border-radius: 14px 14px 0 0; }
