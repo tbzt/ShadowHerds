@@ -247,7 +247,7 @@ function renderSVG(M, accent, title, subtitle) {
   const g = M.grid, W = 680, H = 470, cartY = OY + ROWS * CELL + 10, DW = CELL - 6;
   const at = (r, c) => (r < 0 || r >= ROWS || c < 0 || c >= COLS ? VOID : g[r][c]);
   const sub = subtitle || M.site.label;
-  let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" font-family="system-ui,sans-serif"><title>Plan tactique — ${esc(title || "lieu")}</title><desc>Plan de bâtiment procédural : couloir, pièces, portes, grille tactique.</desc>`;
+  let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" font-family="system-ui,sans-serif"><title>Plan tactique — ${esc(title || "lieu")}</title><desc>Plan de bâtiment procédural : couloir, pièces, portes, grille tactique.</desc>`;
   s += `<defs><marker id="mapgen-arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="${PAL.entry}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>`;
   s += `<rect x="0" y="0" width="${W}" height="${H}" fill="${PAL.outside}"/>`;
   M.rooms.forEach((rm) => { const [x, y] = px(rm.c0, rm.r0); s += `<rect x="${x}" y="${y}" width="${(rm.c1 - rm.c0 + 1) * CELL}" height="${(rm.r1 - rm.r0 + 1) * CELL}" fill="${rm === M.obj ? PAL.floorObj : PAL.floor}"/>`; });
