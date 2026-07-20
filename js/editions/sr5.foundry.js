@@ -836,6 +836,20 @@ const FoundrySR5Import = {
     return Number(node.value ?? node.base ?? node.total ?? 0) || 0;
   },
 
+  /** Rating NATUREL d'un attribut spécial (MAG/RES), avant pénalité
+      d'Essence. Foundry range la valeur déjà réduite dans `natural.value`
+      (une pénalité d'Essence y est empilée en modificateur) ; `natural.base`
+      porte le rating choisi à la création. On lit `base` pour que NOTRE
+      `_applyEssencePenalty` (recalc SR5) applique la réduction une seule fois
+      — sinon double-comptage (CT-5). Le module SR6 lit déjà `natural.base`. */
+  _specialBase(node) {
+    if (node == null) return 0;
+    if (typeof node === "number") return node;
+    if (node.natural && typeof node.natural === "object")
+      return this._specialBase(node.natural);
+    return Number(node.base ?? node.value ?? node.total ?? 0) || 0;
+  },
+
   /** Trait ShadowHerds {base, mods, total} à partir d'un nombre. */
   _trait(n) {
     const v = Number(n) || 0;
@@ -1039,8 +1053,8 @@ const FoundrySR5Import = {
 
     // Attributs spéciaux : Magie / Résonance / Chance (edge) / Essence.
     const sp = system.specialAttributes || {};
-    attrs.MAG = this._trait(this._attrVal(sp.magic));
-    attrs.RES = this._trait(this._attrVal(sp.resonance));
+    attrs.MAG = this._trait(this._specialBase(sp.magic));
+    attrs.RES = this._trait(this._specialBase(sp.resonance));
     attrs.CHC = this._trait(this._attrVal(sp.edge));
     attrs.ESS = this._trait(system.essence ? this._num(system.essence) : 6);
 
@@ -1065,8 +1079,16 @@ const FoundrySR5Import = {
       meta,
       metavariant: bio.characterMetatypeVariant || bio.metatypeVariant || "",
       gender,
-      archetype: system.description || bio.description || "",
-      notes: [system.characterBackground, bio.background, bio.notes].filter(Boolean).join("\n"),
+      // `archetype` s'affiche INLINE sous le nom (header carte) : réservé à un
+      // libellé court. Une vraie fiche Foundry n'a pas d'archétype ShadowHerds ;
+      // sa `system.description` est de la biographie/flavor longue (souvent le
+      // texte d'un trait, ex. « Code d'honneur ») — elle va aux notes, pas au
+      // header, sinon elle inonde la ligne du nom.
+      archetype: "",
+      notes: [system.description, system.characterBackground, bio.background, bio.notes]
+        .map((t) => Utils.htmlToText(t))
+        .filter(Boolean)
+        .join("\n\n"),
       special: "Aucun",
       tradition: null,
       traditionDrainAttr: null,
