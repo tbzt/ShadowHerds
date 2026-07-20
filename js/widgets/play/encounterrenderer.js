@@ -669,6 +669,7 @@ export const EncounterRenderer = {
         <button class="btn-secondary btn-small" data-action="add-team" title="Toute l'équipe active (désignée dans Personnages), moins ceux déjà en scène">＋ Équipe</button>
         <button class="btn-secondary btn-small" data-action="add-pj">＋ Ajouter un PJ</button>
         <button class="btn-secondary btn-small" data-action="add-adhoc" title="Ligne jetable : nom + compteur libre (ALARME, la bombe, renforts…) — non enregistrée dans les personnages">＋ Ligne libre</button>
+        <button class="btn-secondary btn-small" data-action="add-ic" title="Ajouter une CI comme combattante (initiative du livre, moniteur, jets) — sans monter de serveur">＋ CI</button>
         <input type="search" class="encounter-picker-search" data-action="filter-candidates"
           placeholder="Filtrer par nom ou type…" value="${Utils.escHtml(this._pickerQuery || "")}"
           aria-label="Filtrer les combattants à ajouter">
@@ -1217,28 +1218,37 @@ export const EncounterRenderer = {
     }
   },
 
-  /** Fiche CI minimale : ce que le MJ regarde au tour d'une CI —
-      A/S/T/F (si le serveur a des attributs), moniteur matriciel (lecture
-      seule : la saisie de dégâts se fait dans le tiroir, où ic-box est
-      câblé), pouvoir, lien vers le serveur parent (ouvre le tiroir). Pas
-      de fausse fiche chair. L'état vivant est lu sur le serveur, jamais copié. */
+  /** Fiche CI minimale : ce que le MJ regarde au tour d'une CI — A/S/T/F (si
+      le serveur a des attributs), moniteur matriciel CLIQUABLE (tap = dégâts,
+      ic-box), pouvoir, jets. CI liée à un serveur : lien vers le tiroir, l'état
+      vivant est lu sur la scène (state.matrix), jamais copié. CI AUTONOME
+      (VIS-10, `serverId` null) : indice + moniteur portés par le combattant
+      (`m.indice`/`m.dmg`), hôte synthétique pour les textes de pouvoir/jets. */
   _renderMatrixActiveCard(box, r) {
     const m = r.matrix || {};
-    const srv = Servers.find(m.serverId);
-    if (!srv) {
+    const bare = !m.serverId;
+    const srv = bare ? null : Servers.find(m.serverId);
+    // Serveur lié disparu (supprimé pendant la scène) : garde défensive.
+    if (!bare && !srv) {
       box.hidden = true;
       box.innerHTML = "";
       return;
     }
-    const M = Matrix.use(srv.edition);
+    const edition = srv ? srv.edition : m.edition;
+    const indice = srv ? srv.indice : m.indice;
+    const M = Matrix.use(edition);
+    const host = srv || M.bareHost(indice);
     const ic = M.icCatalog()[m.icKey] || { label: r.name };
-    // L'état vivant vit dans la scène (state.matrix), plus srv.intrusion.
-    const intr = Encounter.state.matrix && Encounter.state.matrix[srv.id];
-    const st = (intr && intr.ics[m.icKey]) || { dmg: 0, down: false };
-    const size = M.icMonitorSize(srv.indice);
+    // État vivant : intrusion de serveur (state.matrix) OU, autonome, le
+    // combattant lui-même (mêmes clés dmg/down).
+    const intr = srv && Encounter.state.matrix && Encounter.state.matrix[srv.id];
+    const st = bare ? { dmg: m.dmg || 0, down: !!m.down } : (intr && intr.ics[m.icKey]) || { dmg: 0, down: false };
+    const size = M.icMonitorSize(indice);
     const label = (ic.label || r.name).replace(/^CI /, "");
-    const eff = typeof ic.effect === "function" ? ic.effect(srv) : "";
-    const attrsHtml = M.hasAttrs()
+    const eff = typeof ic.effect === "function" ? ic.effect(host) : "";
+    // Attributs ASDF : seulement pour un vrai serveur (une CI autonome n'a
+    // qu'un indice — pas de fiche de serveur à afficher case par case).
+    const attrsHtml = M.hasAttrs() && srv
       ? `<div class="attr-grid">${Matrix.ATTR_KEYS.map((ak) => {
           const v = (srv.attrs || {})[ak.key];
           return `<div class="attr-cell"><span class="attr-label">${ak.badge}</span><span class="attr-value">${v ?? "—"}</span></div>`;
@@ -1246,12 +1256,14 @@ export const EncounterRenderer = {
       : "";
     const boxes = Array.from({ length: size }, (_, i) => {
       const isPenalty = (i + 1) % 3 === 0;
-      return `<div class="monitor-box${i < st.dmg ? " filled" : ""}${isPenalty ? " penalty" : ""}"></div>`;
+      return `<div class="monitor-box${i < st.dmg ? " filled" : ""}${isPenalty ? " penalty" : ""}" data-action="ic-box" data-id="${r.pnjId}" data-n="${i + 1}" role="button" tabindex="0" aria-label="Case ${i + 1} du moniteur — ${Utils.escHtml(label)}"></div>`;
     }).join("");
-    // Jets de la CI directement sur la fiche active (avant, seul le tiroir
-    // les portait). Réutilise Intrusion.rollIC (aucun calcul de réserve dupliqué)
-    // via data-action="roll-ic", câblé dans Encounter.init (overlay). Les glaces
-    // Anarchy ont des succès fixes (hasAttrs=false) → pas de pastilles de jet.
+    // Jets de la CI directement sur la fiche active. Réserve partagée
+    // (Matrix.icRollSpec) via data-action="roll-ic", câblé dans Encounter.init
+    // (overlay). CI autonome : data-id = id du combattant (jet local) ; CI liée :
+    // data-id = id du serveur. Les glaces Anarchy ont des succès fixes
+    // (hasAttrs=false) → pas de pastilles de jet.
+    const rollId = srv ? srv.id : r.pnjId;
     const rollsHtml = M.hasAttrs()
       ? `<div class="encounter-ic-rolls">${[
           ["atk", "⚔", "Attaque"],
@@ -1261,9 +1273,15 @@ export const EncounterRenderer = {
         ]
           .map(
             ([kind, glyph, lbl]) =>
-              `<button class="react-btn" data-action="roll-ic" data-id="${srv.id}" data-k="${m.icKey}" data-kind="${kind}" title="${lbl} — ${Utils.escHtml(label)}" aria-label="${lbl} — ${Utils.escHtml(label)}"><span class="react-glyph" aria-hidden="true">${glyph}</span> ${lbl}</button>`
+              `<button class="react-btn" data-action="roll-ic" data-id="${rollId}" data-k="${m.icKey}" data-kind="${kind}" title="${lbl} — ${Utils.escHtml(label)}" aria-label="${lbl} — ${Utils.escHtml(label)}"><span class="react-glyph" aria-hidden="true">${glyph}</span> ${lbl}</button>`
           )
           .join("")}</div>`
+      : "";
+    const originLine = srv
+      ? `${Utils.escHtml(srv.name)} · indice ${srv.indice}`
+      : `CI autonome · indice ${indice}`;
+    const drawerBtn = srv
+      ? `<button class="btn-secondary btn-small encounter-ic-open" data-action="toggle-matrix-drawer" title="Ouvrir le tiroir Matrice (jets, moniteur, surveillance)">⚡ Ouvrir la Matrice</button>`
       : "";
     box.hidden = false;
     box.innerHTML =
@@ -1273,12 +1291,12 @@ export const EncounterRenderer = {
           <span class="encounter-kind is-matrix">CI</span>
           <span class="encounter-ic-name">${Utils.escHtml(label)}</span>
         </div>
-        <div class="encounter-ic-server">${Utils.escHtml(srv.name)} · indice ${srv.indice}</div>
+        <div class="encounter-ic-server">${originLine}</div>
         ${attrsHtml}
         <div class="monitor-row"><span class="monitor-label">Moniteur</span><div class="monitor-boxes">${boxes}</div></div>
         ${eff ? `<div class="encounter-ic-power">${Utils.escHtml(eff)}</div>` : ""}
         ${rollsHtml}
-        <button class="btn-secondary btn-small encounter-ic-open" data-action="toggle-matrix-drawer" title="Ouvrir le tiroir Matrice (jets, moniteur, surveillance)">⚡ Ouvrir la Matrice</button>
+        ${drawerBtn}
       </div>` +
       this._activeNote(r);
   },
@@ -1433,12 +1451,16 @@ export const EncounterRenderer = {
       fixes) : boutons inactifs. Pas de chevron (la CI a sa fiche + le tiroir). */
   _reactMatrixRow(r) {
     const m = r.matrix || {};
-    const srv = Servers.find(m.serverId);
-    const canRoll = !!(srv && Matrix.use(srv.edition).hasAttrs());
+    // CI autonome (VIS-10) : pas de serveur — édition/jets portés par le
+    // combattant, data-id = son id (jet local). CI liée : data-id = serveur.
+    const srv = m.serverId ? Servers.find(m.serverId) : null;
+    const edition = srv ? srv.edition : m.edition;
+    const canRoll = !!(edition && Matrix.use(edition).hasAttrs());
+    const rollId = srv ? srv.id : r.pnjId;
     const name = Utils.escHtml(r.name || (r.pnj && r.pnj.name) || "CI");
     const mk = (kind, glyph, lbl) =>
       canRoll
-        ? `<button class="react-btn" data-action="roll-ic" data-id="${m.serverId}" data-k="${m.icKey}" data-kind="${kind}" title="${lbl} — ${name}" aria-label="${lbl} — ${name}"><span class="react-glyph" aria-hidden="true">${glyph}</span> ${lbl}</button>`
+        ? `<button class="react-btn" data-action="roll-ic" data-id="${rollId}" data-k="${m.icKey}" data-kind="${kind}" title="${lbl} — ${name}" aria-label="${lbl} — ${name}"><span class="react-glyph" aria-hidden="true">${glyph}</span> ${lbl}</button>`
         : `<span class="react-btn is-off" title="Glace à succès fixes (ne lance pas les dés)"><span class="react-glyph" aria-hidden="true">${glyph}</span> —</span>`;
     return `<div class="react-row">
         <span class="react-name">${name} <span class="encounter-kind is-matrix">CI</span></span>

@@ -182,35 +182,17 @@ export const Intrusion = {
      indice×2 pour la majorité de leurs jets. */
   rollIC(id, key, kind) {
     const srv = Servers.find(id);
-    if (!srv || !Matrix.use(srv.edition).hasAttrs()) return;
-    const i = srv.indice;
-    const a = srv.attrs || {};
+    const M = Matrix.use(srv && srv.edition);
+    if (!srv || !M.hasAttrs()) return;
     const ic = Servers.icCatalog(srv.edition)[key];
     const name = ic ? ic.label : key;
-
-    let pool = i * 2;
-    let limit = null;
-    let label;
-    const M = Matrix.use(srv.edition);
-    if (kind === "atk") {
-      label = `${name} — attaque`;
-      limit = M.attrLimit("atk", srv);
-    } else if (kind === "def") {
-      label = `${name} — défense`;
-    } else if (kind === "soak") {
-      pool = i + (a.firewall || 0);
-      label = `${name} — encaissement (indice + Firewall)`;
-    } else {
-      label = `${name} — perception matricielle`;
-      limit = M.attrLimit("per", srv);
-    }
-
-    const res = Dice.computeRoll(pool);
-    if (limit != null && res.hits > limit) {
+    const spec = M.icRollSpec(kind, srv);
+    const res = Dice.computeRoll(spec.pool);
+    if (spec.limit != null && res.hits > spec.limit) {
       res.cappedFrom = res.hits;
-      res.hits = limit;
+      res.hits = spec.limit;
     }
-    DiceRoller.show(res, { label, who: srv.name });
+    DiceRoller.show(res, { label: `${name} — ${spec.suffix}`, who: srv.name });
   },
 
   /* ---- Marks (SR5) ---- */

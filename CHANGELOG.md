@@ -12,6 +12,29 @@ commit.
 
 ## [Non publié]
 
+## [1.82.0] — 2026-07-20
+
+### Ajouté
+
+- **Une CI comme combattante à part entière.** Le suivi de combat propose un
+  bouton **« ＋ CI »** : on choisit une contre-mesure (CI Noire, Tueuse, Furie…)
+  et son indice, elle rejoint l'initiative avec son score du livre (indice×2+4D6
+  en SR5, TdD×2+3D6 en SR6, ordre narratif en Anarchy), son moniteur cliquable
+  et ses jets d'attaque/défense/encaissement/perception — sans monter de serveur.
+  Rend natif le détournement quasi universel de la « ligne libre » nommée
+  « CI NOIRE » à l'initiative saisie à la main. La ligne libre (minuteur
+  « ALARME », renforts…) reste évidemment inchangée.
+
+### Modifié
+
+- **Le combat et l'intrusion partagent une horloge.** Quand un serveur est lié à
+  la scène et en alerte, avancer le **« Round suivant »** du combat déploie
+  désormais la CI du tour et la fait rejoindre l'initiative — plus besoin
+  d'avancer aussi le tour dans le tiroir Matrice (dont le bouton s'efface alors
+  pour éviter tout double déploiement). Au passage, l'intrusion parle le même
+  vocabulaire que le combat : son compteur et son avance disent **« Round »**
+  (et non plus « Tour », qui désigne le passage au combattant suivant).
+
 ## [1.81.0] — 2026-07-20
 
 ### Ajouté

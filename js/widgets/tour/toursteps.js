@@ -443,6 +443,11 @@ export const TourSteps = {
       title: "« Rangé dans » sur la fiche",
       body: "Chaque fiche montre désormais les dossiers où elle est classée — le miroir de « Mentionné dans », côté organisation plutôt que narration. Un clic sur un dossier le sélectionne et ouvre la bibliothèque filtrée dessus ; la pastille ❖/◆ signale campagne ou run. Rien de neuf à saisir : l'appartenance multi-dossiers existait déjà, on n'en montre que le sens inverse.",
     },
+    {
+      id: "wn-ic-combatant", anchor: "nav-combat", tours: ["whatsnew"], since: "1.82.0", fallback: "center",
+      title: "Une CI comme combattante à part entière",
+      body: "Le suivi de combat gagne un bouton « ＋ CI » : choisissez une contre-mesure (CI Noire, Tueuse…) et son indice, elle rejoint l'initiative avec son score du livre, son moniteur et ses jets — plus besoin de bricoler une ligne « CI NOIRE » à l'init saisie à la main. Et quand un serveur est lié et en alerte, « Round suivant » du combat déploie désormais la CI du tour tout seul (les deux horloges sont enfin synchronisées, et l'intrusion parle le même « Round » que le combat).",
+    },
   ],
 };
 

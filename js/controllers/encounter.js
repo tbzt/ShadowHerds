@@ -177,6 +177,77 @@ export const Encounter = {
     this._commit();
   },
 
+  /** VIS-10 — flux d'ajout d'une CI AUTONOME au suivi (deux dialogues :
+      type de CI, puis indice). Rend natif le détournement quasi universel
+      « PJ ad-hoc nommé CI NOIRE » : la CI devient une combattante de plein
+      droit (init du livre, moniteur, jets) sans monter de serveur. La
+      Patrouilleuse est écartée du choix — elle veille, n'attaque pas et ne
+      rejoint pas l'ordre d'init (cf. `Intrusion.nextTurn`). */
+  async promptAddIC() {
+    const M = Matrix.use(App.edition);
+    const opts = Object.entries(M.icCatalog())
+      .filter(([, ic]) => !ic.watch)
+      .map(([value, ic]) => ({ value, label: ic.label, danger: value === "noire" }));
+    if (!opts.length) return;
+    const icKey = await Dialog.choose({
+      title: "Ajouter une CI",
+      message: "Quelle contre-mesure rejoint le combat ?",
+      options: opts,
+    });
+    if (!icKey) return;
+    const [min, max] = M.indiceRange();
+    const def = Math.round((min + max) / 2);
+    const raw = await Dialog.prompt({
+      title: "Indice de la CI",
+      label: `Indice de l'hôte (${min}–${max})`,
+      value: String(def),
+      placeholder: String(def),
+      confirmLabel: "Ajouter",
+    });
+    if (raw === null) return;
+    const indice = Utils.clamp(parseInt(raw, 10) || def, min, max);
+    this.addIC(icKey, indice);
+  },
+
+  /** Instancie une CI autonome dans le suivi. Contrairement à `launchIC`
+      (CI liée à un serveur, état vivant dans `state.matrix[serverId]`), l'état
+      vivant d'une CI autonome — indice + moniteur — vit sur `c.matrix`
+      (`serverId: null`). Init du livre via `icCombatant` (module d'édition,
+      prohibition n°1), hôte synthétisé par `Matrix.bareHost`. Doublons
+      autorisés (deux CI Noires dans un même duel) : chaque ligne a son id. */
+  addIC(icKey, indice) {
+    const M = Matrix.use(App.edition);
+    const ic = M.icCatalog()[icKey];
+    if (!ic) return;
+    const host = M.bareHost(indice);
+    const spec = App.editionModule.icCombatant(ic, host);
+    if (!spec) return;
+    const c = {
+      pnjId: "ic-" + Utils.uid(),
+      name: spec.name,
+      kind: "matrix",
+      init: null,
+      hasActed: false,
+      note: "",
+      matrix: {
+        serverId: null,
+        icKey,
+        edition: App.edition,
+        indice: host.indice,
+        initBase: spec.initBase ?? null,
+        initDice: spec.initDice ?? null,
+        dmg: 0,
+        down: false,
+      },
+    };
+    if (!spec.narrative && spec.initBase != null) {
+      c.init = Dice.computeInitiative(spec.initBase, spec.initDice).total;
+    }
+    this._insertByInit(c);
+    this._commit();
+    toast(`${spec.name} rejoint le suivi de combat.`);
+  },
+
   /** « + Équipe » — l'équipe active (Characters.activeTeamMembers,
       tous les PJ par défaut) rejoint la scène en un geste ; les membres déjà
       présents sont ignorés (même règle que _candidates()). Un PJ one-shot
@@ -549,6 +620,10 @@ export const Encounter = {
   _matrixICState(c) {
     const m = c && c.matrix;
     if (!m) return null;
+    // CI autonome (VIS-10) : l'état vivant (moniteur) vit sur le combattant
+    // lui-même, pas dans une intrusion de serveur — on renvoie `m`, dont les
+    // clés `dmg`/`down` sont mutées en place par `icBox`.
+    if (!m.serverId) return m;
     const intr = this.state.matrix && this.state.matrix[m.serverId];
     return (intr && intr.ics[m.icKey]) || null;
   },
@@ -629,13 +704,18 @@ export const Encounter = {
     }
     this.state.turnIndex = this._firstEligibleIndex();
     this._commit();
-    // Rappel de cadence — l'hôte peut déployer une CI par tour de combat
-    // (SR5 p.249, SR6 p.188). Rappel seulement si un serveur alerté est lié et
-    // que l'édition a des CI chiffrées (hasAttrs) ; Anarchy déploie à sa façon.
+    // VIS-10 B1 — le Round de combat EST l'horloge de l'intrusion liée :
+    // avancer le Round déploie la CI du tour (SR5 p.249, SR6 p.188, A2 p.223)
+    // et la fait rejoindre l'init, sans second geste dans le tiroir. Avant, on
+    // ne posait qu'un rappel : les deux horloges étaient découplées.
+    // `Intrusion.nextTurn` gère déjà déploiement + Score de Surveillance +
+    // `launchIC` (et son propre `_commit`). Serveur affiché alerté, en scène
+    // de combat uniquement ; en scène Matrice seule, l'horloge reste le tiroir
+    // (son bouton d'avance est masqué en combat pour ne pas double-déployer).
     const srv = this._linkedServer();
     const intr = srv && this.state.matrix && this.state.matrix[srv.id];
-    if (srv && Matrix.use(srv.edition).hasAttrs() && intr && intr.alerted) {
-      toast("Nouveau tour : le serveur peut déployer une CI.");
+    if (srv && intr && intr.alerted && this.state.motors.includes("combat")) {
+      Intrusion.nextTurn(srv.id);
     }
   },
 
@@ -1222,6 +1302,44 @@ export const Encounter = {
     if (ai !== -1) this.state.turnIndex = ai;
   },
 
+  /** Clic sur une case du moniteur d'une CI depuis le suivi (VIS-10). CI
+      autonome : l'état vit sur le combattant (tap = pose/retire les dégâts,
+      « hors de combat » quand le moniteur est plein). CI liée à un serveur :
+      délègue au tiroir (`Intrusion.icBox`), source unique de l'état
+      d'intrusion — le geste est le même partout. */
+  icBox(pnjId, n) {
+    const c = this._find(pnjId);
+    const m = c && c.matrix;
+    if (!m) return;
+    if (m.serverId) {
+      Intrusion.icBox(m.serverId, m.icKey, n);
+      return;
+    }
+    const size = Matrix.use(m.edition).icMonitorSize(m.indice);
+    m.dmg = m.dmg === n ? n - 1 : n;
+    m.down = m.dmg >= size;
+    this._commit();
+  },
+
+  /** Jet d'une CI AUTONOME (VIS-10) — pas de serveur à interroger. Réserve et
+      limite via `Matrix.icRollSpec` (source unique partagée avec
+      `Intrusion.rollIC`), sur l'hôte synthétique. Les glaces Anarchy ont des
+      succès fixes (`hasAttrs` false) → pas de bouton de jet, jamais appelé. */
+  _rollBareIC(c, kind) {
+    const m = c.matrix;
+    const M = Matrix.use(m.edition);
+    if (!M.hasAttrs()) return;
+    const ic = M.icCatalog()[m.icKey];
+    const name = ic ? ic.label : c.name;
+    const spec = M.icRollSpec(kind, M.bareHost(m.indice));
+    const res = Dice.computeRoll(spec.pool);
+    if (spec.limit != null && res.hits > spec.limit) {
+      res.cappedFrom = res.hits;
+      res.hits = spec.limit;
+    }
+    DiceRoller.show(res, { label: `${name} — ${spec.suffix}`, who: c.name });
+  },
+
   /* ---- Rendu ---- */
   _rows() {
     const rows = this.state.combatants.map((c) => ({
@@ -1680,13 +1798,24 @@ export const Encounter = {
           // cours (Anarchy 2.0, geste manuel du MJ).
           this.grantNarrationAction(id);
           break;
-        case "roll-ic":
-          // Jet d'une CI (attaque/défense/encaissement/perception) depuis
-          // la fiche CI active ou la console de réaction — même moteur que le
-          // tiroir (Intrusion.rollIC), aucun calcul de réserve dupliqué. Ces
-          // boutons vivent dans #encounter-overlay (fiche active), hors de la
-          // délégation #app de Servers._wire → câblés ici.
-          Intrusion.rollIC(el.dataset.id, el.dataset.k, el.dataset.kind);
+        case "roll-ic": {
+          // Jet d'une CI (attaque/défense/encaissement/perception) depuis la
+          // fiche CI active ou la console de réaction — même moteur, réserve
+          // partagée (Matrix.icRollSpec), aucun calcul dupliqué. Ces boutons
+          // vivent dans #encounter-overlay, hors de la délégation #app de
+          // Servers._wire → câblés ici. CI autonome (VIS-10) : `data-id` est
+          // l'id du combattant (jet local, pas de serveur à interroger) ; CI
+          // liée : `data-id` est l'id du serveur (chemin tiroir Intrusion).
+          const cIC = this._find(el.dataset.id);
+          if (cIC && cIC.kind === "matrix" && cIC.matrix && !cIC.matrix.serverId)
+            this._rollBareIC(cIC, el.dataset.kind);
+          else Intrusion.rollIC(el.dataset.id, el.dataset.k, el.dataset.kind);
+          break;
+        }
+        case "ic-box":
+          // Case du moniteur d'une CI (fiche active) — VIS-10 : autonome ou
+          // liée, `icBox` route vers la bonne source d'état.
+          this.icBox(el.dataset.id, parseInt(el.dataset.n, 10) || 0);
           break;
         case "react-expand":
           // Déplie/replie la fiche complète d'un PNJ dans la console de
@@ -1813,6 +1942,10 @@ export const Encounter = {
           break;
         case "add-adhoc":
           this.addAdhoc();
+          break;
+        case "add-ic":
+          // VIS-10 — ajoute une CI autonome (deux dialogues : type, indice).
+          this.promptAddIC();
           break;
         case "add-team":
           this.addTeam();

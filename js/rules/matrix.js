@@ -466,6 +466,17 @@ export const Matrix = {
     return this._model().icMonitorSize(indice);
   },
 
+  /** VIS-10 — hôte synthétique minimal d'une CI AUTONOME (ajoutée au tracker
+      sans monter de serveur). Le MJ choisit un indice (= indice de l'hôte
+      fictif) ; il suffit à dériver init, taille de moniteur et réserves de
+      jet. Les attributs ASDF défaut à l'indice (une CI sans fiche de serveur).
+      Édition-neutre : consommé par `icCombatant`/`ic.effect`/`icRollSpec`
+      exactement comme un vrai serveur. */
+  bareHost(indice) {
+    const i = Utils.clamp(indice | 0, 1, 99);
+    return { indice: i, attrs: { attack: i, sleaze: i, dataProcessing: i, firewall: i } };
+  },
+
   /** Nombre max de CI actives simultanément (Anarchy : illimité, p.223). */
   maxActiveIC(indice) {
     return this._model().maxActiveIC(indice);
@@ -663,6 +674,23 @@ export const Matrix = {
       pour la perception — SR6 n'a pas de limite, neutre : null). */
   attrLimit(kind, srv) {
     return this._model().attrLimit(kind, srv);
+  },
+
+  /** Réserve + limite + suffixe d'un jet de CI (attaque/défense/encaissement/
+      perception), SR5/SR6. `srv` peut être un vrai serveur OU un hôte
+      synthétique (`bareHost`) — même forme, mêmes attributs. Réserve indice×2
+      (SR5 p.249, SR6 p.188), l'encaissement SR5 = indice + Firewall. Source
+      unique consommée par `Intrusion.rollIC` (CI liée) et `Encounter._rollBareIC`
+      (CI autonome), pour ne pas dupliquer le calcul. Le nom de la CI est
+      préfixé par l'appelant. Suppose `use(edition)` déjà appelé (limites lues
+      sur `_model()`). */
+  icRollSpec(kind, srv) {
+    const i = srv.indice;
+    if (kind === "soak")
+      return { pool: i + ((srv.attrs && srv.attrs.firewall) || 0), limit: null, suffix: "encaissement (indice + Firewall)" };
+    if (kind === "atk") return { pool: i * 2, limit: this.attrLimit("atk", srv), suffix: "attaque" };
+    if (kind === "def") return { pool: i * 2, limit: null, suffix: "défense" };
+    return { pool: i * 2, limit: this.attrLimit("per", srv), suffix: "perception matricielle" };
   },
 
   /** Score Défensif matriciel de la cible (SR6 uniquement, p.177 : TdD +

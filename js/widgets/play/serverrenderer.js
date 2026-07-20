@@ -27,6 +27,16 @@ export const ServerRenderer = {
     return Intrusion.newState();
   },
 
+  /** VIS-10 B1 — le serveur affiché est-il piloté par le Round de combat ?
+      (scène de combat + ce serveur lié). Si oui, avancer le Round déploie déjà
+      la CI du tour : le bouton d'avance manuel du tiroir est masqué pour ne pas
+      double-déployer. Faux en scène Matrice seule (le tiroir reste l'horloge).
+      Même accès à l'état de scène (bridge global gardé) que `_intr`. */
+  _combatDriven(srv) {
+    const st = typeof Encounter !== "undefined" && Encounter.state;
+    return !!(st && (st.motors || []).includes("combat") && st.serverId === srv.id);
+  },
+
   renderForm(ed) {
     const esc = CardRenderer._esc.bind(CardRenderer);
     const catalog = Matrix.use(ed).icCatalog();
@@ -377,12 +387,14 @@ export const ServerRenderer = {
     return `
       <div class="intrusion-panel">
         <div class="intrusion-toolbar">
-          <span class="intrusion-turn">Tour <b>${intr.turn}</b></span>
+          <span class="intrusion-turn">Round <b>${intr.turn}</b></span>
           <button class="btn-secondary btn-small ${intr.alerted ? "alert-on" : ""}"
             data-action="set-alert" data-id="${srv.id}"
-            title="La Patrouilleuse a repéré l'intrus : le serveur déploie une CI par tour">
+            title="La Patrouilleuse a repéré l'intrus : le serveur déploie une CI par Round">
             ${intr.alerted ? "⚠ Alerte en cours" : "Donner l'alerte"}</button>
-          <button class="btn-primary btn-small" data-action="next-turn" data-id="${srv.id}">Tour suivant <svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>
+          ${this._combatDriven(srv)
+            ? `<span class="intrusion-turn-hint" title="Le déploiement suit l'horloge du combat">CI déployée au « Round suivant » du combat</span>`
+            : `<button class="btn-primary btn-small" data-action="next-turn" data-id="${srv.id}">Round suivant <svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>`}
           <button class="btn-icon" data-action="reset-intrusion" data-id="${srv.id}" title="Réinitialiser l'intrusion"><svg class="icon" aria-hidden="true"><use href="#ic-reset"></use></svg></button>
         </div>
         <div class="ic-rows">${rows}</div>
@@ -429,7 +441,7 @@ export const ServerRenderer = {
           <span class="ss-marks">Accès illégaux maintenus —
             Utilisateur <button class="btn-icon-tiny" data-action="set-illegal" data-id="${srv.id}" data-kind="user" data-n="-1">−</button><b>${intr.illUser}</b><button class="btn-icon-tiny" data-action="set-illegal" data-id="${srv.id}" data-kind="user" data-n="1">＋</button>
             · Admin <button class="btn-icon-tiny" data-action="set-illegal" data-id="${srv.id}" data-kind="admin" data-n="-1">−</button><b>${intr.illAdmin}</b><button class="btn-icon-tiny" data-action="set-illegal" data-id="${srv.id}" data-kind="admin" data-n="1">＋</button>
-            <small>(+1/+3 SS par round, appliqués à « Tour suivant »)</small>
+            <small>(+1/+3 SS par Round, appliqués à « Round suivant »)</small>
           </span>
           <span class="ss-marks" title="Score Défensif de la cible = Traitement de données + Firewall (p.177), opposition de Forcer l'accès / Sonder l'accès">Accès obtenu —
             <button class="btn-icon-tiny" data-action="set-access" data-id="${srv.id}" data-n="-1">−</button>

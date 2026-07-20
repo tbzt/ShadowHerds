@@ -198,11 +198,20 @@
   gap: 6px;
   margin-bottom: var(--sp-2);
 }
-/* Le libellé « Tour N » et le ↺ (btn-icon) restent compacts ; les deux boutons
+/* Le libellé « Round N » et le ↺ (btn-icon) restent compacts ; les deux boutons
    d'action étirent leur rangée quand la barre passe à la ligne (cf. audit
    alignement). */
 .intrusion-toolbar > .btn-small {
   flex: 1 1 auto;
+}
+/* VIS-10 B1 — en scène de combat, l'avance manuelle est remplacée par un
+   rappel discret : c'est le « Round suivant » du combat qui déploie la CI. */
+.intrusion-turn-hint {
+  flex: 1 1 auto;
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  font-style: italic;
+  line-height: 1.3;
 }
 .intrusion-turn {
   font-family: var(--font-mono);
