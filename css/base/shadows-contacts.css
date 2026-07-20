@@ -550,6 +550,14 @@
   letter-spacing: 0;
   font-weight: 400;
 }
+/* VIS-8 étape 3 — verbes de prépa inline sous le topos (Avant) : rangée
+   compacte de boutons délégués (édition, casting, plan). */
+.play-prep-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
 .play-apres {
   display: flex;
   align-items: center;

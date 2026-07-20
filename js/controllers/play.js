@@ -65,6 +65,28 @@ export const Play = {
           // Notebooks). Jouer ne possède aucune de ces données.
           Debrief.open(id);
           break;
+        case "play-topos-edit":
+          // VIS-8 étape 3 — éditer le topos SANS quitter Jouer. Délégué à
+          // ToposEdit (propriétaire du formulaire de topos). `data-id` = topos.
+          ToposEdit.open(el.dataset.id);
+          break;
+        case "play-cast-generate":
+          // VIS-8 étape 3 — générer le casting d'opposition. Délégué à RunGen
+          // (génère + range dans Shadows) ; re-rendu pour faire apparaître les
+          // puces et retirer le bouton (offre non répétée — pas de doublon).
+          RunGen.castForRun(el.dataset.id);
+          this.render();
+          break;
+        case "play-map":
+          // VIS-8 étape 3 — plan tactique procédural (gratuit). Délégué à
+          // RunGen.showMap (MapGen → lightbox Portrait). Aucune donnée ici.
+          RunGen.showMap(el.dataset.id);
+          break;
+        case "play-plan":
+          // VIS-8 étape 3 — ambiance IA (opt-in). Délégué à RunGen.generatePlan ;
+          // le bouton `el` sert de cible de spinner (géré par Pollinations).
+          RunGen.generatePlan(el.dataset.id, el);
+          break;
         case "play-cast-consult":
           // Consulter une fiche du casting : réutilise le résolveur public de la
           // palette (id → panneau), aucun 2ᵉ résolveur nom→fiche.
@@ -424,7 +446,48 @@ export const Play = {
     return `<div class="play-topos">
       ${rows.map(([k, v]) => `<div class="play-topos-row"><span class="play-topos-k">${k}</span><span class="play-topos-v">${CardRenderer._esc(v)}</span></div>`).join("")}
       ${pay}
+      ${this._prepActionsHtml(t, runId)}
     </div>`;
+  },
+
+  /** VIS-8 étape 3 — verbes de PRÉPA du run, inline dans Avant, PAR DÉLÉGATION :
+      Jouer ne gagne aucune logique, il appelle les modules propriétaires du
+      panneau `run` (édition, casting, plan) pour éviter d'avoir à le quitter.
+      Éditer (→ ToposEdit) · Générer le casting (→ RunGen, seulement si le topos
+      porte un profil de sécurité ET qu'aucun casting n'est encore rangé — le
+      castForRun ne déduplique pas) · Plan tactique / Ambiance : miroir exact du
+      gating de `RunRenderer._planButtons` (site `planUtile` ; Ambiance opt-in IA
+      via Settings ; vue directe si `planUrl` déjà généré, sinon génération). */
+  _prepActionsHtml(t, runId) {
+    const btns = [
+      `<button class="btn-secondary btn-small" data-action="play-topos-edit" data-id="${t.id}" title="Éditer le topos (objectif, complication, mandant, lieu, paie)">✎ Éditer</button>`,
+    ];
+    if (t.securityProfile && !this._runHasCast(runId))
+      btns.push(
+        `<button class="btn-secondary btn-small" data-action="play-cast-generate" data-id="${t.id}" title="Générer les PNJ d'opposition cohérents avec le topos">⚔ Générer le casting</button>`,
+      );
+    if (t.planUtile) {
+      btns.push(
+        `<button class="btn-secondary btn-small" data-action="play-map" data-id="${t.id}" title="Plan tactique du lieu (généré, gratuit)">🗺 Plan tactique</button>`,
+      );
+      const iaOn = typeof Settings !== "undefined" && Settings.getPortraitSettings().enabled;
+      if (iaOn)
+        btns.push(
+          t.planUrl
+            ? `<button class="btn-secondary btn-small" data-portrait-preview="${CardRenderer._esc(t.planUrl)}" data-portrait-caption="${CardRenderer._esc(`Ambiance — ${t.lieu || "lieu inconnu"}`)}" title="Voir l'ambiance générée">✨ Ambiance</button>`
+            : `<button class="btn-secondary btn-small" data-action="play-plan" data-id="${t.id}" title="Générer une ambiance du lieu (IA)">✨ Ambiance</button>`,
+        );
+    }
+    return `<div class="play-prep-actions">${btns.join("")}</div>`;
+  },
+
+  /** Le run a-t-il déjà un casting rangé ? (mêmes collections typées que
+      `_castHtml`). Sert à n'offrir « Générer le casting » que sur un run vierge
+      de PNJ — `RunGen.castForRun` régénère sinon en doublon. */
+  _runHasCast(runId) {
+    for (const col of [Shadows, Characters, ContactsBook, Servers])
+      if (col && col.data && DossierBar.memberIds(col, runId).length) return true;
+    return false;
   },
 
   /** Casting préparé : les entités rangées DANS ce run (DossierBar.memberIds

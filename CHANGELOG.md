@@ -12,6 +12,19 @@ commit.
 
 ## [Non publié]
 
+## [1.80.3] — 2026-07-20
+
+### Modifié
+
+- **Préparer son run sans quitter « Jouer ».** Le moment **Avant** du poste de
+  commandement gagne, sous le topos, ses verbes de prépa : **✎ Éditer** le topos,
+  **⚔ Générer le casting** d'opposition (quand la cible a un profil de sécurité et
+  qu'aucun PNJ n'est encore rangé), **🗺 Plan tactique** (gratuit) et **✨ Ambiance**
+  (si les images IA sont activées). Rien de neuf sous le capot : ces actions
+  existaient déjà au panneau des topos ; elles viennent juste à la rencontre du MJ
+  là où il joue. Troisième étape, par convergence, du chantier « la séance comme
+  objet primaire ».
+
 ## [1.80.2] — 2026-07-20
 
 ### Modifié
