@@ -12,6 +12,17 @@ commit.
 
 ## [Non publié]
 
+## [1.80.1] — 2026-07-20
+
+### Modifié
+
+- **« Jouer » devient la maison.** À l'ouverture (et au tap sur le logo),
+  l'application atterrit désormais sur le poste de séance « Jouer » plutôt que
+  sur « Ombres portées » — le centre de gravité se déplace vers *la partie en
+  cours*. Un lien ou un marque-page vers un panneau précis reste souverain, et
+  « Ombres portées » demeure à un geste (barre de navigation). Première étape,
+  par convergence, du chantier « la séance comme objet primaire ».
+
 ## [1.80.0] — 2026-07-20
 
 ### Ajouté

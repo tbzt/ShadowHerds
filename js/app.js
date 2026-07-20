@@ -17,7 +17,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.80.0",
+  VERSION: "1.80.1",
 
   edition: "none",
   editionModule: null,
@@ -360,9 +360,13 @@ export const App = {
     // ré-appeler à chaque changement d'édition est sans effet si rien n'a bougé.
     Sync.pullOnLoad();
 
-    // Lire le panel depuis l'URL si disponible, sinon le hub
+    // Lire le panel depuis l'URL si disponible, sinon la maison « Jouer »
+    // (VIS-8 étape 1 : le poste de séance devient l'atterrissage par défaut ;
+    // le hash reste souverain, et le 1er lancement est piloté par la visite
+    // d'orientation qui navigue elle-même — le défaut ne touche que les
+    // revenants). État vide de Jouer pédagogique depuis VIS-3, pas un mur.
     const hashPanel = this._panelFromHash();
-    this.showPanel(hashPanel || "shadows", { updateHash: !hashPanel });
+    this.showPanel(hashPanel || "play", { updateHash: !hashPanel });
 
     // Première présentation de la barre du haut : une
     // seule fois, jamais répétée (Onboarding.dismiss pose le flag global).
@@ -508,9 +512,9 @@ export const App = {
     return null;
   },
 
-  /* ---- Retour au hub (tap sur le logo, surtout mobile) ---- */
+  /* ---- Retour à la maison « Jouer » (tap sur le logo, surtout mobile) ---- */
   goHome() {
-    if (this.edition !== "none") this.showPanel("shadows");
+    if (this.edition !== "none") this.showPanel("play"); // VIS-8 étape 1
   },
 
   /* ---- Aide raccourcis clavier ---- */
