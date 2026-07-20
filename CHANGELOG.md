@@ -12,6 +12,17 @@ commit.
 
 ## [Non publié]
 
+## [1.79.1] — 2026-07-20
+
+### Correctif
+
+- **La légende des symboles reste joignable sur mobile.** L'aide « ? » de la
+  barre du haut était masquée sur petit écran, emportant avec les raccourcis
+  clavier (sans objet au doigt) la **légende sémantique** des sigles de combat
+  (⚄, VD/SD/PA…). Les deux sont désormais découplés : sur mobile, le « ? »
+  reste accessible et n'affiche que l'intro et la légende ; les raccourcis
+  clavier, eux, ne s'affichent qu'au clavier. (VIS-5)
+
 ## [1.79.0] — 2026-07-20
 
 ### Votre premier run, guidé

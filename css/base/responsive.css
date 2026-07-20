@@ -332,6 +332,17 @@
   .topbar-action-quiet {
     display: none;
   }
+  /* VIS-5 — découplage légende / raccourcis : le `?` porte `topbar-action-quiet`
+     comme Sauvegarder/Charger, mais eux se replient sur Paramètres et lui non.
+     On le ré-affiche seul (l'entrée vers la légende des symboles VD/SD/PA, utile
+     au doigt), puis on masque la seule section sans objet en tactile : les
+     raccourcis clavier. */
+  .topbar-action-quiet[data-action="toggle-shortcuts"] {
+    display: flex;
+  }
+  .help-kbd-section {
+    display: none;
+  }
   .topbar-actions {
     flex-basis: 100%;
     flex-wrap: wrap;
