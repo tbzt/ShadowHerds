@@ -12,18 +12,6 @@ commit.
 
 ## [Non publié]
 
-### Corrections — import Foundry SR5
-
-- **Import Foundry : Magie/Résonance ne sont plus doublement pénalisées par
-  l'Essence (CT-5).** Le rating spécial était lu déjà réduit (`natural.value`) et
-  reposé en base, puis le recalc ShadowHerds retranchait la pénalité une seconde
-  fois. On lit désormais le rating naturel (`natural.base`), comme le fait déjà le
-  module SR6 ; la réduction d'Essence n'est appliquée qu'une fois.
-- **Import Foundry : la biographie n'inonde plus la ligne du nom.** La
-  `description` d'une fiche importée (souvent la flavor d'un trait, ex. « Code
-  d'honneur ») était placée dans l'archétype, affiché inline sous le nom. Elle est
-  désormais rangée dans les notes ; le header ne montre que métatype et éveil.
-
 ## [1.79.0] — 2026-07-20
 
 ### Votre premier run, guidé
@@ -51,6 +39,18 @@ commit.
 - **Le bouton « PNJ » se dit atelier.** Dans la navigation, il porte un
   sous-titre discret « générer » : on crée ici, et le résultat va se ranger dans
   « Ombres portées ».
+
+### Corrections — import Foundry SR5
+
+- **Import Foundry : Magie/Résonance ne sont plus doublement pénalisées par
+  l'Essence (CT-5).** Le rating spécial était lu déjà réduit (`natural.value`) et
+  reposé en base, puis le recalc ShadowHerds retranchait la pénalité une seconde
+  fois. On lit désormais le rating naturel (`natural.base`), comme le fait déjà le
+  module SR6 ; la réduction d'Essence n'est appliquée qu'une fois.
+- **Import Foundry : la biographie n'inonde plus la ligne du nom.** La
+  `description` d'une fiche importée (souvent la flavor d'un trait, ex. « Code
+  d'honneur ») était placée dans l'archétype, affiché inline sous le nom. Elle est
+  désormais rangée dans les notes ; le header ne montre que métatype et éveil.
 
 ## [1.78.2] — 2026-07-20
 
