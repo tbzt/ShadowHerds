@@ -1,0 +1,99 @@
+/* ============================================================
+   NUDGE — co-MJ contextuel (VIS-1). Bulle NON-MODALE : la racine laisse
+   passer les clics (`pointer-events: none`), seule la carte les capte. Aucun
+   scrim, ne bloque jamais le geste en cours. Entrée douce SANS rebond (le
+   combat reste sec, cadrage CODIR/Juice) : fondu + légère montée sur les
+   tokens de mouvement partagés — `prefers-reduced-motion` tombe seul (les
+   `--dur-*` valent 0ms). Positionnement porté par nudge.js (ancré à droite de
+   la cible sur desktop) ou par ce fichier (mode « coin » : mobile, ou desktop
+   sans ancre visible).
+   ============================================================ */
+.nudge-root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-hud);
+  pointer-events: none;
+}
+
+.nudge-card {
+  position: fixed;
+  width: min(340px, calc(100vw - 24px));
+  pointer-events: auto;
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--info); /* teinte « astuce », universelle */
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.38);
+  padding: 0.85rem 0.9rem 0.75rem;
+  animation: nudge-in var(--dur-base) var(--ease-standard);
+}
+
+@keyframes nudge-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Mode « coin » : mobile toujours (au-dessus de la bottom-nav), ou desktop
+   quand l'ancre n'est pas visible. Positionné par marges (jamais par
+   transform, que l'animation d'entrée réquisitionne). */
+.nudge-corner .nudge-card {
+  top: auto;
+  left: 12px;
+  right: 12px;
+  width: auto;
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 641px) {
+  .nudge-corner .nudge-card {
+    left: auto;
+    right: 24px;
+    bottom: 24px;
+    width: min(340px, calc(100vw - 48px));
+  }
+}
+
+.nudge-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--radius);
+}
+.nudge-close:hover {
+  color: var(--text);
+  background: var(--bg-mid);
+}
+
+.nudge-title {
+  margin: 0 1.6rem 0.3rem 0;
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+.nudge-body {
+  margin: 0 0 0.7rem;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--text-dim);
+}
+.nudge-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.nudge-actions .btn-small {
+  min-height: 32px; /* cible tactile ≥ 24px (loi 4) */
+}

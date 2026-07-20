@@ -12,6 +12,19 @@ commit.
 
 ## [Non publié]
 
+## [1.76.0] — 2026-07-20
+
+### Un co-MJ qui souffle la bonne fonction au bon moment
+
+- **Astuces contextuelles.** ShadowHerds commence à vous souffler, une seule fois
+  et au moment où ça sert, une fonction déjà présente qu'on ne trouve pas toujours
+  — sans jamais décider à votre place. Première astuce : au lancement d'une scène,
+  une bulle discrète propose d'**ouvrir l'écran joueurs** (le second écran en
+  lecture seule à poser côté table). Elle n'apparaît qu'une fois, ne bloque rien,
+  et se ferme d'un geste.
+- **Réglable.** Paramètres › Général › « Assistant (co-MJ) » coupe toutes les
+  astuces d'un coup (elles sont activées par défaut).
+
 ## [1.75.0] — 2026-07-19
 
 ### Un plan tactique du lieu, construit et jouable

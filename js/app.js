@@ -9,6 +9,7 @@ import { ContextSelector } from "./widgets/journal/contextselector.js";
 import { DossierBar } from "./widgets/journal/dossierbar.js";
 import { Dossiers } from "./widgets/journal/dossiers.js";
 import { Encounter } from "./controllers/encounter.js";
+import { Nudge } from "./widgets/tour/nudge.js";
 import { Storage } from "./core/storage.js";
 
 export const App = {
@@ -16,7 +17,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.75.0",
+  VERSION: "1.76.0",
 
   edition: "none",
   editionModule: null,
@@ -88,6 +89,19 @@ export const App = {
       if (next === this.scene) return;
       this.scene = next;
       this._save();
+      // VIS-1 (co-MJ) : une scène devient vivante → propose l'écran joueurs,
+      // une seule fois. `enterScene` rouvre d'abord le budget « 1 nudge neuf /
+      // scène » (throttle). Le CTA FAIT l'action (openSpectator), il ne
+      // désigne pas le bouton de Paramètres, hors écran ici.
+      if (next) {
+        Nudge.enterScene();
+        Nudge.offer("open-spectator", {
+          anchor: "nav-combat",
+          title: "Un écran pour vos joueurs ?",
+          body: "Une scène tourne. Vous pouvez ouvrir un second écran en lecture seule, à poser côté table : initiative et moniteurs, rien de secret.",
+          cta: { label: "Ouvrir l'écran joueurs", run: () => Settings.openSpectator() },
+        });
+      }
     },
 
     /** Fil d'Ariane : chaîne d'échelles de la racine au dossier en focus,
@@ -357,6 +371,9 @@ export const App = {
     // Écran spectateur (#59) : kiosque lecture seule sur un 2e onglet/appareil.
     // La visite d'orientation NAVIGUE (1er pas panel:"shadows") et écraserait
     // le panneau + le hash — on saute tout l'onboarding MJ dans ce mode.
+    // VIS-1 : maître on/off du co-MJ (réglage « Astuces du co-MJ »), coupé dans
+    // le kiosque spectateur (aucun chrome MJ à commenter).
+    Nudge.init({ enabled: hashPanel !== "spectateur" && Settings.getCoachTips() });
     if (hashPanel !== "spectateur") {
       if (Storage.getGlobal("tour_seen", false)) {
         Onboarding.maybeShow();

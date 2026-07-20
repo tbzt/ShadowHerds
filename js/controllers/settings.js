@@ -8,6 +8,7 @@ import { Dialog } from "../widgets/kit/dialog.js";
 import { DicePanel } from "../widgets/dice/dicepanel.js";
 import { DiceRoller } from "../widgets/dice/diceroller.js";
 import { Gen } from "./generator.js";
+import { Nudge } from "../widgets/tour/nudge.js";
 import { Shadows } from "./shadows.js";
 import { Storage } from "../core/storage.js";
 import { Sync } from "./sync.js";
@@ -68,6 +69,19 @@ export const Settings = {
           ? "Edge avant le jet : pastille activée."
           : "Edge avant le jet désactivé.",
     );
+  },
+
+  /* ---- Astuces du co-MJ (VIS-1) : maître on/off du contextuel, global hors
+     édition. Défaut ON. Le « vu une fois » par nudge couvre l'essentiel ;
+     cette case coupe toute la catégorie d'un coup (soupape). ---- */
+  _TIPS_KEY: "coachTips",
+  getCoachTips() {
+    return Storage.getGlobal(this._TIPS_KEY, true);
+  },
+  setCoachTips(on) {
+    Storage.setGlobal(this._TIPS_KEY, !!on);
+    Nudge.setEnabled(!!on);
+    toast(on ? "Astuces du co-MJ activées." : "Astuces du co-MJ désactivées.");
   },
 
   /* ---- La section « Affichage des cartes » (radio layout + cases
@@ -282,7 +296,19 @@ export const Settings = {
   _catGeneral() {
     const dp = this.getDicePrefs();
     const pg = this.getPortraitSettings();
+    const tips = this.getCoachTips();
     return `<div class="settings-section">
+        <h3>Assistant (co-MJ)</h3>
+        <p>ShadowHerds vous souffle, une fois et au bon moment, une fonction déjà présente qui sert l'instant — sans jamais décider à votre place.</p>
+        <div class="display-prefs">
+          <div class="display-pref-row">
+            <label for="coach_tips">Astuces contextuelles</label>
+            <input type="checkbox" id="coach_tips" ${tips ? "checked" : ""}
+              data-action="set-coach-tips">
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
         <h3>Lanceur de dés</h3>
         <p>Le lancer rapide affiche le résultat en bandeau discret, sans l'animation plein écran. Tous les jets restent consultables dans le journal des jets.</p>
         <div class="display-prefs">
@@ -449,7 +475,9 @@ export const Settings = {
     zone.addEventListener("change", (e) => {
       const el = e.target.closest("[data-action]");
       if (!el) return;
-      if (el.dataset.action === "set-dice-quick-roll")
+      if (el.dataset.action === "set-coach-tips")
+        this.setCoachTips(el.checked);
+      else if (el.dataset.action === "set-dice-quick-roll")
         this.setDiceQuickRoll(el.checked);
       else if (el.dataset.action === "set-dice-default-count")
         this.setDiceDefaultCount(el.value);

@@ -418,6 +418,11 @@ export const TourSteps = {
       title: "Un plan de lieu, en image",
       body: "Si les images IA sont activées (Réglages), un topos dont le lieu s'y prête porte un bouton « 🗺 Plan du lieu » qui génère un plan/blueprint du décor via Pollinations et le garde sur le topos — une vignette le réaffiche ensuite en grand. Portraits et plans partagent désormais le même réglage et la même file d'attente.",
     },
+    {
+      id: "wn-comj-nudges", anchor: "nav-settings", tours: ["whatsnew"], since: "1.76.0", fallback: "center",
+      title: "Un co-MJ qui souffle au bon moment",
+      body: "ShadowHerds commence à proposer, une seule fois et quand ça sert, une fonction déjà présente — sans décider à votre place. Première astuce : au lancement d'une scène, une bulle propose d'ouvrir l'écran joueurs ; à couper d'un coup dans Paramètres › Général.",
+    },
   ],
 };
 
