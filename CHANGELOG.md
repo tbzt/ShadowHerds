@@ -12,6 +12,24 @@ commit.
 
 ## [Non publié]
 
+## [1.86.0] — 2026-07-21
+
+### Ajouté
+
+- **Les écrans que le meneur projette prennent l'identité visuelle de leur
+  édition.** L'écran spectateur, le plan de lieu et le poste « Jouer » — les
+  surfaces que les joueurs regardent, pas seulement le meneur — deviennent
+  *iconiques* au lieu d'être seulement lisibles. Sur l'**écran spectateur**,
+  chaque combattant s'inscrit dans le coin coupé signature de l'édition (net en
+  SR6), sur un fond à fines lignes de balayage teinté du livre, et son moniteur
+  est agrandi à l'échelle du vidéoprojecteur — sa **forme** restant celle du
+  livre (la jauge continue de SR5/SR6, les paliers de gravité d'Anarchy 2). Le
+  **plan de lieu** dessine sa grille tactique et sa salle-objectif à l'encre de
+  l'édition (magenta SR6, rouge SR5, or Anarchy 2, bleu Anarchy 1) au lieu d'un
+  cyan unique. Et le poste « Jouer » file ses moments *Avant / Pendant / Après*
+  d'un discret repère à l'accent du livre. Rien de neuf à régler : c'est la même
+  vérité, habillée pour la table.
+
 ## [1.85.0] — 2026-07-21
 
 ### Ajouté
