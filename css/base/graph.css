@@ -47,6 +47,12 @@
 .graph-node.dragging {
   cursor: grabbing;
 }
+/* Le nœud saisi a un poids : ombre portée + halo d'accent (le scale est posé
+   par le moteur dans le transform SVG). B2 « feel ». */
+.graph-node.dragging .graph-node-disc {
+  stroke-width: 3;
+  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 5px var(--accent, #35e0e6));
+}
 .graph-node:focus-visible {
   outline: none;
 }
@@ -56,7 +62,7 @@
 }
 .graph-node-disc {
   stroke-width: 1.6;
-  transition: stroke-width 120ms ease;
+  transition: stroke-width 120ms ease, filter 140ms ease;
 }
 .graph-node:hover .graph-node-disc {
   stroke-width: 2.6;

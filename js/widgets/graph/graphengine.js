@@ -179,7 +179,12 @@ export const GraphEngine = {
       e._line.setAttribute("x1", a.x); e._line.setAttribute("y1", a.y);
       e._line.setAttribute("x2", b.x); e._line.setAttribute("y2", b.y);
     }
-    for (const n of s.N) n._g.setAttribute("transform", `translate(${n.x} ${n.y})`);
+    for (const n of s.N) {
+      // Nœud saisi « soulevé » : léger agrandissement autour de son centre
+      // (les enfants sont dessinés à l'origine locale) — il a un poids (B2).
+      const lift = s.drag && s.drag.n === n ? " scale(1.14)" : "";
+      n._g.setAttribute("transform", `translate(${n.x} ${n.y})${lift}`);
+    }
   },
 
   _loop(s) {
@@ -210,26 +215,43 @@ export const GraphEngine = {
       if (!g) return;
       const n = s.N[s.idx.get(g.dataset.nodeId)];
       if (!n) return;
-      s.drag = { n, moved: false, x0: ev.clientX, y0: ev.clientY };
+      s.drag = { n, moved: false, x0: ev.clientX, y0: ev.clientY, px: null, py: null, vx: 0, vy: 0 };
       n.pinned = true;
       g.setPointerCapture?.(ev.pointerId);
       g.classList.add("dragging");
+      g.parentNode.appendChild(g); // au premier plan (z-order = ordre DOM)
       this._reheat(s);
     });
     s.svg.addEventListener("pointermove", (ev) => {
       if (!s.drag) return;
       if (Math.hypot(ev.clientX - s.drag.x0, ev.clientY - s.drag.y0) > 4) s.drag.moved = true;
       const p = toSvg(ev);
+      // Vitesse du glisser, lissée — servira de momentum au lâcher.
+      if (s.drag.px != null) {
+        s.drag.vx = 0.55 * s.drag.vx + 0.45 * (p.x - s.drag.px);
+        s.drag.vy = 0.55 * s.drag.vy + 0.45 * (p.y - s.drag.py);
+      }
+      s.drag.px = p.x; s.drag.py = p.y;
       s.drag.n.x = p.x; s.drag.n.y = p.y;
       this._reheat(s);
     });
     const end = (ev) => {
       if (!s.drag) return;
-      const { n, moved } = s.drag;
+      const { n, moved, vx, vy } = s.drag;
       n.pinned = false;
       n._g.classList.remove("dragging");
       s.drag = null;
-      if (!moved && typeof s.onNodeTap === "function") s.onNodeTap(n.id);
+      if (!moved) {
+        n.vx = 0; n.vy = 0;
+        if (typeof s.onNodeTap === "function") s.onNodeTap(n.id);
+      } else {
+        // Momentum : le nœud garde l'élan du glisser (borné) puis décélère par
+        // frottement et se recale via les ressorts — glisse, pas de snap sec.
+        const cap = Math.sqrt((s.W * s.H) / s.N.length) * 0.5;
+        const sp = Math.hypot(vx, vy);
+        n.vx = sp > cap ? (vx / sp) * cap : vx;
+        n.vy = sp > cap ? (vy / sp) * cap : vy;
+      }
       this._reheat(s);
     };
     s.svg.addEventListener("pointerup", end);
