@@ -233,15 +233,11 @@ export const FoundryImport = {
         });
         ContactsBook.data.all.push(contact);
       }
-      if (!Array.isArray(pnj.contactLinks)) pnj.contactLinks = [];
-      if (pnj.contactLinks.some((l) => l.contactId === contact.id)) continue;
-      pnj.contactLinks.push({ contactId: contact.id, relation: c.role || "", loyalty: c.loyalty || null });
-      n++;
+      // L'arête PJ→contact vit dans RelationsStore (VIS-15 B0), qui persiste
+      // lui-même ; linkContact renvoie false si le lien existe déjà.
+      if (RelationsStore.linkContact(pnj.id, contact.id, c.role || "", c.loyalty || null)) n++;
     }
-    if (n) {
-      ContactsBook.save();
-      Characters.save();
-    }
+    if (n) ContactsBook.save();
     return n;
   },
 

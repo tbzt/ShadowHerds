@@ -161,7 +161,7 @@ export const Storage = {
       ajoutée à `_MIGRATIONS`. Publique (contrairement à `_MIGRATIONS`) : les
       paquets exportés (`Backup`) la tamponnent pour savoir, à l'import, s'ils
       ont besoin d'être migrés. Voir CONTRIBUTING.md § Versionner les schémas. */
-  SCHEMA_VERSION: 10,
+  SCHEMA_VERSION: 11,
 
   /** Chaîne de migrations de schéma, ordonnée par version croissante. Chaque
       `up()` mute le `localStorage` brut (pas de dépendance à `_edition`) et
@@ -618,6 +618,66 @@ export const Storage = {
           if (treeChanged) localStorage.setItem(dkey, JSON.stringify(tree));
         }
         if (migrated) Debug.warn("storage", "migration v10 (groupsByDossierId)", { migrated });
+      },
+    },
+    {
+      v: 11,
+      /** VIS-15 (B0) — l'arête PJ→contact (`pnj.contactLinks`, portée par
+          l'entité dans `characters_all`/`shadows_all`/`gen_pool`) migre vers
+          le registre d'arêtes unique `entity_relations` (par édition), en
+          records `type:"contact"` (`from`=PJ, `to`=contact, `weight`=loyauté,
+          `label`=relation). Après conversion, `contactLinks` est retiré de
+          l'entité — plus deux foyers d'arêtes. Idempotent : dé-doublonne sur
+          (from,to,type) contre les arêtes déjà présentes, et la suppression de
+          `contactLinks` rend un second passage inerte. Mute le JSON brut (aucune
+          dépendance à RelationsStore/_edition, cf. commentaire de _MIGRATIONS). */
+      up() {
+        const P = "sr_pnj_v2_";
+        const suffixes = ["_shadows_all", "_characters_all", "_gen_pool"];
+        const uid = () => "e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        const editions = new Set();
+        for (const suf of suffixes)
+          for (const k of Object.keys(localStorage))
+            if (k.startsWith(P) && k.endsWith(suf))
+              editions.add(k.slice(P.length, k.length - suf.length));
+        let migrated = 0;
+        for (const ed of editions) {
+          const rkey = P + ed + "_entity_relations";
+          let edges;
+          try { edges = JSON.parse(localStorage.getItem(rkey) || "[]"); } catch { edges = []; }
+          if (!Array.isArray(edges)) edges = [];
+          const seen = new Set(
+            edges.filter((e) => e && e.type === "contact").map((e) => e.from + " " + e.to),
+          );
+          let storeChanged = false;
+          for (const suf of suffixes) {
+            const kkey = P + ed + suf;
+            const raw = localStorage.getItem(kkey);
+            if (raw === null) continue;
+            let list;
+            try { list = JSON.parse(raw); } catch { continue; }
+            if (!Array.isArray(list)) continue;
+            let listChanged = false;
+            for (const pnj of list) {
+              if (!pnj || !Array.isArray(pnj.contactLinks)) continue;
+              for (const link of pnj.contactLinks) {
+                if (!link || !link.contactId) continue;
+                const sig = pnj.id + " " + link.contactId;
+                if (seen.has(sig)) continue;
+                edges.push({
+                  id: uid(), from: pnj.id, to: link.contactId, type: "contact",
+                  weight: link.loyalty ?? null, label: link.relation || "",
+                });
+                seen.add(sig); storeChanged = true; migrated++;
+              }
+              delete pnj.contactLinks;
+              listChanged = true;
+            }
+            if (listChanged) localStorage.setItem(kkey, JSON.stringify(list));
+          }
+          if (storeChanged) localStorage.setItem(rkey, JSON.stringify(edges));
+        }
+        if (migrated) Debug.warn("storage", "migration v11 (contactLinksToEdges)", { migrated });
       },
     },
   ],

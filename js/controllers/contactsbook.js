@@ -56,8 +56,8 @@ const _contactsCollection = Collection.create(
       el.classList.add("contact-card");
       return el;
     },
-    // Rattachement en masse à un PJ (BulkBar) : les liens vivent côté PJ
-    // (Characters.contactLinks), le contact n'est que la cible du lien.
+    // Rattachement en masse à un PJ (BulkBar) : les liens vivent dans
+    // RelationsStore (arête PJ→contact), le contact n'est que la cible du lien.
     pjLinkable: true,
   },
 );
@@ -136,7 +136,7 @@ export const ContactsBook = Object.assign(_contactsCollection, {
     },
 
     /* ---- Rattachement en masse à un PJ (BulkBar → _cfg.pjLinkable) ----
-       Les liens sont stockés côté PJ (Characters.contactLinks) ; ces deux
+       Les liens vivent dans RelationsStore (arête PJ→contact) ; ces deux
        méthodes sont l'API que BulkBar lit sur la collection active, sans rien
        connaître du domaine contact/PJ. */
     pjLinkOptions() {

@@ -115,6 +115,10 @@ export const Collection = {
           );
         }
         this.save();
+        // Intégrité : les arêtes incidentes (liens contact…) partent avec
+        // l'entité, mais sont capturées pour être rendues à l'annulation.
+        const purgedEdges =
+          typeof RelationsStore !== "undefined" ? RelationsStore.purgeEntities(doomed) : [];
         this.render();
         if (!entity) return;
 
@@ -141,6 +145,7 @@ export const Collection = {
             }
           }
           this.save();
+          if (typeof RelationsStore !== "undefined") RelationsStore.addEdges(purgedEdges);
           this.render();
         };
         toastUndo(labels.removed(entity), restore);
@@ -169,6 +174,8 @@ export const Collection = {
           this.data.groups[g] = this.data.groups[g].filter((i) => !doomed.has(i));
         }
         this.save();
+        const purgedEdges =
+          typeof RelationsStore !== "undefined" ? RelationsStore.purgeEntities(doomed) : [];
         this.render();
 
         const restore = () => {
@@ -185,6 +192,7 @@ export const Collection = {
             }
           }
           this.save();
+          if (typeof RelationsStore !== "undefined") RelationsStore.addEdges(purgedEdges);
           this.render();
         };
         const n = snapshot.length;

@@ -39,6 +39,7 @@ export const Backup = {
     "contacts_groups",
     "servers_all",
     "servers_groups",
+    "entity_relations", // VIS-15 B0 : registre d'arêtes (liens contact…) par édition
     "dossiers", // arbre de dossiers (structure {id,name,parentId}) — CH sync
     "encounter_by_dossier", // R1 (Ranger la run) : rencontres rangées par dossier
     "notebooks", // R2 (Ranger la run) : carnets de notes par dossier
@@ -259,7 +260,7 @@ export const Backup = {
     // TODO: reads internal structures {all, groups} of Shadows, ContactsBook, Servers
     // This tight coupling should be addressed in sprint 3 (linked entities roadmap)
     // PNJ, contacts, personnages, dossiers, runs : fusion par id (chaque élément a un id)
-    for (const listKey of ["shadows_all", "contacts_all", "servers_all", "characters_all", "dossiers", "gen_runs"]) {
+    for (const listKey of ["shadows_all", "contacts_all", "servers_all", "characters_all", "dossiers", "gen_runs", "entity_relations"]) {
       if (!Array.isArray(incoming[listKey])) continue;
       const current = this._readRaw(edition, listKey, []);
       const byId = new Set(current.map((x) => x && x.id));
@@ -364,6 +365,8 @@ export const Backup = {
       Servers.load();
       if (Servers.render) Servers.render();
     }
+    // Registre d'arêtes (liens contact…) : recharger la vérité fusionnée.
+    if (typeof RelationsStore !== "undefined" && RelationsStore.load) RelationsStore.load();
     // Dossiers (arbre de dossiers) : recharger la structure + rafraîchir la barre.
     if (typeof Dossiers !== "undefined" && Dossiers.load) Dossiers.load();
     if (typeof DossierBar !== "undefined" && DossierBar.refresh) DossierBar.refresh();
