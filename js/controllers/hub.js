@@ -263,12 +263,18 @@ export const Hub = {
     } else {
       return;
     }
+    // VIS-15 B4 — « ◈ Liens » : le graphe des relations scopé à cette portée
+    // (campagne/run), dès qu'elle a convoqué au moins une entité. Une lentille
+    // de plus sur la même vérité (convenedIds), jamais un store.
+    const liensBtn = DossierBar.convenedIds(node.id).length
+      ? `<button class="btn-secondary btn-small" data-hub data-action="scope-relations-graph" data-dossier="${node.id}" title="Voir les liens de « ${CardRenderer._esc(node.name)} » en graphe">◈ Liens</button>`
+      : "";
     box.insertAdjacentHTML(
       "afterbegin",
       `<div class="hub-section hub-context-banner">
         <div class="hub-section-head">
           <span class="hub-section-title">${title} — ${CardRenderer._esc(node.name)}</span>
-          ${right}
+          ${liensBtn}${right}
         </div>
       </div>`,
     );
@@ -364,6 +370,14 @@ export const Hub = {
       else if (el.dataset.action === "dismiss-save-reminder") {
         this._saveReminderDismissed = true;
         this._renderSaveReminder();
+      } else if (el.dataset.action === "scope-relations-graph") {
+        // VIS-15 B4 — le graphe scopé à la portée (campagne/run) sélectionnée.
+        const id = el.dataset.dossier;
+        const node = Dossiers.get(id);
+        GraphView.open({
+          memberIds: DossierBar.convenedIds(id),
+          title: node ? `Liens — ${node.name}` : "Liens",
+        });
       }
     });
 

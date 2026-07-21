@@ -125,6 +125,35 @@ export const DossierBar = {
     return this._idsForKeys(col, keys);
   },
 
+  // Clé de collection → type de nœud (PnjLookup.locate) : le pont pour filtrer
+  // `convenedIds` par type sans coupler l'appelant aux instances de collection.
+  _COL_TYPE: { shadows: "pnj", characters: "pj", contacts: "contact", servers: "server" },
+
+  /** L'accesseur UNIQUE « entités convoquées » : tous les ids rattachés au
+      sous-arbre d'un dossier, TOUTES collections confondues (ou filtrées par
+      `types`), dédupliqués. `includeAncestors` remonte la lignée — une entité
+      rangée au niveau campagne compte pour un run dessous (ce que `debrief`
+      faisait à la main). Dérivé de la vérité d'appartenance (Dossiers + groups) ;
+      aucun store neuf. Consommé par le graphe scopé campagne (VIS-15 B4), le
+      débrief, et à terme VIS-12. */
+  convenedIds(dossierId, { types = null, includeAncestors = false } = {}) {
+    const cols = this._cols().filter((c) => !types || types.includes(this._COL_TYPE[c.key]));
+    const ids = new Set();
+    const gather = (nodeId) => {
+      for (const col of cols) for (const id of this.memberIds(col, nodeId)) ids.add(id);
+    };
+    gather(dossierId);
+    if (includeAncestors) {
+      let node = Dossiers.get(dossierId);
+      node = node && node.parentId ? Dossiers.get(node.parentId) : null;
+      for (let i = 0; node && i < 50; i++) {
+        gather(node.id);
+        node = node.parentId ? Dossiers.get(node.parentId) : null;
+      }
+    }
+    return [...ids];
+  },
+
   _countFor(keys) {
     return this._cols().reduce(
       (n, col) => n + this._idsForKeys(col, keys).length,

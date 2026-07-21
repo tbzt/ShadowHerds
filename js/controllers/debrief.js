@@ -65,17 +65,11 @@ export const Debrief = {
   },
 
   /** Ids des PJ de l'équipe : membres `Characters` du run ET de ses dossiers
-      ancêtres (campagne parente). `DossierBar.memberIds` ne descend qu'aux
-      sous-groupes → on remonte via `parentId`. Set dédupliqué ; garde à 50
-      purement défensive (`Dossiers.move` interdit déjà les cycles). */
+      ancêtres (campagne parente). Délégué à l'accesseur unique `convenedIds`
+      (types PJ, remontée de lignée) — le rembobinage `parentId` fait main vit
+      désormais en un seul endroit (VIS-15 B4). */
   _teamIds(runId) {
-    const ids = new Set();
-    let node = Dossiers.get(runId);
-    for (let i = 0; node && i < 50; i++) {
-      for (const id of DossierBar.memberIds(Characters, node.id)) ids.add(id);
-      node = node.parentId ? Dossiers.get(node.parentId) : null;
-    }
-    return [...ids];
+    return DossierBar.convenedIds(runId, { types: ["pj"], includeAncestors: true });
   },
 
   /** Fiches PJ de l'équipe, dans l'ordre stable de la collection. */

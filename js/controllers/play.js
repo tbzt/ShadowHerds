@@ -53,6 +53,13 @@ export const Play = {
           DossierBar.select(id);
           App.showPanel("shadows");
           break;
+        case "play-relations-graph":
+          // VIS-15 B4 — le graphe scopé au run (convenedIds), même lentille que le Hub.
+          GraphView.open({
+            memberIds: DossierBar.convenedIds(id),
+            title: `Liens — ${(Dossiers.get(id) || {}).name || "run"}`,
+          });
+          break;
         case "play-notes":
           // Notes de CE run : poser le contexte sur le run (App.context.dossier
           // = carnet courant) puis DÉLÉGUER au Notepad — le poste de commandement
@@ -580,8 +587,12 @@ export const Play = {
       }
     }
     if (!chips) return "";
+    // VIS-15 B4 — « ◈ Liens » : le graphe des relations scopé à ce run (son
+    // casting + les voisins en halo). Même lentille que le Hub, portée du run.
     return `<div class="play-cast">
-      <div class="play-cast-label">Casting préparé</div>
+      <div class="play-cast-label">Casting préparé
+        <button class="btn-secondary btn-small" data-action="play-relations-graph" data-dossier="${runId}" title="Voir les liens du casting en graphe">◈ Liens</button>
+      </div>
       <div class="play-cast-chips">${chips}</div>
     </div>`;
   },
