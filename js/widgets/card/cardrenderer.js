@@ -469,9 +469,14 @@ export const CardRenderer = {
         ${pickItems}
       </div>
     </span>`;
+    // VIS-15 B1 : ouvrir la lentille graphe centrée sur ce PJ (lui + ses
+    // contacts liés), visible dès qu'il a au moins un lien.
+    const graphBtn = links.length
+      ? `<button type="button" class="tag graph-open-btn" data-action="open-relations-graph" data-id="${this._esc(pnj.id)}" title="Voir les liens en graphe">◈ Liens</button>`
+      : "";
     return `<div class="card-section">
       <div class="card-section-label">Contacts</div>
-      <div class="card-section-content">${items}${addControl}</div>
+      <div class="card-section-content">${items}${addControl}${graphBtn}</div>
     </div>`;
   },
 
@@ -2488,6 +2493,14 @@ export const CardRenderer = {
         case "contact-create-open":
           ContactCreate.open(id);
           break;
+        case "open-relations-graph": {
+          // VIS-15 B1 : la lentille graphe, centrée sur cette entité + ses
+          // voisines directes. Un tap de nœud y ouvre CardPeek (jamais d'éjection).
+          const ent = PnjLookup.find(id);
+          if (typeof GraphView !== "undefined")
+            GraphView.open({ focusId: id, title: ent ? `Liens — ${ent.name}` : "Liens" });
+          break;
+        }
         // ---- CO-b (carte Contact, convergence) : actions de la carte
         // contact elle-même, fusionnées depuis l'ex-`ContactRenderer.
         // bindDelegation` (préfixe `contact-` pour ne pas collider avec les

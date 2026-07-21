@@ -1,0 +1,87 @@
+/* ============================================================
+   GRAPH — la lentille « relations » (VIS-15 B1).
+   Overlay réutilisant .modal-overlay/.modal (thème par édition hérité).
+   Stylage par tokens ; les couleurs d'accent/type sont posées inline par
+   le moteur (GraphEngine), ici on tient la MISE EN PAGE et les états.
+   ============================================================ */
+
+.graph-modal {
+  width: min(920px, 94vw);
+  max-width: 94vw;
+}
+
+.graph-body {
+  padding: 0;
+}
+
+/* Le canvas : une surface dimensionnée AVANT le montage (le moteur lit
+   clientWidth/Height). Hauteur responsive, jamais de scroll horizontal. */
+.graph-canvas {
+  width: 100%;
+  height: min(66vh, 560px);
+  min-height: 300px;
+  overflow: hidden;
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.03), transparent 70%),
+    var(--surface-1, #0e1620);
+}
+
+.graph-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none; /* le glisser pilote les nœuds, pas le scroll */
+}
+
+/* Arêtes : discrètes, l'accent est posé inline par le moteur. */
+.graph-edge {
+  stroke-width: 1.2;
+  stroke-opacity: 0.45;
+}
+
+/* Nœuds : disque + glyphe monochrome + label. Cible tactile ≥ 32px. */
+.graph-node {
+  cursor: grab;
+}
+.graph-node.dragging {
+  cursor: grabbing;
+}
+.graph-node:focus-visible {
+  outline: none;
+}
+.graph-node:focus-visible .graph-node-disc {
+  stroke-width: 3;
+  filter: drop-shadow(0 0 4px var(--accent, #35e0e6));
+}
+.graph-node-disc {
+  stroke-width: 1.6;
+  transition: stroke-width 120ms ease;
+}
+.graph-node:hover .graph-node-disc {
+  stroke-width: 2.6;
+}
+.graph-node-glyph {
+  font-size: 15px;
+  pointer-events: none;
+  user-select: none;
+}
+.graph-node-label {
+  font-size: 10px;
+  fill: var(--text-dim, #9fb0c0);
+  letter-spacing: 0.3px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.graph-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--text-dim, #9fb0c0);
+  font-size: 0.85rem;
+}
+
+/* L'affordance d'ouverture sur la fiche (réutilise .tag). */
+.graph-open-btn {
+  cursor: pointer;
+}
