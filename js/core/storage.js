@@ -647,7 +647,7 @@ export const Storage = {
           try { edges = JSON.parse(localStorage.getItem(rkey) || "[]"); } catch { edges = []; }
           if (!Array.isArray(edges)) edges = [];
           const seen = new Set(
-            edges.filter((e) => e && e.type === "contact").map((e) => e.from + " " + e.to),
+            edges.filter((e) => e && e.type === "contact").map((e) => e.from + "\u0000" + e.to),
           );
           let storeChanged = false;
           for (const suf of suffixes) {
@@ -662,7 +662,7 @@ export const Storage = {
               if (!pnj || !Array.isArray(pnj.contactLinks)) continue;
               for (const link of pnj.contactLinks) {
                 if (!link || !link.contactId) continue;
-                const sig = pnj.id + " " + link.contactId;
+                const sig = pnj.id + "\u0000" + link.contactId;
                 if (seen.has(sig)) continue;
                 edges.push({
                   id: uid(), from: pnj.id, to: link.contactId, type: "contact",
