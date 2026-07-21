@@ -12,6 +12,28 @@ commit.
 
 ## [Non publié]
 
+## [1.94.0] — 2026-07-22
+
+### Ajouté
+
+- **La fiche en paysage.** Sur grand écran, la carte de personnage s'ouvre en
+  **deux colonnes** selon un axe unique : à gauche le **système** (ce qui se
+  lance ou se calcule — stats, moniteur, initiative, armes, sorts, compétences,
+  équipement), à droite la **fiction** (incarnation, identités, contacts,
+  mentions, dossiers). La disposition encode un moment d'usage, pas une
+  esthétique. Dualité **matérielle** tenue en laisse : le système garde sa voix
+  froide (mono, majuscules espacées), la fiction prend une voix chaude (corps de
+  texte, casse-phrase) ; l'encre suit déjà l'édition. Sur téléphone, retombée en
+  **une colonne**, l'incarnation en tête (elle se regarde avant le combat).
+- **Une grille pour trier.** En mode Annuaire, les fiches compactes ne s'empilent
+  plus en une seule colonne : elles s'étalent en **grille responsive** (plusieurs
+  de front sur large, une seule en étroit) pour comparer un escadron d'un coup
+  d'œil — le moment « prépa à froid ».
+- **Le nœud du graphe est la fiche repliée.** Dans le graphe des relations, chaque
+  nœud tient son identité (nom, type) du **même contrat** que la carte à son cran
+  le plus replié — une entité, une définition, pas deux rendus. Un clic déplie le
+  nœud en aperçu de fiche.
+
 ## [1.93.0] — 2026-07-22
 
 ### Ajouté

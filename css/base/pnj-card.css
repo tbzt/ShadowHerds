@@ -309,6 +309,54 @@
 }
 
 /* ============================================================
+   CARTE PAYSAGE (densité 2) — carte modulaire L1.
+   La disposition encode un MOMENT D'USAGE, pas une esthétique : deux
+   colonnes selon l'axe SYSTÈME (« ça se lance / se calcule ») ↔ FICTION
+   (« ça se joue / se raconte »). Desktop : côte à côte, système à gauche
+   (point d'entrée le plus fréquent en jeu, l'œil entre par la gauche).
+   Mobile : une seule topographie linéaire, fiction en TÊTE — l'incarnation
+   se regarde avant le combat (invariant I2), système dessous.
+   Dualité MATÉRIELLE tenue en laisse : le système garde sa voix froide
+   (mono, majuscules espacées) ; la fiction prend une voix chaude (corps de
+   texte, casse-phrase). L'encre par livre vient déjà de --accent/--border
+   (theme-*.css) — aucun hex ici.
+   ============================================================ */
+.pnj-card-body--paysage {
+  padding: 0;
+}
+.card-col {
+  padding: var(--sp-3) var(--sp-4);
+  min-width: 0;
+}
+/* La fiction prend la voix : même information, autre matériau. */
+.card-col--fiction .card-section-label {
+  font-family: var(--font-body);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+@media (min-width: 641px) {
+  .pnj-card-body--paysage {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: start;
+  }
+  /* Le filet de couture entre les deux matériaux. */
+  .card-col--fiction {
+    border-left: 1px solid var(--border);
+  }
+}
+@media (max-width: 640px) {
+  .pnj-card-body--paysage {
+    display: flex;
+    flex-direction: column;
+  }
+  .card-col--fiction {
+    order: -1;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+/* ============================================================
    ZONES REPLIABLES (CP1) — Combat / Capacités / Incarnation / Détails.
    Coquille générique : bouton (libellé + résumé + chevron) + corps animé.
    ============================================================ */
@@ -1336,8 +1384,18 @@
    déjà utilisé dans dice-overlay.css) : pas de plomberie côté Hub
    pour cibler spécifiquement la section Ombres.
    ============================================================ */
+/* Densité 1 (tuile) = grille de TRI — carte modulaire L2. L'annuaire dense
+   sert le moment « prépa à froid » : comparer plusieurs PNJ EN PARALLÈLE,
+   garder/jeter. On abandonne le mono-colonne (`column-count:1`) pour une
+   grille responsive : plusieurs tuiles de front sur large, retombée propre
+   en une colonne sous le seuil (minmax → 1fr). Isolé à l'annuaire via
+   `:has(.roster-row)` : les cartes pleines gardent leur disposition. */
 .cards-zone:has(.roster-row) {
-  column-count: 1;
+  column-count: unset;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 2px var(--sp-3);
+  align-content: start;
 }
 .pnj-card.roster-row {
   display: flex;
@@ -1347,7 +1405,6 @@
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 4px;
-  margin-bottom: 2px;
 }
 .roster-row-name {
   display: flex;

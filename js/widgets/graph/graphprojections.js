@@ -17,6 +17,7 @@
    orphelines avec — la purge B0 les retire déjà, ce filtre est le
    garde-fou d'affichage. VIS-15 B1, cf. PLAN_MOTEUR_GRAPHE_UNIFIE.md.
    ============================================================ */
+import { CardZones } from "../../rules/cardzones.js";
 
 export const GraphProjections = {
   /** Voisins directs d'un ensemble d'ids (les bouts d'arête hors de l'ensemble). */
@@ -60,10 +61,10 @@ export const GraphProjections = {
     for (const id of included) {
       const loc = typeof PnjLookup !== "undefined" ? PnjLookup.locate(id) : null;
       if (loc)
-        nodes.push({
-          id, label: loc.name || "Sans nom", type: loc.type,
-          pcColor: loc.pcColor || null, inScope: core.has(id),
-        });
+        // Face-NŒUD = densité 0 du continuum carte : l'identité (id/nom/type)
+        // définie à un seul endroit (cardzones), pas ré-inlinée ici. `inScope`
+        // (B4, portée/halo) est une donnée de PROJECTION, ajoutée par-dessus.
+        nodes.push({ ...CardZones.density0({ ...loc, id }), inScope: core.has(id) });
     }
 
     // 4. Arêtes dont les deux bouts sont présents (orphelines écartées).

@@ -493,6 +493,11 @@ export const TourSteps = {
       title: "La Défense totale, motorisée",
       body: "Au tour d'un PJ, la console « Réagir » gagne un bouton ⛨ Défense totale (SR5/SR6) : d'un tap, le PNJ ajoute sa Volonté à sa réserve de défense pour le round, et le coût d'initiative est appliqué tout seul — −10 au score en SR5, sans coût en SR6. Au passage : le bouton ✸ Dégâts déplie de nouveau ses crans (il ne faisait plus rien), l'Encaissement ⛊ disparaît en Anarchy (qui n'a pas de jet d'encaissement), les blessures légère/grave/incapacitante reprennent les couleurs du moniteur, et la fiche d'un PNJ s'ouvre en aperçu feuilletable (⛶) plutôt que de se déplier vers le bas.",
     },
+    {
+      id: "wn-card-paysage", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.94.0", fallback: "center",
+      title: "La fiche en paysage",
+      body: "Sur grand écran, la fiche s'ouvre maintenant en deux colonnes : à gauche le SYSTÈME (ce qui se lance et se calcule — stats, moniteur, combat), à droite la FICTION (incarnation, contacts, mentions, dossiers). Chaque colonne a sa matière — le système reste net et mono, la fiction prend une voix plus douce. Sur téléphone tout retombe en une colonne, l'incarnation en tête. En mode Annuaire, les fiches compactes s'étalent en grille pour comparer plusieurs figurants d'un coup d'œil. Et dans le graphe des relations, chaque nœud est cette même fiche réduite à son identité — un clic la déplie en aperçu.",
+    },
   ],
 };
 

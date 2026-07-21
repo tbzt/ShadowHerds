@@ -11,6 +11,7 @@
 import { Actor } from "../../rules/actor.js";
 import { ActorEffects } from "../../rules/actoreffects.js";
 import { CardFooter } from "./cardfooter.js";
+import { CardZones } from "../../rules/cardzones.js";
 import { CyberdeckRenderer } from "./cyberdeckrenderer.js";
 import { Drugs } from "../../catalogs/drugs.js";
 import { Esoteric } from "../../rules/esoteric.js";
@@ -692,49 +693,32 @@ export const CardRenderer = {
       default:
         return '<div class="pnj-card-body">—</div>';
     }
-    // Incarnation promue tout en haut du corps (juste après l'ouverture
-    // de pnj-card-body, donc juste après le header) — la saveur se regarde
-    // avant le combat/les capacités, pas après (I2 : jamais déplacée ensuite,
-    // seulement pliée/dépliée). Les modules `placement:"top"` (Identités) la
-    // suivent immédiatement : « qui je prétends être » se lit juste après
-    // « qui je suis », par la même promotion — pas un second mécanisme.
-    const top = this._flavorSection(pnj, deps) + this._topModulesHtml(pnj, deps);
-    if (top) {
-      const openIdx = core.indexOf(">") + 1;
-      core = core.slice(0, openIdx) + top + core.slice(openIdx);
-    }
-    // Injecter traits raciaux + lore créature (habillage neutre, hors modules)
-    const extra = this._metaTraitsSection(pnj) + this._creatureLoreSection(pnj);
-    if (extra) {
-      const idx = core.lastIndexOf("</div>");
-      if (idx !== -1) {
-        core = core.slice(0, idx) + extra + core.slice(idx);
-      }
-    }
-    // Modificateurs situationnels d'objet (visibles + sourcés, non auto-appliqués).
-    const situ = this._situationalMods(pnj);
-    if (situ) {
-      const idx = core.lastIndexOf("</div>");
-      if (idx !== -1) core = core.slice(0, idx) + situ + core.slice(idx);
-    }
-    // Relations. Ces deux sections ne vivaient que dans `_bodyLight` : une
-    // fiche COMPLÈTE (chargen ou import Foundry) ne les a jamais montrées,
-    // alors que le lien existait bien en donnée et se voyait depuis l'autre
-    // bout (`_contactKnownBy`, côté contact). Ici plutôt que dans chaque
-    // module d'édition : les deux ne lisent que `contactLinks`/`Mentions`,
-    // donc un seul point d'ajout couvre les 4 éditions.
-    // « Contacts » est réservé aux PJ — son « ＋ » d'ajout rapide crée un
-    // lien `Characters.addContactLink`, et il s'affiche même sans contact.
-    // Les backlinks valent pour toute fiche (vides ⇒ chaîne vide).
-    const rel =
-      (pnj.isPC ? this._contactLinksSection(pnj) : "") +
-      this._backlinksSection(pnj) +
-      this._dossiersSection(pnj);
-    if (rel) {
-      const idx = core.lastIndexOf("</div>");
-      if (idx !== -1) core = core.slice(0, idx) + rel + core.slice(idx);
-    }
-    return core;
+    // Carte PAYSAGE (densité 2) pilotée par le registre `CardZones` (Lot 1
+    // « carte modulaire ») : deux colonnes selon l'axe SYSTÈME ↔ FICTION —
+    // « ça se lance/se calcule » à gauche, « ça se joue/se raconte » à droite.
+    // La disposition encode un moment d'usage, pas une esthétique. Le corps
+    // d'édition (stats/moniteur/combat) EST la tête de la colonne système ;
+    // les zones neutres se répartissent par leur `column`. Un seul renderer,
+    // une seule vérité d'ordre (le registre) — le mobile retombe en colonne
+    // (CSS), fiction en tête pour garder l'incarnation près du haut (I2).
+    const ctx = { r: this, deps, density: 2, edModule: App.getEditionModule(pnj.edition) };
+    // Le corps d'édition arrive enveloppé dans son propre `<div class=
+    // "pnj-card-body">` (identique aux 4 éditions, nu) : on l'ouvre pour
+    // reloger son contenu dans la colonne système (le body devient la grille).
+    const open = core.indexOf(">") + 1;
+    const close = core.lastIndexOf("</div>");
+    const coreInner = close > open ? core.slice(open, close) : core;
+    const systemHtml = coreInner + CardZones.column("system", pnj, ctx);
+    const fictionHtml = CardZones.column("fiction", pnj, ctx);
+    // Sans fiction (PNJ nu sans incarnation ni liens) : colonne unique, rendu
+    // identique à l'existant — aucune grille imposée à vide.
+    if (!fictionHtml) return `<div class="pnj-card-body">${systemHtml}</div>`;
+    return (
+      `<div class="pnj-card-body pnj-card-body--paysage">` +
+      `<div class="card-col card-col--system">${systemHtml}</div>` +
+      `<div class="card-col card-col--fiction">${fictionHtml}</div>` +
+      `</div>`
+    );
   },
 
   /** Blocs d'OFFENSE du combattant actif, pour la console « Agir » du tracker
