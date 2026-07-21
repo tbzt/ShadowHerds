@@ -91,3 +91,47 @@
 .graph-open-btn {
   cursor: pointer;
 }
+
+/* ---- Tissage (B2b) : créer un lien en tirant d'un nœud à l'autre ---- */
+.graph-weave-toggle {
+  margin-left: auto;
+  margin-right: 8px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  border: 1px solid var(--border, #2a3a49);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-dim, #9fb0c0);
+  cursor: pointer;
+}
+.graph-weave-toggle.active {
+  border-color: var(--accent, #35e0e6);
+  color: var(--accent, #35e0e6);
+  background: color-mix(in srgb, var(--accent, #35e0e6) 12%, transparent);
+}
+
+/* En mode tissage, le curseur invite à relier. */
+.graph-svg.weaving {
+  cursor: crosshair;
+}
+
+/* La ligne temporaire tirée depuis le nœud source. */
+.graph-weave-line {
+  stroke-width: 1.8;
+  stroke-dasharray: 5 4;
+  stroke-opacity: 0.8;
+  pointer-events: none;
+}
+
+/* Cible valide sous le doigt : accroche magnétique + pulsation « j'accepte ». */
+.graph-node.weave-target .graph-node-disc {
+  stroke-width: 3.2;
+  animation: graph-weave-pulse 0.7s ease-in-out infinite;
+}
+@keyframes graph-weave-pulse {
+  0%, 100% { filter: drop-shadow(0 0 2px var(--accent, #35e0e6)); }
+  50% { filter: drop-shadow(0 0 8px var(--accent, #35e0e6)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .graph-node.weave-target .graph-node-disc { animation: none; }
+}

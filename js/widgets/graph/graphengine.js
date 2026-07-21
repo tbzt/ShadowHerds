@@ -25,7 +25,7 @@ export const GraphEngine = {
 
   /** Monte un graphe dans `container`. `onNodeTap(id)` est appelé sur un
       tap net (clic sans glisser). Rappeler `mount` remonte proprement. */
-  mount(container, { nodes = [], edges = [], accent = "#35e0e6", onNodeTap = null } = {}) {
+  mount(container, { nodes = [], edges = [], accent = "#35e0e6", onNodeTap = null, onWeave = null } = {}) {
     this.destroy();
     const W = Math.max(320, container.clientWidth || 640);
     const H = Math.max(240, container.clientHeight || 460);
@@ -103,7 +103,17 @@ export const GraphEngine = {
       gNodes.appendChild(g);
     }
 
-    const state = { container, svg, W, H, N, E, idx, accent, onNodeTap, raf: 0, alpha: 1, drag: null };
+    // Ligne temporaire de tissage (au-dessus des nœuds, masquée au repos).
+    const weaveLine = document.createElementNS(NS, "line");
+    weaveLine.setAttribute("class", "graph-weave-line");
+    weaveLine.setAttribute("stroke", accent);
+    weaveLine.setAttribute("visibility", "hidden");
+    svg.appendChild(weaveLine);
+
+    const state = {
+      container, svg, W, H, N, E, idx, accent, onNodeTap, onWeave,
+      raf: 0, alpha: 1, drag: null, weave: false, weaving: null, weaveLine,
+    };
     this._state = state;
     container.appendChild(svg);
     this._wire(state);
@@ -202,7 +212,26 @@ export const GraphEngine = {
     this._loop(s);
   },
 
-  /* ---- Pointer : glisser un nœud, tap = clic net ---- */
+  /** Bascule le mode tissage (créer un lien en tirant). Off = glisser déplace. */
+  setWeave(on) {
+    const s = this._state;
+    if (!s) return;
+    s.weave = !!on;
+    s.svg.classList.toggle("weaving", s.weave);
+  },
+
+  /** Nœud le plus proche du point `p` dans le rayon d'accroche, hors `exclude`. */
+  _nodeNear(s, p, exclude) {
+    let best = null, bestD = 24; // rayon d'accroche magnétique (unités SVG ≈ px)
+    for (const n of s.N) {
+      if (n === exclude) continue;
+      const d = Math.hypot(n.x - p.x, n.y - p.y);
+      if (d < bestD) { bestD = d; best = n; }
+    }
+    return best;
+  },
+
+  /* ---- Pointer : glisser un nœud, tap = clic net, tisser un lien ---- */
   _wire(s) {
     const toSvg = (ev) => {
       const pt = s.svg.createSVGPoint();
@@ -215,6 +244,17 @@ export const GraphEngine = {
       if (!g) return;
       const n = s.N[s.idx.get(g.dataset.nodeId)];
       if (!n) return;
+      if (s.weave) {
+        // Tissage : tirer un lien depuis ce nœud (la source ne bouge pas).
+        // Visuel posé AVANT la capture (best-effort) pour ne pas dépendre d'elle.
+        s.weaving = { from: n, target: null };
+        const wl = s.weaveLine;
+        wl.setAttribute("x1", n.x); wl.setAttribute("y1", n.y);
+        wl.setAttribute("x2", n.x); wl.setAttribute("y2", n.y);
+        wl.setAttribute("visibility", "visible");
+        try { s.svg.setPointerCapture?.(ev.pointerId); } catch {}
+        return;
+      }
       s.drag = { n, moved: false, x0: ev.clientX, y0: ev.clientY, px: null, py: null, vx: 0, vy: 0 };
       n.pinned = true;
       g.setPointerCapture?.(ev.pointerId);
@@ -223,9 +263,25 @@ export const GraphEngine = {
       this._reheat(s);
     });
     s.svg.addEventListener("pointermove", (ev) => {
+      const p = toSvg(ev);
+      if (s.weaving) {
+        // Accroche magnétique : au voisinage d'un nœud valide, la ligne saute à
+        // son centre et le nœud pulse (« j'accepte ») ; sinon elle suit le doigt.
+        const t = this._nodeNear(s, p, s.weaving.from);
+        if (t !== s.weaving.target) {
+          if (s.weaving.target) s.weaving.target._g.classList.remove("weave-target");
+          if (t) t._g.classList.add("weave-target");
+          s.weaving.target = t;
+        }
+        const from = s.weaving.from;
+        const q = t ? { x: t.x, y: t.y } : p;
+        const wl = s.weaveLine;
+        wl.setAttribute("x1", from.x); wl.setAttribute("y1", from.y);
+        wl.setAttribute("x2", q.x); wl.setAttribute("y2", q.y);
+        return;
+      }
       if (!s.drag) return;
       if (Math.hypot(ev.clientX - s.drag.x0, ev.clientY - s.drag.y0) > 4) s.drag.moved = true;
-      const p = toSvg(ev);
       // Vitesse du glisser, lissée — servira de momentum au lâcher.
       if (s.drag.px != null) {
         s.drag.vx = 0.55 * s.drag.vx + 0.45 * (p.x - s.drag.px);
@@ -236,6 +292,14 @@ export const GraphEngine = {
       this._reheat(s);
     });
     const end = (ev) => {
+      if (s.weaving) {
+        const { from, target } = s.weaving;
+        if (target) target._g.classList.remove("weave-target");
+        s.weaveLine.setAttribute("visibility", "hidden");
+        s.weaving = null;
+        if (target && typeof s.onWeave === "function") s.onWeave(from.id, target.id);
+        return;
+      }
       if (!s.drag) return;
       const { n, moved, vx, vy } = s.drag;
       n.pinned = false;

@@ -17,13 +17,16 @@ import { CardPeek } from "../card/cardpeek.js";
 export const GraphView = {
   _el: null,
   _lastScope: null,
+  _weave: false,
 
   /** Ouvre le graphe. `focusId` = centrer sur une entité + ses voisines ;
       `memberIds` = restreindre à un ensemble (portée dossier, résolue par
       l'appelant) ; ni l'un ni l'autre = toutes les entités reliées. */
   open({ focusId = null, memberIds = null, title = "Liens" } = {}) {
     this._lastScope = { focusId, memberIds };
+    this._weave = false; // chaque ouverture démarre en mode déplacement
     const overlay = this._ensure();
+    this._reflectWeave(overlay);
     overlay.querySelector('[data-graph="title"]').textContent = title;
     overlay.classList.add("open");
     // Monter synchrone : lire `clientWidth` (dans _project) force le reflow,
@@ -61,7 +64,29 @@ export const GraphView = {
       edges: graph.edges,
       accent,
       onNodeTap: (id) => CardPeek.open(id, { siblings: allIds }),
+      onWeave: (fromId, toId) => this._createWeave(fromId, toId),
     });
+    GraphEngine.setWeave(this._weave); // le remontage réinitialise le mode
+  },
+
+  /** Tisser un lien générique (`type:"relation"`) entre deux entités, si aucun
+      n'existe déjà (dans un sens ou l'autre), puis re-projeter pour l'afficher.
+      Les liens contact restent faits sur la fiche — ici, une relation générique. */
+  _createWeave(fromId, toId) {
+    if (!fromId || !toId || fromId === toId) return;
+    const exists =
+      RelationsStore.edgesWhere({ from: fromId, to: toId, type: "relation" }).length ||
+      RelationsStore.edgesWhere({ from: toId, to: fromId, type: "relation" }).length;
+    if (!exists) RelationsStore.upsert({ from: fromId, to: toId, type: "relation" });
+    this._project();
+  },
+
+  /** Reflète l'état du mode tissage sur le bouton (aria-pressed + classe). */
+  _reflectWeave(overlay) {
+    const btn = overlay.querySelector('[data-graph-action="toggle-weave"]');
+    if (!btn) return;
+    btn.setAttribute("aria-pressed", String(this._weave));
+    btn.classList.toggle("active", this._weave);
   },
 
   _ensure() {
@@ -75,6 +100,7 @@ export const GraphView = {
       <div class="modal graph-modal">
         <div class="modal-header">
           <span class="modal-title" data-graph="title">Liens</span>
+          <button class="graph-weave-toggle" data-graph-action="toggle-weave" aria-pressed="false" title="Tisser un lien : tirer d'un nœud à l'autre">◈ Tisser</button>
           <button class="modal-close" data-graph-action="close" aria-label="Fermer">✕</button>
         </div>
         <div class="modal-body graph-body">
@@ -86,7 +112,13 @@ export const GraphView = {
     overlay.addEventListener("click", (e) => {
       if (e.target === overlay) return this.hide();
       const btn = e.target.closest("[data-graph-action]");
-      if (btn && btn.dataset.graphAction === "close") this.hide();
+      if (!btn) return;
+      if (btn.dataset.graphAction === "close") this.hide();
+      else if (btn.dataset.graphAction === "toggle-weave") {
+        this._weave = !this._weave;
+        this._reflectWeave(overlay);
+        GraphEngine.setWeave(this._weave);
+      }
     });
     document.addEventListener("keydown", (e) => {
       if (!overlay.classList.contains("open")) return;
