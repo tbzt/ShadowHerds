@@ -774,6 +774,18 @@ export const EditionAnarchy1 = {
     attrLimit() {
       return null;
     },
+    /* Topologie externe (schéma d'architecture, lot A) — lue par
+       Matrix.topology* / TopologyGen. Anarchy 1re : modèle le plus abstrait
+       (l'indice EST le pool de défense) — chaîne minimale, entrée Matrice
+       seule, pas d'arborescence ni d'imbrication dans le texte. */
+    topology: {
+      archetypes: [{ id: "chain", label: "Chaîne de serveurs" }],
+      entryModes: [{ id: "matrix", label: "Matrice publique", glyph: "◎" }],
+      targetLabel: "données",
+      nodeBadge(srv) {
+        return `Pool de défense ${srv.indice}`;
+      },
+    },
   },
 
   /* Régime cyberdeck Anarchy 1re (sran_01 p.62-65) —

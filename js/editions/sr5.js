@@ -691,6 +691,26 @@ export const EditionSR5 = {
       if (kind === "per") return a.dataProcessing ?? null;
       return null;
     },
+    /* Topologie externe (schéma d'architecture, lot A) — lue par
+       Matrix.topology* / TopologyGen. SR5 : chaîne de serveurs + WAN (hôte +
+       appareils asservis — corebook « un serveur peut avoir un nombre illimité
+       d'appareils esclaves asservis »). PAS de serveurs « imbriqués » (le terme
+       est absent de Data Trails ; l'imbrication est propre à SR6). */
+    topology: {
+      archetypes: [
+        { id: "chain", label: "Chaîne de serveurs" },
+        { id: "wan", label: "Serveur + appareils asservis (WAN)" },
+      ],
+      entryModes: [
+        { id: "matrix", label: "Matrice publique", glyph: "◎" },
+        { id: "direct", label: "Connexion directe (câble)", glyph: "⎇" },
+      ],
+      targetLabel: "fichiers (Archive)",
+      nodeBadge(srv) {
+        const a = srv.attrs || {};
+        return `Ind. ${srv.indice} · A${a.attack} C${a.sleaze} T${a.dataProcessing} F${a.firewall}`;
+      },
+    },
   },
 
   /* Régime cyberdeck SR5 — lu par Cyberdeck

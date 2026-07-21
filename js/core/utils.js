@@ -21,6 +21,39 @@ export const Utils = {
     return min + Math.floor(Math.random() * (max - min + 1));
   },
 
+  /** Générateur pseudo-aléatoire DÉTERMINISTE par graine (mulberry32, amorcé
+      par xmur3 quand la graine est une chaîne). Renvoie une fonction
+      `() => [0,1)` : même graine ⇒ même suite. Socle des générateurs
+      procéduraux (plans de lieu/serveur) qui ne persistent qu'une graine et
+      régénèrent leur SVG à l'identique — partagé ici plutôt que recopié dans
+      chaque leaf. Graine numérique : tronquée en entier 32 bits (`| 0`),
+      strictement équivalent au `>>> 0` d'un amorçage direct. */
+  seededRandom(seed) {
+    const a = typeof seed === "string" ? this._xmur3(seed)() : seed | 0;
+    return this._mulberry32(a);
+  },
+  _xmur3(str) {
+    let h = 1779033703 ^ str.length;
+    for (let i = 0; i < str.length; i++) {
+      h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    return function () {
+      h = Math.imul(h ^ (h >>> 16), 2246822507);
+      h = Math.imul(h ^ (h >>> 13), 3266489909);
+      return (h ^= h >>> 16) >>> 0;
+    };
+  },
+  _mulberry32(a) {
+    return function () {
+      a |= 0;
+      a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  },
+
   /** Normalise une chaîne pour la recherche : minuscules, sans accents. */
   searchNorm(s) {
     return String(s ?? "")

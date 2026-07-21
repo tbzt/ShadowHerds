@@ -835,6 +835,27 @@ export const EditionSR6 = {
     },
     /** Les 3 niveaux d'accès matriciels (p.179), dans l'ordre de progression. */
     accessLevels: ["Invité", "Utilisateur", "Administrateur"],
+    /* Topologie externe (schéma d'architecture, lot A) — lue par
+       Matrix.topology* / TopologyGen. SR6 : chaîne + WAN (appareils asservis,
+       corebook) + serveurs IMBRIQUÉS (Hacker Vaillant p.~133 « les serveurs
+       imbriqués sont inclus les uns dans les autres », « un serveur de sécurité
+       imbriqué dans un serveur public ») — l'imbrication distingue SR6 de SR5. */
+    topology: {
+      archetypes: [
+        { id: "chain", label: "Chaîne de serveurs" },
+        { id: "wan", label: "Serveur + appareils asservis (WAN)" },
+        { id: "nested", label: "Serveurs imbriqués" },
+      ],
+      entryModes: [
+        { id: "matrix", label: "Matrice publique", glyph: "◎" },
+        { id: "direct", label: "Connexion directe (câble)", glyph: "⎇" },
+      ],
+      targetLabel: "fichiers (Archive)",
+      nodeBadge(srv) {
+        const a = srv.attrs || {};
+        return `Ind. ${srv.indice} · A${a.attack} C${a.sleaze} T${a.dataProcessing} F${a.firewall}`;
+      },
+    },
   },
 
   /* Régime cyberdeck SR6 — 4 attributs ACTF, réallouables. Reconfigurer

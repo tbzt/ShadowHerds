@@ -23,28 +23,9 @@
    est un paramètre, fourni par l'appelant depuis `editionModule.mapAccent`.
    ============================================================ */
 
-/* ---- RNG seedé (déterminisme) ---- */
-function xmur3(str) {
-  let h = 1779033703 ^ str.length;
-  for (let i = 0; i < str.length; i++) {
-    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
-    h = (h << 13) | (h >>> 19);
-  }
-  return function () {
-    h = Math.imul(h ^ (h >>> 16), 2246822507);
-    h = Math.imul(h ^ (h >>> 13), 3266489909);
-    return (h ^= h >>> 16) >>> 0;
-  };
-}
-function mulberry32(a) {
-  return function () {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+/* RNG seedé (déterminisme) — partagé via Utils.seededRandom (couche 1),
+   plutôt qu'une copie locale de xmur3+mulberry32. */
+import { Utils } from "../core/utils.js";
 
 /* ---- Palette (scène physique, hex en dur — ne s'inverse pas au thème).
    Le PAPIER du blueprint reste neutre (structure technique) ; c'est l'ENCRE de
@@ -107,7 +88,7 @@ function shuffle(a, rng) {
 
 /* Construit le modèle géométrique (pièces + couloir + portes) — sans rendu. */
 function buildModel(siteKey, seedStr) {
-  const rng = mulberry32(xmur3(seedStr)());
+  const rng = Utils.seededRandom(seedStr);
   const site = SITES[siteKey] || SITES.corpo;
   const grid = Array.from({ length: ROWS }, () => Array(COLS).fill(VOID));
   const rooms = [];
@@ -262,7 +243,7 @@ function renderSVG(M, accent, title, subtitle) {
   for (let r = 0; r <= ROWS; r++) s += `<line x1="${OX}" y1="${OY + r * CELL}" x2="${OX + COLS * CELL}" y2="${OY + r * CELL}"/>`;
   s += `</g>`;
   if (M.notch) { const [nx, ny] = px(M.notch.c0, M.notch.r0); s += `<rect x="${nx}" y="${ny}" width="${(M.notch.c1 - M.notch.c0 + 1) * CELL}" height="${(M.notch.r1 - M.notch.r0 + 1) * CELL}" fill="${PAL.outside}"/>`; }
-  M.rooms.forEach((rm) => { const [x, y] = px(rm.c0, rm.r0); const f = { x: x + 5, y: y + 20, w: (rm.c1 - rm.c0 + 1) * CELL - 10, h: (rm.r1 - rm.r0 + 1) * CELL - 26 }; if (f.w > 18 && f.h > 18 && FURN[rm.kind]) s += FURN[rm.kind](f, mulberry32((rm.idx * 2654435761) >>> 0)); });
+  M.rooms.forEach((rm) => { const [x, y] = px(rm.c0, rm.r0); const f = { x: x + 5, y: y + 20, w: (rm.c1 - rm.c0 + 1) * CELL - 10, h: (rm.r1 - rm.r0 + 1) * CELL - 26 }; if (f.w > 18 && f.h > 18 && FURN[rm.kind]) s += FURN[rm.kind](f, Utils.seededRandom(rm.idx * 2654435761)); });
   let ext = "", extAcc = "", inner = "", swings = "";
   for (let r = 0; r < ROWS; r++) { for (let c = -1; c < COLS; c++) { const L = at(r, c), R = at(r, c + 1); if (L === VOID && R === VOID) continue; const x = OX + (c + 1) * CELL, y0 = OY + r * CELL, y1 = OY + (r + 1) * CELL;
     if ((L === VOID) !== (R === VOID)) { if (M.entrance.type === "V" && M.entrance.r === r && (M.entrance.c === c || (M.entrance.c < 0 && c === -1))) continue;

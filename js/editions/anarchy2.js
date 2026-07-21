@@ -456,6 +456,26 @@ export const EditionAnarchy2 = {
     attrLimit() {
       return null;
     },
+    /* Topologie externe (schéma d'architecture, lot A) — lue par
+       Matrix.topology* / TopologyGen. Anarchy 2.0 DESSINE ses topologies
+       p.222 : chaîne « Matrice↔A↔B↔C↔D » (pirater un par un jusqu'au plus
+       profond, qui tient les données) et arborescence « Matrice↔A →
+       {sécurité, admin} ». Entrée directe par câble si le serveur profond
+       est sans-fil coupé (exemple joué p.226). */
+    topology: {
+      archetypes: [
+        { id: "chain", label: "Chaîne (un serveur après l'autre)" },
+        { id: "branch", label: "Arborescence (passerelle → sécurité/admin)" },
+      ],
+      entryModes: [
+        { id: "matrix", label: "Matrice publique", glyph: "◎" },
+        { id: "direct", label: "Connexion directe (câble)", glyph: "⎇" },
+      ],
+      targetLabel: "données cibles",
+      nodeBadge(srv) {
+        return `Indice ${srv.indice} · Firewall ${srv.indice}`;
+      },
+    },
   },
 
   /* Régime cyberdeck Anarchy 2.0 (p.62-64 & p.210) — Attaque + Firewall

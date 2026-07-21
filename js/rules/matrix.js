@@ -709,6 +709,36 @@ export const Matrix = {
     return this._model().accessLevels || [];
   },
 
+  /* ---- Topologie externe (schéma d'architecture, lot A) ----
+     Régime par édition (`matrixModel.topology`), jamais de branche
+     `if (edition)`. Alimente le générateur de plan de serveur (TopologyGen)
+     et l'écran Serveurs. Archétypes/entrées/cible sourcés par édition
+     (A2 dessine chaîne+arbo p.222 ; SR5/6 = WAN ; SR6 seul = imbriqués). */
+  _topology() {
+    return this._model().topology;
+  },
+
+  /** Archétypes de disposition proposés (le 1er = défaut de l'édition). */
+  topologyArchetypes() {
+    return this._topology().archetypes;
+  },
+
+  /** Modes d'entrée d'un serveur (Matrice publique / connexion directe…). */
+  topologyEntryModes() {
+    return this._topology().entryModes;
+  },
+
+  /** Libellé du nœud tenant les données cibles (« le plus profond »). */
+  topologyTargetLabel() {
+    return this._topology().targetLabel;
+  },
+
+  /** Badge de stats compact d'un nœud (par édition : Indice+ASDF SR5/6,
+      Indice+Firewall A2, pool de défense A1 — jamais aplati). */
+  topologyNodeBadge(srv) {
+    return this._topology().nodeBadge(srv);
+  },
+
   /** Sélection aléatoire cohérente des CI (Patrouilleuse toujours). */
   pickICs(indice, sev) {
     const tiers = this.IC_POOLS[this._edition] || this.IC_POOLS.anarchy2;
