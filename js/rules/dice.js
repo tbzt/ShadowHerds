@@ -9,7 +9,9 @@ import { Utils } from "../core/utils.js";
 
 export const Dice = {
   /* ---- Moteur de règles pur (testable, sans DOM) ---- */
-  computeRoll(n) {
+  /** `opts.wild` (Anarchy 1re) : ajoute un DÉ D'IMPRÉVU à la réserve —
+      cf. _addWildDie. Absent ailleurs (jet standard SR5/SR6). */
+  computeRoll(n, opts = {}) {
     n = Utils.clamp(n, 1, 60);
     const faces = [];
     let hits = 0;
@@ -25,7 +27,38 @@ export const Dice = {
     const glitch = ones > Math.floor(n / 2);
     const critGlitch = glitch && hits === 0;
 
-    return { n, faces, extra: [], hits, ones, glitch, critGlitch };
+    const res = { n, faces, extra: [], hits, ones, glitch, critGlitch };
+    if (opts.wild) this._addWildDie(res, opts.wild);
+    return res;
+  },
+
+  /**
+   * Dé d'imprévu d'Anarchy 1re (sran_01 p.157). Un dé ajouté À la réserve,
+   * opt-in (le plus souvent 1 Point d'Anarchy). Selon sa face :
+   *   - 1   → complication (« l'univers s'en prend à vous »),
+   *   - 5-6 → exploit (« l'univers est clément »).
+   * Ajouté à la réserve, il compte aussi comme un dé normal (succès sur 5-6).
+   * Variante "complication" (dé de complication, imposé par certains Atouts/
+   * Défauts) : ne génère NI succès NI exploit, seul le 1 (complication) est lu.
+   *
+   * Le verdict vit dans le champ NEUTRE `res.wild` (jamais dans glitch/
+   * critGlitch : Anarchy 1re n'a pas de complication de POOL, cf.
+   * Dice.normalizeVerdict). Le dé grossit la réserve (`res.n`) et s'ajoute aux
+   * faces animées comme un dé ordinaire.
+   */
+  _addWildDie(res, variant) {
+    const v = Utils.randInt(1, 6);
+    const wild = { v, complication: v === 1, exploit: false };
+    // "imprevu" = dé plein : compte le succès ET marque l'exploit sur 5-6.
+    // "complication" = dé de complication : muet en succès comme en exploit.
+    if (variant !== "complication" && v >= 5) {
+      res.hits += 1;
+      wild.exploit = true;
+    }
+    res.faces.push(v);
+    res.n += 1;
+    res.wild = wild;
+    return res;
   },
 
   /**

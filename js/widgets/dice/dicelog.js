@@ -290,31 +290,42 @@ export const DiceLog = {
         const term = (spec && (spec.resourceLabel || spec.costAttr)) || "";
         e.texture = { kind: "edge", dice: res.edgeDice, sixes: res.edgeSixes || 0, term };
       }
+      // Terme VF de la complication de pool, lu du module d'édition
+      // (« Complication » SR5/SR6, jamais « Bévue »). Mono-édition, même
+      // convention que le terme de ressource plus haut (App.editionModule).
+      const glitchLabel =
+        (typeof App !== "undefined" &&
+          App.editionModule &&
+          App.editionModule.complicationModel &&
+          App.editionModule.complicationModel.glitchLabel) ||
+        "Complication";
+      // Dé d'imprévu (Anarchy 1re) : verdict porté par le champ neutre res.wild
+      // (exploit positif / complication), sur le chemin standard (A1 n'est pas
+      // res.anarchy). 1 et 5-6 s'excluent → au plus l'un des deux.
+      const wildComp = !!(res.wild && res.wild.complication);
+      const wildExploit = !!(res.wild && res.wild.exploit);
       e.tag = res.critGlitch
         ? "Échec critique"
-        : res.glitch
-          ? // Terme VF de la complication de pool, lu du module d'édition
-            // (« Complication » SR5/SR6, jamais « Bévue »). Mono-édition, même
-            // convention que le terme de ressource plus haut (App.editionModule).
-            (typeof App !== "undefined" &&
-              App.editionModule &&
-              App.editionModule.complicationModel &&
-              App.editionModule.complicationModel.glitchLabel) ||
-            "Complication"
-          : res.threshold != null
-            ? `Seuil ${res.threshold} ${res.hits >= res.threshold ? "atteint" : "manqué"}`
-            : "";
+        : res.glitch || wildComp
+          ? glitchLabel
+          : wildExploit
+            ? "Exploit"
+            : res.threshold != null
+              ? `Seuil ${res.threshold} ${res.hits >= res.threshold ? "atteint" : "manqué"}`
+              : "";
       e.cls = res.critGlitch
         ? "crit"
-        : res.glitch
+        : res.glitch || wildComp
           ? "glitch"
-          : res.threshold != null
-            ? res.hits >= res.threshold
-              ? "good"
-              : "zero"
-            : res.hits > 0
-              ? "good"
-              : "zero";
+          : wildExploit
+            ? "good"
+            : res.threshold != null
+              ? res.hits >= res.threshold
+                ? "good"
+                : "zero"
+              : res.hits > 0
+                ? "good"
+                : "zero";
     }
     this.history.unshift(e);
     // Rétention protégée (J3 + J4) : le plafond n'ampute jamais le tour en

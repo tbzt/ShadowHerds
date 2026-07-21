@@ -94,11 +94,28 @@ export const EditionAnarchy1 = {
       complication. Le
       dé d'imprévu lui-même est motorisé au Lot B. */
   complicationModel: { kind: "unpredictability", glitchLabel: "Complication" },
-  /** Pas d'Edge PRÉ-jet motorisé : Anarchy 1re n'expose pas de « Repousser
-      les limites » vérifié au livre, et sa relance passe déjà par la réserve
-      de menace (Points d'Anarchy). Neutre `null` — le lanceur n'offre aucune
-      option pré-jet, comme Anarchy 2.0. */
-  preRollEdge: null,
+  /** Option PRÉ-jet = DÉ D'IMPRÉVU (sran_01 p.157) : dépenser 1 Point
+      d'Anarchy AVANT le jet pour ajouter un dé d'imprévu (1 → complication,
+      5-6 → exploit). `reserve:"threat"` = le budget vient de la réserve de
+      menace globale (les Points d'Anarchy y sont portés, cf. usesThreatReserve),
+      pas d'un attribut de PNJ comme la Chance SR5. Miroir du contrat neutre
+      preRollEdge, lu par DiceRoller.preRollEdgeOptions ; l'option `wild`
+      route vers Dice.computeRoll({wild}) au lieu des dés d'Edge. Le « dé de
+      complication » (Atouts/Défauts) reste hors périmètre (variante engine
+      "complication" non exposée ici). */
+  preRollEdge: {
+    reserve: "threat",
+    resourceLabel: "Points d'Anarchy",
+    options: [
+      {
+        id: "wild",
+        wild: "imprevu",
+        label: "Dé d'imprévu",
+        cost: 1,
+        hint: "1 Point d'Anarchy · +1 dé — 1 = complication, 5-6 = exploit",
+      },
+    ],
+  },
   /* ---- Action magique : Anarchy n'a pas de Drain chiffré →
      tout neutre. MagicAction ne déclenche rien (spellSkill/conjureSkill null). ---- */
   spellUsesForce: false,

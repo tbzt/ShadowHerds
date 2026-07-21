@@ -298,19 +298,25 @@ export const DiceRoller = {
     });
   },
 
-  /** Jet nu ou avec dés d'Edge pré-jet, selon `edge` — un seul point de
-      bascule pour rollWeapon/rollPool (jamais deux fois la même condition). */
+  /** Jet nu, avec dés d'Edge pré-jet, ou avec DÉ D'IMPRÉVU (Anarchy 1re) selon
+      `edge` — un seul point de bascule pour rollWeapon/rollPool (jamais deux
+      fois la même condition). Le dé d'imprévu n'est PAS un dé d'Edge (pas
+      d'explosion) : il passe par Dice.computeRoll({wild}). */
   _computeWithEdge(pool, edge) {
+    if (edge && edge.wild) return Dice.computeRoll(pool, { wild: edge.wild });
     return edge && edge.dice
       ? Dice.computeRollWithEdge(pool, edge.dice, edge.explode)
       : Dice.computeRoll(pool);
   },
 
-  /** Ajoute la mention d'Edge au décompte affiché (« … · +4 Repousser les
-      limites »). Sobre : rien si pas d'Edge. */
+  /** Ajoute la mention d'Edge/dé d'imprévu au décompte affiché (« … · +4
+      Repousser les limites », « … · Dé d'imprévu »). Sobre : rien si jet nu. */
   _appendEdgeDetail(detail, edge) {
-    if (!edge || !edge.dice) return detail;
-    const tag = `+${edge.dice} ${edge.label}`;
+    if (!edge) return detail;
+    let tag;
+    if (edge.wild) tag = edge.label;
+    else if (edge.dice) tag = `+${edge.dice} ${edge.label}`;
+    else return detail;
     return detail ? `${detail} · ${tag}` : tag;
   },
 
@@ -320,6 +326,14 @@ export const DiceRoller = {
       ne peut pas payer (garde-fou — l'UI ne propose déjà que l'affordable). */
   _spendPreRollEdge(pnj, opt) {
     if (!pnj || !opt) return null;
+    // Budget-réserve (Anarchy 1re : Points d'Anarchy = réserve de menace
+    // globale) : on débite la réserve, pas un attribut de PNJ, et on renvoie
+    // un marqueur `wild` que _computeWithEdge route vers le dé d'imprévu.
+    if (opt.reserve === "threat") {
+      if (this.threatValue() < opt.cost) return null;
+      this._setThreat(this._threat - opt.cost);
+      return { wild: opt.wild, label: opt.label };
+    }
     const have = Actor.attr(pnj, opt.costAttr);
     if (have == null || have < opt.cost) return null;
     Actor.spend(pnj, opt.costAttr, opt.cost);
@@ -933,21 +947,29 @@ export const DiceRoller = {
     const mod = pnj ? App.getEditionModule(pnj.edition) : App.editionModule;
     const spec = mod && mod.preRollEdge;
     if (!spec || !pnj || !pnj.attrs) return [];
-    const budget = Actor.attr(pnj, spec.costAttr);
+    // Source du budget : réserve de menace globale (Anarchy 1re : Points
+    // d'Anarchy) OU attribut de PNJ (Chance SR5 / Atout SR6).
+    const fromReserve = spec.reserve === "threat";
+    const budget = fromReserve ? this.threatValue() : Actor.attr(pnj, spec.costAttr);
     if (budget == null) return [];
     return (spec.options || []).map((o) => {
       const dice = o.dice === "rating" ? Actor.attr(pnj, spec.costAttr) || 0 : o.dice || 0;
+      // Une option « dé d'imprévu » (wild) n'a pas de dés d'Edge : son
+      // utilisabilité tient au seul budget, pas à `dice > 0`.
+      const usable = o.wild ? true : dice > 0;
       return {
         id: o.id,
         label: o.label,
         cost: o.cost,
         dice,
+        wild: o.wild || null,
         explode: !!o.explode,
         ignoreLimit: !!o.ignoreLimit,
         hint: o.hint || "",
         costAttr: spec.costAttr,
+        reserve: fromReserve ? "threat" : null,
         budget,
-        affordable: budget >= o.cost && dice > 0,
+        affordable: budget >= o.cost && usable,
       };
     });
   },
@@ -975,9 +997,15 @@ export const DiceRoller = {
       aucune option de dépense n'est abordable (panneau ouvert pour gagner). */
   _panelBudgetText(pnj) {
     const mod = App.getEditionModule(pnj.edition);
+    const spec = mod.preRollEdge;
+    // Budget-réserve (Anarchy 1re) : Points d'Anarchy lus sur la réserve
+    // globale, pas sur un attribut de PNJ.
+    if (spec && spec.reserve === "threat") {
+      return `${this.threatValue()} ${spec.resourceLabel || "Points d'Anarchy"}`;
+    }
     const attr =
       (mod.preRollGain && mod.preRollGain.costAttr) ||
-      (mod.preRollEdge && mod.preRollEdge.costAttr) ||
+      (spec && spec.costAttr) ||
       null;
     return attr ? `${Actor.attr(pnj, attr)} ${attr}` : "";
   },
@@ -1163,7 +1191,9 @@ export const DiceRoller = {
     const ctx = this._preRoll;
     if (!ctx) return;
     const budget = this._panelBudgetText(ctx.pnj);
-    const label = ctx.gain ? "Atout disponible" : "Edge disponible";
+    const mod = App.getEditionModule(ctx.pnj.edition);
+    const fromReserve = mod && mod.preRollEdge && mod.preRollEdge.reserve === "threat";
+    const label = ctx.gain ? "Atout disponible" : fromReserve ? "Réserve" : "Edge disponible";
     document.getElementById("preroll-pool").innerHTML = budget
       ? `${label} : <strong>${Utils.escHtml(budget)}</strong>`
       : "";
@@ -1411,9 +1441,10 @@ export const DiceRoller = {
   },
 
   _revealStandard(res, summary, opts) {
+    const wildComp = !!(res.wild && res.wild.complication);
     const cls = res.critGlitch
       ? "crit"
-      : res.glitch
+      : res.glitch || wildComp
         ? "glitch"
         : res.hits > 0
           ? "good"
@@ -1433,6 +1464,12 @@ export const DiceRoller = {
       tag = `<span class="dice-summary-tag crit">Échec critique</span>`;
     else if (res.glitch)
       tag = `<span class="dice-summary-tag glitch">${this._glitchLabel()}</span>`;
+    // Dé d'imprévu (Anarchy 1re) : exploit positif et/ou complication, portés
+    // par le champ neutre res.wild (1 et 5-6 s'excluent → au plus un tag).
+    if (res.wild && res.wild.exploit)
+      tag += `<span class="dice-summary-tag safe">Exploit</span>`;
+    if (res.wild && res.wild.complication)
+      tag += `<span class="dice-summary-tag glitch">${this._glitchLabel()}</span>`;
 
     // Limite SR5 : signaler quand la Précision mord
     let limitTag = "";
