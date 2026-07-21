@@ -263,6 +263,15 @@ export const EncounterRenderer = {
     return `<div class="encounter-progress">${played} / ${present.length} ont joué</div>`;
   },
 
+  /** Nom compact partagé par toutes les surfaces du tracker (file, carte
+      active, console de réaction) : alias de rue s'il existe, sinon le dernier
+      mot du nom civil (cf. Utils.parseName). Échappé pour insertion HTML —
+      même règle partout, jamais l'id ni le nom complet en clair dans le rack. */
+  _compactName(raw) {
+    const { alias, family, full } = Utils.parseName(raw);
+    return Utils.escHtml(alias || family || full);
+  },
+
   /** Ligne narrative (Anarchy) — Volet B : la LIGNE ENTIÈRE met le combattant
       « en focus » (data-action="focus-active" → sa fiche + budget d'actions,
       ou la console de réaction si c'est un PJ, s'affichent dans #encounter-
@@ -1201,7 +1210,7 @@ export const EncounterRenderer = {
       // = _activeEconomy (posé juste au-dessus). L'état maintenu ⟳ / les drogues
       // (R1) sont réémis en tête des blocs par offenseBlocks. Rollables câblés
       // par la délégation document-level (DiceRoller), inchangée.
-      box.innerHTML = `<div class="encounter-mode-head is-agir${modeEnter ? " mode-enter" : ""}">Agir · ${Utils.escHtml(pnj.name || "")}</div>
+      box.innerHTML = `<div class="encounter-mode-head is-agir${modeEnter ? " mode-enter" : ""}">Agir · ${this._compactName(pnj.name)}</div>
         <div class="encounter-active-top">${this._activeTop(active, state)}</div>
         <div class="encounter-active-economy">${this._activeEconomy(active, model)}</div>`;
       const offense = CardRenderer.offenseBlocks(pnj, CardRenderer.liveDeps());
@@ -1296,15 +1305,15 @@ export const EncounterRenderer = {
       this._activeNote(r);
   },
 
-  /** Console de réaction : au tour d'un PJ, une ligne par PNJ vivant
-      (hors PJ, hors CI matricielle, hors de combat) avec deux gros boutons —
-      ⛉ Défense · ⛊ Encaisser. Les boutons portent `data-roll` (comme les
-      pastilles des cartes) : le lancer passe par le handler global de
-      DiceRoller, aucune logique de jet nouvelle. Les pools sont ceux déjà
-      portés par les cartes (pnj.defense − malus de blessure ; pnj.damageResist
-      non réduit, cf. carte). Édition-neutre. En mode narratif (Anarchy) il n'y
-      a pas de tour actif → cette console ne s'affiche pas (renderActiveCard
-      sort avant). */
+  /** Console de réaction : quand l'actif est un PJ, une ligne par PNJ vivant
+      (hors PJ, hors de combat) pour le faire réagir. S'affiche AUSSI en mode
+      narratif (Anarchy) : `active` y est le combattant EN FOCUS (renderActiveCard
+      l'établit via _narrativeFocus), donc taper la ligne d'un PJ ouvre bien la
+      console — c'est là qu'on lit les fiches, applique des blessures et retire
+      des points. Chaque ligne (`_reactPnjRow`) porte les gestes que l'ÉDITION
+      expose (⛉ Défense, ⛨ Défense totale si `fullDefenseFor`, ⛊ Encaisser si
+      `combatModel.hasSoak`, ✸ Dégâts), lus à l'aveugle — jamais branchés ici.
+      Les réserves (`data-roll`) passent par le handler global de DiceRoller. */
   _renderReactionConsole(box, rows, active, modeEnter, state) {
     // PNJ chair ET CI matricielles actives (une CI attaquée par un
     // PJ doit pouvoir défendre/encaisser). PJ et combattants « down » exclus.
@@ -1314,8 +1323,9 @@ export const EncounterRenderer = {
       box.innerHTML = "";
       return;
     }
+    const st = state || Encounter.state || {};
     const rowsHtml = targets
-      .map((r) => (r.kind === "matrix" ? this._reactMatrixRow(r) : this._reactPnjRow(r)))
+      .map((r) => (r.kind === "matrix" ? this._reactMatrixRow(r) : this._reactPnjRow(r, st)))
       .join("");
     // V7 Lot 4 — bloc 🔌 des appareils brickables (le decker attaque le matos
     // PNJ à son tour), après les lignes de réaction. Vide hors scène Matrice.
@@ -1324,7 +1334,7 @@ export const EncounterRenderer = {
     // mode — persona Tom : « à qui c'est le tour »). Édition-neutre : lit le nom
     // du combattant, aucun App.edition.
     const pjName = active
-      ? Utils.escHtml((active.pnj && active.pnj.name) || active.name || "un PJ")
+      ? this._compactName((active.pnj && active.pnj.name) || active.name || "un PJ")
       : "un PJ";
     box.hidden = false;
     box.innerHTML = `<div class="encounter-react${modeEnter ? " mode-enter" : ""}">
@@ -1334,40 +1344,57 @@ export const EncounterRenderer = {
     </div>`;
   },
 
-  /** Ligne de réaction d'un PNJ chair : ⛉ Défense · ⛊ Encaisser (pools portés
-      par la carte, via data-roll → DiceRoller) + chevron ▾ qui déplie la fiche
-      complète. DA : glyphes Unicode monochromes (couleur du thème), jamais
-      d'émoji couleur — même bloc que le ⛨ déjà en service. */
-  _reactPnjRow(r) {
+  /** Ligne de réaction d'un PNJ chair : ⛉ Défense [· ⛨ Défense totale] [· ⛊
+      Encaisser] · ✸ Dégâts (réserves portées par la carte, via data-roll →
+      DiceRoller) + ⛶ qui ouvre la fiche en coup d'œil (CardPeek, swipe). Les
+      gestes présents sont lus sur le module (`combatModel.hasSoak`,
+      `fullDefenseFor`), jamais branchés par édition. DA : glyphes Unicode
+      monochromes (couleur du thème), jamais d'émoji couleur. */
+  _reactPnjRow(r, state) {
     const pnj = r.pnj;
-    const name = Utils.escHtml(pnj.name || "");
+    const mod = App.editionModule;
+    const cm = mod && mod.combatModel;
+    // Nom compact — même règle que la file (alias, sinon dernier mot du civil).
+    const name = this._compactName(pnj.name);
     const malus = Utils.dicePenalty(pnj, pnj.edition);
-    const def = Math.max(0, (pnj.defense || 0) - malus);
-    const soak = pnj.damageResist || 0;
+    // Défense totale (SR5/SR6) : déclarée pour le round → +Volonté à la réserve
+    // affichée. fullDefenseFor renvoie null hors SR5/SR6 (Anarchy narratif).
+    const fd = !pnj._adhoc && mod && mod.fullDefenseFor ? mod.fullDefenseFor(pnj) : null;
+    const fdActive = !!(fd && r.fullDefenseRound === (state && state.round));
+    const def = Math.max(0, (pnj.defense || 0) - malus + (fdActive ? fd.bonus || 0 : 0));
     const defBtn = def >= 1
-      ? `<button class="react-btn" data-roll="${def}" data-roll-label="Défense — ${name}" data-roll-pnj="${pnj.id}" title="Test de défense (${def} dés)" aria-label="Défense — ${name} (${def} dés)"><span class="react-glyph" aria-hidden="true">⛉</span> ${def}</button>`
+      ? `<button class="react-btn" data-roll="${def}" data-roll-label="Défense — ${name}" data-roll-pnj="${pnj.id}" title="Test de défense (${def} dés)${fdActive ? " · défense totale" : ""}" aria-label="Défense — ${name} (${def} dés)"><span class="react-glyph" aria-hidden="true">⛉</span> ${def}</button>`
       : `<span class="react-btn is-off" title="Pas de réserve de défense"><span class="react-glyph" aria-hidden="true">⛉</span> —</span>`;
-    const soakBtn = soak >= 1
-      ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${name}" data-roll-pnj="${pnj.id}" title="Résistance aux dommages (${soak} dés)" aria-label="Encaissement — ${name} (${soak} dés)"><span class="react-glyph" aria-hidden="true">⛊</span> ${soak}</button>`
-      : `<span class="react-btn is-off" title="Pas de réserve d'encaissement"><span class="react-glyph" aria-hidden="true">⛊</span> —</span>`;
-    // « Dégâts » ferme la boucle ⛉→⛊→✸ — un résultat NET (déjà résisté),
-    // jamais un brut recalculé. damageUI() est lu sur le module d'édition
-    // (jamais une branche ici) : chips numériques P/S (SR5/SR6) ou crans de
-    // gravité (Anarchy 2, cf. _reactDamageChips).
-    const damageBtn = !pnj._adhoc && App.editionModule && App.editionModule.conditionMonitor
+    // Défense totale : bouton ⛨ (SR5/SR6 seulement — fd non null). Déclaration à
+    // sens unique par round (le contrôleur ne décrémente l'init qu'une fois) ;
+    // le coût d'initiative −10 (SR5) est motorisé côté Encounter via adjustInit.
+    const fdBtn = fd
+      ? `<button class="react-btn react-fulldef-btn${fdActive ? " is-on" : ""}" data-action="full-defense" data-id="${pnj.id}"${fdActive ? ' aria-pressed="true"' : ""} title="${Utils.escHtml(fd.label)} (+${fd.bonus} déf · ${Utils.escHtml(fd.note || "")})" aria-label="${Utils.escHtml(fd.label)} — ${name}"><span class="react-glyph" aria-hidden="true">⛨</span></button>`
+      : "";
+    // Encaissement : uniquement si l'édition résout les dommages par un JET
+    // (SR5/SR6). Anarchy compare la VD à un seuil (p.68) → pas de jet, bouton omis.
+    const soak = pnj.damageResist || 0;
+    const soakBtn = !(cm && cm.hasSoak)
+      ? ""
+      : soak >= 1
+        ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${name}" data-roll-pnj="${pnj.id}" title="Résistance aux dommages (${soak} dés)" aria-label="Encaissement — ${name} (${soak} dés)"><span class="react-glyph" aria-hidden="true">⛊</span> ${soak}</button>`
+        : `<span class="react-btn is-off" title="Pas de réserve d'encaissement"><span class="react-glyph" aria-hidden="true">⛊</span> —</span>`;
+    // « Dégâts » : un résultat NET (déjà résisté), jamais un brut recalculé.
+    // damageUI() lu sur le module (jamais une branche) : chips numériques P/S
+    // (SR5/SR6) ou crans de gravité colorés (Anarchy, cf. _reactDamageChips).
+    const damageBtn = !pnj._adhoc && mod && mod.conditionMonitor
       ? `<button class="react-btn react-damage-btn" data-action="react-damage-toggle" data-id="${pnj.id}" title="Appliquer des dégâts nets" aria-label="Dégâts — ${name}"><span class="react-glyph react-glyph-danger" aria-hidden="true">✸</span> Dégâts</button>`
       : "";
-    // Chevron réservé aux PNJ résolus (une carte réelle à monter) — pas sur un
-    // combattant ad-hoc sans fiche. Le déplié (accordéon, board) est un état de
-    // vue éphémère monté à la demande par toggleReactExpand — aucune clé Storage.
-    const expand = !pnj._adhoc
-      ? `<button class="react-expand-btn" data-action="react-expand" data-id="${pnj.id}" aria-label="Déplier la fiche de ${name}" title="Voir la fiche complète"><span class="react-chevron" aria-hidden="true">▾</span></button>`
+    // Coup d'œil : ouvre la fiche complète en overlay (swipe/prev-next, comme
+    // dans Jouer) plutôt qu'un accordéon vers le bas — même geste partout.
+    const peek = !pnj._adhoc
+      ? `<button class="react-expand-btn" data-action="react-expand" data-id="${pnj.id}" aria-label="Voir la fiche de ${name}" title="Voir la fiche (feuilleter)"><span class="react-peek-glyph" aria-hidden="true">⛶</span></button>`
       : "";
     const chipsBody = damageBtn ? this._reactDamageChips(pnj) : "";
     return `<div class="react-row">
         <span class="react-name">${name}</span>
-        <span class="react-buttons">${defBtn}${soakBtn}${damageBtn}${expand}</span>
-      </div>${chipsBody}${expand ? `<div class="react-expand-body" data-expand-for="${pnj.id}" hidden></div>` : ""}`;
+        <span class="react-buttons">${defBtn}${fdBtn}${soakBtn}${damageBtn}${peek}</span>
+      </div>${chipsBody}`;
   },
 
   /** Panneau de chips de dégâts d'un PNJ, replié par défaut (déplié par
@@ -1380,7 +1407,7 @@ export const EncounterRenderer = {
       const btns = (ui.levels || [])
         .map(
           (lv) =>
-            `<button class="react-btn react-btn-danger" data-action="react-wound" data-id="${pnj.id}" data-sev="${lv.sev}">✸ ${Utils.escHtml(lv.label)}</button>`,
+            `<button class="react-btn react-btn-danger sev-${lv.sev}" data-action="react-wound" data-id="${pnj.id}" data-sev="${lv.sev}">✸ ${Utils.escHtml(lv.label)}</button>`,
         )
         .join("");
       return `<div class="react-damage-chips" data-damage-for="${pnj.id}" hidden>${btns}</div>`;
@@ -1493,37 +1520,6 @@ export const EncounterRenderer = {
       </div>`;
   },
 
-  /** Déplie/replie la fiche complète d'un PNJ sous sa ligne de réaction.
-      Accordéon (board : un seul ouvert — perf mobile + charge cognitive) : on
-      replie tout, puis on monte la carte demandée à la volée. Éphémère : aucun
-      état persisté, reconstruit au prochain _render. La règle « le nom n'est
-      jamais recouvert » (chrome de carte) garantit la contrainte MJ par
-      construction. */
-  toggleReactExpand(pnjId) {
-    const react = document.querySelector(".encounter-react");
-    if (!react) return;
-    const esc = window.CSS && CSS.escape ? CSS.escape(pnjId) : pnjId;
-    const body = react.querySelector(`.react-expand-body[data-expand-for="${esc}"]`);
-    if (!body) return;
-    const wasOpen = !body.hidden;
-    react.querySelectorAll(".react-expand-body").forEach((b) => {
-      b.hidden = true;
-      b.innerHTML = "";
-    });
-    react.querySelectorAll(".react-expand-btn").forEach((b) => b.classList.remove("is-open"));
-    if (!wasOpen) {
-      const pnj = PnjLookup.find(pnjId);
-      if (!pnj) return;
-      // R1b : même vue Combat que la fiche active, sur un clone (cf. son
-      // commentaire dans renderActiveCard) — ne pas polluer le pli bibliothèque.
-      const combatPnj = { ...pnj, _zoneOpen: { ...pnj._zoneOpen } };
-      CardRenderer.applyView(combatPnj, "combat");
-      body.appendChild(CardRenderer.render(combatPnj, [], CardRenderer.liveDeps()));
-      body.hidden = false;
-      const btn = react.querySelector(`.react-expand-btn[data-id="${esc}"]`);
-      if (btn) btn.classList.add("is-open");
-    }
-  },
 
   /** Légende commune (trans-édition) des glyphes du cockpit de combat, ajoutée
       à l'Aide « ? » à la suite de la légende d'édition (App._renderHelpLegend).
@@ -1532,12 +1528,13 @@ export const EncounterRenderer = {
   cockpitLegend() {
     return [
       { keys: "⛉", html: "<strong>Défense</strong> — le PNJ (ou la CI) esquive/pare un test." },
-      { keys: "⛊", html: "<strong>Encaisser</strong> — résistance aux dommages." },
+      { keys: "⛨", html: "<strong>Défense totale</strong> — +Volonté à la défense pour le round (SR5 : −10 init)." },
+      { keys: "⛊", html: "<strong>Encaisser</strong> — résistance aux dommages (SR5/SR6 ; Anarchy n'a pas de jet)." },
       { keys: "✸", html: "<strong>Dégâts</strong> — applique un résultat déjà résisté (net) au moniteur." },
       { keys: "⚔", html: "Envoyer au <strong>combat</strong> / rejoindre l'initiative." },
       { keys: "◎", html: "<strong>Perception matricielle</strong> d'une CI." },
       { keys: "⚡", html: "Ouvrir le <strong>tiroir Matrice</strong> (jets, moniteur, surveillance)." },
-      { keys: "▾", html: "<strong>Déplier</strong> la fiche complète d'un PNJ en réaction." },
+      { keys: "⛶", html: "<strong>Voir la fiche</strong> d'un PNJ en réaction (coup d'œil, feuilletable)." },
       { keys: "CI", html: "<strong>Contre-mesure d'Intrusion</strong> engagée dans l'initiative." },
       { keys: "🔗", html: "<strong>Lier</strong> un serveur (ou la cible d'un decker) à la scène." },
       { keys: "🛡️", html: "<strong>Protéger</strong> un appareil ciblé avec le Firewall d'un decker allié." },

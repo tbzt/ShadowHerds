@@ -183,6 +183,11 @@ export const EditionAnarchy2 = {
   initiativeFor() {
     return null;
   },
+  /** Combat narratif : pas d'action d'interruption chiffrée ni de Défense
+      totale motorisée (contrat neutre → null, lu à l'aveugle par le tracker). */
+  fullDefenseFor() {
+    return null;
+  },
   /** Spec d'un combattant CI lancé dans l'initiative. Anarchy n'a pas
       d'initiative chiffrée (ordre narratif) : jeton narratif sans init, comme
       les PNJ Anarchy. narrative:true → Encounter n'appelle pas Dice. */
@@ -205,7 +210,7 @@ export const EditionAnarchy2 = {
       par scène (atouts p.77, drogues p.159) — le bandeau d'économie affiche
       une rangée par participant (jumelle de l'Atout SR6 `edgeTracker`),
       stockée dans l'entrée de scène. Drapeau de CAPACITÉ, lu à l'aveugle. */
-  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: true, anarchyPoints: true },
+  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: true, anarchyPoints: true, hasSoak: false },
   /** Disposition de combat (Vague D) : { down, morale }. Anarchy 2.0 COMBATIVITÉ
       (p.180) — champ threatLevel (nulle/faible/forte/extrême). Déclencheur
       individuel (1re blessure légère/grave, ou incapacité) OU proportion

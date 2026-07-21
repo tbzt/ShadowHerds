@@ -488,6 +488,11 @@ export const TourSteps = {
       title: "Le graphe des relations",
       body: "Les liens entre vos personnages, PNJ, contacts et serveurs se voient maintenant en graphe. Sur la fiche d'un PJ relié à des contacts, le bouton « ◈ Liens » ouvre une carte des relations : chaque entité est un nœud, reliés par leurs liens. Déplacez les nœuds (ils ont un poids, glissent avec de l'élan), touchez-en un pour ouvrir sa fiche en aperçu sans quitter le graphe, et activez « Tisser » pour créer un lien en tirant d'un nœud à l'autre — la ligne s'accroche à la cible valide. Une seule vérité : liens tissés ici et liens des fiches vivent au même endroit.",
     },
+    {
+      id: "wn-full-defense", anchor: "nav-combat", tours: ["whatsnew"], since: "1.93.0", fallback: "center",
+      title: "La Défense totale, motorisée",
+      body: "Au tour d'un PJ, la console « Réagir » gagne un bouton ⛨ Défense totale (SR5/SR6) : d'un tap, le PNJ ajoute sa Volonté à sa réserve de défense pour le round, et le coût d'initiative est appliqué tout seul — −10 au score en SR5, sans coût en SR6. Au passage : le bouton ✸ Dégâts déplie de nouveau ses crans (il ne faisait plus rien), l'Encaissement ⛊ disparaît en Anarchy (qui n'a pas de jet d'encaissement), les blessures légère/grave/incapacitante reprennent les couleurs du moniteur, et la fiche d'un PNJ s'ouvre en aperçu feuilletable (⛶) plutôt que de se déplier vers le bas.",
+    },
   ],
 };
 

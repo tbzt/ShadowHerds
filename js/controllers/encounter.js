@@ -9,6 +9,7 @@
    EncounterRenderer.
    ============================================================ */
 import { AnarchyAtouts } from "../rules/anarchyatouts.js";
+import { CardPeek } from "../widgets/card/cardpeek.js";
 import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
 import { Dialog } from "../widgets/kit/dialog.js";
@@ -402,6 +403,38 @@ export const Encounter = {
     const base = Number.isFinite(c.init) ? c.init : 0;
     c.init = Math.max(0, base + delta);
     this._commit();
+  },
+
+  /** Défense totale (SR5/SR6) déclarée pour le round courant. La règle vit dans
+      le module (`fullDefenseFor` : +Volonté à la défense, coût d'init par
+      édition) — jamais une branche ici. Le coût d'initiative est MOTORISÉ via
+      adjustInit (le −10 SR5 rentre dans le score). Déclaration à sens unique et
+      idempotente par round : re-cliquer ne re-décrémente pas l'init. Le drapeau
+      `fullDefenseRound` sur le combattant est persistant (survit à un reload)
+      et « s'éteint » seul au round suivant (round ≠ fullDefenseRound), sans
+      migration : un état ancien sans le champ = simplement pas en défense totale. */
+  fullDefense(pnjId) {
+    const c = this._find(pnjId);
+    if (!c || c.fullDefenseRound === this.state.round) return;
+    const pnj = PnjLookup.find(pnjId);
+    const mod = pnj && App.getEditionModule(pnj.edition);
+    const fd = mod && mod.fullDefenseFor ? mod.fullDefenseFor(pnj) : null;
+    if (!fd) return;
+    c.fullDefenseRound = this.state.round;
+    // initCost > 0 (SR5) : adjustInit re-commit (save + rendu). initCost 0
+    // (SR6) : pas de coût, mais persister le drapeau + re-rendre le +Volonté.
+    if (fd.initCost > 0) this.adjustInit(pnjId, -fd.initCost);
+    else this._commit();
+    toast(`${fd.label} — ${pnj.name}${fd.initCost ? ` (−${fd.initCost} init)` : ""}`);
+  },
+
+  /** Ids des PNJ consultables de la console de réaction, dans l'ordre affiché —
+      frères de feuilletage passés à CardPeek (mêmes filtres que
+      EncounterRenderer._renderReactionConsole : PNJ chair, hors PJ/down/CI/adhoc). */
+  _reactSiblings() {
+    return this._rows()
+      .filter((r) => r.pnj && !r.isPJ && !r.down && r.kind !== "matrix" && !r.pnj._adhoc)
+      .map((r) => r.pnjId);
   },
 
   /** Lance l'initiative via l'accesseur neutre du module d'édition
@@ -1848,10 +1881,15 @@ export const Encounter = {
           this.icBox(el.dataset.id, parseInt(el.dataset.n, 10) || 0);
           break;
         case "react-expand":
-          // Déplie/replie la fiche complète d'un PNJ dans la console de
-          // réaction (accordéon, vue éphémère). Le rendu vit au renderer ; ici,
-          // aucune logique de combat.
-          EncounterRenderer.toggleReactExpand(id);
+          // Ouvre la fiche du PNJ en coup d'œil (CardPeek : overlay, swipe,
+          // prev/next) plutôt qu'un accordéon vers le bas — même geste que dans
+          // Jouer. Frères = les PNJ de la console, pour feuilleter le casting.
+          CardPeek.open(id, { siblings: this._reactSiblings(), view: "combat" });
+          break;
+        case "full-defense":
+          // Défense totale (SR5/SR6) : déclarée pour le round, motorise le coût
+          // d'initiative de l'édition (−10 SR5). Édition-neutre (fullDefenseFor).
+          this.fullDefense(id);
           break;
         case "react-damage-toggle":
           // Déplie/replie les chips de dégâts d'une ligne de réaction

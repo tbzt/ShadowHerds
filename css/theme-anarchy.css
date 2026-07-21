@@ -205,6 +205,25 @@
   border-color: var(--accent);
 }
 
+/* Crans de gravité dans la console Réagir (bouton ✸ légère / grave /
+   incapacitante) : mêmes teintes que les cases du moniteur ci-dessus — la
+   couleur EST la gravité, cohérente avec l'objet que le MJ coche. */
+[data-edition^="anarchy"] .react-btn.sev-leger {
+  border-color: #9e2200;
+  background: color-mix(in srgb, #6e1800 30%, var(--bg-card));
+}
+[data-edition^="anarchy"] .react-btn.sev-grave {
+  border-color: var(--accent2);
+  background: color-mix(in srgb, var(--accent2) 22%, var(--bg-card));
+}
+[data-edition^="anarchy"] .react-btn.sev-incap {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 20%, var(--bg-card));
+}
+[data-edition^="anarchy"] .react-btn[class*="sev-"]:hover {
+  filter: brightness(1.15);
+}
+
 /* Narcos */
 [data-edition^="anarchy"] .narco-dot {
   width: 10px;

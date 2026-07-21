@@ -218,6 +218,13 @@ export const EditionSR5 = {
   initiativeFor(pnj) {
     return { base: pnj.init, dice: pnj.initDice };
   },
+  /** Défense totale (SR5 p.170) : action d'interruption qui ajoute la Volonté
+      aux tests de défense jusqu'à la fin du round de combat, au coût de −10 au
+      score d'initiative. Le tracker motorise le coût (adjustInit) et lit le
+      bonus ici — jamais une branche d'édition côté renderer. */
+  fullDefenseFor(pnj) {
+    return { label: "Défense totale", bonus: Actor.attr(pnj, "VOL"), initCost: 10, note: "−10 Init · fin du round" };
+  },
   /** Spec d'un combattant CI lancé dans l'initiative (fiche CI minimale +
       jeton Matrice). Init du livre SR5 : indice du serveur ×2 + 4D6 (p.249).
       La règle vit ici (prohibition n°1) ; Encounter lit le spec neutre. */
@@ -239,7 +246,7 @@ export const EditionSR5 = {
       relancée à chaque tour de combat, et chaque tour se joue en passes
       d'initiative — −10 par passe, un combattant rapide rejoue tant que son
       score reste > 0 (SR5 p.159). `passDecrement > 0` active les passes. */
-  combatModel: { rerollEachRound: true, passDecrement: 10 },
+  combatModel: { rerollEachRound: true, passDecrement: 10, hasSoak: true },
   /** Disposition de combat (Vague D) : { down, morale } — lu par le tracker via
       l'API neutre, jamais de branche d'édition côté Encounter.
       SR5 « brutes » (p.381) : le moral est de GROUPE, selon le Professionnalisme,

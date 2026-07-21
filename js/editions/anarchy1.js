@@ -148,6 +148,11 @@ export const EditionAnarchy1 = {
     const attrs = pnj.attrs || {};
     return { base: Math.max(attrs.AGI || 0, attrs.LOG || 0), dice: 2 };
   },
+  /** Combat narratif : pas d'action d'interruption chiffrée ni de Défense
+      totale motorisée (contrat neutre → null, lu à l'aveugle par le tracker). */
+  fullDefenseFor() {
+    return null;
+  },
   /** Spec d'un combattant CI lancé dans l'initiative. Comme Anarchy 2,
       combat narratif → jeton sans init chiffrée. */
   icCombatant(ic) {
@@ -170,6 +175,7 @@ export const EditionAnarchy1 = {
     passDecrement: 0,
     narrative: true,
     threatReserve: true,
+    hasSoak: false,
   },
   /** Disposition de combat (Vague D) : Anarchy 1 n'a PAS de règle de combativité
       imprimée (seulement « Dangerosité », niveaux de dés) → morale toujours null

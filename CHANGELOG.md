@@ -12,6 +12,35 @@ commit.
 
 ## [Non publié]
 
+## [1.93.0] — 2026-07-22
+
+### Ajouté
+
+- **La Défense totale, motorisée.** Au tour d'un PJ, la console « Réagir » gagne
+  un bouton **⛨ Défense totale** (SR5/SR6) : d'un tap, le PNJ ajoute sa Volonté à
+  sa réserve de défense pour le round, et le coût d'initiative de l'édition est
+  appliqué automatiquement — **−10 au score d'initiative en SR5** (p.170), sans
+  coût en SR6 (p.48). Déclaration à sens unique par round.
+
+### Corrigé
+
+- **« Dégâts » déplie de nouveau ses crans.** Le bouton ✸ Dégâts de la console de
+  réaction ne réagissait plus (une règle CSS `display` écrasait l'attribut
+  `[hidden]`, laissant les crans affichés en permanence et le bouton sans effet) :
+  il rouvre les cases numériques (SR5/SR6) ou de gravité (Anarchy).
+- **Plus de « bouclier d'encaissement » là où le jeu n'en a pas.** L'Encaissement
+  ⛊ disparaît de la console en Anarchy 1re/2.0, dont le combat résout les dommages
+  par un seuil et non par un jet (Anarchy 2 p.68).
+- **Les crans légère / grave / incapacitante** reprennent les **couleurs du
+  moniteur** au lieu d'un rouge uniforme : la couleur porte de nouveau la gravité.
+
+### Modifié
+
+- **La fiche d'un PNJ en réaction s'ouvre en aperçu feuilletable** (⛶, balayage et
+  précédent/suivant, comme dans Jouer) plutôt qu'un accordéon vers le bas.
+- Dans la console de réaction et la carte active, les combattants portent le
+  **même nom compact** (surnom de rue) que dans la file d'attente.
+
 ## [1.92.0] — 2026-07-22
 
 ### Ajouté

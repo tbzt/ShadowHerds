@@ -27,13 +27,17 @@ export const CardPeek = {
   _id: null,
   _siblings: [],
   _returnFocus: null,
+  _view: null,
 
   /** Ouvre le coup d'œil sur `id`. `siblings` = ids consultables du casting,
-      dans l'ordre d'affichage, pour feuilleter sans refermer (prev/next). */
-  open(id, { siblings = [] } = {}) {
+      dans l'ordre d'affichage, pour feuilleter sans refermer (prev/next).
+      `view` (optionnel, ex. "combat") pose une vue de carte sur un clone au
+      rendu — le tracker s'en sert pour ouvrir directement la fiche en combat. */
+  open(id, { siblings = [], view = null } = {}) {
     const ent = PnjLookup.find(id);
     if (!ent) return; // défensif : serveurs & entités non rendues filtrés en amont
     this._returnFocus = document.activeElement;
+    this._view = view;
     this._siblings = siblings.length ? siblings.slice() : [id];
     this._show(id, ent);
   },
@@ -70,7 +74,16 @@ export const CardPeek = {
     const overlay = this._ensure();
     const body = overlay.querySelector(".card-peek-body");
     body.innerHTML = "";
-    body.appendChild(CardRenderer.render(ent, actions));
+    // Vue optionnelle (ex. "combat") : posée sur un CLONE — applyView écrit le
+    // pli, on ne veut pas polluer la carte bibliothèque. Rendu avec les deps
+    // live pour que les réserves restent lançables, comme la fiche active.
+    if (this._view) {
+      const clone = { ...ent, _zoneOpen: { ...ent._zoneOpen } };
+      CardRenderer.applyView(clone, this._view);
+      body.appendChild(CardRenderer.render(clone, actions, CardRenderer.liveDeps()));
+    } else {
+      body.appendChild(CardRenderer.render(ent, actions));
+    }
     overlay.querySelector(".card-peek-title").textContent = ent.name || "Sans nom";
 
     const multi = this._siblings.length > 1;

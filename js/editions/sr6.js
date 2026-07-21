@@ -327,6 +327,12 @@ export const EditionSR6 = {
   initiativeFor(pnj) {
     return { base: pnj.initBase, dice: pnj.initDice };
   },
+  /** Défense totale (SR6 p.48) : action majeure qui ajoute la Volonté aux
+      tests de défense jusqu'à la fin du round. Pas de coût d'initiative en SR6
+      (le modèle de passes −10 de SR5 n'existe plus, p.44) → initCost 0. */
+  fullDefenseFor(pnj) {
+    return { label: "Défense totale", bonus: Actor.attr(pnj, "VOL"), initCost: 0, note: "action majeure · fin du round" };
+  },
   /** Spec d'un combattant CI lancé dans l'initiative. Init du livre SR6 :
       Traitement de données ×2 + 3D6 (p.188). La règle vit ici (prohibition
       n°1) ; repli sur l'indice si le serveur n'a pas d'attributs ASDF posés. */
@@ -353,7 +359,7 @@ export const EditionSR6 = {
   /** edgeTracker : SR6 pilote l'Atout en combat (rangée de 7 jetons sur
       la fiche active, gain plafonné à +2/tour de personnage, p.50). Le tracker
       lit ce drapeau, jamais une branche d'édition. */
-  combatModel: { rerollEachRound: true, passDecrement: 0, edgeTracker: true },
+  combatModel: { rerollEachRound: true, passDecrement: 0, edgeTracker: true, hasSoak: true },
   /** Disposition de combat (Vague D) : { down, morale }. SR6 « figurants »
       (p.211) : DEUX couches. Groupe (comme SR5) selon le Professionnalisme sur
       la proportion d'alliés hors de combat ; et individuel — si les cases de

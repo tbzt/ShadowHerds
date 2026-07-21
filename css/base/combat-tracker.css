@@ -1785,17 +1785,16 @@
   border-color: var(--accent);
   color: var(--text);
 }
-.react-chevron {
+.react-peek-glyph {
   display: inline-block;
   font-size: var(--fs-md);
   line-height: 1;
-  transition: transform var(--dur-fast, 0.15s) var(--ease-emphasized, ease);
 }
-.react-expand-btn.is-open .react-chevron {
-  transform: rotate(180deg);
-}
-.react-expand-body {
-  margin: 0.2rem 0 0.1rem;
+/* Défense totale (⛨) déclarée pour le round : état allumé (SR5/SR6). La teinte
+   « acier » du rack (--cold) marque la réaction active sans crier au danger. */
+.react-fulldef-btn.is-on {
+  border-color: var(--cold);
+  background: color-mix(in srgb, var(--cold) 16%, var(--bg-card));
 }
 
 /* K8 : bouton « Dégâts » — le rouge se mérite, réservé à ce seul contrôle
@@ -1815,6 +1814,12 @@
   padding: 0.4rem;
   border: 1px dashed color-mix(in srgb, var(--danger) 45%, var(--border));
   border-radius: 4px;
+}
+/* L'attribut [hidden] pose display:none via la feuille UA, mais display:flex
+   ci-dessus (règle d'auteur) le battrait — sans cette garde, les chips restent
+   affichées en permanence et « Dégâts » ne déplie rien (bug corrigé). */
+.react-damage-chips[hidden] {
+  display: none;
 }
 .react-btn-danger {
   border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
