@@ -12,6 +12,28 @@ commit.
 
 ## [Non publié]
 
+## [1.89.0] — 2026-07-21
+
+### Ajouté
+
+- **Le plan de serveur.** Un site n'est presque jamais un seul serveur : la
+  Matrice mène à un serveur qui en protège d'autres — enchaînés, en arborescence,
+  hérissés d'appareils asservis, ou imbriqués les uns dans les autres — jusqu'à
+  celui qui tient les données (Anarchy 2 p.222 ; serveurs imbriqués de *Hacker
+  Vaillant* p.139 ; réseaux d'appareils asservis / WAN des livres de base
+  SR5/SR6). L'écran **Serveurs** porte un bouton **« ▤ Plan du site »** qui dessine
+  cette architecture pour le dossier courant — chaîne, arborescence, WAN ou hôtes
+  imbriqués selon l'édition —, construite gratuitement et à l'instant, comme le
+  « Plan tactique » d'un lieu. En mode édition, chaque serveur se voit désigner un
+  **point d'entrée** (Matrice publique ou connexion directe au câble) et, pour l'un
+  d'eux, le rôle de **nœud-cible** (celui qui tient les données) ; les deux sont
+  rappelés en badges sur sa carte.
+- **La Matrice de la scène, en carte navigable.** Quand plusieurs serveurs sont
+  piratés en parallèle dans une même rencontre, le tiroir Matrice affiche une
+  **mini-carte** de ces serveurs : le serveur affiché y est surligné, le nœud-cible
+  marqué, et **toucher un autre nœud** (ou l'activer au clavier) bascule le tiroir
+  dessus — la navigation entre serveurs actifs remplace l'ancien menu déroulant.
+
 ## [1.88.0] — 2026-07-21
 
 ### Ajouté

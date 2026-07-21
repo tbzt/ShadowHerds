@@ -468,6 +468,11 @@ export const TourSteps = {
       title: "Les écrans de la séance prennent l'identité du livre",
       body: "L'écran spectateur, le plan de lieu et le poste « Jouer » — ce que les joueurs regardent — portent désormais la direction artistique de leur édition. Sur l'écran spectateur, chaque combattant s'inscrit dans le coin coupé signature (net en SR6), sur un fond de fines lignes de balayage teinté du livre, et son moniteur est agrandi à l'échelle du vidéoprojecteur — sa forme restant celle du livre (jauge continue SR5/SR6, paliers de gravité Anarchy 2). Le plan de lieu dessine sa grille et sa salle-objectif à l'encre de l'édition (magenta SR6, rouge SR5, or Anarchy 2, bleu Anarchy 1) ; le poste « Jouer » file ses moments Avant / Pendant / Après d'un repère à l'accent du livre. La même vérité, habillée pour la table.",
     },
+    {
+      id: "wn-server-plan", anchor: "nav-matrix", tours: ["whatsnew"], since: "1.89.0", fallback: "center",
+      title: "Le plan de serveur",
+      body: "Un site n'est presque jamais un seul serveur. L'écran Serveurs porte un bouton « ▤ Plan du site » qui dessine l'architecture du dossier — chaîne, arborescence, WAN (appareils asservis) ou hôtes imbriqués selon l'édition —, gratuitement et à l'instant, comme le « Plan tactique » d'un lieu. En mode édition, désignez le point d'entrée d'un serveur (Matrice publique ou connexion directe au câble) et lequel tient les données cibles. Et quand plusieurs serveurs sont piratés dans une même scène, le tiroir Matrice en affiche une mini-carte : touchez un nœud pour basculer le tiroir sur ce serveur.",
+    },
   ],
 };
 
