@@ -388,10 +388,8 @@ export const DossierBar = {
     }).then((name) => {
       if (!name || !name.trim()) return;
       const clean = name.trim();
-      if (Dossiers.list().some((x) => x.name === clean)) {
-        toast("Ce nom existe déjà.", "warning");
-        return;
-      }
+      // Noms de scène NON uniques (appartenance par id, VIS-16 1-bis) : deux
+      // runs peuvent avoir chacun « La rencontre ».
       const d = Dossiers.add(clean, runId, "scene");
       if (d) this.select(d.id);
       toast(`Scène « ${clean} » créée (▷).`);

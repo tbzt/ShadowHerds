@@ -60,6 +60,26 @@ export const Play = {
           DossierBar.select(id);
           Notepad.open();
           break;
+        case "play-add-scene": {
+          // VIS-16 étape 2 — ajouter une scène à CE run depuis Jouer, sans
+          // quitter le run (pas de select). Création déléguée à Dossiers ; les
+          // noms de scène ne sont PLUS uniques (appartenance par id, 1-bis).
+          // Re-rend la barre + Jouer pour faire apparaître la scène.
+          const runId = id;
+          Dialog.prompt({
+            title: "Nouvelle scène",
+            label: "Nom de la scène",
+            placeholder: "ex. La rencontre au marché…",
+            confirmLabel: "Créer",
+          }).then((name) => {
+            if (!name || !name.trim()) return;
+            if (Dossiers.add(name.trim(), runId, "scene")) {
+              if (typeof DossierBar !== "undefined") DossierBar.render();
+              this.render();
+            }
+          });
+          break;
+        }
         case "play-debrief":
           // VIS-7 — clore la boucle : « qu'est-ce que ce run a laissé ? ».
           // Délégué à Debrief (paie/karma/réputation → Campaign, retombées →
@@ -379,7 +399,7 @@ export const Play = {
     // scène+intrusion = Pendant ; débrief = Après). Le vivant garde sa perche
     // privilégiée (doctrine Campagne›Run›Scène) : quand une scène tourne,
     // « Pendant » passe en tête ; à l'arrêt, « Avant » (la prépa) ouvre la lecture.
-    const avant = this._toposGlanceHtml(run.id) + this._castHtml(run.id);
+    const avant = this._toposGlanceHtml(run.id) + this._castHtml(run.id) + this._scenesHtml(run.id);
     const avantZone = avant ? this._momentHtml("Avant", "la prépa", avant) : "";
     const pendantZone = this._momentHtml("Pendant", "la scène", scene + this._matrixClockHtml());
     const apresZone = this._momentHtml(
@@ -558,6 +578,35 @@ export const Play = {
     return `<div class="play-cast">
       <div class="play-cast-label">Casting préparé</div>
       <div class="play-cast-chips">${chips}</div>
+    </div>`;
+  },
+
+  /** VIS-16 étape 2 — les SCÈNES d'un run, dans « Avant ». La scène est la
+      cellule de jeu : son casting = les entités rangées DEDANS (`_castHtml`
+      scopé sur l'id de scène — l'appartenance est par id depuis 1-bis) et son
+      carnet (✎ = `play-notes` sur l'id de scène, `Notebooks` étant par dossier).
+      « ▷ Nouvelle scène » délègue la création. Aucune donnée ici : tout est
+      projeté/délégué (une vérité, des lentilles). */
+  _scenesHtml(runId) {
+    const scenes = typeof Dossiers !== "undefined" ? Dossiers.scenesOf(runId) : [];
+    const rows = scenes
+      .map((s) => {
+        const name = CardRenderer._esc(s.name);
+        const cast = this._castHtml(s.id);
+        return `<div class="play-scene-row">
+          <div class="play-scene-head">
+            <span class="play-scene-icon" aria-hidden="true">▷</span>
+            <span class="play-scene-name">${name}</span>
+            <button class="btn-icon-tiny" data-action="play-notes" data-dossier="${s.id}" title="Carnet de « ${name} »">✎</button>
+          </div>
+          ${cast || `<div class="play-scene-castempty">Personne de rangé — glissez une fiche ou utilisez 🏷 sur une carte.</div>`}
+        </div>`;
+      })
+      .join("");
+    return `<div class="play-scenes">
+      <div class="play-scenes-label">Scènes</div>
+      ${rows}
+      <button class="btn-secondary btn-small" data-action="play-add-scene" data-dossier="${runId}" title="Ajouter une scène à ce run">▷ Nouvelle scène</button>
     </div>`;
   },
 
