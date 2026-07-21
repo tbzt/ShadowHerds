@@ -593,11 +593,25 @@ export const Play = {
       .map((s) => {
         const name = CardRenderer._esc(s.name);
         const cast = this._castHtml(s.id);
-        return `<div class="play-scene-row">
+        // VIS-16 étape 3 — la scène est JOUABLE : son moteur (Encounter) tourne
+        // au niveau de la scène, keyé par son id. Réutilise `play-resume` →
+        // DossierBar.openRencontre (le stash est déjà générique par id de
+        // dossier) : aucune migration, l'encounter run-level (rétro-compat)
+        // et scène-level coexistent.
+        const live = App.context && App.context.scene === s.id;
+        const stashed = typeof Encounter !== "undefined" && Encounter.hasStash(s.id);
+        const playLabel = live ? "Reprendre" : stashed ? "Rouvrir" : "▶ Jouer";
+        const playTitle = live
+          ? `Reprendre la scène « ${name} »`
+          : stashed
+            ? `Rouvrir la rencontre de « ${name} »`
+            : `Lancer la scène « ${name} »`;
+        return `<div class="play-scene-row${live ? " is-live" : ""}">
           <div class="play-scene-head">
             <span class="play-scene-icon" aria-hidden="true">▷</span>
             <span class="play-scene-name">${name}</span>
             <button class="btn-icon-tiny" data-action="play-notes" data-dossier="${s.id}" title="Carnet de « ${name} »">✎</button>
+            <button class="btn-secondary btn-small" data-action="play-resume" data-dossier="${s.id}" title="${playTitle}">${playLabel}</button>
           </div>
           ${cast || `<div class="play-scene-castempty">Personne de rangé — glissez une fiche ou utilisez 🏷 sur une carte.</div>`}
         </div>`;
