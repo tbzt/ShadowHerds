@@ -31,7 +31,16 @@ export const Intrusion = {
       alerted: false,
       turn: 0,
       ics: {},
-      marks: 0,
+      // Marks SR5, DEUX directions distinctes (les livres les séparent, max 3
+      // par cible, p.233) :
+      //  · marksOn {pnjId → 0..3} : marks de l'HÔTE sur chaque persona PJ.
+      //    Un seul compteur côté hôte, PARTAGÉ par toutes ses CI (et le spider,
+      //    qui pose au nom de l'hôte) — SR5 p.247 : les CI utilisent les marks
+      //    de leur hôte. Pas de compteur par CI : les livres les fusionnent.
+      //  · marksHeld 0..3 : marks de l'ÉQUIPE sur l'hôte (monnaie d'accès du
+      //    decker ; 3 = accès propriétaire, miroir SR5 de l'échelle SR6).
+      marksOn: {},
+      marksHeld: 0,
       ss: 0,
       ssLog: [],
       lastRollT: 0,
@@ -196,11 +205,28 @@ export const Intrusion = {
     DiceRoller.show(res, { label: `${name} — ${spec.suffix}`, who: srv.name });
   },
 
-  /* ---- Marks (SR5) ---- */
-  addMarks(id, delta) {
+  /* ---- Marks (SR5) — deux directions séparées ---- */
+
+  /** Marks de l'HÔTE (⇒ toutes ses CI + son spider) sur un persona PJ donné.
+      Compteur par cible (max 3, p.233) ; la clé disparaît à 0 pour garder
+      `marksOn` propre (une scène sans mark = objet vide). */
+  addMarkOn(id, pjId, delta) {
+    const intr = this._state(id);
+    if (!intr || !pjId) return;
+    intr.marksOn ||= {};
+    const next = Utils.clamp((intr.marksOn[pjId] || 0) + delta, 0, 3);
+    if (next > 0) intr.marksOn[pjId] = next;
+    else delete intr.marksOn[pjId];
+    this._persist();
+  },
+
+  /** Marks de l'ÉQUIPE sur l'hôte (monnaie d'accès du decker ; 3 = accès
+      propriétaire). Scalaire d'équipe : un seul infiltrateur dans le cas
+      courant, extensible si besoin. */
+  addMarkHeld(id, delta) {
     const intr = this._state(id);
     if (!intr) return;
-    intr.marks = Utils.clamp(intr.marks + delta, 0, 3);
+    intr.marksHeld = Utils.clamp((intr.marksHeld || 0) + delta, 0, 3);
     this._persist();
   },
 
@@ -247,7 +273,10 @@ export const Intrusion = {
     if (!confirm("Reboot du decker : SS et marks à zéro ?")) return;
     intr.ss = 0;
     intr.ssLog = [];
-    intr.marks = 0;
+    // Reboot : l'hôte perd ses marks sur les intrus ET l'équipe perd les
+    // siennes sur l'hôte (les accès sautent au reboot).
+    intr.marksOn = {};
+    intr.marksHeld = 0;
     intr.lastRollT = 0;
     this._persist();
     toast("SS remis à zéro (reboot : perte des marks, choc d'éjection en RV).");

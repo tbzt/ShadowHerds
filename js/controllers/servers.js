@@ -446,8 +446,11 @@ export const Servers = Object.assign(
           case "add-ss-2d6":
             Intrusion.addSS2D6(id);
             break;
-          case "add-marks":
-            Intrusion.addMarks(id, n());
+          case "mark-on":
+            Intrusion.addMarkOn(id, el.dataset.pj, n());
+            break;
+          case "mark-held":
+            Intrusion.addMarkHeld(id, n());
             break;
           case "add-ss":
             Intrusion.addSS(id, n(), el.dataset.label);

@@ -44,17 +44,6 @@ export const MagicAction = {
         else this.rerollDrain();
         return;
       }
-      // ✕ : efface le dernier jet mémorisé (prioritaire, ne lance pas).
-      const clr = e.target.closest("[data-spell-clear], [data-form-clear]");
-      if (clr) {
-        const isForm = clr.hasAttribute("data-form-clear");
-        this._clearLastCast(
-          clr.getAttribute("data-roll-pnj"),
-          clr.getAttribute(isForm ? "data-form-clear" : "data-spell-clear"),
-          isForm ? "complexForm" : "spell",
-        );
-        return;
-      }
       // Clic sur les succès = bascule du maintien (prioritaire, ne lance pas).
       const sus = e.target.closest("[data-spell-sustain], [data-form-sustain]");
       if (sus) {
@@ -78,17 +67,6 @@ export const MagicAction = {
     });
   },
 
-  /** Efface le dernier jet mémorisé d'un sort/d'une forme (maintenu terminé). */
-  _clearLastCast(pnjId, name, kind = "spell") {
-    const pnj = PnjLookup.find(pnjId);
-    if (!pnj) return;
-    const list = kind === "complexForm" ? pnj.complexForms : pnj.spells;
-    const entry = (list || []).find((s) => s && s.name === name);
-    if (entry && entry._lastCast) {
-      delete entry._lastCast;
-      this._hooks.onPnjChanged(pnj);
-    }
-  },
 
   /** Bascule le maintien du dernier effet lancé (sort/forme complexe). On ne
       maintient qu'un effet effectivement LANCÉ (`_lastCast` présent) — le flag

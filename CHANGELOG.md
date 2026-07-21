@@ -12,6 +12,32 @@ commit.
 
 ## [Non publié]
 
+## [1.87.0] — 2026-07-21
+
+### Ajouté
+
+- **Les marks matricielles SR5 se suivent dans les deux sens.** Le suivi
+  d'intrusion distinguait mal *qui* a marqué *qui* : un compteur unique « Marks du
+  serveur ». Il est remplacé par les deux directions que les livres séparent
+  (max 3 par cible, p.233). D'un côté, **les marks de l'hôte sur chaque PJ** :
+  une ligne par personnage connecté à la scène, car l'hôte peut avoir trois marks
+  sur le decker et une seule sur le rigger. Toutes les CI de l'hôte — et son
+  spider — **partagent** ce compteur (p.247) : on ne suit pas de marks par CI,
+  parce que la règle ne les sépare pas. De l'autre, **les marks de l'équipe sur
+  l'hôte**, la monnaie d'accès du decker (trois marks = accès propriétaire). Au
+  reboot, les deux repartent à zéro.
+
+## [1.86.1] — 2026-07-21
+
+### Modifié
+
+- **Un seul geste pour maintenir un sort/une forme.** Sur la ligne d'un effet —
+  dans le suivi de combat comme sur la fiche — le nombre de succès du dernier jet
+  bascule le maintien : clic pour maintenir (`→ N` → `⟳ N`), re-clic pour l'arrêter.
+  Le petit `✕` qui doublonnait cet arrêt (il ne servait qu'à *oublier* le dernier
+  jet, que le prochain jet réécrit de toute façon) est retiré. Le badge agrégé
+  `⟳ ×N · −N` et le malus de −2 dés par effet maintenu (SR5/SR6) sont inchangés.
+
 ## [1.86.0] — 2026-07-21
 
 ### Ajouté
