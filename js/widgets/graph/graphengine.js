@@ -110,51 +110,67 @@ export const GraphEngine = {
     this._loop(state);
   },
 
-  /* ---- Simulation (Fruchterman-Reingold léger, refroidissement) ---- */
+  /* ---- Simulation : intégration par VITESSE amortie (Verlet-like).
+     Les forces nourrissent une vélocité qui décroît par frottement — motion
+     lisse, sans le tressautement du déplacement direct plafonné. Force de
+     répulsion ET vitesse bornées : aucun nœud ne se téléporte, même très
+     proche d'un autre ou pendant un glisser. Le nœud saisi (`pinned`) ne bouge
+     que par le pointeur. Refroidit puis s'arrête (0 CPU au repos). ---- */
   _step(s) {
     const { N, E, W, H } = s;
-    const area = W * H;
-    const k = Math.sqrt(area / Math.max(1, N.length));
-    const disp = N.map(() => ({ x: 0, y: 0 }));
+    const n = N.length;
+    const k = Math.sqrt((W * H) / Math.max(1, n)); // distance de référence
+    const L = k;                 // longueur de lien cible
+    const CHARGE = k * k;        // intensité de répulsion
+    const FMAX = k * 0.6;        // accélération de répulsion plafonnée
+    const SPRING = 0.05;         // raideur des liens
+    const CENTER = 0.015;        // rappel au centre
+    const DECAY = 0.82;          // rétention de vitesse (frottement)
+    const VMAX = k * 0.5;        // vitesse max (anti-téléportation)
+    const alpha = s.alpha;
+    const ax = new Array(n).fill(0);
+    const ay = new Array(n).fill(0);
 
-    // Répulsion (toutes paires).
-    for (let i = 0; i < N.length; i++) {
-      for (let j = i + 1; j < N.length; j++) {
+    // Répulsion (toutes paires) — force ∝ 1/d², plafonnée.
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
         let dx = N[i].x - N[j].x, dy = N[i].y - N[j].y;
-        let d = Math.hypot(dx, dy) || 0.01;
-        const f = (k * k) / d;
+        let d2 = dx * dx + dy * dy || 0.01;
+        let d = Math.sqrt(d2);
+        const f = Math.min(CHARGE / d2, FMAX);
         const ux = dx / d, uy = dy / d;
-        disp[i].x += ux * f; disp[i].y += uy * f;
-        disp[j].x -= ux * f; disp[j].y -= uy * f;
+        ax[i] += ux * f; ay[i] += uy * f;
+        ax[j] -= ux * f; ay[j] -= uy * f;
       }
     }
-    // Attraction (le long des arêtes).
+    // Ressorts (liens) — rappel vers la longueur L.
     for (const e of E) {
       const a = N[e.a], b = N[e.b];
-      let dx = a.x - b.x, dy = a.y - b.y;
+      let dx = b.x - a.x, dy = b.y - a.y;
       let d = Math.hypot(dx, dy) || 0.01;
-      const f = (d * d) / k;
+      const f = (d - L) * SPRING;
       const ux = dx / d, uy = dy / d;
-      disp[e.a].x -= ux * f; disp[e.a].y -= uy * f;
-      disp[e.b].x += ux * f; disp[e.b].y += uy * f;
+      ax[e.a] += ux * f; ay[e.a] += uy * f;
+      ax[e.b] -= ux * f; ay[e.b] -= uy * f;
     }
-    // Centrage doux + intégration bornée par alpha.
-    const maxMove = k * s.alpha;
+    // Centrage + intégration vitesse/frottement (lissée par alpha).
     const cx = W / 2, cy = H / 2;
-    for (let i = 0; i < N.length; i++) {
-      const n = N[i];
-      if (n.pinned) continue;
-      disp[i].x += (cx - n.x) * 0.02 * k * 0.1;
-      disp[i].y += (cy - n.y) * 0.02 * k * 0.1;
-      let dl = Math.hypot(disp[i].x, disp[i].y) || 0.01;
-      const m = Math.min(dl, maxMove);
-      n.x += (disp[i].x / dl) * m;
-      n.y += (disp[i].y / dl) * m;
-      // Garder dans le cadre.
-      n.x = Math.max(20, Math.min(W - 20, n.x));
-      n.y = Math.max(24, Math.min(H - 28, n.y));
+    for (let i = 0; i < n; i++) {
+      const nd = N[i];
+      if (nd.pinned) { nd.vx = 0; nd.vy = 0; continue; }
+      ax[i] += (cx - nd.x) * CENTER;
+      ay[i] += (cy - nd.y) * CENTER;
+      nd.vx = (nd.vx + ax[i] * alpha) * DECAY;
+      nd.vy = (nd.vy + ay[i] * alpha) * DECAY;
+      const sp = Math.hypot(nd.vx, nd.vy);
+      if (sp > VMAX) { nd.vx = (nd.vx / sp) * VMAX; nd.vy = (nd.vy / sp) * VMAX; }
+      nd.x += nd.vx;
+      nd.y += nd.vy;
+      // Garder dans le cadre (amortir la vitesse au contact pour ne pas coller).
+      if (nd.x < 20) { nd.x = 20; nd.vx = 0; } else if (nd.x > W - 20) { nd.x = W - 20; nd.vx = 0; }
+      if (nd.y < 24) { nd.y = 24; nd.vy = 0; } else if (nd.y > H - 28) { nd.y = H - 28; nd.vy = 0; }
     }
-    s.alpha *= 0.96; // refroidissement
+    s.alpha *= 0.98; // refroidissement
   },
 
   _render(s) {
