@@ -17,13 +17,17 @@
 import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Collection } from "../widgets/collection/collection.js";
 import { Debug } from "../core/debug.js";
+import { Dialog } from "../widgets/kit/dialog.js";
 import { DossierBar } from "../widgets/journal/dossierbar.js";
+import { Dossiers } from "../widgets/journal/dossiers.js";
 import { Encounter } from "./encounter.js";
 import { Intrusion } from "./intrusion.js";
 import { Matrix } from "../rules/matrix.js";
+import { Portrait } from "./portrait.js";
 import { ServerGen } from "./servergen.js";
 import { ServerRenderer } from "../widgets/play/serverrenderer.js";
 import { SidebarToggle } from "../widgets/kit/sidebartoggle.js";
+import { TopologyGen } from "../rules/topologygen.js";
 import { Utils } from "../core/utils.js";
 
 export const Servers = Object.assign(
@@ -146,6 +150,66 @@ export const Servers = Object.assign(
       this.save();
       this.render();
       toast(`✓ ${srv.name} (indice ${srv.indice}) créé.`);
+    },
+
+    /* ========================================================
+       PLAN DE SERVEUR (lot A4) — schéma d'architecture du dossier
+       ========================================================
+       Miroir de RunGen.showMap (« Plan tactique ») pour la Matrice :
+       les serveurs du dossier courant deviennent les nœuds d'un graphe
+       (ordre = ordre du dossier), rendu par le leaf TopologyGen et
+       affiché dans la lightbox Portrait. Rien de lourd persisté — le
+       SVG se régénère de la graine (id du dossier). Le régime par
+       édition (archétypes, mode d'entrée, badge, cible) est lu via
+       Matrix.topology* — aucune branche `if (App.edition === …)`. */
+    async showTopology() {
+      const servers = DossierBar.memberIds(this)
+        .map((id) => this.find(id))
+        .filter(Boolean);
+      if (!servers.length) {
+        toast("Aucun serveur dans ce dossier à mettre en plan.");
+        return;
+      }
+      const ed = this._edition();
+      const archetypes = Matrix.use(ed).topologyArchetypes();
+      let archetype = archetypes[0].id;
+      // Laisser le MJ choisir la forme quand l'édition en propose plusieurs
+      // (A2 chaîne/arbo ; SR5/6 chaîne/WAN/imbriqués) — un seul tap, sinon rien.
+      if (archetypes.length > 1) {
+        const choice = await Dialog.choose({
+          title: "Forme du site",
+          message: "Comment ce site est-il agencé ?",
+          options: archetypes.map((a, i) => ({ value: a.id, label: a.label, primary: i === 0 })),
+        });
+        if (!choice) return; // annulé
+        archetype = choice;
+      }
+      const modes = Matrix.use(ed).topologyEntryModes();
+      const entryServer = servers.find((s) => s.entry);
+      const entryMode = entryServer
+        ? modes.find((m) => m.id === entryServer.entry) || modes[0]
+        : modes[0];
+      // Badge par ÉDITION DU SERVEUR (un dossier peut en mélanger) —
+      // jamais un badge neutre unique (Indice+ASDF / Indice+FW / pool).
+      const nodes = servers.map((s) => ({
+        name: s.name,
+        badge: Matrix.use(s.edition).topologyNodeBadge(s),
+        isTarget: !!s.isTarget,
+      }));
+      const accent = (App.editionModule && App.editionModule.mapAccent) || "#35e0e6";
+      const dossId = DossierBar.current;
+      const label = dossId === "all" ? "Tous les serveurs" : Dossiers.nameOf(dossId) || "Site";
+      const archLabel = (archetypes.find((a) => a.id === archetype) || {}).label || "";
+      const svg = TopologyGen.build({
+        archetype,
+        nodes,
+        seed: `${dossId}:${ed}`,
+        accent,
+        entryMode,
+        title: `Plan — ${label}`,
+        subtitle: `${servers.length} serveur${servers.length > 1 ? "s" : ""} · ${archLabel}`,
+      });
+      Portrait.showPreview(TopologyGen.dataUrl(svg), `Plan de serveur — ${label}`);
     },
 
     /* ---- Spider (decker de sécurité lié) — fabrication déléguée à ServerGen ---- */
@@ -401,6 +465,9 @@ export const Servers = Object.assign(
             break;
           case "create-server":
             this.createFromForm();
+            break;
+          case "show-topology":
+            this.showTopology();
             break;
           case "reroll-sculpture":
             this.rerollSculpture(id);

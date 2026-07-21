@@ -15,6 +15,7 @@ import { DiceRoller } from "../dice/diceroller.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
 import { Matrix } from "../../rules/matrix.js";
 import { ServerRenderer } from "./serverrenderer.js";
+import { TopologyGen } from "../../rules/topologygen.js";
 import { Utils } from "../../core/utils.js";
 
 export const EncounterRenderer = {
@@ -1626,23 +1627,32 @@ export const EncounterRenderer = {
     const dockTitle = document.getElementById("matrix-dock-title");
     if (dockTitle) dockTitle.textContent = srv ? "Matrice — " + srv.name : "Matrice";
 
-    // Plusieurs serveurs peuvent tourner en parallèle
-    // dans la scène (state.matrix) — un sélecteur n'apparaît que s'il y en a
-    // plus d'un (sinon le titre suffit, rien de neuf à l'écran par défaut).
-    const switcher =
+    // Plusieurs serveurs peuvent tourner en parallèle dans la scène
+    // (state.matrix) : une MINI-CARTE navigable (A5) n'apparaît que s'il y en
+    // a plus d'un (sinon le titre suffit). Nœuds cliquables/focusables
+    // (data-node → Encounter.linkServer, cf. drawerActions), serveur affiché
+    // surligné, nœud-cible marqué. Rendu FLUID (épouse la largeur du tiroir).
+    // TopologyGen reste pur : `data-node` est un marqueur, le tiroir décide de
+    // l'action (jamais de logique d'app dans le leaf).
+    const strip =
       srv && activeServers && activeServers.length > 1
-        ? `<select class="matrix-server-switch" data-action="switch-matrix-server" title="Serveur affiché dans le tiroir">
-            ${activeServers
-              .map((s) => `<option value="${s.id}" ${s.id === srv.id ? "selected" : ""}>${Utils.escHtml(s.name)}</option>`)
-              .join("")}
-          </select>`
+        ? `<div class="matrix-topo-strip" role="group" aria-label="Plan des serveurs de la scène — activer un nœud pour l'afficher">${TopologyGen.build({
+            archetype: "chain",
+            nodes: activeServers.map((s) => ({ id: s.id, name: s.name, badge: s.badge, isTarget: s.isTarget })),
+            activeId: srv.id,
+            interactive: true,
+            fluid: true,
+            seed: "scene",
+            accent: (App.editionModule && App.editionModule.mapAccent) || "#35e0e6",
+            entryMode: null,
+          })}</div>`
         : "";
     // inEncounter + launchedKeys : ServerRenderer ajoute « ⚔ Init » sur chaque
     // CI active pas encore dans l'ordre. Le reste du contenu est le panneau
     // d'intrusion réutilisé verbatim. Calculé une fois, posé dans les deux
     // montages (tiroir mobile/dock ≥1100px) — jamais recalculé deux fois.
     const html = srv
-      ? switcher +
+      ? strip +
         ServerRenderer.matrixDrawerHeader(srv) +
         ServerRenderer.intrusionPanel(srv, { inEncounter: true, launchedKeys: launchedKeys || [] })
       : "";

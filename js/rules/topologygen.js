@@ -125,25 +125,40 @@ function layout(archetype, nodes, rng) {
   return { edges, entry, entryIdx };
 }
 
+/* Surligne le nœud actif (2e contour, sans blur) et — en mode interactif —
+   l'enveloppe dans un `<g data-node>` focusable. `data-node` est un simple
+   marqueur d'identité : le leaf reste app-agnostique (c'est l'appelant qui
+   décide ce que « cliquer un nœud » veut dire, cf. tiroir Matrice A5). */
+function wrap(inner, nd, activeId, interactive) {
+  let s = inner;
+  if (nd.id != null && nd.id === activeId) {
+    s += `<rect x="${(nd.x - 3).toFixed(1)}" y="${(nd.y - 3).toFixed(1)}" width="${(nd.w + 6).toFixed(1)}" height="${(nd.h + 6).toFixed(1)}" rx="8" fill="none" stroke="${PAL.entry}" stroke-width="1.6"/>`;
+  }
+  if (interactive && nd.id != null) {
+    return `<g data-node="${esc(nd.id)}" tabindex="0" role="button" aria-label="Serveur ${esc(nd.name)}" style="cursor:pointer">${s}</g>`;
+  }
+  return s;
+}
+
 /* ---- Rendu d'un nœud (boîte + nom + badge + marque cible) ---- */
-function nodeBox(nd, accent) {
+function nodeBox(nd, accent, activeId, interactive) {
   const cx = nd.x + nd.w / 2;
   const t = nd.isTarget;
   let s = `<rect x="${nd.x.toFixed(1)}" y="${nd.y.toFixed(1)}" width="${nd.w.toFixed(1)}" height="${nd.h.toFixed(1)}" rx="6" fill="${t ? PAL.nodeTarget : PAL.node}" stroke="${t ? accent : PAL.nodeStroke}" stroke-width="${t ? 1.6 : 1.2}"/>`;
   s += `<text x="${cx.toFixed(1)}" y="${(nd.y + 21).toFixed(1)}" text-anchor="middle" fill="${t ? accent : PAL.label}" font-size="12" font-weight="500">${esc(clip(nd.name, nd.w))}</text>`;
   if (nd.badge) s += `<text x="${cx.toFixed(1)}" y="${(nd.y + 37).toFixed(1)}" text-anchor="middle" fill="${PAL.sub}" font-size="9.5">${esc(clip(nd.badge, nd.w, 5.2))}</text>`;
   if (t) s += `<text x="${cx.toFixed(1)}" y="${(nd.y + nd.h - 6).toFixed(1)}" text-anchor="middle" fill="${accent}" font-size="8" letter-spacing="1.5">✱ CIBLE</text>`;
-  return s;
+  return wrap(s, nd, activeId, interactive);
 }
 
 /* Rendu d'un nœud « cadre » (nested) : rectangle nommé au coin haut-gauche. */
-function frameBox(nd, accent, i) {
+function frameBox(nd, accent, i, activeId, interactive) {
   const t = nd.isTarget;
   let s = `<rect x="${nd.x.toFixed(1)}" y="${nd.y.toFixed(1)}" width="${nd.w.toFixed(1)}" height="${nd.h.toFixed(1)}" rx="7" fill="${t ? PAL.nodeTarget : (i % 2 ? PAL.bg : PAL.node)}" stroke="${t ? accent : PAL.nodeStroke}" stroke-width="${t ? 1.6 : 1.2}"/>`;
   s += `<text x="${(nd.x + 12).toFixed(1)}" y="${(nd.y + 18).toFixed(1)}" fill="${t ? accent : PAL.label}" font-size="11.5" font-weight="500">${esc(clip(nd.name, nd.w - 12))}</text>`;
   if (nd.badge) s += `<text x="${(nd.x + 12).toFixed(1)}" y="${(nd.y + 32).toFixed(1)}" fill="${PAL.sub}" font-size="9">${esc(clip(nd.badge, nd.w - 12, 5))}</text>`;
   if (t) s += `<text x="${(nd.x + 12).toFixed(1)}" y="${(nd.y + 46).toFixed(1)}" fill="${accent}" font-size="8" letter-spacing="1.5">✱ CIBLE</text>`;
-  return s;
+  return wrap(s, nd, activeId, interactive);
 }
 
 function edgeLine(x1, y1, x2, y2, dir) {
@@ -154,9 +169,12 @@ function edgeLine(x1, y1, x2, y2, dir) {
   return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="2"${dash}${end}${start}/>`;
 }
 
-function renderSVG(nodes, meta, accent, entryMode, title, subtitle, archetype) {
+function renderSVG(nodes, meta, accent, entryMode, title, subtitle, archetype, activeId, interactive, fluid) {
   const em = (entryMode && typeof entryMode === "object") ? entryMode : { glyph: "◎", label: "Entrée" };
-  let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" font-family="system-ui,sans-serif">`;
+  // `fluid` (surcouche navigable A5) : pas de width/height fixes → le SVG
+  // épouse son conteneur via viewBox (le tiroir Matrice le met à l'échelle).
+  const dims = fluid ? "" : `width="${W}" height="${H}" `;
+  let s = `<svg ${dims}viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" font-family="system-ui,sans-serif">`;
   s += `<title>Plan de serveur — ${esc(title || "site")}</title><desc>Schéma d'architecture : point d'entrée, enchaînement des serveurs et nœud tenant les données cibles.</desc>`;
   s += `<defs><marker id="topo-arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="${PAL.trail}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></marker>`;
   s += `<marker id="topo-entry" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="${PAL.entry}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>`;
@@ -165,7 +183,7 @@ function renderSVG(nodes, meta, accent, entryMode, title, subtitle, archetype) {
 
   if (archetype === "nested") {
     // Cadres emboîtés du plus grand (extérieur) au plus petit (cible).
-    nodes.forEach((nd, i) => { s += frameBox(nd, accent, i); });
+    nodes.forEach((nd, i) => { s += frameBox(nd, accent, i, activeId, interactive); });
     // Petite flèche du bord d'un cadre vers le cadre imbriqué suivant.
     for (let i = 0; i < nodes.length - 1; i++) {
       const a = nodes[i], b = nodes[i + 1];
@@ -192,7 +210,7 @@ function renderSVG(nodes, meta, accent, entryMode, title, subtitle, archetype) {
       }
       s += `<text x="${cx.toFixed(1)}" y="${(cy + 150 + 42).toFixed(1)}" text-anchor="middle" fill="${PAL.sub}" font-size="9">appareils asservis</text>`;
     }
-    nodes.forEach((nd) => { s += nodeBox(nd, accent); });
+    nodes.forEach((nd) => { s += nodeBox(nd, accent, activeId, interactive); });
   }
 
   // Flèche d'entrée (verte) vers le nœud d'entrée + libellé du mode.
@@ -221,13 +239,14 @@ export const TopologyGen = {
       `editionModule.mapAccent`. `entryMode` = `{ glyph, label }` (un
       élément de `Matrix.topologyEntryModes`). `archetype` ∈
       chain|branch|wan|nested (défaut chain). */
-  build({ archetype = "chain", nodes = [], seed = "", accent = "#35e0e6", entryMode, title = "", subtitle = "" } = {}) {
+  build({ archetype = "chain", nodes = [], seed = "", accent = "#35e0e6", entryMode, title = "", subtitle = "", activeId, interactive = false, fluid = false } = {}) {
     if (!nodes.length) return emptySvg(title, accent);
     // Copie défensive : on pose x/y/w/h sur les nœuds sans muter l'appelant.
-    const list = nodes.map((n) => ({ name: n.name, badge: n.badge, isTarget: !!n.isTarget }));
+    // `id` propagé pour la surcouche navigable A5 (marqueur data-node).
+    const list = nodes.map((n) => ({ id: n.id, name: n.name, badge: n.badge, isTarget: !!n.isTarget }));
     const rng = Utils.seededRandom(String(seed) + "#" + archetype);
     const meta = layout(archetype, list, rng);
-    return renderSVG(list, meta, accent, entryMode, title, subtitle, archetype);
+    return renderSVG(list, meta, accent, entryMode, title, subtitle, archetype, activeId, interactive, fluid);
   },
 
   /** Enveloppe un SVG en data URL (affichable dans un <img>, exportable). */
