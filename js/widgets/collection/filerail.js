@@ -104,7 +104,7 @@ export const FileRail = {
   /** Cible fraîche sous (x, y), pour le lâcher (indépendant du dernier hover). */
   dropTarget(x, y) {
     const el = this._targetElAt(x, y);
-    return el ? { el, name: el.dataset.dossierName } : null;
+    return el ? { el, name: el.dataset.dossierName, id: el.dataset.dossierId } : null;
   },
 
   _targetElAt(x, y) {

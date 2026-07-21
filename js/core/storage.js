@@ -161,7 +161,7 @@ export const Storage = {
       ajoutée à `_MIGRATIONS`. Publique (contrairement à `_MIGRATIONS`) : les
       paquets exportés (`Backup`) la tamponnent pour savoir, à l'import, s'ils
       ont besoin d'être migrés. Voir CONTRIBUTING.md § Versionner les schémas. */
-  SCHEMA_VERSION: 9,
+  SCHEMA_VERSION: 10,
 
   /** Chaîne de migrations de schéma, ordonnée par version croissante. Chaque
       `up()` mute le `localStorage` brut (pas de dépendance à `_edition`) et
@@ -548,6 +548,76 @@ export const Storage = {
         });
         if (migrated)
           Debug.warn("storage", "migration v9 (personaStructure)", { migrated });
+      },
+    },
+    {
+      v: 10,
+      /** VIS-16 (1-bis) — l'appartenance dossier↔entité (`*_groups`) était keyée
+          par NOM de dossier : fragile au renommage (casse silencieuse) et
+          imposant l'unicité globale des noms. On re-key par ID de dossier ; le
+          nom redevient un simple libellé (et deux scènes peuvent partager un
+          nom). Déterministe : les noms sont uniques avant cette migration (chaque
+          nom ↦ l'id de son nœud `Dossiers`). Le nœud « Favoris » réservé est
+          mappé via son id ; s'il manque alors que des favoris existent, on le
+          crée pour ne rien perdre. Idempotent : une clé déjà égale à un id de
+          nœud n'est pas re-mappée ; une clé-nom sans nœud est laissée telle
+          quelle (inerte, jamais supprimée). */
+      up() {
+        const P = "sr_pnj_v2_";
+        const FAV = "★ Favoris";
+        const suffixes = ["shadows_groups", "contacts_groups", "servers_groups", "characters_groups"];
+        const uid = () => "d" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        const mergeMembers = (a, b) => {
+          const bb = Array.isArray(b) ? b : [];
+          return Array.isArray(a) ? [...new Set([...a, ...bb])] : [...bb];
+        };
+        // Éditions concernées = segment entre le préfixe et un suffixe connu
+        // (robuste aux noms d'édition contenant un underscore, ex. « anarchy2 »).
+        const editions = new Set();
+        for (const suf of suffixes) {
+          const tail = "_" + suf;
+          for (const k of Object.keys(localStorage))
+            if (k.startsWith(P) && k.endsWith(tail))
+              editions.add(k.slice(P.length, k.length - tail.length));
+        }
+        let migrated = 0;
+        for (const ed of editions) {
+          const dkey = P + ed + "_dossiers";
+          let tree;
+          try { tree = JSON.parse(localStorage.getItem(dkey) || "[]"); } catch { tree = []; }
+          if (!Array.isArray(tree)) tree = [];
+          const ids = new Set();
+          const nameToId = {};
+          for (const n of tree)
+            if (n && n.id) { ids.add(n.id); if (n.name != null) nameToId[n.name] = n.id; }
+          let treeChanged = false;
+          const ensureFav = () => {
+            if (nameToId[FAV]) return nameToId[FAV];
+            const id = uid();
+            tree.push({ id, name: FAV, parentId: null });
+            nameToId[FAV] = id; ids.add(id); treeChanged = true;
+            return id;
+          };
+          for (const suf of suffixes) {
+            const gkey = P + ed + "_" + suf;
+            const raw = localStorage.getItem(gkey);
+            if (raw === null) continue;
+            let groups;
+            try { groups = JSON.parse(raw); } catch { continue; }
+            if (!groups || typeof groups !== "object" || Array.isArray(groups)) continue;
+            const next = {};
+            let changed = false;
+            for (const [key, members] of Object.entries(groups)) {
+              if (ids.has(key)) { next[key] = mergeMembers(next[key], members); continue; }
+              const id = nameToId[key] || (key === FAV ? ensureFav() : null);
+              if (id) { next[id] = mergeMembers(next[id], members); changed = true; }
+              else next[key] = mergeMembers(next[key], members); // orphelin réel : inerte
+            }
+            if (changed) { localStorage.setItem(gkey, JSON.stringify(next)); migrated++; }
+          }
+          if (treeChanged) localStorage.setItem(dkey, JSON.stringify(tree));
+        }
+        if (migrated) Debug.warn("storage", "migration v10 (groupsByDossierId)", { migrated });
       },
     },
   ],

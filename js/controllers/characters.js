@@ -204,8 +204,8 @@ export const Characters = Object.assign(
     },
     activeTeamMembers() {
       const node = this._activeTeamNode();
-      if (node && this.data.groups[node.name]) {
-        const ids = new Set(this.data.groups[node.name]);
+      if (node && this.data.groups[node.id]) {
+        const ids = new Set(this.data.groups[node.id]);
         return this.data.all.filter((p) => ids.has(p.id));
       }
       return this.data.all.slice();

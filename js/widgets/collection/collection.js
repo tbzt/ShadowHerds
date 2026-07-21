@@ -30,6 +30,23 @@ export const Collection = {
       transverse comme un autre, pinné en tête par DossierBar. */
   FAV_GROUP: "★ Favoris",
 
+  /** VIS-16 1-bis : l'appartenance est keyée par ID de dossier. La clé des
+      favoris = l'ID du nœud « Favoris ». `favId()` lit sans créer (pour l'état
+      pinné affiché sur chaque carte) ; `ensureFavId()` crée le nœud à la volée
+      au premier favori. */
+  favId() {
+    if (typeof Dossiers === "undefined") return null;
+    const node = Dossiers.roots().find((d) => d.name === this.FAV_GROUP);
+    return node ? node.id : null;
+  },
+  ensureFavId() {
+    const existing = this.favId();
+    if (existing) return existing;
+    if (typeof Dossiers === "undefined") return null;
+    const node = Dossiers.add(this.FAV_GROUP, null);
+    return node ? node.id : null;
+  },
+
   /**
    * @param {object} config
    *   key           identifiant court, porté par data-collection="..."
@@ -288,7 +305,8 @@ export const Collection = {
       fileInto(ids, groupKey) {
         if (!ids || !ids.length || !groupKey) return;
         this.addManyToGroup(ids, groupKey);
-        toast(`Déplacé vers « ${groupKey} ».`);
+        const label = (typeof Dossiers !== "undefined" && Dossiers.nameOf(groupKey)) || groupKey;
+        toast(`Déplacé vers « ${label} ».`);
         this.clearSelection();
       },
 
@@ -491,7 +509,7 @@ export const Collection = {
           groups.length === 0
             ? "Groupes"
             : groups.length === 1
-              ? groups[0]
+              ? (typeof Dossiers !== "undefined" && Dossiers.nameOf(groups[0])) || groups[0]
               : `${groups.length} groupes`;
         const btn = document.createElement("button");
         btn.type = "button";
@@ -507,7 +525,8 @@ export const Collection = {
         // Épingle rapide : même groupe multi-appartenance que le
         // bouton ci-dessus, juste une case réservée bascule en un clic —
         // aucun nouveau mécanisme de persistance.
-        const pinned = groups.includes(Collection.FAV_GROUP);
+        const favKey = Collection.favId();
+        const pinned = favKey ? groups.includes(favKey) : false;
         const pin = document.createElement("button");
         pin.type = "button";
         pin.className = "group-picker-trigger" + (pinned ? " has-groups" : "");
@@ -581,10 +600,10 @@ export const Collection = {
               GroupPicker.open(this, el.dataset.id, el);
               break;
             case "toggle-pin": {
-              const pinned = this.groupsOf(el.dataset.id).includes(
-                Collection.FAV_GROUP,
-              );
-              this.toggleGroup(el.dataset.id, Collection.FAV_GROUP, !pinned);
+              const favKey = Collection.ensureFavId();
+              if (!favKey) break;
+              const pinned = this.groupsOf(el.dataset.id).includes(favKey);
+              this.toggleGroup(el.dataset.id, favKey, !pinned);
               break;
             }
           }
@@ -907,7 +926,7 @@ export const Collection = {
         if (drop) {
           FileRail.pulse(drop.el);
           this._absorbGhost(ghost, drop.el);
-          this.fileInto(ids, drop.name); // écrit + accuse + vide la sélection
+          this.fileInto(ids, drop.id); // écrit + accuse + vide la sélection (par id)
         } else {
           this._dismissGhost(ghost);
         }

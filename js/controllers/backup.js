@@ -272,17 +272,30 @@ export const Backup = {
       this._writeRaw(edition, listKey, current);
     }
 
-    // Groupes : fusion par clé ; les membres (tableaux d'ids) sont unifiés
+    // Groupes : fusion par clé ; les membres (tableaux d'ids) sont unifiés.
+    // VIS-16 1-bis : l'appartenance est keyée par ID de dossier. Un backup d'un
+    // appareil NON migré arrive keyé par NOM → on re-key chaque clé-nom entrante
+    // vers l'id du nœud homonyme (dossiers déjà fusionnés ci-dessus). Une clé
+    // déjà = id de nœud, ou sans nœud (orphelin), est laissée telle quelle :
+    // aucune appartenance perdue au merge cross-device.
+    const mergedDossiers = this._readRaw(edition, "dossiers", []);
+    const dossierIds = new Set();
+    const dossierNameToId = {};
+    for (const n of Array.isArray(mergedDossiers) ? mergedDossiers : [])
+      if (n && n.id) { dossierIds.add(n.id); if (n.name != null) dossierNameToId[n.name] = n.id; }
+    const resolveGroupKey = (k) =>
+      dossierIds.has(k) ? k : (dossierNameToId[k] || k);
     for (const groupKey of ["shadows_groups", "contacts_groups", "servers_groups", "characters_groups"]) {
       if (!incoming[groupKey] || typeof incoming[groupKey] !== "object") continue;
       const current = this._readRaw(edition, groupKey, {});
       for (const [gname, members] of Object.entries(incoming[groupKey])) {
-        if (!current[gname]) {
-          current[gname] = Array.isArray(members) ? [...members] : members;
-        } else if (Array.isArray(current[gname]) && Array.isArray(members)) {
-          const set = new Set(current[gname]);
+        const key = resolveGroupKey(gname);
+        if (!current[key]) {
+          current[key] = Array.isArray(members) ? [...members] : members;
+        } else if (Array.isArray(current[key]) && Array.isArray(members)) {
+          const set = new Set(current[key]);
           members.forEach((m) => set.add(m));
-          current[gname] = [...set];
+          current[key] = [...set];
         }
       }
       this._writeRaw(edition, groupKey, current);

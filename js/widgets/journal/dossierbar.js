@@ -83,40 +83,34 @@ export const DossierBar = {
     for (const fn of this._listeners) fn();
   },
 
-  /** Réconcilie : tout groupe nommé présent dans une collection devient un
-      dossier (ajout non destructif, jointure par nom). Idempotent. */
-  syncDossiers() {
-    const known = new Set(Dossiers.list().map((d) => d.name));
-    for (const col of this._cols()) {
-      for (const name of Object.keys(col.data.groups || {})) {
-        if (name !== "all" && !known.has(name)) {
-          Dossiers.add(name);
-          known.add(name);
-        }
-      }
-    }
-  },
+  /** Historiquement : tout groupe nommé d'une collection devenait un dossier
+      (jointure par nom). Depuis VIS-16 1-bis l'appartenance est keyée par ID de
+      dossier — les clés de groupe SONT des ids de nœuds (ou des orphelins
+      inertes). La réconciliation par nom n'a plus lieu d'être ; l'import de
+      données legacy keyées par nom est re-keyé à l'import (`backup.js`). No-op
+      conservé pour ne pas toucher ses appelants. */
+  syncDossiers() {},
 
   /* ---- Sélection & destination ---- */
 
-  /** Noms d'un nœud + tous ses sous-groupes (un membre d'un sous-groupe
+  /** Clés d'appartenance d'un nœud + tous ses sous-groupes. Depuis VIS-16 1-bis
+      l'appartenance est keyée par ID de dossier (plus par nom) : ce sont donc
+      les ids du nœud et de ses descendants (un membre d'un sous-groupe
       appartient aussi à son dossier parent). */
-  _namesUnder(id) {
-    return [...Dossiers.descendantIds(id)]
-      .map((i) => Dossiers.nameOf(i))
-      .filter(Boolean);
+  _keysUnder(id) {
+    return [...Dossiers.descendantIds(id)];
   },
 
-  /** Noms couverts par la sélection courante ; null = « Tout ». */
-  currentNames() {
-    return this.current === "all" ? null : this._namesUnder(this.current);
+  /** Clés couvertes par la sélection courante ; null = « Tout ». */
+  currentKeys() {
+    return this.current === "all" ? null : this._keysUnder(this.current);
   },
 
-  _idsForNames(col, names) {
-    if (!names) return col.data.all.map((e) => e.id);
+  _idsForKeys(col, keys) {
+    if (!keys) return col.data.all.map((e) => e.id);
     const set = new Set();
-    for (const name of names) {
-      for (const id of col.data.groups[name] || []) set.add(id);
+    for (const key of keys) {
+      for (const id of col.data.groups[key] || []) set.add(id);
     }
     return [...set];
   },
@@ -127,13 +121,13 @@ export const DossierBar = {
       qui n'est pas forcément le dossier ouvert. Défaut = comportement
       historique (sélection courante), donc additif pour tous les appelants. */
   memberIds(col, dossierId = this.current) {
-    const names = dossierId === "all" ? null : this._namesUnder(dossierId);
-    return this._idsForNames(col, names);
+    const keys = dossierId === "all" ? null : this._keysUnder(dossierId);
+    return this._idsForKeys(col, keys);
   },
 
-  _countFor(names) {
+  _countFor(keys) {
     return this._cols().reduce(
-      (n, col) => n + this._idsForNames(col, names).length,
+      (n, col) => n + this._idsForKeys(col, keys).length,
       0,
     );
   },
@@ -145,16 +139,16 @@ export const DossierBar = {
       vers les nœuds du registre. Un groupe sans nœud correspondant (cas
       théorique avant syncDossiers) est simplement ignoré par le filtre. */
   dossiersOf(id) {
-    const names = new Set();
+    const keys = new Set();
     for (const col of this._cols()) {
-      for (const name of col.groupsOf(id)) names.add(name);
+      for (const key of col.groupsOf(id)) keys.add(key);
     }
-    return Dossiers.list().filter((d) => names.has(d.name));
+    return Dossiers.list().filter((d) => keys.has(d.id));
   },
 
   /** Nombre total d'entités (tous types) dans la sélection courante. */
   count() {
-    return this._countFor(this.currentNames());
+    return this._countFor(this.currentKeys());
   },
 
   /** Nœud dossier sélectionné, ou null pour « Tout ». */
@@ -166,8 +160,10 @@ export const DossierBar = {
       (via leur `currentGroup`). Le classement à la génération s'appuie
       dessus (cf. Shadows.savePNJ, ContactsBook.generate, Servers.create). */
   _applyCurrent() {
-    const name = this.current === "all" ? "all" : Dossiers.nameOf(this.current);
-    for (const col of this._cols()) col.currentGroup = name || "all";
+    // VIS-16 1-bis : l'appartenance est keyée par ID → la destination des
+    // collections est l'ID du dossier courant (plus le nom).
+    const key = this.current === "all" ? "all" : this.current;
+    for (const col of this._cols()) col.currentGroup = key;
   },
 
   select(id) {
@@ -236,7 +232,7 @@ export const DossierBar = {
       return `<div class="group-item ${active}" data-dossier-bar data-action="switch-dossier" data-dossier="${node.id}">
         <span class="group-item-icon">★</span>
         <span class="group-item-name">${nameEsc}</span>
-        <span class="group-item-count">${this._countFor(this._namesUnder(node.id))}</span>
+        <span class="group-item-count">${this._countFor(this._keysUnder(node.id))}</span>
       </div>`;
     }
     // « + » masqué au dernier niveau : un enfant dépasserait MAX_DEPTH.
@@ -248,9 +244,15 @@ export const DossierBar = {
     // (▸/↳). Réutilise le slot existant — aucun CSS neuf.
     const posIcon = isSub ? "↳" : "▸";
     const icon =
-      node.kind === "campaign" ? "❖" : node.kind === "run" ? "◆" : posIcon;
+      node.kind === "campaign" ? "❖"
+        : node.kind === "run" ? "◆"
+          : node.kind === "scene" ? "▷"
+            : posIcon;
     const kindTitle =
-      node.kind === "campaign" ? "Campagne" : node.kind === "run" ? "Run" : "";
+      node.kind === "campaign" ? "Campagne"
+        : node.kind === "run" ? "Run"
+          : node.kind === "scene" ? "Scène"
+            : "";
     // Typage a posteriori (menu ⋯) — réutilise le popover .card-menu déjà câblé
     // (CardMenu.bindDelegation) : aucun CSS ni handler neuf, juste des items
     // data-action="set-kind" pris par la délégation de cette barre.
@@ -265,17 +267,24 @@ export const DossierBar = {
           ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="close-rencontre" data-dossier="${node.id}">⏹ Fermer la rencontre</button>`
           : `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="open-rencontre" data-dossier="${node.id}">▶ ${Encounter.hasStash(node.id) ? "Rouvrir" : "Ouvrir"} la rencontre</button>`
         : "";
+    // VIS-16 étape 1 : créer une scène (cellule de jeu) sous un run. Réutilise
+    // le popover ⋯ et la délégation existants — aucun CSS ni handler neuf.
+    const sceneItem =
+      node.kind === "run"
+        ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="add-scene" data-dossier="${node.id}">▷ Nouvelle scène</button>`
+        : "";
     const typeMenu = `<button type="button" class="card-kebab btn-icon-tiny" data-card-menu-toggle aria-haspopup="true" aria-expanded="false" title="Type de dossier" aria-label="Type de dossier">⋯</button>
         <div class="card-menu" role="menu" hidden>
           ${kindItem("campaign", "Campagne")}
           ${kindItem("run", "Run")}
           ${node.kind ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="set-kind" data-kind="" data-dossier="${node.id}">Retirer le type</button>` : ""}
+          ${sceneItem}
           ${rencontreItem}
         </div>`;
     return `<div class="group-item${sub} ${active}"${style} data-dossier-bar data-action="switch-dossier" data-dossier="${node.id}">
       <span class="group-item-icon"${kindTitle ? ` title="${kindTitle}"` : ""}>${icon}</span>
       <span class="group-item-name">${nameEsc}</span>
-      <span class="group-item-count">${this._countFor(this._namesUnder(node.id))}</span>
+      <span class="group-item-count">${this._countFor(this._keysUnder(node.id))}</span>
       <span class="group-item-actions">
         ${addBtn}
         <button class="btn-icon-tiny" data-dossier-bar data-action="rename-dossier" data-dossier="${node.id}" title="Renommer">✎</button>
@@ -360,6 +369,35 @@ export const DossierBar = {
     });
   },
 
+  /** VIS-16 étape 1 : crée une scène (nœud typé `scene`) sous un run. La scène
+      est la cellule de jeu — son cast et ses outils s'y rattacheront par
+      référence (étapes 2-3). Réutilise l'unicité de nom (l'appartenance des
+      collections se joint par nom de dossier). */
+  addScene(runId) {
+    const run = Dossiers.get(runId);
+    if (!run || run.kind !== "run") return;
+    if (this._depthOf(runId) >= this.MAX_DEPTH) {
+      toast("Profondeur maximale atteinte (4 niveaux).", "warning");
+      return;
+    }
+    Dialog.prompt({
+      title: "Nouvelle scène",
+      label: "Nom de la scène",
+      placeholder: "ex. La rencontre au marché…",
+      confirmLabel: "Créer",
+    }).then((name) => {
+      if (!name || !name.trim()) return;
+      const clean = name.trim();
+      if (Dossiers.list().some((x) => x.name === clean)) {
+        toast("Ce nom existe déjà.", "warning");
+        return;
+      }
+      const d = Dossiers.add(clean, runId, "scene");
+      if (d) this.select(d.id);
+      toast(`Scène « ${clean} » créée (▷).`);
+    });
+  },
+
   renameDossier(id) {
     const d = Dossiers.get(id);
     if (!d) return;
@@ -381,13 +419,9 @@ export const DossierBar = {
         return;
       }
       Dossiers.rename(id, newName);
-      for (const col of this._cols()) {
-        if (col.data.groups[oldName]) {
-          col.data.groups[newName] = col.data.groups[oldName];
-          delete col.data.groups[oldName];
-          col.save();
-        }
-      }
+      // VIS-16 1-bis : l'appartenance est keyée par ID → renommer ne change
+      // qu'un libellé, aucune migration de clé de groupe (fin de la casse
+      // silencieuse au renommage, cf. mémoire identités-SIN).
       this._applyCurrent();
       this.render();
       this._notify();
@@ -430,13 +464,13 @@ export const DossierBar = {
       danger: true,
     }).then((ok) => {
       if (!ok) return;
-      const names = this._namesUnder(id);
+      const keys = this._keysUnder(id);
       Dossiers.remove(id);
       for (const col of this._cols()) {
         let changed = false;
-        for (const name of names) {
-          if (col.data.groups[name]) {
-            delete col.data.groups[name];
+        for (const key of keys) {
+          if (col.data.groups[key]) {
+            delete col.data.groups[key];
             changed = true;
           }
         }
@@ -464,6 +498,9 @@ export const DossierBar = {
           break;
         case "add-subgroup":
           this.addSubgroup(el.dataset.parent);
+          break;
+        case "add-scene":
+          this.addScene(el.dataset.dossier);
           break;
         case "rename-dossier":
           this.renameDossier(el.dataset.dossier);

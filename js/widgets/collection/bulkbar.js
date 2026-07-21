@@ -44,7 +44,7 @@ export const BulkBar = {
           break;
         }
         case "bulk-move-to":
-          this._moveTo(el.dataset.dossierName);
+          this._moveTo(el.dataset.dossierId);
           break;
         case "bulk-link": {
           const menu = document.getElementById("bulk-link-menu");
@@ -102,7 +102,7 @@ export const BulkBar = {
       ? dossiers
           .map(
             (d) =>
-              `<button class="bulk-move-item" data-action="bulk-move-to" data-dossier-name="${CardRenderer._esc(d.name)}">${CardRenderer._esc(d.name)}</button>`,
+              `<button class="bulk-move-item" data-action="bulk-move-to" data-dossier-id="${CardRenderer._esc(d.id)}">${CardRenderer._esc(d.name)}</button>`,
           )
           .join("")
       : `<span class="bulk-move-empty">Aucun dossier — créez-en un via « 🏷 Groupes ».</span>`;
@@ -166,10 +166,11 @@ export const BulkBar = {
     this._col.linkManyToTeam(this._col.selectedIds());
   },
 
-  _moveTo(name) {
-    if (!this._col || !name) return;
+  _moveTo(dossierId) {
+    if (!this._col || !dossierId) return;
     // Chemin d'écriture unique, partagé avec le glisser-déposer (FileRail).
-    this._col.fileInto(this._col.selectedIds(), name);
+    // VIS-16 1-bis : la cible est l'ID du dossier (l'appartenance est keyée id).
+    this._col.fileInto(this._col.selectedIds(), dossierId);
   },
 
   async _delete() {

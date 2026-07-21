@@ -51,6 +51,16 @@ export const Dossiers = {
   children(parentId) {
     return this._tree.filter((d) => d.parentId === parentId);
   },
+  /** Runs (kind:"run") enfants directs d'une campagne (VIS-16). */
+  runsOf(campaignId) {
+    return this.children(campaignId).filter((d) => d.kind === "run");
+  },
+  /** Scènes (kind:"scene") enfants directs d'un run (VIS-16). La scène est la
+      cellule de jeu : ses participants et outils s'y rattachent par référence,
+      son état de jeu vit dans l'Encounter (jamais recopié sur les Actifs). */
+  scenesOf(runId) {
+    return this.children(runId).filter((d) => d.kind === "scene");
+  },
   get(id) {
     return this._tree.find((d) => d.id === id) || null;
   },
