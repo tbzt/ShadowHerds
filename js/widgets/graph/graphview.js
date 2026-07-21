@@ -18,6 +18,7 @@ export const GraphView = {
   _el: null,
   _lastScope: null,
   _weave: false,
+  _halo: true, // B4 : afficher la couronne de voisins hors périmètre (estompée)
 
   /** Ouvre le graphe. `focusId` = centrer sur une entité + ses voisines ;
       `memberIds` = restreindre à un ensemble (portée dossier, résolue par
@@ -27,6 +28,7 @@ export const GraphView = {
     this._weave = false; // chaque ouverture démarre en mode déplacement
     const overlay = this._ensure();
     this._reflectWeave(overlay);
+    this._reflectHalo(overlay);
     overlay.querySelector('[data-graph="title"]').textContent = title;
     overlay.classList.add("open");
     // Monter synchrone : lire `clientWidth` (dans _project) force le reflow,
@@ -46,7 +48,7 @@ export const GraphView = {
     const host = overlay.querySelector('[data-graph="canvas"]');
     const empty = overlay.querySelector('[data-graph="empty"]');
     const { focusId, memberIds } = this._lastScope || {};
-    const graph = GraphProjections.buildRelationGraph({ focusId, memberIds });
+    const graph = GraphProjections.buildRelationGraph({ focusId, memberIds, halo: this._halo });
 
     if (!graph.nodes.length) {
       host.hidden = true;
@@ -89,6 +91,14 @@ export const GraphView = {
     btn.classList.toggle("active", this._weave);
   },
 
+  /** Reflète l'état du halo (voisins) sur le bouton (aria-pressed + classe). */
+  _reflectHalo(overlay) {
+    const btn = overlay.querySelector('[data-graph-action="toggle-halo"]');
+    if (!btn) return;
+    btn.setAttribute("aria-pressed", String(this._halo));
+    btn.classList.toggle("active", this._halo);
+  },
+
   _ensure() {
     if (this._el) return this._el;
     const overlay = document.createElement("div");
@@ -100,6 +110,7 @@ export const GraphView = {
       <div class="modal graph-modal">
         <div class="modal-header">
           <span class="modal-title" data-graph="title">Liens</span>
+          <button class="graph-halo-toggle" data-graph-action="toggle-halo" aria-pressed="true" title="Afficher les voisins hors périmètre (estompés)">Voisins</button>
           <button class="graph-weave-toggle" data-graph-action="toggle-weave" aria-pressed="false" title="Tisser un lien : tirer d'un nœud à l'autre">◈ Tisser</button>
           <button class="modal-close" data-graph-action="close" aria-label="Fermer">✕</button>
         </div>
@@ -118,6 +129,10 @@ export const GraphView = {
         this._weave = !this._weave;
         this._reflectWeave(overlay);
         GraphEngine.setWeave(this._weave);
+      } else if (btn.dataset.graphAction === "toggle-halo") {
+        this._halo = !this._halo;
+        this._reflectHalo(overlay);
+        this._project(); // re-projeter avec/sans la couronne de voisins
       }
     });
     document.addEventListener("keydown", (e) => {

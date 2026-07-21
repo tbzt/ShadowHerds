@@ -59,10 +59,11 @@ export const GraphEngine = {
     svg.appendChild(gEdges);
     svg.appendChild(gNodes);
 
-    // Arêtes (lignes) + label optionnel.
+    // Arêtes (lignes) — estompées si l'un des bouts est hors périmètre (halo).
     for (const e of E) {
       const line = document.createElementNS(NS, "line");
-      line.setAttribute("class", "graph-edge");
+      const dim = N[e.a].inScope === false || N[e.b].inScope === false;
+      line.setAttribute("class", dim ? "graph-edge halo" : "graph-edge");
       line.setAttribute("stroke", accent);
       e._line = line;
       gEdges.appendChild(line);
@@ -71,7 +72,7 @@ export const GraphEngine = {
     // Nœuds : cercle + glyphe + label, chacun dans un <g data-node-id>.
     for (const n of N) {
       const g = document.createElementNS(NS, "g");
-      g.setAttribute("class", "graph-node");
+      g.setAttribute("class", n.inScope === false ? "graph-node halo" : "graph-node");
       g.setAttribute("data-node-id", n.id);
       g.setAttribute("tabindex", "0");
       g.setAttribute("role", "button");

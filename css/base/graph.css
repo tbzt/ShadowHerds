@@ -93,9 +93,8 @@
 }
 
 /* ---- Tissage (B2b) : créer un lien en tirant d'un nœud à l'autre ---- */
+.graph-halo-toggle,
 .graph-weave-toggle {
-  margin-left: auto;
-  margin-right: 8px;
   padding: 3px 10px;
   font-size: 0.78rem;
   border: 1px solid var(--border, #2a3a49);
@@ -104,10 +103,26 @@
   color: var(--text-dim, #9fb0c0);
   cursor: pointer;
 }
+.graph-halo-toggle {
+  margin-left: auto; /* pousse le groupe de contrôles à droite */
+  margin-right: 6px;
+}
+.graph-weave-toggle {
+  margin-right: 8px;
+}
+.graph-halo-toggle.active,
 .graph-weave-toggle.active {
   border-color: var(--accent, #35e0e6);
   color: var(--accent, #35e0e6);
   background: color-mix(in srgb, var(--accent, #35e0e6) 12%, transparent);
+}
+
+/* Périmètre (B4) : les voisins hors portée sont estompés (halo). */
+.graph-node.halo {
+  opacity: 0.4;
+}
+.graph-edge.halo {
+  stroke-opacity: 0.16;
 }
 
 /* En mode tissage, le curseur invite à relier. */

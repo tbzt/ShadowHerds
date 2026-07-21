@@ -19,38 +19,54 @@
    ============================================================ */
 
 export const GraphProjections = {
+  /** Voisins directs d'un ensemble d'ids (les bouts d'arête hors de l'ensemble). */
+  _neighborsOf(edges, idSet) {
+    const out = new Set();
+    for (const e of edges) {
+      if (idSet.has(e.from) && !idSet.has(e.to)) out.add(e.to);
+      if (idSet.has(e.to) && !idSet.has(e.from)) out.add(e.from);
+    }
+    return out;
+  },
+
   /** Projette la lentille « relations ». Lit RelationsStore + PnjLookup,
-      tous deux résolveurs (jamais de store parallèle). */
-  buildRelationGraph({ focusId = null, memberIds = null } = {}) {
+      tous deux résolveurs (jamais de store parallèle). `halo` (B4) : quand la
+      portée est bornée (focus ou membres), ajoute une couronne de voisins
+      immédiats HORS portée, marqués `inScope:false` — le périmètre en plein, ses
+      voisins estompés. */
+  buildRelationGraph({ focusId = null, memberIds = null, halo = false } = {}) {
     const store = typeof RelationsStore !== "undefined" ? RelationsStore : null;
     const edges = (store ? store.all() : []).filter((e) => e && e.from && e.to);
 
-    // 1. Univers de nœuds selon la portée.
-    let nodeIds;
+    // 1. Le CŒUR (in-scope) selon la portée.
+    let core;
     if (focusId) {
-      nodeIds = new Set([focusId]);
-      for (const e of edges) {
-        if (e.from === focusId) nodeIds.add(e.to);
-        if (e.to === focusId) nodeIds.add(e.from);
-      }
+      core = new Set([focusId]);
+      for (const nb of this._neighborsOf(edges, core)) core.add(nb); // focus + voisins directs
     } else if (Array.isArray(memberIds)) {
-      nodeIds = new Set(memberIds);
+      core = new Set(memberIds);
     } else {
-      nodeIds = new Set();
-      for (const e of edges) {
-        nodeIds.add(e.from);
-        nodeIds.add(e.to);
-      }
+      core = new Set();
+      for (const e of edges) { core.add(e.from); core.add(e.to); }
     }
 
-    // 2. Résolution typée ; un id non résolu est écarté (jamais un nœud fantôme).
+    // 2. Le HALO : voisins immédiats du cœur, hors cœur (portée bornée seulement).
+    const bounded = !!focusId || Array.isArray(memberIds);
+    const haloSet = halo && bounded ? this._neighborsOf(edges, core) : new Set();
+    const included = new Set([...core, ...haloSet]);
+
+    // 3. Résolution typée ; un id non résolu est écarté (jamais un nœud fantôme).
     const nodes = [];
-    for (const id of nodeIds) {
+    for (const id of included) {
       const loc = typeof PnjLookup !== "undefined" ? PnjLookup.locate(id) : null;
-      if (loc) nodes.push({ id, label: loc.name || "Sans nom", type: loc.type, pcColor: loc.pcColor || null });
+      if (loc)
+        nodes.push({
+          id, label: loc.name || "Sans nom", type: loc.type,
+          pcColor: loc.pcColor || null, inScope: core.has(id),
+        });
     }
 
-    // 3. Arêtes dont les deux bouts sont présents (orphelines écartées).
+    // 4. Arêtes dont les deux bouts sont présents (orphelines écartées).
     const present = new Set(nodes.map((n) => n.id));
     const keptEdges = edges
       .filter((e) => present.has(e.from) && present.has(e.to))
