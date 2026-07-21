@@ -137,6 +137,10 @@ export const ServerRenderer = {
 
     const intr = this._intr(srv);
     const catalog = Matrix.use(srv.edition).icCatalog();
+    // Badges topologie (lot A) : point d'entrée + nœud-cible, si renseignés.
+    const entryMode = srv.entry
+      ? Matrix.use(srv.edition).topologyEntryModes().find((m) => m.id === srv.entry)
+      : null;
 
     /* -- header + stats -- */
     // Dispatch structurel accepté : deux blocs complets
@@ -194,6 +198,8 @@ export const ServerRenderer = {
     card.innerHTML = `
       <div class="server-card-header">
         <span class="server-name" title="${esc(srv.profile || "")}">${esc(srv.name)}</span>
+        ${entryMode ? `<span class="server-badge" title="Point d'entrée : ${esc(entryMode.label)}">${esc(entryMode.glyph)}</span>` : ""}
+        ${srv.isTarget ? `<span class="server-badge" title="Nœud-cible (${esc(Matrix.use(srv.edition).topologyTargetLabel())})">✱</span>` : ""}
         <span class="server-badge">Indice ${srv.indice}</span>
       </div>
       <div class="server-card-body">
@@ -226,6 +232,21 @@ export const ServerRenderer = {
     )
       .map((n) => `<option value="${n}" ${n === srv.indice ? "selected" : ""}>${n}</option>`)
       .join("");
+
+    /* Topologie (lot A) — rôle du serveur dans un site : point d'entrée +
+       nœud-cible. Modes d'entrée et libellé de cible par édition (via Matrix,
+       jamais de branche `if edition`). Lus à la validation (_commitEdit),
+       comme secphys/profil — champs de formulaire, pas de handler inline. */
+    const entryModes = Matrix.use(srv.edition).topologyEntryModes();
+    const entryOpts =
+      `<option value="">— aucun —</option>` +
+      entryModes
+        .map(
+          (m) =>
+            `<option value="${m.id}" ${srv.entry === m.id ? "selected" : ""}>${esc(m.glyph)} ${esc(m.label)}</option>`,
+        )
+        .join("");
+    const targetLabel = Matrix.use(srv.edition).topologyTargetLabel();
 
     const attrsHtml = !Matrix.use(srv.edition).hasAttrs()
       ? ""
@@ -278,6 +299,11 @@ export const ServerRenderer = {
         ${App.getEditionModule(srv.edition)?.secPhysBonus
           ? `<label class="ic-choice"><input type="checkbox" id="se-${id}-secphys" ${srv.secPhys ? "checked" : ""}>Gère la sécurité physique</label>`
           : ""}
+        <div class="server-edit-row">
+          <label class="server-edit-label">Point d'entrée
+            <select id="se-${id}-entry">${entryOpts}</select></label>
+        </div>
+        <label class="ic-choice"><input type="checkbox" id="se-${id}-target" ${srv.isTarget ? "checked" : ""}>Nœud-cible (tient les ${esc(targetLabel)})</label>
         ${attrsHtml}
         <label class="server-edit-label">Sculpture
           <textarea id="se-${id}-sculpture" rows="3">${esc(srv.sculpture || "")}</textarea></label>

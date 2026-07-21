@@ -242,6 +242,16 @@ export const Servers = Object.assign(
       const scEl = val("sculpture");
       if (scEl) srv.sculpture = scEl.value.trim();
 
+      // Topologie (lot A) : point d'entrée + nœud-cible. Absents = défauts
+      // (aucune migration) — on retire le champ plutôt que d'y poser "".
+      const entryEl = val("entry");
+      if (entryEl) {
+        if (entryEl.value) srv.entry = entryEl.value;
+        else delete srv.entry;
+      }
+      const targetEl = val("target");
+      if (targetEl) srv.isTarget = targetEl.checked;
+
       this.save();
     },
 
