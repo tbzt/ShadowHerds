@@ -61,6 +61,74 @@ export const Dossiers = {
   scenesOf(runId) {
     return this.children(runId).filter((d) => d.kind === "scene");
   },
+
+  /* ---- Arêtes de succession → (VIS-16 étape 4 : « enchaîner »).
+     La MÊME grammaire aux 3 échelles (scène→scène, run→run, campagne→campagne).
+     On ne pose ici que le champ `node.next` (ids) + sa lecture/mutation ;
+     l'ÉDITION visuelle des arêtes (glisser pour lier) est portée par VIS-15. */
+  /** Successeurs directs d'un nœud : nœuds existants pointés par `node.next`. */
+  successorsOf(id) {
+    const node = this.get(id);
+    const ids = node && Array.isArray(node.next) ? node.next : [];
+    return ids.map((i) => this.get(i)).filter(Boolean);
+  },
+  /** Ajoute une arête `from → to` (additif, idempotent ; refuse la boucle
+      immédiate et une cible inexistante). */
+  linkNext(fromId, toId) {
+    const node = this.get(fromId);
+    if (!node || fromId === toId || !this.has(toId)) return false;
+    node.next = Array.isArray(node.next) ? node.next : [];
+    if (!node.next.includes(toId)) {
+      node.next.push(toId);
+      this.save();
+    }
+    return true;
+  },
+  /** Retire l'arête `from → to`. */
+  unlinkNext(fromId, toId) {
+    const node = this.get(fromId);
+    if (!node || !Array.isArray(node.next)) return false;
+    const i = node.next.indexOf(toId);
+    if (i >= 0) {
+      node.next.splice(i, 1);
+      this.save();
+    }
+    return true;
+  },
+
+  /** VIS-16 étape 5 — duplique un sous-arbre (campagne ⊃ runs ⊃ scènes) avec de
+      NOUVEAUX ids : une nouvelle prépa autonome pour jouer avec une autre équipe.
+      Copie la structure ET les champs (dont les liaisons d'outils par ref et
+      `next`, ce dernier remappé À L'INTÉRIEUR du sous-arbre ; les liens sortants
+      sont abandonnés). **Les Actifs ne sont PAS dupliqués** — le re-pointage de
+      l'appartenance (keyée par id) est fait par l'appelant via `idMap`. L'état de
+      jeu (Encounter) n'est jamais copié : la partie repart vierge.
+      Renvoie `{ rootId, idMap }` (idMap : ancien id → nouvel id). */
+  duplicateSubtree(rootId, { newName } = {}) {
+    const root = this.get(rootId);
+    if (!root) return null;
+    const ids = [...this.descendantIds(rootId)]; // racine + descendants
+    const idMap = {};
+    for (const oldId of ids) idMap[oldId] = Utils.uid();
+    const clones = ids.map((oldId) => {
+      const src = this.get(oldId);
+      const copy = { ...src, id: idMap[oldId] };
+      copy.parentId =
+        oldId === rootId
+          ? src.parentId || null
+          : idMap[src.parentId] || src.parentId;
+      if (Array.isArray(src.next))
+        copy.next = src.next.filter((n) => idMap[n]).map((n) => idMap[n]);
+      return copy;
+    });
+    const newRoot = clones.find((c) => c.id === idMap[rootId]);
+    if (newRoot)
+      newRoot.name =
+        newName && newName.trim() ? newName.trim() : `${newRoot.name} (copie)`;
+    this._tree.push(...clones);
+    this.save();
+    return { rootId: idMap[rootId], idMap };
+  },
   get(id) {
     return this._tree.find((d) => d.id === id) || null;
   },
@@ -129,6 +197,9 @@ export const Dossiers = {
   remove(id) {
     const doomed = this.descendantIds(id);
     this._tree = this._tree.filter((d) => !doomed.has(d.id));
+    // Intégrité VIS-16 : purge les arêtes de succession pointant vers un nœud retiré.
+    for (const d of this._tree)
+      if (Array.isArray(d.next)) d.next = d.next.filter((n) => !doomed.has(n));
     this.save();
     return doomed;
   },

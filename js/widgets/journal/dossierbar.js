@@ -273,12 +273,19 @@ export const DossierBar = {
       node.kind === "run"
         ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="add-scene" data-dossier="${node.id}">▷ Nouvelle scène</button>`
         : "";
+    // VIS-16 étape 5 : dupliquer une campagne pour la mener avec une autre équipe
+    // (copie de la prépa, état de jeu vierge). Réservé aux campagnes.
+    const duplicateItem =
+      node.kind === "campaign"
+        ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="duplicate-dossier" data-dossier="${node.id}">⎘ Dupliquer (autre équipe)</button>`
+        : "";
     const typeMenu = `<button type="button" class="card-kebab btn-icon-tiny" data-card-menu-toggle aria-haspopup="true" aria-expanded="false" title="Type de dossier" aria-label="Type de dossier">⋯</button>
         <div class="card-menu" role="menu" hidden>
           ${kindItem("campaign", "Campagne")}
           ${kindItem("run", "Run")}
           ${node.kind ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="set-kind" data-kind="" data-dossier="${node.id}">Retirer le type</button>` : ""}
           ${sceneItem}
+          ${duplicateItem}
           ${rencontreItem}
         </div>`;
     return `<div class="group-item${sub} ${active}"${style} data-dossier-bar data-action="switch-dossier" data-dossier="${node.id}">
@@ -481,6 +488,32 @@ export const DossierBar = {
     });
   },
 
+  /** VIS-16 étape 5 — duplique une campagne pour une autre équipe : copie la
+      structure (Dossiers.duplicateSubtree) puis re-pointe l'appartenance PAR ID
+      sur les nouveaux nœuds (le casting suit la copie, PAR RÉFÉRENCE — les Actifs
+      ne sont pas dupliqués). Aucun état de jeu (Encounter) copié : la partie
+      repart vierge. */
+  duplicateDossier(id) {
+    const node = Dossiers.get(id);
+    if (!node || node.kind !== "campaign") return;
+    const res = Dossiers.duplicateSubtree(id);
+    if (!res) return;
+    for (const col of this._cols()) {
+      let changed = false;
+      for (const [oldId, newId] of Object.entries(res.idMap)) {
+        const members = col.data.groups[oldId];
+        if (Array.isArray(members) && members.length) {
+          col.data.groups[newId] = [...members];
+          changed = true;
+        }
+      }
+      if (changed) col.save();
+    }
+    this.render();
+    this._notify();
+    toast(`« ${node.name} » dupliqué — nouvelle partie, prépa copiée.`);
+  },
+
   _wire() {
     if (this._wired) return;
     this._wired = true;
@@ -505,6 +538,9 @@ export const DossierBar = {
           break;
         case "remove-dossier":
           this.removeDossier(el.dataset.dossier);
+          break;
+        case "duplicate-dossier":
+          this.duplicateDossier(el.dataset.dossier);
           break;
         case "set-kind":
           this.setDossierKind(el.dataset.dossier, el.dataset.kind || null);
