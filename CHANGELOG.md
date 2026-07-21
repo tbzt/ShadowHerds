@@ -12,6 +12,17 @@ commit.
 
 ## [Non publié]
 
+## [1.86.1] — 2026-07-21
+
+### Modifié
+
+- **Un seul geste pour maintenir un sort/une forme.** Sur la ligne d'un effet —
+  dans le suivi de combat comme sur la fiche — le nombre de succès du dernier jet
+  bascule le maintien : clic pour maintenir (`→ N` → `⟳ N`), re-clic pour l'arrêter.
+  Le petit `✕` qui doublonnait cet arrêt (il ne servait qu'à *oublier* le dernier
+  jet, que le prochain jet réécrit de toute façon) est retiré. Le badge agrégé
+  `⟳ ×N · −N` et le malus de −2 dés par effet maintenu (SR5/SR6) sont inchangés.
+
 ## [1.86.0] — 2026-07-21
 
 ### Ajouté
