@@ -473,6 +473,11 @@ export const TourSteps = {
       title: "Le plan de serveur",
       body: "Un site n'est presque jamais un seul serveur. L'écran Serveurs porte un bouton « ▤ Plan du site » qui dessine l'architecture du dossier — chaîne, arborescence, WAN (appareils asservis) ou hôtes imbriqués selon l'édition —, gratuitement et à l'instant, comme le « Plan tactique » d'un lieu. En mode édition, désignez le point d'entrée d'un serveur (Matrice publique ou connexion directe au câble) et lequel tient les données cibles. Et quand plusieurs serveurs sont piratés dans une même scène, le tiroir Matrice en affiche une mini-carte : touchez un nœud pour basculer le tiroir sur ce serveur.",
     },
+    {
+      id: "wn-foundation-reference", anchor: "nav-matrix", tours: ["whatsnew"], since: "1.90.0", fallback: "center",
+      title: "Plonger dans les Fondations",
+      body: "En SR5 et SR6, un serveur cache un donjon interne : les sept nœuds de ses Fondations (Data Trails / Hacker Vaillant). Le menu ⋯ d'une carte de serveur porte désormais « ⛓ Plonger dans les Fondations » — une fiche de référence qui rappelle, quand vous menez un run profond, les 7 nœuds (Portail, Archive, Centre de contrôle, échafaudage, sécurité, régie, nœud vide), leurs actions et leurs jets, le paradigme (repris de la sculpture du serveur) et le seuil de Variance — chacun au bon régime : SR5 oppose « Indice + attribut », SR6 « Indice × 2 ». Anarchy n'a pas de Fondation : l'entrée ne s'y affiche pas.",
+    },
   ],
 };
 

@@ -739,6 +739,40 @@ export const Matrix = {
     return this._topology().nodeBadge(srv);
   },
 
+  /* ---- Fondations (donjon interne d'un serveur, lot B) ----
+     SR5 + SR6 SEULEMENT (Data Trails / Hacker Vaillant). Anarchy n'a pas de
+     `foundation` → hasFoundation() falsy → l'affordance ne s'affiche jamais.
+     Délégation PURE : matrix.js relaie la donnée déjà formée par le module ;
+     il ne compose JAMAIS la réserve d'opposition (SR5 = Indice + attribut,
+     SR6 = Indice × 2 — divergences sourcées, cf. FONDATIONS_SERVEUR_BT1.md). */
+  hasFoundation() {
+    return !!this._model().hasFoundation;
+  },
+
+  _foundation() {
+    return this._model().foundation;
+  },
+
+  /** Les 7 nœuds (id, label, role, actions[{name, roll, effect?}]). */
+  foundationNodes() {
+    return this._foundation().nodes;
+  },
+
+  /** Aide MJ : le paradigme est la défense (réutilise srv.sculpture). */
+  foundationParadigmHint() {
+    return this._foundation().paradigmHint;
+  },
+
+  /** Comment on entre dans les Fondations (par édition). */
+  foundationEntryText() {
+    return this._foundation().entryText;
+  },
+
+  /** Rappel du seuil/mécanique de Variance (affichage seul — pas de tracker). */
+  foundationVarianceNote() {
+    return this._foundation().varianceNote;
+  },
+
   /** Sélection aléatoire cohérente des CI (Patrouilleuse toujours). */
   pickICs(indice, sev) {
     const tiers = this.IC_POOLS[this._edition] || this.IC_POOLS.anarchy2;

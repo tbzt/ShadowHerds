@@ -856,6 +856,103 @@ export const EditionSR6 = {
         return `Ind. ${srv.indice} · A${a.attack} C${a.sleaze} T${a.dataProcessing} F${a.firewall}`;
       },
     },
+
+    /* Fondations du serveur (lot B, donjon de 7 nœuds) — lues par
+       Matrix.foundation* / FoundationView. Données SOURCÉES : Hacker Vaillant VF
+       « Au cœur des serveurs » p.137-142 (voir REFERENCE/FONDATIONS_SERVEUR_BT1.md).
+       ⚠ SR6 oppose UNIFORMÉMENT `Indice × 2` (là où SR5 oppose `Indice + attribut
+       spécifique`, mapping attribut→Fondation swappé) : les chaînes `roll` sont
+       écrites ICI, jamais composées par un accesseur neutre. Seuil de Variance
+       SR6 = 80 − 5×Indice (≠ « 5×Indice »). hasFoundation ABSENT en Anarchy. */
+    hasFoundation: true,
+    foundation: {
+      entryText:
+        "Entrer via cyberdeck / cyberjack / persona incarné ; protocole Nexus " +
+        "(« Livre d'argent », Dispo 6(I), 1 000¥) pour une plongée UV emmenant des " +
+        "autostoppeurs. Poser une ancre au portail verrouille le paradigme.",
+      paradigmHint:
+        "Le paradigme EST le mécanisme de défense : agir hors-thème monte la Variance. " +
+        "Réutilise la sculpture du serveur ci-dessus.",
+      varianceNote:
+        "Variance : chaque test opposé réussi contre les Fondations ajoute des Points " +
+        "de variance. Alerte à partir de 80 − (5 × Indice du serveur) ; en alerte, les " +
+        "Fondations attaquent chaque avatar chaque round (réserve Indice × 2, dégâts " +
+        "physiques ½ Indice).",
+      nodes: [
+        {
+          id: "portail",
+          label: "Le Portail",
+          role: "Principal point de sortie ; on y pose l'ancre qui verrouille le paradigme.",
+          actions: [
+            { name: "Créer une ancre", roll: "Électronique + Logique vs Indice × 2", effect: "Empêche le changement de paradigme ; succès nets pour maquiller/renforcer." },
+            { name: "Détruire une ancre", roll: "Perception matricielle (seuil 1 / succès nets) puis attaque (réserve Indice × 2 + succès nets)." },
+            { name: "Sortir des Fondations", roll: "Piratage + Intuition vs Indice × 2" },
+          ],
+        },
+        {
+          id: "archive",
+          label: "L'Archive",
+          role: "Fichiers stockés à l'abri. Pistes stables : Portail, Échafaudage, Régie, Sécurité.",
+          actions: [
+            { name: "Trouver un fichier", roll: "Électronique + Logique vs Indice × 2" },
+            { name: "Copier un fichier", roll: "Électronique + Logique vs Indice × 2", effect: "Copie sans protection." },
+            { name: "Éditer un fichier", roll: "Piratage + Logique vs Indice × 2", effect: "Modification indétectable." },
+            { name: "Effacer un fichier", roll: "Électronique + Logique vs Indice × 2", effect: "Sans laisser de trace." },
+          ],
+        },
+        {
+          id: "echafaudage",
+          label: "L'Échafaudage",
+          role: "Niveaux supérieurs du serveur. Pistes : Archive, Centre de contrôle, 2 opérationnels.",
+          actions: [
+            { name: "Observer le serveur", roll: "Électronique + Intuition vs Indice × 2" },
+            { name: "Éditer la sculpture du serveur", roll: "Électronique + Logique vs Indice × 2", effect: "1 détail modifié par succès net." },
+            { name: "Rebooter le serveur", roll: "Piratage + Logique vs Indice × 2", effect: "Éjecte les personas ; redémarre en (succès nets) minutes." },
+          ],
+        },
+        {
+          id: "securite",
+          label: "Le Nœud de sécurité",
+          role: "CI et systèmes de sécurité. Pistes : Archive, Centre de contrôle, 2 opérationnels.",
+          actions: [
+            { name: "Déployer une CI", roll: "Piratage + Intuition vs Indice × 2", effect: "1 CI par succès net." },
+            { name: "Rappeler une CI", roll: "Piratage + Intuition vs Indice × 2" },
+            { name: "Reconfigurer les CI", roll: "Électronique (Logiciels) + Intuition vs Indice × 2", effect: "Change l'ordre de déploiement." },
+          ],
+        },
+        {
+          id: "regie",
+          label: "La Régie d'asservissement",
+          role: "Appareils liés au serveur. Pistes : Archive, Centre de contrôle, 2 opérationnels.",
+          actions: [
+            { name: "Trouver un appareil", roll: "Électronique + Logique vs Indice × 2" },
+            { name: "Contrôler un appareil lié", roll: "Piratage (Guerre électronique) + Logique vs Indice × 2", effect: "Remise d'Atout de 1 pour ce test." },
+            { name: "Bricker un appareil lié", roll: "Piratage (Cybercombat) + Logique vs Indice × 2", effect: "Cases de moniteur = 2 × succès nets." },
+          ],
+        },
+        {
+          id: "controle",
+          label: "Le Centre de contrôle",
+          role: "Contrôle toutes les fonctions des Fondations. Pistes : Nœud vide + 3 autres.",
+          actions: [
+            { name: "Altérer la réalité des Fondations", roll: "Électronique + Intuition vs Indice × 2", effect: "Ajoute/retire/altère une phrase du paradigme." },
+            { name: "Cartographie des Fondations", roll: "Électronique + Logique vs Indice × 2", effect: "Révèle nom/emplacement/pistes d'1 nœud par succès net." },
+            { name: "Voyager", roll: "Électronique + Logique vs Indice × 2", effect: "Ouvre une piste double sens temporaire / modifie un statut de piste." },
+            { name: "Calmer la bête", roll: "Piratage + Logique vs Indice × 2", effect: "− 5 points de variance par succès net." },
+            { name: "Détruire le serveur", roll: "Piratage (Cybercombat) + Logique vs Indice × 2", effect: "Série de tests d'une traite." },
+            { name: "Configurer les attributs du serveur", roll: "Électronique + Logique vs Indice × 2", effect: "Intervertit l'Indice de deux attributs." },
+          ],
+        },
+        {
+          id: "vide",
+          label: "Le Nœud vide",
+          role: "Source d'énergie et entrée vers les Abysses des Fondations. La variance y est doublée.",
+          actions: [
+            { name: "Entrer dans les Abysses des Fondations", roll: "Test étendu Électronique + Logique (12, 1 round de combat)" },
+          ],
+        },
+      ],
+    },
   },
 
   /* Régime cyberdeck SR6 — 4 attributs ACTF, réallouables. Reconfigurer

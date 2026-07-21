@@ -28,6 +28,7 @@ import { ServerGen } from "./servergen.js";
 import { ServerRenderer } from "../widgets/play/serverrenderer.js";
 import { SidebarToggle } from "../widgets/kit/sidebartoggle.js";
 import { TopologyGen } from "../rules/topologygen.js";
+import { FoundationView } from "../widgets/play/foundationview.js";
 import { Utils } from "../core/utils.js";
 
 export const Servers = Object.assign(
@@ -210,6 +211,20 @@ export const Servers = Object.assign(
         subtitle: `${servers.length} serveur${servers.length > 1 ? "s" : ""} · ${archLabel}`,
       });
       Portrait.showPreview(TopologyGen.dataUrl(svg), `Plan de serveur — ${label}`);
+    },
+
+    /* ========================================================
+       FONDATIONS (lot B, option 2) — vue de référence des 7 nœuds
+       ========================================================
+       DANS un serveur (≠ topologie, qui vit ENTRE les serveurs). Ouvre la
+       vue de référence en lecture seule (FoundationView) : 7 nœuds + actions
+       sourcées + paradigme réaffiché + rappel de Variance. SR5/SR6 seulement
+       (gaté par Matrix.hasFoundation() côté rendu ET côté widget). Rien de
+       persisté ; aucun générateur SVG (B2) ni tracker de Variance (B4). */
+    showFoundation(id) {
+      const srv = this.find(id);
+      if (!srv) return;
+      FoundationView.open(srv);
     },
 
     /* ---- Spider (decker de sécurité lié) — fabrication déléguée à ServerGen ---- */
@@ -468,6 +483,9 @@ export const Servers = Object.assign(
             break;
           case "show-topology":
             this.showTopology();
+            break;
+          case "show-foundation":
+            this.showFoundation(id);
             break;
           case "reroll-sculpture":
             this.rerollSculpture(id);

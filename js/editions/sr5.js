@@ -711,6 +711,102 @@ export const EditionSR5 = {
         return `Ind. ${srv.indice} · A${a.attack} C${a.sleaze} T${a.dataProcessing} F${a.firewall}`;
       },
     },
+
+    /* Fondations du serveur (lot B, donjon de 7 nœuds) — lues par
+       Matrix.foundation* / FoundationView. Données SOURCÉES : Data Trails VF
+       « De plus en plus profond » p.113-124 (voir REFERENCE/FONDATIONS_SERVEUR_BT1.md).
+       ⚠ Les chaînes `roll` sont écrites ICI, par édition : SR5 oppose
+       `Indice + <attribut spécifique>` (Firewall/Traitement/Attaque) — NE PAS
+       les composer via un accesseur neutre (SR6 oppose `Indice × 2`, mapping
+       attribut→Fondation swappé : ce serait l'aplatissement que B-T1 documente).
+       hasFoundation ABSENT en Anarchy 1 & 2 (aucune Fondation). */
+    hasFoundation: true,
+    foundation: {
+      entryText:
+        "Poser une mark sur le portail du serveur (Passer en force ou Hacker à la volée), " +
+        "puis, une fois marké et en RV dans le hôte, entrer par une Action complexe. " +
+        "Aussi via une ancre déjà posée (p.120).",
+      paradigmHint:
+        "Le paradigme EST le mécanisme de défense : agir hors-thème crée une Variance. " +
+        "Réutilise la sculpture du serveur ci-dessus.",
+      varianceNote:
+        "Variance : Décompte secret tenu par le MJ (test de variance seuil 4 ; réserve " +
+        "Firewall pour une variance mineure, Indice + Firewall pour une extrême). " +
+        "Alerte quand le Décompte atteint 40 — « le Monde se retourne contre vous ».",
+      nodes: [
+        {
+          id: "portail",
+          label: "Le Portail",
+          role: "Seul point de sortie ; on y pose l'ancre qui verrouille le paradigme.",
+          actions: [
+            { name: "Créer une ancre", roll: "Logiciel + Logique [Corruption] vs Indice + Firewall" },
+            { name: "Quitter les Fondations", roll: "Informatique + Intuition [Corruption] vs Indice + Attaque" },
+          ],
+        },
+        {
+          id: "archive",
+          label: "L'Archive",
+          role: "Fichiers stockés en sécurité — cible de la plupart des runs profonds.",
+          actions: [
+            { name: "Trouver un fichier", roll: "Informatique + Logique [Traitement de données] vs Indice + Firewall" },
+            { name: "Copier un fichier", roll: "Informatique + Logique [Traitement de données] vs Indice + Traitement de données" },
+            { name: "Extraire un fichier", roll: "Informatique + Logique [Traitement de données] vs Indice + Firewall", effect: "L'intrus en devient propriétaire." },
+            { name: "Modifier un fichier", roll: "Hacking + Logique [Corruption] vs Indice + Firewall", effect: "Modification indétectable à l'examen." },
+            { name: "Supprimer un fichier", roll: "Informatique + Logique [Attaque] vs Indice + Firewall" },
+          ],
+        },
+        {
+          id: "echafaudage",
+          label: "Contrôle de l'échafaudage",
+          role: "Structure et niveaux supérieurs du serveur.",
+          actions: [
+            { name: "Observer le serveur", roll: "Informatique + Logique [Traitement de données] vs Indice + Firewall", effect: "≈ 1 min d'accès par succès excédentaire." },
+            { name: "Modifier la structure du serveur", roll: "Informatique + Logique [Corruption] vs Indice + Firewall" },
+            { name: "Rebooter le serveur", roll: "Cybercombat + Logique [Attaque] vs Indice + Firewall", effect: "Éjecte les personas ; retour en Indice minutes." },
+          ],
+        },
+        {
+          id: "securite",
+          label: "Contrôle de la sécurité",
+          role: "CI et contre-mesures d'intrusion du serveur.",
+          actions: [
+            { name: "Cibler une CI", roll: "Cybercombat + Logique [Attaque] vs Indice + Attaque", effect: "Prérequis pour choisir la cible d'un lancement." },
+            { name: "Lancer une CI", roll: "Sans jet — lance un programme CI disponible (1/tour de combat)." },
+            { name: "Rappeler une CI", roll: "Cybercombat + Intuition [Traitement de données] vs Indice + Attaque" },
+            { name: "Configurer une CI", roll: "Sans jet — échange les programmes CI disponibles." },
+          ],
+        },
+        {
+          id: "regie",
+          label: "Régie d'asservissement",
+          role: "Tous les appareils asservis du serveur.",
+          actions: [
+            { name: "Contrôler un appareil asservi", roll: "Comme l'action matricielle « Contrôler » (p.238), sans mark." },
+            { name: "Bricker un appareil", roll: "Hacking + Logique [Attaque] vs Indice + Firewall" },
+            { name: "Appareil perma-marké", roll: "Hacking + Intuition [Corruption] vs Indice + Firewall", effect: "1 mark persistante (3 max, retirable normalement)." },
+          ],
+        },
+        {
+          id: "controle",
+          label: "Centre de contrôle",
+          role: "Contrôle total des Fondations du serveur.",
+          actions: [
+            { name: "Altérer la réalité des Fondations", roll: "Hacking + Intuition [Corruption] vs Indice + Firewall", effect: "Ajoute/retire/altère une phrase du paradigme." },
+            { name: "Carte des Fondations", roll: "Informatique + Logique [Traitement de données] vs Indice + Traitement de données", effect: "Révèle identité + emplacement d'1 nœud par succès excédentaire." },
+            { name: "Calmer la bête", roll: "Hacking + Logique [Corruption] vs Indice + Attaque" },
+            { name: "Détruire le serveur", roll: "Cybercombat + Logique [Attaque] vs Indice + Firewall", effect: "Série : 1 test par point d'Indice, d'une traite ; crée une variance extrême à chaque test." },
+            { name: "Augmenter le serveur", roll: "Informatique + Intuition [Traitement de données] vs Serveur + Corruption", effect: "1×/semaine, +1 à l'Indice du serveur." },
+            { name: "Configurer les attributs du serveur", roll: "Informatique + Logique [Traitement de données] vs Indice + Firewall", effect: "Échange l'Indice de deux attributs (permanent)." },
+          ],
+        },
+        {
+          id: "vide",
+          label: "Le Nœud vide",
+          role: "Aucune fonction connue — la GPM le baptise « nœud mystère ».",
+          actions: [],
+        },
+      ],
+    },
   },
 
   /* Régime cyberdeck SR5 — lu par Cyberdeck

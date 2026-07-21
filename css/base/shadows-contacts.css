@@ -1588,3 +1588,88 @@ body.reordering .reorder-handle {
   border-color: var(--accent);
 }
 
+/* ---- Fondations (lot B, option 2) — vue de référence lecture seule ----
+   Réutilise la coquille .modal-overlay/.modal et la grammaire debrief
+   (titres display capitales à --accent, secondaire --text-dim). Aucune
+   couleur en dur : DA par tokens, thème d'édition hérité. Même astuce de
+   spécificité que .debrief-modal (modal-core.css charge après ce fichier). */
+.foundation-overlay .foundation-modal {
+  width: min(560px, 94vw);
+}
+.foundation-lead {
+  margin-bottom: 0.6rem;
+}
+.foundation-sub {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+.foundation-section-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0.9rem 0 0.5rem;
+}
+.foundation-meta {
+  margin-bottom: 0.75rem;
+}
+.foundation-node {
+  margin-bottom: 0.85rem;
+  padding-left: 0.6rem;
+  border-left: 2px solid var(--border);
+}
+.foundation-node-title {
+  margin: 0 0 0.2rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-base);
+  color: var(--text);
+}
+.foundation-node-role {
+  margin: 0 0 0.35rem;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+.foundation-paradigm {
+  margin: 0 0 0.35rem;
+  padding: 0.35rem 0.6rem;
+  border-left: 2px solid var(--accent);
+  color: var(--text);
+  font-style: italic;
+}
+.foundation-hint {
+  margin: 0 0 0.35rem;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+.foundation-actions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.foundation-actions li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.foundation-action-name {
+  font-weight: 600;
+  color: var(--text);
+  font-size: var(--fs-sm);
+}
+.foundation-action-roll {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+.foundation-action-effect {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  opacity: 0.85;
+}
+

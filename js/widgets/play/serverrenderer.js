@@ -189,6 +189,11 @@ export const ServerRenderer = {
           // Calque du « ⚔ Combat » des PNJ — porte 2 de liaison au tiroir
           // Matrice (Encounter.linkServer), même geste que pour un combattant.
           { kind: "menu", label: "⚔ Envoyer au combat", attrs: `data-action="send-to-encounter" data-id="${srv.id}"` },
+          // Fondations (lot B) : donjon interne de 7 nœuds — SR5/SR6 seulement.
+          // Gaté par la capacité (jamais `App.edition`) : Anarchy ne l'affiche pas.
+          ...(Matrix.use(srv.edition).hasFoundation()
+            ? [{ kind: "menu", label: "⛓ Plonger dans les Fondations", attrs: `data-action="show-foundation" data-id="${srv.id}"` }]
+            : []),
           srv.spider
             ? { kind: "menu", label: "Retirer le spider", attrs: `data-action="remove-spider" data-id="${srv.id}"` }
             : { kind: "menu", label: "Ajouter un spider", attrs: `data-action="add-spider" data-id="${srv.id}"` },

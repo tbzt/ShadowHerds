@@ -12,6 +12,21 @@ commit.
 
 ## [Non publié]
 
+## [1.90.0] — 2026-07-21
+
+### Ajouté
+
+- **Plonger dans les Fondations (SR5 & SR6).** Le menu ⋯ d'une carte de serveur
+  porte, en SR5 et SR6 uniquement, « ⛓ Plonger dans les Fondations » : une fiche
+  de référence en lecture seule du donjon interne de sept nœuds (Data Trails
+  « De plus en plus profond » p.113-124 ; Hacker Vaillant « Au cœur des serveurs »
+  p.137-142). Elle rappelle les 7 nœuds et leurs actions/jets **sourcés**, le
+  paradigme (repris de la sculpture du serveur) et le seuil de Variance — chacun
+  au régime de son édition : SR5 oppose « Indice + attribut », SR6 « Indice × 2 »
+  (le mapping attribut→Fondation et le seuil de Variance diffèrent entre éditions,
+  et ne sont jamais aplatis). Anarchy n'a pas de Fondation : l'entrée n'y apparaît
+  pas. Générateur de plan des nœuds et suivi de Variance en scène différés.
+
 ## [1.89.0] — 2026-07-21
 
 ### Ajouté
