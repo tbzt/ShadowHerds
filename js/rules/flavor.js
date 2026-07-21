@@ -1211,7 +1211,7 @@ export const Flavor = {
       "faire tomber un forum de la Star",
       "récupérer des souvenirs numériques effacés",
       "coder le virus parfait",
-      "s'introduire dans un hôte fondation d'une AAA",
+      "s'introduire dans un serveur fondation d'une AAA",
       "effacer les preuves d'un run raté",
       "venger un ami victime d'un choc d'éjection",
       "cartographier un serveur secret",

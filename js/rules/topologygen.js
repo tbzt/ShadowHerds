@@ -85,7 +85,7 @@ function layout(archetype, nodes, rng) {
     });
     entry = { x: 40, y: gate.y + BH / 2 };
   } else if (archetype === "wan" && n >= 1) {
-    // Hôte central + satellites (serveurs asservis) en anneau.
+    // Serveur central + satellites (serveurs asservis) en anneau.
     const host = nodes[0];
     const cx = n > 1 ? 330 : W / 2, cy = 235;
     Object.assign(host, { x: cx - BW / 2, y: cy - BH / 2, w: BW, h: BH });
@@ -99,7 +99,7 @@ function layout(archetype, nodes, rng) {
     });
     entry = { x: cx - BW / 2 - 70, y: cy };
   } else if (archetype === "nested" && n >= 1) {
-    // Hôtes emboîtés : rectangles concentriques, cible au plus profond.
+    // Serveurs emboîtés : rectangles concentriques, cible au plus profond.
     nodes.forEach((nd, i) => {
       const pad = i * 46;
       Object.assign(nd, {
@@ -198,7 +198,7 @@ function renderSVG(nodes, meta, accent, entryMode, title, subtitle, archetype, a
       const [bx, by] = rectAnchor(B, A.x + A.w / 2, A.y + A.h / 2);
       s += edgeLine(ax, ay, bx, by, e.dir);
     });
-    // WAN à hôte seul : quelques appareils asservis génériques pour dire le WAN.
+    // WAN à serveur seul : quelques appareils asservis génériques pour dire le WAN.
     if (archetype === "wan" && nodes.length === 1) {
       const h = nodes[0], cx = h.x + h.w / 2, cy = h.y + h.h / 2;
       for (let i = 0; i < 5; i++) {

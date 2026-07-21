@@ -36,7 +36,7 @@ export const TourSteps = {
     {
       id: "matrix", anchor: "nav-matrix", tours: ["full"], since: "1.0.0", fallback: "center",
       title: "Serveurs & Matrice",
-      body: "Des serveurs prêts à hacker, avec CI et pilotage d'intrusion. Le decker n'attend plus que vous improvisiez ses hôtes.",
+      body: "Des serveurs prêts à hacker, avec CI et pilotage d'intrusion. Le decker n'attend plus que vous improvisiez ses serveurs.",
     },
     {
       id: "run", anchor: "nav-run", tours: ["full"], since: "1.0.0", fallback: "center",
@@ -471,7 +471,7 @@ export const TourSteps = {
     {
       id: "wn-server-plan", anchor: "nav-matrix", tours: ["whatsnew"], since: "1.89.0", fallback: "center",
       title: "Le plan de serveur",
-      body: "Un site n'est presque jamais un seul serveur. L'écran Serveurs porte un bouton « ▤ Plan du site » qui dessine l'architecture du dossier — chaîne, arborescence, WAN (appareils asservis) ou hôtes imbriqués selon l'édition —, gratuitement et à l'instant, comme le « Plan tactique » d'un lieu. En mode édition, désignez le point d'entrée d'un serveur (Matrice publique ou connexion directe au câble) et lequel tient les données cibles. Et quand plusieurs serveurs sont piratés dans une même scène, le tiroir Matrice en affiche une mini-carte : touchez un nœud pour basculer le tiroir sur ce serveur.",
+      body: "Un site n'est presque jamais un seul serveur. L'écran Serveurs porte un bouton « ▤ Plan du site » qui dessine l'architecture du dossier — chaîne, arborescence, WAN (appareils asservis) ou serveurs imbriqués selon l'édition —, gratuitement et à l'instant, comme le « Plan tactique » d'un lieu. En mode édition, désignez le point d'entrée d'un serveur (Matrice publique ou connexion directe au câble) et lequel tient les données cibles. Et quand plusieurs serveurs sont piratés dans une même scène, le tiroir Matrice en affiche une mini-carte : touchez un nœud pour basculer le tiroir sur ce serveur.",
     },
     {
       id: "wn-foundation-reference", anchor: "nav-matrix", tours: ["whatsnew"], since: "1.90.0", fallback: "center",

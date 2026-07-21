@@ -434,11 +434,11 @@ export const ServerRenderer = {
   },
 
   /* ---- Marks SR5 (deux directions) ----
-     Les livres séparent « l'hôte a N marks sur le decker » de « le decker a N
-     marks sur l'hôte ». On rend les deux, intégrés au bloc SS :
-      · Hôte → PJ : une ligne par persona PJ de la scène (les CI et le spider
+     Les livres séparent « le serveur a N marks sur le decker » de « le decker a N
+     marks sur le serveur ». On rend les deux, intégrés au bloc SS :
+      · Serveur → PJ : une ligne par persona PJ de la scène (les CI et le spider
         partagent CE compteur, p.247 — pas de compteur par CI).
-      · Équipe → hôte : un stepper unique (accès du decker ; 3 = propriétaire). */
+      · Équipe → serveur : un stepper unique (accès du decker ; 3 = propriétaire). */
   _marksBlock(srv, intr) {
     const esc = CardRenderer._esc.bind(CardRenderer);
     const stepper = (action, extra, val) =>
@@ -466,9 +466,9 @@ export const ServerRenderer = {
       : `<span class="ss-marks"><small>Aucun PJ connecté dans la scène.</small></span>`;
 
     return `
-      <div class="ss-marks-head" title="Max 3 par cible (p.233). Une mark posée par une CI ou le spider l'est au nom de l'hôte : toutes ses CI la partagent (p.247).">Marks de l'hôte sur les PJ <small>(+2 VD CI/mark · Traqueuse à 2+ · convergence pose 3 marks, p.232)</small></div>
+      <div class="ss-marks-head" title="Max 3 par cible (p.233). Une mark posée par une CI ou le spider l'est au nom du serveur : toutes ses CI la partagent (p.247).">Marks du serveur sur les PJ <small>(+2 VD CI/mark · Traqueuse à 2+ · convergence pose 3 marks, p.232)</small></div>
       ${pjRows}
-      <span class="ss-marks" title="Marks du decker sur l'hôte : monnaie d'accès (Manipulation). 3 marks = accès propriétaire (miroir SR5 de l'échelle SR6).">Marks de l'équipe sur l'hôte : ${stepper("mark-held", "", intr.marksHeld || 0)} <small>(3 = propriétaire)</small></span>`;
+      <span class="ss-marks" title="Marks du decker sur le serveur : monnaie d'accès (Manipulation). 3 marks = accès propriétaire (miroir SR5 de l'échelle SR6).">Marks de l'équipe sur le serveur : ${stepper("mark-held", "", intr.marksHeld || 0)} <small>(3 = propriétaire)</small></span>`;
   },
 
   /* ---- Jauge SS (SR5/SR6) ---- */

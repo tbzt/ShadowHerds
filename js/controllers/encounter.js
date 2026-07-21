@@ -199,7 +199,7 @@ export const Encounter = {
     const def = Math.round((min + max) / 2);
     const raw = await Dialog.prompt({
       title: "Indice de la CI",
-      label: `Indice de l'hôte (${min}–${max})`,
+      label: `Indice du serveur (${min}–${max})`,
       value: String(def),
       placeholder: String(def),
       confirmLabel: "Ajouter",
@@ -213,7 +213,7 @@ export const Encounter = {
       (CI liée à un serveur, état vivant dans `state.matrix[serverId]`), l'état
       vivant d'une CI autonome — indice + moniteur — vit sur `c.matrix`
       (`serverId: null`). Init du livre via `icCombatant` (module d'édition,
-      prohibition n°1), hôte synthétisé par `Matrix.bareHost`. Doublons
+      prohibition n°1), serveur synthétisé par `Matrix.bareHost`. Doublons
       autorisés (deux CI Noires dans un même duel) : chaque ligne a son id. */
   addIC(icKey, indice) {
     const M = Matrix.use(App.edition);
@@ -1323,7 +1323,7 @@ export const Encounter = {
 
   /** Jet d'une CI AUTONOME (VIS-10) — pas de serveur à interroger. Réserve,
       limite et suffixe via `Matrix.icCombat` (source unique partagée avec
-      `Intrusion.rollIC`), sur l'hôte synthétique. `roll:false` (A2 succès fixes)
+      `Intrusion.rollIC`), sur le serveur synthétique. `roll:false` (A2 succès fixes)
       ou `null` (geste absent, ex. encaissement Anarchy) → rien à lancer. */
   _rollBareIC(c, kind) {
     const m = c.matrix;

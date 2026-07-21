@@ -470,8 +470,8 @@ export const Matrix = {
     return this._model().icMonitorSize(indice);
   },
 
-  /** VIS-10 — hôte synthétique minimal d'une CI AUTONOME (ajoutée au tracker
-      sans monter de serveur). Le MJ choisit un indice (= indice de l'hôte
+  /** VIS-10 — serveur synthétique minimal d'une CI AUTONOME (ajoutée au tracker
+      sans monter de serveur). Le MJ choisit un indice (= indice du serveur
       fictif) ; il suffit à dériver init, taille de moniteur et réserves de
       jet. Les attributs ASDF défaut à l'indice (une CI sans fiche de serveur).
       Édition-neutre : consommé par `icCombatant`/`ic.effect`/`icCombat`
@@ -688,7 +688,7 @@ export const Matrix = {
         • dés (SR5/SR6/A1) → { roll:true, pool, limit, suffix, dmg? }
         • succès fixes (A2) → { roll:false, value, suffix }
         • geste absent (A1 n'a pas de jet d'encaissement) → null.
-      `host` = vrai serveur OU hôte synthétique (`bareHost`) — même forme.
+      `host` = vrai serveur OU serveur synthétique (`bareHost`) — même forme.
       `ic` = entrée de catalogue (modificateurs de type A1, `watch` A2…). */
   icCombat(kind, host, ic) {
     const m = this._model();

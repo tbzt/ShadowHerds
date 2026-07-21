@@ -33,11 +33,11 @@ export const Intrusion = {
       ics: {},
       // Marks SR5, DEUX directions distinctes (les livres les séparent, max 3
       // par cible, p.233) :
-      //  · marksOn {pnjId → 0..3} : marks de l'HÔTE sur chaque persona PJ.
-      //    Un seul compteur côté hôte, PARTAGÉ par toutes ses CI (et le spider,
-      //    qui pose au nom de l'hôte) — SR5 p.247 : les CI utilisent les marks
-      //    de leur hôte. Pas de compteur par CI : les livres les fusionnent.
-      //  · marksHeld 0..3 : marks de l'ÉQUIPE sur l'hôte (monnaie d'accès du
+      //  · marksOn {pnjId → 0..3} : marks du SERVEUR sur chaque persona PJ.
+      //    Un seul compteur côté serveur, PARTAGÉ par toutes ses CI (et le spider,
+      //    qui pose au nom du serveur) — SR5 p.247 : les CI utilisent les marks
+      //    de leur serveur. Pas de compteur par CI : les livres les fusionnent.
+      //  · marksHeld 0..3 : marks de l'ÉQUIPE sur le serveur (monnaie d'accès du
       //    decker ; 3 = accès propriétaire, miroir SR5 de l'échelle SR6).
       marksOn: {},
       marksHeld: 0,
@@ -207,7 +207,7 @@ export const Intrusion = {
 
   /* ---- Marks (SR5) — deux directions séparées ---- */
 
-  /** Marks de l'HÔTE (⇒ toutes ses CI + son spider) sur un persona PJ donné.
+  /** Marks du SERVEUR (⇒ toutes ses CI + son spider) sur un persona PJ donné.
       Compteur par cible (max 3, p.233) ; la clé disparaît à 0 pour garder
       `marksOn` propre (une scène sans mark = objet vide). */
   addMarkOn(id, pjId, delta) {
@@ -220,7 +220,7 @@ export const Intrusion = {
     this._persist();
   },
 
-  /** Marks de l'ÉQUIPE sur l'hôte (monnaie d'accès du decker ; 3 = accès
+  /** Marks de l'ÉQUIPE sur le serveur (monnaie d'accès du decker ; 3 = accès
       propriétaire). Scalaire d'équipe : un seul infiltrateur dans le cas
       courant, extensible si besoin. */
   addMarkHeld(id, delta) {
@@ -273,8 +273,8 @@ export const Intrusion = {
     if (!confirm("Reboot du decker : SS et marks à zéro ?")) return;
     intr.ss = 0;
     intr.ssLog = [];
-    // Reboot : l'hôte perd ses marks sur les intrus ET l'équipe perd les
-    // siennes sur l'hôte (les accès sautent au reboot).
+    // Reboot : le serveur perd ses marks sur les intrus ET l'équipe perd les
+    // siennes sur le serveur (les accès sautent au reboot).
     intr.marksOn = {};
     intr.marksHeld = 0;
     intr.lastRollT = 0;

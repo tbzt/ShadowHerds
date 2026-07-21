@@ -219,7 +219,7 @@ export const EditionSR5 = {
     return { base: pnj.init, dice: pnj.initDice };
   },
   /** Spec d'un combattant CI lancé dans l'initiative (fiche CI minimale +
-      jeton Matrice). Init du livre SR5 : indice de l'hôte ×2 + 4D6 (p.249).
+      jeton Matrice). Init du livre SR5 : indice du serveur ×2 + 4D6 (p.249).
       La règle vit ici (prohibition n°1) ; Encounter lit le spec neutre. */
   icCombatant(ic, srv) {
     return { name: ic.label, initBase: srv.indice * 2, initDice: 4 };
@@ -692,7 +692,7 @@ export const EditionSR5 = {
       return null;
     },
     /* Topologie externe (schéma d'architecture, lot A) — lue par
-       Matrix.topology* / TopologyGen. SR5 : chaîne de serveurs + WAN (hôte +
+       Matrix.topology* / TopologyGen. SR5 : chaîne de serveurs + WAN (serveur +
        appareils asservis — corebook « un serveur peut avoir un nombre illimité
        d'appareils esclaves asservis »). PAS de serveurs « imbriqués » (le terme
        est absent de Data Trails ; l'imbrication est propre à SR6). */
@@ -724,7 +724,7 @@ export const EditionSR5 = {
     foundation: {
       entryText:
         "Poser une mark sur le portail du serveur (Passer en force ou Hacker à la volée), " +
-        "puis, une fois marké et en RV dans le hôte, entrer par une Action complexe. " +
+        "puis, une fois marké et en RV dans le serveur, entrer par une Action complexe. " +
         "Aussi via une ancre déjà posée (p.120).",
       paradigmHint:
         "Le paradigme EST le mécanisme de défense : agir hors-thème crée une Variance. " +
