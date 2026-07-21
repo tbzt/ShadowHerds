@@ -12,6 +12,32 @@ commit.
 
 ## [Non publié]
 
+## [1.88.0] — 2026-07-21
+
+### Ajouté
+
+- **Le dé d'imprévu d'Anarchy 1re.** Dans *Shadowrun : Anarchy* (1re éd.), un
+  pool ne « rate » jamais tout seul : la malchance — et la chance — viennent d'un
+  **dé d'imprévu** que l'on ajoute avant le jet, le plus souvent en dépensant un
+  **Point d'Anarchy** (sran_01 p.157). Il est maintenant motorisé : depuis le
+  panneau « Avant de lancer », l'option **Dé d'imprévu** dépense 1 point de la
+  réserve de menace et ajoute un dé à la réserve. Sur un **1**, une *complication*
+  s'invite ; sur un **5-6**, un *exploit* (le bon côté du destin) — affichés dans
+  le tirage et le journal des jets. Le dé compte aussi comme un dé normal (succès
+  sur 5-6). *(L'option apparaît quand le mode pré-jet « panneau » est actif dans
+  les préférences, comme l'Edge SR5/SR6.)*
+
+### Corrigé
+
+- **Les complications parlent enfin la langue de chaque édition.** SR5 et SR6
+  affichaient « Bévue » là où les deux livres VF disent **« Complication »**
+  (SR5, § Complications et échecs critiques ; SR6 p.40) — c'est corrigé partout,
+  tirage comme journal. Surtout, **Anarchy 1re n'affiche plus de fausse
+  complication** : un pool y héritait à tort de la règle SR5 (« plus de la moitié
+  des dés sont des 1 »), une règle qui n'existe pas dans Anarchy — sa seule source
+  de complication est le dé d'imprévu ci-dessus. Effet de bord réparé au passage :
+  la « Seconde chance » n'est plus bloquée par un échec critique fantôme.
+
 ## [1.87.0] — 2026-07-21
 
 ### Ajouté
