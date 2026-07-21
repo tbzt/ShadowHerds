@@ -89,7 +89,7 @@ export const EditionSR6 = {
       (ATO), porté par chaque PNJ (attrs.ATO). */
   usesThreatReserve: false,
   /** Action de relance « Relancer les ratés » (p.50-51) : relance les dés
-      ratés (mode "misses"), interdite dès qu'il y a une bévue OU un échec
+      ratés (mode "misses"), interdite dès qu'il y a une complication OU un échec
       critique (blockedBy "glitch" couvre les deux — plus strict que SR5),
       coûte des points d'Atout du PNJ. */
   rerollAction: {
@@ -98,6 +98,12 @@ export const EditionSR6 = {
     blockedBy: "glitch",
     costAttr: "ATO",
   },
+  /** Modèle de complication du pool (SR6 p.40) : « Si plus de la moitié des
+      dés que vous avez lancés affichent un 1 » → complication ; complication
+      + 0 succès → échec critique. Même seuil que SR5, même terme VF officiel
+      « Complication » (jamais « Bévue »). `kind:"pool"` = règle déjà posée par
+      Dice.computeRoll. */
+  complicationModel: { kind: "pool", glitchLabel: "Complication" },
   /** Edge PRÉ-jet (Atout, p.50-51) : deux dépenses « avant le jet ». *Prendre
       un risque* (1 Atout → +1 dé libre, sans explosion) et *Ajouter son rang
       d'Atout* (4 Atouts → +rang de dés à 6 explosifs). Contrat neutre miroir

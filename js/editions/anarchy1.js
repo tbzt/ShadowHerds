@@ -84,6 +84,16 @@ export const EditionAnarchy1 = {
     blockedBy: "critGlitch",
     costAttr: "CHC",
   },
+  /** Modèle de complication (sran_01 p.157) : Anarchy 1re n'a AUCUNE règle de
+      complication de pool (« 1s > moitié » est purement SR5/SR6). Les
+      complications viennent d'un DÉ D'IMPRÉVU opt-in (le plus souvent via un
+      Point d'Anarchy) : 1 → complication, 5-6 → exploit ; un « dé de
+      complication » (Atouts/Défauts) ne fait que des complications. `kind:
+      "unpredictability"` dit à Dice.normalizeVerdict de neutraliser le verdict
+      SR fantôme qu'hériterait computeRoll — un pool A1 ne produit jamais de
+      complication. Le
+      dé d'imprévu lui-même est motorisé au Lot B. */
+  complicationModel: { kind: "unpredictability", glitchLabel: "Complication" },
   /** Pas d'Edge PRÉ-jet motorisé : Anarchy 1re n'expose pas de « Repousser
       les limites » vérifié au livre, et sa relance passe déjà par la réserve
       de menace (Points d'Anarchy). Neutre `null` — le lanceur n'offre aucune

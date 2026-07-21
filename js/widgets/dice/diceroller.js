@@ -335,17 +335,36 @@ export const DiceRoller = {
     input.value = n;
   },
 
+  /** Modèle de complication de l'édition active (mono-édition, comme le terme
+      de ressource lu par le journal). Repli neutre « pool / Complication » si
+      le module n'expose pas encore de modèle. */
+  _complicationModel() {
+    return (
+      (App.editionModule && App.editionModule.complicationModel) || {
+        kind: "pool",
+        glitchLabel: "Complication",
+      }
+    );
+  },
+
+  /** Terme VF de la complication de pool (« Complication » en SR5/SR6, lu du
+      modèle d'édition — jamais « Bévue »). L'échec critique garde son terme
+      universel. */
+  _glitchLabel() {
+    return this._complicationModel().glitchLabel || "Complication";
+  },
+
   /** Rend le résultat dans la barre du haut : compte de succès mis en
-      avant, état (bévue / échec critique) en pastille sémantique. Les
+      avant, état (complication / échec critique) en pastille sémantique. Les
       couleurs viennent des classes CSS (palette sémantique), pas d'un
-      style inline. */
+      style inline. Le verdict a déjà été normalisé par l'édition (roll()). */
   _renderTopbarResult(el, res) {
     el.classList.toggle("is-crit", !!res.critGlitch);
     el.classList.toggle("is-glitch", !res.critGlitch && !!res.glitch);
     const state = res.critGlitch
       ? "Échec critique"
       : res.glitch
-        ? "Bévue"
+        ? this._glitchLabel()
         : "";
     el.innerHTML =
       `<span class="dice-result-hits">${res.hits}</span>` +
@@ -366,6 +385,9 @@ export const DiceRoller = {
     }
 
     const res = Dice.computeRoll(n);
+    // Verdict fidèle à l'édition (Anarchy 1re n'a pas de complication de pool)
+    // AVANT le rendu topbar comme l'overlay.
+    Dice.normalizeVerdict(res, this._complicationModel());
 
     // Résultat textuel dans la barre (comportement d'origine conservé)
     this._renderTopbarResult(document.getElementById("dice-result"), res);
@@ -811,6 +833,10 @@ export const DiceRoller = {
   },
 
   show(res, opts = {}) {
+    // Verdict fidèle à l'édition, en amont de TOUT (journal, overlay, gate de
+    // relance qui lit res.critGlitch) : Anarchy 1re n'a pas de complication de
+    // pool. Idempotent, no-op en SR5/SR6/A2 (cf. Dice.normalizeVerdict).
+    Dice.normalizeVerdict(res, this._complicationModel());
     // opts.noLog : l'appelant a déjà journalisé dans le bon ordre (ex.
     // MagicAction sur une Seconde chance du Drain — le cast n'a pas changé).
     // J3 : entonnoir unique pour poser opts.turn/turnLabel (clé de groupement
@@ -1303,7 +1329,7 @@ export const DiceRoller = {
   /** Résout la ressource de relance pour le dernier jet, selon l'édition
       active (contrat rerollAction, jamais de branche d'édition ici).
       Renvoie null si la relance ne s'applique pas (jet déjà relancé,
-      d'initiative, ou bloqué par bévue/échec critique). Sinon :
+      d'initiative, ou bloqué par complication/échec critique). Sinon :
       { action, mode, label, available, hint, pnj }. */
   _rerollState() {
     const last = this._lastRoll;
@@ -1406,7 +1432,7 @@ export const DiceRoller = {
     if (res.critGlitch)
       tag = `<span class="dice-summary-tag crit">Échec critique</span>`;
     else if (res.glitch)
-      tag = `<span class="dice-summary-tag glitch">Bévue</span>`;
+      tag = `<span class="dice-summary-tag glitch">${this._glitchLabel()}</span>`;
 
     // Limite SR5 : signaler quand la Précision mord
     let limitTag = "";

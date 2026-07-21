@@ -82,6 +82,13 @@ export const EditionSR5 = {
     blockedBy: "critGlitch",
     costAttr: "CHC",
   },
+  /** Modèle de complication du pool (Livre de Règles, § Complications et
+      échecs critiques) : « Si plus de la moitié des dés lancés sont des 1 »
+      → complication ; complication + 0 succès → échec critique. `kind:"pool"`
+      = règle déjà appliquée par Dice.computeRoll ; `glitchLabel` fixe le terme
+      VF officiel (« Complication », jamais « Bévue »). Lu par DiceRoller /
+      DiceLog, jamais de branche d'édition côté widget. */
+  complicationModel: { kind: "pool", glitchLabel: "Complication" },
   /** Edge PRÉ-jet « Repousser les limites » (p.58) : dépenser 1 point de
       Chance AVANT le jet pour ajouter son indice de Chance en dés à Règle des
       six ET ignorer toute Limite. Contrat neutre miroir de rerollAction, lu

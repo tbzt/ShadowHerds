@@ -70,6 +70,12 @@ export const EditionAnarchy2 = {
       prise de risque, déjà portée par le panneau de risque (usesRiskPanel).
       Neutre `null` — aucune option pré-jet supplémentaire à offrir. */
   preRollEdge: null,
+  /** Modèle de complication (p.170) : le verdict d'Anarchy 2.0 vit dans
+      `res.complication` (mineure / critique / désastre selon les 1 sur les
+      dés de RISQUE — computeAnarchyRoll), avec son propre chemin de rendu
+      (_revealAnarchy, branche `res.anarchy` de DiceLog). `kind:"risk"` est
+      documentaire : normalizeVerdict ne touche pas ce chemin (no-op). */
+  complicationModel: { kind: "risk" },
   /* ---- Action magique : Drain déjà couvert par les complications
      du jet de risque (p.170), aucune VD séparée → tout neutre. ---- */
   spellUsesForce: false,

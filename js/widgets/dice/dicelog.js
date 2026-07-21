@@ -278,7 +278,7 @@ export const DiceLog = {
       // (plafond de Précision) ; l'Edge pré-jet (`edgeDice`) sur SR5 « Repousser
       // les limites » ET SR6 — c'est le PHÉNOMÈNE (Edge dépensé + six explosifs)
       // qui porte le sens, pas l'édition. Orthogonales aux tags d'ALARME
-      // (bévue/échec critique) qui, eux, portent la sémantique cls.
+      // (complication/échec critique) qui, eux, portent la sémantique cls.
       if (res.limited) {
         e.texture = { kind: "limit", from: res.cappedFrom, to: res.limit };
       } else if (res.edgeDice) {
@@ -293,7 +293,14 @@ export const DiceLog = {
       e.tag = res.critGlitch
         ? "Échec critique"
         : res.glitch
-          ? "Bévue"
+          ? // Terme VF de la complication de pool, lu du module d'édition
+            // (« Complication » SR5/SR6, jamais « Bévue »). Mono-édition, même
+            // convention que le terme de ressource plus haut (App.editionModule).
+            (typeof App !== "undefined" &&
+              App.editionModule &&
+              App.editionModule.complicationModel &&
+              App.editionModule.complicationModel.glitchLabel) ||
+            "Complication"
           : res.threshold != null
             ? `Seuil ${res.threshold} ${res.hits >= res.threshold ? "atteint" : "manqué"}`
             : "";
@@ -491,7 +498,7 @@ export const DiceLog = {
       return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
     };
     // J1 : cartes pré-attentives — crit (échec critique/désastre) et glitch
-    // (bévue/complication mineure) sont les seules ALARMES (cf. sémantique
+    // (complication/complication mineure) sont les seules ALARMES (cf. sémantique
     // cls, dicelog.js:159-183) ; elles se détachent en carte pleine, tout le
     // reste reste en ligne compacte. Icône ⚠/✕ : réutilise le vocabulaire
     // déjà en place ailleurs (☠/⚑ du tracker de combat), pas un ajout de motif.
