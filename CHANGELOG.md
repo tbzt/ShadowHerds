@@ -12,6 +12,29 @@ commit.
 
 ## [Non publié]
 
+## [1.91.0] — 2026-07-21
+
+### Ajouté
+
+- **La scène devient une entité à part entière.** Un run n'est plus un topo
+  plat : il contient des **scènes nommées**, chacune liant — par référence,
+  jamais copie — son casting, ses notes et son plan de lieu. Dans **Jouer**, le
+  moment « Avant » liste les scènes du run ; chacune montre son propre casting et
+  son bloc de notes. Créer, renommer et ordonner les scènes sous un run se fait
+  comme pour les dossiers.
+- **Chaque scène se joue pour elle-même.** Lancer une scène ouvre **sa** rencontre
+  (initiative, moniteurs, intrusion) ; l'état de jeu est mémorisé **par scène**, si
+  bien qu'on bascule d'une scène à l'autre sans perdre le round en cours de chacune.
+  Les scènes s'**enchaînent** (lien de succession) pour tracer le fil du run.
+- **Rejouer une campagne avec une autre équipe.** Une campagne (ou un run) se
+  **duplique** : la structure — runs, scènes, ordre, et les **références** aux
+  PNJ / plans / hosts — est copiée dans une partie neuve, à l'état de jeu vierge.
+  Améliorer un PNJ profite à toutes les parties (Actif partagé) ; qu'une équipe le
+  tue n'affecte que sa propre partie (l'état vit dans la scène, jamais sur l'Actif).
+- **Un plan de lieu par scène.** Chaque scène peut dessiner son propre plan tactique
+  procédural (lieu et graine mémorisés sur la scène), comme le « Plan tactique »
+  d'un run.
+
 ## [1.90.0] — 2026-07-21
 
 ### Ajouté

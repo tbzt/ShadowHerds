@@ -478,6 +478,11 @@ export const TourSteps = {
       title: "Plonger dans les Fondations",
       body: "En SR5 et SR6, un serveur cache un donjon interne : les sept nœuds de ses Fondations (Data Trails / Hacker Vaillant). Le menu ⋯ d'une carte de serveur porte désormais « ⛓ Plonger dans les Fondations » — une fiche de référence qui rappelle, quand vous menez un run profond, les 7 nœuds (Portail, Archive, Centre de contrôle, échafaudage, sécurité, régie, nœud vide), leurs actions et leurs jets, le paradigme (repris de la sculpture du serveur) et le seuil de Variance — chacun au bon régime : SR5 oppose « Indice + attribut », SR6 « Indice × 2 ». Anarchy n'a pas de Fondation : l'entrée ne s'y affiche pas.",
     },
+    {
+      id: "wn-scene-first-class", anchor: "nav-play", tours: ["whatsnew"], since: "1.91.0", fallback: "center",
+      title: "La scène, unité vivante de la campagne",
+      body: "Un run n'est plus un topo plat : il contient des scènes nommées, chacune avec son propre casting, ses notes et son plan de lieu — par référence, jamais copie. Dans « Jouer », le moment « Avant » liste les scènes du run. Chaque scène se joue pour elle-même : la lancer ouvre sa rencontre, dont l'état est mémorisé par scène (on bascule sans perdre son round). Les scènes s'enchaînent, et une campagne entière se duplique pour la rejouer avec une autre équipe : la structure est copiée, l'état de jeu repart vierge, mais les PNJ, plans et hosts restent partagés.",
+    },
   ],
 };
 
