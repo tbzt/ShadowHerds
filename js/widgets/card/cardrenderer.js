@@ -342,21 +342,23 @@ export const CardRenderer = {
   },
 
   /** Sens inverse du lien PJ↔contact, calculé à la volée (jamais
-      stocké côté contact — source unique `pnj.contactLinks`). Toujours actif
-      (pas de garde `deps.editable` : gestion de liens, pas édition de champ
-      texte — la distinction D-edit-A ne porte que sur le second). */
+      stocké côté contact — source unique `RelationsStore`, arêtes `type:"contact"`).
+      Toujours actif (pas de garde `deps.editable` : gestion de liens, pas édition
+      de champ texte — la distinction D-edit-A ne porte que sur le second). */
   _contactKnownBy(c) {
     if (typeof Characters === "undefined") return "";
     const all = Characters.data.all;
-    const linked = all.filter(
-      (p) => Array.isArray(p.contactLinks) && p.contactLinks.some((l) => l.contactId === c.id),
-    );
+    const linkOf = (p) =>
+      typeof RelationsStore !== "undefined"
+        ? RelationsStore.contactLinksOf(p.id).find((l) => l.contactId === c.id)
+        : null;
+    const linked = all.filter((p) => linkOf(p));
     const linkedIds = new Set(linked.map((p) => p.id));
     const unlinked = all.filter((p) => !linkedIds.has(p.id));
 
     const chips = linked
       .map((p) => {
-        const link = p.contactLinks.find((l) => l.contactId === c.id);
+        const link = linkOf(p);
         const rel = link && link.relation ? ` — ${this._esc(link.relation)}` : "";
         return `<span class="tag tag-clickable pjlink-chip" role="button" tabindex="0" data-action="contact-goto-pj"
           data-pj-id="${this._esc(p.id)}" data-pj-name="${this._esc(p.name)}">${this._pcAvatar(p)}${this._esc(p.name)}${rel}<button type="button" class="pjlink-unlink" title="Délier ce PJ" aria-label="Délier"
@@ -437,7 +439,8 @@ export const CardRenderer = {
       destructive). Cliquable vers la fiche contact via
       `Palette._reveal`, même navigation que les backlinks. */
   _contactLinksSection(pnj) {
-    const links = pnj.contactLinks || [];
+    const links =
+      typeof RelationsStore !== "undefined" ? RelationsStore.contactLinksOf(pnj.id) : [];
     const linkedIds = new Set(links.map((l) => l.contactId));
     const items = links
       .map((l) => {
@@ -481,7 +484,11 @@ export const CardRenderer = {
     if (typeof Mentions === "undefined") return "";
     // Un contact DÉJÀ lié (contactLinks) relève de la section « Contacts » : on
     // ne le répète pas ici. Un contact non lié qui mentionne le PJ y reste.
-    const linkedContactIds = new Set((pnj.contactLinks || []).map((l) => l.contactId));
+    const linkedContactIds = new Set(
+      (typeof RelationsStore !== "undefined" ? RelationsStore.contactLinksOf(pnj.id) : []).map(
+        (l) => l.contactId,
+      ),
+    );
     const links = Mentions.backlinksFor(pnj.id).filter(
       (l) => !(l.kind === "entity" && l.type === "contact" && linkedContactIds.has(l.id)),
     );

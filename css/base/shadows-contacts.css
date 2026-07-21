@@ -617,6 +617,48 @@
 }
 
 /* Casting préparé — puces actionnables (consulter · ⚔ envoyer en scène). */
+/* VIS-16 etape 2 — liste des SCENES d'un run (prepa, zone Avant). Reutilise la
+   grammaire de play-cast (tokens de theme, capitales). Distinct de .play-scene
+   (singulier = la scene VIVANTE). */
+.play-scenes {
+  margin-top: var(--sp-2);
+}
+.play-scenes-label {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 5px;
+}
+.play-scene-row {
+  border: 1px solid var(--border-ui, var(--border));
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+}
+.play-scene-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.play-scene-icon {
+  color: var(--accent);
+}
+.play-scene-name {
+  flex: 1;
+  font-size: var(--fs-xs);
+  color: var(--text);
+}
+.play-scene-castempty {
+  margin-top: 4px;
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  font-style: italic;
+}
+.play-scene-row.is-live {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
 .play-cast {
   margin-top: var(--sp-2);
 }

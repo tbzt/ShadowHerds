@@ -14,7 +14,7 @@
    - le rendu de carte dans `CardRenderer._progressionZone` ;
    - l'édition (réglage des soldes) dans `EditModal`.
    Champ additif porté par l'entité : `pnj.campaign = { ledger, customTracks }`
-   (voyage tel quel dans `characters_all`, comme `journal`/`contactLinks`).
+   (voyage tel quel dans `characters_all`, comme `journal`).
    ============================================================ */
 export const Campaign = {
   /** Devises universelles aux 4 éditions — socle neutre, jamais branché. */

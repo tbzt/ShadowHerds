@@ -310,7 +310,8 @@ export const EditModal = {
       `.em-skill-row`/`.em-add-skill` des compétences, aucun nouveau widget. */
   _buildContactLinksSection(pnj) {
     const esc = CardRenderer._esc;
-    const links = pnj.contactLinks || [];
+    const links =
+      typeof RelationsStore !== "undefined" ? RelationsStore.contactLinksOf(pnj.id) : [];
     const linkedIds = new Set(links.map((l) => l.contactId));
     const rows = links
       .map((l) => {

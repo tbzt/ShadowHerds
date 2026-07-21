@@ -39,6 +39,7 @@ export const Backup = {
     "contacts_groups",
     "servers_all",
     "servers_groups",
+    "entity_relations", // VIS-15 B0 : registre d'arêtes (liens contact…) par édition
     "dossiers", // arbre de dossiers (structure {id,name,parentId}) — CH sync
     "encounter_by_dossier", // R1 (Ranger la run) : rencontres rangées par dossier
     "notebooks", // R2 (Ranger la run) : carnets de notes par dossier
@@ -259,7 +260,7 @@ export const Backup = {
     // TODO: reads internal structures {all, groups} of Shadows, ContactsBook, Servers
     // This tight coupling should be addressed in sprint 3 (linked entities roadmap)
     // PNJ, contacts, personnages, dossiers, runs : fusion par id (chaque élément a un id)
-    for (const listKey of ["shadows_all", "contacts_all", "servers_all", "characters_all", "dossiers", "gen_runs"]) {
+    for (const listKey of ["shadows_all", "contacts_all", "servers_all", "characters_all", "dossiers", "gen_runs", "entity_relations"]) {
       if (!Array.isArray(incoming[listKey])) continue;
       const current = this._readRaw(edition, listKey, []);
       const byId = new Set(current.map((x) => x && x.id));
@@ -272,17 +273,30 @@ export const Backup = {
       this._writeRaw(edition, listKey, current);
     }
 
-    // Groupes : fusion par clé ; les membres (tableaux d'ids) sont unifiés
+    // Groupes : fusion par clé ; les membres (tableaux d'ids) sont unifiés.
+    // VIS-16 1-bis : l'appartenance est keyée par ID de dossier. Un backup d'un
+    // appareil NON migré arrive keyé par NOM → on re-key chaque clé-nom entrante
+    // vers l'id du nœud homonyme (dossiers déjà fusionnés ci-dessus). Une clé
+    // déjà = id de nœud, ou sans nœud (orphelin), est laissée telle quelle :
+    // aucune appartenance perdue au merge cross-device.
+    const mergedDossiers = this._readRaw(edition, "dossiers", []);
+    const dossierIds = new Set();
+    const dossierNameToId = {};
+    for (const n of Array.isArray(mergedDossiers) ? mergedDossiers : [])
+      if (n && n.id) { dossierIds.add(n.id); if (n.name != null) dossierNameToId[n.name] = n.id; }
+    const resolveGroupKey = (k) =>
+      dossierIds.has(k) ? k : (dossierNameToId[k] || k);
     for (const groupKey of ["shadows_groups", "contacts_groups", "servers_groups", "characters_groups"]) {
       if (!incoming[groupKey] || typeof incoming[groupKey] !== "object") continue;
       const current = this._readRaw(edition, groupKey, {});
       for (const [gname, members] of Object.entries(incoming[groupKey])) {
-        if (!current[gname]) {
-          current[gname] = Array.isArray(members) ? [...members] : members;
-        } else if (Array.isArray(current[gname]) && Array.isArray(members)) {
-          const set = new Set(current[gname]);
+        const key = resolveGroupKey(gname);
+        if (!current[key]) {
+          current[key] = Array.isArray(members) ? [...members] : members;
+        } else if (Array.isArray(current[key]) && Array.isArray(members)) {
+          const set = new Set(current[key]);
           members.forEach((m) => set.add(m));
-          current[gname] = [...set];
+          current[key] = [...set];
         }
       }
       this._writeRaw(edition, groupKey, current);
@@ -351,6 +365,8 @@ export const Backup = {
       Servers.load();
       if (Servers.render) Servers.render();
     }
+    // Registre d'arêtes (liens contact…) : recharger la vérité fusionnée.
+    if (typeof RelationsStore !== "undefined" && RelationsStore.load) RelationsStore.load();
     // Dossiers (arbre de dossiers) : recharger la structure + rafraîchir la barre.
     if (typeof Dossiers !== "undefined" && Dossiers.load) Dossiers.load();
     if (typeof DossierBar !== "undefined" && DossierBar.refresh) DossierBar.refresh();

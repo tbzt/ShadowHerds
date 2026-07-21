@@ -117,32 +117,28 @@ export const Characters = Object.assign(
       this.remove(id);
     },
 
-    /** Liens contacts ↔ PJ qualifiés. `contactLinks` additif sur
-        l'entité PJ (vit dans `characters_all`, aucune nouvelle clé) — sens
-        inverse (« Connu de » sur la fiche contact) calculé à la volée par
-        `CardRenderer._contactKnownBy` (CO-b), jamais stocké côté contact (une seule source de
-        vérité). Loyauté en nombre libre, non contraint : vérifié dans les
-        livres, SR5/SR6 ont une échelle 1-6 imprimée pour les contacts mais
-        Anarchy (1 et 2) n'a aucune notion de loyauté (modèle « Niveau »
-        différent) — imposer un clamp aurait inventé une règle. */
+    /** Liens contacts ↔ PJ qualifiés. Depuis VIS-15 (B0) l'arête vit dans
+        le registre unique `RelationsStore` (record `type:"contact"`), plus sur
+        l'entité PJ — sens inverse (« Connu de » sur la fiche contact) calculé à
+        la volée par `CardRenderer._contactKnownBy` (CO-b), jamais stocké côté
+        contact (une seule source de vérité). Loyauté en nombre libre, non
+        contraint : vérifié dans les livres, SR5/SR6 ont une échelle 1-6 imprimée
+        pour les contacts mais Anarchy (1 et 2) n'a aucune notion de loyauté
+        (modèle « Niveau » différent) — imposer un clamp aurait inventé une règle. */
     addContactLink(pnjId, contactId, relation, loyalty) {
       const pnj = this.data.all.find((p) => p.id === pnjId);
       if (!pnj || !contactId) return;
-      if (!Array.isArray(pnj.contactLinks)) pnj.contactLinks = [];
-      if (pnj.contactLinks.some((l) => l.contactId === contactId)) {
+      if (!RelationsStore.linkContact(pnjId, contactId, relation, loyalty)) {
         toast("Ce contact est déjà lié.", "warning");
         return;
       }
-      pnj.contactLinks.push({ contactId, relation: relation || "", loyalty: loyalty ?? null });
-      this.save();
       CardRenderer.refresh(pnj);
     },
 
     removeContactLink(pnjId, contactId) {
       const pnj = this.data.all.find((p) => p.id === pnjId);
-      if (!pnj || !Array.isArray(pnj.contactLinks)) return;
-      pnj.contactLinks = pnj.contactLinks.filter((l) => l.contactId !== contactId);
-      this.save();
+      if (!pnj) return;
+      RelationsStore.unlinkContact(pnjId, contactId);
       CardRenderer.refresh(pnj);
     },
 
@@ -155,19 +151,11 @@ export const Characters = Object.assign(
     addContactLinks(pnjId, contactIds) {
       const pnj = this.data.all.find((p) => p.id === pnjId);
       if (!pnj || !Array.isArray(contactIds)) return 0;
-      if (!Array.isArray(pnj.contactLinks)) pnj.contactLinks = [];
-      const existing = new Set(pnj.contactLinks.map((l) => l.contactId));
       let added = 0;
       for (const contactId of contactIds) {
-        if (!contactId || existing.has(contactId)) continue;
-        pnj.contactLinks.push({ contactId, relation: "", loyalty: null });
-        existing.add(contactId);
-        added++;
+        if (RelationsStore.linkContact(pnjId, contactId, "", null)) added++;
       }
-      if (added) {
-        this.save();
-        CardRenderer.refresh(pnj);
-      }
+      if (added) CardRenderer.refresh(pnj);
       return added;
     },
 
@@ -204,8 +192,8 @@ export const Characters = Object.assign(
     },
     activeTeamMembers() {
       const node = this._activeTeamNode();
-      if (node && this.data.groups[node.name]) {
-        const ids = new Set(this.data.groups[node.name]);
+      if (node && this.data.groups[node.id]) {
+        const ids = new Set(this.data.groups[node.id]);
         return this.data.all.filter((p) => ids.has(p.id));
       }
       return this.data.all.slice();

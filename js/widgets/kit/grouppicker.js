@@ -121,11 +121,13 @@ export const GroupPicker = {
       <button class="group-picker-new" data-action="create">+ Nouveau dossier</button>`;
   },
 
-  _rowHtml(node, currentNames, isSub) {
-    const checked = currentNames.includes(node.name) ? "checked" : "";
+  _rowHtml(node, currentKeys, isSub) {
+    // VIS-16 1-bis : appartenance keyée par ID de dossier — case cochée selon
+    // l'id du nœud, clé transmise au toggle = l'id (le nom reste le libellé).
+    const checked = currentKeys.includes(node.id) ? "checked" : "";
     const nameEsc = CardRenderer._esc(node.name);
     return `<label class="group-picker-row${isSub ? " is-sub" : ""}">
-      <input type="checkbox" ${checked} data-group="${nameEsc}">
+      <input type="checkbox" ${checked} data-group="${CardRenderer._esc(node.id)}">
       <span>${nameEsc}</span>
     </label>`;
   },
