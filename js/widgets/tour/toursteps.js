@@ -483,6 +483,11 @@ export const TourSteps = {
       title: "La scène, unité vivante de la campagne",
       body: "Un run n'est plus un topo plat : il contient des scènes nommées, chacune avec son propre casting, ses notes et son plan de lieu — par référence, jamais copie. Dans « Jouer », le moment « Avant » liste les scènes du run. Chaque scène se joue pour elle-même : la lancer ouvre sa rencontre, dont l'état est mémorisé par scène (on bascule sans perdre son round). Les scènes s'enchaînent, et une campagne entière se duplique pour la rejouer avec une autre équipe : la structure est copiée, l'état de jeu repart vierge, mais les PNJ, plans et hosts restent partagés.",
     },
+    {
+      id: "wn-relations-graph", anchor: "nav-characters", tours: ["whatsnew"], since: "1.92.0", fallback: "center",
+      title: "Le graphe des relations",
+      body: "Les liens entre vos personnages, PNJ, contacts et serveurs se voient maintenant en graphe. Sur la fiche d'un PJ relié à des contacts, le bouton « ◈ Liens » ouvre une carte des relations : chaque entité est un nœud, reliés par leurs liens. Déplacez les nœuds (ils ont un poids, glissent avec de l'élan), touchez-en un pour ouvrir sa fiche en aperçu sans quitter le graphe, et activez « Tisser » pour créer un lien en tirant d'un nœud à l'autre — la ligne s'accroche à la cible valide. Une seule vérité : liens tissés ici et liens des fiches vivent au même endroit.",
+    },
   ],
 };
 

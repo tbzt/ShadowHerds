@@ -12,6 +12,21 @@ commit.
 
 ## [Non publié]
 
+## [1.92.0] — 2026-07-22
+
+### Ajouté
+
+- **Le graphe des relations.** Les liens entre vos personnages, PNJ, contacts et
+  serveurs — jusqu'ici épars sur les fiches — se voient enfin **en graphe**. Sur
+  la fiche d'un PJ relié à des contacts, un bouton **« ◈ Liens »** ouvre une carte
+  des relations : chaque entité est un **nœud** (coloré et marqué d'un glyphe selon
+  son type), reliés par leurs liens. On **déplace** les nœuds — ils ont un poids :
+  soulevés à la prise, ils glissent avec de l'élan et se recalent en douceur ; on
+  **touche** un nœud pour ouvrir sa fiche **en aperçu** sans quitter le graphe ; et
+  en activant **« Tisser »**, on **crée un lien** en tirant d'un nœud à l'autre, la
+  ligne s'accrochant à la cible valide. Une seule vérité : les liens tissés ici et
+  ceux posés sur les fiches vivent au même endroit.
+
 ## [1.91.0] — 2026-07-21
 
 ### Ajouté
