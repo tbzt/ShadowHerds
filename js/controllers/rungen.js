@@ -348,6 +348,42 @@ export const RunGen = {
       `Plan tactique — ${run.lieu || "lieu inconnu"}`,
     );
   },
+
+  /** VIS-16 étape 2b — plan de lieu PROCÉDURAL d'une SCÈNE (nœud `Dossiers`).
+      Lu/écrit SUR LE NŒUD (`lieu`/`mapSeed`), pas dans `gen_runs` (verrou B :
+      les refs de scène vivent sur le nœud ; `gen_runs` reste le topos du run).
+      Réutilise MapGen + Portrait comme `showMap`. Demande le lieu la 1ʳᵉ fois,
+      puis le mémorise (régénération déterministe ensuite). Aucune dépendance au
+      topos : `MapGen` défaute à « corpo » et lit les mots-clés du lieu. */
+  showSceneMap(sceneId) {
+    const node = typeof Dossiers !== "undefined" ? Dossiers.get(sceneId) : null;
+    if (!node) return;
+    const render = (lieu) => {
+      node.lieu = lieu;
+      if (!node.mapSeed) node.mapSeed = Utils.uid();
+      Dossiers.save();
+      const accent =
+        (App.editionModule && App.editionModule.mapAccent) || "#35e0e6";
+      const svg = MapGen.build({
+        siteType: node.siteType,
+        seed: node.mapSeed,
+        accent,
+        title: lieu,
+        subtitle: node.name,
+        lieu,
+      });
+      Portrait.showPreview(MapGen.dataUrl(svg), `Plan — ${lieu}`);
+    };
+    if (node.lieu) return render(node.lieu);
+    Dialog.prompt({
+      title: "Lieu de la scène",
+      label: "Où se passe cette scène ?",
+      placeholder: "ex. entrepôt d'Ares, boîte de nuit, host de Renraku…",
+      confirmLabel: "Générer le plan",
+    }).then((v) => {
+      if (v && v.trim()) render(v.trim());
+    });
+  },
   clearAll() {
     this._runs = [];
     this._save();

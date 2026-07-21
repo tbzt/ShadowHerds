@@ -103,6 +103,11 @@ export const Play = {
           // RunGen.showMap (MapGen → lightbox Portrait). Aucune donnée ici.
           RunGen.showMap(el.dataset.id);
           break;
+        case "play-scene-map":
+          // VIS-16 étape 2b — plan de lieu PROCÉDURAL de la scène (lu/écrit sur
+          // le nœud scène, verrou B). Délégué à RunGen.showSceneMap.
+          RunGen.showSceneMap(el.dataset.id);
+          break;
         case "play-plan":
           // VIS-8 étape 3 — ambiance IA (opt-in). Délégué à RunGen.generatePlan ;
           // le bouton `el` sert de cible de spinner (géré par Pollinations).
@@ -610,6 +615,7 @@ export const Play = {
           <div class="play-scene-head">
             <span class="play-scene-icon" aria-hidden="true">▷</span>
             <span class="play-scene-name">${name}</span>
+            <button class="btn-icon-tiny" data-action="play-scene-map" data-id="${s.id}" title="Plan de lieu de « ${name} »">▦</button>
             <button class="btn-icon-tiny" data-action="play-notes" data-dossier="${s.id}" title="Carnet de « ${name} »">✎</button>
             <button class="btn-secondary btn-small" data-action="play-resume" data-dossier="${s.id}" title="${playTitle}">${playLabel}</button>
           </div>
