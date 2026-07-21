@@ -278,7 +278,7 @@ export const DiceLog = {
       // (plafond de Précision) ; l'Edge pré-jet (`edgeDice`) sur SR5 « Repousser
       // les limites » ET SR6 — c'est le PHÉNOMÈNE (Edge dépensé + six explosifs)
       // qui porte le sens, pas l'édition. Orthogonales aux tags d'ALARME
-      // (bévue/échec critique) qui, eux, portent la sémantique cls.
+      // (complication/échec critique) qui, eux, portent la sémantique cls.
       if (res.limited) {
         e.texture = { kind: "limit", from: res.cappedFrom, to: res.limit };
       } else if (res.edgeDice) {
@@ -290,24 +290,42 @@ export const DiceLog = {
         const term = (spec && (spec.resourceLabel || spec.costAttr)) || "";
         e.texture = { kind: "edge", dice: res.edgeDice, sixes: res.edgeSixes || 0, term };
       }
+      // Terme VF de la complication de pool, lu du module d'édition
+      // (« Complication » SR5/SR6, jamais « Bévue »). Mono-édition, même
+      // convention que le terme de ressource plus haut (App.editionModule).
+      const glitchLabel =
+        (typeof App !== "undefined" &&
+          App.editionModule &&
+          App.editionModule.complicationModel &&
+          App.editionModule.complicationModel.glitchLabel) ||
+        "Complication";
+      // Dé d'imprévu (Anarchy 1re) : verdict porté par le champ neutre res.wild
+      // (exploit positif / complication), sur le chemin standard (A1 n'est pas
+      // res.anarchy). 1 et 5-6 s'excluent → au plus l'un des deux.
+      const wildComp = !!(res.wild && res.wild.complication);
+      const wildExploit = !!(res.wild && res.wild.exploit);
       e.tag = res.critGlitch
         ? "Échec critique"
-        : res.glitch
-          ? "Bévue"
-          : res.threshold != null
-            ? `Seuil ${res.threshold} ${res.hits >= res.threshold ? "atteint" : "manqué"}`
-            : "";
+        : res.glitch || wildComp
+          ? glitchLabel
+          : wildExploit
+            ? "Exploit"
+            : res.threshold != null
+              ? `Seuil ${res.threshold} ${res.hits >= res.threshold ? "atteint" : "manqué"}`
+              : "";
       e.cls = res.critGlitch
         ? "crit"
-        : res.glitch
+        : res.glitch || wildComp
           ? "glitch"
-          : res.threshold != null
-            ? res.hits >= res.threshold
-              ? "good"
-              : "zero"
-            : res.hits > 0
-              ? "good"
-              : "zero";
+          : wildExploit
+            ? "good"
+            : res.threshold != null
+              ? res.hits >= res.threshold
+                ? "good"
+                : "zero"
+              : res.hits > 0
+                ? "good"
+                : "zero";
     }
     this.history.unshift(e);
     // Rétention protégée (J3 + J4) : le plafond n'ampute jamais le tour en
@@ -491,7 +509,7 @@ export const DiceLog = {
       return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
     };
     // J1 : cartes pré-attentives — crit (échec critique/désastre) et glitch
-    // (bévue/complication mineure) sont les seules ALARMES (cf. sémantique
+    // (complication/complication mineure) sont les seules ALARMES (cf. sémantique
     // cls, dicelog.js:159-183) ; elles se détachent en carte pleine, tout le
     // reste reste en ligne compacte. Icône ⚠/✕ : réutilise le vocabulaire
     // déjà en place ailleurs (☠/⚑ du tracker de combat), pas un ajout de motif.

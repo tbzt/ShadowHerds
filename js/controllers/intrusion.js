@@ -31,7 +31,16 @@ export const Intrusion = {
       alerted: false,
       turn: 0,
       ics: {},
-      marks: 0,
+      // Marks SR5, DEUX directions distinctes (les livres les séparent, max 3
+      // par cible, p.233) :
+      //  · marksOn {pnjId → 0..3} : marks de l'HÔTE sur chaque persona PJ.
+      //    Un seul compteur côté hôte, PARTAGÉ par toutes ses CI (et le spider,
+      //    qui pose au nom de l'hôte) — SR5 p.247 : les CI utilisent les marks
+      //    de leur hôte. Pas de compteur par CI : les livres les fusionnent.
+      //  · marksHeld 0..3 : marks de l'ÉQUIPE sur l'hôte (monnaie d'accès du
+      //    decker ; 3 = accès propriétaire, miroir SR5 de l'échelle SR6).
+      marksOn: {},
+      marksHeld: 0,
       ss: 0,
       ssLog: [],
       lastRollT: 0,
@@ -173,20 +182,21 @@ export const Intrusion = {
     this._persist();
   },
 
-  /* ---- Jets des CI (SR5/SR6 — les glaces Anarchy ont des succès
-     fixes et ne lancent jamais les dés, p.223) ----
-     SR5 p.249 : attaque = indice×2 [Attaque] ; encaissement =
-     indice + Firewall (règle des appareils p.229, attributs du
-     serveur). La VF ne détaille pas la réserve de défense : on
-     applique l'usage indice×2. SR6 p.188 : toutes les CI utilisent
-     indice×2 pour la majorité de leurs jets. */
+  /* ---- Jets d'une CI liée à un serveur ----
+     Réserve/limite/suffixe délégués à `Matrix.icCombat` (source unique par
+     édition, prohibition n°1). SR5/SR6 (dés ∝ indice) et Anarchy 1re (dés à
+     statblock fixe) renvoient `roll:true` → on lance. Anarchy 2.0 (succès
+     fixes, p.223) renvoie `roll:false` → rien à lancer (le cockpit affiche la
+     valeur). Un geste inexistant (Anarchy n'a pas de jet d'encaissement,
+     p.156) renvoie `null`. */
   rollIC(id, key, kind) {
     const srv = Servers.find(id);
-    const M = Matrix.use(srv && srv.edition);
-    if (!srv || !M.hasAttrs()) return;
+    if (!srv) return;
+    const M = Matrix.use(srv.edition);
     const ic = Servers.icCatalog(srv.edition)[key];
     const name = ic ? ic.label : key;
-    const spec = M.icRollSpec(kind, srv);
+    const spec = M.icCombat(kind, srv, ic);
+    if (!spec || !spec.roll) return;
     const res = Dice.computeRoll(spec.pool);
     if (spec.limit != null && res.hits > spec.limit) {
       res.cappedFrom = res.hits;
@@ -195,11 +205,28 @@ export const Intrusion = {
     DiceRoller.show(res, { label: `${name} — ${spec.suffix}`, who: srv.name });
   },
 
-  /* ---- Marks (SR5) ---- */
-  addMarks(id, delta) {
+  /* ---- Marks (SR5) — deux directions séparées ---- */
+
+  /** Marks de l'HÔTE (⇒ toutes ses CI + son spider) sur un persona PJ donné.
+      Compteur par cible (max 3, p.233) ; la clé disparaît à 0 pour garder
+      `marksOn` propre (une scène sans mark = objet vide). */
+  addMarkOn(id, pjId, delta) {
+    const intr = this._state(id);
+    if (!intr || !pjId) return;
+    intr.marksOn ||= {};
+    const next = Utils.clamp((intr.marksOn[pjId] || 0) + delta, 0, 3);
+    if (next > 0) intr.marksOn[pjId] = next;
+    else delete intr.marksOn[pjId];
+    this._persist();
+  },
+
+  /** Marks de l'ÉQUIPE sur l'hôte (monnaie d'accès du decker ; 3 = accès
+      propriétaire). Scalaire d'équipe : un seul infiltrateur dans le cas
+      courant, extensible si besoin. */
+  addMarkHeld(id, delta) {
     const intr = this._state(id);
     if (!intr) return;
-    intr.marks = Utils.clamp(intr.marks + delta, 0, 3);
+    intr.marksHeld = Utils.clamp((intr.marksHeld || 0) + delta, 0, 3);
     this._persist();
   },
 
@@ -246,7 +273,10 @@ export const Intrusion = {
     if (!confirm("Reboot du decker : SS et marks à zéro ?")) return;
     intr.ss = 0;
     intr.ssLog = [];
-    intr.marks = 0;
+    // Reboot : l'hôte perd ses marks sur les intrus ET l'équipe perd les
+    // siennes sur l'hôte (les accès sautent au reboot).
+    intr.marksOn = {};
+    intr.marksHeld = 0;
     intr.lastRollT = 0;
     this._persist();
     toast("SS remis à zéro (reboot : perte des marks, choc d'éjection en RV).");

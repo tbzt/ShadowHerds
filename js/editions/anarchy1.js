@@ -84,11 +84,38 @@ export const EditionAnarchy1 = {
     blockedBy: "critGlitch",
     costAttr: "CHC",
   },
-  /** Pas d'Edge PRÉ-jet motorisé : Anarchy 1re n'expose pas de « Repousser
-      les limites » vérifié au livre, et sa relance passe déjà par la réserve
-      de menace (Points d'Anarchy). Neutre `null` — le lanceur n'offre aucune
-      option pré-jet, comme Anarchy 2.0. */
-  preRollEdge: null,
+  /** Modèle de complication (sran_01 p.157) : Anarchy 1re n'a AUCUNE règle de
+      complication de pool (« 1s > moitié » est purement SR5/SR6). Les
+      complications viennent d'un DÉ D'IMPRÉVU opt-in (le plus souvent via un
+      Point d'Anarchy) : 1 → complication, 5-6 → exploit ; un « dé de
+      complication » (Atouts/Défauts) ne fait que des complications. `kind:
+      "unpredictability"` dit à Dice.normalizeVerdict de neutraliser le verdict
+      SR fantôme qu'hériterait computeRoll — un pool A1 ne produit jamais de
+      complication. Le
+      dé d'imprévu lui-même est motorisé au Lot B. */
+  complicationModel: { kind: "unpredictability", glitchLabel: "Complication" },
+  /** Option PRÉ-jet = DÉ D'IMPRÉVU (sran_01 p.157) : dépenser 1 Point
+      d'Anarchy AVANT le jet pour ajouter un dé d'imprévu (1 → complication,
+      5-6 → exploit). `reserve:"threat"` = le budget vient de la réserve de
+      menace globale (les Points d'Anarchy y sont portés, cf. usesThreatReserve),
+      pas d'un attribut de PNJ comme la Chance SR5. Miroir du contrat neutre
+      preRollEdge, lu par DiceRoller.preRollEdgeOptions ; l'option `wild`
+      route vers Dice.computeRoll({wild}) au lieu des dés d'Edge. Le « dé de
+      complication » (Atouts/Défauts) reste hors périmètre (variante engine
+      "complication" non exposée ici). */
+  preRollEdge: {
+    reserve: "threat",
+    resourceLabel: "Points d'Anarchy",
+    options: [
+      {
+        id: "wild",
+        wild: "imprevu",
+        label: "Dé d'imprévu",
+        cost: 1,
+        hint: "1 Point d'Anarchy · +1 dé — 1 = complication, 5-6 = exploit",
+      },
+    ],
+  },
   /* ---- Action magique : Anarchy n'a pas de Drain chiffré →
      tout neutre. MagicAction ne déclenche rien (spellSkill/conjureSkill null). ---- */
   spellUsesForce: false,
@@ -682,6 +709,26 @@ export const EditionAnarchy1 = {
     icMonitorSize() {
       return 11;
     },
+    /** Statblock GLACE (sran_01 p.199-200) — réserves DÉJÀ sommées, à ne PAS
+        ré-additionner : Attaque = Hacking 8 (soit 3 rangs + LOG 5), Défense = 11
+        (soit LOG 5 + Firewall 6), Perception matricielle = LOG + LOG = 10.
+        Valeurs FIXES (indépendantes de l'indice/sécurité du serveur). */
+    icStatblock: { atk: 8, def: 11, per: 10 },
+    /** Descripteur de combat d'une CI (Anarchy 1re), lu par le cockpit + les
+        handlers de jet via Matrix.icCombat. Régime à DÉS mais statblock FIXE
+        (ni succès fixes ∝ indice comme A2, ni ASDF comme SR). Modificateurs de
+        type (p.200) : Tueuse = +2 dés en cybercombat (`ic.atkBonus`), Glace
+        noire = dommages Physiques (`ic.dmg` = "3P"). Anarchy n'a AUCUN jet
+        d'encaissement (soak → null) : seule la Défense opposée protège, le
+        résiduel va droit au moniteur (p.156). */
+    icCombat(kind, host, ic) {
+      const sb = this.icStatblock;
+      if (kind === "atk")
+        return { roll: true, pool: sb.atk + ((ic && ic.atkBonus) || 0), limit: null, suffix: "cybercombat (Hacking)", dmg: (ic && ic.dmg) || "3E" };
+      if (kind === "def") return { roll: true, pool: sb.def, limit: null, suffix: "défense (LOG + Firewall)" };
+      if (kind === "per") return { roll: true, pool: sb.per, limit: null, suffix: "perception (LOG + LOG)" };
+      return null;
+    },
     maxActiveIC() {
       return Infinity;
     },
@@ -726,6 +773,18 @@ export const EditionAnarchy1 = {
     },
     attrLimit() {
       return null;
+    },
+    /* Topologie externe (schéma d'architecture, lot A) — lue par
+       Matrix.topology* / TopologyGen. Anarchy 1re : modèle le plus abstrait
+       (l'indice EST le pool de défense) — chaîne minimale, entrée Matrice
+       seule, pas d'arborescence ni d'imbrication dans le texte. */
+    topology: {
+      archetypes: [{ id: "chain", label: "Chaîne de serveurs" }],
+      entryModes: [{ id: "matrix", label: "Matrice publique", glyph: "◎" }],
+      targetLabel: "données",
+      nodeBadge(srv) {
+        return `Pool de défense ${srv.indice}`;
+      },
     },
   },
 

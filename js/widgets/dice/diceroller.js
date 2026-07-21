@@ -224,9 +224,9 @@ export const DiceRoller = {
         return;
       }
 
-      // Affordances internes d'une ligne de sort (ⓘ détails, ✕ effacer) :
-      // gérées ailleurs (ContentModal / MagicAction), ne pas lancer.
-      if (e.target.closest("[data-content-name], [data-spell-clear]")) return;
+      // Affordances internes d'une ligne de sort (ⓘ détails) : gérées ailleurs
+      // (ContentModal), ne pas lancer.
+      if (e.target.closest("[data-content-name]")) return;
 
       const t = e.target.closest("[data-roll]");
       if (!t) return;
@@ -298,19 +298,25 @@ export const DiceRoller = {
     });
   },
 
-  /** Jet nu ou avec dés d'Edge pré-jet, selon `edge` — un seul point de
-      bascule pour rollWeapon/rollPool (jamais deux fois la même condition). */
+  /** Jet nu, avec dés d'Edge pré-jet, ou avec DÉ D'IMPRÉVU (Anarchy 1re) selon
+      `edge` — un seul point de bascule pour rollWeapon/rollPool (jamais deux
+      fois la même condition). Le dé d'imprévu n'est PAS un dé d'Edge (pas
+      d'explosion) : il passe par Dice.computeRoll({wild}). */
   _computeWithEdge(pool, edge) {
+    if (edge && edge.wild) return Dice.computeRoll(pool, { wild: edge.wild });
     return edge && edge.dice
       ? Dice.computeRollWithEdge(pool, edge.dice, edge.explode)
       : Dice.computeRoll(pool);
   },
 
-  /** Ajoute la mention d'Edge au décompte affiché (« … · +4 Repousser les
-      limites »). Sobre : rien si pas d'Edge. */
+  /** Ajoute la mention d'Edge/dé d'imprévu au décompte affiché (« … · +4
+      Repousser les limites », « … · Dé d'imprévu »). Sobre : rien si jet nu. */
   _appendEdgeDetail(detail, edge) {
-    if (!edge || !edge.dice) return detail;
-    const tag = `+${edge.dice} ${edge.label}`;
+    if (!edge) return detail;
+    let tag;
+    if (edge.wild) tag = edge.label;
+    else if (edge.dice) tag = `+${edge.dice} ${edge.label}`;
+    else return detail;
     return detail ? `${detail} · ${tag}` : tag;
   },
 
@@ -320,6 +326,14 @@ export const DiceRoller = {
       ne peut pas payer (garde-fou — l'UI ne propose déjà que l'affordable). */
   _spendPreRollEdge(pnj, opt) {
     if (!pnj || !opt) return null;
+    // Budget-réserve (Anarchy 1re : Points d'Anarchy = réserve de menace
+    // globale) : on débite la réserve, pas un attribut de PNJ, et on renvoie
+    // un marqueur `wild` que _computeWithEdge route vers le dé d'imprévu.
+    if (opt.reserve === "threat") {
+      if (this.threatValue() < opt.cost) return null;
+      this._setThreat(this._threat - opt.cost);
+      return { wild: opt.wild, label: opt.label };
+    }
     const have = Actor.attr(pnj, opt.costAttr);
     if (have == null || have < opt.cost) return null;
     Actor.spend(pnj, opt.costAttr, opt.cost);
@@ -335,17 +349,36 @@ export const DiceRoller = {
     input.value = n;
   },
 
+  /** Modèle de complication de l'édition active (mono-édition, comme le terme
+      de ressource lu par le journal). Repli neutre « pool / Complication » si
+      le module n'expose pas encore de modèle. */
+  _complicationModel() {
+    return (
+      (App.editionModule && App.editionModule.complicationModel) || {
+        kind: "pool",
+        glitchLabel: "Complication",
+      }
+    );
+  },
+
+  /** Terme VF de la complication de pool (« Complication » en SR5/SR6, lu du
+      modèle d'édition — jamais « Bévue »). L'échec critique garde son terme
+      universel. */
+  _glitchLabel() {
+    return this._complicationModel().glitchLabel || "Complication";
+  },
+
   /** Rend le résultat dans la barre du haut : compte de succès mis en
-      avant, état (bévue / échec critique) en pastille sémantique. Les
+      avant, état (complication / échec critique) en pastille sémantique. Les
       couleurs viennent des classes CSS (palette sémantique), pas d'un
-      style inline. */
+      style inline. Le verdict a déjà été normalisé par l'édition (roll()). */
   _renderTopbarResult(el, res) {
     el.classList.toggle("is-crit", !!res.critGlitch);
     el.classList.toggle("is-glitch", !res.critGlitch && !!res.glitch);
     const state = res.critGlitch
       ? "Échec critique"
       : res.glitch
-        ? "Bévue"
+        ? this._glitchLabel()
         : "";
     el.innerHTML =
       `<span class="dice-result-hits">${res.hits}</span>` +
@@ -366,6 +399,9 @@ export const DiceRoller = {
     }
 
     const res = Dice.computeRoll(n);
+    // Verdict fidèle à l'édition (Anarchy 1re n'a pas de complication de pool)
+    // AVANT le rendu topbar comme l'overlay.
+    Dice.normalizeVerdict(res, this._complicationModel());
 
     // Résultat textuel dans la barre (comportement d'origine conservé)
     this._renderTopbarResult(document.getElementById("dice-result"), res);
@@ -811,6 +847,10 @@ export const DiceRoller = {
   },
 
   show(res, opts = {}) {
+    // Verdict fidèle à l'édition, en amont de TOUT (journal, overlay, gate de
+    // relance qui lit res.critGlitch) : Anarchy 1re n'a pas de complication de
+    // pool. Idempotent, no-op en SR5/SR6/A2 (cf. Dice.normalizeVerdict).
+    Dice.normalizeVerdict(res, this._complicationModel());
     // opts.noLog : l'appelant a déjà journalisé dans le bon ordre (ex.
     // MagicAction sur une Seconde chance du Drain — le cast n'a pas changé).
     // J3 : entonnoir unique pour poser opts.turn/turnLabel (clé de groupement
@@ -907,21 +947,29 @@ export const DiceRoller = {
     const mod = pnj ? App.getEditionModule(pnj.edition) : App.editionModule;
     const spec = mod && mod.preRollEdge;
     if (!spec || !pnj || !pnj.attrs) return [];
-    const budget = Actor.attr(pnj, spec.costAttr);
+    // Source du budget : réserve de menace globale (Anarchy 1re : Points
+    // d'Anarchy) OU attribut de PNJ (Chance SR5 / Atout SR6).
+    const fromReserve = spec.reserve === "threat";
+    const budget = fromReserve ? this.threatValue() : Actor.attr(pnj, spec.costAttr);
     if (budget == null) return [];
     return (spec.options || []).map((o) => {
       const dice = o.dice === "rating" ? Actor.attr(pnj, spec.costAttr) || 0 : o.dice || 0;
+      // Une option « dé d'imprévu » (wild) n'a pas de dés d'Edge : son
+      // utilisabilité tient au seul budget, pas à `dice > 0`.
+      const usable = o.wild ? true : dice > 0;
       return {
         id: o.id,
         label: o.label,
         cost: o.cost,
         dice,
+        wild: o.wild || null,
         explode: !!o.explode,
         ignoreLimit: !!o.ignoreLimit,
         hint: o.hint || "",
         costAttr: spec.costAttr,
+        reserve: fromReserve ? "threat" : null,
         budget,
-        affordable: budget >= o.cost && dice > 0,
+        affordable: budget >= o.cost && usable,
       };
     });
   },
@@ -949,9 +997,15 @@ export const DiceRoller = {
       aucune option de dépense n'est abordable (panneau ouvert pour gagner). */
   _panelBudgetText(pnj) {
     const mod = App.getEditionModule(pnj.edition);
+    const spec = mod.preRollEdge;
+    // Budget-réserve (Anarchy 1re) : Points d'Anarchy lus sur la réserve
+    // globale, pas sur un attribut de PNJ.
+    if (spec && spec.reserve === "threat") {
+      return `${this.threatValue()} ${spec.resourceLabel || "Points d'Anarchy"}`;
+    }
     const attr =
       (mod.preRollGain && mod.preRollGain.costAttr) ||
-      (mod.preRollEdge && mod.preRollEdge.costAttr) ||
+      (spec && spec.costAttr) ||
       null;
     return attr ? `${Actor.attr(pnj, attr)} ${attr}` : "";
   },
@@ -1137,7 +1191,9 @@ export const DiceRoller = {
     const ctx = this._preRoll;
     if (!ctx) return;
     const budget = this._panelBudgetText(ctx.pnj);
-    const label = ctx.gain ? "Atout disponible" : "Edge disponible";
+    const mod = App.getEditionModule(ctx.pnj.edition);
+    const fromReserve = mod && mod.preRollEdge && mod.preRollEdge.reserve === "threat";
+    const label = ctx.gain ? "Atout disponible" : fromReserve ? "Réserve" : "Edge disponible";
     document.getElementById("preroll-pool").innerHTML = budget
       ? `${label} : <strong>${Utils.escHtml(budget)}</strong>`
       : "";
@@ -1303,7 +1359,7 @@ export const DiceRoller = {
   /** Résout la ressource de relance pour le dernier jet, selon l'édition
       active (contrat rerollAction, jamais de branche d'édition ici).
       Renvoie null si la relance ne s'applique pas (jet déjà relancé,
-      d'initiative, ou bloqué par bévue/échec critique). Sinon :
+      d'initiative, ou bloqué par complication/échec critique). Sinon :
       { action, mode, label, available, hint, pnj }. */
   _rerollState() {
     const last = this._lastRoll;
@@ -1385,9 +1441,10 @@ export const DiceRoller = {
   },
 
   _revealStandard(res, summary, opts) {
+    const wildComp = !!(res.wild && res.wild.complication);
     const cls = res.critGlitch
       ? "crit"
-      : res.glitch
+      : res.glitch || wildComp
         ? "glitch"
         : res.hits > 0
           ? "good"
@@ -1406,7 +1463,13 @@ export const DiceRoller = {
     if (res.critGlitch)
       tag = `<span class="dice-summary-tag crit">Échec critique</span>`;
     else if (res.glitch)
-      tag = `<span class="dice-summary-tag glitch">Bévue</span>`;
+      tag = `<span class="dice-summary-tag glitch">${this._glitchLabel()}</span>`;
+    // Dé d'imprévu (Anarchy 1re) : exploit positif et/ou complication, portés
+    // par le champ neutre res.wild (1 et 5-6 s'excluent → au plus un tag).
+    if (res.wild && res.wild.exploit)
+      tag += `<span class="dice-summary-tag safe">Exploit</span>`;
+    if (res.wild && res.wild.complication)
+      tag += `<span class="dice-summary-tag glitch">${this._glitchLabel()}</span>`;
 
     // Limite SR5 : signaler quand la Précision mord
     let limitTag = "";

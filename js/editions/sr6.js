@@ -89,7 +89,7 @@ export const EditionSR6 = {
       (ATO), porté par chaque PNJ (attrs.ATO). */
   usesThreatReserve: false,
   /** Action de relance « Relancer les ratés » (p.50-51) : relance les dés
-      ratés (mode "misses"), interdite dès qu'il y a une bévue OU un échec
+      ratés (mode "misses"), interdite dès qu'il y a une complication OU un échec
       critique (blockedBy "glitch" couvre les deux — plus strict que SR5),
       coûte des points d'Atout du PNJ. */
   rerollAction: {
@@ -98,6 +98,12 @@ export const EditionSR6 = {
     blockedBy: "glitch",
     costAttr: "ATO",
   },
+  /** Modèle de complication du pool (SR6 p.40) : « Si plus de la moitié des
+      dés que vous avez lancés affichent un 1 » → complication ; complication
+      + 0 succès → échec critique. Même seuil que SR5, même terme VF officiel
+      « Complication » (jamais « Bévue »). `kind:"pool"` = règle déjà posée par
+      Dice.computeRoll. */
+  complicationModel: { kind: "pool", glitchLabel: "Complication" },
   /** Edge PRÉ-jet (Atout, p.50-51) : deux dépenses « avant le jet ». *Prendre
       un risque* (1 Atout → +1 dé libre, sans explosion) et *Ajouter son rang
       d'Atout* (4 Atouts → +rang de dés à 6 explosifs). Contrat neutre miroir
@@ -748,6 +754,20 @@ export const EditionSR6 = {
     icMonitorSize(indice) {
       return 8 + Math.ceil(indice / 2);
     },
+    /** Descripteur de combat d'une CI (SR6), lu par le cockpit + les handlers de
+        jet via Matrix.icCombat. « Toutes les CI utilisent indice×2 pour la
+        majorité de leurs jets » (p.188) → attaque/défense/perception = indice×2.
+        Encaissement = indice×2 aussi : on résiste aux dommages matriciels « avec
+        Firewall » (p.180), sans règle de soak dédiée aux CI → on applique la
+        convention CI indice×2 (et NON indice + Firewall, qui n'est pas au livre). */
+    icCombat(kind, host) {
+      const i = host.indice;
+      if (kind === "atk") return { roll: true, pool: i * 2, limit: this.attrLimit("atk", host), suffix: "attaque" };
+      if (kind === "def") return { roll: true, pool: i * 2, limit: null, suffix: "défense" };
+      if (kind === "soak") return { roll: true, pool: i * 2, limit: null, suffix: "encaissement" };
+      if (kind === "per") return { roll: true, pool: i * 2, limit: this.attrLimit("per", host), suffix: "perception matricielle" };
+      return null;
+    },
     maxActiveIC(indice) {
       return indice;
     },
@@ -815,6 +835,27 @@ export const EditionSR6 = {
     },
     /** Les 3 niveaux d'accès matriciels (p.179), dans l'ordre de progression. */
     accessLevels: ["Invité", "Utilisateur", "Administrateur"],
+    /* Topologie externe (schéma d'architecture, lot A) — lue par
+       Matrix.topology* / TopologyGen. SR6 : chaîne + WAN (appareils asservis,
+       corebook) + serveurs IMBRIQUÉS (Hacker Vaillant p.~133 « les serveurs
+       imbriqués sont inclus les uns dans les autres », « un serveur de sécurité
+       imbriqué dans un serveur public ») — l'imbrication distingue SR6 de SR5. */
+    topology: {
+      archetypes: [
+        { id: "chain", label: "Chaîne de serveurs" },
+        { id: "wan", label: "Serveur + appareils asservis (WAN)" },
+        { id: "nested", label: "Serveurs imbriqués" },
+      ],
+      entryModes: [
+        { id: "matrix", label: "Matrice publique", glyph: "◎" },
+        { id: "direct", label: "Connexion directe (câble)", glyph: "⎇" },
+      ],
+      targetLabel: "fichiers (Archive)",
+      nodeBadge(srv) {
+        const a = srv.attrs || {};
+        return `Ind. ${srv.indice} · A${a.attack} C${a.sleaze} T${a.dataProcessing} F${a.firewall}`;
+      },
+    },
   },
 
   /* Régime cyberdeck SR6 — 4 attributs ACTF, réallouables. Reconfigurer

@@ -286,6 +286,12 @@
 .dice-log-tag.crit {
   color: var(--danger);
 }
+/* Exploit (dé d'imprévu Anarchy 1re) : verdict POSITIF → teinte d'édition
+   (--accent), comme la pastille `.safe` de l'overlay. Ne concerne que les
+   lignes taguées « Exploit » (cls "good" + tag présent). */
+.dice-log-tag.good {
+  color: var(--accent);
+}
 /* V6 : texture d'édition — pastille pleine « ce qui a fait compter le jet ».
    Limite (SR5) et Edge (SR5/SR6) prennent la teinte d'édition (--accent, dont
    la valeur suit le livre actif) ; la complication (Anarchy) prend la couleur

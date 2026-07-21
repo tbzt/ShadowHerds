@@ -287,11 +287,15 @@ export const Matrix = {
       noire: {
         label: "Noire",
         def: "Cybercombat GLACE : LOG + Firewall",
+        // p.200 : la glace noire inflige des dommages PHYSIQUES (3P) au lieu de 3E.
+        dmg: "3P",
         effect: () => "Chaque succès excédentaire du serveur inflige 1 case de dégâts physiques au hacker.",
       },
       tueuse: {
         label: "Tueuse",
         def: "Cybercombat GLACE : LOG + Firewall",
+        // p.200 : +2 dés aux tests de Hacking (cybercombat uniquement).
+        atkBonus: 2,
         effect: () => "Chaque succès excédentaire du serveur inflige 1 case de dégâts d'étourdissement au hacker.",
       },
     },
@@ -470,7 +474,7 @@ export const Matrix = {
       sans monter de serveur). Le MJ choisit un indice (= indice de l'hôte
       fictif) ; il suffit à dériver init, taille de moniteur et réserves de
       jet. Les attributs ASDF défaut à l'indice (une CI sans fiche de serveur).
-      Édition-neutre : consommé par `icCombatant`/`ic.effect`/`icRollSpec`
+      Édition-neutre : consommé par `icCombatant`/`ic.effect`/`icCombat`
       exactement comme un vrai serveur. */
   bareHost(indice) {
     const i = Utils.clamp(indice | 0, 1, 99);
@@ -676,21 +680,19 @@ export const Matrix = {
     return this._model().attrLimit(kind, srv);
   },
 
-  /** Réserve + limite + suffixe d'un jet de CI (attaque/défense/encaissement/
-      perception), SR5/SR6. `srv` peut être un vrai serveur OU un hôte
-      synthétique (`bareHost`) — même forme, mêmes attributs. Réserve indice×2
-      (SR5 p.249, SR6 p.188), l'encaissement SR5 = indice + Firewall. Source
-      unique consommée par `Intrusion.rollIC` (CI liée) et `Encounter._rollBareIC`
-      (CI autonome), pour ne pas dupliquer le calcul. Le nom de la CI est
-      préfixé par l'appelant. Suppose `use(edition)` déjà appelé (limites lues
-      sur `_model()`). */
-  icRollSpec(kind, srv) {
-    const i = srv.indice;
-    if (kind === "soak")
-      return { pool: i + ((srv.attrs && srv.attrs.firewall) || 0), limit: null, suffix: "encaissement (indice + Firewall)" };
-    if (kind === "atk") return { pool: i * 2, limit: this.attrLimit("atk", srv), suffix: "attaque" };
-    if (kind === "def") return { pool: i * 2, limit: null, suffix: "défense" };
-    return { pool: i * 2, limit: this.attrLimit("per", srv), suffix: "perception matricielle" };
+  /** Descripteur de combat d'une CI pour un geste (atk/def/soak/per), lu par le
+      cockpit (fiche active + console Réagir) ET les handlers de jet
+      (`Intrusion.rollIC`, `Encounter._rollBareIC`). Forme uniforme,
+      édition-neutre (prohibition n°1 — chaque régime vit dans son modèle
+      `matrixModel.icCombat`) :
+        • dés (SR5/SR6/A1) → { roll:true, pool, limit, suffix, dmg? }
+        • succès fixes (A2) → { roll:false, value, suffix }
+        • geste absent (A1 n'a pas de jet d'encaissement) → null.
+      `host` = vrai serveur OU hôte synthétique (`bareHost`) — même forme.
+      `ic` = entrée de catalogue (modificateurs de type A1, `watch` A2…). */
+  icCombat(kind, host, ic) {
+    const m = this._model();
+    return typeof m.icCombat === "function" ? m.icCombat(kind, host, ic) : null;
   },
 
   /** Score Défensif matriciel de la cible (SR6 uniquement, p.177 : TdD +
@@ -705,6 +707,36 @@ export const Matrix = {
       marks, Anarchy n'a pas cette mécanique). */
   accessLevels() {
     return this._model().accessLevels || [];
+  },
+
+  /* ---- Topologie externe (schéma d'architecture, lot A) ----
+     Régime par édition (`matrixModel.topology`), jamais de branche
+     `if (edition)`. Alimente le générateur de plan de serveur (TopologyGen)
+     et l'écran Serveurs. Archétypes/entrées/cible sourcés par édition
+     (A2 dessine chaîne+arbo p.222 ; SR5/6 = WAN ; SR6 seul = imbriqués). */
+  _topology() {
+    return this._model().topology;
+  },
+
+  /** Archétypes de disposition proposés (le 1er = défaut de l'édition). */
+  topologyArchetypes() {
+    return this._topology().archetypes;
+  },
+
+  /** Modes d'entrée d'un serveur (Matrice publique / connexion directe…). */
+  topologyEntryModes() {
+    return this._topology().entryModes;
+  },
+
+  /** Libellé du nœud tenant les données cibles (« le plus profond »). */
+  topologyTargetLabel() {
+    return this._topology().targetLabel;
+  },
+
+  /** Badge de stats compact d'un nœud (par édition : Indice+ASDF SR5/6,
+      Indice+Firewall A2, pool de défense A1 — jamais aplati). */
+  topologyNodeBadge(srv) {
+    return this._topology().nodeBadge(srv);
   },
 
   /** Sélection aléatoire cohérente des CI (Patrouilleuse toujours). */

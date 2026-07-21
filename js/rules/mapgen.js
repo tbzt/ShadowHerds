@@ -23,33 +23,18 @@
    est un paramètre, fourni par l'appelant depuis `editionModule.mapAccent`.
    ============================================================ */
 
-/* ---- RNG seedé (déterminisme) ---- */
-function xmur3(str) {
-  let h = 1779033703 ^ str.length;
-  for (let i = 0; i < str.length; i++) {
-    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
-    h = (h << 13) | (h >>> 19);
-  }
-  return function () {
-    h = Math.imul(h ^ (h >>> 16), 2246822507);
-    h = Math.imul(h ^ (h >>> 13), 3266489909);
-    return (h ^= h >>> 16) >>> 0;
-  };
-}
-function mulberry32(a) {
-  return function () {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+/* RNG seedé (déterminisme) — partagé via Utils.seededRandom (couche 1),
+   plutôt qu'une copie locale de xmur3+mulberry32. */
+import { Utils } from "../core/utils.js";
 
-/* ---- Palette (scène physique, hex en dur — ne s'inverse pas au thème) ---- */
+/* ---- Palette (scène physique, hex en dur — ne s'inverse pas au thème).
+   Le PAPIER du blueprint reste neutre (structure technique) ; c'est l'ENCRE de
+   l'édition (grille tactique + lavis de la salle-objectif) qui descend par le
+   paramètre `accent` (editionModule.mapAccent), pour que le plan appartienne à
+   son livre sans papier peint AR (VIS-13 Lot B, restriction W3). ---- */
 const PAL = {
-  outside: "#080b10", floor: "#141d27", floorObj: "#20263a", corr: "#0f161e",
-  wall: "#04070b", grid: "rgba(120,190,210,0.08)", furnFill: "#1e2c37",
+  outside: "#080b10", floor: "#141d27", corr: "#0f161e",
+  wall: "#04070b", furnFill: "#1e2c37",
   furnStroke: "#42606e", label: "#8fb4c0", entry: "#57d9a6", door: "#5f8290",
 };
 
@@ -103,7 +88,7 @@ function shuffle(a, rng) {
 
 /* Construit le modèle géométrique (pièces + couloir + portes) — sans rendu. */
 function buildModel(siteKey, seedStr) {
-  const rng = mulberry32(xmur3(seedStr)());
+  const rng = Utils.seededRandom(seedStr);
   const site = SITES[siteKey] || SITES.corpo;
   const grid = Array.from({ length: ROWS }, () => Array(COLS).fill(VOID));
   const rooms = [];
@@ -250,14 +235,15 @@ function renderSVG(M, accent, title, subtitle) {
   let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" font-family="system-ui,sans-serif"><title>Plan tactique — ${esc(title || "lieu")}</title><desc>Plan de bâtiment procédural : couloir, pièces, portes, grille tactique.</desc>`;
   s += `<defs><marker id="mapgen-arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="${PAL.entry}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>`;
   s += `<rect x="0" y="0" width="${W}" height="${H}" fill="${PAL.outside}"/>`;
-  M.rooms.forEach((rm) => { const [x, y] = px(rm.c0, rm.r0); s += `<rect x="${x}" y="${y}" width="${(rm.c1 - rm.c0 + 1) * CELL}" height="${(rm.r1 - rm.r0 + 1) * CELL}" fill="${rm === M.obj ? PAL.floorObj : PAL.floor}"/>`; });
+  M.rooms.forEach((rm) => { const [x, y] = px(rm.c0, rm.r0); s += `<rect x="${x}" y="${y}" width="${(rm.c1 - rm.c0 + 1) * CELL}" height="${(rm.r1 - rm.r0 + 1) * CELL}" fill="${PAL.floor}"/>`; });
+  { const [ox, oy] = px(M.obj.c0, M.obj.r0); s += `<rect x="${ox}" y="${oy}" width="${(M.obj.c1 - M.obj.c0 + 1) * CELL}" height="${(M.obj.r1 - M.obj.r0 + 1) * CELL}" fill="${accent}" opacity="0.1"/>`; }
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) { if (g[r][c] === CORR) { const [x, y] = px(c, r); s += `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" fill="${PAL.corr}"/>`; } }
-  s += `<g stroke="${PAL.grid}" stroke-width="1">`;
+  s += `<g stroke="${accent}" stroke-width="1" opacity="0.09">`;
   for (let c = 0; c <= COLS; c++) s += `<line x1="${OX + c * CELL}" y1="${OY}" x2="${OX + c * CELL}" y2="${OY + ROWS * CELL}"/>`;
   for (let r = 0; r <= ROWS; r++) s += `<line x1="${OX}" y1="${OY + r * CELL}" x2="${OX + COLS * CELL}" y2="${OY + r * CELL}"/>`;
   s += `</g>`;
   if (M.notch) { const [nx, ny] = px(M.notch.c0, M.notch.r0); s += `<rect x="${nx}" y="${ny}" width="${(M.notch.c1 - M.notch.c0 + 1) * CELL}" height="${(M.notch.r1 - M.notch.r0 + 1) * CELL}" fill="${PAL.outside}"/>`; }
-  M.rooms.forEach((rm) => { const [x, y] = px(rm.c0, rm.r0); const f = { x: x + 5, y: y + 20, w: (rm.c1 - rm.c0 + 1) * CELL - 10, h: (rm.r1 - rm.r0 + 1) * CELL - 26 }; if (f.w > 18 && f.h > 18 && FURN[rm.kind]) s += FURN[rm.kind](f, mulberry32((rm.idx * 2654435761) >>> 0)); });
+  M.rooms.forEach((rm) => { const [x, y] = px(rm.c0, rm.r0); const f = { x: x + 5, y: y + 20, w: (rm.c1 - rm.c0 + 1) * CELL - 10, h: (rm.r1 - rm.r0 + 1) * CELL - 26 }; if (f.w > 18 && f.h > 18 && FURN[rm.kind]) s += FURN[rm.kind](f, Utils.seededRandom(rm.idx * 2654435761)); });
   let ext = "", extAcc = "", inner = "", swings = "";
   for (let r = 0; r < ROWS; r++) { for (let c = -1; c < COLS; c++) { const L = at(r, c), R = at(r, c + 1); if (L === VOID && R === VOID) continue; const x = OX + (c + 1) * CELL, y0 = OY + r * CELL, y1 = OY + (r + 1) * CELL;
     if ((L === VOID) !== (R === VOID)) { if (M.entrance.type === "V" && M.entrance.r === r && (M.entrance.c === c || (M.entrance.c < 0 && c === -1))) continue;

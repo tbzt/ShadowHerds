@@ -12,6 +12,117 @@ commit.
 
 ## [Non publié]
 
+## [1.89.0] — 2026-07-21
+
+### Ajouté
+
+- **Le plan de serveur.** Un site n'est presque jamais un seul serveur : la
+  Matrice mène à un serveur qui en protège d'autres — enchaînés, en arborescence,
+  hérissés d'appareils asservis, ou imbriqués les uns dans les autres — jusqu'à
+  celui qui tient les données (Anarchy 2 p.222 ; serveurs imbriqués de *Hacker
+  Vaillant* p.139 ; réseaux d'appareils asservis / WAN des livres de base
+  SR5/SR6). L'écran **Serveurs** porte un bouton **« ▤ Plan du site »** qui dessine
+  cette architecture pour le dossier courant — chaîne, arborescence, WAN ou hôtes
+  imbriqués selon l'édition —, construite gratuitement et à l'instant, comme le
+  « Plan tactique » d'un lieu. En mode édition, chaque serveur se voit désigner un
+  **point d'entrée** (Matrice publique ou connexion directe au câble) et, pour l'un
+  d'eux, le rôle de **nœud-cible** (celui qui tient les données) ; les deux sont
+  rappelés en badges sur sa carte.
+- **La Matrice de la scène, en carte navigable.** Quand plusieurs serveurs sont
+  piratés en parallèle dans une même rencontre, le tiroir Matrice affiche une
+  **mini-carte** de ces serveurs : le serveur affiché y est surligné, le nœud-cible
+  marqué, et **toucher un autre nœud** (ou l'activer au clavier) bascule le tiroir
+  dessus — la navigation entre serveurs actifs remplace l'ancien menu déroulant.
+
+## [1.88.0] — 2026-07-21
+
+### Ajouté
+
+- **Le dé d'imprévu d'Anarchy 1re.** Dans *Shadowrun : Anarchy* (1re éd.), un
+  pool ne « rate » jamais tout seul : la malchance — et la chance — viennent d'un
+  **dé d'imprévu** que l'on ajoute avant le jet, le plus souvent en dépensant un
+  **Point d'Anarchy** (sran_01 p.157). Il est maintenant motorisé : depuis le
+  panneau « Avant de lancer », l'option **Dé d'imprévu** dépense 1 point de la
+  réserve de menace et ajoute un dé à la réserve. Sur un **1**, une *complication*
+  s'invite ; sur un **5-6**, un *exploit* (le bon côté du destin) — affichés dans
+  le tirage et le journal des jets. Le dé compte aussi comme un dé normal (succès
+  sur 5-6). *(L'option apparaît quand le mode pré-jet « panneau » est actif dans
+  les préférences, comme l'Edge SR5/SR6.)*
+
+### Corrigé
+
+- **Les complications parlent enfin la langue de chaque édition.** SR5 et SR6
+  affichaient « Bévue » là où les deux livres VF disent **« Complication »**
+  (SR5, § Complications et échecs critiques ; SR6 p.40) — c'est corrigé partout,
+  tirage comme journal. Surtout, **Anarchy 1re n'affiche plus de fausse
+  complication** : un pool y héritait à tort de la règle SR5 (« plus de la moitié
+  des dés sont des 1 »), une règle qui n'existe pas dans Anarchy — sa seule source
+  de complication est le dé d'imprévu ci-dessus. Effet de bord réparé au passage :
+  la « Seconde chance » n'est plus bloquée par un échec critique fantôme.
+
+## [1.87.0] — 2026-07-21
+
+### Ajouté
+
+- **Les marks matricielles SR5 se suivent dans les deux sens.** Le suivi
+  d'intrusion distinguait mal *qui* a marqué *qui* : un compteur unique « Marks du
+  serveur ». Il est remplacé par les deux directions que les livres séparent
+  (max 3 par cible, p.233). D'un côté, **les marks de l'hôte sur chaque PJ** :
+  une ligne par personnage connecté à la scène, car l'hôte peut avoir trois marks
+  sur le decker et une seule sur le rigger. Toutes les CI de l'hôte — et son
+  spider — **partagent** ce compteur (p.247) : on ne suit pas de marks par CI,
+  parce que la règle ne les sépare pas. De l'autre, **les marks de l'équipe sur
+  l'hôte**, la monnaie d'accès du decker (trois marks = accès propriétaire). Au
+  reboot, les deux repartent à zéro.
+
+## [1.86.1] — 2026-07-21
+
+### Modifié
+
+- **Un seul geste pour maintenir un sort/une forme.** Sur la ligne d'un effet —
+  dans le suivi de combat comme sur la fiche — le nombre de succès du dernier jet
+  bascule le maintien : clic pour maintenir (`→ N` → `⟳ N`), re-clic pour l'arrêter.
+  Le petit `✕` qui doublonnait cet arrêt (il ne servait qu'à *oublier* le dernier
+  jet, que le prochain jet réécrit de toute façon) est retiré. Le badge agrégé
+  `⟳ ×N · −N` et le malus de −2 dés par effet maintenu (SR5/SR6) sont inchangés.
+
+## [1.86.0] — 2026-07-21
+
+### Ajouté
+
+- **Les écrans que le meneur projette prennent l'identité visuelle de leur
+  édition.** L'écran spectateur, le plan de lieu et le poste « Jouer » — les
+  surfaces que les joueurs regardent, pas seulement le meneur — deviennent
+  *iconiques* au lieu d'être seulement lisibles. Sur l'**écran spectateur**,
+  chaque combattant s'inscrit dans le coin coupé signature de l'édition (net en
+  SR6), sur un fond à fines lignes de balayage teinté du livre, et son moniteur
+  est agrandi à l'échelle du vidéoprojecteur — sa **forme** restant celle du
+  livre (la jauge continue de SR5/SR6, les paliers de gravité d'Anarchy 2). Le
+  **plan de lieu** dessine sa grille tactique et sa salle-objectif à l'encre de
+  l'édition (magenta SR6, rouge SR5, or Anarchy 2, bleu Anarchy 1) au lieu d'un
+  cyan unique. Et le poste « Jouer » file ses moments *Avant / Pendant / Après*
+  d'un discret repère à l'accent du livre. Rien de neuf à régler : c'est la même
+  vérité, habillée pour la table.
+
+## [1.85.0] — 2026-07-21
+
+### Ajouté
+
+- **Une contre-mesure d'intrusion se défend et attaque depuis le suivi de
+  combat, dans toutes les éditions.** Quand un PJ decker s'en prend à une CI (bloc
+  « Réagir »), la glace montre enfin sa **défense** ; sur sa fiche active, son
+  **attaque** devient lisible au lieu d'être noyée dans le texte de son pouvoir.
+  Le régime de chaque édition est respecté : **Anarchy 2.0** affiche ses **succès
+  fixes** en valeurs (défense/attaque = indice, encaissement = Firewall 1) ;
+  **Anarchy 1re** motorise le **statblock du livre** de la GLACE (attaque 8,
+  défense 11, perception 10, Tueuse +2 en cybercombat, Noire en dégâts physiques)
+  en jets cliquables — là où le tracker n'offrait que des boutons « — » inertes ;
+  **SR5/SR6** gardent leurs pastilles de dés. Deux corrections de règles au
+  passage : l'encaissement d'une CI **SR6** suit la convention indice×2 (et non
+  indice + Firewall, absent du livre p.180/188), et la défense d'une CI **SR5**
+  passe à indice + Firewall (l'indice de serveur remplace l'attribut mental
+  absent, p.238 ; l'encaissement indice + Firewall reste correct, p.229).
+
 ## [1.84.0] — 2026-07-21
 
 ### Ajouté

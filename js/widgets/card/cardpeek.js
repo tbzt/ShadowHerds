@@ -131,7 +131,65 @@ export const CardPeek = {
       }
     });
 
+    // Balayage tactile = accélérateur mobile pour feuilleter, qui S'AJOUTE aux
+    // flèches (loi 1 « affordance sans survol » : un geste caché n'existe pas,
+    // les flèches restent la voie découvrable). Trois gardes : ne réagir qu'à un
+    // balayage franchement horizontal (sinon on vole le défilement vertical du
+    // corps) ; ignorer un départ dans une zone à défilement horizontal interne
+    // (chips, tableaux) ; laisser la sélection de texte d'un champ éditable.
+    // Passif (jamais de preventDefault) → taps, scroll et zoom restent intacts ;
+    // on n'agit qu'au relâchement, sur un delta clairement latéral.
+    let sx = 0,
+      sy = 0,
+      tracking = false;
+    overlay.addEventListener(
+      "touchstart",
+      (e) => {
+        tracking = false;
+        if (this._siblings.length < 2 || e.touches.length !== 1) return;
+        const t = e.target;
+        if (
+          t.isContentEditable ||
+          (t.closest && t.closest('[contenteditable="true"]')) ||
+          this._inHScroll(t)
+        )
+          return;
+        sx = e.touches[0].clientX;
+        sy = e.touches[0].clientY;
+        tracking = true;
+      },
+      { passive: true },
+    );
+    overlay.addEventListener(
+      "touchend",
+      (e) => {
+        if (!tracking) return;
+        tracking = false;
+        const dx = e.changedTouches[0].clientX - sx;
+        const dy = e.changedTouches[0].clientY - sy;
+        // Franchement horizontal : amplitude ≥ 50px ET dominante latérale.
+        if (Math.abs(dx) < 50 || Math.abs(dx) <= Math.abs(dy)) return;
+        this._step(dx < 0 ? 1 : -1); // gauche = suivant, droite = précédent
+      },
+      { passive: true },
+    );
+
     this._el = overlay;
     return overlay;
+  },
+
+  /** Vrai si `el` ou un ancêtre (jusqu'au peek) défile horizontalement : un
+      balayage qui y démarre doit faire défiler cette rangée (chips, tableau),
+      pas feuilleter la fiche. */
+  _inHScroll(el) {
+    let n = el;
+    while (n && n !== this._el) {
+      if (n.nodeType === 1 && n.scrollWidth > n.clientWidth + 2) {
+        const ox = getComputedStyle(n).overflowX;
+        if (ox === "auto" || ox === "scroll") return true;
+      }
+      n = n.parentElement;
+    }
+    return false;
   },
 };

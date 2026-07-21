@@ -1321,17 +1321,17 @@ export const Encounter = {
     this._commit();
   },
 
-  /** Jet d'une CI AUTONOME (VIS-10) — pas de serveur à interroger. Réserve et
-      limite via `Matrix.icRollSpec` (source unique partagée avec
-      `Intrusion.rollIC`), sur l'hôte synthétique. Les glaces Anarchy ont des
-      succès fixes (`hasAttrs` false) → pas de bouton de jet, jamais appelé. */
+  /** Jet d'une CI AUTONOME (VIS-10) — pas de serveur à interroger. Réserve,
+      limite et suffixe via `Matrix.icCombat` (source unique partagée avec
+      `Intrusion.rollIC`), sur l'hôte synthétique. `roll:false` (A2 succès fixes)
+      ou `null` (geste absent, ex. encaissement Anarchy) → rien à lancer. */
   _rollBareIC(c, kind) {
     const m = c.matrix;
     const M = Matrix.use(m.edition);
-    if (!M.hasAttrs()) return;
     const ic = M.icCatalog()[m.icKey];
     const name = ic ? ic.label : c.name;
-    const spec = M.icRollSpec(kind, M.bareHost(m.indice));
+    const spec = M.icCombat(kind, M.bareHost(m.indice), ic);
+    if (!spec || !spec.roll) return;
     const res = Dice.computeRoll(spec.pool);
     if (spec.limit != null && res.hits > spec.limit) {
       res.cappedFrom = res.hits;
@@ -1447,7 +1447,15 @@ export const Encounter = {
     return this.activeMatrixServerIds()
       .map((id) => Servers.find(id))
       .filter(Boolean)
-      .map((s) => ({ id: s.id, name: s.name }));
+      // Badge par édition DU serveur (jamais aplati) + rôle de cible : de quoi
+      // dessiner la mini-carte navigable du tiroir (A5) sans faire lire Servers
+      // à EncounterRenderer (rendu pur).
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        badge: Matrix.use(s.edition).topologyNodeBadge(s),
+        isTarget: !!s.isTarget,
+      }));
   },
 
   /** Rendu complet (liste, fiche du combattant actif, résumé sidebar) —
@@ -1720,6 +1728,13 @@ export const Encounter = {
     // sien sur le même nœud).
     const drawerActions = (e) => {
       e.stopPropagation();
+      // A5 — clic sur un nœud de la mini-carte topologie : afficher ce serveur
+      // (même geste que l'ancien sélecteur switch-matrix-server).
+      const node = e.target.closest("[data-node]");
+      if (node) {
+        this.linkServer(node.dataset.node);
+        return;
+      }
       const el = e.target.closest("[data-action]");
       if (!el) return;
       switch (el.dataset.action) {
@@ -1737,10 +1752,25 @@ export const Encounter = {
           break;
       }
     };
+    // A5 — activation clavier d'un nœud de la mini-carte (role=button focusable).
+    const drawerKeys = (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const node = e.target.closest && e.target.closest("[data-node]");
+      if (!node) return;
+      e.preventDefault();
+      e.stopPropagation();
+      this.linkServer(node.dataset.node);
+    };
     const matrixDrawer = document.getElementById("matrix-drawer-overlay");
-    if (matrixDrawer) matrixDrawer.addEventListener("click", drawerActions);
+    if (matrixDrawer) {
+      matrixDrawer.addEventListener("click", drawerActions);
+      matrixDrawer.addEventListener("keydown", drawerKeys);
+    }
     const matrixDock = document.getElementById("encounter-matrix-dock");
-    if (matrixDock) matrixDock.addEventListener("click", drawerActions);
+    if (matrixDock) {
+      matrixDock.addEventListener("click", drawerActions);
+      matrixDock.addEventListener("keydown", drawerKeys);
+    }
 
     overlay.addEventListener("click", (e) => {
       // La poignée n'a pas de data-action propre : sans cette garde, un clic
@@ -1801,7 +1831,7 @@ export const Encounter = {
         case "roll-ic": {
           // Jet d'une CI (attaque/défense/encaissement/perception) depuis la
           // fiche CI active ou la console de réaction — même moteur, réserve
-          // partagée (Matrix.icRollSpec), aucun calcul dupliqué. Ces boutons
+          // partagée (Matrix.icCombat), aucun calcul dupliqué. Ces boutons
           // vivent dans #encounter-overlay, hors de la délégation #app de
           // Servers._wire → câblés ici. CI autonome (VIS-10) : `data-id` est
           // l'id du combattant (jet local, pas de serveur à interroger) ; CI

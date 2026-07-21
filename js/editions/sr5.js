@@ -82,6 +82,13 @@ export const EditionSR5 = {
     blockedBy: "critGlitch",
     costAttr: "CHC",
   },
+  /** Modèle de complication du pool (Livre de Règles, § Complications et
+      échecs critiques) : « Si plus de la moitié des dés lancés sont des 1 »
+      → complication ; complication + 0 succès → échec critique. `kind:"pool"`
+      = règle déjà appliquée par Dice.computeRoll ; `glitchLabel` fixe le terme
+      VF officiel (« Complication », jamais « Bévue »). Lu par DiceRoller /
+      DiceLog, jamais de branche d'édition côté widget. */
+  complicationModel: { kind: "pool", glitchLabel: "Complication" },
   /** Edge PRÉ-jet « Repousser les limites » (p.58) : dépenser 1 point de
       Chance AVANT le jet pour ajouter son indice de Chance en dés à Règle des
       six ET ignorer toute Limite. Contrat neutre miroir de rerollAction, lu
@@ -603,6 +610,21 @@ export const EditionSR5 = {
     icMonitorSize(indice) {
       return 8 + Math.ceil(indice / 2);
     },
+    /** Descripteur de combat d'une CI (SR5), lu par le cockpit + les handlers de
+        jet via Matrix.icCombat. Attaque/perception = indice×2 (+ limite
+        d'attribut, p.249). Défense ET encaissement = indice + Firewall : le
+        livre n'a pas de ligne de défense dédiée → l'indice de serveur remplace
+        l'attribut mental manquant (Volonté/Intuition, p.238), et la résistance
+        aux dommages matriciels est « indice d'appareil + Firewall » (p.229). */
+    icCombat(kind, host) {
+      const i = host.indice;
+      const fw = i + ((host.attrs && host.attrs.firewall) || 0);
+      if (kind === "atk") return { roll: true, pool: i * 2, limit: this.attrLimit("atk", host), suffix: "attaque" };
+      if (kind === "def") return { roll: true, pool: fw, limit: null, suffix: "défense (indice + Firewall)" };
+      if (kind === "soak") return { roll: true, pool: fw, limit: null, suffix: "encaissement (indice + Firewall)" };
+      if (kind === "per") return { roll: true, pool: i * 2, limit: this.attrLimit("per", host), suffix: "perception matricielle" };
+      return null;
+    },
     maxActiveIC(indice) {
       return indice;
     },
@@ -668,6 +690,26 @@ export const EditionSR5 = {
       if (kind === "atk") return a.attack ?? null;
       if (kind === "per") return a.dataProcessing ?? null;
       return null;
+    },
+    /* Topologie externe (schéma d'architecture, lot A) — lue par
+       Matrix.topology* / TopologyGen. SR5 : chaîne de serveurs + WAN (hôte +
+       appareils asservis — corebook « un serveur peut avoir un nombre illimité
+       d'appareils esclaves asservis »). PAS de serveurs « imbriqués » (le terme
+       est absent de Data Trails ; l'imbrication est propre à SR6). */
+    topology: {
+      archetypes: [
+        { id: "chain", label: "Chaîne de serveurs" },
+        { id: "wan", label: "Serveur + appareils asservis (WAN)" },
+      ],
+      entryModes: [
+        { id: "matrix", label: "Matrice publique", glyph: "◎" },
+        { id: "direct", label: "Connexion directe (câble)", glyph: "⎇" },
+      ],
+      targetLabel: "fichiers (Archive)",
+      nodeBadge(srv) {
+        const a = srv.attrs || {};
+        return `Ind. ${srv.indice} · A${a.attack} C${a.sleaze} T${a.dataProcessing} F${a.firewall}`;
+      },
     },
   },
 

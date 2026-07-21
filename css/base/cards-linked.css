@@ -730,14 +730,6 @@
   border-color: var(--accent);
   font-weight: 600;
 }
-.spell-last-clear {
-  cursor: pointer;
-  color: var(--text-dim);
-  padding: 0 2px;
-}
-.spell-last-clear:hover {
-  color: var(--danger);
-}
 
 /* Zone Capacités — NIVEAU 2 de la hiérarchie de carte (CH-C2).
    Les trois zones existent déjà dans le DOM (Combat / Capacités / Référence) ;

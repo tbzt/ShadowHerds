@@ -1627,7 +1627,6 @@ export const CardRenderer = {
         const lastHtml = last
           ? `<span class="spell-last${sustained ? " is-sustained" : ""}">` +
             `<span class="spell-sustain" data-spell-sustain="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" tabindex="0" aria-pressed="${sustained}" title="${sustained ? "Sort maintenu (−2 dés à tous les tests) — cliquer pour arrêter" : `Dernier jet : ${last.hits} succès — cliquer pour maintenir (−2 dés à tous les tests)`}">${sustained ? "⟳" : "→"} <strong>${last.hits}</strong></span>` +
-            `<span class="spell-last-clear" data-spell-clear="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" title="${sustained ? "Fin du maintien" : "Effacer le dernier jet"}">✕</span>` +
             `</span>`
           : "";
 
@@ -1683,7 +1682,6 @@ export const CardRenderer = {
         const lastHtml = last
           ? `<span class="spell-last${sustained ? " is-sustained" : ""}">` +
             `<span class="spell-sustain" data-form-sustain="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" tabindex="0" aria-pressed="${sustained}" title="${sustained ? "Forme complexe maintenue (−2 dés à tous les tests) — cliquer pour arrêter" : `Dernier jet : ${last.hits} succès — cliquer pour maintenir (−2 dés à tous les tests)`}">${sustained ? "⟳" : "→"} <strong>${last.hits}</strong></span>` +
-            `<span class="spell-last-clear" data-form-clear="${this._esc(name)}" data-roll-pnj="${pnj.id}" role="button" title="${sustained ? "Fin du maintien" : "Effacer le dernier jet"}">✕</span>` +
             `</span>`
           : "";
 

@@ -1056,6 +1056,20 @@ select optgroup {
 [data-mode="spectateur"] #content {
   padding: 0;
 }
+/* Grain de scène : premier consommateur du token --scan (défini teinté dans les
+   4 thèmes, jusqu'ici inutilisé). Fines lignes de balayage sur le fond projeté
+   — une seule couche sur le conteneur (jamais par rangée : le spectateur re-rend
+   toute la zone à chaque tick). Le sélecteur porte `html` pour dépasser en
+   spécificité la lueur radiale `[data-edition] #content` de chaque thème : le
+   mode projeté a son identité propre, distincte du fond de travail du MJ.
+   background-color --bg conservé (posé par `#content`, non touché ici). */
+html[data-mode="spectateur"] #content {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0 3px,
+    var(--scan) 3px 4px
+  );
+}
 
 
 /* ============================================================

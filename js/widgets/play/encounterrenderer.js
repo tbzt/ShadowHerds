@@ -15,6 +15,7 @@ import { DiceRoller } from "../dice/diceroller.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
 import { Matrix } from "../../rules/matrix.js";
 import { ServerRenderer } from "./serverrenderer.js";
+import { TopologyGen } from "../../rules/topologygen.js";
 import { Utils } from "../../core/utils.js";
 
 export const EncounterRenderer = {
@@ -1258,25 +1259,19 @@ export const EncounterRenderer = {
       const isPenalty = (i + 1) % 3 === 0;
       return `<div class="monitor-box${i < st.dmg ? " filled" : ""}${isPenalty ? " penalty" : ""}" data-action="ic-box" data-id="${r.pnjId}" data-n="${i + 1}" role="button" tabindex="0" aria-label="Case ${i + 1} du moniteur — ${Utils.escHtml(label)}"></div>`;
     }).join("");
-    // Jets de la CI directement sur la fiche active. Réserve partagée
-    // (Matrix.icRollSpec) via data-action="roll-ic", câblé dans Encounter.init
-    // (overlay). CI autonome : data-id = id du combattant (jet local) ; CI liée :
-    // data-id = id du serveur. Les glaces Anarchy ont des succès fixes
-    // (hasAttrs=false) → pas de pastilles de jet.
+    // Combat de la CI directement sur la fiche active, via Matrix.icCombat
+    // (_icCombatChips) : pastilles de jet (SR5/SR6/Anarchy 1re) ou pastilles de
+    // VALEUR à succès fixes (Anarchy 2.0). data-action="roll-ic" câblé dans
+    // Encounter.init (overlay). CI autonome : data-id = id du combattant (jet
+    // local) ; CI liée : data-id = id du serveur.
     const rollId = srv ? srv.id : r.pnjId;
-    const rollsHtml = M.hasAttrs()
-      ? `<div class="encounter-ic-rolls">${[
-          ["atk", "⚔", "Attaque"],
-          ["def", "⛉", "Défense"],
-          ["soak", "⛊", "Encaisser"],
-          ["per", "◎", "Perception"],
-        ]
-          .map(
-            ([kind, glyph, lbl]) =>
-              `<button class="react-btn" data-action="roll-ic" data-id="${rollId}" data-k="${m.icKey}" data-kind="${kind}" title="${lbl} — ${Utils.escHtml(label)}" aria-label="${lbl} — ${Utils.escHtml(label)}"><span class="react-glyph" aria-hidden="true">${glyph}</span> ${lbl}</button>`
-          )
-          .join("")}</div>`
-      : "";
+    const combatHtml = this._icCombatChips(M, host, ic, m.icKey, rollId, label, [
+      ["atk", "⚔", "Attaque"],
+      ["def", "⛉", "Défense"],
+      ["soak", "⛊", "Encaisser"],
+      ["per", "◎", "Perception"],
+    ]);
+    const rollsHtml = combatHtml ? `<div class="encounter-ic-rolls">${combatHtml}</div>` : "";
     const originLine = srv
       ? `${Utils.escHtml(srv.name)} · indice ${srv.indice}`
       : `CI autonome · indice ${indice}`;
@@ -1445,26 +1440,56 @@ export const EncounterRenderer = {
       btn.innerHTML = `${this._reactDamageTypes[pnjId] === "stun" ? "Étourd." : "Phys."} <svg class="icon icon-sm" aria-hidden="true"><use href="#ic-swap"></use></svg>`;
   },
 
-  /** Ligne de réaction d'une CI : mêmes glyphes ⛉/⛊, mais la réserve d'une
-      CI est dérivée (indice×2, +Firewall à l'encaissement) → data-action
-      "roll-ic" vers Intrusion.rollIC, jamais data-roll. Glaces Anarchy (succès
-      fixes) : boutons inactifs. Pas de chevron (la CI a sa fiche + le tiroir). */
+  /** Pastilles de combat d'une CI (fiche active ET console Réagir), pilotées par
+      Matrix.icCombat (source unique par édition, prohibition n°1) :
+        • geste à dés (SR5/SR6, Anarchy 1re statblock) → bouton cliquable
+          data-action="roll-ic" (→ Intrusion.rollIC / Encounter._rollBareIC) ;
+        • succès fixes (Anarchy 2.0) → pastille de VALEUR statique (`is-value`,
+          le nombre EST l'info : succès fixes ou Firewall) ;
+        • geste absent (Anarchy n'a pas de jet d'encaissement) → omis.
+      `kinds` = liste [kind, glyph, libellé]. `name` brut (échappé ici). */
+  _icCombatChips(M, host, ic, icKey, rollId, name, kinds) {
+    const esc = Utils.escHtml(name || "CI");
+    return kinds
+      .map(([kind, glyph, lbl]) => {
+        const cv = M && host ? M.icCombat(kind, host, ic) : null;
+        if (!cv) return "";
+        const g = `<span class="react-glyph" aria-hidden="true">${glyph}</span>`;
+        if (cv.roll) {
+          const vd = cv.dmg ? ` · VD ${Utils.escHtml(cv.dmg)}` : "";
+          return `<button class="react-btn" data-action="roll-ic" data-id="${rollId}" data-k="${icKey}" data-kind="${kind}" title="${lbl} — ${esc}${vd}" aria-label="${lbl} — ${esc}">${g} ${lbl}</button>`;
+        }
+        return `<span class="react-btn is-value" title="${lbl} : ${cv.value} — ${Utils.escHtml(cv.suffix || "")}" aria-label="${lbl} ${cv.value} — ${esc}">${g} ${cv.value}</span>`;
+      })
+      .join("");
+  },
+
+  /** Ligne de réaction d'une CI : au tour d'un PJ, la CI montre sa Défense (et
+      son Encaissement si l'édition en a un) — bouton de jet (SR5/SR6/Anarchy 1re)
+      ou pastille de valeur à succès fixes (Anarchy 2.0). Délègue tout à
+      `_icCombatChips`. Pas de chevron (la CI a sa fiche + le tiroir). */
   _reactMatrixRow(r) {
     const m = r.matrix || {};
     // CI autonome (VIS-10) : pas de serveur — édition/jets portés par le
     // combattant, data-id = son id (jet local). CI liée : data-id = serveur.
     const srv = m.serverId ? Servers.find(m.serverId) : null;
     const edition = srv ? srv.edition : m.edition;
-    const canRoll = !!(edition && Matrix.use(edition).hasAttrs());
+    const M = edition ? Matrix.use(edition) : null;
+    const host = srv || (M && M.bareHost(m.indice));
+    const ic = M ? M.icCatalog()[m.icKey] : null;
     const rollId = srv ? srv.id : r.pnjId;
-    const name = Utils.escHtml(r.name || (r.pnj && r.pnj.name) || "CI");
-    const mk = (kind, glyph, lbl) =>
-      canRoll
-        ? `<button class="react-btn" data-action="roll-ic" data-id="${rollId}" data-k="${m.icKey}" data-kind="${kind}" title="${lbl} — ${name}" aria-label="${lbl} — ${name}"><span class="react-glyph" aria-hidden="true">${glyph}</span> ${lbl}</button>`
-        : `<span class="react-btn is-off" title="Glace à succès fixes (ne lance pas les dés)"><span class="react-glyph" aria-hidden="true">${glyph}</span> —</span>`;
+    const rawName = r.name || (r.pnj && r.pnj.name) || "CI";
+    const chips = this._icCombatChips(M, host, ic, m.icKey, rollId, rawName, [
+      ["def", "⛉", "Défense"],
+      ["soak", "⛊", "Encaisser"],
+    ]);
+    // Repli défensif si l'édition n'expose pas de régime de combat de CI.
+    const buttons =
+      chips ||
+      `<span class="react-btn is-off" title="Pas de réserve de défense"><span class="react-glyph" aria-hidden="true">⛉</span> —</span>`;
     return `<div class="react-row">
-        <span class="react-name">${name} <span class="encounter-kind is-matrix">CI</span></span>
-        <span class="react-buttons">${mk("def", "⛉", "Défense")}${mk("soak", "⛊", "Encaisser")}</span>
+        <span class="react-name">${Utils.escHtml(rawName)} <span class="encounter-kind is-matrix">CI</span></span>
+        <span class="react-buttons">${buttons}</span>
       </div>`;
   },
 
@@ -1602,23 +1627,32 @@ export const EncounterRenderer = {
     const dockTitle = document.getElementById("matrix-dock-title");
     if (dockTitle) dockTitle.textContent = srv ? "Matrice — " + srv.name : "Matrice";
 
-    // Plusieurs serveurs peuvent tourner en parallèle
-    // dans la scène (state.matrix) — un sélecteur n'apparaît que s'il y en a
-    // plus d'un (sinon le titre suffit, rien de neuf à l'écran par défaut).
-    const switcher =
+    // Plusieurs serveurs peuvent tourner en parallèle dans la scène
+    // (state.matrix) : une MINI-CARTE navigable (A5) n'apparaît que s'il y en
+    // a plus d'un (sinon le titre suffit). Nœuds cliquables/focusables
+    // (data-node → Encounter.linkServer, cf. drawerActions), serveur affiché
+    // surligné, nœud-cible marqué. Rendu FLUID (épouse la largeur du tiroir).
+    // TopologyGen reste pur : `data-node` est un marqueur, le tiroir décide de
+    // l'action (jamais de logique d'app dans le leaf).
+    const strip =
       srv && activeServers && activeServers.length > 1
-        ? `<select class="matrix-server-switch" data-action="switch-matrix-server" title="Serveur affiché dans le tiroir">
-            ${activeServers
-              .map((s) => `<option value="${s.id}" ${s.id === srv.id ? "selected" : ""}>${Utils.escHtml(s.name)}</option>`)
-              .join("")}
-          </select>`
+        ? `<div class="matrix-topo-strip" role="group" aria-label="Plan des serveurs de la scène — activer un nœud pour l'afficher">${TopologyGen.build({
+            archetype: "chain",
+            nodes: activeServers.map((s) => ({ id: s.id, name: s.name, badge: s.badge, isTarget: s.isTarget })),
+            activeId: srv.id,
+            interactive: true,
+            fluid: true,
+            seed: "scene",
+            accent: (App.editionModule && App.editionModule.mapAccent) || "#35e0e6",
+            entryMode: null,
+          })}</div>`
         : "";
     // inEncounter + launchedKeys : ServerRenderer ajoute « ⚔ Init » sur chaque
     // CI active pas encore dans l'ordre. Le reste du contenu est le panneau
     // d'intrusion réutilisé verbatim. Calculé une fois, posé dans les deux
     // montages (tiroir mobile/dock ≥1100px) — jamais recalculé deux fois.
     const html = srv
-      ? switcher +
+      ? strip +
         ServerRenderer.matrixDrawerHeader(srv) +
         ServerRenderer.intrusionPanel(srv, { inEncounter: true, launchedKeys: launchedKeys || [] })
       : "";

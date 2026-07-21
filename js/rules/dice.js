@@ -9,7 +9,9 @@ import { Utils } from "../core/utils.js";
 
 export const Dice = {
   /* ---- Moteur de règles pur (testable, sans DOM) ---- */
-  computeRoll(n) {
+  /** `opts.wild` (Anarchy 1re) : ajoute un DÉ D'IMPRÉVU à la réserve —
+      cf. _addWildDie. Absent ailleurs (jet standard SR5/SR6). */
+  computeRoll(n, opts = {}) {
     n = Utils.clamp(n, 1, 60);
     const faces = [];
     let hits = 0;
@@ -25,7 +27,65 @@ export const Dice = {
     const glitch = ones > Math.floor(n / 2);
     const critGlitch = glitch && hits === 0;
 
-    return { n, faces, extra: [], hits, ones, glitch, critGlitch };
+    const res = { n, faces, extra: [], hits, ones, glitch, critGlitch };
+    if (opts.wild) this._addWildDie(res, opts.wild);
+    return res;
+  },
+
+  /**
+   * Dé d'imprévu d'Anarchy 1re (sran_01 p.157). Un dé ajouté À la réserve,
+   * opt-in (le plus souvent 1 Point d'Anarchy). Selon sa face :
+   *   - 1   → complication (« l'univers s'en prend à vous »),
+   *   - 5-6 → exploit (« l'univers est clément »).
+   * Ajouté à la réserve, il compte aussi comme un dé normal (succès sur 5-6).
+   * Variante "complication" (dé de complication, imposé par certains Atouts/
+   * Défauts) : ne génère NI succès NI exploit, seul le 1 (complication) est lu.
+   *
+   * Le verdict vit dans le champ NEUTRE `res.wild` (jamais dans glitch/
+   * critGlitch : Anarchy 1re n'a pas de complication de POOL, cf.
+   * Dice.normalizeVerdict). Le dé grossit la réserve (`res.n`) et s'ajoute aux
+   * faces animées comme un dé ordinaire.
+   */
+  _addWildDie(res, variant) {
+    const v = Utils.randInt(1, 6);
+    const wild = { v, complication: v === 1, exploit: false };
+    // "imprevu" = dé plein : compte le succès ET marque l'exploit sur 5-6.
+    // "complication" = dé de complication : muet en succès comme en exploit.
+    if (variant !== "complication" && v >= 5) {
+      res.hits += 1;
+      wild.exploit = true;
+    }
+    res.faces.push(v);
+    res.n += 1;
+    res.wild = wild;
+    return res;
+  },
+
+  /**
+   * Ajuste le verdict de complication d'un jet STANDARD selon le MODÈLE de
+   * l'édition (editionModule.complicationModel), sans jamais brancher sur
+   * App.edition — le switch porte sur `model.kind`, une donnée fournie par le
+   * module d'édition. Idempotent : appelé aux entonnoirs d'affichage/journal
+   * (DiceRoller.show / roll, DiceLog.record).
+   *
+   *   - "pool" (SR5/SR6) : la règle « 1s > moitié du pool » est déjà posée par
+   *       computeRoll → rien à corriger. Le libellé VF est « Complication » /
+   *       « Échec critique » (SR5 Livre de Règles ; SR6 p.40), porté par
+   *       `model.glitchLabel` côté affichage.
+   *   - "unpredictability" (Anarchy 1re, sran_01 p.157) : un pool ne produit
+   *       JAMAIS de complication — celle-ci vient d'un dé d'imprévu opt-in
+   *       (Points d'Anarchy ; motorisé au Lot B). On neutralise donc le verdict
+   *       SR fantôme hérité de computeRoll.
+   *   - "risk" (Anarchy 2.0) : le verdict vit dans `res.complication`
+   *       (computeAnarchyRoll), pas dans glitch/critGlitch — ici, no-op.
+   */
+  normalizeVerdict(res, model) {
+    if (!res || !model) return res;
+    if (model.kind === "unpredictability") {
+      res.glitch = false;
+      res.critGlitch = false;
+    }
+    return res;
   },
 
   /**
@@ -35,7 +95,7 @@ export const Dice = {
    * dés d'Edge — et EUX SEULS — suivent la Règle des six : un 6 compte comme un
    * succès ET se relance en cascade (SR5 : « seuls vos dés de Chance utilisent
    * la Règle des six »). Les relances d'explosion vont dans `extra` et
-   * n'apportent que des succès ; la bévue se compte sur les dés INITIAUX
+   * n'apportent que des succès ; la complication se compte sur les dés INITIAUX
    * (base + Edge), jamais sur les explosions. Le plafond de Limite éventuel
    * (SR5) est géré par l'appelant (rollWeapon), pas ici — « Repousser les
    * limites » l'ignore de toute façon.
@@ -58,7 +118,7 @@ export const Dice = {
       faces.push(v);
       tally(v);
     }
-    // Dés d'Edge : comptés dans les dés initiaux (donc la bévue), puis Règle
+    // Dés d'Edge : comptés dans les dés initiaux (donc la complication), puis Règle
     // des six si `explode`. Garde-fou de cascade (RNG dégénéré / mock).
     for (let i = 0; i < edgeDice; i++) {
       const v = Utils.randInt(1, 6);
@@ -185,7 +245,7 @@ export const Dice = {
 
   /**
    * Relance les dés qui n'ont pas fait de succès (faces < 5) et
-   * recompte succès / bévue / échec critique — règle SR5 (p.58) et
+   * recompte succès / complication / échec critique — règle SR5 (p.58) et
    * SR6 (p.50-51). Les dés déjà réussis sont conservés tels quels.
    * Préserve le plafond de Précision SR5 si `res.limit` est défini.
    */

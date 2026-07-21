@@ -1398,10 +1398,22 @@
   padding-bottom: var(--sp-2);
   border-bottom: 1px solid var(--border);
 }
-/* R2-B : sélecteur multi-serveur (plusieurs intrusions actives en scène). */
-.matrix-server-switch {
+/* A5 : mini-carte topologie navigable du tiroir (plusieurs intrusions actives
+   en scène). Le SVG est rendu FLUID (sans width/height) → il épouse la largeur
+   du tiroir en gardant son ratio via viewBox. Nœuds focusables (role=button). */
+.matrix-topo-strip {
   width: 100%;
   margin-bottom: var(--sp-2);
+}
+.matrix-topo-strip svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius);
+}
+.matrix-topo-strip [data-node]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* ---- K4 : combattant matriciel (CI) dans le tracker ---- */
@@ -1726,6 +1738,15 @@
   border-style: dashed;
   cursor: default;
 }
+/* Pastille de VALEUR d'une CH à succès fixes (Anarchy 2.0) : le nombre EST
+   l'information (succès fixes / Firewall), il n'y a pas de dés à lancer. Lisible
+   comme une stat — distincte du bouton cliquable (pas de hover) et du .is-off
+   grisé (ici pleinement lisible). */
+.react-btn.is-value {
+  cursor: default;
+  border-style: solid;
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-card));
+}
 /* Glyphe des boutons de réaction (DA : glyphes Unicode monochromes, jamais
    d'émoji couleur — ⛉ dévier / ⛊ absorber, hérite de la couleur du thème). */
 .react-glyph {
@@ -2029,6 +2050,10 @@ kbd {
   padding: var(--sp-3) var(--sp-4);
   border: 1px solid var(--border);
   border-radius: 6px;
+  /* Signature de coin coupé de l'édition (SR6 la porte ; les autres retombent
+     sur --card-clip: none → coins arrondis par défaut, honnête à chaque livre).
+     Premier usage projeté du token, jamais une forme codée en dur. */
+  clip-path: var(--card-clip);
   background: var(--bg-mid);
 }
 .spectator-row.is-active {
@@ -2087,5 +2112,22 @@ kbd {
 .spectator-gauge {
   flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 5px;
+}
+/* Moniteur à l'échelle PROJECTEUR : la case fait 16px sur la carte du MJ, trop
+   petite lue à distance. On l'agrandit — la FORME reste celle du descripteur
+   (ladder + marque de pénalité toutes les 3 cases / tiers A2 + paliers de
+   gravité) : on ne redessine pas la règle, on lui donne l'échelle d'un écran de
+   scène. Curseur neutre : la projection est en lecture seule (pas de pointer). */
+.spectator-gauge .monitor-box {
+  width: 22px;
+  height: 22px;
+  cursor: default;
+}
+/* Séparateur de paliers A2 à l'échelle projecteur : 3 classes pour dépasser la
+   règle de thème `[data-edition^="anarchy"] .monitor-gap` (largeur 6px, même
+   spécificité, chargée après) — sinon la règle serait morte. */
+.monitor-boxes.spectator-gauge .monitor-gap {
+  width: 10px;
 }
 

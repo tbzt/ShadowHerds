@@ -137,6 +137,10 @@ export const ServerRenderer = {
 
     const intr = this._intr(srv);
     const catalog = Matrix.use(srv.edition).icCatalog();
+    // Badges topologie (lot A) : point d'entrée + nœud-cible, si renseignés.
+    const entryMode = srv.entry
+      ? Matrix.use(srv.edition).topologyEntryModes().find((m) => m.id === srv.entry)
+      : null;
 
     /* -- header + stats -- */
     // Dispatch structurel accepté : deux blocs complets
@@ -194,6 +198,8 @@ export const ServerRenderer = {
     card.innerHTML = `
       <div class="server-card-header">
         <span class="server-name" title="${esc(srv.profile || "")}">${esc(srv.name)}</span>
+        ${entryMode ? `<span class="server-badge" title="Point d'entrée : ${esc(entryMode.label)}">${esc(entryMode.glyph)}</span>` : ""}
+        ${srv.isTarget ? `<span class="server-badge" title="Nœud-cible (${esc(Matrix.use(srv.edition).topologyTargetLabel())})">✱</span>` : ""}
         <span class="server-badge">Indice ${srv.indice}</span>
       </div>
       <div class="server-card-body">
@@ -226,6 +232,21 @@ export const ServerRenderer = {
     )
       .map((n) => `<option value="${n}" ${n === srv.indice ? "selected" : ""}>${n}</option>`)
       .join("");
+
+    /* Topologie (lot A) — rôle du serveur dans un site : point d'entrée +
+       nœud-cible. Modes d'entrée et libellé de cible par édition (via Matrix,
+       jamais de branche `if edition`). Lus à la validation (_commitEdit),
+       comme secphys/profil — champs de formulaire, pas de handler inline. */
+    const entryModes = Matrix.use(srv.edition).topologyEntryModes();
+    const entryOpts =
+      `<option value="">— aucun —</option>` +
+      entryModes
+        .map(
+          (m) =>
+            `<option value="${m.id}" ${srv.entry === m.id ? "selected" : ""}>${esc(m.glyph)} ${esc(m.label)}</option>`,
+        )
+        .join("");
+    const targetLabel = Matrix.use(srv.edition).topologyTargetLabel();
 
     const attrsHtml = !Matrix.use(srv.edition).hasAttrs()
       ? ""
@@ -278,6 +299,11 @@ export const ServerRenderer = {
         ${App.getEditionModule(srv.edition)?.secPhysBonus
           ? `<label class="ic-choice"><input type="checkbox" id="se-${id}-secphys" ${srv.secPhys ? "checked" : ""}>Gère la sécurité physique</label>`
           : ""}
+        <div class="server-edit-row">
+          <label class="server-edit-label">Point d'entrée
+            <select id="se-${id}-entry">${entryOpts}</select></label>
+        </div>
+        <label class="ic-choice"><input type="checkbox" id="se-${id}-target" ${srv.isTarget ? "checked" : ""}>Nœud-cible (tient les ${esc(targetLabel)})</label>
         ${attrsHtml}
         <label class="server-edit-label">Sculpture
           <textarea id="se-${id}-sculpture" rows="3">${esc(srv.sculpture || "")}</textarea></label>
@@ -402,6 +428,44 @@ export const ServerRenderer = {
       </div>`;
   },
 
+  /* ---- Marks SR5 (deux directions) ----
+     Les livres séparent « l'hôte a N marks sur le decker » de « le decker a N
+     marks sur l'hôte ». On rend les deux, intégrés au bloc SS :
+      · Hôte → PJ : une ligne par persona PJ de la scène (les CI et le spider
+        partagent CE compteur, p.247 — pas de compteur par CI).
+      · Équipe → hôte : un stepper unique (accès du decker ; 3 = propriétaire). */
+  _marksBlock(srv, intr) {
+    const esc = CardRenderer._esc.bind(CardRenderer);
+    const stepper = (action, extra, val) =>
+      `<button class="btn-icon-tiny" data-action="${action}" data-id="${srv.id}" ${extra} data-n="-1">−</button>` +
+      `<b>${val}</b>/3` +
+      `<button class="btn-icon-tiny" data-action="${action}" data-id="${srv.id}" ${extra} data-n="1">＋</button>`;
+
+    // Personas PJ exposés dans la scène (combattants `kind:"pj"`) — clés de
+    // marksOn. Le MJ ignore simplement les lignes qui ne sont pas connectées.
+    const pjs =
+      typeof Encounter !== "undefined" && Encounter.state
+        ? Encounter.state.combatants.filter((c) => c.kind === "pj")
+        : [];
+    const onMap = intr.marksOn || {};
+    const pjRows = pjs.length
+      ? pjs
+          .map((c) => {
+            const name =
+              (typeof PnjLookup !== "undefined" && PnjLookup.find(c.pnjId)?.name) ||
+              c.name ||
+              "PJ";
+            return `<span class="ss-marks">${esc(name)} : ${stepper("mark-on", `data-pj="${c.pnjId}"`, onMap[c.pnjId] || 0)}</span>`;
+          })
+          .join("")
+      : `<span class="ss-marks"><small>Aucun PJ connecté dans la scène.</small></span>`;
+
+    return `
+      <div class="ss-marks-head" title="Max 3 par cible (p.233). Une mark posée par une CI ou le spider l'est au nom de l'hôte : toutes ses CI la partagent (p.247).">Marks de l'hôte sur les PJ <small>(+2 VD CI/mark · Traqueuse à 2+ · convergence pose 3 marks, p.232)</small></div>
+      ${pjRows}
+      <span class="ss-marks" title="Marks du decker sur l'hôte : monnaie d'accès (Manipulation). 3 marks = accès propriétaire (miroir SR5 de l'échelle SR6).">Marks de l'équipe sur l'hôte : ${stepper("mark-held", "", intr.marksHeld || 0)} <small>(3 = propriétaire)</small></span>`;
+  },
+
   /* ---- Jauge SS (SR5/SR6) ---- */
   ssBlock(srv) {
     const esc = CardRenderer._esc.bind(CardRenderer);
@@ -430,12 +494,7 @@ export const ServerRenderer = {
         ? `<button class="btn-secondary btn-small" data-action="add-ss-2d6" data-id="${srv.id}"
             title="Le SS augmente de 2D6 toutes les 15 minutes après le premier point (p.233)">
             +2D6 ⏱${intr.lastRollT ? ` ${Math.round((Date.now() - intr.lastRollT) / 60000)} min` : ""}</button>
-          <span class="ss-marks">Marks du serveur :
-            <button class="btn-icon-tiny" data-action="add-marks" data-id="${srv.id}" data-n="-1">−</button>
-            <b>${intr.marks}</b>/3
-            <button class="btn-icon-tiny" data-action="add-marks" data-id="${srv.id}" data-n="1">＋</button>
-            <small>(+2 dommages CI/mark · Traqueuse à 2+ · convergence = 3 marks posées)</small>
-          </span>`
+          ${this._marksBlock(srv, intr)}`
         : `<button class="btn-secondary btn-small" data-action="add-ss" data-id="${srv.id}" data-n="1" data-label="programme de hacking"
             title="+1 SS par action matricielle modifiée par un programme de hacking (p.178)">+1 prog.</button>
           <span class="ss-marks">Accès illégaux maintenus —

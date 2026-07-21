@@ -458,6 +458,21 @@ export const TourSteps = {
       title: "Un coup d'œil sans quitter Jouer",
       body: "Consulter un PNJ du casting depuis « Jouer » ouvre désormais sa fiche en surimpression, par-dessus votre poste de commandement — au lieu de vous éjecter vers la bibliothèque. La fiche est complète et éditable ; les flèches ‹ › feuillettent le reste du casting sans jamais refermer. Vous ne quittez plus la scène pour jeter un œil.",
     },
+    {
+      id: "wn-ic-combat-values", anchor: "nav-combat", tours: ["whatsnew"], since: "1.85.0", fallback: "center",
+      title: "Une CI qui se défend et attaque, partout",
+      body: "Dans le suivi de combat, une contre-mesure d'intrusion montre enfin sa défense quand un decker l'attaque (bloc « Réagir »), et son attaque sur sa fiche — au lieu des boutons « — » inertes qu'affichait Anarchy. Chaque édition garde ses règles : Anarchy 2.0 affiche ses succès fixes en valeurs (défense/attaque = indice, Firewall 1), Anarchy 1re lance le statblock du livre (attaque 8, défense 11, Tueuse +2, Noire en physique), SR5/SR6 gardent leurs jets de dés — avec deux corrections au livre au passage (encaissement SR6 en indice×2, défense SR5 en indice + Firewall).",
+    },
+    {
+      id: "wn-da-seance-projetee", anchor: "nav-play", tours: ["whatsnew"], since: "1.86.0", fallback: "center",
+      title: "Les écrans de la séance prennent l'identité du livre",
+      body: "L'écran spectateur, le plan de lieu et le poste « Jouer » — ce que les joueurs regardent — portent désormais la direction artistique de leur édition. Sur l'écran spectateur, chaque combattant s'inscrit dans le coin coupé signature (net en SR6), sur un fond de fines lignes de balayage teinté du livre, et son moniteur est agrandi à l'échelle du vidéoprojecteur — sa forme restant celle du livre (jauge continue SR5/SR6, paliers de gravité Anarchy 2). Le plan de lieu dessine sa grille et sa salle-objectif à l'encre de l'édition (magenta SR6, rouge SR5, or Anarchy 2, bleu Anarchy 1) ; le poste « Jouer » file ses moments Avant / Pendant / Après d'un repère à l'accent du livre. La même vérité, habillée pour la table.",
+    },
+    {
+      id: "wn-server-plan", anchor: "nav-matrix", tours: ["whatsnew"], since: "1.89.0", fallback: "center",
+      title: "Le plan de serveur",
+      body: "Un site n'est presque jamais un seul serveur. L'écran Serveurs porte un bouton « ▤ Plan du site » qui dessine l'architecture du dossier — chaîne, arborescence, WAN (appareils asservis) ou hôtes imbriqués selon l'édition —, gratuitement et à l'instant, comme le « Plan tactique » d'un lieu. En mode édition, désignez le point d'entrée d'un serveur (Matrice publique ou connexion directe au câble) et lequel tient les données cibles. Et quand plusieurs serveurs sont piratés dans une même scène, le tiroir Matrice en affiche une mini-carte : touchez un nœud pour basculer le tiroir sur ce serveur.",
+    },
   ],
 };
 

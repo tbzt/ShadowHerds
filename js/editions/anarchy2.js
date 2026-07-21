@@ -70,6 +70,12 @@ export const EditionAnarchy2 = {
       prise de risque, déjà portée par le panneau de risque (usesRiskPanel).
       Neutre `null` — aucune option pré-jet supplémentaire à offrir. */
   preRollEdge: null,
+  /** Modèle de complication (p.170) : le verdict d'Anarchy 2.0 vit dans
+      `res.complication` (mineure / critique / désastre selon les 1 sur les
+      dés de RISQUE — computeAnarchyRoll), avec son propre chemin de rendu
+      (_revealAnarchy, branche `res.anarchy` de DiceLog). `kind:"risk"` est
+      documentaire : normalizeVerdict ne touche pas ce chemin (no-op). */
+  complicationModel: { kind: "risk" },
   /* ---- Action magique : Drain déjà couvert par les complications
      du jet de risque (p.170), aucune VD séparée → tout neutre. ---- */
   spellUsesForce: false,
@@ -394,6 +400,20 @@ export const EditionAnarchy2 = {
     icMonitorSize() {
       return 4;
     },
+    /** Descripteur de combat d'une CI (Anarchy 2.0), lu par le cockpit via
+        Matrix.icCombat. Régime à SUCCÈS FIXES (`roll:false` → le cockpit affiche
+        une valeur, jamais une pastille de dés) : attaque ET défense = indice du
+        serveur (test opposé, p.223, 225). L'encaissement n'est pas un jet — la VD
+        du decker est comparée au Firewall de la glace, fixé à 1 (fragile, p.223).
+        Perception : seulement la Patrouilleuse (`watch`), sinon absente. */
+    icCombat(kind, host, ic) {
+      const i = host.indice;
+      if (kind === "atk") return { roll: false, value: i, suffix: "succès fixes (attaque)" };
+      if (kind === "def") return { roll: false, value: i, suffix: "succès fixes (défense)" };
+      if (kind === "soak") return { roll: false, value: 1, suffix: "Firewall (VD − 1)" };
+      if (kind === "per") return ic && ic.watch ? { roll: false, value: i, suffix: "perception (succès fixes)" } : null;
+      return null;
+    },
     maxActiveIC() {
       return Infinity;
     },
@@ -435,6 +455,26 @@ export const EditionAnarchy2 = {
     },
     attrLimit() {
       return null;
+    },
+    /* Topologie externe (schéma d'architecture, lot A) — lue par
+       Matrix.topology* / TopologyGen. Anarchy 2.0 DESSINE ses topologies
+       p.222 : chaîne « Matrice↔A↔B↔C↔D » (pirater un par un jusqu'au plus
+       profond, qui tient les données) et arborescence « Matrice↔A →
+       {sécurité, admin} ». Entrée directe par câble si le serveur profond
+       est sans-fil coupé (exemple joué p.226). */
+    topology: {
+      archetypes: [
+        { id: "chain", label: "Chaîne (un serveur après l'autre)" },
+        { id: "branch", label: "Arborescence (passerelle → sécurité/admin)" },
+      ],
+      entryModes: [
+        { id: "matrix", label: "Matrice publique", glyph: "◎" },
+        { id: "direct", label: "Connexion directe (câble)", glyph: "⎇" },
+      ],
+      targetLabel: "données cibles",
+      nodeBadge(srv) {
+        return `Indice ${srv.indice} · Firewall ${srv.indice}`;
+      },
     },
   },
 
