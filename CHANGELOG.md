@@ -12,6 +12,17 @@ commit.
 
 ## [Non publié]
 
+### Corrigé
+
+- **Pied de carte réaligné.** Le pied (★ / 🏷 / actions) débordait sur deux
+  lignes : la poignée de réorganisation, invisible au repos, réservait quand
+  même sa largeur (`visibility:hidden` au lieu de `display:none`) et le tag de
+  groupe étalait son libellé. La poignée ne prend plus de place hors du mode
+  réorganisation, et le tag de groupe passe en **icône seule** (le nom du/des
+  groupe(s) au survol) — les actions tiennent sur une ligne dès que la carte est
+  assez large ; sur les cartes étroites de l'annuaire, le pied retombe
+  proprement sur deux lignes au lieu de se briser.
+
 ## [1.94.0] — 2026-07-22
 
 ### Ajouté

@@ -937,10 +937,13 @@
   line-height: 1;
   opacity: 0.8;
 }
+/* Pied COMPACT (carte modulaire) : le tag de groupe devient icône seule,
+   à parité avec l'épingle ★ — le nom du/des groupe(s) passe en `title`
+   (survol) et l'appartenance reste signalée par `.has-groups` (bordure
+   teintée). Un libellé de ~130 px poussait l'amas d'actions à la ligne sur
+   les cartes étroites de l'annuaire ; l'icône seule le laisse tenir. */
 .group-picker-trigger-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: none;
 }
 
 /* ---- Sélection multiple (CH-Q10) ---- */
@@ -1003,7 +1006,13 @@ body.selecting .bulk-selectable .server-card-header {
    visible au repos, révélée d'un coup par `reordering` sur <body>. */
 .reorder-handle {
   flex: none;
-  display: flex;
+  /* `display:none` au repos (et pas `visibility:hidden`) : une poignée
+     invisible qui garde `display:flex` continue de RÉSERVER sa largeur ET
+     sa part de `gap` dans le pied — ~29 px volés à chaque carte, ce qui
+     poussait l'amas d'actions à passer à la ligne sur les cartes étroites
+     de l'annuaire. `display:none` la retire du flux, du gap ET de l'ordre
+     de tabulation ; elle n'existe que pendant le mode réorganisation. */
+  display: none;
   align-items: center;
   justify-content: center;
   width: 26px;
@@ -1019,11 +1028,6 @@ body.selecting .bulk-selectable .server-card-header {
   cursor: grab;
   touch-action: none;
   user-select: none;
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity var(--dur-fast),
-    visibility 0s var(--dur-fast);
 }
 .reorder-handle:hover,
 .reorder-handle:focus-visible {
@@ -1033,15 +1037,8 @@ body.selecting .bulk-selectable .server-card-header {
 .reorder-handle:active {
   cursor: grabbing;
 }
-/* `visibility` (en plus d'opacity) retire aussi la poignée de l'ordre de
-   tabulation au repos : un vrai <button> focusable ne doit pas rester une
-   trappe invisible pour le clavier hors du mode (Vector). L'affichage est
-   immédiat (transition-delay annulée) ; c'est la disparition qui attend
-   la fin du fondu (règle ci-dessus). */
 body.reordering .reorder-handle {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity var(--dur-fast);
+  display: flex;
 }
 /* Bouton d'entrée du mode, état actif. */
 [data-action="toggle-reorder-mode"].active {

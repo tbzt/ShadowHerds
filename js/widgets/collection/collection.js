@@ -523,7 +523,10 @@ export const Collection = {
         btn.type = "button";
         btn.className =
           "group-picker-trigger" + (groups.length ? " has-groups" : "");
-        btn.title = "Gérer les groupes";
+        // Pied compact : le libellé du tag est masqué (icône seule, cf.
+        // .group-picker-trigger-label) — le nom du/des groupe(s) vit donc
+        // dans le title, seul canal qui le révèle au survol.
+        btn.title = groups.length ? `Groupes : ${gLabel}` : "Gérer les groupes";
         btn.dataset.collection = this.key;
         btn.dataset.action = "open-picker";
         btn.dataset.id = id;
