@@ -503,6 +503,11 @@ export const TourSteps = {
       title: "Le monde se souvient",
       body: "Générez un topos dans une campagne et le monde tient compte de son histoire : une corpo déjà affrontée revient (« 3ᵉ run contre eux, ils vous connaissent »), un contact connu de l'équipe peut s'en mêler, la réputation de l'équipe pèse sur la taille du job, et un ennemi déjà croisé peut resurgir au casting en un tap. Au débrief, marquez qui vous doit une faveur (il vous ramènera un job) ou qui est grillé (il ne rappelle plus). Le monde propose, vous ratifiez : tout est dérivé de votre campagne, rien n'est imposé, et les éditions sans réputation l'ignorent proprement.",
     },
+    {
+      id: "wn-graph-mindmap", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.96.0", fallback: "center",
+      title: "Le graphe des relations, éditable",
+      body: "La lentille « ◈ Liens » s'ouvre désormais depuis n'importe quelle fiche, PNJ compris, pour tisser les relations PNJ↔PNJ. Touchez un nœud : sa fiche s'affiche sur le côté (touchez-en un autre, elle s'échange). Stylez le réseau comme un schéma heuristique — un lien reçoit une couleur, une direction (→, ←, ↔), des pointillés et un mot (« doit une faveur ») ; un nœud reçoit une couleur qui le suit partout. Une flèche reste de la fiction, jamais une marque de jeu. Sur téléphone, la fiche passe en feuille basse sous le graphe.",
+    },
   ],
 };
 

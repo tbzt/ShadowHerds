@@ -23,6 +23,22 @@ commit.
   assez large ; sur les cartes étroites de l'annuaire, le pied retombe
   proprement sur deux lignes au lieu de se briser.
 
+## [1.96.0] — 2026-07-22
+
+### Ajouté
+
+- **Le graphe des relations devient un schéma éditable.** La lentille « ◈ Liens »
+  n'est plus réservée aux PJ : elle s'ouvre depuis **n'importe quelle fiche**, PNJ
+  compris, pour cartographier et **tisser les relations PNJ↔PNJ**. Quand vous
+  touchez un nœud, **sa fiche s'affiche sur le côté** (plus par-dessus) — touchez-en
+  un autre, elle s'échange. Et vous stylez le réseau comme un schéma heuristique :
+  touchez un **lien** pour lui donner une **couleur**, une **direction** (aucune,
+  →, ←, ↔), des **pointillés**, et un **mot sur le trait** (« doit une faveur »,
+  « a trahi »…) ; touchez un **nœud** pour lui choisir une **couleur** qui le suit
+  partout. Tisser un lien ouvre aussitôt son inspecteur, pour le nommer dans la
+  foulée. Le style est de la **fiction de campagne** : une flèche n'est jamais une
+  marque de jeu. Sur téléphone, la fiche passe en feuille basse sous le graphe.
+
 ## [1.95.0] — 2026-07-22
 
 ### Ajouté
