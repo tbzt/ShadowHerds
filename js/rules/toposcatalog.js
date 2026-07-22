@@ -294,19 +294,32 @@ export const ToposCatalog = {
       // d'un run passé de la campagne, une ANNOTATION — les picks ci-dessus sont
       // INCHANGÉS (informer, jamais décider). `facts` injecté par RunGen.
       ...this._memory(facts, opp.key, mandant.key),
-      ...this._contactHook(facts),
+      ...this._contactInject(facts),
     };
   },
 
-  /** Accroche « contact connu » (VIS-12 Phase 3a) : propose un contact de
-      l'équipe qui pourrait se mêler du run — { contactHook } ou {}. Annotation,
-      aucun pick modifié ; un contact au hasard parmi les connus (varie d'un
-      topos à l'autre). */
-  _contactHook(facts) {
-    if (!facts || !Array.isArray(facts.contacts) || !facts.contacts.length) return {};
-    const c = Utils.rand(facts.contacts);
-    const role = c.relation ? ` (votre ${c.relation})` : "";
-    return { contactHook: `Contact connu : ${c.name}${role} pourrait être impliqué.` };
+  /** Injection « contacts connus » (VIS-12 Phases 3a/3b). Renvoie soit un
+      `client` (biais Johnson, P3b), soit un `contactHook` (accroche, P3a), soit {}.
+      - **grillé** (stance burned) : exclu de tout — « ne rappelle plus ».
+      - **redevable** (favor) ou **fixer** : peut DEVENIR le mandant (~40 % quand un
+        tel contact existe) — le contact vous ramène le job (seul pick modifié, doux,
+        proposé). Sinon, une accroche « pourrait être impliqué » (aucun pick changé).
+      Un contact au hasard dans le vivier → varie d'un topos à l'autre. */
+  _contactInject(facts) {
+    if (!facts || !Array.isArray(facts.contacts)) return {};
+    const usable = facts.contacts.filter((c) => c.stance !== "burned");
+    if (!usable.length) return {};
+    const role = (c) => (c.relation ? ` (votre ${c.relation})` : "");
+    // P3b — le mandant devient un contact qui vous doit / un fixer.
+    const isFixer = (c) => /fixer|johnson|interm|broker|employeur|passeur/i.test(c.relation || "");
+    const johnsonPool = usable.filter((c) => c.stance === "favor" || isFixer(c));
+    if (johnsonPool.length && Math.random() < 0.4) {
+      const c = Utils.rand(johnsonPool);
+      return { client: `${c.name}${role(c)}`, clientKnown: true };
+    }
+    // P3a — accroche « contact connu pourrait être impliqué ».
+    const c = Utils.rand(usable);
+    return { contactHook: `Contact connu : ${c.name}${role(c)} pourrait être impliqué.` };
   },
 
   /** Annotation « mémoire du monde » : { memory } si la faction tirée est
