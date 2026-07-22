@@ -97,6 +97,25 @@ export const WorldState = {
     return { tracks, notable: Math.abs(top.value), top };
   },
 
+  /** Visages récurrents (P5) : les PNJ de la campagne déjà taggés d'une faction
+      (`pnj.faction`, posé par le casting) correspondant à `factionKey`, hors du
+      groupe `excludeGroupId` (le run courant, pour ne pas re-proposer les frais).
+      Lu brut (`shadows_all`+`shadows_groups`) — reste couche basse. */
+  recurringFacesFor(dossierId, factionKey, excludeGroupId = null) {
+    if (!dossierId || !factionKey) return [];
+    const scopeSet = new Set(this._campaignScope(dossierId));
+    const groups = Storage.get("shadows_groups", {}) || {};
+    const inCampaign = new Set();
+    for (const [k, members] of Object.entries(groups))
+      if (scopeSet.has(k) && Array.isArray(members)) for (const id of members) inCampaign.add(id);
+    const excluded = new Set(excludeGroupId ? groups[excludeGroupId] || [] : []);
+    return (Storage.get("shadows_all", []) || [])
+      .filter(
+        (p) => p && p.faction === factionKey && inCampaign.has(p.id) && !excluded.has(p.id),
+      )
+      .map((p) => ({ id: p.id, name: p.name || "un adversaire" }));
+  },
+
   /** Sous-arbre de la RACINE de campagne à laquelle appartient `dossierId`
       (remontée `parentId` jusqu'au sommet, puis descendants). */
   _campaignScope(dossierId) {

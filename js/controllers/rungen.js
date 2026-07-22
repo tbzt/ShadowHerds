@@ -202,17 +202,49 @@ export const RunGen = {
     if (!roles.length) return;
 
     const prevGroup = Shadows.currentGroup;
-    Shadows.currentGroup = dossierName; // Shadows.savePNJ classe dans ce dossier
+    // L'appartenance est keyée par ID de dossier (VIS-16 1-bis) : classer par id,
+    // pas par nom — sinon le casting reste invisible dans le run (memberIds/Jouer
+    // lisent par id). `castForRun` était le straggler de cette migration.
+    Shadows.currentGroup = run.dossierId; // Shadows.savePNJ classe dans ce dossier
     let n = 0;
     for (const role of roles) {
       const pnj = Gen.generateForRole(role);
       if (pnj) {
+        // VIS-12 (P5) : tag la faction d'opposition pour la mémoire du monde —
+        // « ce PNJ a été croisé chez Ares » deviendra dérivable (visage récurrent).
+        pnj.faction = run.opposition || null;
         Shadows.savePNJ(pnj.id);
         n++;
       }
     }
     Shadows.currentGroup = prevGroup;
-    toast(`Casting généré : ${n} PNJ rangé${n > 1 ? "s" : ""} dans « ${dossierName} ».`);
+    this._proposeRecurringFace(run, dossierName, n);
+  },
+
+  /** VIS-12 (P5) — après le casting frais, PROPOSE (jamais n'impose) de ramener
+      un visage déjà croisé de la même faction dans la campagne : un tap ré-attache
+      le PNJ existant au run (multi-groupe, par référence). S'il n'y en a pas, le
+      toast de casting normal. */
+  _proposeRecurringFace(run, dossierName, n) {
+    const castMsg = `Casting généré : ${n} PNJ rangé${n > 1 ? "s" : ""} dans « ${dossierName} ».`;
+    const faces =
+      typeof WorldState !== "undefined"
+        ? WorldState.recurringFacesFor(run.dossierId, run.opposition, run.dossierId)
+        : [];
+    if (!faces.length) {
+      toast(castMsg);
+      return;
+    }
+    const face = Utils.rand(faces);
+    const factionName = (ToposCatalog.factions[run.opposition] || {}).nom || "";
+    toastAction(
+      `${castMsg} ${face.name} — déjà croisé${factionName ? ` chez ${factionName}` : ""}. Le ramener ?`,
+      "Ramener",
+      () => {
+        Shadows.toggleGroup(face.id, run.dossierId, true); // ré-attache par référence
+        toast(`${face.name} rejoint « ${dossierName} ».`);
+      },
+    );
   },
 
   /** Ré-affiche une seule carte de run après mutation (évite un re-render
