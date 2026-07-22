@@ -67,11 +67,22 @@ export const GraphProjections = {
         nodes.push({ ...CardZones.density0({ ...loc, id }), inScope: core.has(id) });
     }
 
-    // 4. Arêtes dont les deux bouts sont présents (orphelines écartées).
+    // 4. Arêtes dont les deux bouts sont présents (orphelines écartées). On
+    // projette aussi le style d'arête (Lot 3 : couleur/pointillés/direction/mot),
+    // défauts défensifs — une vieille arête sans ces champs se lit proprement.
     const present = new Set(nodes.map((n) => n.id));
     const keptEdges = edges
       .filter((e) => present.has(e.from) && present.has(e.to))
-      .map((e) => ({ id: e.id, from: e.from, to: e.to, type: e.type, label: e.label || "" }));
+      .map((e) => ({
+        id: e.id,
+        from: e.from,
+        to: e.to,
+        type: e.type,
+        label: e.label || "",
+        color: e.color || null,
+        dashed: !!e.dashed,
+        dir: e.dir || "none",
+      }));
 
     return { nodes, edges: keptEdges };
   },

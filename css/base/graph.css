@@ -216,3 +216,132 @@
     border-top: 1px solid var(--border, #2a3a49);
   }
 }
+
+/* ============================================================
+   LOT 3 — STYLE D'ARÊTE (mind-map éditable)
+   ============================================================ */
+
+/* Ligne-cible transparente élargie : c'est ELLE qui reçoit le clic (le trait
+   fin est trop mince au doigt). La ligne visible ne capte rien. */
+.graph-edge-hit {
+  stroke: transparent;
+  stroke-width: 14;
+  fill: none;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+.graph-edge {
+  pointer-events: none;
+  transition: stroke-width 120ms ease, stroke-opacity 120ms ease;
+}
+/* Arête sélectionnée (inspecteur ouvert) : trait plein + halo d'accent. */
+.graph-edge.selected {
+  stroke-width: 2.6;
+  stroke-opacity: 1;
+  filter: drop-shadow(0 0 4px var(--accent, #35e0e6));
+}
+
+/* Mot sur le trait : liséré du fond (paint-order) pour rester lisible par-dessus
+   les lignes, sans boîte. Le groupe ne capte pas le pointeur. */
+.graph-edge-labels {
+  pointer-events: none;
+}
+.graph-edge-label {
+  font-size: 10px;
+  fill: var(--text, #dfe8f0);
+  paint-order: stroke;
+  stroke: var(--surface-1, #0e1620);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  user-select: none;
+}
+
+/* Inspecteur d'arête dans le panneau latéral. */
+.graph-edge-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.graph-edge-ends {
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  color: var(--text, #dfe8f0);
+}
+.graph-edge-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.graph-edge-flabel {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-dim, #9fb0c0);
+}
+.graph-edge-label-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border, #2a3a49);
+  border-radius: 5px;
+  background: var(--surface-2, #16202b);
+  color: var(--text, #dfe8f0);
+  font: inherit;
+  font-size: 0.85rem;
+}
+.graph-dir-row {
+  display: flex;
+  gap: 6px;
+}
+.graph-dir-btn {
+  flex: 1 1 0;
+  min-height: 32px;
+  border: 1px solid var(--border, #2a3a49);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-dim, #9fb0c0);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.graph-dir-btn.active {
+  border-color: var(--accent, #35e0e6);
+  color: var(--accent, #35e0e6);
+  background: color-mix(in srgb, var(--accent, #35e0e6) 12%, transparent);
+}
+/* Le pastille « défaut » (accent) réutilise .em-color-swatch, + une croix. */
+.graph-color-default {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2, #16202b);
+  color: var(--text-dim, #9fb0c0);
+  font-size: 0.8rem;
+  line-height: 1;
+}
+.graph-edge-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text, #dfe8f0);
+  cursor: pointer;
+}
+.graph-edge-check input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+.graph-edge-delete {
+  margin-top: 4px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--danger, #e0533d) 60%, transparent);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--danger, #e0533d);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.graph-edge-delete:hover {
+  background: color-mix(in srgb, var(--danger, #e0533d) 12%, transparent);
+}

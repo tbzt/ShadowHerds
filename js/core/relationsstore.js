@@ -5,13 +5,21 @@
    ------------------------------------------------------------
    Un registre plat d'arêtes GÉNÉRIQUES, par édition, sur Storage :
 
-       Edge { id, from, to, type, weight?, label?, since?, until?, scope? }
+       Edge { id, from, to, type, weight?, label?, since?, until?, scope?,
+              color?, dashed?, dir? }
 
    `from`/`to` = ids d'entités (PJ, contact, serveur…) OU de nœuds
    `Dossiers` (scène, fait). `type` qualifie l'arête :
        "contact"  → lien PJ→contact  (weight = loyauté, label = relation)
        "clue"     → indice scène→fait (validateur d'enquête, futur)
        "relation" → rivalité/lien générique ratifié
+
+   Style d'arête (Lot 3, mind-map éditable — annotations NEUTRES côté
+   édition, portées par l'arête, sa seule vérité) : `color` (CSS, nue =
+   accent d'édition), `dashed` (bool), `dir` ("none"|"forward"|"back"|
+   "both", direction PUREMENT narrative — jamais une marque SR5). Tous
+   optionnels et additifs : `upsert` les porte via Object.assign, aucune
+   migration (une vieille arête les lit `undefined` = défauts).
 
    Ce module N'EST PAS une 4ᵉ Collection : pas de roster, pas de
    groupes — juste la forme d'arête. Les arêtes sont keyées par ID

@@ -25,7 +25,7 @@ export const GraphEngine = {
 
   /** Monte un graphe dans `container`. `onNodeTap(id)` est appelé sur un
       tap net (clic sans glisser). Rappeler `mount` remonte proprement. */
-  mount(container, { nodes = [], edges = [], accent = "#35e0e6", onNodeTap = null, onWeave = null, onBackgroundTap = null } = {}) {
+  mount(container, { nodes = [], edges = [], accent = "#35e0e6", onNodeTap = null, onWeave = null, onBackgroundTap = null, onEdgeTap = null } = {}) {
     this.destroy();
     const W = Math.max(320, container.clientWidth || 640);
     const H = Math.max(240, container.clientHeight || 460);
@@ -52,21 +52,50 @@ export const GraphEngine = {
     svg.setAttribute("class", "graph-svg");
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
+    // Marqueur de flèche UNIQUE, réutilisé aux deux bouts (`orient` auto-inversé
+    // en tête de trait). `fill: context-stroke` → la pointe hérite la couleur du
+    // trait, donc une seule def couvre toutes les couleurs d'arête (Lot 3).
+    const defs = document.createElementNS(NS, "defs");
+    defs.innerHTML =
+      '<marker id="graph-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse">' +
+      '<path d="M0,0 L10,5 L0,10 z" fill="context-stroke"></path></marker>';
+    svg.appendChild(defs);
+
     const gEdges = document.createElementNS(NS, "g");
     gEdges.setAttribute("class", "graph-edges");
     const gNodes = document.createElementNS(NS, "g");
     gNodes.setAttribute("class", "graph-nodes");
+    const gLabels = document.createElementNS(NS, "g");
+    gLabels.setAttribute("class", "graph-edge-labels");
     svg.appendChild(gEdges);
     svg.appendChild(gNodes);
+    svg.appendChild(gLabels); // au-dessus : les mots de trait restent lisibles
 
-    // Arêtes (lignes) — estompées si l'un des bouts est hors périmètre (halo).
+    // Arêtes : une ligne-cible transparente ÉLARGIE (sélection au doigt d'un
+    // trait fin), la ligne visible par-dessus, et un libellé dans gLabels.
+    // Estompées si un bout est hors périmètre (halo). Le style (couleur,
+    // pointillés, direction, mot) est appliqué par `_applyEdgeStyle` (Lot 3).
     for (const e of E) {
-      const line = document.createElementNS(NS, "line");
       const dim = N[e.a].inScope === false || N[e.b].inScope === false;
+      const hit = document.createElementNS(NS, "line");
+      hit.setAttribute("class", "graph-edge-hit");
+      hit.setAttribute("data-edge-id", e.id);
+      e._hit = hit;
+      gEdges.appendChild(hit);
+
+      const line = document.createElementNS(NS, "line");
       line.setAttribute("class", dim ? "graph-edge halo" : "graph-edge");
-      line.setAttribute("stroke", accent);
       e._line = line;
       gEdges.appendChild(line);
+
+      const lbl = document.createElementNS(NS, "text");
+      lbl.setAttribute("class", "graph-edge-label");
+      lbl.setAttribute("text-anchor", "middle");
+      lbl.setAttribute("dy", "-3");
+      e._label = lbl;
+      gLabels.appendChild(lbl);
+
+      this._applyEdgeStyle(e, accent);
     }
 
     // Nœuds : cercle + glyphe + label, chacun dans un <g data-node-id>.
@@ -112,9 +141,9 @@ export const GraphEngine = {
     svg.appendChild(weaveLine);
 
     const state = {
-      container, svg, W, H, N, E, idx, accent, onNodeTap, onWeave, onBackgroundTap,
+      container, svg, W, H, N, E, idx, accent, onNodeTap, onWeave, onBackgroundTap, onEdgeTap,
       raf: 0, alpha: 1, drag: null, weave: false, weaving: null, weaveLine,
-      selectedId: null, bg: null,
+      selectedId: null, selectedEdgeId: null, bg: null, edgeTap: null,
     };
     this._state = state;
     container.appendChild(svg);
@@ -188,8 +217,22 @@ export const GraphEngine = {
   _render(s) {
     for (const e of s.E) {
       const a = s.N[e.a], b = s.N[e.b];
-      e._line.setAttribute("x1", a.x); e._line.setAttribute("y1", a.y);
-      e._line.setAttribute("x2", b.x); e._line.setAttribute("y2", b.y);
+      // Rétracter les bouts hors du disque (r≈16) : la flèche se pose au bord
+      // du nœud, pas cachée sous lui ; borné pour deux nœuds très proches.
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.hypot(dx, dy) || 1;
+      const pad = Math.min(18, d / 2 - 2);
+      const ux = dx / d, uy = dy / d;
+      const x1 = a.x + ux * pad, y1 = a.y + uy * pad;
+      const x2 = b.x - ux * pad, y2 = b.y - uy * pad;
+      e._line.setAttribute("x1", x1); e._line.setAttribute("y1", y1);
+      e._line.setAttribute("x2", x2); e._line.setAttribute("y2", y2);
+      e._hit.setAttribute("x1", x1); e._hit.setAttribute("y1", y1);
+      e._hit.setAttribute("x2", x2); e._hit.setAttribute("y2", y2);
+      if (e._label.textContent) {
+        e._label.setAttribute("x", (a.x + b.x) / 2);
+        e._label.setAttribute("y", (a.y + b.y) / 2);
+      }
     }
     for (const n of s.N) {
       // Nœud saisi « soulevé » : léger agrandissement autour de son centre
@@ -216,12 +259,50 @@ export const GraphEngine = {
 
   /** Sélectionne un nœud (surbrillance d'accent) ; `null` = désélectionne.
       La sélection est un état de VUE (pas de vérité) : elle est perdue au
-      remontage, la vue la repose si besoin. */
+      remontage, la vue la repose si besoin. Nœud et arête sont exclusifs. */
   select(id) {
     const s = this._state;
     if (!s) return;
     s.selectedId = id || null;
+    s.selectedEdgeId = null;
     for (const n of s.N) n._g.classList.toggle("selected", n.id === s.selectedId);
+    for (const e of s.E) e._line.classList.remove("selected");
+  },
+
+  /** Sélectionne une ARÊTE (surbrillance) ; `null` = désélectionne. Exclusif
+      avec la sélection de nœud. */
+  selectEdge(id) {
+    const s = this._state;
+    if (!s) return;
+    s.selectedEdgeId = id || null;
+    s.selectedId = null;
+    for (const n of s.N) n._g.classList.remove("selected");
+    for (const e of s.E) e._line.classList.toggle("selected", e.id === s.selectedEdgeId);
+  },
+
+  /** Applique en place le style d'une arête (couleur/pointillés/direction/mot)
+      sans remontage — patch visuel immédiat (doctrine « feel » : patcher, pas
+      reconstruire). Appelé par la vue après un `RelationsStore.upsert`. */
+  updateEdgeStyle(id, style) {
+    const s = this._state;
+    if (!s) return;
+    const e = s.E.find((x) => x.id === id);
+    if (!e) return;
+    Object.assign(e, style);
+    this._applyEdgeStyle(e, s.accent);
+  },
+
+  /** Pose couleur/pointillés/flèches/mot sur les éléments SVG d'une arête.
+      Couleur nue → accent d'édition ; la flèche hérite la couleur du trait
+      (marqueur `context-stroke`). Un seul marqueur, orienté aux deux bouts. */
+  _applyEdgeStyle(e, accent) {
+    const stroke = e.color || accent;
+    e._line.setAttribute("stroke", stroke);
+    e._line.style.strokeDasharray = e.dashed ? "6 4" : "";
+    const dir = e.dir || "none";
+    e._line.setAttribute("marker-end", dir === "forward" || dir === "both" ? "url(#graph-arrow)" : "");
+    e._line.setAttribute("marker-start", dir === "back" || dir === "both" ? "url(#graph-arrow)" : "");
+    e._label.textContent = e.label || "";
   },
 
   /** Bascule le mode tissage (créer un lien en tirant). Off = glisser déplace. */
@@ -254,9 +335,13 @@ export const GraphEngine = {
     s.svg.addEventListener("pointerdown", (ev) => {
       const g = ev.target.closest("[data-node-id]");
       if (!g) {
-        // Fond (hors nœud) : candidat « tap vide » = désélection (hors tissage,
-        // où le fond ne fait rien). Un glisser du fond annule le tap.
-        if (!s.weave) s.bg = { x0: ev.clientX, y0: ev.clientY, moved: false };
+        // Hors nœud (et hors tissage) : soit un tap d'ARÊTE (sélection pour
+        // styler), soit un tap de FOND (désélection). Un glisser annule le tap.
+        if (!s.weave) {
+          const ge = ev.target.closest("[data-edge-id]");
+          if (ge) s.edgeTap = { id: ge.dataset.edgeId, x0: ev.clientX, y0: ev.clientY, moved: false };
+          else s.bg = { x0: ev.clientX, y0: ev.clientY, moved: false };
+        }
         return;
       }
       const n = s.N[s.idx.get(g.dataset.nodeId)];
@@ -282,6 +367,7 @@ export const GraphEngine = {
     s.svg.addEventListener("pointermove", (ev) => {
       const p = toSvg(ev);
       if (s.bg && Math.hypot(ev.clientX - s.bg.x0, ev.clientY - s.bg.y0) > 4) s.bg.moved = true;
+      if (s.edgeTap && Math.hypot(ev.clientX - s.edgeTap.x0, ev.clientY - s.edgeTap.y0) > 4) s.edgeTap.moved = true;
       if (s.weaving) {
         // Accroche magnétique : au voisinage d'un nœud valide, la ligne saute à
         // son centre et le nœud pulse (« j'accepte ») ; sinon elle suit le doigt.
@@ -310,6 +396,12 @@ export const GraphEngine = {
       this._reheat(s);
     });
     const end = (ev) => {
+      if (s.edgeTap) {
+        const et = s.edgeTap;
+        s.edgeTap = null;
+        if (!et.moved && typeof s.onEdgeTap === "function") s.onEdgeTap(et.id);
+        return;
+      }
       if (s.bg) {
         const bg = s.bg;
         s.bg = null;
