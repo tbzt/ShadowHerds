@@ -294,7 +294,19 @@ export const ToposCatalog = {
       // d'un run passé de la campagne, une ANNOTATION — les picks ci-dessus sont
       // INCHANGÉS (informer, jamais décider). `facts` injecté par RunGen.
       ...this._memory(facts, opp.key, mandant.key),
+      ...this._contactHook(facts),
     };
+  },
+
+  /** Accroche « contact connu » (VIS-12 Phase 3a) : propose un contact de
+      l'équipe qui pourrait se mêler du run — { contactHook } ou {}. Annotation,
+      aucun pick modifié ; un contact au hasard parmi les connus (varie d'un
+      topos à l'autre). */
+  _contactHook(facts) {
+    if (!facts || !Array.isArray(facts.contacts) || !facts.contacts.length) return {};
+    const c = Utils.rand(facts.contacts);
+    const role = c.relation ? ` (votre ${c.relation})` : "";
+    return { contactHook: `Contact connu : ${c.name}${role} pourrait être impliqué.` };
   },
 
   /** Annotation « mémoire du monde » : { memory } si la faction tirée est

@@ -44,6 +44,14 @@ export const RunRenderer = {
                </div>`
             : ""
         }
+        ${
+          r.contactHook
+            ? `<div class="run-field run-memory">
+                 <span class="run-field-label">☏ Contact</span>
+                 <span class="run-field-val">${CardRenderer._esc(r.contactHook)}</span>
+               </div>`
+            : ""
+        }
         <div class="stats-row" style="margin-top:0.5rem;">
           <span class="stat-pill accent">Paiement <strong>${r.payment}</strong></span>
         </div>
