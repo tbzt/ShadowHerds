@@ -41,6 +41,14 @@
   width: 100%;
   min-width: 0;
   position: relative;
+  /* Conteneur de requête du FOOTPRINT (frame + rail). Le frame porte déjà sa
+     propre `@container` (la bascule paysage lit SA largeur) ; celle-ci sert le
+     rail, qui est FRÈRE du frame donc hors de portée de la requête du frame —
+     on masque le toggle ◫ quand la carte est trop étroite pour deux colonnes
+     (cf. `@container (max-width: 489px)` plus bas). Sans nom : chaque descendant
+     résout vers son conteneur le plus proche (le frame pour le corps, la carte
+     pour le rail), les deux requêtes ne se marchent pas dessus. */
+  container-type: inline-size;
   /* « Materialize » en place (opacity + scale) au lieu d'un translateY : dans
      la grille multi-colonnes, un glissement vertical se battait avec le
      réagencement des colonnes → lecture « glitch/bug ». Le scale pivote sur
@@ -371,6 +379,19 @@
     border-bottom: 1px solid var(--border);
   }
 }
+/* Le toggle ◫ ne promet la bascule paysage QUE si la carte peut la tenir.
+   Le frame passe à deux colonnes dès 460px (requête ci-dessus, sur le frame) ;
+   la carte, elle, fait frame + 30px de bande de rail → le frame atteint 460px
+   quand la CARTE atteint ~490px. Sous ce seuil, deux colonnes de stats seraient
+   illisibles et la bascule se replie en silence : on retire alors le toggle pour
+   qu'il ne propose pas une vue inatteignable à cette largeur (sur téléphone, la
+   fiche reste en vue complète). Cette requête résout vers `.pnj-card` (conteneur
+   le plus proche du rail, frère du frame). */
+@container (max-width: 489px) {
+  .lens-curated {
+    display: none;
+  }
+}
 
 /* ---- Densité 2 (lentille ⚔ Combat), colonne système CURÉE : moniteur +
    capacité signature + compétences + tags. Le contenu léger tient à ~500px —
@@ -417,6 +438,13 @@
    (c'est le geste fréquent). Réutilise .stat-pill.rollable.combat-pill. */
 .curated-pills .combat-pill {
   font-size: var(--fs-sm);
+  /* Un nom d'arme très long (« Tronçonneuse Monofilament Ash Arms… ») est un
+     seul token : nowrap le faisait déborder de la colonne et peindre sur la
+     section voisine. On borne la pastille à la largeur dispo et on autorise le
+     retour à la ligne DANS la pastille — le nom passe sur 2 lignes, la réserve
+     reste visible, plus aucune coupe. */
+  max-width: 100%;
+  white-space: normal;
 }
 /* Augmentations en tags : références PASSIVES (ni dé ni fond) — l'œil comprend
    que c'est inerte, densité par nature (cf. brief §3.3). */
