@@ -7,8 +7,11 @@
    (srv.sculpture) et le rappel de la Variance. SR5 + SR6 seulement.
 
    N'INTRODUIT AUCUN ÉTAT et NE PERSISTE RIEN : un overlay qui lit
-   `Matrix.foundation*` (données par édition) et se ferme. Aucun
-   générateur SVG (B2, différé), aucun tracker de Variance (B4, différé).
+   `Matrix.foundation*` (données par édition) et se ferme. Le plan (B2)
+   est un rendu généré à la volée par FoundationGen (leaf pur, comme
+   TopologyGen) — rien de plus persisté qu'avant. Le tracker de Variance
+   (B4) vit dans Intrusion/serverrenderer.js, pas ici : cette vue reste
+   une fiche de référence en lecture seule.
    Coquille .modal-overlay réutilisée (thème par édition hérité), calquée
    sur js/controllers/debrief.js. Aucun `onclick` : délégation
    `data-foundation-action`, fermeture overlay/croix/Échap.
@@ -17,6 +20,7 @@
    il affiche la chaîne `roll` déjà écrite par le module d'édition
    (SR5 = Indice + attribut, SR6 = Indice × 2 — cf. FONDATIONS_SERVEUR_BT1.md).
    ============================================================ */
+import { FoundationGen } from "../../rules/foundationgen.js";
 import { Matrix } from "../../rules/matrix.js";
 import { Utils } from "../../core/utils.js";
 
@@ -25,15 +29,17 @@ export const FoundationView = {
 
   /** Ouvre la vue de référence des Fondations d'un serveur. No-op si
       l'édition du serveur n'a pas de Fondation (Anarchy) — l'affordance
-      elle-même est déjà gatée, ce garde-fou est défensif. */
-  open(srv) {
+      elle-même est déjà gatée, ce garde-fou est défensif. `accent`
+      (couleur DA, `editionModule.mapAccent`) arrive en paramètre plutôt
+      que d'être lu sur `App` ici — pas de dépendance cachée. */
+  open(srv, { accent = "#35e0e6" } = {}) {
     if (!srv) return;
     const ed = Matrix.use(srv.edition);
     if (!ed.hasFoundation()) return;
     const overlay = this._ensure();
     overlay.querySelector('[data-foundation="title"]').textContent =
       `Fondations — ${srv.name || "serveur"}`;
-    overlay.querySelector('[data-foundation="body"]').innerHTML = this._bodyHtml(srv, ed);
+    overlay.querySelector('[data-foundation="body"]').innerHTML = this._bodyHtml(srv, ed, accent);
     overlay.classList.add("open");
   },
 
@@ -42,16 +48,25 @@ export const FoundationView = {
   },
 
   /* ---- Rendu (lecture seule) ---- */
-  _bodyHtml(srv, ed) {
+  _bodyHtml(srv, ed, accent) {
     const esc = Utils.escHtml;
     const indice = srv.indice != null ? ` · Indice ${esc(srv.indice)}` : "";
+    const foundationNodes = ed.foundationNodes();
+
+    const plan = FoundationGen.build({
+      nodes: foundationNodes.map((n) => ({ id: n.id, label: n.label, isTarget: n.id === "archive" })),
+      edges: ed.foundationEdges(),
+      seed: srv.id,
+      accent,
+      fluid: true,
+      interactive: true,
+    });
 
     const paradigm = srv.sculpture
       ? `<blockquote class="foundation-paradigm">${esc(srv.sculpture)}</blockquote>`
       : `<p class="foundation-hint">Aucune sculpture définie — le paradigme reste à décrire.</p>`;
 
-    const nodes = ed
-      .foundationNodes()
+    const nodes = foundationNodes
       .map((node) => {
         const actions = node.actions.length
           ? `<ul class="foundation-actions">${node.actions
@@ -66,7 +81,7 @@ export const FoundationView = {
               )
               .join("")}</ul>`
           : `<p class="foundation-hint">Aucune action connue sur ce nœud.</p>`;
-        return `<section class="foundation-node">
+        return `<section class="foundation-node" id="foundation-node-${esc(node.id)}">
             <h4 class="foundation-node-title">${esc(node.label)}</h4>
             <p class="foundation-node-role">${esc(node.role)}</p>
             ${actions}
@@ -77,6 +92,7 @@ export const FoundationView = {
     return `<div class="foundation-lead">
         <span class="foundation-sub">Donjon interne de 7 nœuds${indice}</span>
       </div>
+      <div class="foundation-plan">${plan}</div>
       <section class="foundation-meta">
         <h4 class="foundation-node-title">Paradigme</h4>
         ${paradigm}
@@ -116,7 +132,18 @@ export const FoundationView = {
         return;
       }
       const btn = e.target.closest("[data-foundation-action]");
-      if (btn && btn.dataset.foundationAction === "close") this.hide();
+      if (btn && btn.dataset.foundationAction === "close") {
+        this.hide();
+        return;
+      }
+      // Tap sur un nœud du plan (FoundationGen, interactive:true) → défile
+      // jusqu'à sa section d'actions, sans état ni sélection à retenir.
+      const node = e.target.closest("[data-node]");
+      if (node) {
+        overlay
+          .querySelector(`#foundation-node-${CSS.escape(node.dataset.node)}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     });
     document.addEventListener("keydown", (e) => {
       if (!overlay.classList.contains("open")) return;

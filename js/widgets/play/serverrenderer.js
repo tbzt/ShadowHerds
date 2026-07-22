@@ -430,6 +430,7 @@ export const ServerRenderer = {
         </div>
         <div class="ic-rows">${rows}</div>
         ${surveillance}
+        ${this.varianceBlock(srv)}
       </div>`;
   },
 
@@ -556,6 +557,63 @@ export const ServerRenderer = {
         <div class="ss-actions">${sr5Extra}</div>
         ${convergence}
         ${resonanceHint}
+        ${log ? `<div class="ss-log">${log}</div>` : ""}
+      </div>`;
+  },
+
+  /* ---- Variance des Fondations (lot B4, SR5+SR6 seulement) ----
+     Gaté sur `hasFoundation()` (Anarchy → chaîne vide). Deux mécaniques
+     par édition (BT1 § 1.c), jamais aplaties : SR6 = stepper +1..+5 ;
+     SR5 = deux boutons de test à dés. Le choix se fait sur la présence
+     de `foundationVarianceTest()` (donnée), jamais sur `srv.edition`. */
+  varianceBlock(srv) {
+    const M = Matrix.use(srv.edition);
+    if (!M.hasFoundation()) return "";
+    const esc = CardRenderer._esc.bind(CardRenderer);
+    const intr = this._intr(srv);
+    const variance = intr.variance || 0;
+    const threshold = M.foundationVarianceThreshold(srv);
+    const pct = Utils.clamp((variance / threshold) * 100, 0, 100);
+    const zone = pct >= 100 ? "conv" : pct >= 75 ? "hot" : pct >= 50 ? "warm" : "cool";
+
+    const fmt = (t) => {
+      const d = new Date(t);
+      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    };
+    const log = (intr.varianceLog || [])
+      .slice(0, 6)
+      .map(
+        (e) =>
+          `<div class="ss-log-item"><span>${fmt(e.t)}</span> <b>${e.d >= 0 ? "+" : ""}${e.d}</b> ${esc(e.label)}</div>`,
+      )
+      .join("");
+
+    const test = M.foundationVarianceTest();
+    const actions = test
+      ? `<button class="btn-secondary btn-small" data-action="add-variance-test" data-id="${srv.id}" data-mode="mineure"
+          title="Réserve Firewall, seuil 4">Test mineur</button>
+        <button class="btn-secondary btn-small" data-action="add-variance-test" data-id="${srv.id}" data-mode="extreme"
+          title="Réserve Indice + Firewall, seuil 4">Test extrême</button>`
+      : [1, 2, 3, 4, 5]
+          .map(
+            (n) =>
+              `<button class="btn-secondary btn-small" data-action="add-variance" data-id="${srv.id}" data-n="${n}">+${n}</button>`,
+          )
+          .join("");
+
+    return `
+      <div class="ss-block">
+        <div class="ss-head">
+          <span class="monitor-label">Variance des Fondations</span>
+          <span class="ss-value ${zone}">${variance} / ${threshold}</span>
+        </div>
+        <div class="ss-gauge"><div class="ss-fill ${zone}" style="width:${pct}%"></div></div>
+        <div class="ss-actions">
+          <span class="ss-actions-label" title="Agir hors du paradigme du serveur monte la Variance">Variance :</span>
+          ${actions}
+          <button class="btn-icon-tiny" data-action="undo-variance" data-id="${srv.id}" title="Annuler le dernier ajout">⌫</button>
+          <button class="btn-icon-tiny" data-action="reset-variance" data-id="${srv.id}" title="Nouvelle plongée : Variance à zéro"><svg class="icon" aria-hidden="true"><use href="#ic-reset"></use></svg></button>
+        </div>
         ${log ? `<div class="ss-log">${log}</div>` : ""}
       </div>`;
   },

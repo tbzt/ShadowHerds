@@ -12,6 +12,24 @@ commit.
 
 ## [Non publié]
 
+## [1.97.0] — 2026-07-22
+
+### Ajouté
+
+- **Les Fondations d'un serveur deviennent un plan et une Variance vivante.**
+  La fiche « ⛓ Plonger dans les Fondations » (SR5/SR6) affiche désormais un
+  **plan généré** des 7 nœuds : en SR6, le vrai squelette de pistes du livre
+  (Portail↔Archive↔Échafaudage/Sécurité/Régie↔Centre de contrôle↔Nœud vide) ;
+  en SR5, les 7 nœuds seuls — le livre n'imprime aucune table de pistes, elles
+  restent narratives. Touchez un nœud pour sauter à ses actions. Et pendant un
+  run profond, un **tracker de Variance** rejoint le Score de Surveillance
+  dans le tiroir Matrice : en SR6, un stepper +1 à +5 avec seuil `80 −
+  5×Indice` ; en SR5, un vrai **test de dés** (Firewall ou Indice+Firewall,
+  seuil 4) qui déclenche l'alerte sur un succès, ajoute les succès sur un
+  échec, retranche 1 sur une complication et divise le décompte par deux sur
+  un échec critique — les deux mécaniques du livre, jamais aplaties en une
+  seule.
+
 ### Corrigé
 
 - **Pied de carte réaligné.** Le pied (★ / 🏷 / actions) débordait sur deux

@@ -773,6 +773,25 @@ export const Matrix = {
     return this._foundation().varianceNote;
   },
 
+  /** Pistes stables du donjon ({from,to}[]) — [] en SR5 (pas de table au
+      livre, pistes narratives arbitrées par le MJ, cf. BT1 § 1.d). */
+  foundationEdges() {
+    return this._foundation().edges || [];
+  },
+
+  /** Seuil d'alerte de Variance, DÉJÀ RÉSOLU pour ce serveur (SR5 = 40 fixe,
+      SR6 = 80 − 5×Indice) — jamais un nombre en dur côté renderer. */
+  foundationVarianceThreshold(srv) {
+    return this._foundation().varianceThreshold(srv.indice);
+  },
+
+  /** Config du test de variance à dés (SR5 seulement : {threshold,
+      poolMineure(srv), poolExtreme(srv)}) — absent en SR6, qui n'a qu'un
+      stepper manuel. Présence/absence pilote l'UI, jamais `App.edition`. */
+  foundationVarianceTest() {
+    return this._foundation().varianceTest || null;
+  },
+
   /** Sélection aléatoire cohérente des CI (Patrouilleuse toujours). */
   pickICs(indice, sev) {
     const tiers = this.IC_POOLS[this._edition] || this.IC_POOLS.anarchy2;

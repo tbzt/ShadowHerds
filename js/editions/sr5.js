@@ -740,6 +740,23 @@ export const EditionSR5 = {
         "Variance : Décompte secret tenu par le MJ (test de variance seuil 4 ; réserve " +
         "Firewall pour une variance mineure, Indice + Firewall pour une extrême). " +
         "Alerte quand le Décompte atteint 40 — « le Monde se retourne contre vous ».",
+      /** Alerte à 40, décompte fixe (BT1 § 1.c, Data Trails p.123) — à la
+          différence de SR6, ce n'est pas une formule dépendant de l'Indice. */
+      varianceThreshold() {
+        return 40;
+      },
+      /** Test de variance (BT1 § 1.c) : seuil TOUJOURS 4, réserve Firewall
+          (mineure) ou Indice + Firewall (extrême) — jamais composé par un
+          accesseur neutre, ces réserves sont spécifiques à ce test. */
+      varianceTest: {
+        threshold: 4,
+        poolMineure(srv) {
+          return (srv.attrs || {}).firewall || 0;
+        },
+        poolExtreme(srv) {
+          return srv.indice + ((srv.attrs || {}).firewall || 0);
+        },
+      },
       nodes: [
         {
           id: "portail",

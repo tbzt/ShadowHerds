@@ -1642,6 +1642,23 @@ body.reordering .reorder-handle {
   font-size: var(--fs-sm);
   color: var(--text-dim);
 }
+/* Plan généré (B2, FoundationGen) — même recette que .matrix-topo-strip
+   (combat-tracker.css) : SVG fluide, coins arrondis, focus visible sur
+   les nœuds tapables. */
+.foundation-plan {
+  width: 100%;
+  margin: 0.6rem 0 0.9rem;
+}
+.foundation-plan svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius);
+}
+.foundation-plan [data-node]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 .foundation-section-title {
   font-family: var(--font-display);
   font-weight: 700;

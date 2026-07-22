@@ -884,6 +884,30 @@ export const EditionSR6 = {
         "de variance. Alerte à partir de 80 − (5 × Indice du serveur) ; en alerte, les " +
         "Fondations attaquent chaque avatar chaque round (réserve Indice × 2, dégâts " +
         "physiques ½ Indice).",
+      /** Seuil d'alerte, BT1 § 1.c (Hacker Vaillant p.139) : 80 − 5×Indice. */
+      varianceThreshold(indice) {
+        return 80 - 5 * indice;
+      },
+      /** Pistes stables du donjon (BT1 § 2, Hacker Vaillant p.139-142) —
+          squelette fixe : Échafaudage/Sécurité/Régie sont chacun reliés aux
+          2 AUTRES nœuds opérationnels (il n'y en a que 2 sur 3, donc rien
+          à tirer au hasard malgré la formulation « 2 nœuds opérationnels »
+          du livre). Table 2D6 d'orientation des pistes = arbitrage MJ en
+          direct, jamais motorisée ici. */
+      edges: [
+        { from: "portail", to: "archive" },
+        { from: "portail", to: "vide" },
+        { from: "archive", to: "echafaudage" },
+        { from: "archive", to: "securite" },
+        { from: "archive", to: "regie" },
+        { from: "echafaudage", to: "controle" },
+        { from: "securite", to: "controle" },
+        { from: "regie", to: "controle" },
+        { from: "echafaudage", to: "securite" },
+        { from: "echafaudage", to: "regie" },
+        { from: "securite", to: "regie" },
+        { from: "controle", to: "vide" },
+      ],
       nodes: [
         {
           id: "portail",

@@ -508,6 +508,11 @@ export const TourSteps = {
       title: "Le graphe des relations, éditable",
       body: "La lentille « ◈ Liens » s'ouvre désormais depuis n'importe quelle fiche, PNJ compris, pour tisser les relations PNJ↔PNJ. Touchez un nœud : sa fiche s'affiche sur le côté (touchez-en un autre, elle s'échange). Stylez le réseau comme un schéma heuristique — un lien reçoit une couleur, une direction (→, ←, ↔), des pointillés et un mot (« doit une faveur ») ; un nœud reçoit une couleur qui le suit partout. Une flèche reste de la fiction, jamais une marque de jeu. Sur téléphone, la fiche passe en feuille basse sous le graphe.",
     },
+    {
+      id: "wn-foundation-playable", anchor: "nav-matrix", tours: ["whatsnew"], since: "1.97.0", fallback: "center",
+      title: "Les Fondations, en plan et en Variance",
+      body: "La fiche « ⛓ Plonger dans les Fondations » (SR5/SR6) affiche maintenant un plan généré des 7 nœuds : en SR6, le vrai squelette de pistes du livre ; en SR5, les 7 nœuds seuls — le livre n'imprime aucune table, elles restent narratives. Touchez un nœud pour sauter à ses actions. Et pendant un run profond, un tracker de Variance rejoint le Score de Surveillance dans le tiroir Matrice : un stepper +1 à +5 en SR6 (seuil 80 − 5×Indice), un vrai test de dés en SR5 (Firewall ou Indice+Firewall, seuil 4, avec ses 4 issues du livre). Anarchy n'a pas de Fondation : rien n'y apparaît.",
+    },
   ],
 };
 

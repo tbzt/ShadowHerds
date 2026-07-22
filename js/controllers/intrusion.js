@@ -43,6 +43,12 @@ export const Intrusion = {
       marksHeld: 0,
       ss: 0,
       ssLog: [],
+      // Variance des Fondations (lot B4) — décompte séparé du SS, même
+      // portée scène-scopée (cf. FONDATIONS_SERVEUR_BT1.md § 1.c : décompte
+      // « par intrus », pas par serveur en général, mais l'app n'a qu'un
+      // infiltrateur courant par serveur, comme pour SS/marks).
+      variance: 0,
+      varianceLog: [],
       lastRollT: 0,
       illUser: 0,
       illAdmin: 0,
@@ -280,6 +286,78 @@ export const Intrusion = {
     intr.lastRollT = 0;
     this._persist();
     toast("SS remis à zéro (reboot : perte des marks, choc d'éjection en RV).");
+  },
+
+  /* ---- Variance des Fondations (lot B4, SR5+SR6 seulement) ----
+     Deux mécaniques distinctes par édition (BT1 § 1.c), jamais aplaties :
+     SR6 = stepper manuel (+1..+5, comme SS) ; SR5 = test de dés réel
+     (réserve Firewall/Indice+Firewall vs seuil 4, 4 issues possibles).
+     Le choix de mécanique se fait sur la PRÉSENCE de
+     `Matrix.foundationVarianceTest()` (donnée), jamais sur `App.edition`. */
+  _pushVariance(intr, srv, delta, label) {
+    intr.variance = Math.max(0, intr.variance + delta);
+    Debug.log("servers", "Variance", { server: srv.name, delta, total: intr.variance, label });
+    intr.varianceLog.unshift({ t: Date.now(), d: delta, label });
+    if (intr.varianceLog.length > 30) intr.varianceLog.length = 30;
+  },
+
+  /** SR6 : +1 à +5 par action hors-paradigme, manuel (BT1 § 1.c). */
+  addVariance(id, delta, label) {
+    const srv = this._get(id);
+    const intr = this._state(id);
+    if (!srv || !intr) return;
+    this._pushVariance(intr, srv, delta, label || "action hors-paradigme");
+    this._persist();
+  },
+
+  /** SR5 : test de variance (BT1 § 1.c, Data Trails p.123) — seuil TOUJOURS
+      4, réserve Firewall (mineure) ou Indice + Firewall (extrême).
+      Succès (hits ≥ 4) ⇒ alerte immédiate. Échec ⇒ les succès s'ajoutent au
+      décompte. Complication (glitch) ⇒ −1. Échec critique (critGlitch) ⇒
+      décompte divisé par 2. `mode` ∈ "mineure" | "extreme". */
+  addVarianceTest(id, mode) {
+    const srv = this._get(id);
+    const intr = this._state(id);
+    if (!srv || !intr) return;
+    const test = Matrix.use(srv.edition).foundationVarianceTest();
+    if (!test) return; // SR6 n'a pas cette mécanique
+    const pool = mode === "extreme" ? test.poolExtreme(srv) : test.poolMineure(srv);
+    const res = Dice.computeRoll(pool);
+    DiceRoller.show(res, {
+      label: `Test de variance (${mode === "extreme" ? "extrême" : "mineure"})`,
+      who: srv.name,
+    });
+    if (res.critGlitch) {
+      const before = intr.variance;
+      intr.variance = Math.floor(before / 2);
+      this._pushVariance(intr, srv, intr.variance - before, "échec critique (÷2)");
+    } else if (res.glitch) {
+      this._pushVariance(intr, srv, -1, "complication (−1)");
+    } else if (res.hits >= test.threshold) {
+      intr.alerted = true;
+      this._pushVariance(intr, srv, 0, `test réussi (${res.hits} succès) — alerte immédiate`);
+    } else {
+      this._pushVariance(intr, srv, res.hits, `test raté (+${res.hits} succès)`);
+    }
+    this._persist();
+  },
+
+  undoVariance(id) {
+    const intr = this._state(id);
+    if (!intr || !intr.varianceLog.length) return;
+    const last = intr.varianceLog.shift();
+    intr.variance = Math.max(0, intr.variance - last.d);
+    this._persist();
+  },
+
+  /** Nouvelle tentative : la Variance de CETTE plongée repart à zéro. */
+  resetVariance(id) {
+    const intr = this._state(id);
+    if (!intr) return;
+    if (!confirm("Remettre la Variance des Fondations à zéro ?")) return;
+    intr.variance = 0;
+    intr.varianceLog = [];
+    this._persist();
   },
 
   /** SR6 : compteurs d'accès illégaux maintenus. */

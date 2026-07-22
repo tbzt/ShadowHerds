@@ -224,7 +224,8 @@ export const Servers = Object.assign(
     showFoundation(id) {
       const srv = this.find(id);
       if (!srv) return;
-      FoundationView.open(srv);
+      const accent = (App.editionModule && App.editionModule.mapAccent) || "#35e0e6";
+      FoundationView.open(srv, { accent });
     },
 
     /* ---- Spider (decker de sécurité lié) — fabrication déléguée à ServerGen ---- */
@@ -561,6 +562,18 @@ export const Servers = Object.assign(
             break;
           case "reset-ss":
             Intrusion.resetSS(id);
+            break;
+          case "add-variance":
+            Intrusion.addVariance(id, n());
+            break;
+          case "add-variance-test":
+            Intrusion.addVarianceTest(id, el.dataset.mode);
+            break;
+          case "undo-variance":
+            Intrusion.undoVariance(id);
+            break;
+          case "reset-variance":
+            Intrusion.resetVariance(id);
             break;
           case "dieu":
             Intrusion.dieu(id, el.dataset.k, n());
