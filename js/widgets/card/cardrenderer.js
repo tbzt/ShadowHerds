@@ -256,6 +256,7 @@ export const CardRenderer = {
       <div class="contact-desc">${this._esc(pnj.desc)}</div>
       <div class="contact-trait">⚠ <span${traitAttrs}>${this._esc(pnj.trait)}</span></div>
       ${this._flavorSection(pnj, deps)}
+      ${this._factionsSection(pnj)}
     </div>`;
   },
 
@@ -430,6 +431,7 @@ export const CardRenderer = {
           : `<div class="pc-light-empty">Fiche légère — nom seul. « Éditer » pour joueur/notes.</div>`
       }
       ${this._contactLinksSection(pnj)}
+      ${this._factionsSection(pnj)}
       ${this._backlinksSection(pnj)}
       ${this._dossiersSection(pnj)}
     </div>`;
@@ -546,6 +548,27 @@ export const CardRenderer = {
     return `<div class="card-section">
       <div class="card-section-label">Rangé dans</div>
       <div class="card-section-content">${items}</div>
+    </div>`;
+  },
+
+  /** Section « Factions » — la bande d'appartenance transverse (Le Monde et le
+      Jeu, A1). Dérive `FactionStore.factionsOf(id)` ; TOUJOURS présente : le « ＋ »
+      invite à ranger sans jamais l'imposer (état vide non bloquant). Chip =
+      pastille couleur + nom + ✕ retirer ; « ＋ » ouvre `FactionPicker`. Déléguée
+      `data-action="faction-*"` (patron ContentModal, aucun handler inline). */
+  _factionsSection(pnj) {
+    if (typeof FactionStore === "undefined") return "";
+    const id = this._esc(pnj.id);
+    const chips = FactionStore.factionsOf(pnj.id)
+      .map((f) => {
+        const dot = `<span class="faction-dot"${f.color ? ` style="background:${this._esc(f.color)}"` : ""}></span>`;
+        return `<span class="tag faction-chip">${dot}${this._esc(f.name)}<button type="button" class="faction-chip-x" data-action="faction-remove" data-faction="${this._esc(f.id)}" data-id="${id}" title="Retirer de « ${this._esc(f.name)} »" aria-label="Retirer de la faction">✕</button></span>`;
+      })
+      .join("");
+    const add = `<button type="button" class="tag faction-add" data-action="faction-open-picker" data-id="${id}" title="Ajouter à une faction">＋ Faction</button>`;
+    return `<div class="card-section">
+      <div class="card-section-label">Factions</div>
+      <div class="card-section-content">${chips}${add}</div>
     </div>`;
   },
 
@@ -742,6 +765,7 @@ export const CardRenderer = {
       this._creatureLoreSection(pnj) +
       this._situationalMods(pnj) +
       (pnj.isPC ? this._contactLinksSection(pnj) : "") +
+      this._factionsSection(pnj) +
       this._backlinksSection(pnj) +
       this._dossiersSection(pnj);
     if (tail) {

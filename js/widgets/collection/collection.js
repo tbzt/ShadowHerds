@@ -119,6 +119,8 @@ export const Collection = {
         // l'entité, mais sont capturées pour être rendues à l'annulation.
         const purgedEdges =
           typeof RelationsStore !== "undefined" ? RelationsStore.purgeEntities(doomed) : [];
+        const purgedFactions =
+          typeof FactionStore !== "undefined" ? FactionStore.purgeEntities(doomed) : [];
         this.render();
         if (!entity) return;
 
@@ -146,6 +148,7 @@ export const Collection = {
           }
           this.save();
           if (typeof RelationsStore !== "undefined") RelationsStore.addEdges(purgedEdges);
+          if (typeof FactionStore !== "undefined") FactionStore.addMemberships(purgedFactions);
           this.render();
         };
         toastUndo(labels.removed(entity), restore);
@@ -176,6 +179,8 @@ export const Collection = {
         this.save();
         const purgedEdges =
           typeof RelationsStore !== "undefined" ? RelationsStore.purgeEntities(doomed) : [];
+        const purgedFactions =
+          typeof FactionStore !== "undefined" ? FactionStore.purgeEntities(doomed) : [];
         this.render();
 
         const restore = () => {
@@ -193,6 +198,7 @@ export const Collection = {
           }
           this.save();
           if (typeof RelationsStore !== "undefined") RelationsStore.addEdges(purgedEdges);
+          if (typeof FactionStore !== "undefined") FactionStore.addMemberships(purgedFactions);
           this.render();
         };
         const n = snapshot.length;

@@ -348,6 +348,7 @@ export const App = {
     Characters.load();
     ContactsBook.load();
     RelationsStore.load(); // arêtes entité↔entité (liens contact…) de l'édition
+    FactionStore.load(); // rosters transverses (factions) de l'édition
     Servers.initPanel(); // charge + migre + câble la délégation serveur (#app)
     DossierBar.init(); // Dossiers chargés/synchronisés + destination courante
     Encounter.load();

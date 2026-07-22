@@ -95,6 +95,16 @@ export const CardZones = {
       render: (pnj, ctx) => ctx.r._relationsLinkSection(pnj),
     },
     {
+      // « Factions » — l'appartenance transverse du Monde (roster réutilisable),
+      // dérivée de FactionStore. Sur TOUTE entité (PNJ/PJ/contact) : une faction
+      // traverse les types. Sœur de « Liens » (le tissu social), avant les
+      // backlinks narratifs.
+      id: "factions",
+      label: "Factions",
+      column: "fiction",
+      render: (pnj, ctx) => ctx.r._factionsSection(pnj),
+    },
+    {
       id: "backlinks",
       label: "Mentionné dans",
       column: "fiction",

@@ -40,6 +40,7 @@ export const Backup = {
     "servers_all",
     "servers_groups",
     "entity_relations", // VIS-15 B0 : registre d'arêtes (liens contact…) par édition
+    "entity_factions", // Monde et Jeu A1 : rosters transverses (factions) par édition
     "dossiers", // arbre de dossiers (structure {id,name,parentId}) — CH sync
     "encounter_by_dossier", // R1 (Ranger la run) : rencontres rangées par dossier
     "notebooks", // R2 (Ranger la run) : carnets de notes par dossier
@@ -300,6 +301,28 @@ export const Backup = {
         }
       }
       this._writeRaw(edition, groupKey, current);
+    }
+
+    // Factions (rosters transverses) : fusion par id, avec UNION des `members`
+    // (comme les groupes ci-dessus, pas comme une liste par id atomique) — sinon
+    // une faction éditée sur deux appareils perdrait la moitié de son roster.
+    // Métadonnées (nom/couleur/ancre) : la version locale gagne (non destructif).
+    if (Array.isArray(incoming.entity_factions)) {
+      const current = this._readRaw(edition, "entity_factions", []);
+      const byId = new Map(current.map((f) => [f && f.id, f]));
+      for (const inc of incoming.entity_factions) {
+        if (!inc || !inc.id) continue;
+        const local = byId.get(inc.id);
+        if (!local) {
+          current.push(inc);
+          byId.set(inc.id, inc);
+        } else if (Array.isArray(local.members) && Array.isArray(inc.members)) {
+          const set = new Set(local.members);
+          inc.members.forEach((m) => set.add(m));
+          local.members = [...set];
+        }
+      }
+      this._writeRaw(edition, "entity_factions", current);
     }
 
     // Rencontres rangées par dossier : carte dossierId→scène, un dossier

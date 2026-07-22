@@ -1216,17 +1216,20 @@ body.reordering .reorder-handle {
 }
 
 /* ---- Popover : liste de groupes à cocher (multi-appartenance) ---- */
-#group-picker-backdrop {
+#group-picker-backdrop,
+#faction-picker-backdrop {
   display: none;
   position: fixed;
   inset: 0;
   z-index: var(--z-popover-backdrop);
   background: transparent;
 }
-#group-picker-backdrop.open {
+#group-picker-backdrop.open,
+#faction-picker-backdrop.open {
   display: block;
 }
-#group-picker-panel {
+#group-picker-panel,
+#faction-picker-panel {
   position: fixed;
   width: 240px;
   max-height: 320px;
@@ -1245,7 +1248,8 @@ body.reordering .reorder-handle {
     opacity var(--dur-base) ease,
     transform var(--dur-base) ease;
 }
-#group-picker-panel.open {
+#group-picker-panel.open,
+#faction-picker-panel.open {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
@@ -1310,6 +1314,42 @@ body.reordering .reorder-handle {
 .group-picker-new:hover {
   border-color: var(--accent2);
   color: var(--accent2);
+}
+
+/* ---- Bande « Factions » (fiche) + rangées du picker — Le Monde et le Jeu ---- */
+.faction-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent2);
+  flex-shrink: 0;
+}
+.faction-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.faction-chip-x {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0 1px;
+  font-size: var(--fs-2xs);
+  line-height: 1;
+}
+.faction-chip-x:hover {
+  color: var(--danger);
+}
+.faction-add {
+  cursor: pointer;
+  border-style: dashed;
+  color: var(--text-dim);
+}
+.faction-add:hover {
+  color: var(--accent2);
+  border-color: var(--accent2);
 }
 
 /* ---- Cards contacts persistantes ----

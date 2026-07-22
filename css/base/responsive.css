@@ -413,11 +413,13 @@
     padding: 0.65rem var(--sp-4);
   }
 
-  /* ---- Popover groupes (contacts) en feuille basse ---- */
-  #group-picker-backdrop.open {
+  /* ---- Popover groupes/factions en feuille basse ---- */
+  #group-picker-backdrop.open,
+  #faction-picker-backdrop.open {
     background: rgba(0, 0, 0, 0.55);
   }
-  #group-picker-panel {
+  #group-picker-panel,
+  #faction-picker-panel {
     top: auto !important;
     left: 0 !important;
     right: 0;
@@ -432,7 +434,8 @@
       transform var(--dur-slow) var(--ease-emphasized),
       opacity var(--dur-base);
   }
-  #group-picker-panel.open {
+  #group-picker-panel.open,
+  #faction-picker-panel.open {
     transform: translateY(0);
   }
   .group-picker-head {
