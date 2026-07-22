@@ -77,6 +77,14 @@ export const WorldState = {
     for (const [key, members] of Object.entries(groups))
       if (scopeSet.has(key) && Array.isArray(members)) for (const id of members) pjIds.add(id);
     const nameById = new Map((Storage.get("contacts_all", []) || []).map((c) => [c.id, c.name]));
+
+    // Stance de campagne (P3c) : arêtes favor/burned posées au débrief, scopées
+    // à la campagne (`from` ∈ portée). Un contact grillé/redevable, dérivé.
+    const stanceByContact = new Map();
+    for (const type of ["favor", "burned"])
+      for (const e of RS.edgesWhere({ type }))
+        if (scopeSet.has(e.from)) stanceByContact.set(e.to, type);
+
     const byContact = new Map();
     for (const pjId of pjIds) {
       for (const l of RS.contactLinksOf(pjId)) {
@@ -93,6 +101,7 @@ export const WorldState = {
           name: nameById.get(l.contactId) || "un contact",
           relation: l.relation || "",
           loyalty: l.loyalty ?? null,
+          stance: stanceByContact.get(l.contactId) || null,
         });
       }
     }

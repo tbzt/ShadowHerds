@@ -127,9 +127,51 @@ export const Debrief = {
       <div class="debrief-section-title">Paie &amp; progression${team.length ? ` <span class="debrief-team-count">× ${team.length} PJ</span>` : ""}</div>
       <div class="debrief-tracks">${rows}</div>
       ${repNote}
+      ${this._relationsHtml(runId)}
       <div class="debrief-section-title">Ce que le run a laissé</div>
       <p class="debrief-hint">Contact grillé ou gagné, corpo fâchée, faveur due… — ce texte rejoint le carnet du run, daté.</p>
       <textarea class="debrief-notes" data-debrief="notes" rows="5" placeholder="Ex. « Le fixer Hachette est grillé ; la decker Ø-Mercy nous doit une faveur ; Ares a ouvert un dossier sur l'équipe. »"></textarea>`;
+  },
+
+  /** Racine de campagne d'un run (remontée `parentId`) — la portée des arêtes
+      de stance grillé/redevable (elles valent pour toute la campagne). */
+  _campaignRoot(runId) {
+    let node = Dossiers.get(runId);
+    for (let i = 0; node && node.parentId && i < 50; i++) node = Dossiers.get(node.parentId);
+    return node ? node.id : runId;
+  },
+
+  /** VIS-12 (P3c) — « Relations de campagne » : marquer chaque contact connu
+      grillé (⚑, ne reviendra plus) ou redevable (★, vous doit une faveur). Lu de
+      `WorldState.factsFor(racine).contacts` (stance pré-remplie) ; écrit en arêtes
+      au `_apply`. Section absente si l'équipe n'a aucun contact connu. */
+  _relationsHtml(runId) {
+    const esc = CardRenderer._esc;
+    const contacts =
+      typeof WorldState !== "undefined"
+        ? WorldState.factsFor(this._campaignRoot(runId)).contacts
+        : [];
+    if (!contacts.length) return "";
+    // Réutilise des classes existantes (0 CSS neuve, `shadows-contacts.css` étant
+    // contendu) : layout `.debrief-row`, état actif via `.btn-primary` vs
+    // `.btn-secondary` (swappé au clic).
+    const rows = contacts
+      .map((c) => {
+        const cls = (v) => "btn-small " + ((c.stance || "") === v ? "btn-primary" : "btn-secondary");
+        const rel = c.relation ? ` (${esc(c.relation)})` : "";
+        return `<div class="debrief-row debrief-rel-row" data-contact="${esc(c.id)}">
+          <span class="debrief-row-label">${esc(c.name)}${rel}</span>
+          <span class="debrief-rel-stances">
+            <button type="button" class="${cls("")}" data-debrief-stance="">neutre</button>
+            <button type="button" class="${cls("favor")}" data-debrief-stance="favor">★ doit</button>
+            <button type="button" class="${cls("burned")}" data-debrief-stance="burned">⚑ grillé</button>
+          </span>
+        </div>`;
+      })
+      .join("");
+    return `<div class="debrief-section-title">Relations de campagne</div>
+      <p class="debrief-hint">Un contact grillé ne sera plus proposé ; un contact qui vous doit une faveur peut resurgir.</p>
+      <div class="debrief-relations" data-debrief="relations">${rows}</div>`;
   },
 
   /* ---- Application (via UI + Notebooks, jamais de Storage direct) ---- */
@@ -167,9 +209,29 @@ export const Debrief = {
       Notebooks.set(runId, prev ? `${prev}\n\n${section}` : section);
     }
 
+    // 3. Relations de campagne (P3c) → arêtes favor/burned scopées à la campagne
+    //    (`from` = racine). On retire les deux types puis on repose le choisi ;
+    //    « neutre » efface. WorldState les relira comme `stance`.
+    let relChanged = 0;
+    if (typeof RelationsStore !== "undefined") {
+      const root = this._campaignRoot(runId);
+      for (const row of overlay.querySelectorAll('[data-debrief="relations"] .debrief-rel-row')) {
+        const cid = row.dataset.contact;
+        const active = row.querySelector("[data-debrief-stance].btn-primary");
+        const stance = active ? active.dataset.debriefStance : "";
+        const had =
+          RelationsStore.edgesWhere({ from: root, to: cid, type: "favor" }).length ||
+          RelationsStore.edgesWhere({ from: root, to: cid, type: "burned" }).length;
+        RelationsStore.removeWhere({ from: root, to: cid, type: "favor" });
+        RelationsStore.removeWhere({ from: root, to: cid, type: "burned" });
+        if (stance) RelationsStore.upsert({ from: root, to: cid, type: stance });
+        if (stance || had) relChanged++;
+      }
+    }
+
     this.hide();
 
-    if (written || notes) {
+    if (written || notes || relChanged) {
       // Perche vers le carnet (socle VIS-2 `toastAction`) : y consigner d'un clic.
       toastAction(`Débrief de « ${runName} » enregistré.`, "Voir le carnet", () => {
         DossierBar.select(runId);
@@ -204,6 +266,17 @@ export const Debrief = {
     overlay.addEventListener("click", (e) => {
       if (e.target === overlay) {
         this.hide();
+        return;
+      }
+      // P3c : sélection exclusive de la stance d'un contact (neutre/favor/burned).
+      const stanceBtn = e.target.closest("[data-debrief-stance]");
+      if (stanceBtn) {
+        const row = stanceBtn.closest(".debrief-rel-row");
+        if (row)
+          row.querySelectorAll("[data-debrief-stance]").forEach((b) => {
+            b.classList.toggle("btn-primary", b === stanceBtn);
+            b.classList.toggle("btn-secondary", b !== stanceBtn);
+          });
         return;
       }
       const btn = e.target.closest("[data-debrief-action]");
