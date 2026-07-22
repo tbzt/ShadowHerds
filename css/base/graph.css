@@ -6,18 +6,26 @@
    ============================================================ */
 
 .graph-modal {
-  width: min(920px, 94vw);
-  max-width: 94vw;
+  width: min(1080px, 96vw);
+  max-width: 96vw;
 }
 
 .graph-body {
   padding: 0;
 }
 
+/* Split (Lot 2) : le canvas à gauche, la fiche du nœud sélectionné à droite.
+   Le canvas prend la place restante, le panneau une colonne fixe. */
+.graph-split {
+  display: flex;
+  align-items: stretch;
+}
+
 /* Le canvas : une surface dimensionnée AVANT le montage (le moteur lit
    clientWidth/Height). Hauteur responsive, jamais de scroll horizontal. */
 .graph-canvas {
-  width: 100%;
+  flex: 1 1 0;
+  min-width: 0;
   height: min(66vh, 560px);
   min-height: 300px;
   overflow: hidden;
@@ -25,6 +33,39 @@
   background:
     radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.03), transparent 70%),
     var(--surface-1, #0e1620);
+}
+
+/* Panneau latéral : la fiche vivante du nœud sélectionné, scrollable. */
+.graph-inspector {
+  flex: 0 0 304px;
+  max-width: 304px;
+  height: min(66vh, 560px);
+  overflow-y: auto;
+  padding: 12px;
+  border-left: 1px solid var(--border, #2a3a49);
+  background: var(--surface-1, #0e1620);
+}
+.graph-inspector.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.graph-hint {
+  margin: 0;
+  color: var(--text-dim, #9fb0c0);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  text-align: center;
+}
+.graph-identity-name {
+  font-weight: 600;
+  color: var(--text, #dfe8f0);
+}
+.graph-identity-type {
+  margin-top: 2px;
+  color: var(--text-dim, #9fb0c0);
+  font-size: 0.78rem;
+  text-transform: capitalize;
 }
 
 .graph-svg {
@@ -66,6 +107,12 @@
 }
 .graph-node:hover .graph-node-disc {
   stroke-width: 2.6;
+}
+/* Nœud sélectionné : anneau d'accent marqué (fiche affichée dans le panneau).
+   Distinct du survol/glisser — c'est un état persistant, pas transitoire. */
+.graph-node.selected .graph-node-disc {
+  stroke-width: 3.2;
+  filter: drop-shadow(0 0 6px var(--accent, #35e0e6));
 }
 .graph-node-glyph {
   font-size: 15px;
@@ -149,4 +196,23 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .graph-node.weave-target .graph-node-disc { animation: none; }
+}
+
+/* Mobile : le panneau passe en feuille basse sous le canvas (téléphone = la
+   cible ; graphe + fiche côte à côte n'y tiennent pas). Le canvas rétrécit. */
+@media (max-width: 720px) {
+  .graph-split {
+    flex-direction: column;
+  }
+  .graph-canvas {
+    height: 42vh;
+  }
+  .graph-inspector {
+    flex-basis: auto;
+    max-width: none;
+    width: 100%;
+    height: 44vh;
+    border-left: none;
+    border-top: 1px solid var(--border, #2a3a49);
+  }
 }

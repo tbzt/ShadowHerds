@@ -5,14 +5,17 @@
    ------------------------------------------------------------
    Coquille .modal-overlay (patron FoundationView/debrief, thème par
    édition hérité), dans laquelle GraphEngine rend la projection de
-   GraphProjections. Un tap sur un nœud ouvre `CardPeek.open` PAR-DESSUS
-   (jamais d'éjection — prérequis VIS-14). Se re-projette à l'ouverture ;
-   la vérité vit dans RelationsStore/Collection, jamais ici. Aucun
-   `onclick` : délégation + fermeture overlay/croix/Échap. VIS-15 B1.
+   GraphProjections. Un tap sur un nœud le SÉLECTIONNE et affiche SA fiche
+   (la vraie carte, `CardRenderer.render`, éditable par délégation globale)
+   dans le panneau latéral — la carte « sur le côté », pas un overlay ; tap
+   sur un autre nœud échange la fiche, tap sur le fond désélectionne. Se
+   re-projette à l'ouverture ; la vérité vit dans RelationsStore/Collection,
+   jamais ici. Aucun `onclick` : délégation + fermeture overlay/croix/Échap.
    ============================================================ */
 import { GraphProjections } from "./graphprojections.js";
 import { GraphEngine } from "./graphengine.js";
-import { CardPeek } from "../card/cardpeek.js";
+import { CardRenderer } from "../card/cardrenderer.js";
+import { Utils } from "../../core/utils.js";
 
 export const GraphView = {
   _el: null,
@@ -45,30 +48,74 @@ export const GraphView = {
   _project() {
     const overlay = this._el;
     if (!overlay || !overlay.classList.contains("open")) return;
+    const split = overlay.querySelector(".graph-split");
     const host = overlay.querySelector('[data-graph="canvas"]');
     const empty = overlay.querySelector('[data-graph="empty"]');
     const { focusId, memberIds } = this._lastScope || {};
     const graph = GraphProjections.buildRelationGraph({ focusId, memberIds, halo: this._halo });
 
     if (!graph.nodes.length) {
-      host.hidden = true;
+      split.hidden = true;
       empty.hidden = false;
       GraphEngine.destroy();
       return;
     }
-    host.hidden = false;
+    split.hidden = false;
     empty.hidden = true;
     const accent =
       (typeof App !== "undefined" && App.editionModule && App.editionModule.mapAccent) || "#35e0e6";
-    const allIds = graph.nodes.map((n) => n.id);
     GraphEngine.mount(host, {
       nodes: graph.nodes,
       edges: graph.edges,
       accent,
-      onNodeTap: (id) => CardPeek.open(id, { siblings: allIds }),
+      onNodeTap: (id) => this._selectNode(id),
+      onBackgroundTap: () => this._clearInspector(),
       onWeave: (fromId, toId) => this._createWeave(fromId, toId),
     });
     GraphEngine.setWeave(this._weave); // le remontage réinitialise le mode
+    this._clearInspector(); // le panneau démarre sur l'invite
+  },
+
+  /** Tap sur un nœud : le surligner et afficher SA fiche dans le panneau
+      latéral. On injecte la VRAIE carte (`CardRenderer.render`, élément DOM
+      interactif par délégation globale — cf. encounterrenderer/contactsbook),
+      en lecture : aucune vérité détenue ici. Les types que la carte ne sait
+      pas dessiner (serveur) retombent sur une carte d'identité légère. */
+  _selectNode(id) {
+    GraphEngine.select(id);
+    const panel = this._el.querySelector('[data-graph="inspector"]');
+    if (!panel) return;
+    panel.classList.remove("empty");
+    panel.textContent = "";
+    const ent = typeof PnjLookup !== "undefined" ? PnjLookup.find(id) : null;
+    if (ent && this._renderable(id))
+      panel.appendChild(CardRenderer.render(ent, ["edit"], CardRenderer.liveDeps()));
+    else panel.appendChild(this._identityCard(id));
+  },
+
+  /** CardRenderer sait dessiner PNJ/PJ/contact ; les autres → identité. */
+  _renderable(id) {
+    const loc = typeof PnjLookup !== "undefined" ? PnjLookup.locate(id) : null;
+    return !!loc && (loc.type === "pnj" || loc.type === "pj" || loc.type === "contact");
+  },
+
+  /** Carte d'identité minimale (repli pour un type non rendu par la carte). */
+  _identityCard(id) {
+    const loc = (typeof PnjLookup !== "undefined" && PnjLookup.locate(id)) || null;
+    const box = document.createElement("div");
+    box.className = "graph-identity";
+    box.innerHTML = `<div class="graph-identity-name">${Utils.escHtml((loc && loc.name) || "Entité")}</div>
+      <div class="graph-identity-type">${Utils.escHtml((loc && loc.type) || "")}</div>`;
+    return box;
+  },
+
+  /** Désélection : le panneau revient à l'invite. */
+  _clearInspector() {
+    GraphEngine.select(null);
+    const panel = this._el.querySelector('[data-graph="inspector"]');
+    if (!panel) return;
+    panel.classList.add("empty");
+    panel.innerHTML = `<p class="graph-hint">Touchez un nœud pour afficher sa fiche ici.<br>Glissez pour déplacer · <strong>◈ Tisser</strong> pour relier.</p>`;
   },
 
   /** Tisser un lien générique (`type:"relation"`) entre deux entités, si aucun
@@ -115,7 +162,10 @@ export const GraphView = {
           <button class="modal-close" data-graph-action="close" aria-label="Fermer">✕</button>
         </div>
         <div class="modal-body graph-body">
-          <div class="graph-canvas" data-graph="canvas"></div>
+          <div class="graph-split">
+            <div class="graph-canvas" data-graph="canvas"></div>
+            <aside class="graph-inspector empty" data-graph="inspector"></aside>
+          </div>
           <p class="graph-empty" data-graph="empty" hidden>Aucun lien à afficher — tissez des liens contact sur les fiches, ils apparaîtront ici.</p>
         </div>
       </div>`;

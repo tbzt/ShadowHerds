@@ -25,7 +25,7 @@ export const GraphEngine = {
 
   /** Monte un graphe dans `container`. `onNodeTap(id)` est appelé sur un
       tap net (clic sans glisser). Rappeler `mount` remonte proprement. */
-  mount(container, { nodes = [], edges = [], accent = "#35e0e6", onNodeTap = null, onWeave = null } = {}) {
+  mount(container, { nodes = [], edges = [], accent = "#35e0e6", onNodeTap = null, onWeave = null, onBackgroundTap = null } = {}) {
     this.destroy();
     const W = Math.max(320, container.clientWidth || 640);
     const H = Math.max(240, container.clientHeight || 460);
@@ -112,8 +112,9 @@ export const GraphEngine = {
     svg.appendChild(weaveLine);
 
     const state = {
-      container, svg, W, H, N, E, idx, accent, onNodeTap, onWeave,
+      container, svg, W, H, N, E, idx, accent, onNodeTap, onWeave, onBackgroundTap,
       raf: 0, alpha: 1, drag: null, weave: false, weaving: null, weaveLine,
+      selectedId: null, bg: null,
     };
     this._state = state;
     container.appendChild(svg);
@@ -213,6 +214,16 @@ export const GraphEngine = {
     this._loop(s);
   },
 
+  /** Sélectionne un nœud (surbrillance d'accent) ; `null` = désélectionne.
+      La sélection est un état de VUE (pas de vérité) : elle est perdue au
+      remontage, la vue la repose si besoin. */
+  select(id) {
+    const s = this._state;
+    if (!s) return;
+    s.selectedId = id || null;
+    for (const n of s.N) n._g.classList.toggle("selected", n.id === s.selectedId);
+  },
+
   /** Bascule le mode tissage (créer un lien en tirant). Off = glisser déplace. */
   setWeave(on) {
     const s = this._state;
@@ -242,7 +253,12 @@ export const GraphEngine = {
     };
     s.svg.addEventListener("pointerdown", (ev) => {
       const g = ev.target.closest("[data-node-id]");
-      if (!g) return;
+      if (!g) {
+        // Fond (hors nœud) : candidat « tap vide » = désélection (hors tissage,
+        // où le fond ne fait rien). Un glisser du fond annule le tap.
+        if (!s.weave) s.bg = { x0: ev.clientX, y0: ev.clientY, moved: false };
+        return;
+      }
       const n = s.N[s.idx.get(g.dataset.nodeId)];
       if (!n) return;
       if (s.weave) {
@@ -265,6 +281,7 @@ export const GraphEngine = {
     });
     s.svg.addEventListener("pointermove", (ev) => {
       const p = toSvg(ev);
+      if (s.bg && Math.hypot(ev.clientX - s.bg.x0, ev.clientY - s.bg.y0) > 4) s.bg.moved = true;
       if (s.weaving) {
         // Accroche magnétique : au voisinage d'un nœud valide, la ligne saute à
         // son centre et le nœud pulse (« j'accepte ») ; sinon elle suit le doigt.
@@ -293,6 +310,12 @@ export const GraphEngine = {
       this._reheat(s);
     });
     const end = (ev) => {
+      if (s.bg) {
+        const bg = s.bg;
+        s.bg = null;
+        if (!bg.moved && typeof s.onBackgroundTap === "function") s.onBackgroundTap();
+        return;
+      }
       if (s.weaving) {
         const { from, target } = s.weaving;
         if (target) target._g.classList.remove("weave-target");
