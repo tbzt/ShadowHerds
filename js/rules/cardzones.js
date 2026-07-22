@@ -87,6 +87,14 @@ export const CardZones = {
       render: (pnj, ctx) => ctx.r._contactLinksSection(pnj),
     },
     {
+      // « Liens » — porte d'entrée de la lentille graphe, pour TOUTE entité
+      // (PNJ comme PJ) : voir et tisser les relations, y compris PNJ↔PNJ.
+      id: "relations",
+      label: "Liens",
+      column: "fiction",
+      render: (pnj, ctx) => ctx.r._relationsLinkSection(pnj),
+    },
+    {
       id: "backlinks",
       label: "Mentionné dans",
       column: "fiction",

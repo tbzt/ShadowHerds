@@ -470,14 +470,28 @@ export const CardRenderer = {
         ${pickItems}
       </div>
     </span>`;
-    // VIS-15 B1 : ouvrir la lentille graphe centrée sur ce PJ (lui + ses
-    // contacts liés), visible dès qu'il a au moins un lien.
-    const graphBtn = links.length
-      ? `<button type="button" class="tag graph-open-btn" data-action="open-relations-graph" data-id="${this._esc(pnj.id)}" title="Voir les liens en graphe">◈ Liens</button>`
-      : "";
+    // Le ◈ Liens (lentille graphe) ne vit plus ici : il a sa propre section
+    // « Liens », rendue pour TOUTE entité (cf. `_relationsLinkSection`), pas
+    // seulement les PJ à contacts — on gère aussi les relations PNJ↔PNJ.
     return `<div class="card-section">
       <div class="card-section-label">Contacts</div>
-      <div class="card-section-content">${items}${addControl}${graphBtn}</div>
+      <div class="card-section-content">${items}${addControl}</div>
+    </div>`;
+  },
+
+  /** Section « Liens » — porte d'entrée de la lentille graphe, sur TOUTE fiche
+      (PNJ comme PJ), afin de voir et tisser les relations, y compris PNJ↔PNJ.
+      Toujours présente (même à zéro lien : on peut ouvrir puis tisser) ; un
+      compteur discret apparaît dès qu'il y a des arêtes incidentes. */
+  _relationsLinkSection(pnj) {
+    const n =
+      typeof RelationsStore !== "undefined" ? RelationsStore.edgesTouching(pnj.id).length : 0;
+    const label = n ? `◈ Liens · ${n}` : "◈ Liens";
+    return `<div class="card-section">
+      <div class="card-section-label">Liens</div>
+      <div class="card-section-content">
+        <button type="button" class="tag graph-open-btn" data-action="open-relations-graph" data-id="${this._esc(pnj.id)}" title="Voir et tisser les liens en graphe">${label}</button>
+      </div>
     </div>`;
   },
 
