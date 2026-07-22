@@ -263,7 +263,7 @@ export const ToposCatalog = {
       `RunRenderer`/`Play`) + les clés structurées (Lot 3b/4). */
   assemble(facts = null) {
     const mandant = Utils.rand(this._mandants());
-    const opp = this._pickOpposition(mandant);
+    const opp = this._pickOpposition(mandant, facts);
     const district = this._pickDistrict(opp);
     const site = Utils.rand(district.sites);
     const objectif = this._pickObjectif(site.type);
@@ -319,7 +319,7 @@ export const ToposCatalog = {
   },
   /** L'opposition = un rival du mandant ayant un ancrage ; à défaut,
       n'importe quelle faction ancrée (cas du commanditaire privé). */
-  _pickOpposition(mandant) {
+  _pickOpposition(mandant, facts = null) {
     let cands = (mandant.rivaux || [])
       .map((k) => this.factions[k])
       .filter((f) => f && this._hasDistrict(f));
@@ -327,7 +327,29 @@ export const ToposCatalog = {
       cands = Object.values(this.factions).filter(
         (f) => f !== mandant && this._hasDistrict(f),
       );
-    return Utils.rand(cands);
+    // VIS-12 (Phase 2) : biais DOUX vers une faction déjà affrontée (némésis
+    // récurrente). Poids = 1 + min(count, 3) × 0.5 (Ares vu 2× → poids 2.0,
+    // ~2× plus probable, jamais garanti). Sans heat, tous les poids valent 1
+    // ⇒ tirage uniforme identique (non-régression : `assemble()` sans facts
+    // inchangé). Propose, jamais décide — le MJ régénère à volonté.
+    const heat = new Map();
+    if (facts && Array.isArray(facts.factions))
+      for (const f of facts.factions) heat.set(f.key, f.count);
+    return this._weightedPick(cands, (f) => 1 + Math.min(heat.get(f.key) || 0, 3) * 0.5);
+  },
+
+  /** Tirage pondéré : `weightOf(item)` > 0. Poids tous égaux ⇒ uniforme. */
+  _weightedPick(items, weightOf) {
+    if (!items.length) return undefined;
+    const weights = items.map(weightOf);
+    const total = weights.reduce((a, b) => a + b, 0);
+    if (!(total > 0)) return Utils.rand(items);
+    let r = Math.random() * total;
+    for (let i = 0; i < items.length; i++) {
+      r -= weights[i];
+      if (r < 0) return items[i];
+    }
+    return items[items.length - 1];
   },
   /** Un district où l'opposition opère. */
   _pickDistrict(opp) {
