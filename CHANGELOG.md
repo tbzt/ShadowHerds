@@ -23,6 +23,29 @@ commit.
   assez large ; sur les cartes étroites de l'annuaire, le pied retombe
   proprement sur deux lignes au lieu de se briser.
 
+## [1.95.0] — 2026-07-22
+
+### Ajouté
+
+- **La mémoire du monde.** Vos topos ne naissent plus vierges : quand vous générez
+  dans une campagne, le monde tient compte de ce que l'équipe y a fait. Une corpo
+  déjà affrontée revient plus souvent en opposition, annotée « 3ᵉ run contre eux,
+  ils vous connaissent » ; un **contact connu** de l'équipe peut se mêler du run ;
+  la **réputation** de l'équipe pèse sur la taille des jobs proposés ; et un
+  **visage d'ennemi déjà croisé** peut revenir dans le casting, en un tap. Au
+  **débrief**, vous marquez qui vous **doit une faveur** (il pourra vous ramener un
+  job) ou qui est **grillé** (il ne rappellera plus). Rien n'est imposé : le monde
+  propose, vous ratifiez — régénérez à volonté. Tout est **dérivé** de votre
+  campagne (runs passés, contacts, réputation), sans aucune saisie ni donnée en
+  double. Les éditions sans réputation (Anarchy) l'ignorent proprement.
+
+### Corrigé
+
+- **Le casting généré réapparaît dans son run.** Depuis le passage des dossiers à
+  un identifiant interne, « ⚔ Casting » rangeait les PNJ d'opposition sous le *nom*
+  du dossier au lieu de son identifiant : ils n'apparaissaient plus dans le poste
+  de commandement « Jouer ». Corrigé — le casting se range de nouveau dans son run.
+
 ## [1.94.0] — 2026-07-22
 
 ### Ajouté

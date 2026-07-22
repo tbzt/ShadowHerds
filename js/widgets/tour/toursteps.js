@@ -498,6 +498,11 @@ export const TourSteps = {
       title: "Une vue de jeu pour la fiche",
       body: "Un nouveau bouton ◫ dans le rail de vues (à côté de ☰❝⚔) déplie la fiche en PAYSAGE : à gauche le système réduit à l'essentiel de jeu — moniteur en bande horizontale cochable, la capacité signature selon l'archétype (sorts pour un mage, râtelier Matrice pour un decker, armes pour un combattant), les compétences en puces lançables, les augmentations en tags ; à droite la fiction (incarnation lisible, valeurs sous les titres, + contacts/mentions/dossiers). Scannable d'un coup d'œil, tout reste lançable en un tap. Les vues ☰❝⚔ ne changent pas — choisir une lentille sort du paysage. En mode Annuaire, les fiches compactes s'étalent aussi en grille pour comparer plusieurs figurants d'un coup d'œil.",
     },
+    {
+      id: "wn-worldstate-memory", anchor: "nav-run", tours: ["whatsnew"], since: "1.95.0", fallback: "center",
+      title: "Le monde se souvient",
+      body: "Générez un topos dans une campagne et le monde tient compte de son histoire : une corpo déjà affrontée revient (« 3ᵉ run contre eux, ils vous connaissent »), un contact connu de l'équipe peut s'en mêler, la réputation de l'équipe pèse sur la taille du job, et un ennemi déjà croisé peut resurgir au casting en un tap. Au débrief, marquez qui vous doit une faveur (il vous ramènera un job) ou qui est grillé (il ne rappelle plus). Le monde propose, vous ratifiez : tout est dérivé de votre campagne, rien n'est imposé, et les éditions sans réputation l'ignorent proprement.",
+    },
   ],
 };
 
