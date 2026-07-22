@@ -36,6 +36,14 @@ export const RunRenderer = {
           <span class="run-field-val run-complication">${CardRenderer._esc(r.complication)}</span>
         </div>
         ${obj2}
+        ${
+          r.memory
+            ? `<div class="run-field run-memory">
+                 <span class="run-field-label">⟲ Mémoire</span>
+                 <span class="run-field-val">${CardRenderer._esc(r.memory)}</span>
+               </div>`
+            : ""
+        }
         <div class="stats-row" style="margin-top:0.5rem;">
           <span class="stat-pill accent">Paiement <strong>${r.payment}</strong></span>
         </div>

@@ -14,14 +14,19 @@ import { Dossiers } from "../widgets/journal/dossiers.js";
 import { RunRenderer } from "../widgets/play/runrenderer.js";
 import { Storage } from "../core/storage.js";
 import { ToposCatalog } from "../rules/toposcatalog.js";
+import { WorldState } from "../rules/worldstate.js";
 import { Utils } from "../core/utils.js";
 
 export const RunGen = {
   /** Génère un topos cohérent (assemblage par conflit — cf. ToposCatalog).
       Le contrôleur n'ajoute que l'identité persistante ; toute la donnée de
-      jeu et la corrélation appartiennent au catalogue. */
+      jeu et la corrélation appartiennent au catalogue. VIS-12 : le contrôleur
+      ORCHESTRE la mémoire du monde — il dérive les faits de la campagne courante
+      (`WorldState.factsFor`, couche basse) et les PASSE au catalogue (injection
+      descendante) ; le catalogue n'appelle jamais WorldState. */
   generate() {
-    return { id: Utils.uid(), ...ToposCatalog.assemble() };
+    const scope = (typeof App !== "undefined" && App.context && App.context.dossier) || null;
+    return { id: Utils.uid(), ...ToposCatalog.assemble(WorldState.factsFor(scope)) };
   },
 
   initPanel() {

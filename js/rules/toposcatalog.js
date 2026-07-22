@@ -261,7 +261,7 @@ export const ToposCatalog = {
 
   /** Assemble un topos cohérent. Retourne les libellés plats (compatibles
       `RunRenderer`/`Play`) + les clés structurées (Lot 3b/4). */
-  assemble() {
+  assemble(facts = null) {
     const mandant = Utils.rand(this._mandants());
     const opp = this._pickOpposition(mandant);
     const district = this._pickDistrict(opp);
@@ -290,7 +290,23 @@ export const ToposCatalog = {
       objectif2: Utils.rand(this.bonus),
       difficulte: tier.label,
       payment: `${pay.toLocaleString("fr-FR")}¥ par runner`,
+      // VIS-12 (mémoire du monde) : si l'opposition (ou le mandant) tirée revient
+      // d'un run passé de la campagne, une ANNOTATION — les picks ci-dessus sont
+      // INCHANGÉS (informer, jamais décider). `facts` injecté par RunGen.
+      ...this._memory(facts, opp.key, mandant.key),
     };
+  },
+
+  /** Annotation « mémoire du monde » : { memory } si la faction tirée est
+      heatée dans `facts` (VIS-12), {} sinon. Ne modifie aucun pick. */
+  _memory(facts, oppKey, mandantKey) {
+    if (!facts || !Array.isArray(facts.factions)) return {};
+    const find = (k) => facts.factions.find((f) => f.key === k);
+    const opp = find(oppKey);
+    if (opp) return { memory: `${opp.name} — ${opp.count + 1}ᵉ run contre eux, ils vous connaissent.` };
+    const man = find(mandantKey);
+    if (man) return { memory: `${man.name} — ${man.count + 1}ᵉ fois qu'ils vous emploient.` };
+    return {};
   },
 
   /** Factions qui peuvent commanditer (tout sauf `hire:false`). */
