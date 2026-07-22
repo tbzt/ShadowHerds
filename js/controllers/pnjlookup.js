@@ -75,7 +75,7 @@ export const PnjLookup = {
   },
 
   /** id → { id, name, type, pcColor? } (même forme qu'un résultat de
-      `search`, + `pcColor` pour un PJ), pour résoudre le NOM COURANT d'une
+      `search`, + `pcColor` s'il est posé), pour résoudre le NOM COURANT d'une
       mention `@[…](id)` et y naviguer. Balaie les quatre bibliothèques
       sauvegardées offertes par `search` (PNJ, PJ, contact, serveur). `null`
       si l'id ne résout plus (entité supprimée). */
@@ -85,7 +85,9 @@ export const PnjLookup = {
       const e = arr && arr.find((x) => x.id === id);
       if (!e) return null;
       const r = { id: e.id, name: e.name || "Sans nom", type };
-      if (type === "pj" && e.pcColor) r.pcColor = e.pcColor;
+      // `pcColor` pour TOUT type (Lot 4 : la couleur de nœud n'est plus réservée
+      // aux PJ) — la projection graphe la lit d'ici.
+      if (e.pcColor) r.pcColor = e.pcColor;
       return r;
     };
     return (

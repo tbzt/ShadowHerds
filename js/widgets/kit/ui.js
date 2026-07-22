@@ -229,6 +229,20 @@ export const UI = {
     if (pnj) CardRenderer.refresh(pnj);
   },
 
+  /** Pose (ou retire, avec `null`) la couleur d'accent d'une entité, sur TOUTES
+      ses copies (pool/biblio — sinon seule la première muterait), puis persiste
+      et rafraîchit ses cartes. La couleur est une propriété d'identité de
+      l'entité (comme le `pcColor` d'un PJ), réutilisée par la carte et par le
+      nœud de la lentille graphe. Accesseur sanctionné pour l'écriture — la vue
+      graphe l'appelle plutôt que d'écrire dans une collection (couche). */
+  setColor(id, color) {
+    const copies = this._entityCopies(id);
+    if (!copies.length) return;
+    for (const c of copies) c.pcColor = color || null;
+    this.persistEntity(id);
+    this.refreshEntityCard(id);
+  },
+
   addJournalEntry(pnjId, text) {
     const t = (text || "").trim();
     if (!t) return;

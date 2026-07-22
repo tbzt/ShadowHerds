@@ -256,6 +256,14 @@
   user-select: none;
 }
 
+/* Rangée « couleur du nœud » (Lot 4), au-dessus de la fiche dans le panneau. */
+.graph-node-color {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
 /* Inspecteur d'arête dans le panneau latéral. */
 .graph-edge-inspector {
   display: flex;

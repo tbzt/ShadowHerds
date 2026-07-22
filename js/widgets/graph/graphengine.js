@@ -110,8 +110,11 @@ export const GraphEngine = {
       const circle = document.createElementNS(NS, "circle");
       circle.setAttribute("r", "16");
       circle.setAttribute("class", "graph-node-disc");
-      circle.setAttribute("fill", n.type === "pj" && n.pcColor ? n.pcColor : "var(--surface-2, #16202b)");
+      // Couleur de nœud = `pcColor` de l'entité, pour TOUT type (Lot 4 : plus
+      // réservé aux PJ). Nue → fond neutre. `_disc` mémorisé pour `setNodeColor`.
+      circle.setAttribute("fill", n.pcColor || "var(--surface-2, #16202b)");
       circle.setAttribute("stroke", accent);
+      n._disc = circle;
 
       const glyph = document.createElementNS(NS, "text");
       glyph.setAttribute("class", "graph-node-glyph");
@@ -267,6 +270,17 @@ export const GraphEngine = {
     s.selectedEdgeId = null;
     for (const n of s.N) n._g.classList.toggle("selected", n.id === s.selectedId);
     for (const e of s.E) e._line.classList.remove("selected");
+  },
+
+  /** Met à jour EN PLACE la couleur d'un nœud (Lot 4) — patch visuel immédiat
+      sans remontage. `null` = fond neutre par défaut. */
+  setNodeColor(id, color) {
+    const s = this._state;
+    if (!s) return;
+    const n = s.N.find((x) => x.id === id);
+    if (!n || !n._disc) return;
+    n.pcColor = color || null;
+    n._disc.setAttribute("fill", n.pcColor || "var(--surface-2, #16202b)");
   },
 
   /** Sélectionne une ARÊTE (surbrillance) ; `null` = désélectionne. Exclusif

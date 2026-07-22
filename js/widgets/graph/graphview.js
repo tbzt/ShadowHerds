@@ -10,13 +10,16 @@
    dans le panneau latéral — la carte « sur le côté », pas un overlay ; tap
    sur un autre nœud échange la fiche, tap sur le fond désélectionne. Un tap
    sur une ARÊTE ouvre son inspecteur (Lot 3 : couleur, direction, pointillés,
-   mot — le style vit sur l'arête dans RelationsStore ; ici on l'édite). Se
+   mot — le style vit sur l'arête dans RelationsStore ; ici on l'édite). La
+   couleur du nœud (Lot 4) est portée par l'entité (`pcColor`), écrite via
+   l'accesseur sanctionné `UI.setColor` (jamais dans une collection ici). Se
    re-projette à l'ouverture ; la vérité vit dans RelationsStore/Collection,
    jamais ici. Aucun `onclick` : délégation + fermeture overlay/croix/Échap.
    ============================================================ */
 import { GraphProjections } from "./graphprojections.js";
 import { GraphEngine } from "./graphengine.js";
 import { CardRenderer } from "../card/cardrenderer.js";
+import { UI } from "../kit/ui.js";
 import { Utils } from "../../core/utils.js";
 
 export const GraphView = {
@@ -26,6 +29,7 @@ export const GraphView = {
   _halo: true, // B4 : afficher la couronne de voisins hors périmètre (estompée)
   _edges: null, // dernières arêtes projetées (source de l'inspecteur d'arête)
   _selectedEdge: null, // arête en cours d'édition dans le panneau (Lot 3)
+  _selectedNodeId: null, // nœud sélectionné (pour la couleur, Lot 4)
   // Palette curée d'arête (mêmes teintes que les PJ) + échappatoire « autre
   // couleur » : pas de roue libre, la cohérence DA des 4 identités prime. Lot 3.
   _EDGE_COLORS: ["#e0533d", "#3d90e0", "#3dbf6e", "#c9a13d", "#9d5fd6", "#3dc2c2"],
@@ -93,14 +97,72 @@ export const GraphView = {
   _selectNode(id) {
     GraphEngine.select(id);
     this._selectedEdge = null;
+    this._selectedNodeId = id;
     const panel = this._el.querySelector('[data-graph="inspector"]');
     if (!panel) return;
     panel.classList.remove("empty");
     panel.textContent = "";
     const ent = typeof PnjLookup !== "undefined" ? PnjLookup.find(id) : null;
-    if (ent && this._renderable(id))
+    if (ent && this._renderable(id)) {
+      // Rangée « couleur du nœud » (Lot 4) AU-DESSUS de la fiche, puis la vraie
+      // carte. La rangée survit à un refresh de la carte (élément frère).
+      panel.insertAdjacentHTML("beforeend", this._nodeColorRow(id));
       panel.appendChild(CardRenderer.render(ent, ["edit"], CardRenderer.liveDeps()));
-    else panel.appendChild(this._identityCard(id));
+    } else panel.appendChild(this._identityCard(id));
+  },
+
+  /** Rangée de couleur du nœud (palette curée + échappatoire), reflète la
+      couleur courante de l'entité (`pcColor`). Namespace `data-graph-node`. */
+  _nodeColorRow(id) {
+    const ent = typeof PnjLookup !== "undefined" ? PnjLookup.find(id) : null;
+    const cur = (ent && ent.pcColor) || "";
+    const esc = Utils.escHtml;
+    const swatches = this._EDGE_COLORS.map(
+      (c) =>
+        `<button type="button" class="em-color-swatch${cur === c ? " selected" : ""}" style="background:${c}" data-graph-node="color" data-color="${c}" aria-label="Couleur ${c}"></button>`,
+    ).join("");
+    const isCustom = cur && !this._EDGE_COLORS.includes(cur);
+    return `<div class="graph-node-color">
+      <span class="graph-edge-flabel">Couleur du nœud</span>
+      <div class="em-color-picker">
+        <button type="button" class="em-color-swatch graph-color-default${!cur ? " selected" : ""}" data-graph-node="color" data-color="" title="Couleur par défaut" aria-label="Couleur par défaut">✕</button>
+        ${swatches}
+        <label class="em-color-swatch em-color-custom${isCustom ? " selected" : ""}"${isCustom ? ` style="background:${esc(cur)}"` : ""} title="Autre couleur…">
+          <input type="color" class="em-color-custom-input" data-graph-node="color-custom" value="${esc(cur || "#3d90e0")}">
+        </label>
+      </div>
+    </div>`;
+  },
+
+  /** Change la couleur du nœud sélectionné : persiste via l'accesseur sanctionné
+      `UI.setColor` (toutes copies + rafraîchit la carte), patche le nœud SVG en
+      place, puis reflète la sélection des pastilles. */
+  _setNodeColor(color) {
+    const id = this._selectedNodeId;
+    if (!id) return;
+    const c = color || null;
+    UI.setColor(id, c);
+    GraphEngine.setNodeColor(id, c);
+    this._reflectNodeColor(c);
+  },
+
+  _reflectNodeColor(color) {
+    const panel = this._el.querySelector('[data-graph="inspector"]');
+    const row = panel && panel.querySelector(".graph-node-color");
+    if (!row) return;
+    row.querySelectorAll(".em-color-swatch[data-color]").forEach((b) => {
+      b.classList.toggle("selected", (b.dataset.color || "") === (color || ""));
+    });
+    const custom = row.querySelector(".em-color-custom");
+    if (custom) {
+      const isCustom = !!(color && !this._EDGE_COLORS.includes(color));
+      custom.classList.toggle("selected", isCustom);
+      if (isCustom) custom.style.background = color;
+    }
+  },
+
+  _onNodeControl(el) {
+    if (el.dataset.graphNode === "color") this._setNodeColor(el.dataset.color || null);
   },
 
   /** CardRenderer sait dessiner PNJ/PJ/contact ; les autres → identité. */
@@ -123,6 +185,7 @@ export const GraphView = {
   _clearInspector() {
     GraphEngine.select(null);
     this._selectedEdge = null;
+    this._selectedNodeId = null;
     const panel = this._el.querySelector('[data-graph="inspector"]');
     if (!panel) return;
     panel.classList.add("empty");
@@ -139,6 +202,7 @@ export const GraphView = {
   /** Tap sur une arête : la surligner et ouvrir son inspecteur dans le panneau. */
   _selectEdge(id) {
     GraphEngine.selectEdge(id);
+    this._selectedNodeId = null;
     const e = (this._edges || []).find((x) => x.id === id) || null;
     this._selectedEdge = e;
     const panel = this._el.querySelector('[data-graph="inspector"]');
@@ -321,6 +385,8 @@ export const GraphView = {
     document.body.appendChild(overlay);
     overlay.addEventListener("click", (e) => {
       if (e.target === overlay) return this.hide();
+      const nodeCtl = e.target.closest("[data-graph-node]");
+      if (nodeCtl) return this._onNodeControl(nodeCtl);
       const edgeCtl = e.target.closest("[data-graph-edge]");
       if (edgeCtl) return this._onEdgeControl(edgeCtl);
       const btn = e.target.closest("[data-graph-action]");
@@ -339,12 +405,16 @@ export const GraphView = {
     // Valeurs continues de l'inspecteur d'arête : mot (frappe), couleur
     // personnalisée (color picker), pointillés (case). Rendu en direct.
     overlay.addEventListener("input", (e) => {
-      const el = e.target.closest("[data-graph-edge]");
-      if (!el) return;
-      const kind = el.dataset.graphEdge;
-      if (kind === "label") this._applyEdgeChange({ label: el.value });
-      else if (kind === "color-custom") this._applyEdgeChange({ color: el.value || null });
-      else if (kind === "dashed") this._applyEdgeChange({ dashed: el.checked });
+      const edgeEl = e.target.closest("[data-graph-edge]");
+      if (edgeEl) {
+        const kind = edgeEl.dataset.graphEdge;
+        if (kind === "label") this._applyEdgeChange({ label: edgeEl.value });
+        else if (kind === "color-custom") this._applyEdgeChange({ color: edgeEl.value || null });
+        else if (kind === "dashed") this._applyEdgeChange({ dashed: edgeEl.checked });
+        return;
+      }
+      const nodeEl = e.target.closest("[data-graph-node]");
+      if (nodeEl && nodeEl.dataset.graphNode === "color-custom") this._setNodeColor(nodeEl.value || null);
     });
     document.addEventListener("keydown", (e) => {
       if (!overlay.classList.contains("open")) return;
