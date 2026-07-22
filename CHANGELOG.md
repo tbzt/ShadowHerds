@@ -27,15 +27,17 @@ commit.
 
 ### Ajouté
 
-- **La fiche en paysage.** Sur grand écran, la carte de personnage s'ouvre en
-  **deux colonnes** selon un axe unique : à gauche le **système** (ce qui se
-  lance ou se calcule — stats, moniteur, initiative, armes, sorts, compétences,
-  équipement), à droite la **fiction** (incarnation, identités, contacts,
-  mentions, dossiers). La disposition encode un moment d'usage, pas une
-  esthétique. Dualité **matérielle** tenue en laisse : le système garde sa voix
-  froide (mono, majuscules espacées), la fiction prend une voix chaude (corps de
-  texte, casse-phrase) ; l'encre suit déjà l'édition. Sur téléphone, retombée en
-  **une colonne**, l'incarnation en tête (elle se regarde avant le combat).
+- **Une vue de jeu épurée pour chaque perso.** Un nouveau bouton **◫**, posé
+  dans le rail de vues existant (à côté de ☰❝⚔, sans y toucher), déplie la fiche
+  en **paysage** selon l'axe SYSTÈME ↔ FICTION. À gauche, le système réduit à
+  l'essentiel de jeu : **moniteur en bande horizontale cochable**, la capacité
+  **signature** selon l'archétype (sorts pour un mage, formes pour un techno,
+  râtelier Matrice pour un decker, pouvoirs pour un adepte, armes pour un
+  combattant), les **compétences en puces lançables**, les **augmentations en
+  tags**. À droite, la fiction : incarnation (valeurs sous les titres, lisibles)
+  + contacts / mentions / dossiers. Scannable d'un coup d'œil, tout reste
+  lançable en un tap ; la barre étroite retombe en une colonne. Les vues
+  existantes ne changent pas — choisir une lentille sort du paysage.
 - **Une grille pour trier.** En mode Annuaire, les fiches compactes ne s'empilent
   plus en une seule colonne : elles s'étalent en **grille responsive** (plusieurs
   de front sur large, une seule en étroit) pour comparer un escadron d'un coup

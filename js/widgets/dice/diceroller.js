@@ -133,13 +133,27 @@ export const DiceRoller = {
         return;
       }
 
+      // Toggle « paysage épuré » (vue de jeu optionnelle, même rail que les
+      // lentilles) : bascule l'état de rendu curé de CETTE carte, puis re-rend.
+      const curatedEl = e.target.closest("[data-curated-toggle]");
+      if (curatedEl) {
+        const pnj = this._hooks.resolve(curatedEl.getAttribute("data-id"));
+        if (pnj) {
+          CardRenderer.toggleCurated(pnj.id);
+          this._hooks.onPnjChanged(pnj);
+        }
+        return;
+      }
+
       // Appliquer une vue (lentille) : écrit le pli des 4 zones +
       // modules applicables en une fois (CardRenderer.applyView), devient
-      // la nouvelle mémoire de la carte comme un pli manuel (I4).
+      // la nouvelle mémoire de la carte comme un pli manuel (I4). Choisir une
+      // lentille SORT du paysage épuré (les deux sont des vues concurrentes).
       const lensEl = e.target.closest("[data-lens]");
       if (lensEl) {
         const pnj = this._hooks.resolve(lensEl.getAttribute("data-id"));
         if (pnj) {
+          CardRenderer._curatedView.delete(pnj.id);
           CardRenderer.applyView(pnj, lensEl.getAttribute("data-lens"));
           this._hooks.onPnjChanged(pnj);
         }

@@ -495,8 +495,8 @@ export const TourSteps = {
     },
     {
       id: "wn-card-paysage", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.94.0", fallback: "center",
-      title: "La fiche en paysage",
-      body: "Sur grand écran, la fiche s'ouvre maintenant en deux colonnes : à gauche le SYSTÈME (ce qui se lance et se calcule — stats, moniteur, combat), à droite la FICTION (incarnation, contacts, mentions, dossiers). Chaque colonne a sa matière — le système reste net et mono, la fiction prend une voix plus douce. Sur téléphone tout retombe en une colonne, l'incarnation en tête. En mode Annuaire, les fiches compactes s'étalent en grille pour comparer plusieurs figurants d'un coup d'œil. Et dans le graphe des relations, chaque nœud est cette même fiche réduite à son identité — un clic la déplie en aperçu.",
+      title: "Une vue de jeu pour la fiche",
+      body: "Un nouveau bouton ◫ dans le rail de vues (à côté de ☰❝⚔) déplie la fiche en PAYSAGE : à gauche le système réduit à l'essentiel de jeu — moniteur en bande horizontale cochable, la capacité signature selon l'archétype (sorts pour un mage, râtelier Matrice pour un decker, armes pour un combattant), les compétences en puces lançables, les augmentations en tags ; à droite la fiction (incarnation lisible, valeurs sous les titres, + contacts/mentions/dossiers). Scannable d'un coup d'œil, tout reste lançable en un tap. Les vues ☰❝⚔ ne changent pas — choisir une lentille sort du paysage. En mode Annuaire, les fiches compactes s'étalent aussi en grille pour comparer plusieurs figurants d'un coup d'œil.",
     },
   ],
 };

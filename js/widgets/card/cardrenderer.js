@@ -693,32 +693,137 @@ export const CardRenderer = {
       default:
         return '<div class="pnj-card-body">—</div>';
     }
-    // Carte PAYSAGE (densité 2) pilotée par le registre `CardZones` (Lot 1
-    // « carte modulaire ») : deux colonnes selon l'axe SYSTÈME ↔ FICTION —
-    // « ça se lance/se calcule » à gauche, « ça se joue/se raconte » à droite.
-    // La disposition encode un moment d'usage, pas une esthétique. Le corps
-    // d'édition (stats/moniteur/combat) EST la tête de la colonne système ;
-    // les zones neutres se répartissent par leur `column`. Un seul renderer,
-    // une seule vérité d'ordre (le registre) — le mobile retombe en colonne
-    // (CSS), fiction en tête pour garder l'incarnation près du haut (I2).
+    // Carte modulaire (VIS-15) — le PAYSAGE ÉPURÉ est une vue OPTIONNELLE,
+    // ajoutée SANS toucher aux lentilles existantes (rail ☰❝⚔, qui gardent leur
+    // rôle de pli des zones). Un toggle dédié (posé dans le même rail, cf.
+    // `_lensSelector`) bascule `_curatedView` : la carte montre alors deux
+    // colonnes SYSTÈME (moniteur + capacité signature + compétences en puces +
+    // augmentations en tags) ↔ FICTION (saveur sous les titres + relations),
+    // scannable, curée. Par DÉFAUT le drapeau est absent → rendu ORIGINAL,
+    // byte-identique, lentilles pleinement actives : aucune régression.
     const ctx = { r: this, deps, density: 2, edModule: App.getEditionModule(pnj.edition) };
-    // Le corps d'édition arrive enveloppé dans son propre `<div class=
-    // "pnj-card-body">` (identique aux 4 éditions, nu) : on l'ouvre pour
-    // reloger son contenu dans la colonne système (le body devient la grille).
-    const open = core.indexOf(">") + 1;
-    const close = core.lastIndexOf("</div>");
-    const coreInner = close > open ? core.slice(open, close) : core;
-    const systemHtml = coreInner + CardZones.column("system", pnj, ctx);
-    const fictionHtml = CardZones.column("fiction", pnj, ctx);
-    // Sans fiction (PNJ nu sans incarnation ni liens) : colonne unique, rendu
-    // identique à l'existant — aucune grille imposée à vide.
-    if (!fictionHtml) return `<div class="pnj-card-body">${systemHtml}</div>`;
-    return (
-      `<div class="pnj-card-body pnj-card-body--paysage">` +
-      `<div class="card-col card-col--system">${systemHtml}</div>` +
-      `<div class="card-col card-col--fiction">${fictionHtml}</div>` +
-      `</div>`
-    );
+    if (CardRenderer._curatedView.has(pnj.id)) {
+      const systemHtml = this._curatedSystem(pnj, deps) + CardZones.column("system", pnj, ctx);
+      const fictionHtml = CardZones.column("fiction", pnj, ctx);
+      if (!fictionHtml)
+        return `<div class="pnj-card-body pnj-card-body--paysage"><div class="card-col card-col--system">${systemHtml}</div></div>`;
+      return (
+        `<div class="pnj-card-body pnj-card-body--paysage">` +
+        `<div class="card-col card-col--system">${systemHtml}</div>` +
+        `<div class="card-col card-col--fiction">${fictionHtml}</div>` +
+        `</div>`
+      );
+    }
+    // Vue complète (défaut) — assemblage ORIGINAL mono-colonne : incarnation +
+    // identités promues en tête (l'incarnation se regarde avant le combat, I2),
+    // le corps d'édition, puis traits/lore/mods + relations. La carte par défaut
+    // ne change pas d'un octet.
+    const top = this._flavorSection(pnj, deps) + this._topModulesHtml(pnj, deps);
+    if (top) {
+      const openIdx = core.indexOf(">") + 1;
+      core = core.slice(0, openIdx) + top + core.slice(openIdx);
+    }
+    const tail =
+      this._metaTraitsSection(pnj) +
+      this._creatureLoreSection(pnj) +
+      this._situationalMods(pnj) +
+      (pnj.isPC ? this._contactLinksSection(pnj) : "") +
+      this._backlinksSection(pnj) +
+      this._dossiersSection(pnj);
+    if (tail) {
+      const idx = core.lastIndexOf("</div>");
+      if (idx !== -1) core = core.slice(0, idx) + tail + core.slice(idx);
+    }
+    return core;
+  },
+
+  /** Ids des cartes en vue PAYSAGE ÉPURÉ (toggle du rail) — état de vue
+      éphémère, jamais persisté (comme le pli). Défaut = absent = rendu original. */
+  _curatedView: new Set(),
+  toggleCurated(id) {
+    if (this._curatedView.has(id)) this._curatedView.delete(id);
+    else this._curatedView.add(id);
+  },
+
+  /** DENSITÉ 2 — rendu CURÉ de la colonne système : ce que ce perso EST au
+      combat, scannable, tout lançable. Trois blocs :
+        1. Moniteur en BARRE (jauge neutre partagée avec l'annuaire) ;
+        2. la capacité SIGNATURE selon l'archétype — sorts (mage), formes
+           (techno), râtelier Matrice (decker/persona), pouvoirs (adepte) ou
+           armes (combattant). Dispatch par la DONNÉE du pnj (jamais
+           `App.edition`), réutilise les blocs de `offenseBlocks` — mêmes
+           réserves, mêmes libellés d'édition ;
+        3. les augmentations en TAGS (câblage, derme…), lues via `AUGS_KEYS`
+           du module (Anarchy n'en a pas → rien).
+      Le détail complet (toutes les armes, attributs, compétences) vit en
+      densité 3 (« Vue complète »). */
+  _curatedSystem(pnj, deps) {
+    const ed = pnj.edition;
+    const edMod = App.getEditionModule(ed);
+    let html = "";
+    // 1. Moniteur COCHABLE — le compact de la fiche légère : le MJ marque les
+    // dégâts d'un clic (délégation `toggle-monitor`, déjà câblée), dispatch
+    // d'édition via `pcTableBlock` (P/E en SR5, État en Anarchy) — 0 branche.
+    // Une vraie surface de JEU, pas une barre passive.
+    const mon =
+      edMod && edMod.pcTableBlock ? this._tableBlockMonitors(pnj, edMod.pcTableBlock) : "";
+    if (mon) html += `<div class="curated-monitor">${mon}</div>`;
+    // 2. Capacité signature — un seul bloc, choisi par ce que le pnj possède.
+    const deck = CyberdeckRenderer.combatArsenal(pnj, ed);
+    const persona = PersonaRenderer.combatArsenal(pnj, ed);
+    let cap = "";
+    if (pnj.spells && pnj.spells.length) cap = this._spellsBlock(pnj, pnj.spells, ed);
+    else if (pnj.complexForms && pnj.complexForms.length)
+      cap = this._complexFormsBlock(pnj, pnj.complexForms, ed);
+    else if (deck) cap = deck;
+    else if (persona) cap = persona;
+    else if (pnj.powers && pnj.powers.length)
+      cap = this._listSection("Pouvoirs d'adepte", pnj.powers);
+    else {
+      // Combattant : armes signature (3 premières) en pastilles lançables.
+      const { weapons } = ItemResolver.splitEquip(pnj.equip || []);
+      const sorted = weapons
+        .map((w) => ({ w, rank: edMod.weaponCategoryRank(ItemResolver.itemStr(w)) }))
+        .sort((a, b) => a.rank - b.rank)
+        .map(({ w }) => w);
+      const pills = [];
+      for (const w of sorted.slice(0, 3)) {
+        const r = deps.WeaponRoll ? deps.WeaponRoll.resolvePool(pnj, w, ed) : null;
+        const name =
+          (deps.WeaponRoll ? deps.WeaponRoll.parse(w).name : null) || ItemResolver.itemStr(w);
+        if (r)
+          pills.push(
+            `<span class="stat-pill rollable combat-pill" data-roll="${r.pool}" data-roll-label="${this._esc(name)}" title="${this._esc(name)}">${this._esc(name)} <strong>${r.pool}</strong></span>`,
+          );
+        // Sans réserve propre (Anarchy : on lance une compétence, l'arme ajoute
+        // les dégâts) → pastille nom seul, référence non lançable.
+        else pills.push(`<span class="stat-pill combat-pill">${this._esc(name)}</span>`);
+      }
+      if (pills.length) cap = `<div class="curated-pills">${pills.join("")}</div>`;
+    }
+    html += cap;
+    // 2b. Compétences — puces compactes lançables (le MJ les jette sans cesse :
+    // Perception, Discrétion, sociales…). Réutilise le rendu de `offenseBlocks`
+    // (mêmes réserves, malus de blessure cuit). Triées pour le repérage (D5).
+    const skills = (pnj.skills || [])
+      .slice()
+      .sort((a, b) => (a.name || "").localeCompare(b.name || "", "fr"));
+    if (skills.length) html += this._skillsSection(skills, Utils.dicePenalty(pnj, ed), { pnj });
+    // 3. Augmentations en tags.
+    const augs = edMod && edMod.AUGS_KEYS ? ItemResolver.augItems(pnj, edMod.AUGS_KEYS) : [];
+    if (augs && augs.length) {
+      // Tag COURT : le nom (+ indice) seul, sans les effets entre [ ] ou ( )
+      // — la lecture d'un coup d'œil de « ce qui est implanté » (le détail
+      // vit en vue complète).
+      const tags = augs
+        .map((a) => {
+          const short = ItemResolver.itemStr(a).split(/[[(]/)[0].trim();
+          return `<span class="aug-tag" title="${this._esc(ItemResolver.itemStr(a))}">${this._esc(short)}</span>`;
+        })
+        .join("");
+      html += `<div class="curated-augs">${tags}</div>`;
+    }
+    return html;
   },
 
   /** Blocs d'OFFENSE du combattant actif, pour la console « Agir » du tracker
@@ -1013,7 +1118,14 @@ export const CardRenderer = {
         return `<button type="button" class="lens-tab${open ? " active" : ""}" data-zone-toggle="${m.key}" data-id="${pnj.id}" title="${this._esc(m.label)}" aria-label="${this._esc(m.label)}" aria-pressed="${open}">${m.glyph}</button>`;
       })
       .join("");
-    return `<div class="lens-selector" role="tablist" aria-label="Vue">${viewTabs}${moduleTabs}</div>`;
+    // Toggle PAYSAGE ÉPURÉ — vue de jeu optionnelle, posée dans le MÊME rail
+    // que les lentilles (un seul endroit, pas de chrome éparpillé). N'est pas une
+    // « vue » de pli : un état de rendu à part (`_curatedView`), séparé des
+    // ☰❝⚔ par un fin filet. Hors contacts (pas de contenu de combat à curer).
+    const curatedToggle = CardRenderer.isContact(pnj)
+      ? ""
+      : `<button type="button" class="lens-tab lens-curated${this._curatedView.has(pnj.id) ? " active" : ""}" data-curated-toggle data-id="${pnj.id}" title="Vue de jeu épurée (paysage)" aria-label="Vue de jeu épurée (paysage)" aria-pressed="${this._curatedView.has(pnj.id)}">◫</button>`;
+    return `<div class="lens-selector" role="tablist" aria-label="Vue">${viewTabs}${moduleTabs}${curatedToggle}</div>`;
   },
 
   /* ---- Traits raciaux de métavariante ---- */

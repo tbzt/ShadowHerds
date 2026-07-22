@@ -64,6 +64,8 @@ export const CardZones = {
       render: (pnj, ctx) => ctx.r._topModulesHtml(pnj, ctx.deps),
     },
     {
+      // Traits de métavariante (Estomac d'ogre, Vision nocturne…) : « ce que la
+      // créature EST » → fiction, sous l'incarnation (choix user, équilibre).
       id: "meta-traits",
       label: "Traits raciaux",
       column: "fiction",

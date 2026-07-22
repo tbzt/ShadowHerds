@@ -312,15 +312,26 @@
    CARTE PAYSAGE (densité 2) — carte modulaire L1.
    La disposition encode un MOMENT D'USAGE, pas une esthétique : deux
    colonnes selon l'axe SYSTÈME (« ça se lance / se calcule ») ↔ FICTION
-   (« ça se joue / se raconte »). Desktop : côte à côte, système à gauche
-   (point d'entrée le plus fréquent en jeu, l'œil entre par la gauche).
-   Mobile : une seule topographie linéaire, fiction en TÊTE — l'incarnation
-   se regarde avant le combat (invariant I2), système dessous.
+   (« ça se joue / se raconte »), système à gauche (point d'entrée le plus
+   fréquent en jeu, l'œil entre par la gauche).
+
+   Le paysage est le format du FOCUS (une carte large : CardPeek, plein
+   écran) — PAS du masonry multi-cartes, où chaque carte est étroite (elle
+   sert le TRI, densité 1). Le déclencheur est donc la largeur de LA CARTE,
+   pas du viewport : `@container` sur la frame. Sous le seuil (le cas
+   courant : carte dans une colonne de masonry) → colonne unique, fiction
+   en TÊTE (l'incarnation se regarde avant le combat, invariant I2) — aucune
+   régression de lisibilité. Au-delà → deux colonnes.
+
    Dualité MATÉRIELLE tenue en laisse : le système garde sa voix froide
    (mono, majuscules espacées) ; la fiction prend une voix chaude (corps de
    texte, casse-phrase). L'encre par livre vient déjà de --accent/--border
    (theme-*.css) — aucun hex ici.
    ============================================================ */
+/* La frame est le CONTENEUR de requête : la carte réagit à SA largeur. */
+.pnj-card-frame {
+  container-type: inline-size;
+}
 .pnj-card-body--paysage {
   padding: 0;
 }
@@ -334,7 +345,10 @@
   text-transform: none;
   letter-spacing: 0.02em;
 }
-@media (min-width: 641px) {
+/* Carte assez LARGE pour deux colonnes. Le contenu de densité 2 étant CURÉ
+   (léger), le seuil est bas : le paysage tient dès ~460px (masonry, CardPeek),
+   là où le corps complet aurait exigé le double. */
+@container (min-width: 460px) {
   .pnj-card-body--paysage {
     display: grid;
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
@@ -345,7 +359,9 @@
     border-left: 1px solid var(--border);
   }
 }
-@media (max-width: 640px) {
+/* Carte ÉTROITE (le cas courant : masonry) → colonne unique, fiction en
+   tête (I2). C'est le rendu d'avant, sans coupe cramée. */
+@container (max-width: 459px) {
   .pnj-card-body--paysage {
     display: flex;
     flex-direction: column;
@@ -354,6 +370,70 @@
     order: -1;
     border-bottom: 1px solid var(--border);
   }
+}
+
+/* ---- Densité 2 (lentille ⚔ Combat), colonne système CURÉE : moniteur +
+   capacité signature + compétences + tags. Le contenu léger tient à ~500px —
+   d'où le seuil de bascule 2-colonnes bas (le corps complet exigeait le
+   double). Pas de bouton d'organiseur ici : c'est le rail ☰❝⚔ qui pilote. ---- */
+/* Le toggle paysage vit dans le rail, mais SÉPARÉ des lentilles de pli
+   (☰❝⚔) par un fin filet — c'est une vue à part, pas un pli. */
+.lens-curated {
+  margin-top: 5px;
+  padding-top: 7px;
+  border-top: 1px solid var(--border);
+}
+.curated-monitor {
+  margin-bottom: var(--sp-2);
+}
+/* Vue curée : moniteurs à l'HORIZONTAL — une bande par piste (P/E) empilées,
+   pas l'escalier 3-colonnes de la fiche. On sort les pistes du `display:grid`
+   (l'escalier des paliers de malus) vers un flex nowrap ; cases un cran plus
+   petites pour tenir la colonne ; débordement → scroll horizontal. */
+.curated-monitor .monitor-block {
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.curated-monitor .monitor-row {
+  flex-wrap: nowrap;
+}
+.curated-monitor .monitor-block .monitor-phys,
+.curated-monitor .monitor-block .monitor-stun {
+  display: flex;
+  flex-wrap: nowrap;
+  width: auto;
+  overflow-x: auto;
+}
+.curated-monitor .monitor-box {
+  width: 13px;
+  height: 13px;
+}
+.curated-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+/* Pastille d'arme signature : la même pastille lançable, un cran plus grande
+   (c'est le geste fréquent). Réutilise .stat-pill.rollable.combat-pill. */
+.curated-pills .combat-pill {
+  font-size: var(--fs-sm);
+}
+/* Augmentations en tags : références PASSIVES (ni dé ni fond) — l'œil comprend
+   que c'est inerte, densité par nature (cf. brief §3.3). */
+.curated-augs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin-top: var(--sp-2);
+}
+.aug-tag {
+  padding: 1px var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.04em;
 }
 
 /* ============================================================
@@ -653,7 +733,8 @@
    discrets cohérents avec les bordures de carte. */
 .flavor-section .flavor-row {
   display: flex;
-  gap: 0.6rem;
+  flex-wrap: wrap;
+  gap: 0.1rem 0.6rem;
   font-size: var(--fs-xs);
   line-height: 1.45;
   padding: 3px 0;
@@ -662,9 +743,13 @@
 .flavor-section .flavor-row:last-child {
   border-bottom: none;
 }
+/* Le libellé prend sa largeur NATURELLE (plus de colonne fixe qui écrase la
+   valeur) ; la valeur exige au moins ~140px : quand la place à côté manque —
+   colonne étroite ou libellé long — elle bascule EN DESSOUS, pleine largeur
+   (le « si ça dépasse 1 ligne, ça passe dessous » demandé). En colonne large
+   (vue complète), tout reste côte à côte. */
 .flavor-key {
-  flex-shrink: 0;
-  width: 84px;
+  flex: 0 0 auto;
   color: var(--accent);
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
@@ -674,7 +759,8 @@
   opacity: 0.85;
 }
 .flavor-val {
-  flex: 1;
+  flex: 1 1 140px;
+  min-width: 0;
   color: var(--text-dim);
 }
 
