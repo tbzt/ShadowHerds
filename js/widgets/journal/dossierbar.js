@@ -21,7 +21,6 @@
    (lecture des comptes + pilotage de currentGroup), CardRenderer._esc.
    ============================================================ */
 import { CardRenderer } from "../card/cardrenderer.js";
-import { Collection } from "../collection/collection.js";
 import { Dialog } from "../kit/dialog.js";
 import { DiceLog } from "../dice/dicelog.js";
 import { Dossiers } from "./dossiers.js";
@@ -226,12 +225,10 @@ export const DossierBar = {
       <span class="group-item-name">Tout</span>
       <span class="group-item-count">${this._countFor(null)}</span>
     </div>`;
-    // Favoris épinglé en tête, hors boucle des racines — dossier
-    // réservé créé à la volée par syncDossiers() dès la première épingle.
-    const fav = Dossiers.roots().find((d) => d.name === Collection.FAV_GROUP);
-    if (fav) html += this._nodeHtml(fav, 0, true);
+    // A2b — plus de nœud « ★ Favoris » réservé : l'épingle est un tag de
+    // l'entité (`Tags.PINNED`), plus un dossier. La barre ne liste que les
+    // vrais dossiers.
     for (const d of Dossiers.roots()) {
-      if (fav && d.id === fav.id) continue;
       html += this._nodeTreeHtml(d, 0);
     }
     box.innerHTML = html;
@@ -248,22 +245,14 @@ export const DossierBar = {
     return html;
   },
 
-  /** Ligne de l'arbre : dossier (racine) ou sous-groupe (isSub). Le nœud
-      Favoris (isFav) est réservé : pas de sous-groupe/renommer/supprimer. */
-  _nodeHtml(node, depth, isFav = false) {
+  /** Ligne de l'arbre : dossier (racine) ou sous-groupe (isSub). */
+  _nodeHtml(node, depth) {
     const active = this.current === node.id ? "active" : "";
     const nameEsc = CardRenderer._esc(node.name);
     const isSub = depth > 0;
     const sub = isSub ? " group-subitem" : "";
     // Indent piloté par --depth (clampé au plafond visuel), pas un handler.
     const style = isSub ? ` style="--depth:${Math.min(depth, this.MAX_DEPTH)}"` : "";
-    if (isFav) {
-      return `<div class="group-item ${active}" data-dossier-bar data-action="switch-dossier" data-dossier="${node.id}">
-        <span class="group-item-icon">★</span>
-        <span class="group-item-name">${nameEsc}</span>
-        <span class="group-item-count">${this._countFor(this._keysUnder(node.id))}</span>
-      </div>`;
-    }
     // « + » masqué au dernier niveau : un enfant dépasserait MAX_DEPTH.
     const addBtn = depth < this.MAX_DEPTH
       ? `<button class="btn-icon-tiny" data-dossier-bar data-action="add-subgroup" data-parent="${node.id}" title="Nouveau sous-groupe">+</button>`
@@ -435,10 +424,6 @@ export const DossierBar = {
   renameDossier(id) {
     const d = Dossiers.get(id);
     if (!d) return;
-    if (d.name === Collection.FAV_GROUP) {
-      toast("Dossier réservé (Favoris).", "warning");
-      return;
-    }
     const oldName = d.name;
     Dialog.prompt({
       title: "Renommer",
@@ -462,12 +447,12 @@ export const DossierBar = {
     });
   },
 
-  /** Type (ou dé-type) un dossier dans la hiérarchie de campagne. Le dossier
-      Favoris est réservé : jamais typé. Additif — n'affecte ni les membres ni
-      les groupes des collections, seulement la structure Dossiers. */
+  /** Type (ou dé-type) un dossier dans la hiérarchie de campagne. Additif —
+      n'affecte ni les membres ni les groupes des collections, seulement la
+      structure Dossiers. */
   setDossierKind(id, kind) {
     const d = Dossiers.get(id);
-    if (!d || d.name === Collection.FAV_GROUP) return;
+    if (!d) return;
     Dossiers.setKind(id, kind);
     this.render();
     this._notify();
@@ -483,10 +468,6 @@ export const DossierBar = {
   removeDossier(id) {
     const d = Dossiers.get(id);
     if (!d) return;
-    if (d.name === Collection.FAV_GROUP) {
-      toast("Dossier réservé (Favoris).", "warning");
-      return;
-    }
     const isParent = Dossiers.children(id).length > 0;
     const msg = isParent
       ? `Supprimer « ${d.name} » et ses sous-groupes ? (Le contenu reste dans la bibliothèque.)`

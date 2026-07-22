@@ -27,6 +27,9 @@ export const GraphView = {
   _lastScope: null,
   _weave: false,
   _halo: true, // B4 : afficher la couronne de voisins hors périmètre (estompée)
+  _pockets: true, // A3 : afficher les poches de faction (zones colorées)
+  _groupMode: false, // A3b : mode « en faire une faction » (sélection multiple)
+  _groupSel: new Set(), // A3b : ids sélectionnés pour la faction en construction
   _edges: null, // dernières arêtes projetées (source de l'inspecteur d'arête)
   _selectedEdge: null, // arête en cours d'édition dans le panneau (Lot 3)
   _selectedNodeId: null, // nœud sélectionné (pour la couleur, Lot 4)
@@ -40,9 +43,12 @@ export const GraphView = {
   open({ focusId = null, memberIds = null, title = "Liens" } = {}) {
     this._lastScope = { focusId, memberIds };
     this._weave = false; // chaque ouverture démarre en mode déplacement
+    this._groupMode = false; // ni en construction de faction
+    this._groupSel = new Set();
     const overlay = this._ensure();
     this._reflectWeave(overlay);
     this._reflectHalo(overlay);
+    this._reflectPockets(overlay);
     overlay.querySelector('[data-graph="title"]').textContent = title;
     overlay.classList.add("open");
     // Monter synchrone : lire `clientWidth` (dans _project) force le reflow,
@@ -80,12 +86,13 @@ export const GraphView = {
       nodes: graph.nodes,
       edges: graph.edges,
       accent,
-      onNodeTap: (id) => this._selectNode(id),
+      onNodeTap: (id) => this._onNodeTap(id),
       onEdgeTap: (id) => this._selectEdge(id),
       onBackgroundTap: () => this._clearInspector(),
       onWeave: (fromId, toId) => this._createWeave(fromId, toId),
     });
     GraphEngine.setWeave(this._weave); // le remontage réinitialise le mode
+    this._applyPockets(graph.nodes); // A3 — poches de faction sur les nœuds présents
     this._clearInspector(); // le panneau démarre sur l'invite
   },
 
@@ -94,6 +101,14 @@ export const GraphView = {
       interactif par délégation globale — cf. encounterrenderer/contactsbook),
       en lecture : aucune vérité détenue ici. Les types que la carte ne sait
       pas dessiner (serveur) retombent sur une carte d'identité légère. */
+  /** A3b — aiguillage du tap sur un nœud : en mode groupe, il (dé)sélectionne
+      pour la faction en construction ; sinon, il ouvre la fiche (comportement
+      historique). */
+  _onNodeTap(id) {
+    if (this._groupMode) this._toggleGroupNode(id);
+    else this._selectNode(id);
+  },
+
   _selectNode(id) {
     GraphEngine.select(id);
     this._selectedEdge = null;
@@ -102,6 +117,11 @@ export const GraphView = {
     if (!panel) return;
     panel.classList.remove("empty");
     panel.textContent = "";
+    // A3b — entrée « en faire une faction » : amorce le mode groupe avec ce nœud.
+    panel.insertAdjacentHTML(
+      "beforeend",
+      `<button type="button" class="graph-group-start" data-graph-action="group-start">◈ En faire une faction</button>`,
+    );
     const ent = typeof PnjLookup !== "undefined" ? PnjLookup.find(id) : null;
     if (ent && this._renderable(id)) {
       // Rangée « couleur du nœud » (Lot 4) AU-DESSUS de la fiche, puis la vraie
@@ -109,6 +129,78 @@ export const GraphView = {
       panel.insertAdjacentHTML("beforeend", this._nodeColorRow(id));
       panel.appendChild(CardRenderer.render(ent, ["edit"], CardRenderer.liveDeps()));
     } else panel.appendChild(this._identityCard(id));
+  },
+
+  /** A3b — entre en mode « construction de faction », amorcé par le nœud
+      sélectionné. Le tissage est incompatible (les deux détournent le tap) → OFF.
+      Le tap devient (dé)sélection multiple ; l'inspecteur montre le panneau de
+      groupe. */
+  _startGroup(seedId) {
+    if (!seedId) return;
+    if (this._weave) { this._weave = false; this._reflectWeave(this._el); GraphEngine.setWeave(false); }
+    this._groupMode = true;
+    this._groupSel = new Set([seedId]);
+    GraphEngine.select(null);
+    GraphEngine.clearMultiSelected();
+    GraphEngine.setNodeMultiSelected(seedId, true);
+    this._renderGroupPanel();
+  },
+
+  _toggleGroupNode(id) {
+    const on = !this._groupSel.has(id);
+    if (on) this._groupSel.add(id);
+    else this._groupSel.delete(id);
+    GraphEngine.setNodeMultiSelected(id, on);
+    this._renderGroupPanel();
+  },
+
+  /** Panneau de l'inspecteur en mode groupe : le compte + créer/annuler. Le
+      retour visuel des membres est l'anneau sur les nœuds (pas une liste ici). */
+  _renderGroupPanel() {
+    const panel = this._el && this._el.querySelector('[data-graph="inspector"]');
+    if (!panel) return;
+    const n = this._groupSel.size;
+    panel.classList.remove("empty");
+    panel.innerHTML = `<div class="graph-group-panel">
+      <div class="graph-group-head">Construction d'une faction</div>
+      <p class="graph-hint">Touchez les nœuds à regrouper.<br><strong>${n}</strong> membre${n > 1 ? "s" : ""} sélectionné${n > 1 ? "s" : ""}.</p>
+      <div class="graph-group-actions">
+        <button type="button" class="btn-primary btn-small" data-graph-action="make-faction"${n ? "" : " disabled"}>＋ Créer la faction</button>
+        <button type="button" class="btn-secondary btn-small" data-graph-action="group-cancel">Annuler</button>
+      </div>
+    </div>`;
+  },
+
+  /** Crée la faction depuis la sélection : nom demandé, couleur = prochaine de la
+      palette curée (poches distinctes). Écrit via `FactionStore` (jamais un store
+      parallèle), puis sort du mode et re-projette pour faire apparaître la poche. */
+  _makeFaction() {
+    const ids = [...this._groupSel];
+    if (!ids.length) return;
+    Dialog.prompt({
+      title: "Nouvelle faction",
+      label: "Nom de la faction",
+      placeholder: "ex. Les Halloweeners, Cellule Renraku…",
+      confirmLabel: "Créer",
+    }).then((name) => {
+      const clean = (name || "").trim();
+      if (!clean || typeof FactionStore === "undefined") return;
+      const color = this._EDGE_COLORS[FactionStore.all().length % this._EDGE_COLORS.length];
+      const f = FactionStore.create({ name: clean, color });
+      if (!f) return;
+      for (const id of ids) FactionStore.addMember(f.id, id);
+      if (typeof toast === "function") toast(`Faction « ${f.name} » créée (${ids.length}).`);
+      this._exitGroup();
+      this._project(); // re-projette → la nouvelle poche apparaît
+    });
+  },
+
+  /** Sort du mode groupe : efface les anneaux + la sélection + l'inspecteur. */
+  _exitGroup() {
+    this._groupMode = false;
+    this._groupSel = new Set();
+    GraphEngine.clearMultiSelected();
+    this._clearInspector();
   },
 
   /** Rangée de couleur du nœud (palette curée + échappatoire), reflète la
@@ -359,6 +451,30 @@ export const GraphView = {
     btn.classList.toggle("active", this._halo);
   },
 
+  /** Reflète l'état des poches de faction sur le bouton (aria-pressed + classe). */
+  _reflectPockets(overlay) {
+    const btn = (overlay || this._el).querySelector('[data-graph-action="toggle-pockets"]');
+    if (!btn) return;
+    btn.setAttribute("aria-pressed", String(this._pockets));
+    btn.classList.toggle("active", this._pockets);
+  },
+
+  /** A3 — projette les Factions en POCHES sur le graphe : chaque faction dont au
+      moins un membre est présent devient une zone colorée (sa couleur). Lecture
+      seule de `FactionStore` (jamais un store parallèle) ∩ nœuds affichés ;
+      délègue la géométrie et le rendu à GraphEngine. */
+  _applyPockets(nodes) {
+    const present = new Set(nodes.map((n) => n.id));
+    const factions = typeof FactionStore !== "undefined" ? FactionStore.all() : [];
+    const list = [];
+    for (const f of factions) {
+      const ids = (f.members || []).filter((id) => present.has(id));
+      if (ids.length) list.push({ id: f.id, color: f.color, memberIds: ids });
+    }
+    GraphEngine.setPockets(list);
+    GraphEngine.setPocketsVisible(this._pockets);
+  },
+
   _ensure() {
     if (this._el) return this._el;
     const overlay = document.createElement("div");
@@ -370,6 +486,7 @@ export const GraphView = {
       <div class="modal graph-modal">
         <div class="modal-header">
           <span class="modal-title" data-graph="title">Liens</span>
+          <button class="graph-pockets-toggle" data-graph-action="toggle-pockets" aria-pressed="true" title="Afficher les poches de faction (zones colorées)">◇ Poches</button>
           <button class="graph-halo-toggle" data-graph-action="toggle-halo" aria-pressed="true" title="Afficher les voisins hors périmètre (estompés)">Voisins</button>
           <button class="graph-weave-toggle" data-graph-action="toggle-weave" aria-pressed="false" title="Tisser un lien : tirer d'un nœud à l'autre">◈ Tisser</button>
           <button class="modal-close" data-graph-action="close" aria-label="Fermer">✕</button>
@@ -400,6 +517,17 @@ export const GraphView = {
         this._halo = !this._halo;
         this._reflectHalo(overlay);
         this._project(); // re-projeter avec/sans la couronne de voisins
+      } else if (btn.dataset.graphAction === "toggle-pockets") {
+        // A3 — masquer/afficher les poches SANS remonter (patch de visibilité).
+        this._pockets = !this._pockets;
+        this._reflectPockets(overlay);
+        GraphEngine.setPocketsVisible(this._pockets);
+      } else if (btn.dataset.graphAction === "group-start") {
+        this._startGroup(this._selectedNodeId); // A3b — amorcer depuis le nœud ouvert
+      } else if (btn.dataset.graphAction === "make-faction") {
+        this._makeFaction();
+      } else if (btn.dataset.graphAction === "group-cancel") {
+        this._exitGroup();
       }
     });
     // Valeurs continues de l'inspecteur d'arête : mot (frappe), couleur

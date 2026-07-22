@@ -40,6 +40,14 @@ export const FactionPicker = {
       if (rm) {
         FactionStore.removeMember(rm.dataset.faction, rm.dataset.id);
         this._refreshCard(rm.dataset.id);
+        return;
+      }
+      // A3c — ouvrir le graphe scopé aux membres d'une faction (§5.5 : `open`
+      // accepte déjà `memberIds`). Lecture seule du roster, jamais un store.
+      const graph = e.target.closest('[data-action="faction-graph"]');
+      if (graph && typeof GraphView !== "undefined") {
+        const f = FactionStore.get(graph.dataset.faction);
+        if (f) GraphView.open({ memberIds: (f.members || []).slice(), title: f.name });
       }
     });
   },

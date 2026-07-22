@@ -13,7 +13,6 @@
    Délégation `data-action` (aucun onclick), neutre par édition.
    ============================================================ */
 import { CardPeek } from "../widgets/card/cardpeek.js";
-import { Collection } from "../widgets/collection/collection.js";
 import { Debrief } from "./debrief.js";
 import { DossierBar } from "../widgets/journal/dossierbar.js";
 import { Dossiers } from "../widgets/journal/dossiers.js";
@@ -179,7 +178,7 @@ export const Play = {
   render() {
     const box = document.getElementById("play-content");
     if (!box) return;
-    const roots = Dossiers.roots().filter((d) => d.name !== Collection.FAV_GROUP);
+    const roots = Dossiers.roots();
     const campaigns = roots.filter((d) => d.kind === "campaign");
     // Runs hors campagne : racines typées `run`, OU runs dont le parent n'est
     // pas une campagne (dossier neutre) — présentées à plat sous « Runs ».
@@ -206,18 +205,7 @@ export const Play = {
     for (const camp of campaigns) {
       const runs = Dossiers.children(camp.id).filter((d) => d.kind === "run");
       const others = runs.filter((r) => r.id !== heroId);
-      // Un run dont la seule occurrence est le poste de commandement ci-dessus
-      // n'est pas « absent » : on renvoie vers le haut plutôt que « Aucun run ».
-      const inner = others.length
-        ? others.map((r) => this._runRow(r)).join("")
-        : runs.length
-          ? `<div class="play-empty-note">Run en cours affiché ci-dessus ↑</div>`
-          : `<div class="play-empty-note">Aucun run — « Faire un run » depuis un topos le rangera ici.</div>`;
-      html += this._sectionHtml(
-        `❖ ${CardRenderer._esc(camp.name)}`,
-        `${runs.length} run${runs.length > 1 ? "s" : ""}`,
-        inner,
-      );
+      html += this._bridgeHtml(camp, runs, others);
     }
     const otherLoose = looseRuns.filter((r) => r.id !== heroId);
     if (otherLoose.length) {
@@ -249,6 +237,31 @@ export const Play = {
         <span class="hub-section-count">${count}</span>
       </div>
       ${inner}
+    </div>`;
+  },
+
+  /** B1 — Le Pont : la campagne rendue en POSTE D'AIGUILLAGE de runs (peau
+      froide, niveau timeline « campagne » de la maquette « Cockpit vivant »).
+      C'est le pendant froid du Cockpit chaud : mêmes rangées `_runRow`, mais la
+      campagne devient un tableau d'aiguillage où le run vivant est SURÉLEVÉ +
+      pulsant (classe `is-live`/`is-stashed` portée par `_runRow`). Aucune donnée,
+      aucune branche d'édition : projection de `Dossiers.children` + état vivant.
+      `others` = les runs hors poste de commandement (celui-ci reste en tête). */
+  _bridgeHtml(camp, runs, others) {
+    const inner = others.length
+      ? others.map((r) => this._runRow(r)).join("")
+      : runs.length
+        ? `<div class="play-empty-note">Run en cours affiché ci-dessus ↑</div>`
+        : `<div class="play-empty-note">Aucun run — « Faire un run » depuis un topos le rangera ici.</div>`;
+    const count = `${runs.length} run${runs.length > 1 ? "s" : ""}`;
+    return `<div class="play-bridge">
+      <div class="play-bridge-head">
+        <span class="play-bridge-icon" aria-hidden="true">❖</span>
+        <span class="play-bridge-title">${CardRenderer._esc(camp.name)}</span>
+        <span class="play-bridge-count">${count}</span>
+        <span class="play-bridge-hint">aiguillage</span>
+      </div>
+      <div class="play-bridge-runs">${inner}</div>
     </div>`;
   },
 
@@ -286,7 +299,7 @@ export const Play = {
     // rangé ; sinon rien (run préparé sans scène encore jouée).
     const body = live ? this._liveSceneHtml() : stashed ? this._stashSummaryHtml(run.id) : "";
 
-    return `<div class="play-run${live ? " is-live" : ""}">
+    return `<div class="play-run${live ? " is-live" : stashed ? " is-stashed" : ""}">
       <div class="play-run-head">
         <button class="play-run-name" data-action="play-focus" data-dossier="${run.id}" title="Ouvrir « ${CardRenderer._esc(run.name)} » dans la bibliothèque">
           <span class="play-run-icon" aria-hidden="true">◆</span>${CardRenderer._esc(run.name)}
@@ -398,7 +411,12 @@ export const Play = {
       : stashed
         ? "Ouvrir la rencontre"
         : "Lancer la scène";
-    const resumeBtn = `<button class="btn-secondary btn-small" data-action="play-resume" data-dossier="${run.id}">${resumeLabel}</button>`;
+    // Briefing (§4.2) — décision utilisateur : le CTA de lancement CHAUFFE en
+    // accent même dans une coquille FROIDE (il fait basculer vers le chaud). En
+    // live, le shell est déjà chaud → le « Reprendre » reste secondaire (pas de
+    // redondance criée). Un seul CTA primaire par poste de commandement.
+    const launchClass = live ? "btn-secondary" : "btn-primary";
+    const resumeBtn = `<button class="${launchClass} btn-small" data-action="play-resume" data-dossier="${run.id}">${resumeLabel}</button>`;
     // Corps de scène : vivante (projection) · rangée (résumé) · aucune (invite).
     const scene = live
       ? this._liveSceneHtml()
@@ -414,19 +432,19 @@ export const Play = {
     const avant = this._toposGlanceHtml(run.id) + this._castHtml(run.id) + this._scenesHtml(run.id);
     const avantZone = avant ? this._momentHtml("Avant", "la prépa", avant) : "";
     const pendantZone = this._momentHtml("Pendant", "la scène", scene + this._matrixClockHtml());
-    const apresZone = this._momentHtml(
-      "Après",
-      "la clôture",
-      `<div class="play-apres">
-        <button class="btn-secondary btn-small" data-action="play-debrief" data-dossier="${run.id}" title="Débrief : ce que ce run a laissé (paie, karma, réputation, retombées)">✓ Débrief</button>
-        <span class="play-apres-note">Ce que ce run a laissé : paie, karma, réputation, retombées.</span>
-      </div>`,
-    );
+    const apresZone = this._momentHtml("Après", "la clôture", this._clotureHtml(run.id));
     const moments = live
       ? pendantZone + avantZone + apresZone
       : avantZone + pendantZone + apresZone;
 
-    return `<div class="play-command">
+    // B1 — la peau Cockpit : une coquille dont la COULEUR D'ÉTAT informe avant la
+    // lecture (froid au repos · accent d'édition en combat · vert en Matrice). La
+    // classe d'état pilote un seul token `--state` en CSS (aucune couleur en dur,
+    // aucune branche d'édition) ; la barre d'état la met en mots.
+    const state = this._cockpitState(run);
+
+    return `<div class="play-command is-${state}">
+      ${this._cockpitStatusHtml(run, state)}
       <div class="play-command-head">
         <span class="play-run-icon" aria-hidden="true">◆</span>
         <button class="play-command-name" data-action="play-focus" data-dossier="${run.id}" title="Ouvrir « ${CardRenderer._esc(run.name)} » dans la bibliothèque">${CardRenderer._esc(run.name)}</button>
@@ -439,6 +457,47 @@ export const Play = {
     </div>`;
   },
 
+  /** B1 — l'ÉTAT de la coquille Cockpit, dérivé de champs NEUTRES (aucune
+      branche d'édition) : `cold` au repos · `combat` quand une scène de ce run
+      tourne avec un moteur de combat · `matrix` quand la scène est pilotée par
+      la Matrice (preset sans combat, ou serveur en jeu). Précédence combat >
+      Matrice : quand le roster ET une intrusion tournent, la coquille reste
+      chaude (le combat prend l'écran, maquette « Cockpit — Combat »). */
+  _cockpitState(run) {
+    const live = App.context && App.context.scene === run.id;
+    if (!live) return "cold";
+    const motors = (Encounter.state && Encounter.state.motors) || ["combat"];
+    if (motors.includes("combat")) return "combat";
+    if (motors.includes("matrix") || Encounter.matrixMotorSummary().length) return "matrix";
+    return "combat";
+  },
+
+  /** B1 — la barre d'état de la coquille : une pastille (pulse en live, piloté
+      CSS) + un libellé qui dit le moment d'un coup d'œil. Lecture seule, projetée
+      d'`Encounter`/`App.context` — Jouer ne possède rien. */
+  _cockpitStatusHtml(run, state) {
+    const st = Encounter.state;
+    let dot, label;
+    if (state === "combat") {
+      const pass = st && st.pass > 1 ? ` · P${st.pass}` : "";
+      dot = "●";
+      label = `En combat — Round ${st ? st.round : 1}${pass}`;
+    } else if (state === "matrix") {
+      const n = Encounter.matrixMotorSummary().length;
+      dot = "◐";
+      label = n ? `Matrice active — ${n} serveur${n > 1 ? "s" : ""} en jeu` : "Matrice active";
+    } else {
+      dot = "○";
+      label = Encounter.hasStash(run.id)
+        ? "Rencontre rangée — prête à rouvrir"
+        : "En préparation";
+    }
+    return `<div class="play-cockpit-status">
+      <span class="play-cockpit-dot" aria-hidden="true">${dot}</span>
+      <span class="play-cockpit-label">${label}</span>
+    </div>`;
+  },
+
   /** VIS-8 étape 2 — enveloppe une zone du poste de commandement d'un
       « sourcil » discret qui NOMME le moment de jeu (Avant / Pendant / Après).
       `when` = le moment, `hint` = ce qu'on y fait. Pur habillage : aucune
@@ -447,6 +506,27 @@ export const Play = {
     return `<div class="play-moment">
       <div class="play-moment-label"><span class="play-moment-when">${when}</span><span class="play-moment-hint">${hint}</span></div>
       ${inner}
+    </div>`;
+  },
+
+  /** Clôture (§4.2) — le débrief comme un BILAN qui fait plaisir (couleur d'état
+      OR). Peau pure : le détail (paie/karma/réputation/retombées → `Campaign` +
+      `Notebooks`) reste la propriété de `Debrief` (VIS-7) ; ici on invite au
+      bilan, on NOMME ses axes en pastilles et on rappelle qu'il se verse au
+      carnet. Aucune donnée, aucune branche d'édition — labels statiques + un CTA
+      délégué. Toujours présent (comme l'ancien bouton) : clore est le geste de
+      fin de run, même sur un run peu joué (Debrief gère l'équipe vide). */
+  _clotureHtml(runId) {
+    const facets = ["Paie", "Karma", "Réputation", "Retombées"]
+      .map((f) => `<span class="play-cloture-facet">${f}</span>`)
+      .join("");
+    return `<div class="play-cloture">
+      <div class="play-cloture-head">Ce que ce run a laissé</div>
+      <div class="play-cloture-facets">${facets}</div>
+      <div class="play-cloture-cta">
+        <button class="btn-secondary btn-small play-cloture-btn" data-action="play-debrief" data-dossier="${runId}" title="Débrief : ce que ce run a laissé (paie, karma, réputation, retombées)">✓ Faire le débrief</button>
+        <span class="play-cloture-note">Versé au carnet et au registre.</span>
+      </div>
     </div>`;
   },
 
@@ -487,18 +567,33 @@ export const Play = {
     const topoi = typeof RunGen !== "undefined" ? RunGen.forDossier(runId) : [];
     if (!topoi.length) return "";
     const t = topoi[0];
-    const rows = [
-      ["Objectif", t.type],
-      ["Complication", t.complication],
-      ["Mandant", t.client],
-      ["Lieu", t.lieu],
-    ].filter(([, v]) => v);
-    if (!rows.length) return "";
-    const pay = t.payment
-      ? `<div class="play-topos-pay">${CardRenderer._esc(t.payment)}${t.difficulte ? ` · ${CardRenderer._esc(t.difficulte)}` : ""}</div>`
+    const esc = CardRenderer._esc;
+    // Briefing (§4.2) — le topos rendu comme un VRAI briefing, pas une table
+    // plate : l'Objectif (`t.type`) mène en titre, le Mandant · Lieu donnent le
+    // contexte, la Complication (« ce qui peut mal tourner ») est mise en garde,
+    // la paie ferme. Froid, tabulaire. 0 donnée neuve — même topos projeté.
+    const obj = t.type ? `<div class="play-brief-obj">${esc(t.type)}</div>` : "";
+    const metaBits = [t.client, t.lieu].filter(Boolean).map((v) => esc(v));
+    const meta = metaBits.length
+      ? `<div class="play-brief-meta">${metaBits.join(" · ")}</div>`
       : "";
-    return `<div class="play-topos">
-      ${rows.map(([k, v]) => `<div class="play-topos-row"><span class="play-topos-k">${k}</span><span class="play-topos-v">${CardRenderer._esc(v)}</span></div>`).join("")}
+    // Rien de briefing à montrer (topos sans objectif/mandant/lieu/complication) :
+    // repli sur l'ancien silence (mais on garde les verbes de prépa si le topos
+    // existe — éditer reste utile). On n'affiche le cadre que s'il porte du sens.
+    const compl = t.complication
+      ? `<div class="play-brief-compl"><span class="play-brief-compl-k">Complication</span> ${esc(t.complication)}</div>`
+      : "";
+    if (!obj && !meta && !compl) return "";
+    const pay = t.payment
+      ? `<div class="play-topos-pay">${esc(t.payment)}${t.difficulte ? ` · ${esc(t.difficulte)}` : ""}</div>`
+      : "";
+    return `<div class="play-topos play-briefing">
+      <div class="play-brief-head">
+        <span class="play-brief-label">◈ Briefing</span>
+        ${obj}
+        ${meta}
+      </div>
+      ${compl}
       ${pay}
       ${this._prepActionsHtml(t, runId)}
     </div>`;

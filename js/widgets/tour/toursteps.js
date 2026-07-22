@@ -513,6 +513,21 @@ export const TourSteps = {
       title: "Les Fondations, en plan et en Variance",
       body: "La fiche « ⛓ Plonger dans les Fondations » (SR5/SR6) affiche maintenant un plan généré des 7 nœuds : en SR6, le vrai squelette de pistes du livre ; en SR5, les 7 nœuds seuls — le livre n'imprime aucune table, elles restent narratives. Touchez un nœud pour sauter à ses actions. Et pendant un run profond, un tracker de Variance rejoint le Score de Surveillance dans le tiroir Matrice : un stepper +1 à +5 en SR6 (seuil 80 − 5×Indice), un vrai test de dés en SR5 (Firewall ou Indice+Firewall, seuil 4, avec ses 4 issues du livre). Anarchy n'a pas de Fondation : rien n'y apparaît.",
     },
+    {
+      id: "wn-cockpit-vivant", anchor: "nav-play", tours: ["whatsnew"], since: "1.98.0", fallback: "center",
+      title: "Le poste « Jouer » devient un cockpit vivant",
+      body: "La séance se lit d'un coup d'œil. La coquille prend une couleur d'état : froide au repos, à l'encre de l'édition en combat, verte quand la Matrice tourne — avec une barre qui dit le moment (« ● En combat — Round 2 »). Au repos, le topos se présente comme un vrai briefing (objectif en titre, mandant et lieu, complication en garde) et le bouton « Lancer la scène » chauffe en accent. Chaque campagne devient un Pont : un poste d'aiguillage où le run en cours est surélevé et pulse. À la clôture, le débrief se lit comme un bilan en teinte or.",
+    },
+    {
+      id: "wn-factions", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.98.0", fallback: "center",
+      title: "Les Factions, transverses au Monde",
+      body: "Une faction rassemble PNJ, PJ, contacts et serveurs sous un même toit : une bande « Factions » apparaît sur chaque fiche. Sur le graphe des relations, chaque faction devient une poche colorée derrière ses membres (bascule « ◇ Poches »). Sélectionnez plusieurs nœuds pour « en faire une faction » d'un geste. Et le nom d'une faction, sur une fiche, ouvre le graphe scopé à ses seuls membres.",
+    },
+    {
+      id: "wn-tags-pin", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.98.0", fallback: "center",
+      title: "Des tags et une épingle pour ranger",
+      body: "Chaque entité accepte des tags libres (« corpo », « matrice », « indics »), posés depuis sa fiche et réutilisables d'une entité à l'autre. Les Favoris deviennent une épingle (l'étoile de la carte) plutôt qu'un dossier réservé. Dans « Ombres portées », deux nouvelles puces de filtre — ★ Épinglés et Tags — retrouvent d'un tap toutes les fiches d'un tag, en s'ajoutant aux filtres Rôle · Milieu · Métatype.",
+    },
   ],
 };
 

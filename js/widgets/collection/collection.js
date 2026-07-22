@@ -26,26 +26,9 @@ import { Storage } from "../../core/storage.js";
 import { Utils } from "../../core/utils.js";
 
 export const Collection = {
-  /** Nom de groupe réservé pour l'épingle rapide — un dossier
-      transverse comme un autre, pinné en tête par DossierBar. */
-  FAV_GROUP: "★ Favoris",
-
-  /** VIS-16 1-bis : l'appartenance est keyée par ID de dossier. La clé des
-      favoris = l'ID du nœud « Favoris ». `favId()` lit sans créer (pour l'état
-      pinné affiché sur chaque carte) ; `ensureFavId()` crée le nœud à la volée
-      au premier favori. */
-  favId() {
-    if (typeof Dossiers === "undefined") return null;
-    const node = Dossiers.roots().find((d) => d.name === this.FAV_GROUP);
-    return node ? node.id : null;
-  },
-  ensureFavId() {
-    const existing = this.favId();
-    if (existing) return existing;
-    if (typeof Dossiers === "undefined") return null;
-    const node = Dossiers.add(this.FAV_GROUP, null);
-    return node ? node.id : null;
-  },
+  // A2b — l'épingle « Favoris » n'est plus un nœud Dossiers réservé mais le tag
+  // réservé `Tags.PINNED` (écrit via `UI.togglePin`, lu via `UI.isPinned`). Plus
+  // de `FAV_GROUP`/`favId`/`ensureFavId` : l'épingle voyage sur l'entité.
 
   /**
    * @param {object} config
@@ -539,11 +522,9 @@ export const Collection = {
         btn.innerHTML = `<span class="group-picker-trigger-icon">🏷</span><span class="group-picker-trigger-label">${CardRenderer._esc(gLabel)}</span>`;
         footer.prepend(btn);
 
-        // Épingle rapide : même groupe multi-appartenance que le
-        // bouton ci-dessus, juste une case réservée bascule en un clic —
-        // aucun nouveau mécanisme de persistance.
-        const favKey = Collection.favId();
-        const pinned = favKey ? groups.includes(favKey) : false;
+        // Épingle rapide (A2b) : le tag réservé `Tags.PINNED`, lu via
+        // `UI.isPinned` (l'épingle vit sur l'entité, plus de nœud « Favoris »).
+        const pinned = typeof UI !== "undefined" && UI.isPinned(id);
         const pin = document.createElement("button");
         pin.type = "button";
         pin.className = "group-picker-trigger" + (pinned ? " has-groups" : "");
@@ -616,13 +597,14 @@ export const Collection = {
             case "open-picker":
               GroupPicker.open(this, el.dataset.id, el);
               break;
-            case "toggle-pin": {
-              const favKey = Collection.ensureFavId();
-              if (!favKey) break;
-              const pinned = this.groupsOf(el.dataset.id).includes(favKey);
-              this.toggleGroup(el.dataset.id, favKey, !pinned);
+            case "toggle-pin":
+              // A2b — bascule le tag réservé `Tags.PINNED` sur l'entité (UI est
+              // l'écrivain sanctionné, mute toutes les copies + persiste). Puis
+              // re-render la grille pour rafraîchir l'étoile (décoration de pied
+              // de carte propre à la collection, comme l'ancien toggleGroup).
+              if (typeof UI !== "undefined") UI.togglePin(el.dataset.id);
+              this.render();
               break;
-            }
           }
         });
 

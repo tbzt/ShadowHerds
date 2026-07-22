@@ -257,6 +257,7 @@ export const CardRenderer = {
       <div class="contact-trait">⚠ <span${traitAttrs}>${this._esc(pnj.trait)}</span></div>
       ${this._flavorSection(pnj, deps)}
       ${this._factionsSection(pnj)}
+      ${this._entityTagsSection(pnj)}
     </div>`;
   },
 
@@ -432,6 +433,7 @@ export const CardRenderer = {
       }
       ${this._contactLinksSection(pnj)}
       ${this._factionsSection(pnj)}
+      ${this._entityTagsSection(pnj)}
       ${this._backlinksSection(pnj)}
       ${this._dossiersSection(pnj)}
     </div>`;
@@ -562,12 +564,35 @@ export const CardRenderer = {
     const chips = FactionStore.factionsOf(pnj.id)
       .map((f) => {
         const dot = `<span class="faction-dot"${f.color ? ` style="background:${this._esc(f.color)}"` : ""}></span>`;
-        return `<span class="tag faction-chip">${dot}${this._esc(f.name)}<button type="button" class="faction-chip-x" data-action="faction-remove" data-faction="${this._esc(f.id)}" data-id="${id}" title="Retirer de « ${this._esc(f.name)} »" aria-label="Retirer de la faction">✕</button></span>`;
+        // A3c — le nom ouvre le graphe scopé aux membres de la faction (poche).
+        return `<span class="tag faction-chip">${dot}<button type="button" class="faction-chip-name" data-action="faction-graph" data-faction="${this._esc(f.id)}" title="Voir « ${this._esc(f.name)} » en graphe">${this._esc(f.name)}</button><button type="button" class="faction-chip-x" data-action="faction-remove" data-faction="${this._esc(f.id)}" data-id="${id}" title="Retirer de « ${this._esc(f.name)} »" aria-label="Retirer de la faction">✕</button></span>`;
       })
       .join("");
     const add = `<button type="button" class="tag faction-add" data-action="faction-open-picker" data-id="${id}" title="Ajouter à une faction">＋ Faction</button>`;
     return `<div class="card-section">
       <div class="card-section-label">Factions</div>
+      <div class="card-section-content">${chips}${add}</div>
+    </div>`;
+  },
+
+  /** Bande « Tags » (A2 — rangement pur du Monde) : étiquettes libres
+      multi-valuées de l'entité (`Tags.of`), sœur de « Factions » mais SANS
+      roster partagé (un tag est une étiquette, pas un objet commun). Chip ✕ pour
+      retirer (`UI.removeTag`), « ＋ Tag » ouvre le picker. Glyphe monochrome (pas
+      d'émoji couleur, DA). Toujours présente : l'invitation à ranger ≠ rangement
+      forcé (Silk). */
+  _entityTagsSection(pnj) {
+    if (typeof Tags === "undefined") return "";
+    const id = this._esc(pnj.id);
+    const chips = Tags.of(pnj)
+      .map(
+        (t) =>
+          `<span class="tag tag-chip">${this._esc(t)}<button type="button" class="tag-chip-x" data-action="tag-remove" data-tag="${this._esc(t)}" data-id="${id}" title="Retirer le tag « ${this._esc(t)} »" aria-label="Retirer le tag">✕</button></span>`,
+      )
+      .join("");
+    const add = `<button type="button" class="tag tag-add" data-action="tag-open-picker" data-id="${id}" title="Ajouter un tag">＋ Tag</button>`;
+    return `<div class="card-section">
+      <div class="card-section-label">Tags</div>
       <div class="card-section-content">${chips}${add}</div>
     </div>`;
   },
@@ -766,6 +791,7 @@ export const CardRenderer = {
       this._situationalMods(pnj) +
       (pnj.isPC ? this._contactLinksSection(pnj) : "") +
       this._factionsSection(pnj) +
+      this._entityTagsSection(pnj) +
       this._backlinksSection(pnj) +
       this._dossiersSection(pnj);
     if (tail) {

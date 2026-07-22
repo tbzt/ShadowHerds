@@ -61,12 +61,18 @@ export const GraphEngine = {
       '<path d="M0,0 L10,5 L0,10 z" fill="context-stroke"></path></marker>';
     svg.appendChild(defs);
 
+    // Poches de faction (A3) : couche du fond, SOUS les arêtes/nœuds — une zone
+    // colorée par faction, dessinée derrière tout le reste. Remplie par
+    // `setPockets` (données) et repositionnée à chaque tick par `_renderPockets`.
+    const gPockets = document.createElementNS(NS, "g");
+    gPockets.setAttribute("class", "graph-pockets");
     const gEdges = document.createElementNS(NS, "g");
     gEdges.setAttribute("class", "graph-edges");
     const gNodes = document.createElementNS(NS, "g");
     gNodes.setAttribute("class", "graph-nodes");
     const gLabels = document.createElementNS(NS, "g");
     gLabels.setAttribute("class", "graph-edge-labels");
+    svg.appendChild(gPockets); // tout au fond
     svg.appendChild(gEdges);
     svg.appendChild(gNodes);
     svg.appendChild(gLabels); // au-dessus : les mots de trait restent lisibles
@@ -147,6 +153,7 @@ export const GraphEngine = {
       container, svg, W, H, N, E, idx, accent, onNodeTap, onWeave, onBackgroundTap, onEdgeTap,
       raf: 0, alpha: 1, drag: null, weave: false, weaving: null, weaveLine,
       selectedId: null, selectedEdgeId: null, bg: null, edgeTap: null,
+      gPockets, pockets: [], // A3 — poches de faction (données + éléments SVG)
     };
     this._state = state;
     container.appendChild(svg);
@@ -218,6 +225,7 @@ export const GraphEngine = {
   },
 
   _render(s) {
+    if (s.pockets.length) this._renderPockets(s);
     for (const e of s.E) {
       const a = s.N[e.a], b = s.N[e.b];
       // Rétracter les bouts hors du disque (r≈16) : la flèche se pose au bord
@@ -272,6 +280,22 @@ export const GraphEngine = {
     for (const e of s.E) e._line.classList.remove("selected");
   },
 
+  /** A3b — marque/démarque un nœud comme MULTI-sélectionné (construction d'une
+      faction). Indépendant de la sélection simple (`select`) : plusieurs nœuds à
+      la fois, anneau distinct. Purement visuel (le SET vit dans la vue). */
+  setNodeMultiSelected(id, on) {
+    const s = this._state;
+    if (!s) return;
+    const n = s.N.find((x) => x.id === id);
+    if (n && n._g) n._g.classList.toggle("multi-selected", !!on);
+  },
+  /** Efface toutes les multi-sélections (sortie du mode groupe). */
+  clearMultiSelected() {
+    const s = this._state;
+    if (!s) return;
+    for (const n of s.N) if (n._g) n._g.classList.remove("multi-selected");
+  },
+
   /** Met à jour EN PLACE la couleur d'un nœud (Lot 4) — patch visuel immédiat
       sans remontage. `null` = fond neutre par défaut. */
   setNodeColor(id, color) {
@@ -281,6 +305,104 @@ export const GraphEngine = {
     if (!n || !n._disc) return;
     n.pcColor = color || null;
     n._disc.setAttribute("fill", n.pcColor || "var(--surface-2, #16202b)");
+  },
+
+  /** A3 — pose les POCHES de faction : `list = [{id, color, memberIds}]`. Chaque
+      poche est une zone colorée derrière les nœuds, entourant ses membres
+      présents. Idempotent : reconstruit la couche `gPockets`. La géométrie
+      (enveloppe convexe arrondie) est recalculée à chaque tick par
+      `_renderPockets` depuis les positions vivantes des nœuds. */
+  setPockets(list) {
+    const s = this._state;
+    if (!s || !s.gPockets) return;
+    s.gPockets.textContent = "";
+    s.pockets = [];
+    for (const p of list || []) {
+      // Ne garder que les membres réellement présents dans ce graphe.
+      const ids = (p.memberIds || []).filter((id) => s.idx.has(id));
+      if (!ids.length) continue;
+      const path = document.createElementNS(NS, "path");
+      path.setAttribute("class", "graph-pocket");
+      const col = p.color || s.accent;
+      path.setAttribute("fill", col);
+      path.setAttribute("stroke", col);
+      s.gPockets.appendChild(path);
+      s.pockets.push({ id: p.id, color: col, ids, _path: path });
+    }
+    this._renderPockets(s);
+  },
+
+  /** Affiche/masque la couche des poches sans la reconstruire. */
+  setPocketsVisible(on) {
+    const s = this._state;
+    if (s && s.gPockets) s.gPockets.setAttribute("visibility", on ? "visible" : "hidden");
+  },
+
+  /** Recalcule le tracé de chaque poche depuis les positions courantes de ses
+      membres. 1 membre → disque ; 2 → capsule (disque englobant) ; ≥3 →
+      enveloppe convexe dilatée puis arrondie (blob lisse). */
+  _renderPockets(s) {
+    const PAD = 30; // marge autour des disques de nœud (r≈16)
+    for (const p of s.pockets) {
+      const pts = [];
+      for (const id of p.ids) {
+        const n = s.N[s.idx.get(id)];
+        if (n) pts.push({ x: n.x, y: n.y });
+      }
+      p._path.setAttribute("d", pts.length ? this._pocketPath(pts, PAD) : "");
+    }
+  },
+
+  /** Tracé SVG d'une poche autour de `pts`, dilatée de `pad`. */
+  _pocketPath(pts, pad) {
+    const cx = pts.reduce((a, p) => a + p.x, 0) / pts.length;
+    const cy = pts.reduce((a, p) => a + p.y, 0) / pts.length;
+    if (pts.length < 3) {
+      // Disque englobant centré sur le barycentre.
+      let r = 0;
+      for (const p of pts) r = Math.max(r, Math.hypot(p.x - cx, p.y - cy));
+      r += pad;
+      return `M ${cx - r} ${cy} a ${r} ${r} 0 1 0 ${2 * r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0`;
+    }
+    // Enveloppe convexe, chaque sommet poussé vers l'extérieur (depuis le
+    // barycentre) de `pad`, puis lissée en courbes quadratiques par les milieux.
+    const hull = this._convexHull(pts).map((p) => {
+      const a = Math.atan2(p.y - cy, p.x - cx);
+      return { x: p.x + Math.cos(a) * pad, y: p.y + Math.sin(a) * pad };
+    });
+    const m = hull.length;
+    const mid = (i, j) => ({ x: (hull[i].x + hull[j].x) / 2, y: (hull[i].y + hull[j].y) / 2 });
+    let start = mid(0, 1);
+    let d = `M ${start.x.toFixed(1)} ${start.y.toFixed(1)}`;
+    for (let i = 0; i < m; i++) {
+      const ctrl = hull[(i + 1) % m];
+      const end = mid((i + 1) % m, (i + 2) % m);
+      d += ` Q ${ctrl.x.toFixed(1)} ${ctrl.y.toFixed(1)} ${end.x.toFixed(1)} ${end.y.toFixed(1)}`;
+    }
+    return d + " Z";
+  },
+
+  /** Enveloppe convexe (chaîne monotone d'Andrew), sens horaire. */
+  _convexHull(points) {
+    const pts = points.slice().sort((a, b) => a.x - b.x || a.y - b.y);
+    if (pts.length < 3) return pts;
+    const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+    const lower = [];
+    for (const p of pts) {
+      while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0)
+        lower.pop();
+      lower.push(p);
+    }
+    const upper = [];
+    for (let i = pts.length - 1; i >= 0; i--) {
+      const p = pts[i];
+      while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0)
+        upper.pop();
+      upper.push(p);
+    }
+    lower.pop();
+    upper.pop();
+    return lower.concat(upper);
   },
 
   /** Sélectionne une ARÊTE (surbrillance) ; `null` = désélectionne. Exclusif

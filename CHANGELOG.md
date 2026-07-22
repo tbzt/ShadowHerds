@@ -12,6 +12,47 @@ commit.
 
 ## [Non publié]
 
+## [1.98.0] — 2026-07-23
+
+### Ajouté
+
+- **Le poste « Jouer » devient un cockpit vivant.** La séance se lit d'un coup
+  d'œil : une **coquille** dont la couleur d'état informe avant la lecture —
+  froide au repos, à l'encre de l'édition **en combat**, verte quand la
+  **Matrice** tourne — surmontée d'une barre d'état (« ● En combat — Round 2 »,
+  « ◐ Matrice active », « ○ En préparation »). Au repos, le topos se présente
+  comme un **vrai briefing** (l'objectif en titre, le mandant et le lieu en
+  contexte, la complication en garde), et le CTA **« Lancer la scène » chauffe**
+  en accent même dans une coquille froide. Chaque campagne devient un **Pont** :
+  un poste d'aiguillage froid où le run vivant est surélevé et pulse. À la
+  clôture, le débrief se lit comme un **bilan** (paie · karma · réputation ·
+  retombées) en teinte or.
+- **Les Factions : regrouper le Monde, transverse aux types.** Une faction
+  rassemble PNJ, PJ, contacts et serveurs sous un même toit (une bande
+  « Factions » sur chaque fiche). Sur le **graphe des relations**, chaque faction
+  devient une **poche colorée** derrière ses membres (bascule « ◇ Poches ») ;
+  sélectionnez plusieurs nœuds pour **« en faire une faction »** d'un geste ; et
+  le **nom** d'une faction, sur une fiche, ouvre le graphe **scopé** à ses seuls
+  membres.
+- **Des tags et une épingle pour ranger, sans dossier.** Chaque entité accepte
+  des **tags** libres (« corpo », « matrice », « indics »), posés depuis sa
+  fiche et réutilisables d'une entité à l'autre. Les **Favoris** deviennent une
+  **épingle** (l'étoile de la carte) plutôt qu'un dossier réservé. Dans
+  « Ombres portées », deux nouvelles puces de filtre — **★ Épinglés** et
+  **Tags** — retrouvent d'un tap toutes les fiches d'un tag (ou les épinglées),
+  en s'ajoutant aux filtres Rôle · Milieu · Métatype.
+
+### Modifié
+
+- La **timeline** (fil d'Ariane, sélecteur de contexte, Le Pont) ne montre plus
+  que les nœuds de jeu **typés** (campagne · run · scène) : les dossiers de
+  simple rangement restent au classement, hors de la ligne du temps.
+
+### Retiré
+
+- Le dossier réservé **« ★ Favoris »** disparaît de la barre de dossiers : son
+  rôle est repris par l'épingle-tag (les anciens favoris ne sont pas migrés).
+
 ## [1.97.0] — 2026-07-22
 
 ### Ajouté

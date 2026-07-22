@@ -19,7 +19,6 @@
    ou Échap. Rendu neutre par édition (aucun `App.edition`).
    ============================================================ */
 import { CardRenderer } from "../card/cardrenderer.js";
-import { Collection } from "../collection/collection.js";
 import { DossierBar } from "./dossierbar.js";
 import { Dossiers } from "./dossiers.js";
 
@@ -73,7 +72,7 @@ export const ContextSelector = {
     const rowHtml = (node, depth) => {
       const isCampaign = node.kind === "campaign";
       const isRun = node.kind === "run";
-      const icon = isCampaign ? "❖" : isRun ? "◆" : depth > 0 ? "↳" : "▸";
+      const icon = isCampaign ? "❖" : isRun ? "◆" : node.kind === "scene" ? "▷" : depth > 0 ? "↳" : "▸";
       const isFocus = node.id === focus;
       const isLive = node.id === scene;
       const live = isLive
@@ -84,13 +83,17 @@ export const ContextSelector = {
       </button>`;
     };
 
+    // A2b — la timeline ne montre que les nœuds TYPÉS (campagne/run/scène) ; un
+    // dossier non typé est du rangement (Monde), pas de la timeline. On descend
+    // quand même dans les enfants (un run typé peut vivre sous un dossier non typé).
+    const isTimeline = (n) => ["campaign", "run", "scene"].includes(n.kind);
     const walk = (node, depth) => {
-      if (node.name !== Collection.FAV_GROUP) html += rowHtml(node, depth);
+      if (isTimeline(node)) html += rowHtml(node, depth);
       for (const child of Dossiers.children(node.id)) walk(child, depth + 1);
     };
     for (const root of Dossiers.roots()) walk(root, 0);
 
-    if (Dossiers.list().filter((d) => d.name !== Collection.FAV_GROUP).length === 0) {
+    if (!Dossiers.list().some(isTimeline)) {
       html += `<div class="ctx-empty">Aucun dossier. Créez une campagne ou une run dans la bibliothèque.</div>`;
     }
     return html;

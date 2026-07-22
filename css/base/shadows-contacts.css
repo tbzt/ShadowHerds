@@ -404,6 +404,107 @@
   letter-spacing: 0.05em;
 }
 
+/* B1 — Le Pont : la campagne en POSTE D'AIGUILLAGE (peau FROIDE, niveau
+   campagne). Contraste voulu avec la coquille Cockpit chaude : cadre neutre,
+   titre froid. Le run vivant/rangé est SURÉLEVÉ (tuile détachée) ; le vivant
+   PULSE dans une encre froide via un ::before (transform/opacity composés, 60
+   fps) — jamais l'accent chaud, jamais de couleur en dur (tokens neutres). */
+.play-bridge {
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg-mid) 55%, transparent);
+}
+.play-bridge-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+  padding-bottom: var(--sp-1);
+  border-bottom: 1px solid var(--border);
+}
+.play-bridge-icon {
+  flex-shrink: 0;
+  color: var(--text-dim);
+}
+.play-bridge-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.play-bridge-count {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+}
+.play-bridge-hint {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+/* Rangées plates par défaut dans le pont ; le dernier sans filet. */
+.play-bridge .play-run:last-child {
+  border-bottom: 0;
+}
+/* Tuile d'aiguillage surélevée : le vivant/rangé se DÉTACHE de la file plate. */
+.play-run.is-live,
+.play-run.is-stashed {
+  position: relative;
+  margin: var(--sp-1) 0;
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) calc(var(--sp-2) + 5px);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--bg-card);
+}
+.play-run.is-live {
+  box-shadow: var(--elev-1);
+}
+.play-run.is-live::before,
+.play-run.is-stashed::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--text-dim);
+}
+.play-run.is-live::before {
+  background: var(--text);
+  transform-origin: center;
+  animation: play-bridge-pulse 2.2s ease-in-out infinite;
+}
+@keyframes play-bridge-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scaleY(0.7);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .play-run.is-live::before {
+    animation: none;
+  }
+}
+
 /* Cockpit V4 — projection lecture seule de la scène vivante sous la ligne de
    run. Habillage par tokens uniquement (accent d'édition, moniteur sémantique) :
    aucune couleur en dur, aucune règle par édition. */
@@ -481,12 +582,70 @@
 /* V4-b — Poste de commandement de la run courante. Carte-héros : la run jouée
    « ce soir » sortie en grand au-dessus de l'index. Scène = chaud (--accent),
    prep (topos/casting) = froid (--border-ui). Tokens only. */
+/* B1 — la coquille Cockpit. Un seul token `--state` porte la COULEUR D'ÉTAT :
+   froid au repos (bord neutre), accent d'édition en combat, vert en Matrice.
+   Aucune couleur en dur, aucune branche d'édition — l'état vient de la classe
+   posée par `_cockpitState`. Le liseré supérieur épais donne la lecture d'un
+   coup d'œil avant même la barre d'état. */
 .play-command {
+  --state: var(--border);
   margin-bottom: var(--sp-3);
   padding: var(--sp-3);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--state);
+  border-top: 3px solid var(--state);
   border-radius: 6px;
   background: var(--bg-card);
+}
+.play-command.is-combat {
+  --state: var(--accent);
+}
+.play-command.is-matrix {
+  --state: var(--accent-matrix);
+}
+/* Barre d'état : pastille + libellé. Le fond se teinte de l'état (8 %), lisible
+   sans crier ; en live la pastille pulse (transform/opacity composés, 60 fps). */
+.play-cockpit-status {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+  padding: 4px var(--sp-2);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--state) 8%, transparent);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+.play-cockpit-dot {
+  flex-shrink: 0;
+  color: var(--state);
+  font-size: 0.95em;
+  line-height: 1;
+}
+.play-command.is-combat .play-cockpit-label,
+.play-command.is-matrix .play-cockpit-label {
+  color: var(--text);
+  font-weight: 600;
+}
+@keyframes play-cockpit-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+}
+.play-command.is-combat .play-cockpit-dot,
+.play-command.is-matrix .play-cockpit-dot {
+  animation: play-cockpit-pulse 1.8s ease-in-out infinite;
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .play-command .play-cockpit-dot {
+    animation: none;
+  }
 }
 .play-command-head {
   display: flex;
@@ -573,19 +732,61 @@
   gap: var(--sp-2);
   margin-top: var(--sp-2);
 }
-.play-apres {
+/* Clôture (§4.2) — le débrief comme un BILAN qui fait plaisir. Couleur d'état
+   OR (`--warning`, le gold sémantique) : cadre discret, axes du bilan en
+   pastilles, CTA teinté or vers Debrief (propriétaire du détail). 0 couleur en
+   dur, 0 branche d'édition. */
+.play-cloture {
+  margin-top: var(--sp-2);
+  padding: var(--sp-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--warning);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--warning) 6%, transparent);
+}
+.play-cloture-head {
+  font-family: var(--font-display, inherit);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text);
+}
+.play-cloture-facets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: var(--sp-1) 0 var(--sp-2);
+}
+.play-cloture-facet {
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.03em;
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+}
+.play-cloture-cta {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
   flex-wrap: wrap;
 }
-.play-apres-note {
+/* Le CTA porte l'état or (au lieu du survol accent de btn-secondary). */
+.play-cloture-btn {
+  border-color: color-mix(in srgb, var(--warning) 55%, var(--border));
+  color: var(--warning);
+}
+.play-cloture-btn:hover {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+.play-cloture-note {
   color: var(--text-dim);
-  font-size: var(--fs-xs);
+  font-size: var(--fs-2xs);
   min-width: 0;
 }
 
-/* Topos condensé — froid, tabulaire, lisible d'un coup d'œil. */
+/* Topos condensé — froid, cadre lisible d'un coup d'œil. */
 .play-topos {
   margin-top: var(--sp-2);
   padding: var(--sp-2);
@@ -593,22 +794,45 @@
   border-radius: 4px;
   background: var(--bg-mid);
 }
-.play-topos-row {
-  display: flex;
-  gap: var(--sp-2);
-  padding: 1px 0;
-  font-size: var(--fs-xs);
+/* Briefing (§4.2) — le topos comme un VRAI briefing : l'objectif mène en titre,
+   le mandant · lieu donnent le contexte froid, la complication est une mise en
+   garde discrète. Tokens neutres only ; un liseré froid à gauche le pose comme
+   un dossier de mission sans crier (l'accent reste au CTA « Lancer la scène »). */
+.play-briefing {
+  border-left: 3px solid var(--text-dim);
 }
-.play-topos-k {
-  flex-shrink: 0;
-  width: 6.5em;
+.play-brief-head {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.play-brief-label {
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   color: var(--text-dim);
+}
+.play-brief-obj {
+  font-family: var(--font-display, inherit);
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.25;
+}
+.play-brief-meta {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+.play-brief-compl {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-xs);
+  color: var(--text);
+}
+.play-brief-compl-k {
   text-transform: uppercase;
   letter-spacing: 0.04em;
-}
-.play-topos-v {
-  color: var(--text);
-  min-width: 0;
+  font-size: var(--fs-2xs);
+  color: var(--warning);
 }
 .play-topos-pay {
   margin-top: 3px;
@@ -1217,7 +1441,8 @@ body.reordering .reorder-handle {
 
 /* ---- Popover : liste de groupes à cocher (multi-appartenance) ---- */
 #group-picker-backdrop,
-#faction-picker-backdrop {
+#faction-picker-backdrop,
+#tag-picker-backdrop {
   display: none;
   position: fixed;
   inset: 0;
@@ -1225,11 +1450,13 @@ body.reordering .reorder-handle {
   background: transparent;
 }
 #group-picker-backdrop.open,
-#faction-picker-backdrop.open {
+#faction-picker-backdrop.open,
+#tag-picker-backdrop.open {
   display: block;
 }
 #group-picker-panel,
-#faction-picker-panel {
+#faction-picker-panel,
+#tag-picker-panel {
   position: fixed;
   width: 240px;
   max-height: 320px;
@@ -1249,7 +1476,8 @@ body.reordering .reorder-handle {
     transform var(--dur-base) ease;
 }
 #group-picker-panel.open,
-#faction-picker-panel.open {
+#faction-picker-panel.open,
+#tag-picker-panel.open {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
@@ -1330,6 +1558,20 @@ body.reordering .reorder-handle {
   align-items: center;
   gap: 5px;
 }
+/* A3c — le nom de la faction est cliquable (ouvre le graphe scopé). Bouton nu
+   qui hérite de la puce ; souligné au survol pour signaler l'action. */
+.faction-chip-name {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+.faction-chip-name:hover {
+  text-decoration: underline;
+}
 .faction-chip-x {
   border: none;
   background: transparent;
@@ -1348,6 +1590,35 @@ body.reordering .reorder-handle {
   color: var(--text-dim);
 }
 .faction-add:hover {
+  color: var(--accent2);
+  border-color: var(--accent2);
+}
+
+/* ---- Bande « Tags » (fiche) — rangement pur du Monde (A2). Sœur des chips de
+   faction, mais sans pastille de couleur (un tag n'a pas de roster/couleur). --- */
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.tag-chip-x {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0 1px;
+  font-size: var(--fs-2xs);
+  line-height: 1;
+}
+.tag-chip-x:hover {
+  color: var(--danger);
+}
+.tag-add {
+  cursor: pointer;
+  border-style: dashed;
+  color: var(--text-dim);
+}
+.tag-add:hover {
   color: var(--accent2);
   border-color: var(--accent2);
 }

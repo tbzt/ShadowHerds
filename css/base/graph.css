@@ -57,6 +57,41 @@
   line-height: 1.5;
   text-align: center;
 }
+/* A3b — « en faire une faction » : bouton d'amorce (inspecteur de nœud) +
+   panneau de construction (compte + créer/annuler). */
+.graph-group-start {
+  display: block;
+  width: 100%;
+  margin-bottom: var(--sp-2, 8px);
+  padding: 6px 10px;
+  border: 1px dashed var(--border, #2a3a49);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-dim, #9fb0c0);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 140ms ease, color 140ms ease;
+}
+.graph-group-start:hover {
+  border-color: var(--success, #2ecc71);
+  color: var(--success, #2ecc71);
+}
+.graph-group-panel {
+  text-align: center;
+}
+.graph-group-head {
+  font-weight: 600;
+  color: var(--text, #dfe8f0);
+  margin-bottom: var(--sp-2, 8px);
+}
+.graph-group-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2, 8px);
+  justify-content: center;
+  margin-top: var(--sp-3, 12px);
+}
+
 .graph-identity-name {
   font-weight: 600;
   color: var(--text, #dfe8f0);
@@ -73,6 +108,19 @@
   height: 100%;
   display: block;
   touch-action: none; /* le glisser pilote les nœuds, pas le scroll */
+}
+
+/* Poches de faction (A3) : zones colorées du fond, sous arêtes/nœuds. Couleur
+   posée inline par le moteur (celle de la faction) ; ici l'opacité et le trait
+   arrondi. Jamais cliquables (le fond capte le tap « désélection »). */
+.graph-pockets {
+  pointer-events: none;
+}
+.graph-pocket {
+  fill-opacity: 0.11;
+  stroke-opacity: 0.5;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
 }
 
 /* Arêtes : discrètes, l'accent est posé inline par le moteur. */
@@ -114,6 +162,13 @@
   stroke-width: 3.2;
   filter: drop-shadow(0 0 6px var(--accent, #35e0e6));
 }
+/* A3b — nœud retenu pour une faction en construction : anneau VERT distinct de
+   la sélection simple (accent). Le CSS `stroke` gagne sur l'attribut inline. */
+.graph-node.multi-selected .graph-node-disc {
+  stroke: var(--success, #2ecc71);
+  stroke-width: 3.4;
+  filter: drop-shadow(0 0 6px var(--success, #2ecc71));
+}
 .graph-node-glyph {
   font-size: 15px;
   pointer-events: none;
@@ -140,6 +195,7 @@
 }
 
 /* ---- Tissage (B2b) : créer un lien en tirant d'un nœud à l'autre ---- */
+.graph-pockets-toggle,
 .graph-halo-toggle,
 .graph-weave-toggle {
   padding: 3px 10px;
@@ -150,13 +206,17 @@
   color: var(--text-dim, #9fb0c0);
   cursor: pointer;
 }
+.graph-pockets-toggle {
+  margin-left: auto; /* pousse le groupe de contrôles à droite (1er du groupe) */
+  margin-right: 6px;
+}
 .graph-halo-toggle {
-  margin-left: auto; /* pousse le groupe de contrôles à droite */
   margin-right: 6px;
 }
 .graph-weave-toggle {
   margin-right: 8px;
 }
+.graph-pockets-toggle.active,
 .graph-halo-toggle.active,
 .graph-weave-toggle.active {
   border-color: var(--accent, #35e0e6);

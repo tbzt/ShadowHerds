@@ -38,17 +38,38 @@ export const Hub = {
   // État de SESSION (jamais persisté) ; réinitialisé à chaque render() (donc
   // au changement de dossier/type/mutation), conservé pendant la frappe et le
   // basculement d'une puce (qui passent par _renderMain).
-  _facets: { role: new Set(), milieu: new Set(), meta: new Set() },
+  _facets: {
+    pinned: new Set(),
+    tags: new Set(),
+    role: new Set(),
+    milieu: new Set(),
+    meta: new Set(),
+  },
 
-  /** Les 3 axes de facette exposés (Rôle · Milieu · Métatype). `get` lit une
-      métadonnée de génération GÉNÉRIQUE (aucune branche d'édition) ; `labelOf`
-      traduit la clé interne en libellé lisible via les tables Coherence. */
+  /** Les axes de facette exposés. Les axes du MONDE (rangement de l'utilisateur)
+      d'abord — Épinglés · Tags (A2c, MULTI-valués : une entité porte plusieurs
+      tags) — puis les axes de GÉNÉRATION (Rôle · Milieu · Métatype, mono-valués).
+      `get`/`getMany` lisent des champs NEUTRES (aucune branche d'édition) ;
+      `labelOf` traduit la clé en libellé. `multi` = valeurs multiples par entité
+      (OU au sein de l'axe = intersection non vide). `always` = rendu même à une
+      seule valeur (l'axe « Épinglés » n'a qu'une valeur ★). */
   _facetDefs() {
     const roleLabel = (v) =>
       (typeof Coherence !== "undefined" && Coherence.ROLES?.[v]?.label) || v;
     const milieuLabel = (v) =>
       (typeof Coherence !== "undefined" && Coherence.MILIEUX?.[v]?.label) || v;
+    const tagsOf = (e) => (typeof Tags !== "undefined" ? Tags.of(e) : []);
+    const isPinned = (e) => typeof Tags !== "undefined" && Tags.isPinned(e);
     return [
+      {
+        key: "pinned",
+        label: "Épinglés",
+        multi: true,
+        always: true,
+        getMany: (e) => (isPinned(e) ? ["★"] : []),
+        labelOf: () => "★ Épinglés",
+      },
+      { key: "tags", label: "Tags", multi: true, getMany: tagsOf, labelOf: (v) => v },
       { key: "role", label: "Rôle", get: (e) => e.role, labelOf: roleLabel },
       { key: "milieu", label: "Milieu", get: (e) => e.milieu, labelOf: milieuLabel },
       { key: "meta", label: "Métatype", get: (e) => e.meta || e.metatype, labelOf: (v) => v },
@@ -304,7 +325,11 @@ export const Hub = {
     for (const def of this._facetDefs()) {
       const active = this._facets[def.key];
       if (!active.size) continue;
-      if (!active.has(def.get(e))) return false;
+      if (def.multi) {
+        // OU au sein d'un axe multi : l'entité passe si l'une de ses valeurs
+        // (ses tags, ou son épingle) figure dans la sélection.
+        if (!def.getMany(e).some((v) => active.has(v))) return false;
+      } else if (!active.has(def.get(e))) return false;
     }
     return true;
   },
@@ -319,11 +344,17 @@ export const Hub = {
     for (const def of this._facetDefs()) {
       const values = new Map(); // valeur brute → libellé
       for (const e of entities) {
-        const raw = def.get(e);
-        if (raw == null || raw === "") continue;
-        if (!values.has(raw)) values.set(raw, def.labelOf(raw));
+        // Axe MULTI (tags/épingle) : chaque entité peut apporter plusieurs
+        // valeurs ; axe mono : une seule (`get`).
+        const raws = def.multi ? def.getMany(e) : [def.get(e)];
+        for (const raw of raws) {
+          if (raw == null || raw === "") continue;
+          if (!values.has(raw)) values.set(raw, def.labelOf(raw));
+        }
       }
-      if (values.size < 2) continue;
+      // Un axe n'apparaît qu'avec ≥ 2 valeurs (une puce seule ne filtrerait
+      // rien) — SAUF les axes `always` (« Épinglés » : une valeur ★ suffit).
+      if (!values.size || (values.size < 2 && !def.always)) continue;
       const active = this._facets[def.key];
       const chips = [...values.entries()]
         .sort((a, b) => String(a[1]).localeCompare(String(b[1]), "fr"))

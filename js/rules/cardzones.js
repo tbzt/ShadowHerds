@@ -105,6 +105,14 @@ export const CardZones = {
       render: (pnj, ctx) => ctx.r._factionsSection(pnj),
     },
     {
+      // « Tags » — le rangement PUR du Monde (étiquettes libres), sœur de
+      // Factions mais sans roster partagé. Sur TOUTE entité (PNJ/PJ/contact).
+      id: "tags",
+      label: "Tags",
+      column: "fiction",
+      render: (pnj, ctx) => ctx.r._entityTagsSection(pnj),
+    },
+    {
       id: "backlinks",
       label: "Mentionné dans",
       column: "fiction",

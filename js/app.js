@@ -4,7 +4,6 @@
    APP — Bootstrap, routing, sélecteur d'édition
    ============================================================ */
 import { CardRenderer } from "./widgets/card/cardrenderer.js";
-import { Collection } from "./widgets/collection/collection.js";
 import { ContextSelector } from "./widgets/journal/contextselector.js";
 import { DossierBar } from "./widgets/journal/dossierbar.js";
 import { Dossiers } from "./widgets/journal/dossiers.js";
@@ -17,7 +16,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.97.0",
+  VERSION: "1.98.0",
 
   edition: "none",
   editionModule: null,
@@ -119,9 +118,10 @@ export const App = {
         node = node.parentId != null ? Dossiers.get(node.parentId) : null;
       }
       for (const d of chain) {
-        const scale =
-          d.kind === "campaign" ? "campaign" : d.kind === "run" ? "run" : "folder";
-        out.push({ scale, id: d.id, name: d.name });
+        // A2b — seul le TYPÉ est de la timeline : un dossier non typé dans la
+        // chaîne (rangement du Monde) ne produit aucun segment de fil d'Ariane.
+        const scale = d.kind === "campaign" ? "campaign" : d.kind === "run" ? "run" : null;
+        if (scale) out.push({ scale, id: d.id, name: d.name });
       }
       // Scène affichée seulement si son run existe encore (un run supprimé
       // sans rangement laisserait un id de scène orphelin — pas de chip
@@ -143,7 +143,8 @@ export const App = {
       // La rangée s'affiche dès qu'un contexte est en focus OU qu'un dossier
       // existe (le sélecteur a alors une cible) ; sinon masquée (:empty).
       const hasDossiers =
-        typeof Dossiers !== "undefined" && Dossiers.list().some((d) => d.name !== Collection.FAV_GROUP);
+        typeof Dossiers !== "undefined" &&
+        Dossiers.list().some((d) => ["campaign", "run", "scene"].includes(d.kind));
       if (!trail.length && !hasDossiers) {
         el.innerHTML = "";
         return;

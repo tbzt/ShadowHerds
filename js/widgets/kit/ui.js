@@ -243,6 +243,62 @@ export const UI = {
     this.refreshEntityCard(id);
   },
 
+  /* ========================================================
+     TAGS (A2 — rangement pur du Monde). Champ additif `entity.tags`
+     muté sur TOUTES les copies (comme pcColor/journal), persisté par
+     appartenance ; la lecture/le vocabulaire vivent dans `Tags`.
+     Dédup insensible à la casse, première graphie conservée.
+     ======================================================== */
+  addTag(id, tag) {
+    const t = typeof Tags !== "undefined" ? Tags.normalize(tag) : String(tag || "").trim();
+    if (!t) return;
+    const copies = this._entityCopies(id);
+    if (!copies.length) return;
+    const k = t.toLowerCase();
+    for (const c of copies) {
+      if (!Array.isArray(c.tags)) c.tags = [];
+      if (!c.tags.some((x) => String(x).toLowerCase() === k)) c.tags.push(t);
+    }
+    this.persistEntity(id);
+    this.refreshEntityCard(id);
+  },
+
+  removeTag(id, tag) {
+    const t = typeof Tags !== "undefined" ? Tags.normalize(tag) : String(tag || "").trim();
+    // Comparaison insensible à la casse SAUF pour la sentinelle réservée PINNED
+    // (valeur exacte, jamais saisie au clavier).
+    const pinned = typeof Tags !== "undefined" && tag === Tags.PINNED;
+    const k = t.toLowerCase();
+    const copies = this._entityCopies(id);
+    if (!copies.length) return;
+    for (const c of copies) {
+      if (!Array.isArray(c.tags)) continue;
+      c.tags = c.tags.filter((x) =>
+        pinned ? x !== tag : String(x).toLowerCase() !== k,
+      );
+    }
+    this.persistEntity(id);
+    this.refreshEntityCard(id);
+  },
+
+  toggleTag(id, tag, on) {
+    return on ? this.addTag(id, tag) : this.removeTag(id, tag);
+  },
+
+  /** Favoris (A2b) = le tag réservé `Tags.PINNED` (une épingle, rendue à part).
+      `isPinned` lit sans muter (état de l'étoile sur la carte) ; `togglePin`
+      bascule. Aucun nœud « ★ Favoris » : l'épingle est une étiquette de l'entité,
+      elle meurt avec elle et voyage dans `*_all` (comme les autres tags). */
+  isPinned(id) {
+    if (typeof Tags === "undefined") return false;
+    const ent = this._entityCopies(id)[0];
+    return Tags.isPinned(ent);
+  },
+  togglePin(id) {
+    if (typeof Tags === "undefined") return;
+    this.toggleTag(id, Tags.PINNED, !this.isPinned(id));
+  },
+
   addJournalEntry(pnjId, text) {
     const t = (text || "").trim();
     if (!t) return;
