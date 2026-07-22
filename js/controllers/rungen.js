@@ -26,7 +26,8 @@ export const RunGen = {
       descendante) ; le catalogue n'appelle jamais WorldState. */
   generate() {
     const scope = (typeof App !== "undefined" && App.context && App.context.dossier) || null;
-    return { id: Utils.uid(), ...ToposCatalog.assemble(WorldState.factsFor(scope)) };
+    const repTracks = (App && App.editionModule && App.editionModule.reputationTracks) || [];
+    return { id: Utils.uid(), ...ToposCatalog.assemble(WorldState.factsFor(scope, { repTracks })) };
   },
 
   initPanel() {

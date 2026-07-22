@@ -18,15 +18,19 @@
    ============================================================ */
 import { Storage } from "../core/storage.js";
 import { ToposCatalog } from "./toposcatalog.js";
+import { Campaign } from "./campaign.js";
 
 export const WorldState = {
   /** Faits de campagne dérivés pour la portée d'un dossier. La mémoire est
       CAMPAGNE-LARGE : on remonte à la racine de l'arbre auquel `dossierId`
       appartient, puis on prend tout son sous-arbre — générer dans un run voit
       donc la mémoire de tous les runs de sa campagne. `dossierId` falsy (hors
-      campagne) → aucun fait. Recalculé à la demande, jamais persisté. */
-  factsFor(dossierId) {
-    if (!dossierId) return { factions: [], contacts: [] };
+      campagne) → aucun fait. Recalculé à la demande, jamais persisté.
+      `repTracks` (P4) = les pistes de réputation de l'édition, passées par RunGen
+      (le moteur reste édition-neutre : il somme des clés qu'on lui donne, sans
+      savoir ce qu'elles signifient). Anarchy → `[]` → pas de fait réputation. */
+  factsFor(dossierId, { repTracks = [] } = {}) {
+    if (!dossierId) return { factions: [], contacts: [], reputation: null };
     const scopeSet = new Set(this._campaignScope(dossierId));
     const runs = (Storage.get("gen_runs", []) || []).filter(
       (r) => r && scopeSet.has(r.dossierId),
@@ -51,7 +55,46 @@ export const WorldState = {
     }
 
     const factions = [...byKey.values()].sort((a, b) => b.count - a.count);
-    return { factions, contacts: this._contactsIn(scopeSet) };
+    return {
+      factions,
+      contacts: this._contactsIn(scopeSet),
+      reputation: this._reputationIn(scopeSet, repTracks),
+    };
+  },
+
+  /** Ids des PJ de l'équipe rangés dans la portée (lu brut `characters_groups`,
+      comme `gen_runs` — reste couche basse, jamais DossierBar). */
+  _teamPjIds(scopeSet) {
+    const groups = Storage.get("characters_groups", {}) || {};
+    const ids = new Set();
+    for (const [key, members] of Object.entries(groups))
+      if (scopeSet.has(key) && Array.isArray(members)) for (const id of members) ids.add(id);
+    return ids;
+  },
+
+  /** Réputation d'ÉQUIPE agrégée (P4) : pour chaque piste `repTracks` donnée,
+      somme le ledger `Campaign` des PJ de la portée. `notable` = plus grande
+      valeur ABSOLUE (« à quel point on vous connaît », neutre : on ne somme
+      jamais deux pistes de sens opposé). `null` si pas de piste (Anarchy) ou
+      aucune valeur. */
+  _reputationIn(scopeSet, repTracks) {
+    if (!Array.isArray(repTracks) || !repTracks.length) return null;
+    const pjIds = this._teamPjIds(scopeSet);
+    if (!pjIds.size) return null;
+    const pjById = new Map((Storage.get("characters_all", []) || []).map((p) => [p.id, p]));
+    const tracks = repTracks
+      .map((t) => {
+        let value = 0;
+        for (const id of pjIds) {
+          const pj = pjById.get(id);
+          if (pj && pj.campaign) value += Campaign.balance(pj.campaign, t.key);
+        }
+        return { key: t.key, label: t.label, value };
+      })
+      .filter((t) => t.value !== 0);
+    if (!tracks.length) return null;
+    const top = tracks.slice().sort((a, b) => Math.abs(b.value) - Math.abs(a.value))[0];
+    return { tracks, notable: Math.abs(top.value), top };
   },
 
   /** Sous-arbre de la RACINE de campagne à laquelle appartient `dossierId`
@@ -72,10 +115,7 @@ export const WorldState = {
   _contactsIn(scopeSet) {
     const RS = typeof RelationsStore !== "undefined" ? RelationsStore : null;
     if (!RS) return [];
-    const groups = Storage.get("characters_groups", {}) || {};
-    const pjIds = new Set();
-    for (const [key, members] of Object.entries(groups))
-      if (scopeSet.has(key) && Array.isArray(members)) for (const id of members) pjIds.add(id);
+    const pjIds = this._teamPjIds(scopeSet);
     const nameById = new Map((Storage.get("contacts_all", []) || []).map((c) => [c.id, c.name]));
 
     // Stance de campagne (P3c) : arêtes favor/burned posées au débrief, scopées

@@ -268,7 +268,9 @@ export const ToposCatalog = {
     const site = Utils.rand(district.sites);
     const objectif = this._pickObjectif(site.type);
     const diff = Utils.rand(this.difficultes);
-    const tier = this._tier(district.menace);
+    // VIS-12 (P4) : une équipe très connue (réputation notable) tire des jobs un
+    // cran plus gros — nudge DOUX du palier (danger+paie), jamais garanti.
+    const tier = this._tier(district.menace, this._repBonus(facts));
     const pay = this._pay(tier);
 
     return {
@@ -295,7 +297,23 @@ export const ToposCatalog = {
       // INCHANGÉS (informer, jamais décider). `facts` injecté par RunGen.
       ...this._memory(facts, opp.key, mandant.key),
       ...this._contactInject(facts),
+      ...this._reputationNote(facts),
     };
+  },
+
+  /** Bonus de palier lié à la réputation (P4) : +1 si l'équipe est très connue
+      (notable ≥ 20), 0 sinon. Doux, plafonné par le clamp de `_tier`. */
+  _repBonus(facts) {
+    const r = facts && facts.reputation;
+    return r && r.notable >= 20 ? 1 : 0;
+  },
+
+  /** Annotation « votre réputation vous précède » (P4) : la piste la plus
+      marquante de l'équipe, dès qu'elle pèse (notable ≥ 5). { reputationNote } ou {}. */
+  _reputationNote(facts) {
+    const r = facts && facts.reputation;
+    if (!r || r.notable < 5) return {};
+    return { reputationNote: `Votre réputation vous précède — ${r.top.label} ${r.top.value}.` };
   },
 
   /** Injection « contacts connus » (VIS-12 Phases 3a/3b). Renvoie soit un
@@ -388,8 +406,8 @@ export const ToposCatalog = {
     return Utils.rand(os.length ? os : this.objectifs);
   },
   /** Palier tiré autour de la menace (± 1), borné aux 5 paliers. */
-  _tier(menace) {
-    let i = menace - 1 + Utils.randInt(-1, 1);
+  _tier(menace, repBonus = 0) {
+    let i = menace - 1 + Utils.randInt(-1, 1) + repBonus;
     i = Math.max(0, Math.min(this.tiers.length - 1, i));
     return this.tiers[i];
   },
