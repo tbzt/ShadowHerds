@@ -523,6 +523,16 @@ export const TourSteps = {
       title: "Des tags et une épingle pour ranger",
       body: "Chaque entité accepte des tags libres (« corpo », « matrice », « indics »), posés depuis sa fiche et réutilisables d'une entité à l'autre. Les Favoris deviennent une épingle (l'étoile de la carte) plutôt qu'un dossier réservé. Dans « Ombres portées », deux nouvelles puces de filtre — ★ Épinglés et Tags — retrouvent d'un tap toutes les fiches d'un tag, en s'ajoutant aux filtres Rôle · Milieu · Métatype.",
     },
+    {
+      id: "wn-monde-sans-dossiers", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.99.0", fallback: "center",
+      title: "Le Monde se range par tags, plus en dossiers",
+      body: "La colonne « Dossiers » quitte « Ombres portées » et les écrans de génération : la bibliothèque montre désormais tout votre monde d'un seul tenant, retrouvé par ses tags et son type. Un PNJ, un contact ou un serveur généré rejoint directement le Monde — plus d'étape de rangement. La timeline Campagne › Run › Scène, elle, reste chez elle, dans « Jouer » et le générateur de topos : ce qui EST (le Monde) et ce qui SE JOUE (le Jeu) ne se mélangent plus dans la même liste.",
+    },
+    {
+      id: "wn-casting-convocation", anchor: "nav-run", tours: ["whatsnew"], since: "1.99.0", fallback: "center",
+      title: "Le casting d'un run se convoque",
+      body: "Générer l'opposition d'un run ne la « range » plus dans un dossier : elle est CONVOQUÉE, par référence. Conséquence directe : une même figure peut jouer dans plusieurs runs sans être copiée, et convoquer une faction amène tout son roster vivant — éditer la faction une fois se répercute sur tous les runs qui la convoquent. La fiche indique « Convoqué dans » les nœuds où elle joue, et « ramener un visage déjà croisé » comme la mémoire du monde suivent cette même vérité.",
+    },
   ],
 };
 

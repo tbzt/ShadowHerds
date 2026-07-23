@@ -12,6 +12,8 @@ commit.
 
 ## [Non publié]
 
+## [1.99.0] — 2026-07-24
+
 ### Modifié
 
 - **Le Monde ne se range plus en dossiers : il se filtre par tags.** La
