@@ -31,14 +31,13 @@ export const Backup = {
   VERSION: 1,
   EDITIONS: ["sr5", "sr6", "anarchy2", "anarchy1"],
   KEYS: [
+    // A4-bis.3b : les clés `<col>_groups` (appartenance de dossier) ne sont plus
+    // synchronisées — l'appartenance est retirée (§4.1). Le casting vit dans
+    // `dossiers` (convokes) et `entity_factions` (rosters), déjà couverts.
     "shadows_all",
-    "shadows_groups",
     "characters_all",
-    "characters_groups",
     "contacts_all",
-    "contacts_groups",
     "servers_all",
-    "servers_groups",
     "entity_relations", // VIS-15 B0 : registre d'arêtes (liens contact…) par édition
     "entity_factions", // Monde et Jeu A1 : rosters transverses (factions) par édition
     "dossiers", // arbre de dossiers (structure {id,name,parentId}) — CH sync
@@ -275,33 +274,9 @@ export const Backup = {
     }
 
     // Groupes : fusion par clé ; les membres (tableaux d'ids) sont unifiés.
-    // VIS-16 1-bis : l'appartenance est keyée par ID de dossier. Un backup d'un
-    // appareil NON migré arrive keyé par NOM → on re-key chaque clé-nom entrante
-    // vers l'id du nœud homonyme (dossiers déjà fusionnés ci-dessus). Une clé
-    // déjà = id de nœud, ou sans nœud (orphelin), est laissée telle quelle :
-    // aucune appartenance perdue au merge cross-device.
-    const mergedDossiers = this._readRaw(edition, "dossiers", []);
-    const dossierIds = new Set();
-    const dossierNameToId = {};
-    for (const n of Array.isArray(mergedDossiers) ? mergedDossiers : [])
-      if (n && n.id) { dossierIds.add(n.id); if (n.name != null) dossierNameToId[n.name] = n.id; }
-    const resolveGroupKey = (k) =>
-      dossierIds.has(k) ? k : (dossierNameToId[k] || k);
-    for (const groupKey of ["shadows_groups", "contacts_groups", "servers_groups", "characters_groups"]) {
-      if (!incoming[groupKey] || typeof incoming[groupKey] !== "object") continue;
-      const current = this._readRaw(edition, groupKey, {});
-      for (const [gname, members] of Object.entries(incoming[groupKey])) {
-        const key = resolveGroupKey(gname);
-        if (!current[key]) {
-          current[key] = Array.isArray(members) ? [...members] : members;
-        } else if (Array.isArray(current[key]) && Array.isArray(members)) {
-          const set = new Set(current[key]);
-          members.forEach((m) => set.add(m));
-          current[key] = [...set];
-        }
-      }
-      this._writeRaw(edition, groupKey, current);
-    }
+    // A4-bis.3b : fusion des `*_groups` (appartenance de dossier) retirée — plus
+    // de clé synchronisée. Le casting cross-device passe par `dossiers` (convokes)
+    // et `entity_factions` (rosters, fusionnés ci-dessous).
 
     // Factions (rosters transverses) : fusion par id, avec UNION des `members`
     // (comme les groupes ci-dessus, pas comme une liste par id atomique) — sinon

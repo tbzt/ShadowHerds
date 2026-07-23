@@ -15,9 +15,9 @@
    sortante principale est Storage (persistance), descendante.
 
    NB (A4-bis, §4.1) : le rangement du Monde par appartenance de dossier
-   (`data.groups` + GroupPicker + FileRail) est en cours de retrait au
-   profit des TAGS/Factions ; le rail de groupe de `_renderGrid` et le CRUD
-   de groupe subsistent temporairement (retrait total = lot A4-bis.3).
+   (`data.groups` + GroupPicker + FileRail + rail/CRUD de groupe) a été RETIRÉ.
+   Le Monde se range par TAGS et Factions ; le casting d'un run se convoque
+   (`Dossiers.convoke`). La collection ne persiste plus que `data.all`.
    ============================================================ */
 import { BulkBar } from "./bulkbar.js";
 import { CardRenderer } from "../card/cardrenderer.js";
@@ -57,19 +57,17 @@ export const Collection = {
       _labels: labels,
       _wired: false,
 
-      data: { all: [], groups: {} },
-      currentGroup: "all",
+      data: { all: [] },
       filterText: "",
       _selected: new Set(), // ids sélectionnés, éphémère (pas de Storage)
 
-      /* ---- Persistance ---- */
+      /* ---- Persistance (A4-bis.3b : plus de `data.groups` ni de clé
+         `<col>_groups` — l'appartenance de dossier est retirée, §4.1). ---- */
       load() {
         this.data.all = Storage.get(config.storageKeys.all, []);
-        this.data.groups = Storage.get(config.storageKeys.groups, {});
       },
       save() {
         Storage.set(config.storageKeys.all, this.data.all);
-        Storage.set(config.storageKeys.groups, this.data.groups);
       },
 
       /* ---- Suppression générique (cascade sur les entités liées) ---- */
@@ -83,20 +81,14 @@ export const Collection = {
           }
         }
         // Instantané pour l'annulation, capturé AVANT filtrage : chaque entité
-        // retirée avec sa position d'origine dans data.all et son appartenance
-        // de groupe (le maître et ses entités liées partent ensemble).
+        // retirée avec sa position d'origine dans data.all (le maître et ses
+        // entités liées partent ensemble).
         const snapshot = [];
         this.data.all.forEach((e, i) => {
-          if (doomed.has(e.id))
-            snapshot.push({ entity: e, index: i, groups: this.groupsOf(e.id) });
+          if (doomed.has(e.id)) snapshot.push({ entity: e, index: i });
         });
 
         this.data.all = this.data.all.filter((e) => !doomed.has(e.id));
-        for (const g of Object.keys(this.data.groups)) {
-          this.data.groups[g] = this.data.groups[g].filter(
-            (i) => !doomed.has(i),
-          );
-        }
         this.save();
         // Intégrité : les arêtes incidentes (liens contact…) partent avec
         // l'entité, mais sont capturées pour être rendues à l'annulation.
@@ -124,15 +116,6 @@ export const Collection = {
                 entity,
               );
             });
-          for (const { entity, groups } of snapshot) {
-            for (const g of groups) {
-              if (
-                this.data.groups[g] &&
-                !this.data.groups[g].includes(entity.id)
-              )
-                this.data.groups[g].push(entity.id);
-            }
-          }
           this.save();
           if (typeof RelationsStore !== "undefined") RelationsStore.addEdges(purgedEdges);
           if (typeof FactionStore !== "undefined") FactionStore.addMemberships(purgedFactions);
@@ -155,15 +138,11 @@ export const Collection = {
         }
         const snapshot = [];
         this.data.all.forEach((e, i) => {
-          if (doomed.has(e.id))
-            snapshot.push({ entity: e, index: i, groups: this.groupsOf(e.id) });
+          if (doomed.has(e.id)) snapshot.push({ entity: e, index: i });
         });
         if (!snapshot.length) return;
 
         this.data.all = this.data.all.filter((e) => !doomed.has(e.id));
-        for (const g of Object.keys(this.data.groups)) {
-          this.data.groups[g] = this.data.groups[g].filter((i) => !doomed.has(i));
-        }
         this.save();
         const purgedEdges =
           typeof RelationsStore !== "undefined" ? RelationsStore.purgeEntities(doomed) : [];
@@ -180,12 +159,6 @@ export const Collection = {
             .forEach(({ entity, index }) => {
               this.data.all.splice(Math.min(index, this.data.all.length), 0, entity);
             });
-          for (const { entity, groups } of snapshot) {
-            for (const g of groups) {
-              if (this.data.groups[g] && !this.data.groups[g].includes(entity.id))
-                this.data.groups[g].push(entity.id);
-            }
-          }
           this.save();
           if (typeof RelationsStore !== "undefined") RelationsStore.addEdges(purgedEdges);
           if (typeof FactionStore !== "undefined") FactionStore.addMemberships(purgedFactions);
@@ -219,94 +192,13 @@ export const Collection = {
         BulkBar.update(this);
       },
 
-      /* ---- Groupes ---- */
-      addGroup() {
-        Dialog.prompt({
-          title: "Nouveau groupe",
-          label: "Nom du groupe",
-          placeholder: "ex. Gangers, Corpo, Renforts…",
-          confirmLabel: "Créer",
-        }).then((name) => {
-          if (!name || !name.trim()) return;
-          const key = name.trim();
-          if (key === "all") {
-            toast("Nom réservé.", "warning");
-            return;
-          }
-          if (!this.data.groups[key]) this.data.groups[key] = [];
-          this.save();
-          this.render();
-          toast(labels.createdGroup(key));
-        });
-      },
-
-      removeGroup(key) {
-        Dialog.confirm({
-          title: "Supprimer le groupe",
-          message: labels.removeConfirm(key),
-          confirmLabel: "Supprimer",
-          danger: true,
-        }).then((ok) => {
-          if (!ok) return;
-          delete this.data.groups[key];
-          if (this.currentGroup === key) this.currentGroup = "all";
-          this.save();
-          this.render();
-        });
-      },
-
-      renameGroup(key) {
-        Dialog.prompt({
-          title: "Renommer le groupe",
-          label: "Nouveau nom",
-          value: key,
-          confirmLabel: "Renommer",
-        }).then((newName) => {
-          if (!newName || !newName.trim() || newName.trim() === key) return;
-          const newKey = newName.trim();
-          if (this.data.groups[newKey]) {
-            toast("Ce nom existe déjà.", "warning");
-            return;
-          }
-          this.data.groups[newKey] = this.data.groups[key];
-          delete this.data.groups[key];
-          if (this.currentGroup === key) this.currentGroup = newKey;
-          this.save();
-          this.render();
-        });
-      },
-
-      /** Ajoute/retire une entité d'un groupe sans toucher aux autres
-          (appartenance multi-groupes). Le tableau est créé à la volée à
-          la première assignation : permet de ranger dans un dossier que
-          cette collection ne contenait pas encore (jointure par nom). */
-      toggleGroup(id, groupKey, checked) {
-        if (checked && !this.data.groups[groupKey])
-          this.data.groups[groupKey] = [];
-        const arr = this.data.groups[groupKey];
-        if (!arr) return;
-        const has = arr.includes(id);
-        if (checked && !has) arr.push(id);
-        if (!checked && has)
-          this.data.groups[groupKey] = arr.filter((i) => i !== id);
-        this.save();
-        this.render();
-      },
-
-      // A4-bis.2 : `addManyToGroup`/`fileInto` (rangement en masse dans un
-      // dossier — BulkBar « Déplacer vers » + glisser-vers-rail FileRail) retirés.
-      // Le Monde se range par TAGS/Factions ; le casting se CONVOQUE (Dossiers.convoke).
-
-      groupsOf(id) {
-        return Object.keys(this.data.groups).filter((g) =>
-          this.data.groups[g].includes(id),
-        );
-      },
-
-      switchGroup(g) {
-        this.currentGroup = g;
-        this.render();
-      },
+      /* ---- Groupes : RETIRÉS (A4-bis.3b, §4.1) ----
+         Le CRUD de groupe (add/remove/rename/toggleGroup), l'accesseur
+         `groupsOf`, `switchGroup` et le rail du socle (`_renderSidebar`) ont
+         disparu avec `data.groups`. Le Monde se range par TAGS et Factions ; le
+         casting d'un run se CONVOQUE (`Dossiers.convoke`). Le rangement en masse
+         (`fileInto`/`addManyToGroup`, BulkBar « Déplacer vers », glisser-vers-rail
+         FileRail) était déjà parti en A4-bis.2. */
 
       /* ---- Filtre de recherche ---- */
       setFilter(v) {
@@ -332,7 +224,6 @@ export const Collection = {
         // frappes successives et data.all n'est plus rebalayé à chaque touche.
         this._childrenByOwner = null;
         this._wire();
-        this._renderSidebar();
         this._renderGrid();
         // Notifie un agrégateur éventuel (ex : Hub) qu'une mutation a eu
         // lieu, sans que le socle connaisse la couche haute : c'est elle
@@ -340,60 +231,17 @@ export const Collection = {
         if (config.onChange) config.onChange();
       },
 
-      _renderSidebar() {
-        const container = document.getElementById(config.dom.sidebar);
-        if (!container) return;
-        const groups = Object.keys(this.data.groups);
-        const dc = `data-collection="${this.key}"`;
-
-        const allActive = this.currentGroup === "all" ? "active" : "";
-        let html = `<div class="group-item ${allActive}" ${dc} data-action="switch-group" data-group="all">
-          <span class="group-item-icon">${labels.allIcon}</span>
-          <span class="group-item-name">${labels.allName}</span>
-          <span class="group-item-count">${this.data.all.length}</span>
-        </div>`;
-
-        for (const g of groups) {
-          const count = this.data.groups[g].length;
-          const active = this.currentGroup === g ? "active" : "";
-          const gEsc = CardRenderer._esc(g);
-          const gAttr = CardRenderer._esc(g);
-          html += `<div class="group-item ${active}" ${dc} data-action="switch-group" data-group="${gAttr}">
-            <span class="group-item-icon">▸</span>
-            <span class="group-item-name">${gEsc}</span>
-            <span class="group-item-count">${count}</span>
-            <span class="group-item-actions">
-              <button class="btn-icon-tiny" ${dc} data-action="rename-group" data-group="${gAttr}" title="Renommer">✎</button>
-              <button class="btn-icon-tiny danger" ${dc} data-action="remove-group" data-group="${gAttr}" title="Supprimer">✕</button>
-            </span>
-          </div>`;
-        }
-
-        container.innerHTML = html;
-
-        const label =
-          config.dom.label && document.getElementById(config.dom.label);
-        if (label) {
-          label.textContent =
-            this.currentGroup === "all"
-              ? labels.allSummary(this.data.all.length)
-              : labels.groupSummary(
-                  this.currentGroup,
-                  (this.data.groups[this.currentGroup] || []).length,
-                );
-        }
-      },
+      // A4-bis.3b : `_renderSidebar` (rail de groupe du socle) retiré — il était
+      // déjà mort (aucun conteneur `config.dom.sidebar` en DOM). La navigation du
+      // Monde se fait par tags (Hub) ; la timeline du Jeu par la DossierBar.
 
       _renderGrid() {
         const grid = document.getElementById(config.dom.grid);
         if (!grid) return;
         grid.innerHTML = "";
 
+        // A4-bis.3b : toute la bibliothèque (plus de filtrage par `currentGroup`).
         let list = this.data.all;
-        if (this.currentGroup !== "all") {
-          const ids = this.data.groups[this.currentGroup] || [];
-          list = this.data.all.filter((e) => ids.includes(e.id));
-        }
         // Le plus récent en premier (data.all reste en ordre d'insertion).
         list = list.slice().reverse();
         const unfiltered = list.length;
@@ -431,7 +279,6 @@ export const Collection = {
         // jamais render() sur ce chemin (Characters évite l'appel exprès,
         // cf. son initPanel, pour ne pas boucler avec l'onChange DossierBar).
         this._wire();
-        const allGroups = Object.keys(this.data.groups);
         const linked = config.linked;
         // Les entités liées suivent la carte de leur maître. Table mémoïsée :
         // reconstruite seulement après une mutation (render() remet à null),
@@ -450,13 +297,9 @@ export const Collection = {
         for (const entity of list) {
           if (linked && linked.isChild(entity)) continue; // rendue sous son maître
           const card = config.renderCard(entity, {
-            allGroups,
-            groupsIn: this.groupsOf(entity.id),
             collection: this,
             context,
           });
-          // Toujours affiché : le popover permet de créer un premier
-          // groupe à la volée même quand aucun n'existe encore.
           this._appendPinTrigger(card, entity.id);
           this._appendReorderHandle(card, entity.id);
           this._appendSelectCheckbox(card, entity.id);
@@ -553,18 +396,6 @@ export const Collection = {
           const el = e.target.closest(mine);
           if (!el) return;
           switch (el.dataset.action) {
-            case "switch-group":
-              this.switchGroup(el.dataset.group);
-              break;
-            case "add-group":
-              this.addGroup();
-              break;
-            case "rename-group":
-              this.renameGroup(el.dataset.group);
-              break;
-            case "remove-group":
-              this.removeGroup(el.dataset.group);
-              break;
             case "toggle-pin":
               // A2b — bascule le tag réservé `Tags.PINNED` sur l'entité (UI est
               // l'écrivain sanctionné, mute toutes les copies + persiste). Puis

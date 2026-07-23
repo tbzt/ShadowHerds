@@ -31,7 +31,7 @@ export const Characters = Object.assign(
   Collection.create({
     key: "characters",
     combatEligible: true,
-    storageKeys: { all: "characters_all", groups: "characters_groups" },
+    storageKeys: { all: "characters_all" },
     dom: {
       grid: "characters-grid",
       label: "characters-group-label",
@@ -191,10 +191,14 @@ export const Characters = Object.assign(
       return id ? Dossiers.get(id) : null;
     },
     activeTeamMembers() {
+      // A4-bis.3b (§5.3) : l'équipe active = les PJ CONVOQUÉS sur son nœud (plus
+      // l'appartenance de groupe, retirée). Repli gracieux sur tous les PJ quand
+      // aucun nœud n'est désigné ou qu'aucun PJ n'y est encore convoqué (cas MJ
+      // à table unique — l'équipe = tous les PJ).
       const node = this._activeTeamNode();
-      if (node && this.data.groups[node.id]) {
-        const ids = new Set(this.data.groups[node.id]);
-        return this.data.all.filter((p) => ids.has(p.id));
+      if (node) {
+        const ids = new Set(DossierBar.convenedIds(node.id, { types: ["pj"] }));
+        if (ids.size) return this.data.all.filter((p) => ids.has(p.id));
       }
       return this.data.all.slice();
     },
@@ -265,7 +269,11 @@ export const Characters = Object.assign(
       if (!label) return;
       const node = DossierBar.currentNode();
       const base = node ? node.name : "Tous les personnages";
-      label.textContent = `${base} (${DossierBar.memberIds(this).length})`;
+      // A4-bis.3b : compte = PJ convoqués sur le nœud (ou toute la troupe à « Tout »).
+      const n = node
+        ? DossierBar.convenedIds(node.id, { types: ["pj"] }).length
+        : this.data.all.length;
+      label.textContent = `${base} (${n})`;
     },
   },
 );

@@ -11,7 +11,7 @@
 const _contactsCollection = Collection.create(
   {
     key: "contacts",
-    storageKeys: { all: "contacts_all", groups: "contacts_groups" },
+    storageKeys: { all: "contacts_all" },
     // dom.grid n'est jamais monté dans le DOM (les contacts ne s'affichent QUE
     // via l'écran de génération, cf. _renderGenGrid, ou le Hub) : le
     // glisser-déposer B1 est délégué sur `document` et dérive sa grille du

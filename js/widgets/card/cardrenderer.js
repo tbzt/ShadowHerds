@@ -530,12 +530,11 @@ export const CardRenderer = {
     </div>`;
   },
 
-  /** VIS-9 « Rangé dans » — pendant de « Mentionné dans » côté ORGANISATION :
-      les dossiers où la fiche est classée (appartenance multi-dossiers). Aucune
-      donnée neuve — `DossierBar.dossiersOf` ne fait qu'exposer le sens inverse
-      de l'appartenance déjà portée par les collections. Chips identiques aux
-      backlinks (`.tag`/`.tag-clickable`, même patron) ; la pastille ❖/◆ signale
-      campagne/run comme dans la barre de dossiers. Vide ⇒ chaîne vide. */
+  /** VIS-9 / A4-bis.3b « Convoqué dans » — pendant de « Mentionné dans » côté JEU :
+      les nœuds (campagne/run/scène) qui CONVOQUENT la fiche, directement ou via
+      une Faction dont elle est membre. Aucune donnée neuve — `DossierBar.dossiersOf`
+      expose le sens inverse de `node.convokes`. Chips identiques aux backlinks
+      (`.tag`/`.tag-clickable`) ; pastille ❖/◆ pour campagne/run. Vide ⇒ chaîne vide. */
   _dossiersSection(pnj) {
     if (typeof DossierBar === "undefined") return "";
     const nodes = DossierBar.dossiersOf(pnj.id);
@@ -548,7 +547,7 @@ export const CardRenderer = {
       })
       .join("");
     return `<div class="card-section">
-      <div class="card-section-label">Rangé dans</div>
+      <div class="card-section-label">Convoqué dans</div>
       <div class="card-section-content">${items}</div>
     </div>`;
   },

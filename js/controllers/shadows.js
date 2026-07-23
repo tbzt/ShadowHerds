@@ -19,7 +19,7 @@ export const Shadows = Object.assign(
   Collection.create({
     key: "shadows",
     combatEligible: true,
-    storageKeys: { all: "shadows_all", groups: "shadows_groups" },
+    storageKeys: { all: "shadows_all" },
     dom: { grid: "shadows-grid", sidebar: "shadows-group-list", label: "shadows-group-label" },
     labels: {
       removeConfirm: (key) =>
@@ -146,10 +146,7 @@ export const Shadows = Object.assign(
         childCopy.ownerId = copy.id;
         this.data.all.push(childCopy);
       }
-
-      for (const g of this.groupsOf(original.id)) {
-        (this.data.groups[g] ||= []).push(copy.id);
-      }
+      // A4-bis.3b : plus d'appartenance de groupe à recopier sur le doublon.
 
       this.save();
       this.render();

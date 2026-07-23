@@ -539,8 +539,7 @@ export const Settings = {
     });
     if (!ok) return;
     Storage.clearEdition();
-    Shadows.data = { all: [], groups: {} };
-    Shadows.currentGroup = "all";
+    Shadows.data = { all: [] };
     Gen.pool = [];
     document.getElementById("gen-zone-single").innerHTML = "";
     Shadows.render();

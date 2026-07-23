@@ -201,13 +201,11 @@ export const RunGen = {
     const roles = cats.map((c) => this._CAT_TO_ROLE[c]).filter(Boolean);
     if (!roles.length) return;
 
-    const prevGroup = Shadows.currentGroup;
     // A4/§5.2 — casting par RÉFÉRENCE : on génère l'opposition DANS LE MONDE
-    // (bibliothèque, `currentGroup="all"` → savePNJ ne la range dans aucun
-    // groupe) puis on la CONVOQUE sur le run (`Dossiers.convoke`). Le casting
-    // n'est plus une appartenance de dossier ; « Jouer » le résout via
-    // `convenedIds`. Fin de la fuite « casting = folder membership ».
-    Shadows.currentGroup = "all";
+    // (bibliothèque) puis on la CONVOQUE sur le run (`Dossiers.convoke`). Le
+    // casting n'est plus une appartenance de dossier ; « Jouer » le résout via
+    // `convenedIds`. Fin de la fuite « casting = folder membership » (A4-bis.3b :
+    // `savePNJ` ne range plus dans aucun groupe, plus de `currentGroup` à poser).
     let n = 0;
     for (const role of roles) {
       const pnj = Gen.generateForRole(role);
@@ -220,7 +218,6 @@ export const RunGen = {
         n++;
       }
     }
-    Shadows.currentGroup = prevGroup;
     this._proposeRecurringFace(run, dossierName, n);
   },
 

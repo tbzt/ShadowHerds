@@ -8,17 +8,16 @@
    partagée par tous : c'est à la fois le filtre du hub et le
    DOSSIER DE DESTINATION des écrans de génération.
 
-   Rendu de l'arbre (dossiers + sous-groupes) dans chaque conteneur
-   monté, CRUD de dossiers (avec cascade sur les collections), et
-   synchronisation du registre Dossiers avec les groupes réels.
+   Rendu de l'arbre de la TIMELINE (campagne › run › scène) dans chaque
+   conteneur monté, CRUD de dossiers, et synchronisation du registre Dossiers.
 
-   Destination : à chaque changement, pose `currentGroup` sur les
-   trois collections (= nom du dossier, ou "all"). Le classement à
-   la génération réutilise ce `currentGroup` déjà présent dans
-   Collection — aucun nouveau système d'appartenance.
+   A4-bis.3b (§4.1) : la barre ne pilote PLUS aucune appartenance de collection
+   (`Collection.groups` retiré). Le casting d'un nœud se lit par CONVOCATION
+   (`convenedIds` sur `node.convokes` + Factions) ; le Monde se range par tags.
+   Les comptes de l'arbre = entités convoquées (`_entityCount`).
 
-   Dépendances descendantes : Dossiers, Shadows/ContactsBook/Servers
-   (lecture des comptes + pilotage de currentGroup), CardRenderer._esc.
+   Dépendances descendantes : Dossiers, FactionStore, les collections
+   (lecture de `data.all` pour le compte « Tout »), CardRenderer._esc.
    ============================================================ */
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Dialog } from "../kit/dialog.js";
@@ -92,37 +91,10 @@ export const DossierBar = {
 
   /* ---- Sélection & destination ---- */
 
-  /** Clés d'appartenance d'un nœud + tous ses sous-groupes. Depuis VIS-16 1-bis
-      l'appartenance est keyée par ID de dossier (plus par nom) : ce sont donc
-      les ids du nœud et de ses descendants (un membre d'un sous-groupe
-      appartient aussi à son dossier parent). */
-  _keysUnder(id) {
-    return [...Dossiers.descendantIds(id)];
-  },
-
-  /** Clés couvertes par la sélection courante ; null = « Tout ». */
-  currentKeys() {
-    return this.current === "all" ? null : this._keysUnder(this.current);
-  },
-
-  _idsForKeys(col, keys) {
-    if (!keys) return col.data.all.map((e) => e.id);
-    const set = new Set();
-    for (const key of keys) {
-      for (const id of col.data.groups[key] || []) set.add(id);
-    }
-    return [...set];
-  },
-
-  /** Ids des membres d'une collection pour la sélection courante — ou pour un
-      dossier DONNÉ (`dossierId`), sans changer la sélection courante : le
-      poste de commandement « Jouer » (V4-b) liste le casting d'un run précis
-      qui n'est pas forcément le dossier ouvert. Défaut = comportement
-      historique (sélection courante), donc additif pour tous les appelants. */
-  memberIds(col, dossierId = this.current) {
-    const keys = dossierId === "all" ? null : this._keysUnder(dossierId);
-    return this._idsForKeys(col, keys);
-  },
+  // A4-bis.3b (§4.1) : l'appartenance entité→dossier (`Collection.groups`) est
+  // retirée. Les lecteurs de groupe (`_keysUnder`/`currentKeys`/`_idsForKeys`/
+  // `memberIds`) ont disparu ; le casting se lit désormais par CONVOCATION
+  // (`convenedIds` ci-dessous, sur `node.convokes` + Factions).
 
   // Clé de collection → type de nœud (PnjLookup.locate) : le pont pour filtrer
   // `convenedIds` par type sans coupler l'appelant aux instances de collection.
@@ -139,12 +111,9 @@ export const DossierBar = {
     const cols = this._cols().filter((c) => !types || types.includes(this._COL_TYPE[c.key]));
     const ids = new Set();
     const gather = (nodeId) => {
-      // (a) casting hérité : appartenance de groupe (transition — le retrait
-      //     total de `Collection.groups` est un lot dédié). Type-filtré par
-      //     construction (memberIds ne rend que les ids de la collection).
-      for (const col of cols) for (const id of this.memberIds(col, nodeId)) ids.add(id);
-      // (b) casting par RÉFÉRENCE (A4 · §3.4) : `node.convokes` résout les refs
-      //     d'entité directes ET le roster vivant des Factions convoquées.
+      // Casting par RÉFÉRENCE (A4 · §3.4) : `node.convokes` résout les refs
+      // d'entité directes ET le roster vivant des Factions convoquées. Seule
+      // vérité depuis A4-bis.3b (l'appartenance de groupe est retirée).
       for (const c of Dossiers.convokesOf(nodeId)) {
         if (!c) continue;
         if (c.ref === "entity") ids.add(c.id);
@@ -174,30 +143,32 @@ export const DossierBar = {
     return [...ids];
   },
 
-  _countFor(keys) {
-    return this._cols().reduce(
-      (n, col) => n + this._idsForKeys(col, keys).length,
-      0,
-    );
+  /** Compte affiché dans l'arbre : nombre d'entités CONVOQUÉES par un nœud
+      (A4-bis.3b — remplace le comptage par appartenance de groupe). Pour la
+      racine « Tout », la taille de la bibliothèque (toutes collections). */
+  _entityCount(nodeId) {
+    if (nodeId === "all")
+      return this._cols().reduce((n, col) => n + ((col.data && col.data.all.length) || 0), 0);
+    return this.convenedIds(nodeId).length;
   },
 
-  /** VIS-9 — miroir « Rangé dans » : nœuds Dossiers qui contiennent l'entité
-      `id`, quelle que soit sa collection. Lecture seule, aucune donnée neuve :
-      l'appartenance est jointe PAR NOM (comme tout ce module), donc on récolte
-      les noms de groupes via `groupsOf` sur chaque collection puis on mappe
-      vers les nœuds du registre. Un groupe sans nœud correspondant (cas
-      théorique avant syncDossiers) est simplement ignoré par le filtre. */
+  /** VIS-9 — miroir « Convoqué dans » : nœuds Dossiers qui CONVOQUENT l'entité
+      `id`, directement (ref entité) ou via une Faction dont elle est membre.
+      Lecture seule, dérivé de `node.convokes` + `FactionStore` (A4-bis.3b : plus
+      d'appartenance de groupe). */
   dossiersOf(id) {
-    const keys = new Set();
-    for (const col of this._cols()) {
-      for (const key of col.groupsOf(id)) keys.add(key);
-    }
-    return Dossiers.list().filter((d) => keys.has(d.id));
-  },
-
-  /** Nombre total d'entités (tous types) dans la sélection courante. */
-  count() {
-    return this._countFor(this.currentKeys());
+    const factionIds =
+      typeof FactionStore !== "undefined"
+        ? new Set(FactionStore.factionsOf(id).map((f) => f.id))
+        : new Set();
+    return Dossiers.list().filter((d) =>
+      (d.convokes || []).some(
+        (c) =>
+          c &&
+          ((c.ref === "entity" && c.id === id) ||
+            (c.ref === "faction" && factionIds.has(c.id))),
+      ),
+    );
   },
 
   /** Nœud dossier sélectionné, ou null pour « Tout ». */
@@ -205,15 +176,12 @@ export const DossierBar = {
     return this.current === "all" ? null : Dossiers.get(this.current);
   },
 
-  /** Pose le dossier courant comme destination sur les trois collections
-      (via leur `currentGroup`). Le classement à la génération s'appuie
-      dessus (cf. Shadows.savePNJ, ContactsBook.generate, Servers.create). */
-  _applyCurrent() {
-    // VIS-16 1-bis : l'appartenance est keyée par ID → la destination des
-    // collections est l'ID du dossier courant (plus le nom).
-    const key = this.current === "all" ? "all" : this.current;
-    for (const col of this._cols()) col.currentGroup = key;
-  },
+  /** A4-bis.3b : NO-OP. Posait jadis le dossier courant comme destination de
+      rangement (`col.currentGroup`) pour la génération. L'appartenance de
+      dossier étant retirée (§4.1), il n'y a plus de destination à propager — le
+      Monde ne se range plus, le casting se convoque. Conservé en stub inoffensif
+      pour ne pas disperser la suppression sur ses cinq sites d'appel. */
+  _applyCurrent() {},
 
   select(id) {
     this.current = id;
@@ -244,7 +212,7 @@ export const DossierBar = {
     let html = `<div class="group-item ${allActive}" data-dossier-bar data-action="switch-dossier" data-dossier="all">
       <span class="group-item-icon">◈</span>
       <span class="group-item-name">Tout</span>
-      <span class="group-item-count">${this._countFor(null)}</span>
+      <span class="group-item-count">${this._entityCount("all")}</span>
     </div>`;
     // A2b — plus de nœud « ★ Favoris » réservé : l'épingle est un tag de
     // l'entité (`Tags.PINNED`), plus un dossier. La barre ne liste que les
@@ -330,7 +298,7 @@ export const DossierBar = {
     return `<div class="group-item${sub} ${active}"${style} data-dossier-bar data-action="switch-dossier" data-dossier="${node.id}">
       <span class="group-item-icon"${kindTitle ? ` title="${kindTitle}"` : ""}>${icon}</span>
       <span class="group-item-name">${nameEsc}</span>
-      <span class="group-item-count">${this._countFor(this._keysUnder(node.id))}</span>
+      <span class="group-item-count">${this._entityCount(node.id)}</span>
       <span class="group-item-actions">
         ${addBtn}
         <button class="btn-icon-tiny" data-dossier-bar data-action="rename-dossier" data-dossier="${node.id}" title="Renommer">✎</button>
@@ -500,18 +468,10 @@ export const DossierBar = {
       danger: true,
     }).then((ok) => {
       if (!ok) return;
-      const keys = this._keysUnder(id);
+      // A4-bis.3b : supprimer un dossier ne touche plus aucune appartenance de
+      // collection (retirée) — seul le nœud Dossiers part ; ses `convokes`
+      // s'en vont avec lui. Le contenu du Monde reste intact.
       Dossiers.remove(id);
-      for (const col of this._cols()) {
-        let changed = false;
-        for (const key of keys) {
-          if (col.data.groups[key]) {
-            delete col.data.groups[key];
-            changed = true;
-          }
-        }
-        if (changed) col.save();
-      }
       if (!Dossiers.has(this.current)) this.current = "all";
       this._applyCurrent();
       this.render();
@@ -521,26 +481,15 @@ export const DossierBar = {
 
   /** VIS-16 étape 5 — duplique une campagne pour une autre équipe : copie la
       structure (Dossiers.duplicateSubtree). Le casting PAR RÉFÉRENCE (`convokes`)
-      est déjà recopié sur les nouveaux nœuds par `duplicateSubtree` (A4/§5.4) —
-      les Factions ne bougent pas. La boucle ci-dessous ne couvre plus que le
-      casting HÉRITÉ (appartenance de groupe), le temps de la transition. Aucun
-      état de jeu (Encounter) copié : la partie repart vierge. */
+      est recopié sur les nouveaux nœuds par `duplicateSubtree` (A4/§5.4) — les
+      Factions ne bougent pas, les acteurs non plus. A4-bis.3b : plus aucune
+      appartenance de groupe à re-pointer. Aucun état de jeu (Encounter) copié :
+      la partie repart vierge. */
   duplicateDossier(id) {
     const node = Dossiers.get(id);
     if (!node || node.kind !== "campaign") return;
     const res = Dossiers.duplicateSubtree(id);
     if (!res) return;
-    for (const col of this._cols()) {
-      let changed = false;
-      for (const [oldId, newId] of Object.entries(res.idMap)) {
-        const members = col.data.groups[oldId];
-        if (Array.isArray(members) && members.length) {
-          col.data.groups[newId] = [...members];
-          changed = true;
-        }
-      }
-      if (changed) col.save();
-    }
     this.render();
     this._notify();
     toast(`« ${node.name} » dupliqué — nouvelle partie, prépa copiée.`);

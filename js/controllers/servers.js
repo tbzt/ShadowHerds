@@ -34,7 +34,7 @@ import { Utils } from "../core/utils.js";
 export const Servers = Object.assign(
   Collection.create({
     key: "servers",
-    storageKeys: { all: "servers_all", groups: "servers_groups" },
+    storageKeys: { all: "servers_all" },
     // dom.grid n'est jamais monté (mêmes raisons que ContactsBook) : le
     // glisser-déposer B1, délégué sur `document`, dérive sa grille du parent
     // réel de la carte et n'a pas besoin d'un id de conteneur.
