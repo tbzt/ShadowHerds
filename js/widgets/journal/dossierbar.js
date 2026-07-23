@@ -139,7 +139,20 @@ export const DossierBar = {
     const cols = this._cols().filter((c) => !types || types.includes(this._COL_TYPE[c.key]));
     const ids = new Set();
     const gather = (nodeId) => {
+      // (a) casting hérité : appartenance de groupe (transition — le retrait
+      //     total de `Collection.groups` est un lot dédié). Type-filtré par
+      //     construction (memberIds ne rend que les ids de la collection).
       for (const col of cols) for (const id of this.memberIds(col, nodeId)) ids.add(id);
+      // (b) casting par RÉFÉRENCE (A4 · §3.4) : `node.convokes` résout les refs
+      //     d'entité directes ET le roster vivant des Factions convoquées.
+      for (const c of Dossiers.convokesOf(nodeId)) {
+        if (!c) continue;
+        if (c.ref === "entity") ids.add(c.id);
+        else if (c.ref === "faction" && typeof FactionStore !== "undefined") {
+          const f = FactionStore.get(c.id);
+          if (f && Array.isArray(f.members)) for (const m of f.members) ids.add(m);
+        }
+      }
     };
     gather(dossierId);
     if (includeAncestors) {
@@ -149,6 +162,14 @@ export const DossierBar = {
         gather(node.id);
         node = node.parentId ? Dossiers.get(node.parentId) : null;
       }
+    }
+    // Les refs `convokes` ne sont pas cloisonnées par collection : quand un
+    // `types` est demandé, on ne garde que les ids qui vivent dans les
+    // collections voulues (l'appartenance de groupe était déjà type-correcte).
+    if (types) {
+      const allowed = new Set();
+      for (const col of cols) for (const e of col.data.all || []) allowed.add(e.id);
+      return [...ids].filter((id) => allowed.has(id));
     }
     return [...ids];
   },
@@ -499,10 +520,11 @@ export const DossierBar = {
   },
 
   /** VIS-16 étape 5 — duplique une campagne pour une autre équipe : copie la
-      structure (Dossiers.duplicateSubtree) puis re-pointe l'appartenance PAR ID
-      sur les nouveaux nœuds (le casting suit la copie, PAR RÉFÉRENCE — les Actifs
-      ne sont pas dupliqués). Aucun état de jeu (Encounter) copié : la partie
-      repart vierge. */
+      structure (Dossiers.duplicateSubtree). Le casting PAR RÉFÉRENCE (`convokes`)
+      est déjà recopié sur les nouveaux nœuds par `duplicateSubtree` (A4/§5.4) —
+      les Factions ne bougent pas. La boucle ci-dessous ne couvre plus que le
+      casting HÉRITÉ (appartenance de groupe), le temps de la transition. Aucun
+      état de jeu (Encounter) copié : la partie repart vierge. */
   duplicateDossier(id) {
     const node = Dossiers.get(id);
     if (!node || node.kind !== "campaign") return;

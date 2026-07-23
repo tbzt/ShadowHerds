@@ -459,8 +459,8 @@ export const App = {
         Characters.initPanel();
         break;
       case "generator":
-        DossierBar.mount("gen-dossier-list");
-        DossierBar.render();
+        // A4-bis.3a (§4.1) : plus de barre « Dossier cible » — le PNJ généré
+        // rejoint le Monde (bibliothèque), sans rangement de dossier.
         break;
       case "contacts":
         ContactsBook.initGenPanel();

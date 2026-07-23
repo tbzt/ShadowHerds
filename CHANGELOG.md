@@ -12,6 +12,22 @@ commit.
 
 ## [Non publié]
 
+### Modifié
+
+- **Le Monde ne se range plus en dossiers : il se filtre par tags.** La
+  bibliothèque (« Ombres portées » et les écrans de génération Contacts /
+  Serveurs) présente désormais tout le contenu d'un seul tenant, filtrable par
+  **tags** et par type — la colonne « Dossiers » a quitté ces écrans. Un PNJ, un
+  contact ou un serveur généré **rejoint directement le Monde**, sans étape de
+  rangement obligatoire. La timeline Campagne › Run › Scène, elle, reste dans
+  « Jouer » et le générateur de topos.
+- **Le casting d'un run se fait par convocation, pas par rangement.** Générer
+  l'opposition d'un run **convoque** des acteurs du Monde (par référence) : la
+  même figure peut jouer dans plusieurs runs, et convoquer une faction amène
+  tout son roster vivant — éditer la faction met à jour tous les runs qui la
+  convoquent. « Ramener un visage déjà croisé » et la mémoire du monde suivent
+  la même vérité.
+
 ## [1.98.0] — 2026-07-23
 
 ### Ajouté

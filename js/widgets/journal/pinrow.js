@@ -60,8 +60,10 @@ export const PinRow = {
   _dossierEntries() {
     if (DossierBar.current === "all") return [];
     const out = [];
-    for (const { col, type } of this._TYPED_COLS) {
-      for (const id of DossierBar.memberIds(col())) {
+    // A4-bis.3a : les entités CONVOQUÉES sur le contexte courant (convokes +
+    // Factions), plus l'appartenance de dossier (memberIds retiré du Monde).
+    for (const { type } of this._TYPED_COLS) {
+      for (const id of DossierBar.convenedIds(DossierBar.current, { types: [type] })) {
         const e = PnjLookup.find(id);
         if (e) out.push({ id, type, name: e.name || "Sans nom" });
       }

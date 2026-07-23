@@ -96,6 +96,90 @@ export const Dossiers = {
     return true;
   },
 
+  /* ---- Casting → `node.convokes` (A4 · VISION_MONDE_ET_JEU §3.4).
+     Le nœud de jeu (run/scène) CONVOQUE des acteurs du Monde par RÉFÉRENCE,
+     jamais par possession : `convokes = [{ ref:"entity"|"faction", id }]`.
+     Convoquer une Faction = convoquer son roster vivant (résolu à la lecture
+     par `DossierBar.convenedIds` via `FactionStore`), donc éditer la Faction
+     met à jour tous les runs qui la convoquent. Même grammaire que `next` :
+     on ne pose ici que le champ + sa lecture/mutation. */
+  /** Refs convoquées par un nœud (tableau brut, jamais null). */
+  convokesOf(id) {
+    const node = this.get(id);
+    return node && Array.isArray(node.convokes) ? node.convokes : [];
+  },
+  /** Convoque un acteur (`ref`="entity"|"faction") sur un nœud. Additif,
+      idempotent ; refuse une ref inconnue ou un nœud inexistant. */
+  convoke(nodeId, ref, refId) {
+    const node = this.get(nodeId);
+    if (!node || !refId || (ref !== "entity" && ref !== "faction")) return false;
+    node.convokes = Array.isArray(node.convokes) ? node.convokes : [];
+    if (node.convokes.some((c) => c && c.ref === ref && c.id === refId)) return false;
+    node.convokes.push({ ref, id: refId });
+    this.save();
+    return true;
+  },
+  /** Retire une convocation. */
+  unconvoke(nodeId, ref, refId) {
+    const node = this.get(nodeId);
+    if (!node || !Array.isArray(node.convokes)) return false;
+    const i = node.convokes.findIndex((c) => c && c.ref === ref && c.id === refId);
+    if (i < 0) return false;
+    node.convokes.splice(i, 1);
+    this.save();
+    return true;
+  },
+  /** Intégrité (Failsafe §3.1) : purge les convocations d'entités supprimées
+      sur TOUS les nœuds. Renvoie les retraits `{nodeId, ref, id}` pour un
+      éventuel undo (comme RelationsStore/FactionStore rendent leurs purges). */
+  purgeConvokedEntities(ids) {
+    const set = ids instanceof Set ? ids : new Set(ids);
+    return this._purgeConvokes((c) => c.ref === "entity" && set.has(c.id));
+  },
+  /** Intégrité : purge les convocations d'une Faction disparue (l'appelant de
+      `FactionStore.remove` l'invoque, cf. §3.1 « la ref pend sur trois renvois »). */
+  purgeConvokedFaction(factionId) {
+    if (!factionId) return [];
+    return this._purgeConvokes((c) => c.ref === "faction" && c.id === factionId);
+  },
+  /** Retire de tous les nœuds les convocations vérifiant `pred`. Renvoie les
+      retraits `{nodeId, ref, id}` (undo). Facteur commun des deux purges. */
+  _purgeConvokes(pred) {
+    const removed = [];
+    let changed = false;
+    for (const node of this._tree) {
+      if (!node || !Array.isArray(node.convokes)) continue;
+      const kept = node.convokes.filter((c) => {
+        if (c && pred(c)) {
+          removed.push({ nodeId: node.id, ref: c.ref, id: c.id });
+          return false;
+        }
+        return true;
+      });
+      if (kept.length !== node.convokes.length) {
+        node.convokes = kept;
+        changed = true;
+      }
+    }
+    if (changed) this.save();
+    return removed;
+  },
+  /** Réinsère des convocations retirées (undo de suppression). Idempotent. */
+  addConvokes(list) {
+    if (!Array.isArray(list) || !list.length) return;
+    let changed = false;
+    for (const { nodeId, ref, id } of list) {
+      const node = this.get(nodeId);
+      if (!node) continue;
+      node.convokes = Array.isArray(node.convokes) ? node.convokes : [];
+      if (!node.convokes.some((c) => c && c.ref === ref && c.id === id)) {
+        node.convokes.push({ ref, id });
+        changed = true;
+      }
+    }
+    if (changed) this.save();
+  },
+
   /** VIS-16 étape 5 — duplique un sous-arbre (campagne ⊃ runs ⊃ scènes) avec de
       NOUVEAUX ids : une nouvelle prépa autonome pour jouer avec une autre équipe.
       Copie la structure ET les champs (dont les liaisons d'outils par ref et
@@ -119,6 +203,12 @@ export const Dossiers = {
           : idMap[src.parentId] || src.parentId;
       if (Array.isArray(src.next))
         copy.next = src.next.filter((n) => idMap[n]).map((n) => idMap[n]);
+      // A4/§5.4 : dupliquer copie les REFS de casting (le spread les partagerait
+      // par référence — muter la copie muterait l'original). Les acteurs et les
+      // Factions convoqués ne bougent pas : c'est une prépa parallèle qui pointe
+      // le même Monde.
+      if (Array.isArray(src.convokes))
+        copy.convokes = src.convokes.map((c) => ({ ...c }));
       return copy;
     });
     const newRoot = clones.find((c) => c.id === idMap[rootId]);

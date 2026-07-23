@@ -202,10 +202,12 @@ export const RunGen = {
     if (!roles.length) return;
 
     const prevGroup = Shadows.currentGroup;
-    // L'appartenance est keyée par ID de dossier (VIS-16 1-bis) : classer par id,
-    // pas par nom — sinon le casting reste invisible dans le run (memberIds/Jouer
-    // lisent par id). `castForRun` était le straggler de cette migration.
-    Shadows.currentGroup = run.dossierId; // Shadows.savePNJ classe dans ce dossier
+    // A4/§5.2 — casting par RÉFÉRENCE : on génère l'opposition DANS LE MONDE
+    // (bibliothèque, `currentGroup="all"` → savePNJ ne la range dans aucun
+    // groupe) puis on la CONVOQUE sur le run (`Dossiers.convoke`). Le casting
+    // n'est plus une appartenance de dossier ; « Jouer » le résout via
+    // `convenedIds`. Fin de la fuite « casting = folder membership ».
+    Shadows.currentGroup = "all";
     let n = 0;
     for (const role of roles) {
       const pnj = Gen.generateForRole(role);
@@ -214,6 +216,7 @@ export const RunGen = {
         // « ce PNJ a été croisé chez Ares » deviendra dérivable (visage récurrent).
         pnj.faction = run.opposition || null;
         Shadows.savePNJ(pnj.id);
+        Dossiers.convoke(run.dossierId, "entity", pnj.id);
         n++;
       }
     }
@@ -226,7 +229,7 @@ export const RunGen = {
       le PNJ existant au run (multi-groupe, par référence). S'il n'y en a pas, le
       toast de casting normal. */
   _proposeRecurringFace(run, dossierName, n) {
-    const castMsg = `Casting généré : ${n} PNJ rangé${n > 1 ? "s" : ""} dans « ${dossierName} ».`;
+    const castMsg = `Casting généré : ${n} PNJ convoqué${n > 1 ? "s" : ""} dans « ${dossierName} ».`;
     const faces =
       typeof WorldState !== "undefined"
         ? WorldState.recurringFacesFor(run.dossierId, run.opposition, run.dossierId)
@@ -241,7 +244,7 @@ export const RunGen = {
       `${castMsg} ${face.name} — déjà croisé${factionName ? ` chez ${factionName}` : ""}. Le ramener ?`,
       "Ramener",
       () => {
-        Shadows.toggleGroup(face.id, run.dossierId, true); // ré-attache par référence
+        Dossiers.convoke(run.dossierId, "entity", face.id); // convoque par référence
         toast(`${face.name} rejoint « ${dossierName} ».`);
       },
     );

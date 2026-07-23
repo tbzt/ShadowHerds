@@ -87,19 +87,22 @@ export const Hub = {
 
   initPanel(type) {
     if (type) this._type = type;
-    // Collections + DossierBar sont initialisés au choix d'édition ; ici on
-    // ne fait que (dé)monter la sidebar du hub et s'abonner aux changements.
-    DossierBar.mount("hub-dossier-list");
+    // A4-bis.1 (§4.1) : le Hub ne monte plus de barre de dossiers — le Monde est
+    // toute la bibliothèque, filtrée par tags. On reste abonné à DossierBar pour
+    // que le bandeau de contexte (JEU : run/campagne courant, wayfinding) suive
+    // un changement de contexte déclenché AILLEURS (panneau run, Le Pont).
     DossierBar.subscribe(() => this.render());
     this._wire();
-    DossierBar.refresh(); // rend l'arbre + notifie → this.render()
+    this.render();
   },
 
   render() {
     // D3 : dossier vide (sélection courante, indépendant du filtre texte) →
     // masque les actions qui n'ont rien à faire (Combat/Sélectionner/
     // Imprimer/Foundry) ; Charger + recherche restent utiles à vide.
-    const empty = DossierBar.count() === 0;
+    // A4-bis.1 : « vide » = aucune entité DANS TOUTE la bibliothèque (plus une
+    // sélection de dossier), pour masquer les actions inutiles (Combat/Imprimer…).
+    const empty = this._totalEntities() === 0;
     document.getElementById("panel-shadows").classList.toggle("hub-empty", empty);
     // Le socle de contenu change (dossier/type/mutation) : les facettes
     // sélectionnées ne s'y appliquent peut-être plus → on repart à zéro
@@ -165,12 +168,21 @@ export const Hub = {
   _renderLabel(shown) {
     const label = document.getElementById("hub-dossier-label");
     if (!label) return;
-    const node = DossierBar.currentNode();
-    const base = node ? node.name : "Tout le contenu";
-    const total = DossierBar.count();
+    // A4-bis.1 : le Monde = toute la bibliothèque, plus un dossier sélectionné.
+    const total = this._totalEntities();
     label.textContent = this._filter.trim()
-      ? `${base} (${shown}/${total})`
-      : `${base} (${total})`;
+      ? `Tout le contenu (${shown}/${total})`
+      : `Tout le contenu (${total})`;
+  },
+
+  /** Nombre total d'entités (tous types) dans la bibliothèque — A4-bis.1 a
+      remplacé le décompte par dossier (`DossierBar.count`) : le Monde n'est plus
+      scopé par un dossier, seulement filtré par tags. */
+  _totalEntities() {
+    return this._typeDefs().reduce(
+      (n, { col }) => n + ((col && col.data && col.data.all.length) || 0),
+      0,
+    );
   },
 
   _renderChips() {
@@ -197,7 +209,9 @@ export const Hub = {
     const textMatched = [];
     for (const { col, type, label } of this._typeDefs()) {
       if (this._type !== "all" && this._type !== type) continue;
-      let ids = DossierBar.memberIds(col);
+      // A4-bis.1 (§4.1) : toute la bibliothèque, plus les membres d'un dossier.
+      // Le filtrage vit dans les tags (facettes, passe 2) et la recherche texte.
+      let ids = col.data.all.map((e) => e.id);
       if (words.length) ids = this._filterIds(col, ids, words);
       const byId = new Map(col.data.all.map((e) => [e.id, e]));
       const ents = ids.map((id) => byId.get(id)).filter(Boolean);
@@ -232,19 +246,17 @@ export const Hub = {
     if (!total) {
       const facetsActive = this._facetsActive();
       const filtering = !!this._filter.trim() || facetsActive;
-      const selected = DossierBar.current !== "all";
+      // A4-bis.1 : plus de dossier sélectionné dans le Monde → l'état-vide ne
+      // distingue que « rien ne matche le filtre » vs « bibliothèque vide ».
       const body = this._filter.trim()
         ? `Aucune fiche ne correspond à « ${CardRenderer._esc(this._filter.trim())} ».`
         : facetsActive
           ? "Aucune fiche ne correspond aux filtres actifs."
-          : selected
-          ? "Ce dossier est vide pour ce filtre."
-          : "Générez du contenu (PNJ, contacts, serveurs) et rangez-le dans un dossier.";
+          : "Générez du contenu (PNJ, contacts, serveurs) : il apparaîtra ici.";
       // Onboarding léger : « commencer ici » seulement à vide total
-      // (nouvel utilisateur) — pas en recherche ni dans un dossier vide.
-      // Réutilise l'action show-panel, aucun nouveau mécanisme.
+      // (nouvel utilisateur) — pas en recherche/filtre. Réutilise show-panel.
       const cta =
-        !filtering && !selected
+        !filtering
           ? `<button class="btn-primary btn-small empty-state-cta" data-action="show-panel" data-panel="generator"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> Créer un PNJ</button>`
           : "";
       box.innerHTML = `<div class="empty-state">

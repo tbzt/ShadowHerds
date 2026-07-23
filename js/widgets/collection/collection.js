@@ -11,17 +11,17 @@
 
    La brique ne connaît AUCUN contrôleur : toutes les différences
    (clés Storage, ids DOM, libellés, champs de filtre, rendu de
-   carte, entités liées) arrivent par configuration. Ses seules
-   dépendances sortantes sont Storage (persistance) et GroupPicker
-   (widget d'appartenance multi-groupes), toutes deux descendantes.
+   carte, entités liées) arrivent par configuration. Sa dépendance
+   sortante principale est Storage (persistance), descendante.
 
-   Un contact/PNJ/serveur peut appartenir à PLUSIEURS groupes.
+   NB (A4-bis, §4.1) : le rangement du Monde par appartenance de dossier
+   (`data.groups` + GroupPicker + FileRail) est en cours de retrait au
+   profit des TAGS/Factions ; le rail de groupe de `_renderGrid` et le CRUD
+   de groupe subsistent temporairement (retrait total = lot A4-bis.3).
    ============================================================ */
 import { BulkBar } from "./bulkbar.js";
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Dialog } from "../kit/dialog.js";
-import { FileRail } from "./filerail.js";
-import { GroupPicker } from "../kit/grouppicker.js";
 import { Storage } from "../../core/storage.js";
 import { Utils } from "../../core/utils.js";
 
@@ -104,6 +104,10 @@ export const Collection = {
           typeof RelationsStore !== "undefined" ? RelationsStore.purgeEntities(doomed) : [];
         const purgedFactions =
           typeof FactionStore !== "undefined" ? FactionStore.purgeEntities(doomed) : [];
+        // A4/§3.1 — une entité convoquée sur un run laisse une ref pendante :
+        // on la purge (rendue à l'annulation, comme les arêtes/rosters).
+        const purgedConvokes =
+          typeof Dossiers !== "undefined" ? Dossiers.purgeConvokedEntities(doomed) : [];
         this.render();
         if (!entity) return;
 
@@ -132,6 +136,7 @@ export const Collection = {
           this.save();
           if (typeof RelationsStore !== "undefined") RelationsStore.addEdges(purgedEdges);
           if (typeof FactionStore !== "undefined") FactionStore.addMemberships(purgedFactions);
+          if (typeof Dossiers !== "undefined") Dossiers.addConvokes(purgedConvokes);
           this.render();
         };
         toastUndo(labels.removed(entity), restore);
@@ -164,6 +169,8 @@ export const Collection = {
           typeof RelationsStore !== "undefined" ? RelationsStore.purgeEntities(doomed) : [];
         const purgedFactions =
           typeof FactionStore !== "undefined" ? FactionStore.purgeEntities(doomed) : [];
+        const purgedConvokes =
+          typeof Dossiers !== "undefined" ? Dossiers.purgeConvokedEntities(doomed) : [];
         this.render();
 
         const restore = () => {
@@ -182,6 +189,7 @@ export const Collection = {
           this.save();
           if (typeof RelationsStore !== "undefined") RelationsStore.addEdges(purgedEdges);
           if (typeof FactionStore !== "undefined") FactionStore.addMemberships(purgedFactions);
+          if (typeof Dossiers !== "undefined") Dossiers.addConvokes(purgedConvokes);
           this.render();
         };
         const n = snapshot.length;
@@ -285,27 +293,9 @@ export const Collection = {
         this.render();
       },
 
-      /** Déplace N entités vers un dossier en un seul save()+render(),
-          plutôt que d'enchaîner toggleGroup() qui re-rendrait à chaque id. */
-      addManyToGroup(ids, groupKey) {
-        if (!this.data.groups[groupKey]) this.data.groups[groupKey] = [];
-        const arr = this.data.groups[groupKey];
-        for (const id of ids) if (!arr.includes(id)) arr.push(id);
-        this.save();
-        this.render();
-      },
-
-      /** Range N entités dans un dossier (par nom), avec accusé et vidage de
-          la sélection : chemin d'écriture UNIQUE partagé par la barre de
-          sélection (BulkBar « Déplacer vers ») et le glisser-déposer vers le
-          rail (FileRail). Une seule vérité, pas deux copies divergentes. */
-      fileInto(ids, groupKey) {
-        if (!ids || !ids.length || !groupKey) return;
-        this.addManyToGroup(ids, groupKey);
-        const label = (typeof Dossiers !== "undefined" && Dossiers.nameOf(groupKey)) || groupKey;
-        toast(`Déplacé vers « ${label} ».`);
-        this.clearSelection();
-      },
+      // A4-bis.2 : `addManyToGroup`/`fileInto` (rangement en masse dans un
+      // dossier — BulkBar « Déplacer vers » + glisser-vers-rail FileRail) retirés.
+      // Le Monde se range par TAGS/Factions ; le casting se CONVOQUE (Dossiers.convoke).
 
       groupsOf(id) {
         return Object.keys(this.data.groups).filter((g) =>
@@ -467,7 +457,7 @@ export const Collection = {
           });
           // Toujours affiché : le popover permet de créer un premier
           // groupe à la volée même quand aucun n'existe encore.
-          this._appendGroupTrigger(card, entity.id);
+          this._appendPinTrigger(card, entity.id);
           this._appendReorderHandle(card, entity.id);
           this._appendSelectCheckbox(card, entity.id);
           grid.appendChild(card);
@@ -494,36 +484,17 @@ export const Collection = {
         this._renderList(grid, list.slice().reverse(), context);
       },
 
-      /** Bouton d'appartenance multi-groupes, uniforme sur toute carte.
-          Ouvre le popover partagé (GroupPicker) par délégation. */
-      _appendGroupTrigger(card, id) {
+      /** Épingle rapide (A2b) dans le pied de carte : bascule le tag réservé
+          `Tags.PINNED`, lu via `UI.isPinned` (l'épingle vit sur l'entité, plus de
+          nœud « Favoris »). A4-bis.2 a retiré le 🏷 « Groupes » (GroupPicker) qui
+          l'accompagnait : le rangement du Monde se fait par TAGS/Factions, plus par
+          appartenance de dossier. Réutilise la classe `group-picker-trigger`
+          (géométrie du pied), aucun CSS neuf. */
+      _appendPinTrigger(card, id) {
         const footer = card.querySelector(
           config.footerSelector || ".pnj-card-footer",
         );
         if (!footer) return;
-        const groups = this.groupsOf(id);
-        const gLabel =
-          groups.length === 0
-            ? "Groupes"
-            : groups.length === 1
-              ? (typeof Dossiers !== "undefined" && Dossiers.nameOf(groups[0])) || groups[0]
-              : `${groups.length} groupes`;
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className =
-          "group-picker-trigger" + (groups.length ? " has-groups" : "");
-        // Pied compact : le libellé du tag est masqué (icône seule, cf.
-        // .group-picker-trigger-label) — le nom du/des groupe(s) vit donc
-        // dans le title, seul canal qui le révèle au survol.
-        btn.title = groups.length ? `Groupes : ${gLabel}` : "Gérer les groupes";
-        btn.dataset.collection = this.key;
-        btn.dataset.action = "open-picker";
-        btn.dataset.id = id;
-        btn.innerHTML = `<span class="group-picker-trigger-icon">🏷</span><span class="group-picker-trigger-label">${CardRenderer._esc(gLabel)}</span>`;
-        footer.prepend(btn);
-
-        // Épingle rapide (A2b) : le tag réservé `Tags.PINNED`, lu via
-        // `UI.isPinned` (l'épingle vit sur l'entité, plus de nœud « Favoris »).
         const pinned = typeof UI !== "undefined" && UI.isPinned(id);
         const pin = document.createElement("button");
         pin.type = "button";
@@ -594,9 +565,6 @@ export const Collection = {
             case "remove-group":
               this.removeGroup(el.dataset.group);
               break;
-            case "open-picker":
-              GroupPicker.open(this, el.dataset.id, el);
-              break;
             case "toggle-pin":
               // A2b — bascule le tag réservé `Tags.PINNED` sur l'entité (UI est
               // l'écrivain sanctionné, mute toutes les copies + persiste). Puis
@@ -631,7 +599,6 @@ export const Collection = {
 
         this._initReorderDrag();
         this._wireReorderKeys();
-        this._initFileDrag();
       },
 
       /* ---- Réorganisation manuelle (Vague B1) ----
@@ -694,9 +661,9 @@ export const Collection = {
         if (typeof this.refreshGrid === "function") this.refreshGrid();
       },
       /** Cette carte appartient-elle à MA collection ? Chaque carte porte au
-          moins un descendant `[data-collection]` (poignée de groupes ou case
-          de sélection, cf. _appendGroupTrigger/_appendSelectCheckbox) : c'est
-          l'ancre d'appartenance déjà utilisée par la délégation de _wire. */
+          moins un descendant `[data-collection]` (épingle ★ ou case de sélection,
+          cf. _appendPinTrigger/_appendSelectCheckbox) : c'est l'ancre
+          d'appartenance déjà utilisée par la délégation de _wire. */
       _ownsCard(card) {
         return (
           card.querySelector("[data-collection]")?.dataset.collection ===
@@ -794,170 +761,10 @@ export const Collection = {
         });
       },
 
-      /* ---- Glisser une carte vers un dossier (rail FileRail) ----
-         Vit DANS le mode Sélection (body.selecting) : on tire une carte —
-         ou toute la sélection si la carte tirée en fait partie — vers la
-         gauche, le rail des dossiers apparaît et on lâche sur le bon. Même
-         moteur Pointer Events que la réorganisation ci-dessus, mais saisi
-         sur le CORPS de carte (pas une poignée) : la désambiguïsation
-         tap/défilement/glisser se fait au seuil et à l'appui maintenu, pour
-         ne pas voler le défilement vertical au tactile.
-         Enrichissement progressif du geste « Déplacer vers » de BulkBar
-         (canal découvrable + clavier) ; le lâcher route vers fileInto. */
-      _initFileDrag() {
-        // Délégué sur document, comme les écouteurs click/change/input de
-        // _wire() : les cartes de cette collection peuvent être rendues hors
-        // de sa grille propre (sections du Hub, écrans de génération), là où
-        // un écouteur lié au grid ne les atteindrait jamais. On filtre par
-        // appartenance (data-collection porté par les contrôles de la carte).
-        document.addEventListener("pointerdown", (e) => {
-          if (!document.body.classList.contains("selecting")) return;
-          // Jamais depuis un contrôle : case, poignée ⠿, boutons de pied,
-          // menu ⋯. Ceux-là gardent leur geste propre (cocher, réordonner…).
-          if (
-            e.target.closest(
-              "input, button, a, label, select, textarea, .card-menu, .reorder-handle",
-            )
-          )
-            return;
-          const card = e.target.closest(".bulk-selectable[data-reorder-id]");
-          if (!card) return;
-          // N'agir que sur les cartes de CETTE collection (même ancre
-          // d'appartenance que la réorganisation, cf. _ownsCard).
-          if (!this._ownsCard(card)) return;
-
-          const id = card.dataset.reorderId;
-          const pid = e.pointerId;
-          const touch = e.pointerType === "touch";
-          const startX = e.clientX;
-          const startY = e.clientY;
-          let armed = false;
-
-          const arm = () => {
-            if (armed) return;
-            armed = true;
-            clearTimeout(holdTimer);
-            // Charge utile : la sélection entière si la carte tirée en fait
-            // partie, sinon cette seule carte (« un par un »).
-            const ids =
-              this._selected.size && this._selected.has(id)
-                ? this.selectedIds()
-                : [id];
-            this._fdrag = { card, ids };
-            card.classList.add("file-drag-src");
-            card.style.touchAction = "none"; // fige le défilement une fois saisi
-            try {
-              card.setPointerCapture(pid);
-            } catch (_) {}
-            this._fileDragStart(ids, startX, startY);
-          };
-
-          // Tactile : armé au maintien immobile (~160 ms) — un swipe défile
-          // encore. Souris/stylet : armé au premier franchissement de seuil.
-          const holdTimer = touch ? setTimeout(arm, 160) : null;
-
-          const move = (ev) => {
-            if (!armed) {
-              const dist = Math.hypot(ev.clientX - startX, ev.clientY - startY);
-              if (touch) {
-                if (dist > 12) {
-                  clearTimeout(holdTimer); // c'était un défilement
-                  cleanup();
-                }
-              } else if (dist > 6) {
-                arm();
-              }
-              return;
-            }
-            ev.preventDefault();
-            this._fileDragMove(ev);
-          };
-          const up = (ev) => {
-            clearTimeout(holdTimer);
-            if (armed) this._fileDragEnd(ev);
-            cleanup();
-          };
-          const cleanup = () => {
-            try {
-              card.releasePointerCapture(pid);
-            } catch (_) {}
-            document.removeEventListener("pointermove", move);
-            document.removeEventListener("pointerup", up);
-            document.removeEventListener("pointercancel", up);
-          };
-          document.addEventListener("pointermove", move);
-          document.addEventListener("pointerup", up);
-          document.addEventListener("pointercancel", up);
-        });
-      },
-      _fileDragStart(ids, x, y) {
-        FileRail.show();
-        const ghost = document.createElement("div");
-        ghost.className = "file-drag-ghost";
-        let label;
-        if (ids.length === 1) {
-          const e = this.data.all.find((x2) => x2.id === ids[0]);
-          label = e ? e.name : "1 carte";
-        } else {
-          label = `${ids.length} cartes`;
-        }
-        ghost.innerHTML = `<span class="file-drag-ghost-count">${ids.length}</span><span class="file-drag-ghost-label">${CardRenderer._esc(label)}</span>`;
-        document.body.appendChild(ghost);
-        this._fdrag.ghost = ghost;
-        this._positionGhost(x, y);
-      },
-      _positionGhost(x, y) {
-        const g = this._fdrag && this._fdrag.ghost;
-        if (!g) return;
-        g.style.left = `${x}px`;
-        g.style.top = `${y}px`;
-      },
-      _fileDragMove(ev) {
-        if (!this._fdrag) return;
-        this._positionGhost(ev.clientX, ev.clientY);
-        const target = FileRail.hover(ev.clientX, ev.clientY);
-        this._fdrag.ghost.classList.toggle("over-target", !!target);
-      },
-      _fileDragEnd(ev) {
-        if (!this._fdrag) return;
-        const { card, ids, ghost } = this._fdrag;
-        const drop = FileRail.dropTarget(ev.clientX, ev.clientY);
-        if (drop) {
-          FileRail.pulse(drop.el);
-          this._absorbGhost(ghost, drop.el);
-          this.fileInto(ids, drop.id); // écrit + accuse + vide la sélection (par id)
-        } else {
-          this._dismissGhost(ghost);
-        }
-        card.classList.remove("file-drag-src");
-        card.style.touchAction = "";
-        FileRail.hide();
-        this._fdrag = null;
-      },
-      /** Le fantôme file vers la cible puis disparaît (cosmétique — l'écriture
-          a déjà eu lieu). prefers-reduced-motion éteint les --dur-*, la fin
-          de transition arrive alors quasi immédiatement (garde-fou setTimeout). */
-      _absorbGhost(ghost, targetEl) {
-        const box = targetEl.getBoundingClientRect();
-        ghost.classList.add("absorbing");
-        ghost.style.left = `${box.left + box.width / 2}px`;
-        ghost.style.top = `${box.top + box.height / 2}px`;
-        this._killGhost(ghost);
-      },
-      _dismissGhost(ghost) {
-        ghost.classList.add("dismiss");
-        this._killGhost(ghost);
-      },
-      _killGhost(ghost) {
-        let done = false;
-        const fin = () => {
-          if (done) return;
-          done = true;
-          ghost.remove();
-        };
-        ghost.addEventListener("transitionend", fin, { once: true });
-        setTimeout(fin, 400);
-      },
+      // A4-bis.2 (§4.1) : le glisser-carte-vers-dossier (rail FileRail) est retiré
+      // — le Monde ne se range plus par appartenance de dossier (tags/Factions), et
+      // le casting se CONVOQUE (Dossiers.convoke). Cluster _initFileDrag/_fileDrag*
+      // /ghost supprimé ; la réorganisation manuelle (poignée ⠿) reste intacte.
     };
 
     return col;

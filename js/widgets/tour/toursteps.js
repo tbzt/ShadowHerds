@@ -364,11 +364,6 @@ export const TourSteps = {
       body: "Chaque fiche de contact a maintenant un bouton « Éditer » (comme les PNJ, PJ, serveurs et véhicules) : une modale y regroupe le nom, le rôle, le trait, la description, l'Influence/Loyauté (ou Niveau/RR en Anarchy 2) et surtout le métatype, qui n'était modifiable nulle part une fois le contact créé. Au passage, la génération et la création de contact proposent désormais la liste de métatypes complète de l'édition — les 5 souches et toutes les métavariantes (Troll Cyclope, Ork Hobgobelin…), comme le générateur de PNJ.",
     },
     {
-      id: "wn-drag-to-folder", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.63.0", fallback: "center",
-      title: "Glissez une carte dans un dossier",
-      body: "En mode « Sélectionner », tirez une fiche vers la gauche (souris ou doigt) : un rail de dossiers apparaît. Survolez-en un pour déplier ses sous-groupes, lâchez sur le bon pour y ranger la fiche. Si des fiches sont cochées et que vous tirez l'une d'elles, tout le lot suit. C'est le pendant gestuel du bouton « Déplacer vers » de la barre de sélection.",
-    },
-    {
       id: "wn-generator-touch-groups", anchor: "nav-generator", tours: ["whatsnew"], since: "1.64.0", fallback: "center",
       title: "Générateur : filtres regroupés et bouton tactile",
       body: "Les neuf filtres du générateur de PNJ sont maintenant regroupés sous trois repères — Identité, Métier, Composition — plutôt qu'une seule cascade de champs. Le bouton « Générer » atteint aussi sa pleine cible tactile (44px) sur smartphone/tablette, là où il restait un peu court.",

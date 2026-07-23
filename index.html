@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="css/base/forms.css">
   <link rel="stylesheet" href="css/base/pnj-card.css">
   <link rel="stylesheet" href="css/base/shadows-contacts.css">
-  <link rel="stylesheet" href="css/base/file-drag.css">
   <link rel="stylesheet" href="css/base/modal-core.css">
   <link rel="stylesheet" href="css/base/edit-modal.css">
   <link rel="stylesheet" href="css/base/combat-tracker.css">
@@ -392,25 +391,13 @@
         <div class="panel active" id="panel-shadows">
           <div class="panel-title">Ombres portées<span class="panel-subtitle">vos PNJ, contacts et serveurs sauvegardés</span></div>
           <div id="hub-save-reminder"></div>
-          <div class="shadows-layout" data-sidebar="shadows">
-            <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="shadows"></div>
-            <!-- Rail de réouverture (visible quand repliée) -->
-            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="shadows" title="Afficher les dossiers"
-              aria-label="Afficher les dossiers">
-              <span class="sidebar-reopen-icon"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>
-              <span class="sidebar-reopen-label">Dossiers</span>
-            </button>
-            <!-- Colonne gauche : arbre de dossiers -->
-            <aside class="shadows-sidebar">
-              <div class="shadows-sidebar-header">
-                <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="shadows" title="Replier"
-                  aria-label="Replier les dossiers"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>
-                <span class="shadows-sidebar-title">Dossiers</span>
-                <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
-              </div>
-              <div id="hub-dossier-list"></div>
-            </aside>
-            <!-- Zone principale : sections par type du dossier sélectionné -->
+          <!-- A4-bis.1 (VISION_MONDE_ET_JEU §4.1) : le Monde n'a plus de dossiers.
+               La barre de dossiers (une notion du JEU — campagne/run/scène) quitte
+               le Hub ; le filtrage se fait par TAGS (facettes) sur toute la
+               bibliothèque. La timeline reste dans « Jouer » (Le Pont) et le
+               panneau run. -->
+          <div class="shadows-layout">
+            <!-- Zone principale : sections par type sur toute la bibliothèque -->
             <div class="shadows-main">
               <div class="shadows-main-toolbar">
                 <div class="hub-type-chips" role="tablist" aria-label="Filtrer par type">
@@ -438,7 +425,7 @@
                   <button type="button" class="card-kebab" data-card-menu-toggle aria-haspopup="true" aria-expanded="false" title="Plus d'actions" aria-label="Plus d'actions">⋯</button>
                   <div class="card-menu" role="menu" hidden>
                     <button type="button" role="menuitem" class="card-menu-item" data-action="toggle-select-mode">Sélectionner plusieurs fiches</button>
-                    <button type="button" role="menuitem" class="card-menu-item" data-action="print-sheets">Imprimer les fiches de ce dossier</button>
+                    <button type="button" role="menuitem" class="card-menu-item" data-action="print-sheets">Imprimer les fiches affichées</button>
                     <button type="button" role="menuitem" class="card-menu-item" data-action="foundry-dossier">Exporter vers Foundry VTT</button>
                     <button type="button" role="menuitem" class="card-menu-item" data-action="foundry-import">Importer depuis Foundry VTT</button>
                   </div>
@@ -494,22 +481,9 @@
         <!-- GÉNÉRATEUR PNJ -->
         <div class="panel" id="panel-generator">
           <div class="panel-title"><span class="aro-tag">//AR</span>Générateur de PNJ</div>
-          <div class="shadows-layout" data-sidebar="generator">
-            <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="generator"></div>
-            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="generator" title="Afficher les dossiers"
-              aria-label="Afficher les dossiers">
-              <span class="sidebar-reopen-icon"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>
-              <span class="sidebar-reopen-label">Dossiers</span>
-            </button>
-            <aside class="shadows-sidebar">
-              <div class="shadows-sidebar-header">
-                <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="generator" title="Replier"
-                  aria-label="Replier les dossiers"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>
-                <span class="shadows-sidebar-title">Dossier cible</span>
-                <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
-              </div>
-              <div id="gen-dossier-list"></div>
-            </aside>
+          <!-- A4-bis.3a (§4.1) : plus de « Dossier cible » — un PNJ généré rejoint
+               le Monde (bibliothèque), sans rangement de dossier. -->
+          <div class="shadows-layout">
             <div class="shadows-main aro-grid">
               <!-- Générateur unique : le nombre est une variable de génération
                    (1 = un PNJ, N = une bande). Plus d'onglet individuel/groupe. -->
@@ -530,22 +504,9 @@
         <!-- CONTACTS (génération) -->
         <div class="panel" id="panel-contacts">
           <div class="panel-title">Contacts</div>
-          <div class="shadows-layout" data-sidebar="contacts">
-            <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="contacts"></div>
-            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="contacts" title="Afficher les dossiers"
-              aria-label="Afficher les dossiers">
-              <span class="sidebar-reopen-icon"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>
-              <span class="sidebar-reopen-label">Dossiers</span>
-            </button>
-            <aside class="shadows-sidebar">
-              <div class="shadows-sidebar-header">
-                <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="contacts" title="Replier"
-                  aria-label="Replier les dossiers"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>
-                <span class="shadows-sidebar-title">Dossier cible</span>
-                <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
-              </div>
-              <div id="contacts-dossier-list"></div>
-            </aside>
+          <!-- A4-bis.3a (§4.1) : plus de « Dossier cible » — un contact généré
+               rejoint le Monde (bibliothèque), sans rangement de dossier. -->
+          <div class="shadows-layout">
             <div class="shadows-main">
               <div class="contacts-gen-bar">
                 <div id="contact-gen-form"></div>
@@ -563,22 +524,9 @@
         <!-- SERVEURS (génération) -->
         <div class="panel" id="panel-matrix">
           <div class="panel-title">Serveurs & CI</div>
-          <div class="shadows-layout" data-sidebar="matrix">
-            <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="matrix"></div>
-            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="matrix" title="Afficher les dossiers"
-              aria-label="Afficher les dossiers">
-              <span class="sidebar-reopen-icon"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>
-              <span class="sidebar-reopen-label">Dossiers</span>
-            </button>
-            <aside class="shadows-sidebar">
-              <div class="shadows-sidebar-header">
-                <button class="sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="matrix" title="Replier"
-                  aria-label="Replier les dossiers"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>
-                <span class="shadows-sidebar-title">Dossier cible</span>
-                <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
-              </div>
-              <div id="servers-dossier-list"></div>
-            </aside>
+          <!-- A4-bis.3a (§4.1) : plus de « Dossier cible » — un serveur créé
+               rejoint le Monde (bibliothèque), sans rangement de dossier. -->
+          <div class="shadows-layout">
             <div class="shadows-main">
               <div class="contacts-gen-bar">
                 <div id="server-gen-form"></div>
@@ -975,11 +923,9 @@
   <script type="module" src="js/widgets/journal/dossiers.js"></script>
   <script type="module" src="js/widgets/journal/dossierbar.js"></script>
   <script type="module" src="js/widgets/journal/contextselector.js"></script>
-  <script type="module" src="js/widgets/kit/grouppicker.js"></script>
   <script type="module" src="js/widgets/kit/factionpicker.js"></script>
   <script type="module" src="js/widgets/kit/tagpicker.js"></script>
   <script type="module" src="js/widgets/collection/collection.js"></script>
-  <script type="module" src="js/widgets/collection/filerail.js"></script>
   <script type="module" src="js/widgets/collection/bulkbar.js"></script>
   <script type="module" src="js/widgets/collection/selectionmode.js"></script>
   <script type="module" src="js/widgets/collection/reordermode.js"></script>

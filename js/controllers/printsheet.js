@@ -11,24 +11,23 @@
    via App.editionModule.printSheet(pnj) (js/editions/*.print.js).
    Aucune branche App.edition ici (prohibition #1).
    ============================================================ */
-import { DossierBar } from "../widgets/journal/dossierbar.js";
 
 export const PrintSheet = {
   _root() {
     return document.getElementById("print-root");
   },
 
-  /** Fiches imprimables de la sélection DossierBar courante : PNJ (Shadows)
+  /** Fiches imprimables de TOUTE la bibliothèque (A4-bis.3a) : PNJ (Shadows)
       et PJ (Characters), hors entités liées (drones/esprits suivent leur
       maître, pas de fiche propre). */
   _entities() {
     const out = [];
+    // A4-bis.3a (§4.1) : action du Hub (Monde) → imprime TOUTE la bibliothèque,
+    // plus un scoping par dossier (l'entité maître seule ; les liées suivent).
     for (const col of [Shadows, Characters]) {
       if (typeof col === "undefined") continue;
-      const byId = new Map(col.data.all.map((e) => [e.id, e]));
-      for (const id of DossierBar.memberIds(col)) {
-        const e = byId.get(id);
-        if (e && !e.ownerId) out.push(e);
+      for (const e of col.data.all) {
+        if (!e.ownerId) out.push(e);
       }
     }
     return out;

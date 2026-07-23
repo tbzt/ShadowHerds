@@ -15,7 +15,6 @@
    ============================================================ */
 import { Debug } from "../core/debug.js";
 import { Dialog } from "../widgets/kit/dialog.js";
-import { DossierBar } from "../widgets/journal/dossierbar.js";
 import { PnjLookup } from "./pnjlookup.js";
 
 export const FoundryExport = {
@@ -115,12 +114,12 @@ export const FoundryExport = {
       véhicules partent avec leur maître via buildVehicleActors). */
   _dossierEntities() {
     const out = [];
+    // A4-bis.3a (§4.1) : action du Hub (Monde) → exporte TOUTE la bibliothèque,
+    // plus un scoping par dossier (l'entité maître seule ; les liées suivent).
     for (const col of [Shadows, Characters]) {
       if (typeof col === "undefined") continue;
-      const byId = new Map(col.data.all.map((e) => [e.id, e]));
-      for (const id of DossierBar.memberIds(col)) {
-        const e = byId.get(id);
-        if (e && !e.ownerId) out.push(e);
+      for (const e of col.data.all) {
+        if (!e.ownerId) out.push(e);
       }
     }
     return out;

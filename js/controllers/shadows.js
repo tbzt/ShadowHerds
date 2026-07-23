@@ -90,10 +90,10 @@ export const Shadows = Object.assign(
           Gen.pool = Gen.pool.filter((p) => p.id !== e.id);
         }
       }
-      // Classe dans le dossier de destination courant (piloté par DossierBar).
-      if (this.currentGroup && this.currentGroup !== "all") {
-        (this.data.groups[this.currentGroup] ||= []).push(pnj.id);
-      }
+      // A4-bis.2 (§4.1) : un PNJ sauvegardé EXISTE dans le Monde, il ne se range
+      // nulle part d'obligatoire. Plus d'écriture d'appartenance de dossier à la
+      // génération — le casting se fait par CONVOCATION (Dossiers.convoke), le
+      // rangement par TAGS/Factions.
       this.save();
       this.render();
       // Pont « Créer → Retrouver » (VIS-2) : nommer la destination en toutes

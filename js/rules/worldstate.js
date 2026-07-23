@@ -62,13 +62,35 @@ export const WorldState = {
     };
   },
 
-  /** Ids des PJ de l'équipe rangés dans la portée (lu brut `characters_groups`,
-      comme `gen_runs` — reste couche basse, jamais DossierBar). */
+  /** Ids d'entités CONVOQUÉES par les nœuds de la portée (A4/§5.3). Reste couche
+      basse : lit `Dossiers.convokes` + `FactionStore` (core), jamais DossierBar.
+      Résout les refs d'entité directes ET le roster des Factions convoquées. */
+  _convokedIn(scopeSet) {
+    const ids = new Set();
+    if (typeof Dossiers === "undefined") return ids;
+    for (const nodeId of scopeSet) {
+      for (const c of Dossiers.convokesOf(nodeId)) {
+        if (!c) continue;
+        if (c.ref === "entity") ids.add(c.id);
+        else if (c.ref === "faction" && typeof FactionStore !== "undefined") {
+          const f = FactionStore.get(c.id);
+          if (f && Array.isArray(f.members)) for (const m of f.members) ids.add(m);
+        }
+      }
+    }
+    return ids;
+  },
+
+  /** Ids des PJ de l'équipe dans la portée : casting convoqué (A4) filtré aux PJ
+      + appartenance de groupe héritée (`characters_groups`, transition). Reste
+      couche basse (Storage + Dossiers + FactionStore), jamais DossierBar. */
   _teamPjIds(scopeSet) {
     const groups = Storage.get("characters_groups", {}) || {};
     const ids = new Set();
     for (const [key, members] of Object.entries(groups))
       if (scopeSet.has(key) && Array.isArray(members)) for (const id of members) ids.add(id);
+    const pjAll = new Set((Storage.get("characters_all", []) || []).map((p) => p.id));
+    for (const id of this._convokedIn(scopeSet)) if (pjAll.has(id)) ids.add(id);
     return ids;
   },
 
@@ -104,11 +126,18 @@ export const WorldState = {
   recurringFacesFor(dossierId, factionKey, excludeGroupId = null) {
     if (!dossierId || !factionKey) return [];
     const scopeSet = new Set(this._campaignScope(dossierId));
+    const shadowsAll = new Set((Storage.get("shadows_all", []) || []).map((p) => p.id));
     const groups = Storage.get("shadows_groups", {}) || {};
     const inCampaign = new Set();
     for (const [k, members] of Object.entries(groups))
       if (scopeSet.has(k) && Array.isArray(members)) for (const id of members) inCampaign.add(id);
+    // A4 — les visages convoqués (par ref/Faction) comptent aussi comme « dans
+    // la campagne » ; le run frais (`excludeGroupId`) est écarté par ses deux
+    // canaux (groupe hérité + convocations), pour ne pas re-proposer les frais.
+    for (const id of this._convokedIn(scopeSet)) if (shadowsAll.has(id)) inCampaign.add(id);
     const excluded = new Set(excludeGroupId ? groups[excludeGroupId] || [] : []);
+    if (excludeGroupId)
+      for (const id of this._convokedIn(new Set([excludeGroupId]))) excluded.add(id);
     return (Storage.get("shadows_all", []) || [])
       .filter(
         (p) => p && p.faction === factionKey && inCampaign.has(p.id) && !excluded.has(p.id),

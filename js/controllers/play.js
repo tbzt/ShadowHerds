@@ -634,13 +634,13 @@ export const Play = {
       `_castHtml`). Sert à n'offrir « Générer le casting » que sur un run vierge
       de PNJ — `RunGen.castForRun` régénère sinon en doublon. */
   _runHasCast(runId) {
-    for (const col of [Shadows, Characters, ContactsBook, Servers])
-      if (col && col.data && DossierBar.memberIds(col, runId).length) return true;
-    return false;
+    // A4 — le casting est convoqué par RÉFÉRENCE (`convenedIds` résout convokes
+    // + Factions + groups hérités), plus une appartenance de groupe à sonder.
+    return DossierBar.convenedIds(runId).length > 0;
   },
 
-  /** Casting préparé : les entités rangées DANS ce run (DossierBar.memberIds
-      scopé sur le run, pas sur le dossier ouvert). Chaque puce : tap = consulter
+  /** Casting préparé : les entités CONVOQUÉES sur ce run (DossierBar.convenedIds
+      scopé sur le run — refs + Factions + groups hérités). Chaque puce : tap = consulter
       (Palette.reveal) ; les PNJ/PJ portent un ⚔ « envoyer en scène »
       (Encounter.add) — le geste-roi du MJ. Contacts/serveurs = consultation
       seule (un contact n'est pas un combattant ; un serveur rejoint la scène par
@@ -652,19 +652,21 @@ export const Play = {
     // résout pas dans `PnjLookup` (réservé aux combattants), mais chaque membre est
     // par construction dans la collection qui le porte.
     const typed = [
-      { col: Shadows, mode: "scene" },
-      { col: Characters, mode: "scene" },
-      { col: ContactsBook, mode: null },
-      { col: Servers, mode: "server" },
+      { col: Shadows, type: "pnj", mode: "scene" },
+      { col: Characters, type: "pj", mode: "scene" },
+      { col: ContactsBook, type: "contact", mode: null },
+      { col: Servers, type: "server", mode: "server" },
     ];
     const inScene = new Set(
       ((Encounter.state && Encounter.state.combatants) || []).map((c) => c.pnjId),
     );
     const inMatrix = new Set(Encounter.activeMatrixServerIds());
     let chips = "";
-    for (const { col, mode } of typed) {
+    for (const { col, type, mode } of typed) {
       if (!col || !col.data) continue;
-      for (const id of DossierBar.memberIds(col, runId)) {
+      // A4 — le casting convoqué (`convenedIds`) filtré par type, plus une
+      // appartenance de groupe : le run pointe le Monde par référence.
+      for (const id of DossierBar.convenedIds(runId, { types: [type] })) {
         const e = (col.data.all || []).find((x) => x.id === id);
         if (!e) continue;
         const name = CardRenderer._esc(e.name || "Sans nom");

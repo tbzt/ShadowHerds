@@ -6,11 +6,10 @@
    backdrop capteur : il doit coexister avec la grille qu'on sélectionne.
    Une seule collection « active » à la fois : la dernière dont la
    sélection est non vide. Ne connaît d'une collection que son API
-   publique (selectedIds/clearSelection/removeMany/addManyToGroup/_cfg) —
-   jamais de branche par domaine ici.
+   publique (selectedIds/clearSelection/removeMany/_cfg) — jamais de
+   branche par domaine ici.
    ============================================================ */
 import { Dialog } from "../kit/dialog.js";
-import { Dossiers } from "../journal/dossiers.js";
 import { SelectionMode } from "./selectionmode.js";
 
 export const BulkBar = {
@@ -38,14 +37,6 @@ export const BulkBar = {
         case "bulk-encounter":
           this._addToEncounter();
           break;
-        case "bulk-move": {
-          const menu = document.getElementById("bulk-move-menu");
-          if (menu) menu.hidden = !menu.hidden;
-          break;
-        }
-        case "bulk-move-to":
-          this._moveTo(el.dataset.dossierId);
-          break;
         case "bulk-link": {
           const menu = document.getElementById("bulk-link-menu");
           if (menu) menu.hidden = !menu.hidden;
@@ -60,13 +51,9 @@ export const BulkBar = {
       }
     });
 
-    // Ferme les menus dépliés (Déplacer / Lier) au clic ailleurs (pas de
-    // backdrop dédié, la barre doit rester non bloquante).
+    // Ferme le menu « Lier » déplié au clic ailleurs (pas de backdrop dédié,
+    // la barre doit rester non bloquante).
     document.addEventListener("click", (e) => {
-      const move = document.getElementById("bulk-move-menu");
-      if (move && !move.hidden && !e.target.closest(".bulk-move-wrap")) {
-        move.hidden = true;
-      }
       const link = document.getElementById("bulk-link-menu");
       if (link && !link.hidden && !e.target.closest(".bulk-link-wrap")) {
         link.hidden = true;
@@ -97,15 +84,6 @@ export const BulkBar = {
       return;
     }
     const combat = !!this._col._cfg.combatEligible;
-    const dossiers = Dossiers.roots();
-    const moveMenu = dossiers.length
-      ? dossiers
-          .map(
-            (d) =>
-              `<button class="bulk-move-item" data-action="bulk-move-to" data-dossier-id="${CardRenderer._esc(d.id)}">${CardRenderer._esc(d.name)}</button>`,
-          )
-          .join("")
-      : `<span class="bulk-move-empty">Aucun dossier — créez-en un via « 🏷 Groupes ».</span>`;
 
     // Rattachement en masse à un PJ (collections dont _cfg.pjLinkable) : la
     // collection fournit la liste des PJ (pjLinkOptions) et exécute le lien
@@ -140,10 +118,6 @@ export const BulkBar = {
     bar.innerHTML = `
       <span class="bulk-count">${ids.length} sélectionné${ids.length > 1 ? "s" : ""}</span>
       <span class="bulk-actions">
-        <span class="bulk-move-wrap">
-          <button class="btn-secondary btn-small" data-action="bulk-move">Déplacer vers ▾</button>
-          <div class="bulk-move-menu" id="bulk-move-menu" hidden>${moveMenu}</div>
-        </span>
         ${linkBtn}
         ${combat ? `<button class="btn-secondary btn-small" data-action="bulk-encounter"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-combat"></use></svg> Ajouter au combat</button>` : ""}
         <button class="danger-btn btn-small" data-action="bulk-delete">Supprimer</button>
@@ -164,13 +138,6 @@ export const BulkBar = {
   _linkToTeam() {
     if (!this._col || typeof this._col.linkManyToTeam !== "function") return;
     this._col.linkManyToTeam(this._col.selectedIds());
-  },
-
-  _moveTo(dossierId) {
-    if (!this._col || !dossierId) return;
-    // Chemin d'écriture unique, partagé avec le glisser-déposer (FileRail).
-    // VIS-16 1-bis : la cible est l'ID du dossier (l'appartenance est keyée id).
-    this._col.fileInto(this._col.selectedIds(), dossierId);
   },
 
   async _delete() {

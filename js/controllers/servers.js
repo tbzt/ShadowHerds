@@ -144,10 +144,9 @@ export const Servers = Object.assign(
       });
 
       this.data.all.push(srv);
-      // Classe dans le dossier de destination courant (piloté par DossierBar).
-      if (this.currentGroup && this.currentGroup !== "all") {
-        (this.data.groups[this.currentGroup] ||= []).push(srv.id);
-      }
+      // A4-bis.2 (§4.1) : le serveur EXISTE dans le Monde, sans rangement
+      // obligatoire — plus d'écriture de dossier à la création (tags/Factions/
+      // convocation prennent le relais).
       this.save();
       this.render();
       toast(`✓ ${srv.name} (indice ${srv.indice}) créé.`);
@@ -164,8 +163,9 @@ export const Servers = Object.assign(
        édition (archétypes, mode d'entrée, badge, cible) est lu via
        Matrix.topology* — aucune branche `if (App.edition === …)`. */
     async showTopology() {
-      const servers = DossierBar.memberIds(this)
-        .map((id) => this.find(id))
+      // A4-bis.3a : le plan couvre TOUS les serveurs (plus de dossier courant).
+      const servers = this.data.all
+        .map((s) => this.find(s.id))
         .filter(Boolean);
       if (!servers.length) {
         toast("Aucun serveur dans ce dossier à mettre en plan.");
@@ -409,22 +409,23 @@ export const Servers = Object.assign(
 
     /* ---- Écran de génération dédié (barre de dossiers + formulaire +
        grille des serveurs du dossier courant) ---- */
+    // A4-bis.3a (§4.1) : plus de « Dossier cible » (rail retiré) — la grille
+    // montre TOUS les serveurs. Abonnement DossierBar gardé (sans mount) pour
+    // rafraîchir la grille à chaque mutation (render→onChange→refresh→notify).
     _genWired: false,
     initGenPanel() {
       this.renderForm();
       if (!this._genWired) {
         this._genWired = true;
-        DossierBar.mount("servers-dossier-list");
         DossierBar.subscribe(() => this._renderGenGrid());
       }
       this._renderGenGrid();
-      DossierBar.render();
     },
     _renderGenGrid() {
       const grid = document.getElementById("servers-gen-grid");
       if (!grid) return;
       grid.innerHTML = "";
-      this.renderMembers(grid, DossierBar.memberIds(this));
+      this.renderMembers(grid, this.data.all.map((e) => e.id));
     },
 
     /** Rafraîchit la grille de serveurs affichée, sans reconstruire le

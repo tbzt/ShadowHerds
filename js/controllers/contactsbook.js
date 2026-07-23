@@ -91,12 +91,8 @@ export const ContactsBook = Object.assign(_contactsCollection, {
     generate() {
       const c = Contacts.generate();
       this.data.all.push(c);
-      // Classe dans le dossier de destination courant (piloté par DossierBar).
-      const group =
-        this.currentGroup && this.currentGroup !== "all" ? this.currentGroup : null;
-      if (group) {
-        (this.data.groups[group] ||= []).push(c.id);
-      }
+      // A4-bis.2 (§4.1) : le contact EXISTE dans le Monde, sans rangement de
+      // dossier à la génération (tags/Factions/convocation prennent le relais).
       this.save();
       this.render();
       // Zone d'essai / undo (parité avec le pool PNJ du Générateur) : un
@@ -104,11 +100,6 @@ export const ContactsBook = Object.assign(_contactsCollection, {
       // suppression explicite de la fiche.
       const restore = () => {
         this.data.all = this.data.all.filter((x) => x.id !== c.id);
-        if (group) {
-          this.data.groups[group] = (this.data.groups[group] || []).filter(
-            (id) => id !== c.id,
-          );
-        }
         this.save();
         this.render();
       };
@@ -118,18 +109,13 @@ export const ContactsBook = Object.assign(_contactsCollection, {
     /* ---- Créer un contact saisi à la main ----
        Ajout rapide depuis une fiche PJ (ContactCreate) : crée un vrai contact
        du carnet à partir des champs saisis (seul le nom est requis, cf.
-       Contacts.buildManual), le range dans le dossier courant si applicable
-       (même logique que generate()), persiste, et le renvoie pour que
+       Contacts.buildManual), persiste, et le renvoie pour que
        l'appelant le lie au PJ (Characters.addContactLink). Pas de zone d'essai/
        undo ici : la création est intentionnelle, pas un tirage à écarter. */
     createManual(fields, edition = App.edition) {
       const c = Contacts.buildManual(edition, fields);
       this.data.all.push(c);
-      const group =
-        this.currentGroup && this.currentGroup !== "all" ? this.currentGroup : null;
-      if (group) {
-        (this.data.groups[group] ||= []).push(c.id);
-      }
+      // A4-bis.2 (§4.1) : plus de rangement de dossier à la création manuelle.
       this.save();
       this.render();
       return c;
@@ -301,24 +287,25 @@ export const ContactsBook = Object.assign(_contactsCollection, {
       }
     },
 
-    /* ---- Écran de génération dédié (barre de dossiers + formulaire +
-       grille des contacts du dossier courant) ---- */
+    /* ---- Écran de génération dédié (formulaire + grille de TOUS les contacts).
+       A4-bis.3a (§4.1) : plus de « Dossier cible » (rail retiré) — la grille
+       montre toute la bibliothèque. On reste abonné à DossierBar pour que la
+       grille se rafraîchisse à chaque mutation (générer/supprimer/éditer passe
+       par render→onChange→DossierBar.refresh→notify), sans monter de rail. ---- */
     _genWired: false,
     initGenPanel() {
       Contacts.renderForm();
       if (!this._genWired) {
         this._genWired = true;
-        DossierBar.mount("contacts-dossier-list");
         DossierBar.subscribe(() => this._renderGenGrid());
       }
       this._renderGenGrid();
-      DossierBar.render();
     },
     _renderGenGrid() {
       const grid = document.getElementById("contacts-gen-grid");
       if (!grid) return;
       grid.innerHTML = "";
-      this.renderMembers(grid, DossierBar.memberIds(this));
+      this.renderMembers(grid, this.data.all.map((e) => e.id));
     },
 
     /** Rafraîchit la grille de contacts affichée, sans reconstruire le
