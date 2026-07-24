@@ -59,7 +59,13 @@ const agreePlural = (str, name) => {
 /* Contraction « de + article » collée à un nom de faction interpolé : « de les
    Triades » → « des Triades », « de le Vory » → « du Vory » (« de la »/« de l' »
    sont déjà corrects). Sûr : aucun autre « de les/le » dans les gabarits. */
-const contractDe = (s) => (!s ? s : s.replace(/\bde les\b/g, "des").replace(/\bde le\b/g, "du"));
+const contractDe = (s) =>
+  !s ? s : s
+    .replace(/\bde les\b/g, "des")
+    .replace(/\bde le\b/g, "du")
+    // Élision « de + voyelle / h muet » → « d' » : « de une ruche » → « d'une ruche »,
+    // « de Ares » → « d'Ares ». « de la/le/l' » (consonne l) épargnés. Y exclu (« de Yakuza »).
+    .replace(/\bde ([aeiouàâäéèêëîïôöûùAEIOUÀÂÄÉÈÊËÎÏÔÖÛÙHh])/g, "d'$1");
 
 export const TrameGen = {
   /* ================= POOLS ================= */
@@ -247,6 +253,186 @@ export const TrameGen = {
         "Message discret, ou démonstration publique qui laisse des traces ?",
       ],
     },
+    enquete: {
+      stake: "démasquer qui tire les ficelles avant que la piste ne refroidisse",
+      recons: [
+        "Recouper les témoignages et les rumeurs de rue",
+        "Lire la scène : traces, logs matriciels, résidus rituels",
+        "Remonter la chaîne des intermédiaires jusqu'au commanditaire",
+        "Faire parler un témoin avant qu'il ne file",
+      ],
+      actions: [
+        () => `Un témoin clé se volatilise — ou file au commissariat.`,
+        (c) => `La piste mène à ${c.lieu}, déjà nettoyé de ses traces.`,
+        () => `Quelqu'un efface les preuves à mesure que vous les trouvez.`,
+        () => `Un faux indice vous envoie droit dans un guet-apens.`,
+      ],
+      climaxes: [
+        (c) => `La vérité éclate à ${c.lieu} : reste à la faire sortir vivante.`,
+        (c) => `${c.opp} comprend que vous savez, et veut enterrer l'affaire — vous avec.`,
+      ],
+      clocks: [
+        { type: "menace", title: "La piste refroidit" },
+        { type: "alerte", title: "On sait que vous fouinez" },
+        { type: "objectif", title: "Reconstitution de la vérité" },
+      ],
+      bangs: [
+        "Livrer le coupable au mandant, ou protéger la source qui vous a parlé ?",
+        "Sortir la preuve au grand jour (se griller), ou la monnayer en silence ?",
+        "La vérité innocente un « coupable » évident : on la révèle, ou on ferme les yeux ?",
+        "Le coupable offre plus que le contrat pour votre silence : on écoute, ou on livre ?",
+      ],
+    },
+    escorte: {
+      stake: "faire arriver le convoi au bout de la route, malgré tout",
+      recons: [
+        "Repérer l'itinéraire, les points de contrôle et les guet-apens probables",
+        "Identifier qui d'autre convoite le convoi",
+        "Prévoir une route de repli et un relais sûr",
+        "Jauger la fiabilité du guide local",
+      ],
+      actions: [
+        (c) => `Embuscade sur la route : le convoi est pris pour cible près de ${c.lieu}.`,
+        () => `Un poste de contrôle imprévu barre le passage.`,
+        () => `Le guide flanche — ou vous vend.`,
+        () => `Un blessé ralentit tout le convoi.`,
+      ],
+      climaxes: [
+        (c) => `Dernière ligne avant ${c.lieu} : ${c.opp} joue le tout pour le tout sur le convoi.`,
+        (c) => `${c.opp} coupe la route. Passer en force, ou trouver une brèche ?`,
+      ],
+      clocks: [
+        { type: "menace", title: "Les poursuivants gagnent du terrain" },
+        { type: "alerte", title: "La route se ferme" },
+        { type: "objectif", title: "Distance jusqu'au refuge" },
+      ],
+      bangs: [
+        "Fuir avec le convoi, ou tenir la ligne pour couvrir les autres ?",
+        "Sauver la cargaison, ou le protégé ? On ne peut pas les deux.",
+        "Le protégé veut fuir seul : on le retient de force, ou on le suit ?",
+        "Le guide réclame sa part avant la fin : on paie, ou on le laisse en plan ?",
+      ],
+    },
+    recuperation_objet: {
+      stake: "remettre la main sur le bien et le ramener intact",
+      recons: [
+        "Pister le receleur et remonter la chaîne de possession",
+        "Localiser la planque où l'objet est gardé",
+        "Identifier qui d'autre est sur le coup",
+        "Vérifier l'authenticité de l'objet avant de partir avec",
+      ],
+      actions: [
+        (c) => `L'objet a déjà changé de mains : la piste bifurque vers ${c.lieu}.`,
+        () => `Une équipe rivale rafle l'objet juste avant vous.`,
+        () => `L'objet est piégé — ou n'est pas ce qu'on croyait.`,
+        () => `Le receleur exige un service avant de lâcher l'adresse.`,
+      ],
+      climaxes: [
+        (c) => `L'objet est à portée dans ${c.lieu}, mais ${c.opp} ne le lâchera pas sans se battre.`,
+        (c) => `${c.opp} veut l'objet autant que vous : à qui restera-t-il ?`,
+      ],
+      clocks: [
+        { type: "objectif", title: "Localisation de l'objet" },
+        { type: "menace", title: "L'objet change de main" },
+        { type: "alerte", title: "Les concurrents se rapprochent" },
+      ],
+      bangs: [
+        "Rendre l'objet au mandant, ou le garder pour soi ?",
+        "Le prendre par la force, ou négocier avec celui qui le détient ?",
+        "L'objet cache un secret compromettant : on regarde, ou on n'y touche pas ?",
+        "Un tiers surenchérit pour l'objet : on trahit le mandant, ou on reste réglo ?",
+      ],
+    },
+    filature: {
+      stake: "suivre la cible sans être vu jusqu'à ce qu'elle se trahisse",
+      recons: [
+        "Établir les habitudes de trajet de la cible",
+        "Repérer les points où l'on risque de la perdre de vue",
+        "Préparer des relais discrets (drones, contacts, véhicules)",
+        "Savoir ce qu'on cherche à lui faire révéler",
+      ],
+      actions: [
+        () => `La cible flaire une présence et change brusquement de route.`,
+        (c) => `La filature mène à ${c.lieu} — un rendez-vous qui n'était pas prévu.`,
+        () => `La cible se sait suivie et tend un piège au suiveur.`,
+        () => `Un tiers file la même cible et manque de vous griller.`,
+      ],
+      climaxes: [
+        (c) => `La cible arrive à ${c.lieu} : ce qu'elle y fait vaut tout le run — si ${c.opp} ne vous repère pas.`,
+        () => `La cible se retourne : la suivre encore, ou frapper maintenant ?`,
+      ],
+      clocks: [
+        { type: "alerte", title: "La cible vous repère" },
+        { type: "objectif", title: "Ce que la cible révèle" },
+        { type: "menace", title: "La cible s'apprête à disparaître" },
+      ],
+      bangs: [
+        "La rattraper vivante, ou la laisser filer pour une meilleure piste ?",
+        "Rester couvert et patienter, ou intervenir avant qu'il ne soit trop tard ?",
+        "La cible en croise une autre : on suit laquelle ?",
+        "La filature révèle un innocent : on continue, ou on lâche l'affaire ?",
+      ],
+    },
+    chasse_a_la_prime: {
+      stake: "neutraliser la cible et fournir la preuve pour toucher la prime",
+      recons: [
+        "Établir le dernier emplacement connu de la cible",
+        "Jauger sa nature et sa dangerosité réelles",
+        "Comprendre qui la protège — ou qui la manipule",
+        "Prévoir comment prouver la capture ou l'élimination",
+      ],
+      actions: [
+        () => `La cible se cache sous une apparence banale.`,
+        () => `Un pacte (esprit, protecteur) rend la cible plus coriace que prévu.`,
+        (c) => `La cible fuit ${c.lieu} vers un autre territoire.`,
+        () => `Un autre chasseur de prime est déjà sur le coup.`,
+      ],
+      climaxes: [
+        (c) => `La cible acculée à ${c.lieu} : l'abattre, ou l'écouter ?`,
+        (c) => `${c.opp} protège la cible : passer outre, ou renoncer à la prime ?`,
+      ],
+      clocks: [
+        { type: "menace", title: "La cible change de territoire" },
+        { type: "objectif", title: "Traque de la cible" },
+        { type: "alerte", title: "La cible sait qu'on la traque" },
+      ],
+      bangs: [
+        "Encaisser la prime en livrant la cible, ou lui offrir une porte de sortie ?",
+        "La cible est une victime, pas un monstre : on tire, ou on la retourne ?",
+        "La prendre vivante (risqué), ou morte (plus simple, moins payé) ?",
+        "Un rival réclame la même prime : on partage, ou on l'élimine aussi ?",
+      ],
+    },
+    arnaque: {
+      stake: "monter la mise en scène pour que la cible se dépossède elle-même",
+      recons: [
+        "Cerner le profil et les faiblesses de la cible",
+        "Réunir accessoires crédibles et fausses accréditations",
+        "Identifier les noms à citer pour asseoir la légende",
+        "Préparer une sortie propre avant que la cible ne comprenne",
+      ],
+      actions: [
+        () => `La cible flaire quelque chose et exige des garanties.`,
+        () => `Un détail de la légende ne tient pas : il faut improviser.`,
+        () => `Un complice imprévu s'invite dans l'arnaque.`,
+        () => `La cible appelle vérifier vos accréditations.`,
+      ],
+      climaxes: [
+        (c) => `Le dernier acte se joue à ${c.lieu} : la cible mord, ou tout s'effondre.`,
+        (c) => `${c.opp} flaire l'arnaque au pire moment : filer avec la mise, ou sauver la face ?`,
+      ],
+      clocks: [
+        { type: "objectif", title: "La cible mord à l'hameçon" },
+        { type: "alerte", title: "La légende se fissure" },
+        { type: "menace", title: "La cible flaire le piège" },
+      ],
+      bangs: [
+        "Filer avec la mise, ou pousser l'arnaque pour rafler plus ?",
+        "On tient un secret gênant sur la cible : monnaie d'échange, ou on n'y touche pas ?",
+        "La cible est plus fragile qu'on croyait : on continue, ou on renonce ?",
+        "L'arnaque attire un prédateur plus gros : empocher vite, ou tenir le mensonge ?",
+      ],
+    },
   },
   _DEFAULT_OBJECTIVE: {
     stake: "remplir le contrat",
@@ -259,23 +445,33 @@ export const TrameGen = {
 
   /* Choix forcés GÉNÉRIQUES (mêlés au pool d'objectif pour le bang de climax). */
   _BANGS: [
-    "Rester fidèle au plan, ou tout risquer sur un coup d'audace ?",
-    "Quelqu'un est à terre : on s'arrête pour lui, ou on continue ?",
-    "La sortie prévue est coupée : forcer, ou improviser une autre issue ?",
-    "On tient l'objectif mais l'alarme va sonner : on précipite, ou on assure ?",
-    "Un membre de la sécurité se rend : témoin gênant, ou on l'épargne ?",
-    "Trop beau pour être vrai — on saisit l'occasion, ou on flaire le piège ?",
+    "S'en tenir au plan, ou tout miser sur un coup d'audace ?",
+    "Un des vôtres est à terre : on s'arrête, ou on avance ?",
+    "L'exfil prévue est coupée : forcer le passage, ou improviser une autre sortie ?",
+    "L'objectif est à portée, l'alarme sur le point de sonner : précipiter, ou assurer ?",
+    "Un garde se rend : témoin gênant, ou on l'épargne ?",
+    "Trop beau pour être vrai : saisir l'occasion, ou flairer le piège ?",
+    "L'objectif est en main, mais un second, plus juteux, se présente : s'en tenir au plan, ou rafler les deux ?",
+    "La cible n'est qu'une victime : honorer le contrat, ou la retourner contre le mandant ?",
+    "Le Johnson coupe les comms en plein run : continuer à l'aveugle, ou décrocher ?",
+    "Deux Johnson se disputent la même chose : à qui obéir, maintenant ?",
+    "Expédier vite et sale, ou soigner le travail en laissant une trace ?",
+    "On vous offre plus que la paie pour lâcher l'équipe : écouter, ou couper court ?",
   ],
 
   /* Le twist (la complication en choix forcé), au point de bascule. */
   _TWIST_BANGS: [
-    (c) => `${c.complication} — on encaisse et on continue, ou on renégocie tout ?`,
-    (c) => `${c.complication}. On s'adapte, ou on plie bagage ?`,
-    (c) => `Le plan vacille : ${low(c.complication)}. Foncer, ou temporiser ?`,
-    (c) => `${c.complication} — coup monté, ou juste la scoumoune ?`,
+    (c) => `${c.complication} — on encaisse et on avance, ou on renégocie tout ?`,
+    (c) => `${c.complication}. On s'adapte, ou on décroche ?`,
+    (c) => `Le plan vacille : ${low(c.complication)}. Forcer, ou temporiser ?`,
+    (c) => `${c.complication} — coup monté, ou simple malchance ?`,
     (c) => `Il faut trancher, vite : ${low(c.complication)}.`,
-    (c) => `${c.complication}. Qui, dans l'équipe, prend la décision ?`,
-    (c) => `On avait été prévenus ? Non. ${c.complication} — et maintenant ?`,
+    (c) => `${c.complication}. Qui, dans l'équipe, tranche ?`,
+    (c) => `Personne ne vous avait prévenus. ${c.complication} — et maintenant ?`,
+    (c) => `Le job semblait simple : ${low(c.complication)}. Qui avait prévu un repli ?`,
+    (c) => `${c.complication} — et si le mandant l'avait voulu depuis le début ?`,
+    (c) => `Trop tard pour reculer : ${low(c.complication)}. Improviser, ou tout saborder proprement ?`,
+    (c) => `${c.complication}. On encaisse pour la paie, ou on renverse la donne ?`,
   ],
 
   /* Leads de SCÈNE par type (fonctions du contexte `c`). 7-8 variantes chacun. */
@@ -289,6 +485,9 @@ export const TrameGen = {
       (c) => `${c.client} a un problème. Vous êtes la solution : ${c.type}.`,
       (c) => `Café froid, lumière basse : ${c.client} déballe le job. ${cap(c.stake)}.`,
       (c) => `Le contrat vient de ${c.client}. Ce qu'il veut vraiment, c'est ${c.stake}.`,
+      (c) => `${c.client} ne dit pas tout. Le job affiché : ${c.type}. Le vrai, vous le lirez en route.`,
+      (c) => `La paie est énorme — du genre qui sent le piège. ${c.client} veut ${c.stake}.`,
+      () => `Pas de Johnson, pas de brief : vous êtes déjà dans les ennuis, et il faut décider vite.`,
     ],
     "repérage": [
       (c) => `${c.recon}. Face à vous : ${c.opp} (${c.secu}).`,
@@ -298,15 +497,19 @@ export const TrameGen = {
       (c) => `Le terrain d'abord : ${low(c.recon)}. ${c.opp} tient le secteur.`,
       (c) => `Une planque, des jumelles, du soykaf. ${c.recon}.`,
       (c) => `Reconnaissance de ${c.lieu} : rondes, caméras, angles morts.`,
+      (c) => `Chaque groupe de gardes visible en cache un autre : la moitié de la sécurité de ${c.opp} est planquée.`,
+      (c) => `Votre porte d'entrée est dans les failles du quotidien de ${c.opp} : une livraison, une inspection en retard, un poste vacant.`,
     ],
     sociale: [
       (c) => `Approche autour de ${c.lieu} : un contact à retourner, une porte à ouvrir.`,
       (c) => `On passe par les gens : ${c.opp} a des failles, ce sont des humains.`,
       (c) => `Un verre, un pot-de-vin, un mensonge bien placé — l'info se monnaie.`,
       (c) => `Négociation ou séduction : quelqu'un ici sait, et peut parler.`,
-      (c) => `Le côté doux du run : convaincre plutôt que forcer.`,
+      (c) => `L'approche en douceur : convaincre plutôt que forcer.`,
       (c) => `Un intermédiaire propose un marché. Fiable ? À vous de voir.`,
       (c) => `Contacts, rumeurs, dettes anciennes : on tire les bons fils.`,
+      () => `Un accessoire crédible, une histoire pressante, et l'on vous ouvre ce qui devait rester fermé.`,
+      () => `Quelqu'un ici sait, et se laissera acheter, séduire ou intimider — reste à trouver le bon levier.`,
     ],
     "décision": [
       (c) => `Point de bascule — ${c.complication}.`,
@@ -316,6 +519,8 @@ export const TrameGen = {
       (c) => `Le job dérape : ${low(c.complication)}. Quelle route ?`,
       (c) => `Deux mauvaises options, une décision à prendre maintenant.`,
       (c) => `Le moment où tout peut basculer d'un côté ou de l'autre.`,
+      () => `Deux voix dans l'oreillette, deux commanditaires : à qui obéir se décide ici.`,
+      (c) => `La vérité qui remonte retire le « méchant » évident : ${low(c.complication)}.`,
     ],
     action: [
       (c) => `Ça se complique : ${c.complication}.`,
@@ -325,6 +530,8 @@ export const TrameGen = {
       (c) => `Ça part en vrille : ${low(c.complication)}.`,
       (c) => `Un obstacle imprévu barre la route. Il faut le lever, vite.`,
       (c) => `Le terrain se retourne. ${cap(c.complication)}.`,
+      (c) => `Course-poursuite : la foule, les contrôles, les angles morts — ${low(c.complication)}.`,
+      (c) => `Le décor se retourne contre vous autant que ${c.opp} : ${low(c.complication)}.`,
     ],
     "retombée": [
       (c) => `Sortie — paie ${c.payment}. ${c.ending}${c.bonus}`,
@@ -334,6 +541,8 @@ export const TrameGen = {
       (c) => `L'après : la paie (${c.payment}), les traces laissées, les portes ouvertes ou fermées.${c.bonus}`,
       (c) => `${c.ending} Reste à encaisser ${c.payment}.${c.bonus}`,
       (c) => `Le run se referme. ${c.ending}${c.bonus}`,
+      (c) => `Le mandant paie ${c.payment} — mais un tiers vous a peut-être vus, et ça se paiera plus tard.${c.bonus}`,
+      (c) => `Assumer l'échec et transmettre l'info entame la réputation ; doubler le Johnson la réduit en cendres. Paie ${c.payment}.${c.bonus}`,
     ],
     climax: [
       (c) => `Affrontement — ${c.opp} défend ${c.lieu}. ${cap(c.stake)}, maintenant ou jamais.`,
@@ -342,6 +551,8 @@ export const TrameGen = {
       (c) => `La confrontation : plus de finesse, ${c.opp} a compris. ${cap(c.stake)}.`,
       (c) => `Le moment de vérité à ${c.lieu}. ${c.opp} joue son va-tout, vous aussi.`,
       (c) => `Climax : sirènes, projecteurs, ${c.opp} en travers du chemin. ${cap(c.stake)}.`,
+      (c) => `Tout converge sur ${c.lieu} : ${c.opp}, l'horloge, et le choix que vous avez repoussé jusqu'ici.`,
+      (c) => `Dernière ligne droite : ${cap(c.stake)}, sous le feu de ${c.opp}, sans filet.`,
     ],
   },
 
@@ -456,6 +667,14 @@ export const TrameGen = {
       titles: [(c) => `Le jeu de ${c.opp}`, () => `Un intérêt privé`, () => `Une main invisible`],
       impulses: ["Régler une affaire strictement personnelle", "Effacer un témoin d'un vieux secret", "Obtenir ce qu'il convoite sans se salir les mains"],
     },
+    ia: {
+      titles: [(c) => `${c.opp} défend son domaine`, (c) => `${c.opp} resserre son emprise`, () => `Une intelligence froide s'éveille`],
+      impulses: ["Défendre « sa » Matrice comme un territoire exclusif", "Étendre son emprise sur le monde physique en asservissant des corps", "Rester insaisissable : effacer toute trace, retoucher les archives"],
+    },
+    culte: {
+      titles: [(c) => `Le rite de ${c.opp}`, (c) => `${c.opp} passe à l'acte`, () => `La secte accomplit sa prophétie`],
+      impulses: ["Recruter et asservir sous un faux rite", "Hâter l'accomplissement de sa prophétie", "Nourrir l'entité qu'elle sert, à tout prix"],
+    },
   },
 
   /* Escalade TYPÉE par nature de faction : le repérage (notice) et la traque
@@ -473,6 +692,8 @@ export const TrameGen = {
     policlub: { notice: ["Un sympathisant vous a à l'œil.", "La rumeur court : des intrus en ville."], hunt: ["La meute se forme pour vous chasser.", "La populace, ameutée, vous traque."] },
     goules: { notice: ["Quelque chose renifle votre passage.", "Des yeux luisent dans l'ombre."], hunt: ["La meute affamée suit votre trace.", "Vous êtes désormais de la viande en fuite."] },
     particulier: { notice: ["Un œil discret vous suit.", "Quelqu'un s'intéresse d'un peu trop près à vous."], hunt: ["Un traqueur privé est lancé.", "On a mis quelqu'un sur vous."] },
+    ia: { notice: ["Une caméra pivote et vous suit le long du couloir.", "Un système censé être hors ligne s'active soudain."], hunt: ["Un contingent de serviteurs asservis converge sur votre position exacte.", "L'IA inonde la Matrice de votre signalement."] },
+    culte: { notice: ["Un adepte vous a repérés et prévient les siens.", "Des symboles fraîchement gravés trahissent une présence organisée."], hunt: ["La secte lance ses fidèles à vos trousses.", "Une traque rituelle se met en branle contre vous."] },
   },
 
   /* Nature de la trahison du commanditaire, typée (front « mandant » de la
@@ -504,6 +725,8 @@ export const TrameGen = {
       () => `La relève est doublée, fusils sortis.`,
       () => `Un mage de sécurité monte la garde astrale.`,
       () => `Les issues se ferment une à une.`,
+      (c) => `${c.opp} resserre les rangs : relève doublée, accès secondaires fermés.`,
+      () => `Des renforts non répertoriés entrent en scène, mieux équipés que prévu.`,
     ],
     lockdown: [
       (c) => `${c.opp} verrouille le secteur.`,
@@ -511,6 +734,7 @@ export const TrameGen = {
       () => `Le quartier passe en confinement.`,
       () => `Les accès matriciels sont coupés.`,
       (c) => `${c.opp} déclare l'alerte maximale.`,
+      () => `Verrouillage total : plus un accès, plus un signal, plus une issue.`,
     ],
     hunt: [
       (c) => `${c.opp} lance une chasse à l'homme.`,
@@ -548,6 +772,10 @@ export const TrameGen = {
     red_samurai: {
       reinforce: ["Les samouraïs rouges se déploient en formation.", "Une CI Renraku verrouille vos communications."],
       lockdown: ["Renraku isole le secteur et coupe la Matrice.", "Les samouraïs rouges reçoivent l'ordre : ne rien laisser sortir."],
+    },
+    corpo_gen: {
+      reinforce: ["Une équipe d'intervention sous contrat se déploie, méthodique.", "Le spider de garde lâche ses CI et ses drones."],
+      lockdown: ["La corpo verrouille le site et filtre chaque sortie.", "Ordre du PC sécurité : plus personne ne passe sans contrôle."],
     },
     militaire: {
       reinforce: ["La Garde du métroplexe lâche ses para-créatures.", "Blindés en approche, tir à vue autorisé."],
@@ -597,6 +825,22 @@ export const TrameGen = {
       reinforce: ["Les Voisins Vigilants rappliquent, battes en main.", "Une patrouille motorisée signale votre position."],
       lockdown: ["Le quartier s'éclaire : tout le voisinage vous cherche.", "Les Vigilants dressent des barrages improvisés."],
     },
+    ia_hostile: {
+      reinforce: ["Les systèmes se retournent contre vous : portes, caméras, drones asservis.", "Une CI noire se matérialise pour vous barrer la route."],
+      lockdown: ["L'IA verrouille tout le complexe : plus un accès, plus un signal.", "Elle vous a identifiés : ses serviteurs convergent sur votre position exacte."],
+    },
+    chaman_insecte: {
+      reinforce: ["De nouveaux hôtes possédés convergent, l'aura masquée.", "Un esprit-soldat jaillit d'un cocon éventré."],
+      lockdown: ["Le nid se scelle : murs de chitine et de chair.", "La Reine s'éveille — tout le nid répond à sa faim."],
+    },
+    esprit_gardien: {
+      reinforce: ["L'esprit gardien se matérialise entre vous et la sortie.", "Le mana se tend : une force invoquée entre en scène."],
+      lockdown: ["Le lieu se referme sur une barrière mystique.", "L'esprit lié interdit tout passage aux profanes."],
+    },
+    infectes: {
+      reinforce: ["La meute affamée sort des murs, attirée par le sang.", "D'autres Infectés rappliquent, crocs dehors."],
+      lockdown: ["Les issues se referment : vous êtes dans leur garde-manger.", "La meute encercle — la chair ne repart pas."],
+    },
   },
 
   /* Faits cachés « la vérité derrière le run » (fonctions du contexte). */
@@ -609,6 +853,11 @@ export const TrameGen = {
     () => `Quelqu'un, dans la place, attend votre arrivée.`,
     (c) => `${c.opp} a déjà perdu une équipe ici — et ne l'a jamais ébruité.`,
     (c) => `Un cadre de ${c.opp} vendrait la mèche pour le bon prix.`,
+    () => `Le mandant ne veut pas ce qu'il prétend : le vrai but du run est ailleurs.`,
+    () => `Vous êtes des jetables : le commanditaire compte effacer l'équipe une fois le job fait.`,
+    () => `La cible n'est pas coupable : c'est une victime qu'on a maquillée en objectif.`,
+    () => `Un troisième camp tire les ficelles ; les deux adversaires visibles sont manipulés.`,
+    () => `Le brief ment sur la nature du job : ce n'est pas ce qu'on vous a vendu.`,
   ],
 
   /* Descriptions d'INDICE (fonctions du contexte). */
@@ -621,6 +870,10 @@ export const TrameGen = {
     () => `Un détail sur place contredit le dossier.`,
     () => `Une rumeur de rue recoupe ce que vous cherchez.`,
     () => `Un contact commun vous ouvre une piste inattendue.`,
+    () => `Une paie anticipée trop belle, une clause étrange : le contrat lui-même sonne faux.`,
+    () => `Un badge encore actif dont le porteur vient d'être licencié.`,
+    () => `Une seconde source contredit la première : quelqu'un a maquillé le dossier.`,
+    () => `Une icône furtive qui se volatilise dès qu'on cherche à l'identifier.`,
   ],
 
   /* Horloges de complication génériques (couche optionnelle). */
@@ -664,10 +917,42 @@ export const TrameGen = {
       "Message reçu cinq sur cinq, message trop appuyé, ou guerre déclenchée.",
       "Cible soumise, cible brisée, ou vendetta ouverte.",
     ],
+    enquete: [
+      "Vérité exposée, vérité enterrée, ou vérité qui vous explose à la figure.",
+      "Le coupable tombe, le coupable achète votre silence, ou le vrai coupable court toujours.",
+      "Affaire résolue proprement, résolue au prix fort, ou piste perdue pour de bon.",
+    ],
+    escorte: [
+      "Le convoi arrive intact, arrive amoché, ou n'arrive jamais.",
+      "Livraison au bout, livraison au prix fort, ou tout perdu en route.",
+      "Le protégé rentre entier, rentre marqué, ou reste sur le carreau.",
+    ],
+    recuperation_objet: [
+      "L'objet revient intact, revient abîmé, ou file à un rival.",
+      "Bien récupéré, récupéré au prix d'ennemis tenaces, ou perdu pour de bon.",
+      "Livré au mandant, gardé en douce, ou détruit dans la bagarre.",
+    ],
+    filature: [
+      "Cible percée à jour, filature grillée, ou cible envolée.",
+      "On sait tout d'elle, on n'en sait qu'à moitié, ou elle vous a semés.",
+      "La vérité en poche, la couverture cramée, ou la piste perdue.",
+    ],
+    chasse_a_la_prime: [
+      "Prime touchée net, prime touchée dans le doute, ou cible envolée.",
+      "Cible livrée, cible relâchée par pitié, ou cible qui vous a retournés.",
+      "Contrat honoré, victoire amère, ou traque sans fin.",
+    ],
+    arnaque: [
+      "La cible se dépouille elle-même, l'arnaque tourne court (on revend ce qu'on peut), ou tout s'effondre.",
+      "Coup parfait, coup à moitié, ou couverture grillée.",
+      "La cible délestée, la cible sur ses gardes, ou l'arnaque éventée.",
+    ],
     _default: [
       "Le plan tenu, le compromis boiteux, ou la déroute.",
       "Ça finit propre, ça finit sale, ou ça ne finit pas.",
       "Succès net, victoire à la Pyrrhus, ou dette de sang.",
+      "Contrat rempli mais un tiers vous a vus, dette d'ombre ouverte, ou fiasco complet.",
+      "Sortie propre, sortie qui laisse des traces, ou sortie qu'on vous fait payer.",
     ],
   },
 
@@ -727,6 +1012,51 @@ export const TrameGen = {
       infos: ["Un innocent est pris dans la zone d'opération.", "Un enfant, un civil, un curieux — au mauvais endroit."],
       infoRole: "enrichissement", past: false,
       fearScene: true,
+    },
+    mandant_cache: {
+      infos: [
+        "Le mandant n'est pas ce qu'il prétend : une IA, un esprit ou pire derrière l'intermédiaire.",
+        "Le « job » masque son vrai but : vous n'avez pas été engagés pour ce qu'on vous a dit.",
+        "L'employeur anonyme est en réalité la cible même de votre run.",
+      ],
+      infoRole: "progression", past: false,
+      clues: [
+        "Une icône furtive qui se volatilise dès qu'on cherche à l'identifier.",
+        "La paie est liée à un « vrai » but que le brief passe sous silence.",
+      ],
+      fronts: [
+        { faction: "mandant", titles: ["Le vrai visage du commanditaire", "Ce que cache le Johnson"],
+          impulses: ["instrumentaliser l'équipe pour un but qu'elle ignore", "effacer quiconque découvre ce qu'il est"],
+          portents: ["Le Johnson reste injoignable après le brief.", "Un détail de sa couverture ne colle pas.", "Sa véritable nature affleure — et elle n'est pas humaine."] },
+      ],
+    },
+    runners_jetables: {
+      infos: [
+        "Vous êtes des jetables : le commanditaire compte effacer l'équipe une fois le job fait.",
+        "Un « observateur » du Johnson est là pour vous éliminer, pas pour vous aider.",
+      ],
+      infoRole: "progression", past: false,
+      clues: [
+        "La paie exceptionnelle sent le contrat sans lendemain.",
+        "Un prestataire trop lié au Johnson rôde près de votre planque.",
+      ],
+      fronts: [
+        { faction: "mandant", titles: ["Nettoyage prévu", "Le contrat a une clause cachée : vous"],
+          impulses: ["effacer les exécutants une fois le travail fait", "ne laisser aucun témoin de l'opération"],
+          portents: ["Un « observateur » du Johnson s'invite sur le run.", "La sortie prévue se referme derrière vous.", "Des nettoyeurs passent derrière vous pour effacer les traces — vous compris."] },
+      ],
+    },
+    cible_innocente: {
+      infos: [
+        "La cible que vous visez ignore tout et n'a rien fait : c'est une victime.",
+        "La personne à livrer ou abattre est manipulée, ou tenue par un pacte, pas coupable.",
+      ],
+      infoRole: "enrichissement", past: false,
+      fearScene: true,
+      clues: [
+        "La cible supplie, terrifiée : son « crime » ne colle pas.",
+        "Ce qu'on vous a dit d'elle contredit ce que vous voyez sur place.",
+      ],
     },
   },
 
@@ -859,15 +1189,19 @@ export const TrameGen = {
       const ck = Utils.rand(this._EXTRA_CLOCKS);
       clocks.push({ type: ck.type, title: ck.title, segments: Utils.randInt(4, 6), effects: [] });
     }
+    // Objectif secondaire (run à double objectif) : sa propre horloge d'objectif.
+    const obj2 = topos.objectif2Key && topos.objectif2Key !== topos.objectif ? this._OBJECTIVES[topos.objectif2Key] : null;
+    if (obj2) clocks.push({ type: "objectif", title: `Second objectif — ${obj2.stake}`, segments: Utils.randInt(5, 8), effects: [] });
 
     // --- Fronts : opposition (pools) + complication (opt.) ---
     const fronts = [this._oppositionFront(c, comp)];
     if (compFront) {
-      // Trahison du commanditaire : impulsion typée par la nature du mandant.
-      const compImpulse =
-        compFront.faction === "mandant" && this._BETRAYAL_BY_TYPE[mandant.type]
-          ? Utils.rand(this._BETRAYAL_BY_TYPE[mandant.type])
-          : Utils.rand(compFront.impulses);
+      // Impulsion du front de complication. Pour un mandant, on MÊLE ses impulsions
+      // propres (spécifiques à la complication : « effacer les exécutants »…) à
+      // celles typées par sa nature (_BETRAYAL_BY_TYPE) — sans que l'une aplatisse
+      // l'autre. Même logique de concat que les pools de scène flavorés.
+      const betrayalPool = compFront.faction === "mandant" ? (this._BETRAYAL_BY_TYPE[mandant.type] || []) : [];
+      const compImpulse = Utils.rand((compFront.impulses || []).concat(betrayalPool));
       fronts.push({
         factionRole: compFront.faction,
         title: Utils.rand(compFront.titles),
@@ -914,10 +1248,11 @@ export const TrameGen = {
       clues.push({ toInfo: idx, anchorScenes: anchorPick(), description: "Une opportunité que le brief n'avait pas prévue.", gated: false });
     }
 
-    // Passe de langue sur les textes portant le nom de l'opposition, quand celui-ci
-    // commence par un article (« le/les X ») : accord pluriel du verbe collé au nom
-    // (« les Ancients montrent »), puis contraction « de les/le » → « des/du ».
-    if (/^les?\s/i.test(String(opposition.name || ""))) {
+    // Passe de langue sur les textes portant le nom de l'opposition. TOUJOURS
+    // appliquée : accord pluriel du verbe collé au nom quand il est au pluriel
+    // (« les Ancients montrent »), et élision « de le/les » → « du/des », « de +
+    // voyelle » → « d' » (« de une ruche » → « d'une ruche », « de Ares » → « d'Ares »).
+    {
       const fx = (s) => contractDe(c.oppPlural ? agreePlural(s, c.opp) : s);
       for (const sc of scenes) { sc.body = fx(sc.body); sc.bang = fx(sc.bang); }
       for (const fr of fronts) {

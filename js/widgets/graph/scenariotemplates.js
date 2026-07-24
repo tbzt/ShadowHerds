@@ -87,6 +87,28 @@ export const ScenarioTemplates = {
         { from: 7, to: 0, kind: "temporelle", label: "le cycle recommence" },
       ],
     },
+    {
+      key: "hub-spoke",
+      label: "Enquête (pistes en éventail)",
+      source: "d'après les scénarios d'investigation SR",
+      desc: "Un mystère, plusieurs pistes explorables dans l'ordre qu'on veut, qui convergent vers une révélation puis un climax.",
+      beats: [
+        { beat: "mystere", type: "accroche", title: "Le mystère", body: "Un fait trouble à élucider : le contrat pose la question, pas la réponse.", x: 300, y: 40 },
+        { beat: "base", type: "repérage", title: "Base d'enquête", body: "Le point de départ d'où rayonnent les pistes : QG, contact, première scène.", x: 300, y: 170 },
+        { beat: "piste-gens", type: "sociale", title: "Piste — les gens", body: "Interroger, séduire, acheter : une piste par les contacts et les témoins.", x: 60, y: 320 },
+        { beat: "piste-terrain", type: "repérage", title: "Piste — le terrain", body: "Une piste par les lieux : traces, logs matriciels, indices matériels.", x: 300, y: 320 },
+        { beat: "piste-force", type: "action", title: "Piste — la manière forte", body: "Une piste par la pression : filature, effraction, confrontation musclée.", x: 540, y: 320 },
+        { beat: "recoupement", type: "décision", title: "Recouper les pistes", body: "Les fils se rejoignent : la vérité se dessine, un choix s'impose.", x: 300, y: 470 },
+        { beat: "climax", type: "action", title: "Confrontation", body: "La vérité en main, l'affrontement décisif avec ce qu'elle a réveillé.", x: 300, y: 600 },
+        { beat: "retombee", type: "retombée", title: "Retombées", body: "Ce qu'on fait de la vérité : la révéler, la monnayer, l'enterrer.", x: 300, y: 730 },
+      ],
+      links: [
+        { from: 0, to: 1 },
+        { from: 1, to: 2, kind: "libre" }, { from: 1, to: 3, kind: "libre" }, { from: 1, to: 4, kind: "libre" },
+        { from: 2, to: 5 }, { from: 3, to: 5 }, { from: 4, to: 5 },
+        { from: 5, to: 6 }, { from: 6, to: 7 },
+      ],
+    },
   ],
 
   /** Intégrés + user (les user d'abord absents → tableau vide). */

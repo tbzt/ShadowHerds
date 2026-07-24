@@ -12,6 +12,25 @@ commit.
 
 ## [Non publié]
 
+## [1.115.0] — 2026-07-25
+
+### Ajouté
+
+- **« Générer la trame » puise dans un répertoire de patterns bien plus large**
+  (relevé sur une cinquantaine de suppléments Shadowrun). Un topos peut désormais
+  se déplier en de nouveaux mandats — **enquête, filature, escorte, récupération
+  d'objet, chasse à la prime, arnaque** —, porter de nouvelles complications — le
+  **Johnson qui n'est pas ce qu'il prétend**, l'**équipe jetable**, la **cible
+  innocente** —, et affronter des oppositions inédites : **IA renégate, ruche
+  d'esprits-insectes, culte des ombres, meute d'Infectés**. Un **objectif
+  secondaire** optionnel donne des runs à double objectif, et un nouveau modèle
+  **« Enquête (pistes en éventail) »** déroule une investigation non linéaire.
+
+### Modifié
+
+- Prose du générateur de trame resserrée sur le registre **Shadowrun VF** (moins
+  d'argot daté, plus de ton « ombres ») ; correction d'élisions (« d'une IA », « d'Ares »).
+
 ## [1.114.0] — 2026-07-25
 
 ### Ajouté

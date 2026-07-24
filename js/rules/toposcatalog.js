@@ -63,6 +63,42 @@ export const ToposCatalog = {
       sites: ["commercial", "residentiel", "industriel", "naturel"],
       phrase: (o) => `Intimidation / persuasion face ${ToposCatalog._aux(o.nom)}`,
     },
+    {
+      key: "enquete",
+      cible: "informations",
+      sites: ["residentiel", "commercial", "abandonne", "corporatiste", "industriel", "naturel"],
+      phrase: (o) => `Enquête — remonter une affaire trouble liée ${ToposCatalog._aux(o.nom)}`,
+    },
+    {
+      key: "escorte",
+      cible: "personne",
+      sites: ["commercial", "naturel", "abandonne", "residentiel"],
+      phrase: (o) => `Escorte / convoi — mener un bien à bon port face ${ToposCatalog._aux(o.nom)}`,
+    },
+    {
+      key: "recuperation_objet",
+      cible: "objet",
+      sites: ["commercial", "abandonne", "residentiel", "corporatiste", "naturel"],
+      phrase: (o) => `Récupération — reprendre un bien tombé entre les mains ${ToposCatalog._de(o.nom)}`,
+    },
+    {
+      key: "filature",
+      cible: "personne",
+      sites: ["commercial", "residentiel", "corporatiste", "naturel", "industriel"],
+      phrase: (o) => `Filature — pister une cible liée ${ToposCatalog._aux(o.nom)}`,
+    },
+    {
+      key: "chasse_a_la_prime",
+      cible: "personne",
+      sites: ["abandonne", "naturel", "residentiel", "commercial"],
+      phrase: (o) => `Chasse à la prime — traquer une cible cachée sur le territoire ${ToposCatalog._de(o.nom)}`,
+    },
+    {
+      key: "arnaque",
+      cible: "personne",
+      sites: ["commercial", "corporatiste", "residentiel"],
+      phrase: (o) => `Arnaque — plumer une cible sous la coupe ${ToposCatalog._de(o.nom)}`,
+    },
   ],
 
   /* ---- FACTIONS (map par clé). `hire:false` = jamais mandant (loi,
@@ -112,6 +148,12 @@ export const ToposCatalog = {
     ancients: { nom: "les Ancients", secu: "gang", districts: ["puyallup", "auburn"], rivaux: [], hire: false },
     brain_eaters: { nom: "les Brain Eaters", secu: "gang", districts: ["redmond"], rivaux: [], hire: false },
     vigilants: { nom: "les Voisins Vigilants", secu: "vigilants", districts: ["renton"], rivaux: [], hire: false },
+    // Entité numérique (opposition seule) : IA renégate maîtresse de ses systèmes.
+    ia_renegat: { nom: "une IA renégate", secu: "ia_hostile", districts: ["downtown", "underground"], rivaux: [], hire: false },
+    // Menaces surnaturelles (opposition seule).
+    ruche_insecte: { nom: "une ruche d'esprits-insectes", secu: "chaman_insecte", districts: ["redmond"], rivaux: [], hire: false },
+    culte_ombre: { nom: "un culte des ombres", secu: "esprit_gardien", districts: ["auburn", "council_island"], rivaux: [], hire: false },
+    meute_infectee: { nom: "une meute d'Infectés", secu: "infectes", districts: ["redmond", "underground"], rivaux: [], hire: false },
   },
 
   /* ---- TYPE de faction (abstrait) : ce qu'elle VEUT au fond, lu par
@@ -129,6 +171,8 @@ export const ToposCatalog = {
     humanis: "policlub", toxiques: "magie",
     bmb: "gang", crimson_crush: "gang", night_hunters: "gang", validus_magus: "gang",
     ancients: "gang", brain_eaters: "gang", vigilants: "gang",
+    ia_renegat: "ia",
+    ruche_insecte: "magie", culte_ombre: "culte", meute_infectee: "goules",
   },
   typeOf(key) {
     return this.factionTypes[key] || "corpo";
@@ -247,6 +291,11 @@ export const ToposCatalog = {
     { label: "Terrain hostile : zone toxique / brouillage matriciel", role: null, kind: "environnement" },
     { label: "Un civil innocent pris dans la zone d'opération", role: null, kind: "ethique" },
     { label: "Un journaliste avec drone documente tout en direct", role: null, kind: "ethique" },
+    { label: "Le Johnson n'est pas ce qu'il prétend (IA, esprit, imposteur)", role: null, kind: "mandant_cache" },
+    { label: "Le brief ment sur la vraie nature du job", role: null, kind: "mandant_cache" },
+    { label: "L'employeur prévoit d'effacer l'équipe une fois le job fait", role: null, kind: "runners_jetables" },
+    { label: "La cible est une victime, pas une coupable", role: null, kind: "cible_innocente" },
+    { label: "La personne à livrer est manipulée / sous emprise", role: null, kind: "cible_innocente" },
   ],
 
   /* ---- PROFILS DE SÉCURITÉ → casting (Lot 3b). Chaque rôle porte une
@@ -273,6 +322,10 @@ export const ToposCatalog = {
     toxic_shamans: { label: "Chamans toxiques", roles: [{ cat: "mage", label: "Chaman toxique" }, { cat: "spirit", label: "Esprit toxique" }] },
     bioaug: { label: "Sécurité Evo (bio-augmentés)", roles: [{ cat: "grunt", label: "Garde bio-augmenté" }, { cat: "mage", label: "Mage corpo" }] },
     vigilants: { label: "Voisins Vigilants", roles: [{ cat: "grunt", label: "Vigilant à pied" }, { cat: "grunt", label: "Patrouilleur motorisé" }] },
+    ia_hostile: { label: "IA hostile (contrôle des systèmes)", roles: [{ cat: "decker", label: "CI de patrouille" }, { cat: "rigger", label: "Drone asservi" }, { cat: "decker", label: "CI noire" }] },
+    chaman_insecte: { label: "Ruche d'esprits-insectes", roles: [{ cat: "mage", label: "Chaman insecte" }, { cat: "spirit", label: "Esprit-soldat" }, { cat: "grunt", label: "Hôte possédé" }] },
+    esprit_gardien: { label: "Esprit gardien lié", roles: [{ cat: "spirit", label: "Esprit gardien" }, { cat: "mage", label: "Invocateur" }] },
+    infectes: { label: "Meute d'Infectés (HMHVV)", roles: [{ cat: "grunt", label: "Goule affamée" }, { cat: "grunt", label: "Infecté enragé" }, { cat: "leader", label: "Maître de meute" }] },
   },
 
   /* ---- OBJECTIF SECONDAIRE (bonus optionnel ; ~1/5 nul). ---- */
@@ -287,6 +340,31 @@ export const ToposCatalog = {
     "Bonus : laisser une fausse piste pointant vers un rival corpo",
     "Bonus : effacer toutes les traces dans les logs",
   ],
+
+  /* Verbe court d'un objectif SECONDAIRE (run à double objectif, façon Colloton) :
+     libellé affiché quand un run porte une seconde famille d'objectif. */
+  _objVerbs: {
+    extraction: "faire sortir une seconde cible",
+    vol_donnees: "rafler un second lot de données",
+    sabotage: "saboter une installation annexe",
+    liquidation: "neutraliser une cible secondaire",
+    protection: "protéger un second actif",
+    intimidation: "faire passer un second message",
+    enquete: "élucider une question annexe",
+    escorte: "convoyer une seconde charge",
+    recuperation_objet: "récupérer un second objet",
+    filature: "filer une seconde cible",
+    chasse_a_la_prime: "toucher une seconde prime",
+    arnaque: "monter une arnaque en marge",
+  },
+  /** ~40 % : un vrai second objectif d'une AUTRE famille (« run à double objectif »). */
+  _secondaryObjective(primaryKey) {
+    if (Math.random() > 0.4) return null;
+    const others = this.objectifs.filter((o) => o.key !== primaryKey);
+    if (!others.length) return null;
+    const o = Utils.rand(others);
+    return { key: o.key, label: `Objectif secondaire : ${this._objVerbs[o.key] || "boucler un but annexe"}` };
+  },
 
   /* ---- PALIERS de difficulté/paie. Le palier est tiré autour de la
      menace du district (± 1) : un lieu très surveillé paie mieux. ---- */
@@ -313,6 +391,7 @@ export const ToposCatalog = {
     // cran plus gros — nudge DOUX du palier (danger+paie), jamais garanti.
     const tier = this._tier(district.menace, this._repBonus(facts));
     const pay = this._pay(tier);
+    const secondary = this._secondaryObjective(objectif.key);
 
     return {
       // Clés structurées (cohérence, casting, plan de lieu)
@@ -331,7 +410,8 @@ export const ToposCatalog = {
       client: mandant.johnson,
       lieu: `${district.nom} — ${site.nom}`,
       complication: diff.label,
-      objectif2: Utils.rand(this.bonus),
+      objectif2: secondary ? secondary.label : Utils.rand(this.bonus),
+      objectif2Key: secondary ? secondary.key : null,
       difficulte: tier.label,
       payment: `${pay.toLocaleString("fr-FR")}¥ par runner`,
       // VIS-12 (mémoire du monde) : si l'opposition (ou le mandant) tirée revient
