@@ -78,6 +78,11 @@ export const ScenarioGraph = {
   _CLUE: "#6f9fd8",
   _CLOSED: "#5a6673", // S5a — arête fermée par une horloge (atténuée)
   _ARROW_TINT: { hope: "#2f5a44", fear: "#5a2f2f" }, // S6 — teinte de disque par flèche dramatique
+  // Teinte de carte par TYPE (mêmes tokens `--t-*` que le cockpit `play.js`).
+  _TYPE_TINT_VAR: {
+    accroche: "--t-accroche", "repérage": "--t-reperage", action: "--t-action",
+    sociale: "--t-sociale", "décision": "--t-decision", "retombée": "--t-retombee",
+  },
   _ARROWS: [
     { key: "hope", glyph: "↑", label: "Espoir" },
     { key: "", glyph: "—", label: "Neutre" },
@@ -175,14 +180,24 @@ export const ScenarioGraph = {
     empty.hidden = true;
 
     const glyphOf = new Map(this._TYPES.map((t) => [t.key, t.glyph]));
+    const labelOf = new Map(this._TYPES.map((t) => [t.key, t.label]));
     const nodes = sc.sceneNodes.map((n) => ({
       id: n.id,
       type: n.type,
       glyph: glyphOf.get(n.type) || "●",
       shape: this._SHAPE_OF[n.type] || "circle", // P1 — forme par catégorie (BPMN-like)
       label: n.title || "(sans titre)",
-      sub: (n.body || "").trim(), // en un clin d'œil : extrait de la description MJ
-      chips: this._castLabel(n),
+      // « Carte à silhouette » : le contenu de la maquette DANS le nœud (le
+      // moteur rend `card` tel quel, sans savoir « scène »). Ligne ▸ = LIEU si
+      // présent, sinon rien (choix : pas de prose tronquée).
+      card: {
+        glyph: glyphOf.get(n.type) || "●",
+        typeLabel: labelOf.get(n.type) || "",
+        title: n.title || "(sans titre)",
+        sub: this._locationLabel(n),
+        chips: this._castChips(n),
+        tintVar: this._TYPE_TINT_VAR[n.type] || null,
+      },
       pcColor: this._ARROW_TINT[n.arrow] || null, // S6 — teinte par flèche dramatique
       x: n.x, y: n.y,
     }));
@@ -878,18 +893,30 @@ export const ScenarioGraph = {
     </div>`;
   },
 
-  /** Casting d'une étape en une ligne (« en un clin d'œil » sur le nœud du
-      graphe) — mêmes noms résolus par référence que `_castChipsHtml`, plus
-      courts (pas de suppression ici, juste de la lecture). */
-  _castLabel(n) {
+  /** Casting d'une étape en puces (carte du nœud) — noms résolus PAR RÉFÉRENCE
+      via PnjLookup (même source que `_castChipsHtml`), 3 max + « +N ». */
+  _castChips(n) {
     const ids = n.castIds || [];
-    if (!ids.length) return "";
+    if (!ids.length) return [];
     const names = ids
       .map((cid) => (typeof PnjLookup !== "undefined" ? PnjLookup.locate(cid) : null))
       .filter(Boolean)
       .map((loc) => loc.name);
-    if (!names.length) return "";
-    return names.length > 3 ? `${names.slice(0, 3).join(" · ")} +${names.length - 3}` : names.join(" · ");
+    if (!names.length) return [];
+    const shown = names.slice(0, 3).map((text) => ({ text }));
+    if (names.length > 3) shown.push({ text: `+${names.length - 3}` });
+    return shown;
+  },
+
+  /** Ligne ▸ de la carte = LIEU de l'étape si `locationId` est peuplé et
+      résolvable (par référence, comme le casting), sinon « » (pas de prose
+      tronquée). Aujourd'hui `locationId` reste vide → ligne rarement affichée,
+      prête pour quand les lieux seront peuplés. */
+  _locationLabel(n) {
+    const id = n.locationId;
+    if (!id || typeof PnjLookup === "undefined") return "";
+    const loc = PnjLookup.locate(id);
+    return loc ? loc.name : "";
   },
 
   /** Puces du cast d'une étape (par RÉFÉRENCE : nom résolu via PnjLookup), chacune

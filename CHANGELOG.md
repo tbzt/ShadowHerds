@@ -12,16 +12,29 @@ commit.
 
 ## [Non publié]
 
+## [1.113.0] — 2026-07-25
+
+### Modifié
+
+- **Le graphe de trame se lit comme des fiches à silhouette.** Chaque étape
+  devient une **carte** posée sur le canevas, façon plan de scénario : glyphe
+  + badge de type, titre, casting en puces, et (si un lieu est renseigné) une
+  ligne de lieu — le tout d'un coup d'œil, sans cliquer pour ouvrir
+  l'inspecteur. Le **contour** garde la lecture BPMN par catégorie : rectangle
+  arrondi pour les scènes jouables (action · sociale · repérage), pastille pour
+  l'accroche, pastille à double liseré pour la retombée, octogone pour la
+  décision (l'aiguillage). Les liens se posent toujours sur le bord réel de
+  chaque carte. Sur petit écran, l'affichage se replie au glyphe + titre
+  compact pour rester lisible. (Remplace l'aperçu sous le nœud de la 1.112.0.)
+
 ## [1.112.0] — 2026-07-24
 
 ### Ajouté
 
-- **Le graphe de trame montre la description et le casting, sans cliquer.**
-  Chaque étape affiche désormais, sous son titre, un aperçu de sa
-  description MJ et les personnages castés — la forme BPMN (v1.110.0) reste
-  inchangée, ces deux lignes viennent juste compléter le coup d'œil. Sur
-  petit écran (mobile), l'affichage se replie au titre seul pour rester
-  lisible.
+- **La carte TRAME du cockpit affiche la description et le casting de l'étape
+  en cours.** Dans « Jouer » (onglet En jeu), la bande TRAME montre désormais,
+  sous le titre de l'étape courante, un aperçu de sa description MJ — plus
+  besoin d'ouvrir l'atelier pour se rappeler ce qui se joue.
 
 ## [1.111.0] — 2026-07-24
 

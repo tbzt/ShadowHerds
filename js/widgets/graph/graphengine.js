@@ -32,13 +32,33 @@ const SHAPE_VERTS = {
   hexagon: [[16, 0], [8, 13.86], [-8, 13.86], [-16, 0], [-8, -13.86], [8, -13.86]],
 };
 
-/* Distance du centre au bord de la forme dans la direction unitaire (ux,uy).
-   Cercle (et anneau double) : rayon analytique. Polygones : intersection du
-   rayon partant du centre avec les segments (forme convexe → une seule sortie
-   vers l'avant). Sert à poser proprement le bout du câble sur l'arête. */
-function shapeReach(shape, ux, uy) {
-  const verts = SHAPE_VERTS[shape];
-  if (!verts) return CIRCLE_R;
+// « Cartes à silhouette » : quand un nœud fournit `n.card`, il est rendu en
+// CARTE (foreignObject HTML) au lieu d'un petit disque — même canal neutre que
+// `n.shape` (le graphe d'entités ne fournit pas `card` → inchangé). La
+// silhouette prend la forme du type à l'échelle carte : rectangle arrondi
+// (rect), pastille/stadium (circle → accroche), pastille double (circle-double
+// → retombée), octogone (diamond → décision, coins biseautés). Les sommets ci-
+// dessous servent à l'attache d'arête (mêmes que le rendu pour poser le câble
+// sur le vrai bord). Le fait/indice (hexagon) reste un petit disque, sans carte.
+const CARD_W = 168, CARD_H = 84;
+const HW = CARD_W / 2, HH = CARD_H / 2; // demi-extensions
+const CUT = 18; // biseau des coins de l'octogone (décision)
+const RECT_VERTS = [[-HW, -HH], [HW, -HH], [HW, HH], [-HW, HH]];
+const CARD_VERTS = {
+  rect: RECT_VERTS,
+  circle: RECT_VERTS,            // pastille : rayon d'attache ≈ rectangle
+  "circle-double": RECT_VERTS,
+  diamond: [
+    [-HW + CUT, -HH], [HW - CUT, -HH], [HW, -HH + CUT], [HW, HH - CUT],
+    [HW - CUT, HH], [-HW + CUT, HH], [-HW, HH - CUT], [-HW, -HH + CUT],
+  ],
+};
+
+/* Intersection du rayon (centre → direction ux,uy) avec le bord d'un polygone
+   convexe : distance du centre à l'arête, pour poser proprement le bout du
+   câble. Rayon fourni à part (formes rondes) via `fallback`. */
+function reachVerts(verts, ux, uy, fallback) {
+  if (!verts) return fallback;
   for (let i = 0; i < verts.length; i++) {
     const a = verts[i], b = verts[(i + 1) % verts.length];
     const ex = b[0] - a[0], ey = b[1] - a[1];
@@ -48,7 +68,15 @@ function shapeReach(shape, ux, uy) {
     const s = (ux * a[1] - uy * a[0]) / det;        // position sur le segment
     if (t > 0 && s >= -0.001 && s <= 1.001) return t;
   }
-  return CIRCLE_R;
+  return fallback;
+}
+
+/* Distance du centre au bord de la forme dans la direction unitaire (ux,uy).
+   `n._card` (résolu au montage : carte ET écran large) → sommets à l'échelle
+   carte ; sinon petite forme (défaut cercle). */
+function shapeReach(n, ux, uy) {
+  if (n._card) return reachVerts(CARD_VERTS[n.shape] || RECT_VERTS, ux, uy, HW);
+  return reachVerts(SHAPE_VERTS[n.shape], ux, uy, CIRCLE_R);
 }
 
 /* Construit le(s) élément(s) de « disque » d'un nœud selon `n.shape`. Le
@@ -57,6 +85,37 @@ function shapeReach(shape, ux, uy) {
    liseré interne décoratif. Glyphe et label restent posés par-dessus. */
 function makeDiscs(n, accent) {
   const shape = n.shape;
+  // Nœud-carte (`_card` : carte demandée ET écran large) : silhouette À L'ÉCHELLE
+  // CARTE (le contenu HTML se pose dessus). Sinon petit disque (mobile/entités).
+  if (n._card) {
+    const els = [];
+    let main;
+    if (shape === "diamond") {
+      main = document.createElementNS(NS, "polygon");
+      main.setAttribute("points", CARD_VERTS.diamond.map((p) => p.join(",")).join(" "));
+    } else {
+      main = document.createElementNS(NS, "rect");
+      main.setAttribute("x", -HW); main.setAttribute("y", -HH);
+      main.setAttribute("width", CARD_W); main.setAttribute("height", CARD_H);
+      // pastille (accroche/retombée) = stadium ; scènes jouables = coins arrondis.
+      main.setAttribute("rx", shape === "circle" || shape === "circle-double" ? HH : 12);
+    }
+    main.setAttribute("class", "graph-node-disc");
+    main.setAttribute("fill", "var(--surface-2, #16202b)");
+    main.setAttribute("stroke", accent);
+    els.push(main);
+    if (shape === "circle-double") {
+      const inner = document.createElementNS(NS, "rect");
+      inner.setAttribute("x", -HW + 5); inner.setAttribute("y", -HH + 5);
+      inner.setAttribute("width", CARD_W - 10); inner.setAttribute("height", CARD_H - 10);
+      inner.setAttribute("rx", HH - 5);
+      inner.setAttribute("class", "graph-node-disc-inner");
+      inner.setAttribute("fill", "none");
+      inner.setAttribute("stroke", accent);
+      els.push(inner);
+    }
+    return els;
+  }
   const fill = n.pcColor || "var(--surface-2, #16202b)";
   let main;
   if (shape === "rect") {
@@ -84,6 +143,15 @@ function makeDiscs(n, accent) {
     els.push(inner);
   }
   return els;
+}
+
+// Échappement HTML minimal pour le contenu de carte (le moteur reste sans
+// dépendance ; les valeurs viennent de la projection = texte utilisateur).
+const XHTML = "http://www.w3.org/1999/xhtml";
+function escHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 export const GraphEngine = {
@@ -176,7 +244,8 @@ export const GraphEngine = {
       this._applyEdgeStyle(e, accent);
     }
 
-    // Nœuds : cercle + glyphe + label, chacun dans un <g data-node-id>.
+    // Nœuds : soit une CARTE à silhouette (n.card, écran large), soit un petit
+    // disque + glyphe + label — chacun dans un <g data-node-id>.
     for (const n of N) {
       const g = document.createElementNS(NS, "g");
       g.setAttribute("class", n.inScope === false ? "graph-node halo" : "graph-node");
@@ -185,51 +254,38 @@ export const GraphEngine = {
       g.setAttribute("role", "button");
       g.setAttribute("aria-label", n.label);
 
-      // Forme par catégorie (P1) : `makeDiscs` lit `n.shape` (défaut cercle).
-      // Couleur de nœud = `pcColor` de l'entité, pour TOUT type (Lot 4 : plus
-      // réservé aux PJ). Nue → fond neutre. `_disc` (1ᵉ forme) mémorisé pour
-      // `setNodeColor` et ciblé par tous les états CSS.
+      // Carte demandée ET écran large ? (Résolu UNE fois ici ; makeDiscs et
+      // shapeReach s'y réfèrent via `_card` pour rester cohérents sur mobile.)
+      n._card = !!(n.card && showExtra);
+
+      // Forme par catégorie (P1) : `makeDiscs` lit `n.shape` (défaut cercle) et,
+      // si `_card`, bâtit la silhouette à l'échelle carte. `_disc` (1ᵉ forme)
+      // mémorisé pour `setNodeColor` et ciblé par tous les états CSS.
       const discs = makeDiscs(n, accent);
       n._disc = discs[0];
-
-      const glyph = document.createElementNS(NS, "text");
-      glyph.setAttribute("class", "graph-node-glyph");
-      glyph.setAttribute("text-anchor", "middle");
-      glyph.setAttribute("dy", "0.35em");
-      glyph.setAttribute("fill", accent);
-      // Glyphe fourni par la projection (scènes) sinon dérivé du type (entités).
-      // Le moteur reste bête : il rend ce qu'on lui donne (contrat « aucune vérité »).
-      glyph.textContent = n.glyph || TYPE_GLYPH[n.type] || "●";
-
-      const label = document.createElementNS(NS, "text");
-      label.setAttribute("class", "graph-node-label");
-      label.setAttribute("text-anchor", "middle");
-      label.setAttribute("dy", "2.4em");
-      label.textContent = n.label.length > 18 ? n.label.slice(0, 17) + "…" : n.label;
-
       for (const d of discs) g.appendChild(d);
-      g.appendChild(glyph);
-      g.appendChild(label);
 
-      // Sous-titre + casting « en un clin d'œil » (optionnels, fournis par la
-      // projection via n.sub/n.chips — le graphe d'entités ne les fournit jamais,
-      // donc 0 impact ailleurs). Repliés sous petite largeur : trop de texte,
-      // pas assez de place pour zoomer confortablement (mobile).
-      if (showExtra && n.sub) {
-        const sub = document.createElementNS(NS, "text");
-        sub.setAttribute("class", "graph-node-sub");
-        sub.setAttribute("text-anchor", "middle");
-        sub.setAttribute("dy", "3.6em");
-        sub.textContent = n.sub.length > 28 ? n.sub.slice(0, 27) + "…" : n.sub;
-        g.appendChild(sub);
-      }
-      if (showExtra && n.chips) {
-        const chips = document.createElementNS(NS, "text");
-        chips.setAttribute("class", "graph-node-chips");
-        chips.setAttribute("text-anchor", "middle");
-        chips.setAttribute("dy", "4.8em");
-        chips.textContent = n.chips.length > 24 ? n.chips.slice(0, 23) + "…" : n.chips;
-        g.appendChild(chips);
+      // « Carte à silhouette » : contenu riche en HTML (foreignObject) POSÉ sur
+      // la silhouette (elle porte les états + le hit ; la carte est en
+      // pointer-events:none → drag/tap/tissage passent au travers). Repli en
+      // petit disque sous faible largeur (mobile) ou si le nœud n'a pas de carte.
+      if (n._card) {
+        g.appendChild(this._cardNode(n));
+      } else {
+        const glyph = document.createElementNS(NS, "text");
+        glyph.setAttribute("class", "graph-node-glyph");
+        glyph.setAttribute("text-anchor", "middle");
+        glyph.setAttribute("dy", "0.35em");
+        glyph.setAttribute("fill", accent);
+        // Glyphe fourni par la projection (scènes) sinon dérivé du type (entités).
+        glyph.textContent = n.glyph || TYPE_GLYPH[n.type] || "●";
+        const label = document.createElementNS(NS, "text");
+        label.setAttribute("class", "graph-node-label");
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("dy", "2.4em");
+        label.textContent = n.label.length > 18 ? n.label.slice(0, 17) + "…" : n.label;
+        g.appendChild(glyph);
+        g.appendChild(label);
       }
 
       n._g = g;
@@ -321,6 +377,34 @@ export const GraphEngine = {
     s.alpha *= 0.98; // refroidissement
   },
 
+  /** Contenu HTML d'une carte de nœud (foreignObject centré à l'origine locale).
+      `pointer-events:none` (posé au moment du style CSS) → les gestes tombent sur
+      la silhouette SVG dessous. Contenu marqué `aria-hidden` : l'`aria-label` du
+      <g> porte déjà le titre (pas de double lecture). Reste NEUTRE : le moteur ne
+      connaît pas « la scène », il rend les champs de `card` tels quels. */
+  _cardNode(n) {
+    const c = n.card || {};
+    const fo = document.createElementNS(NS, "foreignObject");
+    fo.setAttribute("x", -HW); fo.setAttribute("y", -HH);
+    fo.setAttribute("width", CARD_W); fo.setAttribute("height", CARD_H);
+    fo.setAttribute("class", "graph-node-fo");
+    const card = document.createElementNS(XHTML, "div");
+    card.setAttribute("class", "graph-scene-card");
+    card.setAttribute("aria-hidden", "true");
+    if (c.tintVar) card.setAttribute("style", `--tint:var(${c.tintVar})`);
+    const chips = (c.chips || [])
+      .map((ch) => `<span class="gsc-chip${ch.danger ? " is-danger" : ""}">${escHtml(ch.text)}</span>`)
+      .join("");
+    card.innerHTML =
+      `<div class="gsc-head"><span class="gsc-glyph">${escHtml(c.glyph || n.glyph || "●")}</span>` +
+      `<span class="gsc-type">${escHtml(c.typeLabel || "")}</span></div>` +
+      `<div class="gsc-title">${escHtml(c.title || n.label || "")}</div>` +
+      (c.sub ? `<div class="gsc-sub"><span class="gsc-sub-mark" aria-hidden="true">▸</span> ${escHtml(c.sub)}</div>` : "") +
+      (chips ? `<div class="gsc-cast">${chips}</div>` : "");
+    fo.appendChild(card);
+    return fo;
+  },
+
   _render(s) {
     if (s.pockets.length) this._renderPockets(s);
     for (const e of s.E) {
@@ -333,8 +417,8 @@ export const GraphEngine = {
       const d = Math.hypot(dx, dy) || 1;
       const ux = dx / d, uy = dy / d;
       const GAP = 2.5;
-      let padA = shapeReach(a.shape, ux, uy) + GAP;
-      let padB = shapeReach(b.shape, -ux, -uy) + GAP;
+      let padA = shapeReach(a, ux, uy) + GAP;
+      let padB = shapeReach(b, -ux, -uy) + GAP;
       if (padA + padB > d - 2) { const k = (d - 2) / (padA + padB); padA *= k; padB *= k; }
       const x1 = a.x + ux * padA, y1 = a.y + uy * padA;
       const x2 = b.x - ux * padB, y2 = b.y - uy * padB;

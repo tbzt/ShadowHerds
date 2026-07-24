@@ -604,9 +604,9 @@ export const TourSteps = {
       body: "Le bouton « Générer la trame » (sur la carte de run, et dans « Avant » à Jouer) fait bien plus que caster : d'un clic, il pose une aventure entière depuis le topos, et différente à chaque fois. Le squelette de scènes est tiré au sort parmi trois modèles narratifs, puis habillé par le verbe de votre objectif (une extraction, un vol de données ou un sabotage ne se jouent pas pareil), avec un choix forcé au climax et une flèche espoir/peur qui donne le rythme. S'y greffent : les factions en lice (l'opposition, et le commanditaire ou une équipe rivale selon la complication) ; des horloges de pression (une alerte qui, pleine, déclenche l'affrontement et ferme la fuite, plus une horloge d'objectif propre au contrat) ; des fronts avec leurs présages ; un calque d'indices menant à la vérité cachée derrière le run ; et le casting d'opposition réparti sur les scènes selon les rôles. La trame est aussitôt liée au run : le cockpit de « Jouer » l'affiche en direct. Vous partez d'une amorce, vous repartez avec une aventure structurée.",
     },
     {
-      id: "wn-graph-sub", anchor: "nav-trames", tours: ["whatsnew"], since: "1.112.0", fallback: "center",
-      title: "Le graphe de trame montre la description et le casting",
-      body: "Chaque étape affiche désormais, sous son titre, un aperçu de sa description MJ et les personnages castés — plus besoin de cliquer pour ouvrir l'inspecteur et lire le détail de chaque nœud un par un. La forme BPMN par catégorie reste la même, ces deux lignes viennent juste compléter le coup d'œil. Sur petit écran, l'affichage se replie au titre seul pour rester lisible.",
+      id: "wn-graph-cartes", anchor: "nav-trames", tours: ["whatsnew"], since: "1.113.0", fallback: "center",
+      title: "Le graphe de trame se lit comme des fiches",
+      body: "Chaque étape devient une carte posée sur le canevas, façon plan de scénario : glyphe + type, titre, casting en puces (et le lieu s'il est renseigné) — tout d'un coup d'œil, sans cliquer pour ouvrir l'inspecteur. Le contour garde la lecture par catégorie : rectangle arrondi pour les scènes jouables, pastille pour l'accroche, pastille à double liseré pour la retombée, octogone pour la décision. Les liens se posent toujours sur le bord réel de chaque carte, et sur petit écran l'affichage se replie au glyphe + titre compact.",
     },
   ],
 };
