@@ -417,13 +417,15 @@
   #group-picker-backdrop.open,
   #faction-picker-backdrop.open,
   #tag-picker-backdrop.open,
-  #convoke-picker-backdrop.open {
+  #convoke-picker-backdrop.open,
+  #scenario-cast-picker-backdrop.open {
     background: rgba(0, 0, 0, 0.55);
   }
   #group-picker-panel,
   #faction-picker-panel,
   #tag-picker-panel,
-  #convoke-picker-panel {
+  #convoke-picker-panel,
+  #scenario-cast-picker-panel {
     top: auto !important;
     left: 0 !important;
     right: 0;
@@ -441,7 +443,8 @@
   #group-picker-panel.open,
   #faction-picker-panel.open,
   #tag-picker-panel.open,
-  #convoke-picker-panel.open {
+  #convoke-picker-panel.open,
+  #scenario-cast-picker-panel.open {
     transform: translateY(0);
   }
   .group-picker-head {

@@ -350,6 +350,7 @@ export const App = {
     ContactsBook.load();
     RelationsStore.load(); // arêtes entité↔entité (liens contact…) de l'édition
     FactionStore.load(); // rosters transverses (factions) de l'édition
+    ScenarioStore.load(); // trames scénaristiques (graphe de scènes…) de l'édition
     Servers.initPanel(); // charge + migre + câble la délégation serveur (#app)
     DossierBar.init(); // Dossiers chargés/synchronisés + destination courante
     Encounter.load();
@@ -676,6 +677,9 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
       case "encounter-open":
         Encounter.open();
+        break;
+      case "open-trames": // S1 — atelier de trame scénaristique (ouvreur provisoire)
+        ScenarioGraph.open();
         break;
       case "chargen-open":
         CharGen.open();

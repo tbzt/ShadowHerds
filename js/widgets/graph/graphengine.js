@@ -25,7 +25,7 @@ export const GraphEngine = {
 
   /** Monte un graphe dans `container`. `onNodeTap(id)` est appelé sur un
       tap net (clic sans glisser). Rappeler `mount` remonte proprement. */
-  mount(container, { nodes = [], edges = [], accent = "#35e0e6", onNodeTap = null, onWeave = null, onBackgroundTap = null, onEdgeTap = null } = {}) {
+  mount(container, { nodes = [], edges = [], accent = "#35e0e6", onNodeTap = null, onWeave = null, onBackgroundTap = null, onEdgeTap = null, static: staticLayout = false, onNodeMoved = null } = {}) {
     this.destroy();
     const W = Math.max(320, container.clientWidth || 640);
     const H = Math.max(240, container.clientHeight || 460);
@@ -35,10 +35,13 @@ export const GraphEngine = {
     const R = Math.min(W, H) * 0.32;
     const N = nodes.map((n, i) => {
       const a = (2 * Math.PI * i) / Math.max(1, nodes.length);
+      // Mode « layout auteur » (static:true) : honorer les x,y fournis — carte
+      // heuristique arrangée à la main et PERSISTÉE ; à défaut, couronne.
+      const useXY = staticLayout && Number.isFinite(n.x) && Number.isFinite(n.y);
       return {
         ...n,
-        x: W / 2 + Math.cos(a) * R + (Math.random() - 0.5) * 12,
-        y: H / 2 + Math.sin(a) * R + (Math.random() - 0.5) * 12,
+        x: useXY ? n.x : W / 2 + Math.cos(a) * R + (Math.random() - 0.5) * 12,
+        y: useXY ? n.y : H / 2 + Math.sin(a) * R + (Math.random() - 0.5) * 12,
         vx: 0, vy: 0, pinned: false,
       };
     });
@@ -127,7 +130,9 @@ export const GraphEngine = {
       glyph.setAttribute("text-anchor", "middle");
       glyph.setAttribute("dy", "0.35em");
       glyph.setAttribute("fill", accent);
-      glyph.textContent = TYPE_GLYPH[n.type] || "●";
+      // Glyphe fourni par la projection (scènes) sinon dérivé du type (entités).
+      // Le moteur reste bête : il rend ce qu'on lui donne (contrat « aucune vérité »).
+      glyph.textContent = n.glyph || TYPE_GLYPH[n.type] || "●";
 
       const label = document.createElementNS(NS, "text");
       label.setAttribute("class", "graph-node-label");
@@ -151,6 +156,7 @@ export const GraphEngine = {
 
     const state = {
       container, svg, W, H, N, E, idx, accent, onNodeTap, onWeave, onBackgroundTap, onEdgeTap,
+      staticLayout, onNodeMoved, // mode auteur : pas de simulation ; persiste au lâcher
       raf: 0, alpha: 1, drag: null, weave: false, weaving: null, weaveLine,
       selectedId: null, selectedEdgeId: null, bg: null, edgeTap: null,
       gPockets, pockets: [], // A3 — poches de faction (données + éléments SVG)
@@ -257,11 +263,12 @@ export const GraphEngine = {
 
   _loop(s) {
     const frame = () => {
-      this._step(s);
+      if (!s.staticLayout) this._step(s); // mode auteur : aucune simulation
       this._render(s);
-      // S'arrête au repos (alpha bas et aucun glisser) — 0 CPU.
-      if (s.alpha > 0.02 || s.drag) s.raf = requestAnimationFrame(frame);
-      else s.raf = 0;
+      // S'arrête au repos — 0 CPU. En mode auteur, seul un glisser en cours
+      // anime ; en mode forces, le refroidissement d'alpha décide.
+      const keepGoing = s.staticLayout ? !!s.drag : s.alpha > 0.02 || s.drag;
+      s.raf = keepGoing ? requestAnimationFrame(frame) : 0;
     };
     if (!s.raf) s.raf = requestAnimationFrame(frame);
   },
@@ -296,6 +303,20 @@ export const GraphEngine = {
     const s = this._state;
     if (!s) return;
     for (const n of s.N) if (n._g) n._g.classList.remove("multi-selected");
+  },
+
+  /** S2 — marque L'ÉTAPE COURANTE de la trame (anneau distinct, pulse CSS).
+      Exclusif quand `on` : une seule étape courante à la fois. Purement visuel
+      (la vérité vit dans `runtime.currentSceneId`), comme `setNodeMultiSelected`. */
+  setNodeCurrent(id, on) {
+    const s = this._state;
+    if (!s) return;
+    if (on) {
+      for (const n of s.N) if (n._g) n._g.classList.toggle("current", n.id === id);
+    } else {
+      const n = s.N.find((x) => x.id === id);
+      if (n && n._g) n._g.classList.remove("current");
+    }
   },
 
   /** Met à jour EN PLACE la couleur d'un nœud (Lot 4) — patch visuel immédiat
@@ -673,6 +694,9 @@ export const GraphEngine = {
         const sp = Math.hypot(vx, vy);
         n.vx = sp > cap ? (vx / sp) * cap : vx;
         n.vy = sp > cap ? (vy / sp) * cap : vy;
+        // Mode auteur : la position est finale au lâcher (pas de recalage par
+        // ressorts) → la persister via le callback de la vue.
+        if (s.staticLayout && typeof s.onNodeMoved === "function") s.onNodeMoved(n.id, n.x, n.y);
       }
       this._reheat(s);
     };

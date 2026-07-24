@@ -96,6 +96,10 @@ export const Collection = {
           typeof RelationsStore !== "undefined" ? RelationsStore.purgeEntities(doomed) : [];
         const purgedFactions =
           typeof FactionStore !== "undefined" ? FactionStore.purgeEntities(doomed) : [];
+        // S2b — le cast d'une étape de trame laisse une ref d'entité pendante :
+        // on la purge (rendue à l'annulation, comme rosters/convokes).
+        const purgedCast =
+          typeof ScenarioStore !== "undefined" ? ScenarioStore.purgeEntities(doomed) : [];
         // A4/§3.1 — une entité convoquée sur un run laisse une ref pendante :
         // on la purge (rendue à l'annulation, comme les arêtes/rosters).
         const purgedConvokes =
@@ -119,6 +123,7 @@ export const Collection = {
           this.save();
           if (typeof RelationsStore !== "undefined") RelationsStore.addEdges(purgedEdges);
           if (typeof FactionStore !== "undefined") FactionStore.addMemberships(purgedFactions);
+          if (typeof ScenarioStore !== "undefined") ScenarioStore.addMemberships(purgedCast);
           if (typeof Dossiers !== "undefined") Dossiers.addConvokes(purgedConvokes);
           this.render();
         };
@@ -148,6 +153,8 @@ export const Collection = {
           typeof RelationsStore !== "undefined" ? RelationsStore.purgeEntities(doomed) : [];
         const purgedFactions =
           typeof FactionStore !== "undefined" ? FactionStore.purgeEntities(doomed) : [];
+        const purgedCast =
+          typeof ScenarioStore !== "undefined" ? ScenarioStore.purgeEntities(doomed) : [];
         const purgedConvokes =
           typeof Dossiers !== "undefined" ? Dossiers.purgeConvokedEntities(doomed) : [];
         this.render();
@@ -162,6 +169,7 @@ export const Collection = {
           this.save();
           if (typeof RelationsStore !== "undefined") RelationsStore.addEdges(purgedEdges);
           if (typeof FactionStore !== "undefined") FactionStore.addMemberships(purgedFactions);
+          if (typeof ScenarioStore !== "undefined") ScenarioStore.addMemberships(purgedCast);
           if (typeof Dossiers !== "undefined") Dossiers.addConvokes(purgedConvokes);
           this.render();
         };

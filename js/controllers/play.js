@@ -30,6 +30,8 @@ export const Play = {
   _wire() {
     if (this._wired) return;
     this._wired = true;
+    // S2a — live bidirectionnel : le cockpit reflète toute mutation de trame.
+    if (typeof ScenarioStore !== "undefined") ScenarioStore.subscribe(() => this._onScenarioChange());
     document.getElementById("panel-play").addEventListener("click", (e) => {
       const el = e.target.closest("[data-action]");
       if (!el) return;
@@ -71,6 +73,53 @@ export const Play = {
             title: `Liens — ${(Dossiers.get(id) || {}).name || "run"}`,
           });
           break;
+        case "play-trame-goto":
+          // S2a — bifurquer/avancer : poser l'étape courante de la trame. Le
+          // re-render vient de l'abonnement (patchRuntime émet). Pas de branche.
+          if (typeof ScenarioStore !== "undefined" && el.dataset.scenario && el.dataset.node)
+            ScenarioStore.patchRuntime(el.dataset.scenario, { currentSceneId: el.dataset.node });
+          break;
+        case "play-trame-link": {
+          // Lier une trame existante au run ; aucune → ouvrir l'atelier pour créer.
+          if (typeof ScenarioStore === "undefined") break;
+          const trames = ScenarioStore.all();
+          if (!trames.length) {
+            if (typeof ScenarioGraph !== "undefined") ScenarioGraph.open();
+            break;
+          }
+          Dialog.choose({
+            title: "Lier une trame à ce run",
+            message: "Choisissez la trame qui structure ce run.",
+            options: trames.map((t) => ({ value: t.id, label: t.title })),
+          }).then((scId) => {
+            if (scId) ScenarioStore.setRunId(scId, id);
+          });
+          break;
+        }
+        case "play-trame-unlink":
+          if (typeof ScenarioStore !== "undefined" && el.dataset.scenario)
+            ScenarioStore.setRunId(el.dataset.scenario, null);
+          break;
+        case "play-trame-open":
+          if (typeof ScenarioGraph !== "undefined") ScenarioGraph.open(el.dataset.scenario);
+          break;
+        case "play-trame-cast":
+          // S2b — caster l'étape courante (picker mince → castIds ; le re-render
+          // vient de l'abonnement quand une case est cochée).
+          if (typeof ScenarioCastPicker !== "undefined" && el.dataset.scenario && el.dataset.node)
+            ScenarioCastPicker.open(el.dataset.scenario, el.dataset.node, el);
+          break;
+        case "play-trame-toscene": {
+          // S2b — envoyer le cast planifié de l'étape dans la scène JOUÉE (Encounter).
+          if (typeof ScenarioStore === "undefined") break;
+          const stc = ScenarioStore.get(el.dataset.scenario);
+          const cnode = stc && stc.sceneNodes.find((n) => n.id === el.dataset.node);
+          if (cnode && Array.isArray(cnode.castIds) && cnode.castIds.length) {
+            for (const cid of cnode.castIds) Encounter.add(cid);
+            this.render();
+          }
+          break;
+        }
         case "play-notes":
           // Notes de CE run : poser le contexte sur le run (App.context.dossier
           // = carnet courant) puis DÉLÉGUER au Notepad — le poste de commandement
@@ -474,8 +523,97 @@ export const Play = {
           ${resumeBtn}
         </span>
       </div>
+      ${this._trameHtml(run)}
       ${moments}
     </div>`;
+  },
+
+  /* ============================================================
+     S2a — la bande « TRAME » : suivre et BIFURQUER en direct depuis Jouer.
+     Même vérité que l'atelier (ScenarioStore) ; ici, lentille « partie en
+     cours ». « Étape » = nœud de trame (planifié) ≠ « scène en cours »
+     (Encounter, jouée). Aucune vérité détenue ; bifurquer = `patchRuntime`.
+     ============================================================ */
+  _TRAME_GLYPH: {
+    accroche: "◎", "repérage": "⌕", action: "⚔", sociale: "❝", "décision": "⑂", "retombée": "⚑",
+  },
+  _trameHtml(run) {
+    if (typeof ScenarioStore === "undefined") return "";
+    const esc = CardRenderer._esc;
+    const trame = ScenarioStore.byRun(run.id);
+    if (!trame) {
+      const has = ScenarioStore.all().length;
+      return `<div class="play-trame is-empty">
+        <div class="play-trame-head"><span class="play-trame-word">Trame</span></div>
+        <div class="play-trame-body">
+          <span class="play-trame-note">Aucune trame liée à ce run.</span>
+          <button class="btn-secondary btn-small" data-action="play-trame-link" data-dossier="${run.id}">${has ? "Lier une trame" : "Ouvrir l'atelier"}</button>
+        </div>
+      </div>`;
+    }
+    const sc = trame;
+    const head = `<div class="play-trame-head">
+      <span class="play-trame-word">Trame</span>
+      <span class="play-trame-title">${esc(sc.title)}</span>
+      <span class="play-trame-actions">
+        <button class="btn-secondary btn-small" data-action="play-trame-open" data-scenario="${sc.id}" title="Ouvrir l'atelier de trame">Atelier</button>
+        <button class="btn-secondary btn-small" data-action="play-trame-unlink" data-scenario="${sc.id}" title="Délier cette trame du run">Délier</button>
+      </span>
+    </div>`;
+    const curId = sc.runtime && sc.runtime.currentSceneId;
+    const cur = curId && sc.sceneNodes.find((n) => n.id === curId);
+    if (!cur) {
+      const start = sc.sceneNodes.find((n) => n.type === "accroche") || sc.sceneNodes[0];
+      const body = start
+        ? `<button class="btn-primary btn-small" data-action="play-trame-goto" data-scenario="${sc.id}" data-node="${start.id}">▶ Commencer : ${esc(start.title || "(sans titre)")}</button>`
+        : `<span class="play-trame-note">Trame sans étape — ouvrez l'atelier pour en poser.</span>`;
+      return `<div class="play-trame">${head}<div class="play-trame-body">${body}</div></div>`;
+    }
+    const g = this._TRAME_GLYPH[cur.type] || "●";
+    const exits = sc.sceneEdges.filter((e) => e.from === cur.id);
+    const exitBtns = exits.length
+      ? exits
+          .map((e) => {
+            const to = sc.sceneNodes.find((n) => n.id === e.to);
+            const lbl = to ? to.title || "(sans titre)" : "?";
+            const hint = e.isEscapeHatch ? " ⚑" : e.gateway === "parallel" ? " ∥" : e.gateway === "exclusive" ? " ⋔" : "";
+            const cls = e.isEscapeHatch ? "play-trame-exit is-hatch" : "play-trame-exit";
+            return `<button class="${cls}" data-action="play-trame-goto" data-scenario="${sc.id}" data-node="${e.to}" title="${e.label ? esc(e.label) : "Aller à cette étape"}">→ ${esc(lbl)}${hint}</button>`;
+          })
+          .join("")
+      : `<span class="play-trame-note">Fin de la trame (aucune sortie).</span>`;
+    const castChips = (cur.castIds || [])
+      .map((cid) => {
+        const loc = typeof PnjLookup !== "undefined" ? PnjLookup.locate(cid) : null;
+        return loc ? `<span class="play-trame-cast-chip">${esc(loc.name)}</span>` : "";
+      })
+      .join("");
+    const hasCast = (cur.castIds || []).length > 0;
+    const castRow = `<div class="play-trame-cast">
+      ${castChips}
+      <button class="play-trame-cast-add" data-action="play-trame-cast" data-scenario="${sc.id}" data-node="${cur.id}" title="Caster cette étape">＋ Cast</button>
+      ${hasCast ? `<button class="play-trame-toscene" data-action="play-trame-toscene" data-scenario="${sc.id}" data-node="${cur.id}" title="Ajouter ce cast à la scène en cours (combat)">Envoyer en scène</button>` : ""}
+    </div>`;
+    return `<div class="play-trame">${head}
+      <div class="play-trame-current" data-t="${cur.type}">
+        <span class="play-trame-cur-glyph" aria-hidden="true">${g}</span>
+        <span class="play-trame-cur-title">${esc(cur.title || "(sans titre)")}</span>
+      </div>
+      ${cur.body ? `<p class="play-trame-cur-body">${esc(cur.body)}</p>` : ""}
+      ${castRow}
+      <div class="play-trame-exits">${exitBtns}</div>
+    </div>`;
+  },
+
+  /** Abonnement live à ScenarioStore : quand Jouer est visible et qu'une trame
+      change (bifurcation au cockpit OU édition à l'atelier), re-projeter le
+      poste. Debounce léger : coalesce les salves (frappe de titre à l'atelier).
+      Guardé sur le panneau actif → 0 travail quand Jouer est masqué. */
+  _onScenarioChange() {
+    const panel = document.getElementById("panel-play");
+    if (!panel || !panel.classList.contains("active")) return;
+    clearTimeout(this._trameRenderT);
+    this._trameRenderT = setTimeout(() => this.render(), 60);
   },
 
   /** B1 — l'ÉTAT de la coquille Cockpit, dérivé de champs NEUTRES (aucune

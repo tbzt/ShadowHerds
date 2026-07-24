@@ -626,6 +626,136 @@
   color: var(--text);
   font-weight: 600;
 }
+
+/* S2a — la bande « Trame » : suivre et bifurquer la trame depuis le poste de
+   commandement. Sobre et glanceable (question n°1 du MJ) ; l'accent d'édition
+   porte l'étape courante et les sorties. Aucune couleur en dur, 0 branche. */
+.play-trame {
+  margin-bottom: var(--sp-2);
+  padding: var(--sp-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+.play-trame.is-empty {
+  border-left-color: var(--border);
+  background: none;
+}
+.play-trame-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: 4px;
+}
+.play-trame-word {
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+.play-trame-title {
+  font-weight: 600;
+  color: var(--text);
+}
+.play-trame-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+.play-trame-body {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.play-trame-note {
+  color: var(--text-dim);
+  font-size: var(--fs-sm, 0.85rem);
+}
+.play-trame-current {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 4px 0;
+}
+.play-trame-cur-glyph {
+  color: var(--accent);
+  font-size: 1.15em;
+  line-height: 1;
+}
+.play-trame-cur-title {
+  font-weight: 600;
+  color: var(--text);
+}
+.play-trame-cur-body {
+  margin: 0 0 var(--sp-2);
+  color: var(--text-dim);
+  font-size: var(--fs-sm, 0.85rem);
+  line-height: 1.45;
+}
+.play-trame-cast {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: var(--sp-2);
+}
+.play-trame-cast-chip {
+  font-size: var(--fs-xs);
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--text-dim) 15%, transparent);
+  color: var(--text);
+}
+.play-trame-cast-add,
+.play-trame-toscene {
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+.play-trame-cast-add {
+  border: 1px dashed var(--border);
+  background: none;
+  color: var(--text-dim);
+}
+.play-trame-cast-add:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.play-trame-toscene {
+  border: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--text);
+}
+.play-trame-toscene:hover {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.play-trame-exits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.play-trame-exit {
+  padding: 4px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--text);
+  font-size: var(--fs-sm, 0.85rem);
+  cursor: pointer;
+  transition: background 120ms;
+}
+.play-trame-exit:hover {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.play-trame-exit.is-hatch {
+  border-color: color-mix(in srgb, var(--danger, #e0533d) 60%, var(--border));
+  border-style: dashed;
+  background: none;
+  color: var(--text-dim);
+}
 @keyframes play-cockpit-pulse {
   0%,
   100% {
@@ -1532,7 +1662,8 @@ body.reordering .reorder-handle {
 #group-picker-backdrop,
 #faction-picker-backdrop,
 #tag-picker-backdrop,
-#convoke-picker-backdrop {
+#convoke-picker-backdrop,
+#scenario-cast-picker-backdrop {
   display: none;
   position: fixed;
   inset: 0;
@@ -1542,13 +1673,15 @@ body.reordering .reorder-handle {
 #group-picker-backdrop.open,
 #faction-picker-backdrop.open,
 #tag-picker-backdrop.open,
-#convoke-picker-backdrop.open {
+#convoke-picker-backdrop.open,
+#scenario-cast-picker-backdrop.open {
   display: block;
 }
 #group-picker-panel,
 #faction-picker-panel,
 #tag-picker-panel,
-#convoke-picker-panel {
+#convoke-picker-panel,
+#scenario-cast-picker-panel {
   position: fixed;
   width: 240px;
   max-height: 320px;
@@ -1570,7 +1703,8 @@ body.reordering .reorder-handle {
 #group-picker-panel.open,
 #faction-picker-panel.open,
 #tag-picker-panel.open,
-#convoke-picker-panel.open {
+#convoke-picker-panel.open,
+#scenario-cast-picker-panel.open {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;

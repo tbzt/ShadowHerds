@@ -170,6 +170,19 @@
   stroke-width: 3.4;
   filter: drop-shadow(0 0 6px var(--success, #2ecc71));
 }
+/* S2a — l'ÉTAPE COURANTE de la trame (runtime.currentSceneId) : anneau d'accent
+   qui PULSE, distinct de la sélection. Suit la bifurcation faite au cockpit. */
+.graph-node.current .graph-node-disc {
+  stroke-width: 3.6;
+  animation: graph-current-pulse 1.8s ease-in-out infinite;
+}
+@keyframes graph-current-pulse {
+  0%, 100% { filter: drop-shadow(0 0 3px var(--accent, #35e0e6)); }
+  50% { filter: drop-shadow(0 0 9px var(--accent, #35e0e6)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .graph-node.current .graph-node-disc { animation: none; filter: drop-shadow(0 0 7px var(--accent, #35e0e6)); }
+}
 .graph-node-glyph {
   font-size: 15px;
   pointer-events: none;
@@ -445,4 +458,127 @@
 }
 .graph-edge-delete:hover {
   background: color-mix(in srgb, var(--danger, #e0533d) 12%, transparent);
+}
+
+/* ============================================================
+   SCÉNARIO — lentille « schéma de scènes » (S1). Réutilise toutes les
+   classes .graph-* ; n'ajoute que le picker de trame, la barre des 6
+   types de scène et les entêtes d'inspecteur. Peau : le glyphe par type
+   (posé par la projection) + l'accent d'édition font la différence.
+   ============================================================ */
+.scenario-header {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.scenario-picker {
+  max-width: 240px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #2a3a49);
+  background: var(--surface-2, #16202b);
+  color: var(--text, #dce6f0);
+  font-size: 0.85rem;
+}
+.scenario-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border, #2a3a49);
+}
+.scenario-tb-label {
+  color: var(--text-dim, #9fb0c0);
+  font-size: 0.78rem;
+  margin-right: 2px;
+}
+.scenario-type-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #2a3a49);
+  background: var(--surface-2, #16202b);
+  color: var(--text, #dce6f0);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 120ms, background 120ms;
+}
+.scenario-type-btn:hover {
+  border-color: var(--accent, #35e0e6);
+  background: color-mix(in srgb, var(--accent, #35e0e6) 10%, var(--surface-2, #16202b));
+}
+.scenario-type-glyph {
+  color: var(--accent, #35e0e6);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+.scenario-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.scenario-insp-head {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim, #9fb0c0);
+}
+/* S2b — casting d'une étape : puces retirables + « ＋ Caster ». */
+.scenario-cast-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+.scenario-cast-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 4px 1px 8px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent, #35e0e6) 12%, transparent);
+  color: var(--text, #dce6f0);
+  font-size: 0.78rem;
+}
+.scenario-cast-x {
+  border: none;
+  background: none;
+  color: var(--text-dim, #9fb0c0);
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+  padding: 0 2px;
+}
+.scenario-cast-x:hover {
+  color: var(--danger, #e0533d);
+}
+.scenario-cast-add {
+  padding: 2px 8px;
+  border: 1px dashed var(--border, #2a3a49);
+  border-radius: 10px;
+  background: none;
+  color: var(--text-dim, #9fb0c0);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.scenario-cast-add:hover {
+  border-color: var(--accent, #35e0e6);
+  color: var(--text, #dce6f0);
+}
+/* S2c — offre « relier le casting » (co-castés → relations sur la carte des Liens). */
+.scenario-cast-link {
+  margin-top: 6px;
+  padding: 3px 9px;
+  border: 1px solid var(--border, #2a3a49);
+  border-radius: 4px;
+  background: none;
+  color: var(--text-dim, #9fb0c0);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.scenario-cast-link:hover {
+  border-color: var(--accent, #35e0e6);
+  color: var(--text, #dce6f0);
 }

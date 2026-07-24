@@ -377,6 +377,12 @@
           <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-combat"></use></svg></span><span class="nav-label">Combat</span>
           <span class="tb-crumb-live" aria-hidden="true" title="Scène en cours" hidden></span>
         </button>
+        <!-- PROVISOIRE (S1 trame scénaristique) : ouvreur minimal de l'atelier de
+             trames. La refonte UX « page Jouer » possédera l'emplacement définitif
+             (près du cockpit S2) et pourra déplacer/supprimer ce bouton sans risque. -->
+        <button class="nav-btn" data-action="open-trames" title="Atelier de trame : poser et relier vos scènes">
+          <span class="nav-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="5" cy="6" r="2.1"/><circle cx="18" cy="8.5" r="2.1"/><circle cx="9.5" cy="18" r="2.1"/><path d="M7 6.6l8.9 1.6M6.4 8l2.6 8"/></svg></span><span class="nav-label">Trames</span>
+        </button>
 
         <span class="nav-section-label">Système</span>
         <button class="nav-btn" data-panel="settings" data-tour="nav-settings" data-action="show-panel">
@@ -863,6 +869,7 @@
   <script type="module" src="js/core/storage.js"></script>
   <script type="module" src="js/core/relationsstore.js"></script>
   <script type="module" src="js/core/factionstore.js"></script>
+  <script type="module" src="js/core/scenariostore.js"></script>
   <script type="module" src="js/core/tags.js"></script>
   <script type="module" src="js/rules/actor.js"></script>
   <script type="module" src="js/rules/cardzones.js"></script>
@@ -910,6 +917,7 @@
   <script type="module" src="js/widgets/graph/graphprojections.js"></script>
   <script type="module" src="js/widgets/graph/graphengine.js"></script>
   <script type="module" src="js/widgets/graph/graphview.js"></script>
+  <script type="module" src="js/widgets/graph/scenariograph.js"></script>
   <script type="module" src="js/widgets/kit/ui.js"></script>
   <script type="module" src="js/widgets/kit/amplitudeselector.js"></script>
   <script type="module" src="js/widgets/play/summonpanel.js"></script>
@@ -926,6 +934,7 @@
   <script type="module" src="js/widgets/kit/factionpicker.js"></script>
   <script type="module" src="js/widgets/kit/tagpicker.js"></script>
   <script type="module" src="js/widgets/kit/convokepicker.js"></script>
+  <script type="module" src="js/widgets/kit/scenariocastpicker.js"></script>
   <script type="module" src="js/widgets/collection/collection.js"></script>
   <script type="module" src="js/widgets/collection/bulkbar.js"></script>
   <script type="module" src="js/widgets/collection/selectionmode.js"></script>
