@@ -588,6 +588,11 @@ export const TourSteps = {
       title: "Le cockpit de « Jouer » a de la gueule",
       body: "Le poste de commandement ressemble enfin à un vrai cockpit : un header teinté par l'accent de votre édition, le nom de l'état en grand (⚔ Combat · ⚡ Matrice · Préparation) avec une pastille qui rougeoie à chaud, des cellules d'horloge en gros chiffres (Round · Passe · En scène) et un bandeau de jalons. Le fil des étapes se colore par type de scène (accroche, repérage, action, sociale, décision, retombée), et les Horloges deviennent des jauges segmentées qui se remplissent case par case. Tout suit l'accent de l'édition — rien n'est codé en dur.",
     },
+    {
+      id: "wn-cockpit-onglets", anchor: "nav-play", tours: ["whatsnew"], since: "1.109.0", fallback: "center",
+      title: "Le cockpit de « Jouer » se navigue par onglets",
+      body: "Le bandeau Préparation · En jeu · Clôture devient cliquable : basculez d'un tap entre les parties du poste de commandement. Le Briefing (topos, casting, scènes), la scène En jeu (Combat ou Matrice, avec le roster, la trame et les Horloges/Fronts) et la Clôture (le bilan) s'affichent chacune en plein, avec la couleur d'état qui suit. La partie qui correspond à l'état réel du run reste l'onglet par défaut — le reste, vous pouvez le prévisualiser quand vous voulez.",
+    },
   ],
 };
 

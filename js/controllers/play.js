@@ -66,6 +66,16 @@ export const Play = {
           DossierBar.select(id);
           App.showPanel("shadows");
           break;
+        case "play-cockpit-tab":
+          // Onglets du cockpit (jalons) — bascule la partie affichée EN PLEIN.
+          // État d'UI transitoire, scopé au run (pas de donnée de jeu, pas de
+          // Storage) : re-rendu + scroll doux vers le poste.
+          this._cockpitTab = { run: id, tab: el.dataset.tab };
+          this.render();
+          document
+            .querySelector("#play-content .play-command")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" });
+          break;
         case "play-relations-graph":
           // VIS-15 B4 — le graphe scopé au run (convenedIds), même lentille que le Hub.
           GraphView.open({
@@ -519,51 +529,50 @@ export const Play = {
       this._toposGlanceHtml(run.id) +
       this._castHtml(run.id, { convokeCta: true }) +
       this._scenesHtml(run.id);
-    const avantZone = avant ? this._momentHtml("Avant", "la prépa", avant) : "";
-    const pendantZone = this._momentHtml("Pendant", "la scène", scene + this._matrixClockHtml());
-    const apresZone = this._momentHtml("Après", "la clôture", this._clotureHtml(run.id));
-    const moments = live
-      ? pendantZone + avantZone + apresZone
-      : avantZone + pendantZone + apresZone;
+    // ONGLETS — les jalons Préparation · En jeu · Clôture deviennent la
+    // NAVIGATION entre les 4 parties (Briefing / Combat|Matrice / Clôture),
+    // chacune affichée EN PLEIN. L'état LIVE est l'onglet par défaut ; le MJ peut
+    // prévisualiser les autres. `_cockpitTab` = état d'UI transitoire, scopé au
+    // run (pas de la donnée de jeu, pas de Storage). Le header + sa couleur
+    // d'état suivent l'onglet (prépa froid · combat accent · matrice vert ·
+    // clôture or) — toujours 0 branche d'édition (tout via `--state`).
+    const liveState = this._cockpitState(run); // cold|combat|matrix (réel)
+    const enjeuMotor = liveState === "matrix" ? "matrix" : "combat";
+    const defaultTab = liveState === "cold" ? "prep" : "enjeu";
+    const saved = this._cockpitTab && this._cockpitTab.run === run.id ? this._cockpitTab.tab : null;
+    const tab = ["prep", "enjeu", "close"].includes(saved) ? saved : defaultTab;
+    const headState = tab === "prep" ? "prep" : tab === "close" ? "close" : enjeuMotor;
 
-    // B1 — la peau Cockpit : une coquille dont la COULEUR D'ÉTAT informe avant la
-    // lecture (froid au repos · accent d'édition en combat · vert en Matrice). La
-    // classe d'état pilote un seul token `--state` en CSS (aucune couleur en dur,
-    // aucune branche d'édition) ; la barre d'état la met en mots.
-    const state = this._cockpitState(run);
-    // ÉTAGEMENT (arbitrage board) : à chaud (combat/matrice), le ROSTER est la
-    // star et passe en premier ; la trame se réduit à une barre glanceable + le
-    // moment clé, et Horloges/Fronts/Préparation/Clôture se rangent en tiroirs
-    // `<details>` (disclosure natif : affordance au repos, clavier, 0 JS de
-    // bascule). À froid (Briefing), la trame MÈNE (structure honnête, pas de
-    // fausse ligne — le fil est le chemin PARCOURU, pas le plan qui est un graphe).
-    const hot = live && (state === "combat" || state === "matrix");
+    const trame = typeof ScenarioStore !== "undefined" ? ScenarioStore.byRun(run.id) : null;
     let body;
-    if (hot) {
-      const trame = typeof ScenarioStore !== "undefined" ? ScenarioStore.byRun(run.id) : null;
+    if (tab === "prep") {
+      // Briefing : la trame (froide, structure honnête) mène, puis topos + casting + scènes.
+      body =
+        this._trameHtml(run) +
+        (avant || `<div class="play-scene is-idle"><span class="play-stash-note">Rien de préparé — générez un topos, convoquez un casting.</span></div>`);
+    } else if (tab === "close") {
+      // Clôture : le bilan en plein.
+      body = this._clotureHtml(run.id);
+    } else {
+      // En jeu : le roster (la star) d'abord + la barre de trame + Horloges/Fronts.
       const drawers = [];
       if (trame && (trame.clocks || []).length)
         drawers.push(this._drawerHtml("Horloges", this._pressionSummary(trame), this._pressionHtml(trame, { bare: true }), true));
       if (trame && (trame.fronts || []).length) {
-        // Lot C — coachmark « C'est quoi un Front ? » PROACTIF une fois : la 1re
-        // rencontre d'un Front en combat OUVRE le tiroir et enseigne le mot ;
-        // « Compris » pose le drapeau (Storage) et il ne revient plus.
+        // Lot C — coachmark « C'est quoi un Front ? » PROACTIF une fois.
         const teach = !this._frontCoachSeen();
         const frontsBody = (teach ? this._frontCoachHtml() : "") + this._frontsHtml(trame, { bare: true });
         drawers.push(this._drawerHtml("Fronts", this._frontsSummary(trame), frontsBody, teach));
       }
-      if (avant) drawers.push(this._drawerHtml("Préparation", "topos · casting · scènes", avant, false));
-      drawers.push(this._drawerHtml("Clôture", "débrief — paie, karma, réputation", this._clotureHtml(run.id), false));
       body =
-        this._trameBarHtml(run, trame) +
+        (trame ? this._trameBarHtml(run, trame) : "") +
         `<div class="play-hot-scene">${scene}${this._matrixClockHtml()}</div>` +
-        `<div class="play-drawers">${drawers.join("")}</div>`;
-    } else {
-      body = this._trameHtml(run) + moments;
+        (drawers.length ? `<div class="play-drawers">${drawers.join("")}</div>` : "");
     }
 
-    return `<div class="play-command is-${state}">
-      ${this._cockpitHeadHtml(run, state, resumeBtn)}
+    return `<div class="play-command is-${headState}">
+      ${this._cockpitHeadHtml(run, headState, resumeBtn)}
+      ${this._cockpitJalonsHtml(run, tab)}
       ${body}
     </div>`;
   },
@@ -966,11 +975,11 @@ export const Play = {
       Lecture seule, projeté d'`Encounter`/`Dossiers` — 0 branche d'édition. */
   _cockpitHeadHtml(run, state, resumeBtn) {
     const esc = CardRenderer._esc;
-    const glyph = { combat: "⚔", matrix: "⚡" }[state] || "◈";
-    const name = { combat: "Combat", matrix: "Matrice" }[state] || "Préparation";
+    const glyph = { combat: "⚔", matrix: "⚡", close: "✓" }[state] || "◈";
+    const name = { combat: "Combat", matrix: "Matrice", close: "Clôture" }[state] || "Préparation";
     const parent = run.parentId && typeof Dossiers !== "undefined" ? Dossiers.get(run.parentId) : null;
     const camp = parent && parent.kind === "campaign" ? `❖ ${esc(parent.name)}` : "◆ hors campagne";
-    const cells = this._cockpitCells(state);
+    const cells = this._cockpitCells(run, state);
     return `<div class="play-cockpit-head">
       <div class="pch-line">
         <span class="pch-state"><span class="pch-dot" aria-hidden="true"></span><span class="pch-glyph" aria-hidden="true">${glyph}</span>${name}</span>
@@ -980,12 +989,19 @@ export const Play = {
         </span>
       </div>
       ${cells ? `<div class="pch-cells">${cells}</div>` : ""}
-    </div>${this._cockpitJalonsHtml(state)}`;
+    </div>`;
   },
-  /** Cellules d'horloge de tête (gros chiffres), projetées du moteur de scène. */
-  _cockpitCells(state) {
+  /** Cellules d'horloge de tête (gros chiffres), par partie active. */
+  _cockpitCells(run, state) {
     const cell = (n, l) => `<div class="pch-cell"><span class="n">${n}</span><span class="l">${l}</span></div>`;
     const st = Encounter.state;
+    if (state === "prep") {
+      const trame = typeof ScenarioStore !== "undefined" ? ScenarioStore.byRun(run.id) : null;
+      const etapes = trame ? (trame.sceneNodes || []).length : 0;
+      const cast = typeof DossierBar !== "undefined" ? DossierBar.convenedIds(run.id).length : 0;
+      const scenes = typeof Dossiers !== "undefined" ? Dossiers.scenesOf(run.id).length : 0;
+      return (etapes ? cell(etapes, "Étapes") : "") + cell(cast, "Casting") + cell(scenes, "Scènes");
+    }
     if (state === "combat") {
       return cell(st ? st.round : 1, "Round") + cell(st && st.pass ? st.pass : 1, "Passe") + cell(st ? st.combatants.length : 0, "En scène");
     }
@@ -997,11 +1013,12 @@ export const Play = {
     }
     return "";
   },
-  /** Bandeau de jalons Préparation · En jeu · Clôture ; « En jeu » allumé à chaud. */
-  _cockpitJalonsHtml(state) {
-    const now = state === "combat" || state === "matrix" ? 1 : 0;
-    return `<div class="play-cockpit-jalons">${["Préparation", "En jeu", "Clôture"]
-      .map((n, i) => `<span class="${i < now ? "is-done" : i === now ? "is-now" : ""}">${n}</span>`)
+  /** Les jalons = ONGLETS cliquables (Préparation · En jeu · Clôture) : taper
+      bascule la partie affichée EN PLEIN (`play-cockpit-tab`) ; l'onglet actif
+      est surligné. « En jeu » montre le moteur live (Combat ou Matrice). */
+  _cockpitJalonsHtml(run, tab) {
+    return `<div class="play-cockpit-jalons" role="tablist">${[["prep", "Préparation"], ["enjeu", "En jeu"], ["close", "Clôture"]]
+      .map(([id, label]) => `<button class="play-jalon${id === tab ? " is-now" : ""}" role="tab" aria-selected="${id === tab}" data-action="play-cockpit-tab" data-dossier="${run.id}" data-tab="${id}">${label}</button>`)
       .join("")}</div>`;
   },
 

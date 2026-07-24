@@ -12,6 +12,19 @@ commit.
 
 ## [Non publié]
 
+## [1.109.0] — 2026-07-24
+
+### Modifié
+
+- **Le cockpit de « Jouer » se navigue par onglets.** Le bandeau de jalons
+  (Préparation · En jeu · Clôture) devient **cliquable** : on bascule d'un tap
+  entre les parties du poste de commandement — le **Briefing** (topos, casting,
+  scènes), la scène **En jeu** (Combat ou Matrice, avec le roster, la trame et
+  les Horloges/Fronts) et la **Clôture** (le bilan) — chacune affichée en plein,
+  avec la couleur d'état qui suit (froid · accent · vert · or). La partie qui
+  correspond à l'état réel du run reste l'onglet par défaut ; le meneur peut
+  prévisualiser les autres à tout moment.
+
 ## [1.108.0] — 2026-07-24
 
 ### Modifié
