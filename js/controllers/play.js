@@ -48,6 +48,18 @@ export const Play = {
           // n'est fabriquée — juste la maille où ranger la prep.
           this._createFirstRun();
           break;
+        case "play-enter":
+          // Le Pont (maquette « Cockpit vivant ») — taper un run dans l'index
+          // l'ENTRE ici : il devient le run courant (App.context via
+          // DossierBar.select, SANS changer de panneau), donc `render()` le sort
+          // en tête en poste de commandement (son Briefing). « On tape, on est au
+          // briefing » — plus d'éjection vers Ombres portées.
+          DossierBar.select(id);
+          this.render();
+          document
+            .querySelector("#play-content .play-command")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" });
+          break;
         case "play-focus":
           DossierBar.select(id);
           App.showPanel("shadows");
@@ -307,7 +319,7 @@ export const Play = {
 
     return `<div class="play-run${live ? " is-live" : stashed ? " is-stashed" : ""}">
       <div class="play-run-head">
-        <button class="play-run-name" data-action="play-focus" data-dossier="${run.id}" title="Ouvrir « ${CardRenderer._esc(run.name)} » dans la bibliothèque">
+        <button class="play-run-name" data-action="play-enter" data-dossier="${run.id}" title="Ouvrir « ${CardRenderer._esc(run.name)} » ici — poste de commandement">
           <span class="play-run-icon" aria-hidden="true">◆</span>${CardRenderer._esc(run.name)}
         </button>
         ${liveBadge}
