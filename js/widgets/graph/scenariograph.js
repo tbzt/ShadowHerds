@@ -181,6 +181,8 @@ export const ScenarioGraph = {
       glyph: glyphOf.get(n.type) || "●",
       shape: this._SHAPE_OF[n.type] || "circle", // P1 — forme par catégorie (BPMN-like)
       label: n.title || "(sans titre)",
+      sub: (n.body || "").trim(), // en un clin d'œil : extrait de la description MJ
+      chips: this._castLabel(n),
       pcColor: this._ARROW_TINT[n.arrow] || null, // S6 — teinte par flèche dramatique
       x: n.x, y: n.y,
     }));
@@ -874,6 +876,20 @@ export const ScenarioGraph = {
       </div>
       <button type="button" class="graph-edge-delete" data-scenario-node="delete">Supprimer cette étape</button>
     </div>`;
+  },
+
+  /** Casting d'une étape en une ligne (« en un clin d'œil » sur le nœud du
+      graphe) — mêmes noms résolus par référence que `_castChipsHtml`, plus
+      courts (pas de suppression ici, juste de la lecture). */
+  _castLabel(n) {
+    const ids = n.castIds || [];
+    if (!ids.length) return "";
+    const names = ids
+      .map((cid) => (typeof PnjLookup !== "undefined" ? PnjLookup.locate(cid) : null))
+      .filter(Boolean)
+      .map((loc) => loc.name);
+    if (!names.length) return "";
+    return names.length > 3 ? `${names.slice(0, 3).join(" · ")} +${names.length - 3}` : names.join(" · ");
   },
 
   /** Puces du cast d'une étape (par RÉFÉRENCE : nom résolu via PnjLookup), chacune

@@ -717,6 +717,7 @@ export const Play = {
         <span class="play-trame-cur-title">${esc(cur.title || "(sans titre)")}</span>
         ${suite}
       </div>
+      ${cur.body ? `<p class="play-trame-cur-body">${esc(cur.body)}</p>` : ""}
       ${bang}
     </div>`;
   },

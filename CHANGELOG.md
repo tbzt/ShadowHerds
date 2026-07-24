@@ -12,6 +12,17 @@ commit.
 
 ## [Non publié]
 
+## [1.112.0] — 2026-07-24
+
+### Ajouté
+
+- **Le graphe de trame montre la description et le casting, sans cliquer.**
+  Chaque étape affiche désormais, sous son titre, un aperçu de sa
+  description MJ et les personnages castés — la forme BPMN (v1.110.0) reste
+  inchangée, ces deux lignes viennent juste compléter le coup d'œil. Sur
+  petit écran (mobile), l'affichage se replie au titre seul pour rester
+  lisible.
+
 ## [1.111.0] — 2026-07-24
 
 ### Ajouté

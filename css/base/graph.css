@@ -208,6 +208,14 @@
   pointer-events: none;
   user-select: none;
 }
+.graph-node-sub,
+.graph-node-chips {
+  font-size: 9px;
+  fill: var(--text-faint, var(--text-dim, #9fb0c0));
+  letter-spacing: 0.2px;
+  pointer-events: none;
+  user-select: none;
+}
 
 .graph-empty {
   padding: 48px 24px;

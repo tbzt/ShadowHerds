@@ -95,6 +95,9 @@ export const GraphEngine = {
     this.destroy();
     const W = Math.max(320, container.clientWidth || 640);
     const H = Math.max(240, container.clientHeight || 460);
+    // Sous-titre/casting repliés sous petite largeur (mobile) : pas assez de
+    // place pour lire ces lignes sans zoomer, le titre seul reste lisible.
+    const showExtra = W >= 480;
 
     // Positions initiales : couronne + jitter (déterminisme non requis ici,
     // le layout converge ; MapGen/TopologyGen sont les leaves déterministes).
@@ -207,6 +210,28 @@ export const GraphEngine = {
       for (const d of discs) g.appendChild(d);
       g.appendChild(glyph);
       g.appendChild(label);
+
+      // Sous-titre + casting « en un clin d'œil » (optionnels, fournis par la
+      // projection via n.sub/n.chips — le graphe d'entités ne les fournit jamais,
+      // donc 0 impact ailleurs). Repliés sous petite largeur : trop de texte,
+      // pas assez de place pour zoomer confortablement (mobile).
+      if (showExtra && n.sub) {
+        const sub = document.createElementNS(NS, "text");
+        sub.setAttribute("class", "graph-node-sub");
+        sub.setAttribute("text-anchor", "middle");
+        sub.setAttribute("dy", "3.6em");
+        sub.textContent = n.sub.length > 28 ? n.sub.slice(0, 27) + "…" : n.sub;
+        g.appendChild(sub);
+      }
+      if (showExtra && n.chips) {
+        const chips = document.createElementNS(NS, "text");
+        chips.setAttribute("class", "graph-node-chips");
+        chips.setAttribute("text-anchor", "middle");
+        chips.setAttribute("dy", "4.8em");
+        chips.textContent = n.chips.length > 24 ? n.chips.slice(0, 23) + "…" : n.chips;
+        g.appendChild(chips);
+      }
+
       n._g = g;
       gNodes.appendChild(g);
     }
