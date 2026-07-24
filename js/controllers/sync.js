@@ -253,6 +253,41 @@ export const Sync = {
     }
   },
 
+  /** Répercute en ligne une suppression volontaire (Atomiser/Remise à zéro).
+      À la différence de _doPush, ne propose JAMAIS de fusion en cas de
+      conflit : fusionner ferait revivre les données qu'on vient de détruire.
+      Relit la révision distante avant de pousser (celle mémorisée peut être
+      périmée depuis la suppression, qui n'écrit pas via Storage.set et ne
+      déclenche donc aucun schedulePush) pour ne pas déclencher un faux
+      conflit sur une révision obsolète. */
+  async pushWipe() {
+    const prov = this.provider();
+    const c = this.cfg();
+    if (!prov || !prov.isConfigured(c)) return;
+    this._setState("pushing");
+    try {
+      const pull = await prov.pull(c);
+      const expected = pull && !pull.empty ? pull.revision : null;
+      const pkg = Backup.build();
+      const { revision, cfgPatch } = await prov.push(c, pkg, expected);
+      this._saveCfg({
+        lastRevision: revision,
+        lastHash: this._hash(pkg),
+        lastAt: new Date().toISOString(),
+        ...(cfgPatch || {}),
+      });
+      this._setState("idle");
+      this._refreshSettings();
+    } catch (e) {
+      this._setState("error");
+      this._refreshSettings();
+      toast(
+        "Supprimé sur cet appareil, mais pas répercuté en ligne : " + (e.message || "erreur réseau"),
+        "warning",
+      );
+    }
+  },
+
   /* ---------- Application d'un paquet distant ---------- */
   async _applyRemote(pkg) {
     this._applying = true;

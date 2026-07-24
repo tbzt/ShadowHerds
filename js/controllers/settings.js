@@ -3,6 +3,7 @@
 /* ============================================================
    SETTINGS — paramètres par édition, stockés via Storage
    ============================================================ */
+import { Backup } from "./backup.js";
 import { ContactsBook } from "./contactsbook.js";
 import { Dialog } from "../widgets/kit/dialog.js";
 import { DicePanel } from "../widgets/dice/dicepanel.js";
@@ -376,7 +377,14 @@ export const Settings = {
       </div>`;
   },
   _catBackup() {
-    return this._syncSectionHTML();
+    return (
+      this._syncSectionHTML() +
+      `<div class="settings-section is-danger">
+        <h3>Remise à zéro globale</h3>
+        <p>Efface TOUTES les données (PJ, PNJ, contacts, serveurs, trames…) de TOUTES les éditions — retour à une sauvegarde vierge. Action irréversible.</p>
+        <button class="danger-btn" data-action="atomize-all">⚠ Tout atomiser</button>
+      </div>`
+    );
   },
   _catEdition() {
     const edHTML = App.editionModule?.settingsHTML?.(this);
@@ -386,7 +394,7 @@ export const Settings = {
         : `<div class="settings-section"><p class="settings-note">Aucun réglage spécifique à cette édition — la table suit le livre.</p></div>`) +
       `<div class="settings-section is-danger">
         <h3>Remise à zéro</h3>
-        <p>Efface tous les PNJ sauvegardés et paramètres pour cette édition. Action irréversible.</p>
+        <p>Efface toutes les données de cette édition — PJ, PNJ, contacts, serveurs, trames, dossiers — et les paramètres associés. Action irréversible.</p>
         <button class="danger-btn" data-action="atomize">⚠ Atomiser</button>
       </div>`
     );
@@ -506,6 +514,7 @@ export const Settings = {
       const el = e.target.closest("[data-action]");
       if (!el) return;
       if (el.dataset.action === "atomize") this.atomize();
+      else if (el.dataset.action === "atomize-all") this.atomizeAll();
       else if (el.dataset.action === "reset-coach-tips") this.resetCoachTips();
       else if (el.dataset.action === "sync-now") this.syncNow();
       else if (el.dataset.action === "open-spectator") this.openSpectator();
@@ -533,17 +542,36 @@ export const Settings = {
   async atomize() {
     const ok = await Dialog.confirm({
       title: "Atomiser cette édition",
-      message: `Supprimer toutes les données Shadowrun ${App.edition.toUpperCase()} ? Cette action est irréversible.`,
+      message: `Supprimer TOUTES les données Shadowrun ${App.edition.toUpperCase()} — PJ, PNJ, contacts, serveurs, trames, dossiers ? Cette action est irréversible.`,
       confirmLabel: "Atomiser",
       danger: true,
     });
     if (!ok) return;
     Storage.clearEdition();
-    Shadows.data = { all: [] };
-    Gen.pool = [];
     document.getElementById("gen-zone-single").innerHTML = "";
-    Shadows.render();
+    Backup._reloadActive();
     toast("Atomisé. Table rase.");
+    Sync.pushWipe();
+  },
+
+  /** Remise à zéro globale (toutes éditions) : même geste qu'atomize() mais
+      sur Storage.clearAll(). Les éditions non actives se rechargeront à vide
+      d'elles-mêmes au prochain selectEdition() (leur load() relit un
+      localStorage désormais sans clés sr_pnj_v2_*) ; seule l'édition
+      courante a besoin d'un rechargement immédiat en mémoire. */
+  async atomizeAll() {
+    const ok = await Dialog.confirm({
+      title: "Remise à zéro globale",
+      message: "Supprimer TOUTES les données de TOUTES les éditions (SR5, SR6, Anarchy 1re, Anarchy 2e) ? Cette action est irréversible.",
+      confirmLabel: "Tout atomiser",
+      danger: true,
+    });
+    if (!ok) return;
+    Storage.clearAll();
+    document.getElementById("gen-zone-single").innerHTML = "";
+    Backup._reloadActive();
+    toast("Remise à zéro globale effectuée.");
+    Sync.pushWipe();
   },
 };
 

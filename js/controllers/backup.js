@@ -366,6 +366,20 @@ export const Backup = {
     }
     // Registre d'arêtes (liens contact…) : recharger la vérité fusionnée.
     if (typeof RelationsStore !== "undefined" && RelationsStore.load) RelationsStore.load();
+    // Rosters transverses (factions) : oubliés jusqu'ici — laissaient les
+    // poches de faction d'une édition importée/atomisée affichées en RAM.
+    if (typeof FactionStore !== "undefined" && FactionStore.load) FactionStore.load();
+    // Trames scénaristiques (graphe de scènes) : même oubli.
+    if (typeof ScenarioStore !== "undefined" && ScenarioStore.load) ScenarioStore.load();
+    // Scène vivante (round/init/combattants) : sinon un combat en cours
+    // survit en mémoire à une remise à zéro de l'édition.
+    if (typeof Encounter !== "undefined" && Encounter.load) {
+      Encounter.load();
+      if (Encounter.render) Encounter.render();
+    }
+    // Pool de génération, éphémère (pas dans Backup.KEYS) mais doit suivre :
+    // une remise à zéro ne doit pas laisser des PNJ générés en attente.
+    if (typeof Gen !== "undefined") Gen.pool = [];
     // Dossiers (arbre de dossiers) : recharger la structure + rafraîchir la barre.
     if (typeof Dossiers !== "undefined" && Dossiers.load) Dossiers.load();
     if (typeof DossierBar !== "undefined" && DossierBar.refresh) DossierBar.refresh();
