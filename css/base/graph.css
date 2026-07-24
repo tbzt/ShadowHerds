@@ -242,6 +242,10 @@
   border-radius: 3px;
   background: var(--tint, var(--accent));
 }
+/* Pastille (accroche/retombée) : bord incurvé → barre d'accent et texte
+   rentrés vers le milieu pour ne pas déborder de l'ovale. */
+.graph-scene-card.gsc-pill { padding-left: 25px; }
+.graph-scene-card.gsc-pill::before { left: 17px; }
 .gsc-head { display: flex; align-items: center; gap: 5px; }
 .gsc-glyph { font-size: 15px; line-height: 1; color: var(--tint, var(--accent)); }
 .gsc-type {

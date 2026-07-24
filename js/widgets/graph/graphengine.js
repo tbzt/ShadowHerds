@@ -389,7 +389,10 @@ export const GraphEngine = {
     fo.setAttribute("width", CARD_W); fo.setAttribute("height", CARD_H);
     fo.setAttribute("class", "graph-node-fo");
     const card = document.createElementNS(XHTML, "div");
-    card.setAttribute("class", "graph-scene-card");
+    // Pastille (accroche/retombée) : le bord s'incurve → la barre d'accent et le
+    // texte sont décalés vers le milieu pour rester DANS l'ovale (`gsc-pill`).
+    const pill = n.shape === "circle" || n.shape === "circle-double";
+    card.setAttribute("class", pill ? "graph-scene-card gsc-pill" : "graph-scene-card");
     card.setAttribute("aria-hidden", "true");
     if (c.tintVar) card.setAttribute("style", `--tint:var(${c.tintVar})`);
     const chips = (c.chips || [])
