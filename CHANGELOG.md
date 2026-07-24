@@ -12,6 +12,29 @@ commit.
 
 ## [Non publié]
 
+## [1.104.0] — 2026-07-24
+
+### Modifié
+
+- **La page Trames devient un écran plein, plus lisible, mieux rangée.**
+  L'atelier de trame, jusque-là une fenêtre flottante plafonnée, est promu en
+  **panneau plein écran** : il profite enfin de l'espace des grands moniteurs et
+  se lit comme le reste du site. Son **en-tête** passe d'une rangée de onze
+  boutons à **trois zones** — l'identité de la trame + un menu replié
+  (Nouvelle · Depuis un modèle · Renommer · Enregistrer comme modèle ·
+  Supprimer), les **lentilles regroupées** en segmented control (Relier ·
+  Indices · Horloges · Chronologie), et la Robustesse poussée à droite.
+- **Topos et Trames se rangent ensemble sous « Préparer un run ».** La
+  navigation montre désormais les **deux rampes vers un run** — l'amorce rapide
+  (Topos) et la structure d'avance (Trames) — dans un même groupe distinct de
+  « Jouer », avec un **passage direct** de l'une à l'autre. Trames apparaît aussi
+  dans la navigation mobile, où elle manquait.
+- **Un vocabulaire qui parle sans jargon.** Dans l'atelier comme au cockpit, la
+  *Pression* devient des **Horloges**, le *bang* un **Moment clé**, les
+  *présages* des **étapes « si on ne fait rien… »**, l'*échéance* une
+  **Catastrophe ⚠**, les *sorties de secours* des **issues de secours** — pour
+  qu'un meneur sans la théorie narrative comprenne chaque mot d'un coup d'œil.
+
 ## [1.103.0] — 2026-07-24
 
 ### Ajouté

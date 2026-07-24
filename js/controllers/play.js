@@ -604,7 +604,7 @@ export const Play = {
             return `<button class="${cls}" data-action="play-trame-goto" data-scenario="${sc.id}" data-node="${e.to}" title="${e.label ? esc(e.label) : "Aller à cette étape"}">→ ${esc(lbl)}${hint}</button>`;
           })
           .join("")
-      : `<span class="play-trame-note">Fin de la trame (aucune sortie).</span>`;
+      : `<span class="play-trame-note">Fin de la trame (aucune suite).</span>`;
     const castChips = (cur.castIds || [])
       .map((cid) => {
         const loc = typeof PnjLookup !== "undefined" ? PnjLookup.locate(cid) : null;
@@ -643,15 +643,15 @@ export const Play = {
       const dangers = (f.dangers || []).map((d) => {
         const total = (d.grimPortents || []).length;
         const rev = ScenarioStore.frontPortent(sc, d.id);
-        const portents = (d.grimPortents || []).map((p, i) => `<li class="play-portent${i < rev ? " revealed" : ""}">${i < rev ? esc(p) : "présage à venir"}</li>`).join("");
+        const portents = (d.grimPortents || []).map((p, i) => `<li class="play-portent${i < rev ? " revealed" : ""}">${i < rev ? esc(p) : "étape à venir"}</li>`).join("");
         const doom = total && rev >= total && d.impendingDoom ? `<div class="play-portent-doom">⚠ ${esc(d.impendingDoom)}</div>` : "";
         return `<div class="play-danger">
           <div class="play-danger-head">
             <span class="play-danger-impulse">${esc(d.impulse || "(danger)")}</span>
             <span class="play-portent-count">${rev}/${total}</span>
             <span class="play-clock-btns">
-              <button class="play-clock-btn" data-action="play-trame-portent" data-scenario="${sc.id}" data-danger="${d.id}" data-delta="-1"${rev <= 0 ? " disabled" : ""} aria-label="Reculer les présages">−</button>
-              <button class="play-clock-btn" data-action="play-trame-portent" data-scenario="${sc.id}" data-danger="${d.id}" data-delta="1"${rev >= total || !total ? " disabled" : ""} aria-label="Avancer d'un présage">＋</button>
+              <button class="play-clock-btn" data-action="play-trame-portent" data-scenario="${sc.id}" data-danger="${d.id}" data-delta="-1"${rev <= 0 ? " disabled" : ""} aria-label="Reculer d'une étape">−</button>
+              <button class="play-clock-btn" data-action="play-trame-portent" data-scenario="${sc.id}" data-danger="${d.id}" data-delta="1"${rev >= total || !total ? " disabled" : ""} aria-label="Avancer d'une étape">＋</button>
             </span>
           </div>
           <ol class="play-portents">${portents}</ol>
@@ -687,7 +687,7 @@ export const Play = {
         </div>`;
       })
       .join("");
-    return `<div class="play-trame-pression"><span class="play-trame-word">Pression</span>${rows}</div>`;
+    return `<div class="play-trame-pression"><span class="play-trame-word">Horloges</span>${rows}</div>`;
   },
 
   /** Abonnement live à ScenarioStore : quand Jouer est visible et qu'une trame

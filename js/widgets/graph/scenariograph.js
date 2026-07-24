@@ -39,6 +39,7 @@ export const ScenarioGraph = {
   _warnings: [], // S4b — alertes de robustesse (recalculées à chaque projection)
   _pressureOpen: false, // S5a — panneau d'horloges (Pression) ouvert dans l'inspecteur
   _timelineOpen: false, // S5c — lentille Chronologie (double timeline) ouverte
+  _pendingId: null, // trame demandée par open() avant l'affichage du panneau
   _unsub: null,
   _muted: false, // vrai pendant une écriture interne (l'abonnement l'ignore)
 
@@ -71,7 +72,7 @@ export const ScenarioGraph = {
   _ARROWS: [
     { key: "hope", glyph: "↑", label: "Espoir" },
     { key: "", glyph: "—", label: "Neutre" },
-    { key: "fear", glyph: "↓", label: "Peur" },
+    { key: "fear", glyph: "↓", label: "Danger" },
   ],
   _CLOCK_TYPES: [
     { key: "menace", label: "Menace" },
@@ -79,31 +80,45 @@ export const ScenarioGraph = {
     { key: "objectif", label: "Objectif" },
   ],
   _CLOCK_ACTIONS: [
-    { key: "closeEdge", label: "Ferme une sortie" },
-    { key: "openEdge", label: "Rouvre une sortie" },
+    { key: "closeEdge", label: "Ferme une voie" },
+    { key: "openEdge", label: "Rouvre une voie" },
     { key: "activateNode", label: "Active une étape" },
   ],
 
-  /* ---- Ouverture / fermeture ---- */
-  /** `scenarioId` optionnel : ouvrir directement sur cette trame (depuis le
-      cockpit « Trame » de Jouer, S2). Sinon, la dernière ouverte / la dernière
-      de la liste / aucune. */
+  /* ---- Navigation / montage ---- */
+  /** API publique : naviguer vers le panneau Trames, éventuellement sur une
+      trame précise (depuis le cockpit « Trame » de Jouer). Le montage réel est
+      `initPanel`, déclenché par App.showPanel — Trames est un PANNEAU comme les
+      autres, plus une modale flottante. */
   open(scenarioId) {
-    const overlay = this._ensure();
-    if (scenarioId && ScenarioStore.get(scenarioId)) {
-      this._scenarioId = scenarioId;
+    this._pendingId = scenarioId && ScenarioStore.get(scenarioId) ? scenarioId : null;
+    if (typeof App !== "undefined" && App.showPanel) App.showPanel("trames");
+    else this.initPanel();
+  },
+
+  /** Montage du panneau (appelé par App.showPanel). Idempotent : construit la
+      coquille au premier affichage, se (ré)abonne, projette la trame courante
+      (celle demandée par open(), sinon la dernière ouverte / la dernière de la
+      liste / aucune). */
+  initPanel() {
+    if (!this._ensure()) return;
+    const desired = this._pendingId;
+    this._pendingId = null;
+    if (desired && ScenarioStore.get(desired)) {
+      this._scenarioId = desired;
     } else if (!this._scenarioId || !ScenarioStore.get(this._scenarioId)) {
       const list = ScenarioStore.all();
       this._scenarioId = list.length ? list[list.length - 1].id : null;
     }
     if (!this._unsub) this._unsub = ScenarioStore.subscribe((evt) => this._onStoreEvent(evt));
-    overlay.classList.add("open");
     this._renderLibrary();
     this._project();
   },
 
+  /** Quitter le panneau (App.showPanel vers un autre) n'appelle pas de hook :
+      le moteur reste monté (caché) et l'abonnement gate sur `.active`. Conservé
+      pour l'API — libère proprement si un jour on veut démonter. */
   hide() {
-    if (this._el) this._el.classList.remove("open");
     GraphEngine.destroy();
     if (this._unsub) { this._unsub(); this._unsub = null; }
   },
@@ -119,6 +134,7 @@ export const ScenarioGraph = {
       ouverte (cockpit S2, plus tard) → re-projeter (positions auteur = stable). */
   _onStoreEvent(evt) {
     if (this._muted) return;
+    if (!this._el || !this._el.classList.contains("active")) return; // panneau caché : rien à refléter
     if (!evt || evt.scenarioId !== this._scenarioId) return;
     this._renderLibrary();
     this._project();
@@ -129,7 +145,7 @@ export const ScenarioGraph = {
      ============================================================ */
   _project() {
     const overlay = this._el;
-    if (!overlay || !overlay.classList.contains("open")) return;
+    if (!overlay || !overlay.classList.contains("active")) return;
     const split = overlay.querySelector(".graph-split");
     const host = overlay.querySelector('[data-scenario="canvas"]');
     const empty = overlay.querySelector('[data-scenario="empty"]');
@@ -138,9 +154,11 @@ export const ScenarioGraph = {
     if (!sc) {
       split.hidden = true;
       empty.hidden = false;
-      empty.textContent = ScenarioStore.all().length
+      // Lien croisé « deux rampes » : depuis l'atelier vide, on peut basculer sur
+      // Topos (l'amorce rapide). `data-action` = délégation globale de l'app.
+      empty.innerHTML = ScenarioStore.all().length
         ? "Choisissez une trame ci-dessus."
-        : "Aucune trame. Créez-en une (＋ Nouvelle trame) pour poser vos étapes.";
+        : `Aucune trame. Créez-en une (＋ Nouvelle trame) pour poser vos étapes.<br>Vous préférez jouer vite ? <button class="linklike" data-action="show-panel" data-panel="run">Partir d'un topos</button>.`;
       GraphEngine.destroy();
       return;
     }
@@ -252,7 +270,7 @@ export const ScenarioGraph = {
       ? this._warnings
           .map((w) => `<li class="scenario-robust-item ${w.level}"${w.targetId ? ` data-scenario-robust="${esc(w.targetId)}"` : ""}>${esc(w.message)}</li>`)
           .join("")
-      : `<li class="scenario-robust-item ok">Aucune alerte : l'enquête tient (3 indices, sorties de secours, atteignabilité).</li>`;
+      : `<li class="scenario-robust-item ok">Aucune alerte : l'enquête tient (3 indices, issues de secours, atteignabilité).</li>`;
     panel.innerHTML = `<div class="scenario-inspector">
       <div class="scenario-insp-head">Robustesse de l'enquête</div>
       <ul class="scenario-robust-list">${items}</ul>
@@ -342,7 +360,7 @@ export const ScenarioGraph = {
       const rev = (f.dangers || []).reduce((n, d) => n + ScenarioStore.frontPortent(sc, d.id), 0);
       return `<div class="scenario-tl-future-row"><span class="scenario-front-glyph">⚑</span><span>${esc(f.title || "(front)")}</span><span class="scenario-tl-count">${rev}/${tot}</span></div>`;
     }).join("");
-    const futureHtml = clocks || fronts ? clocks + fronts : `<p class="graph-hint">Aucune horloge ni front (⏱ Pression).</p>`;
+    const futureHtml = clocks || fronts ? clocks + fronts : `<p class="graph-hint">Aucune horloge ni front (⏱ Horloges).</p>`;
 
     panel.innerHTML = `<div class="scenario-inspector">
       <div class="scenario-insp-head">Chronologie</div>
@@ -360,10 +378,10 @@ export const ScenarioGraph = {
     panel.classList.remove("empty");
     const clocks = sc.clocks || [];
     const fronts = sc.fronts || [];
-    const clockRows = clocks.length ? clocks.map((c) => this._clockRowHtml(c, sc)).join("") : `<p class="graph-hint">Une horloge fait monter la pression : à un seuil, elle ferme une sortie ou active une étape.</p>`;
-    const frontRows = fronts.length ? fronts.map((f) => this._frontRowHtml(f)).join("") : `<p class="graph-hint">Un front porte une faction et des présages ordonnés qui escaladent (Dungeon World).</p>`;
+    const clockRows = clocks.length ? clocks.map((c) => this._clockRowHtml(c, sc)).join("") : `<p class="graph-hint">Une horloge se remplit : à un seuil, elle ferme une voie ou active une étape.</p>`;
+    const frontRows = fronts.length ? fronts.map((f) => this._frontRowHtml(f)).join("") : `<p class="graph-hint">Un front porte une faction et des étapes « si on ne fait rien… » qui escaladent.</p>`;
     panel.innerHTML = `<div class="scenario-inspector">
-      <div class="scenario-insp-head">Pression</div>
+      <div class="scenario-insp-head">Horloges & Fronts</div>
       <div class="scenario-subhead">⏱ Horloges</div>
       ${clockRows}
       <button type="button" class="scenario-cast-add" data-scenario-clock="add">＋ Horloge</button>
@@ -402,8 +420,8 @@ export const ScenarioGraph = {
     const esc = Utils.escHtml;
     const portents = (d.grimPortents || []).map((p, i) => `<div class="scenario-portent">
       <span class="scenario-portent-n">${i + 1}.</span>
-      <input type="text" data-scenario-front="portent" data-fr="${f.id}" data-dg="${d.id}" data-idx="${i}" value="${esc(p)}" placeholder="présage…" maxlength="80">
-      <button type="button" class="scenario-clock-del" data-scenario-front="portent-del" data-fr="${f.id}" data-dg="${d.id}" data-idx="${i}" aria-label="Supprimer le présage">✕</button>
+      <input type="text" data-scenario-front="portent" data-fr="${f.id}" data-dg="${d.id}" data-idx="${i}" value="${esc(p)}" placeholder="étape vers le pire…" maxlength="80">
+      <button type="button" class="scenario-clock-del" data-scenario-front="portent-del" data-fr="${f.id}" data-dg="${d.id}" data-idx="${i}" aria-label="Supprimer l'étape">✕</button>
     </div>`).join("");
     return `<div class="scenario-danger" data-fr="${f.id}" data-dg="${d.id}">
       <div class="scenario-danger-head">
@@ -411,9 +429,9 @@ export const ScenarioGraph = {
         <button type="button" class="scenario-clock-del" data-scenario-front="danger-del" data-fr="${f.id}" data-dg="${d.id}" aria-label="Supprimer le danger">✕</button>
       </div>
       <div class="scenario-portents">${portents}
-        <button type="button" class="scenario-portent-add" data-scenario-front="portent-add" data-fr="${f.id}" data-dg="${d.id}">＋ Présage</button>
+        <button type="button" class="scenario-portent-add" data-scenario-front="portent-add" data-fr="${f.id}" data-dg="${d.id}">＋ Étape vers le pire</button>
       </div>
-      <input type="text" class="scenario-danger-doom" data-scenario-front="danger-doom" data-fr="${f.id}" data-dg="${d.id}" value="${esc(d.impendingDoom || "")}" placeholder="Échéance (si tout arrive)" maxlength="90">
+      <input type="text" class="scenario-danger-doom" data-scenario-front="danger-doom" data-fr="${f.id}" data-dg="${d.id}" value="${esc(d.impendingDoom || "")}" placeholder="Catastrophe ⚠ (si personne n'agit)" maxlength="90">
     </div>`;
   },
 
@@ -839,9 +857,9 @@ export const ScenarioGraph = {
         ${(n.castIds || []).length >= 2 ? `<button type="button" class="scenario-cast-link" data-scenario-node="cast-link" title="Créer les liens manquants entre ces personnages sur la carte des Liens">◈ Relier entre eux</button>` : ""}
       </div>
       <div class="graph-edge-field">
-        <span class="graph-edge-flabel">Beat dramatique</span>
+        <span class="graph-edge-flabel">Moment clé</span>
         <div class="graph-dir-row">${arrowBtns}</div>
-        <textarea data-scenario-node="bang" rows="2" placeholder="Le bang : le choix forcé qui met les persos au pied du mur">${esc(n.bang || "")}</textarea>
+        <textarea data-scenario-node="bang" rows="2" placeholder="Le moment clé : le choix qui fait basculer la scène">${esc(n.bang || "")}</textarea>
       </div>
       <button type="button" class="graph-edge-delete" data-scenario-node="delete">Supprimer cette étape</button>
     </div>`;
@@ -990,7 +1008,7 @@ export const ScenarioGraph = {
       </div>
       <label class="graph-edge-field graph-edge-check">
         <input type="checkbox" data-scenario-edge="hatch"${e.isEscapeHatch ? " checked" : ""}>
-        <span>Sortie de secours (échec)</span>
+        <span>Issue de secours (échec)</span>
       </label>
       <label class="graph-edge-field">
         <span class="graph-edge-flabel">Condition / mot sur le trait</span>
@@ -1261,51 +1279,61 @@ export const ScenarioGraph = {
   },
 
   /* ============================================================
-     COQUILLE — .modal-overlay + délégation `data-scenario-*` (0 onclick).
+     COQUILLE — le PANNEAU #panel-trames (promu de modale) + délégation
+     `data-scenario-*` (0 onclick). Plein écran, coquille de l'app : Trames
+     est une pièce du site, plus une boîte flottante.
      ============================================================ */
   _ensure() {
     if (this._el) return this._el;
-    const overlay = document.createElement("div");
-    overlay.className = "modal-overlay graph-overlay scenario-overlay";
-    overlay.id = "scenario-overlay";
-    overlay.setAttribute("role", "dialog");
-    overlay.setAttribute("aria-modal", "true");
-    overlay.innerHTML = `
-      <div class="modal graph-modal scenario-modal">
-        <div class="modal-header scenario-header">
-          <span class="modal-title">Trames</span>
+    const panel = document.getElementById("panel-trames");
+    if (!panel) return null;
+    this._el = panel;
+    panel.innerHTML = `
+        <div class="panel-title">Trames<span class="panel-subtitle">construire et relier vos scènes à l'avance</span></div>
+        <div class="scenario-header">
+          <!-- Zone 1 — IDENTITÉ : quelle trame, + le menu de gestion (rarement
+               touché en plein travail, donc replié dans ▾). -->
           <select class="scenario-picker" data-scenario-action="pick" aria-label="Choisir une trame"></select>
-          <button class="btn-small" data-scenario-action="new">＋ Nouvelle trame</button>
-          <button class="btn-small" data-scenario-action="new-from-template" title="Partir d'un squelette narratif (5 salles, Story Spine, Story Circle)">＋ Depuis un modèle</button>
-          <button class="btn-small" data-scenario-action="rename">Renommer</button>
-          <button class="btn-small" data-scenario-action="save-template" title="Enregistrer la structure de cette trame comme modèle réutilisable">⎘ Modèle</button>
-          <button class="btn-small" data-scenario-action="delete">Supprimer</button>
-          <button class="graph-weave-toggle" data-scenario-action="toggle-weave" aria-pressed="false" title="Relier deux étapes : tirer de l'une à l'autre">◈ Relier</button>
-          <button class="graph-weave-toggle" data-scenario-action="toggle-clues" aria-pressed="false" title="Superposer le calque d'indices : faits (◆/◇) et pistes qui y mènent">◇ Indices</button>
-          <button class="graph-weave-toggle" data-scenario-action="toggle-pressure" aria-pressed="false" title="Pression : définir des horloges (menace/alerte/objectif) et leurs effets au seuil">⏱ Pression</button>
-          <button class="graph-weave-toggle" data-scenario-action="toggle-timeline" aria-pressed="false" title="Chronologie : le passé reconstruit (faits par rang) vs le futur qui avance (horloges/fronts)">🕰 Chronologie</button>
-          <button class="scenario-robust-badge" data-scenario-action="robustesse" title="Vérifier la robustesse de l'enquête (3 indices, sortie de secours, atteignabilité…)">✓ Robustesse</button>
-          <button class="modal-close" data-scenario-action="close" aria-label="Fermer">✕</button>
-        </div>
-        <div class="modal-body graph-body">
-          <div class="scenario-toolbar" data-scenario="toolbar" hidden></div>
-          <div class="graph-split">
-            <div class="graph-canvas" data-scenario="canvas">
-              <div class="graph-zoom" role="group" aria-label="Zoom de la carte">
-                <button type="button" class="graph-zoom-btn" data-scenario-action="zoom-in" aria-label="Zoomer" title="Zoomer (molette · pincement)">＋</button>
-                <button type="button" class="graph-zoom-btn" data-scenario-action="zoom-reset" aria-label="Vue d'ensemble" title="Vue d'ensemble">⤢</button>
-                <button type="button" class="graph-zoom-btn" data-scenario-action="zoom-out" aria-label="Dézoomer" title="Dézoomer">−</button>
-              </div>
+          <details class="scenario-menu">
+            <summary class="btn-small scenario-menu-summary" title="Gérer la trame">Trame ▾</summary>
+            <div class="scenario-menu-pop">
+              <button class="scenario-menu-item" data-scenario-action="new">＋ Nouvelle trame</button>
+              <button class="scenario-menu-item" data-scenario-action="new-from-template" title="Partir d'un squelette narratif (5 salles, Story Spine, Story Circle)">＋ Depuis un modèle</button>
+              <button class="scenario-menu-item" data-scenario-action="rename">Renommer</button>
+              <button class="scenario-menu-item" data-scenario-action="save-template" title="Enregistrer la structure de cette trame comme modèle réutilisable">⎘ Enregistrer comme modèle</button>
+              <button class="scenario-menu-item scenario-menu-danger" data-scenario-action="delete">Supprimer</button>
             </div>
-            <aside class="graph-inspector empty" data-scenario="inspector"></aside>
+          </details>
+          <!-- Zone 2 — LENTILLES : des façons de REGARDER la même vérité, groupées
+               en segmented control (plus 4 boutons épars). -->
+          <div class="scenario-lenses" role="group" aria-label="Lentilles de la trame">
+            <button class="graph-weave-toggle" data-scenario-action="toggle-weave" aria-pressed="false" title="Relier deux étapes : tirer de l'une à l'autre">◈ Relier</button>
+            <button class="graph-weave-toggle" data-scenario-action="toggle-clues" aria-pressed="false" title="Superposer le calque d'indices : faits (◆/◇) et pistes qui y mènent">◇ Indices</button>
+            <button class="graph-weave-toggle" data-scenario-action="toggle-pressure" aria-pressed="false" title="Horloges : des cadrans (menace/alerte/objectif) qui se remplissent et déclenchent leurs effets au seuil">⏱ Horloges</button>
+            <button class="graph-weave-toggle" data-scenario-action="toggle-timeline" aria-pressed="false" title="Chronologie : le passé reconstruit (faits par rang) vs le futur qui avance (horloges/fronts)">🕰 Chronologie</button>
           </div>
-          <p class="graph-empty" data-scenario="empty" hidden></p>
+          <!-- Zone 3 — ÉTAT : la robustesse (un badge de vérification), poussée à droite. -->
+          <span class="scenario-hz-spacer"></span>
+          <button class="scenario-robust-badge" data-scenario-action="robustesse" title="Vérifier la robustesse de l'enquête (3 indices, issue de secours, atteignabilité…)">✓ Robustesse</button>
         </div>
-      </div>`;
-    document.body.appendChild(overlay);
+        <div class="scenario-toolbar" data-scenario="toolbar" hidden></div>
+        <div class="graph-split">
+          <div class="graph-canvas" data-scenario="canvas">
+            <div class="graph-zoom" role="group" aria-label="Zoom de la carte">
+              <button type="button" class="graph-zoom-btn" data-scenario-action="zoom-in" aria-label="Zoomer" title="Zoomer (molette · pincement)">＋</button>
+              <button type="button" class="graph-zoom-btn" data-scenario-action="zoom-reset" aria-label="Vue d'ensemble" title="Vue d'ensemble">⤢</button>
+              <button type="button" class="graph-zoom-btn" data-scenario-action="zoom-out" aria-label="Dézoomer" title="Dézoomer">−</button>
+            </div>
+          </div>
+          <aside class="graph-inspector empty" data-scenario="inspector"></aside>
+        </div>
+        <p class="graph-empty" data-scenario="empty" hidden></p>`;
+    const overlay = panel; // alias : la délégation ci-dessous cible le panneau
 
     overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) return this.hide();
+      // Menu « Trame ▾ » : le refermer si on clique hors de lui (clic-dehors).
+      const openMenu = overlay.querySelector(".scenario-menu[open]");
+      if (openMenu && !e.target.closest(".scenario-menu")) openMenu.removeAttribute("open");
       const nodeCtl = e.target.closest("[data-scenario-node]");
       if (nodeCtl) return this._onNodeControl(nodeCtl);
       const edgeCtl = e.target.closest("[data-scenario-edge]");
@@ -1325,8 +1353,9 @@ export const ScenarioGraph = {
       const btn = e.target.closest("[data-scenario-action]");
       if (!btn || btn.tagName === "SELECT") return;
       const a = btn.dataset.scenarioAction;
-      if (a === "close") this.hide();
-      else if (a === "new") this._newScenario();
+      const inMenu = btn.closest(".scenario-menu"); // refermer le menu après une action
+      if (inMenu) inMenu.removeAttribute("open");
+      if (a === "new") this._newScenario();
       else if (a === "new-from-template") this._newFromTemplate();
       else if (a === "save-template") this._saveAsTemplate();
       else if (a === "rename") this._renameScenario();
@@ -1399,12 +1428,7 @@ export const ScenarioGraph = {
       if (frontCtl) return this._onFrontInput(frontCtl, false);
     });
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && this._el && this._el.classList.contains("open")) this.hide();
-    });
-
-    this._el = overlay;
-    return overlay;
+    return this._el;
   },
 };
 

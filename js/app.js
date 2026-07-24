@@ -16,7 +16,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.103.0",
+  VERSION: "1.104.0",
 
   edition: "none",
   editionModule: null,
@@ -477,6 +477,9 @@ export const App = {
       case "play":
         Play.initPanel(); // colonne Campagne › Run › Scène
         break;
+      case "trames":
+        ScenarioGraph.initPanel(); // atelier de trame (promu de modale en panneau)
+        break;
       case "settings":
         Settings.render();
         break;
@@ -678,8 +681,8 @@ document.addEventListener("DOMContentLoaded", () => {
       case "encounter-open":
         Encounter.open();
         break;
-      case "open-trames": // S1 — atelier de trame scénaristique (ouvreur provisoire)
-        ScenarioGraph.open();
+      case "open-trames": // compat : atelier de trame — désormais un panneau
+        this.showPanel("trames");
         break;
       case "chargen-open":
         CharGen.open();

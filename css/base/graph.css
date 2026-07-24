@@ -467,9 +467,97 @@
    (posé par la projection) + l'accent d'édition font la différence.
    ============================================================ */
 .scenario-header {
+  display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 6px;
+  margin: 2px 0 12px;
 }
+
+/* Trames = PANNEAU plein écran (promu de modale). Le canvas prend la hauteur
+   disponible et TOUTE la largeur du panneau (flex:1) ; l'inspecteur reste une
+   colonne fixe. La modale « Relations » garde, elle, .graph-modal / min(66vh,
+   560px) — ces caps ne sont pas partagés ici. */
+#panel-trames .graph-split { align-items: stretch; }
+@media (min-width: 721px) {
+  #panel-trames .graph-canvas,
+  #panel-trames .graph-inspector {
+    height: min(72vh, 820px);
+  }
+}
+
+/* ── Lot 2 — en-tête en 3 zones : IDENTITÉ (picker + menu ▾) · LENTILLES
+   (segmented control) · ÉTAT (robustesse, poussée à droite). Dégonfle la
+   rangée de 11 boutons plats en groupes lisibles. ── */
+.scenario-hz-spacer { flex: 1 1 auto; }
+
+/* Lentilles = segmented : un cadre unique, les 4 toggles collés dedans. Réutilise
+   .graph-weave-toggle (styles hover/active/pressed intacts), on neutralise juste
+   sa marge et ses coins pour l'effet « segments ». */
+.scenario-lenses {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--border, #2a3a49);
+  border-radius: 8px;
+  background: var(--surface-2, #16202b);
+}
+.scenario-lenses .graph-weave-toggle {
+  margin: 0;
+  border-color: transparent;
+  background: transparent;
+}
+.scenario-lenses .graph-weave-toggle:hover {
+  border-color: var(--border, #2a3a49);
+}
+
+/* Menu « Trame ▾ » : <details> natif (aucun état JS), pop-over absolu. */
+.scenario-menu { position: relative; display: inline-flex; }
+.scenario-menu > summary {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+.scenario-menu > summary::-webkit-details-marker { display: none; }
+.scenario-menu[open] > summary {
+  border-color: var(--accent, #35e0e6);
+  color: var(--accent, #35e0e6);
+}
+.scenario-menu-pop {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 210px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px;
+  border: 1px solid var(--border, #2a3a49);
+  border-radius: 8px;
+  background: var(--surface-1, #0e1620);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
+}
+.scenario-menu-item {
+  text-align: left;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text, #dce6f0);
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.scenario-menu-item:hover {
+  background: color-mix(in srgb, var(--accent, #35e0e6) 14%, transparent);
+}
+.scenario-menu-item:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.scenario-menu-danger { color: var(--danger, #e0533d); }
 .scenario-picker {
   max-width: 240px;
   padding: 4px 8px;

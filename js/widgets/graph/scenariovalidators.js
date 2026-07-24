@@ -75,7 +75,7 @@ export const ScenarioValidators = {
     for (const s of sceneNodes) {
       if (s.type !== "action") continue;
       if (!sceneEdges.some((e) => e && e.from === s.id && e.isEscapeHatch))
-        out.push({ level: "warn", code: "no-escape", targetId: s.id, message: `La scène d'action « ${_short(s.title)} » n'a pas de sortie de secours.` });
+        out.push({ level: "warn", code: "no-escape", targetId: s.id, message: `La scène d'action « ${_short(s.title)} » n'a pas d'issue de secours.` });
     }
 
     // 5. Atteignabilité — tout nœud atteignable depuis une accroche (BFS) ; pas de
