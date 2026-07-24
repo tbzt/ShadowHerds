@@ -12,6 +12,17 @@ commit.
 
 ## [Non publié]
 
+## [1.114.0] — 2026-07-25
+
+### Ajouté
+
+- **Les portraits IA s'affichent sur la carte des Liens.** Quand un
+  personnage a un portrait généré (action « Portrait IA » de sa fiche), son
+  nœud sur la carte des Liens l'incruste directement, détouré dans l'anneau —
+  un vrai *casting board* : on met un visage sur chaque contact d'un coup
+  d'œil. Les entités sans portrait gardent leur pastille + glyphe. Le graphe
+  de trame n'est pas concerné (ses nœuds sont des scènes, pas des personnes).
+
 ## [1.113.0] — 2026-07-25
 
 ### Modifié

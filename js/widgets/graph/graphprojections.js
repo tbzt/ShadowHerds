@@ -64,7 +64,7 @@ export const GraphProjections = {
         // Face-NŒUD = densité 0 du continuum carte : l'identité (id/nom/type)
         // définie à un seul endroit (cardzones), pas ré-inlinée ici. `inScope`
         // (B4, portée/halo) est une donnée de PROJECTION, ajoutée par-dessus.
-        nodes.push({ ...CardZones.density0({ ...loc, id }), inScope: core.has(id) });
+        nodes.push({ ...CardZones.density0({ ...loc, id }), inScope: core.has(id), portrait: loc.portraitUrl || null });
     }
 
     // 4. Arêtes dont les deux bouts sont présents (orphelines écartées). On

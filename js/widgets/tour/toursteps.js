@@ -608,6 +608,11 @@ export const TourSteps = {
       title: "Le graphe de trame se lit comme des fiches",
       body: "Chaque étape devient une carte posée sur le canevas, façon plan de scénario : glyphe + type, titre, casting en puces (et le lieu s'il est renseigné) — tout d'un coup d'œil, sans cliquer pour ouvrir l'inspecteur. Le contour garde la lecture par catégorie : rectangle arrondi pour les scènes jouables, pastille pour l'accroche, pastille à double liseré pour la retombée, octogone pour la décision. Les liens se posent toujours sur le bord réel de chaque carte, et sur petit écran l'affichage se replie au glyphe + titre compact.",
     },
+    {
+      id: "wn-graph-portraits", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.114.0", fallback: "center",
+      title: "Des visages sur la carte des Liens",
+      body: "Quand un personnage a un portrait IA généré (depuis sa fiche), son nœud sur la carte des Liens l'affiche directement, détouré dans l'anneau — un vrai casting board où l'on met un visage sur chaque contact d'un coup d'œil. Les entités sans portrait gardent leur pastille et leur glyphe. (Pour générer un portrait : activez « Images IA » dans les Paramètres, puis « Portrait IA » sur une fiche.)",
+    },
   ],
 };
 

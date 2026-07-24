@@ -88,6 +88,9 @@ export const PnjLookup = {
       // `pcColor` pour TOUT type (Lot 4 : la couleur de nœud n'est plus réservée
       // aux PJ) — la projection graphe la lit d'ici.
       if (e.pcColor) r.pcColor = e.pcColor;
+      // `portraitUrl` (P2) : portrait IA déjà généré depuis la carte — la
+      // projection du graphe des Liens l'incruste dans le nœud (casting board).
+      if (e.portraitUrl) r.portraitUrl = e.portraitUrl;
       return r;
     };
     return (

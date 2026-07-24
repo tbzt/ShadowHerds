@@ -201,6 +201,8 @@
   pointer-events: none;
   user-select: none;
 }
+/* P2 — portrait incrusté (graphe des Liens) : le hit reste sur le disque. */
+.graph-node-portrait { pointer-events: none; }
 .graph-node-label {
   font-size: 10px;
   fill: var(--text-dim, #9fb0c0);

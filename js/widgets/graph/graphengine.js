@@ -198,7 +198,10 @@ export const GraphEngine = {
     const defs = document.createElementNS(NS, "defs");
     defs.innerHTML =
       '<marker id="graph-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse">' +
-      '<path d="M0,0 L10,5 L0,10 z" fill="context-stroke"></path></marker>';
+      '<path d="M0,0 L10,5 L0,10 z" fill="context-stroke"></path></marker>' +
+      // P2 — détourage rond des portraits (une source partagée : chaque <image>
+      // vit dans le <g> translaté du nœud, le cercle à l'origine locale = centre).
+      '<clipPath id="graph-portrait-clip"><circle r="15"></circle></clipPath>';
     svg.appendChild(defs);
 
     // Poches de faction (A3) : couche du fond, SOUS les arêtes/nœuds — une zone
@@ -272,19 +275,33 @@ export const GraphEngine = {
       if (n._card) {
         g.appendChild(this._cardNode(n));
       } else {
-        const glyph = document.createElementNS(NS, "text");
-        glyph.setAttribute("class", "graph-node-glyph");
-        glyph.setAttribute("text-anchor", "middle");
-        glyph.setAttribute("dy", "0.35em");
-        glyph.setAttribute("fill", accent);
-        // Glyphe fourni par la projection (scènes) sinon dérivé du type (entités).
-        glyph.textContent = n.glyph || TYPE_GLYPH[n.type] || "●";
+        // P2 — portrait incrusté (graphe des Liens) : l'image détourée REMPLACE
+        // le glyphe ; le disque dessous (fond + anneau/stroke) encadre le
+        // portrait et porte tous les états. Repli disque+glyphe si pas d'image.
+        if (n.portrait) {
+          const img = document.createElementNS(NS, "image");
+          img.setAttribute("class", "graph-node-portrait");
+          img.setAttribute("x", -15); img.setAttribute("y", -15);
+          img.setAttribute("width", 30); img.setAttribute("height", 30);
+          img.setAttribute("preserveAspectRatio", "xMidYMid slice");
+          img.setAttribute("clip-path", "url(#graph-portrait-clip)");
+          img.setAttribute("href", n.portrait);
+          g.appendChild(img);
+        } else {
+          const glyph = document.createElementNS(NS, "text");
+          glyph.setAttribute("class", "graph-node-glyph");
+          glyph.setAttribute("text-anchor", "middle");
+          glyph.setAttribute("dy", "0.35em");
+          glyph.setAttribute("fill", accent);
+          // Glyphe fourni par la projection (scènes) sinon dérivé du type (entités).
+          glyph.textContent = n.glyph || TYPE_GLYPH[n.type] || "●";
+          g.appendChild(glyph);
+        }
         const label = document.createElementNS(NS, "text");
         label.setAttribute("class", "graph-node-label");
         label.setAttribute("text-anchor", "middle");
         label.setAttribute("dy", "2.4em");
         label.textContent = n.label.length > 18 ? n.label.slice(0, 17) + "…" : n.label;
-        g.appendChild(glyph);
         g.appendChild(label);
       }
 
