@@ -93,7 +93,7 @@ export const ScenarioStore = {
   /* ---- CRUD scénario ---- */
   /** Crée une trame vide (titre requis ; `system` pour la peau, pas pour
       brancher — la structure est édition-neutre). Renvoie le scénario. */
-  create({ title, system = null } = {}) {
+  create({ title, system = null, templateOrigin = null } = {}) {
     const clean = String(title || "").trim();
     if (!clean) return null;
     const sc = {
@@ -101,7 +101,7 @@ export const ScenarioStore = {
       title: clean,
       system: system || null,
       runId: null, // S2 : run (dossier) que cette trame structure — liaison légère
-      templateOrigin: null,
+      templateOrigin: templateOrigin || null, // S3 : clé du modèle d'origine, sinon null
       sceneNodes: [],
       sceneEdges: [],
       infoNodes: [],
@@ -165,7 +165,7 @@ export const ScenarioStore = {
 
   /** Ajoute un nœud-scène. `type` par défaut "action" ; `castIds` (convokes)
       et `locationId` restent vides à S0 — S1 les peuplera. */
-  addSceneNode(scId, { type = "action", title = "", body = "", x = 0, y = 0 } = {}) {
+  addSceneNode(scId, { type = "action", title = "", body = "", x = 0, y = 0, templateBeat = null } = {}) {
     const sc = this.get(scId);
     if (!sc) return null;
     const node = {
@@ -175,7 +175,9 @@ export const ScenarioStore = {
       body: body || "",
       castIds: [],
       locationId: null,
-      templateBeat: null,
+      templateBeat: templateBeat || null, // S3 : beat du modèle d'origine, sinon null
+      bang: "", // S6 : le choix forcé (Edwards), annotation optionnelle
+      arrow: null, // S6 : "hope"|"fear"|null — la flèche dramatique (Laws)
       x, y,
     };
     sc.sceneNodes.push(node);
@@ -270,6 +272,341 @@ export const ScenarioStore = {
     this.save();
     this._emit({ scenarioId: scId, kind: "sceneEdge", op: "remove", id: edgeId });
     return true;
+  },
+
+  /* ============================================================
+     GRAPHE D'INDICES (S4) — le moule générique répliqué : faits (InfoNode)
+     + indices (Clue). Même trois verbes, même contrat d'émission que les
+     scènes. `removeInfoNode` élague ses clues (intégrité interne, undo) ;
+     `removeSceneNode` (plus haut) élague déjà les ancres d'indice.
+     ============================================================ */
+
+  /** Ajoute un FAIT (InfoNode). `role` progression (révélation garantie GUMSHOE)
+      vs enrichissement (≥3 pistes) ; `when` = rang dans le passé reconstruit ;
+      `x,y` = position sur le canvas (layout auteur, persistée au drag). */
+  addInfoNode(scId, { fact = "", role = "enrichissement", when = null, x = 0, y = 0 } = {}) {
+    const sc = this.get(scId);
+    if (!sc) return null;
+    const node = {
+      id: this._uid("i"),
+      fact: String(fact || "").trim(),
+      role: role === "progression" ? "progression" : "enrichissement",
+      when: Number.isFinite(when) ? when : null,
+      x, y,
+    };
+    sc.infoNodes.push(node);
+    this.save();
+    this._emit({ scenarioId: scId, kind: "infoNode", op: "add", id: node.id });
+    return node;
+  },
+  updateInfoNode(scId, infoId, patch = {}) {
+    const sc = this.get(scId);
+    if (!sc) return false;
+    const node = sc.infoNodes.find((n) => n && n.id === infoId);
+    if (!node) return false;
+    Object.assign(node, patch, { id: node.id });
+    this.save();
+    this._emit({ scenarioId: scId, kind: "infoNode", op: "update", id: infoId });
+    return true;
+  },
+  /** Retire un fait + les indices qui le visent (`toInfoNode`). Renvoie les
+      retraits pour un undo, comme `removeSceneNode`. */
+  removeInfoNode(scId, infoId) {
+    const sc = this.get(scId);
+    if (!sc) return null;
+    const idx = sc.infoNodes.findIndex((n) => n && n.id === infoId);
+    if (idx < 0) return null;
+    const node = sc.infoNodes[idx];
+    sc.infoNodes.splice(idx, 1);
+    const removedClues = sc.clues.filter((c) => c && c.toInfoNode === infoId);
+    if (removedClues.length) sc.clues = sc.clues.filter((c) => c && c.toInfoNode !== infoId);
+    this.save();
+    this._emit({ scenarioId: scId, kind: "infoNode", op: "remove", id: infoId });
+    return { node, removedClues };
+  },
+
+  /** Ajoute un INDICE (Clue) vers un fait existant. `anchorSceneNodes` VIDE =
+      indice flottant (Sly Flourish) ; sinon ancré (Alexander). `gated` = derrière
+      un jet/condition (non garanti) ; défaut faux (révélation garantie GUMSHOE). */
+  addClue(scId, { toInfoNode, anchorSceneNodes = [], viaContactIds = [], description = "", gated = false } = {}) {
+    const sc = this.get(scId);
+    if (!sc || !toInfoNode) return null;
+    if (!sc.infoNodes.some((n) => n && n.id === toInfoNode)) return null;
+    const has = (id) => sc.sceneNodes.some((n) => n && n.id === id);
+    const clue = {
+      id: this._uid("cl"),
+      toInfoNode,
+      anchorSceneNodes: (anchorSceneNodes || []).filter(has),
+      viaContactIds: (viaContactIds || []).slice(),
+      description: String(description || ""),
+      gated: !!gated,
+    };
+    sc.clues.push(clue);
+    this.save();
+    this._emit({ scenarioId: scId, kind: "clue", op: "add", id: clue.id });
+    return clue;
+  },
+  updateClue(scId, clueId, patch = {}) {
+    const sc = this.get(scId);
+    if (!sc) return false;
+    const clue = sc.clues.find((c) => c && c.id === clueId);
+    if (!clue) return false;
+    Object.assign(clue, patch, { id: clue.id });
+    this.save();
+    this._emit({ scenarioId: scId, kind: "clue", op: "update", id: clueId });
+    return true;
+  },
+  removeClue(scId, clueId) {
+    const sc = this.get(scId);
+    if (!sc) return false;
+    const before = sc.clues.length;
+    sc.clues = sc.clues.filter((c) => c && c.id !== clueId);
+    if (sc.clues.length === before) return false;
+    this.save();
+    this._emit({ scenarioId: scId, kind: "clue", op: "remove", id: clueId });
+    return true;
+  },
+
+  /* ============================================================
+     HORLOGES / PRESSION (S5a) — le moule répliqué : une Horloge (Clock)
+     porte des segments + des effets qui, au franchissement d'un seuil,
+     touchent le RUNTIME (activer une étape / fermer-rouvrir une sortie).
+     DÉFINITION = édition (type/segments/effets) ; REMPLISSAGE = runtime
+     (`clockFills`) — Failsafe : `setClockFill` n'écrit QUE le runtime.
+     ============================================================ */
+  addClock(scId, { type = "menace", title = "", segments = 6 } = {}) {
+    const sc = this.get(scId);
+    if (!sc) return null;
+    const clock = {
+      id: this._uid("ck"),
+      type: ["alerte", "menace", "objectif"].includes(type) ? type : "menace",
+      title: String(title || "").trim(),
+      segments: Math.max(1, Math.min(24, parseInt(segments, 10) || 6)),
+      filled: 0, // défaut de PREP (rare) ; le live vit dans runtime.clockFills
+      effects: [],
+    };
+    sc.clocks.push(clock);
+    this.save();
+    this._emit({ scenarioId: scId, kind: "clock", op: "add", id: clock.id });
+    return clock;
+  },
+  updateClock(scId, ckId, patch = {}) {
+    const sc = this.get(scId);
+    if (!sc) return false;
+    const clock = sc.clocks.find((c) => c && c.id === ckId);
+    if (!clock) return false;
+    Object.assign(clock, patch, { id: clock.id, effects: clock.effects });
+    if (patch.segments != null) clock.segments = Math.max(1, Math.min(24, parseInt(patch.segments, 10) || clock.segments));
+    this.save();
+    this._emit({ scenarioId: scId, kind: "clock", op: "update", id: ckId });
+    return true;
+  },
+  removeClock(scId, ckId) {
+    const sc = this.get(scId);
+    if (!sc) return false;
+    const before = sc.clocks.length;
+    sc.clocks = sc.clocks.filter((c) => c && c.id !== ckId);
+    if (sc.clocks.length === before) return false;
+    if (sc.runtime && sc.runtime.clockFills) delete sc.runtime.clockFills[ckId];
+    this.save();
+    this._emit({ scenarioId: scId, kind: "clock", op: "remove", id: ckId });
+    return true;
+  },
+  addClockEffect(scId, ckId, { atThreshold = 1, action = "closeEdge", targetId = null } = {}) {
+    const sc = this.get(scId);
+    const clock = sc && sc.clocks.find((c) => c && c.id === ckId);
+    if (!clock) return null;
+    const eff = {
+      id: this._uid("cke"),
+      atThreshold: Math.max(1, parseInt(atThreshold, 10) || 1),
+      action: ["activateNode", "closeEdge", "openEdge"].includes(action) ? action : "closeEdge",
+      targetId: targetId || null,
+    };
+    clock.effects.push(eff);
+    this.save();
+    this._emit({ scenarioId: scId, kind: "clock", op: "update", id: ckId });
+    return eff;
+  },
+  updateClockEffect(scId, ckId, effId, patch = {}) {
+    const sc = this.get(scId);
+    const clock = sc && sc.clocks.find((c) => c && c.id === ckId);
+    const eff = clock && clock.effects.find((e) => e && e.id === effId);
+    if (!eff) return false;
+    Object.assign(eff, patch, { id: eff.id });
+    if (patch.atThreshold != null) eff.atThreshold = Math.max(1, parseInt(patch.atThreshold, 10) || eff.atThreshold);
+    this.save();
+    this._emit({ scenarioId: scId, kind: "clock", op: "update", id: ckId });
+    return true;
+  },
+  removeClockEffect(scId, ckId, effId) {
+    const sc = this.get(scId);
+    const clock = sc && sc.clocks.find((c) => c && c.id === ckId);
+    if (!clock) return false;
+    const before = clock.effects.length;
+    clock.effects = clock.effects.filter((e) => e && e.id !== effId);
+    if (clock.effects.length === before) return false;
+    this.save();
+    this._emit({ scenarioId: scId, kind: "clock", op: "update", id: ckId });
+    return true;
+  },
+  /** Le remplissage LIVE d'une horloge (runtime seul — Failsafe). Recalcule
+      `closedEdgeIds` DÉCLARATIVEMENT depuis l'état de toutes les horloges (donc
+      réversible en baissant), et déclenche `activateNode` au franchissement
+      MONTANT du seuil (one-shot). N'écrit jamais un champ d'édition. */
+  setClockFill(scId, ckId, filled) {
+    const sc = this.get(scId);
+    const clock = sc && sc.clocks.find((c) => c && c.id === ckId);
+    if (!clock) return false;
+    const val = Math.max(0, Math.min(clock.segments, parseInt(filled, 10) || 0));
+    const rt = Object.assign({}, sc.runtime || {});
+    const fills = Object.assign({}, rt.clockFills || {});
+    const liveOf = (c) => (fills[c.id] != null ? fills[c.id] : c.filled || 0);
+    const oldVal = liveOf(clock);
+    fills[ckId] = val;
+    rt.clockFills = fills;
+
+    // closedEdgeIds : ferme d'abord, rouvre ensuite (openEdge l'emporte).
+    const closed = new Set();
+    const opened = new Set();
+    for (const c of sc.clocks) {
+      const f = c.id === ckId ? val : liveOf(c);
+      for (const eff of c.effects || []) {
+        if (!eff.targetId || eff.action === "activateNode") continue;
+        if (f >= eff.atThreshold) (eff.action === "openEdge" ? opened : closed).add(eff.targetId);
+      }
+    }
+    for (const o of opened) closed.delete(o);
+    rt.closedEdgeIds = [...closed];
+
+    // activateNode : franchissement montant du seuil sur CETTE horloge.
+    for (const eff of clock.effects || []) {
+      if (eff.action === "activateNode" && eff.targetId &&
+          oldVal < eff.atThreshold && val >= eff.atThreshold &&
+          sc.sceneNodes.some((n) => n.id === eff.targetId)) {
+        rt.currentSceneId = eff.targetId;
+      }
+    }
+    sc.runtime = rt;
+    this.save();
+    this._emit({ scenarioId: scId, kind: "runtime", op: "patch", id: scId });
+    return true;
+  },
+  /** Lecture du remplissage LIVE (runtime sinon défaut de prep). */
+  clockFill(sc, ckId) {
+    const clock = sc && sc.clocks.find((c) => c && c.id === ckId);
+    if (!clock) return 0;
+    const f = sc.runtime && sc.runtime.clockFills && sc.runtime.clockFills[ckId];
+    return f != null ? f : clock.filled || 0;
+  },
+
+  /* ============================================================
+     FRONTS (S5b) — Dungeon World : un Front porte une faction (référence
+     FactionStore) et des Dangers, chacun avec une impulsion, des présages
+     ORDONNÉS (qui escaladent) et une échéance. DÉFINITION = édition ;
+     AVANCÉE des présages = runtime (`frontPortents{dangerId:n}`, Failsafe).
+     Dangers porteurs d'`id` (pour l'avancée par danger). Présages = strings.
+     ============================================================ */
+  addFront(scId, { title = "", factionId = null } = {}) {
+    const sc = this.get(scId);
+    if (!sc) return null;
+    const front = { id: this._uid("fr"), title: String(title || "").trim(), factionId: factionId || null, dangers: [] };
+    sc.fronts.push(front);
+    this.save();
+    this._emit({ scenarioId: scId, kind: "front", op: "add", id: front.id });
+    return front;
+  },
+  updateFront(scId, frId, patch = {}) {
+    const sc = this.get(scId);
+    const front = sc && sc.fronts.find((f) => f && f.id === frId);
+    if (!front) return false;
+    Object.assign(front, patch, { id: front.id, dangers: front.dangers });
+    this.save();
+    this._emit({ scenarioId: scId, kind: "front", op: "update", id: frId });
+    return true;
+  },
+  removeFront(scId, frId) {
+    const sc = this.get(scId);
+    if (!sc) return false;
+    const front = sc.fronts.find((f) => f && f.id === frId);
+    if (!front) return false;
+    if (sc.runtime && sc.runtime.frontPortents)
+      for (const d of front.dangers || []) delete sc.runtime.frontPortents[d.id];
+    sc.fronts = sc.fronts.filter((f) => f && f.id !== frId);
+    this.save();
+    this._emit({ scenarioId: scId, kind: "front", op: "remove", id: frId });
+    return true;
+  },
+  addDanger(scId, frId, { impulse = "", impendingDoom = "" } = {}) {
+    const sc = this.get(scId);
+    const front = sc && sc.fronts.find((f) => f && f.id === frId);
+    if (!front) return null;
+    const danger = { id: this._uid("dg"), impulse: String(impulse || ""), impendingDoom: String(impendingDoom || ""), grimPortents: [] };
+    front.dangers.push(danger);
+    this.save();
+    this._emit({ scenarioId: scId, kind: "front", op: "update", id: frId });
+    return danger;
+  },
+  updateDanger(scId, frId, dgId, patch = {}) {
+    const sc = this.get(scId);
+    const front = sc && sc.fronts.find((f) => f && f.id === frId);
+    const danger = front && front.dangers.find((d) => d && d.id === dgId);
+    if (!danger) return false;
+    Object.assign(danger, patch, { id: danger.id, grimPortents: danger.grimPortents });
+    this.save();
+    this._emit({ scenarioId: scId, kind: "front", op: "update", id: frId });
+    return true;
+  },
+  removeDanger(scId, frId, dgId) {
+    const sc = this.get(scId);
+    const front = sc && sc.fronts.find((f) => f && f.id === frId);
+    if (!front) return false;
+    const before = front.dangers.length;
+    front.dangers = front.dangers.filter((d) => d && d.id !== dgId);
+    if (front.dangers.length === before) return false;
+    if (sc.runtime && sc.runtime.frontPortents) delete sc.runtime.frontPortents[dgId];
+    this.save();
+    this._emit({ scenarioId: scId, kind: "front", op: "update", id: frId });
+    return true;
+  },
+  addPortent(scId, frId, dgId, text = "") {
+    return this._portentMutate(scId, frId, dgId, (p) => p.push(String(text || "")));
+  },
+  updatePortent(scId, frId, dgId, index, text) {
+    return this._portentMutate(scId, frId, dgId, (p) => { if (index >= 0 && index < p.length) p[index] = String(text || ""); });
+  },
+  removePortent(scId, frId, dgId, index) {
+    return this._portentMutate(scId, frId, dgId, (p) => { if (index >= 0 && index < p.length) p.splice(index, 1); });
+  },
+  _portentMutate(scId, frId, dgId, fn) {
+    const sc = this.get(scId);
+    const front = sc && sc.fronts.find((f) => f && f.id === frId);
+    const danger = front && front.dangers.find((d) => d && d.id === dgId);
+    if (!danger) return false;
+    fn(danger.grimPortents);
+    this.save();
+    this._emit({ scenarioId: scId, kind: "front", op: "update", id: frId });
+    return true;
+  },
+  /** AVANCÉE des présages en partie (runtime seul — Failsafe) : révèle les `n`
+      premiers présages ordonnés d'un danger. */
+  setFrontPortent(scId, dgId, count) {
+    const sc = this.get(scId);
+    if (!sc) return false;
+    let danger = null;
+    for (const f of sc.fronts) { const d = (f.dangers || []).find((x) => x.id === dgId); if (d) { danger = d; break; } }
+    if (!danger) return false;
+    const n = Math.max(0, Math.min((danger.grimPortents || []).length, parseInt(count, 10) || 0));
+    const rt = Object.assign({}, sc.runtime || {});
+    rt.frontPortents = Object.assign({}, rt.frontPortents || {});
+    rt.frontPortents[dgId] = n;
+    sc.runtime = rt;
+    this.save();
+    this._emit({ scenarioId: scId, kind: "runtime", op: "patch", id: scId });
+    return true;
+  },
+  frontPortent(sc, dgId) {
+    const n = sc && sc.runtime && sc.runtime.frontPortents && sc.runtime.frontPortents[dgId];
+    return n != null ? n : 0;
   },
 
   /* ---- Runtime : état de PARTIE, strictement séparé de l'édition (Failsafe) ----

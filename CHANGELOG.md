@@ -12,6 +12,26 @@ commit.
 
 ## [Non publié]
 
+## [1.103.0] — 2026-07-24
+
+### Ajouté
+
+- **Un atelier de trame scénaristique, jouable en direct.** Le meneur peut
+  désormais construire un run comme une **carte de scènes** typées (accroche ·
+  repérage · action · sociale · décision · retombée), reliées par des
+  transitions (choix exclusif, parallèle, **sortie de secours**), arrangées à la
+  main et mémorisées. On part de zéro, d'un **squelette** (Donjon en 5 salles,
+  Story Spine, Story Circle) ou d'un **modèle maison** enregistré depuis une
+  trame existante. Un **calque d'indices** se superpose aux scènes (faits cachés
+  + pistes, ancrées ou flottantes) avec des **alertes de robustesse** (« ce fait
+  n'a qu'une seule voie », règle des trois indices, cul-de-sac…). La **pression**
+  monte avec des **horloges** (qui ferment une sortie ou activent une scène à un
+  seuil) et des **fronts** (une faction + des présages qui escaladent). Chaque
+  scène porte son **beat dramatique** (le choix forcé, une flèche espoir/peur qui
+  teinte la carte). Et tout est **vivant des deux côtés** : l'atelier de prep et
+  le cockpit de « Jouer » éditent la **même trame** — faire monter une horloge ou
+  bifurquer à la table se répercute à la volée sur le schéma, et inversement.
+
 ## [1.102.0] — 2026-07-24
 
 ### Ajouté

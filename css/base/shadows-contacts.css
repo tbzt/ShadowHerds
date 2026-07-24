@@ -695,6 +695,24 @@
   font-size: var(--fs-sm, 0.85rem);
   line-height: 1.45;
 }
+/* S6 — le bang de l'étape (choix forcé) ; teinté par la flèche dramatique. */
+.play-trame-bang {
+  margin: 0 0 var(--sp-2);
+  padding: 5px 8px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  font-size: var(--fs-sm, 0.85rem);
+  font-style: italic;
+}
+.play-trame-bang[data-arrow="hope"] {
+  border-left-color: var(--success, #4caf7d);
+  background: color-mix(in srgb, var(--success, #4caf7d) 8%, transparent);
+}
+.play-trame-bang[data-arrow="fear"] {
+  border-left-color: var(--danger, #d05050);
+  background: color-mix(in srgb, var(--danger, #d05050) 8%, transparent);
+}
+.play-trame-bang-arrow { font-weight: 700; font-style: normal; }
 .play-trame-cast {
   display: flex;
   flex-wrap: wrap;
@@ -755,6 +773,127 @@
   border-style: dashed;
   background: none;
   color: var(--text-dim);
+}
+/* S5a — la Pression : horloges remplissables en live sous les sorties. */
+.play-trame-pression {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.play-clock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.play-clock-title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-sm, 0.85rem);
+}
+.play-clock-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+.play-clock-btns {
+  display: flex;
+  gap: 4px;
+}
+.play-clock-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-mid, #16202b);
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.play-clock-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.play-clock-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+/* S5b — Fronts en cockpit : faction + dangers dont on avance les présages. */
+.play-trame-fronts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.play-front {
+  border-left: 3px solid var(--danger, #d05050);
+  padding-left: 8px;
+}
+.play-front-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm, 0.85rem);
+  font-weight: 600;
+}
+.play-front-faction {
+  margin-left: auto;
+  font-weight: 400;
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+.play-danger {
+  margin-top: 4px;
+}
+.play-danger-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.play-danger-impulse {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.82rem;
+}
+.play-portent-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+.play-portents {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0 0 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.play-portent {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  padding-left: 12px;
+  position: relative;
+}
+.play-portent::before {
+  content: "○";
+  position: absolute;
+  left: 0;
+}
+.play-portent.revealed {
+  color: var(--text);
+}
+.play-portent.revealed::before {
+  content: "◉";
+  color: var(--danger, #d05050);
+}
+.play-portent-doom {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--warning, #e0a72e);
 }
 @keyframes play-cockpit-pulse {
   0%,

@@ -582,3 +582,205 @@
   border-color: var(--accent, #35e0e6);
   color: var(--text, #dce6f0);
 }
+
+/* ── S4 — calque d'indices (faits + pistes) ── */
+/* Bouton « ＋ Fait » de la barre d'ajout : teinte distincte des types de scène. */
+.scenario-info-btn {
+  border-color: #6f9fd8;
+  color: #9fc0e6;
+}
+/* Marqueur de rôle (◆/◇) dans l'entête d'inspecteur. */
+.scenario-info-mark {
+  color: #9fc0e6;
+}
+.scenario-clue-hint {
+  margin: 2px 0 6px;
+  font-size: 0.76rem;
+}
+/* Indice flottant (sans ancre) — Sly Flourish : signalé, pas alarmant. */
+.scenario-clue-floating {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px dashed #6f9fd8;
+  border-radius: 10px;
+  color: var(--text-dim, #9fb0c0);
+  font-size: 0.76rem;
+  font-style: italic;
+}
+
+/* ── S4b — badge & panneau de robustesse ── */
+.scenario-robust-badge {
+  padding: 3px 9px;
+  border: 1px solid var(--border, #2a3a49);
+  border-radius: 4px;
+  background: none;
+  color: var(--text-dim, #9fb0c0);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.scenario-robust-badge:hover:not(:disabled) {
+  border-color: var(--accent, #35e0e6);
+  color: var(--text, #dce6f0);
+}
+.scenario-robust-badge.has-warnings {
+  border-color: var(--warning, #e0a72e);
+  color: var(--warning, #e0a72e);
+}
+.scenario-robust-list {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.scenario-robust-item {
+  padding: 6px 9px;
+  border-left: 3px solid var(--border, #2a3a49);
+  border-radius: 3px;
+  background: var(--bg-mid, #16202b);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  cursor: pointer;
+}
+.scenario-robust-item.error { border-left-color: var(--danger, #d05050); }
+.scenario-robust-item.warn { border-left-color: var(--warning, #e0a72e); }
+.scenario-robust-item.ok {
+  border-left-color: var(--success, #4caf7d);
+  cursor: default;
+}
+.scenario-robust-item[data-scenario-robust]:hover {
+  background: var(--bg-card, #1b2735);
+}
+
+/* ── S5a — horloges (anneau segmenté + panneau d'atelier) ── */
+/* Anneau : partagé atelier↔cockpit. Teinte de remplissage par type. */
+.clock-ring .clock-slice {
+  fill: var(--bg-mid, #16202b);
+  stroke: var(--border, #2a3a49);
+  stroke-width: 1;
+}
+.clock-ring .clock-slice.filled { fill: var(--accent, #35e0e6); }
+.clock-ring.t-menace .clock-slice.filled { fill: var(--danger, #d05050); }
+.clock-ring.t-alerte .clock-slice.filled { fill: var(--warning, #e0a72e); }
+.clock-ring.t-objectif .clock-slice.filled { fill: var(--success, #4caf7d); }
+
+.scenario-clock {
+  border: 1px solid var(--border, #2a3a49);
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+.scenario-clock-head { display: flex; gap: 8px; align-items: flex-start; }
+.scenario-clock-fields { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.scenario-clock-title { width: 100%; }
+.scenario-clock-meta { display: flex; gap: 6px; align-items: center; }
+.scenario-clock-seg { display: flex; gap: 4px; align-items: center; font-size: 0.76rem; color: var(--text-dim, #9fb0c0); }
+.scenario-clock-seg input { width: 46px; }
+.scenario-clock-del {
+  border: none; background: none; cursor: pointer;
+  color: var(--text-dim, #9fb0c0); font-size: 0.9rem; padding: 2px 4px;
+}
+.scenario-clock-del:hover { color: var(--danger, #d05050); }
+.scenario-clock-effects { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+.scenario-effect { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; font-size: 0.78rem; }
+.scenario-effect-at { display: flex; gap: 3px; align-items: center; color: var(--text-dim, #9fb0c0); }
+.scenario-effect-at input { width: 44px; }
+.scenario-effect select { flex: 1; min-width: 96px; }
+
+/* Sous-titres du panneau Pression (Horloges / Fronts). */
+.scenario-subhead {
+  margin: 10px 0 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dim, #9fb0c0);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* ── S5b — fronts (faction + dangers + présages ordonnés) ── */
+.scenario-front {
+  border: 1px solid var(--border, #2a3a49);
+  border-left: 3px solid var(--danger, #d05050);
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+.scenario-front-head { display: flex; gap: 6px; align-items: center; }
+.scenario-front-glyph { color: var(--danger, #d05050); }
+.scenario-front-title { flex: 1; min-width: 0; }
+.scenario-front-head select { max-width: 40%; }
+.scenario-danger {
+  margin-top: 6px;
+  padding: 6px;
+  border: 1px solid var(--border, #2a3a49);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.scenario-danger-head { display: flex; gap: 4px; align-items: center; }
+.scenario-danger-head input { flex: 1; min-width: 0; }
+.scenario-portents { display: flex; flex-direction: column; gap: 3px; }
+.scenario-portent { display: flex; gap: 4px; align-items: center; }
+.scenario-portent-n { color: var(--text-dim, #9fb0c0); font-size: 0.76rem; }
+.scenario-portent input { flex: 1; min-width: 0; }
+.scenario-portent-add {
+  align-self: flex-start;
+  padding: 1px 7px;
+  border: 1px dashed var(--border, #2a3a49);
+  border-radius: 10px;
+  background: none;
+  color: var(--text-dim, #9fb0c0);
+  font-size: 0.74rem;
+  cursor: pointer;
+}
+.scenario-danger-doom { font-style: italic; }
+
+/* ── S5c — lentille Chronologie (double timeline) ── */
+.scenario-tl-list {
+  list-style: none;
+  margin: 4px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.scenario-tl-fact {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  padding: 4px 6px;
+  border-left: 2px solid var(--border, #2a3a49);
+  background: var(--bg-mid, #16202b);
+  border-radius: 3px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.scenario-tl-fact:hover { background: var(--bg-card, #1b2735); }
+.scenario-tl-fact.progression { border-left-color: #9fc0e6; }
+.scenario-tl-when {
+  min-width: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text-dim, #9fb0c0);
+}
+.scenario-tl-sub {
+  margin: 8px 0 4px;
+  font-size: 0.76rem;
+  color: var(--text-dim, #9fb0c0);
+}
+.scenario-tl-future-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 0.82rem;
+}
+.scenario-tl-future-row > span:nth-child(2) { flex: 1; min-width: 0; }
+.scenario-tl-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim, #9fb0c0);
+  font-size: 0.78rem;
+}

@@ -79,6 +79,27 @@ export const Play = {
           if (typeof ScenarioStore !== "undefined" && el.dataset.scenario && el.dataset.node)
             ScenarioStore.patchRuntime(el.dataset.scenario, { currentSceneId: el.dataset.node });
           break;
+        case "play-trame-clock": {
+          // S5a — monter/baisser une horloge en live ; setClockFill applique les
+          // effets (fermer sortie / activer étape) et émet → re-render du poste.
+          if (typeof ScenarioStore === "undefined") break;
+          const s = ScenarioStore.get(el.dataset.scenario);
+          if (s && el.dataset.clock) {
+            const cur = ScenarioStore.clockFill(s, el.dataset.clock);
+            ScenarioStore.setClockFill(el.dataset.scenario, el.dataset.clock, cur + (parseInt(el.dataset.delta, 10) || 0));
+          }
+          break;
+        }
+        case "play-trame-portent": {
+          // S5b — avancer/reculer les présages d'un danger de front (runtime).
+          if (typeof ScenarioStore === "undefined") break;
+          const s = ScenarioStore.get(el.dataset.scenario);
+          if (s && el.dataset.danger) {
+            const cur = ScenarioStore.frontPortent(s, el.dataset.danger);
+            ScenarioStore.setFrontPortent(el.dataset.scenario, el.dataset.danger, cur + (parseInt(el.dataset.delta, 10) || 0));
+          }
+          break;
+        }
         case "play-trame-link": {
           // Lier une trame existante au run ; aucune → ouvrir l'atelier pour créer.
           if (typeof ScenarioStore === "undefined") break;
@@ -570,7 +591,9 @@ export const Play = {
       return `<div class="play-trame">${head}<div class="play-trame-body">${body}</div></div>`;
     }
     const g = this._TRAME_GLYPH[cur.type] || "●";
-    const exits = sc.sceneEdges.filter((e) => e.from === cur.id);
+    // S5a — une sortie FERMÉE par une horloge disparaît des choix (runtime).
+    const closedEdges = new Set((sc.runtime && sc.runtime.closedEdgeIds) || []);
+    const exits = sc.sceneEdges.filter((e) => e.from === cur.id && !closedEdges.has(e.id));
     const exitBtns = exits.length
       ? exits
           .map((e) => {
@@ -600,9 +623,71 @@ export const Play = {
         <span class="play-trame-cur-title">${esc(cur.title || "(sans titre)")}</span>
       </div>
       ${cur.body ? `<p class="play-trame-cur-body">${esc(cur.body)}</p>` : ""}
+      ${cur.bang ? `<p class="play-trame-bang" data-arrow="${cur.arrow || ""}"><span class="play-trame-bang-arrow" aria-hidden="true">${cur.arrow === "hope" ? "↑" : cur.arrow === "fear" ? "↓" : "◆"}</span> ${esc(cur.bang)}</p>` : ""}
       ${castRow}
       <div class="play-trame-exits">${exitBtns}</div>
+      ${this._pressionHtml(sc)}
+      ${this._frontsHtml(sc)}
     </div>`;
+  },
+
+  /** S5b — les FRONTS en cockpit : faction + dangers dont on avance les présages
+      ordonnés en live (−/＋ → `setFrontPortent`). Tous présages révélés → échéance. */
+  _frontsHtml(sc) {
+    const esc = CardRenderer._esc;
+    const fronts = sc.fronts || [];
+    if (!fronts.length) return "";
+    const facName = (id) => (typeof FactionStore !== "undefined" && id && FactionStore.get(id)) ? FactionStore.get(id).name : "";
+    const rows = fronts.map((f) => {
+      const fn = facName(f.factionId);
+      const dangers = (f.dangers || []).map((d) => {
+        const total = (d.grimPortents || []).length;
+        const rev = ScenarioStore.frontPortent(sc, d.id);
+        const portents = (d.grimPortents || []).map((p, i) => `<li class="play-portent${i < rev ? " revealed" : ""}">${i < rev ? esc(p) : "présage à venir"}</li>`).join("");
+        const doom = total && rev >= total && d.impendingDoom ? `<div class="play-portent-doom">⚠ ${esc(d.impendingDoom)}</div>` : "";
+        return `<div class="play-danger">
+          <div class="play-danger-head">
+            <span class="play-danger-impulse">${esc(d.impulse || "(danger)")}</span>
+            <span class="play-portent-count">${rev}/${total}</span>
+            <span class="play-clock-btns">
+              <button class="play-clock-btn" data-action="play-trame-portent" data-scenario="${sc.id}" data-danger="${d.id}" data-delta="-1"${rev <= 0 ? " disabled" : ""} aria-label="Reculer les présages">−</button>
+              <button class="play-clock-btn" data-action="play-trame-portent" data-scenario="${sc.id}" data-danger="${d.id}" data-delta="1"${rev >= total || !total ? " disabled" : ""} aria-label="Avancer d'un présage">＋</button>
+            </span>
+          </div>
+          <ol class="play-portents">${portents}</ol>
+          ${doom}
+        </div>`;
+      }).join("");
+      return `<div class="play-front">
+        <div class="play-front-head"><span aria-hidden="true">⚑</span> <span class="play-front-title">${esc(f.title || "(front)")}</span>${fn ? `<span class="play-front-faction">${esc(fn)}</span>` : ""}</div>
+        ${dangers}
+      </div>`;
+    }).join("");
+    return `<div class="play-trame-fronts"><span class="play-trame-word">Fronts</span>${rows}</div>`;
+  },
+
+  /** S5a — la PRESSION en cockpit : chaque horloge de la trame, remplissable en
+      live (−/＋ → `setClockFill`, qui applique les effets et émet ; l'abonnement
+      re-rend le poste). Anneau réutilisé de l'atelier (ScenarioGraph). */
+  _pressionHtml(sc) {
+    const esc = CardRenderer._esc;
+    const clocks = sc.clocks || [];
+    if (!clocks.length || typeof ScenarioGraph === "undefined") return "";
+    const rows = clocks
+      .map((c) => {
+        const fill = ScenarioStore.clockFill(sc, c.id);
+        return `<div class="play-clock t-${c.type}">
+          ${ScenarioGraph.clockRingHtml(c.segments, fill, c.type, 32)}
+          <span class="play-clock-title">${esc(c.title || "(horloge)")}</span>
+          <span class="play-clock-count">${fill}/${c.segments}</span>
+          <span class="play-clock-btns">
+            <button class="play-clock-btn" data-action="play-trame-clock" data-scenario="${sc.id}" data-clock="${c.id}" data-delta="-1"${fill <= 0 ? " disabled" : ""} aria-label="Baisser l'horloge">−</button>
+            <button class="play-clock-btn" data-action="play-trame-clock" data-scenario="${sc.id}" data-clock="${c.id}" data-delta="1"${fill >= c.segments ? " disabled" : ""} aria-label="Monter l'horloge">＋</button>
+          </span>
+        </div>`;
+      })
+      .join("");
+    return `<div class="play-trame-pression"><span class="play-trame-word">Pression</span>${rows}</div>`;
   },
 
   /** Abonnement live à ScenarioStore : quand Jouer est visible et qu'une trame

@@ -553,6 +553,11 @@ export const TourSteps = {
       title: "La carte des Liens se zoome et se déplace",
       body: "La carte heuristique (vue « Liens ») n'est plus prisonnière de la taille de la fenêtre. Molette pour zoomer autour du curseur, boutons « ＋ / ⤢ / − » au coin de la carte (« ⤢ » revient à la vue d'ensemble), et pincement à deux doigts sur écran tactile — le geste consacré. Une fois zoomé, glissez le fond pour vous déplacer. Vos gestes habituels — déplacer un nœud, tisser un lien — restent intacts : le zoom cadre, il ne touche pas au graphe.",
     },
+    {
+      id: "wn-trame-scenaristique", anchor: "nav-play", tours: ["whatsnew"], since: "1.103.0", fallback: "center",
+      title: "Un atelier de trame scénaristique, jouable en direct",
+      body: "Construisez un run comme une carte de scènes typées (accroche, action, décision, retombée…) reliées par des transitions et des sorties de secours — de zéro, d'un squelette (Donjon en 5 salles, Story Spine, Story Circle) ou d'un modèle maison enregistré depuis une trame existante. Superposez un calque d'indices (faits + pistes, ancrées ou flottantes) avec des alertes de robustesse (« ce fait n'a qu'une seule voie », règle des trois indices). Faites monter la pression avec des horloges (qui ferment une voie ou activent une scène à un seuil) et des fronts (une faction + des présages qui escaladent). Annotez chaque scène de son beat dramatique (le choix forcé, une flèche espoir/peur qui teinte la carte). Et surtout : l'atelier de prep et le cockpit de « Jouer » éditent la même trame, en direct — bifurquer ou faire tourner une horloge à la table se voit aussitôt sur le schéma, et inversement.",
+    },
   ],
 };
 
