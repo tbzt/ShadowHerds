@@ -133,6 +133,41 @@
   line-height: 1.45;
   margin-bottom: 7px;
 }
+/* Face externe du paradigme (ParadigmLens.server) : n'apparaît que
+   lorsqu'un aspect est curé (rendu authored-only côté ServerRenderer). */
+.server-paradigm {
+  margin: 0 0 7px;
+  padding-left: 7px;
+  border-left: 2px solid var(--accent);
+}
+.server-para-row {
+  margin: 0 0 3px;
+  font-size: var(--fs-xs);
+  color: var(--text);
+  line-height: 1.4;
+}
+.server-para-label {
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-right: 0.35rem;
+}
+/* Image d'ambiance du paradigme : vignette sur la carte (cliquable → lightbox),
+   n'apparaît que si générée (opt-in Images IA). */
+.server-paradigm-img {
+  display: block;
+  width: 100%;
+  max-height: 130px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  margin-bottom: 7px;
+  cursor: pointer;
+}
+.server-paradigm-gen {
+  margin-bottom: 7px;
+}
 .server-ic-row {
   display: flex;
   flex-wrap: wrap;

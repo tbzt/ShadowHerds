@@ -345,7 +345,7 @@ export const Settings = {
       <div class="settings-section">
         <h3>Images IA</h3>
         <div class="display-pref-row">
-          <label for="pg_enabled">Images IA (Pollinations) : portraits et plans de lieu</label>
+          <label for="pg_enabled">Images IA (Pollinations) : portraits, ambiances de lieu et de paradigme</label>
           <input type="checkbox" id="pg_enabled" ${pg.enabled ? "checked" : ""}
             data-action="toggle-portrait-gen">
         </div>

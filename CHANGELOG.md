@@ -12,6 +12,32 @@ commit.
 
 ## [Non publié]
 
+## [1.100.0] — 2026-07-24
+
+### Ajouté
+
+- **Le paradigme d'un serveur se déroule sur la narration.** La « sculpture »
+  d'un serveur, jusque-là une ligne, se déplie sur les aspects jouables : dans
+  « ⛓ Plonger dans les Fondations » (SR5/SR6), chacun des 7 nœuds prend le
+  costume du thème (l'Archive d'une cathédrale devient « la crypte aux
+  reliques »), une phrase d'arrivée pose l'ambiance, et la Variance se raconte —
+  ce qu'« agir hors-thème » signifie ici, en mineure et en extrême. Sur la carte
+  du serveur, un bloc dit ce que l'hôte EST dans le monde. Couvre les 32
+  sculptures ; un thème maison retombe sur des amorces à compléter. Contenu
+  dérivé de *Data Trails* (p. 122-124).
+- **Image d'ambiance du paradigme (IA, opt-in).** Quand « Images IA » est actif,
+  un bouton « ✨ Image du paradigme » génère, depuis une carte serveur, une vue
+  onirique de son thème (grande dans la vue Fondations, en vignette sur la
+  carte, cliquable en grand).
+
+### Modifié
+
+- **L'image IA d'un lieu passe du « plan » à l'« ambiance ».** L'IA ne redouble
+  plus le plan tactique (déjà tracé en SVG, gratuit et précis) : le bouton
+  « ✨ Ambiance » d'un topos génère désormais une image d'ambiance
+  cinématographique du lieu, et s'affiche pour toute scène ayant un lieu.
+  Principe : le SVG pour la structure, l'IA pour le ressenti.
+
 ## [1.99.0] — 2026-07-24
 
 ### Modifié

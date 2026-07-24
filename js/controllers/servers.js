@@ -104,6 +104,36 @@ export const Servers = Object.assign(
       this.render();
     },
 
+    /** Image d'AMBIANCE du paradigme (opt-in Images IA). Le prompt est bâti
+        depuis le déroulé (sculpture + sens du paradigme), habillé « hôte
+        Matrice » pour lire comme une RV, pas un lieu réel. Stocke
+        `srv.paradigmImageUrl` ; plomberie (file, token, retries) déléguée à
+        Pollinations, comme les portraits. Pendant : la STRUCTURE reste au SVG
+        (topologie/Fondations) — l'IA n'apporte que l'ambiance. */
+    generateParadigmImage(id, btn) {
+      const srv = this.find(id);
+      if (!srv || !srv.sculpture) return;
+      const p = Matrix.paradigmForSculpture(srv.sculpture);
+      const senses = p && p.senses ? `, ${p.senses}` : "";
+      const prompt =
+        `${srv.sculpture}${senses}, ` +
+        `Shadowrun Matrix host virtual reality dreamscape, cyberpunk digital realm, ` +
+        `atmospheric, cinematic, highly detailed, no text`;
+      Pollinations.generate({
+        prompt,
+        width: 768,
+        height: 512,
+        token: Settings.getPortraitSettings().token,
+        btn,
+        label: "Paradigme",
+        onSuccess: (url) => {
+          srv.paradigmImageUrl = url;
+          this.save();
+          this.render();
+        },
+      });
+    },
+
     /** Taille du moniteur matriciel d'une CI. */
     icMonitorSize(srv) {
       return Matrix.use(srv.edition).icMonitorSize(srv.indice);
@@ -491,6 +521,9 @@ export const Servers = Object.assign(
             break;
           case "reroll-sculpture":
             this.rerollSculpture(id);
+            break;
+          case "gen-paradigm-img":
+            this.generateParadigmImage(id, el);
             break;
           case "toggle-edit":
             this.toggleEdit(id);

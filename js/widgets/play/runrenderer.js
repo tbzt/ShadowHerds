@@ -112,21 +112,23 @@ export const RunRenderer = {
     return `<button class="card-action-btn" data-action="run-cast" title="Générer les PNJ d'opposition et les ranger dans le run">⚔ Casting</button>`;
   },
 
-  /** Boutons « plan » d'un site à plan utile (tag `planUtile`, 3a) ; rien pour
-      un topos vierge. Deux chemins :
-      - « Plan tactique » (MapGen) : plan CONSTRUIT, gratuit, instantané, hors
-        opt-in IA — toujours proposé. Déterministe par graine, régénéré à
-        l'affichage (`run-map` → RunGen.showMap).
-      - « Ambiance » (Pollinations, Lot 4) : image d'ambiance IA, seulement si
-        l'opt-in Images IA est actif ; vignette cliquable si déjà générée. */
+  /** Boutons du lieu. Deux natures distinctes, gatées séparément :
+      - « Plan tactique » (MapGen SVG) = la STRUCTURE : gratuit, hors opt-in IA,
+        seulement là où un plan a du sens (site à `planUtile`, 3a). Déterministe
+        par graine, régénéré à l'affichage (`run-map` → RunGen.showMap).
+      - « Ambiance » (Pollinations) = le RESSENTI : image IA, pour TOUT lieu
+        (une scène a toujours une ambiance, ≠ un plan structurel) si l'opt-in
+        Images IA est actif ; vignette cliquable si déjà générée. */
   _planBtn(r) {
-    if (!r.planUtile) return "";
-    let out = `<button class="card-action-btn" data-action="run-map" title="Plan tactique du lieu (généré, gratuit)">🗺 Plan tactique</button>`;
+    let out = "";
+    if (r.planUtile) {
+      out += `<button class="card-action-btn" data-action="run-map" title="Plan tactique du lieu (généré, gratuit)">🗺 Plan tactique</button>`;
+    }
     const aiEnabled =
       typeof Settings !== "undefined" && Settings.getPortraitSettings().enabled;
-    if (aiEnabled) {
+    if (aiEnabled && r.lieu) {
       out += r.planUrl
-        ? `<button class="card-action-btn" data-portrait-preview="${CardRenderer._esc(r.planUrl)}" data-portrait-caption="${CardRenderer._esc(`Ambiance — ${r.lieu || "lieu inconnu"}`)}" title="Voir l'ambiance générée">✨ Ambiance</button>`
+        ? `<button class="card-action-btn" data-portrait-preview="${CardRenderer._esc(r.planUrl)}" data-portrait-caption="${CardRenderer._esc(`Ambiance — ${r.lieu}`)}" title="Voir l'ambiance générée">✨ Ambiance</button>`
         : `<button class="card-action-btn" data-action="run-plan" title="Générer une ambiance du lieu (IA)">✨ Ambiance</button>`;
     }
     return out;

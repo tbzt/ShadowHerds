@@ -22,6 +22,7 @@
    ============================================================ */
 import { FoundationGen } from "../../rules/foundationgen.js";
 import { Matrix } from "../../rules/matrix.js";
+import { ParadigmLens } from "../../rules/paradigmlens.js";
 import { Utils } from "../../core/utils.js";
 
 export const FoundationView = {
@@ -62,9 +63,23 @@ export const FoundationView = {
       interactive: true,
     });
 
-    const paradigm = srv.sculpture
+    /* Déroulé du paradigme sur les aspects (ParadigmLens) : contenu curé
+       s'il existe, sinon amorce-échafaudage de repli. Aucun état, aucune
+       persistance — la vue reste une fiche de référence en lecture seule. */
+    const lens = ParadigmLens.foundation(Matrix.paradigmForSculpture(srv.sculpture), foundationNodes);
+    const costumeById = new Map(lens.nodes.map((n) => [n.id, n.costume]));
+    const cue = (f, cls = "") =>
+      `<p class="foundation-cue ${cls} ${f.authored ? "is-authored" : "is-scaffold"}">${esc(f.text)}</p>`;
+
+    const sculptureBlock = srv.sculpture
       ? `<blockquote class="foundation-paradigm">${esc(srv.sculpture)}</blockquote>`
       : `<p class="foundation-hint">Aucune sculpture définie — le paradigme reste à décrire.</p>`;
+
+    // Image d'ambiance du paradigme si elle a été générée (depuis la carte
+    // serveur, opt-in Images IA) — affichage seul ici, la vue reste en lecture.
+    const paradigmImg = srv.paradigmImageUrl
+      ? `<img class="foundation-paradigm-img" src="${esc(srv.paradigmImageUrl)}" alt="Ambiance du paradigme" loading="lazy">`
+      : "";
 
     const nodes = foundationNodes
       .map((node) => {
@@ -81,9 +96,11 @@ export const FoundationView = {
               )
               .join("")}</ul>`
           : `<p class="foundation-hint">Aucune action connue sur ce nœud.</p>`;
+        const costume = costumeById.get(node.id);
         return `<section class="foundation-node" id="foundation-node-${esc(node.id)}">
             <h4 class="foundation-node-title">${esc(node.label)}</h4>
             <p class="foundation-node-role">${esc(node.role)}</p>
+            ${costume ? cue(costume, "foundation-costume") : ""}
             ${actions}
           </section>`;
       })
@@ -95,7 +112,9 @@ export const FoundationView = {
       <div class="foundation-plan">${plan}</div>
       <section class="foundation-meta">
         <h4 class="foundation-node-title">Paradigme</h4>
-        ${paradigm}
+        ${paradigmImg}
+        ${sculptureBlock}
+        ${cue(lens.senses, "foundation-senses")}
         <p class="foundation-hint">${esc(ed.foundationParadigmHint())}</p>
       </section>
       <section class="foundation-meta">
@@ -105,6 +124,11 @@ export const FoundationView = {
       <section class="foundation-meta foundation-variance">
         <h4 class="foundation-node-title">Variance</h4>
         <p class="foundation-node-role">${esc(ed.foundationVarianceNote())}</p>
+        <div class="foundation-variance-fiction">
+          <p class="foundation-cue-label">Agir hors-thème, ici :</p>
+          ${cue(lens.variance.minor, "var-minor")}
+          ${cue(lens.variance.extreme, "var-extreme")}
+        </div>
       </section>
       <div class="foundation-section-title">Les 7 nœuds</div>
       ${nodes}`;

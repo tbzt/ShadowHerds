@@ -816,6 +816,199 @@ export const Matrix = {
     return Utils.rand(this.SCULPTURES[Utils.clamp(sev, 0, 2)]);
   },
 
+  /* ========================================================
+     PARADIGMES — déroulé narratif d'une sculpture sur les aspects
+     de la table (le paradigme EST la défense, cf.
+     REFERENCE/FONDATIONS_SERVEUR_BT1.md §6). Structure SPARSE et
+     ADDITIVE : on n'authore ici que ce qu'on a dérivé des livres ;
+     tout le reste tombe en repli côté ParadigmLens. La jointure se
+     fait par `sculpture` = TEXTE EXACT d'une entrée de SCULPTURES
+     (invariant vérifié par paradigmDriftCheck) — donc AUCUN champ
+     nouveau sur `srv` : la clé, c'est srv.sculpture lui-même, et un
+     vieux save ou un thème maison retombe simplement sur le repli.
+     Champs curés, TOUS optionnels : senses, truth, denizens,
+     variance:{minor,extreme}, nodes:{<id de nœud>: costume}.
+     Indépendant d'édition (comme SCULPTURES). ======================== */
+  PARADIGMS: [
+    /* Variance-FICTION (aspect 1). Méthode sourcée Data Trails p.122-124
+       (« Le paradigme », « Variance », table « Exemples de variances »
+       p.123) : MINEURE = incohérence esthétique, « énigmatique ou
+       curieuse » aux habitants ; EXTRÊME = acte perturbant qui saute aux
+       yeux et contredit la règle centrale du rêve (ou agir hors-nœud).
+       Chaque paire suit la LOGIQUE INTERNE de SA sculpture, souvent
+       contre-intuitive (cf. « plaine qui saigne → ne pas saigner »).
+       Indépendant d'édition : le hors-thème découle du thème, pas des
+       règles (la Variance-RÈGLE, elle, diverge SR5≠SR6, gérée ailleurs).
+       Les entrées « façon X, Data Trails/Hacker Vaillant » sont sourçables
+       plus directement ; les autres sont dérivées par analogie. */
+    // ---- sev 0 ----
+    { id: "superette", sculpture: "Supérette virtuelle aux rayonnages criards, jingles promotionnels en boucle, caddies-icônes grinçants ; la patrouilleuse est un vigile mal payé qui traîne des pieds.",
+      variance: { minor: "Repartir sans rien acheter.", extreme: "Faire taire les jingles publicitaires." },
+      nodes: { portail: "Les portes automatiques", archive: "La réserve, cartons au fond", echafaudage: "Les rayonnages et la mezzanine", securite: "Le vigile qui traîne des pieds", regie: "Les caddies-icônes et les caisses", controle: "Le bureau du gérant, à l'étage", vide: "Le quai de livraison désert" },
+      senses: "Le bourdon des néons, une odeur sucrée de promo, le grincement d'un caddie au loin.", truth: "Le serveur d'un petit commerce de quartier — stocks, comptes, fichiers clients ; peu gardé, vite oublié." },
+    { id: "fastfood", sculpture: "Fast-food cartoon aux couleurs saturées ; la mascotte géante suit les visiteurs du regard et note tout.",
+      variance: { minor: "Refuser de sourire à la mascotte.", extreme: "Déclarer que la nourriture est fausse, ne pas avoir faim." },
+      nodes: { portail: "Le comptoir « bienvenue » clignotant", archive: "La chambre froide", echafaudage: "La cuisine et ses passe-plats", securite: "La mascotte géante qui surveille", regie: "Les friteuses et distributeurs asservis", controle: "Le bureau du manager", vide: "Le parking vide sous la pluie" },
+      senses: "L'odeur de friture omniprésente, un jingle qui colle, le regard fixe de la mascotte.", truth: "L'enseigne locale d'une chaîne de fast-food — commandes, RH, recettes ; surveille plus qu'il ne protège." },
+    { id: "bar-arriere", sculpture: "Arrière-salle de bar enfumée : néons fatigués, juke-box qui saute, fichiers étalés sur les tables poisseuses.",
+      variance: { minor: "Rester sobre et parfaitement vif.", extreme: "Ouvrir les fenêtres, chasser la fumée, rallumer la lumière." },
+      nodes: { portail: "La porte de service, derrière", archive: "Les fichiers sur les tables poisseuses", echafaudage: "La charpente basse, l'escalier de cave", securite: "Le videur accoudé au comptoir", regie: "Le juke-box qui saute, les néons", controle: "Le bureau du patron", vide: "La cave murée" },
+      senses: "La fumée qui pique, le juke-box qui accroche, le poisseux sous les doigts.", truth: "L'arrière-boutique numérique d'un rade — comptes au noir, petits secrets du quartier, dettes de comptoir." },
+    { id: "arcade", sculpture: "Salle d'arcade rétro 8-bit : sprites pixelisés, chiptunes, glaces en fantômes de Pac-Man.",
+      variance: { minor: "Se mouvoir en diagonale fluide (le monde bouge par crans).", extreme: "Réclamer la sortie de l'écran, parler du monde réel." },
+      nodes: { portail: "La borne « INSERT COIN »", archive: "L'écran des meilleurs scores", echafaudage: "La rangée de bornes et les câbles", securite: "Les fantômes de Pac-Man en patrouille", regie: "Le monnayeur et les bornes reliées", controle: "Le panneau de maintenance, à l'arrière", vide: "L'écran « GAME OVER » figé" },
+      senses: "Les chiptunes en boucle, le clignotement des bornes, une odeur de plastique chaud.", truth: "Le serveur d'une salle d'arcade ou d'un petit studio de jeu — scores, licences, code maison." },
+    { id: "biblio-quartier", sculpture: "Bibliothèque de quartier assoupie, poussière virtuelle, fiches cartonnées ; le silence y est une politique de sécurité.",
+      variance: { minor: "Chuchoter un ton trop haut, faire craquer le parquet.", extreme: "Parler à voix pleine, briser le silence." },
+      nodes: { portail: "Le tourniquet d'entrée", archive: "Le fichier cartonné et les rayons", echafaudage: "Les étagères et la galerie", securite: "Le silence, et la bibliothécaire", regie: "Le chariot de retour, la photocopieuse", controle: "Le bureau de la conservatrice", vide: "La réserve poussiéreuse, lumière éteinte" },
+      senses: "Le silence ouaté, la poussière dans la lumière, le froissement lointain d'une page.", truth: "Le serveur d'une bibliothèque ou d'une archive locale — dossiers, prêts, un fonds qu'on croit sans valeur." },
+    { id: "garage", sculpture: "Garage associatif : établis gras, pièces détachées suspendues, simulation d'odeur d'huile approximative.",
+      variance: { minor: "Garder les mains propres, ne toucher à rien.", extreme: "Casser une pièce au lieu de la réparer." },
+      nodes: { portail: "La porte basculante", archive: "L'établi où sont posés les fichiers", echafaudage: "Les racks à pièces suspendues", securite: "Le molosse attaché près de l'entrée", regie: "Les outils et machines reliés", controle: "L'atelier du chef mécano", vide: "La fosse de vidange vide" },
+      senses: "Une odeur d'huile approximative, le tintement d'un outil, la chaleur d'un établi.", truth: "Le serveur d'un garage ou d'un atelier associatif — plans, pièces, bidouilles ; parfois un travail au noir." },
+    { id: "page-perso", sculpture: "Page perso à l'ancienne devenue lieu : gifs animés, compteur de visites, murs de photos de famille qui vous dévisagent.",
+      variance: { minor: "Éviter le regard des photos.", extreme: "Se déclarer étranger à la famille, effacer un portrait." },
+      nodes: { portail: "Le bouton « ENTRER » clignotant", archive: "L'album de photos de famille", echafaudage: "Les cadres et les tableaux de liens", securite: "Les visages qui vous dévisagent", regie: "Le compteur de visites et les gifs", controle: "Le livre d'or, page d'admin", vide: "La page « 404 », fond noir" },
+      senses: "Le clignotement des gifs, un vieux MIDI, l'impression d'être dévisagé.", truth: "Le serveur perso de quelqu'un — souvenirs, photos, mots de passe ; l'intimité d'une personne, pas d'une corpo." },
+    { id: "centre-commercial", sculpture: "Centre commercial hypersaturé de publicités, mascottes animées et muzak inlassable.",
+      variance: { minor: "Ignorer une promotion, ne pas répondre à une mascotte.", extreme: "Arracher une affiche, exiger le silence." },
+      nodes: { portail: "Les portiques d'entrée", archive: "Le stock, en sous-sol", echafaudage: "Les coursives et les escalators", securite: "Les mascottes-vigiles animées", regie: "Les écrans publicitaires et la muzak", controle: "Le PC de sécurité, derrière les vitres", vide: "Le parking souterrain désert" },
+      senses: "La muzak inlassable, mille pubs qui parlent en même temps, la foule-icône.", truth: "Le serveur d'un centre commercial — flux clients, baux, vidéosurveillance ; grand, mais peu profond." },
+    { id: "chapelle-tole", sculpture: "Chapelle de tôle et de lumière : vitraux pixellisés, cantiques MIDI ; les troncs acceptent les certifiés.",
+      variance: { minor: "Garder son chapeau, ne pas se recueillir.", extreme: "Vider le tronc, blasphémer." },
+      nodes: { portail: "Le porche de tôle", archive: "La sacristie, registre des certifiés", echafaudage: "La charpente et le clocher", securite: "Le bedeau, à l'entrée", regie: "L'orgue MIDI et les vitraux", controle: "L'autel et la chaire", vide: "Le caveau sous le chœur" },
+      senses: "Des cantiques MIDI, la lumière colorée des vitraux, une odeur de tôle et d'encens.", truth: "Le serveur d'une petite congrégation ou secte — dons, fidèles, une foi qui sert de sécurité." },
+    // ---- sev 1 ----
+    { id: "emeraude", sculpture: "Ville sculptée dans l'émeraude : structures cristallines flottantes, arêtes d'or et d'ébène, mobilier en pétales de pierre précieuse qui vole en éclats sous les intrusions (façon serveur du Métroplexe de Seattle, Data Trails).",
+      variance: { minor: "Un geste brusque qui ternit le cristal.", extreme: "Briser ou empocher une gemme." },
+      nodes: { portail: "L'arche de cristal serti", archive: "La chambre des gemmes (chaque fichier une pierre)", echafaudage: "Les tours flottantes et leurs arêtes d'or", securite: "Les éclats de pierre qui volent aux intrus", regie: "Les serviteurs de jade", controle: "Le trône d'émeraude", vide: "La faille d'ébène sous la ville" },
+      senses: "Un tintement cristallin, une lumière verte et froide, la peur de tout ébrécher.", truth: "Le serveur de prestige d'une administration ou d'une corpo du Métroplexe — vitrine autant que coffre (façon Seattle, Data Trails)." },
+    { id: "film-noir", sculpture: "Tour de bureaux du XXe siècle en noir et blanc purs, sans un gris ; la sécurité n'est que mouvements d'ombre en trenchcoat et Borsalino (façon serveur administratif, Data Trails).",
+      variance: { minor: "Introduire une couleur dans le noir et blanc.", extreme: "Parler ouvertement de shadowrunner (variance extrême imprimée, Data Trails p.123)." },
+      nodes: { portail: "La porte à tambour du hall", archive: "Le classeur du bureau, dossiers noirs", echafaudage: "La cage d'escalier en clair-obscur", securite: "Les ombres en trenchcoat et Borsalino", regie: "Le standard téléphonique", controle: "Le bureau du directeur, stores baissés", vide: "La ruelle sans issue, sous la pluie" },
+      senses: "Le cliquetis d'une machine à écrire, la pluie sur les vitres, tout en noir et blanc.", truth: "Le serveur administratif d'une bureaucratie corpo — dossiers, filatures, secrets d'employés (façon serveur admin, Data Trails)." },
+    { id: "luxe", sculpture: "Boutique de luxe feutrée : vitrines infinies, personnel en gants blancs, clients servis au champagne virtuel (façon serveur Louis Vuitton, Data Trails).",
+      variance: { minor: "Toucher la marchandise sans gants, hausser le ton.", extreme: "Marchander sordidement, voler en vitrine." },
+      nodes: { portail: "La porte tenue par un portier ganté", archive: "Le coffre de l'arrière-boutique", echafaudage: "Les vitrines infinies en enfilade", securite: "Le personnel en gants blancs", regie: "Les présentoirs, le service au champagne", controle: "Le bureau du directeur de clientèle", vide: "Le monte-charge de livraison" },
+      senses: "Le feutré d'une moquette épaisse, une coupe de champagne virtuel, le murmure du personnel.", truth: "Le serveur d'une maison de luxe — clientèle fortunée, stocks rares, réputation à protéger (façon Louis Vuitton, Data Trails)." },
+    { id: "prohibition", sculpture: "Commissariat de la Prohibition : G-men en costume, machines à écrire, tampons officiels ; l'autorité en décorum d'époque (façon icônes du DIEU, Hacker Vaillant).",
+      variance: { minor: "Un geste hors protocole, un anachronisme.", extreme: "Défier l'autorité, s'avouer intrus." },
+      nodes: { portail: "Le comptoir d'accueil, tampon à la main", archive: "Le classeur des dossiers, à clé", echafaudage: "Les couloirs et les bureaux à machines", securite: "Les G-men en costume", regie: "Les machines à écrire et le télétype", controle: "Le bureau du commissaire", vide: "La cellule au sous-sol" },
+      senses: "Le tampon qui claque, le télétype qui crépite, l'autorité en costume d'époque.", truth: "Le serveur d'un service de police ou d'un régulateur — mandats, dossiers, surveillance officielle (façon icônes du DIEU, Hacker Vaillant)." },
+    { id: "open-space", sculpture: "Open-space corporatiste infini se répétant en fractale, néons blancs, odeur virtuelle de café.",
+      variance: { minor: "Flâner sans rien produire.", extreme: "Renverser un poste, crier contre la hiérarchie." },
+      nodes: { portail: "Le tourniquet à badge", archive: "La salle des serveurs", echafaudage: "Les rangées de postes qui se répètent", securite: "L'agent d'étage", regie: "Les imprimantes et la machine à café", controle: "Le bureau d'angle du directeur", vide: "L'étage en travaux, cloisons nues" },
+      senses: "Le bourdon des néons blancs, l'odeur de café, des postes à perte de vue.", truth: "Le serveur de production d'une corpo moyenne — projets, RH, propriété intellectuelle du quotidien." },
+    { id: "campus", sculpture: "Campus universitaire idéalisé : pelouses parfaites, amphithéâtres antiques, le savoir coule en fontaines lumineuses.",
+      variance: { minor: "Couper par la pelouse parfaite.", extreme: "Brûler un livre, railler le savoir." },
+      nodes: { portail: "Le portail d'honneur", archive: "La bibliothèque universitaire", echafaudage: "Les amphithéâtres et les allées", securite: "La sécurité du campus", regie: "Les fontaines de savoir lumineuses", controle: "Le bureau du doyen", vide: "Le terrain vague derrière les bâtiments" },
+      senses: "Le murmure d'une fontaine, l'écho d'un amphi, l'air pur d'une pelouse parfaite.", truth: "Le serveur d'une université ou d'un institut — recherche, dossiers d'étudiants, brevets naissants." },
+    { id: "hopital", sculpture: "Hôpital immaculé : couloirs blancs sans fin, personas-soignants pressés, moniteurs qui bipent des flux de données.",
+      variance: { minor: "Traîner sans urgence, salir le blanc.", extreme: "Blesser au lieu de soigner." },
+      nodes: { portail: "Le sas des urgences", archive: "Les dossiers médicaux, aux archives", echafaudage: "Les couloirs blancs et les étages", securite: "Les vigiles en blouse", regie: "Les moniteurs et les respirateurs", controle: "La salle de garde, bureau du chef", vide: "La morgue, en sous-sol" },
+      senses: "Le bip régulier des moniteurs, l'odeur d'antiseptique, le blanc qui fatigue les yeux.", truth: "Le serveur d'un hôpital ou d'une clinique — dossiers médicaux, un secret qu'un patient a emporté." },
+    { id: "studio-trid", sculpture: "Studio de trid : plateaux emboîtés, projecteurs aveuglants, câbles-serpents ; tout le monde joue un rôle, surtout la sécurité.",
+      variance: { minor: "Chercher la caméra du regard, sortir de son rôle un instant.", extreme: "Refuser de jouer, révéler que c'est un décor." },
+      nodes: { portail: "L'entrée des artistes", archive: "La salle de montage, les rushes", echafaudage: "Les plateaux emboîtés et les passerelles", securite: "Les figurants qui « jouent » la sécurité", regie: "Les projecteurs et la régie technique", controle: "La régie du réalisateur", vide: "Le plateau démonté, décor à nu" },
+      senses: "Des projecteurs aveuglants, le brouhaha d'un plateau, tout le monde qui joue un rôle.", truth: "Le serveur d'un studio de trid ou d'un média — productions, contrats, ce qu'on a coupé au montage." },
+    { id: "jardin-japonais", sculpture: "Jardin japonais idéal : cerisiers perpétuels, pavillons de papier, personas en kimono ; la patrouilleuse est un héron qui arpente son territoire.",
+      variance: { minor: "Presser le pas, hausser le ton.", extreme: "Piétiner le jardin, déchirer un pavillon de papier." },
+      nodes: { portail: "Le torii à l'entrée", archive: "Le pavillon des rouleaux", echafaudage: "Les allées de gravier et les ponts", securite: "Le héron qui arpente son territoire", regie: "Les fontaines et les lanternes", controle: "Le pavillon de thé du maître", vide: "L'étang gelé, sans reflet" },
+      senses: "Le gravier sous les pas, l'eau d'une fontaine, un calme qui ordonne le silence.", truth: "Le serveur d'une corpo japanophile ou d'une fondation — patrimoine, harmonie de façade, décisions feutrées." },
+    { id: "jungle", sculpture: "Jungle luxuriante dont les lianes sont des flux de données, faune-icônes exotique ; les glaces chassent en meute.",
+      variance: { minor: "Marcher à découvert, sans crainte.", extreme: "Fuir en courant (la meute s'élance)." },
+      nodes: { portail: "La trouée dans la canopée", archive: "Le nid caché dans les frondaisons", echafaudage: "Les lianes-flux et les branches maîtresses", securite: "La meute de prédateurs", regie: "La faune-icône asservie", controle: "La clairière du fauve dominant", vide: "Le marécage sans fond" },
+      senses: "Des cris d'oiseaux-icônes, l'humidité épaisse, le sentiment d'être suivi.", truth: "Le serveur d'une biotech ou d'un consortium agro — données du vivant, territoires, une proie désignée." },
+    { id: "recif", sculpture: "Récif corallien bioluminescent, personas-poissons, glaces en requins blancs.",
+      variance: { minor: "Filer droit et vite, sans onduler.", extreme: "Assécher une zone, « respirer » hors de l'eau." },
+      nodes: { portail: "La passe dans le récif", archive: "La grotte aux trésors, coquillages scellés", echafaudage: "Les arches de corail bioluminescent", securite: "Les requins blancs qui rôdent", regie: "Les bancs de personas-poissons", controle: "Le cœur du récif, l'anémone-mère", vide: "La fosse abyssale, lumière éteinte" },
+      senses: "Une lumière bleue qui ondule, le silence sous-marin, des ombres qui tournent.", truth: "Le serveur d'une corpo maritime ou océanique — ressources, cartes, prédateurs qui gardent le large." },
+    // ---- sev 2 ----
+    { id: "cottage-sk", sculpture: "Cottage scandinave au creux de fjords virtuels : cubes de chrome et de verre, géométrie escherienne à l'intérieur, glaces en rottweilers dans des couloirs aseptisés (façon Saeder-Krupp, Data Trails).",
+      variance: { minor: "Laisser une trace de doigt sur le verre immaculé.", extreme: "Introduire du désordre chaud, une courbe organique dans la géométrie froide." },
+      nodes: { portail: "Le sas de verre à l'entrée", archive: "La chambre forte, cubes scellés", echafaudage: "La géométrie escherienne, escaliers impossibles", securite: "Les rottweilers dans les couloirs aseptisés", regie: "Les automates de service", controle: "Le bureau panoramique sur le fjord", vide: "Le vide sous le plancher de verre" },
+      senses: "Un froid de chrome, le claquement net d'une porte, une géométrie qui donne le vertige.", truth: "Le serveur AAA d'un dragon-corpo — ordre glacé, secrets majeurs, chiens de garde partout (façon Saeder-Krupp, Data Trails)." },
+    { id: "chateau-japonais", sculpture: "Château japonais médiéval : jardins zen, personas en kimono, glaces en armure de samouraï réparties dans des temples-fonctions.",
+      variance: { minor: "Tourner le dos à un samouraï, un manquement au protocole.", extreme: "Dégainer sans honneur, frapper un hôte." },
+      nodes: { portail: "Le pont-levis et la porte fortifiée", archive: "Le donjon aux rouleaux et sceaux", echafaudage: "Les étages du donjon, galeries de bois", securite: "Les samouraïs en armure", regie: "Les serviteurs et les palefreniers", controle: "La salle du daimyo", vide: "Le jardin sec, cour scellée" },
+      senses: "Le bois qui craque, l'odeur de tatami, le poids d'un protocole d'honneur.", truth: "Le serveur d'un keiretsu ou d'un clan corpo — hiérarchie d'acier, loyautés, un trésor gardé par la lame." },
+    { id: "pyramide-azteque", sculpture: "Pyramide aztèque monumentale : glyphes de lumière, escaliers processionnels, prêtres-personas ; les connexions coupées sont des sacrifices.",
+      variance: { minor: "Remonter la procession à contresens.", extreme: "Refuser le sacrifice, profaner l'autel." },
+      nodes: { portail: "Le seuil au pied des marches", archive: "La chambre aux trésors, sous la pyramide", echafaudage: "Les escaliers processionnels", securite: "Les prêtres-gardiens", regie: "Les serviteurs offerts au temple", controle: "L'autel sommital", vide: "Le puits sacrificiel (cenote)" },
+      senses: "Un tambour lointain, la lumière des glyphes, une odeur de pierre et de sang.", truth: "Le serveur d'un culte corpo ou d'une AAA rituelle — pouvoir, sacrifices consentis, un secret au sommet." },
+    { id: "labo-simu", sculpture: "Laboratoire de simulation hyperréaliste : souffleries de données, prototypes sous scellés virtuels, physique irréprochable (façon serveurs R&D, Data Trails).",
+      variance: { minor: "Une entorse discrète à la physique, un objet qui flotte.", extreme: "Violer ouvertement les lois physiques, briser un scellé." },
+      nodes: { portail: "Le sas de décontamination", archive: "La salle des prototypes scellés", echafaudage: "Les passerelles et les baies techniques", securite: "Les protocoles et les drones de sécurité", regie: "Les souffleries et les bancs d'essai", controle: "La salle de contrôle vitrée", vide: "La chambre anéchoïque, silence absolu" },
+      senses: "Le souffle des souffleries, une physique trop parfaite, l'odeur stérile d'un scellé.", truth: "Le serveur R&D d'une AAA — prototypes, données d'essai, l'invention qu'on tuerait pour garder (façon serveurs R&D, Data Trails)." },
+    { id: "vortex", sculpture: "Vortex de traitement : plus on approche du cœur du serveur, plus le souffle des données devient un rugissement assourdissant (façon Data Trails).",
+      variance: { minor: "Avancer à contre-courant.", extreme: "S'immobiliser en plein flux, faire taire le rugissement." },
+      nodes: { portail: "Le bord du vortex, seuil du souffle", archive: "L'anneau des données stockées", echafaudage: "Les spirales concentriques", securite: "Les bourrasques qui repoussent", regie: "Les flux asservis, canalisés", controle: "L'œil du vortex, le cœur rugissant", vide: "Le point mort, au centre du silence" },
+      senses: "Un rugissement qui monte, un souffle qui pousse, tout aspiré vers le cœur.", truth: "Le nexus de traitement d'une AAA — un flux colossal de données, un cœur qu'on ne devrait pas atteindre (façon Data Trails)." },
+    { id: "bunker", sculpture: "Bunker militaire en béton brut, éclairage rouge, sirènes silencieuses, portes blindées ; chaque persona est en treillis.",
+      variance: { minor: "Une posture relâchée, une tenue civile.", extreme: "Désobéir à un ordre, rire sous les sirènes." },
+      nodes: { portail: "Le sas blindé", archive: "L'armurerie et le coffre à documents", echafaudage: "Les galeries de béton, les niveaux", securite: "Les sentinelles en treillis", regie: "Le générateur et les systèmes d'armes", controle: "Le PC de commandement", vide: "Le tunnel muré, issue condamnée" },
+      senses: "Une lumière rouge, l'écho du béton, des ordres brefs sous des sirènes muettes.", truth: "Le serveur militaire ou clandestin — opérations, armements, ce qui ne doit jamais sortir." },
+    { id: "cathedrale", sculpture: "Cathédrale gothique de données, vitraux de flux lumineux, échos de chants grégoriens ; les glaces sont des gargouilles qui s'éveillent.",
+      variance: { minor: "Parler fort, rire sous les voûtes.", extreme: "Blasphémer, profaner l'autel (les gargouilles s'éveillent)." },
+      nodes: { portail: "Le grand portail de bronze", archive: "La crypte aux reliques", echafaudage: "La charpente, les arcs-boutants", securite: "Les gargouilles qui s'éveillent", regie: "Les cloches et l'orgue", controle: "Le maître-autel et la chaire", vide: "L'ossuaire scellé sous le chœur" },
+      senses: "L'encens froid, l'écho qui avale les pas, une révérence qui pèse.", truth: "Le serveur d'un ordre qui thésaurise — archives de secrets, dogmes, une relique de données au maître-autel." },
+    { id: "station-orbitale", sculpture: "Station orbitale chromée, baies vitrées sur une Terre virtuelle, gravité à géométrie variable.",
+      variance: { minor: "Marcher comme si le bas était fixe.", extreme: "Réclamer la pesanteur terrestre, exiger de l'air libre." },
+      nodes: { portail: "Le sas d'amarrage", archive: "La soute pressurisée", echafaudage: "Les modules et les coursives", securite: "Les tourelles et les drones", regie: "Les systèmes de survie asservis", controle: "La passerelle de commandement", vide: "Le sas extérieur, le vide spatial" },
+      senses: "Le silence pressurisé, un bourdon de ventilation, le haut et le bas qui glissent.", truth: "Le serveur d'une corpo orbitale ou aérospatiale — trajectoires, brevets, un actif hors d'atteinte." },
+    { id: "colline-reso", sculpture: "Colline sombre sous un ciel sans étoiles, couverte de pierres tombales de programmes morts ; un glas sonne à chaque erreur (façon royaumes de la Résonance, Hacker Vaillant).",
+      variance: { minor: "Rire, afficher de la joie.", extreme: "Ressusciter un programme mort, faire taire le glas." },
+      nodes: { portail: "La grille du cimetière", archive: "Le caveau des programmes défunts", echafaudage: "Les allées de pierres tombales", securite: "Le glas qui appelle les gardiens", regie: "Les épitaphes et les cierges", controle: "Le mausolée central", vide: "La fosse commune, entrée des Abysses" },
+      senses: "Un glas lointain, un ciel sans étoiles, le froid d'un deuil de code.", truth: "Un royaume de la Résonance ou une archive de programmes morts — savoirs enfouis, dangers technomanciens (Hacker Vaillant)." },
+    { id: "speakeasy", sculpture: "Speakeasy années 1920 : jazz feutré, fumée volumétrique, videurs en costume rayé ; le mot de passe change à chaque tour.",
+      variance: { minor: "Détonner, ignorer le tempo.", extreme: "Crier le mot de passe, appeler la Lone Star." },
+      nodes: { portail: "La porte à judas, mot de passe", archive: "L'arrière-salle, coffre sous le bar", echafaudage: "La salle enfumée et la mezzanine", securite: "Les videurs en costume rayé", regie: "Le juke-box et l'alambic clandestin", controle: "Le bureau du gérant, à l'étage", vide: "La sortie de secours, ruelle noire" },
+      senses: "Un jazz feutré, la fumée bleue, un videur qui jauge chaque entrée.", truth: "Le serveur d'un réseau clandestin ou d'une pègre — comptes au noir, contacts, un mot de passe qui change sans cesse." },
+    { id: "biblio-infinie", sculpture: "Bibliothèque infinie aux rayonnages impossibles, fichiers reliés plein cuir ; les index vivent leur propre vie.",
+      variance: { minor: "Ranger un ouvrage à la mauvaise place, corner une page.", extreme: "Brûler un livre, défier l'index vivant." },
+      nodes: { portail: "Le vestibule d'entrée", archive: "Les rayonnages reliés plein cuir", echafaudage: "Les galeries impossibles, escaliers d'Escher", securite: "Les index qui vivent leur propre vie", regie: "Les échelles et les pupitres", controle: "Le bureau du bibliothécaire en chef", vide: "La salle scellée, hors catalogue" },
+      senses: "Le cuir et le vieux papier, l'écho de galeries sans fin, des index qui bruissent.", truth: "Le serveur d'un archiviste obsessionnel ou d'un think tank — un savoir démesuré, un index qui se défend seul." },
+    { id: "noir-absolu", sculpture: "Noir absolu piqueté d'étoiles de données ; l'horizon virtuel n'existe pas, la sécurité si.",
+      variance: { minor: "Projeter sa propre lumière.", extreme: "Imposer un horizon, illuminer le vide." },
+      nodes: { portail: "Le seuil, une lueur dans le noir", archive: "L'amas d'étoiles-données", echafaudage: "Les constellations reliées", securite: "Les sentinelles invisibles", regie: "Les satellites asservis", controle: "L'étoile centrale, la plus brillante", vide: "Le vide sans horizon, le néant" },
+      senses: "Le noir total, des points de données comme des étoiles, aucun sol sous les pieds.", truth: "Le serveur d'une AAA ultra-discrète ou d'un opérateur fantôme — presque rien à voir, tout à cacher." },
+  ],
+  _paradigmChecked: false,
+
+  /** Normalise une clé de sculpture pour la jointure : unifie les
+      apostrophes (droite/typographique) et les espaces, retire les bords.
+      Tolère une saisie curée légèrement divergente sans jamais mélanger
+      deux sculptures distinctes (le corps du texte reste discriminant). */
+  _normSculpt(text) {
+    return String(text || "").replace(/[’‘]/g, "'").replace(/\s+/g, " ").trim();
+  },
+
+  /** Le Paradigme dérivé d'une sculpture (par texte, normalisé), ou null
+      (thème maison / pas encore curé → ParadigmLens sert le repli). */
+  paradigmForSculpture(text) {
+    if (!this._paradigmChecked) {
+      this.paradigmDriftCheck();
+      this._paradigmChecked = true;
+    }
+    if (!text) return null;
+    const key = this._normSculpt(text);
+    return this.PARADIGMS.find((p) => this._normSculpt(p.sculpture) === key) || null;
+  },
+
+  /** Garde-fou anti-dérive : signale tout PARADIGMS.sculpture qui ne
+      correspond plus à aucune entrée de SCULPTURES (édition d'un côté
+      sans l'autre → repli silencieux). Dev-time, jamais bloquant. */
+  paradigmDriftCheck() {
+    const all = new Set(this.SCULPTURES.flat().map((s) => this._normSculpt(s)));
+    this.PARADIGMS.forEach((p) => {
+      if (!all.has(this._normSculpt(p.sculpture)))
+        Debug.warn("matrix", "paradigme orphelin (sculpture introuvable dans SCULPTURES)", {
+          id: p.id,
+          sculpture: String(p.sculpture).slice(0, 40),
+        });
+    });
+  },
+
   makeName(sev) {
     const org = Utils.rand(this.ORGS[Utils.clamp(sev, 0, 2)]);
     return `${org} — ${Utils.rand(this.SUFFIXES)}`;

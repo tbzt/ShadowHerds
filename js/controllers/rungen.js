@@ -264,6 +264,7 @@ export const RunGen = {
      Miroir du pattern gen_pool : les runs survivent au F5 et au changement de
      panel, restaurées par initPanel(). Storage = source de vérité. */
   _RUNS_KEY: "gen_runs",
+  _PURGE_KEY: "gen_runs_blueprint_purged", // flag one-shot (blueprint→ambiance)
   _runs: [],
   _save() {
     Storage.set(this._RUNS_KEY, this._runs);
@@ -291,6 +292,21 @@ export const RunGen = {
   },
   _restore() {
     this._runs = Storage.get(this._RUNS_KEY, []);
+    // Purge unique (par édition) des anciennes images « plan » : c'étaient des
+    // blueprints IA structurels, redondants avec le plan SVG, avant que
+    // `planUrl` ne serve l'AMBIANCE. On les efface pour que le MJ régénère une
+    // vraie ambiance ; garde-fou = flag scopé édition → ne s'exécute qu'une
+    // fois et ne touche jamais une ambiance générée depuis.
+    if (!Storage.get(this._PURGE_KEY, false)) {
+      let touched = false;
+      for (const run of this._runs)
+        if (run.planUrl) {
+          delete run.planUrl;
+          touched = true;
+        }
+      if (touched) this._save();
+      Storage.set(this._PURGE_KEY, true);
+    }
     // _runs est du plus récent au plus ancien : append les rend haut → bas.
     for (const run of this._runs) this._renderCard(run, false);
   },
@@ -331,25 +347,28 @@ export const RunGen = {
     this._refreshCard(id);
   },
 
-  /** « Plan du lieu » (Lot 4) — génère une image de plan (blueprint) du lieu du
-      topos via Pollinations et la stocke sur le topos (`planUrl`). Opt-in Images
-      IA (Settings) ; le bouton n'apparaît que sur un site à `planUtile` (3a).
-      RunGen ne connaît pas la plomberie : file d'attente partagée + token gérés
-      par Pollinations, token lu par l'appelant dans Settings. */
+  /** « Ambiance du lieu » — génère une IMAGE D'AMBIANCE (plan large, ressenti :
+      lumière, matière, atmosphère) du lieu du topos via Pollinations et la
+      stocke sur le topos (`planUrl`, clé conservée — sémantique nouvelle). La
+      STRUCTURE (plan tactique) reste au SVG MapGen (`showMap`) : l'IA ne
+      redouble plus le plan, elle apporte ce que le SVG ne sait pas faire —
+      l'ambiance. Opt-in Images IA (Settings) ; bouton dès qu'il y a un `lieu`
+      (une scène a toujours une ambiance). RunGen ne connaît pas la plomberie :
+      file d'attente + token gérés par Pollinations, token lu dans Settings. */
   generatePlan(runId, btn) {
     const run = this._runs.find((r) => r.id === runId);
     if (!run || !run.lieu) return;
     const prompt =
-      `top-down architectural floor plan blueprint of ${run.lieu}, ` +
-      `schematic layout, labeled rooms, clean technical linework, ` +
-      `Shadowrun cyberpunk facility, blue and white blueprint style`;
+      `atmospheric establishing shot of ${run.lieu}, Shadowrun cyberpunk sixth world, ` +
+      `moody neon lighting, cinematic wide angle, gritty rain-slicked atmosphere, ` +
+      `concept art, highly detailed, no text`;
     Pollinations.generate({
       prompt,
       width: 768,
       height: 512,
       token: Settings.getPortraitSettings().token,
       btn,
-      label: "Plan du lieu",
+      label: "Ambiance du lieu",
       onSuccess: (url) => {
         run.planUrl = url;
         this._save();

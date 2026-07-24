@@ -533,6 +533,16 @@ export const TourSteps = {
       title: "Le casting d'un run se convoque",
       body: "Générer l'opposition d'un run ne la « range » plus dans un dossier : elle est CONVOQUÉE, par référence. Conséquence directe : une même figure peut jouer dans plusieurs runs sans être copiée, et convoquer une faction amène tout son roster vivant — éditer la faction une fois se répercute sur tous les runs qui la convoquent. La fiche indique « Convoqué dans » les nœuds où elle joue, et « ramener un visage déjà croisé » comme la mémoire du monde suivent cette même vérité.",
     },
+    {
+      id: "wn-paradigme-deroule", anchor: "nav-matrix", tours: ["whatsnew"], since: "1.100.0", fallback: "center",
+      title: "Le paradigme d'un serveur, déroulé pour la table",
+      body: "La « sculpture » d'un serveur ne reste plus une simple ligne. Dans « ⛓ Plonger dans les Fondations » (SR5/SR6), chacun des 7 nœuds prend le costume du thème — l'Archive d'une cathédrale devient « la crypte aux reliques » —, une phrase d'arrivée pose l'ambiance, et la Variance se raconte : ce qu'« agir hors-thème » veut dire ici, en mineure et en extrême, dérivé de Data Trails. Sur la carte du serveur, un bloc dit ce que l'hôte EST dans le monde. Le tout couvre les 32 sculptures ; un thème maison retombe sur des amorces qui vous invitent à le décrire.",
+    },
+    {
+      id: "wn-images-ambiance", anchor: "nav-matrix", tours: ["whatsnew"], since: "1.100.0", fallback: "center",
+      title: "Des images d'ambiance générées, là où elles servent",
+      body: "Quand « Images IA » est activé (Paramètres), l'IA sert désormais l'AMBIANCE, pas la structure. Un bouton « ✨ Image du paradigme » sur une carte serveur génère une vue onirique de son thème (grande dans la vue Fondations, en vignette sur la carte). Et l'ancienne « image de plan » d'un lieu devient une vraie image d'ambiance cinématographique — le plan tactique, lui, reste au plan SVG, gratuit et précis. Le SVG pour la géométrie, l'IA pour le ressenti.",
+    },
   ],
 };
 

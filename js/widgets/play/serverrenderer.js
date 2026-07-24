@@ -9,9 +9,52 @@
    ============================================================ */
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Matrix } from "../../rules/matrix.js";
+import { ParadigmLens } from "../../rules/paradigmlens.js";
 import { Utils } from "../../core/utils.js";
 
 export const ServerRenderer = {
+  /** Face EXTERNE du paradigme (le serveur DANS le monde) : sens, ce
+      qu'il est, ses gardiens — via ParadigmLens.server. N'affiche QUE les
+      aspects déjà curés (`authored`) : rien tant que le catalogue ne les
+      porte pas, pour ne pas encombrer une carte déjà dense de repli. La
+      face INTERNE (7 nœuds) vit dans FoundationView. */
+  paradigmBlock(srv) {
+    const p = Matrix.paradigmForSculpture(srv && srv.sculpture);
+    if (!p) return "";
+    const esc = Utils.escHtml;
+    const lens = ParadigmLens.server(p);
+    const rows = [
+      ["Le lieu", lens.senses],
+      ["Ce qu'il est", lens.truth],
+      ["Ses gardiens", lens.denizens],
+    ]
+      .filter(([, f]) => f.authored)
+      .map(
+        ([label, f]) =>
+          `<p class="server-para-row"><span class="server-para-label">${label}</span> ${esc(f.text)}</p>`,
+      )
+      .join("");
+    return rows ? `<div class="server-paradigm">${rows}</div>` : "";
+  },
+
+  /** Image d'AMBIANCE du paradigme : vignette cliquable (→ lightbox Portrait
+      via data-portrait-preview) si déjà générée, sinon un bouton de génération
+      — mais SEULEMENT si l'opt-in Images IA est actif (comme portraits/lieux),
+      et s'il y a une sculpture à représenter. Rien sinon (pas d'affordance
+      morte). La génération vit dans Servers.generateParadigmImage. */
+  paradigmImage(srv) {
+    const esc = Utils.escHtml;
+    if (srv.paradigmImageUrl) {
+      return `<img class="server-paradigm-img" src="${esc(srv.paradigmImageUrl)}" alt="Ambiance du paradigme" loading="lazy" data-portrait-preview="${esc(srv.paradigmImageUrl)}" data-portrait-caption="${esc(`Paradigme — ${srv.name || "serveur"}`)}" title="Voir en grand">`;
+    }
+    const aiEnabled =
+      typeof Settings !== "undefined" && Settings.getPortraitSettings().enabled;
+    if (aiEnabled && srv.sculpture) {
+      return `<button class="card-action-btn server-paradigm-gen" data-action="gen-paradigm-img" data-id="${esc(srv.id)}" title="Générer une image d'ambiance du paradigme (IA)">✨ Image du paradigme</button>`;
+    }
+    return "";
+  },
+
   /** État d'intrusion scène-scopé d'un serveur (`Encounter.state.
       matrix`), lu ici pour l'affichage — remplace `srv.intrusion`. Un seul
       point de résolution plutôt que de faire percoler un paramètre `intr`
@@ -172,6 +215,8 @@ export const ServerRenderer = {
           <button class="btn-icon-tiny" data-action="reroll-sculpture" data-id="${srv.id}"
             title="Relancer la sculpture (gamme du serveur)">🎲</button>
         </div>
+        ${this.paradigmBlock(srv)}
+        ${this.paradigmImage(srv)}
         <div class="server-ic-row">${chips}</div>
         ${intr.open ? this.intrusionPanel(srv, { icMonitorSize }) : ""}`;
 
