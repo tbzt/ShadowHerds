@@ -12,6 +12,21 @@ commit.
 
 ## [Non publié]
 
+## [1.110.0] — 2026-07-24
+
+### Modifié
+
+- **Le graphe de trame se lit à la forme.** Chaque étape prend une **forme selon
+  sa nature**, comme un diagramme de flux : l'**accroche** est un cercle
+  (l'entrée), la **retombée** un cercle à double liseré (la sortie), les étapes
+  jouables (**action · sociale · repérage**) des rectangles arrondis, la
+  **décision** un **losange** (l'aiguillage) et chaque **fait/indice** un
+  hexagone. Le glyphe reste au centre. On repère d'un coup d'œil où l'on
+  bifurque et où le run peut retomber, sans lire les étiquettes. Les **liens se
+  posent élégamment sur le bord réel** de chaque forme — au flanc du losange, à
+  l'arête du rectangle — et plus au bord d'un cercle imaginaire. Le graphe des
+  entités (personnages, contacts, serveurs) est inchangé.
+
 ## [1.109.0] — 2026-07-24
 
 ### Modifié

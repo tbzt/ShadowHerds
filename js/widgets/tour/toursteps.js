@@ -593,6 +593,11 @@ export const TourSteps = {
       title: "Le cockpit de « Jouer » se navigue par onglets",
       body: "Le bandeau Préparation · En jeu · Clôture devient cliquable : basculez d'un tap entre les parties du poste de commandement. Le Briefing (topos, casting, scènes), la scène En jeu (Combat ou Matrice, avec le roster, la trame et les Horloges/Fronts) et la Clôture (le bilan) s'affichent chacune en plein, avec la couleur d'état qui suit. La partie qui correspond à l'état réel du run reste l'onglet par défaut — le reste, vous pouvez le prévisualiser quand vous voulez.",
     },
+    {
+      id: "wn-graph-formes", anchor: "nav-trames", tours: ["whatsnew"], since: "1.110.0", fallback: "center",
+      title: "Le graphe de trame se lit à la forme",
+      body: "Chaque étape prend une forme selon sa nature, comme un diagramme de flux : l'accroche est un cercle (l'entrée), la retombée un cercle à double liseré (la sortie), les étapes jouables (action · sociale · repérage) des rectangles arrondis, la décision un losange (l'aiguillage) et chaque fait/indice un hexagone. On repère d'un coup d'œil où l'on bifurque et où le run peut retomber, sans lire les étiquettes. Et les liens se posent élégamment sur le bord réel de chaque forme — au flanc du losange, à l'arête du rectangle.",
+    },
   ],
 };
 

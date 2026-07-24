@@ -20,6 +20,72 @@ const NS = "http://www.w3.org/2000/svg";
 // Glyphes monochromes par type (vocabulaire établi, jamais d'émoji couleur).
 const TYPE_GLYPH = { pj: "◆", pnj: "●", contact: "◈", server: "▤" };
 
+// P1 — formes par catégorie (BPMN-like). Canal NEUTRE `n.shape` : le moteur
+// rend la forme demandée, la PROJECTION décide du sens (aucune vérité ici).
+// Défaut = cercle → tout graphe sans `shape` (entités) reste inchangé. Une
+// SEULE source de sommets sert au rendu ET à l'attache d'arête, pour que les
+// câbles se posent sur le VRAI bord de la forme et pas un rayon circonscrit.
+const CIRCLE_R = 16;
+const SHAPE_VERTS = {
+  rect:    [[-15, -11], [15, -11], [15, 11], [-15, 11]],
+  diamond: [[0, -17], [17, 0], [0, 17], [-17, 0]],
+  hexagon: [[16, 0], [8, 13.86], [-8, 13.86], [-16, 0], [-8, -13.86], [8, -13.86]],
+};
+
+/* Distance du centre au bord de la forme dans la direction unitaire (ux,uy).
+   Cercle (et anneau double) : rayon analytique. Polygones : intersection du
+   rayon partant du centre avec les segments (forme convexe → une seule sortie
+   vers l'avant). Sert à poser proprement le bout du câble sur l'arête. */
+function shapeReach(shape, ux, uy) {
+  const verts = SHAPE_VERTS[shape];
+  if (!verts) return CIRCLE_R;
+  for (let i = 0; i < verts.length; i++) {
+    const a = verts[i], b = verts[(i + 1) % verts.length];
+    const ex = b[0] - a[0], ey = b[1] - a[1];
+    const det = -ux * ey + ex * uy;
+    if (Math.abs(det) < 1e-6) continue; // rayon parallèle à ce segment
+    const t = (-a[0] * ey + ex * a[1]) / det;      // distance le long du rayon
+    const s = (ux * a[1] - uy * a[0]) / det;        // position sur le segment
+    if (t > 0 && s >= -0.001 && s <= 1.001) return t;
+  }
+  return CIRCLE_R;
+}
+
+/* Construit le(s) élément(s) de « disque » d'un nœud selon `n.shape`. Le
+   premier élément porte TOUJOURS `graph-node-disc` (→ `n._disc`, fill, et tous
+   les états CSS selected/current/halo… le ciblent) ; l'anneau double ajoute un
+   liseré interne décoratif. Glyphe et label restent posés par-dessus. */
+function makeDiscs(n, accent) {
+  const shape = n.shape;
+  const fill = n.pcColor || "var(--surface-2, #16202b)";
+  let main;
+  if (shape === "rect") {
+    main = document.createElementNS(NS, "rect");
+    main.setAttribute("x", -15); main.setAttribute("y", -11);
+    main.setAttribute("width", 30); main.setAttribute("height", 22);
+    main.setAttribute("rx", 6);
+  } else if (SHAPE_VERTS[shape]) {
+    main = document.createElementNS(NS, "polygon");
+    main.setAttribute("points", SHAPE_VERTS[shape].map((p) => p.join(",")).join(" "));
+  } else {
+    main = document.createElementNS(NS, "circle");
+    main.setAttribute("r", CIRCLE_R);
+  }
+  main.setAttribute("class", "graph-node-disc");
+  main.setAttribute("fill", fill);
+  main.setAttribute("stroke", accent);
+  const els = [main];
+  if (shape === "circle-double") {
+    const inner = document.createElementNS(NS, "circle");
+    inner.setAttribute("r", CIRCLE_R - 4.5);
+    inner.setAttribute("class", "graph-node-disc-inner");
+    inner.setAttribute("fill", "none");
+    inner.setAttribute("stroke", accent);
+    els.push(inner);
+  }
+  return els;
+}
+
 export const GraphEngine = {
   _state: null,
 
@@ -116,14 +182,12 @@ export const GraphEngine = {
       g.setAttribute("role", "button");
       g.setAttribute("aria-label", n.label);
 
-      const circle = document.createElementNS(NS, "circle");
-      circle.setAttribute("r", "16");
-      circle.setAttribute("class", "graph-node-disc");
+      // Forme par catégorie (P1) : `makeDiscs` lit `n.shape` (défaut cercle).
       // Couleur de nœud = `pcColor` de l'entité, pour TOUT type (Lot 4 : plus
-      // réservé aux PJ). Nue → fond neutre. `_disc` mémorisé pour `setNodeColor`.
-      circle.setAttribute("fill", n.pcColor || "var(--surface-2, #16202b)");
-      circle.setAttribute("stroke", accent);
-      n._disc = circle;
+      // réservé aux PJ). Nue → fond neutre. `_disc` (1ᵉ forme) mémorisé pour
+      // `setNodeColor` et ciblé par tous les états CSS.
+      const discs = makeDiscs(n, accent);
+      n._disc = discs[0];
 
       const glyph = document.createElementNS(NS, "text");
       glyph.setAttribute("class", "graph-node-glyph");
@@ -140,7 +204,7 @@ export const GraphEngine = {
       label.setAttribute("dy", "2.4em");
       label.textContent = n.label.length > 18 ? n.label.slice(0, 17) + "…" : n.label;
 
-      g.appendChild(circle);
+      for (const d of discs) g.appendChild(d);
       g.appendChild(glyph);
       g.appendChild(label);
       n._g = g;
@@ -236,14 +300,19 @@ export const GraphEngine = {
     if (s.pockets.length) this._renderPockets(s);
     for (const e of s.E) {
       const a = s.N[e.a], b = s.N[e.b];
-      // Rétracter les bouts hors du disque (r≈16) : la flèche se pose au bord
-      // du nœud, pas cachée sous lui ; borné pour deux nœuds très proches.
+      // Attache par forme : le câble se pose sur le VRAI bord de chaque nœud
+      // (rayon pour le cercle, arête pour rect/losange/hexagone) + un filet pour
+      // que la pointe embrasse le bord sans le chevaucher. Borné quand deux
+      // nœuds sont très proches pour que les bouts ne se croisent pas.
       const dx = b.x - a.x, dy = b.y - a.y;
       const d = Math.hypot(dx, dy) || 1;
-      const pad = Math.min(18, d / 2 - 2);
       const ux = dx / d, uy = dy / d;
-      const x1 = a.x + ux * pad, y1 = a.y + uy * pad;
-      const x2 = b.x - ux * pad, y2 = b.y - uy * pad;
+      const GAP = 2.5;
+      let padA = shapeReach(a.shape, ux, uy) + GAP;
+      let padB = shapeReach(b.shape, -ux, -uy) + GAP;
+      if (padA + padB > d - 2) { const k = (d - 2) / (padA + padB); padA *= k; padB *= k; }
+      const x1 = a.x + ux * padA, y1 = a.y + uy * padA;
+      const x2 = b.x - ux * padB, y2 = b.y - uy * padB;
       e._line.setAttribute("x1", x1); e._line.setAttribute("y1", y1);
       e._line.setAttribute("x2", x2); e._line.setAttribute("y2", y2);
       e._hit.setAttribute("x1", x1); e._hit.setAttribute("y1", y1);

@@ -53,6 +53,15 @@ export const ScenarioGraph = {
     { key: "décision", glyph: "⑂", label: "Décision" },
     { key: "retombée", glyph: "⚑", label: "Retombée" },
   ],
+  // P1 — forme par catégorie (BPMN-like), canal NEUTRE `n.shape` lu par le
+  // moteur. Lecture pré-attentive : seuils = cercle (entrée) / anneau double
+  // (SORTIE, comme la fin de flux BPMN) ; étapes jouables = rectangle arrondi ;
+  // décision = losange (gateway) ; le fait/indice = hexagone (posé côté S4).
+  _SHAPE_OF: {
+    accroche: "circle", retombée: "circle-double",
+    repérage: "rect", action: "rect", sociale: "rect",
+    décision: "diamond",
+  },
   _KINDS: [
     { key: "libre", label: "Libre" },
     { key: "conditionnelle", label: "Conditionnelle" },
@@ -170,6 +179,7 @@ export const ScenarioGraph = {
       id: n.id,
       type: n.type,
       glyph: glyphOf.get(n.type) || "●",
+      shape: this._SHAPE_OF[n.type] || "circle", // P1 — forme par catégorie (BPMN-like)
       label: n.title || "(sans titre)",
       pcColor: this._ARROW_TINT[n.arrow] || null, // S6 — teinte par flèche dramatique
       x: n.x, y: n.y,
@@ -197,6 +207,7 @@ export const ScenarioGraph = {
         nodes.push({
           id: f.id, type: "info",
           glyph: this._INFO_GLYPH[f.role] || "◇",
+          shape: "hexagon", // P1 — le fait/indice = hexagone (donnée, hors flux)
           label: f.fact || "(fait sans texte)",
           x: f.x, y: f.y,
         });
