@@ -573,6 +573,11 @@ export const TourSteps = {
       title: "Le cockpit de « Jouer » s'étage autour de la trame",
       body: "Quand une scène de combat tourne, « Jouer » réorganise le poste : le roster (vos combattants) reprend la première place, et la trame se réduit à une barre lisible d'un coup d'œil — le chemin parcouru, l'étape en cours, son moment clé, et « La suite » pour bifurquer. Les Horloges et les Fronts se rangent dans des tiroirs qu'on déplie d'un tap ; monter une horloge ou révéler une étape « si on ne fait rien… » se fait sur place, sans que l'écran se reconstruise et sans perdre où vous en étiez. La première fois qu'un Front apparaît, une note explique en un mot ce que c'est. À froid, en préparation, la trame reprend les commandes — et le fil ne montre que le chemin réellement joué, jamais une ligne imposée d'avance.",
     },
+    {
+      id: "wn-graph-pan", anchor: "nav-trames", tours: ["whatsnew"], since: "1.106.0", fallback: "center",
+      title: "Se déplacer dans les graphes, même sans zoomer",
+      body: "Sur les deux écrans qui reposent sur le moteur de graphe — la carte des Liens et l'atelier de Trames — attrapez le fond et faites glisser la vue à n'importe quelle échelle, y compris à l'ouverture. Avant, il fallait d'abord zoomer pour que le déplacement « prenne » ; désormais le fond se saisit tout de suite (le curseur passe en main ouverte, puis fermée pendant le glisser), et le bouton « ⤢ » recentre sur la vue d'ensemble si vous vous éloignez. Vos autres gestes — déplacer un nœud, tisser un lien, zoomer à la molette ou au pincement — restent intacts.",
+    },
   ],
 };
 

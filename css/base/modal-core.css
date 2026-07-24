@@ -164,9 +164,14 @@
   font-size: var(--fs-base);
   line-height: 1.5;
 }
-/* Dialog.choose() peut poser 3+ boutons (ex. PJ homonyme) : le pied fixe
-   à 2 boutons ne prévoyait pas le débordement. */
+/* Dialog.choose() peut poser 3+ boutons (ex. PJ homonyme, liste de modèles) :
+   le pied fixe à 2 boutons ne prévoyait pas le débordement. On l'AUTORISE à
+   passer à la ligne ET on le sort du collage : un pied `sticky bottom` plus haut
+   que l'écran (mobile, N modèles) planque ses boutons du haut au-dessus de la
+   ligne de collage → inatteignables au scroll. En STATIQUE il coule dans le
+   défilement de la modale, donc toutes les options restent accessibles. */
 .dialog-modal .modal-footer {
   flex-wrap: wrap;
+  position: static;
 }
 

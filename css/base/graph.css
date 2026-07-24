@@ -109,6 +109,10 @@
   height: 100%;
   display: block;
   touch-action: none; /* le glisser pilote les nœuds, pas le scroll */
+  cursor: grab; /* le fond est saisissable : on glisse pour DÉPLACER la vue (à toute échelle) */
+}
+.graph-svg.panning {
+  cursor: grabbing; /* posée par le moteur pendant le glisser-fond */
 }
 
 /* Poches de faction (A3) : zones colorées du fond, sous arêtes/nœuds. Couleur

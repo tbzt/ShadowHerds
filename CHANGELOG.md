@@ -12,6 +12,28 @@ commit.
 
 ## [Non publié]
 
+## [1.106.0] — 2026-07-24
+
+### Modifié
+
+- **On se déplace dans les graphes à la main, sans avoir à zoomer d'abord.**
+  Sur les deux écrans qui partagent le moteur de graphe — la carte des **Liens**
+  et l'atelier de **Trames** — on attrape désormais le fond et on **fait glisser
+  la vue à n'importe quelle échelle**, y compris à l'ouverture. Avant, la vue
+  restait figée tant qu'on n'avait pas zoomé. Le fond affiche un curseur de
+  saisie (main ouverte, puis fermée pendant le glisser) pour signaler le geste,
+  et le bouton **⤢ « Vue d'ensemble »** recentre toujours sur le cadre entier si
+  l'on s'éloigne.
+
+### Corrigé
+
+- **La liste des modèles de trame s'affiche en entier sur mobile.** Le choix
+  d'un modèle (« ＋ Depuis un modèle », « Gérer mes modèles ») empilait ses
+  options dans un pied de fenêtre collé qui, dès qu'il dépassait la hauteur de
+  l'écran, cachait ses premières entrées derrière l'en-tête, inatteignables au
+  défilement. La liste défile maintenant normalement, chaque modèle reste
+  accessible.
+
 ## [1.105.0] — 2026-07-24
 
 ### Modifié

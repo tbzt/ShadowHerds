@@ -494,8 +494,14 @@ export const GraphEngine = {
   },
   _clampView(s) {
     const v = s.view;
-    v.x = Math.max(0, Math.min(s.W - v.w, v.x));
-    v.y = Math.max(0, Math.min(s.H - v.h, v.y));
+    // Marge de DÉBORDEMENT : on autorise à pousser la vue hors du cadre (jusqu'à
+    // 60 % de la fenêtre visible dans chaque sens). Sans elle, à 1× (v.w === W)
+    // la vue était figée en 0,0 → impossible de « se déplacer » sans zoomer d'abord.
+    // Avec elle, on attrape le fond et on fait glisser à n'importe quelle échelle ;
+    // ≥ 40 % du contenu reste toujours visible, et ⤢ (resetView) recentre au cadre.
+    const mx = v.w * 0.6, my = v.h * 0.6;
+    v.x = Math.max(-mx, Math.min(s.W - v.w + mx, v.x));
+    v.y = Math.max(-my, Math.min(s.H - v.h + my, v.y));
   },
   _clientToSvg(s, cx, cy) {
     const pt = s.svg.createSVGPoint();
@@ -541,6 +547,7 @@ export const GraphEngine = {
       s.weaving = null;
     }
     s.bg = null; s.edgeTap = null;
+    s.svg.classList.remove("panning");
   },
 
   /* ---- API de vue publique (boutons +/− du coin de canvas) ---- */
@@ -620,7 +627,8 @@ export const GraphEngine = {
       const p = toSvg(ev);
       if (s.bg) {
         if (Math.hypot(ev.clientX - s.bg.x0, ev.clientY - s.bg.y0) > 4) s.bg.moved = true;
-        if (s.bg.moved) { // glisser le fond = déplacer la vue (utile une fois zoomé)
+        if (s.bg.moved) { // glisser le fond = déplacer la vue (possible à toute échelle)
+          s.svg.classList.add("panning"); // curseur « grabbing » le temps du glisser
           this._panBy(s, ev.clientX - s.bg.lx, ev.clientY - s.bg.ly);
           s.bg.lx = ev.clientX; s.bg.ly = ev.clientY;
         }
@@ -668,6 +676,7 @@ export const GraphEngine = {
       if (s.bg) {
         const bg = s.bg;
         s.bg = null;
+        s.svg.classList.remove("panning");
         if (!bg.moved && typeof s.onBackgroundTap === "function") s.onBackgroundTap();
         return;
       }
