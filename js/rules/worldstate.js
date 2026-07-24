@@ -30,7 +30,7 @@ export const WorldState = {
       (le moteur reste édition-neutre : il somme des clés qu'on lui donne, sans
       savoir ce qu'elles signifient). Anarchy → `[]` → pas de fait réputation. */
   factsFor(dossierId, { repTracks = [] } = {}) {
-    if (!dossierId) return { factions: [], contacts: [], reputation: null };
+    if (!dossierId) return { factions: [], contacts: [], reputation: null, beats: [] };
     const scopeSet = new Set(this._campaignScope(dossierId));
     const runs = (Storage.get("gen_runs", []) || []).filter(
       (r) => r && scopeSet.has(r.dossierId),
@@ -59,7 +59,56 @@ export const WorldState = {
       factions,
       contacts: this._contactsIn(scopeSet),
       reputation: this._reputationIn(scopeSet, repTracks),
+      beats: this._beatsIn(scopeSet),
     };
+  },
+
+  /** Beats d'un run (S6) : les nœuds-scène VISITÉS de sa trame portant un
+      `bang` ou une flèche dramatique, dans l'ordre parcouru — « ce que ce run
+      a laissé » côté fiction. PULL pur (doctrine WorldState) : lit
+      `ScenarioStore.byRun` + le chemin `runtime.visitedIds` (défensif : chemin
+      absent → []). Pas de trame / rien de visité → []. */
+  beatsForRun(runId) {
+    if (!runId || typeof ScenarioStore === "undefined") return [];
+    return this._beatsOf(ScenarioStore.byRun(runId));
+  },
+
+  /** Beats d'UNE trame : nœuds visités (ordre parcouru, dédupliqués) portant un
+      bang non vide ou une flèche. Feuille de lecture, aucune écriture. */
+  _beatsOf(sc) {
+    if (!sc || !Array.isArray(sc.sceneNodes)) return [];
+    const visited =
+      sc.runtime && Array.isArray(sc.runtime.visitedIds) ? sc.runtime.visitedIds : [];
+    const byId = new Map(sc.sceneNodes.map((n) => [n.id, n]));
+    const seen = new Set();
+    const out = [];
+    for (const id of visited) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const n = byId.get(id);
+      if (!n) continue;
+      const bang = String(n.bang || "").trim();
+      if (!bang && !n.arrow) continue;
+      out.push({ sceneId: n.id, title: n.title || "", bang, arrow: n.arrow || null });
+    }
+    return out;
+  },
+
+  /** Mémoire dramatique de campagne (S6) : les beats des trames de TOUS les runs
+      de la portée (chaque run a au plus une trame, `byRun`), aplatis et situés
+      par `runName`. Réutilisé en annotation de génération (RunGen) — informer,
+      jamais décider (aucun pick biaisé). */
+  _beatsIn(scopeSet) {
+    if (typeof ScenarioStore === "undefined") return [];
+    const out = [];
+    for (const id of scopeSet) {
+      const sc = ScenarioStore.byRun(id);
+      if (!sc) continue;
+      const node = typeof Dossiers !== "undefined" ? Dossiers.get(id) : null;
+      const runName = node ? node.name || "" : "";
+      for (const b of this._beatsOf(sc)) out.push({ ...b, runId: id, runName });
+    }
+    return out;
   },
 
   /** Ids d'entités CONVOQUÉES par les nœuds de la portée (A4/§5.3). Reste couche

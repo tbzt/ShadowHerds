@@ -298,6 +298,7 @@ export const ToposCatalog = {
       ...this._memory(facts, opp.key, mandant.key),
       ...this._contactInject(facts),
       ...this._reputationNote(facts),
+      ...this._beatsEcho(facts),
     };
   },
 
@@ -314,6 +315,20 @@ export const ToposCatalog = {
     const r = facts && facts.reputation;
     if (!r || r.notable < 5) return {};
     return { reputationNote: `Votre réputation vous précède — ${r.top.label} ${r.top.value}.` };
+  },
+
+  /** Écho dramatique (S6 / VIS-12 P6) : si des beats (bangs joués sur des scènes
+      VISITÉES) traînent dans la mémoire de campagne, une ANNOTATION — le monde se
+      souvient d'un moment fort. Picks du run INCHANGÉS (informer, jamais décider).
+      Préfère un beat de PEUR (menace restée ouverte), sinon le dernier connu.
+      { beatsEcho } ou {}. */
+  _beatsEcho(facts) {
+    const beats = facts && Array.isArray(facts.beats) ? facts.beats : [];
+    if (!beats.length) return {};
+    const pick = beats.find((b) => b.arrow === "fear") || beats[beats.length - 1];
+    const what = String(pick.bang || pick.title || "un moment resté en suspens").trim();
+    const where = pick.runName ? ` (${pick.runName})` : "";
+    return { beatsEcho: `Le monde se souvient — ${what}${where}.` };
   },
 
   /** Injection « contacts connus » (VIS-12 Phases 3a/3b). Renvoie soit un

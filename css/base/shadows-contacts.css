@@ -2454,6 +2454,50 @@ body.reordering .reorder-handle {
   border-color: var(--accent);
 }
 
+/* ---- Moments clés du run (S6 / VIS-12 P6) — beats des scènes VISITÉES de la
+   trame, dérivés PULL par WorldState.beatsForRun. Lecture seule, DA par tokens :
+   liseré + flèche teintés espoir (--success) / peur (--warning), neutre --border. */
+.debrief-beats {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.debrief-beat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.15rem 0 0.15rem 0.5rem;
+  border-left: 2px solid var(--border);
+  font-size: var(--fs-sm);
+  line-height: 1.35;
+}
+.debrief-beat-arrow {
+  flex: none;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+.debrief-beat.is-hope {
+  border-left-color: var(--success);
+}
+.debrief-beat.is-hope .debrief-beat-arrow {
+  color: var(--success);
+}
+.debrief-beat.is-fear {
+  border-left-color: var(--warning);
+}
+.debrief-beat.is-fear .debrief-beat-arrow {
+  color: var(--warning);
+}
+.debrief-beat-scene {
+  font-weight: 600;
+}
+.debrief-beat-bang {
+  color: var(--text-dim);
+}
+
 /* ---- Fondations (lot B, option 2) — vue de référence lecture seule ----
    Réutilise la coquille .modal-overlay/.modal et la grammaire debrief
    (titres display capitales à --accent, secondaire --text-dim). Aucune

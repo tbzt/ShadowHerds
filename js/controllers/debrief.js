@@ -129,6 +129,7 @@ export const Debrief = {
       ${repNote}
       ${this._relationsHtml(runId)}
       <div class="debrief-section-title">Ce que le run a laissé</div>
+      ${this._beatsHtml(runId)}
       <p class="debrief-hint">Contact grillé ou gagné, corpo fâchée, faveur due… — ce texte rejoint le carnet du run, daté.</p>
       <textarea class="debrief-notes" data-debrief="notes" rows="5" placeholder="Ex. « Le fixer Hachette est grillé ; la decker Ø-Mercy nous doit une faveur ; Ares a ouvert un dossier sur l'équipe. »"></textarea>`;
   },
@@ -139,6 +140,28 @@ export const Debrief = {
     let node = Dossiers.get(runId);
     for (let i = 0; node && node.parentId && i < 50; i++) node = Dossiers.get(node.parentId);
     return node ? node.id : runId;
+  },
+
+  /** VIS-12 (P6) / Trame S6 — « Moments clés » : les bangs des scènes VISITÉES
+      de la trame du run (pull `WorldState.beatsForRun`), teintés espoir↑ / peur↓.
+      Lecture seule (aucune saisie, aucun handler) ; absent si aucun beat — donc
+      inerte tant qu'aucune scène à bang n'a été traversée. */
+  _beatsHtml(runId) {
+    const esc = CardRenderer._esc;
+    const beats =
+      typeof WorldState !== "undefined" ? WorldState.beatsForRun(runId) : [];
+    if (!beats.length) return "";
+    const rows = beats
+      .map((b) => {
+        const tone = b.arrow === "hope" ? "is-hope" : b.arrow === "fear" ? "is-fear" : "";
+        const glyph = b.arrow === "hope" ? "↑" : b.arrow === "fear" ? "↓" : "◆";
+        const scene = b.title ? `<span class="debrief-beat-scene">${esc(b.title)}</span>` : "";
+        const bang = b.bang ? `<span class="debrief-beat-bang">${esc(b.bang)}</span>` : "";
+        const sep = scene && bang ? " — " : "";
+        return `<li class="debrief-beat ${tone}"><span class="debrief-beat-arrow" aria-hidden="true">${glyph}</span> ${scene}${sep}${bang}</li>`;
+      })
+      .join("");
+    return `<ul class="debrief-beats">${rows}</ul>`;
   },
 
   /** VIS-12 (P3c) — « Relations de campagne » : marquer chaque contact connu

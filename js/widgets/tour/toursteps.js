@@ -578,6 +578,11 @@ export const TourSteps = {
       title: "Se déplacer dans les graphes, même sans zoomer",
       body: "Sur les deux écrans qui reposent sur le moteur de graphe — la carte des Liens et l'atelier de Trames — attrapez le fond et faites glisser la vue à n'importe quelle échelle, y compris à l'ouverture. Avant, il fallait d'abord zoomer pour que le déplacement « prenne » ; désormais le fond se saisit tout de suite (le curseur passe en main ouverte, puis fermée pendant le glisser), et le bouton « ⤢ » recentre sur la vue d'ensemble si vous vous éloignez. Vos autres gestes — déplacer un nœud, tisser un lien, zoomer à la molette ou au pincement — restent intacts.",
     },
+    {
+      id: "wn-worldstate-beats", anchor: "nav-play", tours: ["whatsnew"], since: "1.107.0", fallback: "center",
+      title: "Le monde se souvient de vos Moments clés",
+      body: "Au débrief, la section « Ce que le run a laissé » affiche désormais les Moments clés que la partie a réellement traversés — les bascules d'espoir ↑ ou de peur ↓ que vous aviez posées sur la trame. Et quand vous générez un nouveau run dans la même campagne, une ligne « ◆ Écho » rappelle un moment fort laissé derrière l'équipe. Rien n'est imposé : ce sont des rappels, la mémoire du monde qui affleure — jamais un choix à votre place.",
+    },
   ],
 };
 

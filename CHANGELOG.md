@@ -12,6 +12,19 @@ commit.
 
 ## [Non publié]
 
+## [1.107.0] — 2026-07-24
+
+### Ajouté
+
+- **Le débrief liste les Moments clés que le run a traversés, et le monde s'en
+  souvient.** Au débrief, la section « Ce que le run a laissé » affiche désormais
+  les **Moments clés** posés sur les scènes que la partie a **réellement
+  traversées**, teintés selon leur bascule d'**espoir ↑** ou de **peur ↓**. Et
+  quand vous générez un nouveau run dans la même campagne, une ligne **« ◆ Écho »**
+  rappelle un moment fort laissé derrière l'équipe — la mémoire du monde garde
+  trace de ce qui a compté. Ce sont des rappels : les tirages et les choix ne
+  changent pas (informer, jamais décider).
+
 ## [1.106.0] — 2026-07-24
 
 ### Modifié
