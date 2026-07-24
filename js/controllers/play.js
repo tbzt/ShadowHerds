@@ -563,15 +563,7 @@ export const Play = {
     }
 
     return `<div class="play-command is-${state}">
-      ${this._cockpitStatusHtml(run, state)}
-      <div class="play-command-head">
-        <span class="play-run-icon" aria-hidden="true">◆</span>
-        <button class="play-command-name" data-action="play-focus" data-dossier="${run.id}" title="Ouvrir « ${CardRenderer._esc(run.name)} » dans la bibliothèque">${CardRenderer._esc(run.name)}</button>
-        <span class="play-command-actions">
-          <button class="btn-secondary btn-small" data-action="play-notes" data-dossier="${run.id}" title="Ouvrir le carnet de ce run">✎ Notes</button>
-          ${resumeBtn}
-        </span>
-      </div>
+      ${this._cockpitHeadHtml(run, state, resumeBtn)}
       ${body}
     </div>`;
   },
@@ -584,6 +576,14 @@ export const Play = {
      ============================================================ */
   _TRAME_GLYPH: {
     accroche: "◎", "repérage": "⌕", action: "⚔", sociale: "❝", "décision": "⑂", "retombée": "⚑",
+  },
+  /* Peau calibrée — couleur par TYPE de scène (flair « trame McCarthy »),
+     universelle (0 branche d'édition) : des tokens `--t-*` définis sur
+     `.play-command` (accroche = accent d'édition ; les autres = tokens
+     sémantiques + un cyan pour le repérage). */
+  _TYPE_TINT: {
+    accroche: "--t-accroche", "repérage": "--t-reperage", action: "--t-action",
+    sociale: "--t-sociale", "décision": "--t-decision", "retombée": "--t-retombee",
   },
   _trameHtml(run) {
     if (typeof ScenarioStore === "undefined") return "";
@@ -680,6 +680,9 @@ export const Play = {
       }</div></div>`;
     }
     const g = this._TRAME_GLYPH[cur.type] || "●";
+    const tint = this._TYPE_TINT[cur.type];
+    const tintBar = tint ? ` style="--tint:var(${tint})"` : "";
+    const tintG = tint ? ` style="color:var(${tint})"` : "";
     const closed = new Set((sc.runtime && sc.runtime.closedEdgeIds) || []);
     const exits = sc.sceneEdges.filter((e) => e.from === cur.id && !closed.has(e.id));
     const exitBtns = exits.length
@@ -697,10 +700,10 @@ export const Play = {
     const bang = cur.bang
       ? `<p class="play-trame-bang" data-arrow="${cur.arrow || ""}"><span class="play-trame-bang-arrow" aria-hidden="true">${cur.arrow === "hope" ? "↑" : cur.arrow === "fear" ? "↓" : "◆"}</span> ${esc(cur.bang)}</p>`
       : "";
-    return `<div class="play-trame">${head}
+    return `<div class="play-trame is-bar"${tintBar}>${head}
       <div class="play-trame-bar">
         ${this._trailHtml(sc)}
-        <span class="play-trame-cur-glyph" aria-hidden="true">${g}</span>
+        <span class="play-trame-cur-glyph" aria-hidden="true"${tintG}>${g}</span>
         <span class="play-trame-cur-title">${esc(cur.title || "(sans titre)")}</span>
         ${suite}
       </div>
@@ -714,14 +717,17 @@ export const Play = {
   _trailHtml(sc) {
     const path = ScenarioStore.visited(sc);
     if (!path || path.length < 2) return "";
-    const glyphs = path
+    const sep = '<span class="play-trail-sep" aria-hidden="true">›</span>';
+    const parts = path
       .slice(0, -1)
       .map((nid) => {
         const n = sc.sceneNodes.find((x) => x.id === nid);
-        return n ? this._TRAME_GLYPH[n.type] || "●" : "";
+        if (!n) return "";
+        const tint = this._TYPE_TINT[n.type];
+        return `<span class="play-trail-g"${tint ? ` style="color:var(${tint})"` : ""}>${this._TRAME_GLYPH[n.type] || "●"}</span>`;
       })
       .filter(Boolean);
-    return glyphs.length ? `<span class="play-trame-trail" title="Chemin parcouru">${glyphs.join("›")}›</span>` : "";
+    return parts.length ? `<span class="play-trame-trail" title="Chemin parcouru">${parts.join(sep)}${sep}</span>` : "";
   },
 
   /** Un tiroir `<details>` — disclosure natif (affordance au repos + clavier ;
@@ -817,18 +823,25 @@ export const Play = {
   _pressionHtml(sc, { bare = false } = {}) {
     const esc = CardRenderer._esc;
     const clocks = sc.clocks || [];
-    if (!clocks.length || typeof ScenarioGraph === "undefined") return "";
+    if (!clocks.length) return "";
+    const TL = { alerte: "Alerte", menace: "Danger", objectif: "Objectif" };
     const rows = clocks
       .map((c) => {
         const fill = ScenarioStore.clockFill(sc, c.id);
+        // Horloge SEGMENTÉE (flair « trame McCarthy »), couleur sémantique par
+        // type (alerte/menace/objectif) : chaque case se remplit et rougeoie.
+        let segs = "";
+        for (let i = 0; i < c.segments; i++) segs += `<span class="play-seg${i < fill ? " on" : ""}"></span>`;
         return `<div class="play-clock t-${c.type}">
-          ${ScenarioGraph.clockRingHtml(c.segments, fill, c.type, 32)}
-          <span class="play-clock-title">${esc(c.title || "(horloge)")}</span>
-          <span class="play-clock-count">${fill}/${c.segments}</span>
-          <span class="play-clock-btns">
-            <button class="play-clock-btn" data-action="play-trame-clock" data-scenario="${sc.id}" data-clock="${c.id}" data-delta="-1"${fill <= 0 ? " disabled" : ""} aria-label="Baisser l'horloge">−</button>
-            <button class="play-clock-btn" data-action="play-trame-clock" data-scenario="${sc.id}" data-clock="${c.id}" data-delta="1"${fill >= c.segments ? " disabled" : ""} aria-label="Monter l'horloge">＋</button>
-          </span>
+          <div class="play-clock-top">
+            <span class="play-clock-title">${esc(c.title || "(horloge)")}<small>${TL[c.type] || esc(c.type)}</small></span>
+            <span class="play-clock-count">${fill}/${c.segments}</span>
+            <span class="play-clock-btns">
+              <button class="play-clock-btn" data-action="play-trame-clock" data-scenario="${sc.id}" data-clock="${c.id}" data-delta="-1"${fill <= 0 ? " disabled" : ""} aria-label="Baisser l'horloge">−</button>
+              <button class="play-clock-btn" data-action="play-trame-clock" data-scenario="${sc.id}" data-clock="${c.id}" data-delta="1"${fill >= c.segments ? " disabled" : ""} aria-label="Monter l'horloge">＋</button>
+            </span>
+          </div>
+          <div class="play-segs">${segs}</div>
         </div>`;
       })
       .join("");
@@ -874,7 +887,7 @@ export const Play = {
       le compteur et l'état des boutons. */
   _paintClock(row, fill, segments) {
     if (!row) return;
-    row.querySelectorAll(".clock-slice").forEach((sl, i) => sl.classList.toggle("filled", i < fill));
+    row.querySelectorAll(".play-seg").forEach((sl, i) => sl.classList.toggle("on", i < fill));
     const count = row.querySelector(".play-clock-count");
     if (count) count.textContent = `${fill}/${segments}`;
     const minus = row.querySelector('[data-delta="-1"]');
@@ -946,27 +959,50 @@ export const Play = {
   /** B1 — la barre d'état de la coquille : une pastille (pulse en live, piloté
       CSS) + un libellé qui dit le moment d'un coup d'œil. Lecture seule, projetée
       d'`Encounter`/`App.context` — Jouer ne possède rien. */
-  _cockpitStatusHtml(run, state) {
+  /** Peau calibrée — le HEADER du cockpit : nom d'état en gros (display) teinté
+      par l'accent d'édition + pastille (pulse à chaud) · le run + sa campagne +
+      les outils (Notes / Reprendre) · les CELLULES D'HORLOGE (Round·Passe·En
+      scène en combat ; Tour·CI·Serveurs en Matrice). Suivi du bandeau de JALONS.
+      Lecture seule, projeté d'`Encounter`/`Dossiers` — 0 branche d'édition. */
+  _cockpitHeadHtml(run, state, resumeBtn) {
+    const esc = CardRenderer._esc;
+    const glyph = { combat: "⚔", matrix: "⚡" }[state] || "◈";
+    const name = { combat: "Combat", matrix: "Matrice" }[state] || "Préparation";
+    const parent = run.parentId && typeof Dossiers !== "undefined" ? Dossiers.get(run.parentId) : null;
+    const camp = parent && parent.kind === "campaign" ? `❖ ${esc(parent.name)}` : "◆ hors campagne";
+    const cells = this._cockpitCells(state);
+    return `<div class="play-cockpit-head">
+      <div class="pch-line">
+        <span class="pch-state"><span class="pch-dot" aria-hidden="true"></span><span class="pch-glyph" aria-hidden="true">${glyph}</span>${name}</span>
+        <span class="pch-run">
+          <span class="pch-idline"><button class="pch-name" data-action="play-focus" data-dossier="${run.id}" title="Ouvrir « ${esc(run.name)} » dans la bibliothèque">${esc(run.name)}</button><span class="pch-camp">${camp}</span></span>
+          <span class="pch-tools"><button class="btn-secondary btn-small" data-action="play-notes" data-dossier="${run.id}" title="Ouvrir le carnet de ce run">✎ Notes</button>${resumeBtn}</span>
+        </span>
+      </div>
+      ${cells ? `<div class="pch-cells">${cells}</div>` : ""}
+    </div>${this._cockpitJalonsHtml(state)}`;
+  },
+  /** Cellules d'horloge de tête (gros chiffres), projetées du moteur de scène. */
+  _cockpitCells(state) {
+    const cell = (n, l) => `<div class="pch-cell"><span class="n">${n}</span><span class="l">${l}</span></div>`;
     const st = Encounter.state;
-    let dot, label;
     if (state === "combat") {
-      const pass = st && st.pass > 1 ? ` · P${st.pass}` : "";
-      dot = "●";
-      label = `En combat — Round ${st ? st.round : 1}${pass}`;
-    } else if (state === "matrix") {
-      const n = Encounter.matrixMotorSummary().length;
-      dot = "◐";
-      label = n ? `Matrice active — ${n} serveur${n > 1 ? "s" : ""} en jeu` : "Matrice active";
-    } else {
-      dot = "○";
-      label = Encounter.hasStash(run.id)
-        ? "Rencontre rangée — prête à rouvrir"
-        : "En préparation";
+      return cell(st ? st.round : 1, "Round") + cell(st && st.pass ? st.pass : 1, "Passe") + cell(st ? st.combatants.length : 0, "En scène");
     }
-    return `<div class="play-cockpit-status">
-      <span class="play-cockpit-dot" aria-hidden="true">${dot}</span>
-      <span class="play-cockpit-label">${label}</span>
-    </div>`;
+    if (state === "matrix") {
+      const s = Encounter.matrixMotorSummary();
+      const turn = s.reduce((m, x) => Math.max(m, x.turn || 0), 0);
+      const ic = s.reduce((a, x) => a + (x.activeIC || 0), 0);
+      return cell(turn || 1, "Tour") + cell(ic, "CI") + cell(s.length, s.length > 1 ? "Serveurs" : "Serveur");
+    }
+    return "";
+  },
+  /** Bandeau de jalons Préparation · En jeu · Clôture ; « En jeu » allumé à chaud. */
+  _cockpitJalonsHtml(state) {
+    const now = state === "combat" || state === "matrix" ? 1 : 0;
+    return `<div class="play-cockpit-jalons">${["Préparation", "En jeu", "Clôture"]
+      .map((n, i) => `<span class="${i < now ? "is-done" : i === now ? "is-now" : ""}">${n}</span>`)
+      .join("")}</div>`;
   },
 
   /** VIS-8 étape 2 — enveloppe une zone du poste de commandement d'un

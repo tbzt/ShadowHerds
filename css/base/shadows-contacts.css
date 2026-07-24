@@ -592,9 +592,9 @@
   margin-bottom: var(--sp-3);
   padding: var(--sp-3);
   border: 1px solid var(--state);
-  border-top: 3px solid var(--state);
   border-radius: 6px;
   background: var(--bg-card);
+  overflow: hidden;
 }
 .play-command.is-combat {
   --state: var(--accent);
@@ -602,30 +602,94 @@
 .play-command.is-matrix {
   --state: var(--accent-matrix);
 }
-/* Barre d'état : pastille + libellé. Le fond se teinte de l'état (8 %), lisible
-   sans crier ; en live la pastille pulse (transform/opacity composés, 60 fps). */
-.play-cockpit-status {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  margin-bottom: var(--sp-2);
-  padding: 4px var(--sp-2);
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--state) 8%, transparent);
-  font-size: var(--fs-xs);
-  color: var(--text-dim);
+/* ============================================================
+   PEAU « Cockpit vivant » calibrée (1.108.0) — header d'état teinté par
+   l'accent d'édition + gros nom (display) + cellules d'horloge + jalons ;
+   flair « trame McCarthy » : couleur par TYPE de scène (tokens `--t-*`
+   universels) et horloges segmentées. 0 branche d'édition (tout via `--state`
+   + tokens), 0 couleur en dur hors le cyan « repérage ». */
+.play-command {
+  --t-accroche: var(--accent);
+  --t-reperage: #3fc7c7;
+  --t-action: #e0574f;
+  --t-sociale: var(--warning, #e0a516);
+  --t-decision: var(--accent-magic, #9a6bff);
+  --t-retombee: var(--accent-matrix, #2fbf74);
 }
-.play-cockpit-dot {
-  flex-shrink: 0;
-  color: var(--state);
-  font-size: 0.95em;
-  line-height: 1;
+/* header plein-cadre (bleed par marges négatives) : dégradé d'état + liseré */
+.play-cockpit-head {
+  position: relative;
+  margin: calc(-1 * var(--sp-3)) calc(-1 * var(--sp-3)) 0;
+  padding: 14px 16px 15px;
+  border-bottom: 1px solid var(--border);
+  border-radius: 5px 5px 0 0;
+  background:
+    radial-gradient(140% 130% at 100% 0, color-mix(in srgb, var(--state) 24%, transparent), transparent 58%),
+    linear-gradient(180deg, color-mix(in srgb, var(--state) 12%, var(--bg-card)), var(--bg-card));
 }
-.play-command.is-combat .play-cockpit-label,
-.play-command.is-matrix .play-cockpit-label {
-  color: var(--text);
-  font-weight: 600;
+.play-cockpit-head::before {
+  content: "";
+  position: absolute; left: 0; right: 0; top: 0; height: 3px;
+  border-radius: 5px 5px 0 0;
+  background: linear-gradient(90deg, var(--state), transparent 60%);
 }
+.pch-line { display: flex; align-items: flex-start; gap: var(--sp-2); }
+.pch-state {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-display, inherit); font-weight: 600;
+  font-size: clamp(22px, 5vw, 29px); line-height: 0.9; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--state);
+}
+.play-command:not(.is-combat):not(.is-matrix) .pch-state { color: var(--text); }
+.pch-dot { width: 11px; height: 11px; border-radius: 50%; flex: 0 0 auto; background: var(--state); box-shadow: 0 0 10px var(--state); }
+.play-command.is-combat .pch-dot, .play-command.is-matrix .pch-dot { animation: play-cockpit-pulse 1.9s ease-in-out infinite; transform-origin: center; }
+@media (prefers-reduced-motion: reduce) { .pch-dot { animation: none !important; } }
+.pch-glyph { font-size: 0.82em; }
+.pch-run { margin-left: auto; text-align: right; min-width: 0; }
+.pch-name {
+  padding: 0; border: 0; background: transparent; cursor: pointer;
+  font-family: var(--font-display, inherit); font-weight: 600; font-size: var(--fs-md, 1rem);
+  color: var(--text); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  transition: color var(--dur-base);
+}
+.pch-name:hover { color: var(--state); }
+.pch-camp { display: block; font-family: var(--font-mono, monospace); font-size: 10px; letter-spacing: 0.04em; color: var(--faint, var(--text-dim)); margin-top: 1px; }
+.pch-tools { display: inline-flex; gap: 5px; margin-top: 7px; justify-content: flex-end; flex-wrap: wrap; }
+/* cellules d'horloge (gros chiffres) */
+.pch-cells { display: flex; gap: 8px; margin-top: 13px; }
+.pch-cell { min-width: 62px; text-align: center; padding: 7px 13px; border-radius: 8px; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border); }
+.pch-cell .n { display: block; font-family: var(--font-mono, monospace); font-size: 22px; line-height: 1; color: var(--state); font-variant-numeric: tabular-nums; }
+.play-command:not(.is-combat):not(.is-matrix) .pch-cell .n { color: var(--text); }
+.pch-cell .l { display: block; font-family: var(--font-mono, monospace); font-size: 8.5px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--faint, var(--text-dim)); margin-top: 5px; }
+/* bandeau de jalons */
+.play-cockpit-jalons {
+  display: flex; gap: 3px; margin: 0 calc(-1 * var(--sp-3)) var(--sp-3);
+  padding: 8px 16px; border-bottom: 1px solid var(--border); background: var(--bg-card);
+  font-family: var(--font-display, inherit); font-weight: 600; font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase;
+}
+.play-cockpit-jalons span { flex: 1; text-align: center; padding: 4px; border-radius: 5px; color: var(--faint, var(--text-dim)); }
+.play-cockpit-jalons span.is-done { color: var(--text-dim); }
+.play-cockpit-jalons span.is-now { color: var(--state); background: color-mix(in srgb, var(--state) 15%, transparent); }
+.play-command:not(.is-combat):not(.is-matrix) .play-cockpit-jalons span.is-now { color: var(--text); }
+
+/* fil PARCOURU : glyphes teintés par TYPE de scène */
+.play-trame-trail { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-display, inherit); font-weight: 600; font-size: 15px; flex: 0 0 auto; }
+.play-trail-g { line-height: 1; }
+.play-trail-sep { color: var(--faint, var(--text-dim)); font-size: 11px; }
+/* barre de trame (à chaud) teintée par le type de l'étape courante */
+.play-trame.is-bar { border-left-color: var(--tint, var(--accent)); background: color-mix(in srgb, var(--tint, var(--accent)) 6%, transparent); }
+
+/* horloges SEGMENTÉES (flair McCarthy) — couleur sémantique par type */
+.play-clock-top { display: flex; align-items: center; gap: 9px; }
+.play-clock-title small { display: block; font-family: var(--font-mono, monospace); font-size: 8.5px; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; color: var(--text-dim); }
+.play-clock.t-alerte .play-clock-title small { color: var(--warning); }
+.play-clock.t-menace .play-clock-title small { color: var(--danger); }
+.play-clock.t-objectif .play-clock-title small { color: var(--success); }
+.play-segs { display: flex; gap: 5px; margin-top: 8px; }
+.play-seg { flex: 1; height: 11px; border-radius: 2px; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border); transition: background var(--dur-base), box-shadow var(--dur-base); }
+.play-clock.t-alerte .play-seg.on { background: var(--warning); border-color: var(--warning); box-shadow: 0 0 8px color-mix(in srgb, var(--warning) 55%, transparent); }
+.play-clock.t-menace .play-seg.on { background: var(--danger); border-color: var(--danger); box-shadow: 0 0 8px color-mix(in srgb, var(--danger) 55%, transparent); }
+.play-clock.t-objectif .play-seg.on { background: var(--success); border-color: var(--success); box-shadow: 0 0 8px color-mix(in srgb, var(--success) 55%, transparent); }
 
 /* S2a — la bande « Trame » : suivre et bifurquer la trame depuis le poste de
    commandement. Sobre et glanceable (question n°1 du MJ) ; l'accent d'édition
@@ -784,14 +848,15 @@
   border-top: 1px solid var(--border);
 }
 .play-clock {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  padding: 3px 0;
 }
 .play-clock-title {
   flex: 1;
   min-width: 0;
-  font-size: var(--fs-sm, 0.85rem);
+  font-family: var(--font-display, inherit);
+  font-weight: 600;
+  font-size: var(--fs-sm, 0.9rem);
+  color: var(--text);
 }
 .play-clock-count {
   font-variant-numeric: tabular-nums;
@@ -1022,47 +1087,8 @@
     transform: scale(0.8);
   }
 }
-.play-command.is-combat .play-cockpit-dot,
-.play-command.is-matrix .play-cockpit-dot {
-  animation: play-cockpit-pulse 1.8s ease-in-out infinite;
-  transform-origin: center;
-}
-@media (prefers-reduced-motion: reduce) {
-  .play-command .play-cockpit-dot {
-    animation: none;
-  }
-}
-.play-command-head {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  flex-wrap: wrap;
-  margin-bottom: var(--sp-2);
-}
-.play-command-name {
-  flex: 1;
-  min-width: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--text);
-  font-family: var(--font-display, inherit);
-  font-size: var(--fs-lg);
-  text-align: left;
-  cursor: pointer;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: color var(--dur-base);
-}
-.play-command-name:hover {
-  color: var(--accent);
-}
-.play-command-actions {
-  display: inline-flex;
-  gap: var(--sp-2);
-  flex-shrink: 0;
-}
+/* (pulse de pastille + head/name/actions : voir la peau calibrée `.pch-*` plus
+   haut — l'ancienne barre d'état et l'ancien head sont remplacés.) */
 .play-scene.is-idle {
   border-left-color: var(--border-ui, var(--border));
   background: transparent;

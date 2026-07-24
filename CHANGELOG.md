@@ -12,6 +12,22 @@ commit.
 
 ## [Non publié]
 
+## [1.108.0] — 2026-07-24
+
+### Modifié
+
+- **Le cockpit de « Jouer » a la gueule d'un vrai poste de pilotage.** Le
+  bandeau d'état, jusqu'ici une simple ligne, devient un **header teinté par
+  l'accent de l'édition** : le nom de l'état en grand (⚔ Combat · ⚡ Matrice ·
+  Préparation), une pastille qui rougeoie à chaud, le run et sa campagne, et des
+  **cellules d'horloge** en gros chiffres (Round · Passe · En scène en combat ;
+  Tour · CI · Serveurs en Matrice), suivi d'un **bandeau de jalons**
+  (Préparation · En jeu · Clôture). Le fil des étapes se **colore par type de
+  scène** (accroche · repérage · action · sociale · décision · retombée), et les
+  Horloges deviennent des **jauges segmentées** qui rougeoient case par case.
+  Zéro couleur en dur, zéro branche d'édition : SR6 / Anarchy héritent, seul
+  l'accent change.
+
 ## [1.107.0] — 2026-07-24
 
 ### Ajouté

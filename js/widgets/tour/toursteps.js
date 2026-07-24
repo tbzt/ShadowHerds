@@ -583,6 +583,11 @@ export const TourSteps = {
       title: "Le monde se souvient de vos Moments clés",
       body: "Au débrief, la section « Ce que le run a laissé » affiche désormais les Moments clés que la partie a réellement traversés — les bascules d'espoir ↑ ou de peur ↓ que vous aviez posées sur la trame. Et quand vous générez un nouveau run dans la même campagne, une ligne « ◆ Écho » rappelle un moment fort laissé derrière l'équipe. Rien n'est imposé : ce sont des rappels, la mémoire du monde qui affleure — jamais un choix à votre place.",
     },
+    {
+      id: "wn-cockpit-peau", anchor: "nav-play", tours: ["whatsnew"], since: "1.108.0", fallback: "center",
+      title: "Le cockpit de « Jouer » a de la gueule",
+      body: "Le poste de commandement ressemble enfin à un vrai cockpit : un header teinté par l'accent de votre édition, le nom de l'état en grand (⚔ Combat · ⚡ Matrice · Préparation) avec une pastille qui rougeoie à chaud, des cellules d'horloge en gros chiffres (Round · Passe · En scène) et un bandeau de jalons. Le fil des étapes se colore par type de scène (accroche, repérage, action, sociale, décision, retombée), et les Horloges deviennent des jauges segmentées qui se remplissent case par case. Tout suit l'accent de l'édition — rien n'est codé en dur.",
+    },
   ],
 };
 
