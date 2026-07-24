@@ -543,6 +543,11 @@ export const TourSteps = {
       title: "Des images d'ambiance générées, là où elles servent",
       body: "Quand « Images IA » est activé (Paramètres), l'IA sert désormais l'AMBIANCE, pas la structure. Un bouton « ✨ Image du paradigme » sur une carte serveur génère une vue onirique de son thème (grande dans la vue Fondations, en vignette sur la carte). Et l'ancienne « image de plan » d'un lieu devient une vraie image d'ambiance cinématographique — le plan tactique, lui, reste au plan SVG, gratuit et précis. Le SVG pour la géométrie, l'IA pour le ressenti.",
     },
+    {
+      id: "wn-casting-briefing", anchor: "nav-play", tours: ["whatsnew"], since: "1.101.0", fallback: "center",
+      title: "Le casting du Briefing, par faction et à convoquer",
+      body: "Dans « Jouer », la bande Casting d'un run garde enfin ses factions entières : une faction convoquée est une seule puce dépliable — pastille de couleur, compte de membres, chevron qui déroule ses figures avec leur ⚔ « en scène » — au lieu d'une bouillie de noms. Ce que la campagne parente convoque descend sur le run, marqué « hérité ». Et un bouton « ＋ convoquer » ouvre un sélecteur (factions + recherche d'entités) pour bâtir ou ajuster le casting sans quitter le poste de commandement.",
+    },
   ],
 };
 

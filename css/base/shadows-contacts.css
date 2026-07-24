@@ -953,6 +953,95 @@
     min-width: 44px;
   }
 }
+/* ---- Casting par référence (Fil B · Option C) : chip de faction dépliable,
+        chip hérité (campagne parente), bouton « ＋ convoquer ». ---- */
+.play-cast-faction {
+  display: inline-block;
+}
+.play-cast-fsum {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  min-height: 32px;
+  border: 1px solid var(--border-ui, var(--border));
+  border-radius: 4px;
+  font-size: var(--fs-xs);
+  color: var(--text);
+  cursor: pointer;
+  list-style: none;
+  transition: background var(--dur-base);
+}
+.play-cast-fsum::-webkit-details-marker {
+  display: none;
+}
+.play-cast-fsum:hover {
+  background: var(--glow);
+}
+.play-cast-fdot {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: var(--text-dim);
+  flex-shrink: 0;
+}
+.play-cast-fcount {
+  color: var(--text-dim);
+  font-size: var(--fs-2xs);
+}
+.play-cast-fchev {
+  color: var(--text-dim);
+  transition: transform var(--dur-base) ease;
+}
+.play-cast-faction[open] .play-cast-fchev {
+  transform: rotate(180deg);
+}
+.play-cast-fmembers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border-ui, var(--border));
+}
+.play-cast-fempty {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  font-style: italic;
+}
+.play-cast-inh {
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+/* Hérité : liseré pointillé + teinte basse — présent, mais géré au-dessus. */
+.play-cast-chip.is-inherited,
+.play-cast-faction.is-inherited .play-cast-fsum {
+  border-style: dashed;
+  opacity: 0.85;
+}
+.play-cast-convoke {
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 1px dashed var(--accent);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  transition: background var(--dur-base);
+}
+.play-cast-convoke:hover {
+  background: var(--glow);
+}
+@media (pointer: coarse) {
+  .play-cast-fsum,
+  .play-cast-convoke {
+    min-height: 44px;
+  }
+}
 
 /* Horloge d'intrusion (V4-b · b) — moteur Matrice de la scène en projection.
    Un serveur en jeu = une ligne tappable (→ tiroir Matrice). Tokens only. */
@@ -1442,7 +1531,8 @@ body.reordering .reorder-handle {
 /* ---- Popover : liste de groupes à cocher (multi-appartenance) ---- */
 #group-picker-backdrop,
 #faction-picker-backdrop,
-#tag-picker-backdrop {
+#tag-picker-backdrop,
+#convoke-picker-backdrop {
   display: none;
   position: fixed;
   inset: 0;
@@ -1451,12 +1541,14 @@ body.reordering .reorder-handle {
 }
 #group-picker-backdrop.open,
 #faction-picker-backdrop.open,
-#tag-picker-backdrop.open {
+#tag-picker-backdrop.open,
+#convoke-picker-backdrop.open {
   display: block;
 }
 #group-picker-panel,
 #faction-picker-panel,
-#tag-picker-panel {
+#tag-picker-panel,
+#convoke-picker-panel {
   position: fixed;
   width: 240px;
   max-height: 320px;
@@ -1477,10 +1569,45 @@ body.reordering .reorder-handle {
 }
 #group-picker-panel.open,
 #faction-picker-panel.open,
-#tag-picker-panel.open {
+#tag-picker-panel.open,
+#convoke-picker-panel.open {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+}
+/* Convoke picker — un peu plus large (deux sections + recherche). */
+#convoke-picker-panel {
+  width: 260px;
+  max-height: 360px;
+}
+.convoke-search {
+  margin: 0.4rem;
+  padding: 0.4rem 0.55rem;
+  background: var(--bg-input, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+}
+.convoke-search:focus {
+  outline: none;
+  border-color: var(--accent2);
+}
+.convoke-sec {
+  padding: 0.35rem 0.55rem 0.15rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.convoke-type {
+  margin-left: auto;
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 .group-picker-head {
   display: flex;

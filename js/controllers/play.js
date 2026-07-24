@@ -145,6 +145,12 @@ export const Play = {
           }
           break;
         }
+        case "play-cast-convoke":
+          // Fil B / Option C — convoquer une entité ou une faction sur ce run
+          // depuis le Briefing, sans quitter Jouer. Délégué à ConvokePicker
+          // (Dossiers.convoke/unconvoke) ; le picker re-rend Jouer après toggle.
+          if (typeof ConvokePicker !== "undefined") ConvokePicker.open(id, el);
+          break;
         case "play-cast-toscene":
           // Envoyer un participant préparé dans la scène vivante — délégué à
           // Encounter.add (toast interne, dédup). Re-rendu pour l'état « en scène ».
@@ -429,7 +435,10 @@ export const Play = {
     // scène+intrusion = Pendant ; débrief = Après). Le vivant garde sa perche
     // privilégiée (doctrine Campagne›Run›Scène) : quand une scène tourne,
     // « Pendant » passe en tête ; à l'arrêt, « Avant » (la prépa) ouvre la lecture.
-    const avant = this._toposGlanceHtml(run.id) + this._castHtml(run.id) + this._scenesHtml(run.id);
+    const avant =
+      this._toposGlanceHtml(run.id) +
+      this._castHtml(run.id, { convokeCta: true }) +
+      this._scenesHtml(run.id);
     const avantZone = avant ? this._momentHtml("Avant", "la prépa", avant) : "";
     const pendantZone = this._momentHtml("Pendant", "la scène", scene + this._matrixClockHtml());
     const apresZone = this._momentHtml("Après", "la clôture", this._clotureHtml(run.id));
@@ -639,59 +648,124 @@ export const Play = {
     return DossierBar.convenedIds(runId).length > 0;
   },
 
-  /** Casting préparé : les entités CONVOQUÉES sur ce run (DossierBar.convenedIds
-      scopé sur le run — refs + Factions + groups hérités). Chaque puce : tap = consulter
-      (Palette.reveal) ; les PNJ/PJ portent un ⚔ « envoyer en scène »
-      (Encounter.add) — le geste-roi du MJ. Contacts/serveurs = consultation
-      seule (un contact n'est pas un combattant ; un serveur rejoint la scène par
-      le moteur Matrice, hors de ce geste). Vide si le run n'a rien de rangé. */
-  _castHtml(runId) {
-    // `mode` : "scene" → PNJ/PJ, ⚔ envoyer au combat · "server" → serveur, ⚡ mettre
-    // en jeu (moteur Matrice) · null → contact (consultation seule, pas un
-    // combattant). Résolution GÉNÉRIQUE via `col.data.all` : un serveur/contact ne
-    // résout pas dans `PnjLookup` (réservé aux combattants), mais chaque membre est
-    // par construction dans la collection qui le porte.
-    const typed = [
-      { col: Shadows, type: "pnj", mode: "scene" },
-      { col: Characters, type: "pj", mode: "scene" },
-      { col: ContactsBook, type: "contact", mode: null },
-      { col: Servers, type: "server", mode: "server" },
-    ];
+  /** Casting préparé, RENDU PAR RÉFÉRENCE (Fil B · §4.2). Le run/scène convoque
+      le Monde (`node.convokes`) : une Faction reste UNE unité (chip dépliable,
+      « convoquer ≠ recopier »), les entités directes sont des chips, et ce que la
+      campagne parente convoque descend en « hérité » (grisé). Chaque membre : tap
+      = consulter (CardPeek/Palette) ; PNJ/PJ portent ⚔ « envoyer en scène »
+      (geste-roi), serveurs ⚡ « mettre en jeu », contacts = consultation seule.
+      `convokeCta` (run/Briefing) montre toujours « ＋ convoquer », même à vide —
+      invitation Silk ; une scène (défaut) reste muette tant qu'elle n'a rien. */
+  _castHtml(scopeId, { convokeCta = false } = {}) {
+    const direct = typeof Dossiers !== "undefined" ? Dossiers.convokesOf(scopeId) : [];
+    const inherited = this._inheritedConvokes(scopeId);
     const inScene = new Set(
       ((Encounter.state && Encounter.state.combatants) || []).map((c) => c.pnjId),
     );
-    const inMatrix = new Set(Encounter.activeMatrixServerIds());
-    let chips = "";
-    for (const { col, type, mode } of typed) {
-      if (!col || !col.data) continue;
-      // A4 — le casting convoqué (`convenedIds`) filtré par type, plus une
-      // appartenance de groupe : le run pointe le Monde par référence.
-      for (const id of DossierBar.convenedIds(runId, { types: [type] })) {
-        const e = (col.data.all || []).find((x) => x.id === id);
-        if (!e) continue;
-        const name = CardRenderer._esc(e.name || "Sans nom");
-        let action = "";
-        if (mode === "scene") {
-          action = inScene.has(id)
-            ? `<span class="play-cast-in" title="Déjà en scène">en scène</span>`
-            : `<button class="play-cast-add" data-action="play-cast-toscene" data-id="${id}" title="Envoyer « ${name} » en scène" aria-label="Envoyer en scène">⚔</button>`;
-        } else if (mode === "server") {
-          action = inMatrix.has(id)
-            ? `<span class="play-cast-in" title="Serveur en jeu dans la scène">⚡ en jeu</span>`
-            : `<button class="play-cast-add" data-action="play-cast-server" data-id="${id}" title="Mettre « ${name} » en jeu (moteur Matrice)" aria-label="Mettre en jeu (Matrice)">⚡</button>`;
-        }
-        chips += `<span class="play-cast-chip"><button class="play-cast-name" data-action="play-cast-consult" data-id="${id}" title="Consulter « ${name} »">${name}</button>${action}</span>`;
-      }
-    }
-    if (!chips) return "";
-    // VIS-15 B4 — « ◈ Liens » : le graphe des relations scopé à ce run (son
-    // casting + les voisins en halo). Même lentille que le Hub, portée du run.
+    const ctx = { inScene, inMatrix: new Set(Encounter.activeMatrixServerIds()) };
+    // Ordre spec §4.2 : [hérité] [Factions directes] [entités directes] [＋ convoquer].
+    const chips =
+      inherited.map((c) => this._castRefChip(c, { ...ctx, inherited: true })).join("") +
+      direct
+        .filter((c) => c && c.ref === "faction")
+        .map((c) => this._castRefChip(c, ctx))
+        .join("") +
+      direct
+        .filter((c) => c && c.ref === "entity")
+        .map((c) => this._castRefChip(c, ctx))
+        .join("");
+    if (!chips && !convokeCta) return "";
+    // Option C — « ＋ convoquer » : bâtir le casting depuis le Briefing sans quitter
+    // Jouer. Délégué à ConvokePicker (`Dossiers.convoke`/`unconvoke`).
+    const convokeBtn = `<button class="play-cast-convoke" data-action="play-cast-convoke" data-dossier="${scopeId}" title="Convoquer une entité ou une faction sur ce run">＋ convoquer</button>`;
+    // VIS-15 B4 — « ◈ Liens » : le graphe des relations scopé (casting + voisins en
+    // halo). Sans casting, pas de graphe à montrer.
+    const links = chips
+      ? `<button class="btn-secondary btn-small" data-action="play-relations-graph" data-dossier="${scopeId}" title="Voir les liens du casting en graphe">◈ Liens</button>`
+      : "";
     return `<div class="play-cast">
-      <div class="play-cast-label">Casting préparé
-        <button class="btn-secondary btn-small" data-action="play-relations-graph" data-dossier="${runId}" title="Voir les liens du casting en graphe">◈ Liens</button>
-      </div>
-      <div class="play-cast-chips">${chips}</div>
+      <div class="play-cast-label">Casting préparé ${links}</div>
+      <div class="play-cast-chips">${chips}${convokeBtn}</div>
     </div>`;
+  },
+
+  /** Les convokes HÉRITÉS d'un nœud : ceux de ses ancêtres (campagne au-dessus du
+      run), dédupliqués contre les convokes directs (le direct l'emporte). Refs
+      brutes (pas aplaties) pour rendre une Faction héritée comme telle. */
+  _inheritedConvokes(scopeId) {
+    if (typeof Dossiers === "undefined") return [];
+    const seen = new Set((Dossiers.convokesOf(scopeId) || []).map((c) => `${c.ref}:${c.id}`));
+    const out = [];
+    let node = Dossiers.get(scopeId);
+    node = node && node.parentId ? Dossiers.get(node.parentId) : null;
+    for (let i = 0; node && i < 50; i++) {
+      for (const c of Dossiers.convokesOf(node.id)) {
+        if (!c) continue;
+        const k = `${c.ref}:${c.id}`;
+        if (seen.has(k)) continue;
+        seen.add(k);
+        out.push(c);
+      }
+      node = node.parentId ? Dossiers.get(node.parentId) : null;
+    }
+    return out;
+  },
+
+  /** Une puce de casting depuis un convoke (ref entité → chip, ref faction →
+      chip dépliable). Point d'entrée unique du rendu par référence. */
+  _castRefChip(c, opts) {
+    if (!c) return "";
+    if (c.ref === "faction") return this._factionChipHtml(c.id, opts);
+    if (c.ref === "entity") return this._entityChipHtml(c.id, opts);
+    return "";
+  },
+
+  /** Une puce d'ENTITÉ (PNJ/PJ/contact/serveur). Résolution neutre par
+      `PnjLookup.locate` (nom + type, 0 branche d'édition) ; l'action dépend du
+      type : ⚔ scène (PNJ/PJ) · ⚡ Matrice (serveur) · rien (contact). Sert les
+      entités directes ET les membres d'une Faction. `inherited` la grise. */
+  _entityChipHtml(id, { inScene, inMatrix, inherited } = {}) {
+    const loc = typeof PnjLookup !== "undefined" ? PnjLookup.locate(id) : null;
+    if (!loc) return "";
+    const mode = { pnj: "scene", pj: "scene", contact: null, server: "server" }[loc.type];
+    const name = CardRenderer._esc(loc.name);
+    let action = "";
+    if (mode === "scene") {
+      action =
+        inScene && inScene.has(id)
+          ? `<span class="play-cast-in" title="Déjà en scène">en scène</span>`
+          : `<button class="play-cast-add" data-action="play-cast-toscene" data-id="${id}" title="Envoyer « ${name} » en scène" aria-label="Envoyer en scène">⚔</button>`;
+    } else if (mode === "server") {
+      action =
+        inMatrix && inMatrix.has(id)
+          ? `<span class="play-cast-in" title="Serveur en jeu dans la scène">⚡ en jeu</span>`
+          : `<button class="play-cast-add" data-action="play-cast-server" data-id="${id}" title="Mettre « ${name} » en jeu (moteur Matrice)" aria-label="Mettre en jeu (Matrice)">⚡</button>`;
+    }
+    const cls = inherited ? "play-cast-chip is-inherited" : "play-cast-chip";
+    const inhTitle = inherited ? ' title="Convoqué au niveau campagne"' : "";
+    return `<span class="${cls}"${inhTitle}><button class="play-cast-name" data-action="play-cast-consult" data-id="${id}" title="Consulter « ${name} »">${name}</button>${action}</span>`;
+  },
+
+  /** Une puce de FACTION convoquée : `<details>` natif (0 handler inline, chevron
+      piloté par `[open]` — patron `.wn-more` de VIS-6). Le résumé = pastille
+      couleur + nom + compte de membres ; le corps déplie les membres (chips
+      d'entité, avec leur ⚔/⚡). Restaure l'identité perdue par l'aplatissement. */
+  _factionChipHtml(factionId, { inScene, inMatrix, inherited } = {}) {
+    const f = typeof FactionStore !== "undefined" ? FactionStore.get(factionId) : null;
+    if (!f) return "";
+    const name = CardRenderer._esc(f.name || "Faction");
+    const members = Array.isArray(f.members) ? f.members : [];
+    const dot = `<span class="play-cast-fdot"${f.color ? ` style="background:${CardRenderer._esc(f.color)}"` : ""}></span>`;
+    const inh = inherited ? `<span class="play-cast-inh">hérité</span>` : "";
+    const body = members
+      .map((id) => this._entityChipHtml(id, { inScene, inMatrix }))
+      .filter(Boolean)
+      .join("");
+    const cls = inherited ? "play-cast-faction is-inherited" : "play-cast-faction";
+    return `<details class="${cls}">
+      <summary class="play-cast-fsum">${dot}<span class="play-cast-fname">${name}</span><span class="play-cast-fcount">${members.length}</span>${inh}<span class="play-cast-fchev" aria-hidden="true">▾</span></summary>
+      <div class="play-cast-fmembers">${body || `<span class="play-cast-fempty">Faction vide</span>`}</div>
+    </details>`;
   },
 
   /** VIS-16 étape 2 — les SCÈNES d'un run, dans « Avant ». La scène est la

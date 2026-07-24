@@ -12,6 +12,20 @@ commit.
 
 ## [Non publié]
 
+## [1.101.0] — 2026-07-24
+
+### Ajouté
+
+- **Le casting du Briefing se lit par référence, et se convoque sur place.**
+  Dans « Jouer », la bande Casting d'un run ne dissout plus les factions en
+  membres anonymes : une faction convoquée reste une seule puce dépliable
+  (pastille de couleur, compte de membres, chevron qui déroule ses figures avec
+  leur ⚔), une entité convoquée directement est sa propre puce, et ce que la
+  campagne parente convoque descend sur le run marqué « hérité ». Un bouton
+  « ＋ convoquer » ouvre un sélecteur — factions et recherche d'entités — pour
+  bâtir ou ajuster le casting sans quitter le poste de commandement. Dernière
+  vue de la peau « Cockpit vivant » (fil « Le Monde et le Jeu »).
+
 ## [1.100.0] — 2026-07-24
 
 ### Ajouté
