@@ -44,6 +44,11 @@ export const TourSteps = {
       body: "Une amorce de mission en un clic : mandant, lieu, complication, objectif, paiement. Quand les joueurs partent où vous ne l'aviez pas prévu — puis « Faire un run » pour la promouvoir en vrai run.",
     },
     {
+      id: "play", anchor: "nav-play", tours: ["full"], since: "1.0.0", fallback: "center",
+      title: "Jouer",
+      body: "Le poste de commandement de votre séance : campagnes, runs et la scène en cours au même endroit. Quand une scène tourne, votre trame s'y joue en direct — l'étape où vous en êtes, la suite possible — pendant que le combat garde la vedette.",
+    },
+    {
       id: "combat", anchor: "nav-combat", tours: ["full"], since: "1.0.0", fallback: "center",
       title: "Suivi de combat",
       body: "Initiative, moniteurs, fiche du combattant actif, Matrice liée à la scène. Le poste de pilotage pour garder les mains sur l'histoire, pas sur les calculs.",
@@ -562,6 +567,11 @@ export const TourSteps = {
       id: "wn-trame-panneau", anchor: "nav-trames", tours: ["whatsnew"], since: "1.104.0", fallback: "center",
       title: "Trames prend toute la place — et rejoint « Préparer un run »",
       body: "L'atelier de trame n'est plus une fenêtre flottante à l'étroit : c'est un écran plein, qui profite enfin des grands moniteurs et se lit comme le reste du site. Son en-tête, jadis une rangée de onze boutons, tient en trois zones claires — la trame et son menu (Nouvelle, Renommer, Modèle…), les lentilles regroupées (Relier · Indices · Horloges · Chronologie), et la Robustesse. Dans la navigation, Topos et Trames se rangent ensemble sous « Préparer un run » : deux façons de démarrer un run — l'amorce rapide ou la structure d'avance — avec un passage direct de l'une à l'autre. Et le vocabulaire se met à parler sans jargon : la Pression devient des Horloges, le bang un Moment clé, les présages des étapes « si on ne fait rien… », l'échéance une Catastrophe.",
+    },
+    {
+      id: "wn-cockpit-etage", anchor: "nav-play", tours: ["whatsnew"], since: "1.105.0", fallback: "center",
+      title: "Le cockpit de « Jouer » s'étage autour de la trame",
+      body: "Quand une scène de combat tourne, « Jouer » réorganise le poste : le roster (vos combattants) reprend la première place, et la trame se réduit à une barre lisible d'un coup d'œil — le chemin parcouru, l'étape en cours, son moment clé, et « La suite » pour bifurquer. Les Horloges et les Fronts se rangent dans des tiroirs qu'on déplie d'un tap ; monter une horloge ou révéler une étape « si on ne fait rien… » se fait sur place, sans que l'écran se reconstruise et sans perdre où vous en étiez. La première fois qu'un Front apparaît, une note explique en un mot ce que c'est. À froid, en préparation, la trame reprend les commandes — et le fil ne montre que le chemin réellement joué, jamais une ligne imposée d'avance.",
     },
   ],
 };

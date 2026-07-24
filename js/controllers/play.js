@@ -79,27 +79,25 @@ export const Play = {
           if (typeof ScenarioStore !== "undefined" && el.dataset.scenario && el.dataset.node)
             ScenarioStore.patchRuntime(el.dataset.scenario, { currentSceneId: el.dataset.node });
           break;
-        case "play-trame-clock": {
-          // S5a — monter/baisser une horloge en live ; setClockFill applique les
-          // effets (fermer sortie / activer étape) et émet → re-render du poste.
-          if (typeof ScenarioStore === "undefined") break;
-          const s = ScenarioStore.get(el.dataset.scenario);
-          if (s && el.dataset.clock) {
-            const cur = ScenarioStore.clockFill(s, el.dataset.clock);
-            ScenarioStore.setClockFill(el.dataset.scenario, el.dataset.clock, cur + (parseInt(el.dataset.delta, 10) || 0));
-          }
+        case "play-trame-clock":
+          // S5a — monter/baisser une horloge en live. PATCH-IN-PLACE (feel JOUÉ,
+          // pas écrit) : on peint la case dans le nœud DOM existant → la transition
+          // de token joue et l'état ouvert des tiroirs survit. On ne re-rend tout
+          // QUE si un effet de seuil a changé l'étape/les sorties.
+          if (typeof ScenarioStore !== "undefined" && el.dataset.scenario && el.dataset.clock)
+            this._patchClock(el, el.dataset.scenario, el.dataset.clock, parseInt(el.dataset.delta, 10) || 0);
           break;
-        }
-        case "play-trame-portent": {
-          // S5b — avancer/reculer les présages d'un danger de front (runtime).
-          if (typeof ScenarioStore === "undefined") break;
-          const s = ScenarioStore.get(el.dataset.scenario);
-          if (s && el.dataset.danger) {
-            const cur = ScenarioStore.frontPortent(s, el.dataset.danger);
-            ScenarioStore.setFrontPortent(el.dataset.scenario, el.dataset.danger, cur + (parseInt(el.dataset.delta, 10) || 0));
-          }
+        case "play-trame-portent":
+          // S5b — avancer/reculer les présages. Patch-in-place (aucun effet de
+          // seuil possible ici → jamais de re-render complet).
+          if (typeof ScenarioStore !== "undefined" && el.dataset.scenario && el.dataset.danger)
+            this._patchPortent(el, el.dataset.scenario, el.dataset.danger, parseInt(el.dataset.delta, 10) || 0);
           break;
-        }
+        case "play-front-coach-ok":
+          // Lot C — « Compris » : le MJ a vu l'explication du Front une fois.
+          if (typeof Storage !== "undefined") Storage.setGlobal(this._FRONT_COACH_KEY, true);
+          this.render();
+          break;
         case "play-trame-link": {
           // Lier une trame existante au run ; aucune → ouvrir l'atelier pour créer.
           if (typeof ScenarioStore === "undefined") break;
@@ -533,6 +531,36 @@ export const Play = {
     // classe d'état pilote un seul token `--state` en CSS (aucune couleur en dur,
     // aucune branche d'édition) ; la barre d'état la met en mots.
     const state = this._cockpitState(run);
+    // ÉTAGEMENT (arbitrage board) : à chaud (combat/matrice), le ROSTER est la
+    // star et passe en premier ; la trame se réduit à une barre glanceable + le
+    // moment clé, et Horloges/Fronts/Préparation/Clôture se rangent en tiroirs
+    // `<details>` (disclosure natif : affordance au repos, clavier, 0 JS de
+    // bascule). À froid (Briefing), la trame MÈNE (structure honnête, pas de
+    // fausse ligne — le fil est le chemin PARCOURU, pas le plan qui est un graphe).
+    const hot = live && (state === "combat" || state === "matrix");
+    let body;
+    if (hot) {
+      const trame = typeof ScenarioStore !== "undefined" ? ScenarioStore.byRun(run.id) : null;
+      const drawers = [];
+      if (trame && (trame.clocks || []).length)
+        drawers.push(this._drawerHtml("Horloges", this._pressionSummary(trame), this._pressionHtml(trame, { bare: true }), true));
+      if (trame && (trame.fronts || []).length) {
+        // Lot C — coachmark « C'est quoi un Front ? » PROACTIF une fois : la 1re
+        // rencontre d'un Front en combat OUVRE le tiroir et enseigne le mot ;
+        // « Compris » pose le drapeau (Storage) et il ne revient plus.
+        const teach = !this._frontCoachSeen();
+        const frontsBody = (teach ? this._frontCoachHtml() : "") + this._frontsHtml(trame, { bare: true });
+        drawers.push(this._drawerHtml("Fronts", this._frontsSummary(trame), frontsBody, teach));
+      }
+      if (avant) drawers.push(this._drawerHtml("Préparation", "topos · casting · scènes", avant, false));
+      drawers.push(this._drawerHtml("Clôture", "débrief — paie, karma, réputation", this._clotureHtml(run.id), false));
+      body =
+        this._trameBarHtml(run, trame) +
+        `<div class="play-hot-scene">${scene}${this._matrixClockHtml()}</div>` +
+        `<div class="play-drawers">${drawers.join("")}</div>`;
+    } else {
+      body = this._trameHtml(run) + moments;
+    }
 
     return `<div class="play-command is-${state}">
       ${this._cockpitStatusHtml(run, state)}
@@ -544,8 +572,7 @@ export const Play = {
           ${resumeBtn}
         </span>
       </div>
-      ${this._trameHtml(run)}
-      ${moments}
+      ${body}
     </div>`;
   },
 
@@ -631,15 +658,133 @@ export const Play = {
     </div>`;
   },
 
+  /** À CHAUD — la bande trame COMPACTE : fil PARCOURU (passé, linéaire) + étape
+      courante + « La suite » (les sorties, en disclosure `<details>`) + le moment
+      clé en vedette. Glanceable : le roster reste la star, juste dessous. */
+  _trameBarHtml(run, sc) {
+    if (!sc) return "";
+    const esc = CardRenderer._esc;
+    const head = `<div class="play-trame-head">
+      <span class="play-trame-word">Trame</span>
+      <span class="play-trame-title">${esc(sc.title)}</span>
+      <span class="play-trame-actions"><button class="btn-secondary btn-small" data-action="play-trame-open" data-scenario="${sc.id}" title="Ouvrir l'atelier de trame">Atelier</button></span>
+    </div>`;
+    const curId = sc.runtime && sc.runtime.currentSceneId;
+    const cur = curId && sc.sceneNodes.find((n) => n.id === curId);
+    if (!cur) {
+      const start = sc.sceneNodes.find((n) => n.type === "accroche") || sc.sceneNodes[0];
+      return `<div class="play-trame">${head}<div class="play-trame-body">${
+        start
+          ? `<button class="btn-primary btn-small" data-action="play-trame-goto" data-scenario="${sc.id}" data-node="${start.id}">▶ Commencer : ${esc(start.title || "(sans titre)")}</button>`
+          : `<span class="play-trame-note">Trame sans étape.</span>`
+      }</div></div>`;
+    }
+    const g = this._TRAME_GLYPH[cur.type] || "●";
+    const closed = new Set((sc.runtime && sc.runtime.closedEdgeIds) || []);
+    const exits = sc.sceneEdges.filter((e) => e.from === cur.id && !closed.has(e.id));
+    const exitBtns = exits.length
+      ? exits
+          .map((e) => {
+            const to = sc.sceneNodes.find((n) => n.id === e.to);
+            const lbl = to ? to.title || "(sans titre)" : "?";
+            const hint = e.isEscapeHatch ? " ⚑" : e.gateway === "parallel" ? " ∥" : e.gateway === "exclusive" ? " ⋔" : "";
+            const cls = e.isEscapeHatch ? "play-trame-exit is-hatch" : "play-trame-exit";
+            return `<button class="${cls}" data-action="play-trame-goto" data-scenario="${sc.id}" data-node="${e.to}" title="${e.label ? esc(e.label) : "Aller à cette étape"}">→ ${esc(lbl)}${hint}</button>`;
+          })
+          .join("")
+      : `<span class="play-trame-note">Fin de la trame (aucune suite).</span>`;
+    const suite = `<details class="play-suite"><summary>La suite${exits.length ? ` <span class="play-suite-n">${exits.length}</span>` : ""}</summary><div class="play-trame-exits">${exitBtns}</div></details>`;
+    const bang = cur.bang
+      ? `<p class="play-trame-bang" data-arrow="${cur.arrow || ""}"><span class="play-trame-bang-arrow" aria-hidden="true">${cur.arrow === "hope" ? "↑" : cur.arrow === "fear" ? "↓" : "◆"}</span> ${esc(cur.bang)}</p>`
+      : "";
+    return `<div class="play-trame">${head}
+      <div class="play-trame-bar">
+        ${this._trailHtml(sc)}
+        <span class="play-trame-cur-glyph" aria-hidden="true">${g}</span>
+        <span class="play-trame-cur-title">${esc(cur.title || "(sans titre)")}</span>
+        ${suite}
+      </div>
+      ${bang}
+    </div>`;
+  },
+
+  /** Le fil PARCOURU (runtime `ScenarioStore.visited`) rendu en glyphes de type —
+      linéaire par construction : le passé effectivement joué, pas le plan (qui
+      est un graphe branché ; l'avenir vit dans « La suite »). */
+  _trailHtml(sc) {
+    const path = ScenarioStore.visited(sc);
+    if (!path || path.length < 2) return "";
+    const glyphs = path
+      .slice(0, -1)
+      .map((nid) => {
+        const n = sc.sceneNodes.find((x) => x.id === nid);
+        return n ? this._TRAME_GLYPH[n.type] || "●" : "";
+      })
+      .filter(Boolean);
+    return glyphs.length ? `<span class="play-trame-trail" title="Chemin parcouru">${glyphs.join("›")}›</span>` : "";
+  },
+
+  /** Un tiroir `<details>` — disclosure natif (affordance au repos + clavier ;
+      son état ouvert survit aux ± grâce au patch-in-place). */
+  _drawerHtml(word, sum, inner, open) {
+    return `<details class="play-drawer"${open ? " open" : ""}>
+      <summary><span class="play-drawer-word">${word}</span><span class="play-drawer-sum">${sum}</span><span class="play-drawer-chev" aria-hidden="true">▸</span></summary>
+      <div class="play-drawer-body">${inner}</div>
+    </details>`;
+  },
+
+  /** Résumé glanceable des Horloges (compte + la plus chaude) pour le sommaire du tiroir. */
+  _pressionSummary(sc) {
+    const clocks = sc.clocks || [];
+    let top = null;
+    for (const c of clocks) {
+      const fill = ScenarioStore.clockFill(sc, c.id);
+      const ratio = c.segments ? fill / c.segments : 0;
+      if (!top || ratio > top.ratio) top = { title: c.title, fill, seg: c.segments, ratio };
+    }
+    return top ? `${clocks.length} · ${CardRenderer._esc(top.title || "horloge")} ${top.fill}/${top.seg}` : `${clocks.length}`;
+  },
+
+  /** Résumé glanceable des Fronts (compte + présages révélés) pour le sommaire. */
+  _frontsSummary(sc) {
+    const fronts = sc.fronts || [];
+    let rev = 0;
+    let tot = 0;
+    for (const f of fronts)
+      for (const d of f.dangers || []) {
+        rev += ScenarioStore.frontPortent(sc, d.id);
+        tot += (d.grimPortents || []).length;
+      }
+    return `${fronts.length} · présages ${rev}/${tot}`;
+  },
+
+  _FRONT_COACH_KEY: "cockpit_front_coach_seen",
+  _frontCoachSeen() {
+    return typeof Storage !== "undefined" && Storage.getGlobal(this._FRONT_COACH_KEY, false) === true;
+  },
+  /** Lot C — le coachmark première rencontre : enseigne « Front » sans jargon.
+      « Compris » pose le drapeau global (via Storage — prohibition n°2) → il ne
+      revient plus. Proactif « une fois » : le tiroir Fronts s'ouvre tant que non vu. */
+  _frontCoachHtml() {
+    return `<div class="play-front-coach">
+      <span class="play-front-coach-i" aria-hidden="true">ⓘ</span>
+      <div class="play-front-coach-txt"><b>Un Front</b>, c'est un danger organisé — souvent une faction — qui avance vers une catastrophe, étape par étape. À vous de le ralentir.
+        <button class="btn-secondary btn-small" data-action="play-front-coach-ok">Compris</button></div>
+    </div>`;
+  },
+
   /** S5b — les FRONTS en cockpit : faction + dangers dont on avance les présages
       ordonnés en live (−/＋ → `setFrontPortent`). Tous présages révélés → échéance. */
-  _frontsHtml(sc) {
+  _frontsHtml(sc, { bare = false } = {}) {
     const esc = CardRenderer._esc;
     const fronts = sc.fronts || [];
     if (!fronts.length) return "";
     const facName = (id) => (typeof FactionStore !== "undefined" && id && FactionStore.get(id)) ? FactionStore.get(id).name : "";
     const rows = fronts.map((f) => {
       const fn = facName(f.factionId);
+      // Chrome (board) : le Front s'identifie par la PASTILLE de sa faction —
+      // plus de ⚑, réservé au type d'étape « retombée » (collision levée).
+      const fcol = (typeof FactionStore !== "undefined" && f.factionId && FactionStore.get(f.factionId) || {}).color || "";
       const dangers = (f.dangers || []).map((d) => {
         const total = (d.grimPortents || []).length;
         const rev = ScenarioStore.frontPortent(sc, d.id);
@@ -659,17 +804,17 @@ export const Play = {
         </div>`;
       }).join("");
       return `<div class="play-front">
-        <div class="play-front-head"><span aria-hidden="true">⚑</span> <span class="play-front-title">${esc(f.title || "(front)")}</span>${fn ? `<span class="play-front-faction">${esc(fn)}</span>` : ""}</div>
+        <div class="play-front-head"><span class="play-front-dot" aria-hidden="true"${fcol ? ` style="background:${esc(fcol)}"` : ""}></span> <span class="play-front-title">${esc(f.title || "(front)")}</span>${fn ? `<span class="play-front-faction">${esc(fn)}</span>` : ""}</div>
         ${dangers}
       </div>`;
     }).join("");
-    return `<div class="play-trame-fronts"><span class="play-trame-word">Fronts</span>${rows}</div>`;
+    return `<div class="play-trame-fronts">${bare ? "" : '<span class="play-trame-word">Fronts</span>'}${rows}</div>`;
   },
 
   /** S5a — la PRESSION en cockpit : chaque horloge de la trame, remplissable en
       live (−/＋ → `setClockFill`, qui applique les effets et émet ; l'abonnement
       re-rend le poste). Anneau réutilisé de l'atelier (ScenarioGraph). */
-  _pressionHtml(sc) {
+  _pressionHtml(sc, { bare = false } = {}) {
     const esc = CardRenderer._esc;
     const clocks = sc.clocks || [];
     if (!clocks.length || typeof ScenarioGraph === "undefined") return "";
@@ -687,7 +832,7 @@ export const Play = {
         </div>`;
       })
       .join("");
-    return `<div class="play-trame-pression"><span class="play-trame-word">Horloges</span>${rows}</div>`;
+    return `<div class="play-trame-pression">${bare ? "" : '<span class="play-trame-word">Horloges</span>'}${rows}</div>`;
   },
 
   /** Abonnement live à ScenarioStore : quand Jouer est visible et qu'une trame
@@ -695,10 +840,92 @@ export const Play = {
       poste. Debounce léger : coalesce les salves (frappe de titre à l'atelier).
       Guardé sur le panneau actif → 0 travail quand Jouer est masqué. */
   _onScenarioChange() {
+    // Un ± local peint le DOM en place (feel joué + état ouvert des tiroirs
+    // préservé) et pose ce drapeau le temps de la mutation : on n'écrase pas son
+    // travail par un re-render complet. Les changements EXTERNES (atelier) ne le
+    // posent pas → re-render normal.
+    if (this._patching) return;
     const panel = document.getElementById("panel-play");
     if (!panel || !panel.classList.contains("active")) return;
     clearTimeout(this._trameRenderT);
     this._trameRenderT = setTimeout(() => this.render(), 60);
+  },
+
+  /** Patch-in-place d'une horloge : mute le runtime, puis DÉTECTE un éventuel
+      effet de seuil (étape activée / sortie fermée) — seul cas où l'on re-rend le
+      poste ; sinon on peint la case dans le DOM existant (la transition de token
+      joue et l'état ouvert des tiroirs survit). */
+  _patchClock(btn, scId, ckId, delta) {
+    const sc = ScenarioStore.get(scId);
+    const clock = sc && (sc.clocks || []).find((c) => c && c.id === ckId);
+    if (!clock) return;
+    const before = ScenarioStore.clockFill(sc, ckId);
+    const curBefore = sc.runtime && sc.runtime.currentSceneId;
+    const closedBefore = ((sc.runtime && sc.runtime.closedEdgeIds) || []).join(",");
+    this._patching = true;
+    ScenarioStore.setClockFill(scId, ckId, before + delta);
+    this._patching = false;
+    const curAfter = sc.runtime && sc.runtime.currentSceneId;
+    const closedAfter = ((sc.runtime && sc.runtime.closedEdgeIds) || []).join(",");
+    if (curAfter !== curBefore || closedAfter !== closedBefore) return void this.render();
+    this._paintClock(btn.closest(".play-clock"), ScenarioStore.clockFill(sc, ckId), clock.segments);
+  },
+  /** Peint le remplissage sur les cases EXISTANTES (la transition `fill` joue),
+      le compteur et l'état des boutons. */
+  _paintClock(row, fill, segments) {
+    if (!row) return;
+    row.querySelectorAll(".clock-slice").forEach((sl, i) => sl.classList.toggle("filled", i < fill));
+    const count = row.querySelector(".play-clock-count");
+    if (count) count.textContent = `${fill}/${segments}`;
+    const minus = row.querySelector('[data-delta="-1"]');
+    const plus = row.querySelector('[data-delta="1"]');
+    if (minus) minus.disabled = fill <= 0;
+    if (plus) plus.disabled = fill >= segments;
+  },
+  /** Patch-in-place d'un présage (aucun effet de seuil → jamais de re-render). */
+  _patchPortent(btn, scId, dgId, delta) {
+    const sc = ScenarioStore.get(scId);
+    if (!sc) return;
+    let danger = null;
+    for (const f of sc.fronts || []) {
+      const d = (f.dangers || []).find((x) => x && x.id === dgId);
+      if (d) { danger = d; break; }
+    }
+    if (!danger) return;
+    const before = ScenarioStore.frontPortent(sc, dgId);
+    this._patching = true;
+    ScenarioStore.setFrontPortent(scId, dgId, before + delta);
+    this._patching = false;
+    this._paintPortents(btn.closest(".play-danger"), danger, ScenarioStore.frontPortent(sc, dgId));
+  },
+  /** Peint la révélation sur les <li> EXISTANTS (transition + micro-glissé), le
+      compteur, les boutons et l'échéance. */
+  _paintPortents(box, danger, rev) {
+    if (!box) return;
+    const portents = danger.grimPortents || [];
+    box.querySelectorAll(".play-portent").forEach((li, i) => {
+      const on = i < rev;
+      const was = li.classList.contains("revealed");
+      li.classList.toggle("revealed", on);
+      li.textContent = on ? portents[i] : "étape à venir";
+      if (on && !was) { li.classList.remove("just"); void li.offsetWidth; li.classList.add("just"); }
+    });
+    const count = box.querySelector(".play-portent-count");
+    if (count) count.textContent = `${rev}/${portents.length}`;
+    const minus = box.querySelector('[data-delta="-1"]');
+    const plus = box.querySelector('[data-delta="1"]');
+    if (minus) minus.disabled = rev <= 0;
+    if (plus) plus.disabled = rev >= portents.length || !portents.length;
+    let doom = box.querySelector(".play-portent-doom");
+    const show = portents.length && rev >= portents.length && danger.impendingDoom;
+    if (show && !doom) {
+      doom = document.createElement("div");
+      doom.className = "play-portent-doom";
+      doom.textContent = `⚠ ${danger.impendingDoom}`;
+      box.appendChild(doom);
+    } else if (!show && doom) {
+      doom.remove();
+    }
   },
 
   /** B1 — l'ÉTAT de la coquille Cockpit, dérivé de champs NEUTRES (aucune

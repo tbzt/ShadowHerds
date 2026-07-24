@@ -12,6 +12,25 @@ commit.
 
 ## [Non publié]
 
+## [1.105.0] — 2026-07-24
+
+### Modifié
+
+- **Le cockpit de « Jouer » s'étage autour de la trame en combat.** Quand une
+  scène de combat tourne, le poste de commandement se réorganise pour que le
+  **roster reprenne la première place** : la trame se replie en une **barre
+  compacte** — le chemin parcouru, l'étape en cours, son moment clé, et « La
+  suite » pour bifurquer — et les **Horloges** et **Fronts** se rangent dans des
+  tiroirs qu'on déplie d'un tap. Monter une horloge ou révéler une étape « si on
+  ne fait rien… » se fait **sur place** : l'écran ne se reconstruit pas et on ne
+  perd pas où l'on en était (les tiroirs ouverts restent ouverts). La première
+  rencontre d'un **Front** s'accompagne d'une note qui explique le mot. À froid
+  (préparation), la trame reprend les commandes, et le fil des étapes ne montre
+  que le **chemin réellement joué**, jamais une ligne imposée d'avance.
+- **La visite guidée présente enfin « Jouer ».** Le tour d'accueil faisait le
+  tour de toutes les surfaces sauf le poste de commandement de séance : il a
+  désormais son étape, entre Topos et Suivi de combat.
+
 ## [1.104.0] — 2026-07-24
 
 ### Modifié

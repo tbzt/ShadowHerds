@@ -222,8 +222,11 @@ export const ScenarioStore = {
       }
     }
 
-    // Intégrité runtime : la scène courante ne peut pas pointer un nœud disparu.
+    // Intégrité runtime : la scène courante ne peut pas pointer un nœud disparu,
+    // ni le chemin parcouru le retenir.
     if (sc.runtime && sc.runtime.currentSceneId === nodeId) sc.runtime.currentSceneId = null;
+    if (sc.runtime && Array.isArray(sc.runtime.visitedIds))
+      sc.runtime.visitedIds = sc.runtime.visitedIds.filter((id) => id !== nodeId);
 
     this.save();
     this._emit({ scenarioId: scId, kind: "sceneNode", op: "remove", id: nodeId });
@@ -484,6 +487,7 @@ export const ScenarioStore = {
           oldVal < eff.atThreshold && val >= eff.atThreshold &&
           sc.sceneNodes.some((n) => n.id === eff.targetId)) {
         rt.currentSceneId = eff.targetId;
+        rt.visitedIds = this._pushVisit(rt.visitedIds, eff.targetId);
       }
     }
     sc.runtime = rt;
@@ -615,10 +619,28 @@ export const ScenarioStore = {
   patchRuntime(scId, partial = {}) {
     const sc = this.get(scId);
     if (!sc) return false;
-    sc.runtime = Object.assign({}, sc.runtime || {}, partial || {});
+    const prev = sc.runtime || {};
+    const rt = Object.assign({}, prev, partial || {});
+    // Fil « chemin parcouru » : dès qu'on POSE une étape courante (bifurcation au
+    // cockpit), on l'ajoute au chemin visité (runtime seul, Failsafe). Le passé
+    // est linéaire par construction — la route effectivement empruntée.
+    if (partial && partial.currentSceneId)
+      rt.visitedIds = this._pushVisit(prev.visitedIds, partial.currentSceneId);
+    sc.runtime = rt;
     this.save();
     this._emit({ scenarioId: scId, kind: "runtime", op: "patch", id: scId });
     return true;
+  },
+  /** Ajoute `nodeId` au chemin parcouru sans doublon consécutif (aller-retour
+      A→A ignoré), borné à 64 (une trame de séance n'en approche jamais). */
+  _pushVisit(list, nodeId) {
+    const out = Array.isArray(list) ? list.slice() : [];
+    if (out[out.length - 1] !== nodeId) out.push(nodeId);
+    return out.length > 64 ? out.slice(out.length - 64) : out;
+  },
+  /** Le chemin parcouru en partie (runtime) — ordonné, linéaire par construction. */
+  visited(sc) {
+    return sc && sc.runtime && Array.isArray(sc.runtime.visitedIds) ? sc.runtime.visitedIds : [];
   },
   clearRuntime(scId) {
     const sc = this.get(scId);
