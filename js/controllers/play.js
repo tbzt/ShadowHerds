@@ -187,11 +187,12 @@ export const Play = {
           // ToposEdit (propriétaire du formulaire de topos). `data-id` = topos.
           ToposEdit.open(el.dataset.id);
           break;
-        case "play-cast-generate":
-          // VIS-8 étape 3 — générer le casting d'opposition. Délégué à RunGen
-          // (génère + range dans Shadows) ; re-rendu pour faire apparaître les
-          // puces et retirer le bouton (offre non répétée — pas de doublon).
-          RunGen.castForRun(el.dataset.id);
+        case "play-trame-generate":
+          // Générer une trame jouable depuis le topos (scènes, horloges, front,
+          // faction + casting), liée au run. Délégué à RunGen ; re-rendu pour
+          // faire apparaître la trame et retirer le bouton (pas de doublon —
+          // `generateTrameForRun` propose d'ouvrir si une trame existe déjà).
+          RunGen.generateTrameForRun(el.dataset.id);
           this.render();
           break;
         case "play-map":
@@ -1125,19 +1126,19 @@ export const Play = {
 
   /** VIS-8 étape 3 — verbes de PRÉPA du run, inline dans Avant, PAR DÉLÉGATION :
       Jouer ne gagne aucune logique, il appelle les modules propriétaires du
-      panneau `run` (édition, casting, plan) pour éviter d'avoir à le quitter.
-      Éditer (→ ToposEdit) · Générer le casting (→ RunGen, seulement si le topos
-      porte un profil de sécurité ET qu'aucun casting n'est encore rangé — le
-      castForRun ne déduplique pas) · Plan tactique / Ambiance : miroir exact du
-      gating de `RunRenderer._planButtons` (site `planUtile` ; Ambiance opt-in IA
-      via Settings ; vue directe si `planUrl` déjà généré, sinon génération). */
+      panneau `run` (édition, trame, plan) pour éviter d'avoir à le quitter.
+      Éditer (→ ToposEdit) · Générer la trame (→ RunGen, seulement si le topos
+      porte un profil de sécurité ET qu'aucune trame n'est encore liée au run) ·
+      Plan tactique / Ambiance : miroir exact du gating de
+      `RunRenderer._planButtons` (site `planUtile` ; Ambiance opt-in IA via
+      Settings ; vue directe si `planUrl` déjà généré, sinon génération). */
   _prepActionsHtml(t, runId) {
     const btns = [
       `<button class="btn-secondary btn-small" data-action="play-topos-edit" data-id="${t.id}" title="Éditer le topos (objectif, complication, mandant, lieu, paie)">✎ Éditer</button>`,
     ];
-    if (t.securityProfile && !this._runHasCast(runId))
+    if (t.securityProfile && !this._runHasTrame(runId))
       btns.push(
-        `<button class="btn-secondary btn-small" data-action="play-cast-generate" data-id="${t.id}" title="Générer les PNJ d'opposition cohérents avec le topos">⚔ Générer le casting</button>`,
+        `<button class="btn-secondary btn-small" data-action="play-trame-generate" data-id="${t.id}" title="Générer une trame jouable (scènes, horloges, front, faction + casting) et la lier au run">◈ Générer la trame</button>`,
       );
     if (t.planUtile) {
       btns.push(
@@ -1154,13 +1155,12 @@ export const Play = {
     return `<div class="play-prep-actions">${btns.join("")}</div>`;
   },
 
-  /** Le run a-t-il déjà un casting rangé ? (mêmes collections typées que
-      `_castHtml`). Sert à n'offrir « Générer le casting » que sur un run vierge
-      de PNJ — `RunGen.castForRun` régénère sinon en doublon. */
-  _runHasCast(runId) {
-    // A4 — le casting est convoqué par RÉFÉRENCE (`convenedIds` résout convokes
-    // + Factions + groups hérités), plus une appartenance de groupe à sonder.
-    return DossierBar.convenedIds(runId).length > 0;
+  /** Le run a-t-il déjà une trame liée ? (`ScenarioStore.byRun` sur le
+      `dossierId`). Sert à n'offrir « Générer la trame » que là où aucune n'existe
+      encore — `generateTrameForRun` ne duplique pas (il propose alors de l'ouvrir),
+      ce garde évite juste d'afficher le bouton pour rien. */
+  _runHasTrame(runId) {
+    return typeof ScenarioStore !== "undefined" && !!ScenarioStore.byRun(runId);
   },
 
   /** Casting préparé, RENDU PAR RÉFÉRENCE (Fil B · §4.2). Le run/scène convoque

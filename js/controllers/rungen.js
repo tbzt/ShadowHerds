@@ -12,6 +12,10 @@ import { Dialog } from "../widgets/kit/dialog.js";
 import { DossierBar } from "../widgets/journal/dossierbar.js";
 import { Dossiers } from "../widgets/journal/dossiers.js";
 import { RunRenderer } from "../widgets/play/runrenderer.js";
+import { ScenarioStore } from "../core/scenariostore.js";
+import { FactionStore } from "../core/factionstore.js";
+import { ScenarioTemplates } from "../widgets/graph/scenariotemplates.js";
+import { TrameGen } from "../rules/tramegen.js";
 import { Storage } from "../core/storage.js";
 import { ToposCatalog } from "../rules/toposcatalog.js";
 import { WorldState } from "../rules/worldstate.js";
@@ -90,9 +94,9 @@ export const RunGen = {
           this.toDossier(card.dataset.id, actionEl.dataset.runName);
           break;
         }
-        case "run-cast": {
+        case "run-trame": {
           const card = actionEl.closest(".run-card");
-          this.castForRun(card.dataset.id);
+          this.generateTrameForRun(card.dataset.id);
           break;
         }
         // R4 : miroir du geste « rencontre » de dossierbar sur la carte de
@@ -141,14 +145,15 @@ export const RunGen = {
     // (focus + destination de rangement + fil d'Ariane) — sinon il fallait
     // aller le focaliser à la main pour que « Jouer » l'affiche en tête.
     if (dossier) DossierBar.select(dossier.id);
-    // VIS-3 (annexe B b) : le casting est PROPOSÉ, pas imposé (informer jamais
+    // VIS-3 (annexe B b) : la trame est PROPOSÉE, pas imposée (informer jamais
     // décider). Un topos porteur d'un profil de sécurité offre un bouton qui
-    // génère les PNJ d'opposition d'un clic ; sinon, simple confirmation.
+    // pose une trame jouable (scènes, horloges, front, faction + casting) d'un
+    // clic ; sinon, simple confirmation.
     if (run && run.dossierId && run.securityProfile) {
       toastAction(
         `Run « ${name} » créé — rangez-y votre prep.`,
-        "Générer le casting",
-        () => this.castForRun(runId),
+        "Générer la trame",
+        () => this.generateTrameForRun(runId),
         6000,
       );
     } else {
@@ -169,17 +174,53 @@ export const RunGen = {
     runner_rival: "combattant",
   },
 
-  /** « Générer le casting » — produit les PNJ d'opposition cohérents avec le
-      topos (profil de sécurité de la cible + rôle injecté par la difficulté),
-      calés en nombre sur la menace du district, et les range dans le dossier du
-      run. Génération déléguée à `Gen.generateForRole` ; rangement à `Shadows`
-      (via `currentGroup`) — RunGen n'écrit ni la fiche ni le storage lui-même.
-      Le casting apparaît ensuite dans le poste de commandement de « Jouer »
-      (qui lit déjà `DossierBar.memberIds`). */
-  castForRun(runId) {
+  /** Produit et RANGE les PNJ d'opposition d'un run (casting par référence),
+      renvoie `[{id, role}]` (la trame les répartit sur les scènes selon leur rôle
+      et les verse en membres de faction). Slots = profil de sécurité de la cible
+      (+ un extra si district très surveillé) + le rôle injecté par la difficulté,
+      traduits en rôles Coherence (`spirit` filtré car non-PNJ).
+      A4/§5.2 — on génère DANS LE MONDE (bibliothèque) puis on CONVOQUE sur le run
+      (`Dossiers.convoke`) ; le casting n'est plus une appartenance de dossier. */
+  _generateCast(run) {
+    const prof = ToposCatalog.securityProfiles[run.securityProfile];
+    if (!prof) return [];
+    const cats = prof.roles.map((r) => r.cat);
+    const menace = ToposCatalog.districts.find((d) => d.key === run.district)?.menace || 3;
+    if (menace >= 4) cats.push("grunt");
+    if (run.injectedRole) cats.push(run.injectedRole);
+    const roles = cats.map((c) => this._CAT_TO_ROLE[c]).filter(Boolean);
+    const cast = [];
+    for (const role of roles) {
+      const pnj = Gen.generateForRole(role);
+      if (!pnj) continue;
+      // VIS-12 (P5) : tag la faction d'opposition pour la mémoire du monde —
+      // « ce PNJ a été croisé chez Ares » deviendra dérivable (visage récurrent).
+      pnj.faction = run.opposition || null;
+      Shadows.savePNJ(pnj.id);
+      Dossiers.convoke(run.dossierId, "entity", pnj.id);
+      cast.push({ id: pnj.id, role });
+    }
+    return cast;
+  },
+
+  /* Classe de scène (repérage=tech / sociale=social / action=combat) où placer
+     un rôle Coherence — miroir de `TrameGen._CAST_CLASS_BY_TYPE`. */
+  _ROLE_CLASS: {
+    combattant: "combat", mage: "combat", decker: "tech", rigger: "tech", social: "social",
+  },
+
+  /** « Générer la trame » — d'un topos promu en run, POSE une trame jouable
+      COMPLÈTE et la lie au run (le cockpit « Jouer » la retrouve via
+      `ScenarioStore.byRun(dossierId)`). Le contrôleur ORCHESTRE : il résout le
+      contexte (opposition, mandant, sécurité, menace, **modèle tiré au sort**) et
+      le passe au bâtisseur pur `TrameGen.fromTopos` (feuille), puis pose TOUTES
+      les couches — factions en lice, scènes+beats dramatiques, arêtes, horloges,
+      fronts, calque d'indices, casting distribué par rôle. Ne duplique pas : si
+      une trame est déjà liée, propose de l'ouvrir. */
+  generateTrameForRun(runId) {
     const run = this._runs.find((r) => r.id === runId);
     if (!run || !run.dossierId) {
-      toast("Faites d'abord un run (dossier) pour y ranger le casting.", "warning");
+      toast("Faites d'abord un run (dossier) pour y ancrer la trame.", "warning");
       return;
     }
     const prof = ToposCatalog.securityProfiles[run.securityProfile];
@@ -192,60 +233,158 @@ export const RunGen = {
       toast("Dossier du run introuvable.", "warning");
       return;
     }
-    // Slots = profil de la cible (+ un extra si district très surveillé) + le
-    // rôle injecté par la difficulté ; on traduit en rôles Coherence (spirit
-    // filtré car non-PNJ).
-    const cats = prof.roles.map((r) => r.cat);
-    const menace = ToposCatalog.districts.find((d) => d.key === run.district)?.menace || 3;
-    if (menace >= 4) cats.push("grunt");
-    if (run.injectedRole) cats.push(run.injectedRole);
-    const roles = cats.map((c) => this._CAT_TO_ROLE[c]).filter(Boolean);
-    if (!roles.length) return;
+    const openTrame = (id) => {
+      if (typeof ScenarioGraph !== "undefined") ScenarioGraph.open(id);
+    };
+    // Une trame par run (convention `byRun`) : ne pas dupliquer.
+    const existing = ScenarioStore.byRun(run.dossierId);
+    if (existing) {
+      toastAction(`« ${dossierName} » a déjà une trame.`, "Ouvrir la trame", () => openTrame(existing.id));
+      return;
+    }
 
-    // A4/§5.2 — casting par RÉFÉRENCE : on génère l'opposition DANS LE MONDE
-    // (bibliothèque) puis on la CONVOQUE sur le run (`Dossiers.convoke`). Le
-    // casting n'est plus une appartenance de dossier ; « Jouer » le résout via
-    // `convenedIds`. Fin de la fuite « casting = folder membership » (A4-bis.3b :
-    // `savePNJ` ne range plus dans aucun groupe, plus de `currentGroup` à poser).
-    let n = 0;
-    for (const role of roles) {
-      const pnj = Gen.generateForRole(role);
-      if (pnj) {
-        // VIS-12 (P5) : tag la faction d'opposition pour la mémoire du monde —
-        // « ce PNJ a été croisé chez Ares » deviendra dérivable (visage récurrent).
-        pnj.faction = run.opposition || null;
-        Shadows.savePNJ(pnj.id);
-        Dossiers.convoke(run.dossierId, "entity", pnj.id);
-        n++;
+    // Contexte résolu pour le bâtisseur pur (aucune connaissance du catalogue
+    // ni des stores côté TrameGen). Modèle de scènes TIRÉ AU SORT parmi les
+    // intégrés (les modèles user peuvent avoir des beats hors des 6 types).
+    const oppKey = run.opposition || null;
+    const opposition = { key: oppKey, name: (ToposCatalog.factions[oppKey] || {}).nom || "Opposition", type: ToposCatalog.typeOf(oppKey) };
+    const mandant = { key: run.mandant || null, name: (ToposCatalog.factions[run.mandant] || {}).nom || "le commanditaire", type: ToposCatalog.typeOf(run.mandant) };
+    const menace = ToposCatalog.districts.find((d) => d.key === run.district)?.menace || 3;
+    const builtins = ScenarioTemplates.all().filter((t) => !ScenarioTemplates.isUser(t));
+    const template = Utils.rand(builtins.length ? builtins : ScenarioTemplates.all());
+    const system = (typeof App !== "undefined" && App.edition) || null;
+    const spec = TrameGen.fromTopos({
+      topos: run, template, opposition, mandant,
+      security: { label: prof.label, roles: prof.roles, key: run.securityProfile },
+      ambiances: ToposCatalog.districtAmbiances[run.district] || [],
+      menace, system,
+    });
+    if (!spec) {
+      toast("Modèle de trame indisponible.", "warning");
+      return;
+    }
+
+    // Pose — factions d'abord (les fronts les référencent par RÔLE), puis la
+    // trame liée au run.
+    const factionIdByRole = {};
+    for (const [role, f] of Object.entries(spec.factions)) {
+      const created = FactionStore.create({ name: f.name, anchor: f.anchor });
+      if (created) factionIdByRole[role] = created.id;
+    }
+    const oppFactionId = factionIdByRole.opposition || null;
+    const sc = ScenarioStore.create(spec.scenario);
+    if (!sc) {
+      toast("Création de la trame impossible.", "warning");
+      return;
+    }
+    ScenarioStore.setRunId(sc.id, run.dossierId);
+
+    // Scènes (+ beat dramatique) puis arêtes. Les cibles du spec sont des INDEX ;
+    // on les résout via ces tables index→id, comme `_seedFromTemplate`.
+    const sceneIds = spec.scenes.map((s) => {
+      const n = ScenarioStore.addSceneNode(sc.id, {
+        type: s.type, title: s.title, body: s.body, templateBeat: s.beat, x: s.x, y: s.y,
+      });
+      if (n && (s.bang || s.arrow))
+        ScenarioStore.updateSceneNode(sc.id, n.id, { bang: s.bang || "", arrow: s.arrow || null });
+      return n ? n.id : null;
+    });
+    const edgeIds = spec.edges.map((e) => {
+      const edge = ScenarioStore.addSceneEdge(sc.id, {
+        from: sceneIds[e.from], to: sceneIds[e.to],
+        kind: e.kind, gateway: e.gateway, isEscapeHatch: e.isEscapeHatch, label: e.label,
+      });
+      return edge ? edge.id : null;
+    });
+
+    // Horloges + effets (cible scène/arête par index → id).
+    for (const c of spec.clocks) {
+      const clock = ScenarioStore.addClock(sc.id, { type: c.type, title: c.title, segments: c.segments });
+      if (!clock) continue;
+      for (const eff of c.effects || []) {
+        const targetId =
+          eff.target.scene != null ? sceneIds[eff.target.scene]
+          : eff.target.edge != null ? edgeIds[eff.target.edge]
+          : null;
+        if (targetId)
+          ScenarioStore.addClockEffect(sc.id, clock.id, {
+            atThreshold: eff.atThreshold, action: eff.action, targetId,
+          });
       }
     }
-    this._proposeRecurringFace(run, dossierName, n);
-  },
 
-  /** VIS-12 (P5) — après le casting frais, PROPOSE (jamais n'impose) de ramener
-      un visage déjà croisé de la même faction dans la campagne : un tap ré-attache
-      le PNJ existant au run (multi-groupe, par référence). S'il n'y en a pas, le
-      toast de casting normal. */
-  _proposeRecurringFace(run, dossierName, n) {
-    const castMsg = `Casting généré : ${n} PNJ convoqué${n > 1 ? "s" : ""} dans « ${dossierName} ».`;
+    // Calque d'indices : faits cachés (index→id) puis indices ancrés sur les scènes.
+    const infoIds = spec.infoNodes.map((n) => {
+      const info = ScenarioStore.addInfoNode(sc.id, { fact: n.fact, role: n.role, when: n.when });
+      return info ? info.id : null;
+    });
+    for (const cl of spec.clues) {
+      const toInfo = infoIds[cl.toInfo];
+      if (!toInfo) continue;
+      ScenarioStore.addClue(sc.id, {
+        toInfoNode: toInfo,
+        anchorSceneNodes: (cl.anchorScenes || []).map((i) => sceneIds[i]).filter(Boolean),
+        description: cl.description, gated: cl.gated,
+      });
+    }
+
+    // Fronts (faction résolue par rôle) + danger + présages ordonnés.
+    for (const fr of spec.fronts) {
+      const front = ScenarioStore.addFront(sc.id, {
+        title: fr.title, factionId: factionIdByRole[fr.factionRole] || null,
+      });
+      if (!front) continue;
+      const dg = ScenarioStore.addDanger(sc.id, front.id, {
+        impulse: fr.danger.impulse, impendingDoom: fr.danger.impendingDoom,
+      });
+      if (dg) for (const p of fr.danger.portents) ScenarioStore.addPortent(sc.id, front.id, dg.id, p);
+    }
+
+    // Casting (superset) → membres de la faction d'opposition + RÉPARTITION par
+    // rôle sur les scènes (le fixer en sociale, le decker au repérage, le muscle
+    // au climax) ; les surnuméraires atterrissent au climax.
+    const cast = this._generateCast(run);
+    if (oppFactionId) for (const c of cast) FactionStore.addMember(oppFactionId, c.id);
+    const pools = { combat: [], tech: [], social: [] };
+    for (const c of cast) (pools[this._ROLE_CLASS[c.role] || "combat"]).push(c.id);
+    const sceneCast = {};
+    spec.scenes.forEach((s, i) => {
+      const id = s.cast && pools[s.cast] && pools[s.cast].shift();
+      if (id && sceneIds[i]) (sceneCast[sceneIds[i]] ||= []).push(id);
+    });
+    const climaxId = sceneIds[spec.climaxIndex];
+    const leftovers = [...pools.combat, ...pools.tech, ...pools.social];
+    if (climaxId && leftovers.length) (sceneCast[climaxId] ||= []).push(...leftovers);
+    for (const [sid, ids] of Object.entries(sceneCast))
+      ScenarioStore.updateSceneNode(sc.id, sid, { castIds: ids });
+
+    this._refreshCard(runId);
+
+    // Un seul toast à la fois (socle utils). VIS-12 (P5) : si un visage déjà
+    // croisé de l'opposition traîne dans la campagne, on PROPOSE de le ramener
+    // (une némésis récurrente, ré-attachée par référence + versée en faction) ;
+    // sinon, l'accès direct à la trame fraîche.
+    const head = `Trame « ${sc.title} » générée — ${spec.scenes.length} scènes, ${spec.clocks.length} horloges, ${spec.fronts.length} fronts, ${cast.length} PNJ.`;
     const faces =
       typeof WorldState !== "undefined"
         ? WorldState.recurringFacesFor(run.dossierId, run.opposition, run.dossierId)
         : [];
-    if (!faces.length) {
-      toast(castMsg);
-      return;
+    if (faces.length) {
+      const face = Utils.rand(faces);
+      const factionName = opposition.name || "";
+      toastAction(
+        `${head} ${face.name} — déjà croisé${factionName ? ` chez ${factionName}` : ""}. Le ramener ?`,
+        "Ramener",
+        () => {
+          Dossiers.convoke(run.dossierId, "entity", face.id); // convoque par référence
+          if (oppFactionId) FactionStore.addMember(oppFactionId, face.id);
+          toast(`${face.name} rejoint « ${dossierName} ».`);
+        },
+        6000,
+      );
+    } else {
+      toastAction(head, "Ouvrir la trame", () => openTrame(sc.id), 6000);
     }
-    const face = Utils.rand(faces);
-    const factionName = (ToposCatalog.factions[run.opposition] || {}).nom || "";
-    toastAction(
-      `${castMsg} ${face.name} — déjà croisé${factionName ? ` chez ${factionName}` : ""}. Le ramener ?`,
-      "Ramener",
-      () => {
-        Dossiers.convoke(run.dossierId, "entity", face.id); // convoque par référence
-        toast(`${face.name} rejoint « ${dossierName} ».`);
-      },
-    );
   },
 
   /** Ré-affiche une seule carte de run après mutation (évite un re-render

@@ -12,6 +12,42 @@ commit.
 
 ## [Non publié]
 
+## [1.111.0] — 2026-07-24
+
+### Ajouté
+
+- **Un topos se déplie en trame jouable complète, d'un clic.** Le bouton
+  « Générer la trame » (carte de run, et moment « Avant » de « Jouer »)
+  remplace « Générer le casting » et fait bien davantage : à partir des clés du
+  topos (mandant, opposition, lieu, objectif, complication), il pose une
+  **trame entière** et la **lie au run** — le cockpit de « Jouer » l'affiche
+  aussitôt en direct. Chaque génération est différente : le **squelette de
+  scènes est tiré au sort** parmi trois modèles narratifs (Donjon en 5 salles,
+  Colonne narrative, Cercle narratif). Sont peuplés, corrélés entre eux :
+  - **les scènes**, habillées par le **verbe d'objectif** (une extraction, un
+    vol de données ou un sabotage ne se jouent pas pareil), avec **beat
+    dramatique** — un *choix forcé* au climax et au point de bascule, une
+    flèche **↓Peur** sur l'affrontement, **↑Espoir** sur la retombée ;
+  - **les factions en lice** : l'opposition (ancrée sur le catalogue canon) et,
+    selon la complication, le **commanditaire** (double jeu) ou une **équipe
+    rivale** ;
+  - **les horloges de pression** : une *alerte* qui, pleine, déclenche
+    l'affrontement et **ferme la sortie de secours**, une horloge d'**objectif**
+    propre au contrat (Fenêtre d'exfiltration, Traçage de l'intrusion, Compte à
+    rebours…), et une horloge de complication (course contre l'équipe rivale…) ;
+  - **les fronts** (Dungeon World) : l'opposition réagit + un second front de
+    complication, chacun avec ses **présages ordonnés** ;
+  - un **calque d'indices** — un à deux **faits cachés** (la vérité derrière le
+    run) et leurs indices ancrés sur les scènes, dont un *gaté* pour un
+    prérequis ;
+  - le **casting** d'opposition, **réparti par rôle** sur les scènes (le fixer
+    en scène sociale, le decker au repérage, le muscle au climax) et versé en
+    membres de la faction.
+
+  Une trame déjà liée n'est pas dupliquée : le bouton propose de l'ouvrir.
+  Nouveau bâtisseur pur `TrameGen` (couche règles, édition-neutre), nourri des
+  verbes et complications de *Vise Juste* et du modèle des *Dossiers McCarthy*.
+
 ## [1.110.0] — 2026-07-24
 
 ### Modifié

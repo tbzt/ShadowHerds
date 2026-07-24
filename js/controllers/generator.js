@@ -530,7 +530,7 @@ export const Gen = {
 
   /** Génère un PNJ pour un RÔLE de la taxonomie Coherence (combattant, mage,
       decker, rigger, social…), hors formulaire — utilisé par le casting de
-      topos (RunGen.castForRun). Réutilise le moteur de cohérence role→archétype
+      topos (RunGen._generateCast). Réutilise le moteur de cohérence role→archétype
       déjà en place (aucune table nouvelle). Le PNJ entre dans le pool (persisté)
       pour que Shadows.savePNJ(id) puisse le ranger. Retourne le PNJ, ou null. */
   generateForRole(role, { proRating = "Aléatoire", tier = "Aléatoire" } = {}) {

@@ -431,7 +431,7 @@ export const TourSteps = {
     {
       id: "wn-first-run-guided", anchor: "nav-play", tours: ["whatsnew"], since: "1.79.0", fallback: "center",
       title: "Votre premier run, guidé",
-      body: "Quand aucun run n'existe encore, « Jouer » n'affiche plus « Rien à jouer » : un bouton « ＋ Créer mon premier run » demande un nom, crée le run et le met aussitôt en contexte — dès lors, tout ce que vous rangez ou générez s'y range. Et promouvoir un topos en run le focalise directement, en proposant d'un clic de générer le casting d'opposition.",
+      body: "Quand aucun run n'existe encore, « Jouer » n'affiche plus « Rien à jouer » : un bouton « ＋ Créer mon premier run » demande un nom, crée le run et le met aussitôt en contexte — dès lors, tout ce que vous rangez ou générez s'y range. Et promouvoir un topos en run le focalise directement, en proposant d'un clic de générer sa trame.",
     },
     {
       id: "wn-debrief-seance", anchor: "nav-play", tours: ["whatsnew"], since: "1.80.0", fallback: "center",
@@ -597,6 +597,11 @@ export const TourSteps = {
       id: "wn-graph-formes", anchor: "nav-trames", tours: ["whatsnew"], since: "1.110.0", fallback: "center",
       title: "Le graphe de trame se lit à la forme",
       body: "Chaque étape prend une forme selon sa nature, comme un diagramme de flux : l'accroche est un cercle (l'entrée), la retombée un cercle à double liseré (la sortie), les étapes jouables (action · sociale · repérage) des rectangles arrondis, la décision un losange (l'aiguillage) et chaque fait/indice un hexagone. On repère d'un coup d'œil où l'on bifurque et où le run peut retomber, sans lire les étiquettes. Et les liens se posent élégamment sur le bord réel de chaque forme — au flanc du losange, à l'arête du rectangle.",
+    },
+    {
+      id: "wn-topos-trame-auto", anchor: "nav-play", tours: ["whatsnew", "full"], since: "1.111.0", fallback: "center",
+      title: "Un topos qui se déplie en trame jouable",
+      body: "Le bouton « Générer la trame » (sur la carte de run, et dans « Avant » à Jouer) fait bien plus que caster : d'un clic, il pose une aventure entière depuis le topos, et différente à chaque fois. Le squelette de scènes est tiré au sort parmi trois modèles narratifs, puis habillé par le verbe de votre objectif (une extraction, un vol de données ou un sabotage ne se jouent pas pareil), avec un choix forcé au climax et une flèche espoir/peur qui donne le rythme. S'y greffent : les factions en lice (l'opposition, et le commanditaire ou une équipe rivale selon la complication) ; des horloges de pression (une alerte qui, pleine, déclenche l'affrontement et ferme la fuite, plus une horloge d'objectif propre au contrat) ; des fronts avec leurs présages ; un calque d'indices menant à la vérité cachée derrière le run ; et le casting d'opposition réparti sur les scènes selon les rôles. La trame est aussitôt liée au run : le cockpit de « Jouer » l'affiche en direct. Vous partez d'une amorce, vous repartez avec une aventure structurée.",
     },
   ],
 };

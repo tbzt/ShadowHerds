@@ -83,7 +83,7 @@ export const RunRenderer = {
         }
         <button class="card-action-btn" data-action="edit-run" title="Éditer ce topos">✎ Éditer</button>
         ${this._rencontreBtn(r)}
-        ${this._castBtn(r)}
+        ${this._trameBtn(r)}
         ${this._planBtn(r)}
         <button class="card-action-btn danger" data-action="discard-run">Virer</button>
       </div>`;
@@ -112,12 +112,13 @@ export const RunRenderer = {
     return `<button class="card-action-btn" data-action="${action}" data-dossier="${r.dossierId}">${label}</button>`;
   },
 
-  /** « Générer le casting » (Lot 3b) — seulement sur un topos promu en run
-      (`dossierId`) et porteur d'un profil de sécurité (topos généré ≥ 3a) :
-      RunGen produit alors les PNJ d'opposition et les range dans le run. */
-  _castBtn(r) {
+  /** « Générer la trame » — seulement sur un topos promu en run (`dossierId`) et
+      porteur d'un profil de sécurité (topos généré ≥ 3a) : RunGen pose alors une
+      trame jouable complète (scènes, horloges, front, faction + casting) liée au
+      run. Un clic de plus si une trame existe déjà (proposée à l'ouverture). */
+  _trameBtn(r) {
     if (!r.dossierId || !r.securityProfile) return "";
-    return `<button class="card-action-btn" data-action="run-cast" title="Générer les PNJ d'opposition et les ranger dans le run">⚔ Casting</button>`;
+    return `<button class="card-action-btn" data-action="run-trame" title="Générer une trame jouable (scènes, horloges, front, faction + casting) et la lier au run">◈ Générer la trame</button>`;
   },
 
   /** Boutons du lieu. Deux natures distinctes, gatées séparément :

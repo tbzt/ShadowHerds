@@ -114,6 +114,45 @@ export const ToposCatalog = {
     vigilants: { nom: "les Voisins Vigilants", secu: "vigilants", districts: ["renton"], rivaux: [], hire: false },
   },
 
+  /* ---- TYPE de faction (abstrait) : ce qu'elle VEUT au fond, lu par
+     `TrameGen` pour typer l'impulsion/le titre de son front (une corpo ≠ la
+     pègre ≠ un gang ≠ un dragon). Défaut "corpo" via `typeOf`. Édition-neutre. ---- */
+  factionTypes: {
+    ares: "corpo", aztech: "corpo", horizon: "corpo", mct: "corpo", evo: "corpo",
+    renraku: "corpo", saederkrupp: "corpo", fedboeing: "corpo", wuxing: "corpo",
+    erika: "corpo", celedyr: "corpo", seraphins: "corpo",
+    amazonie: "gouv", ucas: "gouv", particulier: "particulier",
+    mafia: "pègre", yakuza: "pègre", vory: "pègre", komungo: "pègre", koshari: "pègre", triades: "pègre",
+    tamanous: "goules",
+    ke_ls: "loi", garde: "loi", salish: "loi",
+    dragon_marin: "dragon", urubia: "dragon",
+    humanis: "policlub", toxiques: "magie",
+    bmb: "gang", crimson_crush: "gang", night_hunters: "gang", validus_magus: "gang",
+    ancients: "gang", brain_eaters: "gang", vigilants: "gang",
+  },
+  typeOf(key) {
+    return this.factionTypes[key] || "corpo";
+  },
+
+  /* ---- AMBIANCE par district (le sens du lieu de Seattle), lue par `TrameGen`
+     pour habiller le repérage. Setting-facts des 13 quartiers (registre, factions
+     dominantes, menace). Édition-neutre. ---- */
+  districtAmbiances: {
+    downtown: ["néons corpo, caméras et paparazzi à chaque carrefour", "la pyramide Aztech domine, la sousveillance est totale"],
+    bellevue: ["opulence feutrée, sécurité privée qui veille sans un bruit", "pelouses parfaites et regards méfiants derrière les haies"],
+    auburn: ["friches industrielles et tensions anti-métas à fleur de peau", "l'ombre de Humanis plane sur des rues ouvrières"],
+    council_island: ["diplomatie, magie et nature sauvage sous l'œil des rangers salish", "l'astral y est dense, la police à mana ne pardonne pas"],
+    everett: ["docks, grues et embourgeoisement qui grince", "l'air salin, les syndicats, et Lone Star qui revient"],
+    fort_lewis: ["béton militaire, tolérance zéro, para-créatures en patrouille", "checkpoints et miradors : ici l'armée règne"],
+    outremer: ["îles de luxe et de secrets, entre corpos et le Dragon marin", "manoirs sur l'eau, brume et gardes changelings"],
+    puyallup: ["barrens de cendres, guerre Mafia-Yakuza, terrain toxique", "smog perpétuel, gangs par zone, loi improvisée"],
+    redmond: ["no man's land sans loi, gangs et goules dans les ruines", "néons crevés, Glow City au loin, chacun pour soi"],
+    renton: ["quartiers mixtes, gangs denses et patrouilles citoyennes", "l'éveil magique monte, les Vigilants surveillent"],
+    snohomish: ["campagne agricole au terroir magique, sécurité locale loyale", "fermes NatVat et para-créatures de Blackstone au loin"],
+    tacoma: ["port de contrebande, la Yakuza tient l'ordre à sa façon", "conteneurs à perte de vue, docks qui grouillent la nuit"],
+    underground: ["labyrinthe souterrain, deux mégas en guerre froide", "tunnels moites, marchés noirs et politiciens nains"],
+  },
+
   /* ---- DISTRICTS : menace (1-5, alimente la paie et le casting) et
      sites {type, nom, planUtile}. `planUtile` pilote le bouton « Plan
      du lieu » (Lot 4). ---- */
@@ -190,22 +229,24 @@ export const ToposCatalog = {
   ],
 
   /* ---- DIFFICULTÉS (Anarchy 2 + Vise Juste). `role` = rôle de PNJ
-     injecté au casting (Lot 3b), sinon `null`. ---- */
+     injecté au casting (Lot 3b), sinon `null`. `kind` = famille de
+     complication (Vise Juste §6), lue par `TrameGen` pour greffer le bon
+     front / fait caché / horloge — édition-neutre, additif. ---- */
   difficultes: [
-    { label: "Double trahison du Johnson", role: null },
-    { label: "Un second Johnson concurrent sur la même cible", role: null },
-    { label: "Sécurité renforcée : mages + watchers astraux", role: "mage" },
-    { label: "Renfort de sécurité à mi-run (quelqu'un a vendu la mise)", role: null },
-    { label: "Drones de couverture non répertoriés", role: "rigger" },
-    { label: "CI défensive non répertoriée", role: "decker" },
-    { label: "Une équipe de runners rivale sur le même contrat", role: "runner_rival" },
-    { label: "Plans du lieu périmés (mauvaise information)", role: null },
-    { label: "La cible n'est pas celle annoncée (un double)", role: null },
-    { label: "Il faut un contact précis pour entrer", role: null },
-    { label: "Équipement rare requis pour réussir", role: null },
-    { label: "Terrain hostile : zone toxique / brouillage matriciel", role: null },
-    { label: "Un civil innocent pris dans la zone d'opération", role: null },
-    { label: "Un journaliste avec drone documente tout en direct", role: null },
+    { label: "Double trahison du Johnson", role: null, kind: "trahison" },
+    { label: "Un second Johnson concurrent sur la même cible", role: null, kind: "trahison" },
+    { label: "Sécurité renforcée : mages + watchers astraux", role: "mage", kind: "securite" },
+    { label: "Renfort de sécurité à mi-run (quelqu'un a vendu la mise)", role: null, kind: "securite" },
+    { label: "Drones de couverture non répertoriés", role: "rigger", kind: "securite" },
+    { label: "CI défensive non répertoriée", role: "decker", kind: "securite" },
+    { label: "Une équipe de runners rivale sur le même contrat", role: "runner_rival", kind: "rival" },
+    { label: "Plans du lieu périmés (mauvaise information)", role: null, kind: "mauvaise_info" },
+    { label: "La cible n'est pas celle annoncée (un double)", role: null, kind: "mauvaise_info" },
+    { label: "Il faut un contact précis pour entrer", role: null, kind: "prerequis" },
+    { label: "Équipement rare requis pour réussir", role: null, kind: "prerequis" },
+    { label: "Terrain hostile : zone toxique / brouillage matriciel", role: null, kind: "environnement" },
+    { label: "Un civil innocent pris dans la zone d'opération", role: null, kind: "ethique" },
+    { label: "Un journaliste avec drone documente tout en direct", role: null, kind: "ethique" },
   ],
 
   /* ---- PROFILS DE SÉCURITÉ → casting (Lot 3b). Chaque rôle porte une
@@ -284,6 +325,7 @@ export const ToposCatalog = {
       planUtile: !!site.planUtile,
       securityProfile: opp.secu,
       injectedRole: diff.role || null,
+      complicationKind: diff.kind || null,
       // Libellés plats (rétro-compatibles)
       type: objectif.phrase(opp),
       client: mandant.johnson,
