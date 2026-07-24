@@ -24,6 +24,7 @@
 /* Le canvas : une surface dimensionnée AVANT le montage (le moteur lit
    clientWidth/Height). Hauteur responsive, jamais de scroll horizontal. */
 .graph-canvas {
+  position: relative; /* ancre la commande de zoom en coin */
   flex: 1 1 0;
   min-width: 0;
   height: min(66vh, 560px);
@@ -222,6 +223,38 @@
   border-color: var(--accent, #35e0e6);
   color: var(--accent, #35e0e6);
   background: color-mix(in srgb, var(--accent, #35e0e6) 12%, transparent);
+}
+
+/* Commande de zoom au coin du canvas (la molette et le pincement font pareil).
+   Cibles tactiles ≥ 30px (doctrine « case de moniteur »). */
+.graph-zoom {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.graph-zoom-btn {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+  border: 1px solid var(--border, #2a3a49);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--surface-1, #0e1620) 82%, transparent);
+  color: var(--text, #dfe8f0);
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+.graph-zoom-btn:hover {
+  border-color: var(--accent, #35e0e6);
+  color: var(--accent, #35e0e6);
 }
 
 /* Périmètre (B4) : les voisins hors portée sont estompés (halo). */

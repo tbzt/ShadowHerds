@@ -12,6 +12,19 @@ commit.
 
 ## [Non publié]
 
+## [1.102.0] — 2026-07-24
+
+### Ajouté
+
+- **On peut zoomer et se déplacer sur la carte des Liens.** La carte
+  heuristique (vue « Liens » / graphe de relations) n'est plus figée à
+  l'échelle de la fenêtre : molette pour zoomer autour du curseur, boutons
+  `＋ / ⤢ / −` au coin du canvas (`⤢` ramène à la vue d'ensemble), et
+  **pincement à deux doigts** sur écran tactile (le geste consacré mobile),
+  avec déplacement qui suit le milieu des doigts. Une fois zoomé, glisser le
+  fond déplace la vue. Le glisser d'un nœud, le tissage de liens et l'accroche
+  magnétique restent exacts — le zoom pilote le cadrage, pas la vérité.
+
 ## [1.101.0] — 2026-07-24
 
 ### Ajouté

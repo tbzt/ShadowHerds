@@ -493,7 +493,13 @@ export const GraphView = {
         </div>
         <div class="modal-body graph-body">
           <div class="graph-split">
-            <div class="graph-canvas" data-graph="canvas"></div>
+            <div class="graph-canvas" data-graph="canvas">
+              <div class="graph-zoom" role="group" aria-label="Zoom de la carte">
+                <button type="button" class="graph-zoom-btn" data-graph-action="zoom-in" aria-label="Zoomer" title="Zoomer (molette · pincement à deux doigts)">＋</button>
+                <button type="button" class="graph-zoom-btn" data-graph-action="zoom-reset" aria-label="Vue d'ensemble" title="Vue d'ensemble">⤢</button>
+                <button type="button" class="graph-zoom-btn" data-graph-action="zoom-out" aria-label="Dézoomer" title="Dézoomer">−</button>
+              </div>
+            </div>
             <aside class="graph-inspector empty" data-graph="inspector"></aside>
           </div>
           <p class="graph-empty" data-graph="empty" hidden>Aucun lien à afficher — tissez des liens contact sur les fiches, ils apparaîtront ici.</p>
@@ -528,6 +534,12 @@ export const GraphView = {
         this._makeFaction();
       } else if (btn.dataset.graphAction === "group-cancel") {
         this._exitGroup();
+      } else if (btn.dataset.graphAction === "zoom-in") {
+        GraphEngine.zoomBy(1.3);
+      } else if (btn.dataset.graphAction === "zoom-out") {
+        GraphEngine.zoomBy(1 / 1.3);
+      } else if (btn.dataset.graphAction === "zoom-reset") {
+        GraphEngine.resetView();
       }
     });
     // Valeurs continues de l'inspecteur d'arête : mot (frappe), couleur

@@ -548,6 +548,11 @@ export const TourSteps = {
       title: "Le casting du Briefing, par faction et à convoquer",
       body: "Dans « Jouer », la bande Casting d'un run garde enfin ses factions entières : une faction convoquée est une seule puce dépliable — pastille de couleur, compte de membres, chevron qui déroule ses figures avec leur ⚔ « en scène » — au lieu d'une bouillie de noms. Ce que la campagne parente convoque descend sur le run, marqué « hérité ». Et un bouton « ＋ convoquer » ouvre un sélecteur (factions + recherche d'entités) pour bâtir ou ajuster le casting sans quitter le poste de commandement.",
     },
+    {
+      id: "wn-graph-zoom", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.102.0", fallback: "center",
+      title: "La carte des Liens se zoome et se déplace",
+      body: "La carte heuristique (vue « Liens ») n'est plus prisonnière de la taille de la fenêtre. Molette pour zoomer autour du curseur, boutons « ＋ / ⤢ / − » au coin de la carte (« ⤢ » revient à la vue d'ensemble), et pincement à deux doigts sur écran tactile — le geste consacré. Une fois zoomé, glissez le fond pour vous déplacer. Vos gestes habituels — déplacer un nœud, tisser un lien — restent intacts : le zoom cadre, il ne touche pas au graphe.",
+    },
   ],
 };
 

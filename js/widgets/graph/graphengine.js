@@ -154,6 +154,8 @@ export const GraphEngine = {
       raf: 0, alpha: 1, drag: null, weave: false, weaving: null, weaveLine,
       selectedId: null, selectedEdgeId: null, bg: null, edgeTap: null,
       gPockets, pockets: [], // A3 — poches de faction (données + éléments SVG)
+      view: { x: 0, y: 0, w: W, h: H }, // fenêtre visible (zoom/déplacement)
+      pointers: new Map(), pinch: null, // suivi multi-doigts pour le pincement
     };
     this._state = state;
     container.appendChild(svg);
@@ -460,23 +462,105 @@ export const GraphEngine = {
     return best;
   },
 
+  /* ---- Vue : zoom & déplacement par VIEWBOX. Piloter le viewBox garde toute
+     la conversion pointeur→SVG (getScreenCTM) exacte — glisser de nœud, tissage
+     et accroche restent justes sans y toucher. Ratio verrouillé sur W/H ;
+     échelle bornée 1×→ZMAX (le layout borne déjà les nœuds au cadre, donc 1×
+     montre tout). État ÉPHÉMÈRE : jamais persisté. ---- */
+  _applyView(s) {
+    const v = s.view;
+    s.svg.setAttribute("viewBox", `${v.x} ${v.y} ${v.w} ${v.h}`);
+  },
+  _clampView(s) {
+    const v = s.view;
+    v.x = Math.max(0, Math.min(s.W - v.w, v.x));
+    v.y = Math.max(0, Math.min(s.H - v.h, v.y));
+  },
+  _clientToSvg(s, cx, cy) {
+    const pt = s.svg.createSVGPoint();
+    pt.x = cx; pt.y = cy;
+    const m = s.svg.getScreenCTM();
+    return m ? pt.matrixTransform(m.inverse()) : { x: cx, y: cy };
+  },
+  /** Échelle écran→SVG courante (px SVG par px écran), pour convertir un
+      déplacement de pointeur en déplacement de vue (respecte le letterbox « meet »). */
+  _screenScale(s) {
+    const r = s.svg.getBoundingClientRect();
+    return Math.min(r.width / s.view.w, r.height / s.view.h) || 1;
+  },
+  /** Zoome de `factor` (>1 = rapprocher) en gardant fixe le point écran cx,cy. */
+  _zoomAt(s, factor, cx, cy) {
+    const v = s.view;
+    const ZMAX = 5;                       // rapprochement maximum
+    const minW = s.W / ZMAX, maxW = s.W;  // 1× = cadre entier (tout visible)
+    const p = this._clientToSvg(s, cx, cy);
+    const nw = Math.max(minW, Math.min(maxW, v.w / factor));
+    const nh = nw * (s.H / s.W);          // ratio verrouillé sur le cadre de base
+    const f = v.w / nw;                   // facteur réellement appliqué après bornage
+    v.x = p.x - (p.x - v.x) / f;
+    v.y = p.y - (p.y - v.y) / f;
+    v.w = nw; v.h = nh;
+    this._clampView(s);
+    this._applyView(s);
+  },
+  /** Déplace la vue d'un delta ÉCRAN (px), typiquement le mouvement d'un doigt. */
+  _panBy(s, dxScreen, dyScreen) {
+    const sc = this._screenScale(s);
+    s.view.x -= dxScreen / sc;
+    s.view.y -= dyScreen / sc;
+    this._clampView(s);
+    this._applyView(s);
+  },
+  /** Avorte proprement les gestes simples en cours (avant d'entrer en pincement). */
+  _abortGestures(s) {
+    if (s.drag) { s.drag.n.pinned = false; s.drag.n._g.classList.remove("dragging"); s.drag = null; }
+    if (s.weaving) {
+      if (s.weaving.target) s.weaving.target._g.classList.remove("weave-target");
+      s.weaveLine.setAttribute("visibility", "hidden");
+      s.weaving = null;
+    }
+    s.bg = null; s.edgeTap = null;
+  },
+
+  /* ---- API de vue publique (boutons +/− du coin de canvas) ---- */
+  /** Zoome autour du centre visible (facteur >1 rapproche, <1 éloigne). */
+  zoomBy(factor) {
+    const s = this._state;
+    if (!s) return;
+    const r = s.svg.getBoundingClientRect();
+    this._zoomAt(s, factor, r.left + r.width / 2, r.top + r.height / 2);
+  },
+  /** Réinitialise la vue au cadre entier (1×). */
+  resetView() {
+    const s = this._state;
+    if (!s) return;
+    s.view = { x: 0, y: 0, w: s.W, h: s.H };
+    this._applyView(s);
+  },
+
   /* ---- Pointer : glisser un nœud, tap = clic net, tisser un lien ---- */
   _wire(s) {
-    const toSvg = (ev) => {
-      const pt = s.svg.createSVGPoint();
-      pt.x = ev.clientX; pt.y = ev.clientY;
-      const m = s.svg.getScreenCTM();
-      return m ? pt.matrixTransform(m.inverse()) : { x: ev.clientX, y: ev.clientY };
-    };
+    const toSvg = (ev) => this._clientToSvg(s, ev.clientX, ev.clientY);
     s.svg.addEventListener("pointerdown", (ev) => {
+      s.pointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+      if (s.pointers.size === 2) {
+        // Deux doigts : pincement. On avorte tout geste simple en cours et on
+        // mémorise l'écart + le milieu de départ (référence du zoom/déplacement).
+        this._abortGestures(s);
+        const [a, b] = [...s.pointers.values()];
+        s.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
+        return;
+      }
+      if (s.pointers.size > 2) return; // 3ᵉ doigt+ : ignoré tant que le pincement dure
       const g = ev.target.closest("[data-node-id]");
       if (!g) {
         // Hors nœud (et hors tissage) : soit un tap d'ARÊTE (sélection pour
-        // styler), soit un tap de FOND (désélection). Un glisser annule le tap.
+        // styler), soit un tap de FOND (désélection ou DÉPLACEMENT si zoomé).
+        // Un glisser annule le tap.
         if (!s.weave) {
           const ge = ev.target.closest("[data-edge-id]");
           if (ge) s.edgeTap = { id: ge.dataset.edgeId, x0: ev.clientX, y0: ev.clientY, moved: false };
-          else s.bg = { x0: ev.clientX, y0: ev.clientY, moved: false };
+          else s.bg = { x0: ev.clientX, y0: ev.clientY, lx: ev.clientX, ly: ev.clientY, moved: false };
         }
         return;
       }
@@ -501,8 +585,25 @@ export const GraphEngine = {
       this._reheat(s);
     });
     s.svg.addEventListener("pointermove", (ev) => {
+      if (s.pointers.has(ev.pointerId)) s.pointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+      if (s.pinch && s.pointers.size >= 2) {
+        // Pincement : + d'écart = rapprochement ; le milieu déplace la vue.
+        const [a, b] = [...s.pointers.values()];
+        const nd = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+        const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+        this._panBy(s, mx - s.pinch.mx, my - s.pinch.my);
+        this._zoomAt(s, nd / s.pinch.d, mx, my);
+        s.pinch.d = nd; s.pinch.mx = mx; s.pinch.my = my;
+        return;
+      }
       const p = toSvg(ev);
-      if (s.bg && Math.hypot(ev.clientX - s.bg.x0, ev.clientY - s.bg.y0) > 4) s.bg.moved = true;
+      if (s.bg) {
+        if (Math.hypot(ev.clientX - s.bg.x0, ev.clientY - s.bg.y0) > 4) s.bg.moved = true;
+        if (s.bg.moved) { // glisser le fond = déplacer la vue (utile une fois zoomé)
+          this._panBy(s, ev.clientX - s.bg.lx, ev.clientY - s.bg.ly);
+          s.bg.lx = ev.clientX; s.bg.ly = ev.clientY;
+        }
+      }
       if (s.edgeTap && Math.hypot(ev.clientX - s.edgeTap.x0, ev.clientY - s.edgeTap.y0) > 4) s.edgeTap.moved = true;
       if (s.weaving) {
         // Accroche magnétique : au voisinage d'un nœud valide, la ligne saute à
@@ -532,6 +633,11 @@ export const GraphEngine = {
       this._reheat(s);
     });
     const end = (ev) => {
+      s.pointers.delete(ev.pointerId);
+      if (s.pinch) { // en pincement : un doigt lâché en sort, l'autre ne (re)tape rien
+        if (s.pointers.size < 2) s.pinch = null;
+        return;
+      }
       if (s.edgeTap) {
         const et = s.edgeTap;
         s.edgeTap = null;
@@ -580,6 +686,11 @@ export const GraphEngine = {
       ev.preventDefault();
       if (typeof s.onNodeTap === "function") s.onNodeTap(g.dataset.nodeId);
     });
+    // Molette : zoom autour du curseur. Non-passif pour bloquer le scroll natif.
+    s.svg.addEventListener("wheel", (ev) => {
+      ev.preventDefault();
+      this._zoomAt(s, ev.deltaY < 0 ? 1.12 : 1 / 1.12, ev.clientX, ev.clientY);
+    }, { passive: false });
   },
 
   destroy() {
