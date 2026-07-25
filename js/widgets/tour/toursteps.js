@@ -628,6 +628,11 @@ export const TourSteps = {
       title: "Importer/exporter ses trames",
       body: "« Charger une sauvegarde » compte désormais vos trames scénaristiques au même titre que vos PNJ et contacts : une sauvegarde qui ne contient que des trames n'apparaît plus vide, s'exporte normalement, et le récapitulatif d'import annonce « … N trames ».",
     },
+    {
+      id: "wn-cockpit-indices", anchor: "nav-play", tours: ["whatsnew"], since: "1.119.0", fallback: "center",
+      title: "Les indices de l'enquête, à la table",
+      body: "Dans « Jouer » (En jeu), un tiroir Indices liste les indices de la scène en cours — plus les indices flottants, révélables partout — avec le fait qu'ils dévoilent, un repère « jet » s'ils sont derrière un test, et le contact qui les porte le cas échéant. Cochez-les « révélé » au fur et à mesure : l'état survit au rechargement et le tiroir affiche révélés/total, pour tenir la règle des trois indices sans quitter la table.",
+    },
   ],
 };
 

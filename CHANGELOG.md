@@ -12,6 +12,20 @@ commit.
 
 ## [Non publié]
 
+## [1.119.0] — 2026-07-25
+
+### Ajouté
+
+- **Les indices de la scène apparaissent au cockpit, et se cochent « révélé ».**
+  Dans « Jouer » (En jeu), un tiroir **Indices** liste les indices ancrés à la
+  scène en cours — plus les indices **flottants**, révélables partout — avec le
+  fait qu'ils dévoilent, un repère **« jet »** s'ils sont derrière un test, et
+  l'entremise d'un **contact** le cas échéant. Chaque indice se **coche
+  « révélé »** : l'état survit au rechargement (état de partie), le résumé du
+  tiroir affiche le compte révélés/total — de quoi tenir la règle des trois
+  indices sans quitter la table. Le calque d'enquête de l'atelier n'est plus
+  cantonné à la préparation.
+
 ## [1.118.0] — 2026-07-25
 
 ### Modifié

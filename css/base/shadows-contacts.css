@@ -964,6 +964,76 @@
   color: var(--warning, #e0a72e);
 }
 
+/* Indices au cockpit (calque d'enquête ◇ à la table) — un fait cochable « révélé ». */
+.play-clues {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.play-clue {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.play-clue-check {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-1, rgba(255, 255, 255, 0.04));
+  color: var(--text-dim);
+  cursor: pointer;
+  line-height: 1;
+  font-size: 0.85rem;
+  transition: color var(--dur-base), border-color var(--dur-base);
+}
+.play-clue-check[aria-pressed="true"] {
+  color: var(--accent-matrix, #2fbf74);
+  border-color: var(--accent-matrix, #2fbf74);
+}
+.play-clue-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.play-clue-fact {
+  font-size: 0.86rem;
+  color: var(--text-dim);
+}
+.play-clue.revealed .play-clue-fact {
+  color: var(--text);
+}
+.play-clue-mark {
+  color: var(--accent, #35e0e6);
+  margin-right: 3px;
+}
+.play-clue-gate {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--warning, #e0a72e);
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  padding: 0 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.play-clue-gate.is-floating {
+  color: var(--text-faint, var(--text-dim));
+}
+.play-clue-desc {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+.play-clue-via {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.72rem;
+  color: var(--text-faint, var(--text-dim));
+}
+
 /* ============================================================
    LOT B — étagement du poste de commandement à chaud + feel joué.
    Feel bâti sur les TOKENS de mouvement (`--dur-*`, `--ease-emphasized`) :

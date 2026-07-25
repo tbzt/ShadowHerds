@@ -367,8 +367,36 @@ export const ScenarioStore = {
     const before = sc.clues.length;
     sc.clues = sc.clues.filter((c) => c && c.id !== clueId);
     if (sc.clues.length === before) return false;
+    // Intégrité runtime : un indice supprimé ne laisse pas d'id « révélé » orphelin.
+    if (sc.runtime && Array.isArray(sc.runtime.revealedClueIds))
+      sc.runtime.revealedClueIds = sc.runtime.revealedClueIds.filter((id) => id !== clueId);
     this.save();
     this._emit({ scenarioId: scId, kind: "clue", op: "remove", id: clueId });
+    return true;
+  },
+
+  /* ── Révélation d'indice = état de PARTIE (runtime seul, Failsafe : les
+        mutateurs d'édition n'y touchent jamais ; comme `setClockFill`). Aucune
+        migration : `runtime` est libre, un vieux scénario lit `[]`. ── */
+  /** Les ids d'indices marqués « révélé » à la table (runtime, sinon vide). */
+  revealedClueIds(sc) {
+    return (sc && sc.runtime && sc.runtime.revealedClueIds) || [];
+  },
+  isClueRevealed(sc, clueId) {
+    return this.revealedClueIds(sc).includes(clueId);
+  },
+  /** Marque/démarque un indice comme révélé (runtime seul). Émet `runtime` →
+      le cockpit abonné se re-rend, comme pour une bifurcation. */
+  setClueRevealed(scId, clueId, on) {
+    const sc = this.get(scId);
+    if (!sc) return false;
+    const rt = Object.assign({}, sc.runtime || {});
+    const set = new Set(rt.revealedClueIds || []);
+    if (on) set.add(clueId); else set.delete(clueId);
+    rt.revealedClueIds = [...set];
+    sc.runtime = rt;
+    this.save();
+    this._emit({ scenarioId: scId, kind: "runtime", op: "patch", id: scId });
     return true;
   },
 

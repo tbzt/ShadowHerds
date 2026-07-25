@@ -103,6 +103,16 @@ export const Play = {
           if (typeof ScenarioStore !== "undefined" && el.dataset.scenario && el.dataset.danger)
             this._patchPortent(el, el.dataset.scenario, el.dataset.danger, parseInt(el.dataset.delta, 10) || 0);
           break;
+        case "play-clue-reveal": {
+          // Bascule « révélé » d'un indice (état de PARTIE). On lit l'état courant
+          // dans le store et on l'inverse. Le re-render vient de l'abonnement
+          // (setClueRevealed émet `runtime`). Pas de branche d'édition.
+          if (typeof ScenarioStore === "undefined" || !el.dataset.scenario || !el.dataset.clue) break;
+          const scForClue = ScenarioStore.get(el.dataset.scenario);
+          const now = scForClue && ScenarioStore.isClueRevealed(scForClue, el.dataset.clue);
+          ScenarioStore.setClueRevealed(el.dataset.scenario, el.dataset.clue, !now);
+          break;
+        }
         case "play-front-coach-ok":
           // Lot C — « Compris » : le MJ a vu l'explication du Front une fois.
           if (typeof Storage !== "undefined") Storage.setGlobal(this._FRONT_COACH_KEY, true);
@@ -559,6 +569,12 @@ export const Play = {
       const drawers = [];
       if (trame && (trame.clocks || []).length)
         drawers.push(this._drawerHtml("Horloges", this._pressionSummary(trame), this._pressionHtml(trame, { bare: true }), true));
+      // Indices de la scène courante (+ flottants) — aide-mémoire d'enquête + coche « révélé ».
+      const sceneClues = trame ? this._sceneClues(trame) : [];
+      if (sceneClues.length)
+        // Ouvert par défaut (comme Horloges) : le re-render de l'abonnement, après
+        // une coche « révélé », ne replie pas le tiroir en cours d'usage.
+        drawers.push(this._drawerHtml("Indices", this._indicesSummary(trame, sceneClues), this._indicesHtml(trame, sceneClues), true));
       if (trame && (trame.fronts || []).length) {
         // Lot C — coachmark « C'est quoi un Front ? » PROACTIF une fois.
         const teach = !this._frontCoachSeen();
@@ -826,6 +842,60 @@ export const Play = {
       </div>`;
     }).join("");
     return `<div class="play-trame-fronts">${bare ? "" : '<span class="play-trame-word">Fronts</span>'}${rows}</div>`;
+  },
+
+  /* ============================================================
+     INDICES en cockpit — le calque d'enquête (◇ Indices de l'atelier) à la
+     TABLE : les indices de la scène courante + les flottants (révélables
+     partout), chacun cochable « révélé » (état de PARTIE, `setClueRevealed`,
+     qui émet → l'abonnement re-rend). Aide-mémoire pour la règle des 3 indices.
+     ============================================================ */
+  /** Les indices à montrer pour la scène courante : ancrés à elle, puis
+      flottants (aucune ancre). `{ c, floating }` — l'ordre place l'ancré d'abord. */
+  _sceneClues(sc) {
+    const cur = sc.runtime && sc.runtime.currentSceneId;
+    const clues = sc.clues || [];
+    const anchored = cur ? clues.filter((c) => (c.anchorSceneNodes || []).includes(cur)) : [];
+    const floating = clues.filter((c) => !(c.anchorSceneNodes || []).length);
+    return [
+      ...anchored.map((c) => ({ c, floating: false })),
+      ...floating.map((c) => ({ c, floating: true })),
+    ];
+  },
+  /** Résumé glanceable du drawer Indices : compte + révélés (règle des 3 indices). */
+  _indicesSummary(sc, list) {
+    const rev = list.reduce((n, { c }) => n + (ScenarioStore.isClueRevealed(sc, c.id) ? 1 : 0), 0);
+    return `${list.length} · révélés ${rev}/${list.length}`;
+  },
+  /** Chaque indice : le FAIT visé (glyphe de rôle), badges (jet / flottant /
+      via-contact), sa description, et une coche « révélé » (délégation). */
+  _indicesHtml(sc, list) {
+    const esc = CardRenderer._esc;
+    const factOf = (id) => (sc.infoNodes || []).find((n) => n.id === id) || null;
+    const rows = list
+      .map(({ c, floating }) => {
+        const fact = factOf(c.toInfoNode);
+        const factText = fact ? fact.fact || "(fait sans texte)" : "(fait supprimé)";
+        const glyph = fact && fact.role === "progression" ? "◆" : "◇";
+        const revealed = ScenarioStore.isClueRevealed(sc, c.id);
+        const badges =
+          (c.gated ? `<span class="play-clue-gate" title="Derrière un jet — non garanti">jet</span>` : "") +
+          (floating ? `<span class="play-clue-gate is-floating" title="Flottant — révélable n'importe où">flottant</span>` : "");
+        const via = (c.viaContactIds || [])
+          .map((id) => (typeof PnjLookup !== "undefined" && PnjLookup.locate(id) ? PnjLookup.locate(id).name : ""))
+          .filter(Boolean)
+          .join(", ");
+        return `<div class="play-clue${revealed ? " revealed" : ""}">
+          <button type="button" class="play-clue-check" data-action="play-clue-reveal" data-scenario="${sc.id}" data-clue="${c.id}" aria-pressed="${revealed}" title="${revealed ? "Marquer non révélé" : "Marquer révélé"}"><span aria-hidden="true">${revealed ? "✓" : "○"}</span></button>
+          <span class="play-clue-body">
+            <span class="play-clue-fact"><span class="play-clue-mark" aria-hidden="true">${glyph}</span> ${esc(factText)}${badges}</span>
+            ${c.description ? `<span class="play-clue-desc">${esc(c.description)}</span>` : ""}
+            ${via ? `<span class="play-clue-via">via ${esc(via)}</span>` : ""}
+          </span>
+        </div>`;
+      })
+      .join("");
+    return `<div class="play-clues">${rows}</div>`;
   },
 
   /** S5a — la PRESSION en cockpit : chaque horloge de la trame, remplissable en
