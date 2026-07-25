@@ -12,6 +12,20 @@ commit.
 
 ## [Non publié]
 
+## [1.116.0] — 2026-07-25
+
+### Ajouté
+
+- **Style de trait manuel sur les graphes : couleur + motif.** Les
+  transitions du graphe de trame se colorent et changent de motif — **plein,
+  pointillé, tirets** — comme les liens l'inspecteur d'arête gagne une rangée
+  « Motif » et un sélecteur de couleur, pour distinguer d'un coup d'œil un
+  passage ferme d'un chemin conditionnel ou hypothétique. Le graphe des Liens
+  adopte le même sélecteur de motifs à la place de son ancienne case
+  « pointillés » (les liens déjà en pointillés s'affichent en tirets). Une
+  transition fermée par une horloge ou une issue de secours reste en tirets
+  atténués (l'état de jeu prime sur le style choisi).
+
 ## [1.115.0] — 2026-07-25
 
 ### Ajouté

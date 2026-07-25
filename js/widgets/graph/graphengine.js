@@ -25,6 +25,10 @@ const TYPE_GLYPH = { pj: "◆", pnj: "●", contact: "◈", server: "▤" };
 // Défaut = cercle → tout graphe sans `shape` (entités) reste inchangé. Une
 // SEULE source de sommets sert au rendu ET à l'attache d'arête, pour que les
 // câbles se posent sur le VRAI bord de la forme et pas un rayon circonscrit.
+// P3 — motifs de trait (canal neutre `e.pattern`) → `stroke-dasharray`. Défaut
+// `solid` (plein) ; `dashed` rétrocompat avec l'ancien booléen d'arête.
+const PATTERN_DASH = { solid: "", dotted: "2 3", dashed: "6 4" };
+
 const CIRCLE_R = 16;
 const SHAPE_VERTS = {
   rect:    [[-15, -11], [15, -11], [15, 11], [-15, 11]],
@@ -655,7 +659,9 @@ export const GraphEngine = {
   _applyEdgeStyle(e, accent) {
     const stroke = e.color || accent;
     e._line.setAttribute("stroke", stroke);
-    e._line.style.strokeDasharray = e.dashed ? "6 4" : "";
+    // P3 — motif de trait neutre (`pattern`), rétrocompat avec l'ancien `dashed`.
+    const pat = e.pattern || (e.dashed ? "dashed" : "solid");
+    e._line.style.strokeDasharray = PATTERN_DASH[pat] || "";
     const dir = e.dir || "none";
     e._line.setAttribute("marker-end", dir === "forward" || dir === "both" ? "url(#graph-arrow)" : "");
     e._line.setAttribute("marker-start", dir === "back" || dir === "both" ? "url(#graph-arrow)" : "");

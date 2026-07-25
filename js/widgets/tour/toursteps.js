@@ -613,6 +613,11 @@ export const TourSteps = {
       title: "Des visages sur la carte des Liens",
       body: "Quand un personnage a un portrait IA généré (depuis sa fiche), son nœud sur la carte des Liens l'affiche directement, détouré dans l'anneau — un vrai casting board où l'on met un visage sur chaque contact d'un coup d'œil. Les entités sans portrait gardent leur pastille et leur glyphe. (Pour générer un portrait : activez « Images IA » dans les Paramètres, puis « Portrait IA » sur une fiche.)",
     },
+    {
+      id: "wn-graph-traits", anchor: "nav-trames", tours: ["whatsnew"], since: "1.116.0", fallback: "center",
+      title: "Colorer et styler les traits du graphe",
+      body: "Sélectionnez une transition (graphe de trame) ou un lien (carte des Liens) : l'inspecteur d'arête permet désormais de choisir une couleur et un motif de trait — plein, pointillé ou tirets. De quoi distinguer d'un coup d'œil un passage ferme d'un chemin conditionnel ou hypothétique. Sur la trame, une transition fermée par une horloge ou une issue de secours reste en tirets atténués : l'état de jeu prime sur le style choisi.",
+    },
   ],
 };
 

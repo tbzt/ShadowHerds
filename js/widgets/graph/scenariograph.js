@@ -77,6 +77,13 @@ export const ScenarioGraph = {
   _INFO_GLYPH: { progression: "◆", enrichissement: "◇" },
   _CLUE: "#6f9fd8",
   _CLOSED: "#5a6673", // S5a — arête fermée par une horloge (atténuée)
+  // P3 — style de trait auteur : palette partagée (idem graphview) + motifs.
+  _EDGE_COLORS: ["#e0533d", "#3d90e0", "#3dbf6e", "#c9a13d", "#9d5fd6", "#3dc2c2"],
+  _PATTERNS: [
+    { key: "solid", glyph: "—", label: "Plein" },
+    { key: "dotted", glyph: "┈", label: "Pointillé" },
+    { key: "dashed", glyph: "╌", label: "Tirets" },
+  ],
   _ARROW_TINT: { hope: "#2f5a44", fear: "#5a2f2f" }, // S6 — teinte de disque par flèche dramatique
   // Teinte de carte par TYPE (mêmes tokens `--t-*` que le cockpit `play.js`).
   _TYPE_TINT_VAR: {
@@ -205,11 +212,14 @@ export const ScenarioGraph = {
     const closedEdges = new Set((sc.runtime && sc.runtime.closedEdgeIds) || []);
     const edges = sc.sceneEdges.map((e) => {
       const closed = closedEdges.has(e.id);
+      // P3 — style AUTEUR (couleur/motif) fusionné avec l'état runtime : fermé
+      // (horloge) et issue de secours gardent la priorité sémantique (tirets).
+      const forced = closed || !!e.isEscapeHatch;
       return {
         id: e.id, from: e.from, to: e.to,
         dir: "forward",
-        dashed: closed || !!e.isEscapeHatch,
-        color: closed ? this._CLOSED : e.isEscapeHatch ? this._HATCH : null,
+        pattern: forced ? "dashed" : (e.pattern || "solid"),
+        color: closed ? this._CLOSED : e.isEscapeHatch ? this._HATCH : (e.color || null),
         label: closed ? (this._edgeLabel(e) ? this._edgeLabel(e) + " ✕" : "✕ fermé") : this._edgeLabel(e),
       };
     });
@@ -1068,7 +1078,41 @@ export const ScenarioGraph = {
         <span class="graph-edge-flabel">Condition / mot sur le trait</span>
         <input type="text" data-scenario-edge="label" value="${esc(e.label || "")}" placeholder="ex. si l'infiltration échoue" maxlength="60">
       </label>
+      <div class="graph-edge-field">
+        <span class="graph-edge-flabel">Motif du trait</span>
+        <div class="graph-dir-row">${this._patternBtns(e, "scenario-edge")}</div>
+      </div>
+      <div class="graph-edge-field">
+        <span class="graph-edge-flabel">Couleur</span>
+        ${this._colorPicker(e.color || "", "scenario-edge")}
+      </div>
       <button type="button" class="graph-edge-delete" data-scenario-edge="delete">Supprimer ce lien</button>
+    </div>`;
+  },
+
+  /** Rangée de boutons Motif (plein/pointillé/tirets) — namespace `ns` pour la
+      délégation (`data-${ns}="pattern"`). Réutilisable trame + Liens. */
+  _patternBtns(e, ns) {
+    const cur = e.pattern || (e.dashed ? "dashed" : "solid");
+    return this._PATTERNS
+      .map((p) => `<button type="button" class="graph-dir-btn${cur === p.key ? " active" : ""}" data-${ns}="pattern" data-pattern="${p.key}" title="${p.label}" aria-pressed="${cur === p.key}">${p.glyph}</button>`)
+      .join("");
+  },
+
+  /** Sélecteur de couleur (défaut + palette + personnalisée), calqué sur
+      graphview — namespace `ns` (`data-${ns}="color"` / `"color-custom"`). */
+  _colorPicker(cur, ns) {
+    const esc = Utils.escHtml;
+    const swatches = this._EDGE_COLORS
+      .map((c) => `<button type="button" class="em-color-swatch${cur === c ? " selected" : ""}" style="background:${c}" data-${ns}="color" data-color="${c}" aria-label="Couleur ${c}"></button>`)
+      .join("");
+    const isCustom = cur && !this._EDGE_COLORS.includes(cur);
+    return `<div class="em-color-picker">
+      <button type="button" class="em-color-swatch graph-color-default${!cur ? " selected" : ""}" data-${ns}="color" data-color="" title="Couleur par défaut (accent)" aria-label="Couleur par défaut">✕</button>
+      ${swatches}
+      <label class="em-color-swatch em-color-custom${isCustom ? " selected" : ""}"${isCustom ? ` style="background:${esc(cur)}"` : ""} title="Autre couleur…">
+        <input type="color" class="em-color-custom-input" data-${ns}="color-custom" value="${esc(cur || "#3d90e0")}">
+      </label>
     </div>`;
   },
 
@@ -1079,21 +1123,36 @@ export const ScenarioGraph = {
   },
   _onEdgeControl(el) {
     const k = el.dataset.scenarioEdge;
-    if (k === "gateway") { this._setEdge({ gateway: el.dataset.gw || null }); this._reflectEdgeInspector(); GraphEngine.updateEdgeStyle(this._selEdge, { label: this._edgeLabelById(this._selEdge) }); }
+    if (k === "gateway") { this._setEdge({ gateway: el.dataset.gw || null }); this._reflectEdgeInspector(); this._pushEdgeStyle(); }
+    else if (k === "color") { this._setEdge({ color: el.dataset.color || null }); this._reflectEdgeInspector(); this._pushEdgeStyle(); }
+    else if (k === "pattern") { this._setEdge({ pattern: el.dataset.pattern || "solid" }); this._reflectEdgeInspector(); this._pushEdgeStyle(); }
     else if (k === "delete") this._deleteEdge();
   },
   _onEdgeInput(el, isChange) {
     const k = el.dataset.scenarioEdge;
     if (k === "kind" && isChange) this._setEdge({ kind: el.value });
-    else if (k === "hatch") {
-      this._setEdge({ isEscapeHatch: el.checked });
-      GraphEngine.updateEdgeStyle(this._selEdge, { dashed: el.checked, color: el.checked ? this._HATCH : null, label: this._edgeLabelById(this._selEdge) });
-    } else if (k === "label") {
+    else if (k === "hatch") { this._setEdge({ isEscapeHatch: el.checked }); this._pushEdgeStyle(); }
+    else if (k === "color-custom") { this._setEdge({ color: el.value }); this._reflectEdgeInspector(); this._pushEdgeStyle(); }
+    else if (k === "label") {
       this._setEdge({ label: el.value });
       GraphEngine.updateEdgeStyle(this._selEdge, { label: this._edgeLabelById(this._selEdge) });
     }
   },
-  /** Reflète les boutons d'embranchement sans reconstruire (préserve le champ). */
+  /** Pousse le style effectif de l'arête au moteur (patch en place). L'issue de
+      secours écrase le style auteur (tirets + teinte HATCH) — même précédence que
+      la projection ; en atelier une arête n'est pas « fermée » (état cockpit). */
+  _pushEdgeStyle() {
+    const sc = ScenarioStore.get(this._scenarioId);
+    const e = sc && sc.sceneEdges.find((x) => x.id === this._selEdge);
+    if (!e) return;
+    const hatch = !!e.isEscapeHatch;
+    GraphEngine.updateEdgeStyle(this._selEdge, {
+      color: hatch ? this._HATCH : (e.color || null),
+      pattern: hatch ? "dashed" : (e.pattern || "solid"),
+      label: this._edgeLabelById(this._selEdge),
+    });
+  },
+  /** Reflète boutons d'embranchement + motif + couleur sans reconstruire (préserve le champ). */
   _reflectEdgeInspector() {
     const sc = ScenarioStore.get(this._scenarioId);
     const e = sc && sc.sceneEdges.find((x) => x.id === this._selEdge);
@@ -1104,6 +1163,21 @@ export const ScenarioGraph = {
       b.classList.toggle("active", on);
       b.setAttribute("aria-pressed", String(on));
     });
+    const curPat = e.pattern || (e.dashed ? "dashed" : "solid");
+    panel.querySelectorAll('[data-scenario-edge="pattern"]').forEach((b) => {
+      const on = curPat === (b.dataset.pattern || "");
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", String(on));
+    });
+    panel.querySelectorAll('.em-color-swatch[data-color]').forEach((b) => {
+      b.classList.toggle("selected", (b.dataset.color || "") === (e.color || ""));
+    });
+    const custom = panel.querySelector(".em-color-custom");
+    if (custom) {
+      const isCustom = !!(e.color && !this._EDGE_COLORS.includes(e.color));
+      custom.classList.toggle("selected", isCustom);
+      if (isCustom) custom.style.background = e.color;
+    }
   },
   _deleteEdge() {
     const sc = ScenarioStore.get(this._scenarioId);

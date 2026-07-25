@@ -239,6 +239,7 @@ export const ScenarioStore = {
     from, to,
     kind = "libre", gateway = null, isEscapeHatch = false,
     condition = null, triggerClockId = null, triggerThreshold = null, label = "",
+    color = null, pattern = "solid", // P3 — style de trait auteur (couleur/motif)
   } = {}) {
     const sc = this.get(scId);
     if (!sc || !from || !to) return null;
@@ -250,6 +251,7 @@ export const ScenarioStore = {
       isEscapeHatch: !!isEscapeHatch,
       condition, triggerClockId, triggerThreshold,
       label: String(label || ""),
+      color: color || null, pattern: pattern || "solid",
     };
     sc.sceneEdges.push(edge);
     this.save();

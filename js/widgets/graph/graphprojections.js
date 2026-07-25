@@ -80,6 +80,7 @@ export const GraphProjections = {
         type: e.type,
         label: e.label || "",
         color: e.color || null,
+        pattern: e.pattern || null, // P3 — motif de trait (rétrocompat via dashed)
         dashed: !!e.dashed,
         dir: e.dir || "none",
       }));

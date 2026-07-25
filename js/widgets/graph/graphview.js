@@ -36,6 +36,12 @@ export const GraphView = {
   // Palette curée d'arête (mêmes teintes que les PJ) + échappatoire « autre
   // couleur » : pas de roue libre, la cohérence DA des 4 identités prime. Lot 3.
   _EDGE_COLORS: ["#e0533d", "#3d90e0", "#3dbf6e", "#c9a13d", "#9d5fd6", "#3dc2c2"],
+  // P3 — motifs de trait (unifié avec le graphe de trame).
+  _PATTERNS: [
+    { key: "solid", glyph: "—", label: "Plein" },
+    { key: "dotted", glyph: "┈", label: "Pointillé" },
+    { key: "dashed", glyph: "╌", label: "Tirets" },
+  ],
 
   /** Ouvre le graphe. `focusId` = centrer sur une entité + ses voisines ;
       `memberIds` = restreindre à un ensemble (portée dossier, résolue par
@@ -351,31 +357,42 @@ export const GraphView = {
           </label>
         </div>
       </div>
-      <label class="graph-edge-field graph-edge-check">
-        <input type="checkbox" data-graph-edge="dashed"${e.dashed ? " checked" : ""}>
-        <span>Trait en pointillés</span>
-      </label>
+      <div class="graph-edge-field">
+        <span class="graph-edge-flabel">Motif du trait</span>
+        <div class="graph-dir-row">${this._patternBtns(e)}</div>
+      </div>
       <button type="button" class="graph-edge-delete" data-graph-edge="delete">Supprimer ce lien</button>
     </div>`;
   },
 
+  /** Rangée de boutons Motif (plein/pointillé/tirets), unifiée avec la trame. */
+  _patternBtns(e) {
+    const cur = e.pattern || (e.dashed ? "dashed" : "solid");
+    return this._PATTERNS
+      .map((p) => `<button type="button" class="graph-dir-btn${cur === p.key ? " active" : ""}" data-graph-edge="pattern" data-pattern="${p.key}" title="${p.label}" aria-pressed="${cur === p.key}">${p.glyph}</button>`)
+      .join("");
+  },
+
   /** Applique une modif de style à l'arête sélectionnée : met à jour la copie
       projetée, PERSISTE via RelationsStore.upsert (sa vérité), pousse le rendu
-      en place (sans remontage), puis reflète l'état des contrôles. */
+      en place (sans remontage), puis reflète l'état des contrôles. `pattern`
+      (P3) supplante l'ancien `dashed`, gardé dérivé pour la rétrocompat. */
   _applyEdgeChange(patch) {
     const e = this._selectedEdge;
     if (!e) return;
     Object.assign(e, patch);
+    if ("pattern" in patch) e.dashed = e.pattern !== "solid"; // rétrocompat
     RelationsStore.upsert({
       from: e.from,
       to: e.to,
       type: e.type,
       label: e.label || "",
       color: e.color || null,
+      pattern: e.pattern || "solid",
       dashed: !!e.dashed,
       dir: e.dir || "none",
     });
-    GraphEngine.updateEdgeStyle(e.id, { color: e.color, dashed: e.dashed, dir: e.dir, label: e.label });
+    GraphEngine.updateEdgeStyle(e.id, { color: e.color, pattern: e.pattern || "solid", dir: e.dir, label: e.label });
     this._reflectEdgeInspector();
   },
 
@@ -392,6 +409,12 @@ export const GraphView = {
     });
     panel.querySelectorAll('.em-color-swatch[data-color]').forEach((b) => {
       b.classList.toggle("selected", (b.dataset.color || "") === (e.color || ""));
+    });
+    const curPat = e.pattern || (e.dashed ? "dashed" : "solid");
+    panel.querySelectorAll('[data-graph-edge="pattern"]').forEach((b) => {
+      const on = curPat === (b.dataset.pattern || "");
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", String(on));
     });
     const custom = panel.querySelector(".em-color-custom");
     if (custom) {
@@ -416,6 +439,7 @@ export const GraphView = {
   _onEdgeControl(el) {
     const kind = el.dataset.graphEdge;
     if (kind === "color") this._applyEdgeChange({ color: el.dataset.color || null });
+    else if (kind === "pattern") this._applyEdgeChange({ pattern: el.dataset.pattern || "solid" });
     else if (kind === "dir") this._applyEdgeChange({ dir: el.dataset.dir || "none" });
     else if (kind === "delete") this._deleteEdge();
   },
@@ -550,7 +574,6 @@ export const GraphView = {
         const kind = edgeEl.dataset.graphEdge;
         if (kind === "label") this._applyEdgeChange({ label: edgeEl.value });
         else if (kind === "color-custom") this._applyEdgeChange({ color: edgeEl.value || null });
-        else if (kind === "dashed") this._applyEdgeChange({ dashed: edgeEl.checked });
         return;
       }
       const nodeEl = e.target.closest("[data-graph-node]");
