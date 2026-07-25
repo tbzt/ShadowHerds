@@ -623,6 +623,11 @@ export const TourSteps = {
       title: "◇ Indices arme le tissage",
       body: "Dans l'atelier de trame, activer ◇ Indices allume maintenant aussi ◈ Relier : vous pouvez tirer d'une scène vers un fait pour l'ancrer tout de suite, sans jongler avec deux boutons. Si vous préférez réarranger les nœuds en glissant, ré-éteignez ◈ Relier à la main.",
     },
+    {
+      id: "wn-backup-trames", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.118.0", fallback: "center",
+      title: "Importer/exporter ses trames",
+      body: "« Charger une sauvegarde » compte désormais vos trames scénaristiques au même titre que vos PNJ et contacts : une sauvegarde qui ne contient que des trames n'apparaît plus vide, s'exporte normalement, et le récapitulatif d'import annonce « … N trames ».",
+    },
   ],
 };
 

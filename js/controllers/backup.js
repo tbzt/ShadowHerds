@@ -73,7 +73,7 @@ export const Backup = {
       paquet migré (`_migrate`) : un vieux paquet non renommé (édition
       "anarchy") doit compter dans les bons totaux avant même d'être importé. */
   stats(pkg) {
-    const out = { pnj: 0, contacts: 0, servers: 0, editions: [] };
+    const out = { pnj: 0, contacts: 0, servers: 0, trames: 0, editions: [] };
     const data = this._migrate(pkg);
     for (const ed of this.EDITIONS) {
       const b = data[ed];
@@ -81,11 +81,13 @@ export const Backup = {
       const pnj = (b.shadows_all || []).length;
       const contacts = (b.contacts_all || []).length;
       const servers = (b.servers_all || []).length;
-      if (pnj || contacts || servers) {
-        out.editions.push({ edition: ed, pnj, contacts, servers });
+      const trames = (b.scenarios || []).length;
+      if (pnj || contacts || servers || trames) {
+        out.editions.push({ edition: ed, pnj, contacts, servers, trames });
         out.pnj += pnj;
         out.contacts += contacts;
         out.servers += servers;
+        out.trames += trames;
       }
     }
     return out;
@@ -95,7 +97,7 @@ export const Backup = {
   export() {
     const pkg = this.build();
     const s = this.stats(pkg);
-    if (s.pnj === 0 && s.contacts === 0 && s.servers === 0) {
+    if (s.pnj === 0 && s.contacts === 0 && s.servers === 0 && s.trames === 0) {
       toast("Rien à exporter pour le moment.", "info");
       return;
     }
@@ -110,7 +112,7 @@ export const Backup = {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    toast(`Export : ${s.pnj} PNJ, ${s.contacts} contacts, ${s.servers} serveurs.`);
+    toast(`Export : ${s.pnj} PNJ, ${s.contacts} contacts, ${s.servers} serveurs, ${s.trames} trames.`);
     // Alimente le rappel de sauvegarde : même horodatage que la synchro.
     if (typeof Sync !== "undefined" && Sync.noteLocalSave) Sync.noteLocalSave();
     // Alimente aussi le rappel d'archive téléchargée (#47), distinct : un
@@ -236,7 +238,7 @@ export const Backup = {
     if (!silent) {
       const s = this.stats(pkg);
       toast(
-        `Import ${mode === "replace" ? "(remplacement)" : "(fusion)"} : ${s.pnj} PNJ, ${s.contacts} contacts, ${s.servers} serveurs.`,
+        `Import ${mode === "replace" ? "(remplacement)" : "(fusion)"} : ${s.pnj} PNJ, ${s.contacts} contacts, ${s.servers} serveurs, ${s.trames} trames.`,
       );
     }
     return true;
@@ -522,11 +524,12 @@ export const Backup = {
     const parts = s.editions
       .map(
         (e) =>
-          `${e.edition.toUpperCase()} : ${e.pnj} PNJ${e.contacts ? `, ${e.contacts} contacts` : ""}`,
+          `${e.edition.toUpperCase()} : ${e.pnj} PNJ${e.contacts ? `, ${e.contacts} contacts` : ""}${e.trames ? `, ${e.trames} trames` : ""}`,
       )
       .join(" · ");
     document.getElementById("backup-summary").innerHTML =
-      `<strong>${s.pnj}</strong> PNJ et <strong>${s.contacts}</strong> contacts trouvés.` +
+      `<strong>${s.pnj}</strong> PNJ, <strong>${s.contacts}</strong> contacts` +
+      `${s.trames ? ` et <strong>${s.trames}</strong> trames` : ""} trouvés.` +
       (parts ? `<br><span class="backup-detail">${parts}</span>` : "");
     this._setStage("confirm");
   },

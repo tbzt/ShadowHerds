@@ -12,6 +12,17 @@ commit.
 
 ## [Non publié]
 
+## [1.118.0] — 2026-07-25
+
+### Modifié
+
+- **Les trames s'importent et s'exportent comme les PNJ.** « Charger une
+  sauvegarde » restaurait déjà les trames scénaristiques, mais l'écran ne les
+  comptait pas : une sauvegarde ne contenant que des trames semblait vide (et
+  refusait même de s'exporter). Elles sont désormais **comptées** à l'export,
+  dans le récapitulatif d'import et dans les messages de confirmation
+  (« … N trames »), aux côtés des PNJ, contacts et serveurs.
+
 ## [1.117.0] — 2026-07-25
 
 ### Modifié
