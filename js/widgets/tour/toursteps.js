@@ -618,6 +618,11 @@ export const TourSteps = {
       title: "Colorer et styler les traits du graphe",
       body: "Sélectionnez une transition (graphe de trame) ou un lien (carte des Liens) : l'inspecteur d'arête permet désormais de choisir une couleur et un motif de trait — plein, pointillé ou tirets. De quoi distinguer d'un coup d'œil un passage ferme d'un chemin conditionnel ou hypothétique. Sur la trame, une transition fermée par une horloge ou une issue de secours reste en tirets atténués : l'état de jeu prime sur le style choisi.",
     },
+    {
+      id: "wn-clues-arm-weave", anchor: "nav-trames", tours: ["whatsnew"], since: "1.117.0", fallback: "center",
+      title: "◇ Indices arme le tissage",
+      body: "Dans l'atelier de trame, activer ◇ Indices allume maintenant aussi ◈ Relier : vous pouvez tirer d'une scène vers un fait pour l'ancrer tout de suite, sans jongler avec deux boutons. Si vous préférez réarranger les nœuds en glissant, ré-éteignez ◈ Relier à la main.",
+    },
   ],
 };
 

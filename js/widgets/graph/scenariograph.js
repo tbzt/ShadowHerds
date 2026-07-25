@@ -1497,6 +1497,14 @@ export const ScenarioGraph = {
       } else if (a === "toggle-clues") {
         this._showClues = !this._showClues;
         this._reflectClues();
+        // P4 — auto-armement : activer ◇ Indices allume aussi ◈ Relier, pour
+        // ancrer un indice (glisser scène→fait) sans deuxième bascule. Reste
+        // ré-éteignable à la main ; désactiver ◇ ne désarme pas (contrôle rendu).
+        if (this._showClues && !this._weave) {
+          this._weave = true;
+          this._reflectWeave();
+          GraphEngine.setWeave(true);
+        }
         this._renderToolbar(true);
         if (!this._showClues && (this._selInfo || this._selClue)) this._clearInspector();
         this._project();

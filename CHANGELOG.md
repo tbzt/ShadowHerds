@@ -12,6 +12,16 @@ commit.
 
 ## [Non publié]
 
+## [1.117.0] — 2026-07-25
+
+### Modifié
+
+- **Ancrer un indice ne demande plus deux bascules.** Dans l'atelier de
+  trame, activer **◇ Indices** arme désormais aussi le tissage (**◈ Relier**
+  s'éclaire) : on peut tirer d'une scène vers un fait pour l'ancrer aussitôt,
+  sans activer les deux boutons. Le tissage reste ré-éteignable à la main si
+  l'on veut réarranger les nœuds en glissant.
+
 ## [1.116.0] — 2026-07-25
 
 ### Ajouté
