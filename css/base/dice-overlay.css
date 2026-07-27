@@ -674,7 +674,7 @@
   padding: var(--sp-2) 0.3rem;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: var(--sp-1);
   align-items: center;
   transition:
     border-color var(--dur-fast),
@@ -830,7 +830,7 @@ input[type="range"]#risk-dice-slider {
   padding: 0.4rem 0.3rem;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: var(--sp-1);
   align-items: center;
   transition:
     border-color var(--dur-fast),
@@ -863,7 +863,7 @@ input[type="range"]#risk-dice-slider {
 .risk-forecast {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: var(--sp-1);
   padding: 0.6rem var(--sp-3);
   background: var(--bg-mid);
   border-left: 2px solid var(--accent2);
@@ -945,7 +945,7 @@ input[type="range"]#risk-dice-slider {
 .preroll-gain-field {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: var(--sp-1);
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   letter-spacing: 0.04em;
@@ -1116,7 +1116,7 @@ input[type="range"]#risk-dice-slider {
 .weapon-pool {
   display: inline-flex;
   align-items: center;
-  gap: 1px;
+  gap: var(--sp-1);
   margin-left: 0.4rem;
   padding: 0 0.3rem;
   border-radius: var(--radius-sm);
@@ -1193,7 +1193,7 @@ input[type="range"]#risk-dice-slider {
   border-left: 1px solid var(--accent);
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: var(--sp-1);
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
 }

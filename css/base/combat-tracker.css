@@ -240,7 +240,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.1rem;
+  gap: var(--sp-1);
   flex: none;
   min-width: 2.8rem;
   padding: 0.3rem 0.35rem;
@@ -309,7 +309,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: var(--sp-1);
 }
 .encounter-name {
   background: none;
@@ -579,7 +579,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: var(--sp-1);
 }
 .encounter-nrow-name {
   max-width: 100%;
@@ -976,7 +976,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.15rem;
+  gap: var(--sp-1);
   flex: none;
   min-width: 3rem;
   padding: 0.3rem 0.4rem;
@@ -1216,7 +1216,7 @@
 .encounter-device-rating {
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: var(--sp-1);
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   color: var(--text-dim);
@@ -1264,7 +1264,7 @@
 .encounter-ndevice-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: var(--sp-1);
 }
 
 /* M5 : protection Firewall (badge/picker) — inline dans une ligne d'appareil,
@@ -1321,7 +1321,7 @@
 .encounter-noise {
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: var(--sp-1);
   padding: 0 0.3rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -1490,7 +1490,7 @@
 }
 .edge-tokens {
   display: flex;
-  gap: 3px;
+  gap: var(--sp-1);
 }
 .edge-token {
   width: 12px;
@@ -1588,7 +1588,7 @@
 }
 .action-tokens {
   display: inline-flex;
-  gap: 3px;
+  gap: var(--sp-1);
 }
 .action-token {
   width: 16px;
@@ -1926,7 +1926,7 @@
 .encounter-threat {
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: var(--sp-1);
   padding: 0 0.3rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);

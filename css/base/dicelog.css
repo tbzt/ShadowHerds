@@ -254,7 +254,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: var(--sp-1);
 }
 .dice-log-label {
   font-family: var(--font-display);

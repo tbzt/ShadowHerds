@@ -871,7 +871,7 @@
 .scenario-clock-del:hover { color: var(--danger, #d05050); }
 .scenario-clock-effects { margin-top: 6px; display: flex; flex-direction: column; gap: var(--sp-1); }
 .scenario-effect { display: flex; gap: var(--sp-1); align-items: center; flex-wrap: wrap; font-size: 0.78rem; }
-.scenario-effect-at { display: flex; gap: 3px; align-items: center; color: var(--text-dim, #9fb0c0); }
+.scenario-effect-at { display: flex; gap: var(--sp-1); align-items: center; color: var(--text-dim, #9fb0c0); }
 .scenario-effect-at input { width: 44px; }
 .scenario-effect select { flex: 1; min-width: 96px; }
 
@@ -908,7 +908,7 @@
 }
 .scenario-danger-head { display: flex; gap: var(--sp-1); align-items: center; }
 .scenario-danger-head input { flex: 1; min-width: 0; }
-.scenario-portents { display: flex; flex-direction: column; gap: 3px; }
+.scenario-portents { display: flex; flex-direction: column; gap: var(--sp-1); }
 .scenario-portent { display: flex; gap: var(--sp-1); align-items: center; }
 .scenario-portent-n { color: var(--text-dim, #9fb0c0); font-size: 0.76rem; }
 .scenario-portent input { flex: 1; min-width: 0; }

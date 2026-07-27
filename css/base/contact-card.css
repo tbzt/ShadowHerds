@@ -83,7 +83,7 @@
 /* Pastilles de niveau (Anarchy) */
 .niveau-dots {
   display: flex;
-  gap: 3px;
+  gap: var(--sp-1);
   align-items: center;
 }
 .niveau-dot {

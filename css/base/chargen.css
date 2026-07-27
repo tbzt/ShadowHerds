@@ -180,7 +180,7 @@
 .cg-step-errors {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--sp-1);
   padding: var(--sp-2);
   border: 1px solid var(--danger);
   border-radius: 2px;
@@ -319,7 +319,7 @@
 .cg-narrative-field {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--sp-1);
 }
 .cg-narrative-role {
   font-size: var(--fs-2xs);

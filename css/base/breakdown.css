@@ -50,7 +50,7 @@
 .breakdown-lines {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--sp-1);
 }
 .breakdown-line {
   display: flex;

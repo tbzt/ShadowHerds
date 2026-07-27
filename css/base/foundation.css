@@ -674,7 +674,7 @@ select optgroup {
 .topbar-locator {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--sp-1);
   padding: 4px var(--sp-4);
   background: var(--bg-card);
   border-bottom: 1px solid var(--border);
@@ -944,7 +944,7 @@ select optgroup {
 .dice-count-group {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: var(--sp-1);
 }
 .dice-count-step {
   width: 24px;
@@ -1059,7 +1059,7 @@ select optgroup {
   display: flex;
   flex-direction: column;
   padding: var(--sp-3) 0;
-  gap: 2px;
+  gap: var(--sp-1);
   overflow-y: auto;
 }
 .nav-section-label {

@@ -148,7 +148,7 @@
   width: var(--rail-w);
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--sp-1);
   z-index: 1;
 }
 .lens-tab {
@@ -1161,7 +1161,7 @@
 .progression-lines {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--sp-1);
   margin-bottom: var(--sp-2);
 }
 .suivi-line {

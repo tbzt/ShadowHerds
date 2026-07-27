@@ -12,7 +12,7 @@
   .nav-btn {
     flex-direction: column;
     justify-content: center;
-    gap: 3px;
+    gap: var(--sp-1);
     padding: 0.6rem 0.2rem;
     border-left: none;
     border-right: 2px solid transparent;
@@ -265,7 +265,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
+    gap: var(--sp-1);
     background: transparent;
     border: none;
     border-top: 2px solid transparent;

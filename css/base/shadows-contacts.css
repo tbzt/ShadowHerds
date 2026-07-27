@@ -661,7 +661,7 @@
 .pch-cell .l { display: block; font-family: var(--font-mono, monospace); font-size: 8.5px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--faint, var(--text-dim)); margin-top: 5px; }
 /* bandeau de jalons */
 .play-cockpit-jalons {
-  display: flex; gap: 3px; margin: 0 calc(-1 * var(--sp-3)) var(--sp-3);
+  display: flex; gap: var(--sp-1); margin: 0 calc(-1 * var(--sp-3)) var(--sp-3);
   padding: 8px 16px; border-bottom: 1px solid var(--border); background: var(--bg-card);
   font-family: var(--font-display, inherit); font-weight: 600; font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase;
 }
@@ -932,7 +932,7 @@
   padding: 0 0 0 4px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--sp-1);
 }
 .play-portent {
   font-size: 0.8rem;
@@ -993,7 +993,7 @@
 .play-clue-body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--sp-1);
   min-width: 0;
 }
 .play-clue-fact {
@@ -1286,7 +1286,7 @@
 .play-brief-head {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: var(--sp-1);
 }
 .play-brief-label {
   font-size: var(--fs-2xs);
@@ -2258,7 +2258,7 @@ body.reordering .reorder-handle {
 .pjlink-chip {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: var(--sp-1);
 }
 .pjlink-unlink {
   background: transparent;
@@ -2449,7 +2449,7 @@ body.reordering .reorder-handle {
 .debrief-lead {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: var(--sp-1);
   margin-bottom: 0.85rem;
 }
 .debrief-run {
@@ -2690,7 +2690,7 @@ body.reordering .reorder-handle {
 .foundation-actions li {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: var(--sp-1);
 }
 .foundation-action-name {
   font-weight: 600;

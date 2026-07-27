@@ -511,7 +511,7 @@
 .server-edit-label {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--sp-1);
   flex: 1;
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
@@ -555,7 +555,7 @@
 .server-edit-attr {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--sp-1);
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   text-transform: uppercase;
@@ -602,7 +602,7 @@
 }
 .ic-edit-actions {
   display: flex;
-  gap: 3px;
+  gap: var(--sp-1);
 }
 .ic-edit-add {
   display: flex;
