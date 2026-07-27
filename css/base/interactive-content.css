@@ -75,6 +75,89 @@
   background: var(--danger);
 }
 
+/* ---- États de combat (lot E1) ----
+   AUCUNE couleur propre : le cockpit a dépensé ses quatre rôles (--accent =
+   Agir, froid = Réagir, --accent2 = Matrice, --danger = Dégâts et rien d'autre,
+   « le rouge se mérite »). Un état se distingue par sa FORME et son NOM, pas
+   par une cinquième teinte — d'où la réutilisation intégrale de `.tag` et du
+   patron `.drug-tag` (tag cliquable à état, déjà dans les doigts du MJ). Ce
+   bloc ne pose donc qu'un liseré « posé », le ✕ de retrait et la feuille. */
+.combat-states {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-top: var(--sp-1);
+}
+/* Un état POSÉ : liseré plein, pas de remplissage — il informe, il ne crie
+   pas. La bordure suffit à le détacher des tags inertes voisins. */
+.status-tag.is-on {
+  border-color: var(--text-dim);
+  color: var(--text);
+}
+.status-clear {
+  margin-left: var(--sp-1);
+  padding: 0 2px;
+  opacity: 0.55;
+  font-weight: 700;
+  cursor: pointer;
+}
+.status-clear:hover,
+.status-clear:focus-visible {
+  opacity: 1;
+  color: var(--danger);
+  outline: none;
+}
+/* Le « ＋ » et « tous… » : mêmes cibles que les tags, jamais des glyphes nus
+   (loi 1 de la Grammaire — un contrôle s'annonce au repos, le tactile n'a pas
+   de survol). Cible ≥ --hit-min, réglée ici parce que ces tags sont plus
+   étroits que le tag de compétence dont ils héritent. */
+.status-add,
+.status-more,
+.status-pick {
+  cursor: pointer;
+  min-height: var(--hit-min);
+  display: inline-flex;
+  align-items: center;
+}
+.status-add {
+  font-weight: 700;
+  padding-inline: var(--sp-2);
+}
+.status-add:hover,
+.status-more:hover,
+.status-pick:hover,
+.status-add:focus-visible,
+.status-more:focus-visible,
+.status-pick:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+/* La feuille de pose : rangée qui se REPLIE, jamais qui défile (§5.2 du
+   référentiel — une barre horizontale sur un écran incliné à la table est
+   invisible, donc inexistante). Occupe toute la largeur pour passer sous les
+   états déjà posés. */
+.status-sheet {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin-top: var(--sp-1);
+  padding: var(--sp-2);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+}
+/* [hidden] pose display:none via la feuille UA, mais le display:flex ci-dessus
+   est une règle d'AUTEUR et le battrait — même piège que .react-damage-chips,
+   documenté là-bas après le bug. */
+.status-sheet[hidden],
+.status-rest[hidden] {
+  display: none;
+}
+.status-rest {
+  display: contents;
+}
+
 /* ---- Modale de description ---- */
 .content-modal-overlay {
   position: fixed;

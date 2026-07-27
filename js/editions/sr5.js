@@ -257,6 +257,84 @@ export const EditionSR5 = {
       { key: "free", label: "Gratuite", total: 1 },
     ];
   },
+  /** ÉTATS DE COMBAT (lot E1) — ⚠ SR5 N'A PAS de système d'états. Le livre a
+      des MODIFICATEURS DE SITUATION (tables p.179, p.189, récap p.483), qui
+      sont RELATIONNELS et se calculent par test : « défenseur étendu −2 » n'est
+      pas une propriété du personnage, c'est une ligne de table que l'attaquant
+      consulte. Coller le vocabulaire SR6 (« Aveuglé II ») sur une fiche SR5
+      serait un contresens.
+
+      Ce catalogue ne retient donc QUE les circonstances réellement PERSISTANTES
+      — celles qui survivent d'un test à l'autre et que le MJ doit se rappeler.
+      Tout le reste (modes de tir, allonge, dispersion, recul, tir ciblé…) est
+      circonstanciel : ça appartient au jet, pas au personnage, et ça n'entre
+      pas ici.
+
+      Les libellés sont ceux du LIVRE SR5, pas ceux de SR6 : « Étendu », pas
+      « À terre » ; « Bon couvert », pas « Couvert III ». */
+  statusModel: {
+    unit: "round",
+    catalog: [
+      { key: "etendu", name: "Étendu", levels: 0, quick: true, page: "p.483",
+        lines: [
+          "−2 dés aux tests de défense",
+          "+1 dé à l'attaquant en mêlée · −1 dé si l'étendu attaque en mêlée",
+          "Se relever coûte une action simple (test CON+VOL (2) si blessé, p.170)",
+        ] },
+      // Couvert partiel (+2) et Bon couvert (+4) : deux crans, pas quatre —
+      // SR5 n'a pas l'échelle I-IV de SR6.
+      { key: "couvert", name: "Couvert", levels: 2, quick: true, page: "p.189",
+        lines: [
+          "I — Couvert partiel : +2 dés en défense",
+          "II — Bon couvert : +4 dés en défense",
+          "Se mettre à couvert = une action simple (impossible si surpris, p.193)",
+        ] },
+      // ⚠ Le −2 vit dans la table du chapitre COMBAT À DISTANCE (p.179) : il
+      // frappe les attaques à distance, pas toutes les actions. Le +2 en
+      // défense, lui, est général (p.483).
+      { key: "course", name: "En course", levels: 0, quick: true, page: "p.179",
+        lines: [
+          "−2 dés aux ATTAQUES À DISTANCE de celui qui court",
+          "+2 dés en défense contre les attaques qui le visent",
+        ] },
+      { key: "melee", name: "En mêlée", levels: 0, quick: true, page: "p.483",
+        lines: [
+          "−3 dés à ses propres attaques à distance",
+          "−3 dés en défense contre une attaque à distance qui le vise",
+        ] },
+      // Le seul état SR5 dont TOUS les leviers existent déjà dans l'app — et
+      // le seul dont le livre écrit la durée : « jusqu'au début de la prochaine
+      // passe d'initiative » → until:"pass", que le tracker sait déjà compter.
+      { key: "surpris", name: "Surpris", levels: 0, quick: true, page: "p.193-194",
+        until: "pass",
+        lines: [
+          "−10 au score d'initiative",
+          "Aucun test de défense possible",
+          "Ne peut rien faire qui affecte ou contre les personnages non surpris",
+          "Ni se jeter au sol ni se mettre à couvert",
+          "Dure jusqu'au début de la prochaine passe d'initiative",
+        ] },
+      // Échelle environnementale p.176, réduite à ses trois crans de malus.
+      // Le livre croise QUATRE axes (visibilité / lumière / vent / portée) et
+      // ajoute une ligne « combinaison » à −10 : on porte le cran, le MJ garde
+      // l'arbitrage du croisement.
+      { key: "visibilite", name: "Visibilité réduite", levels: 3, quick: true, page: "p.176",
+        lines: [
+          "I — léger (pluie/brouillard/fumée, lumière partielle) : −1",
+          "II — modéré (lumière faible, éblouissement modéré) : −3",
+          "III — dense (obscurité totale, éblouissement aveuglant) : −6",
+          "Combinaison de plusieurs conditions au cran III : −10",
+        ] },
+      // Compteur, pas condition : il monte d'un cran à CHAQUE défense déjà
+      // faite dans le tour et retombe au tour suivant. Niveau libre — le
+      // nombre de défenses n'a pas de plafond au livre.
+      { key: "defensesMultiples", name: "Défenses multiples", levels: null, page: "p.483",
+        until: "round",
+        lines: [
+          "−1 dé en défense par défense déjà effectuée dans ce tour de combat",
+        ] },
+    ],
+  },
   /** Règles de round pour le tracker de combat (lues via App.editionModule,
       jamais de branche d'édition côté Encounter). SR5 : l'initiative est
       relancée à chaque tour de combat, et chaque tour se joue en passes

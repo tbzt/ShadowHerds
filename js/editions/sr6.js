@@ -365,6 +365,169 @@ export const EditionSR6 = {
       },
     ];
   },
+  /** ÉTATS DE COMBAT (lot E1) — le catalogue, lu par `Statuses` via ce contrat
+      neutre. SR6 est la seule édition à avoir un vrai système d'états : une
+      table, pas de la prose.
+
+      SOURCES. 23 états viennent du livre de base p.55-58 (`page: "p.55-58"`).
+      Les 5 derniers (Déséquilibré, Estropié, Muet, Sanguinolent, Paralysé)
+      n'y sont PAS : ils viennent des suppléments et la seule source paginable
+      dont on dispose est le jeu de cartes officiel (`page: "Cartes d'états
+      A02"`). C'est dit plutôt que masqué — la doctrine impose une source, pas
+      une page inventée.
+
+      NIVEAUX — deux notations que le livre distingue et qu'on ne confond pas
+      (p.55) : chiffres romains au titre = plafond (`levels: 3|4`) ; `#` seul =
+      niveau LIBRE donné par la source (`levels: null`) — « Le nombre qui suit
+      l'état est le malus à votre réserve de dés » ; rien = binaire
+      (`levels: 0`).
+
+      `quick` — les 8 états qui sortent en accès direct sur la pastille. Critère
+      : ce sont ceux que le MJ POSE, pas ceux qu'un autre état pose (Entravé
+      arrive par Estropié III, À terre par Déséquilibré). Les 20 autres restent
+      derrière « tous ».
+
+      `lines` — les effets, RECOPIÉS du livre, affichés et sourcés, JAMAIS
+      appliqués au lot E1 (même arbitrage qu'ActorEffects : on ne motorise pas
+      un jet qui n'existe pas dans l'app). L'auto-application viendra au lot E3
+      et ne concernera qu'une poignée d'entre eux. */
+  statusModel: {
+    unit: "round", // unité de durée de l'édition (Anarchy comptera en narrations)
+    catalog: [
+      { key: "aterre", name: "À terre", levels: 0, quick: true, page: "p.55-58", lines: [
+        "Vitesse de déplacement : 2 m, sprint impossible",
+        "−2 dés en défense contre les attaques à portée proche/courte",
+        "+2 dés en défense contre les attaques à distance (moyenne et plus)",
+        "−2 à la VD subie des attaques explosives",
+        "−4 dés aux attaques de mêlée ou avec un arc",
+        "+2 au SO des armes à feu / à projectiles (sauf arcs)",
+      ] },
+      { key: "assourdi", name: "Assourdi", levels: 3, page: "p.55-58", lines: [
+        "(I, II) −3 dés / niveau aux tests liés à l'audition",
+        "(III) échec automatique des tests liés à l'audition",
+      ] },
+      { key: "aveugle", name: "Aveuglé", levels: 3, quick: true, page: "p.55-58", lines: [
+        "(I, II) −3 dés / niveau aux tests liés à la vision",
+        "(III) échec automatique des tests liés à la vision",
+      ] },
+      { key: "confus", name: "Confus", levels: null, quick: true, page: "p.55-58", lines: [
+        "−(niveau) dés à TOUTES les actions",
+      ] },
+      { key: "corrode", name: "Corrodé", levels: null, page: "p.55-58", lines: [
+        "Chaque round, résister à (niveau)P",
+        "Ni Trempé ni l'eau ne l'annulent forcément — arbitrage MJ",
+      ] },
+      { key: "couvert", name: "Couvert", levels: 4, quick: true, page: "p.55-58", lines: [
+        "+1 au SD par niveau",
+        "+1 dé / niveau aux tests de défense",
+        "Attaquer à couvert coûte 1 action mineure supplémentaire",
+        "−2 dés pour attaquer au niveau IV",
+        "Impossible de gagner de l'Atout en attaquant",
+      ] },
+      { key: "desoriente", name: "Désorienté", levels: 0, quick: true, page: "p.55-58", lines: [
+        "−4 au score d'initiative",
+        "Ni gain ni dépense d'Atout (Cramer reste possible)",
+      ] },
+      { key: "effraye", name: "Effrayé", levels: 0, page: "p.55-58", lines: [
+        "−4 dés aux tests contre la source de l'état ou pour y résister",
+      ] },
+      { key: "electrocute", name: "Électrocuté", levels: 0, page: "p.55-58", lines: [
+        "−2 au score d'initiative",
+        "−1 dé à toutes les actions",
+        "Sprinter impossible",
+      ] },
+      { key: "empoisonne", name: "Empoisonné", levels: null, quick: true, page: "p.55-58", lines: [
+        "Chaque fin de round, résister à une VD de (niveau)P ou E selon l'effet",
+        "VD réduite de 1 par round",
+      ] },
+      { key: "enflamme", name: "Enflammé", levels: null, quick: true, page: "p.55-58",
+        cancels: ["trempe", "frigorifie"], cancelledBy: ["trempe", "frigorifie"], lines: [
+        "Chaque round, résister à une VD de (niveau)P",
+        "Action majeure + test Agilité + Réaction (2) pour l'éteindre",
+        "Annule et est annulé par Trempé et Frigorifié",
+      ] },
+      { key: "entrave", name: "Entravé", levels: 0, page: "p.55-58", lines: [
+        "Vitesse de déplacement à pied divisée par 2 (arrondi au supérieur)",
+      ] },
+      { key: "fatigue", name: "Fatigué", levels: 3, page: "p.55-58", lines: [
+        "−2 dés / niveau à tous les jets SAUF résistance aux dommages",
+        "Vitesse : 5 m (marche), 10 m (sprint)",
+      ] },
+      { key: "fige", name: "Figé", levels: 0, page: "p.55-58", lines: [
+        "Déplacement impossible · tests de défense impossibles",
+        "−10 au SD contre les attaques (minimum 0)",
+        "Dommages continus et effets persistants SUSPENDUS",
+        "Actions permises : Perception, communication mentale, résistance aux dommages",
+      ] },
+      { key: "frigorifie", name: "Frigorifié", levels: 0, page: "p.55-58",
+        cancels: ["enflamme"], cancelledBy: ["enflamme"], lines: [
+        "−4 au score d'initiative",
+        "−1 dé à tous les jets SAUF résistance aux dommages",
+        "Annule et est annulé par Enflammé",
+      ] },
+      { key: "immobilise", name: "Immobilisé", levels: 0, quick: true, page: "p.55-58", lines: [
+        "Déplacement impossible",
+        "−3 au SO · −3 dés aux attaques",
+        "Réaction réduite à 0 pour les tests de défense",
+      ] },
+      { key: "invisible", name: "Invisible", levels: null, page: "p.55-58", lines: [
+        "Repéré sur une réussite de Perception (seuil = niveau)",
+        "Les caméras et détecteurs inorganiques voient normalement",
+        "Version supérieure : les appareils sont affectés aussi",
+      ] },
+      { key: "nauseeux", name: "Nauséeux", levels: 0, page: "p.55-58", lines: [
+        "Début de round : test Constitution + Volonté (2)",
+        "Échec : impossible d'agir ce round",
+        "Réussite : −1 action mineure",
+      ] },
+      { key: "panique", name: "Paniqué", levels: 0, page: "p.55-58", lines: [
+        "Aucune action possible, sauf pour éviter la source de l'état",
+      ] },
+      { key: "petrifie", name: "Pétrifié", levels: 0, page: "p.55-58", lines: [
+        "Aucune action possible",
+        "+10 à l'indice d'Armure",
+        "Annule tout autre état infligeant des dommages",
+      ] },
+      { key: "silencieux", name: "Silencieux", levels: null, page: "p.55-58", lines: [
+        "Repéré sur une réussite de Perception (seuil = niveau)",
+        "Les micros et détecteurs inorganiques entendent normalement",
+        "Version supérieure : les appareils sont affectés aussi",
+      ] },
+      { key: "trempe", name: "Trempé", levels: 0, page: "p.55-58",
+        cancels: ["enflamme"], cancelledBy: ["enflamme"], lines: [
+        "−6 dés pour résister aux dommages de froid et d'électricité",
+        "Annule et est annulé par Enflammé · peut affecter Corrodé",
+      ] },
+      { key: "embrume", name: "Embrumé", levels: 0, page: "p.55-58", lines: [
+        "Passage physique ↔ astral impossible (projection, manifestation)",
+        "Perception astrale toujours possible",
+      ] },
+      // ── Hors livre de base : suppléments, source = jeu de cartes officiel ──
+      { key: "desequilibre", name: "Déséquilibré", levels: 0, page: "Cartes d'états A02", lines: [
+        "Pas de dépense d'Atout sur une action d'attribut physique ni en défense",
+        "À terre en cas de complication sur ces actions",
+        "Persiste jusqu'à une action mineure pour retrouver l'équilibre",
+      ] },
+      { key: "estropie", name: "Estropié", levels: 3, page: "Cartes d'états A02", lines: [
+        "I : les actions mineures impliquant le membre en coûtent deux",
+        "II : + les actions majeures impliquant le membre coûtent une mineure de plus",
+        "III : + Entravé si jambe ; si bras, −4 dés aux tests de compétence l'utilisant",
+      ] },
+      { key: "muet", name: "Muet", levels: 0, page: "Cartes d'états A02", lines: [
+        "Perte de la communication orale (signes, texto… restent possibles)",
+        "Le MJ décide si des compétences comme Influence sont empêchées",
+      ] },
+      { key: "sanguinolent", name: "Sanguinolent", levels: null, page: "Cartes d'états A02", lines: [
+        "1P NON RÉSISTÉ à chaque fin de round, pendant (niveau) unités de temps",
+        "Annulé par un traitement médical (Premiers soins, médikit, Soins)",
+      ] },
+      { key: "paralyse", name: "Paralysé", levels: 0, page: "Cartes d'états A02", lines: [
+        "Déplacement impossible · tests de défense impossibles",
+        "−10 au SD contre les attaques (minimum 0)",
+        "Actions permises : Perception, communication mentale, résistance aux dommages",
+      ] },
+    ],
+  },
   /** Règles de round pour le tracker de combat. SR6 : l'initiative est
       relancée à chaque round mais il n'y a plus de passes d'initiative
       (une seule passe par round, p.44) → `passDecrement: 0`. */

@@ -9,6 +9,7 @@ import { Campaign } from "../../rules/campaign.js";
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Drugs } from "../../catalogs/drugs.js";
 import { PersonaRenderer } from "../card/personarenderer.js";
+import { Statuses } from "../../rules/statuses.js";
 import { Utils } from "../../core/utils.js";
 import { Vehicles } from "../../catalogs/vehicles.js";
 
@@ -530,6 +531,49 @@ export const UI = {
     Drugs.advance(pnj, edition, drugId);
     Shadows.save();
     CardRenderer.refresh(pnj);
+  },
+
+  /* ---- États de combat (lot E1) ----
+     Deux gestes seulement : monter d'un cran, et retirer. La pose EST le
+     premier cran — il n'y a pas de « poser » séparé, donc pas de sous-menu de
+     niveau. Persistance par `persistEntity` (route par appartenance) et non
+     `Shadows.save()` en dur : un PNJ du générateur ou de l'équipe PJ doit voir
+     ses états survivre au rechargement comme ceux d'Ombres portées. */
+
+  /** Monte l'état d'un cran (absent → I → II → … → plafond → retiré). */
+  stepStatus(pnjId, key) {
+    const pnj = PnjLookup.find(pnjId);
+    if (!pnj || !key) return;
+    Statuses.step(pnj, key);
+    this._afterStatusChange(pnj);
+  },
+
+  /** Pose l'état à un niveau précis — `0` retire. Utilisé par le ✕ du tag et
+      par les purges de masse. */
+  setStatus(pnjId, key, level) {
+    const pnj = PnjLookup.find(pnjId);
+    if (!pnj || !key) return;
+    Statuses.set(pnj, key, level | 0);
+    this._afterStatusChange(pnj);
+  },
+
+  /** Retire tous les états d'un PNJ. Renvoie le nombre retiré (0 = rien à
+      faire, l'appelant n'a alors rien à annoncer). */
+  clearStatuses(pnjId) {
+    const pnj = PnjLookup.find(pnjId);
+    if (!pnj) return 0;
+    const n = Statuses.clearAll(pnj);
+    if (n) this._afterStatusChange(pnj);
+    return n;
+  },
+
+  /** Persistance + re-rendu, communs aux trois gestes. `notifyPnjChanged`
+      prévient le tracker (un état peut changer ce qu'il affiche du combattant),
+      comme le fait déjà la coche de moniteur. */
+  _afterStatusChange(pnj) {
+    this.persistEntity(pnj.id);
+    CardRenderer.refresh(pnj);
+    if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(pnj);
   },
 
   /** Clic sur le tag d'une armure optionnelle (Anarchy) : équipe/range le

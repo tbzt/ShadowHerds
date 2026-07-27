@@ -22,6 +22,7 @@ import { PersonaRenderer } from "./personarenderer.js";
 import { Resonance } from "../../rules/resonance.js";
 import { SkillCatalog } from "../../rules/skillcatalog.js";
 import { SkillEffects } from "../../rules/skilleffects.js";
+import { Statuses } from "../../rules/statuses.js";
 import { UI } from "../kit/ui.js";
 import { Utils } from "../../core/utils.js";
 import { WeaponRoll } from "../../rules/weaponroll.js";
@@ -33,7 +34,7 @@ export const CardRenderer = {
       `DiceRoller` en bare global (pont window, pas d'import ES) : diceroller.js
       importe déjà CardRenderer, un import direct créerait un cycle. */
   liveDeps() {
-    return { Settings, Drugs, Vehicles, Spirits, Sprites, WeaponRoll, UI, Encounter, DiceRoller };
+    return { Settings, Drugs, Statuses, Vehicles, Spirits, Sprites, WeaponRoll, UI, Encounter, DiceRoller };
   },
 
   /** Rend une card PNJ et retourne l'élément DOM.
@@ -912,7 +913,7 @@ export const CardRenderer = {
     let html = "";
     // R1 — état maintenu (⟳ ×N · −ND) + drogues actives, réémis même sans la
     // fiche complète (ils vivaient dans le bloc moniteur / la zone Combat).
-    const state = this._sustainBadge(pnj, ed) + this._drugRow(pnj, ed, deps);
+    const state = this._sustainBadge(pnj, ed) + this._statusRow(pnj, ed, deps) + this._drugRow(pnj, ed, deps);
     if (state) html += `<div class="offense-state">${state}</div>`;
     // ② Armes
     html += this._weaponBlock(pnj, weapons, ed, deps);
@@ -1994,6 +1995,100 @@ export const CardRenderer = {
       title="${this._esc(info)}">${this._esc(rawLabel)}<span class="drug-next">${nextLabel}</span></span>`;
   },
 
+  /* ============================================================
+     ÉTATS DE COMBAT (lot E1) — la ligne, la pastille, la feuille.
+
+     ANCRAGE. Le geste vit ici, dans la zone Combat de la carte, et NON dans la
+     console de réaction : celle-ci ne se rend qu'au tour d'un PJ
+     (encounterrenderer.js:1173) et exclut les PJ et les combattants hors de
+     combat (:1320) — on ne pourrait ni poser un état au tour d'un PNJ, ni sur
+     un PJ, ni sur un PNJ à terre (or un Enflammé continue de brûler). Ni dans
+     le menu ⋯, qui n'existe ni sur la ligne active (_leadActionBar le remplace)
+     ni sur les lignes en attente (.encounter-row.compact masque .encounter-
+     controls). La zone Combat, elle, est rendue par CardRenderer : donc sur la
+     carte, dans le coup d'œil ⛶, et dans les blocs d'offense du cockpit.
+
+     COULEUR. Aucune. Le cockpit a dépensé ses quatre rôles (--accent = Agir,
+     froid = Réagir, --accent2 = Matrice, --danger = Dégâts et rien d'autre :
+     « le rouge se mérite »). Un état se lit par son NOM, jamais par un nombre
+     et jamais par une teinte — d'où la réutilisation de `.tag`, le composant
+     le plus établi de l'app, et de son patron `.drug-tag` (tag cliquable à
+     état, déjà dans les doigts du MJ).
+     ============================================================ */
+
+  /** Ligne d'états : les états posés, puis le « + » qui déplie la feuille.
+      Rien du tout si l'édition n'a pas d'états (Anarchy → statusModel absent :
+      la surface disparaît d'elle-même, comme le panneau pré-jet en Anarchy 2)
+      ni pour un PJ ad-hoc, qui n'a pas de fiche à porter. */
+  _statusRow(pnj, edition, deps) {
+    if (!deps.Statuses || !pnj || pnj._adhoc) return "";
+    const cat = deps.Statuses.catalog(pnj);
+    if (!cat.length) return "";
+    const actifs = deps.Statuses.active(pnj);
+    const chips = actifs.map((s) => this._statusTag(pnj, s, deps)).join("");
+    const plus = `<button type="button" class="tag status-add" data-action="status-sheet" data-id="${pnj.id}" aria-expanded="false" title="Poser un état" aria-label="Poser un état">＋</button>`;
+    return `<div class="combat-states">${chips}${plus}${this._statusSheet(pnj, deps)}</div>`;
+  },
+
+  /** Un état POSÉ. Le tap monte d'un cran (I → II → … → plafond → retiré) :
+      une seule cible, sur l'objet qui existe déjà — patron `edge-step` du
+      cockpit, plutôt que trois crans collés dans une puce de 380px. Le ✕ est
+      le retrait direct, pour ne pas avoir à faire le tour de l'échelle.
+      Le niveau s'affiche en chiffres ROMAINS quand l'échelle est plafonnée
+      (c'est la notation du livre) et en chiffre arabe quand elle est libre —
+      un Confus 6 posé par un sort de Puissance 6 ne s'écrit pas « VI ». */
+  _statusTag(pnj, s, deps) {
+    const cap = deps.Statuses.max(s);
+    const suffixe =
+      cap === 1 ? "" : cap === Infinity ? ` ${s.level}` : ` ${this._roman(s.level)}`;
+    const info = [`${s.name}${suffixe} — ${s.page}`, ...(s.lines || [])].join("\n• ");
+    return `<span class="tag drug-tag status-tag is-on" role="button" tabindex="0"
+      data-action="status-step" data-id="${pnj.id}" data-status="${s.key}"
+      title="${this._esc(info)}">${this._esc(s.name)}${suffixe}<span class="status-clear" role="button" tabindex="0" data-action="status-clear" data-id="${pnj.id}" data-status="${s.key}" aria-label="Retirer ${this._esc(s.name)}" title="Retirer">✕</span></span>`;
+  },
+
+  /** Feuille de pose, repliée par défaut, une seule ouverte à la fois (même
+      discipline que les chips de dégâts). Deux étages : les états d'accès
+      direct (`quick` — ceux que le MJ POSE, pas ceux qu'un autre état pose),
+      puis « tous » qui révèle le reste du catalogue. L'ordre est celui du
+      contrat et ne bouge JAMAIS : une cible qui se déplace entre deux
+      ouvertures produit un mis-tap silencieux.
+      Le bouton « tous » ne s'affiche pas s'il n'a rien de plus à montrer —
+      une affordance qui ouvre une liste identique est une promesse vide. */
+  _statusSheet(pnj, deps) {
+    const cat = deps.Statuses.catalog(pnj);
+    const rapides = cat.filter((s) => s.quick);
+    const reste = cat.filter((s) => !s.quick);
+    const puce = (s) =>
+      `<button type="button" class="tag status-pick" data-action="status-set" data-id="${pnj.id}" data-status="${s.key}" title="${this._esc([`${s.name} — ${s.page}`, ...(s.lines || [])].join("\n• "))}">${this._esc(s.name)}</button>`;
+    const tous = reste.length
+      ? `<button type="button" class="tag status-more" data-action="status-more" data-id="${pnj.id}" aria-expanded="false">tous…</button>
+         <span class="status-rest" hidden>${reste.map(puce).join("")}</span>`
+      : "";
+    return `<div class="status-sheet" data-status-sheet="${pnj.id}" hidden>${rapides.map(puce).join("")}${tous}</div>`;
+  },
+
+  /** I, II, III… — la notation du livre pour les échelles plafonnées. */
+  _roman(n) {
+    return ["", "I", "II", "III", "IV", "V", "VI"][n] || String(n);
+  },
+
+  /** Déplie/replie la feuille de pose, UNE SEULE ouverte à la fois — même
+      discipline que les chips de dégâts du cockpit et que les menus de carte :
+      deux feuilles ouvertes sur deux PNJ voisins, c'est un mis-tap qui attend.
+      Repli en place (pas de re-rendu) pour ne pas détruire l'état transitoire. */
+  _toggleStatusSheet(pnjId, btn) {
+    const sheet = document.querySelector(`.status-sheet[data-status-sheet="${pnjId}"]`);
+    if (!sheet) return;
+    const ouvrir = sheet.hidden;
+    document.querySelectorAll(".status-sheet").forEach((s) => (s.hidden = true));
+    document
+      .querySelectorAll('[data-action="status-sheet"]')
+      .forEach((b) => b.setAttribute("aria-expanded", "false"));
+    sheet.hidden = !ouvrir;
+    btn.setAttribute("aria-expanded", String(ouvrir));
+  },
+
   /** Ligne compacte, toujours visible dans la zone Combat (pas besoin de
       déplier la Référence), listant les drogues détectées dans
       l'équipement (SR5/SR6) et les atouts (Anarchy). */
@@ -2605,6 +2700,31 @@ export const CardRenderer = {
         case "cycle-drug":
           UI.cycleDrug(id, actionEl.dataset.edition, actionEl.dataset.drug);
           break;
+        // ÉTATS (E1). Le ✕ est un enfant du tag d'état, mais `closest` remonte
+        // au PLUS PROCHE [data-action] : un clic sur le ✕ résout `status-clear`
+        // et jamais `status-step`, sans avoir à couper la propagation.
+        case "status-clear":
+          UI.setStatus(id, actionEl.dataset.status, 0);
+          break;
+        // Poser depuis la feuille et monter d'un cran sur un état déjà posé
+        // sont LE MÊME geste : `step` pose le niveau I quand l'état est absent.
+        // Deux libellés parce que les deux surfaces sont distinctes, un seul
+        // comportement parce qu'il n'y a qu'une règle.
+        case "status-set":
+        case "status-step":
+          UI.stepStatus(id, actionEl.dataset.status);
+          break;
+        case "status-sheet":
+          this._toggleStatusSheet(id, actionEl);
+          break;
+        case "status-more": {
+          const rest = actionEl.parentElement.querySelector(".status-rest");
+          if (rest) {
+            rest.hidden = !rest.hidden;
+            actionEl.setAttribute("aria-expanded", String(!rest.hidden));
+          }
+          break;
+        }
         case "generate-portrait":
           Portrait.generateForPnj(id, actionEl);
           break;

@@ -633,6 +633,11 @@ export const TourSteps = {
       title: "Les indices de l'enquête, à la table",
       body: "Dans « Jouer » (En jeu), un tiroir Indices liste les indices de la scène en cours — plus les indices flottants, révélables partout — avec le fait qu'ils dévoilent, un repère « jet » s'ils sont derrière un test, et le contact qui les porte le cas échéant. Cochez-les « révélé » au fur et à mesure : l'état survit au rechargement et le tiroir affiche révélés/total, pour tenir la règle des trois indices sans quitter la table.",
     },
+    {
+      id: "wn-etats-combat", anchor: "nav-combat", tours: ["whatsnew"], since: "1.120.0", fallback: "center",
+      title: "Poser un état sur un PNJ (SR5/SR6)",
+      body: "Zone Combat d'une fiche SR5 ou SR6 : un « ＋ » ouvre la liste des états. SR6 a ses 28 états du livre (Aveuglé, À terre, Enflammé, Couvert…) — huit en accès direct, le reste derrière « tous… ». SR5 n'a pas d'états mais ses modificateurs de situation persistants (Étendu, Couvert, Surpris…), sous leur nom du livre. Un tap pose, les taps suivants montent d'un cran (Aveuglé I → II → III → retiré), le ✕ retire. Chaque état affiche ses effets et sa page en infobulle : l'app les montre, elle ne les applique pas encore. Le ⛨ « Réinitialiser les moniteurs » les retire tous, et au changement de round elle signale ceux dont la durée est échue — sans jamais les enlever à votre place.",
+    },
   ],
 };
 

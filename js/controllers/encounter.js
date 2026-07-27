@@ -23,6 +23,7 @@ import { Nudge } from "../widgets/tour/nudge.js";
 import { PnjLookup } from "./pnjlookup.js";
 import { Servers } from "./servers.js";
 import { Shadows } from "./shadows.js";
+import { Statuses } from "../rules/statuses.js";
 import { Storage } from "../core/storage.js";
 import { UI } from "../widgets/kit/ui.js";
 import { Utils } from "../core/utils.js";
@@ -783,6 +784,11 @@ export const Encounter = {
 
   nextRound() {
     const model = this._model();
+    // BALAYAGE DE FIN DE ROUND (lot E1) — il PROPOSE, il n'exécute jamais.
+    // Registre du drapeau « devrait fuir » et de la doctrine (f) : l'app dit
+    // ce qu'elle a vu, le MJ tranche. Compté AVANT l'incrément du round, sur
+    // l'unité de durée de l'édition (round en SR5/SR6, narration en Anarchy).
+    this._annonceEtatsEchus();
     this.state.round++;
     this.state.pass = 1;
     // Nouveau round : tout le monde rejoue, les actions retardées (Vague C)
@@ -913,6 +919,29 @@ export const Encounter = {
     this._commit();
   },
 
+  /** Annonce les états dont la durée est échue à ce changement de round, sans
+      les retirer. Un seul toast pour toute la scène : autant de toasts que de
+      combattants noierait le MJ, et le geste de retrait reste le ✕ du tag (ou
+      le ⛨ pour tout un PNJ). Muet s'il n'y a rien à dire — l'écrasante
+      majorité des rounds. */
+  _annonceEtatsEchus() {
+    const echus = [];
+    for (const c of this.state.combatants) {
+      const pnj = PnjLookup.find(c.pnjId);
+      if (!pnj) continue;
+      // Frontière « round » : elle fait aussi expirer ce qui ne durait qu'une
+      // passe (SR5 Surpris, p.193-194) — un nouveau round ouvre une nouvelle
+      // passe. L'échelle des portées vit dans Statuses, pas ici.
+      for (const s of Statuses.expiring(pnj, "round")) echus.push(`${pnj.name} : ${s.name}`);
+    }
+    if (!echus.length) return;
+    toast(
+      echus.length === 1
+        ? `État échu — ${echus[0]}`
+        : `${echus.length} états échus — ${echus.slice(0, 2).join(" · ")}${echus.length > 2 ? "…" : ""}`,
+    );
+  },
+
   /** Remet à zéro le budget d'actions d'un combattant : appelé au début de son
       tour (nextTurn / nouvelle passe / nouveau round), jamais en cours de tour.
       Le bonus de narration ne se reporte jamais d'un tour à l'autre (le MJ
@@ -969,13 +998,29 @@ export const Encounter = {
   /** Bouton « réinitialiser les moniteurs » d'une carte de combat. */
   healCombatant(pnjId) {
     const pnj = PnjLookup.find(pnjId);
-    if (!this._resetMonitors(pnj)) return;
+    // ⛨ est la SORTIE DE MASSE des états (lot E1) : les états vivent sur le
+    // PNJ, donc ils survivent à la scène — sans purge ici, le MJ n'aurait que
+    // le retrait un par un et finirait par ne plus rien poser. Remettre un PNJ
+    // d'aplomb, c'est aussi lui retirer ses Aveuglé et ses Enflammé. Passe par
+    // Statuses.clearAll (donc par les revert), jamais par un delete brutal.
+    // ⚠ Les DEUX volets se calculent avant de décider de sortir : un PNJ aux
+    // moniteurs déjà pleins mais couvert d'états doit pouvoir être nettoyé
+    // (sinon le geste ne marche que sur un blessé, ce qui ne se devine pas).
+    const moniteurs = this._resetMonitors(pnj);
+    const etats = Statuses.clearAll(pnj);
+    if (!moniteurs && !etats) return;
     Shadows.save();
     CardRenderer.refresh(pnj);
     // Le badge de malus de la ligne (calculé depuis le moniteur)
     // resterait sinon périmé jusqu'au prochain rendu du tracker.
     this._render();
-    toast("Moniteurs réinitialisés.");
+    toast(
+      !moniteurs
+        ? `${etats} état(s) retiré(s).`
+        : etats
+          ? `Moniteurs réinitialisés · ${etats} état(s) retiré(s).`
+          : "Moniteurs réinitialisés.",
+    );
   },
 
   /** Mise hors de combat immédiate (Vague C) : remplit le moniteur via

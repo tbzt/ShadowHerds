@@ -12,6 +12,28 @@ commit.
 
 ## [Non publié]
 
+## [1.120.0] — 2026-07-27
+
+### Ajouté
+
+- **Les états de combat se posent sur un PNJ, et disent d'où ils sortent.**
+  Dans la zone Combat d'une fiche **SR5** ou **SR6**, un « ＋ » ouvre la liste
+  des états. SR6 apporte ses **28 états** (23 du livre de base p.55-58, 5 des
+  suppléments) — huit en accès direct, le reste derrière « tous… ». SR5, qui
+  n'a pas d'états mais des **modificateurs de situation**, apporte les sept qui
+  sont réellement persistants (Étendu, Couvert, En course, En mêlée, Surpris,
+  Visibilité réduite, Défenses multiples), sous **leur nom du livre** et pas
+  celui de SR6. Un tap pose, les taps suivants montent d'un cran
+  (Aveuglé I → II → III → retiré), le ✕ retire. Chaque état porte **ses effets
+  et sa page** en infobulle. La ligne apparaît sur la carte, dans le coup d'œil
+  ⛶ et dans les blocs d'offense du cockpit ; le ⛨ « Réinitialiser les
+  moniteurs » les retire tous, et le changement de round **signale** ceux dont
+  la durée est échue sans jamais les enlever à votre place.
+
+  *L'app les montre et les source ; elle ne les applique pas encore aux
+  réserves — ça viendra, et seulement pour la poignée d'états que le livre
+  écrit comme globaux.*
+
 ## [1.119.0] — 2026-07-25
 
 ### Ajouté

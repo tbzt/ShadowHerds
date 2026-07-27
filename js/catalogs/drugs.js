@@ -33,6 +33,7 @@ function Drug_anarchy(id, match, label, effectText, crashText) {
 }
 
 import { Actor } from "../rules/actor.js";
+import { Effects } from "../rules/effects.js";
 import { ItemResolver } from "../rules/itemresolver.js";
 
 export const Drugs = {
@@ -188,8 +189,7 @@ export const Drugs = {
   },
 
   _recalcFor(edition, pnj) {
-    const EditionModule = App.getEditionModule(edition);
-    if (EditionModule && typeof EditionModule.recalc === "function") EditionModule.recalc(pnj);
+    Effects.recalc(edition, pnj);
   },
 
   /** Fait avancer une drogue d'un cran (idle → effet → contrecoup → idle),
@@ -205,13 +205,9 @@ export const Drugs = {
     // Chaque phase est annulée puis recalculée (si elle touche des attrs)
     // AVANT que la phase suivante applique ses propres deltas — sinon un
     // recalc() tardif écraserait un delta manuel (ex. initBase du contrecoup).
-    const curPhase = this._phase(drug, cur);
-    if (curPhase && curPhase.revert) curPhase.revert(pnj);
-    if (curPhase && curPhase.recalc) this._recalcFor(edition, pnj);
-
-    const nxtPhase = this._phase(drug, nxt);
-    if (nxtPhase && nxtPhase.apply) nxtPhase.apply(pnj);
-    if (nxtPhase && nxtPhase.recalc) this._recalcFor(edition, pnj);
+    // Cet ordre, payé ici, vit désormais dans Effects.transition et sert aussi
+    // aux états de combat (lot E1) : une seule machine, pas deux.
+    Effects.transition(pnj, edition, this._phase(drug, cur), this._phase(drug, nxt));
 
     if (nxt === "idle") delete pnj.drugState[drugId];
     else pnj.drugState[drugId] = nxt;
