@@ -6,6 +6,10 @@
 n'était pas à 20px — le doigt était déjà servi à 24px ; c'est la base souris à
 16px qui reste ouverte, et elle s'arbitre). Les chiffres du § 1 restent ceux de
 `c2cb013` : ils se recomptent avant et après chaque lot, jamais se recopient.*
+*Version 1.2 — 27 juillet 2026 : lot 2 (élévation) livré ; § 9 gagne deux
+protections re-arbitrées avec l'utilisateur (physicalité des dés, pulsations
+décoratives) ; les lots 5/6/7/8/9 gagnent chacun un périmètre élargi issu du
+reliquat du lot 2 (détail : `PLAN_EXECUTION.md`).*
 
 ---
 
@@ -1025,11 +1029,11 @@ Huit lots. Chacun est livrable seul, sans dépendre du suivant. Ordonnés par
 | 2 | **Adopter l'élévation** — 71 `box-shadow` en dur → `--elev-1/2` ; surfaces d'objet → `--bg-raised` | M | Faible | Profondeur cohérente, immédiatement visible |
 | 3 | **Primitives** — `.surface`, `.stack`, `.cluster` ; migrer 3 écrans témoins | M | Faible | −20 % de CSS sur les écrans touchés |
 | 4 | **`.btn` unique** — 46 classes → 1 + 4 intentions + 3 tailles ; les anciennes deviennent des alias, puis meurent | M | Moyen | Hiérarchie d'action enfin lisible |
-| 5 | **Marqueurs** — 50 classes → `.tag` / `.status` / `.chip` | M | Faible | Le cliquable devient distinguable |
-| 6 | **Carte canonique** — `.card` / `.card-frame` / zones ; les 49 variantes deviennent des modificateurs | L | Moyen | Le cœur du produit devient cohérent |
-| 7 | **Overlays** — 5 formes, focus trap partagé, ARIA, ordre des boutons | L | Moyen | Accessibilité + fin des empilements |
-| 8 | **États systématiques** — vide primo / vide filtré / chargement / erreur sur chaque collection | M | Faible | Le trou le plus large est comblé |
-| 9 | **Rapatrier `graph.css`** — 131 hex → tokens ; le graphe porte enfin l'édition | M | Faible | Cohérence d'identité |
+| 5 | **Marqueurs** — 50 classes → `.tag` / `.status` / `.chip` **+ les lueurs d'affordance bespoke** (rollable, pips, badges) qui répliquent déjà `.chip` | M | Faible | Le cliquable devient distinguable |
+| 6 | **Carte canonique** — `.card` / `.card-frame` / zones ; les 49 variantes deviennent des modificateurs **+ le ruban d'accent** (sélection/live/tour) rejoint le liseré déjà nommé | L | Moyen | Le cœur du produit devient cohérent |
+| 7 | **Overlays** — 5 formes, focus trap partagé, ARIA, ordre des boutons **+ un token d'élévation directionnel** pour la feuille (le tiroir mobile porte un cast latéral, pas vertical) | L | Moyen | Accessibilité + fin des empilements |
+| 8 | **États systématiques** — vide primo / vide filtré / chargement / erreur sur chaque collection **+ l'état « sélectionné »** (partagé avec le lot 6) | M | Faible | Le trou le plus large est comblé |
+| 9 | **Rapatrier `graph.css`** — 141 hex → tokens **+ `--surface-1`**, jamais défini, toujours résolu par son fallback | M | Faible | Cohérence d'identité |
 | 10 | **Arbitrer `.monitor-box` à 16px hors bloc tactile** — le doigt est déjà servi (24px, `responsive.css:682`) ; reste la base souris, sous le plancher WCAG 2.5.8. **À trancher, pas à corriger d'office** | S | Faible | Solde la dernière cible sous le plancher — ou acte qu'on l'assume |
 
 > Ces lots sont suivis sous les identifiants **D1 → D10** dans `PLAN_EXECUTION.md`
@@ -1072,6 +1076,16 @@ existaient :
   système qui tient à travers les habillages : rare et juste.
 - **Le feel du drag tokenisé** (`--drag-tilt`, `--drag-lift`). Du design
   d'auteur. On ne l'uniformise pas.
+- **La physicalité des dés** (`die-face` : liseré + ombre portée, y compris à
+  l'état « hit »). *Ajouté 2026-07-27, re-arbitré avec l'utilisateur après D2.*
+  Un dé est un objet 3D simulé, pas une carte plate — la loi « l'ombre porte le
+  mouvement, jamais le repos » (§ 4.4) ne s'y applique pas : l'aplatir
+  perdrait le grain physique délibéré, comme le ferait uniformiser le drag.
+- **Les pulsations décoratives** (`.tour-ring`, `.vehicle-pulse`,
+  `.tb-crumb-live`). *Confirmé 2026-07-27.* Chacune sert un contexte différent
+  (onboarding, alerte véhicule, navigation) ; les tokens de mouvement
+  (`--dur-*`/`--ease-*`) existent déjà et s'y appliquent — rien de plus à
+  unifier entre elles.
 - **`column-count` sur `.cards-zone`.** Le raisonnement (des hauteurs inégales
   créent des trous d'alignement en grille) est correct et documenté.
 - **La coquille à deux couches de la carte** (footprint / frame / rail
