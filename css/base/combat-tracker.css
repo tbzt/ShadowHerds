@@ -107,10 +107,25 @@
   border-color: var(--accent);
   color: var(--accent);
 }
-/* ⋯ (actions secondaires) poussé à droite ; ancre le popover .card-menu. */
+/* Les deux boutons texte peuvent rétrécir (jusqu'à ellipser) pour ne jamais
+   pousser le ⋯ hors de la barre quand la colonne se resserre. */
+.encounter-toolbar > .btn-secondary {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* ⋯ (actions secondaires) poussé à droite ; ancre le popover .card-menu.
+   flex-shrink: 0 garantit qu'il reste toujours visible, jamais clippé.
+   La direction d'ouverture du popover (haut/bas) est décidée dynamiquement
+   par CardMenu._orient() (cardmenu.js — cf. .card-menu--down dans
+   pnj-card.css), pas ici : ce bouton est proche du haut du modal, donc
+   l'espace au-dessus manque et le popover bascule vers le bas tout seul. */
 .encounter-toolbar-more {
   position: relative;
   margin-left: auto;
+  flex-shrink: 0;
 }
 .encounter-list {
   display: flex;
