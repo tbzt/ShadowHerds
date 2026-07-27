@@ -1890,6 +1890,29 @@
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
 }
+
+/* Échange d'actions (E5) — prolonge la rangée de jetons, ne fonde pas une
+   rangée à soi : le budget se manipule là où il s'affiche. Libellé TEXTE et
+   pas un glyphe : « 4 mineures → 1 majeure » ne se devine à aucun symbole, et
+   le vocabulaire de glyphes du cockpit est figé. */
+.action-trades {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-left: var(--sp-2);
+}
+.action-trade {
+  width: auto;
+  padding: 0 var(--sp-2);
+  color: var(--text-dim);
+  font-size: var(--fs-2xs);
+  white-space: nowrap;
+}
+.action-trade:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
 .react-btn-danger {
   border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
 }

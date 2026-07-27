@@ -1080,6 +1080,79 @@ export const Encounter = {
     toast(`${n} état${n > 1 ? "s" : ""} retiré${n > 1 ? "s" : ""}.`);
   },
 
+  /* ========================================================
+     ÉCHANGE D'ACTIONS (lot E5) — SR6 p.42.
+     ======================================================== */
+
+  /** Applique un échange du contrat (`actionExchange`) au budget du tour.
+      L'échange est stocké comme un DELTA (`c.actionsTraded`), pas comme une
+      réécriture du budget : `actionBudget` reste la vérité de l'édition, le
+      delta dit ce que le MJ en a fait ce tour-ci. Remis à zéro au tour suivant
+      comme `actionsUsed`, puisque le budget l'est aussi.
+
+      Deux gardes, toutes deux tirées de la règle :
+        · il faut avoir les actions à échanger ENCORE DISPONIBLES — on ne troque
+          pas une majeure déjà dépensée ;
+        · le résultat ne doit jamais passer sous ce qui est déjà consommé.
+      Refuse en le disant, comme la porte des interruptions (E4). */
+  tradeAction(pnjId, key) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    const mod = pnj && App.getEditionModule(pnj.edition);
+    const ex = mod && mod.actionExchange && mod.actionExchange.find((e) => e.key === key);
+    if (!c || !ex) return;
+    const budget = this.effectiveBudget(pnjId);
+    const used = c.actionsUsed || {};
+    const dispo = (k) => {
+      const g = budget.find((b) => b.key === k);
+      return (g ? g.total : 0) - (used[k] || 0);
+    };
+    if (dispo(ex.from.key) < ex.from.n) {
+      const g = budget.find((b) => b.key === ex.from.key);
+      toast(`Échange impossible — il reste ${dispo(ex.from.key)} ${(g && g.label.toLowerCase()) || ex.from.key}, il en faut ${ex.from.n}.`);
+      return;
+    }
+    c.actionsTraded = c.actionsTraded || {};
+    c.actionsTraded[ex.from.key] = (c.actionsTraded[ex.from.key] || 0) - ex.from.n;
+    c.actionsTraded[ex.to.key] = (c.actionsTraded[ex.to.key] || 0) + ex.to.n;
+    EncounterRenderer._activeCardId = null;
+    this._commit();
+    toast(`${pnj.name} — ${ex.label}`);
+  },
+
+  /** Rend les jetons échangés ce tour-ci. L'échange du livre étant À PERTE
+      (4 mineures pour 1 majeure), un « aller-retour » mangerait 3 mineures à
+      chaque mé-tap : le geste de correction doit donc ANNULER, pas re-troquer.
+      Refuse si des actions déjà consommées en dépendent. */
+  resetTrades(pnjId) {
+    const c = this._find(pnjId);
+    if (!c || !c.actionsTraded) return;
+    const pnj = PnjLookup.find(pnjId);
+    const base = App.getEditionModule(pnj.edition).actionBudget(pnj);
+    const used = c.actionsUsed || {};
+    const manque = base.find((g) => (used[g.key] || 0) > g.total);
+    if (manque) {
+      toast(`Annulation impossible — ${used[manque.key]} ${manque.label.toLowerCase()} déjà consommée(s) pour ${manque.total} au budget de base.`);
+      return;
+    }
+    delete c.actionsTraded;
+    EncounterRenderer._activeCardId = null;
+    this._commit();
+    toast("Échanges annulés.");
+  },
+
+  /** Budget EFFECTIF du tour = celui de l'édition + les échanges du MJ. Lecture
+      neutre, partagée par le contrôleur (gardes) et le rendu (jetons), pour
+      qu'ils ne divergent jamais — la leçon d'E0. */
+  effectiveBudget(pnjId) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    const mod = pnj && App.getEditionModule(pnj.edition);
+    if (!c || !mod || !mod.actionBudget) return [];
+    const traded = c.actionsTraded || {};
+    return mod.actionBudget(pnj).map((g) => ({ ...g, total: Math.max(0, g.total + (traded[g.key] || 0)) }));
+  },
+
   /** Remet à zéro le budget d'actions d'un combattant : appelé au début de son
       tour (nextTurn / nouvelle passe / nouveau round), jamais en cours de tour.
       Le bonus de narration ne se reporte jamais d'un tour à l'autre (le MJ
@@ -1089,6 +1162,8 @@ export const Encounter = {
     if (c) {
       c.actionsUsed = {};
       c.narrationBonus = false;
+      // Échanges du tour (E5) : le budget se recharge, les troc aussi.
+      delete c.actionsTraded;
       // Défenses multiples (E4, SR5 p.189) : le livre compte « depuis sa
       // dernière PHASE D'ACTION », pas depuis le round — c'est donc ici, et
       // pas dans nextRound, que le compteur retombe. La nuance compte pour un
@@ -2156,6 +2231,13 @@ export const Encounter = {
         case "react-interrupt":
           this.useInterrupt(id, el.dataset.key);
           EncounterRenderer.toggleReactInterrupt(id, true);
+          break;
+        case "trade-action":
+          // E5 — échange majeure↔mineures (SR6 p.42), lu sur le contrat.
+          this.tradeAction(id, el.dataset.key);
+          break;
+        case "reset-trades":
+          this.resetTrades(id);
           break;
         case "count-defense":
           // E4 — porté par le MÊME bouton que le jet de défense : DiceRoller

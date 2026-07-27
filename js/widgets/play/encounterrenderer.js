@@ -1086,9 +1086,15 @@ export const EncounterRenderer = {
   _activeActions(r) {
     const rawBudget = App.editionModule.actionBudget(r.pnj);
     if (!rawBudget || !rawBudget.length) return "";
+    // E5 — le budget affiché intègre les ÉCHANGES du tour (SR6 p.42). Le delta
+    // vit dans l'entrée de scène (`actionsTraded`), `actionBudget` reste la
+    // vérité de l'édition : les jetons montrent ce que le MJ a fait de son
+    // budget, pas un budget réécrit.
+    const traded = r.actionsTraded || {};
+    const echange = rawBudget.map((g) => ({ ...g, total: Math.max(0, g.total + (traded[g.key] || 0)) }));
     const budget = r.narrationBonus
-      ? rawBudget.map((g, i) => (i === rawBudget.length - 1 ? { ...g, total: g.total + 1 } : g))
-      : rawBudget;
+      ? echange.map((g, i) => (i === echange.length - 1 ? { ...g, total: g.total + 1 } : g))
+      : echange;
     const used = r.actionsUsed || {};
     const groups = budget
       .map((g) => {
@@ -1100,7 +1106,39 @@ export const EncounterRenderer = {
         </span>`;
       })
       .join("");
-    return `<div class="encounter-actions" title="Actions du tour (économie de l'édition — taper pour consommer)">${groups}</div>`;
+    return `<div class="encounter-actions" title="Actions du tour (économie de l'édition — taper pour consommer)">${groups}${this._actionTrades(r, budget)}</div>`;
+  },
+
+  /** Boutons d'ÉCHANGE d'actions (lot E5) — n'existent que si l'édition en
+      déclare (`actionExchange` : SR6 seul aujourd'hui). Rien de neuf dans la
+      ligne : ils prolongent la rangée de jetons, qui est déjà l'endroit où le
+      budget se manipule.
+
+      Un échange n'est proposé que s'il est PAYABLE avec ce qui reste — un
+      bouton qui échouerait au clic ne dit rien d'utile au MJ. Le ↺ n'apparaît
+      qu'après un échange : l'aller-retour étant à perte (4 mineures pour 1
+      majeure, p.42), la correction d'un mé-tap doit RENDRE les jetons, pas
+      re-troquer. */
+  _actionTrades(r, budget) {
+    const specs = (App.editionModule && App.editionModule.actionExchange) || null;
+    if (!specs || !specs.length) return "";
+    const used = r.actionsUsed || {};
+    const dispo = (k) => {
+      const g = budget.find((b) => b.key === k);
+      return (g ? g.total : 0) - (used[k] || 0);
+    };
+    const btns = specs
+      .filter((e) => dispo(e.from.key) >= e.from.n)
+      .map(
+        (e) =>
+          `<button class="btn-icon-tiny action-trade" data-action="trade-action" data-key="${e.key}" data-id="${r.pnjId}" title="${Utils.escHtml(e.label)} (p.42)">${Utils.escHtml(e.label)}</button>`,
+      )
+      .join("");
+    const annuler = r.actionsTraded
+      ? `<button class="btn-icon-tiny action-trade" data-action="reset-trades" data-id="${r.pnjId}" title="Annuler les échanges de ce tour (l'échange est à perte : on rend, on ne re-troque pas)" aria-label="Annuler les échanges">↺</button>`
+      : "";
+    if (!btns && !annuler) return "";
+    return `<span class="action-trades">${btns}${annuler}</span>`;
   },
 
   /** Note de scène éditable sous la fiche active : même champ que

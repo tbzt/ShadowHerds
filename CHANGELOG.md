@@ -12,6 +12,21 @@ commit.
 
 ## [Non publié]
 
+## [1.125.0] — 2026-07-27
+
+### Ajouté
+
+- **SR6 : les actions majeures et mineures s'échangent** (p.42). La rangée de
+  jetons portait le compte mais pas la monnaie — deux rangées étanches, alors
+  que le livre les fait converser. Deux boutons prolongent la rangée :
+  **1 majeure → 1 mineure** et **4 mineures → 1 majeure**, ce dernier étant le
+  seul moyen d'attaquer deux fois dans un tour. Seuls les échanges **payables
+  avec ce qui reste** sont proposés.
+- **L'échange est à perte, et l'app le reconnaît** : descendre puis remonter
+  coûte 3 mineures, comme dans le livre. Un ↺ **rend** les jetons échangés du
+  tour plutôt que de proposer un aller-retour qui les mangerait — et il refuse
+  si des actions déjà consommées en dépendent.
+
 ## [1.124.0] — 2026-07-27
 
 ### Ajouté

@@ -366,6 +366,29 @@ export const EditionSR6 = {
       },
     ];
   },
+  /** ÉCHANGE D'ACTIONS (lot E5) — SR6 p.42, verbatim :
+
+        « Les joueurs peuvent échanger des actions mineures et des actions
+        majeures, en utilisant UNE ACTION MAJEURE pour effectuer UNE ACTION
+        MINEURE ou en utilisant 4 ACTIONS MINEURES pour effectuer 1 ACTION
+        MAJEURE (pouvant permettre d'effectuer une seconde attaque au cours du
+        même tour d'un joueur). »
+
+      Le budget de jetons portait le COMPTE mais pas la MONNAIE : deux rangées
+      étanches, alors que le livre les fait converser. La parenthèse du livre
+      dit pourquoi ça compte — c'est le seul moyen d'attaquer deux fois dans
+      un tour, et l'app le rendait impossible.
+
+      ⚠ L'échange est ASYMÉTRIQUE et donc À PERTE : descendre puis remonter
+      coûte 3 mineures. Ce n'est pas un défaut de modélisation, c'est la règle ;
+      d'où un geste d'annulation qui rend les jetons échangés plutôt qu'un
+      aller-retour qui en mangerait.
+
+      Le tracker lit ce contrat à l'aveugle, comme `actionBudget`. */
+  actionExchange: [
+    { key: "downgrade", label: "1 majeure → 1 mineure", from: { key: "major", n: 1 }, to: { key: "minor", n: 1 } },
+    { key: "upgrade", label: "4 mineures → 1 majeure", from: { key: "minor", n: 4 }, to: { key: "major", n: 1 } },
+  ],
   /** ÉTATS DE COMBAT (lot E1) — le catalogue, lu par `Statuses` via ce contrat
       neutre. SR6 est la seule édition à avoir un vrai système d'états : une
       table, pas de la prose.
