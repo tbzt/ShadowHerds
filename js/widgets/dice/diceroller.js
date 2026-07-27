@@ -970,6 +970,15 @@ export const DiceRoller = {
     const fromReserve = spec.reserve === "threat";
     const budget = fromReserve ? this.threatValue() : Actor.attr(pnj, spec.costAttr);
     if (budget == null) return [];
+    // E3 — VERROU D'ÉTAT : un état peut interdire la dépense (SR6 Désorienté,
+    // p.55-58 : « ni gain ni dépense d'Atout »). Aucune option n'est alors
+    // proposée — le panneau ne s'ouvre plus, la pastille de carte disparaît
+    // (elle ne se dessine que si une option est abordable) et le tap redevient
+    // un lancer immédiat. N'entrent ici que les interdictions INCONDITIONNELLES
+    // du livre : celles qui dépendent de l'action tentée (Déséquilibré,
+    // Couvert) restent affichées sur leur puce, parce que le panneau ne sait
+    // pas quelle action va suivre et que deviner serait décider à la place du MJ.
+    if (!Statuses.edgeLock(pnj).spend) return [];
     return (spec.options || []).map((o) => {
       const dice = o.dice === "rating" ? Actor.attr(pnj, spec.costAttr) || 0 : o.dice || 0;
       // Une option « dé d'imprévu » (wild) n'a pas de dés d'Edge : son

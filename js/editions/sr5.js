@@ -23,6 +23,7 @@ import { Resonance } from "../rules/resonance.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
 import { Spirits } from "../catalogs/spirits.js";
 import { Sprites } from "../catalogs/sprites.js";
+import { Statuses } from "../rules/statuses.js";
 import { Utils } from "../core/utils.js";
 import { WeaponRoll } from "../rules/weaponroll.js";
 
@@ -305,8 +306,14 @@ export const EditionSR5 = {
       // Le seul état SR5 dont TOUS les leviers existent déjà dans l'app — et
       // le seul dont le livre écrit la durée : « jusqu'au début de la prochaine
       // passe d'initiative » → until:"pass", que le tracker sait déjà compter.
+      // AUTO-APPLIQUÉ (E3) : le −10 entre dans `_rollInit`, là où le malus de
+      // blessure entre déjà — et surtout PAS dans `adjustInit`, sinon SR5
+      // relance l'initiative au round suivant et efface le malus alors que
+      // l'état est toujours posé. Le reste (pas de défense, interdiction
+      // d'agir contre les non-surpris) reste du texte : ce sont des
+      // arbitrages, pas des soustractions.
       { key: "surpris", name: "Surpris", levels: 0, quick: true, page: "p.193-194",
-        until: "pass",
+        until: "pass", initMalus: 10,
         lines: [
           "−10 au score d'initiative",
           "Aucun test de défense possible",
@@ -537,6 +544,20 @@ export const EditionSR5 = {
       le mapping −2/effet est la règle SR5. */
   sustainMalus(pnj) {
     return Utils.sustainedCount(pnj) * 2;
+  },
+  /** Malus de dés dû aux ÉTATS posés (lot E3) — miroir de `sustainMalus`.
+      Vaut 0 en pratique aujourd'hui : AUCUN des 7 modificateurs de situation
+      SR5 retenus n'est global (« Visibilité réduite » frappe la vue et le tir,
+      pas tous les tests ; « En course » les seules attaques à distance). Le
+      contrat est là quand même, pour que l'édition réponde comme les autres et
+      qu'un état global ajouté un jour s'applique sans toucher au moteur. */
+  statusMalus(pnj) {
+    return Statuses.globalDiceMalus(pnj);
+  },
+  /** Malus d'initiative dû aux états — lu par `_rollInit`. En SR5 c'est le
+      −10 de Surpris (p.193-194). */
+  statusInitMalus(pnj) {
+    return Statuses.initMalus(pnj);
   },
   /** Malus de dés lié aux cases de moniteur remplies : −1D par tranche de
       `woundMod` cases (physique + étourdissement cumulés), réglable en

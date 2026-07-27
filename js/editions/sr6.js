@@ -31,6 +31,7 @@ import { Metavariants } from "../rules/metavariants.js";
 import { Resonance } from "../rules/resonance.js";
 import { Spirits } from "../catalogs/spirits.js";
 import { Sprites } from "../catalogs/sprites.js";
+import { Statuses } from "../rules/statuses.js";
 import { Utils } from "../core/utils.js";
 import { WeaponRoll } from "../rules/weaponroll.js";
 
@@ -410,7 +411,10 @@ export const EditionSR6 = {
         "(I, II) −3 dés / niveau aux tests liés à la vision",
         "(III) échec automatique des tests liés à la vision",
       ] },
-      { key: "confus", name: "Confus", levels: null, quick: true, page: "p.55-58", lines: [
+      // AUTO-APPLIQUÉ (E3) : le seul état à niveau libre qui dise « toutes les
+      // actions » sans réserve → il entre dans Utils.dicePenalty.
+      { key: "confus", name: "Confus", levels: null, quick: true, page: "p.55-58",
+        globalDice: { perLevel: 1 }, lines: [
         "−(niveau) dés à TOUTES les actions",
       ] },
       { key: "corrode", name: "Corrodé", levels: null, page: "p.55-58", lines: [
@@ -424,14 +428,20 @@ export const EditionSR6 = {
         "−2 dés pour attaquer au niveau IV",
         "Impossible de gagner de l'Atout en attaquant",
       ] },
-      { key: "desoriente", name: "Désorienté", levels: 0, quick: true, page: "p.55-58", lines: [
+      // AUTO-APPLIQUÉ (E3) : les deux effets sont inconditionnels et ont chacun
+      // une valeur à corriger dans l'app (le score d'init, le panneau pré-jet).
+      { key: "desoriente", name: "Désorienté", levels: 0, quick: true, page: "p.55-58",
+        initMalus: 4, edge: { spend: false, gain: false }, lines: [
         "−4 au score d'initiative",
         "Ni gain ni dépense d'Atout (Cramer reste possible)",
       ] },
       { key: "effraye", name: "Effrayé", levels: 0, page: "p.55-58", lines: [
         "−4 dés aux tests contre la source de l'état ou pour y résister",
       ] },
-      { key: "electrocute", name: "Électrocuté", levels: 0, page: "p.55-58", lines: [
+      // AUTO-APPLIQUÉ (E3) pour ses deux premiers effets ; « sprinter
+      // impossible » reste du texte (l'app n'a pas de déplacement).
+      { key: "electrocute", name: "Électrocuté", levels: 0, page: "p.55-58",
+        globalDice: { flat: 1 }, initMalus: 2, lines: [
         "−2 au score d'initiative",
         "−1 dé à toutes les actions",
         "Sprinter impossible",
@@ -449,7 +459,14 @@ export const EditionSR6 = {
       { key: "entrave", name: "Entravé", levels: 0, page: "p.55-58", lines: [
         "Vitesse de déplacement à pied divisée par 2 (arrondi au supérieur)",
       ] },
-      { key: "fatigue", name: "Fatigué", levels: 3, page: "p.55-58", lines: [
+      // AUTO-APPLIQUÉ (E3). `exceptSoak` est DOCUMENTAIRE et porteur : la
+      // réserve d'encaissement n'a jamais soustrait dicePenalty (elle affiche
+      // pnj.damageResist brut, cf. cardrenderer.sr5/sr6 et encounterrenderer),
+      // donc l'exception du livre est honorée par construction. Le champ est là
+      // pour que personne ne « corrige » un jour cette omission sans voir que
+      // deux états en dépendent.
+      { key: "fatigue", name: "Fatigué", levels: 3, page: "p.55-58",
+        globalDice: { perLevel: 2, exceptSoak: true }, lines: [
         "−2 dés / niveau à tous les jets SAUF résistance aux dommages",
         "Vitesse : 5 m (marche), 10 m (sprint)",
       ] },
@@ -459,7 +476,9 @@ export const EditionSR6 = {
         "Dommages continus et effets persistants SUSPENDUS",
         "Actions permises : Perception, communication mentale, résistance aux dommages",
       ] },
+      // AUTO-APPLIQUÉ (E3) — même exception d'encaissement que Fatigué.
       { key: "frigorifie", name: "Frigorifié", levels: 0, page: "p.55-58",
+        globalDice: { flat: 1, exceptSoak: true }, initMalus: 4,
         cancels: ["enflamme"], cancelledBy: ["enflamme"], lines: [
         "−4 au score d'initiative",
         "−1 dé à tous les jets SAUF résistance aux dommages",
@@ -736,6 +755,18 @@ export const EditionSR6 = {
       à SR6. */
   sustainMalus(pnj) {
     return Utils.sustainedCount(pnj) * 2;
+  },
+  /** Malus de dés dû aux ÉTATS posés (lot E3) — miroir exact de `sustainMalus`
+      : le contrat déclare que l'édition a la mécanique, le comptage neutre vit
+      dans `Statuses.globalDiceMalus`. Seuls les états marqués `globalDice`
+      comptent, c'est-à-dire ceux que le livre écrit « à toutes les actions » :
+      Confus, Électrocuté, Fatigué, Frigorifié. Quatre sur vingt-huit. */
+  statusMalus(pnj) {
+    return Statuses.globalDiceMalus(pnj);
+  },
+  /** Malus d'initiative dû aux états posés — lu par `_rollInit`. */
+  statusInitMalus(pnj) {
+    return Statuses.initMalus(pnj);
   },
   /** Malus de dés lié aux cases de moniteur remplies : −1D par tranche de
       3 cases. Modèle par défaut = moniteur d'état unique (8 + CON/2), mais

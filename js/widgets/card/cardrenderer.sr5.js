@@ -131,6 +131,7 @@ Object.assign(CardRenderer, {
       </div>
       ${this._monitorMalusBadge(wound5)}
       ${this._sustainBadge(pnj, "sr5")}
+      ${this._statusMalusBadge(pnj, "sr5", deps)}
     </div>`;
 
     combatBody += this._weaponBlock(pnj, weapons, "sr5", deps);

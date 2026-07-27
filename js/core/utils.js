@@ -139,13 +139,41 @@ export const Utils = {
     return editionModule && editionModule.sustainMalus ? editionModule.sustainMalus(pnj) : 0;
   },
 
-  /** Malus de dés SITUATIONNEL TOTAL d'un acteur = blessure + effets maintenus.
-      Ces deux pénalités frappent TOUS les tests du PNJ, elles se cumulent, et
-      chaque site de jet doit retrancher la même chose : c'est ce point unique.
+  /** Malus de dés dû aux ÉTATS posés (lot E3) — délégué au module d'édition
+      (`statusMalus`), exactement comme `sustainMalus`. Seuls comptent les
+      états que le livre écrit « à toutes les actions » : quatre sur les
+      vingt-huit de SR6 (Confus, Électrocuté, Fatigué, Frigorifié), aucun des
+      sept de SR5, aucun en Anarchy (qui passe par l'avantage/désavantage).
+      Les états à portée restreinte — « Aveuglé −3 aux tests liés à la vision »
+      — ne passent PAS par ici : l'app ne tague pas ses compétences par sens,
+      un −3 global serait faux sur la plupart des jets. Ils restent affichés et
+      sourcés sur leur puce, comme les modificateurs d'ActorEffects.
+      0 si l'édition n'expose pas la mécanique. */
+  statusMalus(pnj, edition) {
+    if (!pnj || !this._resolveEditionModule) return 0;
+    const editionModule = this._resolveEditionModule(edition);
+    return editionModule && editionModule.statusMalus ? editionModule.statusMalus(pnj) : 0;
+  },
+
+  /** Malus de dés SITUATIONNEL TOTAL d'un acteur = blessure + effets maintenus
+      + états posés. Ces pénalités frappent TOUS les tests du PNJ, elles se
+      cumulent, et chaque site de jet doit retrancher la même chose : c'est ce
+      point unique.
       ⚠ Le badge de blessure, lui, lit `woundMalus` SEUL — il nomme sa source ;
-      un badge de maintien distinct nomme la sienne. */
+      les badges de maintien et d'états nomment les leurs.
+      ⚠ L'ENCAISSEMENT ne passe PAS par ici : les trois surfaces affichent
+      `pnj.damageResist` brut (cardrenderer.sr5:114, .sr6:98,
+      encounterrenderer:1379). C'était un choix (l'armure est un score séparé,
+      non affectée par la blessure) ; depuis E3 c'est aussi ce qui honore
+      l'exception « sauf résistance aux dommages » de Fatigué et Frigorifié
+      (SR6 p.55-58, marquée `exceptSoak` dans le catalogue). Cette omission est
+      devenue PORTEUSE : ne pas la « corriger » sans traiter ces deux états. */
   dicePenalty(pnj, edition) {
-    return this.woundMalus(pnj, edition) + this.sustainMalus(pnj, edition);
+    return (
+      this.woundMalus(pnj, edition) +
+      this.sustainMalus(pnj, edition) +
+      this.statusMalus(pnj, edition)
+    );
   },
 
   /** Nombre d'effets (sorts + formes complexes) actuellement MAINTENUS par un

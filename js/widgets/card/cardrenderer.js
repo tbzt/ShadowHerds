@@ -913,7 +913,11 @@ export const CardRenderer = {
     let html = "";
     // R1 — état maintenu (⟳ ×N · −ND) + drogues actives, réémis même sans la
     // fiche complète (ils vivaient dans le bloc moniteur / la zone Combat).
-    const state = this._sustainBadge(pnj, ed) + this._statusRow(pnj, ed, deps) + this._drugRow(pnj, ed, deps);
+    const state =
+      this._sustainBadge(pnj, ed) +
+      this._statusMalusBadge(pnj, ed, deps) +
+      this._statusRow(pnj, ed, deps) +
+      this._drugRow(pnj, ed, deps);
     if (state) html += `<div class="offense-state">${state}</div>`;
     // ② Armes
     html += this._weaponBlock(pnj, weapons, ed, deps);
@@ -1647,6 +1651,23 @@ export const CardRenderer = {
     const malus = Utils.sustainMalus(pnj, edition);
     if (!malus) return "";
     return `<div class="sustain-malus" title="${n} effet(s) maintenu(s) — −${malus} dés à tous les tests (déjà appliqué aux réserves)">⟳ ×${n} · −${malus}D</div>`;
+  },
+
+  /** Badge de malus d'ÉTATS (lot E3) — jumeau des badges de blessure et de
+      maintien : le chiffre ne doit jamais baisser sans nom. C'est le
+      « traçage au point de consommation » qui rend l'auto-application
+      acceptable — l'app compte, mais elle dit toujours d'où vient le compte.
+      UN SEUL badge chiffré, jamais un par état (les états, eux, se lisent par
+      leur nom sur leur puce) ; le détail des sources vit dans le title.
+      Vide si aucun état posé n'a d'effet GLOBAL : les 24 états SR6 à portée
+      restreinte ne baissent aucune réserve, donc ils n'ont rien à expliquer. */
+  _statusMalusBadge(pnj, edition, deps = CardRenderer.liveDeps()) {
+    const malus = Utils.statusMalus(pnj, edition);
+    if (!malus || !deps.Statuses) return "";
+    const src = deps.Statuses.globalDiceSources(pnj)
+      .map((s) => `${s.name}${s.level > 1 ? ` ${s.level}` : ""} −${s.malus}`)
+      .join(" · ");
+    return `<div class="sustain-malus status-malus" title="${this._esc(src)} — −${malus} dés à tous les tests (déjà appliqué aux réserves ; l'encaissement en est exempt)">⊘ −${malus}D</div>`;
   },
 
   /**

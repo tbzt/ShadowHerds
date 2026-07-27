@@ -541,8 +541,15 @@ export const Encounter = {
     // d'initiative (SR5 p.171, SR6 — initiative modifiée par tout ce qui
     // affecte l'initiative physique) — réutilise le calcul déjà générique
     // Utils.woundMalus, aucune règle nouvelle à écrire ici.
+    // E3 — le malus d'initiative des ÉTATS entre ICI, au même endroit que
+    // celui de blessure, et pas dans adjustInit : SR5 relance l'initiative à
+    // chaque tour de combat, un −10 de Surpris appliqué au score aurait été
+    // effacé au round suivant alors que l'état est toujours posé. Ici il se
+    // réapplique tant que l'état est là, et disparaît dès qu'il est retiré.
     const malus = Utils.woundMalus(pnj, pnj.edition);
-    DiceRoller.rollInitiative(spec.base - malus, spec.dice, pnjId, "", { silent });
+    const mod = App.getEditionModule(pnj.edition);
+    const etats = mod && mod.statusInitMalus ? mod.statusInitMalus(pnj) : 0;
+    DiceRoller.rollInitiative(spec.base - malus - etats, spec.dice, pnjId, "", { silent });
     c.init = pnj.lastInit ? pnj.lastInit.total : c.init;
     return true;
   },

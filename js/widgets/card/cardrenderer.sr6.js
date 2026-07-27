@@ -120,6 +120,7 @@ Object.assign(CardRenderer, {
         </div>
         ${this._monitorMalusBadge(wound6)}
         ${this._sustainBadge(pnj, "sr6")}
+        ${this._statusMalusBadge(pnj, "sr6", deps)}
       </div>`;
     } else {
       const monTotal = me ?? 9;
@@ -130,6 +131,7 @@ Object.assign(CardRenderer, {
         </div>
         ${this._monitorMalusBadge(wound6)}
         ${this._sustainBadge(pnj, "sr6")}
+        ${this._statusMalusBadge(pnj, "sr6", deps)}
       </div>`;
     }
 

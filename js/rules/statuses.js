@@ -141,6 +141,81 @@ export const Statuses = {
     return this.set(pnj, key, cur >= haut ? 0 : cur + 1);
   },
 
+  /* ============================================================
+     AUTO-APPLICATION (lot E3) — trois lectures, et trois seulement.
+
+     Règle permanente du chantier : **l'app ne pose jamais un état d'elle-même**
+     (R4 « pas d'automatisation complète du combat » + garde-fou (e) « informer,
+     jamais décider »). Une fois l'état posé PAR LE MJ, elle peut en tirer une
+     arithmétique **pure, réversible et tracée au point de consommation**.
+
+     Ne passent donc en automatique que les effets qui ont DÉJÀ une valeur à
+     corriger dans l'app, et que le livre écrit comme non conditionnels :
+       · `globalDice` — le malus de dés, mais UNIQUEMENT pour les états qui
+         disent « à toutes les actions ». Sur les 28 états SR6, ils sont
+         QUATRE. « Aveuglé −3 aux tests liés à la vision » n'en est pas : l'app
+         ne tague pas ses compétences par sens, un −3 global serait faux sur la
+         plupart des jets. Ces états-là restent affichés et sourcés.
+       · `initMalus` — le score d'initiative, que le tracker calcule déjà.
+       · `edge` — l'accès à la ressource pré-jet, que le panneau sait fermer.
+     Tout le reste (déplacement, SO/SD, coûts d'action, seuils de Perception,
+     interdictions d'agir) reste du texte : griser un bouton retirerait au MJ
+     un arbitrage que le livre lui rend explicitement.
+     ============================================================ */
+
+  /** Malus de dés GLOBAL cumulé, en magnitude positive (à soustraire), comme
+      `woundMalus` et `sustainMalus`. `flat` = valeur fixe, `perLevel` = valeur
+      × niveau (Confus « −(niveau) dés à toutes les actions »). */
+  globalDiceMalus(pnj) {
+    let n = 0;
+    for (const s of this.active(pnj)) {
+      const g = s.globalDice;
+      if (!g) continue;
+      n += (g.flat || 0) + (g.perLevel || 0) * s.level;
+    }
+    return n;
+  },
+
+  /** Malus d'initiative cumulé, en magnitude positive. Lu par `_rollInit` au
+      moment où le score se calcule — et surtout PAS par `adjustInit`, qui est
+      le stepper ±1 à la main : un malus posé là serait effacé au relancement
+      d'initiative du round suivant, alors que l'état, lui, est toujours posé. */
+  initMalus(pnj) {
+    let n = 0;
+    for (const s of this.active(pnj)) n += s.initMalus || 0;
+    return n;
+  },
+
+  /** Verrou de ressource pré-jet : { spend, gain } — `false` = interdit.
+      N'entrent ici que les interdictions INCONDITIONNELLES du livre. SR6
+      Désorienté (« ni gain ni dépense d'Atout ») en est une ; Déséquilibré
+      (« pas de dépense pour une action liée à un attribut physique ou un test
+      de défense ») et Couvert (« impossible de gagner de l'Atout EN
+      ATTAQUANT ») n'en sont pas — le panneau ne sait pas quelle action va être
+      tentée, et deviner à la place du MJ serait décider. Ceux-là restent
+      affichés sur leur puce. */
+  edgeLock(pnj) {
+    const out = { spend: true, gain: true };
+    for (const s of this.active(pnj)) {
+      if (!s.edge) continue;
+      if (s.edge.spend === false) out.spend = false;
+      if (s.edge.gain === false) out.gain = false;
+    }
+    return out;
+  },
+
+  /** Les états qui EXPLIQUENT le malus global courant, pour que le chiffre ne
+      baisse jamais sans nom — « tracé au point de consommation ». */
+  globalDiceSources(pnj) {
+    return this.active(pnj)
+      .filter((s) => s.globalDice)
+      .map((s) => ({
+        name: s.name,
+        level: s.level,
+        malus: (s.globalDice.flat || 0) + (s.globalDice.perLevel || 0) * s.level,
+      }));
+  },
+
   /** Contribution d'AVANTAGE de l'acteur — Anarchy uniquement (lot E2).
       Anarchy 2 p.65 : un avantage fait des 4-5-6 des succès, un désavantage
       ne garde que les 6. Et surtout : « Les avantages et désavantages se

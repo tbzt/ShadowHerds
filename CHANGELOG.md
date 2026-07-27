@@ -12,6 +12,26 @@ commit.
 
 ## [Non publié]
 
+## [1.122.0] — 2026-07-27
+
+### Ajouté
+
+- **Quatre états SR6 baissent désormais vraiment les réserves, et disent
+  pourquoi.** Confus, Électrocuté, Fatigué et Frigorifié — les seuls que le
+  livre écrit « à toutes les actions » — entrent dans le calcul de toutes les
+  réserves affichées, avec un badge **⊘ −ND** qui nomme ses sources : le
+  chiffre ne baisse jamais sans qu'on sache d'où ça vient. Les vingt-quatre
+  autres restent affichés et sourcés : « Aveuglé −3 aux tests liés à la
+  vision » ne peut pas devenir un −3 global sans être faux la plupart du temps.
+  L'**encaissement** reste exempt, comme l'écrit le livre pour Fatigué et
+  Frigorifié.
+- **L'initiative et l'Atout suivent.** Désorienté retire ses 4 points
+  d'initiative et **verrouille le panneau d'Atout** (« ni gain ni dépense »,
+  p.55-58) : la pastille disparaît, le tap redevient un lancer immédiat. En
+  SR5, **Surpris** retire ses 10 points (p.193-194) — et il se réapplique à
+  chaque relance d'initiative tant que l'état est posé, au lieu d'être effacé
+  au tour suivant.
+
 ## [1.121.0] — 2026-07-27
 
 ### Ajouté

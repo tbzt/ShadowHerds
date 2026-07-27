@@ -643,6 +643,11 @@ export const TourSteps = {
       title: "Les états arrivent aussi en Anarchy",
       body: "Anarchy 1 reçoit ce que le moniteur ne disait pas : Assommé, Mourant (l'app vous rappelle le test de fin de Tour, elle ne le résout pas), les séquelles des options de récupération, et les conditions durables Acide et En feu. « Sonné » n'y figure pas — vos cases le disent déjà. Anarchy 2 reçoit Avantage, Désavantage et Drain magique : posez un désavantage sur un PNJ et il part dans le jet, avec la règle du livre (avantage et désavantage se cumulent sans jamais dépasser un cran). Les durées se comptent ici en Narrations.",
     },
+    {
+      id: "wn-etats-appliques", anchor: "nav-combat", tours: ["whatsnew"], since: "1.122.0", fallback: "center",
+      title: "Les états qui comptent baissent vraiment les réserves",
+      body: "Quatre états SR6 — Confus, Électrocuté, Fatigué, Frigorifié, les seuls que le livre écrit « à toutes les actions » — entrent maintenant dans toutes les réserves affichées, avec un badge ⊘ −ND qui nomme ses sources : le chiffre ne baisse jamais sans qu'on sache pourquoi. L'encaissement reste exempt, comme l'écrit le livre. Désorienté retire ses 4 points d'initiative et verrouille le panneau d'Atout (« ni gain ni dépense ») ; en SR5, Surpris retire ses 10 points et se réapplique à chaque relance d'initiative tant qu'il est posé. Les vingt-quatre autres états restent affichés et sourcés — « Aveuglé −3 aux tests liés à la vision » ne peut pas devenir un −3 global sans être faux la plupart du temps.",
+    },
   ],
 };
 
