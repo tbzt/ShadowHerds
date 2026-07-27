@@ -334,7 +334,7 @@
 .encounter-controls {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: var(--sp-1);
   position: relative; /* ancre le popover .card-menu du ⋯ (K10) */
 }
 /* K10 : chips inline des verbes fréquents du tour (✓/↩ ⚄ ⏸/▶) — contour +
@@ -1064,7 +1064,7 @@
 .encounter-candidates {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--sp-1);
   max-height: 40vh;
   overflow-y: auto;
 }
@@ -1141,7 +1141,7 @@
 .encounter-active-badges {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--sp-1);
   padding: 0.5rem 0.6rem 0;
 }
 .encounter-active-note {
@@ -1174,7 +1174,7 @@
 .encounter-devices {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--sp-1);
   padding: 0.5rem 0.6rem 0;
 }
 .encounter-devices-lbl {
@@ -1256,7 +1256,7 @@
 .encounter-ndevice-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: var(--sp-1);
 }
 .encounter-ndevice-chips .react-btn.is-off {
   text-decoration: line-through;
@@ -1577,7 +1577,7 @@
 .action-group {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: var(--sp-1);
 }
 .action-group-lbl {
   font-family: var(--font-mono);
@@ -1758,7 +1758,7 @@
 }
 .react-buttons {
   display: flex;
-  gap: 0.3rem;
+  gap: var(--sp-1);
   flex: none;
 }
 .react-btn {
@@ -1807,7 +1807,7 @@
 .encounter-ic-rolls {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: var(--sp-1);
   margin-top: var(--sp-2);
 }
 .encounter-ic-rolls .react-btn {
@@ -1853,7 +1853,7 @@
 .react-damage-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: var(--sp-1);
   margin: 0.2rem 0 0.1rem;
   padding: 0.4rem;
   border: 1px dashed color-mix(in srgb, var(--danger) 45%, var(--border));

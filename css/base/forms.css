@@ -89,7 +89,7 @@
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--sp-1);
 }
 .form-group label {
   font-family: var(--font-mono);
@@ -178,7 +178,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.3rem;
+  gap: var(--sp-1);
   flex: 1;
   min-width: 0;
 }
@@ -211,7 +211,7 @@
 .ms-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: var(--sp-1);
   background: var(--glow);
   border: 1px solid var(--accent);
   color: var(--text);

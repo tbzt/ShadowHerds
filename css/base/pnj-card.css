@@ -1301,7 +1301,7 @@
   display: flex;
   align-items: center;
   padding: 0 var(--sp-1);
-  gap: 0.3rem;
+  gap: var(--sp-1);
   flex: 1;
 }
 
@@ -1486,7 +1486,7 @@
 .deck-loadout-opt {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: var(--sp-1);
   font-size: var(--fs-xs);
   cursor: pointer;
 }

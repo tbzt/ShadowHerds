@@ -1976,7 +1976,7 @@ body.reordering .reorder-handle {
 .pin-row-chips {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: var(--sp-1);
   overflow-x: auto;
   scrollbar-width: thin;
 }
@@ -2560,7 +2560,7 @@ body.reordering .reorder-handle {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--sp-1);
 }
 .debrief-beat {
   display: flex;
