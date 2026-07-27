@@ -1272,7 +1272,7 @@
 .encounter-device-protect {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--sp-1);
   font-size: var(--fs-2xs);
 }
 .encounter-device-protector-select {

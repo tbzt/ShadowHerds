@@ -396,7 +396,7 @@
 .dice-drain-tray {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--sp-1);
   justify-content: center;
 }
 .die.mini {

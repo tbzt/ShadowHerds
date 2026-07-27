@@ -558,7 +558,7 @@
 .play-fighter {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
   min-width: 0;
 }
 .play-fighter-name {
@@ -654,7 +654,7 @@
 .pch-camp { display: block; font-family: var(--font-mono, monospace); font-size: 10px; letter-spacing: 0.04em; color: var(--faint, var(--text-dim)); margin-top: 1px; }
 .pch-tools { display: inline-flex; gap: 5px; margin-top: 7px; justify-content: flex-end; flex-wrap: wrap; }
 /* cellules d'horloge (gros chiffres) */
-.pch-cells { display: flex; gap: 8px; margin-top: 13px; }
+.pch-cells { display: flex; gap: var(--sp-2); margin-top: 13px; }
 .pch-cell { min-width: 62px; text-align: center; padding: 7px 13px; border-radius: var(--radius); background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border); }
 .pch-cell .n { display: block; font-family: var(--font-mono, monospace); font-size: 22px; line-height: 1; color: var(--state); font-variant-numeric: tabular-nums; }
 .play-command:not(.is-combat):not(.is-matrix):not(.is-close) .pch-cell .n { color: var(--text); }
@@ -671,7 +671,7 @@
 .play-command.is-prep .play-jalon.is-now { color: var(--text); }
 
 /* fil PARCOURU : glyphes teintés par TYPE de scène */
-.play-trame-trail { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-display, inherit); font-weight: 600; font-size: 15px; flex: 0 0 auto; }
+.play-trame-trail { display: inline-flex; align-items: center; gap: var(--sp-1); font-family: var(--font-display, inherit); font-weight: 600; font-size: 15px; flex: 0 0 auto; }
 .play-trail-g { line-height: 1; }
 .play-trail-sep { color: var(--faint, var(--text-dim)); font-size: 11px; }
 /* barre de trame (à chaud) teintée par le type de l'étape courante */
@@ -724,7 +724,7 @@
 .play-trame-actions {
   margin-left: auto;
   display: flex;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 .play-trame-body {
   display: flex;
@@ -778,7 +778,7 @@
 .play-trame-cast {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--sp-1);
   margin-bottom: var(--sp-2);
 }
 .play-trame-cast-chip {
@@ -863,7 +863,7 @@
 }
 .play-clock-btns {
   display: flex;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 .play-clock-btn {
   width: 30px;
@@ -886,7 +886,7 @@
 .play-trame-fronts {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--sp-2);
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--border);
@@ -914,7 +914,7 @@
 .play-danger-head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 .play-danger-impulse {
   flex: 1;
@@ -963,12 +963,12 @@
 .play-clues {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 .play-clue {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 .play-clue-check {
   flex: 0 0 auto;
@@ -1054,7 +1054,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--sp-2);
   margin: 4px 0 2px;
 }
 .play-trame-trail {
@@ -1531,7 +1531,7 @@
   margin-top: var(--sp-2);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 .play-mx-row {
   display: flex;
@@ -2507,7 +2507,7 @@ body.reordering .reorder-handle {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: var(--sp-3);
 }
 .debrief-row-label {
   color: var(--text);

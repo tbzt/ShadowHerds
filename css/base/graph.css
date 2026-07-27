@@ -276,7 +276,7 @@
   text-overflow: ellipsis;
 }
 .gsc-sub-mark { color: var(--tint, var(--accent)); }
-.gsc-cast { display: flex; gap: 4px; margin-top: 6px; overflow: hidden; }
+.gsc-cast { display: flex; gap: var(--sp-1); margin-top: 6px; overflow: hidden; }
 .gsc-chip {
   flex: 0 0 auto;
   font-family: var(--font-mono, ui-monospace, monospace);
@@ -346,7 +346,7 @@
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 .graph-zoom-btn {
   width: 30px;
@@ -473,7 +473,7 @@
 .graph-edge-inspector {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--sp-3);
 }
 .graph-edge-ends {
   font-weight: 600;
@@ -534,7 +534,7 @@
 .graph-edge-check {
   flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
   font-size: 0.85rem;
   color: var(--text, #dfe8f0);
   cursor: pointer;
@@ -722,7 +722,7 @@
 .scenario-cast-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-1);
   padding: 1px 4px 1px 8px;
   border-radius: 10px;
   background: color-mix(in srgb, var(--accent, #35e0e6) 12%, transparent);
@@ -858,19 +858,19 @@
   padding: 8px;
   margin-bottom: 8px;
 }
-.scenario-clock-head { display: flex; gap: 8px; align-items: flex-start; }
-.scenario-clock-fields { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.scenario-clock-head { display: flex; gap: var(--sp-2); align-items: flex-start; }
+.scenario-clock-fields { flex: 1; display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
 .scenario-clock-title { width: 100%; }
 .scenario-clock-meta { display: flex; gap: 6px; align-items: center; }
-.scenario-clock-seg { display: flex; gap: 4px; align-items: center; font-size: 0.76rem; color: var(--text-dim, #9fb0c0); }
+.scenario-clock-seg { display: flex; gap: var(--sp-1); align-items: center; font-size: 0.76rem; color: var(--text-dim, #9fb0c0); }
 .scenario-clock-seg input { width: 46px; }
 .scenario-clock-del {
   border: none; background: none; cursor: pointer;
   color: var(--text-dim, #9fb0c0); font-size: 0.9rem; padding: 2px 4px;
 }
 .scenario-clock-del:hover { color: var(--danger, #d05050); }
-.scenario-clock-effects { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
-.scenario-effect { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; font-size: 0.78rem; }
+.scenario-clock-effects { margin-top: 6px; display: flex; flex-direction: column; gap: var(--sp-1); }
+.scenario-effect { display: flex; gap: var(--sp-1); align-items: center; flex-wrap: wrap; font-size: 0.78rem; }
 .scenario-effect-at { display: flex; gap: 3px; align-items: center; color: var(--text-dim, #9fb0c0); }
 .scenario-effect-at input { width: 44px; }
 .scenario-effect select { flex: 1; min-width: 96px; }
@@ -904,12 +904,12 @@
   border-radius: 4px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sp-1);
 }
-.scenario-danger-head { display: flex; gap: 4px; align-items: center; }
+.scenario-danger-head { display: flex; gap: var(--sp-1); align-items: center; }
 .scenario-danger-head input { flex: 1; min-width: 0; }
 .scenario-portents { display: flex; flex-direction: column; gap: 3px; }
-.scenario-portent { display: flex; gap: 4px; align-items: center; }
+.scenario-portent { display: flex; gap: var(--sp-1); align-items: center; }
 .scenario-portent-n { color: var(--text-dim, #9fb0c0); font-size: 0.76rem; }
 .scenario-portent input { flex: 1; min-width: 0; }
 .scenario-portent-add {
@@ -931,7 +931,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 .scenario-tl-fact {
   display: flex;
@@ -960,7 +960,7 @@
 }
 .scenario-tl-future-row {
   display: flex;
-  gap: 8px;
+  gap: var(--sp-2);
   align-items: center;
   padding: 3px 0;
   font-size: 0.82rem;

@@ -92,7 +92,7 @@
 .nudge-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: var(--sp-2);
 }
 .nudge-actions .btn-small {
   min-height: 32px; /* cible tactile ≥ 24px (loi 4) */

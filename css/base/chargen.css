@@ -7,7 +7,7 @@
 .cg-steps {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--sp-1);
   margin-bottom: var(--sp-3);
 }
 .cg-step-tab {
@@ -44,7 +44,7 @@
 }
 .cg-budget-row {
   display: flex;
-  gap: 12px;
+  gap: var(--sp-3);
   flex-wrap: wrap;
   align-items: center;
 }
@@ -82,7 +82,7 @@
 .cg-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 .cg-field label {
   font-size: var(--fs-xs);
@@ -101,7 +101,7 @@
 .cg-attr-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 .cg-attr-label {
   width: 3em;
@@ -114,13 +114,13 @@
 .cg-list-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
   padding: 4px 0;
   border-bottom: 1px solid var(--border);
 }
 .cg-add-row {
   display: flex;
-  gap: 8px;
+  gap: var(--sp-2);
   align-items: center;
   margin-top: 6px;
   flex-wrap: wrap;
@@ -136,13 +136,13 @@
 .cg-check-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 4px;
+  gap: var(--sp-1);
 }
 .cg-check {
   font-size: var(--fs-xs);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 .cg-narrative-grid {
   display: grid;
@@ -152,7 +152,7 @@
 .cg-review-errors {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sp-1);
   margin-bottom: var(--sp-3);
 }
 .cg-error {
@@ -256,7 +256,7 @@
 .cg-spec-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-1);
   padding: 1px 4px 1px 6px;
   font-size: var(--fs-xs);
   border: 1px solid var(--accent2);
@@ -282,12 +282,12 @@
 .cg-spec-add {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 .cg-resume-banner {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
   padding: 6px 10px;
   margin-bottom: var(--sp-3);
   border: 1px solid var(--accent2);
@@ -304,7 +304,7 @@
 .hub-save-reminder {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
   padding: 6px 10px;
   margin: 0 0 var(--sp-3);
   border: 1px solid var(--accent2);

@@ -760,7 +760,7 @@
 .pc-quotes {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 .pc-quote {
   font-style: italic;

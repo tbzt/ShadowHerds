@@ -760,7 +760,7 @@ select optgroup {
 .ctx-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-1);
   flex-shrink: 0;
   padding: 3px var(--sp-2);
   border: 1px solid var(--border);
@@ -861,7 +861,7 @@ select optgroup {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-1);
   color: var(--accent);
   font-size: var(--fs-2xs);
   text-transform: uppercase;
