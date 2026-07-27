@@ -789,10 +789,10 @@ select optgroup {
   max-height: 60vh;
   overflow-y: auto;
   padding: var(--sp-1);
-  background: var(--bg-card);
+  background: var(--bg-overlay);
   border: 1px solid var(--border);
   border-radius: 6px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--elev-2);
 }
 .ctx-item {
   display: flex;
@@ -900,11 +900,11 @@ select optgroup {
   right: var(--sp-4);
   z-index: var(--z-popover);
   max-width: min(320px, calc(100vw - 2 * var(--sp-4)));
-  background: var(--bg-card);
+  background: var(--bg-overlay);
   border: 1px solid var(--accent2);
   border-radius: 6px;
   padding: var(--sp-3);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--elev-2);
   font-size: var(--fs-xs);
   color: var(--text-dim);
 }

@@ -23,11 +23,11 @@
   width: min(420px, calc(100vw - 1.5rem));
   height: min(70vh, 560px);
   z-index: var(--z-popover);
-  background: var(--bg-card);
+  background: var(--bg-overlay);
   border: 1px solid var(--border);
   border-top: 2px solid var(--accent);
   border-radius: 4px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--elev-2);
   display: flex;
   flex-direction: column;
   opacity: 0;

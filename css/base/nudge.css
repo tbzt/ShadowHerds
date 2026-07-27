@@ -19,12 +19,12 @@
   position: fixed;
   width: min(340px, calc(100vw - 24px));
   pointer-events: auto;
-  background: var(--bg-card);
+  background: var(--bg-overlay);
   color: var(--text);
   border: 1px solid var(--border);
   border-left: 3px solid var(--info); /* teinte « astuce », universelle */
   border-radius: var(--radius-lg);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.38);
+  box-shadow: var(--elev-2);
   padding: 0.85rem 0.9rem 0.75rem;
   animation: nudge-in var(--dur-base) var(--ease-standard);
 }

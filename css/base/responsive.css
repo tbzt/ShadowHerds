@@ -324,7 +324,9 @@
     background: var(--accent);
     color: var(--bg);
     border: 3px solid var(--bg-card);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+    /* Pastille en permanence « soulevée » du gabarit — même registre que le
+       FAB dés : --elev-1 (survol), pas 0 ombre (repos). */
+    box-shadow: var(--elev-1);
     transition: transform var(--dur-fast) var(--ease-standard);
   }
   .bnav-btn--hero .bnav-icon .icon {
@@ -515,7 +517,9 @@
     color: var(--bg);
     font-size: var(--fs-xl);
     z-index: var(--z-fab);
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55);
+    /* FAB = objet en permanence « soulevé », pas un repos : --elev-1 (le
+       registre du survol) lui convient mieux que 0 ombre. */
+    box-shadow: var(--elev-1);
     transition: transform var(--dur-fast);
   }
   #dice-fab:active {

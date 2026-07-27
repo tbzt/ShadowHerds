@@ -738,10 +738,10 @@
 .encounter-row.dragging,
 .encounter-nrow.dragging {
   opacity: 0.97;
-  background: var(--bg-card);
+  background: var(--bg-raised);
   cursor: grabbing;
   transform: translateY(var(--drag-dy, 0)) rotate(var(--drag-tilt)) scale(var(--drag-lift));
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--elev-2);
   position: relative;
   z-index: var(--z-card);
   will-change: transform;

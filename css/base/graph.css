@@ -633,8 +633,10 @@
   padding: 4px;
   border: 1px solid var(--border, #2a3a49);
   border-radius: 8px;
+  /* --surface-1 n'est défini nulle part (fallback hex toujours actif) — dette
+     de graph.css, hors scope D2 : rapatriement complet du fichier = D9. */
   background: var(--surface-1, #0e1620);
-  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--elev-2);
 }
 .scenario-menu-item {
   text-align: left;

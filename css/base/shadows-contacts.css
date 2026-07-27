@@ -1850,7 +1850,7 @@ body.reordering .reorder-handle {
   opacity: 0.85;
   transform: scale(1.03);
   box-shadow:
-    0 12px 28px rgba(0, 0, 0, 0.45),
+    var(--elev-2),
     0 0 0 1px var(--accent);
   cursor: grabbing;
   transition:
@@ -1866,12 +1866,12 @@ body.reordering .reorder-handle {
   z-index: var(--z-hud);
   align-items: center;
   gap: var(--sp-3);
-  background: var(--bg-card);
+  background: var(--bg-overlay);
   border: 1px solid var(--border);
   border-top: 2px solid var(--accent);
   border-radius: 6px;
   padding: var(--sp-2) var(--sp-3);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--elev-2);
   /* width:max-content — sans elle, cette pilule flottante (fixed, sans largeur)
      rétrécit sous ses actions et casse prématurément en plusieurs lignes même
      sur grand écran (quirk shrink-to-fit + flex-wrap). Bornée à 94vw : au-delà,
@@ -1917,11 +1917,11 @@ body.reordering .reorder-handle {
   min-width: 160px;
   max-height: 220px;
   overflow-y: auto;
-  background: var(--bg-card);
+  background: var(--bg-overlay);
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: var(--sp-1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--elev-2);
 }
 .bulk-move-item {
   background: transparent;
@@ -2040,11 +2040,11 @@ body.reordering .reorder-handle {
   width: 240px;
   max-height: 320px;
   z-index: var(--z-popover);
-  background: var(--bg-card);
+  background: var(--bg-overlay);
   border: 1px solid var(--border);
   border-top: 2px solid var(--accent2);
   border-radius: 4px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--elev-2);
   display: flex;
   flex-direction: column;
   opacity: 0;
@@ -2307,11 +2307,11 @@ body.reordering .reorder-handle {
   min-width: 160px;
   max-height: 220px;
   overflow-y: auto;
-  background: var(--bg-card);
+  background: var(--bg-overlay);
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: var(--sp-1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--elev-2);
 }
 .contact-pjlink-item {
   display: flex;

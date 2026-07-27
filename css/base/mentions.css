@@ -43,11 +43,11 @@
   z-index: var(--z-command);
   max-height: 40vh;
   overflow-y: auto;
-  background: var(--bg-card);
+  background: var(--bg-overlay);
   border: 1px solid var(--border);
   border-top: 2px solid var(--accent);
   border-radius: 6px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--elev-2);
 }
 /* <641px : ancrée en bas de viewport (au-dessus du clavier virtuel quand
    VisualViewport est disponible, cf. Mentions._position). */
