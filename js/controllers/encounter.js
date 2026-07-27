@@ -420,12 +420,80 @@ export const Encounter = {
     const mod = pnj && App.getEditionModule(pnj.edition);
     const fd = mod && mod.fullDefenseFor ? mod.fullDefenseFor(pnj) : null;
     if (!fd) return;
+    // PORTE D'INITIATIVE (SR5 p.170, contrat `initGate`) : une action
+    // d'interruption n'est permise QUE si le score d'initiative dépasse
+    // STRICTEMENT son coût — à 10 pile, la Défense totale est refusée. On
+    // refuse donc au lieu de laisser adjustInit ramener le score à 0 (le
+    // clamp de adjustInit est juste pour le stepper ±1 à la main, il ne
+    // devait pas servir à appliquer une règle). Le score comparé est celui
+    // de la PASSE COURANTE, pas la base : c'est lui qui dit si le combattant
+    // a encore de quoi payer.
+    if (fd.initGate && fd.initCost > 0) {
+      const score = this._passInit(c);
+      if (score <= fd.initCost) {
+        toast(`${fd.label} impossible — ${pnj.name} n'a que ${score} en initiative (coût ${fd.initCost}).`);
+        return;
+      }
+    }
     c.fullDefenseRound = this.state.round;
+    // COÛT EN ACTION (SR6 p.45/48, contrat `actionCost`) : la Défense totale
+    // y est une action MAJEURE. La note du module le disait déjà, le budget ne
+    // le débitait pas. Miroir exact de SR5, qui la paie en initiative et pas
+    // en phase d'action (p.170 : les interruptions « ne coûtent pas leur phase
+    // d'action ») → actionCost null là-bas, aucun jeton touché.
+    const over = fd.actionCost ? this._consumeAction(c, fd.actionCost, pnj) : false;
     // initCost > 0 (SR5) : adjustInit re-commit (save + rendu). initCost 0
-    // (SR6) : pas de coût, mais persister le drapeau + re-rendre le +Volonté.
+    // (SR6) : pas de coût d'init, mais persister le drapeau + re-rendre le +Volonté.
     if (fd.initCost > 0) this.adjustInit(pnjId, -fd.initCost);
     else this._commit();
-    toast(`${fd.label} — ${pnj.name}${fd.initCost ? ` (−${fd.initCost} init)` : ""}`);
+    const cout = fd.initCost
+      ? ` (−${fd.initCost} init)`
+      : fd.actionCost
+        ? ` (${over ? "budget dépassé — " : ""}1 ${fd.actionCost.key === "major" ? "majeure" : fd.actionCost.key})`
+        : "";
+    toast(`${fd.label} — ${pnj.name}${cout}`);
+  },
+
+  /** Ce combattant est-il en Défense totale MAINTENANT ? Lecture neutre et
+      sans effet, faite pour que TOUTES les surfaces qui affichent une réserve
+      de défense lisent le même drapeau (cf. CardRenderer.defensePool). Avant,
+      seule la console de réaction connaissait `fullDefenseRound` : la carte du
+      même PNJ — ouverte par le ⛶ d'à côté — affichait une Défense plus basse
+      que le bouton qui venait de la déclarer. Faux hors scène vivante. */
+  fullDefenseActive(pnjId) {
+    const c = this._find(pnjId);
+    return !!(c && c.fullDefenseRound === this.state.round);
+  },
+
+  /** Score d'initiative de la PASSE COURANTE (base − décrément × passes
+      écoulées), miroir du calcul déjà fait à l'affichage
+      (EncounterRenderer._effectiveInit / _outOfPass). Vit ici parce qu'une
+      RÈGLE s'en sert désormais (la porte des interruptions SR5), pas seulement
+      le rendu. `passDecrement: 0` (SR6/Anarchy) → le score de base. */
+  _passInit(c) {
+    const base = Number.isFinite(c.init) ? c.init : 0;
+    const pnj = PnjLookup.find(c.pnjId);
+    const mod = pnj && App.getEditionModule(pnj.edition);
+    const dec = (mod && mod.combatModel && mod.combatModel.passDecrement) || 0;
+    return base - (this.state.pass - 1) * dec;
+  },
+
+  /** Débite `n` actions du groupe `key` sur le budget du tour. Renvoie true si
+      la dépense DÉPASSE le budget de l'édition — on débite quand même et on le
+      DIT (garde-fou « informer, jamais décider » : le MJ a cliqué en connaissance
+      de cause, l'app ne lui refuse pas son geste, elle lui montre l'ardoise).
+      Seule la porte d'initiative SR5 refuse, parce que le livre l'écrit comme une
+      interdiction et non comme un coût. */
+  _consumeAction(c, cost, pnj) {
+    c.actionsUsed = c.actionsUsed || {};
+    const cur = c.actionsUsed[cost.key] || 0;
+    const groupe = (App.getEditionModule(pnj.edition).actionBudget(pnj) || []).find(
+      (g) => g.key === cost.key,
+    );
+    const total = groupe ? groupe.total : 0;
+    c.actionsUsed[cost.key] = cur + cost.n;
+    EncounterRenderer._activeCardId = null; // le budget a changé → re-rendre la fiche
+    return cur + cost.n > total;
   },
 
   /** Ids des PNJ consultables de la console de réaction, dans l'ordre affiché —

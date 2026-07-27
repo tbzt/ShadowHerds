@@ -1368,6 +1368,42 @@ export const CardRenderer = {
     return ` data-roll-detail="${this._esc(detail)}" data-explain="${key}" data-explain-pnj="${this._esc(pnj.id)}"`;
   },
 
+  /** RÉSERVE DE DÉFENSE AFFICHÉE — point unique (lot E0).
+
+      Trois surfaces la montrent (pastille de carte SR5, pastille SR6, bouton ⛉
+      de la console de réaction) et DEUX formules la calculaient : la console
+      ajoutait le +Volonté de la Défense totale déclarée
+      (`fullDefenseRound === round`), la carte ne le voyait pas — alors que le
+      ⛶ posé JUSTE À CÔTÉ du bouton ouvre précisément cette carte. Un seul
+      modificateur de scène a suffi à faire diverger deux surfaces distantes
+      d'un tap ; et comme `data-roll` porte le nombre AFFICHÉ, la divergence
+      n'était pas cosmétique : elle changeait le jet réel.
+
+      La règle reste dans le module (`fullDefenseFor().bonus`, `Utils.dicePenalty`) ;
+      cette fonction ne fait que les additionner au même endroit pour tout le
+      monde. Le drapeau de scène se lit via `deps.Encounter` — le pont existe
+      déjà (`liveDeps()`), aucune couche n'est inversée.
+
+      Ne s'applique qu'aux éditions qui ont une Défense totale (`fullDefenseFor`
+      renvoie null en Anarchy) et jamais à un PJ ad-hoc, qui n'a pas de fiche. */
+  defensePool(pnj, deps = CardRenderer.liveDeps()) {
+    if (!pnj) return 0;
+    const base = (pnj.defense || 0) - Utils.dicePenalty(pnj, pnj.edition);
+    return Math.max(0, base + this.fullDefenseBonus(pnj, deps));
+  },
+
+  /** Bonus de Défense totale ACTIF pour ce PNJ, ou 0. Séparé de `defensePool`
+      parce que les surfaces veulent aussi le NOMMER (title, aria-label) sans
+      recalculer la réserve. */
+  fullDefenseBonus(pnj, deps = CardRenderer.liveDeps()) {
+    if (!pnj || pnj._adhoc) return 0;
+    const mod = App.getEditionModule(pnj.edition);
+    const fd = mod && mod.fullDefenseFor ? mod.fullDefenseFor(pnj) : null;
+    if (!fd) return 0;
+    const enc = deps && deps.Encounter;
+    return enc && enc.fullDefenseActive && enc.fullDefenseActive(pnj.id) ? fd.bonus || 0 : 0;
+  },
+
   _rollPill(label, value, opts = {}) {
     if (value == null) return "";
     const { title, glyph, key, pnj, deps } = opts;

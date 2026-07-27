@@ -329,9 +329,21 @@ export const EditionSR6 = {
   },
   /** Défense totale (SR6 p.48) : action majeure qui ajoute la Volonté aux
       tests de défense jusqu'à la fin du round. Pas de coût d'initiative en SR6
-      (le modèle de passes −10 de SR5 n'existe plus, p.44) → initCost 0. */
+      (le modèle de passes −10 de SR5 n'existe plus, p.44) → initCost 0.
+
+      `actionCost` — SR6 facture la Défense totale en ACTION MAJEURE (p.45,
+      colonne « Actions majeures » ; détail p.48). C'est le miroir exact du
+      choix SR5, qui la paie en initiative et pas en phase d'action. La note le
+      disait depuis toujours ; le budget ne le débitait pas. */
   fullDefenseFor(pnj) {
-    return { label: "Défense totale", bonus: Actor.attr(pnj, "VOL"), initCost: 0, note: "action majeure · fin du round" };
+    return {
+      label: "Défense totale",
+      bonus: Actor.attr(pnj, "VOL"),
+      initCost: 0,
+      initGate: false,
+      actionCost: { key: "major", n: 1 },
+      note: "action majeure · fin du round",
+    };
   },
   /** Spec d'un combattant CI lancé dans l'initiative. Init du livre SR6 :
       Traitement de données ×2 + 3D6 (p.188). La règle vit ici (prohibition

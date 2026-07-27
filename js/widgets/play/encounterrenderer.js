@@ -1356,12 +1356,15 @@ export const EncounterRenderer = {
     const cm = mod && mod.combatModel;
     // Nom compact — même règle que la file (alias, sinon dernier mot du civil).
     const name = this._compactName(pnj.name);
-    const malus = Utils.dicePenalty(pnj, pnj.edition);
     // Défense totale (SR5/SR6) : déclarée pour le round → +Volonté à la réserve
     // affichée. fullDefenseFor renvoie null hors SR5/SR6 (Anarchy narratif).
     const fd = !pnj._adhoc && mod && mod.fullDefenseFor ? mod.fullDefenseFor(pnj) : null;
     const fdActive = !!(fd && r.fullDefenseRound === (state && state.round));
-    const def = Math.max(0, (pnj.defense || 0) - malus + (fdActive ? fd.bonus || 0 : 0));
+    // E0 — la réserve vient du POINT UNIQUE, partagé avec la carte : cette
+    // ligne et le ⛶ posé à trois boutons d'ici ouvrent le même PNJ, ils ne
+    // peuvent pas afficher deux Défenses différentes (et `data-roll` porte le
+    // nombre affiché : l'écart devenait un mauvais jet, pas un mauvais pixel).
+    const def = CardRenderer.defensePool(pnj);
     const defBtn = def >= 1
       ? `<button class="react-btn" data-roll="${def}" data-roll-label="Défense — ${name}" data-roll-pnj="${pnj.id}" title="Test de défense (${def} dés)${fdActive ? " · défense totale" : ""}" aria-label="Défense — ${name} (${def} dés)"><span class="react-glyph" aria-hidden="true">⛉</span> ${def}</button>`
       : `<span class="react-btn is-off" title="Pas de réserve de défense"><span class="react-glyph" aria-hidden="true">⛉</span> —</span>`;

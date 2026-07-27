@@ -220,10 +220,26 @@ export const EditionSR5 = {
   },
   /** Défense totale (SR5 p.170) : action d'interruption qui ajoute la Volonté
       aux tests de défense jusqu'à la fin du round de combat, au coût de −10 au
-      score d'initiative. Le tracker motorise le coût (adjustInit) et lit le
-      bonus ici — jamais une branche d'édition côté renderer. */
+      score d'initiative. Le tracker motorise le coût et lit le bonus ici —
+      jamais une branche d'édition côté renderer.
+
+      `actionCost: null` — p.170 : les actions d'interruption « ne coûtent pas
+      leur phase d'action », elles se paient en SCORE D'INITIATIVE. Le budget
+      de jetons n'est donc pas débité (miroir : SR6 la facture en majeure).
+
+      `initGate: true` — même page : « il peut agir en dehors de sa phase
+      d'action, mais uniquement si son score d'initiative est SUPÉRIEUR au coût
+      de l'action ». Strictement supérieur : à 10 pile, la Défense totale est
+      refusée. Le tracker refuse au lieu de ramener le score à 0. */
   fullDefenseFor(pnj) {
-    return { label: "Défense totale", bonus: Actor.attr(pnj, "VOL"), initCost: 10, note: "−10 Init · fin du round" };
+    return {
+      label: "Défense totale",
+      bonus: Actor.attr(pnj, "VOL"),
+      initCost: 10,
+      initGate: true,
+      actionCost: null,
+      note: "−10 Init · fin du round",
+    };
   },
   /** Spec d'un combattant CI lancé dans l'initiative (fiche CI minimale +
       jeton Matrice). Init du livre SR5 : indice du serveur ×2 + 4D6 (p.249).

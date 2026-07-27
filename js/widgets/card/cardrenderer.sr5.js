@@ -100,8 +100,12 @@ Object.assign(CardRenderer, {
         pnj,
         deps,
       });
-    combatBody += this._rollPill("Défense", Math.max(0, (pnj.defense || 0) - malus5), {
-      title: "Test de défense : Réaction + Intuition",
+    // Réserve de défense : passe par le point unique (E0) — il ajoute le
+    // +Volonté d'une Défense totale déclarée, que cette pastille ignorait
+    // alors que le bouton ⛉ du cockpit l'affichait.
+    const fdBonus5 = this.fullDefenseBonus(pnj, deps);
+    combatBody += this._rollPill("Défense", this.defensePool(pnj, deps), {
+      title: `Test de défense : Réaction + Intuition${fdBonus5 ? ` · défense totale (+${fdBonus5})` : ""}`,
       glyph: "⛉",
       key: "defense",
       pnj,
