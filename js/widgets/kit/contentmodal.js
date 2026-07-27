@@ -1,5 +1,7 @@
 "use strict";
 
+import { FocusTrap } from "./focustrap.js";
+
 /* ============================================================
    CONTENT MODAL — affiche la description d'un contenu en un clic
    (arme, sort, pouvoir, trait). Modale légère, fermeture au clic
@@ -8,6 +10,7 @@
 export const ContentModal = {
   _el: null,
   _delegated: false,
+  _releaseTrap: null,
 
   /* Délégation globale : tout clic / touche Enter|Espace sur un
      [data-content-name] ouvre la modale. dataset décode automatiquement
@@ -38,9 +41,9 @@ export const ContentModal = {
     overlay.className = "content-modal-overlay";
     overlay.id = "content-modal-overlay";
     overlay.innerHTML = `
-      <div class="content-modal" role="dialog" aria-modal="true">
+      <div class="content-modal" role="dialog" aria-modal="true" aria-labelledby="content-modal-title">
         <button class="content-modal-close" aria-label="Fermer">&times;</button>
-        <h3 class="content-modal-title"></h3>
+        <h3 class="content-modal-title" id="content-modal-title"></h3>
         <p class="content-modal-desc"></p>
       </div>`;
     document.body.appendChild(overlay);
@@ -51,7 +54,8 @@ export const ContentModal = {
       .querySelector(".content-modal-close")
       .addEventListener("click", () => this.hide());
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") this.hide();
+      if (e.key === "Escape" && overlay.classList.contains("visible"))
+        this.hide();
     });
     this._el = overlay;
     return overlay;
@@ -62,10 +66,20 @@ export const ContentModal = {
     el.querySelector(".content-modal-title").textContent = nom;
     el.querySelector(".content-modal-desc").textContent = desc;
     el.classList.add("visible");
+    // Piégé APRÈS l'ajout de .visible (les boutons doivent être atteignables
+    // par querySelectorAll, cf. FocusTrap._focusable) ; le focus va sur la
+    // croix de fermeture, seul élément interactif de cette modale légère.
+    this._releaseTrap = FocusTrap.activate(el.querySelector(".content-modal"));
+    el.querySelector(".content-modal-close").focus();
   },
 
   hide() {
-    if (this._el) this._el.classList.remove("visible");
+    if (!this._el) return;
+    this._el.classList.remove("visible");
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 };
 

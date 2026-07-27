@@ -1,5 +1,7 @@
 "use strict";
 
+import { FocusTrap } from "./focustrap.js";
+
 /* ============================================================
    DIALOG — modales internes prompt() / confirm()
    ------------------------------------------------------------
@@ -25,6 +27,7 @@ export const Dialog = {
   _el: null,
   _resolve: null,
   _mode: null, // "prompt" | "confirm"
+  _releaseTrap: null,
 
   _ensure() {
     if (this._el) return this._el;
@@ -33,10 +36,11 @@ export const Dialog = {
     overlay.id = "dialog-overlay";
     overlay.setAttribute("role", "dialog");
     overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-labelledby", "dialog-title");
     overlay.innerHTML = `
       <div class="modal dialog-modal">
         <div class="modal-header">
-          <span class="modal-title" data-dialog="title"></span>
+          <span class="modal-title" id="dialog-title" data-dialog="title"></span>
           <button class="modal-close" data-dialog-action="cancel" aria-label="Fermer">✕</button>
         </div>
         <div class="modal-body dialog-body">
@@ -193,6 +197,9 @@ export const Dialog = {
       this._resolve = resolve;
     });
     overlay.classList.add("open");
+    // Piégé AVANT le déplacement du focus : le déclencheur mémorisé est le
+    // vrai bouton cliqué, pas un élément déjà dans la modale.
+    this._releaseTrap = FocusTrap.activate(overlay.querySelector(".modal"));
     // Laisse le layout s'appliquer avant le focus (transition/scroll).
     requestAnimationFrame(() => afterShow && afterShow());
     return promise;
@@ -211,6 +218,10 @@ export const Dialog = {
   /** Ferme et résout la Promise en cours avec `value`. */
   _settle(value) {
     if (this._el) this._el.classList.remove("open");
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
     const resolve = this._resolve;
     this._resolve = null;
     this._mode = null;

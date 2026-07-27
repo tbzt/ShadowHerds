@@ -799,10 +799,15 @@ select optgroup {
   white-space: nowrap;
 }
 
-/* Popover : liste plate scrollable des contextes. */
+/* Popover : liste plate scrollable des contextes.
+   D7 : z-index en dur retiré. La v1 du référentiel supposait --z-popover
+   (550) — FAUX, vérifié : `notepad.js` ouvre ce popover DEPUIS #notepad-panel,
+   déjà à --z-popover. Un même palier aurait fait tenir l'empilement sur le
+   seul ordre du DOM (fragile). Même famille que .palette-box/.mentions-box
+   (popover-sur-panneau, ouvert depuis l'intérieur) → --z-command, comme eux. */
 .ctx-selector {
   position: fixed;
-  z-index: 1200;
+  z-index: var(--z-command);
   min-width: 220px;
   max-width: 340px;
   max-height: 60vh;
