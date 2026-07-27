@@ -255,10 +255,14 @@ export const Hub = {
           : "Générez du contenu (PNJ, contacts, serveurs) : il apparaîtra ici.";
       // Onboarding léger : « commencer ici » seulement à vide total
       // (nouvel utilisateur) — pas en recherche/filtre. Réutilise show-panel.
-      const cta =
-        !filtering
-          ? `<button class="btn-primary btn-small empty-state-cta" data-action="show-panel" data-panel="generator"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> Créer un PNJ</button>`
-          : "";
+      // D8 : jusqu'ici, un filtre/facette à zéro résultat n'offrait AUCUN
+      // recours (mesuré : 0 occurrence de « Effacer les filtres » dans tout
+      // le projet) — la seule sortie était de deviner qu'il fallait vider le
+      // champ soi-même. data-hub (pas data-collection) : Hub a sa propre
+      // délégation de clic (_wire), distincte de Collection.
+      const cta = !filtering
+        ? `<button class="btn-primary btn-small empty-state-cta" data-action="show-panel" data-panel="generator"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> Créer un PNJ</button>`
+        : `<button type="button" class="btn-secondary btn-small empty-state-cta" data-hub data-action="clear-filters">Effacer les filtres</button>`;
       box.innerHTML = `<div class="empty-state">
         <span class="empty-state-title">${filtering ? "Aucun résultat" : "Rien ici"}</span>
         ${body}
@@ -401,6 +405,18 @@ export const Hub = {
     this._renderMain();
   },
 
+  /** D8 — vide le texte de recherche ET toutes les facettes actives, remet le
+      champ visible à zéro (sa valeur n'est pas dans `_filter`, elle vit dans
+      le DOM). Rejoue les puces (leur état actif change) puis la grille. */
+  clearFilters() {
+    this._filter = "";
+    for (const s of Object.values(this._facets)) s.clear();
+    const input = document.querySelector("[data-hub-filter]");
+    if (input) input.value = "";
+    this._renderChips();
+    this._renderMain();
+  },
+
   _wire() {
     if (this._wired) return;
     this._wired = true;
@@ -413,6 +429,8 @@ export const Hub = {
       else if (el.dataset.action === "dismiss-save-reminder") {
         this._saveReminderDismissed = true;
         this._renderSaveReminder();
+      } else if (el.dataset.action === "clear-filters") {
+        this.clearFilters();
       } else if (el.dataset.action === "scope-relations-graph") {
         // VIS-15 B4 — le graphe scopé à la portée (campagne/run) sélectionnée.
         const id = el.dataset.dossier;

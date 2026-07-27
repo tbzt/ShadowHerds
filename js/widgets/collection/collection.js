@@ -264,6 +264,7 @@ export const Collection = {
               ? `<div class="empty-state">
                   <span class="empty-state-title">Aucun résultat</span>
                   ${labels.noMatch(CardRenderer._esc(this.filterText.trim()))}
+                  <button type="button" class="btn-secondary btn-small empty-state-cta" data-action="clear-filter" data-collection="${this.key}">Effacer les filtres</button>
                 </div>`
               : `<div class="empty-state">
                   <span class="empty-state-title">${labels.emptyTitle}</span>
@@ -412,6 +413,18 @@ export const Collection = {
               if (typeof UI !== "undefined") UI.togglePin(el.dataset.id);
               this.render();
               break;
+            case "clear-filter": {
+              // D8 : le seul recours d'un filtre à zéro résultat, jusqu'ici
+              // absent (mesuré : 0 occurrence dans tout le projet). Vide le
+              // champ visible ET l'état interne, sans toucher aux facettes
+              // (cette collection n'en a pas — Hub gère les siennes à part).
+              const input = document.querySelector(
+                `[data-action="filter"][data-collection="${this.key}"]`,
+              );
+              if (input) input.value = "";
+              this.setFilter("");
+              break;
+            }
           }
         });
 
