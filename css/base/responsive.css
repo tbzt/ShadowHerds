@@ -307,6 +307,40 @@
     text-transform: uppercase;
   }
 
+  /* ---- « Jouer » : pastille centrale surélevée ----
+     Le cockpit de partie est l'ancre de la barre, pas une entrée parmi cinq :
+     son icône sort du gabarit en pastille d'accent, détourée à la couleur de
+     la barre pour se décoller du liseré. Le bouton garde sa largeur de colonne
+     (flex: 1 hérité) : la grille des cinq reste régulière, seule l'icône
+     dépasse. Pas de collision avec le FAB dés, ancré à droite. */
+  .bnav-btn--hero {
+    border-top-color: transparent;
+  }
+  .bnav-btn--hero .bnav-icon {
+    width: 46px;
+    height: 46px;
+    margin-top: -28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    border: 3px solid var(--bg-card);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+    transition: transform var(--dur-fast) var(--ease-standard);
+  }
+  .bnav-btn--hero .bnav-icon .icon {
+    width: 24px;
+    height: 24px;
+  }
+  /* L'état actif se lit au libellé : la pastille est déjà en accent, et le
+     liseré du haut passerait sous elle. */
+  .bnav-btn--hero.active {
+    color: var(--accent);
+    border-top-color: transparent;
+  }
+  .bnav-btn--hero:active .bnav-icon {
+    transform: scale(0.92);
+  }
+
   /* ---- Topbar allégée, repliée sur 2 lignes ----
      Les dés passent par le FAB, le journal par le bouton de la feuille des
      dés ; on retire le groupe dés, le séparateur et les actions secondaires.

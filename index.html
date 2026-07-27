@@ -602,16 +602,22 @@
       </main>
     </div>
 
-    <!-- BARRE DE NAVIGATION MOBILE -->
+    <!-- BARRE DE NAVIGATION MOBILE
+         Ordre = flux de table, pas arborescence de bibliothèque : ce qu'on
+         touche en jouant occupe le centre et la droite (pouce), ce qu'on
+         consulte reste à gauche. « Jouer » (le cockpit Campagne › Run › Scène)
+         tient l'emplacement central en pastille surélevée — cf. .bnav-btn--hero
+         dans responsive.css. Les écrans de création/préparation (PJ, Contacts,
+         Serveurs, Topos, Trames, Paramètres) vivent dans la feuille « Plus ». -->
     <nav id="bottom-nav" aria-label="Navigation mobile">
       <button class="bnav-btn" data-panel="shadows" data-tour="nav-shadows" data-action="show-panel">
         <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-shadows"></use></svg></span><span class="bnav-label">Ombres</span>
       </button>
-      <button class="bnav-btn" data-panel="characters" data-tour="nav-characters" data-action="show-panel">
-        <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-character"></use></svg></span><span class="bnav-label">PJ</span>
-      </button>
       <button class="bnav-btn" data-panel="generator" data-tour="nav-generator" data-action="show-panel">
         <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-pnj"></use></svg></span><span class="bnav-label">PNJ</span>
+      </button>
+      <button class="bnav-btn bnav-btn--hero" data-panel="play" data-tour="nav-play" data-action="show-panel" title="Vos campagnes, runs et la scène en cours">
+        <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-play"></use></svg></span><span class="bnav-label">Jouer</span>
       </button>
       <button class="bnav-btn" id="bnav-combat-btn" data-tour="nav-combat" data-action="encounter-open">
         <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-combat"></use></svg><span class="tb-crumb-live" aria-hidden="true" title="Scène en cours" hidden></span></span><span class="bnav-label">Combat</span>
@@ -625,9 +631,8 @@
     <div id="more-sheet-overlay" role="dialog" aria-modal="true" aria-label="Plus">
       <div id="more-sheet">
         <div class="dice-sheet-handle"></div>
-        <!-- Jouer (R3-E) : colonne Campagne › Run › Scène, au more-sheet mobile. -->
-        <button class="bnav-btn" data-panel="play" data-tour="nav-play" data-action="show-panel" title="Vos campagnes, runs et la scène en cours">
-          <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-play"></use></svg></span><span class="bnav-label">Jouer</span>
+        <button class="bnav-btn" data-panel="characters" data-tour="nav-characters" data-action="show-panel">
+          <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-character"></use></svg></span><span class="bnav-label">PJ</span>
         </button>
         <button class="bnav-btn" data-panel="contacts" data-tour="nav-contacts" data-action="show-panel">
           <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-contacts"></use></svg></span><span class="bnav-label">Contacts</span>
