@@ -1394,7 +1394,19 @@ export const CardRenderer = {
   defensePool(pnj, deps = CardRenderer.liveDeps()) {
     if (!pnj) return 0;
     const base = (pnj.defense || 0) - Utils.dicePenalty(pnj, pnj.edition);
-    return Math.max(0, base + this.fullDefenseBonus(pnj, deps));
+    return Math.max(0, base + this.fullDefenseBonus(pnj, deps) - this.multiDefenseMalus(pnj, deps));
+  },
+
+  /** Malus de DÉFENSES MULTIPLES déjà accumulé (lot E4, SR5 p.189) — magnitude
+      positive. Comme le bonus de Défense totale, c'est un état de SCÈNE : il
+      se lit sur `deps.Encounter`, pas sur le PNJ, et il passe par le point
+      unique pour que les trois surfaces de défense l'affichent ensemble.
+      0 hors SR5 (aucune autre édition ne déclare `multiDefense`) et hors
+      scène vivante. */
+  multiDefenseMalus(pnj, deps = CardRenderer.liveDeps()) {
+    if (!pnj || pnj._adhoc) return 0;
+    const enc = deps && deps.Encounter;
+    return enc && enc.multiDefenseMalus ? enc.multiDefenseMalus(pnj.id) : 0;
   },
 
   /** Bonus de Défense totale ACTIF pour ce PNJ, ou 0. Séparé de `defensePool`

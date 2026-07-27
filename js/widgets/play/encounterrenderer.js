@@ -1365,14 +1365,31 @@ export const EncounterRenderer = {
     // peuvent pas afficher deux Défenses différentes (et `data-roll` porte le
     // nombre affiché : l'écart devenait un mauvais jet, pas un mauvais pixel).
     const def = CardRenderer.defensePool(pnj);
+    // E4 — défenses multiples (SR5 p.189) : le bouton porte AUSSI un
+    // `data-action`, capté par la délégation d'Encounter (le ⛉ est dans
+    // l'overlay). Les deux écouteurs tirent : DiceRoller lance, Encounter
+    // compte. Le malus de la défense SUIVANTE est déjà dans `def` au prochain
+    // rendu, et le title dit combien de défenses ont déjà été faites — sinon le
+    // chiffre baisserait sans nom, ce que le chantier s'interdit.
+    const dejaDef = CardRenderer.multiDefenseMalus(pnj);
+    const defTitle = `Test de défense (${def} dés)${fdActive ? " · défense totale" : ""}${dejaDef ? ` · ${dejaDef} défense${dejaDef > 1 ? "s" : ""} déjà faite${dejaDef > 1 ? "s" : ""} depuis sa phase d'action` : ""}`;
     const defBtn = def >= 1
-      ? `<button class="react-btn" data-roll="${def}" data-roll-label="Défense — ${name}" data-roll-pnj="${pnj.id}" title="Test de défense (${def} dés)${fdActive ? " · défense totale" : ""}" aria-label="Défense — ${name} (${def} dés)"><span class="react-glyph" aria-hidden="true">⛉</span> ${def}</button>`
+      ? `<button class="react-btn" data-roll="${def}" data-roll-label="Défense — ${name}" data-roll-pnj="${pnj.id}" data-action="count-defense" data-id="${pnj.id}" title="${Utils.escHtml(defTitle)}" aria-label="Défense — ${name} (${def} dés)"><span class="react-glyph" aria-hidden="true">⛉</span> ${def}${dejaDef ? `<span class="react-multidef">−${dejaDef}</span>` : ""}</button>`
       : `<span class="react-btn is-off" title="Pas de réserve de défense"><span class="react-glyph" aria-hidden="true">⛉</span> —</span>`;
     // Défense totale : bouton ⛨ (SR5/SR6 seulement — fd non null). Déclaration à
     // sens unique par round (le contrôleur ne décrémente l'init qu'une fois) ;
     // le coût d'initiative −10 (SR5) est motorisé côté Encounter via adjustInit.
+    // E4 — quand l'édition a PLUSIEURS interruptions (SR5 en a 8), le ⛨ cesse
+    // d'être un interrupteur et devient l'affordance de la 4ᵉ CATÉGORIE : il
+    // déplie la feuille des interruptions, dont la Défense totale n'est plus
+    // qu'une entrée. Ce n'est pas un contrôle de plus dans la ligne — c'est le
+    // même, qui a récupéré ses frères (garde-fou (c), et la boucle de réaction
+    // reste à trois temps). En SR6 (une seule interruption) le geste ne change
+    // pas d'un pixel : tap = bascule directe.
+    const interrupts = !pnj._adhoc && mod && mod.interruptActions ? mod.interruptActions(pnj) : [];
+    const plusieurs = interrupts.length > 1;
     const fdBtn = fd
-      ? `<button class="react-btn react-fulldef-btn${fdActive ? " is-on" : ""}" data-action="full-defense" data-id="${pnj.id}"${fdActive ? ' aria-pressed="true"' : ""} title="${Utils.escHtml(fd.label)} (+${fd.bonus} déf · ${Utils.escHtml(fd.note || "")})" aria-label="${Utils.escHtml(fd.label)} — ${name}"><span class="react-glyph" aria-hidden="true">⛨</span></button>`
+      ? `<button class="react-btn react-fulldef-btn${fdActive ? " is-on" : ""}" data-action="${plusieurs ? "react-interrupt-toggle" : "full-defense"}" data-id="${pnj.id}"${fdActive ? ' aria-pressed="true"' : ""} title="${plusieurs ? `Actions d'interruption (${interrupts.length}) — se paient en score d'initiative` : `${Utils.escHtml(fd.label)} (+${fd.bonus} déf · ${Utils.escHtml(fd.note || "")})`}" aria-label="${plusieurs ? `Actions d'interruption — ${name}` : `${Utils.escHtml(fd.label)} — ${name}`}"><span class="react-glyph" aria-hidden="true">⛨</span></button>`
       : "";
     // Encaissement : uniquement si l'édition résout les dommages par un JET
     // (SR5/SR6). Anarchy compare la VD à un seuil (p.68) → pas de jet, bouton omis.
@@ -1394,10 +1411,48 @@ export const EncounterRenderer = {
       ? `<button class="react-expand-btn" data-action="react-expand" data-id="${pnj.id}" aria-label="Voir la fiche de ${name}" title="Voir la fiche (feuilleter)"><span class="react-peek-glyph" aria-hidden="true">⛶</span></button>`
       : "";
     const chipsBody = damageBtn ? this._reactDamageChips(pnj) : "";
+    const interruptBody = plusieurs ? this._reactInterruptChips(pnj) : "";
     return `<div class="react-row">
         <span class="react-name">${name}</span>
         <span class="react-buttons">${defBtn}${fdBtn}${soakBtn}${damageBtn}${peek}</span>
-      </div>${chipsBody}`;
+      </div>${interruptBody}${chipsBody}`;
+  },
+
+  /** Feuille des actions d'INTERRUPTION (lot E4) — jumelle exacte de
+      `_reactDamageChips` : repliée par défaut, une seule ouverte à la fois,
+      un tap déclare et referme. Aucun composant neuf.
+
+      Chaque puce porte son COÛT, parce que c'est lui qui décide : « Bloquer
+      −5 ». Les inabordables restent VISIBLES mais désactivées, avec la raison
+      dans le title — les masquer ferait croire que SR5 n'a que trois
+      interruptions, et le MJ doit voir ce qu'il ne peut pas payer autant que
+      le reste (« informer, jamais décider »). */
+  _reactInterruptChips(pnj) {
+    const opts = Encounter.interruptOptions(pnj.id);
+    if (!opts.length) return "";
+    const chips = opts
+      .map((o) => {
+        const raison = o.surpris
+          ? "Surpris : aucune interruption avant sa première phase d'action (p.169)"
+          : `${o.score} en initiative — il en faut plus de ${o.initCost}`;
+        return `<button class="react-btn${o.abordable ? "" : " is-off"}" ${o.abordable ? `data-action="react-interrupt" data-id="${pnj.id}" data-key="${o.key}"` : "disabled"} title="${Utils.escHtml(o.abordable ? `${o.note || ""} · ${o.page}` : raison)}">${Utils.escHtml(o.label)} <span class="react-multidef">−${o.initCost}</span></button>`;
+      })
+      .join("");
+    return `<div class="react-interrupt-chips" data-interrupt-for="${pnj.id}" hidden>${chips}</div>`;
+  },
+
+  /** Déplie/replie la feuille d'interruptions — même mécanique que
+      `toggleReactDamage`, y compris « une seule ouverte », pour que les deux
+      feuilles de la console ne se superposent jamais. */
+  toggleReactInterrupt(pnjId, close) {
+    const react = document.querySelector(".encounter-react");
+    if (!react) return;
+    const esc = window.CSS && CSS.escape ? CSS.escape(pnjId) : pnjId;
+    const body = react.querySelector(`.react-interrupt-chips[data-interrupt-for="${esc}"]`);
+    if (!body) return;
+    const shouldOpen = close ? false : body.hidden;
+    react.querySelectorAll(".react-interrupt-chips, .react-damage-chips").forEach((b) => (b.hidden = true));
+    if (shouldOpen) body.hidden = false;
   },
 
   /** Panneau de chips de dégâts d'un PNJ, replié par défaut (déplié par

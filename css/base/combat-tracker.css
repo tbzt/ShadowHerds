@@ -1865,6 +1865,31 @@
 .react-damage-chips[hidden] {
   display: none;
 }
+/* Feuille des interruptions (E4) — même gabarit que les chips de dégâts, mais
+   NEUTRE : le rouge appartient au contrôle Dégâts et à lui seul (décision K8
+   n°6, « le rouge se mérite »). Une interruption n'est pas un danger, c'est
+   une dépense. */
+.react-interrupt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.2rem 0 0.1rem;
+  padding: 0.4rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+}
+.react-interrupt-chips[hidden] {
+  display: none;
+}
+/* Le coût, accolé au libellé : c'est lui qui décide si l'action est possible,
+   il se lit donc sans ouvrir le title. Même traitement pour le malus de
+   défenses multiples sur le ⛉ — deux chiffres de même nature (ce que ça coûte). */
+.react-multidef {
+  margin-left: 0.25em;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+}
 .react-btn-danger {
   border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
 }

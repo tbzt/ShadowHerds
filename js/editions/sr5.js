@@ -219,6 +219,67 @@ export const EditionSR5 = {
   initiativeFor(pnj) {
     return { base: pnj.init, dice: pnj.initDice };
   },
+  /** LA 4ᵉ CATÉGORIE D'ACTION (lot E4) — SR5 p.169-170.
+
+      L'app ne connaissait que trois natures d'action (gratuite / simple /
+      complexe, cf. `actionBudget`). Le livre en compte QUATRE : « il arrive
+      qu'un personnage soit autorisé à agir en dehors de sa phase d'action. Ces
+      rares cas sont appelés actions d'interruption ». Elles sont structurellement
+      incompatibles avec le jeton de budget — elles ne consomment RIEN et se
+      paient en SCORE D'INITIATIVE :
+
+        « il peut agir en dehors de sa phase d'action, mais uniquement si son
+        score d'initiative est SUPÉRIEUR au coût de l'action. Les actions
+        d'interruption […] ne coûtent pas leur phase d'action au personnage. La
+        réduction du score d'initiative se produit au moment où l'action a lieu.
+        Un personnage ne peut pas utiliser une action d'interruption avant sa
+        première phase d'action que s'il n'est pas surpris. » (p.169)
+
+      D'où les trois clauses du contrat, toutes portées ici et lues à l'aveugle
+      par le tracker : `initCost` (le prix), `initGate` (strictement supérieur —
+      à 10 pile, la Défense totale est refusée) et `blockedByStatus` (le verrou
+      « surpris », qui relie cette table au catalogue d'états du lot E1).
+
+      ⚠ Le catalogue n'est PAS fermé : un pouvoir d'adepte (Parade de
+      projectiles, p.309) est aussi une interruption. La signature prend `pnj`
+      pour que ces sources s'y ajoutent sans changer le moteur.
+
+      ⚠ Il MANQUE une entrée : « Passer en défense totale matricielle » (p.242),
+      listée « Interruption » à l'index des actions mais dont le coût
+      d'initiative n'a pas pu être vérifié au livre lors du dépouillement. Elle
+      sera ajoutée le jour où le chiffre sera confirmé — on n'invente pas un
+      coût (corollaire non négociable : aucun chiffre non calculé). */
+  interruptActions(pnj) {
+    return [
+      { key: "fullDefense", label: "Passer en défense totale", initCost: 10, page: "p.170",
+        ownControl: true, note: "+Volonté à la défense jusqu'à la fin du round" },
+      { key: "bloquer", label: "Bloquer", initCost: 5, page: "p.170",
+        note: "Bloque une attaque de mêlée — Combat à mains nues" },
+      { key: "esquiver", label: "Esquiver", initCost: 5, page: "p.170",
+        note: "Esquive une attaque de mêlée — Gymnastique" },
+      { key: "parer", label: "Parer", initCost: 5, page: "p.170",
+        note: "Pare une attaque de mêlée — compétence d'arme de mêlée" },
+      { key: "intercepter", label: "Intercepter", initCost: 5, page: "p.170",
+        note: "Intercepte un ennemi qui passe ou se retire d'une mêlée" },
+      { key: "poussiere", label: "Manger la poussière", initCost: 5, page: "p.170",
+        note: "Se jeter au sol sous un tir de couverture — étendu à la phase suivante" },
+      { key: "conduiteEvasive", label: "Conduite évasive", initCost: 10, page: "p.205",
+        note: "Équivalent véhicule de la défense totale : +Intuition en défense" },
+      { key: "defenseSort", label: "Défense contre sorts", initCost: 5, page: "p.297",
+        note: "Seulement si le magicien n'a plus d'action gratuite — réserve = Contresort" },
+    ];
+  },
+  /** Verrou p.169 : aucune interruption avant sa première phase d'action tant
+      que le personnage est SURPRIS. La clé renvoyée est celle du catalogue
+      d'états (lot E1) — le tracker interroge `Statuses`, aucune branche ici. */
+  interruptBlockedBy: "surpris",
+  /** DÉFENSES MULTIPLES (p.189) — « Si un personnage s'est déjà défendu au
+      moins une fois DEPUIS SA DERNIÈRE PHASE D'ACTION, appliquez un
+      modificateur cumulatif de −1 dé pour chaque test de défense additionnel. »
+      ⚠ La frontière est la PHASE D'ACTION du personnage, pas le round : un
+      combattant à plusieurs passes d'initiative remet son compteur à zéro à
+      chacune. C'est exactement là que `_resetActions` travaille déjà. */
+  multiDefense: { perDefense: 1, page: "p.189" },
   /** Défense totale (SR5 p.170) : action d'interruption qui ajoute la Volonté
       aux tests de défense jusqu'à la fin du round de combat, au coût de −10 au
       score d'initiative. Le tracker motorise le coût et lit le bonus ici —

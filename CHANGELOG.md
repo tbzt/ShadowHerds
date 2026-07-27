@@ -12,6 +12,33 @@ commit.
 
 ## [Non publié]
 
+## [1.124.0] — 2026-07-27
+
+### Ajouté
+
+- **SR5 récupère sa 4ᵉ catégorie d'action : les interruptions.** L'app n'en
+  connaissait que trois (gratuite / simple / complexe) ; le livre en compte
+  quatre, et la dernière ne consomme aucun jeton — elle se paie en **score
+  d'initiative**. Le bouton ⛨ de la console de réaction déplie désormais les
+  **huit** interruptions avec leur coût (Bloquer −5, Esquiver −5, Parer −5,
+  Intercepter −5, Manger la poussière −5, Défense contre sorts −5, Passer en
+  défense totale −10, Conduite évasive −10). Celles que l'initiative ne peut
+  pas payer restent **visibles mais désactivées**, avec la raison au survol.
+- **Les deux verrous du livre sont posés** (p.169) : le score doit être
+  **strictement supérieur** au coût — à 10 pile, la Défense totale est refusée
+  — et un personnage **Surpris** ne peut déclarer aucune interruption avant sa
+  première phase d'action. C'est le premier endroit où la table des états et
+  celle des actions se parlent.
+- **Les défenses multiples se comptent toutes seules** (p.189) : chaque défense
+  supplémentaire retire 1 dé, le compteur repart **à la phase d'action du
+  personnage** — pas au round, comme l'écrit le livre. La réserve affichée le
+  montre (« ⛉ 4−2 ») sur les trois surfaces à la fois.
+
+### Note
+
+En SR6, le geste ne change pas d'un pixel : l'édition n'a qu'une interruption,
+le ⛨ reste une bascule directe.
+
 ## [1.123.0] — 2026-07-27
 
 ### Ajouté

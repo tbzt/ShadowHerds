@@ -429,13 +429,7 @@ export const Encounter = {
     // devait pas servir à appliquer une règle). Le score comparé est celui
     // de la PASSE COURANTE, pas la base : c'est lui qui dit si le combattant
     // a encore de quoi payer.
-    if (fd.initGate && fd.initCost > 0) {
-      const score = this._passInit(c);
-      if (score <= fd.initCost) {
-        toast(`${fd.label} impossible — ${pnj.name} n'a que ${score} en initiative (coût ${fd.initCost}).`);
-        return;
-      }
-    }
+    if (fd.initGate && fd.initCost > 0 && !this._porteInterruption(c, pnj, fd)) return;
     c.fullDefenseRound = this.state.round;
     // COÛT EN ACTION (SR6 p.45/48, contrat `actionCost`) : la Défense totale
     // y est une action MAJEURE. La note du module le disait déjà, le budget ne
@@ -453,6 +447,105 @@ export const Encounter = {
         ? ` (${over ? "budget dépassé — " : ""}1 ${fd.actionCost.key === "major" ? "majeure" : fd.actionCost.key})`
         : "";
     toast(`${fd.label} — ${pnj.name}${cout}`);
+  },
+
+  /* ========================================================
+     ACTIONS D'INTERRUPTION (lot E4) — SR5 p.169-170, la 4ᵉ catégorie.
+     ======================================================== */
+
+  /** LA PORTE, commune à toutes les interruptions. Deux verrous du livre,
+      dans l'ordre où il les pose :
+        1. « uniquement si son score d'initiative est SUPÉRIEUR au coût » —
+           strictement, donc à 10 pile la Défense totale est refusée. Le score
+           comparé est celui de la PASSE COURANTE (`_passInit`), pas la base :
+           c'est lui qui dit ce que le combattant peut encore payer.
+        2. « ne peut pas utiliser une action d'interruption avant sa première
+           phase d'action que s'il n'est pas SURPRIS » — l'état, posé par le MJ
+           au lot E1, ferme donc la porte ici. C'est le premier endroit où la
+           table des états et la table des actions se parlent, et ce n'est pas
+           un hasard : le livre les a écrites liées.
+      Renvoie true si l'action est permise. Refuse EN LE DISANT — un bouton qui
+      ne fait rien sans expliquer est pire qu'un bouton absent. */
+  _porteInterruption(c, pnj, action) {
+    const mod = App.getEditionModule(pnj.edition);
+    const bloquant = mod && mod.interruptBlockedBy;
+    if (bloquant && Statuses.level(pnj, bloquant) > 0 && !c.hasActed) {
+      const nom = (Statuses.find(pnj, bloquant) || {}).name || bloquant;
+      toast(`${action.label} impossible — ${pnj.name} est ${nom} et n'a pas encore joué (p.169).`);
+      return false;
+    }
+    const score = this._passInit(c);
+    if (score <= action.initCost) {
+      toast(`${action.label} impossible — ${pnj.name} n'a que ${score} en initiative (coût ${action.initCost}).`);
+      return false;
+    }
+    return true;
+  },
+
+  /** Interruptions DISPONIBLES pour un combattant, avec ce qui les bloque —
+      lecture pure, faite pour que la feuille de choix affiche des options
+      honnêtes plutôt qu'un catalogue dont la moitié échoue au clic. */
+  interruptOptions(pnjId) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    const mod = pnj && App.getEditionModule(pnj.edition);
+    if (!c || !mod || !mod.interruptActions) return [];
+    const score = this._passInit(c);
+    const bloquant = mod.interruptBlockedBy;
+    const surpris = bloquant && Statuses.level(pnj, bloquant) > 0 && !c.hasActed;
+    return mod.interruptActions(pnj).map((a) => ({
+      ...a,
+      score,
+      abordable: !surpris && score > a.initCost,
+      surpris: !!surpris,
+    }));
+  },
+
+  /** Déclare une interruption AUTRE que la Défense totale (qui garde son
+      bouton ⛨ dédié, cf. `ownControl`). Applique la porte, débite le score
+      d'initiative — « la réduction se produit au moment où l'action a lieu »
+      (p.169) — et ne touche AUCUN jeton de budget : une interruption « ne
+      coûte pas sa phase d'action ». */
+  useInterrupt(pnjId, key) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    const mod = pnj && App.getEditionModule(pnj.edition);
+    if (!c || !mod || !mod.interruptActions) return;
+    const action = mod.interruptActions(pnj).find((a) => a.key === key);
+    if (!action) return;
+    if (action.key === "fullDefense") return this.fullDefense(pnjId); // son propre chemin
+    if (!this._porteInterruption(c, pnj, action)) return;
+    this.adjustInit(pnjId, -action.initCost);
+    toast(`${action.label} — ${pnj.name} (−${action.initCost} init)`);
+  },
+
+  /** DÉFENSES MULTIPLES (SR5 p.189) — « −1 dé cumulatif pour chaque test de
+      défense additionnel depuis sa dernière phase d'action ». Compteur de
+      scène (`c.defenses`), incrémenté quand une défense part de la console, et
+      remis à zéro par `_resetActions` — c'est-à-dire au début de la phase
+      d'action du personnage, exactement la frontière que le livre nomme (et
+      NON le round : un combattant à plusieurs passes remet à zéro à chacune). */
+  countDefense(pnjId) {
+    const c = this._find(pnjId);
+    if (!c) return;
+    const pnj = PnjLookup.find(pnjId);
+    const mod = pnj && App.getEditionModule(pnj.edition);
+    if (!mod || !mod.multiDefense) return; // édition sans la règle : rien à compter
+    c.defenses = (c.defenses || 0) + 1;
+    this._commit();
+  },
+
+  /** Malus de défenses multiples DÉJÀ accumulé (magnitude positive). Lu par
+      CardRenderer.defensePool, donc par les trois surfaces d'un coup. Le
+      compteur vaut le nombre de défenses passées : la PREMIÈRE est gratuite
+      (« s'est déjà défendu au moins une fois » → le malus commence à la 2ᵉ). */
+  multiDefenseMalus(pnjId) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    const mod = pnj && App.getEditionModule(pnj.edition);
+    const spec = mod && mod.multiDefense;
+    if (!c || !spec || !c.defenses) return 0;
+    return c.defenses * (spec.perDefense || 1);
   },
 
   /** Ce combattant est-il en Défense totale MAINTENANT ? Lecture neutre et
@@ -996,6 +1089,11 @@ export const Encounter = {
     if (c) {
       c.actionsUsed = {};
       c.narrationBonus = false;
+      // Défenses multiples (E4, SR5 p.189) : le livre compte « depuis sa
+      // dernière PHASE D'ACTION », pas depuis le round — c'est donc ici, et
+      // pas dans nextRound, que le compteur retombe. La nuance compte pour un
+      // combattant à plusieurs passes d'initiative.
+      c.defenses = 0;
     }
   },
 
@@ -2048,6 +2146,22 @@ export const Encounter = {
           // Défense totale (SR5/SR6) : déclarée pour le round, motorise le coût
           // d'initiative de l'édition (−10 SR5). Édition-neutre (fullDefenseFor).
           this.fullDefense(id);
+          break;
+        case "react-interrupt-toggle":
+          // E4 — le ⛨ déplie la feuille des interruptions quand l'édition en a
+          // plusieurs (SR5). En SR6 ce cas n'existe pas : le bouton porte
+          // directement `full-defense`.
+          EncounterRenderer.toggleReactInterrupt(id);
+          break;
+        case "react-interrupt":
+          this.useInterrupt(id, el.dataset.key);
+          EncounterRenderer.toggleReactInterrupt(id, true);
+          break;
+        case "count-defense":
+          // E4 — porté par le MÊME bouton que le jet de défense : DiceRoller
+          // lance (délégation document), Encounter compte (délégation overlay).
+          // Le malus de la défense suivante apparaît au rendu qui suit.
+          this.countDefense(id);
           break;
         case "react-damage-toggle":
           // Déplie/replie les chips de dégâts d'une ligne de réaction
