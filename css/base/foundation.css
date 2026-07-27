@@ -67,10 +67,26 @@
   --edge-hi: rgba(255, 255, 255, 0.05);
   --bg-raised: #12161c; /* fallback neutre ; chaque theme-*.css pose sa teinte */
 
+  /* ---- Surfaces d'overlay (niveau 3) ---- DESIGN-SYSTEM.md § 4.4.
+     --bg-overlay ALIASE --bg-raised au lieu de poser une teinte : le niveau 3
+     partage aujourd'hui la surface du niveau 2, et un alias le dit sans rien
+     changer au rendu. Le jour où un overlay doit se détacher d'une carte, on
+     surcharge ICI (ou par thème), pas dans 40 modules.
+     --scrim = le rideau des overlays BLOQUANTS seulement (modale, dialogue) ;
+     un popover ou un coup d'œil n'en pose pas. */
+  --bg-overlay: var(--bg-raised);
+  --scrim: rgba(0, 0, 0, 0.72);
+
   /* ---- Rayons ---- échelle cohérente (remplace les 2/3/4/10px ad hoc au
-     fil des reprises ; les cartes gardent leur biseau --card-clip). */
-  --radius: 8px;
-  --radius-lg: 12px;
+     fil des reprises ; les cartes gardent leur biseau --card-clip).
+     4 pas (DESIGN-SYSTEM.md § 4.5) : le rayon dit la TAILLE de l'objet —
+     petit objet, petit rayon. --radius reste à 8px : le référentiel proposait
+     6px, mais ce lot est à delta visuel NUL et 8px est la valeur en place.
+     Une édition peut mettre les quatre à 0 ; elle n'en invente pas un 5ᵉ. */
+  --radius-sm: 3px; /* marqueurs, pastilles, micro-contrôles */
+  --radius: 8px; /* champs, boutons, encarts */
+  --radius-lg: 12px; /* cartes, overlays, feuilles */
+  --radius-pill: 999px; /* pastilles pilulaires, jauges */
 
   /* ---- Token « système AR » (refonte DA « ARO ») ----
      --aro = le chrome de l'overlay AR (cadre HUD, grille de scan, crochets,
@@ -127,6 +143,34 @@
      n'importe quel overlay ci-dessus (backup « Remplacer », etc.) → doit coiffer
      toute la pile plein écran/système. */
   --z-dialog: 1300;
+
+  /* ---- Cibles tactiles ---- 3 pas, dimensionnés à la FRÉQUENCE du geste
+     (DESIGN-SYSTEM.md § 7), jamais un plancher uniforme : le moniteur SR5
+     (11 cases) ne tiendrait pas à 44px sur un téléphone — mesuré.
+     ⚠️ Ces tokens NOMMENT les paliers ; ils ne déplacent pas la densité
+     tactile, qui se règle dans UN seul endroit : le bloc « CIBLES TACTILES »
+     @media (pointer: coarse) de responsive.css. */
+  --hit-min: 24px; /* plancher WCAG 2.5.8 — en dessous, c'est un bug */
+  --hit-cozy: 32px; /* contrôle courant en ligne dense */
+  --hit: 44px; /* action primaire, geste répété en séance (WCAG 2.5.5) */
+
+  /* ---- Longueur de ligne de lecture ---- 45-75 caractères : au-delà, l'œil
+     perd la ligne au retour. À poser en max-width sur tout bloc de prose
+     (topos, notes, états vides), jamais sur une grille ou un tableau. */
+  --measure: 68ch;
+
+  /* ---- Points de rupture ---- DOCUMENTAIRES : CSS ne résout pas une
+     var() dans une media query, il faut donc recopier la valeur. Ils sont ici
+     pour qu'il existe UNE référence de l'échelle visée, contre les 14 seuils
+     distincts aujourd'hui en place.
+     État réel : 640 est déjà la vraie charnière (13 occurrences, le bloc
+     tactile et la bascule mobile) ; 1024 n'est utilisé qu'une fois et 1440
+     pas encore — ce sont des CIBLES de convergence, pas un constat. Les
+     seuils ad hoc (420/459/489/560/720/900/1100/1280/1700) se replient
+     dessus au fil des lots, jamais d'un coup. */
+  --bp-sm: 640px; /* téléphone ↔ tablette */
+  --bp-md: 1024px; /* tablette ↔ desktop */
+  --bp-lg: 1440px; /* desktop large */
 }
 
 /* Centralise prefers-reduced-motion pour toutes les transitions tokenisées :
@@ -140,6 +184,46 @@
     --dur-slow: 0ms;
   }
 }
+
+/* ============================================================
+   RÔLES TYPOGRAPHIQUES — DESIGN-SYSTEM.md § 4.2
+   ============================================================
+   L'échelle (--fs-*) dit la TAILLE ; ces six rôles disent l'EMPLOI. C'est
+   l'absence de rôles nommés qui fabrique les tailles ad hoc : quand rien ne
+   s'appelle « étiquette », chacun réinvente 11px.
+
+   Règle de la mono : --font-mono est la voix du SYSTÈME (étiquettes, chiffres,
+   identifiants) ; --font-body est la voix de la FICTION. Ne jamais mélanger —
+   c'est le repère de lecture périphérique du MJ, aujourd'hui juste.
+
+   ⚠️ Additif : aucun appelant à ce jour, donc aucun changement de rendu. Ces
+   classes se substituent aux déclarations locales au fil des lots (D3→D6),
+   jamais par un remplacement de masse. */
+.t-label {
+  font: 400 var(--fs-2xs) / 1.2 var(--font-mono);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.t-meta {
+  font: 400 var(--fs-xs) / 1.35 var(--font-body);
+  color: var(--text-dim);
+}
+.t-body-sm {
+  font: 400 var(--fs-sm) / 1.5 var(--font-body);
+}
+.t-body {
+  font: 400 var(--fs-base) / 1.5 var(--font-body);
+}
+.t-title {
+  font: 600 var(--fs-lg) / 1.25 var(--font-display);
+}
+.t-panel {
+  font: 700 var(--fs-xl) / 1.2 var(--font-display);
+  letter-spacing: var(--title-spacing);
+  text-transform: var(--title-transform);
+}
+
 html {
   height: 100%;
   /* Racine du rem (CH-V12) : point zéro de l'échelle typographique, pas une
