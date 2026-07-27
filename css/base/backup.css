@@ -93,7 +93,7 @@
   min-width: 0;
   background: var(--bg-mid);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: var(--sp-2) 0.6rem;
   color: var(--text);
   font-family: var(--font-mono);

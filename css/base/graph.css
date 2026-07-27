@@ -496,7 +496,7 @@
   width: 100%;
   padding: 6px 8px;
   border: 1px solid var(--border, #2a3a49);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background: var(--bg-mid);
   color: var(--text, #dfe8f0);
   font: inherit;

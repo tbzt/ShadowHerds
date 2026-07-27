@@ -430,8 +430,8 @@ jamais été. Il fait l'objet du **lot 11**.
 **Échelle finale — quatre pas :**
 
 ```css
---radius-sm:   3px;   /* marqueurs, pastilles, micro-contrôles, BOUTONS */
---radius:      8px;   /* champs, encarts */
+--radius-sm:   3px;   /* marqueurs, pastilles, micro-contrôles, BOUTONS, CHAMPS */
+--radius:      8px;   /* encarts (petits blocs de mise en avant) */
 --radius-lg:  12px;   /* cartes, overlays, feuilles */
 --radius-pill: 999px; /* pastilles pilulaires, jauges */
 ```
@@ -440,15 +440,21 @@ jamais été. Il fait l'objet du **lot 11**.
 > et le lot 1 étant à delta visuel nul, c'est 8 qui a été gravé. La valeur
 > exacte importe moins que le fait qu'il n'y en ait **qu'une**.
 >
-> **« Boutons » a migré de `--radius` vers `--radius-sm` (2026-07-27, vague 3
-> du lot 11).** Ma v1 les rangeait avec les champs. Faux : `.btn-primary`/
-> `.btn-secondary` — les deux boutons les plus vus de tout le produit —
-> étaient **déjà** à 3px avant que ce document existe, et l'arbitrage sur 23
-> boutons secondaires (react/risk/graph/dice-sheet…) a confirmé la même
-> chose : la famille bouton de ce projet vit à `--radius-sm`, pas `--radius`.
-> Le code établi l'emporte sur mon annotation — même logique que le 6→8px
-> ci-dessus, deux fois de suite maintenant. **Restent aux « champs, encarts »**
-> les vrais rectangles porteurs de texte (`input`, panneaux, encarts).
+> **« Boutons » PUIS « champs » ont migré de `--radius` vers `--radius-sm`
+> (2026-07-27, vagues 3 et 4 du lot 11) — le même diagnostic, deux fois de
+> suite.** Ma v1 rangeait les deux avec les encarts sous `--radius`. Faux dans
+> les deux cas : `.btn-primary`/`.btn-secondary` étaient déjà à 3px avant ce
+> document, et **`forms.css` — les champs les plus vus du produit (générateur,
+> filtres) — l'était tout autant**, confirmé par les 15 champs secondaires
+> arbitrés ensuite (formulaires de contact, éditeur de fiche, entrées inline
+> du journal/graphe). Le code établi l'emporte sur l'annotation. **Ce que
+> `--radius` (8px) sert vraiment, vérifié sur ses 6 usages réels** :
+> `.spell-block`, `.breakdown-pop`, `.scenario-lenses`, `.tour-ring`,
+> `.pch-cell` — des **encarts**, de petits blocs de mise en avant, jamais des
+> contrôles qu'on touche. La ligne du § est corrigée en conséquence : **la
+> quasi-totalité des contrôles interactifs de ce projet — marqueur, bouton,
+> champ — vit à `--radius-sm`. `--radius` est la valeur la plus rare, pas la
+> plus commune.**
 >
 > **Conséquence pour le lot 11 : la migration n'est PAS mécanique.** Les 17
 > valeurs littérales ne se mappent pas toutes sur un des quatre pas (10px, 5px,

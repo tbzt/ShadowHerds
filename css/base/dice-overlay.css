@@ -960,7 +960,7 @@ input[type="range"]#risk-dice-slider {
   color: var(--text);
   background: var(--bg-mid);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: var(--sp-1) var(--sp-2);
 }
 .preroll-gain-static {
