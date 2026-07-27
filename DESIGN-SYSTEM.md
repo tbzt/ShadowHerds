@@ -2,6 +2,10 @@
 
 *Rédigé par Estelle — direction design (UX, UI, psychologie cognitive).*
 *Version 1 — 27 juillet 2026. Établi sur l'état du code au commit `c2cb013`.*
+*Version 1.1 — 27 juillet 2026 : correction du § 7 et du lot 10 (`.monitor-box`
+n'était pas à 20px — le doigt était déjà servi à 24px ; c'est la base souris à
+16px qui reste ouverte, et elle s'arbitre). Les chiffres du § 1 restent ceux de
+`c2cb013` : ils se recomptent avant et après chaque lot, jamais se recopient.*
 
 ---
 
@@ -974,11 +978,25 @@ D'où la règle réelle, en trois pas :
 | **Primaire** | **44px** (WCAG 2.5.5 AAA) | CTA, action reine, geste répété en séance |
 
 **Loi — plus un geste se répète en séance, plus sa cible est grande.** C'est
-le principe, pas le nombre. Corollaire mesuré et toujours ouvert dans le code :
-`.monitor-box` est à **20px** ([`responsive.css:623`](css/base/responsive.css)),
-donc **sous le plancher**, alors que c'est le geste le plus fréquent du MJ en
-combat. Les boutons voisins du même bloc sont à 32 et 38px. C'est l'inversion
-exacte de la loi.
+le principe, pas le nombre.
+
+*Correction du 2026-07-27 — la v1 de ce document se trompait ici.* Elle
+annonçait `.monitor-box` « à 20px, sous le plancher ». **C'est faux** :
+`.monitor-box[data-action]` est déjà à **24px** au doigt
+([`responsive.css:682`](css/base/responsive.css), bloc « CIBLES TACTILES »
+`@media (pointer: coarse)`), avec le calcul en commentaire — *11 cases SR5 × 24
++ 10 espacements × 4 = 304px, tiennent dans une carte mobile*. La loi 4 de la
+Grammaire a donc **déjà été appliquée**, et bien. Le scope `[data-action]` est
+lui aussi juste : il évite de grossir le moniteur de CI en lecture seule, qui
+n'est pas une cible.
+
+**Ce qui reste réellement ouvert est autre chose** : la base **hors bloc
+tactile** est à **16px** ([`pnj-card.css:909`](css/base/pnj-card.css)). Or WCAG
+2.5.8 ne parle pas du doigt, il parle du **pointeur** — à la souris aussi, la
+cible la plus fréquente du MJ est la plus petite de son bloc. C'est un défaut
+plus discutable que l'autre (la souris est précise, et la densité du moniteur
+porte de l'information), donc il s'**arbitre**, il ne se corrige pas
+mécaniquement. Voir le lot 10 du § 8.
 
 **Loi — un seul endroit règle la densité tactile** : le bloc
 `@media (pointer: coarse)` « CIBLES TACTILES » de `responsive.css`.
@@ -1012,7 +1030,7 @@ Huit lots. Chacun est livrable seul, sans dépendre du suivant. Ordonnés par
 | 7 | **Overlays** — 5 formes, focus trap partagé, ARIA, ordre des boutons | L | Moyen | Accessibilité + fin des empilements |
 | 8 | **États systématiques** — vide primo / vide filtré / chargement / erreur sur chaque collection | M | Faible | Le trou le plus large est comblé |
 | 9 | **Rapatrier `graph.css`** — 131 hex → tokens ; le graphe porte enfin l'édition | M | Faible | Cohérence d'identité |
-| 10 | **Solder `.monitor-box` à 20px** — sous le plancher de 24px, alors que c'est le geste le plus fréquent du MJ en combat | S | Faible | Corrige une inversion de la loi de Fitts, déjà mesurée |
+| 10 | **Arbitrer `.monitor-box` à 16px hors bloc tactile** — le doigt est déjà servi (24px, `responsive.css:682`) ; reste la base souris, sous le plancher WCAG 2.5.8. **À trancher, pas à corriger d'office** | S | Faible | Solde la dernière cible sous le plancher — ou acte qu'on l'assume |
 
 > Ces lots sont suivis sous les identifiants **D1 → D10** dans `PLAN_EXECUTION.md`
 > § « 🎛️ CHANTIER — Système de design », avec leur statut d'avancement. Le présent
