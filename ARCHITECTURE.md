@@ -508,6 +508,7 @@ modules d'édition ni du gros catalogue de créatures (~280 Ko + 238 Ko) :
 | Règles d'architecture (doctrine) | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | Changelog public (capacités livrées) | [CHANGELOG.md](CHANGELOG.md) |
 | Présentation utilisateur | [README.md](README.md) |
+| Système de design (tokens, carte, panneau, modale, états) | [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) — **la référence avant d'écrire du CSS** |
 | Structure (grilles, composants, transitions) | `css/base/*.css` — **un fichier = le nom du module JS qu'il habille** (voir ci-dessous) |
 | Habillage par édition (couleurs, typo) | `css/theme-*.css` (tokens `:root` surchargés par `[data-edition]`) |
 | Outils de build | **aucun** — pas de bundler, pas de script de version, rien à lancer avant un commit |
