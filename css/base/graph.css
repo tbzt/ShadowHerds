@@ -33,7 +33,7 @@
   border-radius: 6px;
   background:
     radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.03), transparent 70%),
-    var(--surface-1, #0e1620);
+    var(--bg);
 }
 
 /* Panneau latéral : la fiche vivante du nœud sélectionné, scrollable. */
@@ -44,7 +44,7 @@
   overflow-y: auto;
   padding: 12px;
   border-left: 1px solid var(--border, #2a3a49);
-  background: var(--surface-1, #0e1620);
+  background: var(--bg);
 }
 .graph-inspector.empty {
   display: flex;
@@ -213,19 +213,17 @@
 /* ============================================================
    « Cartes à silhouette » — le contenu de la maquette DANS le nœud (posé en
    foreignObject sur la silhouette SVG, cf. graphengine `_cardNode`). Teinté par
-   TYPE via `--tint` (tokens `--t-*` redéfinis ici pour résoudre DANS le
-   foreignObject : ils n'héritent pas de `.play-command`). Non interactif :
-   pointer-events:none → les gestes tombent sur la silhouette dessous.
+   TYPE via `--tint`, qui lit les tokens `--t-*` de `:root` (D9 — ils y sont
+   posés une fois pour toutes et s'héritent jusqu'ici, foreignObject compris).
+   Non interactif : pointer-events:none → les gestes tombent sur la silhouette
+   dessous.
    ============================================================ */
 .graph-node-fo { overflow: visible; }
 .graph-scene-card {
-  /* tokens de teinte par type (mêmes valeurs que .play-command) */
-  --t-accroche: var(--accent);
-  --t-reperage: #3fc7c7;
-  --t-action: #e0574f;
-  --t-sociale: var(--warning, #e0a516);
-  --t-decision: var(--accent-magic, #9a6bff);
-  --t-retombee: var(--accent-matrix, #2fbf74);
+  /* D9 : les tokens de teinte `--t-*` ne sont plus redéclarés ici. Ils sont
+     posés une seule fois sur :root (foundation.css) et s'héritent jusque
+     dans le foreignObject — la copie locale n'avait de raison d'être que
+     tant qu'ils vivaient sur .play-command, dont ce nœud ne descend pas. */
   box-sizing: border-box;
   width: 100%;
   height: 100%;
@@ -285,7 +283,11 @@
   font-size: 8.5px;
   letter-spacing: 0.03em;
   color: var(--text-dim, #c3ced9);
-  background: var(--surface-1, rgba(255, 255, 255, 0.04));
+  /* D9 — voile translucide, PAS une surface : la puce est posée sur une carte
+     déjà teintée par `--tint` (type d'étape), et le blanc à 4 % laisse cette
+     teinte transparaître. L'écrire `var(--surface-1, …)` était une erreur de
+     nommage — un fond opaque tuerait la teinte. Valeur littérale assumée. */
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
   padding: 1px 5px;
   border-radius: 5px;
@@ -356,7 +358,7 @@
   line-height: 1;
   border: 1px solid var(--border, #2a3a49);
   border-radius: 6px;
-  background: color-mix(in srgb, var(--surface-1, #0e1620) 82%, transparent);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
   color: var(--text, #dfe8f0);
   cursor: pointer;
   -webkit-backdrop-filter: blur(3px);
@@ -453,7 +455,7 @@
   font-size: 10px;
   fill: var(--text, #dfe8f0);
   paint-order: stroke;
-  stroke: var(--surface-1, #0e1620);
+  stroke: var(--bg);
   stroke-width: 3px;
   stroke-linejoin: round;
   user-select: none;
@@ -495,7 +497,7 @@
   padding: 6px 8px;
   border: 1px solid var(--border, #2a3a49);
   border-radius: 5px;
-  background: var(--surface-2, #16202b);
+  background: var(--bg-mid);
   color: var(--text, #dfe8f0);
   font: inherit;
   font-size: 0.85rem;
@@ -524,7 +526,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface-2, #16202b);
+  background: var(--bg-mid);
   color: var(--text-dim, #9fb0c0);
   font-size: 0.8rem;
   line-height: 1;
@@ -598,7 +600,7 @@
   padding: 3px;
   border: 1px solid var(--border, #2a3a49);
   border-radius: 8px;
-  background: var(--surface-2, #16202b);
+  background: var(--bg-mid);
 }
 .scenario-lenses .graph-weave-toggle {
   margin: 0;
@@ -633,9 +635,7 @@
   padding: 4px;
   border: 1px solid var(--border, #2a3a49);
   border-radius: 8px;
-  /* --surface-1 n'est défini nulle part (fallback hex toujours actif) — dette
-     de graph.css, hors scope D2 : rapatriement complet du fichier = D9. */
-  background: var(--surface-1, #0e1620);
+  background: var(--bg);
   box-shadow: var(--elev-2);
 }
 .scenario-menu-item {
@@ -662,7 +662,7 @@
   padding: 4px 8px;
   border-radius: 6px;
   border: 1px solid var(--border, #2a3a49);
-  background: var(--surface-2, #16202b);
+  background: var(--bg-mid);
   color: var(--text, #dce6f0);
   font-size: 0.85rem;
 }
@@ -686,7 +686,7 @@
   padding: 4px 9px;
   border-radius: 6px;
   border: 1px solid var(--border, #2a3a49);
-  background: var(--surface-2, #16202b);
+  background: var(--bg-mid);
   color: var(--text, #dce6f0);
   font-size: 0.8rem;
   cursor: pointer;
@@ -694,7 +694,7 @@
 }
 .scenario-type-btn:hover {
   border-color: var(--accent, #35e0e6);
-  background: color-mix(in srgb, var(--accent, #35e0e6) 10%, var(--surface-2, #16202b));
+  background: color-mix(in srgb, var(--accent, #35e0e6) 10%, var(--bg-mid));
 }
 .scenario-type-glyph {
   color: var(--accent, #35e0e6);
@@ -773,12 +773,12 @@
 /* ── S4 — calque d'indices (faits + pistes) ── */
 /* Bouton « ＋ Fait » de la barre d'ajout : teinte distincte des types de scène. */
 .scenario-info-btn {
-  border-color: #6f9fd8;
-  color: #9fc0e6;
+  border-color: var(--t-fait);
+  color: var(--t-fait-soft);
 }
 /* Marqueur de rôle (◆/◇) dans l'entête d'inspecteur. */
 .scenario-info-mark {
-  color: #9fc0e6;
+  color: var(--t-fait-soft);
 }
 .scenario-clue-hint {
   margin: 2px 0 6px;
@@ -788,7 +788,7 @@
 .scenario-clue-floating {
   display: inline-block;
   padding: 2px 8px;
-  border: 1px dashed #6f9fd8;
+  border: 1px dashed var(--t-fait);
   border-radius: 10px;
   color: var(--text-dim, #9fb0c0);
   font-size: 0.76rem;
@@ -945,7 +945,7 @@
   cursor: pointer;
 }
 .scenario-tl-fact:hover { background: var(--bg-card, #1b2735); }
-.scenario-tl-fact.progression { border-left-color: #9fc0e6; }
+.scenario-tl-fact.progression { border-left-color: var(--t-fait-soft); }
 .scenario-tl-when {
   min-width: 18px;
   text-align: center;

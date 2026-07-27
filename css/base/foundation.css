@@ -159,6 +159,25 @@
      (topos, notes, états vides), jamais sur une grille ou un tableau. */
   --measure: 68ch;
 
+  /* ---- Teintes par TYPE D'ÉTAPE de trame (`--t-*`) ---- D9.
+     Palette catégorielle de 7 types, universelle (0 branche d'édition) :
+     4 des 7 dérivent d'un token sémantique, 3 portent leur propre teinte
+     faute d'équivalent (le cyan « repérage », le rouge « action », le bleu
+     « fait/indice » n'ont pas de token sémantique qui les porte).
+     ⚠️ Déclarée ICI et NULLE PART AILLEURS. Elle vivait en double, à valeurs
+     identiques, dans .play-command (shadows-contacts.css) et
+     .graph-scene-card (graph.css) — cette dernière copie n'existait que
+     parce que le foreignObject du nœud n'hérite pas de .play-command. Posée
+     sur :root, elle hérite partout, foreignObject compris. */
+  --t-accroche: var(--accent);
+  --t-reperage: #3fc7c7;
+  --t-action: #e0574f;
+  --t-sociale: var(--warning);
+  --t-decision: var(--accent-magic);
+  --t-retombee: var(--accent-matrix);
+  --t-fait: #6f9fd8; /* liseré du calque ◇ Indices (S4) */
+  --t-fait-soft: #9fc0e6; /* son texte, plus clair */
+
   /* ---- Points de rupture ---- DOCUMENTAIRES : CSS ne résout pas une
      var() dans une media query, il faut donc recopier la valeur. Ils sont ici
      pour qu'il existe UNE référence de l'échelle visée, contre les 14 seuils

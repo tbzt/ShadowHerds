@@ -610,15 +610,10 @@
    l'accent d'édition + gros nom (display) + cellules d'horloge + jalons ;
    flair « trame McCarthy » : couleur par TYPE de scène (tokens `--t-*`
    universels) et horloges segmentées. 0 branche d'édition (tout via `--state`
-   + tokens), 0 couleur en dur hors le cyan « repérage ». */
-.play-command {
-  --t-accroche: var(--accent);
-  --t-reperage: #3fc7c7;
-  --t-action: #e0574f;
-  --t-sociale: var(--warning, #e0a516);
-  --t-decision: var(--accent-magic, #9a6bff);
-  --t-retombee: var(--accent-matrix, #2fbf74);
-}
+   + tokens), 0 couleur en dur.
+   D9 : les 6 tokens `--t-*` qui étaient redéclarés ici vivent désormais dans
+   `foundation.css` (:root), déclarés UNE fois — ils étaient en double avec
+   `.graph-scene-card`, aux mêmes valeurs. Ils s'héritent, plus rien à poser. */
 /* header plein-cadre (bleed par marges négatives) : dégradé d'état + liseré */
 .play-cockpit-head {
   position: relative;
@@ -981,7 +976,10 @@
   height: 24px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  background: var(--surface-1, rgba(255, 255, 255, 0.04));
+  /* D9 — voile translucide, PAS une surface (cf. `.gsc-chip`) : la case se
+     pose sur le fond du tiroir sans l'occulter. `var(--surface-1, …)` était
+     une erreur de nommage — le token n'a jamais existé. Littérale assumée. */
+  background: rgba(255, 255, 255, 0.04);
   color: var(--text-dim);
   cursor: pointer;
   line-height: 1;
