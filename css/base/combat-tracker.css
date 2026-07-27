@@ -1704,6 +1704,50 @@
   border-radius: 4px;
   background: var(--bg-mid);
 }
+
+/* Bilan de round (E3b) — la ligne reprend EXACTEMENT la grammaire de
+   .react-row (qui · quoi · le geste à droite) : c'est la même lecture, à un
+   autre moment. Aucun composant neuf, les boutons sont des .react-btn. Une
+   durée échue n'a pas de geste propre — la purge est groupée en pied de
+   panneau — d'où son traitement estompé. */
+.round-line {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.35rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-mid);
+}
+.round-line + .round-line {
+  margin-top: 0.3rem;
+}
+.round-line-who {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+.round-line-what {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+}
+.round-line.is-echu {
+  opacity: 0.72;
+}
+#round-panel-purge {
+  width: 100%;
+  margin-top: var(--sp-2);
+}
+/* MESURÉ sur 375×812 : une ligne fait 57px (gouttière comprise) et le chrome
+   du panneau 146px → 10 lignes tiennent, la 11ᵉ pousse « Continuer » hors de
+   l'écran. Une scène de 5 PNJ qui brûlent et s'empoisonnent y arrive. Seul le
+   CORPS défile : le titre et le bouton de sortie restent atteignables, sinon
+   un bilan trop long devient un piège dont on ne sort qu'à l'Échap. */
+#round-panel-body {
+  max-height: min(60vh, 570px);
+  overflow-y: auto;
+}
 .react-name {
   flex: 1;
   min-width: 0;

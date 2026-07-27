@@ -183,7 +183,14 @@ export const EditionAnarchy1 = {
           "Plus de Narration ET plus de dépense de points d'Anarchy",
           "Survient quand un personnage déjà Sonné subit de nouveaux dommages",
         ] },
+      // Le SEUL état du projet dont la difficulté MONTE avec le temps : « très
+      // facile (4 dés) au premier Tour, +1 niveau de difficulté à chaque Tour ».
+      // `ages: true` fait compter les Tours écoulés depuis la pose ; `escalates`
+      // dit que le seuil suit ce compteur. L'app annonce le cran courant — elle
+      // ne lance pas le test et ne tue personne (R4).
       { key: "mourant", name: "Mourant", levels: 0, quick: true, page: "p.157",
+        ages: true,
+        roundTest: { when: "endOfRound", pool: ["FOR", "VOL"], threshold: 4, escalates: 1 },
         lines: [
           "Test Force + Volonté à la FIN DE CHAQUE TOUR (sans malus de blessure)",
           "Difficulté très facile (4 dés) au premier Tour, +1 cran par Tour",

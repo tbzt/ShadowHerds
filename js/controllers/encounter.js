@@ -795,7 +795,7 @@ export const Encounter = {
     // Registre du drapeau « devrait fuir » et de la doctrine (f) : l'app dit
     // ce qu'elle a vu, le MJ tranche. Compté AVANT l'incrément du round, sur
     // l'unité de durée de l'édition (round en SR5/SR6, narration en Anarchy).
-    this._annonceEtatsEchus();
+    this._bilanDeRound();
     this.state.round++;
     this.state.pass = 1;
     // Nouveau round : tout le monde rejoue, les actions retardées (Vague C)
@@ -931,22 +931,60 @@ export const Encounter = {
       combattants noierait le MJ, et le geste de retrait reste le ✕ du tag (ou
       le ⛨ pour tout un PNJ). Muet s'il n'y a rien à dire — l'écrasante
       majorité des rounds. */
-  _annonceEtatsEchus() {
-    const echus = [];
+  /** BILAN DE FRONTIÈRE DE ROUND (lot E3b) — ce que l'horloge permet de dire
+      au bon moment, pour toute la scène d'un coup.
+
+      Trois natures, collectées par `Statuses.roundReport` (pur) : les dégâts
+      périodiques (Enflammé, Corrodé…), les tests de round (Nauséeux, A1
+      Mourant) et les durées échues. Rien n'est appliqué ici — le panneau
+      PROPOSE, le MJ tranche. Seule exception assumée : la décroissance et le
+      vieillissement (`Statuses.advanceRound`), qui sont l'arithmétique que le
+      livre écrit et que le MJ a déclenchée en posant l'état.
+
+      Muet quand il n'y a rien à dire, c'est-à-dire l'écrasante majorité des
+      rounds : le panneau ne doit jamais devenir un péage entre deux tours. */
+  _bilanDeRound() {
+    const lignes = [];
+    const eteints = [];
     for (const c of this.state.combatants) {
       const pnj = PnjLookup.find(c.pnjId);
       if (!pnj) continue;
-      // Frontière « round » : elle fait aussi expirer ce qui ne durait qu'une
-      // passe (SR5 Surpris, p.193-194) — un nouveau round ouvre une nouvelle
-      // passe. L'échelle des portées vit dans Statuses, pas ici.
-      for (const s of Statuses.expiring(pnj, "round")) echus.push(`${pnj.name} : ${s.name}`);
+      // UN SEUL panneau pour les deux frontières : « fin du round N » et
+      // « début du round N+1 » sont le même instant pour le MJ. Deux panneaux
+      // qui s'enchaînent seraient deux péages au lieu d'un bilan.
+      for (const when of ["endOfRound", "startOfRound"]) {
+        const r = Statuses.roundReport(pnj, when);
+        for (const d of r.degats) lignes.push({ kind: "degat", when, pnj, ...d });
+        for (const t of r.tests) lignes.push({ kind: "test", when, pnj, ...t });
+        for (const e of r.echus) lignes.push({ kind: "echu", when, pnj, key: e.key, name: e.name });
+      }
+      // Décroissance + vieillissement : APRÈS la lecture, pour que le bilan
+      // annonce la VD du round qui s'achève et non celle du suivant.
+      eteints.push(...Statuses.advanceRound(pnj).map((n) => `${pnj.name} : ${n}`));
     }
-    if (!echus.length) return;
-    toast(
-      echus.length === 1
-        ? `État échu — ${echus[0]}`
-        : `${echus.length} états échus — ${echus.slice(0, 2).join(" · ")}${echus.length > 2 ? "…" : ""}`,
-    );
+    if (eteints.length) toast(`${eteints.length === 1 ? "État éteint" : "États éteints"} — ${eteints.join(" · ")}`);
+    if (lignes.length) EncounterRenderer.openRoundPanel(lignes, this.state.round);
+  },
+
+  /** Retire d'un geste tous les états échus annoncés par le bilan. C'est le MJ
+      qui appuie — l'app n'a jamais retiré un état toute seule (doctrine (f) :
+      elle propose, comme le drapeau « devrait fuir »). Un seul geste au lieu
+      d'un ✕ par état, c'était la demande. */
+  purgeEtatsEchus(items) {
+    const touches = new Map();
+    for (const it of items || []) {
+      const pnj = PnjLookup.find(it.pnjId);
+      if (pnj && Statuses.set(pnj, it.key, 0) === 0) touches.set(pnj.id, pnj);
+    }
+    if (!touches.size) return;
+    Shadows.save();
+    // Même chemin de rafraîchissement que healCombatant : la carte de chaque
+    // PNJ touché, puis le tracker (dont les badges de ligne sont calculés).
+    for (const pnj of touches.values()) CardRenderer.refresh(pnj);
+    EncounterRenderer._activeCardId = null;
+    this._render();
+    const n = items.length;
+    toast(`${n} état${n > 1 ? "s" : ""} retiré${n > 1 ? "s" : ""}.`);
   },
 
   /** Remet à zéro le budget d'actions d'un combattant : appelé au début de son

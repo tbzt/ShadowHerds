@@ -115,6 +115,14 @@ export const Statuses = {
     else delete pnj.statuses[key];
     if (pnj.statuses && !Object.keys(pnj.statuses).length) delete pnj.statuses;
 
+    // L'âge (lot E3b) meurt avec l'état — sinon un Mourant retiré puis reposé
+    // repartirait à la difficulté où il s'était arrêté, alors que le livre le
+    // fait repartir « au premier Tour ».
+    if (!next && pnj.statusAge) {
+      delete pnj.statusAge[key];
+      if (!Object.keys(pnj.statusAge).length) delete pnj.statusAge;
+    }
+
     // Exclusions du livre (Enflammé annule et est annulé par Trempé et
     // Frigorifié ; Pétrifié annule tout état à dommages). Déclarées par le
     // catalogue, appliquées ici — et seulement à la POSE, jamais au retrait :
@@ -216,6 +224,103 @@ export const Statuses = {
       }));
   },
 
+  /* ============================================================
+     AU FIL DU ROUND (lot E3b) — ce que l'horloge débloque.
+
+     E3 ne savait appliquer que ce qui était VRAI EN PERMANENCE (un malus de
+     dés, un score d'initiative). Les états qui disent « chaque round » n'ont
+     pas de valeur permanente à corriger : ils ont un RENDEZ-VOUS. Il manquait
+     l'horloge, pas la permission.
+
+     Ce que le round change est donc le MOMENT, jamais le POUVOIR. L'app pose
+     la bonne VD au bon instant et tend le bouton de jet ; elle ne lance pas la
+     résistance à la place du MJ, ne remplit aucun moniteur (qui n'accepte que
+     du NET, déjà encaissé) et ne tue personne. R4 et le garde-fou (e) tiennent
+     mot pour mot.
+     ============================================================ */
+
+  /** Nombre de tours écoulés depuis la pose, pour les états qui déclarent
+      `ages: true` (Anarchy 1 Mourant, dont la difficulté monte d'un cran par
+      Tour). 0 = posé ce tour-ci. Stocké à côté du niveau, même cycle de vie. */
+  age(pnj, key) {
+    return (pnj && pnj.statusAge && pnj.statusAge[key]) || 0;
+  },
+
+  /** Seuil COURANT d'un test de round, escalade comprise. Le livre A1 écrit
+      « très facile (4 dés) pour le premier Tour, et augmente d'un niveau de
+      difficulté à chaque Tour » : le seuil de base plus `escalates` par tour
+      d'ancienneté. Sans `escalates`, le seuil est fixe (SR6 Nauséeux). */
+  testThreshold(pnj, entry) {
+    const t = entry && entry.roundTest;
+    if (!t) return 0;
+    return t.threshold + (t.escalates || 0) * this.age(pnj, entry.key);
+  },
+
+  /** Le BILAN d'un PNJ à une frontière de round donnée ("startOfRound" ou
+      "endOfRound") : ce que le MJ doit se rappeler et que personne ne se
+      rappelle. Trois natures, jamais mélangées :
+        · `degats`  — une VD à résister (ou déjà nette, `resisted:false`)
+        · `tests`   — un jet à faire, avec son seuil du moment
+        · `echus`   — une durée arrivée à terme
+      Fonction PURE : elle ne mute rien, elle décrit. C'est l'appelant
+      (Encounter) qui applique la décroissance et incrémente les âges, et le MJ
+      qui tranche le reste. */
+  roundReport(pnj, when = "endOfRound") {
+    const out = { degats: [], tests: [], echus: [] };
+    if (!pnj) return out;
+    for (const s of this.active(pnj)) {
+      const p = s.periodic;
+      if (p && p.when === when) {
+        out.degats.push({
+          key: s.key,
+          name: s.name,
+          level: s.level,
+          vd: p.vd === "level" ? s.level : p.vd || 0,
+          type: p.type || "phys",
+          resisted: p.resisted !== false,
+        });
+      }
+      const t = s.roundTest;
+      if (t && t.when === when) {
+        out.tests.push({
+          key: s.key,
+          name: s.name,
+          pool: t.pool || [],
+          threshold: this.testThreshold(pnj, s),
+          age: this.age(pnj, s.key),
+          escalates: !!t.escalates,
+        });
+      }
+    }
+    if (when === "endOfRound")
+      out.echus = this.expiring(pnj, this.unit(pnj) === "narration" ? "narration" : "round");
+    return out;
+  },
+
+  /** Fait vieillir les états qui comptent leurs tours, et décroître ceux qui
+      s'éteignent seuls (« VD réduite de 1 par round »). C'est la SEULE mutation
+      automatique du lot : elle ne fait qu'appliquer une arithmétique que le
+      livre écrit et que le MJ a déclenchée en posant l'état. Renvoie les états
+      éteints par décroissance, pour que le round puisse le dire.
+      Passe par `set()` — donc par `Effects.transition` — pour qu'un état qui
+      s'éteint défasse proprement ses effets, jamais un `delete` brutal. */
+  advanceRound(pnj) {
+    if (!pnj || !pnj.statuses) return [];
+    const eteints = [];
+    for (const s of this.active(pnj)) {
+      if (s.ages) {
+        pnj.statusAge = pnj.statusAge || {};
+        pnj.statusAge[s.key] = this.age(pnj, s.key) + 1;
+      }
+      if (s.decay) {
+        const next = s.level - s.decay;
+        this.set(pnj, s.key, Math.max(0, next));
+        if (next <= 0) eteints.push(s.name);
+      }
+    }
+    return eteints;
+  },
+
   /** Contribution d'AVANTAGE de l'acteur — Anarchy uniquement (lot E2).
       Anarchy 2 p.65 : un avantage fait des 4-5-6 des succès, un désavantage
       ne garde que les 6. Et surtout : « Les avantages et désavantages se
@@ -244,6 +349,7 @@ export const Statuses = {
     const keys = Object.keys(pnj.statuses);
     for (const k of keys) this.set(pnj, k, 0);
     delete pnj.statuses;
+    delete pnj.statusAge; // l'âge (E3b) ne survit jamais à son état
     return keys.length;
   },
 

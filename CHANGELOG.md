@@ -12,6 +12,25 @@ commit.
 
 ## [Non publié]
 
+## [1.123.0] — 2026-07-27
+
+### Ajouté
+
+- **Le changement de round dresse le bilan de ce que les états réclament.**
+  Un panneau apparaît — et **seulement s'il a quelque chose à dire** — listant
+  pour toute la scène : les **dégâts périodiques** avec leur VD du moment
+  (« Enflammé 2 · VD 2P ») et le bouton d'encaissement à côté, les **tests de
+  round** avec leur réserve et leur seuil (« Nauséeux · CON + VOL (2) »), et
+  les **durées échues**, qui se retirent toutes **d'un seul geste** au lieu
+  d'un ✕ par état. Les jets partent par le lanceur habituel.
+- **Empoisonné s'éteint tout seul**, comme l'écrit le livre (« VD réduite de 1
+  par round ») — et le bilan annonce la VD du round qui s'achève, pas celle du
+  suivant.
+- **Mourant (Anarchy 1) compte ses Tours.** La difficulté monte d'un cran à
+  chaque Tour (p.157) : le panneau affiche le seuil courant et le rang du tour
+  (« FOR + VOL (6) · 3e tour »). L'app rappelle le test et tend les dés ; elle
+  ne le lance pas et ne tue personne.
+
 ## [1.122.0] — 2026-07-27
 
 ### Ajouté

@@ -417,7 +417,8 @@ export const EditionSR6 = {
         globalDice: { perLevel: 1 }, lines: [
         "−(niveau) dés à TOUTES les actions",
       ] },
-      { key: "corrode", name: "Corrodé", levels: null, page: "p.55-58", lines: [
+      { key: "corrode", name: "Corrodé", levels: null, page: "p.55-58",
+        periodic: { when: "endOfRound", vd: "level", type: "phys", resisted: true }, lines: [
         "Chaque round, résister à (niveau)P",
         "Ni Trempé ni l'eau ne l'annulent forcément — arbitrage MJ",
       ] },
@@ -446,12 +447,19 @@ export const EditionSR6 = {
         "−1 dé à toutes les actions",
         "Sprinter impossible",
       ] },
-      { key: "empoisonne", name: "Empoisonné", levels: null, quick: true, page: "p.55-58", lines: [
+      // `decay: 1` — « VD réduite de 1 par round ». C'est le seul état qui
+      // s'éteint SEUL, sans que personne n'agisse : le niveau décroît, et à 0
+      // l'état disparaît. Arithmétique pure sur un état posé par le MJ, donc
+      // automatique au même titre que le malus de dés (critère E3).
+      { key: "empoisonne", name: "Empoisonné", levels: null, quick: true, page: "p.55-58",
+        periodic: { when: "endOfRound", vd: "level", type: "choice", resisted: true },
+        decay: 1, lines: [
         "Chaque fin de round, résister à une VD de (niveau)P ou E selon l'effet",
         "VD réduite de 1 par round",
       ] },
       { key: "enflamme", name: "Enflammé", levels: null, quick: true, page: "p.55-58",
-        cancels: ["trempe", "frigorifie"], cancelledBy: ["trempe", "frigorifie"], lines: [
+        cancels: ["trempe", "frigorifie"], cancelledBy: ["trempe", "frigorifie"],
+        periodic: { when: "endOfRound", vd: "level", type: "phys", resisted: true }, lines: [
         "Chaque round, résister à une VD de (niveau)P",
         "Action majeure + test Agilité + Réaction (2) pour l'éteindre",
         "Annule et est annulé par Trempé et Frigorifié",
@@ -494,7 +502,11 @@ export const EditionSR6 = {
         "Les caméras et détecteurs inorganiques voient normalement",
         "Version supérieure : les appareils sont affectés aussi",
       ] },
-      { key: "nauseeux", name: "Nauséeux", levels: 0, page: "p.55-58", lines: [
+      // Test de DÉBUT de round : l'app le rappelle et offre le jet, elle ne
+      // lit pas le résultat (« échec : impossible d'agir » est un arbitrage,
+      // pas une soustraction — cf. ce qu'E3 refuse d'automatiser).
+      { key: "nauseeux", name: "Nauséeux", levels: 0, page: "p.55-58",
+        roundTest: { when: "startOfRound", pool: ["CON", "VOL"], threshold: 2 }, lines: [
         "Début de round : test Constitution + Volonté (2)",
         "Échec : impossible d'agir ce round",
         "Réussite : −1 action mineure",
@@ -536,7 +548,11 @@ export const EditionSR6 = {
         "Perte de la communication orale (signes, texto… restent possibles)",
         "Le MJ décide si des compétences comme Influence sont empêchées",
       ] },
-      { key: "sanguinolent", name: "Sanguinolent", levels: null, page: "Cartes d'états A02", lines: [
+      // `resisted: false` — le livre dit « 1P NON RÉSISTÉ ». Pas de jet à
+      // proposer : le chiffre est déjà net, donc directement applicable au
+      // moniteur (qui n'accepte que du net). Seul état du catalogue dans ce cas.
+      { key: "sanguinolent", name: "Sanguinolent", levels: null, page: "Cartes d'états A02",
+        periodic: { when: "endOfRound", vd: 1, type: "phys", resisted: false }, lines: [
         "1P NON RÉSISTÉ à chaque fin de round, pendant (niveau) unités de temps",
         "Annulé par un traitement médical (Premiers soins, médikit, Soins)",
       ] },

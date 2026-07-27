@@ -1524,6 +1524,137 @@ export const EncounterRenderer = {
   },
 
 
+  /* ========================================================
+     BILAN DE ROUND (lot E3b) — le panneau qui dit ce que le round réclame.
+
+     Il n'apparaît QUE s'il a quelque chose à dire : sans état périodique ni
+     test ni durée échue, le changement de round reste ce qu'il était, un tap.
+     C'est la condition pour qu'il ne devienne pas un péage entre deux tours.
+
+     Il PROPOSE et n'exécute rien : chaque ligne tend un bouton, le MJ appuie
+     ou ferme. Les jets partent par `data-roll`, capté par la délégation
+     document de DiceRoller — aucun chemin de jet neuf. Réutilise le gabarit
+     `.risk-panel-overlay` du panneau pré-jet, aucun composant neuf.
+     ======================================================== */
+
+  /** Ouvre le bilan pour un jeu de lignes ({kind, when, pnj, …}). */
+  openRoundPanel(lignes, round) {
+    this._ensureRoundPanel();
+    this._roundLignes = lignes;
+    const p = document.getElementById("round-panel");
+    document.getElementById("round-panel-title").textContent = `Fin du round ${round}`;
+    document.getElementById("round-panel-body").innerHTML = lignes
+      .map((l, i) => this._roundLigne(l, i))
+      .join("");
+    // Le bouton de purge n'existe que s'il y a quelque chose à purger.
+    const echus = lignes.filter((l) => l.kind === "echu");
+    const purge = document.getElementById("round-panel-purge");
+    purge.hidden = !echus.length;
+    purge.textContent = `Retirer ${echus.length} état${echus.length > 1 ? "s" : ""} échu${echus.length > 1 ? "s" : ""}`;
+    p.removeAttribute("hidden");
+    void p.offsetWidth;
+    p.classList.add("show");
+  },
+
+  /** Une ligne du bilan. Trois natures, trois verbes :
+      · dégât résisté   → ⛊ le jet d'encaissement, réserve du PNJ
+      · dégât net       → ✸ l'application directe (le livre dit « non résisté »)
+      · test de round   → ⚄ le jet, avec son seuil du moment
+      · durée échue     → aucun bouton propre, la purge groupée s'en charge */
+  _roundLigne(l, i) {
+    const nom = this._compactName(l.pnj.name);
+    const quand = l.when === "startOfRound" ? "début" : "fin";
+    if (l.kind === "degat") {
+      const type = l.type === "stun" ? "E" : l.type === "choice" ? "P ou E" : "P";
+      const soak = l.pnj.damageResist || 0;
+      const geste = l.resisted
+        ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${nom}" data-roll-pnj="${l.pnj.id}" title="Résister à ${l.vd}${type}"><span class="react-glyph" aria-hidden="true">⛊</span> ${soak}</button>`
+        : `<button class="react-btn react-btn-danger" data-action="round-apply" data-idx="${i}" title="Dégâts déjà nets — le livre dit « non résisté »"><span class="react-glyph react-glyph-danger" aria-hidden="true">✸</span> ${l.vd}${type}</button>`;
+      return `<div class="round-line">
+        <span class="round-line-who">${nom}</span>
+        <span class="round-line-what">${Utils.escHtml(l.name)}${l.level > 1 ? ` ${l.level}` : ""} · VD ${l.vd}${type}${l.resisted ? "" : " non résisté"}</span>
+        ${geste}
+      </div>`;
+    }
+    if (l.kind === "test") {
+      const pool = (l.pool || []).reduce((n, k) => n + (Actor.attr(l.pnj, k) || 0), 0);
+      // Ordinal français : « 1er tour », puis « 2e », « 3e »… (le livre A1
+      // compte à partir du premier Tour, d'où le +1 sur l'âge, qui vaut 0 au
+      // tour de la pose).
+      const rang = l.age + 1;
+      const esc = l.escalates ? ` · ${rang}${rang === 1 ? "er" : "e"} tour` : "";
+      return `<div class="round-line">
+        <span class="round-line-who">${nom}</span>
+        <span class="round-line-what">${Utils.escHtml(l.name)} · ${(l.pool || []).join(" + ")} (${l.threshold})${esc}</span>
+        <button class="react-btn" data-roll="${pool}" data-roll-label="${Utils.escHtml(l.name)} — ${nom}" data-roll-pnj="${l.pnj.id}" title="Seuil ${l.threshold}"><span class="react-glyph" aria-hidden="true">⚄</span> ${pool}</button>
+      </div>`;
+    }
+    return `<div class="round-line is-echu">
+      <span class="round-line-who">${nom}</span>
+      <span class="round-line-what">${Utils.escHtml(l.name)} · durée échue (${quand} de round)</span>
+    </div>`;
+  },
+
+  _ensureRoundPanel() {
+    if (document.getElementById("round-panel")) return;
+    const p = document.createElement("div");
+    p.id = "round-panel";
+    p.className = "risk-panel-overlay";
+    p.setAttribute("hidden", "");
+    p.innerHTML = `
+      <div class="risk-panel" role="dialog" aria-label="Bilan de fin de round">
+        <div class="risk-panel-head">
+          <span class="risk-panel-title" id="round-panel-title">Fin de round</span>
+          <button class="risk-panel-close" id="round-panel-close" aria-label="Fermer">✕</button>
+        </div>
+        <div id="round-panel-body"></div>
+        <button class="react-btn" id="round-panel-purge" data-action="round-purge" hidden></button>
+        <button class="risk-roll-btn" id="round-panel-ok">Continuer</button>
+      </div>`;
+    document.body.appendChild(p);
+    const close = () => this.closeRoundPanel();
+    p.addEventListener("click", (e) => {
+      if (e.target === p) close();
+    });
+    document.getElementById("round-panel-close").addEventListener("click", close);
+    document.getElementById("round-panel-ok").addEventListener("click", close);
+    // Le panneau vit sur `document.body` (il doit flotter au-dessus du
+    // tracker), donc HORS de la délégation d'Encounter, qui est bornée à
+    // l'overlay. Il porte donc ses propres écouteurs et appelle le contrôleur
+    // par `window.Encounter` — le même pont assumé que cardrenderer↔DiceRoller
+    // (cf. diceroller.js « un import inverse créerait un cycle »).
+    p.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-action]");
+      if (!b) return;
+      if (b.dataset.action === "round-purge") {
+        Encounter.purgeEtatsEchus(
+          (this._roundLignes || [])
+            .filter((l) => l.kind === "echu")
+            .map((l) => ({ pnjId: l.pnj.id, key: l.key })),
+        );
+        close();
+      }
+      if (b.dataset.action === "round-apply") {
+        const l = (this._roundLignes || [])[parseInt(b.dataset.idx, 10)];
+        if (l) {
+          Encounter.damageCombatant(l.pnj.id, l.vd, { type: l.type === "stun" ? "stun" : "phys" });
+          b.disabled = true; // un dégât net ne s'applique qu'une fois par round
+        }
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !document.getElementById("round-panel").hasAttribute("hidden")) close();
+    });
+  },
+
+  closeRoundPanel() {
+    const p = document.getElementById("round-panel");
+    if (!p) return;
+    p.classList.remove("show");
+    p.setAttribute("hidden", "");
+    this._roundLignes = null;
+  },
+
   /** Légende commune (trans-édition) des glyphes du cockpit de combat, ajoutée
       à l'Aide « ? » à la suite de la légende d'édition (App._renderHelpLegend).
       Vit ici, avec le cockpit qui possède ces glyphes, plutôt que dupliquée

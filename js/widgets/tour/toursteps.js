@@ -648,6 +648,11 @@ export const TourSteps = {
       title: "Les états qui comptent baissent vraiment les réserves",
       body: "Quatre états SR6 — Confus, Électrocuté, Fatigué, Frigorifié, les seuls que le livre écrit « à toutes les actions » — entrent maintenant dans toutes les réserves affichées, avec un badge ⊘ −ND qui nomme ses sources : le chiffre ne baisse jamais sans qu'on sache pourquoi. L'encaissement reste exempt, comme l'écrit le livre. Désorienté retire ses 4 points d'initiative et verrouille le panneau d'Atout (« ni gain ni dépense ») ; en SR5, Surpris retire ses 10 points et se réapplique à chaque relance d'initiative tant qu'il est posé. Les vingt-quatre autres états restent affichés et sourcés — « Aveuglé −3 aux tests liés à la vision » ne peut pas devenir un −3 global sans être faux la plupart du temps.",
     },
+    {
+      id: "wn-bilan-round", anchor: "nav-combat", tours: ["whatsnew"], since: "1.123.0", fallback: "center",
+      title: "Le round dresse son bilan",
+      body: "En passant au round suivant, un panneau liste ce que les états réclament — et il n'apparaît que s'il a quelque chose à dire. Qui brûle, avec la VD du moment et le bouton d'encaissement à côté (« Enflammé 2 · VD 2P »). Qui doit faire un test de round, avec sa réserve et son seuil (« Nauséeux · CON + VOL (2) »). Quelles durées sont échues — et elles se retirent toutes d'un seul geste. Empoisonné décroît tout seul comme le dit le livre, et Mourant (Anarchy 1) compte ses Tours : la difficulté monte d'un cran à chaque fois, le panneau affiche le seuil courant. L'app pose la bonne valeur au bon moment et vous tend les dés — elle ne lance rien à votre place et ne remplit aucun moniteur.",
+    },
   ],
 };
 
