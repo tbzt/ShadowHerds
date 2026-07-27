@@ -376,6 +376,38 @@ L'échelle base 4 existe. **20 valeurs de `gap` littérales cohabitent avec.**
 optiques assumées et commentées (alignement d'un liseré, correction d'un
 demi-pixel).
 
+> **Tranché (2026-07-27) — pas de `--sp-0` sous 4px.** Le lot 11 a mesuré 58
+> `gap` sous `--sp-1` (1px×8, 2px×14, 3px×18, plus leurs équivalents `rem`).
+> Une lecture complète, pas un comptage, montre que ce n'est pas UN manque de
+> pas à l'échelle mais DEUX phénomènes distincts, confondus par le grep :
+>
+> 1. **Des paires densité desktop/tactile déjà mesurées et volontaires.**
+>    `.monitor-boxes` (3px au repos) et `.group-item-actions` (2px) portent
+>    chacune une surcharge `gap: var(--sp-1)` dans le bloc tactile
+>    `responsive.css`. Le resserrement au repos n'est pas une imprécision :
+>    c'est le pendant exact du geste D10 (le doigt a besoin de plus d'air que
+>    la souris). **Les fondre en une seule valeur --sp-1 effacerait la
+>    distinction qu'elles existent pour porter.**
+> 2. **Des gaps structurels, pas rythmiques**, sur des listes où chaque
+>    élément porte déjà son propre `padding` — `.card-menu`/`.bulk-move-menu`/
+>    `.contact-pjlink-menu`/`.scenario-menu-pop` (menus popover, 1-2px) et
+>    `.cg-stepper` (bouton +/- accolé). Un menu de système ne respire pas
+>    entre ses lignes ; c'est la Loi 2.5.8 de tout OS de bureau. Ce sont des
+>    valeurs **optiques**, au sens exact de la loi ci-dessus — elles restent
+>    littérales, commentées site par site, jamais dans l'échelle.
+>
+> **Verdict : l'échelle reste à 7 pas.** Ajouter un `--sp-0` généraliserait
+> une distinction qui n'est vraie que pour une poignée de sites mesurés, et
+> contredirait le principe même du chantier (réduire le nombre de valeurs
+> distinctes, pas en ajouter une pour absorber le désordre existant). Le
+> reste des 58 sites (dominante 3px sur rangées de jetons/pastilles/points —
+> `.edge-tokens`, `.niveau-dots`, `.nav-btn`…) n'a **pas** ce statut protégé :
+> ce sont des candidats normaux à `--sp-1`, à vérifier un par un comme les
+> vagues précédentes — la loi 1 (« à l'intérieur d'un marqueur ») les couvre
+> déjà. **Avant toute conversion, vérifier si le site a une paire tactile
+> déjà posée** (`grep` la classe dans le bloc `@media (pointer: coarse)`) —
+> si oui, c'est protégé comme `.monitor-boxes`, pas un candidat.
+
 *Pourquoi c'est plus qu'une coquetterie* : un rythme irrégulier n'est jamais
 perçu consciemment, mais il augmente mesurablement le temps de balayage
 visuel. À la table, c'est exactement la ressource qui manque.
