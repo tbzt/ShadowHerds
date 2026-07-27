@@ -221,7 +221,7 @@
   line-height: 1;
   background: var(--bg-mid);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   color: var(--text-dim);
   cursor: pointer;
 }

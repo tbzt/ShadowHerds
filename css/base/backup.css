@@ -130,7 +130,7 @@
   background: transparent;
   border: 1px solid var(--danger);
   color: #e74c3c;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 0.55rem var(--sp-4);
   font-family: var(--font-display);
   font-weight: 600;

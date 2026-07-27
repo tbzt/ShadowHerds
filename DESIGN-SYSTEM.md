@@ -430,8 +430,8 @@ jamais été. Il fait l'objet du **lot 11**.
 **Échelle finale — quatre pas :**
 
 ```css
---radius-sm:   3px;   /* marqueurs, pastilles, micro-contrôles */
---radius:      8px;   /* champs, boutons, encarts */
+--radius-sm:   3px;   /* marqueurs, pastilles, micro-contrôles, BOUTONS */
+--radius:      8px;   /* champs, encarts */
 --radius-lg:  12px;   /* cartes, overlays, feuilles */
 --radius-pill: 999px; /* pastilles pilulaires, jauges */
 ```
@@ -439,6 +439,16 @@ jamais été. Il fait l'objet du **lot 11**.
 > **`--radius` vaut 8px, pas 6px.** Ma v1 proposait 6 ; le code portait déjà 8,
 > et le lot 1 étant à delta visuel nul, c'est 8 qui a été gravé. La valeur
 > exacte importe moins que le fait qu'il n'y en ait **qu'une**.
+>
+> **« Boutons » a migré de `--radius` vers `--radius-sm` (2026-07-27, vague 3
+> du lot 11).** Ma v1 les rangeait avec les champs. Faux : `.btn-primary`/
+> `.btn-secondary` — les deux boutons les plus vus de tout le produit —
+> étaient **déjà** à 3px avant que ce document existe, et l'arbitrage sur 23
+> boutons secondaires (react/risk/graph/dice-sheet…) a confirmé la même
+> chose : la famille bouton de ce projet vit à `--radius-sm`, pas `--radius`.
+> Le code établi l'emporte sur mon annotation — même logique que le 6→8px
+> ci-dessus, deux fois de suite maintenant. **Restent aux « champs, encarts »**
+> les vrais rectangles porteurs de texte (`input`, panneaux, encarts).
 >
 > **Conséquence pour le lot 11 : la migration n'est PAS mécanique.** Les 17
 > valeurs littérales ne se mappent pas toutes sur un des quatre pas (10px, 5px,
