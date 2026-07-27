@@ -12,6 +12,21 @@ commit.
 
 ## [Non publié]
 
+## [1.121.0] — 2026-07-27
+
+### Ajouté
+
+- **Anarchy 1 et 2 ont leurs états, eux aussi — et en Anarchy 2 ils changent
+  vraiment le jet.** Anarchy 1 reçoit ce que le moniteur ne disait pas :
+  **Assommé**, **Mourant** (p.157) — dont l'app rappelle le test de fin de Tour
+  sans jamais le résoudre à votre place —, les deux séquelles des options de
+  récupération, et les conditions durables **Acide** / **En feu** (p.168).
+  « Sonné » n'y est pas : le moniteur le dit déjà. Anarchy 2 reçoit
+  **Avantage**, **Désavantage** et **Drain magique** (p.65, p.170) : posé sur
+  un PNJ, le désavantage part **dans le jet** — l'avantage et le désavantage se
+  cumulent sans jamais dépasser un cran, exactement comme l'écrit le livre.
+  Les durées s'y comptent en **Narrations**, pas en rounds.
+
 ## [1.120.0] — 2026-07-27
 
 ### Ajouté

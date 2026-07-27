@@ -188,6 +188,50 @@ export const EditionAnarchy2 = {
   fullDefenseFor() {
     return null;
   },
+  /** ÉTATS (lot E2) — Anarchy 2 n'a pas de table d'états comme SR6, mais elle
+      a un LEVIER que les autres éditions n'ont pas : l'avantage / désavantage
+      (p.65), déjà motorisé dans `Dice.computeAnarchyRoll` via `adv`. Un état
+      Anarchy 2 n'a donc pas besoin d'un malus de dés — il déclare `adv`, et le
+      jet en tient compte.
+
+      p.65 : un avantage fait des 4-5-6 des succès, un désavantage ne garde que
+      les 6. Et « les avantages et désavantages se cumulent, sans que le total
+      puisse dépasser un avantage ou un désavantage » → le bornage à ±1 vit
+      dans `Statuses.adv`, c'est la règle du livre.
+
+      Ce catalogue est VOLONTAIREMENT court. Les blessures (légère / grave /
+      incapacitante, p.68) sont déjà portées par le moniteur d'état et
+      `applyWound` : les redoubler ici serait le doublon que le garde-fou (c)
+      interdit. N'entrent donc que les conditions que le moniteur NE DIT PAS.
+
+      `unit: "narration"` — le tour de jeu d'Anarchy n'est pas un round, et
+      plusieurs durées du livre s'y comptent (« jusqu'à la fin de sa prochaine
+      narration »). */
+  statusModel: {
+    unit: "narration",
+    catalog: [
+      { key: "desavantage", name: "Désavantage", levels: 0, quick: true, adv: -1, page: "p.65",
+        lines: [
+          "Seuls les 6 comptent comme des succès",
+          "Ne se cumule pas : plusieurs désavantages valent un désavantage",
+          "Sources courantes : gaz lacrymogène, toxine débilitante, blessure",
+        ] },
+      { key: "avantage", name: "Avantage", levels: 0, quick: true, adv: 1, page: "p.65",
+        lines: [
+          "Les 4, 5 et 6 comptent comme des succès",
+          "S'annule avec un désavantage simultané (total borné à ±1)",
+        ] },
+      // Le Drain mineur d'Anarchy 2 EST un état à durée, déjà nommé en prose
+      // par drainModel (« désavantage magique jusqu'à la prochaine
+      // narration ») mais que rien ne permettait de poser.
+      { key: "drainMagique", name: "Drain magique", levels: 0, quick: true, adv: -1, page: "p.170",
+        until: "narration",
+        lines: [
+          "Désavantage jusqu'à la fin de la prochaine narration",
+          "Complication mineure d'un jet de risque magique",
+        ] },
+    ],
+  },
   /** Spec d'un combattant CI lancé dans l'initiative. Anarchy n'a pas
       d'initiative chiffrée (ordre narratif) : jeton narratif sans init, comme
       les PNJ Anarchy. narrative:true → Encounter n'appelle pas Dice. */

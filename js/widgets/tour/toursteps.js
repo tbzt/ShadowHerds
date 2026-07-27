@@ -638,6 +638,11 @@ export const TourSteps = {
       title: "Poser un état sur un PNJ (SR5/SR6)",
       body: "Zone Combat d'une fiche SR5 ou SR6 : un « ＋ » ouvre la liste des états. SR6 a ses 28 états du livre (Aveuglé, À terre, Enflammé, Couvert…) — huit en accès direct, le reste derrière « tous… ». SR5 n'a pas d'états mais ses modificateurs de situation persistants (Étendu, Couvert, Surpris…), sous leur nom du livre. Un tap pose, les taps suivants montent d'un cran (Aveuglé I → II → III → retiré), le ✕ retire. Chaque état affiche ses effets et sa page en infobulle : l'app les montre, elle ne les applique pas encore. Le ⛨ « Réinitialiser les moniteurs » les retire tous, et au changement de round elle signale ceux dont la durée est échue — sans jamais les enlever à votre place.",
     },
+    {
+      id: "wn-etats-anarchy", anchor: "nav-combat", tours: ["whatsnew"], since: "1.121.0", fallback: "center",
+      title: "Les états arrivent aussi en Anarchy",
+      body: "Anarchy 1 reçoit ce que le moniteur ne disait pas : Assommé, Mourant (l'app vous rappelle le test de fin de Tour, elle ne le résout pas), les séquelles des options de récupération, et les conditions durables Acide et En feu. « Sonné » n'y figure pas — vos cases le disent déjà. Anarchy 2 reçoit Avantage, Désavantage et Drain magique : posez un désavantage sur un PNJ et il part dans le jet, avec la règle du livre (avantage et désavantage se cumulent sans jamais dépasser un cran). Les durées se comptent ici en Narrations.",
+    },
   ],
 };
 

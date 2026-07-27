@@ -156,6 +156,69 @@ export const EditionAnarchy1 = {
   fullDefenseFor() {
     return null;
   },
+  /** ÉTATS (lot E2) — ⚠ arbitrage utilisateur du 2026-07-27 : le garde-fou
+      « investissement sur Anarchy 1 : maintenance seule » est LEVÉ pour ce
+      chantier, A1 tourne comme les autres éditions.
+
+      Anarchy 1 n'a pas de chapitre d'états, mais il a une ÉCHELLE de sortie de
+      combat que l'app ne modélisait qu'au premier cran : `isDestroyed` dit
+      « Sonné » et s'arrête là, alors que le livre continue jusqu'à la mort.
+
+      Ce catalogue ne porte donc PAS « Sonné » — le moniteur le dit déjà, et le
+      redoubler serait le doublon que le garde-fou (c) interdit. N'entrent que
+      les crans SUIVANTS, que rien ne peut déduire des cases, et les conditions
+      environnementales durables.
+
+      `unit: "narration"` — les durées d'Anarchy 1 se comptent en Narrations
+      (« pendant 2 Narrations », « deux Narrations de plus »), pas en rounds.
+      ⚠ Mourant est un COMPTE À REBOURS : l'app rappelle le test, elle ne le
+      résout pas et ne tue personne toute seule (R4 + « informer, jamais
+      décider »). La difficulté qui monte d'un cran par Tour reste au MJ. */
+  statusModel: {
+    unit: "narration",
+    catalog: [
+      { key: "assomme", name: "Assommé", levels: 0, quick: true, page: "p.157",
+        lines: [
+          "Aucune action possible",
+          "Plus de Narration ET plus de dépense de points d'Anarchy",
+          "Survient quand un personnage déjà Sonné subit de nouveaux dommages",
+        ] },
+      { key: "mourant", name: "Mourant", levels: 0, quick: true, page: "p.157",
+        lines: [
+          "Test Force + Volonté à la FIN DE CHAQUE TOUR (sans malus de blessure)",
+          "Difficulté très facile (4 dés) au premier Tour, +1 cran par Tour",
+          "Échec = mort · des soins font cesser l'état · la Chance est utilisable",
+          "S'ajoute à Assommé quand les dommages physiques débordent",
+        ] },
+      // Les deux options de récupération p.157 : elles ÉCHANGENT la sortie de
+      // combat contre un malus durable, et ce malus n'était noté nulle part.
+      { key: "desoriente", name: "Désorienté", levels: 0, quick: true, page: "p.157",
+        until: "narration",
+        lines: [
+          "−1 dé à tous les tests pendant 2 Narrations",
+          "Option « Donnez-moi juste une minute » : restaure une case au lieu d'être Assommé",
+        ] },
+      { key: "douleurs", name: "Douleurs persistantes", levels: 0, page: "p.157",
+        lines: [
+          "−1 dé à tous les tests jusqu'à la fin de la mission",
+          "Option « Ça va pas guérir tout de suite » : stabilise un Mourant",
+        ] },
+      // Conditions environnementales optionnelles (p.168) — les seuls dommages
+      // du jeu qui CONTINUENT après le contact.
+      { key: "acide", name: "Acide", levels: 0, quick: true, page: "p.168",
+        lines: [
+          "2 cases de dommages à l'Armure, ou 1 case physique une fois l'Armure pleine",
+          "Dure tant que le contact dure, PUIS deux Narrations de plus",
+          "Règle optionnelle — à valider avec la table",
+        ] },
+      { key: "feu", name: "En feu", levels: 0, quick: true, page: "p.168",
+        lines: [
+          "2 cases de dommages à l'Armure, ou 1 case physique une fois l'Armure pleine",
+          "Dure tant que le contact dure, PUIS deux Narrations de plus",
+          "Règle optionnelle — à valider avec la table",
+        ] },
+    ],
+  },
   /** Spec d'un combattant CI lancé dans l'initiative. Comme Anarchy 2,
       combat narratif → jeton sans init chiffrée. */
   icCombatant(ic) {

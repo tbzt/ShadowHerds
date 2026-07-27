@@ -141,6 +141,25 @@ export const Statuses = {
     return this.set(pnj, key, cur >= haut ? 0 : cur + 1);
   },
 
+  /** Contribution d'AVANTAGE de l'acteur — Anarchy uniquement (lot E2).
+      Anarchy 2 p.65 : un avantage fait des 4-5-6 des succès, un désavantage
+      ne garde que les 6. Et surtout : « Les avantages et désavantages se
+      cumulent, sans que le total puisse dépasser un avantage ou un
+      désavantage » — d'où le bornage à ±1, qui est la règle et pas une
+      précaution défensive. Trois désavantages valent un désavantage.
+
+      Agrège les deux sources : `pnj.drugAdv` (posé par le contrecoup d'une
+      drogue, antérieur à ce lot) et les états qui déclarent un `adv`. C'est le
+      sens de « `drugAdv` devient une contribution neutre » : le champ reste,
+      il cesse d'être la SEULE voie. Les jets lisent cette fonction, plus le
+      champ brut. */
+  adv(pnj) {
+    if (!pnj) return 0;
+    let n = pnj.drugAdv || 0;
+    for (const s of this.active(pnj)) if (s.adv) n += s.adv;
+    return Math.max(-1, Math.min(1, n));
+  },
+
   /** Retire tout — sortie de masse du ⛨ « Réinitialiser les moniteurs ».
       Passe par `set` état par état pour que les `revert` du lot E3 soient
       appelés, jamais un `delete pnj.statuses` brutal qui laisserait les

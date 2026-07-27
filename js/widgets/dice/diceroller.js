@@ -11,6 +11,7 @@ import { Actor } from "../../rules/actor.js";
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Dice } from "../../rules/dice.js";
 import { DiceLog } from "./dicelog.js";
+import { Statuses } from "../../rules/statuses.js";
 import { Storage } from "../../core/storage.js";
 import { Utils } from "../../core/utils.js";
 import { WeaponRoll } from "../../rules/weaponroll.js";
@@ -230,7 +231,10 @@ export const DiceRoller = {
               label: `${r.weaponName} (${r.matchedSkill || r.skill})`,
               detail: `${Utils.attrFullName(r.attr)} ${r.attrVal} + ${r.matchedSkill || r.skill} ${r.skillVal}`,
               rr: r.rr,
-              adv: pnj.drugAdv || 0,
+              // E2 — l'avantage vient de TOUTES ses sources (drogue + états),
+              // borné à ±1 comme l'exige Anarchy 2 p.65, et plus du seul champ
+              // brut `drugAdv` qui ignorait les états.
+              adv: Statuses.adv(pnj),
               who: pnj.name || "",
             });
           }
@@ -268,7 +272,7 @@ export const DiceRoller = {
         // complication. Base du label = avant « · » (spécialité).
         const skillBase = label.split(" · ")[0];
         const isMagic = !!(edMod.magicSkills && edMod.magicSkills.includes(skillBase));
-        this.openRiskPanel(n, { label, detail, rr, adv: (rollPnj && rollPnj.drugAdv) || 0, who, pnjId, isMagic, spellName });
+        this.openRiskPanel(n, { label, detail, rr, adv: Statuses.adv(rollPnj), who, pnjId, isMagic, spellName });
       } else {
         const opts = { label, detail, who, pnjId };
         // Edge pré-jet (mode panneau) : intercepte si options abordables.

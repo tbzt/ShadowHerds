@@ -154,6 +154,7 @@ Object.assign(CardRenderer, {
         riskRR: sorc ? sorc.rr || 0 : 0,
       });
     }
+    combatBody += this._statusRow(pnj, pnj.edition, deps);
     combatBody += this._drugRow(pnj, pnj.edition, deps);
     combatBody += this._armorChipRow(pnj);
     combatBody += this._vehicleChipRow(pnj, deps);
