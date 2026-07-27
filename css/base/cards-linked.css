@@ -76,7 +76,7 @@
   display: inline-block;
   margin-left: 6px;
   padding: 0 var(--sp-1);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 0.85em;
   font-weight: 700;
   color: var(--bg);

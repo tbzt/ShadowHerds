@@ -635,7 +635,7 @@ select optgroup {
   background: var(--badge);
   border: 1px solid var(--accent);
   padding: 2px var(--sp-2);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   letter-spacing: 0.1em;
   cursor: pointer;
   display: flex;
@@ -1025,7 +1025,7 @@ select optgroup {
   text-transform: uppercase;
   padding: 1px 5px;
   border: 1px solid;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 /* Bévue = warning, échec critique = danger (cf. palette sémantique). */
 #dice-result.is-glitch .dice-result-hits,

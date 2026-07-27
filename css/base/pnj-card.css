@@ -229,7 +229,7 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   padding: 3px 7px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: var(--badge);
   color: var(--accent);
   border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
@@ -820,7 +820,7 @@
   display: inline-block;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 1px 7px;
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
