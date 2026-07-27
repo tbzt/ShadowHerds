@@ -10,7 +10,7 @@
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-dim);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,7 +56,7 @@
   padding: 0 0.35rem;
   height: 28px;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   color: var(--text-dim);
   flex-shrink: 0;
 }
@@ -86,7 +86,7 @@
   color: var(--text-dim);
   font-size: var(--fs-sm);
   line-height: 1;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;

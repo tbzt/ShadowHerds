@@ -57,7 +57,7 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 0.1rem 0.4rem;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   color: var(--text-dim);
 }

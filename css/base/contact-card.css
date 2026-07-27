@@ -39,7 +39,7 @@
 .contact-anarchy-stats {
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 6px var(--sp-2);
   margin-bottom: 6px;
   display: flex;

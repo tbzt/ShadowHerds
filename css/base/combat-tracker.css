@@ -198,7 +198,7 @@
   min-width: 32px;
   min-height: 32px;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text);
   font-size: var(--fs-sm);
@@ -278,7 +278,7 @@
   font-family: var(--font-mono);
   font-size: var(--fs-md);
   line-height: 1;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 .encounter-init-step:hover {
@@ -345,7 +345,7 @@
   min-width: 32px;
   min-height: 32px;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text);
   font-size: var(--fs-sm);
@@ -608,7 +608,7 @@
   text-transform: uppercase;
   color: var(--text-dim);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 0.1rem 0.5rem;
   background: none;
   -webkit-appearance: none;
@@ -680,7 +680,7 @@
   color: var(--danger);
   background: color-mix(in srgb, var(--danger) 15%, transparent);
   border: 1px solid var(--danger);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 0.05rem 0.35rem;
 }
 .encounter-row.down .encounter-name,
@@ -701,7 +701,7 @@
   color: var(--info);
   background: color-mix(in srgb, var(--info) 15%, transparent);
   border: 1px solid var(--info);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 0.05rem 0.35rem;
 }
 /* Poignée de glisse (Vague C1) : réordonner à la souris ou au doigt.
@@ -827,7 +827,7 @@
   color: var(--warning);
   background: color-mix(in srgb, var(--warning) 15%, transparent);
   border: 1px solid var(--warning);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 0.1rem 0.4rem;
 }
 .encounter-flee.is-shaky .encounter-flee-tag {
@@ -839,7 +839,7 @@
   border: 1px solid var(--warning);
   color: var(--warning);
   background: transparent;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 0.15rem 0.5rem;
   cursor: pointer;
   min-height: 32px;
@@ -1045,7 +1045,7 @@
 .encounter-picker-search {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 0.3rem 0.5rem;
   width: 100%;
 }
@@ -1053,7 +1053,7 @@
 /* ---- Panneau d'ajout de combattants ---- */
 .encounter-add-panel {
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: var(--bg-mid);
   padding: 0.6rem;
   margin-bottom: var(--sp-4);
@@ -1324,7 +1324,7 @@
   gap: 0.2rem;
   padding: 0 0.3rem;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   color: var(--text-dim);
 }
 .encounter-noise[hidden] {
@@ -1545,7 +1545,7 @@
   color: var(--accent2);
   background: transparent;
   border: 1px solid color-mix(in srgb, var(--accent2) 40%, transparent);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 0.05rem 0.4rem;
   cursor: pointer;
 }
@@ -1594,7 +1594,7 @@
   width: 16px;
   height: 16px;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: var(--bg);
   cursor: pointer;
 }
@@ -1837,7 +1837,7 @@
   gap: 0.2rem;
   padding: 0 0.3rem;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   color: var(--text-dim);
 }
 .encounter-threat[hidden] {
@@ -1942,7 +1942,7 @@
   gap: var(--sp-2);
   background: var(--bg-mid);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 0.3rem var(--sp-2);
   color: var(--text);
   cursor: pointer;
@@ -2006,7 +2006,7 @@ kbd {
   background: var(--bg-mid);
   border: 1px solid var(--border);
   border-bottom-width: 2px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 0.15rem 0.45rem;
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
@@ -2111,7 +2111,7 @@ kbd {
   text-transform: uppercase;
   color: var(--text-dim);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 0.1rem 0.5rem;
 }
 .spectator-gauge {

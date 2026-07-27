@@ -596,7 +596,7 @@
     padding: 0.3rem var(--sp-4);
     margin-bottom: 0.6rem;
     border: 1px solid var(--border);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
   }
   .shadows-layout.sidebar-collapsed > .sidebar-reopen .sidebar-reopen-label {
     writing-mode: horizontal-tb;
@@ -720,7 +720,7 @@
   .monitor-box[data-action] {
     width: 24px;
     height: 24px;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
   }
   .monitor-boxes {
     gap: var(--sp-1);

@@ -104,7 +104,7 @@
   border: 1px solid var(--border);
   color: var(--text);
   padding: 0.4rem 0.6rem;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: var(--fs-base);
   transition: border-color var(--dur-base);
 }
@@ -118,7 +118,7 @@
   border: 1px solid var(--border);
   color: var(--text);
   padding: 0.4rem 0.6rem;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: var(--fs-sm);
   resize: vertical;
   min-height: 60px;
@@ -163,7 +163,7 @@
   border: 1px solid var(--border);
   color: var(--text);
   padding: 0.3rem var(--sp-2);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: border-color var(--dur-base);
 }
@@ -215,7 +215,7 @@
   background: var(--glow);
   border: 1px solid var(--accent);
   color: var(--text);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 0.1rem 0.35rem;
   font-size: var(--fs-xs);
   line-height: 1.3;
@@ -249,7 +249,7 @@
   z-index: var(--z-popover);
   background: var(--bg-overlay);
   border: 1px solid var(--accent);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   box-shadow: var(--elev-2);
   max-height: 320px;
   display: flex;
@@ -389,7 +389,7 @@
   border: 1px solid var(--border);
   color: var(--text);
   padding: 0.4rem 0.5rem;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: var(--fs-base);
 }
 .gen-count input:focus {
@@ -407,7 +407,7 @@
   font-size: var(--fs-base);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   transition:
     opacity var(--dur-base),
     transform var(--dur-fast);
@@ -429,7 +429,7 @@
   font-size: var(--fs-base);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   transition:
     border-color var(--dur-base),
     color var(--dur-base),
@@ -459,7 +459,7 @@
   font-size: var(--fs-base);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   transition:
     background var(--dur-base),
     border-color var(--dur-base),

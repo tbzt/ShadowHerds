@@ -61,7 +61,7 @@
   min-width: 120px;
   height: 6px;
   background: var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 .cg-budget-fill {
@@ -411,7 +411,7 @@
   width: 100%;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 7px var(--sp-3);
   display: flex;
   justify-content: space-between;
@@ -465,7 +465,7 @@
   padding: 6px var(--sp-2);
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 .combat-seuils .anarchy-seuil-label {
   width: auto;

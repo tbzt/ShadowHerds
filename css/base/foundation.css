@@ -694,7 +694,7 @@ select optgroup {
   max-width: 15ch;
   padding: 3px var(--sp-2);
   border: 0;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-dim);
   font-size: var(--fs-xs);
@@ -764,7 +764,7 @@ select optgroup {
   flex-shrink: 0;
   padding: 3px var(--sp-2);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-dim);
   font-family: inherit;
@@ -954,7 +954,7 @@ select optgroup {
   color: var(--text-dim);
   font-size: var(--fs-md);
   line-height: 1;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -975,7 +975,7 @@ select optgroup {
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   padding: 3px var(--sp-1);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 .dice-roll-btn {
   display: flex;
@@ -989,7 +989,7 @@ select optgroup {
   font-weight: 700;
   font-size: var(--fs-xs);
   letter-spacing: 0.1em;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   transition: opacity var(--dur-base);
 }
 .dice-roll-btn:hover {
@@ -1192,7 +1192,7 @@ html[data-mode="spectateur"] #content {
 }
 ::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-dim);

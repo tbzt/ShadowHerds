@@ -287,7 +287,7 @@
   width: 56px;
   height: 56px;
   flex-shrink: 0;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   border: 1px solid var(--border);
 }
@@ -457,7 +457,7 @@
 .aug-tag {
   padding: 1px var(--sp-2);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   color: var(--text-dim);
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
@@ -742,7 +742,7 @@
 .wound-malus-badge {
   color: var(--danger);
   border: 1px solid var(--danger);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 0 var(--sp-1);
   margin-left: var(--sp-1);
   letter-spacing: normal;
@@ -871,7 +871,7 @@
   justify-content: space-between;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 5px 9px;
 }
 .cliche-name {
@@ -1173,7 +1173,7 @@
   padding: 0.3rem var(--sp-2);
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   color: var(--text);
   text-align: left;
   transition: border-color var(--dur-fast);
@@ -1383,7 +1383,7 @@
   font-size: var(--fs-xs);
   letter-spacing: 0.04em;
   padding: 7px 10px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition:
     background var(--dur-fast),

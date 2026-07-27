@@ -234,7 +234,7 @@
   min-width: 16px;
   height: 16px;
   padding: 0 3px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--warning);
   color: var(--bg);
   font-family: var(--font-mono);
@@ -307,7 +307,7 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   padding: 2px 7px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
 }
 .dice-log-texture-mark {
