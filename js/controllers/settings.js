@@ -63,12 +63,15 @@ export const Settings = {
     // "pill" change l'affordance dessinée sur les cartes (mini-menu) — les
     // autres modes n'affectent que l'interception au clic, rien à re-rendre.
     this._refreshVisibleCards();
+    // Réglage transverse aux éditions : le toast nomme les DEUX ressources VF
+    // (« Chance » SR5, « Atout » SR6) plutôt que le terme anglais « Edge », qui
+    // n'apparaît dans aucune VF — cf. preRollEdge.resourceLabel.
     toast(
       m === "panel"
-        ? "Edge avant le jet : panneau activé."
+        ? "Chance/Atout avant le jet : panneau activé."
         : m === "pill"
-          ? "Edge avant le jet : pastille activée."
-          : "Edge avant le jet désactivé.",
+          ? "Chance/Atout avant le jet : pastille activée."
+          : "Chance/Atout avant le jet désactivé.",
     );
   },
 
@@ -333,7 +336,7 @@ export const Settings = {
               data-action="set-dice-default-count">
           </div>
           <div class="display-pref-row">
-            <label for="dp_preRollEdge">Edge avant le jet (SR5/SR6)</label>
+            <label for="dp_preRollEdge">Chance / Atout avant le jet (SR5/SR6)</label>
             <select id="dp_preRollEdge" data-action="set-preroll-edge">
               <option value="off" ${dp.preRollEdge !== "panel" && dp.preRollEdge !== "pill" ? "selected" : ""}>Désactivé</option>
               <option value="panel" ${dp.preRollEdge === "panel" ? "selected" : ""}>Panneau avant le jet</option>
@@ -341,7 +344,7 @@ export const Settings = {
             </select>
           </div>
         </div>
-        <p class="settings-note">Quand c'est activé, un jet lancé depuis une carte SR5/SR6 dont le personnage a de l'Edge dépensable ouvre un panneau (« Panneau ») ou affiche un petit menu à côté de la pastille lançable (« Pastille ») : « Repousser les limites » (SR5) ou « Prendre un risque » / « Ajouter son rang d'Atout » (SR6), sinon lancer sans Edge. Le tap nu reste un lancer immédiat dès qu'il n'y a pas d'Edge à dépenser.</p>
+        <p class="settings-note">Quand c'est activé, un jet lancé depuis une carte SR5/SR6 dont le personnage a de la Chance (SR5) ou de l'Atout (SR6) à dépenser ouvre un panneau (« Panneau ») ou affiche un petit menu à côté de la pastille lançable (« Pastille ») : « Repousser les limites » (SR5) ou « Prendre un risque » / « Ajouter son rang d'Atout » (SR6), sinon lancer sans rien dépenser. Le tap nu reste un lancer immédiat dès qu'il n'y a rien à dépenser.</p>
       </div>
       <div class="settings-section">
         <h3>Images IA</h3>

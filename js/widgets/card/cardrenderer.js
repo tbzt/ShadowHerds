@@ -1391,7 +1391,12 @@ export const CardRenderer = {
     if (!deps.DiceRoller || deps.DiceRoller.preRollMode() !== "pill") return "";
     const options = deps.DiceRoller.preRollEdgeOptions(pnj);
     if (!options.some((o) => o.affordable)) return "";
-    return ` <button type="button" class="edge-preroll" data-preroll-open aria-label="Edge avant le jet" title="Edge avant le jet">Edge</button>`;
+    // Le libellé est le nom VF de la ressource de l'édition — « Chance » (SR5),
+    // « Atout » (SR6) — jamais « Edge », terme anglais absent de toute VF.
+    const res = deps.DiceRoller.preRollResourceLabel(pnj, { short: true });
+    if (!res) return "";
+    const esc = this._esc(res);
+    return ` <button type="button" class="edge-preroll" data-preroll-open aria-label="${esc} avant le jet" title="${esc} avant le jet">${esc}</button>`;
   },
 
   _zoneEyebrow(label) {

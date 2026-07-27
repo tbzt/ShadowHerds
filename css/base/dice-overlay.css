@@ -1138,10 +1138,12 @@ input[type="range"]#risk-dice-slider {
 
 /* Affordance Edge PRÉ-jet en mode « pastille » (V1 vague 3b) — contrôle
    DISTINCT posé à côté d'une pastille/ligne lançable (jamais dedans, le tap
-   nu de la pastille reste un lancer immédiat, loi 3). Sobre, typographique
-   (« Edge »), pas un nouveau glyphe : aucun symbole établi (⚔⛉⛊◎⚡✸) ne porte
-   ce concept, cf. vocabulaire de glyphes existant. Cible tactile ≥24px
-   (doctrine V0-c). */
+   nu de la pastille reste un lancer immédiat, loi 3). Sobre, typographique :
+   le libellé est le nom VF de la ressource de l'édition (« Chance » SR5,
+   « Atout » SR6, « Anarchy » A1 — cf. preRollEdge.resourceLabel/resourceShort),
+   jamais un glyphe : aucun symbole établi (⚔⛉⛊◎⚡✸) ne porte ce concept, cf.
+   vocabulaire de glyphes existant. La largeur suit le mot (padding, pas de
+   largeur figée). Cible tactile ≥24px (doctrine V0-c). */
 .edge-preroll {
   display: inline-flex;
   align-items: center;

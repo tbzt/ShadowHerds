@@ -106,6 +106,9 @@ export const EditionAnarchy1 = {
   preRollEdge: {
     reserve: "threat",
     resourceLabel: "Points d'Anarchy",
+    // Forme courte pour les affordances étroites (pastille de carte) — le nom
+    // complet déborderait à côté d'une pastille de réserve.
+    resourceShort: "Anarchy",
     options: [
       {
         id: "wild",

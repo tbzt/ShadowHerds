@@ -1024,6 +1024,21 @@ export const DiceRoller = {
     return attr ? `${Actor.attr(pnj, attr)} ${attr}` : "";
   },
 
+  /** Nom VF de la ressource pré-jet de l'édition du PNJ — « Chance » (SR5),
+      « Atout » (SR6), « Points d'Anarchy » (Anarchy 1re). JAMAIS « Edge » :
+      le terme anglais n'existe dans aucune VF, aucune surface ne doit
+      l'afficher (les contrats `preRollEdge.resourceLabel` sont la seule
+      source). `short:true` prend la forme courte destinée aux affordances
+      étroites (pastille de carte) quand l'édition en déclare une
+      (`resourceShort`), sinon le nom complet. "" si l'édition n'a pas d'Edge
+      pré-jet (Anarchy 2.0) — l'appelant n'a alors rien à afficher. */
+  preRollResourceLabel(pnj, { short = false } = {}) {
+    const mod = pnj ? App.getEditionModule(pnj.edition) : App.editionModule;
+    const spec = (mod && mod.preRollEdge) || null;
+    if (!spec) return "";
+    return (short && spec.resourceShort) || spec.resourceLabel || "";
+  },
+
   /** Mode de surface de l'Edge pré-jet (préférence par appareil) : "panel" =
       panneau qui intercepte automatiquement le tap ; "pill" = affordance
       distincte à côté de la pastille, le tap nu reste un lancer immédiat ;
@@ -1111,7 +1126,7 @@ export const DiceRoller = {
     p.className = "risk-panel-overlay"; // réutilise le gabarit du panneau de risque
     p.setAttribute("hidden", "");
     p.innerHTML = `
-      <div class="risk-panel" role="dialog" aria-label="Edge avant le jet">
+      <div class="risk-panel" role="dialog" aria-label="Avant le jet">
         <div class="risk-panel-head">
           <span class="risk-panel-title" id="preroll-title">Avant de lancer</span>
           <button class="risk-panel-close" id="preroll-close" aria-label="Fermer">✕</button>
@@ -1119,7 +1134,7 @@ export const DiceRoller = {
         <div class="risk-panel-pool" id="preroll-pool"></div>
         <div id="preroll-gain" hidden></div>
         <div id="preroll-options"></div>
-        <button class="risk-roll-btn" id="preroll-plain">Lancer sans Edge</button>
+        <button class="risk-roll-btn" id="preroll-plain">Lancer tel quel</button>
       </div>`;
     document.body.appendChild(p);
 
@@ -1129,7 +1144,7 @@ export const DiceRoller = {
     });
     document.getElementById("preroll-close").addEventListener("click", () => this._closePreRollPanel());
 
-    // Choisir une option = débiter puis lancer avec l'Edge.
+    // Choisir une option = débiter la ressource puis lancer.
     document.getElementById("preroll-options").addEventListener("click", (e) => {
       const b = e.target.closest(".risk-level-btn");
       if (!b || !this._preRoll) return;
@@ -1140,7 +1155,7 @@ export const DiceRoller = {
       doRoll(edge); // edge null si le débit a échoué (garde-fou) → jet nu
     });
 
-    // Lancer sans Edge.
+    // Lancer sans rien dépenser.
     document.getElementById("preroll-plain").addEventListener("click", () => {
       const doRoll = this._preRoll && this._preRoll.doRoll;
       this._closePreRollPanel();
@@ -1189,6 +1204,13 @@ export const DiceRoller = {
     document.getElementById("preroll-title").textContent = ctx.pnj.name
       ? `${ctx.pnj.name} — avant de lancer`
       : "Avant de lancer";
+    // Le panneau est un singleton partagé par toutes les éditions : son nom de
+    // ressource (Chance / Atout / Points d'Anarchy) se pose à l'OUVERTURE, sur
+    // l'édition du PNJ qui lance — jamais figé dans le gabarit.
+    const res = this.preRollResourceLabel(ctx.pnj);
+    const dlg = document.querySelector("#preroll-panel .risk-panel");
+    if (dlg) dlg.setAttribute("aria-label", res ? `${res} avant le jet` : "Avant le jet");
+    document.getElementById("preroll-plain").textContent = res ? `Lancer sans ${res}` : "Lancer tel quel";
     this._renderSpendOptions();
     this._renderGainSection();
     const p = document.getElementById("preroll-panel");
@@ -1207,7 +1229,11 @@ export const DiceRoller = {
     const budget = this._panelBudgetText(ctx.pnj);
     const mod = App.getEditionModule(ctx.pnj.edition);
     const fromReserve = mod && mod.preRollEdge && mod.preRollEdge.reserve === "threat";
-    const label = ctx.gain ? "Atout disponible" : fromReserve ? "Réserve" : "Edge disponible";
+    // Nom VF de la ressource, jamais « Edge » : « Chance disponible » (SR5),
+    // « Atout disponible » (SR6). Le budget-réserve (Anarchy 1re) porte déjà
+    // son nom dans la valeur (« 3 Points d'Anarchy ») → intitulé « Réserve ».
+    const res = this.preRollResourceLabel(ctx.pnj);
+    const label = fromReserve ? "Réserve" : res ? `${res} disponible` : "Disponible";
     document.getElementById("preroll-pool").innerHTML = budget
       ? `${label} : <strong>${Utils.escHtml(budget)}</strong>`
       : "";

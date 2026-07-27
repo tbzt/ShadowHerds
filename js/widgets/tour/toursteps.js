@@ -320,13 +320,13 @@ export const TourSteps = {
     },
     {
       id: "wn-preroll-edge", anchor: "nav-combat", tours: ["whatsnew"], since: "1.52.0", fallback: "center",
-      title: "Dépenser son Edge avant le jet (SR5/SR6)",
-      body: "À activer dans Paramètres › Lanceur de dés. Une fois activé, lancer depuis une carte SR5/SR6 avec de l'Edge dépensable ouvre un panneau : « Repousser les limites » (SR5, ignore la Limite), « Prendre un risque » ou « Ajouter son rang d'Atout » (SR6, dés explosifs) — sinon « Lancer sans Edge ». L'Edge du personnage est débité. Le tap reste un lancer immédiat quand il n'y a pas d'Edge à dépenser.",
+      title: "Dépenser sa Chance / son Atout avant le jet (SR5/SR6)",
+      body: "À activer dans Paramètres › Lanceur de dés. Une fois activé, lancer depuis une carte SR5/SR6 dont le personnage a de la Chance (SR5) ou de l'Atout (SR6) à dépenser ouvre un panneau : « Repousser les limites » (SR5, ignore la Limite), « Prendre un risque » ou « Ajouter son rang d'Atout » (SR6, dés explosifs) — sinon « Lancer sans Chance / sans Atout ». La ressource du personnage est débitée. Le tap reste un lancer immédiat quand il n'y a rien à dépenser.",
     },
     {
       id: "wn-preroll-edge-pill", anchor: "nav-settings", tours: ["whatsnew"], since: "1.53.0", fallback: "center",
-      title: "Edge avant le jet : pastille",
-      body: "Nouveau 3ᵉ choix dans Paramètres › Lanceur de dés (« Pastille sur la carte »). Au lieu d'un panneau qui s'ouvre à chaque jet, une petite pastille « Edge » distincte apparaît à côté des jets où le personnage peut dépenser de l'Edge/Atout (Défense, Encaissement, Drain, armes). Le tap normal reste un lancer immédiat ; toucher « Edge » ouvre le petit choix (Repousser les limites / Prendre un risque / Ajouter son rang d'Atout selon l'édition) avant de lancer.",
+      title: "Chance / Atout avant le jet : pastille",
+      body: "Nouveau 3ᵉ choix dans Paramètres › Lanceur de dés (« Pastille sur la carte »). Au lieu d'un panneau qui s'ouvre à chaque jet, une petite pastille distincte — « Chance » en SR5, « Atout » en SR6 — apparaît à côté des jets où le personnage peut dépenser sa ressource (Défense, Encaissement, Drain, armes). Le tap normal reste un lancer immédiat ; toucher la pastille ouvre le petit choix (Repousser les limites / Prendre un risque / Ajouter son rang d'Atout selon l'édition) avant de lancer.",
     },
     {
       id: "wn-foundry-import-sr6", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.54.0", fallback: "center",
