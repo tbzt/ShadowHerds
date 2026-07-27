@@ -11,6 +11,18 @@ protections re-arbitrées avec l'utilisateur (physicalité des dés, pulsations
 décoratives) ; les lots 5/6/7/8/9 gagnent chacun un périmètre élargi issu du
 reliquat du lot 2 (détail : `PLAN_EXECUTION.md`).*
 
+*Version **2** — 27 juillet 2026. **Re-audit intégral contre le code.** Trois
+lots vérifiés sur trois s'étant révélés bâtis sur une prémisse fausse ou
+périmée, tout le § 1 a été recompté et chaque lot du § 8 confronté au code
+avant réécriture. Corrections principales : les échelles (rayon, espacement,
+typo) sont **bien plus mal adoptées** que la v1 ne le disait — d'où le **lot 11
+neuf**, le plus grand écart mesuré du projet ; le trou d'accessibilité des
+overlays est **pire** que décrit (aucun piège de focus n'existe) ; à l'inverse,
+`graph.css` (§ 1), les cartes et les marqueurs étaient **sur-comptés**, et la
+justification du lot 5 par l'accessibilité était **périmée** (§ 6.5). L'ordre
+des lots ne suit plus l'intuition de la v1. La méthode de comptage est
+désormais explicitée — la v1 comptait des caractères, pas des effets.*
+
 ---
 
 ## Comment lire ce document
@@ -90,18 +102,37 @@ rare. On ne touche pas à ça.
 Les tokens décrivent le *grain*. Rien ne décrit la *carte*, le *panneau*, la
 *modale*. Chaque module a donc redécoré sa propre version. Mesuré :
 
-| Mesure | Valeur |
-|---|---|
-| Classes CSS distinctes dans `css/base/` | **1 427** |
-| Classes contenant `btn` | **46** |
-| Classes de type pastille (`chip`/`pill`/`badge`/`tag`) | **~50** |
-| Classes contenant `card` | **49** |
-| Valeurs de `border-radius` littérales distinctes | **13** (3px ×87, 4px ×67, 2px ×41, 6px ×30…) |
-| Usages de `var(--radius)` / `var(--radius-lg)` | **8** au total |
-| Valeurs de `gap` littérales distinctes | **20** |
-| Tailles de police hors échelle | **~80 occurrences** (0.78rem, 0.82rem, 0.76rem…) |
-| Points de rupture distincts | **11** (420, 560, 640, 641, 720, 721, 900, 1024, 1100, 1280, 1700) |
-| Couleurs hexadécimales en dur dans `css/base/` | **192** |
+| Mesure | v1 (`c2cb013`) | **Re-audit `72c7f58`** |
+|---|---|---|
+| Classes CSS distinctes dans `css/base/` | 1 427 | **1 418** |
+| Classes contenant `btn` | 46 | **46** — dont **43 autonomes** |
+| Classes de type pastille (`chip`/`pill`/`badge`/`tag`) | ~50 | **71 brutes → ~51 réelles** (8 conteneurs, 10 sous-parties, 2 déjà bien formées) |
+| Classes contenant `card` | 49 | **48 brutes → 15 racines** (19 sous-parties légitimes, 13 divers) |
+| **`border-radius` littéraux** | 13 valeurs | **17 valeurs / 310 occurrences** |
+| Usages de `var(--radius*)` | 8 | **10** |
+| **`gap` littéraux** | 20 valeurs | **35 valeurs / 260 occurrences** |
+| **Tailles de police hors échelle** | ~80 occ. | **102 occ. / 41 valeurs** |
+| Points de rupture distincts | 11 | **14** (420, 459, 460, 489, 560, 640, 641, 720, 721, 900, 1024, 1100, 1280, 1700) |
+| Couleurs hex en dur dans `css/base/` | 192 | **204** |
+| `box-shadow` | 71 en dur | **73 dont 28 tokenisés, 7 en dur** *(après lot 2)* |
+| `var(--bg-card)` posé comme surface | 98 | **78** *(après lot 2)* |
+
+> **Re-audit du 2026-07-27** (méthode : commentaires retirés avant comptage,
+> décomposition racines / sous-parties / conteneurs). Il corrige la v1 sur
+> quatre points, tous **dans le sens de la gravité pour les échelles** et
+> **dans le sens de l'exagération pour les objets** :
+> - **les échelles sont bien plus mal adoptées que je ne l'avais écrit** —
+>   310 `border-radius` littéraux face à 10 usages de token, 260 `gap`
+>   littéraux, 102 tailles hors échelle. C'est le plus grand écart mesuré du
+>   projet, et **aucun lot de ma v1 ne le traitait** (voir le lot 11) ;
+> - **les cartes et les marqueurs étaient sur-comptés** : « 49 variantes de
+>   carte » sont en réalité **15 racines** plus des sous-parties parfaitement
+>   légitimes (`-header`, `-body`, `-frame`…), qu'un design system **veut**
+>   voir exister. Idem pour les marqueurs ;
+> - **`graph.css` n'est pas « à moitié habillé »** : sur ses 141 hex, **134
+>   sont des valeurs de repli** dans `var(--token, #hex)` dont le token *est*
+>   défini — elles ne s'activent jamais. Voir le lot 9, dégradé de M à S ;
+> - **le trou d'accessibilité des overlays est pire que décrit** : voir § 6.3.
 
 Et le symptôme le plus parlant, celui qui m'a fait écrire ce document tel
 quel :
@@ -118,9 +149,25 @@ que la question est réglée. Vous n'avez pas un problème de *décision*, vous
 avez un problème d'**adoption**. Ce document est autant un outil de
 propagation qu'une spécification.
 
-Deuxième symptôme du même mal : `graph.css` compte **96 usages de tokens de
+> **Suite (2026-07-27).** Le lot 2 a soldé ce symptôme précis : 28 usages de
+> `--elev-*`, 20 de `--bg-overlay`, 7 `box-shadow` en dur résiduels. **Mais le
+> re-audit montre que le même mal, en pire, frappe les échelles de rayon,
+> d'espacement et de typographie** — 310 `border-radius` littéraux contre 10
+> tokenisés. Ma v1 avait diagnostiqué l'adoption comme *le* problème, puis
+> n'avait écrit de lot que pour l'élévation. C'est corrigé par le **lot 11**.
+
+~~Deuxième symptôme du même mal : `graph.css` compte **96 usages de tokens de
 thème et 131 couleurs en dur**. Le graphe est à moitié habillé. Changez
-d'édition, il ne suit qu'à moitié.
+d'édition, il ne suit qu'à moitié.~~
+
+> **⚠️ Rayé au re-audit du 2026-07-27 — ce diagnostic était faux.** Sur les 141
+> hex de `graph.css`, **134 sont des valeurs de repli** de la forme
+> `var(--token, #hex)`, et **11 des 13 tokens concernés sont bien définis** :
+> ces replis ne s'activent jamais. Le graphe **suit déjà l'édition**. Ne
+> restent que **7 hex réellement nus**, plus deux tokens jamais définis
+> (`--surface-1`, `--surface-2`) dont les replis, eux, sont bien actifs. Le
+> lot 9 passe donc de M à **S**. *Leçon : `grep '#[0-9a-f]'` compte des
+> caractères, pas des couleurs appliquées.*
 
 ### Le verdict
 
@@ -375,21 +422,36 @@ en `overflow: hidden`, un `box-shadow` est **rogné et invisible**. Utiliser
 
 ### 4.5 Rayons
 
-**État :** 13 valeurs littérales (3px, 4px, 2px, 6px, 5px, 10px, 8px, 12px,
-999px…), pour 8 usages des deux tokens existants. C'est le désordre le plus
-visible du projet et le moins coûteux à réparer.
+**État (re-audité 2026-07-27) : 17 valeurs littérales sur 310 occurrences,
+face à 10 usages de token.** C'est le désordre le plus visible du projet, et
+de très loin le plus grand écart mesuré — plus grave que l'élévation ne l'a
+jamais été. Il fait l'objet du **lot 11**.
 
 **Échelle finale — quatre pas :**
 
 ```css
 --radius-sm:   3px;   /* marqueurs, pastilles, micro-contrôles */
---radius:      6px;   /* champs, boutons, encarts */
+--radius:      8px;   /* champs, boutons, encarts */
 --radius-lg:  12px;   /* cartes, overlays, feuilles */
 --radius-pill: 999px; /* pastilles pilulaires, jauges */
 ```
 
+> **`--radius` vaut 8px, pas 6px.** Ma v1 proposait 6 ; le code portait déjà 8,
+> et le lot 1 étant à delta visuel nul, c'est 8 qui a été gravé. La valeur
+> exacte importe moins que le fait qu'il n'y en ait **qu'une**.
+>
+> **Conséquence pour le lot 11 : la migration n'est PAS mécanique.** Les 17
+> valeurs littérales ne se mappent pas toutes sur un des quatre pas (10px, 5px,
+> 14px, `5px 5px 0 0`…). Chaque site demande un arbitrage — *ce rayon dit-il
+> « marqueur », « contrôle » ou « carte » ?* — et certains changeront
+> visiblement. **Le lot 11 se fait par famille d'objets, pas par
+> chercher-remplacer**, et chaque famille se vérifie aux 4 éditions.
+
 **Règle.** Une édition peut mettre les quatre à `0` (SR5 le fait déjà, à
-raison : « coins droits, dossier administratif »). Elle ne peut pas en
+raison : « coins droits, dossier administratif » — mais **site par site**, en
+réécrivant `border-radius: 0` sur une trentaine de sélecteurs, faute de token
+à surcharger ; **c'est précisément ce que le lot 11 rend inutile**). Elle ne
+peut pas en
 inventer un cinquième.
 
 **Conseil — le rayon dit la taille.** Petit objet, petit rayon. Un rayon de
@@ -683,6 +745,28 @@ titre**, pour tout overlay bloquant.
 **Loi — Échap ferme.** Sans exception, sauf le Dialogue, qui exige un choix
 explicite parce que c'est sa raison d'être.
 
+> **⚠️ État réel, mesuré au re-audit du 2026-07-27 — c'est pire que ce que je
+> laissais entendre en écrivant « il manque le traitement partagé ».**
+>
+> | Ce que la loi exige | Ce que le code fait |
+> |---|---|
+> | Focus **piégé** | **aucun piège n'existe** — 0 occurrence de `focusTrap`/`trapFocus` dans tout `js/` |
+> | Focus **restitué** | partiel : 5 occurrences de `returnFocus` |
+> | `role="dialog"` | 10 |
+> | `aria-modal` | 13 |
+> | `aria-labelledby` | **1 seule occurrence dans tout le projet** |
+> | Échap ferme | oui, mais **réimplémenté dans 34 fichiers séparés** |
+>
+> Autrement dit : la touche Échap a été recodée trente-quatre fois, et le
+> piège de focus — la seule de ces règles qui rend une modale *utilisable* au
+> clavier — **n'a jamais été écrit**. Ce n'est pas de la dette cosmétique :
+> aujourd'hui, un MJ au clavier qui ouvre une modale ne peut pas en sortir
+> autrement qu'à la souris ou par Échap.
+>
+> **Conséquence : le lot 7 n'est pas « un des deux gros, à faire en dernier ».
+> C'est le seul lot de ce chantier qui corrige un défaut d'accessibilité réel**,
+> et le seul dont le gain se mesure autrement qu'en nombre de classes.
+
 **Règle — le rideau ferme aussi**, sauf si la saisie en cours est perdue. Dans
 ce cas, le clic sur le rideau déclenche une secousse courte sur l'overlay
 (120ms) plutôt que rien : un contrôle qui ne répond pas est lu comme cassé.
@@ -803,9 +887,27 @@ distingue aujourd'hui, au coup d'œil, ce qui se clique de ce qui informe.
 ```
 
 **Loi — si c'est cliquable, ça se voit sans survol.** Le survol n'existe pas
-au doigt. `.combat-pill` ne se distingue aujourd'hui que par une bordure à
-40 % d'opacité : sur tablette, c'est invisible, et un lanceur de dés qu'on ne
-trouve pas est un lanceur de dés qui n'existe pas.
+au doigt.
+
+> **⚠️ Corrigé au re-audit du 2026-07-27.** La v1 illustrait cette loi en
+> écrivant que *« `.combat-pill` ne se distingue que par une bordure à 40 %
+> d'opacité, donc invisible sur tablette »*. **C'est faux, et ça l'était déjà
+> en v1.** Un chantier antérieur (« CH-M1 », commenté dans
+> [`dice-overlay.css`](css/base/dice-overlay.css)) a posé un **glyphe ⚄
+> permanent, visible au repos**, sur tout `.rollable` — avec en commentaire
+> l'énoncé exact de cette loi : *« le survol n'existe pas sur
+> tablette/téléphone, appareil cible du MJ »*. La loi était donc **déjà
+> appliquée**, et bien.
+>
+> Ce qui reste vrai, et qui est le seul trou d'affordance mesuré : `.stat-pill
+> .rollable` et `.gm-pool.rollable` **seuls** portent le glyphe mais **pas** la
+> bordure teintée que `.skill-tag.rollable` et `.combat-pill` portent. C'est une
+> incohérence entre frères, pas une absence de signal — et elle se solde en
+> quatre sélecteurs.
+>
+> **Conséquence sur le lot 5 : sa justification n'est plus l'accessibilité,
+> c'est la réduction du désordre.** Un lot qu'on vend sur une urgence qui
+> n'existe pas se fait mal.
 
 **Règle — un marqueur ne dépasse pas 24 caractères.** Au-delà, ce n'est plus
 un marqueur : c'est du texte, et il va casser toutes vos grappes.
@@ -1020,31 +1122,64 @@ secondes.
 
 ## 8. Le plan de refonte
 
-Huit lots. Chacun est livrable seul, sans dépendre du suivant. Ordonnés par
-**rapport gain / risque**, pas par pureté.
+Onze lots. Chacun est livrable seul, sans dépendre du suivant.
 
-| # | Lot | Effort | Risque | Gain |
-|---|---|---|---|---|
-| 1 | **Achever les tokens** — rayons (4 pas), points de rupture (3), rôles typo (6), `--scrim`, `--bg-overlay` | S | Nul | Débloque tout le reste |
-| 2 | **Adopter l'élévation** — 71 `box-shadow` en dur → `--elev-1/2` ; surfaces d'objet → `--bg-raised` | M | Faible | Profondeur cohérente, immédiatement visible |
-| 3 | **Primitives** — `.surface`, `.stack`, `.cluster` ; migrer 3 écrans témoins | M | Faible | −20 % de CSS sur les écrans touchés |
-| 4 | **`.btn` unique** — 46 classes → 1 + 4 intentions + 3 tailles ; les anciennes deviennent des alias, puis meurent | M | Moyen | Hiérarchie d'action enfin lisible |
-| 5 | **Marqueurs** — 50 classes → `.tag` / `.status` / `.chip` **+ les lueurs d'affordance bespoke** (rollable, pips, badges) qui répliquent déjà `.chip` | M | Faible | Le cliquable devient distinguable |
-| 6 | **Carte canonique** — `.card` / `.card-frame` / zones ; les 49 variantes deviennent des modificateurs **+ le ruban d'accent** (sélection/live/tour) rejoint le liseré déjà nommé | L | Moyen | Le cœur du produit devient cohérent |
-| 7 | **Overlays** — 5 formes, focus trap partagé, ARIA, ordre des boutons **+ un token d'élévation directionnel** pour la feuille (le tiroir mobile porte un cast latéral, pas vertical) | L | Moyen | Accessibilité + fin des empilements |
-| 8 | **États systématiques** — vide primo / vide filtré / chargement / erreur sur chaque collection **+ l'état « sélectionné »** (partagé avec le lot 6) | M | Faible | Le trou le plus large est comblé |
-| 9 | **Rapatrier `graph.css`** — 141 hex → tokens **+ `--surface-1`**, jamais défini, toujours résolu par son fallback | M | Faible | Cohérence d'identité |
-| 10 | **Arbitrer `.monitor-box` à 16px hors bloc tactile** — le doigt est déjà servi (24px, `responsive.css:682`) ; reste la base souris, sous le plancher WCAG 2.5.8. **À trancher, pas à corriger d'office** | S | Faible | Solde la dernière cible sous le plancher — ou acte qu'on l'assume |
+> **Tableau reconstruit au re-audit du 2026-07-27**, après que trois lots
+> vérifiés sur trois se sont révélés bâtis sur une prémisse fausse ou périmée.
+> Chaque ligne ci-dessous a été **confrontée au code** avant d'être réécrite.
+> Les colonnes Effort/Risque sont révisées en conséquence, et l'ordre ne suit
+> plus l'intuition de ma v1.
 
-> Ces lots sont suivis sous les identifiants **D1 → D10** dans `PLAN_EXECUTION.md`
+| # | Lot | Effort | Risque | Gain | Vérifié |
+|---|---|---|---|---|---|
+| 1 | **Achever les tokens** — rayons, points de rupture, rôles typo, `--scrim`, `--bg-overlay`, cibles, mesure | S | Nul | Débloque le reste | ✅ **LIVRÉ** |
+| 2 | **Adopter l'élévation** — `box-shadow` en dur → `--elev-1/2` ; overlays → `--bg-overlay` | M | Faible | Profondeur cohérente | ✅ **LIVRÉ** |
+| 11 | **Propager les échelles** — **310** `border-radius` littéraux → 4 pas · **260** `gap` littéraux → 7 pas · **102** tailles hors échelle → 8 pas. *Lot neuf : le plus grand écart mesuré du projet, absent de ma v1* | L | Moyen | L'adoption que le § 1 réclamait | ⚠️ **prémisse la plus solide** |
+| 7 | **Overlays** — 5 formes, **focus trap qui n'existe pas du tout**, `aria-labelledby` (1 occurrence dans tout le projet), Échap recodé **34 fois**, + un token d'élévation **directionnel** pour la feuille | L | Moyen | **Le seul vrai défaut d'a11y du chantier** | ⚠️ **pire que décrit** |
+| 8 | **États systématiques** — vide primo ≠ vide filtré (« Effacer les filtres » : **0 occurrence**), chargement (**0 squelette**), erreur (**0 `error-state`**) + l'état « sélectionné » | M | Faible | Le trou le plus large côté MJ | ✅ confirmé |
+| 3 | **Primitives** — `.surface`/`.stack`/`.cluster` (**aucune n'existe**) ; **223** candidats `.cluster`, **97** candidats `.stack` | L | Faible | Le plus gros gisement de lignes | ✅ confirmé, sous-estimé |
+| 4 | **`.btn`** — **46 classes, 43 autonomes**. Mais `.btn-primary`/`.btn-secondary` **existent déjà et sont corrects** : le problème n'est pas « 46 → 1 », c'est que 43 composants **réinventent au lieu de composer** | M | Moyen | Hiérarchie d'action lisible | ⚠️ recadré |
+| 5 | **Marqueurs** — **71 brutes → ~51 réelles** (8 conteneurs partent au lot 3, 10 sont des sous-parties). Justification = **désordre, pas accessibilité** (cf. § 6.5) | M | Faible | Moins de désordre | ⚠️ recadré |
+| 6 | **Carte canonique** — **48 brutes → 15 racines** ; les 19 sous-parties (`-header`, `-frame`…) sont **légitimes et se gardent** + le ruban d'accent | L | Moyen | Le cœur du produit | ⚠️ sur-compté en v1 |
+| 9 | **Solder `graph.css`** — **7 hex réellement nus** (les 134 autres sont des replis inertes) + définir `--surface-1`/`--surface-2` | **S** | Faible | Quasi gratuit | ⚠️ **dégradé de M à S** |
+| 10 | **Arbitrer `.monitor-box` à 16px** hors bloc tactile — le doigt est déjà servi. **À trancher, pas à corriger** | S | Faible | Solde ou acte | ⚠️ requalifié |
+
+> Ces lots sont suivis sous les identifiants **D1 → D11** dans `PLAN_EXECUTION.md`
 > § « 🎛️ CHANTIER — Système de design », avec leur statut d'avancement. Le présent
 > document dit **quoi faire** ; le plan dit **où on en est**.
 
+#### L'ordre, révisé — et pourquoi il a changé
+
+Ma v1 ordonnait par « gain / risque » estimé. Le re-audit montre que
+j'estimais mal. Le nouvel ordre :
+
+1. **D9** — devenu S, quasi gratuit, delta visuel ~nul. On commence par ce qui
+   ne coûte rien.
+2. **D7** — parce que c'est le seul lot qui répare quelque chose de **cassé**
+   pour un utilisateur réel (le MJ au clavier), et non un désordre interne.
+   Un chantier de design system qui fait passer l'esthétique du code avant
+   une modale dont on ne peut pas sortir au clavier a ses priorités inversées.
+3. **D8** — deuxième plus grande valeur pour le MJ : lui dire « Aucun PNJ »
+   quand il en a 40 et vient de taper trois lettres, c'est lui faire croire
+   que l'outil est cassé.
+4. **D11** — le plus grand écart mesuré. Placé après D7/D8 parce qu'il est
+   mécanique : il gagne à être fait quand rien d'autre ne bouge.
+5. **D5** → **D4** → **D3** → **D6** — la consolidation structurelle, par
+   alias transitoire, de la plus petite surface à la plus grande.
+6. **D10** — arbitrage produit, quand vous y penserez.
+
 **⚠️ Le coût dominant n'est pas le code, c'est la vérification.** La doctrine du
 projet impose **4 éditions × 3 tailles d'écran avant chaque commit**. Un lot CSS
-transverse coûte donc bien plus en vérification qu'en frappe. D'où l'ordre
-ci-dessus : les lots à **delta visuel nul** (substitution de token, comparables
-par capture d'écran) passent avant ceux qui restructurent le DOM.
+transverse coûte donc bien plus en vérification qu'en frappe. C'est ce qui
+justifie de commencer par les lots à **delta visuel nul**.
+
+**⚠️ Le piège du comptage, appris à mes dépens.** Trois de mes chiffres de v1
+étaient faux dans le même sens : j'avais compté des **caractères**, pas des
+**effets**. `grep '#[0-9a-f]'` compte des replis inertes comme des couleurs
+appliquées ; `grep 'card'` compte `.pnj-card-header` comme une variante de
+carte. **Avant de rouvrir un lot, recomptez avec la méthode du § 1** —
+commentaires retirés, racines séparées des sous-parties, replis séparés des
+valeurs actives.
 
 **⚠️ Ce chantier ne se parallélise avec aucun autre chantier CSS.** Il touche
 presque tout `css/base/` ; le principe « un fichier = un propriétaire à un
