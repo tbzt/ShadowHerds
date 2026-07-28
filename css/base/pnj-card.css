@@ -857,6 +857,14 @@
   border-color: var(--text-dim);
   color: var(--text);
 }
+/* variante « remplie » (cf. .encounter-down-badge/.encounter-delayed-badge) :
+   fond teinté en plus du liseré, pour un badge qui doit ressortir davantage
+   qu'un simple état posé. `currentColor` reprend la teinte déjà posée par
+   .is-danger/.is-warning/.is-info/.is-accent — un seul modificateur pour
+   tous les canaux, pas une règle par couleur. */
+.status.is-filled {
+  background: color-mix(in srgb, currentColor 15%, transparent);
+}
 
 /* .chip (D5, § 6.5) — une puce ACTIONNABLE : bordure + fond teintés en
    permanence (contrairement à `.tag-clickable`, qui ne réagit qu'au survol —

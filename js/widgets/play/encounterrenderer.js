@@ -455,12 +455,12 @@ export const EncounterRenderer = {
 
   /** Badge « hors de combat » (Vague D), partagé ordonné/narratif. */
   _downBadge() {
-    return `<span class="encounter-down-badge" title="Moniteur plein — hors de combat">☠ Hors de combat</span>`;
+    return `<span class="encounter-down-badge status is-danger is-filled" title="Moniteur plein — hors de combat">☠ Hors de combat</span>`;
   },
 
   /** Badge « action retardée » (Vague C) : le combattant tient son tour. */
   _delayedBadge() {
-    return `<span class="encounter-delayed-badge" title="Action retardée — tient son tour">⏸ En attente</span>`;
+    return `<span class="encounter-delayed-badge status is-info is-filled" title="Action retardée — tient son tour">⏸ En attente</span>`;
   },
 
   /** Bandeau de moral (Vague D) : ⚑ « Devrait fuir » (règle de l'édition) ou

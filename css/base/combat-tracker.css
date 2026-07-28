@@ -687,14 +687,15 @@
   font-size: var(--fs-lg);
   color: var(--text-dim);
 }
+/* D5 : couleur/fond/bordure fournis par .status.is-danger.is-filled (composé
+   dans le HTML, encounterrenderer.js) — ne garde que sa mise en forme propre. */
 .encounter-down-badge {
   flex: none;
   font-size: var(--fs-2xs);
   font-weight: 600;
   letter-spacing: 0.03em;
-  color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 15%, transparent);
-  border: 1px solid var(--danger);
+  border-width: 1px;
+  border-style: solid;
   border-radius: var(--radius-sm);
   padding: 0.05rem 0.35rem;
 }
@@ -708,14 +709,15 @@
 .encounter-row.delayed {
   opacity: 0.75;
 }
+/* D5 : couleur/fond/bordure fournis par .status.is-info.is-filled (composé
+   dans le HTML, encounterrenderer.js) — ne garde que sa mise en forme propre. */
 .encounter-delayed-badge {
   flex: none;
   font-size: var(--fs-2xs);
   font-weight: 600;
   letter-spacing: 0.03em;
-  color: var(--info);
-  background: color-mix(in srgb, var(--info) 15%, transparent);
-  border: 1px solid var(--info);
+  border-width: 1px;
+  border-style: solid;
   border-radius: var(--radius-sm);
   padding: 0.05rem 0.35rem;
 }
