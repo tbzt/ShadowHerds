@@ -3388,7 +3388,11 @@ export const EditionSR6 = {
     shotguns: [
       "Defiance T-250 [Shotgun, VD 4P, SO 7/10/6/-/-, CC/SA, 5(m)]",
       "Mossberg CMDT [Shotgun, VD 4P, SO 3/10/8/-/-, SA/TR, 10(c), visée laser]",
-      "PJSS Model 55 [Shotgun, VD 4P, SO 3/12/8/-/-, SA/TR courte, 2(cb)]",
+      // « TR courte » cassait la lecture des modes (le segment doit ne contenir
+      // QUE des modes) : l'arme perdait SA et TR d'un seul mot. La restriction
+      // n'est pas perdue pour autant — elle se CALCULE désormais : le chargeur à
+      // 2 cartouches affiche « 2/4 » terni sur les deux rafales (vérifié).
+      "PJSS Model 55 [Shotgun, VD 4P, SO 3/12/8/-/-, SA/TR, 2(cb)]",
       "Remington Roomsweeper [Shotgun, VD 5P, SO 9/8/4/-/-, SA, 8(m)]",
       "Defiance T-250 (canon court) [Shotgun, VD 3P, SO 8/8/4/-/-, CC/SA, 5(m), canon court]",
     ],
@@ -3470,34 +3474,66 @@ export const EditionSR6 = {
       "Bottes de combat Bates-Brown [VD 3P, SO 10/—/—/—/—]",
     ],
     // Armes à feu et armures supplémentaires (Bazar de l'Hexagone, Feu Nourri).
+    //
+    // ⚠ PROVENANCE ET FIABILITÉ DE LA PREMIÈRE MOITIÉ (jusqu'à la Pelle
+    // Décathlon). Ces lignes viennent du « Bazar de l'Hexagone », supplément
+    // numérique ABSENT du disque — impossible de les recouper à la source. Elles
+    // étaient transcrites dans une grammaire `Champ=Valeur` que le parseur ne lit
+    // sur AUCUN de ses quatre champs : `VD=3P` (il attend `VD 3P`), `SO=8/8`
+    // (il attend une espace), `Mode=SA` (le segment doit ne contenir QUE des
+    // modes) et `--` (absent de la liste des marques « hors portée » `-`/`–`/`—`,
+    // donc lu comme la chaîne littérale). Résultat : ni dégâts, ni Score
+    // Offensif, ni modes, et un chargeur qui ne se vidait jamais.
+    //
+    // Quatre de ces armes réapparaissent dans « Ombres et lumières » p.159-160,
+    // ce qui a permis de VALIDER le mécanisme de corruption sur 4 cas :
+    //   · `(x)` dans le SO = une barre de séparation perdue (`7(9)/9` → `7/9/9`)
+    //   · `(L)` n'est pas un mécanisme mais la colonne DISPONIBILITÉ, glissée
+    //   · `(F)` et `+F` = `+FOR`, le score offensif de mêlée
+    //   · `4c(c)` = un `40(c)` tronqué (le livre donne 40 balles au PAPOP IV)
+    // Les entrées marquées ✔ portent les valeurs du livre. Les autres sont
+    // RECONSTRUITES par cette règle : elle rétablit la structure, mais deux des
+    // quatre cas vérifiés avaient EN PLUS perdu un chiffre (`9(1)/8` valait
+    // `9/11/8`, pas `9/1/8`) — un SO reconstruit peut donc rester faux d'un
+    // rang. À recouper si le Bazar de l'Hexagone est retrouvé.
     armesSupplement: [
-      "Revolvers FN Manurhin MR2073 GIGN (canon court) [VD=CC, Mode=11/27/--/--, SO=6(c), Capacité=4(L)]",
-      "Revolvers FN Manurhin MR2073 GIGN (classique) [VD=4P, Mode=CC, SO=9(1)/8/--/--, Capacité=6(c)]",
-      "Revolvers FN Manurhin MR2073 GIGN (sniper) [VD=4P, Mode=CC, SO=7(1)/9/2/--, Capacité=6(c)]",
-      "Pistolet Lourd FN FNPL-70 [VD=3P, Mode=SA, SO=7(9)/9/--/--, Capacité=15(c)]",
-      "Pistolet Léger FN PPA-1 [VD=2P, Mode=SA, SO=12(11)/8/--/--, Capacité=20(c)]",
-      "Pistolet Léger Monobe PMAS-70 (normal) [VD=2P, Mode=SA, SO=8(7)/--/--/--, Capacité=12(c)]",
-      "Pistolet Léger Monobe PMAS-70 (version civile) [VD=2E, Mode=SA, SO=8(7)/--/--/--, Capacité=12(c)]",
-      "Lille36 [VD=2P, Mode=SA, SO=8/8/--/--, Capacité=11(c)]",
-      "Monobe FC-MAS (Fusil) [VD=5P, Mode=CC, SO=4/10(9)/4/--, Capacité=2(c)]",
-      "Monobe FC-MAS (Fusil) [VD=5P, Mode=CC, SO=2/7(10)/7/3, Capacité=--]",
-      "Monobe LGAE (Lance-grenade suivant grenade) [VD=7E, Mode=SA, SO=4/8/8/3/--, Capacité=6(c)]",
-      "Fusil d'Assaut Esprit/Dassault PAPOP IV [VD=4P, Mode=SA/TR/TA, SO=6/(1)/8/7/2, Capacité=4c(c)]",
-      "Fusil d'Assaut Esprit/Dassault PAPOP IV (Lance-grenade) [VD=--, Mode=CC, SO=4/10/6/2/--, Capacité=6(c)]",
-      "Fusil de Précision PGM Hecate III F3 [VD=6P, Mode=SA, SO=2/8/10/16/14, Capacité=4c(c)]",
-      'Canon d\'Assaut GIAT Industries CCT "Ultima Ratio" [VD=7P, Mode=SA/TR, SO=1/9/10/10/6, Capacité=12(c)]',
-      "Esprit Gladius (Mitrailleuse) [VD=5A, Mode=SA/TR/TA, SO=10/12/7/--/--, Capacité=30(c)]",
-      "Esprit Pugio [VD=3P, Mode=SA, SO=11/9/5/--/--, Capacité=14(c)]",
-      "Esprit Spatha [VD=5P, Mode=SA/TR/TA, SO=8/12/7/5/--, Capacité=35(c)]",
-      "Esprit Hasta [VD=5P, Mode=SA/TR/TA, SO=6/11/7/7/1, Capacité=35(c)]",
-      "Esprit Pilum [VD=5P, Mode=SA, SO=4/7/8/2/10, Capacité=15(c)]",
-      "Pistolets de Duel Cartier [VD=4P, Mode=CC, SO=10/2/--/-/--, Capacité=1c(b)]",
-      "Rapière de Duel Hermès [VD=3, Mode=--, SO=11(F)/--/--/-/-, Capacité=--]",
-      "Canne à Systèmes Louis Vuitton (lame tranchante) [VD=3P, Mode=--, SO=7(F)/--/--/-/-, Capacité=--]",
-      "Canne à Systèmes Louis Vuitton (fût contondant) [VD=3E, Mode=--, SO=6+(F)/--/--/-/-, Capacité=--]",
-      "Canne à Systèmes Louis Vuitton (pistolet de poche) [VD=2P, Mode=CC/TR, SO=8/8/--/-/--, Capacité=4(b)]",
+      // VD et SO perdus à la transcription (colonnes décalées d'un cran :
+      // `VD=CC` portait le mode, `SO=6(c)` la capacité). Rien à reconstruire.
+      "Revolvers FN Manurhin MR2073 GIGN (canon court) [Pistolet lourd, CC, 6(c)]",
+      "Revolvers FN Manurhin MR2073 GIGN (classique) [Pistolet lourd, VD 4P, SO 9/11/8/—/—, CC, 6(c)]", // ✔ Ombres et lumières p.159
+      "Revolvers FN Manurhin MR2073 GIGN (sniper) [Fusil de précision, VD 4P, SO 7/1/9/2/—, CC, 6(c)]",
+      "Pistolet Lourd FN FNPL-70 [Pistolet lourd, VD 3P, SO 7/9/9/—/—, SA, 15(c)]", // ✔ Ombres et lumières p.160
+      "Pistolet Léger FN PPA-1 [Pistolet léger, VD 2P, SO 12/11/8/—/—, SA, 20(c)]", // ✔ Ombres et lumières p.159 (capacité non donnée au livre)
+      "Pistolet Léger Monobe PMAS-70 (normal) [Pistolet léger, VD 2P, SO 8/7/—/—/—, SA, 12(c)]",
+      "Pistolet Léger Monobe PMAS-70 (version civile) [Pistolet léger, VD 2E, SO 8/7/—/—/—, SA, 12(c)]",
+      "Lille36 [Pistolet léger, VD 2P, SO 8/8/—/—/—, SA, 11(c)]",
+      "Monobe FC-MAS (Fusil) [Fusil, VD 5P, SO 4/10/9/4/—, CC, 2(c)]",
+      // Seconde ligne de table pour ce nom, SO et capacité distincts : deux
+      // configurations, pas un doublon fautif (les deux SO décodent en 5 bandes
+      // valides et différentes). Laquelle est laquelle : indécidable sans le livre.
+      "Monobe FC-MAS (Fusil, seconde configuration) [Fusil, VD 5P, SO 2/7/10/7/3, CC]",
+      "Monobe LGAE (Lance-grenade suivant grenade) [Lance-grenades, VD 7E, SO 4/8/8/3/—, SA, 6(c)]",
+      "Fusil d'Assaut Esprit/Dassault PAPOP IV [Fusil d'assaut, VD 4P, SO 6/11/8/7/2, SA/TR/TA, 40(c)]", // ✔ Ombres et lumières p.159
+      "Fusil d'Assaut Esprit/Dassault PAPOP IV (Lance-grenade) [Lance-grenades, SO 4/10/6/2/—, CC, 6(c)]",
+      // Capacité `4c(c)` illisible et non recoupable : mieux vaut aucun compteur
+      // de balles qu'un compteur faux (le panneau d'attaque s'y fie).
+      "Fusil de Précision PGM Hecate III F3 [Fusil de précision, VD 6P, SO 2/8/10/16/14, SA]",
+      'Canon d\'Assaut GIAT Industries CCT "Ultima Ratio" [Canon d\'assaut, VD 7P, SO 1/9/10/10/6, SA/TR, 12(c)]',
+      // `VD=5A` : « A » n'est pas un type de dommages SR6 (P/E). Conservé tel
+      // quel plutôt que corrigé au jugé — la valeur 5 se lit, le suffixe est dit.
+      "Esprit Gladius (Mitrailleuse) [Mitrailleuse, VD 5A, SO 10/12/7/—/—, SA/TR/TA, 30(c)]",
+      "Esprit Pugio [Pistolet, VD 3P, SO 11/9/5/—/—, SA, 14(c)]",
+      "Esprit Spatha [Mitraillette, VD 5P, SO 8/12/7/5/—, SA/TR/TA, 35(c)]",
+      "Esprit Hasta [Fusil d'assaut, VD 5P, SO 6/11/7/7/1, SA/TR/TA, 35(c)]",
+      "Esprit Pilum [Fusil, VD 5P, SO 4/7/8/2/10, SA, 15(c)]",
+      "Pistolets de Duel Cartier [Pistolet, VD 4P, SO 10/2/—/—/—, CC]",
+      "Rapière de Duel Hermès [Arme de mêlée, VD 3, SO 11+FOR/—/—/—/—]",
+      "Canne à Systèmes Louis Vuitton (lame tranchante) [Arme de mêlée, VD 3P, SO 7+FOR/—/—/—/—]",
+      "Canne à Systèmes Louis Vuitton (fût contondant) [Arme de mêlée, VD 3E, SO 6+FOR/—/—/—/—]",
+      "Canne à Systèmes Louis Vuitton (pistolet de poche) [Pistolet, VD 2P, SO 8/8/—/—/—, CC/TR, 4(b)]",
       "Espelette (grenade toxine) [Effet: État Aweigué & État Désorienté, dégâts étourdissants, Souffle 2m]",
-      "Pelle Pliante Multifonction Décathlon [VD=3P, Mode=10+F/--/--/-/-, Capacité=--, Effet: Dilacé]",
+      // `Mode=10+F` portait en réalité le SO : arme de mêlée, aucun mode de tir.
+      "Pelle Pliante Multifonction Décathlon [Arme de mêlée, VD 3P, SO 10+FOR/—/—/—/—, Effet: Dilacé]",
       "Kit de Dissimulation d'Arme [Effet: Permet de dissimuler une arme démontrée; 300€ armes de poing, 400€ mitraillettes/shotguns]",
       "Ares Light Fire 70 [VD 2P, SA, SO 11/8/7/—/—, Cap. 14(c)]",
       "Ares Light Fire 75 [VD 3P, SA, SO 11/8/7/—/—, Cap. 15(c)]",
