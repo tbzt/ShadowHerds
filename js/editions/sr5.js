@@ -655,11 +655,20 @@ export const EditionSR5 = {
       insère » — soit la phase d'action entière. C'est le point que le livre
       écrit et que personne n'applique en table. Avec un smartgun, l'éjection
       devient GRATUITE (p.165) et il ne reste qu'une simple. */
-  reloadPlan(parsed) {
+  reloadPlan(parsed, pnj) {
     const mech = (parsed && parsed.capacity && parsed.capacity[0] && parsed.capacity[0].mech) || null;
     if (!mech) return [];
     if (mech === "c" || mech === "cy") {
-      return parsed.smart
+      // ⚠ SYNERGIE À DEUX MOITIÉS, comme le bonus de dés `smartlinkBonus`.
+      // Le livre écrit « Un personnage CONNECTÉ à un système smartgun prêt
+      // peut éjecter le chargeur de l'arme à l'aide d'une commande mentale.
+      // Il faudra néanmoins dépenser une action simple pour insérer un nouveau
+      // chargeur plein. » Être connecté demande le smartlink du PERSONNAGE
+      // (lunettes, yeux cybernétiques, `pnj.smartlink`), pas seulement le
+      // système sur l'arme : sans lui, l'éjection reste une action simple et
+      // le rechargement coûte la phase d'action entière.
+      const connecte = !!(parsed.smart && pnj && pnj.smartlink);
+      return connecte
         ? ["ejecterChargeurSmartgun", "insererChargeur"]
         : ["ejecterChargeur", "insererChargeur"];
     }

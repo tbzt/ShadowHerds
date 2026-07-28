@@ -176,7 +176,12 @@ export const Ammo = {
   reloadPlan(pnj, parsed) {
     const mod = pnj ? App.getEditionModule(pnj.edition) : null;
     if (!mod || !mod.reloadPlan) return [];
-    return mod.reloadPlan(parsed) || [];
+    // Le PNJ passe désormais au contrat : la remise smartgun est une SYNERGIE
+    // à deux moitiés — l'arme porte le système, le personnage porte le
+    // smartlink qui l'y connecte. Les deux livres conditionnent la remise au
+    // fait d'être « CONNECTÉ à un smartgun prêt », pas à la seule présence du
+    // système sur l'arme (cf. le commentaire de chaque `reloadPlan`).
+    return mod.reloadPlan(parsed, pnj) || [];
   },
 
   /* ========================================================

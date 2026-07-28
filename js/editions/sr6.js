@@ -1127,11 +1127,20 @@ export const EditionSR6 = {
       le smartgun, lui, « éjecte le chargeur de son arme et en engage un autre
       en un seul mouvement » pour une mineure.
 
+      ⚠ SYNERGIE À DEUX MOITIÉS. La mineure suppose « un personnage CONNECTÉ à
+      un smartgun prêt à être utilisé » : le système sur l'arme ET le smartlink
+      du personnage qui l'y relie. Le libellé de l'action majeure le confirme en
+      creux — elle vise l'arme « sans smartlink OU DONT LE SMARTLINK EST
+      DÉSACTIVÉ », donc la liaison, pas la quincaillerie. Sans `pnj.smartlink`,
+      le rechargement reste une majeure. Même condition que le bonus de dés
+      (`weaponModel.smartlinkBonus`), qui exigeait déjà les deux moitiés.
+
       Le contrat renvoie des clés d'action, jamais un coût : `actionModel` les
       porte déjà. */
-  reloadPlan(parsed) {
+  reloadPlan(parsed, pnj) {
     if (!parsed || !parsed.capacity || !parsed.capacity.length) return [];
-    return parsed.smart ? ["rechargerSmartgun"] : ["rechargerArme"];
+    const connecte = !!(parsed.smart && pnj && pnj.smartlink);
+    return connecte ? ["rechargerSmartgun"] : ["rechargerArme"];
   },
   /** ÉTATS DE COMBAT (lot E1) — le catalogue, lu par `Statuses` via ce contrat
       neutre. SR6 est la seule édition à avoir un vrai système d'états : une
