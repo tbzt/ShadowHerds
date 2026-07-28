@@ -109,7 +109,7 @@ export const PinRow = {
       // ci-dessus pour les entrées dossier ; retrouvée à la volée ici pour
       // team/consulted (listes courtes, coût négligeable).
       const avatar = e.type === "pj" ? CardRenderer._pcAvatar(PnjLookup.find(e.id)) : "";
-      return `<button class="pin-chip" data-pinrow-id="${e.id}" data-pinrow-type="${e.type}" data-pinrow-name="${CardRenderer._esc(e.name)}" title="${CardRenderer._esc(e.name)}">${avatar}${CardRenderer._esc(e.name)}</button>`;
+      return `<button class="chip pin-chip" data-pinrow-id="${e.id}" data-pinrow-type="${e.type}" data-pinrow-name="${CardRenderer._esc(e.name)}" title="${CardRenderer._esc(e.name)}">${avatar}${CardRenderer._esc(e.name)}</button>`;
     };
 
     row.innerHTML = `

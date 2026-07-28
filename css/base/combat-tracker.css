@@ -355,21 +355,16 @@
 /* K10 : chips inline des verbes fréquents du tour (✓/↩ ⚄ ⏸/▶) — contour +
    --text au repos, lisibles à toute taille de pointeur (contrairement à
    l'ancienne bande .btn-icon-tiny nue, révélée seulement au tap). */
+/* D5 : bordure/couleur/cursor/hover fournis par .chip (composé dans le HTML)
+   — ne garde que sa mise en forme propre. */
 .encounter-chip {
   flex: none;
   min-width: 32px;
   min-height: 32px;
-  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--text);
   font-size: var(--fs-sm);
   line-height: 1;
-  cursor: pointer;
-}
-.encounter-chip:hover {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 /* Toggle « a joué » ordonné (SR5/SR6) : jeton ✓ (à marquer) / ↩ (à annuler),
    vert quand joué. Remplace l'ancienne checkbox native permanente — action

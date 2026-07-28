@@ -187,7 +187,7 @@ export const Hub = {
 
   _renderChips() {
     document.querySelectorAll("#panel-shadows .hub-type-chip").forEach((c) => {
-      c.classList.toggle("active", c.dataset.type === this._type);
+      c.classList.toggle("is-active", c.dataset.type === this._type);
     });
   },
 
@@ -375,8 +375,8 @@ export const Hub = {
       const chips = [...values.entries()]
         .sort((a, b) => String(a[1]).localeCompare(String(b[1]), "fr"))
         .map(([raw, lab]) => {
-          const on = active.has(raw) ? " active" : "";
-          return `<button class="hub-facet-chip${on}" data-hub data-action="hub-facet"
+          const on = active.has(raw) ? " is-active" : "";
+          return `<button class="chip hub-facet-chip${on}" data-hub data-action="hub-facet"
             data-facet="${def.key}" data-value="${CardRenderer._esc(raw)}"
             aria-pressed="${active.has(raw)}">${CardRenderer._esc(lab)}</button>`;
         })

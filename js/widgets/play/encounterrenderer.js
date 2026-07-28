@@ -538,13 +538,13 @@ export const EncounterRenderer = {
     // Verbes du tour (fréquents) en chips inline lisibles à toutes tailles
     // de pointeur ; le reste (réordre, note, hors de combat, réinitialiser,
     // retirer) derrière le menu ⋯ canonique.
-    const actedChip = `<button class="encounter-chip encounter-acted-toggle${hasActed ? " is-done" : ""}" data-action="toggle-acted" data-id="${pnjId}" title="${hasActed ? "Marquer « pas encore joué »" : "Marquer « a joué »"}" aria-label="${hasActed ? "Marquer comme pas encore joué" : "Marquer comme a joué"}">${hasActed ? "↩" : "✓"}</button>`;
-    const rollChip = `<button class="encounter-chip" data-action="roll-init" data-id="${pnjId}" title="Lancer l'initiative" aria-label="Lancer l'initiative">⚄</button>`;
+    const actedChip = `<button class="chip encounter-chip encounter-acted-toggle${hasActed ? " is-done" : ""}" data-action="toggle-acted" data-id="${pnjId}" title="${hasActed ? "Marquer « pas encore joué »" : "Marquer « a joué »"}" aria-label="${hasActed ? "Marquer comme pas encore joué" : "Marquer comme a joué"}">${hasActed ? "↩" : "✓"}</button>`;
+    const rollChip = `<button class="chip encounter-chip" data-action="roll-init" data-id="${pnjId}" title="Lancer l'initiative" aria-label="Lancer l'initiative">⚄</button>`;
     const delayChip = r.down
       ? ""
       : r.delayed
-        ? `<button class="encounter-chip" data-action="act-now-combatant" data-id="${pnjId}" title="Agir maintenant" aria-label="Agir maintenant">▶</button>`
-        : `<button class="encounter-chip" data-action="delay-combatant" data-id="${pnjId}" title="Retarder l'action (tenir son tour)" aria-label="Retarder l'action">⏸</button>`;
+        ? `<button class="chip encounter-chip" data-action="act-now-combatant" data-id="${pnjId}" title="Agir maintenant" aria-label="Agir maintenant">▶</button>`
+        : `<button class="chip encounter-chip" data-action="delay-combatant" data-id="${pnjId}" title="Retarder l'action (tenir son tour)" aria-label="Retarder l'action">⏸</button>`;
     // `glyph` : icône monochrome pour la barre dépliée de l'actif (_leadAction
     // Bar, une seule ligne comme les chips) ; `label` reste le texte du menu ⋯
     // (lignes en attente/hors-combat) et le title/aria-label de l'icône.

@@ -249,9 +249,13 @@
 .hub-type-chips > .hub-type-chip {
   flex: none;
 }
+/* D5 : bordure/cursor/hover-bordure/état plein fournis par .chip + .is-active
+   (composés dans le HTML) — ne garde que sa mise en forme propre + les deux
+   vraies différences avec le canon : couleur de repos plus discrète
+   (text-dim, pas text) et le survol vire au texte normal, PAS à l'accent
+   (cohérent avec la puce voisine `.hub-facet-chip`, même famille filtre). */
 .hub-type-chip {
   background: transparent;
-  border: 1px solid var(--border);
   color: var(--text-dim);
   font-family: var(--font-display);
   font-weight: 600;
@@ -259,19 +263,9 @@
   letter-spacing: 0.04em;
   padding: 3px var(--sp-3);
   border-radius: var(--radius-pill);
-  transition:
-    border-color var(--dur-base),
-    color var(--dur-base),
-    background var(--dur-base);
 }
 .hub-type-chip:hover {
   color: var(--text);
-  border-color: var(--accent);
-}
-.hub-type-chip.active {
-  color: var(--bg);
-  background: var(--accent);
-  border-color: var(--accent);
 }
 
 /* ---- Hub : puces de filtre auto (F1) — Rôle · Milieu · Métatype ---- */
@@ -300,27 +294,17 @@
   color: var(--text-faint, var(--text-dim));
   margin-right: var(--sp-1);
 }
+/* D5 : même migration que `.hub-type-chip` juste au-dessus. */
 .hub-facet-chip {
   background: transparent;
-  border: 1px solid var(--border);
   color: var(--text-dim);
   font-family: var(--font-body);
   font-size: var(--fs-xs);
   padding: 2px var(--sp-2);
   border-radius: var(--radius-pill);
-  transition:
-    border-color var(--dur-base),
-    color var(--dur-base),
-    background var(--dur-base);
 }
 .hub-facet-chip:hover {
   color: var(--text);
-  border-color: var(--accent);
-}
-.hub-facet-chip.active {
-  color: var(--bg);
-  background: var(--accent);
-  border-color: var(--accent);
 }
 
 /* ---- Hub : sections par type dans un dossier ---- */
@@ -1980,23 +1964,18 @@ body.reordering .reorder-handle {
   overflow-x: auto;
   scrollbar-width: thin;
 }
+/* D5 : bordure/couleur/cursor/hover fournis par .chip (composé dans le HTML) —
+   ne garde que sa mise en forme propre. */
 .pin-chip {
   flex-shrink: 0;
   background: var(--bg-mid);
-  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  color: var(--text);
   font-size: var(--fs-xs);
   padding: 0.2rem 0.6rem;
-  cursor: pointer;
   max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.pin-chip:hover {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 .pin-row-sep {
   flex-shrink: 0;

@@ -866,21 +866,40 @@
   background: color-mix(in srgb, currentColor 15%, transparent);
 }
 
-/* .chip (D5, § 6.5) — une puce ACTIONNABLE : bordure + fond teintés en
-   permanence (contrairement à `.tag-clickable`, qui ne réagit qu'au survol —
-   deux patrons distincts et volontaires, pas une incohérence : `.chip` est un
-   objet autonome type puce de sélection, `.tag-clickable` un lien de texte
-   inline). Recette reprise telle quelle de `.ms-chip`, le seul site déjà
-   conforme au canon avant ce lot. */
+/* .chip (D5, § 6.5) — une puce ACTIONNABLE. **Canon corrigé le 2026-07-28,
+   arbitré avec l'utilisateur** : la 1re version (bordure+fond accent en
+   PERMANENCE) recopiait `.ms-chip`, mais `.ms-chip` n'est même pas
+   cliquable lui-même (son `-x` seul l'est, cf. le patron « composite
+   retirable » plus bas) — un mauvais exemple pour le seul objet du lot
+   qui doit signaler « cliquable ». Le vrai canon vérifié sur 4 sites
+   RÉELLEMENT cliquables (`.pin-chip`, `.encounter-chip`, `.hub-facet-chip`,
+   `.hub-type-chip`) : **bordure NEUTRE visible au repos — c'est ELLE
+   l'affordance, pas la couleur — accent seulement au survol/focus**.
+   Commentaire trouvé sur `.encounter-chip` (K10) : « lisibles à toute
+   taille de pointeur, contrairement à l'ancienne bande nue révélée
+   seulement au tap » — exactement la loi 1 de la Grammaire, déjà appliquée
+   ici avant même ce lot. `.ms-chip` garde sa propre recette (fond+bordure
+   accent permanents) en variante bespoke assumée, pas migrée. */
 .chip {
-  border: 1px solid var(--accent);
-  background: var(--glow);
+  border: 1px solid var(--border);
+  color: var(--text);
   cursor: pointer;
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base);
 }
 .chip:hover,
 .chip:focus-visible {
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
   outline: none;
+}
+/* Puce-TOGGLE (filtre actif) — cf. `.hub-facet-chip`/`.hub-type-chip` :
+   variante qui bascule en fond plein une fois sélectionnée. */
+.chip.is-active {
+  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 @media (pointer: coarse) {
   .chip {
