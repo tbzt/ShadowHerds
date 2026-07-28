@@ -425,7 +425,7 @@
 .summon-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-2);
   margin: 10px 0;
 }
 .summon-row-label {

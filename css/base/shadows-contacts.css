@@ -633,7 +633,7 @@
 }
 .pch-line { display: flex; align-items: flex-start; gap: var(--sp-2); }
 .pch-state {
-  display: inline-flex; align-items: center; gap: 10px;
+  display: inline-flex; align-items: center; gap: var(--sp-2);
   font-family: var(--font-display, inherit); font-weight: 600;
   font-size: clamp(22px, 5vw, 29px); line-height: 0.9; letter-spacing: 0.04em;
   text-transform: uppercase; color: var(--state);
@@ -1098,7 +1098,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-2);
   padding: 11px 2px;
 }
 .play-drawer > summary::-webkit-details-marker { display: none; }
@@ -1128,7 +1128,7 @@
 /* Lot C — coachmark « C'est quoi un Front ? » (proactif une fois) */
 .play-front-coach {
   display: flex;
-  gap: 10px;
+  gap: var(--sp-2);
   align-items: flex-start;
   padding: 10px 12px;
   margin-bottom: 10px;

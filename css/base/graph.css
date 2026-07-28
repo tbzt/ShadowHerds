@@ -704,7 +704,7 @@
 .scenario-inspector {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--sp-4);
 }
 .scenario-insp-head {
   font-size: var(--fs-xs);
