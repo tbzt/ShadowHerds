@@ -20,13 +20,14 @@
    consultables.
    ============================================================ */
 import { CardRenderer } from "./cardrenderer.js";
+import { FocusTrap } from "../kit/focustrap.js";
 import { PinRow } from "../journal/pinrow.js";
 
 export const CardPeek = {
   _el: null,
   _id: null,
   _siblings: [],
-  _returnFocus: null,
+  _releaseTrap: null,
   _view: null,
 
   /** Ouvre le coup d'œil sur `id`. `siblings` = ids consultables du casting,
@@ -36,7 +37,13 @@ export const CardPeek = {
   open(id, { siblings = [], view = null } = {}) {
     const ent = PnjLookup.find(id);
     if (!ent) return; // défensif : serveurs & entités non rendues filtrés en amont
-    this._returnFocus = document.activeElement;
+    // D7 : remplace l'ancien `_returnFocus` maison (une des « 5 restitutions
+    // partielles » mesurées au diagnostic D7) par le socle partagé — capturé
+    // ICI, avant que `_show()` ne déplace le focus sur `.card-peek`. `_step()`
+    // (prev/next) réutilise le même conteneur sans relancer `activate()` : le
+    // déclencheur mémorisé reste le VRAI bouton d'origine, pas un bouton de
+    // pagination interne.
+    this._releaseTrap = FocusTrap.activate(this._ensure().querySelector(".card-peek"));
     this._view = view;
     this._siblings = siblings.length ? siblings.slice() : [id];
     this._show(id, ent);
@@ -45,14 +52,15 @@ export const CardPeek = {
   hide() {
     if (!this._el) return;
     this._el.classList.remove("visible");
-    const f = this._returnFocus;
-    this._returnFocus = null;
-    // On n'a jamais quitté Jouer : on rend le focus au déclencheur (a11y).
-    if (f && typeof f.focus === "function") f.focus();
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 
   /** prev/next : re-rend en place la fiche voisine (boucle bornée). Ne touche
-      pas `_returnFocus` — on reste dans la même ouverture d'overlay. */
+      pas au piège de focus — on reste dans la même ouverture d'overlay, le
+      déclencheur mémorisé par `open()` doit survivre à la pagination. */
   _step(delta) {
     if (this._siblings.length < 2) return;
     const i = this._siblings.indexOf(this._id);
@@ -103,10 +111,10 @@ export const CardPeek = {
     overlay.className = "content-modal-overlay card-peek-overlay";
     overlay.id = "card-peek-overlay";
     overlay.innerHTML = `
-      <div class="card-peek" role="dialog" aria-modal="true" aria-label="Fiche" tabindex="-1">
+      <div class="card-peek" role="dialog" aria-modal="true" aria-labelledby="card-peek-title" tabindex="-1">
         <div class="card-peek-head">
           <button type="button" class="card-peek-nav card-peek-prev" aria-label="Fiche précédente">&lsaquo;</button>
-          <span class="card-peek-title"></span>
+          <span class="card-peek-title" id="card-peek-title"></span>
           <button type="button" class="card-peek-nav card-peek-next" aria-label="Fiche suivante">&rsaquo;</button>
           <button type="button" class="card-peek-close" aria-label="Fermer">&times;</button>
         </div>
