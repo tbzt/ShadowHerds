@@ -1476,9 +1476,9 @@ export const CardRenderer = {
         const r = deps.WeaponRoll ? deps.WeaponRoll.resolvePool(pnj, w, edition) : null;
         const parsed = deps.WeaponRoll ? deps.WeaponRoll.parse(w) : { name: s };
         const name = parsed.name || s;
-        const stat = s.includes("[")
-          ? s.split("[")[1].replace("]", "").replace(/,\s*/g, " · ")
-          : "";
+        // La ligne de stats vient du contrat : elle réduit « PRE 5 (7) » à
+        // « PRE 7 » quand la Précision couplée s'applique (smartgun + smartlink).
+        const stat = deps.WeaponRoll ? deps.WeaponRoll.statLine(s, r) : "";
         if (!r) {
           return `<div class="weapon-line"><div><div class="weapon-name">${this._esc(name)}</div><div class="weapon-stat">${this._esc(stat)}</div></div></div>`;
         }

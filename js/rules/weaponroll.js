@@ -184,11 +184,18 @@ export const WeaponRoll = {
       // item-objet {str, cat} → parse sa chaîne. Distinct de l'objet
       // arme structuré {name, vd} (éditions à pnj.weapons).
       if (typeof weapon.str === "string") return WeaponRoll.parse(weapon.str);
-      return { name: weapon.name || "", pre: null, vd: weapon.vd ?? null, modes: null, capacity: null, smart: false, cr: null };
+      return { name: weapon.name || "", pre: null, preSmart: null, vd: weapon.vd ?? null, modes: null, capacity: null, smart: false, cr: null };
     }
     const str = String(weapon || "");
     const name = (str.split("[")[0] || "").trim();
-    const preMatch = str.match(/PRE\s*(\d+)/i);
+    // ⚠ « PRE 5 (7) » — la PARENTHÈSE est la Précision atteinte quand le
+    // smartgun de l'arme est COUPLÉ au smartlink du personnage : « Couplé à un
+    // système smartlink, un smartgun augmente la Précision de l'arme de 2 »
+    // (p.435). Elle était jetée par le parseur, qui ne lisait que le premier
+    // nombre — le PNJ correctement équipé restait plafonné à la Précision nue.
+    // La Précision EST la Limite de succès en SR5 : la perdre coûtait des
+    // succès à chaque jet.
+    const preMatch = str.match(/PRE\s*(\d+)(?:\s*\((\d+)\))?/i);
     const vdMatch = str.match(/VD\s*(\d+)/i);
     // Bandes de Score Offensif SR6 (`SO 10/10/8/-/-` à distance, `SO 6+FOR/…`
     // en mêlée) : tokens BRUTS par bande de Portée, `-`/`–`/`—`/vide → null
@@ -204,6 +211,10 @@ export const WeaponRoll = {
     return {
       name,
       pre: preMatch ? parseInt(preMatch[1], 10) : null,
+      // Précision « couplée » (smartgun + smartlink), ou null si l'arme n'en
+      // déclare pas. C'est `resolvePool` qui décide laquelle s'applique — le
+      // parseur n'arbitre jamais, il extrait.
+      preSmart: preMatch && preMatch[2] !== undefined ? parseInt(preMatch[2], 10) : null,
       vd: vdMatch ? parseInt(vdMatch[1], 10) : null,
       so,
       // ---- lot F2 : ce que la chaîne portait déjà et que personne ne lisait.
@@ -212,6 +223,24 @@ export const WeaponRoll = {
       smart: /smart\s*(gun|link)/i.test(str),
       cr: this._parseCR(str),
     };
+  },
+
+  /** La ligne de stats affichée sous le nom d'une arme — le contenu des
+      crochets, en clair. Vit ici et non dans le renderer parce qu'elle porte un
+      ARBITRAGE : quand la Précision couplée s'applique (smartgun + smartlink),
+      « PRE 5 (7) » se réduit à « PRE 7 ». Afficher les deux chiffres ferait
+      relire au MJ une question déjà tranchée, en pleine séance.
+
+      `resolved` = le `resolvePool` de cette arme, ou null (ligne non lançable,
+      arme brickée) — auquel cas la chaîne est rendue telle quelle. */
+  statLine(weaponStr, resolved) {
+    const s = String(weaponStr || "");
+    if (!s.includes("[")) return "";
+    let inner = s.split("[")[1].replace("]", "");
+    if (resolved && resolved.accuracySmart && resolved.limit != null) {
+      inner = inner.replace(/PRE\s*\d+\s*\(\d+\)/i, `PRE ${resolved.limit}`);
+    }
+    return inner.replace(/,\s*/g, " · ");
   },
 
   /** Compétence canonique gouvernant cette arme. */
@@ -399,6 +428,18 @@ export const WeaponRoll = {
         ? weaponModel.smartlinkBonus.implanted
         : weaponModel.smartlinkBonus.external;
     }
+    // PRÉCISION COUPLÉE — même synergie que le bonus de dés ci-dessus, et donc
+    // même condition : le système sur l'ARME, le smartlink sur le PERSONNAGE.
+    // « Couplé à un système smartlink, un smartgun augmente la Précision de
+    // l'arme de 2 » (p.435) ; la parenthèse de la chaîne porte déjà ce total,
+    // on la lit plutôt que de recalculer un +2 qui pourrait diverger du livre.
+    //
+    // ⚠ À SAVOIR AVANT D'AJOUTER LA VISÉE LASER : le même passage lui donne
+    // +1 de Précision « NON CUMULABLE avec les modificateurs d'un système
+    // smartlink ». Le jour où un effet `target: "accuracy"` la porte, il devra
+    // être écarté quand `accuracySmart` est vrai — sinon on cumulera à tort.
+    const accuracySmart = !!(smartBonus && parsed.preSmart != null);
+    const accuracy = accuracySmart ? parsed.preSmart : parsed.pre;
     const malus = Utils.dicePenalty(pnj, edition);
 
     // Effets d'objet motorisés, par FACETTE (pool/accuracy/dv/ap).
@@ -434,7 +475,11 @@ export const WeaponRoll = {
       smartBonus,
       specBonus,
       spec: specSkill ? specSkill.spec : null,
-      limit: weaponModel.accuracyLimit ? parsed.pre : null,
+      limit: weaponModel.accuracyLimit ? accuracy : null,
+      // Vrai quand la Précision jouée est celle de la parenthèse : le badge et
+      // la ligne de stats affichent alors ce seul chiffre, sans « 5 (7) » qui
+      // ferait relire au MJ un arbitrage déjà rendu.
+      accuracySmart,
       rr,
       edition,
       contributions, // pool décomposé (explication du jet)
