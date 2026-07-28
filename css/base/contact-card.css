@@ -9,9 +9,14 @@
    `.cards-zone` masonry que toutes les autres cartes, qui remplissent leur
    colonne (`width:100%`, base `.pnj-card`) sans px figé. Seul un vrai delta
    survit : l'accent2 (au lieu de l'accent générique) du liseré du haut,
-   retargeté sur le frame — plus forte spécificité que la règle de base,
-   ordre de chargement CSS non requis. */
-.contact-card .pnj-card-frame::before {
+   retargeté sur le frame.
+   ⚠️ Bug trouvé en vérifiant D6 (2026-07-28) : la spécificité (2 classes)
+   suffisait contre `.pnj-card-frame::before` de base (1 classe), mais PAS
+   contre `[data-edition="x"] .pnj-card-frame::before` (theme-*.css, même
+   spécificité à 2, gagnant par ordre de charge car injecté après) — les 4
+   éditions écrasaient ce liseré sans exception, jamais vu à l'écran depuis
+   la réconciliation CO-e. `.pnj-card` ajouté pour passer à 3 classes. */
+.pnj-card.contact-card .pnj-card-frame::before {
   background: var(--accent2);
 }
 /* CO-e (nettoyage) : `.contact-card-body`/`.contact-name`/`.contact-role`
