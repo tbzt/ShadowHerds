@@ -238,7 +238,7 @@
   background: var(--warning);
   color: var(--bg);
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   line-height: 16px;
   text-align: center;

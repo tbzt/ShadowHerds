@@ -124,7 +124,7 @@ Object.assign(CardRenderer, {
         .sort((a, b) => ed.weaponCategoryRank(a.name) - ed.weaponCategoryRank(b.name));
       for (const a of sortedWeapons) {
         const noteStr = a.note
-          ? ` <em style="color:var(--text-dim);font-size:0.58rem;">(${this._esc(a.note)})</em>`
+          ? ` <em style="color:var(--text-dim);font-size:var(--fs-2xs);">(${this._esc(a.note)})</em>`
           : "";
         const r = deps.WeaponRoll ? deps.WeaponRoll.resolvePool(pnj, a, pnj.edition) : null;
         if (r) {

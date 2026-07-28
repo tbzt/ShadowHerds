@@ -276,12 +276,12 @@
 }
 .anarchy-skill-spec .anarchy-skill-name {
   color: var(--text-dim);
-  font-size: 0.73rem;
+  font-size: var(--fs-xs);
 }
 
 .anarchy-skill-pool {
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.62rem;
+  font-size: var(--fs-2xs);
   color: var(--accent);
   white-space: nowrap;
   flex-shrink: 0;
@@ -309,7 +309,7 @@
 }
 .anarchy-seuil-label {
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.56rem;
+  font-size: var(--fs-2xs);
   color: var(--text-dim);
   letter-spacing: 0.1em;
   text-transform: uppercase;

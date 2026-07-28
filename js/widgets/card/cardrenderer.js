@@ -341,7 +341,7 @@ export const CardRenderer = {
       <span class="stat-pill">Loyauté
         <strong${numAttrs("loyaute")} class="editable-num">${c.loyaute}</strong>
       </span>
-      ${c.lieu ? `<span style="font-size:0.68rem;color:var(--text-dim);align-self:center;">📍 ${this._esc(c.lieu)}</span>` : ""}
+      ${c.lieu ? `<span style="font-size:var(--fs-xs);color:var(--text-dim);align-self:center;">📍 ${this._esc(c.lieu)}</span>` : ""}
     </div>`;
   },
 

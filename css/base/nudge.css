@@ -81,11 +81,11 @@
 .nudge-title {
   margin: 0 1.6rem 0.3rem 0;
   font-weight: 600;
-  font-size: 0.98rem;
+  font-size: var(--fs-md);
 }
 .nudge-body {
   margin: 0 0 0.7rem;
-  font-size: 0.88rem;
+  font-size: var(--fs-base);
   line-height: 1.4;
   color: var(--text-dim);
 }
