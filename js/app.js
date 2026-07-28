@@ -650,6 +650,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // actions d'Atout dépensaient la réserve du combattant : deux comptes pour
     // une seule ressource. `null` → le PNJ n'est pas en scène (ou l'édition
     // range sa ressource sur la fiche) et l'attribut redevient la source.
+    // Recul : la crosse pliable et la remise à zéro manuelle. Deux gestes que
+    // le livre laisse au MJ et qui avaient perdu leur surface avec la rangée
+    // de munitions ; le panneau est le seul endroit où le badge ↯ se lit.
+    onRecoilStock: (pnj) => {
+      if (typeof Encounter !== "undefined") Encounter.toggleRecoilStock(pnj.id);
+    },
+    onRecoilReset: (pnj) => {
+      if (typeof Encounter !== "undefined") Encounter.resetRecoil(pnj.id);
+    },
     sceneEdge: (pnj) => (typeof Encounter !== "undefined" ? Encounter.sceneEdge(pnj.id) : null),
     adjustSceneEdge: (pnj, delta) => {
       if (typeof Encounter !== "undefined") Encounter.adjustEdge(pnj.id, delta);

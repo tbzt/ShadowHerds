@@ -824,10 +824,13 @@ export const Encounter = {
   /** TIRER : décrémente, cumule le recul, et débite l'action du mode.
 
       Le débit passe par `useAction` — donc par le catalogue F1, donc par les
-      mêmes gardes. Le jet, lui, part par le chemin habituel : le MÊME bouton
-      porte `data-roll` (DiceRoller lance, délégation document) et
-      `data-action="ammo-fire"` (Encounter compte, délégation overlay). C'est le
-      patron déjà écrit pour `count-defense` au lot E4.
+      mêmes gardes.
+
+      ⚠ APPELANT UNIQUE depuis F5c : `resolveAttack`, au sortir du panneau
+      pré-jet. Le patron d'origine (le MÊME bouton portant `data-roll` pour le
+      jet et `data-action="ammo-fire"` pour le compte, comme `count-defense` au
+      lot E4) a disparu avec la rangée de munitions du cockpit ; le cas de
+      dispatch qui restait a été retiré au lot F5h.
 
       Renvoie la résolution du tir, pour que l'appelant l'annonce. */
   fire(pnjId, key, modeKey) {
@@ -1108,7 +1111,12 @@ export const Encounter = {
     const armes = this.ammoWeapons(pnjId).map((a) => a.parsed);
     const comp = Ammo.compensation(pnj, armes, !!c.recoilStock);
     const cumul = c.recoil || 0;
-    return { cumul, comp, malus: Ammo.recoilMalus(cumul, comp), stock: !!c.recoilStock };
+    // `stockMatters` : déployer les accessoires internes change-t-il QUELQUE
+    // CHOSE ? Seules les armes dont la colonne CR porte une parenthèse
+    // (p.418 : un TOTAL, pas un supplément) y gagnent. Sans ça, la bascule
+    // s'afficherait sur toutes les armes en ne faisant rien sur la plupart.
+    const stockMatters = armes.some((p) => p && p.cr && p.cr.full > p.cr.base);
+    return { cumul, comp, malus: Ammo.recoilMalus(cumul, comp), stock: !!c.recoilStock, stockMatters };
   },
 
   /** Bascule « accessoires internes déployés » (crosse pliable/détachable) :
@@ -2978,24 +2986,15 @@ export const Encounter = {
           // F1 — joue une action du catalogue : elle débite son propre coût.
           this.useAction(id, el.dataset.key);
           break;
-        case "ammo-fire":
-          // F2 — porté par le MÊME bouton que le jet : DiceRoller lance
-          // (délégation document), Encounter compte les balles et le recul
-          // (délégation overlay). Patron déjà écrit pour `count-defense` (E4).
-          this.fire(id, el.dataset.arme, el.dataset.mode);
-          break;
-        case "ammo-modes":
-          EncounterRenderer.toggleAmmoModes(el);
-          break;
-        case "ammo-reload":
-          this.reloadWeapon(id, el.dataset.arme);
-          break;
-        case "recoil-stock":
-          this.toggleRecoilStock(id);
-          break;
-        case "recoil-reset":
-          this.resetRecoil(id);
-          break;
+        // F5h — `ammo-fire`, `ammo-modes` et `ammo-reload` ont été retirés :
+        // plus aucun rendu ne les émettait depuis que la rangée de munitions a
+        // quitté le cockpit (F5c), et `ammo-modes` appelait en prime une
+        // fonction disparue — il aurait levé une TypeError s'il avait été
+        // atteint. Leurs métiers ont un chemin vivant : `fire` par
+        // `resolveAttack`, `reloadWeapon` par le hook `onReload` du panneau.
+        // Les deux commandes de RECUL, elles, n'en avaient aucun : elles sont
+        // reparties dans le panneau pré-jet (hooks `onRecoilStock`/
+        // `onRecoilReset`), seul endroit où le badge ↯ se lit encore.
         case "threat-step":
           // ±1 Réserve de menace (Anarchy) — mute la source unique
           // DiceRoller (le badge topbar et le miroir cockpit se synchronisent).

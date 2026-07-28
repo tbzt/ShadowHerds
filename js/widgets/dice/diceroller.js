@@ -1228,6 +1228,25 @@ export const DiceRoller = {
         this._renderAttackSection();
         return;
       }
+      // Les deux commandes de RECUL rendues au panneau (F5h) : elles mutent la
+      // rencontre, donc on relit le contexte et on re-rend la section — le
+      // panneau ne se ferme pas, rien n'est lancé. Même boucle que `_applyGain`.
+      const rec = e.target.closest("[data-preroll-stock], [data-preroll-recoil-reset]");
+      if (rec) {
+        const stock = rec.hasAttribute("data-preroll-stock");
+        const hook = stock ? this._hooks.onRecoilStock : this._hooks.onRecoilReset;
+        if (hook) hook(this._preRoll.pnj);
+        if (this._hooks.attackContext) {
+          const frais = this._hooks.attackContext(this._preRoll.pnj, a.weapon);
+          if (frais) {
+            frais.chosenMode = a.chosenMode;
+            frais.chosenGraft = a.chosenGraft;
+            this._preRoll.attack = frais;
+          }
+        }
+        this._renderAttackSection();
+        return;
+      }
       // Recharger débite ses actions et REND LA MAIN : ce n'est pas un jet, et
       // son retour (le toast de `reloadWeapon`, qui nomme les actions payées)
       // diffère de celui d'un jet — c'est ce qui satisfait la loi 3 plutôt que
@@ -1385,7 +1404,17 @@ export const DiceRoller = {
       : "";
     const recul =
       a.recoil && a.recoil.cumul
-        ? `<span class="preroll-ammo" title="Recul progressif — ${a.recoil.cumul} balles cumulées − CR ${a.recoil.comp}">↯ ${a.recoil.malus ? `−${a.recoil.malus}` : `${a.recoil.cumul}/${a.recoil.comp}`}</span>`
+        ? `<span class="preroll-ammo" title="Recul progressif — ${a.recoil.cumul} balles cumulées − CR ${a.recoil.comp}">↯ ${a.recoil.malus ? `−${a.recoil.malus}` : `${a.recoil.cumul}/${a.recoil.comp}`}</span>` +
+          `<button type="button" class="btn-icon-tiny" data-preroll-recoil-reset title="Remettre le recul à zéro" aria-label="Remettre le recul à zéro">↺</button>`
+        : "";
+    // La CROSSE : le nombre entre parenthèses de la colonne CR est une
+    // compensation TOTALE, qui ne s'applique que si les accessoires internes
+    // sont déployés (p.418). L'app ne peut pas le savoir — c'est un geste du
+    // MJ. Affichée seulement quand elle change quelque chose, sinon elle
+    // mentirait sur l'existence d'un arbitrage.
+    const crosse =
+      a.recoil && a.recoil.stockMatters
+        ? `<button type="button" class="tag status-pick${a.recoil.stock ? " is-on" : ""}" data-preroll-stock aria-pressed="${!!a.recoil.stock}" title="Accessoires internes déployés (crosse pliable ou détachable) — la compensation entre parenthèses est un TOTAL, pas un supplément">crosse</button>`
         : "";
 
     // MODE UNIQUE = pas un choix. Les 29 armes concernées (23 SR5, 6 SR6) sont
@@ -1433,7 +1462,7 @@ export const DiceRoller = {
           .join("")}</div>`
       : "";
 
-    el.innerHTML = `<div class="preroll-attack-head">${esc(a.name)} ${chargeur}${recul}${modeSeul}</div>${modes}${verdict}${this._reloadRowHtml(a)}${greffons}`;
+    el.innerHTML = `<div class="preroll-attack-head">${esc(a.name)} ${chargeur}${recul}${crosse}${modeSeul}</div>${modes}${verdict}${this._reloadRowHtml(a)}${greffons}`;
   },
 
   /** La phrase que le MJ va annoncer, pour un mode donné : ce que `rollDetail`

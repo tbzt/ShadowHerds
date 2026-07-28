@@ -279,75 +279,24 @@
   border-left-width: 3px;
 }
 
-/* ---- Munitions et recul (lot F2) ----
-   Une ligne par arme qui compte ses balles, dans l'économie du TOUR : un
-   chargeur se vide au rythme des actions. Aucune couleur nouvelle — le cockpit
-   a dépensé ses quatre rôles ; « bas » et « vide » se lisent à l'opacité et au
-   liseré, jamais à la teinte. */
-.encounter-ammo {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
-  width: 100%;
-}
-.ammo-row {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  flex-wrap: wrap;
-}
-.ammo-name {
-  font-size: 0.85em;
-  opacity: 0.8;
-}
-.ammo-count {
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.ammo-row.is-low .ammo-count {
-  font-weight: 700;
-}
-/* Arme vide : la ligne se ternit, mais RIEN ne se désactive. Le livre prévoit
-   le tir court et en donne le prix (« réduisez les modificateurs de défense et
-   de recul de 1 par balle manquante ») — griser le bouton retirerait au MJ un
-   arbitrage que le livre lui rend. */
-.ammo-row.is-empty {
-  opacity: 0.6;
-}
-.ammo-modes {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: var(--sp-1);
-}
-.ammo-modes[hidden] {
-  display: none;
-}
-/* Le témoin de recul : il n'est jamais cliquable — c'est le ↺ voisin qui agit.
-   Au repos il rappelle seulement la compensation disponible. */
-.recoil-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  padding-inline: var(--sp-1);
-  border-radius: var(--radius-sm);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.recoil-badge.is-idle {
-  opacity: 0.55;
-}
-.recoil-badge.is-on {
-  font-weight: 700;
-  border: 1px solid var(--border);
-}
-/* Réserve tombée à zéro : le mode se ternit mais reste cliquable — il débite
-   toujours ses balles. Même arbitrage que `.action-pick.is-over` : l'app
-   informe, elle ne décide pas à la place du MJ. */
-.ammo-mode.is-dry {
-  opacity: 0.5;
-  border-style: dashed;
-}
+/* ---- Munitions et recul (lot F2, soldé au lot F5h) ----
+   Les 9 règles qui vivaient ici (`.encounter-ammo`, `.ammo-row`, `.ammo-name`,
+   `.ammo-count`, `.ammo-row.is-low`, `.ammo-row.is-empty`, `.ammo-modes`,
+   `.ammo-modes[hidden]`, `.ammo-mode.is-dry`) habillaient la rangée de
+   munitions du cockpit, retirée au lot F5c parce qu'elle dupliquait l'arme :
+   plus aucun rendu n'émettait ces classes. Retirées plutôt que laissées à
+   pourrir — un sélecteur sans consommateur ment sur ce que porte l'app.
+
+   Leurs deux ARBITRAGES, eux, ont survécu et vivent maintenant dans le panneau
+   pré-jet (`dice-overlay.css`) : le chargeur vide se ternit sans rien
+   désactiver (`.preroll-ammo.is-empty`), et un mode que le chargeur ne suit
+   plus se ternit en restant cliquable (`.status-pick.is-over`) — le livre
+   prévoit le tir court et en donne le prix, griser retirerait au MJ un
+   arbitrage que le livre lui rend.
+
+   `.recoil-badge` a suivi le même chemin : sa recette est devenue celle de
+   `.preroll-ammo`, et le ↺ de remise à zéro comme la bascule de crosse sont
+   revenus dans le bandeau du panneau. */
 
 /* ---- Modale de description ---- */
 .content-modal-overlay {
