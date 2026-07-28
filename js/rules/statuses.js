@@ -340,6 +340,27 @@ export const Statuses = {
     return Math.max(-1, Math.min(1, n));
   },
 
+  /** Pose (ou retire) le MÊME état sur plusieurs PNJ d'un coup — lot E6.
+
+      La signature que la décision CODIR n°17 réclamait dès le premier jour :
+      « une fumigène tombe, TROIS gardes deviennent Aveuglés » était le besoin
+      nommé au panel MJ, et il valait qu'on ne ferme pas la porte. Le moteur
+      était déjà prêt — rien dans `set` ne suppose un PNJ unique — il ne
+      manquait que ce point d'entrée.
+
+      Chaque PNJ passe par `set`, donc par les mêmes gardes : plafond du
+      contrat, exclusions du livre, transition ordonnée. Un PNJ dont l'édition
+      ignore la clé est simplement sauté (une scène peut mêler des éditions).
+      Renvoie le nombre de PNJ réellement touchés. */
+  setMany(pnjs, key, level) {
+    let n = 0;
+    for (const pnj of pnjs || []) {
+      if (!this.find(pnj, key)) continue; // édition sans cet état → ignoré
+      if (this.set(pnj, key, level) === level) n++;
+    }
+    return n;
+  },
+
   /** Retire tout — sortie de masse du ⛨ « Réinitialiser les moniteurs ».
       Passe par `set` état par état pour que les `revert` du lot E3 soient
       appelés, jamais un `delete pnj.statuses` brutal qui laisserait les

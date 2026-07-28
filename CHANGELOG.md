@@ -12,6 +12,23 @@ commit.
 
 ## [Non publié]
 
+## [1.126.0] — 2026-07-28
+
+### Ajouté
+
+- **Une fumigène aveugle trois gardes en un geste.** Le suivi de combat gagne
+  une action de scène **⊘ État de groupe** : on choisit l'état, on coche les
+  combattants, on pose. Le bouton n'apparaît qu'à partir de **deux** cibles —
+  à une seule, la feuille de la fiche suffisait déjà.
+- **Les scènes mixtes sont gérées.** Le panneau propose l'**union** des états
+  connus par les combattants présents, et désactive celles des cibles dont
+  l'édition ignore l'état choisi (« état absent de son édition ») au lieu de
+  masquer l'état. Poser « Aveuglé » sur une scène SR6+SR5 ne touche que les
+  SR6, et le bouton le dit avant d'agir.
+- La fiche garde son geste unitaire **inchangé** : le ＋ de la ligne d'états
+  pose sur un PNJ, l'action de scène pose sur plusieurs. Deux endroits, deux
+  portées — pas de mode à basculer.
+
 ## [1.125.0] — 2026-07-27
 
 ### Ajouté

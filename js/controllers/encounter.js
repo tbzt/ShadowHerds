@@ -450,6 +450,72 @@ export const Encounter = {
   },
 
   /* ========================================================
+     POSE D'ÉTAT DE GROUPE (lot E6) — un état, plusieurs PNJ.
+     ======================================================== */
+
+  /** Les combattants qui peuvent RECEVOIR un état, avec les clés que leur
+      édition connaît. Écarte ce qui n'a pas de fiche (PJ ad-hoc) et les CI
+      matricielles — garde-fou (b) : le « combattant qui n'est pas un
+      combattant » reste un nom et un compteur libre. */
+  groupStatusTargets() {
+    return this.state.combatants
+      .filter((c) => c.kind !== "matrix")
+      .map((c) => ({ c, pnj: PnjLookup.find(c.pnjId) }))
+      .filter((x) => x.pnj && !x.pnj._adhoc && Statuses.catalog(x.pnj).length)
+      .map((x) => ({
+        pnjId: x.pnj.id,
+        name: x.pnj.name,
+        keys: Statuses.catalog(x.pnj).map((s) => s.key),
+      }));
+  },
+
+  /** Le bouton de scène n'existe que s'il a un sens : au moins DEUX cibles
+      capables de porter un état. À une seule, la feuille de la fiche suffit et
+      un second chemin ne ferait qu'ajouter une décision. */
+  groupStatusAvailable() {
+    return this.groupStatusTargets().length >= 2;
+  },
+
+  /** Ouvre la pose de groupe. Le catalogue proposé est l'UNION de ce que les
+      cibles connaissent — une scène peut mêler des éditions, et le panneau
+      désactive ensuite les cibles qui ignorent l'état choisi plutôt que de
+      masquer l'état. */
+  openGroupStatus() {
+    const cibles = this.groupStatusTargets();
+    if (!cibles.length) return;
+    const vues = new Set();
+    const catalogue = [];
+    for (const t of cibles) {
+      const pnj = PnjLookup.find(t.pnjId);
+      for (const s of Statuses.catalog(pnj)) {
+        if (vues.has(s.key)) continue;
+        vues.add(s.key);
+        catalogue.push(s);
+      }
+    }
+    // Les états d'accès direct d'abord, le reste ensuite — même hiérarchie que
+    // la feuille unitaire, pour que le MJ retrouve ses repères.
+    catalogue.sort((a, b) => (b.quick ? 1 : 0) - (a.quick ? 1 : 0));
+    EncounterRenderer.openGroupStatusPanel(cibles, catalogue);
+  },
+
+  /** Applique l'état choisi aux cibles cochées, au niveau I. Le niveau se
+      monte ensuite PNJ par PNJ sur leur puce : une fumigène aveugle tout le
+      monde pareil, mais la suite est individuelle. */
+  applyGroupStatus(key, ids) {
+    if (!key || !ids || !ids.length) return;
+    const pnjs = ids.map((id) => PnjLookup.find(id)).filter(Boolean);
+    const n = Statuses.setMany(pnjs, key, 1);
+    if (!n) return;
+    Shadows.save();
+    for (const pnj of pnjs) CardRenderer.refresh(pnj);
+    EncounterRenderer._activeCardId = null;
+    this._render();
+    const nom = (Statuses.find(pnjs[0], key) || {}).name || key;
+    toast(`${nom} — posé sur ${n} PNJ.`);
+  },
+
+  /* ========================================================
      ACTIONS D'INTERRUPTION (lot E4) — SR5 p.169-170, la 4ᵉ catégorie.
      ======================================================== */
 
@@ -2472,6 +2538,11 @@ export const Encounter = {
           break;
         case "heal-all":
           this.healAll();
+          break;
+        case "group-status":
+          // E6 — pose de groupe : acte de SCÈNE, d'où son entrée ici et pas
+          // sur la fiche, qui garde son geste unitaire inchangé.
+          this.openGroupStatus();
           break;
         case "focus-combatant":
           this.focusCombatant(id);

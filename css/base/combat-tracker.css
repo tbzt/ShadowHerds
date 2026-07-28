@@ -99,7 +99,7 @@
 .encounter-toolbar {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--sp-2);
   margin-bottom: var(--sp-4);
 }
 /* Ajouter = action primaire, teintée accent. */
@@ -130,7 +130,7 @@
 .encounter-list {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--sp-2);
 }
 .encounter-row {
   display: flex;
@@ -233,7 +233,7 @@
 .encounter-queue-sep {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--sp-2);
   font-size: var(--fs-2xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -393,7 +393,7 @@
 .encounter-name-row {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--sp-2);
   min-width: 0;
 }
 .encounter-name.is-pj {
@@ -976,7 +976,7 @@
      liste 2 étages reste affichée (défaut mobile). */
   .encounter-modal.rail-compact .encounter-rail {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--sp-2);
     overflow-x: auto;
     padding: 0.2rem 0.1rem 0.5rem;
     scrollbar-width: thin;
@@ -1173,14 +1173,14 @@
 .encounter-offense {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--sp-2);
   padding: 0.5rem 0.6rem 0;
 }
 .offense-state {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--sp-2);
 }
 
 /* ---- M4 : appareils matriciels (armes brickables) sur la fiche active.
@@ -1626,7 +1626,7 @@
 .encounter-react {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--sp-2);
   padding: 0.6rem;
 }
 /* ── Deux températures (Agir vs Réagir), durcies en V7 ───────────────────────
@@ -1927,6 +1927,48 @@
 .action-trade:hover {
   color: var(--accent);
   border-color: var(--accent);
+}
+
+/* Pose d'état de groupe (E6) — la liste de cibles. Cases natives : le clavier
+   et les lecteurs d'écran les connaissent déjà, et une coche est le geste que
+   tout le monde a dans les doigts. Cible ≥32px sur la LIGNE ENTIÈRE (le
+   <label> est la cible, pas la case) — geste fréquent quand il sert, donc
+   échelle tactile confortable, loi 4 de la Grammaire. */
+.group-targets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  max-height: min(40vh, 320px);
+  overflow-y: auto;
+  padding: var(--sp-2) 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.group-target {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 32px;
+  padding: 0 var(--sp-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.group-target:hover {
+  background: var(--bg-mid);
+}
+.group-target.is-off {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.group-target-note {
+  margin-left: auto;
+  color: var(--text-dim);
+  font-size: var(--fs-2xs);
+}
+.group-target-tools {
+  display: flex;
+  gap: var(--sp-1);
+  padding: var(--sp-2) 0;
 }
 .react-btn-danger {
   border-color: color-mix(in srgb, var(--danger) 45%, var(--border));

@@ -196,6 +196,7 @@ export const EncounterRenderer = {
       restHtml +
       devicesHtml +
       `<div class="encounter-scene-actions">
+        ${Encounter.groupStatusAvailable() ? `<button class="btn-secondary btn-small" data-action="group-status" title="Poser le même état sur plusieurs combattants — une fumigène, un gaz, une zone d'effet">⊘ État de groupe</button>` : ""}
         <button class="btn-secondary btn-small" data-action="heal-all" title="Réinitialiser les moniteurs de tous les combattants">⛨ Fin de scène — tout soigner</button>
       </div>`;
     this._playFlip(flipRoot, flipPrev);
@@ -1616,6 +1617,142 @@ export const EncounterRenderer = {
       </div>`;
   },
 
+
+  /* ========================================================
+     POSE DE GROUPE (lot E6) — un état, plusieurs PNJ.
+
+     Ancrage assumé : la SCÈNE, pas la fiche. Une fumigène est un acte de
+     scène ; le geste vit donc dans `.encounter-scene-actions`, à côté du ⛨
+     « tout soigner », et la fiche garde son geste unitaire INCHANGÉ. Pas de
+     « mode groupe » sur la carte, donc pas d'erreur de mode (le risque n°1
+     du panel MJ) : deux endroits, deux portées, aucune ambiguïté.
+
+     Panneau réutilisant `.risk-panel` comme le bilan de round — aucun
+     composant neuf, et les puces d'état sont les mêmes `.tag` que la feuille
+     de pose unitaire, donc déjà dans les doigts.
+     ======================================================== */
+
+  /** Ouvre la pose de groupe. `state` = l'état de scène d'Encounter. */
+  openGroupStatusPanel(cibles, catalogue) {
+    this._ensureGroupStatusPanel();
+    this._groupCibles = cibles;
+    this._groupCatalogue = catalogue;
+    this._groupChoix = null;
+    // Par défaut AUCUNE cible cochée : cocher est un acte, décocher une
+    // corvée — et poser un état sur toute la scène par inadvertance coûte
+    // plus cher que deux taps.
+    this._groupSel = new Set();
+    this._renderGroupStatus();
+    const p = document.getElementById("group-status-panel");
+    p.removeAttribute("hidden");
+    void p.offsetWidth;
+    p.classList.add("show");
+  },
+
+  _renderGroupStatus() {
+    const etats = this._groupCatalogue
+      .map(
+        (s) =>
+          `<button type="button" class="tag status-pick${this._groupChoix === s.key ? " is-on" : ""}" data-group-status="${s.key}" title="${Utils.escHtml([`${s.name} — ${s.page}`, ...(s.lines || [])].join("\n• "))}">${Utils.escHtml(s.name)}</button>`,
+      )
+      .join("");
+    // Une cible dont l'édition ignore l'état choisi est DÉSACTIVÉE et le dit —
+    // une scène peut mêler des éditions, et un PNJ Anarchy n'a pas « Aveuglé ».
+    const lignes = this._groupCibles
+      .map((t) => {
+        const hors = this._groupChoix && !t.keys.includes(this._groupChoix);
+        return `<label class="group-target${hors ? " is-off" : ""}">
+          <input type="checkbox" data-group-target="${t.pnjId}"${this._groupSel.has(t.pnjId) ? " checked" : ""}${hors ? " disabled" : ""}>
+          <span>${this._compactName(t.name)}</span>
+          ${hors ? `<span class="group-target-note">état absent de son édition</span>` : ""}
+        </label>`;
+      })
+      .join("");
+    document.getElementById("group-status-etats").innerHTML = etats;
+    document.getElementById("group-status-cibles").innerHTML = lignes;
+    const n = [...this._groupSel].filter((id) => {
+      const t = this._groupCibles.find((x) => x.pnjId === id);
+      return t && (!this._groupChoix || t.keys.includes(this._groupChoix));
+    }).length;
+    const nom = (this._groupCatalogue.find((s) => s.key === this._groupChoix) || {}).name;
+    const ok = document.getElementById("group-status-apply");
+    ok.disabled = !this._groupChoix || !n;
+    ok.textContent = this._groupChoix
+      ? n
+        ? `Poser ${nom} sur ${n} PNJ`
+        : `Choisir au moins une cible`
+      : "Choisir un état";
+  },
+
+  _ensureGroupStatusPanel() {
+    if (document.getElementById("group-status-panel")) return;
+    const p = document.createElement("div");
+    p.id = "group-status-panel";
+    p.className = "risk-panel-overlay";
+    p.setAttribute("hidden", "");
+    p.innerHTML = `
+      <div class="risk-panel" role="dialog" aria-label="Poser un état sur plusieurs PNJ">
+        <div class="risk-panel-head">
+          <span class="risk-panel-title">Poser un état sur plusieurs</span>
+          <button class="risk-panel-close" id="group-status-close" aria-label="Fermer">✕</button>
+        </div>
+        <div class="status-sheet" id="group-status-etats"></div>
+        <div class="group-targets" id="group-status-cibles"></div>
+        <div class="group-target-tools">
+          <button class="btn-icon-tiny action-trade" id="group-status-all">Tout cocher</button>
+          <button class="btn-icon-tiny action-trade" id="group-status-none">Rien</button>
+        </div>
+        <button class="risk-roll-btn" id="group-status-apply" disabled></button>
+      </div>`;
+    document.body.appendChild(p);
+    const close = () => this.closeGroupStatusPanel();
+    p.addEventListener("click", (e) => {
+      if (e.target === p) close();
+    });
+    document.getElementById("group-status-close").addEventListener("click", close);
+    document.getElementById("group-status-etats").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-group-status]");
+      if (!b) return;
+      this._groupChoix = b.getAttribute("data-group-status");
+      this._renderGroupStatus();
+    });
+    document.getElementById("group-status-cibles").addEventListener("change", (e) => {
+      const i = e.target.closest("[data-group-target]");
+      if (!i) return;
+      const id = i.getAttribute("data-group-target");
+      if (i.checked) this._groupSel.add(id);
+      else this._groupSel.delete(id);
+      this._renderGroupStatus();
+    });
+    document.getElementById("group-status-all").addEventListener("click", () => {
+      this._groupCibles.forEach((t) => {
+        if (!this._groupChoix || t.keys.includes(this._groupChoix)) this._groupSel.add(t.pnjId);
+      });
+      this._renderGroupStatus();
+    });
+    document.getElementById("group-status-none").addEventListener("click", () => {
+      this._groupSel.clear();
+      this._renderGroupStatus();
+    });
+    document.getElementById("group-status-apply").addEventListener("click", () => {
+      // Pont `window.Encounter` — le panneau vit sur `document.body`, hors de
+      // la délégation bornée à l'overlay (même situation que le bilan de round).
+      Encounter.applyGroupStatus(this._groupChoix, [...this._groupSel]);
+      close();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !document.getElementById("group-status-panel").hasAttribute("hidden")) close();
+    });
+  },
+
+  closeGroupStatusPanel() {
+    const p = document.getElementById("group-status-panel");
+    if (!p) return;
+    p.classList.remove("show");
+    p.setAttribute("hidden", "");
+    this._groupCibles = null;
+    this._groupSel = null;
+  },
 
   /* ========================================================
      BILAN DE ROUND (lot E3b) — le panneau qui dit ce que le round réclame.

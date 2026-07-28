@@ -654,6 +654,11 @@ export const TourSteps = {
       body: "La rangée de jetons du tour portait le compte, mais pas la monnaie : majeures et mineures étaient étanches alors que le livre les fait converser (p.42). Deux boutons prolongent la rangée — « 1 majeure → 1 mineure » et « 4 mineures → 1 majeure », ce dernier étant le seul moyen d'attaquer deux fois dans le même tour. Seuls les échanges payables avec ce qui vous reste sont proposés. Attention, l'échange est à perte : descendre puis remonter coûte 3 mineures, comme dans le livre. C'est pourquoi le ↺ rend les jetons échangés du tour au lieu de proposer un aller-retour — et il refuse si vous avez déjà consommé ce qui en dépendait.",
     },
     {
+      id: "wn-etat-groupe", anchor: "nav-combat", tours: ["whatsnew"], since: "1.126.0", fallback: "center",
+      title: "Poser un état sur plusieurs PNJ",
+      body: "Une fumigène tombe, trois gardes deviennent Aveuglés : en bas du suivi de combat, « ⊘ État de groupe » ouvre un panneau où vous choisissez l'état puis cochez les combattants. Le bouton n'apparaît qu'à partir de deux cibles — à une seule, le ＋ de la fiche suffit. Sur une scène qui mêle les éditions, le panneau propose l'union des états connus et grise les cibles dont l'édition ignore celui que vous avez choisi, en le disant. La fiche, elle, ne change pas : son ＋ pose toujours sur un seul PNJ.",
+    },
+    {
       id: "wn-interruptions-sr5", anchor: "nav-combat", tours: ["whatsnew"], since: "1.124.0", fallback: "center",
       title: "SR5 : les actions d'interruption",
       body: "L'app ne connaissait que trois natures d'action ; le livre en compte quatre. Les interruptions ne consomment aucun jeton — elles se paient en score d'initiative. En SR5, le ⛨ de la console de réaction déplie maintenant les huit, avec leur coût : Bloquer, Esquiver, Parer, Intercepter, Manger la poussière et Défense contre sorts à −5, Passer en défense totale et Conduite évasive à −10. Celles que l'initiative ne peut pas payer restent visibles mais grisées, avec la raison au survol — et un personnage Surpris ne peut en déclarer aucune avant d'avoir joué (p.169). Les défenses multiples se comptent aussi toutes seules : −1 dé par défense supplémentaire, remis à zéro à sa phase d'action. En SR6, rien ne bouge : une seule interruption, le ⛨ reste une bascule.",
