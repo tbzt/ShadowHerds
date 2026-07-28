@@ -95,7 +95,7 @@ export const RunRenderer = {
       rien ne les sépare visuellement avant le footer (bouton vs badge 📁). */
   _stateBadge(r) {
     return r.dossierId || r.dossierName
-      ? `<span class="run-state-badge is-run" title="Promu en run canon">Run</span>`
+      ? `<span class="run-state-badge status is-accent" title="Promu en run canon">Run</span>`
       : `<span class="run-state-badge" title="Pas encore promu en run">Topos</span>`;
   },
 

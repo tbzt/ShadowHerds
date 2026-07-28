@@ -61,7 +61,7 @@
   border: 1px solid var(--border);
   color: var(--text-dim);
 }
-.run-state-badge.is-run {
-  border-color: var(--accent);
-  color: var(--accent);
-}
+/* D5 : l'état « Run » composait déjà .run-state-badge.is-run avec sa propre
+   règle border-color/color:accent — remplacé par .status.is-accent (même
+   couleur, spécificité supérieure à .run-state-badge donc l'override tient
+   toujours). Composé dans le HTML : runrenderer.js:98. */
