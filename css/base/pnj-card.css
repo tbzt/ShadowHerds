@@ -828,11 +828,54 @@
   margin: 2px 2px 2px 0;
   line-height: 1.6;
 }
-/* Trait typé négatif (import Foundry, D5) — même recette danger que
-   .wound-malus-badge, sobre : une bordure/couleur, pas un fond plein. */
-.tag-negative {
+/* .status (D5, § 6.5 DESIGN-SYSTEM.md) — un état sémantique posé SUR `.tag` :
+   bordure/couleur pleines, jamais de fond (« il informe, il ne crie pas » —
+   même recette que `.tag-negative`/`.wound-malus-badge`/`.status-tag.is-on`,
+   généralisée ici en primitive composable : `class="tag status is-danger"`. */
+.status.is-danger {
   border-color: var(--danger);
   color: var(--danger);
+}
+.status.is-warning {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+.status.is-info {
+  border-color: var(--info);
+  color: var(--info);
+}
+.status.is-accent {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* état neutre « posé » (cf. .status-tag.is-on) : liseré discret, pas de
+   couleur sémantique — juste détaché des tags inertes voisins. */
+.status.is-on {
+  border-color: var(--text-dim);
+  color: var(--text);
+}
+
+/* .chip (D5, § 6.5) — une puce ACTIONNABLE : bordure + fond teintés en
+   permanence (contrairement à `.tag-clickable`, qui ne réagit qu'au survol —
+   deux patrons distincts et volontaires, pas une incohérence : `.chip` est un
+   objet autonome type puce de sélection, `.tag-clickable` un lien de texte
+   inline). Recette reprise telle quelle de `.ms-chip`, le seul site déjà
+   conforme au canon avant ce lot. */
+.chip {
+  border: 1px solid var(--accent);
+  background: var(--glow);
+  cursor: pointer;
+}
+.chip:hover,
+.chip:focus-visible {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  outline: none;
+}
+@media (pointer: coarse) {
+  .chip {
+    min-height: var(--hit-cozy);
+    padding-inline: var(--sp-3);
+  }
 }
 
 /* Identités (SIN, import Foundry, Lot 5) — une ligne par identité dans la

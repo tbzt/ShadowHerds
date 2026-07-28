@@ -1978,7 +1978,7 @@ export const CardRenderer = {
       // Trait typé négatif (import Foundry, D5 : affiché tel que saisi par
       // le joueur, jamais validé — le champ ment parfois, ex. « Recherché »
       // en positive chez Mellon/Nane).
-      const negClass = item.type === "negative" ? " tag-negative" : "";
+      const negClass = item.type === "negative" ? " status is-danger" : "";
       // Suffixe Drain (SR5/SR6) ou Seuil (Anarchy 2.0) pour les sorts.
       let suffix = "";
       if (item.drain != null) {
