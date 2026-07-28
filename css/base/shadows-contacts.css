@@ -678,7 +678,7 @@
 .play-trame.is-bar { border-left-color: var(--tint, var(--accent)); background: color-mix(in srgb, var(--tint, var(--accent)) 6%, transparent); }
 
 /* horloges SEGMENTÉES (flair McCarthy) — couleur sémantique par type */
-.play-clock-top { display: flex; align-items: center; gap: 9px; }
+.play-clock-top { display: flex; align-items: center; gap: var(--sp-2); }
 .play-clock-title small { display: block; font-family: var(--font-mono, monospace); font-size: var(--fs-2xs); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; color: var(--text-dim); }
 .play-clock.t-alerte .play-clock-title small { color: var(--warning); }
 .play-clock.t-menace .play-clock-title small { color: var(--danger); }

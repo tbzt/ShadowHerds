@@ -147,7 +147,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.25rem;
+  gap: var(--sp-4);
 }
 .dice-sheet-step {
   width: 56px;

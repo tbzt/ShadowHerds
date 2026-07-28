@@ -318,7 +318,7 @@ select optgroup {
   justify-content: center;
   background: radial-gradient(circle at 50% 0%, #141018 0%, #060608 55%);
   z-index: var(--z-screen);
-  gap: 2.5rem;
+  gap: var(--sp-8);
   overflow: hidden;
 }
 #edition-screen.hidden {
