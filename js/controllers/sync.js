@@ -151,6 +151,13 @@ export const Sync = {
     if (this._pullInFlight) return;
     this._pullInFlight = true;
     this._setState("pulling");
+    // D8 (leg « chargement ») : `_syncStateHTML` distingue déjà pulling/pushing
+    // depuis toujours, mais rien ne rafraîchissait le panneau tant que l'état
+    // n'était pas retombé à idle/error/conflict — le libellé « Synchronisation
+    // en cours… » n'a donc jamais été peint. Un MJ cliquant « Synchroniser
+    // maintenant » sur un WebDAV/NAS lent voyait un bouton figé, sans recours
+    // ni indication que quelque chose se passait.
+    this._refreshSettings();
     try {
       const res = await prov.pull(c);
       if (res.cfgPatch) this._saveCfg(res.cfgPatch); // mémorise un gist découvert
@@ -231,6 +238,7 @@ export const Sync = {
     const hash = this._hash(pkg);
     if (!force && hash === c.lastHash) return; // rien de neuf à envoyer
     this._setState("pushing");
+    this._refreshSettings(); // D8 (leg « chargement ») — même correctif que pullOnLoad
     try {
       const { revision, cfgPatch } = await prov.push(c, pkg, c.lastRevision);
       this._saveCfg({
@@ -265,6 +273,7 @@ export const Sync = {
     const c = this.cfg();
     if (!prov || !prov.isConfigured(c)) return;
     this._setState("pushing");
+    this._refreshSettings(); // D8 (leg « chargement ») — même correctif que pullOnLoad
     try {
       const pull = await prov.pull(c);
       const expected = pull && !pull.empty ? pull.revision : null;
