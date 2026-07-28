@@ -32,6 +32,34 @@ export const Storage = {
     }
   },
 
+  /* ---- D8 (leg « erreur ») ----
+     Mesuré : 40 sites appellent set()/setForEdition()/setGlobal() dans
+     tout le projet, AUCUN ne vérifie le booléen renvoyé — un échec
+     d'écriture (quota localStorage dépassé, cas réel avec les portraits
+     en base64) restait signalé au SEUL Debug.warn (console), donc
+     invisible pour le MJ : sa fiche croit être sauvegardée, elle ne l'est
+     pas. Centralisé ici plutôt que sur 40 sites : Storage est le seul
+     entonnoir par lequel TOUTE écriture passe. `_writeFailNotified` évite
+     un toast à chaque frappe si l'échec persiste (ex. autosave d'un champ
+     note) — un seul avertissement tant qu'aucune écriture n'a réussi
+     depuis ; il se réarme dès qu'un set() aboutit. */
+  _writeFailNotified: false,
+
+  _notifyWriteFailure(e) {
+    if (this._writeFailNotified) return;
+    this._writeFailNotified = true;
+    const quota = !!e && (e.name === "QuotaExceededError" || e.code === 22 || e.code === 1014);
+    if (typeof toast === "function") {
+      toast(
+        quota
+          ? "Stockage plein : cette modification n'est PAS enregistrée. Libérez de la place (ex. supprimer des portraits) ou exportez une sauvegarde."
+          : "Échec d'enregistrement : cette modification n'est PAS enregistrée localement.",
+        "danger",
+        6000,
+      );
+    }
+  },
+
   _key(key) {
     return `sr_pnj_v2_${this._edition}_${key}`;
   },
@@ -60,9 +88,11 @@ export const Storage = {
     try {
       localStorage.setItem(this._globalKey(key), JSON.stringify(value));
       Debug.log("storage", "setGlobal", { key });
+      this._writeFailNotified = false;
       return true;
     } catch (e) {
       Debug.warn("storage", "écriture globale échouée", { key, error: e });
+      this._notifyWriteFailure(e);
       return false;
     }
   },
@@ -83,9 +113,11 @@ export const Storage = {
       localStorage.setItem(this._key(key), JSON.stringify(value));
       Debug.log("storage", "set", { key });
       this._notify(this._key(key));
+      this._writeFailNotified = false;
       return true;
     } catch (e) {
       Debug.warn("storage", "écriture échouée", { key, error: e });
+      this._notifyWriteFailure(e);
       return false;
     }
   },
@@ -113,9 +145,11 @@ export const Storage = {
       localStorage.setItem(this._keyForEdition(edition, key), JSON.stringify(value));
       Debug.log("storage", "setForEdition", { edition, key });
       this._notify(this._keyForEdition(edition, key));
+      this._writeFailNotified = false;
       return true;
     } catch (e) {
       Debug.warn("storage", "écriture d'édition échouée", { edition, key, error: e });
+      this._notifyWriteFailure(e);
       return false;
     }
   },
