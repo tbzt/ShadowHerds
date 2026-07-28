@@ -15,9 +15,12 @@
    génération. Conséquence assumée : un topos édité à la main garde le
    casting de sa génération d'origine, et un topos vierge n'en a pas.
    ============================================================ */
+import { FocusTrap } from "../kit/focustrap.js";
+
 export const ToposEdit = {
   _el: null,
   _runId: null,
+  _releaseTrap: null,
 
   _ensure() {
     if (this._el) return this._el;
@@ -26,10 +29,11 @@ export const ToposEdit = {
     overlay.id = "topos-edit-overlay";
     overlay.setAttribute("role", "dialog");
     overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-labelledby", "topos-edit-title");
     overlay.innerHTML = `
       <div class="modal dialog-modal">
         <div class="modal-header">
-          <span class="modal-title">Éditer le topos</span>
+          <span class="modal-title" id="topos-edit-title">Éditer le topos</span>
           <button class="modal-close" data-action="te-cancel" aria-label="Fermer">✕</button>
         </div>
         <div class="modal-body" data-te="body"></div>
@@ -84,6 +88,8 @@ export const ToposEdit = {
     const overlay = this._ensure();
     overlay.querySelector('[data-te="body"]').innerHTML = this._form(t);
     overlay.classList.add("open");
+    // D7 : piégé AVANT le déplacement du focus (même ordre que Dialog._open).
+    this._releaseTrap = FocusTrap.activate(overlay.querySelector(".modal"));
     requestAnimationFrame(() => {
       const el = overlay.querySelector("#te-type");
       if (el) {
@@ -135,6 +141,10 @@ export const ToposEdit = {
 
   _close() {
     if (this._el) this._el.classList.remove("open");
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
     this._runId = null;
   },
 };
