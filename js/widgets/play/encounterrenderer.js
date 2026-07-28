@@ -1008,8 +1008,8 @@ export const EncounterRenderer = {
     }
     const protector = PnjLookup.find(d.protectorId);
     const protectorName = protector ? esc(protector.name) : "?";
-    return `<span class="encounter-device-protect is-protected">
-      <span class="encounter-device-protector-badge">🛡️ ${protectorName}</span>
+    return `<span class="encounter-device-protect">
+      <span class="encounter-device-protector-badge status is-accent">🛡️ ${protectorName}</span>
       <button class="react-btn" data-action="device-defense" ${idAttrs}>Défense</button>
       <button class="react-btn" data-action="device-unprotect" ${idAttrs} title="Retirer la protection" aria-label="Retirer la protection">✕</button>
     </span>`;

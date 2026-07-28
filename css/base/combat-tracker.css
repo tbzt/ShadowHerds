@@ -1301,8 +1301,11 @@
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
 }
-.encounter-device-protect.is-protected .encounter-device-protector-badge {
-  color: var(--accent);
+/* D5 : ce badge n'existe QUE dans l'état protégé (branche JS,
+   encounterrenderer.js) — la conditionnelle par sélecteur ancêtre était donc
+   superflue. Couleur fournie par .status.is-accent, composé directement sur
+   le badge. */
+.encounter-device-protector-badge {
   font-weight: 600;
 }
 
