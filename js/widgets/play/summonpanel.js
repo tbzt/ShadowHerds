@@ -8,6 +8,7 @@
 import { Actor } from "../../rules/actor.js";
 import { AmplitudeSelector } from "../kit/amplitudeselector.js";
 import { CardRenderer } from "../card/cardrenderer.js";
+import { FocusTrap } from "../kit/focustrap.js";
 import { MagicAction } from "../dice/magicaction.js";
 import { Spirits } from "../../catalogs/spirits.js";
 import { Sprites } from "../../catalogs/sprites.js";
@@ -15,6 +16,7 @@ import { Utils } from "../../core/utils.js";
 
 export const SummonPanel = {
   _summon: null, // état du panneau : { ownerId, force, tier, services }
+  _releaseTrap: null,
 
   /** Panneau d'invocation singleton (pattern du panneau de risque). */
   _ensure() {
@@ -24,7 +26,7 @@ export const SummonPanel = {
     p.className = "risk-panel-overlay";
     p.setAttribute("hidden", "");
     p.innerHTML = `
-      <div class="risk-panel" role="dialog" aria-label="Invocation d'esprit">
+      <div class="risk-panel" role="dialog" aria-modal="true" aria-labelledby="summon-title">
         <div class="risk-panel-head">
           <span class="risk-panel-title" id="summon-title">Invoquer un esprit</span>
           <button class="risk-panel-close" id="summon-close" aria-label="Fermer">✕</button>
@@ -106,6 +108,7 @@ export const SummonPanel = {
     p.removeAttribute("hidden");
     void p.offsetWidth;
     p.classList.add("show");
+    this._releaseTrap = FocusTrap.activate(p.querySelector(".risk-panel"));
   },
 
   _close() {
@@ -114,6 +117,10 @@ export const SummonPanel = {
     p.classList.remove("show");
     clearTimeout(p._t);
     p._t = setTimeout(() => p.setAttribute("hidden", ""), 200);
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 
   _sync() {
