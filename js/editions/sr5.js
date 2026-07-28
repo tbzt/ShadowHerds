@@ -517,7 +517,17 @@ export const EditionSR5 = {
 
       /* ---------------- ACTIONS COMPLEXES (11) ----------------
          Toutes déclarent le « ou » du livre : 1 complexe = les 2 simples. */
-      { key: "attaquerMelee", name: "Attaquer en mêlée", viaWeapon: true, family: "melee", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], quick: true, lines: [
+      // ⚠ `maySet` et NON `sets` — première utilisation du cran intermédiaire
+      // en SR5. « En mêlée » (−3 aux attaques à distance, p.179) traduit
+      // l'ENGAGEMENT dans un corps à corps, pas le fait d'avoir frappé : le
+      // livre ne l'écrit pas dans la phrase de l'action, et l'engagement se
+      // rompt par un mouvement que l'app ne voit pas. Le déduire d'une attaque
+      // serait « déduire un état d'une situation observée », que l'amendement
+      // R4 du lot F4 interdit explicitement. L'app le PROPOSE, le MJ tranche —
+      // et il annonce à voix haute l'état de l'adversaire, que l'app ne pose
+      // jamais (la table se joue en physique, aucun sélecteur de cible).
+      { key: "attaquerMelee", name: "Attaquer en mêlée", viaWeapon: true, family: "melee", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], quick: true,
+        maySet: [{ status: "melee", level: 1, when: "si le corps à corps s'engage — l'adversaire l'est aussi, à annoncer" }], lines: [
         "Une attaque en mêlée",
       ] },
       { key: "bannirEsprit", name: "Bannir un esprit", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
@@ -545,8 +555,17 @@ export const EditionSR5 = {
         "Armes à bande, canon basculant, barillet, tambour, magasin interne, chargement par le canon, ou chargeur rapide",
         "Le chargeur amovible (c), lui, se recharge en DEUX actions simples : éjecter puis insérer",
       ] },
-      { key: "sprinter", name: "Sprinter", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
+      // `sets` comme « Courir » : sprinter, c'est courir plus vite — « Sprinter
+      // permet à un personnage d'augmenter sa VITESSE DE COURSE » (p.169), et
+      // « dès que le personnage a dépassé sa vitesse de marche, on considère
+      // qu'il court jusqu'à la fin du tour de combat, et est soumis aux
+      // modificateurs » (p.163). La conséquence est mécanique et écrite, pas
+      // déduite d'une situation observée : c'est le cas que l'amendement R4 du
+      // lot F4 autorise.
+      { key: "sprinter", name: "Sprinter", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }],
+        sets: [{ status: "course", level: 1 }], lines: [
         "Augmenter sa vitesse de course, avec un test de course",
+        "Dépasser sa vitesse de marche met « En course » jusqu'à la fin du tour",
       ] },
       { key: "utiliserCompetence", name: "Utiliser une compétence", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
         "Utiliser une compétence",
