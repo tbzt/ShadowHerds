@@ -1477,8 +1477,11 @@ export const CardRenderer = {
         const parsed = deps.WeaponRoll ? deps.WeaponRoll.parse(w) : { name: s };
         const name = parsed.name || s;
         // La ligne de stats vient du contrat : elle réduit « PRE 5 (7) » à
-        // « PRE 7 » quand la Précision couplée s'applique (smartgun + smartlink).
-        const stat = deps.WeaponRoll ? deps.WeaponRoll.statLine(s, r) : "";
+        // « PRE 7 » quand la Précision couplée s'applique (smartgun + smartlink),
+        // et remplace la capacité nominale par le chargeur RÉEL quand le PNJ est
+        // en scène — sans quoi la fiche annonce 42 et le panneau 30.
+        const ammo = deps.Encounter ? deps.Encounter.ammoFor(pnj.id, s) : null;
+        const stat = deps.WeaponRoll ? deps.WeaponRoll.statLine(s, r, ammo) : "";
         if (!r) {
           return `<div class="weapon-line"><div><div class="weapon-name">${this._esc(name)}</div><div class="weapon-stat">${this._esc(stat)}</div></div></div>`;
         }

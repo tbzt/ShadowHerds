@@ -876,6 +876,20 @@ export const Encounter = {
     return res;
   },
 
+  /** L'état RÉEL du chargeur d'une arme, pour la ligne de stats de la fiche :
+      `{ reste, n, mech }`, ou null si la scène ne le suit pas (PNJ hors
+      combat, arme sans capacité, édition sans munitions).
+
+      Sans ça, la ligne d'arme affichait la capacité NOMINALE — « 42(c) » —
+      quelle que soit la réalité : le MJ lisait 42 sur la fiche et 30 dans le
+      panneau, pour la même arme au même instant. Le compteur vit dans la
+      rencontre (`c.ammo`), donc la fiche doit le lui demander. */
+  ammoFor(pnjId, weaponStr) {
+    const parsed = WeaponRoll.parse(weaponStr);
+    const arme = this.ammoWeapons(pnjId).find((a) => a.parsed.name === parsed.name);
+    return arme ? { reste: arme.reste, n: arme.cap.n, mech: arme.cap.mech } : null;
+  },
+
   /** Le PRIX d'un rechargement, en clair — « 2 × Insérer un chargeur (simple) ».
       Lu par le panneau pré-jet pour libeller son bouton : une action de ce
       panneau annonce toujours ce qu'elle coûte avant d'être tapée. Même source

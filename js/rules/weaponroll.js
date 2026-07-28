@@ -232,13 +232,26 @@ export const WeaponRoll = {
       relire au MJ une question déjà tranchée, en pleine séance.
 
       `resolved` = le `resolvePool` de cette arme, ou null (ligne non lançable,
-      arme brickée) — auquel cas la chaîne est rendue telle quelle. */
-  statLine(weaponStr, resolved) {
+      arme brickée) — auquel cas la chaîne est rendue telle quelle.
+      `ammo` = `{ reste, n, mech }` de la scène (`Encounter.ammoFor`), ou null
+      hors combat : la capacité affichée devient alors le compte RÉEL. */
+  statLine(weaponStr, resolved, ammo) {
     const s = String(weaponStr || "");
     if (!s.includes("[")) return "";
     let inner = s.split("[")[1].replace("]", "");
     if (resolved && resolved.accuracySmart && resolved.limit != null) {
       inner = inner.replace(/PRE\s*\d+\s*\(\d+\)/i, `PRE ${resolved.limit}`);
+    }
+    // ⚠ Le chargeur : « 42(c) » est la capacité NOMINALE de la chaîne, elle ne
+    // bouge jamais. En scène, la fiche affichait donc 42 pendant que le panneau
+    // affichait 30 pour la même arme au même instant. On substitue le compte
+    // réel — première occurrence seulement, les capacités ALTERNATIVES d'une
+    // arme qui en déclare plusieurs (« 50(c) ou 100(bande) ») restent lisibles.
+    if (ammo && ammo.n) {
+      inner = inner.replace(
+        /(\d+)\s*\((c|m|b|cy|cb|t|bande|cn)\)/i,
+        `${ammo.reste}/${ammo.n}($2)`,
+      );
     }
     return inner.replace(/,\s*/g, " · ");
   },
