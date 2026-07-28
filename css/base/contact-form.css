@@ -45,7 +45,7 @@
   padding: 0.7rem 0.8rem;
   background: var(--bg-mid);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 .contact-form-row {
   display: flex;

@@ -386,7 +386,7 @@ select optgroup {
   position: relative;
   width: 168px;
   border: 1px solid #222;
-  border-radius: 6px;
+  border-radius: var(--radius-lg);
   padding: var(--sp-6) var(--sp-3) var(--sp-5);
   background: #0d0d0d;
   text-align: center;
@@ -815,7 +815,7 @@ select optgroup {
   padding: var(--sp-1);
   background: var(--bg-overlay);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--elev-2);
 }
 .ctx-item {
@@ -926,7 +926,7 @@ select optgroup {
   max-width: min(320px, calc(100vw - 2 * var(--sp-4)));
   background: var(--bg-overlay);
   border: 1px solid var(--accent2);
-  border-radius: 6px;
+  border-radius: var(--radius-lg);
   padding: var(--sp-3);
   box-shadow: var(--elev-2);
   font-size: var(--fs-xs);

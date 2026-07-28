@@ -660,7 +660,7 @@
 .scenario-picker {
   max-width: 240px;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border, #2a3a49);
   background: var(--bg-mid);
   color: var(--text, #dce6f0);
@@ -854,7 +854,7 @@
 
 .scenario-clock {
   border: 1px solid var(--border, #2a3a49);
-  border-radius: 6px;
+  border-radius: var(--radius);
   padding: 8px;
   margin-bottom: 8px;
 }
@@ -889,7 +889,7 @@
 .scenario-front {
   border: 1px solid var(--border, #2a3a49);
   border-left: 3px solid var(--danger, #d05050);
-  border-radius: 6px;
+  border-radius: var(--radius);
   padding: 8px;
   margin-bottom: 8px;
 }

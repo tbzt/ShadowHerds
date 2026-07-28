@@ -529,7 +529,7 @@
   gap: var(--sp-2);
   background: var(--bg-mid);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
   padding: 7px 10px;
 }
 .weapon-line.weapon-rollable {
@@ -639,7 +639,7 @@
   align-self: flex-start;
   padding: 3px 8px;
   border: 1px dashed color-mix(in srgb, var(--accent) 40%, transparent);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--text-dim);
   font-size: var(--fs-2xs);
   font-family: var(--font-mono);

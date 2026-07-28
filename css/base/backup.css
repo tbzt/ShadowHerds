@@ -24,7 +24,7 @@
   width: min(94vw, 440px);
   background: var(--bg-overlay);
   border: 1px solid var(--accent);
-  border-radius: 6px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--elev-2);
   padding: 1.25rem;
   display: flex;

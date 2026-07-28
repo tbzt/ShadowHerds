@@ -138,7 +138,7 @@
   gap: var(--sp-3);
   padding: var(--sp-2) 0.6rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-lg);
   background: var(--bg-card);
   /* Vague B2 : seule la retombée du glisser anime (transform/box-shadow) —
      bref et tokenisé, le cockpit reste sec (Croupier), rien d'autre ne
@@ -261,7 +261,7 @@
   padding: 0.3rem 0.35rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 .encounter-init-val {
   font-family: var(--font-mono);
@@ -544,7 +544,7 @@
   padding: 0.7rem 0.6rem;
   min-height: 48px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-lg);
   background: var(--bg-card);
   color: var(--text);
   cursor: pointer;
@@ -997,7 +997,7 @@
   padding: 0.3rem 0.4rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--text);
   font-family: inherit;
   cursor: pointer;
@@ -1452,7 +1452,7 @@
 /* Fiche CI minimale (fiche active) : cadre --accent2, informations denses. */
 .encounter-ic-card {
   border: 1px solid color-mix(in srgb, var(--accent2) 45%, var(--border));
-  border-radius: 6px;
+  border-radius: var(--radius-lg);
   padding: 0.6rem;
   margin: 0.5rem 0.6rem;
   display: flex;
@@ -2203,7 +2203,7 @@ kbd {
   gap: var(--sp-4);
   padding: var(--sp-3) var(--sp-4);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-lg);
   /* Signature de coin coupé de l'édition (SR6 la porte ; les autres retombent
      sur --card-clip: none → coins arrondis par défaut, honnête à chaque livre).
      Premier usage projeté du token, jamais une forme codée en dur. */
