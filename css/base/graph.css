@@ -724,7 +724,7 @@
   align-items: center;
   gap: var(--sp-1);
   padding: 1px 4px 1px 8px;
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--accent, #35e0e6) 12%, transparent);
   color: var(--text, #dce6f0);
   font-size: var(--fs-xs);
@@ -744,7 +744,7 @@
 .scenario-cast-add {
   padding: 2px 8px;
   border: 1px dashed var(--border, #2a3a49);
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   background: none;
   color: var(--text-dim, #9fb0c0);
   font-size: var(--fs-xs);
@@ -789,7 +789,7 @@
   display: inline-block;
   padding: 2px 8px;
   border: 1px dashed var(--t-fait);
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   color: var(--text-dim, #9fb0c0);
   font-size: var(--fs-xs);
   font-style: italic;
@@ -916,7 +916,7 @@
   align-self: flex-start;
   padding: 1px 7px;
   border: 1px dashed var(--border, #2a3a49);
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   background: none;
   color: var(--text-dim, #9fb0c0);
   font-size: var(--fs-xs);

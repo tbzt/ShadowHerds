@@ -171,7 +171,7 @@
   font-family: var(--font-mono);
   color: var(--text-dim);
   background: rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   padding: 0 5px;
   flex-shrink: 0;
 }
@@ -784,14 +784,14 @@
 .play-trame-cast-chip {
   font-size: var(--fs-xs);
   padding: 1px 7px;
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--text-dim) 15%, transparent);
   color: var(--text);
 }
 .play-trame-cast-add,
 .play-trame-toscene {
   padding: 2px 9px;
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   font-size: var(--fs-xs);
   cursor: pointer;
 }
@@ -1240,7 +1240,7 @@
 }
 .play-cloture-facet {
   padding: 1px 8px;
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   font-size: var(--fs-2xs);
   letter-spacing: 0.03em;
   color: var(--warning);
@@ -1713,7 +1713,7 @@
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   padding: 3px 7px;
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   max-width: 130px;
   transition:
     border-color var(--dur-fast),
