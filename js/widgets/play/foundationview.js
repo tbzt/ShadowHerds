@@ -21,12 +21,14 @@
    (SR5 = Indice + attribut, SR6 = Indice × 2 — cf. FONDATIONS_SERVEUR_BT1.md).
    ============================================================ */
 import { FoundationGen } from "../../rules/foundationgen.js";
+import { FocusTrap } from "../kit/focustrap.js";
 import { Matrix } from "../../rules/matrix.js";
 import { ParadigmLens } from "../../rules/paradigmlens.js";
 import { Utils } from "../../core/utils.js";
 
 export const FoundationView = {
   _el: null,
+  _releaseTrap: null,
 
   /** Ouvre la vue de référence des Fondations d'un serveur. No-op si
       l'édition du serveur n'a pas de Fondation (Anarchy) — l'affordance
@@ -42,10 +44,16 @@ export const FoundationView = {
       `Fondations — ${srv.name || "serveur"}`;
     overlay.querySelector('[data-foundation="body"]').innerHTML = this._bodyHtml(srv, ed, accent);
     overlay.classList.add("open");
+    // D7 : piégé AVANT tout déplacement de focus (même ordre que Dialog._open).
+    this._releaseTrap = FocusTrap.activate(overlay.querySelector(".modal"));
   },
 
   hide() {
     if (this._el) this._el.classList.remove("open");
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 
   /* ---- Rendu (lecture seule) ---- */
@@ -141,10 +149,11 @@ export const FoundationView = {
     overlay.id = "foundation-overlay";
     overlay.setAttribute("role", "dialog");
     overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-labelledby", "foundation-title");
     overlay.innerHTML = `
       <div class="modal foundation-modal">
         <div class="modal-header">
-          <span class="modal-title" data-foundation="title">Fondations</span>
+          <span class="modal-title" id="foundation-title" data-foundation="title">Fondations</span>
           <button class="modal-close" data-foundation-action="close" aria-label="Fermer">✕</button>
         </div>
         <div class="modal-body foundation-body" data-foundation="body"></div>
