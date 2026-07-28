@@ -239,8 +239,8 @@ export const WeaponRoll = {
     const s = String(weaponStr || "");
     if (!s.includes("[")) return "";
     let inner = s.split("[")[1].replace("]", "");
-    if (resolved && resolved.accuracySmart && resolved.limit != null) {
-      inner = inner.replace(/PRE\s*\d+\s*\(\d+\)/i, `PRE ${resolved.limit}`);
+    if (resolved && resolved.accuracySmart && resolved.accuracyBase != null) {
+      inner = inner.replace(/PRE\s*\d+\s*\(\d+\)/i, `PRE ${resolved.accuracyBase}`);
     }
     // ⚠ Le chargeur : « 42(c) » est la capacité NOMINALE de la chaîne, elle ne
     // bouge jamais. En scène, la fiche affichait donc 42 pendant que le panneau
@@ -387,7 +387,7 @@ export const WeaponRoll = {
    * Construit la réserve d'attaque pour une arme donnée.
    * @returns {object|null}
    */
-  resolvePool(pnj, weapon, edition) {
+  resolvePool(pnj, weapon, edition, aim) {
     const parsed = this.parse(weapon);
     if (!parsed.name) return null;
 
@@ -452,7 +452,12 @@ export const WeaponRoll = {
     // smartlink ». Le jour où un effet `target: "accuracy"` la porte, il devra
     // être écarté quand `accuracySmart` est vrai — sinon on cumulera à tort.
     const accuracySmart = !!(smartBonus && parsed.preSmart != null);
-    const accuracy = accuracySmart ? parsed.preSmart : parsed.pre;
+    // « +1 à la Précision lors du test d'attaque », par cran d'Ajuster (SR5) —
+    // la Précision étant la LIMITE de succès, le bonus monte le plafond en même
+    // temps que la réserve. SR6 déclare `accuracy: 0` : il n'a pas de Limite.
+    const aimAcc = (aim && aim.accuracy) || 0;
+    const preBase = accuracySmart ? parsed.preSmart : parsed.pre;
+    const accuracy = preBase == null ? null : preBase + aimAcc;
     const malus = Utils.dicePenalty(pnj, edition);
 
     // Effets d'objet motorisés, par FACETTE (pool/accuracy/dv/ap).
@@ -463,7 +468,12 @@ export const WeaponRoll = {
         ? WeaponEffects.forWeapon(pnj, parsed.name, edition)
         : { pool: [], accuracy: [], dv: [], ap: [] };
     const itemPool = fx.pool.reduce((a, c) => a + c.value, 0);
-    const pool = Math.max(0, basePool + smartBonus + specBonus + itemPool - malus);
+    // AJUSTER — le cumul vient de la SCÈNE (`Encounter.aimBonus`), pas de la
+    // fiche : viser est un fait de rencontre. Passé en paramètre plutôt que lu
+    // ici, pour que ce module reste ignorant du tracker (même discipline que
+    // `pnj.smartlink`, dérivé en amont par `BonusEngine`).
+    const aimPool = (aim && aim.dice) || 0;
+    const pool = Math.max(0, basePool + smartBonus + specBonus + itemPool + aimPool - malus);
 
     // Décomposition GÉNÉRALE du pool (source unique de l'explication du jet) :
     // compétence + attribut + spécialité + smartlink + effets d'objet − blessure.
@@ -473,6 +483,7 @@ export const WeaponRoll = {
     ];
     if (specBonus) contributions.push({ label: "spécialité", value: specBonus });
     if (smartBonus) contributions.push({ label: "smartlink", value: smartBonus });
+    if (aimPool) contributions.push({ label: `Ajuster ×${aim.n}`, value: aimPool });
     for (const c of fx.pool) contributions.push({ label: c.source, value: c.value });
     if (malus) contributions.push({ label: "blessure", value: -malus });
 
@@ -489,6 +500,12 @@ export const WeaponRoll = {
       specBonus,
       spec: specSkill ? specSkill.spec : null,
       limit: weaponModel.accuracyLimit ? accuracy : null,
+      // La Précision de l'ARME seule, sans le bonus SITUATIONNEL d'Ajuster :
+      // `limit` est ce qui plafonne le jet ici et maintenant, `accuracyBase`
+      // est ce qu'on imprime sur la ligne de stats. Afficher « PRE 9 » parce
+      // que le PNJ a visé deux fois mentirait sur l'arme.
+      accuracyBase: weaponModel.accuracyLimit ? preBase : null,
+      aim: aim || null,
       // Vrai quand la Précision jouée est celle de la parenthèse : le badge et
       // la ligne de stats affichent alors ce seul chiffre, sans « 5 (7) » qui
       // ferait relire au MJ un arbitrage déjà rendu.

@@ -1473,7 +1473,10 @@ export const CardRenderer = {
     const rows = weapons
       .map((w) => {
         const s = ItemResolver.itemStr(w); // #63 : item chaîne OU objet
-        const r = deps.WeaponRoll ? deps.WeaponRoll.resolvePool(pnj, w, edition) : null;
+        // Le cumul d'Ajuster vient de la SCÈNE : la réserve affichée sur la
+        // ligne d'arme doit être celle qu'on va réellement lancer.
+        const aim = deps.Encounter ? deps.Encounter.aimBonus(pnj.id) : null;
+        const r = deps.WeaponRoll ? deps.WeaponRoll.resolvePool(pnj, w, edition, aim) : null;
         const parsed = deps.WeaponRoll ? deps.WeaponRoll.parse(w) : { name: s };
         const name = parsed.name || s;
         // La ligne de stats vient du contrat : elle réduit « PRE 5 (7) » à

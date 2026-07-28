@@ -131,6 +131,24 @@ export const Actions = {
     return generique || list[0];
   },
 
+  /** Le contrat d'AJUSTER de l'édition, ou null si elle n'en déclare pas
+      (Anarchy : la surface disparaît d'elle-même). Ce magasin ne connaît ni la
+      Volonté ni la Précision — il rend la spéc, `Encounter` compte les crans
+      et `WeaponRoll` les applique. */
+  aimModel(pnj) {
+    const mod = pnj ? App.getEditionModule(pnj.edition) : null;
+    return (mod && mod.aimModel) || null;
+  },
+
+  /** Le plafond de cumul d'Ajuster pour CE personnage — la spéc le donne comme
+      une fonction parce qu'il dépend d'un attribut (moitié de la Volonté en
+      SR5, Volonté entière en SR6). 0 si l'édition n'a pas la règle. */
+  aimMax(pnj) {
+    const m = this.aimModel(pnj);
+    if (!m || typeof m.max !== "function") return 0;
+    return Math.max(0, m.max(pnj) || 0);
+  },
+
   /** L'action que l'édition NOMME pour cette arme, ou null. Séparée parce que
       le chemin du tir a besoin de la question seule : un arc et une arbalète
       déclarent « CC » comme un pistolet, donc leur mode renvoie « Faire feu »

@@ -1409,6 +1409,36 @@ export const EditionSR6 = {
       la fiche active, gain plafonné à +2/tour de personnage, p.50). Le tracker
       lit ce drapeau, jamais une branche d'édition. */
   combatModel: { rerollEachRound: true, passDecrement: 0, edgeTracker: true, hasSoak: true },
+  /** AJUSTER (p.46) — jumeau du contrat SR5, avec TROIS différences que le
+      livre écrit et qui interdisent de partager les valeurs :
+
+      · `accuracy: 0` — SR6 n'a pas de Limite de succès. « Le personnage gagne
+        un bonus de +1 dé », rien d'autre.
+      · `max` = la Volonté ENTIÈRE (« le bonus maximum à la réserve de dés en
+        utilisant cette action est égal à la Volonté du personnage »), là où
+        SR5 la divise par deux.
+      · `oncePerRound` — « cette action ne peut être choisie qu'une seule fois
+        par round de combat ». SR5 laisse au contraire enchaîner les Ajuster
+        dans la même phase.
+
+      `breaksOnIdleTurn` et non `breaksOnOtherAction` : SR6 est BEAUCOUP plus
+      permissif — « si le bonus n'est pas utilisé, il est toujours valable pour
+      le prochain round de combat et peut donc être combiné avec des actions
+      prises au cours de plusieurs rounds. Si un personnage utilise son tour de
+      jeu SANS CHOISIR les actions Ajuster ou Attaquer, tout bonus issu de
+      rounds précédents est perdu. » Le cumul ne se casse donc pas sur une
+      autre action, mais sur un TOUR ENTIER passé sans viser ni attaquer. */
+  aimModel: {
+    key: "ajuster",
+    dice: 1,
+    accuracy: 0,
+    max: (pnj) => Actor.attr(pnj, "VOL") || 0,
+    maxLabel: "Volonté",
+    oncePerRound: true,
+    breaksOnIdleTurn: true,
+    keepOn: ["ajuster", "attaquer"],
+    page: "p.46",
+  },
   /** Disposition de combat (Vague D) : { down, morale }. SR6 « figurants »
       (p.211) : DEUX couches. Groupe (comme SR5) selon le Professionnalisme sur
       la proportion d'alliés hors de combat ; et individuel — si les cases de

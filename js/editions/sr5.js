@@ -293,6 +293,40 @@ export const EditionSR5 = {
       combattant à plusieurs passes d'initiative remet son compteur à zéro à
       chacune. C'est exactement là que `_resetActions` travaille déjà. */
   multiDefense: { perDefense: 1, page: "p.189" },
+  /** AJUSTER (p.166) — le seul bonus d'action que le livre CHIFFRE, donc le
+      seul motorisable sans rien deviner. Contrat neutre lu par `Actions` et
+      appliqué par `WeaponRoll` ; aucune branche d'édition côté renderer.
+
+      « Chaque action ajuster octroie un modificateur de +1 dé à la réserve de
+      dés et +1 à la Précision lors du test d'attaque. » — d'où `dice` ET
+      `accuracy`, la Précision étant la LIMITE de succès en SR5.
+
+      « Le bonus maximum qu'un personnage peut obtenir à l'aide d'actions
+      ajuster successives (à sa réserve de dés et à sa limite) est égal à la
+      moitié de sa Volonté, arrondie au supérieur. »
+
+      `breaksOnOtherAction` — « les bénéfices sont perdus si le personnage
+      effectue n'importe quelle autre action (ACTIONS GRATUITES INCLUSES) avant
+      d'attaquer ». C'est la règle la plus sévère des deux éditions : toute
+      autre action remet le cumul à zéro. L'app ne voit que les actions qu'on
+      lui déclare — elle applique donc la règle sur ce qu'elle sait, et c'est
+      déjà ce que le MJ vient de taper.
+
+      ⚠ NON MOTORISÉ, et c'est dit sur la puce : « si le personnage utilise une
+      lunette de visée ou un zoom, une action ajuster doit être utilisée pour
+      calibrer l'équipement […] la première action ajuster ne fournit pas de
+      bonus autre que celui de l'équipement ». L'app ne sait pas si l'arme
+      porte une lunette NI si le MJ a déjà calibré : deviner retirerait un cran
+      au premier Ajuster de la moitié des cas. Le rappel suffit. */
+  aimModel: {
+    key: "ajuster",
+    dice: 1,
+    accuracy: 1,
+    max: (pnj) => Math.ceil((Actor.attr(pnj, "VOL") || 0) / 2),
+    maxLabel: "moitié de la Volonté, arrondie au supérieur",
+    breaksOnOtherAction: true,
+    page: "p.166",
+  },
   /** Défense totale (SR5 p.170) : action d'interruption qui ajoute la Volonté
       aux tests de défense jusqu'à la fin du round de combat, au coût de −10 au
       score d'initiative. Le tracker motorise le coût et lit le bonus ici —

@@ -590,6 +590,66 @@ export const Encounter = {
     toast(`${action.label} — ${pnj.name} (−${action.initCost} init)`);
   },
 
+  /* ========================================================
+     AJUSTER (lot F5p) — le seul bonus d'action que le livre chiffre.
+
+     Le cumul vit dans la scène (`c.aim`), comme le chargeur et l'Atout : c'est
+     un fait de rencontre, pas une propriété du personnage. Trois moments —
+     il MONTE (`_trackAim`), il se CASSE (ici et `_resetActions`), il se
+     CONSOMME (`resolveAttack`).
+     ======================================================== */
+
+  /** Suit le cumul d'Ajuster après CHAQUE action jouée. Trois branches, et
+      chacune est une phrase du livre :
+
+      · l'action EST Ajuster → un cran de plus, plafonné (`Actions.aimMax`),
+        et SR6 la limite à un seul par round (`oncePerRound`) ;
+      · l'édition casse le cumul sur toute autre action (SR5,
+        `breaksOnOtherAction`) → remise à zéro ;
+      · sinon on ne touche à rien : SR6 laisse le bonus traverser les rounds
+        tant que le personnage vise ou attaque.
+
+      ⚠ L'ATTAQUE ne casse pas le cumul ici — elle le CONSOMME dans
+      `resolveAttack`, après que le jet en a bénéficié. L'ordre compte : casser
+      d'abord reviendrait à annuler le bonus juste avant de s'en servir. */
+  _trackAim(c, pnj, key) {
+    const m = Actions.aimModel(pnj);
+    if (!m) return;
+    if (key === m.key) {
+      const max = Actions.aimMax(pnj);
+      const plafondTour = m.oncePerRound && c.aimRound === this.state.round;
+      if (plafondTour) {
+        toast(`Ajuster : déjà pris ce round (${m.page}).`, "warning");
+        return;
+      }
+      if ((c.aim || 0) >= max) {
+        toast(`Ajuster : plafond atteint (${max} — ${m.maxLabel}).`, "warning");
+        return;
+      }
+      c.aim = (c.aim || 0) + 1;
+      if (m.oncePerRound) c.aimRound = this.state.round;
+      return;
+    }
+    // L'action hôte de l'attaque ne compte pas comme « autre action » : c'est
+    // elle qui va dépenser le bonus. Les clés d'attaque sont celles que
+    // l'édition marque `viaWeapon`.
+    if (!m.breaksOnOtherAction || !c.aim) return;
+    const attaque = Actions.viaWeapon(pnj).some((a) => a.key === key);
+    if (attaque) return;
+    delete c.aim;
+  },
+
+  /** Le bonus d'Ajuster ACCUMULÉ, prêt à être ajouté au jet : `{ n, dice,
+      accuracy }`, ou null. Lu par les surfaces qui affichent une réserve
+      d'attaque — donc une seule source pour la fiche, le cockpit et le jet. */
+  aimBonus(pnjId) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    const m = pnj && Actions.aimModel(pnj);
+    if (!c || !m || !c.aim) return null;
+    return { n: c.aim, dice: c.aim * (m.dice || 0), accuracy: c.aim * (m.accuracy || 0) };
+  },
+
   /** DÉFENSES MULTIPLES (SR5 p.189) — « −1 dé cumulatif pour chaque test de
       défense additionnel depuis sa dernière phase d'action ». Compteur de
       scène (`c.defenses`), incrémenté quand une défense part de la console, et
@@ -739,6 +799,7 @@ export const Encounter = {
     // F5 — la dernière action jouée porte ses greffons d'Atout (rangée sous les
     // jetons). Mémorisée dans la scène : c'est un fait de tour, pas du PNJ.
     c.lastAction = key;
+    this._trackAim(c, pnj, key);
 
     if (poses.length) {
       Shadows.save();
@@ -1098,6 +1159,14 @@ export const Encounter = {
     const pnj = PnjLookup.find(pnjId);
     if (!pnj) return "";
     if (graftKey) this.useEdgeAction(pnjId, graftKey);
+    // AJUSTER se CONSOMME ici — après le jet, qui en a déjà bénéficié
+    // (`WeaponRoll.resolvePool` a lu `aimBonus` au moment de composer la
+    // réserve). Le bonus vaut « lors du test d'attaque », une fois.
+    const c0 = this._find(pnjId);
+    if (c0 && c0.aim) {
+      delete c0.aim;
+      delete c0.aimRound;
+    }
 
     // L'action Attaquer se débite MÊME sans mode de tir (arme de mêlée) : c'est
     // le geste que le livre facture, l'arme n'en est que l'instrument.
@@ -1769,6 +1838,9 @@ export const Encounter = {
   _resetActions(i) {
     const c = this.state.combatants[i];
     if (c) {
+      // Capturé AVANT le nettoyage : la règle SR6 d'Ajuster juge le tour qui
+      // vient de s'écouler, et `lastAction` est effacé trois lignes plus bas.
+      const joueAuTour = c.lastAction || "";
       c.actionsUsed = {};
       // F5 — une surtaxe achetée en Atout vaut pour LE tour où elle est
       // déclarée : elle s'efface avec le budget qu'elle a soulagé, comme la
@@ -1783,6 +1855,23 @@ export const Encounter = {
       // pas dans nextRound, que le compteur retombe. La nuance compte pour un
       // combattant à plusieurs passes d'initiative.
       c.defenses = 0;
+      // AJUSTER, règle SR6 (`breaksOnIdleTurn`) : « si un personnage utilise
+      // son tour de jeu SANS CHOISIR les actions Ajuster ou Attaquer, tout
+      // bonus issu de rounds précédents est perdu ». On regarde donc le tour
+      // qui vient de s'écouler AVANT de remettre le budget à neuf — d'où la
+      // lecture de `lastAction` juste au-dessus de sa suppression.
+      // SR5 n'a pas besoin de ce filet : `breaksOnOtherAction` a déjà cassé le
+      // cumul à la première action qui n'était ni Ajuster ni une attaque.
+      const pnjR = PnjLookup.find(c.pnjId);
+      const mAim = pnjR && Actions.aimModel(pnjR);
+      if (mAim && mAim.breaksOnIdleTurn && c.aim) {
+        const garde = mAim.keepOn || [];
+        const attaque = Actions.viaWeapon(pnjR).some((a) => a.key === joueAuTour);
+        if (!garde.includes(joueAuTour) && !attaque) {
+          delete c.aim;
+          delete c.aimRound;
+        }
+      }
     }
   },
 

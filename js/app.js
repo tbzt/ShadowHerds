@@ -659,6 +659,8 @@ document.addEventListener("DOMContentLoaded", () => {
     onRecoilReset: (pnj) => {
       if (typeof Encounter !== "undefined") Encounter.resetRecoil(pnj.id);
     },
+    // Cumul d'Ajuster (+dés, +Précision) : un fait de scène, comme l'Atout.
+    aimBonus: (pnj) => (typeof Encounter !== "undefined" ? Encounter.aimBonus(pnj.id) : null),
     sceneEdge: (pnj) => (typeof Encounter !== "undefined" ? Encounter.sceneEdge(pnj.id) : null),
     adjustSceneEdge: (pnj, delta) => {
       if (typeof Encounter !== "undefined") Encounter.adjustEdge(pnj.id, delta);

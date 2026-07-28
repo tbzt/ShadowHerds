@@ -296,7 +296,10 @@ export const DiceRoller = {
       label } ; cf. _spendPreRollEdge), sinon jet nu. « Repousser les limites »
       (ignoreLimit) neutralise le plafond de Précision. */
   rollWeapon(pnj, weapon, edition, edge = null) {
-    const r = WeaponRoll.resolvePool(pnj, weapon, edition);
+    // Le cumul d'Ajuster vient de la scène — c'est LE jet qui en bénéficie,
+    // et `Encounter.resolveAttack` le consommera juste après.
+    const aim = this._hooks.aimBonus ? this._hooks.aimBonus(pnj) : null;
+    const r = WeaponRoll.resolvePool(pnj, weapon, edition, aim);
     if (!r) return;
     const res = this._computeWithEdge(r.pool, edge);
     // Plafonnement à la Précision (SR5) : la limite mord si hits > limite —
