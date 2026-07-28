@@ -44,7 +44,7 @@
   margin-bottom: 6px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: var(--sp-2);
 }
 .contact-stat-row {
   display: flex;

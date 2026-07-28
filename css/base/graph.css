@@ -246,7 +246,7 @@
    rentrés vers le milieu pour ne pas déborder de l'ovale. */
 .graph-scene-card.gsc-pill { padding-left: 25px; }
 .graph-scene-card.gsc-pill::before { left: 17px; }
-.gsc-head { display: flex; align-items: center; gap: 5px; }
+.gsc-head { display: flex; align-items: center; gap: var(--sp-2); }
 .gsc-glyph { font-size: 15px; line-height: 1; color: var(--tint, var(--accent)); }
 .gsc-type {
   font-family: var(--font-mono, ui-monospace, monospace);
@@ -484,7 +484,7 @@
 .graph-edge-field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: var(--sp-2);
 }
 .graph-edge-flabel {
   font-size: var(--fs-xs);
@@ -682,7 +682,7 @@
 .scenario-type-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-2);
   padding: 4px 9px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border, #2a3a49);
@@ -716,7 +716,7 @@
 .scenario-cast-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: var(--sp-2);
   align-items: center;
 }
 .scenario-cast-chip {

@@ -640,7 +640,7 @@ select optgroup {
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-2);
   transition:
     background var(--dur-base),
     border-color var(--dur-base),
@@ -689,7 +689,7 @@ select optgroup {
 .tb-crumb {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-2);
   flex-shrink: 0; /* chaque échelle garde sa largeur ; le locator scrolle si besoin */
   max-width: 15ch;
   padding: 3px var(--sp-2);

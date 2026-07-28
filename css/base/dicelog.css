@@ -300,7 +300,7 @@
 .dice-log-texture {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-2);
   align-self: flex-start;
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);

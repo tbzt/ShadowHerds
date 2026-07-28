@@ -2266,7 +2266,7 @@ kbd {
 .spectator-gauge {
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 5px;
+  gap: var(--sp-2);
 }
 /* Moniteur à l'échelle PROJECTEUR : la case fait 16px sur la carte du MJ, trop
    petite lue à distance. On l'agrandit — la FORME reste celle du descripteur

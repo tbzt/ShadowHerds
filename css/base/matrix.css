@@ -208,7 +208,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-4) 0.65rem;
   border-top: 1px solid var(--border);
 }
@@ -606,7 +606,7 @@
 }
 .ic-edit-add {
   display: flex;
-  gap: 5px;
+  gap: var(--sp-2);
   align-items: center;
 }
 .ic-edit-add select {

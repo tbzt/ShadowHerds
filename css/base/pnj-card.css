@@ -650,7 +650,7 @@
 /* Stats pills */
 .stats-row {
   display: flex;
-  gap: 5px;
+  gap: var(--sp-2);
   flex-wrap: wrap;
   margin-bottom: var(--sp-3);
 }

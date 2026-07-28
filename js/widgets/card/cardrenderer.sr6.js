@@ -34,7 +34,7 @@ Object.assign(CardRenderer, {
     if (!cells) return "";
     return `<div class="card-section gm-pools-section">
       <div class="card-section-label">Jets de situation</div>
-      <div class="stats-row" style="flex-wrap:wrap;gap:5px;">${cells}</div>
+      <div class="stats-row">${cells}</div>
     </div>`;
   },
 

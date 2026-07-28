@@ -646,7 +646,7 @@
   min-height: 28px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-2);
 }
 .cyberdeck-more-summary::-webkit-details-marker {
   display: none;
@@ -676,7 +676,7 @@
 .spell-line .weapon-name {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-2);
 }
 .spell-info {
   display: inline-flex;

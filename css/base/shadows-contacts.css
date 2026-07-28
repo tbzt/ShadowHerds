@@ -396,7 +396,7 @@
 .play-live {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-2);
   flex-shrink: 0;
   color: var(--accent);
   font-size: var(--fs-2xs);
@@ -652,7 +652,7 @@
 }
 .pch-name:hover { color: var(--state); }
 .pch-camp { display: block; font-family: var(--font-mono, monospace); font-size: var(--fs-2xs); letter-spacing: 0.04em; color: var(--faint, var(--text-dim)); margin-top: 1px; }
-.pch-tools { display: inline-flex; gap: 5px; margin-top: 7px; justify-content: flex-end; flex-wrap: wrap; }
+.pch-tools { display: inline-flex; gap: var(--sp-2); margin-top: 7px; justify-content: flex-end; flex-wrap: wrap; }
 /* cellules d'horloge (gros chiffres) */
 .pch-cells { display: flex; gap: var(--sp-2); margin-top: 13px; }
 .pch-cell { min-width: 62px; text-align: center; padding: 7px 13px; border-radius: var(--radius); background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border); }
@@ -683,7 +683,7 @@
 .play-clock.t-alerte .play-clock-title small { color: var(--warning); }
 .play-clock.t-menace .play-clock-title small { color: var(--danger); }
 .play-clock.t-objectif .play-clock-title small { color: var(--success); }
-.play-segs { display: flex; gap: 5px; margin-top: 8px; }
+.play-segs { display: flex; gap: var(--sp-2); margin-top: 8px; }
 .play-seg { flex: 1; height: 11px; border-radius: var(--radius-sm); background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border); transition: background var(--dur-base), box-shadow var(--dur-base); }
 .play-clock.t-alerte .play-seg.on { background: var(--warning); border-color: var(--warning); box-shadow: 0 0 8px color-mix(in srgb, var(--warning) 55%, transparent); }
 .play-clock.t-menace .play-seg.on { background: var(--danger); border-color: var(--danger); box-shadow: 0 0 8px color-mix(in srgb, var(--danger) 55%, transparent); }
@@ -1186,7 +1186,7 @@
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-2);
 }
 /* VIS-13 Lot C — tick d'accent devant le moment : file Avant/Pendant/Après
    comme une colonne dans l'encre de l'édition. Rime discrète avec la barre
@@ -1235,7 +1235,7 @@
 .play-cloture-facets {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: var(--sp-2);
   margin: var(--sp-1) 0 var(--sp-2);
 }
 .play-cloture-facet {
@@ -2169,7 +2169,7 @@ body.reordering .reorder-handle {
 .faction-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-2);
 }
 /* A3c — le nom de la faction est cliquable (ouvre le graphe scopé). Bouton nu
    qui hérite de la puce ; souligné au survol pour signaler l'action. */
@@ -2212,7 +2212,7 @@ body.reordering .reorder-handle {
 .tag-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-2);
 }
 .tag-chip-x {
   border: none;
@@ -2314,7 +2314,7 @@ body.reordering .reorder-handle {
 .contact-pjlink-item {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-2);
   background: transparent;
   border: none;
   color: var(--text);
