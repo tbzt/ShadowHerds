@@ -471,8 +471,8 @@ export const EncounterRenderer = {
     if (r.down || !r.morale || r.morale === "steady") return "";
     const shaky = r.morale === "shaky";
     const label = shaky ? "Moral fragile — à tester" : "Devrait fuir";
-    return `<div class="encounter-flee${shaky ? " is-shaky" : ""}">
-      <span class="encounter-flee-tag" title="Selon la règle de moral de l'édition">⚑ ${label}</span>
+    return `<div class="encounter-flee">
+      <span class="encounter-flee-tag status ${shaky ? "is-info" : "is-warning"} is-filled" title="Selon la règle de moral de l'édition">⚑ ${label}</span>
       <button class="btn-small encounter-flee-act" data-action="flee-combatant" data-id="${r.pnjId}" title="Retirer ce combattant (fuite)">Faire fuir</button>
     </div>`;
   },

@@ -838,19 +838,18 @@
 .encounter-nrow .encounter-flee {
   flex-basis: 100%;
 }
+/* D5 : couleur/fond/bordure fournis par .status.is-warning/.is-info +
+   .is-filled (composé dans le HTML selon l'état — encounterrenderer.js,
+   `_moraleBanner`) — la classe ne garde que sa mise en forme propre. Solde
+   au passage l'ancienne bascule par sélecteur ancêtre `.is-shaky`, devenue
+   inutile puisque l'état est déjà connu au moment du rendu. */
 .encounter-flee-tag {
   font-size: var(--fs-xs);
   font-weight: 600;
-  color: var(--warning);
-  background: color-mix(in srgb, var(--warning) 15%, transparent);
-  border: 1px solid var(--warning);
+  border-width: 1px;
+  border-style: solid;
   border-radius: var(--radius-sm);
   padding: 0.1rem 0.4rem;
-}
-.encounter-flee.is-shaky .encounter-flee-tag {
-  color: var(--info);
-  background: color-mix(in srgb, var(--info) 15%, transparent);
-  border-color: var(--info);
 }
 .encounter-flee-act {
   border: 1px solid var(--warning);
