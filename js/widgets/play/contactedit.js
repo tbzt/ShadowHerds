@@ -19,9 +19,12 @@
    dispatchent via l'API neutre `usesRiskPanel` (Niveau/RR pour
    Anarchy 2, Influence/Loyauté sinon), comme ContactGen.generate.
    ============================================================ */
+import { FocusTrap } from "../kit/focustrap.js";
+
 export const ContactEdit = {
   _el: null,
   _contactId: null,
+  _releaseTrap: null,
 
   /** Appelée une fois au boot (app.js) : construit l'overlay et câble ses
       écouteurs. Idempotent. */
@@ -36,10 +39,11 @@ export const ContactEdit = {
     overlay.id = "contact-edit-overlay";
     overlay.setAttribute("role", "dialog");
     overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-labelledby", "contact-edit-title");
     overlay.innerHTML = `
       <div class="modal dialog-modal">
         <div class="modal-header">
-          <span class="modal-title">Éditer le contact</span>
+          <span class="modal-title" id="contact-edit-title">Éditer le contact</span>
           <button class="modal-close" data-action="ce-cancel" aria-label="Fermer">✕</button>
         </div>
         <div class="modal-body" data-ce="body"></div>
@@ -105,6 +109,8 @@ export const ContactEdit = {
     const overlay = this._ensure();
     overlay.querySelector('[data-ce="body"]').innerHTML = this._form(c);
     overlay.classList.add("open");
+    // D7 : piégé AVANT le déplacement du focus (même ordre que Dialog._open).
+    this._releaseTrap = FocusTrap.activate(overlay.querySelector(".modal"));
     this._syncDerived();
     requestAnimationFrame(() => {
       const nameEl = overlay.querySelector("#ce-name");
@@ -261,6 +267,10 @@ export const ContactEdit = {
 
   _close() {
     if (this._el) this._el.classList.remove("open");
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
     this._contactId = null;
   },
 };
