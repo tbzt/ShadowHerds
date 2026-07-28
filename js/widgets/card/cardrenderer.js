@@ -1754,7 +1754,7 @@ export const CardRenderer = {
       })
       .join("");
     return `<div class="card-section">
-      <div class="card-section-label">${label}${malus > 0 ? ` <span class="wound-malus-badge" title="Malus de blessure automatique">−${malus}D</span>` : ""}</div>
+      <div class="card-section-label">${label}${malus > 0 ? ` <span class="wound-malus-badge status is-danger" title="Malus de blessure automatique">−${malus}D</span>` : ""}</div>
       <div class="card-section-content">
         ${tags}
       </div>

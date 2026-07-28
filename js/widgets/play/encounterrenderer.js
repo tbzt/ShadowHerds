@@ -490,7 +490,7 @@ export const EncounterRenderer = {
     const malus = isMatrix ? 0 : Utils.woundMalus(pnj, pnj.edition);
     const malusHtml =
       malus > 0
-        ? `<span class="wound-malus-badge" title="Malus de blessure automatique (déjà appliqué à l'initiative)">−${malus}D</span>`
+        ? `<span class="wound-malus-badge status is-danger" title="Malus de blessure automatique (déjà appliqué à l'initiative)">−${malus}D</span>`
         : "";
     const { alias, family, full } = Utils.parseName(pnj.name);
     const name = Utils.escHtml(alias || family || full);
