@@ -69,6 +69,14 @@ export const OpposedRoll = {
     this._open = true;
     document.getElementById("opposed-result").innerHTML = "";
     this._releaseTrap = FocusTrap.activate(p.querySelector(".risk-panel"));
+    // Correction D7 : sans ce focus, le piège était inatteignable au clavier
+    // (panneau ajouté à part dans `document.body`, hors de l'ordre de
+    // tabulation du déclencheur). Un vrai champ existe ici (contrairement à
+    // magicaction.js/summonpanel.js) : premier champ du formulaire, comme
+    // Dialog/ContactEdit.
+    const first = document.getElementById("opposed-pool-a");
+    first.focus();
+    first.select();
   },
 
   close() {

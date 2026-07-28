@@ -181,8 +181,12 @@ export const MagicAction = {
     void p.offsetWidth;
     p.classList.add("show");
     // D7 : pas de champ à pré-sélectionner (Puissance/Niveau se choisit au
-    // clic sur un stepper) — le piège seul, comme FoundationView.
+    // clic sur un stepper). Correction : sans le .focus() qui suit, le piège
+    // était inatteignable au clavier — le panneau est ajouté à part dans
+    // `document.body`, hors de l'ordre de tabulation du déclencheur. Même
+    // patron que ContentModal : la croix devient le premier élément atteint.
     this._releaseTrap = FocusTrap.activate(p.querySelector(".risk-panel"));
+    document.getElementById("magic-close").focus();
   },
 
   /** Tisse une forme complexe d'un PNJ (mirroir exact de `castSpell`,
@@ -226,8 +230,12 @@ export const MagicAction = {
     void p.offsetWidth;
     p.classList.add("show");
     // D7 : pas de champ à pré-sélectionner (Puissance/Niveau se choisit au
-    // clic sur un stepper) — le piège seul, comme FoundationView.
+    // clic sur un stepper). Correction : sans le .focus() qui suit, le piège
+    // était inatteignable au clavier — le panneau est ajouté à part dans
+    // `document.body`, hors de l'ordre de tabulation du déclencheur. Même
+    // patron que ContentModal : la croix devient le premier élément atteint.
     this._releaseTrap = FocusTrap.activate(p.querySelector(".risk-panel"));
+    document.getElementById("magic-close").focus();
   },
 
   _close() {

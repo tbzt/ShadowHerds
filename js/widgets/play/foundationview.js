@@ -44,8 +44,14 @@ export const FoundationView = {
       `Fondations — ${srv.name || "serveur"}`;
     overlay.querySelector('[data-foundation="body"]').innerHTML = this._bodyHtml(srv, ed, accent);
     overlay.classList.add("open");
-    // D7 : piégé AVANT tout déplacement de focus (même ordre que Dialog._open).
+    // D7 : piégé AVANT le déplacement de focus (même ordre que Dialog._open).
     this._releaseTrap = FocusTrap.activate(overlay.querySelector(".modal"));
+    // Correction D7 : sans ce .focus(), un clavier n'atteignait JAMAIS le
+    // piège — l'overlay est ajouté à part dans `document.body`, hors de
+    // l'ordre de tabulation du déclencheur ; Tab serait parti ailleurs sur
+    // la page. Même patron que ContentModal (fiche en lecture seule, la
+    // croix est le seul élément interactif à défaut d'un champ).
+    overlay.querySelector('[data-foundation-action="close"]').focus();
   },
 
   hide() {

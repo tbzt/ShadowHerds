@@ -109,6 +109,12 @@ export const SummonPanel = {
     void p.offsetWidth;
     p.classList.add("show");
     this._releaseTrap = FocusTrap.activate(p.querySelector(".risk-panel"));
+    // Correction D7 : sans ce .focus(), le piège était inatteignable au
+    // clavier — le panneau est ajouté à part dans `document.body`, hors de
+    // l'ordre de tabulation du déclencheur. Pas de champ à pré-sélectionner
+    // (Puissance/Services se choisissent au clic sur un stepper) : la croix,
+    // même patron que ContentModal/magicaction.js.
+    document.getElementById("summon-close").focus();
   },
 
   _close() {
