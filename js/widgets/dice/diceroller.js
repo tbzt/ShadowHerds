@@ -1440,13 +1440,20 @@ export const DiceRoller = {
     // le livre compte « les balles qu'on est sur le point de tirer ». Le badge
     // dit `tirées/voulues` dès que le chargeur ne suit plus — sans quoi une
     // rafale à une balle restante s'affichait « 1 », comme un coup par coup.
+    // F6 — changer de mode de tir se facture désormais (sauf IND) : la puce
+    // du mode annonce le coût AVANT le tap, dans le badge qui portait déjà les
+    // balles (jamais désactivée — « informer, jamais décider »). Le premier
+    // choix d'une scène (`a.weaponModeMemo` absent) ne coûte rien : on
+    // découvre l'arme, on ne change rien.
     const modes = a.modes.length > 1
       ? `<div class="preroll-row"><span class="preroll-row-lbl">Mode de tir</span>${a.modes
           .map((m) => {
             const on = a.chosenMode === m.key;
             const court = m.res.court ? " is-over" : "";
-            const badge = m.res.court ? `${m.res.tires}/${m.res.veut}` : `${m.res.tires}`;
-            return `<button type="button" class="tag status-pick${on ? " is-on" : ""}${court}" data-preroll-mode="${m.key}" aria-pressed="${on}" title="${esc(this._modeInfo(m))}">${esc(m.name)}<span class="edge-cost">${badge}</span></button>`;
+            const change = a.weaponModeMemo !== undefined && a.weaponModeMemo !== m.key;
+            const badge = (m.res.court ? `${m.res.tires}/${m.res.veut}` : `${m.res.tires}`) + (change && a.weaponModeCost ? ` · ${esc(a.weaponModeCost)}` : "");
+            const titre = change && a.weaponModeCost ? `${this._modeInfo(m)}\nChanger de mode de tir — ${a.weaponModeCost}` : this._modeInfo(m);
+            return `<button type="button" class="tag status-pick${on ? " is-on" : ""}${court}" data-preroll-mode="${m.key}" aria-pressed="${on}" title="${esc(titre)}">${esc(m.name)}<span class="edge-cost">${badge}</span></button>`;
           })
           .join("")}</div>`
       : "";

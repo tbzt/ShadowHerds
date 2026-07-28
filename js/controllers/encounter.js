@@ -1108,6 +1108,21 @@ export const Encounter = {
      porte `viaWeapon` et ne s'affiche plus.
      ======================================================== */
 
+  /** F6 — la clé d'action qui facture un changement de mode de tir, selon
+      l'édition et l'IND (interface neurale directe). Le livre exempte l'IND,
+      pas le smartlink : SR5 p.435 distingue explicitement
+      « équipement relié par IND » (gratuit) d'« interrupteur réel ou virtuel »
+      (1 simple) ; SR6 range le cas IND dans `changerModeAppareil` (mineure) et
+      le cas nu dans `utiliserAppareilSimple` (majeure, dont la ligne dit
+      elle-même « connecté à une IND activée ne coûte qu'une mineure »).
+      ⚠ Aucun champ de fiche ne porte l'IND aujourd'hui : ce lot réutilise
+      `pnj.smartlink.implanted` (yeux cybernétiques, datajack) comme candidat
+      le plus proche — à corriger si un champ IND dédié apparaît un jour. */
+  _weaponModeActionKey(pnj) {
+    const ind = !!(pnj.smartlink && pnj.smartlink.implanted);
+    return pnj.edition === "sr6" ? (ind ? "changerModeAppareil" : "utiliserAppareilSimple") : ind ? "changerModeAppareilConnecte" : "changerModeAppareil";
+  },
+
   /** Tout ce que le panneau pré-jet doit montrer pour une attaque. Renvoie null
       si l'arme ne compte rien (mêlée : le tap reste un jet nu). */
   attackContext(pnjId, weaponStr) {
@@ -1149,7 +1164,37 @@ export const Encounter = {
     // disparaît pas.
     const edge = c.edge || 0;
     const arbitrable = modes.length > 1 || greffons.some((g) => g.cost <= edge);
-    return { weapon: weaponStr, name: parsed.name, famille, arme, modes, recoil: rec, greffons, edge, arbitrable };
+
+    // F6 — le mode MÉMORISÉ (`c.weaponMode`) sert à annoncer, avant le tap, ce
+    // qui facturerait un changement. Absent (première sélection de la scène :
+    // on DÉCOUVRE l'état de l'arme, on ne le change pas), aucune puce ne coûte
+    // rien — cf. `_billModeChange`.
+    const weaponModeMemo = arme && c.weaponMode ? c.weaponMode[arme.key] : undefined;
+    let weaponModeCost = null;
+    if (arme && modes.length > 1) {
+      const entry = Actions.find(pnj, this._weaponModeActionKey(pnj));
+      if (entry) weaponModeCost = Actions.costLabel(pnj, entry, Actions.costWith(pnj, entry, this.edgeCancels(pnjId)).cost);
+    }
+    return { weapon: weaponStr, name: parsed.name, famille, arme, modes, recoil: rec, greffons, edge, arbitrable, weaponModeMemo, weaponModeCost };
+  },
+
+  /** F6 — facture le changement de mode de tir, à la SORTIE du panneau
+      (même frontière que F5d : sélectionner puis se raviser dans le panneau
+      ne coûte rien, seul le tir qui part paie). Mémorise le mode dans la
+      SCÈNE (`c.weaponMode`), même patron que `c.ammo` : un mode choisi
+      appartient à la rencontre, pas au PNJ.
+      Le premier tir d'une scène ne facture jamais — sans mode mémorisé, on
+      DÉCOUVRE l'état de l'arme dans lequel on l'a trouvée, on ne le change
+      pas. */
+  _billModeChange(pnjId, pnj, armeKey, modeKey) {
+    const c = this._find(pnjId);
+    if (!c) return;
+    c.weaponMode = c.weaponMode || {};
+    const avant = c.weaponMode[armeKey];
+    c.weaponMode[armeKey] = modeKey;
+    if (avant === undefined || avant === modeKey) return;
+    const key = this._weaponModeActionKey(pnj);
+    if (Actions.find(pnj, key)) this.useAction(pnjId, key, false);
   },
 
   /** Valide l'attaque : débite l'action, les balles et le recul, puis rend le
@@ -1173,6 +1218,7 @@ export const Encounter = {
     const parsed = WeaponRoll.parse(weaponStr);
     const arme = this.ammoWeapons(pnjId).find((a) => a.parsed.name === parsed.name);
     if (modeKey && arme) {
+      this._billModeChange(pnjId, pnj, arme.key, modeKey);
       const res = this.fire(pnjId, arme.key, modeKey);
       return res ? Ammo.rollDetail(res) : "";
     }
@@ -1938,6 +1984,7 @@ export const Encounter = {
     if (c) {
       delete c.ammo;
       delete c.recoil;
+      delete c.weaponMode; // F6 — mode de tir remis à « pas encore choisi »
     }
     if (!moniteurs && !etats && !munitions) return;
     EncounterRenderer._activeCardId = null;
@@ -2137,6 +2184,7 @@ export const Encounter = {
       // scène, ils s'en vont avec elle.
       delete c.ammo;
       delete c.recoil;
+      delete c.weaponMode; // F6 — le mode de tir aussi
       if (this._resetMonitors(pnj)) {
         CardRenderer.refresh(pnj);
         n++;
@@ -2588,12 +2636,39 @@ export const Encounter = {
       l'état de vue, il repart à zéro au rechargement sans rien coûter. */
   _rev: 0,
 
+  /** SECOND CIRCUIT — les cartes de la BIBLIOTHÈQUE.
+      `_rev` remet à jour la fiche du cockpit ; ces cartes-là, elles, vivent
+      dans les panneaux et ne se reconstruisent que par `CardRenderer.refresh`.
+      Les mutations d'états y passaient déjà (`UI._afterStatusChange`), les
+      mutations de SCÈNE non : après un tir, la carte annonçait encore le
+      chargeur plein et l'ancienne réserve de défense.
+
+      ⚠ SYSTÉMATIQUE, ET C'EST UN CHOIX MESURÉ. Une première version différait
+      le travail à la fermeture du cockpit, au motif qu'une modale recouvre les
+      cartes. Deux faits l'ont écartée : au-dessus de 641px le cockpit est un
+      DOCK LATÉRAL non bloquant — « le Hub reste utilisable derrière » — donc
+      les cartes sont visibles PENDANT le combat ; et le coût ne le justifiait
+      pas. Mesuré sur une scène de 8 combattants avec 9 cartes rendues :
+      `_refreshCards` ≈ 28-31 ms, sur un `_commit` qui en coûte déjà ~246.
+      Différer, c'était compliquer le code pour 12 % d'un chemin déjà lent.
+
+      Le coût est d'ailleurs proportionnel à ce qui est VISIBLE : `refresh` ne
+      fait rien quand aucune carte du PNJ n'est dans le DOM. */
+  _refreshCards() {
+    if (!this.state) return;
+    for (const c of this.state.combatants) {
+      const pnj = PnjLookup.find(c.pnjId);
+      if (pnj) CardRenderer.refresh(pnj); // no-op si aucune carte n'est rendue
+    }
+  },
+
   _commit() {
     this._rev++;
     this.save();
     this._render();
     this._renderPicker();
     this._maybeNudgePreRollEdge();
+    this._refreshCards();
   },
 
   /** VIS-1 (co-MJ) — Lot 1. Quand la scène vivante compte un participant capable
