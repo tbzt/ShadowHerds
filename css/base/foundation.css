@@ -1000,7 +1000,7 @@ select optgroup {
 #dice-result {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.35rem;
+  gap: var(--sp-2);
   min-width: 120px;
   white-space: nowrap;
 }

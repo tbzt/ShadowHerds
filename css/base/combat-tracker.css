@@ -1310,7 +1310,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--sp-2);
   padding: 0.5rem 0.6rem 0;
 }
 .encounter-duel-select {
@@ -1492,7 +1492,7 @@
 .encounter-edge {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--sp-2);
   padding: 0.5rem 0.6rem 0;
   flex-wrap: wrap;
 }
@@ -1528,7 +1528,7 @@
 .encounter-anarchy {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--sp-2);
   padding: 0.5rem 0.6rem 0;
   flex-wrap: wrap;
 }
@@ -1639,7 +1639,7 @@
 .encounter-mode-head {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--sp-2);
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   letter-spacing: 0.06em;
@@ -2075,7 +2075,7 @@
 .sidebar-encounter {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: var(--sp-2);
   padding-bottom: var(--sp-2);
   margin-bottom: var(--sp-2);
   border-bottom: 1px solid var(--border);
