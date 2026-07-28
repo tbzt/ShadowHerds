@@ -33,7 +33,7 @@
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--sp-2);
   flex-wrap: wrap;
 }
 /* Sous-titre fonctionnel d'en-tête (CH-U3) : passe en pleine ligne sous le

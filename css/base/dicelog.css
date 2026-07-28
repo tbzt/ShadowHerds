@@ -159,7 +159,7 @@
 .dice-log-item {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--sp-2);
   padding: var(--sp-2) 0.8rem;
   border-left: 2px solid var(--border);
   margin: 2px 0;

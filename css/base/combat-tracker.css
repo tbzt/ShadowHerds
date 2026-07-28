@@ -1585,7 +1585,7 @@
 .encounter-actions {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--sp-2);
   flex-wrap: wrap;
   padding: 0.5rem 0.6rem 0;
 }
@@ -2137,7 +2137,7 @@
 .shortcuts-list {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: var(--sp-4);
 }
 .shortcut-row {
   display: flex;

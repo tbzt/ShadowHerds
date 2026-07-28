@@ -190,7 +190,7 @@
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: flex-start;
-  gap: 0.6rem;
+  gap: var(--sp-2);
 }
 .pnj-header-left {
   flex: 1;

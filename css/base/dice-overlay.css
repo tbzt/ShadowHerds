@@ -768,7 +768,7 @@ input[type="range"]#risk-dice-slider {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.6rem;
+  gap: var(--sp-4);
 }
 .risk-rr-label {
   font-family: var(--font-mono);
@@ -939,7 +939,7 @@ input[type="range"]#risk-dice-slider {
 .preroll-gain-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem;
+  gap: var(--sp-4);
   align-items: flex-end;
 }
 .preroll-gain-field {
