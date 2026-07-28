@@ -841,7 +841,14 @@ export const Encounter = {
     // ce garde, un état qui interdirait l'action de tir laisserait quand même
     // partir les balles et monter le recul, et le refus arriverait après.
     // Aucun état ne le fait aujourd'hui ; l'ordre, lui, est déjà juste.
-    const tir = mode.actionKey && Actions.find(pnj, mode.actionKey);
+    // L'action FACTURÉE : celle que l'édition nomme pour cette arme si elle en
+    // nomme une (arc, arbalète, arme montée — le livre leur donne leur propre
+    // ligne), sinon celle du mode de tir. Un arc déclare « CC » comme un
+    // pistolet : sans cette préférence, « Tirer à l'arc » n'était jamais
+    // débitée et le MJ lisait « Faire feu » sur un tir de flèche.
+    const nomme = Actions.viaWeaponNamed(pnj, arme.parsed.name);
+    const cleAction = (nomme && nomme.key) || mode.actionKey;
+    const tir = cleAction && Actions.find(pnj, cleAction);
     const interdits = tir ? Actions.forbidden(pnj, tir) : [];
     if (interdits.length) {
       toast(`${tir.name} impossible — ${pnj.name} est ${interdits.map((i) => i.name).join(", ")} (${interdits[0].why}).`);
@@ -857,13 +864,32 @@ export const Encounter = {
     // tir automatique qui en voulait 10.
     if (Ammo.hasRecoil(pnj)) c.recoil = (c.recoil || 0) + Ammo.recoilFrom(res);
 
-    if (mode.actionKey) this.useAction(pnjId, mode.actionKey, true);
+    if (cleAction) this.useAction(pnjId, cleAction, true);
     EncounterRenderer._activeCardId = null;
     this._commit();
 
     const detail = Ammo.rollDetail(res);
     toast(`${arme.parsed.name} — ${detail}${res.court ? " ⚠ à court" : ""}`);
     return res;
+  },
+
+  /** Le PRIX d'un rechargement, en clair — « 2 × Insérer un chargeur (simple) ».
+      Lu par le panneau pré-jet pour libeller son bouton : une action de ce
+      panneau annonce toujours ce qu'elle coûte avant d'être tapée. Même source
+      que le toast de `reloadWeapon`, pour qu'ils ne divergent jamais. */
+  reloadLabel(pnjId, arme) {
+    const pnj = PnjLookup.find(pnjId);
+    if (!pnj || !arme || !arme.reload.length) return "";
+    const noms = arme.reload
+      .map((k) => {
+        const e = Actions.find(pnj, k);
+        return e ? Actions.costLabel(pnj, e) : "";
+      })
+      .filter(Boolean);
+    if (!noms.length) return "";
+    // Deux fois la même action se dit « 2 × 1 simple », pas « 1 simple + 1 simple ».
+    const uniques = [...new Set(noms)];
+    return uniques.length === 1 && noms.length > 1 ? `${noms.length} × ${uniques[0]}` : noms.join(" + ");
   },
 
   /** RECHARGER : débite les actions du plan de l'édition, puis remplit.
@@ -1031,8 +1057,13 @@ export const Encounter = {
           return { key: m.key, name: m.name, res, malus, detail: Ammo.rollDetail(res) };
         })
       : [];
-    if (!modes.length && !greffons.length) return null;
-    return { weapon: weaponStr, name: parsed.name, famille, arme, modes, recoil: rec, greffons, edge: c.edge || 0 };
+    // `arbitrable` = y a-t-il quelque chose à TRANCHER ? C'est lui qui décide
+    // si le panneau s'ouvre — pas le réglage d'Atout, et pas l'existence d'une
+    // attaque. Un mode unique n'est pas un choix (les 29 armes concernées sont
+    // toutes en Coup par coup : 1 balle, aucun recul, aucun malus à annoncer) ;
+    // une mêlée nue non plus. Ces armes se débitent au tap, sans écran.
+    const arbitrable = modes.length > 1 || greffons.length > 0;
+    return { weapon: weaponStr, name: parsed.name, famille, arme, modes, recoil: rec, greffons, edge: c.edge || 0, arbitrable };
   },
 
   /** Valide l'attaque : débite l'action, les balles et le recul, puis rend le
@@ -1051,8 +1082,12 @@ export const Encounter = {
       const res = this.fire(pnjId, arme.key, modeKey);
       return res ? Ammo.rollDetail(res) : "";
     }
-    const cle = Actions.viaWeapon(pnj).map((a) => a.key)[0];
-    if (cle) this.useAction(pnjId, cle, true);
+    // Sans mode de tir (mêlée, arme de jet, arc, ou arme dont la chaîne ne
+    // déclare aucun mode lisible), c'est l'ARME qui désigne l'action — jamais
+    // le premier venu du catalogue : SR5 en range six à deux prix différents.
+    const famille = WeaponRoll.combatFamily(parsed.name, pnj.edition);
+    const entry = Actions.viaWeaponFor(pnj, parsed.name, famille);
+    if (entry) this.useAction(pnjId, entry.key, true);
     return "";
   },
 

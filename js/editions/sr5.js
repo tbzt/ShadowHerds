@@ -472,14 +472,14 @@ export const EditionSR5 = {
       { key: "encocherFleche", name: "Encocher une flèche", cost: [{ key: "simple", n: 1 }], reload: "insert", lines: [
         "Encocher une flèche dans un arc prêt — une seconde action simple est nécessaire pour tirer",
       ] },
-      { key: "faireFeuSimple", name: "Faire feu (CC, SA, TR, TA)", viaWeapon: true, cost: [{ key: "simple", n: 1 }], quick: true, shot: true, lines: [
+      { key: "faireFeuSimple", name: "Faire feu (CC, SA, TR, TA)", viaWeapon: true, family: "ranged", cost: [{ key: "simple", n: 1 }], quick: true, shot: true, lines: [
         "Coup par coup, semi-automatique, tir en rafale (3 balles) ou tir automatique (6 balles)",
         "Aucune autre action d'attaque durant la même phase d'action",
       ] },
       { key: "insererChargeur", name: "Insérer un chargeur", cost: [{ key: "simple", n: 1 }], quick: true, reload: "insert", lines: [
         "Insérer un chargeur dans une arme à feu prête, uniquement après avoir éjecté l'ancien",
       ] },
-      { key: "lancerArme", name: "Lancer une arme", viaWeapon: true, cost: [{ key: "simple", n: 1 }], lines: [
+      { key: "lancerArme", name: "Lancer une arme", viaWeapon: true, weaponMatch: /grenade|shuriken|étoile|javelot|boomerang|de jet\b/i, cost: [{ key: "simple", n: 1 }], lines: [
         "Lancer une arme prête",
         "Aucune autre action d'attaque durant la même phase d'action",
       ] },
@@ -508,7 +508,7 @@ export const EditionSR5 = {
         "Un personnage couché ou accroupi se relève",
         "Avec un malus de blessure : test de Constitution + Volonté (2), modificateurs de blessure compris",
       ] },
-      { key: "tirerArc", name: "Tirer à l'arc", viaWeapon: true, cost: [{ key: "simple", n: 1 }], shot: true, lines: [
+      { key: "tirerArc", name: "Tirer à l'arc", viaWeapon: true, weaponMatch: /\barcs?\b|arbalète/i, cost: [{ key: "simple", n: 1 }], shot: true, lines: [
         "Tirer une flèche déjà encochée",
       ] },
       { key: "utiliserObjetSimple", name: "Utiliser un objet simple", cost: [{ key: "simple", n: 1 }], lines: [
@@ -517,7 +517,7 @@ export const EditionSR5 = {
 
       /* ---------------- ACTIONS COMPLEXES (11) ----------------
          Toutes déclarent le « ou » du livre : 1 complexe = les 2 simples. */
-      { key: "attaquerMelee", name: "Attaquer en mêlée", viaWeapon: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], quick: true, lines: [
+      { key: "attaquerMelee", name: "Attaquer en mêlée", viaWeapon: true, family: "melee", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], quick: true, lines: [
         "Une attaque en mêlée",
       ] },
       { key: "bannirEsprit", name: "Bannir un esprit", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
@@ -526,7 +526,7 @@ export const EditionSR5 = {
       { key: "faireFeuComplexe", name: "Faire feu (RSA, RL, TA)", viaWeapon: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], quick: true, shot: true, lines: [
         "Rafale semi-automatique (3 balles), rafale longue (6 balles) ou tir automatique (10 balles)",
       ] },
-      { key: "faireFeuMonte", name: "Faire feu (arme montée / de véhicule)", viaWeapon: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], shot: true, lines: [
+      { key: "faireFeuMonte", name: "Faire feu (arme montée / de véhicule)", viaWeapon: true, weaponMatch: /monté|tourelle|de véhicule/i, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], shot: true, lines: [
         "Faire feu avec une arme de véhicule ou montée sur un véhicule, prête",
       ] },
       { key: "invoquerEsprit", name: "Invoquer un esprit", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [

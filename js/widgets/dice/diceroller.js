@@ -199,8 +199,14 @@ export const DiceRoller = {
         if (ctx) {
           const options = this.preRollEdgeOptions(ctx.pnj).filter((o) => o.affordable);
           const gain = ctx.weapon ? this._buildGainCtx(ctx.pnj, ctx.weapon) : null;
-          if (options.length || gain)
-            this.openPreRollPanel({ pnj: ctx.pnj, options, doRoll: ctx.doRoll, gain });
+          // Le contexte d'attaque manquait ici : ouvrir le panneau depuis la
+          // pastille d'une ligne d'ARME donnait un panneau qui ne débitait
+          // rien. Même contrat que le tap sur la ligne (`_maybePreRoll`).
+          const attack =
+            ctx.weapon && this._hooks.attackContext ? this._hooks.attackContext(ctx.pnj, ctx.weapon) : null;
+          if (attack && attack.modes.length) attack.chosenMode = attack.modes[0].key;
+          if (options.length || gain || attack)
+            this.openPreRollPanel({ pnj: ctx.pnj, options, doRoll: ctx.doRoll, gain, attack });
         }
         return;
       }
@@ -1075,19 +1081,31 @@ export const DiceRoller = {
       panneau via `doRoll`). Sinon false → l'appelant lance normalement. Le tap
       nu reste un lancer immédiat dès qu'aucune option n'est disponible. */
   _maybePreRoll(pnj, doRoll, weapon = null) {
-    if (this._preRollMode() !== "panel" || !pnj) return false;
-    const options = this.preRollEdgeOptions(pnj).filter((o) => o.affordable);
-    const gain = weapon ? this._buildGainCtx(pnj, weapon) : null;
-    // F5c — le contexte d'ATTAQUE : modes de tir, balles, recul, greffons.
-    // C'est lui qui fait du panneau le parcours complet ; taper l'arme est
-    // désormais l'action Attaquer, et tout se décide ici.
+    if (!pnj) return false;
+    // F5d — LE RÉGLAGE NE GOUVERNE PLUS QUE L'ATOUT. Il s'intitule « Chance /
+    // Atout avant le jet » : le laisser décider si le livre est payé était une
+    // inversion de hiérarchie — en « pastille » ou « désactivé », taper une
+    // arme ne débitait ni action, ni balles, ni recul, et F5 venait justement
+    // de retirer du cockpit la seule autre porte. Un réglage règle ce que
+    // l'app MONTRE ; il ne règle jamais ce qu'elle COMPTE.
+    const panel = this._preRollMode() === "panel";
+    const options = panel ? this.preRollEdgeOptions(pnj).filter((o) => o.affordable) : [];
+    const gain = panel && weapon ? this._buildGainCtx(pnj, weapon) : null;
+    // Le contexte d'ATTAQUE, lui, se construit TOUJOURS : modes de tir, balles,
+    // recul, greffons. Taper l'arme est l'action Attaquer, dans les trois modes.
     const attack =
       weapon && this._hooks && this._hooks.attackContext ? this._hooks.attackContext(pnj, weapon) : null;
     if (attack && attack.modes.length) attack.chosenMode = attack.modes[0].key;
-    // Ouvre si une dépense est possible, OU si l'attaque permet de GAGNER de
-    // l'Atout (SR6), OU s'il y a une attaque à régler — sinon le tap reste un
-    // lancer immédiat (geste inchangé pour une arme de mêlée sans greffon).
-    if (!options.length && !gain && !attack) return false;
+
+    // Le panneau s'ouvre quand il y a un ARBITRAGE, jamais pour faire signer un
+    // reçu : ≥ 2 modes de tir, un greffon d'Atout, une dépense ou un gain
+    // possibles. Sinon le tap lance immédiatement — mais il débite quand même,
+    // le débit ayant quitté le panneau pour le geste qui le déclenche.
+    if (!options.length && !gain && !(attack && attack.arbitrable)) {
+      if (attack && this._hooks.onAttack)
+        this._hooks.onAttack(pnj, attack.weapon, attack.chosenMode, null);
+      return false;
+    }
     this.openPreRollPanel({ pnj, options, doRoll, gain, attack });
     return true;
   },
@@ -1174,8 +1192,11 @@ export const DiceRoller = {
       if (!a) return;
       const m = e.target.closest("[data-preroll-mode]");
       if (m) {
-        const k = m.getAttribute("data-preroll-mode");
-        a.chosenMode = a.chosenMode === k ? null : k;
+        // RADIO, jamais bascule : un mode éteint faisait retomber
+        // `resolveAttack` sur la branche sans mode — action débitée, zéro
+        // balle, zéro recul. Un mis-tap facturait une attaque muette. Une arme
+        // qu'on tape tire toujours d'une façon ou d'une autre.
+        a.chosenMode = m.getAttribute("data-preroll-mode");
         this._renderAttackSection();
         return;
       }
@@ -1184,6 +1205,16 @@ export const DiceRoller = {
         const k = g.getAttribute("data-preroll-graft");
         a.chosenGraft = a.chosenGraft === k ? null : k;
         this._renderAttackSection();
+        return;
+      }
+      // Recharger débite ses actions et REND LA MAIN : ce n'est pas un jet, et
+      // son retour (le toast de `reloadWeapon`, qui nomme les actions payées)
+      // diffère de celui d'un jet — c'est ce qui satisfait la loi 3 plutôt que
+      // de l'enfreindre. Aucun dé ne part : `doRoll` n'est pas appelé.
+      if (e.target.closest("[data-preroll-reload]")) {
+        const pnj = this._preRoll.pnj;
+        this._closePreRollPanel();
+        if (this._hooks.onReload) this._hooks.onReload(pnj, a.arme);
       }
     });
 
@@ -1324,25 +1355,49 @@ export const DiceRoller = {
     el.hidden = false;
     const esc = Utils.escHtml;
 
+    // Chargeur : « à sec » se voit à la FORME (glyphe barré + opacité), jamais
+    // à une cinquième teinte. Le livre n'interdit pas de presser la détente à
+    // vide — il n'en fait simplement pas une attaque.
+    const vide = a.arme && a.arme.reste <= 0;
     const chargeur = a.arme
-      ? `<span class="preroll-ammo">⦿ ${a.arme.reste}/${a.arme.cap.n} (${esc(a.arme.cap.mech)})</span>`
+      ? `<span class="preroll-ammo${vide ? " is-empty" : ""}"${vide ? ' title="Chargeur à sec — le coup ne part pas"' : ""}>${vide ? "⦸" : "⦿"} ${a.arme.reste}/${a.arme.cap.n} (${esc(a.arme.cap.mech)})</span>`
       : "";
     const recul =
       a.recoil && a.recoil.cumul
         ? `<span class="preroll-ammo" title="Recul progressif — ${a.recoil.cumul} balles cumulées − CR ${a.recoil.comp}">↯ ${a.recoil.malus ? `−${a.recoil.malus}` : `${a.recoil.cumul}/${a.recoil.comp}`}</span>`
         : "";
 
+    // MODE UNIQUE = pas un choix. Les 29 armes concernées (23 SR5, 6 SR6) sont
+    // toutes en Coup par coup : une balle, aucun recul progressif, aucun malus
+    // de défense à annoncer. Une puce pressable y mentirait sur l'existence
+    // d'un arbitrage — l'information monte donc au bandeau, en marqueur inerte.
+    const seul = a.modes.length === 1 ? a.modes[0] : null;
+    const modeSeul = seul
+      ? `<span class="preroll-ammo" title="${esc(this._modeInfo(seul))}">${esc(seul.name)} · ${seul.res.tires} balle${seul.res.tires > 1 ? "s" : ""}</span>`
+      : "";
+
     // Modes de tir : le libellé porte les balles ET le recul PRÉVISIONNEL, car
-    // le livre compte « les balles qu'on est sur le point de tirer ».
-    const modes = a.modes.length
+    // le livre compte « les balles qu'on est sur le point de tirer ». Le badge
+    // dit `tirées/voulues` dès que le chargeur ne suit plus — sans quoi une
+    // rafale à une balle restante s'affichait « 1 », comme un coup par coup.
+    const modes = a.modes.length > 1
       ? `<div class="preroll-row"><span class="preroll-row-lbl">Mode de tir</span>${a.modes
           .map((m) => {
             const on = a.chosenMode === m.key;
             const court = m.res.court ? " is-over" : "";
-            const info = [m.detail, m.malus ? `recul −${m.malus}` : ""].filter(Boolean).join(" · ");
-            return `<button type="button" class="tag status-pick${on ? " is-on" : ""}${court}" data-preroll-mode="${m.key}" aria-pressed="${on}" title="${esc(info)}">${esc(m.name)}<span class="edge-cost">${m.res.tires}</span></button>`;
+            const badge = m.res.court ? `${m.res.tires}/${m.res.veut}` : `${m.res.tires}`;
+            return `<button type="button" class="tag status-pick${on ? " is-on" : ""}${court}" data-preroll-mode="${m.key}" aria-pressed="${on}" title="${esc(this._modeInfo(m))}">${esc(m.name)}<span class="edge-cost">${badge}</span></button>`;
           })
           .join("")}</div>`
+      : "";
+
+    // Le VERDICT du mode retenu, en clair et AVANT le jet — « 3 balles sur 10 ·
+    // défense −2 ». La phrase existait déjà (`Ammo.rollDetail`) mais ne vivait
+    // que dans un `title=` et dans le toast d'APRÈS : le MJ avait déjà annoncé
+    // sa défense à voix haute quand l'app le détrompait.
+    const retenu = a.modes.find((m) => m.key === a.chosenMode) || seul;
+    const verdict = retenu
+      ? `<div class="preroll-verdict${retenu.res.court ? " is-halt" : ""}">${esc(this._modeInfo(retenu))}</div>`
       : "";
 
     // Greffons d'Atout, filtrés par la famille de l'arme et triés par coût.
@@ -1357,7 +1412,29 @@ export const DiceRoller = {
           .join("")}</div>`
       : "";
 
-    el.innerHTML = `<div class="preroll-attack-head">${esc(a.name)} ${chargeur}${recul}</div>${modes}${greffons}`;
+    el.innerHTML = `<div class="preroll-attack-head">${esc(a.name)} ${chargeur}${recul}${modeSeul}</div>${modes}${verdict}${this._reloadRowHtml(a)}${greffons}`;
+  },
+
+  /** La phrase que le MJ va annoncer, pour un mode donné : ce que `rollDetail`
+      produisait déjà, plus le recul prévisionnel. Une seule source pour le
+      `title=`, le bandeau du mode unique et le verdict. */
+  _modeInfo(m) {
+    return [m.detail, m.malus ? `recul −${m.malus}` : ""].filter(Boolean).join(" · ");
+  },
+
+  /** RECHARGER — sa propre rangée, jamais une puce parmi les modes de tir :
+      même forme + même place = même verbe (loi 3), et recharger ne tire pas.
+      Toujours présente dès que l'arme déclare un plan de rechargement — une
+      cible qui apparaît au moment où elle devient utile est une cible qui se
+      déplace sous le doigt. Ce qui varie, c'est l'accent : ternie chargeur
+      plein, pleine quand il ne l'est plus. Le libellé porte son PRIX, comme
+      toute action de ce panneau. */
+  _reloadRowHtml(a) {
+    if (!a.arme || !a.arme.reload.length || !this._hooks.reloadLabel) return "";
+    const prix = this._hooks.reloadLabel(this._preRoll.pnj, a.arme);
+    if (!prix) return "";
+    const plein = a.arme.reste >= a.arme.cap.n;
+    return `<div class="preroll-row"><button type="button" class="risk-level-btn preroll-reload${plein ? " is-idle" : ""}" data-preroll-reload>⟳ Recharger<span class="edge-cost">${Utils.escHtml(prix)}</span></button></div>`;
   },
 
   /** Rend la section « gagner l'Atout » (SR6) : sélecteur de Portée pour les

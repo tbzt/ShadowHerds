@@ -107,6 +107,40 @@ export const Actions = {
     return this.catalog(pnj).filter((a) => a.viaWeapon);
   },
 
+  /** L'action `viaWeapon` que dessert CETTE arme — jamais `viaWeapon()[0]`.
+
+      SR5 en déclare SIX, à DEUX prix différents : « Faire feu (CC, SA, TR,
+      TA) » coûte une simple, « Attaquer en mêlée » une complexe — c'est-à-dire
+      la phase d'action entière. Prendre le premier de la liste facturait donc
+      un coup de katana au prix d'un coup de pistolet, et laissait « Lancer une
+      arme », « Tirer à l'arc » et « Faire feu (arme montée) » sans aucun point
+      d'entrée. La LISTE est la règle ; l'index l'effaçait.
+
+      Ce magasin ne sait pas ce qu'est un arc : c'est l'édition qui déclare, sur
+      son entrée, l'arme qu'elle dessert (`weaponMatch` pour un cas nommé,
+      `family` pour le cas générique). Une famille n'a QU'UNE entrée générique,
+      donc la résolution est déterministe. Les actions de tir portent déjà
+      `shot` et se débitent par le mode de tir (`fireModes[].actionKey`) — elles
+      ne passent ici que si l'arme ne déclare aucun mode lisible. */
+  viaWeaponFor(pnj, weaponName, family) {
+    const list = this.viaWeapon(pnj);
+    if (!list.length) return null;
+    const nomme = this.viaWeaponNamed(pnj, weaponName);
+    if (nomme) return nomme;
+    const generique = list.find((a) => a.family === family && !a.weaponMatch);
+    return generique || list[0];
+  },
+
+  /** L'action que l'édition NOMME pour cette arme, ou null. Séparée parce que
+      le chemin du tir a besoin de la question seule : un arc et une arbalète
+      déclarent « CC » comme un pistolet, donc leur mode renvoie « Faire feu »
+      alors que le livre leur donne « Tirer à l'arc ». Même prix, autre nom —
+      et c'est le nom que le MJ lit. Sans clé nommée, le mode reste maître. */
+  viaWeaponNamed(pnj, weaponName) {
+    const nom = String(weaponName || "");
+    return this.viaWeapon(pnj).find((a) => a.weaponMatch && a.weaponMatch.test(nom)) || null;
+  },
+
   /** DOMAINES (lot F1b) — combat, magie, Matrice.
 
       Le lot F1 tenait dans une seule liste : 32 actions en SR6, 36 en SR5.

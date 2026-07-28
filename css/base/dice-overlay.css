@@ -915,6 +915,112 @@ input[type="range"]#risk-dice-slider {
   cursor: pointer;
 }
 
+/* ---- Parcours d'attaque (lot F5) ----
+   Taper une arme EST l'action Attaquer : cette section montre d'un coup le
+   mode de tir et ses balles, le recul, le rechargement et les greffons
+   d'Atout. Aucune primitive neuve — elle emprunte au gain d'Atout voisin
+   (enveloppe), à la feuille d'actions (rangées, ternissure) et au témoin de
+   recul (marqueurs chiffrés). Zéro token inventé, zéro cinquième teinte. */
+#preroll-attack[hidden] {
+  display: none; /* le `display:flex` auteur bat [hidden] de l'UA sans cette ligne */
+}
+#preroll-attack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-2) 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+/* Le bandeau : le nom de l'arme, puis ses marqueurs chiffrés (chargeur, recul,
+   et le mode quand il est unique — auquel cas ce n'est pas un choix). */
+.preroll-attack-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+/* Une rangée = un libellé + ses puces, exactement comme `.action-domain`. */
+.preroll-row {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+}
+.preroll-row-lbl {
+  flex-basis: 100%;
+  color: var(--text-dim);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* Marqueur chiffré du bandeau — recette de `.recoil-badge`, même rôle : il
+   informe, il n'est jamais cliquable. */
+.preroll-ammo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding-inline: var(--sp-1);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* Chargeur à sec : la forme le dit (glyphe barré) et l'opacité le confirme.
+   Rien n'est désactivé pour autant — le livre ne l'écrit pas. */
+.preroll-ammo.is-empty {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+/* Ce que le MJ va ANNONCER, avant de lancer : « 3 balles sur 10 · défense −2 ».
+   Terne au nominal ; contraste plein dès que le chargeur ne suit plus, comme
+   `.action-notice.is-halt` — c'est la ligne qu'il ne doit pas manquer. */
+.preroll-verdict {
+  flex-basis: 100%;
+  color: var(--text-dim);
+  font-size: var(--fs-2xs);
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+.preroll-verdict.is-halt {
+  color: var(--text);
+  font-weight: 600;
+}
+/* Mode à court de balles, ou greffon d'Atout trop cher : la puce se TERNIT,
+   elle ne se désactive pas. `.status-pick` n'avait pas cet état, alors que le
+   panneau posait déjà la classe — la ternissure existait en doctrine et pas en
+   CSS. Recette identique à `.action-pick.is-over`, même arbitrage : le livre
+   prévoit le tir court et en donne le prix ; griser retirerait au MJ un
+   arbitrage que le livre lui rend. */
+.status-pick.is-over {
+  opacity: 0.55;
+  border-style: dashed;
+}
+/* Recharger : sa propre rangée, jamais une puce parmi les modes de tir — même
+   forme et même place diraient le même verbe, et recharger ne tire pas. Reste
+   secondaire : la seule action primaire visible du panneau est « Lancer ». */
+.preroll-reload {
+  width: 100%;
+  justify-content: space-between;
+  min-height: var(--hit-cozy);
+  cursor: pointer;
+}
+.preroll-reload.is-idle {
+  opacity: 0.55; /* chargeur plein : disponible, mais sans rien à réclamer */
+}
+
 /* Gain d'Atout SR6 (SO vs SD) — section conditionnelle au-dessus des options
    de dépense. Réutilise les tokens du panneau de risque. */
 #preroll-gain[hidden] {

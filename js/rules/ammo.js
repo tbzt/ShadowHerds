@@ -34,6 +34,19 @@
    prix (SR5 : « réduisez les modificateurs de défense et de recul de 1 par
    balle manquante ») — griser le bouton retirerait au MJ un arbitrage que le
    livre lui rend.
+
+   ── AMENDEMENT (lot F5d) : « court » et « vide » ne sont pas la même chose ──
+   Le REFUSÉ ci-dessus visait le tir COURT, et il TIENT : 7 chaînes d'armes SR5
+   ne couvrent pas un de leurs propres modes à chargeur PLEIN — le Walther Palm
+   Pistol le premier, dont la notice décrit précisément ce tir à deux canons en
+   renvoyant à « À court de munitions ». Un verrou tuerait l'arme.
+
+   Mais il ne disait rien du chargeur VIDE, et à zéro la résolution dégénérait :
+   `defense` remontait à 0 pour tous les modes, et l'annonce était « Tir
+   automatique · 0 balle sur 10 » avec la réserve pleine. Le livre interpole
+   entre le plein et le court ; il ne définit rien à zéro, parce qu'à zéro il
+   n'y a pas d'attaque. D'où `res.vide`, qui le DIT — sans refuser le tap : le
+   MJ garde la main, il lit « à sec, le coup ne part pas » et il recharge.
    ============================================================ */
 
 export const Ammo = {
@@ -109,7 +122,13 @@ export const Ammo = {
     const tires = Math.max(0, Math.min(veut, reste));
     const manquants = Math.max(0, veut - tires);
     const court = manquants > 0;
-    const out = { mode, veut, tires, manquants, court, note: mode.note || "" };
+    // ⚠ CHARGEUR VIDE ≠ TIR COURT. Le livre interpole entre le plein et le
+    // court ; il ne définit rien à zéro, parce qu'à zéro il n'y a pas
+    // d'attaque, il y a un clic. Sans ce drapeau, `defense` remontait à 0 pour
+    // tous les modes et l'annonce était « Tir automatique · 0 balle sur 10 »
+    // avec une réserve pleine. On le DIT ; on ne refuse toujours pas le tap.
+    const vide = tires === 0 && veut > 0;
+    const out = { mode, veut, tires, manquants, court, vide, note: mode.note || "" };
 
     if (mode.defense !== undefined && mode.defense !== null) {
       // SR5 : le modificateur remonte vers 0 d'un point par balle manquante.
@@ -127,6 +146,9 @@ export const Ammo = {
       surfaces qui peuvent lancer un tir disent EXACTEMENT la même chose. */
   rollDetail(res) {
     if (!res) return "";
+    // À sec, l'annonce s'arrête là : ni défense, ni SO, ni VD — il n'y a pas de
+    // tir à modifier. Le MJ lit « le coup ne part pas » et recharge.
+    if (res.vide) return `${res.mode.name} — à sec, le coup ne part pas`;
     const bouts = [res.mode.name];
     bouts.push(res.court ? `${res.tires} balle${res.tires > 1 ? "s" : ""} sur ${res.veut}` : `${res.tires} balle${res.tires > 1 ? "s" : ""}`);
     // Signe TYPOGRAPHIQUE (−, U+2212) et non le trait d'union ASCII : c'est la

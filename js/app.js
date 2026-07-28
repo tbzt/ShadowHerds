@@ -636,6 +636,15 @@ document.addEventListener("DOMContentLoaded", () => {
       typeof Encounter !== "undefined"
         ? Encounter.resolveAttack(pnj.id, weapon, modeKey, graftKey)
         : "",
+    // Recharger revient par un HOOK et non par `data-action="ammo-reload"` :
+    // ce dispatch est délégué sur l'overlay du suivi de combat, alors que
+    // `#preroll-panel` vit sur `document.body` — l'événement n'y remonterait
+    // jamais. Jumeau d'`onAttack`, même raison de couche.
+    reloadLabel: (pnj, arme) =>
+      typeof Encounter !== "undefined" ? Encounter.reloadLabel(pnj.id, arme) : "",
+    onReload: (pnj, arme) => {
+      if (typeof Encounter !== "undefined") Encounter.reloadWeapon(pnj.id, arme.key);
+    },
   });
   MagicAction.init({ onPnjChanged });
   ContentModal.bindDelegation();
