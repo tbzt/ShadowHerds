@@ -1034,6 +1034,32 @@ au doigt.
 **Règle — un marqueur ne dépasse pas 24 caractères.** Au-delà, ce n'est plus
 un marqueur : c'est du texte, et il va casser toutes vos grappes.
 
+> **4ᵉ patron identifié au recensement du lot 5 (2026-07-28) — le composite
+> retirable.** `.tag`/`.status`/`.chip` couvrent un marqueur À UN SEUL rôle.
+> Mais `.ms-chip`, `.faction-chip`, `.pjlink-chip`, `.play-cast-chip`,
+> `.scenario-cast-chip` sont des ENVELOPPES contenant elles-mêmes 1-2 enfants
+> cliquables (un nom qui ouvre quelque chose, un ✕ qui retire) — jamais
+> cliquables *elles-mêmes*. Ce n'est pas une incohérence à corriger, c'est un
+> 4ᵉ objet à part entière, avec sa propre loi :
+>
+> **Loi — l'enveloppe ne porte JAMAIS `cursor:pointer` ni les couleurs
+> actionnables de `.chip`. Seuls ses enfants les portent.** Composer `.chip`
+> sur l'enveloppe casse cette loi et produit un faux signal : la puce entière
+> semble cliquable alors que son centre ne fait rien. **Bug réel déjà trouvé
+> deux fois de cette façon** — la collision `.tag-chip` (`8b64216`, l'enveloppe
+> de fiche héritait du `cursor:pointer` de la puce `#hashtag` du chat) et la
+> tentation évitée de migrer `.ms-chip` vers `.chip` (`4249855` : `.ms-chip`
+> lui-même n'a pas `cursor:pointer`, seul son `-x` l'a).
+>
+> **La mise en forme PROPRE de l'enveloppe (bordure neutre, fond teinté en
+> pilule, ou rien du tout) reste bespoke, au cas par cas** — les 5 sites
+> recensés ont chacun une silhouette différente (bordure neutre pour
+> `.play-cast-chip`, fond accent en pilule pour `.scenario-cast-chip`, la
+> recette complète de `.chip` mais sans le curseur pour `.ms-chip`, rien du
+> tout pour `.faction-chip`/`.pjlink-chip`) — rien ne dit qu'ils doivent
+> converger vers UNE silhouette commune, seulement vers la même LOI
+> d'affordance sur leurs enfants.
+
 ### 6.6 Les champs
 
 `forms.css` est sain. Les corrections :
