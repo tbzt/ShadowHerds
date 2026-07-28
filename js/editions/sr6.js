@@ -466,11 +466,16 @@ export const EditionSR6 = {
         "Ajoute la compétence d'Athlétisme à un unique test de défense en combat",
         "Le jet doit être effectué au moment où l'action est utilisée",
       ] },
-      { key: "eviter", name: "Éviter", cost: [{ key: "minor", n: 1 }], timing: "L", lines: [
+      // `maySet` — PROPOSÉ, jamais appliqué : le livre subordonne l'état au
+      // CHOIX du joueur (« Si le personnage choisit de se déplacer de plus de
+      // 2 mètres »). L'app ne connaît pas la distance parcourue, et deviner
+      // serait décider. La puce le rappelle, le MJ pose s'il y a lieu.
+      { key: "eviter", name: "Éviter", cost: [{ key: "minor", n: 1 }], timing: "L",
+        maySet: [{ status: "aterre", level: 1, when: "s'il s'est déplacé de plus de 2 mètres" }], lines: [
         "Hors de son tour : éviter le souffle d'une explosion ou une attaque au gaz",
         "Réaction + Athlétisme − malus d'évitement (point d'impact −6, proche −4, courte −2)",
         "Déplacement d'autant de mètres que de succès, direction choisie avant de connaître la déviation",
-        "Au-delà de 2 mètres, le personnage plonge et subit l'état À terre",
+        "Au-delà de 2 mètres, le personnage plonge et subit l'état À terre",  // → maySet
         "Impossible si Éviter, Se déplacer ou Sprinter a déjà servi ce round — et les interdit pour le reste du round",
       ] },
       { key: "faireTrebucher", name: "Faire trébucher", cost: [{ key: "minor", n: 1 }], timing: "I", combine: "attaquer", lines: [
@@ -490,24 +495,55 @@ export const EditionSR6 = {
         "Connecté à un smartgun prêt : éjecte le chargeur et en engage un autre d'une simple pensée",
         "Exige qu'un nouveau chargeur soit disponible",
       ] },
-      { key: "seCoucher", name: "Se coucher", cost: [{ key: "minor", n: 1 }], timing: "I", lines: [
+      { key: "seCoucher", name: "Se coucher", cost: [{ key: "minor", n: 1 }], timing: "I",
+        sets: [{ status: "aterre", level: 1 }], lines: [
         "Obtient l'état À terre jusqu'à ce qu'il choisisse l'action Se relever",
       ] },
       { key: "seDeplacer", name: "Se déplacer", cost: [{ key: "minor", n: 1 }], timing: "I", quick: true, lines: [
         "Déplacement de 10 mètres",
         "Une seule action Se déplacer par tour de personnage",
       ] },
-      { key: "seJeterParTerre", name: "Se jeter par terre", cost: [{ key: "minor", n: 1 }], timing: "L", lines: [
+      { key: "seJeterParTerre", name: "Se jeter par terre", cost: [{ key: "minor", n: 1 }], timing: "L",
+        sets: [{ status: "aterre", level: 1 }], lines: [
         "+2 dés au test de défense contre une attaque",
         "Obtient l'état À terre",
         "−2 dés à tous les tests de compétences actives jusqu'à la fin de son prochain tour, ou jusqu'à Se relever",
       ] },
-      { key: "seMettreACouvert", name: "Se mettre à couvert", cost: [{ key: "minor", n: 1 }], timing: "I", quick: true, lines: [
+      // ⚠ PLANCHER, pas valeur exacte : le livre octroie « Couvert I, II, III
+      // ou IV » selon la part du corps protégée, et l'app ne voit pas l'abri.
+      // Elle pose le niveau I — le minimum, jamais une largesse — et le MJ
+      // monte d'un cran d'un tap sur la pastille (patron `edge-step`). Même
+      // raisonnement que le −1 mineure de Nauséeux au lot F3.
+      { key: "seMettreACouvert", name: "Se mettre à couvert", cost: [{ key: "minor", n: 1 }], timing: "I", quick: true,
+        sets: [{ status: "couvert", level: 1, note: "niveau I posé — montez d'un cran selon l'abri" }], lines: [
         "Octroie les états Couvert I, II, III ou IV selon l'abri",
         "Le personnage doit agir en fonction des contraintes de cet abri",
       ] },
-      { key: "seRelever", name: "Se relever", cost: [{ key: "minor", n: 1 }], timing: "I", quick: true, lines: [
+      { key: "seRelever", name: "Se relever", cost: [{ key: "minor", n: 1 }], timing: "I", quick: true,
+        sets: [{ status: "aterre", level: 0 }], lines: [
         "Se débarrasse de l'état À terre",
+      ] },
+
+      /* ---- Deux actions que seule la PROSE du livre décrit (lot F4) --------
+         Elles ne figurent pas dans la table p.45 : le livre les écrit dans la
+         description de l'état qu'elles traitent. Les omettre laisserait deux
+         états sans porte de sortie alors que le livre en donne une — c'est le
+         même arbitrage qui a fait entrer les 5 états des suppléments au lot E1,
+         source citée plutôt que masquée. */
+      { key: "retrouverEquilibre", name: "Retrouver l'équilibre", cost: [{ key: "minor", n: 1 }], timing: "I",
+        sets: [{ status: "desequilibre", level: 0 }], lines: [
+        "Retire l'état Déséquilibré, qui persiste sinon",
+        "Source : Cartes d'états A02 (l'action n'est pas dans la table p.45)",
+      ] },
+      // `maySet` et non `sets` : « effectuer un test d'Agilité + Réaction (2) ;
+      // SI VOUS RÉUSSISSEZ, le feu s'éteint ». L'app tend les dés et ne lit pas
+      // le résultat — exactement ce que fait le bilan de round pour Nauséeux
+      // et le Mourant d'Anarchy 1 (lot E3b).
+      { key: "eteindreFlammes", name: "Éteindre les flammes", cost: [{ key: "major", n: 1 }], timing: "I",
+        maySet: [{ status: "enflamme", level: 0, when: "sur une réussite du test" }], lines: [
+        "Test d'Agilité + Réaction (2) — sur une réussite, l'état Enflammé s'éteint",
+        "Sauter dans l'eau y met fin sans aucun test",
+        "Source : description de l'état Enflammé (l'action n'est pas dans la table p.45)",
       ] },
 
       /* ---------------- ACTIONS MAJEURES (13) ---------------- */

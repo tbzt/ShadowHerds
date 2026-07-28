@@ -387,7 +387,13 @@ export const EditionSR5 = {
         "Viser une partie vulnérable de la cible (tir ciblé)",
         "À combiner avec faire feu, lancer une arme ou attaque de mêlée",
       ] },
-      { key: "courir", name: "Courir", cost: [{ key: "free", n: 1 }], lines: [
+      // Le livre : « Courir est une action gratuite, cela impose les
+      // modificateurs de course » — c'est-à-dire l'état « En course », que le
+      // catalogue E1 portait déjà. Rien ne l'ÉTEINT : le personnage cesse de
+      // courir quand le MJ le décide, d'où le ✕ de la pastille et pas une
+      // horloge inventée.
+      { key: "courir", name: "Courir", cost: [{ key: "free", n: 1 }],
+        sets: [{ status: "course", level: 1 }], lines: [
         "Impose les modificateurs de course",
       ] },
       { key: "direPhrase", name: "Dire / envoyer une phrase", cost: [{ key: "free", n: 1 }], lines: [
@@ -405,7 +411,10 @@ export const EditionSR5 = {
       { key: "lacherObjet", name: "Lâcher un objet", cost: [{ key: "free", n: 1 }], lines: [
         "Lâcher un objet tenu — les deux d'un coup s'il en tient un dans chaque main",
       ] },
-      { key: "seJeterAuSol", name: "Se jeter au sol", cost: [{ key: "free", n: 1 }], lines: [
+      // `sets` (F4) + `forbids` sur Surpris (F3b, trou trouvé en faisant F4) :
+      // le livre nomme l'action et la condition, sans rien à arbitrer.
+      { key: "seJeterAuSol", name: "Se jeter au sol", cost: [{ key: "free", n: 1 }],
+        sets: [{ status: "etendu", level: 1 }], lines: [
         "S'agenouiller ou se jeter au sol",
         "Impossible si le personnage est Surpris",
       ] },
@@ -460,11 +469,15 @@ export const EditionSR5 = {
         "Une arme mal rangée peut exiger une action complexe, au jugement du MJ",
         "Petites armes de jet : autant que la moitié de l'Agilité, arrondie au supérieur",
       ] },
-      { key: "seMettreACouvert", name: "Se mettre à couvert", cost: [{ key: "simple", n: 1 }], quick: true, lines: [
+      // ⚠ PLANCHER : SR5 a deux crans (partiel +2, bon couvert +4) et l'app ne
+      // voit pas l'abri. Elle pose le premier, le MJ monte d'un tap.
+      { key: "seMettreACouvert", name: "Se mettre à couvert", cost: [{ key: "simple", n: 1 }], quick: true,
+        sets: [{ status: "couvert", level: 1, note: "couvert partiel posé — passez à II pour un bon couvert" }], lines: [
         "Gagne le bonus de couvert sur les tests de défense tant que le personnage reste derrière",
         "Impossible si le personnage est Surpris",
       ] },
-      { key: "seRelever", name: "Se relever", cost: [{ key: "simple", n: 1 }], quick: true, lines: [
+      { key: "seRelever", name: "Se relever", cost: [{ key: "simple", n: 1 }], quick: true,
+        sets: [{ status: "etendu", level: 0 }], lines: [
         "Un personnage couché ou accroupi se relève",
         "Avec un malus de blessure : test de Constitution + Volonté (2), modificateurs de blessure compris",
       ] },
@@ -702,7 +715,14 @@ export const EditionSR5 = {
       // l'état est toujours posé. Le reste (pas de défense, interdiction
       // d'agir contre les non-surpris) reste du texte : ce sont des
       // arbitrages, pas des soustractions.
+      // INTERDICTIONS CIBLÉES (F3b, complété au lot F4) : le livre écrit « Un
+      // personnage surpris ne peut pas se jeter au sol » (p.165) et « Un
+      // personnage surpris ne peut pas se mettre à couvert » (p.193). Deux
+      // actions nommées, aucune condition — même traitement que Sprinter sous
+      // Électrocuté en SR6. Le verrou des INTERRUPTIONS, lui, reste porté par
+      // `interruptBlockedBy` : ce sont deux surfaces distinctes.
       { key: "surpris", name: "Surpris", levels: 0, quick: true, page: "p.193-194",
+        forbids: [{ actions: ["seJeterAuSol", "seMettreACouvert"], why: "un personnage surpris ne peut ni se jeter au sol ni se mettre à couvert" }],
         until: "pass", initMalus: 10,
         lines: [
           "−10 au score d'initiative",

@@ -1156,10 +1156,25 @@ export const EncounterRenderer = {
       const cher = !Actions.affordable({ cost: res.cost }, budget, used);
       const hors = a.timing === "L" ? " · hors tour" : "";
       const avec = a.combine ? [`À combiner avec : ${a.combine}`] : [];
+      // F4 — ce que l'action fait aux états, dit sur la puce avant le tap.
+      const poses = Actions.sets(a)
+        .map((st) => {
+          const nom = Actions.statusName(r.pnj, st.status);
+          return nom ? `${st.level ? "Pose" : "Retire"} ${nom}${st.note ? ` — ${st.note}` : ""}` : null;
+        })
+        .filter(Boolean);
+      const peut = Actions.maySet(a)
+        .map((m) => {
+          const nom = Actions.statusName(r.pnj, m.status);
+          return nom ? `⚠ ${m.level ? "Peut poser" : "Peut retirer"} ${nom} ${m.when} — à vous de trancher` : null;
+        })
+        .filter(Boolean);
       const surtaxes = res.sources.map((s) => `Surtaxe ${s.name} : +${Actions.costLabel(r.pnj, a, s.cost)} (${s.why})`);
       const doutes = res.warnings.map((w) => `⚠ ${w.name} : +${Actions.costLabel(r.pnj, a, w.cost)} pour ${w.why}. À vous de trancher : l'app ne l'ajoute pas.`);
       const info = [
         `${a.name} — ${Actions.costLabel(r.pnj, a, res.cost)}${hors}`,
+        ...poses,
+        ...peut,
         ...surtaxes,
         ...doutes,
         ...avec,

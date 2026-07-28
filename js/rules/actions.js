@@ -307,6 +307,54 @@ export const Actions = {
     return this.catalog(pnj).filter((a) => a.timing === "L");
   },
 
+  /* ============================================================
+     POSE ET RETRAIT D'ÉTAT (lot F4) — ce que le livre écrit dans la même phrase.
+
+     Le livre ne sépare pas l'action de son effet : « Se coucher : il obtient
+     alors l'état À terre », « Se relever : se débarrasse de l'état À terre ».
+     L'app le faisait en deux gestes — jouer l'action, puis poser l'état à la
+     main — et le second s'oubliait.
+
+     `sets`   — la conséquence est MÉCANIQUE : le livre l'écrit sans jet ni
+                choix. Appliquée, et dite.
+     `maySet` — la conséquence dépend d'un JET (« si vous réussissez, le feu
+                s'éteint ») ou d'un CHOIX (« s'il choisit de se déplacer de plus
+                de 2 mètres »). PROPOSÉE, jamais appliquée : c'est la même
+                frontière qu'E3b, qui rappelle un test et tend les dés sans
+                jamais lire le résultat.
+
+     ⚠ Sur la règle « l'app ne pose jamais un état d'elle-même » : elle n'est pas
+     enfreinte, elle est précisée — cf. l'amendement en tête de `statuses.js`.
+     Le MJ pose toujours ; il le fait par le nom de l'action au lieu du nom de
+     l'état. Ce que l'app continue de ne JAMAIS faire, c'est déduire un état
+     d'une situation qu'elle observe.
+
+     ⚠ Un niveau posé par une action est un PLANCHER quand le livre en laisse le
+     choix (« Couvert I, II, III ou IV » selon l'abri) : l'app pose le minimum,
+     le MJ monte d'un tap. Jamais l'inverse — elle ne peut pas accorder plus que
+     le livre. Même raisonnement que le −1 mineure de Nauséeux (F3).
+     ============================================================ */
+
+  /** Les états qu'une action pose ou retire MÉCANIQUEMENT.
+      → [{ status, level, note }] */
+  sets(entry) {
+    return (entry && entry.sets) || [];
+  },
+
+  /** Ceux qu'elle pose ou retire SOUS CONDITION — proposés, jamais appliqués.
+      → [{ status, level, when }] */
+  maySet(entry) {
+    return (entry && entry.maySet) || [];
+  },
+
+  /** Nom lisible d'un état visé, pour l'annonce. Résolu contre le catalogue de
+      l'édition : une clé inconnue (édition sans cet état) est ignorée par
+      l'appelant, jamais affichée nue. */
+  statusName(pnj, key) {
+    const s = Statuses.find(pnj, key);
+    return s ? s.name : null;
+  },
+
   /** Cette action est-elle un TIR ? Lu par le recul progressif SR5 (lot F2) :
       le livre p.178 remet le cumul à zéro dès que le personnage « dépense une
       action simple ou complexe pour AUTRE CHOSE que faire feu ». C'est

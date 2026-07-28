@@ -29,11 +29,30 @@
    - pas de notation = état binaire → `levels: 0`.
 
    ── Ce que ce module ne fait PAS ────────────────────────────────────────
-   Il ne POSE jamais un état de lui-même (garde-fou R4 « pas d'automatisation
-   complète du combat » + (e) « informer, jamais décider ») : le MJ pose, l'app
-   compte. Et au lot E1 il n'applique aucun effet — les états sont AFFICHÉS et
-   SOURCÉS, comme `ActorEffects`. Les `apply`/`revert` du catalogue arriveront
-   au lot E3, et passeront par `Effects.transition` déjà branché ici.
+   Il ne POSE jamais un état DE SA PROPRE INITIATIVE (garde-fou R4 « pas
+   d'automatisation complète du combat » + (e) « informer, jamais décider ») :
+   le MJ pose, l'app compte. Et au lot E1 il n'applique aucun effet — les états
+   sont AFFICHÉS et SOURCÉS, comme `ActorEffects`. Les `apply`/`revert` du
+   catalogue arrivent au lot E3, et passent par `Effects.transition` déjà
+   branché ici.
+
+   ⚠ AMENDEMENT AU LOT F4. Cette règle disait « jamais de lui-même », tout
+   court. Elle a été précisée le jour où les ACTIONS ont eu un nom (F1), parce
+   que le livre écrit noir sur blanc « Se coucher : il obtient alors l'état
+   À terre » et « Se relever : se débarrasse de l'état À terre ».
+
+   Poser À terre quand le MJ vient de taper « Se coucher » n'est pas une
+   initiative de l'app : c'est la CONSÉQUENCE DIRECTE d'un geste que le MJ vient
+   de faire, écrite dans la même phrase du livre que l'action elle-même. Le MJ
+   pose toujours — simplement, il le fait maintenant par le nom de l'action
+   plutôt que par le nom de l'état.
+
+   La frontière n'a donc pas bougé, elle s'est explicitée : l'app ne DÉDUIT
+   jamais un état d'une situation qu'elle observe (« il a pris 6 cases, il doit
+   être Sonné » — jamais). Elle applique ce qu'un geste du MJ entraîne
+   mécaniquement. Tout ce qui reste soumis à un jet ou à un choix (« Éviter :
+   S'IL CHOISIT de se déplacer de plus de 2 mètres, il subit À terre ») est
+   PROPOSÉ, pas appliqué — cf. `maySet` côté `actionModel`.
    ============================================================ */
 import { Effects } from "./effects.js";
 

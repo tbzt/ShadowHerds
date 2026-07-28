@@ -721,6 +721,25 @@ export const Encounter = {
       if (!silent) toast(`Recul remis à zéro — ${entry.name}`);
     }
 
+    // F4 — les états que l'action pose ou retire mécaniquement. Passe par
+    // `Statuses.set`, donc par les mêmes gardes que la pastille : plafond du
+    // contrat, exclusions du livre, `Effects.transition` ordonnée. Un état
+    // inconnu de l'édition du PNJ est sauté sans bruit (une scène peut mêler
+    // des éditions).
+    const poses = [];
+    for (const st of Actions.sets(entry)) {
+      const nom = Actions.statusName(pnj, st.status);
+      if (!nom) continue;
+      const avant = Statuses.level(pnj, st.status);
+      const apres = Statuses.set(pnj, st.status, st.level);
+      if (apres === avant) continue;
+      poses.push(st.level ? `${nom}${st.note ? ` (${st.note})` : ""}` : `retire ${nom}`);
+    }
+    if (poses.length) {
+      Shadows.save();
+      CardRenderer.refresh(pnj); // la ligne d'états de la carte, tout de suite
+    }
+
     if (!silent) {
       const cout = Actions.costLabel(pnj, entry, res.cost);
       // Un coût ne monte JAMAIS sans nom — même règle que le badge ⊘ des malus
@@ -730,7 +749,17 @@ export const Encounter = {
       const avert = res.warnings.length
         ? ` ⚠ ${res.warnings.map((w) => `${w.name} : +${Actions.costLabel(pnj, entry, w.cost)} pour ${w.why}`).join(" · ")}`
         : "";
-      toast(`${entry.name} — ${pnj.name} (${over ? "budget dépassé — " : ""}${cout}${dus})${avert}`);
+      // F4 — ce que l'action a posé, et ce qu'elle POURRAIT poser si le jet ou
+      // le déplacement le veut. Le second n'est jamais appliqué.
+      const etats = poses.length ? ` · ${poses.join(", ")}` : "";
+      const peut = Actions.maySet(entry)
+        .map((m) => {
+          const nom = Actions.statusName(pnj, m.status);
+          return nom ? `${m.level ? "pose" : "retire"} ${nom} ${m.when}` : null;
+        })
+        .filter(Boolean);
+      const sous = peut.length ? ` ⚠ ${peut.join(" · ")} — à vous de trancher` : "";
+      toast(`${entry.name} — ${pnj.name} (${over ? "budget dépassé — " : ""}${cout}${dus})${etats}${avert}${sous}`);
     }
     this._commit();
     return over;

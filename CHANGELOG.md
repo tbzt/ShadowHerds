@@ -12,6 +12,47 @@ commit.
 
 ## [Non publié]
 
+## [1.132.0] — 2026-07-28
+
+### Ajouté
+
+- **Une action qui pose un état le pose vraiment.** Le livre ne sépare pas les
+  deux — « Se coucher : il obtient alors l'état À terre », « Se relever : se
+  débarrasse de l'état À terre » — mais l'app le faisait en deux gestes, et le
+  second s'oubliait. Neuf actions le font désormais d'un tap :
+  - **SR6** — Se coucher et Se jeter par terre posent **À terre**, Se relever le
+    retire, Se mettre à couvert pose **Couvert**.
+  - **SR5** — Se jeter au sol pose **Étendu**, Se relever le retire, Se mettre à
+    couvert pose **Couvert**, Courir pose **En course**.
+- **Deux actions que seule la prose du livre décrit** entrent au catalogue SR6,
+  parce que sans elles deux états n'avaient pas de porte de sortie :
+  **Retrouver l'équilibre** (1 mineure, retire Déséquilibré) et **Éteindre les
+  flammes** (1 majeure + test Agilité + Réaction (2)). Leur source est citée :
+  elles ne figurent pas dans la table p.45.
+- **Ce qui dépend d'un jet ou d'un choix reste proposé.** « Éviter » ne pose
+  À terre que **si le personnage choisit de se déplacer de plus de 2 mètres** ;
+  « Éteindre les flammes » n'éteint le feu que **sur une réussite**. Dans les
+  deux cas l'app le rappelle et ne touche à rien — comme le bilan de round, qui
+  tend les dés sans jamais lire le résultat.
+
+### Corrigé
+
+- **SR5 : un personnage Surpris ne peut ni se jeter au sol ni se mettre à
+  couvert** (p.165, p.193). Les deux puces sont barrées avec le motif, comme
+  Sprinter sous Électrocuté en SR6. C'est un manque du lot précédent, trouvé en
+  faisant celui-ci.
+
+### Note
+
+Quand le livre laisse le **choix du niveau** — « Couvert I, II, III ou IV » selon
+l'abri — l'app pose le **minimum** et vous montez d'un tap sur la pastille. Elle
+ne peut jamais accorder plus que le livre, seulement moins.
+
+La règle « l'app ne pose jamais un état d'elle-même » n'est pas enfreinte, elle
+est **précisée** : le meneur pose toujours, il le fait maintenant par le nom de
+l'action au lieu du nom de l'état. Ce que l'app continue de ne jamais faire,
+c'est **déduire** un état d'une situation qu'elle observe.
+
 ## [1.131.0] — 2026-07-28
 
 ### Ajouté
