@@ -1394,7 +1394,26 @@ export const CardRenderer = {
   defensePool(pnj, deps = CardRenderer.liveDeps()) {
     if (!pnj) return 0;
     const base = (pnj.defense || 0) - Utils.dicePenalty(pnj, pnj.edition);
-    return Math.max(0, base + this.fullDefenseBonus(pnj, deps) - this.multiDefenseMalus(pnj, deps));
+    // F5r — les états qui modifient la défense y entrent enfin (Couvert +2/+4,
+    // En course +2, Étendu −2). Ils étaient déclarés au catalogue et lus par
+    // personne : la pastille affichait la même réserve à couvert et à
+    // découvert.
+    return Math.max(0, base + this.fullDefenseBonus(pnj, deps) + Statuses.defenseDice(pnj) - this.multiDefenseMalus(pnj, deps));
+  },
+
+  /** La réserve de défense DÉCOMPOSÉE, pour que le chiffre ne bouge jamais
+      sans nom — « tracé au point de consommation », comme le malus global.
+      → chaîne prête pour un `title`, vide si rien ne corrige la base. */
+  defenseBreakdown(pnj, deps = CardRenderer.liveDeps()) {
+    const parts = [];
+    const fd = this.fullDefenseBonus(pnj, deps);
+    if (fd) parts.push(`défense totale +${fd}`);
+    for (const s of Statuses.defenseSources(pnj)) {
+      parts.push(`${s.name} ${s.value >= 0 ? "+" : "−"}${Math.abs(s.value)}`);
+    }
+    const md = this.multiDefenseMalus(pnj, deps);
+    if (md) parts.push(`défenses multiples −${md}`);
+    return parts.join(" · ");
   },
 
   /** Malus de DÉFENSES MULTIPLES déjà accumulé (lot E4, SR5 p.189) — magnitude

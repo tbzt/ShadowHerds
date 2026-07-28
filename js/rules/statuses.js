@@ -203,6 +203,53 @@ export const Statuses = {
     return n;
   },
 
+  /** Modificateur de RÉSERVE DE DÉFENSE cumulé, SIGNÉ (+ bonus, − malus).
+
+      ⚠ QUATRIÈME LECTURE AUTOMATIQUE, ajoutée au lot F5r — la liste ci-dessus
+      en comptait trois. Elle passe les mêmes portes que les autres : la valeur
+      EXISTE déjà dans l'app (`CardRenderer.defensePool`, qui corrige déjà la
+      réserve de la Défense totale et des défenses multiples), et n'entrent ici
+      que les modificateurs que le livre écrit SANS CONDITION.
+
+      Trois états SR5 y passent, et le tri est le même que pour `globalDice` :
+        · Couvert `perLevel: 2` — « I +2 dés en défense, II +4 » ;
+        · En course `flat: 2` — « +2 dés en défense contre les attaques qui le
+          visent » (son −2 aux attaques à distance, lui, reste du texte) ;
+        · Étendu `flat: -2` — « −2 dés aux tests de défense ».
+
+      N'y passent PAS, et c'est le même motif qu'« Aveuglé » en SR6 :
+        · En mêlée « −3 en défense CONTRE UNE ATTAQUE À DISTANCE » — l'app ne
+          sait pas de quoi vient l'attaque, l'appliquer serait faux en mêlée ;
+        · Surpris « aucun test de défense possible » — une interdiction, pas un
+          modificateur : la trancher revient au MJ.
+      Les deux restent affichés et sourcés sur leur puce.
+
+      SR5 seul aujourd'hui : SR6 défend par un SEUIL (SD), que la doctrine E3
+      laisse explicitement hors automatisation. */
+  defenseDice(pnj) {
+    let n = 0;
+    for (const s of this.active(pnj)) {
+      const d = s.defenseDice;
+      if (!d) continue;
+      n += (d.flat || 0) + (d.perLevel || 0) * s.level;
+    }
+    return n;
+  },
+
+  /** Les états qui EXPLIQUENT le modificateur de défense courant — même
+      discipline que `globalDiceSources` : un chiffre ne bouge jamais sans nom.
+      → [{ name, value }], valeurs signées. */
+  defenseSources(pnj) {
+    const out = [];
+    for (const s of this.active(pnj)) {
+      const d = s.defenseDice;
+      if (!d) continue;
+      const v = (d.flat || 0) + (d.perLevel || 0) * s.level;
+      if (v) out.push({ name: s.name, value: v });
+    }
+    return out;
+  },
+
   /** Malus d'initiative cumulé, en magnitude positive. Lu par `_rollInit` au
       moment où le score se calcule — et surtout PAS par `adjustInit`, qui est
       le stepper ±1 à la main : un malus posé là serait effacé au relancement

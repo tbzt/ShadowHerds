@@ -769,6 +769,7 @@ export const EditionSR5 = {
     unit: "round",
     catalog: [
       { key: "etendu", name: "Étendu", levels: 0, quick: true, page: "p.483",
+        defenseDice: { flat: -2 },
         lines: [
           "−2 dés aux tests de défense",
           "+1 dé à l'attaquant en mêlée · −1 dé si l'étendu attaque en mêlée",
@@ -777,6 +778,8 @@ export const EditionSR5 = {
       // Couvert partiel (+2) et Bon couvert (+4) : deux crans, pas quatre —
       // SR5 n'a pas l'échelle I-IV de SR6.
       { key: "couvert", name: "Couvert", levels: 2, quick: true, page: "p.189",
+        // `perLevel` colle au livre sans table : I → +2, II → +4.
+        defenseDice: { perLevel: 2 },
         lines: [
           "I — Couvert partiel : +2 dés en défense",
           "II — Bon couvert : +4 dés en défense",
@@ -786,6 +789,12 @@ export const EditionSR5 = {
       // frappe les attaques à distance, pas toutes les actions. Le +2 en
       // défense, lui, est général (p.483).
       { key: "course", name: "En course", levels: 0, quick: true, page: "p.179",
+        // ⚠ Seul le +2 en DÉFENSE passe en automatique. Le −2 de la même
+        // entrée frappe les ATTAQUES À DISTANCE de celui qui court (table du
+        // chapitre Combat à distance) : l'app ne sait pas si le jet qui part
+        // est une attaque à distance, et un −2 global serait faux partout
+        // ailleurs. Il reste affiché et sourcé, comme « Aveuglé » l'est en SR6.
+        defenseDice: { flat: 2 },
         lines: [
           "−2 dés aux ATTAQUES À DISTANCE de celui qui court",
           "+2 dés en défense contre les attaques qui le visent",

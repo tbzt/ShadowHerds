@@ -103,9 +103,12 @@ Object.assign(CardRenderer, {
     // Réserve de défense : passe par le point unique (E0) — il ajoute le
     // +Volonté d'une Défense totale déclarée, que cette pastille ignorait
     // alors que le bouton ⛉ du cockpit l'affichait.
-    const fdBonus5 = this.fullDefenseBonus(pnj, deps);
+    // L'infobulle NOMME tout ce qui corrige la base — défense totale, états
+    // posés, défenses multiples. Elle n'annonçait que la défense totale, alors
+    // que trois autres sources pouvaient déjà bouger le chiffre.
+    const detail5 = this.defenseBreakdown(pnj, deps);
     combatBody += this._rollPill("Défense", this.defensePool(pnj, deps), {
-      title: `Test de défense : Réaction + Intuition${fdBonus5 ? ` · défense totale (+${fdBonus5})` : ""}`,
+      title: `Test de défense : Réaction + Intuition${detail5 ? ` · ${detail5}` : ""}`,
       glyph: "⛉",
       key: "defense",
       pnj,
