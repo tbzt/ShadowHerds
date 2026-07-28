@@ -147,7 +147,7 @@
 .cg-narrative-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .cg-review-errors {
   display: flex;
@@ -250,7 +250,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   margin: 4px 0 2px 1.5em;
 }
 .cg-spec-chip {
@@ -333,7 +333,7 @@
 .cg-preset-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 /* Boutons de démarrage rapide : tuiles à colonnes égales (grille auto-fill) —
    elles s'alignent et remplissent la largeur au lieu de se ranger en briques de
@@ -341,7 +341,7 @@
 .cg-preset-btns {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .cg-error-link {
   cursor: pointer;

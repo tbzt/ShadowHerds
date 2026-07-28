@@ -10,7 +10,7 @@
   margin-bottom: 9px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .zone-eyebrow::before {
   content: "";
@@ -29,7 +29,7 @@
 }
 .combat-row {
   display: flex;
-  gap: 6px;
+  gap: var(--sp-2);
   flex-wrap: wrap;
   align-items: center;
 }
@@ -48,7 +48,7 @@
   margin-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .combat-drugs {
   margin-top: var(--sp-2);
@@ -483,7 +483,7 @@
 .summon-types {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  gap: var(--sp-2);
   margin-top: var(--sp-3);
 }
 .summon-type-btn {
@@ -631,7 +631,7 @@
 .cyberdeck-more {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .cyberdeck-more-summary {
   cursor: pointer;
@@ -666,7 +666,7 @@
 .cyberdeck-more-body {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--sp-2);
   margin-top: 6px;
 }
 .spell-line .spell-main {

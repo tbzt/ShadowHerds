@@ -465,7 +465,7 @@
 .graph-node-color {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--sp-2);
   margin-bottom: 10px;
 }
 
@@ -504,7 +504,7 @@
 }
 .graph-dir-row {
   display: flex;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .graph-dir-btn {
   flex: 1 1 0;
@@ -569,7 +569,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--sp-2);
   margin: 2px 0 12px;
 }
 
@@ -670,7 +670,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   padding: 8px 12px;
   border-bottom: 1px solid var(--border, #2a3a49);
 }
@@ -819,7 +819,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .scenario-robust-item {
   padding: 6px 9px;
@@ -861,7 +861,7 @@
 .scenario-clock-head { display: flex; gap: var(--sp-2); align-items: flex-start; }
 .scenario-clock-fields { flex: 1; display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
 .scenario-clock-title { width: 100%; }
-.scenario-clock-meta { display: flex; gap: 6px; align-items: center; }
+.scenario-clock-meta { display: flex; gap: var(--sp-2); align-items: center; }
 .scenario-clock-seg { display: flex; gap: var(--sp-1); align-items: center; font-size: 0.76rem; color: var(--text-dim, #9fb0c0); }
 .scenario-clock-seg input { width: 46px; }
 .scenario-clock-del {
@@ -893,7 +893,7 @@
   padding: 8px;
   margin-bottom: 8px;
 }
-.scenario-front-head { display: flex; gap: 6px; align-items: center; }
+.scenario-front-head { display: flex; gap: var(--sp-2); align-items: center; }
 .scenario-front-glyph { color: var(--danger, #d05050); }
 .scenario-front-title { flex: 1; min-width: 0; }
 .scenario-front-head select { max-width: 40%; }
@@ -935,7 +935,7 @@
 }
 .scenario-tl-fact {
   display: flex;
-  gap: 6px;
+  gap: var(--sp-2);
   align-items: baseline;
   padding: 4px 6px;
   border-left: 2px solid var(--border, #2a3a49);

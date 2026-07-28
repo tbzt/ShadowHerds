@@ -49,7 +49,7 @@
 .contact-stat-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .contact-stat-label {
   font-family: var(--font-mono);

@@ -821,7 +821,7 @@ select optgroup {
 .ctx-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   width: 100%;
   padding: 6px var(--sp-2);
   padding-left: calc(var(--sp-2) + var(--depth, 0) * 14px);
@@ -980,7 +980,7 @@ select optgroup {
 .dice-roll-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   height: 28px;
   padding: 0 var(--sp-3);
   background: var(--accent);

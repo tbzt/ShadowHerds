@@ -94,7 +94,7 @@
 }
 .server-attrs {
   display: flex;
-  gap: 6px;
+  gap: var(--sp-2);
   flex-wrap: wrap;
   margin-bottom: 5px;
 }
@@ -230,7 +230,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--sp-2);
   margin-bottom: var(--sp-2);
 }
 /* Le libellé « Round N » et le ↺ (btn-icon) restent compacts ; les deux boutons
@@ -273,7 +273,7 @@
 .ic-rows {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--sp-2);
   margin-bottom: var(--sp-2);
 }
 .ic-row {
@@ -294,7 +294,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--sp-2);
   margin-bottom: 2px;
 }
 .ic-row-name {
@@ -549,7 +549,7 @@
 .server-edit-row {
   display: flex;
   align-items: flex-end;
-  gap: 6px;
+  gap: var(--sp-2);
   flex-wrap: wrap;
 }
 .server-edit-attr {
@@ -584,7 +584,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: var(--sp-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 3px 7px;

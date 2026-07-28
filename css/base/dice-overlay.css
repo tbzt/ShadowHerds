@@ -440,7 +440,7 @@
   margin-top: 0.6rem;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--sp-2);
   padding: 0.3rem 0.8rem;
   background: transparent;
   border: 1px solid var(--accent);
@@ -477,7 +477,7 @@
 .dice-spell-rerolls {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: var(--sp-2);
   justify-content: center;
   margin-top: 0.6rem;
 }
@@ -665,7 +665,7 @@
 .risk-levels {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.4rem;
+  gap: var(--sp-2);
 }
 .risk-level-btn {
   background: var(--bg-mid);
@@ -707,7 +707,7 @@
 .risk-slider-row {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--sp-2);
 }
 .risk-slider-label {
   font-family: var(--font-mono);
@@ -717,7 +717,7 @@
   color: var(--text-dim);
   display: flex;
   align-items: baseline;
-  gap: 0.4rem;
+  gap: var(--sp-2);
 }
 .risk-slider-val {
   font-family: var(--font-display);
@@ -809,7 +809,7 @@ input[type="range"]#risk-dice-slider {
 .risk-adv-row {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--sp-2);
 }
 .risk-adv-label {
   font-family: var(--font-mono);
@@ -821,7 +821,7 @@ input[type="range"]#risk-dice-slider {
 .risk-adv-steps {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.4rem;
+  gap: var(--sp-2);
 }
 .risk-adv-btn {
   background: var(--bg-mid);
@@ -907,7 +907,7 @@ input[type="range"]#risk-dice-slider {
 #preroll-options {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--sp-2);
 }
 #preroll-options .risk-level-btn {
   align-items: flex-start;
@@ -923,7 +923,7 @@ input[type="range"]#risk-dice-slider {
 #preroll-gain {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--sp-2);
   padding: var(--sp-2) 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);

@@ -50,7 +50,7 @@
 .radio-group {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--sp-2);
 }
 .radio-label {
   display: flex;

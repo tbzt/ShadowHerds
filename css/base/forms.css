@@ -157,7 +157,7 @@
 .ss-control {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--sp-2);
   min-height: 2rem;
   background: var(--bg-card);
   border: 1px solid var(--border);

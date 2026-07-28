@@ -106,7 +106,7 @@
 .shadows-sidebar-header {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--sp-2);
   padding: 0.7rem var(--sp-3) var(--sp-2);
   border-bottom: 1px solid var(--border);
 }
@@ -129,7 +129,7 @@
 .group-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   padding: 0.45rem var(--sp-3);
   cursor: pointer;
   font-family: var(--font-display);
@@ -363,7 +363,7 @@
 .play-run-name {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   flex: 1;
   min-width: 0;
   padding: 4px var(--sp-2);
@@ -543,7 +543,7 @@
 .play-motor-bits {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   flex-shrink: 0;
   font-size: var(--fs-2xs);
 }
@@ -815,7 +815,7 @@
 .play-trame-exits {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .play-trame-exit {
   padding: 4px 10px;
@@ -840,7 +840,7 @@
 .play-trame-pression {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--sp-2);
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--border);
@@ -898,7 +898,7 @@
 .play-front-head {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   font-size: var(--fs-sm, 0.85rem);
   font-weight: 600;
 }
@@ -1071,7 +1071,7 @@
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   padding: 6px 12px;
   border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
   border-radius: var(--radius-pill);
@@ -1345,7 +1345,7 @@
 .play-scene-head {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .play-scene-icon {
   color: var(--accent);
@@ -1378,7 +1378,7 @@
 .play-cast-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .play-cast-chip {
   display: inline-flex;
@@ -1443,7 +1443,7 @@
 .play-cast-fsum {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   padding: 4px 8px;
   min-height: 32px;
   border: 1px solid var(--border-ui, var(--border));
@@ -1481,7 +1481,7 @@
 .play-cast-fmembers {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--sp-2);
   margin-top: 6px;
   padding-left: 12px;
   border-left: 2px solid var(--border-ui, var(--border));
@@ -2465,7 +2465,7 @@ body.reordering .reorder-handle {
 .debrief-team {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: var(--sp-2);
   margin-bottom: 0.85rem;
 }
 .debrief-chip {
@@ -2501,7 +2501,7 @@ body.reordering .reorder-handle {
 .debrief-tracks {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--sp-2);
 }
 .debrief-row {
   display: flex;
@@ -2565,7 +2565,7 @@ body.reordering .reorder-handle {
 .debrief-beat {
   display: flex;
   align-items: baseline;
-  gap: 0.4rem;
+  gap: var(--sp-2);
   padding: 0.15rem 0 0.15rem 0.5rem;
   border-left: 2px solid var(--border);
   font-size: var(--fs-sm);
