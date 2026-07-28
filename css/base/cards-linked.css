@@ -221,8 +221,12 @@
 }
 
 /* ---- Esprits invoqués ---- */
-.spirit-card {
-  border-left-color: var(--accent2);
+/* D6 : bug trouvé en cadrant la carte canonique — cette règle ciblait le
+   FOOTPRINT (.pnj-card), qui ne porte aucune bordure (ni style ni largeur),
+   donc la couleur ne s'affichait jamais. Retargetée sur le frame, même
+   patron que .vehicle-card juste en dessous. */
+.pnj-card.spirit-card .pnj-card-frame {
+  border-left: 3px solid var(--accent2);
 }
 .spirit-header .pnj-name {
   font-size: var(--fs-md);
