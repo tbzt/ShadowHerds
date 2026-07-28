@@ -1,13 +1,21 @@
 /* ============================================================
    RUN CARD — carte de run (js/widgets/runrenderer.js)
    ============================================================ */
+/* D6 (réconciliation) : mêmes 3 écarts que .server-card corrigés — voir le
+   commentaire détaillé dans matrix.css. */
 .run-card {
-  background: var(--bg-card);
+  position: relative;
+  background: var(--bg-raised);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  clip-path: var(--card-clip);
   width: 320px;
   overflow: hidden;
   animation: cardIn 0.3s ease;
+  transition: filter var(--dur-base);
+}
+.run-card:hover {
+  filter: drop-shadow(var(--elev-2)) drop-shadow(0 0 7px var(--glow));
 }
 .run-card::before {
   content: "";
