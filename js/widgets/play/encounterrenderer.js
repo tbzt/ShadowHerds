@@ -8,6 +8,8 @@
    Toutes les interactions sont câblées par Encounter (contrôleur),
    jamais ici.
    ============================================================ */
+import { Actions } from "../../rules/actions.js";
+import { Ammo } from "../../rules/ammo.js";
 import { AnarchyAtouts } from "../../rules/anarchyatouts.js";
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Cyberdeck } from "../../rules/cyberdeck.js";
@@ -17,6 +19,7 @@ import { Matrix } from "../../rules/matrix.js";
 import { ServerRenderer } from "./serverrenderer.js";
 import { TopologyGen } from "../../rules/topologygen.js";
 import { Utils } from "../../core/utils.js";
+import { WeaponRoll } from "../../rules/weaponroll.js";
 
 export const EncounterRenderer = {
   /** rows: [{ pnjId, init, hasActed, note, kind?, pnj }] — pnj peut être null
@@ -1023,8 +1026,11 @@ export const EncounterRenderer = {
     const edgeHtml = model && model.edgeTracker ? this._activeEdge(r) : "";
     const anarchyHtml = model && model.anarchyPoints ? this._activeAnarchy(r) : "";
     const actionsHtml = App.editionModule && App.editionModule.actionBudget ? this._activeActions(r) : "";
-    if (!edgeHtml && !anarchyHtml && !actionsHtml) return "";
-    return `<div class="encounter-economy">${edgeHtml}${anarchyHtml}${actionsHtml}</div>`;
+    // F2 — les munitions rejoignent l'économie du TOUR : un chargeur se vide au
+    // rythme des actions, pas des scènes, et le recul s'y accumule.
+    const ammoHtml = r.pnj ? this._activeAmmo(r) : "";
+    if (!edgeHtml && !anarchyHtml && !actionsHtml && !ammoHtml) return "";
+    return `<div class="encounter-economy">${edgeHtml}${anarchyHtml}${actionsHtml}${ammoHtml}</div>`;
   },
 
   /** Rangée Points d'Anarchy (Anarchy 2.0) : compteur de scène par combattant,
@@ -1085,17 +1091,13 @@ export const EncounterRenderer = {
       supplémentaire — extension par état (jamais un `if App.edition`, le
       flag ne s'active que sur les PNJ Anarchy 2.0 dotés de l'atout). */
   _activeActions(r) {
-    const rawBudget = App.editionModule.actionBudget(r.pnj);
-    if (!rawBudget || !rawBudget.length) return "";
-    // E5 — le budget affiché intègre les ÉCHANGES du tour (SR6 p.42). Le delta
-    // vit dans l'entrée de scène (`actionsTraded`), `actionBudget` reste la
-    // vérité de l'édition : les jetons montrent ce que le MJ a fait de son
-    // budget, pas un budget réécrit.
-    const traded = r.actionsTraded || {};
-    const echange = rawBudget.map((g) => ({ ...g, total: Math.max(0, g.total + (traded[g.key] || 0)) }));
-    const budget = r.narrationBonus
-      ? echange.map((g, i) => (i === echange.length - 1 ? { ...g, total: g.total + 1 } : g))
-      : echange;
+    // E5 — le budget affiché intègre les ÉCHANGES du tour (SR6 p.42) et le
+    // bonus de narration. Le calcul vit dans `Encounter.effectiveBudget` et
+    // NULLE PART AILLEURS : au lot F1, le contrôleur en a besoin pour dire si
+    // une action nommée dépasse le budget, et deux calculs jumeaux auraient
+    // fini par diverger (la leçon d'E0).
+    const budget = Encounter.effectiveBudget(r.pnjId);
+    if (!budget || !budget.length) return "";
     const used = r.actionsUsed || {};
     const groups = budget
       .map((g) => {
@@ -1107,7 +1109,218 @@ export const EncounterRenderer = {
         </span>`;
       })
       .join("");
-    return `<div class="encounter-actions" title="Actions du tour (économie de l'édition — taper pour consommer)">${groups}${this._actionTrades(r, budget)}</div>`;
+    return `<div class="encounter-actions" title="Actions du tour (économie de l'édition — taper pour consommer)">${groups}${this._actionTrades(r, budget)}${this._actionPick(r, budget)}</div>`;
+  },
+
+  /* ========================================================
+     FEUILLE D'ACTIONS (lot F1) — le catalogue rejoint le compteur.
+
+     ANCRAGE. La rangée de jetons, pas la console de réaction. Le critère était
+     déjà posé par E4 et il ne bouge pas : la console porte ce qui NE COÛTE PAS
+     DE JETON (défense, encaissement, interruptions SR5, qui se paient en score
+     d'initiative) ; la rangée porte le budget. Une action qui se paie en jetons
+     va là où le budget se manipule — y compris les onze actions SR6 `timing:"L"`,
+     déclarables hors de son tour mais payées en mineures/majeures.
+
+     FORME. Copie conforme de `.status-sheet` (CardRenderer._statusSheet) : deux
+     étages (accès direct, puis « tous… »), mêmes `.tag`, une seule feuille
+     ouverte à la fois. Aucun composant neuf — le geste est déjà dans les doigts
+     du MJ depuis le lot E1.
+
+     COULEUR. Aucune, même arbitrage que les états : le cockpit a dépensé ses
+     quatre rôles. Une action se lit par son nom et son coût.
+     ======================================================== */
+
+  /** Le « ＋ » et la feuille dépliable. Rien si l'édition n'a pas de catalogue
+      (Anarchy : `actionModel` absent → la surface disparaît d'elle-même, comme
+      la ligne d'états). */
+  _actionPick(r, budget) {
+    const cat = Actions.catalog(r.pnj);
+    if (!cat.length) return "";
+    const plus = `<button type="button" class="btn-icon-tiny action-trade action-add" data-action="action-sheet" data-id="${r.pnjId}" aria-expanded="false" title="Jouer une action nommée — elle débite son propre coût" aria-label="Jouer une action">＋</button>`;
+    return `${plus}${this._actionSheet(r, budget)}`;
+  },
+
+  _actionSheet(r, budget) {
+    const used = r.actionsUsed || {};
+    const puce = (a) => {
+      // « Payable avec ce qui reste ? » est une INFORMATION, pas un verrou : la
+      // puce se ternit, elle ne se désactive pas. `_consumeAction` débite
+      // au-delà du budget et le dit — le MJ a le droit de savoir qu'il déborde
+      // et de déborder quand même (garde-fou (e)).
+      const cher = !Actions.affordable(a, budget, used);
+      const hors = a.timing === "L" ? " · hors tour" : "";
+      const avec = a.combine ? [`À combiner avec : ${a.combine}`] : [];
+      const info = [
+        `${a.name} — ${Actions.costLabel(r.pnj, a)}${hors}`,
+        ...avec,
+        ...(a.lines || []),
+      ].join("\n• ");
+      return `<button type="button" class="tag status-pick action-pick${cher ? " is-over" : ""}${a.timing === "L" ? " is-free" : ""}" data-action="action-use" data-id="${r.pnjId}" data-key="${a.key}" title="${Utils.escHtml(info)}">${Utils.escHtml(a.name)}</button>`;
+    };
+    const rapides = Actions.quick(r.pnj).map(puce).join("");
+    const reste = Actions.rest(r.pnj);
+    // ⚠ L'ouverture SURVIT au re-rendu, contrairement à la feuille d'états.
+    // Raison : jouer une action débite le budget, donc `_commit()` re-rend la
+    // fiche — une feuille qui se referme à chaque tap obligerait à la rouvrir
+    // entre chaque action, et un tour SR6 en compte couramment trois (Se
+    // déplacer, Ajuster, Attaquer). Six taps au lieu de quatre.
+    const ouverte = this._actionSheetOpen === r.pnjId;
+    const restOuvert = ouverte && this._actionRestOpen;
+    const tous = reste.length
+      ? `<button type="button" class="tag status-more" data-action="action-more" aria-expanded="${restOuvert}">tous…</button>
+         <span class="action-rest"${restOuvert ? "" : " hidden"}>${reste.map(puce).join("")}</span>`
+      : "";
+    return `<div class="status-sheet action-sheet" data-action-sheet="${r.pnjId}"${ouverte ? "" : " hidden"}>${rapides}${tous}</div>`;
+  },
+
+  /** Déplie/replie la feuille — UNE SEULE ouverte à la fois, et jamais en même
+      temps qu'une feuille d'états : deux feuilles ouvertes côte à côte, c'est un
+      mis-tap qui attend (même discipline que CardRenderer._toggleStatusSheet).
+      Repli en place, sans re-rendu, pour ne pas détruire l'état transitoire —
+      mais l'état est aussi MÉMORISÉ, pour que le re-rendu d'un débit le
+      restitue (cf. `_actionSheet`). */
+  toggleActionSheet(pnjId, btn) {
+    const sheet = document.querySelector(`.action-sheet[data-action-sheet="${pnjId}"]`);
+    if (!sheet) return;
+    const ouvrir = sheet.hidden;
+    document.querySelectorAll(".status-sheet").forEach((s) => (s.hidden = true));
+    document
+      .querySelectorAll('[data-action="action-sheet"], [data-action="status-sheet"]')
+      .forEach((b) => b.setAttribute("aria-expanded", "false"));
+    sheet.hidden = !ouvrir;
+    btn.setAttribute("aria-expanded", String(ouvrir));
+    this._actionSheetOpen = ouvrir ? pnjId : null;
+    if (!ouvrir) this._actionRestOpen = false;
+  },
+
+  /** Révèle le reste du catalogue (« tous… »), en place — mémorisé lui aussi :
+      le MJ qui a déplié « tous… » pour jouer Sprinter ne veut pas le redéplier
+      pour jouer Bannir un esprit juste après. */
+  toggleActionRest(btn) {
+    const rest = btn.parentElement && btn.parentElement.querySelector(".action-rest");
+    if (!rest) return;
+    rest.hidden = !rest.hidden;
+    btn.setAttribute("aria-expanded", String(!rest.hidden));
+    this._actionRestOpen = !rest.hidden;
+  },
+
+  /** La feuille d'actions ouverte (id du combattant), et si « tous… » l'est
+      aussi. Vit sur le renderer, pas dans la scène : c'est un état de VUE, il
+      n'a rien à faire dans `Encounter.state` (ni dans le Storage). */
+  _actionSheetOpen: null,
+  _actionRestOpen: false,
+
+  /* ========================================================
+     MUNITIONS ET RECUL (lot F2) — une ligne par arme qui compte ses balles.
+
+     Rien pour une arme de mêlée, de jet ou exotique : `capacity: null` fait
+     disparaître toute la surface, sans un seul `if App.edition`. Rien non plus
+     en Anarchy, dont le combat narratif n'a pas de modes de tir.
+
+     Le bouton de tir porte à la fois `data-roll*` (DiceRoller lance) et
+     `data-action="ammo-fire"` (Encounter compte) — le patron du lot E4, où le
+     même bouton lançait la défense et incrémentait le compteur de défenses
+     multiples. Un seul geste, deux lectures, jamais deux boutons jumeaux.
+     ======================================================== */
+
+  _activeAmmo(r) {
+    const armes = Encounter.ammoWeapons(r.pnjId);
+    const recul = this._recoilBadge(r);
+    if (!armes.length) return recul ? `<div class="encounter-ammo">${recul}</div>` : "";
+    const lignes = armes.map((a) => this._ammoRow(r, a)).join("");
+    return `<div class="encounter-ammo">${lignes}${recul}</div>`;
+  },
+
+  _ammoRow(r, a) {
+    const vide = a.reste <= 0;
+    const bas = !vide && a.reste <= Math.max(1, Math.ceil(a.cap.n / 5));
+    const modes = a.modes.length
+      ? `<button class="btn-icon-tiny action-trade" data-action="ammo-modes" title="Choisir le mode de tir">${Utils.escHtml(a.parsed.modes.join("/"))} ▾</button>
+         <span class="ammo-modes" hidden>${a.modes.map((m) => this._ammoModeBtn(r, a, m)).join("")}</span>`
+      : "";
+    const recharge = a.reload.length
+      ? `<button class="btn-icon-tiny action-trade" data-action="ammo-reload" data-arme="${Utils.escHtml(a.key)}" data-id="${r.pnjId}" title="${Utils.escHtml(this._reloadTitle(r, a))}">⟳</button>`
+      : "";
+    return `<span class="ammo-row${vide ? " is-empty" : bas ? " is-low" : ""}">
+      <span class="ammo-name">${Utils.escHtml(a.parsed.name)}</span>
+      <span class="ammo-count" title="Balles restantes sur la capacité de l'arme">⦿ ${a.reste}/${a.cap.n} (${Utils.escHtml(a.cap.mech)})</span>
+      ${modes}${recharge}
+    </span>`;
+  },
+
+  /** Un mode de tir : le bouton porte le jet ET le décompte. La réserve est
+      celle que la fiche affiche déjà (`WeaponRoll.forWeapon`), et le `detail`
+      porte l'annonce que le MJ lira au joueur qui va se défendre — corrigée du
+      manque de munitions, comme l'écrit le livre. */
+  _ammoModeBtn(r, a, m) {
+    const res = Ammo.resolve(r.pnj, m, a.reste);
+    const spec = WeaponRoll.resolvePool(r.pnj, a.str, r.pnj.edition);
+    const base = spec ? spec.pool : 0;
+
+    // RECUL — retranché ICI et nulle part ailleurs. Le livre est précis : le
+    // modificateur « doit être retranché à votre réserve de dés POUR LE TEST
+    // D'ATTAQUE » (p.177). Ce n'est donc pas un malus global à la
+    // `globalDiceMalus` : il ne touche ni la défense, ni l'encaissement, ni un
+    // test de Perception. Et il compte les balles qu'on est « SUR LE POINT DE
+    // TIRER » — celles de ce tir-ci comprises.
+    const rec = Encounter.recoilInfo(r.pnjId);
+    const malus = rec ? Ammo.recoilMalus(rec.cumul + Ammo.recoilFrom(res), rec.comp) : 0;
+    const pool = Math.max(0, base - malus);
+
+    const detail = [Ammo.rollDetail(res), malus ? `recul −${malus}` : ""].filter(Boolean).join(" · ");
+    const titre = [
+      `${m.name} — ${res.tires} balle${res.tires > 1 ? "s" : ""}${res.court ? ` (il en faut ${res.veut})` : ""}`,
+      m.actionKey ? `Coûte : ${Actions.costLabel(r.pnj, Actions.find(r.pnj, m.actionKey))}` : "",
+      malus ? `Réserve ${base} − ${malus} recul = ${pool}` : `Réserve ${pool}`,
+      detail,
+    ].filter(Boolean).join("\n• ");
+    const rollAttrs = pool
+      ? `data-roll="${pool}" data-roll-label="${Utils.escHtml(a.parsed.name)}" data-roll-detail="${Utils.escHtml(detail)}" data-roll-pnj="${r.pnjId}" data-roll-edition="${r.pnj.edition}"`
+      : "";
+    // `is-dry` = réserve tombée à zéro (recul, blessures). Le bouton reste
+    // CLIQUABLE et débite toujours ses balles : le livre laisse tirer, il fait
+    // seulement payer. Mais il n'a plus de `data-roll` — on ne lance pas zéro
+    // dé — et l'infobulle dit d'où vient le zéro.
+    return `<button type="button" class="tag status-pick ammo-mode${res.court ? " is-over" : ""}${pool ? "" : " is-dry"}" ${rollAttrs} data-action="ammo-fire" data-arme="${Utils.escHtml(a.key)}" data-mode="${m.key}" data-id="${r.pnjId}" title="${Utils.escHtml(titre)}">${Utils.escHtml(m.name)}<span class="weapon-pool">⚄${pool}</span></button>`;
+  },
+
+  _reloadTitle(r, a) {
+    const noms = a.reload
+      .map((k) => {
+        const e = Actions.find(r.pnj, k);
+        return e ? `${e.name} (${Actions.costLabel(r.pnj, e)})` : k;
+      })
+      .join(" + ");
+    return `Recharger — ${noms}`;
+  },
+
+  toggleAmmoModes(btn) {
+    const box = btn.parentElement && btn.parentElement.querySelector(".ammo-modes");
+    if (!box) return;
+    document.querySelectorAll(".ammo-modes").forEach((b) => {
+      if (b !== box) b.hidden = true;
+    });
+    box.hidden = !box.hidden;
+  },
+
+  /** Le badge de RECUL (SR5) : un témoin, pas un réglage. Il n'apparaît que
+      lorsque le cumul dépasse la compensation, et disparaît de lui-même à la
+      première action qui n'est pas un tir. Le titre nomme son calcul — un
+      chiffre ne baisse jamais sans qu'on sache d'où il vient (patron
+      `globalDiceSources` du lot E3).
+
+      Le ↺ existe pour les cas que le livre laisse au MJ (« ou soit FORCÉ de
+      dépenser » une action pour autre chose), et la bascule ⌐ pour les
+      accessoires internes déployés, que l'app ne peut pas deviner. */
+  _recoilBadge(r) {
+    const info = Encounter.recoilInfo(r.pnjId);
+    if (!info) return "";
+    const crosse = `<button class="btn-icon-tiny action-trade${info.stock ? " is-on" : ""}" data-action="recoil-stock" data-id="${r.pnjId}" aria-pressed="${info.stock}" title="Accessoires internes déployés (crosse pliable/détachable) — la parenthèse de la colonne CR est une compensation TOTALE, pas un supplément">⌐ crosse</button>`;
+    if (!info.cumul) return `<span class="recoil-badge is-idle" title="Compensation de recul : ${info.comp} (1 gratuit + Force/3 + armes)">↯ CR ${info.comp}</span>${crosse}`;
+    const reset = `<button class="btn-icon-tiny action-trade" data-action="recoil-reset" data-id="${r.pnjId}" title="Remettre le recul à zéro (le livre le fait dès qu'une action simple ou complexe n'est pas un tir — ceci est le recours manuel)" aria-label="Remettre le recul à zéro">↺</button>`;
+    const titre = `Recul progressif — ${info.cumul} balle${info.cumul > 1 ? "s" : ""} cumulée${info.cumul > 1 ? "s" : ""} − CR ${info.comp}`;
+    return `<span class="recoil-badge${info.malus ? " is-on" : " is-idle"}" title="${Utils.escHtml(titre)}">↯ ${info.malus ? `−${info.malus}` : `${info.cumul}/${info.comp}`}</span>${reset}${crosse}`;
   },
 
   /** Boutons d'ÉCHANGE d'actions (lot E5) — n'existent que si l'édition en

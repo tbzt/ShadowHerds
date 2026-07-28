@@ -8,6 +8,8 @@
    PnjLookup à chaque rendu. Le rendu (pur) est délégué à
    EncounterRenderer.
    ============================================================ */
+import { Actions } from "../rules/actions.js";
+import { Ammo } from "../rules/ammo.js";
 import { AnarchyAtouts } from "../rules/anarchyatouts.js";
 import { CardPeek } from "../widgets/card/cardpeek.js";
 import { CardRenderer } from "../widgets/card/cardrenderer.js";
@@ -18,6 +20,7 @@ import { DiceRoller } from "../widgets/dice/diceroller.js";
 import { EncounterRenderer } from "../widgets/play/encounterrenderer.js";
 import { Gen } from "./generator.js";
 import { Intrusion } from "./intrusion.js";
+import { ItemResolver } from "../rules/itemresolver.js";
 import { Matrix } from "../rules/matrix.js";
 import { Nudge } from "../widgets/tour/nudge.js";
 import { PnjLookup } from "./pnjlookup.js";
@@ -27,6 +30,7 @@ import { Statuses } from "../rules/statuses.js";
 import { Storage } from "../core/storage.js";
 import { UI } from "../widgets/kit/ui.js";
 import { Utils } from "../core/utils.js";
+import { WeaponRoll } from "../rules/weaponroll.js";
 
 export const Encounter = {
   _KEY: "encounter_current",
@@ -644,16 +648,213 @@ export const Encounter = {
       de cause, l'app ne lui refuse pas son geste, elle lui montre l'ardoise).
       Seule la porte d'initiative SR5 refuse, parce que le livre l'écrit comme une
       interdiction et non comme un coût. */
+  /** ⚠ `cost` accepte une PAIRE `{key, n}` (usage historique de `fullDefenseFor`)
+      ou une LISTE de paires (lot F1) — c'est la liste qui règle le « ou » de
+      SR5 : une action complexe déclare `[{complex:1},{simple:2}]` et débite les
+      trois jetons d'un coup, parce que c'est son coût (p.164).
+
+      Le budget lu est l'EFFECTIF (`effectiveBudget`), échanges compris : après
+      un « 4 mineures → 1 majeure », la majeure gagnée est réelle et ne doit pas
+      être signalée comme un dépassement. */
   _consumeAction(c, cost, pnj) {
     c.actionsUsed = c.actionsUsed || {};
-    const cur = c.actionsUsed[cost.key] || 0;
-    const groupe = (App.getEditionModule(pnj.edition).actionBudget(pnj) || []).find(
-      (g) => g.key === cost.key,
-    );
-    const total = groupe ? groupe.total : 0;
-    c.actionsUsed[cost.key] = cur + cost.n;
+    const budget = this.effectiveBudget(c.pnjId);
+    let over = false;
+    for (const part of Actions.cost({ cost })) {
+      const cur = c.actionsUsed[part.key] || 0;
+      const groupe = budget.find((g) => g.key === part.key);
+      const total = groupe ? groupe.total : 0;
+      c.actionsUsed[part.key] = cur + part.n;
+      if (cur + part.n > total) over = true;
+    }
     EncounterRenderer._activeCardId = null; // le budget a changé → re-rendre la fiche
-    return cur + cost.n > total;
+    return over;
+  },
+
+  /* ========================================================
+     ACTIONS NOMMÉES (lot F1) — le catalogue rejoint le compteur.
+
+     Jusqu'ici `_consumeAction` n'avait qu'UN appelant dans tout le projet : la
+     Défense totale. Attaquer, recharger, sprinter ne coûtaient rien — le MJ
+     tapait les jetons à la main sans que l'app sache ce qu'il payait.
+
+     Ce point d'entrée ne crée aucune machine : il donne un NOM à ce que le
+     compteur débitait déjà. Et il ne refuse rien — `_consumeAction` débite
+     au-delà du budget et le DIT (garde-fou (e) : informer, jamais décider).
+     ======================================================== */
+
+  /** Joue une action du catalogue sur un combattant : débite son coût, le dit,
+      et laisse le MJ juge du reste. Le geste manuel (taper les jetons un par
+      un) reste intact à côté — l'action nommée s'ajoute, elle ne remplace pas. */
+  useAction(pnjId, key, silent) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    const entry = pnj && Actions.find(pnj, key);
+    if (!c || !entry) return;
+
+    const over = Actions.costs(entry) ? this._consumeAction(c, entry.cost, pnj) : false;
+
+    // RECUL PROGRESSIF (F2) — « les modificateurs de recul s'accumulent […] à
+    // moins que le personnage ne dépense une action simple ou complexe pour
+    // AUTRE CHOSE que faire feu » (SR5 p.178). C'est le seul endroit du projet
+    // qui sache si une action est un tir : sans le catalogue F1, cette remise à
+    // zéro n'existait pas.
+    if (c.recoil && Ammo.resetsRecoil(pnj, entry)) {
+      delete c.recoil;
+      if (!silent) toast(`Recul remis à zéro — ${entry.name}`);
+    }
+
+    if (!silent) {
+      const cout = Actions.costLabel(pnj, entry);
+      toast(`${entry.name} — ${pnj.name} (${over ? "budget dépassé — " : ""}${cout})`);
+    }
+    this._commit();
+    return over;
+  },
+
+  /* ========================================================
+     MUNITIONS, RECHARGEMENT ET RECUL (lot F2).
+
+     Le compteur vit dans l'ENTRÉE DE SCÈNE (`c.ammo`), jamais sur le PNJ : un
+     chargeur vidé appartient à la rencontre, comme `c.edge` ou `c.actionsUsed`.
+     Le PNJ, lui, ressort de la scène avec son arme pleine — c'est la même
+     frontière que celle posée pour l'Atout au lot E0, et l'inverse du choix
+     fait pour les ÉTATS (qui survivent parce que la carte doit les voir).
+     ======================================================== */
+
+  /** Les armes d'un combattant qui comptent leurs balles, avec leur état.
+      Vide si l'édition n'a pas de modes de tir (Anarchy) ou si aucune arme ne
+      déclare de capacité (mêlée, jet, exotique) — la surface disparaît alors
+      d'elle-même, sans un seul `if App.edition`. */
+  ammoWeapons(pnjId) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    if (!c || !pnj || !Ammo.fireModes(pnj).length) return [];
+    const out = [];
+    const vus = new Map();
+    (WeaponRoll._weaponsOf(pnj, pnj.edition) || []).forEach((w) => {
+      const parsed = WeaponRoll.parse(w);
+      const cap = Ammo.capacity(parsed);
+      if (!cap) return;
+      // La clé est le NOM de l'arme, pas sa position : un rang d'inventaire
+      // change dès qu'on ajoute une ligne d'équipement, et le compteur suivrait
+      // silencieusement la mauvaise arme. Un doublon exact (deux Predator) est
+      // suffixé, pour qu'ils ne partagent pas un chargeur.
+      const n = (vus.get(parsed.name) || 0) + 1;
+      vus.set(parsed.name, n);
+      const key = n > 1 ? `${parsed.name}#${n}` : parsed.name;
+      out.push({
+        key,
+        str: ItemResolver.itemStr(w),
+        parsed,
+        cap,
+        reste: this._ammoLeft(c, key, cap.n),
+        modes: Ammo.modesFor(pnj, parsed),
+        reload: Ammo.reloadPlan(pnj, parsed),
+      });
+    });
+    return out;
+  },
+
+  /** Balles restantes — l'arme est PLEINE tant que personne n'a tiré (aucune
+      clé écrite dans la scène : un compteur jamais touché ne pèse rien). */
+  _ammoLeft(c, key, capN) {
+    const v = c.ammo && c.ammo[key];
+    return v === undefined ? capN : v;
+  },
+
+  /** TIRER : décrémente, cumule le recul, et débite l'action du mode.
+
+      Le débit passe par `useAction` — donc par le catalogue F1, donc par les
+      mêmes gardes. Le jet, lui, part par le chemin habituel : le MÊME bouton
+      porte `data-roll` (DiceRoller lance, délégation document) et
+      `data-action="ammo-fire"` (Encounter compte, délégation overlay). C'est le
+      patron déjà écrit pour `count-defense` au lot E4.
+
+      Renvoie la résolution du tir, pour que l'appelant l'annonce. */
+  fire(pnjId, key, modeKey) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    const arme = this.ammoWeapons(pnjId).find((a) => a.key === key);
+    const mode = pnj && Ammo.find(pnj, modeKey);
+    if (!c || !arme || !mode) return null;
+
+    const res = Ammo.resolve(pnj, mode, arme.reste);
+    c.ammo = c.ammo || {};
+    c.ammo[key] = arme.reste - res.tires;
+
+    // Le recul compte les balles RÉELLEMENT tirées : « le recul de Wombat sera
+    // calculé en prenant en compte 7 balles », dit l'exemple du livre pour un
+    // tir automatique qui en voulait 10.
+    if (Ammo.hasRecoil(pnj)) c.recoil = (c.recoil || 0) + Ammo.recoilFrom(res);
+
+    if (mode.actionKey) this.useAction(pnjId, mode.actionKey, true);
+    EncounterRenderer._activeCardId = null;
+    this._commit();
+
+    const detail = Ammo.rollDetail(res);
+    toast(`${arme.parsed.name} — ${detail}${res.court ? " ⚠ à court" : ""}`);
+    return res;
+  },
+
+  /** RECHARGER : débite les actions du plan de l'édition, puis remplit.
+      Le plan vient du contrat (`reloadPlan`) et les coûts du catalogue : SR5
+      fait payer DEUX actions simples un chargeur amovible (« retire OU insère »,
+      p.169), une seule si un smartgun éjecte gratuitement ; SR6 facture une
+      mineure au smartgun et une majeure au reste. */
+  reloadWeapon(pnjId, key) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    const arme = this.ammoWeapons(pnjId).find((a) => a.key === key);
+    if (!c || !arme || !arme.reload.length) return;
+
+    let over = false;
+    const noms = [];
+    for (const key of arme.reload) {
+      over = this.useAction(pnjId, key, true) || over;
+      const e = Actions.find(pnj, key);
+      if (e) noms.push(`${e.name} (${Actions.costLabel(pnj, e)})`);
+    }
+    c.ammo = c.ammo || {};
+    c.ammo[key] = arme.cap.n;
+    EncounterRenderer._activeCardId = null;
+    this._commit();
+    toast(`${arme.parsed.name} rechargée — ${arme.cap.n} balles · ${noms.join(" + ")}${over ? " ⚠ budget dépassé" : ""}`);
+  },
+
+  /** État de recul d'un combattant : cumul, compensation, malus, crosse.
+      Lu par le rendu ET par la réserve d'attaque — une seule source. */
+  recoilInfo(pnjId) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    if (!c || !pnj || !Ammo.hasRecoil(pnj)) return null;
+    const armes = this.ammoWeapons(pnjId).map((a) => a.parsed);
+    const comp = Ammo.compensation(pnj, armes, !!c.recoilStock);
+    const cumul = c.recoil || 0;
+    return { cumul, comp, malus: Ammo.recoilMalus(cumul, comp), stock: !!c.recoilStock };
+  },
+
+  /** Bascule « accessoires internes déployés » (crosse pliable/détachable) :
+      le nombre entre parenthèses de la colonne CR est une compensation TOTALE,
+      pas un supplément (p.418). Geste manuel : l'app ne sait pas si la crosse
+      est sortie, et deviner à la place du MJ serait décider. */
+  toggleRecoilStock(pnjId) {
+    const c = this._find(pnjId);
+    if (!c) return;
+    c.recoilStock = !c.recoilStock;
+    EncounterRenderer._activeCardId = null;
+    this._commit();
+  },
+
+  /** Remise à zéro manuelle — pour les cas que le livre laisse au MJ (« ou soit
+      FORCÉ de dépenser » une action pour autre chose). */
+  resetRecoil(pnjId) {
+    const c = this._find(pnjId);
+    if (!c || !c.recoil) return;
+    delete c.recoil;
+    EncounterRenderer._activeCardId = null;
+    this._commit();
+    toast("Recul remis à zéro.");
   },
 
   /** Ids des PNJ consultables de la console de réaction, dans l'ordre affiché —
@@ -1207,16 +1408,26 @@ export const Encounter = {
     toast("Échanges annulés.");
   },
 
-  /** Budget EFFECTIF du tour = celui de l'édition + les échanges du MJ. Lecture
-      neutre, partagée par le contrôleur (gardes) et le rendu (jetons), pour
-      qu'ils ne divergent jamais — la leçon d'E0. */
+  /** Budget EFFECTIF du tour = celui de l'édition + les échanges du MJ + le
+      bonus de narration. Lecture neutre, partagée par le contrôleur (gardes) et
+      le rendu (jetons), pour qu'ils ne divergent jamais — la leçon d'E0.
+
+      Le bonus de narration y entre au lot F1 : il ne vivait que dans le rendu,
+      si bien qu'une action jouée avec le jeton supplémentaire actif se serait
+      annoncée « budget dépassé » alors qu'elle était payée. Même correction que
+      `fullDefenseActive` en son temps : une valeur affichée quelque part doit
+      être calculée UNE fois. */
   effectiveBudget(pnjId) {
     const c = this._find(pnjId);
     const pnj = PnjLookup.find(pnjId);
     const mod = pnj && App.getEditionModule(pnj.edition);
     if (!c || !mod || !mod.actionBudget) return [];
     const traded = c.actionsTraded || {};
-    return mod.actionBudget(pnj).map((g) => ({ ...g, total: Math.max(0, g.total + (traded[g.key] || 0)) }));
+    const b = mod.actionBudget(pnj).map((g) => ({ ...g, total: Math.max(0, g.total + (traded[g.key] || 0)) }));
+    // Atout/drogue Anarchy « +1 action par narration » : le dernier groupe du
+    // budget gagne un jeton (cf. grantNarrationAction).
+    if (c.narrationBonus && b.length) b[b.length - 1].total += 1;
+    return b;
   },
 
   /** Remet à zéro le budget d'actions d'un combattant : appelé au début de son
@@ -1292,7 +1503,18 @@ export const Encounter = {
     // (sinon le geste ne marche que sur un blessé, ce qui ne se devine pas).
     const moniteurs = this._resetMonitors(pnj);
     const etats = Statuses.clearAll(pnj);
-    if (!moniteurs && !etats) return;
+    // F2 — le ⛨ remet aussi les chargeurs pleins et éteint le recul. Ces deux-là
+    // vivent dans la scène (`c.ammo`, `c.recoil`) et non sur le PNJ, donc ils
+    // ne SURVIVENT pas comme les états ; mais « remettre un combattant
+    // d'aplomb » sans lui rendre ses balles serait un demi-geste.
+    const c = this._find(pnjId);
+    const munitions = !!(c && (c.ammo || c.recoil));
+    if (c) {
+      delete c.ammo;
+      delete c.recoil;
+    }
+    if (!moniteurs && !etats && !munitions) return;
+    EncounterRenderer._activeCardId = null;
     Shadows.save();
     CardRenderer.refresh(pnj);
     // Le badge de malus de la ligne (calculé depuis le moniteur)
@@ -1485,14 +1707,21 @@ export const Encounter = {
     let n = 0;
     for (const c of this.state.combatants) {
       const pnj = PnjLookup.find(c.pnjId);
+      // F2 — fin de scène : chargeurs pleins, recul éteint. Ils vivent dans la
+      // scène, ils s'en vont avec elle.
+      delete c.ammo;
+      delete c.recoil;
       if (this._resetMonitors(pnj)) {
         CardRenderer.refresh(pnj);
         n++;
       }
     }
+    EncounterRenderer._activeCardId = null;
     if (n) {
       Shadows.save();
       this._render(); // badges de malus de toutes les lignes à jour
+    } else {
+      this._commit();
     }
     toast(
       n
@@ -2412,6 +2641,35 @@ export const Encounter = {
         case "action-set":
           // Consomme/rend une action du tour actif (jeton tappable).
           this.setAction(id, el.dataset.key, parseInt(el.dataset.idx, 10) || 0);
+          break;
+        case "action-sheet":
+          // F1 — déplie la feuille des actions nommées (patron `status-sheet`).
+          EncounterRenderer.toggleActionSheet(id, el);
+          break;
+        case "action-more":
+          EncounterRenderer.toggleActionRest(el);
+          break;
+        case "action-use":
+          // F1 — joue une action du catalogue : elle débite son propre coût.
+          this.useAction(id, el.dataset.key);
+          break;
+        case "ammo-fire":
+          // F2 — porté par le MÊME bouton que le jet : DiceRoller lance
+          // (délégation document), Encounter compte les balles et le recul
+          // (délégation overlay). Patron déjà écrit pour `count-defense` (E4).
+          this.fire(id, el.dataset.arme, el.dataset.mode);
+          break;
+        case "ammo-modes":
+          EncounterRenderer.toggleAmmoModes(el);
+          break;
+        case "ammo-reload":
+          this.reloadWeapon(id, el.dataset.arme);
+          break;
+        case "recoil-stock":
+          this.toggleRecoilStock(id);
+          break;
+        case "recoil-reset":
+          this.resetRecoil(id);
           break;
         case "threat-step":
           // ±1 Réserve de menace (Anarchy) — mute la source unique

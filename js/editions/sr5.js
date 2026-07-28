@@ -311,13 +311,260 @@ export const EditionSR5 = {
   },
   /** Budget d'actions par phase d'action (= passe d'init, déjà motorisée)
       — vérifié Livre de Règles p.164 : 2 actions simples OU 1 complexe, + 1
-      gratuite. Le « ou » est laissé au jugement du MJ (deux rangées). */
+      gratuite.
+
+      ⚠ LE « OU » (lot F1). Ces trois rangées ne sont PAS indépendantes : le
+      livre accorde « 2 actions simples OU 1 complexe », soit deux actions
+      payables et non trois. Tant qu'aucune action n'avait de nom, l'app ne
+      pouvait pas débiter juste et laissait l'arbitrage au MJ ; ce commentaire
+      disait « le "ou" est laissé au jugement du MJ ».
+
+      Ce n'est plus nécessaire. Le coût vit maintenant dans `actionModel`, et
+      toute action COMPLEXE y déclare `[{complex:1},{simple:2}]` : la choisir
+      noircit les trois jetons d'un coup. L'app n'arbitre rien — elle applique
+      un coût que le livre écrit. Le budget, lui, reste la simple photographie
+      des rangées, lue à l'aveugle par le tracker.
+
+      Les jetons restent tappables un par un : le MJ garde la main sur les cas
+      limites (bras cybernétique, atout qui déroge) sans que l'app ait à les
+      connaître. */
   actionBudget() {
     return [
       { key: "simple", label: "Simples", total: 2 },
       { key: "complex", label: "Complexe", total: 1 },
       { key: "free", label: "Gratuite", total: 1 },
     ];
+  },
+  /** CATALOGUE D'ACTIONS (lot F1) — tables p.164-168, lu par `Actions` via ce
+      contrat neutre, comme `statusModel` l'est par `Statuses`.
+
+      TROIS natures ici, pas quatre : les actions d'INTERRUPTION gardent leur
+      propre contrat (`interruptActions`) parce qu'elles ne consomment AUCUN
+      jeton — « elles ne coûtent pas leur phase d'action » (p.170), elles se
+      paient en score d'initiative. Les mélanger à ce catalogue reviendrait à
+      leur inventer un coût qu'elles n'ont pas.
+
+      `cost` en LISTE — c'est ici que le « ou » du livre se règle : toute
+      complexe déclare `[{complex:1},{simple:2}]`, cf. le commentaire
+      d'`actionBudget` juste au-dessus.
+
+      `shot` — l'action est un TIR. Drapeau propre à SR5 : le recul progressif
+      (p.178) s'accumule tant que le personnage tire et se remet à zéro dès
+      qu'il « dépense une action simple ou complexe pour AUTRE CHOSE que faire
+      feu ». Sans actions nommées, cette remise à zéro n'était pas motorisable.
+      SR6 n'a pas ce drapeau : le Score Offensif y a remplacé le recul.
+
+      `reload` — le rôle de l'action dans le cycle de rechargement (lot F2) :
+      "eject" retire, "insert" met en place, "full" recharge d'un geste. Le
+      livre facture le chargeur amovible (c) en DEUX actions simples (p.169,
+      « retire OU insère »), soit la phase d'action entière — sauf smartgun, où
+      l'éjection devient gratuite. */
+  actionModel: {
+    catalog: [
+      /* ---------------- ACTIONS GRATUITES (9) ---------------- */
+      { key: "attaquesMultiples", name: "Attaques multiples", cost: [{ key: "free", n: 1 }], combine: "attaque", lines: [
+        "Attaquer plusieurs cibles en une seule action en divisant sa réserve de dés",
+        "À combiner avec faire feu, lancer une arme, attaque de mêlée ou lancement de sort",
+      ] },
+      { key: "changerModeAppareilConnecte", name: "Changer le mode d'un appareil connecté", cost: [{ key: "free", n: 1 }], lines: [
+        "Activer, désactiver ou changer le mode d'un équipement relié par interface neurale directe",
+        "Inclut le cyberware, le mode de tir d'un smartgun, la dispersion d'un shotgun, le mode caché d'un commlink",
+      ] },
+      { key: "cibler", name: "Cibler", cost: [{ key: "free", n: 1 }], combine: "attaque", lines: [
+        "Viser une partie vulnérable de la cible (tir ciblé)",
+        "À combiner avec faire feu, lancer une arme ou attaque de mêlée",
+      ] },
+      { key: "courir", name: "Courir", cost: [{ key: "free", n: 1 }], lines: [
+        "Impose les modificateurs de course",
+      ] },
+      { key: "direPhrase", name: "Dire / envoyer une phrase", cost: [{ key: "free", n: 1 }], lines: [
+        "Une courte phrase verbale, ou un court message par interface neurale directe",
+        "Chaque phrase supplémentaire coûte une action gratuite de plus",
+      ] },
+      { key: "ejecterChargeurSmartgun", name: "Éjecter le chargeur (smartgun)", cost: [{ key: "free", n: 1 }], reload: "eject", lines: [
+        "Connecté à un système smartgun prêt : éjection par commande mentale",
+        "Il faudra encore une action simple pour insérer un chargeur plein",
+      ] },
+      { key: "faireGeste", name: "Faire un geste", cost: [{ key: "free", n: 1 }], lines: [
+        "Communiquer par quelques gestes rapides",
+        "Qui n'est pas familier de la communication gestuelle teste l'Intuition (2) pour comprendre",
+      ] },
+      { key: "lacherObjet", name: "Lâcher un objet", cost: [{ key: "free", n: 1 }], lines: [
+        "Lâcher un objet tenu — les deux d'un coup s'il en tient un dans chaque main",
+      ] },
+      { key: "seJeterAuSol", name: "Se jeter au sol", cost: [{ key: "free", n: 1 }], lines: [
+        "S'agenouiller ou se jeter au sol",
+        "Impossible si le personnage est Surpris",
+      ] },
+
+      /* ---------------- ACTIONS SIMPLES (16) ---------------- */
+      { key: "ajuster", name: "Ajuster", cost: [{ key: "simple", n: 1 }], quick: true, lines: [
+        "+1 dé à la réserve et +1 à la Précision du test d'attaque",
+        "Cumulable, y compris sur plusieurs phases et tours — mais perdu si une autre action (même gratuite) intervient avant d'attaquer",
+        "Bonus maximum égal à la moitié de la Volonté, arrondie au supérieur",
+        "Requise pour calibrer une lunette de visée ou un zoom (la première n'apporte alors que le bonus de l'équipement)",
+      ] },
+      { key: "changerPerception", name: "Changer de perception", cost: [{ key: "simple", n: 1 }], lines: [
+        "Basculer sa perception entre le monde physique et l'astral",
+      ] },
+      { key: "changerModeAppareil", name: "Changer le mode d'un appareil", cost: [{ key: "simple", n: 1 }], lines: [
+        "Activer, désactiver ou changer le mode d'un équipement, par interrupteur réel ou virtuel",
+      ] },
+      { key: "degainerRapidement", name: "Dégainer rapidement", cost: [{ key: "simple", n: 1 }], lines: [
+        "Dégainer un pistolet, une arme comparable ou une petite arme de jet et tirer immédiatement",
+        "Test de Compétence d'arme + Réaction [physique] (3) — seuil 2 avec un holster rapide",
+        "Échec : l'arme est dégainée mais le tir n'a pas lieu. Complication : l'arme est coincée ou tombe",
+        "Ne permet pas un mode de tir qui exige une action complexe",
+      ] },
+      { key: "ejecterChargeur", name: "Éjecter un chargeur", cost: [{ key: "simple", n: 1 }], quick: true, reload: "eject", lines: [
+        "Retirer un chargeur d'une arme prête",
+        "Une seconde action simple est nécessaire pour insérer un chargeur plein",
+      ] },
+      { key: "encocherFleche", name: "Encocher une flèche", cost: [{ key: "simple", n: 1 }], reload: "insert", lines: [
+        "Encocher une flèche dans un arc prêt — une seconde action simple est nécessaire pour tirer",
+      ] },
+      { key: "faireFeuSimple", name: "Faire feu (CC, SA, TR, TA)", cost: [{ key: "simple", n: 1 }], quick: true, shot: true, lines: [
+        "Coup par coup, semi-automatique, tir en rafale (3 balles) ou tir automatique (6 balles)",
+        "Aucune autre action d'attaque durant la même phase d'action",
+      ] },
+      { key: "insererChargeur", name: "Insérer un chargeur", cost: [{ key: "simple", n: 1 }], quick: true, reload: "insert", lines: [
+        "Insérer un chargeur dans une arme à feu prête, uniquement après avoir éjecté l'ancien",
+      ] },
+      { key: "lancerArme", name: "Lancer une arme", cost: [{ key: "simple", n: 1 }], lines: [
+        "Lancer une arme prête",
+        "Aucune autre action d'attaque durant la même phase d'action",
+      ] },
+      { key: "observerEnDetail", name: "Observer en détail", cost: [{ key: "simple", n: 1 }], lines: [
+        "Autorise un test de Perception",
+      ] },
+      { key: "prendrePoserObjet", name: "Prendre / poser un objet", cost: [{ key: "simple", n: 1 }], lines: [
+        "Prendre un objet à portée ou en poser un, en y faisant attention",
+        "Lâcher un objet est gratuit, mais un objet lâché risque plus d'être endommagé",
+      ] },
+      { key: "preparerArme", name: "Préparer une arme", cost: [{ key: "simple", n: 1 }], lines: [
+        "Sortir l'arme de son holster ou de son fourreau, la saisir, la préparer",
+        "Une arme doit être prête avant de pouvoir être utilisée",
+        "Une arme mal rangée peut exiger une action complexe, au jugement du MJ",
+        "Petites armes de jet : autant que la moitié de l'Agilité, arrondie au supérieur",
+      ] },
+      { key: "seMettreACouvert", name: "Se mettre à couvert", cost: [{ key: "simple", n: 1 }], quick: true, lines: [
+        "Gagne le bonus de couvert sur les tests de défense tant que le personnage reste derrière",
+        "Impossible si le personnage est Surpris",
+      ] },
+      { key: "seRelever", name: "Se relever", cost: [{ key: "simple", n: 1 }], quick: true, lines: [
+        "Un personnage couché ou accroupi se relève",
+        "Avec un malus de blessure : test de Constitution + Volonté (2), modificateurs de blessure compris",
+      ] },
+      { key: "tirerArc", name: "Tirer à l'arc", cost: [{ key: "simple", n: 1 }], shot: true, lines: [
+        "Tirer une flèche déjà encochée",
+      ] },
+      { key: "utiliserObjetSimple", name: "Utiliser un objet simple", cost: [{ key: "simple", n: 1 }], lines: [
+        "Un objet utilisable d'un simple mouvement : un doigt, un bouton, une icône",
+      ] },
+
+      /* ---------------- ACTIONS COMPLEXES (11) ----------------
+         Toutes déclarent le « ou » du livre : 1 complexe = les 2 simples. */
+      { key: "attaquerMelee", name: "Attaquer en mêlée", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], quick: true, lines: [
+        "Une attaque en mêlée",
+      ] },
+      { key: "bannirEsprit", name: "Bannir un esprit", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
+        "Tenter de bannir un esprit",
+      ] },
+      { key: "faireFeuComplexe", name: "Faire feu (RSA, RL, TA)", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], quick: true, shot: true, lines: [
+        "Rafale semi-automatique (3 balles), rafale longue (6 balles) ou tir automatique (10 balles)",
+      ] },
+      { key: "faireFeuMonte", name: "Faire feu (arme montée / de véhicule)", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], shot: true, lines: [
+        "Faire feu avec une arme de véhicule ou montée sur un véhicule, prête",
+      ] },
+      { key: "invoquerEsprit", name: "Invoquer un esprit", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
+        "Invoquer un esprit pour l'assister",
+      ] },
+      { key: "lancerSort", name: "Lancer un sort", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
+        "Lancer un sort",
+      ] },
+      { key: "projectionAstrale", name: "Passer en projection astrale", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
+        "Projeter son esprit dans l'espace astral",
+      ] },
+      { key: "plongerVehicule", name: "Plonger dans un véhicule (rigger)", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
+        "Avec un câblage de contrôle de véhicules et un véhicule adapté : plonger dedans pour le contrôler",
+      ] },
+      { key: "rechargerArme", name: "Recharger une arme", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], quick: true, reload: "full", lines: [
+        "Armes à bande, canon basculant, barillet, tambour, magasin interne, chargement par le canon, ou chargeur rapide",
+        "Le chargeur amovible (c), lui, se recharge en DEUX actions simples : éjecter puis insérer",
+      ] },
+      { key: "sprinter", name: "Sprinter", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
+        "Augmenter sa vitesse de course, avec un test de course",
+      ] },
+      { key: "utiliserCompetence", name: "Utiliser une compétence", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
+        "Utiliser une compétence",
+      ] },
+    ],
+  },
+  /** MODES DE TIR (lot F2) — table p.180, recopiée ligne pour ligne.
+
+      `requires` est le token que la CHAÎNE de l'arme doit déclarer : les armes
+      portent leurs modes depuis toujours (`SA/TR/TA`, `CC/TR`…), le parseur les
+      jetait faute de lecteur. Une arme `SA` ne se voit donc jamais proposer le
+      tir automatique.
+
+      `defense` est le modificateur à ANNONCER au défenseur, jamais à injecter
+      dans sa fiche : un mode de tir est circonstanciel, il appartient au jet
+      (même arbitrage que les modificateurs de situation, cf. `statusModel`).
+
+      `recoil: false` — les deux lignes que le livre exempte : le coup par coup
+      (« l'avantage de ne pas souffrir de recul progressif dans ce mode »,
+      p.178) et le tir de couverture (colonne « Pas de recul »). */
+  fireModes: [
+    { key: "cc", name: "Coup par coup", requires: "CC", actionKey: "faireFeuSimple", bullets: 1, defense: 0, recoil: false },
+    { key: "sa", name: "Semi-automatique", requires: "SA", actionKey: "faireFeuSimple", bullets: 1, defense: 0 },
+    { key: "rsa", name: "Rafale semi-automatique", requires: "SA", actionKey: "faireFeuComplexe", bullets: 3, defense: -2 },
+    { key: "tr", name: "Tir en rafale", requires: "TR", actionKey: "faireFeuSimple", bullets: 3, defense: -2 },
+    { key: "rl", name: "Rafale longue", requires: "TR", actionKey: "faireFeuComplexe", bullets: 6, defense: -5 },
+    { key: "ta6", name: "Tir automatique (simple)", requires: "TA", actionKey: "faireFeuSimple", bullets: 6, defense: -5 },
+    { key: "ta10", name: "Tir automatique (complexe)", requires: "TA", actionKey: "faireFeuComplexe", bullets: 10, defense: -9 },
+    { key: "couverture", name: "Tir de couverture", requires: "TA", actionKey: "faireFeuComplexe", bullets: 20, defense: null, recoil: false,
+      note: "la cible se jette au sol ou à couvert · zone réduite de 1 m par 2 balles manquantes" },
+  ],
+  /** RECHARGEMENT (lot F2) — table p.169. Renvoie les CLÉS D'ACTION du
+      catalogue, jamais un coût : `actionModel` porte déjà ces coûts, et une
+      valeur qui vit à deux endroits finit par diverger.
+
+      ⚠ Le chargeur amovible (c) coûte DEUX actions simples — « retire OU
+      insère » — soit la phase d'action entière. C'est le point que le livre
+      écrit et que personne n'applique en table. Avec un smartgun, l'éjection
+      devient GRATUITE (p.165) et il ne reste qu'une simple. */
+  reloadPlan(parsed) {
+    const mech = (parsed && parsed.capacity && parsed.capacity[0] && parsed.capacity[0].mech) || null;
+    if (!mech) return [];
+    if (mech === "c" || mech === "cy") {
+      return parsed.smart
+        ? ["ejecterChargeurSmartgun", "insererChargeur"]
+        : ["ejecterChargeur", "insererChargeur"];
+    }
+    return ["rechargerArme"]; // bande, cb, b, t, m, cn → action complexe
+  },
+  /** RECUL PROGRESSIF (lot F2) — p.177-178.
+
+      « 1 point de compensation gratuit à chaque fois que le personnage commence
+      à faire feu, auquel on ajoute Force / 3 (arrondie au supérieur) et la
+      compensation de recul dont disposent les armes. »
+
+      `resetOn: "nonShot"` — « les modificateurs de recul s'accumulent d'une
+      phase d'action et d'un tour de combat à l'autre à moins que le personnage
+      ne dépense […] une action simple ou complexe pour autre chose que faire
+      feu ». Le cumul est donc porté par le PERSONNAGE (pas par l'arme) et ne
+      meurt ni au changement de passe ni au changement de round : seul un geste
+      qui n'est pas un tir l'éteint. C'est le lot F1 qui rend ça lisible —
+      `Actions.isShot`. */
+  recoilModel: {
+    free: 1,
+    fromAttr: { attr: "FOR", div: 3 },
+    // Les natures d'action qui remettent le cumul à zéro : le livre écrit
+    // « une action SIMPLE OU COMPLEXE pour autre chose que faire feu ». Une
+    // action gratuite ne suffit donc pas — parler, lâcher un objet ou cibler
+    // n'a jamais calmé un canon. C'est écrit ici et pas dans le contrôleur :
+    // les noms de groupes sont une affaire d'édition.
+    resetGroups: ["simple", "complex"],
   },
   /** ÉTATS DE COMBAT (lot E1) — ⚠ SR5 N'A PAS de système d'états. Le livre a
       des MODIFICATEURS DE SITUATION (tables p.179, p.189, récap p.483), qui
@@ -2222,11 +2469,11 @@ export const EditionSR5 = {
       "Revolver Colt New Model [PRE 6, VD 4P, PA —, SA, 5(b)]",
     ],
     pistoletsLegers: [
-      "Fichetti Security 600 [PRE 6(7), VD 7P, PA —, SA, 30(c)]",
+      "Fichetti Security 600 [PRE 6(7), VD 7P, PA —, SA, 30(c), CR 0(1)]",
       "Colt America L36 [PRE 7, VD 7P, PA —, SA, 11(c)]",
       "Ares Light Fire 75 [PRE 6(8), VD 6P, PA —, SA, 16(c), smartgun]",
       "Ares Light Fire 70 [PRE 7, VD 6P, PA —, SA, 16(c)]",
-      "Beretta 201T [PRE 6, VD 6P, PA —, SA, 21(c), crosse détachable]",
+      "Beretta 201T [PRE 6, VD 6P, PA —, SA, 21(c), crosse détachable, CR 0(1)]",
       "Taurus Omni-6 [PRE 5(6), VD 6P/7P, PA 0/-1, SA/CC, 6(cy), visée laser]",
       "Colt Agent Special [PRE 5, VD 8P, PA —, SA, 8(c)]",
       "Fichetti Executive Action [PRE 6, VD 7P, PA —, SA, 18(c)]",
@@ -2250,15 +2497,15 @@ export const EditionSR5 = {
       "Savalette Guardian [PRE 5 (7), VD 8P, PA -1, SA, 12 (c)]",
     ],
     mitraillettes: [
-      "HK-227 [PRE 5(7), VD 7P, PA —, SA/TR/TA, 28(c), smartgun, silencieux]",
-      "Ceska Black Scorpion [PRE 5, VD 6P, PA —, SA/TR, 35(c)]",
-      "Colt Cobra TZ-120 [PRE 4(5), VD 7P, PA —, SA/TR/TA, 32(c)]",
+      "HK-227 [PRE 5(7), VD 7P, PA —, SA/TR/TA, 28(c), smartgun, silencieux, CR 0(1)]",
+      "Ceska Black Scorpion [PRE 5, VD 6P, PA —, SA/TR, 35(c), CR 0(1)]",
+      "Colt Cobra TZ-120 [PRE 4(5), VD 7P, PA —, SA/TR/TA, 32(c), CR 2(3)]",
       "HK Urban Combat [PRE 7(9), VD 8P, PA —, SA/TR/TA, 36(c)]",
-      "Ingram Smartgun X [PRE 4(6), VD 8P, PA —, TR/TA, 32(c)]",
-      "FN P93 Praetor [PRE 6, VD 8P, PA —, SA/TR/TA, 50(c), lampe torche]",
-      "SCK Model 100 [PRE 5(7), VD 8P, PA —, SA/TR, 30(c), smartgun, crosse pliable]",
-      "Uzi IV [PRE 4(5), VD 7P, PA —, TR, 24(c), crosse pliable, visée laser]",
-      "Ares Crusader II [PRE 5(7), VD 7P, PA —, SA/TR, 40(c), smartgun]",
+      "Ingram Smartgun X [PRE 4(6), VD 8P, PA —, TR/TA, 32(c), CR 2]",
+      "FN P93 Praetor [PRE 6, VD 8P, PA —, SA/TR/TA, 50(c), lampe torche, CR 1(2)]",
+      "SCK Model 100 [PRE 5(7), VD 8P, PA —, SA/TR, 30(c), smartgun, crosse pliable, CR 0(1)]",
+      "Uzi IV [PRE 4(5), VD 7P, PA —, TR, 24(c), crosse pliable, visée laser, CR 0(1)]",
+      "Ares Crusader II [PRE 5(7), VD 7P, PA —, SA/TR, 40(c), smartgun, CR 2]",
       "Steyr TMP [PRE 4(5), VD 7P, PA —, SA/TR/TA, 30(c), visée laser]",
       "Cavalier Evanator [PRE 5 (6), VD 6P, PA —, TR/TA, 20 (c)]",
       "Fianchetti Military 100 [PRE 5 (7), VD 6P, PA —, SA/TR/TA, 20 (c)]",
@@ -2273,12 +2520,12 @@ export const EditionSR5 = {
       "Krime Spree [PRE 4, VD 7P, PA —, TA, 30 (c)]",
     ],
     fusilsAssaut: [
-      "Ares Alpha [PRE 5(7), VD 11P, PA -2, SA/TR/TA, 42(c), lance-grenades]",
+      "Ares Alpha [PRE 5(7), VD 11P, PA -2, SA/TR/TA, 42(c), lance-grenades, CR 2]",
       "AK-97 [PRE 5, VD 10P, PA -2, SA/TR/TA, 38(c)]",
       "Colt M23 [PRE 4, VD 9P, PA -2, SA/TR/TA, 40(c)]",
-      "FN HAR [PRE 5(6), VD 10P, PA -2, SA/TR/TA, 35(c)]",
+      "FN HAR [PRE 5(6), VD 10P, PA -2, SA/TR/TA, 35(c), CR 2]",
       "HK XM30 [PRE 6(8), VD 9P, PA -2, SA/TR/TA, 30(c)]",
-      "Yamaha Raiden [PRE 6(8), VD 11P, PA -2, TR/TA, 60(c), smartgun, silencieux]",
+      "Yamaha Raiden [PRE 6(8), VD 11P, PA -2, TR/TA, 60(c), smartgun, silencieux, CR 1]",
       "AK-98 [PRE 5 (7), VD 10P, PA -2, SA/TR/TA, 38 (c)]",
       "Ares HVAR [PRE 5 (7), VD 8P, PA —, SA/TR/TA, 50 (c)]",
       "Colt Inception [PRE 7 (8), VD 10P, PA -1, SA/TR, 35 (c)]",
@@ -2298,7 +2545,7 @@ export const EditionSR5 = {
     shotguns: [
       "Defiance T-250 [PRE 4, VD 10P, PA -1, CC/SA, 5(m)]",
       "Enfield AS-7 [PRE 4(5), VD 13P, PA -1, SA/TR, 10(c) ou 24(t), visée laser]",
-      "PJSS Model 55 [PRE 6, VD 11P, PA -1, CC, 2(cb)]",
+      "PJSS Model 55 [PRE 6, VD 11P, PA -1, CC, 2(cb), CR 0(1)]",
       "Auto-Assault 16 [PRE 4, VD 13P, PA -1, SA/TR/TA, 10 (c) ou 32 (t)]",
       "Cavalier Falchion [PRE 5 (7), VD 12P, PA -1, SA/TR, 8 (m)]",
       "Franchi SPAS-24 [PRE 4 (6), VD 12P, PA -1, SA/TR, 10 (c)]",
@@ -2312,9 +2559,9 @@ export const EditionSR5 = {
     ],
     // Mitrailleuses lourdes (absentes de la sélection initiale, p.430).
     mitrailleuses: [
-      "Ingram Valiant [PRE 5(6), VD 9P, PA -2, TR/TA, 50(c) ou 100(bande), visée laser]",
+      "Ingram Valiant [PRE 5(6), VD 9P, PA -2, TR/TA, 50(c) ou 100(bande), visée laser, CR 2(3)]",
       "Stoner-Ares M202 [PRE 5, VD 10P, PA -3, TA, 50(c) ou 100(bande)]",
-      "RPK HMG [PRE 5, VD 12P, PA -4, TA, 50(c) ou 100(bande)]",
+      "RPK HMG [PRE 5, VD 12P, PA -4, TA, 50(c) ou 100(bande), CR 0(6)]",
       "GE Vindicator Minigun [PRE 4 (6), VD 9P, PA -4, TA, 100 ou 200 (bande)]",
       "Krime Wave [PRE 5, VD 10P, PA -2, TA, 50 (c) ou 100 (bande)]",
       "SA Nemesis [PRE 5 (7), VD 9P, PA -2, TR/TA, 50 (c) ou 100 (bande)]",
@@ -2324,12 +2571,12 @@ export const EditionSR5 = {
       "Ultimax HMG-2 [PRE 4 (5), VD 11P, PA -4, TA, 50 (c) ou 100 (bande)]",
     ],
     snipers: [
-      "Ares Desert Strike [PRE 7, VD 13P, PA -4, SA, 14(c)]",
-      "Ranger Arms SM-5 [PRE 8, VD 14P, PA -5, SA, 15(c), silencieux]",
+      "Ares Desert Strike [PRE 7, VD 13P, PA -4, SA, 14(c), CR 0(1)]",
+      "Ranger Arms SM-5 [PRE 8, VD 14P, PA -5, SA, 15(c), silencieux, CR 0(1)]",
       "Remington 950 [PRE 7, VD 12P, PA -4, CC, 5(m)]",
       "Onotari JP-K50 [PRE 7, VD 12P, PA -3, SA/TR, 25(c)]",
       "Cavalier Arms Crockett EBR [PRE 6, VD 12P, PA -3, SA/TR, 20(c)]",
-      "Ruger 101 [PRE 6, VD 11P, PA -3, SA, 8(m), lunette de visée intégrée]",
+      "Ruger 101 [PRE 6, VD 11P, PA -3, SA, 8(m), lunette de visée intégrée, CR 0(1)]",
       "Barret Model 122 [PRE 7 (9), VD 14P, PA -6, SA, 14 (c)]",
       "M1 Garand [PRE 5, VD 12P, PA -1, SA, 8 (c)]",
       "Marlin 3041 BL [PRE 5, VD 10P, PA -3, SA, 6 (m)]",

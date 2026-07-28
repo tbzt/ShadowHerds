@@ -12,6 +12,80 @@ commit.
 
 ## [Non publié]
 
+## [1.128.0] — 2026-07-28
+
+### Ajouté
+
+- **Les armes comptent leurs balles, et le rechargement coûte ce que le livre
+  dit.** Chaque arme à feu du combattant actif affiche `⦿ 40/40 (c)` et la
+  liste des modes que *cette* arme déclare — un pistolet `SA` ne se voit jamais
+  proposer le tir automatique. Tirer décompte, débite l'action correspondante
+  et lance le jet d'un seul geste. Le ⟳ recharge : en SR5, un chargeur amovible
+  coûte **deux actions simples** (« retire *ou* insère », p.169), une seule
+  avec un smartgun qui éjecte gratuitement ; en SR6, une **mineure** au
+  smartgun et une **majeure** à tout le reste.
+- **À court de munitions, l'app donne le chiffre corrigé.** Un tir automatique
+  complexe qui n'a que 7 balles sur 10 annonce **défense −6** au lieu de −9
+  (SR5 : « réduisez les modificateurs de défense et de recul de 1 par balle
+  manquante ») ; en SR6, une rafale ciblée à 3 balles sur 4 passe le Score
+  Offensif à −3 et garde son +1 de VD. Rien n'est jamais bloqué : le livre
+  autorise le tir court, il le fait seulement payer.
+- **Le recul progressif SR5 se suit tout seul** (p.177-178). L'app calcule la
+  compensation (1 point gratuit + Force/3 + la CR des armes, désormais relevée
+  au livre pour les 19 armes concernées), cumule les balles tirées **pour le
+  personnage et non pour l'arme**, retranche le malus de la réserve d'attaque
+  et **le nomme** (« Réserve 12 − 3 recul = 9 »). Surtout : le cumul **se remet
+  à zéro tout seul** dès qu'une action simple ou complexe n'est pas un tir —
+  exactement ce que le livre écrit, et ce que personne ne suit en table. Une
+  action *gratuite* ne suffit pas. Un ↺ reste là pour les cas que le livre
+  laisse au meneur.
+- **Les malus de défense s'annoncent sur le jet** plutôt que d'être injectés
+  dans la fiche du défenseur : la ligne du journal porte « Ares Alpha · Tir
+  automatique (complexe) · 10 balles · défense −9 », à lire au joueur qui va
+  lancer ses dés. Un mode de tir est circonstanciel — il appartient au jet, pas
+  au personnage.
+
+### Note
+
+SR6 n'a pas de recul : le Score Offensif l'a remplacé. La ligne de recul
+n'existe donc qu'en SR5, et rien n'apparaît en Anarchy ni pour une arme de
+mêlée, de jet ou exotique.
+
+## [1.127.0] — 2026-07-28
+
+### Ajouté
+
+- **Les actions ont enfin un nom.** Un ＋ prolonge la rangée de jetons du
+  combattant actif et déplie le catalogue de l'édition : **32 actions** en SR6
+  (19 mineures, 13 majeures), **36** en SR5 (9 gratuites, 16 simples,
+  11 complexes). Un tap joue l'action et **débite son coût** — jusqu'ici, sur
+  tout le projet, une seule action se facturait : la Défense totale. Attaquer,
+  recharger, sprinter ne coûtaient rien. Les jetons restent tappables un par un
+  à côté : le geste manuel n'est jamais retiré.
+- **SR5 récupère son « ou ».** Le livre accorde « 2 actions simples **OU**
+  1 complexe » (p.164) ; l'app affichait deux rangées étanches, soit trois
+  actions payables. Jouer une action complexe noircit désormais la case
+  complexe **et** les deux simples — parce que c'est son coût, pas parce que
+  l'app arbitre.
+- **SR6 avait une catégorie d'action que l'app ignorait.** Le livre note chaque
+  action « (I) au moment de l'initiative » ou « **(L) choix libre à n'importe
+  quel moment** » (p.45) : neuf actions de combat — Bloquer, Esquiver, Éviter,
+  Intercepter, Se jeter par terre, Lâcher un objet, Changer le mode d'un
+  appareil, Assister, Défense totale — se déclarent **hors de son tour**, à
+  condition qu'il reste une action en réserve. L'app affirmait que SR6 n'avait
+  qu'une seule interruption ; elle en a neuf, et elles se paient en jetons, non
+  en initiative comme celles de SR5.
+- Chaque action porte **ses effets recopiés du livre** en infobulle, son coût
+  en clair, et le rappel des cinq mineures SR6 qui « doivent être utilisées
+  avec l'action majeure Attaquer ». Une action que le budget ne peut plus payer
+  **se ternit sans se désactiver** : l'app informe, le meneur décide.
+
+### Note
+
+Anarchy 1 et 2 ne reçoivent rien : leurs livres n'ont pas de table d'actions
+(une action significative + déplacement gratuit), et leur en fabriquer une
+serait un contresens. La surface disparaît d'elle-même, comme la ligne d'états.
+
 ## [1.126.0] — 2026-07-28
 
 ### Ajouté

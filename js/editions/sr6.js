@@ -389,6 +389,211 @@ export const EditionSR6 = {
     { key: "downgrade", label: "1 majeure → 1 mineure", from: { key: "major", n: 1 }, to: { key: "minor", n: 1 } },
     { key: "upgrade", label: "4 mineures → 1 majeure", from: { key: "minor", n: 4 }, to: { key: "major", n: 1 } },
   ],
+  /** CATALOGUE D'ACTIONS (lot F1) — la table de combat p.45, détails p.46-49.
+      Lu par `Actions` via ce contrat neutre, comme `statusModel` l'est par
+      `Statuses`. Le budget savait COMPTER, il ne savait pas NOMMER.
+
+      `timing` — la trouvaille du dépouillement, verbatim p.45 : « c'est soit au
+      moment de l'initiative du joueur (I) soit un choix libre à n'importe quel
+      moment (L). […] pour pouvoir effectuer une action Libre, vous devez avoir
+      ENCORE UNE ACTION EN RÉSERVE durant ce round. »
+
+      `(L)` n'est pas une catégorie de coût, c'est un MOMENT : l'action coûte
+      toujours sa mineure ou sa majeure, mais se déclare hors de son tour. La
+      table de combat en compte NEUF (deux de plus vivent dans les tables
+      magique et matricielle, hors périmètre F1) — quand l'app affirmait que SR6
+      n'en avait qu'UNE, la Défense totale. Elles ne se confondent pas avec les
+      interruptions SR5, qui ne coûtent aucun jeton et se paient en score
+      d'initiative : deux mécaniques, deux surfaces.
+
+      `combine` — le livre écrit noir sur blanc que cinq mineures « doivent être
+      utilisées avec l'action majeure Attaquer ». Le champ le DIT dans
+      l'infobulle ; il ne force rien (garde-fou (e) : informer, jamais décider).
+
+      ⚠ Périmètre : la table de COMBAT seulement. Les actions magiques (4 min,
+      7 maj) et matricielles (6 min, 26 maj) ont déjà leur surface motorisée
+      (`MagicAction`, le tiroir d'Intrusion, `cyberdeckModel.actions`) ; les
+      faire entrer ici créerait deux sources de vérité sur les mêmes gestes.
+      Elles recevront leur COÛT — leur seul manque — au lot F1b.
+
+      ⚠ Pas de `shot` sur « Attaquer » : SR6 n'a pas de recul progressif (le
+      Score Offensif l'a remplacé), et l'action couvre indistinctement la mêlée
+      et la distance. Le drapeau est une notion SR5, il vit dans sr5.js. */
+  actionModel: {
+    catalog: [
+      /* ---------------- ACTIONS MINEURES (19) ---------------- */
+      { key: "ajuster", name: "Ajuster", cost: [{ key: "minor", n: 1 }], timing: "I", quick: true, lines: [
+        "+1 dé à l'attaque, une seule fois par round de combat",
+        "Le bonus non utilisé reste valable au round suivant et se cumule",
+        "Bonus maximum égal à la Volonté du personnage",
+        "Un tour sans Ajuster ni Attaquer fait perdre le bonus accumulé",
+        "Requise pour bénéficier d'une lunette de visée ou d'un agrandissement d'image",
+      ] },
+      { key: "attaquerCouvert", name: "Attaquer depuis un couvert", cost: [{ key: "minor", n: 1 }], timing: "I", combine: "attaquer", lines: [
+        "À effectuer conjointement avec Attaquer, quand on bénéficie de l'état Couvert et qu'on souhaite le conserver",
+      ] },
+      { key: "attaquesMultiples", name: "Attaques multiples", cost: [{ key: "minor", n: 1 }], timing: "I", combine: "attaquer", lines: [
+        "Attaquer plusieurs adversaires à portée, si les munitions et la position le permettent",
+        "Répartir la réserve entre les cibles, ou moitié de réserve par méthode d'attaque (arrondi à l'inférieur)",
+      ] },
+      { key: "bloquer", name: "Bloquer", cost: [{ key: "minor", n: 1 }], timing: "L", lines: [
+        "Ajoute la compétence de Combat rapproché à un unique test de défense au corps à corps",
+        "Le jet doit être effectué au moment où l'action est utilisée",
+      ] },
+      { key: "changerModeAppareil", name: "Changer le mode d'un appareil", cost: [{ key: "minor", n: 1 }], timing: "L", lines: [
+        "Activer, désactiver ou changer le mode d'un appareil connecté à une interface neurale directe",
+        "Inclut cyberware, mode de tir d'un smartgun, mode silencieux d'un commlink, coupure du sans-fil",
+      ] },
+      { key: "cibler", name: "Cibler", cost: [{ key: "minor", n: 1 }], timing: "I", combine: "attaquer", lines: [
+        "+2 à la Valeur de Dommages contre −4 dés",
+        "Des actions d'Atout permettent des ciblages plus précis, sans malus ou avec un malus réduit",
+      ] },
+      { key: "commanderDrone", name: "Commander un drone", cost: [{ key: "minor", n: 1 }], timing: "I", lines: [
+        "Donner un ordre à un drone contrôlé",
+        "Le même ordre à tous les drones via une CCR ; des ordres différents coûtent autant d'actions mineures",
+      ] },
+      { key: "degainerRapidement", name: "Dégainer rapidement", cost: [{ key: "minor", n: 1 }], timing: "I", combine: "attaquer", lines: [
+        "Dégainer un pistolet, une arme de taille comparable ou une petite arme de jet, puis attaquer immédiatement",
+        "Nécessite l'équipement, l'augmentation ou le trait approprié — sans quoi l'action est impossible",
+      ] },
+      { key: "esquiver", name: "Esquiver", cost: [{ key: "minor", n: 1 }], timing: "L", lines: [
+        "Ajoute la compétence d'Athlétisme à un unique test de défense en combat",
+        "Le jet doit être effectué au moment où l'action est utilisée",
+      ] },
+      { key: "eviter", name: "Éviter", cost: [{ key: "minor", n: 1 }], timing: "L", lines: [
+        "Hors de son tour : éviter le souffle d'une explosion ou une attaque au gaz",
+        "Réaction + Athlétisme − malus d'évitement (point d'impact −6, proche −4, courte −2)",
+        "Déplacement d'autant de mètres que de succès, direction choisie avant de connaître la déviation",
+        "Au-delà de 2 mètres, le personnage plonge et subit l'état À terre",
+        "Impossible si Éviter, Se déplacer ou Sprinter a déjà servi ce round — et les interdit pour le reste du round",
+      ] },
+      { key: "faireTrebucher", name: "Faire trébucher", cost: [{ key: "minor", n: 1 }], timing: "I", combine: "attaquer", lines: [
+        "Mêlée uniquement, avec l'action majeure Attaquer — vise la mise à terre, pas les dommages",
+        "Dégâts de base réduits de 2",
+        "Si l'attaque réussit : test d'Athlétisme + Agilité de la cible, seuil égal à la VD ajustée, sinon état À terre",
+      ] },
+      { key: "intercepter", name: "Intercepter", cost: [{ key: "minor", n: 1 }], timing: "L", lines: [
+        "Un adversaire arrive à portée proche : Attaquer hors de l'ordre d'initiative",
+        "Exige qu'il reste ENCORE une action mineure ET une action majeure ce round",
+        "Impossible avec une arme à distance",
+      ] },
+      { key: "lacherObjet", name: "Lâcher un objet", cost: [{ key: "minor", n: 1 }], timing: "L", lines: [
+        "Lâcher ce qu'on tient en main ; les objets peuvent être endommagés selon la chute",
+      ] },
+      { key: "rechargerSmartgun", name: "Recharger un smartgun", cost: [{ key: "minor", n: 1 }], timing: "I", reload: "smart", lines: [
+        "Connecté à un smartgun prêt : éjecte le chargeur et en engage un autre d'une simple pensée",
+        "Exige qu'un nouveau chargeur soit disponible",
+      ] },
+      { key: "seCoucher", name: "Se coucher", cost: [{ key: "minor", n: 1 }], timing: "I", lines: [
+        "Obtient l'état À terre jusqu'à ce qu'il choisisse l'action Se relever",
+      ] },
+      { key: "seDeplacer", name: "Se déplacer", cost: [{ key: "minor", n: 1 }], timing: "I", quick: true, lines: [
+        "Déplacement de 10 mètres",
+        "Une seule action Se déplacer par tour de personnage",
+      ] },
+      { key: "seJeterParTerre", name: "Se jeter par terre", cost: [{ key: "minor", n: 1 }], timing: "L", lines: [
+        "+2 dés au test de défense contre une attaque",
+        "Obtient l'état À terre",
+        "−2 dés à tous les tests de compétences actives jusqu'à la fin de son prochain tour, ou jusqu'à Se relever",
+      ] },
+      { key: "seMettreACouvert", name: "Se mettre à couvert", cost: [{ key: "minor", n: 1 }], timing: "I", quick: true, lines: [
+        "Octroie les états Couvert I, II, III ou IV selon l'abri",
+        "Le personnage doit agir en fonction des contraintes de cet abri",
+      ] },
+      { key: "seRelever", name: "Se relever", cost: [{ key: "minor", n: 1 }], timing: "I", quick: true, lines: [
+        "Se débarrasse de l'état À terre",
+      ] },
+
+      /* ---------------- ACTIONS MAJEURES (13) ---------------- */
+      { key: "assister", name: "Assister", cost: [{ key: "major", n: 1 }], timing: "L", lines: [
+        "Devenir assistant au cours d'un test d'équipe, pour aider un équipier sur une tâche",
+      ] },
+      { key: "attaquer", name: "Attaquer", cost: [{ key: "major", n: 1 }], timing: "I", quick: true, lines: [
+        "Porter un type d'attaque : physique, magique ou de véhicule",
+      ] },
+      { key: "controlerDrone", name: "Contrôler un drone à distance", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
+        "Piloter un drone à distance via une Console de commande pour rigger (CCR)",
+        "Sans CCR, voir l'action matricielle Contrôler un appareil",
+      ] },
+      { key: "defenseTotale", name: "Défense totale", cost: [{ key: "major", n: 1 }], timing: "L", quick: true, lines: [
+        "Ajoute la Volonté à ses tests de défense jusqu'à la fin du round de combat",
+      ] },
+      { key: "observerAttentivement", name: "Observer attentivement", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
+        "Autorise un test de Perception ou d'Observation astrale",
+        "Sert à remarquer les détails que le rythme du combat occulte (équipement, identité)",
+      ] },
+      { key: "plongerRigger", name: "Plonger (rigger)", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
+        "Avec un câblage de contrôle de véhicule et un véhicule ou drone adapté au rigging : en prendre le contrôle",
+      ] },
+      { key: "preparerArme", name: "Préparer une arme", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
+        "Rendre une arme prête à être utilisée : dégainer, sortir du fourreau, armer une grenade…",
+        "Requise pour presque toutes les armes",
+        "Plusieurs petites armes de jet d'un coup : autant que l'Agilité, dans l'autre main",
+      ] },
+      { key: "ramasserPoserObjet", name: "Ramasser / poser un objet", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
+        "Ramasser un objet à portée ou en poser un, en y faisant attention",
+        "Une arme ainsi ramassée est considérée comme prête à être utilisée",
+      ] },
+      { key: "rechargerArme", name: "Recharger une arme", cost: [{ key: "major", n: 1 }], timing: "I", quick: true, reload: "full", lines: [
+        "Pour une arme sans smartlink, ou dont le smartlink est désactivé",
+        "L'arme est rechargée à sa pleine capacité, tant que le personnage a assez de munitions",
+      ] },
+      { key: "sprinter", name: "Sprinter", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
+        "Déplacement de base de 15 mètres, +1 mètre par succès à un test d'Athlétisme + Agilité",
+        "Une seule action Sprinter par tour, non combinable avec Se déplacer ni Éviter",
+      ] },
+      { key: "utiliserAppareilSimple", name: "Utiliser un appareil simple", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
+        "Un appareil activé en un seul mouvement : bouton, touche, icône unique",
+        "Un appareil connecté à une IND activée ne coûte qu'une action mineure",
+      ] },
+      { key: "utiliserCCR", name: "Utiliser une CCR", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
+        "Manœuvres de rigging depuis une Console de commande pour rigger",
+      ] },
+      { key: "utiliserCompetence", name: "Utiliser une compétence", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
+        "Utiliser n'importe quelle compétence appropriée",
+      ] },
+    ],
+  },
+  /** MODES DE TIR (lot F2) — chapitre Combat, caractéristiques des armes.
+
+      SR6 ne paie pas en modificateur de défense mais en SCORE OFFENSIF : « SA :
+      quand vous tirez deux balles, réduisez le Score Offensif de votre arme de
+      2 points et augmentez sa Valeur de Dommages de 1 point » ; « TR : quatre
+      balles par attaque […] rafale ciblée, qui réduit votre Score Offensif de 4
+      et augmente votre Valeur de Dommages de 2 » ; « TA : ce mode utilise dix
+      balles et réduit le Score Offensif de 6 points ».
+
+      Pas de `defense` ici, et pas de `recoil` non plus : SR6 n'a PAS de recul
+      progressif — le Score Offensif a remplacé toute cette mécanique. Le
+      contrat s'en tait plutôt que de porter des zéros trompeurs.
+
+      La rafale LARGE est une entrée à part parce que le livre en fait un choix
+      distinct de la rafale ciblée, au même coût en balles : « répartir votre
+      réserve de dés entre deux cibles […] en considérant chacune de ces
+      attaques comme étant effectuée en mode SA et sans avoir recours à l'action
+      mineure Attaques multiples ». */
+  fireModes: [
+    { key: "cc", name: "Coup par coup", requires: "CC", actionKey: "attaquer", bullets: 1, so: 0, dv: 0 },
+    { key: "sa1", name: "Semi-automatique (1 balle)", requires: "SA", actionKey: "attaquer", bullets: 1, so: 0, dv: 0 },
+    { key: "sa2", name: "Semi-automatique (2 balles)", requires: "SA", actionKey: "attaquer", bullets: 2, so: -2, dv: 1 },
+    { key: "trCiblee", name: "Rafale ciblée", requires: "TR", actionKey: "attaquer", bullets: 4, so: -4, dv: 2 },
+    { key: "trLarge", name: "Rafale large", requires: "TR", actionKey: "attaquer", bullets: 4, so: 0, dv: 0,
+      note: "deux cibles proches, réserve répartie, chaque attaque traitée comme SA — sans l'action Attaques multiples" },
+    { key: "ta", name: "Tir automatique", requires: "TA", actionKey: "attaquer", bullets: 10, so: -6, dv: 0,
+      note: "toutes les cibles valides dans un rayon d'1 m · +1 m par −2 SO supplémentaire, tant que le SO reste positif" },
+  ],
+  /** RECHARGEMENT (lot F2) — deux entrées du catalogue d'actions, et le
+      smartlink décide laquelle. « Il faut utiliser une action majeure pour
+      recharger une arme SANS SMARTLINK ou dont le smartlink est désactivé » ;
+      le smartgun, lui, « éjecte le chargeur de son arme et en engage un autre
+      en un seul mouvement » pour une mineure.
+
+      Le contrat renvoie des clés d'action, jamais un coût : `actionModel` les
+      porte déjà. */
+  reloadPlan(parsed) {
+    if (!parsed || !parsed.capacity || !parsed.capacity.length) return [];
+    return parsed.smart ? ["rechargerSmartgun"] : ["rechargerArme"];
+  },
   /** ÉTATS DE COMBAT (lot E1) — le catalogue, lu par `Statuses` via ce contrat
       neutre. SR6 est la seule édition à avoir un vrai système d'états : une
       table, pas de la prose.

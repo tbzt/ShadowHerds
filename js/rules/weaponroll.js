@@ -128,13 +128,63 @@ export const WeaponRoll = {
     return null;
   },
 
-  /** Analyse une arme (chaîne ou objet) → { name, pre, vd }. */
+  /** Modes de tir déclarés par une chaîne d'arme — `SA/TR/TA`, `CC/TR`, `TR`…
+      (lot F2). Ils étaient DÉJÀ dans la donnée des deux éditions ; le parseur
+      les jetait, faute de quiconque pour les lire.
+
+      ⚠ On segmente sur les virgules AVANT de tester, et le test exige que le
+      segment ne contienne QUE des modes : sans ça, la bande de Score Offensif
+      SR6 (`SO 9/9/7/-/-`) se ferait passer pour une liste de modes à cause de
+      ses barres obliques. */
+  _MODE_SEG: /^(CC|SA|TR|TA)(\s*\/\s*(CC|SA|TR|TA))*$/i,
+  _parseModes(str) {
+    const inner = (str.match(/\[(.*)\]/s) || [, ""])[1];
+    for (const seg of inner.split(",")) {
+      const t = seg.trim();
+      if (this._MODE_SEG.test(t)) return t.split("/").map((m) => m.trim().toUpperCase());
+    }
+    return null;
+  },
+
+  /** Capacité et mécanisme de chargement : `42(c)`, `6 (cy)`, `100(bande)`.
+      Les codes sont ceux des deux livres, à l'identique — (c) chargeur,
+      (m) magasin interne, (b) barillet, (cy) cylindre, (cb) canon basculant,
+      (t) tambour, (bande) bande, (cn) chargement par le canon.
+
+      Une arme peut en déclarer PLUSIEURS (« 50(c) ou 100(bande) », Ingram
+      Valiant) : la première est la nominale, les autres sont conservées telles
+      quelles — le MJ choisit, l'app ne tranche pas à sa place. */
+  _CAPACITY: /(\d+)\s*\((c|m|b|cy|cb|t|bande|cn)\)/gi,
+  _parseCapacity(str) {
+    const out = [];
+    for (const m of String(str).matchAll(this._CAPACITY)) {
+      out.push({ n: parseInt(m[1], 10), mech: m[2].toLowerCase() });
+    }
+    return out.length ? out : null;
+  },
+
+  /** Compensation de recul SR5 — `CR 2`, `CR 0(1)` (lot F2).
+      Notation du livre, verbatim p.418 : « Les nombres entre parenthèses
+      indiquent la compensation de recul TOTALE qui s'applique uniquement si
+      tous les accessoires internes sont utilisés (crosses pliables et
+      détachables, etc.) ». La parenthèse est donc un TOTAL, jamais un
+      supplément — d'où `{ base, full }` et non `{ base, bonus }`.
+      Absent = 0 : la colonne CR du livre vaut « — » pour la majorité des armes. */
+  _parseCR(str) {
+    const m = String(str).match(/\bCR\s*(\d+)?\s*(?:\((\d+)\))?/i);
+    if (!m || (m[1] === undefined && m[2] === undefined)) return null;
+    const base = m[1] !== undefined ? parseInt(m[1], 10) : 0;
+    return { base, full: m[2] !== undefined ? parseInt(m[2], 10) : base };
+  },
+
+  /** Analyse une arme (chaîne ou objet) → { name, pre, vd, so, modes,
+      capacity, smart, cr }. */
   parse(weapon) {
     if (weapon && typeof weapon === "object") {
       // item-objet {str, cat} → parse sa chaîne. Distinct de l'objet
       // arme structuré {name, vd} (éditions à pnj.weapons).
       if (typeof weapon.str === "string") return WeaponRoll.parse(weapon.str);
-      return { name: weapon.name || "", pre: null, vd: weapon.vd ?? null };
+      return { name: weapon.name || "", pre: null, vd: weapon.vd ?? null, modes: null, capacity: null, smart: false, cr: null };
     }
     const str = String(weapon || "");
     const name = (str.split("[")[0] || "").trim();
@@ -156,6 +206,11 @@ export const WeaponRoll = {
       pre: preMatch ? parseInt(preMatch[1], 10) : null,
       vd: vdMatch ? parseInt(vdMatch[1], 10) : null,
       so,
+      // ---- lot F2 : ce que la chaîne portait déjà et que personne ne lisait.
+      modes: this._parseModes(str),
+      capacity: this._parseCapacity(str),
+      smart: /smart\s*(gun|link)/i.test(str),
+      cr: this._parseCR(str),
     };
   },
 
