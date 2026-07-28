@@ -16,10 +16,13 @@
    l'édition (usesRiskPanel), comme ContactGen.generate — aucune branche
    App.edition (prohibition #1).
    ============================================================ */
+import { FocusTrap } from "../kit/focustrap.js";
+
 export const ContactCreate = {
   _el: null,
   _pjId: null,
   _pjEdition: null,
+  _releaseTrap: null,
 
   /** Appelée une fois au boot (app.js) : construit l'overlay et câble ses
       écouteurs. Idempotent. */
@@ -34,10 +37,11 @@ export const ContactCreate = {
     overlay.id = "contact-create-overlay";
     overlay.setAttribute("role", "dialog");
     overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-labelledby", "contact-create-title");
     overlay.innerHTML = `
       <div class="modal dialog-modal">
         <div class="modal-header">
-          <span class="modal-title" data-cc="title">Créer un contact</span>
+          <span class="modal-title" id="contact-create-title" data-cc="title">Créer un contact</span>
           <button class="modal-close" data-action="cc-cancel" aria-label="Fermer">✕</button>
         </div>
         <div class="modal-body" data-cc="body"></div>
@@ -94,6 +98,8 @@ export const ContactCreate = {
     const overlay = this._ensure();
     overlay.querySelector('[data-cc="body"]').innerHTML = this._form(pj);
     overlay.classList.add("open");
+    // D7 : piégé AVANT le déplacement du focus (même ordre que Dialog._open).
+    this._releaseTrap = FocusTrap.activate(overlay.querySelector(".modal"));
     requestAnimationFrame(() => {
       const nameEl = overlay.querySelector("#cc-name");
       if (nameEl) nameEl.focus();
@@ -186,6 +192,10 @@ export const ContactCreate = {
 
   _close() {
     if (this._el) this._el.classList.remove("open");
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
     this._pjId = null;
     this._pjEdition = null;
   },

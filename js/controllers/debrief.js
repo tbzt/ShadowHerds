@@ -29,12 +29,14 @@ import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Campaign } from "../rules/campaign.js";
 import { DossierBar } from "../widgets/journal/dossierbar.js";
 import { Dossiers } from "../widgets/journal/dossiers.js";
+import { FocusTrap } from "../widgets/kit/focustrap.js";
 import { Notebooks } from "../rules/notebooks.js";
 import { RunGen } from "./rungen.js";
 
 export const Debrief = {
   _el: null,
   _runId: null,
+  _releaseTrap: null,
 
   /** Ouvre le débrief d'un run. No-op si l'id ne pointe pas un dossier « run ». */
   open(runId) {
@@ -43,6 +45,10 @@ export const Debrief = {
     const overlay = this._ensure();
     overlay.querySelector('[data-debrief="body"]').innerHTML = this._bodyHtml(runId);
     overlay.classList.add("open");
+    // D7 : piégé AVANT le déplacement du focus (même ordre que Dialog._open) —
+    // le déclencheur mémorisé doit être le vrai bouton cliqué, pas un champ
+    // déjà dans la modale.
+    this._releaseTrap = FocusTrap.activate(overlay.querySelector(".modal"));
     requestAnimationFrame(() => {
       const first = overlay.querySelector("input[type=number]");
       if (first) first.focus();
@@ -51,6 +57,10 @@ export const Debrief = {
 
   hide() {
     if (this._el) this._el.classList.remove("open");
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
     this._runId = null;
   },
 
@@ -272,11 +282,12 @@ export const Debrief = {
     overlay.id = "debrief-overlay";
     overlay.setAttribute("role", "dialog");
     overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-labelledby", "debrief-title");
     // Réutilise la coquille .modal-overlay/.modal (thème par édition hérité).
     overlay.innerHTML = `
       <div class="modal debrief-modal">
         <div class="modal-header">
-          <span class="modal-title">Débrief de séance</span>
+          <span class="modal-title" id="debrief-title">Débrief de séance</span>
           <button class="modal-close" data-debrief-action="cancel" aria-label="Fermer">✕</button>
         </div>
         <div class="modal-body debrief-body" data-debrief="body"></div>
