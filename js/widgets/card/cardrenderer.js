@@ -2075,7 +2075,7 @@ export const CardRenderer = {
     const suffixe =
       cap === 1 ? "" : cap === Infinity ? ` ${s.level}` : ` ${this._roman(s.level)}`;
     const info = [`${s.name}${suffixe} — ${s.page}`, ...(s.lines || [])].join("\n• ");
-    return `<span class="tag drug-tag status-tag is-on" role="button" tabindex="0"
+    return `<span class="tag drug-tag status is-on" role="button" tabindex="0"
       data-action="status-step" data-id="${pnj.id}" data-status="${s.key}"
       title="${this._esc(info)}">${this._esc(s.name)}${suffixe}<span class="status-clear" role="button" tabindex="0" data-action="status-clear" data-id="${pnj.id}" data-status="${s.key}" aria-label="Retirer ${this._esc(s.name)}" title="Retirer">✕</span></span>`;
   },

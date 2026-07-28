@@ -89,12 +89,9 @@
   gap: var(--sp-1);
   margin-top: var(--sp-1);
 }
-/* Un état POSÉ : liseré plein, pas de remplissage — il informe, il ne crie
-   pas. La bordure suffit à le détacher des tags inertes voisins. */
-.status-tag.is-on {
-  border-color: var(--text-dim);
-  color: var(--text);
-}
+/* D5 : .status-tag.is-on était l'exact modèle source de .status.is-on
+   (pnj-card.css) — devenu redondant, retiré. Composé dans le HTML :
+   cardrenderer.js:2078 (`class="tag drug-tag status is-on"`). */
 .status-clear {
   margin-left: var(--sp-1);
   padding: 0 2px;
@@ -185,7 +182,7 @@
   font-weight: 700;
 }
 /* Surtaxe d'état APPLIQUÉE (lot F3) : le coût affiché a monté, et l'infobulle
-   dit de qui. Liseré plein, comme un état posé (`.status-tag.is-on`) — c'est
+   dit de qui. Liseré plein, comme un état posé (`.status.is-on`, D5) — c'est
    la même idée, un effet actif se souligne, il ne se colore pas. */
 .action-pick.is-surcharged {
   border-color: var(--text-dim);
