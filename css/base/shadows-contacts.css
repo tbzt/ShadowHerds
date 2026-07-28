@@ -651,7 +651,7 @@
   transition: color var(--dur-base);
 }
 .pch-name:hover { color: var(--state); }
-.pch-camp { display: block; font-family: var(--font-mono, monospace); font-size: 10px; letter-spacing: 0.04em; color: var(--faint, var(--text-dim)); margin-top: 1px; }
+.pch-camp { display: block; font-family: var(--font-mono, monospace); font-size: var(--fs-2xs); letter-spacing: 0.04em; color: var(--faint, var(--text-dim)); margin-top: 1px; }
 .pch-tools { display: inline-flex; gap: 5px; margin-top: 7px; justify-content: flex-end; flex-wrap: wrap; }
 /* cellules d'horloge (gros chiffres) */
 .pch-cells { display: flex; gap: var(--sp-2); margin-top: 13px; }
@@ -872,7 +872,7 @@
   border-radius: var(--radius-sm);
   background: var(--bg-mid, #16202b);
   color: var(--text);
-  font-size: 1rem;
+  font-size: var(--fs-md);
   cursor: pointer;
 }
 .play-clock-btn:hover:not(:disabled) {

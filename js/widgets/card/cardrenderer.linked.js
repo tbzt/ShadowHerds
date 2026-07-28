@@ -146,7 +146,7 @@ Object.assign(CardRenderer, {
           <div class="card-section-content"><span class="tag">${this._esc(v.rrNotes)}</span></div></div>`;
       if (v.notes)
         html += `<div class="card-section"><div class="card-section-label">Notes</div>
-          <div style="font-size:0.75rem;">${this._esc(v.notes)}</div></div>`;
+          <div style="font-size:var(--fs-xs);">${this._esc(v.notes)}</div></div>`;
       html += "</div>";
     }
 

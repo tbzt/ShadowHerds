@@ -291,7 +291,7 @@
 }
 
 .anarchy-atout {
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   color: var(--text-dim);
   line-height: 1.5;
   margin-bottom: 3px;

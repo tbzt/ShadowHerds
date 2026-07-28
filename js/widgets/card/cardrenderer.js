@@ -1213,7 +1213,7 @@ export const CardRenderer = {
     if (pnj.type !== "creature" || !pnj.lore) return "";
     return `<div class="card-section flavor-section">
       <div class="card-section-label">Description</div>
-      <div style="font-size:0.75rem;">${this._esc(pnj.lore)}</div>
+      <div style="font-size:var(--fs-xs);">${this._esc(pnj.lore)}</div>
     </div>`;
   },
 

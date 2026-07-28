@@ -13,7 +13,7 @@ export const RunRenderer = {
     const obj2 = r.objectif2
       ? `<div class="run-field">
            <span class="run-field-label">Objectif secondaire</span>
-           <span class="run-field-val" style="color:var(--accent2);font-size:0.75rem;">${CardRenderer._esc(r.objectif2)}</span>
+           <span class="run-field-val" style="color:var(--accent2);font-size:var(--fs-xs);">${CardRenderer._esc(r.objectif2)}</span>
          </div>`
       : "";
     el.innerHTML = `

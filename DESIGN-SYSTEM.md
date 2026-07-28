@@ -348,6 +348,31 @@ naissent les 80 tailles ad hoc, parce qu'aucune n'est nommée.
 c'est le **design** qui est à revoir, pas l'échelle. (Les `clamp()` des titres
 d'accueil sont l'exception admise : ils sont fluides par nature.)
 
+**Ce que la loi ne dit pas — les 4 catégories HORS échelle, relevées en ouvrant
+le front typo de D11 (2026-07-28).** Le relevé brut (« 102 tailles hors
+échelle ») confondait quatre choses ; seule la dernière est de la dette :
+
+1. **`pt` dans `print.css` (30 occurrences)** — autre *médium*. Le `pt` est
+   l'unité du papier, `--fs-*` est une échelle écran en `rem`. Hors périmètre
+   par nature, comme les `50%` de `border-radius` (cercles) le sont du rayon.
+2. **Valeurs en `em` (~14)** — relatives au **parent**, pas à la racine. Un
+   `0.82em` dit « un peu plus petit que ce qui m'entoure », ce qu'aucun pas
+   absolu ne sait exprimer. Mécanisme différent, pas un pas manquant.
+3. **`clamp()` (3)** — l'exception déjà admise ci-dessus.
+4. **Le seuil iOS à `16px` (2 sites : `responsive.css`, `contact-form.css`) et
+   la racine du `rem` (`html { font-size: 16px }`, `foundation.css`)** —
+   **protégés, à ne jamais convertir.** Les trois portent déjà leur raison en
+   commentaire : sous 16px iOS zoome au focus d'un champ (CH-V12), et
+   `--fs-md` peut bouger pour des motifs de hiérarchie visuelle — l'y lier
+   réintroduirait le zoom. La racine, elle, est le point zéro **à partir
+   duquel** `--fs-md` est calculé : la lier créerait une référence circulaire.
+
+**Méthode, en retour :** trier par médium et par mécanisme (`pt` / `em` /
+fluide / absolu) **avant** de compter, et lire les commentaires des sites
+restants avant tout arbitrage — les trois protections ci-dessus étaient
+écrites noir sur blanc dans le code, invisibles au seul `grep`. Même leçon
+qu'en §4.3 pour `--sp-*`.
+
 **Règle — le rôle de la mono.** `--font-mono` est la voix du **système** :
 étiquettes, chiffres, identifiants, tout ce que la machine dit. Le corps est
 la voix de la **fiction**. Ne jamais mélanger : c'est votre meilleur repère de

@@ -343,7 +343,7 @@ export const EditModal = {
           <input type="number" id="em-contact-loyalty" placeholder="Loyauté" min="1" max="6">
           <button type="button" class="em-add-skill-btn" data-action="add-contact-link">Lier</button>
         </div>`
-      : `<p style="font-size:0.75rem;color:var(--text-dim);">Aucun contact disponible — créez-en un dans Contacts.</p>`;
+      : `<p style="font-size:var(--fs-xs);color:var(--text-dim);">Aucun contact disponible — créez-en un dans Contacts.</p>`;
     return `<details class="modal-section em-contact-links-section">
       <summary class="modal-section-title">Contacts liés</summary>
       <div id="em-contact-links-list">${rows}</div>

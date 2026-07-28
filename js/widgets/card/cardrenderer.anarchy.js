@@ -283,7 +283,7 @@ Object.assign(CardRenderer, {
     // Cyberdeck : vit désormais dans le module Matrice.
     if (notes) {
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Notes</div>
-        <div style="font-size:0.75rem;">${this._esc(notes)}</div></div>`;
+        <div style="font-size:var(--fs-xs);">${this._esc(notes)}</div></div>`;
     }
     html += this._zoneShell(pnj, "details", detailsBody, "attributs, équipement");
 

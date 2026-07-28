@@ -204,7 +204,7 @@
 /* P2 — portrait incrusté (graphe des Liens) : le hit reste sur le disque. */
 .graph-node-portrait { pointer-events: none; }
 .graph-node-label {
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   fill: var(--text-dim, #9fb0c0);
   letter-spacing: 0.3px;
   pointer-events: none;
@@ -354,7 +354,7 @@
   display: grid;
   place-items: center;
   padding: 0;
-  font-size: 1rem;
+  font-size: var(--fs-md);
   line-height: 1;
   border: 1px solid var(--border, #2a3a49);
   border-radius: var(--radius-sm);
@@ -452,7 +452,7 @@
   pointer-events: none;
 }
 .graph-edge-label {
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   fill: var(--text, #dfe8f0);
   paint-order: stroke;
   stroke: var(--bg);
@@ -513,7 +513,7 @@
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-dim, #9fb0c0);
-  font-size: 1rem;
+  font-size: var(--fs-md);
   cursor: pointer;
 }
 .graph-dir-btn.active {
