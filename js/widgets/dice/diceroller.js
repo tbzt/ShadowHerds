@@ -358,9 +358,13 @@ export const DiceRoller = {
       this._setThreat(this._threat - opt.cost);
       return { wild: opt.wild, label: opt.label };
     }
-    const have = Actor.attr(pnj, opt.costAttr);
+    const have = this._spendableEdge(pnj, opt.costAttr);
     if (have == null || have < opt.cost) return null;
-    Actor.spend(pnj, opt.costAttr, opt.cost);
+    // En scène, la dépense passe par la rencontre — le MÊME registre que les
+    // actions d'Atout, et il porte déjà le plafond et le garde-fou du livre.
+    const scene = this._hooks.sceneEdge ? this._hooks.sceneEdge(pnj) : null;
+    if (scene != null && this._hooks.adjustSceneEdge) this._hooks.adjustSceneEdge(pnj, -opt.cost);
+    else Actor.spend(pnj, opt.costAttr, opt.cost);
     this._hooks.onPnjChanged(pnj);
     return { dice: opt.dice, explode: opt.explode, ignoreLimit: opt.ignoreLimit, label: opt.label };
   },
@@ -967,6 +971,20 @@ export const DiceRoller = {
       n'a pas d'Edge pré-jet (A1/A2), si le PNJ n'a pas d'attributs (lancer
       libre), ou si le budget est nul. Fonction pure (lecture seule) — le débit
       et le jet viennent des surfaces (vagues suivantes). */
+  /** CE QUI RESTE À DÉPENSER, et d'où ça sort. En scène, l'Atout SR6 est une
+      ressource de la RENCONTRE (`Encounter.sceneEdge`) : c'est là que les
+      actions d'Atout puisent, et le panneau doit puiser au même endroit — sinon
+      dépenser un greffon ne change rien aux options affichées. Hors scène, ou
+      pour une édition qui range sa ressource sur la fiche (Chance SR5),
+      l'attribut reprend son rôle.
+
+      ⚠ À ne pas confondre avec le RANG (`Actor.attr`), qui dit le calibre du
+      personnage et alimente `dice: "rating"` — celui-là ne se dépense pas. */
+  _spendableEdge(pnj, costAttr) {
+    const scene = this._hooks.sceneEdge ? this._hooks.sceneEdge(pnj) : null;
+    return scene == null ? Actor.attr(pnj, costAttr) : scene;
+  },
+
   preRollEdgeOptions(pnj) {
     const mod = pnj ? App.getEditionModule(pnj.edition) : App.editionModule;
     const spec = mod && mod.preRollEdge;
@@ -974,7 +992,7 @@ export const DiceRoller = {
     // Source du budget : réserve de menace globale (Anarchy 1re : Points
     // d'Anarchy) OU attribut de PNJ (Chance SR5 / Atout SR6).
     const fromReserve = spec.reserve === "threat";
-    const budget = fromReserve ? this.threatValue() : Actor.attr(pnj, spec.costAttr);
+    const budget = fromReserve ? this.threatValue() : this._spendableEdge(pnj, spec.costAttr);
     if (budget == null) return [];
     // E3 — VERROU D'ÉTAT : un état peut interdire la dépense (SR6 Désorienté,
     // p.55-58 : « ni gain ni dépense d'Atout »). Aucune option n'est alors
@@ -1040,7 +1058,10 @@ export const DiceRoller = {
       (mod.preRollGain && mod.preRollGain.costAttr) ||
       (spec && spec.costAttr) ||
       null;
-    return attr ? `${Actor.attr(pnj, attr)} ${attr}` : "";
+    // Même source que les options et que les greffons : la réserve de scène
+    // quand elle existe, l'attribut sinon. Un bandeau qui annoncerait un autre
+    // chiffre que les puces qu'il surplombe serait pire que pas de bandeau.
+    return attr ? `${this._spendableEdge(pnj, attr)} ${attr}` : "";
   },
 
   /** Nom VF de la ressource pré-jet de l'édition du PNJ — « Chance » (SR5),
@@ -1551,7 +1572,13 @@ export const DiceRoller = {
     const st = this._gainState();
     const g = this._preRoll && this._preRoll.gain;
     if (!st || !st.canGain || !g) return;
-    Actor.gain(this._preRoll.pnj, g.spec.costAttr, 1, g.spec.max);
+    // Le gain crédite le MÊME registre que la dépense. En scène, c'est
+    // `Encounter.adjustEdge` qui l'applique : il borne à 7 et rappelle le
+    // plafond de 2 gains par tour (p.50), que `Actor.gain` ne connaît pas.
+    const pnj = this._preRoll.pnj;
+    const scene = this._hooks.sceneEdge ? this._hooks.sceneEdge(pnj) : null;
+    if (scene != null && this._hooks.adjustSceneEdge) this._hooks.adjustSceneEdge(pnj, 1);
+    else Actor.gain(pnj, g.spec.costAttr, 1, g.spec.max);
     g.gained = (g.gained || 0) + 1; // acté → le bouton passe en état « gagné »
     Utils.haptic(12); // confirme le tap (Android ; le visuel tient seul sinon)
     this._hooks.onPnjChanged(this._preRoll.pnj);
@@ -1608,7 +1635,10 @@ export const DiceRoller = {
       hint = `Menace ${this._threat}`;
     } else if (action.costAttr) {
       pnj = opts.pnjId ? this._hooks.resolve(opts.pnjId) : null;
-      const val = pnj && pnj.attrs ? Actor.attr(pnj, action.costAttr) : null;
+      // Même registre que le pré-jet : la réserve de scène si le lanceur y est,
+      // l'attribut sinon. Sans ça, la relance annonçait un solde d'Atout que le
+      // panneau venait de contredire deux secondes plus tôt.
+      const val = pnj && pnj.attrs ? this._spendableEdge(pnj, action.costAttr) : null;
       if (val != null) {
         available = val > 0;
         hint = `${action.costAttr} ${val}`;
@@ -1642,7 +1672,9 @@ export const DiceRoller = {
     if (mod.usesThreatReserve) {
       this._setThreat(this._threat - 1);
     } else if (st.pnj && st.action.costAttr) {
-      Actor.spend(st.pnj, st.action.costAttr, 1); // dépense d'attribut-ressource
+      const scene = this._hooks.sceneEdge ? this._hooks.sceneEdge(st.pnj) : null;
+      if (scene != null && this._hooks.adjustSceneEdge) this._hooks.adjustSceneEdge(st.pnj, -1);
+      else Actor.spend(st.pnj, st.action.costAttr, 1); // dépense d'attribut-ressource
       this._hooks.onPnjChanged(st.pnj); // re-render la carte (Edge à jour)
     }
     // Jet sans PNJ en SR5/SR6 : relance gratuite, aucune ressource débitée.

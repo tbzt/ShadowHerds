@@ -1479,6 +1479,31 @@ export const Encounter = {
     this.save();
   },
 
+  /** LA RÉSERVE D'ATOUT DE SCÈNE d'un combattant, ou `null` si la scène ne la
+      tient pas — PNJ hors scène, ou édition dont l'Atout n'est pas une
+      ressource de rencontre (`combatModel.edgeTracker`, vrai pour SR6 seul :
+      la Chance SR5 vit sur la fiche, pas dans le tour).
+
+      Ce pont existe parce que le panneau pré-jet lisait et créditait
+      `pnj.attrs.ATO` — l'ATTRIBUT — pendant que les actions d'Atout se
+      payaient sur `c.edge`, la RÉSERVE. Deux registres pour une seule
+      ressource, dans un seul écran : dépenser un greffon ne réduisait pas les
+      options affichées, et gagner de l'Atout ne rendait pas un greffon
+      abordable. `adjustEdge` dit déjà lequel fait foi — « l'Atout vit dans
+      l'entrée de scène, c'est une ressource de la rencontre ».
+
+      ⚠ Ne concerne que ce qui se DÉPENSE. Le RANG (`dice: "rating"`, « Ajouter
+      son rang d'Atout ») reste lu sur l'attribut : c'est le calibre du
+      personnage, pas ce qu'il lui reste en poche. */
+  sceneEdge(pnjId) {
+    const c = this._find(pnjId);
+    if (!c) return null;
+    const pnj = PnjLookup.find(pnjId);
+    const mod = pnj && App.getEditionModule(pnj.edition);
+    if (!mod || !mod.combatModel || !mod.combatModel.edgeTracker) return null;
+    return c.edge || 0;
+  },
+
   /** Ajuste l'Atout de combat d'un combattant (SR6, 0-7). Le gain est
       plafonné à +2 par tour de personnage (p.50) — avertissement NON bloquant
       (le MJ a toujours raison). Le compteur de gains (edgeTurn) est remis à

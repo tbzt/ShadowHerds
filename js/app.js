@@ -645,6 +645,15 @@ document.addEventListener("DOMContentLoaded", () => {
     onReload: (pnj, arme) => {
       if (typeof Encounter !== "undefined") Encounter.reloadWeapon(pnj.id, arme.key);
     },
+    // La RÉSERVE d'Atout de la scène, quand la scène la tient (SR6). Sans ces
+    // deux ponts, le panneau dépensait l'ATTRIBUT du PNJ pendant que les
+    // actions d'Atout dépensaient la réserve du combattant : deux comptes pour
+    // une seule ressource. `null` → le PNJ n'est pas en scène (ou l'édition
+    // range sa ressource sur la fiche) et l'attribut redevient la source.
+    sceneEdge: (pnj) => (typeof Encounter !== "undefined" ? Encounter.sceneEdge(pnj.id) : null),
+    adjustSceneEdge: (pnj, delta) => {
+      if (typeof Encounter !== "undefined") Encounter.adjustEdge(pnj.id, delta);
+    },
   });
   MagicAction.init({ onPnjChanged });
   ContentModal.bindDelegation();
