@@ -299,7 +299,7 @@
   padding: 48px 24px;
   text-align: center;
   color: var(--text-dim, #9fb0c0);
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
 }
 
 /* L'affordance d'ouverture sur la fiche (réutilise .tag). */
@@ -500,7 +500,7 @@
   background: var(--bg-mid);
   color: var(--text, #dfe8f0);
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
 }
 .graph-dir-row {
   display: flex;
@@ -535,7 +535,7 @@
   flex-direction: row;
   align-items: center;
   gap: var(--sp-2);
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
   color: var(--text, #dfe8f0);
   cursor: pointer;
 }
@@ -645,7 +645,7 @@
   border-radius: 5px;
   background: transparent;
   color: var(--text, #dce6f0);
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -664,7 +664,7 @@
   border: 1px solid var(--border, #2a3a49);
   background: var(--bg-mid);
   color: var(--text, #dce6f0);
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
 }
 .scenario-toolbar {
   display: flex;

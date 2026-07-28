@@ -45,7 +45,7 @@ export const RunGen = {
         <button class="btn-secondary" data-action="add-blank">Topos vierge</button>
         <button class="btn-secondary" data-action="clear-all">Effacer tout</button>
       </div>
-      <p style="margin:.4rem 0 .2rem;color:var(--text-dim,#9fb0c0);font-size:.85rem;">Une amorce qui mérite une aventure structurée ? <button class="linklike" data-action="show-panel" data-panel="trames">La construire en trame ◈</button></p>
+      <p style="margin:.4rem 0 .2rem;color:var(--text-dim,#9fb0c0);font-size:var(--fs-sm);">Une amorce qui mérite une aventure structurée ? <button class="linklike" data-action="show-panel" data-panel="trames">La construire en trame ◈</button></p>
       <div style="display:flex;flex-wrap:wrap;gap:1rem;" id="run-list"></div>`;
     this._restore();
   },
