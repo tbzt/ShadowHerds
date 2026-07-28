@@ -2208,13 +2208,17 @@ body.reordering .reorder-handle {
 }
 
 /* ---- Bande « Tags » (fiche) — rangement pur du Monde (A2). Sœur des chips de
-   faction, mais sans pastille de couleur (un tag n'a pas de roster/couleur). --- */
-.tag-chip {
+   faction, mais sans pastille de couleur (un tag n'a pas de roster/couleur).
+   Nommée .entity-tag-chip (pas .tag-chip) : collision de sélecteur trouvée en
+   auditant D5 avec le .tag-chip de mentions.css (puce #hashtag), chargé après
+   ce fichier — son cursor:pointer + padding retombaient ici par erreur sur un
+   span qui n'est lui-même pas cliquable (seul son bouton ✕ l'est). */
+.entity-tag-chip {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
 }
-.tag-chip-x {
+.entity-tag-chip-x {
   border: none;
   background: transparent;
   color: var(--text-dim);
@@ -2223,7 +2227,7 @@ body.reordering .reorder-handle {
   font-size: var(--fs-2xs);
   line-height: 1;
 }
-.tag-chip-x:hover {
+.entity-tag-chip-x:hover {
   color: var(--danger);
 }
 .tag-add {

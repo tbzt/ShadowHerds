@@ -587,7 +587,7 @@ export const CardRenderer = {
     const chips = Tags.of(pnj)
       .map(
         (t) =>
-          `<span class="tag tag-chip">${this._esc(t)}<button type="button" class="tag-chip-x" data-action="tag-remove" data-tag="${this._esc(t)}" data-id="${id}" title="Retirer le tag « ${this._esc(t)} »" aria-label="Retirer le tag">✕</button></span>`,
+          `<span class="tag entity-tag-chip">${this._esc(t)}<button type="button" class="entity-tag-chip-x" data-action="tag-remove" data-tag="${this._esc(t)}" data-id="${id}" title="Retirer le tag « ${this._esc(t)} »" aria-label="Retirer le tag">✕</button></span>`,
       )
       .join("");
     const add = `<button type="button" class="tag tag-add" data-action="tag-open-picker" data-id="${id}" title="Ajouter un tag">＋ Tag</button>`;
