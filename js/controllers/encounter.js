@@ -2514,6 +2514,14 @@ export const Encounter = {
   notifyPnjChanged(pnj) {
     if (!pnj || !this.state) return;
     if (!this.state.combatants.some((c) => c.pnjId === pnj.id)) return;
+    // ⚠ LA RÉVISION MONTE ICI AUSSI. C'est le point d'entrée de tout ce qui
+    // change un combattant DEPUIS L'EXTÉRIEUR de la scène — un état posé ou
+    // retiré, une case de moniteur, une drogue — et c'est précisément le
+    // chemin qui laissait le cockpit périmé : `_render()` seul retombait sur
+    // le cache de la fiche active, qui ne voyait pas que le contenu avait
+    // bougé. Le ✕ d'un état « ne faisait rien » pour cette raison, alors qu'il
+    // avait déjà fait son travail dans le modèle.
+    this._rev++;
     this._render();
   },
 
@@ -2572,7 +2580,16 @@ export const Encounter = {
       this._activeMatrixServers(),
     );
   },
+  /** RÉVISION D'ÉTAT — incrémentée dès que quelque chose change dans la scène
+      ou chez un de ses combattants. Sert de clé de cache à la fiche active du
+      cockpit (`EncounterRenderer._renderActiveCard`), qui ne se contentait
+      jusqu'ici de l'identité du combattant et laissait donc l'écran mentir
+      quand seul son CONTENU changeait. Un entier, jamais persisté : c'est de
+      l'état de vue, il repart à zéro au rechargement sans rien coûter. */
+  _rev: 0,
+
   _commit() {
+    this._rev++;
     this.save();
     this._render();
     this._renderPicker();

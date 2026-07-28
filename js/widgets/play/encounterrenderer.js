@@ -1445,8 +1445,27 @@ export const EncounterRenderer = {
       const econ = box.querySelector(":scope > .encounter-active-economy");
       if (econ) econ.innerHTML = this._activeEconomy(active, model);
     }
-    if (id === this._activeCardId) return; // déjà affiché, laissé au rafraîchissement global
-    this._activeCardId = id;
+    // ⚠ LA CLÉ DE CACHE EST « QUI + QUELLE VERSION », plus « qui » seul.
+    //
+    // Elle n'était qu'un identifiant de combattant : elle répondait « est-ce le
+    // même PNJ ? » alors que la vraie question est « quelque chose a-t-il
+    // changé ? ». Conséquence, mesurée : retirer un état par son ✕ mettait bien
+    // le modèle à jour ({couvert, course, melee} → {course, melee}) et laissait
+    // le cockpit afficher ses TROIS puces — le geste semblait mort. Idem pour
+    // tout ce qui vient d'en dehors de la scène (états, moniteurs, drogues),
+    // qui passe par `Encounter.notifyPnjChanged`.
+    //
+    // Le contournement en place était 19 `_activeCardId = null` disséminés dans
+    // les mutations d'`Encounter` : chaque nouveau geste devait penser à vider
+    // le cache, et le seul qui l'oubliait faisait mentir l'écran. La révision
+    // (`Encounter._rev`, incrémentée par `_commit` et `notifyPnjChanged`)
+    // supprime la question : le cache tombe exactement quand l'état change, et
+    // jamais autrement. Les 19 invalidations manuelles deviennent redondantes —
+    // laissées en place, elles restent inoffensives (`null` ≠ toute clé).
+    const rev = typeof Encounter !== "undefined" ? Encounter._rev || 0 : 0;
+    const cle = `${id}:${rev}`;
+    if (cle === this._activeCardId) return; // rien n'a bougé depuis le dernier rendu
+    this._activeCardId = cle;
 
     box.innerHTML = "";
     box.hidden = !pnj;
