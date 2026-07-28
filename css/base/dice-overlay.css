@@ -1008,17 +1008,43 @@ input[type="range"]#risk-dice-slider {
   opacity: 0.55;
   border-style: dashed;
 }
-/* Recharger : sa propre rangée, jamais une puce parmi les modes de tir — même
-   forme et même place diraient le même verbe, et recharger ne tire pas. Reste
-   secondaire : la seule action primaire visible du panneau est « Lancer ». */
+/* Recharger : DANS la ligne des munitions, accolé au chargeur qu'il remplit, et
+   discret. Pleine largeur il écrasait « Lancer » — « on a presque envie de
+   cliquer dessus au lieu de cliquer sur lancer » — alors que le panneau n'a
+   qu'UNE action primaire (§ 10) et que ce n'est pas celle-ci. Il n'apparaît
+   d'ailleurs qu'à chargeur entamé : à plein, il n'y a rien à recharger.
+   Gabarit du marqueur voisin (`.preroll-ammo`) + le liseré qui dit qu'on peut
+   le taper, jamais le fond plein d'une action primaire. */
 .preroll-reload {
-  width: 100%;
-  justify-content: space-between;
-  min-height: var(--hit-cozy);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: var(--hit-min);
+  padding-inline: var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: var(--fs-2xs);
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
   cursor: pointer;
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base),
+    transform var(--dur-fast);
 }
-.preroll-reload.is-idle {
-  opacity: 0.55; /* chargeur plein : disponible, mais sans rien à réclamer */
+.preroll-reload:hover,
+.preroll-reload:focus-visible {
+  border-color: var(--accent);
+  color: var(--text);
+  outline: none;
+}
+.preroll-reload:active {
+  transform: scale(0.94);
 }
 
 /* Gain d'Atout SR6 (SO vs SD) — section conditionnelle au-dessus des options

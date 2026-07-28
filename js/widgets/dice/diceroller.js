@@ -1194,7 +1194,7 @@ export const DiceRoller = {
         <div id="preroll-attack" hidden></div>
         <div id="preroll-gain" hidden></div>
         <div id="preroll-options"></div>
-        <button class="risk-roll-btn" id="preroll-plain">Lancer tel quel</button>
+        <button class="risk-roll-btn" id="preroll-plain">Lancer les dés</button>
       </div>`;
     document.body.appendChild(p);
 
@@ -1326,7 +1326,12 @@ export const DiceRoller = {
     const res = this.preRollResourceLabel(ctx.pnj);
     const dlg = document.querySelector("#preroll-panel .risk-panel");
     if (dlg) dlg.setAttribute("aria-label", res ? `${res} avant le jet` : "Avant le jet");
-    document.getElementById("preroll-plain").textContent = res ? `Lancer sans ${res}` : "Lancer tel quel";
+    // ⚠ « Lancer sans Chance » / « Lancer tel quel » nommaient l'action par ce
+    // qu'elle N'EST PAS : le bouton primaire donnait l'impression de rater
+    // quelque chose (arbitrage utilisateur, 2026-07-28). Or c'est le jet
+    // NORMAL — les options au-dessus disent déjà, chacune, ce qu'elles
+    // coûtent et ce qu'elles apportent. Un libellé positif, toujours le même.
+    document.getElementById("preroll-plain").textContent = "Lancer les dés";
     // Le débit d'attaque s'accroche à TOUTES les sorties du panneau (option
     // d'Atout comme « Lancer tel quel ») : un seul emballage, jamais un débit
     // recopié sur chaque bouton.
@@ -1464,7 +1469,7 @@ export const DiceRoller = {
           .join("")}</div>`
       : "";
 
-    el.innerHTML = `<div class="preroll-attack-head">${esc(a.name)} ${chargeur}${recul}${crosse}${modeSeul}</div>${modes}${verdict}${this._reloadRowHtml(a)}${greffons}`;
+    el.innerHTML = `<div class="preroll-attack-head">${esc(a.name)} ${chargeur}${this._reloadHtml(a)}${recul}${crosse}${modeSeul}</div>${modes}${verdict}${greffons}`;
   },
 
   /** La phrase que le MJ va annoncer, pour un mode donné : ce que `rollDetail`
@@ -1474,19 +1479,30 @@ export const DiceRoller = {
     return [m.detail, m.malus ? `recul −${m.malus}` : ""].filter(Boolean).join(" · ");
   },
 
-  /** RECHARGER — sa propre rangée, jamais une puce parmi les modes de tir :
-      même forme + même place = même verbe (loi 3), et recharger ne tire pas.
-      Toujours présente dès que l'arme déclare un plan de rechargement — une
-      cible qui apparaît au moment où elle devient utile est une cible qui se
-      déplace sous le doigt. Ce qui varie, c'est l'accent : ternie chargeur
-      plein, pleine quand il ne l'est plus. Le libellé porte son PRIX, comme
-      toute action de ce panneau. */
-  _reloadRowHtml(a) {
+  /** RECHARGER — DANS LA LIGNE DES MUNITIONS, à côté du chargeur qu'il remplit,
+      et petit (arbitrage utilisateur, 2026-07-28).
+
+      ⚠ Il a d'abord été posé en rangée pleine largeur, sur le veto de Silk
+      (« jamais une puce parmi les modes de tir : même forme + même place =
+      même verbe »). Le veto tient — mais il visait la rangée des MODES, pas
+      celle des munitions. Pleine largeur, le bouton écrasait « Lancer » :
+      « on a presque envie de cliquer dessus au lieu de cliquer sur lancer ».
+      Une seule action primaire par écran (§ 10), et ce n'est pas celle-ci.
+      Accolé au chargeur il dit le même verbe que lui, ce qui est juste.
+
+      ⚠ ABSENT À CHARGEUR PLEIN (même arbitrage) : il n'y a rien à recharger.
+      Contrairement à la crainte d'une « cible qui se déplace sous le doigt »,
+      il suit ici le patron du ↺ de recul voisin, qui n'apparaît que lorsqu'il
+      y a du recul à effacer — et sa place ne bouge pas, elle se libère.
+
+      Le PRIX passe au `title` faute de place : le libellé garde son mot
+      (jamais un glyphe nu, loi 1) et l'infobulle porte le coût. */
+  _reloadHtml(a) {
     if (!a.arme || !a.arme.reload.length || !this._hooks.reloadLabel) return "";
+    if (a.arme.reste >= a.arme.cap.n) return ""; // chargeur plein : rien à faire
     const prix = this._hooks.reloadLabel(this._preRoll.pnj, a.arme);
     if (!prix) return "";
-    const plein = a.arme.reste >= a.arme.cap.n;
-    return `<div class="preroll-row"><button type="button" class="risk-level-btn preroll-reload${plein ? " is-idle" : ""}" data-preroll-reload>⟳ Recharger<span class="edge-cost">${Utils.escHtml(prix)}</span></button></div>`;
+    return `<button type="button" class="preroll-reload" data-preroll-reload title="Recharger — ${Utils.escHtml(prix)}">⟳ Recharger</button>`;
   },
 
   /** Rend la section « gagner l'Atout » (SR6) : sélecteur de Portée pour les
