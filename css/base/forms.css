@@ -174,10 +174,10 @@
   outline: none;
   border-color: var(--accent);
 }
+/* D3 : c'est une grappe de puces, pas un marqueur (D5 l'exclut à raison) —
+   compose .cluster (display/wrap/align-items déjà fournis), ne garde que
+   son propre écart de gap et sa mise en page dans le formulaire. */
 .ms-chips {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
   gap: var(--sp-1);
   flex: 1;
   min-width: 0;

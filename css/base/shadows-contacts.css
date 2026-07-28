@@ -226,9 +226,11 @@
 /* Tablist Ombres : une seule ligne, axe commun (align-items:center). 5 types
    fixes (jamais de liste dynamique à curer) ; si l'espace manque, défilement
    à barre visible plutôt que masquée (loi 5, un choix caché n'existe pas). */
+/* D3 : grappe de puces (D5 l'exclut à raison), mais DÉFILE au lieu de
+   replier — override explicite de flex-wrap, sinon .cluster imposerait le
+   repli et casserait le défilement horizontal voulu ici. */
 .hub-type-chips {
-  display: flex;
-  align-items: center;
+  flex-wrap: nowrap;
   gap: var(--sp-1);
   overflow-x: auto;
   scrollbar-width: thin;
@@ -832,8 +834,12 @@
   color: var(--text-dim);
   font-size: var(--fs-xs);
 }
+/* D3 : grappe de deux boutons (± horloge) qui ne doit jamais replier —
+   override flex-wrap:nowrap + align-items:stretch (défauts du flex, pas
+   ceux de .cluster) + son propre gap. */
 .play-clock-btns {
-  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
   gap: var(--sp-1);
 }
 .play-clock-btn {
@@ -1346,10 +1352,11 @@
   letter-spacing: 0.05em;
   margin-bottom: 5px;
 }
+/* D3 : grappe de puces (D5 l'exclut à raison) — gap déjà celui de .cluster ;
+   override align-items:stretch (défaut du flex, pas le center de .cluster)
+   pour ne rien changer au dimensionnement des puces .play-cast-chip. */
 .play-cast-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
+  align-items: stretch;
 }
 .play-cast-chip {
   display: inline-flex;
@@ -1944,9 +1951,10 @@ body.reordering .reorder-handle {
   color: var(--text-dim);
   white-space: nowrap;
 }
+/* D3 : même patron que .hub-type-chips (plus haut dans ce fichier) — grappe
+   qui défile au lieu de replier, override flex-wrap. */
 .pin-row-chips {
-  display: flex;
-  align-items: center;
+  flex-wrap: nowrap;
   gap: var(--sp-1);
   overflow-x: auto;
   scrollbar-width: thin;

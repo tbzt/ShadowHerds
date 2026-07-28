@@ -863,7 +863,7 @@ export const CardRenderer = {
         // les dégâts) → pastille nom seul, référence non lançable.
         else pills.push(`<span class="stat-pill combat-pill">${this._esc(name)}</span>`);
       }
-      if (pills.length) cap = `<div class="curated-pills">${pills.join("")}</div>`;
+      if (pills.length) cap = `<div class="cluster curated-pills">${pills.join("")}</div>`;
     }
     html += cap;
     // 2b. Compétences — puces compactes lançables (le MJ les jette sans cesse :

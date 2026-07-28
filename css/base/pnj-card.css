@@ -429,10 +429,10 @@
   width: 13px;
   height: 13px;
 }
+/* D3 : grappe de puces (D5 l'exclut à raison) — gap déjà celui de .cluster ;
+   override align-items:stretch (défaut du flex, pas le center de .cluster). */
 .curated-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
+  align-items: stretch;
 }
 /* Pastille d'arme signature : la même pastille lançable, un cran plus grande
    (c'est le geste fréquent). Réutilise .stat-pill.rollable.combat-pill. */

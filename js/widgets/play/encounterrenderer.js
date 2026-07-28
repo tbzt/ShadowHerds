@@ -782,7 +782,7 @@ export const EncounterRenderer = {
   _activeBandeau(r) {
     const shaky = r.morale && r.morale !== "steady" && !r.down;
     if (!r.down && !r.delayed && !shaky) return "";
-    return `<div class="encounter-active-badges">
+    return `<div class="stack encounter-active-badges">
       ${r.down ? this._downBadge() : ""}
       ${!r.down && r.delayed ? this._delayedBadge() : ""}
       ${this._moraleBanner(r)}
@@ -804,7 +804,7 @@ export const EncounterRenderer = {
     if (!targetId || targetId === state.serverId) return "";
     const srv = Servers.find(targetId);
     if (!srv) return "";
-    return `<div class="encounter-active-badges">
+    return `<div class="stack encounter-active-badges">
       <button class="btn-secondary btn-small" data-action="link-server" data-id="${srv.id}" title="Lier ${Utils.escHtml(srv.name)} à la scène">🔗 Lier ${Utils.escHtml(srv.name)} à la scène</button>
     </div>`;
   },
@@ -937,7 +937,7 @@ export const EncounterRenderer = {
           .join("");
         return `<div class="encounter-ndevice-row">
           <span class="encounter-ndevice-owner">${esc(r.pnj.name || "")}</span>
-          <span class="encounter-ndevice-chips">${chips}</span>
+          <span class="cluster encounter-ndevice-chips">${chips}</span>
         </div>`;
       })
       .join("");

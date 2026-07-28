@@ -55,7 +55,7 @@ export const MultiSelect = {
       <div class="form-group ms" data-ms="${id}" data-empty="${this._esc(emptyLabel)}">
         <label>${label}${hint ? ` <span class="ms-hint" title="${this._esc(hint)}" aria-label="${this._esc(hint)}">ⓘ</span>` : ""}</label>
         <div class="ms-control" tabindex="0" role="button" aria-haspopup="listbox" aria-expanded="false">
-          <div class="ms-chips" data-ms-chips></div>
+          <div class="cluster ms-chips" data-ms-chips></div>
           <span class="ms-caret">▾</span>
         </div>
         <div class="ms-dropdown" role="listbox" aria-multiselectable="true" hidden>

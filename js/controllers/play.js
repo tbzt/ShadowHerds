@@ -827,7 +827,7 @@ export const Play = {
           <div class="play-danger-head">
             <span class="play-danger-impulse">${esc(d.impulse || "(danger)")}</span>
             <span class="play-portent-count">${rev}/${total}</span>
-            <span class="play-clock-btns">
+            <span class="cluster play-clock-btns">
               <button class="play-clock-btn" data-action="play-trame-portent" data-scenario="${sc.id}" data-danger="${d.id}" data-delta="-1"${rev <= 0 ? " disabled" : ""} aria-label="Reculer d'une étape">−</button>
               <button class="play-clock-btn" data-action="play-trame-portent" data-scenario="${sc.id}" data-danger="${d.id}" data-delta="1"${rev >= total || !total ? " disabled" : ""} aria-label="Avancer d'une étape">＋</button>
             </span>
@@ -917,7 +917,7 @@ export const Play = {
           <div class="play-clock-top">
             <span class="play-clock-title">${esc(c.title || "(horloge)")}<small>${TL[c.type] || esc(c.type)}</small></span>
             <span class="play-clock-count">${fill}/${c.segments}</span>
-            <span class="play-clock-btns">
+            <span class="cluster play-clock-btns">
               <button class="play-clock-btn" data-action="play-trame-clock" data-scenario="${sc.id}" data-clock="${c.id}" data-delta="-1"${fill <= 0 ? " disabled" : ""} aria-label="Baisser l'horloge">−</button>
               <button class="play-clock-btn" data-action="play-trame-clock" data-scenario="${sc.id}" data-clock="${c.id}" data-delta="1"${fill >= c.segments ? " disabled" : ""} aria-label="Monter l'horloge">＋</button>
             </span>
@@ -1271,7 +1271,7 @@ export const Play = {
       : "";
     return `<div class="play-cast">
       <div class="play-cast-label">Casting préparé ${links}</div>
-      <div class="play-cast-chips">${chips}${convokeBtn}</div>
+      <div class="cluster play-cast-chips">${chips}${convokeBtn}</div>
     </div>`;
   },
 

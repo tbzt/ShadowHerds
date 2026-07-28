@@ -115,7 +115,7 @@ export const PinRow = {
     row.innerHTML = `
       <button class="pin-row-toggle" data-action="pinrow-toggle" aria-label="Replier la rangée d'épingles">▾</button>
       ${label ? `<span class="pin-row-label">${CardRenderer._esc(label)}</span>` : ""}
-      <div class="pin-row-chips">
+      <div class="cluster pin-row-chips">
         ${team.map(chip).join("")}
         ${team.length && dossier.length ? `<span class="pin-row-sep"></span>` : ""}
         ${dossier.map(chip).join("")}

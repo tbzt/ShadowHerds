@@ -1149,9 +1149,11 @@
 .encounter-active-card .init-pill {
   display: none;
 }
+/* D3 : pile verticale de badges d'état (D5 l'exclut à raison) — compose
+   .stack (display/direction déjà fournis), gap plus serré qu'un simple
+   --tight (sp-2), donc override direct plutôt qu'un 3ᵉ modificateur pour
+   ce seul site. */
 .encounter-active-badges {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
   padding: 0.5rem 0.6rem 0;
 }
@@ -1264,9 +1266,10 @@
   font-weight: 600;
   color: var(--text-dim);
 }
+/* D3 : grappe de puces (D5 l'exclut à raison) — override align-items:stretch
+   (défaut du flex, pas le center de .cluster) + son propre gap. */
 .encounter-ndevice-chips {
-  display: flex;
-  flex-wrap: wrap;
+  align-items: stretch;
   gap: var(--sp-1);
 }
 .encounter-ndevice-chips .react-btn.is-off {
@@ -1864,9 +1867,10 @@
   border-color: var(--danger);
   background: color-mix(in srgb, var(--danger) 12%, var(--bg-card));
 }
+/* D3 : grappe de puces (D5 l'exclut à raison) — override align-items:stretch
+   (défaut du flex, pas le center de .cluster) + son propre gap/cadre. */
 .react-damage-chips {
-  display: flex;
-  flex-wrap: wrap;
+  align-items: stretch;
   gap: var(--sp-1);
   margin: 0.2rem 0 0.1rem;
   padding: 0.4rem;
@@ -1883,9 +1887,10 @@
    NEUTRE : le rouge appartient au contrôle Dégâts et à lui seul (décision K8
    n°6, « le rouge se mérite »). Une interruption n'est pas un danger, c'est
    une dépense. */
+/* D3 : même patron que .react-damage-chips (même gabarit, plus haut) —
+   grappe de puces, override align-items:stretch. */
 .react-interrupt-chips {
-  display: flex;
-  flex-wrap: wrap;
+  align-items: stretch;
   gap: var(--sp-1);
   margin: 0.2rem 0 0.1rem;
   padding: 0.4rem;
