@@ -41,7 +41,7 @@
 .contact-form {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: var(--sp-4);
   padding: 0.7rem 0.8rem;
   background: var(--bg-mid);
   border: 1px solid var(--border);

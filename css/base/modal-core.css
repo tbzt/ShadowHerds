@@ -136,7 +136,7 @@
 .dialog-body {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: var(--sp-4);
 }
 .dialog-label {
   font-family: var(--font-mono);

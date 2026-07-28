@@ -10,7 +10,7 @@
   z-index: var(--z-hud);
   display: flex;
   align-items: baseline;
-  gap: 0.55rem;
+  gap: var(--sp-2);
   max-width: min(92vw, 520px);
   background: var(--bg-overlay);
   border: 1px solid var(--border);
