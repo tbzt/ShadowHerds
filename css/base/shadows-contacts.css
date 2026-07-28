@@ -620,7 +620,7 @@
   margin: calc(-1 * var(--sp-3)) calc(-1 * var(--sp-3)) 0;
   padding: 14px 16px 15px;
   border-bottom: 1px solid var(--border);
-  border-radius: 5px 5px 0 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   background:
     radial-gradient(140% 130% at 100% 0, color-mix(in srgb, var(--state) 24%, transparent), transparent 58%),
     linear-gradient(180deg, color-mix(in srgb, var(--state) 12%, var(--bg-card)), var(--bg-card));
@@ -628,7 +628,7 @@
 .play-cockpit-head::before {
   content: "";
   position: absolute; left: 0; right: 0; top: 0; height: 3px;
-  border-radius: 5px 5px 0 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   background: linear-gradient(90deg, var(--state), transparent 60%);
 }
 .pch-line { display: flex; align-items: flex-start; gap: var(--sp-2); }

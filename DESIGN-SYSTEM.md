@@ -561,7 +561,27 @@ inventer un cinquième.
 sur une carte de 400px la fait lire comme un tableau. La cohérence perçue,
 c'est la **proportionnalité**, pas l'égalité.
 
-### 4.6 Mouvement
+**Les rayons DIRECTIONNELS (2026-07-28) — pas de 5ᵉ token.** 14 sites posent
+un rayon à 2 ou 4 valeurs (`12px 12px 0 0`, `4px 0 0 4px`…) — un angle
+arrondi, l'autre droit, pour un objet accolé à un bord (feuille mobile
+ancrée en bas d'écran, panneau collé au bord d'un tiroir). La question posée
+par le lot 11 dès son ouverture (« faut-il un `--radius-top`/`--radius-*`
+directionnel ? ») se répond **non** dans la quasi-totalité des cas : le
+raccourci CSS `border-radius` accepte nativement 1 à 4 valeurs
+espace-séparées, et `var(--radius-lg) var(--radius-lg) 0 0` est une syntaxe
+CSS valide — **aucun token composite n'est nécessaire**, les 4 tokens
+uniformes suffisent, simplement posés deux fois dans le raccourci. Vérifié
+sur 12 des 14 sites : le chiffre littéral égalait déjà exactement un pas
+existant, ou son propre parent utilisait déjà ce pas ailleurs dans la même
+règle (incohérence à corriger, pas un choix à trancher).
+**2 sites restent une dette assumée, pas un pas manquant** : `.shadows-
+sidebar`/`.sidebar-reopen` (`4px 0 0 4px`, la sidebar des groupes de
+contacts) n'ont pas de correspondance propre à un pas existant, ni
+numérique ni sémantique (ni marqueur, ni encart, ni carte). Même verdict que
+leur `box-shadow` directionnel, déjà laissé en dette assumée en D7 (§9) pour
+la même raison : substituer aurait été un choix esthétique nouveau, pas une
+convergence. Laissés littéraux plutôt que forcés dans un pas qui ne
+correspond pas.
 
 Rien à corriger. Les tokens existent, `prefers-reduced-motion` est centralisé
 au niveau des variables. On grave les intentions :

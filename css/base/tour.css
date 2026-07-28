@@ -20,7 +20,7 @@
 .tour-actions { display: flex; align-items: center; gap: var(--sp-2); margin-top: 14px; }
 .tour-spacer { flex: 1; }
 @media (max-width: 640px) {
-  .tour-card, .tour-root.tour-centered .tour-card { left: 0 !important; right: 0; top: auto !important; bottom: 0; width: 100%; max-width: none; transform: none !important; border-radius: 14px 14px 0 0; border-left: none; border-top: 3px solid var(--accent); }
+  .tour-card, .tour-root.tour-centered .tour-card { left: 0 !important; right: 0; top: auto !important; bottom: 0; width: 100%; max-width: none; transform: none !important; border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-left: none; border-top: 3px solid var(--accent); }
 }
 @media (prefers-reduced-motion: reduce) { .tour-root, .tour-ring { transition: none; } }
 
@@ -57,5 +57,5 @@
 .wn-more > summary:hover { color: var(--text); }
 .wn-foot { padding: 12px 16px; border-top: 1px solid var(--border); text-align: right; }
 @media (max-width: 640px) {
-  .wn-panel { left: 0; right: 0; bottom: 0; top: auto; transform: none; width: 100%; max-width: none; max-height: 85vh; border-radius: 14px 14px 0 0; }
+  .wn-panel { left: 0; right: 0; bottom: 0; top: auto; transform: none; width: 100%; max-width: none; max-height: 85vh; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
 }
