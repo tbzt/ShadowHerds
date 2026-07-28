@@ -1028,7 +1028,7 @@
 }
 .play-clue-via {
   font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   color: var(--text-faint, var(--text-dim));
 }
 
@@ -1087,7 +1087,7 @@
   transition: transform var(--dur-fast);
 }
 .play-suite[open] > summary::after { transform: rotate(90deg); }
-.play-suite-n { font-family: var(--font-mono, monospace); font-size: 0.72rem; color: var(--accent); }
+.play-suite-n { font-family: var(--font-mono, monospace); font-size: var(--fs-xs); color: var(--accent); }
 .play-suite .play-trame-exits { margin-top: 8px; }
 
 /* tiroirs vivants `<details>` : Horloges / Fronts / Préparation / Clôture */
