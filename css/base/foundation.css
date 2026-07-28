@@ -243,6 +243,62 @@
   text-transform: var(--title-transform);
 }
 
+/* ============================================================
+   PRIMITIVES — DESIGN-SYSTEM.md § 5
+   ============================================================
+   Trois briques sans sens métier, qui absorbent l'essentiel du CSS
+   répétitif : une surface, une pile verticale, une grappe horizontale.
+
+   ⚠️ Additif comme les rôles typo ci-dessus : aucun appelant à ce jour,
+   donc aucun changement de rendu. Migration prévue en 3 écrans témoins
+   (D3), pas un remplacement de masse — le gisement mesuré (223 candidats
+   `.cluster`, 97 `.stack`) est trop large pour un geste unique sans
+   mesurer le delta de lignes d'abord. */
+.surface {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 1px 0 var(--edge-hi);
+}
+.surface--chrome {
+  background: var(--bg-card);
+  border-radius: 0;
+}
+.surface--overlay {
+  background: var(--bg-overlay);
+  box-shadow: var(--elev-2);
+}
+.surface--quiet {
+  background: var(--bg-mid);
+  border-color: transparent;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.stack--tight {
+  gap: var(--sp-2);
+}
+.stack--loose {
+  gap: var(--sp-5);
+}
+
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.cluster--end {
+  justify-content: flex-end;
+}
+.cluster--between {
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+
 html {
   height: 100%;
   /* Racine du rem (CH-V12) : point zéro de l'échelle typographique, pas une
