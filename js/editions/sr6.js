@@ -3402,13 +3402,37 @@ export const EditionSR6 = {
       "Yamaha Pulsar I/II [Taser, VD 4E(e), SO 9/9/-/-/-, SA, 4(m), portée max 20m]",
     ],
     // Armes de jet/trait (absentes de la sélection initiale, p.260-268).
+    //
+    // ⚠ AUCUNE CAPACITÉ ICI, ET C'EST LA TABLE QUI LE DIT. La table « ARMES DE
+    // JET/DE TRAIT » du livre a cinq colonnes — ARME | VD | SCORES OFFENSIFS |
+    // DISPONIBILITÉ | COÛT — là où celle des armes à feu en a six, avec une
+    // colonne MUNITIONS entre les Scores Offensifs et la Disponibilité. Une
+    // arbalète n'a donc ni mode de tir ni chargeur : elle se recharge carreau
+    // par carreau, et le livre compte ça en actions, pas en magasin.
+    //
+    // Les `3(m)` / `4(m)` / `2(m)` qui figuraient ici étaient la colonne
+    // DISPONIBILITÉ prise pour une capacité — MÊME glissement d'un cran que le
+    // `4(L)` du bloc `armesSupplement` (cf. son en-tête). Le livre écrit
+    // « Arbalète, standard … 3 (L) » et « Arbalète, lourde … 4 (L) » en
+    // Disponibilité : le `(L)` s'était perdu, le chiffre était resté.
+    //
+    // Conséquence dans l'app, et raison de ce correctif : `Ammo.capacity` les
+    // faisait entrer dans `ammoWeapons`, donc le panneau d'attaque leur
+    // affichait un chargeur — qui ne se vidait JAMAIS, faute de mode de tir
+    // pour passer par `fire`. Retirer la fausse capacité éteint la surface
+    // munitions pour ces armes, ce qui est exactement ce que le livre décrit.
+    //
+    // ⚠ Ne pas confondre avec les `(m)` LÉGITIMES des armes à feu (Defiance
+    // T-250 5(m), Remington Roomsweeper 8(m), Yamaha Pulsar 4(m), Remington
+    // 900 5(m)) : ceux-là sont dans la colonne MUNITIONS du livre, vérifiés.
     armesJet: [
-      "Arbalète légère [VD 2P, SO 6/8/2/-/-, 3(m)]",
-      "Arbalète standard [VD 3P, SO 2/10/4/2/-, 3(m)]",
-      "Arbalète lourde [VD 4P, SO 2/8/4/4/-, 4(m)]",
+      "Arbalète légère [VD 2P, SO 6/8/2/—/—]",
+      "Arbalète standard [VD 3P, SO 2/10/4/2/—]",
+      // SO corrigé au livre : la 3ᵉ bande vaut 6, pas 4 (transcription fautive).
+      "Arbalète lourde [VD 4P, SO 2/8/6/4/—]",
       "Arc [VD 2P-4P selon indice, SO variable]",
-      "Couteau de lancer [VD 2P, SO 10/9/3/-/-, 2(m)]",
-      "Shuriken [VD 2P, SO 9/11/5/-/-, 2(m)]",
+      "Couteau de lancer [VD 2P, SO 10/9/3/—/—]",
+      "Shuriken [VD 2P, SO 9/11/5/—/—]",
     ],
     // Armes spéciales : lance-grenades (p.267).
     armesSpeciales: [

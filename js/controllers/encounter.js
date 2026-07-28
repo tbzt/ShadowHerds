@@ -1062,8 +1062,16 @@ export const Encounter = {
     // attaque. Un mode unique n'est pas un choix (les 29 armes concernées sont
     // toutes en Coup par coup : 1 balle, aucun recul, aucun malus à annoncer) ;
     // une mêlée nue non plus. Ces armes se débitent au tap, sans écran.
-    const arbitrable = modes.length > 1 || greffons.length > 0;
-    return { weapon: weaponStr, name: parsed.name, famille, arme, modes, recoil: rec, greffons, edge: c.edge || 0, arbitrable };
+    //
+    // Le greffon compte pour un arbitrage seulement s'il est ABORDABLE : à 0
+    // Atout, les 19 greffons de mêlée sont tous morts, et ouvrir un écran où
+    // rien n'est actionnable, c'est faire signer un reçu. Nuance à ne pas
+    // confondre avec l'affichage : une fois le panneau ouvert pour une AUTRE
+    // raison, un greffon trop cher s'y montre terni — il informe, il ne
+    // disparaît pas.
+    const edge = c.edge || 0;
+    const arbitrable = modes.length > 1 || greffons.some((g) => g.cost <= edge);
+    return { weapon: weaponStr, name: parsed.name, famille, arme, modes, recoil: rec, greffons, edge, arbitrable };
   },
 
   /** Valide l'attaque : débite l'action, les balles et le recul, puis rend le
