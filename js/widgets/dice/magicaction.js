@@ -17,6 +17,7 @@ import { AmplitudeSelector } from "../kit/amplitudeselector.js";
 import { Dice } from "../../rules/dice.js";
 import { DiceLog } from "./dicelog.js";
 import { DiceRoller } from "./diceroller.js";
+import { FocusTrap } from "../kit/focustrap.js";
 import { Magic } from "../../rules/magic.js";
 import { Nudge } from "../tour/nudge.js";
 import { Resonance } from "../../rules/resonance.js";
@@ -28,6 +29,7 @@ export const MagicAction = {
 
   /** État du lancer courant : { pnjId, name, entry, force, edition }. */
   _cast: null,
+  _releaseTrap: null,
 
   /** hooks: { onPnjChanged(pnj) }. */
   init(hooks) {
@@ -104,7 +106,7 @@ export const MagicAction = {
     p.className = "risk-panel-overlay";
     p.setAttribute("hidden", "");
     p.innerHTML = `
-      <div class="risk-panel" role="dialog" aria-label="Lancer un sort">
+      <div class="risk-panel" role="dialog" aria-modal="true" aria-labelledby="magic-title">
         <div class="risk-panel-head">
           <span class="risk-panel-title" id="magic-title">Lancer un sort</span>
           <button class="risk-panel-close" id="magic-close" aria-label="Fermer">✕</button>
@@ -178,6 +180,9 @@ export const MagicAction = {
     p.removeAttribute("hidden");
     void p.offsetWidth;
     p.classList.add("show");
+    // D7 : pas de champ à pré-sélectionner (Puissance/Niveau se choisit au
+    // clic sur un stepper) — le piège seul, comme FoundationView.
+    this._releaseTrap = FocusTrap.activate(p.querySelector(".risk-panel"));
   },
 
   /** Tisse une forme complexe d'un PNJ (mirroir exact de `castSpell`,
@@ -220,6 +225,9 @@ export const MagicAction = {
     p.removeAttribute("hidden");
     void p.offsetWidth;
     p.classList.add("show");
+    // D7 : pas de champ à pré-sélectionner (Puissance/Niveau se choisit au
+    // clic sur un stepper) — le piège seul, comme FoundationView.
+    this._releaseTrap = FocusTrap.activate(p.querySelector(".risk-panel"));
   },
 
   _close() {
@@ -229,6 +237,10 @@ export const MagicAction = {
     clearTimeout(p._t);
     p._t = setTimeout(() => p.setAttribute("hidden", ""), 200);
     this._cast = null;
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 
   /** Rafraîchit l'état des boutons de Puissance et la prévision (pool + VD). */
