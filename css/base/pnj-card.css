@@ -762,7 +762,7 @@
 .flavor-section .flavor-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.1rem 0.6rem;
+  gap: 0.1rem var(--sp-2);
   font-size: var(--fs-xs);
   line-height: 1.45;
   padding: 3px 0;
@@ -1488,7 +1488,7 @@
 .deck-loadout-picker {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1rem;
+  gap: var(--sp-2) var(--sp-4);
   margin-top: 0.2rem;
 }
 .deck-loadout-opt {
@@ -1516,7 +1516,7 @@
   column-count: unset;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 2px var(--sp-3);
+  gap: var(--sp-2) var(--sp-3);
   align-content: start;
 }
 .pnj-card.roster-row {

@@ -553,7 +553,7 @@
 .play-roster {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 4px var(--sp-3);
+  gap: var(--sp-1) var(--sp-3);
 }
 .play-fighter {
   display: flex;
