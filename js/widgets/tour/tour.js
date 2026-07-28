@@ -14,6 +14,7 @@
    (aucune étape à capacité) ; l'API résolue par l'édition arrive en G3.
    ============================================================ */
 import { Debug } from "../../core/debug.js";
+import { FocusTrap } from "../kit/focustrap.js";
 import { Storage } from "../../core/storage.js";
 import { TourSteps } from "./toursteps.js";
 
@@ -26,6 +27,11 @@ export const Tour = {
   _MOBILE: 640,
   _navigate: null,
   _version: "0.0.0",
+  // D7 — deux overlays indépendants dans ce fichier (la visite guidée et le
+  // panneau « Quoi de neuf »), jamais ouverts en même temps mais chacun son
+  // propre relâcheur.
+  _releaseTrap: null,
+  _wnReleaseTrap: null,
 
   /** Injection depuis app.js : `navigate` (navigation par panneau pour les
       étapes à `panel`) et `version` (App.VERSION, base du « Quoi de neuf »).
@@ -47,6 +53,11 @@ export const Tour = {
     this._active = true;
     this._ensureRoot();
     this._root.hidden = false;
+    // D7 : piégé UNE fois ici, pas dans `_render()` — `_render()` tourne à
+    // chaque étape (next/prev) sur le MÊME conteneur `.tour-card`, un second
+    // `activate()` y remplacerait le déclencheur mémorisé par la carte
+    // elle-même. Avant `_render()`, qui y déplace le focus.
+    this._releaseTrap = FocusTrap.activate(this._root.querySelector(".tour-card"));
     document.addEventListener("keydown", this._onKey, true);
     this._render();
   },
@@ -73,6 +84,10 @@ export const Tour = {
     this._active = false;
     document.removeEventListener("keydown", this._onKey, true);
     if (this._root) this._root.hidden = true;
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
     const cb = this._onEnd;
     this._onEnd = null;
     if (cb) cb();
@@ -94,6 +109,8 @@ export const Tour = {
     this._active = true;
     this._ensureRoot();
     this._root.hidden = false;
+    // D7 : même raison qu'en start() — piégé une fois, avant _render().
+    this._releaseTrap = FocusTrap.activate(this._root.querySelector(".tour-card"));
     document.addEventListener("keydown", this._onKey, true);
     this._render();
   },
@@ -195,13 +212,18 @@ export const Tour = {
     }
     root.innerHTML =
       `<div class="wn-scrim" data-action="wn-close"></div>` +
-      `<div class="wn-panel" role="dialog" aria-modal="true" aria-label="Quoi de neuf" tabindex="-1">` +
-      `<div class="wn-head"><span class="wn-title">✦ Quoi de neuf</span>` +
+      `<div class="wn-panel" role="dialog" aria-modal="true" aria-labelledby="wn-title" tabindex="-1">` +
+      `<div class="wn-head"><span class="wn-title" id="wn-title">✦ Quoi de neuf</span>` +
       `<button class="modal-close" data-action="wn-close" aria-label="Fermer">✕</button></div>` +
       `<div class="wn-list">${rows}</div>` +
       `<div class="wn-foot"><button class="btn-primary btn-small" data-action="wn-close">Compris</button></div>` +
       `</div>`;
     root.hidden = false;
+    // D7 : piégé AVANT le .focus() qui suit (même ordre que partout ailleurs).
+    // `.wn-panel` est reconstruit à chaque appel (innerHTML entier), donc
+    // toujours le bon conteneur — pas de risque de piège périmé comme
+    // `_render()` sur `.tour-card`.
+    this._wnReleaseTrap = FocusTrap.activate(root.querySelector(".wn-panel"));
     root.querySelector(".wn-panel").focus({ preventScroll: true });
   },
 
@@ -210,6 +232,10 @@ export const Tour = {
   _closeWhatsNew() {
     const root = document.getElementById("whatsnew-root");
     if (root) root.hidden = true;
+    if (this._wnReleaseTrap) {
+      this._wnReleaseTrap();
+      this._wnReleaseTrap = null;
+    }
     Storage.setGlobal("tour_seen_version", this._version);
     this.refreshBadge();
   },
