@@ -4,7 +4,7 @@
 .run-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-lg);
   width: 320px;
   overflow: hidden;
   animation: cardIn 0.3s ease;

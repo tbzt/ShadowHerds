@@ -43,7 +43,7 @@
 .server-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-lg);
   width: 340px;
   max-width: 100%;
   overflow: hidden;
@@ -160,7 +160,7 @@
   width: 100%;
   max-height: 130px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   margin-bottom: 7px;
   cursor: pointer;
@@ -222,7 +222,7 @@
 .intrusion-panel {
   background: var(--bg);
   border: 1px solid var(--accent);
-  border-radius: 4px;
+  border-radius: var(--radius-lg);
   padding: var(--sp-2) 9px;
   margin-bottom: var(--sp-2);
 }

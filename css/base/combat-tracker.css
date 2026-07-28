@@ -1645,7 +1645,7 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 0.28rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-bottom: 0.3rem;
 }
 .encounter-mode-head::before {
@@ -1716,7 +1716,7 @@
   gap: var(--sp-2);
   padding: 0.35rem 0.4rem;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-lg);
   background: var(--bg-mid);
 }
 
@@ -1872,7 +1872,7 @@
   margin: 0.2rem 0 0.1rem;
   padding: 0.4rem;
   border: 1px dashed color-mix(in srgb, var(--danger) 45%, var(--border));
-  border-radius: 4px;
+  border-radius: var(--radius-lg);
 }
 /* L'attribut [hidden] pose display:none via la feuille UA, mais display:flex
    ci-dessus (règle d'auteur) le battrait — sans cette garde, les chips restent

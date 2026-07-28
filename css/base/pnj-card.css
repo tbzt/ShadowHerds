@@ -62,7 +62,7 @@
   position: relative;
   background: var(--bg-raised);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   clip-path: var(--card-clip);
   /* Liseré haut discret : la carte « prend le jour » → figure/fond sans coût
@@ -1368,7 +1368,7 @@
   z-index: var(--z-popover);
   background: var(--bg-overlay);
   border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
-  border-radius: 4px;
+  border-radius: var(--radius-lg);
   padding: 4px;
   box-shadow: var(--elev-2);
   display: flex;
@@ -1442,7 +1442,7 @@
   min-height: 32px;
   padding: 0.15rem 0.5rem;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--bg-card);
   color: var(--text-dim);
   font-family: var(--font-mono);
@@ -1526,7 +1526,7 @@
   padding: var(--sp-1) var(--sp-2);
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-lg);
 }
 .roster-row-name {
   display: flex;

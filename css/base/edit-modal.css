@@ -289,7 +289,7 @@ details[open] > summary.modal-section-title::before {
    plutôt qu'un encadré : c'est un rattachement, pas une boîte de plus. */
 .em-id-block {
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-lg);
   padding: var(--sp-2);
   margin-bottom: var(--sp-2);
 }
@@ -312,7 +312,7 @@ details[open] > summary.modal-section-title::before {
 .em-id-active {
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: var(--text-dim);
   cursor: pointer;
   font-size: var(--fs-sm);

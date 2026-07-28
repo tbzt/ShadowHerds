@@ -17,7 +17,7 @@
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-top: 2px solid var(--accent);
-  border-radius: 4px;
+  border-radius: var(--radius-lg);
   width: min(680px, 94vw);
   max-height: 90vh;
   overflow-y: auto;
