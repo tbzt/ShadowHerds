@@ -1442,7 +1442,7 @@ export const ScenarioGraph = {
           </div>
           <!-- Zone 3 — ÉTAT : la robustesse (un badge de vérification), poussée à droite. -->
           <span class="scenario-hz-spacer"></span>
-          <button class="scenario-robust-badge" data-scenario-action="robustesse" title="Vérifier la robustesse de l'enquête (3 indices, issue de secours, atteignabilité…)">✓ Robustesse</button>
+          <button class="chip scenario-robust-badge" data-scenario-action="robustesse" title="Vérifier la robustesse de l'enquête (3 indices, issue de secours, atteignabilité…)">✓ Robustesse</button>
         </div>
         <div class="scenario-toolbar" data-scenario="toolbar" hidden></div>
         <div class="graph-split">

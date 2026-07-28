@@ -796,17 +796,17 @@
 }
 
 /* ── S4b — badge & panneau de robustesse ── */
+/* D5 : bordure/couleur/cursor fournis par .chip (composé dans le HTML) — ne
+   garde que sa mise en forme propre. Survol : même surcharge documentée que
+   .hub-type-chip/.hub-facet-chip (texte normal, pas accent, seule la
+   bordure vire à l'accent). */
 .scenario-robust-badge {
   padding: 3px 9px;
-  border: 1px solid var(--border, #2a3a49);
   border-radius: var(--radius-sm);
   background: none;
-  color: var(--text-dim, #9fb0c0);
   font-size: var(--fs-sm);
-  cursor: pointer;
 }
 .scenario-robust-badge:hover:not(:disabled) {
-  border-color: var(--accent, #35e0e6);
   color: var(--text, #dce6f0);
 }
 .scenario-robust-badge.has-warnings {
