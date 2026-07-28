@@ -31,7 +31,7 @@ Object.assign(CardRenderer, {
         const title = o.on
           ? `${o.label} : seuils physiques +${o.bonus} — cliquer pour ranger`
           : `${o.label} : cliquer pour l'équiper (seuils physiques +${o.bonus})`;
-        return `<span class="tag vehicle-chip armor-chip${o.on ? " deployed" : ""}" role="button" tabindex="0"
+        return `<span class="tag tag-clickable vehicle-chip armor-chip${o.on ? " deployed" : ""}" role="button" tabindex="0"
           data-action="toggle-armor" data-id="${pnj.id}" data-idx="${o.idx}"
           title="${this._esc(title)}">⛨ ${this._esc(o.label)} +${o.bonus}${state}</span>`;
       })

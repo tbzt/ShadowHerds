@@ -175,7 +175,7 @@ Object.assign(CardRenderer, {
           : deployed
             ? '<span class="vehicle-chip-state on">● fiche</span>'
             : '<span class="vehicle-chip-state"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> déployer</span>';
-        return `<span class="tag vehicle-chip${deployed ? " deployed" : ""}${destroyed ? " destroyed" : ""}" role="button" tabindex="0"
+        return `<span class="tag tag-clickable vehicle-chip${deployed ? " deployed" : ""}${destroyed ? " destroyed" : ""}" role="button" tabindex="0"
           data-action="deploy-vehicle" data-id="${pnj.id}" data-idx="${idx}"
           title="${this._esc(item)}">${icon} ${this._esc(label)}${state}</span>`;
       })
@@ -221,12 +221,12 @@ Object.assign(CardRenderer, {
         : active
           ? `<span class="vehicle-chip-state on">● ${active}</span>`
           : '<span class="vehicle-chip-state"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> invoquer</span>';
-      chips += `<span class="tag vehicle-chip spirit-chip${active ? " deployed" : ""}${destroyed ? " destroyed" : ""}" role="button" tabindex="0"
+      chips += `<span class="tag tag-clickable vehicle-chip spirit-chip${active ? " deployed" : ""}${destroyed ? " destroyed" : ""}" role="button" tabindex="0"
         data-action="open-summon" data-id="${pnj.id}"
         title="Invoquer un esprit lié à ce PNJ">✦ Esprit${state}</span>`;
     }
     if (canBanish) {
-      chips += `<span class="tag vehicle-chip spirit-chip" role="button" tabindex="0"
+      chips += `<span class="tag tag-clickable vehicle-chip spirit-chip" role="button" tabindex="0"
         data-action="open-dismiss" data-kind="spirit" data-id="${pnj.id}"
         title="Bannir un esprit adverse (test opposé de Bannissement)">✦ Bannir</span>`;
     }
@@ -356,12 +356,12 @@ Object.assign(CardRenderer, {
       const state = active
         ? `<span class="vehicle-chip-state on">● ${active}</span>`
         : '<span class="vehicle-chip-state"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg> compiler</span>';
-      chips += `<span class="tag vehicle-chip spirit-chip sprite-chip${active ? " deployed" : ""}" role="button" tabindex="0"
+      chips += `<span class="tag tag-clickable vehicle-chip spirit-chip sprite-chip${active ? " deployed" : ""}" role="button" tabindex="0"
         data-action="open-summon" data-kind="sprite" data-id="${pnj.id}"
         title="Compiler un sprite lié à ce technomancien">◈ Sprite${state}</span>`;
     }
     if (canDecompile) {
-      chips += `<span class="tag vehicle-chip spirit-chip sprite-chip" role="button" tabindex="0"
+      chips += `<span class="tag tag-clickable vehicle-chip spirit-chip sprite-chip" role="button" tabindex="0"
         data-action="open-dismiss" data-kind="sprite" data-id="${pnj.id}"
         title="Décompiler un sprite adverse (test opposé)">◈ Décompiler</span>`;
     }

@@ -60,18 +60,11 @@
 /* ============================================================
    FICHES LIÉES — drones & véhicules déployés depuis un PNJ
    ============================================================ */
-.vehicle-chip {
-  cursor: pointer;
-  transition:
-    background var(--dur-base),
-    border-color var(--dur-base);
-}
-.vehicle-chip:hover,
-.vehicle-chip:focus-visible {
-  background: var(--glow);
-  border-color: var(--accent);
-  outline: none;
-}
+/* D5 : cursor/hover/focus étaient un doublon BYTE POUR BYTE de .tag-clickable
+   (interactive-content.css) — retiré, composé dans le HTML à la place
+   (cardrenderer.anarchy.js/linked.js). .vehicle-chip ne garde que ses
+   propres modificateurs (deployed/destroyed), qu'aucune autre classe ne
+   porte. */
 .vehicle-chip-state {
   display: inline-block;
   margin-left: 6px;
