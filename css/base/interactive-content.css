@@ -130,6 +130,84 @@
   border-color: var(--accent);
   outline: none;
 }
+/* ⚠ L'ÉTAT SÉLECTIONNÉ MANQUAIT. `.status-pick` recevait `is-on` de trois
+   surfaces (mode de tir et greffon d'Atout du panneau pré-jet, pose d'état)
+   sans qu'aucune règle ne le peigne : mesuré au navigateur, une puce
+   sélectionnée et sa voisine inerte étaient PIXEL POUR PIXEL identiques
+   (mêmes bordure, couleur, fond, graisse, ombre). Le MJ ne voyait pas quel
+   mode de tir il allait jouer.
+
+   Recette empruntée à `.chip` (D5) — liseré d'accent + fond `--glow` —, pas
+   une cinquième teinte : c'est déjà celle du survol, poussée d'un cran par le
+   fond et la graisse pour que « sélectionné » se distingue de « survolé ». */
+.status-pick.is-on {
+  border-color: var(--accent);
+  background: var(--glow);
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ---- Le retour au tap (« feel ») ----
+   AUDIT : sur 13 primitives interactives du projet, DEUX seulement portaient un
+   `:active` (`.risk-roll-btn`, `.dice-count-step`) alors que la plupart
+   portaient un `:hover` — qui n'existe pas sur l'appareil cible du MJ
+   (tablette/téléphone). Un contrôle qui ne « répond » pas au doigt se fait
+   double-taper : c'est la loi 3 de la Grammaire (un verbe = un geste = un
+   RETOUR) qui manquait à l'appel.
+
+   Même vocabulaire que `.rollable:active` : un enfoncement, rien d'autre.
+   L'échelle suit la taille de la cible — une puce s'enfonce plus qu'une carte.
+   `--dur-fast` passe à 0 sous `prefers-reduced-motion` (foundation.css), donc
+   le mouvement se coupe tout seul sans règle supplémentaire. */
+.status-pick,
+.action-pick,
+.edge-pick,
+.risk-level-btn,
+.btn-icon-tiny,
+.tag-clickable,
+.chip,
+.react-btn,
+.zone-toggle {
+  transition: transform var(--dur-fast);
+}
+.status-pick:active,
+.action-pick:active,
+.edge-pick:active,
+.risk-level-btn:active,
+.tag-clickable:active,
+.chip:active,
+.react-btn:active,
+.zone-toggle:active {
+  transform: scale(0.96);
+}
+/* Les cibles minuscules (± des compteurs) s'enfoncent davantage : à 24 px, un
+   scale(0.96) ne se voit pas — même arbitrage que `.dice-count-step`. */
+.btn-icon-tiny:active {
+  transform: scale(0.88);
+}
+/* Une puce que le livre interdit ne s'enfonce pas : elle n'est pas cliquable,
+   et lui donner le retour d'un contrôle vivant serait mentir. */
+.action-pick.is-forbidden:active {
+  transform: none;
+}
+
+/* ---- « Ça reste cliqué » : la dernière action jouée ----
+   Un one-shot (Ajuster, Recharger, Sprinter) n'a pas d'état à porter — il agit
+   et la feuille se re-rend. Le MJ perdait donc la trace de ce qu'il venait de
+   taper, dans une feuille de 76 puces. `Encounter` écrivait déjà `c.lastAction`
+   à chaque `useAction` et PERSONNE ne le lisait : l'état existait, il ne se
+   voyait pas. Marque volontairement plus discrète que `.is-on` — c'est une
+   trace, pas une sélection : la puce reste tapable et reste payante. */
+.action-pick.is-last {
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.action-pick.is-last::after {
+  content: "✓";
+  margin-inline-start: var(--sp-1);
+  color: var(--accent);
+  font-size: var(--fs-2xs);
+}
 /* La feuille de pose : rangée qui se REPLIE, jamais qui défile (§5.2 du
    référentiel — une barre horizontale sur un écran incliné à la table est
    invisible, donc inexistante). Occupe toute la largeur pour passer sous les

@@ -1218,6 +1218,7 @@ export const DiceRoller = {
         // balle, zéro recul. Un mis-tap facturait une attaque muette. Une arme
         // qu'on tape tire toujours d'une façon ou d'une autre.
         a.chosenMode = m.getAttribute("data-preroll-mode");
+        Utils.haptic(10); // le choix se sent, comme il se voit (`.is-on`)
         this._renderAttackSection();
         return;
       }
@@ -1225,6 +1226,7 @@ export const DiceRoller = {
       if (g) {
         const k = g.getAttribute("data-preroll-graft");
         a.chosenGraft = a.chosenGraft === k ? null : k;
+        Utils.haptic(10);
         this._renderAttackSection();
         return;
       }

@@ -1198,7 +1198,13 @@ export const EncounterRenderer = {
       // au-dessus de la feuille : 75 ⚠ sur 76 puces n'avertissent de rien.
       const cible = res.warnings.some((w) => w.targeted);
       const doute = cible ? " is-doubtful" : "";
-      return `<button type="button" class="tag status-pick action-pick${cher ? " is-over" : ""}${a.timing === "L" ? " is-free" : ""}${marque}${doute}" data-action="action-use" data-id="${r.pnjId}" data-key="${a.key}" title="${Utils.escHtml(info)}">${Utils.escHtml(a.name)}${cible ? "<span class=\"action-doubt\" aria-hidden=\"true\">⚠</span>" : ""}</button>`;
+      // « Ça reste cliqué » : la dernière action jouée garde sa marque. Une
+      // action one-shot n'a rien à porter d'autre — elle agit et la feuille se
+      // re-rend —, or `c.lastAction` était écrit à chaque `useAction` sans que
+      // personne ne le lise. La trace ne verrouille rien : la puce reste
+      // tapable, et retapée elle repaie (le livre n'interdit pas de recommencer).
+      const dernier = r.lastAction === a.key ? " is-last" : "";
+      return `<button type="button" class="tag status-pick action-pick${cher ? " is-over" : ""}${a.timing === "L" ? " is-free" : ""}${marque}${doute}${dernier}" data-action="action-use" data-id="${r.pnjId}" data-key="${a.key}" title="${Utils.escHtml(info)}">${Utils.escHtml(a.name)}${cible ? "<span class=\"action-doubt\" aria-hidden=\"true\">⚠</span>" : ""}</button>`;
     };
     // Les rappels dits UNE FOIS, en tête de feuille. Absents quand il n'y a
     // rien à dire — l'écrasante majorité des tours.

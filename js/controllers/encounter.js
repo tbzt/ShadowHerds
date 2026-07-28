@@ -2984,6 +2984,10 @@ export const Encounter = {
           break;
         case "action-use":
           // F1 — joue une action du catalogue : elle débite son propre coût.
+          // Haptique au SITE DE DISPATCH et non dans `useAction`, que `fire`,
+          // `reloadWeapon` et `resolveAttack` appellent aussi en silencieux :
+          // seul le geste délibéré du MJ vibre.
+          Utils.haptic(12);
           this.useAction(id, el.dataset.key);
           break;
         // F5h — `ammo-fire`, `ammo-modes` et `ammo-reload` ont été retirés :
