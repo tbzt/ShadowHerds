@@ -95,6 +95,36 @@ export const Actions = {
     return this.catalog(pnj).filter((a) => !a.quick);
   },
 
+  /** DOMAINES (lot F1b) — combat, magie, Matrice.
+
+      Le lot F1 tenait dans une seule liste : 32 actions en SR6, 36 en SR5.
+      F1b y verse les tables magique et matricielle et fait passer SR6 à 76,
+      SR5 à 74. « tous… » deviendrait un mur de puces où l'œil ne retrouve
+      rien — d'où trois rubriques, dans l'ordre où le livre les imprime.
+
+      `domain` absent = combat : c'est la table de référence, celle qu'on joue
+      le plus, et elle n'a pas à porter une étiquette pour exister. */
+  DOMAINS: [
+    { key: "combat", label: "Combat" },
+    { key: "magie", label: "Magie" },
+    { key: "matrice", label: "Matrice" },
+  ],
+
+  domain(entry) {
+    return (entry && entry.domain) || "combat";
+  },
+
+  /** Le reste du catalogue, groupé par domaine et dans l'ordre du contrat.
+      Les rubriques vides ne sont pas rendues : une édition sans magie ni
+      Matrice n'affiche qu'une liste, exactement comme avant F1b. */
+  restByDomain(pnj) {
+    const reste = this.rest(pnj);
+    return this.DOMAINS.map((d) => ({
+      ...d,
+      entries: reste.filter((a) => this.domain(a) === d.key),
+    })).filter((g) => g.entries.length);
+  },
+
   /** Coût NORMALISÉ d'une entrée : toujours un tableau `[{ key, n }]`.
       Accepte une paire seule (`fullDefenseFor().actionCost`) pour que les
       appelants antérieurs à ce lot n'aient pas à changer. */
@@ -109,6 +139,11 @@ export const Actions = {
       source des noms de groupes, jamais une table codée en dur ici (prohibition
       n°1 : la règle vit dans l'édition). */
   costLabel(pnj, entry) {
+    // SR5 classe DEUX actions matricielles en « Variable » (Contrôler un
+    // appareil, Rechercher des données) : leur type dépend de la situation.
+    // Le dire est la seule réponse honnête — inventer un jeton serait pire que
+    // n'en poser aucun, et « gratuit » serait un contresens.
+    if (entry && entry.variable) return "coût variable";
     const mod = pnj ? App.getEditionModule(pnj.edition) : null;
     const budget = (mod && mod.actionBudget && mod.actionBudget(pnj)) || [];
     const nom = (key) => {

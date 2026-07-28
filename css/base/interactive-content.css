@@ -184,6 +184,24 @@
 .action-add {
   font-weight: 700;
 }
+/* Rubriques du catalogue (lot F1b) — combat, magie, Matrice. `.action-rest`
+   est en `display: contents`, donc chaque rubrique doit reprendre elle-même la
+   pleine largeur pour former une bande, sinon les trois se collent bout à bout
+   et le rangement ne se voit pas. */
+.action-domain {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+}
+.action-domain-lbl {
+  flex-basis: 100%;
+  color: var(--text-dim);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
 
 /* ---- Munitions et recul (lot F2) ----
    Une ligne par arme qui compte ses balles, dans l'économie du TOUR : un

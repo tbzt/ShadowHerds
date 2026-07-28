@@ -1159,6 +1159,11 @@ export const EncounterRenderer = {
       return `<button type="button" class="tag status-pick action-pick${cher ? " is-over" : ""}${a.timing === "L" ? " is-free" : ""}" data-action="action-use" data-id="${r.pnjId}" data-key="${a.key}" title="${Utils.escHtml(info)}">${Utils.escHtml(a.name)}</button>`;
     };
     const rapides = Actions.quick(r.pnj).map(puce).join("");
+    // F1b — le reste se range par DOMAINE (combat, magie, Matrice). SR6 est
+    // passé de 32 à 76 actions et SR5 de 36 à 74 : une seule liste serait un
+    // mur de puces. Une rubrique vide ne s'imprime pas — une édition sans
+    // magie ni Matrice retrouve exactement la liste plate de F1.
+    const domaines = Actions.restByDomain(r.pnj);
     const reste = Actions.rest(r.pnj);
     // ⚠ L'ouverture SURVIT au re-rendu, contrairement à la feuille d'états.
     // Raison : jouer une action débite le budget, donc `_commit()` re-rend la
@@ -1167,9 +1172,20 @@ export const EncounterRenderer = {
     // déplacer, Ajuster, Attaquer). Six taps au lieu de quatre.
     const ouverte = this._actionSheetOpen === r.pnjId;
     const restOuvert = ouverte && this._actionRestOpen;
+    // Une seule rubrique (pas de magie ni de Matrice) → pas d'en-tête : un
+    // titre « Combat » au-dessus d'une liste qui n'a rien à côté ne dit rien.
+    const corps =
+      domaines.length > 1
+        ? domaines
+            .map(
+              (d) =>
+                `<span class="action-domain"><span class="action-domain-lbl">${Utils.escHtml(d.label)}</span>${d.entries.map(puce).join("")}</span>`,
+            )
+            .join("")
+        : reste.map(puce).join("");
     const tous = reste.length
       ? `<button type="button" class="tag status-more" data-action="action-more" aria-expanded="${restOuvert}">tous…</button>
-         <span class="action-rest"${restOuvert ? "" : " hidden"}>${reste.map(puce).join("")}</span>`
+         <span class="action-rest"${restOuvert ? "" : " hidden"}>${corps}</span>`
       : "";
     return `<div class="status-sheet action-sheet" data-action-sheet="${r.pnjId}"${ouverte ? "" : " hidden"}>${rapides}${tous}</div>`;
   },

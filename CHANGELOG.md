@@ -12,6 +12,46 @@ commit.
 
 ## [Non publié]
 
+## [1.129.0] — 2026-07-28
+
+### Ajouté
+
+- **La magie et la Matrice récupèrent leur coût d'action.** Le catalogue passe
+  de 32 à **76 actions en SR6** (11 magiques, 33 matricielles) et de 36 à
+  **76 en SR5** (40 matricielles). Lancer un sort coûte enfin sa majeure,
+  Reconfigurer les attributs matriciels sa mineure, un Pic de données SR5 sa
+  complexe — et donc, en SR5, les deux simples avec.
+- **La feuille se range en trois rubriques** — Combat, Magie, Matrice —
+  plutôt que d'aligner 76 puces. Une rubrique vide ne s'imprime pas : une
+  édition sans magie ni Matrice retrouve la liste plate d'avant.
+- **SR5 a deux actions à « coût variable »** (Contrôler un appareil, Rechercher
+  des données) : le livre refuse de les typer, l'app aussi. Elles s'affichent,
+  se jouent, et ne débitent **rien** — inventer un jeton serait pire que de
+  n'en poser aucun.
+
+### Corrigé
+
+- **L'interruption manquante de SR5 est trouvée.** Le catalogue en portait huit
+  et signalait depuis le lot E4 qu'il en manquait une neuvième — « Passer en
+  défense totale matricielle », listée « Interruption » à l'index mais dont le
+  coût d'initiative n'avait pas pu être vérifié. Le dépouillement de la Matrice
+  l'a rendu : **−10 au score d'initiative** (p.242), et la Volonté s'ajoute à
+  toute défense contre une action matricielle — deux fois si elle est déjà dans
+  la réserve. Le ⛨ de la console en déplie désormais **neuf**.
+
+### Note
+
+Une contradiction du livre est signalée plutôt que masquée : « Planter un
+programme » est donné *complexe* dans la liste d'actions (p.165) et *simple*
+dans la table récapitulative par attribut (p.245). L'app retient la liste
+d'actions, qui est l'index de référence des types, et le dit en infobulle.
+
+Les quatre actions matricielles offensives que le moteur d'intrusion lance déjà
+(Pic de données, Forcer l'accès, Sonder l'accès, Planter un programme) existent
+maintenant des deux côtés : là-bas avec leur réserve et leur VD, ici avec leur
+coût. Deux facettes du même geste, aucune des deux tables n'ayant vocation à
+porter l'autre.
+
 ## [1.128.0] — 2026-07-28
 
 ### Ajouté

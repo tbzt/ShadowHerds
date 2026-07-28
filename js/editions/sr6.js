@@ -552,6 +552,93 @@ export const EditionSR6 = {
       { key: "utiliserCompetence", name: "Utiliser une compétence", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
         "Utiliser n'importe quelle compétence appropriée",
       ] },
+
+      /* ================ ACTIONS MAGIQUES (lot F1b) — 4 + 7 ================
+         Le livre les sort dans une table à part, mais l'économie est la MÊME :
+         elles se paient en mineures et en majeures comme le reste. F1 les avait
+         différées parce qu'elles ont déjà leur surface motorisée (MagicAction) ;
+         ce qui leur manquait, c'était uniquement leur COÛT. Rien ici ne touche
+         à leurs jets — `domain` sert au rangement de la feuille, pas au calcul.
+
+         ⚠ « Contrer un sort » est la 10ᵉ action `timing: "L"` de SR6, et
+         « Défense matricielle totale » la 11ᵉ (plus bas) : les deux que la table
+         de combat ne portait pas. */
+      { key: "activerFocus", name: "Activer (désactiver) un focus", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "magie", lines: [
+        "Active ou désactive un focus lié",
+      ] },
+      { key: "declencherPreparation", name: "Déclencher une préparation", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "magie", lines: [
+        "Déclenche une préparation dont le déclencheur est une commande",
+      ] },
+      { key: "commanderEsprit", name: "Commander un esprit", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "magie", lines: [
+        "Donne un ordre à un esprit lié ou invoqué",
+      ] },
+      { key: "modifierPerception", name: "Modifier sa perception", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "magie", lines: [
+        "Bascule la perception entre le monde physique et l'astral",
+      ] },
+      { key: "bannirEsprit", name: "Bannir un esprit", cost: [{ key: "major", n: 1 }], timing: "I", domain: "magie", lines: [
+        "Tente de renvoyer un esprit dans son plan",
+      ] },
+      { key: "contrerSort", name: "Contrer un sort", cost: [{ key: "major", n: 1 }], timing: "L", domain: "magie", lines: [
+        "Oppose son Contresort à un sort en cours de lancement",
+      ] },
+      { key: "invoquerEsprit", name: "Invoquer un esprit", cost: [{ key: "major", n: 1 }], timing: "I", domain: "magie", lines: [
+        "Invoque un esprit et négocie ses services",
+      ] },
+      { key: "lancerSort", name: "Lancer un sort", cost: [{ key: "major", n: 1 }], timing: "I", domain: "magie", lines: [
+        "Lance un sort connu, avec son Drain",
+      ] },
+      { key: "purifier", name: "Purifier", cost: [{ key: "major", n: 1 }], timing: "I", domain: "magie", lines: [
+        "Purifie une zone ou un objet de son empreinte astrale",
+      ] },
+      { key: "seManifester", name: "Se manifester", cost: [{ key: "major", n: 1 }], timing: "I", domain: "magie", lines: [
+        "Un personnage projeté apparaît sous forme spectrale dans le monde physique",
+      ] },
+      { key: "seProjeterAstral", name: "Se projeter dans l'astral", cost: [{ key: "major", n: 1 }], timing: "I", domain: "magie", lines: [
+        "Projette son esprit dans l'espace astral",
+      ] },
+
+      /* ================ ACTIONS MATRICIELLES (lot F1b) — 6 + 27 ============
+         ⚠ NE PAS CONFONDRE avec `cyberdeckModel.actions` (plus bas) : celles-là
+         portent une RÉSERVE et une VD pour le moteur d'intrusion, qui les lance
+         réellement. Celles-ci portent un COÛT D'ACTION, et rien d'autre. Quatre
+         gestes existent des deux côtés (Pic de données, Forcer l'accès, Sonder
+         l'accès, Planter un programme) : c'est voulu, ce sont deux facettes du
+         même geste, et aucune des deux tables n'a vocation à porter l'autre. */
+      { key: "mxChangerIcone", name: "Changer son icône", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "matrice", lines: ["Modifie l'apparence de son icône"] },
+      { key: "mxChangerInterface", name: "Changer de mode d'interface", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "matrice", lines: ["Bascule entre RA et RV"] },
+      { key: "mxEntrerServeur", name: "Entrer / sortir d'un serveur", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "matrice", lines: ["Franchit la frontière d'un serveur"] },
+      { key: "mxEnvoyerMessage", name: "Envoyer un message", cost: [{ key: "minor", n: 1 }], timing: "L", domain: "matrice", lines: ["Envoie un message matriciel"] },
+      { key: "mxPercevoirRV", name: "Percevoir la Matrice en RV", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "matrice", lines: ["Perception matricielle depuis la réalité virtuelle"] },
+      { key: "mxReconfigurer", name: "Reconfigurer les attributs matriciels", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "matrice", lines: [
+        "Échange les valeurs de deux attributs non nuls du persona (légale, aucun test, aucun accès nécessaire)",
+      ] },
+      { key: "mxBrouiller", name: "Brouiller des signaux", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Brouille les communications d'une zone"] },
+      { key: "mxControlerAppareil", name: "Contrôler un appareil", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Prend le contrôle d'un appareil accessible"] },
+      { key: "mxCrypter", name: "Crypter un fichier", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Protège un fichier par cryptage"] },
+      { key: "mxDecrypter", name: "Décrypter un fichier", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Lève le cryptage d'un fichier"] },
+      { key: "mxDefenseTotale", name: "Défense matricielle totale", cost: [{ key: "major", n: 1 }], timing: "L", domain: "matrice", lines: ["Se défend activement contre les actions matricielles jusqu'à la fin du round"] },
+      { key: "mxDesamorcerBombe", name: "Désamorcer une bombe matricielle", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Neutralise une bombe matricielle repérée"] },
+      { key: "mxEditerFichier", name: "Éditer un fichier", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Crée, modifie, copie ou supprime un fichier"] },
+      { key: "mxEffacerSignature", name: "Effacer une signature matricielle", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Efface la trace laissée par une action matricielle"] },
+      { key: "mxEmpetrer", name: "Empêtrer", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Entrave une icône adverse"] },
+      { key: "mxForcerAcces", name: "Forcer l'accès", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Obtient un niveau d'accès par la force (dépend de l'Attaque)"] },
+      { key: "mxFormaterAppareil", name: "Formater un appareil", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Reformate un appareil pour en changer le propriétaire"] },
+      { key: "mxFureter", name: "Fureter", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Fouille un serveur à la recherche de fichiers"] },
+      { key: "mxImiterOrdre", name: "Imiter un ordre", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Fait passer un ordre pour légitime auprès d'un appareil"] },
+      { key: "mxPercevoirMatrice", name: "Percevoir la Matrice", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Analyse un objet matriciel ou scanne les environs"] },
+      { key: "mxPicDonnees", name: "Pic de données", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Attaque matricielle infligeant des dommages (VD = indice d'Attaque)"] },
+      { key: "mxPlanterProgramme", name: "Planter un programme", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Met hors service un programme actif de la cible"] },
+      { key: "mxPlongerAppareil", name: "Plonger dans un appareil riggé", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Prend le contrôle direct d'un appareil riggé"] },
+      { key: "mxPoserBombe", name: "Poser une bombe matricielle", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Piège un fichier ou un appareil"] },
+      { key: "mxRebooter", name: "Rebooter un appareil", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Redémarre un appareil, ce qui purge son état matriciel"] },
+      { key: "mxRechercheMatricielle", name: "Recherche matricielle", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Recherche une information dans la Matrice"] },
+      { key: "mxEmpreinteNumerique", name: "Rechercher une empreinte numérique", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Remonte la piste laissée par une icône"] },
+      { key: "mxSeCacher", name: "Se cacher", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Passe son icône en mode silencieux vis-à-vis d'une cible"] },
+      { key: "mxSeDebrancher", name: "Se débrancher", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Quitte la Matrice"] },
+      { key: "mxSonderAcces", name: "Sonder l'accès", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Prépare un accès en discrétion (dépend de la Corruption)"] },
+      { key: "mxTraquerIcone", name: "Traquer une icône", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Localise physiquement le porteur d'une icône"] },
+      { key: "mxBackdoor", name: "Utiliser une backdoor", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Réutilise un accès préparé par Sonder l'accès"] },
+      { key: "mxVerifierSurveillance", name: "Vérifier son Score de Surveillance", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Consulte son Score de Surveillance courant"] },
     ],
   },
   /** MODES DE TIR (lot F2) — chapitre Combat, caractéristiques des armes.

@@ -244,11 +244,22 @@ export const EditionSR5 = {
       projectiles, p.309) est aussi une interruption. La signature prend `pnj`
       pour que ces sources s'y ajoutent sans changer le moteur.
 
-      ⚠ Il MANQUE une entrée : « Passer en défense totale matricielle » (p.242),
+      ✔ L'ENTRÉE MANQUANTE EST TROUVÉE (lot F1b). Ce commentaire portait depuis
+      E4 un trou assumé : « Passer en défense totale matricielle » (p.242),
       listée « Interruption » à l'index des actions mais dont le coût
-      d'initiative n'a pas pu être vérifié au livre lors du dépouillement. Elle
-      sera ajoutée le jour où le chiffre sera confirmé — on n'invente pas un
-      coût (corollaire non négociable : aucun chiffre non calculé). */
+      d'initiative n'avait pas pu être vérifié — et on n'invente pas un coût
+      (corollaire non négociable : aucun chiffre non calculé). Le dépouillement
+      de la Matrice l'a rendu, verbatim p.242 :
+
+        « Cette action permet de se défendre contre les actions d'Attaque et
+        peut être effectuée à n'importe quel moment. La Volonté du personnage
+        est ajoutée à sa réserve de dés pour tous les tests de défense contre
+        une action matricielle (la Volonté est ajoutée une deuxième fois si
+        l'attribut fait déjà partie de la réserve en question). Cette action
+        RÉDUIT LE SCORE D'INITIATIVE DU PERSONNAGE DE 10 mais les effets durent
+        pour le reste du tour de combat. »
+
+      Le catalogue en compte donc NEUF, et non plus huit. */
   interruptActions(pnj) {
     return [
       { key: "fullDefense", label: "Passer en défense totale", initCost: 10, page: "p.170",
@@ -267,6 +278,8 @@ export const EditionSR5 = {
         note: "Équivalent véhicule de la défense totale : +Intuition en défense" },
       { key: "defenseSort", label: "Défense contre sorts", initCost: 5, page: "p.297",
         note: "Seulement si le magicien n'a plus d'action gratuite — réserve = Contresort" },
+      { key: "defenseMatricielle", label: "Défense totale matricielle", initCost: 10, page: "p.242",
+        note: "+Volonté à toute défense contre une action matricielle (deux fois si la Volonté y est déjà) · 4 marks (propriétaire) · aucun test" },
     ];
   },
   /** Verrou p.169 : aucune interruption avant sa première phase d'action tant
@@ -498,6 +511,75 @@ export const EditionSR5 = {
       { key: "utiliserCompetence", name: "Utiliser une compétence", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
         "Utiliser une compétence",
       ] },
+
+      /* ================ ACTIONS MATRICIELLES (lot F1b) — table p.165 ========
+         SR5 ne sort PAS la magie dans une table à part : lancer un sort,
+         invoquer, bannir, se projeter, changer de perception, activer un focus
+         sont déjà dans les listes gratuite/simple/complexe ci-dessus. Il n'y
+         avait donc rien à ajouter côté magie — seulement côté Matrice.
+
+         ⚠ SIX natures ici, pas trois. Outre gratuite/simple/complexe, le livre
+         classe deux actions en VARIABLE (« Contrôler un appareil »,
+         « Rechercher des données ») et une en INTERRUPTION. Les variables
+         portent `variable: true` et ne débitent RIEN : leur coût dépend de la
+         situation, et inventer un jeton serait pire que n'en poser aucun.
+         L'interruption, elle, vit dans `interruptActions` — elle ne consomme
+         aucun jeton (cf. son commentaire).
+
+         ⚠ CONTRADICTION DU LIVRE, signalée plutôt que masquée : « Planter un
+         programme » est donné COMPLEXE dans la liste d'actions (p.165) et
+         SIMPLE dans la table récapitulative par attribut (p.245). On retient la
+         liste d'actions, qui est l'index de référence des types. */
+      { key: "mxChargerProgramme", name: "Charger un programme", cost: [{ key: "free", n: 1 }], domain: "matrice", lines: ["Charge un programme dans le cyberdeck"] },
+      { key: "mxEchangerAttributs", name: "Échanger deux attributs matriciels", cost: [{ key: "free", n: 1 }], domain: "matrice", lines: ["Permute deux attributs du persona"] },
+      { key: "mxDesactiverProgramme", name: "Désactiver un programme", cost: [{ key: "free", n: 1 }], domain: "matrice", lines: ["Décharge un programme actif"] },
+      { key: "mxRemplacerProgramme", name: "Remplacer un programme en cours", cost: [{ key: "free", n: 1 }], domain: "matrice", lines: ["Substitue un programme en mémoire à un programme actif"] },
+
+      { key: "mxAppelerSprite", name: "Appeler / renvoyer un sprite", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Convoque ou congédie un sprite enregistré"] },
+      { key: "mxChangerIcone", name: "Changer son icône", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Modifie l'apparence de son icône"] },
+      { key: "mxEnvoyerMessage", name: "Envoyer un message", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Envoie un message matriciel"] },
+      { key: "mxVerifierSurveillance", name: "Vérifier son Score de Surveillance", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Consulte son Score de Surveillance courant"] },
+      { key: "mxChangerInterface", name: "Changer de mode d'interface", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Bascule entre RA et RV"] },
+      { key: "mxOrdreSprite", name: "Donner un ordre à un sprite", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Commande un sprite sous ses ordres"] },
+      { key: "mxInviterMarkage", name: "Inviter au markage", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Autorise volontairement une mark sur son persona"] },
+      { key: "mxSeDebrancher", name: "Se débrancher", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Quitte la Matrice"] },
+
+      { key: "mxControlerAppareil", name: "Contrôler un appareil", cost: [], variable: true, domain: "matrice", lines: [
+        "Type d'action VARIABLE : il dépend de l'appareil et de ce qu'on lui demande",
+      ] },
+      { key: "mxRechercherDonnees", name: "Rechercher des données", cost: [], variable: true, domain: "matrice", lines: [
+        "Type d'action VARIABLE : test étendu dont la durée dépend de l'obscurité de l'information",
+      ] },
+
+      { key: "mxBrouiller", name: "Brouiller les signaux", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Brouille les communications d'une zone"] },
+      { key: "mxCompilerSprite", name: "Compiler un sprite", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Compile un sprite et négocie ses tâches"] },
+      { key: "mxDecompilerSprite", name: "Décompiler un sprite", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Tente de dissoudre un sprite"] },
+      { key: "mxDesamorcerBombe", name: "Désamorcer une bombe matricielle", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Neutralise une bombe matricielle repérée"] },
+      { key: "mxEditerFichier", name: "Éditer un fichier", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Crée, modifie, copie ou supprime un fichier"] },
+      { key: "mxEffacerMark", name: "Effacer une mark", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Retire une mark posée sur une icône"] },
+      { key: "mxEffacerSignature", name: "Effacer une signature matricielle", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Efface la trace laissée par une action matricielle"] },
+      { key: "mxEntrerServeur", name: "Entrer / sortir d'un serveur", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Franchit la frontière d'un serveur"] },
+      { key: "mxFormaterAppareil", name: "Formater un appareil", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Reformate un appareil pour en changer le propriétaire"] },
+      { key: "mxFureter", name: "Fureter", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Fouille un serveur à la recherche de fichiers"] },
+      { key: "mxHackerVolee", name: "Hacker à la volée", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Pose une mark en discrétion, sans autorisation"] },
+      { key: "mxImiterOrdre", name: "Imiter un ordre", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Fait passer un ordre pour légitime auprès d'un appareil"] },
+      { key: "mxInscrireSprite", name: "Inscrire un sprite", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Enregistre durablement un sprite compilé"] },
+      { key: "mxPasserForce", name: "Passer en force", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Pose une mark par la force, en privilégiant l'Attaque"] },
+      { key: "mxPerceptionMatricielle", name: "Perception matricielle", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Analyse un objet matriciel ou scanne les environs"] },
+      { key: "mxPicDonnees", name: "Pic de données", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Attaque matricielle infligeant des dommages"] },
+      { key: "mxPiraterFichier", name: "Pirater un fichier", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Lève la protection d'un fichier"] },
+      { key: "mxPisterIcone", name: "Pister une icône", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Localise physiquement le porteur d'une icône"] },
+      { key: "mxPlanterProgramme", name: "Planter un programme", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: [
+        "Met hors service un programme actif de la cible",
+        "⚠ Le livre le donne complexe p.165 et simple p.245 — on retient la liste d'actions",
+      ] },
+      { key: "mxPlongerVehicule", name: "Plonger dans un véhicule interfacé", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Prend le contrôle direct d'un véhicule interfacé"] },
+      { key: "mxPoserBombe", name: "Poser une bombe matricielle", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Piège un fichier ou un appareil"] },
+      { key: "mxRebooter", name: "Rebooter un appareil", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Redémarre un appareil, ce qui purge son état matriciel"] },
+      { key: "mxSauterGrille", name: "Sauter vers une grille", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Change de grille matricielle"] },
+      { key: "mxSeCacher", name: "Se cacher", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Passe son icône en mode silencieux vis-à-vis d'une cible"] },
+      { key: "mxTisserForme", name: "Tisser une forme complexe", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Tisse une forme complexe, avec sa Dissonance"] },
+      { key: "mxTuerForme", name: "Tuer une forme complexe", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Dissipe une forme complexe en cours"] },
     ],
   },
   /** MODES DE TIR (lot F2) — table p.180, recopiée ligne pour ligne.
