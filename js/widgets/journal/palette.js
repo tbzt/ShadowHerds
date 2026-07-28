@@ -7,6 +7,7 @@
    ============================================================ */
 import { CardRenderer } from "../card/cardrenderer.js";
 import { DossierBar } from "./dossierbar.js";
+import { FocusTrap } from "../kit/focustrap.js";
 import { Mentions } from "./mentions.js";
 import { Notebooks } from "../../rules/notebooks.js";
 import { Notepad } from "./notepad.js";
@@ -17,6 +18,7 @@ export const Palette = {
   _sel: 0,
   _results: [],
   _mode: "entity", // "entity" | "tag" (préfixe `#`)
+  _releaseTrap: null,
 
   _TYPE_LABEL: { pnj: "PNJ", pj: "PJ", contact: "Contact", server: "Serveur" },
 
@@ -34,6 +36,7 @@ export const Palette = {
     const overlay = document.createElement("div");
     overlay.id = "palette-overlay";
     overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
     overlay.setAttribute("aria-label", "Palette de commandes");
     overlay.innerHTML = `
       <div id="palette-box">
@@ -71,6 +74,11 @@ export const Palette = {
     this._ensure();
     const overlay = document.getElementById("palette-overlay");
     overlay.classList.add("open");
+    // D7 : seul `#palette-input` est focusable dans la boîte (les lignes de
+    // résultat sont des `<div role="option">` sans tabindex, navigées aux
+    // flèches sans jamais déplacer le focus DOM) — sans piège, Tab s'évadait
+    // de ce plein écran vers la page cachée derrière. Piégé AVANT input.focus().
+    this._releaseTrap = FocusTrap.activate(document.getElementById("palette-box"));
     const input = document.getElementById("palette-input");
     input.value = "";
     this._mode = "entity";
@@ -85,6 +93,10 @@ export const Palette = {
     if (!this._open) return;
     document.getElementById("palette-overlay")?.classList.remove("open");
     this._open = false;
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 
   /** Ouvre la Palette en mode mot-clé, `#tag` pré-rempli (clic sur une puce
