@@ -859,7 +859,7 @@
 .play-clock-count {
   font-variant-numeric: tabular-nums;
   color: var(--text-dim);
-  font-size: 0.78rem;
+  font-size: var(--fs-xs);
 }
 .play-clock-btns {
   display: flex;
@@ -905,7 +905,7 @@
 .play-front-faction {
   margin-left: auto;
   font-weight: 400;
-  font-size: 0.76rem;
+  font-size: var(--fs-xs);
   color: var(--text-dim);
 }
 .play-danger {
@@ -919,12 +919,12 @@
 .play-danger-impulse {
   flex: 1;
   min-width: 0;
-  font-size: 0.82rem;
+  font-size: var(--fs-sm);
 }
 .play-portent-count {
   font-variant-numeric: tabular-nums;
   color: var(--text-dim);
-  font-size: 0.78rem;
+  font-size: var(--fs-xs);
 }
 .play-portents {
   list-style: none;
@@ -935,7 +935,7 @@
   gap: var(--sp-1);
 }
 .play-portent {
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   color: var(--text-dim);
   padding-left: 12px;
   position: relative;
@@ -954,7 +954,7 @@
 }
 .play-portent-doom {
   margin-top: 4px;
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   font-style: italic;
   color: var(--warning, #e0a72e);
 }
@@ -1023,7 +1023,7 @@
   color: var(--text-faint, var(--text-dim));
 }
 .play-clue-desc {
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   color: var(--text-dim);
 }
 .play-clue-via {

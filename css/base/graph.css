@@ -54,7 +54,7 @@
 .graph-hint {
   margin: 0;
   color: var(--text-dim, #9fb0c0);
-  font-size: 0.82rem;
+  font-size: var(--fs-sm);
   line-height: 1.5;
   text-align: center;
 }
@@ -69,7 +69,7 @@
   border-radius: 5px;
   background: transparent;
   color: var(--text-dim, #9fb0c0);
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   cursor: pointer;
   transition: border-color 140ms ease, color 140ms ease;
 }
@@ -100,7 +100,7 @@
 .graph-identity-type {
   margin-top: 2px;
   color: var(--text-dim, #9fb0c0);
-  font-size: 0.78rem;
+  font-size: var(--fs-xs);
   text-transform: capitalize;
 }
 
@@ -312,7 +312,7 @@
 .graph-halo-toggle,
 .graph-weave-toggle {
   padding: 3px 10px;
-  font-size: 0.78rem;
+  font-size: var(--fs-xs);
   border: 1px solid var(--border, #2a3a49);
   border-radius: 5px;
   background: transparent;
@@ -528,7 +528,7 @@
   justify-content: center;
   background: var(--bg-mid);
   color: var(--text-dim, #9fb0c0);
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   line-height: 1;
 }
 .graph-edge-check {
@@ -552,7 +552,7 @@
   background: transparent;
   color: var(--danger, #e0533d);
   font: inherit;
-  font-size: 0.82rem;
+  font-size: var(--fs-sm);
   cursor: pointer;
 }
 .graph-edge-delete:hover {
@@ -676,7 +676,7 @@
 }
 .scenario-tb-label {
   color: var(--text-dim, #9fb0c0);
-  font-size: 0.78rem;
+  font-size: var(--fs-xs);
   margin-right: 2px;
 }
 .scenario-type-btn {
@@ -688,7 +688,7 @@
   border: 1px solid var(--border, #2a3a49);
   background: var(--bg-mid);
   color: var(--text, #dce6f0);
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   cursor: pointer;
   transition: border-color 120ms, background 120ms;
 }
@@ -727,14 +727,14 @@
   border-radius: 10px;
   background: color-mix(in srgb, var(--accent, #35e0e6) 12%, transparent);
   color: var(--text, #dce6f0);
-  font-size: 0.78rem;
+  font-size: var(--fs-xs);
 }
 .scenario-cast-x {
   border: none;
   background: none;
   color: var(--text-dim, #9fb0c0);
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   line-height: 1;
   padding: 0 2px;
 }
@@ -747,7 +747,7 @@
   border-radius: 10px;
   background: none;
   color: var(--text-dim, #9fb0c0);
-  font-size: 0.78rem;
+  font-size: var(--fs-xs);
   cursor: pointer;
 }
 .scenario-cast-add:hover {
@@ -762,7 +762,7 @@
   border-radius: 4px;
   background: none;
   color: var(--text-dim, #9fb0c0);
-  font-size: 0.78rem;
+  font-size: var(--fs-xs);
   cursor: pointer;
 }
 .scenario-cast-link:hover {
@@ -782,7 +782,7 @@
 }
 .scenario-clue-hint {
   margin: 2px 0 6px;
-  font-size: 0.76rem;
+  font-size: var(--fs-xs);
 }
 /* Indice flottant (sans ancre) — Sly Flourish : signalé, pas alarmant. */
 .scenario-clue-floating {
@@ -791,7 +791,7 @@
   border: 1px dashed var(--t-fait);
   border-radius: 10px;
   color: var(--text-dim, #9fb0c0);
-  font-size: 0.76rem;
+  font-size: var(--fs-xs);
   font-style: italic;
 }
 
@@ -802,7 +802,7 @@
   border-radius: 4px;
   background: none;
   color: var(--text-dim, #9fb0c0);
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   cursor: pointer;
 }
 .scenario-robust-badge:hover:not(:disabled) {
@@ -826,7 +826,7 @@
   border-left: 3px solid var(--border, #2a3a49);
   border-radius: var(--radius-sm);
   background: var(--bg-mid, #16202b);
-  font-size: 0.82rem;
+  font-size: var(--fs-sm);
   line-height: 1.35;
   cursor: pointer;
 }
@@ -862,7 +862,7 @@
 .scenario-clock-fields { flex: 1; display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
 .scenario-clock-title { width: 100%; }
 .scenario-clock-meta { display: flex; gap: var(--sp-2); align-items: center; }
-.scenario-clock-seg { display: flex; gap: var(--sp-1); align-items: center; font-size: 0.76rem; color: var(--text-dim, #9fb0c0); }
+.scenario-clock-seg { display: flex; gap: var(--sp-1); align-items: center; font-size: var(--fs-xs); color: var(--text-dim, #9fb0c0); }
 .scenario-clock-seg input { width: 46px; }
 .scenario-clock-del {
   border: none; background: none; cursor: pointer;
@@ -870,7 +870,7 @@
 }
 .scenario-clock-del:hover { color: var(--danger, #d05050); }
 .scenario-clock-effects { margin-top: 6px; display: flex; flex-direction: column; gap: var(--sp-1); }
-.scenario-effect { display: flex; gap: var(--sp-1); align-items: center; flex-wrap: wrap; font-size: 0.78rem; }
+.scenario-effect { display: flex; gap: var(--sp-1); align-items: center; flex-wrap: wrap; font-size: var(--fs-xs); }
 .scenario-effect-at { display: flex; gap: var(--sp-1); align-items: center; color: var(--text-dim, #9fb0c0); }
 .scenario-effect-at input { width: 44px; }
 .scenario-effect select { flex: 1; min-width: 96px; }
@@ -878,7 +878,7 @@
 /* Sous-titres du panneau Pression (Horloges / Fronts). */
 .scenario-subhead {
   margin: 10px 0 6px;
-  font-size: 0.82rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--text-dim, #9fb0c0);
   text-transform: uppercase;
@@ -910,7 +910,7 @@
 .scenario-danger-head input { flex: 1; min-width: 0; }
 .scenario-portents { display: flex; flex-direction: column; gap: var(--sp-1); }
 .scenario-portent { display: flex; gap: var(--sp-1); align-items: center; }
-.scenario-portent-n { color: var(--text-dim, #9fb0c0); font-size: 0.76rem; }
+.scenario-portent-n { color: var(--text-dim, #9fb0c0); font-size: var(--fs-xs); }
 .scenario-portent input { flex: 1; min-width: 0; }
 .scenario-portent-add {
   align-self: flex-start;
@@ -941,7 +941,7 @@
   border-left: 2px solid var(--border, #2a3a49);
   background: var(--bg-mid, #16202b);
   border-radius: var(--radius-sm);
-  font-size: 0.82rem;
+  font-size: var(--fs-sm);
   cursor: pointer;
 }
 .scenario-tl-fact:hover { background: var(--bg-card, #1b2735); }
@@ -955,7 +955,7 @@
 }
 .scenario-tl-sub {
   margin: 8px 0 4px;
-  font-size: 0.76rem;
+  font-size: var(--fs-xs);
   color: var(--text-dim, #9fb0c0);
 }
 .scenario-tl-future-row {
@@ -963,11 +963,11 @@
   gap: var(--sp-2);
   align-items: center;
   padding: 3px 0;
-  font-size: 0.82rem;
+  font-size: var(--fs-sm);
 }
 .scenario-tl-future-row > span:nth-child(2) { flex: 1; min-width: 0; }
 .scenario-tl-count {
   font-variant-numeric: tabular-nums;
   color: var(--text-dim, #9fb0c0);
-  font-size: 0.78rem;
+  font-size: var(--fs-xs);
 }
