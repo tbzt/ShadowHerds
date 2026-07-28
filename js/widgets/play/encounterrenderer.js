@@ -12,6 +12,7 @@ import { Actions } from "../../rules/actions.js";
 import { Ammo } from "../../rules/ammo.js";
 import { AnarchyAtouts } from "../../rules/anarchyatouts.js";
 import { CardRenderer } from "../card/cardrenderer.js";
+import { EdgeActions } from "../../rules/edgeactions.js";
 import { Cyberdeck } from "../../rules/cyberdeck.js";
 import { DiceRoller } from "../dice/diceroller.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
@@ -1026,11 +1027,13 @@ export const EncounterRenderer = {
     const edgeHtml = model && model.edgeTracker ? this._activeEdge(r) : "";
     const anarchyHtml = model && model.anarchyPoints ? this._activeAnarchy(r) : "";
     const actionsHtml = App.editionModule && App.editionModule.actionBudget ? this._activeActions(r) : "";
-    // F2 — les munitions rejoignent l'économie du TOUR : un chargeur se vide au
-    // rythme des actions, pas des scènes, et le recul s'y accumule.
-    const ammoHtml = r.pnj ? this._activeAmmo(r) : "";
-    if (!edgeHtml && !anarchyHtml && !actionsHtml && !ammoHtml) return "";
-    return `<div class="encounter-economy">${edgeHtml}${anarchyHtml}${actionsHtml}${ammoHtml}</div>`;
+    // ⚠ F5c — la rangée de munitions a QUITTÉ le cockpit. Elle dupliquait
+    // l'arme sous les actions et multipliait les points d'entrée : le mode de
+    // tir se choisissait ici, le jet partait des blocs d'offense, l'Atout d'un
+    // troisième endroit. Tout cela vit maintenant dans le panneau pré-jet,
+    // ouvert par le tap sur l'arme elle-même — un geste, un écran, un débit.
+    if (!edgeHtml && !anarchyHtml && !actionsHtml) return "";
+    return `<div class="encounter-economy">${edgeHtml}${anarchyHtml}${actionsHtml}</div>`;
   },
 
   /** Rangée Points d'Anarchy (Anarchy 2.0) : compteur de scène par combattant,
@@ -1152,7 +1155,7 @@ export const EncounterRenderer = {
       // il ne monte jamais sans nom (patron `globalDiceSources`). Les surtaxes
       // que le MJ doit trancher lui-même (`warnings`) ne sont PAS ajoutées :
       // elles marquent la puce d'un ⚠ et s'expliquent en infobulle.
-      const res = Actions.costWith(r.pnj, a);
+      const res = Actions.costWith(r.pnj, a, Encounter.edgeCancels(r.pnjId));
       const cher = !Actions.affordable({ cost: res.cost }, budget, used);
       const hors = a.timing === "L" ? " · hors tour" : "";
       const avec = a.combine ? [`À combiner avec : ${a.combine}`] : [];
@@ -1202,6 +1205,12 @@ export const EncounterRenderer = {
     //   · F3b, les ARRÊTS LARGES en premier : « aucune action possible » prime
     //     sur une surtaxe, et le MJ doit le lire avant de choisir.
     //   · F3, les surtaxes conditionnelles ensuite.
+    // F5b — les domaines fermés à ce PNJ (ni Magie, ni Matrice) : dits une
+    // fois, jamais masqués en silence.
+    const fermes = Actions.closedDomains(r.pnj).filter((d) => d.n);
+    const fermesHtml = fermes.length
+      ? `<span class="action-notice">${fermes.map((d) => `${d.n} ${Utils.escHtml(d.label.toLowerCase())} masquée${d.n > 1 ? "s" : ""} — ${Utils.escHtml(d.why)}`).join(" · ")}</span>`
+      : "";
     const arrets = Actions.halts(r.pnj);
     const stopHtml = arrets.length
       ? `<span class="action-notice is-halt">⊘ ${arrets
@@ -1209,7 +1218,7 @@ export const EncounterRenderer = {
           .join(" · ")}. L'app n'en bloque aucune : le tri vous revient.</span>`
       : "";
     const rappels = Actions.conditionalNotices(r.pnj);
-    const notice = stopHtml + (rappels.length
+    const notice = fermesHtml + stopHtml + (rappels.length
       ? `<span class="action-notice">⚠ ${rappels
           .map((w) => `${Utils.escHtml(w.name)} : +${Utils.escHtml(Actions.costLabel(r.pnj, null, w.cost))} pour ${Utils.escHtml(w.why)}`)
           .join(" · ")} — à vous de trancher, l'app ne l'ajoute pas.</span>`
@@ -1283,117 +1292,6 @@ export const EncounterRenderer = {
   _actionSheetOpen: null,
   _actionRestOpen: false,
 
-  /* ========================================================
-     MUNITIONS ET RECUL (lot F2) — une ligne par arme qui compte ses balles.
-
-     Rien pour une arme de mêlée, de jet ou exotique : `capacity: null` fait
-     disparaître toute la surface, sans un seul `if App.edition`. Rien non plus
-     en Anarchy, dont le combat narratif n'a pas de modes de tir.
-
-     Le bouton de tir porte à la fois `data-roll*` (DiceRoller lance) et
-     `data-action="ammo-fire"` (Encounter compte) — le patron du lot E4, où le
-     même bouton lançait la défense et incrémentait le compteur de défenses
-     multiples. Un seul geste, deux lectures, jamais deux boutons jumeaux.
-     ======================================================== */
-
-  _activeAmmo(r) {
-    const armes = Encounter.ammoWeapons(r.pnjId);
-    const recul = this._recoilBadge(r);
-    if (!armes.length) return recul ? `<div class="encounter-ammo">${recul}</div>` : "";
-    const lignes = armes.map((a) => this._ammoRow(r, a)).join("");
-    return `<div class="encounter-ammo">${lignes}${recul}</div>`;
-  },
-
-  _ammoRow(r, a) {
-    const vide = a.reste <= 0;
-    const bas = !vide && a.reste <= Math.max(1, Math.ceil(a.cap.n / 5));
-    const modes = a.modes.length
-      ? `<button class="btn-icon-tiny action-trade" data-action="ammo-modes" title="Choisir le mode de tir">${Utils.escHtml(a.parsed.modes.join("/"))} ▾</button>
-         <span class="ammo-modes" hidden>${a.modes.map((m) => this._ammoModeBtn(r, a, m)).join("")}</span>`
-      : "";
-    const recharge = a.reload.length
-      ? `<button class="btn-icon-tiny action-trade" data-action="ammo-reload" data-arme="${Utils.escHtml(a.key)}" data-id="${r.pnjId}" title="${Utils.escHtml(this._reloadTitle(r, a))}">⟳</button>`
-      : "";
-    return `<span class="ammo-row${vide ? " is-empty" : bas ? " is-low" : ""}">
-      <span class="ammo-name">${Utils.escHtml(a.parsed.name)}</span>
-      <span class="ammo-count" title="Balles restantes sur la capacité de l'arme">⦿ ${a.reste}/${a.cap.n} (${Utils.escHtml(a.cap.mech)})</span>
-      ${modes}${recharge}
-    </span>`;
-  },
-
-  /** Un mode de tir : le bouton porte le jet ET le décompte. La réserve est
-      celle que la fiche affiche déjà (`WeaponRoll.forWeapon`), et le `detail`
-      porte l'annonce que le MJ lira au joueur qui va se défendre — corrigée du
-      manque de munitions, comme l'écrit le livre. */
-  _ammoModeBtn(r, a, m) {
-    const res = Ammo.resolve(r.pnj, m, a.reste);
-    const spec = WeaponRoll.resolvePool(r.pnj, a.str, r.pnj.edition);
-    const base = spec ? spec.pool : 0;
-
-    // RECUL — retranché ICI et nulle part ailleurs. Le livre est précis : le
-    // modificateur « doit être retranché à votre réserve de dés POUR LE TEST
-    // D'ATTAQUE » (p.177). Ce n'est donc pas un malus global à la
-    // `globalDiceMalus` : il ne touche ni la défense, ni l'encaissement, ni un
-    // test de Perception. Et il compte les balles qu'on est « SUR LE POINT DE
-    // TIRER » — celles de ce tir-ci comprises.
-    const rec = Encounter.recoilInfo(r.pnjId);
-    const malus = rec ? Ammo.recoilMalus(rec.cumul + Ammo.recoilFrom(res), rec.comp) : 0;
-    const pool = Math.max(0, base - malus);
-
-    const detail = [Ammo.rollDetail(res), malus ? `recul −${malus}` : ""].filter(Boolean).join(" · ");
-    const titre = [
-      `${m.name} — ${res.tires} balle${res.tires > 1 ? "s" : ""}${res.court ? ` (il en faut ${res.veut})` : ""}`,
-      m.actionKey ? `Coûte : ${Actions.costLabel(r.pnj, Actions.find(r.pnj, m.actionKey))}` : "",
-      malus ? `Réserve ${base} − ${malus} recul = ${pool}` : `Réserve ${pool}`,
-      detail,
-    ].filter(Boolean).join("\n• ");
-    const rollAttrs = pool
-      ? `data-roll="${pool}" data-roll-label="${Utils.escHtml(a.parsed.name)}" data-roll-detail="${Utils.escHtml(detail)}" data-roll-pnj="${r.pnjId}" data-roll-edition="${r.pnj.edition}"`
-      : "";
-    // `is-dry` = réserve tombée à zéro (recul, blessures). Le bouton reste
-    // CLIQUABLE et débite toujours ses balles : le livre laisse tirer, il fait
-    // seulement payer. Mais il n'a plus de `data-roll` — on ne lance pas zéro
-    // dé — et l'infobulle dit d'où vient le zéro.
-    return `<button type="button" class="tag status-pick ammo-mode${res.court ? " is-over" : ""}${pool ? "" : " is-dry"}" ${rollAttrs} data-action="ammo-fire" data-arme="${Utils.escHtml(a.key)}" data-mode="${m.key}" data-id="${r.pnjId}" title="${Utils.escHtml(titre)}">${Utils.escHtml(m.name)}<span class="weapon-pool">⚄${pool}</span></button>`;
-  },
-
-  _reloadTitle(r, a) {
-    const noms = a.reload
-      .map((k) => {
-        const e = Actions.find(r.pnj, k);
-        return e ? `${e.name} (${Actions.costLabel(r.pnj, e)})` : k;
-      })
-      .join(" + ");
-    return `Recharger — ${noms}`;
-  },
-
-  toggleAmmoModes(btn) {
-    const box = btn.parentElement && btn.parentElement.querySelector(".ammo-modes");
-    if (!box) return;
-    document.querySelectorAll(".ammo-modes").forEach((b) => {
-      if (b !== box) b.hidden = true;
-    });
-    box.hidden = !box.hidden;
-  },
-
-  /** Le badge de RECUL (SR5) : un témoin, pas un réglage. Il n'apparaît que
-      lorsque le cumul dépasse la compensation, et disparaît de lui-même à la
-      première action qui n'est pas un tir. Le titre nomme son calcul — un
-      chiffre ne baisse jamais sans qu'on sache d'où il vient (patron
-      `globalDiceSources` du lot E3).
-
-      Le ↺ existe pour les cas que le livre laisse au MJ (« ou soit FORCÉ de
-      dépenser » une action pour autre chose), et la bascule ⌐ pour les
-      accessoires internes déployés, que l'app ne peut pas deviner. */
-  _recoilBadge(r) {
-    const info = Encounter.recoilInfo(r.pnjId);
-    if (!info) return "";
-    const crosse = `<button class="btn-icon-tiny action-trade${info.stock ? " is-on" : ""}" data-action="recoil-stock" data-id="${r.pnjId}" aria-pressed="${info.stock}" title="Accessoires internes déployés (crosse pliable/détachable) — la parenthèse de la colonne CR est une compensation TOTALE, pas un supplément">⌐ crosse</button>`;
-    if (!info.cumul) return `<span class="recoil-badge is-idle" title="Compensation de recul : ${info.comp} (1 gratuit + Force/3 + armes)">↯ CR ${info.comp}</span>${crosse}`;
-    const reset = `<button class="btn-icon-tiny action-trade" data-action="recoil-reset" data-id="${r.pnjId}" title="Remettre le recul à zéro (le livre le fait dès qu'une action simple ou complexe n'est pas un tir — ceci est le recours manuel)" aria-label="Remettre le recul à zéro">↺</button>`;
-    const titre = `Recul progressif — ${info.cumul} balle${info.cumul > 1 ? "s" : ""} cumulée${info.cumul > 1 ? "s" : ""} − CR ${info.comp}`;
-    return `<span class="recoil-badge${info.malus ? " is-on" : " is-idle"}" title="${Utils.escHtml(titre)}">↯ ${info.malus ? `−${info.malus}` : `${info.cumul}/${info.comp}`}</span>${reset}${crosse}`;
-  },
 
   /** Boutons d'ÉCHANGE d'actions (lot E5) — n'existent que si l'édition en
       déclare (`actionExchange` : SR6 seul aujourd'hui). Rien de neuf dans la

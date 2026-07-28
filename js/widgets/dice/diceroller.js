@@ -1078,10 +1078,17 @@ export const DiceRoller = {
     if (this._preRollMode() !== "panel" || !pnj) return false;
     const options = this.preRollEdgeOptions(pnj).filter((o) => o.affordable);
     const gain = weapon ? this._buildGainCtx(pnj, weapon) : null;
-    // Ouvre si une dépense est possible OU si l'attaque permet de GAGNER de
-    // l'Atout (SR6) — sinon le tap reste un lancer immédiat (geste inchangé).
-    if (!options.length && !gain) return false;
-    this.openPreRollPanel({ pnj, options, doRoll, gain });
+    // F5c — le contexte d'ATTAQUE : modes de tir, balles, recul, greffons.
+    // C'est lui qui fait du panneau le parcours complet ; taper l'arme est
+    // désormais l'action Attaquer, et tout se décide ici.
+    const attack =
+      weapon && this._hooks && this._hooks.attackContext ? this._hooks.attackContext(pnj, weapon) : null;
+    if (attack && attack.modes.length) attack.chosenMode = attack.modes[0].key;
+    // Ouvre si une dépense est possible, OU si l'attaque permet de GAGNER de
+    // l'Atout (SR6), OU s'il y a une attaque à régler — sinon le tap reste un
+    // lancer immédiat (geste inchangé pour une arme de mêlée sans greffon).
+    if (!options.length && !gain && !attack) return false;
+    this.openPreRollPanel({ pnj, options, doRoll, gain, attack });
     return true;
   },
 
@@ -1145,6 +1152,7 @@ export const DiceRoller = {
           <button class="risk-panel-close" id="preroll-close" aria-label="Fermer">✕</button>
         </div>
         <div class="risk-panel-pool" id="preroll-pool"></div>
+        <div id="preroll-attack" hidden></div>
         <div id="preroll-gain" hidden></div>
         <div id="preroll-options"></div>
         <button class="risk-roll-btn" id="preroll-plain">Lancer tel quel</button>
@@ -1156,6 +1164,28 @@ export const DiceRoller = {
       if (e.target === p) this._closePreRollPanel();
     });
     document.getElementById("preroll-close").addEventListener("click", () => this._closePreRollPanel());
+
+    // F5c — mode de tir et greffon d'Atout se SÉLECTIONNENT ; c'est la sortie
+    // du panneau (option d'Atout ou « Lancer ») qui débite tout ensemble.
+    // C'est là toute la fluidité demandée : un écran, un choix simultané, un
+    // seul débit — au lieu de trois surfaces qui se répondaient mal.
+    document.getElementById("preroll-attack").addEventListener("click", (e) => {
+      const a = this._preRoll && this._preRoll.attack;
+      if (!a) return;
+      const m = e.target.closest("[data-preroll-mode]");
+      if (m) {
+        const k = m.getAttribute("data-preroll-mode");
+        a.chosenMode = a.chosenMode === k ? null : k;
+        this._renderAttackSection();
+        return;
+      }
+      const g = e.target.closest("[data-preroll-graft]");
+      if (g) {
+        const k = g.getAttribute("data-preroll-graft");
+        a.chosenGraft = a.chosenGraft === k ? null : k;
+        this._renderAttackSection();
+      }
+    });
 
     // Choisir une option = débiter la ressource puis lancer.
     document.getElementById("preroll-options").addEventListener("click", (e) => {
@@ -1224,6 +1254,19 @@ export const DiceRoller = {
     const dlg = document.querySelector("#preroll-panel .risk-panel");
     if (dlg) dlg.setAttribute("aria-label", res ? `${res} avant le jet` : "Avant le jet");
     document.getElementById("preroll-plain").textContent = res ? `Lancer sans ${res}` : "Lancer tel quel";
+    // Le débit d'attaque s'accroche à TOUTES les sorties du panneau (option
+    // d'Atout comme « Lancer tel quel ») : un seul emballage, jamais un débit
+    // recopié sur chaque bouton.
+    if (ctx.attack && !ctx._wrapped) {
+      const orig = ctx.doRoll;
+      ctx._wrapped = true;
+      ctx.doRoll = (edge) => {
+        if (this._hooks && this._hooks.onAttack)
+          this._hooks.onAttack(ctx.pnj, ctx.attack.weapon, ctx.attack.chosenMode, ctx.attack.chosenGraft);
+        return orig(edge);
+      };
+    }
+    this._renderAttackSection();
     this._renderSpendOptions();
     this._renderGainSection();
     const p = document.getElementById("preroll-panel");
@@ -1259,6 +1302,62 @@ export const DiceRoller = {
            </button>`,
       )
       .join("");
+  },
+
+  /** Rend la section d'ATTAQUE (lot F5c) : mode de tir, état du chargeur,
+      recul prévisionnel et greffons d'Atout. Masquée hors attaque.
+
+      Tout y est SÉLECTIONNABLE et rien n'y lance : le jet part par les sorties
+      existantes du panneau (une option d'Atout, ou « Lancer tel quel »), qui
+      débitent l'ensemble d'un coup. C'est la fluidité recherchée — un écran,
+      des choix simultanés, un seul débit — là où le cockpit demandait avant de
+      passer par trois surfaces différentes. */
+  _renderAttackSection() {
+    const el = document.getElementById("preroll-attack");
+    if (!el) return;
+    const a = this._preRoll && this._preRoll.attack;
+    if (!a) {
+      el.hidden = true;
+      el.innerHTML = "";
+      return;
+    }
+    el.hidden = false;
+    const esc = Utils.escHtml;
+
+    const chargeur = a.arme
+      ? `<span class="preroll-ammo">⦿ ${a.arme.reste}/${a.arme.cap.n} (${esc(a.arme.cap.mech)})</span>`
+      : "";
+    const recul =
+      a.recoil && a.recoil.cumul
+        ? `<span class="preroll-ammo" title="Recul progressif — ${a.recoil.cumul} balles cumulées − CR ${a.recoil.comp}">↯ ${a.recoil.malus ? `−${a.recoil.malus}` : `${a.recoil.cumul}/${a.recoil.comp}`}</span>`
+        : "";
+
+    // Modes de tir : le libellé porte les balles ET le recul PRÉVISIONNEL, car
+    // le livre compte « les balles qu'on est sur le point de tirer ».
+    const modes = a.modes.length
+      ? `<div class="preroll-row"><span class="preroll-row-lbl">Mode de tir</span>${a.modes
+          .map((m) => {
+            const on = a.chosenMode === m.key;
+            const court = m.res.court ? " is-over" : "";
+            const info = [m.detail, m.malus ? `recul −${m.malus}` : ""].filter(Boolean).join(" · ");
+            return `<button type="button" class="tag status-pick${on ? " is-on" : ""}${court}" data-preroll-mode="${m.key}" aria-pressed="${on}" title="${esc(info)}">${esc(m.name)}<span class="edge-cost">${m.res.tires}</span></button>`;
+          })
+          .join("")}</div>`
+      : "";
+
+    // Greffons d'Atout, filtrés par la famille de l'arme et triés par coût.
+    const greffons = a.greffons.length
+      ? `<div class="preroll-row"><span class="preroll-row-lbl">Actions d'Atout · ${a.edge} dispo</span>${a.greffons
+          .map((g) => {
+            const on = a.chosenGraft === g.key;
+            const cher = g.cost > a.edge ? " is-over" : "";
+            const info = [`${g.name} — ${g.cost} point${g.cost > 1 ? "s" : ""}`, ...(g.lines || []), `Source : ${g.source}`].join("\n• ");
+            return `<button type="button" class="tag status-pick${on ? " is-on" : ""}${cher}" data-preroll-graft="${g.key}" aria-pressed="${on}" title="${esc(info)}">${esc(g.name)}<span class="edge-cost">${g.cost}</span></button>`;
+          })
+          .join("")}</div>`
+      : "";
+
+    el.innerHTML = `<div class="preroll-attack-head">${esc(a.name)} ${chargeur}${recul}</div>${modes}${greffons}`;
   },
 
   /** Rend la section « gagner l'Atout » (SR6) : sélecteur de Portée pour les

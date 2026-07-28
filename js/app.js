@@ -626,6 +626,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // J3 (journal des jets) : round de la scène en cours, pour grouper le
     // journal par tour — seule App (couche 6) connaît Encounter (couche 5).
     currentTurn: () => (typeof Encounter !== "undefined" ? Encounter.currentTurn() : null),
+    // F5c — le panneau pré-jet devient le PARCOURS D'ATTAQUE : taper une arme
+    // ouvre un seul écran qui montre le mode de tir, les balles, le recul,
+    // l'Atout et les greffons, et qui débite tout d'un coup. Seule App
+    // (couche 6) connaît Encounter (couche 5), d'où ces deux ponts.
+    attackContext: (pnj, weapon) =>
+      typeof Encounter !== "undefined" ? Encounter.attackContext(pnj.id, weapon) : null,
+    onAttack: (pnj, weapon, modeKey, graftKey) =>
+      typeof Encounter !== "undefined"
+        ? Encounter.resolveAttack(pnj.id, weapon, modeKey, graftKey)
+        : "",
   });
   MagicAction.init({ onPnjChanged });
   ContentModal.bindDelegation();

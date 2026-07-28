@@ -420,6 +420,33 @@ export const EditionSR6 = {
       Score Offensif l'a remplacé), et l'action couvre indistinctement la mêlée
       et la distance. Le drapeau est une notion SR5, il vit dans sr5.js. */
   actionModel: {
+    /* ---- DOMAINES (lot F5b) : où ce PNJ peut-il seulement AGIR ? ---------
+       44 des 76 actions SR6 sont magiques ou matricielles. Sur l'écrasante
+       majorité des PNJ — un ganger, un vigile, un molosse — elles ne serviront
+       JAMAIS : proposer « Lancer un sort » à qui n'a pas une once de Magie,
+       c'est du bruit qui coûte à chaque ouverture de feuille.
+
+       Le prédicat vit ici et pas dans le magasin neutre (prohibition n°1) :
+       lui ne sait pas ce qu'est un cyberdeck. Le combat n'a pas d'entrée —
+       personne n'a besoin d'une condition pour frapper. */
+    domains: {
+      magie: {
+        why: "ce PNJ n'a ni Magie, ni sort, ni pouvoir",
+        when: (pnj) =>
+          (Actor.attr(pnj, "MAG") || 0) > 0 ||
+          !!(pnj.spells && pnj.spells.length) ||
+          !!(pnj.powers && pnj.powers.length) ||
+          !!pnj.tradition,
+      },
+      matrice: {
+        why: "ce PNJ n'a ni cyberjack, ni cyberdeck, ni Résonance",
+        when: (pnj) =>
+          (Actor.attr(pnj, "RES") || 0) > 0 ||
+          !!pnj.cyberdeck ||
+          !!(pnj.complexForms && pnj.complexForms.length) ||
+          /cyberjack|cyberdeck/i.test((pnj.equip || []).map(String).join(" ")),
+      },
+    },
     catalog: [
       /* ---------------- ACTIONS MINEURES (19) ---------------- */
       { key: "ajuster", name: "Ajuster", cost: [{ key: "minor", n: 1 }], timing: "I", quick: true, lines: [
@@ -550,7 +577,7 @@ export const EditionSR6 = {
       { key: "assister", name: "Assister", cost: [{ key: "major", n: 1 }], timing: "L", lines: [
         "Devenir assistant au cours d'un test d'équipe, pour aider un équipier sur une tâche",
       ] },
-      { key: "attaquer", name: "Attaquer", cost: [{ key: "major", n: 1 }], timing: "I", quick: true, lines: [
+      { key: "attaquer", name: "Attaquer", viaWeapon: true, cost: [{ key: "major", n: 1 }], timing: "I", quick: true, lines: [
         "Porter un type d'attaque : physique, magique ou de véhicule",
       ] },
       { key: "controlerDrone", name: "Contrôler un drone à distance", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
@@ -681,6 +708,389 @@ export const EditionSR6 = {
       { key: "mxTraquerIcone", name: "Traquer une icône", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Localise physiquement le porteur d'une icône"] },
       { key: "mxBackdoor", name: "Utiliser une backdoor", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Réutilise un accès préparé par Sonder l'accès"] },
       { key: "mxVerifierSurveillance", name: "Vérifier son Score de Surveillance", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Consulte son Score de Surveillance courant"] },
+    ],
+  },
+  /** ACTIONS D'ATOUT (lot F5) — le contrat, lu par `EdgeActions`.
+
+      82 entrées dépouillées sur quatre ouvrages : livre de base (14 combat +
+      5 matricielles), Feu Nourri (33), À tombeau ouvert (24 + 2 bonus),
+      Compagnon du Sixième Monde (4 optionnelles). Les afficher toutes serait
+      pire que rien — d'où les trois axes de filtre, qui sont la phrase du MJ :
+      **au bon moment, au bon endroit, au bon PNJ**.
+
+      Ce bloc porte les GARDES et les CONTEXTES ; l'en-tête d'`edgeactions.js`
+      porte le raisonnement. Le catalogue se remplit ouvrage par ouvrage —
+      ci-dessous, la tranche qui exerce les trois axes. */
+  edgeActionModel: {
+    /* ---- AXE « au bon PNJ » : capacités lues sur la fiche ---------------
+       Elles sont évaluées ICI parce que le magasin neutre ne sait pas ce
+       qu'est un cyberjack (prohibition n°1). Le livre écrit « un cyberjack
+       implanté OU un score de Résonance » : `who` est donc une disjonction. */
+    gates: {
+      resonance: (pnj) => (Actor.attr(pnj, "RES") || 0) > 0,
+      // Même patron que `BonusEngine.detectSmartlink` : on lit l'équipement,
+      // qui porte « Cyberjack [Indice 1-6, …] » depuis toujours.
+      cyberjack: (pnj) => /cyberjack/i.test((pnj.equip || []).map(String).join(" ")),
+      // Dérogation Hacker Vaillant : les protoconsciences « ont accès à
+      // l'ensemble des actions d'Atout matricielles SANS CONDITION de matériel
+      // ou attribut spécial ». Une exception écrite au livre mérite un champ.
+      vieNumerique: (pnj) => !!(pnj && (pnj.kind === "sprite" || pnj.isProtoconscience)),
+      pilote: (pnj) =>
+        typeof Vehicles !== "undefined" &&
+        (Vehicles.linkedTo(pnj.id) || []).some((v) => v.deployed),
+    },
+    gateLabels: {
+      resonance: "un score de Résonance",
+      cyberjack: "un cyberjack implanté",
+      pilote: "un véhicule ou un drone déployé",
+    },
+
+    /* ---- AXE « au bon endroit » : le contexte de scène ------------------
+       `derive` présent = l'app sait le voir toute seule. Absent = c'est au MJ
+       de le déclarer, et la bascule apparaît au-dessus de la feuille. */
+    contexts: {
+      vehicule: {
+        label: "En véhicule",
+        derive: (pnj) =>
+          typeof Vehicles !== "undefined" &&
+          (Vehicles.linkedTo(pnj.id) || []).some((v) => v.deployed),
+      },
+      matrice: {
+        label: "En Matrice",
+        derive: (pnj) =>
+          (Actor.attr(pnj, "RES") || 0) > 0 ||
+          /cyberjack|cyberdeck/i.test((pnj.equip || []).map(String).join(" ")),
+      },
+      // ⚠ NON DÉRIVABLE — la course-poursuite est un TYPE DE SCÈNE que l'app
+      // ne modélise pas (participants, rôle poursuivant/cible, catégories de
+      // distance relatives, environnement, test de Pilotage par round). Tant
+      // que ce chantier n'est pas fait, le MJ bascule à la main et les 14
+      // actions concernées restent masquées par défaut. Inscrit au plan.
+      poursuite: {
+        label: "Course-poursuite",
+        hint: "À déclarer : l'app ne modélise pas encore ce type de scène",
+      },
+    },
+
+    /* ---- Le catalogue ---------------------------------------------------
+       Tranche de contrat : chaque entrée ci-dessous exerce un axe différent,
+       pour que la machinerie soit vérifiable avant que les 82 y entrent. */
+    catalog: [
+      // AXE « au bon moment » — hôte nommé, du catalogue F1.
+      { key: "arracher", name: "Arracher", cost: 2, source: "SR6",
+        host: ["bloquer"], hostLabel: "Bloquer", when: "avantJet", lines: [
+        "En mêlée, après un Bloquer réussi : test de Combat rapproché + Agilité, seuil = Force de l'adversaire",
+        "Seuil atteint : l'arme tombe · succès excédentaires : vous vous en emparez",
+      ] },
+      { key: "coupAssommant", name: "Coup assommant", cost: 2, source: "SR6",
+        host: ["attaquerMelee"], hostLabel: "Attaquer en mêlée", when: "avantJet", lines: [
+        "Si les dommages dépassent la Volonté de la cible, son moniteur étourdissant est rempli d'un coup",
+        "La cible est inconsciente · aucun dommage ne passe au moniteur physique",
+      ] },
+      // `cancels` — annule la surtaxe d'état de F3. Trois entrées du corpus le
+      // font ; sans ce champ l'app ferait payer une mineure déjà achetée.
+      { key: "tirerDepuisCouvert", name: "Tirer depuis un couvert", cost: 2, source: "SR6",
+        host: ["attaquerDistance"], hostLabel: "Attaquer à distance", when: "avantJet",
+        cancels: ["couvert"], lines: [
+        "Attaquer en restant à couvert, sans dépenser l'action mineure Attaquer depuis un couvert",
+      ] },
+
+      // AXE « au bon PNJ » + « au bon endroit » — les matricielles.
+      { key: "optimisationUrgence", name: "Optimisation d'urgence", cost: 1, source: "SR6",
+        where: "matrice", who: ["cyberjack", "resonance"], waivedBy: ["vieNumerique"],
+        hostLabel: "bonus, avant le jet", when: "avantJet", lines: [
+        "Augmente temporairement un attribut matriciel de 1 point pour un test",
+      ] },
+      // ⚠ Celle-ci coûte AUSSI une action majeure : la règle « les actions
+      // d'Atout ne coûtent pas d'action » ne vaut que pour la section combat.
+      { key: "saturation", name: "Saturation", cost: 2, source: "SR6",
+        where: "matrice", who: ["cyberjack", "resonance"], waivedBy: ["vieNumerique"],
+        actionCost: [{ key: "major", n: 1 }], hostLabel: "action majeure · légale", lines: [
+        "Sature un serveur ou un persona : −2 en Traitement de données et −1 emplacement de programme actif",
+        "Jusqu'à la fin du prochain round · aucun accès nécessaire",
+      ] },
+      { key: "technobavardage", name: "Technobavardage", cost: 2, source: "SR6",
+        where: "matrice", who: ["resonance"], hostLabel: "bonus, avant le jet", when: "avantJet", lines: [
+        "Technomanciens uniquement : Charisme au lieu de Logique pour la prochaine action matricielle",
+      ] },
+
+      // AXE « au bon endroit » — véhicule dérivable.
+      { key: "dansMaBulle", name: "Dans ma bulle", cost: 4, source: "À tombeau ouvert",
+        where: "vehicule", who: ["pilote"], hostLabel: "Pilotage", when: "avantJet", lines: [
+        "Ignore les malus modifiant la Maniabilité du véhicule pour ce test",
+      ] },
+
+      // AXE « au bon endroit » — contexte NON dérivable, plus un rôle de scène.
+      { key: "freinageBrutal", name: "Freinage brutal", cost: 2, source: "À tombeau ouvert",
+        where: "poursuite", role: "cible", hostLabel: "Pilotage", lines: [
+        "Tous les participants sont rapprochés d'une catégorie de distance de votre position",
+      ] },
+      { key: "semerPoursuivants", name: "Semer les poursuivants", cost: 4, costLabel: "4 ou 8 points",
+        source: "À tombeau ouvert", where: "poursuite", role: "cible",
+        hostLabel: "Pilotage ou Athlétisme", lines: [
+        "+1 catégorie de distance pour 4 points d'Atout, +2 pour 8",
+        "Un adversaire déjà à distance extrême y reste · vous gagnez un avantage positionnel",
+      ] },
+
+      // Règle OPTIONNELLE, et coût en FORMULE : deux champs que le corpus impose.
+      { key: "eliminationSilencieuse", name: "Élimination silencieuse", cost: 1,
+        costLabel: "le Professionnalisme de la cible (minimum 1)",
+        source: "Compagnon du Sixième Monde", optional: true,
+        host: ["attaquerMelee"], hostLabel: "attaque de mêlée", when: "avantJet", lines: [
+        "Test de compétence d'arme + Agilité, seuil 4 : le moniteur de la cible est entièrement rempli",
+        "Figurants uniquement, à portée de combat rapproché, totalement inconscients de votre présence",
+      ] },
+
+      { key: "desarmement", name: "Désarmement", cost: 5, source: "SR6", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
+        "Une attaque réussie ne blesse pas la cible mais lui arrache son arme des mains",
+      ] },
+      { key: "encouragement", name: "Encouragement", cost: 4, source: "SR6", hostLabel: "Utiliser une compétence (Influence)", when: "avantJet", lines: [
+        "Test d'Influence + Charisme : la cible regagne un point d'Atout par succès",
+        "Sans pouvoir dépasser son rang d'Atout + 1",
+      ] },
+      { key: "haranguer", name: "Haranguer", cost: 4, source: "SR6", hostLabel: "Utiliser une compétence (Influence)", when: "avantJet", lines: [
+        "Test d'Influence + Charisme : chaque succès fait gagner 1 point d'Atout",
+        "À une personne différente à chaque fois, au choix du MJ, parmi ceux que le personnage harangue",
+      ] },
+      { key: "inspirationSoudaine", name: "Inspiration soudaine", cost: 1, source: "SR6", hostLabel: "toutes", when: "avantJet", lines: [
+        "Effectuer une action pour laquelle on n'a aucun rang de compétence, sans malus",
+        "N'autorise pas les compétences inutilisables quand on est Inexpérimenté",
+      ] },
+      { key: "amiDunAmi", name: "L'ami d'un ami", cost: 1, costLabel: "Réseau + Loyauté du contact temporaire", source: "SR6", hostLabel: "Utiliser une compétence (Influence)", when: "avantJet", lines: [
+        "Être mis en relation avec une personne servant de contact, pour une unique requête",
+      ] },
+      { key: "placementParfait", name: "Placement parfait", cost: 4, source: "SR6", host: ["attaquerDistance"], hostLabel: "Attaquer à distance", when: "avantJet", lines: [
+        "En attaquant plusieurs adversaires (Attaques multiples ou mode de tir), réserve de dés COMPLÈTE pour chaque cible",
+      ] },
+      { key: "poignarder", name: "Poignarder", cost: 1, source: "SR6", host: ["attaquerMelee"], hostLabel: "Attaquer en mêlée", when: "avantJet", lines: [
+        "Avec une lame : réduit le malus de Cibler de 2",
+      ] },
+      { key: "renverser", name: "Renverser", cost: 1, source: "SR6", host: ["attaquerMelee"], hostLabel: "Attaquer en mêlée", when: "avantJet", maySet: [{ status: "aterre", level: 1, when: "si les dommages dépassent la Constitution de la cible" }], lines: [
+        "Si les dommages dépassent la Constitution de la cible, elle tombe et subit l'état À terre",
+      ] },
+      { key: "rouladeTactique", name: "Roulade tactique", cost: 1, source: "SR6", host: ["seJeterParTerre"], hostLabel: "Se jeter par terre", when: "avantJet", lines: [
+        "Une attaque de mêlée le même round ne subit pas le malus de l'état À terre",
+        "Au round suivant : ni le −2 dés d'À terre à portée proche/courte, ni le malus de Se jeter par terre",
+      ] },
+      { key: "dansLaPoche", name: "Se mettre quelqu'un dans la poche", cost: 4, source: "SR6", hostLabel: "Utiliser une compétence (Influence (Étiquette))", when: "avantJet", lines: [
+        "Test d'Influence (Étiquette) réussi : le PNJ garde une bonne impression et évite de vous nuire",
+        "Tant que cela ne lui est pas directement néfaste",
+      ] },
+      { key: "organesVitaux", name: "Viser les organes vitaux", cost: 5, source: "SR6", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
+        "L'attaque touche un organe vital : +3 aux dégâts si elle réussit, en plus des succès nets",
+      ] },
+      { key: "signalHurlant", name: "Signal hurlant", cost: 2, source: "SR6", family: "bonus", where: "matrice", who: ["cyberjack", "resonance"], waivedBy: ["vieNumerique"], hostLabel: "bonus, avant le jet", when: "avantJet", lines: [
+        "La prochaine action ignore tous les malus dus au Bruit",
+      ] },
+      { key: "sousLeRadar", name: "Sous le radar", cost: 3, source: "SR6", family: "bonus", where: "matrice", who: ["cyberjack", "resonance"], waivedBy: ["vieNumerique"], hostLabel: "bonus, avant le jet", when: "avantJet", lines: [
+        "La prochaine action illégale de ce tour n'augmente pas le Score de Surveillance",
+        "L'action ne devient pas légale pour autant",
+      ] },
+      { key: "adroitSinge", name: "Adroit comme un singe", cost: 2, source: "Feu Nourri", hostLabel: "Escalade", when: "avantJet", lines: [
+        "Modifie la distance d'escalade de 1,2 m par succès (1,3 m avec Allonge)",
+      ] },
+      { key: "ancreAuSol", name: "Ancré au sol", cost: 2, source: "Feu Nourri", hostLabel: "Défense", when: "avantJet", lines: [
+        "Test d'Agilité + Athlétisme : les succès s'ajoutent à la Constitution pour déterminer la mise à terre",
+        "Vaut aussi contre Faire trébucher et Renverser",
+      ] },
+      { key: "armoireAGlace", name: "Armoire à glace", cost: 2, source: "Feu Nourri", host: ["intercepter"], hostLabel: "Intercepter", when: "avantJet", lines: [
+        "Permet d'intercepter un adversaire au-delà de ce que l'action autorise normalement",
+      ] },
+      { key: "neutraliser", name: "Attaque ciblée : Neutraliser", cost: 2, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
+        "Réduit la capacité d'agir de la cible plutôt que de lui infliger des dommages",
+      ] },
+      { key: "destructionArme", name: "Attaque ciblée : Destruction d'arme", cost: 5, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
+        "Si les dommages dépassent la Structure de l'arme visée, celle-ci est détruite",
+      ] },
+      { key: "bequille", name: "Béquille", cost: 2, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
+        "Frappe une jambe : la cible perd en mobilité",
+      ] },
+      { key: "claqueAssourdissante", name: "Claque assourdissante", cost: 2, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
+        "Inflige l'état Assourdi à la cible",
+      ] },
+      { key: "clouer", name: "Clouer", cost: 2, source: "Feu Nourri", hostLabel: "Attaque avec arme de jet ou de trait", when: "avantJet", lines: [
+        "Cloue la cible à une surface : elle gagne l'état Entravé",
+      ] },
+      { key: "coupBas", name: "Coup bas", cost: 2, source: "Feu Nourri", host: ["attaquerMelee"], hostLabel: "toute attaque de mêlée", when: "avantJet", lines: [
+        "Coup porté sous la ceinture : la cible subit un malus à ses prochaines actions",
+      ] },
+      { key: "demonstrationForce", name: "Démonstration de force", cost: 1, source: "Feu Nourri", host: ["bloquer"], hostLabel: "Bloquer", when: "avantJet", lines: [
+        "Tant que le personnage n'a pas été touché et qu'il manie une arme de mêlée, son Score Défensif est remplacé par le Score Offensif de son arme",
+      ] },
+      { key: "diversion", name: "Diversion", cost: 2, source: "Feu Nourri", host: ["attaquerMelee"], hostLabel: "Attaque de mêlée", when: "avantJet", lines: [
+        "Une action mineure + test d'Athlétisme + Agilité (3) : −3 dés à la Défense de la cible contre votre prochaine attaque en Combat rapproché",
+        "Un objet accroché à l'arme de mêlée se détache sans dépenser Préparer une arme",
+      ] },
+      { key: "enchevetrer", name: "Enchevêtrer", cost: 2, source: "Feu Nourri", host: ["attaquerMelee"], hostLabel: "Toute attaque de mêlée · Lutte avec armes exotiques", when: "avantJet", lines: [
+        "Succès nets supérieurs à l'Agilité : la cible gagne l'état Muet (durée = succès nets en rounds)",
+        "Avec fouets, chaînes, bolas, lassos en lutte : la cible gagne l'état Entravé",
+        "Cette attaque n'inflige aucun dommage",
+      ] },
+      { key: "evasionKarmique", name: "Évasion karmique", cost: 2, source: "Feu Nourri", host: ["bloquer", "esquiver"], hostLabel: "Bloquer, Esquiver", when: "avantJet", lines: [
+        "Transforme une défense réussie en occasion de se dégager",
+      ] },
+      { key: "faireLeMort", name: "Faire le mort", cost: 3, source: "Feu Nourri", hostLabel: "Utiliser une compétence (Influence)", when: "avantJet", lines: [
+        "Se faire passer pour mort ou hors de combat",
+        "Le MJ seul sait si l'action a réussi ou échoué",
+      ] },
+      { key: "fracture", name: "Fracture", cost: 4, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
+        "Le membre visé gagne l'état Estropié II, pour un nombre de rounds égal aux succès nets",
+        "Reproductible sur le même membre jusqu'à Estropié III · la durée se cumule",
+      ] },
+      { key: "frappeGorge", name: "Frappe à la gorge", cost: 2, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
+        "Vise la gorge : la cible gagne l'état Muet",
+      ] },
+      { key: "frappeAveuglante", name: "Frappe aveuglante", cost: 4, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
+        "Vise les yeux : la cible gagne l'état Aveuglé",
+      ] },
+      { key: "parkour", name: "Parkour", cost: 2, source: "Feu Nourri", host: ["sprinter"], hostLabel: "Sprinter", when: "avantJet", lines: [
+        "Se déplacer rapidement et franchir jusqu'à 18 mètres",
+      ] },
+      { key: "porteeEtendue", name: "Portée étendue", cost: 1, source: "Feu Nourri", host: ["attaquerMelee"], hostLabel: "Attaque de mêlée", when: "avantJet", lines: [
+        "En maniant deux armes de mêlée, étend l'allonge",
+      ] },
+      { key: "presenceIntimidante", name: "Présence intimidante", cost: 2, source: "Feu Nourri", hostLabel: "Utiliser une compétence (Influence)", when: "avantJet", lines: [
+        "Impose sa présence pour dissuader un adversaire d'agir",
+      ] },
+      { key: "projection", name: "Projection", cost: 4, source: "Feu Nourri", hostLabel: "Lutte", when: "avantJet", lines: [
+        "Projette l'adversaire ; 4 points supplémentaires pour l'envoyer à un endroit précis (cage d'escalier, d'ascenseur…)",
+      ] },
+      { key: "promptADegainer", name: "Prompt à dégainer", cost: 2, source: "Feu Nourri", host: ["degainerRapidement", "attaquer"], hostLabel: "Dégainer rapidement, Attaque", when: "avantJet", lines: [
+        "Dégaine et attaque dans un même mouvement",
+      ] },
+      { key: "protegerEssentiel", name: "Protéger l'essentiel", cost: 2, source: "Feu Nourri", host: ["intercepter"], hostLabel: "Intercepter", when: "avantJet", lines: [
+        "Se sacrifier pour protéger un allié d'une attaque",
+      ] },
+      { key: "provocation", name: "Provocation", cost: 1, source: "Feu Nourri", hostLabel: "Utiliser une compétence (Influence)", when: "avantJet", lines: [
+        "Force un adversaire à vous prendre pour cible",
+      ] },
+      { key: "repousserAdversaire", name: "Repousser un adversaire", cost: 2, source: "Feu Nourri", host: ["attaquer", "seDeplacer"], hostLabel: "Attaque de mêlée, Déplacement", when: "avantJet", lines: [
+        "Repousse l'adversaire hors de portée",
+      ] },
+      { key: "retourEnvoyeur", name: "Retour à l'envoyeur !", cost: 3, source: "Feu Nourri", host: ["eviter"], hostLabel: "Éviter", when: "avantJet", lines: [
+        "Renvoie une grenade à l'envoyeur : test d'Athlétisme + Réaction (2)",
+      ] },
+      { key: "riposte", name: "Riposte", cost: 4, source: "Feu Nourri", host: ["bloquer"], hostLabel: "Bloquer", when: "avantJet", lines: [
+        "Bloquer puis contre-attaquer dans le même geste",
+      ] },
+      { key: "rouleBoule", name: "Roulé-boulé", cost: 1, source: "Feu Nourri", hostLabel: "le personnage obtient l'état À terre", when: "avantJet", lines: [
+        "Vous avez été renversé par une attaque : l'état À terre s'applique toujours, mais vous amortissez",
+      ] },
+      { key: "rattraperBranches", name: "Se rattraper aux branches", cost: 2, source: "Feu Nourri", hostLabel: "Tomber", when: "avantJet", lines: [
+        "Une falaise ou des arbres à portée : ralentit la chute pour un atterrissage moins brutal",
+      ] },
+      { key: "simuler", name: "Simuler", cost: 2, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
+        "Au lieu d'infliger des dommages, les succès nets réduisent le Score Défensif de la cible au round suivant, un pour un",
+        "Ce Score Défensif vaut pour TOUT attaquant ciblant cet individu",
+      ] },
+      { key: "tirDeCouverture", name: "Tir de couverture", cost: 3, source: "Feu Nourri", host: ["attaquerDistance"], hostLabel: "Attaque TR ou TA", when: "avantJet", cancels: ["couvert"], lines: [
+        "Tir en Rafale : deux alliés gagnent +2 de Couvert (jusqu'à Couvert IV) si les adversaires ciblés ripostent",
+        "Tir Automatique : VD réduite de 2, les alliés gagnent Couvert IV",
+        "Les alliés peuvent attaquer sans l'action mineure Attaquer depuis un couvert",
+      ] },
+      { key: "transfertForce", name: "Transfert de force", cost: 3, source: "Feu Nourri", host: ["faireTrebucher"], hostLabel: "Faire trébucher", when: "avantJet", lines: [
+        "Test de défense Athlétisme + Agilité : succès nets supérieurs à l'Agilité de l'adversaire → aucun dommage et l'adversaire gagne À terre",
+      ] },
+      { key: "vifCommeVent", name: "Vif comme le vent", cost: 3, source: "Feu Nourri", host: ["sprinter"], hostLabel: "Sprinter", when: "avantJet", cancels: ["couvert"], lines: [
+        "En sprintant, retire des succès de Sprinter pour se mettre à couvert (jusqu'à Couvert IV) pendant un round",
+        "Les autres actions comptent comme à couvert, y compris gagner et dépenser de l'Atout",
+        "Peut attaquer sans l'action mineure Attaquer depuis un couvert",
+      ] },
+      { key: "assaut", name: "Assaut", cost: 4, source: "À tombeau ouvert", where: "vehicule", who: ["pilote"], hostLabel: "Ingénierie ‹Armes de véhicule›", when: "avantJet", lines: [
+        "Action majeure pour attaquer : ajoutez votre rang en Pilotage au test d'Ingénierie (Armes de véhicule) + Logique",
+        "Jusqu'à la fin du round, tout adversaire attaquant votre véhicule gagne un point d'Atout",
+      ] },
+      { key: "solGlissant", name: "Attention, sol glissant", cost: 2, source: "À tombeau ouvert", where: "vehicule", who: ["pilote"], hostLabel: "Pulvérisateur d'huile · action mineure", when: "avantJet", lines: [
+        "Une flaque d'huile devant une cible à distance proche : elle ne peut ni gagner ni dépenser d'Atout sur son test d'Accident",
+      ] },
+      { key: "autoStop", name: "Auto-stop", cost: 4, source: "À tombeau ouvert", where: "vehicule", who: ["pilote"], hostLabel: "Pilotage", when: "avantJet", lines: [
+        "Faire déraper le véhicule devant une cible proche pour l'attraper au vol",
+        "La cible subit 5 cases de dommages étourdissants (non résistables), réduits de 1 par succès net",
+      ] },
+      { key: "ciblageAuto", name: "Ciblage automatique", cost: 6, source: "À tombeau ouvert", where: "vehicule", who: ["pilote"], hostLabel: "Ingénierie ‹Armes de véhicule›", when: "avantJet", lines: [
+        "Au moins un succès net avec une arme montée : succès nets supplémentaires égaux à l'indice Senseurs du véhicule",
+      ] },
+      { key: "ecranFumee", name: "Écran de fumée", cost: 1, source: "À tombeau ouvert", where: "vehicule", who: ["pilote"], hostLabel: "Diffuseur de fumée · action mineure", when: "avantJet", lines: [
+        "Un niveau de Couvert par point d'Atout dépensé (Couvert I pour 1, II pour 2…)",
+        "Seulement contre les attaques venant de derrière vous",
+      ] },
+      { key: "feuCroise", name: "Feu croisé", cost: 6, source: "À tombeau ouvert", where: "vehicule", who: ["pilote"], hostLabel: "Test de Défense", when: "avantJet", lines: [
+        "À annoncer AVANT le test de Défense : attire le feu vers une autre cible proche ou courte",
+        "Tout succès net compte comme un succès contre la cible choisie, qui ne peut ni gagner ni dépenser d'Atout",
+      ] },
+      { key: "interception", name: "Interception", cost: 5, source: "À tombeau ouvert", where: "vehicule", hostLabel: "toute attaque", when: "avantJet", lines: [
+        "Action majeure pour attaquer un missile, une torpille ou une grenade lancée vers vous",
+        "Seuil 5 · exige une arme à distance prête · échec : ni Éviter ni Se jeter par terre pour se protéger",
+      ] },
+      { key: "avantageRigger", name: "L'avantage du rigger", cost: 6, source: "À tombeau ouvert", where: "vehicule", who: ["pilote"], hostLabel: "Pilotage ou Défense", when: "avantJet", lines: [
+        "Ajoutez l'indice de votre câblage de contrôle à votre nombre de succès total",
+      ] },
+      { key: "parIciLaSortie", name: "Par ici la sortie", cost: 6, source: "À tombeau ouvert", where: "vehicule", who: ["pilote"], hostLabel: "Pilotage", when: "avantJet", lines: [
+        "Réduit sa vitesse pour s'échapper du véhicule en sécurité, au prix d'une action mineure supplémentaire",
+        "Au moins 5 succès : le véhicule s'arrête sans dommage ; sinon l'autopilote teste l'Accident",
+      ] },
+      { key: "aspiration", name: "Aspiration", cost: 2, source: "À tombeau ouvert", where: "poursuite", role: "poursuivant", hostLabel: "Pilotage", lines: [
+        "Si un participant est devant vous à distance proche ou courte, avancez d'une catégorie de distance par rapport à la cible",
+      ] },
+      { key: "changementEnv", name: "Changement d'environnement", cost: 5, source: "À tombeau ouvert", where: "poursuite", hostLabel: "Pilotage ou Athlétisme", lines: [
+        "Choisissez un environnement dégagé, étroit ou encombré à partir du prochain round",
+        "Si plusieurs tentent l'action, seul le meilleur succès net la réalise ; les autres ne dépensent pas d'Atout",
+      ] },
+      { key: "compteursAZero", name: "Compteurs à zéro", cost: 2, source: "À tombeau ouvert", where: "poursuite", hostLabel: "Pilotage ou Athlétisme", lines: [
+        "Réussi ou non, annule tous les avantages positionnels des participants vis-à-vis de vous pour tout le round",
+      ] },
+      { key: "concentration", name: "Concentration", cost: 3, source: "À tombeau ouvert", where: "poursuite", hostLabel: "Pilotage ou Athlétisme", lines: [
+        "Réduit la Maniabilité du véhicule de 1 pour ce test, ou le seuil du test d'Athlétisme (Course) de 1",
+      ] },
+      { key: "culDeSac", name: "Cul-de-sac", cost: 5, source: "À tombeau ouvert", where: "poursuite", role: "poursuivant", hostLabel: "Pilotage ou Athlétisme", lines: [
+        "Test opposé de Plein air (Orientation) + Intuition : la cible s'engage dans une voie sans issue",
+        "Met fin à la course-poursuite · un round doit s'écouler avant qu'une nouvelle s'engage",
+      ] },
+      { key: "dansLeRouge", name: "Dans le rouge", cost: 4, source: "À tombeau ouvert", where: "poursuite", hostLabel: "Pilotage", lines: [
+        "Rapproche d'une à deux catégories de distance de la cible ; votre véhicule subit 4P non résistables",
+        "Si vous êtes la cible : empêche vos poursuivants de vous rattraper jusqu'à la fin du round",
+      ] },
+      { key: "demiTour", name: "Demi-tour", cost: 2, source: "À tombeau ouvert", where: "poursuite", role: "cible", hostLabel: "Pilotage ou Athlétisme", lines: [
+        "Virage brusque : ajuste d'une catégorie la position relative de TOUS les participants",
+      ] },
+      { key: "fuite", name: "Fuite !", cost: 4, source: "À tombeau ouvert", where: "poursuite", role: "cible", hostLabel: "Pilotage ou Athlétisme", lines: [
+        "Si tous vos adversaires sont à distance extrême en véhicule (ou moyenne à pied), vous vous échappez",
+        "Ils doivent obtenir autant de succès nets que votre test ou être semés",
+      ] },
+      { key: "manoeuvreSubtile", name: "Manœuvre subtile", cost: 3, source: "À tombeau ouvert", where: "poursuite", hostLabel: "Pilotage", lines: [
+        "Lors d'un test de Furtivité, ajoutez un nombre de dés bonus égal à votre rang en Pilotage",
+        "Seulement en dirigeant un véhicule ou un drone",
+      ] },
+      { key: "pouleMouillee", name: "Poule mouillée", cost: 6, source: "À tombeau ouvert", where: "poursuite", role: "cible", hostLabel: "Pilotage", lines: [
+        "Celui de vous deux qui obtient le moins de succès nets au test de Pilotage doit réussir un test d'Accident ou sortir de la route",
+        "Impossible en environnement dégagé",
+      ] },
+      { key: "surenchere", name: "Surenchère", cost: 2, costLabel: "2, 4 ou 6 points", source: "À tombeau ouvert", where: "poursuite", role: "cible", hostLabel: "Pilotage ou Athlétisme", lines: [
+        "Environnement encombré uniquement : +1 de malus à votre Maniabilité (ou au seuil d'Athlétisme) tous les 2 points d'Atout",
+        "Vos adversaires doivent accepter le malus ou abandonner la poursuite",
+      ] },
+      { key: "tokyoDrift", name: "Tokyo drift", cost: 2, source: "À tombeau ouvert", where: "poursuite", role: "cible", hostLabel: "Pilotage ou Athlétisme", lines: [
+        "Une action de Dérapage réussie empêche vos poursuivants de changer de position, sauf autant de succès nets que vous",
+      ] },
+      { key: "manoeuvreEvitement", name: "Manœuvre d'évitement", cost: 4, source: "À tombeau ouvert", family: "bonus", where: "vehicule", who: ["pilote"], hostLabel: "bonus · test Défensif", when: "avantJet", lines: [
+        "Ajoutez votre rang en Pilotage à votre réserve lors d'un test Défensif contre une attaque ciblant un véhicule que vous pilotez",
+      ] },
+      { key: "quitteOuDouble", name: "Quitte ou double", cost: 2, costLabel: "2, 4 ou 6 points", source: "À tombeau ouvert", family: "bonus", where: "vehicule", hostLabel: "bonus · avant ou après le jet", lines: [
+        "Jusqu'à trois dés libres, un par tranche de 2 points d'Atout",
+        "Utilisable avant OU après le jet — le dé libre peut aider ou empirer",
+        "Un 1 sur un dé libre : tous les 5 sont ignorés, y compris sur les autres dés libres",
+      ] },
+      { key: "departEnPart", name: "De part en part", cost: 1, costLabel: "la Constitution de la cible (APDS −2, minimum 1)", source: "Compagnon du Sixième Monde", optional: true, host: ["attaquerMelee", "attaquerDistance"], hostLabel: "munitions APDS et normales", when: "avantJet", lines: [
+        "La balle traverse la cible : la VD de l'arme est augmentée de moitié, arrondi au supérieur",
+      ] },
+      { key: "dispersionShotgun", name: "Dispersion du shotgun", cost: 2, costLabel: "2 points (1 pour les smartguns)", source: "Compagnon du Sixième Monde", optional: true, host: ["attaquerMelee", "attaquerDistance"], hostLabel: "balles fléchettes pour shotgun", when: "avantJet", lines: [
+        "À portée Proche ou Courte : règle le cône pour un tir en rafale large ne consommant qu'une cartouche",
+        "Même si le shotgun ne peut pas tirer en mode rafale",
+      ] },
+      { key: "munitionDefectueuse", name: "Munition défectueuse !", cost: 5, source: "Compagnon du Sixième Monde", optional: true, host: ["attaquerMelee", "attaquerDistance"], hostLabel: "attaque explosive", when: "avantJet", lines: [
+        "Une grenade ou une roquette ne détonne pas après avoir été tirée",
+        "À déclarer juste après la résolution de la dispersion · l'explosion est annulée",
+      ] },
     ],
   },
   /** MODES DE TIR (lot F2) — chapitre Combat, caractéristiques des armes.

@@ -16,6 +16,7 @@ import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
 import { Dialog } from "../widgets/kit/dialog.js";
 import { Dice } from "../rules/dice.js";
+import { EdgeActions } from "../rules/edgeactions.js";
 import { DiceRoller } from "../widgets/dice/diceroller.js";
 import { EncounterRenderer } from "../widgets/play/encounterrenderer.js";
 import { Gen } from "./generator.js";
@@ -708,7 +709,7 @@ export const Encounter = {
     // surtaxes d'état inconditionnelles (Couvert « Attaquer à couvert nécessite
     // une action mineure supplémentaire »). Les surtaxes conditionnelles
     // (`warnings`) sont DITES et jamais débitées.
-    const res = Actions.costWith(pnj, entry);
+    const res = Actions.costWith(pnj, entry, this.edgeCancels(pnjId));
     const over = Actions.costs(entry) ? this._consumeAction(c, res.cost, pnj) : false;
 
     // RECUL PROGRESSIF (F2) — « les modificateurs de recul s'accumulent […] à
@@ -735,6 +736,10 @@ export const Encounter = {
       if (apres === avant) continue;
       poses.push(st.level ? `${nom}${st.note ? ` (${st.note})` : ""}` : `retire ${nom}`);
     }
+    // F5 — la dernière action jouée porte ses greffons d'Atout (rangée sous les
+    // jetons). Mémorisée dans la scène : c'est un fait de tour, pas du PNJ.
+    c.lastAction = key;
+
     if (poses.length) {
       Shadows.save();
       CardRenderer.refresh(pnj); // la ligne d'états de la carte, tout de suite
@@ -884,6 +889,171 @@ export const Encounter = {
     EncounterRenderer._activeCardId = null;
     this._commit();
     toast(`${arme.parsed.name} rechargée — ${arme.cap.n} balles · ${noms.join(" + ")}${over ? " ⚠ budget dépassé" : ""}`);
+  },
+
+  /* ========================================================
+     ACTIONS D'ATOUT (lot F5) — l'autre monnaie.
+
+     Elles ne touchent pas le budget de jetons : le livre écrit « ces actions
+     en elles-mêmes ne coûtent pas d'action mineure ni majeure ». Elles se
+     paient en ATOUT, sur la rangée que le cockpit compte déjà. D'où un point
+     d'entrée séparé de `useAction`, et non un `domain` de plus.
+
+     82 entrées au catalogue : le filtre à trois axes d'`EdgeActions` est ce
+     qui rend la feuille lisible — au bon moment, au bon endroit, au bon PNJ.
+     ======================================================== */
+
+  /** Le tri du catalogue pour ce combattant, ici et maintenant. `host` = clé
+      de l'action en cours si le MJ en joue une (axe « au bon moment »). */
+  edgeActionsFor(pnjId, host) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    if (!c || !pnj) return { visibles: [], ecartees: [] };
+    return EdgeActions.resolve(pnj, {
+      declared: c.edgeContexts || [],
+      withOptional: !!c.edgeOptional,
+      edge: c.edge || 0,
+      host,
+    });
+  },
+
+  /** Bascule un contexte de scène que l'app ne sait pas dériver (la
+      course-poursuite aujourd'hui). Vit dans l'entrée de scène : c'est une
+      circonstance de rencontre, pas une propriété du PNJ. */
+  toggleEdgeContext(pnjId, key) {
+    const c = this._find(pnjId);
+    if (!c) return;
+    const set = new Set(c.edgeContexts || []);
+    set.has(key) ? set.delete(key) : set.add(key);
+    c.edgeContexts = [...set];
+    EncounterRenderer._activeCardId = null;
+    this._commit();
+  },
+
+  /** Bascule l'affichage des règles OPTIONNELLES (Compagnon du Sixième Monde).
+      Elles restent masquées par défaut : ce sont des variantes que toutes les
+      tables n'emploient pas. */
+  toggleEdgeOptional(pnjId) {
+    const c = this._find(pnjId);
+    if (!c) return;
+    c.edgeOptional = !c.edgeOptional;
+    EncounterRenderer._activeCardId = null;
+    this._commit();
+  },
+
+  /** Déclare une action d'Atout : débite l'Atout, débite l'action quand elle en
+      coûte une, et mémorise les surtaxes qu'elle annule.
+
+      Ne refuse que ce que le livre refuse : Désorienté verrouille « ni gain ni
+      dépense d'Atout » (E3). Le manque d'Atout, lui, ne refuse pas — le MJ voit
+      la puce ternie et tranche, comme partout dans ce chantier. */
+  useEdgeAction(pnjId, key) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    const e = pnj && EdgeActions.find(pnj, key);
+    if (!c || !e) return;
+
+    if (EdgeActions.locked(pnj)) {
+      toast(`${e.name} impossible — ${pnj.name} ne peut ni gagner ni dépenser d'Atout.`);
+      return;
+    }
+    const dispo = c.edge || 0;
+    const court = dispo < e.cost;
+    this.adjustEdge(pnjId, -Math.min(dispo, e.cost));
+
+    // ⚠ Une poignée coûtent AUSSI une action (Saturation : « 2 points d'Atout,
+    // action majeure »). La règle « pas d'action » ne vaut que pour la section
+    // combat du livre de base.
+    if (e.actionCost) this._consumeAction(c, e.actionCost, pnj);
+
+    // Les surtaxes d'état qu'elle achète (F3) — trois entrées paient la mineure
+    // « Attaquer depuis un couvert », qui ne doit alors plus être facturée.
+    const annule = EdgeActions.cancels(e);
+    if (annule.length) {
+      c.edgeCancels = [...new Set([...(c.edgeCancels || []), ...annule])];
+    }
+    EncounterRenderer._activeCardId = null;
+    this._commit();
+
+    const cout = EdgeActions.costLabel(e);
+    const sur = annule.length ? ` · annule la surtaxe ${annule.join(", ")}` : "";
+    const act = e.actionCost ? " + 1 action majeure" : "";
+    toast(`${e.name} — ${pnj.name} (${court ? "Atout insuffisant — " : ""}${cout}${act})${sur} · à déclarer AVANT le jet`);
+  },
+
+  /** Les surtaxes annulées ce tour — lues par `Actions.costWith`. Remises à
+      zéro avec le budget, au début du tour du combattant. */
+  edgeCancels(pnjId) {
+    const c = this._find(pnjId);
+    return (c && c.edgeCancels) || [];
+  },
+
+  /* ========================================================
+     LE PARCOURS D'ATTAQUE (lot F5c) — un geste, un écran, un débit.
+
+     Avant : le mode de tir se choisissait sur une rangée de munitions sous les
+     actions, le jet partait des blocs d'offense, l'Atout d'un troisième
+     endroit, et l'action « Attaquer » existait en double dans la feuille.
+     Quatre points d'entrée pour un seul geste de table.
+
+     Maintenant : **taper l'arme EST l'action Attaquer**. Le tap ouvre le
+     panneau pré-jet, qui montre d'un coup ce que le livre fait payer — le mode
+     de tir et ses balles, le recul, l'Atout, les greffons — et le validant
+     débite tout ensemble. Les deux rangées qui doublonnaient l'arme ont
+     disparu ; l'action `attaquer` reste au catalogue (elle a un coût) mais
+     porte `viaWeapon` et ne s'affiche plus.
+     ======================================================== */
+
+  /** Tout ce que le panneau pré-jet doit montrer pour une attaque. Renvoie null
+      si l'arme ne compte rien (mêlée : le tap reste un jet nu). */
+  attackContext(pnjId, weaponStr) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    if (!c || !pnj) return null;
+    const parsed = WeaponRoll.parse(weaponStr);
+    const famille = WeaponRoll.combatFamily(parsed.name, pnj.edition);
+    const arme = this.ammoWeapons(pnjId).find((a) => a.parsed.name === parsed.name);
+    const rec = this.recoilInfo(pnjId);
+
+    // Les greffons d'Atout de CETTE attaque : la famille d'arme tranche entre
+    // « Attaquer en mêlée » et « Attaquer à distance », que le livre distingue
+    // alors que la table d'actions n'a qu'un « Attaquer ».
+    const greffons = Actions.grafts(pnj, "attaquer", {
+      family: famille,
+      declared: c.edgeContexts || [],
+      withOptional: !!c.edgeOptional,
+    });
+
+    const modes = arme
+      ? arme.modes.map((m) => {
+          const res = Ammo.resolve(pnj, m, arme.reste);
+          const malus = rec ? Ammo.recoilMalus(rec.cumul + Ammo.recoilFrom(res), rec.comp) : 0;
+          return { key: m.key, name: m.name, res, malus, detail: Ammo.rollDetail(res) };
+        })
+      : [];
+    if (!modes.length && !greffons.length) return null;
+    return { weapon: weaponStr, name: parsed.name, famille, arme, modes, recoil: rec, greffons, edge: c.edge || 0 };
+  },
+
+  /** Valide l'attaque : débite l'action, les balles et le recul, puis rend le
+      détail à annoncer. L'Atout, lui, est débité par le panneau (il l'était
+      déjà avant ce lot — un seul chemin, pas deux). */
+  resolveAttack(pnjId, weaponStr, modeKey, graftKey) {
+    const pnj = PnjLookup.find(pnjId);
+    if (!pnj) return "";
+    if (graftKey) this.useEdgeAction(pnjId, graftKey);
+
+    // L'action Attaquer se débite MÊME sans mode de tir (arme de mêlée) : c'est
+    // le geste que le livre facture, l'arme n'en est que l'instrument.
+    const parsed = WeaponRoll.parse(weaponStr);
+    const arme = this.ammoWeapons(pnjId).find((a) => a.parsed.name === parsed.name);
+    if (modeKey && arme) {
+      const res = this.fire(pnjId, arme.key, modeKey);
+      return res ? Ammo.rollDetail(res) : "";
+    }
+    const cle = Actions.viaWeapon(pnj).map((a) => a.key)[0];
+    if (cle) this.useAction(pnjId, cle, true);
+    return "";
   },
 
   /** État de recul d'un combattant : cumul, compensation, malus, crosse.
@@ -1510,6 +1680,11 @@ export const Encounter = {
     const c = this.state.combatants[i];
     if (c) {
       c.actionsUsed = {};
+      // F5 — une surtaxe achetée en Atout vaut pour LE tour où elle est
+      // déclarée : elle s'efface avec le budget qu'elle a soulagé, comme la
+      // rangée de greffons de la dernière action.
+      delete c.edgeCancels;
+      delete c.lastAction;
       c.narrationBonus = false;
       // Échanges du tour (E5) : le budget se recharge, les troc aussi.
       delete c.actionsTraded;
@@ -2720,6 +2895,16 @@ export const Encounter = {
           break;
         case "action-more":
           EncounterRenderer.toggleActionRest(el);
+          break;
+        case "edge-use":
+          // F5 — déclare une action d'Atout : elle se paie en Atout, pas en jetons.
+          this.useEdgeAction(id, el.dataset.key);
+          break;
+        case "edge-context":
+          this.toggleEdgeContext(id, el.dataset.key);
+          break;
+        case "edge-optional":
+          this.toggleEdgeOptional(id);
           break;
         case "action-use":
           // F1 — joue une action du catalogue : elle débite son propre coût.

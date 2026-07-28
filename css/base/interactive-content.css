@@ -242,6 +242,46 @@
   text-transform: uppercase;
 }
 
+/* ---- Actions d'Atout (lot F5) ----
+   Sur la rangée d'Atout, jamais celle des jetons : c'est l'autre monnaie. La
+   feuille réutilise `.action-sheet` — même composant, même geste — et n'ajoute
+   que la rangée de contextes et la pastille de coût. */
+/* La rangée de greffons : elle prolonge l'économie du tour, sous les jetons,
+   et n'existe que lorsque la dernière action jouée en a. Pas une feuille —
+   pas de bouton pour l'ouvrir, pas de navigation : elle arrive avec l'action.
+   Le cockpit reste donc à DEUX surfaces dépliables (actions, états), comme
+   avant le lot. */
+.encounter-grafts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  width: 100%;
+}
+.graft-lbl {
+  color: var(--text-dim);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+/* Le coût, en pastille : c'est le chiffre que le MJ compare à sa rangée
+   d'Atout, il doit se lire sans ouvrir l'infobulle. */
+.edge-cost {
+  margin-left: var(--sp-1);
+  padding-inline: var(--sp-1);
+  border-radius: var(--radius-sm);
+  background: var(--text-dim);
+  color: var(--bg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+/* Un « bonus d'Atout » n'est pas une « action d'Atout » — le livre les sépare
+   (À tombeau ouvert, et 4 des 5 matricielles du livre de base). Liseré, pas
+   teinte, comme les actions Libres du lot F1. */
+.edge-pick.is-bonus {
+  border-left-width: 3px;
+}
+
 /* ---- Munitions et recul (lot F2) ----
    Une ligne par arme qui compte ses balles, dans l'économie du TOUR : un
    chargeur se vide au rythme des actions. Aucune couleur nouvelle — le cockpit

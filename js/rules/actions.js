@@ -63,6 +63,7 @@
    interdictions, et elles existent déjà ailleurs (`initGate`, `blockedByStatus`).
    ============================================================ */
 
+import { EdgeActions } from "./edgeactions.js";
 import { Statuses } from "./statuses.js";
 
 export const Actions = {
@@ -91,10 +92,19 @@ export const Actions = {
   /** Les actions d'accès direct (`quick`) et le reste, dans l'ordre du
       contrat — les deux étages de la feuille de pose, comme les états. */
   quick(pnj) {
-    return this.catalog(pnj).filter((a) => a.quick);
+    return this.catalog(pnj).filter((a) => a.quick && !a.viaWeapon);
   },
   rest(pnj) {
-    return this.catalog(pnj).filter((a) => !a.quick);
+    return this.catalog(pnj).filter((a) => !a.quick && !a.viaWeapon);
+  },
+
+  /** ⚠ `viaWeapon` — l'action existe au catalogue (elle a un coût, elle se
+      débite) mais ne s'affiche PAS dans la feuille : son point d'entrée est
+      l'ARME, dans les blocs d'offense. Taper « Ares Alpha » EST l'action
+      Attaquer — le livre ne connaît qu'un geste, l'app ne doit pas en offrir
+      deux. Le décompte, lui, passe toujours par `useAction`. */
+  viaWeapon(pnj) {
+    return this.catalog(pnj).filter((a) => a.viaWeapon);
   },
 
   /** DOMAINES (lot F1b) — combat, magie, Matrice.
@@ -116,15 +126,88 @@ export const Actions = {
     return (entry && entry.domain) || "combat";
   },
 
-  /** Le reste du catalogue, groupé par domaine et dans l'ordre du contrat.
-      Les rubriques vides ne sont pas rendues : une édition sans magie ni
-      Matrice n'affiche qu'une liste, exactement comme avant F1b. */
+  /** Ce PNJ peut-il seulement AGIR dans ce domaine ? (lot F5b)
+
+      « Lancer un sort » sur un ganger sans une once de Magie, « Pic de
+      données » sur un troll sans cyberjack : ce sont 44 puces qui ne servent
+      jamais, chez la grande majorité des PNJ. Le combat, lui, n'a pas de
+      condition — tout le monde peut frapper.
+
+      Le prédicat vit dans le module d'édition (`actionModel.domains`), jamais
+      ici : ce magasin ne sait pas ce qu'est un cyberdeck. Domaine sans
+      prédicat = toujours disponible, pour qu'une édition qui n'en déclare pas
+      se comporte exactement comme avant. */
+  domainAvailable(pnj, key) {
+    const m = this.model(pnj);
+    const spec = m && m.domains && m.domains[key];
+    return !spec || !spec.when || !!spec.when(pnj);
+  },
+
+  /** Le reste du catalogue, groupé par domaine et dans l'ordre du contrat,
+      LIMITÉ aux domaines où ce PNJ peut agir. Les rubriques vides ou fermées
+      ne sont pas rendues — mais `closedDomains` dit lesquelles et pourquoi :
+      rien ne se masque en silence. */
   restByDomain(pnj) {
     const reste = this.rest(pnj);
-    return this.DOMAINS.map((d) => ({
+    return this.DOMAINS.filter((d) => this.domainAvailable(pnj, d.key))
+      .map((d) => ({ ...d, entries: reste.filter((a) => this.domain(a) === d.key) }))
+      .filter((g) => g.entries.length);
+  },
+
+  /** Les domaines fermés à ce PNJ, avec leur motif — pour la ligne de rappel.
+      → [{ key, label, why, n }] */
+  closedDomains(pnj) {
+    const m = this.model(pnj);
+    const reste = this.rest(pnj);
+    return this.DOMAINS.filter((d) => !this.domainAvailable(pnj, d.key)).map((d) => ({
       ...d,
-      entries: reste.filter((a) => this.domain(a) === d.key),
-    })).filter((g) => g.entries.length);
+      why: (m.domains[d.key] && m.domains[d.key].why) || "",
+      n: reste.filter((a) => this.domain(a) === d.key).length,
+    }));
+  },
+
+  /* ============================================================
+     GREFFONS D'ATOUT (lot F5, révision de surface).
+
+     Première version : un bouton ✦ sur la rangée d'Atout, dépliant les 82
+     actions d'Atout filtrées. Le panel a tranché en deux mots — « la question
+     que la feuille devrait poser n'est pas un filtre à cocher, c'est : quelle
+     action le PNJ vient-il de déclarer ? » — et le design system a ajouté
+     « une feuille par intention de jeu, pas par ressource ».
+
+     Ils avaient raison, et le LIVRE le disait déjà : il range ces options par
+     leur hôte, entre parenthèses. « Arracher (Bloquer) ». Le MJ ne cherche
+     jamais « une action d'Atout » ; il joue une action et se demande s'il peut
+     l'améliorer. Les greffons remontent donc SUR L'ACTION, au moment où elle
+     est jouée — 47 puces à trier deviennent trois, sans un seul filtre.
+     ============================================================ */
+
+  /** Les actions d'Atout qui se greffent sur cette action-ci, triées par coût
+      croissant (le MJ compare au compteur, pas au nom). `EdgeActions` porte le
+      filtre à trois axes ; ici on ne fait que demander l'axe « hôte ». */
+  grafts(pnj, entryKey, opts) {
+    if (!entryKey) return [];
+    const keys = this.hostKeys(entryKey, opts && opts.family);
+    return EdgeActions.resolve(pnj, { ...(opts || {}), host: keys })
+      .visibles.filter((e) => (e.host || []).some((h) => keys.includes(h)))
+      .sort((a, b) => a.cost - b.cost);
+  },
+
+  /** Les clés d'hôte que couvre une action, FAMILLE D'ARME COMPRISE.
+
+      Le livre SR6 n'a QU'UNE action « Attaquer » — mêlée et distance
+      confondues — mais il range ses actions d'Atout selon l'arme : « Arracher
+      (Bloquer) », « Poignarder (Attaquer en mêlée) », « Placement parfait
+      (Attaquer à distance) ». Dédoubler l'ACTION serait trahir la table p.45 ;
+      c'est donc l'ARME qui tranche, au moment où on la choisit.
+
+      Sans famille connue, les deux jeux remontent : mieux vaut une puce de trop
+      qu'une règle escamotée (même arbitrage que `matchesHost`). */
+  hostKeys(entryKey, family) {
+    if (entryKey !== "attaquer") return [entryKey];
+    if (family === "melee") return ["attaquer", "attaquerMelee"];
+    if (family === "ranged") return ["attaquer", "attaquerDistance"];
+    return ["attaquer", "attaquerMelee", "attaquerDistance"];
   },
 
   /** Coût NORMALISÉ d'une entrée : toujours un tableau `[{ key, n }]`.
@@ -192,16 +275,21 @@ export const Actions = {
         · `sources`  — [{ name, cost, why }] les surtaxes appliquées
         · `warnings` — [{ name, cost, why }] celles que le MJ doit trancher
                        lui-même (`auto: false`), affichées et jamais débitées */
-  costWith(pnj, entry) {
+  costWith(pnj, entry, cancelled) {
     const base = this.cost(entry);
     const sources = [];
     const warnings = [];
     if (!entry) return { cost: base, sources, warnings };
+    // F5 — les surtaxes ANNULÉES par une action d'Atout déjà déclarée ce tour.
+    // Trois d'entre elles achètent la mineure « Attaquer depuis un couvert » ;
+    // sans ce filtre, l'app la ferait payer une seconde fois.
+    const off = cancelled instanceof Set ? cancelled : new Set(cancelled || []);
 
     const agg = new Map();
     for (const c of base) agg.set(c.key, (agg.get(c.key) || 0) + c.n);
 
     for (const s of Statuses.surcharges(pnj)) {
+      if (off.has(s.key)) continue; // surtaxe déjà payée en Atout (F5)
       for (const r of s.rules) {
         if (!this._hits(entry, r)) continue;
         // `targeted` — la règle NOMME ses actions (Couvert → « Attaquer »),

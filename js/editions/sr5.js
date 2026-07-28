@@ -373,6 +373,33 @@ export const EditionSR5 = {
       « retire OU insère »), soit la phase d'action entière — sauf smartgun, où
       l'éjection devient gratuite. */
   actionModel: {
+    /* ---- DOMAINES (lot F5b) : où ce PNJ peut-il seulement AGIR ? ---------
+       44 des 76 actions SR6 sont magiques ou matricielles. Sur l'écrasante
+       majorité des PNJ — un ganger, un vigile, un molosse — elles ne serviront
+       JAMAIS : proposer « Lancer un sort » à qui n'a pas une once de Magie,
+       c'est du bruit qui coûte à chaque ouverture de feuille.
+
+       Le prédicat vit ici et pas dans le magasin neutre (prohibition n°1) :
+       lui ne sait pas ce qu'est un cyberdeck. Le combat n'a pas d'entrée —
+       personne n'a besoin d'une condition pour frapper. */
+    domains: {
+      magie: {
+        why: "ce PNJ n'a ni Magie, ni sort, ni pouvoir",
+        when: (pnj) =>
+          (Actor.attr(pnj, "MAG") || 0) > 0 ||
+          !!(pnj.spells && pnj.spells.length) ||
+          !!(pnj.powers && pnj.powers.length) ||
+          !!pnj.tradition,
+      },
+      matrice: {
+        why: "ce PNJ n'a ni cyberjack, ni cyberdeck, ni Résonance",
+        when: (pnj) =>
+          (Actor.attr(pnj, "RES") || 0) > 0 ||
+          !!pnj.cyberdeck ||
+          !!(pnj.complexForms && pnj.complexForms.length) ||
+          /cyberjack|cyberdeck/i.test((pnj.equip || []).map(String).join(" ")),
+      },
+    },
     catalog: [
       /* ---------------- ACTIONS GRATUITES (9) ---------------- */
       { key: "attaquesMultiples", name: "Attaques multiples", cost: [{ key: "free", n: 1 }], combine: "attaque", lines: [
@@ -445,14 +472,14 @@ export const EditionSR5 = {
       { key: "encocherFleche", name: "Encocher une flèche", cost: [{ key: "simple", n: 1 }], reload: "insert", lines: [
         "Encocher une flèche dans un arc prêt — une seconde action simple est nécessaire pour tirer",
       ] },
-      { key: "faireFeuSimple", name: "Faire feu (CC, SA, TR, TA)", cost: [{ key: "simple", n: 1 }], quick: true, shot: true, lines: [
+      { key: "faireFeuSimple", name: "Faire feu (CC, SA, TR, TA)", viaWeapon: true, cost: [{ key: "simple", n: 1 }], quick: true, shot: true, lines: [
         "Coup par coup, semi-automatique, tir en rafale (3 balles) ou tir automatique (6 balles)",
         "Aucune autre action d'attaque durant la même phase d'action",
       ] },
       { key: "insererChargeur", name: "Insérer un chargeur", cost: [{ key: "simple", n: 1 }], quick: true, reload: "insert", lines: [
         "Insérer un chargeur dans une arme à feu prête, uniquement après avoir éjecté l'ancien",
       ] },
-      { key: "lancerArme", name: "Lancer une arme", cost: [{ key: "simple", n: 1 }], lines: [
+      { key: "lancerArme", name: "Lancer une arme", viaWeapon: true, cost: [{ key: "simple", n: 1 }], lines: [
         "Lancer une arme prête",
         "Aucune autre action d'attaque durant la même phase d'action",
       ] },
@@ -481,7 +508,7 @@ export const EditionSR5 = {
         "Un personnage couché ou accroupi se relève",
         "Avec un malus de blessure : test de Constitution + Volonté (2), modificateurs de blessure compris",
       ] },
-      { key: "tirerArc", name: "Tirer à l'arc", cost: [{ key: "simple", n: 1 }], shot: true, lines: [
+      { key: "tirerArc", name: "Tirer à l'arc", viaWeapon: true, cost: [{ key: "simple", n: 1 }], shot: true, lines: [
         "Tirer une flèche déjà encochée",
       ] },
       { key: "utiliserObjetSimple", name: "Utiliser un objet simple", cost: [{ key: "simple", n: 1 }], lines: [
@@ -490,16 +517,16 @@ export const EditionSR5 = {
 
       /* ---------------- ACTIONS COMPLEXES (11) ----------------
          Toutes déclarent le « ou » du livre : 1 complexe = les 2 simples. */
-      { key: "attaquerMelee", name: "Attaquer en mêlée", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], quick: true, lines: [
+      { key: "attaquerMelee", name: "Attaquer en mêlée", viaWeapon: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], quick: true, lines: [
         "Une attaque en mêlée",
       ] },
       { key: "bannirEsprit", name: "Bannir un esprit", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
         "Tenter de bannir un esprit",
       ] },
-      { key: "faireFeuComplexe", name: "Faire feu (RSA, RL, TA)", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], quick: true, shot: true, lines: [
+      { key: "faireFeuComplexe", name: "Faire feu (RSA, RL, TA)", viaWeapon: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], quick: true, shot: true, lines: [
         "Rafale semi-automatique (3 balles), rafale longue (6 balles) ou tir automatique (10 balles)",
       ] },
-      { key: "faireFeuMonte", name: "Faire feu (arme montée / de véhicule)", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], shot: true, lines: [
+      { key: "faireFeuMonte", name: "Faire feu (arme montée / de véhicule)", viaWeapon: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], shot: true, lines: [
         "Faire feu avec une arme de véhicule ou montée sur un véhicule, prête",
       ] },
       { key: "invoquerEsprit", name: "Invoquer un esprit", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
