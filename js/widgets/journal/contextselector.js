@@ -21,11 +21,13 @@
 import { CardRenderer } from "../card/cardrenderer.js";
 import { DossierBar } from "./dossierbar.js";
 import { Dossiers } from "./dossiers.js";
+import { FocusTrap } from "../kit/focustrap.js";
 
 export const ContextSelector = {
   _el: null, // popover monté (unique, réutilisé)
   _onPick: null, // callback de l'ouverture courante
   _outside: null, // handler clic-dehors courant (retiré à la fermeture)
+  _releaseTrap: null,
 
   /** HTML d'un bouton déclencheur (à insérer par les hôtes). `label` visible
       quand aucun contexte n'est en focus (sinon le fil d'Ariane porte le nom). */
@@ -112,6 +114,16 @@ export const ContextSelector = {
     el.innerHTML = this._listHtml();
     el.hidden = false;
     this._position(anchorEl);
+    // D7 : popover NON modal (ferme au clic-dehors, pas d'aria-modal — le
+    // plan prévient explicitement de ne pas le supposer) mais le piège reste
+    // utile pour la navigation clavier. `el` est ajouté à part dans
+    // `document.body`, hors de l'ordre de tabulation du déclencheur : sans
+    // le focus qui suit, un clavier n'atteignait jamais le piège (même
+    // correctif que foundationview.js/magicaction.js/summonpanel.js).
+    // L'item COURANT reçoit le focus s'il existe (reprendre où l'on est),
+    // sinon le premier (« Tout »).
+    this._releaseTrap = FocusTrap.activate(el);
+    (el.querySelector(".ctx-item.is-current") || el.querySelector(".ctx-item"))?.focus();
     // Fermeture au clic-dehors (différée pour ne pas capter le clic d'ouverture).
     this._outside = (e) => {
       if (!el.contains(e.target) && e.target !== anchorEl && !anchorEl.contains(e.target)) {
@@ -160,6 +172,10 @@ export const ContextSelector = {
       this._outside = null;
     }
     document.removeEventListener("keydown", this._onKey);
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 };
 
