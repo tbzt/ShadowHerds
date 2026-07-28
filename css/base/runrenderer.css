@@ -25,7 +25,7 @@
 .run-type {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: var(--fs-lg);
   color: var(--text);
   flex: 1;
 }

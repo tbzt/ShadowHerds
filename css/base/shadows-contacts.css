@@ -2393,7 +2393,7 @@ body.reordering .reorder-handle {
 }
 .empty-state-title {
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: var(--fs-xl);
   color: var(--text-dim);
   font-weight: 700;
   letter-spacing: 0.1em;

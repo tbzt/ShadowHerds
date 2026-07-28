@@ -329,8 +329,8 @@ naissent les 80 tailles ad hoc, parce qu'aucune n'est nommée.
 | **Méta** | `--fs-xs` · corps · `--text-dim` | pastilles, tags, notes, horodatage |
 | **Corps secondaire** | `--fs-sm` · corps | descriptions, aide, contenu dense |
 | **Corps** | `--fs-base` · corps · `line-height 1.5` | texte par défaut |
-| **Titre d'objet** | `--fs-lg` · display · 600 | nom de carte, valeur chiffrée |
-| **Titre de panneau** | `--fs-xl` · display · 700 · `--title-transform` · `--title-spacing` | titre d'écran |
+| **Titre d'objet** | `--fs-lg` · display · 600 (ou **700** en variante accent — voir note D11) | nom de carte, valeur chiffrée |
+| **Titre de panneau** | `--fs-xl` · display · 700 · `--title-transform` · `--title-spacing` | titre d'écran, titre de modale |
 
 ```css
 /* à ajouter dans foundation.css */
@@ -372,6 +372,35 @@ fluide / absolu) **avant** de compter, et lire les commentaires des sites
 restants avant tout arbitrage — les trois protections ci-dessus étaient
 écrites noir sur blanc dans le code, invisibles au seul `grep`. Même leçon
 qu'en §4.3 pour `--sp-*`.
+
+**La grappe `1.1rem` (17,6px) — premier cas où AUCUN pas ne convenait,
+arbitré le 2026-07-28.** 5 sites (`.run-type`, `.opposed-result-main`,
+`.risk-slider-val`, `.modal-title`, `.empty-state-title`), tous
+`font-family: var(--font-display)` + `font-weight: 700`, dans 5 fichiers
+distincts — un consensus de conception jamais nommé, pas un doublon
+accidentel. 17,6px ne matche aucun pas (entre `--fs-md` 16 et `--fs-lg` 20).
+Loi ci-dessus : *dans ce cas, c'est le design qui est à revoir, pas
+l'échelle* — décidé avec l'utilisateur plutôt que forcé unilatéralement,
+vu le rayon d'action de `.modal-title` (tous les dialogues, 4 éditions).
+Scindé en deux par les propriétés restantes, pas par le chiffre seul :
+- **Groupe « valeur »** (`.run-type`, `.opposed-result-main`,
+  `.risk-slider-val` — sans majuscules) → **`--fs-lg`**, poids **700**
+  conservé. Delta réel +13,6 % (17,6→20px). C'est la variante accent du rôle
+  « Titre d'objet » ajoutée à la table ci-dessus : le 600 documenté reste le
+  défaut (noms de carte, labels statiques), le 700 marque une **valeur mise
+  en avant** (résultat de jet, valeur de curseur).
+- **Groupe « titre »** (`.modal-title`, `.empty-state-title` — majuscules +
+  `letter-spacing: 0.1em`) → **`--fs-xl`**. Ces deux sites portaient déjà
+  MOT POUR MOT les autres propriétés de `.t-panel` (700, display, transform,
+  spacing) — seule la taille manquait à l'appel. Delta réel +36 %
+  (17,6→24px), le plus grand delta assumé par D11 à ce jour, sur le
+  composant le plus vu du produit (l'en-tête de TOUTE modale). Accepté :
+  aucune contrainte de hauteur fixe ne le bloque (`.modal-header` est en
+  flex, pas en hauteur figée), et le rôle « Titre de panneau » couvre
+  maintenant explicitement « titre de modale » en plus de « titre d'écran ».
+`.play-front-coach-i` (aussi à `1.1rem`) exclu de la grappe : c'est un
+glyphe d'icône (`ⓘ`, `aria-hidden`), sans `font-family`/`font-weight` —
+famille différente, reste hors périmètre pour l'instant.
 
 **Règle — le rôle de la mono.** `--font-mono` est la voix du **système** :
 étiquettes, chiffres, identifiants, tout ce que la machine dit. Le corps est
