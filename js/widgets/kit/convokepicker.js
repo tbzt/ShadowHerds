@@ -19,10 +19,12 @@
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Dossiers } from "../journal/dossiers.js";
 import { FactionStore } from "../../core/factionstore.js";
+import { FocusTrap } from "./focustrap.js";
 
 export const ConvokePicker = {
   _runId: null,
   _MAX: 40, // borne la liste d'entités quand une recherche est en cours
+  _releaseTrap: null,
 
   _ensure() {
     if (document.getElementById("convoke-picker-panel")) return;
@@ -71,8 +73,15 @@ export const ConvokePicker = {
     this._runId = runId;
     this._renderShell();
     document.getElementById("convoke-picker-backdrop").classList.add("open");
-    document.getElementById("convoke-picker-panel").classList.add("open");
+    const panel = document.getElementById("convoke-picker-panel");
+    panel.classList.add("open");
     this._position(triggerEl);
+    // D7 : piège posé dans tous les cas (inoffensif tant que rien ne
+    // déplace le focus dedans) ; le focus initial reste conditionnel au
+    // desktop (>640px), choix délibéré préexistant pour ne pas ouvrir le
+    // clavier virtuel sur mobile — pas touché. Sur mobile, un premier clic
+    // sur une case suffit à faire entrer le focus dans le piège.
+    this._releaseTrap = FocusTrap.activate(panel);
     const input = document.querySelector('[data-role="convoke-search"]');
     if (input && window.innerWidth > 640) input.focus();
   },
@@ -83,6 +92,10 @@ export const ConvokePicker = {
     if (panel) panel.classList.remove("open");
     if (backdrop) backdrop.classList.remove("open");
     this._runId = null;
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 
   /** Ancre le panneau sous le déclencheur (desktop/iPad) ; feuille basse en CSS
