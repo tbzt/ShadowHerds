@@ -696,7 +696,9 @@ export const EncounterRenderer = {
             ? ""
             : `<div class="empty-state"><span class="empty-state-title">Aucune entité disponible</span>Générez ou sauvegardez des PNJ, créatures ou esprits pour les ajouter ici.</div>`
         }
-        <div class="encounter-picker-empty empty-state" style="display:none"><span class="empty-state-title">Aucun résultat</span>Aucune entité ne correspond à ce filtre.</div>
+        <div class="encounter-picker-empty empty-state" style="display:none"><span class="empty-state-title">Aucun résultat</span>Aucune entité ne correspond à ce filtre.
+          <button type="button" class="btn-secondary btn-small empty-state-cta" data-action="clear-picker-filter">Effacer les filtres</button>
+        </div>
       </div>`;
 
     if (this._pickerQuery) this._applyPickerFilter();

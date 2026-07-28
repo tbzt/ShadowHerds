@@ -3044,6 +3044,17 @@ export const Encounter = {
           this.linkServer(id);
           this._renderPicker();
           break;
+        case "clear-picker-filter": {
+          // D8 : le filtre du picker retombant à zéro résultat n'offrait
+          // aucun recours (même trou que Hub/Collection, mesuré au plan) —
+          // même geste, DOM différent (masquage style.display, pas de
+          // re-render complet) : vider le champ visible ET l'état interne
+          // d'EncounterRenderer, sans reconstruire le panneau.
+          const input = document.querySelector('[data-action="filter-candidates"]');
+          if (input) input.value = "";
+          EncounterRenderer.filterCandidates("");
+          break;
+        }
         case "toggle-matrix-drawer":
           this.toggleMatrixDrawer();
           break;
