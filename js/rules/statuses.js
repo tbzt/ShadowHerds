@@ -321,6 +321,58 @@ export const Statuses = {
     return eteints;
   },
 
+  /* ============================================================
+     SURTAXES D'ACTION (lot F3) — ce que le catalogue portait en texte mort.
+
+     Les états qui renchérissent une action étaient dans le catalogue depuis E1,
+     mais en `lines` : « Attaquer à couvert coûte 1 action mineure
+     supplémentaire », « les actions mineures impliquant le membre en coûtent
+     deux ». Une surtaxe ne peut pas s'appliquer à un JETON ANONYME — il
+     fallait d'abord que les actions aient un nom (F1). C'est fait.
+
+     DEUX RÉGIMES, et la frontière est celle d'E3 :
+       · `auto: true`  — le livre l'écrit SANS condition (Couvert : l'état est
+         posé, l'action est nommée, il n'y a rien à arbitrer) → l'app l'ajoute
+         au coût et NOMME sa source, comme `globalDiceSources`.
+       · `auto: false` — le livre subordonne la surtaxe à un jugement que l'app
+         ne peut pas rendre (Estropié : « les actions IMPLIQUANT LE MEMBRE » —
+         l'app ne sait pas quel membre une action mobilise) → elle SIGNALE, le
+         MJ tape le jeton. Même arbitrage qu'« Aveuglé −3 aux tests liés à la
+         vision », qu'E3 a refusé de rendre global.
+
+     Ce module ne connaît que la FORME de la surtaxe. C'est `Actions` qui la
+     résout contre une action donnée — lui seul sait ce qu'est une action.
+     ============================================================ */
+
+  /** Les états actifs qui déclarent une surtaxe d'action, résolus au niveau
+      posé : → [{ key, name, level, auto, why, rules }]. Les règles dont le
+      `minLevel` n'est pas atteint sont écartées ici, pas chez l'appelant. */
+  surcharges(pnj) {
+    const out = [];
+    for (const s of this.active(pnj)) {
+      const sc = s.surcharge;
+      if (!sc || !sc.rules) continue;
+      const rules = sc.rules.filter((r) => !r.minLevel || s.level >= r.minLevel);
+      if (!rules.length) continue;
+      out.push({ key: s.key, name: s.name, level: s.level, auto: !!sc.auto, why: sc.why || "", rules });
+    }
+    return out;
+  },
+
+  /** Malus de BUDGET cumulé : « le tour contient une action de moins », par
+      opposition à la surtaxe (« cette action coûte plus »). Deux mécaniques
+      distinctes, que le livre distingue lui aussi — d'où deux champs.
+      → [{ key, n }], agrégé par groupe. */
+  budgetMalus(pnj) {
+    const agg = new Map();
+    for (const s of this.active(pnj)) {
+      for (const b of s.budgetMalus || []) {
+        agg.set(b.key, (agg.get(b.key) || 0) + (b.n || 0));
+      }
+    }
+    return [...agg].map(([key, n]) => ({ key, n }));
+  },
+
   /** Contribution d'AVANTAGE de l'acteur — Anarchy uniquement (lot E2).
       Anarchy 2 p.65 : un avantage fait des 4-5-6 des succès, un désavantage
       ne garde que les 6. Et surtout : « Les avantages et désavantages se

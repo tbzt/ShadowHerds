@@ -184,6 +184,28 @@
 .action-add {
   font-weight: 700;
 }
+/* Surtaxe d'état APPLIQUÉE (lot F3) : le coût affiché a monté, et l'infobulle
+   dit de qui. Liseré plein, comme un état posé (`.status-tag.is-on`) — c'est
+   la même idée, un effet actif se souligne, il ne se colore pas. */
+.action-pick.is-surcharged {
+  border-color: var(--text-dim);
+  font-weight: 600;
+}
+/* Surtaxe CONDITIONNELLE : l'app ne l'ajoute pas, elle la signale. Le ⚠ est un
+   témoin, pas un bouton — la puce reste le seul contrôle, et le geste ne
+   change pas d'un pixel selon qu'il y ait doute ou non. */
+.action-doubt {
+  margin-left: var(--sp-1);
+  opacity: 0.75;
+}
+/* Le rappel des surtaxes conditionnelles larges : une bande en tête de feuille,
+   pas 75 ⚠ sur 76 puces. Elle n'existe que s'il y a quelque chose à dire. */
+.action-notice {
+  flex-basis: 100%;
+  color: var(--text-dim);
+  font-size: var(--fs-2xs);
+  line-height: 1.4;
+}
 /* Rubriques du catalogue (lot F1b) — combat, magie, Matrice. `.action-rest`
    est en `display: contents`, donc chaque rubrique doit reprendre elle-même la
    pleine largeur pour former une bande, sinon les trois se collent bout à bout

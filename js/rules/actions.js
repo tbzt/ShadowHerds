@@ -63,6 +63,8 @@
    interdictions, et elles existent déjà ailleurs (`initGate`, `blockedByStatus`).
    ============================================================ */
 
+import { Statuses } from "./statuses.js";
+
 export const Actions = {
   /** Spéc d'actions de l'édition d'un PNJ, ou null si elle n'en a pas
       (Anarchy 1 et 2 : la surface disparaît d'elle-même, comme `statusModel`
@@ -138,7 +140,7 @@ export const Actions = {
       Les libellés viennent d'`actionBudget` — le module d'édition est la seule
       source des noms de groupes, jamais une table codée en dur ici (prohibition
       n°1 : la règle vit dans l'édition). */
-  costLabel(pnj, entry) {
+  costLabel(pnj, entry, cost) {
     // SR5 classe DEUX actions matricielles en « Variable » (Contrôler un
     // appareil, Rechercher des données) : leur type dépend de la situation.
     // Le dire est la seule réponse honnête — inventer un jeton serait pire que
@@ -154,8 +156,93 @@ export const Actions = {
       const l = g.label.toLowerCase();
       return l.endsWith("s") ? l.slice(0, -1) : l;
     };
-    const parts = this.cost(entry).map((c) => `${c.n} ${nom(c.key)}${c.n > 1 ? "s" : ""}`);
+    // `cost` explicite = le coût DÉJÀ résolu (surtaxes d'état comprises, lot
+    // F3). Sans lui, le coût nu du contrat — les appelants antérieurs à F3 ne
+    // bougent pas.
+    const parts = (cost || this.cost(entry)).map((c) => `${c.n} ${nom(c.key)}${c.n > 1 ? "s" : ""}`);
     return parts.join(" + ") || "gratuit";
+  },
+
+  /* ============================================================
+     SURTAXES D'ÉTAT (lot F3) — le coût réel d'une action, ici et maintenant.
+
+     `Statuses` déclare la FORME d'une surtaxe, ce module la RÉSOUT contre une
+     action : lui seul sait ce qu'est une action, sa clé, son groupe de coût.
+     C'est le point où la table des états et la table des actions se parlent
+     pour de bon — E4 avait ouvert la porte avec le verrou « surpris ».
+     ============================================================ */
+
+  /** Une règle de surtaxe frappe-t-elle CETTE action ?
+      `targets` vise des clés d'action nommées (Couvert → « Attaquer »),
+      `group` vise une nature de coût (Estropié I → toutes les mineures). Sans
+      l'un ni l'autre, la règle frappe tout. */
+  _hits(entry, rule) {
+    if (entry.noSurcharge) return false;
+    if (rule.targets && !rule.targets.includes(entry.key)) return false;
+    if (rule.group && !this.cost(entry).some((c) => c.key === rule.group)) return false;
+    return true;
+  },
+
+  /** Le coût RÉEL d'une action sur ce PNJ, surtaxes comprises, plus de quoi
+      l'expliquer. Un chiffre ne monte jamais sans nom — miroir exact de
+      `Statuses.globalDiceSources`, qui l'avait établi pour les malus de dés.
+
+      → { cost, sources, warnings }
+        · `cost`     — la liste à débiter (base + surtaxes AUTO)
+        · `sources`  — [{ name, cost, why }] les surtaxes appliquées
+        · `warnings` — [{ name, cost, why }] celles que le MJ doit trancher
+                       lui-même (`auto: false`), affichées et jamais débitées */
+  costWith(pnj, entry) {
+    const base = this.cost(entry);
+    const sources = [];
+    const warnings = [];
+    if (!entry) return { cost: base, sources, warnings };
+
+    const agg = new Map();
+    for (const c of base) agg.set(c.key, (agg.get(c.key) || 0) + c.n);
+
+    for (const s of Statuses.surcharges(pnj)) {
+      for (const r of s.rules) {
+        if (!this._hits(entry, r)) continue;
+        // `targeted` — la règle NOMME ses actions (Couvert → « Attaquer »),
+        // par opposition à celle qui frappe toute une nature (Estropié → toutes
+        // les mineures). La distinction n'est pas cosmétique : elle décide OÙ
+        // l'avertissement se dit. Cf. `conditionalNotices`.
+        const item = { name: s.name, level: s.level, cost: r.cost || [], why: r.why || s.why || "", targeted: !!r.targets };
+        if (s.auto) {
+          for (const c of item.cost) agg.set(c.key, (agg.get(c.key) || 0) + c.n);
+          sources.push(item);
+        } else {
+          warnings.push(item);
+        }
+      }
+    }
+    return { cost: [...agg].map(([key, n]) => ({ key, n })), sources, warnings };
+  },
+
+  /** Les surtaxes conditionnelles qui frappent TOUTE UNE NATURE d'action, à
+      dire UNE FOIS au-dessus de la feuille plutôt que sur chaque puce.
+
+      C'est une correction de conception, faite en regardant l'écran : avec
+      Estropié II posé, la règle « les actions impliquant le membre » touche
+      potentiellement 75 puces sur 76, et un ⚠ sur chacune n'avertit de rien —
+      c'est le bruit que le bilan de round (E3b) évite déjà en restant muet
+      quand il n'a rien à dire. Le ⚠ sur la puce reste réservé aux surtaxes qui
+      NOMMENT leur cible, où il désigne vraiment quelque chose.
+
+      L'avertissement par action, lui, ne disparaît pas : il est dans le toast
+      au moment où l'action est jouée, c'est-à-dire là où le MJ a une décision
+      à prendre. → [{ name, level, cost, why }] */
+  conditionalNotices(pnj) {
+    const out = [];
+    for (const s of Statuses.surcharges(pnj)) {
+      if (s.auto) continue;
+      for (const r of s.rules) {
+        if (r.targets) continue; // ciblée → elle se dit sur la puce
+        out.push({ name: s.name, level: s.level, cost: r.cost || [], why: r.why || s.why || "" });
+      }
+    }
+    return out;
   },
 
   /** Le coût est-il payable avec ce qui reste ? INFORMATION, jamais un verrou :

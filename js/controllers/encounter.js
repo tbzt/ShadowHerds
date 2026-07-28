@@ -692,7 +692,12 @@ export const Encounter = {
     const entry = pnj && Actions.find(pnj, key);
     if (!c || !entry) return;
 
-    const over = Actions.costs(entry) ? this._consumeAction(c, entry.cost, pnj) : false;
+    // F3 — le coût débité est le coût RÉEL : celui du contrat, plus les
+    // surtaxes d'état inconditionnelles (Couvert « Attaquer à couvert nécessite
+    // une action mineure supplémentaire »). Les surtaxes conditionnelles
+    // (`warnings`) sont DITES et jamais débitées.
+    const res = Actions.costWith(pnj, entry);
+    const over = Actions.costs(entry) ? this._consumeAction(c, res.cost, pnj) : false;
 
     // RECUL PROGRESSIF (F2) — « les modificateurs de recul s'accumulent […] à
     // moins que le personnage ne dépense une action simple ou complexe pour
@@ -705,8 +710,15 @@ export const Encounter = {
     }
 
     if (!silent) {
-      const cout = Actions.costLabel(pnj, entry);
-      toast(`${entry.name} — ${pnj.name} (${over ? "budget dépassé — " : ""}${cout})`);
+      const cout = Actions.costLabel(pnj, entry, res.cost);
+      // Un coût ne monte JAMAIS sans nom — même règle que le badge ⊘ des malus
+      // de dés (`globalDiceSources`, lot E3). Et ce que le MJ doit trancher
+      // lui-même est dit là aussi, plutôt que passé sous silence.
+      const dus = res.sources.length ? ` · ${res.sources.map((s) => s.name).join(", ")}` : "";
+      const avert = res.warnings.length
+        ? ` ⚠ ${res.warnings.map((w) => `${w.name} : +${Actions.costLabel(pnj, entry, w.cost)} pour ${w.why}`).join(" · ")}`
+        : "";
+      toast(`${entry.name} — ${pnj.name} (${over ? "budget dépassé — " : ""}${cout}${dus})${avert}`);
     }
     this._commit();
     return over;
@@ -1427,6 +1439,14 @@ export const Encounter = {
     // Atout/drogue Anarchy « +1 action par narration » : le dernier groupe du
     // budget gagne un jeton (cf. grantNarrationAction).
     if (c.narrationBonus && b.length) b[b.length - 1].total += 1;
+    // F3 — MALUS DE BUDGET d'état : « le tour contient une action de moins »
+    // (SR6 Nauséeux, « ils peuvent agir, mais perdent une action mineure »).
+    // Distinct de la surtaxe, qui renchérit UNE action : ici c'est la rangée
+    // entière qui rétrécit, et le jeton manquant se voit.
+    for (const m of Statuses.budgetMalus(pnj)) {
+      const g = b.find((x) => x.key === m.key);
+      if (g) g.total = Math.max(0, g.total - m.n);
+    }
     return b;
   },
 

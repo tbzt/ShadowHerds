@@ -429,8 +429,14 @@ export const EditionSR6 = {
         "Un tour sans Ajuster ni Attaquer fait perdre le bonus accumulé",
         "Requise pour bénéficier d'une lunette de visée ou d'un agrandissement d'image",
       ] },
-      { key: "attaquerCouvert", name: "Attaquer depuis un couvert", cost: [{ key: "minor", n: 1 }], timing: "I", combine: "attaquer", lines: [
+      // `noSurcharge` — cette action EST la mineure supplémentaire que l'état
+      // Couvert facture (p.56, « Attaquer à couvert nécessite une action mineure
+      // supplémentaire »). Le livre écrit la même règle deux fois, d'un côté
+      // comme une action, de l'autre comme un effet d'état : lui appliquer la
+      // surtaxe reviendrait à la faire payer deux fois.
+      { key: "attaquerCouvert", name: "Attaquer depuis un couvert", cost: [{ key: "minor", n: 1 }], timing: "I", combine: "attaquer", noSurcharge: true, lines: [
         "À effectuer conjointement avec Attaquer, quand on bénéficie de l'état Couvert et qu'on souhaite le conserver",
+        "C'est l'action mineure supplémentaire que l'état Couvert facture — elle ne se cumule pas avec elle",
       ] },
       { key: "attaquesMultiples", name: "Attaques multiples", cost: [{ key: "minor", n: 1 }], timing: "I", combine: "attaquer", lines: [
         "Attaquer plusieurs adversaires à portée, si les munitions et la position le permettent",
@@ -737,7 +743,19 @@ export const EditionSR6 = {
         "Chaque round, résister à (niveau)P",
         "Ni Trempé ni l'eau ne l'annulent forcément — arbitrage MJ",
       ] },
-      { key: "couvert", name: "Couvert", levels: 4, quick: true, page: "p.55-58", lines: [
+      // SURTAXE AUTO (E3/F3) : « Attaquer à couvert nécessite une action mineure
+      // supplémentaire afin de se dégager suffisamment pour faire feu ». C'est
+      // la seule surtaxe d'action INCONDITIONNELLE du catalogue : l'état est
+      // posé, l'action est nommée, il n'y a rien à arbitrer.
+      // ⚠ Elle vise `attaquer` et PAS `attaquerCouvert` : cette mineure-là EST
+      // l'action « Attaquer depuis un couvert » du livre, vue de l'autre côté.
+      // Les cumuler ferait payer deux fois la même règle.
+      { key: "couvert", name: "Couvert", levels: 4, quick: true, page: "p.55-58",
+        surcharge: { auto: true, rules: [
+          { targets: ["attaquer"], cost: [{ key: "minor", n: 1 }],
+            why: "se dégager du couvert pour faire feu" },
+        ] },
+        lines: [
         "+1 au SD par niveau",
         "+1 dé / niveau aux tests de défense",
         "Attaquer à couvert coûte 1 action mineure supplémentaire",
@@ -820,8 +838,20 @@ export const EditionSR6 = {
       // Test de DÉBUT de round : l'app le rappelle et offre le jet, elle ne
       // lit pas le résultat (« échec : impossible d'agir » est un arbitrage,
       // pas une soustraction — cf. ce qu'E3 refuse d'automatiser).
+      // MALUS DE BUDGET (F3) — mécanique distincte de la surtaxe : ce n'est pas
+      // une action qui coûte plus, c'est le TOUR qui en contient une de moins.
+      // Le livre : « S'ils échouent, ils ne peuvent agir au cours de ce round.
+      // S'ils réussissent, ils peuvent agir, mais PERDENT UNE ACTION MINEURE. »
+      //
+      // Retrancher le jeton d'office est conditionnel au jet — donc en dehors
+      // de ce qu'E3 automatise — SAUF que la branche « échec » est STRICTEMENT
+      // PIRE : elle retire toutes les actions. Le −1 mineure est donc un
+      // PLANCHER, jamais une largesse : l'app ne peut pas accorder plus que le
+      // livre, seulement moins. C'est ce qui le rend applicable sans lire le
+      // résultat du jet, que le bilan de round (E3b) propose déjà par ailleurs.
       { key: "nauseeux", name: "Nauséeux", levels: 0, page: "p.55-58",
-        roundTest: { when: "startOfRound", pool: ["CON", "VOL"], threshold: 2 }, lines: [
+        roundTest: { when: "startOfRound", pool: ["CON", "VOL"], threshold: 2 },
+        budgetMalus: [{ key: "minor", n: 1 }], lines: [
         "Début de round : test Constitution + Volonté (2)",
         "Échec : impossible d'agir ce round",
         "Réussite : −1 action mineure",
@@ -854,7 +884,21 @@ export const EditionSR6 = {
         "À terre en cas de complication sur ces actions",
         "Persiste jusqu'à une action mineure pour retrouver l'équilibre",
       ] },
-      { key: "estropie", name: "Estropié", levels: 3, page: "Cartes d'états A02", lines: [
+      // SURTAXE CONDITIONNELLE (F3) : `auto: false`. Le livre dit « les actions
+      // […] IMPLIQUANT LE MEMBRE », et l'app ne sait pas quel membre une action
+      // mobilise — Se déplacer implique une jambe, Recharger implique deux bras,
+      // Observer attentivement n'implique rien. Deviner à la place du MJ serait
+      // décider ; l'app SIGNALE la surtaxe sur les actions qu'elle pourrait
+      // frapper et laisse le geste au MJ (jetons tappables un par un).
+      // Même arbitrage qu'E3 pour « Aveuglé −3 aux tests liés à la vision ».
+      { key: "estropie", name: "Estropié", levels: 3, page: "Cartes d'états A02",
+        surcharge: { auto: false, why: "si l'action implique le membre estropié", rules: [
+          { minLevel: 1, group: "minor", cost: [{ key: "minor", n: 1 }],
+            why: "une action mineure impliquant le membre" },
+          { minLevel: 2, group: "major", cost: [{ key: "minor", n: 1 }],
+            why: "une action majeure impliquant le membre" },
+        ] },
+        lines: [
         "I : les actions mineures impliquant le membre en coûtent deux",
         "II : + les actions majeures impliquant le membre coûtent une mineure de plus",
         "III : + Entravé si jambe ; si bras, −4 dés aux tests de compétence l'utilisant",

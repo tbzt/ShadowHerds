@@ -12,6 +12,43 @@ commit.
 
 ## [Non publié]
 
+## [1.130.0] — 2026-07-28
+
+### Ajouté
+
+- **Les états qui renchérissent une action la renchérissent vraiment.** Trois
+  lignes du catalogue d'états étaient du texte mort depuis le lot E1 — une
+  surtaxe ne peut pas s'appliquer à un jeton anonyme. Maintenant que les actions
+  ont un nom, elles s'appliquent :
+  - **Couvert** (SR6) — « Attaquer à couvert nécessite une action mineure
+    supplémentaire afin de se dégager suffisamment pour faire feu ». Poser
+    l'état fait passer **Attaquer** à *1 majeure + 1 mineure*, et le coût
+    **nomme sa source** : « Attaquer (1 majeure + 1 mineure · Couvert) ». Un
+    chiffre ne monte jamais sans qu'on sache d'où ça vient.
+  - **Nauséeux** (SR6) — « ils peuvent agir, mais perdent une action mineure » :
+    la rangée de jetons rétrécit d'un cran. Ce n'est pas une surtaxe, c'est le
+    **tour** qui contient une action de moins.
+  - **Estropié I et II** (SR6) — le livre dit « les actions **impliquant le
+    membre** », et l'app ne sait pas quel membre une action mobilise. Elle
+    **signale** donc la surtaxe et laisse le meneur trancher : un rappel en tête
+    de la feuille d'actions, et un ⚠ dans le message de l'action jouée. Elle ne
+    l'ajoute jamais toute seule.
+
+### Note
+
+« Attaquer depuis un couvert » ne se cumule pas avec la surtaxe de l'état
+Couvert : cette action **est** la mineure supplémentaire que l'état facture. Le
+livre écrit la même règle deux fois, d'un côté comme une action, de l'autre
+comme un effet d'état — l'app la fait payer une seule.
+
+Le rappel d'Estropié est une bande unique en tête de feuille, pas un ⚠ par
+puce : la règle touche potentiellement 75 actions sur 76, et un avertissement
+qui s'affiche partout n'avertit de rien. Le ⚠ sur la puce reste réservé aux
+surtaxes qui **nomment** leur cible.
+
+Rien ne change en SR5 ni en Anarchy : leurs états ne déclarent aucune surtaxe
+d'action, et la surface reste identique.
+
 ## [1.129.0] — 2026-07-28
 
 ### Ajouté

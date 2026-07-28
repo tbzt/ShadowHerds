@@ -1148,16 +1148,39 @@ export const EncounterRenderer = {
       // puce se ternit, elle ne se désactive pas. `_consumeAction` débite
       // au-delà du budget et le dit — le MJ a le droit de savoir qu'il déborde
       // et de déborder quand même (garde-fou (e)).
-      const cher = !Actions.affordable(a, budget, used);
+      // F3 — le coût affiché est le coût RÉEL, surtaxes d'état comprises, et
+      // il ne monte jamais sans nom (patron `globalDiceSources`). Les surtaxes
+      // que le MJ doit trancher lui-même (`warnings`) ne sont PAS ajoutées :
+      // elles marquent la puce d'un ⚠ et s'expliquent en infobulle.
+      const res = Actions.costWith(r.pnj, a);
+      const cher = !Actions.affordable({ cost: res.cost }, budget, used);
       const hors = a.timing === "L" ? " · hors tour" : "";
       const avec = a.combine ? [`À combiner avec : ${a.combine}`] : [];
+      const surtaxes = res.sources.map((s) => `Surtaxe ${s.name} : +${Actions.costLabel(r.pnj, a, s.cost)} (${s.why})`);
+      const doutes = res.warnings.map((w) => `⚠ ${w.name} : +${Actions.costLabel(r.pnj, a, w.cost)} pour ${w.why}. À vous de trancher : l'app ne l'ajoute pas.`);
       const info = [
-        `${a.name} — ${Actions.costLabel(r.pnj, a)}${hors}`,
+        `${a.name} — ${Actions.costLabel(r.pnj, a, res.cost)}${hors}`,
+        ...surtaxes,
+        ...doutes,
         ...avec,
         ...(a.lines || []),
       ].join("\n• ");
-      return `<button type="button" class="tag status-pick action-pick${cher ? " is-over" : ""}${a.timing === "L" ? " is-free" : ""}" data-action="action-use" data-id="${r.pnjId}" data-key="${a.key}" title="${Utils.escHtml(info)}">${Utils.escHtml(a.name)}</button>`;
+      const marque = res.sources.length ? " is-surcharged" : "";
+      // ⚠ sur la puce UNIQUEMENT pour une surtaxe qui nomme sa cible. Une règle
+      // qui frappe toute une nature d'action (Estropié) se dit une fois
+      // au-dessus de la feuille : 75 ⚠ sur 76 puces n'avertissent de rien.
+      const cible = res.warnings.some((w) => w.targeted);
+      const doute = cible ? " is-doubtful" : "";
+      return `<button type="button" class="tag status-pick action-pick${cher ? " is-over" : ""}${a.timing === "L" ? " is-free" : ""}${marque}${doute}" data-action="action-use" data-id="${r.pnjId}" data-key="${a.key}" title="${Utils.escHtml(info)}">${Utils.escHtml(a.name)}${cible ? "<span class=\"action-doubt\" aria-hidden=\"true\">⚠</span>" : ""}</button>`;
     };
+    // Le rappel des surtaxes conditionnelles larges, dit UNE FOIS. Absent quand
+    // il n'y a rien à dire — l'écrasante majorité des tours.
+    const rappels = Actions.conditionalNotices(r.pnj);
+    const notice = rappels.length
+      ? `<span class="action-notice">⚠ ${rappels
+          .map((w) => `${Utils.escHtml(w.name)} : +${Utils.escHtml(Actions.costLabel(r.pnj, null, w.cost))} pour ${Utils.escHtml(w.why)}`)
+          .join(" · ")} — à vous de trancher, l'app ne l'ajoute pas.</span>`
+      : "";
     const rapides = Actions.quick(r.pnj).map(puce).join("");
     // F1b — le reste se range par DOMAINE (combat, magie, Matrice). SR6 est
     // passé de 32 à 76 actions et SR5 de 36 à 74 : une seule liste serait un
@@ -1187,7 +1210,7 @@ export const EncounterRenderer = {
       ? `<button type="button" class="tag status-more" data-action="action-more" aria-expanded="${restOuvert}">tous…</button>
          <span class="action-rest"${restOuvert ? "" : " hidden"}>${corps}</span>`
       : "";
-    return `<div class="status-sheet action-sheet" data-action-sheet="${r.pnjId}"${ouverte ? "" : " hidden"}>${rapides}${tous}</div>`;
+    return `<div class="status-sheet action-sheet" data-action-sheet="${r.pnjId}"${ouverte ? "" : " hidden"}>${notice}${rapides}${tous}</div>`;
   },
 
   /** Déplie/replie la feuille — UNE SEULE ouverte à la fois, et jamais en même
