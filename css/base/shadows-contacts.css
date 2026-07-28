@@ -13,27 +13,14 @@
 }
 
 /* ---- Bouton replier (dans le header de la sidebar) ---- */
+/* D4 : recette identique à .btn-icon (plus bas dans ce même fichier), à un
+   détail près assumé en le migrant — font-size:16px (--fs-md) devient 14px
+   (--fs-base) comme .btn-icon, delta -12,5% sur le chevron, sous les seuils
+   déjà acceptés ailleurs dans le design system. Composé dans le HTML avec
+   .btn-icon ; ne garde que ce qui lui est propre (flex-shrink, le mirroir
+   .icon). */
 .sidebar-collapse-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  width: 22px;
-  height: 22px;
-  border-radius: var(--radius-sm);
-  font-size: var(--fs-md);
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
-  transition:
-    border-color var(--dur-fast),
-    color var(--dur-fast);
-}
-.sidebar-collapse-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 /* CH-V7 : le chevron du sprite pointe à droite (› = réouvrir) ; le bouton
    replier montre l'inverse (‹), obtenu par miroir horizontal. */
