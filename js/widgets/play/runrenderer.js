@@ -4,6 +4,7 @@
    RUN RENDERER
    ============================================================ */
 import { CardRenderer } from "../card/cardrenderer.js";
+import { CardFooter } from "../card/cardfooter.js";
 import { Dossiers } from "../journal/dossiers.js";
 
 export const RunRenderer = {
@@ -72,22 +73,47 @@ export const RunRenderer = {
           <span class="stat-pill accent">Paiement <strong>${r.payment}</strong></span>
         </div>
       </div>
-      <div class="pnj-card-footer">
-        ${
-          r.dossierId || r.dossierName
-            ? `<span class="pnj-rank-badge" title="Rangé dans ce dossier">📁 ${CardRenderer._esc(
-                (r.dossierId && Dossiers.nameOf(r.dossierId)) || r.dossierName,
-              )}</span>`
-            : `<button class="card-action-btn" data-action="run-to-dossier"
-                 data-run-name="${CardRenderer._esc(r.type)}" title="Promouvoir ce topos en run canon">＋ Faire un run</button>`
-        }
-        <button class="card-action-btn" data-action="edit-run" title="Éditer ce topos">✎ Éditer</button>
-        ${this._rencontreBtn(r)}
-        ${this._trameBtn(r)}
-        ${this._planBtn(r)}
-        <button class="card-action-btn danger" data-action="discard-run">Virer</button>
-      </div>`;
+      ${this._footerHtml(r)}`;
     return el;
+  },
+
+  /** Pied unifié (CardFooter, D6). Promu en run (dossierId) : le badge 📁
+      remplace le bouton de promotion, préfixé au pied comme le fait le
+      socle Collection pour ★/🏷 (même geste, cf. doc de CardFooter). Pas de
+      promotion : « ＋ Faire un run » devient le primaire. */
+  _footerHtml(r) {
+    const promoted = r.dossierId || r.dossierName;
+    const actions = promoted
+      ? this._footerActions(r)
+      : [
+          {
+            kind: "primary",
+            icon: "＋",
+            label: "Faire un run",
+            attrs: `data-action="run-to-dossier" data-run-name="${CardRenderer._esc(r.type)}" title="Promouvoir ce topos en run canon"`,
+          },
+          ...this._footerActions(r),
+        ];
+    const footer = CardFooter.render(actions);
+    if (!promoted) return footer;
+    const badge = `<span class="pnj-rank-badge" title="Rangé dans ce dossier">📁 ${CardRenderer._esc(
+      (r.dossierId && Dossiers.nameOf(r.dossierId)) || r.dossierName,
+    )}</span>`;
+    return footer.replace('<div class="pnj-card-footer">', `<div class="pnj-card-footer">${badge}`);
+  },
+
+  /** Pied unifié (CardFooter, D6) : Éditer + Rencontre en secondaires
+      (visibles), Trame/Plan/Ambiance dans le ⋯ (actions moins fréquentes),
+      « Virer » dans le ⋯ en rouge — jamais un bouton destructeur nu dans le
+      pied (loi D6, Fitts en négatif). Remplace l'ancien pied fait main. */
+  _footerActions(r) {
+    return [
+      { kind: "secondary", label: "Éditer", attrs: `data-action="edit-run" title="Éditer ce topos"` },
+      ...this._rencontreAction(r),
+      ...this._trameAction(r),
+      ...this._planActions(r),
+      { kind: "menu", danger: true, label: "Virer", attrs: `data-action="discard-run"` },
+    ];
   },
 
   /** Distingue au premier coup d'œil un topos encore libre d'un run canon
@@ -102,43 +128,63 @@ export const RunRenderer = {
   /** R4 : miroir du geste « rencontre » de dossierbar (même dossierId, mêmes
       méthodes DossierBar.open/closeRencontre) — seulement pour un run
       rangé dans un dossier réellement typé « run ». */
-  _rencontreBtn(r) {
-    if (!r.dossierId || Dossiers.kindOf(r.dossierId) !== "run") return "";
+  _rencontreAction(r) {
+    if (!r.dossierId || Dossiers.kindOf(r.dossierId) !== "run") return [];
     const active = Encounter.activeDossierId === r.dossierId;
     const action = active ? "close-rencontre" : "open-rencontre";
     const label = active
       ? "⏹ Fermer la rencontre"
       : `▶ ${Encounter.hasStash(r.dossierId) ? "Rouvrir" : "Ouvrir"} la rencontre`;
-    return `<button class="card-action-btn" data-action="${action}" data-dossier="${r.dossierId}">${label}</button>`;
+    return [{ kind: "secondary", label, attrs: `data-action="${action}" data-dossier="${r.dossierId}"` }];
   },
 
   /** « Générer la trame » — seulement sur un topos promu en run (`dossierId`) et
       porteur d'un profil de sécurité (topos généré ≥ 3a) : RunGen pose alors une
       trame jouable complète (scènes, horloges, front, faction + casting) liée au
       run. Un clic de plus si une trame existe déjà (proposée à l'ouverture). */
-  _trameBtn(r) {
-    if (!r.dossierId || !r.securityProfile) return "";
-    return `<button class="card-action-btn" data-action="run-trame" title="Générer une trame jouable (scènes, horloges, front, faction + casting) et la lier au run">◈ Générer la trame</button>`;
+  _trameAction(r) {
+    if (!r.dossierId || !r.securityProfile) return [];
+    return [
+      {
+        kind: "menu",
+        label: "◈ Générer la trame",
+        attrs: `data-action="run-trame" title="Générer une trame jouable (scènes, horloges, front, faction + casting) et la lier au run"`,
+      },
+    ];
   },
 
-  /** Boutons du lieu. Deux natures distinctes, gatées séparément :
+  /** Actions du lieu. Deux natures distinctes, gatées séparément :
       - « Plan tactique » (MapGen SVG) = la STRUCTURE : gratuit, hors opt-in IA,
         seulement là où un plan a du sens (site à `planUtile`, 3a). Déterministe
         par graine, régénéré à l'affichage (`run-map` → RunGen.showMap).
       - « Ambiance » (Pollinations) = le RESSENTI : image IA, pour TOUT lieu
         (une scène a toujours une ambiance, ≠ un plan structurel) si l'opt-in
         Images IA est actif ; vignette cliquable si déjà générée. */
-  _planBtn(r) {
-    let out = "";
+  _planActions(r) {
+    const out = [];
     if (r.planUtile) {
-      out += `<button class="card-action-btn" data-action="run-map" title="Plan tactique du lieu (généré, gratuit)">🗺 Plan tactique</button>`;
+      out.push({
+        kind: "menu",
+        label: "🗺 Plan tactique",
+        attrs: `data-action="run-map" title="Plan tactique du lieu (généré, gratuit)"`,
+      });
     }
     const aiEnabled =
       typeof Settings !== "undefined" && Settings.getPortraitSettings().enabled;
     if (aiEnabled && r.lieu) {
-      out += r.planUrl
-        ? `<button class="card-action-btn" data-portrait-preview="${CardRenderer._esc(r.planUrl)}" data-portrait-caption="${CardRenderer._esc(`Ambiance — ${r.lieu}`)}" title="Voir l'ambiance générée">✨ Ambiance</button>`
-        : `<button class="card-action-btn" data-action="run-plan" title="Générer une ambiance du lieu (IA)">✨ Ambiance</button>`;
+      out.push(
+        r.planUrl
+          ? {
+              kind: "menu",
+              label: "✨ Ambiance",
+              attrs: `data-portrait-preview="${CardRenderer._esc(r.planUrl)}" data-portrait-caption="${CardRenderer._esc(`Ambiance — ${r.lieu}`)}" title="Voir l'ambiance générée"`,
+            }
+          : {
+              kind: "menu",
+              label: "✨ Ambiance",
+              attrs: `data-action="run-plan" title="Générer une ambiance du lieu (IA)"`,
+            },
+      );
     }
     return out;
   },
