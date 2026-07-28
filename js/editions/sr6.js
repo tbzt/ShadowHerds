@@ -465,7 +465,7 @@ export const EditionSR6 = {
         "À effectuer conjointement avec Attaquer, quand on bénéficie de l'état Couvert et qu'on souhaite le conserver",
         "C'est l'action mineure supplémentaire que l'état Couvert facture — elle ne se cumule pas avec elle",
       ] },
-      { key: "attaquesMultiples", name: "Attaques multiples", cost: [{ key: "minor", n: 1 }], timing: "I", combine: "attaquer", lines: [
+      { key: "attaquesMultiples", name: "Attaques multiples", cost: [{ key: "minor", n: 1 }], timing: "I", quick: true, combine: "attaquer", lines: [
         "Attaquer plusieurs adversaires à portée, si les munitions et la position le permettent",
         "Répartir la réserve entre les cibles, ou moitié de réserve par méthode d'attaque (arrondi à l'inférieur)",
       ] },
@@ -477,7 +477,7 @@ export const EditionSR6 = {
         "Activer, désactiver ou changer le mode d'un appareil connecté à une interface neurale directe",
         "Inclut cyberware, mode de tir d'un smartgun, mode silencieux d'un commlink, coupure du sans-fil",
       ] },
-      { key: "cibler", name: "Cibler", cost: [{ key: "minor", n: 1 }], timing: "I", combine: "attaquer", lines: [
+      { key: "cibler", name: "Cibler", cost: [{ key: "minor", n: 1 }], timing: "I", quick: true, combine: "attaquer", lines: [
         "+2 à la Valeur de Dommages contre −4 dés",
         "Des actions d'Atout permettent des ciblages plus précis, sans malus ou avec un malus réduit",
       ] },
@@ -530,7 +530,7 @@ export const EditionSR6 = {
         "Déplacement de 10 mètres",
         "Une seule action Se déplacer par tour de personnage",
       ] },
-      { key: "seJeterParTerre", name: "Se jeter par terre", cost: [{ key: "minor", n: 1 }], timing: "L",
+      { key: "seJeterParTerre", name: "Se jeter par terre", cost: [{ key: "minor", n: 1 }], timing: "L", quick: true,
         sets: [{ status: "aterre", level: 1 }], lines: [
         "+2 dés au test de défense contre une attaque",
         "Obtient l'état À terre",
@@ -603,7 +603,7 @@ export const EditionSR6 = {
         "Ramasser un objet à portée ou en poser un, en y faisant attention",
         "Une arme ainsi ramassée est considérée comme prête à être utilisée",
       ] },
-      { key: "rechargerArme", name: "Recharger une arme", cost: [{ key: "major", n: 1 }], timing: "I", quick: true, reload: "full", lines: [
+      { key: "rechargerArme", name: "Recharger une arme", cost: [{ key: "major", n: 1 }], timing: "I", reload: "full", lines: [
         "Pour une arme sans smartlink, ou dont le smartlink est désactivé",
         "L'arme est rechargée à sa pleine capacité, tant que le personnage a assez de munitions",
       ] },

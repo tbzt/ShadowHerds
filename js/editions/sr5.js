@@ -436,7 +436,7 @@ export const EditionSR5 = {
     },
     catalog: [
       /* ---------------- ACTIONS GRATUITES (9) ---------------- */
-      { key: "attaquesMultiples", name: "Attaques multiples", cost: [{ key: "free", n: 1 }], combine: "attaque", lines: [
+      { key: "attaquesMultiples", name: "Attaques multiples", cost: [{ key: "free", n: 1 }], quick: true, combine: "attaque", lines: [
         "Attaquer plusieurs cibles en une seule action en divisant sa réserve de dés",
         "À combiner avec faire feu, lancer une arme, attaque de mêlée ou lancement de sort",
       ] },
@@ -444,7 +444,7 @@ export const EditionSR5 = {
         "Activer, désactiver ou changer le mode d'un équipement relié par interface neurale directe",
         "Inclut le cyberware, le mode de tir d'un smartgun, la dispersion d'un shotgun, le mode caché d'un commlink",
       ] },
-      { key: "cibler", name: "Cibler", cost: [{ key: "free", n: 1 }], combine: "attaque", lines: [
+      { key: "cibler", name: "Cibler", cost: [{ key: "free", n: 1 }], quick: true, combine: "attaque", lines: [
         "Viser une partie vulnérable de la cible (tir ciblé)",
         "À combiner avec faire feu, lancer une arme ou attaque de mêlée",
       ] },
@@ -453,7 +453,7 @@ export const EditionSR5 = {
       // catalogue E1 portait déjà. Rien ne l'ÉTEINT : le personnage cesse de
       // courir quand le MJ le décide, d'où le ✕ de la pastille et pas une
       // horloge inventée.
-      { key: "courir", name: "Courir", cost: [{ key: "free", n: 1 }],
+      { key: "courir", name: "Courir", cost: [{ key: "free", n: 1 }], quick: true,
         sets: [{ status: "course", level: 1 }], lines: [
         "Impose les modificateurs de course",
       ] },
@@ -474,7 +474,7 @@ export const EditionSR5 = {
       ] },
       // `sets` (F4) + `forbids` sur Surpris (F3b, trou trouvé en faisant F4) :
       // le livre nomme l'action et la condition, sans rien à arbitrer.
-      { key: "seJeterAuSol", name: "Se jeter au sol", cost: [{ key: "free", n: 1 }],
+      { key: "seJeterAuSol", name: "Se jeter au sol", cost: [{ key: "free", n: 1 }], quick: true,
         sets: [{ status: "etendu", level: 1 }], lines: [
         "S'agenouiller ou se jeter au sol",
         "Impossible si le personnage est Surpris",
@@ -499,7 +499,7 @@ export const EditionSR5 = {
         "Échec : l'arme est dégainée mais le tir n'a pas lieu. Complication : l'arme est coincée ou tombe",
         "Ne permet pas un mode de tir qui exige une action complexe",
       ] },
-      { key: "ejecterChargeur", name: "Éjecter un chargeur", cost: [{ key: "simple", n: 1 }], quick: true, reload: "eject", lines: [
+      { key: "ejecterChargeur", name: "Éjecter un chargeur", cost: [{ key: "simple", n: 1 }], reload: "eject", lines: [
         "Retirer un chargeur d'une arme prête",
         "Une seconde action simple est nécessaire pour insérer un chargeur plein",
       ] },
@@ -510,7 +510,7 @@ export const EditionSR5 = {
         "Coup par coup, semi-automatique, tir en rafale (3 balles) ou tir automatique (6 balles)",
         "Aucune autre action d'attaque durant la même phase d'action",
       ] },
-      { key: "insererChargeur", name: "Insérer un chargeur", cost: [{ key: "simple", n: 1 }], quick: true, reload: "insert", lines: [
+      { key: "insererChargeur", name: "Insérer un chargeur", cost: [{ key: "simple", n: 1 }], reload: "insert", lines: [
         "Insérer un chargeur dans une arme à feu prête, uniquement après avoir éjecté l'ancien",
       ] },
       { key: "lancerArme", name: "Lancer une arme", viaWeapon: true, weaponMatch: /grenade|shuriken|étoile|javelot|boomerang|de jet\b/i, cost: [{ key: "simple", n: 1 }], lines: [
@@ -585,7 +585,7 @@ export const EditionSR5 = {
       { key: "plongerVehicule", name: "Plonger dans un véhicule (rigger)", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
         "Avec un câblage de contrôle de véhicules et un véhicule adapté : plonger dedans pour le contrôler",
       ] },
-      { key: "rechargerArme", name: "Recharger une arme", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], quick: true, reload: "full", lines: [
+      { key: "rechargerArme", name: "Recharger une arme", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], reload: "full", lines: [
         "Armes à bande, canon basculant, barillet, tambour, magasin interne, chargement par le canon, ou chargeur rapide",
         "Le chargeur amovible (c), lui, se recharge en DEUX actions simples : éjecter puis insérer",
       ] },

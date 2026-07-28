@@ -90,7 +90,26 @@ export const Actions = {
   },
 
   /** Les actions d'accès direct (`quick`) et le reste, dans l'ordre du
-      contrat — les deux étages de la feuille de pose, comme les états. */
+      contrat — les deux étages de la feuille de pose, comme les états.
+
+      ⚠ CE QUI MÉRITE `quick` — arbitrage utilisateur du 2026-07-28, après
+      usage réel. Le critère n'est pas « ce que le livre imprime en premier »
+      mais **ce que le MJ tape le plus souvent, et qui n'a pas d'autre porte**.
+
+      SORTIS vers « tous… » : les manipulations de chargeur (Éjecter, Insérer,
+      Recharger). Elles sont MOTORISÉES DIRECTEMENT SUR L'ARME depuis F5d — le
+      panneau pré-jet porte « Recharger » avec son prix, dans la ligne des
+      munitions — donc les garder en accès direct offrait deux portes au même
+      geste, dont une qui ne connaît ni l'arme ni son chargeur.
+
+      ENTRÉS : Attaques multiples, Cibler, Courir / Se déplacer, Se jeter au
+      sol — les quatre réflexes d'un tour de combat, toutes gratuites ou
+      mineures, et sans aucune autre surface. Avec Ajuster, Se mettre à couvert
+      et Se relever qui ne bougent pas.
+
+      La liste reste courte À DESSEIN : sept entrées en SR5, huit en SR6, sur
+      un catalogue de 74 et 76. Ce qui n'est pas là n'est pas caché — « tous… »
+      est à un tap, et rien ne se masque en silence. */
   quick(pnj) {
     return this.catalog(pnj).filter((a) => a.quick && !a.viaWeapon);
   },
