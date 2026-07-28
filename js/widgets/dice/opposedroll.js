@@ -9,10 +9,12 @@
    ============================================================ */
 import { Dice } from "../../rules/dice.js";
 import { DiceLog } from "./dicelog.js";
+import { FocusTrap } from "../kit/focustrap.js";
 import { Utils } from "../../core/utils.js";
 
 export const OpposedRoll = {
   _open: false,
+  _releaseTrap: null,
 
   _ensure() {
     if (document.getElementById("opposed-panel")) return;
@@ -21,9 +23,9 @@ export const OpposedRoll = {
     p.className = "risk-panel-overlay";
     p.setAttribute("hidden", "");
     p.innerHTML = `
-      <div class="risk-panel" role="dialog" aria-label="Jet opposé / seuil">
+      <div class="risk-panel" role="dialog" aria-modal="true" aria-labelledby="opposed-title">
         <div class="risk-panel-head">
-          <span class="risk-panel-title">Jet opposé / seuil</span>
+          <span class="risk-panel-title" id="opposed-title">Jet opposé / seuil</span>
           <button class="risk-panel-close" id="opposed-close" aria-label="Fermer">✕</button>
         </div>
         <div class="opposed-row">
@@ -66,6 +68,7 @@ export const OpposedRoll = {
     p.classList.add("show");
     this._open = true;
     document.getElementById("opposed-result").innerHTML = "";
+    this._releaseTrap = FocusTrap.activate(p.querySelector(".risk-panel"));
   },
 
   close() {
@@ -75,6 +78,10 @@ export const OpposedRoll = {
     clearTimeout(p._t);
     p._t = setTimeout(() => p.setAttribute("hidden", ""), 200);
     this._open = false;
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 
   /** Camp B > 0 : test opposé (pas de seuil, cf. livre de règles).
