@@ -256,8 +256,35 @@
 .action-pick.is-free {
   border-left-width: 3px;
 }
+/* Le déplieur de la feuille d'actions. Il mesurait 26×10 px — DIX pixels de
+   haut, moins de la moitié du plancher WCAG que `--hit-min` fixe à 24 — parce
+   qu'il empruntait `.action-trade`, taillé pour les boutons d'échange 4↔1 de
+   SR6 (`padding: 0`, aucun `min-height`). Classe retirée, gabarit posé ici. */
 .action-add {
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--hit-min);
+  min-height: var(--hit-min);
+}
+
+/* ---- `.toggle-glyph` : un « ＋ » qui devient « − » quand c'est ouvert ----
+   Un déplieur qui garde le même signe une fois déplié ne dit pas qu'on peut le
+   refermer : il a l'air mort (constat utilisateur, 2026-07-28). Le glyphe est
+   donc posé par le CSS d'après `aria-expanded`, que chaque bascule tient DÉJÀ à
+   jour pour l'accessibilité — d'où zéro ligne de JS, une seule source de
+   vérité, et l'héritage automatique par tout futur déplieur qui respecte
+   l'ARIA. Le bouton ne porte plus de texte : son nom accessible vient de son
+   `aria-label`, et le signe n'est qu'un décor (`aria-hidden` implicite sur un
+   pseudo-élément).
+   ⚠ « − » est le SIGNE MOINS typographique (U+2212), pas le trait d'union :
+   même convention que les malus du reste de l'app (badge ⊘ −ND, recul −1). */
+.toggle-glyph::after {
+  content: "＋";
+}
+.toggle-glyph[aria-expanded="true"]::after {
+  content: "−";
 }
 /* Surtaxe d'état APPLIQUÉE (lot F3) : le coût affiché a monté, et l'infobulle
    dit de qui. Liseré plein, comme un état posé (`.status.is-on`, D5) — c'est

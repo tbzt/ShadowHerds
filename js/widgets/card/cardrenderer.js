@@ -2062,7 +2062,10 @@ export const CardRenderer = {
     if (!cat.length) return "";
     const actifs = deps.Statuses.active(pnj);
     const chips = actifs.map((s) => this._statusTag(pnj, s, deps)).join("");
-    const plus = `<button type="button" class="tag status-add" data-action="status-sheet" data-id="${pnj.id}" aria-expanded="false" title="Poser un état" aria-label="Poser un état">＋</button>`;
+    // Glyphe posé par le CSS d'après `aria-expanded` (`.toggle-glyph`) : « ＋ »
+    // fermé, « − » ouvert. Un déplieur qui garde le même signe une fois déplié
+    // ne dit pas qu'on peut le refermer.
+    const plus = `<button type="button" class="tag status-add toggle-glyph" data-action="status-sheet" data-id="${pnj.id}" aria-expanded="false" title="Poser un état" aria-label="Poser un état"></button>`;
     return `<div class="combat-states">${chips}${plus}${this._statusSheet(pnj, deps)}</div>`;
   },
 
@@ -2114,7 +2117,13 @@ export const CardRenderer = {
       deux feuilles ouvertes sur deux PNJ voisins, c'est un mis-tap qui attend.
       Repli en place (pas de re-rendu) pour ne pas détruire l'état transitoire. */
   _toggleStatusSheet(pnjId, btn) {
-    const sheet = document.querySelector(`.status-sheet[data-status-sheet="${pnjId}"]`);
+    // ⚠ La feuille se cherche AUTOUR DU BOUTON, pas dans tout le document : le
+    // cockpit et la carte de bibliothèque rendent le même PNJ, donc le même
+    // `data-status-sheet`. Un `document.querySelector` dépliait la première du
+    // DOM — celle de la carte — pendant que le MJ tapait celle du cockpit.
+    const sheet =
+      Utils.nearest(btn, `.status-sheet[data-status-sheet="${pnjId}"]`) ||
+      document.querySelector(`.status-sheet[data-status-sheet="${pnjId}"]`);
     if (!sheet) return;
     const ouvrir = sheet.hidden;
     document.querySelectorAll(".status-sheet").forEach((s) => (s.hidden = true));

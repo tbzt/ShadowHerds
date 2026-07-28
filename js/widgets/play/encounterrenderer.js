@@ -1136,11 +1136,25 @@ export const EncounterRenderer = {
 
   /** Le « ＋ » et la feuille dépliable. Rien si l'édition n'a pas de catalogue
       (Anarchy : `actionModel` absent → la surface disparaît d'elle-même, comme
-      la ligne d'états). */
+      la ligne d'états).
+
+      ⚠ DEUX DÉFAUTS CORRIGÉS AU LOT F5n, tous deux signalés par l'utilisateur
+      (« il semble mort et prend une ligne ») :
+
+      · Il MESURAIT 26×10 px — une hauteur de DIX pixels, moins de la moitié du
+        plancher WCAG que `--hit-min` fixe à 24 — parce qu'il empruntait
+        `.action-trade`, taillé pour les boutons d'échange 4↔1 de SR6, qui
+        écrase le gabarit de `.btn-icon-tiny` (`padding: 0`, aucun
+        `min-height`). Cette classe lui est retirée.
+      · Il gardait son « ＋ » une fois la feuille OUVERTE : rien ne disait
+        qu'on pouvait la refermer, d'où l'impression de bouton mort. Le glyphe
+        est désormais posé par le CSS d'après `aria-expanded` (`.toggle-glyph`)
+        — donc « − » à l'ouverture, sans une ligne de JS. */
   _actionPick(r, budget) {
     const cat = Actions.catalog(r.pnj);
     if (!cat.length) return "";
-    const plus = `<button type="button" class="btn-icon-tiny action-trade action-add" data-action="action-sheet" data-id="${r.pnjId}" aria-expanded="false" title="Jouer une action nommée — elle débite son propre coût" aria-label="Jouer une action">＋</button>`;
+    const ouverte = this._actionSheetOpen === r.pnjId;
+    const plus = `<button type="button" class="btn-icon-tiny action-add toggle-glyph" data-action="action-sheet" data-id="${r.pnjId}" aria-expanded="${ouverte}" title="Jouer une action nommée — elle débite son propre coût" aria-label="Jouer une action"></button>`;
     return `${plus}${this._actionSheet(r, budget)}`;
   },
 
@@ -1268,7 +1282,11 @@ export const EncounterRenderer = {
       mais l'état est aussi MÉMORISÉ, pour que le re-rendu d'un débit le
       restitue (cf. `_actionSheet`). */
   toggleActionSheet(pnjId, btn) {
-    const sheet = document.querySelector(`.action-sheet[data-action-sheet="${pnjId}"]`);
+    // Même piège que la feuille d'états : chercher AUTOUR DU BOUTON, sinon on
+    // déplie la feuille d'un autre rendu du même combattant (cf. Utils.nearest).
+    const sheet =
+      Utils.nearest(btn, `.action-sheet[data-action-sheet="${pnjId}"]`) ||
+      document.querySelector(`.action-sheet[data-action-sheet="${pnjId}"]`);
     if (!sheet) return;
     const ouvrir = sheet.hidden;
     document.querySelectorAll(".status-sheet").forEach((s) => (s.hidden = true));

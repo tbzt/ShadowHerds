@@ -99,6 +99,24 @@ export const Utils = {
     return Math.max(min, Math.min(max, v));
   },
 
+  /** La correspondance de `sel` la PLUS PROCHE de `from` en remontant ses
+      ancêtres, ou null. À utiliser dès qu'un bouton doit retrouver le panneau
+      qu'il pilote et que le même PNJ peut être rendu DEUX FOIS à l'écran.
+
+      ⚠ Le bug qu'elle corrige : un `document.querySelector` par identifiant
+      trouve la PREMIÈRE occurrence du document, pas celle du bouton cliqué. Le
+      cockpit et la carte de bibliothèque rendant le même combattant portent le
+      même `data-*-sheet` — taper le « ＋ » du cockpit dépliait donc la feuille
+      de la carte, ailleurs dans le DOM : rien ne bougeait sous le doigt, et le
+      contrôle passait pour mort. */
+  nearest(from, sel) {
+    for (let el = from && from.parentElement; el; el = el.parentElement) {
+      const hit = el.querySelector(sel);
+      if (hit) return hit;
+    }
+    return null;
+  },
+
   uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   },
