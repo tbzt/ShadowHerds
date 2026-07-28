@@ -15,7 +15,7 @@
   font-size: var(--fs-2xs);
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   color: var(--text-dim);
   cursor: pointer;
   transition:
@@ -40,7 +40,7 @@
   padding: var(--sp-2) var(--sp-3);
   background: var(--glow);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius);
 }
 .cg-budget-row {
   display: flex;
@@ -183,7 +183,7 @@
   gap: var(--sp-1);
   padding: var(--sp-2);
   border: 1px solid var(--danger);
-  border-radius: 2px;
+  border-radius: var(--radius);
   background: color-mix(in srgb, var(--danger) 8%, transparent);
 }
 .cg-budget-cats {
@@ -291,7 +291,7 @@
   padding: 6px 10px;
   margin-bottom: var(--sp-3);
   border: 1px solid var(--accent2);
-  border-radius: 2px;
+  border-radius: var(--radius);
   background: var(--glow);
   font-size: var(--fs-xs);
   color: var(--text-dim);
@@ -308,7 +308,7 @@
   padding: 6px 10px;
   margin: 0 0 var(--sp-3);
   border: 1px solid var(--accent2);
-  border-radius: 2px;
+  border-radius: var(--radius);
   background: var(--glow);
   font-size: var(--fs-xs);
   color: var(--text-dim);

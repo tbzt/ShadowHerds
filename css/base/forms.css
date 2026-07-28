@@ -55,7 +55,7 @@
   width: 3px;
   height: 1.2em;
   background: var(--accent);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 
 /* ============================================================
@@ -283,7 +283,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 0.15rem var(--sp-2);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   transition:
     color var(--dur-base),
     border-color var(--dur-base);

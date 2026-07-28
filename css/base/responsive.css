@@ -139,7 +139,7 @@
 .dice-sheet-handle {
   width: 40px;
   height: 4px;
-  border-radius: 2px;
+  border-radius: var(--radius-pill);
   background: var(--border);
   margin: 0 auto 0.2rem;
 }

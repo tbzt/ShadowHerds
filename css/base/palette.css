@@ -62,7 +62,7 @@
   text-transform: uppercase;
   color: var(--text-dim);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 0.1rem 0.3rem;
   text-align: center;
 }
@@ -98,7 +98,7 @@
 .palette-snippet mark {
   background: color-mix(in srgb, var(--accent) 26%, transparent);
   color: var(--text);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 0 1px;
 }
 /* Pastille de type détournée en porte-emoji (mode `:` de #mentions-box) :

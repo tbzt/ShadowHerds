@@ -88,7 +88,7 @@
 .notepad-flash {
   background: color-mix(in srgb, var(--accent) 22%, transparent);
   color: inherit;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   animation: notepad-flash 1.3s ease-out;
 }
 @keyframes notepad-flash {

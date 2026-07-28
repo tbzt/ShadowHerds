@@ -544,7 +544,7 @@ select optgroup {
   color: #a8746a;
   border: 1px solid #4a2620;
   padding: 0 4px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   letter-spacing: 0.1em;
 }
 
