@@ -206,6 +206,23 @@
   font-size: var(--fs-2xs);
   line-height: 1.4;
 }
+/* L'arrêt large (lot F3b) prime sur une surtaxe : le MJ doit le lire avant de
+   choisir, d'où le contraste plein là où le rappel de surtaxe reste terne.
+   Toujours pas de teinte : le cockpit a dépensé ses quatre rôles. */
+.action-notice.is-halt {
+  color: var(--text);
+  font-weight: 600;
+}
+/* Interdiction NOMMÉE par le livre (lot F3b) — la seule chose que la feuille
+   désactive, et c'est parce qu'il n'y a rien à arbitrer. Reprend `.react-btn.
+   is-off` de la console de réaction, où une interruption impayable se présente
+   déjà comme ça : même situation, même costume. */
+.action-pick.is-forbidden {
+  opacity: 0.4;
+  border-style: dotted;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
 /* Rubriques du catalogue (lot F1b) — combat, magie, Matrice. `.action-rest`
    est en `display: contents`, donc chaque rubrique doit reprendre elle-même la
    pleine largeur pour former une bande, sinon les trois se collent bout à bout

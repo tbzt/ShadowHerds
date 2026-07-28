@@ -1165,6 +1165,15 @@ export const EncounterRenderer = {
         ...avec,
         ...(a.lines || []),
       ].join("\n• ");
+      // F3b — interdiction NOMMÉE par le livre : la puce est refusée et dit
+      // pourquoi, comme un bouton d'interruption qu'une initiative trop basse
+      // ne peut pas payer (E4). C'est la seule chose que la feuille désactive,
+      // et c'est parce qu'il n'y a rien à arbitrer.
+      const interdits = Actions.forbidden(r.pnj, a);
+      if (interdits.length) {
+        const raison = `${a.name} impossible — ${interdits.map((i) => `${i.name} : ${i.why}`).join(" · ")}`;
+        return `<span class="tag status-pick action-pick is-forbidden" title="${Utils.escHtml(raison)}" aria-disabled="true">${Utils.escHtml(a.name)}<span class="action-doubt" aria-hidden="true">⊘</span></span>`;
+      }
       const marque = res.sources.length ? " is-surcharged" : "";
       // ⚠ sur la puce UNIQUEMENT pour une surtaxe qui nomme sa cible. Une règle
       // qui frappe toute une nature d'action (Estropié) se dit une fois
@@ -1173,14 +1182,23 @@ export const EncounterRenderer = {
       const doute = cible ? " is-doubtful" : "";
       return `<button type="button" class="tag status-pick action-pick${cher ? " is-over" : ""}${a.timing === "L" ? " is-free" : ""}${marque}${doute}" data-action="action-use" data-id="${r.pnjId}" data-key="${a.key}" title="${Utils.escHtml(info)}">${Utils.escHtml(a.name)}${cible ? "<span class=\"action-doubt\" aria-hidden=\"true\">⚠</span>" : ""}</button>`;
     };
-    // Le rappel des surtaxes conditionnelles larges, dit UNE FOIS. Absent quand
-    // il n'y a rien à dire — l'écrasante majorité des tours.
+    // Les rappels dits UNE FOIS, en tête de feuille. Absents quand il n'y a
+    // rien à dire — l'écrasante majorité des tours.
+    //   · F3b, les ARRÊTS LARGES en premier : « aucune action possible » prime
+    //     sur une surtaxe, et le MJ doit le lire avant de choisir.
+    //   · F3, les surtaxes conditionnelles ensuite.
+    const arrets = Actions.halts(r.pnj);
+    const stopHtml = arrets.length
+      ? `<span class="action-notice is-halt">⊘ ${arrets
+          .map((h) => `${Utils.escHtml(h.name)} : ${Utils.escHtml(h.why)}${h.except ? ` — sauf ${Utils.escHtml(h.except)}` : ""}`)
+          .join(" · ")}. L'app n'en bloque aucune : le tri vous revient.</span>`
+      : "";
     const rappels = Actions.conditionalNotices(r.pnj);
-    const notice = rappels.length
+    const notice = stopHtml + (rappels.length
       ? `<span class="action-notice">⚠ ${rappels
           .map((w) => `${Utils.escHtml(w.name)} : +${Utils.escHtml(Actions.costLabel(r.pnj, null, w.cost))} pour ${Utils.escHtml(w.why)}`)
           .join(" · ")} — à vous de trancher, l'app ne l'ajoute pas.</span>`
-      : "";
+      : "");
     const rapides = Actions.quick(r.pnj).map(puce).join("");
     // F1b — le reste se range par DOMAINE (combat, magie, Matrice). SR6 est
     // passé de 32 à 76 actions et SR5 de 36 à 74 : une seule liste serait un

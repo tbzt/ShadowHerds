@@ -220,6 +220,47 @@ export const Actions = {
     return { cost: [...agg].map(([key, n]) => ({ key, n })), sources, warnings };
   },
 
+  /* ============================================================
+     INTERDICTIONS (lot F3b) — ce que le livre refuse, l'app le refuse aussi.
+
+     F3 avait branché les états qui RENCHÉRISSENT une action. Quelques-uns ne la
+     renchérissent pas : ils l'INTERDISENT. Électrocuté écrit « il ne peut
+     effectuer une action Sprinter », À terre « il ne peut pas Sprinter ».
+
+     ── Pourquoi refuser ici, alors qu'E3 refusait de griser ────────────────
+     E3 a posé que l'app ne grise pas un bouton, parce que « griser retirerait
+     au MJ un arbitrage que le livre lui rend explicitement ». La nuance est
+     dans « que le livre lui rend » : E3 parlait d'effets CONDITIONNELS
+     (« −3 aux tests liés à la vision » — c'est au MJ de dire si le test est
+     lié à la vision). Ici, il n'y a rien à arbitrer : le livre nomme l'action
+     et n'y met aucune condition.
+
+     Le précédent existe et il est exactement celui-là — E4, `blockedByStatus` :
+     un personnage Surpris ne peut déclarer aucune interruption, la console
+     refuse et DIT pourquoi. F3b applique la même règle à la feuille d'actions.
+
+     ── Deux formes, deux traitements ──────────────────────────────────────
+     · `forbids` — le livre NOMME l'action → la puce est refusée, motif affiché.
+     · `halts`   — « aucune action possible », avec ou sans liste blanche
+       (Figé, Paniqué, Pétrifié) → un rappel en tête de feuille, et RIEN de
+       grisé. Deux raisons : la liste blanche est un arbitrage (« sauf pour
+       éviter la source de l'état » — quelle action est-ce ?), et griser 76
+       puces d'un coup répéterait l'erreur corrigée en F3 pour Estropié.
+     ============================================================ */
+
+  /** Cette action est-elle interdite à ce PNJ ? → [{ name, why }], vide sinon. */
+  forbidden(pnj, entry) {
+    if (!entry) return [];
+    return Statuses.forbids(pnj)
+      .filter((f) => f.actions.includes(entry.key))
+      .map((f) => ({ name: f.name, why: f.why }));
+  },
+
+  /** Les arrêts larges à annoncer une fois — jamais un verrou. */
+  halts(pnj) {
+    return Statuses.halts(pnj);
+  },
+
   /** Les surtaxes conditionnelles qui frappent TOUTE UNE NATURE d'action, à
       dire UNE FOIS au-dessus de la feuille plutôt que sur chaque puce.
 

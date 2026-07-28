@@ -359,6 +359,28 @@ export const Statuses = {
     return out;
   },
 
+  /** Les états actifs qui INTERDISENT des actions nommées.
+      → [{ key, name, actions, why }] — une entrée par règle. */
+  forbids(pnj) {
+    const out = [];
+    for (const s of this.active(pnj)) {
+      for (const f of s.forbids || []) {
+        out.push({ key: s.key, name: s.name, actions: f.actions || [], why: f.why || "" });
+      }
+    }
+    return out;
+  },
+
+  /** Les états actifs qui ARRÊTENT tout — « aucune action possible », avec ou
+      sans liste blanche. Distincts de `forbids` : ils ne visent aucune action
+      en particulier, donc ils se DISENT au lieu de refuser (cf. `Actions`).
+      → [{ key, name, why, except }] */
+  halts(pnj) {
+    return this.active(pnj)
+      .filter((s) => s.halts)
+      .map((s) => ({ key: s.key, name: s.name, why: s.halts.why || "", except: s.halts.except || "" }));
+  },
+
   /** Malus de BUDGET cumulé : « le tour contient une action de moins », par
       opposition à la surtaxe (« cette action coûte plus »). Deux mécaniques
       distinctes, que le livre distingue lui aussi — d'où deux champs.

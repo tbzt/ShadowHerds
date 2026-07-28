@@ -12,6 +12,37 @@ commit.
 
 ## [Non publié]
 
+## [1.131.0] — 2026-07-28
+
+### Ajouté
+
+- **Ce que le livre interdit, l'app le refuse — et elle dit pourquoi.** Trois
+  états SR6 nomment une action et la suppriment ; la puce correspondante est
+  désormais barrée, avec le motif au survol, et un tap répond au lieu de
+  débiter :
+  - **Électrocuté** — « il ne peut effectuer une action **Sprinter** » ;
+  - **À terre** — « la vitesse de déplacement est réduite à 2 mètres et **il ne
+    peut pas Sprinter** » ;
+  - **Immobilisé** — « les personnages ne peuvent pas **se déplacer** » :
+    Se déplacer et Sprinter tombent tous les deux.
+- **Les arrêts larges s'annoncent sans rien bloquer.** **Pétrifié**, **Paniqué**
+  et **Figé** disent « aucune action possible » — mais avec des listes blanches
+  qui sont des arbitrages (« sauf pour éviter la source de l'état », « sauf
+  Perception et communication mentale »). Un bandeau les rappelle en tête de la
+  feuille d'actions ; aucune des 76 puces n'est grisée, le tri revient au
+  meneur.
+
+### Note
+
+C'est la seule chose que la feuille d'actions désactive, et c'est parce qu'il
+n'y a rien à arbitrer : le livre nomme l'action et n'y met aucune condition. Le
+précédent est celui du lot E4, où un personnage **Surpris** se voit refuser ses
+interruptions avec la raison affichée. Partout ailleurs, l'app informe et le
+meneur décide.
+
+Le refus arrive **avant** que quoi que ce soit ne soit consommé : un état qui
+interdirait une action de tir n'en laisserait pas partir les balles.
+
 ## [1.130.0] — 2026-07-28
 
 ### Ajouté

@@ -692,6 +692,18 @@ export const Encounter = {
     const entry = pnj && Actions.find(pnj, key);
     if (!c || !entry) return;
 
+    // F3b — le livre interdit, l'app refuse EN LE DISANT. Même geste que la
+    // porte des interruptions (E4, `_porteInterruption`) : un bouton qui
+    // échouerait en silence ne dit rien d'utile au MJ. N'entrent ici que les
+    // interdictions que le livre écrit SANS CONDITION et sur une action NOMMÉE
+    // (Électrocuté « il ne peut effectuer une action Sprinter ») ; les arrêts
+    // larges (Pétrifié, Paniqué, Figé) sont annoncés, jamais bloqués.
+    const interdits = Actions.forbidden(pnj, entry);
+    if (interdits.length) {
+      toast(`${entry.name} impossible — ${pnj.name} est ${interdits.map((i) => i.name).join(", ")} (${interdits[0].why}).`);
+      return false;
+    }
+
     // F3 — le coût débité est le coût RÉEL : celui du contrat, plus les
     // surtaxes d'état inconditionnelles (Couvert « Attaquer à couvert nécessite
     // une action mineure supplémentaire »). Les surtaxes conditionnelles
@@ -790,6 +802,17 @@ export const Encounter = {
     const arme = this.ammoWeapons(pnjId).find((a) => a.key === key);
     const mode = pnj && Ammo.find(pnj, modeKey);
     if (!c || !arme || !mode) return null;
+
+    // F3b — l'interdiction se vérifie AVANT de brûler quoi que ce soit : sans
+    // ce garde, un état qui interdirait l'action de tir laisserait quand même
+    // partir les balles et monter le recul, et le refus arriverait après.
+    // Aucun état ne le fait aujourd'hui ; l'ordre, lui, est déjà juste.
+    const tir = mode.actionKey && Actions.find(pnj, mode.actionKey);
+    const interdits = tir ? Actions.forbidden(pnj, tir) : [];
+    if (interdits.length) {
+      toast(`${tir.name} impossible — ${pnj.name} est ${interdits.map((i) => i.name).join(", ")} (${interdits[0].why}).`);
+      return null;
+    }
 
     const res = Ammo.resolve(pnj, mode, arme.reste);
     c.ammo = c.ammo || {};

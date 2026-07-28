@@ -716,7 +716,12 @@ export const EditionSR6 = {
   statusModel: {
     unit: "round", // unité de durée de l'édition (Anarchy comptera en narrations)
     catalog: [
-      { key: "aterre", name: "À terre", levels: 0, quick: true, page: "p.55-58", lines: [
+      // INTERDICTION CIBLÉE (F3b) : « La vitesse de déplacement du personnage
+      // est réduite à 2 mètres et IL NE PEUT PAS SPRINTER » — le livre nomme
+      // l'action, la phrase ne porte aucune condition. Cf. l'en-tête de
+      // `Actions.forbidden` pour ce qui distingue ça d'un arrêt large.
+      { key: "aterre", name: "À terre", levels: 0, quick: true, page: "p.55-58",
+        forbids: [{ actions: ["sprinter"], why: "à terre, on ne peut pas Sprinter" }], lines: [
         "Vitesse de déplacement : 2 m, sprint impossible",
         "−2 dés en défense contre les attaques à portée proche/courte",
         "+2 dés en défense contre les attaques à distance (moyenne et plus)",
@@ -774,8 +779,12 @@ export const EditionSR6 = {
       ] },
       // AUTO-APPLIQUÉ (E3) pour ses deux premiers effets ; « sprinter
       // impossible » reste du texte (l'app n'a pas de déplacement).
+      // INTERDICTION CIBLÉE (F3b) : « il ne peut effectuer une action
+      // Sprinter ». Le livre écrit « une action Sprinter » mot pour mot — c'est
+      // le cas le plus net du catalogue.
       { key: "electrocute", name: "Électrocuté", levels: 0, page: "p.55-58",
-        globalDice: { flat: 1 }, initMalus: 2, lines: [
+        globalDice: { flat: 1 }, initMalus: 2,
+        forbids: [{ actions: ["sprinter"], why: "les muscles ne répondent plus" }], lines: [
         "−2 au score d'initiative",
         "−1 dé à toutes les actions",
         "Sprinter impossible",
@@ -811,7 +820,12 @@ export const EditionSR6 = {
         "−2 dés / niveau à tous les jets SAUF résistance aux dommages",
         "Vitesse : 5 m (marche), 10 m (sprint)",
       ] },
-      { key: "fige", name: "Figé", levels: 0, page: "p.55-58", lines: [
+      // ARRÊT LARGE (F3b) : « vous ne pouvez pas faire d'actions autre que
+      // Perception et communication mentale ». C'est une LISTE BLANCHE, pas une
+      // interdiction ciblée : elle se dit une fois en tête de feuille et ne
+      // grise aucune puce (cf. `Actions.halts`).
+      { key: "fige", name: "Figé", levels: 0, page: "p.55-58",
+        halts: { why: "aucune action possible", except: "Perception, communication mentale, résistance aux dommages" }, lines: [
         "Déplacement impossible · tests de défense impossibles",
         "−10 au SD contre les attaques (minimum 0)",
         "Dommages continus et effets persistants SUSPENDUS",
@@ -825,7 +839,16 @@ export const EditionSR6 = {
         "−1 dé à tous les jets SAUF résistance aux dommages",
         "Annule et est annulé par Enflammé",
       ] },
-      { key: "immobilise", name: "Immobilisé", levels: 0, quick: true, page: "p.55-58", lines: [
+      // INTERDICTION CIBLÉE (F3b) : « les personnages subissant cet état NE
+      // PEUVENT PAS SE DÉPLACER mais peuvent tout de même effectuer toute
+      // action réalisable en ayant les pieds rivés au sol ».
+      // ⚠ Le livre nomme « se déplacer » et pas « Sprinter ». On interdit les
+      // DEUX quand même : sprinter est un déplacement à pied, et un Immobilisé
+      // qui pourrait sprinter serait lu comme un bug, pas comme de la rigueur.
+      // Le corollaire « aucun chiffre non calculé » vise les VALEURS, pas la
+      // portée d'une interdiction que le livre écrit en clair.
+      { key: "immobilise", name: "Immobilisé", levels: 0, quick: true, page: "p.55-58",
+        forbids: [{ actions: ["seDeplacer", "sprinter"], why: "les pieds sont rivés au sol" }], lines: [
         "Déplacement impossible",
         "−3 au SO · −3 dés aux attaques",
         "Réaction réduite à 0 pour les tests de défense",
@@ -856,10 +879,12 @@ export const EditionSR6 = {
         "Échec : impossible d'agir ce round",
         "Réussite : −1 action mineure",
       ] },
-      { key: "panique", name: "Paniqué", levels: 0, page: "p.55-58", lines: [
+      { key: "panique", name: "Paniqué", levels: 0, page: "p.55-58",
+        halts: { why: "aucune action cohérente", except: "éviter la source de l'état" }, lines: [
         "Aucune action possible, sauf pour éviter la source de l'état",
       ] },
-      { key: "petrifie", name: "Pétrifié", levels: 0, page: "p.55-58", lines: [
+      { key: "petrifie", name: "Pétrifié", levels: 0, page: "p.55-58",
+        halts: { why: "le personnage est transformé en matériau solide" }, lines: [
         "Aucune action possible",
         "+10 à l'indice d'Armure",
         "Annule tout autre état infligeant des dommages",
