@@ -735,7 +735,7 @@
   line-height: 1;
   padding: 0.1rem 0.3rem;
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--text) 6%, transparent);
   cursor: grab;
   touch-action: none;

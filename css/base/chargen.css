@@ -393,7 +393,7 @@
   padding: var(--sp-2) 0.7rem;
   background: var(--bg-mid);
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   font-size: var(--fs-xs);
 }
 .display-pref-row label {

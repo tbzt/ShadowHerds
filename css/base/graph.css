@@ -66,7 +66,7 @@
   margin-bottom: var(--sp-2, 8px);
   padding: 6px 10px;
   border: 1px dashed var(--border, #2a3a49);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-dim, #9fb0c0);
   font-size: var(--fs-sm);
@@ -314,7 +314,7 @@
   padding: 3px 10px;
   font-size: var(--fs-xs);
   border: 1px solid var(--border, #2a3a49);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-dim, #9fb0c0);
   cursor: pointer;
@@ -642,7 +642,7 @@
   text-align: left;
   padding: 7px 10px;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text, #dce6f0);
   font-size: var(--fs-sm);
