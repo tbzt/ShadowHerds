@@ -18,6 +18,7 @@ import { DiceRoller } from "../dice/diceroller.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
 import { Matrix } from "../../rules/matrix.js";
 import { ServerRenderer } from "./serverrenderer.js";
+import { Sheets } from "../kit/sheets.js";
 import { TopologyGen } from "../../rules/topologygen.js";
 import { Utils } from "../../core/utils.js";
 import { WeaponRoll } from "../../rules/weaponroll.js";
@@ -1155,7 +1156,7 @@ export const EncounterRenderer = {
   _actionPick(r, budget) {
     const cat = Actions.catalog(r.pnj);
     if (!cat.length) return "";
-    const ouverte = this._actionSheetOpen === r.pnjId;
+    const ouverte = Sheets.isOpen("action", r.pnjId);
     const plus = `<button type="button" class="btn-icon-tiny action-add toggle-glyph" data-action="action-sheet" data-id="${r.pnjId}" aria-expanded="${ouverte}" title="Jouer une action nommée — elle débite son propre coût" aria-label="Jouer une action"></button>`;
     return `${plus}${this._actionSheet(r, budget)}`;
   },
@@ -1257,8 +1258,8 @@ export const EncounterRenderer = {
     // fiche — une feuille qui se referme à chaque tap obligerait à la rouvrir
     // entre chaque action, et un tour SR6 en compte couramment trois (Se
     // déplacer, Ajuster, Attaquer). Six taps au lieu de quatre.
-    const ouverte = this._actionSheetOpen === r.pnjId;
-    const restOuvert = ouverte && this._actionRestOpen;
+    const ouverte = Sheets.isOpen("action", r.pnjId);
+    const restOuvert = Sheets.isRestOpen("action", r.pnjId);
     // Une seule rubrique (pas de magie ni de Matrice) → pas d'en-tête : un
     // titre « Combat » au-dessus d'une liste qui n'a rien à côté ne dit rien.
     const corps =
@@ -1277,46 +1278,21 @@ export const EncounterRenderer = {
     return `<div class="status-sheet action-sheet" data-action-sheet="${r.pnjId}"${ouverte ? "" : " hidden"}>${notice}${rapides}${tous}</div>`;
   },
 
-  /** Déplie/replie la feuille — UNE SEULE ouverte à la fois, et jamais en même
-      temps qu'une feuille d'états : deux feuilles ouvertes côte à côte, c'est un
-      mis-tap qui attend (même discipline que CardRenderer._toggleStatusSheet).
-      Repli en place, sans re-rendu, pour ne pas détruire l'état transitoire —
-      mais l'état est aussi MÉMORISÉ, pour que le re-rendu d'un débit le
-      restitue (cf. `_actionSheet`). */
+  /** Déplie/replie la feuille. Toute la mécanique vit dans `Sheets` depuis le
+      lot A1 — y compris ce que cette fonction avait raison de faire seule et
+      que les feuilles de la console de réaction ne faisaient pas : fermer les
+      AUTRES familles, et mémoriser l'ouverture pour qu'un débit ne la referme
+      pas (trois actions dans un tour SR6, c'était deux réouvertures de trop). */
   toggleActionSheet(pnjId, btn) {
-    // Même piège que la feuille d'états : chercher AUTOUR DU BOUTON, sinon on
-    // déplie la feuille d'un autre rendu du même combattant (cf. Utils.nearest).
-    const sheet =
-      Utils.nearest(btn, `.action-sheet[data-action-sheet="${pnjId}"]`) ||
-      document.querySelector(`.action-sheet[data-action-sheet="${pnjId}"]`);
-    if (!sheet) return;
-    const ouvrir = sheet.hidden;
-    document.querySelectorAll(".status-sheet").forEach((s) => (s.hidden = true));
-    document
-      .querySelectorAll('[data-action="action-sheet"], [data-action="status-sheet"]')
-      .forEach((b) => b.setAttribute("aria-expanded", "false"));
-    sheet.hidden = !ouvrir;
-    btn.setAttribute("aria-expanded", String(ouvrir));
-    this._actionSheetOpen = ouvrir ? pnjId : null;
-    if (!ouvrir) this._actionRestOpen = false;
+    Sheets.toggle("action", pnjId, btn);
   },
 
   /** Révèle le reste du catalogue (« tous… »), en place — mémorisé lui aussi :
       le MJ qui a déplié « tous… » pour jouer Sprinter ne veut pas le redéplier
       pour jouer Bannir un esprit juste après. */
   toggleActionRest(btn) {
-    const rest = btn.parentElement && btn.parentElement.querySelector(".action-rest");
-    if (!rest) return;
-    rest.hidden = !rest.hidden;
-    btn.setAttribute("aria-expanded", String(!rest.hidden));
-    this._actionRestOpen = !rest.hidden;
+    Sheets.toggleRest(btn, ".action-rest");
   },
-
-  /** La feuille d'actions ouverte (id du combattant), et si « tous… » l'est
-      aussi. Vit sur le renderer, pas dans la scène : c'est un état de VUE, il
-      n'a rien à faire dans `Encounter.state` (ni dans le Storage). */
-  _actionSheetOpen: null,
-  _actionRestOpen: false,
 
 
   /** Boutons d'ÉCHANGE d'actions (lot E5) — n'existent que si l'édition en
@@ -1732,21 +1708,15 @@ export const EncounterRenderer = {
         return `<button class="react-btn${o.abordable ? "" : " is-off"}" ${o.abordable ? `data-action="react-interrupt" data-id="${pnj.id}" data-key="${o.key}"` : "disabled"} title="${Utils.escHtml(o.abordable ? `${o.note || ""} · ${o.page}` : raison)}">${Utils.escHtml(o.label)} <span class="react-multidef">−${o.initCost}</span></button>`;
       })
       .join("");
-    return `<div class="react-interrupt-chips" data-interrupt-for="${pnj.id}" hidden>${chips}</div>`;
+    return `<div class="react-interrupt-chips" data-interrupt-for="${pnj.id}"${Sheets.hiddenAttr("interrupt", pnj.id)}>${chips}</div>`;
   },
 
-  /** Déplie/replie la feuille d'interruptions — même mécanique que
-      `toggleReactDamage`, y compris « une seule ouverte », pour que les deux
-      feuilles de la console ne se superposent jamais. */
+  /** Déplie/replie la feuille d'interruptions. `close=true` force la fermeture
+      (après une interruption déclarée, cf. Encounter). A1 : elle ne fermait que
+      sa sœur les Dégâts et ignorait les feuilles d'états et d'actions — c'est
+      `Sheets` qui tient désormais la seule discipline. */
   toggleReactInterrupt(pnjId, close) {
-    const react = document.querySelector(".encounter-react");
-    if (!react) return;
-    const esc = window.CSS && CSS.escape ? CSS.escape(pnjId) : pnjId;
-    const body = react.querySelector(`.react-interrupt-chips[data-interrupt-for="${esc}"]`);
-    if (!body) return;
-    const shouldOpen = close ? false : body.hidden;
-    react.querySelectorAll(".react-interrupt-chips, .react-damage-chips").forEach((b) => (b.hidden = true));
-    if (shouldOpen) body.hidden = false;
+    Sheets.toggle("interrupt", pnjId, this._reactTrigger("react-interrupt-toggle", pnjId), { close });
   },
 
   /** Panneau de chips de dégâts d'un PNJ, replié par défaut (déplié par
@@ -1762,7 +1732,7 @@ export const EncounterRenderer = {
             `<button class="react-btn react-btn-danger sev-${lv.sev}" data-action="react-wound" data-id="${pnj.id}" data-sev="${lv.sev}">✸ ${Utils.escHtml(lv.label)}</button>`,
         )
         .join("");
-      return `<div class="react-damage-chips" data-damage-for="${pnj.id}" hidden>${btns}</div>`;
+      return `<div class="react-damage-chips" data-damage-for="${pnj.id}"${Sheets.hiddenAttr("damage", pnj.id)}>${btns}</div>`;
     }
     const type = this.reactDamageType(pnj.id) || ui.defaultType || "phys";
     const typeToggle = ui.hasType
@@ -1774,7 +1744,7 @@ export const EncounterRenderer = {
           `<button class="react-btn react-btn-danger" data-action="react-damage" data-id="${pnj.id}" data-n="${n}">✸ ${n}</button>`,
       )
       .join("");
-    return `<div class="react-damage-chips" data-damage-for="${pnj.id}" hidden>${typeToggle}${chips}</div>`;
+    return `<div class="react-damage-chips" data-damage-for="${pnj.id}"${Sheets.hiddenAttr("damage", pnj.id)}>${typeToggle}${chips}</div>`;
   },
 
   /** État de vue éphémère (aucune clé Storage) — type Phys/Étourd.
@@ -1786,23 +1756,24 @@ export const EncounterRenderer = {
     return this._reactDamageTypes[pnjId];
   },
 
-  /** Déplie/replie le panneau de chips (un seul ouvert à la fois, comme
-      toggleReactExpand) ; `close=true` force la fermeture (après application
-      d'un dégât, cf. Encounter). */
+  /** Déplie/replie le panneau de chips ; `close=true` force la fermeture (après
+      application d'un dégât, cf. Encounter). La marque `.is-open` du bouton
+      Dégâts est posée ici et retirée par `Sheets.closeAll` : c'est le seul
+      retour visuel de la famille qui ne passe pas par `aria-expanded` (le
+      bouton porte un libellé, pas un glyphe ＋/−). */
   toggleReactDamage(pnjId, close) {
-    const react = document.querySelector(".encounter-react");
-    if (!react) return;
-    const esc = window.CSS && CSS.escape ? CSS.escape(pnjId) : pnjId;
-    const body = react.querySelector(`.react-damage-chips[data-damage-for="${esc}"]`);
-    if (!body) return;
-    const shouldOpen = close ? false : body.hidden;
-    react.querySelectorAll(".react-damage-chips").forEach((b) => (b.hidden = true));
-    react.querySelectorAll(".react-damage-btn").forEach((b) => b.classList.remove("is-open"));
-    if (shouldOpen) {
-      body.hidden = false;
-      const btn = react.querySelector(`.react-damage-btn[data-id="${esc}"]`);
-      if (btn) btn.classList.add("is-open");
-    }
+    const btn = this._reactTrigger("react-damage-toggle", pnjId);
+    if (Sheets.toggle("damage", pnjId, btn, { close }) && btn) btn.classList.add("is-open");
+  },
+
+  /** Le déclencheur d'une feuille de la console, par son `data-action` et son
+      combattant — `Sheets.toggle` cherche la feuille AUTOUR de lui (le cockpit
+      et la carte rendent le même PNJ, cf. `Utils.nearest`). Les deux feuilles
+      de la console sont pilotées par le contrôleur, qui n'a que l'id sous la
+      main : c'est ici qu'on retrouve le bouton, pas dans `Sheets`. */
+  _reactTrigger(action, pnjId) {
+    const esc = window.CSS && CSS.escape ? CSS.escape(String(pnjId)) : pnjId;
+    return document.querySelector(`.encounter-react [data-action="${action}"][data-id="${esc}"]`);
   },
 
   /** Bascule Physique/Étourdissant avant d'appliquer un chip (SR5/SR6 séparé

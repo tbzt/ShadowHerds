@@ -20,6 +20,7 @@ import { Magic } from "../../rules/magic.js";
 import { Mentions } from "../journal/mentions.js";
 import { PersonaRenderer } from "./personarenderer.js";
 import { Resonance } from "../../rules/resonance.js";
+import { Sheets } from "../kit/sheets.js";
 import { SkillCatalog } from "../../rules/skillcatalog.js";
 import { SkillEffects } from "../../rules/skilleffects.js";
 import { Statuses } from "../../rules/statuses.js";
@@ -2156,11 +2157,17 @@ export const CardRenderer = {
     const reste = cat.filter((s) => !s.quick);
     const puce = (s) =>
       `<button type="button" class="tag status-pick" data-action="status-set" data-id="${pnj.id}" data-status="${s.key}" title="${this._esc([`${s.name} — ${s.page}`, ...(s.lines || [])].join("\n• "))}">${this._esc(s.name)}</button>`;
+    // A1 — l'ouverture SURVIT au re-rendu, comme celle de la feuille d'actions :
+    // poser un état déclenche `notifyPnjChanged`, donc un re-rendu, et une
+    // feuille qui se referme à chaque pose oblige à la rouvrir entre chaque —
+    // or on pose couramment deux états d'affilée (« Aveuglé puis À terre »).
+    // La mémoire est portée par `Sheets`, une seule pour les quatre feuilles.
+    const restOuvert = Sheets.isRestOpen("status", pnj.id);
     const tous = reste.length
-      ? `<button type="button" class="tag status-more" data-action="status-more" data-id="${pnj.id}" aria-expanded="false">tous…</button>
-         <span class="status-rest" hidden>${reste.map(puce).join("")}</span>`
+      ? `<button type="button" class="tag status-more" data-action="status-more" data-id="${pnj.id}" aria-expanded="${restOuvert}">tous…</button>
+         <span class="status-rest"${restOuvert ? "" : " hidden"}>${reste.map(puce).join("")}</span>`
       : "";
-    return `<div class="status-sheet" data-status-sheet="${pnj.id}" hidden>${rapides.map(puce).join("")}${tous}</div>`;
+    return `<div class="status-sheet" data-status-sheet="${pnj.id}"${Sheets.hiddenAttr("status", pnj.id)}>${rapides.map(puce).join("")}${tous}</div>`;
   },
 
   /** I, II, III… — la notation du livre pour les échelles plafonnées. */
@@ -2168,26 +2175,13 @@ export const CardRenderer = {
     return ["", "I", "II", "III", "IV", "V", "VI"][n] || String(n);
   },
 
-  /** Déplie/replie la feuille de pose, UNE SEULE ouverte à la fois — même
-      discipline que les chips de dégâts du cockpit et que les menus de carte :
-      deux feuilles ouvertes sur deux PNJ voisins, c'est un mis-tap qui attend.
-      Repli en place (pas de re-rendu) pour ne pas détruire l'état transitoire. */
+  /** Déplie/replie la feuille de pose. Toute la mécanique — une seule ouverte
+      dans le cockpit toutes familles confondues, recherche autour du bouton,
+      ARIA, mémoire — vit dans `Sheets` depuis le lot A1 : il n'y a plus qu'une
+      façon de déplier quelque chose dans l'app. Ce qui reste ici, c'est le
+      NOM de la famille, et c'est tout ce que cette surface a de particulier. */
   _toggleStatusSheet(pnjId, btn) {
-    // ⚠ La feuille se cherche AUTOUR DU BOUTON, pas dans tout le document : le
-    // cockpit et la carte de bibliothèque rendent le même PNJ, donc le même
-    // `data-status-sheet`. Un `document.querySelector` dépliait la première du
-    // DOM — celle de la carte — pendant que le MJ tapait celle du cockpit.
-    const sheet =
-      Utils.nearest(btn, `.status-sheet[data-status-sheet="${pnjId}"]`) ||
-      document.querySelector(`.status-sheet[data-status-sheet="${pnjId}"]`);
-    if (!sheet) return;
-    const ouvrir = sheet.hidden;
-    document.querySelectorAll(".status-sheet").forEach((s) => (s.hidden = true));
-    document
-      .querySelectorAll('[data-action="status-sheet"]')
-      .forEach((b) => b.setAttribute("aria-expanded", "false"));
-    sheet.hidden = !ouvrir;
-    btn.setAttribute("aria-expanded", String(ouvrir));
+    Sheets.toggle("status", pnjId, btn);
   },
 
   /** Ligne compacte, toujours visible dans la zone Combat (pas besoin de
@@ -2818,14 +2812,12 @@ export const CardRenderer = {
         case "status-sheet":
           this._toggleStatusSheet(id, actionEl);
           break;
-        case "status-more": {
-          const rest = actionEl.parentElement.querySelector(".status-rest");
-          if (rest) {
-            rest.hidden = !rest.hidden;
-            actionEl.setAttribute("aria-expanded", String(!rest.hidden));
-          }
+        case "status-more":
+          // A1 — mémorisé avec sa feuille (cf. `Sheets`), comme le « tous… »
+          // des actions l'était déjà seul : rouvrir le second étage entre deux
+          // poses était un tap de trop que la feuille d'actions ne payait pas.
+          Sheets.toggleRest(actionEl, ".status-rest");
           break;
-        }
         case "generate-portrait":
           Portrait.generateForPnj(id, actionEl);
           break;
