@@ -76,7 +76,7 @@ export const SingleSelect = {
           .map(([k, v]) => ` data-${k}="${this._esc(v)}"`)
           .join("");
         return `<div class="ss-opt ms-opt${o.value === value ? " active" : ""}"
-          role="option" data-value="${this._esc(o.value)}"${dataAttrs}>${this._esc(o.label)}</div>`;
+          role="option" tabindex="-1" data-value="${this._esc(o.value)}"${dataAttrs}>${this._esc(o.label)}</div>`;
       })
       .join("");
   },
@@ -91,7 +91,7 @@ export const SingleSelect = {
         const items = g.items
           .map(
             (o) => `<div class="ss-opt ms-opt ms-opt-child${o.value === value ? " active" : ""}"
-              role="option" data-value="${this._esc(o.value)}">${this._esc(o.label)}</div>`,
+              role="option" tabindex="-1" data-value="${this._esc(o.value)}">${this._esc(o.label)}</div>`,
           )
           .join("");
         return `<div class="ms-group">
@@ -197,7 +197,44 @@ export const SingleSelect = {
         const ss = control.closest(".ss");
         const dd = ss.querySelector(".ss-dropdown");
         this._setOpen(ss, dd.hidden);
+        return;
       }
+
+      // Navigation clavier dans la liste ouverte (foyer sur le control, la
+      // recherche, ou une option déjà survolée via une flèche précédente) —
+      // focus réel posé sur l'option (roving tabindex, cf. tabindex="-1" sur
+      // .ss-opt) plutôt qu'aria-activedescendant : options déjà en
+      // role="option", et [tabindex]:focus-visible (focus.css) leur donne
+      // déjà l'anneau clavier sans CSS supplémentaire.
+      const ss = e.target.closest(".ss");
+      if (ss) {
+        const dd = ss.querySelector(".ss-dropdown");
+        if (!dd.hidden) {
+          if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Home" || e.key === "End") {
+            e.preventDefault();
+            this._moveHighlight(ss, e.key);
+            return;
+          }
+          if (e.key === " " && e.target.closest(".ss-opt")) {
+            // Sans ce garde-fou, l'espace ferait défiler la page (comportement
+            // par défaut sur un <div> focusable) — ce qui déclenche à son tour
+            // la fermeture au scroll (cf. plus bas) en pleine navigation.
+            e.preventDefault();
+            return;
+          }
+          if (e.key === "Enter") {
+            const opt = e.target.closest(".ss-opt");
+            if (opt) {
+              e.preventDefault();
+              this._select(ss, opt.dataset.value);
+              this._setOpen(ss, false);
+              ss.querySelector(".ss-control").focus();
+              return;
+            }
+          }
+        }
+      }
+
       if (e.key === "Escape") {
         document.querySelectorAll(".ss").forEach((ss) => this._setOpen(ss, false));
       }
@@ -235,6 +272,25 @@ export const SingleSelect = {
     dd.style.top = `${r.bottom + 4}px`;
     dd.style.left = `${r.left}px`;
     dd.style.width = `${r.width}px`;
+  },
+
+  /** Déplace le focus réel vers l'option visible suivante/précédente/première/
+      dernière (ArrowDown/ArrowUp/Home/End). Repart de l'option focalisée si
+      elle appartient à `ss`, sinon (foyer sur le control ou la recherche) du
+      début ou de la fin de la liste selon le sens de la flèche. */
+  _moveHighlight(ss, key) {
+    const opts = [...ss.querySelectorAll(".ss-opt")].filter((o) => !o.hidden);
+    if (!opts.length) return;
+    const current = document.activeElement && document.activeElement.closest(".ss-opt");
+    const idx = current && opts.includes(current) ? opts.indexOf(current) : -1;
+    let next;
+    if (key === "Home") next = 0;
+    else if (key === "End") next = opts.length - 1;
+    else if (key === "ArrowDown") next = Math.min(idx + 1, opts.length - 1);
+    else if (key === "ArrowUp") next = idx === -1 ? opts.length - 1 : Math.max(idx - 1, 0);
+    else return;
+    opts[next].focus();
+    opts[next].scrollIntoView({ block: "nearest" });
   },
 
   _select(ss, value) {
