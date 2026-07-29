@@ -147,11 +147,11 @@ export const Gen = {
       ["spirit", "Esprit libre"],
       ["creature", "Créature"],
     ];
-    return `<div class="entity-type-bar" role="tablist" aria-label="Type d'entité">
+    return `<div class="cluster entity-type-bar" role="tablist" aria-label="Type d'entité">
       ${types
         .map(
           ([key, label]) =>
-            `<button type="button" class="entity-type-btn${key === this.entityType ? " active" : ""}"
+            `<button type="button" class="cluster entity-type-btn${key === this.entityType ? " active" : ""}"
               role="tab" aria-selected="${key === this.entityType}"
               data-action="set-entity-type" data-entity-type="${key}">
               <svg class="icon entity-type-icon" aria-hidden="true"><use href="#ic-${key}"></use></svg>

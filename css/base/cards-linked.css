@@ -8,9 +8,7 @@
   text-transform: uppercase;
   color: var(--accent);
   margin-bottom: 9px;
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
 }
 .zone-eyebrow::before {
   content: "";
@@ -27,12 +25,7 @@
   border-bottom: 1px solid var(--border);
   padding: var(--sp-3) 14px;
 }
-.combat-row {
-  display: flex;
-  gap: var(--sp-2);
-  flex-wrap: wrap;
-  align-items: center;
-}
+
 /* pastille de combat lançable : signalée comme interactive */
 .combat-pill {
   border-color: color-mix(in srgb, var(--accent) 40%, transparent);
@@ -46,14 +39,10 @@
 /* Bloc d'armes lançables (zone combat) */
 .weapon-block {
   margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
 }
 .combat-drugs {
   margin-top: var(--sp-2);
-  display: flex;
-  flex-wrap: wrap;
+  align-items: stretch;
   gap: var(--sp-1);
 }
 
@@ -166,8 +155,9 @@
    et hérite de la hauteur de sa voisine via align-items:stretch. */
 .entity-type-bar {
   grid-column: 1 / -1;
-  display: flex;
   gap: 1px;
+  align-items: stretch;
+  flex-wrap: nowrap;
   margin-bottom: var(--sp-3);
   background: var(--border);
   border: 1px solid var(--border);
@@ -176,10 +166,8 @@
 }
 .entity-type-btn {
   flex: 1;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   min-height: 44px;
   background: var(--bg-card);
   border: none;
@@ -188,9 +176,7 @@
   font-size: var(--fs-sm);
   padding: var(--sp-2) 6px;
   cursor: pointer;
-  transition:
-    background var(--dur-base),
-    color var(--dur-base);
+  transition: background var(--dur-base), color var(--dur-base);
   text-transform: var(--title-transform);
   letter-spacing: 0.04em;
 }
@@ -273,9 +259,7 @@
   display: none;
 }
 .spirit-services {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   padding: 6px 14px;
   border-bottom: 1px dashed var(--border);
   font-family: var(--font-mono);
@@ -283,8 +267,9 @@
   color: var(--text-dim);
 }
 .spirit-services-pips {
-  display: flex;
   gap: var(--sp-1);
+  align-items: stretch;
+  flex-wrap: nowrap;
 }
 .service-pip {
   width: 12px;
@@ -312,14 +297,11 @@
    (mêmes classes appliquées au sprite) ; seuls les compétences/notes propres
    au sprite s'habillent ici, avec les mêmes tokens. */
 .sprite-skills {
-  display: flex;
-  flex-wrap: wrap;
   gap: var(--sp-1);
+  align-items: stretch;
   margin: var(--sp-2) 0;
 }
 .sprite-notes {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
   margin-top: var(--sp-2);
   font-family: var(--font-mono);
@@ -334,9 +316,6 @@
 
 /* Panneau jet opposé / seuil (réutilise l'habillage .risk-panel) */
 .opposed-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: var(--sp-3);
 }
 .opposed-label {
@@ -367,8 +346,6 @@
   outline: none;
 }
 .opposed-result {
-  display: flex;
-  flex-direction: column;
   align-items: center;
   gap: var(--sp-1);
   min-height: 2.6rem;
@@ -402,8 +379,6 @@
 
 /* Panneau d'action magique (CH-M7c, réutilise l'habillage .risk-panel) */
 .magic-forecast {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
@@ -420,9 +395,7 @@
 
 /* Panneau d'invocation (réutilise l'habillage .risk-panel) */
 .summon-row {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   margin: 10px 0;
 }
 .summon-row-label {
@@ -432,8 +405,7 @@
   min-width: 70px;
 }
 .summon-steps {
-  display: flex;
-  flex-wrap: wrap;
+  align-items: stretch;
   gap: var(--sp-1);
 }
 .summon-step-btn {
@@ -520,10 +492,6 @@
   }
 }
 .weapon-line {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--sp-2);
   background: var(--bg-mid);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -593,8 +561,6 @@
 
 /* Sorts en zone Combat (CH-M7e) — lignes calquées sur les armes. */
 .spell-block {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
 }
 .spell-block .zone-eyebrow {
@@ -625,11 +591,7 @@
 /* Actions secondaires repliées (Planter un programme, Effacer une mark…) :
    <details> natif — clavier + zéro JS/état persisté. Déplié d'office pendant
    une intrusion (attribut `open` posé au rendu si un serveur est ciblé). */
-.cyberdeck-more {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
+
 .cyberdeck-more-summary {
   cursor: pointer;
   list-style: none;
@@ -661,9 +623,6 @@
   letter-spacing: 1px;
 }
 .cyberdeck-more-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
   margin-top: 6px;
 }
 .spell-line .spell-main {
@@ -671,9 +630,7 @@
   flex: 1;
 }
 .spell-line .weapon-name {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
 }
 .spell-info {
   display: inline-flex;
@@ -755,8 +712,6 @@
 /* Répliques d'un personnage jouable (Anarchy, p.50-51) — vivent désormais
    dans la zone Incarnation (PJ-b, cardrenderer.js _flavorSection). */
 .pc-quotes {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
 }
 .pc-quote {

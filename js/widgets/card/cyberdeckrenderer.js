@@ -118,7 +118,7 @@ export const CyberdeckRenderer = {
       const poolBadge = rollable ? `<span class="weapon-pool">⚄${a.pool}</span>` : "";
       const dvTxt = a.dv != null ? `VD ${a.dv}` : "";
       const title = `${a.name}${a.dv != null ? ` · VD ${a.dv}` : ""}${rollable ? ` · ${a.pool} dés` : ""} (p.${a.page})`;
-      return `<div class="weapon-line matrix-line${rollable ? " weapon-rollable rollable" : ""}" data-action="deck-action" data-id="${pnj.id}" data-key="${esc(a.key)}" title="${esc(title)}">
+      return `<div class="cluster weapon-line matrix-line${rollable ? " weapon-rollable rollable" : ""}" data-action="deck-action" data-id="${pnj.id}" data-key="${esc(a.key)}" title="${esc(title)}">
         <div><div class="weapon-name">${esc(a.name)}</div>${dvTxt ? `<div class="weapon-stat">${dvTxt}</div>` : ""}</div>
         ${poolBadge}
       </div>`;
@@ -129,13 +129,13 @@ export const CyberdeckRenderer = {
     if (rest.length) {
       const open = DeckRun.target(pnj) ? " open" : "";
       const n = rest.length;
-      restHtml = `<details class="cyberdeck-more"${open}>
+      restHtml = `<details class="stack cyberdeck-more"${open}>
         <summary class="cyberdeck-more-summary"><span class="cyberdeck-more-dots">⋯</span> ${n} autre${n > 1 ? "s" : ""} action${n > 1 ? "s" : ""}</summary>
-        <div class="cyberdeck-more-body">${rest.map(line).join("")}</div>
+        <div class="stack cyberdeck-more-body">${rest.map(line).join("")}</div>
       </details>`;
     }
-    return `<div class="weapon-block matrix-block">
-      <div class="zone-eyebrow">Matrice</div>
+    return `<div class="stack weapon-block matrix-block">
+      <div class="cluster zone-eyebrow">Matrice</div>
       ${primary}
       ${restHtml}
     </div>`;

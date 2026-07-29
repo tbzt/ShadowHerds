@@ -74,7 +74,7 @@ Object.assign(CardRenderer, {
     const malus6 = Utils.dicePenalty(pnj, "sr6");
 
     // ---- ZONE COMBAT ----
-    let combatBody = '<div class="combat-row">';
+    let combatBody = '<div class="cluster combat-row">';
     const initDetail = `${Utils.attrFullName("RÉA")} ${Actor.attr(pnj, "RÉA")} + ${Utils.attrFullName("INT")} ${Actor.attr(pnj, "INT")}`;
     combatBody += this._initPill(initBase ?? 0, initDice ?? 1, pnj, initDetail);
     if (pnj.drainResist != null)

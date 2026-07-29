@@ -28,19 +28,19 @@ export const OpposedRoll = {
           <span class="risk-panel-title" id="opposed-title">Jet opposé / seuil</span>
           <button class="risk-panel-close" id="opposed-close" aria-label="Fermer">✕</button>
         </div>
-        <div class="opposed-row">
+        <div class="cluster cluster--between opposed-row">
           <label class="opposed-label" for="opposed-pool-a">Camp A</label>
           <input class="opposed-input" type="number" id="opposed-pool-a" min="1" max="40" value="6">
         </div>
-        <div class="opposed-row">
+        <div class="cluster cluster--between opposed-row">
           <label class="opposed-label" for="opposed-pool-b">Camp B <span class="opposed-hint">(0 = jet de seuil)</span></label>
           <input class="opposed-input" type="number" id="opposed-pool-b" min="0" max="40" value="0">
         </div>
-        <div class="opposed-row">
+        <div class="cluster cluster--between opposed-row">
           <label class="opposed-label" for="opposed-threshold">Seuil <span class="opposed-hint">(ignoré si Camp B > 0)</span></label>
           <input class="opposed-input" type="number" id="opposed-threshold" min="0" max="40" value="0">
         </div>
-        <div class="opposed-result" id="opposed-result"></div>
+        <div class="stack opposed-result" id="opposed-result"></div>
         <button class="risk-roll-btn" id="opposed-roll-btn">Lancer</button>
       </div>`;
     document.body.appendChild(p);

@@ -111,11 +111,11 @@ export const MagicAction = {
           <span class="risk-panel-title" id="magic-title">Lancer un sort</span>
           <button class="risk-panel-close" id="magic-close" aria-label="Fermer">✕</button>
         </div>
-        <div class="summon-row" id="magic-force-row">
+        <div class="cluster summon-row" id="magic-force-row">
           <span class="summon-row-label">Puissance</span>
-          <div class="summon-steps" id="magic-force-steps"></div>
+          <div class="cluster summon-steps" id="magic-force-steps"></div>
         </div>
-        <div class="magic-forecast" id="magic-forecast"></div>
+        <div class="stack magic-forecast" id="magic-forecast"></div>
         <button class="risk-roll-btn" id="magic-roll-btn">Lancer le sort</button>
       </div>`;
     document.body.appendChild(p);

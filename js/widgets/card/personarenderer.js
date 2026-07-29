@@ -104,7 +104,7 @@ export const PersonaRenderer = {
       const poolBadge = rollable ? `<span class="weapon-pool">⚄${a.pool}</span>` : "";
       const dvTxt = a.dv != null ? `VD ${a.dv}` : "";
       const title = `${a.name}${a.dv != null ? ` · VD ${a.dv}` : ""}${rollable ? ` · ${a.pool} dés` : ""} (p.${a.page})`;
-      return `<div class="weapon-line matrix-line${rollable ? " weapon-rollable rollable" : ""}" data-action="persona-action" data-id="${pnj.id}" data-key="${esc(a.key)}" title="${esc(title)}">
+      return `<div class="cluster weapon-line matrix-line${rollable ? " weapon-rollable rollable" : ""}" data-action="persona-action" data-id="${pnj.id}" data-key="${esc(a.key)}" title="${esc(title)}">
         <div><div class="weapon-name">${esc(a.name)}</div>${dvTxt ? `<div class="weapon-stat">${dvTxt}</div>` : ""}</div>
         ${poolBadge}
       </div>`;
@@ -114,13 +114,13 @@ export const PersonaRenderer = {
     let restHtml = "";
     if (rest.length) {
       const n = rest.length;
-      restHtml = `<details class="cyberdeck-more">
+      restHtml = `<details class="stack cyberdeck-more">
         <summary class="cyberdeck-more-summary"><span class="cyberdeck-more-dots">⋯</span> ${n} autre${n > 1 ? "s" : ""} action${n > 1 ? "s" : ""}</summary>
-        <div class="cyberdeck-more-body">${rest.map(line).join("")}</div>
+        <div class="stack cyberdeck-more-body">${rest.map(line).join("")}</div>
       </details>`;
     }
-    return `<div class="weapon-block matrix-block">
-      <div class="zone-eyebrow">Résonance</div>
+    return `<div class="stack weapon-block matrix-block">
+      <div class="cluster zone-eyebrow">Résonance</div>
       ${primary}
       ${restHtml}
     </div>`;

@@ -31,13 +31,13 @@ export const SummonPanel = {
           <span class="risk-panel-title" id="summon-title">Invoquer un esprit</span>
           <button class="risk-panel-close" id="summon-close" aria-label="Fermer">✕</button>
         </div>
-        <div class="summon-row" id="summon-power-row">
+        <div class="cluster summon-row" id="summon-power-row">
           <span class="summon-row-label" id="summon-power-label">Puissance</span>
-          <div class="summon-steps" id="summon-power-steps"></div>
+          <div class="cluster summon-steps" id="summon-power-steps"></div>
         </div>
-        <div class="summon-row" id="summon-service-row">
+        <div class="cluster summon-row" id="summon-service-row">
           <span class="summon-row-label">Services</span>
-          <div class="summon-steps" id="summon-service-steps"></div>
+          <div class="cluster summon-steps" id="summon-service-steps"></div>
         </div>
         <div class="summon-types" id="summon-types"></div>
       </div>`;

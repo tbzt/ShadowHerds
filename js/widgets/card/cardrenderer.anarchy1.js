@@ -42,7 +42,7 @@ Object.assign(CardRenderer, {
     const malus = Utils.dicePenalty(pnj, "anarchy1");
 
     // ---- ZONE COMBAT ----
-    let combatBody = '<div class="combat-row">';
+    let combatBody = '<div class="cluster combat-row">';
     if (init != null)
       combatBody += this._initPill(init, initDice, pnj);
     if (drainResist != null)

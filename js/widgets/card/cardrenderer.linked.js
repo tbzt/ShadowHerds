@@ -82,7 +82,7 @@ Object.assign(CardRenderer, {
 
     // Réserves de dés (jets cliquables) + initiative SR5/SR6
     const edAttr = App.getEditionModule(v.edition)?.usesRiskPanel ? ` data-roll-edition="${v.edition}"` : "";
-    html += '<div class="combat-row">';
+    html += '<div class="cluster combat-row">';
     const init = deps.Vehicles.initiative(v);
     if (init) html += this._initPill(init.base, init.dice, v);
     for (const p of deps.Vehicles.pools(v)) {
@@ -122,14 +122,14 @@ Object.assign(CardRenderer, {
     // Armes embarquées
     if ((v.weapons || []).length) {
       const atk = deps.Vehicles.pools(v).find((p) => p.weaponOnly || p.label === "Autonome");
-      html += '<div class="weapon-block">';
+      html += '<div class="stack weapon-block">';
       for (const w of v.weapons) {
         const pool = atk ? atk.pool : 0;
         const roll =
           pool >= 1
             ? ` data-roll="${pool}" data-roll-label="${this._esc(v.name)} — ${this._esc(w.name)}"${edAttr} data-roll-rr="0" data-roll-pnj="${v.id}"`
             : "";
-        html += `<div class="weapon-line${pool >= 1 ? " weapon-rollable rollable" : ""}"${roll} title="Arme embarquée — cliquer pour lancer ${pool} dés">
+        html += `<div class="cluster weapon-line${pool >= 1 ? " weapon-rollable rollable" : ""}"${roll} title="Arme embarquée — cliquer pour lancer ${pool} dés">
           <div><div class="weapon-name">${this._esc(w.name)}</div><div class="weapon-stat">${this._esc(w.vd || "")}</div></div>
           ${pool >= 1 ? `<span class="weapon-pool">⚄${pool}</span>` : ""}
         </div>`;
@@ -180,7 +180,7 @@ Object.assign(CardRenderer, {
           title="${this._esc(item)}">${icon} ${this._esc(label)}${state}</span>`;
       })
       .join("");
-    return `<div class="combat-drugs vehicle-chips">${chips}</div>`;
+    return `<div class="cluster combat-drugs vehicle-chips">${chips}</div>`;
   },
 
   /** Barre de services d'un esprit : pips cliquables (services rendus).
@@ -193,9 +193,9 @@ Object.assign(CardRenderer, {
       const cls = i < used ? "service-pip used" : "service-pip";
       return `<span class="${cls}" data-action="toggle-service" data-id="${sp.id}" data-idx="${i}" title="Service ${i + 1}${i < used ? " (rendu)" : ""}"></span>`;
     }).join("");
-    return `<div class="spirit-services" title="Services dus par l'esprit — cliquer pour marquer un service rendu">
+    return `<div class="cluster spirit-services" title="Services dus par l'esprit — cliquer pour marquer un service rendu">
       <span class="spirit-services-label">Services</span>
-      <span class="spirit-services-pips">${pips}</span>
+      <span class="cluster spirit-services-pips">${pips}</span>
       <span class="spirit-services-count">${total - used}/${total}</span>
     </div>`;
   },
@@ -230,7 +230,7 @@ Object.assign(CardRenderer, {
         data-action="open-dismiss" data-kind="spirit" data-id="${pnj.id}"
         title="Bannir un esprit adverse (test opposé de Bannissement)">✦ Bannir</span>`;
     }
-    return `<div class="combat-drugs spirit-chips">${chips}</div>`;
+    return `<div class="cluster combat-drugs spirit-chips">${chips}</div>`;
   },
 
   /* ============================================================
@@ -278,9 +278,9 @@ Object.assign(CardRenderer, {
       const cls = i < used ? "service-pip used" : "service-pip";
       return `<span class="${cls}" data-action="toggle-sprite-task" data-id="${sp.id}" data-idx="${i}" title="Tâche ${i + 1}${i < used ? " (rendue)" : ""}"></span>`;
     }).join("");
-    return `<div class="spirit-services" title="Tâches dues par le sprite — cliquer pour en marquer une rendue">
+    return `<div class="cluster spirit-services" title="Tâches dues par le sprite — cliquer pour en marquer une rendue">
       <span class="spirit-services-label">Tâches</span>
-      <span class="spirit-services-pips">${pips}</span>
+      <span class="cluster spirit-services-pips">${pips}</span>
       <span class="spirit-services-count">${total - used}/${total}</span>
     </div>`;
   },
@@ -309,7 +309,7 @@ Object.assign(CardRenderer, {
       ).join("");
       html += `<div class="attr-grid" title="Attaque · Corruption · Traitement de données · Firewall">${cells}</div>`;
       if (sp.initBase != null) {
-        html += '<div class="combat-row">' + this._initPill(sp.initBase, sp.initDice || 4, sp) + "</div>";
+        html += '<div class="cluster combat-row">' + this._initPill(sp.initBase, sp.initDice || 4, sp) + "</div>";
       }
     }
 
@@ -318,7 +318,7 @@ Object.assign(CardRenderer, {
     const skills = (sp.skills || [])
       .map((s) => `<span class="tag">${esc(s.name)} ${s.val}</span>`)
       .join("");
-    if (skills) html += `<div class="tag-row sprite-skills">${skills}</div>`;
+    if (skills) html += `<div class="cluster tag-row sprite-skills">${skills}</div>`;
 
     // Arme de cybercombat (Anarchy 1) / pouvoirs (SR).
     const notes = [];
@@ -327,7 +327,7 @@ Object.assign(CardRenderer, {
     for (const e of sp.edges || []) notes.push(esc(e));
     if (sp.special) notes.push(esc(sp.special));
     if (notes.length)
-      html += `<div class="sprite-notes">${notes.map((n) => `<div class="sprite-note">${n}</div>`).join("")}</div>`;
+      html += `<div class="stack sprite-notes">${notes.map((n) => `<div class="sprite-note">${n}</div>`).join("")}</div>`;
 
     // Moniteur matriciel (case unique, mécanique toggle-monitor type "mat").
     html += `<div class="monitor-block sprite-monitor">
@@ -365,6 +365,6 @@ Object.assign(CardRenderer, {
         data-action="open-dismiss" data-kind="sprite" data-id="${pnj.id}"
         title="Décompiler un sprite adverse (test opposé)">◈ Décompiler</span>`;
     }
-    return `<div class="combat-drugs sprite-chips">${chips}</div>`;
+    return `<div class="cluster combat-drugs sprite-chips">${chips}</div>`;
   },
 });

@@ -36,7 +36,7 @@ Object.assign(CardRenderer, {
           title="${this._esc(title)}">⛨ ${this._esc(o.label)} +${o.bonus}${state}</span>`;
       })
       .join("");
-    return `<div class="combat-drugs armor-chips">${chips}</div>`;
+    return `<div class="cluster combat-drugs armor-chips">${chips}</div>`;
   },
 
   _bodyAnarchy(pnj, deps) {
@@ -72,7 +72,7 @@ Object.assign(CardRenderer, {
       arr ? `${arr[0]} / ${arr[1]} / ${arr[2]}` : "—";
 
     // ---- ZONE COMBAT ----
-    let combatBody = '<div class="combat-row">';
+    let combatBody = '<div class="cluster combat-row">';
     const combClass =
       threatLevel === "forte" || threatLevel === "extrême" ? "accent" : "";
     combatBody += `<span class="stat-pill ${combClass}">Combativité <strong>${threatLevel}</strong></span>`;
@@ -115,7 +115,7 @@ Object.assign(CardRenderer, {
 
     // Armes (lançables, ouvrent le panneau de risque RR)
     if (weapons && weapons.length) {
-      combatBody += `<div class="weapon-block">`;
+      combatBody += `<div class="stack weapon-block">`;
       // Rangé par catégorie (Mains nues → mêlée → pistolets → armes
       // d'épaule → lourd), rang lu depuis WEAPON_CATALOG (prohibition n°1).
       const ed = App.getEditionModule(pnj.edition);
@@ -130,12 +130,12 @@ Object.assign(CardRenderer, {
         if (r) {
           const rrTxt = r.rr ? ` RR${r.rr}` : "";
           const title = `${r.weaponName} : ${r.pool} dés (${r.matchedSkill || r.skill} ${r.skillVal}+${r.attr} ${r.attrVal}${rrTxt}) — cliquer pour lancer`;
-          combatBody += `<div class="weapon-line weapon-rollable rollable" data-roll-weapon-anarchy="${this._esc(a.name)}" data-roll-pnj="${pnj.id}" title="${this._esc(title)}">
+          combatBody += `<div class="cluster weapon-line weapon-rollable rollable" data-roll-weapon-anarchy="${this._esc(a.name)}" data-roll-pnj="${pnj.id}" title="${this._esc(title)}">
             <div><div class="weapon-name">${this._esc(a.name)}${noteStr}</div><div class="weapon-stat">VD ${a.vd} · ${this._esc(a.ranges)}</div></div>
             <span class="weapon-pool">⚄${r.pool}${r.rr ? `<span class="lim">RR${r.rr}</span>` : ""}</span>
           </div>`;
         } else {
-          combatBody += `<div class="weapon-line">
+          combatBody += `<div class="cluster weapon-line">
             <div><div class="weapon-name">${this._esc(a.name)}${noteStr}</div><div class="weapon-stat">VD ${a.vd} · ${this._esc(a.ranges)}</div></div>
           </div>`;
         }
@@ -261,14 +261,14 @@ Object.assign(CardRenderer, {
       const spentStr = (nuyenSpent || 0).toLocaleString("fr-FR");
       const budgetStr = nuyenBudget.toLocaleString("fr-FR");
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Budget de création</div>
-        <div class="combat-row">
+        <div class="cluster combat-row">
           <span class="stat-pill" title="Budget de création (dépensé / disponible)">${spentStr} / ${budgetStr} ¥</span>
           ${lifestyle ? `<span class="stat-pill">${this._esc(lifestyle)}</span>` : ""}
         </div>
       </div>`;
     } else if (lifestyle) {
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Style de vie</div>
-        <div class="combat-row"><span class="stat-pill">${this._esc(lifestyle)}</span></div>
+        <div class="cluster combat-row"><span class="stat-pill">${this._esc(lifestyle)}</span></div>
       </div>`;
     }
     if (prefs.showAttributes) {

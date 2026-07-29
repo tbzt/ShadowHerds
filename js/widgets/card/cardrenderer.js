@@ -1263,7 +1263,7 @@ export const CardRenderer = {
     if (pnj.quotes && pnj.quotes.length) {
       html += `<div class="card-section">
         <div class="card-section-label">Répliques</div>
-        <div class="card-section-content pc-quotes">
+        <div class="stack card-section-content pc-quotes">
           ${pnj.quotes.map((q) => `<div class="pc-quote">« ${this._esc(q)} »</div>`).join("")}
         </div>
       </div>`;
@@ -1477,7 +1477,7 @@ export const CardRenderer = {
   },
 
   _zoneEyebrow(label) {
-    return `<div class="zone-eyebrow">${this._esc(label)}</div>`;
+    return `<div class="cluster zone-eyebrow">${this._esc(label)}</div>`;
   },
 
   /** Bloc d'armes lançables, sorti dans la zone Combat. */
@@ -1510,7 +1510,7 @@ export const CardRenderer = {
         const ammo = deps.Encounter ? deps.Encounter.ammoFor(pnj.id, s) : null;
         const stat = deps.WeaponRoll ? deps.WeaponRoll.statLine(s, r, ammo) : "";
         if (!r) {
-          return `<div class="weapon-line"><div><div class="weapon-name">${this._esc(name)}</div><div class="weapon-stat">${this._esc(stat)}</div></div></div>`;
+          return `<div class="cluster weapon-line"><div><div class="weapon-name">${this._esc(name)}</div><div class="weapon-stat">${this._esc(stat)}</div></div></div>`;
         }
         // Explication du jet, GÉNÉRALE : décompose le pool depuis
         // `contributions` (compétence + attribut + spécialité + smartlink +
@@ -1558,13 +1558,13 @@ export const CardRenderer = {
           : App.getEditionModule(edition)?.usesRiskPanel
             ? `data-roll-weapon-anarchy="${this._esc(name)}"`
             : `data-roll-weapon="${this._esc(s)}" data-roll-edition="${edition}"`;
-        return `<div class="weapon-line${bricked ? " is-bricked" : " weapon-rollable rollable"}" ${dataAttr} ${bricked ? "" : `data-roll-pnj="${pnj.id}"`} title="${this._esc(title)}">
+        return `<div class="cluster weapon-line${bricked ? " is-bricked" : " weapon-rollable rollable"}" ${dataAttr} ${bricked ? "" : `data-roll-pnj="${pnj.id}"`} title="${this._esc(title)}">
           <div><div class="weapon-name">${this._esc(name)}</div><div class="weapon-stat">${this._esc(stat)}</div></div>
           ${poolBadge}${bricked ? "" : this._edgePrerollHtml(pnj, deps)}
         </div>`;
       })
       .join("");
-    return `<div class="weapon-block">${rows}</div>`;
+    return `<div class="stack weapon-block">${rows}</div>`;
   },
 
   /** Coquille de zone repliable : bouton (libellé + résumé + chevron)
@@ -1922,7 +1922,7 @@ export const CardRenderer = {
         const lineCls = `weapon-line spell-line${rollable ? " weapon-rollable rollable" : ""}`;
         return `<div class="${lineCls}" ${castAttr} data-roll-pnj="${pnj.id}">
           <div class="spell-main">
-            <div class="weapon-name">${this._esc(name)} ${infoBtn}</div>
+            <div class="cluster weapon-name">${this._esc(name)} ${infoBtn}</div>
             ${info ? `<div class="weapon-stat">${this._esc(info)}</div>` : ""}
           </div>
           ${poolBadge}
@@ -1930,8 +1930,8 @@ export const CardRenderer = {
         </div>`;
       })
       .join("");
-    return `<div class="weapon-block spell-block">
-      <div class="zone-eyebrow">Sorts</div>
+    return `<div class="stack weapon-block spell-block">
+      <div class="cluster zone-eyebrow">Sorts</div>
       ${rows}
     </div>`;
   },
@@ -1972,7 +1972,7 @@ export const CardRenderer = {
         const lineCls = `weapon-line spell-line${rollable ? " weapon-rollable rollable" : ""}`;
         return `<div class="${lineCls}" ${castAttr} data-roll-pnj="${pnj.id}">
           <div class="spell-main">
-            <div class="weapon-name">${this._esc(name)} ${infoBtn}</div>
+            <div class="cluster weapon-name">${this._esc(name)} ${infoBtn}</div>
             ${info ? `<div class="weapon-stat">${this._esc(info)}</div>` : ""}
           </div>
           ${poolBadge}
@@ -1980,8 +1980,8 @@ export const CardRenderer = {
         </div>`;
       })
       .join("");
-    return `<div class="weapon-block spell-block">
-      <div class="zone-eyebrow">Formes complexes</div>
+    return `<div class="stack weapon-block spell-block">
+      <div class="cluster zone-eyebrow">Formes complexes</div>
       ${rows}
     </div>`;
   },
@@ -2213,7 +2213,7 @@ export const CardRenderer = {
       }
     }
     if (!found.length) return "";
-    return `<div class="combat-drugs">${found.join("")}</div>`;
+    return `<div class="cluster combat-drugs">${found.join("")}</div>`;
   },
 
   /** Section Équipement où les weapons (VD/PRE) deviennent lançables. */
