@@ -75,7 +75,7 @@ export const SpectatorView = {
     const header = `<div class="spectator-header">Round ${state.round}${passLabel}</div>`;
     const activeId = this._activeId(rows, state);
     const list = rows.map((r) => this._row(r, r.pnjId === activeId)).join("");
-    zone.innerHTML = header + `<div class="spectator-list">${list}</div>`;
+    zone.innerHTML = header + `<div class="stack spectator-list">${list}</div>`;
   },
 
   /** Combattant à mettre en avant : Miroir NEUTRE de la résolution de focus
@@ -125,11 +125,11 @@ export const SpectatorView = {
     // aucune interaction.
     const boxes = CardRenderer.gaugeBoxes(r.gauge);
     const gauge = boxes ? `<div class="cluster monitor-boxes spectator-gauge">${boxes}</div>` : "";
-    const cls = `spectator-row${isActive ? " is-active" : ""}${r.down ? " is-down" : ""}${r.hasActed ? " has-acted" : ""}`;
+    const cls = `cluster cluster--between spectator-row${isActive ? " is-active" : ""}${r.down ? " is-down" : ""}${r.hasActed ? " has-acted" : ""}`;
     // Identité (portrait + nom + type) à gauche, moniteur à droite : les joueurs
     // doivent savoir QUI est en jeu, pas seulement voir des cases.
     return `<div class="${cls}">
-      <div class="spectator-identity">
+      <div class="cluster spectator-identity">
         ${this._portrait(r)}
         <span class="spectator-name">${name}</span>
         <span class="spectator-type">${this._typeLabel(r)}</span>

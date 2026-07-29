@@ -919,7 +919,7 @@ export const CardRenderer = {
       this._statusMalusBadge(pnj, ed, deps) +
       this._statusRow(pnj, ed, deps) +
       this._drugRow(pnj, ed, deps);
-    if (state) html += `<div class="offense-state">${state}</div>`;
+    if (state) html += `<div class="cluster">${state}</div>`;
     // ② Armes
     html += this._weaponBlock(pnj, weapons, ed, deps);
     // ③ Sorts · Matrice · Pouvoirs — capacités ACTIVES (mage=Sorts, techno=

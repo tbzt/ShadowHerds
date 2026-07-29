@@ -561,7 +561,7 @@ export const App = {
     if (!label || !list) return;
     const entries = (this.editionModule && this.editionModule.helpLegend) || [];
     label.textContent = `Légende des symboles${this.editionModule ? " — " + this.editionModule.label : ""}`;
-    const row = (e) => `<div class="shortcut-row"><span class="shortcut-keys">${e.keys}</span><span>${e.html}</span></div>`;
+    const row = (e) => `<div class="cluster shortcut-row"><span class="cluster shortcut-keys">${e.keys}</span><span>${e.html}</span></div>`;
     // Section commune trans-édition des glyphes du cockpit de combat, à la
     // suite de la légende d'édition. Possédée par le cockpit (EncounterRenderer,
     // couche 4 — appel descendant direct), pas dupliquée dans les 4 helpLegend.

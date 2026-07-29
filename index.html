@@ -330,9 +330,9 @@
       <!-- SIDEBAR -->
       <nav id="sidebar" aria-label="Navigation principale">
         <!-- Suivi de combat actif : masqué tant qu'aucune scène n'est en cours (cf. EncounterRenderer.renderSidebar). -->
-        <div id="sidebar-encounter" class="sidebar-encounter" hidden>
+        <div id="sidebar-encounter" class="stack stack--tight sidebar-encounter" hidden>
           <span class="nav-section-label" id="sidebar-encounter-round">Round 1</span>
-          <button class="sidebar-encounter-turn" data-action="encounter-open" title="Ouvrir le suivi de combat">
+          <button class="cluster sidebar-encounter-turn" data-action="encounter-open" title="Ouvrir le suivi de combat">
             <span class="encounter-kind" id="sidebar-encounter-kind"></span>
             <span class="sidebar-encounter-name" id="sidebar-encounter-name">—</span>
           </button>
@@ -715,13 +715,13 @@
         </span>
         <button class="modal-close" data-action="encounter-close" aria-label="Fermer">✕</button>
       </div>
-      <div class="modal-body encounter-body">
+      <div class="cluster modal-body encounter-body">
         <div class="encounter-main-col">
           <!-- V7 : barre d'outils sur UNE ligne — les deux actions primaires
                (Ajouter · Initiative) en clair, le reste replié dans ⋯ (menu
                canonique .card-menu, CardMenu déjà bindé au boot). « Lancer &
                classer » → « Initiative » (plus court). -->
-          <div class="encounter-toolbar">
+          <div class="cluster encounter-toolbar">
             <button class="btn-secondary btn-small" id="encounter-add-toggle" data-action="toggle-add-picker" title="Ajouter un combattant" aria-expanded="false">➕ Ajouter</button>
             <button class="btn-secondary btn-small" data-action="roll-and-sort" title="Lancer l'initiative de tous et classer">⚄ Initiative</button>
             <div class="encounter-toolbar-more">
@@ -744,7 +744,7 @@
                sur mobile ([actif][console][attente], cf. maquette). Sur desktop
                elle coule simplement en tête de l'effectif, avant la file. -->
           <div id="encounter-active-lead" class="encounter-active-lead"></div>
-          <div id="encounter-list" class="encounter-list"></div>
+          <div id="encounter-list" class="stack stack--tight"></div>
           <!-- R2-E : scène Matrice seule — remplace la liste/réglette d'init
                (vides et hors-sujet ici), cf. .encounter-modal.is-matrix-only. -->
           <div id="encounter-matrix-only-note" class="encounter-matrix-only-note" hidden>
@@ -770,7 +770,7 @@
              montages du même rendu, cf. EncounterRenderer.renderMatrix), visible
              seulement si un serveur est lié (.has-matrix-dock posé par JS). -->
         <div id="encounter-matrix-dock" class="encounter-matrix-dock" hidden>
-          <div class="matrix-drawer-header">
+          <div class="cluster matrix-drawer-header">
             <span class="matrix-drawer-title" id="matrix-dock-title">Matrice</span>
             <button class="btn-icon-tiny" data-action="unlink-server" title="Délier le serveur de la scène">Délier</button>
           </div>
@@ -788,7 +788,7 @@
   <div id="matrix-drawer-overlay" role="dialog" aria-modal="false" aria-label="Matrice — serveur lié à la scène">
     <div id="matrix-drawer">
       <div class="dice-sheet-handle"></div>
-      <div class="matrix-drawer-header">
+      <div class="cluster matrix-drawer-header">
         <span class="matrix-drawer-title" id="matrix-drawer-title">Matrice</span>
         <button class="btn-icon-tiny" data-action="unlink-server" title="Délier le serveur de la scène">Délier</button>
         <button class="modal-close" data-action="close-matrix-drawer" aria-label="Fermer">✕</button>
@@ -833,28 +833,28 @@
              elle, reste utile en tactile (VIS-5, découplage). -->
         <div class="help-kbd-section">
         <div class="help-section-label">Raccourcis clavier</div>
-        <div class="shortcuts-list">
-          <div class="shortcut-row"><span class="shortcut-keys"><kbd>1</kbd>–<kbd>7</kbd></span><span>Changer de panel (Ombres, Personnages, PNJ, Contacts, Serveurs, Run, Paramètres)</span></div>
-          <div class="shortcut-row"><span class="shortcut-keys"><kbd>G</kbd></span><span>Générer (onglet actif du générateur)</span></div>
-          <div class="shortcut-row"><span class="shortcut-keys"><kbd>R</kbd></span><span>Lancer les dés (réserve de la barre du haut)</span></div>
-          <div class="shortcut-row"><span class="shortcut-keys"><kbd>C</kbd></span><span>Ouvrir le suivi de combat</span></div>
-          <div class="shortcut-row"><span class="shortcut-keys"><kbd>J</kbd></span><span>Journal des jets</span></div>
-          <div class="shortcut-row"><span class="shortcut-keys"><kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>K</kbd></span><span>Palette : trouver une entité et y aller</span></div>
-          <div class="shortcut-row"><span class="shortcut-keys"><kbd>/</kbd></span><span>Focus sur le filtre de la liste affichée</span></div>
-          <div class="shortcut-row"><span class="shortcut-keys"><kbd>?</kbd></span><span>Afficher/masquer cette aide</span></div>
-          <div class="shortcut-row"><span class="shortcut-keys"><kbd>Échap</kbd></span><span>Fermer une fenêtre ouverte</span></div>
-          <div class="shortcut-row"><span class="shortcut-keys"></span><span><strong>En combat</strong> (suivi de combat ouvert)</span></div>
-          <div class="shortcut-row"><span class="shortcut-keys"><kbd>Espace</kbd> <kbd>N</kbd></span><span>Tour suivant</span></div>
-          <div class="shortcut-row"><span class="shortcut-keys"><kbd>R</kbd></span><span>Relancer l'initiative de tous</span></div>
-          <div class="shortcut-row"><span class="shortcut-keys"><kbd>↑</kbd> <kbd>↓</kbd></span><span>Réordonner le combattant actif</span></div>
-          <div class="shortcut-row"><span class="shortcut-keys"><kbd>Échap</kbd></span><span>Fermer le suivi de combat</span></div>
-          <div class="shortcut-row" id="cheat-menace" hidden><span class="shortcut-keys"><kbd>M</kbd> / <kbd>Maj</kbd>+<kbd>M</kbd></span><span>Réserve de Menace : +1 / −1</span></div>
+        <div class="stack shortcuts-list">
+          <div class="cluster shortcut-row"><span class="cluster shortcut-keys"><kbd>1</kbd>–<kbd>7</kbd></span><span>Changer de panel (Ombres, Personnages, PNJ, Contacts, Serveurs, Run, Paramètres)</span></div>
+          <div class="cluster shortcut-row"><span class="cluster shortcut-keys"><kbd>G</kbd></span><span>Générer (onglet actif du générateur)</span></div>
+          <div class="cluster shortcut-row"><span class="cluster shortcut-keys"><kbd>R</kbd></span><span>Lancer les dés (réserve de la barre du haut)</span></div>
+          <div class="cluster shortcut-row"><span class="cluster shortcut-keys"><kbd>C</kbd></span><span>Ouvrir le suivi de combat</span></div>
+          <div class="cluster shortcut-row"><span class="cluster shortcut-keys"><kbd>J</kbd></span><span>Journal des jets</span></div>
+          <div class="cluster shortcut-row"><span class="cluster shortcut-keys"><kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>K</kbd></span><span>Palette : trouver une entité et y aller</span></div>
+          <div class="cluster shortcut-row"><span class="cluster shortcut-keys"><kbd>/</kbd></span><span>Focus sur le filtre de la liste affichée</span></div>
+          <div class="cluster shortcut-row"><span class="cluster shortcut-keys"><kbd>?</kbd></span><span>Afficher/masquer cette aide</span></div>
+          <div class="cluster shortcut-row"><span class="cluster shortcut-keys"><kbd>Échap</kbd></span><span>Fermer une fenêtre ouverte</span></div>
+          <div class="cluster shortcut-row"><span class="cluster shortcut-keys"></span><span><strong>En combat</strong> (suivi de combat ouvert)</span></div>
+          <div class="cluster shortcut-row"><span class="cluster shortcut-keys"><kbd>Espace</kbd> <kbd>N</kbd></span><span>Tour suivant</span></div>
+          <div class="cluster shortcut-row"><span class="cluster shortcut-keys"><kbd>R</kbd></span><span>Relancer l'initiative de tous</span></div>
+          <div class="cluster shortcut-row"><span class="cluster shortcut-keys"><kbd>↑</kbd> <kbd>↓</kbd></span><span>Réordonner le combattant actif</span></div>
+          <div class="cluster shortcut-row"><span class="cluster shortcut-keys"><kbd>Échap</kbd></span><span>Fermer le suivi de combat</span></div>
+          <div class="cluster shortcut-row" id="cheat-menace" hidden><span class="cluster shortcut-keys"><kbd>M</kbd> / <kbd>Maj</kbd>+<kbd>M</kbd></span><span>Réserve de Menace : +1 / −1</span></div>
         </div>
         </div>
         <!-- Sensible à l'édition (CH-V6-T1.4) : rempli par App._renderHelpLegend()
              depuis editionModule.helpLegend (js/editions/*), jamais figé sur SR5. -->
         <div class="help-section-label" id="help-legend-label">Légende des symboles</div>
-        <div class="shortcuts-list" id="help-legend-list"></div>
+        <div class="stack shortcuts-list" id="help-legend-list"></div>
       </div>
     </div>
   </div>

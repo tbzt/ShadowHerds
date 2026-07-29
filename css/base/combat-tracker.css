@@ -11,14 +11,21 @@
   width: min(1200px, 96vw);
   max-height: 94vh;
 }
-/* Corps = les 4 surfaces détachées par des gouttières (--sp-4) : Effectif
-   (.encounter-main-col) · Console (#encounter-active-card) · Dock Matrice
-   (#encounter-matrix-dock) ; l'Instrument est le bandeau .modal-header. */
+/* D3 — écran du suivi de combat, converti à .cluster/.stack (foundation.css),
+   même patron que les témoins chargen et shadows-contacts.css (respectivement
+   2ᵉ et 3ᵉ écrans témoins) et les 4 sites déjà notés « D3 » plus bas dans ce
+   fichier (1ʳᵉ vague). Ce qui reste déclaré ici est le vrai écart au défaut
+   de la primitive — gap non standard, wrap/align-items forcés, décor propre
+   au site — jamais un match supposé sur le seul nom.
+   `.encounter-body` : `align-items: flex-start` gardé explicite (le défaut de
+   .cluster est `center`) — mais les 2 media queries juste dessous
+   (≥641px : nowrap+stretch · ≤640px : column+stretch) redéclarent déjà
+   wrap/align-items/direction à chaque largeur réelle : cette valeur de base
+   ne s'applique donc jamais seule, gardée pour rester correcte par
+   construction plutôt que par coïncidence des breakpoints. */
 .encounter-body {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
   gap: var(--sp-4);
+  align-items: flex-start;
 }
 /* Zone « Effectif » : surface froide et scannable (--bg-mid), détachée. Ses
    lignes passent en --bg-card (cf. .encounter-row) pour ressortir du fond. */
@@ -107,9 +114,7 @@
    grille empilée « en briques » ; comme il n'y a que 2 items visibles + le ⋯,
    aucun mur de briques ni scroll (doctrine alignement respectée). */
 .encounter-toolbar {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   margin-bottom: var(--sp-4);
 }
 /* Ajouter = action primaire, teintée accent. */
@@ -137,14 +142,8 @@
   margin-left: auto;
   flex-shrink: 0;
 }
-.encounter-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
 .encounter-row {
-  display: flex;
-  align-items: center;
+  flex-wrap: nowrap;
   gap: var(--sp-3);
   padding: var(--sp-2) 0.6rem;
   border: 1px solid var(--border);
@@ -241,9 +240,7 @@
 
 /* Séparateur « ordre du tour » entre l'actif et la file en attente. */
 .encounter-queue-sep {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   font-size: var(--fs-2xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -261,8 +258,6 @@
    de passe), séparé visuellement du nom. Le lancer ⚄ par ligne a migré dans
    le menu ⋯ pour dégager la ligne. */
 .encounter-init {
-  display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--sp-1);
@@ -286,8 +281,7 @@
 }
 /* Vague B : steppers ±1 autour du champ d'init. */
 .encounter-init-main {
-  display: flex;
-  align-items: center;
+  flex-wrap: nowrap;
   gap: 1px;
 }
 .encounter-init-main .encounter-init-val {
@@ -332,8 +326,6 @@
 .encounter-main {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
 }
 .encounter-name {
@@ -357,8 +349,7 @@
   padding: 0.15rem 0.4rem;
 }
 .encounter-controls {
-  display: flex;
-  align-items: center;
+  flex-wrap: nowrap;
   gap: var(--sp-1);
   position: relative; /* ancre le popover .card-menu du ⋯ (K10) */
 }
@@ -396,9 +387,7 @@
 }
 /* Ligne nom + badge de type. */
 .encounter-name-row {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   min-width: 0;
 }
 .encounter-name.is-pj {
@@ -542,10 +531,6 @@
 }
 /* Ligne narrative : grande cible tap-to-grise, sans jeton d'init. */
 .encounter-nrow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
   padding: 0.7rem 0.6rem;
   min-height: 48px;
   border: 1px solid var(--border);
@@ -597,8 +582,6 @@
 .encounter-nrow-body {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
 }
 .encounter-nrow-name {
@@ -607,12 +590,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 600;
-}
-.encounter-nrow-sub {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  flex-wrap: wrap;
 }
 .encounter-comb {
   color: var(--accent);
@@ -835,9 +812,7 @@
 }
 /* Bandeau « devrait fuir » — conseil (⚑) + raccourci « Faire fuir ». */
 .encounter-flee {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   margin-top: 0.25rem;
 }
 .encounter-nrow .encounter-flee {
@@ -979,7 +954,13 @@
     display: inline-flex;
   }
   /* Vue compacte opt-in : rail de jetons, liste masquée. Sans la classe, la
-     liste 2 étages reste affichée (défaut mobile). */
+     liste 2 étages reste affichée (défaut mobile).
+     NON composé avec .cluster (D3) malgré un gap qui correspond : la base
+     `.encounter-rail{display:none}` (plus haut, même spécificité qu'une
+     classe) doit être renversée par CE sélecteur composé, pas par
+     `.cluster` — composer n'économiserait aucune ligne (tout doit rester
+     déclaré ici pour gagner la spécificité) et ajouterait une classe qui ne
+     sert à rien. */
   .encounter-modal.rail-compact .encounter-rail {
     display: flex;
     gap: var(--sp-2);
@@ -993,8 +974,6 @@
   }
 }
 .encounter-token {
-  display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--sp-1);
@@ -1083,16 +1062,12 @@
   margin-bottom: var(--sp-2);
 }
 .encounter-candidates {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
   max-height: 40vh;
   overflow-y: auto;
 }
 .encounter-candidate {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   width: 100%;
   text-align: left;
   padding: 0.35rem var(--sp-2);
@@ -1179,24 +1154,13 @@
    bloc moniteur. .offense-state = fine ligne d'état R1 (maintien ⟳ / drogues)
    réémise en tête des blocs. */
 .encounter-offense {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
   padding: 0.5rem 0.6rem 0;
-}
-.offense-state {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
 }
 
 /* ---- M4 : appareils matriciels (armes brickables) sur la fiche active.
    Réutilise .react-btn / .btn-icon-tiny / .monitor-box existants ; ce bloc
    ne pose que le conteneur et l'état « hors service ». ---- */
 .encounter-devices {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
   padding: 0.5rem 0.6rem 0;
 }
@@ -1226,9 +1190,6 @@
   margin-top: 0.25rem;
 }
 .encounter-device-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
   gap: var(--sp-1) var(--sp-2);
 }
 .encounter-device-name {
@@ -1265,8 +1226,6 @@
   padding-top: 0.5rem;
 }
 .encounter-ndevice-row {
-  display: flex;
-  flex-wrap: wrap;
   align-items: baseline;
   gap: var(--sp-1) var(--sp-2);
 }
@@ -1319,10 +1278,6 @@
 
 /* M5a : duel decker↔decker — même rangée que .encounter-devices. */
 .encounter-duel {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
   padding: 0.5rem 0.6rem 0;
 }
 .encounter-duel-select {
@@ -1410,9 +1365,7 @@
   transform: translateY(0);
 }
 .matrix-drawer-header {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   margin-bottom: var(--sp-2);
 }
 .matrix-drawer-title {
@@ -1467,14 +1420,9 @@
   border-radius: var(--radius-lg);
   padding: 0.6rem;
   margin: 0.5rem 0.6rem;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
 }
 .encounter-ic-head {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
 }
 .encounter-ic-name {
   font-weight: 700;
@@ -1502,11 +1450,7 @@
 }
 /* Rangée Atout (SR6) sur la fiche active : 7 jetons + steppers. */
 .encounter-edge {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
   padding: 0.5rem 0.6rem 0;
-  flex-wrap: wrap;
 }
 .encounter-edge-lbl {
   font-family: var(--font-mono);
@@ -1516,7 +1460,8 @@
   color: var(--text-dim);
 }
 .edge-tokens {
-  display: flex;
+  align-items: stretch;
+  flex-wrap: nowrap;
   gap: var(--sp-1);
 }
 .edge-token {
@@ -1538,11 +1483,7 @@
 /* Pass C : rangée Points d'Anarchy de scène (Anarchy 2.0) — jumelle de
    .encounter-edge, même grammaire. Habillage par tokens (thème anarchy2). */
 .encounter-anarchy {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
   padding: 0.5rem 0.6rem 0;
-  flex-wrap: wrap;
 }
 .encounter-anarchy-lbl {
   font-family: var(--font-mono);
@@ -1595,10 +1536,6 @@
 }
 /* K7 : rangée budget d'actions du tour actif (jetons tappables par groupe). */
 .encounter-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  flex-wrap: wrap;
   padding: 0.5rem 0.6rem 0;
 }
 .action-group {
@@ -1636,9 +1573,6 @@
 
 /* ---- K7-B : console de réaction (tour d'un PJ) ---- */
 .encounter-react {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
   padding: 0.6rem;
 }
 /* ── Deux températures (Agir vs Réagir), durcies en V7 ───────────────────────
@@ -1649,9 +1583,7 @@
    Bandeau d'une ligne nommant le mode + le combattant actif → tue l'erreur de
    mode. Le rouge (--danger) reste au seul contrôle Dégâts (« le rouge se mérite »). */
 .encounter-mode-head {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   letter-spacing: 0.06em;
@@ -1723,10 +1655,6 @@
   }
 }
 .react-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
   padding: 0.35rem 0.4rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -1739,9 +1667,7 @@
    durée échue n'a pas de geste propre — la purge est groupée en pied de
    panneau — d'où son traitement estompé. */
 .round-line {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   padding: 0.35rem 0.4rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -1820,11 +1746,9 @@
   font-weight: 600;
 }
 .react-buttons {
-  display: flex;
-  flex-wrap: wrap;
+  align-items: stretch;
   gap: var(--sp-1);
   flex: 1 1 auto;
-  justify-content: flex-end;
 }
 /* États (E1) dans la ligne de réaction. Le ＋ vit dans la grappe (c'est un
    geste) ; ce qu'il PRODUIT prend un rang sous elle — une conséquence se lit
@@ -1832,9 +1756,6 @@
    chose à y lire : `.react-states` n'est émis qu'avec au moins une pastille, et
    la feuille repliée est `hidden` (donc hors flux). */
 .react-states {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
   gap: var(--sp-1);
   flex: 1 1 100%;
   min-width: 0;
@@ -1890,8 +1811,7 @@
 /* K9 : pastilles de jet d'une CI sur la fiche active (⚔/⛉/⛊/◎ → Intrusion.rollIC).
    flex:1 1 auto = barre hétérogène qui remplit sans « mur de briques ». */
 .encounter-ic-rolls {
-  display: flex;
-  flex-wrap: wrap;
+  align-items: stretch;
   gap: var(--sp-1);
   margin-top: var(--sp-2);
 }
@@ -2007,8 +1927,6 @@
    <label> est la cible, pas la case) — geste fréquent quand il sert, donc
    échelle tactile confortable, loi 4 de la Grammaire. */
 .group-targets {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
   max-height: min(40vh, 320px);
   overflow-y: auto;
@@ -2017,9 +1935,7 @@
   border-bottom: 1px solid var(--border);
 }
 .group-target {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   min-height: 32px;
   padding: 0 var(--sp-2);
   border-radius: var(--radius-sm);
@@ -2038,7 +1954,8 @@
   font-size: var(--fs-2xs);
 }
 .group-target-tools {
-  display: flex;
+  align-items: stretch;
+  flex-wrap: nowrap;
   gap: var(--sp-1);
   padding: var(--sp-2) 0;
 }
@@ -2145,9 +2062,6 @@
 
 /* ---- Résumé de la scène de combat dans la sidebar ---- */
 .sidebar-encounter {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
   padding-bottom: var(--sp-2);
   margin-bottom: var(--sp-2);
   border-bottom: 1px solid var(--border);
@@ -2158,9 +2072,7 @@
   display: none;
 }
 .sidebar-encounter-turn {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   background: var(--bg-mid);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -2207,21 +2119,17 @@
   border-top: 1px solid var(--border);
 }
 .shortcuts-list {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-4);
 }
 .shortcut-row {
-  display: flex;
-  align-items: center;
+  flex-wrap: nowrap;
   gap: var(--sp-3);
 }
 .shortcut-keys {
   flex-shrink: 0;
   min-width: 4.5rem;
-  display: flex;
+  flex-wrap: nowrap;
   gap: var(--sp-1);
-  align-items: center;
 }
 kbd {
   background: var(--bg-mid);
@@ -2261,17 +2169,11 @@ kbd {
   padding: var(--sp-5);
 }
 .spectator-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
   max-width: 640px;
   margin: 0 auto;
   padding: 0 var(--sp-4) var(--sp-5);
 }
 .spectator-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: var(--sp-4);
   padding: var(--sp-3) var(--sp-4);
   border: 1px solid var(--border);
@@ -2304,8 +2206,7 @@ kbd {
 /* Identité du combattant côté joueurs : portrait (si dispo) + nom + type, à
    gauche de la ligne. Les joueurs doivent reconnaître QUI est en jeu. */
 .spectator-identity {
-  display: flex;
-  align-items: center;
+  flex-wrap: nowrap;
   gap: var(--sp-3);
   min-width: 0;
 }

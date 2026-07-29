@@ -131,7 +131,7 @@ export const EncounterRenderer = {
         : "";
       const waiting = liveQueue.slice(1);
       waitingHtml = waiting.length
-        ? `<div class="encounter-queue-sep">En attente · ordre du tour<span class="encounter-queue-count">${waiting.length}</span></div>` +
+        ? `<div class="cluster encounter-queue-sep">En attente · ordre du tour<span class="encounter-queue-count">${waiting.length}</span></div>` +
           waiting
             .map((x) => this._row(x.r, false, this._outOfPass(x.r, state, model), this._effectiveInit(x.r, state, model), true))
             .join("")
@@ -333,16 +333,16 @@ export const EncounterRenderer = {
       this._dismissMenuItem(r),
       { attrs: `data-action="remove-combatant" data-id="${pnjId}"`, label: "Retirer du combat", danger: true },
     ].filter(Boolean);
-    return `<div class="encounter-nrow${hasActed ? " has-acted" : ""}${r.down ? " down" : ""}${isFocused ? " is-focused" : ""}" data-action="focus-active" data-id="${pnjId}" role="button" tabindex="0" aria-current="${isFocused ? "true" : "false"}" title="Toucher pour voir ses actions">
+    return `<div class="cluster encounter-nrow${hasActed ? " has-acted" : ""}${r.down ? " down" : ""}${isFocused ? " is-focused" : ""}" data-action="focus-active" data-id="${pnjId}" role="button" tabindex="0" aria-current="${isFocused ? "true" : "false"}" title="Toucher pour voir ses actions">
       ${dragHandle}
       ${r.down ? `<span class="encounter-nrow-check" aria-hidden="true">✓</span>` : `<button type="button" class="encounter-nrow-check" data-action="narrative-toggle" data-id="${pnjId}" aria-pressed="${hasActed}" title="Marquer « joué »" aria-label="Marquer joué — ${fullName}">✓</button>`}
-      <div class="encounter-nrow-body">
+      <div class="stack encounter-nrow-body">
         <span class="encounter-nrow-name">${colorDot}${name}</span>
-        <span class="encounter-nrow-sub"><span class="encounter-kind">${kind}</span>${comb}</span>
+        <span class="cluster"><span class="encounter-kind">${kind}</span>${comb}</span>
       </div>
       ${status}
       ${this._lifeGauge(r)}
-      <span class="encounter-controls">${this._rowMenu(menuItems)}</span>
+      <span class="cluster encounter-controls">${this._rowMenu(menuItems)}</span>
       ${this._moraleBanner(r)}
     </div>`;
   },
@@ -472,7 +472,7 @@ export const EncounterRenderer = {
     if (r.down || !r.morale || r.morale === "steady") return "";
     const shaky = r.morale === "shaky";
     const label = shaky ? "Moral fragile — à tester" : "Devrait fuir";
-    return `<div class="encounter-flee">
+    return `<div class="cluster encounter-flee">
       <span class="encounter-flee-tag status ${shaky ? "is-info" : "is-warning"} is-filled" title="Selon la règle de moral de l'édition">⚑ ${label}</span>
       <button class="btn-small encounter-flee-act" data-action="flee-combatant" data-id="${r.pnjId}" title="Retirer ce combattant (fuite)">Faire fuir</button>
     </div>`;
@@ -524,9 +524,9 @@ export const EncounterRenderer = {
     // Vague B : steppers ±1 autour du champ (ajuster une init lancée sans
     // convoquer le clavier). Pas de re-tri → la ligne ne saute pas.
     const initZone = r.down
-      ? `<div class="encounter-init is-out"><span class="encounter-init-out" title="Hors de combat — sans initiative">—</span></div>`
-      : `<div class="encounter-init">
-        <div class="encounter-init-main">
+      ? `<div class="stack encounter-init is-out"><span class="encounter-init-out" title="Hors de combat — sans initiative">—</span></div>`
+      : `<div class="stack encounter-init">
+        <div class="cluster encounter-init-main">
           <button class="encounter-init-step" data-action="init-step" data-delta="-1" data-id="${pnjId}" title="Initiative −1" aria-label="Diminuer l'initiative">−</button>
           <input class="encounter-init-val" type="text" inputmode="numeric" data-action="set-init" data-id="${pnjId}"
             ${r.isPJ ? 'data-pj="1"' : ""}
@@ -568,10 +568,10 @@ export const EncounterRenderer = {
     // tableau de bord, et le ⋯ disparaît de cette ligne. Les lignes compactes
     // (en attente) et hors-combat gardent le menu ⋯.
     const isLead = isActive && !r.down;
-    return `<div class="encounter-row${isMatrix ? " is-matrix" : ""}${isActive ? " active-turn" : ""}${compact ? " compact" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}${r.down ? " down" : ""}${r.delayed && !r.down ? " delayed" : ""}" data-id="${pnjId}">
+    return `<div class="cluster encounter-row${isMatrix ? " is-matrix" : ""}${isActive ? " active-turn" : ""}${compact ? " compact" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}${r.down ? " down" : ""}${r.delayed && !r.down ? " delayed" : ""}" data-id="${pnjId}">
       ${initZone}
-      <div class="encounter-main">
-        <div class="encounter-name-row">
+      <div class="stack encounter-main">
+        <div class="cluster encounter-name-row">
           ${isActive ? `<span class="encounter-active-flag" title="Tour actif" aria-label="Tour actif"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>` : ""}
           <span class="encounter-kind">${this._kindLabel(r)}</span>
           ${nameHtml}
@@ -583,7 +583,7 @@ export const EncounterRenderer = {
         <input type="text" class="encounter-note${hasNote ? "" : " is-empty"}" placeholder="Note…" value="${Utils.escHtml(note || "")}"
           data-action="set-note" data-id="${pnjId}">
       </div>
-      <div class="encounter-controls">
+      <div class="cluster encounter-controls">
         ${actedChip}
         ${rollChip}
         ${delayChip}
@@ -606,6 +606,7 @@ export const EncounterRenderer = {
     const avatar = r.isPJ ? CardRenderer._pcAvatar(pnj) : "";
     const initLabel = r.down ? "—" : r.delayed ? "⏸" : init == null ? "·" : String(init);
     const cls = [
+      "stack",
       "encounter-token",
       isMatrix && "is-matrix", // canal --accent2 (jeton CI)
       isActive && "active-turn",
@@ -635,7 +636,7 @@ export const EncounterRenderer = {
     const name = Utils.escHtml(alias || family || full);
     const fullName = Utils.escHtml(full);
     const avatar = r.isPJ ? CardRenderer._pcAvatar(pnj) : "";
-    const cls = ["encounter-token", hasActed && "has-acted", r.down && "down"].filter(Boolean).join(" ");
+    const cls = ["stack", "encounter-token", hasActed && "has-acted", r.down && "down"].filter(Boolean).join(" ");
     return `<button class="${cls}" data-action="narrative-toggle" data-id="${pnjId}" title="${fullName}">
       <span class="encounter-token-init">${hasActed ? "✓" : "•"}</span>
       <span class="encounter-token-name">${avatar}${name}</span>
@@ -662,7 +663,7 @@ export const EncounterRenderer = {
         const kind = this._kindLabel({ pnj: p });
         // data-name = clé de recherche normalisée (jamais affichée).
         const norm = Utils.escHtml(Utils.searchNorm((p.name || "") + " " + kind));
-        return `<button class="encounter-candidate" data-action="add-candidate" data-id="${p.id}" data-name="${norm}">
+        return `<button class="cluster encounter-candidate" data-action="add-candidate" data-id="${p.id}" data-name="${norm}">
           <span class="encounter-kind">${kind}</span>
           <span class="encounter-candidate-name">${Utils.escHtml(p.name || "Sans nom")}</span>
           <span class="encounter-candidate-add">＋</span>
@@ -673,7 +674,7 @@ export const EncounterRenderer = {
     const serverRows = (servers || [])
       .map((s) => {
         const norm = Utils.escHtml(Utils.searchNorm((s.name || "") + " serveur"));
-        return `<button class="encounter-candidate" data-action="link-server" data-id="${s.id}" data-name="${norm}">
+        return `<button class="cluster encounter-candidate" data-action="link-server" data-id="${s.id}" data-name="${norm}">
           <span class="encounter-kind">Serveur</span>
           <span class="encounter-candidate-name">${Utils.escHtml(s.name || "Sans nom")}</span>
           <span class="encounter-candidate-add">⚡</span>
@@ -690,7 +691,7 @@ export const EncounterRenderer = {
           placeholder="Filtrer par nom ou type…" value="${Utils.escHtml(this._pickerQuery || "")}"
           aria-label="Filtrer les combattants à ajouter">
       </div>
-      <div class="encounter-candidates">
+      <div class="stack encounter-candidates">
         ${rows}${serverRows}
         ${
           rows || serverRows
@@ -848,7 +849,7 @@ export const EncounterRenderer = {
       blocks.push(`<div class="encounter-device-owner">${Utils.escHtml(pnj.name || "")}</div>${rows}`);
     }
     if (!blocks.length) return "";
-    return `<div class="encounter-devices encounter-react-devices">
+    return `<div class="stack encounter-devices encounter-react-devices">
       <div class="encounter-devices-lbl">🔌 Appareils matriciels ciblables — le decker les brique</div>
       ${blocks.join("")}
     </div>`;
@@ -888,7 +889,7 @@ export const EncounterRenderer = {
     if (!targets.length) return "";
     const esc = Utils.escHtml;
     const options = targets.map((t) => `<option value="${t.id}">${esc(t.name)}</option>`).join("");
-    return `<div class="encounter-duel">
+    return `<div class="cluster encounter-duel">
       <span class="encounter-devices-lbl">Duel decker↔decker</span>
       <select class="encounter-duel-select" aria-label="Decker ciblé">${options}</select>
       <button class="react-btn" data-action="decker-attack" data-id="${pnj.id}" title="Piratage contre ce decker (dégâts : cases de son propre moniteur de deck)"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-combat"></use></svg> Piratage</button>
@@ -938,14 +939,14 @@ export const EncounterRenderer = {
             return `<span class="encounter-ndevice-chip">${toggle}${this._deviceProtection(r.pnj, w, devices[w] || {}, protectors)}</span>`;
           })
           .join("");
-        return `<div class="encounter-ndevice-row">
+        return `<div class="cluster encounter-ndevice-row">
           <span class="encounter-ndevice-owner">${esc(r.pnj.name || "")}</span>
           <span class="cluster encounter-ndevice-chips">${chips}</span>
         </div>`;
       })
       .join("");
     if (!blocks) return "";
-    return `<div class="encounter-devices encounter-ndevices">
+    return `<div class="stack encounter-devices encounter-ndevices">
       <div class="encounter-devices-lbl">Appareils matriciels — touchez une arme pour la rendre hors service</div>
       ${blocks}
     </div>`;
@@ -962,7 +963,7 @@ export const EncounterRenderer = {
     const el = esc(label);
     const idAttrs = `data-id="${pnj.id}" data-label="${el}"`;
     if (!d) {
-      return `<div class="encounter-device-row">
+      return `<div class="cluster encounter-device-row">
         <span class="encounter-device-name">${el}</span>
         <button class="react-btn" data-action="target-device" ${idAttrs}>Bricker</button>
       </div>`;
@@ -986,7 +987,7 @@ export const EncounterRenderer = {
       Ind. ${d.indice}
       <button class="btn-icon-tiny" data-action="device-rating-step" data-delta="1" ${idAttrs} aria-label="Indice +1">＋</button>
     </span>`;
-    return `<div class="encounter-device-row${d.bricked ? " is-bricked" : ""}">
+    return `<div class="cluster encounter-device-row${d.bricked ? " is-bricked" : ""}">
       <span class="encounter-device-name">${el}</span>
       ${rating}
       <div class="cluster monitor-boxes">${boxes}</div>
@@ -1062,7 +1063,7 @@ export const EncounterRenderer = {
       atouts && atouts.narrationAction
         ? `<button class="encounter-anarchy-narration${narrationActive ? " is-active" : ""}" data-action="narration-bonus" data-id="${r.pnjId}" title="Un atout octroie +1 action par narration — active le bonus pour ce tour" aria-pressed="${narrationActive}">+1 action/narration</button>`
         : "";
-    return `<div class="encounter-anarchy" title="Points d'Anarchy de scène (Anarchy 2.0 — atouts p.77, drogues p.159)">
+    return `<div class="cluster encounter-anarchy" title="Points d'Anarchy de scène (Anarchy 2.0 — atouts p.77, drogues p.159)">
       <span class="encounter-anarchy-lbl">Points d'Anarchy</span>
       <button class="btn-icon-tiny" data-action="anarchy-step" data-delta="-1" data-id="${r.pnjId}" aria-label="Points d'Anarchy −1">−</button>
       <span class="encounter-anarchy-val">${ap}</span>
@@ -1078,10 +1079,10 @@ export const EncounterRenderer = {
   _activeEdge(r) {
     const edge = r.edge || 0;
     const tokens = Array.from({ length: 7 }, (_, i) => `<span class="edge-token${i < edge ? " filled" : ""}"></span>`).join("");
-    return `<div class="encounter-edge" title="Atout SR6 (max 7, gain +2/tour de personnage — p.50)">
+    return `<div class="cluster encounter-edge" title="Atout SR6 (max 7, gain +2/tour de personnage — p.50)">
       <span class="encounter-edge-lbl">Atout</span>
       <button class="btn-icon-tiny" data-action="edge-step" data-delta="-1" data-id="${r.pnjId}" aria-label="Atout −1">−</button>
-      <span class="edge-tokens" aria-hidden="true">${tokens}</span>
+      <span class="cluster edge-tokens" aria-hidden="true">${tokens}</span>
       <span class="encounter-edge-val">${edge}/7</span>
       <button class="btn-icon-tiny" data-action="edge-step" data-delta="1" data-id="${r.pnjId}" aria-label="Atout +1">＋</button>
     </div>`;
@@ -1115,7 +1116,7 @@ export const EncounterRenderer = {
         </span>`;
       })
       .join("");
-    return `<div class="encounter-actions" title="Actions du tour (économie de l'édition — taper pour consommer)">${groups}${this._actionTrades(r, budget)}${this._actionPick(r, budget)}${this._activeGrafts(r)}</div>`;
+    return `<div class="cluster encounter-actions" title="Actions du tour (économie de l'édition — taper pour consommer)">${groups}${this._actionTrades(r, budget)}${this._actionPick(r, budget)}${this._activeGrafts(r)}</div>`;
   },
 
   /* ========================================================
@@ -1527,12 +1528,12 @@ export const EncounterRenderer = {
       // = _activeEconomy (posé juste au-dessus). L'état maintenu ⟳ / les drogues
       // (R1) sont réémis en tête des blocs par offenseBlocks. Rollables câblés
       // par la délégation document-level (DiceRoller), inchangée.
-      box.innerHTML = `<div class="encounter-mode-head is-agir${modeEnter ? " mode-enter" : ""}">Agir · ${this._compactName(pnj.name)}</div>
+      box.innerHTML = `<div class="cluster encounter-mode-head is-agir${modeEnter ? " mode-enter" : ""}">Agir · ${this._compactName(pnj.name)}</div>
         <div class="encounter-active-top">${this._activeTop(active, state)}</div>
         <div class="encounter-active-economy">${this._activeEconomy(active, model)}</div>`;
       const offense = CardRenderer.offenseBlocks(pnj, CardRenderer.liveDeps());
       if (offense != null) {
-        box.insertAdjacentHTML("beforeend", `<div class="encounter-offense">${offense}</div>`);
+        box.insertAdjacentHTML("beforeend", `<div class="stack stack--tight encounter-offense">${offense}</div>`);
       } else {
         // anarchy2 (offense sur mesure, pas encore recomposée) : repli sur la
         // fiche complète en vue Combat, comme avant V7 — sur un CLONE (applyView
@@ -1597,7 +1598,7 @@ export const EncounterRenderer = {
       ["soak", "⛊", "Encaisser"],
       ["per", "◎", "Perception"],
     ]);
-    const rollsHtml = combatHtml ? `<div class="encounter-ic-rolls">${combatHtml}</div>` : "";
+    const rollsHtml = combatHtml ? `<div class="cluster encounter-ic-rolls">${combatHtml}</div>` : "";
     const originLine = srv
       ? `${Utils.escHtml(srv.name)} · indice ${srv.indice}`
       : `CI autonome · indice ${indice}`;
@@ -1607,8 +1608,8 @@ export const EncounterRenderer = {
     box.hidden = false;
     box.innerHTML =
       this._activeBandeau(r) +
-      `<div class="encounter-ic-card">
-        <div class="encounter-ic-head">
+      `<div class="stack stack--tight encounter-ic-card">
+        <div class="cluster encounter-ic-head">
           <span class="encounter-kind is-matrix">CI</span>
           <span class="encounter-ic-name">${Utils.escHtml(label)}</span>
         </div>
@@ -1655,7 +1656,7 @@ export const EncounterRenderer = {
       : "un PJ";
     box.hidden = false;
     box.innerHTML = `<div class="encounter-react${modeEnter ? " mode-enter" : ""}">
-      <div class="encounter-mode-head is-react">Réagir · ${pjName} agit — faites réagir les PNJ</div>
+      <div class="cluster encounter-mode-head is-react">Réagir · ${pjName} agit — faites réagir les PNJ</div>
       ${rowsHtml}
       ${devicesHtml}
     </div>`;
@@ -1785,11 +1786,11 @@ export const EncounterRenderer = {
       quickOnly: true,
     });
     const statusBtn = st ? st.plus : "";
-    const statusChips = st && st.chips ? `<span class="react-states">${st.chips}</span>` : "";
+    const statusChips = st && st.chips ? `<span class="cluster react-states">${st.chips}</span>` : "";
     const statusSheet = st ? st.sheet : "";
-    return `<div class="react-row">
+    return `<div class="cluster react-row">
         <span class="react-name">${name}</span>
-        <span class="react-buttons">${defBtn}${fdBtn}${soakBtn}${damageBtn}${statusBtn}${peek}</span>
+        <span class="cluster cluster--end react-buttons">${defBtn}${fdBtn}${soakBtn}${damageBtn}${statusBtn}${peek}</span>
         ${statusChips}${statusSheet}
       </div>${interruptBody}${chipsBody}`;
   },
@@ -1943,9 +1944,9 @@ export const EncounterRenderer = {
     const buttons =
       chips ||
       `<span class="react-btn is-off" title="Pas de réserve de défense"><span class="react-glyph" aria-hidden="true">⛉</span> —</span>`;
-    return `<div class="react-row">
+    return `<div class="cluster react-row">
         <span class="react-name">${Utils.escHtml(rawName)} <span class="encounter-kind is-matrix">CI</span></span>
-        <span class="react-buttons">${buttons}</span>
+        <span class="cluster cluster--end react-buttons">${buttons}</span>
       </div>`;
   },
 
@@ -1993,7 +1994,7 @@ export const EncounterRenderer = {
     const lignes = this._groupCibles
       .map((t) => {
         const hors = this._groupChoix && !t.keys.includes(this._groupChoix);
-        return `<label class="group-target${hors ? " is-off" : ""}">
+        return `<label class="cluster group-target${hors ? " is-off" : ""}">
           <input type="checkbox" data-group-target="${t.pnjId}"${this._groupSel.has(t.pnjId) ? " checked" : ""}${hors ? " disabled" : ""}>
           <span>${this._compactName(t.name)}</span>
           ${hors ? `<span class="group-target-note">état absent de son édition</span>` : ""}
@@ -2029,8 +2030,8 @@ export const EncounterRenderer = {
           <button class="risk-panel-close" id="group-status-close" aria-label="Fermer">✕</button>
         </div>
         <div class="status-sheet" id="group-status-etats"></div>
-        <div class="group-targets" id="group-status-cibles"></div>
-        <div class="group-target-tools">
+        <div class="stack group-targets" id="group-status-cibles"></div>
+        <div class="cluster group-target-tools">
           <button class="btn-icon-tiny action-trade" id="group-status-all">Tout cocher</button>
           <button class="btn-icon-tiny action-trade" id="group-status-none">Rien</button>
         </div>
@@ -2133,7 +2134,7 @@ export const EncounterRenderer = {
       const geste = l.resisted
         ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${nom}" data-roll-pnj="${l.pnj.id}" title="Résister à ${l.vd}${type}"><span class="react-glyph" aria-hidden="true">⛊</span> ${soak}</button>`
         : `<button class="react-btn react-btn-danger" data-action="round-apply" data-idx="${i}" title="Dégâts déjà nets — le livre dit « non résisté »"><span class="react-glyph react-glyph-danger" aria-hidden="true">✸</span> ${l.vd}${type}</button>`;
-      return `<div class="round-line" data-todo>
+      return `<div class="cluster round-line" data-todo>
         <span class="round-line-who">${nom}</span>
         <span class="round-line-what">${Utils.escHtml(l.name)}${l.level > 1 ? ` ${l.level}` : ""} · VD ${l.vd}${type}${l.resisted ? "" : " non résisté"}</span>
         ${geste}
@@ -2146,13 +2147,13 @@ export const EncounterRenderer = {
       // tour de la pose).
       const rang = l.age + 1;
       const esc = l.escalates ? ` · ${rang}${rang === 1 ? "er" : "e"} tour` : "";
-      return `<div class="round-line" data-todo>
+      return `<div class="cluster round-line" data-todo>
         <span class="round-line-who">${nom}</span>
         <span class="round-line-what">${Utils.escHtml(l.name)} · ${(l.pool || []).join(" + ")} (${l.threshold})${esc}</span>
         <button class="react-btn" data-roll="${pool}" data-roll-label="${Utils.escHtml(l.name)} — ${nom}" data-roll-pnj="${l.pnj.id}" title="Seuil ${l.threshold}"><span class="react-glyph" aria-hidden="true">⚄</span> ${pool}</button>
       </div>`;
     }
-    return `<div class="round-line is-echu">
+    return `<div class="cluster round-line is-echu">
       <span class="round-line-who">${nom}</span>
       <span class="round-line-what">${Utils.escHtml(l.name)} · durée échue (${quand} de round)</span>
     </div>`;
