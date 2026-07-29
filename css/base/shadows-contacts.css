@@ -2224,44 +2224,6 @@ body.reordering .reorder-handle {
   color: var(--text-dim);
 }
 
-/* Ancien toolbar (conservé pour compatibilité) */
-.shadows-toolbar {
-  display: flex;
-  gap: var(--sp-3);
-  margin-bottom: var(--sp-4);
-  align-items: center;
-  flex-wrap: wrap;
-}
-.group-tabs {
-  display: flex;
-  gap: var(--sp-1);
-  flex-wrap: wrap;
-  flex: 1;
-}
-.group-tab {
-  padding: 0.3rem 0.9rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--fs-sm);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition:
-    border-color var(--dur-base),
-    color var(--dur-base);
-}
-.group-tab:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.group-tab.active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--glow);
-}
-
 /* ============================================================
    EMPTY STATE
    ============================================================ */
