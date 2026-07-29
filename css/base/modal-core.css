@@ -85,9 +85,6 @@
    la place de l'ancien bouton Sauvegarder et pousse les actions à droite. */
 .modal-autosave-hint {
   margin-right: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.4em;
   color: var(--text-dim);
   font-size: var(--fs-sm);
 }
