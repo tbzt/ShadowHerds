@@ -1188,7 +1188,7 @@ export const EncounterRenderer = {
         return `<button type="button" class="tag status-pick${cher}" data-action="edge-use" data-id="${r.pnjId}" data-key="${g.key}" title="${Utils.escHtml(info)}">${Utils.escHtml(g.name)}<span class="edge-cost">${g.cost}</span></button>`;
       })
       .join("");
-    return `<div class="encounter-grafts">
+    return `<div class="cluster encounter-grafts">
       <span class="graft-lbl">Atout sur ${Utils.escHtml(hote ? hote.name : r.lastAction)}</span>${puces}
     </div>`;
   },
@@ -1342,15 +1342,15 @@ export const EncounterRenderer = {
         ? domaines
             .map(
               (d) =>
-                `<span class="action-domain"><span class="action-domain-lbl">${Utils.escHtml(d.label)}</span>${d.entries.map(puce).join("")}</span>`,
+                `<span class="cluster action-domain"><span class="action-domain-lbl">${Utils.escHtml(d.label)}</span>${d.entries.map(puce).join("")}</span>`,
             )
             .join("")
         : reste.map(puce).join("");
     const tous = reste.length
       ? `<button type="button" class="tag status-more" data-action="action-more" aria-expanded="${restOuvert}">tous…</button>
-         <span class="action-rest"${restOuvert ? "" : " hidden"}>${corps}</span>`
+         <span class="cluster action-rest"${restOuvert ? "" : " hidden"}>${corps}</span>`
       : "";
-    return `<div class="status-sheet action-sheet" data-action-sheet="${r.pnjId}"${ouverte ? "" : " hidden"}>${notice}${rapides}${tous}</div>`;
+    return `<div class="cluster status-sheet action-sheet" data-action-sheet="${r.pnjId}"${ouverte ? "" : " hidden"}>${notice}${rapides}${tous}</div>`;
   },
 
   /** Déplie/replie la feuille. Toute la mécanique vit dans `Sheets` depuis le
@@ -2029,7 +2029,7 @@ export const EncounterRenderer = {
           <span class="risk-panel-title">Poser un état sur plusieurs</span>
           <button class="risk-panel-close" id="group-status-close" aria-label="Fermer">✕</button>
         </div>
-        <div class="status-sheet" id="group-status-etats"></div>
+        <div class="cluster status-sheet" id="group-status-etats"></div>
         <div class="stack group-targets" id="group-status-cibles"></div>
         <div class="cluster group-target-tools">
           <button class="btn-icon-tiny action-trade" id="group-status-all">Tout cocher</button>

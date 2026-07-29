@@ -2097,7 +2097,7 @@ export const CardRenderer = {
       ni pour un PJ ad-hoc, qui n'a pas de fiche à porter. */
   _statusRow(pnj, edition, deps) {
     const p = this.statusParts(pnj, deps);
-    return p ? `<div class="combat-states">${p.chips}${p.plus}${p.sheet}</div>` : "";
+    return p ? `<div class="cluster combat-states">${p.chips}${p.plus}${p.sheet}</div>` : "";
   },
 
   /** Les TROIS pièces de la ligne d'états, séparées — pour une surface qui
@@ -2178,8 +2178,8 @@ export const CardRenderer = {
       : quickOnly
         ? `<span class="action-notice">${reste.length} autre${reste.length > 1 ? "s" : ""} état${reste.length > 1 ? "s" : ""} — ouvrez la fiche ⛶</span>`
         : `<button type="button" class="tag status-more" data-action="status-more" data-id="${pnj.id}" aria-expanded="${restOuvert}">tous…</button>
-         <span class="status-rest"${restOuvert ? "" : " hidden"}>${reste.map(puce).join("")}</span>`;
-    return `<div class="status-sheet" data-status-sheet="${pnj.id}"${Sheets.hiddenAttr("status", pnj.id)}>${rapides.map(puce).join("")}${tous}</div>`;
+         <span class="cluster status-rest"${restOuvert ? "" : " hidden"}>${reste.map(puce).join("")}</span>`;
+    return `<div class="cluster status-sheet" data-status-sheet="${pnj.id}"${Sheets.hiddenAttr("status", pnj.id)}>${rapides.map(puce).join("")}${tous}</div>`;
   },
 
   /** I, II, III… — la notation du livre pour les échelles plafonnées. */

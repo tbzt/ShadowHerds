@@ -83,9 +83,6 @@
    patron `.drug-tag` (tag cliquable à état, déjà dans les doigts du MJ). Ce
    bloc ne pose donc qu'un liseré « posé », le ✕ de retrait et la feuille. */
 .combat-states {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
   gap: var(--sp-1);
   margin-top: var(--sp-1);
 }
@@ -214,9 +211,8 @@
    états déjà posés. */
 .status-sheet {
   flex-basis: 100%;
-  display: flex;
-  flex-wrap: wrap;
   gap: var(--sp-1);
+  align-items: stretch;
   margin-top: var(--sp-1);
   padding: var(--sp-2);
   border: 1px dashed var(--border);
@@ -256,9 +252,6 @@
 .status-rest,
 .action-rest {
   flex-basis: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
   gap: var(--sp-1);
   max-height: min(50vh, 420px);
   overflow-y: auto;
@@ -359,9 +352,6 @@
    elle l'est toujours depuis qu'A3 en a fait une boîte à défilement.) */
 .action-domain {
   flex-basis: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
   gap: var(--sp-1);
 }
 .action-domain-lbl {
@@ -382,9 +372,6 @@
    Le cockpit reste donc à DEUX surfaces dépliables (actions, états), comme
    avant le lot. */
 .encounter-grafts {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
   gap: var(--sp-1);
   width: 100%;
 }
@@ -527,9 +514,7 @@
   animation: modalPop 0.18s ease;
 }
 .card-peek-head {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   padding: var(--sp-2) var(--sp-3);
   border-bottom: 1px solid var(--border);
 }

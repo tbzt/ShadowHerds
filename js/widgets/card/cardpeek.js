@@ -112,7 +112,7 @@ export const CardPeek = {
     overlay.id = "card-peek-overlay";
     overlay.innerHTML = `
       <div class="card-peek" role="dialog" aria-modal="true" aria-labelledby="card-peek-title" tabindex="-1">
-        <div class="card-peek-head">
+        <div class="cluster card-peek-head">
           <button type="button" class="card-peek-nav card-peek-prev" aria-label="Fiche précédente">&lsaquo;</button>
           <span class="card-peek-title" id="card-peek-title"></span>
           <button type="button" class="card-peek-nav card-peek-next" aria-label="Fiche suivante">&rsaquo;</button>
