@@ -356,7 +356,7 @@ export const EncounterRenderer = {
   _rowMenu(items) {
     const esc = Utils.escHtml;
     return `<button type="button" class="card-kebab" data-card-menu-toggle aria-haspopup="true" aria-expanded="false" aria-label="Plus d'actions">⋯</button>
-      <div class="card-menu" role="menu" hidden>${items
+      <div class="stack card-menu" role="menu" hidden>${items
         .map(
           (a) =>
             `<button type="button" role="menuitem" class="card-menu-item${a.danger ? " danger" : ""}" ${a.attrs}>${esc(a.label)}</button>`,
@@ -989,7 +989,7 @@ export const EncounterRenderer = {
     return `<div class="encounter-device-row${d.bricked ? " is-bricked" : ""}">
       <span class="encounter-device-name">${el}</span>
       ${rating}
-      <div class="monitor-boxes">${boxes}</div>
+      <div class="cluster monitor-boxes">${boxes}</div>
       ${brickedBadge}${untarget}
       ${this._deviceProtection(pnj, label, d, protectors)}
     </div>`;
@@ -1614,7 +1614,7 @@ export const EncounterRenderer = {
         </div>
         <div class="encounter-ic-server">${originLine}</div>
         ${attrsHtml}
-        <div class="monitor-row"><span class="monitor-label">Moniteur</span><div class="monitor-boxes">${boxes}</div></div>
+        <div class="cluster monitor-row"><span class="monitor-label">Moniteur</span><div class="cluster monitor-boxes">${boxes}</div></div>
         ${eff ? `<div class="encounter-ic-power">${Utils.escHtml(eff)}</div>` : ""}
         ${rollsHtml}
         ${drawerBtn}

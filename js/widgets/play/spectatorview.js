@@ -124,7 +124,7 @@ export const SpectatorView = {
     // aplati. Lecture seule (projection) — CardRenderer.gaugeBoxes n'émet
     // aucune interaction.
     const boxes = CardRenderer.gaugeBoxes(r.gauge);
-    const gauge = boxes ? `<div class="monitor-boxes spectator-gauge">${boxes}</div>` : "";
+    const gauge = boxes ? `<div class="cluster monitor-boxes spectator-gauge">${boxes}</div>` : "";
     const cls = `spectator-row${isActive ? " is-active" : ""}${r.down ? " is-down" : ""}${r.hasActed ? " has-acted" : ""}`;
     // Identité (portrait + nom + type) à gauche, moniteur à droite : les joueurs
     // doivent savoir QUI est en jeu, pas seulement voir des cases.

@@ -396,7 +396,7 @@ export const ServerRenderer = {
         const eff = typeof ic.effect === "function" ? ic.effect(srv) : "";
 
         const M = Matrix.use(srv.edition);
-        const boxes = `<span class="monitor-boxes">${Array.from({ length: size }, (_, i) => {
+        const boxes = `<span class="cluster monitor-boxes">${Array.from({ length: size }, (_, i) => {
           const n = i + 1;
           return `<span class="monitor-box ${st.dmg >= n ? "filled" : ""}"${M.monitorBoxSep(n)}
               title="${M.monitorBoxLabel(n)}"
@@ -450,7 +450,7 @@ export const ServerRenderer = {
           </div>
           <div class="ic-row-effect">${ic.def ? `<b>Défense :</b> ${esc(ic.def)} — ` : ""}${esc(eff)}</div>
           ${rolls ? `<div class="ic-row-rolls">${rolls}</div>` : ""}
-          ${st.active || st.down || ic.watch ? `<div class="monitor-row"><span class="monitor-label">Moniteur${Matrix.use(srv.edition).firewallLabel()}</span>${boxes}</div>` : ""}
+          ${st.active || st.down || ic.watch ? `<div class="cluster monitor-row"><span class="monitor-label">Moniteur${Matrix.use(srv.edition).firewallLabel()}</span>${boxes}</div>` : ""}
         </div>`;
       })
       .join("");

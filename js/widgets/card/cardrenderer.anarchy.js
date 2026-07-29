@@ -93,9 +93,9 @@ Object.assign(CardRenderer, {
     // ne déterminent que la GRAVITÉ d'un coup reçu (via des attributs de
     // résistance différents), pas des moniteurs séparés.
     combatBody += `<div class="monitor-block">
-      <div class="monitor-row">
+      <div class="cluster monitor-row">
         <span class="monitor-label">État</span>
-        <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj, atouts)}</div>
+        <div class="cluster monitor-boxes">${this._monitorBoxesAnarchy(pnj, atouts)}</div>
       </div>
     </div>`;
 

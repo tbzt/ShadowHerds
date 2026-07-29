@@ -14,7 +14,7 @@ Object.assign(CardRenderer, {
     const icon = v.kind === "drone" ? "◇" : "▣";
     const kindLabel = v.kind === "drone" ? "Drone" : "Véhicule";
     const destroyed = App.getEditionModule(v.edition).conditionMonitor.isDestroyed(v);
-    return `<div class="pnj-card-header vehicle-header${destroyed ? " destroyed" : ""}">
+    return `<div class="cluster pnj-card-header vehicle-header${destroyed ? " destroyed" : ""}">
       <div class="pnj-header-left">
         <div class="pnj-name">${icon} ${this._esc(v.name)}</div>
         <div class="pnj-meta">
@@ -50,7 +50,7 @@ Object.assign(CardRenderer, {
         title="${sp.collapsed ? "Déplier la fiche" : "Replier la fiche"}"
         aria-label="${sp.collapsed ? "Déplier la fiche" : "Replier la fiche"}"
         aria-expanded="${sp.collapsed ? "false" : "true"}"><svg class="icon${sp.collapsed ? "" : " is-open"}" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>`;
-    return `<div class="pnj-card-header vehicle-header spirit-header${destroyed ? " destroyed" : ""}">
+    return `<div class="cluster pnj-card-header vehicle-header spirit-header${destroyed ? " destroyed" : ""}">
       ${this._portraitThumb(sp)}
       <div class="pnj-header-left">
         <div class="pnj-name">✦ ${this._esc(sp.name)}</div>
@@ -101,9 +101,9 @@ Object.assign(CardRenderer, {
     if (Mod.conditionMonitor.vehicleFields === "thresholds") {
       const [l, g, i] = deps.Vehicles.anarchyThresholds(v);
       html += `<div class="monitor-block">
-        <div class="monitor-row">
+        <div class="cluster monitor-row">
           <span class="monitor-label" title="Seuils : léger ${l} / grave ${g} / incap ${i} (Structure+Blindage ×1/×2/×3)">État</span>
-          <div class="monitor-boxes">${this._monitorBoxesAnarchy(v)}</div>
+          <div class="cluster monitor-boxes">${this._monitorBoxesAnarchy(v)}</div>
         </div>
         <div class="anarchy-seuil-row" style="margin-top:4px;">
           <span class="anarchy-seuil-label">Seuils dommages</span>
@@ -112,9 +112,9 @@ Object.assign(CardRenderer, {
       </div>`;
     } else {
       html += `<div class="monitor-block">
-        <div class="monitor-row">
+        <div class="cluster monitor-row">
           <span class="monitor-label">État</span>
-          <div class="monitor-boxes">${this._monitorBoxes(v.id, "mon", v.monTotal || 9, v.monFilled || 0)}</div>
+          <div class="cluster monitor-boxes">${this._monitorBoxes(v.id, "mon", v.monTotal || 9, v.monFilled || 0)}</div>
         </div>
       </div>`;
     }
@@ -258,7 +258,7 @@ Object.assign(CardRenderer, {
         title="${sp.collapsed ? "Déplier la fiche" : "Replier la fiche"}"
         aria-label="${sp.collapsed ? "Déplier la fiche" : "Replier la fiche"}"
         aria-expanded="${sp.collapsed ? "false" : "true"}"><svg class="icon${sp.collapsed ? "" : " is-open"}" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>`;
-    return `<div class="pnj-card-header vehicle-header spirit-header sprite-header${destroyed ? " destroyed" : ""}">
+    return `<div class="cluster pnj-card-header vehicle-header spirit-header sprite-header${destroyed ? " destroyed" : ""}">
       <div class="pnj-header-left">
         <div class="pnj-name">◈ ${this._esc(sp.name)}</div>
         <div class="pnj-meta">${metaLine}</div>
@@ -332,7 +332,7 @@ Object.assign(CardRenderer, {
     // Moniteur matriciel (case unique, mécanique toggle-monitor type "mat").
     html += `<div class="monitor-block sprite-monitor">
       <div class="monitor-label">Moniteur matriciel</div>
-      <div class="monitor-boxes">${this._monitorBoxes(sp.id, "mat", sp.matrixMonitor || 8, sp.matFilled || 0)}</div>
+      <div class="cluster monitor-boxes">${this._monitorBoxes(sp.id, "mat", sp.matrixMonitor || 8, sp.matFilled || 0)}</div>
     </div>`;
 
     html += "</div></div>";

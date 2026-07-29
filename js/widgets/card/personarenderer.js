@@ -36,7 +36,7 @@ export const PersonaRenderer = {
       .join("")}</div>`;
     const realloc = Resonance.redistributable(edition);
     const reallocHtml = realloc && keys.length > 1
-      ? `<div class="cyberdeck-realloc" title="Reconfigurer les attributs matriciels">${keys
+      ? `<div class="cluster cyberdeck-realloc" title="Reconfigurer les attributs matriciels">${keys
           .slice(0, -1)
           .map(
             (k, i) =>
@@ -72,7 +72,7 @@ export const PersonaRenderer = {
     const openBtn = targetId
       ? `<button type="button" class="cyberdeck-swap" data-action="deck-open-matrix" data-id="${pnj.id}" title="Ouvrir la Matrice de ce serveur">⚡ Ouvrir la Matrice</button>`
       : "";
-    return `<div class="cyberdeck-target">
+    return `<div class="cluster cyberdeck-target">
       <select class="cyberdeck-target-select" data-action="deck-set-target" data-id="${pnj.id}" aria-label="Serveur ciblé">${options}</select>
       ${openBtn}
     </div>`;

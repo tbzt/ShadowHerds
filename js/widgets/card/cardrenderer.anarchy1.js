@@ -63,13 +63,13 @@ Object.assign(CardRenderer, {
     combatBody += "</div>";
 
     combatBody += `<div class="monitor-block">
-      <div class="monitor-row">
+      <div class="cluster monitor-row">
         <span class="monitor-label" title="Physique">P</span>
-        <div class="monitor-boxes monitor-phys">${this._monitorBoxes(pnj.id, "phys", physMon, physFilled)}</div>
+        <div class="cluster monitor-boxes monitor-phys">${this._monitorBoxes(pnj.id, "phys", physMon, physFilled)}</div>
       </div>
-      <div class="monitor-row">
+      <div class="cluster monitor-row">
         <span class="monitor-label" title="Étourdissant">E</span>
-        <div class="monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, stunFilled)}</div>
+        <div class="cluster monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, stunFilled)}</div>
       </div>
       ${this._monitorMalusBadge(wound)}
     </div>`;

@@ -45,7 +45,7 @@ export const CyberdeckRenderer = {
     // quelques taps, comme un tri par transpositions.
     const realloc = Cyberdeck.reallocatable(edition);
     const reallocHtml = realloc && keys.length > 1
-      ? `<div class="cyberdeck-realloc" title="Reconfigurer le deck (${esc(Cyberdeck.reallocCostLabel(edition))})">${keys
+      ? `<div class="cluster cyberdeck-realloc" title="Reconfigurer le deck (${esc(Cyberdeck.reallocCostLabel(edition))})">${keys
           .slice(0, -1)
           .map(
             (k, i) =>
@@ -64,10 +64,10 @@ export const CyberdeckRenderer = {
     // Absent si l'édition n'a pas de moniteur de deck séparé (Anarchy 2.0).
     const size = Cyberdeck.monitorSize(edition, deck);
     const monitorHtml = size
-      ? `<div class="monitor-row"><span class="monitor-label">Moniteur</span><div class="monitor-boxes">${this._monitorBoxes(pnj.id, size, deck.filled || 0)}</div></div>`
+      ? `<div class="cluster monitor-row"><span class="monitor-label">Moniteur</span><div class="cluster monitor-boxes">${this._monitorBoxes(pnj.id, size, deck.filled || 0)}</div></div>`
       : "";
     const programsHtml = deck.programs && deck.programs.length
-      ? `<div class="cyberdeck-programs">${deck.programs.map((p) => `<span class="tag">${esc(p)}</span>`).join("")}</div>`
+      ? `<div class="cluster cyberdeck-programs">${deck.programs.map((p) => `<span class="tag">${esc(p)}</span>`).join("")}</div>`
       : "";
     const nameHtml = deck.name ? `<span class="cyberdeck-name">${esc(deck.name)}</span>` : "";
     return `<div class="ref-block cyberdeck-block">
@@ -158,7 +158,7 @@ export const CyberdeckRenderer = {
     const openBtn = targetId
       ? `<button type="button" class="cyberdeck-swap" data-action="deck-open-matrix" data-id="${pnj.id}" title="Ouvrir la Matrice de ce serveur">⚡ Ouvrir la Matrice</button>`
       : "";
-    return `<div class="cyberdeck-target">
+    return `<div class="cluster cyberdeck-target">
       <select class="cyberdeck-target-select" data-action="deck-set-target" data-id="${pnj.id}" aria-label="Serveur ciblé">${options}</select>
       ${openBtn}
     </div>`;
@@ -213,7 +213,7 @@ export const CyberdeckRenderer = {
     const loadoutInput = catalog.length
       ? `<div class="form-group full">
           <label>Actions matricielles équipées (râtelier)</label>
-          <div class="deck-loadout-picker">
+          <div class="cluster deck-loadout-picker">
             ${catalog
               .map(
                 (a) =>
@@ -256,7 +256,7 @@ export const CyberdeckRenderer = {
     const picker = catalog.length
       ? `<div class="form-group full">
           <label>Programmes chargés</label>
-          <div class="deck-loadout-picker">
+          <div class="cluster deck-loadout-picker">
             ${catalog
               .map((p) => {
                 const motor = p.effect ? " ●" : "";

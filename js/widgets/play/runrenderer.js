@@ -70,7 +70,7 @@ export const RunRenderer = {
                  </div>`
               : ""
           }
-          <div class="stats-row" style="margin-top:0.5rem;">
+          <div class="cluster stats-row" style="margin-top:0.5rem;">
             <span class="stat-pill accent">Paiement <strong>${r.payment}</strong></span>
           </div>
         </div>
@@ -101,7 +101,7 @@ export const RunRenderer = {
     const badge = `<span class="pnj-rank-badge" title="Rangé dans ce dossier">📁 ${CardRenderer._esc(
       (r.dossierId && Dossiers.nameOf(r.dossierId)) || r.dossierName,
     )}</span>`;
-    return footer.replace('<div class="pnj-card-footer">', `<div class="pnj-card-footer">${badge}`);
+    return footer.replace('<div class="cluster pnj-card-footer">', `<div class="cluster pnj-card-footer">${badge}`);
   },
 
   /** Pied unifié (CardFooter, D6) : Éditer + Rencontre en secondaires

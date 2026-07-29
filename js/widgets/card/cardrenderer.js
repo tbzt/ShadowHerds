@@ -122,11 +122,11 @@ export const CardRenderer = {
     const life = this.lifeBar(cm && cm.gauge ? cm.gauge(pnj) : null, "roster-row-life");
 
     el.innerHTML = `
-      <button type="button" class="roster-row-name" data-action="roster-row-open" data-id="${pnj.id}">
+      <button type="button" class="cluster roster-row-name" data-action="roster-row-open" data-id="${pnj.id}">
         <span class="roster-row-nametext">${this._esc(pnj.name)}</span>
         ${archStr ? `<span class="roster-row-arch">${this._esc(archStr)}</span>` : ""}
       </button>
-      <div class="roster-row-pools">${defense}${resist}</div>
+      <div class="cluster roster-row-pools">${defense}${resist}</div>
       ${life}
     `;
     return el;
@@ -181,7 +181,7 @@ export const CardRenderer = {
     const archStr =
       pnj.archetype && pnj.archetype !== pnj.name ? ` · ${pnj.archetype}` : "";
 
-    return `<div class="pnj-card-header">
+    return `<div class="cluster pnj-card-header">
       ${this._portraitThumb(pnj)}
       <div class="pnj-header-left">
         ${nameHtml}
@@ -209,7 +209,7 @@ export const CardRenderer = {
     const roleAttrs = editable
       ? ` contenteditable="true" spellcheck="false" data-contact-field="role"`
       : "";
-    return `<div class="pnj-card-header">
+    return `<div class="cluster pnj-card-header">
       ${this._portraitThumb(pnj)}
       <div class="pnj-header-left">
         <div class="pnj-name"${nameAttrs}>${this._esc(pnj.name)}</div>
@@ -222,7 +222,7 @@ export const CardRenderer = {
   /* ---- PJ léger — gabarit minimal commun, aucune branche d'édition :
      un PJ léger n'a ni attrs ni skills, seulement nom/joueur/couleur/notes. ---- */
   _headerLight(pnj) {
-    return `<div class="pnj-card-header">
+    return `<div class="cluster pnj-card-header">
       <div class="pnj-header-left">
         ${this._nameBlock(pnj.name)}
         <div class="pnj-meta">Personnage-joueur${pnj.player ? ` · ${this._esc(pnj.player)}` : ""}</div>
@@ -335,7 +335,7 @@ export const CardRenderer = {
   _contactStatsSR(c) {
     const numAttrs = (field) =>
       ` contenteditable="true" spellcheck="false" data-contact-field="${field}" data-id="${this._esc(c.id)}"`;
-    return `<div class="stats-row" style="margin-top:6px;flex-wrap:wrap;gap:6px;">
+    return `<div class="cluster stats-row" style="margin-top:6px;flex-wrap:wrap;gap:6px;">
       <span class="stat-pill accent">Influence
         <strong${numAttrs("influence")} class="editable-num">${c.influence}</strong>
       </span>
@@ -471,7 +471,7 @@ export const CardRenderer = {
       .join("");
     const addControl = `<span class="contact-add-wrap">
       <button type="button" class="tag contact-add-btn" data-card-menu-toggle aria-haspopup="true" aria-expanded="false" title="Ajouter un contact">＋</button>
-      <div class="card-menu" role="menu" hidden>
+      <div class="stack card-menu" role="menu" hidden>
         <button type="button" role="menuitem" class="card-menu-item" data-action="contact-create-open" data-id="${this._esc(pnj.id)}">＋ Créer un contact</button>
         ${pickItems}
       </div>
@@ -653,18 +653,18 @@ export const CardRenderer = {
     const kind =
       typeof block.monitorKind === "function" ? block.monitorKind() : block.monitorKind;
     if (kind === "anarchy") {
-      return `<div class="monitor-block"><div class="monitor-row">
+      return `<div class="monitor-block"><div class="cluster monitor-row">
         <span class="monitor-label">État</span>
-        <div class="monitor-boxes">${this._monitorBoxesAnarchy(pnj)}</div>
+        <div class="cluster monitor-boxes">${this._monitorBoxesAnarchy(pnj)}</div>
       </div></div>`;
     }
     if (kind === "single") {
       const key = block.monitorMaxKey || "me";
       const max = pnj[key] || 0;
       if (!max) return "";
-      return `<div class="monitor-block"><div class="monitor-row">
+      return `<div class="monitor-block"><div class="cluster monitor-row">
         <span class="monitor-label">État</span>
-        <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "phys", max, pnj.physFilled || 0)}</div>
+        <div class="cluster monitor-boxes">${this._monitorBoxes(pnj.id, "phys", max, pnj.physFilled || 0)}</div>
       </div></div>`;
     }
     // "double" (SR5, Anarchy1) : physMon/stunMon, chaque piste optionnelle
@@ -675,14 +675,14 @@ export const CardRenderer = {
     return `<div class="monitor-block">
       ${
         physMon
-          ? `<div class="monitor-row"><span class="monitor-label" title="Physique">P</span>
-             <div class="monitor-boxes monitor-phys">${this._monitorBoxes(pnj.id, "phys", physMon, pnj.physFilled || 0)}</div></div>`
+          ? `<div class="cluster monitor-row"><span class="monitor-label" title="Physique">P</span>
+             <div class="cluster monitor-boxes monitor-phys">${this._monitorBoxes(pnj.id, "phys", physMon, pnj.physFilled || 0)}</div></div>`
           : ""
       }
       ${
         stunMon
-          ? `<div class="monitor-row"><span class="monitor-label" title="Étourdissant">E</span>
-             <div class="monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, pnj.stunFilled || 0)}</div></div>`
+          ? `<div class="cluster monitor-row"><span class="monitor-label" title="Étourdissant">E</span>
+             <div class="cluster monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, pnj.stunFilled || 0)}</div></div>`
           : ""
       }
     </div>`;
@@ -886,7 +886,7 @@ export const CardRenderer = {
           return `<span class="aug-tag" title="${this._esc(ItemResolver.itemStr(a))}">${this._esc(short)}</span>`;
         })
         .join("");
-      html += `<div class="curated-augs">${tags}</div>`;
+      html += `<div class="cluster curated-augs">${tags}</div>`;
     }
     return html;
   },
@@ -1194,7 +1194,7 @@ export const CardRenderer = {
     const curatedToggle = CardRenderer.isContact(pnj)
       ? ""
       : `<button type="button" class="lens-tab lens-curated${this._curatedView.has(pnj.id) ? " active" : ""}" data-curated-toggle data-id="${pnj.id}" title="Vue de jeu épurée (paysage)" aria-label="Vue de jeu épurée (paysage)" aria-pressed="${this._curatedView.has(pnj.id)}">◫</button>`;
-    return `<div class="lens-selector" role="tablist" aria-label="Vue">${viewTabs}${moduleTabs}${curatedToggle}</div>`;
+    return `<div class="cluster lens-selector" role="tablist" aria-label="Vue">${viewTabs}${moduleTabs}${curatedToggle}</div>`;
   },
 
   /* ---- Traits raciaux de métavariante ---- */
@@ -1247,8 +1247,8 @@ export const CardRenderer = {
     const rows = defs
       .map(([field, k, v]) =>
         editable
-          ? `<div class="flavor-row"><span class="flavor-key">${k}</span><span class="flavor-val" contenteditable="true" spellcheck="false" data-contact-flavor="${field}">${this._esc(String(v))}</span></div>`
-          : `<div class="flavor-row"><span class="flavor-key">${k}</span><span class="flavor-val">${this._esc(String(v))}</span></div>`,
+          ? `<div class="cluster flavor-row"><span class="flavor-key">${k}</span><span class="flavor-val" contenteditable="true" spellcheck="false" data-contact-flavor="${field}">${this._esc(String(v))}</span></div>`
+          : `<div class="cluster flavor-row"><span class="flavor-key">${k}</span><span class="flavor-val">${this._esc(String(v))}</span></div>`,
       )
       .join("");
     const reroll =
@@ -1575,7 +1575,7 @@ export const CardRenderer = {
     const open = this._zoneIsOpen(pnj, zoneKey);
     const label = this._ZONE_LABELS[zoneKey] || zoneKey;
     return `<div class="card-zone${open ? "" : " zone-collapsed"}" data-zone="${zoneKey}">
-      <button class="zone-toggle" data-zone-toggle="${zoneKey}" data-id="${pnj.id}">
+      <button class="cluster cluster--between zone-toggle" data-zone-toggle="${zoneKey}" data-id="${pnj.id}">
         <span class="zone-toggle-label">${this._esc(label)}</span>
         ${summary ? `<span class="zone-toggle-summary">${this._esc(summary)}</span>` : ""}
         <span class="chev">▾</span>
@@ -2406,7 +2406,7 @@ export const CardRenderer = {
         const dstr = isNaN(d.getTime())
           ? ""
           : d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
-        return `<li class="journal-entry" data-ts="${e.ts}">
+        return `<li class="cluster journal-entry" data-ts="${e.ts}">
           <span class="journal-date">${dstr}</span>
           <span class="journal-text">${Mentions.renderText(e.text)}</span>
           <button class="journal-del" data-action="journal-remove" data-id="${pnj.id}"
@@ -2415,7 +2415,7 @@ export const CardRenderer = {
       })
       .join("");
     return `${entries.length ? `<ul class="journal-list">${rows}</ul>` : ""}
-      <div class="journal-input-row">
+      <div class="stack journal-input-row">
         <input type="text" class="journal-input" data-journal-input data-mentions data-id="${pnj.id}"
           maxlength="200" placeholder="Une note, datée…" aria-label="Nouvelle note">
         <button class="btn-secondary btn-small journal-add-btn" data-action="journal-add" data-id="${pnj.id}">Ajouter</button>
@@ -2488,7 +2488,7 @@ export const CardRenderer = {
     const ledger = entries.length
       ? `<ul class="progression-list">${entries.map((e) => this._ledgerRow(pnj, e, tracks)).join("")}</ul>`
       : "";
-    return `<div class="progression-lines">${lines}</div>${ledger}`;
+    return `<div class="stack progression-lines">${lines}</div>${ledger}`;
   },
 
   /** Ligne-ressource D3 : label + solde toujours visibles ; toucher la ligne
@@ -2500,7 +2500,7 @@ export const CardRenderer = {
     const balStr = t.glyph
       ? `${bal.toLocaleString("fr-FR")} ${this._esc(t.glyph)}`
       : `${bal}`;
-    const row = `<button type="button" class="suivi-line${flash}${open ? " open" : ""}"
+    const row = `<button type="button" class="cluster suivi-line${flash}${open ? " open" : ""}"
       data-action="suivi-line-toggle" data-id="${pnj.id}" data-res="${this._esc(t.key)}"
       aria-expanded="${open}" title="${this._esc(t.label)}">
       <span class="suivi-line-label">${this._esc(t.label)}</span>
@@ -2508,7 +2508,7 @@ export const CardRenderer = {
       <span class="suivi-line-add" aria-hidden="true">${open ? "▾" : "＋"}</span>
     </button>`;
     if (!open) return row;
-    return `${row}<div class="suivi-line-form">
+    return `${row}<div class="cluster suivi-line-form">
       <input type="number" class="progression-amount" data-id="${pnj.id}"
         placeholder="± montant" aria-label="Montant (signé)">
       <input type="text" class="progression-reason" data-id="${pnj.id}" data-mentions
@@ -2535,7 +2535,7 @@ export const CardRenderer = {
     const reason = e.reason
       ? `<span class="progression-reason-txt">${Mentions.renderText(e.reason)}</span>`
       : "";
-    return `<li class="progression-entry">
+    return `<li class="cluster progression-entry">
       <span class="journal-date">${dstr}</span>
       <span class="${cls}">${amount}</span>
       ${reason}

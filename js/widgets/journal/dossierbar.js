@@ -287,7 +287,7 @@ export const DossierBar = {
         ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="duplicate-dossier" data-dossier="${node.id}">⎘ Dupliquer (autre équipe)</button>`
         : "";
     const typeMenu = `<button type="button" class="card-kebab btn-icon-tiny" data-card-menu-toggle aria-haspopup="true" aria-expanded="false" title="Type de dossier" aria-label="Type de dossier">⋯</button>
-        <div class="card-menu" role="menu" hidden>
+        <div class="stack card-menu" role="menu" hidden>
           ${kindItem("campaign", "Campagne")}
           ${kindItem("run", "Run")}
           ${node.kind ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="set-kind" data-kind="" data-dossier="${node.id}">Retirer le type</button>` : ""}

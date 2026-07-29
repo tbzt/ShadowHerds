@@ -844,7 +844,7 @@ export const EditModal = {
     const { summary = "", collapsed = false, zoneClass = "" } = opts;
     const esc = CardRenderer._esc;
     return `<div class="card-zone${collapsed ? " zone-collapsed" : ""}${zoneClass ? " " + zoneClass : ""}">
-      <button type="button" class="zone-toggle" data-action="em-zone-toggle" aria-expanded="${!collapsed}">
+      <button type="button" class="cluster cluster--between zone-toggle" data-action="em-zone-toggle" aria-expanded="${!collapsed}">
         <span class="zone-toggle-label">${esc(label)}</span>
         <span class="zone-toggle-summary">${esc(summary)}</span>
         <span class="chev" aria-hidden="true">▾</span>
@@ -876,7 +876,7 @@ export const EditModal = {
   _zoneLocked(label, hint) {
     const esc = CardRenderer._esc;
     return `<div class="card-zone em-zone-locked">
-      <div class="zone-toggle em-zone-locked-header">
+      <div class="cluster cluster--between zone-toggle em-zone-locked-header">
         <span class="zone-toggle-label">${esc(label)}</span>
         <span class="zone-toggle-summary">${esc(hint)}</span>
       </div>

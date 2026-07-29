@@ -34,7 +34,7 @@ Object.assign(CardRenderer, {
     if (!cells) return "";
     return `<div class="card-section gm-pools-section">
       <div class="card-section-label">Jets de situation</div>
-      <div class="stats-row">${cells}</div>
+      <div class="cluster stats-row">${cells}</div>
     </div>`;
   },
 
@@ -110,13 +110,13 @@ Object.assign(CardRenderer, {
     // réglage separateMonitors actif (physMon/stunMon posés, comme SR5).
     if (stunMon !== undefined) {
       combatBody += `<div class="monitor-block">
-        <div class="monitor-row">
+        <div class="cluster monitor-row">
           <span class="monitor-label" title="Physique">P</span>
-          <div class="monitor-boxes monitor-phys">${this._monitorBoxes(pnj.id, "phys", physMon, physFilled ?? 0)}</div>
+          <div class="cluster monitor-boxes monitor-phys">${this._monitorBoxes(pnj.id, "phys", physMon, physFilled ?? 0)}</div>
         </div>
-        <div class="monitor-row">
+        <div class="cluster monitor-row">
           <span class="monitor-label" title="Étourdissant">E</span>
-          <div class="monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, stunFilled ?? 0)}</div>
+          <div class="cluster monitor-boxes monitor-stun">${this._monitorBoxes(pnj.id, "stun", stunMon, stunFilled ?? 0)}</div>
         </div>
         ${this._monitorMalusBadge(wound6)}
         ${this._sustainBadge(pnj, "sr6")}
@@ -125,9 +125,9 @@ Object.assign(CardRenderer, {
     } else {
       const monTotal = me ?? 9;
       combatBody += `<div class="monitor-block">
-        <div class="monitor-row">
+        <div class="cluster monitor-row">
           <span class="monitor-label">État</span>
-          <div class="monitor-boxes">${this._monitorBoxes(pnj.id, "phys", monTotal, physFilled ?? 0)}</div>
+          <div class="cluster monitor-boxes">${this._monitorBoxes(pnj.id, "phys", monTotal, physFilled ?? 0)}</div>
         </div>
         ${this._monitorMalusBadge(wound6)}
         ${this._sustainBadge(pnj, "sr6")}

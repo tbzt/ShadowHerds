@@ -45,7 +45,7 @@ export const CardFooter = {
       : "";
     const menuHtml = menu.length
       ? `<button type="button" class="card-kebab" data-card-menu-toggle aria-haspopup="true" aria-expanded="false" aria-label="Plus d'actions">⋯</button>
-         <div class="card-menu" role="menu" hidden>${menu
+         <div class="stack card-menu" role="menu" hidden>${menu
            .map(
              (a) =>
                `<button type="button" role="menuitem" class="card-menu-item${a.danger ? " danger" : ""}" ${a.attrs || ""}>${esc(a.label)}</button>`,
@@ -54,15 +54,15 @@ export const CardFooter = {
       : "";
 
     const savedLbl = opts.savedLabel
-      ? `<span class="card-saved-label">${esc(opts.savedLabel)}</span>`
+      ? `<span class="cluster card-saved-label">${esc(opts.savedLabel)}</span>`
       : "";
     const savedAttr = opts.savedActions
       ? ` data-saved-actions='${opts.savedActions}'`
       : "";
 
-    return `<div class="${opts.footerClass || "pnj-card-footer"}"${savedAttr}>
+    return `<div class="${opts.footerClass || "cluster pnj-card-footer"}"${savedAttr}>
       ${savedLbl}
-      <div class="card-act-cluster">${secHtml}${primHtml}${menuHtml}</div>
+      <div class="cluster cluster--end card-act-cluster">${secHtml}${primHtml}${menuHtml}</div>
     </div>`;
   },
 };

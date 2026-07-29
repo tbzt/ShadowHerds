@@ -146,8 +146,6 @@
   top: 12px;
   right: 0;
   width: var(--rail-w);
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
   z-index: 1;
 }
@@ -188,9 +186,8 @@
 .pnj-card-header {
   padding: 0.8rem var(--sp-4) 0.65rem;
   border-bottom: 1px solid var(--border);
-  display: flex;
   align-items: flex-start;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
 }
 .pnj-header-left {
   flex: 1;
@@ -449,9 +446,8 @@
 /* Augmentations en tags : références PASSIVES (ni dé ni fond) — l'œil comprend
    que c'est inerte, densité par nature (cf. brief §3.3). */
 .curated-augs {
-  display: flex;
-  flex-wrap: wrap;
   gap: var(--sp-1);
+  align-items: stretch;
   margin-top: var(--sp-2);
 }
 .aug-tag {
@@ -479,10 +475,6 @@
   background: transparent;
   border: none;
   padding: 10px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--sp-2);
   cursor: pointer;
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
@@ -649,9 +641,6 @@
 
 /* Stats pills */
 .stats-row {
-  display: flex;
-  gap: var(--sp-2);
-  flex-wrap: wrap;
   margin-bottom: var(--sp-3);
 }
 .stat-pill {
@@ -763,9 +752,8 @@
    même typographie d'étiquette que les autres sections, séparateurs
    discrets cohérents avec les bordures de carte. */
 .flavor-section .flavor-row {
-  display: flex;
-  flex-wrap: wrap;
   gap: 0.1rem var(--sp-2);
+  align-items: stretch;
   font-size: var(--fs-xs);
   line-height: 1.45;
   padding: 3px 0;
@@ -960,12 +948,7 @@
 }
 
 /* Moniteur de condition cliquable */
-.monitor-row {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  flex-wrap: wrap;
-}
+
 .monitor-label {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
@@ -975,9 +958,8 @@
   white-space: nowrap;
 }
 .monitor-boxes {
-  display: flex;
   gap: 3px;
-  flex-wrap: wrap;
+  align-items: stretch;
 }
 .monitor-box {
   width: 16px;
@@ -1032,10 +1014,8 @@
    branche App.edition). `flex-wrap` fait retomber la 2ᵉ piste sous la 1ʳᵉ si
    la carte est vraiment trop étroite (fallback mobile gracieux). */
 .monitor-block:has(.monitor-phys) {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2) var(--sp-4);
   align-items: flex-start;
+  gap: var(--sp-2) var(--sp-4);
 }
 /* Chaque piste garde l'escalier 3 colonnes du livre (SR6 p.43) : chaque rangée
    = 3 cases = un palier de malus. Utile ici pour rester ÉTROITE (côte à côte)
@@ -1094,9 +1074,8 @@
   padding: 0;
 }
 .journal-entry {
-  display: flex;
   align-items: baseline;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   padding: 0.2rem 0;
   border-bottom: 1px dashed var(--border);
   font-size: var(--fs-xs);
@@ -1155,8 +1134,8 @@
   opacity: 1;
 }
 .journal-input-row {
-  display: flex;
-  gap: var(--sp-2);
+  align-items: stretch;
+  flex-wrap: nowrap;
 }
 .journal-input {
   flex: 1 1 auto;
@@ -1191,9 +1170,8 @@
   padding: 0;
 }
 .progression-entry {
-  display: flex;
   align-items: baseline;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   padding: 0.2rem 0;
   border-bottom: 1px dashed var(--border);
   font-size: var(--fs-xs);
@@ -1220,16 +1198,12 @@
    ambiguë. Solde toujours visible (repos) ; toucher la ligne déplie le
    formulaire SUR PLACE (montant + motif + ✓). */
 .progression-lines {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
   margin-bottom: var(--sp-2);
 }
 .suivi-line {
   width: 100%;
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   min-height: 44px;
   padding: 0.3rem var(--sp-2);
   background: transparent;
@@ -1260,8 +1234,8 @@
   font-size: var(--fs-sm);
 }
 .suivi-line-form {
-  display: flex;
-  gap: var(--sp-2);
+  align-items: stretch;
+  flex-wrap: nowrap;
   padding: 0.3rem var(--sp-2) 0.5rem;
 }
 .suivi-line-form .progression-amount {
@@ -1305,10 +1279,6 @@
 .pnj-card-footer {
   padding: 0.55rem var(--sp-4);
   border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
   background: var(--bg);
 }
 /* Le pied passe sur deux lignes plutôt que de se couper quand les actions
@@ -1359,11 +1329,10 @@
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   color: var(--success);
-  display: flex;
-  align-items: center;
   padding: 0 var(--sp-1);
   gap: var(--sp-1);
   flex: 1;
+  flex-wrap: nowrap;
 }
 
 /* ---- Grammaire de pied unifiée (Phase 1) ----
@@ -1371,11 +1340,6 @@
    Le socle Collection préfixe ★/🏷 à gauche du pied (footer.prepend),
    l'amas est poussé à droite par margin-left:auto. */
 .card-act-cluster {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
   margin-left: auto;
   position: relative;
 }
@@ -1432,8 +1396,6 @@
   border-radius: var(--radius-lg);
   padding: 4px;
   box-shadow: var(--elev-2);
-  display: flex;
-  flex-direction: column;
   gap: 1px;
 }
 .card-menu.card-menu--down {
@@ -1480,9 +1442,8 @@
   margin-top: 2px;
 }
 .cyberdeck-programs {
-  display: flex;
-  flex-wrap: wrap;
   gap: var(--sp-1);
+  align-items: stretch;
   margin-top: 0.3rem;
 }
 .cyberdeck-legacy-note {
@@ -1494,9 +1455,8 @@
 /* M2 : réallocation en un tap — rangée de boutons d'échange, sous l'attr-grid
    (pas interfolée dedans, pour ne pas perturber sa grille responsive). */
 .cyberdeck-realloc {
-  display: flex;
-  flex-wrap: wrap;
   gap: var(--sp-1);
+  align-items: stretch;
   margin: 0.3rem 0;
 }
 .cyberdeck-swap {
@@ -1519,10 +1479,6 @@
 /* M3 : cible Matrice du decker — picker de serveur + accès au tracker,
    même rangée en scène de combat et hors combat (hub/biblio). */
 .cyberdeck-target {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
   margin-top: 0.4rem;
 }
 .cyberdeck-target-select {
@@ -1547,9 +1503,8 @@
    action du catalogue. Peu d'items (2-4), donc simple flex qui peut replier ;
    pas de <select> natif (a11y + cohérence tactile). */
 .deck-loadout-picker {
-  display: flex;
-  flex-wrap: wrap;
   gap: var(--sp-2) var(--sp-4);
+  align-items: stretch;
   margin-top: 0.2rem;
 }
 .deck-loadout-opt {
@@ -1581,18 +1536,16 @@
   align-content: start;
 }
 .pnj-card.roster-row {
-  display: flex;
-  align-items: center;
   gap: var(--sp-3);
+  flex-wrap: nowrap;
   padding: var(--sp-1) var(--sp-2);
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
 }
 .roster-row-name {
-  display: flex;
   align-items: baseline;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   flex: 1 1 auto;
   min-width: 0;
   background: none;
@@ -1620,8 +1573,8 @@
   text-overflow: ellipsis;
 }
 .roster-row-pools {
-  display: flex;
-  gap: var(--sp-2);
+  align-items: stretch;
+  flex-wrap: nowrap;
   flex: 0 0 auto;
 }
 .roster-row-life {
