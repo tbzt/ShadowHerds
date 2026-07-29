@@ -1006,21 +1006,21 @@ export const Encounter = {
 
      82 entrées au catalogue : le filtre à trois axes d'`EdgeActions` est ce
      qui rend la feuille lisible — au bon moment, au bon endroit, au bon PNJ.
-     ======================================================== */
 
-  /** Le tri du catalogue pour ce combattant, ici et maintenant. `host` = clé
-      de l'action en cours si le MJ en joue une (axe « au bon moment »). */
-  edgeActionsFor(pnjId, host) {
-    const c = this._find(pnjId);
-    const pnj = PnjLookup.find(pnjId);
-    if (!c || !pnj) return { visibles: [], ecartees: [] };
-    return EdgeActions.resolve(pnj, {
-      declared: c.edgeContexts || [],
-      withOptional: !!c.edgeOptional,
-      edge: c.edge || 0,
-      host,
-    });
-  },
+     ⚠ `edgeActionsFor(pnjId, host)` A ÉTÉ RETIRÉ ici. Il était le seul point
+     d'entrée « général » du catalogue et n'a JAMAIS été appelé — l'audit
+     d'attention l'a trouvé mort, un an de commentaires plus tard. Et il ne
+     fallait pas le brancher tel quel : il passait `host` à `EdgeActions.resolve`,
+     dont `matchesHost` laisse aussi passer les entrées **sans hôte**
+     (« hôte non modélisé »). Or elles sont **45 sur 82** : la rangée de
+     greffons les aurait affichées sous chaque action, ce qui est exactement le
+     contraire du tri annoncé.
+
+     Le bon primitif existait à côté : `Actions.grafts`, qui post-filtre sur
+     l'hôte réel et que le panneau d'attaque utilisait déjà. C'est lui que la
+     rangée de greffons appelle (`EncounterRenderer._activeGrafts`). Deux
+     entrées pour une question, dont une fausse : on garde celle qui marche.
+     ======================================================== */
 
   /** Bascule un contexte de scène que l'app ne sait pas dériver (la
       course-poursuite aujourd'hui). Vit dans l'entrée de scène : c'est une

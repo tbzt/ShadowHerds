@@ -1115,7 +1115,81 @@ export const EncounterRenderer = {
         </span>`;
       })
       .join("");
-    return `<div class="encounter-actions" title="Actions du tour (économie de l'édition — taper pour consommer)">${groups}${this._actionTrades(r, budget)}${this._actionPick(r, budget)}</div>`;
+    return `<div class="encounter-actions" title="Actions du tour (économie de l'édition — taper pour consommer)">${groups}${this._actionTrades(r, budget)}${this._actionPick(r, budget)}${this._activeGrafts(r)}</div>`;
+  },
+
+  /* ========================================================
+     RANGÉE DE GREFFONS D'ATOUT (lot F5, restée à brancher jusqu'ici).
+
+     Le lot F5 avait livré les 82 actions d'Atout, leur filtre à trois axes, le
+     débit (`edge-use`, déjà dans la délégation) et **le style** de cette
+     rangée (`.encounter-grafts`, `.graft-lbl`). Il n'avait jamais livré le
+     rendu : les deux classes CSS étaient mortes, et le commentaire qui les
+     accompagne décrivait une surface qui n'existait pas. L'audit d'attention
+     l'a chiffré — **19 entrées sur 82 atteignables**, toutes par le panneau
+     d'attaque.
+
+     ── Ce que cette rangée branche, exactement ──────────────────────────────
+     MESURÉ sur le catalogue SR6 : **45 des 82 entrées n'ont AUCUN hôte** (ce
+     sont des greffons de compétence, de nature ou de situation — leur place
+     est le panneau pré-jet, pas une action). Sur les 37 restantes, 23 sont
+     hébergées par « Attaquer », **qui a déjà sa surface** : le panneau
+     d'attaque, seul endroit où l'ARME tranche entre mêlée et distance
+     (`Actions.hostKeys`). Les rejouer ici serait un doublon, et un doublon qui
+     mentirait — sans arme choisie, on ne peut afficher que les deux familles à
+     la fois.
+
+     Restent **14 entrées sur 9 hôtes** — Bloquer (4), Intercepter (2),
+     Sprinter (2), Se jeter par terre, Esquiver, Dégainer rapidement, Se
+     déplacer, Éviter, Faire trébucher — qui n'avaient **aucune** surface.
+     C'est ce que ce lot rend joignable, et rien de plus : annoncer « les 82 »
+     serait faux.
+
+     ── Pourquoi une rangée et pas une feuille ──────────────────────────────
+     Décision A n°8 (arbitrage Bertrand) : une action d'Atout est un GREFFON,
+     elle vit sur son hôte et n'aura jamais de feuille à elle. La rangée
+     n'a donc ni bouton d'ouverture ni navigation — **elle arrive avec
+     l'action** que le MJ vient de jouer (`c.lastAction`, que `useAction`
+     écrivait déjà), et repart avec la suivante. Le cockpit reste à deux
+     surfaces dépliables.
+
+     ── La porte (A2) ───────────────────────────────────────────────────────
+     La rangée ne s'affiche que si **au moins un greffon est abordable** —
+     même prédicat que `arbitrable` dans le panneau d'attaque : à 0 Atout, les
+     19 greffons de mêlée sont tous morts et une rangée entièrement grisée est
+     un reçu à signer. Une fois la rangée là, un greffon trop cher s'y montre
+     TERNI et reste tapable : le MJ a le droit de déborder, et `useEdgeAction`
+     le dit déjà quand il le fait (« Atout insuffisant — »).
+     ======================================================== */
+  _activeGrafts(r) {
+    const pnj = r.pnj;
+    if (!pnj || pnj._adhoc || !r.lastAction) return "";
+    // « Attaquer » est exclu : son panneau le fait déjà, et mieux (il connaît
+    // l'arme, donc la famille). Cf. l'en-tête.
+    if (r.lastAction === "attaquer") return "";
+    const greffons = Actions.grafts(pnj, r.lastAction, {
+      declared: r.edgeContexts || [],
+      withOptional: !!r.edgeOptional,
+    });
+    const edge = r.edge || 0;
+    if (!greffons.some((g) => g.cost <= edge)) return "";
+    const hote = Actions.find(pnj, r.lastAction);
+    const puces = greffons
+      .map((g) => {
+        const cher = g.cost > edge ? " is-over" : "";
+        const info = [
+          `${g.name} — ${EdgeActions.costLabel(g)}${g.actionCost ? " + 1 action majeure" : ""}`,
+          ...(g.lines || []),
+          g.page ? g.page : "",
+        ]
+          .filter(Boolean)
+          .join("\n• ");
+        return `<button type="button" class="tag status-pick${cher}" data-action="edge-use" data-id="${r.pnjId}" data-key="${g.key}" title="${Utils.escHtml(info)}">${Utils.escHtml(g.name)}<span class="edge-cost">${g.cost}</span></button>`;
+      })
+      .join("");
+    return `<div class="encounter-grafts">
+      <span class="graft-lbl">Atout sur ${Utils.escHtml(hote ? hote.name : r.lastAction)}</span>${puces}
+    </div>`;
   },
 
   /* ========================================================
