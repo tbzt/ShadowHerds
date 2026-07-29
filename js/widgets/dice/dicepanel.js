@@ -8,12 +8,14 @@
    ============================================================ */
 import { DiceLog } from "./dicelog.js";
 import { DiceRoller } from "./diceroller.js";
+import { FocusTrap } from "../kit/focustrap.js";
 import { Utils } from "../../core/utils.js";
 
 export const DicePanel = {
   count: 6,
   _holdTimer: null,
   _holdInterval: null,
+  _releaseTrap: null,
 
   /** Applique la réserve par défaut des préférences. */
   applyPrefs() {
@@ -91,6 +93,13 @@ export const DicePanel = {
     if (!overlay) return;
     this._renderCount();
     overlay.classList.add("open");
+    // D7 : déjà aria-modal="true" (vrai bottom sheet bloquant, contrairement
+    // aux menus/select-like du reste de cette catégorie) — piégé juste après
+    // .open (qui rend le panneau visible/atteignable par querySelectorAll,
+    // même ordre que ContentModal), avant le focus initial sur le premier
+    // contrôle (aucune croix de fermeture dans ce gabarit).
+    this._releaseTrap = FocusTrap.activate(overlay);
+    overlay.querySelector("[data-dice-step]")?.focus();
     // double rAF pour laisser display:flex s'appliquer avant la transition
     requestAnimationFrame(() =>
       requestAnimationFrame(() => overlay.classList.add("show")),
@@ -103,6 +112,10 @@ export const DicePanel = {
     this._stopHold();
     overlay.classList.remove("show");
     setTimeout(() => overlay.classList.remove("open"), 220);
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 
   step(delta) {
