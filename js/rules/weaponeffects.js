@@ -154,6 +154,20 @@ export const WeaponEffects = {
       source: "Focus d'arme",
       page: "SR5 p.318",
     },
+    // Pointeur/viseur laser (SR5 p.435) — « +1 à la Précision […] non
+    // cumulable avec les modificateurs d'un système smartlink ». La garde de
+    // non-cumul est posée côté `resolvePool` (`accuracySmart`), pas ici : ce
+    // moteur ne connaît que l'objet, jamais la synergie de l'arme portée.
+    // Exclu des armes de mêlée — un laser ne vise rien sur un katana.
+    {
+      match: /pointeur laser|viseur laser/i,
+      target: "accuracy",
+      value: 1,
+      conditional: (name, edition) =>
+        !App.getEditionModule(edition)?.isMeleeWeapon?.(name),
+      source: "Pointeur laser",
+      page: "SR5 p.435",
+    },
   ],
 
   /** Résout les effets d'objet pour un jet d'arme donné → contributions

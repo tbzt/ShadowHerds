@@ -452,13 +452,6 @@ export const WeaponRoll = {
     // smartlink ». Le jour où un effet `target: "accuracy"` la porte, il devra
     // être écarté quand `accuracySmart` est vrai — sinon on cumulera à tort.
     const accuracySmart = !!(smartBonus && parsed.preSmart != null);
-    // « +1 à la Précision lors du test d'attaque », par cran d'Ajuster (SR5) —
-    // la Précision étant la LIMITE de succès, le bonus monte le plafond en même
-    // temps que la réserve. SR6 déclare `accuracy: 0` : il n'a pas de Limite.
-    const aimAcc = (aim && aim.accuracy) || 0;
-    const preBase = accuracySmart ? parsed.preSmart : parsed.pre;
-    const accuracy = preBase == null ? null : preBase + aimAcc;
-    const malus = Utils.dicePenalty(pnj, edition);
 
     // Effets d'objet motorisés, par FACETTE (pool/accuracy/dv/ap).
     // Provenance étiquetée — le pool absorbe ses contributions, les autres
@@ -468,6 +461,21 @@ export const WeaponRoll = {
         ? WeaponEffects.forWeapon(pnj, parsed.name, edition)
         : { pool: [], accuracy: [], dv: [], ap: [] };
     const itemPool = fx.pool.reduce((a, c) => a + c.value, 0);
+    // VISÉE LASER (SR5 p.435) — « +1 à la Précision […] non cumulable avec
+    // les modificateurs d'un système smartlink » : la contribution d'objet
+    // ciblant `accuracy` (posée par `WeaponEffects`) est donc écartée dès que
+    // la synergie smartgun+smartlink est déjà active, pour ne jamais cumuler
+    // les deux mots du même passage.
+    const accuracyFx = accuracySmart ? [] : fx.accuracy;
+    const accuracyFxBonus = accuracyFx.reduce((a, c) => a + c.value, 0);
+    // « +1 à la Précision lors du test d'attaque », par cran d'Ajuster (SR5) —
+    // la Précision étant la LIMITE de succès, le bonus monte le plafond en même
+    // temps que la réserve. SR6 déclare `accuracy: 0` : il n'a pas de Limite.
+    const aimAcc = (aim && aim.accuracy) || 0;
+    const preArme = accuracySmart ? parsed.preSmart : parsed.pre;
+    const preBase = preArme == null ? null : preArme + accuracyFxBonus;
+    const accuracy = preBase == null ? null : preBase + aimAcc;
+    const malus = Utils.dicePenalty(pnj, edition);
     // AJUSTER — le cumul vient de la SCÈNE (`Encounter.aimBonus`), pas de la
     // fiche : viser est un fait de rencontre. Passé en paramètre plutôt que lu
     // ici, pour que ce module reste ignorant du tracker (même discipline que
@@ -514,7 +522,9 @@ export const WeaponRoll = {
       edition,
       contributions, // pool décomposé (explication du jet)
       dvContributions: fx.dv, // VD : bonus d'objet étiquetés
-      accuracyContributions: fx.accuracy, // précision/limite
+      // Écartée quand `accuracySmart` l'a annulée (non-cumul laser/smartlink,
+      // p.435) : sinon la carte afficherait un bonus qui ne joue pas.
+      accuracyContributions: accuracyFx, // précision/limite RÉELLEMENT appliquée
       apContributions: fx.ap, // pénétration d'armure
     };
   },

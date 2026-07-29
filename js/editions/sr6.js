@@ -3594,7 +3594,7 @@ export const EditionSR6 = {
       "Canne à Systèmes Louis Vuitton (lame tranchante) [Arme de mêlée, VD 3P, SO 7+FOR/—/—/—/—]",
       "Canne à Systèmes Louis Vuitton (fût contondant) [Arme de mêlée, VD 3E, SO 6+FOR/—/—/—/—]",
       "Canne à Systèmes Louis Vuitton (pistolet de poche) [Pistolet, VD 2P, SO 8/8/—/—/—, CC/TR, 4(b)]",
-      "Espelette (grenade toxine) [Effet: État Aweigué & État Désorienté, dégâts étourdissants, Souffle 2m]",
+      "Espelette (grenade toxine) [Effet: État Aveuglé & État Désorienté, dégâts étourdissants, Souffle 2m]",
       // `Mode=10+F` portait en réalité le SO : arme de mêlée, aucun mode de tir.
       "Pelle Pliante Multifonction Décathlon [Arme de mêlée, VD 3P, SO 10+FOR/—/—/—/—, Effet: Dilacé]",
       "Kit de Dissimulation d'Arme [Effet: Permet de dissimuler une arme démontrée; 300€ armes de poing, 400€ mitraillettes/shotguns]",
