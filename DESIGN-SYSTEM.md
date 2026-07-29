@@ -1020,22 +1020,47 @@ distingue aujourd'hui, au coup d'œil, ce qui se clique de ce qui informe.
 
 | Type | Ce que c'est | Cliquable | Couleur |
 |---|---|---|---|
-| **`.tag`** | une étiquette. Informe, catégorise. | non | `--text-dim` sur `--bg-mid` |
+| **`.tag`** | une étiquette. Informe, catégorise. | non | `--text-dim` sur `--bg` |
 | **`.status`** | un état. Change avec la donnée. | non | palette sémantique |
-| **`.chip`** | une puce actionnable. Filtre, ouvre, retire. | **oui** | bordure `--accent`, fond `--glow` |
+| **`.chip`** | une puce actionnable. Filtre, ouvre, retire. | **oui** | bordure neutre au repos, `--accent` au survol |
+
+**Recette réelle** (`pnj-card.css`) — pas un exemple illustratif : c'est le code
+en place, vérifié.
 
 ```css
-.tag, .status, .chip {
-  display: inline-flex; align-items: center; gap: var(--sp-1);
-  padding: 2px var(--sp-2);
+.tag {                                    /* la base : une boîte mono, sobre */
+  display: inline-block;                  /* pas inline-flex : pas d'enfants à aligner */
+  background: var(--bg); border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  font: 400 var(--fs-xs)/1.3 var(--font-body);
-  white-space: nowrap;
+  padding: 1px 7px; margin: 2px 2px 2px 0;
+  font-family: var(--font-mono);          /* mono : c'est de la donnée, pas de la prose */
+  font-size: var(--fs-xs); color: var(--text-dim); line-height: 1.6;
 }
-.chip { border: 1px solid var(--accent); background: var(--glow); cursor: pointer; }
-.chip:hover, .chip:focus-visible { background: color-mix(in srgb, var(--accent) 18%, transparent); }
-@media (pointer: coarse) { .chip { min-height: 32px; padding-inline: var(--sp-3); } }
+.status { /* posé SUR .tag — bordure+couleur pleines, jamais de fond */ }
+.status.is-danger|is-warning|is-info|is-accent|is-on { /* 4 canaux + l'état actif */ }
+.status.is-filled { background: color-mix(in srgb, currentColor 15%, transparent); }
+
+.chip {                                   /* actionnable : l'affordance est la BORDURE */
+  border: 1px solid var(--border); color: var(--text); cursor: pointer;
+}
+.chip:hover, .chip:focus-visible { border-color: var(--accent); color: var(--accent); }
+.chip.is-active { color: var(--bg); background: var(--accent); border-color: var(--accent); }
+@media (pointer: coarse) { .chip { min-height: var(--hit-cozy); padding-inline: var(--sp-3); } }
 ```
+
+> **⚠️ Ce bloc était faux sur deux points, corrigé le 2026-07-29 (lot 5).**
+> — La recette de base annonçait `inline-flex`+`gap`+`font-body`+`padding 2px`,
+> quand `.tag` est en place depuis toujours en `inline-block`+`margin`+
+> `font-mono`+`padding 1px 7px`. C'était un exemple *illustratif* jamais
+> confronté au code, et ~20 fichiers consomment la vraie recette : **le code
+> établi l'emporte**, on corrige l'annotation (même principe que `--radius` au
+> lot 11).
+> — `.chip` était encore décrit « bordure `--accent` + fond `--glow` permanents »,
+> soit le canon **d'avant** son arbitrage. Le canon a été retourné avec
+> l'utilisateur (`2008a03`) : l'affordance est une **bordure neutre visible au
+> repos**, l'accent n'arrive qu'au survol/focus — parce que 4 sites réellement
+> cliquables le faisaient déjà ainsi, contre 1 seul (`.ms-chip`, jamais cliquable
+> lui-même) pour l'accent permanent.
 
 **Loi — si c'est cliquable, ça se voit sans survol.** Le survol n'existe pas
 au doigt.
@@ -1050,15 +1075,30 @@ au doigt.
 > tablette/téléphone, appareil cible du MJ »*. La loi était donc **déjà
 > appliquée**, et bien.
 >
-> Ce qui reste vrai, et qui est le seul trou d'affordance mesuré : `.stat-pill
-> .rollable` et `.gm-pool.rollable` **seuls** portent le glyphe mais **pas** la
-> bordure teintée que `.skill-tag.rollable` et `.combat-pill` portent. C'est une
-> incohérence entre frères, pas une absence de signal — et elle se solde en
-> quatre sélecteurs.
+> **⚠️ Le re-audit s'était trompé à son tour — vérifié à l'écran le 2026-07-29
+> (lot 5), il n'y a AUCUN trou d'affordance.** Il annonçait « un dernier trou :
+> `.stat-pill.rollable` et `.gm-pool.rollable` portent le glyphe mais pas la
+> bordure teintée, ça se solde en quatre sélecteurs ». Les quatre sélecteurs
+> n'ont pas lieu d'être :
+> — `.gm-pool` **a** une bordure teintée (`accent 18%`, `pnj-card.css`) ;
+> — `.stat-pill.rollable` **n'existe jamais seule** dans le produit : les 4 sites
+> qui la génèrent la composent toujours avec `combat-pill`, `gm-pool` ou
+> `init-pill` (`cardrenderer.js` 861/1291/1455/1609), qui apportent chacun
+> bordure teintée **et** glyphe.
+> Mesuré sur les 4 combinaisons réelles (Drain · Dévier · Jets · Init) :
+> `cursor:pointer`, bordure teintée accent et signal permanent — **conformes
+> toutes les quatre**.
 >
-> **Conséquence sur le lot 5 : sa justification n'est plus l'accessibilité,
-> c'est la réduction du désordre.** Un lot qu'on vend sur une urgence qui
-> n'existe pas se fait mal.
+> La faute de méthode est instructive et se répète : le re-audit avait lu
+> `.stat-pill` **isolément** dans le CSS (`border: 1px solid var(--border)`, donc
+> « pas de bordure teintée ») sans vérifier avec quoi elle est réellement
+> composée — exactement l'erreur qu'il reprochait à la v1. **Lire une classe
+> seule ne dit rien de ce que l'utilisateur voit : il faut mesurer la
+> combinaison rendue.**
+>
+> **Conséquence sur le lot 5 : sa justification n'est ni l'accessibilité ni un
+> correctif d'affordance — c'est la réduction du désordre, point.** Un lot qu'on
+> vend sur une urgence qui n'existe pas se fait mal.
 
 **Règle — un marqueur ne dépasse pas 24 caractères.** Au-delà, ce n'est plus
 un marqueur : c'est du texte, et il va casser toutes vos grappes.
@@ -1088,6 +1128,29 @@ un marqueur : c'est du texte, et il va casser toutes vos grappes.
 > tout pour `.faction-chip`/`.pjlink-chip`) — rien ne dit qu'ils doivent
 > converger vers UNE silhouette commune, seulement vers la même LOI
 > d'affordance sur leurs enfants.
+
+> **5ᵉ patron identifié au recensement du lot 5, documenté le 2026-07-29 — le
+> marqueur HYBRIDE, qui bascule TAG → CHIP.** `.stat-pill`, `.init-pill`,
+> `.combat-pill`, `.skill-tag` et `.attr-cell` ne sont **ni** des tags **ni** des
+> chips : ils sont l'un **ou** l'autre selon qu'ils portent `.rollable`.
+>
+> | | Sans `.rollable` | Avec `.rollable` |
+> |---|---|---|
+> | Rôle | TAG — informe (une réserve, un score) | CHIP — lance le jet |
+> | Bordure | neutre | teintée accent |
+> | Signal permanent | aucun | glyphe ⚄ (ou ⛉/⛊ sémantique) |
+> | Curseur | défaut | `pointer` |
+>
+> **Loi — la bascule se fait par `.rollable`, jamais par un composant séparé.**
+> C'est la même donnée (« Perception 8 ») qui devient actionnable quand le
+> contexte le permet : dupliquer en `.skill-tag` + `.skill-tag-clickable`
+> forcerait le renderer à choisir une classe au lieu d'ajouter un état.
+>
+> **Ne pas aplatir ces 5 classes en `.chip`.** Elles seraient alors *toujours*
+> actionnables, ce qui est faux : sur une carte en lecture seule, une réserve
+> reste une réserve. C'est précisément ce que le lot 5 a failli faire avant de
+> mesurer (voir l'encadré « aucun trou d'affordance » plus haut : les 4
+> combinaisons réelles sont déjà conformes, il n'y avait rien à corriger).
 
 ### 6.6 Les champs
 
