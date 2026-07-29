@@ -17,10 +17,12 @@
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Dialog } from "./dialog.js";
 import { FactionStore } from "../../core/factionstore.js";
+import { FocusTrap } from "./focustrap.js";
 
 export const FactionPicker = {
   _id: null,
   _wired: false,
+  _releaseTrap: null,
   // Palette curée partagée avec la lentille graphe (GraphView._EDGE_COLORS) :
   // une faction neuve prend la couleur suivante, pour des poches distinctes.
   _PALETTE: ["#e0533d", "#3d90e0", "#3dbf6e", "#c9a13d", "#9d5fd6", "#3dc2c2"],
@@ -98,8 +100,17 @@ export const FactionPicker = {
     this._id = id;
     this._render();
     document.getElementById("faction-picker-backdrop").classList.add("open");
-    document.getElementById("faction-picker-panel").classList.add("open");
+    const panel = document.getElementById("faction-picker-panel");
+    panel.classList.add("open");
     this._position(triggerEl);
+    // D7 : panneau ajouté à part dans `document.body`, hors de l'ordre de
+    // tabulation du déclencheur — sans ce focus, le piège aurait été
+    // inatteignable au clavier (leçon de la correction précédente sur
+    // foundationview.js/magicaction.js/summonpanel.js). Pas de champ fiable
+    // à pré-sélectionner (la liste de factions peut être vide) : la croix,
+    // même patron que ContentModal.
+    this._releaseTrap = FocusTrap.activate(panel);
+    panel.querySelector('[data-action="close"]').focus();
   },
 
   close() {
@@ -108,6 +119,10 @@ export const FactionPicker = {
     if (panel) panel.classList.remove("open");
     if (backdrop) backdrop.classList.remove("open");
     this._id = null;
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 
   /** Ancre le panneau sous le déclencheur (desktop/iPad) ; feuille basse en
