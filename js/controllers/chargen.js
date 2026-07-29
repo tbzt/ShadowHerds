@@ -18,6 +18,7 @@
 import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
 import { Dialog } from "../widgets/kit/dialog.js";
+import { FocusTrap } from "../widgets/kit/focustrap.js";
 import { Storage } from "../core/storage.js";
 import { Utils } from "../core/utils.js";
 
@@ -37,6 +38,7 @@ export const CharGen = {
 
   _step: 0,
   _build: null,
+  _releaseTrap: null,
 
   _creation() {
     return App.editionModule && App.editionModule.creation;
@@ -58,7 +60,11 @@ export const CharGen = {
     this._build = draft || this._newBuild(creation);
     this._build.skills = this._normalizeSkillSpecs(this._build.skills);
     this._step = 0;
-    document.getElementById("chargen-overlay").classList.add("open");
+    const overlay = document.getElementById("chargen-overlay");
+    overlay.classList.add("open");
+    // D7 : piégé AVANT le déplacement de focus (même ordre que Dialog._open).
+    this._releaseTrap = FocusTrap.activate(overlay.querySelector(".modal"));
+    overlay.querySelector(".modal-close").focus();
     this._renderAll();
   },
 
@@ -74,6 +80,10 @@ export const CharGen = {
 
   close() {
     document.getElementById("chargen-overlay").classList.remove("open");
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 
   _newBuild(creation) {
