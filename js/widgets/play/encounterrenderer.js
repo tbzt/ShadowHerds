@@ -2034,6 +2034,7 @@ export const EncounterRenderer = {
     document.getElementById("round-panel-body").innerHTML = lignes
       .map((l, i) => this._roundLigne(l, i))
       .join("");
+    this._roundProgress();
     // Le bouton de purge n'existe que s'il y a quelque chose à purger.
     const echus = lignes.filter((l) => l.kind === "echu");
     const purge = document.getElementById("round-panel-purge");
@@ -2058,7 +2059,7 @@ export const EncounterRenderer = {
       const geste = l.resisted
         ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${nom}" data-roll-pnj="${l.pnj.id}" title="Résister à ${l.vd}${type}"><span class="react-glyph" aria-hidden="true">⛊</span> ${soak}</button>`
         : `<button class="react-btn react-btn-danger" data-action="round-apply" data-idx="${i}" title="Dégâts déjà nets — le livre dit « non résisté »"><span class="react-glyph react-glyph-danger" aria-hidden="true">✸</span> ${l.vd}${type}</button>`;
-      return `<div class="round-line">
+      return `<div class="round-line" data-todo>
         <span class="round-line-who">${nom}</span>
         <span class="round-line-what">${Utils.escHtml(l.name)}${l.level > 1 ? ` ${l.level}` : ""} · VD ${l.vd}${type}${l.resisted ? "" : " non résisté"}</span>
         ${geste}
@@ -2071,7 +2072,7 @@ export const EncounterRenderer = {
       // tour de la pose).
       const rang = l.age + 1;
       const esc = l.escalates ? ` · ${rang}${rang === 1 ? "er" : "e"} tour` : "";
-      return `<div class="round-line">
+      return `<div class="round-line" data-todo>
         <span class="round-line-who">${nom}</span>
         <span class="round-line-what">${Utils.escHtml(l.name)} · ${(l.pool || []).join(" + ")} (${l.threshold})${esc}</span>
         <button class="react-btn" data-roll="${pool}" data-roll-label="${Utils.escHtml(l.name)} — ${nom}" data-roll-pnj="${l.pnj.id}" title="Seuil ${l.threshold}"><span class="react-glyph" aria-hidden="true">⚄</span> ${pool}</button>
@@ -2081,6 +2082,51 @@ export const EncounterRenderer = {
       <span class="round-line-who">${nom}</span>
       <span class="round-line-what">${Utils.escHtml(l.name)} · durée échue (${quand} de round)</span>
     </div>`;
+  },
+
+  /* ── SURVEILLANCE DU BILAN ────────────────────────────────────────────────
+     Le panneau tient géométriquement — MESURÉ à 10 PNJ Enflammés ET
+     Empoisonnés : 20 lignes, 1155px de corps bornés à 480, il défile, et
+     « Continuer » reste atteignable. Ce n'est donc PAS la géométrie qui casse
+     à l'échelle, c'est la TÂCHE : vingt gestes à faire un par un, chacun
+     ouvrant l'overlay de dés PAR-DESSUS le panneau. Le MJ le referme, revient,
+     et rien ne lui dit où il en était — les vingt lignes sont identiques,
+     avant comme après. À la quatrième, il compte sur ses doigts ; à la
+     douzième, il en saute une ou il en refait une.
+
+     La réponse est une TRACE, pas un verrou (patron `.action-pick.is-last`,
+     qui marque la dernière action jouée sans la désactiver) : la ligne se
+     ternit et prend un ✓, son bouton reste vivant. Un jet raté, un mis-tap, un
+     MJ qui veut relancer : c'est son arbitrage, pas celui de l'app
+     (garde-fou « informer, jamais décider »). Seul ✸ garde son verrou — un
+     dégât NET appliqué deux fois est une erreur de fait, pas un arbitrage, et
+     ce verrou-là existait déjà.
+
+     Et le compteur en tête dit ce que le défilement cache : « 3/20 traités »
+     se lit sans faire défiler, parce que la tête du panneau, elle, ne défile
+     pas. */
+
+  /** Marque une ligne comme traitée. Idempotent — retaper un jet ne compte pas
+      deux fois, et ne DÉ-marque pas non plus : la trace dit « vous êtes passé
+      par là », pas « c'est réglé ». */
+  _roundDone(ligne) {
+    if (!ligne || !ligne.hasAttribute("data-todo")) return;
+    ligne.classList.add("is-done");
+    this._roundProgress();
+  },
+
+  /** « N/T traités » en tête — T ne compte que les lignes qui PORTENT un
+      geste : les durées échues n'en ont pas (la purge groupée s'en charge en
+      pied), les compter gonflerait un dénominateur que le MJ ne peut pas
+      faire baisser une ligne à la fois. Muet quand il n'y a qu'un geste : un
+      compteur « 0/1 » n'apprend rien. */
+  _roundProgress() {
+    const body = document.getElementById("round-panel-body");
+    const el = document.getElementById("round-panel-count");
+    if (!body || !el) return;
+    const total = body.querySelectorAll(".round-line[data-todo]").length;
+    const faits = body.querySelectorAll(".round-line[data-todo].is-done").length;
+    el.textContent = total > 1 ? `${faits}/${total} traités` : "";
   },
 
   _ensureRoundPanel() {
@@ -2093,6 +2139,7 @@ export const EncounterRenderer = {
       <div class="risk-panel" role="dialog" aria-label="Bilan de fin de round">
         <div class="risk-panel-head">
           <span class="risk-panel-title" id="round-panel-title">Fin de round</span>
+          <span class="round-progress" id="round-panel-count" aria-live="polite"></span>
           <button class="risk-panel-close" id="round-panel-close" aria-label="Fermer">✕</button>
         </div>
         <div id="round-panel-body"></div>
@@ -2112,6 +2159,16 @@ export const EncounterRenderer = {
     // par `window.Encounter` — le même pont assumé que cardrenderer↔DiceRoller
     // (cf. diceroller.js « un import inverse créerait un cycle »).
     p.addEventListener("click", (e) => {
+      // La TRACE, avant tout aiguillage : elle vaut pour les deux gestes du
+      // bilan, le jet (`data-roll`, tiré par la délégation document de
+      // DiceRoller — ce panneau ne le voit jamais autrement) et l'application
+      // directe (`round-apply`, traité juste en dessous). Un seul endroit, donc
+      // aucune des deux branches ne peut l'oublier. Le `closest(".round-line")`
+      // est aussi le filtre : la purge groupée et « Continuer » vivent en pied
+      // de panneau, hors de toute ligne, et ne marquent donc rien.
+      const geste = e.target.closest("[data-roll], [data-action]");
+      if (geste) this._roundDone(geste.closest(".round-line"));
+
       const b = e.target.closest("[data-action]");
       if (!b) return;
       if (b.dataset.action === "round-purge") {
