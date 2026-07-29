@@ -8,6 +8,7 @@ import { ContextSelector } from "./widgets/journal/contextselector.js";
 import { DossierBar } from "./widgets/journal/dossierbar.js";
 import { Dossiers } from "./widgets/journal/dossiers.js";
 import { Encounter } from "./controllers/encounter.js";
+import { FocusTrap } from "./widgets/kit/focustrap.js";
 import { Nudge } from "./widgets/tour/nudge.js";
 import { Storage } from "./core/storage.js";
 
@@ -399,10 +400,17 @@ export const App = {
   },
 
   /* ---- D1 : sheet mobile « Plus » (Contacts/Serveurs/Run/Paramètres) ---- */
+  _moreReleaseTrap: null,
   openMore() {
     const overlay = document.getElementById("more-sheet-overlay");
     if (!overlay) return;
     overlay.classList.add("open");
+    // D7 : déjà aria-modal="true" (même famille que #dice-sheet-overlay,
+    // gabarit CSS partagé) — piégé juste après .open, puis focus sur le
+    // premier bouton de panneau (aucune croix de fermeture dans ce gabarit,
+    // même choix que dicepanel.js).
+    this._moreReleaseTrap = FocusTrap.activate(overlay);
+    overlay.querySelector("#more-sheet .bnav-btn")?.focus();
     requestAnimationFrame(() =>
       requestAnimationFrame(() => overlay.classList.add("show")),
     );
@@ -412,6 +420,10 @@ export const App = {
     if (!overlay || !overlay.classList.contains("open")) return;
     overlay.classList.remove("show");
     setTimeout(() => overlay.classList.remove("open"), 220);
+    if (this._moreReleaseTrap) {
+      this._moreReleaseTrap();
+      this._moreReleaseTrap = null;
+    }
   },
 
   /* ---- Navigation entre panels ---- */
