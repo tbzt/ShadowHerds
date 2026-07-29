@@ -22,8 +22,6 @@
    La sélection est lue à la volée depuis le DOM ; aucun état JS
    à synchroniser. Une sélection vide signifie « Aléatoire / tout ».
    ============================================================ */
-import { FocusTrap } from "./focustrap.js";
-
 export const MultiSelect = {
   _bound: false,
 
@@ -219,17 +217,6 @@ export const MultiSelect = {
     dd.hidden = !open;
     ms.classList.toggle("ms-open", open);
     if (control) control.setAttribute("aria-expanded", String(open));
-    // D7 : non modal (ferme au clic dehors/Échap/scroll, pas d'aria-modal),
-    // mais le contrôle et le dropdown sont deux frères dans le même `.ms` —
-    // sans piège, Tab s'évade vers le reste de la page une fois la dernière
-    // case atteinte. Le contrôle garde déjà le focus à l'ouverture (clic ou
-    // Entrée/Espace ci-dessous), donc rien à déplacer, juste boucler Tab.
-    if (open) {
-      ms._msFocusRelease = FocusTrap.activate(ms);
-    } else if (ms._msFocusRelease) {
-      ms._msFocusRelease();
-      ms._msFocusRelease = null;
-    }
   },
 
   /** Positionne le dropdown (position:fixed) sous son contrôle — recalculé
