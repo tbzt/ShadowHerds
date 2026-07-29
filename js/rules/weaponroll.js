@@ -461,18 +461,28 @@ export const WeaponRoll = {
         ? WeaponEffects.forWeapon(pnj, parsed.name, edition)
         : { pool: [], accuracy: [], dv: [], ap: [] };
     const itemPool = fx.pool.reduce((a, c) => a + c.value, 0);
+    const preArme = accuracySmart ? parsed.preSmart : parsed.pre;
     // VISÉE LASER (SR5 p.435) — « +1 à la Précision […] non cumulable avec
     // les modificateurs d'un système smartlink » : la contribution d'objet
     // ciblant `accuracy` (posée par `WeaponEffects`) est donc écartée dès que
     // la synergie smartgun+smartlink est déjà active, pour ne jamais cumuler
     // les deux mots du même passage.
-    const accuracyFx = accuracySmart ? [] : fx.accuracy;
+    //
+    // ⚠ ET écartée quand l'arme n'a AUCUNE Précision (`preArme == null`) : on
+    // ne relève pas un plafond qui n'existe pas. Sans cette seconde garde, des
+    // mains nues affichaient un badge « Prec+1 » fantôme (vu en navigateur) —
+    // le filtre de mêlée de `WeaponEffects` ne suffit pas, parce qu'il reçoit
+    // le nom NU (`parsed.name`) alors qu'`isMeleeWeapon` a besoin de la chaîne
+    // entière pour reconnaître « Mains nues » (test `\ballonge\b`). Les deux
+    // gardes sont complémentaires : celle-ci couvre les armes sans PRE, celle
+    // de `WeaponEffects` couvre les armes de mêlée qui EN déclarent une (la
+    // Poêle à Frire et ses PRE 3).
+    const accuracyFx = accuracySmart || preArme == null ? [] : fx.accuracy;
     const accuracyFxBonus = accuracyFx.reduce((a, c) => a + c.value, 0);
     // « +1 à la Précision lors du test d'attaque », par cran d'Ajuster (SR5) —
     // la Précision étant la LIMITE de succès, le bonus monte le plafond en même
     // temps que la réserve. SR6 déclare `accuracy: 0` : il n'a pas de Limite.
     const aimAcc = (aim && aim.accuracy) || 0;
-    const preArme = accuracySmart ? parsed.preSmart : parsed.pre;
     const preBase = preArme == null ? null : preArme + accuracyFxBonus;
     const accuracy = preBase == null ? null : preBase + aimAcc;
     const malus = Utils.dicePenalty(pnj, edition);
