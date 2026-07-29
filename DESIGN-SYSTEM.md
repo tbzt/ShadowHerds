@@ -216,7 +216,7 @@ scène bifurque.
 |---|---|---|
 | **Fitts** | Le temps d'atteinte dépend de la taille et de la distance | Cibles dimensionnées **à la fréquence du geste** (§7) ; actions fréquentes en bord d'écran ; le kebab d'une carte est petit **parce qu'il est rare** |
 | **Hick** | Le temps de décision croît avec le nombre d'options | Une seule action primaire par surface ; les 9 filtres du générateur regroupés en 3 blocs |
-| **Miller / chunking** | On tient ~4 groupes en mémoire de travail | Une carte a **au plus 4 zones** ; au-delà, on replie |
+| **Miller / chunking** | On tient ~4 groupes en mémoire de travail | Une carte a **au plus 4 zones déployées** ; au-delà, on replie (un tiroir fermé ne compte pas — §Carte) |
 | **Doherty** | Sous 400ms, l'utilisateur reste « dans » la tâche | Pas d'indicateur de chargement sous 200ms ; feedback immédiat sur toute action |
 | **Von Restorff** | Ce qui diffère est mémorisé | **Un accent = un sens.** L'accent d'édition signale l'interactif et l'actif. Rien d'autre. |
 | **Jakob** | On attend d'un produit qu'il marche comme les autres | Échap ferme, le rideau ferme, le focus revient d'où il vient |
@@ -727,7 +727,8 @@ généralise** ; elle devient le patron de toutes les cartes.
 │   │   ├── .card-title
 │   │   ├── .card-badges     .cluster de marqueurs
 │   │   └── .card-kebab      menu (⋮) — 32px de cible
-│   ├── .card-zone           1 à 4 zones, séparées par un filet
+│   ├── .card-zone           zones, séparées par un filet (≤ 4 DÉPLOYÉES ;
+│   │                        les tiroirs repliés ne comptent pas)
 │   │   ├── .card-zone-label  étiquette mono (rôle « Étiquette »)
 │   │   └── …contenu
 │   └── .card-foot           .cluster--end d'actions
@@ -751,18 +752,46 @@ généralise** ; elle devient le patron de toutes les cartes.
 
 #### Règles
 
-**Loi — au plus 4 zones.** Au-delà, on replie ou on scinde. C'est la limite
-de la mémoire de travail : une carte à 7 zones n'est pas lue, elle est
-survolée puis abandonnée.
+**Loi — au plus 4 zones DÉPLOYÉES.** Au-delà, on replie ou on scinde. C'est la
+limite de la mémoire de travail : une carte à 7 zones ouvertes n'est pas lue,
+elle est survolée puis abandonnée.
+
+Un **tiroir replié ne compte pas** — c'est un titre, pas une zone : il coûte une
+ligne de 31px et zéro charge de lecture. La carte PNJ en fait la démonstration
+(audit D6, mesuré à l'écran) : 4 blocs pour un PNJ, 5 pour un PJ (tiroir
+« Suivi »), 6 pour un PJ issu d'un contact (+ « Relation ») — mais les 2 tiroirs
+surnuméraires sont fermés au repos, et la charge réelle reste celle de 4 zones.
+Ce qu'il faut compter, c'est ce qui est **ouvert en même temps**, pas le nombre
+de bandeaux empilés.
+
+*Formulation antérieure — « au plus 4 zones », sans le mot « déployées ». Elle
+comptait les nœuds DOM au lieu de la charge cognitive, et déclarait donc en
+faute une carte que sa propre parenthèse (« mémoire de travail ») déclarait
+saine. Amendée après mesure, arbitrage utilisateur 2026-07-29.*
 
 **Loi — un seul geste primaire par carte.** Soit la carte entière est
 cliquable (elle ouvre son détail), soit elle ne l'est pas et ses actions
 vivent dans le pied ou le kebab. **Jamais les deux** : une carte cliquable
 avec des boutons dedans produit un clic sur deux au mauvais endroit.
 
-**Règle — l'ordre de lecture est fixe** : identité → état → contenu →
+**Règle — l'ordre de lecture est fixe** : identité → fiction → état → contenu →
 actions. Toujours. C'est ce qui permet le coup d'œil : on sait *où regarder*
 avant de savoir *quoi lire*.
+
+La **fiction** (incarnation, identités d'emprunt) vient juste après l'identité,
+**avant l'état** : on regarde *qui est ce personnage* avant de regarder *combien
+il lui reste de cases*. C'est la convention **I2 « fiction en tête »** du lot
+paysage (VIS-15/L1), et c'est aussi ce que fait le code
+(`cardrenderer.js` `_body` : « l'incarnation se regarde avant le combat »).
+Le besoin inverse — l'état d'abord — existe, mais il est **situationnel** : il
+est servi par la lentille **Combat**, qui déplie le bon bloc au bon moment, pas
+par un réordonnancement permanent de toutes les cartes.
+
+*Formulation antérieure — « identité → état → contenu → actions », sans la
+fiction. Elle contredisait frontalement I2, déjà implémentée et documentée dans
+le code : deux règles du projet en conflit, l'une des deux forcément violée en
+permanence. Conflit relevé par l'audit D6 (2026-07-29) et tranché en faveur
+d'I2 par arbitrage utilisateur.*
 
 **Règle — les actions destructrices ne sont jamais dans le pied.** Elles
 vivent dans le kebab, derrière une confirmation. Le pied est réservé aux
