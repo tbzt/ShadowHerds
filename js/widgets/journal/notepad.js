@@ -8,11 +8,13 @@
    ============================================================ */
 import { ContextSelector } from "./contextselector.js";
 import { Dossiers } from "./dossiers.js";
+import { FocusTrap } from "../kit/focustrap.js";
 import { Mentions } from "./mentions.js";
 import { Notebooks } from "../../rules/notebooks.js";
 
 export const Notepad = {
   _open: false,
+  _releaseTrap: null,
   _saveTimer: null,
   _mode: "read", // "read" (puces @/#) | "edit" (jeton brut)
   // R2 (Notebooks) : carnet courant, figé à l'ouverture (le panneau est un
@@ -155,12 +157,27 @@ export const Notepad = {
     this._syncView();
     this._updateTitle();
     document.getElementById("notepad-backdrop").classList.add("open");
-    document.getElementById("notepad-panel").classList.add("open");
+    const panel = document.getElementById("notepad-panel");
+    panel.classList.add("open");
     this._open = true;
+    // D7 : panneau ajouté à part dans `document.body`, hors de l'ordre de
+    // tabulation du bouton qui l'ouvre — sans un focus explicite à
+    // l'intérieur, le piège serait inatteignable au clavier (même correctif
+    // que dicelog.js/factionpicker.js). Posé avant tout déplacement de focus,
+    // même ordre que partout ailleurs sur ce chantier.
+    this._releaseTrap = FocusTrap.activate(panel);
     // « Atterrir en haut » : ouvert depuis la Palette avec une ancre, on amène
     // la ligne trouvée en tête du carnet (mode Lire) + flash bref.
     if (opts.scrollTo && this._mode === "read") this._scrollToText(opts.scrollTo);
-    else if (this._mode === "edit") ta.focus();
+    // Mode Éditer : le champ EST le contenu, focus naturel (préexistant).
+    // Mode Lire : rien de fiable à pré-sélectionner (le rendu n'est pas
+    // focusable, cf. commentaire de _ensure sur le clic-pour-éditer) — la
+    // croix de fermeture, même patron que dicelog.js/factionpicker.js. Sans
+    // ce filet, ouvrir sur une note déjà écrite (mode Lire par défaut)
+    // laissait le piège posé mais mort : AUCUN focus n'entrait jamais dans
+    // le panneau, trou pire que les cas déjà corrigés.
+    if (this._mode === "edit") ta.focus();
+    else panel.querySelector('[data-action="close"]').focus();
   },
 
   /** Amène la 1ʳᵉ occurrence de `needle` (texte brut) en haut du rendu Lire +
@@ -237,6 +254,10 @@ export const Notepad = {
     clearTimeout(this._saveTimer);
     document.getElementById("notepad-panel")?.classList.remove("open");
     document.getElementById("notepad-backdrop")?.classList.remove("open");
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
     this._open = false;
   },
 };
