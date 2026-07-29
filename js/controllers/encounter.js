@@ -2709,11 +2709,33 @@ export const Encounter = {
     });
   },
 
+  /** Le tiroir se souvient s'il avait quelque chose à offrir au rendu précédent :
+      c'est ce qui distingue « ouvert alors qu'il était déjà vide » (le message
+      explique pourquoi, il est utile) de « vidé par l'ajout qui vient de
+      réussir » (le message ne dit plus rien, et il coûte la place de l'effectif). */
+  _pickerHadCandidates: false,
+
   /** Ne (re)rend le panneau d'ajout que s'il est ouvert : évite de recalculer
-      la liste des candidats à chaque commit inutilement. */
+      la liste des candidats à chaque commit inutilement.
+
+      B1.2 — le tiroir se referme quand l'ajout vient de le VIDER. Mesuré sur une
+      scène de 7 : l'état « Aucune entité disponible » occupait 266px, soit 43 %
+      de la colonne, et il ne restait AUCUNE des 6 lignes d'effectif à l'écran.
+      Cet état n'apparaissait là que PARCE QUE le geste avait réussi — un panneau
+      qui reste ouvert pour annoncer qu'il n'a plus rien à offrir. Ouvrir un
+      tiroir déjà vide reste légitime : c'est le seul cas où le message informe. */
   _renderPicker() {
     const panel = document.getElementById("encounter-add-panel");
-    if (panel && !panel.hidden) EncounterRenderer.renderPicker(this._candidates(), this._serverCandidates());
+    if (!panel || panel.hidden) return;
+    const candidates = this._candidates();
+    const servers = this._serverCandidates();
+    const vide = !candidates.length && !servers.length;
+    if (vide && this._pickerHadCandidates) {
+      this.toggleAddPicker(); // même primitive que le geste : libellé et aria-expanded suivent
+      return;
+    }
+    EncounterRenderer.renderPicker(candidates, servers);
+    this._pickerHadCandidates = !vide;
   },
 
   /** R1c : bouton-bascule libellée (aria-expanded), pas une icône nue — le
@@ -2722,7 +2744,14 @@ export const Encounter = {
     const panel = document.getElementById("encounter-add-panel");
     if (!panel) return;
     panel.hidden = !panel.hidden;
-    if (!panel.hidden) EncounterRenderer.renderPicker(this._candidates(), this._serverCandidates());
+    if (!panel.hidden) {
+      const candidates = this._candidates();
+      const servers = this._serverCandidates();
+      EncounterRenderer.renderPicker(candidates, servers);
+      // Un tiroir ouvert VIDE doit rester ouvert (le message est le seul recours
+      // du MJ) : on ne mémorise donc « il avait à offrir » que s'il avait à offrir.
+      this._pickerHadCandidates = !!(candidates.length || servers.length);
+    }
     const btn = document.getElementById("encounter-add-toggle");
     if (btn) {
       btn.setAttribute("aria-expanded", String(!panel.hidden));
