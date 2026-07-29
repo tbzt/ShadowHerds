@@ -15,11 +15,13 @@
    globale ici. Réutilise le CSS partagé `#…-picker-*` / `.group-picker-*`.
    ============================================================ */
 import { CardRenderer } from "../card/cardrenderer.js";
+import { FocusTrap } from "./focustrap.js";
 
 export const ScenarioCastPicker = {
   _scId: null,
   _nodeId: null,
   _MAX: 40,
+  _releaseTrap: null,
 
   _ensure() {
     if (document.getElementById("scenario-cast-picker-panel")) return;
@@ -66,8 +68,16 @@ export const ScenarioCastPicker = {
     this._nodeId = nodeId;
     this._renderShell();
     document.getElementById("scenario-cast-picker-backdrop").classList.add("open");
-    document.getElementById("scenario-cast-picker-panel").classList.add("open");
+    const panel = document.getElementById("scenario-cast-picker-panel");
+    panel.classList.add("open");
     this._position(triggerEl);
+    // D7 : piège posé dans tous les cas (inoffensif tant que rien ne
+    // déplace le focus dedans) ; le focus initial reste conditionnel au
+    // desktop (>640px), même choix délibéré préexistant que
+    // convokepicker.js pour ne pas ouvrir le clavier virtuel sur mobile —
+    // pas touché. Sur mobile, un premier clic sur une case suffit à faire
+    // entrer le focus dans le piège.
+    this._releaseTrap = FocusTrap.activate(panel);
     const input = document.querySelector('[data-role="cast-search"]');
     if (input && window.innerWidth > 640) input.focus();
   },
@@ -79,6 +89,10 @@ export const ScenarioCastPicker = {
     if (backdrop) backdrop.classList.remove("open");
     this._scId = null;
     this._nodeId = null;
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 
   _node() {
