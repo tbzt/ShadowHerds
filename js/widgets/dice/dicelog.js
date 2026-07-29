@@ -5,11 +5,13 @@
    Alimenté par Dice._animate (dice.js) via DiceLog.record().
    ============================================================ */
 import { DicePanel } from "./dicepanel.js";
+import { FocusTrap } from "../kit/focustrap.js";
 import { Storage } from "../../core/storage.js";
 import { Utils } from "../../core/utils.js";
 
 export const DiceLog = {
   _open: false,
+  _releaseTrap: null,
 
   /* ---- Journal des jets (persistant, plus récent en premier) ---- */
   history: [],
@@ -166,7 +168,16 @@ export const DiceLog = {
     this._renderBadge();
     this.refresh();
     document.getElementById("dice-log-backdrop").classList.add("open");
-    document.getElementById("dice-log-panel").classList.add("open");
+    const panel = document.getElementById("dice-log-panel");
+    panel.classList.add("open");
+    // D7 : panneau ajouté à part dans `document.body`, hors de l'ordre de
+    // tabulation du bouton qui l'ouvre — sans ce focus, le piège serait
+    // inatteignable au clavier (même correctif que foundationview.js/
+    // magicaction.js/summonpanel.js/factionpicker.js/tagpicker.js). Contenu
+    // dynamique (filtres/liste varient) : pas de champ fiable à
+    // pré-sélectionner, la croix de fermeture comme les autres.
+    this._releaseTrap = FocusTrap.activate(panel);
+    panel.querySelector('[data-action="close"]').focus();
     this._open = true;
   },
 
@@ -176,6 +187,10 @@ export const DiceLog = {
     const b = document.getElementById("dice-log-backdrop");
     if (p) p.classList.remove("open");
     if (b) b.classList.remove("open");
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
     this._open = false;
   },
 
