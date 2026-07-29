@@ -19,11 +19,13 @@
 import { GraphProjections } from "./graphprojections.js";
 import { GraphEngine } from "./graphengine.js";
 import { CardRenderer } from "../card/cardrenderer.js";
+import { FocusTrap } from "../kit/focustrap.js";
 import { UI } from "../kit/ui.js";
 import { Utils } from "../../core/utils.js";
 
 export const GraphView = {
   _el: null,
+  _releaseTrap: null,
   _lastScope: null,
   _weave: false,
   _halo: true, // B4 : afficher la couronne de voisins hors périmètre (estompée)
@@ -57,6 +59,14 @@ export const GraphView = {
     this._reflectPockets(overlay);
     overlay.querySelector('[data-graph="title"]').textContent = title;
     overlay.classList.add("open");
+    // D7 : coquille .modal-overlay détachée dans document.body, comme
+    // FoundationView/debrief (même patron, cf. en-tête du fichier) — sans un
+    // focus explicite à l'intérieur, le piège serait inatteignable au
+    // clavier (même correctif que ces deux-là). Canvas + inspecteur peuplés
+    // dynamiquement par _project() : pas de champ fiable à pré-sélectionner,
+    // la croix de fermeture comme ContentModal/FoundationView.
+    this._releaseTrap = FocusTrap.activate(overlay);
+    overlay.querySelector('[data-graph-action="close"]').focus();
     // Monter synchrone : lire `clientWidth` (dans _project) force le reflow,
     // donc le container a ses dimensions réelles dès maintenant — sans dépendre
     // d'un rAF (throttlé onglet en arrière-plan, et fragile au premier rendu).
@@ -65,6 +75,10 @@ export const GraphView = {
 
   hide() {
     if (this._el) this._el.classList.remove("open");
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
     GraphEngine.destroy();
   },
 
@@ -506,10 +520,11 @@ export const GraphView = {
     overlay.id = "graph-overlay";
     overlay.setAttribute("role", "dialog");
     overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-labelledby", "graph-title");
     overlay.innerHTML = `
       <div class="modal graph-modal">
         <div class="modal-header">
-          <span class="modal-title" data-graph="title">Liens</span>
+          <span class="modal-title" id="graph-title" data-graph="title">Liens</span>
           <button class="graph-pockets-toggle" data-graph-action="toggle-pockets" aria-pressed="true" title="Afficher les poches de faction (zones colorées)">◇ Poches</button>
           <button class="graph-halo-toggle" data-graph-action="toggle-halo" aria-pressed="true" title="Afficher les voisins hors périmètre (estompés)">Voisins</button>
           <button class="graph-weave-toggle" data-graph-action="toggle-weave" aria-pressed="false" title="Tisser un lien : tirer d'un nœud à l'autre">◈ Tisser</button>
