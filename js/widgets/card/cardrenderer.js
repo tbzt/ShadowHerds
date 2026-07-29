@@ -2066,6 +2066,18 @@ export const CardRenderer = {
      controls). La zone Combat, elle, est rendue par CardRenderer : donc sur la
      carte, dans le coup d'œil ⛶, et dans les blocs d'offense du cockpit.
 
+     ⚠ AMENDEMENT. « NON dans la console » disait POURQUOI la console ne peut
+     pas être le SEUL point de pose. C'était juste, et ça le reste : les trois
+     angles morts (tour d'un PNJ, PJ, combattant à terre) n'ont d'issue que par
+     la carte, qui garde donc l'ancrage. Mais le cas le plus fréquent de la
+     table est précisément celui que la console couvre : le PJ lance un sort,
+     le PNJ défend (⛉), encaisse (⛊), prend ses cases (✸) — et ressort
+     Enflammé. Envoyer le MJ ouvrir une fiche pour le dernier tiers d'une
+     séquence qu'il vient de jouer en trois taps, c'est casser la séquence.
+     `statusRow` sert donc la MÊME ligne à la console de réaction : un second
+     MONTAGE du composant, pas un second composant (cf. `_toggleStatusSheet`,
+     qui cherchait déjà sa feuille autour du bouton pour cette raison).
+
      COULEUR. Aucune. Le cockpit a dépensé ses quatre rôles (--accent = Agir,
      froid = Réagir, --accent2 = Matrice, --danger = Dégâts et rien d'autre :
      « le rouge se mérite »). Un état se lit par son NOM, jamais par un nombre
@@ -2079,16 +2091,34 @@ export const CardRenderer = {
       la surface disparaît d'elle-même, comme le panneau pré-jet en Anarchy 2)
       ni pour un PJ ad-hoc, qui n'a pas de fiche à porter. */
   _statusRow(pnj, edition, deps) {
-    if (!deps.Statuses || !pnj || pnj._adhoc) return "";
-    const cat = deps.Statuses.catalog(pnj);
-    if (!cat.length) return "";
-    const actifs = deps.Statuses.active(pnj);
-    const chips = actifs.map((s) => this._statusTag(pnj, s, deps)).join("");
-    // Glyphe posé par le CSS d'après `aria-expanded` (`.toggle-glyph`) : « ＋ »
-    // fermé, « − » ouvert. Un déplieur qui garde le même signe une fois déplié
-    // ne dit pas qu'on peut le refermer.
-    const plus = `<button type="button" class="tag status-add toggle-glyph" data-action="status-sheet" data-id="${pnj.id}" aria-expanded="false" title="Poser un état" aria-label="Poser un état"></button>`;
-    return `<div class="combat-states">${chips}${plus}${this._statusSheet(pnj, deps)}</div>`;
+    const p = this.statusParts(pnj, deps);
+    return p ? `<div class="combat-states">${p.chips}${p.plus}${p.sheet}</div>` : "";
+  },
+
+  /** Les TROIS pièces de la ligne d'états, séparées — pour une surface qui
+      n'est pas une carte et qui ne les range pas dans le même ordre. La console
+      de réaction met le ＋ dans sa grappe de gestes (poser un état EST un
+      geste, au même titre qu'appliquer des dégâts), les pastilles posées sur
+      leur propre rang, et laisse la feuille se déplier en pleine largeur.
+      Même balisage, même délégation (`bindDelegation` est posée sur `document`,
+      donc tout tire depuis l'overlay du tracker comme depuis le Hub) : c'est un
+      second MONTAGE, pas un second composant.
+
+      `plusClass` — la classe du déplieur, parce que c'est la seule pièce dont
+      l'habit dépend de la surface : `.tag` parmi les tags de la carte,
+      `.react-btn` parmi les gestes du rack. Le `.toggle-glyph` (＋ fermé, −
+      ouvert, posé par le CSS d'après `aria-expanded`) est commun aux deux.
+      Renvoie `null` — pas des chaînes vides — quand l'édition n'a pas d'états
+      ou que le PNJ n'a pas de fiche : l'appelant n'a alors AUCUN rang à poser,
+      et c'est une question différente de « la ligne est vide ». */
+  statusParts(pnj, deps = CardRenderer.liveDeps(), { plusClass = "tag status-add" } = {}) {
+    if (!deps.Statuses || !pnj || pnj._adhoc) return null;
+    if (!deps.Statuses.catalog(pnj).length) return null;
+    return {
+      chips: deps.Statuses.active(pnj).map((s) => this._statusTag(pnj, s, deps)).join(""),
+      plus: `<button type="button" class="${plusClass} toggle-glyph" data-action="status-sheet" data-id="${pnj.id}" aria-expanded="false" title="Poser un état" aria-label="Poser un état"></button>`,
+      sheet: this._statusSheet(pnj, deps),
+    };
   },
 
   /** Un état POSÉ. Le tap monte d'un cran (I → II → … → plafond → retiré) :

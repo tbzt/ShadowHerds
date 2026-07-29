@@ -1338,7 +1338,18 @@ export const EditionSR6 = {
         halts: { why: "aucune action cohérente", except: "éviter la source de l'état" }, lines: [
         "Aucune action possible, sauf pour éviter la source de l'état",
       ] },
+      // `cancelsDamaging` et non un `cancels` en dur : le livre (p.57) écrit
+      // « Cela annule tout autre état infligeant des dommages QUE POURRAIT
+      // SUBIR LE PERSONNAGE » — une CATÉGORIE, pas une liste. Les quatre
+      // concernés aujourd'hui (Enflammé, Empoisonné, Corrodé, Sanguinolent)
+      // sont exactement ceux qui déclarent un `periodic` ; les nommer ici les
+      // aurait figés, et le cinquième qu'un supplément ajoutera serait passé au
+      // travers en silence. `Statuses.set` résout la catégorie contre le
+      // catalogue de l'édition du PNJ. « Annule » = retire, à ne pas confondre
+      // avec Figé, dont le livre dit « SUSPENDUS » (et qui reste du texte :
+      // suspendre puis rendre est une autre mécanique, pas celle-ci).
       { key: "petrifie", name: "Pétrifié", levels: 0, page: "p.55-58",
+        cancelsDamaging: true,
         halts: { why: "le personnage est transformé en matériau solide" }, lines: [
         "Aucune action possible",
         "+10 à l'indice d'Armure",

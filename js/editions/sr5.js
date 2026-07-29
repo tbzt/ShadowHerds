@@ -814,19 +814,34 @@ export const EditionSR5 = {
       // d'agir contre les non-surpris) reste du texte : ce sont des
       // arbitrages, pas des soustractions.
       // INTERDICTIONS CIBLÉES (F3b, complété au lot F4) : le livre écrit « Un
-      // personnage surpris ne peut pas se jeter au sol » (p.165) et « Un
-      // personnage surpris ne peut pas se mettre à couvert » (p.193). Deux
-      // actions nommées, aucune condition — même traitement que Sprinter sous
+      // personnage surpris ne peut pas se jeter au sol » (chap. Actions, « Se
+      // jeter au sol ») et « Un personnage surpris ne peut pas se mettre à
+      // couvert » (chap. Actions, « Se mettre à couvert »). Deux actions
+      // nommées, aucune condition — même traitement que Sprinter sous
       // Électrocuté en SR6. Le verrou des INTERRUPTIONS, lui, reste porté par
       // `interruptBlockedBy` : ce sont deux surfaces distinctes.
+      //
+      // ⚠ LE LIVRE SE CONTREDIT, et c'est vérifié dans les deux sens. Le
+      // chapitre Combat, § « Effets de la surprise », donne « se jeter au
+      // sol » comme EXEMPLE de ce qu'un surpris peut encore faire : « Un
+      // personnage surpris peut, par contre, effectuer d'autres actions qui ne
+      // sont pas directement dirigées contre ceux qui l'ont surpris, telles
+      // que se jeter au sol ou préparer une arme (mais pas faire feu) ». Le
+      // chapitre Actions dit l'inverse, mot pour mot.
+      // On garde l'interdiction — c'est le texte le plus SPÉCIFIQUE (il nomme
+      // l'action dans sa propre entrée, seul critère de `forbids`) — mais la
+      // contradiction est DITE dans le `why`, qui s'affiche sur la puce grisée.
+      // Le MJ voit donc qu'il arbitre, au lieu de subir un bouton mort ; et
+      // personne ne « corrigera » cette entrée un jour sans savoir qu'il
+      // choisit entre deux passages du même livre.
       { key: "surpris", name: "Surpris", levels: 0, quick: true, page: "p.193-194",
-        forbids: [{ actions: ["seJeterAuSol", "seMettreACouvert"], why: "un personnage surpris ne peut ni se jeter au sol ni se mettre à couvert" }],
+        forbids: [{ actions: ["seJeterAuSol", "seMettreACouvert"], why: "un personnage surpris ne peut ni se jeter au sol ni se mettre à couvert (chap. Actions) — ⚠ le chapitre Combat, « Effets de la surprise », donne au contraire « se jeter au sol » en exemple de ce qui reste permis : à vous de trancher" }],
         until: "pass", initMalus: 10,
         lines: [
           "−10 au score d'initiative",
           "Aucun test de défense possible",
-          "Ne peut rien faire qui affecte ou contre les personnages non surpris",
-          "Ni se jeter au sol ni se mettre à couvert",
+          "Ne peut rien faire qui affecte, entrave ou contre les personnages non surpris",
+          "Ni se jeter au sol ni se mettre à couvert (⚠ contredit par « Effets de la surprise »)",
           "Dure jusqu'au début de la prochaine passe d'initiative",
         ] },
       // Échelle environnementale p.176, réduite à ses trois crans de malus.
@@ -840,14 +855,15 @@ export const EditionSR5 = {
           "III — dense (obscurité totale, éblouissement aveuglant) : −6",
           "Combinaison de plusieurs conditions au cran III : −10",
         ] },
-      // Compteur, pas condition : il monte d'un cran à CHAQUE défense déjà
-      // faite dans le tour et retombe au tour suivant. Niveau libre — le
-      // nombre de défenses n'a pas de plafond au livre.
-      { key: "defensesMultiples", name: "Défenses multiples", levels: null, page: "p.483",
-        until: "round",
-        lines: [
-          "−1 dé en défense par défense déjà effectuée dans ce tour de combat",
-        ] },
+      // ⚠ « Défenses multiples » A ÉTÉ RETIRÉ de ce catalogue, et ne doit pas y
+      // revenir. La règle (« −1 dé cumulatif par test de défense additionnel
+      // depuis la dernière phase d'action ») est MOTORISÉE ailleurs, et
+      // entièrement : le tracker compte les défenses (`Encounter.countDefense`,
+      // porté par le ⛉ lui-même) et `CardRenderer.defensePool` retranche
+      // `multiDefenseMalus` sur les trois surfaces. L'entrée de catalogue ne
+      // déclarait aucun `defenseDice` : c'était une puce que le MJ pouvait
+      // poser et qui ne faisait RIEN — la « promesse vide » que la doctrine
+      // interdit, doublée d'un compteur manuel concurrent du compteur réel.
     ],
   },
   /** Règles de round pour le tracker de combat (lues via App.editionModule,

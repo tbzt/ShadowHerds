@@ -239,7 +239,9 @@ export const DiceRoller = {
               rr: r.rr,
               // E2 — l'avantage vient de TOUTES ses sources (drogue + états),
               // borné à ±1 comme l'exige Anarchy 2 p.65, et plus du seul champ
-              // brut `drugAdv` qui ignorait les états.
+              // brut `drugAdv` qui ignorait les états. Un tir n'est pas une
+              // activité magique : aucun contexte passé, donc le Drain (à
+              // portée `magic`) ne s'y invite pas.
               adv: Statuses.adv(pnj),
               who: pnj.name || "",
             });
@@ -278,7 +280,10 @@ export const DiceRoller = {
         // complication. Base du label = avant « · » (spécialité).
         const skillBase = label.split(" · ")[0];
         const isMagic = !!(edMod.magicSkills && edMod.magicSkills.includes(skillBase));
-        this.openRiskPanel(n, { label, detail, rr, adv: Statuses.adv(rollPnj), who, pnjId, isMagic, spellName });
+        // `{ magic: isMagic }` — le contexte du jet, pour les états dont le
+        // livre restreint le désavantage aux activités magiques (Drain, A2
+        // p.170). Le drapeau est déjà calculé deux lignes plus haut.
+        this.openRiskPanel(n, { label, detail, rr, adv: Statuses.adv(rollPnj, { magic: isMagic }), who, pnjId, isMagic, spellName });
       } else {
         const opts = { label, detail, who, pnjId };
         // Edge pré-jet (mode panneau) : intercepte si options abordables.

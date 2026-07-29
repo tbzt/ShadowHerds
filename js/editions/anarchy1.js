@@ -33,6 +33,7 @@ import { Magic } from "../rules/magic.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { Spirits } from "../catalogs/spirits.js";
 import { Sprites } from "../catalogs/sprites.js";
+import { Statuses } from "../rules/statuses.js";
 import { Utils } from "../core/utils.js";
 import { WeaponRoll } from "../rules/weaponroll.js";
 
@@ -188,24 +189,37 @@ export const EditionAnarchy1 = {
       // `ages: true` fait compter les Tours écoulés depuis la pose ; `escalates`
       // dit que le seuil suit ce compteur. L'app annonce le cran courant — elle
       // ne lance pas le test et ne tue personne (R4).
+      // ⚠ `escalates: 2` et non 1 — CORRIGÉ après relecture du livre. L'échelle
+      // de difficulté d'Anarchy 1 (p.153) est une réserve d'opposition qui
+      // monte de DEUX dés par cran : Triviale 4 · Facile 6 · Moyenne 8 ·
+      // Difficile 10 · Très difficile 12. « Augmente d'un niveau de difficulté
+      // à chaque Tour » donne donc 4 → 6 → 8 → 10 → 12. Un pas de 1 produisait
+      // 4 → 5 → 6 → 7, des seuils qui n'existent nulle part dans le jeu.
       { key: "mourant", name: "Mourant", levels: 0, quick: true, page: "p.157",
         ages: true,
-        roundTest: { when: "endOfRound", pool: ["FOR", "VOL"], threshold: 4, escalates: 1 },
+        roundTest: { when: "endOfRound", pool: ["FOR", "VOL"], threshold: 4, escalates: 2 },
         lines: [
           "Test Force + Volonté à la FIN DE CHAQUE TOUR (sans malus de blessure)",
-          "Difficulté très facile (4 dés) au premier Tour, +1 cran par Tour",
+          "Difficulté triviale (4 dés) au premier Tour, +1 cran (soit +2 dés) par Tour",
           "Échec = mort · des soins font cesser l'état · la Chance est utilisable",
           "S'ajoute à Assommé quand les dommages physiques débordent",
         ] },
       // Les deux options de récupération p.157 : elles ÉCHANGENT la sortie de
       // combat contre un malus durable, et ce malus n'était noté nulle part.
+      // AUTO-APPLIQUÉS — les deux seuls états d'Anarchy 1 qui passent la porte
+      // d'E3, et ils la passent sans discussion : le livre écrit « un
+      // modificateur supplémentaire de −1 dé pour TOUS ses tests » (p.157),
+      // sans réserve ni condition. C'est mot pour mot le critère qui motorise
+      // Confus et Fatigué en SR6 — et la valeur existe déjà dans l'app
+      // (`Utils.dicePenalty`, où le malus de blessure d'A1 entre déjà).
       { key: "desoriente", name: "Désorienté", levels: 0, quick: true, page: "p.157",
-        until: "narration",
+        until: "narration", globalDice: { flat: 1 },
         lines: [
           "−1 dé à tous les tests pendant 2 Narrations",
           "Option « Donnez-moi juste une minute » : restaure une case au lieu d'être Assommé",
         ] },
       { key: "douleurs", name: "Douleurs persistantes", levels: 0, page: "p.157",
+        globalDice: { flat: 1 },
         lines: [
           "−1 dé à tous les tests jusqu'à la fin de la mission",
           "Option « Ça va pas guérir tout de suite » : stabilise un Mourant",
@@ -222,6 +236,21 @@ export const EditionAnarchy1 = {
         lines: [
           "2 cases de dommages à l'Armure, ou 1 case physique une fois l'Armure pleine",
           "Dure tant que le contact dure, PUIS deux Narrations de plus",
+          "Règle optionnelle — à valider avec la table",
+        ] },
+      // AJOUTÉ après relecture — la troisième condition de la même section
+      // p.168, jumelle des deux ci-dessus et absente du catalogue : « Entrer en
+      // contact avec un froid extrême ou un courant électrique cause 1 case de
+      // dommages physique et 1 case de dommages étourdissants par Narration
+      // (ignorant l'armure dans les deux cas). Les dommages cessent de
+      // s'accumuler immédiatement une fois le contact terminé. » Elle s'arrête
+      // AVEC le contact, là où l'acide et le feu courent deux Narrations de
+      // plus — d'où l'absence d'`until` ici : c'est le MJ qui coupe.
+      { key: "froid", name: "Froid ou électricité", levels: 0, quick: true, page: "p.168",
+        lines: [
+          "1 case physique ET 1 case étourdissante par Narration, armure ignorée",
+          "S'arrête dès que le contact cesse (pas de rémanence)",
+          "Une décharge puissante peut sonner le personnage — arbitrage MJ",
           "Règle optionnelle — à valider avec la table",
         ] },
     ],
@@ -300,6 +329,18 @@ export const EditionAnarchy1 = {
       (les effets persistants s'y gèrent en fiction, pas en malus chiffré). */
   sustainMalus() {
     return 0;
+  },
+  /** Malus de dés dû aux ÉTATS posés — jumeau de `sustainMalus`, et il ne vaut
+      PAS 0 en Anarchy 1, contrairement à ce que le commentaire d'origine de
+      `Utils.statusMalus` supposait (« aucun en Anarchy, qui passe par
+      l'avantage/désavantage »). C'est vrai d'Anarchy 2, dont toute la
+      modulation est l'avantage/désavantage ; Anarchy 1, lui, module en DÉS,
+      exactement comme SR5/SR6 — son propre malus de blessure est un « −1 dé
+      cumulatif » (p.156). Désorienté et Douleurs persistantes disent « −1 dé
+      pour tous ses tests » : sans ce contrat, les deux étaient affichés et
+      jamais retranchés. */
+  statusMalus(pnj) {
+    return Statuses.globalDiceMalus(pnj);
   },
   conditionMonitor: {
     model: "double physique+étourdissement, cases = 8 + FOR|VOL /2",

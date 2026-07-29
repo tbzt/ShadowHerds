@@ -68,9 +68,19 @@
      vit donc ici, PAS dans la règle de base (sinon, à specificité égale mais
      déclarée plus bas, il l'emportait aussi sur mobile → console bridée à
      380px = le défaut « moche » signalé). */
+  /* MESURÉ à 1280px : l'Effectif disposait de 762px pour des lignes de file,
+     la Console de 380 pour SIX gestes (⛉ ⛨ ⛊ ✸Dégâts ＋ ⛶ = 337px de grappe) et
+     un nom (112px de base) — 457px demandés dans 346 offerts, d'où le « St… »
+     mesuré. Les 140px déplacés ici mettent nom et grappe sur UNE ligne (484
+     disponibles, marge prise pour les réserves à deux chiffres : un ⛉ 12 / ⛊ 12
+     élargit la grappe et repliait la ligne à 500) et laissent 622px à
+     l'Effectif, qui n'en demandait pas tant.
+     `0 1` et non `0 0` : quand le dock Matrice prend sa colonne sur un écran
+     juste, c'est la Console qui cède — la ligne sait se replier (cf.
+     .react-row), l'Effectif ne descend pas sous sa base. */
   .encounter-active-card {
-    flex: 0 0 380px;
-    max-width: 400px;
+    flex: 0 1 520px;
+    max-width: 520px;
   }
 }
 
@@ -1714,6 +1724,7 @@
 }
 .react-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--sp-2);
   padding: 0.35rem 0.4rem;
@@ -1765,8 +1776,17 @@
   max-height: min(60vh, 570px);
   overflow-y: auto;
 }
+/* MESURÉ (SR5, console 380px) : la grappe de gestes fait 294px et la ligne en
+   offre 346 — le nom héritait de 42px pour un alias qui en demande 60 à 75, donc
+   « St… » partout. Le nom est ce qui identifie QUI réagit : il ne se tronque
+   pas. `flex-wrap` sur la ligne + une base de 7rem lui donnent la priorité —
+   quand les deux ne tiennent pas, c'est la grappe qui passe à la ligne (elle
+   reste alignée à droite, la grammaire « qui · le geste à droite » tient sur
+   deux lignes), et le nom récupère toute la largeur. Là où tout tient (console
+   large, édition à moins de gestes), la ligne reste unique : aucune bascule
+   pilotée par une largeur d'écran. */
 .react-name {
-  flex: 1;
+  flex: 1 1 7rem;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1775,8 +1795,30 @@
 }
 .react-buttons {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--sp-1);
-  flex: none;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+}
+/* États (E1) dans la ligne de réaction. Le ＋ vit dans la grappe (c'est un
+   geste) ; ce qu'il PRODUIT prend un rang sous elle — une conséquence se lit
+   après le geste, jamais mêlée à lui. Le rang n'existe que s'il y a quelque
+   chose à y lire : `.react-states` n'est émis qu'avec au moins une pastille, et
+   la feuille repliée est `hidden` (donc hors flux). */
+.react-states {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  flex: 1 1 100%;
+  min-width: 0;
+}
+/* Le déplieur ＋ à la taille des gestes glyphiques du rack (le ⛶ fait 40) :
+   il ne mérite pas les 52px d'un bouton qui porte un NOMBRE, et la ligne se
+   joue à quelques pixels. Le glyphe lui-même vient de `.toggle-glyph`. */
+.react-btn.react-status-btn {
+  min-width: 40px;
+  padding-inline: 0.4rem;
 }
 .react-btn {
   min-height: 40px;

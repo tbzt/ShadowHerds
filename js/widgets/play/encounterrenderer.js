@@ -1639,7 +1639,18 @@ export const EncounterRenderer = {
     // rendu, et le title dit combien de défenses ont déjà été faites — sinon le
     // chiffre baisserait sans nom, ce que le chantier s'interdit.
     const dejaDef = CardRenderer.multiDefenseMalus(pnj);
-    const defTitle = `Test de défense (${def} dés)${fdActive ? " · défense totale" : ""}${dejaDef ? ` · ${dejaDef} défense${dejaDef > 1 ? "s" : ""} déjà faite${dejaDef > 1 ? "s" : ""} depuis sa phase d'action` : ""}`;
+    // ⚠ Le title disait la défense totale et les défenses multiples, mais PAS
+    // les états : poser Étendu puis Couvert II faisait passer le ⛉ de 11 à 9
+    // puis à 13 sans que rien ne le nomme (mesuré). `defenseBreakdown` est le
+    // point unique qui décompose déjà la réserve pour la carte — il porte les
+    // trois sources, y compris les états (`Statuses.defenseSources`). On le
+    // lit plutôt que de rejouer sa moitié ici : « le chiffre ne bouge jamais
+    // sans nom » ne vaut pas que sur la fiche.
+    // Il porte les TROIS corrections (défense totale, états, défenses
+    // multiples) : les deux fragments que cette ligne composait à la main en
+    // doublaient déjà deux, et en oubliaient une.
+    const detailDef = CardRenderer.defenseBreakdown(pnj);
+    const defTitle = `Test de défense (${def} dés)${detailDef ? ` · ${detailDef}` : ""}`;
     const defBtn = def >= 1
       ? `<button class="react-btn" data-roll="${def}" data-roll-label="Défense — ${name}" data-roll-pnj="${pnj.id}" data-action="count-defense" data-id="${pnj.id}" title="${Utils.escHtml(defTitle)}" aria-label="Défense — ${name} (${def} dés)"><span class="react-glyph" aria-hidden="true">⛉</span> ${def}${dejaDef ? `<span class="react-multidef">−${dejaDef}</span>` : ""}</button>`
       : `<span class="react-btn is-off" title="Pas de réserve de défense"><span class="react-glyph" aria-hidden="true">⛉</span> —</span>`;
@@ -1679,9 +1690,25 @@ export const EncounterRenderer = {
       : "";
     const chipsBody = damageBtn ? this._reactDamageChips(pnj) : "";
     const interruptBody = plusieurs ? this._reactInterruptChips(pnj) : "";
+    // États de combat (E1) — MÊMES pièces que la zone Combat de la carte
+    // (CardRenderer.statusParts), montées ici parce que la séquence du MJ ne
+    // s'arrête pas aux dégâts : « le PJ lance sa Boule de feu, le PNJ défend,
+    // encaisse, prend 5 — et il est Enflammé 5 ». Le ＋ prend sa place DANS la
+    // grappe, après ✸ : c'est l'ordre de la séquence (on encaisse, puis on
+    // brûle), et poser un état est un geste comme les autres. Les pastilles
+    // posées n'occupent un rang que s'il y en a — une ligne vide sous chaque
+    // PNJ, c'est le mur que ce cockpit s'interdit. La feuille, elle, est
+    // toujours dans le DOM mais `hidden` (donc sans rang) : `_toggleStatusSheet`
+    // la cherche autour du bouton (Utils.nearest), il lui faut ce voisin.
+    // `null` là où l'édition n'a pas d'états — aucun `if App.edition` ici.
+    const st = CardRenderer.statusParts(pnj, undefined, { plusClass: "react-btn react-status-btn" });
+    const statusBtn = st ? st.plus : "";
+    const statusChips = st && st.chips ? `<span class="react-states">${st.chips}</span>` : "";
+    const statusSheet = st ? st.sheet : "";
     return `<div class="react-row">
         <span class="react-name">${name}</span>
-        <span class="react-buttons">${defBtn}${fdBtn}${soakBtn}${damageBtn}${peek}</span>
+        <span class="react-buttons">${defBtn}${fdBtn}${soakBtn}${damageBtn}${statusBtn}${peek}</span>
+        ${statusChips}${statusSheet}
       </div>${interruptBody}${chipsBody}`;
   },
 
@@ -2123,6 +2150,7 @@ export const EncounterRenderer = {
       { keys: "⛨", html: "<strong>Défense totale</strong> — +Volonté à la défense pour le round (SR5 : −10 init)." },
       { keys: "⛊", html: "<strong>Encaisser</strong> — résistance aux dommages (SR5/SR6 ; Anarchy n'a pas de jet)." },
       { keys: "✸", html: "<strong>Dégâts</strong> — applique un résultat déjà résisté (net) au moniteur." },
+      { keys: "＋", html: "<strong>Poser un état</strong> — Enflammé, Aveuglé… le catalogue de l'édition ; le tap sur un état posé monte d'un cran, le ✕ le retire." },
       { keys: "⚔", html: "Envoyer au <strong>combat</strong> / rejoindre l'initiative." },
       { keys: "◎", html: "<strong>Perception matricielle</strong> d'une CI." },
       { keys: "⚡", html: "Ouvrir le <strong>tiroir Matrice</strong> (jets, moniteur, surveillance)." },

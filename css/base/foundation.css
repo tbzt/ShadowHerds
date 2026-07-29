@@ -128,8 +128,13 @@
   --z-bottom-nav: 400;
   --z-sidebar-backdrop: 440;
   --z-sidebar: 450;
-  --z-peek: 490; /* coup d'œil (CardPeek) : au-dessus du panneau, SOUS le modal d'édition qu'il ouvre */
   --z-modal: 500;
+  /* Coup d'œil (CardPeek) : s'ouvre DEPUIS un panneau OU depuis une modale (le
+     ⛶ de la console de réaction, tracker de combat) → doit coiffer --z-modal,
+     sinon la fiche s'ouvre invisible derrière le voile du tracker. Le modal
+     d'édition qu'un « Éditer » ouvre à son tour reste au-dessus (--z-modal-edit). */
+  --z-peek: 510;
+  --z-modal-edit: 520;
   --z-popover-backdrop: 540;
   --z-popover: 550;
   --z-hud: 560;

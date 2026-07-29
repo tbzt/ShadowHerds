@@ -224,10 +224,18 @@ export const EditionAnarchy2 = {
       // Le Drain mineur d'Anarchy 2 EST un état à durée, déjà nommé en prose
       // par drainModel (« désavantage magique jusqu'à la prochaine
       // narration ») mais que rien ne permettait de poser.
-      { key: "drainMagique", name: "Drain magique", levels: 0, quick: true, adv: -1, page: "p.170",
+      // ⚠ `advScope: "magic"` — CORRIGÉ après relecture du livre. p.170 :
+      // « Complication mineure : le personnage subit un désavantage À TOUTES
+      // SES ACTIVITÉS MAGIQUES jusqu'à la fin de sa prochaine narration ». Le
+      // désavantage était appliqué à TOUS ses jets, y compris son tir. La
+      // portée est tenable ici (le site de jet calcule déjà `isMagic` sur
+      // `magicSkills`), contrairement aux états à portée floue qui restent du
+      // texte — cf. `Statuses.adv`.
+      { key: "drainMagique", name: "Drain magique", levels: 0, quick: true, adv: -1,
+        advScope: "magic", page: "p.170",
         until: "narration",
         lines: [
-          "Désavantage jusqu'à la fin de la prochaine narration",
+          "Désavantage à toutes ses ACTIVITÉS MAGIQUES, jusqu'à la fin de la prochaine narration",
           "Complication mineure d'un jet de risque magique",
         ] },
     ],

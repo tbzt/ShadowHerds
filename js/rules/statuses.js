@@ -142,11 +142,21 @@ export const Statuses = {
       if (!Object.keys(pnj.statusAge).length) delete pnj.statusAge;
     }
 
-    // Exclusions du livre (Enflammé annule et est annulé par Trempé et
-    // Frigorifié ; Pétrifié annule tout état à dommages). Déclarées par le
-    // catalogue, appliquées ici — et seulement à la POSE, jamais au retrait :
-    // retirer Enflammé ne rallume pas Trempé.
+    // Exclusions du livre. Déclarées par le catalogue, appliquées ici — et
+    // seulement à la POSE, jamais au retrait : retirer Enflammé ne rallume pas
+    // Trempé. Aucune récursion à craindre, les deux formes ne s'arment que
+    // pour `next > 0` et ne posent que des 0.
+    //   · `cancels` — une LISTE de clés, quand le livre nomme ses exclus
+    //     (Enflammé annule et est annulé par Trempé et Frigorifié).
+    //   · `cancelsDamaging` — une CATÉGORIE, quand le livre décrit au lieu de
+    //     nommer : Pétrifié « annule tout autre état infligeant des dommages »
+    //     (p.57). Un état inflige des dommages exactement quand il déclare un
+    //     `periodic` — c'est la même définition que celle dont `roundReport`
+    //     tire ses lignes de dégâts, donc il n'y a pas deux notions de « fait
+    //     mal » dans le moteur. `s.key !== key` : « tout AUTRE état ».
     if (next && entry.cancels) for (const k of entry.cancels) this.set(pnj, k, 0);
+    if (next && entry.cancelsDamaging)
+      for (const s of this.catalog(pnj)) if (s.key !== key && s.periodic) this.set(pnj, s.key, 0);
     return next;
   },
 
@@ -472,11 +482,28 @@ export const Statuses = {
       drogue, antérieur à ce lot) et les états qui déclarent un `adv`. C'est le
       sens de « `drugAdv` devient une contribution neutre » : le champ reste,
       il cesse d'être la SEULE voie. Les jets lisent cette fonction, plus le
-      champ brut. */
-  adv(pnj) {
+      champ brut.
+
+      `advScope` — un état dont le livre RESTREINT le désavantage à une famille
+      de jets ne compte que dans ce contexte. Un seul le fait aujourd'hui : le
+      Drain d'Anarchy 2 (p.170), « le personnage subit un désavantage À TOUTES
+      SES ACTIVITÉS MAGIQUES jusqu'à la fin de sa prochaine narration ». Sans
+      cette porte, l'app le retranchait aussi de son tir au fusil — la même
+      faute que celle qu'E3 s'interdit pour « Aveuglé −3 aux tests liés à la
+      vision ». Ici elle est réparable : le site de jet SAIT si le jet est
+      magique (`isMagic`, calculé sur `magicSkills`), il n'y a rien à deviner.
+      Un contexte qui ne dit rien EXCLUT les états à portée : mieux vaut ne pas
+      appliquer que d'appliquer à tort (garde-fou « informer, jamais décider »),
+      et le panneau de risque laisse de toute façon le MJ poser l'avantage à
+      la main. */
+  adv(pnj, ctx = {}) {
     if (!pnj) return 0;
     let n = pnj.drugAdv || 0;
-    for (const s of this.active(pnj)) if (s.adv) n += s.adv;
+    for (const s of this.active(pnj)) {
+      if (!s.adv) continue;
+      if (s.advScope && !ctx[s.advScope]) continue;
+      n += s.adv;
+    }
     return Math.max(-1, Math.min(1, n));
   },
 

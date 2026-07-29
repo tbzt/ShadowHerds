@@ -13,6 +13,12 @@
 .modal-overlay.open {
   display: flex;
 }
+/* Édition avancée : dernière élévation de la pile modale — elle s'ouvre DEPUIS
+   une fiche, y compris une fiche en coup d'œil (CardPeek, lui-même au-dessus du
+   tracker). Trois surfaces empilables, un seul ordre possible. */
+#edit-modal {
+  z-index: var(--z-modal-edit);
+}
 .modal {
   background: var(--bg-card);
   border: 1px solid var(--border);
