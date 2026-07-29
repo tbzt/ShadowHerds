@@ -15,11 +15,13 @@
    ============================================================ */
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Dialog } from "./dialog.js";
+import { FocusTrap } from "./focustrap.js";
 import { Tags } from "../../core/tags.js";
 
 export const TagPicker = {
   _id: null,
   _wired: false,
+  _releaseTrap: null,
 
   /** Délégation des déclencheurs de fiche (＋ Tag / ✕), montée une fois sur
       `document` — les cartes sont rendues dynamiquement. L'écriture (UI) est le
@@ -88,8 +90,16 @@ export const TagPicker = {
     this._id = id;
     this._render();
     document.getElementById("tag-picker-backdrop").classList.add("open");
-    document.getElementById("tag-picker-panel").classList.add("open");
+    const panel = document.getElementById("tag-picker-panel");
+    panel.classList.add("open");
     this._position(triggerEl);
+    // D7 : panneau ajouté à part dans `document.body`, hors de l'ordre de
+    // tabulation du déclencheur — sans ce focus, le piège aurait été
+    // inatteignable au clavier (même correctif que factionpicker.js). Pas
+    // de champ fiable à pré-sélectionner (le vocabulaire de tags peut être
+    // vide) : la croix, même patron que ContentModal.
+    this._releaseTrap = FocusTrap.activate(panel);
+    panel.querySelector('[data-action="close"]').focus();
   },
 
   close() {
@@ -98,6 +108,10 @@ export const TagPicker = {
     if (panel) panel.classList.remove("open");
     if (backdrop) backdrop.classList.remove("open");
     this._id = null;
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 
   /** Ancre le panneau sous le déclencheur (desktop/iPad) ; feuille basse en CSS
