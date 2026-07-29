@@ -5,7 +5,9 @@
    (Défense, Encaissement, Drain…). Un seul contrôle par pastille
    (data-explain, posé par CardRenderer._rollPill sur le MÊME élément
    que data-roll) : clic/tap lance (geste sacré, inchangé) ; survol
-   desktop ou appui long tactile ouvre le décompte. Recalcule
+   desktop, appui long tactile OU Entrée/Espace sur la pastille
+   focusée (clavier — tabindex+role posés par _breakdownAttrs) ouvre
+   le décompte ; Échap ou perte de focus le referme. Recalcule
    reserveBreakdown(pnj,key) à la demande (aucune donnée persistée) —
    un seul panneau flottant réutilisé, ancré au déclencheur sur
    desktop/tablette, promu en bottom-sheet sur mobile.
@@ -52,8 +54,33 @@ export const Breakdown = {
     );
 
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") this.close();
+      if (e.key === "Escape") {
+        this.close();
+        return;
+      }
+      if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+      const trigger = e.target.closest("[data-explain]");
+      if (!trigger) return;
+      // Entrée/Espace n'active pas nativement un <span role="button"> (pas de
+      // clic auto-émis, contrairement à un vrai <button>) : le lancer de dés
+      // (écouté sur "click" par diceroller.js) ne se déclenche donc jamais
+      // ici, seul ce panneau répond au clavier — le geste clic/tap reste
+      // l'unique façon de lancer, inchangé.
+      e.preventDefault();
+      if (this._el && this._trigger === trigger) this.close();
+      else this.open(trigger);
     });
+
+    // Perte de focus clavier (Tab vers ailleurs) : le clic hors-panneau est
+    // déjà couvert plus haut, mais Tab ne déclenche aucun clic.
+    document.addEventListener(
+      "focusout",
+      (e) => {
+        const trigger = e.target.closest("[data-explain]");
+        if (trigger && trigger === this._trigger) this.close();
+      },
+      true,
+    );
 
     window.addEventListener("scroll", () => this.close(), true);
     window.addEventListener("resize", () => this.close());

@@ -14,7 +14,11 @@
 .attr-cell.rollable:hover,
 .skill-tag.rollable:hover,
 .gm-pool.rollable:hover,
-.stat-pill.rollable:hover {
+.stat-pill.rollable:hover,
+/* .combat-pill/.gm-pool avec data-explain sont focusables (Entrée/Espace
+   ouvre le décompte, cf. breakdown.js) : même halo qu'au survol. */
+.combat-pill.rollable:focus-visible,
+.gm-pool.rollable:focus-visible {
   border-color: var(--accent);
   box-shadow:
     0 0 0 1px var(--accent),
@@ -112,7 +116,9 @@
 .skill-tag.rollable:focus-visible::after,
 .init-pill.rollable:hover::after,
 .gm-pool.rollable:hover::after,
-.combat-pill.rollable:not(:has(.pill-glyph)):hover::after {
+.gm-pool.rollable:focus-visible::after,
+.combat-pill.rollable:not(:has(.pill-glyph)):hover::after,
+.combat-pill.rollable:not(:has(.pill-glyph)):focus-visible::after {
   transform: rotate(-12deg) scale(1.1);
 }
 .skill-tag.rollable:active::after,

@@ -1357,8 +1357,12 @@ export const CardRenderer = {
       motorisée par reserveBreakdown — partagés par _rollPill (combat) et
       _gmPoolRow (jets de situation), jamais dupliqués. La chaîne plate
       data-roll-detail est celle que diceroller pose dans le résultat du jet ;
-      data-explain/-pnj ouvre le panneau Breakdown (survol/appui long, sur la
-      pastille même). "" si l'édition ne décompose pas la clé. */
+      data-explain/-pnj ouvre le panneau Breakdown (survol/appui long/Entrée-
+      Espace au clavier, sur la pastille même — cf. js/widgets/card/breakdown.js).
+      tabindex+role rendent la pastille atteignable au clavier UNIQUEMENT pour
+      ouvrir ce panneau — le lancer de dés (clic/tap) reste sans équivalent
+      clavier, hors périmètre ici. "" si l'édition ne décompose pas la clé
+      (aucune affordance orpheline). */
   _breakdownAttrs(pnj, key) {
     const ed = key && pnj ? App.getEditionModule(pnj.edition) : null;
     const bd = ed && ed.reserveBreakdown ? ed.reserveBreakdown(pnj, key) : null;
@@ -1370,7 +1374,7 @@ export const CardRenderer = {
           : `${c.value >= 0 ? "+" : "−"} ${c.label} ${Math.abs(c.value)}`,
       )
       .join(" ");
-    return ` data-roll-detail="${this._esc(detail)}" data-explain="${key}" data-explain-pnj="${this._esc(pnj.id)}"`;
+    return ` data-roll-detail="${this._esc(detail)}" data-explain="${key}" data-explain-pnj="${this._esc(pnj.id)}" tabindex="0" role="button"`;
   },
 
   /** RÉSERVE DE DÉFENSE AFFICHÉE — point unique (lot E0).
