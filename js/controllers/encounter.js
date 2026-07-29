@@ -106,11 +106,16 @@ export const Encounter = {
   },
 
   /* ---- Composition de la scène ---- */
-  add(pnjId) {
-    if (!pnjId || this._find(pnjId)) return;
+  /** `silent` : ajoute SANS toast, pour un appelant qui porte déjà son propre
+      retour. Il n'y a qu'un seul élément `#toast` et chaque appel écrase le
+      précédent (utils.js) — deux retours coup sur coup, c'est le premier perdu.
+      Utilisé par l'invocation (B1.3), dont le toast annonce déjà les services. */
+  add(pnjId, { silent = false } = {}) {
+    if (!pnjId || this._find(pnjId)) return false;
     this.state.combatants.push({ pnjId, init: this._initFor(pnjId), hasActed: false, note: "" });
     this._commit();
-    toast("Ajouté au suivi de combat.");
+    if (!silent) toast("Ajouté au suivi de combat.");
+    return true;
   },
 
   /** Ajout groupé : dédup, UN seul commit + UN seul toast. */
@@ -307,14 +312,36 @@ export const Encounter = {
     });
   },
 
-  remove(pnjId) {
+  /** B1.4 (C-007) — le retrait est ANNULABLE. Sans filet, un retrait par erreur
+      obligeait à ré-ajouter le combattant, et le ré-ajout repart de `_initFor`
+      (donc de `initBase`, ou de rien pour un PNJ généré) : **le score lancé était
+      perdu** et devait être ressaisi en pleine scène. On remet donc l'entrée
+      COMPLÈTE — `init`, `hasActed`, `note` — à sa place dans l'ordre, et on rend
+      aussi le `turnIndex` d'avant : annuler doit rendre la scène telle quelle, pas
+      un combattant approchant dont c'est le tour de quelqu'un d'autre.
+
+      `silent` : retire sans toast ni annulation, pour un appelant dont le retrait
+      n'est PAS réversible. C'est le cas du renvoi d'esprit
+      (`SummonPanel._finishDismiss`), qui a déjà supprimé la fiche : proposer
+      « Annuler » y remettrait en piste une entité sans carte. */
+  remove(pnjId, { silent = false } = {}) {
     const idx = this.state.combatants.findIndex((c) => c.pnjId === pnjId);
     if (idx === -1) return;
-    this.state.combatants.splice(idx, 1);
+    const [retire] = this.state.combatants.splice(idx, 1);
+    const tourAvant = this.state.turnIndex;
     const max = Math.max(0, this.state.combatants.length - 1);
     if (this.state.turnIndex > idx) this.state.turnIndex--;
     this.state.turnIndex = Utils.clamp(this.state.turnIndex, 0, max);
     this._commit();
+    if (silent) return;
+    const nom = PnjLookup.find(pnjId)?.name || retire.name || "Combattant";
+    toastUndo(`${nom} retiré du suivi.`, () => {
+      // Ré-ajouté à la main entre-temps : ne pas le dédoubler.
+      if (this._find(pnjId)) return;
+      this.state.combatants.splice(Math.min(idx, this.state.combatants.length), 0, retire);
+      this.state.turnIndex = Utils.clamp(tourAvant, 0, Math.max(0, this.state.combatants.length - 1));
+      this._commit();
+    });
   },
 
   async clear() {

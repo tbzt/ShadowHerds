@@ -209,13 +209,31 @@ export const SummonPanel = {
       setTimeout(() => card.classList.remove("vehicle-deploying"), 700);
     }
     CardRenderer.refresh(owner);
+    // B1.3 (C-012) — l'esprit entre en piste de lui-même. Ce panneau ne parlait à
+    // Encounter que pour RETIRER au renvoi (:465) ; l'ajout manquait, et le MJ
+    // payait 3 gestes plus un changement de vue, en pleine scène, pour aller
+    // chercher au tiroir une entité que l'app venait de créer. Son initiative est
+    // déjà sur sa fiche (`spirit.initBase`, posé par Spirits.spawn) : `_initFor`
+    // la reprend, rien à ressaisir. Strictement symétrique du renvoi.
+    //
+    // Garde : SEULEMENT si une scène est déjà en cours. Invoquer hors combat ne
+    // doit pas fabriquer une scène par effet de bord — l'esprit reste une carte.
+    // Ajout SILENCIEUX : le retour de ce verbe est le jet ci-dessous (ou le toast
+    // des services), et un second toast écraserait le premier.
+    const enPiste =
+      typeof Encounter !== "undefined" &&
+      !!(Encounter.state && Encounter.state.combatants.length) &&
+      Encounter.add(spirit.id, { silent: true });
     // Invocation chiffrée : présente le résultat dans l'affichage de dés
     // standard (jet de Conjuration + services + Drain) avec Secondes chances,
     // parité avec le lancer de sort. Toast conservé pour Anarchy (pas de conj).
     if (conj) {
       MagicAction.presentConjuration(owner, s.force, conj, spirit);
     } else {
-      toast(`Esprit invoqué : ${services} service${services > 1 ? "s" : ""}.`);
+      toast(
+        `Esprit invoqué : ${services} service${services > 1 ? "s" : ""}.` +
+          (enPiste ? " Entré en piste." : ""),
+      );
     }
   },
 
@@ -462,7 +480,9 @@ export const SummonPanel = {
     target.deployed = false;
     document.querySelectorAll(`.pnj-card[data-id="${target.id}"]`).forEach((c) => c.remove());
     Shadows.save();
-    if (typeof Encounter !== "undefined") Encounter.remove(target.id);
+    // Retrait NON réversible : la fiche vient d'être supprimée juste au-dessus,
+    // un « Annuler » remettrait en piste une entité sans carte (cf. B1.4).
+    if (typeof Encounter !== "undefined") Encounter.remove(target.id, { silent: true });
     const owner = target.ownerId ? PnjLookup.find(target.ownerId) : null;
     if (owner) CardRenderer.refresh(owner);
   },
