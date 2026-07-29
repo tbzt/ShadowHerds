@@ -60,16 +60,23 @@ export const UI = {
   /** Patch chirurgical des cases + du malus, sur toutes les cartes vivantes
       de l'entité (générateur + Ombres peuvent coexister, cf. refresh()).
       Pulse + haptique seulement au FRANCHISSEMENT d'un palier de 3 (jamais
-      à la coche simple) — la case qui vient de faire basculer le malus. */
-  _patchMonitorDOM(pnj, pnjId, type, idx, before, after) {
+      à la coche simple) — la case qui vient de faire basculer le malus.
+
+      `boxSel` — sélecteur des cases à patcher. Par défaut celles du moniteur
+      top-level (`data-sev`) ; le moniteur du DECK passe le sien, ses cases
+      n'ayant pas de `data-sev` (`cyberdeckrenderer.js:175`). Un seul patcheur
+      pour les deux moniteurs : même geste, même retour (Grammaire, loi 3) —
+      un second dialecte serait précisément ce que la loi interdit. */
+  _patchMonitorDOM(pnj, pnjId, type, idx, before, after, boxSel) {
     // Le badge de malus n'existe que pour le moniteur phys/étourdissant
     // (seuls sr5.js/sr6.js/anarchy1.js appellent _monitorMalusBadge) — un
     // moniteur matriciel/persona/Anarchy 2 n'en a pas, ne pas lui en inventer un.
     const tracksMalus = type === "phys" || type === "stun";
     const malus = tracksMalus ? Utils.woundMalus(pnj, pnj.edition) : 0;
     const palierCrossed = Math.floor(before / 3) !== Math.floor(after / 3);
+    const sel = boxSel || `.monitor-box[data-id="${pnjId}"][data-sev="${type}"]`;
     document.querySelectorAll(`.pnj-card[data-id="${pnjId}"]`).forEach((card) => {
-      const boxes = card.querySelectorAll(`.monitor-box[data-id="${pnjId}"][data-sev="${type}"]`);
+      const boxes = card.querySelectorAll(sel);
       boxes.forEach((box, i) => box.classList.toggle("filled", i < after));
       const malusEl = tracksMalus ? card.querySelector(".monitor-malus") : null;
       if (malus > 0) {
@@ -91,9 +98,7 @@ export const UI = {
         malusEl.remove();
       }
       if (palierCrossed) {
-        const box = card.querySelector(
-          `.monitor-box[data-id="${pnjId}"][data-sev="${type}"][data-idx="${idx}"]`,
-        );
+        const box = card.querySelector(`${sel}[data-idx="${idx}"]`);
         if (box) {
           box.classList.remove("rule-pulse");
           void box.offsetWidth; // relance l'animation si déjà posée
@@ -111,13 +116,33 @@ export const UI = {
   toggleDeckMonitor(pnjId, idx) {
     const copies = this._entityCopies(pnjId);
     if (!copies.length) return;
+    const before = (copies[0].cyberdeck && copies[0].cyberdeck.filled) || 0;
     for (const pnj of copies) {
       if (!pnj.cyberdeck) continue;
       const cur = pnj.cyberdeck.filled || 0;
       pnj.cyberdeck.filled = idx < cur ? idx : idx + 1;
     }
+    const after = (copies[0].cyberdeck && copies[0].cyberdeck.filled) || 0;
     this.persistEntity(pnjId);
-    CardRenderer.refresh(copies[0]);
+    // Le JUMEAU de `toggleMonitor` était resté sur le `CardRenderer.refresh()`
+    // complet, alors que sa précondition est la MÊME : cocher une case ne
+    // change pas la forme du moniteur. Vérifié avant de patcher —
+    // `cyberdeck.filled` n'est lu qu'à UN site de rendu, la rangée elle-même
+    // (`cyberdeckrenderer.js:67`) : aucun malus, aucune réserve n'en dépend,
+    // donc rien d'autre sur la carte n'a à être reconstruit.
+    // Conséquence : la `transition` de `.monitor-box` (`pnj-card.css`), jusqu'ici
+    // code mort sur ce moniteur-là, se JOUE enfin — « un feel écrit n'est pas un
+    // feel joué » (Grammaire). Les cases du deck n'ont pas de `data-sev`, d'où
+    // le sélecteur explicite.
+    this._patchMonitorDOM(
+      copies[0],
+      pnjId,
+      "deck",
+      idx,
+      before,
+      after,
+      `.monitor-box[data-action="toggle-deck-monitor"][data-id="${pnjId}"]`,
+    );
   },
 
   /** Réallocation ASDF/ACTF en un tap — échange les valeurs de deux
