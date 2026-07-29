@@ -420,9 +420,42 @@
   justify-content: flex-end;
 }
 
+/* B1.1 — hauteur de la barre collante, RÉSERVÉE sous la file. Composée des
+   mêmes pièces que `.encounter-turn-bar` ci-dessous (bouton 44px + ses deux
+   marges + le filet) pour qu'elle ne puisse pas dériver si la barre change.
+
+   ⚠️ Le constat C-014 (« ⊘ État de groupe inatteignable au pointeur ») ne se
+   reproduit PAS sur HEAD : mesuré AU REPOS (défilé en bas) par elementFromPoint,
+   la rangée est atteignable à 1280×800 (la colonne ne déborde même pas), à
+   1280×650 de 7 à 31 combattants, et à 375×812. La preuve citée par le constat
+   (`traces/E/mesures.json`) enregistre d'ailleurs `"atteint": true` ; et son
+   option de correctif « placer la rangée avant le bouton dans le DOM » est un
+   no-op — elle est déjà avant (encounterrenderer.js, queue de #encounter-list).
+
+   Ce qui subsistait : une BANDE de défilement où la barre — opaque, donc qui
+   cache 100 % du bouton — recouvre la rangée, et où un clic à l'aveugle atterrit
+   sur « Tour suivant », c'est-à-dire FAIT AVANCER LE TOUR.
+
+   Ce que la réserve fait, et ce qu'elle ne fait PAS (mesuré A/B, 1280×650,
+   7 combattants, réserve neutralisée puis remise) : la zone sûre CONTIGUË en fin
+   de course passe de 26px à 87px de défilement, et les positions où le bouton
+   est cliquable de 38 à 99. En revanche les 45 positions où le clic tombe sur
+   « Tour suivant » sont INCHANGÉES — la bande n'est pas supprimée, elle est
+   contournée : le MJ qui défile jusqu'en bas atterrit désormais dans une zone
+   sûre trois fois plus large, au lieu de s'arrêter juste au bord. Supprimer la
+   bande demanderait de sortir la rangée du conteneur qui défile. */
+.encounter-main-col {
+  --encounter-turn-bar-h: calc(44px + 2 * var(--sp-2) + 1px);
+}
+#encounter-list {
+  padding-bottom: var(--encounter-turn-bar-h);
+}
+
 /* Action primaire « Tour suivant » : collée au bas de la colonne (zone pouce
    sur mobile). Le fond opaque (= fond du modal) occulte les lignes qui défilent
-   dessous ; le conteneur scrollable est .modal (overflow-y:auto). */
+   dessous. Le conteneur scrollable est `.encounter-main-col` au-dessus de 641px
+   (cf. le bloc @media plus haut : min-height:0 + max-height:100% + overflow-y),
+   et `.modal` en dessous, où la colonne passe en `display:contents`. */
 .encounter-turn-bar {
   position: sticky;
   bottom: 0;
