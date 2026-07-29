@@ -4059,7 +4059,22 @@ export const EditionSR5 = {
       ...Coherence.skillsForRole("sr5", role),
       ...Coherence.skillsForMilieu("sr5", milieu),
     ];
-    const pool = [...new Set([...basePool, ...coherentPool])];
+    const mergedPool = [...new Set([...basePool, ...coherentPool])];
+    // Un groupe de compétences ("Conjuration (GC)"…) couvre déjà toutes ses
+    // compétences membres au même rang (SkillCatalog.sr5Groups). Si l'une de
+    // ces membres traîne aussi dans le pool à côté du groupe, elle tirerait
+    // un rang indépendant et divergerait du groupe sans qu'aucune n'ait été
+    // "cassée" du groupe — on retire donc les membres déjà couverts par un
+    // groupe présent dans le pool.
+    const activeGroups = mergedPool.filter((n) => n.endsWith("(GC)"));
+    const coveredMembers = new Set(
+      activeGroups.flatMap(
+        (g) => SkillCatalog.sr5Groups[g.replace(/\s*\(GC\)\s*$/, "")] || [],
+      ),
+    );
+    const pool = mergedPool.filter(
+      (n) => activeGroups.includes(n) || !coveredMembers.has(n),
+    );
     const count = this.skillCount[p] || 4;
 
     const shuffled = [...pool].sort(() => Math.random() - 0.5);

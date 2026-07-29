@@ -122,6 +122,32 @@ export const SkillCatalog = {
     "Sciences appliquées": "LOG",
   },
 
+  /* ---- SR5 : groupes de compétences (Livre de Règles p.131) ----
+     Un groupe acheté à un rang N couvre ses compétences membres au même
+     rang N (tant qu'aucune n'a été « cassée » du groupe pour progresser
+     individuellement). Sert à empêcher qu'une génération de PNJ tire à la
+     fois un groupe et l'une de ses compétences membres avec des rangs
+     indépendants et divergents. */
+  sr5Groups: {
+    "Armes à feu": ["Armes automatiques", "Fusils", "Pistolets"],
+    "Athlétisme": ["Course", "Gymnastique", "Natation"],
+    "Combat rapproché": [
+      "Armes tranchantes",
+      "Armes contondantes",
+      "Combat à mains nues",
+    ],
+    "Conjuration": ["Bannissement", "Invocation", "Lien d'esprit"],
+    "Électronique": ["Informatique", "Matériel électronique", "Logiciels"],
+    "Hacking": ["Cybercombat", "Guerre électronique", "Hacking"],
+    "Pilotage": [
+      "Appareils spatiaux",
+      "Appareils volants",
+      "Marcheurs",
+      "Véhicules aquatiques",
+      "Véhicules terrestres",
+    ],
+  },
+
   /* ---- Catégories de connaissance (Livre de Règles SR5 p.150-152, vérifié
      texte du livre) — les 4 catégories canon sont Rue/Académique/
      Professionnelle/Hobbies (PAS « Intérêt », erreur répandue à ne pas
