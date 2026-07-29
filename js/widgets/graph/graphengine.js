@@ -420,11 +420,11 @@ export const GraphEngine = {
       .map((ch) => `<span class="gsc-chip${ch.danger ? " is-danger" : ""}">${escHtml(ch.text)}</span>`)
       .join("");
     card.innerHTML =
-      `<div class="gsc-head"><span class="gsc-glyph">${escHtml(c.glyph || n.glyph || "●")}</span>` +
+      `<div class="cluster gsc-head"><span class="gsc-glyph">${escHtml(c.glyph || n.glyph || "●")}</span>` +
       `<span class="gsc-type">${escHtml(c.typeLabel || "")}</span></div>` +
       `<div class="gsc-title">${escHtml(c.title || n.label || "")}</div>` +
       (c.sub ? `<div class="gsc-sub"><span class="gsc-sub-mark" aria-hidden="true">▸</span> ${escHtml(c.sub)}</div>` : "") +
-      (chips ? `<div class="gsc-cast">${chips}</div>` : "");
+      (chips ? `<div class="cluster gsc-cast">${chips}</div>` : "");
     fo.appendChild(card);
     return fo;
   },

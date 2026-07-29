@@ -309,9 +309,9 @@ export const ScenarioGraph = {
           .map((w) => `<li class="scenario-robust-item ${w.level}"${w.targetId ? ` data-scenario-robust="${esc(w.targetId)}"` : ""}>${esc(w.message)}</li>`)
           .join("")
       : `<li class="scenario-robust-item ok">Aucune alerte : l'enquête tient (3 indices, issues de secours, atteignabilité).</li>`;
-    panel.innerHTML = `<div class="scenario-inspector">
+    panel.innerHTML = `<div class="stack scenario-inspector">
       <div class="scenario-insp-head">Robustesse de l'enquête</div>
-      <ul class="scenario-robust-list">${items}</ul>
+      <ul class="stack stack--tight scenario-robust-list">${items}</ul>
       <p class="graph-hint">Touchez une alerte pour surligner le nœud concerné.</p>
     </div>`;
   },
@@ -382,25 +382,25 @@ export const ScenarioGraph = {
     // Passé : faits datés (when) triés ; les non datés listés à part.
     const dated = (sc.infoNodes || []).filter((f) => Number.isFinite(f.when)).sort((a, b) => a.when - b.when);
     const undated = (sc.infoNodes || []).filter((f) => !Number.isFinite(f.when));
-    const factItem = (f) => `<li class="scenario-tl-fact ${f.role}" data-scenario-tl="${f.id}">${Number.isFinite(f.when) ? `<span class="scenario-tl-when">${f.when}</span>` : ""}<span class="scenario-info-mark">${this._INFO_GLYPH[f.role] || "◇"}</span> ${esc(f.fact || "(fait)")}</li>`;
+    const factItem = (f) => `<li class="cluster scenario-tl-fact ${f.role}" data-scenario-tl="${f.id}">${Number.isFinite(f.when) ? `<span class="scenario-tl-when">${f.when}</span>` : ""}<span class="scenario-info-mark">${this._INFO_GLYPH[f.role] || "◇"}</span> ${esc(f.fact || "(fait)")}</li>`;
     const pastHtml = dated.length || undated.length
-      ? `<ol class="scenario-tl-list">${dated.map(factItem).join("")}</ol>` +
-        (undated.length ? `<div class="scenario-tl-sub">Non datés (${undated.length})</div><ul class="scenario-tl-list">${undated.map(factItem).join("")}</ul>` : "")
+      ? `<ol class="stack scenario-tl-list">${dated.map(factItem).join("")}</ol>` +
+        (undated.length ? `<div class="scenario-tl-sub">Non datés (${undated.length})</div><ul class="stack scenario-tl-list">${undated.map(factItem).join("")}</ul>` : "")
       : `<p class="graph-hint">Aucun fait. Ajoutez des faits (◇ Indices) et donnez-leur un rang temporel pour reconstruire le passé.</p>`;
 
     // Futur : horloges (remplissage) + fronts (présages révélés).
     const clocks = (sc.clocks || []).map((c) => {
       const fill = ScenarioStore.clockFill(sc, c.id);
-      return `<div class="scenario-tl-future-row">${this.clockRingHtml(c.segments, fill, c.type, 26)}<span>${esc(c.title || "(horloge)")}</span><span class="scenario-tl-count">${fill}/${c.segments}</span></div>`;
+      return `<div class="cluster scenario-tl-future-row">${this.clockRingHtml(c.segments, fill, c.type, 26)}<span>${esc(c.title || "(horloge)")}</span><span class="scenario-tl-count">${fill}/${c.segments}</span></div>`;
     }).join("");
     const fronts = (sc.fronts || []).map((f) => {
       const tot = (f.dangers || []).reduce((n, d) => n + (d.grimPortents || []).length, 0);
       const rev = (f.dangers || []).reduce((n, d) => n + ScenarioStore.frontPortent(sc, d.id), 0);
-      return `<div class="scenario-tl-future-row"><span class="scenario-front-glyph">⚑</span><span>${esc(f.title || "(front)")}</span><span class="scenario-tl-count">${rev}/${tot}</span></div>`;
+      return `<div class="cluster scenario-tl-future-row"><span class="scenario-front-glyph">⚑</span><span>${esc(f.title || "(front)")}</span><span class="scenario-tl-count">${rev}/${tot}</span></div>`;
     }).join("");
     const futureHtml = clocks || fronts ? clocks + fronts : `<p class="graph-hint">Aucune horloge ni front (⏱ Horloges).</p>`;
 
-    panel.innerHTML = `<div class="scenario-inspector">
+    panel.innerHTML = `<div class="stack scenario-inspector">
       <div class="scenario-insp-head">Chronologie</div>
       <div class="scenario-subhead">↤ Passé reconstruit</div>
       ${pastHtml}
@@ -418,7 +418,7 @@ export const ScenarioGraph = {
     const fronts = sc.fronts || [];
     const clockRows = clocks.length ? clocks.map((c) => this._clockRowHtml(c, sc)).join("") : `<p class="graph-hint">Une horloge se remplit : à un seuil, elle ferme une voie ou active une étape.</p>`;
     const frontRows = fronts.length ? fronts.map((f) => this._frontRowHtml(f)).join("") : `<p class="graph-hint">Un front porte une faction et des étapes « si on ne fait rien… » qui escaladent.</p>`;
-    panel.innerHTML = `<div class="scenario-inspector">
+    panel.innerHTML = `<div class="stack scenario-inspector">
       <div class="scenario-insp-head">Horloges & Fronts</div>
       <div class="scenario-subhead">⏱ Horloges</div>
       ${clockRows}
@@ -442,7 +442,7 @@ export const ScenarioGraph = {
     const esc = Utils.escHtml;
     const dangers = (f.dangers || []).map((d) => this._dangerRowHtml(f, d)).join("");
     return `<div class="scenario-front" data-fr="${f.id}">
-      <div class="scenario-front-head">
+      <div class="cluster scenario-front-head">
         <span class="scenario-front-glyph" aria-hidden="true">⚑</span>
         <input type="text" class="scenario-front-title" data-scenario-front="title" data-fr="${f.id}" value="${esc(f.title || "")}" placeholder="ex. Les représailles d'une faction" maxlength="60">
         <select data-scenario-front="faction" data-fr="${f.id}">${this._factionOptions(f.factionId)}</select>
@@ -456,17 +456,17 @@ export const ScenarioGraph = {
 
   _dangerRowHtml(f, d) {
     const esc = Utils.escHtml;
-    const portents = (d.grimPortents || []).map((p, i) => `<div class="scenario-portent">
+    const portents = (d.grimPortents || []).map((p, i) => `<div class="cluster scenario-portent">
       <span class="scenario-portent-n">${i + 1}.</span>
       <input type="text" data-scenario-front="portent" data-fr="${f.id}" data-dg="${d.id}" data-idx="${i}" value="${esc(p)}" placeholder="étape vers le pire…" maxlength="80">
       <button type="button" class="scenario-clock-del" data-scenario-front="portent-del" data-fr="${f.id}" data-dg="${d.id}" data-idx="${i}" aria-label="Supprimer l'étape">✕</button>
     </div>`).join("");
-    return `<div class="scenario-danger" data-fr="${f.id}" data-dg="${d.id}">
-      <div class="scenario-danger-head">
+    return `<div class="stack scenario-danger" data-fr="${f.id}" data-dg="${d.id}">
+      <div class="cluster scenario-danger-head">
         <input type="text" data-scenario-front="danger-impulse" data-fr="${f.id}" data-dg="${d.id}" value="${esc(d.impulse || "")}" placeholder="Impulsion (ce que ça VEUT)" maxlength="70">
         <button type="button" class="scenario-clock-del" data-scenario-front="danger-del" data-fr="${f.id}" data-dg="${d.id}" aria-label="Supprimer le danger">✕</button>
       </div>
-      <div class="scenario-portents">${portents}
+      <div class="stack scenario-portents">${portents}
         <button type="button" class="scenario-portent-add" data-scenario-front="portent-add" data-fr="${f.id}" data-dg="${d.id}">＋ Étape vers le pire</button>
       </div>
       <input type="text" class="scenario-danger-doom" data-scenario-front="danger-doom" data-fr="${f.id}" data-dg="${d.id}" value="${esc(d.impendingDoom || "")}" placeholder="Catastrophe ⚠ (si personne n'agit)" maxlength="90">
@@ -500,18 +500,18 @@ export const ScenarioGraph = {
     const typeOpts = this._CLOCK_TYPES.map((t) => `<option value="${t.key}"${c.type === t.key ? " selected" : ""}>${t.label}</option>`).join("");
     const effects = (c.effects || []).map((e) => this._effectRowHtml(c, e, sc)).join("");
     return `<div class="scenario-clock" data-ck="${c.id}">
-      <div class="scenario-clock-head">
+      <div class="cluster scenario-clock-head">
         ${this.clockRingHtml(c.segments, ScenarioStore.clockFill(sc, c.id), c.type, 34)}
-        <div class="scenario-clock-fields">
+        <div class="stack scenario-clock-fields">
           <input type="text" class="scenario-clock-title" data-scenario-clock="title" data-ck="${c.id}" value="${esc(c.title || "")}" placeholder="ex. L'arrivée des renforts" maxlength="60">
-          <div class="scenario-clock-meta">
+          <div class="cluster scenario-clock-meta">
             <select data-scenario-clock="type" data-ck="${c.id}">${typeOpts}</select>
-            <label class="scenario-clock-seg">Cases <input type="number" min="1" max="24" data-scenario-clock="segments" data-ck="${c.id}" value="${c.segments}"></label>
+            <label class="cluster scenario-clock-seg">Cases <input type="number" min="1" max="24" data-scenario-clock="segments" data-ck="${c.id}" value="${c.segments}"></label>
             <button type="button" class="scenario-clock-del" data-scenario-clock="delete" data-ck="${c.id}" aria-label="Supprimer l'horloge">✕</button>
           </div>
         </div>
       </div>
-      <div class="scenario-clock-effects">${effects}
+      <div class="stack scenario-clock-effects">${effects}
         <button type="button" class="scenario-cast-add" data-scenario-clock="add-effect" data-ck="${c.id}">＋ Effet au seuil</button>
       </div>
     </div>`;
@@ -531,8 +531,8 @@ export const ScenarioGraph = {
         return `<option value="${ed.id}"${e.targetId === ed.id ? " selected" : ""}>${esc(lbl)}</option>`;
       }).join("");
     }
-    return `<div class="scenario-effect" data-ck="${c.id}" data-eff="${e.id}">
-      <span class="scenario-effect-at">à <input type="number" min="1" max="${c.segments}" data-scenario-clock="eff-threshold" data-ck="${c.id}" data-eff="${e.id}" value="${e.atThreshold}"></span>
+    return `<div class="cluster scenario-effect" data-ck="${c.id}" data-eff="${e.id}">
+      <span class="cluster scenario-effect-at">à <input type="number" min="1" max="${c.segments}" data-scenario-clock="eff-threshold" data-ck="${c.id}" data-eff="${e.id}" value="${e.atThreshold}"></span>
       <select data-scenario-clock="eff-action" data-ck="${c.id}" data-eff="${e.id}">${actOpts}</select>
       <select data-scenario-clock="eff-target" data-ck="${c.id}" data-eff="${e.id}"><option value="">— cible —</option>${targetOpts}</select>
       <button type="button" class="scenario-clock-del" data-scenario-clock="eff-delete" data-ck="${c.id}" data-eff="${e.id}" aria-label="Supprimer l'effet">✕</button>
@@ -875,28 +875,28 @@ export const ScenarioGraph = {
     const arrowBtns = this._ARROWS
       .map((a) => `<button type="button" class="graph-dir-btn${curArrow === a.key ? " active" : ""}" data-scenario-node="arrow" data-arrow="${a.key}" title="${a.label}" aria-pressed="${curArrow === a.key}">${a.glyph} ${a.label}</button>`)
       .join("");
-    return `<div class="scenario-inspector">
+    return `<div class="stack scenario-inspector">
       <div class="scenario-insp-head">Étape</div>
-      <label class="graph-edge-field">
+      <label class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Type</span>
         <select data-scenario-node="type">${typeOpts}</select>
       </label>
-      <label class="graph-edge-field">
+      <label class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Titre</span>
         <input type="text" data-scenario-node="title" value="${esc(n.title || "")}" placeholder="ex. Le rendez-vous avec le Johnson" maxlength="80">
       </label>
-      <label class="graph-edge-field">
+      <label class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Description (MJ)</span>
         <textarea data-scenario-node="body" rows="5" placeholder="Ce qui se joue dans cette scène…">${esc(n.body || "")}</textarea>
       </label>
-      <div class="graph-edge-field">
+      <div class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Casting</span>
-        <div class="scenario-cast-list">${this._castChipsHtml(n)}<button type="button" class="scenario-cast-add" data-scenario-node="cast">＋ Caster</button></div>
+        <div class="cluster scenario-cast-list">${this._castChipsHtml(n)}<button type="button" class="scenario-cast-add" data-scenario-node="cast">＋ Caster</button></div>
         ${(n.castIds || []).length >= 2 ? `<button type="button" class="scenario-cast-link" data-scenario-node="cast-link" title="Créer les liens manquants entre ces personnages sur la carte des Liens">◈ Relier entre eux</button>` : ""}
       </div>
-      <div class="graph-edge-field">
+      <div class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Moment clé</span>
-        <div class="graph-dir-row">${arrowBtns}</div>
+        <div class="cluster graph-dir-row">${arrowBtns}</div>
         <textarea data-scenario-node="bang" rows="2" placeholder="Le moment clé : le choix qui fait basculer la scène">${esc(n.bang || "")}</textarea>
       </div>
       <button type="button" class="graph-edge-delete" data-scenario-node="delete">Supprimer cette étape</button>
@@ -1056,33 +1056,33 @@ export const ScenarioGraph = {
     const gw = e.gateway || "";
     const gwBtn = (val, glyph, title) =>
       `<button type="button" class="graph-dir-btn${gw === val ? " active" : ""}" data-scenario-edge="gateway" data-gw="${val}" title="${title}" aria-pressed="${gw === val}">${glyph}</button>`;
-    return `<div class="scenario-inspector">
+    return `<div class="stack scenario-inspector">
       <div class="scenario-insp-head">Transition</div>
-      <label class="graph-edge-field">
+      <label class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Type de lien</span>
         <select data-scenario-edge="kind">${kindOpts}</select>
       </label>
-      <div class="graph-edge-field">
+      <div class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Embranchement</span>
-        <div class="graph-dir-row">
+        <div class="cluster graph-dir-row">
           ${gwBtn("", "—", "Aucun")}
           ${gwBtn("exclusive", "⋔", "Exclusif : le joueur choisit A ou B")}
           ${gwBtn("parallel", "∥", "Parallèle : A et B se déroulent ensemble")}
         </div>
       </div>
-      <label class="graph-edge-field graph-edge-check">
+      <label class="stack stack--tight graph-edge-field graph-edge-check">
         <input type="checkbox" data-scenario-edge="hatch"${e.isEscapeHatch ? " checked" : ""}>
         <span>Issue de secours (échec)</span>
       </label>
-      <label class="graph-edge-field">
+      <label class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Condition / mot sur le trait</span>
         <input type="text" data-scenario-edge="label" value="${esc(e.label || "")}" placeholder="ex. si l'infiltration échoue" maxlength="60">
       </label>
-      <div class="graph-edge-field">
+      <div class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Motif du trait</span>
-        <div class="graph-dir-row">${this._patternBtns(e, "scenario-edge")}</div>
+        <div class="cluster graph-dir-row">${this._patternBtns(e, "scenario-edge")}</div>
       </div>
-      <div class="graph-edge-field">
+      <div class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Couleur</span>
         ${this._colorPicker(e.color || "", "scenario-edge")}
       </div>
@@ -1222,24 +1222,24 @@ export const ScenarioGraph = {
     const roleBtn = (val, label, title) =>
       `<button type="button" class="graph-dir-btn${(f.role || "enrichissement") === val ? " active" : ""}" data-scenario-info="role" data-role="${val}" title="${title}" aria-pressed="${(f.role || "enrichissement") === val}">${this._INFO_GLYPH[val]} ${label}</button>`;
     const clues = (ScenarioStore.get(this._scenarioId).clues || []).filter((c) => c.toInfoNode === f.id);
-    return `<div class="scenario-inspector">
+    return `<div class="stack scenario-inspector">
       <div class="scenario-insp-head">Fait <span class="scenario-info-mark">${this._INFO_GLYPH[f.role] || "◇"}</span></div>
-      <label class="graph-edge-field">
+      <label class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Le fait (caché)</span>
         <textarea data-scenario-info="fact" rows="3" placeholder="ex. le commanditaire cache sa véritable identité">${esc(f.fact || "")}</textarea>
       </label>
-      <div class="graph-edge-field">
+      <div class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Rôle dans l'enquête</span>
-        <div class="graph-dir-row">
+        <div class="cluster graph-dir-row">
           ${roleBtn("progression", "Progression", "Progression : le fil ne peut avancer sans lui (révélation garantie, GUMSHOE)")}
           ${roleBtn("enrichissement", "Enrichissement", "Enrichissement : de la couleur (règle des 3 indices)")}
         </div>
       </div>
-      <label class="graph-edge-field">
+      <label class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Rang temporel (passé reconstruit)</span>
         <input type="number" data-scenario-info="when" value="${f.when != null ? f.when : ""}" placeholder="optionnel — ex. 1, 2, 3…">
       </label>
-      <div class="graph-edge-field">
+      <div class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Indices vers ce fait (${clues.length})</span>
         <p class="graph-hint scenario-clue-hint">Tirez d'une <strong>scène</strong> vers ce fait (◈ Relier) pour l'ancrer, ou ajoutez un indice flottant :</p>
         <button type="button" class="scenario-cast-add" data-scenario-info="add-clue">＋ Indice flottant</button>
@@ -1322,17 +1322,17 @@ export const ScenarioGraph = {
       })
       .join("");
     const anchorLabel = (c.anchorSceneNodes || []).length ? anchors : `<span class="scenario-clue-floating">Flottant (aucune ancre) — révélable n'importe où / via un contact.</span>`;
-    return `<div class="scenario-inspector">
+    return `<div class="stack scenario-inspector">
       <div class="scenario-insp-head">Indice → <span class="scenario-info-mark">${this._INFO_GLYPH[fact && fact.role] || "◇"}</span> ${esc((fact && fact.fact) || "(fait)").slice(0, 40)}</div>
-      <label class="graph-edge-field">
+      <label class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Description (ce que la table trouve)</span>
         <textarea data-scenario-clue="description" rows="3" placeholder="ex. un indice matériel laissé sur les lieux">${esc(c.description || "")}</textarea>
       </label>
-      <div class="graph-edge-field">
+      <div class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Ancres (scènes)</span>
-        <div class="scenario-cast-list">${anchorLabel}</div>
+        <div class="cluster scenario-cast-list">${anchorLabel}</div>
       </div>
-      <label class="graph-edge-field graph-edge-check">
+      <label class="stack stack--tight graph-edge-field graph-edge-check">
         <input type="checkbox" data-scenario-clue="gated"${c.gated ? " checked" : ""}>
         <span>Révélation derrière un jet / une condition</span>
       </label>
@@ -1418,13 +1418,13 @@ export const ScenarioGraph = {
     this._el = panel;
     panel.innerHTML = `
         <div class="panel-title">Trames<span class="panel-subtitle">construire et relier vos scènes à l'avance</span></div>
-        <div class="scenario-header">
+        <div class="cluster scenario-header">
           <!-- Zone 1 — IDENTITÉ : quelle trame, + le menu de gestion (rarement
                touché en plein travail, donc replié dans ▾). -->
           <select class="scenario-picker" data-scenario-action="pick" aria-label="Choisir une trame"></select>
           <details class="scenario-menu">
             <summary class="btn-small scenario-menu-summary" title="Gérer la trame">Trame ▾</summary>
-            <div class="scenario-menu-pop">
+            <div class="stack scenario-menu-pop">
               <button class="scenario-menu-item" data-scenario-action="new">＋ Nouvelle trame</button>
               <button class="scenario-menu-item" data-scenario-action="new-from-template" title="Partir d'un squelette narratif (5 salles, Story Spine, Story Circle)">＋ Depuis un modèle</button>
               <button class="scenario-menu-item" data-scenario-action="rename">Renommer</button>
@@ -1444,10 +1444,10 @@ export const ScenarioGraph = {
           <span class="scenario-hz-spacer"></span>
           <button class="chip scenario-robust-badge" data-scenario-action="robustesse" title="Vérifier la robustesse de l'enquête (3 indices, issue de secours, atteignabilité…)">✓ Robustesse</button>
         </div>
-        <div class="scenario-toolbar" data-scenario="toolbar" hidden></div>
+        <div class="cluster scenario-toolbar" data-scenario="toolbar" hidden></div>
         <div class="graph-split">
           <div class="graph-canvas" data-scenario="canvas">
-            <div class="graph-zoom" role="group" aria-label="Zoom de la carte">
+            <div class="stack graph-zoom" role="group" aria-label="Zoom de la carte">
               <button type="button" class="graph-zoom-btn" data-scenario-action="zoom-in" aria-label="Zoomer" title="Zoomer (molette · pincement)">＋</button>
               <button type="button" class="graph-zoom-btn" data-scenario-action="zoom-reset" aria-label="Vue d'ensemble" title="Vue d'ensemble">⤢</button>
               <button type="button" class="graph-zoom-btn" data-scenario-action="zoom-out" aria-label="Dézoomer" title="Dézoomer">−</button>

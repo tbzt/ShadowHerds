@@ -184,7 +184,7 @@ export const GraphView = {
     panel.innerHTML = `<div class="graph-group-panel">
       <div class="graph-group-head">Construction d'une faction</div>
       <p class="graph-hint">Touchez les nœuds à regrouper.<br><strong>${n}</strong> membre${n > 1 ? "s" : ""} sélectionné${n > 1 ? "s" : ""}.</p>
-      <div class="graph-group-actions">
+      <div class="cluster graph-group-actions">
         <button type="button" class="btn-primary btn-small" data-graph-action="make-faction"${n ? "" : " disabled"}>＋ Créer la faction</button>
         <button type="button" class="btn-secondary btn-small" data-graph-action="group-cancel">Annuler</button>
       </div>
@@ -234,7 +234,7 @@ export const GraphView = {
         `<button type="button" class="em-color-swatch${cur === c ? " selected" : ""}" style="background:${c}" data-graph-node="color" data-color="${c}" aria-label="Couleur ${c}"></button>`,
     ).join("");
     const isCustom = cur && !this._EDGE_COLORS.includes(cur);
-    return `<div class="graph-node-color">
+    return `<div class="stack stack--tight graph-node-color">
       <span class="graph-edge-flabel">Couleur du nœud</span>
       <div class="em-color-picker">
         <button type="button" class="em-color-swatch graph-color-default${!cur ? " selected" : ""}" data-graph-node="color" data-color="" title="Couleur par défaut" aria-label="Couleur par défaut">✕</button>
@@ -351,17 +351,17 @@ export const GraphView = {
           `<button type="button" class="graph-dir-btn${(e.dir || "none") === d ? " active" : ""}" data-graph-edge="dir" data-dir="${d}" title="${t}" aria-pressed="${(e.dir || "none") === d}">${g}</button>`,
       )
       .join("");
-    return `<div class="graph-edge-inspector">
+    return `<div class="stack graph-edge-inspector">
       <div class="graph-edge-ends">${esc(this._nameOf(e.from))} <span aria-hidden="true">↔</span> ${esc(this._nameOf(e.to))}</div>
-      <label class="graph-edge-field">
+      <label class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Mot sur le trait</span>
         <input type="text" class="graph-edge-label-input" data-graph-edge="label" value="${esc(e.label || "")}" placeholder="ex. doit une faveur" maxlength="40">
       </label>
-      <div class="graph-edge-field">
+      <div class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Direction</span>
-        <div class="graph-dir-row">${dirBtns}</div>
+        <div class="cluster graph-dir-row">${dirBtns}</div>
       </div>
-      <div class="graph-edge-field">
+      <div class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Couleur</span>
         <div class="em-color-picker">
           <button type="button" class="em-color-swatch graph-color-default${!cur ? " selected" : ""}" data-graph-edge="color" data-color="" title="Couleur par défaut (accent)" aria-label="Couleur par défaut">✕</button>
@@ -371,9 +371,9 @@ export const GraphView = {
           </label>
         </div>
       </div>
-      <div class="graph-edge-field">
+      <div class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Motif du trait</span>
-        <div class="graph-dir-row">${this._patternBtns(e)}</div>
+        <div class="cluster graph-dir-row">${this._patternBtns(e)}</div>
       </div>
       <button type="button" class="graph-edge-delete" data-graph-edge="delete">Supprimer ce lien</button>
     </div>`;
@@ -533,7 +533,7 @@ export const GraphView = {
         <div class="modal-body graph-body">
           <div class="graph-split">
             <div class="graph-canvas" data-graph="canvas">
-              <div class="graph-zoom" role="group" aria-label="Zoom de la carte">
+              <div class="stack graph-zoom" role="group" aria-label="Zoom de la carte">
                 <button type="button" class="graph-zoom-btn" data-graph-action="zoom-in" aria-label="Zoomer" title="Zoomer (molette · pincement à deux doigts)">＋</button>
                 <button type="button" class="graph-zoom-btn" data-graph-action="zoom-reset" aria-label="Vue d'ensemble" title="Vue d'ensemble">⤢</button>
                 <button type="button" class="graph-zoom-btn" data-graph-action="zoom-out" aria-label="Dézoomer" title="Dézoomer">−</button>
