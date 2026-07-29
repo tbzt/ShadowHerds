@@ -8,6 +8,8 @@
    ne lit que des champs génériques (meta, gender, archetype, role...),
    jamais App.edition.
    ============================================================ */
+import { FocusTrap } from "../widgets/kit/focustrap.js";
+
 export const Portrait = {
   PROMPT_SUFFIX:
     "cyberpunk digital painting, dramatic rim lighting, muted teal and magenta palette, highly detailed, concept art style",
@@ -335,6 +337,7 @@ export const Portrait = {
      data-* (aucun onclick inline). ---- */
   _previewEl: null,
   _previewDelegated: false,
+  _releaseTrap: null,
 
   bindDelegation() {
     if (this._previewDelegated) return;
@@ -361,6 +364,8 @@ export const Portrait = {
     if (this._previewEl) return this._previewEl;
     const overlay = document.createElement("div");
     overlay.className = "portrait-preview-overlay";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
     overlay.innerHTML = `
       <div class="portrait-preview-box">
         <button class="portrait-preview-close" aria-label="Fermer">&times;</button>
@@ -388,10 +393,24 @@ export const Portrait = {
     const cap = el.querySelector(".portrait-preview-caption");
     cap.textContent = caption || "";
     cap.style.display = caption ? "" : "none";
+    // La légende est optionnelle (cf. commentaire ci-dessus) : nom de la
+    // boîte de dialogue plus riche quand elle existe, générique sinon —
+    // jamais un aria-label vide.
+    el.setAttribute("aria-label", caption || "Aperçu de l'image");
     el.classList.add("visible");
+    // D7 : overlay détaché dans document.body, même patron que ContentModal
+    // (cf. commentaire d'en-tête) — sans ce focus, le piège serait
+    // inatteignable au clavier. Contenu = image + légende, rien de fiable à
+    // pré-sélectionner : la croix de fermeture, même patron que ContentModal.
+    this._releaseTrap = FocusTrap.activate(el);
+    el.querySelector(".portrait-preview-close").focus();
   },
 
   hidePreview() {
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
     if (this._previewEl) this._previewEl.classList.remove("visible");
   },
 };
