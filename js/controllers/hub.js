@@ -233,7 +233,7 @@ export const Hub = {
       const section = document.createElement("div");
       section.className = "hub-section";
       const head = document.createElement("div");
-      head.className = "hub-section-head";
+      head.className = "cluster hub-section-head";
       head.innerHTML = `<span class="hub-section-title">${label}</span><span class="hub-section-count">${kept.length}</span>`;
       section.appendChild(head);
       const grid = document.createElement("div");
@@ -309,7 +309,7 @@ export const Hub = {
     box.insertAdjacentHTML(
       "afterbegin",
       `<div class="hub-section hub-context-banner">
-        <div class="hub-section-head">
+        <div class="cluster hub-section-head">
           <span class="hub-section-title">${title} — ${CardRenderer._esc(node.name)}</span>
           ${liensBtn}${right}
         </div>
@@ -381,7 +381,7 @@ export const Hub = {
             aria-pressed="${active.has(raw)}">${CardRenderer._esc(lab)}</button>`;
         })
         .join("");
-      html += `<div class="hub-facet-group">
+      html += `<div class="cluster hub-facet-group">
         <span class="hub-facet-label">${def.label}</span>${chips}</div>`;
     }
     box.innerHTML = html;

@@ -209,7 +209,7 @@ export const DossierBar = {
     const box = document.getElementById(containerId);
     if (!box) return;
     const allActive = this.current === "all" ? "active" : "";
-    let html = `<div class="group-item ${allActive}" data-dossier-bar data-action="switch-dossier" data-dossier="all">
+    let html = `<div class="cluster group-item ${allActive}" data-dossier-bar data-action="switch-dossier" data-dossier="all">
       <span class="group-item-icon">◈</span>
       <span class="group-item-name">Tout</span>
       <span class="group-item-count">${this._entityCount("all")}</span>
@@ -295,7 +295,7 @@ export const DossierBar = {
           ${duplicateItem}
           ${rencontreItem}
         </div>`;
-    return `<div class="group-item${sub} ${active}"${style} data-dossier-bar data-action="switch-dossier" data-dossier="${node.id}">
+    return `<div class="cluster group-item${sub} ${active}"${style} data-dossier-bar data-action="switch-dossier" data-dossier="${node.id}">
       <span class="group-item-icon"${kindTitle ? ` title="${kindTitle}"` : ""}>${icon}</span>
       <span class="group-item-name">${nameEsc}</span>
       <span class="group-item-count">${this._entityCount(node.id)}</span>

@@ -105,7 +105,7 @@ export const Debrief = {
     const paie = this._defaultPaie(runId);
 
     const teamHtml = team.length
-      ? `<div class="debrief-team">${team
+      ? `<div class="cluster debrief-team">${team
           .map((c) => `<span class="debrief-chip">${esc(c.name || "Sans nom")}</span>`)
           .join("")}</div>`
       : `<p class="debrief-warn">Aucun PJ rangé dans ce run ni dans sa campagne — les bascules chiffrées seront ignorées. Rangez l'équipe dans le run pour les activer.</p>`;
@@ -116,7 +116,7 @@ export const Debrief = {
       .map((t) => {
         const glyph = t.glyph ? ` <span class="debrief-glyph">${esc(t.glyph)}</span>` : "";
         const def = t.key === "nuyen" ? paie : 0;
-        return `<label class="debrief-row">
+        return `<label class="cluster cluster--between debrief-row">
           <span class="debrief-row-label">${esc(t.label)}${glyph}</span>
           <input type="number" class="debrief-input" data-debrief-track="${esc(t.key)}" value="${def}" step="1" inputmode="numeric">
         </label>`;
@@ -129,13 +129,13 @@ export const Debrief = {
       ? `<p class="debrief-hint">Cette édition ne chiffre pas la réputation — notez les retombées ci-dessous.</p>`
       : "";
 
-    return `<div class="debrief-lead">
+    return `<div class="stack debrief-lead">
         <span class="debrief-run">◆ ${esc(runName)}</span>
         <span class="debrief-sub">Les valeurs proposées ne s'appliquent qu'à votre validation.</span>
       </div>
       ${teamHtml}
       <div class="debrief-section-title">Paie &amp; progression${team.length ? ` <span class="debrief-team-count">× ${team.length} PJ</span>` : ""}</div>
-      <div class="debrief-tracks">${rows}</div>
+      <div class="stack stack--tight debrief-tracks">${rows}</div>
       ${repNote}
       ${this._relationsHtml(runId)}
       <div class="debrief-section-title">Ce que le run a laissé</div>
@@ -168,10 +168,10 @@ export const Debrief = {
         const scene = b.title ? `<span class="debrief-beat-scene">${esc(b.title)}</span>` : "";
         const bang = b.bang ? `<span class="debrief-beat-bang">${esc(b.bang)}</span>` : "";
         const sep = scene && bang ? " — " : "";
-        return `<li class="debrief-beat ${tone}"><span class="debrief-beat-arrow" aria-hidden="true">${glyph}</span> ${scene}${sep}${bang}</li>`;
+        return `<li class="cluster debrief-beat ${tone}"><span class="debrief-beat-arrow" aria-hidden="true">${glyph}</span> ${scene}${sep}${bang}</li>`;
       })
       .join("");
-    return `<ul class="debrief-beats">${rows}</ul>`;
+    return `<ul class="stack debrief-beats">${rows}</ul>`;
   },
 
   /** VIS-12 (P3c) — « Relations de campagne » : marquer chaque contact connu
@@ -192,7 +192,7 @@ export const Debrief = {
       .map((c) => {
         const cls = (v) => "btn-small " + ((c.stance || "") === v ? "btn-primary" : "btn-secondary");
         const rel = c.relation ? ` (${esc(c.relation)})` : "";
-        return `<div class="debrief-row debrief-rel-row" data-contact="${esc(c.id)}">
+        return `<div class="cluster cluster--between debrief-row debrief-rel-row" data-contact="${esc(c.id)}">
           <span class="debrief-row-label">${esc(c.name)}${rel}</span>
           <span class="debrief-rel-stances">
             <button type="button" class="${cls("")}" data-debrief-stance="">neutre</button>

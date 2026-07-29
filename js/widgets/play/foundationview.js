@@ -98,10 +98,10 @@ export const FoundationView = {
     const nodes = foundationNodes
       .map((node) => {
         const actions = node.actions.length
-          ? `<ul class="foundation-actions">${node.actions
+          ? `<ul class="stack foundation-actions">${node.actions
               .map(
                 (a) =>
-                  `<li><span class="foundation-action-name">${esc(a.name)}</span>` +
+                  `<li class="stack"><span class="foundation-action-name">${esc(a.name)}</span>` +
                   `<span class="foundation-action-roll">${esc(a.roll)}</span>` +
                   (a.effect
                     ? `<span class="foundation-action-effect">${esc(a.effect)}</span>`

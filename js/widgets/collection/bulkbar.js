@@ -111,13 +111,13 @@ export const BulkBar = {
         : `<span class="bulk-move-empty">Aucun PJ — créez-en un dans Équipe.</span>`;
       linkBtn = `<span class="bulk-move-wrap bulk-link-wrap">
           <button class="btn-secondary btn-small" data-action="bulk-link">🔗 Lier à un PJ ▾</button>
-          <div class="bulk-move-menu" id="bulk-link-menu" hidden>${linkMenu}</div>
+          <div class="stack bulk-move-menu" id="bulk-link-menu" hidden>${linkMenu}</div>
         </span>`;
     }
 
     bar.innerHTML = `
       <span class="bulk-count">${ids.length} sélectionné${ids.length > 1 ? "s" : ""}</span>
-      <span class="bulk-actions">
+      <span class="cluster bulk-actions">
         ${linkBtn}
         ${combat ? `<button class="btn-secondary btn-small" data-action="bulk-encounter"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-combat"></use></svg> Ajouter au combat</button>` : ""}
         <button class="danger-btn btn-small" data-action="bulk-delete">Supprimer</button>

@@ -120,7 +120,7 @@ export const ConvokePicker = {
     const panel = document.getElementById("convoke-picker-panel");
     if (!panel) return;
     panel.innerHTML = `
-      <div class="group-picker-head">
+      <div class="cluster group-picker-head">
         <span class="group-picker-title">Convoquer</span>
         <button class="btn-icon-tiny" data-action="close" aria-label="Fermer">✕</button>
       </div>
@@ -162,7 +162,7 @@ export const ConvokePicker = {
       .map((f) => {
         const dot = `<span class="faction-dot"${f.color ? ` style="background:${this._esc(f.color)}"` : ""}></span>`;
         const n = Array.isArray(f.members) ? f.members.length : 0;
-        return `<label class="group-picker-row">
+        return `<label class="cluster group-picker-row">
           <input type="checkbox" ${facSet.has(f.id) ? "checked" : ""} data-ref="faction" data-cid="${this._esc(f.id)}">
           ${dot}<span>${this._esc(f.name || "Faction")}</span><span class="convoke-type">${n} m.</span>
         </label>`;
@@ -183,7 +183,7 @@ export const ConvokePicker = {
         if (matches && !isConvoked && count >= this._MAX) continue;
         seen.add(e.id);
         if (matches && !isConvoked) count++;
-        entRows += `<label class="group-picker-row">
+        entRows += `<label class="cluster group-picker-row">
           <input type="checkbox" ${isConvoked ? "checked" : ""} data-ref="entity" data-cid="${this._esc(e.id)}">
           <span>${this._esc(e.name || "Sans nom")}</span><span class="convoke-type">${type}</span>
         </label>`;

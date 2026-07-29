@@ -362,7 +362,7 @@ export const Play = {
         : `<div class="play-empty-note">Aucun run — « Faire un run » depuis un topos le rangera ici.</div>`;
     const count = `${runs.length} run${runs.length > 1 ? "s" : ""}`;
     return `<div class="play-bridge">
-      <div class="play-bridge-head">
+      <div class="cluster play-bridge-head">
         <span class="play-bridge-icon" aria-hidden="true">❖</span>
         <span class="play-bridge-title">${CardRenderer._esc(camp.name)}</span>
         <span class="play-bridge-count">${count}</span>
@@ -407,7 +407,7 @@ export const Play = {
     const body = live ? this._liveSceneHtml() : stashed ? this._stashSummaryHtml(run.id) : "";
 
     return `<div class="play-run${live ? " is-live" : stashed ? " is-stashed" : ""}">
-      <div class="play-run-head">
+      <div class="cluster play-run-head">
         <button class="play-run-name" data-action="play-enter" data-dossier="${run.id}" title="Ouvrir « ${CardRenderer._esc(run.name)} » ici — poste de commandement">
           <span class="play-run-icon" aria-hidden="true">◆</span>${CardRenderer._esc(run.name)}
         </button>
@@ -440,11 +440,11 @@ export const Play = {
       .map((r) => {
         const name = CardRenderer._esc(r.pnj?.name || r.name || "?");
         const bar = CardRenderer.lifeBar(r.gauge, "play-life");
-        return `<div class="play-fighter"><span class="play-fighter-name">${name}</span>${bar}${this._presenceToggleHtml(r)}</div>`;
+        return `<div class="cluster play-fighter"><span class="play-fighter-name">${name}</span>${bar}${this._presenceToggleHtml(r)}</div>`;
       })
       .join("");
     return `<div class="play-scene">
-      <div class="play-motor-line play-scene-meta">
+      <div class="cluster play-motor-line play-scene-meta">
         <span class="play-motor-name">${motorName}</span>
         <span class="play-motor-bits"><span class="play-motor-clock">Round ${st.round}${passLabel}</span></span>
       </div>
@@ -618,18 +618,18 @@ export const Play = {
     if (!trame) {
       const has = ScenarioStore.all().length;
       return `<div class="play-trame is-empty">
-        <div class="play-trame-head"><span class="play-trame-word">Trame</span></div>
-        <div class="play-trame-body">
+        <div class="cluster play-trame-head"><span class="play-trame-word">Trame</span></div>
+        <div class="cluster play-trame-body">
           <span class="play-trame-note">Aucune trame liée à ce run.</span>
           <button class="btn-secondary btn-small" data-action="play-trame-link" data-dossier="${run.id}">${has ? "Lier une trame" : "Ouvrir l'atelier"}</button>
         </div>
       </div>`;
     }
     const sc = trame;
-    const head = `<div class="play-trame-head">
+    const head = `<div class="cluster play-trame-head">
       <span class="play-trame-word">Trame</span>
       <span class="play-trame-title">${esc(sc.title)}</span>
-      <span class="play-trame-actions">
+      <span class="cluster play-trame-actions">
         <button class="btn-secondary btn-small" data-action="play-trame-open" data-scenario="${sc.id}" title="Ouvrir l'atelier de trame">Atelier</button>
         <button class="btn-secondary btn-small" data-action="play-trame-unlink" data-scenario="${sc.id}" title="Délier cette trame du run">Délier</button>
       </span>
@@ -641,7 +641,7 @@ export const Play = {
       const body = start
         ? `<button class="btn-primary btn-small" data-action="play-trame-goto" data-scenario="${sc.id}" data-node="${start.id}">▶ Commencer : ${esc(start.title || "(sans titre)")}</button>`
         : `<span class="play-trame-note">Trame sans étape — ouvrez l'atelier pour en poser.</span>`;
-      return `<div class="play-trame">${head}<div class="play-trame-body">${body}</div></div>`;
+      return `<div class="play-trame">${head}<div class="cluster play-trame-body">${body}</div></div>`;
     }
     const g = this._TRAME_GLYPH[cur.type] || "●";
     // S5a — une sortie FERMÉE par une horloge disparaît des choix (runtime).
@@ -665,20 +665,20 @@ export const Play = {
       })
       .join("");
     const hasCast = (cur.castIds || []).length > 0;
-    const castRow = `<div class="play-trame-cast">
+    const castRow = `<div class="cluster play-trame-cast">
       ${castChips}
       <button class="play-trame-cast-add" data-action="play-trame-cast" data-scenario="${sc.id}" data-node="${cur.id}" title="Caster cette étape">＋ Cast</button>
       ${hasCast ? `<button class="play-trame-toscene" data-action="play-trame-toscene" data-scenario="${sc.id}" data-node="${cur.id}" title="Ajouter ce cast à la scène en cours (combat)">Envoyer en scène</button>` : ""}
     </div>`;
     return `<div class="play-trame">${head}
-      <div class="play-trame-current" data-t="${cur.type}">
+      <div class="cluster play-trame-current" data-t="${cur.type}">
         <span class="play-trame-cur-glyph" aria-hidden="true">${g}</span>
         <span class="play-trame-cur-title">${esc(cur.title || "(sans titre)")}</span>
       </div>
       ${cur.body ? `<p class="play-trame-cur-body">${esc(cur.body)}</p>` : ""}
       ${cur.bang ? `<p class="play-trame-bang" data-arrow="${cur.arrow || ""}"><span class="play-trame-bang-arrow" aria-hidden="true">${cur.arrow === "hope" ? "↑" : cur.arrow === "fear" ? "↓" : "◆"}</span> ${esc(cur.bang)}</p>` : ""}
       ${castRow}
-      <div class="play-trame-exits">${exitBtns}</div>
+      <div class="cluster play-trame-exits">${exitBtns}</div>
       ${this._pressionHtml(sc)}
       ${this._frontsHtml(sc)}
     </div>`;
@@ -690,16 +690,16 @@ export const Play = {
   _trameBarHtml(run, sc) {
     if (!sc) return "";
     const esc = CardRenderer._esc;
-    const head = `<div class="play-trame-head">
+    const head = `<div class="cluster play-trame-head">
       <span class="play-trame-word">Trame</span>
       <span class="play-trame-title">${esc(sc.title)}</span>
-      <span class="play-trame-actions"><button class="btn-secondary btn-small" data-action="play-trame-open" data-scenario="${sc.id}" title="Ouvrir l'atelier de trame">Atelier</button></span>
+      <span class="cluster play-trame-actions"><button class="btn-secondary btn-small" data-action="play-trame-open" data-scenario="${sc.id}" title="Ouvrir l'atelier de trame">Atelier</button></span>
     </div>`;
     const curId = sc.runtime && sc.runtime.currentSceneId;
     const cur = curId && sc.sceneNodes.find((n) => n.id === curId);
     if (!cur) {
       const start = sc.sceneNodes.find((n) => n.type === "accroche") || sc.sceneNodes[0];
-      return `<div class="play-trame">${head}<div class="play-trame-body">${
+      return `<div class="play-trame">${head}<div class="cluster play-trame-body">${
         start
           ? `<button class="btn-primary btn-small" data-action="play-trame-goto" data-scenario="${sc.id}" data-node="${start.id}">▶ Commencer : ${esc(start.title || "(sans titre)")}</button>`
           : `<span class="play-trame-note">Trame sans étape.</span>`
@@ -722,12 +722,12 @@ export const Play = {
           })
           .join("")
       : `<span class="play-trame-note">Fin de la trame (aucune suite).</span>`;
-    const suite = `<details class="play-suite"><summary>La suite${exits.length ? ` <span class="play-suite-n">${exits.length}</span>` : ""}</summary><div class="play-trame-exits">${exitBtns}</div></details>`;
+    const suite = `<details class="play-suite"><summary>La suite${exits.length ? ` <span class="play-suite-n">${exits.length}</span>` : ""}</summary><div class="cluster play-trame-exits">${exitBtns}</div></details>`;
     const bang = cur.bang
       ? `<p class="play-trame-bang" data-arrow="${cur.arrow || ""}"><span class="play-trame-bang-arrow" aria-hidden="true">${cur.arrow === "hope" ? "↑" : cur.arrow === "fear" ? "↓" : "◆"}</span> ${esc(cur.bang)}</p>`
       : "";
     return `<div class="play-trame is-bar"${tintBar}>${head}
-      <div class="play-trame-bar">
+      <div class="cluster play-trame-bar">
         ${this._trailHtml(sc)}
         <span class="play-trame-cur-glyph" aria-hidden="true"${tintG}>${g}</span>
         <span class="play-trame-cur-title">${esc(cur.title || "(sans titre)")}</span>
@@ -761,7 +761,7 @@ export const Play = {
       son état ouvert survit aux ± grâce au patch-in-place). */
   _drawerHtml(word, sum, inner, open) {
     return `<details class="play-drawer"${open ? " open" : ""}>
-      <summary><span class="play-drawer-word">${word}</span><span class="play-drawer-sum">${sum}</span><span class="play-drawer-chev" aria-hidden="true">▸</span></summary>
+      <summary class="cluster"><span class="play-drawer-word">${word}</span><span class="play-drawer-sum">${sum}</span><span class="play-drawer-chev" aria-hidden="true">▸</span></summary>
       <div class="play-drawer-body">${inner}</div>
     </details>`;
   },
@@ -799,7 +799,7 @@ export const Play = {
       « Compris » pose le drapeau global (via Storage — prohibition n°2) → il ne
       revient plus. Proactif « une fois » : le tiroir Fronts s'ouvre tant que non vu. */
   _frontCoachHtml() {
-    return `<div class="play-front-coach">
+    return `<div class="cluster play-front-coach">
       <span class="play-front-coach-i" aria-hidden="true">ⓘ</span>
       <div class="play-front-coach-txt"><b>Un Front</b>, c'est un danger organisé — souvent une faction — qui avance vers une catastrophe, étape par étape. À vous de le ralentir.
         <button class="btn-secondary btn-small" data-action="play-front-coach-ok">Compris</button></div>
@@ -824,7 +824,7 @@ export const Play = {
         const portents = (d.grimPortents || []).map((p, i) => `<li class="play-portent${i < rev ? " revealed" : ""}">${i < rev ? esc(p) : "étape à venir"}</li>`).join("");
         const doom = total && rev >= total && d.impendingDoom ? `<div class="play-portent-doom">⚠ ${esc(d.impendingDoom)}</div>` : "";
         return `<div class="play-danger">
-          <div class="play-danger-head">
+          <div class="cluster play-danger-head">
             <span class="play-danger-impulse">${esc(d.impulse || "(danger)")}</span>
             <span class="play-portent-count">${rev}/${total}</span>
             <span class="cluster play-clock-btns">
@@ -832,16 +832,16 @@ export const Play = {
               <button class="play-clock-btn" data-action="play-trame-portent" data-scenario="${sc.id}" data-danger="${d.id}" data-delta="1"${rev >= total || !total ? " disabled" : ""} aria-label="Avancer d'une étape">＋</button>
             </span>
           </div>
-          <ol class="play-portents">${portents}</ol>
+          <ol class="stack play-portents">${portents}</ol>
           ${doom}
         </div>`;
       }).join("");
       return `<div class="play-front">
-        <div class="play-front-head"><span class="play-front-dot" aria-hidden="true"${fcol ? ` style="background:${esc(fcol)}"` : ""}></span> <span class="play-front-title">${esc(f.title || "(front)")}</span>${fn ? `<span class="play-front-faction">${esc(fn)}</span>` : ""}</div>
+        <div class="cluster play-front-head"><span class="play-front-dot" aria-hidden="true"${fcol ? ` style="background:${esc(fcol)}"` : ""}></span> <span class="play-front-title">${esc(f.title || "(front)")}</span>${fn ? `<span class="play-front-faction">${esc(fn)}</span>` : ""}</div>
         ${dangers}
       </div>`;
     }).join("");
-    return `<div class="play-trame-fronts">${bare ? "" : '<span class="play-trame-word">Fronts</span>'}${rows}</div>`;
+    return `<div class="stack stack--tight play-trame-fronts">${bare ? "" : '<span class="play-trame-word">Fronts</span>'}${rows}</div>`;
   },
 
   /* ============================================================
@@ -885,9 +885,9 @@ export const Play = {
           .map((id) => (typeof PnjLookup !== "undefined" && PnjLookup.locate(id) ? PnjLookup.locate(id).name : ""))
           .filter(Boolean)
           .join(", ");
-        return `<div class="play-clue${revealed ? " revealed" : ""}">
+        return `<div class="cluster play-clue${revealed ? " revealed" : ""}">
           <button type="button" class="play-clue-check" data-action="play-clue-reveal" data-scenario="${sc.id}" data-clue="${c.id}" aria-pressed="${revealed}" title="${revealed ? "Marquer non révélé" : "Marquer révélé"}"><span aria-hidden="true">${revealed ? "✓" : "○"}</span></button>
-          <span class="play-clue-body">
+          <span class="stack play-clue-body">
             <span class="play-clue-fact"><span class="play-clue-mark" aria-hidden="true">${glyph}</span> ${esc(factText)}${badges}</span>
             ${c.description ? `<span class="play-clue-desc">${esc(c.description)}</span>` : ""}
             ${via ? `<span class="play-clue-via">via ${esc(via)}</span>` : ""}
@@ -895,7 +895,7 @@ export const Play = {
         </div>`;
       })
       .join("");
-    return `<div class="play-clues">${rows}</div>`;
+    return `<div class="stack stack--tight play-clues">${rows}</div>`;
   },
 
   /** S5a — la PRESSION en cockpit : chaque horloge de la trame, remplissable en
@@ -914,7 +914,7 @@ export const Play = {
         let segs = "";
         for (let i = 0; i < c.segments; i++) segs += `<span class="play-seg${i < fill ? " on" : ""}"></span>`;
         return `<div class="play-clock t-${c.type}">
-          <div class="play-clock-top">
+          <div class="cluster play-clock-top">
             <span class="play-clock-title">${esc(c.title || "(horloge)")}<small>${TL[c.type] || esc(c.type)}</small></span>
             <span class="play-clock-count">${fill}/${c.segments}</span>
             <span class="cluster play-clock-btns">
@@ -922,11 +922,11 @@ export const Play = {
               <button class="play-clock-btn" data-action="play-trame-clock" data-scenario="${sc.id}" data-clock="${c.id}" data-delta="1"${fill >= c.segments ? " disabled" : ""} aria-label="Monter l'horloge">＋</button>
             </span>
           </div>
-          <div class="play-segs">${segs}</div>
+          <div class="cluster play-segs">${segs}</div>
         </div>`;
       })
       .join("");
-    return `<div class="play-trame-pression">${bare ? "" : '<span class="play-trame-word">Horloges</span>'}${rows}</div>`;
+    return `<div class="stack stack--tight play-trame-pression">${bare ? "" : '<span class="play-trame-word">Horloges</span>'}${rows}</div>`;
   },
 
   /** Abonnement live à ScenarioStore : quand Jouer est visible et qu'une trame
@@ -1053,14 +1053,14 @@ export const Play = {
     const camp = parent && parent.kind === "campaign" ? `❖ ${esc(parent.name)}` : "◆ hors campagne";
     const cells = this._cockpitCells(run, state);
     return `<div class="play-cockpit-head">
-      <div class="pch-line">
+      <div class="cluster pch-line">
         <span class="pch-state"><span class="pch-dot" aria-hidden="true"></span><span class="pch-glyph" aria-hidden="true">${glyph}</span>${name}</span>
         <span class="pch-run">
           <span class="pch-idline"><button class="pch-name" data-action="play-focus" data-dossier="${run.id}" title="Ouvrir « ${esc(run.name)} » dans la bibliothèque">${esc(run.name)}</button><span class="pch-camp">${camp}</span></span>
           <span class="pch-tools"><button class="btn-secondary btn-small" data-action="play-notes" data-dossier="${run.id}" title="Ouvrir le carnet de ce run">✎ Notes</button>${resumeBtn}</span>
         </span>
       </div>
-      ${cells ? `<div class="pch-cells">${cells}</div>` : ""}
+      ${cells ? `<div class="cluster pch-cells">${cells}</div>` : ""}
     </div>`;
   },
   /** Cellules d'horloge de tête (gros chiffres), par partie active. */
@@ -1089,7 +1089,7 @@ export const Play = {
       bascule la partie affichée EN PLEIN (`play-cockpit-tab`) ; l'onglet actif
       est surligné. « En jeu » montre le moteur live (Combat ou Matrice). */
   _cockpitJalonsHtml(run, tab) {
-    return `<div class="play-cockpit-jalons" role="tablist">${[["prep", "Préparation"], ["enjeu", "En jeu"], ["close", "Clôture"]]
+    return `<div class="cluster play-cockpit-jalons" role="tablist">${[["prep", "Préparation"], ["enjeu", "En jeu"], ["close", "Clôture"]]
       .map(([id, label]) => `<button class="play-jalon${id === tab ? " is-now" : ""}" role="tab" aria-selected="${id === tab}" data-action="play-cockpit-tab" data-dossier="${run.id}" data-tab="${id}">${label}</button>`)
       .join("")}</div>`;
   },
@@ -1100,7 +1100,7 @@ export const Play = {
       donnée, aucune logique — le contenu reste projeté/délégué par l'appelant. */
   _momentHtml(when, hint, inner) {
     return `<div class="play-moment">
-      <div class="play-moment-label"><span class="play-moment-when">${when}</span><span class="play-moment-hint">${hint}</span></div>
+      <div class="cluster play-moment-label"><span class="play-moment-when">${when}</span><span class="play-moment-hint">${hint}</span></div>
       ${inner}
     </div>`;
   },
@@ -1118,8 +1118,8 @@ export const Play = {
       .join("");
     return `<div class="play-cloture">
       <div class="play-cloture-head">Ce que ce run a laissé</div>
-      <div class="play-cloture-facets">${facets}</div>
-      <div class="play-cloture-cta">
+      <div class="cluster play-cloture-facets">${facets}</div>
+      <div class="cluster play-cloture-cta">
         <button class="btn-secondary btn-small play-cloture-btn" data-action="play-debrief" data-dossier="${runId}" title="Débrief : ce que ce run a laissé (paie, karma, réputation, retombées)">✓ Faire le débrief</button>
         <span class="play-cloture-note">Versé au carnet et au registre.</span>
       </div>
@@ -1146,13 +1146,13 @@ export const Play = {
         if (s.turn > 0) bits.push(`<span class="play-motor-clock">Tour ${s.turn}</span>`);
         if (s.activeIC > 0)
           bits.push(`<span class="play-motor-clock">${s.activeIC} CI</span>`);
-        return `<button class="play-motor-line play-mx-row" data-action="play-matrix" title="Ouvrir le tiroir Matrice (Surveillance, CI, marks)">
+        return `<button class="cluster play-motor-line play-mx-row" data-action="play-matrix" title="Ouvrir le tiroir Matrice (Surveillance, CI, marks)">
           <span class="play-motor-name">⚡ ${CardRenderer._esc(s.name)}</span>
           <span class="play-motor-bits">${bits.join("")}</span>
         </button>`;
       })
       .join("");
-    return `<div class="play-matrix">${lines}</div>`;
+    return `<div class="stack play-matrix">${lines}</div>`;
   },
 
   /** Topos condensé (lu de `RunGen.forDossier`, jamais recopié) : l'essentiel
@@ -1184,7 +1184,7 @@ export const Play = {
       ? `<div class="play-topos-pay">${esc(t.payment)}${t.difficulte ? ` · ${esc(t.difficulte)}` : ""}</div>`
       : "";
     return `<div class="play-topos play-briefing">
-      <div class="play-brief-head">
+      <div class="stack play-brief-head">
         <span class="play-brief-label">◈ Briefing</span>
         ${obj}
         ${meta}
@@ -1223,7 +1223,7 @@ export const Play = {
             : `<button class="btn-secondary btn-small" data-action="play-plan" data-id="${t.id}" title="Générer une ambiance du lieu (IA)">✨ Ambiance</button>`,
         );
     }
-    return `<div class="play-prep-actions">${btns.join("")}</div>`;
+    return `<div class="cluster play-prep-actions">${btns.join("")}</div>`;
   },
 
   /** Le run a-t-il déjà une trame liée ? (`ScenarioStore.byRun` sur le
@@ -1350,7 +1350,7 @@ export const Play = {
     const cls = inherited ? "play-cast-faction is-inherited" : "play-cast-faction";
     return `<details class="${cls}">
       <summary class="play-cast-fsum">${dot}<span class="play-cast-fname">${name}</span><span class="play-cast-fcount">${members.length}</span>${inh}<span class="play-cast-fchev" aria-hidden="true">▾</span></summary>
-      <div class="play-cast-fmembers">${body || `<span class="play-cast-fempty">Faction vide</span>`}</div>
+      <div class="cluster play-cast-fmembers">${body || `<span class="play-cast-fempty">Faction vide</span>`}</div>
     </details>`;
   },
 
@@ -1380,7 +1380,7 @@ export const Play = {
             ? `Rouvrir la rencontre de « ${name} »`
             : `Lancer la scène « ${name} »`;
         return `<div class="play-scene-row${live ? " is-live" : ""}">
-          <div class="play-scene-head">
+          <div class="cluster play-scene-head">
             <span class="play-scene-icon" aria-hidden="true">▷</span>
             <span class="play-scene-name">${name}</span>
             <button class="btn-icon-tiny" data-action="play-scene-map" data-id="${s.id}" title="Plan de lieu de « ${name} »">▦</button>
@@ -1428,7 +1428,7 @@ export const Play = {
     return `<div class="play-onboard">
       <p class="play-onboard-lead">Votre première séance commence par un run.</p>
       <p>Créons-le — <strong>nommez-le</strong>, et tout ce que vous préparez (PNJ, contacts, notes) s'y rangera. C'est la maille <strong>Campagne › Run › Scène</strong> autour de laquelle tourne la table.</p>
-      <div class="play-onboard-cta">
+      <div class="cluster play-onboard-cta">
         <button class="btn-primary btn-small" data-action="play-first-run">＋ Créer mon premier run</button>
       </div>
       <p class="play-onboard-alt">Vous préférez partir d'une amorce ? <button class="linklike" data-action="show-panel" data-panel="run">Générer un topos</button> · <button class="linklike" data-action="show-panel" data-panel="shadows">Ouvrir la bibliothèque</button></p>

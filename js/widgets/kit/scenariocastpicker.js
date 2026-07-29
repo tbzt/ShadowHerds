@@ -131,7 +131,7 @@ export const ScenarioCastPicker = {
     const panel = document.getElementById("scenario-cast-picker-panel");
     if (!panel) return;
     panel.innerHTML = `
-      <div class="group-picker-head">
+      <div class="cluster group-picker-head">
         <span class="group-picker-title">Caster cette étape</span>
         <button class="btn-icon-tiny" data-action="close" aria-label="Fermer">✕</button>
       </div>
@@ -172,7 +172,7 @@ export const ScenarioCastPicker = {
         if (matches && !isCast && count >= this._MAX) continue;
         seen.add(e.id);
         if (matches && !isCast) count++;
-        rows += `<label class="group-picker-row">
+        rows += `<label class="cluster group-picker-row">
           <input type="checkbox" ${isCast ? "checked" : ""} data-cid="${this._esc(e.id)}">
           <span>${this._esc(e.name || "Sans nom")}</span><span class="convoke-type">${type}</span>
         </label>`;

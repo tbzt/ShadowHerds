@@ -151,7 +151,7 @@ export const FactionPicker = {
       .map((f) => {
         const checked = mine.has(f.id) ? "checked" : "";
         const dot = `<span class="faction-dot"${f.color ? ` style="background:${CardRenderer._esc(f.color)}"` : ""}></span>`;
-        return `<label class="group-picker-row">
+        return `<label class="cluster group-picker-row">
           <input type="checkbox" ${checked} data-faction="${CardRenderer._esc(f.id)}">
           ${dot}<span>${CardRenderer._esc(f.name)}</span>
         </label>`;
@@ -159,7 +159,7 @@ export const FactionPicker = {
       .join("");
 
     panel.innerHTML = `
-      <div class="group-picker-head">
+      <div class="cluster group-picker-head">
         <span class="group-picker-title">Factions</span>
         <button class="btn-icon-tiny" data-action="close" aria-label="Fermer">✕</button>
       </div>

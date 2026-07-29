@@ -375,18 +375,18 @@ export const CardRenderer = {
     if (unlinked.length) {
       const teamItem =
         typeof Characters !== "undefined" && Characters.activeTeamMembers().length
-          ? `<button type="button" class="contact-pjlink-item contact-pjlink-team" data-action="contact-link-team" data-id="${this._esc(c.id)}">${this._esc(ContactsBook.teamLinkLabel())}</button>`
+          ? `<button type="button" class="cluster contact-pjlink-item contact-pjlink-team" data-action="contact-link-team" data-id="${this._esc(c.id)}">${this._esc(ContactsBook.teamLinkLabel())}</button>`
           : "";
       const items = unlinked
         .map(
           (p) =>
-            `<button type="button" class="contact-pjlink-item" data-action="contact-link-pj"
+            `<button type="button" class="cluster contact-pjlink-item" data-action="contact-link-pj"
               data-id="${this._esc(c.id)}" data-pj-id="${this._esc(p.id)}">${this._pcAvatar(p)}${this._esc(p.name)}</button>`,
         )
         .join("");
       addControl = `<span class="contact-pjlink-wrap">
         <button type="button" class="tag contact-pjlink-add" data-action="contact-toggle-pjlink-menu">＋ Lier un PJ</button>
-        <div class="contact-pjlink-menu" hidden>${teamItem}${items}</div>
+        <div class="stack contact-pjlink-menu" hidden>${teamItem}${items}</div>
       </span>`;
     } else if (!linked.length) {
       addControl = `<span class="pjlink-empty">Aucun PJ — créez-en un dans Équipe.</span>`;

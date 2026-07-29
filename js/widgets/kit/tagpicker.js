@@ -141,7 +141,7 @@ export const TagPicker = {
     const rows = Tags.vocabulary()
       .map((t) => {
         const checked = mine.has(t.toLowerCase()) ? "checked" : "";
-        return `<label class="group-picker-row">
+        return `<label class="cluster group-picker-row">
           <input type="checkbox" ${checked} data-tag="${CardRenderer._esc(t)}">
           <span>${CardRenderer._esc(t)}</span>
         </label>`;
@@ -149,7 +149,7 @@ export const TagPicker = {
       .join("");
 
     panel.innerHTML = `
-      <div class="group-picker-head">
+      <div class="cluster group-picker-head">
         <span class="group-picker-title">Tags</span>
         <button class="btn-icon-tiny" data-action="close" aria-label="Fermer">✕</button>
       </div>

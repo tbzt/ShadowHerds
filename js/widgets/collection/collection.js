@@ -350,7 +350,7 @@ export const Collection = {
         const pinned = typeof UI !== "undefined" && UI.isPinned(id);
         const pin = document.createElement("button");
         pin.type = "button";
-        pin.className = "group-picker-trigger" + (pinned ? " has-groups" : "");
+        pin.className = "cluster group-picker-trigger" + (pinned ? " has-groups" : "");
         pin.title = pinned ? "Retirer des favoris" : "Épingler aux favoris";
         pin.dataset.collection = this.key;
         pin.dataset.action = "toggle-pin";
