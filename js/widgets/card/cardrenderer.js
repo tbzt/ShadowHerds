@@ -2418,7 +2418,7 @@ export const CardRenderer = {
       <div class="journal-input-row">
         <input type="text" class="journal-input" data-journal-input data-mentions data-id="${pnj.id}"
           maxlength="200" placeholder="Une note, datée…" aria-label="Nouvelle note">
-        <button class="journal-add-btn" data-action="journal-add" data-id="${pnj.id}">Ajouter</button>
+        <button class="btn-secondary btn-small journal-add-btn" data-action="journal-add" data-id="${pnj.id}">Ajouter</button>
       </div>`;
   },
 

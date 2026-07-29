@@ -1173,25 +1173,13 @@
   outline: none;
   border-color: var(--accent);
 }
+/* Composé avec .btn-secondary.btn-small (D4) : ne reste que la contrainte de
+   layout propre à la rangée .journal-input-row (jamais étiré/rétréci à côté
+   du champ). Le reste (padding/couleurs/hover…) dupliquait le canon à
+   quelques px près, sans raison documentée — écart assumé, même décision
+   que .sidebar-collapse-btn. */
 .journal-add-btn {
   flex: 0 0 auto;
-  padding: 0.35rem var(--sp-3);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-dim);
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--fs-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  transition:
-    border-color var(--dur-base),
-    color var(--dur-base);
-}
-.journal-add-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 
 /* ---- Module Suivi (PJ-c) — Progression ----
