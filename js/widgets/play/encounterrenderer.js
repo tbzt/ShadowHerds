@@ -1642,9 +1642,33 @@ export const EncounterRenderer = {
     // pas d'un pixel : tap = bascule directe.
     const interrupts = !pnj._adhoc && mod && mod.interruptActions ? mod.interruptActions(pnj) : [];
     const plusieurs = interrupts.length > 1;
-    const fdBtn = fd
-      ? `<button class="react-btn react-fulldef-btn${fdActive ? " is-on" : ""}" data-action="${plusieurs ? "react-interrupt-toggle" : "full-defense"}" data-id="${pnj.id}"${fdActive ? ' aria-pressed="true"' : ""} title="${plusieurs ? `Actions d'interruption (${interrupts.length}) — se paient en score d'initiative` : `${Utils.escHtml(fd.label)} (+${fd.bonus} déf · ${Utils.escHtml(fd.note || "")})`}" aria-label="${plusieurs ? `Actions d'interruption — ${name}` : `${Utils.escHtml(fd.label)} — ${name}`}"><span class="react-glyph" aria-hidden="true">⛨</span></button>`
-      : "";
+    // A2 — LA PORTE D'ARBITRAGE. Le livre INTERDIT une interruption dont le
+    // coût n'est pas strictement couvert par le score de la passe (p.170), et
+    // `_porteInterruption` la refuse déjà — mais elle la refusait APRÈS le tap,
+    // par un toast. Résultat mesuré : à partir de la 2ᵉ passe (chaque passe
+    // retranche 10, la moins chère des neuf en coûte 5), le ⛨ ouvrait une
+    // feuille de NEUF puces toutes désactivées. C'est exactement ce que la
+    // règle de `_maybePreRoll` interdit : « le panneau s'ouvre quand il y a un
+    // ARBITRAGE, jamais pour faire signer un reçu ».
+    //
+    // Le contrôle se TERNIT et dit pourquoi — il ne disparaît pas : le MJ doit
+    // voir ce qu'il ne peut pas payer autant que le reste (« informer, jamais
+    // décider »), et c'est déjà le traitement du ⛉/⛊ sans réserve, deux
+    // boutons plus loin. La porte lit `Encounter.interruptOptions`, qui est le
+    // point unique — même prédicat que l'exécution, pas une copie.
+    const interruptOpts = plusieurs ? Encounter.interruptOptions(pnj.id) : [];
+    const ouvrable = interruptOpts.some((o) => o.abordable);
+    const fdOff = plusieurs && !ouvrable;
+    const raisonOff = !fdOff
+      ? ""
+      : interruptOpts[0] && interruptOpts[0].surpris
+        ? "Surpris : aucune interruption avant sa première phase d'action (p.169)"
+        : `${interruptOpts[0] ? interruptOpts[0].score : 0} en initiative — la moins chère des ${interruptOpts.length} en coûte ${Math.min(...interruptOpts.map((o) => o.initCost))}`;
+    const fdBtn = !fd
+      ? ""
+      : fdOff
+        ? `<span class="react-btn is-off" title="${Utils.escHtml(`Aucune interruption payable — ${raisonOff}`)}" aria-label="${Utils.escHtml(`Actions d'interruption — ${name} : aucune payable`)}"><span class="react-glyph" aria-hidden="true">⛨</span></span>`
+        : `<button class="react-btn react-fulldef-btn${fdActive ? " is-on" : ""}" data-action="${plusieurs ? "react-interrupt-toggle" : "full-defense"}" data-id="${pnj.id}"${fdActive ? ' aria-pressed="true"' : ""} title="${plusieurs ? `Actions d'interruption (${interrupts.length}) — se paient en score d'initiative` : `${Utils.escHtml(fd.label)} (+${fd.bonus} déf · ${Utils.escHtml(fd.note || "")})`}" aria-label="${plusieurs ? `Actions d'interruption — ${name}` : `${Utils.escHtml(fd.label)} — ${name}`}"><span class="react-glyph" aria-hidden="true">⛨</span></button>`;
     // Encaissement : uniquement si l'édition résout les dommages par un JET
     // (SR5/SR6). Anarchy compare la VD à un seuil (p.68) → pas de jet, bouton omis.
     const soak = pnj.damageResist || 0;
@@ -1665,7 +1689,9 @@ export const EncounterRenderer = {
       ? `<button class="react-expand-btn" data-action="react-expand" data-id="${pnj.id}" aria-label="Voir la fiche de ${name}" title="Voir la fiche (feuilleter)"><span class="react-peek-glyph" aria-hidden="true">⛶</span></button>`
       : "";
     const chipsBody = damageBtn ? this._reactDamageChips(pnj) : "";
-    const interruptBody = plusieurs ? this._reactInterruptChips(pnj) : "";
+    // A2 — porte fermée : pas de feuille du tout. Neuf puces désactivées dans
+    // le DOM d'une ligne qu'aucun geste n'ouvre, c'est du poids sans lecteur.
+    const interruptBody = plusieurs && ouvrable ? this._reactInterruptChips(pnj) : "";
     // États de combat (E1) — MÊMES pièces que la zone Combat de la carte
     // (CardRenderer.statusParts), montées ici parce que la séquence du MJ ne
     // s'arrête pas aux dégâts : « le PJ lance sa Boule de feu, le PNJ défend,
