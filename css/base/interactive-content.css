@@ -226,21 +226,48 @@
    est une règle d'AUTEUR et le battrait — même piège que .react-damage-chips,
    documenté là-bas après le bug. */
 .status-sheet[hidden],
-.status-rest[hidden] {
-  display: none;
-}
-.status-rest {
-  display: contents;
-}
-/* La feuille d'ACTIONS (lot F1) hérite de la feuille d'états — même composant,
-   même geste, rien de neuf à apprendre. Elle vit dans la rangée de jetons du
-   combattant actif, d'où la largeur pleine qui la fait passer SOUS les groupes
-   de jetons plutôt qu'à leur suite. */
+.status-rest[hidden],
 .action-rest[hidden] {
   display: none;
 }
+/* ── A3 : « tous… » ne se déplie plus EN PLACE ───────────────────────────────
+   MESURÉ (SR6, Console 520px, fenêtre utile 614px) : la feuille d'actions
+   dépliée faisait 1371px, soit 2,2 fenêtres. Le MJ perdait le haut de la
+   feuille — donc les 8 accès direct, donc précisément ce qu'il cherchait dans
+   la grande majorité des cas. Un déplié qui pousse hors du champ ce qu'il
+   complète n'est pas une divulgation progressive, c'est un remplacement
+   déguisé.
+
+   Le critère retenu n'est pas un nombre de puces (il aurait fallu le négocier
+   par édition) mais une géométrie : **une feuille ne pousse jamais son propre
+   déclencheur hors du champ**. D'où le plafond + défilement interne, recette
+   déjà tranchée pour `#round-panel-body` sur exactement ce problème.
+
+   `min(50vh, 420px)` : à 614px de fenêtre il reste 194px, de quoi garder à
+   l'écran le bandeau de mode, la rangée de jetons et les accès direct —
+   c'est-à-dire tout le contexte de la décision.
+
+   ⚠ Le `display: contents` d'origine DEVAIT sauter : un conteneur transparent
+   n'a ni hauteur ni défilement. Ces deux rangées redeviennent donc des boîtes,
+   d'où le `flex-basis: 100%` (elles prennent leur propre rang, comme la
+   feuille qui les porte) et le `flex-wrap` qu'elles empruntaient jusqu'ici au
+   parent. Les rubriques de `.action-domain` continuent de fonctionner : elles
+   déclarent déjà leur pleine largeur pour elles-mêmes. */
+.status-rest,
 .action-rest {
-  display: contents;
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  max-height: min(50vh, 420px);
+  overflow-y: auto;
+  /* Un filet SÉPARATEUR, pas une promesse de défilement : il marque la
+     frontière entre les accès direct et le reste du catalogue, et il la marque
+     que la liste défile ou non (mesuré : 121px sur la carte SR6, 406px et
+     défilante à 375px de large — le plafond ne mord que quand il le faut). */
+  border-top: 1px solid var(--border);
+  padding-top: var(--sp-1);
 }
 /* Coût non payable avec ce qui reste : la puce se TERNIT, elle ne se désactive
    pas. `_consumeAction` débite au-delà du budget et le dit — le MJ a le droit
@@ -325,10 +352,11 @@
   cursor: not-allowed;
   text-decoration: line-through;
 }
-/* Rubriques du catalogue (lot F1b) — combat, magie, Matrice. `.action-rest`
-   est en `display: contents`, donc chaque rubrique doit reprendre elle-même la
-   pleine largeur pour former une bande, sinon les trois se collent bout à bout
-   et le rangement ne se voit pas. */
+/* Rubriques du catalogue (lot F1b) — combat, magie, Matrice. Chaque rubrique
+   reprend elle-même la pleine largeur pour former une bande, sinon les trois
+   se collent bout à bout et le rangement ne se voit pas. (Cette déclaration
+   était déjà nécessaire quand `.action-rest` était en `display: contents` ;
+   elle l'est toujours depuis qu'A3 en a fait une boîte à défilement.) */
 .action-domain {
   flex-basis: 100%;
   display: flex;

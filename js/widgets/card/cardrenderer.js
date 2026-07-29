@@ -2113,16 +2113,17 @@ export const CardRenderer = {
       l'habit dépend de la surface : `.tag` parmi les tags de la carte,
       `.react-btn` parmi les gestes du rack. Le `.toggle-glyph` (＋ fermé, −
       ouvert, posé par le CSS d'après `aria-expanded`) est commun aux deux.
+      `quickOnly` — un seul étage, décision A3 n°5 (cf. `_statusSheet`).
       Renvoie `null` — pas des chaînes vides — quand l'édition n'a pas d'états
       ou que le PNJ n'a pas de fiche : l'appelant n'a alors AUCUN rang à poser,
       et c'est une question différente de « la ligne est vide ». */
-  statusParts(pnj, deps = CardRenderer.liveDeps(), { plusClass = "tag status-add" } = {}) {
+  statusParts(pnj, deps = CardRenderer.liveDeps(), { plusClass = "tag status-add", quickOnly = false } = {}) {
     if (!deps.Statuses || !pnj || pnj._adhoc) return null;
     if (!deps.Statuses.catalog(pnj).length) return null;
     return {
       chips: deps.Statuses.active(pnj).map((s) => this._statusTag(pnj, s, deps)).join(""),
-      plus: `<button type="button" class="${plusClass} toggle-glyph" data-action="status-sheet" data-id="${pnj.id}" aria-expanded="false" title="Poser un état" aria-label="Poser un état"></button>`,
-      sheet: this._statusSheet(pnj, deps),
+      plus: `<button type="button" class="${plusClass} toggle-glyph" data-action="status-sheet" data-id="${pnj.id}" aria-expanded="${Sheets.isOpen("status", pnj.id)}" title="Poser un état" aria-label="Poser un état"></button>`,
+      sheet: this._statusSheet(pnj, deps, quickOnly),
     };
   },
 
@@ -2150,8 +2151,17 @@ export const CardRenderer = {
       contrat et ne bouge JAMAIS : une cible qui se déplace entre deux
       ouvertures produit un mis-tap silencieux.
       Le bouton « tous » ne s'affiche pas s'il n'a rien de plus à montrer —
-      une affordance qui ouvre une liste identique est une promesse vide. */
-  _statusSheet(pnj, deps) {
+      une affordance qui ouvre une liste identique est une promesse vide.
+
+      A3 — `quickOnly` : le SECOND étage n'existe pas dans le rack Réagir. Une
+      posture, une densité (K8 n°1) : la console froide est un objet plat et
+      dense où le MJ tape en écoutant un joueur ; y déplier vingt états de plus
+      la transforme en pile de fiches, c'est-à-dire en objet chaud. Les vingt
+      restants sont à trois boutons de là — le ⛶ ouvre la carte, qui EST
+      l'objet fait pour un catalogue. Ils ne sont pas masqués en silence pour
+      autant : le rack le dit et dit où aller (même règle que les domaines
+      fermés de la feuille d'actions, qui s'annoncent au lieu de disparaître). */
+  _statusSheet(pnj, deps, quickOnly) {
     const cat = deps.Statuses.catalog(pnj);
     const rapides = cat.filter((s) => s.quick);
     const reste = cat.filter((s) => !s.quick);
@@ -2163,10 +2173,12 @@ export const CardRenderer = {
     // or on pose couramment deux états d'affilée (« Aveuglé puis À terre »).
     // La mémoire est portée par `Sheets`, une seule pour les quatre feuilles.
     const restOuvert = Sheets.isRestOpen("status", pnj.id);
-    const tous = reste.length
-      ? `<button type="button" class="tag status-more" data-action="status-more" data-id="${pnj.id}" aria-expanded="${restOuvert}">tous…</button>
-         <span class="status-rest"${restOuvert ? "" : " hidden"}>${reste.map(puce).join("")}</span>`
-      : "";
+    const tous = !reste.length
+      ? ""
+      : quickOnly
+        ? `<span class="action-notice">${reste.length} autre${reste.length > 1 ? "s" : ""} état${reste.length > 1 ? "s" : ""} — ouvrez la fiche ⛶</span>`
+        : `<button type="button" class="tag status-more" data-action="status-more" data-id="${pnj.id}" aria-expanded="${restOuvert}">tous…</button>
+         <span class="status-rest"${restOuvert ? "" : " hidden"}>${reste.map(puce).join("")}</span>`;
     return `<div class="status-sheet" data-status-sheet="${pnj.id}"${Sheets.hiddenAttr("status", pnj.id)}>${rapides.map(puce).join("")}${tous}</div>`;
   },
 
