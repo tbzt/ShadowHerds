@@ -695,6 +695,23 @@ document.addEventListener("DOMContentLoaded", () => {
   Tour.init({ navigate: (p) => App.showPanel(p), version: App.VERSION });
   Mentions.wireAuto();
 
+  // D6 : un `[data-action]` porté par un non-bouton (div/span) ne reçoit ni
+  // focus ni Entrée/Espace — la délégation `click` juste en dessous ne le voit
+  // jamais au clavier. Mesuré : 5 sites dans ce cas sur 96 `[data-action]`,
+  // dont les 4 `.edition-card` de l'écran d'accueil — qui n'offrait AUCUN
+  // élément focusable, donc aucune entrée clavier dans l'app. Ces 5 portent
+  // maintenant `role="button" tabindex="0"` ; ce relais convertit Entrée/
+  // Espace en clic. Borné à `role="button"` sur un élément NON nativement
+  // focusable : un vrai `<button>` déclenche déjà `click` tout seul, le
+  // relayer le doublerait.
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const el = e.target.closest('[data-action][role="button"]');
+    if (!el || /^(BUTTON|A|INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) return;
+    e.preventDefault();
+    el.click();
+  });
+
   document.addEventListener("click", (e) => {
     const actionEl = e.target.closest("[data-action]");
     if (!actionEl) return;
