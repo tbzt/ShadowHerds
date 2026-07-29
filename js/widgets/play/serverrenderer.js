@@ -246,18 +246,20 @@ export const ServerRenderer = {
         ];
 
     card.innerHTML = `
-      <div class="server-card-header">
-        <span class="server-name" title="${esc(srv.profile || "")}">${esc(srv.name)}</span>
-        ${entryMode ? `<span class="server-badge" title="Point d'entrée : ${esc(entryMode.label)}">${esc(entryMode.glyph)}</span>` : ""}
-        ${srv.isTarget ? `<span class="server-badge" title="Nœud-cible (${esc(Matrix.use(srv.edition).topologyTargetLabel())})">✱</span>` : ""}
-        <span class="server-badge">Indice ${srv.indice}</span>
-      </div>
-      <div class="server-card-body">
-        ${body}
-        <textarea class="server-notes" placeholder="Notes…"
-          data-action="edit-note" data-id="${srv.id}">${esc(srv.notes || "")}</textarea>
-      </div>
-      ${CardFooter.render(footerActs, { footerClass: "server-card-footer" })}`;
+      <div class="server-card-frame">
+        <div class="server-card-header">
+          <span class="server-name" title="${esc(srv.profile || "")}">${esc(srv.name)}</span>
+          ${entryMode ? `<span class="server-badge" title="Point d'entrée : ${esc(entryMode.label)}">${esc(entryMode.glyph)}</span>` : ""}
+          ${srv.isTarget ? `<span class="server-badge" title="Nœud-cible (${esc(Matrix.use(srv.edition).topologyTargetLabel())})">✱</span>` : ""}
+          <span class="server-badge">Indice ${srv.indice}</span>
+        </div>
+        <div class="server-card-body">
+          ${body}
+          <textarea class="server-notes" placeholder="Notes…"
+            data-action="edit-note" data-id="${srv.id}">${esc(srv.notes || "")}</textarea>
+        </div>
+        ${CardFooter.render(footerActs, { footerClass: "server-card-footer" })}
+      </div>`;
     return card;
   },
 

@@ -18,62 +18,64 @@ export const RunRenderer = {
          </div>`
       : "";
     el.innerHTML = `
-      <div class="run-card-header">
-        <div class="run-type">${CardRenderer._esc(r.type)}</div>
-        ${this._stateBadge(r)}
-        <span class="pnj-rank-badge">${r.difficulte}</span>
-      </div>
-      <div class="run-card-body">
-        <div class="run-field">
-          <span class="run-field-label">Client</span>
-          <span class="run-field-val">${CardRenderer._esc(r.client)}</span>
+      <div class="run-card-frame">
+        <div class="run-card-header">
+          <div class="run-type">${CardRenderer._esc(r.type)}</div>
+          ${this._stateBadge(r)}
+          <span class="pnj-rank-badge">${r.difficulte}</span>
         </div>
-        <div class="run-field">
-          <span class="run-field-label">Lieu</span>
-          <span class="run-field-val">${CardRenderer._esc(r.lieu)}</span>
+        <div class="run-card-body">
+          <div class="run-field">
+            <span class="run-field-label">Client</span>
+            <span class="run-field-val">${CardRenderer._esc(r.client)}</span>
+          </div>
+          <div class="run-field">
+            <span class="run-field-label">Lieu</span>
+            <span class="run-field-val">${CardRenderer._esc(r.lieu)}</span>
+          </div>
+          <div class="run-field">
+            <span class="run-field-label">Complication</span>
+            <span class="run-field-val run-complication">${CardRenderer._esc(r.complication)}</span>
+          </div>
+          ${obj2}
+          ${
+            r.memory
+              ? `<div class="run-field run-memory">
+                   <span class="run-field-label">⟲ Mémoire</span>
+                   <span class="run-field-val">${CardRenderer._esc(r.memory)}</span>
+                 </div>`
+              : ""
+          }
+          ${
+            r.contactHook
+              ? `<div class="run-field run-memory">
+                   <span class="run-field-label">☏ Contact</span>
+                   <span class="run-field-val">${CardRenderer._esc(r.contactHook)}</span>
+                 </div>`
+              : ""
+          }
+          ${
+            r.reputationNote
+              ? `<div class="run-field run-memory">
+                   <span class="run-field-label">✶ Réputation</span>
+                   <span class="run-field-val">${CardRenderer._esc(r.reputationNote)}</span>
+                 </div>`
+              : ""
+          }
+          ${
+            r.beatsEcho
+              ? `<div class="run-field run-memory">
+                   <span class="run-field-label">◆ Écho</span>
+                   <span class="run-field-val">${CardRenderer._esc(r.beatsEcho)}</span>
+                 </div>`
+              : ""
+          }
+          <div class="stats-row" style="margin-top:0.5rem;">
+            <span class="stat-pill accent">Paiement <strong>${r.payment}</strong></span>
+          </div>
         </div>
-        <div class="run-field">
-          <span class="run-field-label">Complication</span>
-          <span class="run-field-val run-complication">${CardRenderer._esc(r.complication)}</span>
-        </div>
-        ${obj2}
-        ${
-          r.memory
-            ? `<div class="run-field run-memory">
-                 <span class="run-field-label">⟲ Mémoire</span>
-                 <span class="run-field-val">${CardRenderer._esc(r.memory)}</span>
-               </div>`
-            : ""
-        }
-        ${
-          r.contactHook
-            ? `<div class="run-field run-memory">
-                 <span class="run-field-label">☏ Contact</span>
-                 <span class="run-field-val">${CardRenderer._esc(r.contactHook)}</span>
-               </div>`
-            : ""
-        }
-        ${
-          r.reputationNote
-            ? `<div class="run-field run-memory">
-                 <span class="run-field-label">✶ Réputation</span>
-                 <span class="run-field-val">${CardRenderer._esc(r.reputationNote)}</span>
-               </div>`
-            : ""
-        }
-        ${
-          r.beatsEcho
-            ? `<div class="run-field run-memory">
-                 <span class="run-field-label">◆ Écho</span>
-                 <span class="run-field-val">${CardRenderer._esc(r.beatsEcho)}</span>
-               </div>`
-            : ""
-        }
-        <div class="stats-row" style="margin-top:0.5rem;">
-          <span class="stat-pill accent">Paiement <strong>${r.payment}</strong></span>
-        </div>
-      </div>
-      ${this._footerHtml(r)}`;
+        ${this._footerHtml(r)}
+      </div>`;
     return el;
   },
 

@@ -40,33 +40,40 @@
 }
 
 /* ---- Carte serveur ---- */
-/* D6 (réconciliation) : 3 écarts réels avec la coquille partagée
-   .pnj-card-frame corrigés — --bg-card (chrome) était le mauvais token,
-   --bg-raised est LITTÉRALEMENT documenté « surface élevée (cartes) » ;
-   clip-path posé (no-op sur SR5/Anarchy/A2, biseau SR6 comme les autres
-   cartes) ; glow au survol ajouté (même recette que .pnj-card:hover
-   .pnj-card-frame). Le `::before` reste un bloc en flux (pas un overlay
-   absolu) : mécanisme différent de .pnj-card-frame::before mais même rendu
-   visuel, pas de raison de le changer sans un vrai motif. */
+/* D6 (restructuration DOM, 2026-07-29) : coquille à deux couches, même
+   séparation que .pnj-card/.pnj-card-frame — .server-card ne garde que le
+   gabarit (positionnement dans .cards-zone, aucun chrome visuel),
+   .server-card-frame porte tout le rendu visible (fond/bordure/clip-path/
+   glow), même recette que .pnj-card-frame. `width: 340px` (pas `100%` comme
+   .pnj-card) reste un choix assumé : .cards-zone est en colonnes CSS
+   (column-count), pas en grid — une carte plus étroite que son support est
+   la mise en page voulue, pas un oubli d'harmonisation. Le `::before` reste
+   un bloc en flux sur le frame (pas un overlay absolu comme
+   .pnj-card-frame::before) : mécanisme différent, même rendu visuel,
+   toujours pas de raison de le changer sans un vrai motif (cf. réconciliation
+   D6 précédente, commentaire conservé pour mémoire dans l'historique git). */
 .server-card {
+  position: relative;
+  width: 340px;
+  max-width: 100%;
+  animation: cardIn 0.3s ease;
+  break-inside: avoid; /* CH-V4 : masonry .cards-zone */
+  -webkit-column-break-inside: avoid;
+  margin-bottom: var(--sp-4);
+}
+.server-card-frame {
   position: relative;
   background: var(--bg-raised);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   clip-path: var(--card-clip);
-  width: 340px;
-  max-width: 100%;
   overflow: hidden;
-  animation: cardIn 0.3s ease;
-  break-inside: avoid; /* CH-V4 : masonry .cards-zone */
-  -webkit-column-break-inside: avoid;
-  margin-bottom: var(--sp-4);
   transition: filter var(--dur-base);
 }
-.server-card:hover {
+.server-card-frame:hover {
   filter: drop-shadow(var(--elev-2)) drop-shadow(0 0 7px var(--glow));
 }
-.server-card::before {
+.server-card-frame::before {
   content: "";
   display: block;
   height: 2px;
