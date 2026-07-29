@@ -11,6 +11,7 @@ import { Actor } from "../../rules/actor.js";
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Dice } from "../../rules/dice.js";
 import { DiceLog } from "./dicelog.js";
+import { FocusTrap } from "../kit/focustrap.js";
 import { Statuses } from "../../rules/statuses.js";
 import { Storage } from "../../core/storage.js";
 import { Utils } from "../../core/utils.js";
@@ -18,6 +19,11 @@ import { WeaponRoll } from "../../rules/weaponroll.js";
 
 export const DiceRoller = {
   _animating: false,
+  // D7 — deux panneaux distincts (risque Anarchy / pré-jet Edge-Chance-Atout
+  // SR5-SR6), jamais ouverts en même temps mais chacun son propre relâcheur
+  // pour ne pas mélanger les deux pièges de focus si ça change un jour.
+  _riskReleaseTrap: null,
+  _prerollReleaseTrap: null,
 
   /** Dernier résultat brut affiché (res + opts), source des relances
       « Seconde chance » / « Relancer tous les dés ». Le journal (DiceLog)
@@ -511,7 +517,7 @@ export const DiceRoller = {
     p.className = "risk-panel-overlay";
     p.setAttribute("hidden", "");
     p.innerHTML = `
-      <div class="risk-panel" role="dialog" aria-label="Prise de risque">
+      <div class="risk-panel" role="dialog" aria-modal="true" aria-labelledby="risk-panel-title">
         <div class="risk-panel-head">
           <span class="risk-panel-title" id="risk-panel-title">Prise de risque</span>
           <button class="risk-panel-close" id="risk-panel-close" aria-label="Fermer">✕</button>
@@ -660,6 +666,11 @@ export const DiceRoller = {
     p.removeAttribute("hidden");
     void p.offsetWidth;
     p.classList.add("show");
+    // D7 : pas de champ à pré-sélectionner (niveau/RR/avantage se choisissent
+    // au clic sur un bouton ou un slider) — la croix, même patron que
+    // ContentModal/magicaction.js/summonpanel.js.
+    this._riskReleaseTrap = FocusTrap.activate(p.querySelector(".risk-panel"));
+    document.getElementById("risk-panel-close").focus();
     this._syncRiskPanel();
   },
 
@@ -669,6 +680,10 @@ export const DiceRoller = {
     p.classList.remove("show");
     clearTimeout(p._t);
     p._t = setTimeout(() => p.setAttribute("hidden", ""), 200);
+    if (this._riskReleaseTrap) {
+      this._riskReleaseTrap();
+      this._riskReleaseTrap = null;
+    }
   },
 
   _syncRiskPanel() {
@@ -1193,7 +1208,7 @@ export const DiceRoller = {
     p.className = "risk-panel-overlay"; // réutilise le gabarit du panneau de risque
     p.setAttribute("hidden", "");
     p.innerHTML = `
-      <div class="risk-panel" role="dialog" aria-label="Avant le jet">
+      <div class="risk-panel" role="dialog" aria-modal="true" aria-label="Avant le jet">
         <div class="risk-panel-head">
           <span class="risk-panel-title" id="preroll-title">Avant de lancer</span>
           <button class="risk-panel-close" id="preroll-close" aria-label="Fermer">✕</button>
@@ -1333,6 +1348,11 @@ export const DiceRoller = {
     // l'édition du PNJ qui lance — jamais figé dans le gabarit.
     const res = this.preRollResourceLabel(ctx.pnj);
     const dlg = document.querySelector("#preroll-panel .risk-panel");
+    // D7 : aria-label plutôt qu'aria-labelledby — ce libellé porte la
+    // RESSOURCE (Chance/Atout/Points d'Anarchy), une info que le titre visible
+    // (nom du PNJ) ne donne pas ; y substituer aria-labelledby perdrait cette
+    // précision. Déjà mis à jour dynamiquement ici, contrairement au reste de
+    // la famille — rien à corriger sur ce point, seul le piège manquait.
     if (dlg) dlg.setAttribute("aria-label", res ? `${res} avant le jet` : "Avant le jet");
     // ⚠ « Lancer sans Chance » / « Lancer tel quel » nommaient l'action par ce
     // qu'elle N'EST PAS : le bouton primaire donnait l'impression de rater
@@ -1359,6 +1379,11 @@ export const DiceRoller = {
     p.removeAttribute("hidden");
     void p.offsetWidth;
     p.classList.add("show");
+    // D7 : pas de champ fiable à pré-sélectionner (mode de tir/greffon/options
+    // se choisissent au clic, section Gain conditionnelle) — la croix, même
+    // patron que le reste de la famille.
+    this._prerollReleaseTrap = FocusTrap.activate(p.querySelector(".risk-panel"));
+    document.getElementById("preroll-close").focus();
   },
 
   /** (Re)rend le bandeau de budget + la liste des options de DÉPENSE d'Edge.
@@ -1664,6 +1689,10 @@ export const DiceRoller = {
   _closePreRollPanel() {
     const p = document.getElementById("preroll-panel");
     this._preRoll = null;
+    if (this._prerollReleaseTrap) {
+      this._prerollReleaseTrap();
+      this._prerollReleaseTrap = null;
+    }
     if (!p) return;
     p.classList.remove("show");
     clearTimeout(p._t);
