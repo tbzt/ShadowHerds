@@ -4,9 +4,11 @@
 .chargen-modal {
   width: min(760px, 96vw);
 }
+/* CHARGEN — 2e écran témoin D3 : composé avec .cluster/.stack
+   (foundation.css). Ce qui reste ci-dessous n'est que le vrai écart au
+   défaut de la primitive — gap non standard, wrap forcé à nowrap, décor
+   propre au site. */
 .cg-steps {
-  display: flex;
-  flex-wrap: wrap;
   gap: var(--sp-1);
   margin-bottom: var(--sp-3);
 }
@@ -43,10 +45,7 @@
   border-radius: var(--radius);
 }
 .cg-budget-row {
-  display: flex;
   gap: var(--sp-3);
-  flex-wrap: wrap;
-  align-items: center;
 }
 .cg-budget-cell {
   font-size: var(--fs-xs);
@@ -71,17 +70,10 @@
 .cg-budget-fill.over {
   background: var(--danger);
 }
-.cg-step {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-}
 .cg-step-section {
   margin-top: var(--sp-2);
 }
 .cg-field {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
 }
 .cg-field label {
@@ -99,9 +91,7 @@
   font-size: var(--fs-xs);
 }
 .cg-attr-row {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
 }
 .cg-attr-label {
   width: 3em;
@@ -112,18 +102,12 @@
   color: var(--text-dim);
 }
 .cg-list-row {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   padding: 4px 0;
   border-bottom: 1px solid var(--border);
 }
 .cg-add-row {
-  display: flex;
-  gap: var(--sp-2);
-  align-items: center;
   margin-top: 6px;
-  flex-wrap: wrap;
 }
 .cg-section-label {
   font-family: var(--font-mono);
@@ -140,9 +124,8 @@
 }
 .cg-check {
   font-size: var(--fs-xs);
-  display: flex;
-  align-items: center;
   gap: var(--sp-1);
+  flex-wrap: nowrap;
 }
 .cg-narrative-grid {
   display: grid;
@@ -150,8 +133,6 @@
   gap: var(--sp-2);
 }
 .cg-review-errors {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
   margin-bottom: var(--sp-3);
 }
@@ -178,8 +159,6 @@
   font-size: var(--fs-2xs);
 }
 .cg-step-errors {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
   padding: var(--sp-2);
   border: 1px solid var(--danger);
@@ -247,10 +226,6 @@
 }
 .cg-spec-line {
   flex-basis: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
   margin: 4px 0 2px 1.5em;
 }
 .cg-spec-chip {
@@ -285,9 +260,7 @@
   gap: var(--sp-1);
 }
 .cg-resume-banner {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   padding: 6px 10px;
   margin-bottom: var(--sp-3);
   border: 1px solid var(--accent2);
@@ -317,8 +290,6 @@
   flex: 1;
 }
 .cg-narrative-field {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
 }
 .cg-narrative-role {
@@ -329,11 +300,6 @@
 }
 .cg-dice-btn {
   margin-left: 8px;
-}
-.cg-preset-row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
 }
 /* Boutons de démarrage rapide : tuiles à colonnes égales (grille auto-fill) —
    elles s'alignent et remplissent la largeur au lieu de se ranger en briques de

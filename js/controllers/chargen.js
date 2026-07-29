@@ -71,7 +71,7 @@ export const CharGen = {
   /** Bandeau de reprise de brouillon (masquable, propose de repartir à zéro). */
   _resumeBanner() {
     if (!this._resumed) return "";
-    return `<div class="cg-resume-banner">
+    return `<div class="cluster cg-resume-banner">
       <span>↺ Brouillon repris.</span>
       <button class="btn-secondary btn-small" data-cg-action="restart">Recommencer à zéro</button>
       <button class="btn-icon-tiny" data-cg-action="dismiss-resume" title="Masquer">✕</button>
@@ -159,7 +159,7 @@ export const CharGen = {
   _stepErrorBox(step) {
     const errs = this._creation().stepErrors(this._build)[step] || [];
     if (!errs.length) return "";
-    return `<div class="cg-step-errors">${errs
+    return `<div class="stack cg-step-errors">${errs
       .map((e) => `<div class="cg-error-text">⚠ ${this._esc(e)}</div>`)
       .join("")}</div>`;
   },
@@ -205,7 +205,7 @@ export const CharGen = {
     const nuyenLabel = b.advancedMode
       ? `${spent.toLocaleString("fr-FR")} / ${level.nuyen.toLocaleString("fr-FR")} ¥`
       : `Coût ${spent.toLocaleString("fr-FR")} ¥ · budget ${level.nuyen.toLocaleString("fr-FR")} ¥`;
-    let html = `<div class="cg-budget-row">
+    let html = `<div class="cluster cg-budget-row">
       <span class="cg-budget-cell${barOver ? " over" : ""}">${nuyenLabel}</span>
       <div class="cg-budget-bar"><div class="cg-budget-fill${barOver ? " over" : ""}" style="width:${pct}%"></div></div>
     </div>`;
@@ -215,7 +215,7 @@ export const CharGen = {
       const edgePts = b.edges.reduce((a, e) => a + (e.level || 0), 0);
       const cell = (label, used, total) =>
         `<span class="cg-budget-cell${used > total ? " over" : ""}">${label} ${used}/${total}</span>`;
-      html += `<div class="cg-budget-row cg-budget-cats">
+      html += `<div class="cluster cg-budget-row cg-budget-cats">
         ${cell("Attributs", attrPts, table.attrPoints)}
         ${cell("Compétences", skillPts, table.skillPoints)}
         ${cell("Atouts", edgePts, table.edgePoints)}
@@ -281,20 +281,20 @@ export const CharGen = {
       )
       .join("");
 
-    return `<div class="cg-step">
+    return `<div class="stack">
       ${this._stepErrorBox("concept")}
-      <div class="cg-preset-row">
+      <div class="stack stack--tight">
         <span class="cg-section-label">Démarrage rapide</span>
         <div class="cg-preset-btns">${presetBtns}</div>
       </div>
-      <div class="cg-field"><label>Nom</label>
+      <div class="stack cg-field"><label>Nom</label>
         <input type="text" data-cg="name" data-cg-rerender="false" value="${this._esc(b.name)}" placeholder="Nom du personnage"></div>
-      <div class="cg-field"><label>Niveau de jeu</label><select data-cg="gameLevel">${levelOpts}</select></div>
-      <div class="cg-field"><label>Table de points</label><select data-cg="archetypeTable">${tableOpts}</select></div>
-      <div class="cg-field"><label>Métatype</label><select data-cg="meta">${metaOpts}</select></div>
-      <div class="cg-field"><label>Genre</label><select data-cg="gender">${genderOpts}</select></div>
-      <div class="cg-field"><label>Éveil</label><select data-cg="awakened">${awakenedOpts}</select></div>
-      <div class="cg-field"><label><input type="checkbox" data-cg="advancedMode" ${b.advancedMode ? "checked" : ""}> Mode avancé (nuyens fins, transferts libres entre catégories)</label></div>
+      <div class="stack cg-field"><label>Niveau de jeu</label><select data-cg="gameLevel">${levelOpts}</select></div>
+      <div class="stack cg-field"><label>Table de points</label><select data-cg="archetypeTable">${tableOpts}</select></div>
+      <div class="stack cg-field"><label>Métatype</label><select data-cg="meta">${metaOpts}</select></div>
+      <div class="stack cg-field"><label>Genre</label><select data-cg="gender">${genderOpts}</select></div>
+      <div class="stack cg-field"><label>Éveil</label><select data-cg="awakened">${awakenedOpts}</select></div>
+      <div class="stack cg-field"><label><input type="checkbox" data-cg="advancedMode" ${b.advancedMode ? "checked" : ""}> Mode avancé (nuyens fins, transferts libres entre catégories)</label></div>
     </div>`;
   },
 
@@ -315,7 +315,7 @@ export const CharGen = {
         const atMax = val >= max;
         if (atMax) atMaxCount++;
         const outOfRange = val < min || val > max;
-        return `<div class="cg-attr-row">
+        return `<div class="cluster cg-attr-row">
           <span class="cg-attr-label">${k}</span>
           <div class="cg-stepper">
             <button class="cg-step-btn" data-cg-action="attr-dec" data-key="${k}" ${val <= min ? "disabled" : ""} aria-label="Diminuer ${k}">−</button>
@@ -330,7 +330,7 @@ export const CharGen = {
       .join("");
 
     const overMax = atMaxCount > level.attrsAtMax;
-    return `<div class="cg-step">
+    return `<div class="stack">
       ${this._stepErrorBox("attrs")}
       <p class="cg-hint">Table « ${this._esc(table.label)} » : ${table.attrPoints} points d'attributs, comptés depuis 0 (somme des indices, p.85). Dé d'Anarchy du ${this._esc(b.meta)} : ${range.anarchy}.</p>
       ${rows}
@@ -373,13 +373,13 @@ export const CharGen = {
               <button class="btn-icon-tiny" data-cg-action="add-spec" data-idx="${i}" ${canAddSpec ? "" : "disabled"} title="${canAddSpec ? "Ajouter une spécialisation (2 500 ¥)" : "Indice ≥ 1 requis"}">＋ spé</button>
             </span>`
           : "";
-        return `<div class="cg-list-row cg-skill-row">
+        return `<div class="cluster cg-list-row cg-skill-row">
           <strong>${this._esc(s.name)}</strong>
           <input type="number" min="0" max="${level.skillMax}" data-cg="skills.${i}.val" value="${s.val || 0}" style="width:3.5em">
           ${poolChip}
           ${overCap ? '<span class="cg-error-text">&gt; plafond</span>' : ""}
           <button class="btn-icon-tiny danger" data-cg-action="remove-skill" data-idx="${i}" title="Retirer">✕</button>
-          <div class="cg-spec-line">${specChips}${addSpec}</div>
+          <div class="cluster cg-spec-line">${specChips}${addSpec}</div>
         </div>`;
       })
       .join("");
@@ -395,21 +395,21 @@ export const CharGen = {
     const knowledgeRows = knowledges
       .map(
         (k, i) =>
-          `<div class="cg-list-row"><span>${this._esc(k)}</span><button class="btn-icon-tiny danger" data-cg-action="remove-knowledge" data-idx="${i}" title="Retirer">✕</button></div>`,
+          `<div class="cluster cg-list-row"><span>${this._esc(k)}</span><button class="btn-icon-tiny danger" data-cg-action="remove-knowledge" data-idx="${i}" title="Retirer">✕</button></div>`,
       )
       .join("");
 
-    return `<div class="cg-step">
+    return `<div class="stack">
       ${this._stepErrorBox("skills")}
       <p class="cg-hint">Table : ${table.skillPoints} points de compétences (spés et connaissances comprises). Plafond d'indice : ${level.skillMax}. ⚄ = pool de dés (indice + attribut). Plusieurs spés possibles par compétence (indice ≥ 1, sans limite de nombre).</p>
       ${rows || '<p class="cg-hint">Aucune compétence choisie.</p>'}
-      <div class="cg-add-row">
+      <div class="cluster cg-add-row">
         <select id="cg-skill-pick">${addOpts || "<option>— toutes prises —</option>"}</select>
         <button class="btn-secondary btn-small" data-cg-action="add-skill" ${available.length ? "" : "disabled"}>＋ Ajouter</button>
       </div>
       <div class="cg-section-label">Connaissances <span class="cg-section-note">2 500 ¥ chacune = 1 point</span></div>
       ${knowledgeRows}
-      <div class="cg-add-row">
+      <div class="cluster cg-add-row">
         <input type="text" id="cg-knowledge-text" placeholder="ex. Gangs de Seattle, Sécurité corpo, Magie…">
         <button class="btn-secondary btn-small" data-cg-action="add-knowledge">＋ Ajouter</button>
       </div>
@@ -427,7 +427,7 @@ export const CharGen = {
     const edgeRows = b.edges
       .map(
         (e, i) =>
-          `<div class="cg-list-row"><span>${this._esc(e.text)}</span><span class="tag">niv. ${e.level}</span>
+          `<div class="cluster cg-list-row"><span>${this._esc(e.text)}</span><span class="tag">niv. ${e.level}</span>
           <button class="btn-icon-tiny danger" data-cg-action="remove-edge" data-idx="${i}" title="Retirer">✕</button></div>`,
       )
       .join("");
@@ -446,7 +446,7 @@ export const CharGen = {
       const spellChecks = c.spellPool()
         .map(
           (sp) =>
-            `<label class="cg-check"><input type="checkbox" data-cg-action="toggle-spell" data-name="${this._esc(sp.name)}" ${b.spells.includes(sp.name) ? "checked" : ""}> ${this._esc(sp.name)}</label>`,
+            `<label class="cluster cg-check"><input type="checkbox" data-cg-action="toggle-spell" data-name="${this._esc(sp.name)}" ${b.spells.includes(sp.name) ? "checked" : ""}> ${this._esc(sp.name)}</label>`,
         )
         .join("");
       const mentorBlock = b.mentorSpirit
@@ -457,23 +457,23 @@ export const CharGen = {
         <div class="cg-section-label">Sorts <span class="cg-section-note">${this._kitMeter(b.spells.length, kitSpells, "au kit")} · 5 000 ¥/sort hors kit</span></div>
         <div class="cg-check-grid">${spellChecks}</div>
         <div class="cg-section-label">Esprit mentor</div>
-        <div class="cg-add-row">${mentorBlock}</div>
+        <div class="cluster cg-add-row">${mentorBlock}</div>
       </div>`;
     }
 
-    return `<div class="cg-step">
+    return `<div class="stack">
       ${this._stepErrorBox("edges")}
       <p class="cg-hint">Table : ${table.edgePoints} points d'atouts (5 000 ¥/niveau). Modèles RR pré-câblés (s'appliquent automatiquement) + atout personnalisé en texte libre pour le reste du système (cyberware/bioware/pouvoirs d'adepte…, p.58-63).</p>
       ${edgeRows || '<p class="cg-hint">Aucun atout.</p>'}
-      <div class="cg-add-row">
+      <div class="cluster cg-add-row">
         <select id="cg-edge-spec-pick">${specOpts || "<option value=\"\">— aucune spécialisation —</option>"}</select>
         <button class="btn-secondary btn-small" data-cg-action="add-edge-rrspec" ${specPairs.length ? "" : "disabled"}>＋ RR 1 (spé, niv. 2)</button>
       </div>
-      <div class="cg-add-row">
+      <div class="cluster cg-add-row">
         <select id="cg-edge-skill-pick">${skillOpts || "<option value=\"\">— aucune compétence —</option>"}</select>
         <button class="btn-secondary btn-small" data-cg-action="add-edge-rrskill" ${b.skills.length ? "" : "disabled"}>＋ RR 1 (compétence, niv. 5)</button>
       </div>
-      <div class="cg-add-row">
+      <div class="cluster cg-add-row">
         <input type="text" id="cg-edge-custom-label" placeholder="Atout personnalisé…">
         <input type="number" id="cg-edge-custom-level" min="1" value="1" style="width:4em">
         <button class="btn-secondary btn-small" data-cg-action="add-edge-custom">＋ Ajouter</button>
@@ -494,17 +494,17 @@ export const CharGen = {
     const chosenNormal = b.weapons.filter((w) => !specialistNames.has(w.name)).length;
     const chosenSpe = b.weapons.filter((w) => specialistNames.has(w.name)).length;
     const weaponCheck = (w) =>
-      `<label class="cg-check"><input type="checkbox" data-cg-action="toggle-weapon" data-name="${this._esc(w.name)}" ${chosenNames.includes(w.name) ? "checked" : ""}> ${this._esc(w.name)}</label>`;
+      `<label class="cluster cg-check"><input type="checkbox" data-cg-action="toggle-weapon" data-name="${this._esc(w.name)}" ${chosenNames.includes(w.name) ? "checked" : ""}> ${this._esc(w.name)}</label>`;
     const normalChecks = catalog.filter((w) => !w.specialist).map(weaponCheck).join("");
     const speChecks = catalog.filter((w) => w.specialist).map(weaponCheck).join("");
     const gearRows = (b.gear || [])
       .map(
         (g, i) =>
-          `<div class="cg-list-row"><span>${this._esc(g)}</span><button class="btn-icon-tiny danger" data-cg-action="remove-gear" data-idx="${i}" title="Retirer">✕</button></div>`,
+          `<div class="cluster cg-list-row"><span>${this._esc(g)}</span><button class="btn-icon-tiny danger" data-cg-action="remove-gear" data-idx="${i}" title="Retirer">✕</button></div>`,
       )
       .join("");
 
-    return `<div class="cg-step">
+    return `<div class="stack">
       ${this._stepErrorBox("gear")}
       <p class="cg-hint">Kit gratuit (${this._esc(table.label)}) : commlink, faux SIN et armure 3 toujours fournis. Au-delà des quotas, chaque élément est payé en nuyens.</p>
       <div class="cg-section-label">Armes normales <span class="cg-section-note">${this._kitMeter(chosenNormal, table.kit.armesNormales, "au kit")}</span></div>
@@ -515,7 +515,7 @@ export const CharGen = {
       <input type="number" min="0" data-cg="extraArmor" value="${b.extraArmor || 0}" style="width:4em">
       <div class="cg-section-label">Équipement <span class="cg-section-note">${this._kitMeter((b.gear || []).length, table.kit.equipements, "au kit")}</span></div>
       ${gearRows}
-      <div class="cg-add-row">
+      <div class="cluster cg-add-row">
         <input type="text" id="cg-gear-text" placeholder="Nom de l'équipement…">
         <button class="btn-secondary btn-small" data-cg-action="add-gear">＋ Ajouter</button>
       </div>
@@ -534,7 +534,7 @@ export const CharGen = {
     const kwFields = b.keywords
       .map(
         (v, i) =>
-          `<label class="cg-narrative-field">
+          `<label class="stack cg-narrative-field">
             <span class="cg-narrative-role">${this._esc(roles[i] || `Mot-clé ${i + 1}`)}</span>
             <input type="text" data-cg="keywords.${i}" data-cg-rerender="false" value="${this._esc(v)}" placeholder="${this._esc(roles[i] || `Mot-clé ${i + 1}`)}">
           </label>`,
@@ -555,7 +555,7 @@ export const CharGen = {
     const diceBtn = (field) =>
       `<button class="btn-secondary btn-small cg-dice-btn" data-cg-action="draw-narrative" data-field="${field}" title="Remplit les champs vides">🎲 Inspiration</button>`;
 
-    return `<div class="cg-step">
+    return `<div class="stack">
       <div class="cg-section-label">5 mots-clés (p.50-51) ${diceBtn("keywords")}</div>
       <div class="cg-narrative-grid">${kwFields}</div>
       <div class="cg-section-label">4 comportements ${diceBtn("behaviors")}</div>
@@ -572,14 +572,14 @@ export const CharGen = {
     const rows = (b.contacts || [])
       .map(
         (c, i) =>
-          `<div class="cg-list-row">
+          `<div class="cluster cg-list-row">
             <input type="text" data-cg="contacts.${i}.name" data-cg-rerender="false" value="${this._esc(c.name || "")}" placeholder="Nom">
             <input type="text" data-cg="contacts.${i}.description" data-cg-rerender="false" value="${this._esc(c.description || "")}" placeholder="Description (rôle, loyauté…)">
             <button class="btn-icon-tiny danger" data-cg-action="remove-contact" data-idx="${i}" title="Retirer">✕</button>
           </div>`,
       )
       .join("");
-    return `<div class="cg-step">
+    return `<div class="stack">
       <p class="cg-hint">Contacts nommés du Réseau (niveau de base 0, p.61) — libre, narratif.</p>
       ${rows}
       <button class="btn-secondary btn-small" data-cg-action="add-contact">＋ Ajouter un contact</button>
@@ -588,8 +588,8 @@ export const CharGen = {
 
   /* ---- Étape : Révision ---- */
   _render_review() {
-    return `<div class="cg-step">
-      <div id="cg-review-errors" class="cg-review-errors"></div>
+    return `<div class="stack">
+      <div id="cg-review-errors" class="stack cg-review-errors"></div>
       <div id="cg-review-card" class="cg-review-card"></div>
     </div>`;
   },
