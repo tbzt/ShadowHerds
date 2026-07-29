@@ -19,6 +19,7 @@ import { Dice } from "../rules/dice.js";
 import { EdgeActions } from "../rules/edgeactions.js";
 import { DiceRoller } from "../widgets/dice/diceroller.js";
 import { EncounterRenderer } from "../widgets/play/encounterrenderer.js";
+import { FocusTrap } from "../widgets/kit/focustrap.js";
 import { Gen } from "./generator.js";
 import { Intrusion } from "./intrusion.js";
 import { ItemResolver } from "../rules/itemresolver.js";
@@ -2730,22 +2731,32 @@ export const Encounter = {
   },
 
   /* ---- Overlay ---- */
+  _releaseTrap: null,
   open() {
     const overlay = document.getElementById("encounter-overlay");
     overlay.classList.add("open");
     // Dock latéral non bloquant ≥641px (le Hub reste utilisable
     // derrière, ex. suivre une intrusion en cours) ; plein écran réel en
     // dessous (pas de place pour cohabiter) — aria-modal reflète lequel.
-    overlay.setAttribute(
-      "aria-modal",
-      window.matchMedia("(max-width: 640px)").matches ? "true" : "false",
-    );
+    const isModal = window.matchMedia("(max-width: 640px)").matches;
+    overlay.setAttribute("aria-modal", isModal ? "true" : "false");
+    // D7 : piégé UNIQUEMENT en plein écran (aria-modal="true") — en dock
+    // latéral le Hub reste volontairement dans l'ordre de tabulation,
+    // piéger Tab casserait ce mode non bloquant.
+    this._releaseTrap = isModal
+      ? FocusTrap.activate(overlay.querySelector(".modal"))
+      : null;
+    if (isModal) overlay.querySelector(".modal-close").focus();
     this._render();
     this._renderPicker();
   },
   close() {
     const el = document.getElementById("encounter-overlay");
     if (el) el.classList.remove("open");
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
   },
 
   /* ---- Glisser-déposer pour réordonner (Vague C1, refonte « feel sticker ») ----

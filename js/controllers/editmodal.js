@@ -12,6 +12,7 @@ import { Content } from "../rules/content.js";
 import { Cyberdeck } from "../rules/cyberdeck.js";
 import { CyberdeckRenderer } from "../widgets/card/cyberdeckrenderer.js";
 import { Esoteric } from "../rules/esoteric.js";
+import { FocusTrap } from "../widgets/kit/focustrap.js";
 import { ItemResolver } from "../rules/itemresolver.js";
 import { Mentions } from "../widgets/journal/mentions.js";
 import { Metavariants } from "../rules/metavariants.js";
@@ -30,6 +31,7 @@ export const EditModal = {
   // modifications » (revert) et du commit conditionnel à la fermeture.
   _snapshot: null,
   _notesMode: "read", // "read" (puces @/#) | "edit" (jeton brut)
+  _releaseTrap: null,
 
   open(id) {
     const pnj = PnjLookup.find(id);
@@ -61,7 +63,15 @@ export const EditModal = {
     this._notesMode = notesEl && notesEl.value.trim() ? "read" : "edit";
     this._syncNotesView();
 
-    document.getElementById("edit-modal").classList.add("open");
+    const modalEl = document.getElementById("edit-modal");
+    modalEl.classList.add("open");
+    // D7 : piégé AVANT le déplacement de focus (même ordre que Dialog._open).
+    this._releaseTrap = FocusTrap.activate(modalEl.querySelector(".modal"));
+    // Sans ce .focus(), Tab partirait sur le reste de la page (l'overlay
+    // est hors de l'ordre de tabulation du déclencheur) — même patron que
+    // ContentModal/FoundationView : la croix est le point d'entrée par
+    // défaut d'un formulaire trop varié pour un champ « premier » unique.
+    modalEl.querySelector(".modal-close").focus();
   },
 
   /** Bascule Lire (puces @/# cliquables) / Éditer (jeton brut) des notes
@@ -208,6 +218,10 @@ export const EditModal = {
 
   _hide() {
     document.getElementById("edit-modal").classList.remove("open");
+    if (this._releaseTrap) {
+      this._releaseTrap();
+      this._releaseTrap = null;
+    }
     this.currentId = null;
     this._snapshot = null;
   },
