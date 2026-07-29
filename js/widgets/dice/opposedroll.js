@@ -23,8 +23,8 @@ export const OpposedRoll = {
     p.className = "risk-panel-overlay";
     p.setAttribute("hidden", "");
     p.innerHTML = `
-      <div class="risk-panel" role="dialog" aria-modal="true" aria-labelledby="opposed-title">
-        <div class="risk-panel-head">
+      <div class="stack risk-panel" role="dialog" aria-modal="true" aria-labelledby="opposed-title">
+        <div class="cluster cluster--between risk-panel-head">
           <span class="risk-panel-title" id="opposed-title">Jet opposé / seuil</span>
           <button class="risk-panel-close" id="opposed-close" aria-label="Fermer">✕</button>
         </div>

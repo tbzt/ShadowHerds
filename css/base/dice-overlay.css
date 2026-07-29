@@ -184,20 +184,15 @@
 }
 
 .dice-overlay-inner {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--sp-5);
   width: min(92vw, 720px);
   padding: var(--sp-4);
 }
 
 /* Tapis de jeu */
 .dice-tray {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: center;
   justify-content: center;
+  align-content: center;
   gap: clamp(var(--sp-2), 2vw, var(--sp-4));
   min-height: 96px;
   width: 100%;
@@ -301,10 +296,7 @@
 /* ---- Résumé du jet ---- */
 .dice-summary {
   min-height: 84px;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--sp-2);
   opacity: 0;
   transform: translateY(8px);
 }
@@ -323,9 +315,8 @@
   color: var(--text-dim);
 }
 .dice-summary-main {
-  display: flex;
   align-items: baseline;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
 }
 .dice-summary-hits {
   font-family: var(--font-display);
@@ -382,10 +373,7 @@
 /* Bloc « Résistance au Drain » dans le résumé d'un lancer de sort (CH-M7e) :
    jet de résistance (mini-dés statiques + succès) + dégâts encaissés. */
 .dice-drain {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--sp-2);
   margin-top: 0.5rem;
   padding: 0.55rem 0.9rem;
   border-top: 1px solid var(--border);
@@ -400,10 +388,9 @@
   color: var(--text-dim);
 }
 .dice-drain-tray {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-1);
   justify-content: center;
+  align-items: stretch;
+  gap: var(--sp-1);
 }
 .die.mini {
   --die-size: 20px;
@@ -481,10 +468,9 @@
 }
 /* Deux Secondes chances d'un lancer de sort (sort / Drain), CH-M7e. */
 .dice-spell-rerolls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
   justify-content: center;
+  align-items: stretch;
+  gap: var(--sp-2);
   margin-top: 0.6rem;
 }
 .dice-spell-rerolls .dice-reroll-btn {
@@ -618,8 +604,6 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--elev-2);
   padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-4);
   transform: translateY(10px) scale(0.98);
   transition: transform var(--dur-base) var(--ease-emphasized);
@@ -629,9 +613,6 @@
 }
 
 .risk-panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: var(--sp-4);
   border-bottom: 1px solid var(--border);
   padding-bottom: 0.6rem;
@@ -678,13 +659,9 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: var(--sp-2) 0.3rem;
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
   align-items: center;
-  transition:
-    border-color var(--dur-fast),
-    background var(--dur-fast);
+  transition: border-color var(--dur-fast), background var(--dur-fast);
 }
 .risk-level-btn:hover {
   border-color: var(--accent2);
@@ -710,20 +687,15 @@
 }
 
 /* Curseur de dés de risque */
-.risk-slider-row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
+
 .risk-slider-label {
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-dim);
-  display: flex;
   align-items: baseline;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
 }
 .risk-slider-val {
   font-family: var(--font-display);
@@ -771,9 +743,6 @@ input[type="range"]#risk-dice-slider {
 
 /* RR */
 .risk-rr-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: var(--sp-4);
 }
 .risk-rr-label {
@@ -784,8 +753,9 @@ input[type="range"]#risk-dice-slider {
   color: var(--text-dim);
 }
 .risk-rr-steps {
-  display: flex;
   gap: var(--sp-1);
+  align-items: stretch;
+  flex-wrap: nowrap;
 }
 .risk-rr-btn {
   width: 30px;
@@ -812,11 +782,7 @@ input[type="range"]#risk-dice-slider {
 }
 
 /* Avantage / Désavantage (p.67) */
-.risk-adv-row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
+
 .risk-adv-label {
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
@@ -834,13 +800,9 @@ input[type="range"]#risk-dice-slider {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0.4rem 0.3rem;
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
   align-items: center;
-  transition:
-    border-color var(--dur-fast),
-    background var(--dur-fast);
+  transition: border-color var(--dur-fast), background var(--dur-fast);
 }
 .risk-adv-btn:hover {
   border-color: var(--accent2);
@@ -867,8 +829,6 @@ input[type="range"]#risk-dice-slider {
 }
 
 .risk-forecast {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
   padding: 0.6rem var(--sp-3);
   background: var(--bg-mid);
@@ -910,11 +870,7 @@ input[type="range"]#risk-dice-slider {
    LISTE verticale pleine largeur : leurs libellés + indices (« Repousser les
    limites · 1 Chance · +indice… ») sont plus longs que les 4 chips de risque,
    la grille 4-colonnes du risque les tasserait. */
-#preroll-options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
+
 #preroll-options .risk-level-btn {
   align-items: flex-start;
   text-align: left;
@@ -931,9 +887,6 @@ input[type="range"]#risk-dice-slider {
   display: none; /* le `display:flex` auteur bat [hidden] de l'UA sans cette ligne */
 }
 #preroll-attack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
   padding: var(--sp-2) 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -941,10 +894,6 @@ input[type="range"]#risk-dice-slider {
 /* Le bandeau : le nom de l'arme, puis ses marqueurs chiffrés (chargeur, recul,
    et le mode quand il est unique — auquel cas ce n'est pas un choix). */
 .preroll-attack-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
   font-family: var(--font-display);
   font-size: var(--fs-sm);
   font-weight: 600;
@@ -955,9 +904,6 @@ input[type="range"]#risk-dice-slider {
 /* Une rangée = un libellé + ses puces, exactement comme `.action-domain`. */
 .preroll-row {
   flex-basis: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
   gap: var(--sp-1);
 }
 .preroll-row-lbl {
@@ -1059,9 +1005,6 @@ input[type="range"]#risk-dice-slider {
   display: none;
 }
 #preroll-gain {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
   padding: var(--sp-2) 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -1075,14 +1018,10 @@ input[type="range"]#risk-dice-slider {
   color: var(--text);
 }
 .preroll-gain-row {
-  display: flex;
-  flex-wrap: wrap;
   gap: var(--sp-4);
   align-items: flex-end;
 }
 .preroll-gain-field {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);

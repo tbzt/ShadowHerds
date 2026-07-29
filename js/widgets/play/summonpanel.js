@@ -26,8 +26,8 @@ export const SummonPanel = {
     p.className = "risk-panel-overlay";
     p.setAttribute("hidden", "");
     p.innerHTML = `
-      <div class="risk-panel" role="dialog" aria-modal="true" aria-labelledby="summon-title">
-        <div class="risk-panel-head">
+      <div class="stack risk-panel" role="dialog" aria-modal="true" aria-labelledby="summon-title">
+        <div class="cluster cluster--between risk-panel-head">
           <span class="risk-panel-title" id="summon-title">Invoquer un esprit</span>
           <button class="risk-panel-close" id="summon-close" aria-label="Fermer">✕</button>
         </div>

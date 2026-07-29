@@ -517,29 +517,29 @@ export const DiceRoller = {
     p.className = "risk-panel-overlay";
     p.setAttribute("hidden", "");
     p.innerHTML = `
-      <div class="risk-panel" role="dialog" aria-modal="true" aria-labelledby="risk-panel-title">
-        <div class="risk-panel-head">
+      <div class="stack risk-panel" role="dialog" aria-modal="true" aria-labelledby="risk-panel-title">
+        <div class="cluster cluster--between risk-panel-head">
           <span class="risk-panel-title" id="risk-panel-title">Prise de risque</span>
           <button class="risk-panel-close" id="risk-panel-close" aria-label="Fermer">✕</button>
         </div>
         <div class="risk-panel-pool" id="risk-panel-pool"></div>
         <div class="risk-levels" id="risk-levels"></div>
-        <div class="risk-slider-row">
-          <label class="risk-slider-label">Dés de risque
+        <div class="stack stack--tight risk-slider-row">
+          <label class="cluster risk-slider-label">Dés de risque
             <span class="risk-slider-val" id="risk-dice-val">0</span>
             <span class="risk-slider-sub">/ <span id="risk-pool-total">0</span></span>
           </label>
           <input type="range" id="risk-dice-slider" min="0" max="0" value="0">
         </div>
-        <div class="risk-rr-row">
+        <div class="cluster cluster--between risk-rr-row">
           <span class="risk-rr-label">Réduction de risque (RR)</span>
-          <div class="risk-rr-steps" id="risk-rr-steps"></div>
+          <div class="cluster risk-rr-steps" id="risk-rr-steps"></div>
         </div>
-        <div class="risk-adv-row">
+        <div class="stack stack--tight risk-adv-row">
           <span class="risk-adv-label">Avantage / Désavantage</span>
           <div class="risk-adv-steps" id="risk-adv-steps"></div>
         </div>
-        <div class="risk-forecast" id="risk-forecast"></div>
+        <div class="stack risk-forecast" id="risk-forecast"></div>
         <button class="risk-roll-btn" id="risk-roll-btn">Lancer</button>
       </div>`;
     document.body.appendChild(p);
@@ -556,7 +556,7 @@ export const DiceRoller = {
     const lv = document.getElementById("risk-levels");
     lv.innerHTML = this.RISK_LEVELS.map(
       (l) =>
-        `<button class="risk-level-btn" data-level="${l.key}">
+        `<button class="stack risk-level-btn" data-level="${l.key}">
            <span class="risk-level-name">${l.label}</span>
            <span class="risk-level-sub">${l.sub}</span>
          </button>`,
@@ -604,7 +604,7 @@ export const DiceRoller = {
     const adv = document.getElementById("risk-adv-steps");
     adv.innerHTML = this.ADV_LEVELS.map(
       (l) =>
-        `<button class="risk-adv-btn" data-adv="${l.key}">
+        `<button class="stack risk-adv-btn" data-adv="${l.key}">
            <span class="risk-adv-name">${l.label}</span>
            <span class="risk-adv-sub">${l.sub}</span>
          </button>`,
@@ -731,9 +731,9 @@ export const DiceRoller = {
     ov.className = "dice-overlay";
     ov.setAttribute("hidden", "");
     ov.innerHTML = `
-      <div class="dice-overlay-inner">
-        <div class="dice-tray" id="dice-tray"></div>
-        <div class="dice-summary" id="dice-summary"></div>
+      <div class="stack stack--loose dice-overlay-inner">
+        <div class="cluster dice-tray" id="dice-tray"></div>
+        <div class="stack stack--tight dice-summary" id="dice-summary"></div>
         <div class="dice-hint">Cliquez pour fermer</div>
       </div>`;
     document.body.appendChild(ov);
@@ -800,9 +800,9 @@ export const DiceRoller = {
       damage > 0
         ? `${damage} case${damage > 1 ? "s" : ""} · ${typeLabel}`
         : "Résisté";
-    return `<div class="dice-drain">
+    return `<div class="stack dice-drain">
       <span class="dice-drain-title">Résistance au Drain — VD ${dv}</span>
-      <div class="dice-drain-tray">${dice}</div>
+      <div class="cluster dice-drain-tray">${dice}</div>
       <span class="dice-drain-sub">${res.hits} succès → <strong class="${outCls}">${outcome}</strong></span>
     </div>`;
   },
@@ -1208,15 +1208,15 @@ export const DiceRoller = {
     p.className = "risk-panel-overlay"; // réutilise le gabarit du panneau de risque
     p.setAttribute("hidden", "");
     p.innerHTML = `
-      <div class="risk-panel" role="dialog" aria-modal="true" aria-label="Avant le jet">
-        <div class="risk-panel-head">
+      <div class="stack risk-panel" role="dialog" aria-modal="true" aria-label="Avant le jet">
+        <div class="cluster cluster--between risk-panel-head">
           <span class="risk-panel-title" id="preroll-title">Avant de lancer</span>
           <button class="risk-panel-close" id="preroll-close" aria-label="Fermer">✕</button>
         </div>
         <div class="risk-panel-pool" id="preroll-pool"></div>
-        <div id="preroll-attack" hidden></div>
-        <div id="preroll-gain" hidden></div>
-        <div id="preroll-options"></div>
+        <div id="preroll-attack" class="stack stack--tight" hidden></div>
+        <div id="preroll-gain" class="stack stack--tight" hidden></div>
+        <div id="preroll-options" class="stack stack--tight"></div>
         <button class="risk-roll-btn" id="preroll-plain">Lancer les dés</button>
       </div>`;
     document.body.appendChild(p);
@@ -1407,7 +1407,7 @@ export const DiceRoller = {
     document.getElementById("preroll-options").innerHTML = (ctx.options || [])
       .map(
         (o, i) =>
-          `<button class="risk-level-btn" data-idx="${i}">
+          `<button class="stack risk-level-btn" data-idx="${i}">
              <span class="risk-level-name">${Utils.escHtml(o.label)}</span>
              <span class="risk-level-sub">${Utils.escHtml(o.hint)}</span>
            </button>`,
@@ -1476,7 +1476,7 @@ export const DiceRoller = {
     // choix d'une scène (`a.weaponModeMemo` absent) ne coûte rien : on
     // découvre l'arme, on ne change rien.
     const modes = a.modes.length > 1
-      ? `<div class="preroll-row"><span class="preroll-row-lbl">Mode de tir</span>${a.modes
+      ? `<div class="cluster preroll-row"><span class="preroll-row-lbl">Mode de tir</span>${a.modes
           .map((m) => {
             const on = a.chosenMode === m.key;
             const court = m.res.court ? " is-over" : "";
@@ -1499,7 +1499,7 @@ export const DiceRoller = {
 
     // Greffons d'Atout, filtrés par la famille de l'arme et triés par coût.
     const greffons = a.greffons.length
-      ? `<div class="preroll-row"><span class="preroll-row-lbl">Actions d'Atout · ${a.edge} dispo</span>${a.greffons
+      ? `<div class="cluster preroll-row"><span class="preroll-row-lbl">Actions d'Atout · ${a.edge} dispo</span>${a.greffons
           .map((g) => {
             const on = a.chosenGraft === g.key;
             const cher = g.cost > a.edge ? " is-over" : "";
@@ -1509,7 +1509,7 @@ export const DiceRoller = {
           .join("")}</div>`
       : "";
 
-    el.innerHTML = `<div class="preroll-attack-head">${esc(a.name)} ${chargeur}${this._reloadHtml(a)}${recul}${crosse}${modeSeul}</div>${modes}${verdict}${greffons}`;
+    el.innerHTML = `<div class="cluster preroll-attack-head">${esc(a.name)} ${chargeur}${this._reloadHtml(a)}${recul}${crosse}${modeSeul}</div>${modes}${verdict}${greffons}`;
   },
 
   /** La phrase que le MJ va annoncer, pour un mode donné : ce que `rollDetail`
@@ -1559,7 +1559,7 @@ export const DiceRoller = {
     }
     el.hidden = false;
     const bandControl = g.offense.isRanged
-      ? `<label class="preroll-gain-field">Portée
+      ? `<label class="stack preroll-gain-field">Portée
            <select data-preroll-band>
              ${g.offense.bands
                .map(
@@ -1572,16 +1572,16 @@ export const DiceRoller = {
       : `<span class="preroll-gain-static">${Utils.escHtml(g.offense.bands[0].label)} · SO <strong>${g.offense.bands[0].so ?? "—"}</strong></span>`;
     el.innerHTML = `
       <div class="preroll-gain-head">Gagner l'Atout — SO de l'arme vs SD de la cible</div>
-      <div class="preroll-gain-row">
+      <div class="cluster preroll-gain-row">
         ${bandControl}
-        <label class="preroll-gain-field">SD cible
+        <label class="stack preroll-gain-field">SD cible
           <span class="dice-count-group">
             <button class="dice-count-step" data-preroll-sd-step="-1" tabindex="-1" aria-label="Baisser le SD">−</button>
             <input class="dice-count-input" type="number" inputmode="numeric" min="0" data-preroll-sd placeholder="—" value="${Utils.escHtml(String(g.sd || ""))}">
             <button class="dice-count-step" data-preroll-sd-step="1" tabindex="-1" aria-label="Monter le SD">＋</button>
           </span>
         </label>
-        <button class="risk-level-btn preroll-gain-btn" data-preroll-gain disabled>+1 Atout</button>
+        <button class="stack risk-level-btn preroll-gain-btn" data-preroll-gain disabled>+1 Atout</button>
       </div>
       <div class="preroll-gain-verdict" data-preroll-verdict></div>
       <div class="preroll-gain-note">Règle : 2 Atout gagnés max par tour · réserve max ${g.spec.max}.</div>`;
@@ -1784,7 +1784,7 @@ export const DiceRoller = {
     summary.innerHTML = `
       ${this._whoHtml(opts)}
       <span class="dice-summary-label">Initiative</span>
-      <div class="dice-summary-main">
+      <div class="cluster dice-summary-main">
         <span class="dice-summary-hits">${res.total}</span>
       </div>
       ${attrDetailHtml}
@@ -1832,7 +1832,7 @@ export const DiceRoller = {
     summary.innerHTML = `
       ${this._whoHtml(opts)}
       ${labelHtml}
-      <div class="dice-summary-main">${big}</div>
+      <div class="cluster dice-summary-main">${big}</div>
       ${breakdownHtml}
       ${tag}
       ${limitTag}
@@ -1869,7 +1869,7 @@ export const DiceRoller = {
     const drainLabel = opts.kind === "complexForm" ? "Technodrain" : "Drain";
     const mainDis = edge <= 0 || d.mainRerolled || mainRes.critGlitch;
     const drainDis = edge <= 0 || d.drainRerolled || d.res.critGlitch;
-    return `<div class="dice-spell-rerolls">
+    return `<div class="cluster dice-spell-rerolls">
       <button class="dice-reroll-btn" data-action="reroll-cast"${mainDis ? " disabled" : ""}>↻ ${Utils.escHtml(action.label)} — ${mainLabel}${hint}</button>
       <button class="dice-reroll-btn" data-action="reroll-drain"${drainDis ? " disabled" : ""}>↻ ${Utils.escHtml(action.label)} — ${drainLabel}${hint}</button>
     </div>`;
@@ -1932,7 +1932,7 @@ export const DiceRoller = {
     summary.innerHTML = `
       ${this._whoHtml(opts)}
       ${labelHtml}
-      <div class="dice-summary-main">${big}</div>
+      <div class="cluster dice-summary-main">${big}</div>
       ${poolDetailHtml}
       ${breakdown}
       ${advTag}

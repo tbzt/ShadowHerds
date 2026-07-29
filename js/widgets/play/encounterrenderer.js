@@ -2024,8 +2024,8 @@ export const EncounterRenderer = {
     p.className = "risk-panel-overlay";
     p.setAttribute("hidden", "");
     p.innerHTML = `
-      <div class="risk-panel" role="dialog" aria-label="Poser un état sur plusieurs PNJ">
-        <div class="risk-panel-head">
+      <div class="stack risk-panel" role="dialog" aria-label="Poser un état sur plusieurs PNJ">
+        <div class="cluster cluster--between risk-panel-head">
           <span class="risk-panel-title">Poser un état sur plusieurs</span>
           <button class="risk-panel-close" id="group-status-close" aria-label="Fermer">✕</button>
         </div>
@@ -2211,8 +2211,8 @@ export const EncounterRenderer = {
     p.className = "risk-panel-overlay";
     p.setAttribute("hidden", "");
     p.innerHTML = `
-      <div class="risk-panel" role="dialog" aria-label="Bilan de fin de round">
-        <div class="risk-panel-head">
+      <div class="stack risk-panel" role="dialog" aria-label="Bilan de fin de round">
+        <div class="cluster cluster--between risk-panel-head">
           <span class="risk-panel-title" id="round-panel-title">Fin de round</span>
           <span class="round-progress" id="round-panel-count" aria-live="polite"></span>
           <button class="risk-panel-close" id="round-panel-close" aria-label="Fermer">✕</button>

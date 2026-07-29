@@ -106,8 +106,8 @@ export const MagicAction = {
     p.className = "risk-panel-overlay";
     p.setAttribute("hidden", "");
     p.innerHTML = `
-      <div class="risk-panel" role="dialog" aria-modal="true" aria-labelledby="magic-title">
-        <div class="risk-panel-head">
+      <div class="stack risk-panel" role="dialog" aria-modal="true" aria-labelledby="magic-title">
+        <div class="cluster cluster--between risk-panel-head">
           <span class="risk-panel-title" id="magic-title">Lancer un sort</span>
           <button class="risk-panel-close" id="magic-close" aria-label="Fermer">✕</button>
         </div>
