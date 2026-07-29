@@ -145,12 +145,32 @@ export const WeaponEffects = {
     // d'arme liée nommée). Prédicat de mêlée = contrat d'édition
     // (isMeleeWeapon), comme les drogues « en mêlée » ci-dessus — le moteur
     // reste neutre (aucune liste d'armes en dur).
+    //
+    // ⚠ JAMAIS À MAINS NUES, et c'est le livre qui le dit : « Une arme focus a
+    // toujours, de manière peu surprenante, LA FORME D'UNE ARME DE MÊLÉE »
+    // (p.318, section « ARME FOCUS » — le livre dit « arme focus », l'app pose
+    // « Focus d'arme », d'où le `match`). Le combat astral tranche encore plus
+    // net : il liste « les attaques à mains nues, les armes focus actives, et
+    // les sorts mana » comme trois options DISTINCTES, et leur donne des
+    // limites différentes (mains nues → [Astrale], arme focus → [Précision]).
+    // Un poing n'est pas un objet qu'on enchante et qu'on lie ; l'adepte qui
+    // frappe à mains nues relève du FOCUS DE QI, une autre catégorie (p.318).
+    //
+    // L'exclusion était déjà obtenue AVANT ce commentaire, mais PAR ACCIDENT :
+    // `EditionSR5.isMeleeWeapon` reçoit ici le nom NU (`parsed.name`) et ne
+    // reconnaît « Mains nues » que sur la chaîne ENTIÈRE (son test
+    // `\ballonge\b` vit dans les crochets, et « Mains nues » n'est pas dans le
+    // pool `meleeWeapons` — elle est poussée à part, sr5.js:3568). Le jour où
+    // ce prédicat sera rendu cohérent, l'accident tomberait et le focus se
+    // mettrait à doper les poings : le garde explicite ci-dessous survit à ce
+    // changement, la coïncidence non.
     {
       match: /focus d'arme/i,
       target: "pool",
       perRating: [null, 1, 2, 3, 4, 5, 6],
       conditional: (name, edition) =>
-        !!App.getEditionModule(edition)?.isMeleeWeapon?.(name),
+        !!App.getEditionModule(edition)?.isMeleeWeapon?.(name) &&
+        !WeaponEffects.isUnarmed(name),
       source: "Focus d'arme",
       page: "SR5 p.318",
     },
