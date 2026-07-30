@@ -156,6 +156,35 @@
     transform var(--dur-fast) var(--ease-standard),
     box-shadow var(--dur-fast);
 }
+
+/* ---- 4.4 : DEUX DENSITÉS, décidées par la HAUTEUR de la fenêtre ----
+   Le cockpit était réglé pour un grand écran et subissait le portable : à 665px
+   utiles, 9 lignes sur 15 seulement tenaient à l'écran (mesuré, scène de 15).
+
+   Ce qui coûte est la LIGNE, pas le décor. Mesuré en A/B : rogner le séparateur,
+   le padding de la colonne ET la barre d'outils ne fait rien gagner du tout — le
+   compte est quantifié, libérer 20px ne loge pas une ligne de 39. Tout le gain
+   est ici : gouttière et padding vertical, --sp-2 → --sp-1.
+
+     référence   9/15   ligne 45px
+     ici        11/15   ligne 38px
+
+   ⚠️ La cible du plan (13/15) est atteignable — mesuré — mais SEULEMENT en
+   descendant le champ d'initiative à 20px et la gouttière à 2px. On s'arrête
+   avant : le tracker impose déjà 32px à ses puces et 44px aux boutons de la
+   barre, et `Utils.nearest` existe parce que les mis-taps y étaient un problème
+   MESURÉ. Deux lignes gagnées ne valent pas une cible tactile sous le plancher
+   qu'on s'impose ailleurs. 11/15 assumé, 13/15 refusé sciemment.
+
+   Sous 900px de haut seulement : les grands écrans gardent leur respiration,
+   c'est le portable qui est servi. Aucune règle de largeur ici — une fenêtre
+   basse est une fenêtre basse, en dock latéral comme en plein écran. */
+   ⚠️ Ce bloc est placé APRÈS `.encounter-row.compact` (plus bas) et pas ici, à
+   côté de `.encounter-row` : `.compact` redéclare `padding` à spécificité (0,2,0),
+   donc à égalité c'est l'ORDRE SOURCE qui tranche. Écrit plus haut, la densité
+   était ignorée par les lignes EN ATTENTE — précisément celles qu'on veut faire
+   tenir. Déplacer plutôt qu'escalader la spécificité. */
+
 /* Tour actif : dominant (barre d'accent à gauche + fond teinté), pas une
    simple bordore fine — repérable d'un coup d'œil sur petit écran sombre. */
 .encounter-row.active-turn {
@@ -186,6 +215,19 @@
 .encounter-row.compact .encounter-init {
   min-width: 2.2rem;
   padding: 0.15rem 0.25rem;
+}
+
+/* 4.4 — la densité « portable » elle-même (raisonnement complet plus haut, sous
+   `.encounter-row`). Ici et pas là-haut : à spécificité égale avec `.compact`,
+   c'est l'ordre source qui décide. */
+@media (max-height: 900px) {
+  #encounter-list {
+    gap: var(--sp-1);
+  }
+  .encounter-row,
+  .encounter-row.compact {
+    padding-block: var(--sp-1);
+  }
 }
 /* V7 — actions DÉPLIÉES de la ligne de l'actif : un petit tableau de bord dans
    l'espace vide sous la jauge de vie du combattant en focus (les lignes en
