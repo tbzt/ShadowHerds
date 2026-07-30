@@ -275,6 +275,53 @@ export const EncounterRenderer = {
     });
   },
 
+  /** B2.5 (C-018) — les états POSÉS, lisibles depuis la piste elle-même.
+      Mesuré avant : 3 PNJ Enflammés, le mot « enflamm » sortait **0 fois** de tout
+      le cockpit dès que l'actif n'était pas l'un d'eux. Les pastilles n'existaient
+      que dans la console Réagir, donc uniquement quand un PJ est l'acteur actif :
+      au tour d'un PNJ, rien ne disait qui brûle.
+
+      **En LECTURE seule**, et c'est le point de conception. Les pastilles de la
+      carte (`CardRenderer._statusTag`) portent deux verbes — monter d'un cran, et
+      ✕ retirer. Les monter ici mettrait des gestes destructifs dans la surface
+      qu'on BALAIE, et donnerait un troisième endroit où poser un état alors que
+      la Suite A vient d'en unifier la discipline. La piste répond à « qui brûle ? »,
+      pas à « soigne-le ».
+
+      Source unique : `Statuses.active`, celle des cartes, atteinte par
+      `CardRenderer.liveDeps()` — pas de second catalogue, pas d'import de plus.
+      Borné à 3 + un reliquat « +N » (leçon A3 : une ligne ne doit pas pousser le
+      reste hors du champ ; un PNJ peut porter 28 états). Le niveau s'écrit en
+      chiffre arabe et non en romain comme sur la carte : la piste est une surface
+      de balayage, pas la notation du livre — le détail complet est dans le title. */
+  _rowStatuses(pnj) {
+    if (!pnj || pnj._adhoc) return "";
+    const deps = CardRenderer.liveDeps();
+    if (!deps || !deps.Statuses) return "";
+    let actifs = [];
+    try {
+      actifs = deps.Statuses.active(pnj) || [];
+    } catch {
+      return "";
+    }
+    if (!actifs.length) return "";
+    const MAX = 3;
+    // Pas de référence de page dans le title : le MJ n'en a jamais besoin, et
+    // cette surface-ci est neuve — on n'y en introduit pas. (Les `page` déjà
+    // affichés ailleurs, ex. `CardRenderer._statusTag`, restent tels quels.)
+    const puce = (s) => {
+      const niveau = s.level > 1 ? ` ${s.level}` : "";
+      return `<span class="encounter-kind encounter-state" title="${Utils.escHtml(`${s.name}${niveau}`)}">${Utils.escHtml(s.name)}${niveau}</span>`;
+    };
+    const montrees = actifs.slice(0, MAX).map(puce).join("");
+    const reste = actifs.length - MAX;
+    const plus =
+      reste > 0
+        ? `<span class="encounter-kind encounter-state is-more" title="${Utils.escHtml(actifs.slice(MAX).map((s) => s.name).join(", "))}">+${reste}</span>`
+        : "";
+    return montrees + plus;
+  },
+
   /** Ligne statique : Anarchy n'a pas d'initiative chiffrée, l'ordre est
       décidé à la table et réordonné à la main (glisser-déposer, cf.
       dragHandle de _rowNarrative) — sans ce rappel, le silence de « Lancer &
@@ -361,7 +408,7 @@ export const EncounterRenderer = {
       ${r.down ? `<span class="encounter-nrow-check" aria-hidden="true">✓</span>` : `<button type="button" class="encounter-nrow-check" data-action="narrative-toggle" data-id="${pnjId}" aria-pressed="${hasActed}" title="Marquer « joué »" aria-label="Marquer joué — ${fullName}">✓</button>`}
       <div class="stack encounter-nrow-body">
         <span class="encounter-nrow-name">${colorDot}${name}</span>
-        <span class="cluster"><span class="encounter-kind">${kind}</span>${comb}</span>
+        <span class="cluster"><span class="encounter-kind">${kind}</span>${comb}${this._rowStatuses(pnj)}</span>
       </div>
       ${status}
       ${this._lifeGauge(r)}
@@ -600,6 +647,7 @@ export const EncounterRenderer = {
           ${nameHtml}
           ${r.down ? this._downBadge() : ""}
           ${!r.down && r.delayed ? this._delayedBadge() : ""}
+          ${this._rowStatuses(pnj)}
         </div>
         ${this._lifeGauge(r)}
         ${this._moraleBanner(r)}

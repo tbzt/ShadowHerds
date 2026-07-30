@@ -405,6 +405,24 @@
   padding: 0.05rem 0.3rem;
 }
 
+/* B2.5 — état POSÉ, lu depuis la piste. Même gabarit que `.encounter-kind`
+   (dont il hérite : c'est la pastille compacte du tracker) mais teinté --warning,
+   parce qu'il ne dit pas ce QU'EST le combattant, il dit ce qu'il SUBIT — et
+   c'est ce qui doit accrocher l'œil pendant un balayage. Aucune affordance :
+   pas de curseur pointeur, pas de survol actif — la piste répond à « qui
+   brûle ? », les verbes restent sur la carte et dans la console. */
+.encounter-state {
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 45%, var(--border));
+  text-transform: none;
+}
+/* Le reliquat « +N » reste discret : il annonce un dépassement, il ne le nomme
+   pas (le detail est dans son title). */
+.encounter-state.is-more {
+  color: var(--text-dim);
+  border-color: var(--border);
+}
+
 /* Marqueur de dominance du combattant actif. */
 .encounter-active-flag {
   color: var(--accent);
