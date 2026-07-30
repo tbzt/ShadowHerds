@@ -12,6 +12,184 @@ commit.
 
 ## [Non publié]
 
+## [1.135.0] — 2026-07-30
+
+### Ajouté
+
+- **Contrer un sort rejoint la console Réagir.** Le livre SR6 la note « L » —
+  déclarable à n'importe quel moment, donc jamais à son propre tour : on contre
+  le sort de quelqu'un d'autre. Dans la feuille d'actions, qui est celle du
+  combattant ACTIF, elle ne pouvait littéralement pas servir. Elle est
+  maintenant un bouton **✦** sur la ligne du PNJ non actif, entre ⛨ Défense
+  totale et ⛊ Encaissement — l'ordre de la séquence que le meneur joue déjà.
+  Un tap lance la réserve de Sorcellerie et débite l'action majeure, comme le ⛉
+  de défense le fait depuis longtemps.
+  **Seulement pour qui a la compétence de son édition** : Sorcellerie en SR6
+  (le livre n'y sépare pas le contresort du lancement), et en SR5 c'est
+  « Défense contre sorts » qui reste dans la feuille du ⛨ — une INTERRUPTION,
+  payée en score d'initiative et non en jetons. Deux éditions, deux mécaniques,
+  deux surfaces.
+
+### Corrigé
+
+- **Les états « impayable » et « interdit » rendaient le nom de l'action
+  illisible.** Les deux s'appuyaient sur l'opacité, qui atténue le mot autant
+  que le décor. Mesuré : le libellé tombait à **2,4:1** pour une action trop
+  chère et **~1,9:1** pour une action interdite, très en dessous des 4,5:1 que
+  le référentiel exige. Et aucun réglage n'y pouvait rien — même à 0,85
+  d'opacité le contraste plafonnait à 4,26:1. Ce n'était pas une valeur trop
+  basse, c'était un canal qui ne pouvait pas marcher. **L'atténuation porte
+  désormais sur le filet, jamais sur l'encre** : filet tireté et pâli pour un
+  coût impayable, pointillé + barré + ⊘ pour une interdiction. Tous les états
+  passent maintenant 4,5:1, teinte de domaine comprise (4,81 en magie, 4,58 en
+  Matrice), et la teinte survit à l'atténuation — c'était tout l'intérêt d'avoir
+  séparé les deux canaux.
+- **Le decker était renvoyé vers des chips de sprite qu'il n'a pas.** La
+  rubrique « Matrice » confondait deux publics : le decker et le technomancien
+  jouent bien les mêmes actions matricielles (SR5 p.252), mais sept d'entre
+  elles — compiler, inscrire, décompiler un sprite, lui donner un ordre,
+  l'appeler, tisser et tuer une forme complexe — n'appartiennent qu'au second.
+  Elles ont leur propre rubrique **Résonance**, ouverte à qui a de la Résonance,
+  une forme complexe ou un persona. Un decker SR5 y perd 4 puces et deux renvois
+  vers des endroits absents de sa fiche.
+- **Un cyberdeck ajouté depuis l'éditeur n'ouvrait pas la rubrique Matrice.**
+  Le prédicat cherchait « cyberdeck » dans l'équipement converti par `String`,
+  or un objet d'équipement catégorisé y devient « [object Object] ». Seuls les
+  items saisis en chaîne nue étaient reconnus.
+- **« Défense contre sorts » était proposée à tout le monde en SR5**, molosses
+  compris, dans une feuille d'interruptions de neuf puces. Le livre nomme
+  pourtant sa réserve — « réserve = Contresort ». La condition était écrite ;
+  elle n'était portée par rien. Le filtre passe par le point unique, donc la
+  porte fermée à l'écran l'est aussi au clavier.
+
+## [1.134.0] — 2026-07-30
+
+### Corrigé
+
+- **Trois portes du cockpit jouaient gratuitement ce que la feuille faisait
+  payer.** Lancer un sort depuis le bloc Sorts, invoquer ou bannir depuis les
+  chips ✦, tirer un pic de données depuis le râtelier Matrice : aucune de ces
+  surfaces ne touchait au budget d'actions. Les mêmes gestes coûtaient une
+  majeure (SR6) ou une complexe (SR5) depuis la feuille d'actions. **Deux
+  portes, deux prix, dont un gratuit** — et c'est ce qui rendait impossible de
+  refermer les doublons : effacer la puce sans brancher le débit aurait
+  supprimé le coût au lieu de le déplacer. Les trois portes débitent
+  désormais, et la clé débitée vient toujours du catalogue de l'édition.
+- **La ligne du combattant actif avait perdu son fond, sa bordure et sa barre
+  d'accent.** Un bloc de commentaire refermé une ligne trop tôt dans la feuille
+  du tracker faisait avaler la règle qui suit — précisément celle qui donne au
+  tour actif son identité visuelle. Mesuré : la ligne active s'affichait avec
+  le fond et le filet d'une ligne ordinaire, sans le liseré de 3 px. Le repère
+  le plus important de la piste ne se voyait plus.
+
+### Modifié
+
+- **Les actions qui se jouent ailleurs ont quitté la feuille.** Le catalogue
+  savait depuis longtemps que « Attaquer » n'y a pas sa place — on attaque en
+  tapant l'arme. Huit autres étaient dans le même cas et personne ne le lisait :
+  le rechargement (le panneau de l'arme le porte avec son prix), Lancer un sort,
+  Invoquer, Bannir, et les quatre gestes du râtelier Matrice. **9 puces de moins
+  en SR6, 15 en SR5.** Rien ne disparaît en silence : un rappel en tête de
+  feuille nomme l'endroit — « 4 actions se jouent depuis le râtelier Matrice » —
+  et il ne cite que des endroits qui existent pour CE PNJ.
+- **Une rubrique « Hors tour » sépare les réactions des actions du tour.**
+  Bloquer, Esquiver, Éviter, Intercepter, Assister, Contrer un sort, Défense
+  matricielle totale : le livre SR6 les note « L », déclarables à n'importe quel
+  moment — c'est-à-dire jamais à son propre tour. Elles étaient mélangées aux
+  actions du tour, ce qui obligeait l'œil à retrier à chaque ouverture ce que le
+  livre avait déjà trié. Elles ne changent pas de surface, seulement de rangée :
+  elles se paient toujours en jetons, donc elles restent là où le budget se
+  manipule. **La rubrique traverse les domaines, et chaque puce y garde sa
+  teinte** — Contrer un sort reste violet, Défense matricielle totale reste
+  verte. SR5 n'a pas cette notation : la rubrique n'y apparaît pas.
+
+**Ce que ça donne, mesuré** (accès direct + « tous… ») :
+
+| | avant | 1.133 | 1.134 |
+|---|---|---|---|
+| ganger SR6 | 77 | 29 | **27** |
+| mage SR6 | 77 | 40 | **35** |
+| decker SR6 | 77 | 62 | **56** |
+| rigger SR6 | 77 | 33 | **31** |
+| ganger SR5 | 70 | 24 | **19** |
+| mage SR5 | 70 | 29 | **21** |
+| decker SR5 | 70 | 57 | **52** |
+
+## [1.133.0] — 2026-07-30
+
+### Corrigé
+
+- **La feuille d'actions ne montrait plus la magie ni la Matrice à qui n'en a
+  pas — sauf chez la quasi-totalité des PNJ.** Le tri par domaine, livré au lot
+  F5b, ne s'appliquait que lorsque **deux rubriques au moins** restaient
+  ouvertes : c'est-à-dire chez le mage et le decker, et nulle part ailleurs.
+  Pour un ganger, un vigile, un molosse — la population que ce tri visait — la
+  feuille repartait du catalogue entier. **Mesuré : 69 puces affichées au lieu
+  de 21 en SR6, 63 au lieu de 17 en SR5**, avec juste au-dessus le rappel
+  « 11 magie masquées · 33 matrice masquées » qui promettait le contraire.
+  La ligne qui garantit que rien ne se masque en silence surplombait 44 puces
+  qui ne se masquaient pas du tout.
+- **En SR5, le domaine « magie » ne fermait rien.** Le prédicat était écrit et
+  testé à chaque ouverture de feuille, mais aucune entrée du catalogue ne
+  portait le domaine : SR5 n'imprime pas la magie dans une table à part, et le
+  rangement en avait conclu qu'il n'y avait rien à faire. Lancer un sort,
+  Invoquer, Bannir, Passer en projection astrale et Changer de perception
+  restaient donc proposés à tout le monde. **Les cinq entrées portent leur
+  domaine.**
+- **Un Ares Predator n'est plus un char de combat.** Le catalogue de véhicules
+  SR6 reconnaissait l'« Ares Army-Master » au motif `/ARES/i` — le fabricant
+  seul. Ares produit le pistolet et le fusil d'assaut les plus répandus du jeu :
+  tout ganger armé recevait donc une chip « ▣ Ares Army-Master · déployer »
+  dans sa zone Combat. Même défaut sur `/HORIZON/i`, qui captait les commlinks
+  Horizon et le drone Horizon Flying Eye pourtant catalogué à part. Les deux
+  motifs nomment désormais le véhicule.
+- **Trente-trois véhicules SR6 étaient inatteignables, masqués par un homonyme
+  de leur propre marque.** `/ARES/i` et `/HORIZON/i` n'étaient pas deux
+  accidents : une trentaine d'entrées du catalogue SR6 se reconnaissaient au
+  seul nom du fabricant — `/HONDA/i`, `/FORD/i`, `/NISSAN/i`, `/TOYOTA/i`,
+  `/CORSAIR/i`, `/MAERSK/i`… Comme le premier motif qui répond l'emporte,
+  chaque marque ne pouvait sortir qu'un seul véhicule, toujours le même :
+  « Honda Viking 2080 » et « Honda-Gm Diamondback » devenaient un *Honda Rough
+  Rider*, les trois fourgons Ford un *Ford Dasher (Sport)*, les **cinq**
+  Corsair un *Corsair Elysium*. Un motard sur une Yamaha Nodachi recevait la
+  fiche d'une Kaburaya de course — mauvaise vitesse, mauvaise structure,
+  mauvais moniteur. **Les 131 motifs du catalogue nomment maintenant le
+  véhicule**, et les variantes de carrosserie (« … (Minivan) ») passent avant
+  leur modèle de base pour ne plus être avalées par lui. Deux modèles gardent
+  leur marque parce que leur nom seul désignait déjà de l'équipement : le
+  Centaur (les cyberjambes « Substitut de membres inférieurs - Centaure ») et
+  le Gladius (trois armes au catalogue). Vérifié à l'inverse : plus aucun motif
+  ne capte le nom d'une autre entrée du catalogue — SR5 n'avait aucun cas et
+  n'en a toujours aucun.
+
+### Ajouté
+
+- **Un domaine « Pilotage », pour que les actions de rigger cessent d'être
+  proposées à tout le monde.** Commander un drone, Contrôler un drone à
+  distance, Plonger (rigger) et Utiliser une CCR (SR6), Plonger dans un
+  véhicule (SR5) : le livre les imprime dans la table de combat, mais chacune
+  nomme son matériel dans sa propre description — « via une Console de commande
+  pour rigger », « avec un câblage de contrôle de véhicule et un véhicule ou
+  drone adapté ». La condition était écrite ; aucun prédicat ne la portait.
+  **Cinq puces de moins chez qui n'a ni drone, ni véhicule, ni interface.**
+- **Les rubriques Magie et Matrice se reconnaissent à l'œil.** Le domaine ne se
+  lisait que dans un libellé gris au-dessus de trente puces identiques —
+  invisible dès qu'on défile. Chaque rubrique porte désormais son **calque
+  teinté**, violet pour la magie, vert pour la Matrice : liseré de bande,
+  libellé, filet et fond des puces. Ce n'est pas une cinquième couleur d'accent
+  mais le calque transverse que la zone Combat utilise déjà pour ses blocs
+  Sorts et Matrice — même recette, aucun jeton nouveau.
+  **La disponibilité reste lisible parce qu'elle n'emprunte pas le même
+  canal** : la teinte dit le domaine, la forme dit l'état — filet tireté pour
+  un coût impayable, pointillé barré et ⊘ pour une action que le livre
+  interdit, liseré gauche épais pour une action déclarable hors de son tour.
+  Une puce violette tiretée reste violette. L'encre, elle, ne prend jamais la
+  teinte : elle doit rester lisible sous atténuation.
+
+**Ce que ça donne, mesuré** (SR6 · SR5, accès direct + « tous… ») :
+ganger 77 → **29** · 70 → **24** ; mage 77 → **40** · 70 → **29** ;
+decker 77 → **62** · rigger 77 → **33**.
+
 ## [1.132.1] — 2026-07-30
 
 ### Corrigé
