@@ -178,7 +178,8 @@
 
    Sous 900px de haut seulement : les grands écrans gardent leur respiration,
    c'est le portable qui est servi. Aucune règle de largeur ici — une fenêtre
-   basse est une fenêtre basse, en dock latéral comme en plein écran. */
+   basse est une fenêtre basse, en dock latéral comme en plein écran.
+
    ⚠️ Ce bloc est placé APRÈS `.encounter-row.compact` (plus bas) et pas ici, à
    côté de `.encounter-row` : `.compact` redéclare `padding` à spécificité (0,2,0),
    donc à égalité c'est l'ORDRE SOURCE qui tranche. Écrit plus haut, la densité
