@@ -511,9 +511,27 @@ et final.
 
 *Pourquoi le repos est plat* : sur fond sombre, une ombre noire ne détache
 rien — elle salit. Le figure/fond se fait par la **luminance**. Votre
-`foundation.css` le dit déjà, en toutes lettres, ligne 58. Il faut maintenant
-que le code le fasse : **66** `box-shadow` en dur attendent *(mesuré le
-2026-07-30 ; 71 à la rédaction v1)*.
+`foundation.css` le dit déjà, en toutes lettres, ligne 58.
+
+> **Le « 71 `box-shadow` en dur » de la v1 était un mauvais compteur — et le
+> corriger en « 66 » l'était tout autant** *(les deux erreurs sont de moi ;
+> recompté par nature le 2026-07-30)*. Sur les **52** `box-shadow` sans
+> `--elev-*` : **12 sont des `inset`** (les liserés d'accent — un patron que ce
+> document recommande, § 6.1), **14 des `none`/`transparent`** (des remises à
+> zéro), **15 des lueurs** (`--glow`, `--accent`, anneaux de focus) — **rien de
+> tout cela n'est de l'élévation.** Restent 11 vraies ombres portées, dont
+> **6 appartiennent aux dés** (physicalité protégée, § 9), 2 combinent déjà
+> `var(--elev-2)` avec une lueur sur plusieurs lignes, et 1 est le fondu du
+> footer collant (assumé, § 9).
+>
+> **Reliquat réel : UN site.** `.shadows-sidebar` en tiroir mobile
+> ([`responsive.css`](css/base/responsive.css)) porte `4px 0 16px rgba(0,0,0,.5)`
+> — un cast **latéral**, quand `--elev-1/2` sont des casts **verticaux**. Ce
+> n'est pas un oubli de migration : il manque un **token directionnel**, que
+> personne n'a encore jugé utile de créer pour un seul appelant.
+>
+> *C'est exactement le piège que le § 8 dénonce — compter des **caractères**
+> plutôt que des **effets**. Il a fallu deux passages pour ne plus y tomber.*
 
 **Piège connu, déjà documenté par vous — à répéter ici pour qu'il ne se
 reperde pas :** sur une surface biseautée (`clip-path: var(--card-clip)`) ou
@@ -1284,6 +1302,16 @@ Aucun résultat pour « <terme> »
 l'interface **plus lente** que pas d'indicateur du tout. Au-delà de 200ms :
 squelette à la forme du contenu attendu, jamais un spinner plein écran —
 le squelette prépare l'œil à la mise en page qui arrive.
+
+> **Zéro squelette dans `css/`, et c'est le bon résultat — ne pas le lire comme
+> une dette** *(tranché au lot 8)*. Les collections se peignent depuis
+> `localStorage`, **synchrone** : il n'y a pas de 200ms à couvrir, un squelette y
+> serait un mensonge décoratif. Le seul chemin réellement asynchrone du produit
+> est **Sync** (`sync.js`, appels réseau) — et c'est là que le manque était réel :
+> le libellé « Synchronisation en cours… » existait **mais n'était jamais
+> peint**, faute de rafraîchissement entre le changement d'état et la fin de
+> l'appel. Corrigé là, pas ailleurs. *Leçon : « 0 squelette » ne se lit pas comme
+> un trou tant qu'on n'a pas vérifié ce qui est réellement asynchrone.*
 
 #### Erreur
 
