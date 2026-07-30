@@ -422,7 +422,11 @@
   width: auto;
   overflow-x: auto;
 }
-.curated-monitor .monitor-box {
+/* [data-action] ajouté pour battre .monitor-box[data-action] (même
+   spécificité 0,2,0 sinon — l'ordre de fichier déciderait, fragile) : la
+   densité compacte de la vue curated reste voulue malgré la loi 4, ce
+   moniteur est aussi cochable qu'en vue complète. */
+.curated-monitor .monitor-box[data-action] {
   width: 13px;
   height: 13px;
 }
@@ -975,6 +979,14 @@
     background var(--dur-fast),
     border-color var(--dur-fast);
   flex-shrink: 0;
+}
+/* Loi 4 (cibles tactiles, D10) : la case de moniteur est le geste le plus
+   fréquent du MJ — 24px = plancher WCAG 2.5.5/2.5.8 exact. Scopé à
+   [data-action] pour NE PAS grossir le moniteur en lecture seule
+   (CardRenderer.gaugeBoxes, écran spectateur), qui n'est jamais une cible. */
+.monitor-box[data-action] {
+  width: 24px;
+  height: 24px;
 }
 .monitor-box:hover {
   border-color: var(--accent);

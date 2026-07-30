@@ -707,17 +707,10 @@
     height: 18px;
   }
 
-  /* Loi 4 (CIBLES TACTILES) : la case de moniteur est le geste le plus
-     fréquent du MJ — scopé à `[data-action]` pour ne PAS grossir le
-     moniteur de CI en lecture seule (play/encounterrenderer.js), qui n'est
-     jamais une cible. 24 = minimum WCAG 2.5.5/2.5.8 exact ; mesuré : 11
-     cases SR5 × 24 + 10 espacements × 4 = 304px, tiennent dans une carte
-     mobile sans repli. */
-  .monitor-box[data-action] {
-    width: 24px;
-    height: 24px;
-    border-radius: var(--radius-sm);
-  }
+  /* La case de moniteur (24px, loi 4) est passée à la base (D10, pnj-card.css)
+     — souris et tactile partagent maintenant la même cible. Reste ici
+     l'espacement propre au tactile : mesuré à 4px, 11 cases SR5 × 24 + 10
+     espacements × 4 = 304px, tiennent dans une carte mobile sans repli. */
   .monitor-boxes {
     gap: var(--sp-1);
   }
