@@ -64,18 +64,25 @@
      pas box-shadow (le clip/overflow rognait le glow — bug latent réparé). */
   --elev-1: 0 4px 12px rgba(0, 0, 0, 0.5);
   --elev-2: 0 14px 28px rgba(0, 0, 0, 0.62);
-  /* Cast LATÉRAL — pour une surface qui entre par le côté (tiroir hors-champ),
-     pas par le dessus. `--elev-1/2` portent un cast VERTICAL : les substituer
-     ici changerait la direction perçue, c'est pourquoi la dette a été assumée
-     plutôt que résorbée de force (D2 → soldée ici).
-     Même famille que `--elev-1` (alpha .5), juste tournée d'un quart de tour et
-     à peine plus diffuse (16 contre 12) : un tiroir se détache de la page, il ne
-     lévite pas au-dessus d'elle.
-     ⚠️ UN SEUL appelant aujourd'hui (`.shadows-sidebar` en tiroir mobile), et
-     c'est assumé : ce token ne factorise pas, il NOMME une direction. Les
-     feuilles du bas (`#dice-sheet`/`#more-sheet`) n'ont, elles, aucune ombre —
-     leur cast devrait pointer vers le HAUT ; à trancher si le besoin se pose. */
+  /* ---- Élévations DIRECTIONNELLES ----
+     `--elev-1/2` portent un cast VERTICAL VERS LE BAS : parfait pour un objet
+     qui flotte au-dessus de la page, inutilisable pour une surface qui entre
+     par un bord. Substituer l'un d'eux changerait la direction perçue — d'où
+     ces deux tokens, nommés par leur DIRECTION et non par un niveau.
+     Ils ne factorisent presque rien (1 et 2 appelants) : ils NOMMENT une
+     intention. `4px 0 16px` au milieu d'une media query ne dit à personne
+     pourquoi ces chiffres-là.
+
+     `--elev-side` : le tiroir qui entre par la gauche (`.shadows-sidebar`).
+       Famille de `--elev-1` (alpha .5) tournée d'un quart de tour, à peine plus
+       diffuse (16 contre 12) : un tiroir se détache de la page, il ne lévite
+       pas au-dessus d'elle.
+     `--elev-up` : les feuilles qui montent du bas (`#dice-sheet`/`#more-sheet`).
+       Miroir EXACT de `--elev-2` (le niveau que le § 4.4 donne aux overlays,
+       et ces feuilles en sont), juste retourné vers le haut : un `--elev-2`
+       tel quel casterait vers le bas, donc hors de l'écran, invisible. */
   --elev-side: 4px 0 16px rgba(0, 0, 0, 0.5);
+  --elev-up: 0 -14px 28px rgba(0, 0, 0, 0.62);
   --edge-hi: rgba(255, 255, 255, 0.05);
   --bg-raised: #12161c; /* fallback neutre ; chaque theme-*.css pose sa teinte */
 
