@@ -64,6 +64,18 @@
      pas box-shadow (le clip/overflow rognait le glow — bug latent réparé). */
   --elev-1: 0 4px 12px rgba(0, 0, 0, 0.5);
   --elev-2: 0 14px 28px rgba(0, 0, 0, 0.62);
+  /* Cast LATÉRAL — pour une surface qui entre par le côté (tiroir hors-champ),
+     pas par le dessus. `--elev-1/2` portent un cast VERTICAL : les substituer
+     ici changerait la direction perçue, c'est pourquoi la dette a été assumée
+     plutôt que résorbée de force (D2 → soldée ici).
+     Même famille que `--elev-1` (alpha .5), juste tournée d'un quart de tour et
+     à peine plus diffuse (16 contre 12) : un tiroir se détache de la page, il ne
+     lévite pas au-dessus d'elle.
+     ⚠️ UN SEUL appelant aujourd'hui (`.shadows-sidebar` en tiroir mobile), et
+     c'est assumé : ce token ne factorise pas, il NOMME une direction. Les
+     feuilles du bas (`#dice-sheet`/`#more-sheet`) n'ont, elles, aucune ombre —
+     leur cast devrait pointer vers le HAUT ; à trancher si le besoin se pose. */
+  --elev-side: 4px 0 16px rgba(0, 0, 0, 0.5);
   --edge-hi: rgba(255, 255, 255, 0.05);
   --bg-raised: #12161c; /* fallback neutre ; chaque theme-*.css pose sa teinte */
 

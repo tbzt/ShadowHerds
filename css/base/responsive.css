@@ -554,7 +554,7 @@
     width: min(78vw, 280px);
     z-index: var(--z-sidebar);
     border-radius: 0;
-    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--elev-side);
     transition:
       transform var(--dur-slow) ease,
       opacity var(--dur-base) ease;
