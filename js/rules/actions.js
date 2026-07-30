@@ -111,10 +111,98 @@ export const Actions = {
       un catalogue de 74 et 76. Ce qui n'est pas là n'est pas caché — « tous… »
       est à un tap, et rien ne se masque en silence. */
   quick(pnj) {
-    return this.catalog(pnj).filter((a) => a.quick && !a.viaWeapon);
+    return this.catalog(pnj).filter((a) => a.quick && !this.hasDoor(a));
   },
   rest(pnj) {
-    return this.catalog(pnj).filter((a) => !a.quick && !a.viaWeapon);
+    return this.catalog(pnj).filter((a) => !a.quick && !this.hasDoor(a));
+  },
+
+  /* ============================================================
+     LES AUTRES PORTES (lot F6) — généralisation de `viaWeapon`.
+
+     `viaWeapon` disait depuis F1 une chose vraie et utile : « cette action
+     existe, elle se débite, mais son point d'entrée est ailleurs ». Taper
+     « Ares Alpha » EST l'action Attaquer ; l'offrir une seconde fois dans la
+     feuille donnerait deux portes au même geste.
+
+     La feuille en comptait pourtant HUIT AUTRES, mesurées : Lancer un sort a
+     le bloc Sorts, Invoquer et Bannir ont leurs chips ✦, Pic de données et ses
+     trois voisines ont le râtelier Matrice, Recharger a le panneau de l'arme.
+     Le catalogue le SAVAIT — l'en-tête de `actionModel` en SR6 écrit noir sur
+     blanc « elles ont déjà leur surface motorisée ; ce qui leur manquait,
+     c'était uniquement leur COÛT » — mais rien ne le lisait.
+
+     ⚠ ET LE COÛT NE SE PAYAIT PAS. C'est le vrai défaut que ce lot corrige, et
+     il est plus grave que le doublon : sur les trois portes concernées, AUCUNE
+     n'appelait `useAction`. Le mage qui lançait son sort depuis le bloc Sorts
+     ne payait rien ; le même sort depuis la feuille coûtait une majeure. Deux
+     portes, deux prix, dont un gratuit. Fermer la porte en trop sans brancher
+     le débit sur celle qui reste aurait donc effacé le coût, pas déplacé.
+
+     `via` est la CLÉ de la porte, jamais son libellé : c'est par elle que la
+     porte retrouve l'action à débiter (`byDoor`), et c'est `DOORS` qui donne le
+     mot à afficher. Une seule déclaration, deux lecteurs. `viaWeapon` garde sa
+     forme booléenne — la résolution d'une arme a besoin de `family` et de
+     `weaponMatch`, que ce champ-ci ne porte pas.
+     ============================================================ */
+
+  /** Où se joue une action qui ne s'affiche pas dans la feuille. Le libellé est
+      celui que le MJ lit dans le rappel — il doit NOMMER un endroit de l'écran,
+      pas une abstraction : « rien ne se masque en silence » n'est tenu que si
+      le rappel dit où regarder. */
+  DOORS: {
+    arme: "le panneau de l'arme",
+    rechargement: "le panneau de l'arme",
+    sorts: "le bloc Sorts",
+    formes: "le bloc Formes complexes",
+    invocation: "la chip ✦ Esprit",
+    bannissement: "la chip ✦ Bannir",
+    compilation: "la chip ✦ Sprite",
+    decompilation: "la chip ✦ Décompiler",
+    matrice: "le râtelier Matrice",
+    // La console « Réagir », c'est-à-dire la ligne du PNJ quand ce n'est PAS
+    // son tour. Seule porte de ce tableau qui ne soit pas sur la fiche active,
+    // et c'est le fond du sujet : une action `timing:"L"` se joue pendant le
+    // tour d'un autre. Cf. `counterSpellFor`.
+    reactions: "la console Réagir",
+  },
+
+  /** Cette action a-t-elle un point d'entrée AILLEURS que la feuille ? */
+  hasDoor(entry) {
+    return !!(entry && (entry.viaWeapon || entry.via));
+  },
+
+  /** L'action du catalogue que dessert CETTE porte, ou null si l'édition n'en
+      déclare pas (SR6 n'a pas d'action « tisser une forme complexe » ; Anarchy
+      n'a pas de catalogue du tout). C'est le point d'entrée des portes elles-
+      mêmes : `MagicAction` demande « sorts », le panneau d'invocation demande
+      « invocation », et aucune ne code en dur une clé d'édition. */
+  byDoor(pnj, door) {
+    return this.catalog(pnj).find((a) => a.via === door) || null;
+  },
+
+  /** Ce qui ne s'affiche PAS dans la feuille parce que ça se joue ailleurs,
+      groupé par endroit → [{ where, n }]. Dit une fois en tête de feuille, sur
+      le patron de `closedDomains` : une action retirée de la vue doit dire où
+      elle est partie, sinon le MJ la croit disparue.
+
+      ⚠ LIMITÉ AUX DOMAINES OÙ CE PNJ PEUT AGIR — corrigé en le regardant à
+      l'écran. Sans ce filtre, le ganger lisait « 1 action se joue depuis le
+      bloc Sorts · 4 actions depuis le râtelier Matrice » alors qu'il n'a ni
+      l'un ni l'autre sur sa fiche : un renvoi vers un endroit qui n'existe pas
+      pour lui est pire qu'un silence, il envoie chercher. La ligne juste
+      au-dessus lui dit déjà que la magie et la Matrice sont fermées, et
+      `closedDomains` compte ces actions-là — chaque action masquée est donc
+      annoncée exactement une fois, par la raison qui la masque vraiment. */
+  doorGroups(pnj) {
+    const par = new Map();
+    for (const a of this.catalog(pnj)) {
+      if (!a.via) continue; // `viaWeapon` a sa porte évidente : l'arme elle-même
+      if (!this.domainAvailable(pnj, this.domain(a))) continue;
+      const where = this.DOORS[a.via] || a.via;
+      par.set(where, (par.get(where) || 0) + 1);
+    }
+    return [...par].map(([where, n]) => ({ where, n }));
   },
 
   /** ⚠ `viaWeapon` — l'action existe au catalogue (elle a un coût, elle se
@@ -178,12 +266,42 @@ export const Actions = {
     return this.viaWeapon(pnj).find((a) => a.weaponMatch && a.weaponMatch.test(nom)) || null;
   },
 
-  /** DOMAINES (lot F1b) — combat, magie, Matrice.
+  /** DOMAINES (lot F1b, quatrième rubrique au lot F6) — combat, magie,
+      Matrice, pilotage.
 
       Le lot F1 tenait dans une seule liste : 32 actions en SR6, 36 en SR5.
-      F1b y verse les tables magique et matricielle et fait passer SR6 à 76,
-      SR5 à 74. « tous… » deviendrait un mur de puces où l'œil ne retrouve
-      rien — d'où trois rubriques, dans l'ordre où le livre les imprime.
+      F1b y verse les tables magique et matricielle et fait passer SR6 à 78,
+      SR5 à 76. « tous… » deviendrait un mur de puces où l'œil ne retrouve
+      rien — d'où des rubriques, dans l'ordre où le livre les imprime.
+
+      ── PILOTAGE (F6) : le domaine qui manquait ─────────────────────────────
+      F1b s'était arrêté aux rubriques que le LIVRE imprime en tables séparées.
+      Mais la question que `domainAvailable` pose n'est pas « le livre range-t-il
+      ça à part ? », c'est « ce PNJ peut-il seulement agir là ? ». À ce compte,
+      Commander un drone / Contrôler un drone à distance / Plonger (rigger) /
+      Utiliser une CCR sont aussi inutiles à un vigile que Lancer un sort —
+      **quatre puces en SR6, une en SR5** (Plonger dans un véhicule) qui ne
+      servaient à personne d'autre qu'à un rigger, et qu'aucune porte ne fermait.
+      Le livre les imprime dans la table de combat ; ce n'est pas une raison
+      pour les proposer à un molosse.
+
+      Ce domaine est donc le premier qui ne CALQUE PAS une table du livre : il
+      calque une capacité de la fiche, comme les trois autres le font déjà par
+      leur prédicat. La rubrique arrive en dernier — c'est la moins jouée des
+      cinq, et l'ordre d'une feuille ne se renégocie pas à chaque ouverture.
+
+      ── RÉSONANCE (F6b) : la Matrice avait DEUX publics ─────────────────────
+      « Matrice » restait ouverte au decker comme au technomancien, et c'est
+      juste — le livre SR5 (p.252) fait jouer au technomancien les MÊMES actions
+      matricielles, par la Résonance. Mais sept d'entre elles ne sont PAS les
+      mêmes : compiler, inscrire, décompiler un sprite, lui donner un ordre,
+      l'appeler, tisser et tuer une forme complexe. Un decker n'a ni sprite ni
+      forme complexe, et le rappel des portes le renvoyait vers une « chip
+      ✦ Sprite » qui n'existe pas sur sa fiche — un renvoi vers un endroit
+      absent, ce que ce lot s'était justement interdit.
+
+      Le prédicat « matrice » n'était donc pas trop large : c'est la rubrique
+      qui confondait deux publics. On ne resserre pas, on SÉPARE.
 
       `domain` absent = combat : c'est la table de référence, celle qu'on joue
       le plus, et elle n'a pas à porter une étiquette pour exister. */
@@ -191,6 +309,8 @@ export const Actions = {
     { key: "combat", label: "Combat" },
     { key: "magie", label: "Magie" },
     { key: "matrice", label: "Matrice" },
+    { key: "resonance", label: "Résonance" },
+    { key: "pilotage", label: "Pilotage" },
   ],
 
   domain(entry) {
@@ -225,15 +345,69 @@ export const Actions = {
       .filter((g) => g.entries.length);
   },
 
+  /* ============================================================
+     LE MOMENT, DEUXIÈME AXE DE RANGEMENT (lot F6).
+
+     Le domaine répond à « ce PNJ peut-il agir là ? ». Il ne répond pas à la
+     question que l'utilisateur a posée ensuite — « pas forcément au bon
+     moment ». Or le catalogue porte déjà la réponse, depuis F1 : `timing`.
+
+     SR6 note chaque action « I » (au moment de son initiative) ou « L » (choix
+     libre, à n'importe quel moment). Les « L » sont des RÉACTIONS — Bloquer,
+     Esquiver, Éviter, Intercepter, Assister, Contrer un sort, Défense
+     matricielle totale. Le PNJ actif ne les joue jamais à son tour : elles se
+     déclarent quand quelqu'un d'AUTRE agit. Mélangées aux dix-huit actions du
+     tour, elles obligeaient l'œil à trier à chaque ouverture ce que le livre
+     avait déjà trié.
+
+     ⚠ ELLES NE CHANGENT PAS DE SURFACE, seulement de rangée. L'ancrage posé en
+     tête de ce module tient : une action qui se paie en JETONS vit là où le
+     budget se manipule, par opposition aux interruptions SR5 qui se paient en
+     score d'initiative et vivent dans la console de réaction. Les séparer en
+     rubrique, c'est appliquer ce que le livre imprime — ce n'est pas les
+     déménager.
+
+     La rubrique traverse les domaines (« Contrer un sort » est magique ET hors
+     tour) : chaque puce garde donc son domaine, et donc sa teinte. Le domaine
+     dit CE QUE C'EST, la rubrique dit QUAND ÇA SE JOUE — deux questions, deux
+     canaux, jamais le même.
+
+     SR5 n'a pas de `timing` : ses réactions hors tour SONT les interruptions,
+     déjà ailleurs. La rubrique n'apparaît donc pas, sans une ligne de garde —
+     elle est vide, et une rubrique vide ne s'imprime pas.
+     ============================================================ */
+
+  OUT_OF_TURN: { key: "horsTour", label: "Hors tour" },
+
+  /** Le reste du catalogue tel que la feuille le range : les domaines ouverts
+      (ce qui se joue à son tour), puis « Hors tour ». → [{ key, label, entries }] */
+  restGroups(pnj) {
+    const parDomaine = this.restByDomain(pnj);
+    const groupes = parDomaine
+      .map((g) => ({ ...g, entries: g.entries.filter((a) => a.timing !== "L") }))
+      .filter((g) => g.entries.length);
+    const hors = parDomaine.flatMap((g) => g.entries).filter((a) => a.timing === "L");
+    if (hors.length) groupes.push({ ...this.OUT_OF_TURN, entries: hors });
+    return groupes;
+  },
+
   /** Les domaines fermés à ce PNJ, avec leur motif — pour la ligne de rappel.
-      → [{ key, label, why, n }] */
+      → [{ key, label, why, n }]
+
+      ⚠ Le compte se fait sur le CATALOGUE, pas sur `rest()` (lot F6). Depuis
+      que les actions à autre porte sortent de `rest()`, compter là aurait
+      annoncé « 8 magie masquées » pour une table qui en a onze : les trois qui
+      ont une porte auraient disparu des DEUX comptes — de celui-ci parce
+      qu'elles ne sont plus dans `rest()`, et du rappel des portes parce que
+      leur domaine est fermé. Un domaine fermé masque tout ce qu'il contient ;
+      c'est ce nombre-là que le MJ doit lire. */
   closedDomains(pnj) {
     const m = this.model(pnj);
-    const reste = this.rest(pnj);
+    const cat = this.catalog(pnj);
     return this.DOMAINS.filter((d) => !this.domainAvailable(pnj, d.key)).map((d) => ({
       ...d,
       why: (m.domains[d.key] && m.domains[d.key].why) || "",
-      n: reste.filter((a) => this.domain(a) === d.key).length,
+      n: cat.filter((a) => this.domain(a) === d.key).length,
     }));
   },
 
@@ -512,6 +686,23 @@ export const Actions = {
   statusName(pnj, key) {
     const s = Statuses.find(pnj, key);
     return s ? s.name : null;
+  },
+
+  /** Cette action PORTE-T-ELLE une attaque ? (lot F6b)
+
+      `viaWeapon` couvre les six entrées SR5 et l'unique SR6 : ce sont
+      exactement les gestes qui partent d'une arme, et le livre ne compte pas
+      autre chose quand il écrit « aucune autre action d'attaque ». `shot` s'y
+      ajoute pour les modes de tir, qui se débitent par `fireModes[].actionKey`
+      sans forcément passer par une entrée `viaWeapon`.
+
+      ⚠ VOLONTAIREMENT ÉTROIT. « Lancer un sort » est une attaque quand le sort
+      en est une, et ne l'est pas sinon — l'app ne lit pas la catégorie du sort
+      et deviner reviendrait à décider. Compter une attaque de trop serait pire
+      qu'un compte muet : le rappel qui en découle affirmerait une faute que le
+      MJ n'a pas commise. */
+  isAttack(entry) {
+    return !!(entry && (entry.viaWeapon || entry.shot));
   },
 
   /** Cette action est-elle un TIR ? Lu par le recul progressif SR5 (lot F2) :

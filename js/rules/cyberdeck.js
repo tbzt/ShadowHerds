@@ -214,7 +214,10 @@ export const Cyberdeck = {
       basePool,
       baseDv,
     );
-    return { pool, dv, label: a.name, type: a.type };
+    // `actionKey` (lot F6) : la clé du CATALOGUE D'ACTIONS que ce geste
+    // débite. Remontée telle quelle depuis le contrat de l'édition — ce module
+    // ne sait pas ce qu'est un budget d'actions, il transmet.
+    return { pool, dv, label: a.name, type: a.type, actionKey: a.actionKey || null };
   },
 
   /** Pool de l'attaque matricielle principale (le « pic de données »),

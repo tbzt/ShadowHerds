@@ -12,6 +12,89 @@ commit.
 
 ## [Non publié]
 
+## [1.137.0] — 2026-07-31
+
+### Ajouté
+
+- **Anarchy 1 et 2 reçoivent la limite d'attaques et le Contresort.** Les deux
+  éditions étaient restées en dehors du lot précédent ; elles portent pourtant
+  la version la plus nette de la règle. Anarchy 1re a même une section qui
+  s'appelle littéralement **« Limite d'attaques » (p.155)** : « Un personnage ne
+  peut effectuer qu'**une action offensive** durant sa Narration. » Anarchy 2.0
+  (p.65) : « Un personnage normal pourra effectuer **une action par narration**,
+  et une action supplémentaire **en dépensant un point d'Anarchy**. »
+  Le rappel ⚔ nomme donc la règle, ce qu'elle couvre, et ce qui en achète une
+  seconde — une **augmentation de réflexes** en A1, un **point d'Anarchy** en
+  A2, dont le compteur est déjà juste à gauche dans le bandeau.
+- **Le Contresort d'Anarchy, avec ses deux usages.** Comme partout, ils ne se
+  jouent pas pareil — et en Anarchy ils ne se **paient** même pas pareil :
+  - **A2 (p.184)** — *Contrer au lancement* : test simple Sorcellerie
+    (contresort) + Volonté, les succès se retranchent au lancement. *Dissiper
+    un sort maintenu* : test **opposé** contre Sorcellerie (type de sort) +
+    Volonté, et **les deux magiciens** sont sujets au drain.
+  - **A1 (p.158)** — ⚠ **règle optionnelle**, signalée comme telle : *Contrer un
+    sort d'effet* consomme l'action offensive de la Narration ; *s'interposer*
+    contre un sort de combat coûte **un point d'Anarchy et pas l'action**, et
+    c'est toujours la cible d'origine qui subit les effets.
+
+### Modifié
+
+- **Le rappel d'attaques ne compte pas là où il ne peut pas compter.** En SR5 et
+  SR6 il affiche un décompte, parce qu'un catalogue d'actions existe et que tout
+  passe par un point unique. En Anarchy il affiche la **règle** sans chiffre :
+  il n'y a pas de catalogue, les armes passent par le panneau de risque qui ne
+  débite rien, et surtout les deux livres définissent l'action offensive bien
+  plus largement qu'un coup de feu — lancer un sort d'effet ou engager un
+  cybercombat en sont. Annoncer « 1/1 » à un magicien qui en est à sa troisième
+  action offensive aurait été pire qu'un silence. Même discipline que les arrêts
+  larges : l'app dit la règle, le meneur tranche.
+
+## [1.136.0] — 2026-07-30
+
+### Ajouté
+
+- **Le Contresort, avec ses deux usages — pas seulement la défense contre
+  sorts.** La version précédente n'en offrait qu'un bouton et un jet ; les deux
+  livres en décrivent **deux**, et ils ne se jouent pas pareil. Le ✦ de la
+  console Réagir déplie donc une rangée où chaque usage porte son propre test :
+  - **SR6 (p.146)** — *Défense augmentée* : Sorcellerie + Magie sans seuil, les
+    succès nets deviennent un bonus de défense pour tout le monde dans une
+    sphère de 2 m, pendant un nombre de rounds égal à la Magie. *Dissipation* :
+    même réserve, mais contre la **Valeur de Drain du sort × 2**.
+  - **SR5 (p.297)** — *Défense contre sorts* : ce n'est pas un jet, c'est une
+    **réserve de dés égale à l'indice de Contresort**, qu'on alloue par
+    portions et qui se rafraîchit à chaque tour de combat. Elle a donc ses ±
+    comme l'Atout, et rien ne se lance : ces dés s'ajoutent au test de défense
+    d'un *autre*. *Dissipation* : Contresort + Magie [Astral] contre Puissance
+    du sort + Magie de son lanceur, et le magicien qui dissipe encaisse le
+    Drain — annoncé, jamais appliqué.
+
+  La compétence exigée reste celle de l'édition : **Contresort** en SR5,
+  **Sorcellerie** en SR6, qui n'a pas de Contresort séparé.
+- **Le nombre d'attaques portées est visible sur la rangée de jetons.** Un
+  repère ⚔ *n/1* apparaît dès la première attaque et vire à l'orange au-delà.
+  Il **nomme sa règle**, parce que les deux éditions limitent pour des raisons
+  différentes — et qu'aucune ne dit tout à fait « une attaque par tour » :
+  - **SR5 (p.178)** — une interdiction explicite, mais son unité est la **phase
+    d'action**, pas le tour : un combattant à trois passes attaque trois fois
+    dans le tour, réglementairement.
+  - **SR6 (p.42)** — aucune interdiction : attaquer coûte la majeure, et il n'y
+    en a qu'une. Le livre prévoit d'ailleurs la seconde et la chiffre —
+    « 4 actions mineures pour effectuer 1 action majeure (pouvant permettre
+    d'effectuer une seconde attaque au cours du même tour) ». L'infobulle le dit,
+    à côté du bouton d'échange qui la réalise.
+
+  Comme le reste du cockpit, le repère informe et ne verrouille pas : rien
+  n'empêche de dépasser, l'app le compte et le montre.
+
+### Corrigé
+
+- **« Conduite évasive » était proposée à qui n'a pas de véhicule.** Il ne faut
+  pas être rigger pour faire un écart au volant, mais il faut un volant : la
+  condition est désormais d'avoir un drone ou un véhicule. Une interface de
+  contrôle sans engin ne suffit plus ici — elle continue en revanche d'ouvrir la
+  rubrique Pilotage, qui répond à une autre question.
+
 ## [1.135.0] — 2026-07-30
 
 ### Ajouté

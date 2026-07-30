@@ -260,6 +260,89 @@ export const EditionAnarchy1 = {
   icCombatant(ic) {
     return { name: ic.label, narrative: true };
   },
+  /** LIMITE D'ATTAQUES (lot F6b) — c'est le NOM que le livre donne à sa
+      section, p.155, et c'est la formulation la plus nette des quatre
+      éditions : « Un personnage ne peut effectuer qu'UNE ACTION OFFENSIVE
+      durant sa Narration. »
+
+      ⚠ « Offensive » est plus large que « attaque avec une arme » — le livre le
+      définit lui-même : « toutes les actions qui blessent, endommagent ou
+      pénalisent volontairement et directement une autre cible (PNJ, créatures,
+      drones, esprits, etc.) ». Lancer un sort d'effet (p.158) et engager un
+      cybercombat (p.161) y renvoient explicitement. D'où `broad`, que le rappel
+      affiche : l'app ne SAIT pas reconnaître ces gestes-là, elle peut au moins
+      dire au MJ où la règle s'applique.
+
+      `counted: false` — et c'est la raison de fond : Anarchy n'a pas de
+      catalogue d'actions (`actionModel` absent), donc rien à quoi accrocher un
+      compteur, et ses armes passent par le panneau de RISQUE, qui ne débite
+      pas. Compter serait mentir sur la moitié des gestes concernés. Le cockpit
+      affiche donc la RÈGLE et son exception, jamais un décompte qu'il ne peut
+      pas tenir — même discipline que les états `halts`, annoncés et jamais
+      appliqués.
+
+      `buys` — « les différents types d'augmentation de réflexes, qu'il s'agisse
+      de cyberware, bioware, sort, pouvoir d'adepte ou autres, sont l'exception
+      notable à cette règle, car ils permettent au personnage de bénéficier
+      d'une action offensive supplémentaire ». */
+  attackLimit: {
+    n: 1,
+    scope: "narration",
+    scopeLabel: "sa Narration",
+    page: "p.155",
+    counted: false,
+    why: "un personnage ne peut effectuer qu'une action offensive durant sa Narration",
+    broad:
+      "est offensive toute action qui blesse, endommage ou pénalise volontairement une autre cible — y compris lancer un sort d'effet ou engager un cybercombat",
+    buys:
+      "une augmentation de réflexes (cyberware, bioware, sort ou pouvoir d'adepte) en accorde une seconde",
+  },
+  /** CONTRESORT (lot F6b) — ⚠ RÈGLE OPTIONNELLE en Anarchy 1re : elle vit dans
+      l'encart « Chasseurs de mana — Règles optionnelles de magie », pas dans le
+      corps des règles. On la propose quand même, source citée : c'est le même
+      arbitrage qu'au lot E1, où les cinq états des suppléments sont entrés avec
+      leur provenance plutôt que d'être masqués. Le MJ voit d'où ça vient et
+      tranche.
+
+      Deux usages, comme partout — et le second est le plus dépaysant des quatre
+      éditions : il ne se paie pas en action mais en POINT D'ANARCHY, et il ne
+      protège pas le magicien mais un tiers.
+
+      `null` si le PNJ n'a pas Sorcellerie : sans la compétence, pas de test. */
+  counterspellFor(pnj) {
+    if (!pnj || pnj._adhoc) return null;
+    const sorc = (pnj.skills || []).find((s) => s && /sorcellerie/i.test(s.name || ""));
+    if (!sorc) return null;
+    // Réserve Anarchy = compétence + attribut, comme partout dans cette édition
+    // (cf. la zone Capacités des cartes). Le livre nomme la Volonté.
+    const pool = (Number(sorc.val) || 0) + (Actor.attr(pnj, "VOL") || 0);
+    return {
+      label: "Contresort",
+      skill: "Sorcellerie",
+      page: "p.158 (règle optionnelle)",
+      optional: true,
+      actionKey: null,
+      cost: "une action offensive — ou un point d'Anarchy pour s'interposer",
+      uses: [
+        {
+          key: "effet",
+          label: "Contrer un sort d'effet",
+          pool,
+          roll: "Sorcellerie + Volonté",
+          vs: "Sorcellerie + Volonté du magicien qui maintient le sort",
+          note: "Compte comme l'action offensive de la Narration. En cas de réussite, le sort est dissipé",
+        },
+        {
+          key: "interposer",
+          label: "S'interposer (sort de combat)",
+          pool,
+          roll: "Sorcellerie + Volonté",
+          vs: "les succès servent à la cible pour résister",
+          note: "Coûte UN POINT D'ANARCHY, pas l'action. La cible originelle peut utiliser ses propres succès ou ceux du magicien — et c'est toujours elle qui subit les effets du sort",
+        },
+      ],
+    };
+  },
   /** Budget d'actions par narration (vérifié p.155) — 1 action + déplacement
       gratuit. Atouts (Réflexes câblés) et points d'Anarchy ajoutent des actions :
       au MJ d'incrémenter. */

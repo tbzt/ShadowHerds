@@ -171,6 +171,13 @@ export const SummonPanel = {
     // de Drain (comportement historique).
     let services = s.services;
     let conj = null;
+    // F6 — l'invocation se paie, et elle se paie AVANT de savoir si elle
+    // réussit : le livre facture le geste, pas le résultat. C'est le même
+    // raisonnement que le Drain quelques lignes plus bas, qui est encaissé
+    // même sur une invocation ratée (SR5 p.303 / SR6 p.150). La chip ✦ Esprit
+    // était jusqu'ici gratuite alors que la puce « Invoquer un esprit » de la
+    // feuille coûtait une complexe.
+    if (typeof Encounter !== "undefined") Encounter.useActionVia(owner, "invocation");
     if (ed.conjureSkill) {
       conj = MagicAction.resolveConjuration(owner, s.force);
       services = conj.netHits;
@@ -247,6 +254,9 @@ export const SummonPanel = {
     if (!owner) return;
     const isTier = s.power.field === "tier";
     const level = isTier ? null : s[s.power.field];
+    // F6 — jumeau du débit d'invocation ci-dessus. Seul SR5 déclare l'action
+    // « Compiler un sprite » ; ailleurs la porte se tait.
+    if (typeof Encounter !== "undefined") Encounter.useActionVia(owner, "compilation");
     this._close();
 
     // SR5/SR6 : l'app roule la compilation (tâches = succès nets) + le
@@ -497,6 +507,11 @@ export const SummonPanel = {
     const isSprite = kind === "sprite";
     const verb = isSprite ? "Décompilation" : "Bannissement";
     const unit = isSprite ? "tâche" : "service";
+    // F6 — le renvoi se paie sur le LANCEUR, avant le jet : c'est son action,
+    // et le livre la facture qu'elle aboutisse ou non (le Drain suit la même
+    // règle, cf. `_doSummon`).
+    if (typeof Encounter !== "undefined")
+      Encounter.useActionVia(caster, isSprite ? "decompilation" : "bannissement");
     const res = isSprite
       ? MagicAction.resolveDecompilation(caster, target)
       : MagicAction.resolveBanishment(caster, target);

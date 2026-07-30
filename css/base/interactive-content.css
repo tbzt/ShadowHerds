@@ -402,6 +402,104 @@
   text-transform: uppercase;
 }
 
+/* ---- F6 : le CALQUE TEINTÉ des rubriques Magie et Matrice ----
+   Demande utilisateur : « identifier à l'œil les actions magiques et les
+   actions matricielles ». Jusqu'ici le domaine ne se lisait que dans le
+   libellé de rubrique — quatre lettres grises au-dessus de trente puces
+   identiques, invisibles dès qu'on défile.
+
+   ── Pourquoi ce n'est PAS un cinquième rôle chromatique ──────────────────
+   L'objection était posée, deux fois, dans ce fichier même : « le cockpit a
+   dépensé ses quatre rôles ». Elle vise les rôles d'ACCENT. `--accent-matrix`
+   et `--accent-magic` n'en sont pas : le référentiel (§4.1) les classe en
+   « canaux de calque transverses », et le projet s'en sert déjà exactement
+   comme ça — CP4, `.matrix-block` / `.spell-block` (cards-linked.css), qui
+   redéfinissent `--accent`/`--glow` sur le bloc pour que TOUT ce qu'il
+   contient reprenne la teinte sans une règle dupliquée.
+
+   On applique la même recette à la bande de rubrique. Conséquence gratuite :
+   `.is-last` (✓ + liseré), `.is-surcharged` et `.status-pick.is-on` lisent
+   déjà `var(--accent)` — ils prennent la teinte du domaine sans une ligne de
+   plus, et le sort joué se marque en violet, le hack en vert.
+
+   ── Et « pas disponible » reste lisible parce que les canaux sont disjoints ─
+   C'était la vraie question. La teinte porte le DOMAINE ; la disponibilité est
+   portée par trois autres canaux, tous déjà en place et tous insensibles à la
+   teinte :
+     · impayable    → `.is-over`      opacité .55 + filet TIRETÉ
+     · interdit     → `.is-forbidden` opacité .4 + filet POINTILLÉ + barré + ⊘
+     · hors tour    → `.is-free`      liseré gauche épais
+   Une puce violette tiretée à 55 % reste violette : l'atténuation baisse la
+   luminosité, elle ne change pas la teinte, et la forme d'un filet ne dépend
+   d'aucune couleur. La loi « la couleur n'est jamais le seul porteur » tient
+   donc dans les deux sens — le domaine garde son libellé de rubrique, l'état
+   garde sa forme.
+
+   ⚠ L'ENCRE NE PREND PAS LA TEINTE. Elle reste `--text` : à 0.4 d'opacité, un
+   texte déjà coloré ne tiendrait pas le plancher de 4.5:1 du référentiel, et
+   `.is-forbidden` est justement l'état le plus atténué. Le calque ne touche
+   que le filet, le fond et les marques d'accent — jamais le mot.
+
+   ⚠ LA TEINTE EST SUR LA PUCE, PAS SUR LA BANDE. Elle a d'abord été posée sur
+   `.action-domain`, ce qui suffisait tant que rubrique et domaine se
+   confondaient. La rubrique « Hors tour » les sépare : elle rassemble des
+   actions de trois domaines (Contrer un sort est magique, Défense matricielle
+   totale est matricielle, Bloquer est de combat), et une teinte de bande les
+   aurait toutes repeintes de la même couleur — ce qui aurait été un mensonge,
+   pas un raccourci. La bande garde son liseré et son libellé ; la puce porte sa
+   propre teinte, où qu'elle soit rangée. */
+.action-pick.dom-magie,
+.action-domain.is-magie {
+  --accent: var(--accent-magic);
+  --glow: var(--glow-magic);
+}
+.action-pick.dom-matrice,
+.action-domain.is-matrice {
+  --accent: var(--accent-matrix);
+  --glow: var(--glow-matrix);
+}
+/* La bande : un liseré de gauche, pas un cadre. `.matrix-block` prend un cadre
+   complet parce qu'il DÉCOUPE une zone de la carte ; ici les rubriques se
+   suivent dans une feuille déjà encadrée (le pointillé de `.status-sheet`), et
+   des cadres emboîtés feraient du bruit. Le liseré suffit à dire « à partir
+   d'ici, c'est autre chose ». */
+.action-domain.is-magie,
+.action-domain.is-matrice,
+.action-domain.is-pilotage,
+.action-domain.is-horsTour {
+  border-inline-start: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  padding-inline-start: var(--sp-2);
+}
+.action-domain.is-magie .action-domain-lbl,
+.action-domain.is-matrice .action-domain-lbl {
+  color: var(--accent);
+}
+/* Les puces du calque : filet et fond teintés, encre inchangée (cf. ⚠ plus
+   haut).
+   ⚠ `:not(.is-last):not(.is-surcharged)` — sans lui, cette règle écraserait
+   `.action-pick.is-last` et `.action-pick.is-surcharged` (même poids, mais
+   déclarées plus haut dans le fichier), qui possèdent `border-color` pour dire
+   « dernière action jouée » et « surtaxe appliquée ». Le calque ne teinte que
+   le REPOS : dès qu'un état s'exprime par le filet, c'est lui qui parle — et il
+   parle dans la teinte du domaine, puisque `.is-last` lit `var(--accent)`,
+   redéfini juste au-dessus. */
+.action-pick.dom-magie:not(.is-last):not(.is-surcharged),
+.action-pick.dom-matrice:not(.is-last):not(.is-surcharged) {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border-ui));
+}
+.action-pick.dom-magie,
+.action-pick.dom-matrice {
+  background: var(--glow);
+}
+/* Pilotage : pas de canal transverse dédié — le référentiel n'en déclare que
+   deux, et en inventer un troisième serait exactement le cinquième rôle qu'on
+   refuse. La rubrique se distingue par son liseré seul, en teinte d'édition.
+
+   « Hors tour » non plus, et pour une raison de fond : ce n'est pas un domaine
+   mais un MOMENT. Lui donner une teinte mettrait deux informations sur le même
+   canal — la puce y dit déjà son domaine par sa couleur et son hors-tour par le
+   liseré gauche de `.is-free`. La bande n'ajoute que le rangement. */
+
 /* ---- Actions d'Atout (lot F5) ----
    Sur la rangée d'Atout, jamais celle des jetons : c'est l'autre monnaie. La
    feuille réutilise `.action-sheet` — même composant, même geste — et n'ajoute

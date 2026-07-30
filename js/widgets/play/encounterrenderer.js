@@ -1196,7 +1196,74 @@ export const EncounterRenderer = {
         </span>`;
       })
       .join("");
-    return `<div class="cluster encounter-actions" title="Actions du tour (économie de l'édition — taper pour consommer)">${groups}${this._actionTrades(r, budget)}${this._actionPick(r, budget)}${this._activeGrafts(r)}</div>`;
+    return `<div class="cluster encounter-actions" title="Actions du tour (économie de l'édition — taper pour consommer)">${groups}${this._attackTally(r)}${this._actionTrades(r, budget)}${this._actionPick(r, budget)}${this._activeGrafts(r)}</div>`;
+  },
+
+  /* ========================================================
+     ATTAQUE PORTÉE (lot F6b) — le compte que le livre limite.
+
+     Les deux éditions n'autorisent qu'UNE attaque, pour des raisons qui ne se
+     ressemblent pas, et l'app doit dire laquelle :
+
+     · SR5 p.178 — une INTERDICTION explicite, répétée sous chaque action
+       d'attaque : « aucune autre action d'attaque durant la même PHASE
+       D'ACTION ». L'unité est la phase, donc un combattant à trois passes
+       attaque trois fois dans le tour et c'est réglementaire.
+     · SR6 p.42 — pas d'interdiction du tout : une ÉCONOMIE. Attaquer coûte la
+       majeure, il y en a une. Et le livre nomme lui-même la porte de sortie —
+       « 4 actions mineures pour effectuer 1 action majeure (pouvant permettre
+       d'effectuer une seconde attaque au cours du même tour) ». C'est même le
+       seul exemple qu'il donne de l'échange.
+
+     D'où un repère qui NOMME sa règle au lieu d'asséner « une seule attaque ».
+     Et qui ne verrouille rien : le contrôle d'attaque reste tapable, comme la
+     puce d'une action au-delà du budget. Le MJ a le droit de savoir qu'il
+     déborde et de déborder — garde-fou (e), « informer, jamais décider ».
+
+     ── DEUX ÉTATS, DÉCIDÉS PAR `counted` ───────────────────────────────────
+     · `counted: true` (SR5, SR6) — un CATALOGUE d'actions existe, `useAction`
+       est l'entonnoir unique du tir comme de la mêlée, donc l'app sait compter.
+       Le repère n'apparaît qu'une fois la première attaque portée : c'est un
+       fait, et un fait ne s'annonce pas avant d'avoir eu lieu.
+     · `counted: false` (Anarchy 1 et 2) — pas de catalogue d'actions, et les
+       armes y passent par le panneau de RISQUE, qui ne débite rien. L'app ne
+       peut donc PAS compter, et les deux livres définissent en plus l'action
+       offensive bien plus largement qu'« un coup de feu » : lancer un sort
+       d'effet, engager un cybercombat en sont. Compter ce qu'on voit reviendrait
+       à annoncer « 1/1 » à un magicien qui en est à sa troisième action
+       offensive. Le cockpit affiche donc la RÈGLE, en permanence et sans
+       chiffre — même discipline que les arrêts larges (`halts`), annoncés et
+       jamais appliqués.
+
+     Dans les deux cas le repère informe et ne verrouille rien.
+
+     Rien du tout si l'édition ne déclare pas de limite. */
+  _attackTally(r) {
+    const lim = App.editionModule && App.editionModule.attackLimit;
+    if (!lim) return "";
+    const regle = [
+      `Le livre en autorise ${lim.n} par ${lim.scopeLabel.replace(/^(cette|sa|ce) /, "")} — ${lim.why} (${lim.page})`,
+      lim.broad ? `Ce que ça couvre : ${lim.broad}` : "",
+      lim.buys ? `Pour en porter une de plus : ${lim.buys}` : "",
+    ].filter(Boolean);
+
+    // Éditions qui ne peuvent pas compter : la règle, en clair et en continu.
+    if (lim.counted === false) {
+      const info = ["Limite d'attaques", ...regle, "L'app ne compte pas : les actions offensives d'Anarchy ne passent pas toutes par le budget. Le suivi vous revient."].join("\n• ");
+      return `<span class="attack-tally is-rule" title="${Utils.escHtml(info)}"><span aria-hidden="true">⚔</span> ${lim.n} offensive${lim.n > 1 ? "s" : ""}</span>`;
+    }
+
+    const n = r.attacks || 0;
+    if (!n) return "";
+    const trop = n > lim.n;
+    const info = [
+      `${n} attaque${n > 1 ? "s" : ""} portée${n > 1 ? "s" : ""} ${lim.scopeLabel}`,
+      ...regle,
+      trop ? "L'app ne bloque rien : l'arbitrage vous revient." : "",
+    ]
+      .filter(Boolean)
+      .join("\n• ");
+    return `<span class="attack-tally${trop ? " is-over" : ""}" title="${Utils.escHtml(info)}"><span aria-hidden="true">⚔</span> ${n}/${lim.n}</span>`;
   },
 
   /* ========================================================
@@ -1376,7 +1443,15 @@ export const EncounterRenderer = {
       // personne ne le lise. La trace ne verrouille rien : la puce reste
       // tapable, et retapée elle repaie (le livre n'interdit pas de recommencer).
       const dernier = r.lastAction === a.key ? " is-last" : "";
-      return `<button type="button" class="tag status-pick action-pick${cher ? " is-over" : ""}${a.timing === "L" ? " is-free" : ""}${marque}${doute}${dernier}" data-action="action-use" data-id="${r.pnjId}" data-key="${a.key}" title="${Utils.escHtml(info)}">${Utils.escHtml(a.name)}${cible ? "<span class=\"action-doubt\" aria-hidden=\"true\">⚠</span>" : ""}</button>`;
+      // F6 — la teinte de domaine est portée par LA PUCE, pas par sa rubrique.
+      // Elle l'était d'abord par la bande, ce qui suffisait tant que rubrique
+      // et domaine se confondaient. La rubrique « Hors tour » les sépare : elle
+      // rassemble des puces de trois domaines (Contrer un sort est magique,
+      // Défense matricielle totale est matricielle, Bloquer est de combat), et
+      // une teinte de bande les aurait toutes repeintes de la même couleur.
+      // Sur la puce, chacune garde la sienne où qu'elle soit rangée.
+      const dom = ` dom-${Actions.domain(a)}`;
+      return `<button type="button" class="tag status-pick action-pick${dom}${cher ? " is-over" : ""}${a.timing === "L" ? " is-free" : ""}${marque}${doute}${dernier}" data-action="action-use" data-id="${r.pnjId}" data-key="${a.key}" title="${Utils.escHtml(info)}">${Utils.escHtml(a.name)}${cible ? "<span class=\"action-doubt\" aria-hidden=\"true\">⚠</span>" : ""}</button>`;
     };
     // Les rappels dits UNE FOIS, en tête de feuille. Absents quand il n'y a
     // rien à dire — l'écrasante majorité des tours.
@@ -1395,19 +1470,55 @@ export const EncounterRenderer = {
           .map((h) => `${Utils.escHtml(h.name)} : ${Utils.escHtml(h.why)}${h.except ? ` — sauf ${Utils.escHtml(h.except)}` : ""}`)
           .join(" · ")}. L'app n'en bloque aucune : le tri vous revient.</span>`
       : "";
+    // F6 — les actions qui se jouent AILLEURS. Même discipline que les domaines
+    // fermés, et pour la même raison : une puce qui disparaît doit dire où elle
+    // est partie, sinon le MJ la croit perdue. Le rappel nomme un endroit de
+    // l'écran (« le bloc Sorts », « le râtelier Matrice »), jamais un concept.
+    const portes = Actions.doorGroups(r.pnj);
+    const portesHtml = portes.length
+      ? `<span class="action-notice">${portes
+          .map((p) => `${p.n} action${p.n > 1 ? "s" : ""} se joue${p.n > 1 ? "nt" : ""} depuis ${Utils.escHtml(p.where)}`)
+          .join(" · ")}</span>`
+      : "";
     const rappels = Actions.conditionalNotices(r.pnj);
-    const notice = fermesHtml + stopHtml + (rappels.length
+    const notice = fermesHtml + portesHtml + stopHtml + (rappels.length
       ? `<span class="action-notice">⚠ ${rappels
           .map((w) => `${Utils.escHtml(w.name)} : +${Utils.escHtml(Actions.costLabel(r.pnj, null, w.cost))} pour ${Utils.escHtml(w.why)}`)
           .join(" · ")} — à vous de trancher, l'app ne l'ajoute pas.</span>`
       : "");
     const rapides = Actions.quick(r.pnj).map(puce).join("");
-    // F1b — le reste se range par DOMAINE (combat, magie, Matrice). SR6 est
-    // passé de 32 à 76 actions et SR5 de 36 à 74 : une seule liste serait un
-    // mur de puces. Une rubrique vide ne s'imprime pas — une édition sans
-    // magie ni Matrice retrouve exactement la liste plate de F1.
-    const domaines = Actions.restByDomain(r.pnj);
-    const reste = Actions.rest(r.pnj);
+    // F1b — le reste se range par DOMAINE (combat, magie, Matrice ; pilotage
+    // depuis F6). SR6 est passé de 32 à 78 actions et SR5 de 36 à 76 : une
+    // seule liste serait un mur de puces. Une rubrique vide ne s'imprime pas —
+    // un PNJ sans magie, ni Matrice, ni drone retrouve une liste plate.
+    // F6 — deux axes de rangement, pas un : le DOMAINE (ce que c'est) puis le
+    // MOMENT (quand ça se joue). `restGroups` rend les domaines ouverts d'abord
+    // — ce qui se joue à son tour — puis « Hors tour », qui rassemble les
+    // actions `timing:"L"` de tous les domaines. Le raisonnement est en tête
+    // d'`actions.js` ; l'essentiel : le PNJ actif ne Bloque ni n'Esquive jamais
+    // à son tour, et les voir mélangées aux dix-huit actions du tour faisait
+    // retrier l'œil à chaque ouverture.
+    const domaines = Actions.restGroups(r.pnj);
+    // ⚠ F6 — LE FILTRE PAR DOMAINE NE S'APPLIQUAIT PAS À UN SEUL DOMAINE.
+    //
+    // Ces deux lignes lisaient `Actions.rest(r.pnj)` — le catalogue ENTIER,
+    // sans filtre — et la branche « une seule rubrique » ci-dessous le rendait
+    // tel quel. Or « une seule rubrique » est le cas de l'écrasante majorité
+    // des PNJ : c'est précisément la population que F5b visait. Le prédicat de
+    // domaine ne servait donc QUE chez les mages et les deckers, c'est-à-dire
+    // exactement là où il n'était pas nécessaire.
+    //
+    // MESURÉ, sur un ganger sans une once de Magie ni de Matrice :
+    //   · SR6 — 69 puces affichées au lieu de 21 · SR5 — 63 au lieu de 10,
+    // avec, JUSTE AU-DESSUS, le rappel « 11 magie masquées · 33 matrice
+    // masquées » posé par `closedDomains`. La ligne qui promet que rien ne se
+    // masque en silence surplombait 44 puces qui ne se masquaient pas du tout.
+    //
+    // Le correctif est le nom de la variable : on rend ce que le groupeur a
+    // retenu, jamais le catalogue brut. `rest()` garde son appelant — c'est
+    // `closedDomains` qui COMPTE les masquées, et lui a besoin du catalogue
+    // entier pour les compter.
+    const visibles = domaines.flatMap((d) => d.entries);
     // ⚠ L'ouverture SURVIT au re-rendu, contrairement à la feuille d'états.
     // Raison : jouer une action débite le budget, donc `_commit()` re-rend la
     // fiche — une feuille qui se referme à chaque tap obligerait à la rouvrir
@@ -1415,18 +1526,27 @@ export const EncounterRenderer = {
     // déplacer, Ajuster, Attaquer). Six taps au lieu de quatre.
     const ouverte = Sheets.isOpen("action", r.pnjId);
     const restOuvert = Sheets.isRestOpen("action", r.pnjId);
-    // Une seule rubrique (pas de magie ni de Matrice) → pas d'en-tête : un
-    // titre « Combat » au-dessus d'une liste qui n'a rien à côté ne dit rien.
+    // Une seule rubrique → pas d'en-tête : un titre « Combat » au-dessus d'une
+    // liste qui n'a rien à côté ne dit rien.
+    //
+    // F6 — la rubrique porte sa CLÉ en classe (`is-magie`, `is-horsTour`…),
+    // pour son liseré et son libellé. La TEINTE, elle, est sur la puce (cf.
+    // `puce` plus haut) : « Hors tour » est une rubrique multicolore, et une
+    // teinte de bande y aurait menti. Le CSS n'invente aucun rôle chromatique —
+    // il redéfinit `--accent`/`--glow`, exactement comme `.matrix-block` et
+    // `.spell-block` le font depuis CP4 sur les blocs d'offense (le référentiel
+    // classe `--accent-matrix`/`--accent-magic` en « canaux de calque
+    // transverses », pas en rôle d'accent).
     const corps =
       domaines.length > 1
         ? domaines
             .map(
               (d) =>
-                `<span class="cluster action-domain"><span class="action-domain-lbl">${Utils.escHtml(d.label)}</span>${d.entries.map(puce).join("")}</span>`,
+                `<span class="cluster action-domain is-${d.key}"><span class="action-domain-lbl">${Utils.escHtml(d.label)}</span>${d.entries.map(puce).join("")}</span>`,
             )
             .join("")
-        : reste.map(puce).join("");
-    const tous = reste.length
+        : visibles.map(puce).join("");
+    const tous = visibles.length
       ? `<button type="button" class="tag status-more" data-action="action-more" aria-expanded="${restOuvert}">tous…</button>
          <span class="cluster action-rest"${restOuvert ? "" : " hidden"}>${corps}</span>`
       : "";
@@ -1849,6 +1969,25 @@ export const EncounterRenderer = {
       : fdOff
         ? `<span class="react-btn is-off" title="${Utils.escHtml(`Aucune interruption payable — ${raisonOff}`)}" aria-label="${Utils.escHtml(`Actions d'interruption — ${name} : aucune payable`)}"><span class="react-glyph" aria-hidden="true">⛨</span></span>`
         : `<button class="react-btn react-fulldef-btn${fdActive ? " is-on" : ""}" data-action="${plusieurs ? "react-interrupt-toggle" : "full-defense"}" data-id="${pnj.id}"${fdActive ? ' aria-pressed="true"' : ""} title="${plusieurs ? `Actions d'interruption (${interrupts.length}) — se paient en score d'initiative` : `${Utils.escHtml(fd.label)} (+${fd.bonus} déf · ${Utils.escHtml(fd.note || "")})`}" aria-label="${plusieurs ? `Actions d'interruption — ${name}` : `${Utils.escHtml(fd.label)} — ${name}`}"><span class="react-glyph" aria-hidden="true">⛨</span></button>`;
+    // F6b — CONTRER UN SORT, la réaction du magicien. Elle vivait dans la
+    // feuille d'actions du combattant ACTIF, où elle ne pouvait pas servir : le
+    // livre la note `(L)`, on contre le sort de quelqu'un d'AUTRE. Sa place est
+    // ici, entre ⛨ Défense totale et ⛊ Encaissement — l'ordre de la séquence
+    // que le MJ joue déjà (le PJ lance, le magicien contre, le PNJ défend,
+    // encaisse). Absente pour qui n'a pas la compétence de l'édition, absente
+    // dans les éditions qui n'en déclarent pas (SR5 : sa « Défense contre
+    // sorts » est une INTERRUPTION, elle vit dans la feuille du ⛨ et se paie en
+    // score d'initiative).
+    //
+    // ✦ est le glyphe magie déjà établi dans l'app (badge Éveillé, esprit
+    // mentor, chips d'invocation) — réutilisé, pas inventé. Le bouton porte
+    // `data-roll` ET `data-action` : DiceRoller lance, Encounter débite, comme
+    // le ⛉ de défense depuis E4.
+    const cs = !pnj._adhoc && mod && mod.counterspellFor ? mod.counterspellFor(pnj) : null;
+    const csOuvert = Sheets.isOpen("counterspell", pnj.id);
+    const csBtn = !cs
+      ? ""
+      : `<button class="react-btn react-counterspell-btn${csOuvert ? " is-open" : ""}" data-action="react-counterspell-toggle" data-id="${pnj.id}" aria-expanded="${csOuvert}" title="${Utils.escHtml(`${cs.label} (${cs.skill}, ${cs.page}) — ${cs.uses.length} usages : ${cs.uses.map((u) => u.label).join(", ")}. ${cs.cost}`)}" aria-label="${Utils.escHtml(`${cs.label} — ${name}`)}"><span class="react-glyph" aria-hidden="true">✦</span></button>`;
     // Encaissement : uniquement si l'édition résout les dommages par un JET
     // (SR5/SR6). Anarchy compare la VD à un seuil (p.68) → pas de jet, bouton omis.
     const soak = pnj.damageResist || 0;
@@ -1872,6 +2011,8 @@ export const EncounterRenderer = {
     // A2 — porte fermée : pas de feuille du tout. Neuf puces désactivées dans
     // le DOM d'une ligne qu'aucun geste n'ouvre, c'est du poids sans lecteur.
     const interruptBody = plusieurs && ouvrable ? this._reactInterruptChips(pnj) : "";
+    // F6b — les usages du Contresort, repliés comme les deux rangées voisines.
+    const csBody = cs ? this._reactCounterspellChips(pnj) : "";
     // États de combat (E1) — MÊMES pièces que la zone Combat de la carte
     // (CardRenderer.statusParts), montées ici parce que la séquence du MJ ne
     // s'arrête pas aux dégâts : « le PJ lance sa Boule de feu, le PNJ défend,
@@ -1895,9 +2036,9 @@ export const EncounterRenderer = {
     const statusSheet = st ? st.sheet : "";
     return `<div class="cluster react-row">
         <span class="react-name">${name}</span>
-        <span class="cluster cluster--end react-buttons">${defBtn}${fdBtn}${soakBtn}${damageBtn}${statusBtn}${peek}</span>
+        <span class="cluster cluster--end react-buttons">${defBtn}${fdBtn}${csBtn}${soakBtn}${damageBtn}${statusBtn}${peek}</span>
         ${statusChips}${statusSheet}
-      </div>${interruptBody}${chipsBody}`;
+      </div>${interruptBody}${csBody}${chipsBody}`;
   },
 
   /** Feuille des actions d'INTERRUPTION (lot E4) — jumelle exacte de
@@ -1929,6 +2070,68 @@ export const EncounterRenderer = {
       `Sheets` qui tient désormais la seule discipline. */
   toggleReactInterrupt(pnjId, close) {
     Sheets.toggle("interrupt", pnjId, this._reactTrigger("react-interrupt-toggle", pnjId), { close });
+  },
+
+  /** Les USAGES du Contresort, dépliés par le ✦ (lot F6b).
+
+      Une rangée et pas un bouton, parce que le livre en décrit DEUX et qu'ils
+      ne se jouent pas pareil — c'est la correction apportée par l'utilisateur
+      (« ça peut nécessiter des jets différents en fonction du type du sort ») et
+      elle est exacte dans les deux éditions :
+
+      · SR6 p.146 — Défense augmentée (aucun seuil, les succès nets deviennent
+        un bonus de défense en sphère) et Dissipation (contre la Valeur de Drain
+        du sort × 2). Même réserve, deux cibles.
+      · SR5 p.297 — Défense contre sorts (une RÉSERVE de dés qui se dépense par
+        portions, pas un jet) et Dissipation (test opposé + Drain encaissé).
+
+      D'où deux formes de puce, décidées par la DONNÉE du contrat et non par une
+      branche d'édition : `pool` → une rollable ; `reserve` → un compteur avec
+      ses ± , comme l'Atout. Une édition qui ne déclarerait qu'un seul usage
+      n'aurait qu'une puce, sans une ligne de plus ici. */
+  _reactCounterspellChips(pnj) {
+    const mod = App.editionModule;
+    const cs = !pnj._adhoc && mod && mod.counterspellFor ? mod.counterspellFor(pnj) : null;
+    if (!cs) return "";
+    const name = this._compactName(pnj.name);
+    const puces = cs.uses
+      .map((u) => {
+        const info = [
+          `${u.label}${u.roll ? ` — ${u.roll}` : ""}`,
+          u.vs ? `Opposé à : ${u.vs}` : "",
+          u.note,
+        ]
+          .filter(Boolean)
+          .join("\n• ");
+        // Usage à RÉSERVE (SR5, défense contre sorts) : un compteur, pas un jet.
+        // Les dés ne se lancent pas — ils s'ajoutent au test de défense d'un
+        // AUTRE. Lancer ici serait inventer un jet que le livre ne demande pas.
+        if (u.reserve != null) {
+          const reste = Encounter.counterspellLeft(pnj.id, u.reserve);
+          return `<span class="cluster react-cs-reserve" title="${Utils.escHtml(info)}">
+            <span class="react-cs-lbl">${Utils.escHtml(u.label)}</span>
+            <button class="btn-icon-tiny" data-action="counterspell-step" data-delta="-1" data-id="${pnj.id}" data-max="${u.reserve}" aria-label="Allouer un dé de ${Utils.escHtml(u.label)}">−</button>
+            <span class="react-cs-val">${reste}/${u.reserve}</span>
+            <button class="btn-icon-tiny" data-action="counterspell-step" data-delta="1" data-id="${pnj.id}" data-max="${u.reserve}" aria-label="Rendre un dé de ${Utils.escHtml(u.label)}">＋</button>
+          </span>`;
+        }
+        // Usage à JET (Dissipation dans les deux éditions, Défense augmentée en
+        // SR6) : une rollable ordinaire. `react-counterspell` débite l'action
+        // majeure quand l'édition en facture une — SR5 n'en facture aucune, sa
+        // déclaration est gratuite, et `actionKey: null` le dit.
+        if (!u.pool) return "";
+        return `<button class="react-btn react-cs-use" data-action="react-counterspell" data-id="${pnj.id}" data-roll="${u.pool}" data-roll-label="${Utils.escHtml(`${u.label} — ${name}`)}" data-roll-pnj="${pnj.id}" title="${Utils.escHtml(info)}">✦ ${Utils.escHtml(u.label)} ${u.pool}</button>`;
+      })
+      .join("");
+    const pied = `<span class="react-cs-note">${Utils.escHtml(`${cs.skill} · ${cs.cost} · ${cs.page}`)}</span>`;
+    return `<div class="cluster react-cs-chips" data-counterspell-for="${pnj.id}"${Sheets.hiddenAttr("counterspell", pnj.id)}>${puces}${pied}</div>`;
+  },
+
+  /** Déplie/replie la rangée des usages du Contresort — même primitive que le
+      ⛨ des interruptions et le ✸ des dégâts, aucun mécanisme neuf. */
+  toggleReactCounterspell(pnjId, close) {
+    const btn = this._reactTrigger("react-counterspell-toggle", pnjId);
+    if (Sheets.toggle("counterspell", pnjId, btn, { close }) && btn) btn.classList.add("is-open");
   },
 
   /** Panneau de chips de dégâts d'un PNJ, replié par défaut (déplié par

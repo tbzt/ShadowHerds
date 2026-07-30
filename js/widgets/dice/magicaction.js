@@ -299,6 +299,13 @@ export const MagicAction = {
     // effet. Mémorise le dernier jet sur l'entrée (persisté ; utile pour un
     // sort/forme maintenu).
     const isForm = c.kind === "complexForm";
+    // F6 — le geste se PAIE. Ce bloc lançait les dés depuis toujours sans
+    // toucher au budget d'actions : « Lancer un sort » coûtait une majeure
+    // depuis la feuille d'actions et rien du tout depuis la fiche. Le débit
+    // passe par le catalogue de l'édition (`via: "sorts"` / `via: "formes"`),
+    // jamais par une clé codée ici — SR6 ne déclare aucune action de tissage,
+    // et la porte doit se taire dans ce cas plutôt que d'inventer un coût.
+    if (typeof Encounter !== "undefined") Encounter.useActionVia(pnj, isForm ? "formes" : "sorts");
     const skill = isForm ? c.entry.skill || ed.technoFormSkill : ed.spellSkill;
     const castPool = isForm
       ? Resonance.actionPool(pnj, skill, c.edition)

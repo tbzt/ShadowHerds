@@ -2765,6 +2765,13 @@ export const CardRenderer = {
           if (!pnj) break;
           const act = Cyberdeck.rollAction(pnj.edition, pnj.cyberdeck, actionEl.dataset.key);
           if (!act) break;
+          // F6 — le râtelier PAIE ce qu'il joue. Ces quatre lignes lançaient
+          // les dés sans toucher au budget d'actions, alors que les mêmes
+          // gestes coûtaient une majeure (SR6) ou une complexe (SR5) depuis la
+          // feuille. La clé vient du contrat de l'édition (`actionKey`), jamais
+          // d'une table codée ici — même patron que `fireModes[].actionKey`.
+          if (act.actionKey && typeof Encounter !== "undefined")
+            Encounter.useAction(pnj.id, act.actionKey, true);
           const srv = DeckRun.targetServer(pnj);
           const vs = srv ? ` vs ${srv.name}` : "";
           const dvTxt = act.dv != null ? ` (VD ${act.dv})` : "";
@@ -2791,6 +2798,11 @@ export const CardRenderer = {
           if (!pnj) break;
           const act = Resonance.rollAction(pnj, pnj.edition, actionEl.dataset.key);
           if (!act) break;
+          // F6 — jumeau du débit de `deck-action`. Le technomancien joue les
+          // MÊMES actions matricielles par la Résonance (`Resonance.actions`
+          // délègue à `Cyberdeck.actions`), donc le même `actionKey` remonte.
+          if (act.actionKey && typeof Encounter !== "undefined")
+            Encounter.useAction(pnj.id, act.actionKey, true);
           const srv = DeckRun.targetServer(pnj);
           const vs = srv ? ` vs ${srv.name}` : "";
           const dvTxt = act.dv != null ? ` (VD ${act.dv})` : "";

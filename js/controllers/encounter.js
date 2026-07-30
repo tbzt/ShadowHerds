@@ -633,12 +633,22 @@ export const Encounter = {
     const score = this._passInit(c);
     const bloquant = mod.interruptBlockedBy;
     const surpris = bloquant && Statuses.level(pnj, bloquant) > 0 && !c.hasActed;
-    return mod.interruptActions(pnj).map((a) => ({
-      ...a,
-      score,
-      abordable: !surpris && score > a.initCost,
-      surpris: !!surpris,
-    }));
+    // F6b — `when` : l'interruption qui exige une CAPACITÉ ne se propose qu'à
+    // qui l'a. « Défense contre sorts » s'affichait à tout le monde, dans une
+    // feuille de neuf puces où chacune coûte à lire. Une entrée sans `when`
+    // reste offerte à tous, comme avant — Bloquer et Esquiver n'exigent rien.
+    // Le filtre passe AUSSI par ici et pas seulement à l'affichage : c'est le
+    // point unique que `useInterrupt` doit partager, sinon la porte fermée à
+    // l'écran resterait ouverte au clavier.
+    return mod
+      .interruptActions(pnj)
+      .filter((a) => !a.when || a.when(pnj))
+      .map((a) => ({
+        ...a,
+        score,
+        abordable: !surpris && score > a.initCost,
+        surpris: !!surpris,
+      }));
   },
 
   /** Déclare une interruption AUTRE que la Défense totale (qui garde son
@@ -651,7 +661,10 @@ export const Encounter = {
     const pnj = PnjLookup.find(pnjId);
     const mod = pnj && App.getEditionModule(pnj.edition);
     if (!c || !mod || !mod.interruptActions) return;
-    const action = mod.interruptActions(pnj).find((a) => a.key === key);
+    // F6b — LA MÊME LISTE QUE L'AFFICHAGE, `when` compris. Relire
+    // `interruptActions` brut rouvrirait au clavier la porte que le rendu vient
+    // de fermer : `interruptOptions` est le point unique, ici comme là-bas.
+    const action = this.interruptOptions(pnjId).find((a) => a.key === key);
     if (!action) return;
     if (action.key === "fullDefense") return this.fullDefense(pnjId); // son propre chemin
     if (!this._porteInterruption(c, pnj, action)) return;
@@ -813,6 +826,94 @@ export const Encounter = {
      au-delà du budget et le DIT (garde-fou (e) : informer, jamais décider).
      ======================================================== */
 
+  /* ========================================================
+     CONTRESORT (lot F6b) — livre SR5 p.297, SR6 p.146.
+
+     Deux usages par édition, et ils ne se paient pas pareil :
+     · SR6 — les deux passent par l'action majeure « Contrer un sort ». On
+       débite, le jet part par `data-roll` sur le même bouton (DiceRoller lance,
+       Encounter compte : le partage du ⛉ de défense, établi en E4).
+     · SR5 — la déclaration est GRATUITE (`actionKey: null`), donc rien à
+       débiter ; et sa « défense contre sorts » n'est PAS un jet mais une
+       RÉSERVE de dés qui se dépense par portions au fil du tour de combat.
+
+     La réserve vit dans la SCÈNE (`c.counterspell`), comme l'Atout, le chargeur
+     et le cumul d'Ajuster : c'est un fait de rencontre, pas une propriété du
+     personnage. Elle se rafraîchit au TOUR DE COMBAT — « la réserve de dés est
+     rafraîchie au début de chaque tour de combat » —, donc dans `nextRound` et
+     surtout pas dans `_resetActions`, qui travaille à la phase d'action.
+     ======================================================== */
+
+  /** Le contrat de Contresort de ce PNJ, ou null. Point unique : le rendu et
+      le débit lisent le même. */
+  counterspellFor(pnjId) {
+    const pnj = PnjLookup.find(pnjId);
+    const mod = pnj && App.getEditionModule(pnj.edition);
+    return (mod && mod.counterspellFor && mod.counterspellFor(pnj)) || null;
+  },
+
+  /** Dés de défense contre sorts encore disponibles ce tour de combat. Sans
+      entrée en scène, la réserve est pleine — on ne prive pas d'une capacité un
+      PNJ que la rencontre ne suit pas encore. */
+  counterspellLeft(pnjId, max) {
+    const c = this._find(pnjId);
+    if (!c || c.counterspell == null) return max;
+    return Utils.clamp(c.counterspell, 0, max);
+  },
+
+  /** Alloue (−) ou rend (+) un dé de la réserve. Jamais un jet : ces dés
+      s'ajoutent au test de défense d'un AUTRE, et l'app ne lance pas à la place
+      du MJ un test qu'elle ne sait pas composer (elle ignore qui est protégé).
+      Elle tient le compte, c'est tout — et c'est le compte qu'on oublie. */
+  counterspellStep(pnjId, delta, max) {
+    const c = this._find(pnjId);
+    if (!c) return;
+    const avant = c.counterspell == null ? max : c.counterspell;
+    c.counterspell = Utils.clamp(avant + delta, 0, max);
+    if (c.counterspell === avant) return;
+    const pnj = PnjLookup.find(pnjId);
+    const alloues = max - c.counterspell;
+    toast(
+      `Contresort — ${pnj ? pnj.name : ""} : ${c.counterspell}/${max} dés restants` +
+        (alloues > 0 ? ` (${alloues} alloué${alloues > 1 ? "s" : ""} à la défense)` : ""),
+    );
+    this._commit();
+  },
+
+  /** Débite ce que l'édition facture pour un usage du Contresort. SR5 ne
+      facture rien (action gratuite) : la méthode se tait plutôt que d'inventer
+      un coût. Non silencieux — le MJ doit voir qu'une majeure vient de partir
+      HORS du tour du magicien, c'est précisément ce qui s'oublie. */
+  counterSpell(pnjId) {
+    const spec = this.counterspellFor(pnjId);
+    if (!spec || !spec.actionKey) return;
+    this.useAction(pnjId, spec.actionKey, false);
+  },
+
+  /** LE DÉBIT DES AUTRES PORTES (lot F6) — le point unique par lequel une
+      surface qui n'est pas la feuille paie l'action qu'elle vient de jouer.
+
+      Trois portes lançaient les dés sans rien débiter : le bloc Sorts,
+      les chips ✦ Esprit / ✦ Bannir, le râtelier Matrice. Le mage lançait donc
+      son sort gratuitement depuis sa fiche et au prix d'une majeure depuis la
+      feuille — deux portes, deux prix, dont un gratuit. C'est ce qui rendait
+      la fermeture des doublons impossible : effacer la puce sans brancher le
+      débit aurait supprimé le coût, pas déplacé la porte.
+
+      SILENCIEUX par choix, comme le tir (`resolveAttack`) : la porte présente
+      déjà son résultat (jet de sort, invocation, pic de données) et un second
+      toast l'écraserait. Le débit se lit sur les jetons, qui sont à l'écran.
+
+      Sans scène en cours, sans ce PNJ en piste, ou dans une édition qui ne
+      déclare pas la porte (SR6 n'a pas d'action « tisser une forme complexe »,
+      Anarchy n'a pas de catalogue), la méthode ne fait rien — c'est déjà le
+      contrat de `useAction`, on ne le redouble pas ici. */
+  useActionVia(pnj, door) {
+    if (!pnj || pnj._adhoc) return;
+    const entry = Actions.byDoor(pnj, door);
+    if (entry) this.useAction(pnj.id, entry.key, true);
+  },
+
   /** Joue une action du catalogue sur un combattant : débite son coût, le dit,
       et laisse le MJ juge du reste. Le geste manuel (taper les jetons un par
       un) reste intact à côté — l'action nommée s'ajoute, elle ne remplace pas. */
@@ -889,6 +990,12 @@ export const Encounter = {
       reprise.statuses.push({ status: st.status, avant }); // B3.4 : le niveau d'AVANT
       poses.push(st.level ? `${nom}${st.note ? ` (${st.note})` : ""}` : `retire ${nom}`);
     }
+    // F6b — COMPTE DES ATTAQUES. Les deux éditions n'en autorisent qu'une, pour
+    // des raisons différentes (SR5 l'interdit, p.178 ; SR6 n'a qu'une majeure,
+    // p.42) — le contrat `attackLimit` porte laquelle, ce compteur porte le
+    // fait. `useAction` est le seul entonnoir : le tir passe par lui
+    // (`resolveAttack` → `fire` → `useAction`), la mêlée aussi.
+    if (Actions.isAttack(entry)) c.attacks = (c.attacks || 0) + 1;
     // F5 — la dernière action jouée porte ses greffons d'Atout (rangée sous les
     // jetons). Mémorisée dans la scène : c'est un fait de tour, pas du PNJ.
     c.lastAction = key;
@@ -1740,6 +1847,11 @@ export const Encounter = {
       // Budget d'actions rechargé pour tout le monde au nouveau round.
       c.actionsUsed = {};
       c.narrationBonus = false;
+      // F6b — « La réserve de dés est rafraîchie au début de chaque TOUR DE
+      // COMBAT » (SR5 p.297). Ici et pas dans `_resetActions`, qui travaille à
+      // la phase d'action : un magicien à deux passes ne récupère pas sa
+      // réserve entre ses deux phases.
+      delete c.counterspell;
     });
     // SR5/SR6 : nouvelle initiative à chaque tour de combat. Anarchy
     // (rerollEachRound:false) conserve l'ordre rangé à la main.
@@ -2062,6 +2174,12 @@ export const Encounter = {
       // pas dans nextRound, que le compteur retombe. La nuance compte pour un
       // combattant à plusieurs passes d'initiative.
       c.defenses = 0;
+      // F6b — le compte d'attaques retombe au MÊME endroit, et c'est juste dans
+      // les deux éditions sans une ligne de branche : `_resetActions` s'appelle
+      // à chaque phase d'action, or SR5 limite à la phase (p.178) et SR6 n'a
+      // qu'un tour sans passes (p.44), donc chez lui phase = tour. Une seule
+      // remise à zéro, deux règles satisfaites.
+      delete c.attacks;
       // AJUSTER, règle SR6 (`breaksOnIdleTurn`) : « si un personnage utilise
       // son tour de jeu SANS CHOISIR les actions Ajuster ou Attaquer, tout
       // bonus issu de rounds précédents est perdu ». On regarde donc le tour
@@ -3266,6 +3384,24 @@ export const Encounter = {
           // Défense totale (SR5/SR6) : déclarée pour le round, motorise le coût
           // d'initiative de l'édition (−10 SR5). Édition-neutre (fullDefenseFor).
           this.fullDefense(id);
+          break;
+        case "react-counterspell-toggle":
+          // F6b — le ✦ déplie les USAGES du Contresort. Deux, dans les deux
+          // éditions, et ils ne roulent pas le même test : un bouton unique
+          // aurait menti sur ce que le livre décrit.
+          EncounterRenderer.toggleReactCounterspell(id);
+          break;
+        case "react-counterspell":
+          // Un usage à JET. Le jet part par la délégation de DiceRoller
+          // (`data-roll` sur le même bouton) ; ici on ne fait que DÉBITER, comme
+          // le tir débite son action à part du jet. Édition-neutre : c'est le
+          // contrat qui dit s'il y a quelque chose à payer (SR5 : rien).
+          this.counterSpell(id);
+          break;
+        case "counterspell-step":
+          // La RÉSERVE de défense contre sorts (SR5) : des dés qu'on alloue,
+          // qu'on ne lance pas. Cf. `counterspellStep`.
+          this.counterspellStep(id, Number(el.dataset.delta) || 0, Number(el.dataset.max) || 0);
           break;
         case "react-interrupt-toggle":
           // E4 — le ⛨ déplie la feuille des interruptions quand l'édition en a

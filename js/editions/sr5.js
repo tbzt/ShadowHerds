@@ -25,9 +25,44 @@ import { Spirits } from "../catalogs/spirits.js";
 import { Sprites } from "../catalogs/sprites.js";
 import { Statuses } from "../rules/statuses.js";
 import { Utils } from "../core/utils.js";
+import { Vehicles } from "../catalogs/vehicles.js";
 import { WeaponRoll } from "../rules/weaponroll.js";
 
 export const EditionSR5 = {
+  /** Ce PNJ a-t-il de quoi PILOTER — un engin, ou l'interface qui permet d'y
+      plonger ? Lu par `actionModel.domains.pilotage` (F6).
+
+      L'engin se reconnaît par `Vehicles.matchItem`, le point unique de la
+      rangée de chips « Drones & véhicules » ; l'interface, elle, n'est qu'un
+      libellé d'équipement (« Câblage de contrôle de véhicules », « Console de
+      commande pour rigger ») qu'aucun catalogue ne modélise — d'où le motif.
+
+      ⚠ Le motif est LARGE À DESSEIN. Un faux positif coûte quatre puces de
+      trop dans « tous… » ; un faux négatif escamote une règle que le livre
+      écrit. Même arbitrage que `Actions.hostKeys` — mieux vaut une puce de
+      trop qu'une règle escamotée. */
+  _hasRig(pnj) {
+    if (!pnj) return false;
+    // `equip` + `augs` : le câblage de contrôle est du CYBERWARE, et le
+    // cyberware généré vit dans `pnj.augs` — le lire seul manquerait les items
+    // ajoutés au catalogue depuis l'éditeur, qui atterrissent dans `equip`
+    // (même paire que `WeaponEffects` et `ActorEffects`).
+    const items = [...(pnj.equip || []), ...(pnj.augs || [])];
+    if (this._hasVehicle(pnj)) return true;
+    const txt = items.map((i) => ItemResolver.itemStr(i)).join(" ");
+    return /c[âa]blage de contr[ôo]le|console de commande|\bCCR\b|rigger/i.test(txt);
+  },
+  /** Ce PNJ a-t-il un ENGIN — un drone, une voiture, une moto ? Plus étroit que
+      `_hasRig` : ici l'interface de rigger ne suffit pas, il faut quelque chose
+      à conduire. Lu par l'interruption « Conduite évasive », qui est l'
+      équivalent véhicule de la défense totale : on ne fait pas d'écart au
+      volant quand on n'a pas de volant. Et il n'est pas besoin d'être rigger
+      pour conduire — d'où deux prédicats et pas un (arbitrage utilisateur). */
+  _hasVehicle(pnj) {
+    if (!pnj) return false;
+    const items = [...(pnj.equip || []), ...(pnj.augs || [])];
+    return items.some((i) => Vehicles.matchItem(i, pnj.edition));
+  },
   id: "sr5",
   label: "Shadowrun 5e",
   // Accent DA lu par le générateur de plan de lieu (MapGen) — liseré + objectif.
@@ -274,9 +309,27 @@ export const EditionSR5 = {
         note: "Intercepte un ennemi qui passe ou se retire d'une mêlée" },
       { key: "poussiere", label: "Manger la poussière", initCost: 5, page: "p.170",
         note: "Se jeter au sol sous un tir de couverture — étendu à la phase suivante" },
+      // `when` (F6b) — il faut quelque chose à conduire. `_hasVehicle` et non
+      // `_hasRig` : le livre ne demande pas d'être RIGGER pour faire un écart
+      // au volant, seulement d'être au volant (arbitrage utilisateur). Une
+      // interface de contrôle sans engin ne suffit donc pas ici, alors qu'elle
+      // suffit pour le domaine « pilotage » — deux questions, deux prédicats.
       { key: "conduiteEvasive", label: "Conduite évasive", initCost: 10, page: "p.205",
+        when: (pnj) => EditionSR5._hasVehicle(pnj),
         note: "Équivalent véhicule de la défense totale : +Intuition en défense" },
+      // `when` (lot F6b) — LA COMPÉTENCE, pas la bonne volonté. Cette
+      // interruption est celle du magicien ; elle s'affichait à tout le monde,
+      // molosses compris, dans une feuille de neuf puces où chacune coûte à
+      // lire. Le livre nomme sa réserve — « réserve = Contresort » — donc la
+      // condition est écrite, elle n'était simplement portée par rien.
+      //
+      // ⚠ La compétence, pas l'attribut : `Magic.actionPool` rend
+      // `compétence + MAG`, donc un nombre non nul chez un éveillé qui n'a
+      // jamais appris le Contresort. C'est le même arbitrage que
+      // `counterSpellFor` en SR6, où la compétence adéquate est Sorcellerie —
+      // deux éditions, deux noms, un seul principe.
       { key: "defenseSort", label: "Défense contre sorts", initCost: 5, page: "p.297",
+        when: (pnj) => (pnj.skills || []).some((s) => s && s.name === "Contresort"),
         note: "Seulement si le magicien n'a plus d'action gratuite — réserve = Contresort" },
       { key: "defenseMatricielle", label: "Défense totale matricielle", initCost: 10, page: "p.242",
         note: "+Volonté à toute défense contre une action matricielle (deux fois si la Volonté y est déjà) · 4 marks (propriétaire) · aucun test" },
@@ -350,6 +403,99 @@ export const EditionSR5 = {
       note: "−10 Init · fin du round",
     };
   },
+  /** LIMITE D'ATTAQUE (lot F6b) — livre p.178-179, répété à chaque action
+      d'attaque : « Le personnage ne peut effectuer AUCUNE AUTRE ACTION
+      D'ATTAQUE durant la même PHASE D'ACTION. »
+
+      ⚠ L'unité est la PHASE D'ACTION, pas le tour de combat — nuance qui compte
+      exactement pour les personnages qui en ont plusieurs, c'est-à-dire les
+      combattants augmentés qu'on croise le plus. Un samouraï à trois passes
+      attaque trois fois dans le tour, une fois par phase, et c'est réglementaire.
+      C'est aussi la frontière que le livre retient pour les défenses multiples
+      (p.189) et que `_resetActions` motorise déjà.
+
+      `buys` absent : en SR5, RIEN n'achète une seconde attaque dans la même
+      phase. Le livre l'interdit sans contrepartie — la seconde attaque vient
+      d'une seconde passe d'initiative, pas d'une dépense. */
+  attackLimit: {
+    n: 1,
+    counted: true, // catalogue d'actions + `useAction` : l'app sait compter
+    scope: "phase",
+    scopeLabel: "cette phase d'action",
+    page: "p.178",
+    why: "aucune autre action d'attaque durant la même phase d'action",
+  },
+  /** CONTRESORT (lot F6b) — livre p.297, verbatim : « Contresort offre au
+      magicien DEUX BÉNÉFICES, la défense contre sorts et la Dissipation. »
+
+      ⚠ Ne pas réduire Contresort à « défense contre sorts » : c'est un de ses
+      deux usages, et les deux ne roulent pas le même test.
+
+      ── 1. DÉFENSE CONTRE SORTS — une RÉSERVE, pas un jet ────────────────────
+      « Chaque tour de combat, la réserve de dés de défense contre sorts est
+      égale à la compétence Contresort. […] Il doit décider du nombre de dés de
+      cette réserve qu'il compte allouer à cette défense […] La réserve de dés
+      est rafraîchie au début de chaque tour de combat. »
+
+      C'est donc un COMPTEUR qui se dépense par portions au fil du tour, pas un
+      bouton qui lance des dés — le même objet que l'Atout ou le chargeur, et il
+      se modélise comme eux. Les dés alloués s'ajoutent au test de défense des
+      protégés, jusqu'à Magie personnes, le magicien inclus s'il le veut.
+
+      « Déclarer cette protection est une ACTION GRATUITE ou, si le magicien
+      n'en a plus, une action d'interruption qui réduit son score d'initiative
+      de 5. » La porte d'interruption existe déjà (`defenseSort` ci-dessus) :
+      elle est le cas de repli que le livre nomme, pas le geste principal.
+
+      ── 2. DISSIPATION — un test opposé, et du Drain ─────────────────────────
+      « Le test de dissipation oppose Contresort + Magie [Astral] du magicien à
+      Puissance du sort ciblé + Magie de son lanceur. » Contre un sort MAINTENU
+      ou ACTIVÉ, pas contre une attaque en cours. Et « quelle que soit l'issue,
+      le magicien qui dissipe subit le Drain du sort comme s'il l'avait lancé
+      lui-même » — ce que l'app annonce et n'applique pas : elle ne connaît ni
+      la Puissance du sort visé ni son lanceur.
+
+      La compétence, ici, s'appelle vraiment Contresort — contrairement à SR6 où
+      Sorcellerie couvre les deux. C'est tout l'intérêt de faire porter le nom
+      par l'édition. */
+  counterspellFor(pnj) {
+    if (!pnj || pnj._adhoc) return null;
+    const skill = "Contresort";
+    const sk = (pnj.skills || []).find((s) => s && s.name === skill);
+    if (!sk) return null;
+    if (this.arcaneLock(pnj, "magic") !== null) return null;
+    const indice = Number(sk.val) || 0;
+    const mag = Actor.attr(pnj, "MAG") || 0;
+    return {
+      label: "Contresort",
+      skill,
+      page: "p.297",
+      // Aucun jeton d'action : la déclaration est GRATUITE. Le repli en
+      // interruption vit dans `interruptActions` et se paie en initiative.
+      actionKey: null,
+      cost: "action gratuite — ou interruption (−5 init) s'il n'en reste plus",
+      uses: [
+        {
+          key: "defense",
+          label: "Défense contre sorts",
+          // `reserve` et non `pool` : ces dés ne se LANCENT pas, ils s'ajoutent
+          // au test de défense d'un autre. Le compteur se dépense par portions.
+          reserve: indice,
+          roll: null,
+          vs: null,
+          note: `Réserve = indice de ${skill} (${indice}), rafraîchie à chaque tour de combat. Les dés alloués s'ajoutent au test de défense des protégés — jusqu'à ${mag || "Magie"} personne${mag > 1 ? "s" : ""}, le magicien inclus s'il le souhaite`,
+        },
+        {
+          key: "dissipation",
+          label: "Dissipation",
+          pool: Magic.actionPool(pnj, skill, "sr5"),
+          roll: `${skill} + Magie [Astral]`,
+          vs: "Puissance du sort + Magie de son lanceur",
+          note: "Contre un sort MAINTENU ou ACTIVÉ. Chaque succès excédentaire retire un succès excédentaire au lanceur ; à zéro, le sort s'achève. ⚠ Le magicien qui dissipe subit le Drain du sort, succès ou non",
+        },
+      ],
+    };
+  },
   /** Spec d'un combattant CI lancé dans l'initiative (fiche CI minimale +
       jeton Matrice). Init du livre SR5 : indice du serveur ×2 + 4D6 (p.249).
       La règle vit ici (prohibition n°1) ; Encounter lit le spec neutre. */
@@ -407,15 +553,29 @@ export const EditionSR5 = {
       « retire OU insère »), soit la phase d'action entière — sauf smartgun, où
       l'éjection devient gratuite. */
   actionModel: {
-    /* ---- DOMAINES (lot F5b) : où ce PNJ peut-il seulement AGIR ? ---------
-       44 des 76 actions SR6 sont magiques ou matricielles. Sur l'écrasante
-       majorité des PNJ — un ganger, un vigile, un molosse — elles ne serviront
-       JAMAIS : proposer « Lancer un sort » à qui n'a pas une once de Magie,
-       c'est du bruit qui coûte à chaque ouverture de feuille.
+    /* ---- DOMAINES (lot F5b, complétés au lot F6) : où ce PNJ peut-il
+       seulement AGIR ? -----------------------------------------------------
+       46 des 76 actions SR5 sont magiques, matricielles ou de pilotage. Sur
+       l'écrasante majorité des PNJ — un ganger, un vigile, un molosse — elles
+       ne serviront JAMAIS : proposer « Lancer un sort » à qui n'a pas une once
+       de Magie, c'est du bruit qui coûte à chaque ouverture de feuille.
 
        Le prédicat vit ici et pas dans le magasin neutre (prohibition n°1) :
        lui ne sait pas ce qu'est un cyberdeck. Le combat n'a pas d'entrée —
-       personne n'a besoin d'une condition pour frapper. */
+       personne n'a besoin d'une condition pour frapper.
+
+       ⚠ F6 — CE BLOC ÉTAIT À MOITIÉ MORT EN SR5, et le commentaire qu'il
+       portait (recopié de sr6.js, « 44 des 76 actions SR6… ») expliquait le
+       catalogue d'une AUTRE édition. Le prédicat `magie` était déclaré, testé
+       à chaque ouverture de feuille — et ne pouvait rien fermer, faute d'une
+       seule entrée portant `domain: "magie"` : SR5 ne sort pas la magie dans
+       une table à part, et F1b en avait conclu qu'il n'y avait « rien à
+       ajouter côté magie ». Conclusion juste sur le CATALOGUE (aucune action
+       manquait), fausse sur le RANGEMENT : les cinq gestes éveillés restaient
+       en Combat, donc proposés à tout le monde, molosses compris. Et comme
+       `closedDomains` ne compte que les rubriques non vides, rien ne le
+       signalait — la magie ne se masquait pas, et ne disait pas qu'elle ne se
+       masquait pas. Les cinq entrées portent désormais leur domaine. */
     domains: {
       magie: {
         why: "ce PNJ n'a ni Magie, ni sort, ni pouvoir",
@@ -427,11 +587,46 @@ export const EditionSR5 = {
       },
       matrice: {
         why: "ce PNJ n'a ni cyberjack, ni cyberdeck, ni Résonance",
+        // ⚠ `ItemResolver.itemStr` et non `String` (lot F6b) : un item
+        // d'équipement peut être un OBJET (`{ str, cat, rating }`) depuis que
+        // les catégories existent, et `String(objet)` rend « [object Object] ».
+        // Le motif ne pouvait donc pas voir un cyberdeck ajouté depuis
+        // l'éditeur — seulement ceux saisis en chaîne nue. Même helper que
+        // partout ailleurs dans le projet.
         when: (pnj) =>
           (Actor.attr(pnj, "RES") || 0) > 0 ||
           !!pnj.cyberdeck ||
+          !!pnj.persona ||
           !!(pnj.complexForms && pnj.complexForms.length) ||
-          /cyberjack|cyberdeck/i.test((pnj.equip || []).map(String).join(" ")),
+          /cyberjack|cyberdeck/i.test((pnj.equip || []).map((i) => ItemResolver.itemStr(i)).join(" ")),
+      },
+      /* RÉSONANCE (F6b) — le technomancien SEUL. « Matrice » reste ouverte aux
+         deux publics, et c'est juste : le livre p.252 fait jouer au
+         technomancien les mêmes actions matricielles, par la Résonance. Mais
+         sept d'entre elles ne sont pas les mêmes — sprites et formes complexes
+         n'existent que pour lui. Un decker y était renvoyé vers une chip
+         ✦ Sprite absente de sa fiche. */
+      resonance: {
+        why: "ce PNJ n'a ni Résonance, ni forme complexe, ni persona",
+        when: (pnj) =>
+          (Actor.attr(pnj, "RES") || 0) > 0 ||
+          !!pnj.persona ||
+          !!(pnj.complexForms && pnj.complexForms.length),
+      },
+      // PILOTAGE (F6) — « Plonger dans un véhicule (rigger) » exige, dans la
+      // phrase même du livre, « un câblage de contrôle de véhicules ET un
+      // véhicule adapté ». Le prédicat est donc une DISJONCTION de ce que la
+      // fiche peut porter : l'interface, ou l'engin. Sans l'un ni l'autre, le
+      // geste n'existe pas pour ce PNJ.
+      //
+      // `Vehicles.matchItem` est le point unique déjà utilisé par la rangée de
+      // chips « Drones & véhicules » de la zone Combat : si l'app sait déployer
+      // une fiche pour cet item, elle sait qu'il y a quelque chose à piloter.
+      // Redemander à un second parseur ce que celui-là sait déjà les ferait
+      // diverger (la leçon d'E0).
+      pilotage: {
+        why: "ce PNJ n'a ni drone, ni véhicule, ni interface de rigger",
+        when: (pnj) => EditionSR5._hasRig(pnj),
       },
     },
     catalog: [
@@ -461,7 +656,7 @@ export const EditionSR5 = {
         "Une courte phrase verbale, ou un court message par interface neurale directe",
         "Chaque phrase supplémentaire coûte une action gratuite de plus",
       ] },
-      { key: "ejecterChargeurSmartgun", name: "Éjecter le chargeur (smartgun)", cost: [{ key: "free", n: 1 }], reload: "eject", lines: [
+      { key: "ejecterChargeurSmartgun", name: "Éjecter le chargeur (smartgun)", cost: [{ key: "free", n: 1 }], reload: "eject", via: "rechargement", lines: [
         "Connecté à un système smartgun prêt : éjection par commande mentale",
         "Il faudra encore une action simple pour insérer un chargeur plein",
       ] },
@@ -487,7 +682,7 @@ export const EditionSR5 = {
         "Bonus maximum égal à la moitié de la Volonté, arrondie au supérieur",
         "Requise pour calibrer une lunette de visée ou un zoom (la première n'apporte alors que le bonus de l'équipement)",
       ] },
-      { key: "changerPerception", name: "Changer de perception", cost: [{ key: "simple", n: 1 }], lines: [
+      { key: "changerPerception", name: "Changer de perception", cost: [{ key: "simple", n: 1 }], domain: "magie", lines: [
         "Basculer sa perception entre le monde physique et l'astral",
       ] },
       { key: "changerModeAppareil", name: "Changer le mode d'un appareil", cost: [{ key: "simple", n: 1 }], lines: [
@@ -499,18 +694,18 @@ export const EditionSR5 = {
         "Échec : l'arme est dégainée mais le tir n'a pas lieu. Complication : l'arme est coincée ou tombe",
         "Ne permet pas un mode de tir qui exige une action complexe",
       ] },
-      { key: "ejecterChargeur", name: "Éjecter un chargeur", cost: [{ key: "simple", n: 1 }], reload: "eject", lines: [
+      { key: "ejecterChargeur", name: "Éjecter un chargeur", cost: [{ key: "simple", n: 1 }], reload: "eject", via: "rechargement", lines: [
         "Retirer un chargeur d'une arme prête",
         "Une seconde action simple est nécessaire pour insérer un chargeur plein",
       ] },
-      { key: "encocherFleche", name: "Encocher une flèche", cost: [{ key: "simple", n: 1 }], reload: "insert", lines: [
+      { key: "encocherFleche", name: "Encocher une flèche", cost: [{ key: "simple", n: 1 }], reload: "insert", via: "rechargement", lines: [
         "Encocher une flèche dans un arc prêt — une seconde action simple est nécessaire pour tirer",
       ] },
       { key: "faireFeuSimple", name: "Faire feu (CC, SA, TR, TA)", viaWeapon: true, family: "ranged", cost: [{ key: "simple", n: 1 }], quick: true, shot: true, lines: [
         "Coup par coup, semi-automatique, tir en rafale (3 balles) ou tir automatique (6 balles)",
         "Aucune autre action d'attaque durant la même phase d'action",
       ] },
-      { key: "insererChargeur", name: "Insérer un chargeur", cost: [{ key: "simple", n: 1 }], reload: "insert", lines: [
+      { key: "insererChargeur", name: "Insérer un chargeur", cost: [{ key: "simple", n: 1 }], reload: "insert", via: "rechargement", lines: [
         "Insérer un chargeur dans une arme à feu prête, uniquement après avoir éjecté l'ancien",
       ] },
       { key: "lancerArme", name: "Lancer une arme", viaWeapon: true, weaponMatch: /grenade|shuriken|étoile|javelot|boomerang|de jet\b/i, cost: [{ key: "simple", n: 1 }], lines: [
@@ -564,7 +759,7 @@ export const EditionSR5 = {
         maySet: [{ status: "melee", level: 1, when: "si le corps à corps s'engage — l'adversaire l'est aussi, à annoncer" }], lines: [
         "Une attaque en mêlée",
       ] },
-      { key: "bannirEsprit", name: "Bannir un esprit", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
+      { key: "bannirEsprit", name: "Bannir un esprit", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "magie", via: "bannissement", lines: [
         "Tenter de bannir un esprit",
       ] },
       { key: "faireFeuComplexe", name: "Faire feu (RSA, RL, TA)", viaWeapon: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], quick: true, shot: true, lines: [
@@ -573,19 +768,19 @@ export const EditionSR5 = {
       { key: "faireFeuMonte", name: "Faire feu (arme montée / de véhicule)", viaWeapon: true, weaponMatch: /monté|tourelle|de véhicule/i, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], shot: true, lines: [
         "Faire feu avec une arme de véhicule ou montée sur un véhicule, prête",
       ] },
-      { key: "invoquerEsprit", name: "Invoquer un esprit", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
+      { key: "invoquerEsprit", name: "Invoquer un esprit", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "magie", via: "invocation", lines: [
         "Invoquer un esprit pour l'assister",
       ] },
-      { key: "lancerSort", name: "Lancer un sort", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
+      { key: "lancerSort", name: "Lancer un sort", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "magie", via: "sorts", lines: [
         "Lancer un sort",
       ] },
-      { key: "projectionAstrale", name: "Passer en projection astrale", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
+      { key: "projectionAstrale", name: "Passer en projection astrale", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "magie", lines: [
         "Projeter son esprit dans l'espace astral",
       ] },
-      { key: "plongerVehicule", name: "Plonger dans un véhicule (rigger)", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], lines: [
+      { key: "plongerVehicule", name: "Plonger dans un véhicule (rigger)", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "pilotage", lines: [
         "Avec un câblage de contrôle de véhicules et un véhicule adapté : plonger dedans pour le contrôler",
       ] },
-      { key: "rechargerArme", name: "Recharger une arme", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], reload: "full", lines: [
+      { key: "rechargerArme", name: "Recharger une arme", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], reload: "full", via: "rechargement", lines: [
         "Armes à bande, canon basculant, barillet, tambour, magasin interne, chargement par le canon, ou chargeur rapide",
         "Le chargeur amovible (c), lui, se recharge en DEUX actions simples : éjecter puis insérer",
       ] },
@@ -628,12 +823,12 @@ export const EditionSR5 = {
       { key: "mxDesactiverProgramme", name: "Désactiver un programme", cost: [{ key: "free", n: 1 }], domain: "matrice", lines: ["Décharge un programme actif"] },
       { key: "mxRemplacerProgramme", name: "Remplacer un programme en cours", cost: [{ key: "free", n: 1 }], domain: "matrice", lines: ["Substitue un programme en mémoire à un programme actif"] },
 
-      { key: "mxAppelerSprite", name: "Appeler / renvoyer un sprite", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Convoque ou congédie un sprite enregistré"] },
+      { key: "mxAppelerSprite", name: "Appeler / renvoyer un sprite", cost: [{ key: "simple", n: 1 }], domain: "resonance", lines: ["Convoque ou congédie un sprite enregistré"] },
       { key: "mxChangerIcone", name: "Changer son icône", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Modifie l'apparence de son icône"] },
       { key: "mxEnvoyerMessage", name: "Envoyer un message", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Envoie un message matriciel"] },
       { key: "mxVerifierSurveillance", name: "Vérifier son Score de Surveillance", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Consulte son Score de Surveillance courant"] },
       { key: "mxChangerInterface", name: "Changer de mode d'interface", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Bascule entre RA et RV"] },
-      { key: "mxOrdreSprite", name: "Donner un ordre à un sprite", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Commande un sprite sous ses ordres"] },
+      { key: "mxOrdreSprite", name: "Donner un ordre à un sprite", cost: [{ key: "simple", n: 1 }], domain: "resonance", lines: ["Commande un sprite sous ses ordres"] },
       { key: "mxInviterMarkage", name: "Inviter au markage", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Autorise volontairement une mark sur son persona"] },
       { key: "mxSeDebrancher", name: "Se débrancher", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Quitte la Matrice"] },
 
@@ -645,24 +840,24 @@ export const EditionSR5 = {
       ] },
 
       { key: "mxBrouiller", name: "Brouiller les signaux", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Brouille les communications d'une zone"] },
-      { key: "mxCompilerSprite", name: "Compiler un sprite", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Compile un sprite et négocie ses tâches"] },
-      { key: "mxDecompilerSprite", name: "Décompiler un sprite", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Tente de dissoudre un sprite"] },
+      { key: "mxCompilerSprite", name: "Compiler un sprite", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "resonance", via: "compilation", lines: ["Compile un sprite et négocie ses tâches"] },
+      { key: "mxDecompilerSprite", name: "Décompiler un sprite", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "resonance", via: "decompilation", lines: ["Tente de dissoudre un sprite"] },
       { key: "mxDesamorcerBombe", name: "Désamorcer une bombe matricielle", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Neutralise une bombe matricielle repérée"] },
       { key: "mxEditerFichier", name: "Éditer un fichier", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Crée, modifie, copie ou supprime un fichier"] },
-      { key: "mxEffacerMark", name: "Effacer une mark", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Retire une mark posée sur une icône"] },
+      { key: "mxEffacerMark", name: "Effacer une mark", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", via: "matrice", lines: ["Retire une mark posée sur une icône"] },
       { key: "mxEffacerSignature", name: "Effacer une signature matricielle", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Efface la trace laissée par une action matricielle"] },
       { key: "mxEntrerServeur", name: "Entrer / sortir d'un serveur", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Franchit la frontière d'un serveur"] },
       { key: "mxFormaterAppareil", name: "Formater un appareil", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Reformate un appareil pour en changer le propriétaire"] },
       { key: "mxFureter", name: "Fureter", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Fouille un serveur à la recherche de fichiers"] },
-      { key: "mxHackerVolee", name: "Hacker à la volée", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Pose une mark en discrétion, sans autorisation"] },
+      { key: "mxHackerVolee", name: "Hacker à la volée", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", via: "matrice", lines: ["Pose une mark en discrétion, sans autorisation"] },
       { key: "mxImiterOrdre", name: "Imiter un ordre", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Fait passer un ordre pour légitime auprès d'un appareil"] },
-      { key: "mxInscrireSprite", name: "Inscrire un sprite", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Enregistre durablement un sprite compilé"] },
+      { key: "mxInscrireSprite", name: "Inscrire un sprite", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "resonance", lines: ["Enregistre durablement un sprite compilé"] },
       { key: "mxPasserForce", name: "Passer en force", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Pose une mark par la force, en privilégiant l'Attaque"] },
       { key: "mxPerceptionMatricielle", name: "Perception matricielle", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Analyse un objet matriciel ou scanne les environs"] },
-      { key: "mxPicDonnees", name: "Pic de données", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Attaque matricielle infligeant des dommages"] },
+      { key: "mxPicDonnees", name: "Pic de données", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", via: "matrice", lines: ["Attaque matricielle infligeant des dommages"] },
       { key: "mxPiraterFichier", name: "Pirater un fichier", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Lève la protection d'un fichier"] },
       { key: "mxPisterIcone", name: "Pister une icône", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Localise physiquement le porteur d'une icône"] },
-      { key: "mxPlanterProgramme", name: "Planter un programme", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: [
+      { key: "mxPlanterProgramme", name: "Planter un programme", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", via: "matrice", lines: [
         "Met hors service un programme actif de la cible",
         "⚠ Le livre le donne complexe p.165 et simple p.245 — on retient la liste d'actions",
       ] },
@@ -671,8 +866,8 @@ export const EditionSR5 = {
       { key: "mxRebooter", name: "Rebooter un appareil", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Redémarre un appareil, ce qui purge son état matriciel"] },
       { key: "mxSauterGrille", name: "Sauter vers une grille", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Change de grille matricielle"] },
       { key: "mxSeCacher", name: "Se cacher", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Passe son icône en mode silencieux vis-à-vis d'une cible"] },
-      { key: "mxTisserForme", name: "Tisser une forme complexe", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Tisse une forme complexe, avec sa Dissonance"] },
-      { key: "mxTuerForme", name: "Tuer une forme complexe", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Dissipe une forme complexe en cours"] },
+      { key: "mxTisserForme", name: "Tisser une forme complexe", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "resonance", via: "formes", lines: ["Tisse une forme complexe, avec sa Dissonance"] },
+      { key: "mxTuerForme", name: "Tuer une forme complexe", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "resonance", lines: ["Dissipe une forme complexe en cours"] },
     ],
   },
   /** MODES DE TIR (lot F2) — table p.180, recopiée ligne pour ligne.
@@ -1498,9 +1693,21 @@ export const EditionSR5 = {
        à la Limite entre crochets ([Attaque] → attack, [Corruption] → sleaze) ;
        VD chiffrée seulement pour le pic de données (VD = indice d'Attaque,
        p.242 — les +1/succès exc. et +2/mark s'ajoutent live, côté MJ). */
+    /* `actionKey` (lot F6) — la CLÉ DU CATALOGUE que cette ligne de râtelier
+       débite quand on la tape. Miroir exact de `fireModes[].actionKey`, qui
+       fait déjà ça pour les modes de tir depuis F2 : la porte connaît le geste
+       qu'elle facture, et le catalogue reste la seule source du coût.
+
+       ⚠ Sans elle, ces quatre lignes étaient GRATUITES : `deck-action` lançait
+       les dés sans jamais toucher au budget d'actions, alors que la même
+       action depuis la feuille coûtait une complexe. L'entrée de catalogue
+       correspondante porte `via: "matrice"` et ne s'affiche plus dans la
+       feuille — les deux moitiés vont ensemble, on ne ferme pas une porte sans
+       brancher le débit sur celle qui reste. */
     actions: [
       {
         key: "spike",
+        actionKey: "mxPicDonnees",
         name: "Pic de données",
         type: "attack",
         page: 242,
@@ -1509,6 +1716,7 @@ export const EditionSR5 = {
       },
       {
         key: "crash",
+        actionKey: "mxPlanterProgramme",
         name: "Planter un programme",
         type: "crash",
         page: 243,
@@ -1517,6 +1725,7 @@ export const EditionSR5 = {
       },
       {
         key: "erasemark",
+        actionKey: "mxEffacerMark",
         name: "Effacer une mark",
         type: "erase",
         page: 242,
@@ -1525,6 +1734,7 @@ export const EditionSR5 = {
       },
       {
         key: "hackfly",
+        actionKey: "mxHackerVolee",
         name: "Hacker à la volée",
         type: "access",
         page: 242,

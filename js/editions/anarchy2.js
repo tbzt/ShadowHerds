@@ -246,6 +246,89 @@ export const EditionAnarchy2 = {
   icCombatant(ic) {
     return { name: ic.label, narrative: true };
   },
+  /** LIMITE D'ATTAQUES (lot F6b) — p.65, verbatim : « Un personnage normal
+      pourra effectuer UNE ACTION PAR NARRATION, et une action supplémentaire
+      en dépensant un point d'Anarchy. »
+
+      La limite n'est pas écrite comme une interdiction d'attaquer deux fois :
+      c'est l'économie qui la produit, comme en SR6. Mais le livre définit ce
+      qu'est une action, et attaquer en tête de liste : « les actions
+      significatives […] sont généralement celles qui nécessitent de tester une
+      compétence : attaquer, lancer un sort, invoquer un esprit, hacker un
+      appareil, piloter un véhicule ». D'où `broad` — le rappel dit ce que la
+      règle couvre, ce qui est plus utile que de répéter « une attaque ».
+
+      `counted: false` — comme en Anarchy 1re, et pour la même raison : pas de
+      catalogue d'actions, et les armes passent par le panneau de RISQUE, qui ne
+      débite pas. Le cockpit affiche la règle et son prix, jamais un décompte
+      qu'il ne peut pas tenir.
+
+      ⚠ Le prix de l'action supplémentaire — un point d'Anarchy — est déjà à
+      l'écran, juste à gauche : la rangée `_activeAnarchy` compte ces points par
+      combattant. Le rappel et la monnaie se lisent donc d'un même coup d'œil,
+      ce qui est tout l'intérêt de le poser là plutôt que dans une infobulle
+      d'arme. */
+  attackLimit: {
+    n: 1,
+    scope: "narration",
+    scopeLabel: "cette narration",
+    page: "p.65",
+    counted: false,
+    why: "un personnage normal effectue une action significative par narration, et attaquer en est une",
+    broad:
+      "sont significatives les actions qui demandent un test de compétence : attaquer, lancer un sort, invoquer un esprit, hacker un appareil, piloter un véhicule",
+    buys: "un point d'Anarchy accorde une action supplémentaire (p.77)",
+  },
+  /** CONTRESORT (lot F6b) — p.184. Deux usages, comme dans les trois autres
+      éditions, et ils ne se jouent toujours pas pareil :
+
+      · « Tenter de dissiper un sort maintenu est une action. Il s'agit d'un
+        TEST OPPOSÉ entre Sorcellerie (contresort) + Volonté contre Sorcellerie
+        (type de sort) + Volonté. LES DEUX MAGICIENS sont sujets au drain. »
+      · « Contrer un sort au moment de son lancement est une action, ce qui peut
+        nécessiter de dépenser un point d'Anarchy si l'action de ce tour a déjà
+        été utilisée. Il s'agit d'un TEST SIMPLE […] dont les succès sont
+        retranchés au test de lancement du sort. »
+
+      Le second est celui qui relie ce contrat à `attackLimit` ci-dessus : c'est
+      le livre lui-même qui renvoie à l'économie d'une action par narration et
+      au point d'Anarchy qui en achète une seconde. Les deux rappels du cockpit
+      disent donc la même règle depuis deux endroits, sans se contredire.
+
+      Le drain n'est ni calculé ni appliqué — Anarchy 2 le résout par
+      complication (`Dice.computeAnarchyRoll`), au moment du jet, et l'app ne
+      décide pas à la place du MJ qui, des deux magiciens, encaisse quoi. */
+  counterspellFor(pnj) {
+    if (!pnj || pnj._adhoc) return null;
+    const sorc = (pnj.skills || []).find((s) => s && /sorcellerie/i.test(s.name || ""));
+    if (!sorc) return null;
+    const pool = (Number(sorc.val) || 0) + (Actor.attr(pnj, "VOL") || 0);
+    return {
+      label: "Contresort",
+      skill: "Sorcellerie (contresort)",
+      page: "p.184",
+      actionKey: null,
+      cost: "une action — ou un point d'Anarchy si l'action de la narration est déjà utilisée",
+      uses: [
+        {
+          key: "contrer",
+          label: "Contrer au lancement",
+          pool,
+          roll: "Sorcellerie (contresort) + Volonté",
+          vs: "test simple — les succès se retranchent au test de lancement",
+          note: "Au moment où le sort est lancé. Peut causer du drain",
+        },
+        {
+          key: "dissiper",
+          label: "Dissiper un sort maintenu",
+          pool,
+          roll: "Sorcellerie (contresort) + Volonté",
+          vs: "Sorcellerie (type de sort) + Volonté du lanceur",
+          note: "Test opposé. Les DEUX magiciens sont sujets au drain. En cas de succès, le sort est dissipé",
+        },
+      ],
+    };
+  },
   /** Budget d'actions par narration (vérifié p.65) — 1 action significative
       (déplacement + annexes gratuits, non décomptés). Les points d'Anarchy
       accordent des actions en plus : au MJ d'incrémenter (jeton supplémentaire). */

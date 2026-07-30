@@ -33,9 +33,23 @@ import { Spirits } from "../catalogs/spirits.js";
 import { Sprites } from "../catalogs/sprites.js";
 import { Statuses } from "../rules/statuses.js";
 import { Utils } from "../core/utils.js";
+import { Vehicles } from "../catalogs/vehicles.js";
 import { WeaponRoll } from "../rules/weaponroll.js";
 
 export const EditionSR6 = {
+  /** Ce PNJ a-t-il de quoi PILOTER — un engin, ou l'interface qui permet d'y
+      plonger ? Lu par `actionModel.domains.pilotage` (F6). Jumeau exact de
+      `EditionSR5._hasRig` ; le raisonnement est là-bas. Dupliqué plutôt que
+      partagé parce qu'un prédicat de domaine vit dans son édition (prohibition
+      n°1) — et que rien ne garantit que les deux vocabulaires resteront
+      identiques quand SR6 gagnera ses propres libellés de CCR. */
+  _hasRig(pnj) {
+    if (!pnj) return false;
+    const items = [...(pnj.equip || []), ...(pnj.augs || [])];
+    if (items.some((i) => Vehicles.matchItem(i, pnj.edition))) return true;
+    const txt = items.map((i) => ItemResolver.itemStr(i)).join(" ");
+    return /c[âa]blage de contr[ôo]le|console de commande|\bCCR\b|rigger/i.test(txt);
+  },
   id: "sr6",
   label: "Shadowrun 6e",
   // Accent DA lu par le générateur de plan de lieu (MapGen) — liseré + objectif.
@@ -346,6 +360,98 @@ export const EditionSR6 = {
       note: "action majeure · fin du round",
     };
   },
+  /** LIMITE D'ATTAQUE (lot F6b) — SR6 n'écrit pas d'interdiction ; il pose une
+      ÉCONOMIE, et c'est elle qui limite. Attaquer coûte l'action majeure, on en
+      a une par tour : donc une attaque par tour, par construction.
+
+      ⚠ ET LE LIVRE PRÉVOIT LA SECONDE, explicitement — p.42, verbatim : « en
+      utilisant 4 ACTIONS MINEURES pour effectuer 1 ACTION MAJEURE (pouvant
+      permettre d'effectuer une SECONDE ATTAQUE au cours du même tour d'un
+      joueur) ». C'est même le seul exemple que le livre donne de l'échange.
+      Annoncer « une seule attaque par tour » sans dire cela serait donc faux :
+      la limite est une limite de BUDGET, et l'échange est la porte de sortie
+      que la règle nomme. D'où `buys`, que la rangée de jetons affiche à côté du
+      bouton d'échange qui la réalise.
+
+      L'unité est le TOUR et non la phase : SR6 n'a plus de passes d'initiative
+      (p.44), il a un tour par personnage et un budget dedans. */
+  attackLimit: {
+    n: 1,
+    counted: true, // catalogue d'actions + `useAction` : l'app sait compter
+    scope: "turn",
+    scopeLabel: "ce tour",
+    page: "p.42",
+    why: "attaquer coûte l'action majeure, et il n'y en a qu'une par tour",
+    buys: "échanger 4 mineures contre 1 majeure en rend une seconde possible",
+  },
+  /** CONTRESORT (lot F6b, corrigé au livre p.146) — le contrat que la console
+      de réaction lit à l'aveugle. `null` quand ce PNJ ne peut pas contrer.
+
+      ⚠ CE N'EST PAS « LA DÉFENSE CONTRE SORTS ». Première version de ce lot :
+      un bouton unique, une réserve, un jet. Le livre décrit autre chose —
+      « le contresort […] peut se manifester de DEUX MANIÈRES : Défense
+      augmentée ou Dissipation » (p.146), et les deux ne visent pas la même
+      chose. La Défense augmentée est préventive et son seuil est libre : ses
+      succès NETS deviennent un bonus de défense pour tout le monde dans une
+      sphère de 2 m. La Dissipation, elle, s'oppose à un sort DÉJÀ actif et se
+      joue contre un seuil chiffré, « la Valeur de Drain du sort × 2 ». Même
+      réserve de dés, deux tests, deux cibles — d'où `uses` et pas un `pool`
+      seul (correction utilisateur : « ça peut nécessiter des jets différents
+      en fonction du type du sort »).
+
+      ── Pourquoi la console et pas la feuille ────────────────────────────────
+      L'action est notée `(L)` : déclarable à n'importe quel moment, donc jamais
+      à son propre tour — on contre le sort de quelqu'un d'AUTRE. Dans la
+      feuille du combattant ACTIF elle ne pouvait littéralement pas servir.
+
+      ── La compétence, en fonction de l'édition ──────────────────────────────
+      SR6 n'a pas de compétence Contresort séparée : Sorcellerie couvre le
+      lancement ET le contresort (cf. `skilleffects.js`), et les deux usages
+      roulent « Sorcellerie + Magie ». On exige donc `spellSkill`, jamais la
+      chaîne en dur.
+
+      ⚠ EXIGE LA COMPÉTENCE SUR LA FICHE, pas seulement de la Magie :
+      `Magic.actionPool` rend `compétence + MAG`, donc un nombre non nul même
+      sans la ligne de compétence. Le prédicat regarde la fiche ; la réserve ne
+      sert qu'à remplir le bouton.
+
+      `arcaneLock` — le même verrou que la chip ✦ Bannir (`_spiritChipRow`) :
+      un magicien coupé de l'astral ne contre rien. */
+  counterspellFor(pnj) {
+    if (!pnj || pnj._adhoc) return null;
+    const skill = this.spellSkill; // Sorcellerie — pas de Contresort séparé en SR6
+    if (!(pnj.skills || []).some((s) => s && s.name === skill)) return null;
+    if (this.arcaneLock(pnj, "magic") !== null) return null;
+    const pool = Magic.actionPool(pnj, skill, "sr6");
+    const mag = Actor.attr(pnj, "MAG") || 0;
+    return {
+      label: "Contresort",
+      skill,
+      page: "p.146",
+      // Les DEUX usages passent par la même action majeure : c'est elle qu'on
+      // débite, quel que soit l'usage choisi.
+      actionKey: "contrerSort",
+      cost: "1 action majeure",
+      uses: [
+        {
+          key: "defense",
+          label: "Défense augmentée",
+          pool,
+          roll: `${skill} + Magie`,
+          vs: "aucun seuil — les succès NETS deviennent le bonus",
+          note: `Sphère de 2 m dans la ligne de vue ; les succès nets s'ajoutent à la défense de tous ceux qui s'y trouvent, contre n'importe quel sort, pendant ${mag || "Magie"} round${mag > 1 ? "s" : ""} de combat`,
+        },
+        {
+          key: "dissipation",
+          label: "Dissipation",
+          pool,
+          roll: `${skill} + Magie`,
+          vs: "Valeur de Drain du sort × 2",
+          note: "Contre un sort maintenu ou à effet prolongé. Chaque succès net annule un succès net du sort ; à zéro succès net, le sort est totalement dissipé",
+        },
+      ],
+    };
+  },
   /** Spec d'un combattant CI lancé dans l'initiative. Init du livre SR6 :
       Traitement de données ×2 + 3D6 (p.188). La règle vit ici (prohibition
       n°1) ; repli sur l'indice si le serveur n'a pas d'attributs ASDF posés. */
@@ -420,15 +526,21 @@ export const EditionSR6 = {
       Score Offensif l'a remplacé), et l'action couvre indistinctement la mêlée
       et la distance. Le drapeau est une notion SR5, il vit dans sr5.js. */
   actionModel: {
-    /* ---- DOMAINES (lot F5b) : où ce PNJ peut-il seulement AGIR ? ---------
-       44 des 76 actions SR6 sont magiques ou matricielles. Sur l'écrasante
-       majorité des PNJ — un ganger, un vigile, un molosse — elles ne serviront
-       JAMAIS : proposer « Lancer un sort » à qui n'a pas une once de Magie,
-       c'est du bruit qui coûte à chaque ouverture de feuille.
+    /* ---- DOMAINES (lot F5b, complétés au lot F6) : où ce PNJ peut-il
+       seulement AGIR ? -----------------------------------------------------
+       48 des 78 actions SR6 sont magiques, matricielles ou de pilotage. Sur
+       l'écrasante majorité des PNJ — un ganger, un vigile, un molosse — elles
+       ne serviront JAMAIS : proposer « Lancer un sort » à qui n'a pas une once
+       de Magie, c'est du bruit qui coûte à chaque ouverture de feuille.
 
        Le prédicat vit ici et pas dans le magasin neutre (prohibition n°1) :
        lui ne sait pas ce qu'est un cyberdeck. Le combat n'a pas d'entrée —
-       personne n'a besoin d'une condition pour frapper. */
+       personne n'a besoin d'une condition pour frapper.
+
+       ⚠ F6 — ces prédicats étaient JUSTES et INOPÉRANTS : la feuille ne les
+       lisait que si DEUX rubriques au moins restaient ouvertes, c'est-à-dire
+       jamais chez le PNJ qu'ils visaient (cf. `_actionSheet`). Ils fermaient
+       la magie et la Matrice du mage-decker, et rien chez le ganger. */
     domains: {
       magie: {
         why: "ce PNJ n'a ni Magie, ni sort, ni pouvoir",
@@ -440,11 +552,37 @@ export const EditionSR6 = {
       },
       matrice: {
         why: "ce PNJ n'a ni cyberjack, ni cyberdeck, ni Résonance",
+        // ⚠ `ItemResolver.itemStr` et non `String` (lot F6b) : un item peut
+        // être un OBJET (`{ str, cat, rating }`), et `String(objet)` rend
+        // « [object Object] » — le motif ne voyait donc pas un cyberdeck ajouté
+        // depuis l'éditeur. Jumeau de la correction faite en SR5.
+        //
+        // Pas de domaine « resonance » ici : le catalogue SR6 ne porte aucune
+        // action de sprite ni de forme complexe (elles vivent dans les surfaces
+        // du technomancien, pas dans la table matricielle p.183-186). Le jour
+        // où il en portera, la rubrique existe déjà côté magasin neutre.
         when: (pnj) =>
           (Actor.attr(pnj, "RES") || 0) > 0 ||
           !!pnj.cyberdeck ||
+          !!pnj.persona ||
           !!(pnj.complexForms && pnj.complexForms.length) ||
-          /cyberjack|cyberdeck/i.test((pnj.equip || []).map(String).join(" ")),
+          /cyberjack|cyberdeck/i.test((pnj.equip || []).map((i) => ItemResolver.itemStr(i)).join(" ")),
+      },
+      // PILOTAGE (F6) — QUATRE actions que le livre imprime dans la table de
+      // COMBAT (p.45) et qui n'appartiennent pourtant qu'au rigger : Commander
+      // un drone, Contrôler un drone à distance, Plonger (rigger), Utiliser
+      // une CCR. Chacune nomme son matériel dans sa propre description — « via
+      // une Console de commande pour rigger », « avec un câblage de contrôle
+      // de véhicule et un véhicule ou drone adapté ». La condition était donc
+      // ÉCRITE ; elle n'était simplement portée par aucun prédicat.
+      //
+      // C'est le premier domaine qui ne calque pas une table du livre. Le
+      // critère de F5b n'a pas changé pour autant — « ce PNJ peut-il seulement
+      // agir là ? » — et il répond non pour un molosse, exactement comme pour
+      // « Lancer un sort ».
+      pilotage: {
+        why: "ce PNJ n'a ni drone, ni véhicule, ni interface de rigger",
+        when: (pnj) => EditionSR6._hasRig(pnj),
       },
     },
     catalog: [
@@ -481,7 +619,7 @@ export const EditionSR6 = {
         "+2 à la Valeur de Dommages contre −4 dés",
         "Des actions d'Atout permettent des ciblages plus précis, sans malus ou avec un malus réduit",
       ] },
-      { key: "commanderDrone", name: "Commander un drone", cost: [{ key: "minor", n: 1 }], timing: "I", lines: [
+      { key: "commanderDrone", name: "Commander un drone", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "pilotage", lines: [
         "Donner un ordre à un drone contrôlé",
         "Le même ordre à tous les drones via une CCR ; des ordres différents coûtent autant d'actions mineures",
       ] },
@@ -518,7 +656,7 @@ export const EditionSR6 = {
       { key: "lacherObjet", name: "Lâcher un objet", cost: [{ key: "minor", n: 1 }], timing: "L", lines: [
         "Lâcher ce qu'on tient en main ; les objets peuvent être endommagés selon la chute",
       ] },
-      { key: "rechargerSmartgun", name: "Recharger un smartgun", cost: [{ key: "minor", n: 1 }], timing: "I", reload: "smart", lines: [
+      { key: "rechargerSmartgun", name: "Recharger un smartgun", cost: [{ key: "minor", n: 1 }], timing: "I", reload: "smart", via: "rechargement", lines: [
         "Connecté à un smartgun prêt : éjecte le chargeur et en engage un autre d'une simple pensée",
         "Exige qu'un nouveau chargeur soit disponible",
       ] },
@@ -580,7 +718,7 @@ export const EditionSR6 = {
       { key: "attaquer", name: "Attaquer", viaWeapon: true, cost: [{ key: "major", n: 1 }], timing: "I", quick: true, lines: [
         "Porter un type d'attaque : physique, magique ou de véhicule",
       ] },
-      { key: "controlerDrone", name: "Contrôler un drone à distance", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
+      { key: "controlerDrone", name: "Contrôler un drone à distance", cost: [{ key: "major", n: 1 }], timing: "I", domain: "pilotage", lines: [
         "Piloter un drone à distance via une Console de commande pour rigger (CCR)",
         "Sans CCR, voir l'action matricielle Contrôler un appareil",
       ] },
@@ -591,7 +729,7 @@ export const EditionSR6 = {
         "Autorise un test de Perception ou d'Observation astrale",
         "Sert à remarquer les détails que le rythme du combat occulte (équipement, identité)",
       ] },
-      { key: "plongerRigger", name: "Plonger (rigger)", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
+      { key: "plongerRigger", name: "Plonger (rigger)", cost: [{ key: "major", n: 1 }], timing: "I", domain: "pilotage", lines: [
         "Avec un câblage de contrôle de véhicule et un véhicule ou drone adapté au rigging : en prendre le contrôle",
       ] },
       { key: "preparerArme", name: "Préparer une arme", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
@@ -603,7 +741,7 @@ export const EditionSR6 = {
         "Ramasser un objet à portée ou en poser un, en y faisant attention",
         "Une arme ainsi ramassée est considérée comme prête à être utilisée",
       ] },
-      { key: "rechargerArme", name: "Recharger une arme", cost: [{ key: "major", n: 1 }], timing: "I", reload: "full", lines: [
+      { key: "rechargerArme", name: "Recharger une arme", cost: [{ key: "major", n: 1 }], timing: "I", reload: "full", via: "rechargement", lines: [
         "Pour une arme sans smartlink, ou dont le smartlink est désactivé",
         "L'arme est rechargée à sa pleine capacité, tant que le personnage a assez de munitions",
       ] },
@@ -615,7 +753,7 @@ export const EditionSR6 = {
         "Un appareil activé en un seul mouvement : bouton, touche, icône unique",
         "Un appareil connecté à une IND activée ne coûte qu'une action mineure",
       ] },
-      { key: "utiliserCCR", name: "Utiliser une CCR", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
+      { key: "utiliserCCR", name: "Utiliser une CCR", cost: [{ key: "major", n: 1 }], timing: "I", domain: "pilotage", lines: [
         "Manœuvres de rigging depuis une Console de commande pour rigger",
       ] },
       { key: "utiliserCompetence", name: "Utiliser une compétence", cost: [{ key: "major", n: 1 }], timing: "I", lines: [
@@ -644,16 +782,16 @@ export const EditionSR6 = {
       { key: "modifierPerception", name: "Modifier sa perception", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "magie", lines: [
         "Bascule la perception entre le monde physique et l'astral",
       ] },
-      { key: "bannirEsprit", name: "Bannir un esprit", cost: [{ key: "major", n: 1 }], timing: "I", domain: "magie", lines: [
+      { key: "bannirEsprit", name: "Bannir un esprit", cost: [{ key: "major", n: 1 }], timing: "I", domain: "magie", via: "bannissement", lines: [
         "Tente de renvoyer un esprit dans son plan",
       ] },
-      { key: "contrerSort", name: "Contrer un sort", cost: [{ key: "major", n: 1 }], timing: "L", domain: "magie", lines: [
+      { key: "contrerSort", name: "Contrer un sort", cost: [{ key: "major", n: 1 }], timing: "L", domain: "magie", via: "reactions", lines: [
         "Oppose son Contresort à un sort en cours de lancement",
       ] },
-      { key: "invoquerEsprit", name: "Invoquer un esprit", cost: [{ key: "major", n: 1 }], timing: "I", domain: "magie", lines: [
+      { key: "invoquerEsprit", name: "Invoquer un esprit", cost: [{ key: "major", n: 1 }], timing: "I", domain: "magie", via: "invocation", lines: [
         "Invoque un esprit et négocie ses services",
       ] },
-      { key: "lancerSort", name: "Lancer un sort", cost: [{ key: "major", n: 1 }], timing: "I", domain: "magie", lines: [
+      { key: "lancerSort", name: "Lancer un sort", cost: [{ key: "major", n: 1 }], timing: "I", domain: "magie", via: "sorts", lines: [
         "Lance un sort connu, avec son Drain",
       ] },
       { key: "purifier", name: "Purifier", cost: [{ key: "major", n: 1 }], timing: "I", domain: "magie", lines: [
@@ -690,13 +828,13 @@ export const EditionSR6 = {
       { key: "mxEditerFichier", name: "Éditer un fichier", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Crée, modifie, copie ou supprime un fichier"] },
       { key: "mxEffacerSignature", name: "Effacer une signature matricielle", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Efface la trace laissée par une action matricielle"] },
       { key: "mxEmpetrer", name: "Empêtrer", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Entrave une icône adverse"] },
-      { key: "mxForcerAcces", name: "Forcer l'accès", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Obtient un niveau d'accès par la force (dépend de l'Attaque)"] },
+      { key: "mxForcerAcces", name: "Forcer l'accès", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", via: "matrice", lines: ["Obtient un niveau d'accès par la force (dépend de l'Attaque)"] },
       { key: "mxFormaterAppareil", name: "Formater un appareil", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Reformate un appareil pour en changer le propriétaire"] },
       { key: "mxFureter", name: "Fureter", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Fouille un serveur à la recherche de fichiers"] },
       { key: "mxImiterOrdre", name: "Imiter un ordre", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Fait passer un ordre pour légitime auprès d'un appareil"] },
       { key: "mxPercevoirMatrice", name: "Percevoir la Matrice", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Analyse un objet matriciel ou scanne les environs"] },
-      { key: "mxPicDonnees", name: "Pic de données", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Attaque matricielle infligeant des dommages (VD = indice d'Attaque)"] },
-      { key: "mxPlanterProgramme", name: "Planter un programme", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Met hors service un programme actif de la cible"] },
+      { key: "mxPicDonnees", name: "Pic de données", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", via: "matrice", lines: ["Attaque matricielle infligeant des dommages (VD = indice d'Attaque)"] },
+      { key: "mxPlanterProgramme", name: "Planter un programme", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", via: "matrice", lines: ["Met hors service un programme actif de la cible"] },
       { key: "mxPlongerAppareil", name: "Plonger dans un appareil riggé", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Prend le contrôle direct d'un appareil riggé"] },
       { key: "mxPoserBombe", name: "Poser une bombe matricielle", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Piège un fichier ou un appareil"] },
       { key: "mxRebooter", name: "Rebooter un appareil", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Redémarre un appareil, ce qui purge son état matriciel"] },
@@ -704,7 +842,7 @@ export const EditionSR6 = {
       { key: "mxEmpreinteNumerique", name: "Rechercher une empreinte numérique", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Remonte la piste laissée par une icône"] },
       { key: "mxSeCacher", name: "Se cacher", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Passe son icône en mode silencieux vis-à-vis d'une cible"] },
       { key: "mxSeDebrancher", name: "Se débrancher", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Quitte la Matrice"] },
-      { key: "mxSonderAcces", name: "Sonder l'accès", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Prépare un accès en discrétion (dépend de la Corruption)"] },
+      { key: "mxSonderAcces", name: "Sonder l'accès", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", via: "matrice", lines: ["Prépare un accès en discrétion (dépend de la Corruption)"] },
       { key: "mxTraquerIcone", name: "Traquer une icône", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Localise physiquement le porteur d'une icône"] },
       { key: "mxBackdoor", name: "Utiliser une backdoor", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Réutilise un accès préparé par Sonder l'accès"] },
       { key: "mxVerifierSurveillance", name: "Vérifier son Score de Surveillance", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Consulte son Score de Surveillance courant"] },
@@ -2112,10 +2250,19 @@ export const EditionSR6 = {
        de l'Attaque, p.183) et « Sonder l'accès » (dépend de la Corruption,
        p.186) au lieu des actions de markage SR5. Pool simplifié = attribut du
        deck concerné ; VD chiffrée pour le pic de données (p.184, même modèle de
-       dommages matriciels que SR5, VD = indice d'Attaque). */
+       dommages matriciels que SR5, VD = indice d'Attaque).
+
+       `actionKey` (lot F6) — la CLÉ DU CATALOGUE que cette ligne débite quand
+       on la tape. Miroir de `fireModes[].actionKey`. L'en-tête d'`actionModel`
+       ci-dessus assumait le chevauchement de ces quatre gestes (« c'est voulu,
+       ce sont deux facettes du même geste ») ; l'arbitrage tenait tant que les
+       deux facettes coûtaient pareil. Elles ne coûtaient pas pareil : celle-ci
+       était GRATUITE. Le râtelier débite désormais, et la facette de la feuille
+       s'efface (`via: "matrice"`) — un geste, une porte, un prix. */
     actions: [
       {
         key: "spike",
+        actionKey: "mxPicDonnees",
         name: "Pic de données",
         type: "attack",
         page: 184,
@@ -2124,6 +2271,7 @@ export const EditionSR6 = {
       },
       {
         key: "forceaccess",
+        actionKey: "mxForcerAcces",
         name: "Forcer l'accès",
         type: "access",
         page: 183,
@@ -2132,6 +2280,7 @@ export const EditionSR6 = {
       },
       {
         key: "probeaccess",
+        actionKey: "mxSonderAcces",
         name: "Sonder l'accès",
         type: "access",
         page: 186,
@@ -2140,6 +2289,7 @@ export const EditionSR6 = {
       },
       {
         key: "crash",
+        actionKey: "mxPlanterProgramme",
         name: "Planter un programme",
         type: "crash",
         page: 184,

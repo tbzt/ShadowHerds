@@ -1965,6 +1965,81 @@
 .react-damage-chips[hidden] {
   display: none;
 }
+
+/* ---- F6b : les USAGES du Contresort, dépliés par le ✦ ----
+   Même gabarit que les deux rangées voisines (dégâts, interruptions) : on ne
+   crée pas un troisième vocabulaire pour un troisième déplié. Teinte MAGIE
+   plutôt que neutre, parce que c'est le seul de ces trois panneaux qui
+   n'appartient qu'aux magiciens — c'est le même calque transverse que les
+   rubriques de la feuille d'actions et que le bloc Sorts (CP4), pas un
+   cinquième rôle. */
+.react-cs-chips {
+  --accent: var(--accent-magic);
+  --glow: var(--glow-magic);
+  align-items: center;
+  gap: var(--sp-1);
+  margin: 0.2rem 0 0.1rem;
+  padding: 0.4rem;
+  border: 1px dashed color-mix(in srgb, var(--accent) 40%, var(--border));
+  border-radius: var(--radius-sm);
+}
+.react-cs-chips[hidden] {
+  display: none;
+}
+/* La RÉSERVE (SR5) : des dés qu'on alloue, jamais qu'on lance — d'où des ±
+   et un compteur, pas une rollable. Vocabulaire repris tel quel de la rangée
+   d'Atout, qui est déjà exactement cet objet : un capital de tour qui se
+   dépense par portions. */
+.react-cs-reserve {
+  align-items: center;
+  gap: var(--sp-1);
+}
+.react-cs-lbl {
+  color: var(--text-dim);
+  font-size: var(--fs-2xs);
+}
+.react-cs-val {
+  min-width: 3ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+/* Le pied : compétence, coût, page. Terne — c'est un rappel, pas un contrôle. */
+.react-cs-note {
+  flex-basis: 100%;
+  color: var(--text-dim);
+  font-size: var(--fs-2xs);
+}
+
+/* ---- F6b : le compte d'attaques de la rangée de jetons ----
+   Un repère, pas un verrou : il apparaît dès la première attaque et vire au
+   `--warning` quand le livre est dépassé. Jamais `--danger` — dépasser n'est
+   pas une perte irréversible, c'est un arbitrage que le meneur a le droit de
+   prendre (« le rouge se mérite », décision K8 n°6). */
+.attack-tally {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: var(--fs-2xs);
+  font-variant-numeric: tabular-nums;
+}
+.attack-tally.is-over {
+  border-color: var(--warning);
+  color: var(--warning);
+  font-weight: 600;
+}
+/* Anarchy : un RAPPEL de règle, pas un compteur — l'app ne peut pas compter des
+   actions offensives qui ne passent pas par le budget. Il est là en permanence,
+   donc il doit se faire encore plus discret qu'un compte : filet en pointillé
+   (le vocabulaire du « pas un contrôle » déjà posé sur `.action-notice`) et
+   aucune emphase. */
+.attack-tally.is-rule {
+  border-style: dotted;
+}
 /* Feuille des interruptions (E4) — même gabarit que les chips de dégâts, mais
    NEUTRE : le rouge appartient au contrôle Dégâts et à lui seul (décision K8
    n°6, « le rouge se mérite »). Une interruption n'est pas un danger, c'est
