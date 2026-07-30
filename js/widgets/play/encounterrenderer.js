@@ -326,9 +326,18 @@ export const EncounterRenderer = {
       décidé à la table et réordonné à la main (glisser-déposer, cf.
       dragHandle de _rowNarrative) — sans ce rappel, le silence de « Lancer &
       classer »/« Trier » (masqués en narratif, cf. CSS .is-narrative) est pris
-      pour une panne plutôt qu'une règle appliquée à la lettre. */
+      pour une panne plutôt qu'une règle appliquée à la lettre.
+
+      B4.2 — le rappel disait « la ligne pour voir ses actions ». Vrai d'un PNJ,
+      FAUX d'un PJ : taper sa ligne bascule le cockpit en RÉAGIR et ouvre le rack
+      de réaction des PNJ (le mode suit le combattant en FOCUS en narratif, cf.
+      renderActiveCard). C'est le seul chemin vers cette console en Anarchy — il
+      n'y a pas d'ordre de tour pour l'ouvrir tout seul — et rien ne l'annonçait :
+      l'audit du cockpit, instrumenté, est passé entièrement à côté et a conclu que
+      la console « n'existait pas dans les éditions narratives ». Elle existe dans
+      les deux, avec ses 4 lignes de réaction ; c'est le libellé qui mentait. */
   _narrativeNote() {
-    return `<div class="encounter-narrative-note">Anarchy : ordre narratif — <b>touchez ✓</b> pour marquer « joué », <b>la ligne</b> pour voir ses actions · glissez ⠿ pour réordonner</div>`;
+    return `<div class="encounter-narrative-note">Anarchy : ordre narratif — <b>touchez ✓</b> pour marquer « joué », <b>la ligne d'un PNJ</b> pour ses actions, <b>celle d'un PJ</b> pour faire réagir les PNJ · glissez ⠿ pour réordonner</div>`;
   },
 
   /** Compteur de progression du round narratif : combien de combattants ont
