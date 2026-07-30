@@ -417,34 +417,34 @@ export const Backup = {
     d.className = "backup-overlay";
     d.setAttribute("hidden", "");
     d.innerHTML = `
-      <div class="backup-panel" role="dialog" aria-label="Importer une sauvegarde">
+      <div class="stack backup-panel" role="dialog" aria-label="Importer une sauvegarde">
         <div class="backup-head">
           <span class="backup-title">Importer une sauvegarde</span>
           <button class="backup-close" id="backup-close" aria-label="Fermer">✕</button>
         </div>
 
-        <div class="backup-stage" data-stage="choose">
+        <div class="stack backup-stage" data-stage="choose">
           <p class="backup-hint">Depuis un fichier local, ou une URL (NAS, serveur).</p>
           <button class="btn-primary backup-full" id="backup-pick-file">Choisir un fichier…</button>
           <input type="file" id="backup-file-input" accept=".json,application/json" hidden>
           <div class="backup-or">ou</div>
-          <div class="backup-url-row">
+          <div class="cluster backup-url-row">
             <input type="text" id="backup-url" placeholder="https://mon-nas.local/pnj.json">
             <button class="btn-secondary" id="backup-fetch-url">Charger</button>
           </div>
         </div>
 
-        <div class="backup-stage" data-stage="confirm" hidden>
+        <div class="stack backup-stage" data-stage="confirm" hidden>
           <p class="backup-summary" id="backup-summary"></p>
           <p class="backup-hint">Comment intégrer ces données ?</p>
-          <div class="backup-actions">
+          <div class="cluster backup-actions">
             <button class="btn-secondary" id="backup-merge">Fusionner</button>
             <button class="btn-danger-soft" id="backup-replace">Remplacer tout</button>
           </div>
           <button class="backup-back" id="backup-back">‹ Retour</button>
         </div>
 
-        <div class="backup-stage" data-stage="loading" hidden>
+        <div class="stack backup-stage" data-stage="loading" hidden>
           <p class="backup-hint">Chargement…</p>
         </div>
       </div>`;

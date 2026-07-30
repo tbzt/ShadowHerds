@@ -316,7 +316,7 @@ export const EditionSR6 = {
     return `<div class="settings-section">
       <h3>Moniteur de condition</h3>
       <p>Par défaut, les PNJ SR6 ont un moniteur unique. Vous pouvez activer les moniteurs séparés (physique + étourdissement).</p>
-      <div class="radio-group">
+      <div class="stack stack--tight radio-group">
         ${S._radio("separateMonitors", "false", "Moniteur unique (standard SR6)", !sep)}
         ${S._radio("separateMonitors", "true", "Moniteurs séparés (Physique + Étourd.)", sep)}
       </div>

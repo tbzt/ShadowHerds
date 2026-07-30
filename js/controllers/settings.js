@@ -143,7 +143,7 @@ export const Settings = {
       </div>
       <div class="stack form-group" style="margin-top:1rem;">
         <label>Synchronisation automatique entre appareils</label>
-        <div class="radio-group">
+        <div class="stack stack--tight radio-group">
           ${this._radioSync("none", "Aucune (sauvegarde manuelle)", sc.provider === "none")}
           ${this._radioSync("gist", "GitHub Gist secret (tous appareils)", sc.provider === "gist")}
           ${this._radioSync("webdav", "WebDAV / NAS", sc.provider === "webdav")}
@@ -167,7 +167,7 @@ export const Settings = {
     return h + `</div>`;
   },
   _radioSync(val, label, checked) {
-    return `<label class="radio-label">
+    return `<label class="cluster radio-label">
       <input type="radio" name="sync_provider" value="${val}" ${checked ? "checked" : ""}
         data-action="set-sync-provider">
       <span>${label}</span>
@@ -209,7 +209,7 @@ export const Settings = {
       <input type="text" id="sync_webdav_url" value="${CardRenderer._esc(sc.webdav.url)}"
         placeholder="https://mon-nas.local/dav/shadowherds.json"
         data-action="set-sync-field" data-prov="webdav" data-field="url">
-      <div class="backup-url-row" style="margin-top:0.5rem;">
+      <div class="cluster backup-url-row" style="margin-top:0.5rem;">
         <input type="text" placeholder="utilisateur" value="${CardRenderer._esc(sc.webdav.user)}"
           data-action="set-sync-field" data-prov="webdav" data-field="user">
         <input type="password" placeholder="mot de passe" value="${CardRenderer._esc(sc.webdav.pass)}"
@@ -460,13 +460,13 @@ export const Settings = {
       )
       .join("");
 
-    zone.innerHTML = `<div class="settings-layout">
-      <nav class="settings-nav">
+    zone.innerHTML = `<div class="cluster settings-layout">
+      <nav class="stack settings-nav">
         ${navItems}
         <hr class="settings-nav-sep">
         <button class="settings-nav-item is-action" data-action="toggle-shortcuts">Aide et raccourcis ↗</button>
       </nav>
-      <div class="settings-pane">${panes[this._cat]()}</div>
+      <div class="stack settings-pane">${panes[this._cat]()}</div>
     </div>`;
     this._bindDelegation(zone);
 
@@ -529,7 +529,7 @@ export const Settings = {
   },
 
   _radio(name, value, label, checked) {
-    return `<label class="radio-label">
+    return `<label class="cluster radio-label">
       <input type="radio" name="${name}" value="${value}" ${checked ? "checked" : ""}>
       ${label}
     </label>`;

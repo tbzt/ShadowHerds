@@ -170,7 +170,7 @@ export const Tour = {
       byVer[v]
         .map(
           (s) =>
-            `<div class="wn-row"><div class="wn-txt"><strong>${esc(s.title)}</strong><span>${esc(s.body)}</span></div>` +
+            `<div class="cluster wn-row"><div class="wn-txt"><strong>${esc(s.title)}</strong><span>${esc(s.body)}</span></div>` +
             `<button class="btn-secondary btn-small" data-action="wn-demo" data-step="${esc(s.id)}">Montre-moi</button></div>`,
         )
         .join("") +
@@ -213,7 +213,7 @@ export const Tour = {
     root.innerHTML =
       `<div class="wn-scrim" data-action="wn-close"></div>` +
       `<div class="wn-panel" role="dialog" aria-modal="true" aria-labelledby="wn-title" tabindex="-1">` +
-      `<div class="wn-head"><span class="wn-title" id="wn-title">✦ Quoi de neuf</span>` +
+      `<div class="cluster wn-head"><span class="wn-title" id="wn-title">✦ Quoi de neuf</span>` +
       `<button class="modal-close" data-action="wn-close" aria-label="Fermer">✕</button></div>` +
       `<div class="wn-list">${rows}</div>` +
       `<div class="wn-foot"><button class="btn-primary btn-small" data-action="wn-close">Compris</button></div>` +
@@ -271,7 +271,7 @@ export const Tour = {
         <h2 class="tour-title" id="tour-title"></h2>
         <p class="tour-body" id="tour-body"></p>
         <p class="tour-try" id="tour-try" hidden></p>
-        <div class="tour-actions">
+        <div class="cluster tour-actions">
           <button class="btn-secondary btn-small" data-action="tour-end">Passer</button>
           <span class="tour-spacer"></span>
           <button class="btn-secondary btn-small" id="tour-prev" data-action="tour-prev">Précédent</button>

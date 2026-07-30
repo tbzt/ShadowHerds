@@ -206,7 +206,7 @@ export const EditionSR5 = {
     return `<div class="settings-section">
       <h3>Malus de blessure</h3>
       <p>Les PNJ subissent normalement −1D par tranche de cases sur leur moniteur. Choisissez la fréquence.</p>
-      <div class="radio-group">
+      <div class="stack stack--tight radio-group">
         ${S._radio("woundMod", "3", "−1D pour 3 cases (standard)", woundMod == 3)}
         ${S._radio("woundMod", "2", "−1D pour 2 cases", woundMod == 2)}
         ${S._radio("woundMod", "1", "−1D par case", woundMod == 1)}
