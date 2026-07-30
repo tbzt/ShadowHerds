@@ -265,10 +265,41 @@
 /* Coût non payable avec ce qui reste : la puce se TERNIT, elle ne se désactive
    pas. `_consumeAction` débite au-delà du budget et le dit — le MJ a le droit
    de savoir qu'il déborde et de déborder quand même (garde-fou « informer,
-   jamais décider »). Un bouton grisé lui retirerait l'arbitrage. */
+   jamais décider »). Un bouton grisé lui retirerait l'arbitrage.
+
+   ── F6b : l'OPACITÉ était le mauvais canal ──────────────────────────────────
+   Elle était à 0.55, et elle atténuait le MOT en même temps que le décor.
+   MESURÉ, contraste du libellé sur son fond, à plusieurs valeurs :
+
+       opacité   0.55   0.65   0.75   0.85   1.00
+       combat    2.41   2.93   3.55   4.26   5.53
+       magie     2.26   2.70   3.22   3.81   4.81
+       matrice   2.21   2.63   3.12   3.66   4.58
+
+   Le référentiel demande 4.5:1 pour du texte de cette taille. **Aucune valeur
+   d'opacité ne l'atteint** — il faudrait 1.00, c'est-à-dire ne plus atténuer du
+   tout. Autrement dit ce n'était pas un réglage trop bas : c'était un canal qui
+   ne pouvait pas marcher, parce qu'une opacité ne sait pas distinguer le décor
+   du texte.
+
+   On atténue donc ce qui PORTE l'état, jamais ce qui porte l'information :
+   le fond s'efface, le filet passe en tireté et perd son contraste, l'encre
+   reste à `--text-dim` — la même que toutes les autres puces. Le tireté était
+   déjà là et il ne dépend d'aucune couleur ; il redevient le signal principal,
+   ce qu'il aurait toujours dû être.
+
+   ⚠ Ne PAS remplacer par `color: <encre plus pâle>` : ce serait refaire la même
+   erreur avec un autre outil. « Impayable » est une information de coût, pas une
+   information de moindre importance — le MJ doit pouvoir lire le nom de
+   l'action qu'il s'apprête à jouer en dépassant son budget.
+
+   ⚠ Le FOND n'est pas touché non plus : c'est lui qui porte la teinte de
+   domaine (`.dom-magie` / `.dom-matrice`), et l'effacer ferait perdre à une
+   action matricielle impayable le fait qu'elle est matricielle. Les deux
+   canaux restent disjoints, ce qui était tout l'intérêt du calque. */
 .action-pick.is-over {
-  opacity: 0.55;
   border-style: dashed;
+  border-color: color-mix(in srgb, var(--border-ui) 50%, transparent);
 }
 /* Les actions SR6 « Libres » (p.45) — déclarables hors de son tour, mais payées
    en jetons comme les autres. Le repère est un liseré, pas une couleur : le
@@ -338,10 +369,19 @@
 /* Interdiction NOMMÉE par le livre (lot F3b) — la seule chose que la feuille
    désactive, et c'est parce qu'il n'y a rien à arbitrer. Reprend `.react-btn.
    is-off` de la console de réaction, où une interruption impayable se présente
-   déjà comme ça : même situation, même costume. */
+   déjà comme ça : même situation, même costume.
+
+   ⚠ F6b — l'`opacity: 0.4` a sauté pour la même raison qu'`.is-over` juste
+   au-dessus : elle emmenait l'encre à ~1.9:1, très en dessous du plancher de
+   4.5:1, sur l'état le plus atténué de la feuille. Et c'était le moins
+   nécessaire des trois signaux — un mot BARRÉ précédé d'un ⊘ ne se confond avec
+   rien, et le libellé doit rester lisible : le MJ a besoin de savoir QUELLE
+   action le livre lui refuse, pas seulement qu'il en refuse une. Le filet
+   pointillé et le curseur restent. */
 .action-pick.is-forbidden {
-  opacity: 0.4;
   border-style: dotted;
+  border-color: color-mix(in srgb, var(--border-ui) 45%, transparent);
+  color: var(--text-dim);
   cursor: not-allowed;
   text-decoration: line-through;
 }

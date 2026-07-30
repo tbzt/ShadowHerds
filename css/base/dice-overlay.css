@@ -956,9 +956,15 @@ input[type="range"]#risk-dice-slider {
    CSS. Recette identique à `.action-pick.is-over`, même arbitrage : le livre
    prévoit le tir court et en donne le prix ; griser retirerait au MJ un
    arbitrage que le livre lui rend. */
+/* ⚠ F6b — l'`opacity: 0.55` a sauté, comme sur `.action-pick.is-over` dont
+   cette règle est la jumelle : elle atténuait le MOT autant que le décor, et
+   MESURÉ, aucune valeur d'opacité n'atteignait le plancher de 4.5:1 du
+   référentiel (0.55 → 2.4:1, et il faut 1.00 pour passer). Le tireté, lui, ne
+   dépend d'aucune couleur : il redevient le signal, et le filet pâlit à sa
+   place. Le raisonnement complet est dans `interactive-content.css`. */
 .status-pick.is-over {
-  opacity: 0.55;
   border-style: dashed;
+  border-color: color-mix(in srgb, var(--border-ui) 50%, transparent);
 }
 /* Recharger : DANS la ligne des munitions, accolé au chargeur qu'il remplit, et
    discret. Pleine largeur il écrasait « Lancer » — « on a presque envie de
