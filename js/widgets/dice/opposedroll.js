@@ -104,7 +104,9 @@ export const OpposedRoll = {
       const res = Dice.computeOpposedRoll(poolA, poolB);
       DiceLog.record(res, { label: "Jet opposé" });
       const winner = res.net > 0 ? "Camp A" : res.net < 0 ? "Camp B" : "Égalité";
-      out.className = `opposed-result ${res.net > 0 ? "good" : res.net < 0 ? "glitch" : "zero"}`;
+      // `stack` réécrit à chaque fois : .opposed-result n'a plus de display
+      // propre depuis D3, l'omettre reposerait les deux lignes en flux normal.
+      out.className = `stack opposed-result ${res.net > 0 ? "good" : res.net < 0 ? "glitch" : "zero"}`;
       out.innerHTML = `
         <span class="opposed-result-main">A ${res.a.hits} — B ${res.b.hits}</span>
         <span class="opposed-result-sub">${winner}${res.net !== 0 ? ` (marge ${Math.abs(res.net)})` : ""}</span>`;
@@ -113,7 +115,7 @@ export const OpposedRoll = {
       res.threshold = threshold;
       DiceLog.record(res, { label: "Jet de seuil" });
       const success = res.hits >= threshold;
-      out.className = `opposed-result ${success ? "good" : "zero"}`;
+      out.className = `stack opposed-result ${success ? "good" : "zero"}`;
       out.innerHTML = `
         <span class="opposed-result-main">${res.hits} succès</span>
         <span class="opposed-result-sub">Seuil ${threshold} — ${success ? "atteint" : "manqué"}</span>`;

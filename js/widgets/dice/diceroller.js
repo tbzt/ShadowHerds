@@ -940,7 +940,12 @@ export const DiceRoller = {
     const summary = document.getElementById("dice-summary");
     tray.innerHTML = "";
     summary.innerHTML = "";
-    summary.className = "dice-summary";
+    // ⚠ Remettre le gabarit AVEC ses utilitaires : depuis que .dice-summary
+    // délègue sa colonne à .stack (D3), écrire "dice-summary" seul effaçait le
+    // display:flex du bloc — le résumé retombait en flux normal, calé à gauche
+    // et sans gouttière. Tout reset de className doit réécrire les utilitaires
+    // posés par le gabarit de `_ensureOverlay`.
+    summary.className = "stack stack--tight dice-summary";
 
     let shown;
     if (res.init) {
