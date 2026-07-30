@@ -35,7 +35,7 @@ export const Notepad = {
     panel.setAttribute("role", "dialog");
     panel.setAttribute("aria-label", "Bloc-notes de séance");
     panel.innerHTML = `
-      <div class="dice-log-head">
+      <div class="cluster dice-log-head">
         <button class="ctx-trigger notepad-ctx" id="notepad-ctx" title="Changer de carnet (contexte)" aria-haspopup="listbox">
           <span class="ctx-trigger-icon" aria-hidden="true">◇</span><span class="ctx-trigger-label" id="notepad-ctx-label">Bloc-notes de séance</span><span class="ctx-trigger-caret" aria-hidden="true">▾</span>
         </button>

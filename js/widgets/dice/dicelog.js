@@ -68,14 +68,14 @@ export const DiceLog = {
     panel.setAttribute("role", "dialog");
     panel.setAttribute("aria-label", "Journal des jets");
     panel.innerHTML = `
-      <div class="dice-log-head">
+      <div class="cluster dice-log-head">
         <span class="dice-log-title">Journal des jets</span>
         <button class="btn-icon-tiny" data-action="export" title="Exporter le journal"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-export"></use></svg></button>
         <button class="btn-icon-tiny" data-action="clear" title="Vider le journal">⌫</button>
         <button class="btn-icon-tiny" data-action="close" title="Fermer" aria-label="Fermer">✕</button>
       </div>
       <div class="dice-log-summary" id="dice-log-summary"></div>
-      <div class="dice-log-filters" id="dice-log-filters"></div>
+      <div class="cluster dice-log-filters" id="dice-log-filters"></div>
       <div class="dice-log-list" id="dice-log-list"></div>`;
     document.body.appendChild(panel);
 
@@ -442,7 +442,7 @@ export const DiceLog = {
     const stat = (val, unit) =>
       `<span class="dice-log-stat"><b>${val}</b>${unit ? `<small>${unit}</small>` : ""}</span>`;
     const body = open
-      ? `<div class="dice-log-summary-body">
+      ? `<div class="cluster dice-log-summary-body">
           ${stat(total, total > 1 ? "jets" : "jet")}
           ${stat(rate == null ? "—" : rate + "%", "réussite")}
           ${stat(alarms, alarms > 1 ? "alarmes" : "alarme")}
@@ -450,7 +450,7 @@ export const DiceLog = {
         </div>`
       : "";
     box.innerHTML =
-      `<button class="dice-log-summary-toggle" data-action="summary-toggle" aria-expanded="${open}">
+      `<button class="cluster dice-log-summary-toggle" data-action="summary-toggle" aria-expanded="${open}">
         <span class="dice-log-summary-chevron${open ? " is-open" : ""}" aria-hidden="true"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>
         Résumé de séance
       </button>${body}`;
@@ -622,7 +622,7 @@ export const DiceLog = {
     const t = String(e.t);
     let note;
     if (e.note) {
-      note = `<div class="dice-log-note">
+      note = `<div class="cluster dice-log-note">
         <span class="dice-log-note-text">${Utils.escHtml(e.note)}</span>
         <button class="dice-log-detail-btn" data-action="log-note-clear" data-t="${e.t}">✕</button>
       </div>`;
@@ -636,10 +636,10 @@ export const DiceLog = {
     const pinBtn = `<button class="dice-log-pin-btn${e.pinned ? " is-pinned" : ""}" data-action="log-pin" data-t="${e.t}"
       title="${e.pinned ? "Désépingler" : "Épingler — garder ce jet même après la purge"}"
       aria-label="${e.pinned ? "Désépingler" : "Épingler"}">📌</button>`;
-    return `<div class="dice-log-item ${e.cls}${isCard ? " is-card" : ""}${e.pinned ? " is-pinned" : ""}">
+    return `<div class="cluster dice-log-item ${e.cls}${isCard ? " is-card" : ""}${e.pinned ? " is-pinned" : ""}">
       <span class="dice-log-time">${fmt(e.t)}</span>
       ${icon}
-      <div class="dice-log-body">
+      <div class="stack dice-log-body">
         ${label}
         ${detail}
         ${note}
