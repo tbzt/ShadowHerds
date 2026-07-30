@@ -68,6 +68,12 @@ versionné n'est pas lu.
 
 ## 1. Le diagnostic
 
+> 📌 **Section historique — les chiffres ci-dessous sont ceux du diagnostic
+> d'origine, pas l'état actuel.** Ils sont conservés intacts : ce sont eux qui
+> ont motivé les onze lots, tous livrés depuis (cf. § 8). Pour l'état à jour d'un
+> axe donné, voir sa section propre (§ 4.x), qui porte ses re-mesures datées.
+> *La méthode de comptage décrite ici, elle, reste valable — c'est le principal.*
+
 J'ai lu les 17 500 lignes de CSS avant d'écrire une ligne de ce document. Le
 constat est net et, je vous rassure d'emblée, **inhabituellement bon sur un
 axe et défaillant sur un autre**.
@@ -289,11 +295,11 @@ contrôle, contraste garanti) est juste et rare. **Elle est sous-employée** :
 tout ce qui est un contrôle interactif doit porter `--border-ui`, pas
 `--border`.
 
-**Ce qu'on ajoute :**
+**Ce qu'on ajoutait — ✅ posé depuis (lot 1, `foundation.css`) :**
 
 ```css
 --bg-overlay: var(--bg-raised);  /* surface d'une modale/popover/feuille */
---scrim: rgba(0, 0, 0, 0.72);    /* rideau — aujourd'hui 0.8 en dur, 3 valeurs coexistent */
+--scrim: rgba(0, 0, 0, 0.72);    /* rideau — remplace les 3 valeurs qui coexistaient */
 ```
 
 **Règle — sémantique des cinq couleurs d'état.** Une seule et même
@@ -333,7 +339,7 @@ naissent les 80 tailles ad hoc, parce qu'aucune n'est nommée.
 | **Titre de panneau** | `--fs-xl` · display · 700 · `--title-transform` · `--title-spacing` | titre d'écran, titre de modale |
 
 ```css
-/* à ajouter dans foundation.css */
+/* ✅ posées dans foundation.css (lot 1) — identiques propriété pour propriété */
 .t-label   { font: 400 var(--fs-2xs)/1.2 var(--font-mono);
              letter-spacing: .15em; text-transform: uppercase; color: var(--text-dim); }
 .t-meta    { font: 400 var(--fs-xs)/1.35 var(--font-body); color: var(--text-dim); }
@@ -412,7 +418,12 @@ lecture périphérique, et il est aujourd'hui appliqué avec justesse.
 
 ### 4.3 Espacement
 
-L'échelle base 4 existe. **20 valeurs de `gap` littérales cohabitent avec.**
+L'échelle base 4 existe. **Au diagnostic, 20 valeurs de `gap` littérales
+cohabitaient avec** ; le lot 11 les a soldées. *Re-mesuré le 2026-07-30 : il
+reste 26 sites littéraux sur ~13 valeurs, tous des replis protégés et commentés
+(densité tactile, liserés de 1-3px, replis d'enroulement quasi nuls, `6%` des
+pips de dé, `10mm` de `print.css`) — voir la loi ci-dessous, qui les autorise
+explicitement.*
 
 **On fixe la correspondance densité — un pas, une intention :**
 
@@ -485,14 +496,24 @@ et final.
 | État | Traitement |
 |---|---|
 | Objet au repos | pas d'ombre. Il se détache par sa **valeur** (`--bg-raised` plus clair que `--bg`) + le liseré `--edge-hi` |
-| Objet survolé | `--elev-1` |
+| Objet survolé | **`--elev-2`** (voir la note ci-dessous — corrigé sur mesure le 2026-07-30) |
 | Objet saisi (drag) | `--elev-2` + `--drag-tilt` / `--drag-lift` de l'édition |
 | Overlay | `--elev-2`, en permanence |
+
+> **Correction du 2026-07-30 — le doc disait `--elev-1`, le code fait `--elev-2`,
+> et c'est le CODE qui a raison.** Le survol de fiche
+> ([`pnj-card.css:82`](css/base/pnj-card.css)) est le geste le plus vu du produit
+> et il est monté à `--elev-2` en pratique. Arbitré : **on garde `--elev-2`** — le
+> survol d'une carte n'est pas un frémissement, c'est la carte qui se saisit du
+> regard, et la nuance `--elev-1` ne se voyait pas sur fond sombre à travers un
+> `drop-shadow`. `--elev-1` reste disponible pour un survol discret (ligne dense,
+> item de liste) ; il n'est simplement pas le défaut des cartes.
 
 *Pourquoi le repos est plat* : sur fond sombre, une ombre noire ne détache
 rien — elle salit. Le figure/fond se fait par la **luminance**. Votre
 `foundation.css` le dit déjà, en toutes lettres, ligne 58. Il faut maintenant
-que le code le fasse : 71 `box-shadow` en dur attendent.
+que le code le fasse : **66** `box-shadow` en dur attendent *(mesuré le
+2026-07-30 ; 71 à la rédaction v1)*.
 
 **Piège connu, déjà documenté par vous — à répéter ici pour qu'il ne se
 reperde pas :** sur une surface biseautée (`clip-path: var(--card-clip)`) ou
@@ -500,18 +521,21 @@ en `overflow: hidden`, un `box-shadow` est **rogné et invisible**. Utiliser
 `filter: drop-shadow(...)`, qui suit la silhouette réelle.
 
 ```css
-/* Le geste canonique du survol d'un objet */
+/* Le geste canonique du survol d'une CARTE (cf. correction ci-dessus) */
 .card:hover .card-frame {
-  filter: drop-shadow(var(--elev-1)) drop-shadow(0 0 7px var(--glow));
+  filter: drop-shadow(var(--elev-2)) drop-shadow(0 0 7px var(--glow));
 }
 ```
 
 ### 4.5 Rayons
 
-**État (re-audité 2026-07-27) : 17 valeurs littérales sur 310 occurrences,
-face à 10 usages de token.** C'est le désordre le plus visible du projet, et
-de très loin le plus grand écart mesuré — plus grave que l'élévation ne l'a
-jamais été. Il fait l'objet du **lot 11**.
+**État (lot 11 SOLDÉ, re-mesuré le 2026-07-30) : 291 occurrences sur 356 portent
+un token ; il ne reste que 8 valeurs littérales distinctes sur 13 sites**, hors
+`0` (×25, les « coins droits » d'édition) et `50%` (×26, les cercles — hors
+échelle à dessein). Au diagnostic v1 c'était **17 valeurs littérales sur 310
+occurrences face à 10 usages de token** : le désordre le plus visible du projet
+est résorbé. *Le paragraphe ci-dessous garde le raisonnement du chantier, qui
+reste la doctrine à appliquer pour tout nouveau site.*
 
 **Échelle finale — quatre pas :**
 
@@ -534,20 +558,30 @@ jamais été. Il fait l'objet du **lot 11**.
 > filtres) — l'était tout autant**, confirmé par les 15 champs secondaires
 > arbitrés ensuite (formulaires de contact, éditeur de fiche, entrées inline
 > du journal/graphe). Le code établi l'emporte sur l'annotation. **Ce que
-> `--radius` (8px) sert vraiment, vérifié sur ses 6 usages réels** :
-> `.spell-block`, `.breakdown-pop`, `.scenario-lenses`, `.tour-ring`,
-> `.pch-cell` — des **encarts**, de petits blocs de mise en avant, jamais des
-> contrôles qu'on touche. La ligne du § est corrigée en conséquence : **la
-> quasi-totalité des contrôles interactifs de ce projet — marqueur, bouton,
-> champ — vit à `--radius-sm`. `--radius` est la valeur la plus rare, pas la
-> plus commune.**
+> `--radius` (8px) sert vraiment** : des **encarts**, de petits blocs de mise en
+> avant (`.spell-block`, `.breakdown-pop`, `.scenario-lenses`, `.tour-ring`,
+> `.pch-cell`, `.contact-form`, `.weapon-line`…), **jamais des contrôles qu'on
+> touche**. La ligne du § est corrigée en conséquence : **la quasi-totalité des
+> contrôles interactifs de ce projet — marqueur, bouton, champ — vit à
+> `--radius-sm`. `--radius` est la valeur la plus rare, pas la plus commune.**
 >
-> **Conséquence pour le lot 11 : la migration n'est PAS mécanique.** Les 17
-> valeurs littérales ne se mappent pas toutes sur un des quatre pas (10px, 5px,
-> 14px, `5px 5px 0 0`…). Chaque site demande un arbitrage — *ce rayon dit-il
-> « marqueur », « contrôle » ou « carte » ?* — et certains changeront
-> visiblement. **Le lot 11 se fait par famille d'objets, pas par
-> chercher-remplacer**, et chaque famille se vérifie aux 4 éditions.
+> *Mise à jour 2026-07-30 : les usages de `--radius` sont passés de 6 à **19** au
+> fil du lot (les familles `6px` et `2px` ont versé leurs encarts dedans) — la
+> règle « encarts, pas contrôles » n'a pas bougé, seul le compte a grossi.
+> **Un contre-exemple trouvé à l'audit de clôture et corrigé** : `.nudge-close`,
+> un vrai `<button>`, était resté à `--radius` ; c'était le dernier bouton du
+> projet à l'ancien canon (`5f33531`). Le commentaire de `foundation.css` qui
+> annonçait encore « champs, boutons, encarts » a été corrigé au passage — il
+> décrivait l'inverse de ce que le code faisait.*
+>
+> **Conséquence, et leçon qui survit au lot : la migration n'est PAS
+> mécanique.** Les 17 valeurs littérales ne se mappaient pas toutes sur un des
+> quatre pas (10px, 5px, 14px, `5px 5px 0 0`…). Chaque site demandait un
+> arbitrage — *ce rayon dit-il « marqueur », « contrôle » ou « carte » ?* — et
+> certains ont changé visiblement. **Le lot s'est fait par famille d'objets, pas
+> par chercher-remplacer**, chaque famille vérifiée aux 4 éditions. La plus
+> grosse (`4px`, 44 sites, +200 % sur `.modal` et `.pnj-card-frame`) a été
+> tranchée **avec l'utilisateur**, pas décidée seule.
 
 **Règle.** Une édition peut mettre les quatre à `0` (SR5 le fait déjà, à
 raison : « coins droits, dossier administratif » — mais **site par site**, en
@@ -613,8 +647,14 @@ qu'elle le reste :
 
 **Loi.** Aucun `z-index` littéral. Si aucune bande ne convient, c'est qu'il
 manque une bande : on l'ajoute dans `foundation.css`, nommée et commentée.
-*(Note de dette : `.ctx-selector` porte `z-index: 1200` en dur — il doit lire
-`--z-popover`.)*
+> ✅ **Dette soldée (lot 7) — et la prescription de ce document était fausse.**
+> `.ctx-selector` ne porte plus de littéral, mais il lit **`--z-command`**, pas
+> `--z-popover` comme ce § l'annonçait. Vérifié dans le code : ce popover
+> s'ouvre **depuis** `#notepad-panel`, lui-même déjà à `--z-popover` — les mettre
+> au même palier aurait fait reposer l'empilement sur le seul ordre du DOM,
+> fragile. Même famille que `.palette-box`/`.mentions-box` (popover-sur-panneau,
+> ouvert de l'intérieur). *Leçon : prescrire une bande sans regarder d'où
+> l'élément est ouvert, c'est prescrire au hasard.*
 
 **Loi — deux couches bloquantes au maximum.** Si un troisième overlay
 bloquant doit s'empiler, le flux est mal découpé. `--z-dialog` existe pour
@@ -633,18 +673,34 @@ de bordure — le reste est de l'accumulation.
 --bp-lg: 1440px;   /* bureau large */
 ```
 
+> ⚠️ **Ces trois tokens sont une CONVENTION, pas un mécanisme — et ça ne se
+> corrige pas.** `var()` est **invalide dans une media query** (CSS standard) :
+> `@media (max-width: var(--bp-sm))` ne fonctionne dans aucun navigateur. Les
+> `@media` du projet portent donc les pixels en dur, et c'est **structurel**, pas
+> un oubli de propagation. Les `--bp-*` servent de **référence écrite** : ils
+> disent quel nombre écrire à la main. Vérifié le 2026-07-30 — zéro `var(--bp-*)`
+> consommé dans tout `css/`, comme attendu. *(Un préprocesseur lèverait la
+> limite ; ce projet n'en a pas, par choix — cf. § 2.)*
+
 ```css
 @media (pointer: coarse) { /* densité tactile — cibles 44px */ }
 @media (hover: hover)    { /* effets de survol uniquement */ }
 ```
 
 **Loi — la densité suit le pointeur, pas la largeur.** Une tablette de
-1024px au doigt a besoin de cibles élargies ; un portable de 1024px à la
-souris, non. C'est `(pointer: coarse)` qui décide des tailles de cible,
-jamais `max-width`. Et c'est **un seul endroit** : le bloc
-`@media (pointer: coarse)` intitulé « CIBLES TACTILES » de
-[`responsive.css`](css/base/responsive.css) — un contrôle qui lui échappe est un
-oubli, pas un choix (doctrine *Grammaire d'interaction*, loi 4).
+1024px au doigt a besoin de plus d'air entre les cibles ; un portable de 1024px
+à la souris, non. C'est `(pointer: coarse)` qui décide de la **densité**, jamais
+`max-width`. Et c'est **un seul endroit** : le bloc `@media (pointer: coarse)`
+intitulé « CIBLES TACTILES » de
+[`responsive.css`](css/base/responsive.css) — un réglage de densité qui lui
+échappe est un oubli, pas un choix (doctrine *Grammaire d'interaction*, loi 4).
+
+> **Nuance posée le 2026-07-30 (lot 10) : la TAILLE de cible, elle, n'est pas
+> conditionnelle.** Le plancher de 24px vit à la **base**, pas dans le bloc
+> tactile : une cible trop petite l'est aussi à la souris (WCAG 2.5.8 parle du
+> pointeur, pas du doigt). Le bloc `(pointer: coarse)` ne garde donc que ce qui
+> est *vraiment* propre au doigt — l'**espacement** entre cibles voisines. Voir
+> § 7 pour le raisonnement complet.
 
 *Exception admise et à conserver :* les seuils de `column-count` de
 `.cards-zone` (900 / 1280 / 1700) sont des seuils **de contenu**, calés sur la
@@ -1160,9 +1216,16 @@ un marqueur : c'est du texte, et il va casser toutes vos grappes.
 |---|---|---|
 | Fond | `--bg-card` | `--bg-raised` (le champ est un objet, niveau 2) |
 | Bordure | `--border` | `--border-ui` (c'est un contrôle, ≥ 3:1) |
-| Rayon | `3px` | `--radius` |
+| ~~Rayon~~ | ~~`3px`~~ | ✅ **cible atteinte : `--radius-sm`** (= 3px) — voir ci-dessous |
 | Padding | `.4rem .6rem` | `--sp-2 --sp-3` |
 | Hauteur tactile | variable | `min-height: var(--hit)` sous `(pointer: coarse)` |
+
+> **La ligne « Rayon » de cette table était fausse, et le code avait raison
+> (corrigé le 2026-07-30).** Elle visait `--radius` (8px) ; or `forms.css` était
+> déjà à 3px avant même ce document, et le lot 11 (vague 4) a acté que **les
+> champs vivent à `--radius-sm`**, comme les boutons — cf. § 4.5. La « cible »
+> demandait donc de faire régresser un code déjà juste. Elle est barrée, pas
+> réécrite : le chemin compte autant que la valeur.
 
 **Loi — tout champ a un label visible.** Le placeholder n'est pas un label :
 il disparaît à la saisie, exactement au moment où l'utilisateur interrompu en
@@ -1336,16 +1399,29 @@ Grammaire a donc **déjà été appliquée**, et bien. Le scope `[data-action]` 
 lui aussi juste : il évite de grossir le moniteur de CI en lecture seule, qui
 n'est pas une cible.
 
-**Ce qui reste réellement ouvert est autre chose** : la base **hors bloc
-tactile** est à **16px** ([`pnj-card.css:909`](css/base/pnj-card.css)). Or WCAG
-2.5.8 ne parle pas du doigt, il parle du **pointeur** — à la souris aussi, la
-cible la plus fréquente du MJ est la plus petite de son bloc. C'est un défaut
-plus discutable que l'autre (la souris est précise, et la densité du moniteur
-porte de l'information), donc il s'**arbitre**, il ne se corrige pas
-mécaniquement. Voir le lot 10 du § 8.
+*Suite — et clôture, 2026-07-30 (lot 10).* Le point resté ouvert était la base
+**hors bloc tactile**, à **16px**. WCAG 2.5.8 ne parle pas du doigt, il parle du
+**pointeur** : à la souris aussi, la cible la plus fréquente du MJ était la plus
+petite de son bloc. Défaut plus discutable que l'autre (la souris est précise, et
+la densité du moniteur porte de l'information), donc **arbitré** plutôt que
+corrigé mécaniquement — **arbitrage rendu : on agrandit.**
+`.monitor-box[data-action]` est désormais à **24px à la base**
+([`pnj-card.css`](css/base/pnj-card.css)), même scope `[data-action]` que la
+règle tactile pour ne pas grossir le moniteur en lecture seule
+(`CardRenderer.gaugeBoxes`, écran spectateur). **Souris et doigt partagent
+maintenant la même cible.**
 
-**Loi — un seul endroit règle la densité tactile** : le bloc
-`@media (pointer: coarse)` « CIBLES TACTILES » de `responsive.css`.
+**Loi — la taille de cible ne dépend pas du pointeur, la DENSITÉ oui.** Le
+plancher de 24px vit à la **base**, pas dans un bloc conditionnel : une cible
+trop petite l'est pour tout le monde, WCAG 2.5.8 ne connaît pas le `hover`. Ce
+qui reste légitimement dans le bloc `@media (pointer: coarse)` « CIBLES
+TACTILES » de `responsive.css`, c'est ce qui est **vraiment** propre au doigt —
+l'espacement entre cibles voisines (le doigt a besoin d'air, le curseur non).
+*Corollaire pratique* : poser une règle à la base sur une classe qui a des
+variantes contextuelles oblige à re-vérifier la **spécificité de chaque
+variante** — `.curated-monitor .monitor-box` (13px, vue compacte assumée) avait
+la même spécificité (0,2,0) que la nouvelle règle et ne gagnait que par l'ordre
+des fichiers ; il a fallu lui ajouter `[data-action]` pour trancher franchement.
 
 **Règle — avant de plaider le manque de place, mesurer.** Les conséquences de
 layout s'assument (à 24px la rangée SR5 prend toute la largeur, donc le libellé
@@ -1363,6 +1439,26 @@ secondes.
 ## 8. Le plan de refonte
 
 Onze lots. Chacun est livrable seul, sans dépendre du suivant.
+
+> ## ✅ **LES ONZE LOTS SONT LIVRÉS (2026-07-30).**
+> Le tableau et l'ordre ci-dessous sont conservés **tels qu'ils ont été écrits au
+> diagnostic** : ils disent ce qu'on a mesuré et pourquoi on l'a ordonné ainsi,
+> pas où on en est. Ce sont des **archives de raisonnement**, plus une feuille de
+> route. L'état d'avancement vit dans `PLAN_EXECUTION.md` (§ « 🎛️ CHANTIER —
+> Système de design ») ; les corrections que le chantier a rendues au présent
+> document sont datées et signées dans leurs sections respectives (§ 4.4 survol,
+> § 4.5 rayons, § 4.7 bande d'empilement, § 4.8 points de rupture, § 6.6 champs,
+> § 7 taille de cible).
+>
+> **Ce que le chantier a appris, et qui vaut pour le prochain :** sur les onze
+> lots, **cinq ont vu leur prémisse invalidée par le code** avant d'être livrés —
+> D10 décrivait un défaut déjà corrigé, D5 s'appuyait sur une urgence
+> d'accessibilité inexistante, D9 était surévalué, D6 sur-comptait ses variantes,
+> et D4 confondait « réinventer » avec « avoir 46 classes ». *Le document avait
+> tort plus souvent que le code.* D'où la règle qui a fini par s'imposer :
+> **relire le code AVANT de rouvrir un lot, et accepter que le lot change de
+> forme** — trois d'entre eux se sont soldés en corrigeant ce référentiel-ci
+> plutôt qu'en touchant une ligne de CSS.
 
 > **Tableau reconstruit au re-audit du 2026-07-27**, après que trois lots
 > vérifiés sur trois se sont révélés bâtis sur une prémisse fausse ou périmée.
@@ -1382,7 +1478,7 @@ Onze lots. Chacun est livrable seul, sans dépendre du suivant.
 | 5 | **Marqueurs** — **71 brutes → ~51 réelles** (8 conteneurs partent au lot 3, 10 sont des sous-parties). Justification = **désordre, pas accessibilité** (cf. § 6.5) | M | Faible | Moins de désordre | ⚠️ recadré |
 | 6 | **Carte canonique** — **48 brutes → 15 racines** ; les 19 sous-parties (`-header`, `-frame`…) sont **légitimes et se gardent** + le ruban d'accent | L | Moyen | Le cœur du produit | ⚠️ sur-compté en v1 |
 | 9 | **Solder `graph.css`** — **7 hex réellement nus** (les 134 autres sont des replis inertes) + définir `--surface-1`/`--surface-2` | **S** | Faible | Quasi gratuit | ⚠️ **dégradé de M à S** |
-| 10 | **Arbitrer `.monitor-box` à 16px** hors bloc tactile — le doigt est déjà servi. **À trancher, pas à corriger** | S | Faible | Solde ou acte | ⚠️ requalifié |
+| 10 | **Arbitrer `.monitor-box` à 16px** hors bloc tactile — le doigt est déjà servi. **À trancher, pas à corriger** | S | Faible | Solde ou acte | ⚠️ requalifié → ✅ **tranché : agrandi à 24px** (§ 7) |
 
 > Ces lots sont suivis sous les identifiants **D1 → D11** dans `PLAN_EXECUTION.md`
 > § « 🎛️ CHANTIER — Système de design », avec leur statut d'avancement. Le présent
@@ -1390,8 +1486,9 @@ Onze lots. Chacun est livrable seul, sans dépendre du suivant.
 
 #### L'ordre, révisé — et pourquoi il a changé
 
-Ma v1 ordonnait par « gain / risque » estimé. Le re-audit montre que
-j'estimais mal. Le nouvel ordre :
+*(Ordre effectivement suivi, et tenu jusqu'au bout — conservé comme trace du
+raisonnement.)* Ma v1 ordonnait par « gain / risque » estimé. Le re-audit montre
+que j'estimais mal. Le nouvel ordre :
 
 1. **D9** — devenu S, quasi gratuit, delta visuel ~nul. On commence par ce qui
    ne coûte rien.
