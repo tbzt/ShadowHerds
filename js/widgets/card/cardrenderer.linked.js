@@ -105,7 +105,7 @@ Object.assign(CardRenderer, {
           <span class="monitor-label" title="Seuils : léger ${l} / grave ${g} / incap ${i} (Structure+Blindage ×1/×2/×3)">État</span>
           <div class="cluster monitor-boxes">${this._monitorBoxesAnarchy(v)}</div>
         </div>
-        <div class="anarchy-seuil-row" style="margin-top:4px;">
+        <div class="cluster anarchy-seuil-row" style="margin-top:4px;">
           <span class="anarchy-seuil-label">Seuils dommages</span>
           <span class="anarchy-seuil-val">${l} / ${g} / ${i}</span>
         </div>

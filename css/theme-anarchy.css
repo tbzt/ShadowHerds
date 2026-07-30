@@ -298,14 +298,10 @@
 }
 
 .anarchy-seuils {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
 }
 .anarchy-seuil-row {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
 }
 .anarchy-seuil-label {
   font-family: "Share Tech Mono", monospace;
