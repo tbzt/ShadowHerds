@@ -105,26 +105,26 @@ export const ServerRenderer = {
       .filter(([k]) => k !== "patrouilleuse")
       .map(
         ([k, ic]) => `
-        <label class="ic-choice"><input type="checkbox" value="${k}">${esc(ic.label.replace(/^CI /, ""))}</label>`,
+        <label class="stack ic-choice"><input type="checkbox" value="${k}">${esc(ic.label.replace(/^CI /, ""))}</label>`,
       )
       .join("");
 
     return `
       <div class="stack contact-form">
         <div class="cluster contact-form-row">
-          <label>Nom
+          <label class="stack">Nom
             <input type="text" id="srv-name" placeholder="Aléatoire si vide">
           </label>
-          <label>Profil
+          <label class="stack">Profil
             <select id="srv-profile">${profOpts}</select>
           </label>
-          <label>Indice
+          <label class="stack">Indice
             <select id="srv-indice">${indOpts}</select>
           </label>
         </div>
         <div class="cluster contact-form-row server-form-flags">
-          ${secPhysBonus ? `<label class="ic-choice"><input type="checkbox" id="srv-secphys">Gère la sécurité physique (+${secPhysBonus} indice)</label>` : ""}
-          <label class="ic-choice"><input type="checkbox" id="srv-spider">Spider (decker de sécurité lié)</label>
+          ${secPhysBonus ? `<label class="stack ic-choice"><input type="checkbox" id="srv-secphys">Gère la sécurité physique (+${secPhysBonus} indice)</label>` : ""}
+          <label class="stack ic-choice"><input type="checkbox" id="srv-spider">Spider (decker de sécurité lié)</label>
         </div>
         <details class="server-ic-details">
           <summary>CI présentes — sélection auto (Patrouilleuse toujours incluse), ou au choix :</summary>

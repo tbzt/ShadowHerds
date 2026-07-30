@@ -1580,7 +1580,7 @@ export const DiceRoller = {
       <div class="cluster preroll-gain-row">
         ${bandControl}
         <label class="stack preroll-gain-field">SD cible
-          <span class="dice-count-group">
+          <span class="cluster dice-count-group">
             <button class="dice-count-step" data-preroll-sd-step="-1" tabindex="-1" aria-label="Baisser le SD">−</button>
             <input class="dice-count-input" type="number" inputmode="numeric" min="0" data-preroll-sd placeholder="—" value="${Utils.escHtml(String(g.sd || ""))}">
             <button class="dice-count-step" data-preroll-sd-step="1" tabindex="-1" aria-label="Monter le SD">＋</button>

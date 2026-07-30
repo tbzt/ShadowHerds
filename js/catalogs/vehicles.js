@@ -23,8 +23,31 @@ import { Utils } from "../core/utils.js";
 export const Vehicles = {
   /* ---- Catalogue SR5/SR6 : stats des tables du livre de base ----
      mania/vitesse/accel/structure/blindage/pilote/senseurs.
-     SR6 : vitesse = Vitesse max, accel = Accélération, intervalle
-     affiché à titre indicatif dans le titre. */
+     SR6 : vitesse = Vitesse max, accel = Accélération.
+
+     ── Deux champs SR6 seulement (lot P0 du chantier ⇉ course-poursuite) ──
+     `intervalle` (Intervalle de vitesse) et `maniaHors` (Maniabilité hors
+     route) : le livre SR6 donne CINQ caractéristiques de mouvement (Man
+     route / Man hors route / Accél / Intervalle / Vitesse max) là où ce
+     catalogue n'en portait que trois et demie — la table de la p. 206 les
+     imprime toutes. Ils manquaient parce que rien ne les consommait ;
+     la course-poursuite les consomme :
+       · l'Intervalle de vitesse est l'attribut COMPARÉ en environnement
+         dégagé et étroit (le plus haut gagne 1 point d'Atout), et le seuil
+         du raccourci « 3× ⇒ avantage automatique sans jet » ;
+       · la Maniabilité HORS ROUTE est celle qui compte dès qu'on quitte le
+         bitume — l'exemple du livre repose entièrement dessus.
+     Hors poursuite, `intervalle` sert aussi au malus de conduite (−1 dé
+     par intervalle franchi).
+
+     ⚠ Renseignés pour les **49 véhicules et drones du LIVRE DE BASE**
+     seulement. Les entrées venues des autres ouvrages ne les portent pas :
+     la cellule ne s'affiche alors pas (le rendu filtre `!= null`) et la
+     piste de poursuite écrit « — » avec une saisie à un tap, plutôt que
+     de dériver un chiffre que le livre n'a pas donné.
+     `maniaHors` est absent quand le livre ne donne qu'une Maniabilité
+     (bateaux, sous-marins, aéronefs, une partie des drones) : le lecteur
+     retombe alors sur `mania`. */
   CATALOG: {
     sr5: [
       { match: /Optic-X2/i, name: "Lockheed Optic-X2", kind: "drone",
@@ -110,103 +133,111 @@ export const Vehicles = {
     ],
     sr6: [
       { match: /Optic-X2/i, name: "Lockheed Optic-X2", kind: "drone",
-        stats: { mania: 4, vitesse: 140, accel: 15, structure: 2, blindage: 4, pilote: 4, senseurs: 4 } },
+        stats: { mania: 4, vitesse: 140, intervalle: 30, accel: 15, structure: 2, blindage: 4, pilote: 4, senseurs: 4 } },
       { match: /Crawler/i, name: "Aztechnology Crawler", kind: "drone",
-        stats: { mania: 3, vitesse: 30, accel: 8, structure: 6, blindage: 2, pilote: 2, senseurs: 2 } },
+        stats: { mania: 3, maniaHors: 4, vitesse: 30, intervalle: 10, accel: 8, structure: 6, blindage: 2, pilote: 2, senseurs: 2 } },
       { match: /Doberman/i, name: "GM-Nissan Doberman", kind: "drone",
-        stats: { mania: 3, vitesse: 100, accel: 10, structure: 4, blindage: 6, pilote: 2, senseurs: 3 } },
+        stats: { mania: 3, maniaHors: 5, vitesse: 100, intervalle: 15, accel: 10, structure: 4, blindage: 6, pilote: 2, senseurs: 3 } },
       { match: /Roto-?drone/i, name: "MCT-Nissan Roto-drone", kind: "drone",
-        stats: { mania: 3, vitesse: 160, accel: 20, structure: 5, blindage: 6, pilote: 3, senseurs: 2 } },
+        stats: { mania: 3, vitesse: 160, intervalle: 30, accel: 20, structure: 5, blindage: 6, pilote: 3, senseurs: 2 } },
       { match: /Dalmatian/i, name: "Cyberspace Designs Dalmatian", kind: "drone",
-        stats: { mania: 3, vitesse: 130, accel: 13, structure: 6, blindage: 4, pilote: 3, senseurs: 3 } },
+        stats: { mania: 3, vitesse: 130, intervalle: 20, accel: 13, structure: 6, blindage: 4, pilote: 3, senseurs: 3 } },
       { match: /Steel Lynx/i, name: "Steel Lynx", kind: "drone",
-        stats: { mania: 3, vitesse: 80, accel: 15, structure: 12, blindage: 16, pilote: 4, senseurs: 4 } },
+        stats: { mania: 3, maniaHors: 5, vitesse: 80, intervalle: 15, accel: 15, structure: 12, blindage: 16, pilote: 4, senseurs: 4 } },
       { match: /Americar/i, name: "Ford Americar", kind: "vehicule",
-        stats: { mania: 4, vitesse: 160, accel: 9, structure: 11, blindage: 4, pilote: 1, senseurs: 2 } },
+        stats: { mania: 4, maniaHors: 5, vitesse: 160, intervalle: 20, accel: 9, structure: 11, blindage: 4, pilote: 1, senseurs: 2 } },
       { match: /Westwind/i, name: "Eurocar Westwind X80", kind: "vehicule",
-        stats: { mania: 2, vitesse: 250, accel: 24, structure: 6, blindage: 1, pilote: 4, senseurs: 3 } },
+        stats: { mania: 2, maniaHors: 6, vitesse: 250, intervalle: 30, accel: 24, structure: 6, blindage: 1, pilote: 4, senseurs: 3 } },
       { match: /Bulldog/i, name: "GMC Bulldog Step-Van", kind: "vehicule",
-        stats: { mania: 5, vitesse: 140, accel: 10, structure: 16, blindage: 12, pilote: 2, senseurs: 3 } },
+        stats: { mania: 5, maniaHors: 7, vitesse: 140, intervalle: 10, accel: 10, structure: 16, blindage: 12, pilote: 2, senseurs: 3 } },
       { match: /Roadmaster/i, name: "Ares Roadmaster", kind: "vehicule",
-        stats: { mania: 5, vitesse: 120, accel: 8, structure: 18, blindage: 16, pilote: 2, senseurs: 2 } },
+        stats: { mania: 5, maniaHors: 7, vitesse: 120, intervalle: 10, accel: 8, structure: 18, blindage: 16, pilote: 2, senseurs: 2 } },
       { match: /Gopher/i, name: "Toyota Gopher", kind: "vehicule",
-        stats: { mania: 4, vitesse: 150, accel: 15, structure: 12, blindage: 6, pilote: 1, senseurs: 1 } },
+        stats: { mania: 4, maniaHors: 4, vitesse: 150, intervalle: 15, accel: 15, structure: 12, blindage: 6, pilote: 1, senseurs: 1 } },
       { match: /Dodge\ Scoot/i, name: "Dodge Scoot", kind: "vehicule",
-        stats: { mania: 5, vitesse: 80, accel: 4, structure: 2, blindage: 0, pilote: 1, senseurs: 0 } },
+        stats: { mania: 5, maniaHors: 7, vitesse: 80, intervalle: 10, accel: 4, structure: 2, blindage: 0, pilote: 1, senseurs: 0 } },
       { match: /Harley\-Davidson\ Scorpion/i, name: "Harley-Davidson Scorpion", kind: "vehicule",
-        stats: { mania: 3, vitesse: 200, accel: 16, structure: 7, blindage: 6, pilote: 1, senseurs: 1 } },
+        stats: { mania: 3, maniaHors: 5, vitesse: 200, intervalle: 30, accel: 16, structure: 7, blindage: 6, pilote: 1, senseurs: 1 } },
       { match: /Suzuki\ Mirage/i, name: "Suzuki Mirage", kind: "vehicule",
-        stats: { mania: 2, vitesse: 260, accel: 29, structure: 4, blindage: 2, pilote: 1, senseurs: 1 } },
+        stats: { mania: 2, maniaHors: 6, vitesse: 260, intervalle: 30, accel: 29, structure: 4, blindage: 2, pilote: 1, senseurs: 1 } },
       { match: /Yamaha\ Growler/i, name: "Yamaha Growler", kind: "vehicule",
-        stats: { mania: 3, vitesse: 180, accel: 15, structure: 6, blindage: 4, pilote: 1, senseurs: 1 } },
+        stats: { mania: 3, maniaHors: 3, vitesse: 180, intervalle: 20, accel: 15, structure: 6, blindage: 4, pilote: 1, senseurs: 1 } },
       { match: /Chrysler\-Nissan\ Jackrabbit/i, name: "Chrysler-Nissan Jackrabbit", kind: "vehicule",
-        stats: { mania: 3, vitesse: 160, accel: 20, structure: 8, blindage: 4, pilote: 2, senseurs: 1 } },
+        stats: { mania: 3, maniaHors: 5, vitesse: 160, intervalle: 15, accel: 20, structure: 8, blindage: 4, pilote: 2, senseurs: 1 } },
       { match: /Honda\ Spirit/i, name: "Honda Spirit", kind: "vehicule",
-        stats: { mania: 4, vitesse: 150, accel: 15, structure: 10, blindage: 3, pilote: 1, senseurs: 1 } },
+        stats: { mania: 4, maniaHors: 5, vitesse: 150, intervalle: 20, accel: 15, structure: 10, blindage: 3, pilote: 1, senseurs: 1 } },
       { match: /Hyundai\ Shin\-Hyung/i, name: "Hyundai Shin-Hyung", kind: "vehicule",
-        stats: { mania: 3, vitesse: 200, accel: 12, structure: 7, blindage: 1, pilote: 1, senseurs: 1 } },
+        stats: { mania: 3, maniaHors: 5, vitesse: 200, intervalle: 25, accel: 12, structure: 7, blindage: 1, pilote: 1, senseurs: 1 } },
       { match: /Saeder\-Krupp\-Bentley\ Concordat/i, name: "Saeder-Krupp-Bentley Concordat", kind: "vehicule",
-        stats: { mania: 3, vitesse: 180, accel: 18, structure: 14, blindage: 8, pilote: 3, senseurs: 3 } },
+        stats: { mania: 3, maniaHors: 5, vitesse: 180, intervalle: 30, accel: 18, structure: 14, blindage: 8, pilote: 3, senseurs: 3 } },
       { match: /Mitsubishi\ Nightsky/i, name: "Mitsubishi Nightsky", kind: "vehicule",
-        stats: { mania: 4, vitesse: 160, accel: 10, structure: 18, blindage: 10, pilote: 3, senseurs: 4 } },
+        stats: { mania: 4, maniaHors: 6, vitesse: 160, intervalle: 10, accel: 10, structure: 18, blindage: 10, pilote: 3, senseurs: 4 } },
       { match: /Range\ Rover/i, name: "Range Rover Model 2080", kind: "vehicule",
-        stats: { mania: 4, vitesse: 160, accel: 12, structure: 16, blindage: 10, pilote: 4, senseurs: 4 } },
+        stats: { mania: 4, maniaHors: 5, vitesse: 160, intervalle: 20, accel: 12, structure: 16, blindage: 10, pilote: 4, senseurs: 4 } },
       { match: /Samuvani\ CrisCraft/i, name: "Samuvani CrisCraft Otter", kind: "vehicule",
-        stats: { mania: 4, vitesse: 90, accel: 10, structure: 6, blindage: 4, pilote: 2, senseurs: 2 } },
+        stats: { mania: 4, vitesse: 90, intervalle: 15, accel: 10, structure: 6, blindage: 4, pilote: 2, senseurs: 2 } },
       { match: /Aztechnology\ Sunrunner/i, name: "Aztechnology Sunrunner/Nightrunner", kind: "vehicule",
-        stats: { mania: 3, vitesse: 120, accel: 20, structure: 10, blindage: 8, pilote: 3, senseurs: 3 } },
+        stats: { mania: 3, vitesse: 120, intervalle: 20, accel: 20, structure: 10, blindage: 8, pilote: 3, senseurs: 3 } },
       { match: /GMC\ Riverine/i, name: "GMC Riverine", kind: "vehicule",
-        stats: { mania: 4, vitesse: 100, accel: 15, structure: 14, blindage: 12, pilote: 4, senseurs: 4 } },
+        stats: { mania: 4, vitesse: 100, intervalle: 15, accel: 15, structure: 14, blindage: 12, pilote: 4, senseurs: 4 } },
       { match: /Proteus\ Lamprey/i, name: "Proteus Lamprey/Sea Snake", kind: "vehicule",
-        stats: { mania: 3, vitesse: 60, accel: 13, structure: 2, blindage: 1, pilote: 2, senseurs: 1 } },
+        stats: { mania: 3, vitesse: 60, intervalle: 10, accel: 13, structure: 2, blindage: 1, pilote: 2, senseurs: 1 } },
       { match: /YNT\ Delfin/i, name: "YNT Delfin", kind: "vehicule",
-        stats: { mania: 5, vitesse: 70, accel: 18, structure: 6, blindage: 12, pilote: 3, senseurs: 3 } },
+        stats: { mania: 5, vitesse: 70, intervalle: 10, accel: 18, structure: 6, blindage: 12, pilote: 3, senseurs: 3 } },
       { match: /Nightwing/i, name: "Artemis Industries Nightwing", kind: "vehicule",
-        stats: { mania: 4, vitesse: 150, accel: 15, structure: 2, blindage: 0, pilote: 1, senseurs: 1 } },
+        stats: { mania: 4, vitesse: 150, intervalle: 25, accel: 15, structure: 2, blindage: 0, pilote: 1, senseurs: 1 } },
       { match: /Cessna\ C750/i, name: "Cessna C750", kind: "vehicule",
-        stats: { mania: 5, vitesse: 250, accel: 20, structure: 8, blindage: 2, pilote: 2, senseurs: 1 } },
+        stats: { mania: 5, vitesse: 250, intervalle: 25, accel: 20, structure: 8, blindage: 2, pilote: 2, senseurs: 1 } },
       { match: /MCT\-Sikorsky\-Bell\ Seahawk/i, name: "MCT-Sikorsky-Bell Seahawk", kind: "vehicule",
-        stats: { mania: 5, vitesse: 500, accel: 30, structure: 12, blindage: 4, pilote: 2, senseurs: 2 } },
+        stats: { mania: 5, vitesse: 500, intervalle: 50, accel: 30, structure: 12, blindage: 4, pilote: 2, senseurs: 2 } },
       { match: /Ares\ Dragon/i, name: "Ares Dragon", kind: "vehicule",
-        stats: { mania: 4, vitesse: 260, accel: 10, structure: 22, blindage: 10, pilote: 2, senseurs: 3 } },
+        stats: { mania: 4, vitesse: 260, intervalle: 30, accel: 10, structure: 22, blindage: 10, pilote: 2, senseurs: 3 } },
       { match: /MCT\-Sikorsky\-Bell\ Wolfhound/i, name: "MCT-Sikorsky-Bell Wolfhound", kind: "vehicule",
-        stats: { mania: 3, vitesse: 320, accel: 20, structure: 12, blindage: 14, pilote: 4, senseurs: 4 } },
+        stats: { mania: 3, vitesse: 320, intervalle: 40, accel: 20, structure: 12, blindage: 14, pilote: 4, senseurs: 4 } },
       { match: /Northrup\ Wasp/i, name: "Northrup Wasp", kind: "vehicule",
-        stats: { mania: 3, vitesse: 330, accel: 25, structure: 10, blindage: 8, pilote: 3, senseurs: 3 } },
+        stats: { mania: 3, vitesse: 330, intervalle: 30, accel: 25, structure: 10, blindage: 8, pilote: 3, senseurs: 3 } },
       { match: /Ares\ Venture/i, name: "Ares Venture", kind: "vehicule",
-        stats: { mania: 4, vitesse: 680, accel: 40, structure: 16, blindage: 12, pilote: 2, senseurs: 2 } },
+        stats: { mania: 4, vitesse: 680, intervalle: 60, accel: 40, structure: 16, blindage: 12, pilote: 2, senseurs: 2 } },
       { match: /GMC\ Banshee/i, name: "GMC Banshee", kind: "vehicule",
-        stats: { mania: 3, vitesse: 900, accel: 60, structure: 18, blindage: 18, pilote: 4, senseurs: 4 } },
+        stats: { mania: 3, vitesse: 900, intervalle: 90, accel: 60, structure: 18, blindage: 18, pilote: 4, senseurs: 4 } },
       { match: /Federated\ Boeing\ Commuter/i, name: "Federated Boeing Commuter", kind: "vehicule",
-        stats: { mania: 3, vitesse: 420, accel: 35, structure: 16, blindage: 10, pilote: 2, senseurs: 2 } },
+        stats: { mania: 3, vitesse: 420, intervalle: 60, accel: 35, structure: 16, blindage: 10, pilote: 2, senseurs: 2 } },
       { match: /Osprey\ X/i, name: "Osprey X", kind: "vehicule",
-        stats: { mania: 3, vitesse: 420, accel: 35, structure: 16, blindage: 16, pilote: 4, senseurs: 4 } },
+        stats: { mania: 3, vitesse: 420, intervalle: 80, accel: 35, structure: 16, blindage: 16, pilote: 4, senseurs: 4 } },
       { match: /GMC\ Micromachine/i, name: "GMC Micromachine", kind: "drone",
-        stats: { mania: 3, vitesse: 25, accel: 5, structure: 0, blindage: 0, pilote: 1, senseurs: 1 } },
+        stats: { mania: 3, maniaHors: 6, vitesse: 25, intervalle: 5, accel: 5, structure: 0, blindage: 0, pilote: 1, senseurs: 1 } },
       { match: /Shiawase\ Kanmushi/i, name: "Shiawase Kanmushi", kind: "drone",
-        stats: { mania: 2, vitesse: 15, accel: 4, structure: 0, blindage: 0, pilote: 3, senseurs: 2 } },
+        stats: { mania: 2, maniaHors: 3, vitesse: 15, intervalle: 5, accel: 4, structure: 0, blindage: 0, pilote: 3, senseurs: 2 } },
       { match: /Sikorsky\-Bell\ Microskimmer/i, name: "Sikorsky-Bell Microskimmer XXS", kind: "drone",
-        stats: { mania: 2, vitesse: 35, accel: 6, structure: 0, blindage: 0, pilote: 2, senseurs: 1 } },
+        stats: { mania: 2, vitesse: 35, intervalle: 10, accel: 6, structure: 0, blindage: 0, pilote: 2, senseurs: 1 } },
       { match: /MCT\ Gnat/i, name: "MCT Gnat", kind: "drone",
-        stats: { mania: 3, vitesse: 30, accel: 4, structure: 0, blindage: 0, pilote: 2, senseurs: 1 } },
+        stats: { mania: 3, vitesse: 30, intervalle: 10, accel: 4, structure: 0, blindage: 0, pilote: 2, senseurs: 1 } },
       { match: /GM\-Nissan\ Flip\-Flop/i, name: "GM-Nissan Flip-Flop", kind: "drone",
-        stats: { mania: 2, vitesse: 50, accel: 8, structure: 1, blindage: 0, pilote: 2, senseurs: 1 } },
+        stats: { mania: 2, maniaHors: 4, vitesse: 50, intervalle: 15, accel: 8, structure: 1, blindage: 0, pilote: 2, senseurs: 1 } },
       { match: /Horizon\ Flying/i, name: "Horizon Flying Eye", kind: "drone",
-        stats: { mania: 3, vitesse: 40, accel: 15, structure: 1, blindage: 0, pilote: 2, senseurs: 2 } },
+        stats: { mania: 3, vitesse: 40, intervalle: 15, accel: 15, structure: 1, blindage: 0, pilote: 2, senseurs: 2 } },
       { match: /MCT\ Hornet/i, name: "MCT Hornet", kind: "drone",
-        stats: { mania: 3, vitesse: 35, accel: 20, structure: 1, blindage: 0, pilote: 2, senseurs: 2 } },
+        stats: { mania: 3, vitesse: 35, intervalle: 15, accel: 20, structure: 1, blindage: 0, pilote: 2, senseurs: 2 } },
       { match: /Shiawase\ Inu/i, name: "Shiawase Inu", kind: "drone",
-        stats: { mania: 2, vitesse: 24, accel: 6, structure: 1, blindage: 0, pilote: 2, senseurs: 2 } },
+        stats: { mania: 2, maniaHors: 3, vitesse: 24, intervalle: 8, accel: 6, structure: 1, blindage: 0, pilote: 2, senseurs: 2 } },
       { match: /Quadrotor/i, name: "Cyberspace Designs Quadrotor", kind: "drone",
-        stats: { mania: 2, vitesse: 120, accel: 15, structure: 3, blindage: 1, pilote: 3, senseurs: 2 } },
+        stats: { mania: 2, vitesse: 120, intervalle: 20, accel: 15, structure: 3, blindage: 1, pilote: 3, senseurs: 2 } },
+      // Manquait au catalogue : seul drone du livre de base absent, relevé en
+      // recomptant les 9 tables p. 304-311 pour le lot P0. Drone de petite
+      // taille, et accessoirement le plus rapide d'entre eux.
+      { match: /Pursuit\ V/i, name: "Chrysler-Nissan Pursuit V", kind: "drone",
+        stats: { mania: 3, maniaHors: 6, vitesse: 280, intervalle: 50, accel: 30, structure: 4, blindage: 2, pilote: 4, senseurs: 3 } },
       { match: /Nissan\ Samurai/i, name: "Nissan Samurai/Oni", kind: "drone",
-        stats: { mania: 3, vitesse: 30, accel: 10, structure: 6, blindage: 6, pilote: 3, senseurs: 2 } },
+        // Le livre donne DEUX modèles sur une ligne (Samurai / Oni) : intervalle
+        // 10/8, Résistance 6/9, Blindage 6/10. Les stats portées ici sont celles
+        // du Samurai, comme avant ce lot — l'Oni reste à saisir à la main.
+        stats: { mania: 3, maniaHors: 4, vitesse: 30, intervalle: 10, accel: 10, structure: 6, blindage: 6, pilote: 3, senseurs: 2 } },
       { match: /Federated\ Boeing\ Blackhawk/i, name: "Federated Boeing Blackhawk", kind: "drone",
-        stats: { mania: 3, vitesse: 200, accel: 35, structure: 8, blindage: 6, pilote: 3, senseurs: 3 } },
+        stats: { mania: 3, vitesse: 200, intervalle: 40, accel: 35, structure: 8, blindage: 6, pilote: 3, senseurs: 3 } },
       { match: /Ares\ Black/i, name: "Ares Black Sky", kind: "drone",
-        stats: { mania: 2, vitesse: 300, accel: 25, structure: 8, blindage: 10, pilote: 4, senseurs: 4 } },
+        stats: { mania: 2, vitesse: 300, intervalle: 50, accel: 25, structure: 8, blindage: 10, pilote: 4, senseurs: 4 } },
       { match: /Ares\ Packmule/i, name: "Ares Packmule", kind: "drone",
-        stats: { mania: 3, vitesse: 30, accel: 6, structure: 8, blindage: 6, pilote: 2, senseurs: 1 } },
+        stats: { mania: 3, maniaHors: 4, vitesse: 30, intervalle: 5, accel: 6, structure: 8, blindage: 6, pilote: 2, senseurs: 1 } },
       /* ⚠ Suite du lot F6 — tout le bloc importé qui commence ici ne nommait
          QUE le fabricant : /HONDA/i, /FORD/i, /NISSAN/i, /CORSAIR/i… Comme
          `matchItem` retient le PREMIER motif qui répond, 33 véhicules SR6

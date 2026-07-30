@@ -126,28 +126,28 @@ export const ContactCreate = {
       ...metaCfg,
     });
     const ratings = App.getEditionModule(pj.edition)?.usesRiskPanel
-      ? `<label>Niveau
+      ? `<label class="stack">Niveau
            <input type="number" id="cc-level" min="0" max="6" placeholder="1">
          </label>
-         <label>RR (loyauté / réseau)
+         <label class="stack">RR (loyauté / réseau)
            <input type="number" id="cc-rr" min="1" max="3" placeholder="1">
          </label>`
-      : `<label>Influence
+      : `<label class="stack">Influence
            <input type="number" id="cc-influence" min="1" max="12" placeholder="1">
          </label>
-         <label>Loyauté
+         <label class="stack">Loyauté
            <input type="number" id="cc-loyaute" min="1" max="6" placeholder="1">
          </label>`;
     return `
       <div class="stack contact-form">
         <div class="cluster contact-form-row">
-          <label>Nom <span class="cc-req">*</span>
+          <label class="stack">Nom <span class="cc-req">*</span>
             <input type="text" id="cc-name" placeholder="Nom du contact" autocomplete="off">
           </label>
           ${metaSelect}
         </div>
         <div class="cluster contact-form-row">
-          <label>Rôle / métier
+          <label class="stack">Rôle / métier
             <input type="text" id="cc-role" placeholder="ex. fixer, indic…" autocomplete="off">
           </label>
         </div>

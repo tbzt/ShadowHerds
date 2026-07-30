@@ -409,6 +409,12 @@
    (l'escalier des paliers de malus) vers un flex nowrap ; cases un cran plus
    petites pour tenir la colonne ; débordement → scroll horizontal. */
 .curated-monitor .monitor-block {
+  /* `display` porté ICI et pas par un utilitaire dans le gabarit : le contexte
+     flex de `.monitor-block` est CONDITIONNEL (cette vue-ci, et le moniteur
+     double plus bas). Une classe posée sur les 11 sites de rendu passerait
+     aussi les moniteurs simples en flex, ce qu'aucune des deux règles ne
+     demande. Cf. le même arbitrage sur `.monitor-block:has(.monitor-phys)`. */
+  display: flex;
   flex-direction: column;
   gap: var(--sp-1);
 }
@@ -999,6 +1005,11 @@
    branche App.edition). `flex-wrap` fait retomber la 2ᵉ piste sous la 1ʳᵉ si
    la carte est vraiment trop étroite (fallback mobile gracieux). */
 .monitor-block:has(.monitor-phys) {
+  /* `display` non délégable à `.cluster` : la mise côte à côte ne vaut QUE
+     pour le moniteur double, que `:has()` détecte. Composer les gabarits
+     mettrait aussi les moniteurs simples en flex. */
+  display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: var(--sp-2) var(--sp-4);
 }

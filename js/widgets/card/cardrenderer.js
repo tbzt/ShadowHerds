@@ -103,7 +103,7 @@ export const CardRenderer = {
       rouvre la carte complète (repli), pas de logique dupliquée ici. */
   renderRow(pnj, deps = CardRenderer.liveDeps()) {
     const el = document.createElement("div");
-    el.className = "pnj-card roster-row";
+    el.className = "cluster pnj-card roster-row";
     el.dataset.id = pnj.id;
     el.dataset.edition = pnj.edition;
 

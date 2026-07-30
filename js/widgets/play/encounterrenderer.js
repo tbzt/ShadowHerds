@@ -2061,7 +2061,7 @@ export const EncounterRenderer = {
         return `<button class="react-btn${o.abordable ? "" : " is-off"}" ${o.abordable ? `data-action="react-interrupt" data-id="${pnj.id}" data-key="${o.key}"` : "disabled"} title="${Utils.escHtml(o.abordable ? `${o.note || ""} · ${o.page}` : raison)}">${Utils.escHtml(o.label)} <span class="react-multidef">−${o.initCost}</span></button>`;
       })
       .join("");
-    return `<div class="react-interrupt-chips" data-interrupt-for="${pnj.id}"${Sheets.hiddenAttr("interrupt", pnj.id)}>${chips}</div>`;
+    return `<div class="cluster react-interrupt-chips" data-interrupt-for="${pnj.id}"${Sheets.hiddenAttr("interrupt", pnj.id)}>${chips}</div>`;
   },
 
   /** Déplie/replie la feuille d'interruptions. `close=true` force la fermeture
@@ -2147,7 +2147,7 @@ export const EncounterRenderer = {
             `<button class="react-btn react-btn-danger sev-${lv.sev}" data-action="react-wound" data-id="${pnj.id}" data-sev="${lv.sev}">✸ ${Utils.escHtml(lv.label)}</button>`,
         )
         .join("");
-      return `<div class="react-damage-chips" data-damage-for="${pnj.id}"${Sheets.hiddenAttr("damage", pnj.id)}>${btns}</div>`;
+      return `<div class="cluster react-damage-chips" data-damage-for="${pnj.id}"${Sheets.hiddenAttr("damage", pnj.id)}>${btns}</div>`;
     }
     const type = this.reactDamageType(pnj.id) || ui.defaultType || "phys";
     const typeToggle = ui.hasType
@@ -2159,7 +2159,7 @@ export const EncounterRenderer = {
           `<button class="react-btn react-btn-danger" data-action="react-damage" data-id="${pnj.id}" data-n="${n}">✸ ${n}</button>`,
       )
       .join("");
-    return `<div class="react-damage-chips" data-damage-for="${pnj.id}"${Sheets.hiddenAttr("damage", pnj.id)}>${typeToggle}${chips}</div>`;
+    return `<div class="cluster react-damage-chips" data-damage-for="${pnj.id}"${Sheets.hiddenAttr("damage", pnj.id)}>${typeToggle}${chips}</div>`;
   },
 
   /** État de vue éphémère (aucune clé Storage) — type Phys/Étourd.

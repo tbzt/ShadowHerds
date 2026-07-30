@@ -428,7 +428,7 @@
                      éditions), ils vivent dans la topbar (desktop) et Paramètres. -->
                 <div class="hub-toolbar-more">
                   <button type="button" class="card-kebab" data-card-menu-toggle aria-haspopup="true" aria-expanded="false" title="Plus d'actions" aria-label="Plus d'actions">⋯</button>
-                  <div class="card-menu" role="menu" hidden>
+                  <div class="stack card-menu" role="menu" hidden>
                     <button type="button" role="menuitem" class="card-menu-item" data-action="toggle-select-mode">Sélectionner plusieurs fiches</button>
                     <button type="button" role="menuitem" class="card-menu-item" data-action="print-sheets">Imprimer les fiches affichées</button>
                     <button type="button" role="menuitem" class="card-menu-item" data-action="foundry-dossier">Exporter vers Foundry VTT</button>
@@ -672,14 +672,14 @@
   <!-- MODAL ÉDITION AVANCÉE -->
   <div class="modal-overlay" id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-label">
     <div class="modal">
-      <div class="modal-header">
+      <div class="cluster modal-header">
         <span class="modal-title" id="modal-title-label">Édition avancée</span>
         <button class="modal-close" data-action="close" aria-label="Fermer">✕</button>
       </div>
       <div class="modal-body">
         <div id="modal-form-body"></div>
       </div>
-      <div class="modal-footer">
+      <div class="cluster cluster--end modal-footer">
         <span class="modal-autosave-hint">⟳ Enregistrement automatique</span>
         <button class="btn-secondary" data-action="revert">Annuler les modifications</button>
         <button class="btn-primary" data-action="close">Terminé</button>
@@ -690,7 +690,7 @@
   <!-- OVERLAY SUIVI DE COMBAT -->
   <div class="modal-overlay" id="encounter-overlay" role="dialog" aria-modal="true" aria-labelledby="encounter-title">
     <div class="modal encounter-modal">
-      <div class="modal-header">
+      <div class="cluster modal-header">
         <span class="modal-title" id="encounter-title">Suivi de combat — Round <span id="encounter-round">1</span><span id="encounter-pass"></span></span>
         <!-- CE1 : ressources de scène groupées (portée = scène, pas combattant) —
              Menace (K5, Anarchy) + Bruit (M6, ex-fiche active/pied narratif). -->
@@ -726,7 +726,7 @@
             <button class="btn-secondary btn-small" data-action="roll-and-sort" title="Lancer l'initiative de tous et classer">⚄ Initiative</button>
             <div class="encounter-toolbar-more">
               <button type="button" class="card-kebab" data-card-menu-toggle aria-haspopup="true" aria-expanded="false" aria-label="Plus d'actions">⋯</button>
-              <div class="card-menu" role="menu" hidden>
+              <div class="stack card-menu" role="menu" hidden>
                 <button type="button" role="menuitem" class="card-menu-item" data-action="next-round">↻ Round suivant</button>
                 <!-- K1 : rail compact (mobile) vs liste complète — bascule de classe. -->
                 <button type="button" role="menuitem" class="card-menu-item" data-action="toggle-rail" title="Basculer réglette compacte / liste complète">☰ Réglette / Liste</button>
@@ -800,7 +800,7 @@
   <!-- OVERLAY ASSISTANT DE CRÉATION DE PERSONNAGE (CharGen) -->
   <div class="modal-overlay" id="chargen-overlay" role="dialog" aria-modal="true" aria-labelledby="chargen-title">
     <div class="modal chargen-modal">
-      <div class="modal-header">
+      <div class="cluster modal-header">
         <span class="modal-title" id="chargen-title">Créer un personnage</span>
         <button class="modal-close" data-action="chargen-close" aria-label="Fermer">✕</button>
       </div>
@@ -809,14 +809,14 @@
         <div id="chargen-budget" class="cg-budget"></div>
         <div id="chargen-body"></div>
       </div>
-      <div class="modal-footer" id="chargen-footer"></div>
+      <div class="cluster cluster--end modal-footer" id="chargen-footer"></div>
     </div>
   </div>
 
   <!-- OVERLAY AIDE RACCOURCIS CLAVIER -->
   <div class="modal-overlay" id="shortcuts-overlay" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
     <div class="modal">
-      <div class="modal-header">
+      <div class="cluster modal-header">
         <span class="modal-title" id="shortcuts-title">Aide</span>
         <button class="modal-close" data-action="shortcuts-close" aria-label="Fermer">✕</button>
       </div>

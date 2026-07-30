@@ -142,34 +142,34 @@ export const ContactEdit = {
     const editionFields = mod && mod.usesRiskPanel
       ? this._anarchyFields(c, esc)
       : `<div class="cluster contact-form-row">
-           <label>Influence
+           <label class="stack">Influence
              <input type="number" id="ce-influence" min="1" max="12" value="${esc(c.influence ?? "")}">
            </label>
-           <label>Loyauté
+           <label class="stack">Loyauté
              <input type="number" id="ce-loyaute" min="1" max="6" value="${esc(c.loyaute ?? "")}">
            </label>
          </div>`;
     return `
       <div class="stack contact-form">
         <div class="cluster contact-form-row">
-          <label>Nom
+          <label class="stack">Nom
             <input type="text" id="ce-name" value="${esc(c.name || "")}" autocomplete="off">
           </label>
           ${metaSelect}
         </div>
         <div class="cluster contact-form-row">
-          <label>Rôle / métier
+          <label class="stack">Rôle / métier
             <input type="text" id="ce-role" value="${esc(c.role || "")}" autocomplete="off">
           </label>
         </div>
         ${editionFields}
         <div class="cluster contact-form-row">
-          <label>Trait
+          <label class="stack">Trait
             <input type="text" id="ce-trait" value="${esc(c.trait || "")}" autocomplete="off">
           </label>
         </div>
         <div class="cluster contact-form-row">
-          <label>Description
+          <label class="stack">Description
             <textarea id="ce-desc" rows="3">${esc(c.desc || "")}</textarea>
           </label>
         </div>
@@ -186,10 +186,10 @@ export const ContactEdit = {
     ).join("");
     return `
       <div class="cluster contact-form-row">
-        <label>Réseau
+        <label class="stack">Réseau
           <select id="ce-network">${nets}</select>
         </label>
-        <label>Portée
+        <label class="stack">Portée
           <select id="ce-scope">
             <option value="specialisation"${c.scope !== "competence" ? " selected" : ""}>Spécialisation (un Réseau)</option>
             <option value="competence"${c.scope === "competence" ? " selected" : ""}>Compétence Réseau (tous)</option>
@@ -197,10 +197,10 @@ export const ContactEdit = {
         </label>
       </div>
       <div class="cluster contact-form-row">
-        <label>Niveau
+        <label class="stack">Niveau
           <input type="number" id="ce-level" min="0" max="6" value="${esc(c.level ?? "")}">
         </label>
-        <label>RR (loyauté / réseau)
+        <label class="stack">RR (loyauté / réseau)
           <input type="number" id="ce-rr" min="1" max="3" value="${esc(c.rr ?? "")}">
         </label>
       </div>

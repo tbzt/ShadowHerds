@@ -339,7 +339,7 @@ export const Play = {
 
   _sectionHtml(title, count, inner) {
     return `<div class="hub-section">
-      <div class="hub-section-head">
+      <div class="cluster hub-section-head">
         <span class="hub-section-title">${title}</span>
         <span class="hub-section-count">${count}</span>
       </div>

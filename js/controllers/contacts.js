@@ -64,10 +64,10 @@ export const Contacts = {
     return `
       <div class="stack contact-form">
         <div class="cluster contact-form-row">
-          <label>Réseau
+          <label class="stack">Réseau
             <select id="cg-network">${nets}</select>
           </label>
-          <label>Portée
+          <label class="stack">Portée
             <select id="cg-scope">
               <option value="specialisation">Spécialisation (un Réseau)</option>
               <option value="competence">Compétence Réseau (tous)</option>
@@ -75,7 +75,7 @@ export const Contacts = {
           </label>
         </div>
         <div class="cluster contact-form-row">
-          <label>RR (loyauté / réseau)
+          <label class="stack">RR (loyauté / réseau)
             <select id="cg-rr">
               <option value="1">RR 1</option>
               <option value="2">RR 2</option>
@@ -99,7 +99,7 @@ export const Contacts = {
     return `
       <div class="stack contact-form">
         <div class="cluster contact-form-row">
-          <label>Grand métier
+          <label class="stack">Grand métier
             <select id="cg-category">${cats}</select>
           </label>
           ${this._metaSelect()}

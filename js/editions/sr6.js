@@ -1705,19 +1705,38 @@ export const EditionSR6 = {
       Offensif direct via autosoft + Senseurs), Encaissement = Structure
       seule (pas de Blindage ajouté en SR6, cf. Riggers p.203-208). */
   vehicleModel: {
-    /** Champs de stats affichés en pills (card) et édités (modal). */
+    /** Champs de stats affichés en pills (card) et édités (modal).
+
+        `IdV` = Intervalle de vitesse. **N'était pas là**, et ce n'était pas
+        un oubli de rendu mais un trou de DONNÉES : la fiche de véhicule SR6
+        porte cinq caractéristiques de mouvement (Man route / Man hors route /
+        Accél / Intervalle / Vitesse max), le catalogue n'en tenait que trois
+        et demie. Lot P0 du chantier ⇉ (course-poursuite), qui en fait
+        l'attribut COMPARÉ des environnements dégagé et étroit. Il sert aussi,
+        hors poursuite, au malus de −1 dé par intervalle franchi.
+        Le rendu filtre les valeurs nulles : un véhicule d'un autre ouvrage,
+        qui ne le porte pas encore, n'affiche simplement pas la cellule. */
     statFields: [
       ["mania", "Man"],
       ["vitesse", "Vit"],
+      ["intervalle", "IdV"],
       ["accel", "Acc"],
       ["structure", "Str"],
       ["blindage", "Blind"],
       ["pilote", "Auto"],
       ["senseurs", "Sens"],
     ],
-    /** Champ supplémentaire édité (pas affiché en pill) : autosoft
-        d'attaque autonome, distinct de l'autopilote (Riggers p.203-208). */
-    formExtraFields: [["autosoft", "Autosoft"]],
+    /** Champs supplémentaires édités (pas affichés en pill) :
+        · `autosoft` — attaque autonome, distinct de l'autopilote (Riggers) ;
+        · `maniaHors` — Maniabilité HORS ROUTE, la seconde valeur que le livre
+          imprime sous « Mania. (route/hors route) ». Éditée mais pas en pill :
+          elle ne concerne qu'une partie des engins (bateaux, aéronefs et
+          plusieurs drones n'ont qu'une Maniabilité) et ne sert que quand on
+          quitte le bitume. Son lecteur retombe sur `mania` quand elle manque. */
+    formExtraFields: [
+      ["autosoft", "Autosoft"],
+      ["maniaHors", "Man hors route"],
+    ],
     pools(v) {
       const s = v.stats || {};
       const autosoft = s.autosoft || s.pilote || s.autopilote || 0;
