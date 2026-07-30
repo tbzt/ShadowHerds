@@ -104,8 +104,6 @@
   border-top: 2px solid var(--accent);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   padding: 0.6rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-4);
   transform: translateY(100%);
   transition: transform var(--dur-slow) var(--ease-emphasized);
@@ -144,8 +142,6 @@
   margin: 0 auto 0.2rem;
 }
 .dice-sheet-counter {
-  display: flex;
-  align-items: center;
   justify-content: center;
   gap: var(--sp-4);
 }
@@ -775,7 +771,6 @@
     font-size: var(--fs-md);
   }
   .group-item-actions {
-    display: flex;
     gap: var(--sp-1);
   }
 }

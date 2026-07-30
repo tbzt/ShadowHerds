@@ -299,7 +299,7 @@ export const DossierBar = {
       <span class="group-item-icon"${kindTitle ? ` title="${kindTitle}"` : ""}>${icon}</span>
       <span class="group-item-name">${nameEsc}</span>
       <span class="group-item-count">${this._entityCount(node.id)}</span>
-      <span class="group-item-actions">
+      <span class="cluster group-item-actions">
         ${addBtn}
         <button class="btn-icon-tiny" data-dossier-bar data-action="rename-dossier" data-dossier="${node.id}" title="Renommer">✎</button>
         <button class="btn-icon-tiny danger" data-dossier-bar data-action="remove-dossier" data-dossier="${node.id}" title="Supprimer">✕</button>

@@ -2680,6 +2680,14 @@ export const Encounter = {
       `_refreshCards` ≈ 28-31 ms, sur un `_commit` qui en coûte déjà ~246.
       Différer, c'était compliquer le code pour 12 % d'un chemin déjà lent.
 
+      ⚠️ **Ce raisonnement est caduc depuis B2.1, et c'est le chemin rapide qui
+      l'a périmé.** L'argument tenait par son dénominateur : 12 % de 246ms. Une
+      fois le FLIP corrigé, le reste du `_commit` tombe sous 100ms et ces 52-118ms
+      (re-mesurés à 10 combattants) deviennent la PART DOMINANTE. `_commit` le
+      programme donc maintenant hors du chemin synchrone, coalescé, via
+      `_scheduleRefreshCards`. La leçon vaut au-delà : un coût jugé négligeable
+      contre un chemin lent redevient le sujet dès qu'on accélère le chemin.
+
       Le coût est d'ailleurs proportionnel à ce qui est VISIBLE : `refresh` ne
       fait rien quand aucune carte du PNJ n'est dans le DOM. */
   _refreshCards() {
@@ -2690,13 +2698,25 @@ export const Encounter = {
     }
   },
 
+  /** B2.1 — `_refreshCards` sort du chemin synchrone. Il est COALESCÉ : dix
+      mutations d'affilée ne rafraîchissent qu'une fois, à la frame suivante.
+      Les cartes vivent derrière le dock (visibles ≥641px), une frame de retard
+      ne se voit pas ; le geste, lui, gagne le temps entier. */
+  _scheduleRefreshCards() {
+    if (this._refreshHandle) return;
+    this._refreshHandle = requestAnimationFrame(() => {
+      this._refreshHandle = null;
+      this._refreshCards();
+    });
+  },
+
   _commit() {
     this._rev++;
     this.save();
     this._render();
     this._renderPicker();
     this._maybeNudgePreRollEdge();
-    this._refreshCards();
+    this._scheduleRefreshCards();
   },
 
   /** VIS-1 (co-MJ) — Lot 1. Quand la scène vivante compte un participant capable

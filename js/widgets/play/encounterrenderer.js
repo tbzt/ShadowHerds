@@ -193,8 +193,22 @@ export const EncounterRenderer = {
     // l'actif (#encounter-active-lead) et la file (#encounter-list), donc une
     // ligne qui passe de l'une à l'autre au « Tour suivant » glisse au lieu de
     // sauter, même à travers les deux conteneurs.
+    // B2.1 — le FLIP ne se paie QUE s'il y a un glissement à jouer. Mesuré à 10
+    // combattants : la capture coûte ~86ms à elle seule (un layout synchrone
+    // forcé), et `_render` passait 185ms sur 189 dans le FLIP — la construction
+    // du HTML, elle, coûte 0,5ms. Or la plupart des commits ne réordonnent RIEN
+    // (dégâts, état posé, note, coche) : ils payaient deux layouts pour animer
+    // zéro ligne. Comparer les identités d'abord — lire un attribut ne force
+    // aucun layout, lire un rect en force un. L'ordre rendu est exactement celui
+    // de la réglette ci-dessus (`liveQueue` puis `downList`), actif compris.
     const flipRoot = list.parentElement || list;
-    const flipPrev = this._captureRowPositions(flipRoot);
+    const nouvelOrdre = liveQueue.concat(downList).map((x) => x.r.pnjId);
+    const ancienOrdre = [...flipRoot.querySelectorAll(".encounter-row[data-id], .encounter-nrow[data-id]")].map(
+      (el) => el.dataset.id,
+    );
+    const reordonne =
+      ancienOrdre.length !== nouvelOrdre.length || ancienOrdre.some((id, i) => id !== nouvelOrdre[i]);
+    const flipPrev = reordonne ? this._captureRowPositions(flipRoot) : null;
     if (activeLead) activeLead.innerHTML = leadHtml;
     list.innerHTML =
       progressHtml +
@@ -225,17 +239,26 @@ export const EncounterRenderer = {
   _playFlip(list, prev) {
     if (!list || !prev || !prev.size) return;
     if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const moved = [];
-    list.querySelectorAll(".encounter-row[data-id], .encounter-nrow[data-id]").forEach((el) => {
+    // B2.1 — DEUX phases, jamais entrelacées. Lire un rect après avoir écrit un
+    // style force le navigateur à refaire la mise en page sur-le-champ : la
+    // boucle d'origine lisait puis écrivait ligne par ligne, soit N layouts
+    // synchrones pour N lignes. Mesuré à 10 combattants : médiane 320 → 174ms,
+    // et surtout pic 2463 → 194ms — les pointes à 2,2s de l'audit ÉTAIENT ce
+    // thrashing, pas la taille de la scène.
+    const lus = [];
+    for (const el of list.querySelectorAll(".encounter-row[data-id], .encounter-nrow[data-id]")) {
       const oldTop = prev.get(el.dataset.id);
-      if (oldTop == null) return;
-      const dy = oldTop - el.getBoundingClientRect().top;
-      if (Math.abs(dy) < 1) return;
+      if (oldTop == null) continue;
+      lus.push([el, oldTop - el.getBoundingClientRect().top]); // LECTURES seules
+    }
+    const moved = [];
+    for (const [el, dy] of lus) {
+      if (Math.abs(dy) < 1) continue;
       // Invert : replace la ligne à son ancienne position, sans transition.
-      el.style.transition = "none";
+      el.style.transition = "none"; // ÉCRITURES seules
       el.style.transform = `translateY(${dy}px)`;
       moved.push(el);
-    });
+    }
     if (!moved.length) return;
     void list.offsetHeight; // ancre l'état inversé avant de relâcher
     requestAnimationFrame(() => {
