@@ -39,16 +39,16 @@ export const Dialog = {
     overlay.setAttribute("aria-labelledby", "dialog-title");
     overlay.innerHTML = `
       <div class="modal dialog-modal">
-        <div class="modal-header">
+        <div class="cluster modal-header">
           <span class="modal-title" id="dialog-title" data-dialog="title"></span>
           <button class="modal-close" data-dialog-action="cancel" aria-label="Fermer">✕</button>
         </div>
-        <div class="modal-body dialog-body">
+        <div class="stack modal-body dialog-body">
           <label class="dialog-label" data-dialog="label"></label>
           <input type="text" class="dialog-input" data-dialog="input" autocomplete="off">
           <p class="dialog-message" data-dialog="message"></p>
         </div>
-        <div class="modal-footer">
+        <div class="cluster cluster--end modal-footer">
           <button class="btn-secondary" data-dialog-action="cancel">Annuler</button>
           <button class="btn-primary" data-dialog-action="confirm" data-dialog="confirm-btn">Valider</button>
         </div>

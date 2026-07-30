@@ -42,12 +42,12 @@ export const ContactEdit = {
     overlay.setAttribute("aria-labelledby", "contact-edit-title");
     overlay.innerHTML = `
       <div class="modal dialog-modal">
-        <div class="modal-header">
+        <div class="cluster modal-header">
           <span class="modal-title" id="contact-edit-title">Éditer le contact</span>
           <button class="modal-close" data-action="ce-cancel" aria-label="Fermer">✕</button>
         </div>
         <div class="modal-body" data-ce="body"></div>
-        <div class="modal-footer">
+        <div class="cluster cluster--end modal-footer">
           <button class="btn-secondary" data-action="ce-cancel">Annuler</button>
           <button class="btn-primary" data-action="ce-submit">Enregistrer</button>
         </div>

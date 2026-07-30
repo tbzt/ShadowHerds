@@ -32,12 +32,12 @@ export const ToposEdit = {
     overlay.setAttribute("aria-labelledby", "topos-edit-title");
     overlay.innerHTML = `
       <div class="modal dialog-modal">
-        <div class="modal-header">
+        <div class="cluster modal-header">
           <span class="modal-title" id="topos-edit-title">Éditer le topos</span>
           <button class="modal-close" data-action="te-cancel" aria-label="Fermer">✕</button>
         </div>
         <div class="modal-body" data-te="body"></div>
-        <div class="modal-footer">
+        <div class="cluster cluster--end modal-footer">
           <button class="btn-secondary" data-action="te-cancel">Annuler</button>
           <button class="btn-primary" data-action="te-submit">Enregistrer</button>
         </div>

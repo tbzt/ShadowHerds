@@ -1107,7 +1107,7 @@ export const ScenarioGraph = {
       .map((c) => `<button type="button" class="em-color-swatch${cur === c ? " selected" : ""}" style="background:${c}" data-${ns}="color" data-color="${c}" aria-label="Couleur ${c}"></button>`)
       .join("");
     const isCustom = cur && !this._EDGE_COLORS.includes(cur);
-    return `<div class="em-color-picker">
+    return `<div class="cluster em-color-picker">
       <button type="button" class="em-color-swatch graph-color-default${!cur ? " selected" : ""}" data-${ns}="color" data-color="" title="Couleur par défaut (accent)" aria-label="Couleur par défaut">✕</button>
       ${swatches}
       <label class="em-color-swatch em-color-custom${isCustom ? " selected" : ""}"${isCustom ? ` style="background:${esc(cur)}"` : ""} title="Autre couleur…">

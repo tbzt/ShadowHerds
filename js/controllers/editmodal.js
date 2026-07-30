@@ -289,7 +289,7 @@ export const EditModal = {
         </div>
         <div class="stack form-group full">
           <label>Couleur</label>
-          <div class="em-color-picker">
+          <div class="cluster em-color-picker">
             ${colors
               .map(
                 (c) =>
@@ -345,7 +345,7 @@ export const EditModal = {
       .filter((c) => !linkedIds.has(c.id))
       .map((c) => ({ value: c.id, label: c.name }));
     const picker = options.length
-      ? `<div class="em-add-skill">
+      ? `<div class="cluster em-add-skill">
           ${SingleSelect.create({
             id: "em-contact-pick",
             label: "",
@@ -559,13 +559,13 @@ export const EditModal = {
           <div class="em-id-subs">
             <div class="modal-section-hint">Licences</div>
             ${licenses}
-            <div class="em-id-add-row">
+            <div class="cluster em-id-add-row">
               <input type="text" id="em-id-newlic-${i}" placeholder="Nouvelle licence" aria-label="Nouvelle licence">
               <button type="button" class="btn-secondary" data-action="id-lic-add" data-idx="${i}">＋</button>
             </div>
             <div class="modal-section-hint">Styles de vie</div>
             ${this._lifestyleRows(idn.lifestyles, String(i), ids)}
-            <div class="em-id-add-row">
+            <div class="cluster em-id-add-row">
               <input type="text" id="em-id-newls-${i}" placeholder="Nouveau style de vie" aria-label="Nouveau style de vie">
               <button type="button" class="btn-secondary" data-action="id-ls-add" data-idx="${i}">＋</button>
             </div>
@@ -588,7 +588,7 @@ export const EditModal = {
       <p class="modal-section-hint">Fausses identités, licences qu'elles portent et styles de vie qu'elles paient. ● marque celle que le personnage joue en ce moment.</p>
       ${blocks}
       ${orphanBlock}
-      <div class="em-id-add-row em-id-add-identity">
+      <div class="cluster em-id-add-row em-id-add-identity">
         <input type="text" id="em-id-newname" placeholder="Nouvelle identité" aria-label="Nom de la nouvelle identité">
         <button type="button" class="btn-secondary" data-action="id-add">＋ Ajouter</button>
       </div>
@@ -738,7 +738,7 @@ export const EditModal = {
     const custom = (pnj.campaign && pnj.campaign.customTracks) || [];
     const customRows = custom
       .map(
-        (t) => `<div class="em-camp-track-row" data-key="${esc(t.key)}">
+        (t) => `<div class="cluster em-camp-track-row" data-key="${esc(t.key)}">
           <input type="text" class="em-camp-label" id="em-camp-label-${esc(t.key)}" value="${esc(t.label)}" aria-label="Nom du compteur">
           <button type="button" class="btn-icon-tiny" data-action="camp-track-remove" data-key="${esc(t.key)}" title="Retirer ce compteur" aria-label="Retirer">✕</button>
         </div>`,
@@ -751,7 +751,7 @@ export const EditModal = {
       <div class="em-camp-customs">
         <div class="modal-section-hint">Compteurs personnalisés (mois de style de vie, faveurs dues…)</div>
         ${customRows}
-        <div class="em-camp-add-row">
+        <div class="cluster em-camp-add-row">
           <input type="text" id="em-camp-newtrack" placeholder="Nouveau compteur" aria-label="Nom du nouveau compteur">
           <button type="button" class="btn-secondary" data-action="camp-track-add">＋ Ajouter</button>
         </div>
@@ -1030,7 +1030,7 @@ export const EditModal = {
       if (magLocked && !(pnj.spells || []).length) {
         html += this._zoneLocked("Sorts", magLocked.hint);
       } else {
-        const spellsBody = `<div id="em-spells-list" class="em-skills-list">
+        const spellsBody = `<div id="em-spells-list" class="stack stack--tight em-skills-list">
           ${this._spellRows(pnj)}
         </div>
         ${this._spellCatalogControls(pnj)}`;
@@ -1049,7 +1049,7 @@ export const EditModal = {
       if (resLocked && !(pnj.complexForms || []).length) {
         html += this._zoneLocked("Formes complexes", resLocked.hint);
       } else {
-        const formsBody = `<div id="em-complex-forms-list" class="em-skills-list">
+        const formsBody = `<div id="em-complex-forms-list" class="stack stack--tight em-skills-list">
           ${this._complexFormRows(pnj)}
         </div>
         ${this._complexFormCatalogControls(pnj)}`;
@@ -1067,7 +1067,7 @@ export const EditModal = {
       if (magLocked && !(pnj.powers || []).length) {
         html += this._zoneLocked("Pouvoirs", magLocked.hint);
       } else {
-        const powersBody = `<div id="em-powers-list" class="em-skills-list">
+        const powersBody = `<div id="em-powers-list" class="stack stack--tight em-skills-list">
           ${this._powerRows(pnj)}
         </div>
         ${this._powerCatalogControls(pnj)}`;
@@ -1106,7 +1106,7 @@ export const EditModal = {
         App.getEditionModule(pnj.edition).skillModel.shape === "extended"
           ? this._skillRowAnarchy.bind(this)
           : this._skillRowSR.bind(this);
-      const skillsBody = `<div id="em-skills-list" class="em-skills-list">
+      const skillsBody = `<div id="em-skills-list" class="stack stack--tight em-skills-list">
           ${(pnj.skills || []).map((s, i) => rowFn(pnj, s, i)).join("")}
         </div>
         ${this._addSkillControls(pnj)}`;
@@ -1124,7 +1124,7 @@ export const EditModal = {
     // fiable sur du texte imprévisible, la catégorie est donc stockée
     // explicitement sur l'item (`k.cat`), lue par _knowledgesSection. ----
     if (App.getEditionModule(pnj.edition).hasKnowledges) {
-      const knowledgesBody = `<div id="em-knowledges-list" class="em-skills-list">
+      const knowledgesBody = `<div id="em-knowledges-list" class="stack stack--tight em-skills-list">
           ${(pnj.knowledges || []).map((k, i) => this._knowledgeRow(k, i)).join("")}
         </div>
         ${this._knowledgeAddControls()}`;
@@ -1140,7 +1140,7 @@ export const EditModal = {
     // neutre, jamais de branche d'édition. Le catalogue de la section
     // Équipement route alors ses armes ici (pnj.weapons), pas dans equip.
     if (App.getEditionModule(pnj.edition).weaponModel?.source === "weapons") {
-      const weaponsBody = `<div id="em-weapons-list" class="em-skills-list">
+      const weaponsBody = `<div id="em-weapons-list" class="stack stack--tight em-skills-list">
           ${this._weaponRows(pnj)}
         </div>`;
       html += this._zone("Armes", weaponsBody, {
@@ -1174,7 +1174,7 @@ export const EditModal = {
     const augCount = (pnj.equip || []).filter((it) => it && typeof it === "object").length;
     html += this._zone(
       "Augmentations",
-      `<div id="em-equip-ratings" class="em-skills-list">${this._equipRatingRows(pnj)}</div>`,
+      `<div id="em-equip-ratings" class="stack stack--tight em-skills-list">${this._equipRatingRows(pnj)}</div>`,
       {
         summary: this._zoneCount(augCount, "augmentation", "augmentations"),
         collapsed: true,
@@ -1248,7 +1248,7 @@ export const EditModal = {
       .filter((n) => !existing.has(n))
       .map((n) => ({ value: n, label: n }));
     if (!options.length) return "";
-    return `<div class="em-add-skill">
+    return `<div class="cluster em-add-skill">
       ${SingleSelect.create({
         id: "em-add-skill-select",
         label: "",
@@ -1370,7 +1370,7 @@ export const EditModal = {
      catalogue comme les compétences actives. */
   _knowledgeAddControls() {
     const cats = Object.keys(SkillCatalog.knowledgeCategories);
-    return `<div class="em-add-skill em-add-knowledge">
+    return `<div class="cluster em-add-skill em-add-knowledge">
       <input type="text" id="em-know-add-name" class="em-know-add-name-input"
         placeholder="Nouvelle connaissance…">
       ${SingleSelect.create({
@@ -1460,7 +1460,7 @@ export const EditModal = {
   _equipCatalogControls(pnj) {
     const catalog = App.getEditionModule(pnj.edition).equipCatalog?.();
     if (!catalog || !catalog.length) return "";
-    return `<div class="em-add-skill">
+    return `<div class="cluster em-add-skill">
       ${SingleSelect.create({
         id: "em-equip-catalog",
         label: "",
@@ -1625,7 +1625,7 @@ export const EditModal = {
   _spellCatalogControls(pnj) {
     const catalog = App.getEditionModule(pnj.edition).spellCatalog?.();
     if (!catalog || !catalog.length) return "";
-    return `<div class="em-add-skill">
+    return `<div class="cluster em-add-skill">
       ${SingleSelect.create({
         id: "em-spell-catalog",
         label: "",
@@ -1695,7 +1695,7 @@ export const EditModal = {
   _complexFormCatalogControls(pnj) {
     const catalog = App.getEditionModule(pnj.edition).complexFormCatalog?.();
     if (!catalog || !catalog.length) return "";
-    return `<div class="em-add-skill">
+    return `<div class="cluster em-add-skill">
       ${SingleSelect.create({
         id: "em-complex-form-catalog",
         label: "",
@@ -1767,7 +1767,7 @@ export const EditModal = {
   _powerCatalogControls(pnj) {
     const catalog = App.getEditionModule(pnj.edition).powerCatalog?.();
     if (!catalog || !catalog.length) return "";
-    return `<div class="em-add-skill">
+    return `<div class="cluster em-add-skill">
       ${SingleSelect.create({
         id: "em-power-catalog",
         label: "",
@@ -1826,7 +1826,7 @@ export const EditModal = {
         )
         .join(" ");
       if (!starters) return "";
-      return this._zone("Initiation / Submersion", `<div class="em-add-skill">${starters}</div>`, {
+      return this._zone("Initiation / Submersion", `<div class="cluster em-add-skill">${starters}</div>`, {
         collapsed: true,
       });
     }
@@ -1839,7 +1839,7 @@ export const EditModal = {
         <button type="button" class="em-add-skill-btn" data-action="esoteric-grade-inc" title="${nextCost ? `Coût du grade suivant : ${esc(nextCost)}` : ""}">+ Grade</button>
         <button type="button" class="em-skill-del" data-action="esoteric-remove" title="Retirer la progression">✕</button>
       </div>
-      <div id="em-esoteric-acquis-list" class="em-skills-list">${this._esotericAcquisRows(pnj)}</div>
+      <div id="em-esoteric-acquis-list" class="stack stack--tight em-skills-list">${this._esotericAcquisRows(pnj)}</div>
       ${this._esotericCatalogControls(pnj)}`;
     const acquisLabel = Esoteric.acquisLabel(edition, voie).toLowerCase();
     return this._zone(`${Esoteric.label(voie)} (${acquisLabel}s)`, body, {
@@ -1878,7 +1878,7 @@ export const EditModal = {
     const catalog = submersion ? mod.echoCatalog?.(includeAntagonist) : mod.metamagicCatalog?.(includeAntagonist);
     if (!catalog || !catalog.length) return "";
     const label = (it) => (it.titreReconstitue ? `${it.label} *` : it.antagonist ? `⚠ ${it.label}` : it.label);
-    return `<div class="em-add-skill">
+    return `<div class="cluster em-add-skill">
       ${SingleSelect.create({
         id: "em-esoteric-catalog",
         label: "",
@@ -1959,7 +1959,7 @@ export const EditModal = {
   _edgeCatalogControls(pnj) {
     const catalog = App.getEditionModule(pnj.edition).edgeCatalog?.();
     if (!catalog || !catalog.length) return "";
-    return `<div class="em-add-skill">
+    return `<div class="cluster em-add-skill">
       ${SingleSelect.create({
         id: "em-edge-catalog",
         label: "",

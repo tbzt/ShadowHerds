@@ -236,7 +236,7 @@ export const GraphView = {
     const isCustom = cur && !this._EDGE_COLORS.includes(cur);
     return `<div class="stack stack--tight graph-node-color">
       <span class="graph-edge-flabel">Couleur du nœud</span>
-      <div class="em-color-picker">
+      <div class="cluster em-color-picker">
         <button type="button" class="em-color-swatch graph-color-default${!cur ? " selected" : ""}" data-graph-node="color" data-color="" title="Couleur par défaut" aria-label="Couleur par défaut">✕</button>
         ${swatches}
         <label class="em-color-swatch em-color-custom${isCustom ? " selected" : ""}"${isCustom ? ` style="background:${esc(cur)}"` : ""} title="Autre couleur…">
@@ -363,7 +363,7 @@ export const GraphView = {
       </div>
       <div class="stack stack--tight graph-edge-field">
         <span class="graph-edge-flabel">Couleur</span>
-        <div class="em-color-picker">
+        <div class="cluster em-color-picker">
           <button type="button" class="em-color-swatch graph-color-default${!cur ? " selected" : ""}" data-graph-edge="color" data-color="" title="Couleur par défaut (accent)" aria-label="Couleur par défaut">✕</button>
           ${swatches}
           <label class="em-color-swatch em-color-custom${isCustom ? " selected" : ""}"${isCustom ? ` style="background:${esc(cur)}"` : ""} title="Autre couleur…">
@@ -523,7 +523,7 @@ export const GraphView = {
     overlay.setAttribute("aria-labelledby", "graph-title");
     overlay.innerHTML = `
       <div class="modal graph-modal">
-        <div class="modal-header">
+        <div class="cluster modal-header">
           <span class="modal-title" id="graph-title" data-graph="title">Liens</span>
           <button class="graph-pockets-toggle" data-graph-action="toggle-pockets" aria-pressed="true" title="Afficher les poches de faction (zones colorées)">◇ Poches</button>
           <button class="graph-halo-toggle" data-graph-action="toggle-halo" aria-pressed="true" title="Afficher les voisins hors périmètre (estompés)">Voisins</button>

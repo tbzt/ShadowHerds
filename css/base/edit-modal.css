@@ -115,11 +115,7 @@ details[open] > summary.modal-section-title::before {
    tokens --sp-* (au lieu de rem/px disparates au fil des lots) — un seul
    rythme, sans toucher aux grid-template-columns porteurs de sens. */
 /* ---- Compétences éditables dans le modal ---- */
-.em-skills-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
+
 .em-skill-row {
   display: grid;
   grid-template-columns: 1fr 56px minmax(110px, 1.2fr) 28px;
@@ -186,10 +182,9 @@ details[open] > summary.modal-section-title::before {
   color: var(--danger);
 }
 .em-add-skill {
-  display: flex;
   gap: var(--sp-2);
+  flex-wrap: nowrap;
   margin-top: var(--sp-3);
-  align-items: center;
 }
 .em-add-skill .form-group.ss {
   flex: 1;
@@ -237,9 +232,8 @@ details[open] > summary.modal-section-title::before {
 }
 .em-camp-track-row,
 .em-camp-add-row {
-  display: flex;
   gap: var(--sp-2);
-  align-items: center;
+  flex-wrap: nowrap;
   margin-bottom: var(--sp-2);
 }
 .em-camp-track-row .em-camp-label,
@@ -250,8 +244,7 @@ details[open] > summary.modal-section-title::before {
 
 /* Palette de couleur de la vignette (portrait) */
 .em-color-picker {
-  display: flex;
-  flex-wrap: wrap;
+  align-items: stretch;
   gap: var(--sp-2);
 }
 .em-color-swatch {
@@ -346,9 +339,8 @@ details[open] > summary.modal-section-title::before {
   grid-template-columns: 1fr 70px 28px;
 }
 .em-id-add-row {
-  display: flex;
   gap: var(--sp-2);
-  align-items: center;
+  flex-wrap: nowrap;
   margin-bottom: var(--sp-2);
 }
 .em-id-add-row input {

@@ -137,7 +137,7 @@ export const Settings = {
       <h3>Sauvegarde &amp; synchronisation</h3>
       <p>Vos fiches sont enregistrées dans ce navigateur. Sauvegardez-les, ou synchronisez-les automatiquement entre vos appareils via un stockage qui vous appartient — rien ne transite par un serveur ShadowHerds.</p>
       <div class="sync-reminder" id="sync-reminder">${this._syncReminderHTML(st)}</div>
-      <div class="display-prefs" style="margin-top:0.6rem;">
+      <div class="stack stack--tight display-prefs" style="margin-top:0.6rem;">
         <button class="btn-primary" data-action="backup-export">Sauvegarder mes fiches</button>
         <button class="btn-secondary" data-action="backup-import">Importer une sauvegarde…</button>
       </div>
@@ -154,11 +154,11 @@ export const Settings = {
     else if (sc.provider === "webdav") h += this._syncWebdavFields(sc);
 
     if (sc.provider !== "none") {
-      h += `<div class="display-pref-row" style="margin-top:0.6rem;">
+      h += `<div class="cluster cluster--between display-pref-row" style="margin-top:0.6rem;">
           <label for="sync_auto">Synchroniser à chaque modification</label>
           <input type="checkbox" id="sync_auto" ${sc.auto ? "checked" : ""} data-action="toggle-sync-auto">
         </div>
-        <div class="display-prefs" style="margin-top:0.6rem;">
+        <div class="stack stack--tight display-prefs" style="margin-top:0.6rem;">
           <button class="btn-secondary" data-action="sync-now">Synchroniser maintenant</button>
         </div>
         <p class="sync-state" id="sync-state">${this._syncStateHTML(st)}</p>`;
@@ -308,14 +308,14 @@ export const Settings = {
     return `<div class="settings-section">
         <h3>Assistant (co-MJ)</h3>
         <p>ShadowHerds vous souffle, une fois et au bon moment, une fonction déjà présente qui sert l'instant — sans jamais décider à votre place.</p>
-        <div class="display-prefs">
-          <div class="display-pref-row">
+        <div class="stack stack--tight display-prefs">
+          <div class="cluster cluster--between display-pref-row">
             <label for="coach_tips">Astuces contextuelles</label>
             <input type="checkbox" id="coach_tips" ${tips ? "checked" : ""}
               data-action="set-coach-tips">
           </div>
         </div>
-        <div class="display-prefs" style="margin-top:0.6rem;">
+        <div class="stack stack--tight display-prefs" style="margin-top:0.6rem;">
           <button class="btn-secondary" data-action="reset-coach-tips">Revoir les astuces</button>
         </div>
         <p class="settings-note">Réaffiche les astuces déjà vues : elles réapparaîtront au moment utile.</p>
@@ -323,19 +323,19 @@ export const Settings = {
       <div class="settings-section">
         <h3>Lanceur de dés</h3>
         <p>Le lancer rapide affiche le résultat en bandeau discret, sans l'animation plein écran. Tous les jets restent consultables dans le journal des jets.</p>
-        <div class="display-prefs">
-          <div class="display-pref-row">
+        <div class="stack stack--tight display-prefs">
+          <div class="cluster cluster--between display-pref-row">
             <label for="dp_quickRoll">Lancer rapide (sans animation)</label>
             <input type="checkbox" id="dp_quickRoll" ${dp.quickRoll ? "checked" : ""}
               data-action="set-dice-quick-roll">
           </div>
-          <div class="display-pref-row">
+          <div class="cluster cluster--between display-pref-row">
             <label for="dp_defaultCount">Réserve par défaut du lanceur</label>
             <input type="number" id="dp_defaultCount" min="1" max="40" value="${dp.defaultCount}"
               class="settings-number-input"
               data-action="set-dice-default-count">
           </div>
-          <div class="display-pref-row">
+          <div class="cluster cluster--between display-pref-row">
             <label for="dp_preRollEdge">Chance / Atout avant le jet (SR5/SR6)</label>
             <select id="dp_preRollEdge" data-action="set-preroll-edge">
               <option value="off" ${dp.preRollEdge !== "panel" && dp.preRollEdge !== "pill" ? "selected" : ""}>Désactivé</option>
@@ -348,7 +348,7 @@ export const Settings = {
       </div>
       <div class="settings-section">
         <h3>Images IA</h3>
-        <div class="display-pref-row">
+        <div class="cluster cluster--between display-pref-row">
           <label for="pg_enabled">Images IA (Pollinations) : portraits, ambiances de lieu et de paradigme</label>
           <input type="checkbox" id="pg_enabled" ${pg.enabled ? "checked" : ""}
             data-action="toggle-portrait-gen">
@@ -374,7 +374,7 @@ export const Settings = {
       <div class="settings-section">
         <h3>Écran spectateur</h3>
         <p>Ouvre un second onglet en lecture seule (rien d'éditable, aucune fiche secrète) : ordre d'initiative et moniteurs de condition des combattants de la rencontre en cours. À poser côté joueurs.</p>
-        <div class="display-prefs">
+        <div class="stack stack--tight display-prefs">
           <button class="btn-secondary" data-action="open-spectator">Ouvrir l'écran spectateur ↗</button>
         </div>
       </div>`;

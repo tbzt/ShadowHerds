@@ -286,12 +286,12 @@ export const Debrief = {
     // Réutilise la coquille .modal-overlay/.modal (thème par édition hérité).
     overlay.innerHTML = `
       <div class="modal debrief-modal">
-        <div class="modal-header">
+        <div class="cluster modal-header">
           <span class="modal-title" id="debrief-title">Débrief de séance</span>
           <button class="modal-close" data-debrief-action="cancel" aria-label="Fermer">✕</button>
         </div>
         <div class="modal-body debrief-body" data-debrief="body"></div>
-        <div class="modal-footer">
+        <div class="cluster cluster--end modal-footer">
           <button class="btn-secondary" data-debrief-action="cancel">Annuler</button>
           <button class="btn-primary" data-debrief-action="apply">Valider le débrief</button>
         </div>

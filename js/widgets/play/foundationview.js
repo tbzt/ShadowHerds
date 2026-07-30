@@ -158,7 +158,7 @@ export const FoundationView = {
     overlay.setAttribute("aria-labelledby", "foundation-title");
     overlay.innerHTML = `
       <div class="modal foundation-modal">
-        <div class="modal-header">
+        <div class="cluster modal-header">
           <span class="modal-title" id="foundation-title" data-foundation="title">Fondations</span>
           <button class="modal-close" data-foundation-action="close" aria-label="Fermer">✕</button>
         </div>

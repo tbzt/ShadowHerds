@@ -275,9 +275,7 @@
 /* Rappel de sauvegarde (F3, Hub) : même registre discret que le bandeau de
    reprise de brouillon (.cg-resume-banner) — pas de nouveau vocabulaire visuel. */
 .hub-save-reminder {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   padding: 6px 10px;
   margin: 0 0 var(--sp-3);
   border: 1px solid var(--accent2);
@@ -346,15 +344,9 @@
 
 /* Réglages d'affichage des cartes */
 .display-prefs {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
   margin-top: var(--sp-2);
 }
 .display-pref-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: var(--sp-4);
   padding: var(--sp-2) 0.7rem;
   background: var(--bg-mid);

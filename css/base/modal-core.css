@@ -31,9 +31,8 @@
 .modal-header {
   padding: var(--sp-4) 1.25rem;
   border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
   gap: var(--sp-3);
+  flex-wrap: nowrap;
   position: sticky;
   top: 0;
   background: var(--bg-card);
@@ -73,9 +72,8 @@
 .modal-footer {
   padding: var(--sp-3) 1.25rem;
   border-top: 1px solid var(--border);
-  display: flex;
   gap: var(--sp-3);
-  justify-content: flex-end;
+  flex-wrap: nowrap;
   position: sticky;
   bottom: 0;
   background: var(--bg-card);
@@ -137,8 +135,6 @@
   animation: modalPop 0.18s ease;
 }
 .dialog-body {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-4);
 }
 .dialog-label {

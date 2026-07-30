@@ -129,7 +129,7 @@ export const Hub = {
     }
     const txt =
       days === null ? "Vous n'avez encore jamais sauvegardé vos fiches." : `Dernière sauvegarde : il y a ${days} jours.`;
-    box.innerHTML = `<div class="hub-save-reminder">
+    box.innerHTML = `<div class="cluster hub-save-reminder">
       <span>${txt}</span>
       <button class="btn-secondary btn-small" data-action="backup-export"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-export"></use></svg> Sauvegarder mes fiches</button>
       <button class="btn-icon-tiny" data-hub data-action="dismiss-save-reminder" title="Masquer">✕</button>
