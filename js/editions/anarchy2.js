@@ -346,6 +346,81 @@ export const EditionAnarchy2 = {
       une rangée par participant (jumelle de l'Atout SR6 `edgeTracker`),
       stockée dans l'entrée de scène. Drapeau de CAPACITÉ, lu à l'aveugle. */
   combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: true, anarchyPoints: true, hasSoak: false },
+
+  /* ========================================================
+     COURSE-POURSUITE (moteur ⇉) — Anarchy 2.0, p. 65-66 (portées,
+     déplacement) et p. 230 (drones et véhicules).
+
+     Deux paragraphes, mais ils tranchent trois choses : la poursuite se
+     joue en **tests opposés de Pilotage**, l'environnement donne
+     l'avantage soit aux rapides soit aux maniables, et **changer de portée
+     coûte des Narrations** (1 / 2 / 3 selon la marche), qu'un point
+     d'Anarchy peut accélérer. Le livre ajoute qu'un tour de poursuite dure
+     plutôt 10 s que 3, et qu'une issue évidente ne se lance pas
+     (« une moto rattrapera forcément un bus urbain sur une autoroute »).
+     ======================================================== */
+  chaseModel: {
+    glyph: "⇉",
+    defaultTerrain: "vehicule",
+    terrains: {
+      pied: { label: "À pied", unruled: true, testLabel: "Athlétisme + AGI" },
+      vehicule: { label: "En véhicule", testLabel: "Pilotage + AGI (test opposé)" },
+    },
+    /** Les quatre portées d'Anarchy 2.0, avec le coût en Narrations pour
+        franchir chaque marche — la seule mécanique de déplacement chiffrée
+        du livre. */
+    lanes: [
+      { key: "contact", label: "Contact", hint: { all: "≤ 2 m · 1 narration depuis Courte" } },
+      { key: "courte", label: "Courte", hint: { all: "3-15 m · 2 narrations depuis Moyenne" } },
+      { key: "moyenne", label: "Moyenne", hint: { all: "16-60 m · 3 narrations depuis Longue" } },
+      { key: "longue", label: "Longue", hint: { all: "> 60 m" } },
+    ],
+    /** Le livre ne NOMME pas d'environnements : il dit que l'environnement
+        « peut favoriser les engins rapides, ou au contraire ceux plus
+        maniables ». Les deux entrées ci-dessous sont donc ce choix-là, pas
+        un décor inventé — le MJ dit lequel s'applique, l'app en déduit
+        l'attribut comparé. */
+    envs: [
+      { key: "vitesse", label: "Favorise la vitesse", maniaMod: 0, footThreshold: null,
+        examples: "ligne droite, autoroute, grands axes", onFail: null },
+      { key: "maniabilite", label: "Favorise la maniabilité", maniaMod: 0, footThreshold: null,
+        examples: "ruelles, virages serrés, circulation dense", onFail: null },
+    ],
+    attr(envKey) {
+      return envKey === "maniabilite"
+        ? { short: "MAN", label: "Maniabilité", meaning: "avantage au test opposé" }
+        : { short: "VIT", label: "Vitesse", meaning: "avantage au test opposé" };
+    },
+    attrValue(pnj, { terrain, env } = {}) {
+      if (terrain === "pied" || typeof Vehicles === "undefined") return undefined;
+      const liste = Vehicles.linkedTo(pnj.id) || [];
+      const veh = liste.find((v) => v.deployed) || liste[0];
+      const s = (veh && veh.stats) || null;
+      if (!s) return undefined;
+      const v = env === "maniabilite" ? s.mania : s.vitesse;
+      return Number.isFinite(v) ? v : undefined;
+    },
+    threshold() {
+      return null; // test OPPOSÉ : pas de seuil, c'est l'adversaire qui fixe la barre
+    },
+    round: {
+      /** Requis, mais opposé : « le vainqueur parvient à progresser vers son
+          objectif (s'enfuir, rattraper l'autre) ». Et si l'issue ne fait
+          aucun doute, le livre dit de ne pas jeter les dés. */
+      test: { required: true, opposed: true, cost: "1 action", skipIfObvious: true },
+      onSuccess: "progress",
+      onSkip: null,
+      move: { onSuccess: 1, targetMoves: true, narrationCost: [1, 2, 3], anarchyShortcut: true },
+    },
+    edge: { compare: false, chasePool: false, roles: null, anarchyPoints: true },
+    variants: [],
+    outcomes: {
+      poursuite: {
+        caught: { label: "Contact", cond: { all: "≤ 2 m — le combat rapproché devient possible" } },
+        lost: { label: "Semé", cond: { all: "narratif : le vainqueur atteint son objectif" } },
+      },
+    },
+  },
   /** Disposition de combat (Vague D) : { down, morale }. Anarchy 2.0 COMBATIVITÉ
       (p.180) — champ threatLevel (nulle/faible/forte/extrême). Déclencheur
       individuel (1re blessure légère/grave, ou incapacité) OU proportion

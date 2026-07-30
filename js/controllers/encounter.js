@@ -56,7 +56,11 @@ export const Encounter = {
   _sceneSeq: 0,
   _empty() {
     this._sceneSeq++;
-    return { v: this._V, round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null, noise: 0, focusId: null, motors: ["combat"], matrix: {} };
+    // `chase: null` = pas de poursuite en cours. Champ ADDITIF, comme
+    // `matrix` en son temps : une scène persistée avant le moteur ⇉ le lit
+    // `undefined`, ce que toutes les gardes traitent comme `null` — aucune
+    // migration (cf. § Versionner les schémas).
+    return { v: this._V, round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null, noise: 0, focusId: null, motors: ["combat"], matrix: {}, chase: null };
   },
 
   state: null,
@@ -2548,15 +2552,45 @@ export const Encounter = {
     return this.state.serverId ? Servers.find(this.state.serverId) : null;
   },
 
-  /** Bascule le type de scène — Combat (init/roster, défaut) ↔
-      Matrice seule (moteur Matrice seul, pas d'initiative : le decker
-      infiltre pendant que les autres négocient). Binaire volontairement
-      simple (`motors` extensible pour un futur « Combat +
-      Matrice », non tranché ici — pas de sur-construction avant besoin
-      réel). */
+  /** Un moteur allumé ou éteint, sans toucher aux autres — le point unique
+      par lequel passent Matrice ET Poursuite. La doctrine R0 dit que le
+      « type » de scène n'est qu'un préréglage de moteurs : `motors` est un
+      ENSEMBLE, pas une énumération à une valeur.
+
+      Deux invariants tenus ici :
+      · une scène garde toujours au moins un moteur (couper le dernier
+        rallume Combat — une scène sans moteur ne « joue » plus rien) ;
+      · Combat et Poursuite COEXISTENT en SR5/SR6 (les deux livres font
+        tourner l'initiative pendant la poursuite) mais pas en Anarchy, qui
+        n'a pas d'initiative : `combatModel.narrative` tranche, jamais une
+        branche `App.edition`. */
+  setMotor(key, on) {
+    if (!this.state) return;
+    const set = new Set(this.state.motors || ["combat"]);
+    if (on) {
+      set.add(key);
+      if (key === "chase" && this._model().narrative) set.delete("combat");
+      if (key === "matrix" && set.has("chase")) set.delete("chase");
+    } else {
+      set.delete(key);
+    }
+    if (!set.size) set.add("combat");
+    this.state.motors = [...set];
+  },
+
+  hasMotor(key) {
+    return ((this.state && this.state.motors) || ["combat"]).includes(key);
+  },
+
+  /** Bascule le type de scène — Combat (init/roster, défaut) ↔ Matrice seule
+      (moteur Matrice seul, pas d'initiative : le decker infiltre pendant que
+      les autres négocient). Reste BINAIRE côté UI : le 3ᵉ moteur (Poursuite)
+      n'est pas un 3ᵉ état de cette bascule mais un moteur qui s'AJOUTE, par
+      `setMotor` — c'est `Pursuit.open()` qui l'allume. */
   toggleSceneType() {
     const isMatrixOnly = !this.state.motors.includes("combat");
     this.state.motors = isMatrixOnly ? ["combat"] : ["matrix"];
+    if (!isMatrixOnly) this.state.chase = null; // la Matrice seule n'a pas de piste
     this._commit();
     if (!isMatrixOnly) {
       // Le tiroir Matrice devient la surface principale : l'ouvrir tout de

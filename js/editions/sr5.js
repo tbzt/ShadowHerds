@@ -1067,6 +1067,116 @@ export const EditionSR5 = {
       d'initiative — −10 par passe, un combattant rapide rejoue tant que son
       score reste > 0 (SR5 p.159). `passDecrement > 0` active les passes. */
   combatModel: { rerollEachRound: true, passDecrement: 10, hasSoak: true },
+
+  /* ========================================================
+     COURSE-POURSUITE (moteur ⇉) — Livre de Règles, p. 204-205.
+
+     ⚠ Ne pas importer le régime SR6 : SR5 n'a **pas** de test obligatoire
+     par round et **pas** d'attribut comparé. Son environnement choisit une
+     LIMITE (Vitesse ou Maniabilité) pour des tests qu'on ne fait que si on
+     tente quelque chose — quatre actions complexes, plus une interruption
+     déjà au catalogue (« Conduite évasive », −10 init).
+
+     Et ses portées d'engagement sont en MÈTRES QUI CHANGENT avec
+     l'environnement (0-10 en rapide, 0-5 en encombré) : la même bande
+     « courte » ne couvre pas la même rue.
+     ======================================================== */
+  chaseModel: {
+    glyph: "⇉",
+    defaultTerrain: "vehicule",
+    terrains: {
+      vehicule: { label: "En véhicule", testLabel: "Compétence de véhicule + RÉA" },
+      /** Le core SR5 ne règle QUE les véhicules (« quand tous les
+          protagonistes sont dans des véhicules en déplacement »). À pied, il
+          n'a que Course/Sprint — utile, mais ce n'est pas un système de
+          poursuite. On le dit plutôt que de recopier le régime SR6. */
+      pied: {
+        label: "À pied",
+        unruled: true,
+        testLabel: "Course + FOR (Sprint)",
+        note: "SR5 ne règle la course-poursuite qu'en véhicule — à pied, arbitrage MJ sur des tests de Course opposés",
+      },
+    },
+    /** Portées d'engagement (p. 204). Le livre donne DEUX échelles de mètres
+        selon l'environnement ; les deux sont affichées, c'est la seule façon
+        honnête de ne pas mentir sur la bande. */
+    lanes: [
+      { key: "courte", label: "Courte", hint: { all: "rapide 0-10 m · encombré 0-5 m" } },
+      { key: "moyenne", label: "Moyenne", hint: { all: "rapide 11-50 m · encombré 6-20 m" } },
+      { key: "longue", label: "Longue", hint: { all: "rapide 51-150 m · encombré 21-80 m" } },
+      { key: "extreme", label: "Extrême", hint: { all: "rapide 151-300 m · encombré 81-150 m" } },
+    ],
+    envs: [
+      {
+        key: "rapide", label: "Rapide", maniaMod: 0, footThreshold: null,
+        examples: "autoroute, terrain dégagé, eaux calmes, ciel clair",
+        onFail: { all: "véhicule hors de contrôle (accident, ralentissement…)" },
+      },
+      {
+        key: "encombre", label: "Encombré", maniaMod: 0, footThreshold: null,
+        examples: "rues résidentielles, gorges, port bondé, vol au niveau de la rue",
+        onFail: { all: "véhicule hors de contrôle (accident, ralentissement…)" },
+      },
+    ],
+    /** L'environnement choisit la LIMITE du test, pas un gain : « test de
+        Compétence de véhicule + Réaction [Vitesse ou Maniabilité] ». Le
+        `meaning` le dit à l'écran — un chiffre nu ferait croire à un bonus. */
+    attr(envKey) {
+      return envKey === "encombre"
+        ? { short: "MAN", label: "Maniabilité", meaning: "limite du test" }
+        : { short: "VIT", label: "Vitesse", meaning: "limite du test" };
+    },
+    attrValue(pnj, { terrain, env } = {}) {
+      if (terrain === "pied" || typeof Vehicles === "undefined") return undefined;
+      const liste = Vehicles.linkedTo(pnj.id) || [];
+      const veh = liste.find((v) => v.deployed) || liste[0];
+      const s = (veh && veh.stats) || null;
+      if (!s) return undefined;
+      const v = env === "encombre" ? s.mania : s.vitesse;
+      return Number.isFinite(v) ? v : undefined;
+    },
+    threshold() {
+      // Seuil de manœuvre : table des seuils de pilotage + modificateur de
+      // terrain, tous deux arbitrés par le MJ selon ce qu'on tente. L'app ne
+      // le devine pas — elle rappelle les actions, elle ne fixe pas leur prix.
+      return null;
+    },
+    round: {
+      /** Pas de test par round : ce sont des ACTIONS, choisies. */
+      test: null,
+      onSuccess: null,
+      onSkip: null,
+      move: { onSuccess: null, targetMoves: true },
+      /** Les quatre actions de course-poursuite (actions complexes) —
+          « Conduite évasive » vit déjà dans `interruptActions`. */
+      actions: [
+        { key: "cascade", label: "Cascade", range: "toutes",
+          lines: ["Manœuvre folle pour semer : seuil selon l'environnement et le terrain",
+                  "Réussie ⇒ tous les poursuivants refont le même test · raté ⇒ hors de contrôle",
+                  "Un poursuivant qui rate s'éloigne d'une catégorie ; déjà à extrême, il perd la cible"] },
+        { key: "couperRoute", label: "Couper la route", range: "courte",
+          lines: ["Test opposé de Compétence de véhicule + RÉA [Maniabilité]",
+                  "Succès ⇒ la cible refait un test de pilotage pour éviter l'accident"] },
+        { key: "percuter", label: "Percuter", range: "courte",
+          lines: ["Test opposé [Vitesse ou Maniabilité selon l'environnement]",
+                  "Succès ⇒ collision : la cible encaisse la Structure de l'attaquant + succès nets, l'attaquant la moitié de la sienne"] },
+        { key: "rattraper", label: "Rattraper / Prendre de l'avance", range: "toutes",
+          lines: ["Change la portée d'un nombre de niveaux égal à l'Accélération",
+                  "Test [Vitesse ou Maniabilité] au seuil de manœuvre · +1 niveau par succès excédentaire"] },
+      ],
+    },
+    edge: { compare: false, chasePool: false, roles: null },
+    variants: [],
+    outcomes: {
+      poursuite: {
+        caught: { label: "Rattrapé", cond: { all: "à portée courte : Percuter, Couper la route" } },
+        lost: {
+          label: "Échappé",
+          cond: { all: "un poursuivant déjà à portée extrême qui rate perd sa cible — le MJ dit s'il la retrouve" },
+        },
+      },
+    },
+  },
   /** Disposition de combat (Vague D) : { down, morale } — lu par le tracker via
       l'API neutre, jamais de branche d'édition côté Encounter.
       SR5 « brutes » (p.381) : le moral est de GROUPE, selon le Professionnalisme,

@@ -1558,6 +1558,164 @@ export const EditionSR6 = {
       la fiche active, gain plafonné à +2/tour de personnage, p.50). Le tracker
       lit ce drapeau, jamais une branche d'édition. */
   combatModel: { rerollEachRound: true, passDecrement: 0, edgeTracker: true, hasSoak: true },
+
+  /* ========================================================
+     COURSE-POURSUITE (moteur ⇉) — « À tombeau ouvert », L'avantage du
+     rigger, p. 173-180. **Le seul système complet du corpus**, et le seul
+     qui règle explicitement les poursuites À PIED : le chapitre ouvre en
+     disant que les règles véhicule s'y appliquent, « seule une mention
+     explicite fait foi » pour les adaptations.
+
+     Ce que ce contrat porte, et que les trois autres éditions n'ont pas :
+     un test OBLIGATOIRE par round, un attribut COMPARÉ qui change avec
+     l'environnement, et une réserve dédiée. Cf. `js/rules/chase.js`.
+     ======================================================== */
+  chaseModel: {
+    glyph: "⇉",
+    defaultTerrain: "vehicule",
+    terrains: {
+      pied: {
+        label: "À pied",
+        // Action majeure Sprinter, Athlétisme + Agilité. Le seuil vient de
+        // l'environnement (0 / 3 / 4), pas de la Maniabilité d'un engin.
+        testLabel: "Athlétisme + AGI (Sprinter)",
+      },
+      vehicule: {
+        label: "En véhicule",
+        // Action majeure Pilotage ; le seuil est la Maniabilité du véhicule,
+        // modifiée par l'environnement (−2 / 0 / +1), et c'est la Maniabilité
+        // HORS ROUTE dès qu'on quitte le bitume — d'où `maniaHors` au
+        // catalogue (lot P0).
+        testLabel: "Pilotage + RÉA",
+      },
+    },
+    /** Les catégories de distance sont RELATIVES à la cible de la
+        course-poursuite (« toutes les autres positions sont définies selon
+        la sienne »). Les mètres ne sont donnés qu'à titre indicatif : le
+        livre dit qu'on n'a besoin que des catégories. */
+    lanes: [
+      { key: "proche", label: "Proche", hint: { vehicule: "≤ 10 m", pied: "≤ 3 m" } },
+      { key: "courte", label: "Courte", hint: { vehicule: "11-50 m", pied: "4-50 m" } },
+      { key: "moyenne", label: "Moyenne", hint: { all: "51-250 m" } },
+      { key: "longue", label: "Longue", hint: { all: "251-500 m" } },
+      { key: "extreme", label: "Extrême", hint: { all: "> 500 m" } },
+    ],
+    /** Trois environnements, chacun avec SES trois effets — c'est lui qui
+        décide de l'attribut comparé, du modificateur de Maniabilité et du
+        prix d'un échec. En dégagé et étroit, réussir donne l'avantage
+        positionnel ; en encombré, échouer coûte un test d'Accident (4E à
+        pied, résistables avec la Constitution). */
+    envs: [
+      {
+        key: "degage", label: "Dégagé", maniaMod: -2, footThreshold: 0,
+        examples: "autoroutes, ciel dégagé, grands espaces",
+        onFail: null,
+      },
+      {
+        key: "etroit", label: "Étroit", maniaMod: 0, footThreshold: 3,
+        examples: "boulevards urbains, vol entre les tours, intérieurs",
+        onFail: null,
+      },
+      {
+        key: "encombre", label: "Encombré", maniaMod: 1, footThreshold: 4,
+        examples: "embouteillages, ruelles, foules, forêts denses",
+        onFail: { vehicule: "test d'Accident", pied: "4E (résistance CON)" },
+      },
+    ],
+    /** L'attribut COMPARÉ du round : le plus haut gagne 1 point d'Atout
+        (un seul, le MJ arbitre en cas d'égalité). `optional` reste absent
+        ici — la règle n'est pas optionnelle en SR6. */
+    attr(envKey, terrain) {
+      const vehicule = terrain !== "pied";
+      if (envKey === "encombre")
+        return vehicule
+          ? { short: "ACC", label: "Accélération", meaning: "+1 point d'Atout" }
+          : { short: "AGI", label: "Agilité", meaning: "+1 point d'Atout" };
+      return vehicule
+        ? { short: "IdV", label: "Intervalle de vitesse", meaning: "+1 point d'Atout" }
+        : envKey === "degage"
+          ? { short: "FOR", label: "Force", meaning: "+1 point d'Atout" }
+          : { short: "AGI", label: "Agilité", meaning: "+1 point d'Atout" };
+    },
+    /** Valeur de cet attribut sur la fiche — ou `undefined` quand l'app ne
+        la tient PAS du livre, ce qui arrive deux fois :
+          · un PJ léger n'a ni Agilité ni Force (son bloc de table ne porte
+            que l'initiative, la défense, la perception et la volonté) ;
+          · un véhicule venu d'un autre ouvrage n'a pas encore d'Intervalle
+            de vitesse au catalogue (lot P0 : livre de base seulement).
+        Dans les deux cas la piste écrit « — » et propose la saisie. */
+    attrValue(pnj, { terrain, env } = {}) {
+      if (terrain === "pied") {
+        const key = env === "degage" ? "FOR" : "AGI";
+        const v = typeof Actor !== "undefined" ? Actor.attr(pnj, key) : null;
+        return Number.isFinite(v) && v > 0 ? v : undefined;
+      }
+      if (typeof Vehicles === "undefined") return undefined;
+      const veh = (Vehicles.linkedTo(pnj.id) || []).find((v) => v.deployed) || (Vehicles.linkedTo(pnj.id) || [])[0];
+      const s = (veh && veh.stats) || null;
+      if (!s) return undefined;
+      const v = env === "encombre" ? s.accel : s.intervalle;
+      return Number.isFinite(v) ? v : undefined;
+    },
+    /** Le seuil du test de Pilotage : Maniabilité du véhicule (hors route
+        dès que l'environnement l'est), plus le modificateur d'environnement.
+        À pied, c'est le seuil d'Athlétisme de l'environnement. */
+    threshold(pnj, { terrain, env } = {}) {
+      const e = this.envs.find((x) => x.key === env) || null;
+      if (terrain === "pied") return e ? e.footThreshold : null;
+      if (typeof Vehicles === "undefined") return null;
+      const veh = (Vehicles.linkedTo(pnj.id) || []).find((v) => v.deployed) || (Vehicles.linkedTo(pnj.id) || [])[0];
+      const s = (veh && veh.stats) || null;
+      if (!s) return null;
+      const base = env === "encombre" && Number.isFinite(s.maniaHors) ? s.maniaHors : s.mania;
+      return Number.isFinite(base) ? Math.max(0, base + (e ? e.maniaMod : 0)) : null;
+    },
+    round: {
+      /** Le seul du corpus à l'imposer : « une action majeure Pilotage est
+          requise » / « une action majeure Sprinter est nécessaire à chaque
+          round ». Ne pas le faire, c'est perdre la course-poursuite. */
+      test: { required: true, cost: "1 majeure" },
+      onSuccess: "positional",
+      onSkip: "lost",
+      move: { onSuccess: 1, targetMoves: false },
+    },
+    edge: {
+      compare: true,
+      /** « Tout véhicule avec un Intervalle de vitesse trois fois plus élevé
+          qu'un autre obtient automatiquement un avantage positionnel et peut
+          choisir sa position, quel que soit le résultat des tests. » */
+      outclassFactor: 3,
+      riggerPerTest: 1,
+      chasePool: true,
+      poolLabel: "Réserve ⇉",
+      /** Les 14 actions d'Atout de poursuite (déjà au catalogue
+          `edgeActionModel`) se filtrent par ce rôle. */
+      roles: ["cible", "poursuivant"],
+    },
+    variants: ["course", "filature"],
+    outcomes: {
+      poursuite: {
+        caught: { label: "Rattrapé", cond: { all: "au contact : percuter, Auto-stop, mêlée" } },
+        lost: {
+          label: "Semé",
+          cond: {
+            vehicule: "accident, aucun test joué, ou « Fuite ! » à distance extrême",
+            pied: "accident, aucun test joué, ou « Fuite ! » à distance moyenne ou plus",
+          },
+        },
+      },
+      /** Variante « course » : le livre dit que **le premier tient le rôle de
+          cible**. Le composant ne change pas — seuls les libellés. */
+      course: {
+        caught: { label: "1ᵉʳ", cond: { all: "la place à prendre — dernier test à distance proche" } },
+        lost: { label: "Hors course", cond: { all: "distancé" } },
+      },
+      filature: {
+        caught: { label: "Repéré", cond: { all: "la cible obtient des succès nets sur votre Furtivité" } },
+        lost: { label: "Perdue", cond: { all: "échec en Perception / Plein air — seuil 6 pour reprendre la piste" } },
+      },
+    },
+  },
   /** AJUSTER (p.46) — jumeau du contrat SR5, avec TROIS différences que le
       livre écrit et qui interdisent de partager les valeurs :
 

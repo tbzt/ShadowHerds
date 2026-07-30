@@ -362,6 +362,68 @@ export const EditionAnarchy1 = {
     threatReserve: true,
     hasSoak: false,
   },
+
+  /* ========================================================
+     COURSE-POURSUITE (moteur ⇉) — Anarchy 1re, p. 166-167.
+
+     Le livre n'a **aucun système dédié** : il a des portées de combat, une
+     règle de déplacement (« un véhicule peut se rapprocher de portée longue
+     jusqu'à intermédiaire ou courte d'un personnage à pied en une seule
+     Narration »), et des manœuvres risquées dont le MJ fixe la difficulté.
+     Le contrat porte donc surtout des VIDES — et la piste les montre au
+     lieu de recopier le régime SR6.
+     ======================================================== */
+  chaseModel: {
+    glyph: "⇉",
+    defaultTerrain: "vehicule",
+    terrains: {
+      pied: { label: "À pied", unruled: true, testLabel: "Athlétisme + AGI (narration)" },
+      vehicule: { label: "En véhicule", testLabel: "Véhicules terrestres / divers + AGI" },
+    },
+    /** Les trois portées d'Anarchy 1re, telles que le livre les nomme. */
+    lanes: [
+      { key: "courte", label: "Courte", hint: { all: "portée d'épée à quelques mètres" } },
+      { key: "intermediaire", label: "Intermédiaire", hint: { all: "au-delà, jusqu'à la portée d'une arme de poing" } },
+      { key: "longue", label: "Longue", hint: { all: "hors de portée d'une arme de poing" } },
+    ],
+    /** Aucun environnement au livre : c'est le MJ qui fixe la difficulté
+        d'une manœuvre. La barre le dira — un environnement inventé
+        changerait la difficulté d'une table sans que le livre le demande. */
+    envs: [],
+    /** La **Mobilité** est une règle OPTIONNELLE du livre (encart « Être la
+        machine ») : elle regroupe vitesse, maniabilité et accélération en un
+        modificateur de pilotage. Décision du chantier : on l'affiche, avec
+        sa mention — une table qui ne l'emploie pas lit un chiffre de plus,
+        une table qui l'emploie n'a plus à le chercher. */
+    attr() {
+      return { short: "MOB", label: "Mobilité", meaning: "modificateur de pilotage", optional: true };
+    },
+    attrValue(pnj, { terrain } = {}) {
+      if (terrain === "pied" || typeof Vehicles === "undefined") return undefined;
+      const liste = Vehicles.linkedTo(pnj.id) || [];
+      const veh = liste.find((v) => v.deployed) || liste[0];
+      const v = veh && veh.stats && veh.stats.mobilite;
+      return Number.isFinite(v) ? v : undefined;
+    },
+    threshold() {
+      return null; // difficulté fixée par le MJ (table des difficultés)
+    },
+    round: {
+      test: null,
+      onSuccess: null,
+      onSkip: null,
+      /** La seule règle de déplacement chiffrée du livre. */
+      move: { onSuccess: 1, targetMoves: true, note: "1 Narration : un véhicule gagne une catégorie sur un personnage à pied" },
+    },
+    edge: { compare: false, chasePool: false, roles: null },
+    variants: [],
+    outcomes: {
+      poursuite: {
+        caught: { label: "Rattrapé", cond: { all: "à portée courte — le combat rapproché devient possible" } },
+        lost: { label: "Semé", cond: { all: "narratif : le MJ tranche (accident : 6 cases physiques)" } },
+      },
+    },
+  },
   /** Disposition de combat (Vague D) : Anarchy 1 n'a PAS de règle de combativité
       imprimée (seulement « Dangerosité », niveaux de dés) → morale toujours null
       (pas de drapeau « devrait fuir »). Seul « hors de combat » (moniteur
