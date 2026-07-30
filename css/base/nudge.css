@@ -90,9 +90,7 @@
   color: var(--text-dim);
 }
 .nudge-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
 }
 .nudge-actions .btn-small {
   min-height: 32px; /* cible tactile ≥ 24px (loi 4) */

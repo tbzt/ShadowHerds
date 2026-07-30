@@ -186,14 +186,14 @@ export const Breakdown = {
         const sub = (c.detail || [])
           .map(
             (d) =>
-              `<div class="breakdown-sub" data-negative="${d.value < 0}"><span>${esc(d.label)}</span><span>${d.value >= 0 ? "" : "−"}${Math.abs(d.value)}</span></div>`,
+              `<div class="cluster breakdown-sub" data-negative="${d.value < 0}"><span>${esc(d.label)}</span><span>${d.value >= 0 ? "" : "−"}${Math.abs(d.value)}</span></div>`,
           )
           .join("");
-        return `<div class="breakdown-line" data-negative="${c.value < 0}"><span>${esc(c.label)}</span><span>${c.value >= 0 ? "" : "−"}${Math.abs(c.value)}</span></div>${sub}`;
+        return `<div class="cluster breakdown-line" data-negative="${c.value < 0}"><span>${esc(c.label)}</span><span>${c.value >= 0 ? "" : "−"}${Math.abs(c.value)}</span></div>${sub}`;
       })
       .join("");
     return `<div class="breakdown-title">${esc(this._LABELS[key] || key)} <strong>${total}</strong></div>
-      <div class="breakdown-lines">${lines}</div>`;
+      <div class="stack breakdown-lines">${lines}</div>`;
   },
 
   _position(trigger, el) {

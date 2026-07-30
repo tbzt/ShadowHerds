@@ -48,21 +48,15 @@
 }
 
 .breakdown-lines {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
 }
 .breakdown-line {
-  display: flex;
-  justify-content: space-between;
   gap: var(--sp-3);
 }
 .breakdown-line > span:last-child {
   color: var(--text);
 }
 .breakdown-sub {
-  display: flex;
-  justify-content: space-between;
   gap: var(--sp-3);
   padding-left: var(--sp-3);
   color: var(--text-dim);

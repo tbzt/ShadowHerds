@@ -47,14 +47,9 @@
   border-radius: var(--radius-sm);
   padding: 6px var(--sp-2);
   margin-bottom: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
 }
 .contact-stat-row {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
 }
 .contact-stat-label {
   font-family: var(--font-mono);
@@ -87,9 +82,8 @@
 
 /* Pastilles de niveau (Anarchy) */
 .niveau-dots {
-  display: flex;
   gap: var(--sp-1);
-  align-items: center;
+  flex-wrap: nowrap;
 }
 .niveau-dot {
   width: 9px;

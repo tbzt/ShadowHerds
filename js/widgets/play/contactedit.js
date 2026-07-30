@@ -141,7 +141,7 @@ export const ContactEdit = {
     });
     const editionFields = mod && mod.usesRiskPanel
       ? this._anarchyFields(c, esc)
-      : `<div class="contact-form-row">
+      : `<div class="cluster contact-form-row">
            <label>Influence
              <input type="number" id="ce-influence" min="1" max="12" value="${esc(c.influence ?? "")}">
            </label>
@@ -150,25 +150,25 @@ export const ContactEdit = {
            </label>
          </div>`;
     return `
-      <div class="contact-form">
-        <div class="contact-form-row">
+      <div class="stack contact-form">
+        <div class="cluster contact-form-row">
           <label>Nom
             <input type="text" id="ce-name" value="${esc(c.name || "")}" autocomplete="off">
           </label>
           ${metaSelect}
         </div>
-        <div class="contact-form-row">
+        <div class="cluster contact-form-row">
           <label>Rôle / métier
             <input type="text" id="ce-role" value="${esc(c.role || "")}" autocomplete="off">
           </label>
         </div>
         ${editionFields}
-        <div class="contact-form-row">
+        <div class="cluster contact-form-row">
           <label>Trait
             <input type="text" id="ce-trait" value="${esc(c.trait || "")}" autocomplete="off">
           </label>
         </div>
-        <div class="contact-form-row">
+        <div class="cluster contact-form-row">
           <label>Description
             <textarea id="ce-desc" rows="3">${esc(c.desc || "")}</textarea>
           </label>
@@ -185,7 +185,7 @@ export const ContactEdit = {
       (n) => `<option value="${n.id}"${n.id === c.networkId ? " selected" : ""}>${esc(n.label)}</option>`,
     ).join("");
     return `
-      <div class="contact-form-row">
+      <div class="cluster contact-form-row">
         <label>Réseau
           <select id="ce-network">${nets}</select>
         </label>
@@ -196,7 +196,7 @@ export const ContactEdit = {
           </select>
         </label>
       </div>
-      <div class="contact-form-row">
+      <div class="cluster contact-form-row">
         <label>Niveau
           <input type="number" id="ce-level" min="0" max="6" value="${esc(c.level ?? "")}">
         </label>

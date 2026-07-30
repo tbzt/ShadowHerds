@@ -110,8 +110,8 @@ export const ServerRenderer = {
       .join("");
 
     return `
-      <div class="contact-form">
-        <div class="contact-form-row">
+      <div class="stack contact-form">
+        <div class="cluster contact-form-row">
           <label>Nom
             <input type="text" id="srv-name" placeholder="Aléatoire si vide">
           </label>
@@ -122,7 +122,7 @@ export const ServerRenderer = {
             <select id="srv-indice">${indOpts}</select>
           </label>
         </div>
-        <div class="contact-form-row server-form-flags">
+        <div class="cluster contact-form-row server-form-flags">
           ${secPhysBonus ? `<label class="ic-choice"><input type="checkbox" id="srv-secphys">Gère la sécurité physique (+${secPhysBonus} indice)</label>` : ""}
           <label class="ic-choice"><input type="checkbox" id="srv-spider">Spider (decker de sécurité lié)</label>
         </div>

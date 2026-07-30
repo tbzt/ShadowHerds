@@ -313,17 +313,17 @@ export const CardRenderer = {
       return `<span class="niveau-dot${filled}" data-action="contact-set-niveau" data-id="${c.id}" data-niveau-value="${i + 1}"></span>`;
     }).join("");
     const bonus = c.bonus ? `<div class="contact-bonus">+ ${this._esc(c.bonus)}</div>` : "";
-    return `<div class="contact-anarchy-stats">
-      <div class="contact-stat-row">
+    return `<div class="stack contact-anarchy-stats">
+      <div class="cluster contact-stat-row">
         <span class="contact-stat-label">Niveau</span>
-        <div class="niveau-dots">${dots}</div>
+        <div class="cluster niveau-dots">${dots}</div>
         <span class="contact-stat-val">${c.level} (${(c.level * 5000).toLocaleString("fr-FR")}¥)</span>
       </div>
-      <div class="contact-stat-row">
+      <div class="cluster contact-stat-row">
         <span class="contact-stat-label">Effet</span>
         <span class="contact-rr">RR ${c.rr} — ${this._esc(c.domaine)}</span>
       </div>
-      ${c.atoutCost != null ? `<div class="contact-stat-row"><span class="contact-stat-label">Atout</span><span class="contact-stat-val">${c.atoutCost} pts</span></div>` : ""}
+      ${c.atoutCost != null ? `<div class="cluster contact-stat-row"><span class="contact-stat-label">Atout</span><span class="contact-stat-val">${c.atoutCost} pts</span></div>` : ""}
       ${bonus}
     </div>`;
   },

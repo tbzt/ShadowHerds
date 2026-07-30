@@ -5,9 +5,8 @@
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
-  display: flex;
-  align-items: center;
   gap: var(--sp-3);
+  flex-wrap: nowrap;
   background: var(--bg-card);
   border: 1px solid var(--accent);
   border-radius: var(--radius-lg);
@@ -18,9 +17,7 @@
   z-index: var(--z-toast);
   opacity: 0;
   transform: translateY(10px);
-  transition:
-    opacity var(--dur-slow),
-    transform var(--dur-slow);
+  transition: opacity var(--dur-slow), transform var(--dur-slow);
   pointer-events: none;
   max-width: 320px;
 }

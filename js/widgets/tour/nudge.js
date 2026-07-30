@@ -122,7 +122,7 @@ export const Nudge = {
         <button class="nudge-close" data-action="nudge-dismiss" aria-label="Fermer">✕</button>
         <p class="nudge-title"></p>
         <p class="nudge-body"></p>
-        <div class="nudge-actions">
+        <div class="cluster nudge-actions">
           <button class="btn-secondary btn-small" data-action="nudge-dismiss">Plus tard</button>
           <button class="btn-primary btn-small" data-action="nudge-cta"></button>
         </div>

@@ -139,19 +139,19 @@ export const ContactCreate = {
            <input type="number" id="cc-loyaute" min="1" max="6" placeholder="1">
          </label>`;
     return `
-      <div class="contact-form">
-        <div class="contact-form-row">
+      <div class="stack contact-form">
+        <div class="cluster contact-form-row">
           <label>Nom <span class="cc-req">*</span>
             <input type="text" id="cc-name" placeholder="Nom du contact" autocomplete="off">
           </label>
           ${metaSelect}
         </div>
-        <div class="contact-form-row">
+        <div class="cluster contact-form-row">
           <label>Rôle / métier
             <input type="text" id="cc-role" placeholder="ex. fixer, indic…" autocomplete="off">
           </label>
         </div>
-        <div class="contact-form-row">${ratings}</div>
+        <div class="cluster contact-form-row">${ratings}</div>
         <p class="contact-form-hint">Seul le nom est requis. Vous pourrez compléter la fiche du contact ensuite.</p>
       </div>`;
   },

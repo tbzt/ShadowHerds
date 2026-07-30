@@ -62,8 +62,8 @@ export const Contacts = {
       (n) => `<option value="${n.id}">${n.label}</option>`,
     ).join("");
     return `
-      <div class="contact-form">
-        <div class="contact-form-row">
+      <div class="stack contact-form">
+        <div class="cluster contact-form-row">
           <label>Réseau
             <select id="cg-network">${nets}</select>
           </label>
@@ -74,7 +74,7 @@ export const Contacts = {
             </select>
           </label>
         </div>
-        <div class="contact-form-row">
+        <div class="cluster contact-form-row">
           <label>RR (loyauté / réseau)
             <select id="cg-rr">
               <option value="1">RR 1</option>
@@ -97,8 +97,8 @@ export const Contacts = {
       ),
     ].join("");
     return `
-      <div class="contact-form">
-        <div class="contact-form-row">
+      <div class="stack contact-form">
+        <div class="cluster contact-form-row">
           <label>Grand métier
             <select id="cg-category">${cats}</select>
           </label>

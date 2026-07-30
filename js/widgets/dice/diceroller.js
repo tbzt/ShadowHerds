@@ -879,7 +879,7 @@ export const DiceRoller = {
       const txt = d.damage > 0 ? `${d.damage} case${d.damage > 1 ? "s" : ""} (${t})` : "résisté";
       drainHtml = `<span class="dice-quick-drain">Drain ${d.res.hits}✓ → ${txt}</span>`;
     }
-    el.className = `dice-quick-${last.cls}`;
+    el.className = `cluster dice-quick-${last.cls}`;
     el.innerHTML = `${labelHtml}
       <span class="dice-quick-main">${last.main}</span>
       <span class="dice-quick-unit">${last.unit || ""}</span>

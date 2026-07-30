@@ -194,26 +194,26 @@ export const Mentions = {
       .map((r, i) => {
         const sel = i === this._sel ? " sel" : "";
         if (this._mode === "#") {
-          return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+          return `<div class="cluster palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
               <span class="palette-type">Mot-clé</span>
               <span class="palette-name">#${Utils.escHtml(r.tag)}</span>
             </div>`;
         }
         if (this._mode === ":") {
-          return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+          return `<div class="cluster palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
               <span class="palette-type palette-emoji">${r.char}</span>
               <span class="palette-name">:${Utils.escHtml(r.shortcode)}:</span>
             </div>`;
         }
         if (this._mode === "/") {
-          return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+          return `<div class="cluster palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
               <span class="palette-type">${Utils.escHtml(r.label)}</span>
               <span class="palette-name">${Utils.escHtml(r.hint)}</span>
             </div>`;
         }
         // Même avatar constant que la Palette (couleur+anneau+initiale).
         const avatar = r.type === "pj" ? CardRenderer._pcAvatar(PnjLookup.find(r.id)) : "";
-        return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+        return `<div class="cluster palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
             <span class="palette-type">${this._TYPE_LABEL[r.type] || r.type}</span>
             <span class="palette-name">${avatar}${Utils.escHtml(r.name)}</span>
           </div>`;

@@ -151,9 +151,9 @@ export const Palette = {
       box.innerHTML = this._results
         .map((r, i) => {
           const label = r.kind === "notepad" ? r.label : r.name;
-          return `<div class="palette-row${i === this._sel ? " sel" : ""}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+          return `<div class="cluster palette-row${i === this._sel ? " sel" : ""}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
               <span class="palette-type">${r.kind === "notepad" ? "Bloc-notes" : this._TYPE_LABEL[r.type] || r.type}</span>
-              <div class="palette-main"><span class="palette-name">${Utils.escHtml(label)}</span>${this._snippetHtml(r)}</div>
+              <div class="stack palette-main"><span class="palette-name">${Utils.escHtml(label)}</span>${this._snippetHtml(r)}</div>
             </div>`;
         })
         .join("");
@@ -167,17 +167,17 @@ export const Palette = {
         // même gabarit que le mode tag, pas d'avatar (ce n'est pas une carte).
         if (r.kind === "notepad" || r.kind === "entity") {
           const label = r.kind === "notepad" ? r.label : r.name;
-          return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+          return `<div class="cluster palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
               <span class="palette-type">${r.kind === "notepad" ? "Bloc-notes" : this._TYPE_LABEL[r.type] || r.type}</span>
-              <div class="palette-main"><span class="palette-name">${Utils.escHtml(label)}</span>${this._snippetHtml(r)}</div>
+              <div class="stack palette-main"><span class="palette-name">${Utils.escHtml(label)}</span>${this._snippetHtml(r)}</div>
             </div>`;
         }
         // Avatar PJ constant (couleur+anneau+initiale) — un aller-retour
         // PnjLookup de plus par ligne, liste bornée à 30 résultats (search()).
         const avatar = r.type === "pj" ? CardRenderer._pcAvatar(PnjLookup.find(r.id)) : "";
-        return `<div class="palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
+        return `<div class="cluster palette-row${sel}" data-idx="${i}" role="option" aria-selected="${i === this._sel}">
             <span class="palette-type">${this._TYPE_LABEL[r.type] || r.type}</span>
-            <div class="palette-main"><span class="palette-name">${avatar}${Utils.escHtml(r.name)}</span></div>
+            <div class="stack palette-main"><span class="palette-name">${avatar}${Utils.escHtml(r.name)}</span></div>
           </div>`;
       })
       .join("");
