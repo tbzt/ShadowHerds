@@ -12,6 +12,23 @@ commit.
 
 ## [Non publié]
 
+## [1.132.1] — 2026-07-30
+
+### Corrigé
+
+- **Les cases du moniteur de condition se cochent sans viser.** Marquer des
+  dégâts est le geste que le meneur répète le plus en combat ; à la souris,
+  c'était pourtant la **plus petite cible de toute la fiche** — 16 px, sous le
+  plancher d'accessibilité (WCAG 2.5.8 en demande 24). Au doigt le problème
+  n'existait pas, les cases y sont à 24 px depuis longtemps : c'est donc l'écran
+  de bureau qui était le moins bien servi, là où se prépare l'essentiel des
+  parties. **Les cases passent à 24 px partout.** La rangée s'élargit en
+  conséquence — vérifié qu'elle tient toujours, y compris les 11 cases d'un
+  moniteur SR5 sur téléphone, où le calcul avait déjà été fait.
+  Deux moniteurs gardent volontairement leur taille : celui de l'**écran
+  spectateur** (il se regarde, il ne se clique pas) et celui de la **vue
+  compacte** d'une fiche légère, dont la densité est un choix.
+
 ## [1.132.0] — 2026-07-28
 
 ### Ajouté
