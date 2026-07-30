@@ -373,8 +373,6 @@ select optgroup {
 #edition-screen {
   position: fixed;
   inset: 0;
-  display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: radial-gradient(circle at 50% 0%, #141018 0%, #060608 55%);
@@ -436,9 +434,8 @@ select optgroup {
 
 .edition-cards {
   position: relative;
-  display: flex;
   gap: var(--sp-5);
-  flex-wrap: wrap;
+  align-items: stretch;
   justify-content: center;
   padding: 0 var(--sp-4);
 }
@@ -667,17 +664,15 @@ select optgroup {
   height: 52px;
   background: var(--bg-card);
   border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
   padding: 0 var(--sp-4);
   gap: var(--sp-3);
+  flex-wrap: nowrap;
   flex-shrink: 0;
 }
 /* Zone marque (gauche) : logo + badge, groupés et épinglés. */
 .topbar-brand {
-  display: flex;
-  align-items: center;
   gap: var(--sp-3);
+  flex-wrap: nowrap;
   flex-shrink: 0;
 }
 .topbar-logo {
@@ -699,13 +694,8 @@ select optgroup {
   border-radius: var(--radius-sm);
   letter-spacing: 0.1em;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  transition:
-    background var(--dur-base),
-    border-color var(--dur-base),
-    color var(--dur-base);
+  flex-wrap: nowrap;
+  transition: background var(--dur-base), border-color var(--dur-base), color var(--dur-base);
   position: relative;
 }
 .topbar-edition-badge::after {
@@ -733,9 +723,8 @@ select optgroup {
    défiler hors champ. Le scroll qui reste (noms très longs) garde sa barre
    visible, jamais cachée. */
 .topbar-locator {
-  display: flex;
-  align-items: center;
   gap: var(--sp-1);
+  flex-wrap: nowrap;
   padding: 4px var(--sp-4);
   background: var(--bg-card);
   border-bottom: 1px solid var(--border);
@@ -880,9 +869,7 @@ select optgroup {
   box-shadow: var(--elev-2);
 }
 .ctx-item {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   width: 100%;
   padding: 6px var(--sp-2);
   padding-left: calc(var(--sp-2) + var(--depth, 0) * 14px);
@@ -943,9 +930,7 @@ select optgroup {
 /* Groupe dés : conteneur borduré discret pour que le stepper + « Lancer » +
    résultat se lisent comme UNE unité, pas cinq contrôles épars. */
 .topbar-group {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   padding: 3px var(--sp-2);
   background: var(--bg-mid);
   border: 1px solid var(--border);
@@ -953,9 +938,7 @@ select optgroup {
   flex-shrink: 0;
 }
 #dice-roller {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
 }
 
 /* Séparateur vertical entre le groupe dés et les actions MJ. */
@@ -968,9 +951,7 @@ select optgroup {
 
 /* Zone actions MJ (droite) : combat, journal, menace, raccourcis. */
 .topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   flex-shrink: 0;
 }
 
@@ -1003,9 +984,8 @@ select optgroup {
 
 /* ---- Réserve : stepper + champ ---- */
 .dice-count-group {
-  display: flex;
-  align-items: center;
   gap: var(--sp-1);
+  flex-wrap: nowrap;
 }
 .dice-count-step {
   width: 24px;
@@ -1039,9 +1019,7 @@ select optgroup {
   border-radius: var(--radius-sm);
 }
 .dice-roll-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   height: 28px;
   padding: 0 var(--sp-3);
   background: var(--accent);
@@ -1117,8 +1095,6 @@ select optgroup {
   flex-shrink: 0;
   background: var(--bg-card);
   border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
   padding: var(--sp-3) 0;
   gap: var(--sp-1);
   overflow-y: auto;
@@ -1132,9 +1108,7 @@ select optgroup {
   padding: 0.8rem var(--sp-4) 0.3rem;
 }
 .nav-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   padding: 0.55rem var(--sp-4);
   background: transparent;
   border: none;
@@ -1146,11 +1120,7 @@ select optgroup {
   text-align: left;
   width: 100%;
   border-left: 2px solid transparent;
-  transition:
-    color var(--dur-base),
-    border-color var(--dur-base),
-    background var(--dur-base),
-    transform var(--dur-fast) var(--ease-standard);
+  transition: color var(--dur-base), border-color var(--dur-base), background var(--dur-base), transform var(--dur-fast) var(--ease-standard);
 }
 .nav-btn:active {
   transform: scale(0.97);
@@ -1239,7 +1209,6 @@ html[data-mode="spectateur"] #content {
     var(--scan) 3px 4px
   );
 }
-
 
 /* ============================================================
    SCROLLBAR
