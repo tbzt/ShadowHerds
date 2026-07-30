@@ -71,7 +71,10 @@
   font-size: 0.95rem;
   line-height: 1;
   cursor: pointer;
-  border-radius: var(--radius);
+  /* --radius-sm : c'est un BOUTON. D11 (vagues 3-4) a tranché que boutons et
+     champs portent --radius-sm, --radius ne gardant que les encarts ; ce site
+     était le dernier bouton resté à l'ancien canon. */
+  border-radius: var(--radius-sm);
 }
 .nudge-close:hover {
   color: var(--text);
