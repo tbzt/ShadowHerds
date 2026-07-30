@@ -1602,10 +1602,35 @@ export const EncounterRenderer = {
       box.innerHTML = `<div class="cluster encounter-mode-head is-agir${modeEnter ? " mode-enter" : ""}">Agir · ${this._compactName(pnj.name)}</div>
         <div class="encounter-active-top">${this._activeTop(active, state)}</div>
         <div class="encounter-active-economy">${this._activeEconomy(active, model)}</div>`;
-      const offense = CardRenderer.offenseBlocks(pnj, CardRenderer.liveDeps());
+      const deps = CardRenderer.liveDeps();
+      const offense = CardRenderer.offenseBlocks(pnj, deps);
       if (offense != null) {
-        box.insertAdjacentHTML("beforeend", `<div class="stack stack--tight encounter-offense">${offense}</div>`);
+        // B3.1 (C-011) — ✦ Esprit / ✦ Bannir rejoignent le bloc SORTS.
+        //
+        // Mesuré : l'invocateur étant l'acteur ACTIF (mode « AGIR · HANGMAN »),
+        // `open-summon` sortait **0 fois** de tout l'overlay — alors qu'il
+        // apparaissait 3 fois ailleurs dans la page, sur les cartes du Hub. Pour
+        // invoquer, le MJ devait taper le nom dans la piste, ce qui appelle
+        // `focusCombatant` → `this.close()` : le cockpit se FERME, et il perd sa
+        // piste d'initiative des yeux. Bannir depuis la ligne coûte 2 gestes ; les
+        // deux verbes sont symétriques, leur coût allait de 1 à 4,5.
+        //
+        // ⚠️ Le commentaire de `_spiritChipRow` affirmait que ces affordances
+        // vivaient « aussi dans l'Agir du tracker (même renderer) ». C'était FAUX :
+        // les éditions l'ajoutent à `combatBody`, or la console ne monte pas la
+        // carte entière — elle compose `offenseBlocks`, qui ne la contient pas.
+        //
+        // On monte la primitive existante, sans la dupliquer et sans toucher un
+        // contrôleur : `open-summon` et `open-dismiss` sont déjà délégués sur
+        // `document`, donc ils tirent depuis l'overlay comme depuis le Hub.
+        const esprits = CardRenderer._spiritChipRow ? CardRenderer._spiritChipRow(pnj, deps) : "";
+        box.insertAdjacentHTML(
+          "beforeend",
+          `<div class="stack stack--tight encounter-offense">${offense}${esprits}</div>`,
+        );
       } else {
+        // Le repli ci-dessous rend la fiche COMPLÈTE, qui porte déjà la rangée
+        // d'esprits : ne pas l'ajouter ici, ce serait un doublon.
         // anarchy2 (offense sur mesure, pas encore recomposée) : repli sur la
         // fiche complète en vue Combat, comme avant V7 — sur un CLONE (applyView
         // écrit le pli, on ne veut pas polluer la carte bibliothèque).
