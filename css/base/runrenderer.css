@@ -31,9 +31,7 @@
 .run-card-header {
   padding: var(--sp-3) var(--sp-4) 0.6rem;
   border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
 }
 .run-type {
   font-family: var(--font-display);

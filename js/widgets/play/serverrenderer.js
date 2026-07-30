@@ -128,7 +128,7 @@ export const ServerRenderer = {
         </div>
         <details class="server-ic-details">
           <summary>CI présentes — sélection auto (Patrouilleuse toujours incluse), ou au choix :</summary>
-          <div id="srv-ic-choices" class="server-ic-choices">${icChips}</div>
+          <div id="srv-ic-choices" class="cluster server-ic-choices">${icChips}</div>
         </details>
       </div>`;
   },
@@ -147,12 +147,12 @@ export const ServerRenderer = {
         .map((a) => `<span class="server-attr"><b>${a.value}</b>${esc(a.label)}</span>`)
         .join("");
       return `
-        <div class="server-attrs">${badges}</div>
+        <div class="cluster server-attrs">${badges}</div>
         <div class="server-thresholds">${M.thresholdsText(srv)}</div>`;
     }
     const a = srv.attrs || {};
     return `
-      <div class="server-attrs">
+      <div class="cluster server-attrs">
         <span class="server-attr"><b>${srv.indice}</b>Indice</span>
         ${Matrix.ATTR_KEYS
           .map((ak) => `<span class="server-attr"><b>${a[ak.key] ?? "?"}</b>${ak.badge}</span>`)
@@ -217,7 +217,7 @@ export const ServerRenderer = {
         </div>
         ${this.paradigmBlock(srv)}
         ${this.paradigmImage(srv)}
-        <div class="server-ic-row">${chips}</div>
+        <div class="cluster server-ic-row">${chips}</div>
         ${intr.open ? this.intrusionPanel(srv, { icMonitorSize }) : ""}`;
 
     // Pied unifié (CardFooter) : même grammaire que PNJ/contacts. Intrusion
@@ -247,7 +247,7 @@ export const ServerRenderer = {
 
     card.innerHTML = `
       <div class="server-card-frame">
-        <div class="server-card-header">
+        <div class="cluster cluster--between server-card-header">
           <span class="server-name" title="${esc(srv.profile || "")}">${esc(srv.name)}</span>
           ${entryMode ? `<span class="server-badge" title="Point d'entrée : ${esc(entryMode.label)}">${esc(entryMode.glyph)}</span>` : ""}
           ${srv.isTarget ? `<span class="server-badge" title="Nœud-cible (${esc(Matrix.use(srv.edition).topologyTargetLabel())})">✱</span>` : ""}
@@ -258,7 +258,7 @@ export const ServerRenderer = {
           <textarea class="server-notes" placeholder="Notes…"
             data-action="edit-note" data-id="${srv.id}">${esc(srv.notes || "")}</textarea>
         </div>
-        ${CardFooter.render(footerActs, { footerClass: "server-card-footer" })}
+        ${CardFooter.render(footerActs, { footerClass: "cluster server-card-footer" })}
       </div>`;
     return card;
   },
@@ -302,10 +302,10 @@ export const ServerRenderer = {
 
     const attrsHtml = !Matrix.use(srv.edition).hasAttrs()
       ? ""
-      : `<div class="server-edit-row">
+      : `<div class="cluster server-edit-row">
             ${Matrix.ATTR_KEYS
               .map(
-                (ak) => `<label class="server-edit-attr" title="${ak.label}">${ak.badge}
+                (ak) => `<label class="stack server-edit-attr" title="${ak.label}">${ak.badge}
                   <input type="number" id="se-${id}-${ak.key}" min="1" max="15"
                     value="${(srv.attrs || {})[ak.key] || srv.indice}"></label>`,
               )
@@ -320,11 +320,11 @@ export const ServerRenderer = {
         const ic = catalog[k];
         const label = ic ? ic.label.replace(/^CI /, "") : k;
         if (k === "patrouilleuse") {
-          return `<div class="ic-edit-row fixed"><span>1. ${esc(label)}</span><small>toujours présente</small></div>`;
+          return `<div class="cluster cluster--between ic-edit-row fixed"><span>1. ${esc(label)}</span><small>toujours présente</small></div>`;
         }
-        return `<div class="ic-edit-row">
+        return `<div class="cluster cluster--between ic-edit-row">
           <span>${i + 1}. ${esc(label)}</span>
-          <span class="ic-edit-actions">
+          <span class="cluster ic-edit-actions">
             <button class="btn-icon-tiny" data-action="move-ic" data-id="${id}" data-k="${k}" data-n="-1" title="Déployée plus tôt">↑</button>
             <button class="btn-icon-tiny" data-action="move-ic" data-id="${id}" data-k="${k}" data-n="1" title="Déployée plus tard">↓</button>
             <button class="btn-icon-tiny danger" data-action="drop-ic" data-id="${id}" data-k="${k}" title="Retirer">✕</button>
@@ -339,32 +339,32 @@ export const ServerRenderer = {
       .join("");
 
     return `
-      <div class="server-edit">
-        <label class="server-edit-label">Nom
+      <div class="stack server-edit">
+        <label class="stack server-edit-label">Nom
           <input type="text" id="se-${id}-name" value="${esc(srv.name)}"></label>
-        <div class="server-edit-row">
-          <label class="server-edit-label">Profil
+        <div class="cluster server-edit-row">
+          <label class="stack server-edit-label">Profil
             <select id="se-${id}-profile">${profOpts}</select></label>
-          <label class="server-edit-label narrow">Indice
+          <label class="stack server-edit-label narrow">Indice
             <select id="se-${id}-indice">${indOpts}</select></label>
         </div>
         ${App.getEditionModule(srv.edition)?.secPhysBonus
           ? `<label class="ic-choice"><input type="checkbox" id="se-${id}-secphys" ${srv.secPhys ? "checked" : ""}>Gère la sécurité physique</label>`
           : ""}
-        <div class="server-edit-row">
-          <label class="server-edit-label">Point d'entrée
+        <div class="cluster server-edit-row">
+          <label class="stack server-edit-label">Point d'entrée
             <select id="se-${id}-entry">${entryOpts}</select></label>
         </div>
         <label class="ic-choice"><input type="checkbox" id="se-${id}-target" ${srv.isTarget ? "checked" : ""}>Nœud-cible (tient les ${esc(targetLabel)})</label>
         ${attrsHtml}
-        <label class="server-edit-label">Sculpture
+        <label class="stack server-edit-label">Sculpture
           <textarea id="se-${id}-sculpture" rows="3">${esc(srv.sculpture || "")}</textarea></label>
         <button class="btn-secondary btn-small" data-action="reroll-sculpture-edit" data-id="${id}">🎲 Relancer la sculpture</button>
-        <div class="server-edit-ics">
+        <div class="stack server-edit-ics">
           <span class="monitor-label">CI — ordre de déploiement</span>
           ${icRows}
           ${addOpts
-            ? `<div class="ic-edit-add">
+            ? `<div class="cluster ic-edit-add">
                 <select id="se-${id}-addic">${addOpts}</select>
                 <button class="btn-secondary btn-small" data-action="add-ic" data-id="${id}">＋ Ajouter</button>
               </div>`
@@ -443,13 +443,13 @@ export const ServerRenderer = {
         }
 
         return `<div class="ic-row ${isActive ? "on" : ""} ${st.down ? "dead" : ""}">
-          <div class="ic-row-head">
+          <div class="cluster ic-row-head">
             <span class="ic-row-name">${esc(label)}</span>
             ${status}
             ${launchBtn}
           </div>
           <div class="ic-row-effect">${ic.def ? `<b>Défense :</b> ${esc(ic.def)} — ` : ""}${esc(eff)}</div>
-          ${rolls ? `<div class="ic-row-rolls">${rolls}</div>` : ""}
+          ${rolls ? `<div class="cluster ic-row-rolls">${rolls}</div>` : ""}
           ${st.active || st.down || ic.watch ? `<div class="cluster monitor-row"><span class="monitor-label">Moniteur${Matrix.use(srv.edition).firewallLabel()}</span>${boxes}</div>` : ""}
         </div>`;
       })
@@ -464,7 +464,7 @@ export const ServerRenderer = {
 
     return `
       <div class="intrusion-panel">
-        <div class="intrusion-toolbar">
+        <div class="cluster intrusion-toolbar">
           <span class="intrusion-turn">Round <b>${intr.turn}</b></span>
           <button class="btn-secondary btn-small ${intr.alerted ? "alert-on" : ""}"
             data-action="set-alert" data-id="${srv.id}"
@@ -475,7 +475,7 @@ export const ServerRenderer = {
             : `<button class="btn-primary btn-small" data-action="next-turn" data-id="${srv.id}">Round suivant <svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>`}
           <button class="btn-icon" data-action="reset-intrusion" data-id="${srv.id}" title="Réinitialiser l'intrusion"><svg class="icon" aria-hidden="true"><use href="#ic-reset"></use></svg></button>
         </div>
-        <div class="ic-rows">${rows}</div>
+        <div class="stack ic-rows">${rows}</div>
         ${surveillance}
         ${this.varianceBlock(srv)}
       </div>`;
@@ -585,12 +585,12 @@ export const ServerRenderer = {
 
     return `
       <div class="ss-block">
-        <div class="ss-head">
+        <div class="cluster cluster--between ss-head">
           <span class="monitor-label">Score de Surveillance</span>
           <span class="ss-value ${zone}">${ss} / 40</span>
         </div>
         <div class="ss-gauge"><div class="ss-fill ${zone}" style="width:${pct}%"></div></div>
-        <div class="ss-actions">
+        <div class="cluster ss-actions">
           <span class="ss-actions-label" title="Après chaque action illégale : +succès de la défense">Défense :</span>
           ${[1, 2, 3, 4, 5]
             .map(
@@ -601,7 +601,7 @@ export const ServerRenderer = {
           <button class="btn-icon-tiny" data-action="undo-ss" data-id="${srv.id}" title="Annuler le dernier ajout">⌫</button>
           <button class="btn-icon-tiny" data-action="reset-ss" data-id="${srv.id}" title="Reboot du decker : SS à zéro"><svg class="icon" aria-hidden="true"><use href="#ic-reset"></use></svg></button>
         </div>
-        <div class="ss-actions">${sr5Extra}</div>
+        <div class="cluster ss-actions">${sr5Extra}</div>
         ${convergence}
         ${resonanceHint}
         ${log ? `<div class="ss-log">${log}</div>` : ""}
@@ -650,12 +650,12 @@ export const ServerRenderer = {
 
     return `
       <div class="ss-block">
-        <div class="ss-head">
+        <div class="cluster cluster--between ss-head">
           <span class="monitor-label">Variance des Fondations</span>
           <span class="ss-value ${zone}">${variance} / ${threshold}</span>
         </div>
         <div class="ss-gauge"><div class="ss-fill ${zone}" style="width:${pct}%"></div></div>
-        <div class="ss-actions">
+        <div class="cluster ss-actions">
           <span class="ss-actions-label" title="Agir hors du paradigme du serveur monte la Variance">Variance :</span>
           ${actions}
           <button class="btn-icon-tiny" data-action="undo-variance" data-id="${srv.id}" title="Annuler le dernier ajout">⌫</button>
@@ -680,17 +680,17 @@ export const ServerRenderer = {
 
     return `
       <div class="ss-block">
-        <div class="ss-head">
+        <div class="cluster cluster--between ss-head">
           <span class="monitor-label">Surveillance du DIEU (complications de Piratage)</span>
         </div>
-        <div class="ss-actions">
+        <div class="cluster ss-actions">
           ${stepper("Mineures", "minor", intr.minor, "Chaque complication mineure : +2 dés de risque minimum sur les tests de Piratage (hors cybercombat)")}
           ${stepper("Critiques", "critical", intr.critical, "Chaque complication critique : seuil de tous les tests de Piratage (hors cybercombat) +1")}
         </div>
         <div class="ss-effects ${riskMin || seuil ? "on" : ""}">
           Effets en cours : dés de risque minimum <b>${riskMin}</b> · seuil de Piratage <b>+${seuil}</b> (hors cybercombat)
         </div>
-        <div class="ss-actions">
+        <div class="cluster ss-actions">
           <button class="btn-secondary btn-small ${intr.converged ? "alert-on" : ""}"
             data-action="disaster" data-id="${srv.id}"
             title="Complication Désastre : le DIEU converge">${intr.converged ? "☠ Convergence !" : "Désastre…"}</button>

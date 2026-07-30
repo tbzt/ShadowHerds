@@ -19,7 +19,7 @@ export const RunRenderer = {
       : "";
     el.innerHTML = `
       <div class="run-card-frame">
-        <div class="run-card-header">
+        <div class="cluster run-card-header">
           <div class="run-type">${CardRenderer._esc(r.type)}</div>
           ${this._stateBadge(r)}
           <span class="pnj-rank-badge">${r.difficulte}</span>
