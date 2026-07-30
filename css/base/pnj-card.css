@@ -924,33 +924,6 @@
   color: var(--text-dim);
 }
 
-/* Clichés — Anarchy */
-.cliche-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-1);
-}
-.cliche-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 5px 9px;
-}
-.cliche-name {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--fs-base);
-  color: var(--text);
-}
-.cliche-dice {
-  font-family: var(--font-mono);
-  font-size: var(--fs-base);
-  color: var(--accent);
-}
-
 /* Moniteur de condition cliquable */
 
 .monitor-label {

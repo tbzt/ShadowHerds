@@ -1249,12 +1249,6 @@ input[type="range"]#risk-dice-slider {
 .edge-preroll:active {
   transform: scale(0.95);
 }
-/* dans la liste d'armes Anarchy, le badge s'aligne à droite */
-.anarchy-skill-row.weapon-rollable .anarchy-skill-pool {
-  display: inline-flex;
-  align-items: center;
-}
-
 .dice-summary-tag.limit {
   color: var(--accent2);
   border-color: var(--accent2);

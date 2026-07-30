@@ -177,14 +177,6 @@
   background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
-/* Clichés — boss en ambre */
-[data-edition^="anarchy"] .cliche-item.boss-cliche {
-  border-color: color-mix(in srgb, var(--accent2) 20%, transparent);
-}
-[data-edition^="anarchy"] .cliche-dice {
-  color: var(--accent);
-}
-
 /* Moniteur Anarchy : 2 cases légères / 1 grave / 1 incapacitante (p.68) */
 [data-edition^="anarchy"] .monitor-box.sev-leger.filled {
   background: #6e1800;
@@ -243,53 +235,6 @@
 }
 
 /* ---- Styles spécifiques Anarchy 2e ---- */
-.anarchy-skill-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
-
-.anarchy-skill-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sp-2);
-  padding: 2px 0;
-  border-bottom: 1px solid var(--border);
-}
-.anarchy-skill-row:last-child {
-  border-bottom: none;
-}
-.anarchy-skill-spec {
-  padding-left: 0.8rem;
-  opacity: 0.85;
-}
-
-.anarchy-skill-name {
-  font-size: var(--fs-xs);
-  color: var(--text);
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.anarchy-skill-spec .anarchy-skill-name {
-  color: var(--text-dim);
-  font-size: var(--fs-xs);
-}
-
-.anarchy-skill-pool {
-  font-family: "Share Tech Mono", monospace;
-  font-size: var(--fs-2xs);
-  color: var(--accent);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.anarchy-skill-spec .anarchy-skill-pool {
-  color: var(--accent2);
-}
-
 .anarchy-atout {
   font-size: var(--fs-xs);
   color: var(--text-dim);
