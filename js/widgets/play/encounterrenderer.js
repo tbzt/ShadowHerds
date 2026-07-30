@@ -2061,16 +2061,24 @@ export const EncounterRenderer = {
      de pose unitaire, donc déjà dans les doigts.
      ======================================================== */
 
-  /** Ouvre la pose de groupe. `state` = l'état de scène d'Encounter. */
-  openGroupStatusPanel(cibles, catalogue) {
+  /** Ouvre la pose de groupe. `state` = l'état de scène d'Encounter.
+      `preselection` = les combattants qui viennent d'encaisser (B3.3), résolus
+      par le contrôleur — ce rendu ne lit jamais l'état de scène lui-même. */
+  openGroupStatusPanel(cibles, catalogue, preselection = []) {
     this._ensureGroupStatusPanel();
     this._groupCibles = cibles;
     this._groupCatalogue = catalogue;
     this._groupChoix = null;
-    // Par défaut AUCUNE cible cochée : cocher est un acte, décocher une
-    // corvée — et poser un état sur toute la scène par inadvertance coûte
-    // plus cher que deux taps.
-    this._groupSel = new Set();
+    // B3.3 — la règle d'origine était : « par défaut AUCUNE cible cochée, cocher
+    // est un acte, décocher une corvée — poser un état sur toute la scène par
+    // inadvertance coûte plus cher que deux taps ». Elle reste vraie, et c'est
+    // pourquoi on ne coche PAS tout : on ne coche que ceux qui viennent
+    // d'encaisser CE round. La crainte visait la scène entière ; ici la
+    // proposition est étroite, motivée (une zone d'effet touche ceux qu'on vient
+    // de faire encaisser) et VISIBLE avant validation — le bouton dit sur combien
+    // de PNJ on pose, et décocher reste un tap. Sans encaissement récent, le
+    // panneau s'ouvre vide comme avant : la règle d'origine s'applique par défaut.
+    this._groupSel = new Set(preselection);
     this._renderGroupStatus();
     const p = document.getElementById("group-status-panel");
     p.removeAttribute("hidden");

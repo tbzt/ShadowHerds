@@ -537,7 +537,17 @@ export const Encounter = {
     // Les états d'accès direct d'abord, le reste ensuite — même hiérarchie que
     // la feuille unitaire, pour que le MJ retrouve ses repères.
     catalogue.sort((a, b) => (b.quick ? 1 : 0) - (a.quick ? 1 : 0));
-    EncounterRenderer.openGroupStatusPanel(cibles, catalogue);
+    // B3.3 — la présélection est calculée ICI et passée au rendu : le renderer
+    // reste pur (il reçoit des données résolues, il ne lit jamais l'état de scène).
+    // Une zone d'effet touche presque toujours ceux qu'on vient de faire encaisser.
+    const frais = new Set(
+      this.state.combatants.filter((c) => c.hurtRound === this.state.round).map((c) => c.pnjId),
+    );
+    EncounterRenderer.openGroupStatusPanel(
+      cibles,
+      catalogue,
+      cibles.filter((t) => frais.has(t.pnjId)).map((t) => t.pnjId),
+    );
   },
 
   /** Applique l'état choisi aux cibles cochées, au niveau I. Le niveau se
@@ -2156,6 +2166,18 @@ export const Encounter = {
     const cm = App.editionModule && App.editionModule.conditionMonitor;
     if (!pnj || !cm || !cm.applyDamage) return null;
     const res = cm.applyDamage(pnj, n, opts || {});
+    // B3.3 (C-015) — on retient QUI vient d'encaisser, pour que la pose de groupe
+    // puisse le proposer. Le constat affirmait que « Encounter garde déjà la trace
+    // des mutations de moniteur » : c'était faux, l'entrée de scène ne portait que
+    // `pnjId, init, hasActed, note`. Elle la garde maintenant.
+    //
+    // On stocke le NUMÉRO DE ROUND, pas un booléen : la marque se périme d'elle-même
+    // au round suivant (comparaison `=== state.round`), donc aucun point de remise à
+    // zéro à tenir — et aucun endroit où l'oublier. C'est de scène, jamais du PNJ.
+    // Ici et pas plus haut : `damageCombatant` est le point de passage UNIQUE des
+    // trois chemins de dégâts (chip Réagir, cran de gravité Anarchy, bilan de round).
+    const c = this._find(pnjId);
+    if (c && n > 0) c.hurtRound = this.state.round;
     Shadows.save();
     CardRenderer.refresh(pnj);
     this._render();
