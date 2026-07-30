@@ -52,14 +52,14 @@ export const MultiSelect = {
         : this._flatBody(options);
 
     return `
-      <div class="form-group ms" data-ms="${id}" data-empty="${this._esc(emptyLabel)}">
+      <div class="stack form-group ms" data-ms="${id}" data-empty="${this._esc(emptyLabel)}">
         <label>${label}${hint ? ` <span class="ms-hint" title="${this._esc(hint)}" aria-label="${this._esc(hint)}">ⓘ</span>` : ""}</label>
-        <div class="ms-control" tabindex="0" role="button" aria-haspopup="listbox" aria-expanded="false">
+        <div class="cluster ms-control" tabindex="0" role="button" aria-haspopup="listbox" aria-expanded="false">
           <div class="cluster ms-chips" data-ms-chips></div>
           <span class="ms-caret">▾</span>
         </div>
         <div class="ms-dropdown" role="listbox" aria-multiselectable="true" hidden>
-          <div class="ms-dropdown-tools">
+          <div class="cluster ms-dropdown-tools">
             <button type="button" class="ms-tool" data-ms-all>Tout</button>
             <button type="button" class="ms-tool" data-ms-none>Aucun</button>
           </div>
@@ -72,7 +72,7 @@ export const MultiSelect = {
     return options
       .map(
         (o) => `
-        <label class="ms-opt">
+        <label class="cluster ms-opt">
           <input type="checkbox" value="${this._esc(o)}">
           <span>${o}</span>
         </label>`,
@@ -86,7 +86,7 @@ export const MultiSelect = {
         const items = g.items
           .map(
             (i) => `
-            <label class="ms-opt ms-opt-child">
+            <label class="cluster ms-opt ms-opt-child">
               <input type="checkbox" value="${this._esc(i)}" data-ms-cat="${this._esc(g.cat)}">
               <span>${i}</span>
             </label>`,
@@ -94,7 +94,7 @@ export const MultiSelect = {
           .join("");
         return `
           <div class="ms-group">
-            <label class="ms-opt ms-group-head">
+            <label class="cluster ms-opt ms-group-head">
               <input type="checkbox" data-ms-cathead="${this._esc(g.cat)}">
               <span>${g.cat}</span>
             </label>

@@ -158,7 +158,7 @@ export const PersonaRenderer = {
     const alloc = pnj.persona.alloc || {};
     const inputs = keys
       .map(
-        (k) => `<div class="form-group">
+        (k) => `<div class="stack form-group">
           <label>${esc(k.label)} (dont ${alloc[k.key] || 0} répartis)</label>
           <input type="number" id="em-persona-alloc-${k.key}" value="${alloc[k.key] || 0}" min="-4" max="4">
         </div>`,

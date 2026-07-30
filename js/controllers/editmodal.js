@@ -120,7 +120,7 @@ export const EditModal = {
         Notes
         <button type="button" class="btn-icon-tiny" data-action="toggle-notes-mode" title="Lire / Éditer" aria-label="Lire / Éditer">✎</button>
       </div>
-      <div class="form-group">
+      <div class="stack form-group">
         <div class="notepad-read" id="em-notes-read"></div>
         <textarea id="em-notes" rows="3" data-mentions placeholder="Notes libres…">${esc(notes || "")}</textarea>
       </div>
@@ -235,7 +235,7 @@ export const EditModal = {
     let html = `<div class="modal-section">
       <div class="modal-section-title">Identité</div>
       <div class="modal-grid wide">
-        <div class="form-group full">
+        <div class="stack form-group full">
           <label>Nom</label>
           <input type="text" id="em-name" value="${esc(v.name)}">
         </div>
@@ -246,7 +246,7 @@ export const EditModal = {
       <div class="modal-grid">`;
     for (const [key, label] of fields) {
       const cur = s[key] ?? (key === "autosoft" ? s.pilote ?? "" : 0);
-      html += `<div class="form-group">
+      html += `<div class="stack form-group">
         <label>${label}</label>
         <input type="number" id="em-vstat-${key}" value="${cur}" min="0" max="30">
       </div>`;
@@ -279,15 +279,15 @@ export const EditModal = {
     return `<div class="modal-section">
       <div class="modal-section-title">Identité</div>
       <div class="modal-grid wide">
-        <div class="form-group full">
+        <div class="stack form-group full">
           <label>Nom</label>
           <input type="text" id="em-name" value="${esc(pnj.name)}">
         </div>
-        <div class="form-group full">
+        <div class="stack form-group full">
           <label>Joueur·se</label>
           <input type="text" id="em-player" value="${esc(pnj.player || "")}" placeholder="Nom à la table (optionnel)">
         </div>
-        <div class="form-group full">
+        <div class="stack form-group full">
           <label>Couleur</label>
           <div class="em-color-picker">
             ${colors
@@ -410,7 +410,7 @@ export const EditModal = {
             placeholder: "—",
           });
         }
-        return `<div class="form-group">
+        return `<div class="stack form-group">
           <label>${esc(f.label)}</label>
           <input type="number" id="em-tb-${f.key}" value="${pnj[f.key] ?? ""}">
         </div>`;
@@ -434,18 +434,18 @@ export const EditModal = {
     const kind =
       typeof block.monitorKind === "function" ? block.monitorKind() : block.monitorKind;
     if (kind === "double") {
-      return `<div class="form-group">
+      return `<div class="stack form-group">
           <label>Moniteur physique (cases)</label>
           <input type="number" id="em-tb-physMon" value="${pnj.physMon ?? ""}" min="0" max="30">
         </div>
-        <div class="form-group">
+        <div class="stack form-group">
           <label>Moniteur étourdissant (cases)</label>
           <input type="number" id="em-tb-stunMon" value="${pnj.stunMon ?? ""}" min="0" max="30">
         </div>`;
     }
     if (kind === "single") {
       const key = block.monitorMaxKey || "me";
-      return `<div class="form-group">
+      return `<div class="stack form-group">
         <label>Moniteur d'état (cases)</label>
         <input type="number" id="em-tb-${esc(key)}" value="${pnj[key] ?? ""}" min="0" max="30">
       </div>`;
@@ -729,7 +729,7 @@ export const EditModal = {
       .map((t) => {
         const bal = Campaign.balance(pnj.campaign, t.key);
         const suffix = t.glyph ? ` (${esc(t.glyph)})` : "";
-        return `<div class="form-group">
+        return `<div class="stack form-group">
           <label>${esc(t.label)}${suffix}</label>
           <input type="number" id="em-camp-${esc(t.key)}" value="${bal}">
         </div>`;
@@ -891,7 +891,7 @@ export const EditModal = {
     html += `<div class="modal-section">
       <div class="modal-section-title">Identité</div>
       <div class="modal-grid wide">
-        <div class="form-group full">
+        <div class="stack form-group full">
           <label>Nom</label>
           <input type="text" id="em-name" value="${CardRenderer._esc(pnj.name)}">
         </div>
@@ -928,7 +928,7 @@ export const EditModal = {
         placeholder: "—",
       });
     } else {
-      html += `<div class="form-group">
+      html += `<div class="stack form-group">
         <label>${ratingBadge.label}</label>
         <input type="number" id="em-prof" value="${pnj[ratingBadge.field]}" min="0" max="6">
       </div>`;
@@ -945,7 +945,7 @@ export const EditModal = {
 
     for (const k of attrKeys) {
       if (pnj.attrs[k] !== undefined) {
-        html += `<div class="form-group">
+        html += `<div class="stack form-group">
           <label>${k}</label>
           <input type="number" id="em-attr-${k}" value="${Actor.attr(pnj, k)}" min="1" max="12">
         </div>`;
@@ -957,7 +957,7 @@ export const EditModal = {
     // génération. min=0 (pas 1) : 0 = non magicien, valeur légitime.
     const magicAttr = App.getEditionModule(pnj.edition).magicAttr;
     if (magicAttr) {
-      html += `<div class="form-group">
+      html += `<div class="stack form-group">
         <label>${magicAttr}</label>
         <input type="number" id="em-attr-${magicAttr}" value="${Actor.attr(pnj, magicAttr)}" min="0" max="12">
       </div>`;
@@ -967,7 +967,7 @@ export const EditModal = {
     // générateur, exactement comme un magicien se pose via MAG > 0.
     const resonanceAttr = App.getEditionModule(pnj.edition).resonanceAttr;
     if (resonanceAttr) {
-      html += `<div class="form-group">
+      html += `<div class="stack form-group">
         <label>${resonanceAttr}</label>
         <input type="number" id="em-attr-${resonanceAttr}" value="${Actor.attr(pnj, resonanceAttr)}" min="0" max="12">
       </div>`;
@@ -984,7 +984,7 @@ export const EditModal = {
       Actor.attr(pnj, magicAttr) > 0 &&
       Actor.attr(pnj, resonanceAttr) > 0
     ) {
-      html += `<p class="form-group" style="color:var(--warning);font-size:.85em;">
+      html += `<p class="stack form-group" style="color:var(--warning);font-size:.85em;">
         ⚠ Ce personnage porte à la fois ${magicAttr} et ${resonanceAttr} — un être est normalement soit Éveillé, soit Émergé, jamais les deux.
       </p>`;
     }
@@ -992,7 +992,7 @@ export const EditModal = {
     // module d'édition — jamais de nom d'attribut figé côté contrôleur.
     const edgeKey = App.getEditionModule(pnj.edition).rerollAction?.costAttr;
     if (edgeKey && pnj.attrs[edgeKey] !== undefined) {
-      html += `<div class="form-group">
+      html += `<div class="stack form-group">
         <label>${edgeKey}</label>
         <input type="number" id="em-attr-${edgeKey}" value="${Actor.attr(pnj, edgeKey)}" min="0" max="7">
       </div>`;
@@ -1003,7 +1003,7 @@ export const EditModal = {
     // le concept — capacité de l'édition, pas contenu courant, même
     // correctif que l'Équipement). Hors esprits (sémantique distincte). ----
     if (App.getEditionModule(pnj.edition).hasEdges && pnj.type !== "spirit") {
-      const atoutsBody = `<div class="form-group">
+      const atoutsBody = `<div class="stack form-group">
           <label>Un edge par ligne</label>
           <textarea id="em-atouts" rows="5">${(pnj.edges || []).join("\n")}</textarea>
         </div>
@@ -1156,7 +1156,7 @@ export const EditModal = {
     // juste en dessous (D-ME-2b), sinon mix textarea+rows dans une section.
     html += `<div class="modal-section">
         <div class="modal-section-title">Équipement</div>
-        <div class="form-group">
+        <div class="stack form-group">
           <label>Un élément par ligne</label>
           <textarea id="em-equip" rows="4">${this._equipTextLines(pnj).join("\n")}</textarea>
         </div>

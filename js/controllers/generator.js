@@ -266,7 +266,7 @@ export const Gen = {
     html += this._groupLabel("Identité");
 
     if (!opts.hideName) {
-      html += `<div class="form-group">
+      html += `<div class="stack form-group">
         <label>Nom</label>
         <input type="text" id="${prefix}-name" placeholder="Aléatoire">
       </div>`;

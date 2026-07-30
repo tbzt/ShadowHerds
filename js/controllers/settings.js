@@ -141,7 +141,7 @@ export const Settings = {
         <button class="btn-primary" data-action="backup-export">Sauvegarder mes fiches</button>
         <button class="btn-secondary" data-action="backup-import">Importer une sauvegarde…</button>
       </div>
-      <div class="form-group" style="margin-top:1rem;">
+      <div class="stack form-group" style="margin-top:1rem;">
         <label>Synchronisation automatique entre appareils</label>
         <div class="radio-group">
           ${this._radioSync("none", "Aucune (sauvegarde manuelle)", sc.provider === "none")}
@@ -174,7 +174,7 @@ export const Settings = {
     </label>`;
   },
   _syncGistFields(sc) {
-    return `<div class="form-group sync-fields" style="margin-top:0.6rem;">
+    return `<div class="stack form-group sync-fields" style="margin-top:0.6rem;">
       <label for="sync_gist_token">Token GitHub (périmètre « gist »)</label>
       <input type="password" id="sync_gist_token" value="${CardRenderer._esc(sc.gist.token)}"
         placeholder="ghp_… ou github_pat_… (pas l'URL du gist)"
@@ -204,7 +204,7 @@ export const Settings = {
     </div>`;
   },
   _syncWebdavFields(sc) {
-    return `<div class="form-group sync-fields" style="margin-top:0.6rem;">
+    return `<div class="stack form-group sync-fields" style="margin-top:0.6rem;">
       <label for="sync_webdav_url">URL du fichier de sauvegarde</label>
       <input type="text" id="sync_webdav_url" value="${CardRenderer._esc(sc.webdav.url)}"
         placeholder="https://mon-nas.local/dav/shadowherds.json"
@@ -354,7 +354,7 @@ export const Settings = {
             data-action="toggle-portrait-gen">
         </div>
         <p class="settings-note">Génère un portrait au clic sur une carte PNJ, esprit, créature ou contact, et un plan de lieu depuis un topos. Nécessite une connexion internet ; le prompt part vers un service tiers.</p>
-        <div class="form-group" style="margin-top:0.6rem;">
+        <div class="stack form-group" style="margin-top:0.6rem;">
           <label for="pg_token">Token personnel Pollinations (optionnel)</label>
           <input type="password" id="pg_token" value="${CardRenderer._esc(pg.token)}"
             placeholder="Laisser vide pour rester en anonyme"

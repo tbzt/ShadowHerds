@@ -31,10 +31,6 @@
   margin-bottom: 1.25rem;
   padding-bottom: 0.6rem;
   border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  flex-wrap: wrap;
 }
 /* Sous-titre fonctionnel d'en-tête (CH-U3) : passe en pleine ligne sous le
    titre (flex-basis:100%), au-dessus du liseré. Police corps, non capitalisée,
@@ -87,8 +83,6 @@
   margin-top: 0;
 }
 .form-group {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-1);
 }
 .form-group label {
@@ -155,9 +149,7 @@
    ou la valeur choisie (ss) */
 .ms-control,
 .ss-control {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   min-height: 2rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -260,8 +252,8 @@
   display: none;
 }
 .ms-dropdown-tools {
-  display: flex;
-  gap: var(--sp-2);
+  align-items: stretch;
+  flex-wrap: nowrap;
   padding: 0.4rem 0.6rem;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
@@ -300,9 +292,7 @@
 
 /* Options */
 .ms-opt {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   padding: 0.28rem 0.7rem;
   cursor: pointer;
   font-size: var(--fs-sm);
@@ -341,11 +331,8 @@
 }
 
 .gen-actions {
-  display: flex;
   gap: var(--sp-3);
   margin-bottom: var(--sp-5);
-  flex-wrap: wrap;
-  align-items: center;
 }
 /* Le libellé « Nombre » garde sa largeur ; les boutons d'action étirent leur
    rangée (pas de bouton seul collé à gauche après un retour à la ligne, pas de
@@ -374,9 +361,7 @@
 }
 /* #54 : le nombre à générer, variable de génération posée à côté de « Générer ». */
 .gen-count {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: nowrap;
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   letter-spacing: 0.15em;

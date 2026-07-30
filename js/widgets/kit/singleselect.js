@@ -55,9 +55,9 @@ export const SingleSelect = {
         ? `<input type="text" class="ss-search" placeholder="Filtrer…" autocomplete="off" spellcheck="false">`
         : "";
 
-    return `<div class="form-group ss" data-ss="${id}" data-placeholder="${this._esc(placeholder)}">
+    return `<div class="stack form-group ss" data-ss="${id}" data-placeholder="${this._esc(placeholder)}">
       ${label ? `<label>${label}</label>` : ""}
-      <div class="ss-control ms-control" tabindex="0" role="button" aria-haspopup="listbox" aria-expanded="false">
+      <div class="cluster ss-control ms-control" tabindex="0" role="button" aria-haspopup="listbox" aria-expanded="false">
         <span class="ss-value" data-ss-value>${selected ? this._esc(selected.label) : placeholder}</span>
         <span class="ss-caret ms-caret">▾</span>
       </div>
@@ -75,7 +75,7 @@ export const SingleSelect = {
         const dataAttrs = Object.entries(o.data || {})
           .map(([k, v]) => ` data-${k}="${this._esc(v)}"`)
           .join("");
-        return `<div class="ss-opt ms-opt${o.value === value ? " active" : ""}"
+        return `<div class="cluster ss-opt ms-opt${o.value === value ? " active" : ""}"
           role="option" tabindex="-1" data-value="${this._esc(o.value)}"${dataAttrs}>${this._esc(o.label)}</div>`;
       })
       .join("");
@@ -90,12 +90,12 @@ export const SingleSelect = {
       .map((g) => {
         const items = g.items
           .map(
-            (o) => `<div class="ss-opt ms-opt ms-opt-child${o.value === value ? " active" : ""}"
+            (o) => `<div class="cluster ss-opt ms-opt ms-opt-child${o.value === value ? " active" : ""}"
               role="option" tabindex="-1" data-value="${this._esc(o.value)}">${this._esc(o.label)}</div>`,
           )
           .join("");
         return `<div class="ms-group">
-          <div class="ms-opt ms-group-head" role="presentation">${this._esc(g.category)}</div>
+          <div class="cluster ms-opt ms-group-head" role="presentation">${this._esc(g.category)}</div>
           <div class="ms-group-items">${items}</div>
         </div>`;
       })

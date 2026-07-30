@@ -394,7 +394,7 @@
 
         <!-- OMBRES PORTÉES — hub transverse (dossiers × types) -->
         <div class="panel active" id="panel-shadows">
-          <div class="panel-title">Ombres portées<span class="panel-subtitle">vos PNJ, contacts et serveurs sauvegardés</span></div>
+          <div class="cluster panel-title">Ombres portées<span class="panel-subtitle">vos PNJ, contacts et serveurs sauvegardés</span></div>
           <div id="hub-save-reminder"></div>
           <!-- A4-bis.1 (VISION_MONDE_ET_JEU §4.1) : le Monde n'a plus de dossiers.
                La barre de dossiers (une notion du JEU — campagne/run/scène) quitte
@@ -449,7 +449,7 @@
              transverse (DossierBar, CH-A3 polish) : grille propre (socle
              Collection), sidebar partagée. -->
         <div class="panel" id="panel-characters">
-          <div class="panel-title">Personnages<span class="panel-subtitle">vos personnages-joueurs sauvegardés</span></div>
+          <div class="cluster panel-title">Personnages<span class="panel-subtitle">vos personnages-joueurs sauvegardés</span></div>
           <div class="shadows-layout" data-sidebar="characters">
             <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="characters"></div>
             <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="characters" title="Afficher les dossiers"
@@ -485,7 +485,7 @@
 
         <!-- GÉNÉRATEUR PNJ -->
         <div class="panel" id="panel-generator">
-          <div class="panel-title"><span class="aro-tag">//AR</span>Générateur de PNJ</div>
+          <div class="cluster panel-title"><span class="aro-tag">//AR</span>Générateur de PNJ</div>
           <!-- A4-bis.3a (§4.1) : plus de « Dossier cible » — un PNJ généré rejoint
                le Monde (bibliothèque), sans rangement de dossier. -->
           <div class="shadows-layout">
@@ -493,8 +493,8 @@
               <!-- Générateur unique : le nombre est une variable de génération
                    (1 = un PNJ, N = une bande). Plus d'onglet individuel/groupe. -->
               <div class="gen-form" id="gen-form-single"></div>
-              <div class="gen-actions">
-                <label class="gen-count">Nombre
+              <div class="cluster gen-actions">
+                <label class="cluster gen-count">Nombre
                   <input type="number" id="sg-count" min="1" max="20" value="1" inputmode="numeric" aria-label="Nombre de PNJ à générer">
                 </label>
                 <button class="btn-primary" data-tour="gen-generate" data-action="generate">Générer</button>
@@ -508,7 +508,7 @@
 
         <!-- CONTACTS (génération) -->
         <div class="panel" id="panel-contacts">
-          <div class="panel-title">Contacts</div>
+          <div class="cluster panel-title">Contacts</div>
           <!-- A4-bis.3a (§4.1) : plus de « Dossier cible » — un contact généré
                rejoint le Monde (bibliothèque), sans rangement de dossier. -->
           <div class="shadows-layout">
@@ -528,7 +528,7 @@
 
         <!-- SERVEURS (génération) -->
         <div class="panel" id="panel-matrix">
-          <div class="panel-title">Serveurs & CI</div>
+          <div class="cluster panel-title">Serveurs & CI</div>
           <!-- A4-bis.3a (§4.1) : plus de « Dossier cible » — un serveur créé
                rejoint le Monde (bibliothèque), sans rangement de dossier. -->
           <div class="shadows-layout">
@@ -549,7 +549,7 @@
 
         <!-- TOPOS — amorces de mission (id `run` interne, historique) -->
         <div class="panel" id="panel-run">
-          <div class="panel-title">Générateur de topos<span class="panel-subtitle">amorces de mission — client, lieu, complication</span></div>
+          <div class="cluster panel-title">Générateur de topos<span class="panel-subtitle">amorces de mission — client, lieu, complication</span></div>
           <div class="shadows-layout" data-sidebar="run">
             <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="run"></div>
             <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="run" title="Afficher les dossiers"
@@ -576,7 +576,7 @@
              pendant « monde Jouer » du hub « monde Créer ». Contenu rendu par
              Play (js/controllers/play.js) depuis Dossiers + l'état vivant. -->
         <div class="panel" id="panel-play">
-          <div class="panel-title">Jouer<span class="panel-subtitle">vos campagnes, runs et la scène en cours</span></div>
+          <div class="cluster panel-title">Jouer<span class="panel-subtitle">vos campagnes, runs et la scène en cours</span></div>
           <div id="play-content"></div>
         </div>
 
@@ -587,7 +587,7 @@
 
         <!-- PARAMÈTRES -->
         <div class="panel" id="panel-settings">
-          <div class="panel-title">Paramètres</div>
+          <div class="cluster panel-title">Paramètres</div>
           <div id="settings-panel-content"></div>
         </div>
 

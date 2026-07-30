@@ -1417,7 +1417,7 @@ export const ScenarioGraph = {
     if (!panel) return null;
     this._el = panel;
     panel.innerHTML = `
-        <div class="panel-title">Trames<span class="panel-subtitle">construire et relier vos scènes à l'avance</span></div>
+        <div class="cluster panel-title">Trames<span class="panel-subtitle">construire et relier vos scènes à l'avance</span></div>
         <div class="cluster scenario-header">
           <!-- Zone 1 — IDENTITÉ : quelle trame, + le menu de gestion (rarement
                touché en plein travail, donc replié dans ▾). -->

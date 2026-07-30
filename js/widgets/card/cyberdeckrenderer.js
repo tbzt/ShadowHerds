@@ -187,20 +187,20 @@ export const CyberdeckRenderer = {
     const keys = Cyberdeck.attrKeys(edition);
     const attrInputs = keys
       .map(
-        (k) => `<div class="form-group">
+        (k) => `<div class="stack form-group">
           <label>${esc(k.label)}</label>
           <input type="number" id="em-deck-attr-${k.key}" value="${deck.attrs[k.key] ?? 0}" min="0" max="12">
         </div>`,
       )
       .join("");
     const rerollInput = Cyberdeck.hasReroll(edition)
-      ? `<div class="form-group">
+      ? `<div class="stack form-group">
           <label>Relance (échecs Hacking)</label>
           <input type="number" id="em-deck-reroll" value="${deck.reroll || 0}" min="0" max="5">
         </div>`
       : "";
     const biofeedbackInput = Cyberdeck.hasBiofeedbackFilter(edition)
-      ? `<div class="form-group">
+      ? `<div class="stack form-group">
           <label><input type="checkbox" id="em-deck-biofeedback" ${deck.biofeedbackFilter ? "checked" : ""}> Filtre de biofeedback</label>
         </div>`
       : "";
@@ -211,7 +211,7 @@ export const CyberdeckRenderer = {
     const catalog = Cyberdeck.catalog(edition);
     const equipped = new Set(Cyberdeck.loadout(edition, deck).map((a) => a.key));
     const loadoutInput = catalog.length
-      ? `<div class="form-group full">
+      ? `<div class="stack form-group full">
           <label>Actions matricielles équipées (râtelier)</label>
           <div class="cluster deck-loadout-picker">
             ${catalog
@@ -226,7 +226,7 @@ export const CyberdeckRenderer = {
     return `<div class="modal-section">
       <div class="modal-section-title">${esc(Cyberdeck.label(edition))}</div>
       <div class="modal-grid">
-        <div class="form-group full">
+        <div class="stack form-group full">
           <label>Modèle</label>
           <input type="text" id="em-deck-name" value="${esc(deck.name || "")}" placeholder="Ex. Shiawase Cyber-5">
         </div>
@@ -254,7 +254,7 @@ export const CyberdeckRenderer = {
     // Entrées non catalogue = programmes libres/legacy → textarea « autres ».
     const custom = (deck.programs || []).filter((p) => !catalogNames.has(p));
     const picker = catalog.length
-      ? `<div class="form-group full">
+      ? `<div class="stack form-group full">
           <label>Programmes chargés</label>
           <div class="cluster deck-loadout-picker">
             ${catalog
@@ -271,7 +271,7 @@ export const CyberdeckRenderer = {
       ? "Autres programmes (un par ligne)"
       : "Programmes (un par ligne — choisis hors scène)";
     return `${picker}
-      <div class="form-group">
+      <div class="stack form-group">
         <label>${customLabel}</label>
         <textarea id="em-deck-programs" rows="${catalog.length ? 2 : 3}">${esc(custom.join("\n"))}</textarea>
       </div>`;
