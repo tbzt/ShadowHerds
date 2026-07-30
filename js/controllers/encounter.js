@@ -162,6 +162,14 @@ export const Encounter = {
       note: "",
     });
     this._commit();
+    // B3.5 (C-002) — « l'initiative de table », sans nouvelle machinerie. Le
+    // dossier demandait un second champ dans la modale d'ajout ; `Dialog.prompt`
+    // n'en porte qu'un et son retour est une CHAÎNE, partagé par toutes les
+    // modales de l'app — l'étendre pour ce lot aurait modifié un primitif commun
+    // au lieu d'utiliser celui qui existe. Le dépôt a déjà le bon geste, écrit
+    // pour la rafale de « ＋ Équipe » : on pose le curseur dans le champ d'init
+    // du PJ qu'on vient de créer. Le joueur annonce, le MJ tape, rien à écraser.
+    EncounterRenderer.focusNextPJInit();
   },
 
   /** #17 : combattant ad-hoc jetable — une ligne « nom + compteur libre »
@@ -1398,6 +1406,22 @@ export const Encounter = {
     const spec = App.editionModule && App.editionModule.initiativeFor(pnj);
     if (!spec) {
       if (!silent) toast("Pas d'initiative chiffrée pour cette édition — classez ce PNJ manuellement (▲▼).");
+      return false;
+    }
+    // B3.5 (C-002) — UN SPEC VIDE N'EST PAS UN SPEC. Un PJ léger (`pcLight`, créé
+    // par « ＋ Ajouter un PJ ») n'a pas d'attributs : `initiativeFor` lui renvoie
+    // `{}`, qui passait ce `if` sans encombre. Deux lignes plus bas,
+    // `spec.base - malus` valait donc `NaN` et `spec.dice` `undefined` — le jet
+    // partait sur des entrées cassées et rendait un simple 1D6. C'est l'origine
+    // exacte des « 4 scores inventés pour 4 PJ » : mesuré 6/3/2/1 ici, 6/6/4/2
+    // dans l'audit — tous ≤ 6, aucun n'était autre chose qu'un dé nu.
+    //
+    // Le code disait déjà la règle deux cents lignes plus haut (`_initFor`) :
+    // « les joueurs annoncent, l'app propose ». Elle n'était simplement pas
+    // appliquée ici. On ne fabrique plus : la ligne reste en saisie manuelle,
+    // et le champ d'init de la ligne EST le chemin (steppers compris).
+    if (spec.base == null || spec.dice == null) {
+      if (!silent) toast(`${pnj.name} — à la table, le joueur annonce son initiative : saisissez-la sur sa ligne.`);
       return false;
     }
     // DiceRoller pose pnj.lastInit (champ neutre, déjà utilisé par les
