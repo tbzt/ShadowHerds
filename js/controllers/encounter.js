@@ -793,6 +793,29 @@ export const Encounter = {
       return false;
     }
 
+    // B3.4 (C-016) — INSTANTANÉ de reprise, pris avant toute mutation.
+    //
+    // Pourquoi un instantané et pas une inversion effet par effet : `_trackAim`
+    // est PLAFONNÉ (`oncePerRound`, `aimMax`). Mesuré — deux « Ajuster » de suite
+    // donnent `minor` 1 puis 2, mais `aim` reste à 1 : le second tap a coûté sans
+    // rien donner. Un « annuler » qui retrancherait ce qu'il croit avoir ajouté
+    // rendrait donc un ajustement de trop. On restitue l'état d'avant, on ne
+    // recalcule pas — même raisonnement que le retrait annulable de B1.4.
+    //
+    // LIFO, et c'est assumé : on ne mémorise que la DERNIÈRE action. Restituer
+    // un `actionsUsed` plus ancien effacerait au passage les actions jouées
+    // depuis. C'est aussi le besoin décrit — « un MJ se reprend souvent en cours
+    // d'annonce », donc sur le geste qu'il vient de faire.
+    const reprise = {
+      key,
+      actionsUsed: JSON.parse(JSON.stringify(c.actionsUsed || {})),
+      recoil: c.recoil,
+      aim: c.aim,
+      aimRound: c.aimRound,
+      lastAction: c.lastAction,
+      statuses: [],
+    };
+
     // F3 — le coût débité est le coût RÉEL : celui du contrat, plus les
     // surtaxes d'état inconditionnelles (Couvert « Attaquer à couvert nécessite
     // une action mineure supplémentaire »). Les surtaxes conditionnelles
@@ -822,12 +845,14 @@ export const Encounter = {
       const avant = Statuses.level(pnj, st.status);
       const apres = Statuses.set(pnj, st.status, st.level);
       if (apres === avant) continue;
+      reprise.statuses.push({ status: st.status, avant }); // B3.4 : le niveau d'AVANT
       poses.push(st.level ? `${nom}${st.note ? ` (${st.note})` : ""}` : `retire ${nom}`);
     }
     // F5 — la dernière action jouée porte ses greffons d'Atout (rangée sous les
     // jetons). Mémorisée dans la scène : c'est un fait de tour, pas du PNJ.
     c.lastAction = key;
     this._trackAim(c, pnj, key);
+    c.lastActionUndo = reprise; // B3.4 — le chemin de retour, désormais ouvert
 
     if (poses.length) {
       Shadows.save();
@@ -853,10 +878,51 @@ export const Encounter = {
         })
         .filter(Boolean);
       const sous = peut.length ? ` ⚠ ${peut.join(" · ")} — à vous de trancher` : "";
-      toast(`${entry.name} — ${pnj.name} (${over ? "budget dépassé — " : ""}${cout}${dus})${etats}${avert}${sous}`);
+      // B3.4 — le retour vit DANS le retour de l'action, pas dans une seconde
+      // affordance. Le dossier proposait « un second tap sur l'action la
+      // retire » : ç'aurait cassé la déclaration LÉGITIME d'une même action deux
+      // fois dans un tour. Le défaut mesuré n'était pas que les actions
+      // s'additionnent — c'est correct — mais qu'AUCUN chemin de retour
+      // n'existe (cherché sur tout l'overlay, pas seulement la fiche active :
+      // zéro affordance). Même primitive que le retrait de B1.4.
+      toastUndo(
+        `${entry.name} — ${pnj.name} (${over ? "budget dépassé — " : ""}${cout}${dus})${etats}${avert}${sous}`,
+        () => this.undoAction(pnjId),
+      );
     }
     this._commit();
     return over;
+  },
+
+  /** B3.4 (C-016) — reprend la dernière action déclarée : rend son coût, ses
+      états, son recul et son ajustement. Restitue l'instantané pris par
+      `useAction` au lieu de retrancher ce qu'elle croit avoir ajouté — la seule
+      façon correcte, les effets plafonnés (`_trackAim`) n'étant pas inversibles.
+      Sans effet si la dernière action a déjà été reprise, ou si le tour a changé
+      d'acteur entre-temps (l'instantané meurt avec `lastAction`, cf. `nextTurn`). */
+  undoAction(pnjId) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    const u = c && c.lastActionUndo;
+    if (!u) return false;
+    c.actionsUsed = u.actionsUsed;
+    if (u.recoil === undefined) delete c.recoil;
+    else c.recoil = u.recoil;
+    if (u.aim === undefined) delete c.aim;
+    else c.aim = u.aim;
+    if (u.aimRound === undefined) delete c.aimRound;
+    else c.aimRound = u.aimRound;
+    if (u.lastAction === undefined) delete c.lastAction;
+    else c.lastAction = u.lastAction;
+    if (pnj && u.statuses.length) {
+      for (const s of u.statuses) Statuses.set(pnj, s.status, s.avant);
+      Shadows.save();
+      CardRenderer.refresh(pnj);
+    }
+    delete c.lastActionUndo; // une reprise, pas un cliquet
+    EncounterRenderer._activeCardId = null; // le budget a changé → re-rendre la fiche
+    this._commit();
+    return true;
   },
 
   /* ========================================================
@@ -1565,7 +1631,13 @@ export const Encounter = {
     const cs = this.state.combatants;
     if (!cs.length) return;
     const current = cs[this.state.turnIndex];
-    if (current) current.hasActed = true;
+    if (current) {
+      current.hasActed = true;
+      // B3.4 — la reprise se ferme avec le tour. `_resetActions` ne suffit pas :
+      // il remet à neuf l'acteur ENTRANT (« budget frais au début du tour »),
+      // jamais le sortant — mesuré, l'instantané survivait au passage de tour.
+      delete current.lastActionUndo;
+    }
 
     const next = this._nextEligibleIndex(this.state.turnIndex);
     if (next !== -1) {
@@ -1921,6 +1993,10 @@ export const Encounter = {
       // rangée de greffons de la dernière action.
       delete c.edgeCancels;
       delete c.lastAction;
+      // B3.4 — l'instantané de reprise meurt avec le tour qu'il décrit. Le
+      // budget est remis à neuf trois lignes plus haut : le restituer après coup
+      // rendrait un `actionsUsed` d'un tour révolu.
+      delete c.lastActionUndo;
       c.narrationBonus = false;
       // Échanges du tour (E5) : le budget se recharge, les troc aussi.
       delete c.actionsTraded;
