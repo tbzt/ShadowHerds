@@ -145,23 +145,46 @@ export const Encounter = {
       pour distinguer visuellement la ligne sans dépendre de `Characters`.
       Saisie du nom via le Dialog interne (jamais de prompt() natif). */
   async addPJ() {
-    const name = await Dialog.prompt({
-      title: "Ajouter un PJ",
-      label: "Nom du PJ",
-      placeholder: "Nom du personnage joueur",
+    const saisie = await Dialog.prompt({
+      title: "Ajouter un ou plusieurs PJ",
+      label: "Nom du PJ — séparez par une virgule pour en ajouter plusieurs",
+      placeholder: "Kestrel, Rook, Vega…",
       confirmLabel: "Ajouter",
     });
-    if (name === null) return;
-    const pnj = Characters.addLight(name);
-    if (!pnj) return;
-    this.state.combatants.push({
-      pnjId: pnj.id,
-      kind: "pj",
-      init: null,
-      hasActed: false,
-      note: "",
-    });
+    if (saisie === null) return;
+    // B3.6 (C-005) — TOUTE LA TABLE EN UN GESTE. Mesuré par l'audit : 3 gestes
+    // par PJ (ouvrir, saisir, valider), soit 22 pour les 7 PJ d'une scène dense,
+    // contre UNE interaction pour mettre 12 PNJ générés en piste. Le raccourci
+    // « ＋ Équipe » existait déjà mais suppose une équipe constituée ailleurs :
+    // invisible pour une première scène, donc sans effet le jour où ça compte.
+    //
+    // Une virgule suffit — pas de second champ, pas de modale à étages. Un nom
+    // vide (double virgule, virgule finale) est ignoré plutôt que de créer un PJ
+    // sans nom ; les doublons ne sont pas dédupliqués, deux joueurs peuvent
+    // légitimement annoncer le même surnom et c'est au MJ de trancher, pas à
+    // l'app. UN seul commit pour toute la fournée (la liste ne se reconstruit
+    // pas N fois), et le curseur atterrit sur le premier champ d'init vide.
+    const noms = saisie
+      .split(",")
+      .map((n) => n.trim())
+      .filter(Boolean);
+    if (!noms.length) return;
+    let ajoutes = 0;
+    for (const nom of noms) {
+      const pnj = Characters.addLight(nom);
+      if (!pnj) continue;
+      this.state.combatants.push({
+        pnjId: pnj.id,
+        kind: "pj",
+        init: null,
+        hasActed: false,
+        note: "",
+      });
+      ajoutes++;
+    }
+    if (!ajoutes) return;
     this._commit();
+    if (ajoutes > 1) toast(`${ajoutes} PJ ajoutés — annoncez vos initiatives.`);
     // B3.5 (C-002) — « l'initiative de table », sans nouvelle machinerie. Le
     // dossier demandait un second champ dans la modale d'ajout ; `Dialog.prompt`
     // n'en porte qu'un et son retour est une CHAÎNE, partagé par toutes les
