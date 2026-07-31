@@ -89,6 +89,12 @@ export const Play = {
           if (typeof ScenarioStore !== "undefined" && el.dataset.scenario && el.dataset.node)
             ScenarioStore.patchRuntime(el.dataset.scenario, { currentSceneId: el.dataset.node });
           break;
+        case "play-trame-back":
+          // Revenir sur ses pas : dépile le fil (jamais un 2ᵉ patchRuntime, qui
+          // ré-empilerait). Le re-render vient de l'abonnement, comme le goto.
+          if (typeof ScenarioStore !== "undefined" && el.dataset.scenario)
+            ScenarioStore.stepBack(el.dataset.scenario);
+          break;
         case "play-trame-clock":
           // S5a — monter/baisser une horloge en live. PATCH-IN-PLACE (feel JOUÉ,
           // pas écrit) : on peint la case dans le nœud DOM existant → la transition
@@ -672,6 +678,7 @@ export const Play = {
     </div>`;
     return `<div class="play-trame">${head}
       <div class="cluster play-trame-current" data-t="${cur.type}">
+        ${this._trameBackHtml(sc)}
         <span class="play-trame-cur-glyph" aria-hidden="true">${g}</span>
         <span class="play-trame-cur-title">${esc(cur.title || "(sans titre)")}</span>
       </div>
@@ -728,7 +735,7 @@ export const Play = {
       : "";
     return `<div class="play-trame is-bar"${tintBar}>${head}
       <div class="cluster play-trame-bar">
-        ${this._trailHtml(sc)}
+        ${this._trameBackHtml(sc)}${this._trailHtml(sc)}
         <span class="play-trame-cur-glyph" aria-hidden="true"${tintG}>${g}</span>
         <span class="play-trame-cur-title">${esc(cur.title || "(sans titre)")}</span>
         ${suite}
@@ -736,6 +743,23 @@ export const Play = {
       ${cur.body ? `<p class="play-trame-cur-body">${esc(cur.body)}</p>` : ""}
       ${bang}
     </div>`;
+  },
+
+  /** ↩ revenir à l'étape précédente — rendu seulement s'il y a un AVANT dans le
+      fil parcouru (une trame qui vient de commencer n'a nulle part où revenir).
+      Nomme sa destination : on revient à une scène précise, pas « en arrière ».
+      Même registre que le ↩ du résumé de round : réversible, sans limite de temps. */
+  _trameBackHtml(sc) {
+    // ⚠ `slice(-2)[0]` sur un fil d'UNE étape rend cette étape elle-même (et le
+    // ↩ proposerait de revenir là où l'on est déjà) : exiger deux étapes, le
+    // même seuil que `stepBack`, sinon l'affordance ment.
+    const path = ScenarioStore.visited(sc);
+    if (path.length < 2) return "";
+    const prevId = path[path.length - 2];
+    const prev = sc.sceneNodes.find((n) => n.id === prevId);
+    if (!prev) return "";
+    const name = CardRenderer._esc(prev.title || "(sans titre)");
+    return `<button class="play-trame-back" data-action="play-trame-back" data-scenario="${sc.id}" title="Revenir à « ${name} »" aria-label="Revenir à l'étape précédente : ${name}">↩</button>`;
   },
 
   /** Le fil PARCOURU (runtime `ScenarioStore.visited`) rendu en glyphes de type —

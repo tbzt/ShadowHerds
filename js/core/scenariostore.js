@@ -668,6 +668,26 @@ export const ScenarioStore = {
     if (out[out.length - 1] !== nodeId) out.push(nodeId);
     return out.length > 64 ? out.slice(out.length - 64) : out;
   },
+  /** Revient à l'étape précédente du chemin parcouru : DÉPILE au lieu de poser
+      (`patchRuntime` empilerait, et le fil grossirait A›B›A au lieu de revenir
+      à A). Le retour d'un mé-tap ne doit pas laisser de trace dans le passé
+      joué. Ne touche que `runtime`, et rien d'autre du runtime que le fil et
+      l'étape courante : horloges, présages et sorties fermées survivent — on
+      revient sur ses pas, on ne rembobine pas la séance. `false` quand il n'y a
+      pas d'avant (le cockpit n'affiche alors pas le geste). */
+  stepBack(scId) {
+    const sc = this.get(scId);
+    const path = this.visited(sc);
+    if (path.length < 2) return false;
+    const out = path.slice(0, -1);
+    sc.runtime = Object.assign({}, sc.runtime, {
+      visitedIds: out,
+      currentSceneId: out[out.length - 1],
+    });
+    this.save();
+    this._emit({ scenarioId: scId, kind: "runtime", op: "patch", id: scId });
+    return true;
+  },
   /** Le chemin parcouru en partie (runtime) — ordonné, linéaire par construction. */
   visited(sc) {
     return sc && sc.runtime && Array.isArray(sc.runtime.visitedIds) ? sc.runtime.visitedIds : [];

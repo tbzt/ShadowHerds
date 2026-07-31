@@ -999,6 +999,26 @@
   flex: 0 0 auto;
 }
 .play-trame-bar .play-trame-cur-title { flex: 1; min-width: 0; }
+/* ↩ revenir à l'étape précédente — discret au repos comme le fil qu'il prolonge,
+   il s'anime au survol seulement (le geste est rare, il ne réclame rien). */
+.play-trame-back {
+  flex: 0 0 auto;
+  min-width: var(--hit-min);
+  min-height: var(--hit-min);
+  padding: 0 var(--sp-1);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-dim);
+  font-size: var(--fs-base);
+  line-height: 1;
+  cursor: pointer;
+}
+.play-trame-back:hover,
+.play-trame-back:focus-visible {
+  border-color: var(--border);
+  color: var(--text);
+}
 .play-suite { flex-basis: 100%; }
 .play-suite > summary {
   list-style: none;
