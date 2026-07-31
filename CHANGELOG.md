@@ -12,6 +12,28 @@ commit.
 
 ## [Non publié]
 
+### Corrigé
+
+- **Les armes du « Bazar de l'Hexagone » portent enfin les chiffres du
+  livre.** Ce supplément manquait au disque : une trentaine d'armes
+  françaises avaient été transcrites de mémoire, dans une grammaire que le
+  parseur ne savait pas lire, puis *reconstruites* — avec un avertissement
+  honnête disant qu'un score offensif pouvait rester faux d'un rang. Le
+  livre a été retrouvé et tout a été recoupé, ligne à ligne.
+
+  Trois scores étaient effectivement faux d'un rang (Manurhin sniper, Esprit
+  Pilum, pistolets Cartier), trois autres avaient perdu leur troisième bande
+  de portée (les deux Monobe PMAS-70 et le Lille36), et le Manurhin à canon
+  court n'avait ni dégâts ni score du tout. Huit armes étaient rangées dans
+  la mauvaise catégorie : l'Esprit Gladius est une **mitraillette** de VD 3P
+  en SA/TR, pas une mitrailleuse « VD 5A » — cette valeur n'a jamais existé,
+  c'était la colonne voisine. Le Monobe FC-MAS n'avait pas « deux
+  configurations indécidables » : c'est un fusil de chasse à trois canons,
+  deux de calibre 12 et un de fusil, chacun avec sa ligne. Deux lance-grenades
+  affichaient les dégâts de la ligne d'en dessous. Enfin la pelle Décathlon
+  est traitée au **Dikote** (et non « Dilacé », qui n'existe pas), et le kit
+  de dissimulation coûte 600 € pour une mitraillette, pas 400 €.
+
 ## [1.139.2] — 2026-07-31
 
 ### Modifié

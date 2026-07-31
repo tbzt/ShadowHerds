@@ -4053,66 +4053,72 @@ export const EditionSR6 = {
     ],
     // Armes à feu et armures supplémentaires (Bazar de l'Hexagone, Feu Nourri).
     //
-    // ⚠ PROVENANCE ET FIABILITÉ DE LA PREMIÈRE MOITIÉ (jusqu'à la Pelle
-    // Décathlon). Ces lignes viennent du « Bazar de l'Hexagone », supplément
-    // numérique ABSENT du disque — impossible de les recouper à la source. Elles
-    // étaient transcrites dans une grammaire `Champ=Valeur` que le parseur ne lit
-    // sur AUCUN de ses quatre champs : `VD=3P` (il attend `VD 3P`), `SO=8/8`
-    // (il attend une espace), `Mode=SA` (le segment doit ne contenir QUE des
-    // modes) et `--` (absent de la liste des marques « hors portée » `-`/`–`/`—`,
-    // donc lu comme la chaîne littérale). Résultat : ni dégâts, ni Score
-    // Offensif, ni modes, et un chargeur qui ne se vidait jamais.
-    //
-    // Quatre de ces armes réapparaissent dans « Ombres et lumières » p.159-160,
-    // ce qui a permis de VALIDER le mécanisme de corruption sur 4 cas :
-    //   · `(x)` dans le SO = une barre de séparation perdue (`7(9)/9` → `7/9/9`)
-    //   · `(L)` n'est pas un mécanisme mais la colonne DISPONIBILITÉ, glissée
-    //   · `(F)` et `+F` = `+FOR`, le score offensif de mêlée
-    //   · `4c(c)` = un `40(c)` tronqué (le livre donne 40 balles au PAPOP IV)
-    // Les entrées marquées ✔ portent les valeurs du livre. Les autres sont
-    // RECONSTRUITES par cette règle : elle rétablit la structure, mais deux des
-    // quatre cas vérifiés avaient EN PLUS perdu un chiffre (`9(1)/8` valait
-    // `9/11/8`, pas `9/1/8`) — un SO reconstruit peut donc rester faux d'un
-    // rang. À recouper si le Bazar de l'Hexagone est retrouvé.
+    // ✔ PREMIÈRE MOITIÉ RECOUPÉE AU LIVRE (2026-07-31, jusqu'au Kit de
+    // dissimulation). Le « Bazar de l'Hexagone » a été retrouvé et TOUTES ces
+    // lignes portent désormais les valeurs de ses tables, plus aucune n'est
+    // reconstruite. Ce que le recoupement a corrigé, une fois pour toutes :
+    //   · trois SO avaient perdu un rang, exactement comme le prédisait la règle
+    //     de corruption — Manurhin sniper `7/1/9/2` → `7/11/9/2`, Pilum
+    //     `4/7/8/2/10` → `4/7/8/12/10`, Cartier `10/2` → `10/12` ; les PMAS-70
+    //     et le Lille36 avaient perdu leur TROISIÈME bande (`8/7/—` → `8/7/6`)
+    //   · huit TYPES étaient faux : le Gladius est une mitraillette (VD 3P,
+    //     SA/TR) et non une mitrailleuse `VD 5A` — ce « A » n'a jamais existé,
+    //     c'était la colonne voisine ; le Spatha est un fusil d'assaut carabine,
+    //     le Pilum et le Manurhin sniper ne sont pas ce qu'on croyait
+    //   · le FC-MAS n'a pas deux « configurations indécidables » : c'est un
+    //     fusil de chasse à 3 canons, deux de calibre 12 (shotgun) et un de
+    //     fusil, chacun avec sa ligne et son canon basculant `(cb)`
+    //   · deux VD étaient celles de la ligne d'EN DESSOUS (LGAE ← Balle de
+    //     Défense), deux capacités manquaient (Hecate 40(c), Cartier 1(cb))
+    //   · `Dilacé` n'existe pas : c'est **Dikote**, et le kit de dissimulation
+    //     coûte 600 € pour mitraillettes/shotguns, pas 400 €.
+    // La seule chose NON transcrite est le SO de l'Espelette (`R+F/…`), cf. sa
+    // ligne. La SECONDE moitié (à partir des Ares Light Fire) vient d'une autre
+    // source et n'est pas concernée par ce recoupement.
     armesSupplement: [
-      // VD et SO perdus à la transcription (colonnes décalées d'un cran :
-      // `VD=CC` portait le mode, `SO=6(c)` la capacité). Rien à reconstruire.
-      "Revolvers FN Manurhin MR2073 GIGN (canon court) [Pistolet lourd, CC, 6(c)]",
-      "Revolvers FN Manurhin MR2073 GIGN (classique) [Pistolet lourd, VD 4P, SO 9/11/8/—/—, CC, 6(c)]", // ✔ Ombres et lumières p.159
-      "Revolvers FN Manurhin MR2073 GIGN (sniper) [Fusil de précision, VD 4P, SO 7/1/9/2/—, CC, 6(c)]",
-      "Pistolet Lourd FN FNPL-70 [Pistolet lourd, VD 3P, SO 7/9/9/—/—, SA, 15(c)]", // ✔ Ombres et lumières p.160
-      "Pistolet Léger FN PPA-1 [Pistolet léger, VD 2P, SO 12/11/8/—/—, SA, 20(c)]", // ✔ Ombres et lumières p.159 (capacité non donnée au livre)
-      "Pistolet Léger Monobe PMAS-70 (normal) [Pistolet léger, VD 2P, SO 8/7/—/—/—, SA, 12(c)]",
-      "Pistolet Léger Monobe PMAS-70 (version civile) [Pistolet léger, VD 2E, SO 8/7/—/—/—, SA, 12(c)]",
-      "Lille36 [Pistolet léger, VD 2P, SO 8/8/—/—/—, SA, 11(c)]",
-      "Monobe FC-MAS (Fusil) [Fusil, VD 5P, SO 4/10/9/4/—, CC, 2(c)]",
-      // Seconde ligne de table pour ce nom, SO et capacité distincts : deux
-      // configurations, pas un doublon fautif (les deux SO décodent en 5 bandes
-      // valides et différentes). Laquelle est laquelle : indécidable sans le livre.
-      "Monobe FC-MAS (Fusil, seconde configuration) [Fusil, VD 5P, SO 2/7/10/7/3, CC]",
-      "Monobe LGAE (Lance-grenade suivant grenade) [Lance-grenades, VD 7E, SO 4/8/8/3/—, SA, 6(c)]",
-      "Fusil d'Assaut Esprit/Dassault PAPOP IV [Fusil d'assaut, VD 4P, SO 6/11/8/7/2, SA/TR/TA, 40(c)]", // ✔ Ombres et lumières p.159
-      "Fusil d'Assaut Esprit/Dassault PAPOP IV (Lance-grenade) [Lance-grenades, SO 4/10/6/2/—, CC, 6(c)]",
-      // Capacité `4c(c)` illisible et non recoupable : mieux vaut aucun compteur
-      // de balles qu'un compteur faux (le panneau d'attaque s'y fie).
-      "Fusil de Précision PGM Hecate III F3 [Fusil de précision, VD 6P, SO 2/8/10/16/14, SA]",
+      "Revolvers FN Manurhin MR2073 GIGN (canon court) [Pistolet lourd, VD 4P, SO 11/12/—/—/—, CC, 6(c)]",
+      "Revolvers FN Manurhin MR2073 GIGN (classique) [Pistolet lourd, VD 4P, SO 9/11/8/—/—, CC, 6(c)]",
+      "Revolvers FN Manurhin MR2073 GIGN (sniper) [Pistolet lourd, VD 4P, SO 7/11/9/2/—, CC, 6(c)]",
+      "Pistolet Lourd FN FNPL-70 [Pistolet lourd, VD 3P, SO 7/9/9/—/—, SA, 15(c)]",
+      "Pistolet Léger FN PPA-1 [Pistolet léger, VD 2P, SO 12/11/8/—/—, SA, 20(c)]",
+      "Pistolet Léger Monobe PMAS-70 (normal) [Pistolet léger, VD 2P, SO 8/7/6/—/—, SA, 12(c)]",
+      "Pistolet Léger Monobe PMAS-70 (version civile) [Pistolet léger, VD 2E, SO 8/7/6/—/—, SA, 12(c)]",
+      "Lille36 [Pistolet léger, VD 2P, SO 8/8/6/—/—, SA, 11(c)]",
+      // Deux LIGNES de la même table, et le livre les nomme : le FC-MAS est un
+      // fusil de chasse à 3 canons — deux canons de calibre 12 (shotgun) sur le
+      // dessus, un canon de fusil dessous. Ce ne sont donc pas deux
+      // « configurations » indécidables mais les deux armes de l'objet.
+      "Monobe FC-MAS (canons de calibre 12) [Shotgun, VD 4P, SO 4/10/6/—/—, CC, 2(cb)]",
+      "Monobe FC-MAS (canon de fusil) [Fusil, VD 5P, SO 2/7/10/7/3, CC, 1(cb)]",
+      // La VD dépend de la grenade chargée : le livre écrit « suivant grenade »
+      // dans la colonne, et `VD 7E` était celle de la Balle de Défense (BDD),
+      // la SECONDE ligne de la table — pas celle du lance-grenade.
+      "Monobe LGAE (Lance-grenade anti-émeute) [Lance-grenades, VD selon la grenade, SO 4/8/8/3/—, SA, 6(c)]",
+      "Monobe LGAE — Balle de Défense (BDD) [Munition de lance-grenade, VD 7E]",
+      "Fusil d'Assaut Esprit/Dassault PAPOP IV [Fusil d'assaut, VD 4P, SO 6/11/8/7/2, SA/TR/TA, 40(c)]",
+      "Fusil d'Assaut Esprit/Dassault PAPOP IV (Lance-grenade) [Lance-grenades, VD selon la grenade, SO 4/10/6/2/—, CC, 6(c)]",
+      "Fusil de Précision PGM Hecate III F3 [Fusil de précision, VD 6P, SO 2/8/10/16/14, SA, 40(c)]",
       'Canon d\'Assaut GIAT Industries CCT "Ultima Ratio" [Canon d\'assaut, VD 7P, SO 1/9/10/10/6, SA/TR, 12(c)]',
-      // `VD=5A` : « A » n'est pas un type de dommages SR6 (P/E). Conservé tel
-      // quel plutôt que corrigé au jugé — la valeur 5 se lit, le suffixe est dit.
-      "Esprit Gladius (Mitrailleuse) [Mitrailleuse, VD 5A, SO 10/12/7/—/—, SA/TR/TA, 30(c)]",
-      "Esprit Pugio [Pistolet, VD 3P, SO 11/9/5/—/—, SA, 14(c)]",
-      "Esprit Spatha [Mitraillette, VD 5P, SO 8/12/7/5/—, SA/TR/TA, 35(c)]",
+      "Esprit Gladius [Mitraillette, VD 3P, SO 10/12/7/—/—, SA/TR, 30(c)]",
+      "Esprit Pugio [Pistolet lourd, VD 3P, SO 11/9/5/—/—, SA, 14(c)]",
+      "Esprit Spatha [Fusil d'assaut carabine, VD 5P, SO 8/12/7/5/—, SA/TR/TA, 35(c)]",
       "Esprit Hasta [Fusil d'assaut, VD 5P, SO 6/11/7/7/1, SA/TR/TA, 35(c)]",
-      "Esprit Pilum [Fusil, VD 5P, SO 4/7/8/2/10, SA, 15(c)]",
-      "Pistolets de Duel Cartier [Pistolet, VD 4P, SO 10/2/—/—/—, CC]",
-      "Rapière de Duel Hermès [Arme de mêlée, VD 3, SO 11+FOR/—/—/—/—]",
-      "Canne à Systèmes Louis Vuitton (lame tranchante) [Arme de mêlée, VD 3P, SO 7+FOR/—/—/—/—]",
-      "Canne à Systèmes Louis Vuitton (fût contondant) [Arme de mêlée, VD 3E, SO 6+FOR/—/—/—/—]",
-      "Canne à Systèmes Louis Vuitton (pistolet de poche) [Pistolet, VD 2P, SO 8/8/—/—/—, CC/TR, 4(b)]",
-      "Espelette (grenade toxine) [Effet: État Aveuglé & État Désorienté, dégâts étourdissants, Souffle 2m]",
-      // `Mode=10+F` portait en réalité le SO : arme de mêlée, aucun mode de tir.
-      "Pelle Pliante Multifonction Décathlon [Arme de mêlée, VD 3P, SO 10+FOR/—/—/—/—, Effet: Dilacé]",
-      "Kit de Dissimulation d'Arme [Effet: Permet de dissimuler une arme démontrée; 300€ armes de poing, 400€ mitraillettes/shotguns]",
+      "Esprit Pilum [Fusil de précision, VD 5P, SO 4/7/8/12/10, SA, 15(c)]",
+      "Pistolets de Duel Cartier [Pistolet lourd, VD 4P, SO 10/12/—/—/—, CC, 1(cb)]",
+      "Rapière de Duel Hermès [Arme tranchante, VD 2P, SO 11+FOR/—/—/—/—]",
+      "Canne à Systèmes Louis Vuitton (lame tranchante) [Arme tranchante, VD 3P, SO 7+FOR/—/—/—/—]",
+      "Canne à Systèmes Louis Vuitton (fût contondant) [Arme contondante, VD 3E, SO 6+FOR/—/—/—/—]",
+      "Canne à Systèmes Louis Vuitton (pistolet de poche) [Pistolet de poche, VD 2P, SO 8/8/—/—/—, CC/TR, 4(b)]",
+      // SO du livre : `R+F/R+F-1/R+F-6/—/—` — NON transcrit dans la chaîne : ces
+      // jetons ne sont résolus par aucune édition (contrairement à `+FOR`), le
+      // parseur les rendrait tels quels sous le nom de l'arme. Effet et souffle
+      // suffisent ici ; la réserve se calcule à la main.
+      "Espelette (grenade toxine) [Effet: État Aveuglé I, État Désorienté & État Nauséeux, dégâts étourdissants, Souffle 5m]",
+      // `Dilacé` était une lecture fautive de **Dikote** (le revêtement), porté
+      // par la colonne MUNITIONS de la table. Plier/déplier = action mineure ;
+      // bonus sans fil : une fois par round, sans dépenser d'action.
+      "Pelle Pliante Multifonction Décathlon [Arme tranchante, VD 3P, SO 10+FOR/—/—/—/—, Dikote]",
+      "Kit de Dissimulation d'Arme [Effet: dissimule une arme DÉMONTÉE (dissimulation +3, seuil 4 au détecteur d'anomalie magnétique); 300€ armes de poing, 600€ mitraillettes/shotguns]",
       "Ares Light Fire 70 [VD 2P, SA, SO 11/8/7/—/—, Cap. 14(c)]",
       "Ares Light Fire 75 [VD 3P, SA, SO 11/8/7/—/—, Cap. 15(c)]",
       "Ares Light Fire 75 implanté [VD 3P, SA, SO 9/6/5/—/—, Cap. 15(c)]",
