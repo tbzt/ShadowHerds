@@ -442,6 +442,33 @@ export const Encounter = {
     return Object.prototype.hasOwnProperty.call(map, dossierId);
   },
 
+  /** Combien de ces dossiers portent une rencontre rangée (lecture seule) — sert
+      à NOMMER ce qui va partir dans la confirmation de suppression, avant de le
+      purger. Le format de clé reste privé à ce module (prohibition n°2). */
+  countStashed(dossierIds) {
+    if (!Array.isArray(dossierIds) && !(dossierIds instanceof Set)) return 0;
+    const map = Storage.get(this._STASH_KEY, {});
+    let n = 0;
+    for (const id of dossierIds) if (Object.prototype.hasOwnProperty.call(map, id)) n++;
+    return n;
+  },
+
+  /** Purge les rencontres rangées de ces dossiers (VIS-16 Failsafe : un nœud
+      supprimé ne doit pas laisser son bundle derrière lui). Sans ça l'entrée
+      survit au nœud, ne se voit plus nulle part — et la fusion de sauvegarde
+      étant ADDITIVE (`backup.js`), l'orphelin ne meurt pas : il voyage d'un
+      appareil à l'autre. Renvoie le nombre d'entrées retirées. */
+  purgeStash(dossierIds) {
+    if (!Array.isArray(dossierIds) && !(dossierIds instanceof Set)) return 0;
+    const map = Storage.get(this._STASH_KEY, {});
+    let n = 0;
+    for (const id of dossierIds) {
+      if (Object.prototype.hasOwnProperty.call(map, id)) { delete map[id]; n++; }
+    }
+    if (n) Storage.set(this._STASH_KEY, map);
+    return n;
+  },
+
   /** Résumé STATIQUE d'une rencontre rangée (cockpit V4) : lit le bundle du
       dossier sans le restaurer — `{ count, round }` (combattants + round au
       moment du rangement). `null` si aucun bundle. Le format de clé du stash

@@ -458,9 +458,21 @@ export const DossierBar = {
     const d = Dossiers.get(id);
     if (!d) return;
     const isParent = Dossiers.children(id).length > 0;
-    const msg = isParent
-      ? `Supprimer « ${d.name} » et ses sous-groupes ? (Le contenu reste dans la bibliothèque.)`
-      : `Supprimer « ${d.name} » ? (Le contenu reste dans la bibliothèque.)`;
+    // VIS-16 Failsafe (CODIR 2026-07-31, décision 3) : la suppression emporte
+    // les rencontres RANGÉES du sous-arbre. On les compte AVANT pour que la
+    // confirmation dise ce qui part — supprimer un run cascade sur ses scènes,
+    // et le MJ ne doit pas l'apprendre après coup.
+    const doomed = Dossiers.descendantIds(id);
+    const stashed = typeof Encounter !== "undefined" ? Encounter.countStashed(doomed) : 0;
+    const msg =
+      (isParent
+        ? `Supprimer « ${d.name} » et ses sous-groupes ? (Le contenu reste dans la bibliothèque.)`
+        : `Supprimer « ${d.name} » ? (Le contenu reste dans la bibliothèque.)`) +
+      (stashed
+        ? stashed > 1
+          ? `\n\n⚠ ${stashed} rencontres rangées seront également supprimées.`
+          : `\n\n⚠ 1 rencontre rangée sera également supprimée.`
+        : "");
     Dialog.confirm({
       title: "Supprimer le dossier",
       message: msg,
@@ -471,6 +483,8 @@ export const DossierBar = {
       // A4-bis.3b : supprimer un dossier ne touche plus aucune appartenance de
       // collection (retirée) — seul le nœud Dossiers part ; ses `convokes`
       // s'en vont avec lui. Le contenu du Monde reste intact.
+      // La purge du stash, elle, est SILENCIEUSE (le MJ vient de la confirmer).
+      if (typeof Encounter !== "undefined") Encounter.purgeStash(doomed);
       Dossiers.remove(id);
       if (!Dossiers.has(this.current)) this.current = "all";
       this._applyCurrent();
