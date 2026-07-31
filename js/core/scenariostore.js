@@ -692,6 +692,18 @@ export const ScenarioStore = {
   visited(sc) {
     return sc && sc.runtime && Array.isArray(sc.runtime.visitedIds) ? sc.runtime.visitedIds : [];
   },
+  /** Remet la trame « jamais jouée » : efface le chemin parcouru et l'étape
+      courante d'un seul coup.
+
+      ⚠ AUCUN APPELANT, ET C'EST DÉLIBÉRÉ — même statut que `purgeEntities` en
+      son temps : la méthode est prête, la surface ne l'est pas. Lui en donner
+      une supposerait tranché ce que le modèle ne dit pas encore, à savoir ce
+      qu'est un run TERMINÉ (un dossier `kind:"run"` n'a pas d'état de fin ;
+      `RunGen.toDossier` ouvre, rien ne ferme). Rejouer une trame, la remettre à
+      zéro pour une autre table, ou la clore : trois gestes différents qui
+      passeraient tous par ici, et on ne sait pas encore lequel le MJ veut.
+      Ne pas câbler avant cette décision — et ne pas supprimer non plus : le
+      verbe est juste, c'est sa place dans le parcours qui manque. */
   clearRuntime(scId) {
     const sc = this.get(scId);
     if (!sc) return false;
@@ -702,9 +714,11 @@ export const ScenarioStore = {
   },
 
   /* ---- Intégrité EXTERNE (entités supprimées) ----
-     Méthode prête ; le CÂBLAGE dans collection.js est différé à S1 (les
-     `castIds` n'existent qu'à partir de S1 — le brancher maintenant serait
-     du code mort). Calqué FactionStore : renvoie les retraits pour l'undo. */
+     CÂBLÉE depuis S1 : `collection.js` l'appelle aux deux chemins de
+     suppression, aux côtés de `RelationsStore.purgeEntities` et de
+     `FactionStore.purgeEntities`. Calqué FactionStore : renvoie les retraits
+     pour l'undo. (Ce commentaire annonçait encore un câblage « différé à S1 »
+     bien après que S1 fut livré — corrigé le 2026-07-31.) */
   purgeEntities(ids) {
     const set = ids instanceof Set ? ids : new Set(ids);
     const removed = [];
