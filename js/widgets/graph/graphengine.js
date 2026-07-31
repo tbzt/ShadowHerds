@@ -35,6 +35,12 @@ const SHAPE_VERTS = {
   diamond: [[0, -17], [17, 0], [0, 17], [-17, 0]],
   hexagon: [[16, 0], [8, 13.86], [-8, 13.86], [-16, 0], [-8, -13.86], [8, -13.86]],
 };
+/* Rayon du cercle INSCRIT de chaque forme — ce qu'un portrait rond peut
+   occuper sans mordre le bord. Calculé, pas estimé : rectangle = sa demi-
+   hauteur (11) ; losange = distance du centre à l'arête, 17/√2 ≈ 12,0 ;
+   hexagone = son apothème (13,86). Les formes rondes gardent 15, la valeur
+   d'origine (CIRCLE_R vaut 16, le trait mange le dernier pixel). */
+const SHAPE_INRADIUS = { circle: 15, "circle-double": 15, rect: 11, diamond: 12, hexagon: 13.8 };
 
 // « Cartes à silhouette » : quand un nœud fournit `n.card`, il est rendu en
 // CARTE (foreignObject HTML) au lieu d'un petit disque — même canal neutre que
@@ -205,7 +211,14 @@ export const GraphEngine = {
       '<path d="M0,0 L10,5 L0,10 z" fill="context-stroke"></path></marker>' +
       // P2 — détourage rond des portraits (une source partagée : chaque <image>
       // vit dans le <g> translaté du nœud, le cercle à l'origine locale = centre).
-      '<clipPath id="graph-portrait-clip"><circle r="15"></circle></clipPath>';
+      // ⚠ `objectBoundingBox` et non un rayon fixe : depuis que les entités ont
+      // une FORME (P1), le portrait doit s'inscrire dans une silhouette qui n'est
+      // plus toujours ronde — un losange n'a que ~12 px de rayon inscrit contre
+      // 15 au cercle, un rayon en dur débordait des pointes. En unités relatives,
+      // le détourage suit la taille de l'image, quelle qu'elle soit. Sur une
+      // image 30×30 (le cas d'avant), `r=0.5` redonne exactement `r=15`.
+      '<clipPath id="graph-portrait-clip" clipPathUnits="objectBoundingBox">' +
+      '<circle cx="0.5" cy="0.5" r="0.5"></circle></clipPath>';
     svg.appendChild(defs);
 
     // Poches de faction (A3) : couche du fond, SOUS les arêtes/nœuds — une zone
@@ -283,10 +296,14 @@ export const GraphEngine = {
         // le glyphe ; le disque dessous (fond + anneau/stroke) encadre le
         // portrait et porte tous les états. Repli disque+glyphe si pas d'image.
         if (n.portrait) {
+          // Le portrait s'INSCRIT dans la silhouette : son rayon est celui du
+          // cercle inscrit de la forme, pas 15 en dur — sinon il déborde des
+          // pointes d'un losange ou du haut d'un rectangle (P1).
+          const r = SHAPE_INRADIUS[n.shape] || CIRCLE_R - 1;
           const img = document.createElementNS(NS, "image");
           img.setAttribute("class", "graph-node-portrait");
-          img.setAttribute("x", -15); img.setAttribute("y", -15);
-          img.setAttribute("width", 30); img.setAttribute("height", 30);
+          img.setAttribute("x", -r); img.setAttribute("y", -r);
+          img.setAttribute("width", r * 2); img.setAttribute("height", r * 2);
           img.setAttribute("preserveAspectRatio", "xMidYMid slice");
           img.setAttribute("clip-path", "url(#graph-portrait-clip)");
           img.setAttribute("href", n.portrait);

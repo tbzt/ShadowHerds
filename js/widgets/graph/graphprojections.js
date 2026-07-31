@@ -52,11 +52,36 @@ const FLOW_TYPES = {
 // Motif de trait par type d'arête (édition-neutre, canal `pattern` du moteur).
 const FLOW_KIND_PATTERN = { libre: "solid", conditionnelle: "dotted", evenement: "dashed" };
 
+// P1 (reliquat) — formes par catégorie pour le graphe d'ENTITÉS. Le moteur
+// portait déjà le canal `n.shape` de façon neutre, mais seule la Trame
+// l'alimentait : toutes les entités sortaient en cercle.
+//
+// ⚠ Ce n'est PAS une information neuve — le moteur distingue déjà les quatre
+// types par glyphe (`TYPE_GLYPH` : pj ◆ · pnj ● · contact ◈ · server ▤). Ce
+// que la forme ajoute, c'est la LISIBILITÉ À DISTANCE : un glyphe dans un
+// disque de 16 px disparaît dès qu'on recule ou qu'on dézoome, la silhouette
+// non (« à un mètre, les yeux plissés », checklist du design system). Même
+// information, deux échelles de lecture.
+//
+// La forme RIME donc avec le glyphe déjà en service plutôt que d'inventer un
+// second vocabulaire : ● reste un cercle, ▤ devient un rectangle, ◆ un losange.
+// `contact` est le seul arbitrage : c'est un pnj AVEC un lien vers l'équipe,
+// d'où le cercle redoublé — une personne, cerclée.
+//
+// ⚠ Réserve assumée : `diamond` et `circle-double` portent aussi un sens dans
+// la Trame (décision, retombée). Les deux lentilles ne partagent jamais un
+// canvas — l'une montre des SCÈNES, l'autre des PERSONNES — et la doctrine
+// interdit de nommer différemment la même chose, pas de réemployer une
+// primitive géométrique sur deux familles d'objets. Aucune forme libre ne
+// permettait d'éviter tout recouvrement (le moteur en offre cinq).
+const ENTITY_SHAPE = { pj: "diamond", pnj: "circle", contact: "circle-double", server: "rect" };
+
 export const GraphProjections = {
   // Vocabulaire exposé pour les vues (sélecteurs de type de nœud/arête) —
   // une seule source, la projection ne le laisse pas se dupliquer en vue.
   FLOW_TYPES,
   FLOW_KIND_PATTERN,
+  ENTITY_SHAPE,
 
   /** Voisins directs d'un ensemble d'ids (les bouts d'arête hors de l'ensemble). */
   _neighborsOf(edges, idSet) {
@@ -102,7 +127,15 @@ export const GraphProjections = {
         // Face-NŒUD = densité 0 du continuum carte : l'identité (id/nom/type)
         // définie à un seul endroit (cardzones), pas ré-inlinée ici. `inScope`
         // (B4, portée/halo) est une donnée de PROJECTION, ajoutée par-dessus.
-        nodes.push({ ...CardZones.density0({ ...loc, id }), inScope: core.has(id), portrait: loc.portraitUrl || null });
+        // `shape` (P1) est une donnée de PROJECTION, comme `inScope` : le moteur
+        // ne décide pas du sens, il rend la forme demandée. Type inconnu →
+        // `circle`, le défaut du moteur (aucune régression possible).
+        nodes.push({
+          ...CardZones.density0({ ...loc, id }),
+          shape: ENTITY_SHAPE[loc.type] || "circle",
+          inScope: core.has(id),
+          portrait: loc.portraitUrl || null,
+        });
     }
 
     // 4. Arêtes dont les deux bouts sont présents (orphelines écartées). On
