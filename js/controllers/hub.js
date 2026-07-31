@@ -284,7 +284,13 @@ export const Hub = {
   _renderContextBanner() {
     const box = document.getElementById("hub-sections");
     const node = DossierBar.currentNode();
-    if (!box || !node || !node.kind) return;
+    // Portée « Tout » (aucun dossier focalisé) : pas de contexte à rappeler,
+    // mais la 3ᵉ échelle d'enchaînement vit là — campagne → campagne (une
+    // trilogie est une succession de campagnes pairs, pas une 4ᵉ échelle).
+    // C'est la seule vue où les racines sont toutes visibles à la fois.
+    if (!box) return;
+    if (!node) return void this._renderRootBanner(box);
+    if (!node.kind) return;
     let title = "";
     let right = "";
     if (node.kind === "run") {
@@ -318,6 +324,25 @@ export const Hub = {
         <div class="cluster hub-section-head">
           <span class="hub-section-title">${title} — ${CardRenderer._esc(node.name)}</span>
           ${liensBtn}${fluxBtn}${right}
+        </div>
+      </div>`,
+    );
+  },
+
+  /** Bandeau de la portée « Tout » : n'existe que pour porter l'enchaînement
+      des CAMPAGNES entre elles (VIS-15 B3, 3ᵉ échelle). Rendu seulement s'il y
+      a au moins deux campagnes racines — en dessous il n'y a rien à enchaîner,
+      et un bandeau qui ne propose rien est du bruit. */
+  _renderRootBanner(box) {
+    const camps = Dossiers.roots().filter((d) => d.kind === "campaign");
+    if (camps.length < 2) return;
+    box.insertAdjacentHTML(
+      "afterbegin",
+      `<div class="hub-section hub-context-banner">
+        <div class="cluster hub-section-head">
+          <span class="hub-section-title">❖ Campagnes</span>
+          <button class="btn-secondary btn-small" data-hub data-action="root-flow-graph" title="Enchaîner les campagnes entre elles (une trilogie se lit ici)">⇉ Flux</button>
+          <span class="hub-section-count">${camps.length} campagnes</span>
         </div>
       </div>`,
     );
@@ -445,6 +470,9 @@ export const Hub = {
           memberIds: DossierBar.convenedIds(id),
           title: node ? `Liens — ${node.name}` : "Liens",
         });
+      } else if (el.dataset.action === "root-flow-graph") {
+        // VIS-15 B3, 3ᵉ échelle — les campagnes racines (`parentId: null`).
+        FlowView.open({ parentId: null, title: "Flux — campagnes" });
       } else if (el.dataset.action === "scope-flow-graph") {
         // VIS-15 B3 — le mode Flux scopé à la portée (campagne/run) sélectionnée.
         const id = el.dataset.dossier;

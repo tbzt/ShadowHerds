@@ -37,13 +37,17 @@ import { Dossiers } from "../journal/dossiers.js";
 // même vocabulaire de forme que le moteur (P1) et la Trame (scénariograph),
 // pour que « seuil = cercle », « décision = losange » se lisent pareil
 // partout. Un nœud sans `sceneType` reste un rectangle neutre (◻).
+// ⚠ Les clés sont CELLES DE LA TRAME (`ScenarioGraph._TYPES`), pas celles du
+// plan : il écrivait « legwork », l'app dit « repérage » depuis S1 et c'est ce
+// mot que le MJ lit. Deux lentilles sur la même grammaire ne peuvent pas
+// nommer différemment la même chose ; la teinte suit (`--t-*` partagés).
 const FLOW_TYPES = {
-  accroche: { glyph: "◎", shape: "circle", label: "Accroche" },
-  legwork: { glyph: "⌕", shape: "rect", label: "Enquête" },
-  action: { glyph: "⚔", shape: "rect", label: "Action" },
-  sociale: { glyph: "❝", shape: "rect", label: "Sociale" },
-  "décision": { glyph: "⑂", shape: "diamond", label: "Décision" },
-  "retombée": { glyph: "⚑", shape: "circle-double", label: "Retombée" },
+  accroche: { glyph: "◎", shape: "circle", label: "Accroche", tint: "--t-accroche" },
+  "repérage": { glyph: "⌕", shape: "rect", label: "Repérage", tint: "--t-reperage" },
+  action: { glyph: "⚔", shape: "rect", label: "Action", tint: "--t-action" },
+  sociale: { glyph: "❝", shape: "rect", label: "Sociale", tint: "--t-sociale" },
+  "décision": { glyph: "⑂", shape: "diamond", label: "Décision", tint: "--t-decision" },
+  "retombée": { glyph: "⚑", shape: "circle-double", label: "Retombée", tint: "--t-retombee" },
 };
 // Motif de trait par type d'arête (édition-neutre, canal `pattern` du moteur).
 const FLOW_KIND_PATTERN = { libre: "solid", conditionnelle: "dotted", evenement: "dashed" };
@@ -139,6 +143,21 @@ export const GraphProjections = {
         sceneType: d.sceneType || null,
         glyph: t ? t.glyph : "◻",
         shape: t ? t.shape : "rect",
+        // « Carte à silhouette » : même canal `card` que la Trame, rempli des
+        // SEULS champs qu'un nœud Dossiers porte réellement — un dossier n'a
+        // ni description ni lieu (contrairement à `ScenarioStore.sceneNodes`),
+        // donc rien n'est inventé : le sous-titre dit ce que le nœud CONTIENT
+        // (dérivé de l'arbre) et les puces qui il CONVOQUE (dérivé de
+        // `convokes`, par référence). Le moteur ne replie en petit disque que
+        // sous faible largeur, tout seul.
+        card: {
+          glyph: t ? t.glyph : "◻",
+          typeLabel: t ? t.label : this._kindLabel(d),
+          title: d.name,
+          sub: this._flowSub(d),
+          chips: this._castChips(d),
+          tintVar: t ? t.tint : null,
+        },
       };
     });
     const idSet = new Set(nodes.map((n) => n.id));
@@ -165,6 +184,48 @@ export const GraphProjections = {
       n.y = p ? p.y : height / 2;
     }
     return { nodes, edges };
+  },
+
+  /** Étiquette de repli quand le nœud n'a pas de `sceneType` : son `kind` de
+      campagne (Campagne/Run/Scène) plutôt qu'un vide — un run non typé reste
+      un run. Rien pour un dossier libre : il n'est rien de nommé. */
+  _kindLabel(d) {
+    return { campaign: "Campagne", run: "Run", scene: "Scène" }[d.kind] || "";
+  },
+
+  /** Sous-titre ▸ : ce que le nœud CONTIENT, dérivé de l'arbre (jamais saisi).
+      Une campagne compte ses runs, un run ses scènes ; à défaut, ses
+      sous-dossiers. Vide quand il n'a pas d'enfant — pas de « 0 » à lire. */
+  _flowSub(d) {
+    const kids = Dossiers.children(d.id);
+    if (!kids.length) return "";
+    const runs = kids.filter((k) => k.kind === "run").length;
+    if (runs) return `${runs} run${runs > 1 ? "s" : ""}`;
+    const scenes = kids.filter((k) => k.kind === "scene").length;
+    if (scenes) return `${scenes} scène${scenes > 1 ? "s" : ""}`;
+    return `${kids.length} sous-dossier${kids.length > 1 ? "s" : ""}`;
+  },
+
+  /** Puces de casting : les refs CONVOQUÉES par le nœud, résolues par nom (une
+      Faction reste UNE puce — on ne déplie pas son roster ici, la carte dirait
+      douze noms là où le MJ en a convoqué un). 3 max + « +N », comme la Trame.
+      Une ref qui ne résout plus est écartée, pas rendue en « ? ». */
+  _castChips(d) {
+    const names = [];
+    for (const c of Dossiers.convokesOf(d.id)) {
+      if (!c) continue;
+      if (c.ref === "faction") {
+        const f = typeof FactionStore !== "undefined" ? FactionStore.get(c.id) : null;
+        if (f) names.push(f.name);
+      } else {
+        const loc = typeof PnjLookup !== "undefined" ? PnjLookup.locate(c.id) : null;
+        if (loc) names.push(loc.name);
+      }
+    }
+    if (!names.length) return [];
+    const shown = names.slice(0, 3).map((text) => ({ text }));
+    if (names.length > 3) shown.push({ text: `+${names.length - 3}` });
+    return shown;
   },
 
   /** Couches par profondeur topologique (Kahn), source = degré entrant nul
@@ -199,9 +260,17 @@ export const GraphProjections = {
     }
     const maxDepth = Math.max(0, ...byDepth.keys());
     const pos = new Map();
-    const padX = 70, padY = 60;
+    // Marges dimensionnées sur la CARTE (168 × 84 dans le moteur), pas sur le
+    // petit disque : une demi-carte de chaque côté, sinon les cartes des bords
+    // sortent du cadre et celles d'une même couche se chevauchent. La couche
+    // suivante est posée au moins une hauteur de carte plus bas — le câble doit
+    // rester lisible entre deux étages.
+    const padX = 95, padY = 60, ROW_MIN = 110;
+    const usableH = Math.max(1, H - 2 * padY);
     for (const [d, row] of byDepth) {
-      const y = maxDepth ? padY + (d / maxDepth) * Math.max(1, H - 2 * padY) : H / 2;
+      const y = maxDepth
+        ? padY + (d / maxDepth) * Math.max(usableH, maxDepth * ROW_MIN)
+        : H / 2;
       row.forEach((id, i) => {
         const x = (Math.max(1, W - 2 * padX) / (row.length + 1)) * (i + 1) + padX;
         pos.set(id, { x, y });
