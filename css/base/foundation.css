@@ -1117,8 +1117,21 @@ select optgroup {
   background: var(--bg-card);
   border-right: 1px solid var(--border);
   padding: var(--sp-3) 0;
-  gap: var(--sp-1);
+  gap: var(--sp-2);
+  overflow: hidden;
+}
+/* B1.7 (C-006) — `#sidebar-encounter` (0 à 2 boutons selon la scène) reste
+   HORS du scroll, `flex: none` pour ne jamais céder de place ; `#sidebar-nav`
+   seul défile (`min-height: 0` est ce qui permet à un enfant flex de scroller
+   au lieu de pousser son parent — sans lui, overflow-y n'a aucun effet ici). */
+#sidebar-encounter {
+  flex: none;
+}
+#sidebar-nav {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  gap: var(--sp-1);
 }
 .nav-section-label {
   font-family: var(--font-mono);
