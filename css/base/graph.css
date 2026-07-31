@@ -809,7 +809,8 @@
   border-left-color: var(--success, #4caf7d);
   cursor: default;
 }
-.scenario-robust-item[data-scenario-robust]:hover {
+.scenario-robust-item[data-scenario-robust]:hover,
+.scenario-robust-item[data-flow-warn]:hover {
   background: var(--bg-card, #1b2735);
 }
 

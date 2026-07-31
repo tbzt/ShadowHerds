@@ -16,10 +16,44 @@
    qui ne résout plus (entité supprimée) est écarté, et les arêtes
    orphelines avec — la purge B0 les retire déjà, ce filtre est le
    garde-fou d'affichage. VIS-15 B1, cf. PLAN_MOTEUR_GRAPHE_UNIFIE.md.
+   ------------------------------------------------------------
+   `buildFlowGraph({ parentId? })` → { nodes, edges } — VIS-15 B3, la 2ᵉ
+   projection (« mode enchaînement »). Lit `Dossiers` : les enfants directs
+   de `parentId` (runs d'une campagne, ou scènes d'un run — même grammaire
+   aux deux échelles, `node.next`) deviennent les nœuds, `next`/`nextKind`
+   les arêtes. `parentId` null → les campagnes racines. Layout HIÉRARCHIQUE
+   (couches par profondeur topologique depuis les sources), pas de forces :
+   un flux se lit de haut en bas, pas en essaim. Aucune position n'est
+   persistée (Dossiers n'a pas de champ x/y) — recalculée à chaque
+   projection, un glisser reste local à la session (repositionne le temps de
+   la vue ouverte, comme un brouillon).
    ============================================================ */
 import { CardZones } from "../../rules/cardzones.js";
+import { Dossiers } from "../journal/dossiers.js";
+
+// VIS-15 B3 — vocabulaire de nœud du mode Flux, greffé de l'Approche 1 du
+// doc aveugle (cf. PLAN_MOTEUR_GRAPHE_UNIFIE.md § B3) : système-agnostique
+// (SR5/SR6/Anarchy partagent la même liste), forme BPMN par catégorie —
+// même vocabulaire de forme que le moteur (P1) et la Trame (scénariograph),
+// pour que « seuil = cercle », « décision = losange » se lisent pareil
+// partout. Un nœud sans `sceneType` reste un rectangle neutre (◻).
+const FLOW_TYPES = {
+  accroche: { glyph: "◎", shape: "circle", label: "Accroche" },
+  legwork: { glyph: "⌕", shape: "rect", label: "Enquête" },
+  action: { glyph: "⚔", shape: "rect", label: "Action" },
+  sociale: { glyph: "❝", shape: "rect", label: "Sociale" },
+  "décision": { glyph: "⑂", shape: "diamond", label: "Décision" },
+  "retombée": { glyph: "⚑", shape: "circle-double", label: "Retombée" },
+};
+// Motif de trait par type d'arête (édition-neutre, canal `pattern` du moteur).
+const FLOW_KIND_PATTERN = { libre: "solid", conditionnelle: "dotted", evenement: "dashed" };
 
 export const GraphProjections = {
+  // Vocabulaire exposé pour les vues (sélecteurs de type de nœud/arête) —
+  // une seule source, la projection ne le laisse pas se dupliquer en vue.
+  FLOW_TYPES,
+  FLOW_KIND_PATTERN,
+
   /** Voisins directs d'un ensemble d'ids (les bouts d'arête hors de l'ensemble). */
   _neighborsOf(edges, idSet) {
     const out = new Set();
@@ -86,6 +120,94 @@ export const GraphProjections = {
       }));
 
     return { nodes, edges: keptEdges };
+  },
+
+  /** VIS-15 B3 — projette le mode Flux : les enfants directs de `parentId`
+      (grammaire `Dossiers` : campagnes racines si `parentId` est absent,
+      runs d'une campagne, scènes d'un run) et leurs arêtes `next`, mis en
+      couches par profondeur topologique (source = sans arête entrante dans
+      cet ensemble). `width`/`height` = la taille réelle du canvas hôte
+      (mesurée par la vue) : sans elles, les nœuds se poseraient au repère
+      par défaut du moteur, pas au centre du conteneur réel. */
+  buildFlowGraph({ parentId = null, width = 640, height = 460 } = {}) {
+    const kids = parentId == null ? Dossiers.roots() : Dossiers.children(parentId);
+    const nodes = kids.map((d) => {
+      const t = FLOW_TYPES[d.sceneType] || null;
+      return {
+        id: d.id,
+        label: d.name,
+        sceneType: d.sceneType || null,
+        glyph: t ? t.glyph : "◻",
+        shape: t ? t.shape : "rect",
+      };
+    });
+    const idSet = new Set(nodes.map((n) => n.id));
+    const edges = [];
+    for (const d of kids) {
+      for (const toId of Array.isArray(d.next) ? d.next : []) {
+        if (!idSet.has(toId)) continue; // cible hors de cette portée : ignorée (pas un lien fantôme)
+        const kind = Dossiers.nextKindOf(d.id, toId);
+        edges.push({
+          id: `${d.id}→${toId}`,
+          from: d.id,
+          to: toId,
+          kind,
+          dir: "forward",
+          pattern: FLOW_KIND_PATTERN[kind] || "solid",
+          label: kind !== "libre" ? kind : "",
+        });
+      }
+    }
+    const pos = this._layerLayout(nodes, edges, width, height);
+    for (const n of nodes) {
+      const p = pos.get(n.id);
+      n.x = p ? p.x : width / 2;
+      n.y = p ? p.y : height / 2;
+    }
+    return { nodes, edges };
+  },
+
+  /** Couches par profondeur topologique (Kahn), source = degré entrant nul
+      dans l'ensemble projeté. Un cycle ou un nœud jamais atteint depuis une
+      source reste à sa profondeur par défaut (0) — visible, pas invisible :
+      le mode Flux ne masque jamais un nœud, il le range moins bien. */
+  _layerLayout(nodes, edges, W, H) {
+    const ids = nodes.map((n) => n.id);
+    const indeg = new Map(ids.map((id) => [id, 0]));
+    const adj = new Map(ids.map((id) => [id, []]));
+    const idSet = new Set(ids);
+    for (const e of edges) {
+      if (!idSet.has(e.from) || !idSet.has(e.to)) continue;
+      adj.get(e.from).push(e.to);
+      indeg.set(e.to, (indeg.get(e.to) || 0) + 1);
+    }
+    const depth = new Map(ids.map((id) => [id, 0]));
+    const queue = ids.filter((id) => indeg.get(id) === 0);
+    const seen = new Set(queue);
+    for (let i = 0; i < queue.length; i++) {
+      const id = queue[i];
+      for (const to of adj.get(id)) {
+        if (depth.get(to) < depth.get(id) + 1) depth.set(to, depth.get(id) + 1);
+        if (!seen.has(to)) { seen.add(to); queue.push(to); }
+      }
+    }
+    const byDepth = new Map();
+    for (const id of ids) {
+      const d = depth.get(id) || 0;
+      if (!byDepth.has(d)) byDepth.set(d, []);
+      byDepth.get(d).push(id);
+    }
+    const maxDepth = Math.max(0, ...byDepth.keys());
+    const pos = new Map();
+    const padX = 70, padY = 60;
+    for (const [d, row] of byDepth) {
+      const y = maxDepth ? padY + (d / maxDepth) * Math.max(1, H - 2 * padY) : H / 2;
+      row.forEach((id, i) => {
+        const x = (Math.max(1, W - 2 * padX) / (row.length + 1)) * (i + 1) + padX;
+        pos.set(id, { x, y });
+      });
+    }
+    return pos;
   },
 };
 

@@ -84,16 +84,35 @@ export const Dossiers = {
     }
     return true;
   },
-  /** Retire l'arête `from → to`. */
+  /** Retire l'arête `from → to` (et son habillage `nextKind`, s'il y en a un). */
   unlinkNext(fromId, toId) {
     const node = this.get(fromId);
     if (!node || !Array.isArray(node.next)) return false;
     const i = node.next.indexOf(toId);
     if (i >= 0) {
       node.next.splice(i, 1);
+      if (node.nextKind) delete node.nextKind[toId];
       this.save();
     }
     return true;
+  },
+  /** VIS-15 B3 — type de l'arête `next` (libre/conditionnelle/evenement),
+      keyé par id CIBLE sur le nœud source. Additif, séparé de `next` (la
+      vérité de la liaison) : n'habille que son style. Refuse une arête qui
+      n'existe pas (on type un lien posé, jamais un lien fantôme). */
+  setNextKind(fromId, toId, kind) {
+    const node = this.get(fromId);
+    if (!node || !Array.isArray(node.next) || !node.next.includes(toId)) return false;
+    node.nextKind = node.nextKind || {};
+    if (kind && kind !== "libre") node.nextKind[toId] = kind;
+    else delete node.nextKind[toId];
+    this.save();
+    return true;
+  },
+  /** Type de l'arête `from → to` ; "libre" par défaut (absent = libre). */
+  nextKindOf(fromId, toId) {
+    const node = this.get(fromId);
+    return (node && node.nextKind && node.nextKind[toId]) || "libre";
   },
 
   /* ---- Casting → `node.convokes` (A4 · VISION_MONDE_ET_JEU §3.4).
@@ -203,6 +222,13 @@ export const Dossiers = {
           : idMap[src.parentId] || src.parentId;
       if (Array.isArray(src.next))
         copy.next = src.next.filter((n) => idMap[n]).map((n) => idMap[n]);
+      // VIS-15 B3 : `nextKind` est keyé par id CIBLE — remappé comme `next`,
+      // jamais partagé par référence avec la source (spread ci-dessus l'aliasait).
+      if (src.nextKind) {
+        const nk = {};
+        for (const toId in src.nextKind) if (idMap[toId]) nk[idMap[toId]] = src.nextKind[toId];
+        copy.nextKind = nk;
+      }
       // A4/§5.4 : dupliquer copie les REFS de casting (le spread les partagerait
       // par référence — muter la copie muterait l'original). Les acteurs et les
       // Factions convoqués ne bougent pas : c'est une prépa parallèle qui pointe
@@ -266,6 +292,19 @@ export const Dossiers = {
     if (!node) return false;
     if (kind) node.kind = kind;
     else delete node.kind;
+    this.save();
+    return true;
+  },
+
+  /** VIS-15 B3 — type de SCÈNE au sens flux (accroche/legwork/action/
+      sociale/décision/retombée), additif sur un nœud `run`/`scène`. Un nœud
+      sans `sceneType` se rend en rectangle neutre dans le mode Flux ; ce
+      champ n'a aucun effet ailleurs (pas lu par le reste de l'app). */
+  setSceneType(id, type) {
+    const node = this.get(id);
+    if (!node) return false;
+    if (type) node.sceneType = type;
+    else delete node.sceneType;
     this.save();
     return true;
   },

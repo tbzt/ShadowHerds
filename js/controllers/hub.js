@@ -306,12 +306,18 @@ export const Hub = {
     const liensBtn = DossierBar.convenedIds(node.id).length
       ? `<button class="btn-secondary btn-small" data-hub data-action="scope-relations-graph" data-dossier="${node.id}" title="Voir les liens de « ${CardRenderer._esc(node.name)} » en graphe">◈ Liens</button>`
       : "";
+    // VIS-15 B3 — « ⇉ Flux » : enchaîner les enfants directs (runs d'une
+    // campagne, scènes d'un run — même grammaire), dès qu'il y en a au moins
+    // un à ranger/typer (même à un seul enfant, le typer sert déjà).
+    const fluxBtn = Dossiers.children(node.id).length
+      ? `<button class="btn-secondary btn-small" data-hub data-action="scope-flow-graph" data-dossier="${node.id}" title="Enchaîner les ${node.kind === "campaign" ? "runs" : "scènes"} de « ${CardRenderer._esc(node.name)} »">⇉ Flux</button>`
+      : "";
     box.insertAdjacentHTML(
       "afterbegin",
       `<div class="hub-section hub-context-banner">
         <div class="cluster hub-section-head">
           <span class="hub-section-title">${title} — ${CardRenderer._esc(node.name)}</span>
-          ${liensBtn}${right}
+          ${liensBtn}${fluxBtn}${right}
         </div>
       </div>`,
     );
@@ -438,6 +444,14 @@ export const Hub = {
         GraphView.open({
           memberIds: DossierBar.convenedIds(id),
           title: node ? `Liens — ${node.name}` : "Liens",
+        });
+      } else if (el.dataset.action === "scope-flow-graph") {
+        // VIS-15 B3 — le mode Flux scopé à la portée (campagne/run) sélectionnée.
+        const id = el.dataset.dossier;
+        const node = Dossiers.get(id);
+        FlowView.open({
+          parentId: id,
+          title: node ? `Flux — ${node.name}` : "Flux",
         });
       }
     });
