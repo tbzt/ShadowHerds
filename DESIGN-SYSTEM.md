@@ -11,6 +11,17 @@ protections re-arbitrées avec l'utilisateur (physicalité des dés, pulsations
 décoratives) ; les lots 5/6/7/8/9 gagnent chacun un périmètre élargi issu du
 reliquat du lot 2 (détail : `PLAN_EXECUTION.md`).*
 
+*Version **2.1** — 31 juillet 2026 : le chantier ⇉ (scène de course-poursuite,
+1.138.0) verse trois choses au référentiel, toutes issues de mesures et non
+d'intentions. Un **composant neuf** — la piste, § 6.10, patron réutilisable pour
+toute grandeur ordonnée à participants. Une **méthode d'ajout de glyphe** (§ 6.5)
+née d'un audit qui a écarté trois candidats sur cinq : ◆ et ◎ étaient déjà pris,
+⌖ n'est servi que par 3 polices système. Et deux entrées de **checklist de PR**
+(§ 10) payées comptant : le `min-width: 0` des chaînes flex — dont le symptôme
+est que l'ANCÊTRE déborde, pas l'élément fautif — et la mesure à 375px. Le § 7
+gagne son corollaire : un contrôle absent du bloc « CIBLES TACTILES » n'a pas
+été jugé trop petit, il n'a jamais été jugé.*
+
 *Version **2** — 27 juillet 2026. **Re-audit intégral contre le code.** Trois
 lots vérifiés sur trois s'étant révélés bâtis sur une prémisse fausse ou
 périmée, tout le § 1 a été recompté et chaque lot du § 8 confronté au code
@@ -1226,6 +1237,28 @@ un marqueur : c'est du texte, et il va casser toutes vos grappes.
 > mesurer (voir l'encadré « aucun trou d'affordance » plus haut : les 4
 > combinaisons réelles sont déjà conformes, il n'y avait rien à corriger).
 
+> **Deux glyphes entrés au vocabulaire en 1.138.0, et la méthode qui les a
+> choisis.** **⇉** (le moteur de course-poursuite) et **⊙** (l'avantage
+> positionnel). Avant de les retenir, trois candidats ont été écartés **par
+> mesure, pas par goût** :
+>
+> | Candidat | Verdict | Raison |
+> |---|---|---|
+> | ◆ | écarté | **déjà pris** — c'est le glyphe de *Run* dans le fil d'Ariane |
+> | ◎ | écarté | **déjà pris** — « Matrice publique » dans les quatre éditions |
+> | ⌖ | écarté | **3 polices système** le couvrent, contre 153 pour ⊙ |
+> | ⇉ | retenu | 19 polices — mieux couvert que **tout** ce qui est déjà en service (⛨ 4, ⛉ 5, ⠿ 7) |
+> | ⊙ | retenu | 153 polices, libre dans le dépôt |
+>
+> **Deux vérifications à faire avant d'ajouter un glyphe**, dans cet ordre :
+> `grep -r` sur le dépôt (une collision sémantique coûte plus cher qu'un
+> tofu), puis `fc-list ":charset=<codepoint>"` (les polices auto-hébergées du
+> projet ont un `unicode-range` qui **exclut les blocs de symboles** : tous
+> nos glyphes passent déjà par le fallback système — un glyphe neuf n'ajoute
+> pas un risque d'un genre nouveau, mais il faut le choisir dans un bloc
+> largement couvert). ⚠ Ces comptages valent pour la machine de dev ; un
+> contrôle à l'œil sur l'appareil de table reste nécessaire.
+
 ### 6.6 Les champs
 
 `forms.css` est sain. Les corrections :
@@ -1371,6 +1404,68 @@ Ajouter une entrée en fin de section, jamais au milieu.
 
 ---
 
+### 6.10 La piste (rail gradué)
+
+> **Un rail gradué répond à une question d'ÉCART** : qui est devant, qui est
+> derrière, et de combien. S'il faut lire pour le savoir, il a échoué.
+
+Introduit par la scène de course-poursuite (1.138.0), mais le patron n'a rien
+de spécifique à elle : il vaut pour **toute grandeur ordonnée à participants**
+— une échelle de distance, une progression, un classement.
+
+#### Anatomie
+
+```
+.chase-track                le ruban, une COLONNE
+├── .chase-outcome.is-caught   issue haute — nommée, avec sa condition
+├── .chase-anchor              l'ANCRE : l'origine du repère, collante
+├── .chase-band ×N             une bande = une ligne pleine largeur
+│   ├── .chase-band-key          libellé + échelle (la distance en clair)
+│   └── .chase-band-slots        les jetons, en grappe
+└── .chase-outcome.is-lost     issue basse
+```
+
+#### Les cinq règles
+
+**Loi — l'ancre est au début de la lecture, l'écart croît dans le sens de la
+lecture, et les deux bouts sont des ISSUES NOMMÉES.** Un rail sans ses deux
+fins n'a pas d'enjeu lisible : c'est une réglette. L'issue porte un mot
+(« Rattrapé », « Semé », « 1ᵉʳ ») **et** sa condition.
+
+**Loi — une seule orientation.** La piste est **verticale** à toutes les
+tailles. Le tracker est fait de colonnes : une piste horizontale y était un
+corps étranger, et le vertical rend les noms lisibles en entier là où
+l'horizontal les tronquait à cinq caractères. *L'invariant sémantique n'a
+qu'une incarnation — rien à réapprendre d'un écran à l'autre.*
+
+**Loi — trois canaux par jeton, jamais quatre.** Position (sa bande) ·
+la valeur qui décide · l'état de son test. Tout le reste descend d'un étage
+(l'initiative reste dans la file, les mètres dans l'infobulle).
+
+**Loi — la dominance se signale par l'ACCENT, pas par un glyphe de plus.**
+Le § 2 dit déjà que l'accent signale l'état actif ; un marqueur dédié aurait
+fait doublon. *Vérifié au passage : ◆ était déjà pris (le glyphe de Run) et ◎
+aussi (Matrice publique) — un audit de collision avant d'ajouter un signe
+coûte cinq minutes et évite un fil d'Ariane cassé.*
+
+**Loi — une valeur que l'app ne tient pas s'affiche `—` et se saisit d'un
+tap.** Jamais de dérivation inventée pour boucher un trou de données. C'est
+un principe de contenu autant que de design : un chiffre faux ne se détecte
+pas, un « — » se corrige.
+
+#### Densité : ce qui tombe, et ce qui ne tombe jamais
+
+| | Ce qui disparaît sous 640px | Ce qui reste, toujours |
+|---|---|---|
+| Bandes | l'échelle en mètres | le libellé, la bande elle-même |
+| Issues | la condition | le mot |
+| Jeton | rien — ses contrôles passent **à la ligne** | nom, valeur, cible ≥ 44px |
+
+**La densité dégrade, la forme non.** Un contrôle qu'on retire est un geste
+qu'on perd ; un contrôle qui passe à la ligne coûte 18px de hauteur.
+
+---
+
 ## 7. Accessibilité et conditions réelles
 
 Sur cet outil, l'accessibilité et l'ergonomie de table sont **le même
@@ -1416,6 +1511,15 @@ D'où la règle réelle, en trois pas :
 
 **Loi — plus un geste se répète en séance, plus sa cible est grande.** C'est
 le principe, pas le nombre.
+
+> **Corollaire découvert en 1.138.0 : un contrôle absent du bloc « CIBLES
+> TACTILES » n'a pas été *jugé* trop petit — il n'a jamais été jugé du tout.**
+> `.encounter-token`, le jeton du suivi de combat, n'y figurait pas. Ce n'était
+> pas un arbitrage de place (le même piège que `.monitor-box` avant lui), juste
+> un oubli que rien ne signalait : le bloc ne liste que ce qu'on y a pensé.
+> **Vérification à faire quand un composant devient fréquent** : `grep` sa
+> classe dans le bloc `@media (pointer: coarse)` de `responsive.css`. Absente
+> = à régler, pas à supposer conforme.
 
 *Correction du 2026-07-27 — la v1 de ce document se trompait ici.* Elle
 annonçait `.monitor-box` « à 20px, sous le plancher ». **C'est faux** :
@@ -1614,6 +1718,12 @@ relirez le plus souvent.
 - [ ] Rayon pris dans les 4 pas
 
 **Structure**
+- [ ] `min-width: 0` sur **chaque** conteneur flex d'une chaîne qui doit se
+      compresser — un enfant flex garde `min-width: auto` et refuse de
+      descendre sous la largeur de son contenu. Symptôme : ce n'est pas
+      l'élément fautif qui déborde, c'est son ANCÊTRE (mesuré en 1.138.0 :
+      un ruban exigeait 367px là où la colonne mobile en offrait 342, et
+      c'est la modale qui débordait de 23px)
 - [ ] Aucune classe neuve si un composant existant convient
 - [ ] Le thème n'a touché que couleur / typo / rayon / clip — jamais la géométrie
 - [ ] La surface est au bon niveau d'élévation (0 fond · 1 chrome · 2 objet · 3 overlay)
@@ -1634,6 +1744,8 @@ relirez le plus souvent.
 - [ ] Erreur : ce qui a échoué · ce que ça implique · la sortie
 
 **Le test de la table**
+- [ ] Mesuré à **375px** : ni la page ni la modale ne défilent
+      horizontalement (`scrollWidth > clientWidth` sur les deux)
 - [ ] À un mètre, les yeux plissés : l'état de l'objet est-il lisible ?
 - [ ] Si on m'interrompt maintenant, ai-je perdu quelque chose ?
 - [ ] Ce geste demande-t-il de se souvenir de quoi que ce soit ?

@@ -12,6 +12,71 @@ commit.
 
 ## [Non publié]
 
+## [1.138.0] — 2026-07-31
+
+### Ajouté
+
+- **La scène de course-poursuite — un troisième moteur, et une piste pour le
+  jouer.** Le suivi de combat savait faire tourner l'initiative et une
+  intrusion ; il sait maintenant faire tourner une poursuite, à pied ou en
+  véhicule. « ⇉ Scène Poursuite » (menu ⋯) ouvre une **piste verticale** : la
+  cible de la poursuite est ancrée en haut, l'écart croît vers le bas, et
+  chaque bout porte son issue avec la condition du livre — *rattrapé* d'un
+  côté, *semé* de l'autre. Les participants s'y posent en un geste, se
+  déplacent d'une bande aux chevrons ▲▼, et la piste dit à voix haute ce
+  qu'elle sait : « Plus proche : Proche · plus loin : Moyenne · 3 sans test ».
+  En SR5 et SR6 la poursuite tourne **avec** l'initiative (les deux livres
+  l'exigent) ; en Anarchy elle tourne seule.
+- **Le chiffre qui décide le round, sur chaque jeton — et son sens écrit.** Le
+  livre SR6 fait dépendre le gain d'Atout d'un attribut **choisi par
+  l'environnement** (Intervalle de vitesse en dégagé et étroit, Accélération en
+  encombré ; Force ou Agilité à pied). Il est donc porté par le jeton, avec le
+  meilleur signalé par l'accent — et la barre dit d'où il vient et **ce qu'il
+  fait**, parce que le même nombre ne veut pas dire la même chose d'un livre à
+  l'autre : `+1 point d'Atout` en SR6, **`limite du test`** en SR5,
+  `avantage au test opposé` en Anarchy 2, `modificateur · règle optionnelle`
+  en Anarchy 1<sup>re</sup>. Un chiffre nu aurait été un piège.
+- **Le ⚄ du round lance ou pointe, selon qui joue.** Sur un PNJ dont l'app tient
+  la réserve, il lance vraiment (« ⚄ 11 », seuil affiché) et tranche ; sur un PJ,
+  il enregistre ce que le joueur annonce. Même doctrine que l'initiative : l'app
+  ne lance jamais les dés d'un joueur. Ce que l'échec coûte — test d'Accident,
+  4E à pied — est **proposé** avec sa réserve prête, jamais appliqué.
+- **Les 14 actions d'Atout de course-poursuite de SR6 sont enfin jouables.**
+  Elles étaient au catalogue depuis des mois, invisibles faute d'un endroit où
+  les proposer : leur hôte, au livre, est *« l'action majeure nécessaire au test
+  requis chaque round »* — donc la piste. Le ⇉ d'un jeton les déplie, filtrées
+  par le **rôle** que le livre leur donne : *Freinage brutal* et *Fuite !* à la
+  cible, *Aspiration* et *Cul-de-sac* aux poursuivants, et le compte des
+  écartées dit pourquoi. Une action trop chère se **ternit** au lieu de
+  disparaître — le livre écrit un prix, pas une interdiction.
+- **Course et filature, sans un écran de plus.** Les deux variantes de
+  *À tombeau ouvert* réutilisent la piste : en **course**, l'ancre devient
+  « Meneur » et les issues « 1ᵉʳ / Hors course » (le livre : *le premier tient
+  le rôle de cible*) ; en **filature**, le rythme passe en phases d'une minute
+  avec ses **deux tests**, l'Atout change de camp selon l'environnement, le dé
+  libre suit la distance, et la réserve de poursuite disparaît — « elle n'est
+  généralement pas accessible lorsque l'on file une cible ».
+- **Quatre actions de course-poursuite rendues à SR5** : Cascade, Couper la
+  route, Percuter, Rattraper / Prendre de l'avance. Seule « Conduite évasive »
+  était au catalogue, et par une autre porte (c'est une interruption).
+- **La poursuite suit la scène partout** : elle se range et se rouvre avec elle,
+  la sidebar résume l'écart (« 3 en piste · au plus près : Proche ») avec le
+  compteur du mode, et l'écran spectateur la projette **sans** les informations
+  de gestion — ni tests, ni réserves, ni attributs.
+
+### Modifié
+
+- **Le catalogue de véhicules SR6 récupère deux caractéristiques que le livre
+  imprime et que l'app n'avait pas** : l'**Intervalle de vitesse** et la
+  **Maniabilité hors route**. Les 49 véhicules et drones du livre de base sont
+  complétés (le Chrysler-Nissan Pursuit V, seul absent, a été ajouté au
+  passage). Sans elles, la piste aurait été muette sur deux environnements sur
+  trois. Les engins venus des autres ouvrages affichent « — » avec la saisie à
+  un tap : l'app demande, elle n'invente pas.
+- **Le jeton du suivi de combat entre dans les cibles tactiles.** Il n'y avait
+  jamais été réglé — un oubli, pas un choix, comme la case de moniteur avant
+  lui. La piste en fait le geste le plus fréquent d'une poursuite.
+
 ## [1.137.0] — 2026-07-31
 
 ### Ajouté

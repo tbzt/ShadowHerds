@@ -654,6 +654,11 @@ export const TourSteps = {
       body: "La rangée de jetons du tour portait le compte, mais pas la monnaie : majeures et mineures étaient étanches alors que le livre les fait converser (p.42). Deux boutons prolongent la rangée — « 1 majeure → 1 mineure » et « 4 mineures → 1 majeure », ce dernier étant le seul moyen d'attaquer deux fois dans le même tour. Seuls les échanges payables avec ce qui vous reste sont proposés. Attention, l'échange est à perte : descendre puis remonter coûte 3 mineures, comme dans le livre. C'est pourquoi le ↺ rend les jetons échangés du tour au lieu de proposer un aller-retour — et il refuse si vous avez déjà consommé ce qui en dépendait.",
     },
     {
+      id: "wn-poursuite", anchor: "nav-combat", tours: ["whatsnew"], since: "1.138.0", fallback: "center",
+      title: "Les courses-poursuites ont enfin une piste",
+      body: "Dans le suivi de combat, « ⋯ → ⇉ Scène Poursuite » ouvre une piste : la cible en haut, l'écart qui descend, et une issue à chaque bout — rattrapé d'un côté, semé de l'autre, avec la condition du livre. Posez tout le monde d'un geste, déplacez d'une bande aux chevrons ▲▼. Chaque jeton porte le chiffre qui décide le round (Intervalle de vitesse, Accélération, Vitesse, Mobilité selon l'édition ET l'environnement) et la barre dit ce qu'il fait : gain d'Atout en SR6, limite du test en SR5. Le ⚄ lance pour vos PNJ et se contente d'enregistrer ce que vos joueurs annoncent. En SR6, le ⇉ d'un jeton déplie les 14 actions d'Atout de course-poursuite, filtrées selon que le participant fuit ou poursuit.",
+    },
+    {
       id: "wn-etat-groupe", anchor: "nav-combat", tours: ["whatsnew"], since: "1.126.0", fallback: "center",
       title: "Poser un état sur plusieurs PNJ",
       body: "Une fumigène tombe, trois gardes deviennent Aveuglés : en bas du suivi de combat, « ⊘ État de groupe » ouvre un panneau où vous choisissez l'état puis cochez les combattants. Le bouton n'apparaît qu'à partir de deux cibles — à une seule, le ＋ de la fiche suffit. Sur une scène qui mêle les éditions, le panneau propose l'union des états connus et grise les cibles dont l'édition ignore celui que vous avez choisi, en le disant. La fiche, elle, ne change pas : son ＋ pose toujours sur un seul PNJ.",
