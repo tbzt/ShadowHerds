@@ -436,7 +436,7 @@ export const EncounterRenderer = {
       ${r.down ? `<span class="encounter-nrow-check" aria-hidden="true">✓</span>` : `<button type="button" class="encounter-nrow-check" data-action="narrative-toggle" data-id="${pnjId}" aria-pressed="${hasActed}" title="Marquer « joué »" aria-label="Marquer joué — ${fullName}">✓</button>`}
       <div class="stack encounter-nrow-body">
         <span class="encounter-nrow-name">${colorDot}${name}</span>
-        <span class="cluster"><span class="encounter-kind">${kind}</span>${comb}${this._rowStatuses(pnj)}</span>
+        <span class="cluster"><span class="encounter-kind">${kind}</span>${comb}${this._serviceBadge(r)}${this._rowStatuses(pnj)}</span>
       </div>
       ${status}
       ${this._lifeGauge(r)}
@@ -524,6 +524,29 @@ export const EncounterRenderer = {
     // ce badge est réutilisé (picker, carte active, ligne du tracker).
     if (Characters.data.all.some((c) => c.id === p.id)) return "PJ";
     return "PNJ";
+  },
+
+  /** Compteur de services (esprit) / tâches (sprite) restants, affiché à côté
+      du badge de type sur la ligne d'initiative (C-013) : c'est ce compteur
+      qui décide si l'entité tiendra encore au prochain bannissement, et il
+      n'existait jusqu'ici que sur la fiche — un écran plus loin que la piste
+      où la scène se joue. Champs déjà tenus par SummonPanel._reduceDismiss :
+      services/servicesUsed (esprit), tasks/tasksUsed (sprite). Rien pour une
+      entité libre (pas de service dû, cf. _spiritServicesBar) ni pour un
+      total nul (Anarchy sans mécanique chiffrée). */
+  _serviceBadge(r) {
+    const p = r.pnj;
+    if (!p || !p.ownerId) return "";
+    const isSprite = p.type === "sprite";
+    if (!isSprite && p.type !== "spirit") return "";
+    const totalKey = isSprite ? "tasks" : "services";
+    const usedKey = isSprite ? "tasksUsed" : "servicesUsed";
+    const total = p[totalKey] || 0;
+    if (!total) return "";
+    const left = Math.max(0, total - (p[usedKey] || 0));
+    const noun = isSprite ? "tâche" : "service";
+    const title = `${left} ${noun}${left > 1 ? "s" : ""} restant${left > 1 ? "s" : ""} sur ${total}`;
+    return `<span class="encounter-kind encounter-services${left <= 0 ? " is-depleted" : ""}" title="${title}">${left}/${total}</span>`;
   },
 
   /** Mini-jauge de vie : résumé du moniteur en barre fine, non
@@ -672,6 +695,7 @@ export const EncounterRenderer = {
         <div class="cluster encounter-name-row">
           ${isActive ? `<span class="encounter-active-flag" title="Tour actif" aria-label="Tour actif"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>` : ""}
           <span class="encounter-kind">${this._kindLabel(r)}</span>
+          ${this._serviceBadge(r)}
           ${nameHtml}
           ${r.down ? this._downBadge() : ""}
           ${!r.down && r.delayed ? this._delayedBadge() : ""}

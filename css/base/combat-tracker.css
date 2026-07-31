@@ -466,6 +466,20 @@
   border-color: var(--border);
 }
 
+/* C-013 — compteur de services/tâches d'un esprit ou d'un sprite invoqué, lu
+   sur la piste. Même gabarit que `.encounter-kind` (chiffre mono pour la
+   lecture au vol) ; --danger une fois épuisé (0 restant), symétrique de
+   `.encounter-init-eff.spent` : c'est le signal que l'entité repartira au
+   prochain bannissement. */
+.encounter-services {
+  font-family: var(--font-mono);
+  text-transform: none;
+}
+.encounter-services.is-depleted {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+}
+
 /* Marqueur de dominance du combattant actif. */
 .encounter-active-flag {
   color: var(--accent);
