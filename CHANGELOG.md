@@ -12,7 +12,29 @@ commit.
 
 ## [Non publié]
 
+### Ajouté
+
+- **Un run se termine enfin — et c'est le débrief qui le termine.** La
+  timeline savait ouvrir un run, jamais le fermer : le débrief racontait la
+  fin sans la marquer, si bien que l'index affichait un run joué il y a six
+  mois exactement comme celui de ce soir. Faire le débrief clôt désormais le
+  run, qui prend la mention **✓ Clos** et s'éteint dans la liste. Aucun geste
+  neuf à apprendre : la clôture suit un geste que vous faisiez déjà, au moment
+  où vous le faisiez.
+
+  Deux garde-fous. Un débrief **vide** ne clôt rien — ouvrir la modale par
+  curiosité ne termine pas votre run. Et clore est **réversible** : le message
+  de confirmation propose « Rouvrir » d'un clic, parce qu'on peut débriefer
+  trop tôt, ou rouvrir une affaire.
+
 ### Corrigé
+
+- **Le bouton qui effaçait votre scène survivait dans la liste des runs.** Le
+  correctif de la version 1.139.1 n'avait couvert qu'une des deux surfaces :
+  le poste de commandement. La rangée de chaque run, elle, proposait toujours
+  « Reprendre la scène » pendant qu'une scène tournait — le même chemin qui
+  restaure la version rangée et vide la scène en cours. Elle porte maintenant
+  la même bascule : **▶ Lancer · ▶ Rouvrir · ⏹ Fermer**.
 
 - **Les 33 actions d'Atout de « Feu Nourri » disent enfin leur seuil.** Elles
   étaient résumées d'un trait — « la cible perd en mobilité », « un malus à

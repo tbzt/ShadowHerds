@@ -351,6 +351,24 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+/* Run CLOS (débriefé) — même grammaire que `.play-live` (le marqueur d'état
+   de la rangée, à la même place), mais en registre ÉTEINT : un run fini ne
+   réclame rien, il se range. D'où `--text-dim` et non l'accent d'édition, qui
+   est réservé à ce qui tourne. Aucune propriété neuve : on hérite la mise en
+   forme et on ne change que la couleur. */
+.play-run.is-closed .play-run-name,
+.play-run-closed {
+  color: var(--text-dim);
+}
+.play-run-closed {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
 
 /* B1 — Le Pont : la campagne en POSTE D'AIGUILLAGE (peau FROIDE, niveau
    campagne). Contraste voulu avec la coquille Cockpit chaude : cadre neutre,

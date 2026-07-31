@@ -403,20 +403,26 @@ export const Play = {
     const stashed = Encounter.hasStash(run.id);
     const hasTopos = typeof RunGen !== "undefined" && RunGen.forDossier(run.id).length > 0;
 
+    const closed = Dossiers.isClosed(run.id);
+    // Le run CLOS le dit avant tout le reste : sans ça, l'index montrait un run
+    // joué il y a six mois exactement comme un run de ce soir.
     const liveBadge = live
       ? `<span class="play-live" title="Scène en cours"><span class="tb-crumb-live" aria-hidden="true"></span>En cours</span>`
-      : "";
-    // Reprendre : proposé si une scène tourne (live) ou a été rangée (stashed).
-    // 1a : toujours un bouton — la scène se REPREND (vivante), se ROUVRE
-    // (rangée) ou se LANCE (aucune scène encore jouée). Les trois délèguent à
-    // DossierBar.openRencontre ; Encounter.restore initialise une scène vierge
-    // liée au dossier quand aucun stash n'existe (rien créé ici — délégation).
+      : closed
+        ? `<span class="play-run-closed" title="Run débriefé et clos">✓ Clos</span>`
+        : "";
+    // 1a : toujours UN bouton, et c'est la même BASCULE qu'au poste de
+    // commandement — ▶ Lancer / ▶ Rouvrir / ⏹ Fermer. Cette rangée portait
+    // encore « Reprendre la scène » sur une scène VIVANTE, c'est-à-dire le
+    // chemin destructeur corrigé en 1.139.1 : `openRencontre` → `restore`
+    // relit le stash, jamais resynchronisé pendant qu'on joue, et vidait la
+    // scène. Le correctif ne couvrait qu'une des deux surfaces.
     const resumeLabel = live
-      ? "Reprendre la scène"
+      ? "⏹ Fermer la rencontre"
       : stashed
-        ? "Ouvrir la rencontre"
-        : "Lancer la scène";
-    const resumeBtn = `<button class="btn-secondary btn-small" data-action="play-resume" data-dossier="${run.id}">${resumeLabel}</button>`;
+        ? "▶ Rouvrir la rencontre"
+        : "▶ Lancer la scène";
+    const resumeBtn = `<button class="btn-secondary btn-small" data-action="${live ? "play-close" : "play-resume"}" data-dossier="${run.id}">${resumeLabel}</button>`;
     const toposBtn = hasTopos
       ? `<button class="btn-secondary btn-small" data-action="show-panel" data-panel="run">Voir le topos</button>`
       : "";
@@ -425,7 +431,7 @@ export const Play = {
     // rangé ; sinon rien (run préparé sans scène encore jouée).
     const body = live ? this._liveSceneHtml() : stashed ? this._stashSummaryHtml(run.id) : "";
 
-    return `<div class="play-run${live ? " is-live" : stashed ? " is-stashed" : ""}">
+    return `<div class="play-run${live ? " is-live" : stashed ? " is-stashed" : ""}${closed ? " is-closed" : ""}">
       <div class="cluster play-run-head">
         <button class="play-run-name" data-action="play-enter" data-dossier="${run.id}" title="Ouvrir « ${CardRenderer._esc(run.name)} » ici — poste de commandement">
           <span class="play-run-icon" aria-hidden="true">◆</span>${CardRenderer._esc(run.name)}

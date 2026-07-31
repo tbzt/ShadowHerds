@@ -262,14 +262,37 @@ export const Debrief = {
       }
     }
 
+    // 4. CLÔTURE — arbitrage utilisateur (2026-07-31) : faire le débrief EST le
+    //    geste de fin d'un run. Le run s'ouvrait (`RunGen.toDossier`) sans que
+    //    rien ne le ferme, donc l'index montrait à jamais des runs joués il y a
+    //    six mois comme s'ils tournaient encore. Aucun geste neuf à apprendre :
+    //    la clôture SUIT le débrief au lieu de s'ajouter à côté.
+    //    Volontairement APRÈS les trois écritures : un débrief vide ne clôt
+    //    rien (le MJ a ouvert la modale par curiosité, pas pour finir le run).
+    const wroteSomething = !!(written || notes || relChanged);
+    const closed = wroteSomething && !Dossiers.isClosed(runId) && Dossiers.closeRun(runId);
+
     this.hide();
 
-    if (written || notes || relChanged) {
-      // Perche vers le carnet (socle VIS-2 `toastAction`) : y consigner d'un clic.
-      toastAction(`Débrief de « ${runName} » enregistré.`, "Voir le carnet", () => {
-        DossierBar.select(runId);
-        Notepad.open();
-      });
+    if (wroteSomething) {
+      // Clore est RÉVERSIBLE (on peut débriefer trop tôt) : la perche offre
+      // l'annulation tant qu'elle est à l'écran, sinon elle mène au carnet.
+      // Une seule action par toast — on ne pose pas deux verbes concurrents.
+      if (closed) {
+        toastAction(`« ${runName} » est débriefé et clos.`, "Rouvrir", () => {
+          Dossiers.closeRun(runId, false);
+          if (typeof Play !== "undefined") Play.render();
+          DossierBar.render();
+          toast(`« ${runName} » est rouvert.`);
+        });
+      } else {
+        toastAction(`Débrief de « ${runName} » enregistré.`, "Voir le carnet", () => {
+          DossierBar.select(runId);
+          Notepad.open();
+        });
+      }
+      if (typeof Play !== "undefined") Play.render();
+      DossierBar.render();
     } else {
       toast("Rien à enregistrer — aucune bascule saisie.");
     }

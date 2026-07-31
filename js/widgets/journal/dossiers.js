@@ -309,6 +309,39 @@ export const Dossiers = {
     return true;
   },
 
+  /** Clôture d'un run — le seul état de FIN de la timeline Campagne › Run ›
+      Scène. Jusqu'ici un run s'ouvrait (`RunGen.toDossier`) et rien ne le
+      fermait : le débrief RACONTAIT la fin sans la MARQUER, donc l'index
+      montrait à jamais des runs joués il y a six mois comme s'ils étaient en
+      cours.
+
+      Arbitrage utilisateur (2026-07-31) : **c'est le débrief qui clôt** —
+      aucun geste neuf à apprendre, et le MJ le fait déjà au bon moment
+      (`Debrief._apply`). Voir `PLANS/DESIGN_VERBES_SCENE_CLOTURE.md` § 5.
+
+      Champ ADDITIF `closedAt` (ISO), comme `sceneType` ou `chase: null` : un
+      dossier écrit avant ce jour le lit `undefined`, ce que `isClosed` traite
+      comme ouvert — aucune migration, pas de `SCHEMA_VERSION` à bouger.
+
+      RÉVERSIBLE par construction : clore n'est pas détruire (on peut
+      débriefer trop tôt, ou rouvrir une affaire). `closeRun(id, false)`
+      rouvre en SUPPRIMANT le champ, jamais en posant un faux. */
+  closeRun(id, closed = true) {
+    const node = this.get(id);
+    if (!node || node.kind !== "run") return false;
+    if (closed) node.closedAt = new Date().toISOString();
+    else delete node.closedAt;
+    this.save();
+    return true;
+  },
+
+  /** Un run est-il clos ? Faux pour tout ce qui n'est pas un run clos —
+      campagne, scène, dossier de rangement, run encore ouvert. */
+  isClosed(id) {
+    const node = this.get(id);
+    return !!(node && node.kind === "run" && node.closedAt);
+  },
+
   /** Déplace un nœud sous un nouveau parent (null = racine). Refuse un
       cycle (se replacer sous soi-même ou l'un de ses descendants). */
   move(id, newParentId) {
