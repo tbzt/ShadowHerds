@@ -12,6 +12,30 @@ commit.
 
 ## [Non publié]
 
+## [1.139.1] — 2026-07-31
+
+### Corrigé
+
+- **Le bouton qui rangeait votre scène a cessé de l'effacer.** Dans « Jouer »,
+  pendant qu'une scène tournait, le poste de commandement proposait
+  « Reprendre la scène » — un verbe qui **relit la version rangée** de la
+  rencontre. Or tant qu'on joue, la version rangée n'est jamais remise à
+  jour : sur une scène lancée puis jamais fermée, il n'y en avait tout
+  simplement aucune. Mesuré avant correction : trois combattants au round 4,
+  un clic, **zéro combattant au round 1**. Ce bouton n'existe plus dans cet
+  état.
+
+### Modifié
+
+- **« Jouer » sait enfin refermer une scène, pas seulement l'ouvrir.** Le
+  geste existait — au menu ⋯ de la barre de dossiers, et au pied d'une carte
+  de topos — mais pas là où la séance se passe. Le bouton du poste de
+  commandement devient une bascule franche : **▶ Lancer la scène** quand rien
+  n'a été joué, **▶ Rouvrir la rencontre** quand elle est rangée, **⏹ Fermer
+  la rencontre** quand elle tourne. Mêmes mots et même glyphe qu'ailleurs, et
+  la perche « Débriefer » se tend d'elle-même au rangement. Conduire le tour
+  reste au suivi de combat : Jouer est la porte, le tracker est la pièce.
+
 ## [1.139.0] — 2026-07-31
 
 ### Ajouté

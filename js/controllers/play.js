@@ -40,7 +40,20 @@ export const Play = {
         case "play-resume":
           // Rouvre la scène de ce run (restaure + focus + tracker) — un seul
           // geste, réutilise la mécanique de la barre de dossiers (R4).
+          // ⚠ `openRencontre` → `Encounter.restore` RELIT le stash : ne jamais
+          // l'offrir sur une scène VIVANTE (le stash n'est pas resynchronisé
+          // par `save()`, cf. `_runCommandHtml`).
           DossierBar.openRencontre(id);
+          break;
+        case "play-close":
+          // La moitié manquante de la porte : Jouer savait ouvrir une scène,
+          // pas la refermer (`close-rencontre` ne vivait qu'au menu ⋯ de la
+          // barre de dossiers et au pied de carte de topos). Même méthode que
+          // ces deux surfaces — Jouer n'ajoute aucune logique : `closeRencontre`
+          // range le bundle (stash), remet le filtre du journal, ferme le
+          // tracker et tend la perche « Débriefer » (VIS-7) sur un run.
+          DossierBar.closeRencontre(id);
+          this.render();
           break;
         case "play-first-run":
           // VIS-3 — crée le premier run (dossier typé « run ») et le pose EN
@@ -515,21 +528,33 @@ export const Play = {
   _runCommandHtml(run) {
     const live = App.context && App.context.scene === run.id;
     const stashed = Encounter.hasStash(run.id);
-    // 1a : toujours un bouton — la scène se REPREND (vivante), se ROUVRE
-    // (rangée) ou se LANCE (aucune scène encore jouée). Les trois délèguent à
-    // DossierBar.openRencontre ; Encounter.restore initialise une scène vierge
-    // liée au dossier quand aucun stash n'existe (rien créé ici — délégation).
+    // 1a : toujours UN bouton, et c'est une BASCULE — la scène se FERME
+    // (vivante), se ROUVRE (rangée) ou se LANCE (jamais jouée). Miroir exact du
+    // couple déjà écrit en une ligne à `runrenderer.js:_rencontreAction` ; même
+    // verbe, même mot, même glyphe que le menu ⋯ de la barre de dossiers
+    // (Grammaire, loi 3). Jouer ne crée rien : tout délègue à DossierBar.
+    //
+    // ⚠ Pourquoi la branche vivante ne peut PAS rester « Reprendre la scène » :
+    // `openRencontre` → `Encounter.restore` REMPLACE l'état par le bundle rangé
+    // (`encounter.js:430`), et `save()` n'écrit que la scène courante — le stash
+    // n'est jamais resynchronisé pendant qu'on joue. Sur une scène vivante
+    // jamais rangée, ce bouton restaurait donc une scène VIDE. Mesuré sur cette
+    // build avant correction : 3 combattants / round 4 → 0 combattant / round 1
+    // en un clic. Le tracker reste joignable par la topbar, la nav « Combat »,
+    // la sidebar, la bottom-nav et le raccourci « c ».
     const resumeLabel = live
-      ? "Reprendre la scène"
+      ? "⏹ Fermer la rencontre"
       : stashed
-        ? "Ouvrir la rencontre"
-        : "Lancer la scène";
+        ? "▶ Rouvrir la rencontre"
+        : "▶ Lancer la scène";
     // Briefing (§4.2) — décision utilisateur : le CTA de lancement CHAUFFE en
     // accent même dans une coquille FROIDE (il fait basculer vers le chaud). En
-    // live, le shell est déjà chaud → le « Reprendre » reste secondaire (pas de
-    // redondance criée). Un seul CTA primaire par poste de commandement.
+    // live, le shell est déjà chaud → fermer reste secondaire (pas de redondance
+    // criée, et ranger n'est pas détruire : jamais `--danger`). Un seul CTA
+    // primaire par poste de commandement.
     const launchClass = live ? "btn-secondary" : "btn-primary";
-    const resumeBtn = `<button class="${launchClass} btn-small" data-action="play-resume" data-dossier="${run.id}">${resumeLabel}</button>`;
+    const resumeAction = live ? "play-close" : "play-resume";
+    const resumeBtn = `<button class="${launchClass} btn-small" data-action="${resumeAction}" data-dossier="${run.id}">${resumeLabel}</button>`;
     // Corps de scène : vivante (projection) · rangée (résumé) · aucune (invite).
     const scene = live
       ? this._liveSceneHtml()
@@ -537,11 +562,10 @@ export const Play = {
         ? this._stashSummaryHtml(run.id)
         : `<div class="play-scene is-idle"><span class="play-stash-note">Aucune scène en cours — préparez, puis lancez le combat.</span></div>`;
 
-    // VIS-8 étape 2 — les trois MOMENTS DE JEU. Les zones existaient déjà ; on
-    // les NOMME et on les ordonne, sans rien inventer (topos+casting = Avant ;
-    // scène+intrusion = Pendant ; débrief = Après). Le vivant garde sa perche
-    // privilégiée (doctrine Campagne›Run›Scène) : quand une scène tourne,
-    // « Pendant » passe en tête ; à l'arrêt, « Avant » (la prépa) ouvre la lecture.
+    // Le corps de l'onglet « Préparation ». Le nom `avant` est le dernier
+    // vestige des trois MOMENTS DE JEU (VIS-8 étape 2, empilés et nommés
+    // Avant/Pendant/Après) — remplacés par les ONGLETS ci-dessous en 1.109.0.
+    // Ce n'est plus un moment, c'est le contenu d'un onglet.
     const avant =
       this._toposGlanceHtml(run.id) +
       this._castHtml(run.id, { convokeCta: true }) +
@@ -1116,17 +1140,6 @@ export const Play = {
     return `<div class="cluster play-cockpit-jalons" role="tablist">${[["prep", "Préparation"], ["enjeu", "En jeu"], ["close", "Clôture"]]
       .map(([id, label]) => `<button class="play-jalon${id === tab ? " is-now" : ""}" role="tab" aria-selected="${id === tab}" data-action="play-cockpit-tab" data-dossier="${run.id}" data-tab="${id}">${label}</button>`)
       .join("")}</div>`;
-  },
-
-  /** VIS-8 étape 2 — enveloppe une zone du poste de commandement d'un
-      « sourcil » discret qui NOMME le moment de jeu (Avant / Pendant / Après).
-      `when` = le moment, `hint` = ce qu'on y fait. Pur habillage : aucune
-      donnée, aucune logique — le contenu reste projeté/délégué par l'appelant. */
-  _momentHtml(when, hint, inner) {
-    return `<div class="play-moment">
-      <div class="cluster play-moment-label"><span class="play-moment-when">${when}</span><span class="play-moment-hint">${hint}</span></div>
-      ${inner}
-    </div>`;
   },
 
   /** Clôture (§4.2) — le débrief comme un BILAN qui fait plaisir (couleur d'état
