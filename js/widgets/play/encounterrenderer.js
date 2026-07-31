@@ -2298,8 +2298,9 @@ export const EncounterRenderer = {
     // la cherche autour du bouton (Utils.nearest), il lui faut ce voisin.
     // `null` là où l'édition n'a pas d'états — aucun `if App.edition` ici.
     // A3 n°5 — `quickOnly` : le rack froid porte les accès direct et RIEN de
-    // plus (8 états en SR6, 6 en SR5/A1, 3 en A2) ; le second étage vit sur la
-    // carte, à trois boutons de là par le ⛶. Une posture, une densité.
+    // plus (9 états en SR6 depuis Surpris/CT-4, 6 en SR5 et A1, 3 en A2) ; le
+    // second étage vit sur la carte, à trois boutons de là par le ⛶. Une
+    // posture, une densité.
     const st = CardRenderer.statusParts(pnj, undefined, {
       plusClass: "react-btn react-status-btn",
       quickOnly: true,

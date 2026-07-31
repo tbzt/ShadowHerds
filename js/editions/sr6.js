@@ -1533,6 +1533,41 @@ export const EditionSR6 = {
         "Les micros et détecteurs inorganiques entendent normalement",
         "Version supérieure : les appareils sont affectés aussi",
       ] },
+      // CT-4 (tranché par l'utilisateur le 2026-07-31 : Surprise oui, Port non
+      // — Port est descriptif, il n'a rien à motoriser).
+      //
+      // ⚠ Surprise N'EST PAS dans le chapitre des états (p.55-58) : elle vit
+      // p.112, côté Initiative. Elle entre quand même au catalogue, et le
+      // précédent est dans la maison — SR5 porte son propre `surpris` sourcé
+      // « p.193-194 », soit son chapitre Combat. Un état est ici ce que le MJ
+      // POSE sur une ligne, pas une section de sommaire.
+      //
+      // `halts` et non `forbids` : le livre n'interdit aucune action NOMMÉE, il
+      // dit « ils ne peuvent pas agir » avec une liste blanche (se défendre,
+      // encaisser). C'est exactement la frontière posée en F3b — `forbids`
+      // grise une puce que le livre désigne, `halts` pose un rappel en tête de
+      // feuille et ne grise RIEN, parce que la liste blanche est un arbitrage.
+      //
+      // `until: "round"` : le livre borne l'effet au PREMIER round de combat
+      // (« une fois le premier round terminé, ils peuvent agir normalement »),
+      // ce qui est l'unité de tour de SR6 — pas besoin de l'échelle de portées
+      // qu'exigeait le Surpris SR5, borné lui à la passe.
+      //
+      // « Ne peut pas dépenser d'Atout » reste du TEXTE : aucun canal ne bloque
+      // l'Atout aujourd'hui, et le catalogue affiche sans appliquer tant que la
+      // mécanique n'existe pas (doctrine E1). Ne pas inventer le canal ici.
+      //
+      // Le test qui détermine la surprise (Réaction + Intuition, seuil 3) n'est
+      // PAS motorisé : c'est un jet d'ouverture de scène que l'app ne tient pas,
+      // et les embusqués ne le lancent même pas. Il est dit, le MJ le fait.
+      { key: "surpris", name: "Surpris", levels: 0, quick: true, page: "p.112", until: "round",
+        halts: { why: "surpris, le personnage ne peut pas agir de son propre chef", except: "se défendre contre les attaques, encaisser les dommages" }, lines: [
+        "Test pour l'éviter : Réaction + Intuition (3) — les embusqués ne le lancent pas",
+        "Lance son initiative et prend son rang, mais n'agit pas du premier round",
+        "Ne peut pas dépenser de points d'Atout pendant ce round",
+        "Se défend et encaisse normalement — seules les actions de son propre chef sont refusées",
+        "Le premier round terminé, il agit normalement",
+      ] },
       { key: "trempe", name: "Trempé", levels: 0, page: "p.55-58",
         cancels: ["enflamme"], cancelledBy: ["enflamme"], lines: [
         "−6 dés pour résister aux dommages de froid et d'électricité",

@@ -14,6 +14,21 @@ commit.
 
 ### Ajouté
 
+- **L'état Surpris entre au catalogue SR6.** L'embuscade était la seule
+  ouverture de combat que l'app ne savait pas noter : le MJ tenait de tête qui
+  ne joue pas le premier round. Surpris rejoint les états en accès direct, avec
+  la règle du livre — le personnage prend son rang d'initiative mais n'agit pas
+  de son propre chef pendant le premier round, ne dépense pas d'Atout, et se
+  défend et encaisse normalement. L'état s'éteint tout seul au changement de
+  round.
+
+  Rien n'est grisé sur sa feuille d'actions, et c'est voulu : le livre
+  n'interdit aucune action nommée, il dit « ne peut pas agir » avec des
+  exceptions. Un rappel s'affiche en tête, le MJ tranche — la même frontière
+  que Figé ou Paniqué. Le test qui détermine la surprise (Réaction + Intuition,
+  seuil 3) est écrit sur la pastille mais reste à votre table : les embusqués
+  ne le lancent même pas.
+
 - **Un run se termine enfin — et c'est le débrief qui le termine.** La
   timeline savait ouvrir un run, jamais le fermer : le débrief racontait la
   fin sans la marquer, si bien que l'index affichait un run joué il y a six
