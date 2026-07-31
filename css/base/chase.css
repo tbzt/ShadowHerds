@@ -170,6 +170,13 @@
 .chase-track {
   display: flex;
   flex-direction: column;
+  /* `min-width: 0` : sans lui, un enfant flex garde `min-width: auto` et
+     refuse de descendre sous la largeur de son contenu — le ruban exigeait
+     alors 367px là où la colonne mobile n'en offre que 342, et c'est la
+     MODALE qui débordait de 23px (mesuré à 375px, les 4 éditions). Le
+     coupable n'était pas la piste elle-même : c'est la chaîne des enfants
+     flex qui ne se compressait pas. */
+  min-width: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -249,6 +256,7 @@
 .chase-band {
   display: flex;
   align-items: stretch;
+  min-width: 0;
   min-height: 52px;
   border-bottom: 1px dashed color-mix(in srgb, var(--border) 90%, transparent);
 }
@@ -299,6 +307,10 @@
 .chase-tok {
   display: flex;
   align-items: center;
+  /* Les contrôles (test, avantage, chevrons, ancre, feuille) sont
+     incompressibles : sur un écran étroit ils passent À LA LIGNE au lieu de
+     pousser la piste hors de l'écran. La densité dégrade, la forme non. */
+  flex-wrap: wrap;
   gap: var(--sp-1);
   flex: 1 1 auto;
   min-width: 0;
@@ -742,6 +754,12 @@ button.chase-tok-val.is-void {
   }
   .chase-band-key {
     flex: 0 0 66px;
+  }
+  /* Le nom peut tomber à zéro (ellipsis) : c'est la seule pièce compressible
+     du jeton, et c'est ce qui permet au ruban de tenir dans 342px. */
+  .chase-tok-name {
+    flex: 1 1 3rem;
+    min-width: 0;
   }
   .chase-outcome-cond {
     display: none;
