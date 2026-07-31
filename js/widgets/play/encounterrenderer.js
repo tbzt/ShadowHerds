@@ -126,7 +126,23 @@ export const EncounterRenderer = {
     let leadHtml = "";
     let waitingHtml;
     if (narrative) {
-      waitingHtml = liveQueue.map((x) => this._rowNarrative(x.r)).join("");
+      // Même split qu'en ordonné (D1), avec un « actif » choisi autrement : pas
+      // le tour (il n'y en a pas), mais le focus posé par le tap (this.
+      // _narrativeFocusId, résolu plus haut). Sans cette isolation, la fiche
+      // (juste après ce bloc dans le flux mobile) atterrissait toujours en
+      // tête d'écran, alors que la ligne focus pouvait être n'importe où dans
+      // l'ordre manuel — d'où l'aller-retour de scroll. L'ordre manuel du
+      // RESTE n'est pas perturbé : on retire une ligne de la file, on ne la
+      // retrie pas.
+      const leadIdx = this._narrativeFocusId
+        ? liveQueue.findIndex((x) => x.r.pnjId === this._narrativeFocusId)
+        : -1;
+      const lead = leadIdx >= 0 ? liveQueue[leadIdx] : null;
+      leadHtml = lead ? this._rowNarrative(lead.r) : "";
+      waitingHtml = liveQueue
+        .filter((x) => x !== lead)
+        .map((x) => this._rowNarrative(x.r))
+        .join("");
     } else {
       const active = liveQueue[0];
       leadHtml = active
