@@ -1384,11 +1384,20 @@ export const DiceRoller = {
     p.removeAttribute("hidden");
     void p.offsetWidth;
     p.classList.add("show");
-    // D7 : pas de champ fiable à pré-sélectionner (mode de tir/greffon/options
-    // se choisissent au clic, section Gain conditionnelle) — la croix, même
-    // patron que le reste de la famille.
     this._prerollReleaseTrap = FocusTrap.activate(p.querySelector(".risk-panel"));
-    document.getElementById("preroll-close").focus();
+    // B3.2 (C-010) — le focus initial va sur « Lancer les dés », pas sur ✕.
+    //
+    // Mesuré (audit, scénario B-sr6) : ce panneau s'ouvre à chaque défense/
+    // encaissement dès qu'un Atout est abordable (mode "panel", par défaut) —
+    // 4 des 7 gestes d'un tour de PJ. Le tap qui ouvre le panneau reste
+    // nécessaire (l'app ne devine pas si le MJ veut dépenser), mais le second
+    // geste peut redevenir une touche : `preroll-plain` EST le jet normal
+    // (« Lancer les dés », jamais « sans Chance » — cf. commentaire au-dessus),
+    // toujours rendu, contrairement aux options de dépense (conditionnelles).
+    // Le reste de la famille de panneaux (D7, pas de champ fiable) garde ✕ —
+    // celui-ci en a un, fiable et permanent : l'exception est nommée, pas une
+    // dérive.
+    document.getElementById("preroll-plain").focus();
   },
 
   /** (Re)rend le bandeau de budget + la liste des options de DÉPENSE d'Edge.
