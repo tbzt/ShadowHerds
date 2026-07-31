@@ -13,6 +13,7 @@ import { Ammo } from "../rules/ammo.js";
 import { AnarchyAtouts } from "../rules/anarchyatouts.js";
 import { CardPeek } from "../widgets/card/cardpeek.js";
 import { CardRenderer } from "../widgets/card/cardrenderer.js";
+import { ChaseRenderer } from "../widgets/play/chaserenderer.js";
 import { Characters } from "./characters.js";
 import { Dialog } from "../widgets/kit/dialog.js";
 import { Dice } from "../rules/dice.js";
@@ -26,6 +27,7 @@ import { ItemResolver } from "../rules/itemresolver.js";
 import { Matrix } from "../rules/matrix.js";
 import { Nudge } from "../widgets/tour/nudge.js";
 import { PnjLookup } from "./pnjlookup.js";
+import { Pursuit } from "./pursuit.js";
 import { Servers } from "./servers.js";
 import { Shadows } from "./shadows.js";
 import { Statuses } from "../rules/statuses.js";
@@ -2952,6 +2954,9 @@ export const Encounter = {
       this._activeICCount(srv),
       this._activeMatrixServers(),
     );
+    // ⇉ La piste. `viewModel()` renvoie null quand aucune poursuite n'est
+    // ouverte : le rendu se masque alors tout seul, sans garde ici.
+    ChaseRenderer.render(Pursuit.viewModel());
   },
   /** RÉVISION D'ÉTAT — incrémentée dès que quelque chose change dans la scène
       ou chez un de ses combattants. Sert de clé de cache à la fiche active du
@@ -3368,6 +3373,50 @@ export const Encounter = {
           if (modal) modal.classList.toggle("rail-compact");
           break;
         }
+        /* ---- ⇉ Course-poursuite (lot P2) ----
+           Tout est délégué à `Pursuit`, qui mute l'état de scène et
+           persiste : ce switch ne fait qu'aiguiller, comme pour la
+           Matrice. Les libellés des positions viennent de l'édition, pas
+           d'ici. */
+        case "chase-open":
+          Pursuit.open({});
+          break;
+        case "chase-close":
+          Pursuit.close();
+          break;
+        case "chase-terrain":
+          Pursuit.setTerrain(el.dataset.key);
+          break;
+        case "chase-env":
+          Pursuit.setEnv(el.dataset.key);
+          break;
+        case "chase-target":
+          Pursuit.setTarget(el.dataset.id);
+          break;
+        case "chase-move":
+          Pursuit.move(el.dataset.id, parseInt(el.dataset.delta, 10) || 0);
+          break;
+        case "chase-test":
+          Pursuit.cycleTest(el.dataset.id);
+          break;
+        case "chase-edge":
+          Pursuit.toggleEdgeUp(el.dataset.id);
+          break;
+        case "chase-attr":
+          Pursuit.promptAttr(el.dataset.id);
+          break;
+        case "chase-drop":
+          Pursuit.drop(el.dataset.id, el.dataset.reason);
+          break;
+        case "chase-restore":
+          Pursuit.restore(el.dataset.id);
+          break;
+        case "chase-fill":
+          Pursuit.fill(el.dataset.key);
+          break;
+        case "chase-end-round":
+          Pursuit.endRound();
+          break;
         case "toggle-scene-type":
           this.toggleSceneType();
           break;

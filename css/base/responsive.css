@@ -665,6 +665,28 @@
     width: 44px;
     height: 44px;
   }
+  /* ⇉ Piste de poursuite (P2) — et, du même coup, le JETON DU RAIL, qui
+     n'avait JAMAIS été réglé ici : c'est un oubli, pas un choix, exactement
+     comme `.monitor-box` à 20px l'était (relevé au CODIR du 2026-07-31).
+     La piste en fait le geste le plus fréquent de la scène : déplacer d'une
+     bande, cocher un test. Les chevrons et les marques montent à 32px (geste
+     répété, plancher WCAG 24px), le jeton à 44. */
+  .encounter-token {
+    min-height: 44px;
+  }
+  .chase-tok {
+    min-height: 48px;
+  }
+  .chase-move button,
+  .chase-mark,
+  .chase-out button,
+  button.chase-tok-val.is-void {
+    width: 32px;
+    min-height: 32px;
+  }
+  .chase-chip {
+    min-height: 32px;
+  }
   .dice-count-input {
     width: 54px;
     min-height: 38px;

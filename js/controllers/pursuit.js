@@ -294,6 +294,52 @@ export const Pursuit = {
   summary() {
     return Chase.summary(this.edition(), this.state());
   },
+
+  /** Le paquet complet que le rendu consomme — assemblé ICI (couche 5, seule
+      à pouvoir lire les fiches) pour que `ChaseRenderer` reste PUR : il reçoit
+      des données déjà résolues et rend du HTML, comme `EncounterRenderer`.
+      → null si aucune poursuite n'est ouverte (le rendu se masque alors). */
+  viewModel() {
+    const st = this.state();
+    if (!st) return null;
+    const ed = this.edition();
+    const m = this.model();
+    if (!m) return null;
+    const rows = this.rows();
+    const target = this.targetRow();
+    const dominantId = this.dominant();
+    const byLane = {};
+    for (const r of rows) if (!r.out && r.lane) (byLane[r.lane] ||= []).push(r);
+    const terr = m.terrains[st.terrain] || {};
+    return {
+      round: st.round,
+      mode: st.mode,
+      glyph: m.glyph || "⇉",
+      terrain: st.terrain,
+      terrains: Object.entries(m.terrains).map(([key, t]) => ({ key, label: t.label, unruled: !!t.unruled })),
+      terrainNote: terr.note || "",
+      unruled: !!terr.unruled,
+      testLabel: terr.testLabel || "",
+      testRequired: !!(m.round && m.round.test && m.round.test.required),
+      testCost: (m.round && m.round.test && m.round.test.cost) || "",
+      opposed: !!(m.round && m.round.test && m.round.test.opposed),
+      actions: (m.round && m.round.actions) || [],
+      env: st.env,
+      envs: Chase.envs(ed).map((e) => ({ key: e.key, label: e.label, examples: e.examples || "" })),
+      envLabel: (Chase.env(ed, st.env) || {}).label || "",
+      attr: Chase.attrSpec(ed, st.env, st.terrain),
+      failCost: Chase.failCost(ed, st),
+      lanes: Chase.lanes(ed, st.terrain).map((l) => ({ ...l, rows: byLane[l.key] || [] })),
+      target,
+      dominantId,
+      outcomes: Chase.outcomes(ed, st) || { caught: null, lost: null },
+      summary: this.summary(),
+      dropped: rows.filter((r) => r.out),
+      unplaced: rows.filter((r) => !r.out && !r.lane),
+      poolOn: !!(m.edge && m.edge.chasePool),
+      poolLabel: (m.edge && m.edge.poolLabel) || "Réserve",
+    };
+  },
 };
 
 // Pont couche 5 (migration modules ES) — retiré en fin de migration.

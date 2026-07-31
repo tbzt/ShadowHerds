@@ -39,6 +39,7 @@
   <link rel="stylesheet" href="css/base/cards-linked.css">
   <link rel="stylesheet" href="css/base/chargen.css">
   <link rel="stylesheet" href="css/base/matrix.css">
+  <link rel="stylesheet" href="css/base/chase.css">
   <link rel="stylesheet" href="css/base/focus.css">
   <link rel="stylesheet" href="css/base/tour.css">
   <link rel="stylesheet" href="css/base/nudge.css">
@@ -731,11 +732,19 @@
                 <!-- K1 : rail compact (mobile) vs liste complète — bascule de classe. -->
                 <button type="button" role="menuitem" class="card-menu-item" data-action="toggle-rail" title="Basculer réglette compacte / liste complète">☰ Réglette / Liste</button>
                 <!-- R2-E : scène Matrice autonome (moteur Matrice seul, pas d'initiative). -->
+                <!-- ⇉ Le 3ᵉ moteur : il s'AJOUTE au combat (SR5/SR6, où le livre
+                     fait tourner l'initiative pendant la poursuite) ou tourne seul
+                     (Anarchy, sans initiative) — cf. Encounter.setMotor. -->
+                <button type="button" role="menuitem" class="card-menu-item" id="encounter-chase-toggle" data-action="chase-open" title="Ouvrir une course-poursuite — piste de positions, à pied ou en véhicule">⇉ Scène Poursuite</button>
                 <button type="button" role="menuitem" class="card-menu-item" id="encounter-scene-type-toggle" data-action="toggle-scene-type" title="Basculer entre scène de combat et scène Matrice seule (decker qui infiltre pendant que les autres négocient)">⚡ Scène Matrice</button>
                 <button type="button" role="menuitem" class="card-menu-item danger" data-action="clear-encounter">Vider la scène</button>
               </div>
             </div>
           </div>
+          <!-- ⇉ P2 : la piste de poursuite, montage « colonne principale »
+               (< 1000px). Son jumeau docké vit plus bas dans .encounter-body ;
+               ChaseRenderer écrit dans les deux, le CSS n'en montre qu'un. -->
+          <div id="encounter-chase-inline" class="encounter-chase-inline" hidden></div>
           <div id="encounter-add-panel" class="encounter-add-panel" hidden></div>
           <!-- K1 : réglette compacte (rail de jetons, sous 641px par défaut) — sœur de la liste complète, jamais les deux visibles à la fois. -->
           <div id="encounter-rail" class="encounter-rail"></div>
@@ -766,6 +775,9 @@
         </div>
         <!-- Fiche du combattant actif (cf. EncounterRenderer.renderActiveCard) : masquée pour un PJ ad-hoc ou une scène vide. -->
         <div id="encounter-active-card" class="encounter-active-card" hidden></div>
+        <!-- ⇉ P2 : la piste en COLONNE (≥1000px) — verticale, elle entre dans
+             la grille du tracker sans la déformer (cf. PLANS/DESIGN_SCENE_POURSUITE). -->
+        <div id="encounter-chase-dock" class="encounter-chase-dock" hidden></div>
         <!-- K6 : 3ᵉ colonne ≥1100px — même contenu que #matrix-drawer (deux
              montages du même rendu, cf. EncounterRenderer.renderMatrix), visible
              seulement si un serveur est lié (.has-matrix-dock posé par JS). -->
@@ -960,6 +972,7 @@
   <script type="module" src="js/widgets/card/cyberdeckrenderer.js"></script>
   <script type="module" src="js/widgets/card/personarenderer.js"></script>
   <script type="module" src="js/widgets/play/encounterrenderer.js"></script>
+  <script type="module" src="js/widgets/play/chaserenderer.js"></script>
   <script type="module" src="js/widgets/play/spectatorview.js"></script>
   <script type="module" src="js/controllers/servergen.js"></script>
   <script type="module" src="js/controllers/servers.js"></script>

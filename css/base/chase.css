@@ -1,0 +1,525 @@
+/* ============================================================
+   PISTE DE COURSE-POURSUITE (moteur ⇉) — lot P2.
+
+   Une COLONNE : l'ancre (la cible de la poursuite) en haut et collante,
+   l'écart qui croît vers le bas, une issue nommée à chaque bout. Verticale
+   à toutes les tailles — décision du CODIR : le tracker est fait de
+   colonnes, et le vertical rend les noms lisibles en entier là où
+   l'horizontal les tronquait à cinq caractères.
+
+   Deux montages du même HTML (cf. ChaseRenderer.render) :
+     · #encounter-chase-dock   — colonne à droite, ≥ 1000px
+     · #encounter-chase-inline — en tête de la colonne principale, en dessous
+   Le CSS n'en montre qu'un ; JS écrit dans les deux.
+
+   Tokens uniquement (checklist de PR § Tokens) : aucune couleur littérale,
+   aucun pas d'espacement ni de rayon hors échelle. Le seul objet accentué
+   de la piste est le DOMINANT (`.is-top`) — l'accent signale l'état actif,
+   il n'est jamais décoratif.
+   ============================================================ */
+
+/* ---- Les deux hôtes ---- */
+.encounter-chase-dock {
+  display: none;
+}
+.encounter-chase-inline {
+  margin-bottom: var(--sp-3);
+}
+@media (min-width: 1000px) {
+  .encounter-modal.has-chase .encounter-chase-dock {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 300px;
+    max-width: 320px;
+    max-height: 100%;
+    overflow-y: auto;
+    background: var(--bg-card);
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+    border-radius: var(--radius-lg);
+    padding: var(--sp-2);
+  }
+  /* Un seul montage visible : au-dessus de 1000px, c'est la colonne. */
+  .encounter-chase-inline {
+    display: none;
+  }
+}
+
+/* ---- En-tête ---- */
+.chase-head {
+  gap: var(--sp-1);
+  align-items: center;
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--border);
+}
+.chase-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  text-transform: var(--title-transform);
+  letter-spacing: var(--title-spacing);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+.chase-glyph {
+  font-size: var(--fs-md);
+}
+.chase-round {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+.chase-chip {
+  font: inherit;
+  font-size: var(--fs-xs);
+  min-height: 24px;
+  padding: 0 var(--sp-2);
+  background: var(--bg-mid);
+  color: var(--text);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.chase-chip.is-on {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.chase-chip:hover,
+.chase-chip:focus-visible {
+  border-color: var(--accent);
+}
+
+/* ---- La barre qui NOMME l'attribut du round et son sens ----
+   Sans elle, le chiffre des jetons mentirait d'une édition à l'autre. */
+.chase-attr-bar {
+  gap: var(--sp-2);
+  align-items: baseline;
+  padding: var(--sp-2) 0;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+}
+.chase-attr-cause {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.chase-attr-what {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  letter-spacing: 0.06em;
+  color: var(--text);
+  text-transform: var(--title-transform);
+}
+.chase-attr-means {
+  color: var(--accent);
+}
+.chase-fail {
+  margin-left: auto;
+  color: var(--warning);
+}
+/* Terrain que l'édition ne règle pas : on le DIT, on ne le comble pas. */
+.chase-unruled {
+  margin: var(--sp-2) 0;
+  padding: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--text);
+  background: color-mix(in srgb, var(--warning) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 30%, var(--border));
+  border-radius: var(--radius-sm);
+}
+
+/* ---- Bandeau d'état (phrase calculée) ---- */
+.chase-state {
+  margin: var(--sp-2) 0;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+.chase-state b {
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+.chase-state b.is-danger {
+  color: var(--danger);
+}
+.chase-state b.is-good {
+  color: var(--success);
+}
+.chase-state b.is-warn {
+  color: var(--warning);
+}
+.chase-state.is-empty {
+  color: var(--text-dim);
+}
+.chase-link {
+  font: inherit;
+  font-size: var(--fs-xs);
+  min-height: 24px;
+  padding: 0 var(--sp-1);
+  background: none;
+  border: 0;
+  border-bottom: 1px dashed var(--border-ui);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+/* ---- Le ruban ---- */
+.chase-track {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+/* Les deux ISSUES : hachures + couleur sémantique (jamais l'accent
+   d'édition, qui est réservé au dominant). */
+.chase-outcome {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-2xs);
+}
+.chase-outcome-word {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+.chase-outcome-cond {
+  color: var(--text-dim);
+}
+.chase-outcome.is-caught {
+  border-bottom: 1px solid var(--border);
+  background: repeating-linear-gradient(
+    135deg,
+    transparent 0 6px,
+    color-mix(in srgb, var(--danger) 12%, transparent) 6px 12px
+  );
+}
+.chase-outcome.is-caught .chase-outcome-word {
+  color: var(--danger);
+}
+.chase-outcome.is-lost {
+  border-top: 1px solid var(--border);
+  background: repeating-linear-gradient(
+    135deg,
+    transparent 0 6px,
+    color-mix(in srgb, var(--success) 12%, transparent) 6px 12px
+  );
+}
+.chase-outcome.is-lost .chase-outcome-word {
+  color: var(--success);
+}
+
+/* L'ancre : origine du repère, collante en haut du ruban. */
+.chase-anchor {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 14%, var(--bg-card)), var(--bg-card));
+  border-bottom: 2px solid var(--accent);
+}
+.chase-anchor-lbl {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.chase-anchor-hint {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+}
+.chase-anchor .btn-icon-tiny {
+  margin-left: auto;
+}
+
+/* Une bande = une ligne pleine largeur. Les vides se compriment : c'est
+   ce qui rend l'écart lisible d'un mètre. */
+.chase-band {
+  display: flex;
+  align-items: stretch;
+  min-height: 52px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--border) 90%, transparent);
+}
+.chase-band:last-of-type {
+  border-bottom: 0;
+}
+.chase-band.is-empty {
+  min-height: 30px;
+  opacity: 0.6;
+}
+.chase-band-key {
+  flex: 0 0 78px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 var(--sp-2);
+  border-right: 1px solid var(--border);
+  background: var(--bg-mid);
+}
+.chase-band-name {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.chase-band-dist {
+  font-size: var(--fs-2xs);
+  color: color-mix(in srgb, var(--text-dim) 65%, transparent);
+}
+.chase-band-slots {
+  flex: 1 1 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-1);
+  min-width: 0;
+}
+.chase-band-dot {
+  color: color-mix(in srgb, var(--text-dim) 45%, transparent);
+  font-size: var(--fs-sm);
+}
+
+/* ---- Le jeton ----
+   Trois canaux : position (sa bande) · attribut · état du test. Plus la
+   tendance et l'avantage positionnel. */
+.chase-tok {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  padding: var(--sp-1);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}
+.chase-tok.is-top {
+  border-color: var(--accent);
+  box-shadow: inset 0 -3px 0 var(--accent);
+}
+.chase-tok.is-top .chase-tok-val {
+  color: var(--accent);
+}
+.chase-tok.is-anchor {
+  flex: 0 1 auto;
+  background: transparent;
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+.chase-tok-lbl {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+}
+.chase-tok-val {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--fs-md);
+  line-height: 1;
+  color: var(--text);
+}
+/* Valeur que l'app ne tient pas du livre : bouton de saisie, jamais un
+   chiffre inventé. */
+button.chase-tok-val.is-void {
+  min-height: 24px;
+  padding: 0 var(--sp-1);
+  background: none;
+  color: var(--text-dim);
+  border: 1px dashed var(--border-ui);
+  border-radius: var(--radius-sm);
+  font-weight: 400;
+  cursor: pointer;
+}
+.chase-tok-name {
+  font-size: var(--fs-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.chase-trend {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  padding: 0 var(--sp-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--text-dim);
+  flex: none;
+}
+.chase-trend.is-up {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+}
+.chase-trend.is-down {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 45%, var(--border));
+}
+.chase-pool {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent);
+  flex: none;
+}
+.chase-mark {
+  font: inherit;
+  font-size: var(--fs-xs);
+  line-height: 1;
+  width: 24px;
+  min-height: 24px;
+  padding: 0;
+  flex: none;
+  background: var(--bg-mid);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.chase-mark.is-ok {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 45%, var(--border));
+}
+.chase-mark.is-ko {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--border));
+}
+.chase-mark.is-edge {
+  opacity: 0.45;
+}
+.chase-mark.is-edge.is-on {
+  opacity: 1;
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+}
+.chase-mark.is-anchor-set {
+  opacity: 0.5;
+}
+.chase-mark.is-anchor-set:hover,
+.chase-mark.is-anchor-set:focus-visible {
+  opacity: 1;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+/* Le geste principal : chevrons visibles AU REPOS (le tactile n'a pas de
+   survol) — le glisser reste un bonus, jamais le seul chemin. */
+.chase-move {
+  display: flex;
+  gap: 1px;
+  flex: none;
+}
+.chase-move button {
+  font: inherit;
+  font-size: var(--fs-2xs);
+  line-height: 1;
+  width: 24px;
+  min-height: 24px;
+  padding: 0;
+  background: var(--bg-mid);
+  color: var(--text-dim);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.chase-move button:hover,
+.chase-move button:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ---- Hors piste / hors course ---- */
+.chase-unplaced,
+.chase-dropped {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-top: var(--sp-2);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+}
+.chase-dropped-lbl {
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.chase-out {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0 var(--sp-1);
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  opacity: 0.8;
+}
+.chase-out em {
+  color: var(--text-dim);
+  font-style: normal;
+}
+.chase-out button {
+  font: inherit;
+  font-size: var(--fs-2xs);
+  width: 24px;
+  min-height: 24px;
+  padding: 0;
+  background: none;
+  color: var(--text-dim);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+/* ---- Pied : rappel du test + action primaire ---- */
+.chase-foot {
+  gap: var(--sp-2);
+  align-items: center;
+  margin-top: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--border);
+}
+.chase-recall {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.chase-end {
+  margin-left: auto;
+  min-height: 44px;
+}
+
+/* ---- Densité : sous 640px, ce qui tombe est le RAPPEL et la distance,
+   jamais la forme (décision n°7 : la densité dégrade, pas la géométrie). ---- */
+@media (max-width: 640px) {
+  .chase-band-dist {
+    display: none;
+  }
+  .chase-band-key {
+    flex: 0 0 66px;
+  }
+  .chase-outcome-cond {
+    display: none;
+  }
+  .chase-attr-bar {
+    gap: var(--sp-1);
+  }
+  .chase-fail {
+    margin-left: 0;
+  }
+}
