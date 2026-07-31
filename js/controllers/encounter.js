@@ -3146,17 +3146,55 @@ export const Encounter = {
       fait rien quand aucune carte du PNJ n'est dans le DOM. */
   _refreshCards() {
     if (!this.state) return;
+    this._refreshDue = false; // la dette est soldée par le travail lui-même
     for (const c of this.state.combatants) {
       const pnj = PnjLookup.find(c.pnjId);
       if (pnj) CardRenderer.refresh(pnj); // no-op si aucune carte n'est rendue
     }
   },
 
+  /** Dette de rafraîchissement accumulée pendant que le cockpit éclipse la
+      bibliothèque (cf. `_scheduleRefreshCards`), soldée à la fermeture. */
+  _refreshDue: false,
+
+  /** Le cockpit ÉCLIPSE-t-il les cartes de la bibliothèque ? Vrai quand il est
+      ouvert — c'est une modale plein écran à toutes les largeurs (le dock
+      latéral n'existe plus depuis D4, cf. B1.8/C-003), et `#main-body` est
+      même sorti du rendu par `content-visibility` (foundation.css).
+
+      EXCEPTION, et c'est la seule : le coup d'œil (`#card-peek-overlay`)
+      s'ouvre PAR-DESSUS le cockpit (z-index 510 > 500) et montre une VRAIE
+      carte — là une carte est bel et bien regardée, on la tient à jour. */
+  _cockpitEclipsesCards() {
+    if (!document.documentElement.classList.contains("is-cockpit-open")) return false;
+    const peek = document.getElementById("card-peek-overlay");
+    return !(peek && peek.classList.contains("visible"));
+  },
+
   /** B2.1 — `_refreshCards` sort du chemin synchrone. Il est COALESCÉ : dix
       mutations d'affilée ne rafraîchissent qu'une fois, à la frame suivante.
-      Les cartes vivent derrière le dock (visibles ≥641px), une frame de retard
-      ne se voit pas ; le geste, lui, gagne le temps entier. */
+
+      Vague 4.1 (suite de `f00fb59`) — ET IL NE PART PAS DU TOUT tant que le
+      cockpit éclipse la bibliothèque. `f00fb59` a sorti `#main-body` du RENDU
+      (`content-visibility`) : le navigateur ne peint plus la sous-couche. Mais
+      le JS, lui, continuait de reconstruire les 12 cartes à chaque tour —
+      `CardRenderer.refresh` rebâtit des chaînes HTML, ce qu'aucune propriété
+      CSS ne peut empêcher. On refaisait donc, à chaque « Tour suivant », le
+      HTML de cartes que personne ne regarde.
+
+      MESURÉ (A/B alterné, 3 blocs de 12 clics chacun, échauffement écarté,
+      12 PNJ SR6, PAR-DESSUS `f00fb59`) : médiane par clic **184,5 → 61,4 ms,
+      −67 %**. C'est le franchissement du budget de l'audit (« mutation →
+      rendu < 100 ms »), jamais atteint jusqu'ici : 375 ms avant `f00fb59`,
+      184 après, 61 avec ce report.
+
+      La dette est soldée à la fermeture (`close`), où les cartes redeviennent
+      regardées — donc rien ne se voit périmé, jamais. */
   _scheduleRefreshCards() {
+    if (this._cockpitEclipsesCards()) {
+      this._refreshDue = true;
+      return;
+    }
     if (this._refreshHandle) return;
     this._refreshHandle = requestAnimationFrame(() => {
       this._refreshHandle = null;
@@ -3322,6 +3360,16 @@ export const Encounter = {
       this._releaseTrap();
       this._releaseTrap = null;
     }
+    // Vague 4.1 — la bibliothèque redevient regardée : on solde ici la dette
+    // de rafraîchissement accumulée sous le voile (cf. `_scheduleRefreshCards`).
+    //
+    // Appel DIRECT, pas `_scheduleRefreshCards` : c'est le seul point où la
+    // CORRECTION est en jeu (des cartes périmées redeviennent visibles), et on
+    // ne la fait pas dépendre d'une frame — un `rAF` ne se déclenche pas si
+    // l'onglet ne compose pas (arrière-plan, panneau navigateur intégré),
+    // constaté à la vérification. La fermeture n'est pas un chemin chaud : on
+    // paie une fois, au moment où le MJ quitte le combat.
+    if (this._refreshDue) this._refreshCards();
   },
 
   /* ---- Glisser-déposer pour réordonner (Vague C1, refonte « feel sticker ») ----
