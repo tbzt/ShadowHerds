@@ -711,19 +711,33 @@ export const EncounterRenderer = {
     </${tag}>`;
   },
 
-  /** Jeton narratif (Anarchy) : puce/✓ au lieu d'une init, tap = bascule « a
-      joué » (même action que la ligne narrative). */
+  /** Jeton narratif (Anarchy) : puce/✓ au lieu d'une init. Le jeton ENTIER
+      met le combattant en focus (data-action="focus-active", même geste
+      dominant que _rowNarrative) — la puce ✓/• est un contrôle dédié imbriqué
+      (data-action="narrative-toggle", gagne via closest() sur le tap précis)
+      pour marquer « joué » sans changer le focus. Avant ce split, la réglette
+      compacte (seule vue dispo sous 640px en mode rail) ne posait QUE
+      narrative-toggle : aucune affordance mobile pour choisir le PNJ actif. */
   _tokenNarrative(r) {
     const { pnjId, hasActed, pnj } = r;
     const { alias, family, full } = Utils.parseName(pnj.name);
     const name = Utils.escHtml(alias || family || full);
     const fullName = Utils.escHtml(full);
     const avatar = r.isPJ ? CardRenderer._pcAvatar(pnj) : "";
-    const cls = ["stack", "encounter-token", hasActed && "has-acted", r.down && "down"].filter(Boolean).join(" ");
-    return `<button class="${cls}" data-action="narrative-toggle" data-id="${pnjId}" title="${fullName}">
-      <span class="encounter-token-init">${hasActed ? "✓" : "•"}</span>
+    const isFocused = pnjId === this._narrativeFocusId;
+    const cls = [
+      "stack",
+      "encounter-token",
+      hasActed && "has-acted",
+      r.down && "down",
+      isFocused && "active-turn",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    return `<div class="${cls}" data-action="focus-active" data-id="${pnjId}" role="button" tabindex="0" aria-current="${isFocused ? "true" : "false"}" title="Toucher pour voir ses actions">
+      <button type="button" class="encounter-token-init" data-action="narrative-toggle" data-id="${pnjId}" aria-pressed="${hasActed}" title="Marquer « joué »">${hasActed ? "✓" : "•"}</button>
       <span class="encounter-token-name">${avatar}${name}</span>
-    </button>`;
+    </div>`;
   },
 
   /** Filtre de recherche du picker. Conservé côté renderer, comme

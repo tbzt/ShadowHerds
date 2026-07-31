@@ -1897,6 +1897,16 @@ export const Encounter = {
       this._sortInPlace();
     }
     this.state.turnIndex = this._firstEligibleIndex();
+    // Anarchy (narratif) : rien ne pilote le focus MJ comme `turnIndex` le
+    // fait en ordonné — sans ce reset, `_narrativeFocus` (encounterrenderer.js)
+    // le retrouve toujours en tête de sa recherche et il ne bouge plus JAMAIS
+    // tout seul (« Round suivant » semblait boucler sur le même PNJ, fiche et
+    // écran spectateur compris). Il retombe sur le premier « à jouer », comme
+    // au tout premier rendu (state.focusId à null, cf. `_empty()`).
+    if (model.narrative) {
+      this.state.focusId = null;
+      EncounterRenderer._narrativeFocusId = null;
+    }
     this._commit();
     // VIS-10 B1 — le Round de combat EST l'horloge de l'intrusion liée :
     // avancer le Round déploie la CI du tour (SR5 p.249, SR6 p.188, A2 p.223)

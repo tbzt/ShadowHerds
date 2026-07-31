@@ -1087,6 +1087,20 @@
   font-size: var(--fs-md);
   color: var(--accent);
 }
+/* Jeton narratif : la puce ✓/• est un <button> imbriqué (narrative-toggle
+   dédié, cf. _tokenNarrative) — reset du chrome par défaut, le jeton parent
+   porte déjà le focus-active dominant. */
+button.encounter-token-init {
+  border: none;
+  background: none;
+  padding: 0.2rem;
+  margin: -0.2rem;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+button.encounter-token-init:active {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
 .encounter-token-name {
   font-size: var(--fs-2xs);
   max-width: 3.4rem;
