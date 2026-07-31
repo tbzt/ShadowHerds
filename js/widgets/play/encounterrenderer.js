@@ -1800,13 +1800,23 @@ export const EncounterRenderer = {
       // V7 — « Agir produit » : la console montre l'OFFENSE (② Armes → ③ Sorts·
       // Matrice·Pouvoirs → ④ Compétences, cf. CardRenderer.offenseBlocks), PAS
       // la fiche complète ni le bloc moniteur (il ne subit rien à son tour ; le
-      // malus est cuit dans les réserves, la vie est dans l'effectif). ① Actions
-      // = _activeEconomy (posé juste au-dessus). L'état maintenu ⟳ / les drogues
-      // (R1) sont réémis en tête des blocs par offenseBlocks. Rollables câblés
-      // par la délégation document-level (DiceRoller), inchangée.
+      // malus est cuit dans les réserves, la vie est dans l'effectif). L'état
+      // maintenu ⟳ / les drogues (R1) sont réémis en tête des blocs par
+      // offenseBlocks. Rollables câblés par la délégation document-level
+      // (DiceRoller), inchangée.
+      //
+      // B2.4 (C-009) — l'OFFENSE passe AVANT ① Actions (_activeEconomy).
+      //
+      // Mesuré (audit, scénario B-sr6) : la pastille de jet (⚄N, weapon-pool)
+      // était sous la ligne de flottaison — `jet_dans_l_ecran = false` — parce
+      // qu'elle vient après le budget d'actions ET la feuille d'actions nommées
+      // (jusqu'à 78 puces chez un PNJ Matrice/magie). « Attaquer » n'a pourtant
+      // pas de puce dédiée dans la feuille : c'est CE bloc, ou rien. Armes
+      // rendent toujours en tête d'offenseBlocks (② avant ③/④, cf. ce fichier),
+      // donc l'inverser suffit à remonter la première pastille de jet sans
+      // dupliquer aucun rendu.
       box.innerHTML = `<div class="cluster encounter-mode-head is-agir${modeEnter ? " mode-enter" : ""}">Agir · ${this._compactName(pnj.name)}</div>
-        <div class="encounter-active-top">${this._activeTop(active, state)}</div>
-        <div class="encounter-active-economy">${this._activeEconomy(active, model)}</div>`;
+        <div class="encounter-active-top">${this._activeTop(active, state)}</div>`;
       const deps = CardRenderer.liveDeps();
       const offense = CardRenderer.offenseBlocks(pnj, deps);
       if (offense != null) {
@@ -1843,6 +1853,10 @@ export const EncounterRenderer = {
         CardRenderer.applyView(combatPnj, "combat");
         box.appendChild(CardRenderer.render(combatPnj, [], CardRenderer.liveDeps()));
       }
+      box.insertAdjacentHTML(
+        "beforeend",
+        `<div class="encounter-active-economy">${this._activeEconomy(active, model)}</div>`,
+      );
       box.insertAdjacentHTML("beforeend", this._activeNote(active));
     }
   },
