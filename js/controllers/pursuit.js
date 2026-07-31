@@ -404,6 +404,13 @@ export const Pursuit = {
   /** Quelle feuille d'actions est dépliée — état de VUE éphémère (jamais
       persisté), comme `_activeCardId` du tracker. */
   _sheetFor: null,
+  /** Réglages dépliés (mode/terrain/environnement) — état de vue éphémère.
+      Repliés par défaut : on les touche une fois par scène. */
+  _settingsOpen: false,
+  toggleSettings() {
+    this._settingsOpen = !this._settingsOpen;
+    Encounter._render();
+  },
   toggleSheet(pnjId) {
     this._sheetFor = this._sheetFor === pnjId ? null : pnjId;
     Encounter._render();
@@ -516,11 +523,32 @@ export const Pursuit = {
           parcourue). */
       sheetFor: this._sheetFor || null,
       sheet: this._sheetFor ? this.edgeActionsFor(this._sheetFor) : null,
+      /** L'état du participant dont la fiche est ouverte : la fiche porte
+          désormais les GESTES que le jeton ne montre plus sur écran étroit
+          (ancrer, avantage, réserve, sortie, saisie). Sans elle, masquer ces
+          boutons les aurait supprimés — ils sont déplacés, pas retirés. */
+      sheetRow: this._sheetFor
+        ? (this.rows().find((r) => r.pnjId === this._sheetFor) || null)
+        : null,
+      sheetIsTarget: this._sheetFor && st.targetId === this._sheetFor,
       sheetName: this._sheetFor ? (PnjLookup.find(this._sheetFor) || {}).name || "?" : "",
       resourceLabel: (() => {
         const pnj = this._sheetFor ? PnjLookup.find(this._sheetFor) : null;
         return pnj ? EdgeActions.resourceLabel(pnj) : "Atout";
       })(),
+      /** Résolution de nom pour le rendu (qui ne connaît pas les fiches). */
+      nameOf: (id) => (PnjLookup.find(id) || {}).name || "?",
+      /** Vierge = aucun déplacement, aucun test, aucun round joué : c'est le
+          moment où l'amorce sert, et le seul. */
+      /** ⚠ On itère sur `lanes`, pas sur `prev` : ancrer un participant le
+          RETIRE des bandes, et comparer `prev` à un `lanes` devenu
+          `undefined` faisait passer la piste pour « déjà jouée » dès le
+          premier ancrage — l'amorce ne s'affichait donc jamais. */
+      vierge:
+        st.round === 1 &&
+        !Object.keys(st.tested).length &&
+        !Object.keys(st.lanes).some((k) => st.prev[k] && st.prev[k] !== st.lanes[k]),
+      settingsOpen: !!this._settingsOpen,
       recap: (() => {
         const r = st.log && st.log[0];
         if (!r) return null;

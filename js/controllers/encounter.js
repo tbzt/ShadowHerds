@@ -3492,6 +3492,9 @@ export const Encounter = {
         case "chase-total":
           Pursuit.setTotal(parseInt(el.dataset.delta, 10) || 0);
           break;
+        case "chase-settings":
+          Pursuit.toggleSettings();
+          break;
         case "chase-sheet":
           Pursuit.toggleSheet(el.dataset.id);
           break;

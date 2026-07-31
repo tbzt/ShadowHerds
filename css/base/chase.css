@@ -132,16 +132,56 @@
   border-radius: var(--radius-sm);
 }
 
-/* ---- Bandeau d'état (phrase calculée) ---- */
+/* ---- Bandeau d'état : LA phrase, celle qu'on lit en premier ----
+   Elle était en 10px entre deux barres de réglage ; un MJ ouvrait, ne
+   comprenait pas, et refermait. Elle passe en taille de lecture, en tête,
+   et nomme les gens plutôt que les bandes. */
 .chase-state {
   margin: var(--sp-2) 0;
-  font-size: var(--fs-xs);
+  font-size: var(--fs-base);
+  line-height: 1.35;
   color: var(--text-dim);
 }
 .chase-state b {
-  font-family: var(--font-mono);
   color: var(--text);
 }
+/* Amorce du premier usage : dit les trois gestes, puis s'efface au premier
+   déplacement — une aide permanente devient du bruit. */
+.chase-amorce {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-2xs);
+  color: color-mix(in srgb, var(--text-dim) 80%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  padding-left: var(--sp-2);
+}
+.chase-amorce b {
+  color: var(--text-dim);
+}
+
+/* ---- Réglages repliables (mode · terrain · environnement) ----
+   Touchés une fois par scène : ils ne méritent pas 8 chips permanents sur
+   375px. Repliés par défaut, dépliés au-dessus de 640px où la place existe. */
+.chase-settings {
+  display: none;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+.chase-settings.is-open {
+  display: flex;
+  flex-basis: 100%;
+  order: 9;
+  padding-top: var(--sp-1);
+}
+@media (min-width: 641px) {
+  .chase-settings {
+    display: flex;
+  }
+  .chase-settings-toggle {
+    display: none;
+  }
+}
+/* Les noms restent en police de LECTURE : c'est une phrase, pas un relevé.
+   (Le mono d'origine venait de la version sténo, remplacée en 1.138.1.) */
 .chase-state b.is-danger {
   color: var(--danger);
 }
@@ -358,6 +398,13 @@ button.chase-tok-val.is-void {
   cursor: pointer;
 }
 .chase-tok-name {
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
   font-size: var(--fs-xs);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -616,6 +663,46 @@ button.chase-tok-val.is-void {
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
+/* Les gestes du participant — ceux que le jeton ne porte plus sur écran
+   étroit. Séparés des actions d'Atout par un filet : ce ne sont pas des
+   règles du livre, ce sont des gestes de suivi. */
+.chase-sheet-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  padding-bottom: var(--sp-2);
+  margin-bottom: var(--sp-2);
+  border-bottom: 1px dashed var(--border);
+}
+.chase-sheet-acts button {
+  font: inherit;
+  font-size: var(--fs-2xs);
+  min-height: 32px;
+  padding: 0 var(--sp-2);
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.chase-sheet-acts button.is-on {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.chase-sheet-pool {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+}
+.chase-sheet-pool b {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  min-width: 1.4rem;
+  text-align: center;
+}
 .chase-acts {
   display: flex;
   flex-wrap: wrap;
@@ -760,6 +847,39 @@ button.chase-tok-val.is-void {
   .chase-tok-name {
     flex: 1 1 3rem;
     min-width: 0;
+  }
+  /* La barre d'attribut tenait sur trois lignes (57px) : elle se resserre
+     en une ligne — la cause, l'attribut, son sens. Le coût d'un échec est
+     déjà rappelé sur la bande concernée, il n'a pas à l'être deux fois. */
+  .chase-attr-bar {
+    padding: var(--sp-1) 0;
+    font-size: var(--fs-2xs);
+  }
+  .chase-attr-what {
+    font-size: var(--fs-sm);
+  }
+  .chase-fail {
+    display: none;
+  }
+
+  /* ── La hiérarchie mobile (1.138.1) ──────────────────────────────────
+     Le jeton portait NEUF boutons et passait sur deux lignes : 42 contrôles
+     dans une piste de 375px. Il n'en garde que trois — ceux de la boucle du
+     round : ⚄ tester, ▲▼ déplacer. Ancrer, avantage positionnel, réserve et
+     actions d'Atout vivent dans la FICHE, qu'un tap sur le nom ouvre.
+     Aucun geste n'est perdu : il est déplacé, et c'est ce qui rend la piste
+     lisible d'un coup d'œil. */
+  .chase-tok .is-secondary,
+  .chase-pool.is-secondary {
+    display: none;
+  }
+  .chase-tok {
+    flex-wrap: nowrap;
+  }
+  .chase-tok-name {
+    text-align: left;
+    text-decoration: underline dotted color-mix(in srgb, var(--accent) 45%, transparent);
+    text-underline-offset: 3px;
   }
   .chase-outcome-cond {
     display: none;

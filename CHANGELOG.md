@@ -12,6 +12,32 @@ commit.
 
 ## [Non publié]
 
+## [1.138.1] — 2026-07-31
+
+### Corrigé
+
+- **La piste de poursuite était illisible sur téléphone.** Retour d'usage sans
+  appel : *« j'ai ouvert, j'ai regardé, et je suis parti en me disant que
+  c'était trop compliqué »*. Le compte donnait raison — **42 boutons** dans une
+  piste de 375px, **9 par jeton** (qui passait donc sur deux lignes), et
+  **39 % de la hauteur en chrome**, dont huit puces de réglage qu'on ne touche
+  qu'une fois par scène. Trois corrections, dans l'ordre où elles répondent au
+  problème :
+  - **la phrase d'état passe en tête, en taille de lecture, et nomme les
+    gens** : « Knight Errant est au contact · 3 n'ont pas encore testé » au
+    lieu d'un « Plus proche : Proche · plus loin : Moyenne » en 10px coincé
+    entre deux barres de réglage ;
+  - **le jeton retombe à trois gestes** — ⚄ tester, ▲▼ déplacer. Ancrer,
+    avantage positionnel, réserve, sortie de course et actions d'Atout vivent
+    dans la **fiche du participant**, qu'un tap sur son nom ouvre. Aucun geste
+    n'est supprimé : ils sont déplacés là où on les cherche ;
+  - **les réglages se replient** derrière un bouton qui résume l'état
+    (« ⚙ En véhicule · Étroit »), et une **ligne d'amorce** dit les trois
+    gestes tant qu'on n'a rien déplacé — puis s'efface.
+  Mesuré après : 20 boutons, jeton sur une seule ligne (44px), en-tête de 89 à
+  33px, piste de 670 à 552px. **Au-dessus de 640px rien ne change** : la place
+  existe, les réglages restent dépliés et le jeton garde ses dix contrôles.
+
 ## [1.138.0] — 2026-07-31
 
 ### Ajouté
