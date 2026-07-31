@@ -1888,7 +1888,11 @@ export const Encounter = {
     if (next !== -1) {
       this.state.turnIndex = next;
       this._resetActions(next); // budget d'actions frais au début du tour
-      this._commit();
+      // B2.3 — chemin rapide : patcher les deux lignes qui changent de statut
+      // actif plutôt que reconstruire toute la file. `_render` retombe
+      // lui-même sur le rendu complet dès qu'une hypothèse ne tient pas
+      // (retardataire sauté, narratif...) — voir `renderTurnAdvance`.
+      this._commit(current ? { prevId: current.pnjId, nextId: cs[next].pnjId } : null);
       return;
     }
 
@@ -3033,8 +3037,17 @@ export const Encounter = {
   /** Rendu complet (liste, fiche du combattant actif, résumé sidebar) —
       factorisé pour être appelable aussi bien après un commit qu'au
       chargement initial de l'édition (sidebar à jour sans ouvrir le
-      tracker). */
-  _render() {
+      tracker).
+
+      `turnAdvance` ({prevId, nextId}, optionnel) — B2.3 : passé par
+      `nextTurn()` pour tenter le chemin rapide de la LISTE seule
+      (`EncounterRenderer.renderTurnAdvance`, ne patche que les deux lignes
+      dont le statut actif change) au lieu de la reconstruire en entier.
+      Retombe silencieusement sur le rendu complet si l'hypothèse ne tient
+      pas. Le reste (fiche active, sidebar, Matrice, poursuite) est de toute
+      façon dépendant du combattant actif : ces rendus-là s'exécutent
+      normalement, avec ou sans chemin rapide. */
+  _render(turnAdvance) {
     const rows = this._rows();
     const model = this._model();
     // Auto-guérison si le serveur lié a été supprimé entre-temps (ex.
@@ -3048,7 +3061,10 @@ export const Encounter = {
     // EncounterRenderer (qui reste un rendu pur — reçoit le serveur déjà
     // résolu).
     const srv = this.state.serverId ? Intrusion._get(this.state.serverId) : null;
-    EncounterRenderer.render(this.state, rows, model);
+    const patched =
+      turnAdvance &&
+      EncounterRenderer.renderTurnAdvance(this.state, rows, model, turnAdvance.prevId, turnAdvance.nextId);
+    if (!patched) EncounterRenderer.render(this.state, rows, model);
     EncounterRenderer.renderActiveCard(rows, this.state, model);
     EncounterRenderer.renderSidebar(this.state, rows, model);
     EncounterRenderer.renderMatrix(
@@ -3116,10 +3132,10 @@ export const Encounter = {
     });
   },
 
-  _commit() {
+  _commit(turnAdvance) {
     this._rev++;
     this.save();
-    this._render();
+    this._render(turnAdvance);
     this._renderPicker();
     this._maybeNudgePreRollEdge();
     this._scheduleRefreshCards();

@@ -170,21 +170,12 @@ export const EncounterRenderer = {
     const restHtml = waitingHtml + downHtml;
     const html = leadHtml + restHtml;
 
-    // Réglette compacte (rail de jetons, sœur de la liste complète —
-    // jamais reconstruite depuis elle, mêmes rows). Toujours rendue (même
-    // vide), la visibilité rail/liste est purement CSS. Ordonné : MÊME file
-    // que la liste (rotation comprise), les hors-combat en fin.
-    const rail = document.getElementById("encounter-rail");
-    if (rail) {
-      const railHtml = narrative
-        ? visible.map((x) => this._tokenNarrative(x.r)).join("")
-        : liveQueue
-            .concat(downList)
-            .map((x) => this._token(x.r, x.i === state.turnIndex, this._outOfPass(x.r, state, model)))
-            .join("");
-      rail.innerHTML =
-        railHtml || `<div class="encounter-rail-empty">Aucun combattant</div>`;
-    }
+    // Réglette compacte (rail de jetons) — factorisée (`_renderRail`) pour
+    // être appelable seule par `renderTurnAdvance` (B2.3), qui ne passe pas
+    // par ici. Ses jetons restent assez légers pour être reconstruits en
+    // entier à chaque appel (mesuré : la ligne complète est le coût dominant,
+    // pas la réglette).
+    this._renderRail(state, rows, model);
 
     const activeLead = document.getElementById("encounter-active-lead");
     if (!html) {
@@ -242,6 +233,116 @@ export const EncounterRenderer = {
     this._playFlip(flipRoot, flipPrev);
   },
 
+  /** Réglette compacte (rail de jetons), factorisée hors de `render()` pour
+      être appelable seule par `renderTurnAdvance` (B2.3) — celui-ci ne passe
+      pas par `render()`, mais la réglette doit quand même suivre le tour.
+      Toujours reconstruite en entier : ses jetons sont assez légers (mesuré,
+      cf. B2.1) pour que ça ne vaille pas la complexité d'un patch ciblé,
+      contrairement à la ligne complète. */
+  _renderRail(state, rows, model) {
+    const rail = document.getElementById("encounter-rail");
+    if (!rail) return;
+    const narrative = !!model.narrative;
+    const visible = rows.map((r, i) => ({ r, i })).filter((x) => x.r.pnj);
+    const liveList = visible.filter((x) => !x.r.down);
+    const downList = visible.filter((x) => x.r.down);
+    let liveQueue = liveList;
+    if (!narrative) {
+      const startPos = Math.max(0, liveList.findIndex((x) => x.i === state.turnIndex));
+      liveQueue = liveList.slice(startPos).concat(liveList.slice(0, startPos));
+    }
+    const railHtml = narrative
+      ? visible.map((x) => this._tokenNarrative(x.r)).join("")
+      : liveQueue
+          .concat(downList)
+          .map((x) => this._token(x.r, x.i === state.turnIndex, this._outOfPass(x.r, state, model)))
+          .join("");
+    rail.innerHTML = railHtml || `<div class="encounter-rail-empty">Aucun combattant</div>`;
+  },
+
+  /** B2.3 — chemin RAPIDE de `nextTurn()` (appelé par `Encounter._render`,
+      qui reçoit `{prevId, nextId}` de `nextTurn()`) : quand un tour avance
+      sans qu'aucun
+      retardataire ne soit sauté entre l'ancien et le nouvel actif (le cas de
+      loin le plus fréquent — un round joue les combattants dans l'ordre),
+      ne PATCHE que les DEUX lignes dont le statut actif change au lieu de
+      reconstruire tout `#encounter-list` (`render()`) : l'ancienne tête
+      redevient une ligne compacte en fin de file, la première ligne
+      d'attente devient la tête pleine. Tout le reste de la file — y compris
+      un éventuel retardataire déjà sauté un tour plus tôt — n'est ni
+      reconstruit ni déplacé : son contenu ET sa position DOM sont déjà
+      corrects avant comme après cette rotation d'UN cran.
+
+      Renvoie `false` (→ l'appelant doit alors faire un `render()` complet)
+      dès qu'une hypothèse ne tient pas : narratif (ordre manuel, pas de
+      tour), retardataire sauté (plus de deux lignes bougeraient), ou DOM
+      absent/inattendu — la sûreté prime toujours la vitesse. Ne touche pas
+      la réglette (`_renderRail`, à charge de l'appelant) ni la fiche active,
+      le résumé sidebar ou le tiroir Matrice : leur contenu dépend du
+      combattant actif et doit de toute façon être reconstruit. */
+  renderTurnAdvance(state, rows, model, prevId, nextId) {
+    if (model.narrative) return false;
+    const list = document.getElementById("encounter-list");
+    const activeLead = document.getElementById("encounter-active-lead");
+    if (!list || !activeLead) return false;
+
+    const liveList = rows.map((r, i) => ({ r, i })).filter((x) => x.r.pnj && !x.r.down);
+    const prevPos = liveList.findIndex((x) => x.r.pnjId === prevId);
+    const nextPos = liveList.findIndex((x) => x.r.pnjId === nextId);
+    if (prevPos === -1 || nextPos !== prevPos + 1) return false;
+
+    const prevRow = liveList[prevPos].r;
+    const nextRow = liveList[nextPos].r;
+
+    const prevLeadEl = activeLead.querySelector(".encounter-row[data-id]");
+    const nextRowEl = list.querySelector(`.encounter-row[data-id="${CSS.escape(nextId)}"]`);
+    if (!prevLeadEl || prevLeadEl.dataset.id !== prevId || !nextRowEl) return false;
+
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prevOldTop = reduceMotion ? null : prevLeadEl.getBoundingClientRect().top;
+    const nextOldTop = reduceMotion ? null : nextRowEl.getBoundingClientRect().top;
+
+    const prevHtml = this._row(
+      prevRow,
+      false,
+      this._outOfPass(prevRow, state, model),
+      this._effectiveInit(prevRow, state, model),
+      true,
+    );
+    const nextHtml = this._row(
+      nextRow,
+      true,
+      this._outOfPass(nextRow, state, model),
+      this._effectiveInit(nextRow, state, model),
+      false,
+    );
+    const tmp = document.createElement("div");
+    tmp.innerHTML = prevHtml;
+    const prevNewEl = tmp.firstElementChild;
+    tmp.innerHTML = nextHtml;
+    const nextNewEl = tmp.firstElementChild;
+
+    // L'ancien actif rejoint la FIN de la file d'attente (avant un éventuel
+    // séparateur « hors de combat », sinon avant le pied de liste — toujours
+    // présent, cf. render()) : exactement la position que produirait la
+    // rotation complète.
+    const anchor = list.querySelector(".encounter-downsep") || list.querySelector(".encounter-scene-actions");
+    if (anchor) list.insertBefore(prevNewEl, anchor);
+    else list.appendChild(prevNewEl);
+
+    nextRowEl.remove();
+    activeLead.innerHTML = "";
+    activeLead.appendChild(nextNewEl);
+
+    if (!reduceMotion) {
+      this._flipTwo([
+        { el: prevNewEl, oldTop: prevOldTop },
+        { el: nextNewEl, oldTop: nextOldTop },
+      ]);
+    }
+    return true;
+  },
+
   /** FLIP (First-Last-Invert-Play) du réordonnancement de la file (Lot 6) : le
       glissement des lignes EST le retour visuel de l'avancement du tour. Capture
       les positions AVANT le re-render (par data-id) ; _playFlip mesure APRÈS,
@@ -282,6 +383,38 @@ export const EncounterRenderer = {
     }
     if (!moved.length) return;
     void list.offsetHeight; // ancre l'état inversé avant de relâcher
+    requestAnimationFrame(() => {
+      moved.forEach((el) => {
+        el.style.transition = "transform var(--dur-base) var(--ease-standard)";
+        el.style.transform = "";
+        const clear = () => {
+          el.style.transition = "";
+          el.style.transform = "";
+          el.removeEventListener("transitionend", clear);
+        };
+        el.addEventListener("transitionend", clear);
+      });
+    });
+  },
+
+  /** FLIP scoped à EXACTEMENT deux éléments déjà connus (B2.3, chemin rapide
+      de `renderTurnAdvance`) — même patron que `_playFlip`, sans son balayage
+      `querySelectorAll` sur tout le conteneur : les positions AVANT sont déjà
+      lues par l'appelant (un seul `getBoundingClientRect` par ligne touchée,
+      pas un par ligne du conteneur). `pairs`: [{el, oldTop}, …], `el` déjà
+      dans sa position FINALE au moment de l'appel. */
+  _flipTwo(pairs) {
+    const moved = [];
+    for (const { el, oldTop } of pairs) {
+      if (oldTop == null) continue;
+      const dy = oldTop - el.getBoundingClientRect().top;
+      if (Math.abs(dy) < 1) continue;
+      el.style.transition = "none";
+      el.style.transform = `translateY(${dy}px)`;
+      moved.push(el);
+    }
+    if (!moved.length) return;
+    void moved[0].offsetHeight;
     requestAnimationFrame(() => {
       moved.forEach((el) => {
         el.style.transition = "transform var(--dur-base) var(--ease-standard)";
