@@ -2761,12 +2761,28 @@ export const Encounter = {
     }
     const overlay = document.getElementById("matrix-drawer-overlay");
     if (!overlay) return;
+    if (overlay.classList.contains("open")) return; // déjà ouvert (ex. linkServer depuis la mini-carte du tiroir) — pas de second piège empilé par-dessus lui-même
     overlay.classList.add("open");
+    // B1.8 (C-003), second volet — le tiroir vit sur <body>, DEHORS du piège
+    // du cockpit. Sans le sien, piéger le cockpit le rendrait inatteignable
+    // au clavier : Tab tournerait dans le cockpit pendant que le tiroir est
+    // ouvert par-dessus. Le piège est empilable (cf. focustrap.js) et rend le
+    // focus au déclencheur — ici le bouton « ⚡ Ouvrir la Matrice ».
+    // Le trou existait déjà sous 640px, où le cockpit était seul piégé.
+    overlay.setAttribute("aria-modal", "true");
+    this._releaseMatrixTrap = FocusTrap.activate(overlay);
+    overlay.querySelector(".modal-close").focus();
     requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add("show")));
   },
+  _releaseMatrixTrap: null,
   closeMatrixDrawer() {
     const overlay = document.getElementById("matrix-drawer-overlay");
     if (!overlay || !overlay.classList.contains("open")) return;
+    if (this._releaseMatrixTrap) {
+      this._releaseMatrixTrap();
+      this._releaseMatrixTrap = null;
+    }
+    overlay.setAttribute("aria-modal", "false");
     overlay.classList.remove("show");
     setTimeout(() => overlay.classList.remove("open"), 220);
   },
@@ -3181,18 +3197,29 @@ export const Encounter = {
   open() {
     const overlay = document.getElementById("encounter-overlay");
     overlay.classList.add("open");
-    // Dock latéral non bloquant ≥641px (le Hub reste utilisable
-    // derrière, ex. suivre une intrusion en cours) ; plein écran réel en
-    // dessous (pas de place pour cohabiter) — aria-modal reflète lequel.
-    const isModal = window.matchMedia("(max-width: 640px)").matches;
-    overlay.setAttribute("aria-modal", isModal ? "true" : "false");
-    // D7 : piégé UNIQUEMENT en plein écran (aria-modal="true") — en dock
-    // latéral le Hub reste volontairement dans l'ordre de tabulation,
-    // piéger Tab casserait ce mode non bloquant.
-    this._releaseTrap = isModal
-      ? FocusTrap.activate(overlay.querySelector(".modal"))
-      : null;
-    if (isModal) overlay.querySelector(".modal-close").focus();
+    // B1.8 (C-003) — le cockpit est une MODALE à toutes les largeurs, donc
+    // piégé à toutes les largeurs.
+    //
+    // Le code disait le contraire : `aria-modal` valait "false" au-dessus de
+    // 640px et `FocusTrap` n'y était pas activé, au motif — écrit ici — que
+    // « en dock latéral le Hub reste volontairement dans l'ordre de
+    // tabulation ». Ce dock N'EXISTE PLUS : `css/base/combat-tracker.css` le
+    // dit en toutes lettres depuis la décision D4 (« l'ancien dock non
+    // bloquant est RETIRÉ », le voile sombre de .modal-overlay reprend le
+    // dessus). La condition avait survécu à sa prémisse : au-dessus de 640px,
+    // un écran qui couvre tout se déclarait non modal, et Tab sortait du
+    // dialogue vers du contenu invisible derrière le voile.
+    //
+    // Il n'y a donc plus de régime à distinguer : DESIGN-SYSTEM.md § 6.3 range
+    // cette surface dans « Modale » (bloque · rideau · --z-modal · max-height
+    // 90vh) et lui applique ses deux lois — « le focus est piégé et restitué »
+    // et « aria-modal="true" pour tout overlay bloquant ». `FocusTrap` est
+    // empilable et son écouteur vit sur le conteneur : le tiroir Matrice et le
+    // coup d'œil, qui s'ouvrent par-dessus avec leur propre piège, gardent le
+    // leur (cf. l'ordre de z-index tracker 500 < coup d'œil 510 < édition 520).
+    overlay.setAttribute("aria-modal", "true");
+    this._releaseTrap = FocusTrap.activate(overlay.querySelector(".modal"));
+    overlay.querySelector(".modal-close").focus();
     this._render();
     this._renderPicker();
   },

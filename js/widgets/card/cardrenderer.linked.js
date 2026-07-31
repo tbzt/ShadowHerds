@@ -202,8 +202,18 @@ Object.assign(CardRenderer, {
 
   /** Chips « Invoquer » (produire) et « Bannir » (renvoi hostile) dans la zone
       Combat des conjurateurs. Le glyphe ✦ (domaine esprit) est réutilisé pour
-      les deux verbes ; « Agir produit » — les deux affordances vivent sur la
-      carte du lanceur, donc aussi dans l'Agir du tracker (même renderer). */
+      les deux verbes.
+
+      ⚠ B1.9 / C-008 — ce commentaire affirmait que « les deux affordances vivent
+      sur la carte du lanceur, DONC aussi dans l'Agir du tracker (même
+      renderer) ». Mesuré faux (audit du cockpit, 2026-07-29) : l'invocateur
+      étant l'acteur actif, la chaîne `open-summon` est ABSENTE du HTML de
+      `#encounter-overlay` — sa console offre Atout, actions, armes, SORTS,
+      états, note, mais aucune entrée « Esprit ». Le tracker ne compose pas la
+      carte entière : il en monte des morceaux choisis, et cette rangée-ci n'en
+      fait pas partie. Conséquence mesurée : invoquer coûte 9 gestes et 2
+      changements de vue, contre 2 gestes pour bannir depuis la ligne. La monter
+      dans la console de l'actif est le lot B3.1 (C-011). */
   _spiritChipRow(pnj, deps) {
     const ed = App.getEditionModule(pnj.edition);
     const canSummon = !!(deps.Spirits && deps.Spirits.canSummon(pnj));

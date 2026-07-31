@@ -5,9 +5,16 @@
 
    Un état est une condition temporaire posée sur un PNJ : Aveuglé, À terre,
    Enflammé… Le CATALOGUE vit dans le module d'édition (`statusModel`), jamais
-   ici : SR6 en a 28, SR5 n'a pas d'états du tout mais une poignée de
-   modificateurs de situation persistants (p.179), Anarchy n'en a pas encore.
-   Ce module ne connaît que la FORME d'un état, pas son contenu.
+   ici. Ce module ne connaît que la FORME d'un état, pas son contenu.
+
+   Comptes réels, relevés le 2026-07-31 (B1.9 / C-008) : SR6 28 · SR5 6
+   (modificateurs de situation, p.176 et p.483 — Étendu, Couvert, En course,
+   En mêlée, Surpris, Visibilité réduite) · Anarchy 1 7 (dont En feu, p.168)
+   · Anarchy 2 3 (Désavantage, Avantage, Drain magique). Ces quatre nombres
+   remplacent un texte qui disait « SR5 n'a pas d'états du tout » et « Anarchy
+   n'en a pas encore » : c'était vrai à l'écriture, faux depuis, et l'audit du
+   cockpit a failli en tirer une conclusion fausse. Les états SR5 et Anarchy
+   sont arrivés APRÈS ce commentaire — si vous en ajoutez, recomptez ici.
 
    ── Où vivent les états, et pourquoi sur le PNJ ──────────────────────────
    `pnj.statuses = { aveugle: 2, aterre: 1 }` — même emplacement que
