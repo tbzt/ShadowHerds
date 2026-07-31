@@ -3291,6 +3291,24 @@ export const Encounter = {
     // coup d'œil, qui s'ouvrent par-dessus avec leur propre piège, gardent le
     // leur (cf. l'ordre de z-index tracker 500 < coup d'œil 510 < édition 520).
     overlay.setAttribute("aria-modal", "true");
+    // Vague 4.1 (suite) — NE PAS PEINDRE CE QUI EST DERRIÈRE. Le cockpit est
+    // une modale plein écran à toutes les largeurs (cf. ci-dessus) : la sidebar
+    // et les panneaux sous le voile ne sont plus visibles, mais le navigateur
+    // continuait de les mettre en page et de les peindre à chaque tour. Le
+    // profilage CDP de la vague 4.1 (traces/V4) le chiffre : sur une scène de
+    // 12 PNJ, les retirer du rendu fait passer la médiane par clic de 263,6 à
+    // 217,9 ms (−17,3 %), sans toucher au layout du cockpit lui-même — le gain
+    // est en peinture/composition.
+    //
+    // Marqueur en JS et non `:has()` : la vague 4.1 vient précisément de
+    // RETIRER un `:has()` du cockpit parce qu'il forçait une réévaluation à
+    // chaque mutation du sous-arbre surveillé. On ne le réintroduit pas.
+    //
+    // `content-visibility` et non `display:none` : la sous-couche garde sa
+    // boîte et ses positions de défilement, donc rouvrir ne la reconstruit pas
+    // et ne perd pas où le MJ en était. Les écritures JS (sidebar, round)
+    // continuent normalement — seul le RENDU est sauté.
+    document.documentElement.classList.add("is-cockpit-open");
     this._releaseTrap = FocusTrap.activate(overlay.querySelector(".modal"));
     overlay.querySelector(".modal-close").focus();
     this._render();
@@ -3299,6 +3317,7 @@ export const Encounter = {
   close() {
     const el = document.getElementById("encounter-overlay");
     if (el) el.classList.remove("open");
+    document.documentElement.classList.remove("is-cockpit-open");
     if (this._releaseTrap) {
       this._releaseTrap();
       this._releaseTrap = null;

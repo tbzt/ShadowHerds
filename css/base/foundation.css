@@ -1109,6 +1109,16 @@ select optgroup {
   flex: 1;
   overflow: hidden;
 }
+/* Vague 4.1 — sous une modale plein écran, la sous-couche n'est plus regardée :
+   on cesse de la mettre en page et de la peindre. `contain-intrinsic-size`
+   verrouille la taille de la boîte pendant l'éclipse pour que la barre du haut
+   ne bouge pas, et `content-visibility` (≠ `display:none`) préserve l'état
+   interne et les positions de défilement — rouvrir ne reconstruit rien.
+   Mesuré (traces/V4, 12 PNJ SR6) : médiane par clic 263,6 → 217,9 ms. */
+html.is-cockpit-open #main-body {
+  content-visibility: hidden;
+  contain-intrinsic-size: auto 100%;
+}
 
 /* SIDEBAR */
 #sidebar {
