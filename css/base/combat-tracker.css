@@ -1966,7 +1966,7 @@
   display: none;
 }
 
-/* ---- F6b : les USAGES du Contresort, dépliés par le ✦ ----
+/* ---- G4 : les USAGES du Contresort, dépliés par le ✦ ----
    Même gabarit que les deux rangées voisines (dégâts, interruptions) : on ne
    crée pas un troisième vocabulaire pour un troisième déplié. Teinte MAGIE
    plutôt que neutre, parce que c'est le seul de ces trois panneaux qui
@@ -2011,7 +2011,7 @@
   font-size: var(--fs-2xs);
 }
 
-/* ---- F6b : le compte d'attaques de la rangée de jetons ----
+/* ---- G4 : le compte d'attaques de la rangée de jetons ----
    Un repère, pas un verrou : il apparaît dès la première attaque et vire au
    `--warning` quand le livre est dépassé. Jamais `--danger` — dépasser n'est
    pas une perte irréversible, c'est un arbitrage que le meneur a le droit de

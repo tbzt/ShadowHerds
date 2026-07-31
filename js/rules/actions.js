@@ -118,7 +118,7 @@ export const Actions = {
   },
 
   /* ============================================================
-     LES AUTRES PORTES (lot F6) — généralisation de `viaWeapon`.
+     LES AUTRES PORTES (lot G2) — généralisation de `viaWeapon`.
 
      `viaWeapon` disait depuis F1 une chose vraie et utile : « cette action
      existe, elle se débite, mais son point d'entrée est ailleurs ». Taper
@@ -266,7 +266,7 @@ export const Actions = {
     return this.viaWeapon(pnj).find((a) => a.weaponMatch && a.weaponMatch.test(nom)) || null;
   },
 
-  /** DOMAINES (lot F1b, quatrième rubrique au lot F6) — combat, magie,
+  /** DOMAINES (lot F1b, quatrième rubrique au lot G1) — combat, magie,
       Matrice, pilotage.
 
       Le lot F1 tenait dans une seule liste : 32 actions en SR6, 36 en SR5.
@@ -274,7 +274,7 @@ export const Actions = {
       SR5 à 76. « tous… » deviendrait un mur de puces où l'œil ne retrouve
       rien — d'où des rubriques, dans l'ordre où le livre les imprime.
 
-      ── PILOTAGE (F6) : le domaine qui manquait ─────────────────────────────
+      ── PILOTAGE (G1) : le domaine qui manquait ─────────────────────────────
       F1b s'était arrêté aux rubriques que le LIVRE imprime en tables séparées.
       Mais la question que `domainAvailable` pose n'est pas « le livre range-t-il
       ça à part ? », c'est « ce PNJ peut-il seulement agir là ? ». À ce compte,
@@ -290,7 +290,7 @@ export const Actions = {
       leur prédicat. La rubrique arrive en dernier — c'est la moins jouée des
       cinq, et l'ordre d'une feuille ne se renégocie pas à chaque ouverture.
 
-      ── RÉSONANCE (F6b) : la Matrice avait DEUX publics ─────────────────────
+      ── RÉSONANCE (G1) : la Matrice avait DEUX publics ─────────────────────
       « Matrice » restait ouverte au decker comme au technomancien, et c'est
       juste — le livre SR5 (p.252) fait jouer au technomancien les MÊMES actions
       matricielles, par la Résonance. Mais sept d'entre elles ne sont PAS les
@@ -346,7 +346,7 @@ export const Actions = {
   },
 
   /* ============================================================
-     LE MOMENT, DEUXIÈME AXE DE RANGEMENT (lot F6).
+     LE MOMENT, DEUXIÈME AXE DE RANGEMENT (lot G3).
 
      Le domaine répond à « ce PNJ peut-il agir là ? ». Il ne répond pas à la
      question que l'utilisateur a posée ensuite — « pas forcément au bon
@@ -394,7 +394,7 @@ export const Actions = {
   /** Les domaines fermés à ce PNJ, avec leur motif — pour la ligne de rappel.
       → [{ key, label, why, n }]
 
-      ⚠ Le compte se fait sur le CATALOGUE, pas sur `rest()` (lot F6). Depuis
+      ⚠ Le compte se fait sur le CATALOGUE, pas sur `rest()` (lot G2). Depuis
       que les actions à autre porte sortent de `rest()`, compter là aurait
       annoncé « 8 magie masquées » pour une table qui en a onze : les trois qui
       ont une porte auraient disparu des DEUX comptes — de celui-ci parce
@@ -688,7 +688,7 @@ export const Actions = {
     return s ? s.name : null;
   },
 
-  /** Cette action PORTE-T-ELLE une attaque ? (lot F6b)
+  /** Cette action PORTE-T-ELLE une attaque ? (lot G4)
 
       `viaWeapon` couvre les six entrées SR5 et l'unique SR6 : ce sont
       exactement les gestes qui partent d'une arme, et le livre ne compte pas
