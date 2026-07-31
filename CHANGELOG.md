@@ -12,6 +12,8 @@ commit.
 
 ## [Non publié]
 
+## [1.139.0] — 2026-07-31
+
 ### Ajouté
 
 - **On déclare enfin qui est dans quel véhicule — et on en vole un à la
