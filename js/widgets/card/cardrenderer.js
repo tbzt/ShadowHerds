@@ -903,11 +903,12 @@ export const CardRenderer = {
       MAINTENU (⟳ ×N) et les drogues actives — seuls états hors des 4 blocs,
       portés jusqu'ici par le bloc moniteur retiré — sont réémis en tête (fine
       ligne d'état), jamais perdus. anarchy2 rend armes/compétences avec un
-      balisage sur mesure (weapon-line/skill-tag, sorts au jet de risque) : il
-      renvoie `null` → le tracker garde la fiche complète en attendant son
-      propre constructeur d'offense. */
+      balisage sur mesure (weapon-line/skill-tag, sorts au jet de risque) : il a
+      désormais SON constructeur (_offenseBlocksAnarchy, cardrenderer.anarchy.js)
+      et n'est plus replié sur la fiche complète. */
   offenseBlocks(pnj, deps = CardRenderer.liveDeps()) {
-    if (!pnj || pnj._adhoc || pnj.edition === "anarchy2") return null;
+    if (!pnj || pnj._adhoc) return null;
+    if (pnj.edition === "anarchy2") return this._offenseBlocksAnarchy(pnj, deps);
     const ed = pnj.edition;
     const { weapons } = ItemResolver.splitEquip(pnj.equip || []);
     const malus = Utils.dicePenalty(pnj, ed);
