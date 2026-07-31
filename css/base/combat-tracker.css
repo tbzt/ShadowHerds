@@ -877,7 +877,16 @@
   animation: encounter-drop-settle var(--dur-base) var(--ease-emphasized);
 }
 /* CE3 : feel au tap — le jeton d'action/Atout se consume, bref rebond
-   d'échelle (~120ms, transform seul, zéro reflow). */
+   d'échelle (~120ms, transform seul, zéro reflow).
+   ⚠ CORRIGÉ (audit « le feel détruit », lot 3/3, 2026-07-31) — l'animation
+   vivait sur `.used`/`.filled`, qui naissent DÉJÀ posées à chaque re-rendu de
+   `.encounter-active-economy` (bandeau « live », hors du cache
+   `_activeCardId` — cf. `EncounterRenderer.renderActiveCard`) : TOUT jeton
+   déjà consommé rejouait donc le pop à chaque rendu, pas seulement celui
+   tapé — mesuré, pas supposé un « accident heureux » qui tournait large.
+   `.just-toggled` est posée une fois, impérativement, par
+   `EncounterRenderer._pulseToken`, sur LE jeton qui vient de changer — jamais
+   au rendu (même patron que `.just-dropped` ci-dessus). */
 @keyframes token-consume {
   0% {
     transform: scale(1);
@@ -896,8 +905,8 @@
     background var(--dur-fast) ease,
     border-color var(--dur-fast) ease;
 }
-.action-token.used,
-.edge-token.filled {
+.action-token.just-toggled,
+.edge-token.just-toggled {
   animation: token-consume var(--dur-fast) var(--ease-emphasized);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -913,8 +922,8 @@
   .edge-token {
     transition: none;
   }
-  .action-token.used,
-  .edge-token.filled {
+  .action-token.just-toggled,
+  .edge-token.just-toggled {
     animation: none;
   }
 }
@@ -1225,12 +1234,25 @@ button.encounter-token-init:active {
 .encounter-active-card[hidden] {
   display: none;
 }
-/* Température par le TOUR (« Agir produit / Réagir subit », D2). Le hook est
-   le bandeau de mode déjà posé par renderActiveCard (.is-agir / .is-react) :
-   coloration de toute la console via :has(), aucun JS. Agir = lavis chaud
-   --accent + halo ; Réagir = acier froid --cold plat. Rouvre assumé le « pas
-   de 3ᵉ couleur » du polish K (--cold est sémantique hors accent d'édition). */
-.encounter-active-card:has(.encounter-mode-head.is-agir) {
+/* Température par le TOUR (« Agir produit / Réagir subit », D2). Agir = lavis
+   chaud --accent + halo ; Réagir = acier froid --cold plat. Rouvre assumé le
+   « pas de 3ᵉ couleur » du polish K (--cold est sémantique hors accent
+   d'édition).
+   4.1 (perf) — la classe vit DIRECTEMENT sur `.encounter-active-card` (posée
+   par `renderActiveCard`, qui connaît déjà `mode`), plus via
+   `:has(.encounter-mode-head.is-agir)`. `:has()` force une réévaluation à
+   chaque mutation du sous-arbre qu'il surveille ; ce conteneur est reconstruit
+   à chaque tour. Gain **modeste mais réel et reproductible** : médiane par
+   clic 300,1 → 285,4 ms (≈-5 %), mesuré à froid (échauffement écarté, 3
+   blocs alternés AVEC/SANS `:has()`, 15 clics/bloc, même page/scène — le
+   premier essai (avant contrôle) annonçait -49 %, c'était un artefact
+   d'échauffement JIT/style, corrigé après coup). `:has()` reste un
+   sélecteur coûteux à éviter par principe ; il n'explique PAS le gros du
+   fossé mesuré ailleurs entre script (~35 ms/clic) et latence réelle
+   (~280-380 ms/clic) — cause encore non identifiée, chantier 4.1 rouvert.
+   `.encounter-mode-head.is-agir`/`.is-react` restent posés (styles propres
+   au bandeau, cf. plus bas). */
+.encounter-active-card.is-agir {
   border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
   background: linear-gradient(
     180deg,
@@ -1241,7 +1263,7 @@ button.encounter-token-init:active {
     inset 0 0 50px color-mix(in srgb, var(--accent) 8%, transparent),
     0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
 }
-.encounter-active-card:has(.encounter-mode-head.is-react) {
+.encounter-active-card.is-react {
   border-color: color-mix(in srgb, var(--cold) 40%, var(--border));
   background: linear-gradient(
     180deg,

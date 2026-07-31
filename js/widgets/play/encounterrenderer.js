@@ -1035,6 +1035,31 @@ export const EncounterRenderer = {
       dans app.js), retrouve cette card via son data-id comme les autres. */
   _activeCardId: null,
 
+  /** Rejoue le pop de consommation (`token-consume`) sur UN jeton précis,
+      après le re-rendu qui vient de le recréer (audit « le feel détruit »,
+      lot 3/3, 2026-07-31 — mesuré, pas supposé : `.encounter-active-economy`
+      est réécrite en entier à CHAQUE `renderActiveCard` (cf. plus bas, « live »
+      et hors du cache `_activeCardId`) — donc baigner
+      l'animation dans `.action-token.used`/`.edge-token.filled` la faisait
+      rejouer sur TOUS les jetons déjà consommés à chaque rendu, pas seulement
+      celui tapé — y compris un rendu déclenché par un événement sans rapport
+      (état posé sur ce même combattant, tour d'un autre).
+
+      Même patron que `Encounter._dragEnd` (`.just-dropped`) : la classe est
+      posée sur le nœud FRAIS, impérativement, APRÈS le re-rendu — jamais dans
+      le gabarit, donc jamais rejouée par un rendu qui n'est pas CE tap. Appelée
+      par `Encounter.setAction`/`adjustEdge` juste après `_commit()` (synchrone :
+      `_commit` → `_render` → `renderActiveCard`, pas de RAF entre les deux). */
+  _pulseToken(sel) {
+    const box = document.getElementById("encounter-active-card");
+    const el = box && box.querySelector(sel);
+    if (!el) return;
+    el.classList.remove("just-toggled");
+    void el.offsetWidth; // relance l'animation si un pulse précédent traînait
+    el.classList.add("just-toggled");
+    el.addEventListener("animationend", () => el.classList.remove("just-toggled"), { once: true });
+  },
+
   /** Polish DA « deux températures » : mode de la fiche active au dernier rendu
       (agir | react | matrix | null). Sert à n'animer la bascule fiche↔rack qu'au
       CHANGEMENT de mode, jamais aux refresh de même mode (sinon flicker). */
@@ -1364,7 +1389,10 @@ export const EncounterRenderer = {
       avertissement non bloquant (Encounter.adjustEdge). */
   _activeEdge(r) {
     const edge = r.edge || 0;
-    const tokens = Array.from({ length: 7 }, (_, i) => `<span class="edge-token${i < edge ? " filled" : ""}"></span>`).join("");
+    // data-id/data-idx (audit « le feel détruit », lot 3/3) : nécessaires à
+    // EncounterRenderer._pulseToken pour retrouver LE jeton qui vient de
+    // changer d'état après le re-rendu qui l'a recréé — cf. Encounter.adjustEdge.
+    const tokens = Array.from({ length: 7 }, (_, i) => `<span class="edge-token${i < edge ? " filled" : ""}" data-id="${r.pnjId}" data-idx="${i}"></span>`).join("");
     return `<div class="cluster encounter-edge" title="Atout SR6 (max 7, gain +2/tour de personnage — p.50)">
       <span class="encounter-edge-lbl">Atout</span>
       <button class="btn-icon-tiny" data-action="edge-step" data-delta="-1" data-id="${r.pnjId}" aria-label="Atout −1">−</button>
@@ -1864,6 +1892,16 @@ export const EncounterRenderer = {
     const mode = !active ? null : active.kind === "matrix" ? "matrix" : active.isPJ ? "react" : "agir";
     const modeEnter = mode !== this._activeMode;
     this._activeMode = mode;
+    // 4.1 — la classe de température vit DIRECTEMENT sur `.encounter-active-
+    // card` (posée ici, en JS, qui connaît déjà `mode`) plutôt que déduite en
+    // CSS via `:has(.encounter-mode-head.is-agir)` (`:has()` force le moteur à
+    // réévaluer la correspondance à chaque mutation du sous-arbre qu'il
+    // surveille). Gain mesuré modeste mais reproductible (~-5 % de médiane
+    // par clic, cf. combat-tracker.css) — le script de `renderActiveCard`
+    // (~11 ms) n'explique de toute façon qu'une fraction de la latence
+    // réelle (~280-380 ms) ; la cause dominante du reste n'est pas identifiée.
+    box.classList.toggle("is-agir", mode === "agir");
+    box.classList.toggle("is-react", mode === "react");
 
     // Combattant matriciel (CI) — fiche minimale, pas de fiche de pool.
     // Toujours re-rendue (le moniteur matriciel vit sur le serveur et change
