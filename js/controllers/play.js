@@ -1143,19 +1143,56 @@ export const Play = {
   },
 
   /** Clôture (§4.2) — le débrief comme un BILAN qui fait plaisir (couleur d'état
-      OR). Peau pure : le détail (paie/karma/réputation/retombées → `Campaign` +
-      `Notebooks`) reste la propriété de `Debrief` (VIS-7) ; ici on invite au
-      bilan, on NOMME ses axes en pastilles et on rappelle qu'il se verse au
-      carnet. Aucune donnée, aucune branche d'édition — labels statiques + un CTA
-      délégué. Toujours présent (comme l'ancien bouton) : clore est le geste de
-      fin de run, même sur un run peu joué (Debrief gère l'équipe vide). */
+      OR). Le détail chiffré (paie/karma/réputation/retombées → `Campaign` +
+      `Notebooks`) reste la propriété de `Debrief` (VIS-7) : ici on MONTRE ce que
+      le run a laissé côté fiction, puis on invite au bilan.
+
+      Le titre promettait « ce que ce run a laissé » et affichait quatre
+      étiquettes littérales qui ne lisaient AUCUNE donnée — un run joué six
+      heures et un run vide y étaient identiques. Ce n'était ni un vide primo ni
+      un vide filtré (DESIGN-SYSTEM § 6.7) mais du décor, et le décor apprend à
+      l'œil à ne plus regarder la zone. On lit désormais `WorldState.beatsForRun`
+      — PULL pur, même appel que `Debrief._beatsHtml` (`debrief.js:162`), donc
+      zéro donnée neuve, zéro store, aucune branche d'édition.
+
+      Classes `.debrief-beat*` RÉUTILISÉES telles quelles (sélecteurs globaux,
+      non scopés à la modale) : même objet, même peau des deux côtés — le design
+      system interdit une classe neuve quand un composant existant convient.
+
+      Trois états distincts, jamais confondus : des beats → on les liste ·
+      une trame liée mais rien de traversé → on dit quoi faire pour en produire ·
+      aucune trame → on le dit et on rappelle les axes du débrief (le run reste
+      débriefable, `Debrief` gère l'équipe vide). Le CTA est toujours présent :
+      clore est le geste de fin de run, même sur un run peu joué. */
   _clotureHtml(runId) {
-    const facets = ["Paie", "Karma", "Réputation", "Retombées"]
-      .map((f) => `<span class="play-cloture-facet">${f}</span>`)
-      .join("");
+    const esc = CardRenderer._esc;
+    const beats = typeof WorldState !== "undefined" ? WorldState.beatsForRun(runId) : [];
+    const trame = typeof ScenarioStore !== "undefined" ? ScenarioStore.byRun(runId) : null;
+
+    let corps;
+    if (beats.length) {
+      corps = `<ul class="stack debrief-beats">${beats
+        .map((b) => {
+          const tone = b.arrow === "hope" ? "is-hope" : b.arrow === "fear" ? "is-fear" : "";
+          const glyph = b.arrow === "hope" ? "↑" : b.arrow === "fear" ? "↓" : "◆";
+          const scene = b.title ? `<span class="debrief-beat-scene">${esc(b.title)}</span>` : "";
+          const bang = b.bang ? `<span class="debrief-beat-bang">${esc(b.bang)}</span>` : "";
+          return `<li class="cluster debrief-beat ${tone}"><span class="debrief-beat-arrow" aria-hidden="true">${glyph}</span> ${scene}${scene && bang ? " — " : ""}${bang}</li>`;
+        })
+        .join("")}</ul>`;
+    } else if (trame) {
+      corps = `<div class="play-scene is-idle"><span class="play-stash-note">Aucune étape marquante traversée pour l'instant — avancez la trame depuis l'onglet « En jeu », les moments à bang viendront se poser ici.</span></div>`;
+    } else {
+      const facets = ["Paie", "Karma", "Réputation", "Retombées"]
+        .map((f) => `<span class="play-cloture-facet">${f}</span>`)
+        .join("");
+      corps = `<div class="play-scene is-idle"><span class="play-stash-note">Ce run n'a pas de trame — rien à retracer côté fiction. Le débrief reste disponible :</span></div>
+      <div class="cluster play-cloture-facets">${facets}</div>`;
+    }
+
     return `<div class="play-cloture">
       <div class="play-cloture-head">Ce que ce run a laissé</div>
-      <div class="cluster play-cloture-facets">${facets}</div>
+      ${corps}
       <div class="cluster play-cloture-cta">
         <button class="btn-secondary btn-small play-cloture-btn" data-action="play-debrief" data-dossier="${runId}" title="Débrief : ce que ce run a laissé (paie, karma, réputation, retombées)">✓ Faire le débrief</button>
         <span class="play-cloture-note">Versé au carnet et au registre.</span>

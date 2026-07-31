@@ -12,6 +12,24 @@ commit.
 
 ## [Non publié]
 
+## [1.139.2] — 2026-07-31
+
+### Modifié
+
+- **L'onglet « Clôture » raconte enfin votre soirée au lieu de quatre mots.**
+  Il promettait « ce que ce run a laissé » et affichait *Paie · Karma ·
+  Réputation · Retombées* — quatre étiquettes en dur, identiques sur un run
+  joué six heures et sur un run jamais ouvert. Il liste désormais les
+  **étapes marquantes réellement traversées**, avec leur bang et leur flèche
+  (↑ espoir, ↓ peur) : les mêmes moments que la modale de débrief, mais
+  visibles sans l'ouvrir. Rien de neuf n'est calculé ni stocké — c'est la
+  trame du run, relue.
+
+  Et les vides disent enfin quelque chose : une trame liée mais pas encore
+  parcourue invite à l'avancer depuis « En jeu » ; un run sans trame le dit
+  et rappelle les axes du débrief. Le bouton « ✓ Faire le débrief » reste là
+  dans tous les cas.
+
 ## [1.139.1] — 2026-07-31
 
 ### Corrigé
