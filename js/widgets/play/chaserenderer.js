@@ -79,6 +79,7 @@ export const ChaseRenderer = {
       </div>
       ${this._unplaced(vm)}
       ${this._dropped(vm)}
+      ${this._recap(vm)}
       ${this._foot(vm)}`;
   },
 
@@ -194,9 +195,24 @@ export const ChaseRenderer = {
     const marks = [];
     if (!opts.anchor) {
       const t = r.test;
+      // Le ⚄ LANCE quand l'app tient la réserve (elle tient les PNJ) et
+      // affiche son compte, comme toutes les pastilles de jet de l'app ; sur
+      // un PJ, il POINTE ce que le joueur annonce. Un test déjà posé se
+      // corrige au même endroit.
+      const dés = r.roll && !t ? ` ${r.roll.pool}` : "";
+      const titre = t
+        ? "Corriger le test du round"
+        : r.roll
+          ? `Lancer ${r.roll.label}${r.roll.threshold != null ? `, seuil ${r.roll.threshold}` : ""}`
+          : "Le joueur annonce — taper pour poser ✓ ou ✗";
       marks.push(
-        `<button class="chase-mark ${t === "ok" ? "is-ok" : t === "ko" ? "is-ko" : "is-todo"}" data-action="chase-test" data-id="${r.pnjId}" title="Test du round — taper pour cycler ⚄ → ✓ → ✗">${t === "ok" ? "✓" : t === "ko" ? "✗" : "⚄"}</button>`,
+        `<button class="chase-mark chase-roll ${t === "ok" ? "is-ok" : t === "ko" ? "is-ko" : "is-todo"}${dés ? " has-pool" : ""}" data-action="chase-roll" data-id="${r.pnjId}" title="${Utils.escHtml(titre)}">${t === "ok" ? "✓" : t === "ko" ? "✗" : `⚄${dés}`}</button>`,
       );
+      // Ce que l'échec coûte ICI : proposé au bon moment, jamais appliqué.
+      if (t === "ko" && vm.failCostLabel)
+        marks.push(
+          `<button class="chase-mark is-fail" data-action="chase-fail" data-id="${r.pnjId}" title="${Utils.escHtml(vm.failCostLabel)} — proposé, jamais appliqué">!</button>`,
+        );
       marks.push(
         `<button class="chase-mark is-edge${r.edgeUp ? " is-on" : ""}" data-action="chase-edge" data-id="${r.pnjId}" title="Avantage positionnel — remise d'Atout de 1 sur ceux qui ont échoué">⊙</button>`,
       );
@@ -205,9 +221,18 @@ export const ChaseRenderer = {
       !opts.anchor && Number.isFinite(r.trend)
         ? `<span class="chase-trend ${r.trend < 0 ? "is-up" : r.trend > 0 ? "is-down" : ""}">${r.trend === 0 ? "=" : r.trend > 0 ? `+${r.trend}` : r.trend}</span>`
         : "";
-    const pool =
-      vm.poolOn && r.pool
-        ? `<span class="chase-pool" title="${Utils.escHtml(vm.poolLabel)}">${vm.glyph}${r.pool}</span>`
+    const pool = vm.poolOn
+      ? `<span class="chase-pool" title="${Utils.escHtml(vm.poolLabel)} — la réserve revient à zéro en fin de poursuite">
+          <button data-action="chase-pool" data-id="${r.pnjId}" data-delta="-1" aria-label="Réserve −1">−</button>
+          <b>${vm.glyph}${r.pool || 0}</b>
+          <button data-action="chase-pool" data-id="${r.pnjId}" data-delta="1" aria-label="Réserve +1">＋</button>
+        </span>`
+      : "";
+    // Le gain d'Atout du round (SR6) : un point automatique que les tables
+    // oublient tous les rounds. Proposé au dominant, jamais appliqué seul.
+    const grant =
+      dom && vm.edgeCompare
+        ? `<button class="chase-grant" data-action="chase-grant" data-id="${r.pnjId}" title="Attribuer le point d'Atout du round (attribut le plus élevé)">+1 Atout</button>`
         : "";
     const moves = opts.anchor
       ? ""
@@ -219,7 +244,7 @@ export const ChaseRenderer = {
       ${vm.attr ? `<span class="chase-tok-lbl">${Utils.escHtml(vm.attr.short)}</span>` : ""}
       ${vm.attr ? val : ""}
       <span class="chase-tok-name">${CardRenderer._esc(r.name)}</span>
-      ${trend}${pool}${marks.join("")}${moves}
+      ${trend}${grant}${pool}${marks.join("")}${moves}
       ${opts.anchor ? "" : `<button class="chase-mark is-anchor-set" data-action="chase-target" data-id="${r.pnjId}" title="Ancrer : faire de ce participant la cible de la poursuite">▣</button>`}
     </span>`;
   },
@@ -247,6 +272,19 @@ export const ChaseRenderer = {
               <button data-action="chase-restore" data-id="${r.pnjId}" title="Remettre en course" aria-label="Remettre en course">↩</button></span>`,
         )
         .join("")}</p>`;
+  },
+
+  /** Le round qui vient de se terminer, en une ligne — et son annulation.
+      Le toast s'efface au bout de quelques secondes ; le MJ, lui, s'aperçoit
+      de son mé-tap deux minutes plus tard. */
+  _recap(vm) {
+    const r = vm.recap;
+    if (!r) return "";
+    const bits = r.moves.map((m) => `${CardRenderer._esc(m.name)} ${m.delta > 0 ? "+" : ""}${m.delta}`);
+    if (r.untested.length) bits.push(`${r.untested.length} sans test`);
+    return `<p class="chase-recap"><span class="chase-recap-k">R${r.round} →</span>
+      ${bits.length ? bits.join(" · ") : "rien n'a bougé"}
+      <button data-action="chase-undo-round" title="Annuler la fin de round">↩</button></p>`;
   },
 
   /** Pied : le rappel du test (ou, en SR5, les quatre actions qui le

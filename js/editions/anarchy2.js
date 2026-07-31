@@ -403,6 +403,18 @@ export const EditionAnarchy2 = {
     threshold() {
       return null; // test OPPOSÉ : pas de seuil, c'est l'adversaire qui fixe la barre
     },
+    testPool(pnj, { terrain } = {}) {
+      const skills = (pnj && pnj.skills) || [];
+      const rank = (re) => {
+        const s = skills.find((k) => k && re.test(k.name || ""));
+        return s ? Number(s.rank != null ? s.rank : s.val) || 0 : null;
+      };
+      const attr = (k) => (typeof Actor !== "undefined" ? Actor.attr(pnj, k) : 0) || 0;
+      const r = rank(terrain === "pied" ? /athl/i : /pilotage|véhicule/i);
+      return r == null
+        ? null
+        : { pool: r + attr("AGI"), label: terrain === "pied" ? "Athlétisme + AGI" : "Pilotage + AGI" };
+    },
     round: {
       /** Requis, mais opposé : « le vainqueur parvient à progresser vers son
           objectif (s'enfuir, rattraper l'autre) ». Et si l'issue ne fait

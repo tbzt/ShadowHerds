@@ -20,6 +20,8 @@
    PROPOSÉ, jamais appliqué (règle R4).
    ============================================================ */
 import { Chase } from "../rules/chase.js";
+import { Dice } from "../rules/dice.js";
+import { DiceRoller } from "../widgets/dice/diceroller.js";
 import { Dialog } from "../widgets/kit/dialog.js";
 import { Encounter } from "./encounter.js";
 import { PnjLookup } from "./pnjlookup.js";
@@ -142,10 +144,74 @@ export const Pursuit = {
     return n;
   },
 
-  /* ---- Le test du round ----
-     Sur un PNJ, l'app peut lancer (elle tient les PNJ) ; sur un PJ, elle
-     ENREGISTRE ce que le joueur annonce. Ici on ne fait qu'enregistrer :
-     le jet réel vient du parcours de dés existant, branché au lot P2. */
+  /* ========================================================
+     LE TEST DU ROUND (lot P3)
+
+     Le ⚄ lance partout ailleurs dans l'app : il lance ici aussi — mais
+     seulement sur un PNJ dont l'app tient la réserve. Sur un PJ léger (pas
+     de compétences sur sa fiche : son bloc de table n'en porte pas), le
+     même geste POINTE ce que le joueur annonce. Aucune règle nouvelle :
+     c'est la doctrine de l'initiative (lot B3.5) appliquée au round de
+     poursuite.
+
+     Et ce qui se passe sur un ÉCHEC n'est jamais appliqué : le test
+     d'Accident (SR6 encombré) ou les 4E à pied sont PROPOSÉS, avec leur
+     réserve prête à lancer. L'app ne remplit aucun moniteur (règle R4).
+     ======================================================== */
+
+  /** La réserve du test pour ce participant, ou null si l'app ne la tient
+      pas du livre → `{ pool, label, threshold }`. */
+  testSpec(pnjId) {
+    const st = this.state();
+    const m = this.model();
+    const pnj = PnjLookup.find(pnjId);
+    if (!st || !m || !pnj || !m.testPool) return null;
+    const spec = m.testPool(pnj, { terrain: st.terrain, env: st.env });
+    if (!spec || !spec.pool) return null;
+    const seuil = m.threshold ? m.threshold(pnj, { terrain: st.terrain, env: st.env }) : null;
+    return { ...spec, threshold: Number.isFinite(seuil) ? seuil : null };
+  },
+
+  /** Le geste du ⚄ : lancer si on peut, pointer sinon. Un test DÉJÀ posé se
+      corrige d'un tap (cycle) — se tromper doit coûter un geste, pas un
+      détour. */
+  testOrRoll(pnjId) {
+    const st = this.state();
+    if (!st) return;
+    if (st.tested[pnjId]) return this.cycleTest(pnjId);
+    const spec = this.testSpec(pnjId);
+    if (!spec) return this.cycleTest(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    const res = Dice.computeRoll(spec.pool);
+    const suffixe = spec.threshold != null ? ` (seuil ${spec.threshold})` : "";
+    DiceRoller.show(res, { label: `${spec.label}${suffixe}`, who: (pnj && pnj.name) || "?" });
+    if (spec.threshold == null) {
+      // SR5, Anarchy : pas de seuil (test opposé, ou difficulté arbitrée).
+      // On lance, le MJ tranche — l'app ne décide pas d'un résultat qu'aucun
+      // livre ne lui donne.
+      toast(`${res.hits} succès — comparez, puis posez ✓ ou ✗.`);
+      return;
+    }
+    Chase.setTest(this.edition(), st, pnjId, res.hits >= spec.threshold ? "ok" : "ko");
+    this._persist();
+  },
+
+  /** Ce que l'échec coûte ICI, prêt à lancer si c'est un jet (test
+      d'Accident) — proposé, jamais appliqué. */
+  rollFail(pnjId) {
+    const st = this.state();
+    const spec = this.testSpec(pnjId);
+    const cost = Chase.failCost(this.edition(), st);
+    if (!cost) return;
+    if (!spec) {
+      toast(`Échec — ${cost}. À résoudre à la table.`);
+      return;
+    }
+    const pnj = PnjLookup.find(pnjId);
+    const res = Dice.computeRoll(spec.pool);
+    DiceRoller.show(res, { label: `${cost} — ${spec.label}`, who: (pnj && pnj.name) || "?" });
+  },
+
   setTest(pnjId, res) {
     const st = this.state();
     if (!st) return;
@@ -216,6 +282,18 @@ export const Pursuit = {
     Chase.addPool(this.edition(), st, pnjId, delta);
     this._persist();
   },
+  /** Le gain d'Atout du round (SR6) : « le camp ayant l'indice le plus élevé
+      gagne un point d'Atout. Seul un point est attribué. » L'app le PROPOSE
+      au dominant en un tap — c'est un gain automatique que les tables
+      oublient tous les rounds — mais ne l'applique jamais d'elle-même. */
+  grantEdge(pnjId) {
+    const m = this.model();
+    if (!m || !(m.edge && m.edge.compare)) return;
+    Encounter.adjustEdge(pnjId, 1);
+    const nom = (PnjLookup.find(pnjId) || {}).name || "Le dominant";
+    toast(`${nom} — +1 point d'Atout (attribut le plus élevé du round).`);
+  },
+
   setPoolMax(pnjId, value) {
     const st = this.state();
     if (!st) return;
@@ -243,6 +321,16 @@ export const Pursuit = {
       this._persist();
     });
     return recap;
+  },
+
+  /** Annule la dernière fin de round. Le toast s'efface au bout de quelques
+      secondes — le MJ, lui, s'aperçoit de son mé-tap deux minutes plus tard :
+      le bandeau de résumé garde donc son propre ↩, sans limite de temps. */
+  undoRound() {
+    const st = this.state();
+    if (!st || !Chase.undoRound(st)) return;
+    this._persist();
+    toast("Round annulé.");
   },
 
   /* ---- Lectures dérivées (pour le rendu du lot P2 et la console) ---- */
@@ -308,6 +396,9 @@ export const Pursuit = {
     const rows = this.rows();
     const target = this.targetRow();
     const dominantId = this.dominant();
+    // La réserve du test rejoint chaque ligne : le rendu affiche « ⚄ 12 »
+    // quand l'app la tient, et un ⚄ nu quand c'est au joueur d'annoncer.
+    for (const r of rows) r.roll = this.testSpec(r.pnjId);
     const byLane = {};
     for (const r of rows) if (!r.out && r.lane) (byLane[r.lane] ||= []).push(r);
     const terr = m.terrains[st.terrain] || {};
@@ -336,6 +427,22 @@ export const Pursuit = {
       summary: this.summary(),
       dropped: rows.filter((r) => r.out),
       unplaced: rows.filter((r) => !r.out && !r.lane),
+      /** Le résumé du round qui vient de se terminer — résolu en NOMS ici
+          (le rendu ne connaît pas les fiches). Ce que Savage Worlds appelle
+          « le round produit un événement » : un round qui passe sans rien
+          dire est un round qu'on oublie. */
+      recap: (() => {
+        const r = st.log && st.log[0];
+        if (!r) return null;
+        const nom = (id) => (PnjLookup.find(id) || {}).name || "?";
+        return {
+          round: r.round,
+          moves: (r.moves || []).map((mv) => ({ name: nom(mv.pnjId), delta: mv.delta })),
+          untested: (r.untested || []).map(nom),
+        };
+      })(),
+      edgeCompare: !!(m.edge && m.edge.compare),
+      failCostLabel: Chase.failCost(ed, st),
       poolOn: !!(m.edge && m.edge.chasePool),
       poolLabel: (m.edge && m.edge.poolLabel) || "Réserve",
     };

@@ -680,8 +680,13 @@
   .chase-move button,
   .chase-mark,
   .chase-out button,
+  .chase-pool button,
+  .chase-recap button,
   button.chase-tok-val.is-void {
     width: 32px;
+    min-height: 32px;
+  }
+  .chase-grant {
     min-height: 32px;
   }
   .chase-chip {

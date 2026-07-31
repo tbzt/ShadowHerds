@@ -441,6 +441,94 @@ button.chase-tok-val.is-void {
   border-color: var(--accent);
 }
 
+/* Le ⚄ qui porte sa réserve : plus large qu'une marque ronde, comme les
+   pastilles de jet de l'app. */
+.chase-mark.chase-roll.has-pool {
+  width: auto;
+  min-width: 34px;
+  padding: 0 var(--sp-1);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+.chase-mark.is-fail {
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 55%, var(--border));
+  font-weight: 700;
+}
+/* Le gain d'Atout du round, proposé au dominant (SR6). */
+.chase-grant {
+  font: inherit;
+  font-size: var(--fs-2xs);
+  font-family: var(--font-mono);
+  min-height: 24px;
+  padding: 0 var(--sp-1);
+  flex: none;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+/* Réserve de course-poursuite : un stepper, parce que son plafond dépend
+   d'un câblage ou d'une augmentation que l'app ne sait pas lire. */
+.chase-pool {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent);
+}
+.chase-pool button {
+  font: inherit;
+  width: 24px;
+  min-height: 24px;
+  padding: 0;
+  background: var(--bg-mid);
+  color: var(--text-dim);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.chase-pool b {
+  min-width: 24px;
+  text-align: center;
+}
+
+/* ---- Résumé du round écoulé, avec son annulation ---- */
+.chase-recap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex-wrap: wrap;
+  margin-top: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-2xs);
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  border-radius: var(--radius-sm);
+}
+.chase-recap-k {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+.chase-recap button {
+  font: inherit;
+  margin-left: auto;
+  width: 28px;
+  min-height: 24px;
+  padding: 0;
+  background: var(--bg-mid);
+  color: var(--text);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
 /* ---- Hors piste / hors course ---- */
 .chase-unplaced,
 .chase-dropped {

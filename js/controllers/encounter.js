@@ -3399,6 +3399,23 @@ export const Encounter = {
         case "chase-test":
           Pursuit.cycleTest(el.dataset.id);
           break;
+        /* ⚄ du round : l'app lance quand elle tient la réserve (PNJ), le MJ
+           pointe quand c'est au joueur d'annoncer (PJ) — cf. Pursuit.testOrRoll. */
+        case "chase-roll":
+          Pursuit.testOrRoll(el.dataset.id);
+          break;
+        case "chase-fail":
+          Pursuit.rollFail(el.dataset.id);
+          break;
+        case "chase-grant":
+          Pursuit.grantEdge(el.dataset.id);
+          break;
+        case "chase-pool":
+          Pursuit.addPool(el.dataset.id, parseInt(el.dataset.delta, 10) || 0);
+          break;
+        case "chase-undo-round":
+          Pursuit.undoRound();
+          break;
         case "chase-edge":
           Pursuit.toggleEdgeUp(el.dataset.id);
           break;

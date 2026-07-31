@@ -1670,6 +1670,24 @@ export const EditionSR6 = {
       const base = env === "encombre" && Number.isFinite(s.maniaHors) ? s.maniaHors : s.mania;
       return Number.isFinite(base) ? Math.max(0, base + (e ? e.maniaMod : 0)) : null;
     },
+    /** Réserve du test du round. Recherche TOLÉRANTE de la compétence (les
+        fiches n'écrivent pas toutes le même libellé) et `null` dès qu'elle
+        manque — un PJ léger n'a pas de compétences : il annonce, l'app ne
+        fabrique pas une réserve. */
+    testPool(pnj, { terrain } = {}) {
+      const skills = (pnj && pnj.skills) || [];
+      const rank = (re) => {
+        const s = skills.find((k) => k && re.test(k.name || ""));
+        return s ? Number(s.rank != null ? s.rank : s.val) || 0 : null;
+      };
+      const attr = (k) => (typeof Actor !== "undefined" ? Actor.attr(pnj, k) : 0) || 0;
+      if (terrain === "pied") {
+        const r = rank(/athl|course|sprint/i);
+        return r == null ? null : { pool: r + attr("AGI"), label: "Athlétisme + AGI (Sprinter)" };
+      }
+      const r = rank(/pilotage|véhicule/i);
+      return r == null ? null : { pool: r + attr("RÉA"), label: "Pilotage + RÉA" };
+    },
     round: {
       /** Le seul du corpus à l'imposer : « une action majeure Pilotage est
           requise » / « une action majeure Sprinter est nécessaire à chaque

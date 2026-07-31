@@ -1141,6 +1141,23 @@ export const EditionSR5 = {
       // le devine pas — elle rappelle les actions, elle ne fixe pas leur prix.
       return null;
     },
+    /** « Test de Compétence de véhicule + Réaction [Vitesse ou Maniabilité] ».
+        La compétence dépend du milieu (terrestre, aquatique, aérien) : on
+        prend la première que porte la fiche, et `null` si elle n'en a aucune. */
+    testPool(pnj, { terrain } = {}) {
+      const skills = (pnj && pnj.skills) || [];
+      const rank = (re) => {
+        const s = skills.find((k) => k && re.test(k.name || ""));
+        return s ? Number(s.rank != null ? s.rank : s.val) || 0 : null;
+      };
+      const attr = (k) => (typeof Actor !== "undefined" ? Actor.attr(pnj, k) : 0) || 0;
+      if (terrain === "pied") {
+        const r = rank(/course/i);
+        return r == null ? null : { pool: r + attr("FOR"), label: "Course + FOR (Sprint)" };
+      }
+      const r = rank(/véhicule/i);
+      return r == null ? null : { pool: r + attr("REA"), label: "Compétence de véhicule + RÉA" };
+    },
     round: {
       /** Pas de test par round : ce sont des ACTIONS, choisies. */
       test: null,

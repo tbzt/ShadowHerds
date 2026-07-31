@@ -408,6 +408,18 @@ export const EditionAnarchy1 = {
     threshold() {
       return null; // difficulté fixée par le MJ (table des difficultés)
     },
+    testPool(pnj, { terrain } = {}) {
+      const skills = (pnj && pnj.skills) || [];
+      const rank = (re) => {
+        const s = skills.find((k) => k && re.test(k.name || ""));
+        return s ? Number(s.rank != null ? s.rank : s.val) || 0 : null;
+      };
+      const attr = (k) => (typeof Actor !== "undefined" ? Actor.attr(pnj, k) : 0) || 0;
+      const r = rank(terrain === "pied" ? /athl/i : /véhicule/i);
+      return r == null
+        ? null
+        : { pool: r + attr("AGI"), label: terrain === "pied" ? "Athlétisme + AGI" : "Véhicules + AGI" };
+    },
     round: {
       test: null,
       onSuccess: null,
