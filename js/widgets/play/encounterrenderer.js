@@ -12,6 +12,7 @@ import { Actions } from "../../rules/actions.js";
 import { Ammo } from "../../rules/ammo.js";
 import { AnarchyAtouts } from "../../rules/anarchyatouts.js";
 import { CardRenderer } from "../card/cardrenderer.js";
+import { Chase } from "../../rules/chase.js";
 import { EdgeActions } from "../../rules/edgeactions.js";
 // Lecture SEULE (contextes/rôle de scène) — le rendu ne mute jamais la scène.
 import { Encounter } from "../../controllers/encounter.js";
@@ -1202,7 +1203,7 @@ export const EncounterRenderer = {
   },
 
   /* ========================================================
-     ATTAQUE PORTÉE (lot F6b) — le compte que le livre limite.
+     ATTAQUE PORTÉE (lot G4) — le compte que le livre limite.
 
      Les deux éditions n'autorisent qu'UNE attaque, pour des raisons qui ne se
      ressemblent pas, et l'app doit dire laquelle :
@@ -1448,7 +1449,7 @@ export const EncounterRenderer = {
       // personne ne le lise. La trace ne verrouille rien : la puce reste
       // tapable, et retapée elle repaie (le livre n'interdit pas de recommencer).
       const dernier = r.lastAction === a.key ? " is-last" : "";
-      // F6 — la teinte de domaine est portée par LA PUCE, pas par sa rubrique.
+      // G3 — la teinte de domaine est portée par LA PUCE, pas par sa rubrique.
       // Elle l'était d'abord par la bande, ce qui suffisait tant que rubrique
       // et domaine se confondaient. La rubrique « Hors tour » les sépare : elle
       // rassemble des puces de trois domaines (Contrer un sort est magique,
@@ -1475,7 +1476,7 @@ export const EncounterRenderer = {
           .map((h) => `${Utils.escHtml(h.name)} : ${Utils.escHtml(h.why)}${h.except ? ` — sauf ${Utils.escHtml(h.except)}` : ""}`)
           .join(" · ")}. L'app n'en bloque aucune : le tri vous revient.</span>`
       : "";
-    // F6 — les actions qui se jouent AILLEURS. Même discipline que les domaines
+    // G2 — les actions qui se jouent AILLEURS. Même discipline que les domaines
     // fermés, et pour la même raison : une puce qui disparaît doit dire où elle
     // est partie, sinon le MJ la croit perdue. Le rappel nomme un endroit de
     // l'écran (« le bloc Sorts », « le râtelier Matrice »), jamais un concept.
@@ -1493,10 +1494,10 @@ export const EncounterRenderer = {
       : "");
     const rapides = Actions.quick(r.pnj).map(puce).join("");
     // F1b — le reste se range par DOMAINE (combat, magie, Matrice ; pilotage
-    // depuis F6). SR6 est passé de 32 à 78 actions et SR5 de 36 à 76 : une
+    // depuis G1). SR6 est passé de 32 à 78 actions et SR5 de 36 à 76 : une
     // seule liste serait un mur de puces. Une rubrique vide ne s'imprime pas —
     // un PNJ sans magie, ni Matrice, ni drone retrouve une liste plate.
-    // F6 — deux axes de rangement, pas un : le DOMAINE (ce que c'est) puis le
+    // G3 — deux axes de rangement, pas un : le DOMAINE (ce que c'est) puis le
     // MOMENT (quand ça se joue). `restGroups` rend les domaines ouverts d'abord
     // — ce qui se joue à son tour — puis « Hors tour », qui rassemble les
     // actions `timing:"L"` de tous les domaines. Le raisonnement est en tête
@@ -1504,7 +1505,7 @@ export const EncounterRenderer = {
     // à son tour, et les voir mélangées aux dix-huit actions du tour faisait
     // retrier l'œil à chaque ouverture.
     const domaines = Actions.restGroups(r.pnj);
-    // ⚠ F6 — LE FILTRE PAR DOMAINE NE S'APPLIQUAIT PAS À UN SEUL DOMAINE.
+    // ⚠ G1 — LE FILTRE PAR DOMAINE NE S'APPLIQUAIT PAS À UN SEUL DOMAINE.
     //
     // Ces deux lignes lisaient `Actions.rest(r.pnj)` — le catalogue ENTIER,
     // sans filtre — et la branche « une seule rubrique » ci-dessous le rendait
@@ -1534,7 +1535,7 @@ export const EncounterRenderer = {
     // Une seule rubrique → pas d'en-tête : un titre « Combat » au-dessus d'une
     // liste qui n'a rien à côté ne dit rien.
     //
-    // F6 — la rubrique porte sa CLÉ en classe (`is-magie`, `is-horsTour`…),
+    // G3 — la rubrique porte sa CLÉ en classe (`is-magie`, `is-horsTour`…),
     // pour son liseré et son libellé. La TEINTE, elle, est sur la puce (cf.
     // `puce` plus haut) : « Hors tour » est une rubrique multicolore, et une
     // teinte de bande y aurait menti. Le CSS n'invente aucun rôle chromatique —
@@ -1974,7 +1975,7 @@ export const EncounterRenderer = {
       : fdOff
         ? `<span class="react-btn is-off" title="${Utils.escHtml(`Aucune interruption payable — ${raisonOff}`)}" aria-label="${Utils.escHtml(`Actions d'interruption — ${name} : aucune payable`)}"><span class="react-glyph" aria-hidden="true">⛨</span></span>`
         : `<button class="react-btn react-fulldef-btn${fdActive ? " is-on" : ""}" data-action="${plusieurs ? "react-interrupt-toggle" : "full-defense"}" data-id="${pnj.id}"${fdActive ? ' aria-pressed="true"' : ""} title="${plusieurs ? `Actions d'interruption (${interrupts.length}) — se paient en score d'initiative` : `${Utils.escHtml(fd.label)} (+${fd.bonus} déf · ${Utils.escHtml(fd.note || "")})`}" aria-label="${plusieurs ? `Actions d'interruption — ${name}` : `${Utils.escHtml(fd.label)} — ${name}`}"><span class="react-glyph" aria-hidden="true">⛨</span></button>`;
-    // F6b — CONTRER UN SORT, la réaction du magicien. Elle vivait dans la
+    // G4 — CONTRER UN SORT, la réaction du magicien. Elle vivait dans la
     // feuille d'actions du combattant ACTIF, où elle ne pouvait pas servir : le
     // livre la note `(L)`, on contre le sort de quelqu'un d'AUTRE. Sa place est
     // ici, entre ⛨ Défense totale et ⛊ Encaissement — l'ordre de la séquence
@@ -2016,7 +2017,7 @@ export const EncounterRenderer = {
     // A2 — porte fermée : pas de feuille du tout. Neuf puces désactivées dans
     // le DOM d'une ligne qu'aucun geste n'ouvre, c'est du poids sans lecteur.
     const interruptBody = plusieurs && ouvrable ? this._reactInterruptChips(pnj) : "";
-    // F6b — les usages du Contresort, repliés comme les deux rangées voisines.
+    // G4 — les usages du Contresort, repliés comme les deux rangées voisines.
     const csBody = cs ? this._reactCounterspellChips(pnj) : "";
     // États de combat (E1) — MÊMES pièces que la zone Combat de la carte
     // (CardRenderer.statusParts), montées ici parce que la séquence du MJ ne
@@ -2077,7 +2078,7 @@ export const EncounterRenderer = {
     Sheets.toggle("interrupt", pnjId, this._reactTrigger("react-interrupt-toggle", pnjId), { close });
   },
 
-  /** Les USAGES du Contresort, dépliés par le ✦ (lot F6b).
+  /** Les USAGES du Contresort, dépliés par le ✦ (lot G4).
 
       Une rangée et pas un bouton, parce que le livre en décrit DEUX et qu'ils
       ne se jouent pas pareil — c'est la correction apportée par l'utilisateur
@@ -2628,7 +2629,10 @@ export const EncounterRenderer = {
     // (doctrine « moteurs de scène »). Rendu pur : dérive uniquement de
     // `state`/`rows` déjà reçus, ne touche jamais App/Storage.
     const hasMatrix = !!(state.serverId || (state.matrix && Object.keys(state.matrix).length));
-    const visible = rows.some((r) => r.pnj) || hasMatrix;
+    // Idem pour une poursuite : le 3ᵉ moteur rend la scène vivante, même sans
+    // un seul combattant résolu (une piste ouverte, c'est une scène en cours).
+    const hasChase = !!state.chase;
+    const visible = rows.some((r) => r.pnj) || hasMatrix || hasChase;
     box.hidden = !visible;
     // Perche « Reprendre » : allumée partout où la scène peut se
     // rouvrir en un geste — topbar (desktop+mobile), sidebar, bottom-nav
@@ -2641,7 +2645,15 @@ export const EncounterRenderer = {
     if (!visible) return;
 
     const roundEl = document.getElementById("sidebar-encounter-round");
-    if (roundEl) roundEl.textContent = "Round " + state.round + this._passSuffix(state, model);
+    // En poursuite, c'est le compteur de la PISTE qui fait autorité (Round,
+    // Tour ou Phase selon le mode) : afficher « Round 1 » pendant une filature
+    // à la phase 3 serait faux.
+    const ch = state.chase;
+    if (roundEl) {
+      roundEl.textContent = ch
+        ? `${(Chase.mode(App.edition, ch.mode) || {}).counter || "Round"} ${ch.round}${ch.total ? ` / ${ch.total}` : ""}`
+        : "Round " + state.round + this._passSuffix(state, model);
+    }
 
     const nameEl = document.getElementById("sidebar-encounter-name");
     const kindEl = document.getElementById("sidebar-encounter-kind");
@@ -2651,6 +2663,22 @@ export const EncounterRenderer = {
       const played = present.filter((r) => r.hasActed).length;
       if (nameEl) nameEl.textContent = `${played} / ${present.length} ont joué`;
       if (kindEl) kindEl.textContent = "";
+      return;
+    }
+
+    // Poursuite en cours : le résumé dit l'ÉCART, la seule chose qu'on veut
+    // savoir d'un coup d'œil depuis la sidebar (« qui me colle au train »).
+    if (ch) {
+      const enPiste = Object.keys(ch.lanes || {}).filter((id) => !(ch.out || {})[id]).length;
+      const bandes = Chase.lanes(App.edition, ch.terrain);
+      const plusProche = Object.keys(ch.lanes || {})
+        .filter((id) => !(ch.out || {})[id])
+        .map((id) => bandes.findIndex((b) => b.key === ch.lanes[id]))
+        .filter((i) => i >= 0)
+        .sort((a, b) => a - b)[0];
+      if (nameEl) nameEl.textContent = enPiste ? `${enPiste} en piste` : "piste vide";
+      if (kindEl)
+        kindEl.textContent = plusProche != null ? `au plus près : ${(bandes[plusProche] || {}).label || "?"}` : "⇉";
       return;
     }
 

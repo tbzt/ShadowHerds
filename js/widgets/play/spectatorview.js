@@ -10,6 +10,7 @@
    moniteur (échelle/seuils) vit dans le descripteur `conditionMonitor.gauge` ;
    `CardRenderer.gaugeBoxes` la dessine — ici on ne branche jamais sur l'édition.
    ============================================================ */
+import { Chase } from "../../rules/chase.js";
 import { Storage } from "../../core/storage.js";
 import { Utils } from "../../core/utils.js";
 
@@ -75,7 +76,53 @@ export const SpectatorView = {
     const header = `<div class="spectator-header">Round ${state.round}${passLabel}</div>`;
     const activeId = this._activeId(rows, state);
     const list = rows.map((r) => this._row(r, r.pnjId === activeId)).join("");
-    zone.innerHTML = header + `<div class="stack spectator-list">${list}</div>`;
+    zone.innerHTML = header + this._chase(state, rows) + `<div class="stack spectator-list">${list}</div>`;
+  },
+
+  /** ⇉ La piste, projetée en LECTURE SEULE — les positions, rien d'autre.
+
+      Ce que les joueurs peuvent voir : qui est devant, qui colle au train,
+      et sur quel terrain. Ce qui reste chez le MJ : les tests du round, les
+      réserves, les valeurs d'attribut, les actions d'Atout — ce sont des
+      informations de GESTION, pas de fiction. La piste projetée est donc
+      volontairement pauvre, comme le reste de cet écran.
+
+      Rendu local plutôt qu'un appel à `ChaseRenderer` : l'écran spectateur
+      est isolé du cluster cockpit (même arbitrage que `_typeLabel` et
+      `_activeId`, recopiés pour la même raison). */
+  _chase(state, rows) {
+    const ch = state.chase;
+    if (!ch) return "";
+    const ed = App.edition;
+    const mode = Chase.mode(ed, ch.mode) || { label: "Poursuite", counter: "Round" };
+    const nom = (id) => {
+      const r = rows.find((x) => x.pnjId === id);
+      return Utils.escHtml((r && r.pnj && r.pnj.name) || "?");
+    };
+    const cible = ch.targetId
+      ? `<div class="spectator-chase-anchor"><span>${Utils.escHtml(mode.anchorLabel || "Cible")}</span> ${nom(ch.targetId)}</div>`
+      : "";
+    const bandes = Chase.lanes(ed, ch.terrain)
+      .map((l) => {
+        const gens = Object.keys(ch.lanes || {})
+          .filter((id) => ch.lanes[id] === l.key && !(ch.out || {})[id])
+          .map((id) => `<span class="spectator-chase-tok">${nom(id)}</span>`)
+          .join("");
+        return `<div class="spectator-chase-band${gens ? "" : " is-empty"}">
+          <span class="spectator-chase-lane">${Utils.escHtml(l.label)}</span>
+          <span class="spectator-chase-slots">${gens || "·"}</span>
+        </div>`;
+      })
+      .join("");
+    const sortis = Object.keys(ch.out || {})
+      .map((id) => `${nom(id)} <em>${ch.out[id] === "accident" ? "accident" : "semé"}</em>`)
+      .join(" · ");
+    return `<div class="spectator-chase">
+      <div class="spectator-chase-head">⇉ ${Utils.escHtml(mode.label)} —
+        ${Utils.escHtml(mode.counter || "Round")} ${ch.round}${ch.total ? ` / ${ch.total}` : ""}</div>
+      ${cible}${bandes}
+      ${sortis ? `<div class="spectator-chase-out">Hors course : ${sortis}</div>` : ""}
+    </div>`;
   },
 
   /** Combattant à mettre en avant : Miroir NEUTRE de la résolution de focus

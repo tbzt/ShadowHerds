@@ -753,3 +753,83 @@ button.chase-tok-val.is-void {
     margin-left: 0;
   }
 }
+
+/* ============================================================
+   ⇉ ÉCRAN SPECTATEUR (P6) — la piste projetée, en lecture seule.
+
+   Volontairement pauvre : les positions, la cible, le compteur. Les
+   tests, les réserves et les valeurs d'attribut restent chez le MJ —
+   ce sont des informations de gestion, pas de fiction. Styles posés
+   ici (avec le reste de la piste) plutôt que dans combat-tracker.css :
+   c'est le même composant, vu d'un autre écran.
+   ============================================================ */
+.spectator-chase {
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-3);
+  background: var(--bg-card);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: var(--radius-lg);
+}
+.spectator-chase-head {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  letter-spacing: var(--title-spacing);
+  text-transform: var(--title-transform);
+  color: var(--accent);
+  margin-bottom: var(--sp-2);
+}
+.spectator-chase-anchor {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-2);
+  margin-bottom: var(--sp-2);
+  border-bottom: 2px solid var(--accent);
+  font-size: var(--fs-lg);
+  color: var(--text);
+}
+.spectator-chase-anchor span {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.spectator-chase-band {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 40px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--border) 90%, transparent);
+}
+.spectator-chase-band:last-of-type {
+  border-bottom: 0;
+}
+.spectator-chase-band.is-empty {
+  min-height: 26px;
+  opacity: 0.5;
+}
+.spectator-chase-lane {
+  flex: 0 0 8rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.spectator-chase-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  font-size: var(--fs-md);
+  color: var(--text);
+}
+.spectator-chase-out {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+.spectator-chase-out em {
+  font-style: normal;
+  opacity: 0.75;
+}
