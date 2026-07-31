@@ -1036,25 +1036,33 @@ export const EditionSR6 = {
         "Vaut aussi contre Faire trébucher et Renverser",
       ] },
       { key: "armoireAGlace", name: "Armoire à glace", cost: 2, source: "Feu Nourri", host: ["intercepter"], hostLabel: "Intercepter", when: "avantJet", lines: [
-        "Permet d'intercepter un adversaire au-delà de ce que l'action autorise normalement",
+        "Chaque succès réduit le déplacement de l'adversaire de 1 mètre",
+        "Résultat de l'attaque supérieur à l'Agilité de l'adversaire : il s'arrête à côté du personnage",
       ] },
       { key: "neutraliser", name: "Attaque ciblée : Neutraliser", cost: 2, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
-        "Réduit la capacité d'agir de la cible plutôt que de lui infliger des dommages",
+        "VD modifiée supérieure à la Réaction de la cible : elle gagne l'état Désorienté (durée = succès nets en rounds)",
       ] },
       { key: "destructionArme", name: "Attaque ciblée : Destruction d'arme", cost: 5, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
-        "Si les dommages dépassent la Structure de l'arme visée, celle-ci est détruite",
+        "La cible ne subit aucun dommage — c'est son ARME qui encaisse (même test que détruire un obstacle)",
+        "VD modifiée supérieure à la Structure de l'arme : elle est détruite",
+        "Sinon son Score Offensif baisse de 1 par succès net, DÉFINITIVEMENT et à toutes les portées — un SO tombé à 0 rend l'arme inutilisable à cette distance",
+        "Structure à la discrétion du MJ, entre 8 et 12 selon le type et la fabrication",
       ] },
       { key: "bequille", name: "Béquille", cost: 2, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
-        "Frappe une jambe : la cible perd en mobilité",
+        "Vise le tendon, le genou ou la jambe : VD modifiée supérieure à l'Agilité de l'adversaire → état Entravé (durée = succès nets en rounds)",
+        "Cette attaque n'inflige aucun dommage",
       ] },
       { key: "claqueAssourdissante", name: "Claque assourdissante", cost: 2, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
-        "Inflige l'état Assourdi à la cible",
+        "Succès nets supérieurs à la Volonté de l'adversaire : il gagne l'état Assourdi (durée = succès nets en rounds)",
+        "Cette attaque n'inflige aucun dommage",
       ] },
       { key: "clouer", name: "Clouer", cost: 2, source: "Feu Nourri", hostLabel: "Attaque avec arme de jet ou de trait", when: "avantJet", lines: [
-        "Cloue la cible à une surface : elle gagne l'état Entravé",
+        "VD modifiée supérieure à l'Agilité : la cible est clouée au mur ou au sol et gagne l'état Immobilisé",
+        "Elle doit dépenser Ramasser/Poser un objet pour s'en défaire",
       ] },
       { key: "coupBas", name: "Coup bas", cost: 2, source: "Feu Nourri", host: ["attaquerMelee"], hostLabel: "toute attaque de mêlée", when: "avantJet", lines: [
-        "Coup porté sous la ceinture : la cible subit un malus à ses prochaines actions",
+        "VD modifiée supérieure à la Volonté de l'adversaire : il gagne l'état Confus (durée = succès nets en rounds)",
+        "Cette attaque n'inflige aucun dommage",
       ] },
       { key: "demonstrationForce", name: "Démonstration de force", cost: 1, source: "Feu Nourri", host: ["bloquer"], hostLabel: "Bloquer", when: "avantJet", lines: [
         "Tant que le personnage n'a pas été touché et qu'il manie une arme de mêlée, son Score Défensif est remplacé par le Score Offensif de son arme",
@@ -1063,63 +1071,86 @@ export const EditionSR6 = {
         "Une action mineure + test d'Athlétisme + Agilité (3) : −3 dés à la Défense de la cible contre votre prochaine attaque en Combat rapproché",
         "Un objet accroché à l'arme de mêlée se détache sans dépenser Préparer une arme",
       ] },
-      { key: "enchevetrer", name: "Enchevêtrer", cost: 2, source: "Feu Nourri", host: ["attaquerMelee"], hostLabel: "Toute attaque de mêlée · Lutte avec armes exotiques", when: "avantJet", lines: [
-        "Succès nets supérieurs à l'Agilité : la cible gagne l'état Muet (durée = succès nets en rounds)",
-        "Avec fouets, chaînes, bolas, lassos en lutte : la cible gagne l'état Entravé",
-        "Cette attaque n'inflige aucun dommage",
+      { key: "enchevetrer", name: "Enchevêtrer", cost: 2, source: "Feu Nourri", host: ["attaquerMelee"], hostLabel: "Lutte avec armes exotiques", when: "avantJet", lines: [
+        "Fouet, chaîne, bolas, lasso en lutte : après une attaque réussie, test d'Agilité + succès nets contre l'Agilité de la cible",
+        "Réussi : la cible gagne l'état Entravé (durée = succès nets en rounds)",
+        "Tant qu'elle est entravée, quiconque l'attaque gagne AUTOMATIQUEMENT un point d'Atout",
       ] },
       { key: "evasionKarmique", name: "Évasion karmique", cost: 2, source: "Feu Nourri", host: ["bloquer", "esquiver"], hostLabel: "Bloquer, Esquiver", when: "avantJet", lines: [
-        "Transforme une défense réussie en occasion de se dégager",
+        "S'utilise APRÈS avoir ÉCHOUÉ à bloquer ou esquiver une attaque qui inflige un état",
+        "Une action mineure de plus : on troque l'état contre des DOMMAGES — les succès nets frappent comme s'ils avaient infligé des dégâts",
       ] },
       { key: "faireLeMort", name: "Faire le mort", cost: 3, source: "Feu Nourri", hostLabel: "Utiliser une compétence (Influence)", when: "avantJet", lines: [
-        "Se faire passer pour mort ou hors de combat",
-        "Le MJ seul sait si l'action a réussi ou échoué",
+        "Test d'Escroquerie + Charisme contre Volonté + Intuition (le MJ module selon la crédibilité de la mise en scène)",
+        "Gagné : le personnage prend 1 point d'Atout, l'adversaire est surpris et ne peut pas dépenser d'Atout à sa prochaine action contre lui",
+        "Le MJ peut attendre l'attaque suivante pour révéler si ça a marché",
       ] },
       { key: "fracture", name: "Fracture", cost: 4, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
-        "Le membre visé gagne l'état Estropié II, pour un nombre de rounds égal aux succès nets",
+        "Vise un membre précis, au prix d'un malus de −4 à la réserve : attaque réussie → le membre gagne l'état Estropié",
+        "VD modifiée supérieure à la Constitution de l'adversaire : Estropié II (durée = succès nets en rounds)",
         "Reproductible sur le même membre jusqu'à Estropié III · la durée se cumule",
       ] },
-      { key: "frappeGorge", name: "Frappe à la gorge", cost: 2, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
-        "Vise la gorge : la cible gagne l'état Muet",
+      { key: "frappeGorge", name: "Frappe à la gorge", cost: 2, source: "Feu Nourri", host: ["attaquerMelee"], hostLabel: "toute attaque de mêlée", when: "avantJet", lines: [
+        "Succès nets supérieurs à l'Agilité de l'adversaire : il gagne l'état Muet (durée = succès nets en rounds)",
+        "Cette attaque n'inflige aucun dommage",
       ] },
       { key: "frappeAveuglante", name: "Frappe aveuglante", cost: 4, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
-        "Vise les yeux : la cible gagne l'état Aveuglé",
+        "Attaque réussie : la cible subit l'état Aveuglé au niveau (succès nets ÷ 2), arrondi au supérieur",
+        "Durée = succès nets en rounds · cette attaque n'inflige aucun autre dommage",
       ] },
       { key: "parkour", name: "Parkour", cost: 2, source: "Feu Nourri", host: ["sprinter"], hostLabel: "Sprinter", when: "avantJet", lines: [
-        "Se déplacer rapidement et franchir jusqu'à 18 mètres",
+        "Déplacements horizontaux ET verticaux pour une seule action majeure (au lieu de plusieurs mineures)",
+        "En sprintant, retire des succès de Sprinter pour de la distance VERTICALE, jusqu'à son Agilité en mètres",
+        "Doit finir sur une surface horizontale, sinon il tombe · un adepte avec Course sur les murs porte sa base de sprint à 18 m",
       ] },
       { key: "porteeEtendue", name: "Portée étendue", cost: 1, source: "Feu Nourri", host: ["attaquerMelee"], hostLabel: "Attaque de mêlée", when: "avantJet", lines: [
-        "En maniant deux armes de mêlée, étend l'allonge",
+        "En maniant DEUX armes de mêlée : la portée Proche est étendue de 2 mètres pour toute la rencontre",
       ] },
       { key: "presenceIntimidante", name: "Présence intimidante", cost: 2, source: "Feu Nourri", hostLabel: "Utiliser une compétence (Influence)", when: "avantJet", lines: [
-        "Impose sa présence pour dissuader un adversaire d'agir",
+        "Test d'Influence + Force contre Volonté + Force : les succès nets réduisent le Score Offensif de l'adversaire ce round, un pour un",
+        "Succès nets supérieurs à son Score Offensif : il ne peut ni gagner ni dépenser d'Atout de tout le round",
+        "Touche quiconque peut voir ET entendre le personnage",
       ] },
       { key: "projection", name: "Projection", cost: 4, source: "Feu Nourri", hostLabel: "Lutte", when: "avantJet", lines: [
-        "Projette l'adversaire ; 4 points supplémentaires pour l'envoyer à un endroit précis (cage d'escalier, d'ascenseur…)",
+        "L'adversaire doit d'abord être saisi · test de Combat rapproché + Force contre Constitution + Force",
+        "L'attaquant utilise son SO à mains nues ; le défenseur ne subit pas le malus d'immobilisation",
+        "Projeté d'un mètre par succès excédentaire, libéré de la prise, il gagne l'état À terre · le MJ peut ajouter des dommages selon l'atterrissage",
+        "⚠ Le texte du livre dit « 2 points, ou 4 pour choisir l'endroit » ; sa table des coûts ne retient que 4 — c'est elle qui fait foi ici",
       ] },
       { key: "promptADegainer", name: "Prompt à dégainer", cost: 2, source: "Feu Nourri", host: ["degainerRapidement", "attaquer"], hostLabel: "Dégainer rapidement, Attaque", when: "avantJet", lines: [
-        "Dégaine et attaque dans un même mouvement",
+        "Autorise Dégainer rapidement avec N'IMPORTE QUELLE arme de mêlée",
+        "Doit être employée avec l'action majeure Attaquer",
       ] },
       { key: "protegerEssentiel", name: "Protéger l'essentiel", cost: 2, source: "Feu Nourri", host: ["intercepter"], hostLabel: "Intercepter", when: "avantJet", lines: [
-        "Se sacrifier pour protéger un allié d'une attaque",
+        "Si le personnage peut rejoindre l'allié en 1 action mineure, il encaisse les dommages à sa place",
+        "Il lui est impossible de bloquer ou d'esquiver cette attaque",
       ] },
       { key: "provocation", name: "Provocation", cost: 1, source: "Feu Nourri", hostLabel: "Utiliser une compétence (Influence)", when: "avantJet", lines: [
-        "Force un adversaire à vous prendre pour cible",
+        "Test d'Influence + Charisme contre Volonté + Intuition",
+        "Les succès nets augmentent le Score Défensif de L'ALLIÉ visé contre cet adversaire, pendant un round",
       ] },
       { key: "repousserAdversaire", name: "Repousser un adversaire", cost: 2, source: "Feu Nourri", host: ["attaquer", "seDeplacer"], hostLabel: "Attaque de mêlée, Déplacement", when: "avantJet", lines: [
-        "Repousse l'adversaire hors de portée",
+        "Exige de s'être déplacé d'au moins 5 mètres avant l'attaque",
+        "Les succès nets convertissent des dommages en déplacement, jusqu'à concurrence de la Constitution de l'attaquant",
+        "Recul = Force de l'attaquant + succès transférés − Constitution du défenseur, en mètres",
+        "Si l'attaque blesse, calculer la mise à terre comme si la VD était supérieure de 2 AVANT le transfert",
       ] },
       { key: "retourEnvoyeur", name: "Retour à l'envoyeur !", cost: 3, source: "Feu Nourri", host: ["eviter"], hostLabel: "Éviter", when: "avantJet", lines: [
-        "Renvoie une grenade à l'envoyeur : test d'Athlétisme + Réaction (2)",
+        "L'action mineure Éviter place le personnage au point d'impact de la grenade",
+        "Puis Ramasser un objet + test d'Athlétisme + Réaction : 10 mètres par succès, dans une direction ALÉATOIRE",
+        "Pour la renvoyer précisément à l'envoyeur, le test passe à Athlétisme + Réaction (2)",
       ] },
       { key: "riposte", name: "Riposte", cost: 4, source: "Feu Nourri", host: ["bloquer"], hostLabel: "Bloquer", when: "avantJet", lines: [
-        "Bloquer puis contre-attaquer dans le même geste",
+        "La dépense réduit d'abord la base de dommages reçus de 2",
+        "Test de Défense réussi : l'attaquant subit des dommages égaux aux succès nets de ce test",
       ] },
       { key: "rouleBoule", name: "Roulé-boulé", cost: 1, source: "Feu Nourri", hostLabel: "le personnage obtient l'état À terre", when: "avantJet", lines: [
-        "Vous avez été renversé par une attaque : l'état À terre s'applique toujours, mais vous amortissez",
+        "Se déplacer jusqu'à 1 mètre du point de chute — de quoi changer de catégorie de portée ou gagner un couvert",
+        "Le personnage reste au sol : l'état À terre s'applique quand même",
       ] },
       { key: "rattraperBranches", name: "Se rattraper aux branches", cost: 2, source: "Feu Nourri", hostLabel: "Tomber", when: "avantJet", lines: [
-        "Une falaise ou des arbres à portée : ralentit la chute pour un atterrissage moins brutal",
+        "Exige un mur, une falaise ou des arbres à portée pendant la chute",
+        "Test d'Athlétisme + Agilité : chaque succès ajoute 1 mètre de chute SANS dommage à la distance de sécurité",
       ] },
       { key: "simuler", name: "Simuler", cost: 2, source: "Feu Nourri", host: ["attaquerMelee", "attaquerDistance"], hostLabel: "toute attaque", when: "avantJet", lines: [
         "Au lieu d'infliger des dommages, les succès nets réduisent le Score Défensif de la cible au round suivant, un pour un",

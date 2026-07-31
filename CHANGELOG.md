@@ -14,6 +14,26 @@ commit.
 
 ### Corrigé
 
+- **Les 33 actions d'Atout de « Feu Nourri » disent enfin leur seuil.** Elles
+  étaient résumées d'un trait — « la cible perd en mobilité », « un malus à
+  ses prochaines actions » — ce qui ne permet pas d'arbitrer en séance : il
+  manquait chaque fois l'attribut à battre, l'état exact et sa durée. Toutes
+  portent désormais le mécanisme du livre : Béquille inflige **Entravé** si
+  la VD modifiée dépasse l'Agilité, Coup bas inflige **Confus** au-dessus de
+  la Volonté, Neutraliser **Désorienté** au-dessus de la Réaction, chacune
+  pour un nombre de rounds égal aux succès nets.
+
+  Deux étaient franchement fausses. **Clouer** annonçait l'état Entravé — le
+  livre dit **Immobilisé**, dont on ne se défait qu'en dépensant Ramasser/
+  Poser un objet. Et **Enchevêtrer** portait l'effet d'une autre action
+  (« Muet », qui appartient à Frappe à la gorge) : elle inflige Entravé, et
+  surtout tous ceux qui attaquent la cible entravée gagnent **automatiquement
+  un point d'Atout** — une conséquence qui change un tour et que l'app
+  passait sous silence. **Parkour** annonçait « jusqu'à 18 mètres », qui est
+  le cas particulier d'un adepte avec Course sur les murs, pas la règle.
+
+  Les 33 coûts, eux, étaient déjà exacts : ils reproduisent la table du livre.
+
 - **Les armes du « Bazar de l'Hexagone » portent enfin les chiffres du
   livre.** Ce supplément manquait au disque : une trentaine d'armes
   françaises avaient été transcrites de mémoire, dans une grammaire que le
