@@ -686,7 +686,9 @@
     width: 32px;
     min-height: 32px;
   }
-  .chase-grant {
+  .chase-grant,
+  .chase-act,
+  .chase-sheet-head button {
     min-height: 32px;
   }
   .chase-chip {

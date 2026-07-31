@@ -200,7 +200,9 @@ export const EdgeActions = {
       → { visibles, ecartees: [{ entry, raison }] }
 
       `opts` : { declared: [contextes déclarés], host: clé d'action courante,
-                 edge: points d'Atout disponibles, withOptional: bool } */
+                 edge: points d'Atout disponibles, withOptional: bool,
+                 role: "cible" | "poursuivant" — le camp du PNJ dans la
+                 poursuite en cours, quand il y en a une } */
   resolve(pnj, opts = {}) {
     const ctx = this.contexts(pnj, opts.declared);
     const visibles = [];
@@ -212,6 +214,17 @@ export const EdgeActions = {
       }
       if (e.where && !ctx.has(e.where)) {
         ecartees.push({ entry: e, raison: `hors contexte : ${e.where}` });
+        continue;
+      }
+      // AXE 4 — LE RÔLE (lot P4). Le livre réserve neuf actions de
+      // course-poursuite à un camp : « Freinage brutal (cible de la
+      // course-poursuite uniquement) », « Aspiration (poursuivants
+      // uniquement) ». Le champ existait au catalogue depuis F5 et n'était
+      // lu nulle part — c'est le moteur ⇉ qui donne enfin un rôle à lire.
+      // Sans rôle connu (hors poursuite), rien n'est filtré : mieux vaut une
+      // puce de trop qu'une règle escamotée, comme partout ici.
+      if (e.role && opts.role && e.role !== opts.role) {
+        ecartees.push({ entry: e, raison: `réservée à : ${e.role}` });
         continue;
       }
       if (!this.meetsWho(pnj, e)) {

@@ -23,6 +23,7 @@ import { Chase } from "../rules/chase.js";
 import { Dice } from "../rules/dice.js";
 import { DiceRoller } from "../widgets/dice/diceroller.js";
 import { Dialog } from "../widgets/kit/dialog.js";
+import { EdgeActions } from "../rules/edgeactions.js";
 import { Encounter } from "./encounter.js";
 import { PnjLookup } from "./pnjlookup.js";
 
@@ -383,6 +384,56 @@ export const Pursuit = {
     return Chase.summary(this.edition(), this.state());
   },
 
+  /** Quelle feuille d'actions est dépliée — état de VUE éphémère (jamais
+      persisté), comme `_activeCardId` du tracker. */
+  _sheetFor: null,
+  toggleSheet(pnjId) {
+    this._sheetFor = this._sheetFor === pnjId ? null : pnjId;
+    Encounter._render();
+  },
+
+  /* ========================================================
+     LES ACTIONS D'ATOUT DE POURSUITE (lot P4)
+
+     Elles étaient au catalogue depuis F5 — 14 entrées, coût, hôte, rôle — et
+     n'avaient AUCUNE surface : `Actions.grafts` ne remonte que les entrées
+     portant un `host` du catalogue F1, et **aucune des 14 n'en a**. C'est
+     normal : leur hôte, le livre l'écrit en toutes lettres, c'est « l'action
+     majeure nécessaire au test de Pilotage ou d'Athlétisme requis chaque
+     round ». Autrement dit : la piste. Elles sont donc chez elles ici.
+     ======================================================== */
+
+  /** Les actions d'Atout jouables par ce participant, dans CETTE poursuite.
+      → { visibles, ecartees, role, edge } ou null hors poursuite. */
+  edgeActionsFor(pnjId) {
+    const st = this.state();
+    const pnj = PnjLookup.find(pnjId);
+    if (!st || !pnj) return null;
+    const c = Encounter._find(pnjId);
+    const role = Encounter.chaseRoleFor(pnjId);
+    const res = EdgeActions.resolve(pnj, {
+      declared: Encounter.edgeContextsFor(c || { pnjId }),
+      role,
+      withOptional: !!(c && c.edgeOptional),
+    });
+    // Ne remonter QUE celles de la poursuite : le reste du catalogue a ses
+    // propres surfaces (greffons d'action, panneau d'attaque) et n'a rien à
+    // faire sur une piste.
+    return {
+      role,
+      edge: (c && c.edge) || 0,
+      visibles: res.visibles.filter((e) => e.where === "poursuite"),
+      ecartees: res.ecartees.filter((x) => x.entry.where === "poursuite"),
+    };
+  },
+
+  /** Dépense : déléguée telle quelle au débit déjà écrit (F5d) — il gère
+      l'Atout, l'action quand l'entrée en coûte une, et les surtaxes
+      annulées. Rien à réécrire ici. */
+  useEdgeAction(pnjId, key) {
+    Encounter.useEdgeAction(pnjId, key);
+  },
+
   /** Le paquet complet que le rendu consomme — assemblé ICI (couche 5, seule
       à pouvoir lire les fiches) pour que `ChaseRenderer` reste PUR : il reçoit
       des données déjà résolues et rend du HTML, comme `EncounterRenderer`.
@@ -431,6 +482,16 @@ export const Pursuit = {
           (le rendu ne connaît pas les fiches). Ce que Savage Worlds appelle
           « le round produit un événement » : un round qui passe sans rien
           dire est un round qu'on oublie. */
+      /** La feuille d'actions d'Atout ouverte, s'il y en a une : un seul
+          participant à la fois (la piste est consultée en saccades, pas
+          parcourue). */
+      sheetFor: this._sheetFor || null,
+      sheet: this._sheetFor ? this.edgeActionsFor(this._sheetFor) : null,
+      sheetName: this._sheetFor ? (PnjLookup.find(this._sheetFor) || {}).name || "?" : "",
+      resourceLabel: (() => {
+        const pnj = this._sheetFor ? PnjLookup.find(this._sheetFor) : null;
+        return pnj ? EdgeActions.resourceLabel(pnj) : "Atout";
+      })(),
       recap: (() => {
         const r = st.log && st.log[0];
         if (!r) return null;
@@ -442,6 +503,10 @@ export const Pursuit = {
         };
       })(),
       edgeCompare: !!(m.edge && m.edge.compare),
+      /** L'édition a-t-elle des actions d'Atout de poursuite ? SR6 en a 14 ;
+          les trois autres n'en ont aucune (Anarchy a ses points d'Anarchy,
+          SR5 sa Chance sans catalogue nommé). Le bouton disparaît alors. */
+      hasEdgeActions: !!(m.edge && m.edge.roles),
       failCostLabel: Chase.failCost(ed, st),
       poolOn: !!(m.edge && m.edge.chasePool),
       poolLabel: (m.edge && m.edge.poolLabel) || "Réserve",

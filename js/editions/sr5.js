@@ -777,6 +777,31 @@ export const EditionSR5 = {
       { key: "projectionAstrale", name: "Passer en projection astrale", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "magie", lines: [
         "Projeter son esprit dans l'espace astral",
       ] },
+      /* ---- COURSE-POURSUITE (p. 204-205) — QUATRE actions qui manquaient.
+         « Toutes les actions de course-poursuite sont des actions
+         complexes. » Seule « Conduite évasive » était au catalogue, et par
+         une autre porte : c'est une INTERRUPTION (−10 init), elle vit dans
+         `interruptActions`. Les quatre ci-dessous se jouent au tour du
+         pilote, et deux d'entre elles exigent la portée courte — la piste ⇉
+         le rappelle, elle ne l'interdit pas (le MJ tranche). */
+      { key: "cascade", name: "Cascade (course-poursuite)", cost: [{ key: "complex", n: 1 }], domain: "pilotage", lines: [
+        "Manœuvre folle pour semer : seuil selon l'environnement et le terrain",
+        "Réussie ⇒ tous les poursuivants refont le même test · ratée ⇒ véhicule hors de contrôle",
+        "Un poursuivant qui rate s'éloigne d'une catégorie ; déjà à portée extrême, il perd la cible",
+      ] },
+      { key: "couperRoute", name: "Couper la route (portée courte)", cost: [{ key: "complex", n: 1 }], domain: "pilotage", lines: [
+        "Test opposé de Compétence de véhicule + RÉA [Maniabilité]",
+        "Succès ⇒ la cible refait un test de pilotage pour éviter l'accident, seuil = succès excédentaires",
+      ] },
+      { key: "percuter", name: "Percuter (portée courte)", cost: [{ key: "complex", n: 1 }], domain: "pilotage", lines: [
+        "Test opposé [Vitesse ou Maniabilité selon l'environnement]",
+        "Succès ⇒ collision : la cible encaisse la Structure de l'attaquant + succès nets",
+        "L'attaquant encaisse la moitié de sa propre Structure",
+      ] },
+      { key: "rattraper", name: "Rattraper / Prendre de l'avance", cost: [{ key: "complex", n: 1 }], domain: "pilotage", lines: [
+        "Change la portée d'engagement d'un nombre de niveaux égal à l'Accélération",
+        "Test [Vitesse ou Maniabilité] au seuil de manœuvre · +1 niveau par succès excédentaire",
+      ] },
       { key: "plongerVehicule", name: "Plonger dans un véhicule (rigger)", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "pilotage", lines: [
         "Avec un câblage de contrôle de véhicules et un véhicule adapté : plonger dedans pour le contrôler",
       ] },

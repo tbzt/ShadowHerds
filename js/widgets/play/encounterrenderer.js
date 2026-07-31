@@ -13,6 +13,8 @@ import { Ammo } from "../../rules/ammo.js";
 import { AnarchyAtouts } from "../../rules/anarchyatouts.js";
 import { CardRenderer } from "../card/cardrenderer.js";
 import { EdgeActions } from "../../rules/edgeactions.js";
+// Lecture SEULE (contextes/rôle de scène) — le rendu ne mute jamais la scène.
+import { Encounter } from "../../controllers/encounter.js";
 import { Cyberdeck } from "../../rules/cyberdeck.js";
 import { DiceRoller } from "../dice/diceroller.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
@@ -1316,7 +1318,10 @@ export const EncounterRenderer = {
     // l'arme, donc la famille). Cf. l'en-tête.
     if (r.lastAction === "attaquer") return "";
     const greffons = Actions.grafts(pnj, r.lastAction, {
-      declared: r.edgeContexts || [],
+      // Contextes DÉCLARÉS + ceux que la scène rend évidents (la poursuite en
+      // cours), et le camp du combattant : cf. Encounter.edgeContextsFor.
+      declared: Encounter.edgeContextsFor(r),
+      role: Encounter.chaseRoleFor(r.pnjId),
       withOptional: !!r.edgeOptional,
     });
     const edge = r.edge || 0;

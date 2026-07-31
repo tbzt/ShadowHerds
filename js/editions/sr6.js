@@ -899,14 +899,18 @@ export const EditionSR6 = {
           (Actor.attr(pnj, "RES") || 0) > 0 ||
           /cyberjack|cyberdeck/i.test((pnj.equip || []).map(String).join(" ")),
       },
-      // ⚠ NON DÉRIVABLE — la course-poursuite est un TYPE DE SCÈNE que l'app
-      // ne modélise pas (participants, rôle poursuivant/cible, catégories de
-      // distance relatives, environnement, test de Pilotage par round). Tant
-      // que ce chantier n'est pas fait, le MJ bascule à la main et les 14
-      // actions concernées restent masquées par défaut. Inscrit au plan.
+      // ✅ L'app modélise ce type de scène depuis le moteur ⇉ (lots P1-P3) :
+      // participants, rôle cible/poursuivant, catégories de distance,
+      // environnement et test par round. Le contexte reste sans `derive` —
+      // non par impuissance, mais par COUCHE : l'état d'une poursuite vit
+      // dans la scène (couche 5) et une édition (couche 3) ne remonte jamais
+      // l'y chercher. C'est le contrôleur qui l'ajoute aux contextes
+      // déclarés dès qu'un PNJ est sur la piste (`Encounter.edgeContextsFor`),
+      // et la bascule manuelle reste là pour le MJ qui joue la poursuite
+      // sans ouvrir la piste.
       poursuite: {
         label: "Course-poursuite",
-        hint: "À déclarer : l'app ne modélise pas encore ce type de scène",
+        hint: "Déclaré tout seul dès qu'une piste de poursuite est ouverte",
       },
     },
 

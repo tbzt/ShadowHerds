@@ -34,6 +34,7 @@
    de Run).
    ============================================================ */
 import { CardRenderer } from "../card/cardrenderer.js";
+import { EdgeActions } from "../../rules/edgeactions.js";
 import { Utils } from "../../core/utils.js";
 
 export const ChaseRenderer = {
@@ -79,6 +80,7 @@ export const ChaseRenderer = {
       </div>
       ${this._unplaced(vm)}
       ${this._dropped(vm)}
+      ${this._sheet(vm)}
       ${this._recap(vm)}
       ${this._foot(vm)}`;
   },
@@ -246,6 +248,11 @@ export const ChaseRenderer = {
       <span class="chase-tok-name">${CardRenderer._esc(r.name)}</span>
       ${trend}${grant}${pool}${marks.join("")}${moves}
       ${opts.anchor ? "" : `<button class="chase-mark is-anchor-set" data-action="chase-target" data-id="${r.pnjId}" title="Ancrer : faire de ce participant la cible de la poursuite">▣</button>`}
+      ${
+        vm.hasEdgeActions
+          ? `<button class="chase-mark is-sheet${vm.sheetFor === r.pnjId ? " is-on" : ""}" data-action="chase-sheet" data-id="${r.pnjId}" title="Actions d'Atout de course-poursuite">${vm.glyph}</button>`
+          : ""
+      }
     </span>`;
   },
 
@@ -272,6 +279,39 @@ export const ChaseRenderer = {
               <button data-action="chase-restore" data-id="${r.pnjId}" title="Remettre en course" aria-label="Remettre en course">↩</button></span>`,
         )
         .join("")}</p>`;
+  },
+
+  /** Les actions d'Atout de course-poursuite du participant choisi.
+
+      Elles n'avaient jusqu'ici aucune surface : leur hôte, au livre, est
+      « l'action majeure nécessaire au test requis chaque round » — donc la
+      piste. Le filtre informe, il n'arbitre pas : une action écartée est
+      retirée EN LE DISANT, et une action trop chère se ternit au lieu de
+      disparaître (le livre écrit un prix, pas une interdiction). */
+  _sheet(vm) {
+    if (!vm.sheet) return "";
+    const { visibles, ecartees, edge } = vm.sheet;
+    const puces = visibles
+      .map((e) => {
+        const cher = e.cost > edge ? " is-over" : "";
+        const info = [`${e.name} — ${EdgeActions.costLabel(e)}`, ...(e.lines || [])].join("\n");
+        return `<button class="chase-act${cher}" data-action="chase-use" data-id="${vm.sheetFor}" data-key="${e.key}" title="${Utils.escHtml(info)}">
+          <b>${Utils.escHtml(EdgeActions.costLabel(e).replace(/ points?$/, ""))}</b> ${Utils.escHtml(e.name)}
+        </button>`;
+      })
+      .join("");
+    const reste = ecartees.length
+      ? `<p class="chase-act-out">${ecartees.length} écartée${ecartees.length > 1 ? "s" : ""} — ${Utils.escHtml(
+          [...new Set(ecartees.map((x) => x.raison))].join(" · "),
+        )}</p>`
+      : "";
+    return `<div class="chase-sheet">
+      <p class="chase-sheet-head">${vm.glyph} Actions — <b>${CardRenderer._esc(vm.sheetName)}</b>
+        <span class="chase-sheet-edge">${Utils.escHtml(vm.resourceLabel)} ${edge}</span>
+        <button data-action="chase-sheet" data-id="${vm.sheetFor}" aria-label="Fermer">✕</button></p>
+      ${visibles.length ? `<div class="chase-acts">${puces}</div>` : `<p class="chase-act-out">Aucune action de poursuite ouverte à ce participant.</p>`}
+      ${reste}
+    </div>`;
   },
 
   /** Le round qui vient de se terminer, en une ligne — et son annulation.

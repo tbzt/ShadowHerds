@@ -1269,6 +1269,36 @@ export const Encounter = {
      entrées pour une question, dont une fausse : on garde celle qui marche.
      ======================================================== */
 
+  /** Les contextes d'Atout EFFECTIFS d'un combattant : ceux que le MJ a
+      déclarés à la main, plus ceux que la SCÈNE rend évidents.
+
+      Aujourd'hui un seul est dérivé ici : « poursuite », dès que le
+      combattant est sur la piste (ou qu'il en est la cible). Il ne pouvait
+      pas l'être dans le module d'édition — l'état d'une poursuite vit dans
+      la scène, et une édition ne remonte jamais chercher la couche au-dessus
+      d'elle. Résultat : les 14 actions d'Atout de course-poursuite, au
+      catalogue depuis F5 et masquées depuis, s'allument sans que le MJ ait
+      à cocher quoi que ce soit. La bascule manuelle reste, pour qui joue la
+      poursuite sans ouvrir la piste. */
+  edgeContextsFor(c) {
+    const base = (c && c.edgeContexts) || [];
+    const st = this.state && this.state.chase;
+    if (!st || !c) return base;
+    const dedans = c.pnjId === st.targetId || !!(st.lanes && st.lanes[c.pnjId]);
+    return dedans && !base.includes("poursuite") ? [...base, "poursuite"] : base;
+  },
+
+  /** Le camp du combattant dans la poursuite en cours — l'axe que le livre
+      utilise pour réserver neuf actions d'Atout (« cible de la
+      course-poursuite uniquement », « poursuivants uniquement »).
+      `null` hors poursuite : rien n'est alors filtré. */
+  chaseRoleFor(pnjId) {
+    const st = this.state && this.state.chase;
+    if (!st) return null;
+    if (pnjId === st.targetId) return "cible";
+    return st.lanes && st.lanes[pnjId] ? "poursuivant" : null;
+  },
+
   /** Bascule un contexte de scène que l'app ne sait pas dériver (la
       course-poursuite aujourd'hui). Vit dans l'entrée de scène : c'est une
       circonstance de rencontre, pas une propriété du PNJ. */
@@ -1387,7 +1417,8 @@ export const Encounter = {
     // alors que la table d'actions n'a qu'un « Attaquer ».
     const greffons = Actions.grafts(pnj, "attaquer", {
       family: famille,
-      declared: c.edgeContexts || [],
+      declared: this.edgeContextsFor(c),
+      role: this.chaseRoleFor(c.pnjId),
       withOptional: !!c.edgeOptional,
     });
 
@@ -3415,6 +3446,14 @@ export const Encounter = {
           break;
         case "chase-undo-round":
           Pursuit.undoRound();
+          break;
+        /* Les 14 actions d'Atout de poursuite : leur feuille, et leur dépense
+           — déléguée au débit déjà écrit (F5d), pas réécrite. */
+        case "chase-sheet":
+          Pursuit.toggleSheet(el.dataset.id);
+          break;
+        case "chase-use":
+          Pursuit.useEdgeAction(el.dataset.id, el.dataset.key);
           break;
         case "chase-edge":
           Pursuit.toggleEdgeUp(el.dataset.id);

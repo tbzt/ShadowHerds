@@ -497,6 +497,89 @@ button.chase-tok-val.is-void {
   text-align: center;
 }
 
+/* ---- Feuille d'actions d'Atout de poursuite (P4) ----
+   Les 14 entrées du livre n'avaient aucune surface : leur hôte est le test
+   du round, donc la piste. Une action trop chère se TERNIT, elle ne
+   disparaît pas — le livre écrit un prix, pas une interdiction. */
+.chase-mark.is-sheet {
+  color: var(--accent);
+  opacity: 0.55;
+}
+.chase-mark.is-sheet.is-on {
+  opacity: 1;
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.chase-sheet {
+  margin-top: var(--sp-2);
+  padding: var(--sp-2);
+  background: var(--bg-mid);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: var(--radius-sm);
+}
+.chase-sheet-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  margin-bottom: var(--sp-2);
+}
+.chase-sheet-head b {
+  color: var(--text);
+}
+.chase-sheet-edge {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent);
+}
+.chase-sheet-head button {
+  font: inherit;
+  width: 24px;
+  min-height: 24px;
+  padding: 0;
+  background: none;
+  color: var(--text-dim);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.chase-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+.chase-act {
+  font: inherit;
+  font-size: var(--fs-2xs);
+  text-align: left;
+  min-height: 32px;
+  padding: var(--sp-1) var(--sp-2);
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.chase-act b {
+  font-family: var(--font-mono);
+  color: var(--accent);
+}
+.chase-act:hover,
+.chase-act:focus-visible {
+  border-color: var(--accent);
+}
+/* Trop chère pour l'Atout disponible : ternie, jamais désactivée. */
+.chase-act.is-over {
+  opacity: 0.5;
+}
+.chase-act-out {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+}
+
 /* ---- Résumé du round écoulé, avec son annulation ---- */
 .chase-recap {
   display: flex;
