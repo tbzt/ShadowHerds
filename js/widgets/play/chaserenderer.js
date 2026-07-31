@@ -80,6 +80,7 @@ export const ChaseRenderer = {
       </div>
       ${this._unplaced(vm)}
       ${this._dropped(vm)}
+      ${this._trailing(vm)}
       ${this._sheet(vm)}
       ${this._recap(vm)}
       ${this._foot(vm)}`;
@@ -103,10 +104,31 @@ export const ChaseRenderer = {
           `<button class="chase-chip${e.key === vm.env ? " is-on" : ""}" data-action="chase-env" data-key="${e.key}" title="${Utils.escHtml(e.examples)}">${Utils.escHtml(e.label)}</button>`,
       )
       .join("");
+    // La rangée de modes n'apparaît que si l'édition en déclare plusieurs :
+    // SR6 a la course et la filature, les trois autres livres n'en ont pas.
+    const modes =
+      vm.modes.length > 1
+        ? vm.modes
+            .map(
+              (m) =>
+                `<button class="chase-chip${m.key === vm.mode ? " is-on" : ""}" data-action="chase-mode" data-key="${m.key}">${Utils.escHtml(m.label)}</button>`,
+            )
+            .join("")
+        : "";
+    // Compteur : « Round 3 » en poursuite, « Tour 3 / 8 » en course,
+    // « Phase 2 / 3 » en filature — le mode dit son unité, et le total se
+    // règle ici (le livre laisse ce choix au MJ).
+    const compteur = `<span class="chase-round">${Utils.escHtml(vm.modeSpec.counter || "Round")} ${vm.round}${
+      vm.modeSpec.hasTotal ? ` / ${vm.total || "?"}` : ""
+    }</span>${
+      vm.modeSpec.hasTotal
+        ? `<span class="chase-total"><button data-action="chase-total" data-delta="-1" aria-label="Un de moins">−</button><button data-action="chase-total" data-delta="1" aria-label="Un de plus">＋</button></span>`
+        : ""
+    }`;
     return `<div class="cluster chase-head">
-      <span class="chase-title"><span class="chase-glyph" aria-hidden="true">${vm.glyph}</span> ${vm.mode === "course" ? "Course" : "Poursuite"}</span>
-      ${terr}${envs}
-      <span class="chase-round">R${vm.round}</span>
+      <span class="chase-title"><span class="chase-glyph" aria-hidden="true">${vm.glyph}</span> ${Utils.escHtml(vm.modeSpec.label)}</span>
+      ${modes}${terr}${envs}
+      ${compteur}
       <button class="btn-icon-tiny" data-action="chase-close" title="Fermer la poursuite" aria-label="Fermer la poursuite">✕</button>
     </div>`;
   },
@@ -165,7 +187,7 @@ export const ChaseRenderer = {
         <span class="chase-anchor-hint">tapez ▣ sur un combattant pour l'ancrer</span>
       </div>`;
     return `<div class="chase-anchor">
-      <span class="chase-anchor-lbl">${vm.mode === "course" ? "Meneur" : "Cible"}</span>
+      <span class="chase-anchor-lbl">${Utils.escHtml(vm.modeSpec.anchorLabel || "Cible")}</span>
       ${this._token(t, vm, { anchor: true })}
       <button class="btn-icon-tiny" data-action="chase-target" data-id="${t.pnjId}" title="Retirer l'ancre" aria-label="Retirer l'ancre">⏏</button>
     </div>`;
@@ -281,6 +303,31 @@ export const ChaseRenderer = {
         .join("")}</p>`;
   },
 
+  /** FILATURE — le sous-système que « À tombeau ouvert » écrit à part :
+      deux tests par phase, un Atout qui change de camp selon
+      l'environnement, et un dé libre qui suit la distance. Rien de tout ça
+      ne se devine : c'est déclaré dans `chaseModel.modes.filature`. */
+  _trailing(vm) {
+    const t = vm.trailing;
+    if (!t) return "";
+    const tests = t.tests
+      .map(
+        (x) => `<li><b>${Utils.escHtml(x.label)}</b> — ${Utils.escHtml(x.threshold)}
+          <em>échec : ${Utils.escHtml(x.fail)}</em></li>`,
+      )
+      .join("");
+    const edge = t.edge
+      ? `<p class="chase-trail-edge">Atout de l'environnement — Perception : ${Utils.escHtml(t.edge.perception)} · Furtivité : ${Utils.escHtml(t.edge.furtivite)}</p>`
+      : "";
+    const dé = t.freeDie
+      ? `<p class="chase-trail-die">Dé libre : <b>${t.freeDie === "cible" ? "la cible" : "les traqueurs"}</b> — il suit la distance et change de camp.</p>`
+      : "";
+    return `<div class="chase-trail">
+      <ul class="chase-trail-tests">${tests}</ul>
+      ${edge}${dé}
+    </div>`;
+  },
+
   /** Les actions d'Atout de course-poursuite du participant choisi.
 
       Elles n'avaient jusqu'ici aucune surface : leur hôte, au livre, est
@@ -330,14 +377,18 @@ export const ChaseRenderer = {
   /** Pied : le rappel du test (ou, en SR5, les quatre actions qui le
       remplacent) et l'action primaire de la boucle. */
   _foot(vm) {
-    const rappel = vm.testRequired
+    // En filature, ce sont les deux tests de la phase qui font foi (bloc
+    // ci-dessus) : répéter « ⚄ Pilotage + RÉA » ici serait faux.
+    const rappel = vm.trailing
+      ? Utils.escHtml(vm.modeSpec.note || "")
+      : vm.testRequired
       ? `⚄ ${Utils.escHtml(vm.testLabel)}${vm.testCost ? ` · ${Utils.escHtml(vm.testCost)}` : ""}${vm.opposed ? " · test opposé" : ""}`
       : vm.actions.length
         ? `Actions : ${vm.actions.map((a) => Utils.escHtml(a.label)).join(" · ")}`
         : `Pas de test imposé — ${Utils.escHtml(vm.testLabel || "arbitrage MJ")}`;
     return `<div class="cluster chase-foot">
       <span class="chase-recall">${rappel}</span>
-      <button class="btn-primary chase-end" data-action="chase-end-round">▶ Fin de round</button>
+      <button class="btn-primary chase-end" data-action="chase-end-round">▶ ${Utils.escHtml(vm.modeSpec.next || "Round suivant")}</button>
     </div>`;
   },
 };

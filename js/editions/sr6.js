@@ -38,7 +38,7 @@ import { WeaponRoll } from "../rules/weaponroll.js";
 
 export const EditionSR6 = {
   /** Ce PNJ a-t-il de quoi PILOTER — un engin, ou l'interface qui permet d'y
-      plonger ? Lu par `actionModel.domains.pilotage` (F6). Jumeau exact de
+      plonger ? Lu par `actionModel.domains.pilotage` (G1). Jumeau exact de
       `EditionSR5._hasRig` ; le raisonnement est là-bas. Dupliqué plutôt que
       partagé parce qu'un prédicat de domaine vit dans son édition (prohibition
       n°1) — et que rien ne garantit que les deux vocabulaires resteront
@@ -360,7 +360,7 @@ export const EditionSR6 = {
       note: "action majeure · fin du round",
     };
   },
-  /** LIMITE D'ATTAQUE (lot F6b) — SR6 n'écrit pas d'interdiction ; il pose une
+  /** LIMITE D'ATTAQUE (lot G4) — SR6 n'écrit pas d'interdiction ; il pose une
       ÉCONOMIE, et c'est elle qui limite. Attaquer coûte l'action majeure, on en
       a une par tour : donc une attaque par tour, par construction.
 
@@ -384,7 +384,7 @@ export const EditionSR6 = {
     why: "attaquer coûte l'action majeure, et il n'y en a qu'une par tour",
     buys: "échanger 4 mineures contre 1 majeure en rend une seconde possible",
   },
-  /** CONTRESORT (lot F6b, corrigé au livre p.146) — le contrat que la console
+  /** CONTRESORT (lot G4, corrigé au livre p.146) — le contrat que la console
       de réaction lit à l'aveugle. `null` quand ce PNJ ne peut pas contrer.
 
       ⚠ CE N'EST PAS « LA DÉFENSE CONTRE SORTS ». Première version de ce lot :
@@ -526,7 +526,7 @@ export const EditionSR6 = {
       Score Offensif l'a remplacé), et l'action couvre indistinctement la mêlée
       et la distance. Le drapeau est une notion SR5, il vit dans sr5.js. */
   actionModel: {
-    /* ---- DOMAINES (lot F5b, complétés au lot F6) : où ce PNJ peut-il
+    /* ---- DOMAINES (lot F5b, complétés au lot G1) : où ce PNJ peut-il
        seulement AGIR ? -----------------------------------------------------
        48 des 78 actions SR6 sont magiques, matricielles ou de pilotage. Sur
        l'écrasante majorité des PNJ — un ganger, un vigile, un molosse — elles
@@ -537,7 +537,7 @@ export const EditionSR6 = {
        lui ne sait pas ce qu'est un cyberdeck. Le combat n'a pas d'entrée —
        personne n'a besoin d'une condition pour frapper.
 
-       ⚠ F6 — ces prédicats étaient JUSTES et INOPÉRANTS : la feuille ne les
+       ⚠ G1 — ces prédicats étaient JUSTES et INOPÉRANTS : la feuille ne les
        lisait que si DEUX rubriques au moins restaient ouvertes, c'est-à-dire
        jamais chez le PNJ qu'ils visaient (cf. `_actionSheet`). Ils fermaient
        la magie et la Matrice du mage-decker, et rien chez le ganger. */
@@ -552,7 +552,7 @@ export const EditionSR6 = {
       },
       matrice: {
         why: "ce PNJ n'a ni cyberjack, ni cyberdeck, ni Résonance",
-        // ⚠ `ItemResolver.itemStr` et non `String` (lot F6b) : un item peut
+        // ⚠ `ItemResolver.itemStr` et non `String` (lot G1) : un item peut
         // être un OBJET (`{ str, cat, rating }`), et `String(objet)` rend
         // « [object Object] » — le motif ne voyait donc pas un cyberdeck ajouté
         // depuis l'éditeur. Jumeau de la correction faite en SR5.
@@ -568,7 +568,7 @@ export const EditionSR6 = {
           !!(pnj.complexForms && pnj.complexForms.length) ||
           /cyberjack|cyberdeck/i.test((pnj.equip || []).map((i) => ItemResolver.itemStr(i)).join(" ")),
       },
-      // PILOTAGE (F6) — QUATRE actions que le livre imprime dans la table de
+      // PILOTAGE (G1) — QUATRE actions que le livre imprime dans la table de
       // COMBAT (p.45) et qui n'appartiennent pourtant qu'au rigger : Commander
       // un drone, Contrôler un drone à distance, Plonger (rigger), Utiliser
       // une CCR. Chacune nomme son matériel dans sa propre description — « via
@@ -1715,6 +1715,75 @@ export const EditionSR6 = {
       roles: ["cible", "poursuivant"],
     },
     variants: ["course", "filature"],
+    /* ---- LES TROIS MODES (lot P5) ------------------------------------
+       « À tombeau ouvert » donne deux variantes à la course-poursuite, et
+       elles ne demandent PAS un écran de plus : la course ne change que
+       trois libellés, la filature change le rythme et les tests. Tout ce
+       qui suit est déclaré ici pour que le rendu n'ait rien à deviner. */
+    modes: {
+      poursuite: { label: "Poursuite", counter: "Round", next: "Round suivant" },
+      /** « Le participant en première position est considéré comme la cible
+          de la course-poursuite, peu importe la situation. Pour pouvoir
+          utiliser les actions d'Atout appliquées aux cibles, vous devez être
+          premier. » → même composant, même rôle, autre nom. */
+      course: {
+        label: "Course",
+        counter: "Tour",
+        next: "Tour suivant",
+        anchorLabel: "Meneur",
+        hasTotal: true,
+        note: "Le premier tient le rôle de cible — les actions d'Atout de cible lui sont réservées. Au dernier tour, tous ceux à distance proche refont un test pour la ligne d'arrivée.",
+      },
+      /** La filature n'est PAS une poursuite au ralenti : phases d'environ
+          une minute (le MJ en fixe le nombre, moyenne 3), deux tests par
+          phase, et un Atout qui change de camp selon l'environnement. La
+          réserve de course-poursuite n'y est pas accessible. */
+      filature: {
+        label: "Filature",
+        counter: "Phase",
+        next: "Phase suivante",
+        anchorLabel: "Cible filée",
+        hasTotal: true,
+        defaultTotal: 3,
+        noPool: true,
+        note: "Une phase ≈ 1 minute. Ce n'est pas un combat : s'il faut déterminer l'initiative, c'est qu'on est passé à la course-poursuite.",
+        tests: [
+          {
+            key: "perception",
+            label: "Perception ou Plein air (Pistage / Orientation)",
+            threshold: "3 si la cible ne se méfie pas — sinon opposé à Furtivité + AGI",
+            fail: "cible perdue de vue · Plein air (Pistage) seuil 6 pour reprendre la piste · deux échecs de suite : trace perdue",
+          },
+          {
+            key: "furtivite",
+            label: "Furtivité",
+            threshold: "opposé à Perception + INT de la cible",
+            fail: "succès nets de la cible : vous êtes pris la main dans le sac",
+          },
+        ],
+        /** Qui gagne le point d'Atout, et qui a le droit d'en dépenser, par
+            environnement — le livre en fait trois cas distincts. */
+        edgeByEnv: {
+          degage: {
+            perception: "les traqueurs gagnent 1 point d'Atout",
+            furtivite: "seule la cible peut gagner ou dépenser de l'Atout",
+          },
+          etroit: {
+            perception: "la cible gagne 1 point d'Atout",
+            furtivite: "—",
+          },
+          encombre: {
+            perception: "la cible gagne 1 point d'Atout, et elle seule peut en gagner ou en dépenser",
+            furtivite: "la cible ne peut ni gagner ni dépenser d'Atout",
+          },
+        },
+        /** Le dé libre suit la DISTANCE, et il change de camp : « si les
+            traqueurs les moins éloignés sont à distance proche ou courte,
+            la cible obtient un dé libre ; s'ils restent éloignés ou à
+            distance extrême, ce sont eux qui l'obtiennent. » */
+        freeDie: { near: ["proche", "courte"], toTarget: true },
+      },
+    },
     outcomes: {
       poursuite: {
         caught: { label: "Rattrapé", cond: { all: "au contact : percuter, Auto-stop, mêlée" } },
@@ -2451,7 +2520,7 @@ export const EditionSR6 = {
        deck concerné ; VD chiffrée pour le pic de données (p.184, même modèle de
        dommages matriciels que SR5, VD = indice d'Attaque).
 
-       `actionKey` (lot F6) — la CLÉ DU CATALOGUE que cette ligne débite quand
+       `actionKey` (lot G2) — la CLÉ DU CATALOGUE que cette ligne débite quand
        on la tape. Miroir de `fireModes[].actionKey`. L'en-tête d'`actionModel`
        ci-dessus assumait le chevauchement de ces quatre gestes (« c'est voulu,
        ce sont deux facettes du même geste ») ; l'arbitrage tenait tant que les

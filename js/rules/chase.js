@@ -154,6 +154,9 @@ export const Chase = {
       v: this.V,
       terrain: opts.terrain || (m && m.defaultTerrain) || terrains[0] || "pied",
       mode: opts.mode || "poursuite",
+      // Nombre de tours (course) ou de phases (filature) PRÉVU par le MJ —
+      // le livre lui laisse ce choix (« la moyenne s'élève à trois »).
+      total: opts.total || null,
       // `null` est une valeur LÉGITIME : Anarchy laisse l'environnement au MJ
       // (aucune liste dans le livre), la barre le dira au lieu d'inventer.
       env: opts.env || (envs[0] && envs[0].key) || null,
@@ -343,6 +346,40 @@ export const Chase = {
     return { caught: pick(set.caught), lost: pick(set.lost) };
   },
 
+  /* ========================================================
+     LES MODES (lot P5) — poursuite · course · filature
+
+     Le mode ne change pas le composant, il change ce que le composant DIT :
+     le nom de l'ancre, l'unité du compteur, les deux issues, et — pour la
+     filature — le rythme et les tests. Tout est déclaré par l'édition ;
+     ce module ne fait que lire.
+     ======================================================== */
+  modes(edition) {
+    const m = this.use(edition);
+    return (m && m.modes) || { poursuite: { label: "Poursuite", counter: "Round" } };
+  },
+  mode(edition, key) {
+    return this.modes(edition)[key] || null;
+  },
+
+  /** Qui tient le dé libre, en filature — il suit la DISTANCE et change de
+      camp : les traqueurs proches le donnent à la cible, les traqueurs
+      lointains le prennent. → "cible" | "traqueurs" | null. */
+  freeDie(edition, state) {
+    const spec = (this.mode(edition, state && state.mode) || {}).freeDie;
+    if (!spec || !state) return null;
+    const keys = this.laneKeys(edition, state.terrain);
+    const dedans = Object.keys(state.lanes || {}).filter((id) => !state.out[id]);
+    if (!dedans.length) return null;
+    const plusProche = dedans
+      .map((id) => keys.indexOf(this.laneOf(state, id)))
+      .filter((i) => i >= 0)
+      .sort((a, b) => a - b)[0];
+    if (plusProche == null) return null;
+    const proche = (spec.near || []).includes(keys[plusProche]);
+    return proche ? (spec.toTarget ? "cible" : "traqueurs") : spec.toTarget ? "traqueurs" : "cible";
+  },
+
   /** Réserve de course-poursuite (SR6). Compteur libre à plafond SAISI :
       son indice dépend du câblage de contrôle OU d'une augmentation de
       Réaction (adepte, sort, cyberware) que l'app ne sait pas lire de
@@ -350,6 +387,9 @@ export const Chase = {
   addPool(edition, state, pnjId, delta) {
     const m = this.use(edition);
     if (!state || !pnjId || !(m && m.edge && m.edge.chasePool)) return;
+    // « La réserve de course-poursuite n'est généralement pas accessible
+    // lorsque l'on file une cible. »
+    if ((this.mode(edition, state.mode) || {}).noPool) return;
     const max = state.poolMax[pnjId];
     const hi = Number.isFinite(max) ? max : 99;
     state.pool[pnjId] = Utils.clamp((state.pool[pnjId] || 0) + delta, 0, hi);

@@ -497,6 +497,65 @@ button.chase-tok-val.is-void {
   text-align: center;
 }
 
+/* ---- Compteur de tours / phases (P5) ----
+   Le mode dit son unité — Round, Tour, Phase — et la course comme la
+   filature ont un TOTAL que le MJ fixe (le livre le lui laisse). */
+.chase-total {
+  display: inline-flex;
+  gap: 1px;
+  flex: none;
+}
+.chase-total button {
+  font: inherit;
+  font-size: var(--fs-2xs);
+  width: 24px;
+  min-height: 24px;
+  padding: 0;
+  background: var(--bg-mid);
+  color: var(--text-dim);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+/* ---- Filature (P5) : deux tests par phase, un Atout qui change de camp,
+   un dé libre qui suit la distance. Traitement de NOTE, pas de piste : ce
+   n'est pas un combat, et le livre le dit — « s'il est temps de déterminer
+   l'initiative, c'est qu'on est passé à la course-poursuite ». ---- */
+.chase-trail {
+  margin-top: var(--sp-2);
+  padding: var(--sp-2);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+}
+.chase-trail-tests {
+  margin: 0 0 var(--sp-1);
+  padding-left: var(--sp-4);
+}
+.chase-trail-tests li {
+  margin-bottom: var(--sp-1);
+}
+.chase-trail-tests b {
+  color: var(--text);
+}
+.chase-trail-tests em {
+  display: block;
+  font-style: normal;
+  color: color-mix(in srgb, var(--text-dim) 85%, transparent);
+}
+.chase-trail-edge,
+.chase-trail-die {
+  margin-top: var(--sp-1);
+}
+.chase-trail-die b {
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
 /* ---- Feuille d'actions d'Atout de poursuite (P4) ----
    Les 14 entrées du livre n'avaient aucune surface : leur hôte est le test
    du round, donc la piste. Une action trop chère se TERNIT, elle ne

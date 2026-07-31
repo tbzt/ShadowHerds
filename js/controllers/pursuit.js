@@ -98,10 +98,27 @@ export const Pursuit = {
     st.env = key || null;
     this._persist();
   },
+  /** Bascule de mode — poursuite · course · filature. Le composant ne
+      change pas : ce sont ses libellés, son compteur et ses tests qui
+      suivent le livre (cf. `chaseModel.modes`). Le nombre de tours ou de
+      phases prévu est repris du mode quand il en propose un (« la moyenne
+      s'élève à trois » pour une filature). */
   setMode(mode) {
     const st = this.state();
     if (!st) return;
-    st.mode = mode || "poursuite";
+    const spec = Chase.mode(this.edition(), mode);
+    if (!spec) return;
+    st.mode = mode;
+    if (spec.hasTotal && !st.total) st.total = spec.defaultTotal || null;
+    if (!spec.hasTotal) st.total = null;
+    this._persist();
+    toast(`${spec.label} — ${spec.note || "les libellés suivent le livre."}`);
+  },
+  setTotal(delta) {
+    const st = this.state();
+    if (!st) return;
+    const n = (st.total || 0) + delta;
+    st.total = n > 0 ? n : null;
     this._persist();
   },
   /** Désigner la cible n'applique RIEN à personne (cf. `no-target-selection`) :
@@ -455,7 +472,19 @@ export const Pursuit = {
     const terr = m.terrains[st.terrain] || {};
     return {
       round: st.round,
+      total: st.total || null,
       mode: st.mode,
+      modeSpec: Chase.mode(ed, st.mode) || { label: "Poursuite", counter: "Round" },
+      modes: Object.entries(Chase.modes(ed)).map(([key, v]) => ({ key, label: v.label })),
+      /** Filature : les deux tests de la phase, l'Atout que
+          l'environnement donne à l'un ou l'autre camp, et le dé libre — qui
+          suit la distance et change de camp. */
+      trailing: (() => {
+        const spec = Chase.mode(ed, st.mode);
+        if (!spec || !spec.tests) return null;
+        const parEnv = (spec.edgeByEnv || {})[st.env] || null;
+        return { tests: spec.tests, edge: parEnv, freeDie: Chase.freeDie(ed, st) };
+      })(),
       glyph: m.glyph || "⇉",
       terrain: st.terrain,
       terrains: Object.entries(m.terrains).map(([key, t]) => ({ key, label: t.label, unruled: !!t.unruled })),
@@ -508,7 +537,7 @@ export const Pursuit = {
           SR5 sa Chance sans catalogue nommé). Le bouton disparaît alors. */
       hasEdgeActions: !!(m.edge && m.edge.roles),
       failCostLabel: Chase.failCost(ed, st),
-      poolOn: !!(m.edge && m.edge.chasePool),
+      poolOn: !!(m.edge && m.edge.chasePool) && !(Chase.mode(ed, st.mode) || {}).noPool,
       poolLabel: (m.edge && m.edge.poolLabel) || "Réserve",
     };
   },

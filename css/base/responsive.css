@@ -682,6 +682,7 @@
   .chase-out button,
   .chase-pool button,
   .chase-recap button,
+  .chase-total button,
   button.chase-tok-val.is-void {
     width: 32px;
     min-height: 32px;

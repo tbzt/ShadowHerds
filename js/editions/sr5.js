@@ -30,7 +30,7 @@ import { WeaponRoll } from "../rules/weaponroll.js";
 
 export const EditionSR5 = {
   /** Ce PNJ a-t-il de quoi PILOTER — un engin, ou l'interface qui permet d'y
-      plonger ? Lu par `actionModel.domains.pilotage` (F6).
+      plonger ? Lu par `actionModel.domains.pilotage` (G1).
 
       L'engin se reconnaît par `Vehicles.matchItem`, le point unique de la
       rangée de chips « Drones & véhicules » ; l'interface, elle, n'est qu'un
@@ -294,7 +294,18 @@ export const EditionSR5 = {
         RÉDUIT LE SCORE D'INITIATIVE DU PERSONNAGE DE 10 mais les effets durent
         pour le reste du tour de combat. »
 
-      Le catalogue en compte donc NEUF, et non plus huit. */
+      Le catalogue en compte donc NEUF, et non plus huit.
+
+      ⚠ `when` N'EST PAS SYSTÉMATIQUE, PAR CHOIX (lot G, constat Suite G).
+      Seules 2 des 9 entrées le posent — `conduiteEvasive` (il faut un
+      véhicule) et `defenseSort` (il faut la compétence Contresort) — parce
+      que ce sont les deux SEULES qui exigent une capacité précise. Les sept
+      autres sont des manœuvres universelles (Bloquer, Esquiver, Parer,
+      Intercepter, Manger la poussière, Défense totale, Défense totale
+      matricielle) : n'importe quel combattant non Surpris peut les tenter,
+      donc rien à gater. Une future entrée qui exigerait une capacité doit
+      poser son propre `when`, sur ce même patron — ne pas l'omettre au
+      prétexte que la majorité du catalogue s'en passe. */
   interruptActions(pnj) {
     return [
       { key: "fullDefense", label: "Passer en défense totale", initCost: 10, page: "p.170",
@@ -309,7 +320,7 @@ export const EditionSR5 = {
         note: "Intercepte un ennemi qui passe ou se retire d'une mêlée" },
       { key: "poussiere", label: "Manger la poussière", initCost: 5, page: "p.170",
         note: "Se jeter au sol sous un tir de couverture — étendu à la phase suivante" },
-      // `when` (F6b) — il faut quelque chose à conduire. `_hasVehicle` et non
+      // `when` (G4) — il faut quelque chose à conduire. `_hasVehicle` et non
       // `_hasRig` : le livre ne demande pas d'être RIGGER pour faire un écart
       // au volant, seulement d'être au volant (arbitrage utilisateur). Une
       // interface de contrôle sans engin ne suffit donc pas ici, alors qu'elle
@@ -317,7 +328,7 @@ export const EditionSR5 = {
       { key: "conduiteEvasive", label: "Conduite évasive", initCost: 10, page: "p.205",
         when: (pnj) => EditionSR5._hasVehicle(pnj),
         note: "Équivalent véhicule de la défense totale : +Intuition en défense" },
-      // `when` (lot F6b) — LA COMPÉTENCE, pas la bonne volonté. Cette
+      // `when` (lot G4) — LA COMPÉTENCE, pas la bonne volonté. Cette
       // interruption est celle du magicien ; elle s'affichait à tout le monde,
       // molosses compris, dans une feuille de neuf puces où chacune coûte à
       // lire. Le livre nomme sa réserve — « réserve = Contresort » — donc la
@@ -403,7 +414,7 @@ export const EditionSR5 = {
       note: "−10 Init · fin du round",
     };
   },
-  /** LIMITE D'ATTAQUE (lot F6b) — livre p.178-179, répété à chaque action
+  /** LIMITE D'ATTAQUE (lot G4) — livre p.178-179, répété à chaque action
       d'attaque : « Le personnage ne peut effectuer AUCUNE AUTRE ACTION
       D'ATTAQUE durant la même PHASE D'ACTION. »
 
@@ -425,7 +436,7 @@ export const EditionSR5 = {
     page: "p.178",
     why: "aucune autre action d'attaque durant la même phase d'action",
   },
-  /** CONTRESORT (lot F6b) — livre p.297, verbatim : « Contresort offre au
+  /** CONTRESORT (lot G4) — livre p.297, verbatim : « Contresort offre au
       magicien DEUX BÉNÉFICES, la défense contre sorts et la Dissipation. »
 
       ⚠ Ne pas réduire Contresort à « défense contre sorts » : c'est un de ses
@@ -553,7 +564,7 @@ export const EditionSR5 = {
       « retire OU insère »), soit la phase d'action entière — sauf smartgun, où
       l'éjection devient gratuite. */
   actionModel: {
-    /* ---- DOMAINES (lot F5b, complétés au lot F6) : où ce PNJ peut-il
+    /* ---- DOMAINES (lot F5b, complétés au lot G1) : où ce PNJ peut-il
        seulement AGIR ? -----------------------------------------------------
        46 des 76 actions SR5 sont magiques, matricielles ou de pilotage. Sur
        l'écrasante majorité des PNJ — un ganger, un vigile, un molosse — elles
@@ -564,7 +575,7 @@ export const EditionSR5 = {
        lui ne sait pas ce qu'est un cyberdeck. Le combat n'a pas d'entrée —
        personne n'a besoin d'une condition pour frapper.
 
-       ⚠ F6 — CE BLOC ÉTAIT À MOITIÉ MORT EN SR5, et le commentaire qu'il
+       ⚠ G1 — CE BLOC ÉTAIT À MOITIÉ MORT EN SR5, et le commentaire qu'il
        portait (recopié de sr6.js, « 44 des 76 actions SR6… ») expliquait le
        catalogue d'une AUTRE édition. Le prédicat `magie` était déclaré, testé
        à chaque ouverture de feuille — et ne pouvait rien fermer, faute d'une
@@ -587,7 +598,7 @@ export const EditionSR5 = {
       },
       matrice: {
         why: "ce PNJ n'a ni cyberjack, ni cyberdeck, ni Résonance",
-        // ⚠ `ItemResolver.itemStr` et non `String` (lot F6b) : un item
+        // ⚠ `ItemResolver.itemStr` et non `String` (lot G1) : un item
         // d'équipement peut être un OBJET (`{ str, cat, rating }`) depuis que
         // les catégories existent, et `String(objet)` rend « [object Object] ».
         // Le motif ne pouvait donc pas voir un cyberdeck ajouté depuis
@@ -600,7 +611,7 @@ export const EditionSR5 = {
           !!(pnj.complexForms && pnj.complexForms.length) ||
           /cyberjack|cyberdeck/i.test((pnj.equip || []).map((i) => ItemResolver.itemStr(i)).join(" ")),
       },
-      /* RÉSONANCE (F6b) — le technomancien SEUL. « Matrice » reste ouverte aux
+      /* RÉSONANCE (G1) — le technomancien SEUL. « Matrice » reste ouverte aux
          deux publics, et c'est juste : le livre p.252 fait jouer au
          technomancien les mêmes actions matricielles, par la Résonance. Mais
          sept d'entre elles ne sont pas les mêmes — sprites et formes complexes
@@ -613,7 +624,7 @@ export const EditionSR5 = {
           !!pnj.persona ||
           !!(pnj.complexForms && pnj.complexForms.length),
       },
-      // PILOTAGE (F6) — « Plonger dans un véhicule (rigger) » exige, dans la
+      // PILOTAGE (G1) — « Plonger dans un véhicule (rigger) » exige, dans la
       // phrase même du livre, « un câblage de contrôle de véhicules ET un
       // véhicule adapté ». Le prédicat est donc une DISJONCTION de ce que la
       // fiche peut porter : l'interface, ou l'engin. Sans l'un ni l'autre, le
@@ -1209,6 +1220,10 @@ export const EditionSR5 = {
     },
     edge: { compare: false, chasePool: false, roles: null },
     variants: [],
+    /** Un seul mode : ce livre ne décrit ni course ni filature comme
+        variantes de la course-poursuite. La rangée de modes disparaît
+        d'elle-même — on n'importe pas les variantes de SR6. */
+    modes: { poursuite: { label: "Poursuite", counter: "Round", next: "Round suivant" } },
     outcomes: {
       poursuite: {
         caught: { label: "Rattrapé", cond: { all: "à portée courte : Percuter, Couper la route" } },
@@ -1845,7 +1860,7 @@ export const EditionSR5 = {
        à la Limite entre crochets ([Attaque] → attack, [Corruption] → sleaze) ;
        VD chiffrée seulement pour le pic de données (VD = indice d'Attaque,
        p.242 — les +1/succès exc. et +2/mark s'ajoutent live, côté MJ). */
-    /* `actionKey` (lot F6) — la CLÉ DU CATALOGUE que cette ligne de râtelier
+    /* `actionKey` (lot G2) — la CLÉ DU CATALOGUE que cette ligne de râtelier
        débite quand on la tape. Miroir exact de `fireModes[].actionKey`, qui
        fait déjà ça pour les modes de tir depuis F2 : la porte connaît le geste
        qu'elle facture, et le catalogue reste la seule source du coût.

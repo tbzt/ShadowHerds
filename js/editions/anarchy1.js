@@ -260,7 +260,7 @@ export const EditionAnarchy1 = {
   icCombatant(ic) {
     return { name: ic.label, narrative: true };
   },
-  /** LIMITE D'ATTAQUES (lot F6b) — c'est le NOM que le livre donne à sa
+  /** LIMITE D'ATTAQUES (lot G4) — c'est le NOM que le livre donne à sa
       section, p.155, et c'est la formulation la plus nette des quatre
       éditions : « Un personnage ne peut effectuer qu'UNE ACTION OFFENSIVE
       durant sa Narration. »
@@ -297,7 +297,7 @@ export const EditionAnarchy1 = {
     buys:
       "une augmentation de réflexes (cyberware, bioware, sort ou pouvoir d'adepte) en accorde une seconde",
   },
-  /** CONTRESORT (lot F6b) — ⚠ RÈGLE OPTIONNELLE en Anarchy 1re : elle vit dans
+  /** CONTRESORT (lot G4) — ⚠ RÈGLE OPTIONNELLE en Anarchy 1re : elle vit dans
       l'encart « Chasseurs de mana — Règles optionnelles de magie », pas dans le
       corps des règles. On la propose quand même, source citée : c'est le même
       arbitrage qu'au lot E1, où les cinq états des suppléments sont entrés avec
@@ -429,6 +429,10 @@ export const EditionAnarchy1 = {
     },
     edge: { compare: false, chasePool: false, roles: null },
     variants: [],
+    /** Un seul mode : ce livre ne décrit ni course ni filature comme
+        variantes de la course-poursuite. La rangée de modes disparaît
+        d'elle-même — on n'importe pas les variantes de SR6. */
+    modes: { poursuite: { label: "Poursuite", counter: "Round", next: "Round suivant" } },
     outcomes: {
       poursuite: {
         caught: { label: "Rattrapé", cond: { all: "à portée courte — le combat rapproché devient possible" } },

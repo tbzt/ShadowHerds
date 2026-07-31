@@ -246,7 +246,7 @@ export const EditionAnarchy2 = {
   icCombatant(ic) {
     return { name: ic.label, narrative: true };
   },
-  /** LIMITE D'ATTAQUES (lot F6b) — p.65, verbatim : « Un personnage normal
+  /** LIMITE D'ATTAQUES (lot G4) — p.65, verbatim : « Un personnage normal
       pourra effectuer UNE ACTION PAR NARRATION, et une action supplémentaire
       en dépensant un point d'Anarchy. »
 
@@ -279,7 +279,7 @@ export const EditionAnarchy2 = {
       "sont significatives les actions qui demandent un test de compétence : attaquer, lancer un sort, invoquer un esprit, hacker un appareil, piloter un véhicule",
     buys: "un point d'Anarchy accorde une action supplémentaire (p.77)",
   },
-  /** CONTRESORT (lot F6b) — p.184. Deux usages, comme dans les trois autres
+  /** CONTRESORT (lot G4) — p.184. Deux usages, comme dans les trois autres
       éditions, et ils ne se jouent toujours pas pareil :
 
       · « Tenter de dissiper un sort maintenu est une action. Il s'agit d'un
@@ -426,6 +426,10 @@ export const EditionAnarchy2 = {
     },
     edge: { compare: false, chasePool: false, roles: null, anarchyPoints: true },
     variants: [],
+    /** Un seul mode : ce livre ne décrit ni course ni filature comme
+        variantes de la course-poursuite. La rangée de modes disparaît
+        d'elle-même — on n'importe pas les variantes de SR6. */
+    modes: { poursuite: { label: "Poursuite", counter: "Round", next: "Round suivant" } },
     outcomes: {
       poursuite: {
         caught: { label: "Contact", cond: { all: "≤ 2 m — le combat rapproché devient possible" } },

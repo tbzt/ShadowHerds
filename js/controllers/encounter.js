@@ -3449,6 +3449,12 @@ export const Encounter = {
           break;
         /* Les 14 actions d'Atout de poursuite : leur feuille, et leur dépense
            — déléguée au débit déjà écrit (F5d), pas réécrite. */
+        case "chase-mode":
+          Pursuit.setMode(el.dataset.key);
+          break;
+        case "chase-total":
+          Pursuit.setTotal(parseInt(el.dataset.delta, 10) || 0);
+          break;
         case "chase-sheet":
           Pursuit.toggleSheet(el.dataset.id);
           break;
