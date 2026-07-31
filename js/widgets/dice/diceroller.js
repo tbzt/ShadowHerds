@@ -1221,6 +1221,7 @@ export const DiceRoller = {
         <div class="risk-panel-pool" id="preroll-pool"></div>
         <div id="preroll-attack" class="stack stack--tight" hidden></div>
         <div id="preroll-gain" class="stack stack--tight" hidden></div>
+        <div id="preroll-edge-actions" class="stack stack--tight"></div>
         <div id="preroll-options" class="stack stack--tight"></div>
         <button class="risk-roll-btn" id="preroll-plain">Lancer les dés</button>
       </div>`;
@@ -1286,6 +1287,23 @@ export const DiceRoller = {
         this._closePreRollPanel();
         if (this._hooks.onReload) this._hooks.onReload(pnj, a.arme);
       }
+    });
+
+    // Actions d'Atout SANS HÔTE (§ plan d'exécution) : dépense IMMÉDIATE au
+    // tap, comme la rangée de greffons hostés sur la carte (décision 8 —
+    // « une action d'Atout est un greffon, jamais de feuille à elle »).
+    // Volontairement PAS un différé façon `data-preroll-graft` : ce
+    // mécanisme-là n'existe que parce que l'attaque bundle plusieurs débits
+    // dans un seul geste (F5c) ; ici chaque entrée est son propre geste, rien
+    // à bundler. Le panneau reste ouvert — dépenser n'est pas lancer.
+    document.getElementById("preroll-edge-actions").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-preroll-edge-action]");
+      if (!b || !this._preRoll || !this._hooks.onEdgeAction) return;
+      this._hooks.onEdgeAction(this._preRoll.pnj, b.getAttribute("data-preroll-edge-action"));
+      Utils.haptic(10);
+      this._renderEdgeActionsSection();
+      this._renderSpendOptions(); // budget partagé : une dépense ici change ce qu'affiche l'autre rangée
+      this._pulseBudget();
     });
 
     // Choisir une option = débiter la ressource puis lancer.
@@ -1378,6 +1396,7 @@ export const DiceRoller = {
       };
     }
     this._renderAttackSection();
+    this._renderEdgeActionsSection();
     this._renderSpendOptions();
     this._renderGainSection();
     const p = document.getElementById("preroll-panel");
@@ -1427,6 +1446,55 @@ export const DiceRoller = {
              <span class="risk-level-sub">${Utils.escHtml(o.hint)}</span>
            </button>`,
       )
+      .join("");
+  },
+
+  /** Rend les actions d'Atout SANS HÔTE (§ plan d'exécution, item 3 — 45/82
+      au catalogue SR6, dont 14 déjà surfacées côté piste de poursuite, cf.
+      `Encounter.edgeActionsWithoutHost`/`Pursuit.edgeActionsFor`). Lues via
+      le hook `edgeActionsFor` (optionnel, comme `attackContext` — l'app
+      fonctionne toujours sans Encounter). Groupées par contexte, même
+      patron que les greffons d'attaque (`.tag.status-pick` + `.edge-cost`
+      dans un `.cluster.preroll-row` étiqueté) : AUCUNE nouvelle primitive.
+
+      Même porte qu'ailleurs (décision 8, Suite F) : une ligne n'existe que
+      si ≥1 entrée y est abordable — jamais une ligne entièrement grisée. Une
+      entrée trop chère dans une ligne affichée se ternit mais reste tapable
+      (le MJ garde la main, comme partout dans ce chantier). */
+  _renderEdgeActionsSection() {
+    const el = document.getElementById("preroll-edge-actions");
+    if (!el) return;
+    const ctx = this._preRoll;
+    const entries = ctx && this._hooks.edgeActionsFor ? this._hooks.edgeActionsFor(ctx.pnj) : [];
+    if (!entries.length) {
+      el.innerHTML = "";
+      return;
+    }
+    const mod = App.getEditionModule(ctx.pnj.edition);
+    const spec = mod && mod.preRollEdge;
+    const budget = spec ? this._spendableEdge(ctx.pnj, spec.costAttr) || 0 : 0;
+    const esc = Utils.escHtml;
+    // Ordre lecture MJ : le contexte le plus rare/spécialisé d'abord, le
+    // socle générique (aucun contexte requis) en dernier.
+    const groups = [
+      { where: "matrice", label: "Actions d'Atout · Matrice" },
+      { where: "vehicule", label: "Actions d'Atout · Véhicule" },
+      { where: undefined, label: "Actions d'Atout" },
+    ];
+    el.innerHTML = groups
+      .map((grp) => {
+        const list = entries.filter((e) => e.where === grp.where).sort((a, b) => a.cost - b.cost);
+        if (!list.some((e) => e.cost <= budget)) return ""; // porte : ≥1 abordable
+        const chips = list
+          .map((e) => {
+            const cher = e.cost > budget ? " is-over" : "";
+            const cout = e.costLabel || `${e.cost} point${e.cost > 1 ? "s" : ""}`;
+            const info = [`${e.name} — ${cout}`, ...(e.lines || []), `Source : ${e.source}`].join("\n• ");
+            return `<button type="button" class="tag status-pick${cher}" data-preroll-edge-action="${e.key}" title="${esc(info)}">${esc(e.name)}<span class="edge-cost">${e.cost}</span></button>`;
+          })
+          .join("");
+        return `<div class="cluster preroll-row"><span class="preroll-row-lbl">${esc(grp.label)}</span>${chips}</div>`;
+      })
       .join("");
   },
 

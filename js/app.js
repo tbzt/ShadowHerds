@@ -677,6 +677,15 @@ document.addEventListener("DOMContentLoaded", () => {
     adjustSceneEdge: (pnj, delta) => {
       if (typeof Encounter !== "undefined") Encounter.adjustEdge(pnj.id, delta);
     },
+    // Les 45 actions d'Atout SANS HÔTE (§ plan d'exécution, item 3) : leur
+    // place est le panneau pré-jet, à côté de « Prendre un risque ». Même
+    // pont de couche que les greffons d'attaque ci-dessus — seule App
+    // connaît à la fois DiceRoller et Encounter.
+    edgeActionsFor: (pnj) =>
+      typeof Encounter !== "undefined" ? Encounter.edgeActionsWithoutHost(pnj.id) : [],
+    onEdgeAction: (pnj, key) => {
+      if (typeof Encounter !== "undefined") Encounter.useEdgeAction(pnj.id, key);
+    },
   });
   MagicAction.init({ onPnjChanged });
   ContentModal.bindDelegation();

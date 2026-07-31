@@ -1414,6 +1414,31 @@ export const Encounter = {
     return (c && c.edgeCancels) || [];
   },
 
+  /** Les actions d'Atout SANS HÔTE (45/82 au dépouillement F5) : aucun
+      `host` du catalogue F1 à se greffer dessus, donc invisibles pour
+      `Actions.grafts`. Leur place documentée (plan d'exécution) est le
+      panneau pré-jet, lu par `DiceRoller` via le hook `edgeActionsFor`
+      (app.js). Miroir exact de `Pursuit.edgeActionsFor` (pursuit.js) — même
+      résolution 3 axes, poussée par un post-filtre différent.
+
+      Exclut la Poursuite (`where: "poursuite"`, 14 entrées) : elle a déjà sa
+      propre surface, la piste — les remonter ici doublonnerait. Exclut tout
+      ce qui A un host : c'est le rôle d'`Actions.grafts`, sur la carte.
+
+      Scène uniquement, comme les greffons hostés : hors scène `c` est nul et
+      `useEdgeAction`/`adjustEdge` sont des no-op (pas de `c.edge`) — mieux
+      vaut ne rien montrer qu'une puce qui ne ferait rien au tap. */
+  edgeActionsWithoutHost(pnjId) {
+    const c = this._find(pnjId);
+    const pnj = PnjLookup.find(pnjId);
+    if (!c || !pnj) return [];
+    const res = EdgeActions.resolve(pnj, {
+      declared: this.edgeContextsFor(c),
+      withOptional: !!c.edgeOptional,
+    });
+    return res.visibles.filter((e) => !e.host && e.where !== "poursuite");
+  },
+
   /* ========================================================
      LE PARCOURS D'ATTAQUE (lot F5c) — un geste, un écran, un débit.
 
