@@ -148,10 +148,18 @@ export const ChaseRenderer = {
   /** La barre qui NOMME l'attribut du round et sa cause. C'est elle qui
       empêche le chiffre des jetons de mentir. */
   _attrBar(vm) {
+    // Piste MIXTE (lot P6) : des coureurs et des engins sur le même ruban. La
+    // barre ne peut plus annoncer UN attribut — chaque jeton porte le sien —,
+    // et surtout aucun livre du corpus ne compare une Force à un Intervalle
+    // de vitesse. On le dit, et le point d'Atout du round n'est plus proposé.
+    const mixte = vm.mixte
+      ? `<span class="chase-attr-mixed">Piste mixte — chaque jeton porte son attribut ; le livre ne les compare pas, le point d'Atout du round est à votre main.</span>`
+      : "";
     if (!vm.attr) {
-      return vm.unruled
+      const note = vm.unruled
         ? `<p class="chase-unruled">⚠ ${Utils.escHtml(vm.terrainNote || "Cette édition ne règle pas ce terrain — l'app tient les positions, vous tenez l'arbitrage.")}</p>`
         : "";
+      return mixte ? `${note}<div class="cluster chase-attr-bar">${mixte}</div>` : note;
     }
     const cause = vm.envLabel ? `${Utils.escHtml(vm.envLabel)} ⇒` : "Attribut du round ⇒";
     return `<div class="cluster chase-attr-bar">
@@ -159,6 +167,7 @@ export const ChaseRenderer = {
       <span class="chase-attr-what">${Utils.escHtml(vm.attr.label)}</span>
       <span class="chase-attr-means">${Utils.escHtml(vm.attr.meaning)}${vm.attr.optional ? " · règle optionnelle" : ""}</span>
       ${vm.failCost ? `<span class="chase-fail">échec ⇒ ${Utils.escHtml(vm.failCost)}</span>` : ""}
+      ${mixte}
     </div>`;
   },
 
@@ -221,7 +230,7 @@ export const ChaseRenderer = {
     return `<div class="chase-anchor">
       <span class="chase-anchor-lbl">${Utils.escHtml(vm.modeSpec.anchorLabel || "Cible")}</span>
       ${this._token(t, vm, { anchor: true })}
-      <button class="btn-icon-tiny" data-action="chase-target" data-id="${t.pnjId}" title="Retirer l'ancre" aria-label="Retirer l'ancre">⏏</button>
+      <button class="btn-icon-tiny" data-action="chase-target" data-id="${t.key}" title="Retirer l'ancre" aria-label="Retirer l'ancre">⏏</button>
     </div>`;
   },
 
@@ -244,10 +253,15 @@ export const ChaseRenderer = {
      ▲▼ : visible au repos (le tactile n'a pas de survol) et sans conflit
      avec le défilement, contrairement au glisser. */
   _token(r, vm, opts = {}) {
-    const dom = vm.dominantId && r.pnjId === vm.dominantId;
+    const dom = vm.dominantId && r.key === vm.dominantId;
+    // L'attribut de la LIGNE, pas celui de la piste : depuis qu'on peut sauter
+    // dans une bagnole en pleine poursuite à pied, le même ruban porte des
+    // « FOR 5 » et des « IdV 20 ». Le jeton dit lequel, sinon le chiffre ment
+    // (règle d'affichage n°1 du composant).
+    const attr = r.attr || vm.attr;
     const val = Number.isFinite(r.value)
       ? `<span class="chase-tok-val">${r.value}</span>`
-      : `<button class="chase-tok-val is-void" data-action="chase-attr" data-id="${r.pnjId}" title="Valeur inconnue de l'app — l'annoncer">—</button>`;
+      : `<button class="chase-tok-val is-void" data-action="chase-attr" data-id="${r.key}" title="Valeur inconnue de l'app — l'annoncer">—</button>`;
     const marks = [];
     if (!opts.anchor) {
       const t = r.test;
@@ -262,17 +276,17 @@ export const ChaseRenderer = {
           ? `Lancer ${r.roll.label}${r.roll.threshold != null ? `, seuil ${r.roll.threshold}` : ""}`
           : "Le joueur annonce — taper pour poser ✓ ou ✗";
       marks.push(
-        `<button class="chase-mark chase-roll ${t === "ok" ? "is-ok" : t === "ko" ? "is-ko" : "is-todo"}${dés ? " has-pool" : ""}" data-action="chase-roll" data-id="${r.pnjId}" title="${Utils.escHtml(titre)}">${t === "ok" ? "✓" : t === "ko" ? "✗" : `⚄${dés}`}</button>`,
+        `<button class="chase-mark chase-roll ${t === "ok" ? "is-ok" : t === "ko" ? "is-ko" : "is-todo"}${dés ? " has-pool" : ""}" data-action="chase-roll" data-id="${r.key}" title="${Utils.escHtml(titre)}">${t === "ok" ? "✓" : t === "ko" ? "✗" : `⚄${dés}`}</button>`,
       );
       // Ce que l'échec coûte ICI : proposé au bon moment, jamais appliqué.
       if (t === "ko" && vm.failCostLabel)
         marks.push(
-          `<button class="chase-mark is-fail" data-action="chase-fail" data-id="${r.pnjId}" title="${Utils.escHtml(vm.failCostLabel)} — proposé, jamais appliqué">!</button>`,
+          `<button class="chase-mark is-fail" data-action="chase-fail" data-id="${r.key}" title="${Utils.escHtml(vm.failCostLabel)} — proposé, jamais appliqué">!</button>`,
         );
       // L'avantage positionnel se LIT toujours, mais il ne se règle plus
       // depuis le jeton sur écran étroit : le geste vit dans la fiche.
       marks.push(
-        `<button class="chase-mark is-edge is-secondary${r.edgeUp ? " is-on" : ""}" data-action="chase-edge" data-id="${r.pnjId}" title="Avantage positionnel — remise d'Atout de 1 sur ceux qui ont échoué">⊙</button>`,
+        `<button class="chase-mark is-edge is-secondary${r.edgeUp ? " is-on" : ""}" data-action="chase-edge" data-id="${r.key}" title="Avantage positionnel — remise d'Atout de 1 sur ceux qui ont échoué">⊙</button>`,
       );
     }
     const trend =
@@ -281,36 +295,52 @@ export const ChaseRenderer = {
         : "";
     const pool = vm.poolOn
       ? `<span class="chase-pool is-secondary" title="${Utils.escHtml(vm.poolLabel)} — la réserve revient à zéro en fin de poursuite">
-          <button data-action="chase-pool" data-id="${r.pnjId}" data-delta="-1" aria-label="Réserve −1">−</button>
+          <button data-action="chase-pool" data-id="${r.key}" data-delta="-1" aria-label="Réserve −1">−</button>
           <b>${vm.glyph}${r.pool || 0}</b>
-          <button data-action="chase-pool" data-id="${r.pnjId}" data-delta="1" aria-label="Réserve +1">＋</button>
+          <button data-action="chase-pool" data-id="${r.key}" data-delta="1" aria-label="Réserve +1">＋</button>
         </span>`
       : "";
     // Le gain d'Atout du round (SR6) : un point automatique que les tables
     // oublient tous les rounds. Proposé au dominant, jamais appliqué seul.
     const grant =
       dom && vm.edgeCompare
-        ? `<button class="chase-grant" data-action="chase-grant" data-id="${r.pnjId}" title="Attribuer le point d'Atout du round (attribut le plus élevé)">+1 Atout</button>`
+        ? `<button class="chase-grant" data-action="chase-grant" data-id="${r.key}" title="Attribuer le point d'Atout du round (attribut le plus élevé)">+1 Atout</button>`
         : "";
     const moves = opts.anchor
       ? ""
       : `<span class="chase-move">
-          <button data-action="chase-move" data-id="${r.pnjId}" data-delta="-1" aria-label="Rapprocher de la cible">▲</button>
-          <button data-action="chase-move" data-id="${r.pnjId}" data-delta="1" aria-label="Éloigner de la cible">▼</button>
+          <button data-action="chase-move" data-id="${r.key}" data-delta="-1" aria-label="Rapprocher de la cible">▲</button>
+          <button data-action="chase-move" data-id="${r.key}" data-delta="1" aria-label="Éloigner de la cible">▼</button>
         </span>`;
-    return `<span class="chase-tok${dom ? " is-top" : ""}${opts.anchor ? " is-anchor" : ""}" data-id="${r.pnjId}">
-      ${vm.attr ? `<span class="chase-tok-lbl">${Utils.escHtml(vm.attr.short)}</span>` : ""}
-      ${vm.attr ? val : ""}
+    // ── L'ÉQUIPAGE (lot P6) ──────────────────────────────────────────
+    // Une monture porte le nom de l'ENGIN — c'est lui qui a une position — et
+    // dit qui tient le volant. L'équipage n'est pas un quatrième canal : c'est
+    // l'IDENTITÉ du jeton, au même titre qu'un nom de PNJ. Au-delà du
+    // conducteur, on compte au lieu d'énumérer (la piste se lit à un mètre).
+    const crew = r.crew
+      ? `<span class="chase-tok-crew" title="${Utils.escHtml(r.crew.map((c) => c.name).join(" · "))}">${
+          CardRenderer._esc((r.crew.find((c) => c.driver) || r.crew[0] || {}).name || "sans conducteur")
+        }${r.crew.length > 1 ? ` +${r.crew.length - 1}` : ""}</span>`
+      : "";
+    return `<span class="chase-tok${dom ? " is-top" : ""}${opts.anchor ? " is-anchor" : ""}${r.crew ? " is-ride" : ""}" data-id="${r.key}">
+      ${attr ? `<span class="chase-tok-lbl">${Utils.escHtml(attr.short)}</span>` : ""}
+      ${attr ? val : ""}
       ${
         opts.anchor
           ? `<span class="chase-tok-name">${CardRenderer._esc(r.name)}</span>`
-          : `<button class="chase-tok-name" data-action="chase-sheet" data-id="${r.pnjId}" title="Fiche du participant — ancrer, avantage, réserve, sortie, actions d'Atout">${CardRenderer._esc(r.name)}</button>`
+          : `<button class="chase-tok-name" data-action="chase-sheet" data-id="${r.key}" title="${Utils.escHtml(
+              r.crew
+                ? "Fiche de la monture — équipage, volant, position"
+                : [r.move ? vm.moveDetail(r.move) : "", "Fiche du participant — ancrer, avantage, réserve, sortie, actions d'Atout"]
+                    .filter(Boolean)
+                    .join("\n\n"),
+            )}">${CardRenderer._esc(r.name)}</button>`
       }
-      ${trend}${grant}${pool}${marks.join("")}${moves}
-      ${opts.anchor ? "" : `<button class="chase-mark is-anchor-set is-secondary" data-action="chase-target" data-id="${r.pnjId}" title="Ancrer : faire de ce participant la cible de la poursuite">▣</button>`}
+      ${crew}${trend}${grant}${pool}${marks.join("")}${moves}
+      ${opts.anchor ? "" : `<button class="chase-mark is-anchor-set is-secondary" data-action="chase-target" data-id="${r.key}" title="Ancrer : faire de ce participant la cible de la poursuite">▣</button>`}
       ${
         vm.hasEdgeActions
-          ? `<button class="chase-mark is-sheet is-secondary${vm.sheetFor === r.pnjId ? " is-on" : ""}" data-action="chase-sheet" data-id="${r.pnjId}" title="Actions d'Atout de course-poursuite">${vm.glyph}</button>`
+          ? `<button class="chase-mark is-sheet is-secondary${vm.sheetFor === r.key ? " is-on" : ""}" data-action="chase-sheet" data-id="${r.key}" title="Actions d'Atout de course-poursuite">${vm.glyph}</button>`
           : ""
       }
     </span>`;
@@ -336,7 +366,7 @@ export const ChaseRenderer = {
         .map(
           (r) =>
             `<span class="chase-out">${CardRenderer._esc(r.name)} <em>${r.out === "accident" ? "accident" : "semé"}</em>
-              <button data-action="chase-restore" data-id="${r.pnjId}" title="Remettre en course" aria-label="Remettre en course">↩</button></span>`,
+              <button data-action="chase-restore" data-id="${r.key}" title="Remettre en course" aria-label="Remettre en course">↩</button></span>`,
         )
         .join("")}</p>`;
   },
@@ -374,8 +404,11 @@ export const ChaseRenderer = {
       retirée EN LE DISANT, et une action trop chère se ternit au lieu de
       disparaître (le livre écrit un prix, pas une interdiction). */
   _sheet(vm) {
-    if (!vm.sheet) return "";
-    const { visibles, ecartees, edge } = vm.sheet;
+    // Depuis le lot P6 la feuille s'ouvre aussi sur une MONTURE, qui n'a ni
+    // Atout ni actions : le garde n'est donc plus `vm.sheet` mais la présence
+    // d'une cible de feuille.
+    if (!vm.sheetFor) return "";
+    const { visibles = [], ecartees = [], edge = 0 } = vm.sheet || {};
     const puces = visibles
       .map((e) => {
         const cher = e.cost > edge ? " is-over" : "";
@@ -397,28 +430,117 @@ export const ChaseRenderer = {
     const r = vm.sheetRow;
     const gestes = r
       ? `<div class="chase-sheet-acts">
-          <button data-action="chase-target" data-id="${r.pnjId}" class="${vm.sheetIsTarget ? "is-on" : ""}">▣ ${vm.sheetIsTarget ? "Retirer l'ancre" : "Ancrer comme cible"}</button>
-          <button data-action="chase-edge" data-id="${r.pnjId}" class="${r.edgeUp ? "is-on" : ""}">⊙ Avantage positionnel</button>
+          <button data-action="chase-target" data-id="${r.key}" class="${vm.sheetIsTarget ? "is-on" : ""}">▣ ${vm.sheetIsTarget ? "Retirer l'ancre" : "Ancrer comme cible"}</button>
+          <button data-action="chase-edge" data-id="${r.key}" class="${r.edgeUp ? "is-on" : ""}">⊙ Avantage positionnel</button>
           ${
             vm.poolOn
               ? `<span class="chase-sheet-pool">${Utils.escHtml(vm.poolLabel)}
-                  <button data-action="chase-pool" data-id="${r.pnjId}" data-delta="-1" aria-label="−1">−</button>
+                  <button data-action="chase-pool" data-id="${r.key}" data-delta="-1" aria-label="−1">−</button>
                   <b>${r.pool || 0}</b>
-                  <button data-action="chase-pool" data-id="${r.pnjId}" data-delta="1" aria-label="+1">＋</button></span>`
+                  <button data-action="chase-pool" data-id="${r.key}" data-delta="1" aria-label="+1">＋</button></span>`
               : ""
           }
-          <button data-action="chase-attr" data-id="${r.pnjId}">${Number.isFinite(r.value) ? `Valeur : ${r.value}` : "Saisir la valeur"}</button>
-          <button data-action="chase-drop" data-id="${r.pnjId}" data-reason="seme">Semé</button>
-          <button data-action="chase-drop" data-id="${r.pnjId}" data-reason="accident">Accident</button>
+          <button data-action="chase-attr" data-id="${r.key}">${Number.isFinite(r.value) ? `Valeur : ${r.value}` : "Saisir la valeur"}</button>
+          <button data-action="chase-drop" data-id="${r.key}" data-reason="seme">Semé</button>
+          <button data-action="chase-drop" data-id="${r.key}" data-reason="accident">Accident</button>
         </div>`
       : "";
+    // Une carrosserie ne dépense pas d'Atout : la pastille de ressource ne
+    // s'affiche que sur la feuille d'une PERSONNE.
+    const ressource = vm.sheet
+      ? `<span class="chase-sheet-edge">${Utils.escHtml(vm.resourceLabel)} ${edge}</span>`
+      : "";
+    const actions = vm.sheet
+      ? visibles.length
+        ? `<div class="chase-acts">${puces}</div>`
+        : `<p class="chase-act-out">Aucune action de poursuite ouverte à ce participant.</p>`
+      : "";
     return `<div class="chase-sheet">
-      <p class="chase-sheet-head">${vm.glyph} ${CardRenderer._esc(vm.sheetName)}
-        <span class="chase-sheet-edge">${Utils.escHtml(vm.resourceLabel)} ${edge}</span>
+      <p class="chase-sheet-head">${vm.sheetVehicle && vm.sheetVehicle.kind === "drone" ? "◇" : vm.sheetVehicle ? "▣" : vm.glyph} ${CardRenderer._esc(vm.sheetName)}
+        ${ressource}
         <button data-action="chase-sheet" data-id="${vm.sheetFor}" aria-label="Fermer">✕</button></p>
+      ${this._crew(vm)}
+      ${this._legs(vm)}
+      ${this._board(vm)}
       ${gestes}
-      ${visibles.length ? `<div class="chase-acts">${puces}</div>` : `<p class="chase-act-out">Aucune action de poursuite ouverte à ce participant.</p>`}
+      ${actions}
       ${reste}
+    </div>`;
+  },
+
+  /** L'ÉQUIPAGE d'une monture (lot P6) : la ligne de caractéristiques de
+      l'engin, puis ses occupants. Un nom d'équipier ouvre SA fiche — parce
+      que l'Atout et ses 14 actions appartiennent à une personne, jamais à une
+      voiture. Le conducteur porte l'accent, pas un glyphe de plus : le
+      design system réserve l'accent à l'état actif, et un signe neuf aurait
+      fait doublon avec le ⊙ de l'avantage positionnel. */
+  _crew(vm) {
+    const v = vm.sheetVehicle;
+    if (!v) return "";
+    const membres = ((vm.sheetRow && vm.sheetRow.crew) || [])
+      .map(
+        (c) =>
+          `<button class="chase-crew${c.driver ? " is-driver" : ""}" data-action="chase-sheet" data-id="${c.pnjId}" title="${c.driver ? "Au volant" : "Passager"} — ouvrir sa fiche et ses actions d'Atout">${CardRenderer._esc(c.name)}${c.driver ? " <em>volant</em>" : ""}</button>`,
+      )
+      .join("");
+    return `<div class="chase-sheet-ride">
+      <p class="chase-ride-stats">${
+        v.stats.length
+          ? Utils.escHtml(v.stats.join(" · "))
+          : "Aucune caractéristique de course au catalogue — la valeur du round se saisit ci-dessous."
+      }</p>
+      <div class="cluster chase-crew-row">${membres || "<em>Personne à bord.</em>"}</div>
+    </div>`;
+  },
+
+  /** LES JAMBES (lot P7) — le pendant exact de la ligne de stats d'une
+      monture : ce qui vous porte, et jusqu'où.
+
+      Elle vit dans la fiche et pas sur le jeton parce que le §6.10 du design
+      system n'autorise que trois canaux par jeton (position · valeur qui
+      décide · état du test) : un quatrième les aurait tous rendus illisibles.
+      Le jeton la porte donc en infobulle, la fiche en clair.
+
+      Anarchy n'a pas de mètres — des portées et des Narrations : on écrit ce
+      que le livre dit, plutôt qu'un chiffre qu'il n'a pas donné. */
+  _legs(vm) {
+    if (vm.sheetVehicle || !vm.sheetRow || vm.sheetRow.crew) return "";
+    const m = vm.sheetRow.move;
+    if (!m) {
+      return vm.moveNote ? `<p class="chase-legs is-narrative">${Utils.escHtml(vm.moveNote)}</p>` : "";
+    }
+    const paliers = m.steps
+      .map(
+        (s) =>
+          `<span class="chase-legs-step"><b>${vm.moveNum(s.value)}</b> ${Utils.escHtml(s.label.toLowerCase())}${
+            s.note ? ` <em>${Utils.escHtml(s.note)}</em>` : ""
+          }</span>`,
+      )
+      .join("");
+    const alt = m.alt
+      ? `<span class="chase-legs-alt">${Utils.escHtml(m.alt.mode)} ${m.alt.steps.map((s) => vm.moveNum(s.value)).join(" / ")} ${Utils.escHtml(m.unit)} · +${vm.moveNum(m.alt.perHit)}/succès</span>`
+      : "";
+    return `<p class="chase-legs${m.capped ? " is-capped" : ""}" title="${Utils.escHtml(vm.moveDetail(m))}">
+      ${paliers}${m.sprint ? `<span class="chase-legs-step"><b>+${vm.moveNum(m.sprint.perHit)}</b> ${Utils.escHtml(m.unit)}/succès</span>` : ""}${alt}
+      ${m.capped ? `<span class="chase-legs-cap">${Utils.escHtml(m.capped)}</span>` : ""}
+    </p>`;
+  },
+
+  /** Monter, prendre le volant, descendre. C'est ici que se règle « ils
+      sautent tous dans le même taxi » : le geste vit sur la fiche du
+      PARTICIPANT, là où le MJ le cherche — pas dans un écran de plus. */
+  _board(vm) {
+    if (vm.sheetVehicle) return "";
+    const r = vm.sheetRide;
+    const nom = r && r.vehicle ? r.vehicle.name : "la monture";
+    return `<div class="chase-sheet-acts">
+      <button data-action="chase-board" data-id="${vm.sheetFor}">▣ ${r ? "Changer de monture…" : "Monter dans…"}</button>
+      ${
+        r
+          ? `<button data-action="chase-wheel" data-id="${vm.sheetFor}">Prendre le volant</button>
+             <button data-action="chase-leave" data-id="${vm.sheetFor}">Descendre — ${CardRenderer._esc(nom)}</button>`
+          : ""
+      }
     </div>`;
   },
 
@@ -440,13 +562,18 @@ export const ChaseRenderer = {
   _foot(vm) {
     // En filature, ce sont les deux tests de la phase qui font foi (bloc
     // ci-dessus) : répéter « ⚄ Pilotage + RÉA » ici serait faux.
+    // Piste mixte : le rappel ne vaut que pour la moitié des jetons — celui
+    // qui roule ne fait pas de test d'Athlétisme. On nomme les deux régimes.
+    const alt = vm.testAlt
+      ? ` · ${Utils.escHtml(vm.testAlt.terrainLabel.toLowerCase())} : ${Utils.escHtml(vm.testAlt.label)}`
+      : "";
     const rappel = vm.trailing
       ? Utils.escHtml(vm.modeSpec.note || "")
       : vm.testRequired
-      ? `⚄ ${Utils.escHtml(vm.testLabel)}${vm.testCost ? ` · ${Utils.escHtml(vm.testCost)}` : ""}${vm.opposed ? " · test opposé" : ""}`
-      : vm.actions.length
-        ? `Actions : ${vm.actions.map((a) => Utils.escHtml(a.label)).join(" · ")}`
-        : `Pas de test imposé — ${Utils.escHtml(vm.testLabel || "arbitrage MJ")}`;
+        ? `⚄ ${Utils.escHtml(vm.testLabel)}${vm.testCost ? ` · ${Utils.escHtml(vm.testCost)}` : ""}${vm.opposed ? " · test opposé" : ""}${alt}`
+        : vm.actions.length
+          ? `Actions : ${vm.actions.map((a) => Utils.escHtml(a.label)).join(" · ")}${alt}`
+          : `Pas de test imposé — ${Utils.escHtml(vm.testLabel || "arbitrage MJ")}${alt}`;
     return `<div class="cluster chase-foot">
       <span class="chase-recall">${rappel}</span>
       <button class="btn-primary chase-end" data-action="chase-end-round">▶ ${Utils.escHtml(vm.modeSpec.next || "Round suivant")}</button>

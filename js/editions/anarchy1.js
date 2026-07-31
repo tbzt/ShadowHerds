@@ -364,6 +364,19 @@ export const EditionAnarchy1 = {
   },
 
   /* ========================================================
+     DÉPLACEMENT À PIED (lot P7) — Anarchy 1re
+
+     Même vide assumé qu'en Anarchy 2.0 : le livre compte en PORTÉES et en
+     Narrations, pas en mètres. Sa seule règle de déplacement chiffrée
+     concerne les véhicules (« de portée longue jusqu'à intermédiaire ou
+     courte en une seule Narration »), et elle vit déjà dans `chaseModel`.
+     ======================================================== */
+  movementModel: {
+    narrative: true,
+    note: "Anarchy compte en portées, pas en mètres : franchir un cran coûte une Narration.",
+  },
+
+  /* ========================================================
      COURSE-POURSUITE (moteur ⇉) — Anarchy 1re, p. 166-167.
 
      Le livre n'a **aucun système dédié** : il a des portées de combat, une
@@ -398,10 +411,13 @@ export const EditionAnarchy1 = {
     attr() {
       return { short: "MOB", label: "Mobilité", meaning: "modificateur de pilotage", optional: true };
     },
-    attrValue(pnj, { terrain } = {}) {
-      if (terrain === "pied" || typeof Vehicles === "undefined") return undefined;
-      const liste = Vehicles.linkedTo(pnj.id) || [];
-      const veh = liste.find((v) => v.deployed) || liste[0];
+    attrValue(pnj, { terrain, ride } = {}) {
+      if (terrain === "pied") return undefined;
+      const liste = (typeof Vehicles !== "undefined" && pnj && Vehicles.linkedTo(pnj.id)) || [];
+      // La monture DÉCLARÉE sur la piste (lot P6) d'abord — elle seule sait
+      // qu'on a sauté dans un engin qui n'appartient à personne ; le véhicule
+      // déployé depuis l'équipement en repli.
+      const veh = ride || liste.find((v) => v.deployed) || liste[0];
       const v = veh && veh.stats && veh.stats.mobilite;
       return Number.isFinite(v) ? v : undefined;
     },

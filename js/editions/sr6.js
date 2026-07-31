@@ -1574,6 +1574,81 @@ export const EditionSR6 = {
      un test OBLIGATOIRE par round, un attribut COMPARÉ qui change avec
      l'environnement, et une réserve dédiée. Cf. `js/rules/chase.js`.
      ======================================================== */
+
+  /* ========================================================
+     DÉPLACEMENT À PIED (lot P7) — SR6 p. 48
+
+     ⚠ **SR6 est FORFAITAIRE**, et c'est l'écart le plus net avec SR5 : le
+     livre ne fait varier la distance ni par métatype, ni par Agilité. Deux
+     actions, deux nombres fixes :
+
+       · « Un personnage peut utiliser cette action mineure pour se déplacer
+         de 10 mètres. Une seule action Se déplacer est autorisée par tour. »
+       · « Un personnage peut Sprinter avec une action majeure. Le déplacement
+         de base est de 15 mètres et il est augmenté de 1 mètre par succès
+         obtenu à un test d'Athlétisme + Agilité. »
+
+     Il n'y a donc PAS de palier « course » intermédiaire en SR6, et les
+     métavariantes de cette édition ne chiffrent aucun déplacement propre. Le
+     contrat de `movement.js` est une LISTE de paliers précisément pour que
+     cette table-là puisse n'en déclarer que deux, au lieu de remplir un
+     troisième champ avec un chiffre que personne n'a écrit.
+     ======================================================== */
+  movementModel: {
+    unit: "m",
+    note: "une seule action Se déplacer par tour ; Sprinter n'est combinable ni avec Se déplacer ni avec Éviter",
+    /** Les deux états du livre qui touchent la vitesse à pied — cf.
+        `statusRates` plus bas, qui dit COMMENT. */
+    statusKeys: ["fatigue", "entrave"],
+    rates() {
+      return {
+        unit: "m",
+        note: this.note,
+        steps: [
+          { key: "deplacer", label: "Se déplacer", value: 10, note: "action mineure" },
+          { key: "sprinter", label: "Sprinter", value: 15, note: "action majeure" },
+        ],
+        sprint: { perHit: 1, label: "Sprint : +1 m par succès d'Athlétisme + AGI" },
+      };
+    },
+    /** Deux états du livre touchent la vitesse à pied, et ils la touchent
+        différemment : Fatigué la FIXE (« Vitesse : 5 m (marche), 10 m
+        (sprint) »), Entravé la DIVISE (« divisée par 2, arrondi au
+        supérieur »). L'app les lit, elle ne les invente pas — et elle dit
+        d'où vient le chiffre, parce qu'un 5 sans cause se lit comme un bug. */
+    statusRates(base, statuses) {
+      const a = (k) => (statuses || []).includes(k);
+      if (!a("fatigue") && !a("entrave")) return null;
+      let steps = base.steps;
+      let cause = "";
+      if (a("fatigue")) {
+        steps = [
+          { ...steps[0], value: 5 },
+          { ...steps[1], value: 10 },
+        ];
+        cause = "Fatigué";
+      }
+      if (a("entrave")) {
+        steps = steps.map((s) => ({ ...s, value: Math.ceil(s.value / 2) }));
+        cause = cause ? `${cause} + Entravé` : "Entravé";
+      }
+      return { ...base, steps, capped: cause, note: `${cause} — ${base.note}` };
+    },
+    sprintSpec(pnj) {
+      const skills = (pnj && pnj.skills) || [];
+      const s = skills.find((k) => k && /athl|course|sprint/i.test(k.name || ""));
+      const rank = s ? Number(s.rank != null ? s.rank : s.val) || 0 : null;
+      if (rank == null) return null;
+      const attr = (k) => (typeof Actor !== "undefined" ? Actor.attr(pnj, k) : 0) || 0;
+      return {
+        pool: rank + attr("AGI"),
+        label: "Athlétisme + AGI",
+        action: "1 majeure",
+        maxTests: 1, // « il ne peut utiliser qu'une seule action Sprinter à son tour »
+      };
+    },
+  },
+
   chaseModel: {
     glyph: "⇉",
     defaultTerrain: "vehicule",
@@ -1648,28 +1723,39 @@ export const EditionSR6 = {
           · un véhicule venu d'un autre ouvrage n'a pas encore d'Intervalle
             de vitesse au catalogue (lot P0 : livre de base seulement).
         Dans les deux cas la piste écrit « — » et propose la saisie. */
-    attrValue(pnj, { terrain, env } = {}) {
+    attrValue(pnj, { terrain, env, ride } = {}) {
       if (terrain === "pied") {
         const key = env === "degage" ? "FOR" : "AGI";
         const v = typeof Actor !== "undefined" ? Actor.attr(pnj, key) : null;
         return Number.isFinite(v) && v > 0 ? v : undefined;
       }
-      if (typeof Vehicles === "undefined") return undefined;
-      const veh = (Vehicles.linkedTo(pnj.id) || []).find((v) => v.deployed) || (Vehicles.linkedTo(pnj.id) || [])[0];
-      const s = (veh && veh.stats) || null;
+      const s = (this._engin(pnj, ride) || {}).stats || null;
       if (!s) return undefined;
       const v = env === "encombre" ? s.accel : s.intervalle;
       return Number.isFinite(v) ? v : undefined;
     },
+    /** L'engin dont on lit les caractéristiques (lot P6).
+
+        `ride` — la monture DÉCLARÉE sur la piste — l'emporte, parce qu'elle
+        est la seule à savoir qu'on a sauté dans un taxi qui n'appartient à
+        personne, ou que trois runners partagent la même bagnole.
+
+        Sans elle, on garde le repli d'origine : le premier véhicule déployé
+        depuis l'ÉQUIPEMENT du participant. Il reste juste pour le rigger qui
+        joue sa propre moto et n'a rien eu à déclarer. */
+    _engin(pnj, ride) {
+      if (ride) return ride;
+      if (typeof Vehicles === "undefined" || !pnj) return null;
+      const liste = Vehicles.linkedTo(pnj.id) || [];
+      return liste.find((v) => v.deployed) || liste[0] || null;
+    },
     /** Le seuil du test de Pilotage : Maniabilité du véhicule (hors route
         dès que l'environnement l'est), plus le modificateur d'environnement.
         À pied, c'est le seuil d'Athlétisme de l'environnement. */
-    threshold(pnj, { terrain, env } = {}) {
+    threshold(pnj, { terrain, env, ride } = {}) {
       const e = this.envs.find((x) => x.key === env) || null;
       if (terrain === "pied") return e ? e.footThreshold : null;
-      if (typeof Vehicles === "undefined") return null;
-      const veh = (Vehicles.linkedTo(pnj.id) || []).find((v) => v.deployed) || (Vehicles.linkedTo(pnj.id) || [])[0];
-      const s = (veh && veh.stats) || null;
+      const s = (this._engin(pnj, ride) || {}).stats || null;
       if (!s) return null;
       const base = env === "encombre" && Number.isFinite(s.maniaHors) ? s.maniaHors : s.mania;
       return Number.isFinite(base) ? Math.max(0, base + (e ? e.maniaMod : 0)) : null;

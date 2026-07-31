@@ -1311,8 +1311,24 @@ export const Encounter = {
     const base = (c && c.edgeContexts) || [];
     const st = this.state && this.state.chase;
     if (!st || !c) return base;
-    const dedans = c.pnjId === st.targetId || !!(st.lanes && st.lanes[c.pnjId]);
+    const dedans = c.pnjId === st.targetId || !!(st.lanes && st.lanes[this._chaseKey(c.pnjId)]);
     return dedans && !base.includes("poursuite") ? [...base, "poursuite"] : base;
+  },
+
+  /** La CLÉ DE PISTE d'un combattant : celle de sa monture quand il est monté
+      (lot P6), la sienne sinon.
+
+      ⚠ Sans ce détour, un PASSAGER n'est plus « sur la piste » du point de vue
+      des deux lectures ci-dessous — sa bande appartient au véhicule — et les
+      14 actions d'Atout de course-poursuite s'éteindraient pour tout
+      l'équipage sauf le conducteur. C'est exactement l'inverse de ce que dit
+      le livre : monter dans la voiture d'un poursuivant, c'est poursuivre. */
+  _chaseKey(pnjId) {
+    const st = this.state && this.state.chase;
+    if (!st || !st.rides) return pnjId;
+    for (const id of Object.keys(st.rides))
+      if ((st.rides[id].crew || []).includes(pnjId)) return id;
+    return pnjId;
   },
 
   /** Le camp du combattant dans la poursuite en cours — l'axe que le livre
@@ -1322,8 +1338,9 @@ export const Encounter = {
   chaseRoleFor(pnjId) {
     const st = this.state && this.state.chase;
     if (!st) return null;
-    if (pnjId === st.targetId) return "cible";
-    return st.lanes && st.lanes[pnjId] ? "poursuivant" : null;
+    const cle = this._chaseKey(pnjId);
+    if (cle === st.targetId || pnjId === st.targetId) return "cible";
+    return st.lanes && st.lanes[cle] ? "poursuivant" : null;
   },
 
   /** Bascule un contexte de scène que l'app ne sait pas dériver (la
@@ -3545,6 +3562,20 @@ export const Encounter = {
           break;
         case "chase-fill":
           Pursuit.fill(el.dataset.key);
+          break;
+        /* ---- Équipages (lot P6) ----
+           `data-id` porte ici un **pnjId**, pas une clé de piste : monter,
+           conduire et descendre sont des gestes de personne. Tout ce qui
+           touche à la POSITION (déplacement, test, sortie) porte au contraire
+           la clé de piste, qui est celle de l'engin dès qu'on est monté. */
+        case "chase-board":
+          Pursuit.promptRide(el.dataset.id);
+          break;
+        case "chase-wheel":
+          Pursuit.takeWheel(el.dataset.id);
+          break;
+        case "chase-leave":
+          Pursuit.disembark(el.dataset.id);
           break;
         case "chase-end-round":
           Pursuit.endRound();

@@ -348,6 +348,23 @@ export const EditionAnarchy2 = {
   combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: true, anarchyPoints: true, hasSoak: false },
 
   /* ========================================================
+     DÉPLACEMENT À PIED (lot P7) — Anarchy 2.0
+
+     Anarchy ne compte pas en mètres : il compte en PORTÉES (contact, courte,
+     moyenne, longue), et changer de portée coûte des Narrations — 1, 2 ou 3
+     selon la marche à franchir. C'est déjà ce que porte `chaseModel.lanes`,
+     avec le prix de chaque cran dans son libellé.
+
+     Il n'y a donc ni marche, ni course, ni sprint à chiffrer, et le lot P7
+     n'en fabrique pas : `narrative: true` dit à la surface d'écrire la note
+     plutôt qu'un nombre. Un « 10 / 20 m » ici serait du SR5 déguisé.
+     ======================================================== */
+  movementModel: {
+    narrative: true,
+    note: "Anarchy compte en portées, pas en mètres : changer de portée coûte 1 à 3 Narrations (un point d'Anarchy accélère).",
+  },
+
+  /* ========================================================
      COURSE-POURSUITE (moteur ⇉) — Anarchy 2.0, p. 65-66 (portées,
      déplacement) et p. 230 (drones et véhicules).
 
@@ -391,10 +408,13 @@ export const EditionAnarchy2 = {
         ? { short: "MAN", label: "Maniabilité", meaning: "avantage au test opposé" }
         : { short: "VIT", label: "Vitesse", meaning: "avantage au test opposé" };
     },
-    attrValue(pnj, { terrain, env } = {}) {
-      if (terrain === "pied" || typeof Vehicles === "undefined") return undefined;
-      const liste = Vehicles.linkedTo(pnj.id) || [];
-      const veh = liste.find((v) => v.deployed) || liste[0];
+    attrValue(pnj, { terrain, env, ride } = {}) {
+      if (terrain === "pied") return undefined;
+      const liste = (typeof Vehicles !== "undefined" && pnj && Vehicles.linkedTo(pnj.id)) || [];
+      // La monture DÉCLARÉE sur la piste (lot P6) l'emporte : elle seule sait
+      // qu'on a sauté dans un engin qui n'appartient à personne. Le repli reste
+      // le véhicule déployé depuis l'équipement, pour qui joue le sien.
+      const veh = ride || liste.find((v) => v.deployed) || liste[0];
       const s = (veh && veh.stats) || null;
       if (!s) return undefined;
       const v = env === "maniabilite" ? s.mania : s.vitesse;

@@ -25,7 +25,13 @@ import { DiceRoller } from "../widgets/dice/diceroller.js";
 import { Dialog } from "../widgets/kit/dialog.js";
 import { EdgeActions } from "../rules/edgeactions.js";
 import { Encounter } from "./encounter.js";
+import { Gen } from "./generator.js";
+import { Movement } from "../rules/movement.js";
 import { PnjLookup } from "./pnjlookup.js";
+import { Shadows } from "./shadows.js";
+import { Statuses } from "../rules/statuses.js";
+import { Utils } from "../core/utils.js";
+import { Vehicles } from "../catalogs/vehicles.js";
 
 export const Pursuit = {
   /* ---- Accès à l'état (jamais créé ici : c'est la scène qui le porte) ---- */
@@ -45,6 +51,216 @@ export const Pursuit = {
   /** Persiste + rend. Un seul point, comme `Intrusion._persist`. */
   _persist() {
     Encounter._commit();
+  },
+
+  /* ========================================================
+     ÉQUIPAGES (lot P6) — qui est dans quoi
+
+     Le moteur `Chase` tient la structure (`state.rides`) et la clé de piste ;
+     ce contrôleur y ajoute la seule chose qu'une couche 2 n'a pas le droit
+     d'aller chercher : les FICHES. D'où les trois accesseurs ci-dessous, et
+     la règle qu'ils servent — sur la piste, ce qui a une position est
+     l'ENGIN, mais ce qui lance les dés et dépense de l'Atout est une
+     PERSONNE. Confondre les deux, c'est faire piloter une voiture par
+     elle-même.
+     ======================================================== */
+
+  /** L'entité véhicule de cette clé de piste, ou `null` si la clé désigne
+      quelqu'un qui court sur ses jambes. */
+  vehicleOf(key) {
+    const st = this.state();
+    if (!st || !key || !Chase.ride(st, key)) return null;
+    const v = PnjLookup.find(key);
+    return v && v.type === "vehicle" ? v : null;
+  },
+
+  /** La monture d'un PARTICIPANT → `{ vehicle, ride }`, ou `null`. */
+  rideOf(pnjId) {
+    const st = this.state();
+    const id = st && Chase.rideIdOf(st, pnjId);
+    return id ? { vehicle: PnjLookup.find(id), ride: st.rides[id] } : null;
+  },
+
+  /** La fiche qui RÉPOND pour cette clé de piste : le conducteur quand c'est
+      une monture, l'intéressé sinon. C'est elle qui porte la compétence du
+      test, l'Atout, et le nom qu'un toast doit citer. */
+  _actorFor(key) {
+    const st = this.state();
+    const r = st && Chase.ride(st, key);
+    return PnjLookup.find(r ? r.driverId : key);
+  },
+
+  /** Monter dans une monture déjà sur la piste (« ils sautent tous dans le
+      même taxi »). */
+  board(pnjId, vehicleId) {
+    const st = this.state();
+    if (!st || !Chase.board(st, pnjId, vehicleId)) return;
+    if (this._sheetFor === pnjId) this._sheetFor = vehicleId;
+    this._persist();
+    const qui = (PnjLookup.find(pnjId) || {}).name || "Le participant";
+    const quoi = (PnjLookup.find(vehicleId) || {}).name || "la monture";
+    toast(`${qui} monte — ${quoi}.`);
+  },
+
+  /** Descendre : on retombe sur la bande de la monture, jamais ailleurs.
+      Sauter d'une voiture lancée coûte quelque chose au livre — l'app le
+      laisse au MJ (règle R4), elle ne fait que replacer le jeton. */
+  disembark(pnjId) {
+    const st = this.state();
+    if (!st) return;
+    const veh = Chase.rideIdOf(st, pnjId);
+    if (!veh) return;
+    const bande = Chase.laneOf(st, veh);
+    Chase.unboard(st, pnjId);
+    if (bande) Chase.place(st, pnjId, bande);
+    if (this._sheetFor === veh) this._sheetFor = pnjId;
+    this._persist();
+    const qui = (PnjLookup.find(pnjId) || {}).name || "Le participant";
+    toast(`${qui} descend — même bande, à pied.`);
+  },
+
+  /** Prendre le volant. C'est le conducteur dont l'app lit la compétence
+      pour le test du round : le geste sert dès que le pilote prend une balle. */
+  takeWheel(pnjId) {
+    const st = this.state();
+    if (!st || !Chase.setDriver(st, pnjId)) return;
+    this._persist();
+    toast(`${(PnjLookup.find(pnjId) || {}).name || "Le participant"} prend le volant.`);
+  },
+
+  /** Sortir tout l'équipage de la course d'un geste — un van qui se plante
+      emmène ses occupants avec lui. */
+  dropRide(vehicleId, reason) {
+    const st = this.state();
+    if (!st || !Chase.ride(st, vehicleId)) return;
+    this.drop(vehicleId, reason);
+  },
+
+  /* ---- Faire entrer un véhicule dans la scène ----
+     Jusqu'ici un engin n'entrait que par l'ÉQUIPEMENT de quelqu'un. Une
+     poursuite ne suppose pas la propriété : on vole une bagnole, on saute
+     dans un taxi. La monture créée est une entité COMPLÈTE (fiche, moniteur
+     de dégâts) — dans une poursuite on se fait tirer dessus, et un véhicule
+     sans moniteur aurait été un demi-véhicule. */
+
+  /** Le pool où pousser la nouvelle entité — celui que `UI.deployVehicle`
+      utilise déjà : la bibliothèque sauvegardée si le propriétaire y vit,
+      le pool de génération sinon. Un seul endroit décide. */
+  _poolFor(owner) {
+    return Shadows.data.all.some((p) => p.id === owner.id) ? Shadows.data.all : Gen.pool;
+  },
+
+  _adopt(owner, vehicle) {
+    if (!vehicle) return null;
+    const pool = this._poolFor(owner);
+    pool.push(vehicle);
+    if (pool === Shadows.data.all) Shadows.save();
+    return vehicle;
+  },
+
+  /** Prendre un véhicule au catalogue de l'édition et y monter. */
+  rideFromCatalog(pnjId, name) {
+    const owner = PnjLookup.find(pnjId);
+    if (!owner) return null;
+    const v = this._adopt(owner, Vehicles.spawnFromCatalog(owner, name, this.edition()));
+    if (v) this.board(pnjId, v.id);
+    return v;
+  },
+
+  /** Le sélecteur de monture : les engins DÉJÀ en scène d'abord (c'est le cas
+      fréquent — « ils montent tous dans le même »), puis le catalogue, puis
+      la saisie libre.
+
+      ⚠ `Dialog.choose` fabrique un BOUTON par option : la liste des montures
+      en scène en compte deux ou trois, mais le catalogue SR6 en compte plus
+      de cent. Le catalogue passe donc par une SAISIE filtrante (le geste de
+      la palette), et seul le résultat resserré revient en boutons.
+
+      En Anarchy la table est vide — cette édition lit ses véhicules dans le
+      libellé d'équipement, qui est auto-descriptif. L'entrée « Catalogue »
+      disparaît alors, et le message dit pourquoi. */
+  async promptRide(pnjId) {
+    const st = this.state();
+    if (!st || !PnjLookup.find(pnjId)) return;
+    const aCatalogue = !!Vehicles.catalogList(this.edition()).length;
+    const enScene = Object.keys(st.rides || {}).filter((id) => id !== Chase.rideIdOf(st, pnjId));
+    const options = [
+      ...enScene.map((id) => ({
+        value: `ride:${id}`,
+        label: `▣ ${(PnjLookup.find(id) || {}).name || "Monture"}`,
+      })),
+      ...(aCatalogue ? [{ value: "cat", label: "＋ Catalogue", primary: !enScene.length }] : []),
+      { value: "libre", label: "＋ À la volée" },
+    ];
+    const choix = await Dialog.choose({
+      title: "Monter dans…",
+      message: aCatalogue
+        ? "Une monture déjà en scène, ou un engin pris au catalogue de l'édition."
+        : "Cette édition n'a pas de table de véhicules — ses engins se lisent dans le libellé d'équipement. Saisissez le vôtre.",
+      options,
+    });
+    if (!choix) return;
+    if (choix.startsWith("ride:")) return this.board(pnjId, choix.slice(5));
+    if (choix === "cat") return this.promptCatalogRide(pnjId);
+    return this.promptCustomRide(pnjId);
+  },
+
+  /** Le catalogue par la saisie : on tape « americar », « roto », « bulldog ».
+      Un seul résultat part directement ; une poignée revient en boutons ;
+      au-delà, on demande de préciser plutôt que d'afficher un mur. */
+  async promptCatalogRide(pnjId) {
+    const cat = Vehicles.catalogList(this.edition());
+    const brut = await Dialog.prompt({
+      title: "Catalogue",
+      label: `${cat.length} engins — tapez un nom (americar, bulldog, roto…)`,
+      value: "",
+    });
+    if (brut === null || !brut.trim()) return;
+    const q = Utils.searchNorm(brut);
+    const hits = cat.filter((e) => Utils.searchNorm(e.name).includes(q));
+    if (!hits.length) return void toast(`Aucun engin ne répond à « ${brut.trim()} ».`, "warning");
+    if (hits.length === 1) return void this.rideFromCatalog(pnjId, hits[0].name);
+    if (hits.length > 8)
+      return void toast(`${hits.length} engins répondent à « ${brut.trim()} » — précisez.`, "warning");
+    const choix = await Dialog.choose({
+      title: "Lequel ?",
+      options: hits.map((e) => ({ value: e.name, label: `${e.kind === "drone" ? "◇" : "▣"} ${e.name}` })),
+    });
+    if (choix) this.rideFromCatalog(pnjId, choix);
+  },
+
+  /** Monture saisie à la main. Ce que le MJ laisse vide RESTE vide : la piste
+      écrira « — » avec sa saisie à un tap plutôt qu'un chiffre inventé. */
+  async promptCustomRide(pnjId) {
+    const st = this.state();
+    const owner = PnjLookup.find(pnjId);
+    if (!st || !owner) return;
+    const nom = await Dialog.prompt({
+      title: "Véhicule à la volée",
+      message: "Le nom de l'engin — un taxi, une bagnole volée, le van du fixer.",
+      value: "",
+    });
+    if (nom === null || !nom.trim()) return;
+    const spec = this.model() || {};
+    const attr = spec.attr ? spec.attr(st.env, "vehicule") : null;
+    const brut = await Dialog.prompt({
+      title: nom.trim(),
+      message: attr
+        ? `${attr.label} de l'engin — laissez vide si vous ne l'avez pas, la piste le demandera au bon moment.`
+        : "Caractéristique de course de l'engin — laissez vide si vous ne l'avez pas.",
+      value: "",
+    });
+    if (brut === null) return;
+    // Le champ de stats visé dépend de l'édition (Intervalle de vitesse en
+    // SR6, Vitesse en SR5/Anarchy 2, Mobilité en Anarchy 1) : on le déduit du
+    // code court que l'édition affiche déjà sur la barre du round.
+    const champ = { IdV: "intervalle", ACC: "accel", VIT: "vitesse", MAN: "mania", MOB: "mobilite" }[
+      (attr && attr.short) || ""
+    ];
+    const n = parseInt(brut, 10);
+    const stats = champ && Number.isFinite(n) && n >= 0 ? { [champ]: n } : {};
+    const v = this._adopt(owner, Vehicles.spawnCustom(owner, { name: nom.trim(), stats }, this.edition()));
+    if (v) this.board(pnjId, v.id);
   },
 
   /* ========================================================
@@ -154,8 +370,12 @@ export const Pursuit = {
     const lane = keys.includes(laneKey) ? laneKey : keys[0];
     let n = 0;
     for (const c of Encounter.state.combatants) {
-      if (c.pnjId === st.targetId || st.lanes[c.pnjId]) continue;
-      Chase.place(st, c.pnjId, lane);
+      // Un combattant monté entre par sa MONTURE : les trois occupants d'un
+      // van posent un jeton, pas trois (le deuxième trouve la bande déjà
+      // prise et passe son tour).
+      const cle = Chase.trackKey(st, c.pnjId);
+      if (cle === st.targetId || st.lanes[cle]) continue;
+      Chase.place(st, cle, lane);
       n++;
     }
     if (n) this._persist();
@@ -177,29 +397,36 @@ export const Pursuit = {
      réserve prête à lancer. L'app ne remplit aucun moniteur (règle R4).
      ======================================================== */
 
-  /** La réserve du test pour ce participant, ou null si l'app ne la tient
-      pas du livre → `{ pool, label, threshold }`. */
-  testSpec(pnjId) {
+  /** La réserve du test pour cette CLÉ DE PISTE, ou null si l'app ne la tient
+      pas du livre → `{ pool, label, threshold }`.
+
+      Sur une monture, c'est le CONDUCTEUR qui teste : la compétence est sur
+      une fiche, pas sur une carrosserie — et le seuil, lui, vient de l'engin
+      (Maniabilité). Les deux moitiés du test viennent donc de deux endroits,
+      ce que le contexte passé à l'édition dit explicitement. */
+  testSpec(key) {
     const st = this.state();
     const m = this.model();
-    const pnj = PnjLookup.find(pnjId);
+    const pnj = this._actorFor(key);
     if (!st || !m || !pnj || !m.testPool) return null;
-    const spec = m.testPool(pnj, { terrain: st.terrain, env: st.env });
+    const veh = this.vehicleOf(key);
+    const ctx = { terrain: veh ? "vehicule" : st.terrain, env: st.env, ride: veh };
+    const spec = m.testPool(pnj, ctx);
     if (!spec || !spec.pool) return null;
-    const seuil = m.threshold ? m.threshold(pnj, { terrain: st.terrain, env: st.env }) : null;
+    const seuil = m.threshold ? m.threshold(pnj, ctx) : null;
     return { ...spec, threshold: Number.isFinite(seuil) ? seuil : null };
   },
 
   /** Le geste du ⚄ : lancer si on peut, pointer sinon. Un test DÉJÀ posé se
       corrige d'un tap (cycle) — se tromper doit coûter un geste, pas un
       détour. */
-  testOrRoll(pnjId) {
+  testOrRoll(key) {
     const st = this.state();
     if (!st) return;
-    if (st.tested[pnjId]) return this.cycleTest(pnjId);
-    const spec = this.testSpec(pnjId);
-    if (!spec) return this.cycleTest(pnjId);
-    const pnj = PnjLookup.find(pnjId);
+    if (st.tested[key]) return this.cycleTest(key);
+    const spec = this.testSpec(key);
+    if (!spec) return this.cycleTest(key);
+    const pnj = this._actorFor(key);
     const res = Dice.computeRoll(spec.pool);
     const suffixe = spec.threshold != null ? ` (seuil ${spec.threshold})` : "";
     DiceRoller.show(res, { label: `${spec.label}${suffixe}`, who: (pnj && pnj.name) || "?" });
@@ -210,22 +437,22 @@ export const Pursuit = {
       toast(`${res.hits} succès — comparez, puis posez ✓ ou ✗.`);
       return;
     }
-    Chase.setTest(this.edition(), st, pnjId, res.hits >= spec.threshold ? "ok" : "ko");
+    Chase.setTest(this.edition(), st, key, res.hits >= spec.threshold ? "ok" : "ko");
     this._persist();
   },
 
   /** Ce que l'échec coûte ICI, prêt à lancer si c'est un jet (test
       d'Accident) — proposé, jamais appliqué. */
-  rollFail(pnjId) {
+  rollFail(key) {
     const st = this.state();
-    const spec = this.testSpec(pnjId);
+    const spec = this.testSpec(key);
     const cost = Chase.failCost(this.edition(), st);
     if (!cost) return;
     if (!spec) {
       toast(`Échec — ${cost}. À résoudre à la table.`);
       return;
     }
-    const pnj = PnjLookup.find(pnjId);
+    const pnj = this._actorFor(key);
     const res = Dice.computeRoll(spec.pool);
     DiceRoller.show(res, { label: `${cost} — ${spec.label}`, who: (pnj && pnj.name) || "?" });
   },
@@ -279,18 +506,20 @@ export const Pursuit = {
     else delete st.attrOverride[pnjId];
     this._persist();
   },
-  async promptAttr(pnjId) {
+  async promptAttr(key) {
     const st = this.state();
     if (!st) return;
-    const spec = Chase.attrSpec(this.edition(), st.env, st.terrain);
-    const nom = (PnjLookup.find(pnjId) || {}).name || "Ce participant";
+    // Le régime de CETTE ligne, pas celui de la piste : sur une piste mixte,
+    // on demande l'Intervalle de vitesse à la bagnole et la Force au coureur.
+    const spec = Chase.attrSpec(this.edition(), st.env, this.vehicleOf(key) ? "vehicule" : st.terrain);
+    const nom = (PnjLookup.find(key) || {}).name || "Ce participant";
     const raw = await Dialog.prompt({
       title: spec ? spec.label : "Attribut du round",
       message: `${nom} — valeur à comparer ce round. L'app ne la trouve ni sur la fiche ni au catalogue : annoncez-la.`,
-      value: String(st.attrOverride[pnjId] ?? ""),
+      value: String(st.attrOverride[key] ?? ""),
     });
     if (raw === null) return;
-    this.setAttr(pnjId, raw.trim());
+    this.setAttr(key, raw.trim());
   },
 
   /* ---- Réserve de course-poursuite (SR6) ---- */
@@ -304,12 +533,16 @@ export const Pursuit = {
       gagne un point d'Atout. Seul un point est attribué. » L'app le PROPOSE
       au dominant en un tap — c'est un gain automatique que les tables
       oublient tous les rounds — mais ne l'applique jamais d'elle-même. */
-  grantEdge(pnjId) {
+  grantEdge(key) {
     const m = this.model();
     if (!m || !(m.edge && m.edge.compare)) return;
-    Encounter.adjustEdge(pnjId, 1);
-    const nom = (PnjLookup.find(pnjId) || {}).name || "Le dominant";
-    toast(`${nom} — +1 point d'Atout (attribut le plus élevé du round).`);
+    // L'Atout va à une PERSONNE, jamais à une carrosserie : sur une monture,
+    // c'est le conducteur qui l'encaisse (le livre parle du « camp », et le
+    // camp d'un véhicule tient le volant).
+    const pnj = this._actorFor(key);
+    if (!pnj) return;
+    Encounter.adjustEdge(pnj.id, 1);
+    toast(`${pnj.name || "Le dominant"} — +1 point d'Atout (attribut le plus élevé du round).`);
   },
 
   setPoolMax(pnjId, value) {
@@ -352,50 +585,100 @@ export const Pursuit = {
   },
 
   /* ---- Lectures dérivées (pour le rendu du lot P2 et la console) ---- */
-  /** Une ligne par participant, prête à rendre : position, attribut,
-      tendance, état du test. Le calcul des fiches se fait ICI (couche 5),
-      jamais dans le moteur neutre. */
+
+  /** Une ligne de piste, prête à rendre. `key` est la CLÉ DE PISTE — l'id de
+      l'engin quand la ligne est une monture, l'id du participant sinon —, et
+      c'est elle que le rendu renvoie dans `data-id` pour tout ce qui touche à
+      la POSITION. Ce qui touche à une personne (Atout, feuille d'actions)
+      passe par `driverId` / `crew`.
+
+      ── Le régime de la LIGNE, pas de la piste (lot P6) ──
+      Depuis qu'on peut sauter dans une bagnole en pleine poursuite à pied,
+      les deux régimes cohabitent : le coureur garde le terrain de la piste,
+      celui qui est monté passe en « véhicule ». Sans ça, le chiffre du jeton
+      mentirait — c'est la première des deux règles d'affichage du composant. */
+  _row(key, { crew = null, driverId = null, fallbackName = "" } = {}) {
+    const st = this.state();
+    const ed = this.edition();
+    const monte = !!crew;
+    const veh = monte ? PnjLookup.find(key) : null;
+    const pilote = PnjLookup.find(monte ? driverId : key);
+    const terrain = monte ? "vehicule" : st.terrain;
+    return {
+      key,
+      name: monte ? (veh && veh.name) || "Véhicule" : (pilote && pilote.name) || fallbackName || "?",
+      /** Non nul ⇒ la ligne est une monture. Le rendu s'en sert pour le
+          libellé du jeton et pour la feuille d'équipage. */
+      crew: monte
+        ? crew.map((id) => ({
+            pnjId: id,
+            name: (PnjLookup.find(id) || {}).name || "?",
+            driver: id === driverId,
+          }))
+        : null,
+      driverId: monte ? driverId : key,
+      kind: veh ? veh.kind : null,
+      terrain,
+      /** CE QUI VOUS PORTE (lot P7) : les vitesses à pied quand on court, les
+          caractéristiques de l'engin quand on roule. Symétrie voulue — la
+          fiche répond à la même question dans les deux cas. Le jeton, lui,
+          n'en montre rien : le §6.10 du design system interdit un quatrième
+          canal, alors le chiffre vit dans l'infobulle et dans la fiche. */
+      move: monte ? null : Movement.rates(pilote, { edition: ed, statuses: Statuses.active(pilote).map((s) => s.key) }),
+      attr: Chase.attrSpec(ed, st.env, terrain),
+      lane: Chase.laneOf(st, key),
+      value: Chase.attrValue(ed, pilote, st, { ride: veh, terrain }),
+      trend: Chase.trend(ed, st, key),
+      test: st.tested[key] || null,
+      edgeUp: !!st.edgeUp[key],
+      out: st.out[key] || null,
+      pool: st.pool[key] || 0,
+    };
+  },
+
+  /** Une ligne par ENTITÉ DE PISTE : une par monture (le livre donne une
+      position à un véhicule, pas une par occupant — trois runners dans le
+      même taxi, c'est un jeton, un test, un Intervalle de vitesse), une par
+      combattant resté sur ses jambes. */
   rows() {
     const st = this.state();
     if (!st) return [];
-    const ed = this.edition();
-    return Encounter.state.combatants
-      .filter((c) => c.pnjId !== st.targetId)
-      .map((c) => {
-        const pnj = PnjLookup.find(c.pnjId);
-        return {
-          pnjId: c.pnjId,
-          name: (pnj && pnj.name) || c.name || "?",
-          lane: Chase.laneOf(st, c.pnjId),
-          value: Chase.attrValue(ed, pnj, st),
-          trend: Chase.trend(ed, st, c.pnjId),
-          test: st.tested[c.pnjId] || null,
-          edgeUp: !!st.edgeUp[c.pnjId],
-          out: st.out[c.pnjId] || null,
-          pool: st.pool[c.pnjId] || 0,
-        };
-      });
+    const montes = new Set();
+    const out = [];
+    for (const vehId of Object.keys(st.rides || {})) {
+      const r = st.rides[vehId];
+      (r.crew || []).forEach((id) => montes.add(id));
+      if (vehId !== st.targetId) out.push(this._row(vehId, { crew: r.crew || [], driverId: r.driverId }));
+    }
+    for (const c of Encounter.state.combatants) {
+      if (montes.has(c.pnjId) || c.pnjId === st.targetId) continue;
+      out.push(this._row(c.pnjId, { fallbackName: c.name }));
+    }
+    return out;
   },
-  /** L'entrée d'ancre (la cible), même forme qu'une ligne. */
+
+  /** L'entrée d'ancre (la cible), même forme qu'une ligne — elle peut être un
+      véhicule depuis le lot P6 (c'est même le cas ordinaire : on poursuit une
+      bagnole, pas son conducteur). */
   targetRow() {
     const st = this.state();
     if (!st || !st.targetId) return null;
-    const pnj = PnjLookup.find(st.targetId);
-    return {
-      pnjId: st.targetId,
-      name: (pnj && pnj.name) || "?",
-      value: Chase.attrValue(this.edition(), pnj, st),
-      pool: st.pool[st.targetId] || 0,
-    };
+    const r = Chase.ride(st, st.targetId);
+    return this._row(st.targetId, r ? { crew: r.crew || [], driverId: r.driverId } : {});
   },
-  /** Qui domine ce round (l'accent), et les écrasements « 3× » de SR6. */
+
+  /** Qui domine ce round (l'accent). `attr` accompagne chaque valeur : c'est
+      lui qui fait taire la comparaison quand la piste est mixte — aucun livre
+      ne met un Intervalle de vitesse en face d'une Force. */
   dominant() {
     const st = this.state();
     if (!st) return null;
     const all = this.rows().filter((r) => !r.out);
     const t = this.targetRow();
     if (t) all.push(t);
-    return Chase.dominantId(all.map((r) => ({ pnjId: r.pnjId, value: r.value })));
+    return Chase.dominantId(
+      all.map((r) => ({ pnjId: r.key, value: r.value, attr: r.attr && r.attr.short })),
+    );
   },
   summary() {
     return Chase.summary(this.edition(), this.state());
@@ -473,10 +756,16 @@ export const Pursuit = {
     const dominantId = this.dominant();
     // La réserve du test rejoint chaque ligne : le rendu affiche « ⚄ 12 »
     // quand l'app la tient, et un ⚄ nu quand c'est au joueur d'annoncer.
-    for (const r of rows) r.roll = this.testSpec(r.pnjId);
+    for (const r of rows) r.roll = this.testSpec(r.key);
     const byLane = {};
     for (const r of rows) if (!r.out && r.lane) (byLane[r.lane] ||= []).push(r);
     const terr = m.terrains[st.terrain] || {};
+    // Piste MIXTE : deux familles d'attribut sur la même piste (un coureur et
+    // une bagnole). La barre du round le dit, et plus aucun dominant n'est
+    // proposé — cf. `Chase.dominantId`.
+    const familles = new Set(
+      [...rows, target].filter(Boolean).map((r) => r.attr && r.attr.short).filter(Boolean),
+    );
     return {
       round: st.round,
       total: st.total || null,
@@ -498,6 +787,16 @@ export const Pursuit = {
       terrainNote: terr.note || "",
       unruled: !!terr.unruled,
       testLabel: terr.testLabel || "",
+      /** Sur une piste MIXTE, le rappel du pied ne vaut que pour la moitié des
+          jetons : celui qui roule ne fait pas de test d'Athlétisme. On nomme
+          donc les DEUX tests, avec leur régime — un rappel à moitié vrai est
+          plus trompeur qu'un rappel absent. */
+      testAlt: (() => {
+        if (familles.size < 2) return null;
+        const autre = st.terrain === "pied" ? "vehicule" : "pied";
+        const t = m.terrains[autre];
+        return t && t.testLabel ? { label: t.testLabel, terrainLabel: t.label } : null;
+      })(),
       testRequired: !!(m.round && m.round.test && m.round.test.required),
       testCost: (m.round && m.round.test && m.round.test.cost) || "",
       opposed: !!(m.round && m.round.test && m.round.test.opposed),
@@ -506,6 +805,9 @@ export const Pursuit = {
       envs: Chase.envs(ed).map((e) => ({ key: e.key, label: e.label, examples: e.examples || "" })),
       envLabel: (Chase.env(ed, st.env) || {}).label || "",
       attr: Chase.attrSpec(ed, st.env, st.terrain),
+      /** La piste porte-t-elle deux régimes à la fois ? La barre du round le
+          dit, et la comparaison d'Atout se tait (lot P6). */
+      mixte: familles.size > 1,
       failCost: Chase.failCost(ed, st),
       lanes: Chase.lanes(ed, st.terrain).map((l) => ({ ...l, rows: byLane[l.key] || [] })),
       target,
@@ -522,22 +824,63 @@ export const Pursuit = {
           participant à la fois (la piste est consultée en saccades, pas
           parcourue). */
       sheetFor: this._sheetFor || null,
-      sheet: this._sheetFor ? this.edgeActionsFor(this._sheetFor) : null,
+      /** Une monture n'a pas d'Atout — une carrosserie n'en dépense pas. Sa
+          feuille montre son ÉQUIPAGE, et c'est en tapant un nom d'équipier
+          qu'on ouvre les 14 actions, sur SA fiche à lui (lot P6). */
+      sheet: this._sheetFor && !this.vehicleOf(this._sheetFor) ? this.edgeActionsFor(this._sheetFor) : null,
       /** L'état du participant dont la fiche est ouverte : la fiche porte
           désormais les GESTES que le jeton ne montre plus sur écran étroit
           (ancrer, avantage, réserve, sortie, saisie). Sans elle, masquer ces
           boutons les aurait supprimés — ils sont déplacés, pas retirés. */
       sheetRow: this._sheetFor
-        ? (this.rows().find((r) => r.pnjId === this._sheetFor) || null)
+        ? [...rows, target].find((r) => r && r.key === this._sheetFor) || null
         : null,
+      /** La monture DU PARTICIPANT dont la fiche est ouverte — non nul quand
+          la fiche est celle d'un équipier (ouverte en tapant son nom dans la
+          feuille de l'engin) : elle porte alors « Prendre le volant » et
+          « Descendre » au lieu des gestes de position, qui appartiennent à la
+          voiture. */
+      sheetRide: this._sheetFor ? this.rideOf(this._sheetFor) : null,
+      /** L'ENGIN dont la fiche est ouverte, avec la ligne de stats que le MJ
+          veut voir sans quitter la piste. Non nul ⇒ la feuille est celle d'une
+          monture, et elle montre son équipage. */
+      sheetVehicle: (() => {
+        const v = this._sheetFor && this.vehicleOf(this._sheetFor);
+        if (!v) return null;
+        const s = v.stats || {};
+        const cell = (lbl, val) => (Number.isFinite(val) ? `${lbl} ${val}` : null);
+        return {
+          name: v.name,
+          kind: v.kind,
+          // Ce que le livre ne donne pas ne s'affiche pas : le catalogue ne
+          // porte `intervalle`/`maniaHors` que pour les livres de base (lot P0).
+          stats: [
+            cell("Man", s.mania),
+            cell("Man hr", s.maniaHors),
+            cell("Accél", s.accel),
+            cell("IdV", s.intervalle),
+            cell("Vit", s.vitesse),
+            cell("Mob", s.mobilite),
+          ].filter(Boolean),
+        };
+      })(),
       sheetIsTarget: this._sheetFor && st.targetId === this._sheetFor,
       sheetName: this._sheetFor ? (PnjLookup.find(this._sheetFor) || {}).name || "?" : "",
       resourceLabel: (() => {
         const pnj = this._sheetFor ? PnjLookup.find(this._sheetFor) : null;
-        return pnj ? EdgeActions.resourceLabel(pnj) : "Atout";
+        return pnj && pnj.type !== "vehicle" ? EdgeActions.resourceLabel(pnj) : "Atout";
       })(),
       /** Résolution de nom pour le rendu (qui ne connaît pas les fiches). */
       nameOf: (id) => (PnjLookup.find(id) || {}).name || "?",
+      /** Mise en forme des vitesses — une seule, partagée par la piste, la
+          fiche PNJ et le tracker, pour qu'ils disent le même chiffre au
+          caractère près (`Movement.label` / `Movement.detail`). */
+      moveLabel: (m) => Movement.label(m),
+      moveDetail: (m) => Movement.detail(m),
+      moveNum: (v) => Movement.num(v),
+      /** Ce que l'édition dit quand elle ne compte PAS en mètres (Anarchy :
+          des portées et des Narrations). Un vide assumé, pas un trou. */
+      moveNote: Movement.narrativeNote(ed),
       /** Vierge = aucun déplacement, aucun test, aucun round joué : c'est le
           moment où l'amorce sert, et le seul. */
       /** ⚠ On itère sur `lanes`, pas sur `prev` : ancrer un participant le

@@ -516,37 +516,110 @@ export const Vehicles = {
     return Math.ceil((stats.structure || 0) / 2) + 8;
   },
 
+  /** Préfixe d'`srcItem` des montures prises EN POURSUITE (bagnole volée,
+      taxi, van du fixer). Il sert deux fois :
+        · `linkedTo(ownerId, srcItem)` compare des chaînes exactes — sans lui,
+          une monture volée écraserait l'engin d'équipement homonyme de son
+          conducteur (et « Ranger » les rangerait tous les deux) ;
+        · `UI._vehicleItems` ne lit que l'ÉQUIPEMENT, donc une monture ainsi
+          nommée ne fabrique aucune chip parasite sur la carte du
+          propriétaire — elle n'y a rien à faire, il ne la possède pas. */
+  CHASE_SRC: "⇉ ",
+
+  /** Le seul constructeur d'entité `type:"vehicle"` du fichier. Trois
+      appelants : le déploiement depuis l'équipement (`spawn`), la prise au
+      catalogue (`spawnFromCatalog`) et la saisie libre (`spawnCustom`) —
+      un moniteur qui diverge d'un chemin à l'autre serait invisible et
+      faux. */
+  _entity(owner, spec, edition) {
+    const v = {
+      id: Utils.uid(),
+      type: "vehicle",
+      kind: spec.kind || "vehicule",
+      edition,
+      name: spec.name,
+      ownerId: owner.id,
+      ownerName: owner.name || owner.archetype || "PNJ",
+      srcItem: spec.srcItem,
+      stats: { ...(spec.stats || {}) },
+      weapons: (spec.weapons || []).map((w) => ({ ...w })),
+      rrNotes: spec.rrNotes || null,
+      notes: "",
+      deployed: true,
+    };
+    if (App.getEditionModule(edition).conditionMonitor.vehicleFields === "thresholds") {
+      v.legerFilled = 0;
+      v.graveFilled = 0;
+      v.incapFilled = 0;
+    } else {
+      v.monTotal = this._monitor(v.stats, edition);
+      v.monFilled = 0;
+    }
+    return v;
+  },
+
   spawn(owner, itemStr, edition) {
     const parsed = this.matchItem(itemStr, edition);
     if (!parsed) return [];
     const out = [];
-    for (let i = 0; i < parsed.count; i++) {
-      const v = {
-        id: Utils.uid(),
-        type: "vehicle",
-        kind: parsed.kind,
-        edition,
-        name: parsed.count > 1 ? `${parsed.name} #${i + 1}` : parsed.name,
-        ownerId: owner.id,
-        ownerName: owner.name || owner.archetype || "PNJ",
-        srcItem: itemStr,
-        stats: { ...parsed.stats },
-        weapons: parsed.weapons.map((w) => ({ ...w })),
-        rrNotes: parsed.rrNotes,
-        notes: "",
-        deployed: true,
-      };
-      if (App.getEditionModule(edition).conditionMonitor.vehicleFields === "thresholds") {
-        v.legerFilled = 0;
-        v.graveFilled = 0;
-        v.incapFilled = 0;
-      } else {
-        v.monTotal = this._monitor(parsed.stats, edition);
-        v.monFilled = 0;
-      }
-      out.push(v);
-    }
+    for (let i = 0; i < parsed.count; i++)
+      out.push(
+        this._entity(
+          owner,
+          { ...parsed, name: parsed.count > 1 ? `${parsed.name} #${i + 1}` : parsed.name, srcItem: itemStr },
+          edition,
+        ),
+      );
     return out;
+  },
+
+  /* ========================================================
+     PRENDRE UN VÉHICULE À LA VOLÉE (lot P6)
+
+     Jusqu'ici un engin n'entrait dans l'app que par l'ÉQUIPEMENT de
+     quelqu'un — ce qui suppose qu'il lui appartienne. Une course-poursuite
+     ne suppose rien de tel : on saute dans un taxi, on vole une bagnole,
+     on monte dans le van du fixer. Les deux entrées ci-dessous ouvrent ce
+     geste sans toucher au chemin de l'équipement.
+     ======================================================== */
+
+  /** Le catalogue de l'édition, à plat et trié, pour un sélecteur.
+
+      VIDE en Anarchy, et c'est normal : cette édition n'a pas de table de
+      véhicules — ses engins se lisent dans le libellé d'équipement, qui est
+      auto-descriptif (`_parseAnarchy`). Le sélecteur n'offre alors que la
+      saisie libre, et il le dit plutôt que de présenter une liste vide. */
+  catalogList(edition) {
+    return (this.CATALOG[edition] || [])
+      .map((e) => ({ name: e.name, kind: e.kind, stats: { ...e.stats } }))
+      .sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  },
+
+  /** Monture prise au catalogue. On construit l'entité DEPUIS l'entrée
+      retenue, sans repasser par `matchItem` : un aller-retour par le motif
+      exposerait au piège du « premier motif qui répond » corrigé au lot F6
+      (`Honda Rough Rider` ressortant en `… (Motoquad)`, les cinq Corsair en
+      `Corsair Elysium`). Le nom choisi est celui qu'on obtient. */
+  spawnFromCatalog(owner, name, edition) {
+    const entry = (this.CATALOG[edition] || []).find((e) => e.name === name);
+    if (!entry || !owner) return null;
+    return this._entity(
+      owner,
+      { name: entry.name, kind: entry.kind, stats: entry.stats, srcItem: this.CHASE_SRC + entry.name },
+      edition,
+    );
+  },
+
+  /** Monture dont aucun livre chargé ne donne les stats : le MJ saisit ce
+      qu'il a sous les yeux, et ce qu'il laisse vide reste vide — la piste
+      écrira « — » avec sa saisie à un tap, elle ne dérivera rien. */
+  spawnCustom(owner, { name, kind, stats } = {}, edition) {
+    if (!owner || !name) return null;
+    return this._entity(
+      owner,
+      { name, kind: kind || "vehicule", stats: stats || {}, srcItem: this.CHASE_SRC + name },
+      edition,
+    );
   },
 
   /** Entités liées à un item source précis d'un propriétaire. */

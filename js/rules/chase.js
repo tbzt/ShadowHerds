@@ -102,25 +102,45 @@ export const Chase = {
   /** Valeur de l'attribut décisif pour ce participant, ou `null` quand
       l'app ne la tient pas du livre (à saisir). Une saisie du MJ
       (`state.attrOverride`) l'emporte toujours : c'est lui qui a la fiche
-      sous les yeux. */
-  attrValue(edition, pnj, state) {
+      sous les yeux.
+
+      `ride` (lot P6) est l'ENGIN dans lequel ce participant se trouve : il
+      donne l'attribut à sa place, et le `terrain` de sa LIGNE — celui d'un
+      coureur reste « pied » sur une piste où les autres sont motorisés.
+      Sans monture, on retombe sur le régime global de la piste et sur le
+      repli de l'édition (le véhicule déployé depuis l'équipement). */
+  attrValue(edition, pnj, state, { ride, terrain } = {}) {
     if (!pnj) return null;
-    const over = state && state.attrOverride && state.attrOverride[pnj.id];
+    const cle = ride ? ride.id : this.trackKey(state, pnj.id);
+    const over = state && state.attrOverride && state.attrOverride[cle];
     if (Number.isFinite(over)) return over;
     const m = this.use(edition);
     if (!m || !m.attrValue) return null;
-    const v = m.attrValue(pnj, { terrain: state && state.terrain, env: state && state.env });
+    const v = m.attrValue(pnj, {
+      terrain: terrain || (state && state.terrain),
+      env: state && state.env,
+      ride: ride || null,
+    });
     return Number.isFinite(v) ? v : null;
   },
 
-  /** Qui domine ce round. `entries` = [{ pnjId, value }] fourni par
+  /** Qui domine ce round. `entries` = [{ pnjId, value, attr? }] fourni par
       l'appelant (le moteur ne va pas chercher les fiches : couche).
       Renvoie l'id du plus haut, ou `null` en cas d'égalité ou de valeurs
       manquantes — le livre dit « un seul point », et une égalité est
-      arbitrée par le MJ, pas par nous. */
+      arbitrée par le MJ, pas par nous.
+
+      ── Et `null` aussi quand la piste est MIXTE (lot P6) ──
+      Depuis qu'on peut faire monter un participant dans un véhicule en cours
+      de route, la même piste porte des coureurs (Force, Agilité) et des
+      engins (Intervalle de vitesse, Accélération). Aucun livre du corpus ne
+      compare ces deux grandeurs : `20` d'Intervalle de vitesse n'est pas
+      « plus » que `5` de Force, c'est autre chose. Quand `attr` révèle deux
+      familles, on se tait — même arbitrage que l'égalité. */
   dominantId(entries) {
     const known = (entries || []).filter((e) => Number.isFinite(e.value));
     if (known.length < 2) return null;
+    if (new Set(known.map((e) => e.attr).filter(Boolean)).size > 1) return null;
     const max = Math.max(...known.map((e) => e.value));
     const top = known.filter((e) => e.value === max);
     return top.length === 1 ? top[0].pnjId : null;
@@ -162,6 +182,13 @@ export const Chase = {
       env: opts.env || (envs[0] && envs[0].key) || null,
       targetId: opts.targetId || null,
       round: 1,
+      /** Les équipages (lot P6) : `vehicleId → { driverId, crew: [pnjId…] }`.
+          La clé est l'id d'une entité `type:"vehicle"` RÉELLE (fiche +
+          moniteur), résoluble par `PnjLookup` comme n'importe quel
+          participant. Champ ADDITIF de plus : une poursuite d'avant le lot
+          n'en a pas, ses clés de piste sont des `pnjId`, et tout se comporte
+          à l'identique — d'où un `V` qui ne bouge pas. */
+      rides: {},
       lanes: {},
       prev: {},
       tested: {},
@@ -217,6 +244,97 @@ export const Chase = {
     if (!now || !before) return null;
     const d = keys.indexOf(now) - keys.indexOf(before);
     return Number.isFinite(d) ? d : null;
+  },
+
+  /* ========================================================
+     LES ÉQUIPAGES (lot P6) — pourquoi la piste ne s'indexe plus par PNJ
+
+     Le livre donne UNE position à un véhicule, pas une par occupant : trois
+     runners dans le même taxi partagent une bande, un test et un Intervalle
+     de vitesse. Jusqu'ici la piste n'indexait que des `pnjId` — trois
+     jetons, trois tests, trois fois la même bagnole.
+
+     La généralisation est minuscule parce que `place`, `move`, `laneOf`,
+     `trend`, `drop` et `setTest` opèrent déjà sur une CHAÎNE quelconque :
+     elles n'ont jamais su que c'était un `pnjId`. On leur passe désormais
+     une **clé de piste** — l'id de la monture quand le participant est
+     monté, le sien sinon. Toutes les cartes d'état (`lanes`, `prev`,
+     `tested`, `edgeUp`, `pool`, `out`, `attrOverride`) suivent cette clé.
+
+     Ce qui reste attaché à la PERSONNE, et pas à l'engin : l'Atout et ses
+     14 actions. On ne dépense pas de l'Atout au nom d'un véhicule.
+     ======================================================== */
+
+  /** La monture de ce participant, ou `null`. */
+  rideIdOf(state, pnjId) {
+    const rides = (state && state.rides) || {};
+    for (const id of Object.keys(rides))
+      if ((rides[id].crew || []).includes(pnjId)) return id;
+    return null;
+  },
+  ride(state, vehicleId) {
+    return (state && state.rides && state.rides[vehicleId]) || null;
+  },
+
+  /** LA clé de piste de ce participant. Point unique : tout ce qui indexe
+      l'état de la piste passe par ici, sinon un seul oubli suffit à faire
+      diverger la position d'un passager de celle de sa voiture. */
+  trackKey(state, pnjId) {
+    return this.rideIdOf(state, pnjId) || pnjId;
+  },
+
+  /** Monter. Le premier à bord prend le volant — personne ne monte dans une
+      bagnole vide pour s'asseoir derrière. Et si le participant tenait une
+      bande à lui, elle DÉMÉNAGE sur la monture quand celle-ci n'en a pas
+      encore : on saute dans une voiture là où on est, pas ailleurs. */
+  board(state, pnjId, vehicleId) {
+    if (!state || !pnjId || !vehicleId || pnjId === vehicleId) return false;
+    state.rides = state.rides || {};
+    this.unboard(state, pnjId);
+    const r = (state.rides[vehicleId] ||= { driverId: null, crew: [] });
+    if (!r.crew.includes(pnjId)) r.crew.push(pnjId);
+    if (!r.driverId) r.driverId = pnjId;
+    const sienne = state.lanes[pnjId];
+    if (sienne && !state.lanes[vehicleId]) this.place(state, vehicleId, sienne);
+    this._forget(state, pnjId);
+    return true;
+  },
+
+  /** Retire du seul équipage, sans rien poser : c'est l'appelant qui décide
+      où le participant retombe (`Pursuit.disembark` le pose sur la bande de
+      la monture — on ne se téléporte pas en descendant).
+      → l'id de la monture quittée, ou `null`. Une monture vidée disparaît de
+      la piste ; l'ENGIN, lui, reste : sa fiche et son moniteur vivent dans
+      le pool, une carcasse ne s'efface pas parce qu'on en est sorti. */
+  unboard(state, pnjId) {
+    const id = this.rideIdOf(state, pnjId);
+    if (!id) return null;
+    const r = state.rides[id];
+    r.crew = (r.crew || []).filter((x) => x !== pnjId);
+    if (r.driverId === pnjId) r.driverId = r.crew[0] || null;
+    if (!r.crew.length) delete state.rides[id];
+    return id;
+  },
+
+  /** Prendre le volant de sa propre monture. Le conducteur est celui dont
+      l'app lit la compétence pour le test du round — le changer en cours de
+      poursuite est un geste courant (le rigger se réveille, le conducteur
+      prend une balle). */
+  setDriver(state, pnjId) {
+    const id = this.rideIdOf(state, pnjId);
+    if (!id) return false;
+    state.rides[id].driverId = pnjId;
+    return true;
+  },
+
+  /** L'état de piste d'un participant qui vient de monter n'a plus de sens :
+      sa position est celle de l'engin. On efface donc ce qui est POSITIONNEL
+      et le test du round ; on garde ce que le MJ a saisi de sa main
+      (`attrOverride`, `poolMax`) — une valeur annoncée à la table ne doit pas
+      disparaître parce qu'on est monté dans une voiture. */
+  _forget(state, pnjId) {
+    for (const map of ["lanes", "prev", "tested", "edgeUp", "out"])
+      if (state[map]) delete state[map][pnjId];
   },
 
   /* ---- Sorties de course ----

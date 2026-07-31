@@ -93,6 +93,11 @@ Object.assign(CardRenderer, {
     let combatBody = '<div class="cluster combat-row">';
     const initDetail = `${Utils.attrFullName("REA")} ${Actor.attr(pnj, "REA")} + ${Utils.attrFullName("INT")} ${Actor.attr(pnj, "INT")}`;
     combatBody += this._initPill(init, initDice, pnj, initDetail);
+    // L'initiative dit QUAND on agit ; la vitesse dit JUSQU'OÙ. Les deux se
+    // lisent ensemble dès qu'une scène bouge (lot P7) — et SR5 en a besoin
+    // plus que les autres : c'est la seule édition où dépasser sa vitesse de
+    // marche a une conséquence mécanique (l'état « En course »).
+    combatBody += this._movePill(pnj);
     if (drainResist != null)
       combatBody += this._rollPill("Drain", Math.max(0, drainResist - malus5), {
         title: "Résistance au Drain",

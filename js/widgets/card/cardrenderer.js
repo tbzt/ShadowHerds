@@ -18,6 +18,7 @@ import { Esoteric } from "../../rules/esoteric.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
 import { Magic } from "../../rules/magic.js";
 import { Mentions } from "../journal/mentions.js";
+import { Movement } from "../../rules/movement.js";
 import { PersonaRenderer } from "./personarenderer.js";
 import { Resonance } from "../../rules/resonance.js";
 import { Sheets } from "../kit/sheets.js";
@@ -1272,6 +1273,30 @@ export const CardRenderer = {
     if (!html) return "";
     const summary = (f && (f.style || f.attitude || f.motivation)) || (pnj.keywords && pnj.keywords[0]) || "";
     return this._zoneShell(pnj, "incarnation", html, summary);
+  },
+
+  /** MOUVEMENT À PIED (lot P7) — la distance qu'on couvre, posée à côté de
+      l'initiative qui dit quand.
+
+      Ce n'est PAS une réserve de dés : ni `rollable`, ni ⓘ de décompte. C'est
+      une valeur dérivée, comme le Sang-froid, et elle disparaît d'elle-même
+      dans deux cas — quand l'édition ne compte pas en mètres (Anarchy compte
+      en portées et en Narrations) et quand la fiche ne porte pas de quoi la
+      dériver. Un « — » de plus sur la carte ne servirait personne : ici,
+      l'absence EST l'information.
+
+      Le gain de sprint et le coût en actions descendent dans l'infobulle : la
+      pastille dit la distance, le survol dit la règle. */
+  _movePill(pnj) {
+    if (!pnj || typeof Movement === "undefined") return "";
+    const r = Movement.rates(pnj, {
+      edition: pnj.edition,
+      statuses: Statuses.active(pnj).map((s) => s.key),
+    });
+    if (!r) return "";
+    return `<span class="stat-pill move-pill${r.capped ? " is-capped" : ""}" title="${this._esc(
+      Movement.detail(r),
+    )}">Vitesse&nbsp;<strong>${this._esc(Movement.short(r))}</strong></span>`;
   },
 
   /* ---- Réserves de dés utiles au MJ ---- */

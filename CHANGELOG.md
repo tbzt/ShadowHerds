@@ -12,6 +12,56 @@ commit.
 
 ## [Non publié]
 
+### Ajouté
+
+- **On déclare enfin qui est dans quel véhicule — et on en vole un à la
+  volée.** La piste ne connaissait que des personnes : le véhicule d'un
+  participant était *deviné* (« le premier engin que son équipement a fait
+  déployer »), ce qui interdisait les deux situations les plus banales d'une
+  poursuite — trois runners dans **le même** taxi, et un engin que
+  **personne ne possède**. Désormais un tap sur un nom ouvre sa fiche, et
+  « ▣ Monter dans… » propose les montures déjà en scène, le catalogue de
+  l'édition (par une saisie filtrante : *americar*, *bulldog*, *roto*…) ou
+  une saisie libre. On prend le volant, on change de monture, on descend —
+  et descendre repose sur la bande de la voiture, pas ailleurs.
+
+  Ce qui change à l'écran : **un véhicule = un jeton**, comme le livre lui
+  donne une position, avec son conducteur en sous-titre et son équipage dans
+  sa fiche. Ce qui ne change pas : l'Atout et ses 14 actions restent
+  attachés aux **personnes** — un passager reste « poursuivant » et garde
+  les siennes. La monture prise au catalogue est une **vraie fiche** avec
+  son moniteur de dégâts : dans une poursuite, on se fait tirer dessus.
+
+- **Une piste peut désormais être mixte** — des coureurs et des bagnoles sur
+  le même ruban, ce qui arrive dès qu'un PJ saute dans une voiture en pleine
+  course-poursuite à pied. Chaque jeton porte alors **son** attribut (« FOR
+  5 » pour celui qui court, « IdV 20 » pour la bagnole) et le rappel du bas
+  nomme les deux tests. Et l'app **se tait** sur le point d'Atout du round :
+  aucun livre du corpus ne compare une Force à un Intervalle de vitesse, donc
+  elle le dit et vous laisse trancher — même arbitrage que sur une égalité.
+
+- **Le déplacement à pied est enfin chiffré : marche, course, sprint.**
+  Aucune de ces valeurs n'existait dans l'app, alors que le terrain « À pied »
+  de la piste affichait un attribut sans jamais dire ce qu'il permettait de
+  parcourir. Les livres ne se ressemblent pas, et le contrat le montre au
+  lieu de le lisser :
+  - **SR5** dérive de l'Agilité (marche ×2, course ×4) et ne fait varier que
+    le **gain de sprint** — +1 m par succès pour les nains et les trolls,
+    +2 m pour les elfes, les humains et les orks ;
+  - **SR6** est **forfaitaire** : 10 m pour Se déplacer, 15 m + 1 m par
+    succès pour Sprinter, quels que soient le métatype et l'Agilité ;
+  - **Anarchy** ne compte pas en mètres du tout — des portées et des
+    Narrations : l'app écrit la phrase du livre plutôt qu'un chiffre.
+
+  Les **17 formes qui ont leur propre déplacement** (centaure, naga, pixie,
+  sasquatch, les dix zooanthropes) remplacent celui de leur souche, mode
+  secondaire compris — le pixie et le falcin volent, le naga nage. Les états
+  qui plafonnent une vitesse (SR6 Fatigué, Entravé) l'emportent en dernier
+  **en disant lequel**. Trois surfaces : la fiche du participant sur la
+  piste, une pastille « Vitesse » à côté de l'initiative sur la carte, et
+  l'infobulle de l'état « En course » de SR5 — qui portait une conséquence
+  mécanique sans que rien ne dise à partir de combien de mètres.
+
 ## [1.138.1] — 2026-07-31
 
 ### Corrigé

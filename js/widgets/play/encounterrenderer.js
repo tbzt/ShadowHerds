@@ -20,6 +20,7 @@ import { Cyberdeck } from "../../rules/cyberdeck.js";
 import { DiceRoller } from "../dice/diceroller.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
 import { Matrix } from "../../rules/matrix.js";
+import { Movement } from "../../rules/movement.js";
 import { ServerRenderer } from "./serverrenderer.js";
 import { Sheets } from "../kit/sheets.js";
 import { TopologyGen } from "../../rules/topologygen.js";
@@ -329,9 +330,23 @@ export const EncounterRenderer = {
     // Pas de référence de page dans le title : le MJ n'en a jamais besoin, et
     // cette surface-ci est neuve — on n'y en introduit pas. (Les `page` déjà
     // affichés ailleurs, ex. `CardRenderer._statusTag`, restent tels quels.)
+    // Un état qui parle de DÉPLACEMENT joint la vitesse à son infobulle (lot
+    // P7). « En course » sans dire à partir de combien de mètres ne renseigne
+    // personne — et c'était précisément le trou : SR5 attache une conséquence
+    // mécanique au dépassement d'une vitesse que rien n'affichait. La liste
+    // des états concernés est DÉCLARÉE par l'édition, pas devinée ici.
+    const vitesse = (() => {
+      if (typeof Movement === "undefined") return "";
+      const r = Movement.rates(pnj, {
+        edition: pnj.edition,
+        statuses: actifs.map((s) => s.key),
+      });
+      return r ? `\nVitesse : ${Movement.label(r)}` : "";
+    })();
     const puce = (s) => {
       const niveau = s.level > 1 ? ` ${s.level}` : "";
-      return `<span class="encounter-kind encounter-state" title="${Utils.escHtml(`${s.name}${niveau}`)}">${Utils.escHtml(s.name)}${niveau}</span>`;
+      const suite = vitesse && Movement.touchesMovement(pnj.edition, s.key) ? vitesse : "";
+      return `<span class="encounter-kind encounter-state" title="${Utils.escHtml(`${s.name}${niveau}${suite}`)}">${Utils.escHtml(s.name)}${niveau}</span>`;
     };
     const montrees = actifs.slice(0, MAX).map(puce).join("");
     const reste = actifs.length - MAX;

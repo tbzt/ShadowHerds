@@ -680,6 +680,15 @@
 .stat-pill.accent.entry-flash {
   animation: entry-flash 1.2s ease-out;
 }
+/* Vitesse à pied (lot P7) : une distance PLAFONNÉE par un état (SR6 Fatigué
+   fixe 5/10 m, Entravé divise par 2) se signale, sinon un « 5 / 10 m » sans
+   cause se lit comme un bug. L'infobulle nomme l'état. */
+.stat-pill.move-pill.is-capped {
+  border-color: color-mix(in srgb, var(--warning) 40%, transparent);
+}
+.stat-pill.move-pill.is-capped strong {
+  color: var(--warning);
+}
 /* Initiative : premier chiffre lu par le MJ à chaque tour — mis en avant
    comme le résultat de dés (cf. #8), pour rester scannable à distance. */
 .init-pill {

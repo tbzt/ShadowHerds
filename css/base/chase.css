@@ -121,6 +121,15 @@
   margin-left: auto;
   color: var(--warning);
 }
+/* Piste MIXTE (lot P6) : des coureurs et des engins sur le même ruban. La
+   barre ne peut plus annoncer UN attribut — chaque jeton porte le sien —, et
+   aucun livre ne compare une Force à un Intervalle de vitesse. On l'écrit
+   plutôt que de laisser deux chiffres incomparables côte à côte sans mot. */
+.chase-attr-mixed {
+  flex: 1 0 100%;
+  font-size: var(--fs-2xs);
+  color: var(--warning);
+}
 /* Terrain que l'édition ne règle pas : on le DIT, on ne le comble pas. */
 .chase-unruled {
   margin: var(--sp-2) 0;
@@ -736,6 +745,118 @@ button.chase-tok-val.is-void {
   margin-top: var(--sp-1);
   font-size: var(--fs-2xs);
   color: var(--text-dim);
+}
+
+/* ============================================================
+   ÉQUIPAGES (lot P6) — le jeton d'une monture, et sa feuille
+
+   Un véhicule a UNE position : trois runners dans le même taxi font un
+   jeton, pas trois. Le jeton porte donc le nom de l'ENGIN, et son équipage
+   en sous-titre — ce n'est pas un quatrième canal (la loi du §6.10 en
+   interdit un), c'est l'IDENTITÉ du jeton, au même rang qu'un nom de PNJ.
+   ============================================================ */
+.chase-tok-crew {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+/* Le liseré marque « ceci roule » sans ajouter de glyphe : l'accent reste
+   réservé au dominant (§6.10), donc on emploie la bordure, pas la couleur
+   d'état. */
+.chase-tok.is-ride {
+  border-left: 2px solid var(--border-ui);
+}
+
+.chase-sheet-ride {
+  padding-bottom: var(--sp-2);
+  margin-bottom: var(--sp-2);
+  border-bottom: 1px dashed var(--border);
+}
+.chase-ride-stats {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  margin-bottom: var(--sp-1);
+}
+.chase-crew-row {
+  gap: var(--sp-1);
+}
+.chase-crew {
+  font: inherit;
+  font-size: var(--fs-2xs);
+  min-height: 32px;
+  padding: 0 var(--sp-2);
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.chase-crew em {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: var(--fs-3xs, var(--fs-2xs));
+  color: var(--text-dim);
+}
+/* Le conducteur porte l'ACCENT, pas un signe de plus : ⊙ est déjà pris par
+   l'avantage positionnel, et le design system dit que l'accent signale
+   l'état actif. */
+.chase-crew.is-driver {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.chase-crew.is-driver em {
+  color: var(--accent);
+}
+.chase-crew:hover,
+.chase-crew:focus-visible {
+  border-color: var(--accent);
+}
+
+/* ---- Les jambes (lot P7) : le pendant de la ligne de stats d'une monture.
+   Même place dans la fiche, même rôle — « ce qui vous porte, et jusqu'où ». */
+.chase-legs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-2);
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  border-bottom: 1px dashed var(--border);
+}
+/* Un palier reste d'un bloc quand la ligne passe à la ligne : « 15 sprinter »
+   coupé en deux ne veut plus rien dire. */
+.chase-legs-step {
+  white-space: nowrap;
+}
+.chase-legs b {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text);
+}
+.chase-legs em {
+  font-style: normal;
+  opacity: 0.7;
+}
+.chase-legs-alt {
+  font-style: italic;
+}
+/* Une vitesse FIXÉE ou divisée par un état : on dit lequel, parce qu'un 5 sans
+   cause se lit comme un bug, pas comme une règle. */
+.chase-legs.is-capped b {
+  color: var(--warning);
+}
+.chase-legs-cap {
+  color: var(--warning);
+}
+/* Édition qui ne compte pas en mètres : la phrase du livre, pas un chiffre. */
+.chase-legs.is-narrative {
+  font-style: italic;
 }
 
 /* ---- Résumé du round écoulé, avec son annulation ---- */

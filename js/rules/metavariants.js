@@ -513,6 +513,11 @@ export const Metavariants = {
         INT: [1, 5],
         CHA: [1, 5],
       },
+      /** Déplacement racial (lot P7) : multiplicateurs d'Agilité pour la
+          marche et la course, gain de sprint par succès. Double du trait
+          ci-dessous — le texte est ce que le lecteur lit, ce champ est ce
+          avec quoi l'app calcule. */
+      move: { walk: 1, run: 4, sprint: 4 },
       traits: [
         { name: "Arme naturelle (Coup de pied)", desc: RULE.armeNaturelle },
         { name: "Déplacement (×1/×4/+4)", desc: RULE.deplacement },
@@ -538,6 +543,11 @@ export const Metavariants = {
         INT: [1, 6],
         CHA: [2, 7],
       },
+      /** Déplacement racial (lot P7) : multiplicateurs d'Agilité pour la
+          marche et la course, gain de sprint par succès. Double du trait
+          ci-dessous — le texte est ce que le lecteur lit, ce champ est ce
+          avec quoi l'app calcule. */
+      move: { walk: 1, run: 4, sprint: 1, alt: { mode: "nage", walk: 2, run: 4, sprint: 2 } },
       traits: [
         { name: "Animal à sang froid", desc: RULE.animalSangFroid },
         { name: "Arme naturelle (Crocs)", desc: RULE.armeNaturelle },
@@ -565,6 +575,11 @@ export const Metavariants = {
         INT: [2, 7],
         CHA: [3, 8],
       },
+      /** Déplacement racial (lot P7) : multiplicateurs d'Agilité pour la
+          marche et la course, gain de sprint par succès. Double du trait
+          ci-dessous — le texte est ce que le lecteur lit, ce champ est ce
+          avec quoi l'app calcule. */
+      move: { walk: 1, run: 2, sprint: 1, alt: { mode: "vol", walk: 2, run: 6, sprint: 2 } },
       traits: [
         { name: "Déplacement (×1/×2/+1 ; vol ×2/×6/+2)", desc: RULE.deplacement },
         { name: "Disparition (mort)", desc: RULE.disparition },
@@ -588,6 +603,11 @@ export const Metavariants = {
         INT: [1, 6],
         CHA: [1, 6],
       },
+      /** Déplacement racial (lot P7) : multiplicateurs d'Agilité pour la
+          marche et la course, gain de sprint par succès. Double du trait
+          ci-dessous — le texte est ce que le lecteur lit, ce champ est ce
+          avec quoi l'app calcule. */
+      move: { walk: 2, run: 4, sprint: 2 },
       traits: [
         { name: "Arme naturelle (Griffes)", desc: RULE.armeNaturelle },
         { name: "Déplacement (×2/×4/+2)", desc: RULE.deplacement },
@@ -618,6 +638,11 @@ export const Metavariants = {
         INT: [1, 6],
         CHA: [1, 6],
       },
+      /** Déplacement racial (lot P7) : multiplicateurs d'Agilité pour la
+          marche et la course, gain de sprint par succès. Double du trait
+          ci-dessous — le texte est ce que le lecteur lit, ce champ est ce
+          avec quoi l'app calcule. */
+      move: { walk: 1, run: 4, sprint: 1 },
       traits: [
         { name: "Cornes perforantes", desc: RULE.cornesPerforantes },
         { name: "Déplacement (×1/×4/+1)", desc: RULE.deplacement },
@@ -638,6 +663,11 @@ export const Metavariants = {
         INT: [2, 7],
         CHA: [2, 7],
       },
+      /** Déplacement racial (lot P7) : multiplicateurs d'Agilité pour la
+          marche et la course, gain de sprint par succès. Double du trait
+          ci-dessous — le texte est ce que le lecteur lit, ce champ est ce
+          avec quoi l'app calcule. */
+      move: { walk: 2, run: 8, sprint: 4 },
       traits: [
         { name: "Arme naturelle (Crocs)", desc: RULE.armeNaturelle },
         { name: "Déplacement (×2/×8/+4)", desc: RULE.deplacement },
@@ -661,6 +691,11 @@ export const Metavariants = {
         INT: [1, 6],
         CHA: [1, 6],
       },
+      /** Déplacement racial (lot P7) : multiplicateurs d'Agilité pour la
+          marche et la course, gain de sprint par succès. Double du trait
+          ci-dessous — le texte est ce que le lecteur lit, ce champ est ce
+          avec quoi l'app calcule. */
+      move: { walk: 3, run: 10, sprint: 6 },
       traits: [
         { name: "Déplacement (×3/×10/+6)", desc: RULE.deplacement },
         { name: "Illettré", desc: RULE.illettre },
@@ -681,6 +716,11 @@ export const Metavariants = {
         INT: [2, 7],
         CHA: [2, 7],
       },
+      /** Déplacement racial (lot P7) : multiplicateurs d'Agilité pour la
+          marche et la course, gain de sprint par succès. Double du trait
+          ci-dessous — le texte est ce que le lecteur lit, ce champ est ce
+          avec quoi l'app calcule. */
+      move: { walk: 1, run: 2, sprint: 0.5, alt: { mode: "vol", walk: 2, run: 6, sprint: 2 } },
       traits: [
         { name: "Armes naturelles (Crocs, Serres)", desc: RULE.armeNaturelle },
         { name: "Déplacement (×1/×2/+0,5 ; vol ×2/×6/+2)", desc: RULE.deplacement },
@@ -706,6 +746,11 @@ export const Metavariants = {
         INT: [2, 7],
         CHA: [2, 7],
       },
+      /** Déplacement racial (lot P7) : multiplicateurs d'Agilité pour la
+          marche et la course, gain de sprint par succès. Double du trait
+          ci-dessous — le texte est ce que le lecteur lit, ce champ est ce
+          avec quoi l'app calcule. */
+      move: { walk: 2, run: 6, sprint: 4 },
       traits: [
         { name: "Armes naturelles (Crocs, Griffes)", desc: RULE.armeNaturelle },
         { name: "Déplacement (×2/×6/+4)", desc: RULE.deplacement },
@@ -733,6 +778,11 @@ export const Metavariants = {
         INT: [2, 7],
         CHA: [2, 7],
       },
+      /** Déplacement racial (lot P7) : multiplicateurs d'Agilité pour la
+          marche et la course, gain de sprint par succès. Double du trait
+          ci-dessous — le texte est ce que le lecteur lit, ce champ est ce
+          avec quoi l'app calcule. */
+      move: { walk: 2, run: 6, sprint: 4 },
       traits: [
         { name: "Arme naturelle (Crocs)", desc: RULE.armeNaturelle },
         { name: "Déplacement (×2/×6/+4)", desc: RULE.deplacement },
@@ -757,6 +807,11 @@ export const Metavariants = {
         INT: [3, 8],
         CHA: [3, 8],
       },
+      /** Déplacement racial (lot P7) : multiplicateurs d'Agilité pour la
+          marche et la course, gain de sprint par succès. Double du trait
+          ci-dessous — le texte est ce que le lecteur lit, ce champ est ce
+          avec quoi l'app calcule. */
+      move: { walk: 2, run: 6, sprint: 4 },
       traits: [
         { name: "Armes naturelles (Crocs, Griffes)", desc: RULE.armeNaturelle },
         { name: "Déplacement (×2/×6/+4)", desc: RULE.deplacement },
@@ -784,6 +839,11 @@ export const Metavariants = {
         INT: [3, 8],
         CHA: [2, 7],
       },
+      /** Déplacement racial (lot P7) : multiplicateurs d'Agilité pour la
+          marche et la course, gain de sprint par succès. Double du trait
+          ci-dessous — le texte est ce que le lecteur lit, ce champ est ce
+          avec quoi l'app calcule. */
+      move: { walk: 2, run: 6, sprint: 4 },
       traits: [
         { name: "Armes naturelles (Crocs, Griffes)", desc: RULE.armeNaturelle },
         { name: "Déplacement (×2/×6/+4)", desc: RULE.deplacement },
@@ -811,6 +871,11 @@ export const Metavariants = {
         INT: [1, 6],
         CHA: [1, 6],
       },
+      /** Déplacement racial (lot P7) : multiplicateurs d'Agilité pour la
+          marche et la course, gain de sprint par succès. Double du trait
+          ci-dessous — le texte est ce que le lecteur lit, ce champ est ce
+          avec quoi l'app calcule. */
+      move: { walk: 1, run: 3, sprint: 2 },
       traits: [
         { name: "Armes naturelles (Crocs, Griffes)", desc: RULE.armeNaturelle },
         { name: "Déplacement (×1/×3/+2)", desc: RULE.deplacement },
@@ -839,6 +904,11 @@ export const Metavariants = {
         INT: [2, 7],
         CHA: [2, 7],
       },
+      /** Déplacement racial (lot P7) : multiplicateurs d'Agilité pour la
+          marche et la course, gain de sprint par succès. Double du trait
+          ci-dessous — le texte est ce que le lecteur lit, ce champ est ce
+          avec quoi l'app calcule. */
+      move: { walk: 1, run: 3, sprint: 2 },
       traits: [
         { name: "Arme naturelle (Crocs)", desc: RULE.armeNaturelle },
         { name: "Déplacement (×1/×3/+2)", desc: RULE.deplacement },

@@ -1117,6 +1117,93 @@ export const EditionSR5 = {
      l'environnement (0-10 en rapide, 0-5 en encombré) : la même bande
      « courte » ne couvre pas la même rue.
      ======================================================== */
+
+  /* ========================================================
+     DÉPLACEMENT À PIED (lot P7) — SR5 p. 163-164
+
+     Trois types : la marche, la course et le sprint. Les deux premiers sont
+     des DISTANCES PAR TOUR DE COMBAT (« et non pas par passe d'initiative »),
+     dérivées de l'Agilité ; le troisième est un TEST qui augmente la course.
+
+     Ce que la table fait varier par métatype, c'est **le gain de sprint, et
+     lui seul** : +1 m par succès pour les nains et les trolls, +2 m pour les
+     elfes, les humains et les orks. La marche et la course sont AGI × 2 et
+     AGI × 4 pour tout le monde. C'est peu, mais c'est ce que le livre écrit,
+     et le lot P7 s'interdit d'étoffer une table qu'il n'a pas.
+
+     Une métavariante peut REMPLACER les trois (Run Faster) : un centaure est
+     en ×1/×4/+4, un équin en ×3/×10/+6. Ces multiplicateurs vivent sur
+     l'entrée de métavariante (`move`), à côté du trait qui les écrit en
+     clair.
+     ======================================================== */
+  movementModel: {
+    unit: "m",
+    note: "par tour de combat, pas par passe — dépasser sa vitesse de marche met « En course » jusqu'à la fin du tour",
+    /** L'état que le livre attache au déplacement. SR5 est la seule édition où
+        dépasser une vitesse a une CONSÉQUENCE mécanique — « En course » vaut
+        +2 dés en défense et −2 sur tout le reste —, et jusqu'ici rien ne
+        disait au MJ à partir de combien de mètres. */
+    statusKeys: ["course"],
+    /** Multiplicateurs d'Agilité et gain de sprint, par souche. La marche et
+        la course ne varient pas ; seul le gain le fait. */
+    metatypes: {
+      Humain: { walk: 2, run: 4, sprint: 2 },
+      Elfe: { walk: 2, run: 4, sprint: 2 },
+      Ork: { walk: 2, run: 4, sprint: 2 },
+      Nain: { walk: 2, run: 4, sprint: 1 },
+      Troll: { walk: 2, run: 4, sprint: 1 },
+    },
+    rates(pnj, { racial, baseMeta } = {}) {
+      const agi = typeof Actor !== "undefined" ? Actor.attr(pnj, "AGI") : null;
+      if (!Number.isFinite(agi) || agi <= 0) return null;
+      // La forme raciale l'emporte quand elle existe (« qui remplacent celles
+      // du métatype de base »), sinon la souche, sinon l'humain — un métatype
+      // qu'on ne reconnaît pas ne vaut pas un trou.
+      const t = racial || this.metatypes[baseMeta] || this.metatypes.Humain;
+      const arrondi = (n) => Math.round(n * 10) / 10; // le falcin marche en ×0,5
+      return {
+        unit: this.unit,
+        note: this.note,
+        steps: [
+          { key: "marche", label: "Marche", value: arrondi(agi * t.walk) },
+          { key: "course", label: "Course", value: arrondi(agi * t.run), note: "−2 dés sauf sprint et charge, +2 dés en défense" },
+        ],
+        sprint: {
+          perHit: t.sprint,
+          label: `Sprint : +${String(t.sprint).replace(".", ",")} m par succès, au-delà de la course (Course + FOR, action complexe)`,
+        },
+        /** Le mode secondaire quand la forme en a un (le pixie vole, le naga
+            nage) : on le NOMME au lieu de l'écraser sur la marche. */
+        alt: racial && racial.alt
+          ? {
+              mode: racial.alt.mode,
+              steps: [
+                { key: "marche", label: "Marche", value: arrondi(agi * racial.alt.walk) },
+                { key: "course", label: "Course", value: arrondi(agi * racial.alt.run) },
+              ],
+              perHit: racial.alt.sprint,
+            }
+          : null,
+      };
+    },
+    /** « Les personnages qui sprintent souffrent aussi de fatigue » : l'app le
+        rappelle, elle ne l'applique pas (règle R4). */
+    sprintSpec(pnj) {
+      const skills = (pnj && pnj.skills) || [];
+      const s = skills.find((k) => k && /course/i.test(k.name || ""));
+      const rank = s ? Number(s.rank != null ? s.rank : s.val) || 0 : null;
+      if (rank == null) return null;
+      const attr = (k) => (typeof Actor !== "undefined" ? Actor.attr(pnj, k) : 0) || 0;
+      return {
+        pool: rank + attr("FOR"),
+        label: "Course + FOR [Physique]",
+        action: "1 complexe",
+        // « limité à la moitié de sa compétence Course, avec un minimum de un »
+        maxTests: Math.max(1, Math.floor(rank / 2)),
+      };
+    },
+  },
+
   chaseModel: {
     glyph: "⇉",
     defaultTerrain: "vehicule",
@@ -1162,14 +1249,22 @@ export const EditionSR5 = {
         ? { short: "MAN", label: "Maniabilité", meaning: "limite du test" }
         : { short: "VIT", label: "Vitesse", meaning: "limite du test" };
     },
-    attrValue(pnj, { terrain, env } = {}) {
-      if (terrain === "pied" || typeof Vehicles === "undefined") return undefined;
-      const liste = Vehicles.linkedTo(pnj.id) || [];
-      const veh = liste.find((v) => v.deployed) || liste[0];
-      const s = (veh && veh.stats) || null;
+    attrValue(pnj, { terrain, env, ride } = {}) {
+      if (terrain === "pied") return undefined;
+      const s = (this._engin(pnj, ride) || {}).stats || null;
       if (!s) return undefined;
       const v = env === "encombre" ? s.mania : s.vitesse;
       return Number.isFinite(v) ? v : undefined;
+    },
+    /** L'engin dont on lit les caractéristiques (lot P6) : la monture
+        DÉCLARÉE sur la piste d'abord — elle seule sait qu'on a sauté dans un
+        taxi que personne ne possède —, le premier véhicule déployé depuis
+        l'équipement en repli, pour le rigger qui joue sa propre moto. */
+    _engin(pnj, ride) {
+      if (ride) return ride;
+      if (typeof Vehicles === "undefined" || !pnj) return null;
+      const liste = Vehicles.linkedTo(pnj.id) || [];
+      return liste.find((v) => v.deployed) || liste[0] || null;
     },
     threshold() {
       // Seuil de manœuvre : table des seuils de pilotage + modificateur de

@@ -77,6 +77,9 @@ Object.assign(CardRenderer, {
     let combatBody = '<div class="cluster combat-row">';
     const initDetail = `${Utils.attrFullName("RÉA")} ${Actor.attr(pnj, "RÉA")} + ${Utils.attrFullName("INT")} ${Actor.attr(pnj, "INT")}`;
     combatBody += this._initPill(initBase ?? 0, initDice ?? 1, pnj, initDetail);
+    // L'initiative dit QUAND on agit ; la vitesse dit JUSQU'OÙ. Les deux se
+    // lisent ensemble dès qu'une scène bouge (lot P7).
+    combatBody += this._movePill(pnj);
     if (pnj.drainResist != null)
       combatBody += this._rollPill("Drain", Math.max(0, pnj.drainResist - malus6), {
         title: "Résistance au Drain",
