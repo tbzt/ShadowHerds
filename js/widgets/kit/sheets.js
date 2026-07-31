@@ -4,9 +4,10 @@
    FEUILLES DÉPLIABLES — la primitive unique du cockpit (lot A1).
 
    ── Pourquoi ce module existe ────────────────────────────────────────────
-   Le cockpit déplie QUATRE feuilles : les états (`.status-sheet`), les actions
-   (`.action-sheet`), les dégâts (`.react-damage-chips`) et les interruptions
-   (`.react-interrupt-chips`). Elles ont été écrites à trois moments différents
+   Le cockpit déplie CINQ feuilles : les états (`.status-sheet`), les actions
+   (`.action-sheet`), les dégâts (`.react-damage-chips`), les interruptions
+   (`.react-interrupt-chips`) et les usages de Contresort (`.react-cs-chips`).
+   Elles ont été écrites à trois moments différents
    et ont produit DEUX disciplines qui s'ignoraient :
 
      · `toggleActionSheet` / `_toggleStatusSheet` fermaient tous les
@@ -58,6 +59,7 @@ export const Sheets = {
     action: { sel: ".action-sheet", attr: "data-action-sheet" },
     damage: { sel: ".react-damage-chips", attr: "data-damage-for" },
     interrupt: { sel: ".react-interrupt-chips", attr: "data-interrupt-for" },
+    counterspell: { sel: ".react-cs-chips", attr: "data-counterspell-for" },
   },
 
   /** Tous les déclencheurs, pour remettre leur `aria-expanded` à false d'un
@@ -65,7 +67,8 @@ export const Sheets = {
       un déclencheur qui garde son « − » après fermeture ment à l'œil. */
   TRIGGERS:
     '[data-action="status-sheet"], [data-action="action-sheet"],' +
-    '[data-action="react-damage-toggle"], [data-action="react-interrupt-toggle"]',
+    '[data-action="react-damage-toggle"], [data-action="react-interrupt-toggle"],' +
+    '[data-action="react-counterspell-toggle"]',
 
   /** La SEULE feuille ouverte du cockpit : `{ kind, id }`, ou null. État de
       VUE — il vit ici, jamais dans `Encounter.state` ni dans le Storage. */
