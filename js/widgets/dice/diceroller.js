@@ -1387,9 +1387,10 @@ export const DiceRoller = {
     this._prerollReleaseTrap = FocusTrap.activate(p.querySelector(".risk-panel"));
     // B3.2 (C-010) — le focus initial va sur « Lancer les dés », pas sur ✕.
     //
-    // Mesuré (audit, scénario B-sr6) : ce panneau s'ouvre à chaque défense/
-    // encaissement dès qu'un Atout est abordable (mode "panel", par défaut) —
-    // 4 des 7 gestes d'un tour de PJ. Le tap qui ouvre le panneau reste
+    // Mesuré (audit, scénario B-sr6, mode "panel" — DÉFAUT à l'époque, plus
+    // depuis C-010/2026-07-31, cf. settings.js) : ce panneau s'ouvre à chaque
+    // défense/encaissement dès qu'un Atout est abordable — 4 des 7 gestes d'un
+    // tour de PJ. Le tap qui ouvre le panneau reste
     // nécessaire (l'app ne devine pas si le MJ veut dépenser), mais le second
     // geste peut redevenir une touche : `preroll-plain` EST le jet normal
     // (« Lancer les dés », jamais « sans Chance » — cf. commentaire au-dessus),

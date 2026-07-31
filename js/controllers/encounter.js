@@ -3143,22 +3143,23 @@ export const Encounter = {
 
   /** VIS-1 (co-MJ) — Lot 1. Quand la scène vivante compte un participant capable
       de dépenser sa ressource AVANT un jet (Chance SR5 / Atout SR6 ; rien en
-      Anarchy) ET que le pré-jet est actif (défaut « panel » depuis V3), EXPLIQUE
-      une fois cette affordance — un panneau/une pastille s'ouvre au lancer depuis
-      la carte — en rappelant qu'elle est désactivable dans les Paramètres. Le
-      panneau s'auto-annonce déjà ; le nudge le pré-explique et dit comment le
-      couper, ce que le panneau ne fait pas. Capacité lue par contrat neutre
-      `DiceRoller.preRollEdgeOptions` (0 branche d'édition) : un combattant
-      ad-hoc/sans attrs (minuteur « ALARME », ligne libre) renvoie `[]` → jamais
-      candidat, garde-fou « combattant qui n'en est pas » préservé. Rien à
-      expliquer si le MJ a déjà coupé le pré-jet (« off »). Gardes chères-en-dernier :
-      pas de scan une fois vu (appelé à chaque `_commit`). Le throttle « 1
-      nudge/scène » (réarmé par `App.context.setScene`) fait passer open-spectator
-      d'abord ; ce nudge suit à une scène ultérieure. */
+      Anarchy) ET que le pré-jet est actif (défaut « pill » depuis C-010,
+      2026-07-31 — « panel » depuis V3 jusque-là), EXPLIQUE une fois cette
+      affordance — texte adapté au MODE réel (panneau qui intercepte le tap, ou
+      pastille distincte à côté du jet) — en rappelant qu'elle est réglable dans
+      les Paramètres. Capacité lue par contrat neutre `DiceRoller.
+      preRollEdgeOptions` (0 branche d'édition) : un combattant ad-hoc/sans
+      attrs (minuteur « ALARME », ligne libre) renvoie `[]` → jamais candidat,
+      garde-fou « combattant qui n'en est pas » préservé. Rien à expliquer si
+      le MJ a déjà coupé le pré-jet (« off »). Gardes chères-en-dernier : pas de
+      scan une fois vu (appelé à chaque `_commit`). Le throttle « 1 nudge/scène »
+      (réarmé par `App.context.setScene`) fait passer open-spectator d'abord ;
+      ce nudge suit à une scène ultérieure. */
   _maybeNudgePreRollEdge() {
     if (!this.activeDossierId) return; // pas de scène vivante
     if (Nudge.seen("preroll-edge")) return; // déjà expliqué une fois
-    if (DiceRoller.preRollMode() === "off") return; // MJ a coupé → rien à expliquer
+    const mode = DiceRoller.preRollMode();
+    if (mode === "off") return; // MJ a coupé → rien à expliquer
     let cand = null;
     for (const c of this.state.combatants) {
       const pnj = PnjLookup.find(c.pnjId);
@@ -3170,10 +3171,14 @@ export const Encounter = {
     if (!cand) return;
     const res =
       (App.getEditionModule(cand.edition).preRollEdge || {}).resourceLabel || "Edge";
+    const geste =
+      mode === "panel"
+        ? `un panneau s'ouvre au lancer depuis sa carte (repousser une limite, dés explosifs…)`
+        : `un petit bouton « ${res} » apparaît à côté du jet — le tap nu, lui, lance directement`;
     Nudge.offer("preroll-edge", {
       anchor: "nav-combat",
       title: `${res} avant le jet`,
-      body: `${cand.name} peut améliorer un jet avant de lancer (${res}) : un panneau s'ouvre au lancer depuis sa carte (repousser une limite, dés explosifs…). Désactivable dans Paramètres › Lanceur de dés.`,
+      body: `${cand.name} peut améliorer un jet avant de lancer (${res}) : ${geste}. Réglable dans Paramètres › Lanceur de dés.`,
       cta: { label: "Voir les réglages", run: () => App.showPanel("settings") },
     });
   },

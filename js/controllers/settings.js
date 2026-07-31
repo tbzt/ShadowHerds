@@ -31,11 +31,20 @@ export const Settings = {
     defaultCount: 6,
     // Surface de l'Edge PRÉ-jet (SR5/SR6) : "off" (aucun), "panel" (panneau
     // avant le jet) ou "pill" (mini-menu ancré à la pastille roulable). Par
-    // appareil, non synchronisé. Défaut "panel" (depuis V3) — le panneau ne
-    // s'ouvre QUE quand une dépense d'Edge est abordable OU (SR6) quand une
-    // attaque permet de gagner de l'Atout ; sinon le tap reste un lancer
-    // immédiat. Le MJ peut revenir à "off" dans les Paramètres.
-    preRollEdge: "panel",
+    // appareil, non synchronisé.
+    //
+    // Défaut "pill" depuis C-010 (audit cockpit tactique, 2026-07-31) —
+    // remplace le défaut "panel" tenu depuis la V3. Mesuré : le panel
+    // intercepte le tap sur CHAQUE tir/défense dès qu'un Atout est abordable,
+    // 4 des 7 gestes d'un tour de PJ (`AUDITS/AUDIT_COCKPIT_TACTIQUE_2026-07-29`).
+    // "pill" tient la même promesse (dépense d'Edge visible et accessible)
+    // sans ce coût : le tap nu reste un lancer immédiat, l'Atout devient un
+    // petit bouton distinct à côté (`cardrenderer.js:_edgePrerollHtml`) —
+    // aucun nouveau geste sur le chemin commun, la dépense reste à un tap.
+    // Ne change RIEN pour les profils existants (préférence déjà enregistrée
+    // dans `Storage`, ce défaut ne s'applique qu'à un profil neuf). Le MJ
+    // reste libre de revenir à "panel" ou "off" dans les Paramètres.
+    preRollEdge: "pill",
   },
   getDicePrefs() {
     return { ...this._diceDefaults, ...Storage.getGlobal(this._DICE_KEY, {}) };
