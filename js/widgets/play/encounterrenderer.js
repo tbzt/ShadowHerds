@@ -235,6 +235,7 @@ export const EncounterRenderer = {
       devicesHtml +
       `<div class="encounter-scene-actions">
         ${Encounter.groupStatusAvailable() ? `<button class="btn-secondary btn-small" data-action="group-status" title="Poser le même état sur plusieurs combattants — une fumigène, un gaz, une zone d'effet">⊘ État de groupe</button>` : ""}
+        ${Servers.data.all.length ? `<button class="btn-secondary btn-small" data-action="scene-matrix" title="${Encounter.state.serverId ? "Ouvrir le tiroir Matrice" : "Lier un serveur à la scène"}">⚡ Matrice</button>` : ""}
         <button class="btn-secondary btn-small" data-action="heal-all" title="Réinitialiser les moniteurs de tous les combattants">⛨ Fin de scène — tout soigner</button>
       </div>`;
     this._playFlip(flipRoot, flipPrev);

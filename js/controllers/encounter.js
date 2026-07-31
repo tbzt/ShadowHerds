@@ -2720,6 +2720,9 @@ export const Encounter = {
     this.intrusionFor(id);
     this._commit();
     toast("Serveur affiché dans le tiroir.");
+    // C-020 — la scène vient d'acquérir un serveur, c'est le moment de le
+    // montrer : plus de 4e geste pour rouvrir le tiroir Matrice à la main.
+    this.openMatrixDrawer();
   },
 
   /** Cesse d'afficher le serveur courant dans le tiroir (l'intrusion, elle,
@@ -3915,6 +3918,15 @@ export const Encounter = {
           // E6 — pose de groupe : acte de SCÈNE, d'où son entrée ici et pas
           // sur la fiche, qui garde son geste unitaire inchangé.
           this.openGroupStatus();
+          break;
+        case "scene-matrix":
+          // C-020 — porte de scène vers la Matrice : un serveur déjà lié
+          // ouvre directement son tiroir (1 geste) ; sinon on ouvre le
+          // panneau d'ajout pour en lier un, ce qui rouvre le tiroir tout
+          // seul via linkServer (2 gestes, contre 4 en passant par l'ancien
+          // seul chemin, le tiroir d'ajout non annoncé).
+          if (this.state.serverId) this.openMatrixDrawer();
+          else this.toggleAddPicker();
           break;
         case "focus-combatant":
           this.focusCombatant(id);
