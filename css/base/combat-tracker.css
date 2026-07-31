@@ -1768,6 +1768,21 @@ button.encounter-token-init:active {
   border-radius: var(--radius-lg);
   background: var(--bg-mid);
 }
+/* G4bis : la ligne entière remplace le bouton ✦ disparu (data-action porté par
+   .react-row) — cursor + teinte MAGIE au survol annoncent la cible, comme
+   .encounter-nrow l'annonce déjà pour la ligne narrative. Le glyphe qui
+   marquait le bouton vit désormais dans le nom (`.react-cs-mark`), sobre
+   pour ne pas rivaliser avec lui. */
+.react-row.has-counterspell {
+  cursor: pointer;
+}
+.react-row.has-counterspell:hover {
+  border-color: var(--accent-magic);
+  background: color-mix(in srgb, var(--accent-magic) 8%, var(--bg-mid));
+}
+.react-cs-mark {
+  color: var(--accent-magic);
+}
 
 /* Bilan de round (E3b) — la ligne reprend EXACTEMENT la grammaire de
    .react-row (qui · quoi · le geste à droite) : c'est la même lecture, à un

@@ -2005,9 +2005,21 @@ export const EncounterRenderer = {
     // le ⛉ de défense depuis E4.
     const cs = !pnj._adhoc && mod && mod.counterspellFor ? mod.counterspellFor(pnj) : null;
     const csOuvert = Sheets.isOpen("counterspell", pnj.id);
-    const csBtn = !cs
-      ? ""
-      : `<button class="react-btn react-counterspell-btn${csOuvert ? " is-open" : ""}" data-action="react-counterspell-toggle" data-id="${pnj.id}" aria-expanded="${csOuvert}" title="${Utils.escHtml(`${cs.label} (${cs.skill}, ${cs.page}) — ${cs.uses.length} usages : ${cs.uses.map((u) => u.label).join(", ")}. ${cs.cost}`)}" aria-label="${Utils.escHtml(`${cs.label} — ${name}`)}"><span class="react-glyph" aria-hidden="true">✦</span></button>`;
+    // La ligne ENTIÈRE est le déclencheur (plus de bouton ✦ à part) — même
+    // idiome que `.encounter-nrow` (div role="button" qui enveloppe des
+    // boutons enfants sans leur voler le tap, `closest` les départage). Gain :
+    // une cible plus grande et plus « affordante » qu'une puce de 40px perdue
+    // dans la grappe, et une puce de moins à caser dans une ligne déjà dense.
+    const csTitle = cs
+      ? `${cs.label} (${cs.skill}, ${cs.page}) — ${cs.uses.length} usages : ${cs.uses.map((u) => u.label).join(", ")}. ${cs.cost}`
+      : "";
+    const csRowAttrs = cs
+      ? ` data-action="react-counterspell-toggle" data-id="${pnj.id}" role="button" tabindex="0" aria-expanded="${csOuvert}" title="${Utils.escHtml(csTitle)}" aria-label="${Utils.escHtml(`${cs.label} — ${name}`)}"`
+      : "";
+    // Marque décorative (pas un contrôle) : le glyphe qui annonçait Contresort
+    // sur le bouton disparu vit désormais dans le nom, pour que « ce PNJ
+    // contre les sorts » reste visible sans redépendre du tap.
+    const csMark = cs ? `<span class="react-glyph react-cs-mark" aria-hidden="true">✦</span> ` : "";
     // Encaissement : uniquement si l'édition résout les dommages par un JET
     // (SR5/SR6). Anarchy compare la VD à un seuil (p.68) → pas de jet, bouton omis.
     const soak = pnj.damageResist || 0;
@@ -2054,9 +2066,9 @@ export const EncounterRenderer = {
     const statusBtn = st ? st.plus : "";
     const statusChips = st && st.chips ? `<span class="cluster react-states">${st.chips}</span>` : "";
     const statusSheet = st ? st.sheet : "";
-    return `<div class="cluster react-row">
-        <span class="react-name">${name}</span>
-        <span class="cluster cluster--end react-buttons">${defBtn}${fdBtn}${csBtn}${soakBtn}${damageBtn}${statusBtn}${peek}</span>
+    return `<div class="cluster react-row${cs ? " has-counterspell" : ""}"${csRowAttrs}>
+        <span class="react-name">${csMark}${name}</span>
+        <span class="cluster cluster--end react-buttons">${defBtn}${fdBtn}${soakBtn}${damageBtn}${statusBtn}${peek}</span>
         ${statusChips}${statusSheet}
       </div>${interruptBody}${csBody}${chipsBody}`;
   },
