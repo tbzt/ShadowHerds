@@ -2050,6 +2050,10 @@ export const Encounter = {
     // forcer sa reconstruction pour que les jetons reflètent la nouvelle valeur.
     EncounterRenderer._activeCardId = null;
     this._commit();
+    // Audit « le feel détruit », lot 3/3 — un seul jeton pulse : celui qui
+    // vient de traverser le seuil (gain ou dépense pulsent le même jeton, le
+    // plus BAS des deux bornes, cf. EncounterRenderer._pulseToken).
+    EncounterRenderer._pulseToken(`.edge-token[data-id="${pnjId}"][data-idx="${Math.min(before, next)}"]`);
   },
 
   /** Ajuste les Points d'Anarchy de scène d'un combattant (Anarchy 2.0,
@@ -2112,6 +2116,9 @@ export const Encounter = {
     c.actionsUsed[key] = cur === idx + 1 ? idx : idx + 1;
     EncounterRenderer._activeCardId = null;
     this._commit();
+    // Audit « le feel détruit », lot 3/3 — un seul jeton pulse : celui tapé
+    // (data-idx porte déjà l'index cliqué, cf. EncounterRenderer._pulseToken).
+    EncounterRenderer._pulseToken(`.action-token[data-id="${pnjId}"][data-key="${key}"][data-idx="${idx}"]`);
   },
 
   /** Annonce les états dont la durée est échue à ce changement de round, sans

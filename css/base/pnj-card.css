@@ -864,6 +864,17 @@
   border-color: var(--text-dim);
   color: var(--text);
 }
+/* Accusé « dernier état touché » (audit « le feel détruit », lot 1/3,
+   2026-07-31) — patron `.action-pick.is-last` (combat-tracker), porté par la
+   DONNÉE (pnj._lastStatusTouch) puisque poser un état change la FORME de la
+   carte : le patch en place n'y est pas applicable, le re-rendu complet est
+   légitime, et un simple `:active` mourrait avec le nœud détruit à chaque
+   coup. Canal DISJOINT de la sévérité (.is-danger/.is-warning/.is-info/
+   .is-accent restent sur border-color) : un anneau, pas une couleur, pour
+   que les deux se lisent en même temps sans se marcher dessus. */
+.status.is-last-touch {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
 /* variante « remplie » (cf. .encounter-down-badge/.encounter-delayed-badge) :
    fond teinté en plus du liseré, pour un badge qui doit ressortir davantage
    qu'un simple état posé. `currentColor` reprend la teinte déjà posée par

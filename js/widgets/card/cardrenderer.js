@@ -2165,7 +2165,15 @@ export const CardRenderer = {
     const suffixe =
       cap === 1 ? "" : cap === Infinity ? ` ${s.level}` : ` ${this._roman(s.level)}`;
     const info = [`${s.name}${suffixe} — ${s.page}`, ...(s.lines || [])].join("\n• ");
-    return `<span class="tag drug-tag status is-on" role="button" tabindex="0"
+    // Accusé « dernier état touché » (audit « le feel détruit », lot 1/3) :
+    // poser un état change la FORME de la carte (tag ajouté/retiré/renuméroté),
+    // donc le patch en place n'est PAS applicable ici — le re-rendu complet
+    // reste légitime. Même patron que `.action-pick.is-last` : l'accusé est
+    // porté par la DONNÉE (pnj._lastStatusTouch), pas par l'identité DOM, et
+    // survit donc au re-rendu qui détruirait n'importe quelle classe posée à
+    // la main. Écrit par UI.stepStatus/setStatus, lu ici seulement.
+    const dernier = pnj._lastStatusTouch === s.key ? " is-last-touch" : "";
+    return `<span class="tag drug-tag status is-on${dernier}" role="button" tabindex="0"
       data-action="status-step" data-id="${pnj.id}" data-status="${s.key}"
       title="${this._esc(info)}">${this._esc(s.name)}${suffixe}<span class="status-clear" role="button" tabindex="0" data-action="status-clear" data-id="${pnj.id}" data-status="${s.key}" aria-label="Retirer ${this._esc(s.name)}" title="Retirer">✕</span></span>`;
   },
@@ -2191,8 +2199,17 @@ export const CardRenderer = {
     const cat = deps.Statuses.catalog(pnj);
     const rapides = cat.filter((s) => s.quick);
     const reste = cat.filter((s) => !s.quick);
-    const puce = (s) =>
-      `<button type="button" class="tag status-pick" data-action="status-set" data-id="${pnj.id}" data-status="${s.key}" title="${this._esc([`${s.name} — ${s.page}`, ...(s.lines || [])].join("\n• "))}">${this._esc(s.name)}</button>`;
+    // Gisement gratuit (audit « le feel détruit », lot 1/3) : `.status-pick`
+    // du catalogue de pose n'avait NI `aria-pressed` NI `.is-on` pour un état
+    // déjà posé, alors que la donnée existe (`deps.Statuses.level`) — la même
+    // classe que les puces de mode/greffon du pré-jet (D5), jamais câblée ici.
+    // Le MJ ne voyait pas, en cherchant « À terre » dans le second étage, qu'il
+    // avait déjà posé « Aveuglé ». `.status-pick.is-on` existe déjà en CSS
+    // (interactive-content.css), seul le calcul manquait.
+    const puce = (s) => {
+      const on = deps.Statuses.level(pnj, s.key) > 0;
+      return `<button type="button" class="tag status-pick${on ? " is-on" : ""}" data-action="status-set" data-id="${pnj.id}" data-status="${s.key}" aria-pressed="${on}" title="${this._esc([`${s.name} — ${s.page}`, ...(s.lines || [])].join("\n• "))}">${this._esc(s.name)}</button>`;
+    };
     // A1 — l'ouverture SURVIT au re-rendu, comme celle de la feuille d'actions :
     // poser un état déclenche `notifyPnjChanged`, donc un re-rendu, et une
     // feuille qui se referme à chaque pose oblige à la rouvrir entre chaque —
@@ -2849,6 +2866,15 @@ export const CardRenderer = {
         // au PLUS PROCHE [data-action] : un clic sur le ✕ résout `status-clear`
         // et jamais `status-step`, sans avoir à couper la propagation.
         case "status-clear":
+          // Feel (audit « le feel détruit », lot 1/3, 2026-07-31) — aucune des
+          // trois mutations d'état ne vibrait : `_afterStatusChange` reconstruit
+          // la carte entière (`CardRenderer.refresh`), donc même le flash
+          // `:active` natif meurt avec le nœud tapé. Haptique posée au SITE DE
+          // DISPATCH, comme `action-use` plus bas — jamais dans
+          // `UI.stepStatus`/`setStatus`, qui n'ont aucun moyen de savoir si
+          // l'appelant est un geste délibéré du MJ ou une purge de masse
+          // (`clearStatuses`, qui ne passe pas par ce dispatch).
+          Utils.haptic(10);
           UI.setStatus(id, actionEl.dataset.status, 0);
           break;
         // Poser depuis la feuille et monter d'un cran sur un état déjà posé
@@ -2857,6 +2883,7 @@ export const CardRenderer = {
         // comportement parce qu'il n'y a qu'une règle.
         case "status-set":
         case "status-step":
+          Utils.haptic(10);
           UI.stepStatus(id, actionEl.dataset.status);
           break;
         case "status-sheet":

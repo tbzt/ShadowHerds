@@ -570,6 +570,11 @@ export const UI = {
     const pnj = PnjLookup.find(pnjId);
     if (!pnj || !key) return;
     Statuses.step(pnj, key);
+    // Accusé « dernier état touché » (audit « le feel détruit », lot 1/3) —
+    // lu par CardRenderer._statusTag (`.status.is-last-touch`), porté par la
+    // donnée pour survivre au re-rendu complet de la carte. Cf. commentaire
+    // du champ ci-dessous.
+    pnj._lastStatusTouch = key;
     this._afterStatusChange(pnj);
   },
 
@@ -579,6 +584,7 @@ export const UI = {
     const pnj = PnjLookup.find(pnjId);
     if (!pnj || !key) return;
     Statuses.set(pnj, key, level | 0);
+    pnj._lastStatusTouch = key;
     this._afterStatusChange(pnj);
   },
 

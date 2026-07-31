@@ -1248,7 +1248,14 @@ export const DiceRoller = {
         // qu'on tape tire toujours d'une façon ou d'une autre.
         a.chosenMode = m.getAttribute("data-preroll-mode");
         Utils.haptic(10); // le choix se sent, comme il se voit (`.is-on`)
-        this._renderAttackSection();
+        // Audit « le feel détruit », lot 2/3 — un `:active` se perd à CHAQUE
+        // sélection de mode : la réécriture complète de `#preroll-attack`
+        // détruit le nœud sous le doigt, donc la relaxation `scale(0.96)→1`
+        // n'a plus rien à animer. `_patchAttackSelection` mute les classes en
+        // place quand rien de structurel ne change (patron `_patchMonitorDOM`) ;
+        // repli sur le rendu complet au premier affichage ou si la structure
+        // n'est pas celle attendue.
+        if (!this._patchAttackSelection()) this._renderAttackSection();
         return;
       }
       const g = e.target.closest("[data-preroll-graft]");
@@ -1256,7 +1263,7 @@ export const DiceRoller = {
         const k = g.getAttribute("data-preroll-graft");
         a.chosenGraft = a.chosenGraft === k ? null : k;
         Utils.haptic(10);
-        this._renderAttackSection();
+        if (!this._patchAttackSelection()) this._renderAttackSection();
         return;
       }
       // Les deux commandes de RECUL rendues au panneau (F5h) : elles mutent la
@@ -1496,6 +1503,50 @@ export const DiceRoller = {
         return `<div class="cluster preroll-row"><span class="preroll-row-lbl">${esc(grp.label)}</span>${chips}</div>`;
       })
       .join("");
+  },
+
+  /** Patch ciblé d'une sélection de mode/greffon (audit « le feel détruit »,
+      lot 2/3, 2026-07-31) — SEUL `.is-on`/`aria-pressed` et le verdict changent
+      quand on choisit un mode ou un greffon : les badges de coût
+      (`weaponModeCost`, `g.cost`) et les titres ne dépendent QUE de données
+      statiques à l'ouverture du panneau (chargeur, mémo de scène, Atout
+      disponible), jamais de `chosenMode`/`chosenGraft` — vérifié en lisant
+      `_renderAttackSection` avant d'écrire ce patch, pas supposé. Patcher ces
+      deux attributs en place laisse le nœud VIVANT, donc son `:active` joue
+      normalement — contrairement au `el.innerHTML` complet que ce patch
+      remplace pour ce cas précis.
+
+      Renvoie `false` si la structure attendue n'est pas là (premier rendu,
+      ou un autre chemin — crosse/recul/rechargement — a changé autre chose
+      que la sélection) : l'appelant retombe alors sur `_renderAttackSection`,
+      seul habilité à reconstruire. Jamais l'inverse : ce patch ne construit
+      rien, il ne fait que muter ce qui existe déjà. */
+  _patchAttackSelection() {
+    const el = document.getElementById("preroll-attack");
+    const a = this._preRoll && this._preRoll.attack;
+    if (!el || !a) return false;
+    const modeBtns = el.querySelectorAll("[data-preroll-mode]");
+    const graftBtns = el.querySelectorAll("[data-preroll-graft]");
+    const verdictEl = el.querySelector(".preroll-verdict");
+    if (!modeBtns.length && !graftBtns.length) return false;
+    modeBtns.forEach((b) => {
+      const on = b.getAttribute("data-preroll-mode") === a.chosenMode;
+      b.classList.toggle("is-on", on);
+      b.setAttribute("aria-pressed", String(on));
+    });
+    graftBtns.forEach((b) => {
+      const on = b.getAttribute("data-preroll-graft") === a.chosenGraft;
+      b.classList.toggle("is-on", on);
+      b.setAttribute("aria-pressed", String(on));
+    });
+    // Le verdict ne dépend que du mode retenu (_modeInfo ne lit que `m`),
+    // jamais du greffon — recalculé dans les deux cas, idempotent.
+    const retenu = a.modes.find((m) => m.key === a.chosenMode);
+    if (retenu && verdictEl) {
+      verdictEl.textContent = this._modeInfo(retenu);
+      verdictEl.classList.toggle("is-halt", !!retenu.res.court);
+    }
+    return true;
   },
 
   /** Rend la section d'ATTAQUE (lot F5c) : mode de tir, état du chargeur,
