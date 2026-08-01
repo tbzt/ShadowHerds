@@ -52,16 +52,35 @@ export const Movement = {
   /** Le déplacement RACIAL, quand la forme du personnage en a un propre —
       un centaure ne court pas comme un humain, et le livre le chiffre.
 
-      Il vit sur l'entrée de métavariante (champ `move`), à côté du trait qui
-      l'écrit en clair : le texte est ce que le lecteur lit, le champ est ce
-      avec quoi l'app calcule. `null` pour un métatype de base, et `null` en
-      SR6 et Anarchy — leurs tables de métavariantes ne chiffrent aucun
-      déplacement, et on ne leur en prête pas un. */
+      DEUX porteurs, dans cet ordre :
+      1. la FICHE elle-même (`pnj.move`) — c'est le cas des créatures, dont les
+         livres chiffrent le déplacement espèce par espèce, aux DEUX éditions ;
+      2. à défaut, l'entrée de métavariante (champ `move`), à côté du trait qui
+         l'écrit en clair : le texte est ce que le lecteur lit, le champ est ce
+         avec quoi l'app calcule.
+
+      `null` pour un métatype de base ; `null` aussi pour les métavariantes SR6
+      et Anarchy, dont les tables ne chiffrent aucun déplacement — on ne leur en
+      prête pas un. (Cette dernière réserve ne vaut QUE pour les métavariantes :
+      une créature SR6 a bien son propre déplacement, cf. point 1.) */
   racial(pnj, edition) {
-    if (typeof Metavariants === "undefined" || !pnj || !pnj.meta) return null;
+    if (!pnj) return null;
+    // Une CRÉATURE porte son déplacement sur sa propre fiche : les livres le
+    // chiffrent par espèce (SR5 « Déplacement : ×2 / ×6 / +4 », multiplicateurs
+    // d'Agilité comme les métavariantes ; SR6 « DÉPLACEMENT 10/25/+2 », en
+    // mètres ABSOLUS — d'où `abs: true`). Il prime sur toute table de métatype :
+    // un requin ne marche pas comme un humain.
+    if (pnj.move) return pnj.move;
+    if (typeof Metavariants === "undefined" || !pnj.meta) return null;
     const ed = this._edition(pnj, edition);
     const r = Metavariants.use(ed).resolve(pnj.meta);
     return (r && r.move) || null;
+  },
+
+  /** Cette fiche est-elle une créature ? `Creatures.spawn` pose `type` ;
+      `meta` sert de repli pour une fiche ancienne ou saisie à la main. */
+  estCreature(pnj) {
+    return !!pnj && (pnj.type === "creature" || pnj.meta === "Créature");
   },
 
   /** La souche (« Troll » pour un Cyclope) : c'est elle que porte la table de
@@ -87,7 +106,14 @@ export const Movement = {
     const ed = this._edition(pnj, edition);
     const m = this.use(ed);
     if (!m || !m.rates || !pnj) return null;
-    const base = m.rates(pnj, { racial: this.racial(pnj, ed), baseMeta: this.baseMeta(pnj, ed) });
+    const racial = this.racial(pnj, ed);
+    // ⚠ Une créature SANS déplacement au catalogue ne reçoit RIEN plutôt que
+    // la table métahumaine. Le repli « un métatype inconnu ne vaut pas un
+    // trou » est bon pour un métahumain ; appliqué à une bête, il produit un
+    // chiffre faux ET crédible — mesuré : le requin « marchait 8 m et courait
+    // 16 m » en SR5. Un blanc se voit, un mensonge non.
+    if (!racial && this.estCreature(pnj)) return null;
+    const base = m.rates(pnj, { racial, baseMeta: this.baseMeta(pnj, ed) });
     if (!base || !base.steps || !base.steps.length) return null;
     return (m.statusRates && m.statusRates(base, statuses || [])) || base;
   },

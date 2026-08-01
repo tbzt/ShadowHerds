@@ -50,7 +50,7 @@ export const Creatures = {
       traits: [["Sens accrus", "Odorat, ouïe"]],
     },
     loup: {
-      label: "Loup", a: [6, 3, 5, 5, 3, 2, 4, 3, null],
+      label: "Loup", move: { walk: 2, run: 8, sprint: 4 }, a: [6, 3, 5, 5, 3, 2, 4, 3, null],
       init: 9, dice: 2, mon: [10, 10], armure: 0, lim: [6, 4, 5],
       habitat: ["forets", "montagnes"],
       desc: "Prédateur de meute, chasse en groupe dans les forêts et zones sauvages en marge des métroplex.",
@@ -60,7 +60,7 @@ export const Creatures = {
       traits: [["Sens accrus", "Odorat, ouïe"]],
     },
     felin: {
-      label: "Grand félin", a: [6, 5, 4, 5, 3, 2, 4, 3, null],
+      label: "Grand félin", move: { walk: 2, run: 6, sprint: 4 }, a: [6, 5, 4, 5, 3, 2, 4, 3, null],
       init: 8, dice: 2, mon: [11, 10], armure: 0, lim: [7, 4, 5],
       habitat: ["jungles", "forets"],
       desc: "Grand félin solitaire (puma, jaguar, tigre selon la région), chasseur embusqué redoutable en milieu naturel.",
@@ -70,7 +70,7 @@ export const Creatures = {
       traits: [],
     },
     requin: {
-      label: "Requin", a: [5, 4, 5, 5, 3, 1, 4, 1, null],
+      label: "Requin", move: { walk: 3, run: 8, sprint: 4 }, a: [5, 4, 5, 5, 3, 1, 4, 1, null],
       init: 9, dice: 1, mon: [11, 10], armure: 2, lim: [7, 3, 4],
       habitat: ["oceans"],
       desc: "Prédateur marin attiré par le sang et les vibrations, danger classique des zones côtières et récifs.",
@@ -80,7 +80,7 @@ export const Creatures = {
       traits: [["Armure 2", null]],
     },
     barghest: {
-      label: "Barghest", a: [8, 5, 6, 6, 4, 2, 5, 5, 5],
+      label: "Barghest", move: { walk: 2, run: 6, sprint: 4 }, a: [8, 5, 6, 6, 4, 2, 5, 5, 5],
       init: 11, dice: 2, mon: [12, 10], armure: 3, lim: [9, 5, 7],
       habitat: ["urbain", "forets"],
       desc: "Molosse spectral des légendes britanniques, hante ruines et friches industrielles en meutes réduites.",
@@ -90,7 +90,7 @@ export const Creatures = {
       traits: [["Hurlement paralysant", "Paralyse les proies saisies de terreur"], ["Immunité", "Hurlement de barghest"], ["Nature duale", null], ["Peur", null], ["Sens accrus", "Odorat, ouïe, sonar"]],
     },
     basilic: {
-      label: "Basilic", a: [6, 3, 3, 7, 5, 1, 3, 1, 4],
+      label: "Basilic", move: { walk: 1, run: 5, sprint: 1 }, a: [6, 3, 3, 7, 5, 1, 3, 1, 4],
       init: 6, dice: 1, mon: [11, 11], armure: 7, lim: [8, 4, 5],
       habitat: ["marais", "urbain"],
       desc: "Grand reptile éveillé au regard pétrifiant, se terre dans les égouts, marais et zones humides désertées.",
@@ -100,7 +100,7 @@ export const Creatures = {
       traits: [["Pétrification", "Son regard pétrifie ses proies"], ["Vulnérabilité", "Son propre regard (-3 dés au test de résistance)"]],
     },
     chienEnfer: {
-      label: "Chien de l'enfer", a: [6, 4, 5, 6, 4, 2, 4, 3, 5],
+      label: "Chien de l'enfer", move: { walk: 2, run: 6, sprint: 4 }, a: [6, 4, 5, 6, 4, 2, 4, 3, 5],
       init: 10, dice: 3, mon: [11, 10], armure: 2, lim: [8, 4, 5],
       habitat: ["deserts", "urbain"],
       desc: "Canidé éveillé crachant le feu, associé aux légendes de chiens infernaux gardiens de lieux maudits.",
@@ -120,7 +120,7 @@ export const Creatures = {
       traits: [["Conscience", null], ["Nature duale", null], ["Sens accrus", "Odorat, ouïe"], ["Faiblesses", "Allergie (lumière solaire, modérée), Exigence alimentaire (chair métahumaine), Sens réduits (aveugle)"]],
     },
     ratDiable: {
-      label: "Rat du diable", a: [2, 5, 5, 1, 3, 2, 5, 5, 4],
+      label: "Rat du diable", move: { walk: 1, run: 2, sprint: 1 }, a: [2, 5, 5, 1, 3, 2, 5, 5, 4],
       init: 10, dice: 1, mon: [9, 10], armure: 0, lim: [3, 4, 7],
       habitat: ["urbain"],
       desc: "Rat éveillé meneur de meutes de rats ordinaires, endémique des sous-sols et égouts urbains.",
@@ -130,7 +130,7 @@ export const Creatures = {
       traits: [["Contrôle animal", "Rats ordinaires"], ["Dissimulation", "Personnelle seulement"], ["Immunité", "Toxines"], ["Faiblesses", "Allergie (lumière solaire, modérée)"]],
     },
     cocatrix: {
-      label: "Cocatrix", a: [4, 5, 4, 4, 4, 2, 3, 1, 4],
+      label: "Cocatrix", move: { walk: 2, run: 8, sprint: 3 }, a: [4, 5, 4, 4, 4, 2, 3, 1, 4],
       init: 7, dice: 1, mon: [10, 10], armure: 1, lim: [6, 4, 4],
       habitat: ["marais", "forets"],
       desc: "Petit reptile éveillé au toucher paralysant, immunisé à son propre poison, chasse à l'affût en zone humide.",
@@ -140,7 +140,7 @@ export const Creatures = {
       traits: [["Armure 1", null], ["Immunité", "Son propre toucher"], ["Toucher paralysant", "Queue"]],
     },
     sasquatch: {
-      label: "Sasquatch", a: [8, 3, 4, 7, 3, 3, 5, 3, 4],
+      label: "Sasquatch", move: { walk: 2, run: 4, sprint: 2 }, a: [8, 3, 4, 7, 3, 3, 5, 3, 4],
       init: 9, dice: 1, mon: [12, 10], armure: 0, lim: [9, 5, 5],
       habitat: ["forets", "montagnes"],
       desc: "Grand hominidé éveillé et discret des forêts profondes, imite les cris d'animaux pour égarer les intrus.",
@@ -156,7 +156,7 @@ export const Creatures = {
       ],
     },
     dragonOccidental: {
-      label: "Dragon occidental", a: [18, 7, 8, 40, 8, 8, 8, 8, 10],
+      label: "Dragon occidental", move: { walk: 2, run: 4, sprint: 4 }, a: [18, 7, 8, 40, 8, 8, 8, 8, 10],
       init: 16, dice: 2, mon: [17, 12], armure: 18, lim: [36, 11, 12],
       habitat: ["montagnes"],
       desc: "Grand dragon ailé occidental, s'installe dans des repaires montagneux et amasse fortune et pouvoir.",
@@ -169,7 +169,7 @@ export const Creatures = {
       traits: [["Armure mystique renforcée", "Volonté (armure mystique 8R en plus de l'armure physique)"], ["Armure renforcée", "Constitution"], ["Attaque élémentaire", "Feu (souffle)"], ["Conscience", null], ["Draconique", null], ["Nature duale", null], ["Sens accrus", "Audition à large spectre, odorat, vision nocturne, vision thermographique"], ["Magicien", "Connaît la plupart des sorts"], ["Allonge", "+2"], ["Pouvoir individuel (choix du MJ)", "Un pouvoir supplémentaire parmi : Compulsion, Contrôle animal, Influence, Peur, Salive corrosive, Souffle nocif, Venin"]],
     },
     dragonOriental: {
-      label: "Dragon oriental", a: [17, 8, 8, 35, 9, 10, 8, 9, 10],
+      label: "Dragon oriental", move: { walk: 2, run: 4, sprint: 4 }, a: [17, 8, 8, 35, 9, 10, 8, 9, 10],
       init: 16, dice: 2, mon: [17, 13], armure: 17, lim: [32, 13, 13],
       habitat: ["oceans"],
       desc: "Long dragon serpentiforme lié aux eaux et à la pluie dans les traditions d'Asie de l'Est ; la variante Sirrush est présente en Asie mineure avec des statistiques identiques.",
@@ -182,7 +182,7 @@ export const Creatures = {
       traits: [["Armure mystique renforcée", "Volonté (armure mystique 9R en plus de l'armure physique)"], ["Armure renforcée", "Constitution"], ["Attaque élémentaire", "Feu (souffle)"], ["Conscience", null], ["Draconique", null], ["Nature duale", null], ["Sens accrus", "Audition à large spectre, odorat, vision nocturne, vision thermographique"], ["Magicien", "Connaît la plupart des sorts"], ["Allonge", "+2"], ["Pouvoir individuel (choix du MJ)", "Un pouvoir supplémentaire parmi : Compulsion, Contrôle animal, Influence, Peur, Salive corrosive, Souffle nocif, Venin"]],
     },
     serpentPlumes: {
-      label: "Serpent à plumes", a: [15, 9, 10, 30, 10, 9, 9, 8, 10],
+      label: "Serpent à plumes", move: { walk: 3, run: 5, sprint: 5 }, a: [15, 9, 10, 30, 10, 9, 9, 8, 10],
       init: 19, dice: 3, mon: [16, 13], armure: 15, lim: [29, 13, 12],
       habitat: ["jungles"],
       desc: "Dragon ailé à plumes des traditions mésoaméricaines, figure divine associée à Quetzalcoatl.",
@@ -850,7 +850,7 @@ export const Creatures = {
       traits: [["Armure 1", null], ["Sens accrus", "Ouïe, odorat"]],
     },
     felin: {
-      label: "Grand félin", a: [5, 5, 4, 4, 1, 1, 4, 3, null],
+      label: "Grand félin", move: { abs: true, walk: 10, run: 25, sprint: 2 }, a: [5, 5, 4, 4, 1, 1, 4, 3, null],
       sd: 7, init: 8, dice: 2, me: 11, atkPool: 8,
       habitat: ["jungles", "forets"],
       desc: "Grand félin solitaire, chasseur embusqué redoutable en milieu naturel.",
@@ -860,7 +860,7 @@ export const Creatures = {
       traits: [["Armure 2", null], ["Sens accrus", "Vision nocturne, odorat"]],
     },
     requin: {
-      label: "Requin", a: [5, 3, 5, 5, 2, 1, 4, 1, null],
+      label: "Requin", move: { abs: true, walk: 10, run: 20, sprint: 3 }, a: [5, 3, 5, 5, 2, 1, 4, 1, null],
       sd: 11, init: 9, dice: 1, me: 11, atkPool: 10,
       habitat: ["oceans"],
       desc: "Prédateur marin attiré par le sang et les vibrations, danger classique des zones côtières.",
@@ -880,7 +880,7 @@ export const Creatures = {
       traits: [["Armure 4", null], ["Hurlement paralysant", null], ["Immunité", "Hurlement du barghest"], ["Nature duale", null], ["Peur", null], ["Sens accrus", "Ouïe, odorat, sonar"]],
     },
     cocatrix: {
-      label: "Cocatrix", a: [3, 4, 3, 3, 3, 1, 2, 1, 5],
+      label: "Cocatrix", move: { abs: true, walk: 10, run: 25, sprint: 2 }, a: [3, 4, 3, 3, 3, 1, 2, 1, 5],
       sd: 4, init: 5, dice: 2, me: 10, atkPool: 6,
       habitat: ["marais", "forets"],
       desc: "Petit reptile éveillé au toucher paralysant, immunisé à son propre poison.",
@@ -890,7 +890,7 @@ export const Creatures = {
       traits: [["Armure 1", null], ["Toucher paralysant", "Queue"], ["Immunité", "Son propre toucher"]],
     },
     goule: {
-      label: "Goule", a: [6, 2, 4, 5, 4, 1, 3, 1, 1],
+      label: "Goule", move: { abs: true, walk: 12, run: 18, sprint: 1 }, a: [6, 2, 4, 5, 4, 1, 3, 1, 1],
       sd: 7, init: 7, dice: 1, me: 13, atkPool: 9,
       habitat: ["urbain"],
       desc: "Infecté HMHVV nécrophage, aveugle mais vif d'oreille et d'odorat, terré dans égouts et bâtiments abandonnés.",
@@ -900,7 +900,7 @@ export const Creatures = {
       traits: [["Armure 1", null], ["Conscience", null], ["Nature duale", null], ["Robuste 2", null], ["Sens accrus", "Ouïe, odorat"], ["Faiblesses", "Allergie (lumière du soleil, modérée), Exigence alimentaire (chair métahumaine), Sens réduit (aveugle)"]],
     },
     ratDiable: {
-      label: "Rat du diable", a: [1, 4, 5, 1, 2, 1, 5, 4, 4],
+      label: "Rat du diable", move: { abs: true, walk: 5, run: 10, sprint: 1 }, a: [1, 4, 5, 1, 2, 1, 5, 4, 4],
       sd: 1, init: 10, dice: 1, me: 9, atkPool: 6,
       habitat: ["urbain"],
       desc: "Rat éveillé meneur de meutes de rats ordinaires, endémique des sous-sols et égouts urbains.",
@@ -910,7 +910,7 @@ export const Creatures = {
       traits: [["Contrôle animal", "Rats communs"], ["Dissimulation", "Personnelle"], ["Immunité", "Toxines"], ["Faiblesses", "Allergie (lumière du soleil, faible)"]],
     },
     ratDemon: {
-      label: "Rat démon", a: [3, 4, 5, 3, 3, 2, 5, 5, 6],
+      label: "Rat démon", move: { abs: true, walk: 5, run: 10, sprint: 1 }, a: [3, 4, 5, 3, 3, 2, 5, 5, 6],
       sd: 5, init: 10, dice: 2, me: 10, atkPool: 8,
       habitat: ["urbain"],
       desc: "Rat éveillé venimeux, meneur de meutes urbaines regroupant plusieurs espèces de rats.",
@@ -920,7 +920,7 @@ export const Creatures = {
       traits: [["Armure 2", null], ["Contrôle animal", "Rats communs, rats du diable, rats d'infortune"], ["Dissimulation", "Personnelle"], ["Immunité", "Toxines"], ["Venin", null], ["Faiblesses", "Allergie (lumière du soleil, grave)"]],
     },
     vampire: {
-      label: "Vampire", a: [3, 2, 4, 3, 3, 2, 3, 4, 5],
+      label: "Vampire", move: { abs: true, walk: 15, run: 20, sprint: 2 }, a: [3, 2, 4, 3, 3, 2, 3, 4, 5],
       sd: 3, init: 7, dice: 2, me: 10, atkPool: 7,
       habitat: ["urbain"],
       desc: "Infecté HMHVV hématophage se fondant parmi les métahumains la nuit venue, drainant l'Essence de ses victimes.",
@@ -930,7 +930,7 @@ export const Creatures = {
       traits: [["Conscience", null], ["Drain d'Essence", null], ["Forme brumeuse", null], ["Immunité", "Vieillissement, pathogènes, toxines"], ["Infection", null], ["Nature duale", null], ["Régénération", null], ["Sens accrus", "Ouïe, odorat, vision thermographique"], ["Faiblesses", "Allergie (bois, grave), Allergie (lumière du soleil, grave), Exigence alimentaire (sang métahumain), Perte d'Essence, Sommeil induit (manque d'air, [Essence] minutes)"]],
     },
     basilic: {
-      label: "Basilic", a: [6, 2, 3, 6, 4, 1, 3, 1, 4],
+      label: "Basilic", move: { abs: true, walk: 5, run: 10, sprint: 1 }, a: [6, 2, 3, 6, 4, 1, 3, 1, 4],
       sd: 13, init: 6, dice: 1, me: 11, atkPool: 9,
       habitat: ["marais", "urbain"],
       desc: "Grand reptile éveillé au regard pétrifiant, se terre dans les égouts et zones humides désertées.",
@@ -940,7 +940,7 @@ export const Creatures = {
       traits: [["Armure 7", null], ["Pétrification", null], ["Faiblesses", "Vulnérabilité (son propre regard)"]],
     },
     chienEnfer: {
-      label: "Chien de l'enfer", a: [6, 4, 5, 4, 3, 2, 4, 3, 5],
+      label: "Chien de l'enfer", move: { abs: true, walk: 10, run: 20, sprint: 4 }, a: [6, 4, 5, 4, 3, 2, 4, 3, 5],
       sd: 10, init: 9, dice: 2, me: 11, atkPool: 9,
       habitat: ["deserts", "urbain"],
       desc: "Canidé éveillé crachant le feu, associé aux légendes de chiens infernaux gardiens de lieux maudits.",
@@ -950,7 +950,7 @@ export const Creatures = {
       traits: [["Armure 4", null], ["Attaque élémentaire", "Feu"], ["Immunité", "Feu"], ["Nature duale", null], ["Peur", null], ["Sens accrus", "Ouïe, vision nocturne, odorat"]],
     },
     cerbere: {
-      label: "Cerbère", a: [6, 4, 5, 6, 4, 2, 6, 3, 5],
+      label: "Cerbère", move: { abs: true, walk: 10, run: 25, sprint: 3 }, a: [6, 4, 5, 6, 4, 2, 6, 3, 5],
       sd: 12, init: 11, dice: 2, me: 15, atkPool: 11,
       habitat: ["forets", "montagnes"],
       desc: "Molosse tricéphale mythique, gardien redouté des lieux sacrés en forêt et montagne.",
@@ -960,7 +960,7 @@ export const Creatures = {
       traits: [["Armure 6", null], ["Dissimulation", "Personnelle"], ["Immunité", "Froid, feu"], ["Mouvement", "Personnelle"], ["Peur", null], ["Recherche", null], ["Robuste 4", null], ["Salive corrosive", null], ["Sens accrus", "Ouïe, vision nocturne, odorat, vision thermographique"]],
     },
     ratInfortune: {
-      label: "Rat d'infortune", a: [1, 3, 4, 0, 2, 1, 3, 2, 6],
+      label: "Rat d'infortune", move: { abs: true, walk: 5, run: 10, sprint: 1 }, a: [1, 3, 4, 0, 2, 1, 3, 2, 6],
       sd: 1, init: 7, dice: 1, me: 9, atkPool: 4,
       habitat: ["urbain"],
       desc: "Petit rat éveillé porte-malheur, capable d'infliger la malchance à distance à ses cibles.",
@@ -3530,6 +3530,11 @@ export const Creatures = {
       creatureKey: key,
       name: c.label,
       meta: "Créature",
+      // Déplacement propre à l'espèce, quand le livre le chiffre (`move` sur
+      // l'entrée de catalogue). Lu par `Movement.racial`, qui le fait primer
+      // sur toute table de métatype. Absent = l'app n'affiche AUCUNE vitesse
+      // plutôt que de prêter à la bête celle d'un métahumain.
+      ...(c.move ? { move: c.move } : {}),
       gender: "",
       archetype: c.label,
       special: "Aucun",

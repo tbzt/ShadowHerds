@@ -1666,7 +1666,26 @@ export const EditionSR6 = {
     /** Les deux états du livre qui touchent la vitesse à pied — cf.
         `statusRates` plus bas, qui dit COMMENT. */
     statusKeys: ["fatigue", "entrave"],
-    rates() {
+    /** Forfaitaire pour les métahumains — le livre ne distingue AUCUN métatype
+        (10 m / 15 m pour tout le monde), contrairement à SR5.
+        En revanche les CRÉATURES ont bien un déplacement propre, en mètres
+        ABSOLUS (« DÉPLACEMENT 10/25/+2 », p.220-223) : quand `racial` en porte
+        un (`abs`), il l'emporte — un grand félin ne court pas à 15 m. */
+    rates(pnj, { racial } = {}) {
+      if (racial && racial.abs) {
+        return {
+          unit: "m",
+          note: this.note,
+          steps: [
+            { key: "deplacer", label: "Se déplacer", value: racial.walk, note: "action mineure" },
+            { key: "sprinter", label: "Sprinter", value: racial.run, note: "action majeure" },
+          ],
+          sprint: {
+            perHit: racial.sprint,
+            label: `Sprint : +${racial.sprint} m par succès d'Athlétisme + AGI`,
+          },
+        };
+      }
       return {
         unit: "m",
         note: this.note,
