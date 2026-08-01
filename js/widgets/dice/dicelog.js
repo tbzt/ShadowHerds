@@ -2,7 +2,18 @@
 
 /* ============================================================
    DICE LOG — journal des jets de la session
-   Alimenté par Dice._animate (dice.js) via DiceLog.record().
+
+   Alimenté par `DiceLog.record()`, depuis trois écrivains :
+     · `DiceRoller.show` — l'entonnoir UNIQUE de tous les jets ordinaires
+       (il y pose aussi `turn`/`turnLabel`) ; sauté par `opts.noLog` quand
+       l'appelant journalise lui-même dans son propre ordre.
+     · `OpposedRoll` — jet opposé et jet de seuil.
+     · `MagicAction` — deux entrées par action (le sort ET son drain,
+       l'invocation ET l'esprit, etc.), d'où son usage de `noLog`.
+
+   ⚠ Ce cartouche a longtemps crédité `Dice._animate` (dice.js), fonction qui
+   n'existe nulle part dans le dépôt et qui n'a donc jamais rien alimenté ;
+   `js/rules/dice.js` n'importe même pas ce module. Corrigé le 2026-08-01.
    ============================================================ */
 import { DicePanel } from "./dicepanel.js";
 import { FocusTrap } from "../kit/focustrap.js";
@@ -49,9 +60,11 @@ export const DiceLog = {
       clé = e.t (comme _expanded). */
   _noteEditing: new Set(),
 
-  /** Persistance globale (commune aux 3 éditions, comme les préférences de
-      dés) : le journal survit au F5. Passe par Storage — jamais de
-      localStorage direct. */
+  /** Persistance globale (commune à TOUTES les éditions, comme les préférences
+      de dés) : le journal survit au F5. Passe par Storage — jamais de
+      localStorage direct.
+      ⚠ Le plafond `HISTORY_MAX` est donc lui aussi global : jouer une autre
+      édition évince les entrées les plus anciennes, toutes éditions confondues. */
   _save() {
     Storage.setGlobal("diceLog", this.history);
   },
@@ -231,7 +244,8 @@ export const DiceLog = {
     toast(`Journal exporté : ${this.history.length} jets.`);
   },
 
-  /** Enregistre un jet dans le journal (appelé par Dice._animate après chaque jet). */
+  /** Enregistre un jet dans le journal (appelé par les trois écrivains listés
+      en tête de module, après chaque jet). */
   record(res, opts = {}) {
     // J3 : turn = clé de groupement (scène+round, opaque), turnLabel = numéro
     // affiché — injectés par DiceRoller.show, null/null hors combat.

@@ -1756,11 +1756,18 @@ export const EncounterRenderer = {
     // `closedDomains` qui COMPTE les masquées, et lui a besoin du catalogue
     // entier pour les compter.
     const visibles = domaines.flatMap((d) => d.entries);
-    // ⚠ L'ouverture SURVIT au re-rendu, contrairement à la feuille d'états.
-    // Raison : jouer une action débite le budget, donc `_commit()` re-rend la
-    // fiche — une feuille qui se referme à chaque tap obligerait à la rouvrir
-    // entre chaque action, et un tour SR6 en compte couramment trois (Se
-    // déplacer, Ajuster, Attaquer). Six taps au lieu de quatre.
+    // L'ouverture SURVIT au re-rendu. Raison : jouer une action débite le
+    // budget, donc `_commit()` re-rend la fiche — une feuille qui se referme à
+    // chaque tap obligerait à la rouvrir entre chaque action, et un tour SR6 en
+    // compte couramment trois (Se déplacer, Ajuster, Attaquer). Six taps au
+    // lieu de quatre.
+    //
+    // ⚠ Ce commentaire opposait ici la feuille d'ÉTATS, qu'il disait se
+    // refermer au re-rendu. C'était vrai avant `sheets.js` (Suite A) ; depuis,
+    // les deux feuilles partagent `Sheets` et survivent toutes les deux — seul
+    // un CHANGEMENT D'ACTEUR les ferme, ce qui est voulu. Le contraste était
+    // donc faux, et il a produit un faux constat d'audit (C-017, retiré après
+    // remesure : 8 puces avant `_commit()`, 8 après). Ne pas le réintroduire.
     const ouverte = Sheets.isOpen("action", r.pnjId);
     const restOuvert = Sheets.isRestOpen("action", r.pnjId);
     // Une seule rubrique → pas d'en-tête : un titre « Combat » au-dessus d'une
