@@ -446,8 +446,17 @@ export const Matrix = {
       (App.editionModule.matrixModel) : matrix.js ne fait qu'orchestrer les
       catalogues communs (IC / PROFILES / IC_POOLS) et déléguer le régime. */
   _model() {
-    const mod = App.getEditionModule(this._edition);
-    return (mod && mod.matrixModel) || App.getEditionModule("anarchy2").matrixModel;
+    // ⚠ Le repli visait `getEditionModule("anarchy2")` en le déréférençant
+    // sans garde. Or les modules d'édition sont chargés À LA DEMANDE : depuis
+    // une session SR5/SR6, celui d'Anarchy 2 n'existe pas, et le repli
+    // plantait. Il n'était atteignable que tant que `use()` n'avait pas
+    // encore couru — `_edition` vaut « anarchy2 » par défaut — mais il
+    // plantait bel et bien (mesuré : « Cannot read properties of null »).
+    // On se rabat désormais sur le module de l'édition COURANTE, qui est le
+    // seul dont le chargement soit garanti — et qui est aussi, accessoirement,
+    // le régime que la table joue vraiment.
+    const mod = App.getEditionModule(this._edition) || App.editionModule;
+    return (mod && mod.matrixModel) || null;
   },
 
   icCatalog() {

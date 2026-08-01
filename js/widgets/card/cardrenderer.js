@@ -13,6 +13,7 @@ import { ActorEffects } from "../../rules/actoreffects.js";
 import { CardFooter } from "./cardfooter.js";
 import { CardZones } from "../../rules/cardzones.js";
 import { CyberdeckRenderer } from "./cyberdeckrenderer.js";
+import { Debug } from "../../core/debug.js";
 import { Drugs } from "../../catalogs/drugs.js";
 import { Esoteric } from "../../rules/esoteric.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
@@ -44,7 +45,33 @@ export const CardRenderer = {
       complet, réserve la bande du rail) enveloppe `.pnj-card-frame` (la
       carte VISIBLE : bordure/clip/scan) + le rail « carnet » en frère du
       frame, posé hors-cadre dans la bande droite réservée. */
+  /** ⚠ Garde d'édition, à l'ENTRÉE et à l'entrée seulement. Les assets
+      d'édition sont chargés à la demande : une fiche d'une AUTRE édition n'a
+      pas son module en mémoire, et le corps de la carte le déréference en
+      plusieurs endroits (`ratingBadge`, `hasEdges`, …). Garder chaque site
+      donnerait une demi-protection — pire que rien, parce qu'elle laisse
+      croire que le cas est traité. On refuse donc de rendre la fiche, une
+      fois, ici, et on le DIT à l'écran plutôt que de faire tomber la vue.
+
+      Aucun chemin vivant n'y mène aujourd'hui : `Gen.restorePool` filtre par
+      édition depuis `78920ba`, et tout le reste du stockage est cloisonné par
+      édition. C'est une garde contre la CLASSE de panne — celle qui a produit
+      `EditionSR5 is not defined` — pas le correctif d'un bug mesuré. */
   render(pnj, actions = ["save", "discard"], deps = CardRenderer.liveDeps()) {
+    if (pnj && pnj.edition && !App.isEditionLoaded(pnj.edition)) {
+      Debug.warn("storage", "fiche d'une édition non chargée — rendu refusé", {
+        edition: pnj.edition,
+        pnj: pnj.name,
+      });
+      const stub = document.createElement("div");
+      stub.className = "pnj-card";
+      stub.dataset.id = pnj.id;
+      stub.dataset.edition = pnj.edition;
+      stub.innerHTML =
+        `<div class="stack" style="padding:var(--sp-3)"><strong>${Utils.escHtml(pnj.name || "Fiche")}</strong>` +
+        `<span class="dim">Fiche d'une autre édition (${Utils.escHtml(pnj.edition)}) — non affichable ici.</span></div>`;
+      return stub;
+    }
     const el = document.createElement("div");
     el.className = "pnj-card scanning";
     if (pnj.collapsed) el.classList.add("spirit-collapsed");
