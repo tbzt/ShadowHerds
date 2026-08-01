@@ -248,16 +248,29 @@ export const App = {
     },
   },
 
-  /** Registre des modules d'édition */
+  /** Registre des modules d'édition.
+
+      ⚠ `typeof` obligatoire : les assets d'édition sont chargés À LA DEMANDE
+      (`_loadEditionAssets`), donc seule l'édition COURANTE est en mémoire.
+      Une référence nue à `EditionSR5` depuis une session SR6 ne rendait pas
+      `null` — elle levait une `ReferenceError` brute, qui remontait jusqu'à
+      l'appelant sous une pile illisible. Un module non chargé se lit
+      désormais comme un module inconnu : `null`. */
   _modules: {
-    sr5: () => EditionSR5,
-    sr6: () => EditionSR6,
-    anarchy2: () => EditionAnarchy2,
-    anarchy1: () => EditionAnarchy1,
+    sr5: () => (typeof EditionSR5 !== "undefined" ? EditionSR5 : null),
+    sr6: () => (typeof EditionSR6 !== "undefined" ? EditionSR6 : null),
+    anarchy2: () => (typeof EditionAnarchy2 !== "undefined" ? EditionAnarchy2 : null),
+    anarchy1: () => (typeof EditionAnarchy1 !== "undefined" ? EditionAnarchy1 : null),
   },
 
   getEditionModule(ed) {
     return this._modules[ed] ? this._modules[ed]() : null;
+  },
+
+  /** Ce module est-il utilisable MAINTENANT ? Sert aux surfaces qui affichent
+      des fiches persistées : une fiche d'une autre édition ne se rend pas. */
+  isEditionLoaded(ed) {
+    return !!this.getEditionModule(ed);
   },
 
   /* ---- Chargement conditionnel des assets d'édition ----

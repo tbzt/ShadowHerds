@@ -71,12 +71,46 @@ export const Gen = {
     Storage.set(this._POOL_KEY, this.pool);
   },
 
+  /** Recharge le pool de l'édition COURANTE, et lui seul.
+
+      ⚠ Deux défauts corrigés ici, tous deux prouvés en navigateur — ils
+      formaient la chaîne qui produisait `ReferenceError: EditionSR5 is not
+      defined` au changement d'édition :
+
+      1. **Le retour anticipé fuyait.** `if (!saved.length) return` laissait
+         `this.pool` — et les cartes du DOM — sur le contenu de l'édition
+         PRÉCÉDENTE. Basculer vers une édition au pool vide conservait donc les
+         fiches de l'autre ; le premier `_savePool()` suivant les écrivait dans
+         la clé de la nouvelle édition (mesuré : 2 fiches SR5 persistées dans
+         `sr_pnj_v2_sr6_gen_pool`). On remet donc TOUJOURS pool et zone à zéro.
+      2. **Aucun filtre d'édition au rendu.** Les assets sont chargés à la
+         demande : rendre une fiche SR5 depuis une session SR6 appelle un
+         module absent. On écarte ce qui n'est pas de l'édition courante — ce
+         qui RÉPARE au passage un stockage déjà contaminé, sans migration ni
+         perte silencieuse (les fiches écartées sont retirées de la clé, et
+         `Debug` le dit). */
   restorePool() {
+    const zone = document.getElementById("gen-zone-single");
+    if (zone) zone.innerHTML = "";
+    this.pool = [];
+
     const saved = Storage.get(this._POOL_KEY, []);
     if (!saved.length) return;
-    this.pool = saved;
-    const zone = document.getElementById("gen-zone-single");
-    for (const pnj of saved) {
+
+    const ed = App.edition;
+    const propres = saved.filter((p) => !p.edition || p.edition === ed);
+    const etrangeres = saved.length - propres.length;
+    if (etrangeres) {
+      Debug.warn("storage", "pool : fiches d'une autre édition écartées", {
+        edition: ed,
+        ecartees: etrangeres,
+      });
+    }
+
+    this.pool = propres;
+    if (etrangeres) this._savePool(); // solde la clé contaminée
+    if (!zone) return;
+    for (const pnj of propres) {
       const actions = pnj.type === "vehicle" || (pnj.type === "spirit" && pnj.ownerId)
         ? ["remove"]
         : ["save", "discard", "edit"];
