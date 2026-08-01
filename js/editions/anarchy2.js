@@ -403,13 +403,25 @@ export const EditionAnarchy2 = {
       { key: "maniabilite", label: "Favorise la maniabilité", maniaMod: 0, footThreshold: null,
         examples: "ruelles, virages serrés, circulation dense", onFail: null },
     ],
-    attr(envKey) {
+    attr(envKey, terrain) {
+      // À pied, Vitesse/Maniabilité décrivent un ENGIN — les afficher sur un
+      // coureur était faux (`Chase.attrSpec` passait déjà `terrain`, ce modèle
+      // ne le lisait pas). Le livre apparie « Athlétisme + Agilité » (et
+      // « Pilotage + Agilité » en véhicule), ce que dit déjà
+      // `terrains.pied.testLabel` : l'attribut à pied est donc AGI.
+      // `unruled` reste — Anarchy ne chiffre pas la poursuite à pied ; on
+      // cesse seulement de réclamer au MJ un chiffre déjà sur la fiche.
+      if (terrain === "pied")
+        return { short: "AGI", label: "Agilité", meaning: "avantage au test opposé" };
       return envKey === "maniabilite"
         ? { short: "MAN", label: "Maniabilité", meaning: "avantage au test opposé" }
         : { short: "VIT", label: "Vitesse", meaning: "avantage au test opposé" };
     },
     attrValue(pnj, { terrain, env, ride } = {}) {
-      if (terrain === "pied") return undefined;
+      if (terrain === "pied") {
+        const v = typeof Actor !== "undefined" ? Actor.attr(pnj, "AGI") : null;
+        return Number.isFinite(v) && v > 0 ? v : undefined;
+      }
       const liste = (typeof Vehicles !== "undefined" && pnj && Vehicles.linkedTo(pnj.id)) || [];
       // La monture DÉCLARÉE sur la piste (lot P6) l'emporte : elle seule sait
       // qu'on a sauté dans un engin qui n'appartient à personne. Le repli reste

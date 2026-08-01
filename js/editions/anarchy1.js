@@ -408,11 +408,23 @@ export const EditionAnarchy1 = {
         modificateur de pilotage. Décision du chantier : on l'affiche, avec
         sa mention — une table qui ne l'emploie pas lit un chiffre de plus,
         une table qui l'emploie n'a plus à le chercher. */
-    attr() {
+    attr(envKey, terrain) {
+      // La Mobilité est une caractéristique d'ENGIN : à pied elle n'a pas
+      // d'objet, et l'afficher sur un coureur était faux (`Chase.attrSpec`
+      // passait déjà `terrain`, ce modèle ne le lisait pas). À pied, le livre
+      // apparie Athlétisme + Agilité, ce que dit déjà
+      // `terrains.pied.testLabel`. `unruled` reste : Anarchy ne chiffre pas
+      // la poursuite à pied, on cesse seulement de réclamer au MJ un chiffre
+      // déjà présent sur la fiche.
+      if (terrain === "pied")
+        return { short: "AGI", label: "Agilité", meaning: "attribut du test" };
       return { short: "MOB", label: "Mobilité", meaning: "modificateur de pilotage", optional: true };
     },
     attrValue(pnj, { terrain, ride } = {}) {
-      if (terrain === "pied") return undefined;
+      if (terrain === "pied") {
+        const v = typeof Actor !== "undefined" ? Actor.attr(pnj, "AGI") : null;
+        return Number.isFinite(v) && v > 0 ? v : undefined;
+      }
       const liste = (typeof Vehicles !== "undefined" && pnj && Vehicles.linkedTo(pnj.id)) || [];
       // La monture DÉCLARÉE sur la piste (lot P6) d'abord — elle seule sait
       // qu'on a sauté dans un engin qui n'appartient à personne ; le véhicule

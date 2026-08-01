@@ -1244,13 +1244,25 @@ export const EditionSR5 = {
     /** L'environnement choisit la LIMITE du test, pas un gain : « test de
         Compétence de véhicule + Réaction [Vitesse ou Maniabilité] ». Le
         `meaning` le dit à l'écran — un chiffre nu ferait croire à un bonus. */
-    attr(envKey) {
+    attr(envKey, terrain) {
+      // À pied, Vitesse/Maniabilité sont des caractéristiques d'ENGIN : les
+      // afficher sur quelqu'un qui court était faux (le paramètre `terrain`
+      // arrivait déjà de `Chase.attrSpec`, ce modèle ne le lisait pas).
+      // Le livre donne le test de Sprint « Course + Force [Physique] » — donc
+      // FOR, comme le dit déjà `terrains.pied.testLabel`. On ne motorise
+      // toujours PAS de poursuite à pied (`unruled` reste) : on cesse
+      // seulement de demander au MJ un chiffre que l'app tient déjà.
+      if (terrain === "pied")
+        return { short: "FOR", label: "Force", meaning: "test de Sprint (limite Physique)" };
       return envKey === "encombre"
         ? { short: "MAN", label: "Maniabilité", meaning: "limite du test" }
         : { short: "VIT", label: "Vitesse", meaning: "limite du test" };
     },
     attrValue(pnj, { terrain, env, ride } = {}) {
-      if (terrain === "pied") return undefined;
+      if (terrain === "pied") {
+        const v = typeof Actor !== "undefined" ? Actor.attr(pnj, "FOR") : null;
+        return Number.isFinite(v) && v > 0 ? v : undefined;
+      }
       const s = (this._engin(pnj, ride) || {}).stats || null;
       if (!s) return undefined;
       const v = env === "encombre" ? s.mania : s.vitesse;
