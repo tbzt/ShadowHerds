@@ -258,9 +258,19 @@ export const Vehicles = {
 
          Enfin les variantes de carrosserie (« … (Minivan) ») passent AVANT
          leur modèle de base, sinon le motif de base les capterait : le plus
-         spécifique d'abord, comme /CAS\/GENERAL/i devant /GENERAL/i. */
+         spécifique d'abord, comme /CAS\/GENERAL/i devant /GENERAL/i.
+
+         ⚠ 11 divergences catalogue/livre relevées à l'image sur *À Tombeau
+         Ouvert*, tranchées le 2026-08-04 (le livre fait autorité) : un import
+         antérieur avait par endroits rangé l'Intervalle de vitesse dans
+         l'Accélération, ou recopié un chiffre voisin. Corrigés ici (`accel`
+         sauf mention) : Evo-Echo Stiletto 40→35, Honda Viking 2080 10→15,
+         Yamaha Nodachi 30→20, Saab Gladius 998Ti 30→22, Sea Ray Cottonmouth
+         30→50, Horizon Freedom 7→2, Mv Poseidon'S Endeavour 12→8 ·
+         `blindage` des deux entrées Gmc Grizzly 9→6 · `structure`+`blindage`
+         de Bmw-Krupp Demon 5→4. */
       { match: /Stiletto/i, name: "Evo-Echo Motors Stiletto", kind: "vehicule",
-        stats: { mania: 2, intervalle: 40, maniaHors: 5, vitesse: 250, accel: 40, structure: 3, blindage: 3, pilote: 2, senseurs: 2 } },
+        stats: { mania: 2, intervalle: 40, maniaHors: 5, vitesse: 250, accel: 35, structure: 3, blindage: 3, pilote: 2, senseurs: 2 } },
       { match: /HARLEY\-?DAVIDSON\ CENTAUR/i, name: "Harley-Davidson Centaur (Combat)", kind: "vehicule",
         stats: { mania: 3, intervalle: 30, maniaHors: 3, vitesse: 220, accel: 20, structure: 8, blindage: 7, pilote: 2, senseurs: 2 } },
       { match: /HONDA\ ROUGH\ RIDER.*MOTOQUAD/i, name: "Honda Rough Rider (Motoquad)", kind: "vehicule",
@@ -268,7 +278,7 @@ export const Vehicles = {
       { match: /HONDA\ ROUGH\ RIDER/i, name: "Honda Rough Rider", kind: "vehicule",
         stats: { mania: 4, intervalle: 20, maniaHors: 3, vitesse: 160, accel: 15, structure: 5, blindage: 4, pilote: 2, senseurs: 1 } },
       { match: /HONDA\ VIKING/i, name: "Honda Viking 2080", kind: "vehicule",
-        stats: { mania: 3, intervalle: 30, maniaHors: 4, vitesse: 210, accel: 10, structure: 7, blindage: 6, pilote: 2, senseurs: 1 } },
+        stats: { mania: 3, intervalle: 30, maniaHors: 4, vitesse: 210, accel: 15, structure: 7, blindage: 6, pilote: 2, senseurs: 1 } },
       { match: /NISSAN\ CONSTELLATION/i, name: "Nissan Constellation", kind: "vehicule",
         stats: { mania: 2, intervalle: 15, maniaHors: 2, vitesse: 90, accel: 10, structure: 3, blindage: 2, pilote: 2, senseurs: 2 } },
       { match: /SUZUKI\ TRANSIT.*COURSE/i, name: "Suzuki Transit (Course)", kind: "vehicule",
@@ -280,7 +290,7 @@ export const Vehicles = {
       { match: /YAMAHA\ KABURAYA/i, name: "Yamaha Kaburaya", kind: "vehicule",
         stats: { mania: 2, intervalle: 30, maniaHors: 4, vitesse: 280, accel: 32, structure: 3, blindage: 2, pilote: 2, senseurs: 2 } },
       { match: /YAMAHA\ NODACHI/i, name: "Yamaha Nodachi", kind: "vehicule",
-        stats: { mania: 3, intervalle: 30, maniaHors: 3, vitesse: 210, accel: 30, structure: 9, blindage: 6, pilote: 2, senseurs: 1 } },
+        stats: { mania: 3, intervalle: 30, maniaHors: 3, vitesse: 210, accel: 20, structure: 9, blindage: 6, pilote: 2, senseurs: 1 } },
       { match: /BMW\ TSARINA/i, name: "Bmw Tsarina Ii (Coupé)", kind: "vehicule",
         stats: { mania: 3, intervalle: 25, maniaHors: 5, vitesse: 220, accel: 18, structure: 12, blindage: 4, pilote: 2, senseurs: 3 } },
       { match: /DODGE\ RAMPART\ LEV/i, name: "Dodge Rampart Lev", kind: "vehicule",
@@ -298,7 +308,7 @@ export const Vehicles = {
       { match: /SAAB\ JAVELIN/i, name: "Saab Javelin 878Ti (Sport)", kind: "vehicule",
         stats: { mania: 1, intervalle: 34, maniaHors: 5, vitesse: 240, accel: 26, structure: 6, blindage: 4, pilote: 2, senseurs: 4 } },
       { match: /SAAB\ GLADIUS/i, name: "Saab Gladius 998Ti (Sport)", kind: "vehicule",
-        stats: { mania: 2, intervalle: 30, maniaHors: 6, vitesse: 260, accel: 30, structure: 6, blindage: 4, pilote: 2, senseurs: 4 } },
+        stats: { mania: 2, intervalle: 30, maniaHors: 6, vitesse: 260, accel: 22, structure: 6, blindage: 4, pilote: 2, senseurs: 4 } },
       { match: /TOYOTA\ DAYTRIPPER/i, name: "Toyota Daytripper", kind: "vehicule",
         stats: { mania: 4, vitesse: 180, accel: 10, structure: 12, blindage: 6, pilote: 2, senseurs: 2 } },
       { match: /TOYOTA\ ULTRA\-?ELITE/i, name: "Toyota Ultra-Elite (Limousine)", kind: "vehicule",
@@ -308,9 +318,9 @@ export const Vehicles = {
       { match: /GAZ\-?NIKI\ P\-?183/i, name: "Gaz-Niki P-183", kind: "vehicule",
         stats: { mania: 3, intervalle: 20, maniaHors: 4, vitesse: 160, accel: 16, structure: 14, blindage: 4, pilote: 2, senseurs: 1 } },
       { match: /GMC\ GRIZZLY.*CAMIONNETTE/i, name: "Gmc Grizzly (Camionnette Lourd)", kind: "vehicule",
-        stats: { mania: 3, intervalle: 20, maniaHors: 3, vitesse: 170, accel: 15, structure: 16, blindage: 9, pilote: 2, senseurs: 1 } },
+        stats: { mania: 3, intervalle: 20, maniaHors: 3, vitesse: 170, accel: 15, structure: 16, blindage: 6, pilote: 2, senseurs: 1 } },
       { match: /GMC\ GRIZZLY/i, name: "Gmc Grizzly", kind: "vehicule",
-        stats: { mania: 3, intervalle: 20, maniaHors: 3, vitesse: 170, accel: 15, structure: 16, blindage: 9, pilote: 2, senseurs: 1 } },
+        stats: { mania: 3, intervalle: 20, maniaHors: 3, vitesse: 170, accel: 15, structure: 16, blindage: 6, pilote: 2, senseurs: 1 } },
       { match: /JEEP\ TRAILBLAZER/i, name: "Jeep Trailblazer", kind: "vehicule",
         stats: { mania: 3, intervalle: 20, maniaHors: 2, vitesse: 180, accel: 18, structure: 14, blindage: 6, pilote: 2, senseurs: 3 } },
       { match: /TATA\ HOTSPUR/i, name: "Tata Hotspur", kind: "vehicule",
@@ -338,7 +348,7 @@ export const Vehicles = {
       { match: /VOLKSWAGEN\ SUPERKOMBI/i, name: "Volkswagen Superkombi Iv", kind: "vehicule",
         stats: { mania: 4, intervalle: 15, maniaHors: 5, vitesse: 160, accel: 12, structure: 14, blindage: 8, pilote: 2, senseurs: 1 } },
       { match: /BMW\-?KRUPP\ DEMON/i, name: "Bmw-Krupp Demon", kind: "vehicule",
-        stats: { mania: 4, intervalle: 40, maniaHors: 4, vitesse: 270, accel: 30, structure: 5, blindage: 5, pilote: 2, senseurs: 3 } },
+        stats: { mania: 4, intervalle: 40, maniaHors: 4, vitesse: 270, accel: 30, structure: 4, blindage: 4, pilote: 2, senseurs: 3 } },
       { match: /CHRYSLER\-?NISSAN\ G12C/i, name: "Chrysler-Nissan G12C", kind: "vehicule",
         stats: { mania: 4, intervalle: 20, maniaHors: 4, vitesse: 160, accel: 12, structure: 12, blindage: 8, pilote: 2, senseurs: 1 } },
       { match: /BLUE\ RAPTOR/i, name: "Essy Motors Blue Raptor", kind: "vehicule",
@@ -390,7 +400,7 @@ export const Vehicles = {
       { match: /MITSUBISHI\ WAVESKIPPER/i, name: "Mitsubishi Waveskipper", kind: "vehicule",
         stats: { mania: 4, intervalle: 20, vitesse: 80, accel: 15, structure: 6, blindage: 3, pilote: 2, senseurs: 1 } },
       { match: /SEA\ RAY\ COTTONMOUTH/i, name: "Sea Ray Cottonmouth", kind: "vehicule",
-        stats: { mania: 5, intervalle: 40, vitesse: 180, accel: 30, structure: 8, blindage: 4, pilote: 2, senseurs: 3 } },
+        stats: { mania: 5, intervalle: 40, vitesse: 180, accel: 50, structure: 8, blindage: 4, pilote: 2, senseurs: 3 } },
       { match: /ZODIAC\ WHISPER/i, name: "Zodiac Whisper", kind: "vehicule",
         stats: { mania: 3, vitesse: 50, accel: 15, structure: 5, blindage: 4, pilote: 2, senseurs: 0 } },
       { match: /CORSAIR\ ELYSIUM/i, name: "Corsair Elysium", kind: "vehicule",
@@ -410,7 +420,7 @@ export const Vehicles = {
       // captait au passage le drone « Horizon Flying Eye », pourtant catalogué
       // à part vingt lignes plus haut (le premier motif qui répond gagne).
       { match: /HORIZON\ FREEDOM/i, name: "Horizon Freedom", kind: "vehicule",
-        stats: { mania: 3, intervalle: 3, vitesse: 10, accel: 7, structure: 4, blindage: 3, pilote: 2, senseurs: 0 } },
+        stats: { mania: 3, intervalle: 3, vitesse: 10, accel: 2, structure: 4, blindage: 3, pilote: 2, senseurs: 0 } },
       { match: /CUTTY\ SARK/i, name: "Cutty Sark Ii", kind: "vehicule",
         stats: { mania: 5, intervalle: 10, vitesse: 30, accel: 10, structure: 36, blindage: 12, pilote: 2, senseurs: 0 } },
       { match: /EVO\ AQUAVIDA\ ?2/i, name: "Evo Aquavida 2", kind: "vehicule",
@@ -428,7 +438,7 @@ export const Vehicles = {
       { match: /LURSSEN\ MOBIUS/i, name: "Lurssen Mobius", kind: "vehicule",
         stats: { mania: 4, intervalle: 10, vitesse: 50, accel: 10, structure: 36, blindage: 14, pilote: 3, senseurs: 6 } },
       { match: /MV\ POSEIDON'S/i, name: "Mv Poseidon'S Endeavour", kind: "vehicule",
-        stats: { mania: 4, intervalle: 12, vitesse: 50, accel: 12, structure: 40, blindage: 18, pilote: 3, senseurs: 4 } },
+        stats: { mania: 4, intervalle: 12, vitesse: 50, accel: 8, structure: 40, blindage: 18, pilote: 3, senseurs: 4 } },
       { match: /NAVIRE\-USINE/i, name: "Navire-Usine", kind: "vehicule",
         stats: { mania: 0, vitesse: 20, accel: 0, structure: 90, blindage: 0, pilote: 3, senseurs: 4 } },
       { match: /CROISEUR.*RANGER/i, name: "Croiseur Classe Ranger", kind: "vehicule",
