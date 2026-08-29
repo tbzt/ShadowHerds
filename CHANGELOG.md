@@ -10,6 +10,58 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.141.0] — 2026-08-29
+
+### Ajouté
+
+- **Anarchy 2.0 hérite de 172 créatures — le griffon, le kraken, les
+  gargouilles.** Le catalogue de créatures d'Anarchy n'a jamais compté que les
+  dix du livre de base : un MJ qui voulait autre chose n'avait rien, et devait
+  improviser ou basculer d'édition. L'annexe « Nature et Anarchy » de *Nature
+  sauvage* (p. 177-240) en convertit 174, une par une, avec leurs compétences,
+  leurs Atouts, leurs armes et leurs seuils de blessures. Elles sont là. Le
+  bloc passe de **10 à 182 entrées**.
+
+  Le filtre par lieu de rencontre marche dès le premier jour — 39 créatures
+  urbaines, 32 de jungle, 29 de montagne, 26 de marécage — parce que la
+  description, l'habitat et le portrait sont repris de la fiche SR6 de la même
+  bête, déjà écrite et déjà relue. Les armes portent enfin l'effet que le livre
+  écrit à leur suite (« détrempe l'ennemi », « perte d'une action si
+  blessure ») : cinquante créatures en ont un.
+
+  Deux statblocs ne sont **pas** repris, et c'est délibéré : le Brochet cracheur
+  et le Gashadokuro sont décrits en trois forces (« Petit / Moyen / Gros »), ce
+  que la fiche ne sait pas dire aujourd'hui. Cinq créatures ont deux moniteurs
+  physiques selon qu'on les frappe avec une arme normale ou magique : la fiche
+  porte le premier, le second est écrit dans ses Atouts avec sa page.
+
+### Corrigé
+
+- **Les créatures d'Anarchy 2.0 lançaient les mauvaises réserves depuis
+  toujours.** Le livre écrit chaque compétence « Athlétisme 3 (5+F) » : le
+  nombre de tête est l'indice, mais c'est la **parenthèse** qui donne la réserve
+  — 5 dés plus la Force. L'app stockait l'indice et lançait « indice +
+  attribut », ce qui donne un autre chiffre dès qu'un modificateur entre en
+  jeu. Sur le Chien de garde du livre de base, **cinq réserves sur dix étaient
+  fausses** ; sur les 1309 lignes de l'annexe, l'indice ne vaut la parenthèse
+  que dans un cas sur trois. Les 88 réserves fausses des dix créatures
+  existantes sont corrigées, et l'indice imprimé est conservé à côté.
+
+- **Onze créatures techno passaient pour des Éveillées.** Le Lièvre de Matrice,
+  le Coyote chanteur, l'Ibis des déchets et huit autres portent une
+  **Résonance** dans *Nature sauvage*, pas une Magie — le catalogue n'avait
+  qu'un emplacement et y rangeait tout. Résultat : elles ressortaient
+  magiciennes, et surtout **n'ouvraient pas les actions d'Atout matricielles**
+  qui les concernent. Le Lièvre de Matrice en propose désormais cinq. Vingt-huit
+  autres créatures, elles, étaient générées profanes alors que le livre leur
+  chiffre une Magie — le Léviathan, le Kraken, le Mégalodon, les requins.
+
+- **Trois cartes « Quoi de neuf » ne montraient rien du doigt.** Elles visaient
+  le badge d'édition et le bouton du bloc-notes, deux boutons qui existent bel
+  et bien, mais le balisage ne portait pas la clé que le moteur de visite
+  cherche. Elles s'affichaient au centre de l'écran au lieu de désigner leur
+  cible.
+
 ## [1.140.0] — 2026-08-29
 
 ### Ajouté
