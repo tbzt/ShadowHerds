@@ -5517,6 +5517,23 @@ export const EditionSR6 = {
         Ne régénèrent PAS : cerveau (attaque ciblée à la tête), focus d'arme,
         Vulnérabilité, Drain. L'Allergie se soigne, mais aucun test tant que la
         créature touche l'allergène — d'où le rappel porté par la ligne. */
+    /** Drain d'Essence — SR6 p. 228. Test ÉTENDU Charisme + Magie, seuil
+        (10 − Essence de la cible), intervalle 1 minute ; interrompu, aucun
+        point n'est drainé. La cible doit être physique, consciente de nature,
+        et consentante ou maîtrisée — l'app ne vérifie pas ces conditions de
+        fiction, elle les RAPPELLE. Une cible tombée à 0 meurt. Le draineur ne
+        dépasse jamais le DOUBLE de son Essence naturelle ; au-delà, le point
+        est perdu. La victime subit
+        l'état Fatigué à un indice égal aux points drainés. */
+    essenceDrain: {
+      action: "Majeure",
+      pool: ["CHA", "MAG"],
+      threshold: (cible) => 10 - (Actor.attr(cible, "ESS") || 0),
+      interval: "1 minute",
+      fatigue: true,
+      rappel: "cible physique, consciente de nature, consentante ou maîtrisée ; lien émotionnel focalisé sur le draineur",
+      page: "SR6 p. 228",
+    },
     roundLines(pnj, when) {
       if (when !== "endOfRound") return [];
       if (!Actor.hasPower(pnj, /r[ée]g[ée]n[ée]ration/i)) return [];

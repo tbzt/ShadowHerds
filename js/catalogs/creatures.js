@@ -6626,6 +6626,10 @@ export const Creatures = {
       habitat: c.habitat || [],
       physFilled: 0,
       stunFilled: 0,
+      // Essence NATURELLE, figée à la génération : le Drain d'Essence plafonne
+      // le draineur au DOUBLE de son indice naturel (SR5 p.401, SR6 p.229), et
+      // « courante » ne suffit pas pour connaître ce plafond.
+      essBase: c.ess ?? 6,
       initDice: c.dice,
       defense: rea + intel,
       composure: vol + cha,

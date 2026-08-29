@@ -2716,6 +2716,14 @@ export const CardRenderer = {
       acts.push({ kind: "menu", label: "Combat", attrs: `data-action="add-to-encounter" data-id="${id}"` });
     if (has("remove"))
       acts.push({ kind: "menu", label: "Dupliquer", attrs: `data-action="duplicate-pnj" data-id="${id}"` });
+      // Drain d'Essence : seulement sur une fiche qui PORTE le pouvoir et dans
+      // une édition qui le motorise (Anarchy ne l'a pas). Action dirigée, donc
+      // au menu et non en primaire — elle ouvre un choix de cible.
+      if (
+        Actor.hasPower(pnj, /drain d'essence/i) &&
+        App.getEditionModule(pnj.edition)?.creaturePowers?.essenceDrain
+      )
+        acts.push({ kind: "menu", label: "Drain d'Essence…", attrs: `data-action="essence-drain" data-id="${id}"` });
     if (this._portraitEnabled(pnj, deps))
       acts.push({ kind: "menu", label: "Portrait IA", attrs: `data-action="generate-portrait" data-id="${id}"` });
     // Export Foundry : uniquement si l'édition l'expose. Lecture neutre du
@@ -2784,6 +2792,9 @@ export const CardRenderer = {
           break;
         case "toggle-monitor":
           UI.toggleMonitor(id, actionEl.dataset.sev, Number(actionEl.dataset.idx));
+          break;
+        case "essence-drain":
+          UI.promptEssenceDrain(id);
           break;
         case "essence-step":
           // Drain d'Essence, pose d'implant : le geste de jeu (D2b). Le pas

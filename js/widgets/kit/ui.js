@@ -202,6 +202,95 @@ export const UI = {
     if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(copies[0]);
   },
 
+  /** DRAIN D'ESSENCE (lot E) — l'action dirigée d'un Infecté vers sa victime.
+      SR5 p.401 / SR6 p.228 : test ÉTENDU Charisme + Magie, seuil
+      (10 − Essence de la cible), intervalle 1 minute. Un point par réussite du
+      test étendu ; interrompu, rien n'est drainé.
+
+      L'app PROPOSE et enregistre, elle ne lance ni ne décide : le test étendu
+      se joue sur plusieurs minutes de fiction, et les conditions du livre
+      (cible consciente, consentante ou maîtrisée, lien émotionnel focalisé)
+      ne sont pas vérifiables par du code. Elles sont RAPPELÉES dans le
+      dialogue, le MJ tranche — même doctrine que le bilan de round.
+
+      L'édition porte la règle (`creaturePowers.essenceDrain`) : SR5 en action
+      Complexe et sans état, SR6 en action Majeure avec l'état Fatigué à
+      l'indice des points drainés. Anarchy n'a pas ce pouvoir : pas de contrat,
+      pas d'entrée. */
+  async promptEssenceDrain(drainerId) {
+    const drainer = this._entityCopies(drainerId)[0];
+    if (!drainer) return;
+    const regle = App.getEditionModule(drainer.edition)?.creaturePowers?.essenceDrain;
+    if (!regle) return;
+    // Les candidats : la scène si elle tourne, SINON la bibliothèque. Le livre
+    // décrit un acte LENT sur une victime maîtrisée — « test étendu, intervalle
+    // 1 minute » — qui se joue le plus souvent HORS combat. Gater sur le
+    // tracker rendrait le pouvoir injouable dans la scène où il sert vraiment.
+    const enScene = (Encounter?.state?.combatants || [])
+      .map((c) => PnjLookup.find(c.pnjId))
+      .filter(Boolean);
+    const source = enScene.length ? enScene : (Shadows?.data?.all || []);
+    const cibles = source.filter(
+      (p) => p && p.id !== drainerId && p.attrs && p.attrs.ESS != null,
+    );
+    if (!cibles.length)
+      return toast("Aucune cible avec une Essence à drainer.", "warning");
+    // `Dialog.choose` fabrique un bouton par option (cf. Pursuit.promptRide) :
+    // au-delà d'une douzaine, on renvoie vers la scène plutôt qu'un mur.
+    if (cibles.length > 12)
+      return toast(
+        `${cibles.length} fiches portent une Essence — mettez la victime en scène pour la désigner.`,
+        "warning",
+      );
+    const choix = await Dialog.choose({
+      title: "Drain d'Essence",
+      message: `${regle.action} · ${regle.pool.join(" + ")} en test étendu, intervalle ${regle.interval} — ${regle.rappel} (${regle.page}).`,
+      options: cibles.map((p) => ({
+        value: p.id,
+        label: `${p.name} — Essence ${Actor.attr(p, "ESS")} · seuil ${regle.threshold(p)}`,
+      })),
+    });
+    if (!choix) return;
+    const cible = PnjLookup.find(choix) || cibles.find((p) => p.id === choix);
+    if (!cible) return;
+    // Une cible déjà à 0 est morte (SR5 p.401, SR6 p.229) : on ne draine pas
+    // un cadavre, et le silence de l'app vaudrait acceptation.
+    if (Actor.attr(cible, "ESS") <= 0)
+      return toast(`${cible.name} est déjà à 0 d'Essence — le livre dit qu'elle est morte.`, "warning");
+    // Le plafond du draineur : le DOUBLE de son Essence naturelle. `essBase`
+    // est posée à la génération ; une fiche d'avant retombe sur sa valeur
+    // courante, ce qui n'invente rien.
+    const base = drainer.essBase != null ? drainer.essBase : Actor.attr(drainer, "ESS");
+    const avant = Actor.attr(drainer, "ESS");
+    const perdu = avant + 1 > base * 2;
+    for (const p of this._entityCopies(cible.id))
+      Actor.setBase(p, "ESS", Math.max(0, Actor.attr(p, "ESS") - 1));
+    if (!perdu)
+      for (const p of this._entityCopies(drainerId))
+        Actor.setBase(p, "ESS", Actor.attr(p, "ESS") + 1);
+    // L'invariant Essence↔MAG/RES se rejoue par le recalc de l'édition.
+    for (const p of [...this._entityCopies(cible.id), ...this._entityCopies(drainerId)]) {
+      const mod = App.getEditionModule(p.edition);
+      if (mod && mod.recalc) mod.recalc(p);
+    }
+    // SR6 : la victime prend Fatigué à l'indice des points drainés.
+    if (regle.fatigue && typeof Statuses !== "undefined") {
+      const drainee = Math.max(0, (cible.essBase != null ? cible.essBase : 6) - Actor.attr(cible, "ESS"));
+      if (drainee > 0) Statuses.set(cible, "fatigue", drainee);
+    }
+    this.persistEntity(cible.id);
+    this.persistEntity(drainerId);
+    CardRenderer.refresh(cible);
+    CardRenderer.refresh(drainer);
+    if (typeof Encounter !== "undefined") {
+      Encounter.notifyPnjChanged(cible);
+      Encounter.notifyPnjChanged(drainer);
+    }
+    const mort = Actor.attr(cible, "ESS") <= 0 ? ` — ${cible.name} tombe à 0 : le livre dit qu'elle meurt.` : "";
+    toast(`${drainer.name} draine 1 point d'Essence à ${cible.name}${perdu ? " (perdu : plafond au double de son Essence naturelle)" : ""}.${mort}`,
+          mort ? "warning" : undefined);
+  },
+
   reallocPersona(pnjId, fromKey, toKey) {
     const copies = this._entityCopies(pnjId);
     if (!copies.length) return;
