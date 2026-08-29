@@ -140,6 +140,25 @@ export const Actor = {
     return out;
   },
 
+  /** Un POUVOIR permanent est-il porté par cette fiche ? Il n'existe pas de
+      champ structuré : le pouvoir est une CHAÎNE, rangée selon sa provenance —
+      `traits` (catalogue de créatures), `infectedPowers` (rules/infected.js),
+      `powers` (esprits), `edges` (Anarchy, phrase entière). On les lit toutes.
+
+      Lecture au MOTIF, comme `BonusEngine.detectSmartlink` lit l'équipement :
+      c'est le prix d'un catalogue qui décrit ses pouvoirs en français plutôt
+      qu'en clés. Le motif doit donc être LARGE (accents, pluriels) et le
+      faux positif rester bénin — ici, proposer une ligne de bilan de trop.
+      Ne JAMAIS s'en servir pour retirer quelque chose au MJ. */
+  hasPower(pnj, re) {
+    if (!pnj) return false;
+    const txt = [];
+    for (const champ of ["traits", "infectedPowers", "powers"])
+      for (const p of pnj[champ] || []) txt.push(typeof p === "string" ? p : p && p.name);
+    for (const e of pnj.edges || []) txt.push(typeof e === "string" ? e : e && e.name);
+    return txt.some((t) => t && re.test(t));
+  },
+
   /** Rang total d'une compétence par nom exact. Renvoie 0 si absente.
       (La réconciliation floue nom↔compétence vit dans WeaponRoll ; ici on
       ne fait que lire la valeur d'une compétence déjà identifiée.) */

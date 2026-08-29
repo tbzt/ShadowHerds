@@ -2750,6 +2750,22 @@ export const EncounterRenderer = {
         <button class="react-btn" data-roll="${pool}" data-roll-label="${Utils.escHtml(l.name)} — ${nom}" data-roll-pnj="${l.pnj.id}" title="Seuil ${l.threshold}"><span class="react-glyph" aria-hidden="true">⚄</span> ${pool}</button>
       </div>`;
     }
+    if (l.kind === "pouvoir") {
+      // Un pouvoir permanent : la ligne DIT ce que le livre fait faire. Elle
+      // porte un jet quand l'édition en demande un (SR5/SR6 : Magie +
+      // Constitution) et rien du tout quand elle n'en demande pas (Anarchy,
+      // qui compte des tours). Jamais de bouton « appliquer » : l'app ne
+      // soigne pas plus qu'elle ne blesse.
+      const pool = (l.pool || []).reduce((n, k) => n + (Actor.attr(l.pnj, k) || 0), 0);
+      const geste = l.pool
+        ? `<button class="react-btn" data-roll="${pool}" data-roll-label="${Utils.escHtml(l.name)} — ${nom}" data-roll-pnj="${l.pnj.id}" title="${Utils.escHtml(l.effet || "")}"><span class="react-glyph" aria-hidden="true">⚄</span> ${pool}</button>`
+        : "";
+      return `<div class="cluster round-line" data-todo>
+        <span class="round-line-who">${nom}</span>
+        <span class="round-line-what">${Utils.escHtml(l.name)} · ${Utils.escHtml(l.effet || "")}${l.rappel ? `<span class="lim" title="${Utils.escHtml(l.rappel)}"> ⓘ</span>` : ""}</span>
+        ${geste}
+      </div>`;
+    }
     return `<div class="cluster round-line is-echu">
       <span class="round-line-who">${nom}</span>
       <span class="round-line-what">${Utils.escHtml(l.name)} · durée échue (${quand} de round)</span>

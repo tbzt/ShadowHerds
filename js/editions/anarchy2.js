@@ -4426,6 +4426,28 @@ export const EditionAnarchy2 = {
     return null;
   },
 
+  /* ---- POUVOIRS PERMANENTS au bilan de round ------------------------------
+     Un pouvoir n'est PAS un état : `Statuses.roundReport` ne parcourt que
+     `Statuses.active`. Ce contrat est le second collecteur, lu par
+     `Encounter._bilanDeRound`. Pur : il décrit, il n'applique rien — le
+     panneau propose, le MJ tranche, comme pour les dégâts périodiques. ---- */
+  creaturePowers: {
+    /** Régénération — Anarchy ne fait lancer AUCUN dé : « guérit une blessure
+        légère en 3 tours, une blessure grave en 10 tours » (Nature sauvage,
+        annexe). La ligne compte donc, elle ne propose pas de jet. */
+    roundLines(pnj, when) {
+      if (when !== "endOfRound") return [];
+      if (!Actor.hasPower(pnj, /r[ée]g[ée]n[ée]ration/i)) return [];
+      const blesse = (pnj.legerFilled || 0) + (pnj.graveFilled || 0) + (pnj.incapFilled || 0);
+      if (!blesse) return [];
+      return [{
+        kind: "pouvoir",
+        name: "Régénération",
+        effet: "blessure légère : 3 tours · blessure grave : 10 tours",
+      }];
+    },
+  },
+
   recalc(pnj) {
     return pnj;
   },

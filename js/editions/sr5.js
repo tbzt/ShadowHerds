@@ -4743,6 +4743,33 @@ export const EditionSR5 = {
     apply(this.resonanceAttr, resPenalty);
   },
 
+  /* ---- POUVOIRS PERMANENTS au bilan de round ------------------------------
+     Un pouvoir n'est PAS un état : `Statuses.roundReport` ne parcourt que
+     `Statuses.active`. Ce contrat est le second collecteur, lu par
+     `Encounter._bilanDeRound`. Pur : il décrit, il n'applique rien — le
+     panneau propose, le MJ tranche, comme pour les dégâts périodiques. ---- */
+  creaturePowers: {
+    /** Régénération — SR5 p. 402. « À la fin de chaque round de combat, si la
+        créature a subi des dommages, elle effectue un test de Magie +
+        Constitution, ajoute sa Constitution aux succès obtenus et récupère
+        d'autant de cases » — Surplus, puis physique, puis étourdissant.
+        Ne régénèrent PAS : cerveau (attaque ciblée à la tête), focus d'arme,
+        Vulnérabilité, Drain. L'Allergie se soigne, mais aucun test tant que la
+        créature touche l'allergène — d'où le rappel porté par la ligne. */
+    roundLines(pnj, when) {
+      if (when !== "endOfRound") return [];
+      if (!Actor.hasPower(pnj, /r[ée]g[ée]n[ée]ration/i)) return [];
+      if (!((pnj.physFilled || 0) > 0 || (pnj.stunFilled || 0) > 0)) return [];
+      return [{
+        kind: "pouvoir",
+        name: "Régénération",
+        pool: ["MAG", "CON"],
+        effet: "soigne Constitution + succès — surplus, puis physique, puis étourdissant",
+        rappel: "ni cerveau, ni focus d'arme, ni Vulnérabilité, ni Drain ; aucun test au contact d'un allergène",
+      }];
+    },
+  },
+
   recalc(pnj) {
     const { proRating } = pnj;
     // Chance : init douce pour les PNJ sauvegardés avant l'ajout du champ

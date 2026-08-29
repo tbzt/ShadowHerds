@@ -2152,6 +2152,13 @@ export const Encounter = {
         for (const d of r.degats) lignes.push({ kind: "degat", when, pnj, ...d });
         for (const t of r.tests) lignes.push({ kind: "test", when, pnj, ...t });
         for (const e of r.echus) lignes.push({ kind: "echu", when, pnj, key: e.key, name: e.name });
+        // Second collecteur : les POUVOIRS permanents (Régénération…), qui ne
+        // sont pas des états et que `roundReport` ne voit donc pas. La règle
+        // vit dans le module d'édition — SR5/SR6 font lancer Magie +
+        // Constitution, Anarchy compte des tours sans un seul dé.
+        const mod = App.getEditionModule(pnj.edition);
+        for (const p of mod?.creaturePowers?.roundLines?.(pnj, when) || [])
+          lignes.push({ when, pnj, ...p });
       }
       // Décroissance + vieillissement : APRÈS la lecture, pour que le bilan
       // annonce la VD du round qui s'achève et non celle du suivant.
