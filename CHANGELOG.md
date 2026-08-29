@@ -10,6 +10,55 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.142.0] — 2026-08-30
+
+### Ajouté
+
+- **Les Infectés se jouent enfin : l'Essence descend, et elle se draine.** Un
+  vampire qui vidait sa victime, un ghoul qui régénérait entre deux rounds —
+  l'app les décrivait sans jamais permettre de le noter. Trois manques
+  s'enchaînaient : la carte SR6 **n'affichait pas l'Essence du tout**, aucune
+  surface ne permettait de la changer, et les pouvoirs des vingt-deux types
+  Infectés restaient du texte.
+
+  L'Essence apparaît désormais sur la carte SR6 — **seulement quand la fiche en
+  porte une**, parce qu'un PNJ métahumain n'en a pas dans l'app et qu'écrire
+  « ESS 6 » sur sa carte inventerait une donnée. Deux pas **−/+** la font
+  bouger en séance, et l'éditeur de fiche accepte les décimales du cyberware
+  (5,85). En SR5, la Magie et la Résonance suivent toutes seules : perdre de
+  l'Essence les réduit, en revenir les restaure, sans que rien ne s'empile.
+
+- **Le Drain d'Essence, avec sa cible et son seuil.** Depuis le menu d'une
+  fiche qui porte le pouvoir : on désigne la victime, l'app annonce le test du
+  livre — **Charisme + Magie en test étendu, seuil (10 − Essence de la cible),
+  intervalle 1 minute** — puis enregistre le transfert. La victime prend
+  l'état **Fatigué** à l'indice des points drainés (SR6), et le draineur
+  plafonne au **double de son Essence naturelle** : au-delà, le point est
+  perdu, comme le disent les deux livres. Une cible tombée à 0 est refusée
+  avec le rappel qu'elle est morte, plutôt que drainée en silence.
+
+  L'app n'invente rien de la fiction : les conditions du livre — cible
+  physique, consciente de nature, consentante ou maîtrisée, lien émotionnel
+  focalisé sur le draineur — sont **rappelées dans le dialogue avec leur
+  page**, jamais vérifiées par du code. Et la victime se choisit dans la scène
+  quand une scène tourne, **sinon dans la bibliothèque** : le livre décrit un
+  acte lent sur quelqu'un de ligoté, qui se joue le plus souvent hors combat.
+
+- **La Régénération se rappelle à vous à la fin du round.** Le bilan de round
+  ne voyait que les états ; la Régénération est un pouvoir permanent, et un
+  vampire blessé finissait son tour sans que rien ne le signale. Il porte
+  maintenant sa ligne — avec le rappel de ce qui **ne** régénère pas : ni les
+  dommages au cerveau sur une attaque ciblée, ni ceux d'un focus d'arme, ni
+  ceux d'une Vulnérabilité, ni le Drain, et aucun test tant que la créature
+  touche son allergène.
+
+  Chaque édition garde sa règle, parce qu'elles ne se ressemblent pas : SR5 et
+  SR6 font lancer **Magie + Constitution** et soignent (Constitution + succès)
+  cases ; **Anarchy ne fait lancer aucun dé** — « une blessure légère en 3
+  tours, une grave en 10 ». La ligne d'Anarchy n'a donc pas de bouton de jet,
+  elle compte. Comme pour les dégâts périodiques, le panneau **propose** : rien
+  n'est soigné dans votre dos.
+
 ## [1.141.0] — 2026-08-29
 
 ### Ajouté
