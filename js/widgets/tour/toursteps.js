@@ -683,6 +683,21 @@ export const TourSteps = {
       title: "Le round dresse son bilan",
       body: "En passant au round suivant, un panneau liste ce que les états réclament — et il n'apparaît que s'il a quelque chose à dire. Qui brûle, avec la VD du moment et le bouton d'encaissement à côté (« Enflammé 2 · VD 2P »). Qui doit faire un test de round, avec sa réserve et son seuil (« Nauséeux · CON + VOL (2) »). Quelles durées sont échues — et elles se retirent toutes d'un seul geste. Empoisonné décroît tout seul comme le dit le livre, et Mourant (Anarchy 1) compte ses Tours : la difficulté monte d'un cran à chaque fois, le panneau affiche le seuil courant. L'app pose la bonne valeur au bon moment et vous tend les dés — elle ne lance rien à votre place et ne remplit aucun moniteur.",
     },
+    {
+      id: "wn-etat-surpris", anchor: "nav-combat", tours: ["whatsnew"], since: "1.140.0", fallback: "center",
+      title: "L'embuscade a enfin son état",
+      body: "Surpris était le seul début de combat que l'app ne savait pas noter : vous teniez de tête qui ne joue pas le premier round. L'état rejoint l'accès direct en SR6, avec la règle du livre — le personnage prend son rang d'initiative mais n'agit pas de son propre chef pendant le premier round, ne dépense pas d'Atout, se défend et encaisse normalement, et l'état s'éteint tout seul au changement de round. Rien n'est grisé sur sa feuille d'actions, et c'est voulu : le livre n'interdit aucune action nommée, il dit « ne peut pas agir » avec des exceptions — un rappel s'affiche en tête et vous tranchez, comme pour Figé ou Paniqué. Le test qui détermine la surprise (Réaction + Intuition, seuil 3) est écrit sur la pastille mais reste à votre table.",
+    },
+    {
+      id: "wn-run-clos", anchor: "nav-play", tours: ["whatsnew"], since: "1.140.0", fallback: "center",
+      title: "Un run se termine enfin",
+      body: "La timeline savait ouvrir un run, jamais le fermer : le débrief racontait la fin sans la marquer, si bien que l'index affichait un run joué il y a six mois exactement comme celui de ce soir. Faire le débrief clôt désormais le run, qui prend la mention ✓ Clos et s'éteint dans la liste — aucun geste neuf à apprendre, la clôture suit celui que vous faisiez déjà, au moment où vous le faisiez. Deux garde-fous : un débrief vide ne clôt rien, ouvrir la modale par curiosité ne termine pas votre run ; et clore est réversible, le message de confirmation propose « Rouvrir » d'un clic.",
+    },
+    {
+      id: "wn-creatures-vf", anchor: "nav-generator", tours: ["whatsnew"], since: "1.140.0", fallback: "center",
+      title: "Les créatures reprennent leur nom français",
+      body: "Le catalogue de créatures SR6 avait été bâti sur l'édition anglaise, avec des noms traduits au jugé : ne cherchez plus « Jackalope » ni « Glouton majeur », votre livre les appelle Lièvre cornu et Carcajou géant. Quatre-vingt-seize créatures changent de nom — Ours chuteur devient Drop bear, Martichoras devient Manticore, Coloniste devient Blatte régente — et dix-neuf statblocs faux retrouvent les chiffres du livre : l'Ours cornu jouait avec un Seuil de défense de 6 au lieu de 23. Vos fiches déjà rangées gardent leur ancien nom, volontairement : ce sont vos fiches, et les renommer casserait les dossiers et les mentions de journal qui les citent.",
+    },
   ],
 };
 
