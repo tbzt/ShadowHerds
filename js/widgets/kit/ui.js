@@ -170,6 +170,38 @@ export const UI = {
       matriciels, borné au cap de chacun (js/rules/resonance.js). À la
       différence du deck (échange de valeurs brutes), ici seul le DELTA
       `pnj.persona.alloc` bouge — les attributs mentaux de base sont fixes. */
+  /** Essence au fil du jeu : le drain d'un Infecté, la pose d'un implant.
+      Même plomberie que `toggleMonitor` (toutes les copies, persistance,
+      tracker prévenu), mais PAS sa forme : l'Essence est fractionnaire, son
+      maximum varie d'une créature à l'autre, et elle ne se réinitialise pas
+      entre deux scènes comme un moniteur.
+
+      Le pas de jeu est ENTIER (un drain se compte en points) ; les décimales
+      du cyberware se saisissent dans l'éditeur de fiche.
+
+      Passe par `Actor.setBase` puis par le `recalc` de l'édition : en SR5,
+      l'invariant Essence↔MAG/RES (`_applyEssencePenalty`) se rejoue donc tout
+      seul. Aucune branche d'édition ici. */
+  stepEssence(pnjId, delta) {
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
+    const cur = Actor.attr(copies[0], "ESS");
+    // Plafond 6 = Essence naturelle d'un métahumain. Une créature qui démarre
+    // plus bas (Mycofundi 3) peut être remontée au-dessus de sa valeur de
+    // départ : l'app ne mémorise pas d'Essence initiale, c'est au MJ de savoir.
+    const next = Utils.clamp(Math.round((cur + delta) * 10) / 10, 0, 6);
+    if (next === cur) return;
+    for (const pnj of copies) {
+      if (pnj.attrs == null || pnj.attrs.ESS == null) continue;
+      Actor.setBase(pnj, "ESS", next);
+      const mod = App.getEditionModule(pnj.edition);
+      if (mod && mod.recalc) mod.recalc(pnj);
+    }
+    this.persistEntity(pnjId);
+    CardRenderer.refresh(copies[0]);
+    if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(copies[0]);
+  },
+
   reallocPersona(pnjId, fromKey, toKey) {
     const copies = this._entityCopies(pnjId);
     if (!copies.length) return;

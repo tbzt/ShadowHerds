@@ -1680,6 +1680,20 @@ export const CardRenderer = {
     </div>`;
   },
 
+  /** Cellule d'Essence : la valeur, encadrée de deux pas −/+ (D2b).
+      L'Essence n'est pas un pool de dés — la cellule n'est jamais lançable.
+      Pas de gestionnaire en ligne : délégation `data-action`, comme partout. */
+  _essenceCell(pnj) {
+    const v = Actor.attr(pnj, "ESS");
+    const btn = (d, sign, lbl) =>
+      `<button type="button" class="ess-step" data-action="essence-step" data-id="${pnj.id}"` +
+      ` data-delta="${d}" title="${lbl}" aria-label="${lbl}">${sign}</button>`;
+    return `<div class="attr-cell attr-special ess-cell">
+      <span class="attr-label">ESS</span>
+      <span class="attr-value">${btn(-1, "−", "Essence −1")}${this._esc(String(v))}${btn(1, "＋", "Essence +1")}</span>
+    </div>`;
+  },
+
   _monitorBoxes(pnjId, type, total, filled = 0) {
     return Array.from({ length: total }, (_, i) => {
       const isFilled = i < filled;
@@ -2770,6 +2784,11 @@ export const CardRenderer = {
           break;
         case "toggle-monitor":
           UI.toggleMonitor(id, actionEl.dataset.sev, Number(actionEl.dataset.idx));
+          break;
+        case "essence-step":
+          // Drain d'Essence, pose d'implant : le geste de jeu (D2b). Le pas
+          // fractionnaire du cyberware passe par l'éditeur de fiche.
+          UI.stepEssence(id, Number(actionEl.dataset.delta));
           break;
         case "toggle-deck-monitor":
           // Case du moniteur matriciel du deck (pnj.cyberdeck.filled),

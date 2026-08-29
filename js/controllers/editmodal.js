@@ -972,6 +972,16 @@ export const EditModal = {
         <input type="number" id="em-attr-${resonanceAttr}" value="${Actor.attr(pnj, resonanceAttr)}" min="0" max="12">
       </div>`;
     }
+    // Essence (D2a) — gatée sur la FICHE, pas sur l'édition : en SR6 les
+    // créatures de Nature sauvage en portent une (le livre la chiffre) et les
+    // PNJ métahumains non (`attrByProf` n'en pose pas). `step=0.1` parce que
+    // le cyberware SR5 coûte 0,1 / 0,2 / 3,0 — le champ doit accepter 5,85.
+    if (pnj.attrs && pnj.attrs.ESS != null) {
+      html += `<div class="stack form-group">
+        <label>ESS</label>
+        <input type="number" id="em-attr-ESS" value="${Actor.attr(pnj, "ESS")}" min="0" max="6" step="0.1">
+      </div>`;
+    }
     // Avertissement souple XOR Magie/Résonance (décision utilisateur
     // 2026-07-18) : les livres traitent Éveillé et Émergé comme exclusifs, mais
     // le veto CODIR (Esoteric.blank) autorise volontairement la coexistence. On
@@ -2070,6 +2080,16 @@ export const EditModal = {
           Utils.clamp(Number.isNaN(raw) ? Actor.base(pnj, k) : raw, lo, hi),
         );
       }
+    }
+
+    // Essence : hors de la boucle ci-dessus, qui lit en `parseInt` et clampe
+    // sur des entiers. L'Essence est FRACTIONNAIRE (cyberware SR5). Deux
+    // décimales suffisent : le livre ne descend pas plus bas que 0,05 arrondi.
+    const essEl = document.getElementById("em-attr-ESS");
+    if (essEl && pnj.attrs && pnj.attrs.ESS != null) {
+      const rawEss = parseFloat(String(essEl.value).replace(",", "."));
+      const val = Number.isNaN(rawEss) ? Actor.base(pnj, "ESS") : rawEss;
+      Actor.setBase(pnj, "ESS", Math.round(Utils.clamp(val, 0, 6) * 100) / 100);
     }
 
     // Équipement — #63 : la textarea ne porte que les items CHAÎNE (indice

@@ -185,7 +185,7 @@ Object.assign(CardRenderer, {
       if (extras.length)
         // ESS n'est pas un pool de dés (ressource, pas un test) — non lançable,
         // même patron qu'en SR5.
-        detailsBody += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, Actor.attr(pnj, k), "attr-special", { roll: k !== "ESS", edition: "sr6" })).join("")}</div>`;
+        detailsBody += `<div class="attr-grid attr-special-row">${extras.map((k) => (k === "ESS" ? this._essenceCell(pnj) : this._attrCell(k, Actor.attr(pnj, k), "attr-special", { roll: true, edition: "sr6" }))).join("")}</div>`;
       detailsBody += `<div class="limites-grid" style="margin-top:6px;">
         ${this._attrCell("ME", me ?? "?")}
       </div></div>`;
