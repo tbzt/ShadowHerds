@@ -972,7 +972,7 @@ export const Creatures = {
 
     /* ---- Wild Life p.20-51 : Grasslands+Plains + Mountains ---- */
     mortMongolJeune: {
-      label: "Ver de la mort mongol (jeune)", a: [5, 4, 6, 2, 3, 1, 3, 1, 3],
+      label: "Ver intestin mongol juvénile", a: [5, 4, 6, 2, 3, 1, 3, 1, 3],
       sd: 7, init: 9, dice: 2, me: 11, atkPool: 7,
       habitat: ["deserts", "plaines"],
       desc: "Ver géant éveillé adapté à la contamination des sols, environ 4 mètres de long, sensible à la lumière solaire.",
@@ -982,17 +982,17 @@ export const Creatures = {
       traits: [["Armure 2", null], ["Nature duale", null], ["Sens accrus", "Sens des vibrations"], ["Immunité", "Pathogènes, toxines"], ["Régénération", null], ["Faiblesses", "Vulnérabilité (lumière du soleil, faible)"]],
     },
     mortMongolBehemoth: {
-      label: "Ver de la mort mongol (béhémoth)", a: [18, 4, 6, 10, 3, 1, 3, 1, 6],
+      label: "Ver intestin mongol géant", a: [18, 4, 6, 10, 3, 1, 3, 1, 6],
       sd: 24, init: 9, dice: 2, me: 17, atkPool: 7,
       habitat: ["deserts", "plaines"],
-      desc: "Spécimen adulte du ver de la mort mongol, pouvant atteindre 23 mètres de long, chargé d'une aura électrique.",
+      desc: "Spécimen adulte du ver intestin mongol, pouvant atteindre 23 mètres de long, chargé d'une aura électrique.",
       visualTag: "colossal segmented death worm, crackling electrical aura, desert dunes",
       skills: { Athlétisme: 4, "Combat rapproché": 7, "Plein air": 4, Perception: 5, Furtivité: 4 },
       naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]", "Crachats corrosifs [VD 4P (chimique), SO FOR+RÉA/–/–/–/–]"],
       traits: [["Armure 6", null], ["Nature duale", null], ["Attaque élémentaire", "Aura électrique"], ["Sens accrus", "Sens des vibrations"], ["Immunité", "Pathogènes, toxines"], ["Régénération", null], ["Faiblesses", "Vulnérabilité (lumière du soleil, faible)"]],
     },
     oiseauTerreur: {
-      label: "Oiseau terreur", a: [5, 5, 4, 6, 3, 3, 3, 1, null],
+      label: "Oiseau-terreur", a: [5, 5, 4, 6, 3, 3, 3, 1, null],
       sd: 8, init: 7, dice: 2, me: 11, atkPool: 6,
       habitat: ["urbain"],
       desc: "Grand oiseau terrestre créé génétiquement par Shiawase Biotech, tête proche du T-Rex sur un corps de cocatrix.",
@@ -1012,8 +1012,8 @@ export const Creatures = {
       traits: [["Sens accrus", "Vision en basse lumière, vision thermographique"], ["Coloration adaptative", "Dynamique : change de coloration à la chasse"]],
     },
     dentSabreJaguar: {
-      label: "Jaguar à dents de sabre", a: [7, 5, 4, 7, 3, 2, 4, 3, null],
-      sd: 4, init: 8, dice: 2, me: 13, atkPool: 6,
+      label: "Jaguar à dents de sabre", a: [4, 5, 4, 5, 3, 2, 4, 3, null],
+      sd: 4, init: 8, dice: 2, me: 11, atkPool: 6,
       habitat: ["jungles"],
       desc: "Variante jaguar du félin à dents de sabre, chasseur furtif des zones tropicales.",
       visualTag: "saber-toothed jaguar, long curved fangs, tropical jungle",
@@ -1032,7 +1032,7 @@ export const Creatures = {
       traits: [["Sens accrus", "Vision en basse lumière, vision thermographique"]],
     },
     furetCentenaire: {
-      label: "Furet centenaire", a: [1, 2, 3, 1, 1, 2, 2, 1, 2],
+      label: "Furet du nouveau siècle", a: [1, 2, 3, 1, 1, 2, 2, 1, 2],
       sd: 1, init: 5, dice: 2, me: 9, atkPool: 3,
       habitat: ["plaines"],
       desc: "Furet éveillé de grande taille (jusqu'à 2 m), chasseur solitaire très sensible à la magie ambiante.",
@@ -1042,7 +1042,7 @@ export const Creatures = {
       traits: [["Sens accrus", "Manasensible"], ["Faiblesses", "Allergie (magie, faible)"]],
     },
     fauconCetan: {
-      label: "Faucon Cetan", a: [1, 6, 3, 2, 3, 1, 3, 3, 4],
+      label: "Faucon cétan", a: [1, 6, 3, 2, 3, 1, 3, 3, 4],
       sd: 1, init: 6, dice: 2, me: 2, atkPool: 4,
       habitat: ["plaines"],
       desc: "Rapace éveillé des prairies nord-américaines, capable de suivre ses proies sur près de 3 km en vol.",
@@ -1052,7 +1052,7 @@ export const Creatures = {
       traits: [["Nature duale", null], ["Sens accrus", "Amélioration et magnification visuelles"], ["Influence", "Engloutir (air, terre)"], ["Faiblesses", "Robuste -2 (fragile)"], ["Mouvement", "Vol 20/60/+5"]],
     },
     canardDemoniaque: {
-      label: "Canard démoniaque", a: [6, 4, 3, 7, 2, 1, 3, 2, null],
+      label: "Canard du démon", a: [6, 4, 3, 7, 2, 1, 3, 2, null],
       sd: 6, init: 6, dice: 1, me: 11, atkPool: 3,
       habitat: ["plaines"],
       desc: "Canard éveillé agressif des prairies australiennes, aux serres tranchantes et au bec puissant.",
@@ -1062,7 +1062,7 @@ export const Creatures = {
       traits: [["Faiblesses", "Vulnérabilité (feu)"]],
     },
     vacheInfernale: {
-      label: "Vache infernale", a: [8, 2, 3, 7, 2, 1, 2, 1, 3],
+      label: "Vache de l'enfer", a: [8, 2, 3, 7, 2, 1, 2, 1, 3],
       sd: 13, init: 5, dice: 2, me: 12, atkPool: 4,
       habitat: ["plaines"],
       desc: "Bovidé éveillé des prairies indiennes protégées, à l'estomac assez robuste pour digérer bois et métal.",
@@ -1072,8 +1072,8 @@ export const Creatures = {
       traits: [["Armure 5", null], ["Faiblesses", "Sens réduit (odorat)"]],
     },
     renardFimbulwinter: {
-      label: "Renard de Fimbulwinter", a: [1, 3, 3, 2, 2, 2, 2, 1, 2],
-      sd: 2, init: 5, dice: 2, me: 9, atkPool: 3,
+      label: "Renard fimbulvetr", a: [1, 3, 4, 1, 2, 1, 4, 1, 5],
+      sd: 6, init: 8, dice: 2, me: 7, atkPool: 3,
       habitat: ["polaire"],
       desc: "Renard éveillé adapté aux conditions extrêmes du grand froid, peu documenté au-delà de son territoire le long de la rivière Porcupine.",
       visualTag: "arctic fox, thick white winter coat, frozen tundra",
@@ -1102,7 +1102,7 @@ export const Creatures = {
       traits: [["Forme astrale", null], ["Peur", null], ["Sapience", null], ["Toucher paralysant", null], ["Immunité", "Armes ordinaires (matérialisation)"], ["Faiblesses", "Vulnérabilité (lumière du soleil, grave)"]],
     },
     loupTerres: {
-      label: "Loup des terres", a: [3, 4, 4, 5, 2, 2, 3, 1, 4],
+      label: "Loup terreux", a: [3, 4, 4, 5, 2, 2, 3, 1, 4],
       sd: 3, init: 7, dice: 2, me: 10, atkPool: 7,
       habitat: ["plaines"],
       desc: "Loup éveillé du centre de l'UCAS, capable de s'engloutir dans le sol pour surgir sur ses proies.",
@@ -1112,7 +1112,7 @@ export const Creatures = {
       traits: [["Nature duale", null], ["Sens accrus", "Sens des vibrations"], ["Faiblesses", "Vulnérabilité (feu)"]],
     },
     jackalope: {
-      label: "Jackalope", a: [1, 3, 3, 1, 2, 2, 3, 3, null],
+      label: "Lièvre cornu", a: [1, 3, 3, 1, 2, 2, 3, 3, null],
       sd: 1, init: 6, dice: 2, me: 3, atkPool: 3,
       habitat: ["plaines"],
       desc: "Petit lièvre éveillé aux bois perçants, reproducteur prolifique des prairies du CAS.",
@@ -1122,8 +1122,8 @@ export const Creatures = {
       traits: [["Faiblesses", "Robuste -3 (fragile)"]],
     },
     miniwashitu: {
-      label: "Miniwashitu", a: [3, 3, 3, 3, 1, 1, 2, 2, 3],
-      sd: 4, init: 8, dice: 2, me: 10, atkPool: 5,
+      label: "Miniwashitu", a: [8, 4, 5, 7, 3, 1, 3, 1, 5],
+      sd: 8, init: 8, dice: 2, me: 12, atkPool: 5,
       habitat: ["plaines"],
       desc: "Bovidé éveillé des prairies portant une rangée d'épines de 30 cm le long de la colonne vertébrale.",
       visualTag: "sturdy bovine creature with a row of spines along its back, prairie backdrop",
@@ -1132,8 +1132,8 @@ export const Creatures = {
       traits: [],
     },
     pegase: {
-      label: "Pégase", a: [4, 4, 4, 4, 2, 2, 3, 1, 3],
-      sd: 5, init: 7, dice: 2, me: 10, atkPool: 4,
+      label: "Pégase", a: [8, 5, 6, 7, 3, 2, 4, 3, 4],
+      sd: 8, init: 10, dice: 2, me: 12, atkPool: 4,
       habitat: ["plaines"],
       desc: "Cheval ailé docile et généralement pacifique des grandes prairies ; aucun pouvoir documenté au-delà de ses statistiques de base dans cette source.",
       visualTag: "pegasus, majestic white winged horse, large feathered wings, calm expression, grazing on open plains",
@@ -1141,8 +1141,8 @@ export const Creatures = {
       traits: [],
     },
     peryton: {
-      label: "Peryton (SR6)", a: [5, 4, 4, 5, 2, 2, 3, 2, 4],
-      sd: 4, init: 8, dice: 2, me: 11, atkPool: 5,
+      label: "Péryton", a: [8, 5, 5, 7, 4, 2, 4, 2, 4],
+      sd: 8, init: 9, dice: 2, me: 12, atkPool: 5,
       habitat: ["montagnes"],
       desc: "Cerf éveillé des piémonts montagneux dont le régime alimentaire est complété par de la chair ; aucun pouvoir détaillé au-delà de ses statistiques de base dans cette source.",
       visualTag: "antlered deer with feathered wings, mountain foothills",
@@ -1160,7 +1160,7 @@ export const Creatures = {
       traits: [["Armure 3", null], ["Nature duale", null], ["Sens accrus", "Vision en basse lumière, odorat"], ["Peur", "Hurlement paralysant"], ["Garde", "Protection ; vitesse au sol 10/20/+3"], ["Faiblesses", "Exigence alimentaire (traces d'or, d'argent ou de bijoux)"]],
     },
     licorne: {
-      label: "Licorne (SR6)", a: [7, 5, 5, 7, 4, 2, 4, 4, 5],
+      label: "Licorne", a: [7, 5, 5, 7, 4, 2, 4, 4, 5],
       sd: 7, init: 9, dice: 2, me: 12, atkPool: 4,
       habitat: ["plaines"],
       desc: "Cheval éveillé à la corne mystique, symbole de pureté errant dans les prairies.",
@@ -1170,7 +1170,7 @@ export const Creatures = {
       traits: [["Immunité", "Pathogènes"], ["Garde magique", null], ["Contre-sort", "+2"], ["Faiblesses", "Allergie (polluants, grave)"]],
     },
     licorneSuperieure: {
-      label: "Licorne supérieure", a: [9, 5, 4, 9, 4, 2, 4, 3, 6],
+      label: "Grande licorne", a: [9, 5, 4, 9, 4, 2, 4, 3, 6],
       sd: 7, init: 9, dice: 2, me: 12, atkPool: 4,
       habitat: ["plaines", "montagnes"],
       desc: "Licorne d'un rang supérieur, plus puissante et plus rare, présente en altitude dans les mêmes prairies.",
@@ -1180,8 +1180,8 @@ export const Creatures = {
       traits: [["Arrêteur d'arcane", null], ["Recherche", null], ["Immunité", "Pathogènes, poisons"], ["Garde magique", null], ["Empathie", null], ["Contre-sort", "+2"], ["Faiblesses", "Allergie (polluants, grave)"]],
     },
     bisonBlanc: {
-      label: "Bison blanc", a: [6, 3, 3, 5, 2, 1, 2, 1, 3],
-      sd: 4, init: 5, dice: 2, me: 10, atkPool: 4,
+      label: "Bison blanc", a: [9, 3, 3, 8, 3, 2, 4, 3, 4],
+      sd: 9, init: 7, dice: 2, me: 13, atkPool: 4,
       habitat: ["plaines"],
       desc: "Bison éveillé des prairies nord-américaines, vu selon les tribus comme une bénédiction ou un mauvais présage ; aucun pouvoir détaillé au-delà de ses statistiques de base dans cette source.",
       visualTag: "white bison, thick shaggy coat, standing in open prairie, sacred aura",
@@ -1189,8 +1189,8 @@ export const Creatures = {
       traits: [],
     },
     lynxAvalanche: {
-      label: "Lynx d'avalanche", a: [4, 5, 3, 4, 2, 1, 3, 2, 3],
-      sd: 3, init: 6, dice: 2, me: 10, atkPool: 4,
+      label: "Lynx avalanche", a: [8, 5, 5, 7, 4, 2, 6, 3, 6],
+      sd: 10, init: 11, dice: 2, me: 12, atkPool: 4,
       habitat: ["montagnes"],
       desc: "Félin éveillé des montagnes enneigées, chasse ses proies dans la neige et les décombres ; aucun pouvoir détaillé au-delà de ses statistiques de base dans cette source.",
       visualTag: "lynx with thick winter fur, snowy mountain terrain",
@@ -1208,7 +1208,7 @@ export const Creatures = {
       traits: [["Nature duale", null], ["Attaque élémentaire", "Feu"], ["Sens accrus", null], ["Immunité", "Feu"], ["Faiblesses", "Vulnérabilité (froid)"]],
     },
     rockwormExterne: {
-      label: "Ver externe (Exoworm)", a: [4, 2, 2, 4, 2, 1, 3, 3, 6],
+      label: "Ver mine", a: [4, 2, 2, 4, 2, 1, 3, 3, 6],
       sd: 4, init: 5, dice: 1, me: 10, atkPool: 3,
       habitat: ["montagnes"],
       desc: "Variante de ver des roches des zones géothermales, son excrétion refroidie forme des dépôts minéraux précieux dans les tunnels.",
@@ -1218,7 +1218,7 @@ export const Creatures = {
       traits: [["Nature duale", null], ["Attaque élémentaire", "Feu"], ["Sens accrus", null], ["Immunité", "Feu"], ["Faiblesses", "Vulnérabilité (froid)"], ["Filon précieux", "Extraction possible : test Magie + Edge, succès x1¥/mètre de tunnel"]],
     },
     rockwormSable: {
-      label: "Ver de sable (Sandworm)", a: [6, 1, 2, 4, 2, 1, 3, 1, 6],
+      label: "Ver de sable", a: [6, 1, 2, 4, 2, 1, 3, 1, 6],
       sd: 6, init: 5, dice: 1, me: 11, atkPool: 3,
       habitat: ["deserts"],
       desc: "Variante de ver des roches des zones désertiques, connecté au méta-plan de l'eau et laissant des traînées de sable mouvant.",
@@ -1228,7 +1228,7 @@ export const Creatures = {
       traits: [["Nature duale", null], ["Sens accrus", null], ["Faiblesses", "Vulnérabilité (feu)"]],
     },
     rockwormMangeur: {
-      label: "Mangeur de montagne (Mountain Eater)", a: [22, 3, 2, 20, 2, 2, 2, 4, 6],
+      label: "Dévoreur de montagnes", a: [22, 3, 2, 20, 2, 2, 2, 4, 6],
       sd: 22, init: 4, dice: 1, me: 19, atkPool: 6,
       habitat: ["montagnes"],
       desc: "Le plus grand des vers des roches, peut dépasser 100 mètres de long et creuser des réseaux de cavernes entiers, causant parfois des effondrements.",
@@ -1238,7 +1238,7 @@ export const Creatures = {
       traits: [["Nature duale", null], ["Sens accrus", null]],
     },
     verGlamour: {
-      label: "Ver de glamour (Glamourworm)", a: [2, 3, 4, 2, 3, 1, 3, 5, 6],
+      label: "Ver joaillier", a: [2, 3, 4, 2, 3, 1, 3, 5, 6],
       sd: 2, init: 7, dice: 2, me: 10, atkPool: 3,
       habitat: ["montagnes"],
       desc: "Petit ver éveillé des régions riches en minéraux, porte un anneau de kératine servant d'écrin à des pierres précieuses.",
@@ -1248,17 +1248,17 @@ export const Creatures = {
       traits: [["Nature duale", null], ["Sens accrus", null], ["Sort inné", "Phantasme"], ["Anneau précieux", "Anneau de kératine dépositaire de pierres précieuses : test Corps + Magie + Edge, 5 000¥/succès"]],
     },
     chatRedflower: {
-      label: "Chat de Redflower", a: [4, 5, 5, 3, 3, 2, 5, 4, 6],
+      label: "Félin de Redflower", a: [4, 5, 5, 3, 3, 2, 5, 4, 6],
       sd: 6, init: 10, dice: 2, me: 10, atkPool: 6,
       habitat: ["montagnes"],
-      desc: "Chat éveillé sapient de la région de Red Mountain, doué de télépathie basique et d'un lien empathique avec ses proches.",
+      desc: "Félin éveillé sapient de la région de Red Mountain, doué de télépathie basique et d'un lien empathique avec ses proches.",
       visualTag: "sapient mountain cat, sleek fur, telepathic gaze, red mountain backdrop",
       skills: { Astral: 4, Athlétisme: 5, "Combat rapproché": 6, "Plein air": 6, Perception: 8, Sorcellerie: 4, Furtivité: 6 },
       naturalWeapons: ["Morsure [VD 5P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 5P, SO FOR+RÉA/–/–/–/–]"],
       traits: [["Armure 2", null], ["Nature duale", null], ["Sapience", null], ["Sens accrus", null], ["Sorts innés (liste indicative)", "Lévitation, Lien mental, Phantasme, Silence"], ["Lien empathique", "Télépathie basique ; peut percevoir/apprendre les sorts lancés par d'autres"]],
     },
     aigleImperialAlchaeran: {
-      label: "Aigle impérial alchaeran", a: [5, 6, 5, 7, 4, 2, 5, 5, 8],
+      label: "Aigle impérial alcheréen", a: [5, 6, 5, 7, 4, 2, 5, 5, 8],
       sd: 5, init: 10, dice: 2, me: 10, atkPool: 6,
       habitat: ["montagnes"],
       desc: "Grand aigle éveillé du Caucase, se nourrit des habitants d'alchéra ; ses ailes semblent couler et ses yeux s'enflamment près des limites arcanes.",
@@ -1268,7 +1268,7 @@ export const Creatures = {
       traits: [["Nature duale", null], ["Sens accrus", "Magnification visuelle"]],
     },
     gorilleArcanus: {
-      label: "Gorille Arcanus", a: [10, 4, 4, 12, 4, 3, 4, 5, 6],
+      label: "Gorille arcanus", a: [10, 4, 4, 12, 4, 3, 4, 5, 6],
       sd: 10, init: 8, dice: 1, me: 13, atkPool: 6,
       habitat: ["montagnes"],
       desc: "Gorille éveillé des Rocheuses, capable d'invoquer des esprits et de diriger une troupe de gorilles ordinaires.",
@@ -1298,7 +1298,7 @@ export const Creatures = {
       traits: [["Armure 4", null], ["Sens accrus", "Magnification visuelle"], ["Mouvement", "10/20/+2 au sol, 20/40/+4 en vol"]],
     },
     griffonAsiatique: {
-      label: "Griffon asiatique", a: [9, 5, 4, 8, 4, 2, 5, 2, 6],
+      label: "Griffon d'Asie", a: [9, 5, 4, 8, 4, 2, 5, 2, 6],
       sd: 15, init: 9, dice: 2, me: 13, atkPool: 6,
       habitat: ["montagnes"],
       desc: "Variante asiatique du griffon au torse plus reptilien, vit en petits groupes familiaux dans les montagnes d'Asie.",
@@ -1308,7 +1308,7 @@ export const Creatures = {
       traits: [["Armure 6", null], ["Sens accrus", "Magnification visuelle"], ["Mouvement", "10/20/+2 au sol, 20/30/+4 en vol"]],
     },
     pinsDouleur: {
-      label: "Pins de la douleur", a: [14, 4, 4, 8, 1, 1, 4, 1, 6],
+      label: "Pin douloureux", a: [14, 4, 4, 8, 1, 1, 4, 1, 6],
       sd: 24, init: 8, dice: 1, me: 15, atkPool: 4,
       habitat: ["montagnes"],
       desc: "Arbre éveillé immobile des falaises montagneuses, vit en groupes aux systèmes racinaires partagés et projette des cônes explosifs toxiques jusqu'à 100 m.",
@@ -1319,7 +1319,7 @@ export const Creatures = {
     },
     yakOmbres: {
       label: "Yak des ombres", a: [10, 1, 2, 12, 2, 1, 2, 1, 6],
-      sd: 13, init: 3, dice: 1, me: 13, atkPool: 4,
+      sd: 13, init: 4, dice: 1, me: 13, atkPool: 4,
       habitat: ["montagnes"],
       desc: "Yak éveillé du Tibet et de l'Himalaya, utilisé comme transport clandestin grâce à une poche abdominale cutanée pouvant dissimuler 1 à 2 métahumains ; se déplace furtivement de nuit.",
       visualTag: "shaggy yak with a hidden abdominal pouch, moving stealthily through Himalayan mist",
@@ -1329,7 +1329,7 @@ export const Creatures = {
       ],
     },
     renardChanceTibet: {
-      label: "Renard chanceux du Tibet", a: [2, 6, 4, 2, 4, 2, 6, 4, 6],
+      label: "Renard porte-bonheur du Tibet", a: [2, 6, 4, 2, 4, 2, 6, 4, 6],
       sd: 2, init: 10, dice: 2, me: 9, atkPool: 3,
       habitat: ["montagnes"],
       desc: "Renard éveillé de l'Himalaya, décide par instinct ou caprice de porter chance ou malchance aux métahumains proches (Accident et Garde).",
@@ -1339,7 +1339,7 @@ export const Creatures = {
       traits: [["Nature duale", null], ["Sens accrus", null], ["Accident", null], ["Garde", null]],
     },
     oiseauTonnerreMajeur: {
-      label: "Oiseau-tonnerre majeur (SR6)", a: [4, 3, 7, 8, 3, 2, 4, 1, 6],
+      label: "Oiseau-tonnerre géant", a: [4, 3, 7, 8, 3, 2, 4, 1, 6],
       sd: 4, init: 11, dice: 2, me: 9, atkPool: 5,
       habitat: ["montagnes"],
       desc: "Grand rapace mythique des régions d'orage, provoque des tempêtes électriques ; les jeunes ressemblent à des oiseaux ordinaires.",
@@ -1349,7 +1349,7 @@ export const Creatures = {
       traits: [["Nature duale", null], ["Attaque élémentaire", "Électricité"], ["Sens accrus", "Vision en basse lumière"], ["Contrôle météorologique", "Tempêtes électriques"], ["Faiblesses", "Robuste -1 (fragile)"], ["Mouvement", "20/40/+3 en vol, 1/5/+1 au sol"]],
     },
     troglodyte: {
-      label: "Troglodyte (SR6)", a: [3, 3, 4, 2, 3, 2, 3, 2, 2],
+      label: "Troglodyte", a: [3, 3, 4, 2, 3, 2, 3, 2, 2],
       sd: 3, init: 7, dice: 1, me: 10, atkPool: 4,
       habitat: ["montagnes", "urbain"],
       desc: "Créature sapiente souterraine, sensible thermiquement et résistante aux radiations, vit en tribu hiérarchisée avec des variantes brute et leader.",
@@ -1360,7 +1360,7 @@ export const Creatures = {
       ],
     },
     troglodyteBrute: {
-      label: "Troglodyte brute", a: [6, 4, 4, 8, 2, 2, 2, 1, 2],
+      label: "Brute troglodyte", a: [6, 4, 4, 8, 2, 2, 2, 1, 2],
       sd: 6, init: 6, dice: 1, me: 11, atkPool: 6,
       habitat: ["montagnes", "urbain"],
       desc: "Membre le plus fort d'une tribu troglodyte, combat au club renforcé.",
@@ -1371,7 +1371,7 @@ export const Creatures = {
       ],
     },
     troglodyteLeader: {
-      label: "Troglodyte leader", a: [3, 2, 3, 2, 4, 3, 4, 5, 2],
+      label: "Chef troglodyte", a: [3, 2, 3, 2, 4, 3, 4, 5, 2],
       sd: 3, init: 7, dice: 1, me: 10, atkPool: 5,
       habitat: ["montagnes", "urbain"],
       desc: "Meneur d'une tribu troglodyte, coordonne les pillages d'équipement et de nourriture.",
@@ -1382,7 +1382,7 @@ export const Creatures = {
       ],
     },
     wyverneBase: {
-      label: "Wyverne de base", a: [9, 4, 4, 16, 4, 4, 4, 3, 6],
+      label: "Wyverne", a: [9, 4, 4, 16, 4, 4, 4, 3, 6],
       sd: 15, init: 8, dice: 2, me: 13, atkPool: 6,
       habitat: ["montagnes", "urbain"],
       desc: "Grand reptile ailé éveillé présent en zones montagneuses et urbaines, agile en vol comme au sol.",
@@ -1402,7 +1402,7 @@ export const Creatures = {
       traits: [["Armure 4", null], ["Sens accrus", null], ["Venin", "Queue : VD 6P"], ["Résonance (créature partiellement émergée)", "Attribut 9 = Résonance, non Magie"], ["Sabotage numérique", "Peut modifier flux vidéo et données cartographiques pour créer des pièges"]],
     },
     wyverneAsiatique: {
-      label: "Wyverne asiatique (renard à neuf queues)", a: [6, 5, 4, 10, 4, 3, 5, 6, 6],
+      label: "Wyverne asiatique", a: [6, 5, 4, 10, 4, 3, 5, 6, 6],
       sd: 10, init: 9, dice: 2, me: 11, atkPool: 4,
       habitat: ["montagnes"],
       desc: "Wyverne des montagnes asiatiques, change-forme puissant apparaissant en belle femme ou jeune fille pour attirer des métahumains mâles vers les nids d'autres wyvernes.",
@@ -1412,7 +1412,7 @@ export const Creatures = {
       traits: [["Armure 4", null], ["Nature duale", null], ["Sens accrus", null], ["Sort inné", "Phantasme"], ["Venin", "Queue : VD 7P"]],
     },
     wyverneArctique: {
-      label: "Wyverne arctique (Isitoq)", a: [14, 3, 3, 18, 3, 3, 5, 2, 6],
+      label: "Wyverne arctique", a: [14, 3, 3, 18, 3, 3, 5, 2, 6],
       sd: 20, init: 8, dice: 2, me: 15, atkPool: 4,
       habitat: ["polaire"],
       desc: "Wyverne arctique liée à la mythologie Isitoq des nations tribales nordiques, plus robuste que ses cousines grâce à une épaisse couche de graisse.",
@@ -1422,7 +1422,7 @@ export const Creatures = {
       traits: [["Armure 6", null], ["Nature duale", null], ["Attaque élémentaire", "Froid"], ["Sens accrus", null], ["Immunité", "Froid"], ["Venin", "Queue : VD 8P"]],
     },
     wyverneAfricaine: {
-      label: "Wyverne africaine (Kongamato)", a: [10, 5, 4, 14, 4, 4, 6, 3, 6],
+      label: "Wyverne africaine", a: [10, 5, 4, 14, 4, 4, 6, 3, 6],
       sd: 14, init: 10, dice: 2, me: 13, atkPool: 6,
       habitat: ["oceans"],
       desc: "Wyverne des rivières et lacs africains, prédateur focalisé sur les métahumains, plonge de haut pour renverser les embarcations.",
@@ -1434,7 +1434,7 @@ export const Creatures = {
 
     /* ---- Wild Life p.52-84 : Forests + Swamps ---- */
     loupFumee: {
-      label: "Loup de fumée", a: [6, 5, 4, 6, 2, 2, 7, 2, 6],
+      label: "Loup fumant", a: [6, 5, 4, 6, 2, 2, 7, 2, 6],
       sd: 9, init: 11, dice: 2, me: 11, atkPool: 6,
       habitat: ["forets", "urbain"],
       desc: "Loup éveillé né des forêts ravagées par les incendies, s'aventurant parfois en zones urbaines et périurbaines.",
@@ -1457,7 +1457,7 @@ export const Creatures = {
       ],
     },
     ecureuilCharognard: {
-      label: "Écureuil charognard", a: [1, 5, 4, 1, 2, 1, 4, 1, 6],
+      label: "Écureuil fouineur", a: [1, 5, 4, 1, 2, 1, 4, 1, 6],
       sd: 1, init: 8, dice: 1, me: 3, atkPool: 1,
       habitat: ["forets", "urbain"],
       desc: "Écureuil éveillé des parcs et forêts d'Amérique du Nord, collecte les objets brillants et use de magie pour dérober les biens des voyageurs.",
@@ -1470,7 +1470,7 @@ export const Creatures = {
       ],
     },
     gargouilleForetNoire: {
-      label: "Gargouille de la Forêt Noire", a: [6, 4, 5, 7, 2, 2, 4, 4, 6],
+      label: "Gargouille de la Forêt-Noire", a: [6, 4, 5, 7, 2, 2, 4, 4, 6],
       sd: 12, init: 9, dice: 2, me: 11, atkPool: 5,
       habitat: ["forets"],
       desc: "Gargouille éveillée des forêts sombres tempérées d'Europe et d'Amérique du Nord.",
@@ -1480,8 +1480,8 @@ export const Creatures = {
       traits: [["Coloration adaptative", null], ["Armure 4", null], ["Nature duale", null], ["Sens accrus", "Vision en pénombre"], ["Armure durcie 2", null], ["Silence", null]],
     },
     oursChuteur: {
-      label: "Ours chuteur", a: [3, 3, 3, 5, 5, 2, 4, 1, 3],
-      sd: 5, init: 7, dice: 1, me: 10, atkPool: 4,
+      label: "Drop bear", a: [3, 3, 3, 5, 5, 2, 4, 1, 3],
+      sd: 5, init: 7, dice: 2, me: 11, atkPool: 4,
       habitat: ["forets"],
       desc: "Petit ours éveillé des forêts australiennes, retombe sans dommage depuis les hauteurs pour surprendre ses proies en embuscade.",
       visualTag: "small bear dropping from a tree branch, forest ambush",
@@ -1490,8 +1490,8 @@ export const Creatures = {
       traits: [["Armure 1", null], ["Chute amortie", "Retombe sans dommage depuis les hauteurs, souvent en embuscade"], ["Sens accrus", "Odorat"]],
     },
     oursCorne: {
-      label: "Ours cornu (SR6)", a: [5, 2, 3, 4, 4, 2, 4, 2, 6],
-      sd: 6, init: 8, dice: 1, me: 10, atkPool: 4,
+      label: "Ours cornu", a: [13, 4, 4, 13, 5, 4, 4, 1, 6],
+      sd: 23, init: 8, dice: 1, me: 18, atkPool: 4,
       habitat: ["forets"],
       desc: "Ours éveillé des forêts boréales et tempérées, aux bois massifs.",
       visualTag: "colossal bear with massive antlers like a stag, thick fur, towering and imposing",
@@ -1500,18 +1500,18 @@ export const Creatures = {
       traits: [["Armure 1", null], ["Charge", null], ["Sens accrus", "Odorat"]],
     },
     gloutonMajeur: {
-      label: "Glouton majeur", a: [4, 4, 3, 3, 2, 3, 4, 3, 4],
-      sd: 5, init: 9, dice: 2, me: 8, atkPool: 5,
+      label: "Carcajou géant", a: [7, 6, 5, 5, 4, 2, 4, 1, 4],
+      sd: 13, init: 9, dice: 2, me: 12, atkPool: 5,
       habitat: ["forets"],
-      desc: "Glouton éveillé des régions boréales et tempérées, ne recule jamais et harcèle des proies bien plus grosses que lui.",
+      desc: "Carcajou éveillé des régions boréales et tempérées, ne recule jamais et harcèle des proies bien plus grosses que lui.",
       visualTag: "large fierce wolverine, thick dark fur, relentless predatory stance",
       skills: { Athlétisme: 5, "Combat rapproché": 5, "Plein air": 4, Perception: 4, Furtivité: 3 },
       naturalWeapons: ["Griffes [VD 4P, SO FOR+RÉA/–/–/–/–]", "Morsure [VD 3S, SO FOR+RÉA/–/–/–/–]"],
       traits: [["Armure 1", null], ["Combat farouche", "Ne recule jamais, harcèle des proies bien plus grosses que lui"], ["Sens accrus", "Odorat"]],
     },
     fauconMerlin: {
-      label: "Faucon merlin", a: [2, 5, 4, 2, 3, 2, 5, 4, 6],
-      sd: 4, init: 12, dice: 2, me: 4, atkPool: 2,
+      label: "Faucon merlin", a: [1, 7, 3, 1, 4, 4, 6, 4, 5],
+      sd: 1, init: 9, dice: 1, me: 4, atkPool: 2,
       habitat: ["forets", "montagnes"],
       desc: "Petit rapace éveillé des forêts côtières et montagneuses tempérées.",
       visualTag: "small merlin falcon, sharp eyes, coastal forest backdrop",
@@ -1520,8 +1520,8 @@ export const Creatures = {
       traits: [["Armure 1", null], ["Sens accrus", "Vision"]],
     },
     serpentMimetique: {
-      label: "Serpent mimétique", a: [2, 4, 4, 2, 1, 2, 3, 1, 6],
-      sd: 2, init: 7, dice: 1, me: 4, atkPool: 3,
+      label: "Serpent imitateur", a: [3, 4, 4, 5, 2, 2, 4, 1, 4],
+      sd: 5, init: 8, dice: 1, me: 10, atkPool: 3,
       habitat: ["jungles"],
       desc: "Serpent éveillé des forêts tropicales, imite magiquement l'apparence d'autres créatures ou objets.",
       visualTag: "shape-shifting snake, scales rippling with illusory patterns, jungle foliage",
@@ -1530,8 +1530,9 @@ export const Creatures = {
       traits: [["Mimétisme magique", "Imite l'apparence d'autres créatures ou objets"], ["Sens accrus", "Odorat"], ["Venin", null], ["Faiblesses", "Aucune résistance aux poisons"]],
     },
     mycofundi: {
-      label: "Mycofundi", a: [2, 1, 2, 2, 4, 1, 2, 3, 6],
-      sd: 2, init: 5, dice: 1, me: 5, atkPool: 2,
+      label: "Mycofundi", a: [2, 2, 3, 1, 3, 2, 4, 0, 3], // livre : CHA — et ESS 3 (p. 58)
+      sd: 2, init: 7, dice: 1, me: 10, atkPool: 2,
+      ess: 3,
       habitat: ["forets", "marais"],
       desc: "Champignon éveillé des zones souterraines et forêts humides, présent dans le monde entier.",
       visualTag: "large sentient fungus, glowing spores, damp cave or forest floor",
@@ -1543,8 +1544,8 @@ export const Creatures = {
       ],
     },
     pandamonium: {
-      label: "Pandamonium", a: [4, 3, 3, 3, 3, 3, 3, 2, 6],
-      sd: 5, init: 8, dice: 1, me: 9, atkPool: 4,
+      label: "Pandamonium", a: [6, 4, 5, 8, 3, 1, 5, 4, 6],
+      sd: 9, init: 10, dice: 2, me: 11, atkPool: 4,
       habitat: ["forets"],
       desc: "Panda éveillé vivant surtout dans les bambouseraies d'Asie.",
       visualTag: "giant panda, black and white fur, bamboo forest",
@@ -1553,8 +1554,8 @@ export const Creatures = {
       traits: [["Armure 1", null], ["Attaque élémentaire", "Électricité"], ["Sens accrus", "Odorat"]],
     },
     porcEpicVolant: {
-      label: "Porc-épic volant (Wild Life)", a: [2, 4, 3, 2, 2, 2, 4, 2, 6],
-      sd: 3, init: 8, dice: 1, me: 5, atkPool: 3,
+      label: "Porc-épic archer", a: [1, 4, 2, 1, 3, 1, 3, 2, 4],
+      sd: 3, init: 5, dice: 1, me: 6, atkPool: 3,
       habitat: ["forets"],
       desc: "Porc-épic éveillé des forêts, surtout africaines, capable de projeter ses piquants.",
       visualTag: "flying porcupine, spines raised, African forest canopy",
@@ -1563,8 +1564,9 @@ export const Creatures = {
       traits: [["Armure 2", "Piquants"]],
     },
     araigneeFeuFollet: {
-      label: "Araignée-feu follet", a: [2, 4, 3, 1, 2, 2, 4, 2, 6],
-      sd: 3, init: 8, dice: 1, me: 4, atkPool: 2,
+      label: "Arachno-follet", a: [2, 4, 5, 2, 3, 1, 4, 1, 6],
+      sd: 6, init: 9, dice: 1, me: 10, atkPool: 2,
+      ess: 4,
       habitat: ["forets", "marais"],
       desc: "Araignée éveillée des forêts humides et marais, très venimeuse ; à ne pas confondre avec les feux follets normaux.",
       visualTag: "venomous spider with faint glowing markings, wet forest undergrowth",
@@ -1573,7 +1575,7 @@ export const Creatures = {
       traits: [["Nature duale", null], ["Sens accrus", "Vision"], ["Venin", null], ["Arme naturelle à distance", "Filet (immobilisation à distance)"]],
     },
     martichoras: {
-      label: "Martichoras (SR6)", a: [7, 5, 5, 6, 3, 2, 4, 1, 6],
+      label: "Manticore", a: [7, 5, 5, 6, 3, 2, 4, 1, 6],
       sd: 11, init: 9, dice: 1, me: 12, atkPool: 5,
       habitat: ["forets", "montagnes"],
       // Compétence Perception non trouvée dans la source (donnée tronquée dans l'extraction, Wild Life p.60 à vérifier).
@@ -1584,8 +1586,8 @@ export const Creatures = {
       traits: [["Armure 2", null], ["Sens accrus", "Odorat, audition"], ["Venin", null]],
     },
     piasma: {
-      label: "Piasma (SR6)", a: [4, 2, 2, 3, 3, 2, 3, 2, 6],
-      sd: 4, init: 7, dice: 1, me: 8, atkPool: 3,
+      label: "Piasme", a: [12, 4, 4, 12, 4, 3, 4, 1, 4],
+      sd: 20, init: 8, dice: 1, me: 14, atkPool: 3,
       habitat: ["marais", "forets"],
       desc: "Grand prédateur éveillé des marais et forêts humides.",
       visualTag: "large armored forest predator, thick hide, crouched and menacing",
@@ -1604,7 +1606,7 @@ export const Creatures = {
       traits: [["Armure 7", null], ["Compulsion", null], ["Nature duale", null], ["Sens accrus", "Odorat, vision thermographique"], ["Régénération", null], ["Venin", "Injection, vitesse 1 tour, Pouvoir 7"], ["Faiblesses", "Vulnérabilité (feu)"]],
     },
     vodyanoy: {
-      label: "Vodyanoy", a: [2, 4, 4, 1, 4, 2, 5, 3, null],
+      label: "Vodianoï", a: [2, 4, 4, 1, 4, 2, 5, 3, null],
       sd: 2, init: 9, dice: 2, me: 9, atkPool: 2,
       habitat: ["marais"],
       desc: "Créature techno-critter des marais de Pripet (Biélorussie, Russie, Yakoutie).",
@@ -1633,7 +1635,7 @@ export const Creatures = {
       ],
     },
     afanc: {
-      label: "Afanc (SR6)", a: [11, 4, 4, 10, 4, 2, 4, 2, 4],
+      label: "Addanc", a: [11, 4, 4, 10, 4, 2, 4, 2, 4],
       sd: 15, init: 8, dice: 2, me: 14, atkPool: 8,
       habitat: ["marais"],
       desc: "Grand castor éveillé des zones humides tropicales (Carib League, Aztlan).",
@@ -1650,7 +1652,7 @@ export const Creatures = {
       ],
     },
     behemothMarecage: {
-      label: "Behemoth (marécage)", a: [15, 3, 2, 16, 6, 2, 3, 1, null],
+      label: "Béhémoth", a: [15, 3, 2, 16, 6, 2, 3, 1, null],
       sd: 21, init: 5, dice: 2, me: 16, atkPool: 8,
       habitat: ["marais"],
       desc: "Alligator géant éveillé des zones humides s'étendant des Caraïbes au CAS et à Aztlan.",
@@ -1670,18 +1672,18 @@ export const Creatures = {
       traits: [["Infection", "VITAS-III"]],
     },
     feuFolletCadaverique: {
-      label: "Feu follet cadavérique", a: [3, 8, 8, 1, 5, 2, 5, 3, 6],
+      label: "Lumicorps", a: [3, 8, 8, 1, 5, 2, 5, 3, 6],
       sd: 3, init: 13, dice: 2, me: 10, atkPool: 6,
       habitat: ["marais"],
       // ESS de base 2D6 (aléatoire) ; considéré avoir une Force égale à son Essence actuelle pour la Matérialisation. Stats astrales : DR 6, I/ID 11/3.
-      desc: "Feu follet des zones humides, esprit errant se nourrissant d'Essence par contact.",
+      desc: "Entité astrale des zones humides, aussi appelée feu follet ; esprit errant se nourrissant d'Essence par contact.",
       visualTag: "ghostly wisp of pale light, drifting over a swamp, faint corpse-light glow",
       skills: { Astral: 6, "Combat rapproché": 6, Influence: 2, Perception: 6, Sorcellerie: 4, Furtivité: 6 },
       naturalWeapons: ["Frappe [VD 2P (élémentaire), SO FOR+RÉA/–/–/–/–]"],
       traits: [["Forme astrale", null], ["Drain d'Essence", null], ["Euphoria", "Pouvoir non listé dans le vocabulaire existant, effet au choix du MJ"], ["Matérialisation", null], ["Mouvement", "Soi"], ["Psychokinésie", null], ["Régénération", null], ["Faiblesses", "Allergie (sel), Perte d'Essence"]],
     },
     porcInfernal: {
-      label: "Porc infernal", a: [7, 5, 4, 5, 3, 2, 4, 1, 4],
+      label: "Sanglier de l'enfer", a: [7, 5, 4, 5, 3, 2, 4, 1, 4],
       sd: 7, init: 8, dice: 2, me: 12, atkPool: 5,
       habitat: ["marais"],
       desc: "Sanglier éveillé très agressif et territorial des marais pollués, peut s'envelopper de flammes.",
@@ -1691,7 +1693,7 @@ export const Creatures = {
       traits: [["Nature duale", null], ["Attaque élémentaire", "Radiation"], ["Engloutissement", "Radiation"], ["Immunité", "Agents pathogènes, toxines"]],
     },
     moucheGhedeFemelle: {
-      label: "Mouche Ghede (femelle)", a: [1, 4, 4, 1, 3, 2, 2, 1, 4],
+      label: "Mouche des Ghédé femelle", a: [1, 4, 4, 1, 3, 2, 2, 1, 4],
       sd: 2, init: 6, dice: 2, me: 2, atkPool: 4,
       habitat: ["marais", "oceans"],
       desc: "Mouche éveillée des Caraïbes et de Méditerranée, se nourrit exclusivement de sang métahumain pour produire ses œufs.",
@@ -1701,7 +1703,7 @@ export const Creatures = {
       traits: [["Armure 1", null], ["Nature duale", null], ["Drain d'Essence", null], ["Immunité", "Agents pathogènes"], ["Pestilence", null], ["Faiblesses", "Fragile (7)"]],
     },
     moucheGhedeMale: {
-      label: "Mouche Ghede (mâle)", a: [1, 5, 5, 1, 2, 1, 1, 1, 4],
+      label: "Mouche des Ghédé mâle", a: [1, 5, 5, 1, 2, 1, 1, 1, 4],
       sd: 2, init: 6, dice: 2, me: 1, atkPool: 4,
       habitat: ["marais", "oceans"],
       desc: "Forme mâle de la mouche Ghede, moins vorace que la femelle mais tout aussi présente sur les côtes caribéennes et méditerranéennes.",
@@ -1711,7 +1713,7 @@ export const Creatures = {
       traits: [["Armure 1", null], ["Confusion", null], ["Nature duale", null], ["Sens accrus", "Odorat, sonar, vision thermographique"], ["Immunité", "Agents pathogènes"], ["Faiblesses", "Fragile (8)"]],
     },
     heqetAdulte: {
-      label: "Heqet (adulte)", a: [1, 3, 4, 1, 2, 1, 2, 1, 3],
+      label: "Héqet adulte", a: [1, 3, 4, 1, 2, 1, 2, 1, 3],
       sd: 1, init: 6, dice: 2, me: 9, atkPool: 1,
       habitat: ["marais"],
       desc: "Grenouille éveillée des zones humides du Nil, capture ses proies d'un jet de langue corrosif.",
@@ -1721,7 +1723,7 @@ export const Creatures = {
       traits: [["Camouflage", null], ["Nature duale", null], ["Drain d'Essence", "Magie"]],
     },
     heqetTetard: {
-      label: "Heqet (têtard)", a: [1, 1, 1, 1, 1, 1, 1, 1, 1],
+      label: "Têtard d'Héqet", a: [1, 1, 1, 1, 1, 1, 1, 1, 1],
       sd: 1, init: 2, dice: 2, me: 1, atkPool: 1,
       habitat: ["marais"],
       desc: "Têtard du Heqet, se nourrit principalement de magie ambiante ; son Magie naturel plafonne à 3.",
@@ -1733,7 +1735,7 @@ export const Creatures = {
       ],
     },
     ninkiNanka: {
-      label: "Ninki Nanka", a: [12, 4, 6, 10, 3, 2, 4, 4, 4],
+      label: "Ninki nanka", a: [12, 4, 6, 10, 3, 2, 4, 4, 4],
       sd: 22, init: 10, dice: 2, me: 14, atkPool: 7,
       habitat: ["marais"],
       desc: "Parent distant des dragons chinois des zones humides d'Afrique de l'Ouest, corps de 21 mètres, chasseur embusqué travaillant en paires.",
@@ -1743,7 +1745,7 @@ export const Creatures = {
       traits: [["Sens accrus", "Biosonar, vision sous-marine"], ["Altérations dermiques", "Dragon"], ["Coloration adaptative", null], ["Armure 10", null], ["Confusion", null]],
     },
     apeMouffette: {
-      label: "Ape mouffette", a: [4, 5, 5, 3, 3, 1, 3, 2, 3],
+      label: "Singe mouffette", a: [4, 5, 5, 3, 3, 1, 3, 2, 3],
       sd: 4, init: 8, dice: 2, me: 11, atkPool: 5,
       habitat: ["marais"],
       desc: "Primate omnivore éveillé des marais de Floride, parenté éloignée du Sasquatch, vit en groupes familiaux de 20 à 30 individus.",
@@ -1753,7 +1755,7 @@ export const Creatures = {
       traits: [["Robuste 1", null], ["Nature duale", null], ["Mouvement", "Soi"], ["Souffle nauséabond", "Inhalation, immédiat, Pouvoir 6, Étourdi/Étourdie/Nauséeux"]],
     },
     dragonClaqueur: {
-      label: "Petit dragon claqueur", a: [11, 4, 4, 14, 4, 1, 3, 1, 5],
+      label: "Dragon serpentin", a: [11, 4, 4, 14, 4, 1, 3, 1, 5],
       sd: 16, init: 7, dice: 2, me: 14, atkPool: 5,
       habitat: ["marais"],
       desc: "Tortue géante éveillée de 12 mètres de diamètre à coquille durcie et cou extensible, des marécages nord-américains.",
@@ -1786,14 +1788,14 @@ export const Creatures = {
       label: "Wangliang", a: [2, 2, 2, 2, 4, 1, 2, 2, 5],
       sd: 4, init: 4, dice: 1, me: 9, atkPool: 1,
       habitat: ["marais"],
-      desc: "Petite tortue éveillée d'Asie du Sud-Est considérée comme un mauvais présage, porteuse de maladie, apparentée à la tortue étang jaune et à la Lo Shu.",
+      desc: "Petite tortue éveillée d'Asie du Sud-Est considérée comme un mauvais présage, porteuse de maladie, apparentée à l'émyde mutique et à la tortue de Luo Shu.",
       visualTag: "small ominous turtle, dark shell, Southeast Asian wetland",
       skills: { Astral: 2, Athlétisme: 2, "Combat rapproché": 1, "Plein air": 2, Perception: 2, Furtivité: 2 },
       naturalWeapons: ["Toucher infecté [VD 2S, SO FOR+RÉA/–/–/–/–]"],
       traits: [["Compulsion", null], ["Armure durcie 2", null]],
     },
     coloColo: {
-      label: "Colo Colo", a: [2, 4, 4, 1, 4, 2, 5, 3, 5],
+      label: "Colo colo", a: [2, 4, 4, 1, 4, 2, 5, 3, 5],
       sd: 2, init: 9, dice: 2, me: 9, atkPool: 2,
       habitat: ["marais"],
       desc: "Rongeur émergent des zones humides, cousin distant de la nutria, mord les hardlines et broute électroniquement les données.",
@@ -1803,7 +1805,7 @@ export const Creatures = {
       traits: [["Persona Matrice", "DR 6, AC A1/I5, CM 10"], ["Morsure numérique", "[Cybercombat, DV 2S, RA 8]"], ["Formes complexes", "Diffusion (Firewall), Éditeur, Pulse Storm"]],
     },
     tortueLoShu: {
-      label: "Tortue Lo Shu", a: [2, 2, 2, 2, 4, 1, 2, 3, 6],
+      label: "Tortue de Luo Shu", a: [2, 2, 2, 2, 4, 1, 2, 3, 6],
       sd: 4, init: 4, dice: 1, me: 9, atkPool: 1,
       habitat: ["marais"],
       desc: "Tortue éveillée d'Asie du Sud-Est considérée comme porte-bonheur, jamais reproduite en captivité, génère son propre puits de mana taoïste (grille magique 3x3).",
@@ -1813,10 +1815,10 @@ export const Creatures = {
       traits: [["Compulsion", null], ["Nature duale", null], ["Garde", null], ["Armure durcie 2", null]],
     },
     tortueEtangJaune: {
-      label: "Tortue étang jaune", a: [2, 1, 1, 1, 4, 1, 1, 2, null],
+      label: "Émyde mutique", a: [2, 1, 1, 1, 4, 1, 1, 2, null],
       sd: 4, init: 2, dice: 1, me: 9, atkPool: 1,
       habitat: ["marais"],
-      desc: "Petite tortue d'Asie du Sud-Est à la rayure jaune caractéristique de l'œil au cou, parente naturelle de la Lo Shu et du Wangliang, rarement Éveillée.",
+      desc: "Petite tortue d'Asie du Sud-Est à la rayure jaune caractéristique de l'œil au cou, parente naturelle de la tortue de Luo Shu et du wangliang, rarement Éveillée.",
       visualTag: "small turtle with a yellow-striped eye marking, pond backdrop",
       skills: { Athlétisme: 1, "Combat rapproché": 1, "Plein air": 1, Perception: 1, Furtivité: 1 },
       naturalWeapons: ["Morsure [VD 2S, SO FOR+RÉA/–/–/–/–]"],
@@ -1825,7 +1827,7 @@ export const Creatures = {
 
     /* ---- Wild Life p.86-114 : Jungles + Savannas ---- */
     leopardBrume: {
-      label: "Léopard de brume", a: [4, 4, 3, 4, 3, 2, 6, 2, null],
+      label: "Léopard des brumes", a: [4, 4, 3, 4, 3, 2, 6, 2, null],
       sd: 6, init: 9, dice: 2, me: 10, atkPool: 5,
       habitat: ["jungles"],
       desc: "Grand félin éveillé des profondeurs de la jungle amazonienne, associé aux sources et cours d'eau.",
@@ -1865,7 +1867,7 @@ export const Creatures = {
       traits: [["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Immobilisé/Empoisonné"]],
     },
     arangUtan: {
-      label: "Arang-Utan", a: [6, 3, 3, 6, 6, 3, 6, 5, 6],
+      label: "Arang-outan", a: [6, 3, 3, 6, 6, 3, 6, 5, 6],
       sd: 9, init: 9, dice: 2, me: 11, atkPool: 4,
       habitat: ["jungles"],
       desc: "Orang-outan éveillé arboricole des forêts tropicales indonésiennes, lecteur d'auras capable de créer des préparations magiques sans drain.",
@@ -1875,7 +1877,7 @@ export const Creatures = {
       traits: [["Armure 3", null], ["Sens accrus", "Vision en basse lumière"], ["Sapience", null], ["Observation astrale", "Lecture d'aura"], ["Préparations magiques", "Peut créer des préparations magiques (Combat, Illusion ou Manipulation) sans drain"]],
     },
     paresseuxClignotant: {
-      label: "Paresseux clignotant", a: [6, 8, 11, 5, 4, 1, 5, 4, 6],
+      label: "Paresseux fulgurant", a: [6, 8, 11, 5, 4, 1, 5, 4, 6],
       sd: 10, init: 16, dice: 5, me: 11, atkPool: 8,
       habitat: ["jungles"],
       // Normalement très lent, le mouvement listé (2(50*)/4/—) ne s'applique que lorsqu'il attaque.
@@ -1886,7 +1888,7 @@ export const Creatures = {
       traits: [["Armure 4", null], ["Brachiation", null], ["Sens accrus", "Ouïe, odorat"], ["Immunité", "Toxines"], ["Faiblesses", "Sens réduit (vue)"]],
     },
     gorilleNartaki: {
-      label: "Gorille Nartaki", a: [8, 3, 4, 9, 2, 2, 4, 2, 6],
+      label: "Gorille nartaki", a: [8, 3, 4, 9, 2, 2, 4, 2, 6],
       sd: 8, init: 8, dice: 1, me: 12, atkPool: 8,
       habitat: ["jungles"],
       desc: "Gorille éveillé des jungles, redoutable au combat rapproché.",
@@ -1896,7 +1898,7 @@ export const Creatures = {
       traits: [["Armure 4", null], ["Sens accrus", "Vision en basse lumière"], ["Frappes multiples", "Ne divise pas sa réserve de dés lors d'attaques multiples en mêlée"]],
     },
     grenouilleFlecettePlanaire: {
-      label: "Grenouille fléchette planaire", a: [1, 3, 3, 1, 4, 1, 3, 1, 8],
+      label: "Dendrobate planaire", a: [1, 3, 3, 1, 4, 1, 3, 1, 8],
       sd: 1, init: 6, dice: 1, me: 3, atkPool: 1,
       habitat: ["jungles"],
       desc: "Petite grenouille éveillée de la canopée, sans arme naturelle documentée, capable de passages métaplanaires.",
@@ -1908,7 +1910,7 @@ export const Creatures = {
       ],
     },
     gomatia: {
-      label: "Gomatia (SR6)", a: [6, 3, 1, 6, 3, 2, 6, 1, 3],
+      label: "Gomatia", a: [6, 3, 1, 6, 3, 2, 6, 1, 3],
       sd: 9, init: 7, dice: 1, me: 11, atkPool: 5,
       habitat: ["jungles"],
       desc: "Petit reptile éveillé caméléonesque de la jungle, souvent utilisé comme créature de sécurité par les corporations.",
@@ -1918,7 +1920,7 @@ export const Creatures = {
       traits: [["Coloration adaptative", null], ["Armure 3", null], ["Liaison", "Binding"], ["Sens accrus", "Toucher, vision à 360°"], ["Immunité", "Toxines"], ["Faiblesses", "Sens réduit (ouïe, odorat)"]],
     },
     beteAraignee: {
-      label: "Bête-araignée (SR6)", a: [2, 4, 3, 2, 3, 1, 3, 1, 6],
+      label: "Araignée colosse", a: [2, 4, 3, 2, 3, 1, 3, 1, 6],
       sd: 6, init: 6, dice: 3, me: 5, atkPool: 3,
       habitat: ["jungles"],
       desc: "Araignée éveillée chasseuse de la canopée, tisse des toiles pour piéger ses proies.",
@@ -1928,7 +1930,7 @@ export const Creatures = {
       traits: [["Armure 4", null], ["Sens accrus", "Tactile"], ["Extrusion de substance", "Soie d'araignée"], ["Escalade murale", null], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Immobilisé/Nauséeux/Empoisonné"], ["Faiblesses", "Fragile (4)"]],
     },
     chatTalisGuepard: {
-      label: "Chat Talis (forme guépard)", a: [5, 5, 4, 4, 3, 3, 2, 3, 6],
+      label: "Chat talis (forme de guépard)", a: [5, 5, 4, 4, 3, 3, 2, 3, 6],
       sd: 8, init: 5, dice: 2, me: 11, atkPool: 3,
       habitat: ["jungles"],
       desc: "Félin éveillé social des confins savane/jungle asiatiques, capable de changer de forme entre guépard et chat domestique.",
@@ -1938,7 +1940,7 @@ export const Creatures = {
       traits: [["Armure 3", null], ["Masque astral", null], ["Métamorphose", "Shift : possède deux formes, guépard et chat domestique"], ["Sens accrus", "Vision en basse lumière"], ["Mouvement", "Soi"]],
     },
     chatTalisDomestique: {
-      label: "Chat Talis (forme domestique)", a: [2, 6, 4, 1, 3, 3, 2, 3, 6],
+      label: "Chat talis (forme domestique)", a: [2, 6, 4, 1, 3, 3, 2, 3, 6],
       sd: 5, init: 6, dice: 2, me: 5, atkPool: 3,
       habitat: ["jungles"],
       desc: "Forme domestique du chat Talis, plus discrète mais capable des mêmes métamorphoses.",
@@ -1962,7 +1964,7 @@ export const Creatures = {
       traits: [["Armure 2", null], ["Compulsion", null], ["Sens accrus", "Odorat, vision en basse lumière"], ["Peur", null], ["Mimétisme", null]],
     },
     guepeVide: {
-      label: "Guêpe du vide", a: [1, 8, 11, 1, 1, 1, 5, 5, 6],
+      label: "Guêpe du néant", a: [1, 8, 11, 1, 1, 1, 5, 5, 6],
       sd: 1, init: 16, dice: 2, me: 1, atkPool: 6,
       habitat: ["jungles"],
       desc: "Guêpe éveillée nichant en essaim dans les arbres Sangre del Diablo de l'Amazonie, crée un vide de mana autour de son nid.",
@@ -1992,7 +1994,7 @@ export const Creatures = {
       traits: [["Armure 6", null], ["Attaque élémentaire", "Feu"], ["Sécrétion", "Huiles inflammables"], ["Sens accrus", "Vision en basse lumière, odorat"], ["Immunité", "Feu"]],
     },
     elephantBlinde: {
-      label: "Éléphant blindé", a: [18, 3, 3, 30, 4, 2, 8, 6, 6],
+      label: "Éléphantaure", a: [18, 3, 3, 30, 4, 2, 8, 6, 6],
       sd: 32, init: 11, dice: 1, me: 17, atkPool: 8,
       habitat: ["jungles"],
       desc: "Éléphant éveillé cuirassé des savanes africaines, protecteur du troupeau.",
@@ -2002,7 +2004,7 @@ export const Creatures = {
       traits: [["Armure 8", null], ["Sens accrus", "Vision en basse lumière"], ["Armure durcie 6", null]],
     },
     autrucheAerienne: {
-      label: "Autruche aérienne", a: [2, 4, 2, 1, 1, 1, 4, 2, 6],
+      label: "Autruche volante", a: [2, 4, 2, 1, 1, 1, 4, 2, 6],
       sd: 2, init: 6, dice: 1, me: 5, atkPool: 3,
       habitat: ["jungles"],
       desc: "Autruche éveillée volante nichant en savane, circumnavigue le globe tous les 2 ans pour se reproduire.",
@@ -2022,7 +2024,7 @@ export const Creatures = {
       traits: [["Armure 3", null], ["Nature duale", null], ["Sens accrus", "Ouïe, vision en basse lumière, odorat"], ["Passage métaplanaire", null], ["Mouvement", "Soi"], ["Sapience", null]],
     },
     rhinocerosApocalypse: {
-      label: "Rhinocéros de l'apocalypse", a: [10, 3, 3, 10, 1, 1, 3, 1, 6],
+      label: "Rhino de l'apocalypse", a: [10, 3, 3, 10, 1, 1, 3, 1, 6],
       sd: 18, init: 6, dice: 1, me: 13, atkPool: 6,
       habitat: ["jungles"],
       desc: "Rhinocéros éveillé des savanes africaines, associé à une mine de radium désaffectée.",
@@ -2032,7 +2034,7 @@ export const Creatures = {
       traits: [["Armure 6", null], ["Sens accrus", "Vision en basse lumière"], ["Peur", null], ["Armure durcie 2", null], ["Porteur", null], ["Secousse", "Quake"], ["Tempête", "Storm"], ["Pétrification", null]],
     },
     termitesOsseux: {
-      label: "Termites osseux", a: [1, 1, 1, 1, 1, 1, 2, 1, 2],
+      label: "Termite osseux", a: [1, 1, 1, 1, 1, 1, 2, 1, 2],
       sd: 1, init: 3, dice: 1, me: 1, atkPool: 2,
       habitat: ["jungles"],
       desc: "Colonie de termites éveillés habitant cimetières, ossuaires et sites de massacre.",
@@ -2042,7 +2044,7 @@ export const Creatures = {
       traits: [["Sens accrus", "Vision en basse lumière"], ["Faiblesses", "Fragile (8)"]],
     },
     ebranleurTerre: {
-      label: "Ébranleur de terre", a: [12, 2, 3, 12, 1, 1, 3, 1, 6],
+      label: "Briseterre", a: [12, 2, 3, 12, 1, 1, 3, 1, 6],
       sd: 24, init: 6, dice: 1, me: 14, atkPool: 4,
       habitat: ["jungles"],
       desc: "Grand bovidé éveillé des savanes africaines, utilisé comme monture de guerre par certaines tribus.",
@@ -2052,7 +2054,7 @@ export const Creatures = {
       traits: [["Armure 8", null], ["Sens accrus", "Vision en basse lumière"], ["Armure durcie 4", null]],
     },
     fourmisBoulesFeu: {
-      label: "Fourmis boules de feu", a: [1, 1, 1, 1, 1, 1, 2, 1, 2],
+      label: "Fourmi boule de feu", a: [1, 1, 1, 1, 1, 1, 2, 1, 2],
       sd: 1, init: 3, dice: 1, me: 1, atkPool: 2,
       habitat: ["jungles"],
       desc: "Fourmis éveillées coloniales des savanes africaines, capables de projeter des boules de feu.",
@@ -2065,7 +2067,7 @@ export const Creatures = {
       ],
     },
     grandTisserin: {
-      label: "Grand tisserin", a: [1, 5, 4, 1, 3, 3, 4, 3, 6],
+      label: "Tisserin supérieur", a: [1, 5, 4, 1, 3, 3, 4, 3, 6],
       sd: 1, init: 8, dice: 1, me: 1, atkPool: 1,
       habitat: ["jungles"],
       desc: "Oiseau tisserin éveillé des savanes africaines, dont les nids servent de passages métaplanaires.",
@@ -2097,7 +2099,7 @@ export const Creatures = {
       traits: [["Sens accrus", "Vision en basse lumière"], ["Passage métaplanaire", null], ["Faiblesses", "Fragile (4)"]],
     },
     babouinOzien: {
-      label: "Babouin d'Oz (SR6)", a: [5, 5, 4, 4, 2, 2, 5, 4, 4],
+      label: "Babouin d'Oz", a: [5, 5, 4, 4, 2, 2, 5, 4, 4],
       sd: 7, init: 9, dice: 2, me: 9, atkPool: 4,
       habitat: ["jungles"],
       desc: "Babouin éveillé ailé des savanes africaines, prédateur aérien.",
@@ -2107,7 +2109,7 @@ export const Creatures = {
       traits: [["Armure 2", null], ["Sens accrus", "Vision en basse lumière, odorat"], ["Sort inné", "Lévitation"], ["Faiblesses", "Fragile (2)"]],
     },
     fourmisResonance: {
-      label: "Fourmis de résonance", a: [1, 1, 1, 1, 1, 1, 2, 1, null],
+      label: "Fourmi résonante", a: [1, 1, 1, 1, 1, 1, 2, 1, null],
       sd: 1, init: 3, dice: 1, me: 1, atkPool: 1,
       habitat: ["jungles", "urbain"],
       desc: "Fourmis techno-critter des savanes africaines, nichant aussi bien dans les arbres qu'en zone urbaine.",
@@ -2120,7 +2122,7 @@ export const Creatures = {
       ],
     },
     crocodileVide: {
-      label: "Crocodile du vide", a: [8, 3, 4, 5, 2, 1, 3, 2, 6],
+      label: "Crocodile du néant", a: [8, 3, 4, 5, 2, 1, 3, 2, 6],
       sd: 14, init: 7, dice: 2, me: 12, atkPool: 4,
       habitat: ["jungles"],
       desc: "Crocodile éveillé prédateur des savanes africaines, capable d'amortir la magie ambiante.",
@@ -2142,7 +2144,7 @@ export const Creatures = {
       traits: [["Armure 8", null], ["Nature duale", null], ["Sens accrus", "Odorat, vision en basse lumière"], ["Armure durcie 2", null], ["Bond", "Doit courir avant d'attaquer, une attaque réussie provoque une chute"]],
     },
     juggernaut: {
-      label: "Juggernaut (Wild Life)", a: [20, 6, 5, 42, 9, 1, 3, 1, null],
+      label: "Juggernaut", a: [20, 6, 5, 42, 9, 1, 3, 1, null],
       sd: 40, init: 8, dice: 1, me: 30, atkPool: 5,
       habitat: ["deserts"],
       desc: "Tatou géant éveillé des régions désertiques pouvant atteindre 20 mètres, respire par symbiose bactérienne anaérobie.",
@@ -2152,7 +2154,7 @@ export const Creatures = {
       traits: [["Armure 8", null], ["Robuste 12", null], ["Sens accrus", "Ouïe, odorat, détection de mouvement"], ["Peur", null], ["Armure durcie 12", null], ["Immunité", "Froid, feu, pathogènes, toxines"], ["Faiblesses", "Sens réduit (vue)"]],
     },
     dardAile: {
-      label: "Dard-ailé", a: [2, 5, 5, 2, 3, 2, 4, 1, null],
+      label: "Scorpillon", a: [2, 5, 5, 2, 3, 2, 4, 1, null],
       sd: 6, init: 9, dice: 2, me: 9, atkPool: 5,
       habitat: ["deserts"],
       desc: "Petite créature ailée venimeuse des zones désertiques, nichant volontiers dans les cactus.",
@@ -2162,7 +2164,7 @@ export const Creatures = {
       traits: [["Armure 4", null], ["Sens accrus", "Odorat, vision en basse lumière"], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Empoisonné"]],
     },
     loupFouisseur: {
-      label: "Loup fouisseur", a: [3, 4, 5, 3, 2, 2, 4, 2, null],
+      label: "Protèle", a: [3, 4, 5, 3, 2, 2, 4, 2, null],
       sd: 5, init: 9, dice: 2, me: 10, atkPool: 5,
       habitat: ["deserts"],
       desc: "Petit canidé éveillé des déserts d'Amérique du Nord (PCC, Cal Free, Aztlan), se dissimule facilement.",
@@ -2172,7 +2174,7 @@ export const Creatures = {
       traits: [["Armure 2", null], ["Dissimulation", "Personnelle"], ["Nature duale", null], ["Sens accrus", "Odorat, vision en basse lumière"], ["Faiblesses", "Allergie (polluants, faible)"]],
     },
     cactusTonnerre: {
-      label: "Cactus tonnerre", a: [6, 1, 4, 3, 1, 1, 4, 1, null],
+      label: "Cactus explosif", a: [6, 1, 4, 3, 1, 1, 4, 1, null],
       sd: 17, init: 8, dice: 1, me: 21, atkPool: 4,
       habitat: ["deserts"],
       desc: "Cactus éveillé immobile des régions désertiques, tire ses aiguilles venimeuses sur ses assaillants.",
@@ -2182,7 +2184,7 @@ export const Creatures = {
       traits: [["Armure 8", null], ["Nature duale", null], ["Robuste 10", null], ["Armure durcie 3", null], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Immobilisé/Empoisonné"], ["Immobile", "Mouvement 0"]],
     },
     chimere: {
-      label: "Chimère (Wild Life)", a: [5, 6, 5, 5, 4, 2, 3, 4, null],
+      label: "Chimère", a: [5, 6, 5, 5, 4, 2, 3, 4, null],
       sd: 11, init: 8, dice: 2, me: 11, atkPool: 4,
       habitat: ["deserts"],
       desc: "Grand lézard éveillé de 3,5 mètres des régions désertiques, ressemblant à un jeune dragon sans ailes.",
@@ -2192,7 +2194,7 @@ export const Creatures = {
       traits: [["Armure 6", null], ["Dissimulation", "Personnelle"], ["Nature duale", null], ["Immunité", "Poisons, toxines"], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Confusion/Étourdi/Empoisonné"], ["Faiblesses", "Vulnérabilité (métaux ferreux)"], ["Pouvoir optionnel (choix du MJ)", "Attaque élémentaire (Feu)"]],
     },
     deathrattle: {
-      label: "Deathrattle (SR6)", a: [3, 6, 8, 4, 2, 1, 5, 2, null],
+      label: "Crotale funeste", a: [3, 6, 8, 4, 2, 1, 5, 2, null],
       sd: 9, init: 13, dice: 3, me: 10, atkPool: 5,
       habitat: ["deserts"],
       desc: "Serpent éveillé du désert, chasseur nocturne crachant un venin dévastateur à distance.",
@@ -2202,17 +2204,17 @@ export const Creatures = {
       traits: [["Armure 6", null], ["Sens accrus", "Vision thermographique"], ["Immunité", "Douleur, toxines"], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Empoisonné"]],
     },
     millePattesEthere: {
-      label: "Mille-pattes éthéré", a: [1, 2, 2, 1, 1, 1, 3, 1, null],
+      label: "Scolopendre éthérée", a: [1, 2, 2, 1, 1, 1, 3, 1, null],
       sd: 1, init: 5, dice: 1, me: 1, atkPool: 2,
       habitat: ["deserts"],
-      desc: "Petit mille-pattes éveillé des zones désertiques, son venin force une perception astrale non désirée.",
+      desc: "Petite scolopendre éveillée des zones désertiques, son venin force une perception astrale non désirée.",
       visualTag: "small ethereal centipede, faint astral shimmer, desert rocks",
       skills: { Astral: 2, "Combat rapproché": 2, "Plein air": 2, Perception: 2, Furtivité: 4 },
       naturalWeapons: ["Morsure [VD 1P (plus venin), SO FOR+RÉA/–/–/–/–]"],
       traits: [["Nature duale", null], ["Sens accrus", "Odorat"], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Confusion/Étourdi/Empoisonné/Perception astrale forcée"], ["Faiblesses", "Fragile (8)"]],
     },
     demonGila: {
-      label: "Démon Gila", a: [4, 4, 3, 4, 3, 2, 6, 2, null],
+      label: "Démon de Gila", a: [4, 4, 3, 4, 3, 2, 6, 2, null],
       sd: 8, init: 9, dice: 2, me: 10, atkPool: 5,
       habitat: ["deserts"],
       desc: "Lézard éveillé venimeux des régions désertiques, apparenté au monstre de Gila.",
@@ -2222,7 +2224,7 @@ export const Creatures = {
       traits: [["Armure 4", null], ["Sens accrus", "Odorat, vision en basse lumière"], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Étourdi/Nauséeux/Empoisonné"]],
     },
     tatouMajeur: {
-      label: "Tatou majeur", a: [6, 4, 3, 4, 3, 2, 4, 2, null],
+      label: "Tatou géant", a: [6, 4, 3, 4, 3, 2, 4, 2, null],
       sd: 16, init: 7, dice: 2, me: 11, atkPool: 5,
       habitat: ["deserts"],
       desc: "Tatou éveillé cuirassé des régions désertiques, très stupide et imprévisible, se roule en boule défensive.",
@@ -2232,7 +2234,7 @@ export const Creatures = {
       traits: [["Armure 8", null], ["Nature duale", null], ["Sens accrus", "Odorat, vision en basse lumière"], ["Armure durcie 2", null], ["Bond", null]],
     },
     grandeDameBlancheDansante: {
-      label: "Grande dame blanche dansante", a: [1, 4, 4, 1, 3, 1, 3, 1, null],
+      label: "Dame blanche géante", a: [1, 4, 4, 1, 3, 1, 3, 1, null],
       sd: 1, init: 7, dice: 2, me: 4, atkPool: 2,
       habitat: ["deserts"],
       desc: "Araignée-trappe éveillée des dunes du Namib (12-30 cm), vivant en communautés de jusqu'à 24 individus.",
@@ -2242,7 +2244,7 @@ export const Creatures = {
       traits: [["Sens accrus", "Sens des vibrations"], ["Mouvement", "Soi"], ["Escalade murale", null], ["Toucher paralysant", null], ["Venin", "Injection, vitesse 1 tour, Pouvoir Magie, effet Saignement/Étourdi/Immobilisé/Empoisonné"], ["Faiblesses", "Fragile (5)"]],
     },
     scorpionNova: {
-      label: "Scorpion nova (SR6)", a: [4, 4, 4, 3, 3, 2, 5, 1, null],
+      label: "Novascorpion", a: [4, 4, 4, 3, 3, 2, 5, 1, null],
       sd: 16, init: 7, dice: 2, me: 11, atkPool: 4,
       habitat: ["deserts"],
       desc: "Scorpion éveillé des régions désertiques, chasse la nuit en embuscade dans le sable.",
@@ -2272,7 +2274,7 @@ export const Creatures = {
       traits: [["Armure 3", null], ["Dissimulation", "Émergent : invisible et perturbe la technologie environnante"], ["Sens accrus", "Ouïe, vision en basse lumière, odorat"], ["Immunité", "Froid"]],
     },
     renneRegne: {
-      label: "Renne-règne", a: [8, 4, 4, 8, 2, 2, 4, 2, 6],
+      label: "Renne tyran", a: [8, 4, 4, 8, 2, 2, 4, 2, 6],
       sd: 10, init: 8, dice: 1, me: 12, atkPool: 4,
       habitat: ["polaire"],
       desc: "Renne ailé prédateur éveillé du Svalbard, influence les enfants avant de les précipiter au sol depuis les airs.",
@@ -2282,7 +2284,7 @@ export const Creatures = {
       traits: [["Armure 2", null], ["Nature duale", null], ["Sens accrus", "Vision en basse lumière"], ["Influence", null]],
     },
     renardMalade: {
-      label: "Renard malade", a: [3, 5, 5, 3, 2, 1, 5, 3, 6],
+      label: "Renard toxique", a: [3, 5, 5, 3, 2, 1, 5, 3, 6],
       sd: 3, init: 10, dice: 2, me: 10, atkPool: 3,
       habitat: ["polaire"],
       desc: "Renard éveillé arctique corrompu par la pollution des anciennes mines (teinte cuivrée-verte).",
@@ -2292,7 +2294,7 @@ export const Creatures = {
       traits: [["Nature duale", null], ["Sens accrus", "Ouïe, vision en basse lumière, odorat"], ["Immunité", "Radiation, toxines"]],
     },
     sculpteursAntarctiques: {
-      label: "Sculpteurs antarctiques", a: [4, 4, 2, 1, 2, 1, 4, 1, 6],
+      label: "Sculpteur antarctique", a: [4, 4, 2, 1, 2, 1, 4, 1, 6],
       sd: 6, init: 6, dice: 1, me: 10, atkPool: 4,
       habitat: ["polaire"],
       desc: "Créature éveillée non classifiée ressemblant à une méduse, ne survit qu'en dessous de -10°C.",
@@ -2304,7 +2306,7 @@ export const Creatures = {
       ],
     },
     dragonGlace: {
-      label: "Dragon de glace", a: [4, 4, 4, 4, 3, 4, 4, 2, 6],
+      label: "Drakon de glace", a: [4, 4, 4, 4, 3, 4, 4, 2, 6],
       sd: 10, init: 8, dice: 2, me: 10, atkPool: 8,
       habitat: ["polaire"],
       desc: "Grand lézard éveillé polaire ressemblant à un jeune dragon sans ailes, dégage une aura froide (-100°C).",
@@ -2314,7 +2316,7 @@ export const Creatures = {
       traits: [["Armure 2", null], ["Nature duale", null], ["Attaque élémentaire", "Froid"], ["Sens accrus", "Odorat"], ["Armure durcie 4", null], ["Immunité", "Froid"], ["Armure mystique 4", null], ["Escalade murale", null]],
     },
     araigneeGlace: {
-      label: "Araignée des glaces", a: [3, 4, 4, 2, 1, 1, 4, 1, 4],
+      label: "Araignée de glace", a: [3, 4, 4, 2, 1, 1, 4, 1, 4],
       sd: 3, init: 8, dice: 1, me: 10, atkPool: 4,
       habitat: ["polaire"],
       desc: "Araignée éveillée des régions polaires (arctique et antarctique).",
@@ -2324,7 +2326,7 @@ export const Creatures = {
       traits: [["Nature duale", null], ["Immunité", "Froid"], ["Mouvement", "Soi"], ["Venin", null], ["Bond", "Doit courir avant d'attaquer, une attaque réussie fait tomber la cible (Prone)"]],
     },
     lievreMatriciel: {
-      label: "Lièvre matriciel", a: [2, 5, 4, 1, 3, 2, 5, 2, null],
+      label: "Lièvre de Matrice", a: [2, 5, 4, 1, 3, 2, 5, 2, null],
       sd: 2, init: 9, dice: 1, me: 5, atkPool: 2,
       habitat: ["polaire"],
       desc: "Lièvre techno-critter émergent des régions polaires arctiques, ailes en circuit imprimé, dents et griffes allongées.",
@@ -2351,7 +2353,7 @@ export const Creatures = {
       ],
     },
     elanNeiges: {
-      label: "Élan des neiges", a: [11, 4, 4, 9, 3, 2, 4, 3, 4],
+      label: "Élan arcanarctique", a: [11, 4, 4, 9, 3, 2, 4, 3, 4],
       sd: 14, init: 8, dice: 1, me: 14, atkPool: 4,
       habitat: ["polaire"],
       desc: "Élan éveillé des régions polaires arctiques.",
@@ -2361,17 +2363,17 @@ export const Creatures = {
       traits: [["Armure 3", null], ["Nature duale", null], ["Silence", null]],
     },
     chouetteNeiges: {
-      label: "Chouette des neiges", a: [4, 3, 3, 2, 2, 2, 5, 2, 6],
+      label: "Harfang des glaces", a: [4, 3, 3, 2, 2, 2, 5, 2, 6],
       sd: 4, init: 8, dice: 1, me: 8, atkPool: 3,
       habitat: ["polaire", "montagnes"],
-      desc: "Chouette éveillée des régions polaires et montagneuses, provoque des chutes de neige localisées.",
+      desc: "Harfang éveillé des régions polaires et montagneuses, provoque des chutes de neige localisées.",
       visualTag: "snowy owl, pale plumage, swirling snow around it, mountain backdrop",
       skills: { Astral: 3, Athlétisme: 2, "Combat rapproché": 3, "Plein air": 3, Perception: 6, Furtivité: 4 },
       naturalWeapons: ["Serres [VD 1P, SO FOR+RÉA/–/–/–/–]"],
       traits: [["Nature duale", null], ["Sens accrus", "Vision en basse lumière, vision thermographique"], ["Immunité", "Froid"], ["Contrôle météorologique", "Chute de neige localisée"], ["Faiblesses", "Fragile (2), Vulnérabilité (feu)"]],
     },
     serpentDesNeiges: {
-      label: "Serpent des neiges (SR6)", a: [2, 5, 4, 2, 2, 1, 4, 1, 3],
+      label: "Serpent des neiges", a: [2, 5, 4, 2, 2, 1, 4, 1, 3],
       sd: 2, init: 8, dice: 1, me: 9, atkPool: 3,
       habitat: ["polaire"],
       desc: "Serpent éveillé adapté au grand froid, en expansion vers le nord-ouest de l'Amérique du Nord.",
@@ -2381,10 +2383,10 @@ export const Creatures = {
       traits: [["Sens accrus", "Vision en basse lumière, odorat"], ["Immunité", "Froid"], ["Venin", null], ["Faiblesses", "Vulnérabilité (feu)"]],
     },
     pingouinVampire: {
-      label: "Pingouin vampire", a: [2, 3, 3, 1, 1, 1, 4, 2, 4],
+      label: "Manchot vampire", a: [2, 3, 3, 1, 1, 1, 4, 2, 4],
       sd: 2, init: 7, dice: 1, me: 4, atkPool: 3,
       habitat: ["polaire"],
-      desc: "Pingouin hématophage éveillé de l'Antarctique.",
+      desc: "Manchot hématophage éveillé de l'Antarctique.",
       visualTag: "penguin with small fangs, blood-tinted beak, antarctic ice backdrop",
       skills: { Astral: 3, Athlétisme: 4, "Combat rapproché": 3, "Plein air": 3, Perception: 4, Furtivité: 2 },
       naturalWeapons: ["Morsure [VD 1P (saignement si succès), SO FOR+RÉA/–/–/–/–]"],
@@ -2433,7 +2435,7 @@ export const Creatures = {
       traits: [["Coloration adaptative", null], ["Armure 11", null], ["Faiblesses", "Allergie (soleil, faible)"], ["Allonge", "Portée maximale de 40 mètres"]],
     },
     homardAbrams: {
-      label: "Homard Abrams (SR6)", a: [4, 3, 3, 7, 3, 4, 3, 1, null],
+      label: "Homard Abrams", a: [4, 3, 3, 7, 3, 4, 3, 1, null],
       sd: 10, init: 6, dice: 1, me: 10, atkPool: 5,
       habitat: ["oceans"],
       desc: "Crustacé éveillé de 1,5 mètre pesant plus de 100 kg, de la mer du Nord et des mers arctiques.",
@@ -2443,7 +2445,7 @@ export const Creatures = {
       traits: [["Sens accrus", "Sonar"], ["Conscience collective", null], ["Armure durcie 6", null], ["Immunité", "Toxines"]],
     },
     poissonDiable: {
-      label: "Poisson-diable", a: [11, 3, 5, 8, 4, 2, 3, 2, null],
+      label: "Raie de l'effroi", a: [11, 3, 5, 8, 4, 2, 3, 2, null],
       sd: 11, init: 8, dice: 1, me: 14, atkPool: 2,
       habitat: ["oceans"],
       desc: "Raie manta éveillée de 8 mètres d'envergure, des eaux tropicales et subtropicales, solitaire ou en groupes jusqu'à 30.",
@@ -2453,7 +2455,7 @@ export const Creatures = {
       traits: [["Peur", null], ["Venin", "Injection, vitesse 4 tours, Pouvoir 6, effet Nauséeux/Empoisonné"]],
     },
     brochetDiamantDemoniaque: {
-      label: "Brochet diamant démoniaque", a: [5, 5, 5, 5, 3, 1, 3, 1, null],
+      label: "Devil jack diamond", a: [5, 5, 5, 5, 3, 1, 3, 1, null],
       sd: 11, init: 8, dice: 1, me: 11, atkPool: 5,
       habitat: ["oceans"],
       desc: "Poisson prédateur éveillé agressif de 3 mètres, du Mississippi et des eaux douces d'Amérique du Nord.",
@@ -2463,7 +2465,7 @@ export const Creatures = {
       traits: [["Armure 6", null]],
     },
     requinGlouton: {
-      label: "Requin glouton", a: [20, 4, 3, 16, 3, 1, 3, 2, null],
+      label: "Requin-pèlerin géant", a: [20, 4, 3, 16, 3, 1, 3, 2, null],
       sd: 32, init: 6, dice: 1, me: 26, atkPool: 3,
       habitat: ["oceans"],
       desc: "Grand requin filtreur éveillé de 20-23 mètres, des eaux tempérées au large de Land's End.",
@@ -2474,7 +2476,7 @@ export const Creatures = {
       ],
     },
     baleineGungir: {
-      label: "Baleine Gungir", a: [10, 4, 4, 8, 4, 3, 5, 3, null],
+      label: "Baleine Gungnir", a: [10, 4, 4, 8, 4, 3, 5, 3, null],
       sd: 16, init: 9, dice: 2, me: 13, atkPool: 6,
       habitat: ["oceans"],
       desc: "Narval éveillé de 8-12 mètres, se déplaçant en groupes mêlés à des narvals ordinaires dans l'océan Arctique.",
@@ -2484,7 +2486,7 @@ export const Creatures = {
       traits: [["Armure 6", null], ["Sens accrus", "Sonar"]],
     },
     chantreMaitre: {
-      label: "Chantre-maître (SR6)", a: [24, 5, 5, 32, 8, 3, 4, 5, null],
+      label: "Meistersinger", a: [24, 5, 5, 32, 8, 3, 4, 5, null],
       sd: 36, init: 9, dice: 1, me: 30, atkPool: 5,
       habitat: ["oceans"],
       desc: "Baleine à bosse éveillée et sapiente de 26 mètres et 55 tonnes, vivant en groupes océaniques pouvant compter jusqu'à 15 individus ; sa queue est utilisée en coups de mêlée.",
@@ -2494,7 +2496,7 @@ export const Creatures = {
       traits: [["Contrôle animal", "Poissons, mammifères marins"], ["Armure 12", null], ["Compulsion", null], ["Robuste 10", null], ["Engloutissement", "Eau"], ["Sens accrus", "Sonar, sens magique"], ["Peur", null], ["Immunité", "Armes ordinaires"], ["Influence", null], ["Télépathie", "Mindspeech"], ["Sapience", null], ["Recherche", null], ["Contrôle météorologique", null], ["Faiblesses", "Inculte (Uneducated)"]],
     },
     tortueLuthNouvelle: {
-      label: "Nouvelle tortue luth", a: [8, 3, 3, 6, 4, 2, 3, 4, null],
+      label: "Néo-luth", a: [8, 3, 3, 6, 4, 2, 3, 4, null],
       sd: 13, init: 6, dice: 1, me: 12, atkPool: 5,
       habitat: ["oceans"],
       desc: "Tortue marine éveillée de plus de 3 mètres et 1000 kg, des eaux tropicales (variante en eau douce dans les Grands Lacs et le Mississippi).",
@@ -2525,7 +2527,7 @@ export const Creatures = {
       traits: [["Engloutissement", "Eau"], ["Attaque élémentaire", "Électricité"], ["Sens accrus", "Sonar, sens magique"], ["Garde magique", "Soi"], ["Télépathie", "Mindspeech"], ["Sapience", null], ["Contrôle météorologique", null], ["Faiblesses", "Inculte (Uneducated)"]],
     },
     requinTorpille: {
-      label: "Requin torpille", a: [8, 5, 4, 9, 3, 1, 3, 1, null],
+      label: "Requin-torpille", a: [8, 5, 4, 9, 3, 1, 3, 1, null],
       sd: 13, init: 7, dice: 2, me: 12, atkPool: 4,
       habitat: ["oceans"],
       desc: "Requin bleu éveillé de 5 mètres, des eaux tropicales et subtropicales du Pacifique à moins de 150 m de profondeur.",
@@ -2576,7 +2578,7 @@ export const Creatures = {
       traits: [["Armure 5", null], ["Sens accrus", "Odorat"], ["Escalade murale", null]],
     },
     pigeonsBruit: {
-      label: "Pigeons du bruit", a: [2, 3, 3, 1, 3, 4, 5, 4, null],
+      label: "Pigeon parasite", a: [2, 3, 3, 1, 3, 4, 5, 4, null],
       sd: 2, init: 8, dice: 1, me: 2, atkPool: 2,
       habitat: ["urbain"],
       // Agit comme un Jammer 1, +1 de rating par pigeon (max 25) ; nourrir un pigeon annule le brouillage.
@@ -2592,7 +2594,7 @@ export const Creatures = {
       ],
     },
     chienChanteur: {
-      label: "Chien chanteur", a: [3, 2, 4, 2, 4, 4, 5, 4, null],
+      label: "Coyote chanteur", a: [3, 2, 4, 2, 4, 4, 5, 4, null],
       sd: 7, init: 9, dice: 1, me: 10, atkPool: 4,
       habitat: ["urbain"],
       // Fourrure = poils électrochromiques biologiques, contrôlable comme des vêtements.
@@ -2603,7 +2605,7 @@ export const Creatures = {
       traits: [["Résonance (créature techno-critter)", "Attribut 9 = Résonance (5), non Magie ; AR-Parallélisme"], ["Armure 4", null], ["Sens accrus", "Ouïe, vision en basse lumière, odorat"], ["Dissimulation holographique", null], ["Chant hypnotique", null], ["Mimétisme", null], ["Formes complexes", "Emulate (datasoft transit local, mapsoft zone locale, brouilleur de signal), Canal de résonance"]],
     },
     bergerEveille: {
-      label: "Berger éveillé", a: [3, 2, 3, 2, 2, 3, 3, 3, 4],
+      label: "Berger Éveillé", a: [3, 2, 3, 2, 2, 3, 3, 3, 4],
       sd: 4, init: 6, dice: 1, me: 10, atkPool: 4,
       habitat: ["urbain"],
       desc: "Berger allemand éveillé des zones de sécurité urbaines, en alerte il offre un point d'Edge situationnel à quiconque tente de le remarquer.",
@@ -2613,7 +2615,7 @@ export const Creatures = {
       traits: [["Armure 1", null], ["Nature duale", null], ["Sens accrus", "Ouïe, odorat"], ["Armure mystique 1", null]],
     },
     colonisteCafard: {
-      label: "Coloniste (cafard)", a: [1, 2, 3, 1, 2, 1, 2, 1, null],
+      label: "Cafard", a: [1, 2, 3, 1, 2, 1, 2, 1, null],
       sd: 1, init: 5, dice: 1, me: 1, atkPool: 2,
       habitat: ["urbain"],
       desc: "Cafard éveillé de 0,3 mètre pesant 1 kg, membre d'une colonie urbaine à conscience collective.",
@@ -2623,27 +2625,27 @@ export const Creatures = {
       traits: [["Conscience collective", null], ["Escalade murale", null], ["Faiblesses", "Fragile (8)"]],
     },
     colonisteNymphe: {
-      label: "Coloniste (nymphe)", a: [2, 2, 3, 2, 2, 2, 2, 1, 4],
+      label: "Blatte régente (nymphe)", a: [2, 2, 3, 2, 2, 2, 2, 1, 4],
       sd: 5, init: 5, dice: 1, me: 9, atkPool: 3,
       habitat: ["urbain"],
-      desc: "Forme jeune du coloniste, nichant dans les colonies de cafards urbaines.",
+      desc: "Forme jeune de la blatte régente, nichant dans les colonies de cafards urbaines.",
       visualTag: "small pale cockroach nymph, urban tunnel colony",
       skills: { Athlétisme: 3, Con: 2, "Combat rapproché": 3, Influence: 3, "Plein air": 4, Perception: 3, Furtivité: 4 },
       naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 1P, SO FOR+RÉA/–/–/–/–]"],
       traits: [["Contrôle animal", "Cafards"], ["Armure 3", null], ["Conscience collective", "50 m"], ["Escalade murale", null], ["Pouvoir optionnel (choix du MJ)", "Engloutissement (air)"]],
     },
     colonisteAdulte: {
-      label: "Coloniste (adulte)", a: [2, 4, 5, 3, 2, 2, 2, 1, 5],
+      label: "Blatte régente (adulte)", a: [2, 4, 5, 3, 2, 2, 2, 1, 5],
       sd: 10, init: 7, dice: 1, me: 12, atkPool: 4,
       habitat: ["urbain"],
-      desc: "Forme adulte du coloniste, meneur de nids de cafards urbains ; en construct de cafard, gagne Armure durcie 2.",
+      desc: "Forme adulte de la blatte régente, meneuse de nids de cafards urbains ; en construct de cafard, gagne Armure durcie 2.",
       visualTag: "large adult cockroach leading its colony, urban tunnel",
       skills: { Athlétisme: 3, Con: 3, "Combat rapproché": 4, Influence: 4, "Plein air": 4, Perception: 3, Furtivité: 5 },
       naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]", "Griffes [VD 2P, SO FOR+RÉA/–/–/–/–]"],
       traits: [["Robuste 3", null], ["Contrôle animal", "Cafards et nymphes colonistes"], ["Armure 8", null], ["Conscience collective", "100 m"], ["Escalade murale", null], ["Pouvoir optionnel (choix du MJ)", "Engloutissement (air)"]],
     },
     chatImitateur: {
-      label: "Chat imitateur", a: [2, 4, 3, 1, 1, 1, 4, 3, 3],
+      label: "Chat mimique", a: [2, 4, 3, 1, 1, 1, 4, 3, 3],
       sd: 2, init: 7, dice: 1, me: 2, atkPool: 2,
       habitat: ["urbain"],
       desc: "Chat éveillé des réseaux souterrains urbains, doté d'une conscience collective (le MJ peut augmenter sa Logique de +1 selon la taille de la ruche).",
@@ -2653,7 +2655,7 @@ export const Creatures = {
       traits: [["Pouvoir adepte", "Kinesics, Maîtrise Kinesics (chats)"], ["Sens accrus", "Ouïe, vision en basse lumière"], ["Conscience collective", "100 m"], ["Pouvoir optionnel (choix du MJ)", "Sapience"], ["Faiblesses", "Fragile (7)"]],
     },
     semeurPeur: {
-      label: "Semeur de peur", a: [8, 5, 4, 8, 4, 3, 4, 3, 5],
+      label: "Croque-mitaine", a: [8, 5, 4, 8, 4, 3, 4, 3, 5],
       sd: 12, init: 8, dice: 1, me: 12, atkPool: 4,
       habitat: ["urbain"],
       desc: "Créature anthropomorphe éveillée aux traits animaux, hante les endroits sombres ou traumatisants des zones urbaines.",
@@ -2743,7 +2745,7 @@ export const Creatures = {
       traits: [["Coloration adaptative", null], ["Sécrétion", "Corrosive"], ["Engloutissement", "Eau : VD 7S (Mouillé et Fatigué I)"], ["Immunité", "Armes ordinaires"], ["Immobile", "Seuil de perception 6 pour être remarqué"], ["Faiblesses", "Vulnérabilité (produits alcalins, feu)"]],
     },
     proteeCorrompue: {
-      label: "Protée corrompue", a: [2, 3, 3, 2, 3, 3, 5, 1, 5],
+      label: "Protée (corrompu)", a: [2, 3, 3, 2, 3, 3, 5, 1, 5],
       sd: 2, init: 8, dice: 1, me: 9, atkPool: 5,
       habitat: ["urbain"],
       desc: "Variante du protée exposée à une magie corrompue, des zones urbaines souterraines.",
@@ -2753,8 +2755,8 @@ export const Creatures = {
       traits: [["Coloration adaptative", null], ["Sécrétion", "Corrosive"], ["Engloutissement", "Eau : VD 5P (Brûlure)"], ["Immunité", "Armes ordinaires"], ["Pouvoir optionnel (choix du MJ)", "Sort inné"], ["Faiblesses", "Vulnérabilité (produits alcalins)"]],
     },
     proteeToxique: {
-      label: "Protée toxique", a: [4, 3, 3, 4, 3, 3, 5, 1, 5],
-      sd: 2, init: 8, dice: 1, me: 9, atkPool: 5,
+      label: "Protée (toxique)", a: [4, 3, 3, 4, 3, 3, 5, 1, 5],
+      sd: 4, init: 8, dice: 1, me: 10, atkPool: 5,
       habitat: ["urbain"],
       desc: "Variante du protée exposée à la pollution radioactive des zones urbaines.",
       visualTag: "translucent amoeba-like mass with a sickly radioactive glow, urban shadows",
@@ -2763,7 +2765,7 @@ export const Creatures = {
       traits: [["Coloration adaptative", null], ["Sécrétion", "Corrosive"], ["Engloutissement", "Radiation : VD 5P (Irradié) ; le MJ peut ajouter jusqu'à +10 Corps/Force pour des tailles plus grandes"], ["Immunité", "Armes ordinaires"], ["Faiblesses", "Vulnérabilité (feu)"]],
     },
     tanuki: {
-      label: "Tanuki (SR6)", a: [3, 2, 3, 2, 4, 2, 4, 5, 4],
+      label: "Tanuki", a: [3, 2, 3, 2, 4, 2, 4, 5, 4],
       sd: 3, init: 7, dice: 1, me: 10, atkPool: 2,
       habitat: ["urbain"],
       desc: "Canidé éveillé farceur des bars et restaurants du monde entier, toujours chanceux (2 points d'Edge situationnel en défense).",
@@ -2783,7 +2785,7 @@ export const Creatures = {
       traits: [["Pouvoir adepte", "Réflexes améliorés 2"], ["Armure 1", null], ["Sens accrus", "Odorat"], ["Drain d'Essence", null], ["Immunité", "Toxines"], ["Conscience collective", "10 m"], ["Faiblesses", "Exigence alimentaire (sang/chair de mammifère), Fragile (7), Vulnérabilité (feu)"]],
     },
     pouletPoubelles: {
-      label: "Poulet des poubelles", a: [2, 2, 2, 1, 3, 4, 4, 3, null],
+      label: "Ibis des déchets", a: [2, 2, 2, 1, 3, 4, 4, 3, null],
       sd: 2, init: 6, dice: 1, me: 2, atkPool: 4,
       habitat: ["urbain"],
       desc: "Ibis blanc éveillé de 0,75 m et 1,2 kg des parcs et poubelles urbaines australiennes, techno-critter connecté à la Résonance.",
@@ -2803,7 +2805,7 @@ export const Creatures = {
       traits: [["Pouvoir adepte", "Frappe rapide"], ["Armure 5", null], ["Liaison", "Toucher"], ["Hurlement paralysant", null], ["Escalade murale", null]],
     },
     traptorToxique: {
-      label: "Traptor toxique", a: [6, 7, 7, 5, 3, 3, 7, 2, 5],
+      label: "Traptor (toxique)", a: [6, 7, 7, 5, 3, 3, 7, 2, 5],
       sd: 11, init: 14, dice: 2, me: 11, atkPool: 6,
       habitat: ["urbain"],
       desc: "Variante toxique et plus agressive du Traptor, en zone urbaine polluée ; les piques augmentent le DR de +2 en mêlée et résistent VD 2P lors d'une prise.",
@@ -3513,7 +3515,9 @@ export const Creatures = {
     const attrs = {};
     K.forEach((k, i) => (attrs[k] = c.a[i]));
     if (c.a[8] != null) attrs.MAG = c.a[8];
-    attrs.ESS = 6;
+    // Essence : 6 sauf quand le livre la chiffre autrement (`ess` sur
+    // l'entrée — Arachno-follet 4, Mycofundi 3 dans Nature sauvage).
+    attrs.ESS = c.ess ?? 6;
 
     const skills = Object.entries(c.skills).map(([name, val]) => ({ name, val }));
     const traits = c.traits.map(([name, desc]) => (desc ? { name, desc } : { name }));
