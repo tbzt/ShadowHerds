@@ -513,6 +513,12 @@ export const RunGen = {
         run.planUrl = url;
         this._save();
         this._refreshCard(runId);
+        // Le bouton « ✨ Ambiance » existe AUSSI dans Jouer (VIS-8 étape 3,
+        // moment « Avant »), où il n'y a pas de `#run-list` : `_refreshCard`
+        // n'y trouve aucune carte et la vue n'apparaissait qu'au re-render
+        // suivant. Même garde que `convokepicker`/`debrief` — Jouer est un
+        // pont global, et re-dessiner un panneau masqué ne coûte rien.
+        if (typeof Play !== "undefined") Play.render();
       },
     });
   },
