@@ -204,6 +204,7 @@ Object.assign(CardRenderer, {
       spells,
       threatLevel,
       physMonitor,
+      physMagicMonitor,
       mentMonitor,
       matrixMonitor,
       awakened,
@@ -260,6 +261,7 @@ Object.assign(CardRenderer, {
     combatBody += `<div class="stack anarchy-seuils combat-seuils">
       <div class="cluster anarchy-seuil-row"><span class="anarchy-seuil-label">Seuils phys.${armorBonus ? ` <span class="armor-bonus-note">(armure +${armorBonus})</span>` : ""}</span><span class="anarchy-seuil-val">${fmtThresholds(effPhys)}</span></div>
       <div class="cluster anarchy-seuil-row" style="margin-top:3px;"><span class="anarchy-seuil-label">Seuils ment.</span><span class="anarchy-seuil-val">${fmtThresholds(mentMonitor)}</span></div>
+      ${physMagicMonitor ? `<div class="cluster anarchy-seuil-row" style="margin-top:3px;"><span class="anarchy-seuil-label" title="Le livre imprime deux barèmes : celui-ci vaut face aux armes magiques">Seuils phys. (magiques)</span><span class="anarchy-seuil-val">${fmtThresholds(physMagicMonitor.map((v) => v + armorBonus))}</span></div>` : ""}
       ${matrixMonitor ? `<div class="cluster anarchy-seuil-row" style="margin-top:3px;"><span class="anarchy-seuil-label">Seuils matr.</span><span class="anarchy-seuil-val">${fmtThresholds(matrixMonitor)}</span></div>` : ""}
     </div>`;
 

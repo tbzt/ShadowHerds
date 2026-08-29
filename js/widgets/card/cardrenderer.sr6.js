@@ -188,7 +188,22 @@ Object.assign(CardRenderer, {
         detailsBody += `<div class="attr-grid attr-special-row">${extras.map((k) => (k === "ESS" ? this._essenceCell(pnj) : this._attrCell(k, Actor.attr(pnj, k), "attr-special", { roll: true, edition: "sr6" }))).join("")}</div>`;
       detailsBody += `<div class="limites-grid" style="margin-top:6px;">
         ${this._attrCell("ME", me ?? "?")}
-      </div></div>`;
+      </div>`;
+      // Seconde colonne de dérivés, quand le livre en imprime une : le Rat de
+      // Troie (Nature sauvage p. 65) existe AUSSI en Matrice, avec son propre
+      // Seuil de défense, sa propre initiative et son propre moniteur. La
+      // fiche les MONTRE ; elle ne bascule pas de régime, ce serait un mode.
+      const mx = pnj.matrixStats;
+      if (mx)
+        detailsBody += `<div class="ref-block" style="margin-top:6px;">
+          <div class="ref-lbl">En Matrice</div>
+          <div class="limites-grid">
+            ${this._attrCell("SD", mx.sd ?? "—")}
+            ${this._attrCell("Init", `${mx.init ?? "—"}+${mx.dice ?? 0}D6`)}
+            ${this._attrCell("ME", mx.me ?? "—")}
+            ${mx.pa ? this._attrCell("PA", mx.pa) : ""}
+          </div></div>`;
+      detailsBody += `</div>`;
     }
     if (prefs.showGmPools) detailsBody += this._gmPoolsSR6(pnj);
     // inventaire consolidé (Porté + Augmentations en une section).

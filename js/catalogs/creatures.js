@@ -1835,8 +1835,11 @@ export const Creatures = {
       desc: "Rongeur techno-critter des marécages, doté d'une persona matricielle propre : SD 5, initiative 6/4 et moniteur 10 en Matrice, où il porte des échos et des formes complexes.",
       visualTag: "awakened marsh rat with faint digital static around its whiskers, swamp reeds",
       skills: { Athlétisme: 2, "Combat rapproché": 2, Électronique: 3, Furtivité: 4, Perception: 4, Piratage: 4, "Plein air": 2 },
+      // Le livre imprime une SECONDE COLONNE entière pour son existence
+      // matricielle (p. 65) : ce ne sont pas des traits, ce sont des dérivés.
+      matrix: { sd: 5, init: 6, dice: 4, me: 10, pa: "MAJ 1, MIN 5" },
       naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]", "Morsure numérique [Cybercombat, VD 1, SO 5]"],
-      traits: [["Échos", "Cri dissonant, Liaison dermique"], ["Formes complexes", "Marionnettiste, Pic de Résonance, Bombe d'interférences, Indic"], ["Persona matricielle", "SD 5, I/DI 6/4, PA MAJ 1 MIN 5, ME 10"]],
+      traits: [["Échos", "Cri dissonant, Liaison dermique"], ["Formes complexes", "Marionnettiste, Pic de Résonance, Bombe d'interférences, Indic"]],
     },
     tortueLoShu: {
       label: "Tortue de Luo Shu", a: [2, 2, 2, 2, 4, 1, 2, 3, 6],
@@ -3694,9 +3697,12 @@ export const Creatures = {
         { name: "Sorcellerie", val: 4, rating: 4, attr: "VOL" },
         { name: "Survie", val: 4, rating: 4, attr: "VOL" },
       ],
-      edges: ["Vision nocturne, ouïe améliorée", "Armure naturelle 3", "Armure mystique : Armure 3 contre les dommages normaux et magiques", "Porteur sain et infection : peut transmettre le VVHMH II", "Sort inné optionnel au choix du MJ", "Allergie à la lumière du soleil", "Exigence alimentaire : peur", "Moniteur physique réduit face aux armes magiques : 8/11/14 (p. 189)"],
+      edges: ["Vision nocturne, ouïe améliorée", "Armure naturelle 3", "Armure mystique : Armure 3 contre les dommages normaux et magiques", "Porteur sain et infection : peut transmettre le VVHMH II", "Sort inné optionnel au choix du MJ", "Allergie à la lumière du soleil", "Exigence alimentaire : peur"],
       weapons: [{ name: "Griffes / Crocs", vd: 7, ranges: "[OK/—/—/—]" }, { name: "Piquants", vd: 5, ranges: "[OK/OK/—/—]", note: "risque d’infection" }],
       phys: [11, 14, 17], ment: [4, 7, 10],
+      // Le livre imprime DEUX échelles de seuils physiques : celle-ci vaut
+      // face aux armes magiques (annexe de Nature sauvage).
+      physMagic: [8, 11, 14],
     },
     deathrattle: {
       label: "Crotale funeste", threat: "forte",
@@ -4763,9 +4769,11 @@ export const Creatures = {
         { name: "Influence", val: 2, rating: 2, attr: "CHA", spec: "Intimidation", specVal: 4, specRating: 3, specAttr: "CHA" },
         { name: "Sorcellerie", val: 4, rating: 4, attr: "VOL", spec: "Contresort", specVal: 6, specRating: 4, specAttr: "VOL" },
       ],
-      edges: ["Moniteur physique réduit face aux armes magiques : 2/5/8 (p. 212)"],
       weapons: [{ name: "Serres / Bec", vd: 2, ranges: "[OK/—/—/—]" }],
       phys: [6, 9, 12], ment: [4, 7, 10],
+      // Le livre imprime DEUX échelles de seuils physiques : celle-ci vaut
+      // face aux armes magiques (annexe de Nature sauvage).
+      physMagic: [2, 5, 8],
     },
     lynxAvalanche: {
       label: "Lynx avalanche", threat: "forte",
@@ -4873,9 +4881,11 @@ export const Creatures = {
         { name: "Influence", val: 3, rating: 3, attr: "CHA", spec: "Intimidation", specVal: 5, specRating: 6, specAttr: "CHA", specRR: 2 },
         { name: "Survie", val: 2, rating: 4, attr: "VOL" },
       ],
-      edges: ["Moniteur physique réduit face aux armes magiques : 28/31/34 (p. 214)"],
       weapons: [{ name: "Queue", vd: 18, ranges: "[OK/—/—/—]" }, { name: "Saut", vd: 20, ranges: "[OK/—/—/—]" }, { name: "Projection sonique", vd: 10, ranges: "[OK/OK/Dés./–]", note: "perte d’une action si blessure" }, { name: "Engloutissement", vd: 10, ranges: "[OK/—/—/—]", note: "inflige un désavantage si attaque réussie" }],
       phys: [32, 35, 38], ment: [6, 9, 12],
+      // Le livre imprime DEUX échelles de seuils physiques : celle-ci vaut
+      // face aux armes magiques (annexe de Nature sauvage).
+      physMagic: [28, 31, 34],
     },
     miniwashitu: {
       label: "Miniwashitu", threat: "faible",
@@ -5257,9 +5267,11 @@ export const Creatures = {
         { name: "Sorcellerie", val: 4, rating: 3, attr: "VOL" },
         { name: "Survie", val: 4, rating: 3, attr: "VOL" },
       ],
-      edges: ["Moniteur physique réduit face aux armes magiques : 2/5/8 (p. 223)"],
       weapons: [{ name: "[si protée normal] Engloutissement (eau)", vd: 4, ranges: "[OK/—/—/—]", note: "détrempe l’ennemi" }, { name: "[si protée corrompu] Engloutissement (feu)", vd: 4, ranges: "[OK/—/—/—]", note: "enflamme la cible si blessure" }, { name: "[si protée toxique] Engloutissement (radiations)", vd: 4, ranges: "[OK/— /—/—]", note: "irradie la cible" }],
       phys: [5, 8, 11], ment: [3, 6, 9],
+      // Le livre imprime DEUX échelles de seuils physiques : celle-ci vaut
+      // face aux armes magiques (annexe de Nature sauvage).
+      physMagic: [2, 5, 8],
     },
     loupFouisseur: {
       label: "Protèle", threat: "forte",
@@ -6630,6 +6642,10 @@ export const Creatures = {
       // le draineur au DOUBLE de son indice naturel (SR5 p.401, SR6 p.229), et
       // « courante » ne suffit pas pour connaître ce plafond.
       essBase: c.ess ?? 6,
+      // Dérivés matriciels quand le livre imprime une seconde colonne
+      // (Rat de Troie p. 65) : la fiche les PORTE et les montre, elle ne
+      // bascule pas de régime — ce serait un mode, pas une donnée.
+      ...(c.matrix ? { matrixStats: { ...c.matrix } } : {}),
       initDice: c.dice,
       defense: rea + intel,
       composure: vol + cha,
@@ -6693,6 +6709,9 @@ export const Creatures = {
       physMonitor: [...c.phys],
       mentMonitor: [...c.ment],
       matrixMonitor: null,
+      // Seconde échelle de seuils physiques, quand le livre en imprime une
+      // (armes magiques) — une seule piste de dégâts, deux barèmes.
+      physMagicMonitor: c.physMagic ? [...c.physMagic] : null,
       legerFilled: 0,
       graveFilled: 0,
       incapFilled: 0,
