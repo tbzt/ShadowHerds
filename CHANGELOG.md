@@ -10,7 +10,7 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
-## [Non publié]
+## [1.140.0] — 2026-08-29
 
 ### Ajouté
 
@@ -43,6 +43,37 @@ commit.
   trop tôt, ou rouvrir une affaire.
 
 ### Corrigé
+
+- **Les créatures de « Nature sauvage » prennent enfin le nom que la VF leur
+  donne.** Le catalogue SR6 avait été bâti sur l'édition anglaise, en
+  traduisant les noms au jugé : le MJ cherchait « Jackalope » ou « Glouton
+  majeur » dans une liste que son livre appelle **Lièvre cornu** et
+  **Carcajou géant**. Le PDF français est arrivé, il fait autorité, et
+  **96 créatures changent de nom** — Ours chuteur → **Drop bear**,
+  Martichoras → **Manticore**, Poisson-diable → **Raie de l'effroi**, Semeur
+  de peur → **Croque-mitaine**, Coloniste → **Blatte régente**. Vingt-quatre
+  autres corrigent un accent, une casse ou un trait d'union, et les mentions
+  « (SR6) » ou « (Wild Life) » disparaissent des libellés : elles ne
+  désambiguïsaient rien, deux catalogues d'édition ne se croisent jamais dans
+  une même liste.
+
+  **Dix-neuf statblocs étaient faux**, et pas d'un rang : l'Ours cornu jouait
+  avec un Seuil de défense de 6 au lieu de 23 et un moniteur de 10 au lieu de
+  18, le Piasme avec une Constitution de 4 au lieu de 12, le Carcajou géant
+  avec un SD de 5 au lieu de 13. Ces valeurs-là ne correspondaient **ni à la
+  VF ni à la VO** : ce sont des erreurs de saisie, pas des divergences entre
+  éditions. Les écarts qui opposent réellement les deux livres ont été
+  relevés et laissés en l'état — ils demandent un arbitrage, pas un
+  correctif.
+
+  Deux créatures récupèrent leur Essence : l'app la fixait à 6 pour tout le
+  monde, alors que l'**Arachno-follet** a 4 et le **Mycofundi** 3. Et le
+  Mycofundi n'a **pas de Charisme** — c'est un champignon, le livre imprime
+  un tiret ; il vaut désormais 0 au lieu du 3 qu'on lui avait prêté.
+
+  Vos fiches déjà rangées gardent leur ancien nom, volontairement : ce sont
+  vos fiches, et les renommer casserait les dossiers et les mentions de
+  journal qui les citent.
 
 - **Le bouton qui effaçait votre scène survivait dans la liste des runs.** Le
   correctif de la version 1.139.1 n'avait couvert qu'une des deux surfaces :
