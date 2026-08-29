@@ -172,13 +172,20 @@ Object.assign(CardRenderer, {
     if (prefs.showAttributes) {
       const attrKeys = ["CON", "AGI", "RÉA", "FOR", "VOL", "LOG", "INT", "CHA"];
       const extras = [];
+      // Essence : SEULEMENT quand la fiche en porte une. Les statblocs de
+      // créature la chiffrent tous (Nature sauvage), jamais `attrByProf` —
+      // afficher « ESS 6 » sur un PNJ métahumain serait inventer une donnée
+      // que l'app ne modélise pas.
+      if (attrs.ESS != null) extras.push("ESS");
       if (attrs.MAG) extras.push("MAG");
       if (attrs.RES) extras.push("RES");
       if (attrs.ATO != null) extras.push("ATO");
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Attributs</div>`;
       detailsBody += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, Actor.attr(pnj, k), "", { roll: true, edition: "sr6" })).join("")}</div>`;
       if (extras.length)
-        detailsBody += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, Actor.attr(pnj, k), "attr-special", { roll: true, edition: "sr6" })).join("")}</div>`;
+        // ESS n'est pas un pool de dés (ressource, pas un test) — non lançable,
+        // même patron qu'en SR5.
+        detailsBody += `<div class="attr-grid attr-special-row">${extras.map((k) => this._attrCell(k, Actor.attr(pnj, k), "attr-special", { roll: k !== "ESS", edition: "sr6" })).join("")}</div>`;
       detailsBody += `<div class="limites-grid" style="margin-top:6px;">
         ${this._attrCell("ME", me ?? "?")}
       </div></div>`;
