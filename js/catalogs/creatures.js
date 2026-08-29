@@ -1268,6 +1268,16 @@ export const Creatures = {
       naturalWeapons: ["Bec [VD 7P, SO FOR+RÉA/–/–/–/–]", "serres [VD 7P, SO FOR+RÉA/–/–/–/–]"],
       traits: [["Nature duale", null], ["Sens accrus", "Magnification visuelle"]],
     },
+    chaleurMontagnes: {
+      label: "Chaleur des montagnes", a: [8, 3, 3, 6, 2, 1, 4, 5, 6],
+      sd: 12, init: 7, dice: 1, me: 12, atkPool: 9,
+      habitat: ["montagnes"],
+      desc: "Alpaga éveillé des hautes montagnes, à la toison mêlée de blanc, noir, argent, brun et or — la plus douce des matières naturelles, résistante comme la soie d'araignée et prisée en vêtement de luxe. Sacré pour les tribus locales, qui le protègent ; il crache une salive corrosive.",
+      visualTag: "awakened alpaca with a shimmering white, black, silver, brown and gold fleece, high mountain ridge",
+      skills: { Athlétisme: 2, "Combat rapproché": 2, Perception: 4, "Plein air": 6 },
+      naturalWeapons: ["Ruade [VD 3E, SO FOR+RÉA/–/–/–/–]", "Salive corrosive [VD 6P, SO 12/10/4/2/–, Corrodé 6]"],
+      traits: [["Armure 4", null], ["Immunité", "Froid"], ["Nature duale", null], ["Salive corrosive", "Corrodé 6"], ["Sens accrus", "Vision thermographique"]],
+    },
     gorilleArcanus: {
       label: "Gorille arcanus", a: [10, 4, 4, 12, 4, 3, 4, 5, 6],
       sd: 10, init: 8, dice: 1, me: 13, atkPool: 6,
@@ -1807,6 +1817,26 @@ export const Creatures = {
       skills: { Athlétisme: 2, "Combat rapproché": 2, Cracking: 3, Électronique: 3, "Plein air": 3, Perception: 5, Furtivité: 4 },
       naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]"],
       traits: [["Persona Matrice", "DR 6, AC A1/I5, CM 10"], ["Morsure numérique", "[Cybercombat, DV 2S, RA 8]"], ["Formes complexes", "Diffusion (Firewall), Éditeur, Pulse Storm"]],
+    },
+    castorLesion: {
+      label: "Castor lésion", a: [2, 4, 3, 1, 3, 2, 4, 1, 5],
+      sd: 2, init: 7, dice: 2, me: 10, atkPool: 4,
+      habitat: ["marais"],
+      desc: "Rongeur éveillé des marécages, porteur d'une aura de radiations et immunisé aux pathogènes comme aux toxines.",
+      visualTag: "awakened beaver with a faint sickly glow around it, murky swamp water",
+      skills: { Astral: 3, Athlétisme: 2, "Combat rapproché": 2, Furtivité: 5, Perception: 4, "Plein air": 2 },
+      naturalWeapons: ["Morsure [VD 1P, SO FOR+RÉA/–/–/–/–]"],
+      traits: [["Aura d'énergie", "Radiations"], ["Immunité", "Pathogènes, toxines"], ["Nature duale", null]],
+    },
+    ratTroie: {
+      label: "Rat de Troie", a: [2, 4, 3, 1, 3, 2, 4, 1, null], res: 5,
+      sd: 2, init: 7, dice: 2, me: 10, atkPool: 4,
+      habitat: ["marais"],
+      desc: "Rongeur techno-critter des marécages, doté d'une persona matricielle propre : SD 5, initiative 6/4 et moniteur 10 en Matrice, où il porte des échos et des formes complexes.",
+      visualTag: "awakened marsh rat with faint digital static around its whiskers, swamp reeds",
+      skills: { Athlétisme: 2, "Combat rapproché": 2, Électronique: 3, Furtivité: 4, Perception: 4, Piratage: 4, "Plein air": 2 },
+      naturalWeapons: ["Morsure [VD 2P, SO FOR+RÉA/–/–/–/–]", "Morsure numérique [Cybercombat, VD 1, SO 5]"],
+      traits: [["Échos", "Cri dissonant, Liaison dermique"], ["Formes complexes", "Marionnettiste, Pic de Résonance, Bombe d'interférences, Indic"], ["Persona matricielle", "SD 5, I/DI 6/4, PA MAJ 1 MIN 5, ME 10"]],
     },
     tortueLoShu: {
       label: "Tortue de Luo Shu", a: [2, 2, 2, 2, 4, 1, 2, 3, 6],
@@ -3491,8 +3521,8 @@ export const Creatures = {
     castorLesion: {
       label: "Castor lésion", threat: "faible",
       habitat: ["marais"],
-      desc: "Rongeur éveillé des marécages, apparenté au rat de Troie.",
-      visualTag: "awakened beaver, swamp setting",
+      desc: "Rongeur éveillé des marécages, porteur d'une aura de radiations et immunisé aux pathogènes comme aux toxines.",
+      visualTag: "awakened beaver with a faint sickly glow around it, murky swamp water",
       attrs: { FOR: 1, AGI: 3, VOL: 2, LOG: 2, CHA: 1 },
       skills: [
         { name: "Athlétisme", val: 2, rating: 2, attr: "FOR", spec: "Défense à distance", specVal: 2, specRating: 3, specAttr: "AGI" },
@@ -3508,8 +3538,8 @@ export const Creatures = {
     chaleurMontagnes: {
       label: "Chaleur des montagnes", threat: "faible",
       habitat: ["montagnes"],
-      desc: "Créature éveillée des hautes altitudes.",
-      visualTag: "heat-shimmer creature on a mountain slope",
+      desc: "Alpaga éveillé des hautes montagnes, à la toison mêlée de blanc, noir, argent, brun et or — la plus douce des matières naturelles, résistante comme la soie d'araignée et prisée en vêtement de luxe. Sacré pour les tribus locales, qui le protègent ; il crache une salive corrosive.",
+      visualTag: "awakened alpaca with a shimmering white, black, silver, brown and gold fleece, high mountain ridge",
       attrs: { FOR: 5, AGI: 2, VOL: 2, LOG: 2, CHA: 3 },
       skills: [
         { name: "Athlétisme", val: 2, rating: 3, attr: "FOR", spec: "Défense à distance", specVal: 2, specRating: 2, specAttr: "AGI" },
@@ -5269,8 +5299,8 @@ export const Creatures = {
     ratTroie: {
       label: "Rat de Troie", threat: "faible",
       habitat: ["marais"],
-      desc: "Rongeur techno-critter des marécages.",
-      visualTag: "awakened rat with faint digital shimmer, swamp setting",
+      desc: "Rongeur techno-critter des marécages, doté d'une persona matricielle propre : SD 5, initiative 6/4 et moniteur 10 en Matrice, où il porte des échos et des formes complexes.",
+      visualTag: "awakened marsh rat with faint digital static around its whiskers, swamp reeds",
       attrs: { FOR: 1, AGI: 3, VOL: 2, LOG: 2, CHA: 1 },
       skills: [
         { name: "Athlétisme", val: 2, rating: 2, attr: "FOR", spec: "Défense à distance", specVal: 2, specRating: 3, specAttr: "AGI" },
