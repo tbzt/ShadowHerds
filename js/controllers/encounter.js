@@ -2,7 +2,8 @@
 
 /* ============================================================
    ENCOUNTER — tracker de combat (initiative, tours, rounds)
-   Une seule scène active par édition, persistée via Storage.
+   Une seule scène active par édition, persistée par EncounterStore
+   (js/core/) — ce fichier ne connaît plus ni clé ni format.
    Ne stocke que des pnjId ; les PNJ résident dans leurs pools
    d'origine (Gen.pool / Shadows / Servers) et sont résolus via
    PnjLookup à chaque rendu. Le rendu (pur) est délégué à
@@ -18,6 +19,7 @@ import { Characters } from "./characters.js";
 import { Dialog } from "../widgets/kit/dialog.js";
 import { Dice } from "../rules/dice.js";
 import { EdgeActions } from "../rules/edgeactions.js";
+import { EncounterStore } from "../core/encounterstore.js";
 import { DiceRoller } from "../widgets/dice/diceroller.js";
 import { EncounterRenderer } from "../widgets/play/encounterrenderer.js";
 import { FocusTrap } from "../widgets/kit/focustrap.js";
@@ -31,24 +33,11 @@ import { Pursuit } from "./pursuit.js";
 import { Servers } from "./servers.js";
 import { Shadows } from "./shadows.js";
 import { Statuses } from "../rules/statuses.js";
-import { Storage } from "../core/storage.js";
 import { UI } from "../widgets/kit/ui.js";
 import { Utils } from "../core/utils.js";
 import { WeaponRoll } from "../rules/weaponroll.js";
 
 export const Encounter = {
-  _KEY: "encounter_current",
-
-  /** Version de la FORME de l'état persisté (round/pass/turnIndex/combatants/
-      serverId/v) — distincte du `schemaVersion` de Storage, qui versionne la
-      chaîne de migrations elle-même. Si la forme évolue encore, incrémenter
-      ici et ajouter le backfill correspondant à la migration de Storage (le
-      seul endroit qui migre — voir CONTRIBUTING.md § Versionner les
-      schémas). Les scènes persistées avant l'ajout de ce champ sont
-      tamponnées `v:1` par cette migration au boot : `load()` peut donc
-      supposer l'état déjà à niveau, sans rétro-compat locale. */
-  _V: 3,
-
   /** J3 (journal des jets) : incrémenté à chaque scène fraîche (_empty),
       pour distinguer deux combats séparés qui repartiraient chacun au round
       1 — sinon leurs jets fusionneraient dans le même groupe « Tour 1 » du
@@ -58,18 +47,15 @@ export const Encounter = {
   _sceneSeq: 0,
   _empty() {
     this._sceneSeq++;
-    // `chase: null` = pas de poursuite en cours. Champ ADDITIF, comme
-    // `matrix` en son temps : une scène persistée avant le moteur ⇉ le lit
-    // `undefined`, ce que toutes les gardes traitent comme `null` — aucune
-    // migration (cf. § Versionner les schémas).
-    return { v: this._V, round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null, noise: 0, focusId: null, motors: ["combat"], matrix: {}, chase: null };
+    return EncounterStore.emptyScene();
   },
 
   state: null,
 
-  /* ---- Persistance (édition-scopée, comme Shadows/Servers) ---- */
+  /* ---- Persistance : le FORMAT appartient à EncounterStore (couche 1) ;
+     ce qui reste ici est l'orchestration — rendu, fiche active, focus. ---- */
   load() {
-    this.state = Storage.get(this._KEY, null) || this._empty();
+    this.state = EncounterStore.readScene() || this._empty();
     // La sidebar doit refléter la scène dès le chargement de l'édition, pas
     // seulement à l'ouverture du tracker — reset de la fiche active d'une
     // édition à l'autre (les pnjId ne collisionnent jamais entre éditions,
@@ -95,7 +81,7 @@ export const Encounter = {
     );
   },
   save() {
-    Storage.set(this._KEY, this.state);
+    EncounterStore.writeScene(this.state);
   },
 
   _find(pnjId) {
@@ -393,11 +379,9 @@ export const Encounter = {
     this._commit();
   },
 
-  /* ---- Rencontre persistante (R1, PLAN_RANGER_LA_RUN.md) -----------------
-     Le tracker reste mono-scène ACTIVE ; la persistance multi-scène vit dans
-     ce side-key édition-scopé, keyé par id de dossier `kind:"run"`. Clé
-     additive (défaut `{}`) : aucune migration nécessaire. */
-  _STASH_KEY: "encounter_by_dossier",
+  /* ---- Rencontre persistante (R1, PLAN_RANGER_LA_RUN.md) — le rangement
+     lui-même vit dans EncounterStore ; ici seulement ce qui touche la scène
+     vivante, le pointeur de session et le rendu. ---- */
 
   /** Rencontre actuellement ouverte (session, pas persisté) — pointeur léger
       lu par DiceLog.record (R3) pour taguer les jets. `null` hors rencontre :
@@ -410,9 +394,7 @@ export const Encounter = {
       pas une suppression : le bundle reste récupérable via `restore`). */
   stash(dossierId) {
     if (!dossierId) return;
-    const map = Storage.get(this._STASH_KEY, {});
-    map[dossierId] = structuredClone(this.state);
-    Storage.set(this._STASH_KEY, map);
+    EncounterStore.writeBundle(dossierId, this.state);
     this.state = this._empty();
     if (this.activeDossierId === dossierId) this.activeDossierId = null;
     // Miroir vers la scène vivante d'App.context (persistée).
@@ -425,9 +407,7 @@ export const Encounter = {
       sans bundle restaure une scène vide plutôt que d'échouer. */
   restore(dossierId) {
     if (!dossierId) return;
-    const map = Storage.get(this._STASH_KEY, {});
-    const bundle = map[dossierId];
-    this.state = bundle ? structuredClone(bundle) : this._empty();
+    this.state = EncounterStore.readBundle(dossierId) || this._empty();
     this.activeDossierId = dossierId;
     // Miroir vers la scène vivante d'App.context (persistée) → survit au reload.
     if (typeof App !== "undefined" && App.context) App.context.setScene(dossierId);
@@ -435,51 +415,29 @@ export const Encounter = {
     this._commit();
   },
 
+  /* ---- Lectures du rangement : relais MINCES vers EncounterStore.
+     Gardés sur Encounter parce que six appelants les connaissent sous ce
+     nom ; la connaissance du format, elle, a quitté ce fichier. ---- */
+
   /** Affordance UI (R4) : un dossier a-t-il une rencontre rangée ? */
   hasStash(dossierId) {
-    if (!dossierId) return false;
-    const map = Storage.get(this._STASH_KEY, {});
-    return Object.prototype.hasOwnProperty.call(map, dossierId);
+    return EncounterStore.has(dossierId);
   },
 
-  /** Combien de ces dossiers portent une rencontre rangée (lecture seule) — sert
-      à NOMMER ce qui va partir dans la confirmation de suppression, avant de le
-      purger. Le format de clé reste privé à ce module (prohibition n°2). */
+  /** Combien de ces dossiers portent une rencontre rangée — sert à NOMMER ce
+      qui va partir dans la confirmation de suppression, avant de le purger. */
   countStashed(dossierIds) {
-    if (!Array.isArray(dossierIds) && !(dossierIds instanceof Set)) return 0;
-    const map = Storage.get(this._STASH_KEY, {});
-    let n = 0;
-    for (const id of dossierIds) if (Object.prototype.hasOwnProperty.call(map, id)) n++;
-    return n;
+    return EncounterStore.countIn(dossierIds);
   },
 
-  /** Purge les rencontres rangées de ces dossiers (VIS-16 Failsafe : un nœud
-      supprimé ne doit pas laisser son bundle derrière lui). Sans ça l'entrée
-      survit au nœud, ne se voit plus nulle part — et la fusion de sauvegarde
-      étant ADDITIVE (`backup.js`), l'orphelin ne meurt pas : il voyage d'un
-      appareil à l'autre. Renvoie le nombre d'entrées retirées. */
+  /** Purge les rencontres rangées de ces dossiers (VIS-16 Failsafe). */
   purgeStash(dossierIds) {
-    if (!Array.isArray(dossierIds) && !(dossierIds instanceof Set)) return 0;
-    const map = Storage.get(this._STASH_KEY, {});
-    let n = 0;
-    for (const id of dossierIds) {
-      if (Object.prototype.hasOwnProperty.call(map, id)) { delete map[id]; n++; }
-    }
-    if (n) Storage.set(this._STASH_KEY, map);
-    return n;
+    return EncounterStore.purge(dossierIds);
   },
 
-  /** Résumé STATIQUE d'une rencontre rangée (cockpit V4) : lit le bundle du
-      dossier sans le restaurer — `{ count, round }` (combattants + round au
-      moment du rangement). `null` si aucun bundle. Le format de clé du stash
-      reste privé à ce module (prohibition n°2) : le cockpit ne reconstruit
-      jamais `_STASH_KEY`, il passe par cet accesseur en LECTURE SEULE. */
+  /** Résumé STATIQUE d'une rencontre rangée (cockpit V4), sans la restaurer. */
   stashSummary(dossierId) {
-    if (!dossierId) return null;
-    const map = Storage.get(this._STASH_KEY, {});
-    const bundle = map[dossierId];
-    if (!bundle) return null;
-    return { count: (bundle.combatants || []).length, round: bundle.round || 1 };
+    return EncounterStore.summary(dossierId);
   },
 
   /* ---- Initiative ---- */
