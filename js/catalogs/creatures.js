@@ -836,12 +836,14 @@ export const Creatures = {
   },
 
   /* ---- SR6 : attrs [CON,AGI,RÉA,FOR,VOL,LOG,INT,CHA,MAG?],
-     sd, init/dice, moniteur me, réserve d'attaque (Score Offensif
-     du livre), skills = réserves indice+attribut. ---- */
+     sd, init/dice, moniteur me, skills = réserves indice+attribut.
+     La réserve d'attaque n'a pas de champ propre : elle EST la
+     compétence (`skills`), et le Score Offensif est écrit dans la
+     chaîne de `naturalWeapons` — un troisième exemplaire dériverait. ---- */
   SR6: {
     chien: {
       label: "Chien de garde", a: [3, 2, 3, 2, 2, 2, 3, 3, null],
-      sd: 4, init: 6, dice: 1, me: 10, atkPool: 5,
+      sd: 4, init: 6, dice: 1, me: 10,
       habitat: ["urbain"],
       desc: "Chien dressé pour la garde de propriétés privées, entrepôts ou compounds corporatifs.",
       visualTag: "muscular guard dog, dark short fur, alert stance, chain leash",
@@ -851,7 +853,7 @@ export const Creatures = {
     },
     felin: {
       label: "Grand félin", move: { abs: true, walk: 10, run: 25, sprint: 2 }, a: [5, 5, 4, 4, 1, 1, 4, 3, null],
-      sd: 7, init: 8, dice: 2, me: 11, atkPool: 8,
+      sd: 7, init: 8, dice: 2, me: 11,
       habitat: ["jungles", "forets"],
       desc: "Grand félin solitaire, chasseur embusqué redoutable en milieu naturel.",
       visualTag: "large wild cat (puma or jaguar), sleek muscular predator, low crouch",
@@ -861,7 +863,7 @@ export const Creatures = {
     },
     requin: {
       label: "Requin", move: { abs: true, walk: 10, run: 20, sprint: 3 }, a: [5, 3, 5, 5, 2, 1, 4, 1, null],
-      sd: 11, init: 9, dice: 1, me: 11, atkPool: 10,
+      sd: 11, init: 9, dice: 1, me: 11,
       habitat: ["oceans"],
       desc: "Prédateur marin attiré par le sang et les vibrations, danger classique des zones côtières.",
       visualTag: "large shark breaching dark water, rows of sharp teeth, ocean predator",
@@ -871,7 +873,7 @@ export const Creatures = {
     },
     barghest: {
       label: "Barghest", a: [7, 4, 5, 5, 3, 2, 5, 5, 5],
-      sd: 11, init: 10, dice: 2, me: 12, atkPool: 10,
+      sd: 11, init: 10, dice: 2, me: 12,
       habitat: ["urbain", "forets"],
       desc: "Molosse spectral des légendes britanniques, hante ruines et friches industrielles en meutes réduites.",
       visualTag: "massive spectral black hound, glowing yellow eyes, smoky ethereal aura, muscular build",
@@ -881,7 +883,7 @@ export const Creatures = {
     },
     cocatrix: {
       label: "Cocatrix", move: { abs: true, walk: 10, run: 25, sprint: 2 }, a: [3, 4, 3, 3, 3, 1, 2, 1, 5],
-      sd: 4, init: 5, dice: 2, me: 10, atkPool: 6,
+      sd: 4, init: 5, dice: 2, me: 10,
       habitat: ["marais", "forets"],
       desc: "Petit reptile éveillé au toucher paralysant, immunisé à son propre poison.",
       visualTag: "small reptilian creature, colorful frilled crest, paralytic tail, wetland ambush predator",
@@ -891,7 +893,7 @@ export const Creatures = {
     },
     goule: {
       label: "Goule", move: { abs: true, walk: 12, run: 18, sprint: 1 }, a: [6, 2, 4, 5, 4, 1, 3, 1, 1],
-      sd: 7, init: 7, dice: 1, me: 13, atkPool: 9,
+      sd: 7, init: 7, dice: 1, me: 13,
       habitat: ["urbain"],
       desc: "Infecté HMHVV nécrophage, aveugle mais vif d'oreille et d'odorat, terré dans égouts et bâtiments abandonnés.",
       visualTag: "emaciated feral humanoid, pale grey skin, clawed hands, hunched predatory posture, sewer setting",
@@ -901,7 +903,7 @@ export const Creatures = {
     },
     ratDiable: {
       label: "Rat du diable", move: { abs: true, walk: 5, run: 10, sprint: 1 }, a: [1, 4, 5, 1, 2, 1, 5, 4, 4],
-      sd: 1, init: 10, dice: 1, me: 9, atkPool: 6,
+      sd: 1, init: 10, dice: 1, me: 9,
       habitat: ["urbain"],
       desc: "Rat éveillé meneur de meutes de rats ordinaires, endémique des sous-sols et égouts urbains.",
       visualTag: "oversized rat, matted fur, glowing red eyes, sewer tunnel setting",
@@ -911,7 +913,7 @@ export const Creatures = {
     },
     ratDemon: {
       label: "Rat démon", move: { abs: true, walk: 5, run: 10, sprint: 1 }, a: [3, 4, 5, 3, 3, 2, 5, 5, 6],
-      sd: 5, init: 10, dice: 2, me: 10, atkPool: 8,
+      sd: 5, init: 10, dice: 2, me: 10,
       habitat: ["urbain"],
       desc: "Rat éveillé venimeux, meneur de meutes urbaines regroupant plusieurs espèces de rats.",
       visualTag: "oversized venomous rat, matted dark fur, glowing eyes, sewer tunnel setting",
@@ -921,7 +923,7 @@ export const Creatures = {
     },
     vampire: {
       label: "Vampire", move: { abs: true, walk: 15, run: 20, sprint: 2 }, a: [3, 2, 4, 3, 3, 2, 3, 4, 5],
-      sd: 3, init: 7, dice: 2, me: 10, atkPool: 7,
+      sd: 3, init: 7, dice: 2, me: 10,
       habitat: ["urbain"],
       desc: "Infecté HMHVV hématophage se fondant parmi les métahumains la nuit venue, drainant l'Essence de ses victimes.",
       visualTag: "gaunt pale humanoid, sharp fangs, red eyes, tattered elegant clothing, nocturnal predator",
@@ -931,7 +933,7 @@ export const Creatures = {
     },
     basilic: {
       label: "Basilic", move: { abs: true, walk: 5, run: 10, sprint: 1 }, a: [6, 2, 3, 6, 4, 1, 3, 1, 4],
-      sd: 13, init: 6, dice: 1, me: 11, atkPool: 9,
+      sd: 13, init: 6, dice: 1, me: 11,
       habitat: ["marais", "urbain"],
       desc: "Grand reptile éveillé au regard pétrifiant, se terre dans les égouts et zones humides désertées.",
       visualTag: "large reptilian creature, thick scaled hide, glowing petrifying eyes, swamp lurker",
@@ -941,7 +943,7 @@ export const Creatures = {
     },
     chienEnfer: {
       label: "Chien de l'enfer", move: { abs: true, walk: 10, run: 20, sprint: 4 }, a: [6, 4, 5, 4, 3, 2, 4, 3, 5],
-      sd: 10, init: 9, dice: 2, me: 11, atkPool: 9,
+      sd: 10, init: 9, dice: 2, me: 11,
       habitat: ["deserts", "urbain"],
       desc: "Canidé éveillé crachant le feu, associé aux légendes de chiens infernaux gardiens de lieux maudits.",
       visualTag: "black hound wreathed in flames, glowing ember eyes, smoke trailing from jaws",
@@ -951,7 +953,7 @@ export const Creatures = {
     },
     cerbere: {
       label: "Cerbère", move: { abs: true, walk: 10, run: 25, sprint: 3 }, a: [6, 4, 5, 6, 4, 2, 6, 3, 5],
-      sd: 12, init: 11, dice: 2, me: 15, atkPool: 11,
+      sd: 12, init: 11, dice: 2, me: 15,
       habitat: ["forets", "montagnes"],
       desc: "Molosse tricéphale mythique, gardien redouté des lieux sacrés en forêt et montagne.",
       visualTag: "three-headed hound, massive muscular dogs fused at the shoulders, glowing eyes, guarding a sacred site",
@@ -961,7 +963,7 @@ export const Creatures = {
     },
     ratInfortune: {
       label: "Rat d'infortune", move: { abs: true, walk: 5, run: 10, sprint: 1 }, a: [1, 3, 4, 0, 2, 1, 3, 2, 6],
-      sd: 1, init: 7, dice: 1, me: 9, atkPool: 4,
+      sd: 1, init: 7, dice: 1, me: 9,
       habitat: ["urbain"],
       desc: "Petit rat éveillé porte-malheur, capable d'infliger la malchance à distance à ses cibles.",
       visualTag: "small rat with an unsettling aura, urban gutter",
@@ -973,7 +975,7 @@ export const Creatures = {
     /* ---- Wild Life p.20-51 : Grasslands+Plains + Mountains ---- */
     mortMongolJeune: {
       label: "Ver intestin mongol juvénile", a: [5, 4, 6, 2, 3, 1, 3, 1, 3],
-      sd: 7, init: 9, dice: 2, me: 11, atkPool: 7,
+      sd: 7, init: 9, dice: 2, me: 11,
       habitat: ["deserts", "plaines"],
       desc: "Ver géant éveillé adapté à la contamination des sols, environ 4 mètres de long, sensible à la lumière solaire.",
       visualTag: "giant segmented worm, pale hide, emerging from cracked desert soil",
@@ -983,7 +985,7 @@ export const Creatures = {
     },
     mortMongolBehemoth: {
       label: "Ver intestin mongol géant", a: [18, 4, 6, 10, 3, 1, 3, 1, 6],
-      sd: 24, init: 9, dice: 2, me: 17, atkPool: 7,
+      sd: 24, init: 9, dice: 2, me: 17,
       habitat: ["deserts", "plaines"],
       desc: "Spécimen adulte du ver intestin mongol, pouvant atteindre 23 mètres de long, chargé d'une aura électrique.",
       visualTag: "colossal segmented death worm, crackling electrical aura, desert dunes",
@@ -993,7 +995,7 @@ export const Creatures = {
     },
     oiseauTerreur: {
       label: "Oiseau-terreur", a: [5, 5, 4, 6, 3, 3, 3, 1, 3],
-      sd: 8, init: 7, dice: 2, me: 11, atkPool: 6,
+      sd: 8, init: 7, dice: 2, me: 11,
       habitat: ["urbain"],
       desc: "Grand oiseau terrestre créé génétiquement par Shiawase Biotech, tête proche du T-Rex sur un corps de cocatrix.",
       visualTag: "large flightless bird with a T-Rex-like head, powerful legs, prairie backdrop",
@@ -1003,7 +1005,7 @@ export const Creatures = {
     },
     dentSabreTigre: {
       label: "Tigre à dents de sabre", a: [7, 5, 4, 7, 3, 2, 4, 3, null],
-      sd: 7, init: 8, dice: 2, me: 12, atkPool: 7,
+      sd: 7, init: 8, dice: 2, me: 12,
       habitat: ["plaines", "montagnes"],
       desc: "Grand félin éveillé des prairies et Rocheuses, vit en groupes familiaux et peut changer sa coloration à la chasse.",
       visualTag: "saber-toothed tiger, long curved fangs, prairie grassland",
@@ -1013,7 +1015,7 @@ export const Creatures = {
     },
     dentSabreJaguar: {
       label: "Jaguar à dents de sabre", a: [4, 5, 4, 5, 3, 2, 4, 3, null],
-      sd: 4, init: 8, dice: 2, me: 11, atkPool: 6,
+      sd: 4, init: 8, dice: 2, me: 11,
       habitat: ["jungles"],
       desc: "Variante jaguar du félin à dents de sabre, chasseur furtif des zones tropicales.",
       visualTag: "saber-toothed jaguar, long curved fangs, tropical jungle",
@@ -1023,7 +1025,7 @@ export const Creatures = {
     },
     dentSabreLion: {
       label: "Lion à dents de sabre", a: [5, 5, 4, 5, 2, 2, 4, 3, null],
-      sd: 5, init: 8, dice: 2, me: 11, atkPool: 5,
+      sd: 5, init: 8, dice: 2, me: 11,
       habitat: ["plaines"],
       desc: "Variante lion du félin à dents de sabre, chasseur en groupe des grandes plaines.",
       visualTag: "saber-toothed lion, long curved fangs, hunting on open plains",
@@ -1033,7 +1035,7 @@ export const Creatures = {
     },
     furetCentenaire: {
       label: "Furet du nouveau siècle", a: [1, 2, 3, 1, 1, 2, 2, 1, 2],
-      sd: 1, init: 5, dice: 2, me: 9, atkPool: 3,
+      sd: 1, init: 5, dice: 2, me: 9,
       habitat: ["plaines"],
       desc: "Furet éveillé de grande taille (jusqu'à 2 m), chasseur solitaire très sensible à la magie ambiante.",
       visualTag: "large elder ferret, sleek elongated body, solitary hunter",
@@ -1043,7 +1045,7 @@ export const Creatures = {
     },
     fauconCetan: {
       label: "Faucon cétan", a: [1, 6, 3, 2, 3, 1, 3, 3, 4],
-      sd: 1, init: 6, dice: 2, me: 8, atkPool: 4,
+      sd: 1, init: 6, dice: 2, me: 8,
       habitat: ["plaines"],
       desc: "Rapace éveillé des prairies nord-américaines, capable de suivre ses proies sur près de 3 km en vol.",
       visualTag: "hawk with piercing eyes, soaring over open prairie",
@@ -1053,7 +1055,7 @@ export const Creatures = {
     },
     canardDemoniaque: {
       label: "Canard du démon", a: [6, 4, 3, 7, 2, 1, 3, 2, null],
-      sd: 6, init: 6, dice: 1, me: 11, atkPool: 3,
+      sd: 6, init: 6, dice: 1, me: 11,
       habitat: ["plaines"],
       desc: "Canard éveillé agressif des prairies australiennes, aux serres tranchantes et au bec puissant.",
       visualTag: "aggressive duck with sharp talons, feral eyes, marshland",
@@ -1063,7 +1065,7 @@ export const Creatures = {
     },
     vacheInfernale: {
       label: "Vache de l'enfer", a: [8, 2, 3, 7, 2, 1, 2, 1, 3],
-      sd: 13, init: 5, dice: 2, me: 12, atkPool: 4,
+      sd: 13, init: 5, dice: 2, me: 12,
       habitat: ["plaines"],
       desc: "Bovidé éveillé des prairies indiennes protégées, à l'estomac assez robuste pour digérer bois et métal.",
       visualTag: "sturdy cow with an unsettling gaze, grazing in a protected prairie",
@@ -1073,7 +1075,7 @@ export const Creatures = {
     },
     renardFimbulwinter: {
       label: "Renard fimbulvetr", a: [1, 3, 4, 1, 2, 1, 4, 1, 5],
-      sd: 6, init: 8, dice: 2, me: 7, atkPool: 3,
+      sd: 6, init: 8, dice: 2, me: 7,
       habitat: ["polaire"],
       desc: "Renard éveillé adapté aux conditions extrêmes du grand froid, peu documenté au-delà de son territoire le long de la rivière Porcupine.",
       visualTag: "arctic fox, thick white winter coat, frozen tundra",
@@ -1082,7 +1084,7 @@ export const Creatures = {
     },
     furfur: {
       label: "Furfur", a: [5, 4, 5, 4, 3, 1, 3, 3, null],
-      sd: 5, init: 8, dice: 2, me: 11, atkPool: 2,
+      sd: 5, init: 8, dice: 2, me: 11,
       res: 4,
       habitat: ["polaire"],
       desc: "Créature techno-critter des régions arctiques du Yukon, généralement pacifique mais capable d'attaques matricielles actives.",
@@ -1093,7 +1095,7 @@ export const Creatures = {
     },
     gashadokuro: {
       label: "Gashadokuro", a: [8, 6, 8, 4, 6, 6, 7, 6, 6],
-      sd: 8, init: 15, dice: 2, me: 12, atkPool: 12, // livre : statbloc paramétré par la Puissance, ESS 2D6* (p. 22) — cf. lot D
+      sd: 8, init: 15, dice: 2, me: 12, // livre : statbloc paramétré par la Puissance, ESS 2D6* (p. 22) — cf. lot D
       habitat: ["plaines"],
       // Stats basées sur une Force fixée à 6 (créature de type esprit, formules B=F+2, R=F+2, S=F-2, I=F+1, reste=F) ; à ajuster si le MJ veut un individu plus ou moins puissant.
       desc: "Squelette géant sapient de la mythologie japonaise, né sur d'anciens champs de bataille, actif uniquement la nuit.",
@@ -1104,7 +1106,7 @@ export const Creatures = {
     },
     loupTerres: {
       label: "Loup terreux", a: [3, 4, 4, 5, 2, 2, 3, 1, 4],
-      sd: 3, init: 7, dice: 2, me: 10, atkPool: 7,
+      sd: 3, init: 7, dice: 2, me: 10,
       habitat: ["plaines"],
       desc: "Loup éveillé du centre de l'UCAS, capable de s'engloutir dans le sol pour surgir sur ses proies.",
       visualTag: "burrowing wolf, dirt-covered fur, emerging from the ground",
@@ -1114,7 +1116,7 @@ export const Creatures = {
     },
     jackalope: {
       label: "Lièvre cornu", a: [1, 3, 3, 1, 2, 2, 3, 3, null],
-      sd: 1, init: 6, dice: 2, me: 6, atkPool: 3,
+      sd: 1, init: 6, dice: 2, me: 6,
       habitat: ["plaines"],
       desc: "Petit lièvre éveillé aux bois perçants, reproducteur prolifique des prairies du CAS.",
       visualTag: "small jackrabbit with sharp antlers, alert stance, prairie grass",
@@ -1124,7 +1126,7 @@ export const Creatures = {
     },
     miniwashitu: {
       label: "Miniwashitu", a: [8, 4, 5, 7, 3, 1, 3, 1, 5],
-      sd: 8, init: 8, dice: 2, me: 12, atkPool: 5,
+      sd: 8, init: 8, dice: 2, me: 12,
       habitat: ["plaines"],
       desc: "Bovidé éveillé des prairies portant une rangée d'épines de 30 cm le long de la colonne vertébrale.",
       visualTag: "sturdy bovine creature with a row of spines along its back, prairie backdrop",
@@ -1134,7 +1136,7 @@ export const Creatures = {
     },
     pegase: {
       label: "Pégase", a: [8, 5, 6, 7, 3, 2, 4, 3, 4],
-      sd: 8, init: 10, dice: 2, me: 12, atkPool: 4,
+      sd: 8, init: 10, dice: 2, me: 12,
       habitat: ["plaines"],
       desc: "Cheval ailé docile et généralement pacifique des grandes prairies ; aucun pouvoir documenté au-delà de ses statistiques de base dans cette source.",
       visualTag: "pegasus, majestic white winged horse, large feathered wings, calm expression, grazing on open plains",
@@ -1143,7 +1145,7 @@ export const Creatures = {
     },
     peryton: {
       label: "Péryton", a: [8, 5, 5, 7, 4, 2, 4, 2, 4],
-      sd: 8, init: 9, dice: 2, me: 12, atkPool: 5,
+      sd: 8, init: 9, dice: 2, me: 12,
       habitat: ["montagnes"],
       desc: "Cerf éveillé des piémonts montagneux dont le régime alimentaire est complété par de la chair ; aucun pouvoir détaillé au-delà de ses statistiques de base dans cette source.",
       visualTag: "antlered deer with feathered wings, mountain foothills",
@@ -1152,7 +1154,7 @@ export const Creatures = {
     },
     pixiu: {
       label: "Pixiu", a: [8, 5, 4, 6, 5, 2, 3, 4, 5],
-      sd: 11, init: 7, dice: 2, me: 12, atkPool: 5,
+      sd: 11, init: 7, dice: 2, me: 12,
       habitat: ["deserts", "montagnes"],
       desc: "Créature ailée gardienne des steppes d'Asie et régions riches en minéraux, attirée par l'or et les bijoux.",
       visualTag: "winged lion-like guardian creature, ornate scales, hoarding gold and jewels",
@@ -1162,7 +1164,7 @@ export const Creatures = {
     },
     licorne: {
       label: "Licorne", a: [7, 5, 5, 7, 4, 2, 4, 4, 5],
-      sd: 7, init: 9, dice: 2, me: 12, atkPool: 4,
+      sd: 7, init: 9, dice: 2, me: 12,
       habitat: ["plaines"],
       desc: "Cheval éveillé à la corne mystique, symbole de pureté errant dans les prairies.",
       visualTag: "unicorn, elegant white horse with a single spiraled horn, standing in open prairie",
@@ -1172,7 +1174,7 @@ export const Creatures = {
     },
     licorneSuperieure: {
       label: "Grande licorne", a: [9, 5, 4, 9, 4, 2, 4, 3, 6],
-      sd: 9, init: 8, dice: 2, me: 13, atkPool: 4,
+      sd: 9, init: 8, dice: 2, me: 13,
       habitat: ["plaines", "montagnes"],
       desc: "Licorne d'un rang supérieur, plus puissante et plus rare, présente en altitude dans les mêmes prairies.",
       visualTag: "majestic elder unicorn, elegant white horse with a radiant glowing spiraled horn, ethereal golden aura",
@@ -1182,7 +1184,7 @@ export const Creatures = {
     },
     bisonBlanc: {
       label: "Bison blanc", a: [9, 3, 3, 8, 3, 2, 4, 3, 4],
-      sd: 9, init: 7, dice: 2, me: 13, atkPool: 4,
+      sd: 9, init: 7, dice: 2, me: 13,
       habitat: ["plaines"],
       desc: "Bison éveillé des prairies nord-américaines, vu selon les tribus comme une bénédiction ou un mauvais présage ; aucun pouvoir détaillé au-delà de ses statistiques de base dans cette source.",
       visualTag: "white bison, thick shaggy coat, standing in open prairie, sacred aura",
@@ -1191,7 +1193,7 @@ export const Creatures = {
     },
     lynxAvalanche: {
       label: "Lynx avalanche", a: [8, 5, 5, 7, 4, 2, 6, 3, 6],
-      sd: 10, init: 11, dice: 2, me: 12, atkPool: 4,
+      sd: 10, init: 11, dice: 2, me: 12,
       habitat: ["montagnes"],
       desc: "Félin éveillé des montagnes enneigées, chasse ses proies dans la neige et les décombres ; aucun pouvoir détaillé au-delà de ses statistiques de base dans cette source.",
       visualTag: "lynx with thick winter fur, snowy mountain terrain",
@@ -1200,7 +1202,7 @@ export const Creatures = {
     },
     verFeu: {
       label: "Ver de feu", a: [3, 2, 2, 3, 2, 1, 2, 2, 6],
-      sd: 3, init: 4, dice: 1, me: 10, atkPool: 3,
+      sd: 3, init: 4, dice: 1, me: 10,
       habitat: ["montagnes"],
       desc: "Ver éveillé des zones volcaniques, cavité orale maintenue à 1200°C, creuse des tunnels dans les poches de magma.",
       visualTag: "giant worm with a mouth radiating intense heat, volcanic tunnel",
@@ -1210,7 +1212,7 @@ export const Creatures = {
     },
     rockwormExterne: {
       label: "Ver mine", a: [4, 2, 2, 4, 2, 1, 3, 3, 6],
-      sd: 4, init: 5, dice: 1, me: 10, atkPool: 3,
+      sd: 4, init: 5, dice: 1, me: 10,
       habitat: ["montagnes"],
       desc: "Variante de ver des roches des zones géothermales, son excrétion refroidie forme des dépôts minéraux précieux dans les tunnels.",
       visualTag: "giant rock worm, mineral-crusted segmented hide, geothermal cave",
@@ -1220,7 +1222,7 @@ export const Creatures = {
     },
     rockwormSable: {
       label: "Ver de sable", a: [6, 1, 2, 4, 2, 1, 3, 1, 6],
-      sd: 6, init: 5, dice: 1, me: 11, atkPool: 3,
+      sd: 6, init: 5, dice: 1, me: 11,
       habitat: ["deserts"],
       desc: "Variante de ver des roches des zones désertiques, connecté au méta-plan de l'eau et laissant des traînées de sable mouvant.",
       visualTag: "giant sand worm, pale segmented hide, desert dune trail",
@@ -1230,7 +1232,7 @@ export const Creatures = {
     },
     rockwormMangeur: {
       label: "Dévoreur de montagnes", a: [22, 3, 2, 20, 2, 2, 2, 4, 6],
-      sd: 22, init: 4, dice: 1, me: 19, atkPool: 6,
+      sd: 22, init: 4, dice: 1, me: 19,
       habitat: ["montagnes"],
       desc: "Le plus grand des vers des roches, peut dépasser 100 mètres de long et creuser des réseaux de cavernes entiers, causant parfois des effondrements.",
       visualTag: "colossal rock-eating worm, massive segmented body, collapsing cavern",
@@ -1240,7 +1242,7 @@ export const Creatures = {
     },
     verGlamour: {
       label: "Ver joaillier", a: [2, 3, 4, 2, 3, 1, 3, 5, 6],
-      sd: 2, init: 7, dice: 2, me: 11, atkPool: 3,
+      sd: 2, init: 7, dice: 2, me: 11,
       habitat: ["montagnes"],
       desc: "Petit ver éveillé des régions riches en minéraux, porte un anneau de kératine servant d'écrin à des pierres précieuses.",
       visualTag: "small worm wearing a ring of gemstones, glimmering cave",
@@ -1250,7 +1252,7 @@ export const Creatures = {
     },
     chatRedflower: {
       label: "Félin de Redflower", a: [4, 5, 5, 3, 3, 2, 5, 4, 6],
-      sd: 6, init: 10, dice: 2, me: 10, atkPool: 6,
+      sd: 6, init: 10, dice: 2, me: 10,
       habitat: ["montagnes"],
       desc: "Félin éveillé sapient de la région de Red Mountain, doué de télépathie basique et d'un lien empathique avec ses proches.",
       visualTag: "sapient mountain cat, sleek fur, telepathic gaze, red mountain backdrop",
@@ -1260,7 +1262,7 @@ export const Creatures = {
     },
     aigleImperialAlchaeran: {
       label: "Aigle impérial alcheréen", a: [5, 6, 5, 7, 4, 2, 5, 5, 8],
-      sd: 5, init: 10, dice: 2, me: 11, atkPool: 6,
+      sd: 5, init: 10, dice: 2, me: 11,
       habitat: ["montagnes"],
       desc: "Grand aigle éveillé du Caucase, se nourrit des habitants d'alchéra ; ses ailes semblent couler et ses yeux s'enflamment près des limites arcanes.",
       visualTag: "great eagle with flowing molten-looking wings, eyes flickering with flame, mountain peak",
@@ -1270,7 +1272,7 @@ export const Creatures = {
     },
     chaleurMontagnes: {
       label: "Chaleur des montagnes", a: [8, 3, 3, 6, 2, 1, 4, 5, 6],
-      sd: 12, init: 7, dice: 1, me: 12, atkPool: 9,
+      sd: 12, init: 7, dice: 1, me: 12,
       habitat: ["montagnes"],
       desc: "Alpaga éveillé des hautes montagnes, à la toison mêlée de blanc, noir, argent, brun et or — la plus douce des matières naturelles, résistante comme la soie d'araignée et prisée en vêtement de luxe. Sacré pour les tribus locales, qui le protègent ; il crache une salive corrosive.",
       visualTag: "awakened alpaca with a shimmering white, black, silver, brown and gold fleece, high mountain ridge",
@@ -1280,7 +1282,7 @@ export const Creatures = {
     },
     gorilleArcanus: {
       label: "Gorille arcanus", a: [10, 4, 4, 12, 4, 3, 4, 5, 6],
-      sd: 10, init: 8, dice: 1, me: 13, atkPool: 6,
+      sd: 10, init: 8, dice: 1, me: 13,
       habitat: ["montagnes"],
       desc: "Gorille éveillé des Rocheuses, capable d'invoquer des esprits et de diriger une troupe de gorilles ordinaires.",
       visualTag: "gorilla with glowing mystic markings, commanding a troop, rocky mountainside",
@@ -1290,7 +1292,7 @@ export const Creatures = {
     },
     leopardMort: {
       label: "Léopard de la mort", a: [4, 5, 5, 4, 4, 2, 6, 2, 6],
-      sd: 6, init: 11, dice: 3, me: 10, atkPool: 8,
+      sd: 6, init: 11, dice: 3, me: 10,
       habitat: ["montagnes"],
       desc: "Espèce éveillée du léopard des neiges d'Asie centrale, attaque en imposant un silence soudain et un souffle d'air froid avant de bondir, parfois pour précipiter ses proies du haut des falaises.",
       visualTag: "snow leopard, pale coat, cold mist swirling around it, cliffside",
@@ -1300,7 +1302,7 @@ export const Creatures = {
     },
     griffon: {
       label: "Griffon", a: [8, 6, 4, 8, 4, 3, 5, 1, 6],
-      sd: 12, init: 9, dice: 2, me: 12, atkPool: 6,
+      sd: 12, init: 9, dice: 2, me: 12,
       habitat: ["montagnes"],
       desc: "Créature ailée mi-lion mi-aigle des massifs montagneux, rapide au sol comme en vol.",
       visualTag: "griffin, lion body with the head, wings and talons of an eagle, perched on a mountain crag",
@@ -1310,7 +1312,7 @@ export const Creatures = {
     },
     griffonAsiatique: {
       label: "Griffon d'Asie", a: [9, 5, 4, 8, 4, 2, 5, 2, 6],
-      sd: 15, init: 9, dice: 2, me: 13, atkPool: 6,
+      sd: 15, init: 9, dice: 2, me: 13,
       habitat: ["montagnes"],
       desc: "Variante asiatique du griffon au torse plus reptilien, vit en petits groupes familiaux dans les montagnes d'Asie.",
       visualTag: "asian griffin, lion-eagle hybrid with reptilian scaled torso, ornate dragon-like features, mountain backdrop",
@@ -1320,7 +1322,7 @@ export const Creatures = {
     },
     pinsDouleur: {
       label: "Pin douloureux", a: [14, 4, 4, 8, 1, 1, 4, 1, 6],
-      sd: 24, init: 8, dice: 1, me: 15, atkPool: 4,
+      sd: 24, init: 8, dice: 1, me: 15,
       habitat: ["montagnes"],
       desc: "Arbre éveillé immobile des falaises montagneuses, vit en groupes aux systèmes racinaires partagés et projette des cônes explosifs toxiques jusqu'à 100 m.",
       visualTag: "gnarled twisted pine tree, dark bark, thorny black needles, cliffside forest",
@@ -1330,7 +1332,7 @@ export const Creatures = {
     },
     yakOmbres: {
       label: "Yak des ombres", a: [10, 1, 2, 12, 2, 1, 2, 1, 6],
-      sd: 13, init: 4, dice: 1, me: 13, atkPool: 4,
+      sd: 13, init: 4, dice: 1, me: 13,
       habitat: ["montagnes"],
       desc: "Yak éveillé du Tibet et de l'Himalaya, utilisé comme transport clandestin grâce à une poche abdominale cutanée pouvant dissimuler 1 à 2 métahumains ; se déplace furtivement de nuit.",
       visualTag: "shaggy yak with a hidden abdominal pouch, moving stealthily through Himalayan mist",
@@ -1341,7 +1343,7 @@ export const Creatures = {
     },
     renardChanceTibet: {
       label: "Renard porte-bonheur du Tibet", a: [2, 6, 4, 2, 4, 2, 6, 4, 6],
-      sd: 2, init: 10, dice: 2, me: 10, atkPool: 3,
+      sd: 2, init: 10, dice: 2, me: 10,
       habitat: ["montagnes"],
       desc: "Renard éveillé de l'Himalaya, décide par instinct ou caprice de porter chance ou malchance aux métahumains proches (Accident et Garde).",
       visualTag: "small fox with a knowing gleam in its eyes, Himalayan mountain backdrop",
@@ -1351,7 +1353,7 @@ export const Creatures = {
     },
     oiseauTonnerreMajeur: {
       label: "Oiseau-tonnerre géant", a: [4, 3, 7, 8, 3, 2, 4, 1, 6],
-      sd: 4, init: 11, dice: 2, me: 9, atkPool: 5,
+      sd: 4, init: 11, dice: 2, me: 9,
       habitat: ["montagnes"],
       desc: "Grand rapace mythique des régions d'orage, provoque des tempêtes électriques ; les jeunes ressemblent à des oiseaux ordinaires.",
       visualTag: "great thunderbird, storm clouds crackling with lightning, mountain peak",
@@ -1361,7 +1363,7 @@ export const Creatures = {
     },
     troglodyte: {
       label: "Troglodyte", a: [3, 3, 4, 2, 3, 2, 3, 2, 2],
-      sd: 3, init: 7, dice: 1, me: 10, atkPool: 4,
+      sd: 3, init: 7, dice: 1, me: 10,
       habitat: ["montagnes", "urbain"],
       desc: "Créature sapiente souterraine, sensible thermiquement et résistante aux radiations, vit en tribu hiérarchisée avec des variantes brute et leader.",
       visualTag: "pale subterranean humanoid, hunched posture, glowing eyes in the dark",
@@ -1372,7 +1374,7 @@ export const Creatures = {
     },
     troglodyteBrute: {
       label: "Brute troglodyte", a: [6, 4, 4, 8, 2, 2, 2, 1, 2],
-      sd: 6, init: 6, dice: 1, me: 11, atkPool: 6,
+      sd: 6, init: 6, dice: 1, me: 11,
       habitat: ["montagnes", "urbain"],
       desc: "Membre le plus fort d'une tribu troglodyte, combat au club renforcé.",
       visualTag: "hulking pale subterranean humanoid, wielding a heavy reinforced club",
@@ -1383,7 +1385,7 @@ export const Creatures = {
     },
     troglodyteLeader: {
       label: "Chef troglodyte", a: [3, 2, 3, 2, 4, 3, 4, 5, 2],
-      sd: 3, init: 7, dice: 1, me: 10, atkPool: 5,
+      sd: 3, init: 7, dice: 1, me: 10,
       habitat: ["montagnes", "urbain"],
       desc: "Meneur d'une tribu troglodyte, coordonne les pillages d'équipement et de nourriture.",
       visualTag: "pale subterranean humanoid with a commanding presence, tribal leader",
@@ -1394,7 +1396,7 @@ export const Creatures = {
     },
     wyverneBase: {
       label: "Wyverne", a: [9, 4, 4, 16, 4, 4, 4, 3, 6],
-      sd: 15, init: 8, dice: 2, me: 13, atkPool: 6,
+      sd: 15, init: 8, dice: 2, me: 13,
       habitat: ["montagnes", "urbain"],
       desc: "Grand reptile ailé éveillé présent en zones montagneuses et urbaines, agile en vol comme au sol.",
       visualTag: "wyvern, two-legged winged dragon, barbed tail, leathery wings, perched on a rocky ledge",
@@ -1404,7 +1406,7 @@ export const Creatures = {
     },
     wyverneEmergee: {
       label: "Wyverne émergée", a: [7, 4, 4, 12, 5, 5, 5, 4, null],
-      sd: 11, init: 9, dice: 2, me: 12, atkPool: 6,
+      sd: 11, init: 9, dice: 2, me: 12,
       res: 6,
       habitat: ["urbain"],
       desc: "Wyverne partiellement émergée (créature techno-critter), présente notamment à St. Louis, cohabite avec les wyvernes baseline et éveillées.",
@@ -1415,7 +1417,7 @@ export const Creatures = {
     },
     wyverneAsiatique: {
       label: "Wyverne asiatique", a: [6, 5, 4, 10, 4, 3, 5, 6, 6],
-      sd: 10, init: 9, dice: 2, me: 11, atkPool: 4,
+      sd: 10, init: 9, dice: 2, me: 11,
       habitat: ["montagnes"],
       desc: "Wyverne des montagnes asiatiques, change-forme puissant apparaissant en belle femme ou jeune fille pour attirer des métahumains mâles vers les nids d'autres wyvernes.",
       visualTag: "elegant nine-tailed fox spirit in the form of a beautiful woman, mystical aura, mountain mist",
@@ -1425,7 +1427,7 @@ export const Creatures = {
     },
     wyverneArctique: {
       label: "Wyverne arctique", a: [14, 3, 3, 18, 3, 3, 5, 2, 6],
-      sd: 20, init: 8, dice: 2, me: 15, atkPool: 4,
+      sd: 20, init: 8, dice: 2, me: 15,
       habitat: ["polaire"],
       desc: "Wyverne arctique liée à la mythologie Isitoq des nations tribales nordiques, plus robuste que ses cousines grâce à une épaisse couche de graisse.",
       visualTag: "stocky wyvern with a thick layer of blubber, arctic ice backdrop",
@@ -1435,7 +1437,7 @@ export const Creatures = {
     },
     wyverneAfricaine: {
       label: "Wyverne africaine", a: [10, 5, 4, 14, 4, 4, 6, 3, 6],
-      sd: 14, init: 10, dice: 2, me: 13, atkPool: 6,
+      sd: 14, init: 10, dice: 2, me: 13,
       habitat: ["oceans"],
       desc: "Wyverne des rivières et lacs africains, prédateur focalisé sur les métahumains, plonge de haut pour renverser les embarcations.",
       visualTag: "wyvern diving toward the water, African river backdrop",
@@ -1447,7 +1449,7 @@ export const Creatures = {
     /* ---- Wild Life p.52-84 : Forests + Swamps ---- */
     loupFumee: {
       label: "Loup fumant", a: [6, 5, 4, 6, 2, 2, 7, 2, 6],
-      sd: 9, init: 11, dice: 2, me: 11, atkPool: 6,
+      sd: 9, init: 11, dice: 2, me: 11,
       habitat: ["forets", "urbain"],
       desc: "Loup éveillé né des forêts ravagées par les incendies, s'aventurant parfois en zones urbaines et périurbaines.",
       visualTag: "wolf made of drifting smoke and ash, burned forest backdrop",
@@ -1457,7 +1459,7 @@ export const Creatures = {
     },
     lapinAmortisseur: {
       label: "Lapin amortisseur", a: [1, 6, 4, 1, 3, 2, 7, 5, 6],
-      sd: 1, init: 11, dice: 2, me: 5, atkPool: 1,
+      sd: 1, init: 11, dice: 2, me: 5,
       habitat: ["forets"],
       desc: "Petit lapin éveillé découvert dans plusieurs régions du monde, crée autour de lui une zone d'amortissement de la magie.",
       visualTag: "small rabbit radiating a faint dampening aura, alert in a clearing",
@@ -1470,7 +1472,7 @@ export const Creatures = {
     },
     ecureuilCharognard: {
       label: "Écureuil fouineur", a: [1, 5, 4, 1, 2, 1, 4, 1, 6],
-      sd: 1, init: 8, dice: 1, me: 3, atkPool: 1,
+      sd: 1, init: 8, dice: 1, me: 3,
       habitat: ["forets", "urbain"],
       desc: "Écureuil éveillé des parcs et forêts d'Amérique du Nord, collecte les objets brillants et use de magie pour dérober les biens des voyageurs.",
       visualTag: "squirrel clutching shiny stolen trinkets, forest park backdrop",
@@ -1483,7 +1485,7 @@ export const Creatures = {
     },
     gargouilleForetNoire: {
       label: "Gargouille de la Forêt-Noire", a: [6, 4, 5, 7, 2, 2, 4, 4, 6],
-      sd: 12, init: 9, dice: 2, me: 11, atkPool: 5,
+      sd: 12, init: 9, dice: 2, me: 11,
       habitat: ["forets"],
       desc: "Gargouille éveillée des forêts sombres tempérées d'Europe et d'Amérique du Nord.",
       visualTag: "winged stone gargoyle, dark mossy hide, perched in a dense dark forest",
@@ -1493,7 +1495,7 @@ export const Creatures = {
     },
     oursChuteur: {
       label: "Drop bear", a: [3, 3, 3, 5, 5, 2, 4, 1, 3],
-      sd: 5, init: 7, dice: 2, me: 11, atkPool: 4,
+      sd: 5, init: 7, dice: 2, me: 11,
       habitat: ["forets"],
       desc: "Petit ours éveillé des forêts australiennes, retombe sans dommage depuis les hauteurs pour surprendre ses proies en embuscade.",
       visualTag: "small bear dropping from a tree branch, forest ambush",
@@ -1503,7 +1505,7 @@ export const Creatures = {
     },
     oursCorne: {
       label: "Ours cornu", a: [13, 4, 4, 13, 5, 4, 4, 1, 6],
-      sd: 23, init: 8, dice: 1, me: 18, atkPool: 4,
+      sd: 23, init: 8, dice: 1, me: 18,
       habitat: ["forets"],
       desc: "Ours éveillé des forêts boréales et tempérées, aux bois massifs.",
       visualTag: "colossal bear with massive antlers like a stag, thick fur, towering and imposing",
@@ -1513,7 +1515,7 @@ export const Creatures = {
     },
     gloutonMajeur: {
       label: "Carcajou géant", a: [7, 6, 5, 5, 4, 2, 4, 1, 4],
-      sd: 13, init: 9, dice: 2, me: 12, atkPool: 5,
+      sd: 13, init: 9, dice: 2, me: 12,
       habitat: ["forets"],
       desc: "Carcajou éveillé des régions boréales et tempérées, ne recule jamais et harcèle des proies bien plus grosses que lui.",
       visualTag: "large fierce wolverine, thick dark fur, relentless predatory stance",
@@ -1523,7 +1525,7 @@ export const Creatures = {
     },
     fauconMerlin: {
       label: "Faucon merlin", a: [1, 7, 3, 1, 4, 4, 6, 4, 5],
-      sd: 1, init: 9, dice: 1, me: 4, atkPool: 2,
+      sd: 1, init: 9, dice: 1, me: 4,
       habitat: ["forets", "montagnes"],
       desc: "Petit rapace éveillé des forêts côtières et montagneuses tempérées.",
       visualTag: "small merlin falcon, sharp eyes, coastal forest backdrop",
@@ -1533,7 +1535,7 @@ export const Creatures = {
     },
     serpentMimetique: {
       label: "Serpent imitateur", a: [3, 4, 4, 5, 2, 2, 4, 1, 4],
-      sd: 5, init: 8, dice: 1, me: 10, atkPool: 3,
+      sd: 5, init: 8, dice: 1, me: 10,
       habitat: ["jungles"],
       desc: "Serpent éveillé des forêts tropicales, imite magiquement l'apparence d'autres créatures ou objets.",
       visualTag: "shape-shifting snake, scales rippling with illusory patterns, jungle foliage",
@@ -1543,7 +1545,7 @@ export const Creatures = {
     },
     mycofundi: {
       label: "Mycofundi", a: [2, 2, 3, 1, 3, 2, 4, 0, 3], // livre : CHA — et ESS 3 (p. 58)
-      sd: 2, init: 7, dice: 1, me: 10, atkPool: 2,
+      sd: 2, init: 7, dice: 1, me: 10,
       ess: 3,
       habitat: ["forets", "marais"],
       desc: "Champignon éveillé des zones souterraines et forêts humides, présent dans le monde entier.",
@@ -1557,7 +1559,7 @@ export const Creatures = {
     },
     pandamonium: {
       label: "Pandamonium", a: [6, 4, 5, 8, 3, 1, 5, 4, 6],
-      sd: 9, init: 10, dice: 2, me: 11, atkPool: 4,
+      sd: 9, init: 10, dice: 2, me: 11,
       habitat: ["forets"],
       desc: "Panda éveillé vivant surtout dans les bambouseraies d'Asie.",
       visualTag: "giant panda, black and white fur, bamboo forest",
@@ -1567,7 +1569,7 @@ export const Creatures = {
     },
     porcEpicVolant: {
       label: "Porc-épic archer", a: [1, 4, 2, 1, 3, 1, 3, 2, 4],
-      sd: 3, init: 5, dice: 1, me: 6, atkPool: 3,
+      sd: 3, init: 5, dice: 1, me: 6,
       habitat: ["forets"],
       desc: "Porc-épic éveillé des forêts, surtout africaines, capable de projeter ses piquants.",
       visualTag: "flying porcupine, spines raised, African forest canopy",
@@ -1577,7 +1579,7 @@ export const Creatures = {
     },
     araigneeFeuFollet: {
       label: "Arachno-follet", a: [2, 4, 5, 2, 3, 1, 4, 1, 6],
-      sd: 6, init: 9, dice: 1, me: 10, atkPool: 2,
+      sd: 6, init: 9, dice: 1, me: 10,
       ess: 4,
       habitat: ["forets", "marais"],
       desc: "Araignée éveillée des forêts humides et marais, très venimeuse ; à ne pas confondre avec les feux follets normaux.",
@@ -1588,7 +1590,7 @@ export const Creatures = {
     },
     martichoras: {
       label: "Manticore", a: [7, 5, 5, 6, 3, 2, 4, 1, 6],
-      sd: 11, init: 9, dice: 1, me: 12, atkPool: 5,
+      sd: 11, init: 9, dice: 1, me: 12,
       habitat: ["forets", "montagnes"],
       // Compétence Perception non trouvée dans la source (donnée tronquée dans l'extraction, Wild Life p.60 à vérifier).
       desc: "Créature ailée à queue venimeuse des zones montagneuses et forestières tropicales et subtropicales.",
@@ -1599,7 +1601,7 @@ export const Creatures = {
     },
     piasma: {
       label: "Piasme", a: [12, 4, 4, 12, 4, 3, 4, 1, 4],
-      sd: 20, init: 8, dice: 1, me: 14, atkPool: 3,
+      sd: 20, init: 8, dice: 1, me: 14,
       habitat: ["marais", "forets"],
       desc: "Grand prédateur éveillé des marais et forêts humides.",
       visualTag: "large armored forest predator, thick hide, crouched and menacing",
@@ -1609,7 +1611,7 @@ export const Creatures = {
     },
     hydreRoyale: {
       label: "Hydre royale", a: [11, 7, 8, 10, 4, 2, 4, 3, 7],
-      sd: 18, init: 12, dice: 2, me: 14, atkPool: 7,
+      sd: 18, init: 12, dice: 2, me: 14,
       habitat: ["marais"],
       desc: "Grande hydre éveillée des zones humides d'Asie du Sud-Est, gagne une action mineure supplémentaire par tête.",
       visualTag: "hydra, massive serpentine body with multiple snake heads, swamp lurker, scaled and sinuous",
@@ -1619,7 +1621,7 @@ export const Creatures = {
     },
     vodyanoy: {
       label: "Vodianoï", a: [2, 4, 4, 1, 4, 2, 5, 3, null],
-      sd: 2, init: 9, dice: 2, me: 9, atkPool: 2,
+      sd: 2, init: 9, dice: 2, me: 9,
       res: 5,
       habitat: ["marais"],
       desc: "Créature techno-critter des marais de Pripet (Biélorussie, Russie, Yakoutie).",
@@ -1630,7 +1632,7 @@ export const Creatures = {
     },
     bunyip: {
       label: "Bunyip", a: [11, 4, 4, 10, 4, 2, 4, 2, null],
-      sd: 17, init: 8, dice: 2, me: 14, atkPool: 8,
+      sd: 17, init: 8, dice: 2, me: 14,
       habitat: ["marais"],
       desc: "Créature aquatique éveillée des zones humides, rivières et billabongs d'Australie, capable d'imiter d'autres formes.",
       visualTag: "aquatic shapeshifting creature, murky eyes, emerging from a billabong",
@@ -1649,7 +1651,7 @@ export const Creatures = {
     },
     afanc: {
       label: "Addanc", a: [11, 4, 4, 10, 4, 2, 4, 2, 4],
-      sd: 15, init: 8, dice: 2, me: 14, atkPool: 8,
+      sd: 15, init: 8, dice: 2, me: 14,
       habitat: ["marais"],
       desc: "Grand castor éveillé des zones humides tropicales (Carib League, Aztlan).",
       visualTag: "giant awakened beaver, thick fur, dwelling in a deep marsh",
@@ -1666,7 +1668,7 @@ export const Creatures = {
     },
     behemothMarecage: {
       label: "Béhémoth", a: [15, 3, 2, 16, 6, 2, 3, 1, null],
-      sd: 21, init: 5, dice: 2, me: 16, atkPool: 8,
+      sd: 21, init: 5, dice: 2, me: 16,
       habitat: ["marais"],
       desc: "Alligator géant éveillé des zones humides s'étendant des Caraïbes au CAS et à Aztlan.",
       visualTag: "colossal armored alligator, thick hide, swamp predator",
@@ -1676,7 +1678,7 @@ export const Creatures = {
     },
     boobrie: {
       label: "Boobrie", a: [3, 6, 5, 3, 3, 1, 6, 2, null],
-      sd: 3, init: 11, dice: 2, me: 10, atkPool: 8,
+      sd: 3, init: 11, dice: 2, me: 10,
       habitat: ["marais"],
       desc: "Grand oiseau éveillé des zones humides d'Amérique du Nord, notamment le Mississippi, porteur de la peste VITAS-III.",
       visualTag: "large diseased-looking waterfowl, wetland backdrop",
@@ -1686,7 +1688,7 @@ export const Creatures = {
     },
     feuFolletCadaverique: {
       label: "Lumicorps", a: [3, 8, 8, 1, 5, 2, 5, 3, 6],
-      sd: 3, init: 13, dice: 2, me: 10, atkPool: 6, // livre : ESS 2D6 (p. 68) — figé à 6, cf. lot D
+      sd: 3, init: 13, dice: 2, me: 10, // livre : ESS 2D6 (p. 68) — figé à 6, cf. lot D
       habitat: ["marais"],
       // ESS de base 2D6 (aléatoire) ; considéré avoir une Force égale à son Essence actuelle pour la Matérialisation. Stats astrales : DR 6, I/ID 11/3.
       desc: "Entité astrale des zones humides, aussi appelée feu follet ; esprit errant se nourrissant d'Essence par contact.",
@@ -1697,7 +1699,7 @@ export const Creatures = {
     },
     porcInfernal: {
       label: "Sanglier de l'enfer", a: [7, 5, 4, 5, 3, 2, 4, 1, 4],
-      sd: 7, init: 8, dice: 2, me: 12, atkPool: 5,
+      sd: 7, init: 8, dice: 2, me: 12,
       habitat: ["marais"],
       desc: "Sanglier éveillé très agressif et territorial des marais pollués, peut s'envelopper de flammes.",
       visualTag: "aggressive wild boar wreathed in flames, polluted swamp backdrop",
@@ -1707,7 +1709,7 @@ export const Creatures = {
     },
     moucheGhedeFemelle: {
       label: "Mouche des Ghédé femelle", a: [1, 4, 4, 1, 3, 2, 2, 1, 4],
-      sd: 2, init: 6, dice: 2, me: 3, atkPool: 4,
+      sd: 2, init: 6, dice: 2, me: 3,
       habitat: ["marais", "oceans"],
       desc: "Mouche éveillée des Caraïbes et de Méditerranée, se nourrit exclusivement de sang métahumain pour produire ses œufs.",
       visualTag: "large fly with iridescent wings, blood-red eyes, Caribbean coastal backdrop",
@@ -1717,7 +1719,7 @@ export const Creatures = {
     },
     moucheGhedeMale: {
       label: "Mouche des Ghédé mâle", a: [1, 5, 5, 1, 2, 1, 1, 1, 4],
-      sd: 2, init: 6, dice: 2, me: 1, atkPool: 4,
+      sd: 2, init: 6, dice: 2, me: 1,
       habitat: ["marais", "oceans"],
       desc: "Forme mâle de la mouche Ghede, moins vorace que la femelle mais tout aussi présente sur les côtes caribéennes et méditerranéennes.",
       visualTag: "fly with iridescent wings, smaller and duller than its mate, coastal backdrop",
@@ -1727,7 +1729,7 @@ export const Creatures = {
     },
     heqetAdulte: {
       label: "Héqet adulte", a: [1, 3, 4, 1, 2, 1, 2, 1, 3],
-      sd: 1, init: 6, dice: 2, me: 9, atkPool: 1,
+      sd: 1, init: 6, dice: 2, me: 9,
       habitat: ["marais"],
       desc: "Grenouille éveillée des zones humides du Nil, capture ses proies d'un jet de langue corrosif.",
       visualTag: "large frog with a long corrosive tongue, Nile wetland backdrop",
@@ -1737,7 +1739,7 @@ export const Creatures = {
     },
     heqetTetard: {
       label: "Têtard d'Héqet", a: [1, 1, 1, 1, 1, 1, 1, 1, 1],
-      sd: 1, init: 2, dice: 2, me: 1, atkPool: 1,
+      sd: 1, init: 2, dice: 2, me: 1,
       habitat: ["marais"],
       desc: "Têtard du Heqet, se nourrit principalement de magie ambiante ; son Magie naturel plafonne à 3.",
       visualTag: "small tadpole glowing faintly with absorbed magic, wetland pool",
@@ -1749,7 +1751,7 @@ export const Creatures = {
     },
     ninkiNanka: {
       label: "Ninki nanka", a: [12, 4, 6, 10, 3, 2, 4, 4, 4],
-      sd: 22, init: 10, dice: 2, me: 14, atkPool: 7,
+      sd: 22, init: 10, dice: 2, me: 14,
       habitat: ["marais"],
       desc: "Parent distant des dragons chinois des zones humides d'Afrique de l'Ouest, corps de 21 mètres, chasseur embusqué travaillant en paires.",
       visualTag: "elongated dragon-like serpent, West African wetland, ambush predator",
@@ -1759,7 +1761,7 @@ export const Creatures = {
     },
     apeMouffette: {
       label: "Singe mouffette", a: [4, 5, 5, 3, 3, 1, 3, 2, 3],
-      sd: 4, init: 8, dice: 2, me: 10, atkPool: 5,
+      sd: 4, init: 8, dice: 2, me: 10,
       habitat: ["marais"],
       desc: "Primate omnivore éveillé des marais de Floride, parenté éloignée du Sasquatch, vit en groupes familiaux de 20 à 30 individus.",
       visualTag: "shaggy primate with a skunk-like musk, Florida swamp backdrop",
@@ -1769,7 +1771,7 @@ export const Creatures = {
     },
     dragonClaqueur: {
       label: "Dragon serpentin", a: [15, 4, 4, 18, 4, 1, 3, 1, 5],
-      sd: 21, init: 7, dice: 2, me: 16, atkPool: 5,
+      sd: 21, init: 7, dice: 2, me: 16,
       habitat: ["marais"],
       desc: "Tortue géante éveillée de 12 mètres de diamètre à coquille durcie et cou extensible, des marécages nord-américains.",
       visualTag: "giant turtle with a hardened shell and extending serpentine neck, swamp waters",
@@ -1779,7 +1781,7 @@ export const Creatures = {
     },
     stymphalien: {
       label: "Stymphalien", a: [3, 4, 4, 2, 4, 1, 4, 2, 4],
-      sd: 3, init: 8, dice: 2, me: 10, atkPool: 5,
+      sd: 3, init: 8, dice: 2, me: 10,
       habitat: ["marais"],
       desc: "Oiseau éveillé de la mythologie grecque, présent dans les marais méditerranéens, très sensible au bruit (seuil de douleur ~100 dB).",
       visualTag: "large bronze-feathered bird, Mediterranean marsh backdrop",
@@ -1789,7 +1791,7 @@ export const Creatures = {
     },
     titanoboa: {
       label: "Titanoboa", a: [7, 3, 3, 6, 3, 1, 3, 2, null],
-      sd: 11, init: 6, dice: 2, me: 12, atkPool: 5,
+      sd: 11, init: 6, dice: 2, me: 12,
       habitat: ["oceans", "jungles"],
       desc: "Le plus grand serpent connu (14 m, plus d'une tonne) des régions côtières d'Aztlan et d'Amazonie, prédateur attentiste qui se gave puis sommeille.",
       visualTag: "colossal snake, immense coiled body, coastal jungle backdrop",
@@ -1799,7 +1801,7 @@ export const Creatures = {
     },
     wangliang: {
       label: "Wangliang", a: [2, 2, 2, 2, 4, 1, 2, 2, 5],
-      sd: 4, init: 4, dice: 1, me: 10, atkPool: 1,
+      sd: 4, init: 4, dice: 1, me: 10,
       habitat: ["marais"],
       desc: "Petite tortue éveillée d'Asie du Sud-Est considérée comme un mauvais présage, porteuse de maladie, apparentée à l'émyde mutique et à la tortue de Luo Shu.",
       visualTag: "small ominous turtle, dark shell, Southeast Asian wetland",
@@ -1809,7 +1811,7 @@ export const Creatures = {
     },
     coloColo: {
       label: "Colo colo", a: [2, 4, 4, 1, 4, 2, 5, 3, null],
-      sd: 2, init: 9, dice: 2, me: 9, atkPool: 2,
+      sd: 2, init: 9, dice: 2, me: 9,
       res: 5,
       habitat: ["marais"],
       desc: "Rongeur émergent des zones humides, cousin distant de la nutria, mord les hardlines et broute électroniquement les données.",
@@ -1820,7 +1822,7 @@ export const Creatures = {
     },
     castorLesion: {
       label: "Castor lésion", a: [2, 4, 3, 1, 3, 2, 4, 1, 5],
-      sd: 2, init: 7, dice: 2, me: 10, atkPool: 4,
+      sd: 2, init: 7, dice: 2, me: 10,
       habitat: ["marais"],
       desc: "Rongeur éveillé des marécages, porteur d'une aura de radiations et immunisé aux pathogènes comme aux toxines.",
       visualTag: "awakened beaver with a faint sickly glow around it, murky swamp water",
@@ -1830,7 +1832,7 @@ export const Creatures = {
     },
     ratTroie: {
       label: "Rat de Troie", a: [2, 4, 3, 1, 3, 2, 4, 1, null], res: 5,
-      sd: 2, init: 7, dice: 2, me: 10, atkPool: 4,
+      sd: 2, init: 7, dice: 2, me: 10,
       habitat: ["marais"],
       desc: "Rongeur techno-critter des marécages, doté d'une persona matricielle propre : SD 5, initiative 6/4 et moniteur 10 en Matrice, où il porte des échos et des formes complexes.",
       visualTag: "awakened marsh rat with faint digital static around its whiskers, swamp reeds",
@@ -1843,7 +1845,7 @@ export const Creatures = {
     },
     tortueLoShu: {
       label: "Tortue de Luo Shu", a: [2, 2, 2, 2, 4, 1, 2, 3, 6],
-      sd: 4, init: 4, dice: 1, me: 10, atkPool: 1,
+      sd: 4, init: 4, dice: 1, me: 10,
       habitat: ["marais"],
       desc: "Tortue éveillée d'Asie du Sud-Est considérée comme porte-bonheur, jamais reproduite en captivité, génère son propre puits de mana taoïste (grille magique 3x3).",
       visualTag: "sacred turtle with an intricate shell pattern, glowing faintly, auspicious aura",
@@ -1853,7 +1855,7 @@ export const Creatures = {
     },
     tortueEtangJaune: {
       label: "Émyde mutique", a: [2, 1, 1, 1, 4, 1, 1, 2, null],
-      sd: 4, init: 2, dice: 1, me: 10, atkPool: 1,
+      sd: 4, init: 2, dice: 1, me: 10,
       habitat: ["marais"],
       desc: "Petite tortue d'Asie du Sud-Est à la rayure jaune caractéristique de l'œil au cou, parente naturelle de la tortue de Luo Shu et du wangliang, rarement Éveillée.",
       visualTag: "small turtle with a yellow-striped eye marking, pond backdrop",
@@ -1865,7 +1867,7 @@ export const Creatures = {
     /* ---- Wild Life p.86-114 : Jungles + Savannas ---- */
     leopardBrume: {
       label: "Léopard des brumes", a: [4, 4, 3, 4, 3, 2, 6, 2, 6],
-      sd: 6, init: 9, dice: 2, me: 10, atkPool: 5,
+      sd: 6, init: 9, dice: 2, me: 10,
       habitat: ["jungles"],
       desc: "Grand félin éveillé des profondeurs de la jungle amazonienne, associé aux sources et cours d'eau.",
       visualTag: "leopard shrouded in mist, deep jungle river backdrop",
@@ -1875,7 +1877,7 @@ export const Creatures = {
     },
     singeSang: {
       label: "Singe de sang", a: [3, 5, 3, 4, 4, 2, 2, 3, 5],
-      sd: 5, init: 5, dice: 2, me: 8, atkPool: 5,
+      sd: 5, init: 5, dice: 2, me: 8,
       habitat: ["jungles"],
       desc: "Petit primate éveillé hématophage de la canopée, vivant en groupes pouvant compter jusqu'à 40 individus.",
       visualTag: "small primate with blood-stained fangs, crouched predatory posture in the jungle canopy",
@@ -1885,7 +1887,7 @@ export const Creatures = {
     },
     novaraptor: {
       label: "Novaraptor", a: [5, 4, 4, 4, 2, 1, 4, 2, 6],
-      sd: 9, init: 8, dice: 2, me: 11, atkPool: 6,
+      sd: 9, init: 8, dice: 2, me: 11,
       habitat: ["jungles"],
       desc: "Petit raptor éveillé pyrique de la jungle amazonienne.",
       visualTag: "small fiery raptor-like dinosaur, glowing scales, jungle backdrop",
@@ -1895,7 +1897,7 @@ export const Creatures = {
     },
     angeAmazonien: {
       label: "Ange amazonien", a: [2, 5, 5, 2, 3, 2, 4, 1, 6],
-      sd: 2, init: 9, dice: 2, me: 9, atkPool: 3,
+      sd: 2, init: 9, dice: 2, me: 9,
       habitat: ["jungles"],
       desc: "Méduse aérienne éveillée flottant dans les nuages et brumes de la jungle amazonienne.",
       visualTag: "translucent jellyfish-like creature floating through jungle mist and clouds",
@@ -1905,7 +1907,7 @@ export const Creatures = {
     },
     arangUtan: {
       label: "Arang-outan", a: [6, 3, 3, 6, 6, 3, 6, 5, 6],
-      sd: 9, init: 9, dice: 2, me: 11, atkPool: 4,
+      sd: 9, init: 9, dice: 2, me: 11,
       habitat: ["jungles"],
       desc: "Orang-outan éveillé arboricole des forêts tropicales indonésiennes, lecteur d'auras capable de créer des préparations magiques sans drain.",
       visualTag: "orangutan with a perceptive gaze, sitting among magical herbs, tropical canopy",
@@ -1915,7 +1917,7 @@ export const Creatures = {
     },
     paresseuxClignotant: {
       label: "Paresseux fulgurant", a: [6, 8, 11, 5, 4, 1, 5, 4, 6],
-      sd: 10, init: 16, dice: 5, me: 11, atkPool: 8,
+      sd: 10, init: 16, dice: 5, me: 11,
       habitat: ["jungles"],
       // Normalement très lent, le mouvement listé (2(50*)/4/—) ne s'applique que lorsqu'il attaque.
       desc: "Paresseux éveillé arboricole d'une lenteur trompeuse, capable d'exploser en vitesse foudroyante au moment de l'attaque.",
@@ -1926,7 +1928,7 @@ export const Creatures = {
     },
     gorilleNartaki: {
       label: "Gorille nartaki", a: [8, 3, 4, 9, 2, 2, 4, 2, 6],
-      sd: 12, init: 8, dice: 1, me: 12, atkPool: 8,
+      sd: 12, init: 8, dice: 1, me: 12,
       habitat: ["jungles"],
       desc: "Gorille éveillé des jungles, redoutable au combat rapproché.",
       visualTag: "powerful gorilla, fierce combat stance, jungle backdrop",
@@ -1936,7 +1938,7 @@ export const Creatures = {
     },
     grenouilleFlecettePlanaire: {
       label: "Dendrobate planaire", a: [1, 3, 3, 1, 4, 1, 3, 1, 8],
-      sd: 1, init: 6, dice: 1, me: 4, atkPool: 1,
+      sd: 1, init: 6, dice: 1, me: 4,
       habitat: ["jungles"],
       desc: "Petite grenouille éveillée de la canopée, sans arme naturelle documentée, capable de passages métaplanaires.",
       visualTag: "small vividly colored dart frog, glowing faintly, jungle canopy",
@@ -1948,7 +1950,7 @@ export const Creatures = {
     },
     gomatia: {
       label: "Gomatia", a: [6, 3, 1, 6, 3, 2, 6, 1, 3],
-      sd: 9, init: 7, dice: 1, me: 11, atkPool: 5,
+      sd: 9, init: 7, dice: 1, me: 11,
       habitat: ["jungles"],
       desc: "Petit reptile éveillé caméléonesque de la jungle, souvent utilisé comme créature de sécurité par les corporations.",
       visualTag: "small chameleon-like reptile, long tongue, jungle foliage",
@@ -1958,7 +1960,7 @@ export const Creatures = {
     },
     beteAraignee: {
       label: "Araignée colosse", a: [2, 4, 3, 2, 3, 1, 3, 1, 6],
-      sd: 6, init: 6, dice: 3, me: 6, atkPool: 3,
+      sd: 6, init: 6, dice: 3, me: 6,
       habitat: ["jungles"],
       desc: "Araignée éveillée chasseuse de la canopée, tisse des toiles pour piéger ses proies.",
       visualTag: "large spider spinning thick silk webs, climbing a tree canopy",
@@ -1968,7 +1970,7 @@ export const Creatures = {
     },
     chatTalisGuepard: {
       label: "Chat talis (forme de guépard)", a: [5, 5, 4, 4, 3, 3, 2, 3, 6],
-      sd: 8, init: 6, dice: 2, me: 11, atkPool: 3,
+      sd: 8, init: 6, dice: 2, me: 11,
       habitat: ["jungles"],
       desc: "Félin éveillé social des confins savane/jungle asiatiques, capable de changer de forme entre guépard et chat domestique.",
       visualTag: "cheetah with a shimmering aura mid-transformation, savanna-jungle border",
@@ -1978,7 +1980,7 @@ export const Creatures = {
     },
     chatTalisDomestique: {
       label: "Chat talis (forme domestique)", a: [2, 6, 4, 1, 3, 3, 2, 3, 6],
-      sd: 5, init: 6, dice: 2, me: 5, atkPool: 3,
+      sd: 5, init: 6, dice: 2, me: 5,
       habitat: ["jungles"],
       desc: "Forme domestique du chat Talis, plus discrète mais capable des mêmes métamorphoses.",
       visualTag: "small house cat with a shimmering aura mid-transformation",
@@ -1992,7 +1994,7 @@ export const Creatures = {
     },
     tunche: {
       label: "Tunche", a: [4, 4, 5, 4, 3, 2, 6, 2, 6],
-      sd: 10, init: 16, dice: 5, me: 11, atkPool: 5,
+      sd: 10, init: 16, dice: 5, me: 11,
       habitat: ["jungles"],
       desc: "Prédateur nocturne éveillé de la jungle péruvienne.",
       visualTag: "shadowy nocturnal predator, glowing eyes, Peruvian jungle at night",
@@ -2002,7 +2004,7 @@ export const Creatures = {
     },
     guepeVide: {
       label: "Guêpe du néant", a: [1, 8, 11, 1, 1, 1, 5, 5, 6],
-      sd: 1, init: 16, dice: 2, me: 1, atkPool: 6,
+      sd: 1, init: 16, dice: 2, me: 1,
       habitat: ["jungles"],
       desc: "Guêpe éveillée nichant en essaim dans les arbres Sangre del Diablo de l'Amazonie, crée un vide de mana autour de son nid.",
       visualTag: "wasp swarm nesting in dark twisted trees, faint void-like shimmer around the nest",
@@ -2012,7 +2014,7 @@ export const Creatures = {
     },
     guepardConway: {
       label: "Guépard de Conway", a: [7, 8, 6, 6, 5, 2, 6, 4, 6],
-      sd: 13, init: 12, dice: 3, me: 12, atkPool: 8,
+      sd: 13, init: 12, dice: 3, me: 12,
       habitat: ["jungles"],
       desc: "Guépard éveillé à six pattes des savanes africaines, très social et vivant en coalitions.",
       visualTag: "six-legged cheetah, sleek muscular build, African savanna",
@@ -2022,7 +2024,7 @@ export const Creatures = {
     },
     lionFeu: {
       label: "Lion de feu", a: [12, 4, 4, 10, 3, 2, 6, 4, 6],
-      sd: 18, init: 10, dice: 2, me: 14, atkPool: 8,
+      sd: 18, init: 10, dice: 2, me: 14,
       habitat: ["jungles"],
       desc: "Lion éveillé chasseur en groupe des savanes africaines, sécrète des huiles inflammables.",
       visualTag: "lion with a faint oily sheen, savanna backdrop, pride hunting together",
@@ -2032,7 +2034,7 @@ export const Creatures = {
     },
     elephantBlinde: {
       label: "Éléphantaure", a: [18, 3, 3, 30, 4, 2, 8, 6, 6],
-      sd: 32, init: 11, dice: 1, me: 17, atkPool: 8,
+      sd: 32, init: 11, dice: 1, me: 17,
       habitat: ["jungles"],
       desc: "Éléphant éveillé cuirassé des savanes africaines, protecteur du troupeau.",
       visualTag: "elephant with thick armor-like hide, protective stance, savanna backdrop",
@@ -2042,7 +2044,7 @@ export const Creatures = {
     },
     autrucheAerienne: {
       label: "Autruche volante", a: [2, 4, 2, 1, 1, 1, 4, 2, 6],
-      sd: 2, init: 6, dice: 1, me: 5, atkPool: 3,
+      sd: 2, init: 6, dice: 1, me: 5,
       habitat: ["jungles"],
       desc: "Autruche éveillée volante nichant en savane, circumnavigue le globe tous les 2 ans pour se reproduire.",
       visualTag: "ostrich with large flight-capable wings, soaring above the savanna",
@@ -2052,7 +2054,7 @@ export const Creatures = {
     },
     leopardOmniscient: {
       label: "Léopard omniscient", a: [5, 6, 6, 4, 6, 4, 5, 4, 6],
-      sd: 8, init: 11, dice: 3, me: 11, atkPool: 5,
+      sd: 8, init: 11, dice: 3, me: 11,
       habitat: ["jungles"],
       desc: "Léopard éveillé sapient et solitaire des savanes africaines, doté de connexions métaplanaires.",
       visualTag: "solitary leopard with an all-knowing gaze, faint mystical aura, savanna",
@@ -2062,7 +2064,7 @@ export const Creatures = {
     },
     rhinocerosApocalypse: {
       label: "Rhino de l'apocalypse", a: [10, 3, 3, 10, 1, 1, 3, 1, 6],
-      sd: 18, init: 6, dice: 1, me: 13, atkPool: 6,
+      sd: 18, init: 6, dice: 1, me: 13,
       habitat: ["jungles"],
       desc: "Rhinocéros éveillé des savanes africaines, associé à une mine de radium désaffectée.",
       visualTag: "rhinoceros with a faint radioactive glow, cracked hide, savanna backdrop",
@@ -2072,7 +2074,7 @@ export const Creatures = {
     },
     termitesOsseux: {
       label: "Termite osseux", a: [1, 1, 1, 1, 1, 1, 2, 1, 2],
-      sd: 1, init: 3, dice: 1, me: 1, atkPool: 2,
+      sd: 1, init: 3, dice: 1, me: 1,
       habitat: ["jungles"],
       desc: "Colonie de termites éveillés habitant cimetières, ossuaires et sites de massacre.",
       visualTag: "swarm of bone-colored termites, ossuary or cemetery backdrop",
@@ -2082,7 +2084,7 @@ export const Creatures = {
     },
     ebranleurTerre: {
       label: "Briseterre", a: [12, 2, 3, 12, 1, 1, 3, 1, 6],
-      sd: 24, init: 6, dice: 1, me: 14, atkPool: 4,
+      sd: 24, init: 6, dice: 1, me: 14,
       habitat: ["jungles"],
       desc: "Grand bovidé éveillé des savanes africaines, utilisé comme monture de guerre par certaines tribus.",
       visualTag: "large bovine creature ridden as a war mount, savanna backdrop",
@@ -2092,7 +2094,7 @@ export const Creatures = {
     },
     fourmisBoulesFeu: {
       label: "Fourmi boule de feu", a: [1, 1, 1, 1, 1, 1, 2, 1, 2],
-      sd: 1, init: 3, dice: 1, me: 1, atkPool: 2,
+      sd: 1, init: 3, dice: 1, me: 1,
       habitat: ["jungles"],
       desc: "Fourmis éveillées coloniales des savanes africaines, capables de projeter des boules de feu.",
       visualTag: "colony of ants launching small fireballs, savanna anthill",
@@ -2105,7 +2107,7 @@ export const Creatures = {
     },
     grandTisserin: {
       label: "Tisserin supérieur", a: [1, 5, 4, 1, 3, 3, 4, 3, 6],
-      sd: 1, init: 8, dice: 1, me: 1, atkPool: 1,
+      sd: 1, init: 8, dice: 1, me: 1,
       habitat: ["jungles"],
       desc: "Oiseau tisserin éveillé des savanes africaines, dont les nids servent de passages métaplanaires.",
       visualTag: "weaver bird with an elaborate woven nest that shimmers faintly, savanna tree",
@@ -2117,7 +2119,7 @@ export const Creatures = {
     },
     elephantGrimm: {
       label: "Éléphant de Grimm", a: [16, 3, 3, 24, 4, 2, 4, 4, 6],
-      sd: 26, init: 7, dice: 1, me: 16, atkPool: 8,
+      sd: 26, init: 7, dice: 1, me: 16,
       habitat: ["jungles"],
       desc: "Éléphant éveillé chasseur solitaire des savanes africaines.",
       visualTag: "solitary elephant with a fierce predatory stance, savanna backdrop",
@@ -2127,7 +2129,7 @@ export const Creatures = {
     },
     suricateMetaplanaire: {
       label: "Suricate métaplanaire", a: [1, 5, 4, 1, 2, 2, 5, 2, 4],
-      sd: 1, init: 9, dice: 1, me: 5, atkPool: 2,
+      sd: 1, init: 9, dice: 1, me: 5,
       habitat: ["jungles"],
       desc: "Suricate éveillé des savanes africaines, vit en groupes sociaux mêlés à des suricates ordinaires.",
       visualTag: "meerkat standing alert, faint otherworldly shimmer around it, savanna burrow",
@@ -2137,7 +2139,7 @@ export const Creatures = {
     },
     babouinOzien: {
       label: "Babouin d'Oz", a: [5, 5, 4, 4, 2, 2, 5, 4, 4],
-      sd: 7, init: 9, dice: 2, me: 9, atkPool: 4,
+      sd: 7, init: 9, dice: 2, me: 9,
       habitat: ["jungles"],
       desc: "Babouin éveillé ailé des savanes africaines, prédateur aérien.",
       visualTag: "baboon hovering above the ground, savanna plains backdrop",
@@ -2147,7 +2149,7 @@ export const Creatures = {
     },
     fourmisResonance: {
       label: "Fourmi résonante", a: [1, 1, 1, 1, 1, 1, 2, 1, null],
-      sd: 1, init: 3, dice: 1, me: 1, atkPool: 1,
+      sd: 1, init: 3, dice: 1, me: 1,
       res: 3,
       habitat: ["jungles", "urbain"],
       desc: "Fourmis techno-critter des savanes africaines, nichant aussi bien dans les arbres qu'en zone urbaine.",
@@ -2161,7 +2163,7 @@ export const Creatures = {
     },
     crocodileVide: {
       label: "Crocodile du néant", a: [8, 3, 4, 5, 2, 1, 3, 2, 6],
-      sd: 14, init: 7, dice: 2, me: 12, atkPool: 4,
+      sd: 14, init: 7, dice: 2, me: 12,
       habitat: ["jungles"],
       desc: "Crocodile éveillé prédateur des savanes africaines, capable d'amortir la magie ambiante.",
       visualTag: "crocodile with a faint magic-dampening aura, savanna riverbank",
@@ -2173,7 +2175,7 @@ export const Creatures = {
     /* ---- Wild Life p.116-142 : Deserts + Polar Regions ---- */
     wombatCombat: {
       label: "Wombat de combat", a: [6, 4, 3, 4, 3, 2, 4, 2, 6],
-      sd: 16, init: 7, dice: 2, me: 11, atkPool: 5,
+      sd: 16, init: 7, dice: 2, me: 11,
       habitat: ["deserts"],
       desc: "Wombat éveillé cuirassé des régions désertiques australiennes.",
       visualTag: "armored wombat, sturdy stance, Australian desert backdrop",
@@ -2183,7 +2185,7 @@ export const Creatures = {
     },
     juggernaut: {
       label: "Juggernaut", a: [20, 6, 5, 42, 9, 1, 3, 1, 6],
-      sd: 40, init: 8, dice: 1, me: 30, atkPool: 5,
+      sd: 40, init: 8, dice: 1, me: 30,
       habitat: ["deserts"],
       desc: "Tatou géant éveillé des régions désertiques pouvant atteindre 20 mètres, respire par symbiose bactérienne anaérobie.",
       visualTag: "giant armored armadillo, rolled defensive posture, desert backdrop",
@@ -2193,7 +2195,7 @@ export const Creatures = {
     },
     dardAile: {
       label: "Scorpillon", a: [2, 5, 5, 2, 3, 2, 4, 1, 6],
-      sd: 6, init: 9, dice: 2, me: 10, atkPool: 5,
+      sd: 6, init: 9, dice: 2, me: 10,
       habitat: ["deserts"],
       desc: "Petite créature ailée venimeuse des zones désertiques, nichant volontiers dans les cactus.",
       visualTag: "small winged venomous creature, nesting in a cactus, desert backdrop",
@@ -2203,7 +2205,7 @@ export const Creatures = {
     },
     loupFouisseur: {
       label: "Protèle", a: [3, 4, 5, 3, 2, 2, 4, 2, 6],
-      sd: 5, init: 9, dice: 2, me: 10, atkPool: 5,
+      sd: 5, init: 9, dice: 2, me: 10,
       habitat: ["deserts"],
       desc: "Petit canidé éveillé des déserts d'Amérique du Nord (PCC, Cal Free, Aztlan), se dissimule facilement.",
       visualTag: "small desert canine, sandy fur, partially burrowed into the ground",
@@ -2213,7 +2215,7 @@ export const Creatures = {
     },
     cactusTonnerre: {
       label: "Cactus explosif", a: [6, 1, 4, 3, 1, 1, 4, 1, 6],
-      sd: 17, init: 8, dice: 1, me: 21, atkPool: 4,
+      sd: 17, init: 8, dice: 1, me: 21,
       habitat: ["deserts"],
       desc: "Cactus éveillé immobile des régions désertiques, tire ses aiguilles venimeuses sur ses assaillants.",
       visualTag: "large cactus creature, firing venomous spines, desert backdrop",
@@ -2223,7 +2225,7 @@ export const Creatures = {
     },
     chimere: {
       label: "Chimère", a: [5, 6, 5, 5, 4, 2, 3, 4, 6],
-      sd: 11, init: 8, dice: 2, me: 11, atkPool: 4,
+      sd: 11, init: 8, dice: 2, me: 11,
       habitat: ["deserts"],
       desc: "Grand lézard éveillé de 3,5 mètres des régions désertiques, ressemblant à un jeune dragon sans ailes.",
       visualTag: "large wingless dragon-like lizard, desert backdrop",
@@ -2233,7 +2235,7 @@ export const Creatures = {
     },
     deathrattle: {
       label: "Crotale funeste", a: [3, 6, 8, 4, 2, 1, 5, 2, 6],
-      sd: 9, init: 13, dice: 3, me: 10, atkPool: 5,
+      sd: 9, init: 13, dice: 3, me: 10,
       habitat: ["deserts"],
       desc: "Serpent éveillé du désert, chasseur nocturne crachant un venin dévastateur à distance.",
       visualTag: "large desert snake, rattling tail, spitting venom, sand dunes backdrop",
@@ -2243,7 +2245,7 @@ export const Creatures = {
     },
     millePattesEthere: {
       label: "Scolopendre éthérée", a: [1, 2, 2, 1, 1, 1, 3, 1, 6],
-      sd: 1, init: 5, dice: 1, me: 1, atkPool: 2,
+      sd: 1, init: 5, dice: 1, me: 1,
       habitat: ["deserts"],
       desc: "Petite scolopendre éveillée des zones désertiques, son venin force une perception astrale non désirée.",
       visualTag: "small ethereal centipede, faint astral shimmer, desert rocks",
@@ -2253,7 +2255,7 @@ export const Creatures = {
     },
     demonGila: {
       label: "Démon de Gila", a: [4, 4, 3, 4, 3, 2, 6, 2, 6],
-      sd: 8, init: 9, dice: 2, me: 10, atkPool: 5,
+      sd: 8, init: 9, dice: 2, me: 10,
       habitat: ["deserts"],
       desc: "Lézard éveillé venimeux des régions désertiques, apparenté au monstre de Gila.",
       visualTag: "venomous beaded lizard, orange and black pattern, desert rocks",
@@ -2263,7 +2265,7 @@ export const Creatures = {
     },
     tatouMajeur: {
       label: "Tatou géant", a: [6, 4, 3, 4, 3, 2, 4, 2, 6],
-      sd: 16, init: 7, dice: 2, me: 11, atkPool: 5,
+      sd: 16, init: 7, dice: 2, me: 11,
       habitat: ["deserts"],
       desc: "Tatou éveillé cuirassé des régions désertiques, très stupide et imprévisible, se roule en boule défensive.",
       visualTag: "large armored armadillo, rolled into a defensive ball, desert backdrop",
@@ -2273,7 +2275,7 @@ export const Creatures = {
     },
     grandeDameBlancheDansante: {
       label: "Dame blanche géante", a: [1, 4, 4, 1, 3, 1, 3, 1, 6],
-      sd: 1, init: 7, dice: 2, me: 5, atkPool: 2,
+      sd: 1, init: 7, dice: 2, me: 5,
       habitat: ["deserts"],
       desc: "Araignée-trappe éveillée des dunes du Namib (12-30 cm), vivant en communautés de jusqu'à 24 individus.",
       visualTag: "large pale trapdoor spider, sand dunes, Namib desert backdrop",
@@ -2283,7 +2285,7 @@ export const Creatures = {
     },
     scorpionNova: {
       label: "Novascorpion", a: [4, 4, 4, 3, 3, 2, 5, 1, 4],
-      sd: 8, init: 9, dice: 2, me: 10, atkPool: 4,
+      sd: 8, init: 9, dice: 2, me: 10,
       habitat: ["deserts"],
       desc: "Scorpion éveillé des régions désertiques, chasse la nuit en embuscade dans le sable.",
       visualTag: "large scorpion, glossy carapace, desert sand at night",
@@ -2293,7 +2295,7 @@ export const Creatures = {
     },
     lezardRoches: {
       label: "Lézard des roches", a: [3, 3, 3, 4, 3, 1, 3, 1, 6],
-      sd: 3, init: 6, dice: 1, me: 10, atkPool: 5,
+      sd: 3, init: 6, dice: 1, me: 10,
       habitat: ["deserts"],
       desc: "Lézard éveillé des rochers désertiques, à la langue préhensile fourchue, escalade les parois avec aisance.",
       visualTag: "lizard with a forked prehensile tongue, climbing sheer desert rock walls",
@@ -2303,7 +2305,7 @@ export const Creatures = {
     },
     oursFantome: {
       label: "Ours fantôme", a: [10, 4, 4, 16, 3, 2, 6, 8, null],
-      sd: 13, init: 10, dice: 3, me: 13, atkPool: 8,
+      sd: 13, init: 10, dice: 3, me: 13,
       res: 6,
       habitat: ["polaire"],
       desc: "Ours émergent des régions arctiques, invisible et perturbant la technologie environnante.",
@@ -2314,7 +2316,7 @@ export const Creatures = {
     },
     renneRegne: {
       label: "Renne tyran", a: [8, 4, 4, 8, 2, 2, 4, 2, 6],
-      sd: 10, init: 8, dice: 1, me: 12, atkPool: 4,
+      sd: 10, init: 8, dice: 1, me: 12,
       habitat: ["polaire"],
       desc: "Renne ailé prédateur éveillé du Svalbard, influence les enfants avant de les précipiter au sol depuis les airs.",
       visualTag: "winged reindeer, predatory eyes, arctic sky",
@@ -2324,7 +2326,7 @@ export const Creatures = {
     },
     renardMalade: {
       label: "Renard toxique", a: [3, 5, 5, 3, 2, 1, 5, 3, 6],
-      sd: 3, init: 10, dice: 2, me: 10, atkPool: 3,
+      sd: 3, init: 10, dice: 2, me: 10,
       habitat: ["polaire"],
       desc: "Renard éveillé arctique corrompu par la pollution des anciennes mines (teinte cuivrée-verte).",
       visualTag: "sickly fox with a copper-green tinted coat, polluted arctic mine backdrop",
@@ -2334,7 +2336,7 @@ export const Creatures = {
     },
     sculpteursAntarctiques: {
       label: "Sculpteur antarctique", a: [4, 4, 2, 1, 2, 1, 4, 1, 6],
-      sd: 6, init: 6, dice: 1, me: 10, atkPool: 4,
+      sd: 6, init: 6, dice: 1, me: 10,
       habitat: ["polaire"],
       desc: "Créature éveillée non classifiée ressemblant à une méduse, ne survit qu'en dessous de -10°C.",
       visualTag: "translucent jellyfish-like creature, drifting over antarctic ice",
@@ -2346,7 +2348,7 @@ export const Creatures = {
     },
     dragonGlace: {
       label: "Drakon de glace", a: [4, 4, 4, 4, 3, 4, 4, 2, 6],
-      sd: 14, init: 8, dice: 2, me: 10, atkPool: 8,
+      sd: 14, init: 8, dice: 2, me: 10,
       habitat: ["polaire"],
       desc: "Grand lézard éveillé polaire ressemblant à un jeune dragon sans ailes, dégage une aura froide (-100°C).",
       visualTag: "large wingless dragon-like lizard radiating intense cold, frost forming around it, polar backdrop",
@@ -2356,7 +2358,7 @@ export const Creatures = {
     },
     araigneeGlace: {
       label: "Araignée de glace", a: [3, 4, 4, 2, 1, 1, 4, 1, 4],
-      sd: 3, init: 8, dice: 1, me: 10, atkPool: 4,
+      sd: 3, init: 8, dice: 1, me: 10,
       habitat: ["polaire"],
       desc: "Araignée éveillée des régions polaires (arctique et antarctique).",
       visualTag: "spider adapted to polar cold, frost-covered legs, icy terrain",
@@ -2366,7 +2368,7 @@ export const Creatures = {
     },
     lievreMatriciel: {
       label: "Lièvre de Matrice", a: [2, 5, 4, 1, 3, 2, 5, 2, null],
-      sd: 2, init: 9, dice: 1, me: 6, atkPool: 2,
+      sd: 2, init: 9, dice: 1, me: 6,
       res: 6,
       habitat: ["polaire"],
       desc: "Lièvre techno-critter émergent des régions polaires arctiques, ailes en circuit imprimé, dents et griffes allongées.",
@@ -2381,7 +2383,7 @@ export const Creatures = {
     },
     abeilleSiberienne: {
       label: "Abeille sibérienne", a: [1, 4, 3, 1, 1, 1, 3, 1, 4],
-      sd: 1, init: 6, dice: 1, me: 1, atkPool: 1,
+      sd: 1, init: 6, dice: 1, me: 1,
       habitat: ["polaire"],
       desc: "Abeille éveillée arctique nichant près des stations électriques et transformateurs, forte affinité électromagnétique.",
       visualTag: "bee with a faint electromagnetic shimmer, nesting near power lines, arctic backdrop",
@@ -2394,7 +2396,7 @@ export const Creatures = {
     },
     elanNeiges: {
       label: "Élan arcanarctique", a: [11, 4, 4, 9, 3, 2, 4, 3, 4],
-      sd: 14, init: 8, dice: 1, me: 14, atkPool: 4,
+      sd: 14, init: 8, dice: 1, me: 14,
       habitat: ["polaire"],
       desc: "Élan éveillé des régions polaires arctiques.",
       visualTag: "elk with thick winter coat, arctic tundra backdrop",
@@ -2404,7 +2406,7 @@ export const Creatures = {
     },
     chouetteNeiges: {
       label: "Harfang des glaces", a: [4, 3, 3, 2, 2, 2, 5, 2, 6],
-      sd: 4, init: 8, dice: 1, me: 8, atkPool: 3,
+      sd: 4, init: 8, dice: 1, me: 8,
       habitat: ["polaire", "montagnes"],
       desc: "Harfang éveillé des régions polaires et montagneuses, provoque des chutes de neige localisées.",
       visualTag: "snowy owl, pale plumage, swirling snow around it, mountain backdrop",
@@ -2414,7 +2416,7 @@ export const Creatures = {
     },
     serpentDesNeiges: {
       label: "Serpent des neiges", a: [2, 5, 4, 2, 2, 1, 4, 1, 3],
-      sd: 2, init: 8, dice: 1, me: 9, atkPool: 3,
+      sd: 2, init: 8, dice: 1, me: 9,
       habitat: ["polaire"],
       desc: "Serpent éveillé adapté au grand froid, en expansion vers le nord-ouest de l'Amérique du Nord.",
       visualTag: "pale snake adapted to snow, coiled on icy ground",
@@ -2424,7 +2426,7 @@ export const Creatures = {
     },
     pingouinVampire: {
       label: "Manchot vampire", a: [2, 3, 3, 1, 1, 1, 4, 2, 4],
-      sd: 2, init: 7, dice: 1, me: 4, atkPool: 3,
+      sd: 2, init: 7, dice: 1, me: 4,
       habitat: ["polaire"],
       desc: "Manchot hématophage éveillé de l'Antarctique.",
       visualTag: "penguin with small fangs, blood-tinted beak, antarctic ice backdrop",
@@ -2434,7 +2436,7 @@ export const Creatures = {
     },
     mammouthLaineux: {
       label: "Mammouth laineux", a: [12, 4, 4, 12, 4, 3, 4, 1, null],
-      sd: 20, init: 8, dice: 1, me: 14, atkPool: 2,
+      sd: 20, init: 8, dice: 1, me: 14,
       res: 4,
       habitat: ["polaire"],
       desc: "Mammouth éveillé sibérien réapparu en 2015, utilisé comme monture et bête de somme.",
@@ -2447,7 +2449,7 @@ export const Creatures = {
     /* ---- Wild Life p.144-174 : Oceans/Seas/Lakes + Urban ---- */
     leviathan: {
       label: "Léviathan", a: [18, 7, 5, 15, 4, 2, 4, 5, 8],
-      sd: 30, init: 9, dice: 2, me: 17, atkPool: 9,
+      sd: 30, init: 9, dice: 2, me: 17,
       habitat: ["oceans"],
       desc: "Grande baleine carnivore éveillée de 21-25 mètres, des océans et mers arctiques et tempérés.",
       visualTag: "colossal carnivorous whale, immense jaws, arctic ocean waves",
@@ -2457,7 +2459,7 @@ export const Creatures = {
     },
     megalodon: {
       label: "Mégalodon", a: [15, 9, 5, 12, 4, 1, 4, 3, 5],
-      sd: 23, init: 9, dice: 2, me: 16, atkPool: 8,
+      sd: 23, init: 9, dice: 2, me: 16,
       habitat: ["oceans"],
       desc: "Grand requin blanc éveillé de 16 mètres, des océans et mers tempérés, rarement en dessous de 750 m.",
       visualTag: "colossal prehistoric shark, rows of massive teeth, deep ocean",
@@ -2467,7 +2469,7 @@ export const Creatures = {
     },
     kraken: {
       label: "Kraken", a: [18, 6, 5, 24, 5, 3, 3, 1, 4],
-      sd: 29, init: 8, dice: 1, me: 17, atkPool: 7,
+      sd: 29, init: 8, dice: 1, me: 17,
       habitat: ["oceans"],
       desc: "Céphalopode géant éveillé de plus de 25 mètres, des profondeurs océaniques près du plateau continental antarctique.",
       visualTag: "colossal kraken, giant octopus-like creature, massive writhing tentacles emerging from dark deep ocean water",
@@ -2477,7 +2479,7 @@ export const Creatures = {
     },
     homardAbrams: {
       label: "Homard Abrams", a: [4, 3, 3, 7, 3, 4, 3, 1, 4],
-      sd: 10, init: 6, dice: 1, me: 10, atkPool: 5,
+      sd: 10, init: 6, dice: 1, me: 10,
       habitat: ["oceans"],
       desc: "Crustacé éveillé de 1,5 mètre pesant plus de 100 kg, de la mer du Nord et des mers arctiques.",
       visualTag: "large lobster-like crustacean, hardened shell, cold northern sea",
@@ -2487,7 +2489,7 @@ export const Creatures = {
     },
     poissonDiable: {
       label: "Raie de l'effroi", a: [11, 3, 5, 8, 4, 2, 3, 2, 6],
-      sd: 11, init: 8, dice: 1, me: 14, atkPool: 2,
+      sd: 11, init: 8, dice: 1, me: 14,
       habitat: ["oceans"],
       desc: "Raie manta éveillée de 8 mètres d'envergure, des eaux tropicales et subtropicales, solitaire ou en groupes jusqu'à 30.",
       visualTag: "giant manta ray, wide wingspan, gliding through tropical water",
@@ -2497,7 +2499,7 @@ export const Creatures = {
     },
     brochetDiamantDemoniaque: {
       label: "Devil jack diamond", a: [5, 5, 5, 5, 3, 1, 3, 1, 4],
-      sd: 11, init: 8, dice: 1, me: 11, atkPool: 5,
+      sd: 11, init: 8, dice: 1, me: 11,
       habitat: ["oceans"],
       desc: "Poisson prédateur éveillé agressif de 3 mètres, du Mississippi et des eaux douces d'Amérique du Nord.",
       visualTag: "aggressive predatory pike fish, diamond-patterned scales, river water",
@@ -2507,7 +2509,7 @@ export const Creatures = {
     },
     requinGlouton: {
       label: "Requin-pèlerin géant", a: [20, 4, 3, 16, 3, 1, 3, 2, 4],
-      sd: 32, init: 6, dice: 1, me: 26, atkPool: 3,
+      sd: 32, init: 6, dice: 1, me: 26,
       habitat: ["oceans"],
       desc: "Grand requin filtreur éveillé de 20-23 mètres, des eaux tempérées au large de Land's End.",
       visualTag: "colossal filter-feeding shark, wide gaping mouth, deep temperate ocean",
@@ -2518,7 +2520,7 @@ export const Creatures = {
     },
     baleineGungir: {
       label: "Baleine Gungnir", a: [10, 4, 4, 8, 4, 3, 5, 3, 8],
-      sd: 16, init: 9, dice: 2, me: 13, atkPool: 6,
+      sd: 16, init: 9, dice: 2, me: 13,
       habitat: ["oceans"],
       desc: "Narval éveillé de 8-12 mètres, se déplaçant en groupes mêlés à des narvals ordinaires dans l'océan Arctique.",
       visualTag: "narwhal with a long spiraled tusk, arctic ocean waters",
@@ -2528,7 +2530,7 @@ export const Creatures = {
     },
     chantreMaitre: {
       label: "Meistersinger", a: [24, 5, 5, 32, 8, 3, 4, 5, 8],
-      sd: 36, init: 9, dice: 1, me: 30, atkPool: 5,
+      sd: 36, init: 9, dice: 1, me: 30,
       habitat: ["oceans"],
       desc: "Baleine à bosse éveillée et sapiente de 26 mètres et 55 tonnes, vivant en groupes océaniques pouvant compter jusqu'à 15 individus ; sa queue est utilisée en coups de mêlée.",
       visualTag: "colossal sapient humpback whale, singing, ocean pod",
@@ -2538,7 +2540,7 @@ export const Creatures = {
     },
     tortueLuthNouvelle: {
       label: "Néo-luth", a: [8, 3, 3, 6, 4, 2, 3, 4, 5],
-      sd: 13, init: 6, dice: 1, me: 12, atkPool: 5,
+      sd: 13, init: 6, dice: 1, me: 12,
       habitat: ["oceans"],
       desc: "Tortue marine éveillée de plus de 3 mètres et 1000 kg, des eaux tropicales (variante en eau douce dans les Grands Lacs et le Mississippi).",
       visualTag: "giant leatherback sea turtle, massive shell, tropical ocean",
@@ -2548,7 +2550,7 @@ export const Creatures = {
     },
     brochetCracheur: {
       label: "Brochet cracheur", a: [2, 5, 4, 2, 3, 1, 4, 1, 6],
-      sd: 2, init: 8, dice: 1, me: 9, atkPool: 5,
+      sd: 2, init: 8, dice: 1, me: 9,
       // Chaque mètre supplémentaire au-dessus de 1 m ajoute +1 Corps et +1 Force (max 7) et +1 aux DV/RA de la morsure.
       habitat: ["oceans"],
       desc: "Brochet éveillé agressif des eaux douces d'Amérique du Nord, d'Europe occidentale et du Royaume-Uni, crache un jet corrosif aveuglant.",
@@ -2559,7 +2561,7 @@ export const Creatures = {
     },
     dauphinTempetes: {
       label: "Dauphin des tempêtes", a: [7, 5, 5, 8, 5, 3, 4, 4, 4],
-      sd: 7, init: 9, dice: 1, me: 12, atkPool: 2,
+      sd: 7, init: 9, dice: 1, me: 12,
       habitat: ["oceans"],
       desc: "Dauphin éveillé de 3 mètres des mers du Nord, d'Irlande et Baltique, vivant en groupes familiaux de 6 à 20 individus ; utilise sa queue en coups de mêlée.",
       visualTag: "dolphin with a storm-grey hide, leaping through rough northern seas",
@@ -2569,7 +2571,7 @@ export const Creatures = {
     },
     requinTorpille: {
       label: "Requin-torpille", a: [8, 5, 4, 9, 3, 1, 3, 1, 4],
-      sd: 13, init: 7, dice: 2, me: 12, atkPool: 4,
+      sd: 13, init: 7, dice: 2, me: 12,
       habitat: ["oceans"],
       desc: "Requin bleu éveillé de 5 mètres, des eaux tropicales et subtropicales du Pacifique à moins de 150 m de profondeur.",
       visualTag: "blue shark, sleek torpedo-shaped body, tropical Pacific waters",
@@ -2579,7 +2581,7 @@ export const Creatures = {
     },
     neogargouilleChauveSouris: {
       label: "Néogargouille (chauve-souris)", a: [3, 2, 2, 3, 1, 2, 2, 1, null],
-      sd: 8, init: 4, dice: 1, me: 10, atkPool: 5,
+      sd: 8, init: 4, dice: 1, me: 10,
       habitat: ["urbain"],
       // L'armure augmente de 1 par mois après infection (max 12 à 12 mois).
       desc: "Chauve-souris mutante infectée par un virus de calcification, nichant dans les tours et gratte-ciel urbains.",
@@ -2590,7 +2592,7 @@ export const Creatures = {
     },
     neogargouilleChat: {
       label: "Néogargouille (chat)", a: [3, 4, 2, 3, 2, 2, 2, 1, null],
-      sd: 8, init: 4, dice: 1, me: 10, atkPool: 5,
+      sd: 8, init: 4, dice: 1, me: 10,
       habitat: ["urbain"],
       desc: "Chat urbain muté par le même virus de calcification que les autres néogargouilles.",
       visualTag: "mutated urban cat with calcified stone-like patches on its fur, city rooftop",
@@ -2600,7 +2602,7 @@ export const Creatures = {
     },
     neogargouilleChien: {
       label: "Néogargouille (chien)", a: [4, 2, 2, 4, 2, 2, 2, 1, null],
-      sd: 9, init: 4, dice: 1, me: 10, atkPool: 5,
+      sd: 9, init: 4, dice: 1, me: 10,
       habitat: ["urbain"],
       desc: "Chien urbain muté par le virus de calcification des néogargouilles.",
       visualTag: "mutated urban dog with calcified stone-like patches on its hide, city alley",
@@ -2610,7 +2612,7 @@ export const Creatures = {
     },
     neogargouilleEcureuil: {
       label: "Néogargouille (écureuil)", a: [2, 4, 4, 2, 2, 2, 2, 1, null],
-      sd: 7, init: 6, dice: 1, me: 9, atkPool: 5,
+      sd: 7, init: 6, dice: 1, me: 9,
       habitat: ["urbain"],
       desc: "Écureuil urbain muté par le virus de calcification des néogargouilles.",
       visualTag: "mutated urban squirrel with calcified stone-like patches, city park",
@@ -2620,7 +2622,7 @@ export const Creatures = {
     },
     pigeonsBruit: {
       label: "Pigeon parasite", a: [2, 3, 3, 1, 3, 4, 5, 4, null],
-      sd: 2, init: 8, dice: 1, me: 3, atkPool: 2,
+      sd: 2, init: 8, dice: 1, me: 3,
       res: 5,
       habitat: ["urbain"],
       // Agit comme un Jammer 1, +1 de rating par pigeon (max 25) ; nourrir un pigeon annule le brouillage.
@@ -2637,7 +2639,7 @@ export const Creatures = {
     },
     chienChanteur: {
       label: "Coyote chanteur", a: [3, 2, 4, 2, 4, 4, 5, 4, null],
-      sd: 7, init: 9, dice: 1, me: 10, atkPool: 4,
+      sd: 7, init: 9, dice: 1, me: 10,
       res: 5,
       habitat: ["urbain"],
       // Fourrure = poils électrochromiques biologiques, contrôlable comme des vêtements.
@@ -2649,7 +2651,7 @@ export const Creatures = {
     },
     bergerEveille: {
       label: "Berger Éveillé", a: [3, 2, 3, 2, 2, 3, 3, 3, 4],
-      sd: 5, init: 6, dice: 1, me: 10, atkPool: 4,
+      sd: 5, init: 6, dice: 1, me: 10,
       habitat: ["urbain"],
       desc: "Berger allemand éveillé des zones de sécurité urbaines, en alerte il offre un point d'Edge situationnel à quiconque tente de le remarquer.",
       visualTag: "alert german shepherd dog, faint watchful glow in its eyes, urban security zone",
@@ -2659,7 +2661,7 @@ export const Creatures = {
     },
     colonisteCafard: {
       label: "Cafard", a: [1, 2, 3, 1, 2, 1, 2, 1, null],
-      sd: 1, init: 5, dice: 1, me: 1, atkPool: 2,
+      sd: 1, init: 5, dice: 1, me: 1,
       habitat: ["urbain"],
       desc: "Cafard éveillé de 0,3 mètre pesant 1 kg, membre d'une colonie urbaine à conscience collective.",
       visualTag: "large cockroach, part of a hive colony, urban tunnel",
@@ -2669,7 +2671,7 @@ export const Creatures = {
     },
     colonisteNymphe: {
       label: "Blatte régente (nymphe)", a: [2, 2, 3, 2, 2, 2, 2, 1, 4],
-      sd: 5, init: 5, dice: 1, me: 9, atkPool: 3,
+      sd: 5, init: 5, dice: 1, me: 9,
       habitat: ["urbain"],
       desc: "Forme jeune de la blatte régente, nichant dans les colonies de cafards urbaines.",
       visualTag: "small pale cockroach nymph, urban tunnel colony",
@@ -2679,7 +2681,7 @@ export const Creatures = {
     },
     colonisteAdulte: {
       label: "Blatte régente (adulte)", a: [2, 4, 5, 3, 2, 2, 2, 1, 5],
-      sd: 10, init: 7, dice: 1, me: 12, atkPool: 4,
+      sd: 10, init: 7, dice: 1, me: 12,
       habitat: ["urbain"],
       desc: "Forme adulte de la blatte régente, meneuse de nids de cafards urbains ; en construct de cafard, gagne Armure durcie 2.",
       visualTag: "large adult cockroach leading its colony, urban tunnel",
@@ -2689,7 +2691,7 @@ export const Creatures = {
     },
     chatImitateur: {
       label: "Chat mimique", a: [2, 4, 3, 1, 1, 1, 4, 3, 3],
-      sd: 2, init: 7, dice: 1, me: 2, atkPool: 2,
+      sd: 2, init: 7, dice: 1, me: 2,
       habitat: ["urbain"],
       desc: "Chat éveillé des réseaux souterrains urbains, doté d'une conscience collective (le MJ peut augmenter sa Logique de +1 selon la taille de la ruche).",
       visualTag: "urban cat with an unsettling collective awareness in its eyes, subterranean tunnel",
@@ -2699,7 +2701,7 @@ export const Creatures = {
     },
     semeurPeur: {
       label: "Croque-mitaine", a: [8, 5, 4, 8, 4, 3, 4, 3, 5],
-      sd: 16, init: 8, dice: 1, me: 12, atkPool: 4,
+      sd: 16, init: 8, dice: 1, me: 12,
       habitat: ["urbain"],
       desc: "Créature anthropomorphe éveillée aux traits animaux, hante les endroits sombres ou traumatisants des zones urbaines.",
       visualTag: "gaunt anthropomorphic creature with animal features, lurking in a dark urban ruin",
@@ -2709,7 +2711,7 @@ export const Creatures = {
     },
     gargouilleAfricaine: {
       label: "Gargouille africaine", a: [9, 5, 5, 9, 4, 3, 4, 3, 3],
-      sd: 19, init: 9, dice: 1, me: 13, atkPool: 6,
+      sd: 19, init: 9, dice: 1, me: 13,
       habitat: ["urbain"],
       desc: "Créature ailée éveillée de 2,5 m des zones urbaines africaines, ressemblant aux dieux égyptiens, capable de se changer en sable.",
       visualTag: "winged stone gargoyle with an Egyptian god-like head, sandy grey hide, perched on an urban rooftop",
@@ -2719,7 +2721,7 @@ export const Creatures = {
     },
     gargouilleAsiatique: {
       label: "Gargouille asiatique", a: [8, 8, 5, 6, 4, 3, 4, 2, 4],
-      sd: 18, init: 12, dice: 4, me: 12, atkPool: 6,
+      sd: 18, init: 12, dice: 4, me: 12,
       habitat: ["urbain"],
       desc: "Créature ailée éveillée de 1,25 m des zones urbaines asiatiques, tête de lion ou d'oni.",
       visualTag: "winged stone gargoyle with a lion or oni demon head, grey stone hide, perched on an urban rooftop",
@@ -2729,7 +2731,7 @@ export const Creatures = {
     },
     gargouilleEuropeenne: {
       label: "Gargouille européenne", a: [10, 4, 5, 11, 4, 2, 4, 1, 3],
-      sd: 25, init: 9, dice: 1, me: 13, atkPool: 6,
+      sd: 25, init: 9, dice: 1, me: 13,
       habitat: ["urbain"],
       desc: "Créature trapue et agressive de 1,5 m des zones urbaines européennes, peau grise comme la pierre.",
       visualTag: "winged stone gargoyle, stocky menacing build, stone-grey hide, perched on a European cathedral rooftop",
@@ -2739,7 +2741,7 @@ export const Creatures = {
     },
     gargouilleNordAmericaine: {
       label: "Gargouille nord-américaine", a: [10, 4, 5, 10, 4, 2, 4, 1, 6],
-      sd: 25, init: 9, dice: 1, me: 13, atkPool: 5,
+      sd: 25, init: 9, dice: 1, me: 13,
       habitat: ["urbain"],
       desc: "Créature de 2 m pesant 200 kg à la peau marbrée, des zones urbaines nord et sud-américaines.",
       visualTag: "winged stone gargoyle, heavy muscular build, marbled grey-brown hide, perched on an American skyscraper ledge",
@@ -2749,7 +2751,7 @@ export const Creatures = {
     },
     grot: {
       label: "GROT", a: [2, 5, 4, 3, 3, 2, 4, 2, 5],
-      sd: 7, init: 8, dice: 1, me: 4, atkPool: 3,
+      sd: 7, init: 8, dice: 1, me: 4,
       habitat: ["urbain"],
       desc: "Opossum éveillé de 0,6 m et 5 kg d'Amérique du Nord/Centre/Sud et d'Australie, porteur de VITAS-IIII, à l'estomac robuste et à la queue préhensile fonctionnelle.",
       visualTag: "opossum, pale fur, sharp teeth bared, urban alley",
@@ -2759,7 +2761,7 @@ export const Creatures = {
     },
     incube: {
       label: "Incube", a: [6, 3, 4, 9, 4, 3, 4, 3, 5],
-      sd: 6, init: 8, dice: 1, me: 11, atkPool: 4,
+      sd: 6, init: 8, dice: 1, me: 11,
       habitat: ["urbain"],
       desc: "Créature de 1 mètre ressemblant à une pieuvre, hante égouts et tunnels urbains.",
       visualTag: "small octopus-like creature, tentacled, lurking in a sewer tunnel",
@@ -2769,7 +2771,7 @@ export const Creatures = {
     },
     incubeAdulte: {
       label: "Incube adulte", a: [10, 5, 5, 10, 5, 4, 5, 3, 6],
-      sd: 10, init: 10, dice: 1, me: 13, atkPool: 6,
+      sd: 10, init: 10, dice: 1, me: 13,
       habitat: ["urbain"],
       desc: "Version adulte de l'incube, plus grande et plus puissante, des réseaux souterrains urbains.",
       visualTag: "larger octopus-like creature, tentacled, lurking in an underground tunnel",
@@ -2779,7 +2781,7 @@ export const Creatures = {
     },
     protee: {
       label: "Protée", a: [2, 3, 3, 2, 3, 3, 5, 1, 5],
-      sd: 2, init: 8, dice: 1, me: 10, atkPool: 5,
+      sd: 2, init: 8, dice: 1, me: 10,
       habitat: ["urbain"],
       desc: "Amibe éveillée urbaine porteuse du virus Boltzmann-Schneider, immobile et difficile à repérer (seuil de perception 6).",
       visualTag: "translucent amoeba-like mass, barely visible, urban shadows",
@@ -2789,7 +2791,7 @@ export const Creatures = {
     },
     proteeCorrompue: {
       label: "Protée (corrompu)", a: [2, 3, 3, 2, 3, 3, 5, 1, 5],
-      sd: 2, init: 8, dice: 1, me: 10, atkPool: 5,
+      sd: 2, init: 8, dice: 1, me: 10,
       habitat: ["urbain"],
       desc: "Variante du protée exposée à une magie corrompue, des zones urbaines souterraines.",
       visualTag: "translucent amoeba-like mass with a corrupted dark magical sheen, urban shadows",
@@ -2799,7 +2801,7 @@ export const Creatures = {
     },
     proteeToxique: {
       label: "Protée (toxique)", a: [4, 3, 3, 4, 3, 3, 5, 1, 5],
-      sd: 4, init: 8, dice: 1, me: 10, atkPool: 5,
+      sd: 4, init: 8, dice: 1, me: 10,
       habitat: ["urbain"],
       desc: "Variante du protée exposée à la pollution radioactive des zones urbaines.",
       visualTag: "translucent amoeba-like mass with a sickly radioactive glow, urban shadows",
@@ -2809,7 +2811,7 @@ export const Creatures = {
     },
     tanuki: {
       label: "Tanuki", a: [3, 2, 3, 2, 4, 2, 4, 5, 4],
-      sd: 3, init: 7, dice: 1, me: 10, atkPool: 2,
+      sd: 3, init: 7, dice: 1, me: 10,
       habitat: ["urbain"],
       desc: "Canidé éveillé farceur des bars et restaurants du monde entier, toujours chanceux (2 points d'Edge situationnel en défense).",
       visualTag: "raccoon dog with a mischievous grin, sitting in a bar or restaurant",
@@ -2819,7 +2821,7 @@ export const Creatures = {
     },
     feeDents: {
       label: "Fée des dents", a: [1, 5, 2, 1, 1, 1, 1, 1, 3],
-      sd: 2, init: 5, dice: 3, me: 2, atkPool: 3,
+      sd: 2, init: 5, dice: 3, me: 2,
       habitat: ["urbain"],
       desc: "Moustique éveillé de 10 cm et 200 g des parcs urbains mondiaux, capable de forme humanoïde à quatre bras.",
       visualTag: "large mosquito with faint humanoid features, four arms, urban park",
@@ -2829,7 +2831,7 @@ export const Creatures = {
     },
     pouletPoubelles: {
       label: "Ibis des déchets", a: [2, 2, 2, 1, 3, 4, 4, 3, null],
-      sd: 2, init: 6, dice: 1, me: 3, atkPool: 4,
+      sd: 2, init: 6, dice: 1, me: 3,
       res: 5,
       habitat: ["urbain"],
       desc: "Ibis blanc éveillé de 0,75 m et 1,2 kg des parcs et poubelles urbaines australiennes, techno-critter connecté à la Résonance.",
@@ -2840,7 +2842,7 @@ export const Creatures = {
     },
     traptor: {
       label: "Traptor", a: [4, 7, 6, 3, 2, 2, 7, 4, 5],
-      sd: 9, init: 13, dice: 1, me: 10, atkPool: 6,
+      sd: 9, init: 13, dice: 1, me: 10,
       habitat: ["urbain"],
       desc: "Araignée-trappe éveillée de 1,8 m et 12,5 kg du sud-ouest nord-américain, d'Afrique, d'Australie orientale et d'Asie ; quiconque approche à moins de 10 m d'un terrier doit réussir Furtivité + Agilité (3) ou être détecté.",
       visualTag: "large trapdoor spider, camouflaged burrow entrance, desert or forest floor",
@@ -2850,7 +2852,7 @@ export const Creatures = {
     },
     traptorToxique: {
       label: "Traptor (toxique)", a: [6, 7, 7, 5, 3, 3, 7, 2, 5],
-      sd: 11, init: 14, dice: 2, me: 11, atkPool: 6,
+      sd: 11, init: 14, dice: 2, me: 11,
       habitat: ["urbain"],
       desc: "Variante toxique et plus agressive du Traptor, en zone urbaine polluée ; les piques augmentent le DR de +2 en mêlée et résistent VD 2P lors d'une prise.",
       visualTag: "large trapdoor spider with venom-slick fangs, polluted urban lot",
@@ -2860,7 +2862,7 @@ export const Creatures = {
     },
     wampus: {
       label: "Wampus", a: [3, 5, 5, 3, 4, 3, 4, 3, 5],
-      sd: 3, init: 11, dice: 3, me: 10, atkPool: 5,
+      sd: 3, init: 11, dice: 3, me: 10,
       habitat: ["urbain"],
       desc: "Chat sauvage éveillé (lynx/caracal) d'Amérique du Nord pouvant prendre forme humanoïde et rester bipède 4 à 6 heures par jour.",
       visualTag: "wildcat mid-transformation into a humanoid shape, feral eyes, forest backdrop",
