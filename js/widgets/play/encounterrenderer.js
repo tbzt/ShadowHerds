@@ -2082,7 +2082,7 @@ export const EncounterRenderer = {
     // Combat de la CI directement sur la fiche active, via Matrix.icCombat
     // (_icCombatChips) : pastilles de jet (SR5/SR6/Anarchy 1re) ou pastilles de
     // VALEUR à succès fixes (Anarchy 2.0). data-action="roll-ic" câblé dans
-    // Encounter.init (overlay). CI autonome : data-id = id du combattant (jet
+    // EncounterBinding.bindDelegation (overlay). CI autonome : data-id = id du combattant (jet
     // local) ; CI liée : data-id = id du serveur.
     const rollId = srv ? srv.id : r.pnjId;
     const combatHtml = this._icCombatChips(M, host, ic, m.icKey, rollId, label, [
