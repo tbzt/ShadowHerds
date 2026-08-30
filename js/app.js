@@ -702,7 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   MagicAction.init({ onPnjChanged });
   ContentModal.bindDelegation();
-  CardRenderer.bindDelegation();
+  CardDelegation.bindDelegation();
   CardMenu.bindDelegation();
   Breakdown.init({ resolve: (id) => PnjLookup.find(id) });
   ContactCreate.bindDelegation();

@@ -9,7 +9,7 @@
    Coquille calquée sur `ContentModal` (backdrop, ×, Échap), mais qui
    héberge une carte complète au lieu d'un texte. La fiche est rendue
    avec ses actions (Éditer / Supprimer) : édition et suppression sont
-   déléguées GLOBALEMENT par `CardRenderer.bindDelegation` et résolvent
+   déléguées GLOBALEMENT par `CardDelegation.bindDelegation` et résolvent
    l'entité par `data-id` — elles écrivent donc dans la Collection
    propriétaire quel que soit le conteneur (ici l'overlay), et
    `CardRenderer.refresh` re-rend toutes les copies, dont celle du peek.
