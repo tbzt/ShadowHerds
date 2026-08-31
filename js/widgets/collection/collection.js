@@ -454,11 +454,17 @@ export const Collection = {
       },
 
       /* ---- Réorganisation manuelle (Vague B1) ----
-         Même patron que EncounterDrag.init/_dragMove/_dragEnd (Pointer
-         Events, DOM réordonné en direct pendant le glisser, commit au
-         relâcher seulement) — pas extrait en utilitaire partagé pour ne pas
-         toucher un mécanisme combat-critique déjà stable ; la forme de
-         l'algorithme reste la même aux deux endroits.
+         Cousin de EncounterDrag (controllers/encounterdrag.js) : même
+         plomberie Pointer Events, commit au relâcher seulement. Mais les
+         deux moteurs DIVERGENT là où ça compte et ne doivent pas être
+         réunis — ici le DOM est réordonné EN DIRECT (insertBefore), là-bas
+         jamais (translation + trait d'insertion, sans quoi la base de
+         translation saute). L'écoute est ici sur `document` (les cartes
+         vivent dans des conteneurs pas toujours montés, cf. plus bas),
+         là-bas sur l'overlay. Le pilotage clavier ↑/↓ n'existe qu'ici ;
+         l'auto-défilement et l'haptique, que là-bas. Comparaison refaite
+         le 2026-08-31 : rien à mutualiser au-delà d'une quinzaine de
+         lignes, et pas au prix de coupler ce widget au combat.
          Simplification assumée : reorderByIds/moveUp/moveDown opèrent sur
          data.all en entier, y compris quand la vue affichée est filtrée par
          dossier (DossierBar) — le résultat reste toujours correct (aucune

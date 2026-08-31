@@ -7,10 +7,25 @@
    nommable et clos : cinq membres qui ne parlent qu'entre eux,
    plus UN appel sortant (`Encounter.reorderByIds`) au relâcher.
 
-   ⚠ Il existe une SECONDE implémentation du même geste dans
-   widgets/collection/collection.js, qui se réclame de ce patron
-   sans le partager. Les deux n'ont jamais été fusionnées ; si
-   l'une bouge, regarder l'autre.
+   ⚠ `widgets/collection/collection.js` porte un second moteur de
+   réordonnancement. Il RESSEMBLE à celui-ci, il n'en est pas une
+   copie, et les fusionner serait une erreur — comparaison faite
+   le 2026-08-31 :
+
+     · ici le DOM n'est JAMAIS réordonné pendant le glisser (la
+       ligne est translatée, un trait montre où elle se posera) ;
+       là-bas la carte est déplacée en direct par insertBefore ;
+     · ici l'écoute est portée par l'overlay ; là-bas par
+       `document`, avec une garde `_ownsCard` parce que trois
+       collections se partagent le même document ;
+     · auto-défilement et retour haptique n'existent qu'ici ;
+     · le pilotage clavier ↑/↓ (a11y) n'existe que là-bas.
+
+   Le seul vrai commun est la plomberie Pointer Events, une
+   quinzaine de lignes. L'extraire couplerait un mécanisme
+   combat-critique à un widget de collection pour cette
+   quinzaine-là. Si l'un des deux bouge, lire l'autre — mais ne
+   pas chercher à les réunir.
    ============================================================ */
 import { Encounter } from "./encounter.js";
 import { Utils } from "../core/utils.js";
