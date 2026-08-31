@@ -10,6 +10,26 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.143.0] — 2026-08-31
+
+### Ajouté
+
+- **La Chance d'Anarchy 1re se dépense enfin AVANT le jet — et se cumule avec le
+  dé d'imprévu.** Le livre décrit deux ressources pré-jet sur la même page
+  (p. 152) : les Points d'Anarchy, pris sur la réserve du meneur, et la Chance,
+  prise sur la fiche du personnage — « en dépensant un point de Chance avant de
+  lancer les dés, chaque dé est un succès sur un résultat de 4, 5 ou 6 ».
+  L'application n'en connaissait qu'une : le contrat de jet ne pouvait porter
+  qu'un seul budget par édition, et la Chance n'avait nulle part où aller. Elle
+  n'existait qu'en relance, après le jet. Le panneau d'avant-jet propose
+  désormais les deux, et comme rien au livre n'interdit de les dépenser sur un
+  même test, **il permet de cocher les deux** : chaque option se coche, le
+  bandeau annonce les deux budgets (« 4 Points d'Anarchy · 3 Chance ») et le
+  bouton dit ce qu'il va dépenser avant de lancer. Les deux ressources sont
+  débitées chacune au bon endroit, ou aucune si l'une des deux manque.
+  Shadowrun 5 reste à une seule dépense par test, comme son livre l'impose
+  (p. 58, « un seul point de Chance, pas plus »).
+
 ## [1.142.0] — 2026-08-30
 
 ### Ajouté

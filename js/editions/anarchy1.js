@@ -105,18 +105,38 @@ export const EditionAnarchy1 = {
       complication » (Atouts/Défauts) reste hors périmètre (variante engine
       "complication" non exposée ici). */
   preRollEdge: {
-    reserve: "threat",
     resourceLabel: "Points d'Anarchy",
     // Forme courte pour les affordances étroites (pastille de carte) — le nom
     // complet déborderait à côté d'une pastille de réserve.
     resourceShort: "Anarchy",
+    /** Anarchy 1re est la seule édition à porter DEUX budgets pré-jet, décrits
+        sur la même page (p.152) : la réserve du meneur et la Chance de fiche.
+        Rien au livre n'interdit de les dépenser sur un même test — décision
+        d'arbitrage 2026-08-31 : le panneau autorise le cumul. */
+    multiSpend: true,
     options: [
       {
         id: "wild",
         wild: "imprevu",
         label: "Dé d'imprévu",
         cost: 1,
+        from: "threat",
         hint: "1 Point d'Anarchy · +1 dé — 1 = complication, 5-6 = exploit",
+      },
+      /** Chance PRÉ-jet (p.152) : « en dépensant un point de Chance avant de
+          lancer les dés, chaque dé est un succès sur un résultat de 4, 5 ou
+          6 ». Ce n'est pas un ajout de dés mais un SEUIL — d'où `hitOn: 4`,
+          la forme déjà retenue par Dice.computeAnarchyRoll pour l'avantage.
+          À distinguer de `rerollAction` (« Seconde chance »), qui est la
+          dépense APRÈS le jet et vit déjà sur le même attribut. */
+      {
+        id: "chancePreRoll",
+        label: "Chance avant le jet",
+        cost: 1,
+        from: "attr:CHC",
+        resourceLabel: "Chance",
+        hitOn: 4,
+        hint: "1 Chance · chaque dé réussit sur 4, 5 ou 6",
       },
     ],
   },

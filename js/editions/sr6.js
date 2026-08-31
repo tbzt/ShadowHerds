@@ -125,13 +125,16 @@ export const EditionSR6 = {
       de rerollAction, lu par DiceRoller.preRollEdgeOptions. SR6 n'a pas de
       Limite → `ignoreLimit:false`. `dice:"rating"` = valeur de `costAttr`. */
   preRollEdge: {
-    costAttr: "ATO",
     resourceLabel: "Atout", // nom VF de la ressource (jamais « Edge ») — lu par le journal des jets
+    /** Conservateur : le livre de base SR6 n'a pas pu être vérifié (absent de
+        la doc de référence). On ne cumule pas tant que la page n'est pas lue. */
+    multiSpend: false,
     options: [
       {
         id: "takeRisk",
         label: "Prendre un risque",
         cost: 1,
+        from: "attr:ATO",
         dice: 1,
         explode: false,
         ignoreLimit: false,
@@ -141,6 +144,7 @@ export const EditionSR6 = {
         id: "edgeRating",
         label: "Ajouter son rang d'Atout",
         cost: 4,
+        from: "attr:ATO",
         dice: "rating",
         explode: true,
         ignoreLimit: false,

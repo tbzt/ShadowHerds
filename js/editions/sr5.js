@@ -134,13 +134,18 @@ export const EditionSR5 = {
       mord que là où une Limite existe (rollWeapon). `null` si l'édition n'a
       pas d'Edge pré-jet par PNJ. */
   preRollEdge: {
-    costAttr: "CHC",
     resourceLabel: "Chance", // nom VF de la ressource (jamais « Edge ») — lu par le journal des jets
+    /** ⚠ p.58 : « Un seul point de Chance, pas plus, peut être dépensé pour un
+        test » — SR5 ne cumule PAS les options pré-jet (cf. `multiSpend`). */
+    multiSpend: false,
     options: [
       {
         id: "pushLimit",
         label: "Repousser les limites",
         cost: 1,
+        // La source du budget vit sur l'option (contrat AUD-7) : une édition
+        // peut en avoir plusieurs. SR5 n'en a qu'une, la Chance de fiche.
+        from: "attr:CHC",
         dice: "rating",
         explode: true,
         ignoreLimit: true,

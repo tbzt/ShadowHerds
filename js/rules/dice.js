@@ -11,8 +11,15 @@ export const Dice = {
   /* ---- Moteur de règles pur (testable, sans DOM) ---- */
   /** `opts.wild` (Anarchy 1re) : ajoute un DÉ D'IMPRÉVU à la réserve —
       cf. _addWildDie. Absent ailleurs (jet standard SR5/SR6). */
+  /** `opts.hitOn` = face minimale qui compte un succès (défaut 5). Le seuil
+      n'est PAS une invention : il est la forme déjà retenue par
+      computeAnarchyRoll (`adv === 1 ? 4 : …`, Anarchy 2 p.67). Il sert ici à la
+      Chance PRÉ-jet d'Anarchy 1re (p.152 : « en dépensant un point de Chance
+      avant de lancer les dés, chaque dé est un succès sur un résultat de 4, 5
+      ou 6 »). La complication reste comptée sur les 1, seuil indifférent. */
   computeRoll(n, opts = {}) {
     n = Utils.clamp(n, 1, 60);
+    const hitOn = Utils.clamp(opts.hitOn || 5, 4, 6);
     const faces = [];
     let hits = 0;
     let ones = 0;
@@ -20,15 +27,16 @@ export const Dice = {
     for (let i = 0; i < n; i++) {
       const r = Utils.randInt(1, 6);
       faces.push(r);
-      if (r >= 5) hits++;
+      if (r >= hitOn) hits++;
       if (r === 1) ones++;
     }
 
     const glitch = ones > Math.floor(n / 2);
     const critGlitch = glitch && hits === 0;
 
-    const res = { n, faces, extra: [], hits, ones, glitch, critGlitch };
-    if (opts.wild) this._addWildDie(res, opts.wild);
+    const res = { n, faces, extra: [], hits, ones, glitch, critGlitch, hitOn };
+    // Le dé d'imprévu REJOINT la réserve : il se lit au même seuil qu'elle.
+    if (opts.wild) this._addWildDie(res, opts.wild, hitOn);
     return res;
   },
 
@@ -46,14 +54,17 @@ export const Dice = {
    * Dice.normalizeVerdict). Le dé grossit la réserve (`res.n`) et s'ajoute aux
    * faces animées comme un dé ordinaire.
    */
-  _addWildDie(res, variant) {
+  _addWildDie(res, variant, hitOn = 5) {
     const v = Utils.randInt(1, 6);
     const wild = { v, complication: v === 1, exploit: false };
     // "imprevu" = dé plein : compte le succès ET marque l'exploit sur 5-6.
     // "complication" = dé de complication : muet en succès comme en exploit.
-    if (variant !== "complication" && v >= 5) {
-      res.hits += 1;
-      wild.exploit = true;
+    // ⚠ Les deux lectures se SÉPARENT dès que le seuil bouge : le dé rejoint la
+    // réserve, donc son SUCCÈS suit `hitOn` (Chance A1 pré-jet → 4) ; l'EXPLOIT
+    // reste la lecture 5-6 de sran_01 p.157, qu'aucune dépense ne déplace.
+    if (variant !== "complication") {
+      if (v >= hitOn) res.hits += 1;
+      if (v >= 5) wild.exploit = true;
     }
     res.faces.push(v);
     res.n += 1;

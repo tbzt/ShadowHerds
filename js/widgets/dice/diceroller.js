@@ -341,10 +341,16 @@ export const DiceRoller = {
       fois la même condition). Le dé d'imprévu n'est PAS un dé d'Edge (pas
       d'explosion) : il passe par Dice.computeRoll({wild}). */
   _computeWithEdge(pool, edge) {
-    if (edge && edge.wild) return Dice.computeRoll(pool, { wild: edge.wild });
+    // `hitOn` (Chance pré-jet d'Anarchy 1re, p.152) abaisse le seuil de succès
+    // de TOUTE la réserve. Il se cumule avec le dé d'imprévu — les deux
+    // dépenses sont distinctes et puisent dans deux budgets différents.
+    const hitOn = (edge && edge.hitOn) || undefined;
+    if (edge && edge.wild) return Dice.computeRoll(pool, { wild: edge.wild, hitOn });
+    // Les dés d'Edge SR5/SR6 (Règle des six) n'ont pas de variante à seuil :
+    // aucune édition ne combine aujourd'hui explosion et abaissement de seuil.
     return edge && edge.dice
       ? Dice.computeRollWithEdge(pool, edge.dice, edge.explode)
-      : Dice.computeRoll(pool);
+      : Dice.computeRoll(pool, { hitOn });
   },
 
   /** Ajoute la mention d'Edge/dé d'imprévu au décompte affiché (« … · +4
@@ -364,14 +370,14 @@ export const DiceRoller = {
       ne peut pas payer (garde-fou — l'UI ne propose déjà que l'affordable). */
   _spendPreRollEdge(pnj, opt) {
     if (!pnj || !opt) return null;
-    // Budget-réserve (Anarchy 1re : Points d'Anarchy = réserve de menace
-    // globale) : on débite la réserve, pas un attribut de PNJ, et on renvoie
-    // un marqueur `wild` que _computeWithEdge route vers le dé d'imprévu.
-    if (opt.reserve === "threat") {
+    // La source est portée par l'OPTION : une édition à deux budgets débite
+    // chacun au bon endroit, sans que ce code sache de quelle édition il parle.
+    if (opt.from === "threat") {
       if (this.threatValue() < opt.cost) return null;
       this._setThreat(this._threat - opt.cost);
-      return { wild: opt.wild, label: opt.label };
+      return { wild: opt.wild, hitOn: opt.hitOn, label: opt.label };
     }
+    if (!opt.costAttr) return null;
     const have = this._spendableEdge(pnj, opt.costAttr);
     if (have == null || have < opt.cost) return null;
     // En scène, la dépense passe par la rencontre — le MÊME registre que les
@@ -380,7 +386,13 @@ export const DiceRoller = {
     if (scene != null && this._hooks.adjustSceneEdge) this._hooks.adjustSceneEdge(pnj, -opt.cost);
     else Actor.spend(pnj, opt.costAttr, opt.cost);
     this._hooks.onPnjChanged(pnj);
-    return { dice: opt.dice, explode: opt.explode, ignoreLimit: opt.ignoreLimit, label: opt.label };
+    return {
+      dice: opt.dice,
+      explode: opt.explode,
+      ignoreLimit: opt.ignoreLimit,
+      hitOn: opt.hitOn,
+      label: opt.label,
+    };
   },
 
   /** Stepper −/＋ du compteur de dés topbar. */
@@ -1013,15 +1025,86 @@ export const DiceRoller = {
     return scene == null ? Actor.attr(pnj, costAttr) : scene;
   },
 
+  /** Résout le budget d'UNE option. Le contrat déclare la source sur l'option
+      (`from`), plus sur l'édition : une édition peut donc en avoir plusieurs.
+      Anarchy 1re en a deux au même endroit du livre (p.152) — Points d'Anarchy
+      sur la réserve du meneur, et Chance sur l'attribut du personnage ; tant que
+      la source vivait sur le spec, la seconde n'avait nulle part où aller.
+
+      Formes : "threat" = réserve globale · "attr:XXX" = attribut de fiche (via
+      _spendableEdge, donc réserve de scène en priorité). Aucune branche
+      d'édition : `from` est une donnée du module, pas un test sur son id. */
+  /** Attribut de fiche qui porte l'Edge de cette édition — la PREMIÈRE source
+      `attr:` déclarée par ses options, ou celle du gain (SR6). Sert aux surfaces
+      qui ont besoin d'UN attribut (actions d'Atout, greffons) là où les options,
+      elles, peuvent puiser à plusieurs endroits. */
+  _primaryEdgeAttr(mod) {
+    const opts = (mod && mod.preRollEdge && mod.preRollEdge.options) || [];
+    const hit = opts.find((o) => (o.from || "").startsWith("attr:"));
+    if (hit) return hit.from.slice(5);
+    return (mod && mod.preRollGain && mod.preRollGain.costAttr) || null;
+  },
+
+  /** L'édition autorise-t-elle plusieurs dépenses pré-jet sur un MÊME test ?
+      Capacité lue sur le contrat, jamais déduite : Anarchy 1re oui (deux
+      budgets distincts, p.152), SR5 non (p.58, « un seul point de Chance, pas
+      plus, peut être dépensé pour un test »), SR6 non par prudence (livre de
+      base non vérifiable). */
+  _allowsMultiSpend(pnj) {
+    const mod = pnj ? App.getEditionModule(pnj.edition) : App.editionModule;
+    return !!(mod && mod.preRollEdge && mod.preRollEdge.multiSpend);
+  },
+
+  /** Fusionne plusieurs dépenses en UN seul effet de jet. Chaque champ se
+      combine selon sa nature, pas selon une règle générique : les dés
+      s'ajoutent, les drapeaux s'unissent, et le SEUIL prend le plus généreux
+      (un `hitOn` de 4 l'emporte sur l'absence de seuil, qui vaut 5). */
+  _combineEdges(list) {
+    const parts = (list || []).filter(Boolean);
+    if (!parts.length) return null;
+    if (parts.length === 1) return parts[0];
+    const seuils = parts.map((e) => e.hitOn).filter(Boolean);
+    return {
+      dice: parts.reduce((n, e) => n + (e.dice || 0), 0),
+      explode: parts.some((e) => e.explode),
+      ignoreLimit: parts.some((e) => e.ignoreLimit),
+      // Un seul dé d'imprévu : aucune édition n'en déclare deux, et deux
+      // verdicts d'imprévu ne sauraient pas cohabiter dans `res.wild`.
+      wild: (parts.find((e) => e.wild) || {}).wild || null,
+      hitOn: seuils.length ? Math.min(...seuils) : null,
+      label: parts.map((e) => e.label).join(" + "),
+    };
+  },
+
+  /** Débite PLUSIEURS options. Vérifie d'abord source par source — deux
+      options peuvent puiser au même budget, et un débit partiel laisserait le
+      MJ payé sans effet complet. Rien n'est débité si l'ensemble ne passe pas. */
+  _spendPreRollEdges(pnj, opts) {
+    const list = (opts || []).filter(Boolean);
+    if (!list.length) return null;
+    const total = new Map();
+    for (const o of list) total.set(o.from || "", (total.get(o.from || "") || 0) + o.cost);
+    for (const [from, cout] of total) {
+      const src = this._optionBudget(pnj, { from });
+      if (src.budget == null || src.budget < cout) return null; // aucun débit
+    }
+    return this._combineEdges(list.map((o) => this._spendPreRollEdge(pnj, o)));
+  },
+
+  _optionBudget(pnj, opt) {
+    const from = opt.from || "";
+    if (from === "threat") return { from, attr: null, budget: this.threatValue() };
+    if (from.startsWith("attr:")) {
+      const attr = from.slice(5);
+      return { from, attr, budget: this._spendableEdge(pnj, attr) };
+    }
+    return { from: null, attr: null, budget: null };
+  },
+
   preRollEdgeOptions(pnj) {
     const mod = pnj ? App.getEditionModule(pnj.edition) : App.editionModule;
     const spec = mod && mod.preRollEdge;
     if (!spec || !pnj || !pnj.attrs) return [];
-    // Source du budget : réserve de menace globale (Anarchy 1re : Points
-    // d'Anarchy) OU attribut de PNJ (Chance SR5 / Atout SR6).
-    const fromReserve = spec.reserve === "threat";
-    const budget = fromReserve ? this.threatValue() : this._spendableEdge(pnj, spec.costAttr);
-    if (budget == null) return [];
     // E3 — VERROU D'ÉTAT : un état peut interdire la dépense (SR6 Désorienté,
     // p.55-58 : « ni gain ni dépense d'Atout »). Aucune option n'est alors
     // proposée — le panneau ne s'ouvre plus, la pastille de carte disparaît
@@ -1032,23 +1115,31 @@ export const DiceRoller = {
     // pas quelle action va suivre et que deviner serait décider à la place du MJ.
     if (!Statuses.edgeLock(pnj).spend) return [];
     return (spec.options || []).map((o) => {
-      const dice = o.dice === "rating" ? Actor.attr(pnj, spec.costAttr) || 0 : o.dice || 0;
-      // Une option « dé d'imprévu » (wild) n'a pas de dés d'Edge : son
-      // utilisabilité tient au seul budget, pas à `dice > 0`.
-      const usable = o.wild ? true : dice > 0;
+      const src = this._optionBudget(pnj, o);
+      // `dice: "rating"` = l'indice de l'attribut QUI PAIE (Chance SR5, Atout
+      // SR6). Il se lit donc sur la source de l'option, pas sur le spec.
+      const dice = o.dice === "rating" ? (src.attr ? Actor.attr(pnj, src.attr) || 0 : 0) : o.dice || 0;
+      // Une option sans dés d'Edge (dé d'imprévu `wild`, changement de seuil
+      // `hitOn`) reste utilisable : son effet ne passe pas par la réserve.
+      const usable = o.wild || o.hitOn ? true : dice > 0;
       return {
         id: o.id,
         label: o.label,
         cost: o.cost,
         dice,
         wild: o.wild || null,
+        hitOn: o.hitOn || null,
         explode: !!o.explode,
         ignoreLimit: !!o.ignoreLimit,
         hint: o.hint || "",
-        costAttr: spec.costAttr,
-        reserve: fromReserve ? "threat" : null,
-        budget,
-        affordable: budget >= o.cost && usable,
+        from: src.from,
+        costAttr: src.attr,
+        reserve: src.from === "threat" ? "threat" : null,
+        // Nom de CETTE dépense — une édition à deux budgets a deux noms
+        // (« Points d'Anarchy » / « Chance ») ; sans ça la puce mentirait.
+        resourceLabel: o.resourceLabel || spec.resourceLabel || "",
+        budget: src.budget,
+        affordable: src.budget != null && src.budget >= o.cost && usable,
       };
     });
   },
@@ -1077,18 +1168,26 @@ export const DiceRoller = {
   _panelBudgetText(pnj) {
     const mod = App.getEditionModule(pnj.edition);
     const spec = mod.preRollEdge;
-    // Budget-réserve (Anarchy 1re) : Points d'Anarchy lus sur la réserve
-    // globale, pas sur un attribut de PNJ.
-    if (spec && spec.reserve === "threat") {
-      return `${this.threatValue()} ${spec.resourceLabel || "Points d'Anarchy"}`;
+    // Une édition peut avoir PLUSIEURS budgets (Anarchy 1re : réserve du meneur
+    // + Chance de fiche). Le bandeau les énumère tous, dédoublonnés par source :
+    // annoncer un seul chiffre au-dessus de puces qui puisent ailleurs serait
+    // pire que pas de bandeau.
+    const vus = new Map();
+    for (const o of (spec && spec.options) || []) {
+      const src = this._optionBudget(pnj, o);
+      if (!src.from || src.budget == null || vus.has(src.from)) continue;
+      vus.set(src.from, { budget: src.budget, nom: o.resourceLabel || (spec && spec.resourceLabel) || src.attr || "" });
     }
-    const attr =
-      (mod.preRollGain && mod.preRollGain.costAttr) ||
-      (spec && spec.costAttr) ||
-      null;
-    // Même source que les options et que les greffons : la réserve de scène
-    // quand elle existe, l'attribut sinon. Un bandeau qui annoncerait un autre
-    // chiffre que les puces qu'il surplombe serait pire que pas de bandeau.
+    // ⚠ La valeur ne se nomme QUE s'il y a plusieurs sources à distinguer :
+    // à source unique l'intitulé porte déjà le nom, et le répéter donnerait
+    // « Chance disponible : 3 Chance ».
+    if (vus.size > 1) {
+      return [...vus.values()].map((v) => `${v.budget} ${v.nom}`.trim()).join(" · ");
+    }
+    if (vus.size === 1) return String([...vus.values()][0].budget);
+    // Panneau ouvert pour GAGNER (SR6) : aucune option de dépense, mais un
+    // budget à annoncer quand même — il se lit alors sur l'attribut de gain.
+    const attr = (mod.preRollGain && mod.preRollGain.costAttr) || null;
     return attr ? `${this._spendableEdge(pnj, attr)} ${attr}` : "";
   },
 
@@ -1313,22 +1412,44 @@ export const DiceRoller = {
       this._pulseBudget();
     });
 
-    // Choisir une option = débiter la ressource puis lancer.
+    // Choisir une option. À dépense UNIQUE (SR5/SR6) le geste reste inchangé :
+    // un tap débite et lance. À dépense MULTIPLE (Anarchy 1re), le tap
+    // SÉLECTIONNE — c'est « Lancer les dés » qui valide, parce qu'un tap ne
+    // peut pas à la fois cocher et partir.
     document.getElementById("preroll-options").addEventListener("click", (e) => {
       const b = e.target.closest(".risk-level-btn");
       if (!b || !this._preRoll) return;
-      const opt = this._preRoll.options[parseInt(b.dataset.idx, 10)];
+      const idx = parseInt(b.dataset.idx, 10);
+      if (this._allowsMultiSpend(this._preRoll.pnj)) {
+        const picked = this._preRoll.picked || (this._preRoll.picked = []);
+        const at = picked.indexOf(idx);
+        if (at >= 0) picked.splice(at, 1);
+        else picked.push(idx);
+        Utils.haptic(10);
+        this._renderSpendOptions();
+        return;
+      }
+      const opt = this._preRoll.options[idx];
       const doRoll = this._preRoll.doRoll;
       const edge = this._spendPreRollEdge(this._preRoll.pnj, opt);
       this._closePreRollPanel();
       doRoll(edge); // edge null si le débit a échoué (garde-fou) → jet nu
     });
 
-    // Lancer sans rien dépenser.
+    // Lancer. Sans sélection c'est le jet nu ; avec, il débite les options
+    // cochées puis lance — une seule sortie, jamais deux boutons de départ.
     document.getElementById("preroll-plain").addEventListener("click", () => {
-      const doRoll = this._preRoll && this._preRoll.doRoll;
+      const ctx = this._preRoll;
+      const doRoll = ctx && ctx.doRoll;
+      const picked = (ctx && ctx.picked) || [];
+      const edge = picked.length
+        ? this._spendPreRollEdges(
+            ctx.pnj,
+            picked.map((i) => ctx.options[i]),
+          )
+        : null;
       this._closePreRollPanel();
-      if (doRoll) doRoll(null);
+      if (doRoll) doRoll(edge);
     });
 
     // Gain d'Atout SR6 (section conditionnelle) : Portée (change) + SD (input)
@@ -1436,24 +1557,51 @@ export const DiceRoller = {
     if (!ctx) return;
     const budget = this._panelBudgetText(ctx.pnj);
     const mod = App.getEditionModule(ctx.pnj.edition);
-    const fromReserve = mod && mod.preRollEdge && mod.preRollEdge.reserve === "threat";
-    // Nom VF de la ressource, jamais « Edge » : « Chance disponible » (SR5),
-    // « Atout disponible » (SR6). Le budget-réserve (Anarchy 1re) porte déjà
-    // son nom dans la valeur (« 3 Points d'Anarchy ») → intitulé « Réserve ».
+    const opts = (mod && mod.preRollEdge && mod.preRollEdge.options) || [];
+    // Le bandeau nomme déjà chaque ressource dans sa valeur dès qu'il y en a
+    // plusieurs (« 3 Points d'Anarchy · 2 Chance ») ou qu'elle vient d'une
+    // réserve : l'intitulé reste alors neutre. À budget unique sur fiche, il
+    // reprend le nom VF — « Chance disponible » (SR5), « Atout disponible ».
+    const sources = new Set(opts.map((o) => o.from).filter(Boolean));
     const res = this.preRollResourceLabel(ctx.pnj);
-    const label = fromReserve ? "Réserve" : res ? `${res} disponible` : "Disponible";
+    let label;
+    if (sources.size > 1) {
+      // Deux sources de nature différente (réserve du meneur + fiche) : aucun
+      // intitulé ne peut les couvrir toutes deux sans mentir sur l'une. Les
+      // valeurs se nomment déjà elles-mêmes (« 4 Points d'Anarchy · 3 Chance »).
+      label = "Disponible";
+    } else if (sources.size === 1 && [...sources][0].startsWith("attr:")) {
+      label = res ? `${res} disponible` : "Disponible";
+    } else {
+      label = "Réserve";
+    }
     document.getElementById("preroll-pool").innerHTML = budget
       ? `${label} : <strong>${Utils.escHtml(budget)}</strong>`
       : "";
+    // En dépense multiple, l'option est un INTERRUPTEUR : `aria-pressed` le dit
+    // au lecteur d'écran, `.active` (style déjà au thème) le dit à l'œil.
+    // En dépense unique, aucun des deux — le bouton part, il ne se coche pas.
+    const multi = this._allowsMultiSpend(ctx.pnj);
+    const picked = (multi && ctx.picked) || [];
     document.getElementById("preroll-options").innerHTML = (ctx.options || [])
-      .map(
-        (o, i) =>
-          `<button class="stack risk-level-btn" data-idx="${i}">
+      .map((o, i) => {
+        const on = picked.includes(i);
+        return `<button class="stack risk-level-btn${on ? " active" : ""}" data-idx="${i}"${
+          multi ? ` aria-pressed="${on}"` : ""
+        }>
              <span class="risk-level-name">${Utils.escHtml(o.label)}</span>
              <span class="risk-level-sub">${Utils.escHtml(o.hint)}</span>
-           </button>`,
-      )
+           </button>`;
+      })
       .join("");
+    // Le bouton de sortie reste UNIQUE et son libellé reste POSITIF (arbitrage
+    // du 2026-07-28 : ne jamais nommer l'action par ce qu'elle n'est pas). Il
+    // annonce donc ce qu'il VA dépenser, pas ce dont il se prive.
+    const sortie = document.getElementById("preroll-plain");
+    if (sortie) {
+      const noms = picked.map((i) => (ctx.options[i] || {}).label).filter(Boolean);
+      sortie.textContent = noms.length ? `Lancer les dés · ${noms.join(" + ")}` : "Lancer les dés";
+    }
   },
 
   /** Rend les actions d'Atout SANS HÔTE (§ plan d'exécution, item 3 — 45/82
@@ -1478,8 +1626,11 @@ export const DiceRoller = {
       return;
     }
     const mod = App.getEditionModule(ctx.pnj.edition);
-    const spec = mod && mod.preRollEdge;
-    const budget = spec ? this._spendableEdge(ctx.pnj, spec.costAttr) || 0 : 0;
+    // Les actions d'Atout se paient sur l'attribut de fiche de l'édition. Depuis
+    // qu'une édition peut porter plusieurs budgets, il se lit sur les options
+    // (première source `attr:`) et non plus sur un `costAttr` de spec.
+    const attr = this._primaryEdgeAttr(mod);
+    const budget = attr ? this._spendableEdge(ctx.pnj, attr) || 0 : 0;
     const esc = Utils.escHtml;
     // Ordre lecture MJ : le contexte le plus rare/spécialisé d'abord, le
     // socle générique (aucun contexte requis) en dernier.
@@ -1804,6 +1955,9 @@ export const DiceRoller = {
     Utils.haptic(12); // confirme le tap (Android ; le visuel tient seul sinon)
     this._hooks.onPnjChanged(this._preRoll.pnj);
     this._preRoll.options = this.preRollEdgeOptions(this._preRoll.pnj).filter((o) => o.affordable);
+    // La liste est reconstruite : les index cochés ne désignent plus les mêmes
+    // options. On repart d'une sélection vide plutôt que de débiter à côté.
+    this._preRoll.picked = [];
     this._renderSpendOptions();
     this._pulseBudget(); // le nombre d'Atout qui monte clignote → « c'est fait »
     this._updateGainVerdict();
