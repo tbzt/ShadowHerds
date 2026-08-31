@@ -5,6 +5,7 @@
    ============================================================ */
 import { CardRenderer } from "../card/cardrenderer.js";
 import { CardFooter } from "../card/cardfooter.js";
+import { EncounterStore } from "../../core/encounterstore.js";
 import { Dossiers } from "../journal/dossiers.js";
 
 export const RunRenderer = {
@@ -136,7 +137,7 @@ export const RunRenderer = {
     const action = active ? "close-rencontre" : "open-rencontre";
     const label = active
       ? "⏹ Fermer la rencontre"
-      : `▶ ${Encounter.hasStash(r.dossierId) ? "Rouvrir" : "Ouvrir"} la rencontre`;
+      : `▶ ${EncounterStore.has(r.dossierId) ? "Rouvrir" : "Ouvrir"} la rencontre`;
     return [{ kind: "secondary", label, attrs: `data-action="${action}" data-dossier="${r.dossierId}"` }];
   },
 

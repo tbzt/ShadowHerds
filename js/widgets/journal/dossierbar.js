@@ -22,6 +22,7 @@
 import { CardRenderer } from "../card/cardrenderer.js";
 import { Dialog } from "../kit/dialog.js";
 import { DiceLog } from "../dice/dicelog.js";
+import { EncounterStore } from "../../core/encounterstore.js";
 import { Dossiers } from "./dossiers.js";
 
 export const DossierBar = {
@@ -272,7 +273,7 @@ export const DossierBar = {
       node.kind === "run"
         ? Encounter.activeDossierId === node.id
           ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="close-rencontre" data-dossier="${node.id}">⏹ Fermer la rencontre</button>`
-          : `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="open-rencontre" data-dossier="${node.id}">▶ ${Encounter.hasStash(node.id) ? "Rouvrir" : "Ouvrir"} la rencontre</button>`
+          : `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="open-rencontre" data-dossier="${node.id}">▶ ${EncounterStore.has(node.id) ? "Rouvrir" : "Ouvrir"} la rencontre</button>`
         : "";
     // VIS-16 étape 1 : créer une scène (cellule de jeu) sous un run. Réutilise
     // le popover ⋯ et la délégation existants — aucun CSS ni handler neuf.
@@ -463,7 +464,7 @@ export const DossierBar = {
     // confirmation dise ce qui part — supprimer un run cascade sur ses scènes,
     // et le MJ ne doit pas l'apprendre après coup.
     const doomed = Dossiers.descendantIds(id);
-    const stashed = typeof Encounter !== "undefined" ? Encounter.countStashed(doomed) : 0;
+    const stashed = EncounterStore.countIn(doomed);
     const msg =
       (isParent
         ? `Supprimer « ${d.name} » et ses sous-groupes ? (Le contenu reste dans la bibliothèque.)`
@@ -484,7 +485,7 @@ export const DossierBar = {
       // collection (retirée) — seul le nœud Dossiers part ; ses `convokes`
       // s'en vont avec lui. Le contenu du Monde reste intact.
       // La purge du stash, elle, est SILENCIEUSE (le MJ vient de la confirmer).
-      if (typeof Encounter !== "undefined") Encounter.purgeStash(doomed);
+      EncounterStore.purge(doomed);
       Dossiers.remove(id);
       if (!Dossiers.has(this.current)) this.current = "all";
       this._applyCurrent();

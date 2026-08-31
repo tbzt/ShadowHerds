@@ -15,6 +15,7 @@
 import { CardPeek } from "../widgets/card/cardpeek.js";
 import { Debrief } from "./debrief.js";
 import { DossierBar } from "../widgets/journal/dossierbar.js";
+import { EncounterStore } from "../core/encounterstore.js";
 import { Dossiers } from "../widgets/journal/dossiers.js";
 import { Encounter } from "./encounter.js";
 import { RunGen } from "./rungen.js";
@@ -400,7 +401,7 @@ export const Play = {
       Projection LECTURE SEULE (garde-fou K8) : rien n'est muté ici. */
   _runRow(run) {
     const live = App.context && App.context.scene === run.id;
-    const stashed = Encounter.hasStash(run.id);
+    const stashed = EncounterStore.has(run.id);
     const hasTopos = typeof RunGen !== "undefined" && RunGen.forDossier(run.id).length > 0;
 
     const closed = Dossiers.isClosed(run.id);
@@ -516,10 +517,10 @@ export const Play = {
 
   /** Cockpit — résumé STATIQUE d'une rencontre rangée (pas de projection
       vivante : le bundle n'est pas restauré). Lu via l'accesseur propriétaire
-      `Encounter.stashSummary` (le format de clé du stash reste privé à
-      Encounter — prohibition n°2). */
+      `EncounterStore.summary` (le format de clé du stash reste privé à
+      ce store — prohibition n°2). */
   _stashSummaryHtml(runId) {
-    const s = Encounter.stashSummary(runId);
+    const s = EncounterStore.summary(runId);
     if (!s) return "";
     return `<div class="play-scene is-stashed">
       <span class="play-stash-note">Rangée · ${s.count} combattant${s.count > 1 ? "s" : ""} · round ${s.round}</span>
@@ -533,7 +534,7 @@ export const Play = {
       ces données (garde-fous Kernel/Failsafe). */
   _runCommandHtml(run) {
     const live = App.context && App.context.scene === run.id;
-    const stashed = Encounter.hasStash(run.id);
+    const stashed = EncounterStore.has(run.id);
     // 1a : toujours UN bouton, et c'est une BASCULE — la scène se FERME
     // (vivante), se ROUVRE (rangée) ou se LANCE (jamais jouée). Miroir exact du
     // couple déjà écrit en une ligne à `runrenderer.js:_rencontreAction` ; même
@@ -1452,7 +1453,7 @@ export const Play = {
         // dossier) : aucune migration, l'encounter run-level (rétro-compat)
         // et scène-level coexistent.
         const live = App.context && App.context.scene === s.id;
-        const stashed = typeof Encounter !== "undefined" && Encounter.hasStash(s.id);
+        const stashed = EncounterStore.has(s.id);
         const playLabel = live ? "Reprendre" : stashed ? "Rouvrir" : "▶ Jouer";
         const playTitle = live
           ? `Reprendre la scène « ${name} »`

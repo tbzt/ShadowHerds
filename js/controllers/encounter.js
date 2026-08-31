@@ -415,31 +415,6 @@ export const Encounter = {
     this._commit();
   },
 
-  /* ---- Lectures du rangement : relais MINCES vers EncounterStore.
-     Gardés sur Encounter parce que six appelants les connaissent sous ce
-     nom ; la connaissance du format, elle, a quitté ce fichier. ---- */
-
-  /** Affordance UI (R4) : un dossier a-t-il une rencontre rangée ? */
-  hasStash(dossierId) {
-    return EncounterStore.has(dossierId);
-  },
-
-  /** Combien de ces dossiers portent une rencontre rangée — sert à NOMMER ce
-      qui va partir dans la confirmation de suppression, avant de le purger. */
-  countStashed(dossierIds) {
-    return EncounterStore.countIn(dossierIds);
-  },
-
-  /** Purge les rencontres rangées de ces dossiers (VIS-16 Failsafe). */
-  purgeStash(dossierIds) {
-    return EncounterStore.purge(dossierIds);
-  },
-
-  /** Résumé STATIQUE d'une rencontre rangée (cockpit V4), sans la restaurer. */
-  stashSummary(dossierId) {
-    return EncounterStore.summary(dossierId);
-  },
-
   /* ---- Initiative ---- */
   setInit(pnjId, value) {
     const c = this._find(pnjId);
