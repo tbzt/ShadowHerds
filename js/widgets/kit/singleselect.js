@@ -202,10 +202,18 @@ export const SingleSelect = {
 
       // Navigation clavier dans la liste ouverte (foyer sur le control, la
       // recherche, ou une option déjà survolée via une flèche précédente) —
-      // focus réel posé sur l'option (roving tabindex, cf. tabindex="-1" sur
-      // .ss-opt) plutôt qu'aria-activedescendant : options déjà en
-      // role="option", et [tabindex]:focus-visible (focus.css) leur donne
-      // déjà l'anneau clavier sans CSS supplémentaire.
+      // focus réel posé sur l'option plutôt qu'aria-activedescendant : options
+      // déjà en role="option", et [tabindex]:focus-visible (focus.css) leur
+      // donne déjà l'anneau clavier sans CSS supplémentaire.
+      //
+      // ⚠ Ce n'est PAS un roving tabindex, contrairement à ce que disait ce
+      // commentaire (corrigé 2026-08-31, il a induit un audit en erreur) :
+      // l'arrêt de tabulation est FIXE sur `.ss-control`, les options restent
+      // en `tabindex="-1"` et rien n'est jamais transféré. Le vrai motif roving
+      // — le groupe porte lui-même son unique arrêt, qui suit le focus — vit
+      // dans `rovinggroup.js` et sert les grilles PERMANENTES (jetons d'action,
+      // cases de moniteur). Cousins, pas jumeaux : une liste transitoire qu'on
+      // ouvre et referme n'a pas d'arrêt à faire rouler.
       const ss = e.target.closest(".ss");
       if (ss) {
         const dd = ss.querySelector(".ss-dropdown");

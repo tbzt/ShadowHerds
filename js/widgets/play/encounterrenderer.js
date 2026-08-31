@@ -21,6 +21,7 @@ import { DiceRoller } from "../dice/diceroller.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
 import { Matrix } from "../../rules/matrix.js";
 import { Movement } from "../../rules/movement.js";
+import { RovingGroup } from "../kit/rovinggroup.js";
 import { ServerRenderer } from "./serverrenderer.js";
 import { Sheets } from "../kit/sheets.js";
 import { TopologyGen } from "../../rules/topologygen.js";
@@ -1434,11 +1435,12 @@ export const EncounterRenderer = {
         // créer — c'est le garde-fou (f) du plan d'exécution. Le jeton porteur
         // du tab stop est le premier NON consommé (là où le meneur va agir),
         // ou le dernier si tout est consommé.
-        const focusIdx = Math.min(u, g.total - 1);
+        // Le tab stop va où le meneur va agir : le premier jeton NON consommé
+        // (ou le dernier si tout l'est). `RovingGroup.tabIndexAt` borne.
         const tokens = Array.from(
           { length: g.total },
           (_, i) =>
-            `<span class="action-token${i < u ? " used" : ""}" data-action="action-set" data-key="${g.key}" data-idx="${i}" data-id="${r.pnjId}" role="checkbox" aria-checked="${i < u}" tabindex="${i === focusIdx ? 0 : -1}" aria-label="${Utils.escHtml(g.label)} ${i + 1} sur ${g.total}"></span>`,
+            `<span class="action-token${i < u ? " used" : ""}" data-action="action-set" data-key="${g.key}" data-idx="${i}" data-id="${r.pnjId}" role="checkbox" aria-checked="${i < u}" tabindex="${RovingGroup.tabIndexAt(i, u, g.total)}" aria-label="${Utils.escHtml(g.label)} ${i + 1} sur ${g.total}"></span>`,
         ).join("");
         // ⚠ `aria-label` SEUL, pas `aria-labelledby` : le second l'emporterait
         // sur le premier et ne dirait que « Simples », perdant le compte —

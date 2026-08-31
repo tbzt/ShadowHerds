@@ -23,6 +23,7 @@ import { Intrusion } from "./intrusion.js";
 import { Matrix } from "../rules/matrix.js";
 import { PnjLookup } from "./pnjlookup.js";
 import { Pursuit } from "./pursuit.js";
+import { RovingGroup } from "../widgets/kit/rovinggroup.js";
 import { Servers } from "./servers.js";
 import { Storage } from "../core/storage.js";
 import { Utils } from "../core/utils.js";
@@ -668,50 +669,30 @@ export const EncounterBinding = {
         const dlg = document.getElementById("dialog-overlay");
         if (dlg && dlg.classList.contains("open")) return;
 
-        // AUD-3 — les jetons d'action passent AVANT les raccourcis du tracker.
-        // Sans cette priorité, Espace déclencherait « tour suivant » et les
-        // flèches déplaceraient le combattant actif, alors que le focus est
-        // posé sur un jeton : le clavier ferait autre chose que ce qu'il
-        // montre. Flèches ← → seulement (↑ ↓ restent à la file d'init).
+        // Les jetons d'action passent AVANT les raccourcis du tracker. Sans
+        // cette priorité, Espace déclencherait « tour suivant » et les flèches
+        // déplaceraient le combattant actif alors que le focus est sur un
+        // jeton : le clavier ferait autre chose que ce qu'il montre.
+        // ↑ ↓ restent donc à la file d'init — d'où `orientation: "horizontal"`.
         const tok = e.target.closest && e.target.closest(".action-token");
         if (tok) {
-          const jetons = [...(tok.closest(".action-tokens") || tok).querySelectorAll(".action-token")];
-          const i = jetons.indexOf(tok);
-          let cible = null;
-          if (e.key === "ArrowRight") cible = jetons[Math.min(i + 1, jetons.length - 1)];
-          else if (e.key === "ArrowLeft") cible = jetons[Math.max(i - 1, 0)];
-          else if (e.key === "Home") cible = jetons[0];
-          else if (e.key === "End") cible = jetons[jetons.length - 1];
-          else if (e.key === " " || e.key === "Enter") {
+          const grp = { container: ".action-tokens", selector: ".action-token", orientation: "horizontal" };
+          if (e.key === " " || e.key === "Enter") {
             const { id, key, idx } = tok.dataset;
             Encounter.setAction(id, key, parseInt(idx, 10) || 0);
-            // Le groupe vient d'être réécrit en entier : le nœud qui avait le
-            // focus n'existe plus. On rend le focus à son jumeau frais, sinon
-            // le clavier perdrait sa place à CHAQUE activation — le défaut le
-            // plus sûr pour faire abandonner qui s'en sert.
-            const frais = document.querySelector(
+            // Le groupe a été réécrit en entier : le nœud focalisé n'existe
+            // plus. `refocus` retrouve son jumeau et ré-arme le groupe ENTIER
+            // — le rendu vient de replacer son propre tab stop ailleurs, et
+            // poser le nôtre sans retirer celui-là ferait deux arrêts.
+            RovingGroup.refocus(
               `.action-token[data-id="${id}"][data-key="${key}"][data-idx="${idx}"]`,
+              grp,
             );
-            if (frais) {
-              // ⚠ Le rendu a replacé SON tab stop sur le premier jeton non
-              // consommé, qui vient de changer. Rendre le focus sans retirer
-              // celui-là laisserait DEUX arrêts dans le groupe — l'invariant
-              // même que ce lot installe. Le groupe est ré-armé en entier.
-              frais
-                .closest(".action-tokens")
-                ?.querySelectorAll(".action-token")
-                .forEach((t) => t.setAttribute("tabindex", t === frais ? "0" : "-1"));
-              frais.focus();
-            }
             e.preventDefault();
             e.stopImmediatePropagation();
             return;
           }
-          if (cible) {
-            // Roving : le tab stop SUIT le focus. Sans ce transfert, quitter
-            // puis revenir au groupe par Tab ramènerait au jeton d'origine.
-            jetons.forEach((t) => t.setAttribute("tabindex", t === cible ? "0" : "-1"));
-            cible.focus();
+          if (RovingGroup.key(e.key, tok, grp)) {
             e.preventDefault();
             e.stopImmediatePropagation();
             return;
