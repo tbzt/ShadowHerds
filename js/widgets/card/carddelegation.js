@@ -15,6 +15,7 @@
    ============================================================ */
 import { CardRenderer } from "./cardrenderer.js";
 import { Resonance } from "../../rules/resonance.js";
+import { RovingGroup } from "../kit/rovinggroup.js";
 import { Sheets } from "../kit/sheets.js";
 import { UI } from "../kit/ui.js";
 import { Utils } from "../../core/utils.js";
@@ -409,6 +410,34 @@ export const CardDelegation = {
       const el = e.target.closest('[data-action="deck-set-target"]');
       if (!el) return;
       UI.setDeckTarget(el.dataset.id, el.value);
+    });
+
+    // AUD-4 — le moniteur de condition au clavier. C'était le geste le plus
+    // fréquent du meneur et le seul entièrement inatteignable : 85 `<div>`
+    // muets sur une scène ordinaire. Un moniteur = UN arrêt de tabulation,
+    // flèches ← → à l'intérieur (motif `RovingGroup`, validé sur les jetons
+    // d'action). Les quatre éditions passent ici sans distinction : le groupe
+    // est `.monitor-boxes` partout, et la gravité vit dans l'aria-label que le
+    // renderer a déjà posé.
+    document.addEventListener("keydown", (e) => {
+      const box = e.target.closest && e.target.closest(".monitor-box[data-action='toggle-monitor']");
+      if (!box) return;
+      const grp = { container: ".monitor-boxes", selector: ".monitor-box[data-action='toggle-monitor']", orientation: "horizontal" };
+      if (e.key === " " || e.key === "Enter") {
+        const { id, sev, idx } = box.dataset;
+        e.preventDefault();
+        UI.toggleMonitor(id, sev, Number(idx));
+        // La carte est re-rendue : le nœud focalisé n'existe plus. `refocus`
+        // ré-arme le groupe ENTIER autour de son jumeau frais — poser le tab
+        // stop sans retirer celui que le rendu vient de replacer ailleurs en
+        // laisserait deux (piège mesuré sur les jetons d'action).
+        RovingGroup.refocus(
+          `.monitor-box[data-action='toggle-monitor'][data-id="${id}"][data-sev="${sev}"][data-idx="${idx}"]`,
+          grp,
+        );
+        return;
+      }
+      if (RovingGroup.key(e.key, box, grp)) e.preventDefault();
     });
 
     // Entrée dans l'input de journal = ajouter la note (pas de <form> : évite

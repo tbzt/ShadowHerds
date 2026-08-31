@@ -10,6 +10,21 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.145.0] — 2026-09-01
+
+### Ajouté
+
+- **Le moniteur de condition se coche au clavier.** Cocher une case de dégâts
+  est le geste le plus fréquent d'une scène — et c'était le seul entièrement
+  hors d'atteinte : les cases étaient des `<div>` muets, invisibles au clavier
+  comme au lecteur d'écran. Une scène ordinaire en comptait 85. Chaque case
+  s'annonce désormais pour ce qu'elle est (« Case 3 sur 10 — physique, palier
+  de malus », « Blessure grave 1 sur 1 » en Anarchy 2.0), et un moniteur ne
+  coûte **qu'une seule tabulation** : les flèches ← → circulent à l'intérieur,
+  Espace coche. Les quatre éditions en profitent, chacune avec son vocabulaire
+  — l'échelle de Shadowrun et les crans nommés d'Anarchy 2.0 ne s'annoncent pas
+  pareil, parce que les livres ne les décrivent pas pareil.
+
 ## [1.144.0] — 2026-08-31
 
 ### Ajouté

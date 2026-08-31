@@ -5,6 +5,7 @@
    ============================================================ */
 import { Actor } from "../../rules/actor.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
+import { RovingGroup } from "../kit/rovinggroup.js";
 import { Utils } from "../../core/utils.js";
 
 Object.assign(CardRenderer, {
@@ -368,7 +369,13 @@ Object.assign(CardRenderer, {
         const cls = ["monitor-box", `sev-${sev}`, isFilled ? "filled" : ""]
           .filter(Boolean)
           .join(" ");
-        return `<div class="${cls}" data-action="toggle-monitor" data-id="${pnj.id}" data-sev="${sev}" data-idx="${i}"></div>`;
+        // ACCESSIBILITÉ (AUD-4), même contrat qu'en SR5/SR6 — mais ici le
+        // libellé porte la GRAVITÉ, que le livre nomme (p.68 : légère, grave,
+        // incapacitante). Une case d'Anarchy 2 n'est pas une case de plus dans
+        // une échelle : c'est un cran, et l'annoncer sans son nom perdrait
+        // exactement ce que cette édition distingue.
+        const nom = this._SEV_LABEL[sev] || sev;
+        return `<div class="${cls}" data-action="toggle-monitor" data-id="${pnj.id}" data-sev="${sev}" data-idx="${i}" role="checkbox" aria-checked="${isFilled}" tabindex="${RovingGroup.tabIndexAt(i, filled, CAPS[sev])}" aria-label="Blessure ${nom} ${i + 1} sur ${CAPS[sev]}"></div>`;
       }).join("");
     return `${seg("leger")}<span class="monitor-gap"></span>${seg("grave")}<span class="monitor-gap"></span>${seg("incap")}`;
   },

@@ -22,6 +22,7 @@ import { Mentions } from "../journal/mentions.js";
 import { Movement } from "../../rules/movement.js";
 import { PersonaRenderer } from "./personarenderer.js";
 import { Resonance } from "../../rules/resonance.js";
+import { RovingGroup } from "../kit/rovinggroup.js";
 import { Sheets } from "../kit/sheets.js";
 import { SkillCatalog } from "../../rules/skillcatalog.js";
 import { SkillEffects } from "../../rules/skilleffects.js";
@@ -1694,15 +1695,37 @@ export const CardRenderer = {
     </div>`;
   },
 
+  /** Libellé VF d'un type de moniteur, pour le lecteur d'écran. Les classes
+      CSS (`phys`, `stun`…) ne sont pas des mots : sans cette table, une case
+      s'annoncerait « case 3 de stun ». */
+  _SEV_LABEL: { phys: "physique", stun: "étourdissement", mat: "matriciel", leger: "légère", grave: "grave", incap: "incapacitante" },
+
   _monitorBoxes(pnjId, type, total, filled = 0) {
+    const nom = this._SEV_LABEL[type] || type;
     return Array.from({ length: total }, (_, i) => {
       const isFilled = i < filled;
       // Pénalité toutes les 3 cases
       const isPenalty = (i + 1) % 3 === 0;
       const cls =
         `monitor-box ${isFilled ? "filled" : ""} ${isPenalty ? "penalty" : ""}`.trim();
-      return `<div class="${cls}" data-action="toggle-monitor" data-id="${pnjId}" data-sev="${type}" data-idx="${i}"></div>`;
+      // ACCESSIBILITÉ (AUD-4) — c'était un <div> muet : le geste le PLUS
+      // fréquent du meneur, invisible au clavier comme au lecteur d'écran.
+      // `role="checkbox"` dit ce que l'œil voit (cochée ou non) ; le tab stop
+      // va à la première case LIBRE, là où le meneur va cocher. Un seul arrêt
+      // par moniteur — cf. RovingGroup et le garde-fou (f).
+      return `<div class="${cls}" data-action="toggle-monitor" data-id="${pnjId}" data-sev="${type}" data-idx="${i}" role="checkbox" aria-checked="${isFilled}" tabindex="${RovingGroup.tabIndexAt(i, filled, total)}" aria-label="Case ${i + 1} sur ${total} — ${nom}${isPenalty ? " (palier de malus)" : ""}"></div>`;
     }).join("");
+  },
+
+  /** Enveloppe UN moniteur : c'est le groupe qui porte l'unique arrêt de
+      tabulation, et son libellé donne le COMPTE — ce que le meneur vient
+      chercher. Passer par ici plutôt que recopier le `<div class="cluster
+      monitor-boxes">` à chaque appelant : huit sites l'écrivaient, huit
+      occasions d'en oublier un. */
+  monitorGroup(inner, { label, filled = 0, total = 0, extraClass = "" } = {}) {
+    const cls = `cluster monitor-boxes${extraClass ? " " + extraClass : ""}`;
+    const compte = total ? ` : ${filled} sur ${total}` : "";
+    return `<div class="${cls}" role="group" aria-label="${this._esc(label || "Moniteur")}${compte}">${inner}</div>`;
   },
 
   /** Barre fine de moniteur (mini-jauge de vie), partagée par la ligne
