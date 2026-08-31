@@ -17,7 +17,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.145.1",
+  VERSION: "1.145.2",
 
   edition: "none",
   editionModule: null,
@@ -306,6 +306,41 @@ export const App = {
     l.href = href;
     document.head.appendChild(l);
   },
+
+  /** Thème d'ÉDITION : un seul actif à la fois, contrairement au reste des
+      feuilles qui s'empilent sans se gêner.
+
+      Sans ce retrait, changer d'édition laissait la feuille précédente en
+      place, et les règles d'une édition continuaient de s'appliquer à la
+      suivante. Le cas nuisible est Anarchy : `theme-anarchy.css` cible
+      `[data-edition^="anarchy"]` — un PRÉFIXE, qui matche donc aussi
+      `anarchy1` — sur ses 51 règles. À spécificité égale (0,1,0) c'est
+      l'ORDRE DE SOURCE qui tranche, donc l'ordre des clics du meneur :
+      choisir Anarchy 1, aller voir Anarchy 2, puis revenir suffisait à
+      repeindre Anarchy 1 avec la palette d'Anarchy 2 jusqu'au rechargement.
+      Un style qui dépend de l'historique de navigation n'est pas un style.
+
+      Le préfixe n'est PAS corrigé ici : 16 règles d'`theme-anarchy.css`
+      (`.nav-btn`, `.narco-dot`, les badges de rang…) n'ont pas d'équivalent
+      dans `theme-anarchy1.css`, et les rendre exactes changerait l'aspect
+      d'Anarchy 1. Le retrait suffit et rend le rendu DÉTERMINISTE : il vaut
+      exactement ce qu'une session fraîche affiche déjà, c'est-à-dire ce que la
+      table `_EDITION_CSS` dit — une édition, une feuille. */
+  _loadEditionCss(href) {
+    for (const l of document.querySelectorAll("link[data-edition-theme]")) {
+      if (l.getAttribute("href") === href) continue;
+      this._loadedAssets.delete(l.getAttribute("href")); // rechargeable au retour
+      l.remove();
+    }
+    if (!href) return;
+    if (document.querySelector(`link[data-edition-theme][href="${href}"]`)) return;
+    this._loadedAssets.add(href);
+    const l = document.createElement("link");
+    l.rel = "stylesheet";
+    l.href = href;
+    l.setAttribute("data-edition-theme", "");
+    document.head.appendChild(l);
+  },
   /** Injecte un module ES. `type="module"` est obligatoire : les fichiers
       chargés ici (éditions + créatures) ont des `import`/`export`, illégaux
       dans un script classique. Les modules sont dédupliqués par URL côté
@@ -329,7 +364,10 @@ export const App = {
       d'édition) n'est plus une question de séquence : chacun `import`e son
       édition, le graphe de modules garantit qu'elle existe. */
   async _loadEditionAssets(ed) {
-    this._loadCss(this._EDITION_CSS[ed]);
+    // Thème d'édition : chargé PAR REMPLACEMENT (cf. _loadEditionCss). Les
+    // modules JS, eux, restent en place — un module ne cascade pas, en garder
+    // deux ne peint rien de travers.
+    this._loadEditionCss(this._EDITION_CSS[ed]);
     for (const src of [...this._COMMON_JS, ...(this._EDITION_JS[ed] || [])]) {
       await this._loadScript(src);
     }
