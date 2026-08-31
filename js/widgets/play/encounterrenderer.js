@@ -1423,10 +1423,29 @@ export const EncounterRenderer = {
     const groups = budget
       .map((g) => {
         const u = used[g.key] || 0;
-        const tokens = Array.from({ length: g.total }, (_, i) => `<span class="action-token${i < u ? " used" : ""}" data-action="action-set" data-key="${g.key}" data-idx="${i}" data-id="${r.pnjId}" title="${Utils.escHtml(g.label)} ${i + 1}"></span>`).join("");
+        // ACCESSIBILITÉ (lot AUD-3) — ces jetons étaient des <span> muets :
+        // 16 px, cursor:pointer, ni rôle ni tabindex. Au doigt ils marchaient,
+        // au clavier et au lecteur d'écran ils n'existaient pas, sur le geste
+        // le plus répété d'un tour SR6 (une mineure par dé d'initiative).
+        //
+        // Motif : UN arrêt de tabulation par groupe (roving tabindex), flèches
+        // à l'intérieur. Poser tabindex="0" sur chaque jeton donnerait autant
+        // d'arrêts que d'actions et DÉGRADERAIT la navigation au lieu de la
+        // créer — c'est le garde-fou (f) du plan d'exécution. Le jeton porteur
+        // du tab stop est le premier NON consommé (là où le meneur va agir),
+        // ou le dernier si tout est consommé.
+        const focusIdx = Math.min(u, g.total - 1);
+        const tokens = Array.from(
+          { length: g.total },
+          (_, i) =>
+            `<span class="action-token${i < u ? " used" : ""}" data-action="action-set" data-key="${g.key}" data-idx="${i}" data-id="${r.pnjId}" role="checkbox" aria-checked="${i < u}" tabindex="${i === focusIdx ? 0 : -1}" aria-label="${Utils.escHtml(g.label)} ${i + 1} sur ${g.total}"></span>`,
+        ).join("");
+        // ⚠ `aria-label` SEUL, pas `aria-labelledby` : le second l'emporterait
+        // sur le premier et ne dirait que « Simples », perdant le compte —
+        // or c'est le compte que le meneur vient chercher.
         return `<span class="action-group">
           <span class="action-group-lbl">${Utils.escHtml(g.label)}</span>
-          <span class="action-tokens">${tokens}</span>
+          <span class="action-tokens" role="group" aria-label="${Utils.escHtml(g.label)} : ${u} consommée${u > 1 ? "s" : ""} sur ${g.total}">${tokens}</span>
         </span>`;
       })
       .join("");

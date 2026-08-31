@@ -668,6 +668,56 @@ export const EncounterBinding = {
         const dlg = document.getElementById("dialog-overlay");
         if (dlg && dlg.classList.contains("open")) return;
 
+        // AUD-3 — les jetons d'action passent AVANT les raccourcis du tracker.
+        // Sans cette priorité, Espace déclencherait « tour suivant » et les
+        // flèches déplaceraient le combattant actif, alors que le focus est
+        // posé sur un jeton : le clavier ferait autre chose que ce qu'il
+        // montre. Flèches ← → seulement (↑ ↓ restent à la file d'init).
+        const tok = e.target.closest && e.target.closest(".action-token");
+        if (tok) {
+          const jetons = [...(tok.closest(".action-tokens") || tok).querySelectorAll(".action-token")];
+          const i = jetons.indexOf(tok);
+          let cible = null;
+          if (e.key === "ArrowRight") cible = jetons[Math.min(i + 1, jetons.length - 1)];
+          else if (e.key === "ArrowLeft") cible = jetons[Math.max(i - 1, 0)];
+          else if (e.key === "Home") cible = jetons[0];
+          else if (e.key === "End") cible = jetons[jetons.length - 1];
+          else if (e.key === " " || e.key === "Enter") {
+            const { id, key, idx } = tok.dataset;
+            Encounter.setAction(id, key, parseInt(idx, 10) || 0);
+            // Le groupe vient d'être réécrit en entier : le nœud qui avait le
+            // focus n'existe plus. On rend le focus à son jumeau frais, sinon
+            // le clavier perdrait sa place à CHAQUE activation — le défaut le
+            // plus sûr pour faire abandonner qui s'en sert.
+            const frais = document.querySelector(
+              `.action-token[data-id="${id}"][data-key="${key}"][data-idx="${idx}"]`,
+            );
+            if (frais) {
+              // ⚠ Le rendu a replacé SON tab stop sur le premier jeton non
+              // consommé, qui vient de changer. Rendre le focus sans retirer
+              // celui-là laisserait DEUX arrêts dans le groupe — l'invariant
+              // même que ce lot installe. Le groupe est ré-armé en entier.
+              frais
+                .closest(".action-tokens")
+                ?.querySelectorAll(".action-token")
+                .forEach((t) => t.setAttribute("tabindex", t === frais ? "0" : "-1"));
+              frais.focus();
+            }
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return;
+          }
+          if (cible) {
+            // Roving : le tab stop SUIT le focus. Sans ce transfert, quitter
+            // puis revenir au groupe par Tab ramènerait au jeton d'origine.
+            jetons.forEach((t) => t.setAttribute("tabindex", t === cible ? "0" : "-1"));
+            cible.focus();
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return;
+          }
+        }
+
         let handled = true;
         switch (e.key) {
           case " ":
