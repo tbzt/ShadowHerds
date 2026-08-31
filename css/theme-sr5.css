@@ -31,7 +31,9 @@
   --scan: color-mix(in srgb, var(--accent) 8%, transparent);
   /* Teintes hors système de température (un-off, non dérivées de l'accent) */
   --title-tint: #c0a070;
-  --label-tint: #b0501a;
+  --label-tint: #dc6420; /* libellés de section — 5,46:1 sur --bg-card, 5,02:1 sur --bg-raised.
+     L'ancien #b0501a tombait à 3,42:1 : la convention I2 promet « un accent LISIBLE »
+     par thème, elle n'était pas tenue. Même famille rouille, seule la clarté monte. */
 
   --font-display: "Oswald", sans-serif;
   --title-transform: uppercase;

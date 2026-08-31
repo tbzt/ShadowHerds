@@ -13,6 +13,10 @@
   --bg-raised: #111b28; /* surface élevée (cartes) — plus claire que --bg pour le figure/fond */
   --accent: #e24fa8;
   --accent2: #7b2fff;
+  /* Libellés de section — 5,60:1 sur --bg-card, 5,01:1 sur --bg-raised. Remplace
+     un #8b5cff écrit EN DUR dans la règle (4,19:1 au pire) : une teinte se
+     déclare en token, et la convention I2 exige qu'elle soit lisible. */
+  --label-tint: #996fff;
   --text: #bbd4e8;
   --text-dim: #6e8aa6;
   --border: #0e2030;
@@ -146,7 +150,7 @@
 
 /* ---- Labels de section : violet corpo ---- */
 [data-edition="sr6"] .card-section-label {
-  color: #8b5cff;
+  color: var(--label-tint);
   letter-spacing: 0.18em;
 }
 
@@ -163,7 +167,8 @@
   color: #5a2acc;
 }
 [data-edition="sr6"] .def-section .card-section-label {
-  color: var(--accent2);
+  /* Lisait --accent2 (3,05:1) : canal de décor sur du texte, cf. convention I2. */
+  color: var(--label-tint);
 }
 
 /* ---- Moniteur unique SR6 ---- */
