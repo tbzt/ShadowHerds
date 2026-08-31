@@ -445,11 +445,14 @@ export const ChaseRenderer = {
           <button data-action="chase-drop" data-id="${r.key}" data-reason="accident">Accident</button>
         </div>`
       : "";
-    // Une carrosserie ne dépense pas d'Atout : la pastille de ressource ne
-    // s'affiche que sur la feuille d'une PERSONNE.
-    const ressource = vm.sheet
-      ? `<span class="chase-sheet-edge">${Utils.escHtml(vm.resourceLabel)} ${edge}</span>`
-      : "";
+    // Une carrosserie ne dépense rien : la pastille de ressource ne s'affiche
+    // que sur la feuille d'une PERSONNE — et seulement si son édition NOMME une
+    // ressource. Sans nom, pas de pastille : mieux vaut ne rien dire que dire
+    // le mot d'une autre édition (Anarchy 2.0 affichait « Atout », un terme SR6).
+    const ressource =
+      vm.sheet && vm.resourceLabel
+        ? `<span class="chase-sheet-edge">${Utils.escHtml(vm.resourceLabel)} ${edge}</span>`
+        : "";
     const actions = vm.sheet
       ? visibles.length
         ? `<div class="chase-acts">${puces}</div>`

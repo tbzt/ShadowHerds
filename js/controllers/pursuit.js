@@ -866,9 +866,13 @@ export const Pursuit = {
       })(),
       sheetIsTarget: this._sheetFor && st.targetId === this._sheetFor,
       sheetName: this._sheetFor ? (PnjLookup.find(this._sheetFor) || {}).name || "?" : "",
+      /** Nom VF de la ressource de la fiche affichée, "" si l'édition n'en a
+          pas ou si la fiche est une carrosserie (une carrosserie ne dépense
+          rien). Jamais de littéral : un `"Atout"` en dur ici faisait dire à
+          Anarchy 2.0 le mot de SR6 — cf. EdgeActions.resourceLabel. */
       resourceLabel: (() => {
         const pnj = this._sheetFor ? PnjLookup.find(this._sheetFor) : null;
-        return pnj && pnj.type !== "vehicle" ? EdgeActions.resourceLabel(pnj) : "Atout";
+        return pnj && pnj.type !== "vehicle" ? EdgeActions.resourceLabel(pnj) : "";
       })(),
       /** Résolution de nom pour le rendu (qui ne connaît pas les fiches). */
       nameOf: (id) => (PnjLookup.find(id) || {}).name || "?",

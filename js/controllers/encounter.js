@@ -3194,8 +3194,14 @@ export const Encounter = {
       }
     }
     if (!cand) return;
-    const res =
-      (App.getEditionModule(cand.edition).preRollEdge || {}).resourceLabel || "Edge";
+    // Nom VF de la ressource, lu sur le contrat. Le repli était `"Edge"` — le
+    // seul mot que la doctrine bannit de l'écran, parce qu'il n'existe dans
+    // aucune VF. Il ne pouvait pas s'afficher (un candidat n'existe que si son
+    // édition a des options pré-jet, donc un libellé), mais un terme interdit
+    // qui dort dans le code finit toujours par se réveiller : sans nom, on
+    // renonce au nudge plutôt que d'en inventer un.
+    const res = EdgeActions.resourceLabel(cand);
+    if (!res) return;
     const geste =
       mode === "panel"
         ? `un panneau s'ouvre au lancer depuis sa carte (repousser une limite, dés explosifs…)`

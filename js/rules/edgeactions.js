@@ -71,12 +71,26 @@ export const EdgeActions = {
     return this.catalog(pnj).find((a) => a.key === key) || null;
   },
 
-  /** Nom VF de la ressource — jamais « Edge » à l'écran (décision du chantier :
-      la ressource pré-jet se nomme Chance, Atout ou Points d'Anarchy). Lu sur
-      `preRollEdge.resourceLabel`, qui le porte déjà. */
+  /** Nom VF de la ressource — jamais « Edge » à l'écran : le terme anglais
+      n'existe dans aucune VF. Les QUATRE éditions ont leur mot, et deux
+      contrats le portent : `preRollEdge.resourceLabel` (Chance en SR5, Atout en
+      SR6, Points d'Anarchy en Anarchy 1re) et `advantageCost.resourceLabel`
+      (Points d'Anarchy en Anarchy 2.0, dont la ressource ne sert pas un jet
+      pré-payé mais l'achat d'un avantage, p.77).
+
+      ⚠ AUCUN repli littéral. La version précédente retombait sur `"Atout"`,
+      si bien qu'Anarchy 2.0 — qui n'a pas d'Atout — affichait un terme de SR6
+      sur la feuille de poursuite d'une personne. Un défaut d'accesseur ne doit
+      jamais se déguiser en vocabulaire d'une autre édition : on rend `""`, et
+      c'est à l'appelant de ne rien afficher. */
   resourceLabel(pnj) {
     const mod = pnj ? App.getEditionModule(pnj.edition) : null;
-    return (mod && mod.preRollEdge && mod.preRollEdge.resourceLabel) || "Atout";
+    if (!mod) return "";
+    return (
+      (mod.preRollEdge && mod.preRollEdge.resourceLabel) ||
+      (mod.advantageCost && mod.advantageCost.resourceLabel) ||
+      ""
+    );
   },
 
   /* ========================================================
