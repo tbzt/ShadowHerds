@@ -535,7 +535,7 @@ export const EncounterRenderer = {
       droite (« À jouer » → « Joué »). Séparer focus (grande cible) et « joué »
       (contrôles dédiés) évite le double-sens du tap. Le nom + type/combativité
       sont empilés. Pas de jeton d'init, ⚄ ni tri — l'ordre se réordonne à la
-      main via ⠿ (câblé par Encounter._initDrag). Le ✕ (retirer) et « voir la
+      main via ⠿ (câblé par EncounterDrag.init). Le ✕ (retirer) et « voir la
       fiche » (panneau complet) restent derrière ⋯. */
   _rowNarrative(r) {
     const { pnjId, hasActed, pnj } = r;
@@ -1045,7 +1045,7 @@ export const EncounterRenderer = {
       celui tapé — y compris un rendu déclenché par un événement sans rapport
       (état posé sur ce même combattant, tour d'un autre).
 
-      Même patron que `Encounter._dragEnd` (`.just-dropped`) : la classe est
+      Même patron que `EncounterDrag._dragEnd` (`.just-dropped`) : la classe est
       posée sur le nœud FRAIS, impérativement, APRÈS le re-rendu — jamais dans
       le gabarit, donc jamais rejouée par un rendu qui n'est pas CE tap. Appelée
       par `Encounter.setAction`/`adjustEdge` juste après `_commit()` (synchrone :

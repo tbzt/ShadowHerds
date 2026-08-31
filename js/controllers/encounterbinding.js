@@ -17,6 +17,7 @@ import { Dialog } from "../widgets/kit/dialog.js";
 import { Dice } from "../rules/dice.js";
 import { DiceRoller } from "../widgets/dice/diceroller.js";
 import { Encounter } from "./encounter.js";
+import { EncounterDrag } from "./encounterdrag.js";
 import { EncounterRenderer } from "../widgets/play/encounterrenderer.js";
 import { Intrusion } from "./intrusion.js";
 import { Matrix } from "../rules/matrix.js";
@@ -33,7 +34,7 @@ export const EncounterBinding = {
     const overlay = document.getElementById("encounter-overlay");
     if (!overlay) return;
 
-    Encounter._initDrag(overlay);
+    EncounterDrag.init(overlay);
 
     // Le tiroir Matrice est hors de #encounter-overlay (overlay séparé,
     // cf. index.html) — Servers._wire() y pose sa propre délégation pour le

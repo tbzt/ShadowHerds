@@ -454,7 +454,7 @@ export const Collection = {
       },
 
       /* ---- Réorganisation manuelle (Vague B1) ----
-         Même patron que Encounter._initDrag/_dragMove/_dragEnd (Pointer
+         Même patron que EncounterDrag.init/_dragMove/_dragEnd (Pointer
          Events, DOM réordonné en direct pendant le glisser, commit au
          relâcher seulement) — pas extrait en utilitaire partagé pour ne pas
          toucher un mécanisme combat-critique déjà stable ; la forme de
