@@ -124,6 +124,9 @@ export const EditionSR6 = {
       d'Atout* (4 Atouts → +rang de dés à 6 explosifs). Contrat neutre miroir
       de rerollAction, lu par DiceRoller.preRollEdgeOptions. SR6 n'a pas de
       Limite → `ignoreLimit:false`. `dice:"rating"` = valeur de `costAttr`. */
+  /** Aucun avantage ACHETABLE : cette édition ne vend pas de bonus de seuil
+      avant le jet (contrat miroir d'Anarchy 2.0). Neutre documenté. */
+  advantageCost: null,
   preRollEdge: {
     resourceLabel: "Atout", // nom VF de la ressource (jamais « Edge ») — lu par le journal des jets
     /** Conservateur : le livre de base SR6 n'a pas pu être vérifié (absent de

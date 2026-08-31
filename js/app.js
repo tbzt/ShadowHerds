@@ -17,7 +17,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.143.0",
+  VERSION: "1.144.0",
 
   edition: "none",
   editionModule: null,
@@ -689,6 +689,13 @@ document.addEventListener("DOMContentLoaded", () => {
     sceneEdge: (pnj) => (typeof Encounter !== "undefined" ? Encounter.sceneEdge(pnj.id) : null),
     adjustSceneEdge: (pnj, delta) => {
       if (typeof Encounter !== "undefined") Encounter.adjustEdge(pnj.id, delta);
+    },
+    // Jumelle Anarchy 2.0 de la paire ci-dessus : les Points d'Anarchy sont
+    // une ressource DE SCÈNE (c.anarchyPoints), comme l'Atout SR6. Même pont
+    // de couche, seule App connaissant DiceRoller et Encounter à la fois.
+    sceneAnarchy: (pnjId) => (typeof Encounter !== "undefined" ? Encounter.sceneAnarchy(pnjId) : null),
+    adjustSceneAnarchy: (pnjId, delta) => {
+      if (typeof Encounter !== "undefined") Encounter.adjustAnarchyPoints(pnjId, delta);
     },
     // Les 45 actions d'Atout SANS HÔTE (§ plan d'exécution, item 3) : leur
     // place est le panneau pré-jet, à côté de « Prendre un risque ». Même

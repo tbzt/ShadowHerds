@@ -70,6 +70,23 @@ export const EditionAnarchy2 = {
       prise de risque, déjà portée par le panneau de risque (usesRiskPanel).
       Neutre `null` — aucune option pré-jet supplémentaire à offrir. */
   preRollEdge: null,
+  /** COÛT D'UN AVANTAGE acheté (p.77, « Obtenir un avantage (ou annuler un
+      désavantage) : 1 point d'Anarchy — doit être déclaré avant de lancer les
+      dés »). L'avantage lui-même n'est PAS toujours payant : le livre en
+      accorde gratuitement par la fiction, l'équipement ou la posture (p.67,
+      « quand le personnage cherche uniquement à se défendre […] il bénéficie
+      d'un avantage »). Le paiement est donc une OPTION offerte au meneur, pas
+      une taxe — le panneau de risque ne l'impose jamais.
+      `from: "scene:anarchy"` = la ressource vit sur l'entrée de scène
+      (c.anarchyPoints), comme l'Atout SR6 vit sur c.edge : seuls les PJ et les
+      PNJ premiers rôles en ont (p.77), et n'en avoir aucun EST le critère qui
+      distingue un figurant. `null` dans les trois autres éditions. */
+  advantageCost: {
+    cost: 1,
+    from: "scene:anarchy",
+    resourceLabel: "Points d'Anarchy",
+    hint: "1 Point d'Anarchy · avantage déclaré avant les dés (p.77)",
+  },
   /** Modèle de complication (p.170) : le verdict d'Anarchy 2.0 vit dans
       `res.complication` (mineure / critique / désastre selon les 1 sur les
       dés de RISQUE — computeAnarchyRoll), avec son propre chemin de rendu

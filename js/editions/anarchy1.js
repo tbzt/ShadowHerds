@@ -104,6 +104,9 @@ export const EditionAnarchy1 = {
       route vers Dice.computeRoll({wild}) au lieu des dés d'Edge. Le « dé de
       complication » (Atouts/Défauts) reste hors périmètre (variante engine
       "complication" non exposée ici). */
+  /** Aucun avantage ACHETABLE : cette édition ne vend pas de bonus de seuil
+      avant le jet (contrat miroir d'Anarchy 2.0). Neutre documenté. */
+  advantageCost: null,
   preRollEdge: {
     resourceLabel: "Points d'Anarchy",
     // Forme courte pour les affordances étroites (pastille de carte) — le nom

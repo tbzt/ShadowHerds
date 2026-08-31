@@ -10,6 +10,26 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.144.0] — 2026-08-31
+
+### Ajouté
+
+- **Anarchy 2.0 : l'avantage s'achète enfin, quand il doit se payer.** Le
+  panneau de risque savait poser un avantage (4-6 = succès) mais il était
+  toujours gratuit — alors que le livre en vend un : « Obtenir un avantage (ou
+  annuler un désavantage) : 1 point d'Anarchy — doit être déclaré avant de
+  lancer les dés » (p. 77). Vous teniez donc la dépense de tête, ou vous
+  l'oubliiez. Une ligne « Payer · Points d'Anarchy −1 » apparaît désormais sous
+  le sélecteur, avec le solde restant, et le point part au lancer — pas au tap,
+  pour que vous puissiez encore changer d'avis. Le journal note la dépense à
+  côté du jet.
+  **Le paiement n'est jamais imposé** : le livre accorde aussi des avantages
+  gratuits (p. 67, un personnage qui cherche uniquement à se défendre en
+  bénéficie), et c'est vous qui savez lequel s'applique.
+  La ligne ne s'affiche que pour un combattant qui a des points d'Anarchy —
+  ce qui est exactement la distinction du livre entre un premier rôle et un
+  figurant, sans aucune case à cocher de plus.
+
 ## [1.143.0] — 2026-08-31
 
 ### Ajouté

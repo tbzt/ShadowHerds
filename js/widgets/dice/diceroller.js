@@ -516,6 +516,39 @@ export const DiceRoller = {
     { key: "extreme", label: "Extrême", sub: "Suicidaire" },
   ],
 
+  /** Spéc d'achat d'avantage de l'édition du lanceur, ou null. Contrat lu sur
+      le module (`advantageCost`), jamais un test sur App.edition. */
+  _advantageCostSpec(pnjId) {
+    const pnj = pnjId && this._hooks.resolve ? this._hooks.resolve(pnjId) : null;
+    const mod = pnj ? App.getEditionModule(pnj.edition) : App.editionModule;
+    return (mod && mod.advantageCost) || null;
+  },
+
+  /** Rend la ligne d'ACHAT d'avantage. Elle n'existe que si trois conditions
+      tiennent ensemble : l'édition vend l'avantage, le palier +1 est choisi, et
+      le combattant a de quoi payer. La troisième est aussi le critère de
+      « premier rôle » du livre (p.77) — un figurant n'a pas de points, donc la
+      ligne ne s'affiche pas pour lui, sans qu'aucun champ ne le déclare. */
+  _renderAdvBuy() {
+    const el = document.getElementById("risk-adv-buy");
+    if (!el || !this._risk) return;
+    const spec = this._advantageCostSpec(this._risk.pnjId);
+    const reste = spec && this._hooks.sceneAnarchy ? this._hooks.sceneAnarchy(this._risk.pnjId) : null;
+    if (!spec || this._risk.adv !== 1 || reste == null || reste < spec.cost) {
+      el.hidden = true;
+      el.innerHTML = "";
+      this._risk.advPaid = false;
+      return;
+    }
+    el.hidden = false;
+    const on = !!this._risk.advPaid;
+    el.innerHTML = `<button class="risk-adv-buy-btn${on ? " active" : ""}" aria-pressed="${on}">
+        <span class="risk-adv-buy-name">${on ? "Payé" : "Payer"} · ${Utils.escHtml(spec.resourceLabel)}
+          <span class="risk-adv-buy-cost">−${spec.cost}</span></span>
+        <span class="risk-adv-buy-sub">${Utils.escHtml(spec.hint)} · reste ${reste - (on ? spec.cost : 0)}</span>
+      </button>`;
+  },
+
   ADV_LEVELS: [
     { key: -1, label: "Désavantage", sub: "Seul 6 = succès" },
     { key: 0, label: "Normal", sub: "5-6 = succès" },
@@ -550,6 +583,7 @@ export const DiceRoller = {
         <div class="stack stack--tight risk-adv-row">
           <span class="risk-adv-label">Avantage / Désavantage</span>
           <div class="risk-adv-steps" id="risk-adv-steps"></div>
+          <div class="risk-adv-buy" id="risk-adv-buy" hidden></div>
         </div>
         <div class="stack risk-forecast" id="risk-forecast"></div>
         <button class="risk-roll-btn" id="risk-roll-btn">Lancer</button>
@@ -625,15 +659,44 @@ export const DiceRoller = {
       const b = e.target.closest(".risk-adv-btn");
       if (!b) return;
       this._risk.adv = parseInt(b.dataset.adv, 10);
+      // Changer de palier annule un achat en cours : on ne paie pas pour un
+      // avantage qu'on vient de retirer.
+      if (this._risk.adv !== 1) this._risk.advPaid = false;
+      this._syncRiskPanel();
+    });
+
+    // Achat d'avantage (Anarchy 2.0 p.77) — bascule, jamais une obligation :
+    // le livre accorde aussi des avantages gratuits (p.67, posture défensive).
+    document.getElementById("risk-adv-buy").addEventListener("click", (e) => {
+      if (!e.target.closest(".risk-adv-buy-btn") || !this._risk) return;
+      this._risk.advPaid = !this._risk.advPaid;
+      Utils.haptic(10);
       this._syncRiskPanel();
     });
 
     // Lancer
     document.getElementById("risk-roll-btn").addEventListener("click", () => {
-      const { pool, riskDice, rr, adv, label, detail, who, pnjId, isMagic, spellName } = this._risk;
+      const { pool, riskDice, rr, adv, label, detail, who, pnjId, isMagic, spellName, advPaid } =
+        this._risk;
+      // Le débit se fait AU LANCER, pas au tap sur la bascule : tant que le
+      // panneau est ouvert le meneur peut encore changer d'avis, et une
+      // ressource débitée puis rendue serait deux écritures pour rien.
+      const spec = this._advantageCostSpec(pnjId);
+      if (advPaid && spec && this._hooks.adjustSceneAnarchy) {
+        this._hooks.adjustSceneAnarchy(pnjId, -spec.cost);
+      }
       this._closeRiskPanel();
       const res = Dice.computeAnarchyRoll(pool, riskDice, rr, adv);
-      this.show(res, { label, detail, who, pnjId, isMagic, spellName });
+      this.show(res, {
+        label,
+        // Ce qui a été PAYÉ doit rester lisible au journal : sinon le meneur
+        // ne saura pas, trois jets plus tard, pourquoi la réserve a baissé.
+        detail: advPaid && spec ? `${detail ? detail + " · " : ""}${spec.resourceLabel} −${spec.cost}` : detail,
+        who,
+        pnjId,
+        isMagic,
+        spellName,
+      });
     });
 
     // Échap ferme
@@ -713,6 +776,8 @@ export const DiceRoller = {
     document.querySelectorAll(".risk-rr-btn").forEach((b) => {
       b.classList.toggle("active", parseInt(b.dataset.rr, 10) === rr);
     });
+    // L'achat d'avantage dépend du palier courant : il se re-rend à chaque sync.
+    this._renderAdvBuy();
     document.querySelectorAll(".risk-adv-btn").forEach((b) => {
       b.classList.toggle("active", parseInt(b.dataset.adv, 10) === adv);
     });

@@ -1954,6 +1954,21 @@ export const Encounter = {
       ⚠ Ne concerne que ce qui se DÉPENSE. Le RANG (`dice: "rating"`, « Ajouter
       son rang d'Atout ») reste lu sur l'attribut : c'est le calibre du
       personnage, pas ce qu'il lui reste en poche. */
+  /** Points d'Anarchy de scène d'un combattant — jumelle EXACTE de sceneEdge,
+      même forme et même garde : la ressource vit sur l'entrée de scène, et la
+      lecture n'existe que si l'édition la déclare (combatModel.anarchyPoints).
+      `null` = cette édition ne compte pas de points d'Anarchy ; `0` = elle en
+      compte et ce combattant n'en a pas — c'est-à-dire un second rôle (p.77),
+      distinction que l'appelant doit pouvoir faire. */
+  sceneAnarchy(pnjId) {
+    const c = this._find(pnjId);
+    if (!c) return null;
+    const pnj = PnjLookup.find(pnjId);
+    const mod = pnj && App.getEditionModule(pnj.edition);
+    if (!mod || !mod.combatModel || !mod.combatModel.anarchyPoints) return null;
+    return c.anarchyPoints || 0;
+  },
+
   sceneEdge(pnjId) {
     const c = this._find(pnjId);
     if (!c) return null;

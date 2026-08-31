@@ -133,6 +133,9 @@ export const EditionSR5 = {
       résolue par le lanceur ; `explode` = Règle des six ; `ignoreLimit` ne
       mord que là où une Limite existe (rollWeapon). `null` si l'édition n'a
       pas d'Edge pré-jet par PNJ. */
+  /** Aucun avantage ACHETABLE : cette édition ne vend pas de bonus de seuil
+      avant le jet (contrat miroir d'Anarchy 2.0). Neutre documenté. */
+  advantageCost: null,
   preRollEdge: {
     resourceLabel: "Chance", // nom VF de la ressource (jamais « Edge ») — lu par le journal des jets
     /** ⚠ p.58 : « Un seul point de Chance, pas plus, peut être dépensé pour un
