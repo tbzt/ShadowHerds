@@ -1702,6 +1702,36 @@ existaient :
   « Générer la trame », « Reprendre ». Un libellé qui parle la langue de la
   fiction supprime une traduction mentale à chaque lecture.
 
+- **Le suivi de combat est un ÉCRAN, et il se sert de la mécanique de modale
+  pour l'être.** *Ajouté 2026-09-01, après qu'un audit a proposé de « sortir le
+  tracker de la modale » et que le code a invalidé la proposition.*
+  La critique était fondée sur le § 6.3 (« une modale est le geste le plus
+  coûteux ») appliqué sans lire l'histoire de cette surface. Trois décisions
+  documentées disent l'inverse, et elles tiennent :
+  - **Tracker V7** l'a promu de *tiroir* à écran plein — une correction
+    d'ALTITUDE : la fiche PNJ, le Hub et le Générateur étaient devenus des
+    écrans, lui restait un dock droit bridé à 720px. Il a été **monté**.
+  - **Décision D4** (`combat-tracker.css`, en tête) : « l'ancien dock non
+    bloquant (CH-M4 : overlay transparent, Hub cliquable derrière) est
+    **RETIRÉ**, son bénéfice remplacé par le dock Matrice intégré ». Le produit
+    a déjà essayé la forme non bloquante, et en est revenu.
+  - **B1.8 (C-003)** a corrigé un vrai défaut d'accessibilité en le rendant
+    modal à toutes les largeurs : au-dessus de 640px il se déclarait non-modal
+    et Tab sortait vers du contenu invisible derrière le voile.
+  - **Vague 4.1** a chiffré au profilage CDP le gain de ne pas peindre ce qui
+    est dessous : médiane par clic de 263,6 à 217,9 ms (−17,3 %) sur une scène
+    de 12 PNJ. Le rendre coexistant rend ce gain.
+
+  **Ce que l'arbre du § 6.3 ne sait pas dire.** Il demande « faut-il RÉPONDRE ? »
+  (non) puis « est-ce une TÂCHE ? » (non plus). Le tracker n'est ni l'un ni
+  l'autre : c'est un **lieu qu'on habite** pendant une scène entière. L'arbre n'a
+  pas de branche pour ça, et son silence ne vaut pas condamnation. Ce qui restait
+  vrai de la critique — que la surface *se déclarait* dialogue et héritait donc
+  du titre de modale — a été corrigé autrement, en dégradant `.modal-title`.
+
+  *Leçon, la même que celle du § 8 : relire le code AVANT de rouvrir un lot. Le
+  document a tort plus souvent que le code.*
+
 ---
 
 ## 10. La checklist de PR
