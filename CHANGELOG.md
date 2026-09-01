@@ -10,6 +10,43 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.145.4] — 2026-09-01
+
+### Modifié
+
+- **Le nom de l'écran cède le premier rang à ce qui se passe.** Le premier
+  coup d'œil rendait un mot que le meneur connaissait déjà en cliquant : sur le
+  suivi de combat, « SUIVI DE COMBAT — ROUND 1 · PASSE 1 » occupait 39 528 px²
+  en accent, contre 1 010 px² pour le nom du combattant qui joue — un rapport de
+  39 contre 1. Les titres d'écran et de modale descendent d'un cran et rendent
+  l'accent ; le nom du combattant actif monte à la taille d'un titre d'objet,
+  dans la police d'affichage de son édition. Le rapport tombe à 4,5 contre 1.
+- **Une bascule de mode ne ressemble plus à une action.** « Sélectionner »,
+  « Réorganiser » et « Annuaire » portaient le même vêtement que « Créer un
+  personnage » — cinq boutons de poids égal dans une barre. Elles passent au
+  palier discret, et leur état allumé se voit enfin : il était posé dans le code
+  depuis toujours mais rien ne le peignait, seul le libellé changeait.
+- **La bibliothèque s'ouvre sur un index.** « Ombres portées » répond à
+  « retrouve-moi celui-là » et ouvrait pourtant sur des fiches déployées de
+  2 000 px de haut — près de trois écrans par entrée. L'annuaire dense devient
+  le défaut ; un tap sur un nom ouvre la fiche en coup d'œil sans quitter la
+  liste. Un choix déjà fait par le meneur est respecté.
+- **Les objets se détachent par leur matière, plus par leur contour.** Les
+  quatre surfaces d'élévation tenaient dans 13 pour cent de luminance : le fond
+  et l'objet étaient à 1,03 contre 1, et c'étaient les filets qui faisaient tout
+  le travail. La surface d'objet s'élargit à 1,45-1,54 contre 1 aux quatre
+  éditions ; la ligne de combat, les cartes et les surfaces d'overlay y passent.
+  Le filet reste là où il signale un état — tour actif, « a joué », « à terre » —
+  et disparaît là où il ne compensait qu'une surface invisible. L'encre
+  secondaire est relevée d'autant pour rester lisible.
+
+### Note
+
+- Aucune capacité neuve : ces quatre lots corrigent des inversions de hiérarchie
+  visuelle, mesurées écran par écran. `outils/da.py` donne les compteurs et leurs
+  cibles ; `outils/servir.py` sert le dépôt sans cache, seul moyen fiable de
+  vérifier une feuille ou un module fraîchement modifié.
+
 ## [1.145.0] — 2026-09-01
 
 ### Ajouté
