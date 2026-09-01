@@ -1156,7 +1156,12 @@
   flex: none;
   min-width: 3rem;
   padding: 0.3rem 0.4rem;
-  background: var(--bg-card);
+  /* DA lot 5 — le jeton prend la masse comme la ligne, mais GARDE son filet :
+     c'est une puce cliquable, et le paragraphe 6.5 fait de la bordure son
+     affordance — « si c'est cliquable, ça se voit sans survol », et le survol
+     n'existe pas au doigt. Migrer la surface sans retirer le contour est le
+     bon découpage ici, pas une demi-mesure. */
+  background: var(--bg-raised);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
@@ -1199,7 +1204,8 @@ button.encounter-token-init:active {
 }
 .encounter-token.active-turn {
   border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 18%, var(--bg-card));
+  /* DA lot 5 : base du mélange alignée sur la surface du jeton. */
+  background: color-mix(in srgb, var(--accent) 18%, var(--bg-raised));
   box-shadow: inset 0 -3px 0 var(--accent);
 }
 .encounter-token.has-acted {
@@ -1223,7 +1229,8 @@ button.encounter-token-init:active {
 }
 .encounter-token.is-matrix.active-turn {
   border-color: var(--accent2);
-  background: color-mix(in srgb, var(--accent2) 18%, var(--bg-card));
+  /* DA lot 5 — cf. .encounter-token.active-turn, canal Matrice. */
+  background: color-mix(in srgb, var(--accent2) 18%, var(--bg-raised));
   box-shadow: inset 0 -3px 0 var(--accent2);
 }
 .encounter-rail-empty {
@@ -1261,9 +1268,12 @@ button.encounter-token-init:active {
   width: 100%;
   text-align: left;
   padding: 0.35rem var(--sp-2);
+  /* DA lot 5 — cf. .encounter-token : contrôle cliquable, masse migrée, filet
+     gardé. Il vit dans .encounter-add-panel, resté en --bg-mid (du chrome) :
+     le candidat s'y détache donc franchement. */
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--bg-card);
+  background: var(--bg-raised);
   color: var(--text);
   cursor: pointer;
 }
@@ -1838,7 +1848,9 @@ button.encounter-token-init:active {
    console porte le reste de la température. */
 .encounter-react .react-row {
   border-color: color-mix(in srgb, var(--cold) 25%, var(--border));
-  background: color-mix(in srgb, var(--cold) 6%, var(--bg-card));
+  /* DA lot 5 : base alignée. Le registre subi (--cold) reste porté par le
+     filet, qui redevient ici ce qu'il doit être — un signal. */
+  background: color-mix(in srgb, var(--cold) 6%, var(--bg-raised));
 }
 
 /* Bascule fiche↔rack : fondu-glissé ≤200 ms joué UNIQUEMENT au changement de
@@ -1860,9 +1872,13 @@ button.encounter-token-init:active {
 }
 .react-row {
   padding: 0.35rem 0.4rem;
-  border: 1px solid var(--border);
+  /* DA lot 5 — une ligne de réaction est une LIGNE : même geste que
+     .encounter-row au lot 4, la masse remplace le filet. Transparent plutôt que
+     retiré, pour que `.encounter-react` et `.has-counterspell:hover` continuent
+     de ne changer que border-color. */
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  background: var(--bg-mid);
+  background: var(--bg-raised);
 }
 /* G4bis : la ligne entière remplace le bouton ✦ disparu (data-action porté par
    .react-row) — cursor + teinte MAGIE au survol annoncent la cible, comme
@@ -1874,7 +1890,8 @@ button.encounter-token-init:active {
 }
 .react-row.has-counterspell:hover {
   border-color: var(--accent-magic);
-  background: color-mix(in srgb, var(--accent-magic) 8%, var(--bg-mid));
+  /* DA lot 5 : base alignée sur la surface de .react-row. */
+  background: color-mix(in srgb, var(--accent-magic) 8%, var(--bg-raised));
 }
 .react-cs-mark {
   color: var(--accent-magic);
@@ -1888,9 +1905,10 @@ button.encounter-token-init:active {
 .round-line {
   flex-wrap: nowrap;
   padding: 0.35rem 0.4rem;
-  border: 1px solid var(--border);
+  /* DA lot 5 — ligne du bilan de round : même famille, même geste. */
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  background: var(--bg-mid);
+  background: var(--bg-raised);
 }
 .round-line + .round-line {
   margin-top: 0.3rem;
@@ -2470,17 +2488,22 @@ kbd {
 .spectator-row {
   gap: var(--sp-4);
   padding: var(--sp-3) var(--sp-4);
-  border: 1px solid var(--border);
+  /* DA lot 5 : transparent, pas retiré — .is-active ne change que border-color. */
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   /* Signature de coin coupé de l'édition (SR6 la porte ; les autres retombent
      sur --card-clip: none → coins arrondis par défaut, honnête à chaque livre).
      Premier usage projeté du token, jamais une forme codée en dur. */
   clip-path: var(--card-clip);
-  background: var(--bg-mid);
+  /* DA lot 5 — l'écran joueur est une PROJECTION de la scène, vue de loin :
+     c'est là que la masse sert le plus, et le filet le moins. Le clip d'édition
+     reste la seule silhouette. */
+  background: var(--bg-raised);
 }
 .spectator-row.is-active {
   border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, var(--bg-mid));
+  /* DA lot 5 : base alignée sur .spectator-row. */
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-raised));
   box-shadow: inset 3px 0 0 var(--accent);
 }
 .spectator-row.is-down {
