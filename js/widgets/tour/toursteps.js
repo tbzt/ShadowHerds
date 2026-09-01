@@ -181,7 +181,7 @@ export const TourSteps = {
     {
       id: "wn-card-modules", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.23.0", fallback: "center",
       title: "Modules Magie et Matrice",
-      body: "Un decker gagne une section « Matrice » ⚡ (deck, moniteur, cible) juste après Combat. Un personnage magique gagne une section « Magie » ✦ (tradition, esprit mentor, pouvoirs d'adepte). Invisibles si le PNJ n'est pas concerné.",
+      body: "Un decker gagne une section « Matrice » ⚡︎ (deck, moniteur, cible) juste après Combat. Un personnage magique gagne une section « Magie » ✦ (tradition, esprit mentor, pouvoirs d'adepte). Invisibles si le PNJ n'est pas concerné.",
     },
     {
       id: "wn-card-views", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.24.0", fallback: "center",
@@ -296,7 +296,7 @@ export const TourSteps = {
     {
       id: "wn-persona-vivant", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.46.0", fallback: "center",
       title: "Persona incarné du technomancien",
-      body: "Le module Matrice ⚡ d'un technomancien (SR5/SR6) affiche désormais son persona incarné : Attaque, Corruption, Traitement de données, Firewall, calculés depuis ses attributs mentaux et sa Résonance. En SR6, un bouton de reconfiguration répartit le pool de points bonus entre les 4 attributs. Les dommages matriciels encaissés rejoignent le moniteur étourdissant, comme au livre.",
+      body: "Le module Matrice ⚡︎ d'un technomancien (SR5/SR6) affiche désormais son persona incarné : Attaque, Corruption, Traitement de données, Firewall, calculés depuis ses attributs mentaux et sa Résonance. En SR6, un bouton de reconfiguration répartit le pool de points bonus entre les 4 attributs. Les dommages matriciels encaissés rejoignent le moniteur étourdissant, comme au livre.",
     },
     {
       id: "wn-foundry-import-v2", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.48.0", fallback: "center",
@@ -386,7 +386,7 @@ export const TourSteps = {
     {
       id: "wn-play-cockpit", anchor: "nav-play", tours: ["whatsnew"], since: "1.67.0", fallback: "center",
       title: "« Jouer » : le poste de commandement du run",
-      body: "Le run que vous jouez est désormais sorti en tête de « Jouer » et rassemble tout pour la séance : la scène vivante (round, moteur ⚔/⚡, barre de vie par combattant, sans ouvrir le tracker), la présence de chaque participant (un tap : RV ou astral, selon sa capacité — RA par défaut), l'horloge d'intrusion quand un serveur est en jeu (alerte, tour, CI), le topos condensé (objectif, complication, mandant, lieu, paie), le casting préparé (tap pour consulter, ⚔ pour envoyer un PNJ en scène, ⚡ pour mettre un serveur en jeu) et un accès direct à votre carnet de notes. Vos autres runs restent listés en dessous.",
+      body: "Le run que vous jouez est désormais sorti en tête de « Jouer » et rassemble tout pour la séance : la scène vivante (round, moteur ⚔/⚡︎, barre de vie par combattant, sans ouvrir le tracker), la présence de chaque participant (un tap : RV ou astral, selon sa capacité — RA par défaut), l'horloge d'intrusion quand un serveur est en jeu (alerte, tour, CI), le topos condensé (objectif, complication, mandant, lieu, paie), le casting préparé (tap pour consulter, ⚔ pour envoyer un PNJ en scène, ⚡︎ pour mettre un serveur en jeu) et un accès direct à votre carnet de notes. Vos autres runs restent listés en dessous.",
     },
     {
       id: "wn-persona-combat", anchor: "nav-shadows", tours: ["whatsnew"], since: "1.68.0", fallback: "center",
@@ -586,7 +586,7 @@ export const TourSteps = {
     {
       id: "wn-cockpit-peau", anchor: "nav-play", tours: ["whatsnew"], since: "1.108.0", fallback: "center",
       title: "Le cockpit de « Jouer » a de la gueule",
-      body: "Le poste de commandement ressemble enfin à un vrai cockpit : un header teinté par l'accent de votre édition, le nom de l'état en grand (⚔ Combat · ⚡ Matrice · Préparation) avec une pastille qui rougeoie à chaud, des cellules d'horloge en gros chiffres (Round · Passe · En scène) et un bandeau de jalons. Le fil des étapes se colore par type de scène (accroche, repérage, action, sociale, décision, retombée), et les Horloges deviennent des jauges segmentées qui se remplissent case par case. Tout suit l'accent de l'édition — rien n'est codé en dur.",
+      body: "Le poste de commandement ressemble enfin à un vrai cockpit : un header teinté par l'accent de votre édition, le nom de l'état en grand (⚔ Combat · ⚡︎ Matrice · Préparation) avec une pastille qui rougeoie à chaud, des cellules d'horloge en gros chiffres (Round · Passe · En scène) et un bandeau de jalons. Le fil des étapes se colore par type de scène (accroche, repérage, action, sociale, décision, retombée), et les Horloges deviennent des jauges segmentées qui se remplissent case par case. Tout suit l'accent de l'édition — rien n'est codé en dur.",
     },
     {
       id: "wn-cockpit-onglets", anchor: "nav-play", tours: ["whatsnew"], since: "1.109.0", fallback: "center",

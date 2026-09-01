@@ -997,7 +997,7 @@ export const CardRenderer = {
     {
       key: "matrice",
       label: "Matrice",
-      glyph: "⚡",
+      glyph: "⚡︎",
       // Decker ET technomancien partagent ce module (même glyphe ⚡, même
       // zone) : deck OU persona incarné, jamais les deux à la fois en
       // pratique, mais le rendu concatène les deux blocs sans hypothèse.

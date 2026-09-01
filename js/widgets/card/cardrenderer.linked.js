@@ -245,7 +245,7 @@ Object.assign(CardRenderer, {
 
   /* ============================================================
      SPRITES COMPILÉS (T3b) — entité MATRICIELLE liée à un
-     technomancien. ⚠️ À ne pas confondre avec les méthodes
+     technomancien. ⚠ À ne pas confondre avec les méthodes
      `_*Spirit`/`_spirit*` ci-dessus (ESPRIT du mage) : ici c'est
      le SPRITE du technomancien, vocabulaire distinct (Compiler /
      Niveau / tâches / Renvoyer). Glyphe ◈ (esprit = ✦).

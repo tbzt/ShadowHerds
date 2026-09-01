@@ -59,7 +59,7 @@ export const EncounterRenderer = {
     if (modal) modal.classList.toggle("is-matrix-only", matrixOnly);
     const toggleBtn = document.getElementById("encounter-scene-type-toggle");
     if (toggleBtn) {
-      toggleBtn.textContent = matrixOnly ? "⚔ Scène Combat" : "⚡ Scène Matrice";
+      toggleBtn.textContent = matrixOnly ? "⚔ Scène Combat" : "⚡︎ Scène Matrice";
       toggleBtn.setAttribute("aria-pressed", String(matrixOnly));
     }
     const matrixNote = document.getElementById("encounter-matrix-only-note");
@@ -228,7 +228,7 @@ export const EncounterRenderer = {
       devicesHtml +
       `<div class="encounter-scene-actions">
         ${Encounter.groupStatusAvailable() ? `<button class="btn-secondary btn-small" data-action="group-status" title="Poser le même état sur plusieurs combattants — une fumigène, un gaz, une zone d'effet">⊘ État de groupe</button>` : ""}
-        ${Servers.data.all.length ? `<button class="btn-secondary btn-small" data-action="scene-matrix" title="${Encounter.state.serverId ? "Ouvrir le tiroir Matrice" : "Lier un serveur à la scène"}">⚡ Matrice</button>` : ""}
+        ${Servers.data.all.length ? `<button class="btn-secondary btn-small" data-action="scene-matrix" title="${Encounter.state.serverId ? "Ouvrir le tiroir Matrice" : "Lier un serveur à la scène"}">⚡︎ Matrice</button>` : ""}
         <button class="btn-secondary btn-small" data-action="heal-all" title="Réinitialiser les moniteurs de tous les combattants">⛨ Fin de scène — tout soigner</button>
       </div>`;
     this._playFlip(flipRoot, flipPrev);
@@ -964,7 +964,7 @@ export const EncounterRenderer = {
         return `<button class="cluster encounter-candidate" data-action="link-server" data-id="${s.id}" data-name="${norm}">
           <span class="encounter-kind">Serveur</span>
           <span class="encounter-candidate-name">${Utils.escHtml(s.name || "Sans nom")}</span>
-          <span class="encounter-candidate-add">⚡</span>
+          <span class="encounter-candidate-add">⚡︎</span>
         </button>`;
       })
       .join("");
@@ -2117,7 +2117,7 @@ export const EncounterRenderer = {
       ? `${Utils.escHtml(srv.name)} · indice ${srv.indice}`
       : `CI autonome · indice ${indice}`;
     const drawerBtn = srv
-      ? `<button class="btn-secondary btn-small encounter-ic-open" data-action="toggle-matrix-drawer" title="Ouvrir le tiroir Matrice (jets, moniteur, surveillance)">⚡ Ouvrir la Matrice</button>`
+      ? `<button class="btn-secondary btn-small encounter-ic-open" data-action="toggle-matrix-drawer" title="Ouvrir le tiroir Matrice (jets, moniteur, surveillance)">⚡︎ Ouvrir la Matrice</button>`
       : "";
     box.hidden = false;
     box.innerHTML =
@@ -2922,7 +2922,7 @@ export const EncounterRenderer = {
       { keys: "＋", html: "<strong>Poser un état</strong> — Enflammé, Aveuglé… le catalogue de l'édition ; le tap sur un état posé monte d'un cran, le ✕ le retire." },
       { keys: "⚔", html: "Envoyer au <strong>combat</strong> / rejoindre l'initiative." },
       { keys: "◎", html: "<strong>Perception matricielle</strong> d'une CI." },
-      { keys: "⚡", html: "Ouvrir le <strong>tiroir Matrice</strong> (jets, moniteur, surveillance)." },
+      { keys: "⚡︎", html: "Ouvrir le <strong>tiroir Matrice</strong> (jets, moniteur, surveillance)." },
       { keys: "⛶", html: "<strong>Voir la fiche</strong> d'un PNJ en réaction (coup d'œil, feuilletable)." },
       { keys: "CI", html: "<strong>Contre-mesure d'Intrusion</strong> engagée dans l'initiative." },
       { keys: "🔗", html: "<strong>Lier</strong> un serveur (ou la cible d'un decker) à la scène." },
@@ -3026,10 +3026,10 @@ export const EncounterRenderer = {
         const initial = Utils.escHtml((srv.name || "?").slice(0, 1));
         btn.innerHTML =
           level === 3
-            ? `⚡ Matrice <span class="matrix-ic-count">×${activeCount}</span>`
+            ? `⚡︎ Matrice <span class="matrix-ic-count">×${activeCount}</span>`
             : level === 2
-              ? `⚡ Matrice <span class="matrix-dot" aria-hidden="true"></span>`
-              : `⚡ ${initial}`;
+              ? `⚡︎ Matrice <span class="matrix-dot" aria-hidden="true"></span>`
+              : `⚡︎ ${initial}`;
         btn.title = "Matrice — " + srv.name;
       }
     }

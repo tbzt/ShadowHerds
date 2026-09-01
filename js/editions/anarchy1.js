@@ -501,7 +501,7 @@ export const EditionAnarchy1 = {
   /** 3 puissances par esprit V1 (mineur/normal/majeur), valeur numérique
       0/1/2 — même domaine que `generate()` (`opts.tier ?? 1`, clampé 0-2,
       anarchy1.js:382). Table réelle des esprits : Lot 6.
-      ⚠️ Corrigé 2026-07-17 : rendait des chaînes nues (`["mineur", …]`) au
+      ⚠ Corrigé 2026-07-17 : rendait des chaînes nues (`["mineur", …]`) au
       lieu de `{value, label}` comme les 3 autres éditions — le
       destructuring silencieux dans summonpanel.js produisait des boutons
       vides (`data-power="undefined"`). */

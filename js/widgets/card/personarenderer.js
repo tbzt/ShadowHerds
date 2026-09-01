@@ -3,7 +3,7 @@
 /* ============================================================
    PERSONA RENDERER — bloc persona incarné sur la carte PNJ
    (technomancien), partagé avec le bloc Cyberdeck dans le module
-   Matrice ⚡ (cardrenderer.js). Miroir minimal de CyberdeckRenderer :
+   Matrice ⚡︎ (cardrenderer.js). Miroir minimal de CyberdeckRenderer :
    reçoit le PNJ + son édition en paramètres, ne lit ni ne modifie
    rien lui-même — la donnée vit sur `pnj.persona`
    (structure posée par Resonance.blank/hydrate et la migration
@@ -70,7 +70,7 @@ export const PersonaRenderer = {
         .map((s) => `<option value="${s.id}" ${s.id === targetId ? "selected" : ""}>${esc(s.name)}</option>`)
         .join("");
     const openBtn = targetId
-      ? `<button type="button" class="cyberdeck-swap" data-action="deck-open-matrix" data-id="${pnj.id}" title="Ouvrir la Matrice de ce serveur">⚡ Ouvrir la Matrice</button>`
+      ? `<button type="button" class="cyberdeck-swap" data-action="deck-open-matrix" data-id="${pnj.id}" title="Ouvrir la Matrice de ce serveur">⚡︎ Ouvrir la Matrice</button>`
       : "";
     return `<div class="cluster cyberdeck-target">
       <select class="cyberdeck-target-select" data-action="deck-set-target" data-id="${pnj.id}" aria-label="Serveur ciblé">${options}</select>

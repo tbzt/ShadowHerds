@@ -553,7 +553,7 @@ export const CharGen = {
       )
       .join("");
     const diceBtn = (field) =>
-      `<button class="btn-secondary btn-small cg-dice-btn" data-cg-action="draw-narrative" data-field="${field}" title="Remplit les champs vides">🎲 Inspiration</button>`;
+      `<button class="btn-secondary btn-small cg-dice-btn" data-cg-action="draw-narrative" data-field="${field}" title="Remplit les champs vides">⚄ Inspiration</button>`;
 
     return `<div class="stack">
       <div class="cg-section-label">5 mots-clés (p.50-51) ${diceBtn("keywords")}</div>

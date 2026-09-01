@@ -461,7 +461,7 @@ export const Play = {
     // Grammaire commune avec l'horloge d'intrusion : GAUCHE = moteur (⚔/⚡),
     // DROITE = pendule (round·passe). Mêmes classes `.play-motor-name/-bits`
     // que `_matrixClockHtml` → les deux lignes se lisent pareil.
-    const motorName = combat ? "⚔ Combat" : "⚡ Matrice";
+    const motorName = combat ? "⚔ Combat" : "⚡︎ Matrice";
     const strip = rows
       .map((r) => {
         const name = CardRenderer._esc(r.pnj?.name || r.name || "?");
@@ -1102,7 +1102,7 @@ export const Play = {
       Lecture seule, projeté d'`Encounter`/`Dossiers` — 0 branche d'édition. */
   _cockpitHeadHtml(run, state, resumeBtn) {
     const esc = CardRenderer._esc;
-    const glyph = { combat: "⚔", matrix: "⚡", close: "✓" }[state] || "◈";
+    const glyph = { combat: "⚔", matrix: "⚡︎", close: "✓" }[state] || "◈";
     const name = { combat: "Combat", matrix: "Matrice", close: "Clôture" }[state] || "Préparation";
     const parent = run.parentId && typeof Dossiers !== "undefined" ? Dossiers.get(run.parentId) : null;
     const camp = parent && parent.kind === "campaign" ? `❖ ${esc(parent.name)}` : "◆ hors campagne";
@@ -1228,7 +1228,7 @@ export const Play = {
         if (s.activeIC > 0)
           bits.push(`<span class="play-motor-clock">${s.activeIC} CI</span>`);
         return `<button class="cluster play-motor-line play-mx-row" data-action="play-matrix" title="Ouvrir le tiroir Matrice (Surveillance, CI, marks)">
-          <span class="play-motor-name">⚡ ${CardRenderer._esc(s.name)}</span>
+          <span class="play-motor-name">⚡︎ ${CardRenderer._esc(s.name)}</span>
           <span class="play-motor-bits">${bits.join("")}</span>
         </button>`;
       })
@@ -1320,7 +1320,7 @@ export const Play = {
       « convoquer ≠ recopier »), les entités directes sont des chips, et ce que la
       campagne parente convoque descend en « hérité » (grisé). Chaque membre : tap
       = consulter (CardPeek/Palette) ; PNJ/PJ portent ⚔ « envoyer en scène »
-      (geste-roi), serveurs ⚡ « mettre en jeu », contacts = consultation seule.
+      (geste-roi), serveurs ⚡︎ « mettre en jeu », contacts = consultation seule.
       `convokeCta` (run/Briefing) montre toujours « ＋ convoquer », même à vide —
       invitation Silk ; une scène (défaut) reste muette tant qu'elle n'a rien. */
   _castHtml(scopeId, { convokeCta = false } = {}) {
@@ -1389,7 +1389,7 @@ export const Play = {
 
   /** Une puce d'ENTITÉ (PNJ/PJ/contact/serveur). Résolution neutre par
       `PnjLookup.locate` (nom + type, 0 branche d'édition) ; l'action dépend du
-      type : ⚔ scène (PNJ/PJ) · ⚡ Matrice (serveur) · rien (contact). Sert les
+      type : ⚔ scène (PNJ/PJ) · ⚡︎ Matrice (serveur) · rien (contact). Sert les
       entités directes ET les membres d'une Faction. `inherited` la grise. */
   _entityChipHtml(id, { inScene, inMatrix, inherited } = {}) {
     const loc = typeof PnjLookup !== "undefined" ? PnjLookup.locate(id) : null;
@@ -1405,8 +1405,8 @@ export const Play = {
     } else if (mode === "server") {
       action =
         inMatrix && inMatrix.has(id)
-          ? `<span class="play-cast-in" title="Serveur en jeu dans la scène">⚡ en jeu</span>`
-          : `<button class="play-cast-add" data-action="play-cast-server" data-id="${id}" title="Mettre « ${name} » en jeu (moteur Matrice)" aria-label="Mettre en jeu (Matrice)">⚡</button>`;
+          ? `<span class="play-cast-in" title="Serveur en jeu dans la scène">⚡︎ en jeu</span>`
+          : `<button class="play-cast-add" data-action="play-cast-server" data-id="${id}" title="Mettre « ${name} » en jeu (moteur Matrice)" aria-label="Mettre en jeu (Matrice)">⚡︎</button>`;
     }
     const cls = inherited ? "play-cast-chip is-inherited" : "play-cast-chip";
     const inhTitle = inherited ? ' title="Convoqué au niveau campagne"' : "";
@@ -1416,7 +1416,7 @@ export const Play = {
   /** Une puce de FACTION convoquée : `<details>` natif (0 handler inline, chevron
       piloté par `[open]` — patron `.wn-more` de VIS-6). Le résumé = pastille
       couleur + nom + compte de membres ; le corps déplie les membres (chips
-      d'entité, avec leur ⚔/⚡). Restaure l'identité perdue par l'aplatissement. */
+      d'entité, avec leur ⚔/⚡︎). Restaure l'identité perdue par l'aplatissement. */
   _factionChipHtml(factionId, { inScene, inMatrix, inherited } = {}) {
     const f = typeof FactionStore !== "undefined" ? FactionStore.get(factionId) : null;
     if (!f) return "";

@@ -213,7 +213,7 @@ export const ServerRenderer = {
         ${statsHtml}
         <div class="server-sculpture">${esc(srv.sculpture || "")}
           <button class="btn-icon-tiny" data-action="reroll-sculpture" data-id="${srv.id}"
-            title="Relancer la sculpture (gamme du serveur)">🎲</button>
+            title="Relancer la sculpture (gamme du serveur)">⚄</button>
         </div>
         ${this.paradigmBlock(srv)}
         ${this.paradigmImage(srv)}
@@ -230,7 +230,7 @@ export const ServerRenderer = {
         ]
       : [
           { kind: "secondary", label: "Éditer", attrs: `data-action="toggle-edit" data-id="${srv.id}"` },
-          { kind: "primary", icon: "⚡", label: intr.open ? "Fermer l'intrusion" : "Intrusion", attrs: `data-action="toggle-intrusion" data-id="${srv.id}"` },
+          { kind: "primary", icon: "⚡︎", label: intr.open ? "Fermer l'intrusion" : "Intrusion", attrs: `data-action="toggle-intrusion" data-id="${srv.id}"` },
           // Calque du « ⚔ Combat » des PNJ — porte 2 de liaison au tiroir
           // Matrice (Encounter.linkServer), même geste que pour un combattant.
           { kind: "menu", label: "⚔ Envoyer au combat", attrs: `data-action="send-to-encounter" data-id="${srv.id}"` },
@@ -359,7 +359,7 @@ export const ServerRenderer = {
         ${attrsHtml}
         <label class="stack server-edit-label">Sculpture
           <textarea id="se-${id}-sculpture" rows="3">${esc(srv.sculpture || "")}</textarea></label>
-        <button class="btn-secondary btn-small" data-action="reroll-sculpture-edit" data-id="${id}">🎲 Relancer la sculpture</button>
+        <button class="btn-secondary btn-small" data-action="reroll-sculpture-edit" data-id="${id}">⚄ Relancer la sculpture</button>
         <div class="stack server-edit-ics">
           <span class="monitor-label">CI — ordre de déploiement</span>
           ${icRows}
@@ -580,7 +580,7 @@ export const ServerRenderer = {
     // sont hors SS et sans mark (ses actions matricielles standard, elles, comptent).
     const resonanceNote = M.resonanceOSNote();
     const resonanceHint = resonanceNote
-      ? `<div class="ss-effects">⚡ ${esc(resonanceNote)}</div>`
+      ? `<div class="ss-effects">⚡︎ ${esc(resonanceNote)}</div>`
       : "";
 
     return `

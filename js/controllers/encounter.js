@@ -3089,7 +3089,7 @@ export const Encounter = {
       `_refreshCards` ≈ 28-31 ms, sur un `_commit` qui en coûte déjà ~246.
       Différer, c'était compliquer le code pour 12 % d'un chemin déjà lent.
 
-      ⚠️ **Ce raisonnement est caduc depuis B2.1, et c'est le chemin rapide qui
+      ⚠ **Ce raisonnement est caduc depuis B2.1, et c'est le chemin rapide qui
       l'a périmé.** L'argument tenait par son dénominateur : 12 % de 246ms. Une
       fois le FLIP corrigé, le reste du `_commit` tombe sous 100ms et ces 52-118ms
       (re-mesurés à 10 combattants) deviennent la PART DOMINANTE. `_commit` le
