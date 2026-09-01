@@ -1436,8 +1436,16 @@
     background var(--dur-fast),
     color var(--dur-fast);
 }
+/* DA lot 5 — le survol ÉCLAIRE, il n'éteint plus.
+   Ce menu vit sur --bg-overlay, qui vaut --bg-raised : depuis que la surface
+   d'objet s'est élargie (lot 4), le popover est clair et ce survol le
+   RENVOYAIT à --bg-mid, c'est-à-dire nettement plus sombre que la ligne au
+   repos. Un survol qui assombrit se lit comme une désactivation.
+   --glow est le token prévu pour ça (§ 4.1, « halo d'accent à faible opacité,
+   fond des états actifs ») : semi-transparent, il se compose sur la surface au
+   lieu de la remplacer, donc il suit toute évolution ultérieure de l'élévation. */
 .card-menu-item:hover {
-  background: var(--bg-mid);
+  background: var(--glow);
   color: var(--accent);
 }
 .card-menu-item.danger:hover {
@@ -1555,8 +1563,13 @@
   gap: var(--sp-3);
   flex-wrap: nowrap;
   padding: var(--sp-1) var(--sp-2);
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  /* DA lot 5 — la ligne d'annuaire est devenue l'objet PRINCIPAL de la
+     bibliothèque : depuis que « Ombres portées » s'ouvre sur l'index, c'est
+     elle qu'on parcourt pour retrouver quelqu'un, pas la carte. Même geste que
+     .encounter-row — masse, filet transparent — parce que c'est la même nature
+     d'objet : une ligne qu'on LIT. */
+  background: var(--bg-raised);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
 }
 .roster-row-name {
