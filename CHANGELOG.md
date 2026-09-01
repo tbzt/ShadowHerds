@@ -10,6 +10,43 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.145.5] — 2026-09-01
+
+### Corrigé
+
+- **Six libellés étaient devenus illisibles en 1.145.4.** Élargir la surface des
+  objets a un revers mécanique : le texte qui y était calibré pour un fond
+  sombre ne l'est plus pour un fond clair. Le rang d'un PNJ, sa métavariante,
+  les clés de son portrait, le titre du journal des jets, la valeur d'un
+  attribut et le nom de la ressource pré-jet (« Chance », « Atout ») tombaient
+  à 3,75:1, sous le seuil de lisibilité. Ils repassent au-dessus aux quatre
+  éditions, sans changer de registre : l'accent reste l'accent, c'est sa
+  clarté qui monte.
+
+### Modifié
+
+- **La matière gagne le reste des écrans.** Le suivi de combat n'était que le
+  premier : les lignes de réaction, le bilan de round, l'écran joueur, la ligne
+  d'annuaire, le poste de commandement de « Jouer » et la scène de poursuite se
+  détachent maintenant du fond par leur surface au lieu de leur contour. Une
+  distinction s'est dégagée en chemin et vaut pour la suite — **ce qu'on lit
+  prend une masse et perd son filet ; ce qu'on presse prend une masse et garde
+  le sien**, parce qu'un contour est l'affordance d'une puce et que le survol
+  n'existe pas au doigt.
+- **Le survol du menu d'une carte cesse d'éteindre.** Il renvoyait la ligne
+  survolée à une teinte plus sombre que son propre repos — un survol qui
+  assombrit se lit comme une désactivation.
+
+### Note
+
+- Le rideau des modales consomme enfin `--scrim`, défini de longue date et
+  utilisé nulle part. Les tiroirs et feuilles gardent leur voile plus léger,
+  qui est une distinction voulue et non un oubli.
+- La proposition de sortir le suivi de combat de sa modale est **écartée** :
+  trois décisions antérieures et une mesure de performance la contredisent.
+  Consigné au § 9 de `DESIGN-SYSTEM.md` pour que la question ne se rouvre pas
+  sans ces éléments.
+
 ## [1.145.4] — 2026-09-01
 
 ### Modifié
