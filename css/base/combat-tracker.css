@@ -146,9 +146,19 @@
   flex-wrap: nowrap;
   gap: var(--sp-3);
   padding: var(--sp-2) 0.6rem;
-  border: 1px solid var(--border);
+  /* DA lot 4 — LA MASSE REMPLACE LE FILET.
+     La ligne était peinte en --bg-card, c'est-à-dire à 1,03:1 du fond : elle ne
+     se détachait pas, et son contour faisait tout le travail. Sur l'écran de
+     combat, 73 éléments bordés et jusqu'à 5 cadres imbriqués pour atteindre une
+     pastille — un damier de contours sur du vide, jamais des objets.
+     Elle passe donc à --bg-raised (élargi à ~1,5:1, cf. theme-*.css) et son
+     filet devient TRANSPARENT plutôt que retiré : la géométrie ne bouge pas
+     d'un pixel, et surtout `.active-turn` / `.is-matrix` / `.down` continuent de
+     ne changer que `border-color`. Le filet cesse d'être une séparation pour
+     redevenir ce qu'il doit être — un signal d'ÉTAT. */
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  background: var(--bg-card);
+  background: var(--bg-raised);
   /* Vague B2 : seule la retombée du glisser anime (transform/box-shadow) —
      bref et tokenisé, le cockpit reste sec (Croupier), rien d'autre ne
      transitionne ici. */
@@ -190,7 +200,10 @@
    simple bordore fine — repérable d'un coup d'œil sur petit écran sombre. */
 .encounter-row.active-turn {
   border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, var(--bg-card));
+  /* DA lot 4 : la base du mélange suit la surface. La laisser sur --bg-card
+     aurait fait du tour actif la SEULE ligne restée sombre — le point focal en
+     retrait de ses voisines. */
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-raised));
   box-shadow: inset 3px 0 0 var(--accent);
 }
 .encounter-row.has-acted {
@@ -662,9 +675,12 @@
 .encounter-nrow {
   padding: 0.7rem 0.6rem;
   min-height: 48px;
-  border: 1px solid var(--border);
+  /* DA lot 4 — cf. .encounter-row : masse au lieu de filet, sur l'autre
+     composant. La ligne narrative (Anarchy) est le pendant de la ligne
+     tactique ; le lot serait resté à moitié fait sans elle. */
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  background: var(--bg-card);
+  background: var(--bg-raised);
   color: var(--text);
   cursor: pointer;
   /* Vague B2 : même retombée de glisser que .encounter-row (transform/
@@ -770,7 +786,8 @@
 }
 /* Joué : coché + grisé barré (fond succès discret). */
 .encounter-nrow.has-acted {
-  background: color-mix(in srgb, var(--success) 12%, var(--bg-mid));
+  /* DA lot 4 : base du mélange alignée sur la surface. */
+  background: color-mix(in srgb, var(--success) 12%, var(--bg-raised));
   border-color: var(--success);
   opacity: 0.85;
 }
@@ -801,8 +818,13 @@
 }
 .encounter-row.down,
 .encounter-nrow.down {
+  /* DA lot 4 : « à terre » garde sa masse — c'est le TIRET du filet qui porte
+     l'état, pas un retour au fond. Le filet redevient visible ici (border-style
+     dashed sur une border-color héritée) : c'est exactement l'emploi qu'on lui
+     rend, un signal et non une séparation. */
   border-style: dashed;
-  background: var(--bg-card);
+  border-color: var(--border-ui);
+  background: var(--bg-raised);
   opacity: 0.9;
 }
 .encounter-init.is-out {
@@ -1587,7 +1609,8 @@ button.encounter-token-init:active {
 }
 .encounter-row.is-matrix.active-turn {
   border-color: var(--accent2);
-  background: color-mix(in srgb, var(--accent2) 12%, var(--bg-mid));
+  /* DA lot 4 — cf. .encounter-row.active-turn : même mélange, canal Matrice. */
+  background: color-mix(in srgb, var(--accent2) 12%, var(--bg-raised));
   box-shadow: inset 3px 0 0 var(--accent2);
 }
 .encounter-row.is-matrix .encounter-kind,

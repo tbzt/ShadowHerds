@@ -17,12 +17,22 @@
   --bg: #0a0710;
   --bg-card: #120b1a;
   --bg-mid: #170e20;
-  --bg-raised: #1e1532; /* surface élevée (cartes) — plus claire que --bg pour le figure/fond */
+  /* DA lot 4 — élargi. Les quatre surfaces tenaient dans 13 pour cent de
+     luminance : le fond et l'objet étaient à 1,03:1, donc invisibles l'un de
+     l'autre, et c'étaient 73 filets qui faisaient le travail de séparation sur
+     l'écran de combat. Le paragraphe 4.4 dit pourtant « le figure/fond se fait
+     par la luminance » — la règle était juste, les valeurs ne pouvaient pas la
+     tenir. Ici : 1,45:1 contre le fond. */
+  --bg-raised: #332748; /* surface élevée (cartes) — plus claire que --bg pour le figure/fond */
   --aro: #38c0c0; /* chrome AR décalé vers le teal : l'accent A1 est déjà bleu (#3a8fd0) */
   --accent: #3a8fd0;
   --accent2: #c89a2e;
   --text: #dccbe8;
-  --text-dim: #9880ac; /* remonté (était #8a72a0) : AA ≥4.5 sur la carte élevée --bg-raised (refonte ARO) */
+  /* DA lot 4 — relevé avec la surface. Sur #332748 l'ancienne valeur tombait à
+     3,95:1, sous AA : élargir l'élévation sans relever l'encre secondaire aurait
+     rendu illisible ce qu'on venait de mieux détacher. Valeur MINIMALE qui passe
+     (4,79:1) — l'encre reste atténuée, elle n'est pas relevée à l'excès. */
+  --text-dim: #a98ebf; /* remonté (était #8a72a0) : AA ≥4.5 sur la carte élevée --bg-raised (refonte ARO) */
   --border: #241030;
   /* Bordure de contrôle (case de moniteur, etc.) : teinte de l'édition,
      saturation basse, valeur minimale franchissant 3:1 sur --bg-card. */
