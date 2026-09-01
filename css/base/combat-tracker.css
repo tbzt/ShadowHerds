@@ -7,8 +7,14 @@
    (CH-M4 : overlay transparent, Hub cliquable derrière) est RETIRÉ, son
    bénéfice remplacé par le dock Matrice intégré. Sous 641px : plein écran,
    comportement par défaut de .modal inchangé. */
+/* ⚠ Retour de table (2026-09-01) : « sur grand écran on peut encore prendre
+   plus de place, pourquoi resserrer autant ? ». Le 1200 n'avait aucune raison
+   écrite — le commentaire ci-dessus justifie l'ALTITUDE (écran et non tiroir),
+   jamais le chiffre. Porté à 1600 : sur un 1920 il reste ~320px de voile, donc
+   la modale garde la lecture « écran centré » que la décision D4 voulait, sans
+   se coller aux bords. */
 .encounter-modal {
-  width: min(1200px, 96vw);
+  width: min(1600px, 96vw);
   max-height: 94vh;
 }
 /* D3 — écran du suivi de combat, converti à .cluster/.stack (foundation.css),
@@ -49,7 +55,10 @@
   .encounter-modal {
     display: flex;
     flex-direction: column;
-    height: 90vh;
+    /* 94vh comme la base : le 90 laissait 4 % de hauteur inutilisée sans raison
+       écrite, alors que la vague 4.4 s'est battue pour des LIGNES (9/15 → 11/15
+       en resserrant la gouttière). Rendre ces 4 % vaut une ligne de plus. */
+    height: 94vh;
     overflow: hidden;
   }
   .encounter-modal .modal-header {
@@ -86,8 +95,16 @@
      juste, c'est la Console qui cède — la ligne sait se replier (cf.
      .react-row), l'Effectif ne descend pas sous sa base. */
   .encounter-active-card {
-    flex: 0 1 520px;
-    max-width: 520px;
+    /* `1 1` et non `0 1` : la largeur gagnée par le passage à 1600 allait
+       ENTIÈREMENT à l'Effectif (seul flex-grow du corps), qui — le bloc mesuré
+       ci-dessus le dit — « n'en demandait pas tant » dès 1280. La console
+       grandit donc avec, jusqu'à 640 : le nom et la grappe de six gestes
+       respirent au lieu de tenir juste.
+       Le facteur de RÉTRÉCISSEMENT reste 1, donc la logique documentée plus
+       haut ne bouge pas : sur un écran juste, quand le dock Matrice prend sa
+       colonne, c'est encore la console qui cède. */
+    flex: 1 1 520px;
+    max-width: 640px;
   }
 }
 

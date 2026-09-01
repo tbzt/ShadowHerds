@@ -15,8 +15,16 @@
      l'autre, et c'étaient 73 filets qui faisaient le travail de séparation sur
      l'écran de combat. Le paragraphe 4.4 dit pourtant « le figure/fond se fait
      par la luminance » — la règle était juste, les valeurs ne pouvaient pas la
-     tenir. Ici : 1,54:1 contre le fond. */
-  --bg-raised: #3a2e26; /* surface élevée (cartes) — plus claire que --bg pour le figure/fond */
+     tenir. Ici : 1,46:1 contre le fond. 
+     ⚠ Retour de table (2026-09-01) : « ça fait un peu délavé 1990 ». Vrai, et
+     mesurable — j'avais monté la CLARTÉ sans compenser le CHROMA, et la
+     saturation chute quand on éclaircit : 21 % ici, jusqu'à −16 points en
+     SR6. Un gris beige à mi-clarté, c'est exactement la recette.
+     Corrigé à détachement CONSTANT (1,46:1 contre le fond) mais à
+     41 % de saturation : la surface redevient de la MATIÈRE colorée, pas
+     un gris éclairci. Les encres y gagnent au passage, la surface étant
+     légèrement plus sombre. */
+  --bg-raised: #41261b; /* surface élevée (cartes) — plus claire que --bg pour le figure/fond */
   --bg-header: #140a08;
   --accent: #d9646d;
   --accent2: #8b1a1a;
