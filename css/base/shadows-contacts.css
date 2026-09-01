@@ -430,9 +430,12 @@
   position: relative;
   margin: var(--sp-1) 0;
   padding: var(--sp-2) var(--sp-2) var(--sp-2) calc(var(--sp-2) + 5px);
+  /* DA lot 5 : le filet reste — il est ce qui distingue la TUILE des rangées
+     plates de la file, qui n'ont qu'un filet bas. La masse ci-dessous lui donne
+     ce que le commentaire au-dessus demandait depuis le début : « se détacher ». */
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: var(--bg-card);
+  background: var(--bg-raised);
 }
 .play-run.is-live {
   box-shadow: var(--elev-1);
@@ -552,9 +555,16 @@
   --state: var(--border);
   margin-bottom: var(--sp-3);
   padding: var(--sp-3);
+  /* DA lot 5 — le filet RESTE, et c'est délibéré : ici il porte l'ÉTAT du
+     cockpit (--state, surchargé par .is-combat / .is-matrix / .is-close). C'est
+     un signal, pas une compensation de surface invisible — exactement la
+     distinction que le lot 4 a posée. */
   border: 1px solid var(--state);
   border-radius: var(--radius-lg);
-  background: var(--bg-card);
+  /* Le poste de commandement est l'objet PRINCIPAL de l'écran signature, et il
+     était encore à 1,036:1 du fond — invisible — pendant que la ligne de
+     tracker et la ligne d'annuaire d'à côté avaient pris la masse. */
+  background: var(--bg-raised);
   overflow: hidden;
 }
 .play-command.is-combat {
@@ -1420,10 +1430,14 @@
 .play-cast-convoke {
   min-height: 32px;
   padding: 4px 10px;
+  /* Le filet reste en --accent : c'est l'affordance du contrôle, et une bordure
+     n'a besoin que de 3:1 — 3,75 passe. */
   border: 1px dashed var(--accent);
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--accent);
+  /* DA lot 5 : le TEXTE, lui, exige 4,5. Posé sur .play-command qui vient de
+     prendre la masse, --accent brut y tombait à 3,75:1. */
+  color: var(--label-tint);
   font-family: inherit;
   font-size: var(--fs-xs);
   cursor: pointer;
