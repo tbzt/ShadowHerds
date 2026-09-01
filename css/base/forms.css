@@ -21,12 +21,22 @@
   display: block;
 }
 
+/* DA lot 1 — le titre d'écran CÈDE LE PREMIER RANG au contenu.
+   Mesuré avant : 24px/700 en --accent, soit 39 528 px² sur le tracker, contre
+   1 010 px² pour le nom du combattant actif — un rapport de 39:1 en faveur du
+   mot que le MJ connaissait déjà en cliquant. Le titre reste l'identité de
+   l'écran (il est seul à la porter sur Paramètres, Contacts, Serveurs), mais il
+   n'en est plus l'objet dominant.
+   L'ACCENT part avec la taille : il signale l'interactif et l'actif (§2), un
+   titre n'est ni l'un ni l'autre. Il reste sur le liseré ::before ci-dessous —
+   une MARQUE, pas une encre. La casse, elle, ne bouge pas : `--title-transform`
+   est une signature d'édition, son arbitrage est un autre lot. */
 .panel-title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: var(--fs-xl);
+  font-size: var(--fs-md);
   letter-spacing: var(--title-spacing);
-  color: var(--accent);
+  color: var(--text);
   text-transform: var(--title-transform);
   margin-bottom: 1.25rem;
   padding-bottom: 0.6rem;

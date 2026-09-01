@@ -187,7 +187,8 @@
 }
 [data-edition="anarchy1"] .modal-title {
   letter-spacing: 0.03em;
-  color: var(--accent2);
+  /* DA lot 1 — cf. theme-sr5.css. La chasse reste la signature A1. */
+  color: var(--text);
 }
 [data-edition="anarchy1"] .modal-close:hover {
   border-color: var(--accent);

@@ -545,8 +545,11 @@
   .gen-form {
     grid-template-columns: 1fr 1fr;
   }
+  /* DA lot 1 : le `font-size: var(--fs-lg)` (20px) qui vivait ici a été retiré.
+     La base est passée à --fs-md (16px) ; le garder aurait rendu le titre PLUS
+     GROS sur téléphone que sur ordinateur. Seule la respiration reste propre au
+     mobile. */
   .panel-title {
-    font-size: var(--fs-lg);
     margin-bottom: 0.9rem;
   }
 

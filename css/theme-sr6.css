@@ -232,7 +232,8 @@
   background: var(--accent);
 }
 [data-edition="sr6"] .modal-title {
-  color: var(--accent);
+  /* DA lot 1 — cf. theme-sr5.css. */
+  color: var(--text);
 }
 [data-edition="sr6"] .modal-close:hover {
   border-color: var(--accent2);

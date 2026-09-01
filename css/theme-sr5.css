@@ -211,7 +211,9 @@
   background: linear-gradient(180deg, var(--bg-header) 0%, transparent 100%);
 }
 [data-edition="sr5"] .modal-title {
-  color: var(--accent);
+  /* DA lot 1 : le titre nomme un contenant, pas le sujet — l'accent reste sur
+     le liseré 2px de .modal, il n'est plus une encre. */
+  color: var(--text);
 }
 [data-edition="sr5"] .modal-close:hover {
   border-color: var(--accent2);

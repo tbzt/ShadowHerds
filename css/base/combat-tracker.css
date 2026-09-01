@@ -371,14 +371,35 @@
   min-width: 0;
   gap: var(--sp-1);
 }
+/* DA lot 1-bis — le nom du combattant entre dans l'échelle typographique.
+   C'est un <button> sans `font-size` : il héritait donc du DÉFAUT DU NAVIGATEUR,
+   13,333px, une valeur qui n'existe dans aucun des 8 pas. La loi « aucun
+   font-size littéral » était respectée à la lettre et violée dans les faits —
+   le nom de la personne qui joue était hors échelle par omission, pas par choix.
+   Mesuré : passer la file à --fs-base ne coûte RIEN en densité (ligne compacte
+   à 40px avant comme après, hauteur de liste inchangée). */
 .encounter-name {
   background: none;
   border: none;
   text-align: left;
   color: var(--text);
+  font-size: var(--fs-base);
   font-weight: 600;
   padding: 0;
   cursor: pointer;
+}
+/* Le combattant ACTIF est le sujet de l'écran, pas une ligne parmi 25 : il prend
+   le rôle « Titre d'objet » (--fs-lg + display + 600, cf. DESIGN-SYSTEM §4.2).
+   C'est la moitié que le lot 1 ne faisait pas : il avait descendu le titre de
+   son trône, il ne montait personne dessus.
+   Coût mesuré : la ligne active passe de 150 à 160px — elle seule, la file ne
+   bouge pas (l'actif vit dans #encounter-active-lead, hors de #encounter-list).
+   Casse volontairement NON forcée : c'est le seul nom du produit qu'on doit
+   reconnaître d'un coup d'œil, et la majuscule détruit la silhouette du mot. */
+.encounter-row.active-turn .encounter-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 600;
 }
 .encounter-name:hover {
   color: var(--accent);
@@ -725,6 +746,22 @@
 .encounter-nrow.is-focused {
   border-color: var(--accent);
   box-shadow: inset 3px 0 0 var(--accent);
+}
+/* DA lot 1-bis, versant ANARCHY — le pendant exact de
+   `.encounter-row.active-turn .encounter-name`, mais sur l'autre composant :
+   la ligne narrative a son propre DOM (`.encounter-nrow`), et sans cette règle
+   les deux éditions Anarchy restaient en arrière du lot.
+   ⚠ La base ne bouge PAS ici, contrairement au versant tactique : le nom y est
+   déjà à 16px sur l'échelle, et la ligne narrative fait 126px de haut contre 40
+   pour la ligne compacte — ce n'est pas la même densité, donc pas le même pas.
+   Ce qui manquait n'était pas la taille, c'était l'ÉCART entre le focus et la
+   file : les deux étaient à 16px, le sujet ne se distinguait pas.
+   `text-overflow: ellipsis` est déjà posé sur la classe : en Anarchy 1, dont la
+   display est une MONOSPACE (Share Tech Mono, bien plus large), un nom long est
+   tronqué proprement au lieu de déborder. */
+.encounter-nrow.is-focused .encounter-nrow-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
 }
 .encounter-nrow-status.is-done {
   color: var(--success);

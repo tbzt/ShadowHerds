@@ -38,12 +38,22 @@
   background: var(--bg-card);
   z-index: var(--z-card);
 }
+/* DA lot 1 — même dégradation que `.panel-title`, et c'est ici qu'elle compte le
+   plus : le tracker de combat EST une `.modal-overlay` (index.html), donc
+   « SUIVI DE COMBAT — ROUND 1 · PASSE 1 » héritait du titre de dialogue et
+   régnait sur l'écran le plus regardé du produit — 24px accent, 3 lignes et
+   72px de haut à 375px.
+   ⚠ Ceci REVIENT SUR l'arbitrage D11 (DESIGN-SYSTEM.md §4.2), qui avait monté ce
+   titre de 1.1rem à --fs-xl pour le conformer au rôle « Titre de panneau ». Le
+   rôle était le mauvais : un titre de modale nomme un contenant, il n'est pas le
+   sujet. L'accent part pour la même raison qu'au-dessus ; le liseré 2px de
+   `.modal` continue de porter la marque d'édition. */
 .modal-title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: var(--fs-xl);
+  font-size: var(--fs-md);
   letter-spacing: 0.1em;
-  color: var(--accent);
+  color: var(--text);
   text-transform: uppercase;
   flex: 1;
 }
