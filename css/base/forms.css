@@ -444,6 +444,60 @@
   color: var(--accent);
 }
 
+/* DA lot 2 — LE TROISIÈME PALIER D'ACTION, spécifié au § 6.4 de
+   DESIGN-SYSTEM.md (« quiet : tertiaire, outils, bascules, actions de chrome »)
+   et jamais bâti : `btn-quiet` avait 0 occurrence dans tout le projet.
+   Il porte les BASCULES DE MODE — Sélectionner, Réorganiser, Annuaire. Elles ne
+   FONT rien : elles changent l'état de la surface. Elles portaient pourtant le
+   vêtement d'une action réelle (même contour, même display en majuscules, même
+   rayon que « ＋ PJ rapide »), ce qui alignait cinq boutons de poids égal dans
+   une barre pour une décision que le MJ prend une fois sur vingt.
+   Le vêtement dit maintenant la nature : corps en casse normale contre display
+   en majuscules, aucun contour visible, encre atténuée.
+   La géométrie ne bouge pas — `border: 1px solid transparent` garde exactement
+   l'encombrement de `.btn-secondary`, donc aucune barre d'outils ne se
+   recompose. Le padding reste celui de `.btn-small` (shadows-contacts.css est
+   chargé après ce fichier, il gagne comme aujourd'hui). */
+.btn-quiet {
+  /* Littéral assumé : c'est EXACTEMENT le padding de `.btn-secondary` ci-dessus,
+     recopié pour que les deux paliers aient le même encombrement. Le tokeniser
+     ici seul créerait un écart entre frères ; le faire pour les deux est un
+     autre chantier (§ 4.3). En pratique `.btn-small` le surcharge sur les sept
+     appelants actuels. */
+  padding: 0.55rem 1.2rem;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--fs-base);
+  letter-spacing: 0;
+  text-transform: none;
+  border-radius: var(--radius-sm);
+  min-height: var(--hit-min);
+  transition:
+    color var(--dur-base),
+    background var(--dur-base),
+    transform var(--dur-fast) var(--ease-standard);
+}
+.btn-quiet:hover {
+  color: var(--text);
+}
+.btn-quiet:active {
+  transform: scale(0.97);
+}
+/* L'ÉTAT ALLUMÉ, qui n'existait pas. SelectionMode, ReorderMode et RosterView
+   posent tous les trois `.active` sur ces boutons dans leur `_syncButtons()` —
+   mais AUCUNE règle ne peignait `.btn-secondary.active` (seul `:active`, la
+   pseudo-classe « pressé », était stylée, et c'est autre chose). Un mode en
+   cours ne se distinguait donc d'un mode éteint que par son libellé, qu'il
+   fallait LIRE. Ici il se voit : c'est le seul endroit du palier où l'accent
+   apparaît, et il y signale exactement ce que le § 2 lui assigne — l'état actif. */
+.btn-quiet.active {
+  color: var(--accent);
+  background: var(--glow);
+}
+
 .danger-btn {
   padding: var(--sp-2) 1.2rem;
   background: transparent;
