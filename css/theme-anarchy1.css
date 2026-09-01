@@ -27,6 +27,16 @@
   --aro: #38c0c0; /* chrome AR décalé vers le teal : l'accent A1 est déjà bleu (#3a8fd0) */
   --accent: #3a8fd0;
   --accent2: #c89a2e;
+  /* DA lot 5 — l'accent lisible EN TEXTE, aux quatre éditions.
+     Ce token existait en SR5 et SR6 seulement, calibré sur l'ancienne surface
+     élevée. Le lot 4 l'ayant élargie, ses valeurs sont tombées sous AA (3,68 et
+     3,83) — et avec elles les six sites qui peignaient du texte en --accent
+     brut, à 3,75:1. Recalibré ici sur la NOUVELLE surface, et étendu aux deux
+     Anarchy qui ne l'avaient pas.
+     Le registre d'accent est conservé — c'est l'arbitrage de 88e37ad, qui avait
+     mesuré ces libellés « 32/32 » sur l'ancienne élévation. Seule la valeur
+     bouge, pas l'intention. Anarchy 1 : 4,76:1 sur #332748, dérivé de son bleu. */
+  --label-tint: #409ee6;
   --text: #dccbe8;
   /* DA lot 4 — relevé avec la surface. Sur #332748 l'ancienne valeur tombait à
      3,95:1, sous AA : élargir l'élévation sans relever l'encre secondaire aurait

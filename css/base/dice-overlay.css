@@ -1286,9 +1286,14 @@ input[type="range"]#risk-dice-slider {
      couleur de DÉCOR, jamais de texte porteur d'information ») : le nom de la
      ressource tombait à 2,05:1 en SR5 et 3,36:1 en SR6, sur une commande de
      décision en plein combat. --accent est le canal « Agir », ce qu'est une
-     dépense pré-jet, et il est mesuré lisible dans les QUATRE éditions
-     (pire cas 4,89:1 en SR6, sur --bg-raised). */
-  color: var(--accent);
+     dépense pré-jet — l'intention est conservée.
+     ⚠ Le « pire cas 4,89:1 en SR6 sur --bg-raised » que cette note annonçait
+     n'est PLUS VRAI : le lot 4 a élargi --bg-raised (1,03 → ~1,5:1 du fond) et
+     --accent brut y retombe à 3,75:1, sous AA. Le canal ne change pas, seule sa
+     valeur en TEXTE : --label-tint est l'accent lisible, recalibré sur la
+     nouvelle surface et désormais défini aux quatre éditions.
+     Mesuré après, sur --bg-raised : SR5 4,79 · SR6 4,76 · A1 4,76 · A2 7,47. */
+  color: var(--label-tint);
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   font-weight: 700;

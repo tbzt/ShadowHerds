@@ -228,7 +228,9 @@
   padding: 3px 7px;
   border-radius: var(--radius-sm);
   background: var(--badge);
-  color: var(--accent);
+  /* DA lot 5 : --accent brut tombait à 3,75:1 sur la surface élargie du
+     lot 4. --label-tint est le token prévu pour l'accent EN TEXTE. */
+  color: var(--label-tint);
   border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
   text-transform: uppercase;
   white-space: nowrap;
@@ -644,7 +646,9 @@
 .attr-value {
   font-family: var(--font-mono);
   font-size: var(--fs-lg);
-  color: var(--accent);
+  /* DA lot 5 : --accent brut tombait à 3,75:1 sur la surface élargie du
+     lot 4. --label-tint est le token prévu pour l'accent EN TEXTE. */
+  color: var(--label-tint);
   display: block;
   line-height: 1.2;
 }
@@ -762,7 +766,9 @@
 
 /* ---- Métavariante dans l'en-tête ---- */
 .pnj-metavariant {
-  color: var(--accent);
+  /* DA lot 5 : --accent brut tombait à 3,75:1 sur la surface élargie du
+     lot 4. --label-tint est le token prévu pour l'accent EN TEXTE. */
+  color: var(--label-tint);
   font-style: italic;
 }
 
@@ -788,7 +794,9 @@
    (vue complète), tout reste côte à côte. */
 .flavor-key {
   flex: 0 0 auto;
-  color: var(--accent);
+  /* DA lot 5 : --accent brut tombait à 3,75:1 sur la surface élargie du
+     lot 4. --label-tint est le token prévu pour l'accent EN TEXTE. */
+  color: var(--label-tint);
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   letter-spacing: 0.06em;

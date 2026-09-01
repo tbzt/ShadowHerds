@@ -22,7 +22,9 @@
   /* Libellés de section — 5,60:1 sur --bg-card, 5,01:1 sur --bg-raised. Remplace
      un #8b5cff écrit EN DUR dans la règle (4,19:1 au pire) : une teinte se
      déclare en token, et la convention I2 exige qu'elle soit lisible. */
-  --label-tint: #996fff;
+  /* Accent LISIBLE EN TEXTE. DA lot 5 : #996fff valait 5,01:1 sur l'ancienne
+     surface élevée, 3,83:1 sur la nouvelle. Recalibré : 4,76:1 sur #25313d. */
+  --label-tint: #b382ff;
   --text: #bbd4e8;
   /* DA lot 4 — relevé avec la surface. Sur #25313d l'ancienne valeur tombait à
      3,69:1, sous AA : élargir l'élévation sans relever l'encre secondaire aurait
@@ -152,7 +154,8 @@
 /* ---- Badge : pilule corpo ---- */
 [data-edition="sr6"] .pnj-rank-badge {
   background: var(--badge);
-  color: var(--accent);
+  /* DA lot 5 : --accent brut tombe à 3,73:1 sur la surface élargie. */
+  color: var(--label-tint);
   border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
   border-radius: 12px;
   font-weight: 600;
@@ -199,7 +202,8 @@
 
 /* ---- Métavariante en surbrillance magenta ---- */
 [data-edition="sr6"] .pnj-metavariant {
-  color: var(--accent);
+  /* DA lot 5 : cf. .pnj-rank-badge. */
+  color: var(--label-tint);
 }
 
 /* ---- Empty state : coin coupé net, fine barre néon ---- */

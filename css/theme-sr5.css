@@ -41,9 +41,12 @@
   --scan: color-mix(in srgb, var(--accent) 8%, transparent);
   /* Teintes hors système de température (un-off, non dérivées de l'accent) */
   --title-tint: #c0a070;
-  --label-tint: #dc6420; /* libellés de section — 5,46:1 sur --bg-card, 5,02:1 sur --bg-raised.
-     L'ancien #b0501a tombait à 3,42:1 : la convention I2 promet « un accent LISIBLE »
-     par thème, elle n'était pas tenue. Même famille rouille, seule la clarté monte. */
+  /* Accent LISIBLE EN TEXTE. Historique : #b0501a (3,42:1) → #dc6420, mesuré
+     alors 5,02:1 sur --bg-raised — vrai à l'époque, faux depuis.
+     DA lot 5 : le lot 4 a élargi --bg-raised (1,03 → 1,54:1 du fond) et #dc6420
+     y retombe à 3,68:1. Recalibré : 4,79:1 sur #3a2e26. Même famille rouille,
+     seule la clarté monte — encore. */
+  --label-tint: #fd7325;
 
   --font-display: "Oswald", sans-serif;
   --title-transform: uppercase;
@@ -136,7 +139,8 @@
 [data-edition="sr5"] .pnj-rank-badge {
   background: var(--badge);
   border: 1px solid var(--accent2);
-  color: var(--accent);
+  /* DA lot 5 : --accent brut tombe à 3,75:1 sur la surface élargie. */
+  color: var(--label-tint);
   border-radius: 0;
 }
 
@@ -188,7 +192,8 @@
 
 /* ---- Métavariante en surbrillance ambrée ---- */
 [data-edition="sr5"] .pnj-metavariant {
-  color: var(--accent);
+  /* DA lot 5 : cf. .pnj-rank-badge. */
+  color: var(--label-tint);
 }
 
 /* ---- Empty state : dossier vide, coin biseauté façon tampon ---- */

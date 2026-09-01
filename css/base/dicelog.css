@@ -50,7 +50,9 @@
   font-size: var(--fs-2xs);
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--accent);
+  /* DA lot 5 : --accent brut tombait à 3,75:1 sur la surface élargie du
+     lot 4. --label-tint est le token prévu pour l'accent EN TEXTE. */
+  color: var(--label-tint);
 }
 /* « Résumé de séance » : bandeau repliable entre l'en-tête et les filtres,
    recalculé sur tout l'historique. Replié par défaut ; l'en-tête reprend la
