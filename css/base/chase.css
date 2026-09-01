@@ -75,7 +75,9 @@
   font-size: var(--fs-xs);
   min-height: 24px;
   padding: 0 var(--sp-2);
-  background: var(--bg-mid);
+  /* DA lot 5 — puce de piste : contrôle, donc masse + filet conservé (--border-ui, le
+     contour de contrôle). */
+  background: var(--bg-raised);
   color: var(--text);
   border: 1px solid var(--border-ui);
   border-radius: var(--radius-pill);
@@ -365,7 +367,9 @@
   min-width: 0;
   min-height: 44px;
   padding: var(--sp-1);
-  background: var(--bg-card);
+  /* DA lot 5 — jeton de piste : exactement l'analogue de .encounter-token — masse, et le
+     filet reste parce que c'est une puce qu'on manipule (§ 6.5). */
+  background: var(--bg-raised);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
@@ -595,7 +599,8 @@ button.chase-tok-val.is-void {
   padding: var(--sp-2);
   font-size: var(--fs-2xs);
   color: var(--text-dim);
-  background: var(--bg-mid);
+  /* DA lot 5 — la trace est une ligne qu'on lit. */
+  background: var(--bg-raised);
   border: 1px solid var(--border);
   border-left: 2px solid var(--accent);
   border-radius: var(--radius-sm);
@@ -640,7 +645,9 @@ button.chase-tok-val.is-void {
 .chase-sheet {
   margin-top: var(--sp-2);
   padding: var(--sp-2);
-  background: var(--bg-mid);
+  /* DA lot 5 — la feuille d'un participant est un OBJET qu'on lit. Son filet teinté
+     d'accent reste : il désigne la feuille active, c'est un signal. */
+  background: var(--bg-raised);
   border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
   border-radius: var(--radius-sm);
 }
@@ -912,7 +919,9 @@ button.chase-tok-val.is-void {
   align-items: center;
   gap: var(--sp-1);
   padding: 0 var(--sp-1);
-  background: var(--bg-mid);
+  /* DA lot 5 — l'issue nommée (« Rattrapé », « Semé ») est ce qui donne son enjeu à la
+     piste (§ 6.10) — elle mérite d'être une masse, pas un contour. */
+  background: var(--bg-raised);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
@@ -1025,7 +1034,9 @@ button.chase-tok-val.is-void {
 .spectator-chase {
   margin-bottom: var(--sp-4);
   padding: var(--sp-3);
-  background: var(--bg-card);
+  /* DA lot 5 — projection de la poursuite sur l'écran joueur : même geste que
+     .spectator-row, et c'est là que la masse porte le plus — vue de loin. */
+  background: var(--bg-raised);
   border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
   border-radius: var(--radius-lg);
 }
