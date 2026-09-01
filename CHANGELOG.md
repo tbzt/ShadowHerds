@@ -10,6 +10,25 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.145.6] — 2026-09-01
+
+### Modifié
+
+- **Les surfaces redeviennent de la matière colorée.** En les éclaircissant pour
+  qu'elles se détachent enfin du fond, la version précédente leur avait pris
+  leur couleur : la saturation chute quand on monte la clarté, et Shadowrun 6
+  était passé de 40 à 24 %. Le résultat tirait vers le gris beige. Le
+  détachement est conservé au centième près, mais chaque édition retrouve son
+  chroma — le sang-et-rouille de SR5, le bleu nuit de SR6, le violet d'Anarchy 1,
+  la terre brûlée d'Anarchy 2. Les textes y gagnent même en lisibilité, la
+  surface étant très légèrement plus sombre.
+- **Le suivi de combat cesse d'être à l'étroit sur grand écran.** Il était
+  plafonné à 1200px de large et 90 % de la hauteur, sans raison inscrite nulle
+  part. Il passe à 1600px et 94 % — et la place gagnée est partagée : elle
+  allait entièrement à la liste des combattants, qui n'en manquait pas, alors
+  que la console de l'action en cours tenait tout juste. Son nom et ses six
+  gestes respirent maintenant. Sur écran étroit, rien ne change.
+
 ## [1.145.5] — 2026-09-01
 
 ### Corrigé
