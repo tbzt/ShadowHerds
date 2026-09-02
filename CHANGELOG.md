@@ -10,6 +10,27 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.148.0] — 2026-09-02
+
+### Ajouté
+
+- **En Anarchy, franchir une portée prend le temps que le livre lui donne.**
+  « Changer de portée coûte 1 à 3 Narrations » : le chiffre était imprimé sur
+  la piste depuis toujours, en petits caractères, et ne faisait rien. Il est
+  désormais motorisé — et pas comme une dépense, parce qu'une Narration n'est
+  pas une monnaie mais le tour de jeu d'Anarchy. C'est donc une durée : le
+  jeton reste sur sa bande, une pastille compte les tours qui restent, et il
+  arrive tout seul à la fin de la ronde voulue. Un écart à une seule Narration
+  se franchit dans le tour courant, donc immédiatement. Un tap sur la pastille
+  fait arriver sans attendre : c'est là que se dépense le point d'Anarchy dont
+  le livre dit qu'il accélère le franchissement, et c'est vous qui en décidez.
+  Repartir dans l'autre sens annule le franchissement en cours.
+
+  Shadowrun 5 et 6 ne chiffrent pas l'écart : le déplacement y reste immédiat,
+  à l'identique. Anarchy 1re non plus — son livre ne chiffre que le véhicule
+  qui gagne une catégorie sur un coureur à pied, ce qui n'est pas un coût
+  général, et il n'a pas été étendu aux trois portées.
+
 ## [1.147.0] — 2026-09-02
 
 ### Modifié
