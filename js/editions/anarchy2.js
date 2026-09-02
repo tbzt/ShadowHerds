@@ -483,7 +483,11 @@ export const EditionAnarchy2 = {
     /** Un seul mode : ce livre ne décrit ni course ni filature comme
         variantes de la course-poursuite. La rangée de modes disparaît
         d'elle-même — on n'importe pas les variantes de SR6. */
-    modes: { poursuite: { label: "Poursuite", counter: "Round", next: "Round suivant" } },
+    /** `combatRound` : même lecture qu'en Anarchy 1re — pas d'initiative
+        chiffrée, mais des rondes, et la piste partage celle de la scène.
+        Depuis le lot B, le moteur Combat n'est plus retiré à l'ouverture d'une
+        poursuite : la clé s'applique donc pour de bon. */
+    modes: { poursuite: { label: "Poursuite", counter: "Round", next: "Round suivant", combatRound: true } },
     outcomes: {
       poursuite: {
         caught: { label: "Contact", cond: { all: "≤ 2 m — le combat rapproché devient possible" } },

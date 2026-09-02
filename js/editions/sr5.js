@@ -1338,7 +1338,11 @@ export const EditionSR5 = {
     /** Un seul mode : ce livre ne décrit ni course ni filature comme
         variantes de la course-poursuite. La rangée de modes disparaît
         d'elle-même — on n'importe pas les variantes de SR6. */
-    modes: { poursuite: { label: "Poursuite", counter: "Round", next: "Round suivant" } },
+    /** `combatRound` : la ronde de poursuite EST la ronde de combat. Le livre
+        range les quatre manœuvres parmi les ACTIONS COMPLEXES, dépensées en
+        phase d'action — elles se paient donc dans la ronde de combat, elles ne
+        courent pas à côté. */
+    modes: { poursuite: { label: "Poursuite", counter: "Round", next: "Round suivant", combatRound: true } },
     outcomes: {
       poursuite: {
         caught: { label: "Rattrapé", cond: { all: "à portée courte : Percuter, Couper la route" } },

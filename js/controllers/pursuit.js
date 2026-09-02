@@ -276,7 +276,11 @@ export const Pursuit = {
       return false;
     }
     if (this.state()) return true; // idempotent : rouvrir n'écrase pas une piste en cours
-    Encounter.state.chase = Chase.newState(this.edition(), opts);
+    // La ronde de départ est celle du combat quand il tourne : une poursuite
+    // qui s'ouvre au 3ᵉ round de combat est au 3ᵉ round, pas au 1ᵉʳ. Sans ça,
+    // les deux compteurs naissaient décalés et le restaient pour toujours.
+    const depart = Encounter.hasMotor("combat") ? Encounter.state.round : null;
+    Encounter.state.chase = Chase.newState(this.edition(), depart ? { ...opts, round: depart } : opts);
     Encounter.setMotor("chase", true);
     this._persist();
     toast("Scène de poursuite — posez la cible, puis les positions.");
@@ -324,6 +328,17 @@ export const Pursuit = {
     if (!st) return;
     const spec = Chase.mode(this.edition(), mode);
     if (!spec) return;
+    // Changer de mode peut changer d'UNITÉ : une ronde de combat dure trois
+    // secondes, une phase de filature environ une minute. Reporter le compte
+    // de l'une sur l'autre écrivait « Phase 4 / 3 » en passant à la filature
+    // au 4ᵉ round — un décompte de minutes hérité d'un décompte de secondes.
+    // Le compteur repart donc à 1 quand l'horloge change de maître ; il ne
+    // bouge pas entre deux modes qui partagent la même (poursuite ↔ course).
+    const avant = Chase.followsCombat(this.edition(), st);
+    if (!!spec.combatRound !== avant) {
+      st.round = spec.combatRound && Encounter.hasMotor("combat") ? Encounter.state.round : 1;
+      st.log = [];
+    }
     st.mode = mode;
     if (spec.hasTotal && !st.total) st.total = spec.defaultTotal || null;
     if (!spec.hasTotal) st.total = null;
@@ -612,11 +627,23 @@ export const Pursuit = {
      Ne déplace personne : le MJ a posé les jetons pendant le round. Ce que
      la fin de round produit, c'est un RÉSUMÉ (qui a gagné ou perdu une
      bande, qui n'a pas testé), annulable. */
-  endRound() {
+  /** `driven` : la fin de ronde vient du COMBAT, pas d'un tap sur la piste
+      (cf. `Chase.followsCombat`). Deux différences, une seule raison — il n'y
+      a qu'une ronde, donc il ne peut y avoir qu'un endroit où l'on avance et
+      qu'un endroit où l'on revient en arrière :
+
+      · pas de `toastUndo`. Annuler la seule ronde de la piste laisserait le
+        combat à la ronde suivante : on recréerait la dérive qu'on vient de
+        supprimer, avec le bouton d'à côté. Le récapitulatif reste affiché dans
+        le panneau, en permanence — plus utile qu'un toast de trois secondes.
+      · pas de toast du tout : `Encounter.nextRound` parle déjà, et il n'y a
+        qu'un `#toast` (le second écrase le premier). */
+  endRound({ driven = false } = {}) {
     const st = this.state();
     if (!st) return null;
     const recap = Chase.endRound(this.edition(), st);
     this._persist();
+    if (driven) return recap;
     const nom = (id) => (PnjLookup.find(id) || {}).name || "?";
     const bits = (recap.moves || []).map((m) => `${nom(m.pnjId)} ${m.delta > 0 ? "+" : ""}${m.delta}`);
     if (recap.untested.length)
@@ -626,6 +653,23 @@ export const Pursuit = {
       this._persist();
     });
     return recap;
+  },
+
+  /** Appelé par `Encounter.nextRound` — le pendant exact de
+      `Intrusion.nextTurn` pour le 3ᵉ moteur. Ne fait rien si la piste tient sa
+      propre horloge (filature). */
+  followCombatRound() {
+    const st = this.state();
+    if (!st || !Chase.followsCombat(this.edition(), st)) return;
+    this.endRound({ driven: true });
+  },
+
+  /** La ronde de la piste est-elle pilotée par le combat ? Vrai seulement si
+      les DEUX moteurs tournent — une poursuite Anarchy, seule en scène, garde
+      son bouton. */
+  isCombatDriven() {
+    const st = this.state();
+    return !!(st && Encounter.hasMotor("combat") && Chase.followsCombat(this.edition(), st));
   },
 
   /** Annule la dernière fin de round. Le toast s'efface au bout de quelques
@@ -822,6 +866,10 @@ export const Pursuit = {
     );
     return {
       round: st.round,
+      /** La ronde est-elle tenue par le combat ? Le rendu s'en sert pour
+          remplacer son bouton d'avance par une mention et retirer son ↩ —
+          on avance et on revient en arrière à UN seul endroit. */
+      combatDriven: this.isCombatDriven(),
       total: st.total || null,
       mode: st.mode,
       modeSpec: Chase.mode(ed, st.mode) || { label: "Poursuite", counter: "Round" },

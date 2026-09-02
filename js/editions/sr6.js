@@ -1903,7 +1903,10 @@ export const EditionSR6 = {
        trois libellés, la filature change le rythme et les tests. Tout ce
        qui suit est déclaré ici pour que le rendu n'ait rien à deviner. */
     modes: {
-      poursuite: { label: "Poursuite", counter: "Round", next: "Round suivant" },
+      /** `combatRound` : « une action majeure Pilotage est requise » à chaque
+          round — le test se paie sur le tour du personnage, donc la ronde de
+          poursuite EST la ronde de combat. Deux compteurs seraient un de trop. */
+      poursuite: { label: "Poursuite", counter: "Round", next: "Round suivant", combatRound: true },
       /** « Le participant en première position est considéré comme la cible
           de la course-poursuite, peu importe la situation. Pour pouvoir
           utiliser les actions d'Atout appliquées aux cibles, vous devez être
@@ -1914,6 +1917,9 @@ export const EditionSR6 = {
         next: "Tour suivant",
         anchorLabel: "Meneur",
         hasTotal: true,
+        // Variante de la course-poursuite, même moteur et même test par tour :
+        // sa ronde reste celle du combat.
+        combatRound: true,
         note: "Le premier tient le rôle de cible — les actions d'Atout de cible lui sont réservées. Au dernier tour, tous ceux à distance proche refont un test pour la ligne d'arrivée.",
       },
       /** La filature n'est PAS une poursuite au ralenti : phases d'environ
@@ -1928,6 +1934,11 @@ export const EditionSR6 = {
         hasTotal: true,
         defaultTotal: 3,
         noPool: true,
+        /** `combatRound` ABSENT, et c'est la seule exception du corpus : une
+            phase dure environ une minute, là où une ronde de combat dure trois
+            secondes. Le livre le dit lui-même dans la note ci-dessous — si
+            l'initiative entre en jeu, on a quitté la filature. La phase garde
+            donc son compteur et son bouton. */
         note: "Une phase ≈ 1 minute. Ce n'est pas un combat : s'il faut déterminer l'initiative, c'est qu'on est passé à la course-poursuite.",
         tests: [
           {

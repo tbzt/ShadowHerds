@@ -1035,6 +1035,19 @@ button.chase-tok-val.is-void {
   margin-left: auto;
   min-height: 44px;
 }
+/* La mention qui remplace le bouton d'avance quand la ronde suit le combat.
+   Même registre que `.intrusion-turn-hint` du moteur Matrice, qui dit déjà
+   « CI déployée au "Round suivant" du combat » : un moteur piloté nomme son
+   horloge, il n'en ouvre pas une seconde. */
+.chase-turn-hint {
+  margin-left: auto;
+  font-size: var(--fs-2xs);
+  font-style: italic;
+  color: var(--text-dim);
+  text-align: right;
+  flex: 0 1 auto;
+  min-width: 0;
+}
 
 /* ---- Densité : sous 640px, ce qui tombe est le RAPPEL et la distance,
    jamais la forme (décision n°7 : la densité dégrade, pas la géométrie). ---- */

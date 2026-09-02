@@ -181,7 +181,11 @@ export const Chase = {
       // (aucune liste dans le livre), la barre le dira au lieu d'inventer.
       env: opts.env || (envs[0] && envs[0].key) || null,
       targetId: opts.targetId || null,
-      round: 1,
+      /** La ronde de DÉPART. Une poursuite qui s'ouvre au milieu d'un combat
+          commence à la ronde de ce combat, pas à 1 : il n'y a qu'une ronde
+          dans la scène, et un compteur qui repart de zéro annoncerait une
+          seconde horloge là où le livre n'en connaît qu'une. */
+      round: opts.round || 1,
       /** Les équipages (lot P6) : `vehicleId → { driverId, crew: [pnjId…] }`.
           La clé est l'id d'une entité `type:"vehicle"` RÉELLE (fiche +
           moniteur), résoluble par `PnjLookup` comme n'importe quel
@@ -501,7 +505,29 @@ export const Chase = {
      ======================================================== */
   modes(edition) {
     const m = this.use(edition);
-    return (m && m.modes) || { poursuite: { label: "Poursuite", counter: "Round" } };
+    return (m && m.modes) || { poursuite: { label: "Poursuite", counter: "Round", combatRound: true } };
+  },
+
+  /** La ronde de ce mode EST-ELLE la ronde de combat ?
+
+      Les trois livres qui règlent la poursuite la font payer sur le tour du
+      personnage — action majeure en SR6, action complexe en SR5, action en
+      Anarchy 2.0. Il n'y a donc qu'une ronde, et deux compteurs qui avancent
+      séparément ne peuvent que diverger : c'est ce qui arrivait, en silence,
+      parce que `Encounter.nextTurn` bascule tout seul en ronde suivante quand
+      l'ordre a fait le tour. La piste restait à la ronde 1 pendant que le
+      combat passait à la 2, et avec elle `tested`, `paid`, `edgeUp` et les
+      tendances ▲▼ — trois affichages faux.
+
+      L'unique exception du corpus est la FILATURE (SR6), dont les phases font
+      une minute. Elle ne déclare pas la clé, elle garde son compteur.
+
+      Le patron n'est pas neuf : `Encounter.nextRound` pilote déjà l'horloge de
+      l'intrusion Matrice, et `ServerRenderer._combatDriven` y remplace le
+      bouton du moteur par une mention. La poursuite était le seul moteur à ne
+      pas l'avoir reçu. */
+  followsCombat(edition, state) {
+    return !!(this.mode(edition, state && state.mode) || {}).combatRound;
   },
   mode(edition, key) {
     return this.modes(edition)[key] || null;

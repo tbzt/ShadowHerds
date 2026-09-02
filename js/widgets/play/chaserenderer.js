@@ -555,9 +555,17 @@ export const ChaseRenderer = {
     if (!r) return "";
     const bits = r.moves.map((m) => `${CardRenderer._esc(m.name)} ${m.delta > 0 ? "+" : ""}${m.delta}`);
     if (r.untested.length) bits.push(`${r.untested.length} sans test`);
+    // Le ↩ n'a de sens que là où l'on avance. Piloté par le combat, il
+    // ramènerait la piste d'une ronde en laissant le combat sur la suivante —
+    // la dérive qu'on vient de supprimer, réintroduite par le bouton d'à côté.
+    // Le récapitulatif, lui, reste : il est même la seule trace persistante
+    // depuis que la fin de ronde pilotée ne lève plus de toast.
+    const undo = vm.combatDriven
+      ? ""
+      : `<button data-action="chase-undo-round" title="Annuler la fin de round">↩</button>`;
     return `<p class="chase-recap"><span class="chase-recap-k">R${r.round} →</span>
       ${bits.length ? bits.join(" · ") : "rien n'a bougé"}
-      <button data-action="chase-undo-round" title="Annuler la fin de round">↩</button></p>`;
+      ${undo}</p>`;
   },
 
   /** Pied : le rappel du test (ou, en SR5, les quatre actions qui le
@@ -577,9 +585,20 @@ export const ChaseRenderer = {
         : vm.actions.length
           ? `Actions : ${vm.actions.map((a) => Utils.escHtml(a.label)).join(" · ")}${alt}`
           : `Pas de test imposé — ${Utils.escHtml(vm.testLabel || "arbitrage MJ")}${alt}`;
+    // ── Une seule ronde, donc un seul bouton ─────────────────────────
+    // Quand le combat tourne, sa ronde EST celle de la piste (le test se paie
+    // sur le tour du personnage). Un second « Round suivant » ici n'ajoutait
+    // pas un geste, il ajoutait une HORLOGE — et elle dérivait dès que
+    // `nextTurn` basculait tout seul en ronde suivante. On nomme l'horloge
+    // maîtresse au lieu de la doubler : c'est déjà ce que fait le moteur
+    // Matrice (`ServerRenderer._combatDriven`, « CI déployée au Round suivant
+    // du combat »). La filature, elle, compte en minutes et garde son bouton.
+    const avance = vm.combatDriven
+      ? `<span class="chase-turn-hint" title="Le test de la ronde se paie sur le tour du personnage : la piste et le combat n'ont qu'une ronde">Ronde suivie par le combat — « ${Utils.escHtml(vm.modeSpec.counter || "Round")} suivant » du suivi</span>`
+      : `<button class="btn-primary chase-end" data-action="chase-end-round">▶ ${Utils.escHtml(vm.modeSpec.next || "Round suivant")}</button>`;
     return `<div class="cluster chase-foot">
       <span class="chase-recall">${rappel}</span>
-      <button class="btn-primary chase-end" data-action="chase-end-round">▶ ${Utils.escHtml(vm.modeSpec.next || "Round suivant")}</button>
+      ${avance}
     </div>`;
   },
 };

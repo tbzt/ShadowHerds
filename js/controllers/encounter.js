@@ -1927,6 +1927,14 @@ export const Encounter = {
     if (srv && intr && intr.alerted && this.state.motors.includes("combat")) {
       Intrusion.nextTurn(srv.id);
     }
+    // …et le 3ᵉ moteur, qui n'avait jamais reçu ce traitement. Les livres qui
+    // règlent la poursuite la font payer sur le tour du personnage (majeure en
+    // SR6, complexe en SR5) : sa ronde EST celle-ci. Deux compteurs séparés
+    // divergeaient en silence — `nextTurn` bascule tout seul en ronde suivante
+    // quand l'ordre a fait le tour, pendant que la piste restait en arrière
+    // avec ses tests, ses actions payées et ses tendances. `Pursuit` décide
+    // s'il suit (la filature, elle, compte en minutes et garde son horloge).
+    if (this.state.chase) Pursuit.followCombatRound();
   },
 
   setNote(pnjId, text) {

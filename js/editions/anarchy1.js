@@ -483,7 +483,17 @@ export const EditionAnarchy1 = {
     /** Un seul mode : ce livre ne décrit ni course ni filature comme
         variantes de la course-poursuite. La rangée de modes disparaît
         d'elle-même — on n'importe pas les variantes de SR6. */
-    modes: { poursuite: { label: "Poursuite", counter: "Round", next: "Round suivant" } },
+    /** `combatRound` : la ronde de poursuite EST la ronde de la scène. Ce
+        livre n'a pas d'initiative chiffrée (`combatModel.narrative`) — il a
+        quand même des RONDES, et « Round suivant » y rallume tout le monde.
+        Pas d'ordre du tour ne veut pas dire pas de ronde : la piste suit donc
+        la même, comme partout ailleurs.
+        (Cette clé était d'abord notée « sans effet ici », au motif que
+        `setMotor` retirait le moteur Combat dès qu'une poursuite s'ouvrait.
+        Le lot B a supprimé ce retrait — un combat qui devient une poursuite
+        pour une partie de l'équipe reste un combat pour l'autre — et la clé a
+        pris son plein effet.) */
+    modes: { poursuite: { label: "Poursuite", counter: "Round", next: "Round suivant", combatRound: true } },
     outcomes: {
       poursuite: {
         caught: { label: "Rattrapé", cond: { all: "à portée courte — le combat rapproché devient possible" } },
