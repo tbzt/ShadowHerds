@@ -2655,17 +2655,26 @@ export const Encounter = {
     const set = new Set(this.state.motors || ["combat"]);
     if (on) {
       set.add(key);
-      if (key === "chase" && this._model().narrative) set.delete("combat");
-      if (key === "matrix" && set.has("chase")) set.delete("chase");
-      // La réciproque, qui manquait : l'exclusivité Matrice ⇄ Poursuite était
-      // écrite dans un seul sens. Ouvrir une poursuite depuis une scène
-      // Matrice laissait donc `["matrix", "chase"]`, un état qu'aucun des deux
-      // moteurs ne revendique — et la surface le disait : la note « Scène
-      // Matrice — le decker infiltre pendant que les autres négocient »
-      // s'affichait par-dessus la piste. Deux moteurs de SCÈNE ne mènent pas
-      // ensemble ; le combat, lui, coexiste avec les deux (c'est tout l'objet
-      // de la ligne au-dessus).
-      if (key === "chase" && set.has("matrix")) set.delete("matrix");
+      // ── LOT B : plus aucune exclusivité ──────────────────────────────
+      // Trois règles vivaient ici et disaient toutes « un seul moteur mène » :
+      // Matrice retirait Poursuite, Poursuite retirait Matrice (sa réciproque,
+      // ajoutée pour réparer un symptôme d'affichage), et une poursuite en
+      // Anarchy retirait Combat. Toutes les trois tombent, parce que la table
+      // fait l'inverse : un combat devient une poursuite pour une partie de
+      // l'équipe, reste un combat pour les autres, pendant qu'un decker est
+      // dans un serveur. Les trois moteurs tournent alors ENSEMBLE.
+      //
+      // La règle Anarchy méritait un mot de plus, parce qu'elle s'appuyait sur
+      // une vraie constatation de livre — « Anarchy n'a pas d'initiative ».
+      // C'est exact, et ça ne conclut rien : pas d'initiative ne veut pas dire
+      // pas de combat. Le tracker y montre déjà un effectif narratif (des
+      // combattants qu'on éteint au tap, `combatModel.narrative`), et le retirer
+      // parce que quelqu'un s'enfuit privait la table de la moitié de sa scène.
+      //
+      // Ce qui reste vrai et n'a pas besoin d'être écrit ici : les moteurs se
+      // partagent UNE ronde (cf. `Chase.followsCombat` et `Intrusion.nextTurn`
+      // pilotés par `nextRound`) et ne se partagent pas les participants — la
+      // piste dit qui est dessus, l'intrusion dit qui est dedans.
     } else {
       set.delete(key);
     }
@@ -2677,32 +2686,36 @@ export const Encounter = {
     return ((this.state && this.state.motors) || ["combat"]).includes(key);
   },
 
-  /** Bascule le type de scène — Combat (init/roster, défaut) ↔ Matrice seule
-      (moteur Matrice seul, pas d'initiative : le decker infiltre pendant que
-      les autres négocient). Reste BINAIRE côté UI : le 3ᵉ moteur (Poursuite)
-      n'est pas un 3ᵉ état de cette bascule mais un moteur qui s'AJOUTE, par
-      `setMotor` — c'est `Pursuit.open()` qui l'allume. */
+  /** Allume ou éteint le moteur MATRICE, sans toucher aux autres.
+
+      Ce geste s'appelait « basculer le type de scène » et il écrasait
+      l'ensemble : `motors = ["matrix"]` ou `["combat"]`. Un bouton radio
+      déguisé en ensemble — il suffisait de l'actionner pour perdre la
+      poursuite en cours et le combat avec. Or `motors` est un ENSEMBLE depuis
+      la doctrine R0, et une scène réelle en fait tourner plusieurs : le decker
+      est dans le serveur pendant que la moitié de l'équipe fuit et que l'autre
+      se bat.
+
+      Il devient donc l'exact pendant de « ⇉ Scène Poursuite » — un moteur
+      qu'on ouvre et qu'on ferme au même endroit (loi 3 de la grammaire : un
+      verbe, un geste, au même endroit). `setMotor` garde l'invariant « au
+      moins un moteur » : éteindre le dernier rallume Combat. */
   toggleSceneType() {
-    // Même lecture que `EncounterRenderer` pour `is-matrix-only` : « le moteur
-    // Matrice mène », et non « il n'y a pas de combat ». Sur `["chase"]` seul
-    // (poursuite Anarchy), l'ancien prédicat renvoyait vrai et la bascule
-    // partait vers le Combat pendant que le bouton, lui, proposait « ⚡︎ Scène
-    // Matrice » — le libellé et le geste se contredisaient. Aller vers la
-    // Matrice depuis une poursuite ferme la piste, exactement comme
-    // `setMotor("matrix")` retire déjà le moteur « chase ».
-    const isMatrixOnly = this.state.motors.includes("matrix") && !this.state.motors.includes("combat");
-    this.state.motors = isMatrixOnly ? ["combat"] : ["matrix"];
-    if (!isMatrixOnly) this.state.chase = null; // la Matrice seule n'a pas de piste
+    const on = this.hasMotor("matrix");
+    this.setMotor("matrix", !on);
     this._commit();
-    if (!isMatrixOnly) {
-      // Le tiroir Matrice devient la surface principale : l'ouvrir tout de
-      // suite plutôt que de laisser un MJ chercher où suivre l'intrusion.
-      // Un seul geste (pas ré-ouvert de force à chaque commit suivant — le
-      // MJ peut le refermer sans qu'on le lui réimpose).
+    if (!on) {
+      // Le tiroir s'ouvre au moment où l'on allume le moteur, une seule fois —
+      // plutôt que de laisser un MJ chercher où suivre l'intrusion. Il reste
+      // libre de le refermer, on ne le lui réimpose pas au commit suivant.
       this.openMatrixDrawer();
-      toast("Scène Matrice — pas d'initiative, suivez l'intrusion.");
+      toast(
+        this.hasMotor("combat")
+          ? "Moteur Matrice allumé — il tourne avec le combat."
+          : "Scène Matrice — pas d'initiative, suivez l'intrusion.",
+      );
     } else {
-      toast("Scène de combat.");
+      toast("Moteur Matrice éteint.");
     }
   },
 

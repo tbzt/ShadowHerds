@@ -676,11 +676,13 @@
 .encounter-matrix-inline[hidden] {
   display: none;
 }
-.encounter-modal.is-matrix-only .encounter-matrix-inline:not([hidden]) {
+/* Gaté sur le MOTEUR (`has-matrix`), pas sur « il est seul » : allumer la
+   Matrice à côté d'un combat ne montrait rien, ni panneau ni invite. */
+.encounter-modal.has-matrix .encounter-matrix-inline:not([hidden]) {
   display: block;
 }
 @media (min-width: 1100px) {
-  .encounter-modal.is-matrix-only.has-matrix-dock .encounter-matrix-inline {
+  .encounter-modal.has-matrix.has-matrix-dock .encounter-matrix-inline {
     display: none;
   }
 }
@@ -2741,4 +2743,39 @@ kbd {
    une autre passe de rendu le retirerait. */
 .encounter-modal.is-engine-led .encounter-active-card {
   display: none;
+}
+
+/* ============================================================
+   LOT B — TROIS MOTEURS QUI TOURNENT ENSEMBLE
+
+   Le lot 2 partageait la largeur entre UN moteur qui mène et le combat. Mais
+   une scène réelle en fait tourner plusieurs : une partie de l'équipe fuit,
+   l'autre se bat, le decker est dans le serveur. Quand la piste ET la Matrice
+   sont à l'écran, elles partagent à parts égales ce que le combat ne réclame
+   pas — et le combat, depuis que sa console est repliée en bandeau (lot 3),
+   ne réclame plus qu'un effectif : 320px suffisent.
+
+   Budget mesuré à 1280 : 1126px de colonnes (gouttière 16, padding 20).
+   320 + 387 + 387 + 2×16 = 1126.
+   ============================================================ */
+@media (min-width: 1100px) {
+  .encounter-modal.has-chase.has-matrix-dock .encounter-main-col {
+    flex: 0 1 320px;
+  }
+  /* `1 1 0` des deux côtés : c'est un PARTAGE, pas une hiérarchie. Aucun des
+     deux moteurs ne prime — le MJ les a allumés tous les deux. */
+  .encounter-modal.has-chase.has-matrix-dock .encounter-chase-dock,
+  .encounter-modal.has-chase.has-matrix-dock .encounter-matrix-dock {
+    flex: 1 1 0;
+    max-width: none;
+    min-width: 300px;
+  }
+}
+/* Marqueur d'engagement sur la ligne d'effectif (lot B) : discret par
+   construction — il dit « il est sur la piste », pas où. Registre des badges
+   de ligne, sans couleur d'accent : ce n'est pas un état actif, c'est un lieu. */
+.encounter-engage {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  flex: 0 0 auto;
 }

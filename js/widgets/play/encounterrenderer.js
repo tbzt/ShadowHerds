@@ -94,14 +94,29 @@ export const EncounterRenderer = {
     if (modal) {
       modal.classList.toggle("is-engine-led", engineLed);
       modal.classList.toggle("has-combat", motors.includes("combat"));
+      // `has-matrix` dit que le MOTEUR tourne ; `is-matrix-only` disait qu'il
+      // est SEUL. Les surfaces de la Matrice se gataient sur le second, si
+      // bien qu'allumer la Matrice à côté d'un combat ne montrait rien du
+      // tout : ni panneau, ni invite à lier un serveur. Un moteur allumé doit
+      // avoir une surface, qu'il mène ou qu'il accompagne.
+      modal.classList.toggle("has-matrix", motors.includes("matrix"));
     }
     const toggleBtn = document.getElementById("encounter-scene-type-toggle");
     if (toggleBtn) {
-      toggleBtn.textContent = matrixOnly ? "⚔ Scène Combat" : "⚡︎ Scène Matrice";
-      toggleBtn.setAttribute("aria-pressed", String(matrixOnly));
+      // Exact pendant de l'entrée « ⇉ Scène Poursuite / ⇉ Fermer la poursuite » :
+      // le libellé dit l'ÉTAT DU MOTEUR, plus le « type » d'une scène qui n'en
+      // a plus qu'un. « ⚔ Scène Combat » était trompeur depuis que les deux
+      // tournent ensemble — il promettait de revenir au combat alors qu'il ne
+      // fait qu'éteindre la Matrice.
+      const matrixOn = motors.includes("matrix");
+      toggleBtn.textContent = matrixOn ? "⚡︎ Fermer la Matrice" : "⚡︎ Scène Matrice";
+      toggleBtn.setAttribute("aria-pressed", String(matrixOn));
     }
+    // La note ne dépend plus du fait que la Matrice MÈNE, mais du fait qu'elle
+    // TOURNE sans serveur lié — le seul cas où elle a quelque chose à dire.
+    // Le CSS l'éteint dès qu'un serveur arrive (`has-matrix-dock`).
     const matrixNote = document.getElementById("encounter-matrix-only-note");
-    if (matrixNote) matrixNote.hidden = !matrixOnly;
+    if (matrixNote) matrixNote.hidden = !motors.includes("matrix");
 
     // Volet B : en narratif (pas de tour d'initiative), la fiche active suit un
     // combattant « en focus » (tap sur une ligne, cf. focus-active). On résout
@@ -624,7 +639,7 @@ export const EncounterRenderer = {
       ${r.down ? `<span class="encounter-nrow-check" aria-hidden="true">✓</span>` : `<button type="button" class="encounter-nrow-check" data-action="narrative-toggle" data-id="${pnjId}" aria-pressed="${hasActed}" title="Marquer « joué »" aria-label="Marquer joué — ${fullName}">✓</button>`}
       <div class="stack encounter-nrow-body">
         <span class="encounter-nrow-name">${colorDot}${name}</span>
-        <span class="cluster"><span class="encounter-kind">${kind}</span>${comb}${this._serviceBadge(r)}${this._rowStatuses(pnj)}</span>
+        <span class="cluster"><span class="encounter-kind">${kind}</span>${comb}${this._engageBadge(pnjId, false)}${this._serviceBadge(r)}${this._rowStatuses(pnj)}</span>
       </div>
       ${status}
       ${this._lifeGauge(r)}
@@ -787,6 +802,30 @@ export const EncounterRenderer = {
     </div>`;
   },
 
+  /** Où ce combattant est-il engagé ? (lot B)
+
+      Depuis que les moteurs se cumulent, l'effectif mélange des gens qui ne
+      jouent pas la même scène : une partie de l'équipe fuit, l'autre tient la
+      position. La file ne le disait nulle part — il fallait ouvrir la piste
+      pour savoir qui était dessus. Un glyphe, pris du vocabulaire en service
+      (⇉ est celui du moteur), et rien de plus : la position exacte reste sur
+      la piste, qui est faite pour ça.
+
+      Les DEUX lignes d'effectif le portent — la tactique (`_row`) et la
+      narrative (`_rowNarrative`, Anarchy). C'est justement en Anarchy que la
+      scène se scinde le plus volontiers, puisque le livre n'y fige aucun ordre.
+
+      Pas de ⚡︎ jumeau, et c'est un manque ASSUMÉ, pas un oubli : l'intrusion
+      n'enregistre pas QUI est dedans (`state.matrix[srvId]` porte l'alerte,
+      les CI, la surveillance — jamais un id de participant). L'inventer ici
+      afficherait une information que l'app ne tient pas. */
+  _engageBadge(pnjId, isMatrix) {
+    const chase = typeof Encounter !== "undefined" && Encounter.state && Encounter.state.chase;
+    if (isMatrix || !chase) return "";
+    if (!Chase.laneOf(chase, Chase.trackKey(chase, pnjId))) return "";
+    return `<span class="encounter-engage" title="Sur la piste de poursuite">⇉</span>`;
+  },
+
   _row(r, isActive, outOfPass, effectiveInit, compact) {
     const { pnjId, init, hasActed, note, pnj } = r;
     const isMatrix = r.kind === "matrix";
@@ -802,6 +841,19 @@ export const EncounterRenderer = {
       malus > 0
         ? `<span class="wound-malus-badge status is-danger" title="Malus de blessure automatique (déjà appliqué à l'initiative)">−${malus}D</span>`
         : "";
+    // ── LOT B : où ce combattant est-il engagé ? ──────────────────────
+    // Depuis que les moteurs se cumulent, l'effectif mélange des gens qui ne
+    // jouent pas la même scène : une partie de l'équipe fuit, l'autre tient la
+    // position. La file ne le disait nulle part — il fallait ouvrir la piste
+    // pour savoir qui était dessus. Un glyphe, pris du vocabulaire en service
+    // (⇉ est le glyphe du moteur), et rien de plus : la position exacte reste
+    // sur la piste, qui est faite pour ça.
+    //
+    // Pas de ⚡︎ jumeau, et c'est un manque ASSUMÉ, pas un oubli : l'intrusion
+    // n'enregistre pas QUI est dedans (`state.matrix[srvId]` porte l'alerte,
+    // les CI, la surveillance — jamais un id de participant). L'inventer ici
+    // afficherait une information que l'app ne tient pas.
+    const engageHtml = this._engageBadge(pnjId, isMatrix);
     const { alias, family, full } = Utils.parseName(pnj.name);
     const name = Utils.escHtml(alias || family || full);
     // PJ : avatar constant avant le nom — couleur + anneau + initiale du
@@ -843,6 +895,7 @@ export const EncounterRenderer = {
           <button class="encounter-init-step" data-action="init-step" data-delta="1" data-id="${pnjId}" title="Initiative +1" aria-label="Augmenter l'initiative">+</button>
         </div>
         ${malusHtml}
+        ${engageHtml}
         ${effHtml}
       </div>`;
     // Verbes du tour (fréquents) en chips inline lisibles à toutes tailles
