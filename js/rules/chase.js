@@ -71,6 +71,77 @@ export const Chase = {
     return this.lanes(edition, terrain).map((l) => l.key);
   },
 
+  /* ========================================================
+     LE FRANCHISSEMENT (Anarchy) — un écart se traverse en TEMPS
+
+     Anarchy ne compte pas en mètres mais en portées, et changer de portée
+     « coûte 1 à 3 Narrations ». Le mot piège : une Narration n'est pas une
+     ressource, c'est le TOUR DE JEU d'Anarchy — `Statuses._PORTEES` la range
+     au même rang que le round. Il n'y a donc rien à retrancher d'un budget ;
+     il y a une durée à tenir, et c'est la ronde de la scène qui la décompte
+     (celle-là même que la piste partage avec le combat).
+
+     Les éditions qui ne chiffrent pas l'écart renvoient `null` partout : SR5
+     et SR6 déplacent d'une bande par test réussi, sans durée intermédiaire.
+     ======================================================== */
+
+  /** Narrations pour franchir l'écart entre deux bandes ADJACENTES, ou `null`
+      quand l'édition ne le chiffre pas. Porté par l'écart, donc identique
+      dans les deux sens. */
+  crossCost(edition, terrain, fromKey, toKey) {
+    const lanes = this.lanes(edition, terrain);
+    const keys = lanes.map((l) => l.key);
+    const i = keys.indexOf(fromKey);
+    const j = keys.indexOf(toKey);
+    if (i < 0 || j < 0 || Math.abs(i - j) !== 1) return null;
+    // L'écart appartient à la bande la plus PROCHE de l'ancre des deux.
+    const spec = this.use(edition);
+    const brut = ((spec && spec.lanes) || [])[Math.min(i, j)];
+    const n = brut && brut.cross;
+    return Number.isFinite(n) ? n : null;
+  },
+
+  /** Le franchissement en cours d'un participant, ou `null`.
+      `{ to, left }` — la bande visée et les Narrations restantes. */
+  crossing(state, key) {
+    return (state && state.crossing && state.crossing[key]) || null;
+  },
+
+  /** Engage un franchissement. Renvoie `true` s'il PREND DU TEMPS (le
+      participant reste où il est et le compteur tourne), `false` si l'écart
+      n'est pas chiffré — l'appelant déplace alors immédiatement, comme
+      toujours en SR5/SR6. */
+  startCross(edition, state, key, toKey) {
+    if (!state) return false;
+    const n = this.crossCost(edition, state.terrain, this.laneOf(state, key), toKey);
+    if (!Number.isFinite(n) || n <= 1) return false; // 1 Narration = le tour courant : on arrive
+    state.crossing = state.crossing || {};
+    state.crossing[key] = { to: toKey, left: n };
+    return true;
+  },
+
+  /** Abandonne ou résout d'un coup (le livre laisse un point d'Anarchy
+      accélérer le franchissement — c'est le MJ qui en décide). */
+  endCross(state, key) {
+    if (state && state.crossing) delete state.crossing[key];
+  },
+
+  /** Décompte d'une Narration tous les franchissements en cours et POSE ceux
+      qui arrivent. Appelé par la fin de ronde, seule horloge de la scène. */
+  tickCrossings(state) {
+    const arrivés = [];
+    for (const key of Object.keys((state && state.crossing) || {})) {
+      const c = state.crossing[key];
+      c.left -= 1;
+      if (c.left <= 0) {
+        this.place(state, key, c.to);
+        delete state.crossing[key];
+        arrivés.push({ key, lane: c.to });
+      }
+    }
+    return arrivés;
+  },
+
   envs(edition) {
     const m = this.use(edition);
     return (m && m.envs) || [];
@@ -201,6 +272,10 @@ export const Chase = {
           chaque fin de round, comme `tested`. Champ ADDITIF : une poursuite
           d'avant le lot n'en a pas, d'où un `V` qui ne bouge pas. */
       paid: {},
+      /** Franchissements en cours (Anarchy) : `clé → { to, left }`. Champ
+          ADDITIF de plus — une poursuite d'avant le lot n'en a pas et se
+          comporte à l'identique, d'où un `V` qui ne bouge pas. */
+      crossing: {},
       edgeUp: {},
       pool: {},
       poolMax: {},
@@ -444,6 +519,10 @@ export const Chase = {
      qu'un round qui passe sans rien dire est un round qu'on oublie. */
   endRound(edition, state) {
     if (!state) return null;
+    // Les franchissements avancent AVANT le relevé des tendances : celui qui
+    // arrive ce round-ci doit apparaître dans le récapitulatif comme un
+    // déplacement, pas comme un immobile.
+    const arrivés = this.tickCrossings(state);
     const moves = [];
     for (const id of Object.keys(state.lanes)) {
       const d = this.trend(edition, state, id);
@@ -455,7 +534,7 @@ export const Chase = {
     const untested = Object.keys(state.lanes).filter(
       (id) => !state.out[id] && !state.tested[id]
     );
-    const recap = { round: state.round, moves, untested, dropped: Object.keys(state.out) };
+    const recap = { round: state.round, moves, untested, dropped: Object.keys(state.out), arrivés };
     state.prev = { ...state.lanes };
     state.tested = {};
     state.paid = {};

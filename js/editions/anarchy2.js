@@ -403,10 +403,26 @@ export const EditionAnarchy2 = {
     /** Les quatre portées d'Anarchy 2.0, avec le coût en Narrations pour
         franchir chaque marche — la seule mécanique de déplacement chiffrée
         du livre. */
+    /** `cross` : le nombre de NARRATIONS pour franchir l'écart entre cette
+        bande et la suivante vers l'extérieur (Contact↔Courte = 1,
+        Courte↔Moyenne = 2, Moyenne↔Longue = 3).
+
+        Le chiffre était déjà là, mais dans la PROSE du `hint` — donc affiché
+        et jamais motorisé. Sorti en donnée, il devient ce que le livre en
+        fait : une durée. Une Narration est le tour de jeu d'Anarchy
+        (`Statuses._PORTEES` la range au rang du round), pas une monnaie : on
+        ne la retranche d'aucun budget, on COMPTE les tours.
+
+        Porté sur l'ÉCART et non sur une direction : le livre chiffre le
+        rapprochement (« 2 narrations depuis Moyenne » = pour atteindre
+        Courte) et ne dit rien de l'éloignement. Le même compte vaut dans les
+        deux sens — CONFIRMÉ le 2026-09-02 par le traducteur français de
+        l'édition, à qui la question a été posée avant de figer la donnée.
+        Ce n'est donc pas une hypothèse de code : c'est la règle. */
     lanes: [
-      { key: "contact", label: "Contact", hint: { all: "≤ 2 m · 1 narration depuis Courte" } },
-      { key: "courte", label: "Courte", hint: { all: "3-15 m · 2 narrations depuis Moyenne" } },
-      { key: "moyenne", label: "Moyenne", hint: { all: "16-60 m · 3 narrations depuis Longue" } },
+      { key: "contact", label: "Contact", cross: 1, hint: { all: "≤ 2 m · 1 narration depuis Courte" } },
+      { key: "courte", label: "Courte", cross: 2, hint: { all: "3-15 m · 2 narrations depuis Moyenne" } },
+      { key: "moyenne", label: "Moyenne", cross: 3, hint: { all: "16-60 m · 3 narrations depuis Longue" } },
       { key: "longue", label: "Longue", hint: { all: "> 60 m" } },
     ],
     /** Le livre ne NOMME pas d'environnements : il dit que l'environnement

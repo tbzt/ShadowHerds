@@ -370,10 +370,49 @@ export const Pursuit = {
     Chase.place(st, pnjId, laneKey);
     this._persist();
   },
+  /** ▲▼ — rapprocher ou éloigner d'une bande.
+
+      En SR5 et SR6, un écart se franchit d'un coup : le jeton bouge, comme
+      depuis toujours. En Anarchy, le livre chiffre l'écart en NARRATIONS
+      (1 à 3 selon la marche) — et une Narration est le tour de jeu, pas une
+      monnaie. Le déplacement y prend donc du TEMPS : le jeton reste où il
+      est, un compteur tourne, et la fin de ronde le fait arriver. Un écart à
+      1 Narration se franchit dans le tour courant, donc immédiatement.
+
+      Le MJ garde la main de bout en bout : « arriver » (`arriveNow`) résout
+      d'un tap — c'est là que se dépense le point d'Anarchy dont le livre dit
+      qu'il accélère le franchissement, et c'est lui qui en décide, pas nous. */
   move(pnjId, delta) {
     const st = this.state();
     if (!st) return;
+    const keys = Chase.laneKeys(this.edition(), st.terrain);
+    const cur = Chase.laneOf(st, pnjId);
+    const i = cur ? keys.indexOf(cur) : 0;
+    const cible = keys[Utils.clamp((i < 0 ? 0 : i) + delta, 0, keys.length - 1)];
+    // Repartir dans l'autre sens annule le franchissement en cours : on ne
+    // traverse pas un écart et son contraire à la fois.
+    const enCours = Chase.crossing(st, pnjId);
+    if (enCours && enCours.to !== cible) Chase.endCross(st, pnjId);
+    if (cible !== cur && Chase.startCross(this.edition(), st, pnjId, cible)) {
+      const n = Chase.crossing(st, pnjId).left;
+      const nom = (PnjLookup.find(pnjId) || {}).name || "Le participant";
+      toast(`${nom} franchit vers ${cible} — ${n} Narrations.`);
+      this._persist();
+      return;
+    }
     Chase.move(this.edition(), st, pnjId, delta);
+    this._persist();
+  },
+
+  /** Arriver tout de suite : le livre laisse un point d'Anarchy accélérer le
+      franchissement, et c'est un arbitrage de MJ — l'app ne dépense rien
+      d'elle-même, elle exécute. */
+  arriveNow(pnjId) {
+    const st = this.state();
+    const c = st && Chase.crossing(st, pnjId);
+    if (!c) return;
+    Chase.place(st, pnjId, c.to);
+    Chase.endCross(st, pnjId);
     this._persist();
   },
   /** Fait entrer tous les combattants de la scène qui n'y sont pas encore,
@@ -800,6 +839,9 @@ export const Pursuit = {
       lane: Chase.laneOf(st, key),
       value: Chase.attrValue(ed, pilote, st, { ride: veh, terrain }),
       trend: Chase.trend(ed, st, key),
+      /** Franchissement en cours (Anarchy) : `{ to, left }`. Le jeton l'affiche
+          au lieu d'une position qu'il n'a pas encore atteinte. */
+      crossing: Chase.crossing(st, key),
       test: st.tested[key] || null,
       edgeUp: !!st.edgeUp[key],
       out: st.out[key] || null,

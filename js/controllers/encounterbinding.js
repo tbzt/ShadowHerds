@@ -224,6 +224,12 @@ export const EncounterBinding = {
         case "chase-leave":
           Pursuit.disembark(el.dataset.id);
           break;
+        case "chase-arrive":
+          // Arriver tout de suite au bout d'un franchissement (Anarchy) :
+          // le livre laisse un point d'Anarchy l'accélérer, l'app exécute
+          // l'arbitrage du MJ, elle ne dépense rien d'elle-même.
+          Pursuit.arriveNow(id);
+          break;
         case "chase-end-round":
           Pursuit.endRound();
           break;

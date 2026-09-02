@@ -289,6 +289,16 @@ export const ChaseRenderer = {
         `<button class="chase-mark is-edge is-secondary${r.edgeUp ? " is-on" : ""}" data-action="chase-edge" data-id="${r.key}" title="Avantage positionnel — remise d'Atout de 1 sur ceux qui ont échoué">⊙</button>`,
       );
     }
+    // ── Le franchissement en cours (Anarchy) ─────────────────────────
+    // Le livre chiffre l'écart en Narrations, et une Narration est le TOUR de
+    // jeu : le participant est entre deux bandes, et il y reste le temps
+    // annoncé. Le jeton le dit — sinon un ▲ qui ne bouge rien passerait pour
+    // un tap perdu. Un tap sur le compteur fait arriver tout de suite : le
+    // livre laisse un point d'Anarchy accélérer, et c'est le MJ qui tranche.
+    const cross =
+      !opts.anchor && r.crossing
+        ? `<button class="chase-cross" data-action="chase-arrive" data-id="${r.key}" title="Franchit vers ${Utils.escHtml(r.crossing.to)} — ${r.crossing.left} Narration${r.crossing.left > 1 ? "s" : ""} restante${r.crossing.left > 1 ? "s" : ""}. Taper pour arriver tout de suite (un point d'Anarchy accélère le franchissement).">⇢${r.crossing.left}</button>`
+        : "";
     const trend =
       !opts.anchor && Number.isFinite(r.trend)
         ? `<span class="chase-trend ${r.trend < 0 ? "is-up" : r.trend > 0 ? "is-down" : ""}">${r.trend === 0 ? "=" : r.trend > 0 ? `+${r.trend}` : r.trend}</span>`
@@ -336,7 +346,7 @@ export const ChaseRenderer = {
                     .join("\n\n"),
             )}">${CardRenderer._esc(r.name)}</button>`
       }
-      ${crew}${trend}${grant}${pool}${marks.join("")}${moves}
+      ${crew}${cross}${trend}${grant}${pool}${marks.join("")}${moves}
       ${opts.anchor ? "" : `<button class="chase-mark is-anchor-set is-secondary" data-action="chase-target" data-id="${r.key}" title="Ancrer : faire de ce participant la cible de la poursuite">▣</button>`}
       ${
         vm.hasEdgeActions

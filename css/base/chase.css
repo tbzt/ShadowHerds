@@ -1240,3 +1240,20 @@ button.chase-tok-val.is-void {
 .chase-manoeuvre.is-out {
   opacity: 0.55;
 }
+
+/* Franchissement en cours (Anarchy) : le participant est ENTRE deux bandes.
+   Registre du `.chase-trend` — même taille, même pastille — parce que c'est
+   la même famille d'information : où il va, pas ce qu'il est. */
+.chase-cross {
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  padding: 0 var(--sp-1);
+  min-height: 24px;
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+  flex: none;
+}
