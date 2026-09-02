@@ -1874,7 +1874,11 @@ export const EditionSR6 = {
       /** Le seul du corpus à l'imposer : « une action majeure Pilotage est
           requise » / « une action majeure Sprinter est nécessaire à chaque
           round ». Ne pas le faire, c'est perdre la course-poursuite. */
-      test: { required: true, cost: "1 majeure" },
+      /** `costAction` double `cost` en MONNAIE du tracker : le libellé
+          s'affiche, la paire se débite (lot 4). Même source, deux usages —
+          plutôt qu'un parseur qui relirait « 1 majeure » à l'exécution et
+          casserait au premier libellé traduit autrement. */
+      test: { required: true, cost: "1 majeure", costAction: { key: "major", n: 1 } },
       onSuccess: "positional",
       onSkip: "lost",
       move: { onSuccess: 1, targetMoves: false },

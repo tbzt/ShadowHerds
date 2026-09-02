@@ -417,6 +417,53 @@ export const Pursuit = {
     return { ...spec, threshold: Number.isFinite(seuil) ? seuil : null };
   },
 
+  /* ========================================================
+     LOT 4 — LE TEST DU ROUND PAIE SON ACTION
+
+     `chaseModel.round.test.cost` disait « 1 majeure » (SR6) et « 1 action »
+     (Anarchy 2.0) depuis l'écriture du moteur, et ne débitait rien : le
+     compteur d'actions du tracker vivait dans une colonne, la piste dans une
+     autre, et c'est le MJ qui devait se rappeler que le pilote avait brûlé sa
+     majeure pour rester en course. C'est le motif exact que le CONTRIBUTING
+     appelle « l'endroit où le contrat aplatit » : la clé portait la règle,
+     personne ne la lisait.
+
+     Trois précautions, chacune tirée d'une règle déjà écrite ailleurs :
+
+     · **C'est une PERSONNE qui paie.** Sur la piste, ce qui a une position est
+       l'ENGIN, mais ce qui lance les dés est quelqu'un (`_actorFor` : le
+       conducteur d'une monture, l'intéressé sinon). Débiter une voiture n'a
+       pas de sens — même arbitrage que l'Atout, déjà tenu par `chase.js`.
+     · **Une fois par round.** `state.paid` garde la trace ; corriger un ✓ en ✗
+       ne repasse pas à la caisse, et la fin de round remet le compteur à zéro.
+     · **On informe, on ne refuse pas.** `_consumeAction` débite au-delà du
+       budget et le DIT — garde-fou (e) du tracker. Un MJ qui fait tester un
+       pilote sans majeure disponible sait ce qu'il fait ; l'app lui montre
+       l'ardoise, elle ne lui retire pas son dé.
+     ======================================================== */
+  _payRound(key) {
+    const st = this.state();
+    const cost = Chase.testCost(this.edition());
+    if (!st || !cost) return; // SR5, Anarchy 1re : le livre n'impose pas de test
+    st.paid = st.paid || {};
+    if (st.paid[key]) return;
+    const pnj = this._actorFor(key);
+    // Un participant hors du suivi de combat n'a pas de budget à débiter :
+    // la piste accepte des figurants que le tracker ne connaît pas.
+    const c = pnj && Encounter._find(pnj.id);
+    if (!c) return;
+    st.paid[key] = true;
+    const over = Encounter._consumeAction(c, cost, pnj);
+    // Texte brut : un toast n'est pas du HTML (l'échapper afficherait les
+    // entités). Le libellé vient du livre via `round.test.cost` — « majeure »
+    // en SR6, « action » en Anarchy 2.0 — jamais un mot écrit ici.
+    if (over)
+      toast(
+        `${pnj.name} teste sans ${(this.model().round.test.cost || "1 action").replace(/^1 /, "")} disponible — l'ardoise est notée.`,
+        "warning",
+      );
+  },
+
   /** Le geste du ⚄ : lancer si on peut, pointer sinon. Un test DÉJÀ posé se
       corrige d'un tap (cycle) — se tromper doit coûter un geste, pas un
       détour. */
@@ -427,6 +474,9 @@ export const Pursuit = {
     const spec = this.testSpec(key);
     if (!spec) return this.cycleTest(key);
     const pnj = this._actorFor(key);
+    // On paie au LANCER, pas au résultat : le livre fait dépenser l'action
+    // pour tenter le test, réussi ou non.
+    this._payRound(key);
     const res = Dice.computeRoll(spec.pool);
     const suffixe = spec.threshold != null ? ` (seuil ${spec.threshold})` : "";
     DiceRoller.show(res, { label: `${spec.label}${suffixe}`, who: (pnj && pnj.name) || "?" });
@@ -467,6 +517,10 @@ export const Pursuit = {
     const st = this.state();
     if (!st) return;
     const cur = st.tested[pnjId] || null;
+    // Poser un résultat à la main, c'est le chemin des PJ (l'app ne lance
+    // jamais pour eux, doctrine B3.5) : leur action est dépensée en fiction
+    // exactement comme celle d'un PNJ dont on a lancé le dé.
+    if (cur === null) this._payRound(pnjId);
     Chase.setTest(this.edition(), st, pnjId, cur === null ? "ok" : cur === "ok" ? "ko" : null);
     this._persist();
   },

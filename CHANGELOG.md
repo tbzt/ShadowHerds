@@ -10,6 +10,69 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.146.0] — 2026-09-02
+
+### Modifié
+
+- **La scène qui tourne prend le centre du suivi de combat.** Une
+  course-poursuite ouverte se voyait offrir la colonne la plus étroite de
+  l'écran — 300 px, contre 511 pour la console de combat et 315 pour l'effectif
+  — et elle ne grandissait à aucune largeur. Le moteur qui fait avancer la
+  scène passe à 771 px, et jusqu'à 869 en Anarchy, où le livre ne fait pas
+  tourner l'initiative et laisse donc la piste seule maîtresse. Même chose pour
+  une scène Matrice, dont le panneau passe de 320 à 831 px. Le combat garde sa
+  colonne quand le livre l'exige : Shadowrun 5 et 6 font tourner l'initiative
+  *pendant* la poursuite.
+- **La console de combat se replie au lieu de rétrécir.** Pendant qu'un autre
+  moteur mène, elle devient un bandeau d'une ligne : qui agit, son initiative,
+  son malus de blessure, ses jetons d'action — et un ⛶ qui rouvre la fiche
+  entière quand un coup part vraiment. C'est exactement ce que la poursuite
+  consomme ; les armes, les seuils et l'encaissement n'ont pas leur place dans
+  un round de course. 640 px de haut deviennent 98.
+- **Le test de course-poursuite paie son action.** Le prix était écrit au pied
+  de la piste depuis toujours — « 1 majeure » en SR6, « 1 action » en
+  Anarchy 2.0 — et ne débitait rien : le compteur d'actions vivait dans une
+  colonne, la piste dans une autre, et c'est vous qui deviez vous souvenir que
+  le pilote avait brûlé sa majeure pour rester en course. Le ⚄ débite
+  maintenant le budget du tour, une seule fois par round, et c'est le
+  conducteur qui paie quand plusieurs partagent un véhicule. Corriger un ✓ en ✗
+  ne repasse pas à la caisse. Si le budget est épuisé, l'app le dit sans
+  refuser le dé — vous savez ce que vous faites. Shadowrun 5 et Anarchy 1re ne
+  débitent rien : leurs livres n'imposent pas de test par round.
+
+### Ajouté
+
+- **La Matrice a enfin une surface quand elle mène la scène.** Son panneau
+  d'intrusion ne vivait que dans un tiroir ou dans une colonne réservée aux
+  écrans d'au moins 1100 px : sur un portable ou une tablette, une scène
+  Matrice n'affichait *rien* de la Matrice. Le panneau s'installe désormais
+  dans la colonne principale, que la liste d'initiative — inutile dans une
+  scène qui n'en a pas — lui laisse libre.
+
+### Corrigé
+
+- **La piste de poursuite ne se coupe plus.** Sur un écran de portable, deux
+  des cinq bandes de distance, dont « Extrême » et l'issue « Semé », étaient
+  invisibles *et* hors d'atteinte : 188 px de ruban rognés sans barre de
+  défilement nulle part. La colonne défile désormais pour de bon, « Round
+  suivant » reste collé en bas, et l'ancre de la poursuite tient enfin le haut
+  de la piste — elle était censée le faire depuis le début.
+- **La piste ne déborde plus de l'écran sur téléphone.** Elle élargissait la
+  fenêtre de suivi de 52 px, et le nom de la cible s'écrasait à 13 px dans une
+  rangée à moitié vide. Le nom de la cible se lit maintenant en entier.
+- **Une course-poursuite Anarchy ne se déclare plus « scène Matrice ».** Faute
+  d'initiative dans ces livres, l'app en concluait que la scène était
+  matricielle et affichait, en plein centre, « le decker infiltre pendant que
+  les autres négocient ». Ouvrir une poursuite depuis une scène Matrice ferme
+  aussi la Matrice, au lieu de laisser les deux se superposer.
+- **Une scène Matrice cache enfin l'ordre du tour.** La liste des combattants
+  restait affichée, avec ses scores d'initiative, dans une scène que l'app
+  déclare elle-même sans initiative.
+- **On peut de nouveau lier un serveur depuis une scène Matrice.** Le bouton
+  qui donne accès à la liste des serveurs y était masqué : sans serveur déjà
+  lié, la scène était une impasse. Un bouton « Lier un serveur » est proposé
+  tant qu'aucun ne l'est.
+
 ## [1.145.6] — 2026-09-01
 
 ### Modifié

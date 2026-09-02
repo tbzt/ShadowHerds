@@ -650,13 +650,45 @@
    vers le tiroir ⚡ ET un bouton primaire de retour (le seul chemin de
    sortie ne doit pas être planqué dans le menu ⋯, cf. retour utilisateur
    mobile : « je peux plus revenir en arrière »). */
-.encounter-modal.is-matrix-only .encounter-list,
+/* ⚠ `#encounter-list` et non `.encounter-list` : la CLASSE n'existe nulle
+   part dans le projet — l'élément est `id="encounter-list" class="stack
+   stack--tight"`. Cette règle était donc MORTE depuis son écriture, et la
+   liste « ORDRE DU TOUR — 5 PNJ » restait affichée en plein milieu d'une
+   scène que l'app déclare sans initiative (mesuré : 622 × 414). Spécificité
+   suffisante pour battre le `#encounter-list` de la l.576 (1 id + 2 classes
+   contre 1 id). */
+.encounter-modal.is-matrix-only #encounter-list,
 .encounter-modal.is-matrix-only .encounter-rail,
 .encounter-modal.is-matrix-only .encounter-toolbar [data-action="toggle-add-picker"],
 .encounter-modal.is-matrix-only .encounter-toolbar [data-action="roll-and-sort"],
 .encounter-modal.is-matrix-only .encounter-toolbar [data-action="next-round"],
 .encounter-modal.is-matrix-only .encounter-turn-bar [data-action="next-turn"],
 .encounter-modal.is-matrix-only .encounter-turn-bar .encounter-narrative-only {
+  display: none;
+}
+/* ---- ⚡︎ 3ᵉ montage : le panneau d'intrusion dans la colonne principale ----
+   Masqué par défaut ; visible quand la Matrice MÈNE la scène. Au-delà de
+   1100px la colonne dockée reprend le relais et celui-ci s'efface — un seul
+   montage visible à la fois, exactement comme la piste. */
+.encounter-matrix-inline {
+  display: none;
+}
+.encounter-matrix-inline[hidden] {
+  display: none;
+}
+.encounter-modal.is-matrix-only .encounter-matrix-inline:not([hidden]) {
+  display: block;
+}
+@media (min-width: 1100px) {
+  .encounter-modal.is-matrix-only.has-matrix-dock .encounter-matrix-inline {
+    display: none;
+  }
+}
+/* La note ne parle plus que du vide : dès qu'un serveur est lié
+   (`has-matrix-dock`, posé par renderMatrix quand l'état Matrice ≥ 1), c'est
+   le panneau qui occupe la place. Deux surfaces qui disent la même chose,
+   c'est une de trop. */
+.encounter-modal.has-matrix-dock .encounter-matrix-only-note {
   display: none;
 }
 .encounter-matrix-only-note {
@@ -668,9 +700,13 @@
 .encounter-matrix-only-note p {
   margin: 0 0 var(--sp-2);
 }
-.encounter-matrix-only-note .btn-primary {
+.encounter-matrix-only-note .btn-primary,
+.encounter-matrix-only-note .btn-secondary {
   min-height: 44px;
   width: 100%;
+}
+.encounter-matrix-only-note .btn-secondary {
+  margin-top: var(--sp-2);
 }
 /* Rappel du silence des actions chiffrées en narratif (T1.5 FIELD_STUDY REC-6) —
    même registre discret que .encounter-progress, posée juste au-dessus. */
@@ -1108,6 +1144,14 @@
   }
   #encounter-active-lead {
     order: 4;
+  }
+  /* Le bandeau de veille (lot 3) prend EXACTEMENT la place de la console
+     qu'il remplace : sans `order`, il retombait à 0 et se retrouvait mesuré
+     à y=835 entre la barre « Tour suivant » et la barre d'outils — la pile
+     mobile est ordonnée par `order`, pas par le DOM (l'effectif est dissous
+     en `display: contents`). */
+  #encounter-active-strip {
+    order: 5;
   }
   /* La console s'intercale ENTRE l'actif et la file d'attente (le cœur du fix). */
   .encounter-active-card {
@@ -2389,6 +2433,22 @@ button.encounter-token-init:active {
   letter-spacing: 0.06em;
 }
 
+/* LOT 2, volet Matrice — quand la Matrice MÈNE la scène (`is-matrix-only` :
+   moteur Matrice sans combat, le decker infiltre pendant que les autres
+   négocient), son dock cesse d'être une bande de 320px à côté d'un effectif
+   qui n'a plus d'ordre du tour à montrer. Il grandit, l'effectif cède.
+   Le cas « Matrice en SECOND moteur » (combat + matrice) n'est pas touché :
+   là le combat tourne pour de bon et garde sa place. */
+@media (min-width: 1100px) {
+  .encounter-modal.is-matrix-only.has-matrix-dock .encounter-matrix-dock {
+    flex: 1 1 560px;
+    max-width: none;
+  }
+  .encounter-modal.is-matrix-only.has-matrix-dock .encounter-main-col {
+    flex: 0 1 340px;
+  }
+}
+
 /* ---- Résumé de la scène de combat dans la sidebar ---- */
 .sidebar-encounter {
   padding-bottom: var(--sp-2);
@@ -2592,3 +2652,93 @@ kbd {
   width: 10px;
 }
 
+
+/* ============================================================
+   LOT 3 — LA CONSOLE EN VEILLE (`.encounter-active-strip`)
+
+   Quand un autre moteur mène la scène (⇉ poursuite, ⚡︎ Matrice), la console
+   de combat ne rétrécit pas : elle se replie. La distinction n'est pas de
+   forme mais de mesure — le bloc « MESURÉ à 1280px » plus haut dans ce
+   fichier chiffre qu'à 346px la console tronquait déjà le nom (« St… ») pour
+   457px demandés par le nom et la grappe de six gestes. Lui prendre sa
+   largeur, c'est la casser ; on la remplace par une ligne qui dit ce que la
+   poursuite consomme — qui agit, et a-t-il payé son action.
+   ============================================================ */
+.encounter-active-strip[hidden] {
+  display: none;
+}
+.encounter-strip {
+  gap: var(--sp-2);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-2);
+  padding: var(--sp-2);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  /* Le liseré d'accent reprend le canal de la console pleine : la veille est
+     le MÊME objet, à une autre densité — pas un composant de plus. */
+  border-left: 3px solid var(--accent);
+}
+.encounter-strip-mode {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--title-spacing);
+  text-transform: uppercase;
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+.encounter-strip-init {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  flex: 0 0 auto;
+}
+.encounter-strip-name {
+  font: inherit;
+  font-size: var(--fs-sm);
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* `width: 0` et pas seulement `min-width: 0` — même piège que
+     `.chase-tok-name` (cf. css/base/chase.css) : `min-width: 0` laisse
+     rétrécir dans un conteneur de largeur connue, mais ne retire pas le texte
+     `nowrap` du min-content du conteneur. */
+  min-width: 0;
+  width: 0;
+  flex: 1 1 6rem;
+}
+.encounter-strip-open {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+/* DEUX rangées franches, jamais trois. Le bandeau se lisait sur 120px parce
+   que le ⛶ retombait seul sur une 3ᵉ ligne : identité en haut (mode, init,
+   nom, malus, ⛶), économie d'actions en dessous, sur toute la largeur. Le
+   `100%` force la coupure au bon endroit au lieu de la subir. */
+.encounter-strip .encounter-actions {
+  flex: 1 1 100%;
+  margin: 0;
+}
+.encounter-strip-void {
+  margin: 0 0 var(--sp-2);
+  padding: var(--sp-2);
+  font-size: var(--fs-xs);
+  font-style: italic;
+  color: var(--text-dim);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+}
+/* La console pleine s'efface pendant la veille : c'est le bandeau qui la
+   remplace, jamais les deux à la fois (même loi que les deux montages de la
+   piste). `renderActiveCard` pose déjà [hidden] ; cette règle tient le cas où
+   une autre passe de rendu le retirerait. */
+.encounter-modal.is-engine-led .encounter-active-card {
+  display: none;
+}

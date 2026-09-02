@@ -632,6 +632,14 @@ export const Servers = Object.assign(
       // 3ᵉ copie du switch.
       const matrixDock = document.getElementById("encounter-matrix-dock");
       if (matrixDock) matrixDock.addEventListener("click", onClick);
+      // 4ᵉ hôte : le montage en COLONNE PRINCIPALE, seule surface Matrice sous
+      // 1100px quand la Matrice mène la scène. La délégation se pose hôte par
+      // hôte (le switch n'est pas recopié), donc un montage muet est un
+      // montage MORT : ses boutons existent, rien ne les écoute. C'est
+      // exactement ce qui est arrivé — « Surveillance +1 » cliqué depuis la
+      // colonne ne bougeait pas d'un cran.
+      const matrixInline = document.getElementById("encounter-matrix-inline");
+      if (matrixInline) matrixInline.addEventListener("click", onClick);
 
       const onChange = (e) => {
         const noteEl = e.target.closest('[data-action="edit-note"]');
@@ -643,6 +651,7 @@ export const Servers = Object.assign(
       panel.addEventListener("change", onChange);
       if (matrixDrawer) matrixDrawer.addEventListener("change", onChange);
       if (matrixDock) matrixDock.addEventListener("change", onChange);
+      if (matrixInline) matrixInline.addEventListener("change", onChange);
     },
 
     renderForm() {

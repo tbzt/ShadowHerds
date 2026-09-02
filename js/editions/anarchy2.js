@@ -468,7 +468,12 @@ export const EditionAnarchy2 = {
       /** Requis, mais opposé : « le vainqueur parvient à progresser vers son
           objectif (s'enfuir, rattraper l'autre) ». Et si l'issue ne fait
           aucun doute, le livre dit de ne pas jeter les dés. */
-      test: { required: true, opposed: true, cost: "1 action", skipIfObvious: true },
+      /** `costAction` : la clé du seul groupe de `actionBudget` en Anarchy
+          2.0 (« Action », 1 par tour). Le livre dit de ne pas jeter les dés
+          quand l'issue ne fait aucun doute (`skipIfObvious`) — dans ce cas
+          aucun test n'est joué, donc rien n'est débité : c'est le geste du ⚄
+          qui paie, pas l'ouverture de la piste. */
+      test: { required: true, opposed: true, cost: "1 action", skipIfObvious: true, costAction: { key: "action", n: 1 } },
       onSuccess: "progress",
       onSkip: null,
       move: { onSuccess: 1, targetMoves: true, narrationCost: [1, 2, 3], anarchyShortcut: true },

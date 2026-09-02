@@ -29,14 +29,55 @@
   .encounter-modal.has-chase .encounter-chase-dock {
     display: flex;
     flex-direction: column;
-    flex: 0 0 300px;
-    max-width: 320px;
+    /* ── LOT 2 : la piste cesse d'être la colonne la plus étroite ──────
+       Mesuré à 1280px avant : Effectif 315 · console de combat 511 · piste
+       **300**, et un `flex: 0 0` qui l'empêchait de grandir à 1600 comme à
+       1000. Le moteur qui fait tourner la scène tenait 59 % de la largeur de
+       la carte qui décrit UN combattant.
+       C'est elle qui grandit désormais (seul `flex-grow` du corps) : le budget
+       mesuré est de 1126px de colonnes à 1280 (gouttière 16, padding 20). */
+    flex: 1 1 620px;
+    max-width: none;
     max-height: 100%;
     overflow-y: auto;
     background: var(--bg-card);
     border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
     border-radius: var(--radius-lg);
     padding: var(--sp-2);
+  }
+  /* Rien ne se comprime dans la colonne : c'est ELLE qui défile — elle a
+     `overflow-y: auto` depuis le lot P2 —, ce ne sont pas ses blocs qui
+     rétrécissent en silence. Sans ce `flex-shrink: 0`, un enfant flex cède
+     AVANT que le conteneur n'accepte de défiler : c'est le mécanisme exact
+     qui coupait 188px de ruban (cf. `.chase-track`). */
+  .encounter-modal.has-chase .encounter-chase-dock > * {
+    flex-shrink: 0;
+  }
+  /* Le pied porte l'action primaire de la boucle (« ▶ Round suivant ») :
+     maintenant que la colonne défile pour de bon, il resterait en haut de la
+     piste pendant qu'on descend vers « Extrême ». Il est donc collé en bas.
+     Le `bottom` négatif compensé par le `padding-bottom` couvre la gouttière
+     de la colonne — sinon un liseré de contenu défile dans ses 8px. */
+  .encounter-modal.has-chase .encounter-chase-dock .chase-foot {
+    position: sticky;
+    bottom: calc(var(--sp-2) * -1);
+    z-index: 2;
+    padding-bottom: var(--sp-2);
+    background: var(--bg-card);
+  }
+  /* Le combat garde une colonne, PARCE QUE LE LIVRE LE DEMANDE : SR5
+     (p. 204-205) et SR6 (« À tombeau ouvert ») font tourner l'initiative
+     pendant la poursuite, et le test du round s'y paie en actions. Elle ne
+     grandit plus (`flex-grow: 0`) : elle porte l'ordre du tour, la barre
+     d'outils et le bandeau de veille (lot 3), pas une console de 511px. */
+  .encounter-modal.has-chase .encounter-main-col {
+    flex: 0 1 400px;
+  }
+  /* Anarchy : le livre n'a pas d'initiative, `setMotor` retire donc « combat »
+     et il ne reste rien à tenir en parallèle — la piste prend franchement le
+     reste (mesuré : 400 → 300 rend 100px de plus au ruban). */
+  .encounter-modal.has-chase:not(.has-combat) .encounter-main-col {
+    flex: 0 1 300px;
   }
   /* Un seul montage visible : au-dessus de 1000px, c'est la colonne. */
   .encounter-chase-inline {
@@ -230,7 +271,24 @@
   min-width: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  overflow: hidden;
+  /* `clip` et non `hidden` — deux effets, tous deux voulus.
+
+     1. `hidden` faisait du ruban un CONTENEUR DE DÉFILEMENT, et comme il est
+        aussi un enfant flex de la colonne dockée, il se laissait COMPRIMER
+        sous la hauteur de son contenu puis masquait ce qu'il perdait, sans
+        ascenseur nulle part. Mesuré à 1280×800 comme à 1280×720 : 407px de
+        contenu dans 219px visibles — 188px coupés, « Longue », « Extrême » et
+        l'issue SEMÉ INATTEIGNABLES (la colonne ne défilait pas non plus,
+        `scrollHeight === clientHeight`). Un MJ qui ne peut pas voir le bout de
+        sa piste ne peut pas voir la fin de sa poursuite.
+     2. `clip` ne crée PAS de conteneur de défilement : l'ancre collante
+        (`.chase-anchor`, `position: sticky`) se résout enfin sur la colonne
+        qui défile vraiment. Elle était inerte depuis toujours — collée dans
+        une boîte qui ne défilait pas.
+
+     Le rognage du rayon, seule raison d'être du `hidden` d'origine, est
+     conservé : `clip` clippe aussi. */
+  overflow: clip;
 }
 
 /* Les deux ISSUES : hachures + couleur sémantique (jamais l'accent
@@ -365,6 +423,13 @@
   gap: var(--sp-1);
   flex: 1 1 auto;
   min-width: 0;
+  /* Plafond (lot 2) : depuis que la piste prend la colonne large, un jeton
+     SEUL sur sa bande s'étirait à toute la largeur — mesuré 972px à 1600px,
+     un nom et trois boutons étalés sur un mètre d'écran. Ce n'est pas de la
+     lisibilité, c'est de la dilution. Borné, il laisse la largeur faire ce
+     pour quoi elle a été prise : aligner PLUSIEURS participants côte à côte
+     sur la même bande (3 par rangée à 1600px) au lieu de les empiler. */
+  max-width: 320px;
   min-height: 44px;
   padding: var(--sp-1);
   /* DA lot 5 — jeton de piste : exactement l'analogue de .encounter-token — masse, et le
@@ -382,7 +447,15 @@
   color: var(--accent);
 }
 .chase-tok.is-anchor {
-  flex: 0 1 auto;
+  /* `flex-grow: 1` et non 0 : le jeton d'ancre partage sa rangée avec un
+     libellé et un ⏏, et il lui restait 181px inutilisés à 375px pendant que
+     son nom, lui, tombait à 13px — la cible de la poursuite, illisible, dans
+     une rangée à moitié vide. Le `0` d'origine tenait tant que le nom portait
+     sa propre largeur ; depuis que sa contribution intrinsèque est nulle (cf.
+     `width: 0` sous 640px), « épouser le contenu » veut dire « s'effondrer ».
+     Mesuré à 375px : nom 13px → 165px, complet, sans ellipsis — ce que la
+     décision de piste VERTICALE promettait (« lisibles en entier »). */
+  flex: 1 1 auto;
   background: transparent;
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
 }
@@ -973,10 +1046,22 @@ button.chase-tok-val.is-void {
     flex: 0 0 66px;
   }
   /* Le nom peut tomber à zéro (ellipsis) : c'est la seule pièce compressible
-     du jeton, et c'est ce qui permet au ruban de tenir dans 342px. */
+     du jeton, et c'est ce qui permet au ruban de tenir dans 342px.
+
+     … sauf qu'il ne tombait pas. `min-width: 0` autorise un enfant flex à
+     RÉTRÉCIR dans un conteneur de largeur connue, mais il ne retire pas le
+     texte `nowrap` du calcul de MIN-CONTENT du conteneur — et la colonne
+     mobile est justement en dimensionnement intrinsèque. Mesuré à 375px :
+     min-content du ruban 402px pour 370 offerts, soit 52px de débordement
+     horizontal de la MODALE ENTIÈRE (0 quand la piste est fermée : elle en
+     était la seule cause). `width: 0` retire le nom de ce calcul et ramène le
+     ruban à 248px. Rien ne bouge à l'écran : la base flex reste `3rem`, donc
+     la largeur UTILISÉE est inchangée — c'est la contribution intrinsèque,
+     elle seule, qui passe enfin à zéro. Ligne unique et ellipsis intactes. */
   .chase-tok-name {
     flex: 1 1 3rem;
     min-width: 0;
+    width: 0;
   }
   /* La barre d'attribut tenait sur trois lignes (57px) : elle se resserre
      en une ligne — la cause, l'attribut, son sens. Le coût d'un échec est

@@ -52,11 +52,49 @@ export const EncounterRenderer = {
     const modal = document.querySelector(".encounter-modal");
     if (modal) modal.classList.toggle("is-narrative", narrative);
 
-    // Scène Matrice seule (state.motors sans "combat") — pas de
-    // réglette d'init ni de liste vide à afficher, le tiroir Matrice
-    // (toujours ouvert dans ce mode) est la surface principale.
-    const matrixOnly = !(state.motors || []).includes("combat");
+    // Scène Matrice seule — pas de réglette d'init ni de liste vide à
+    // afficher, le tiroir Matrice (toujours ouvert dans ce mode) est la
+    // surface principale.
+    //
+    // Le prédicat disait « pas de combat », alors qu'il voulait dire « le
+    // moteur Matrice mène ». Depuis que la Poursuite existe, les deux ne se
+    // confondent plus : en Anarchy le livre n'a pas d'initiative, donc
+    // `setMotor("chase")` retire « combat » (combatModel.narrative) et la
+    // scène tourne sur `motors: ["chase"]` seul. Une course-poursuite Anarchy
+    // se déclarait ainsi « Matrice » et affichait, mesuré à 489×108 en plein
+    // centre, « Scène Matrice — le decker infiltre pendant que les autres
+    // négocient ». Un moteur ne devient pas la Matrice parce que le combat
+    // s'est tu. Même lecture dans `Encounter.toggleSceneType`, qui décide de
+    // la BASCULE que ce libellé annonce — les deux doivent lire pareil,
+    // sinon le bouton ment sur ce qu'il va faire.
+    const motors = state.motors || [];
+    const matrixOnly = motors.includes("matrix") && !motors.includes("combat");
     if (modal) modal.classList.toggle("is-matrix-only", matrixOnly);
+    // ── Lot 2 : le moteur qui TOURNE prend le centre ────────────────────
+    // `motors` est un ENSEMBLE (doctrine R0) ; la mise en page ne le lisait
+    // nulle part. Une poursuite ouverte se voyait donc offrir la colonne la
+    // plus ÉTROITE de l'écran — mesuré à 1280px : Effectif 315, console de
+    // combat 511, piste 300. La console qui décrit UN combattant faisait 1,70×
+    // le moteur qui fait tourner la scène.
+    //
+    // Deux classes, deux faits, aucune largeur d'écran ici (le CSS s'en
+    // charge) : ce qui MÈNE, et si le combat tourne encore. Les livres
+    // tranchent le second : SR5 (p. 204-205) et SR6 (À tombeau ouvert) font
+    // tourner l'initiative PENDANT la poursuite — le combat garde donc sa
+    // colonne. Anarchy n'a pas d'initiative (`combatModel.narrative`), d'où
+    // `setMotor` qui retire « combat » : là, la piste peut tout prendre.
+    // La PISTE se lit sur `state.chase`, pas sur `motors` : c'est la source
+    // qu'utilise déjà `ChaseRenderer` pour poser `has-chase`, et deux sources
+    // pour un même fait finissent par se contredire — vu en vérification, une
+    // scène avec `state.chase` mais des `motors` désynchronisés affichait la
+    // piste ET la console, dans des colonnes calculées pour une seule des
+    // deux. `Pursuit.open`/`close` tiennent les deux ensemble ; ce n'est pas
+    // une raison pour leur demander de ne jamais se tromper.
+    const engineLed = !!state.chase || motors.includes("matrix");
+    if (modal) {
+      modal.classList.toggle("is-engine-led", engineLed);
+      modal.classList.toggle("has-combat", motors.includes("combat"));
+    }
     const toggleBtn = document.getElementById("encounter-scene-type-toggle");
     if (toggleBtn) {
       toggleBtn.textContent = matrixOnly ? "⚔ Scène Combat" : "⚡︎ Scène Matrice";
@@ -1903,9 +1941,92 @@ export const EncounterRenderer = {
     return found || live.find((r) => !r.hasActed) || live[0];
   },
 
+  /** LE BANDEAU DE VEILLE (lot 3) — la console de combat repliée sur une
+      ligne pendant qu'un autre moteur mène la scène.
+
+      Quatre informations, pas cinq : qui agit · son initiative · son malus de
+      blessure · ses jetons d'action. Ce sont celles que la poursuite CONSOMME
+      (le test du round coûte « 1 majeure » en SR6, une action complexe en
+      SR5) ; tout le reste de la console — armes, VD, seuils, encaissement —
+      revient d'un ⛶, qui rouvre la fiche en coup d'œil.
+
+      Rien n'est réécrit ici : les jetons sont `_activeActions` VERBATIM (même
+      budget `Encounter.effectiveBudget`, même roving tabindex, même
+      `data-action="action-set"` déjà délégué), le malus est le
+      `Utils.woundMalus` de la ligne d'effectif, et le ⛶ réutilise
+      `react-expand` — l'action qui ouvre déjà CardPeek en vue combat. Un
+      geste déplacé, jamais un geste réinventé. */
+  _activeStrip(active, model) {
+    if (!active || !active.pnj)
+      return `<p class="encounter-strip-void">Aucun combattant actif — la scène tourne sur son autre moteur.</p>`;
+    const pnj = active.pnj;
+    const isMatrix = active.kind === "matrix";
+    const { alias, family, full } = Utils.parseName(pnj.name);
+    const nom = Utils.escHtml(alias || family || full);
+    // Le mot du mode dit d'un coup d'œil à qui appartient le tour : au MJ
+    // (Agir) ou à un joueur (Réagir). En narratif, ni l'un ni l'autre — le
+    // livre Anarchy n'a pas d'ordre de tour, on écrit « En scène ».
+    const mode = model && model.narrative ? "En scène" : active.isPJ ? "Réagir" : "Agir";
+    const init =
+      model && model.narrative
+        ? ""
+        : active.init == null
+          ? ""
+          : `<span class="encounter-strip-init" title="Initiative">${active.init}</span>`;
+    const malus = isMatrix ? 0 : Utils.woundMalus(pnj, pnj.edition);
+    const malusHtml =
+      malus > 0
+        ? `<span class="wound-malus-badge status is-danger" title="Malus de blessure automatique (déjà appliqué à l'initiative)">−${malus}D</span>`
+        : "";
+    // Une CI n'a pas de budget d'actions de chair : on ne lui en invente pas.
+    const actions =
+      !isMatrix && App.editionModule && App.editionModule.actionBudget ? this._activeActions(active) : "";
+    return `<div class="cluster encounter-strip">
+      <span class="encounter-strip-mode">${Utils.escHtml(mode)}</span>
+      ${init}
+      <button class="encounter-strip-name" data-action="react-expand" data-id="${pnj.id}" title="${Utils.escHtml(full)} — ouvrir la fiche complète">${nom}</button>
+      ${malusHtml}
+      <button class="btn-icon-tiny encounter-strip-open" data-action="react-expand" data-id="${pnj.id}" title="Rouvrir la console de combat — armes, défense, encaissement" aria-label="Rouvrir la console de combat">⛶</button>
+      ${actions}
+    </div>`;
+  },
+
   renderActiveCard(rows, state, model) {
     const box = document.getElementById("encounter-active-card");
     if (!box) return;
+
+    // ── Lot 3 : la console EN VEILLE ────────────────────────────────────
+    // Quand un autre moteur mène (⇉ poursuite, ⚡︎ Matrice), la console se
+    // replie en bandeau. Elle ne RÉTRÉCIT pas : le bloc mesuré de
+    // combat-tracker.css chiffre qu'à 346px elle tronquait déjà (« St… ») pour
+    // 457 demandés par le nom et la grappe de six gestes. On ne peut donc pas
+    // lui prendre sa largeur sans la casser — on la remplace.
+    //
+    // Ce que le bandeau garde est exactement ce que le livre fait consommer à
+    // la poursuite : QUI agit, et A-T-IL PAYÉ. SR6 exige « une action majeure
+    // Pilotage à chaque round » (`chaseModel.round.test.cost`), SR5 quatre
+    // actions complexes — dans les deux cas la question est le budget
+    // d'actions, pas la VD d'un fusil. Les armes, la SO et l'encaissement
+    // n'ont aucun rôle dans un round de poursuite : ils reviennent d'un ⛶.
+    const motors = state.motors || [];
+    // Même lecture que `render` ci-dessus : la piste existe si `state.chase`
+    // existe. Les deux doivent dire la même chose, sinon le bandeau et la
+    // console se cachent ou s'affichent ensemble.
+    const enVeille = !!state.chase || motors.includes("matrix");
+    const strip = document.getElementById("encounter-active-strip");
+    if (strip) strip.hidden = !enVeille;
+    if (enVeille) {
+      const actif = model && model.narrative ? this._narrativeFocus(rows) : rows[state.turnIndex];
+      if (strip) strip.innerHTML = this._activeStrip(actif, model);
+      // On repart d'un état propre : au retour en scène de combat, la console
+      // doit rejouer son « mode entrant » et reconstruire sa fiche, sinon le
+      // cache par id la croirait déjà à l'écran.
+      this._activeMode = null;
+      this._activeCardId = null;
+      box.innerHTML = "";
+      box.hidden = true;
+      return;
+    }
 
     // En narratif (pas de tour d'initiative), la fiche suit le combattant EN
     // FOCUS (tap sur une ligne, focus-active) ; en ordonné, le combattant dont
@@ -3073,6 +3194,15 @@ export const EncounterRenderer = {
     if (body) body.innerHTML = html;
     const dockBody = document.getElementById("matrix-dock-body");
     if (dockBody) dockBody.innerHTML = html;
+    // 3ᵉ montage : la colonne principale. Même HTML, calculé une seule fois —
+    // `intrusionPanel` n'émet aucun `id`, ses gestes passent tous par la
+    // délégation `data-action` que `Servers._wire()` pose déjà sur l'overlay,
+    // donc un montage de plus ne coûte ni écouteur ni collision.
+    const inline = document.getElementById("encounter-matrix-inline");
+    if (inline) {
+      inline.innerHTML = html;
+      inline.hidden = !srv; // pas de serveur lié = rien à montrer (la note prend le relais)
+    }
 
     // Colonne dockée visible seulement ≥1100px ET état ≥1 (état 0 = 2
     // colonnes, cf. CSS .encounter-modal.has-matrix-dock) — classe posée sur

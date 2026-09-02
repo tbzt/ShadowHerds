@@ -756,18 +756,41 @@
           <div id="encounter-add-panel" class="encounter-add-panel" hidden></div>
           <!-- K1 : réglette compacte (rail de jetons, sous 641px par défaut) — sœur de la liste complète, jamais les deux visibles à la fois. -->
           <div id="encounter-rail" class="encounter-rail"></div>
+          <!-- Lot 3 : la console EN VEILLE. Quand un autre moteur mène la scène
+               (⇉ poursuite, ⚡︎ Matrice), la console de combat n'a pas à tenir
+               520px au centre : elle se replie en un bandeau d'une ligne monté
+               ICI — l'actif, son initiative, son malus, ses jetons d'action, et
+               ⛶ pour rouvrir la fiche entière. Même patron à deux montages que
+               la piste : EncounterRenderer n'en remplit qu'un à la fois. -->
+          <div id="encounter-active-strip" class="encounter-active-strip" hidden></div>
           <!-- V7 : la ligne de l'ACTIF est isolée ici (hors #encounter-list) pour
                que la console puisse s'intercaler entre elle et la file d'attente
                sur mobile ([actif][console][attente], cf. maquette). Sur desktop
                elle coule simplement en tête de l'effectif, avant la file. -->
           <div id="encounter-active-lead" class="encounter-active-lead"></div>
           <div id="encounter-list" class="stack stack--tight"></div>
+          <!-- ⚡︎ 3ᵉ MONTAGE du panneau d'intrusion — le pendant exact de
+               #encounter-chase-inline. Quand la Matrice MÈNE la scène, elle
+               n'a pas à vivre dans un tiroir ou dans une colonne réservée aux
+               écrans ≥1100px : elle prend la colonne principale, que la liste
+               d'initiative a libérée (aucune initiative dans cette scène).
+               EncounterRenderer.renderMatrix calcule le HTML UNE fois et le
+               pose dans les trois hôtes ; le CSS n'en montre qu'un. -->
+          <div id="encounter-matrix-inline" class="encounter-matrix-inline" hidden></div>
           <!-- R2-E : scène Matrice seule — remplace la liste/réglette d'init
-               (vides et hors-sujet ici), cf. .encounter-modal.is-matrix-only. -->
+               (vides et hors-sujet ici), cf. .encounter-modal.is-matrix-only.
+               Ne parle plus que du cas SANS serveur lié : dès qu'il y en a un,
+               c'est le panneau ci-dessus qui occupe la place, et le CSS masque
+               cette note. -->
           <div id="encounter-matrix-only-note" class="encounter-matrix-only-note" hidden>
             <p>Scène Matrice — le decker infiltre pendant que les autres négocient.
-            Suivez l'intrusion dans le tiroir ⚡︎ ci-dessous.</p>
-            <button class="btn-primary" data-action="toggle-scene-type">⚔ Retour scène Combat</button>
+            <b>Aucun serveur n'est lié à la scène</b> : il n'y a pas encore d'intrusion à suivre.</p>
+            <!-- La liste des serveurs vit dans le picker « Ajouter » (rangée
+                 « Serveur ⚡︎ »), dont le bouton de barre d'outils est masqué
+                 dans ce mode : sans ce raccourci, lier un serveur était
+                 devenu impossible depuis une scène Matrice. -->
+            <button class="btn-primary" data-action="toggle-add-picker">⚡︎ Lier un serveur</button>
+            <button class="btn-secondary" data-action="toggle-scene-type">⚔ Retour scène Combat</button>
           </div>
           <!-- Action primaire de la boucle : collée en pied de colonne (zone
                pouce sur mobile), séparée des actions secondaires ci-dessus. -->

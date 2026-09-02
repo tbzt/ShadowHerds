@@ -192,6 +192,11 @@ export const Chase = {
       lanes: {},
       prev: {},
       tested: {},
+      /** Le test du round déjà PAYÉ, par clé de piste — pour ne débiter
+          l'action qu'une fois quand le MJ corrige un ✓ en ✗. Remis à zéro à
+          chaque fin de round, comme `tested`. Champ ADDITIF : une poursuite
+          d'avant le lot n'en a pas, d'où un `V` qui ne bouge pas. */
+      paid: {},
       edgeUp: {},
       pool: {},
       poolMax: {},
@@ -371,6 +376,26 @@ export const Chase = {
     }
   },
 
+  /** Le coût EN ACTIONS du test du round, dans la monnaie que le tracker
+      débite déjà (`{key, n}` ou liste de paires, cf. `Encounter._consumeAction`)
+      — ou `null` quand le livre n'en met pas.
+
+      Le contrat portait ce coût depuis toujours, mais en TEXTE : « 1 majeure »
+      s'affichait au pied de la piste et ne débitait rien. Le compteur
+      d'actions du tracker et le moteur de poursuite se lisaient donc à un
+      mètre l'un de l'autre sans jamais se parler, et c'est au MJ qu'il
+      revenait de se souvenir que le pilote avait déjà brûlé sa majeure.
+
+      Deux éditions seulement le déclarent, et c'est voulu : SR6 (« une action
+      majeure Pilotage est requise ») et Anarchy 2.0 (test opposé, 1 action).
+      SR5 et Anarchy 1re portent `round.test = null` — un VIDE ASSUMÉ que ce
+      module documente déjà — et n'ont donc rien à débiter. */
+  testCost(edition) {
+    const m = this.use(edition);
+    const t = m && m.round && m.round.test;
+    return (t && t.costAction) || null;
+  },
+
   /** Ce que l'échec coûte, DANS CETTE ÉDITION ET CET ENVIRONNEMENT — ou
       null quand il ne coûte rien (SR6 : en dégagé et étroit, rater ne fait
       perdre que l'avantage). Le rendu l'ANNONCE, il ne l'applique pas :
@@ -404,6 +429,7 @@ export const Chase = {
     const recap = { round: state.round, moves, untested, dropped: Object.keys(state.out) };
     state.prev = { ...state.lanes };
     state.tested = {};
+    state.paid = {};
     state.edgeUp = {};
     state.round += 1;
     state.log.unshift(recap);
@@ -418,6 +444,7 @@ export const Chase = {
     state.log.shift();
     state.round -= 1;
     state.tested = {};
+    state.paid = {};
     state.edgeUp = {};
     return true;
   },

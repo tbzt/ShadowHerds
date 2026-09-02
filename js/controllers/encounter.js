@@ -2649,6 +2649,15 @@ export const Encounter = {
       set.add(key);
       if (key === "chase" && this._model().narrative) set.delete("combat");
       if (key === "matrix" && set.has("chase")) set.delete("chase");
+      // La réciproque, qui manquait : l'exclusivité Matrice ⇄ Poursuite était
+      // écrite dans un seul sens. Ouvrir une poursuite depuis une scène
+      // Matrice laissait donc `["matrix", "chase"]`, un état qu'aucun des deux
+      // moteurs ne revendique — et la surface le disait : la note « Scène
+      // Matrice — le decker infiltre pendant que les autres négocient »
+      // s'affichait par-dessus la piste. Deux moteurs de SCÈNE ne mènent pas
+      // ensemble ; le combat, lui, coexiste avec les deux (c'est tout l'objet
+      // de la ligne au-dessus).
+      if (key === "chase" && set.has("matrix")) set.delete("matrix");
     } else {
       set.delete(key);
     }
@@ -2666,7 +2675,14 @@ export const Encounter = {
       n'est pas un 3ᵉ état de cette bascule mais un moteur qui s'AJOUTE, par
       `setMotor` — c'est `Pursuit.open()` qui l'allume. */
   toggleSceneType() {
-    const isMatrixOnly = !this.state.motors.includes("combat");
+    // Même lecture que `EncounterRenderer` pour `is-matrix-only` : « le moteur
+    // Matrice mène », et non « il n'y a pas de combat ». Sur `["chase"]` seul
+    // (poursuite Anarchy), l'ancien prédicat renvoyait vrai et la bascule
+    // partait vers le Combat pendant que le bouton, lui, proposait « ⚡︎ Scène
+    // Matrice » — le libellé et le geste se contredisaient. Aller vers la
+    // Matrice depuis une poursuite ferme la piste, exactement comme
+    // `setMotor("matrix")` retire déjà le moteur « chase ».
+    const isMatrixOnly = this.state.motors.includes("matrix") && !this.state.motors.includes("combat");
     this.state.motors = isMatrixOnly ? ["combat"] : ["matrix"];
     if (!isMatrixOnly) this.state.chase = null; // la Matrice seule n'a pas de piste
     this._commit();
