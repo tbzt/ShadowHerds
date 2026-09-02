@@ -3204,7 +3204,16 @@ export const EncounterRenderer = {
             : level === 2
               ? `⚡︎ Matrice <span class="matrix-dot" aria-hidden="true"></span>`
               : `⚡︎ ${initial}`;
-        btn.title = "Matrice — " + srv.name;
+        // Quand la piste occupe la colonne (dock rétracté, cf. CSS
+        // `.has-chase:not(.has-matrix)`), le bouton DIT où la Matrice est
+        // passée et comment la ramener. Sans ça, un dock qui disparaît à
+        // l'ouverture d'une poursuite passe pour une perte, pas pour un choix.
+        const modalEl = document.querySelector(".encounter-modal");
+        const replie =
+          modalEl && modalEl.classList.contains("has-chase") && !modalEl.classList.contains("has-matrix");
+        btn.title = replie
+          ? `Matrice — ${srv.name} · la piste occupe la colonne. Ouvrir le tiroir, ou allumer le moteur Matrice (⋯ › ⚡︎ Scène Matrice) pour lui rendre sa place.`
+          : "Matrice — " + srv.name;
       }
     }
 

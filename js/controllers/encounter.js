@@ -2799,11 +2799,18 @@ export const Encounter = {
       pose display:flex, .show (au rAF suivant) déclenche la transition —
       sans ce décalage, la feuille apparaîtrait déjà translatée à 0. */
   openMatrixDrawer() {
-    // Quand la colonne Matrice dockée est visible (≥1100px, serveur
-    // lié), la Matrice est déjà à l'écran — pas de tiroir par-dessus, on
-    // amène la colonne en vue (tap sur un jeton CI, « Ouvrir la Matrice »).
+    // Quand la colonne Matrice dockée est À L'ÉCRAN, la Matrice y est déjà —
+    // pas de tiroir par-dessus, on amène la colonne en vue.
+    //
+    // La visibilité se MESURE, elle ne se déduit pas. Le garde lisait
+    // `!dock.hidden` (l'attribut, posé sur « un serveur est lié ») ET une
+    // media query — deux indices dont la conjonction n'a jamais voulu dire
+    // « le dock est visible ». Le jour où le CSS a retiré la colonne pendant
+    // une poursuite, le garde a continué de croire qu'elle était là : il
+    // refusait le tiroir et faisait défiler vers un élément en `display:none`.
+    // Le bouton Matrice de la barre de tour ne répondait plus à rien.
     const dock = document.getElementById("encounter-matrix-dock");
-    if (dock && !dock.hidden && window.matchMedia("(min-width: 1100px)").matches) {
+    if (dock && dock.getClientRects().length) {
       dock.scrollIntoView({ block: "nearest" });
       return;
     }

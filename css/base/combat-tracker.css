@@ -2449,6 +2449,20 @@ button.encounter-token-init:active {
   .encounter-modal.is-matrix-only.has-matrix-dock .encounter-main-col {
     flex: 0 1 340px;
   }
+  /* LE DOCK SUIT LE MOTEUR, LE BOUTON SUIT LE SERVEUR.
+     Sa visibilité tenait au seul fait qu'un serveur soit LIÉ (`has-matrix-dock`,
+     posé dès l'état Matrice ≥ 1). Un serveur lié en début de scène gardait donc
+     sa colonne de 320px pendant toute une course-poursuite, au détriment du
+     moteur qui, lui, tournait : mesuré à 1280, la piste tombait de 771 à 506.
+     Quand une piste est ouverte et que la Matrice n'est PAS un moteur déclaré,
+     le dock se retire et rend sa place. Rien n'est perdu : `#encounter-matrix-btn`
+     reste dans la barre de tour et porte déjà l'état qu'il ne faut pas manquer
+     — alerte (●) et nombre de CI en jeu (×N) —, et il ouvre le tiroir d'un tap.
+     Pour rendre sa colonne à la Matrice, on l'allume comme moteur (⚡︎ Scène
+     Matrice) : les deux partagent alors, cf. le bloc « TROIS MOTEURS ». */
+  .encounter-modal.has-chase:not(.has-matrix) .encounter-matrix-dock {
+    display: none;
+  }
 }
 
 /* ---- Résumé de la scène de combat dans la sidebar ---- */

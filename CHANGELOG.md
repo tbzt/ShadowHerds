@@ -10,6 +10,26 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.148.1] — 2026-09-02
+
+### Modifié
+
+- **La colonne Matrice se retire pendant une course-poursuite.** Elle
+  s'affichait dès qu'un serveur était lié à la scène, et gardait donc ses
+  320 px pendant toute une poursuite même quand la Matrice ne tournait pas :
+  la piste, elle, tombait de 851 à 506 px. Elle suit désormais le moteur, pas
+  le lien — et le bouton ⚡︎ de la barre de tour reste là, avec l'état qu'on ne
+  peut pas manquer (alerte, nombre de CI en jeu) et le tiroir à un tap. Pour
+  lui rendre sa colonne, il suffit d'allumer le moteur Matrice : les deux
+  moteurs partagent alors la largeur, comme depuis la 1.147.0.
+
+### Corrigé
+
+- **Le bouton ⚡︎ n'ouvrait plus rien quand la colonne Matrice était retirée**,
+  rendant l'intrusion inatteignable pendant une poursuite. Il vérifiait la
+  présence de la colonne au lieu de la mesurer, et faisait défiler vers un
+  élément invisible.
+
 ## [1.148.0] — 2026-09-02
 
 ### Ajouté
