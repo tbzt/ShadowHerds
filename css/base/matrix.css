@@ -601,3 +601,27 @@
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
 }
+
+/* « Dans le serveur » — qui est exposé si l'alerte tombe (lot « l'intrusion
+   enregistre qui est dedans »). Registre des lignes d'état du panneau, pas
+   des contrôles : rien à taper ici, c'est un constat. */
+.intrusion-runners {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1);
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-2xs);
+}
+.intrusion-runners-lbl {
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.intrusion-runner {
+  padding: 0 var(--sp-1);
+  border: 1px solid color-mix(in srgb, var(--accent2) 45%, var(--border));
+  border-radius: var(--radius-pill);
+  color: var(--accent2);
+}

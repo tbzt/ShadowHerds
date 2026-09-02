@@ -23,6 +23,7 @@ import { Matrix } from "../../rules/matrix.js";
 import { Movement } from "../../rules/movement.js";
 import { RovingGroup } from "../kit/rovinggroup.js";
 import { ServerRenderer } from "./serverrenderer.js";
+import { Servers } from "../../controllers/servers.js";
 import { Sheets } from "../kit/sheets.js";
 import { TopologyGen } from "../../rules/topologygen.js";
 import { Utils } from "../../core/utils.js";
@@ -815,15 +816,25 @@ export const EncounterRenderer = {
       narrative (`_rowNarrative`, Anarchy). C'est justement en Anarchy que la
       scène se scinde le plus volontiers, puisque le livre n'y fige aucun ordre.
 
-      Pas de ⚡︎ jumeau, et c'est un manque ASSUMÉ, pas un oubli : l'intrusion
-      n'enregistre pas QUI est dedans (`state.matrix[srvId]` porte l'alerte,
-      les CI, la surveillance — jamais un id de participant). L'inventer ici
-      afficherait une information que l'app ne tient pas. */
+      Le ⚡︎ jumeau a fini par arriver, et sans rien stocker : l'intrusion
+      n'enregistre toujours pas qui la mène, mais le fait vivait déjà sur la
+      fiche du runner (`<cyberdeck|persona>.run.targetServerId`, lu par
+      `DeckRun.target`). Il manquait la JOINTURE avec l'effectif, pas la
+      donnée — cf. `Encounter.serverOfRunner`. */
   _engageBadge(pnjId, isMatrix) {
-    const chase = typeof Encounter !== "undefined" && Encounter.state && Encounter.state.chase;
-    if (isMatrix || !chase) return "";
-    if (!Chase.laneOf(chase, Chase.trackKey(chase, pnjId))) return "";
-    return `<span class="encounter-engage" title="Sur la piste de poursuite">⇉</span>`;
+    if (isMatrix || typeof Encounter === "undefined" || !Encounter.state) return "";
+    const out = [];
+    const chase = Encounter.state.chase;
+    if (chase && Chase.laneOf(chase, Chase.trackKey(chase, pnjId)))
+      out.push(`<span class="encounter-engage" title="Sur la piste de poursuite">⇉</span>`);
+    const srvId = Encounter.serverOfRunner(pnjId);
+    if (srvId) {
+      const srv = Servers.find(srvId);
+      out.push(
+        `<span class="encounter-engage is-matrix" title="Dans la Matrice — ${Utils.escHtml((srv && srv.name) || "serveur de la scène")}">⚡︎</span>`,
+      );
+    }
+    return out.join("");
   },
 
   _row(r, isActive, outOfPass, effectiveInit, compact) {

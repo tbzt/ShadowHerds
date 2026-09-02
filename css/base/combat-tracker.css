@@ -2793,3 +2793,9 @@ kbd {
   color: var(--text-dim);
   flex: 0 0 auto;
 }
+/* Le ⚡︎ jumeau du ⇉ : engagé dans une intrusion de la scène. Canal --accent2,
+   celui de la Matrice partout ailleurs, pour que le lieu se lise à la couleur
+   sans lire le glyphe. */
+.encounter-engage.is-matrix {
+  color: var(--accent2);
+}

@@ -28,6 +28,7 @@ import { Intrusion } from "./intrusion.js";
 import { ItemResolver } from "../rules/itemresolver.js";
 import { Matrix } from "../rules/matrix.js";
 import { Nudge } from "../widgets/tour/nudge.js";
+import { DeckRun } from "./deckrun.js";
 import { PnjLookup } from "./pnjlookup.js";
 import { Pursuit } from "./pursuit.js";
 import { Servers } from "./servers.js";
@@ -2601,6 +2602,48 @@ export const Encounter = {
     if (!this.state || !id) return null;
     this.state.matrix ||= {};
     return (this.state.matrix[id] ||= Intrusion.newState());
+  },
+
+  /* ========================================================
+     QUI EST DANS LE SERVEUR
+
+     L'intrusion ne l'enregistrait nulle part : `state.matrix[srvId]` porte
+     l'alerte, les CI, la surveillance, les marks — jamais « qui la mène ».
+     Le contrat de `Intrusion.newState` le dit d'ailleurs en toutes lettres à
+     propos de la Variance : le livre compte « par intrus », « mais l'app n'a
+     qu'un infiltrateur courant par serveur ».
+
+     Or le fait EXISTE, et depuis toujours : il vit sur la fiche du runner.
+     `DeckRun.target(pnj)` lit `<cyberdeck|persona>.run.targetServerId`, et
+     c'est déjà la source à laquelle le pont decker fait confiance pour
+     proposer « 🔗 Lier ce serveur à la scène ». Il n'a simplement jamais été
+     JOINT à l'effectif. Rien à stocker, rien à migrer : une jointure.
+
+     Ce qu'on ne fait PAS : compter les marks comme une présence. `marksOn`
+     dit que le serveur a tagué une persona, pas qu'elle est dedans — un
+     runner déconnecté garde ses marks, et une cible traquée n'est pas une
+     intruse. Une conséquence n'est pas une définition.
+     ======================================================== */
+
+  /** Les combattants de la scène qui font tourner leur persona contre CE
+      serveur. → `[pnjId]`. */
+  runnersIn(srvId) {
+    if (!this.state || !srvId) return [];
+    return this._rows()
+      .filter((r) => r.pnj && !r.pnj._adhoc && DeckRun.target(r.pnj) === srvId)
+      .map((r) => r.pnjId);
+  },
+
+  /** Le serveur DE LA SCÈNE contre lequel ce combattant tourne, ou `null` —
+      la scène peut en suivre plusieurs en parallèle (`state.matrix`), et un
+      runner visant un serveur qu'elle ne suit pas n'est engagé dans aucune de
+      ses intrusions. */
+  serverOfRunner(pnjId) {
+    const pnj = PnjLookup.find(pnjId);
+    const cible = pnj && !pnj._adhoc ? DeckRun.target(pnj) : null;
+    if (!cible) return null;
+    const suivis = new Set([this.state && this.state.serverId, ...this.activeMatrixServerIds()].filter(Boolean));
+    return suivis.has(cible) ? cible : null;
   },
 
   /** Serveurs ayant une intrusion en cours dans cette scène (au moins un

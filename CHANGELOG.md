@@ -10,6 +10,28 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.149.0] — 2026-09-02
+
+### Ajouté
+
+- **La scène sait qui est dans le serveur.** Le suivi affichait l'alerte, les
+  CI et la surveillance d'une intrusion sans jamais dire qui la menait — donc
+  sans répondre à la question qu'on se pose à la seconde où l'alerte tombe :
+  qui est exposé ? Le panneau d'intrusion porte désormais une ligne « Dans le
+  serveur » avec les personas qui y tournent, et la liste des combattants
+  marque ces runners d'un ⚡︎, jumeau du ⇉ de la course-poursuite. Un coup
+  d'œil suffit à voir qui se bat, qui fuit et qui est branché.
+
+  Rien n'a été ajouté à l'intrusion pour ça : l'information vivait déjà sur la
+  fiche du runner — c'est sa cible matricielle, celle que l'app affiche sur sa
+  carte et qu'elle propose de lier à la scène. Elle n'avait simplement jamais
+  été rapprochée de l'effectif. Les scènes déjà enregistrées en profitent sans
+  rien changer.
+
+  Deux silences volontaires : la ligne n'apparaît pas quand personne n'est
+  dans le serveur (un serveur préparé à l'avance n'a rien à annoncer), et un
+  runner qui vise un serveur que la scène ne suit pas n'est marqué nulle part.
+
 ## [1.148.1] — 2026-09-02
 
 ### Modifié

@@ -75,6 +75,32 @@ export const ServerRenderer = {
       la CI du tour : le bouton d'avance manuel du tiroir est masqué pour ne pas
       double-déployer. Faux en scène Matrice seule (le tiroir reste l'horloge).
       Même accès à l'état de scène (bridge global gardé) que `_intr`. */
+  /** QUI EST DEDANS — la question que le panneau ne savait pas répondre.
+
+      C'est celle que le MJ se pose au moment où l'alerte tombe : « qui est
+      exposé ? ». L'intrusion n'enregistre pourtant rien de tel, et on ne lui
+      a rien ajouté : le fait vit sur la fiche du runner
+      (`<cyberdeck|persona>.run.targetServerId`) et `Encounter.runnersIn` ne
+      fait que le joindre à l'effectif de la scène.
+
+      Silencieux quand personne n'y est — un serveur qu'on prépare avant que
+      le decker n'y entre n'a pas à afficher une ligne vide. */
+  _runnersRow(srv) {
+    // Ponts globaux, comme `Encounter` plus haut dans ce fichier : l'importer
+    // fermerait un cycle (le contrôleur rend déjà ce panneau).
+    const dispo = typeof Encounter !== "undefined" && Encounter.state && typeof PnjLookup !== "undefined";
+    const noms = dispo
+      ? Encounter.runnersIn(srv.id)
+          .map((id) => (PnjLookup.find(id) || {}).name)
+          .filter(Boolean)
+      : [];
+    if (!noms.length) return "";
+    return `<p class="intrusion-runners" title="Personas qui tournent contre ce serveur — lu sur leur fiche (cible matricielle), pas déclaré ici">
+      <span class="intrusion-runners-lbl">Dans le serveur</span>
+      ${noms.map((n) => `<span class="intrusion-runner">${CardRenderer._esc(n)}</span>`).join("")}
+    </p>`;
+  },
+
   _combatDriven(srv) {
     const st = typeof Encounter !== "undefined" && Encounter.state;
     return !!(st && (st.motors || []).includes("combat") && st.serverId === srv.id);
@@ -475,6 +501,7 @@ export const ServerRenderer = {
             : `<button class="btn-primary btn-small" data-action="next-turn" data-id="${srv.id}">Round suivant <svg class="icon icon-sm" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>`}
           <button class="btn-icon" data-action="reset-intrusion" data-id="${srv.id}" title="Réinitialiser l'intrusion"><svg class="icon" aria-hidden="true"><use href="#ic-reset"></use></svg></button>
         </div>
+        ${this._runnersRow(srv)}
         <div class="stack ic-rows">${rows}</div>
         ${surveillance}
         ${this.varianceBlock(srv)}
