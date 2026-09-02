@@ -394,6 +394,31 @@ export const Chase = {
       majeure Pilotage est requise ») et Anarchy 2.0 (test opposé, 1 action).
       SR5 et Anarchy 1re portent `round.test = null` — un VIDE ASSUMÉ que ce
       module documente déjà — et n'ont donc rien à débiter. */
+  /** L'action NOMMÉE que le test de la ronde dépense, pour ce terrain — ou
+      `null`. Seul SR6 à pied en déclare une (« Sprinter »). Ailleurs le livre
+      demande une action sans la nommer, ou n'impose pas de test. */
+  testActionKey(edition, terrain) {
+    const m = this.use(edition);
+    const t = m && m.round && m.round.test;
+    const map = t && t.actionKey;
+    return (map && map[terrain]) || null;
+  },
+
+  /** Les manœuvres de course-poursuite déclarées par le livre, avec leur
+      PORTÉE — la condition que le rendu jetait. Seul SR5 en donne : son
+      `round.test` est nul parce que « ce sont des ACTIONS, choisies ». */
+  roundActions(edition) {
+    const m = this.use(edition);
+    return (m && m.round && m.round.actions) || [];
+  },
+
+  /** Cette manœuvre est-elle possible depuis cette bande ? `"toutes"` passe
+      partout ; sinon la bande doit être exactement celle que le livre nomme
+      (Percuter et Couper la route : portée courte). */
+  rangeAllows(range, laneKey) {
+    return !range || range === "toutes" || range === laneKey;
+  },
+
   testCost(edition) {
     const m = this.use(edition);
     const t = m && m.round && m.round.test;

@@ -10,6 +10,55 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.147.0] — 2026-09-02
+
+### Modifié
+
+- **Une scène ne joue plus un seul moteur à la fois.** Le suivi de combat
+  traitait « combat », « poursuite » et « Matrice » comme un choix unique :
+  ouvrir la Matrice effaçait la poursuite en cours, et une poursuite en
+  Anarchy éteignait le combat. Or une table fait l'inverse — un combat devient
+  une course-poursuite pour une partie de l'équipe, reste un combat pour les
+  autres, pendant qu'un decker est dans un serveur. Les trois tournent
+  désormais ensemble, chacun avec sa surface, et la liste des combattants
+  marque d'un ⇉ ceux qui sont sur la piste. L'entrée de menu suit : « ⚡︎ Scène
+  Matrice » devient « ⚡︎ Fermer la Matrice » une fois allumée, comme la
+  poursuite — un moteur qu'on ouvre et qu'on ferme au même endroit.
+- **La poursuite et le combat n'ont plus qu'une ronde.** Les livres font payer
+  le test de la ronde sur le tour du personnage : il n'y en a qu'une, et deux
+  compteurs séparés ne pouvaient que diverger. C'est ce qui arrivait sans rien
+  dire — passer les tours jusqu'à ce que l'ordre boucle changeait la ronde de
+  combat pendant que la piste restait en arrière, avec ses tests, ses actions
+  payées et ses flèches de tendance périmés. La piste suit maintenant le
+  combat, son « Round suivant » laisse la place à une mention, et une
+  poursuite ouverte au 3ᵉ round commence au 3ᵉ. Seule exception, écrite au
+  livre : la filature, dont les phases durent une minute, garde son compteur.
+
+### Ajouté
+
+- **Les manœuvres de course-poursuite se jouent depuis la piste (Shadowrun 5).**
+  Le livre n'y impose pas de test par round — ce sont quatre actions choisies,
+  et elles étaient affichées en petits caractères gris, sans prix ni règle ni
+  moyen de les déclencher. Cascade, Couper la route, Percuter et Rattraper
+  sont des boutons sur la fiche du participant, avec leur coût, et elles
+  débitent son budget d'actions. **Leur portée redevient une règle** : Percuter
+  et Couper la route se ternissent hors de portée courte en disant pourquoi —
+  ternies, pas retirées, parce que le livre écrit une condition et que vous
+  voyez une situation que l'app ne voit pas.
+- **Le test de course à pied s'appelle Sprinter (Shadowrun 6).** Le livre écrit
+  « une action majeure Sprinter est nécessaire à chaque round » : le ⚄ ne
+  débitait qu'une majeure anonyme, il joue maintenant l'action nommée. Elle
+  laisse sa trace comme les autres, son prix vient d'une seule source, et les
+  interdictions du livre s'appliquent enfin — un personnage Électrocuté se
+  voit refuser le sprint, avec la raison.
+
+### Corrigé
+
+- **Une scène Matrice n'avait aucune surface sous 1100 px** et le panneau
+  d'intrusion n'apparaissait qu'à côté d'un combat qui n'existait pas.
+- **Passer en filature affichait « Phase 4 / 3 »** — un décompte de minutes
+  hérité d'un décompte de secondes.
+
 ## [1.146.0] — 2026-09-02
 
 ### Modifié

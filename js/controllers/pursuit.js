@@ -19,6 +19,7 @@
    ✓ ou ✗ (même doctrine que l'initiative, lot B3.5) ; un accident est
    PROPOSÉ, jamais appliqué (règle R4).
    ============================================================ */
+import { Actions } from "../rules/actions.js";
 import { Chase } from "../rules/chase.js";
 import { Dice } from "../rules/dice.js";
 import { DiceRoller } from "../widgets/dice/diceroller.js";
@@ -467,6 +468,22 @@ export const Pursuit = {
     // la piste accepte des figurants que le tracker ne connaît pas.
     const c = pnj && Encounter._find(pnj.id);
     if (!c) return;
+    // ── Le test de la ronde est une ACTION NOMMÉE quand le livre la nomme ──
+    // SR6 à pied écrit « une action majeure Sprinter » : ce n'est pas un débit
+    // anonyme d'une majeure, c'est Sprinter. Passer par `useAction` fait donc
+    // trois choses de plus, toutes déjà motorisées : le prix vient du
+    // catalogue (une seule source), les interdictions du livre s'appliquent
+    // (Électrocuté « ne peut effectuer une action Sprinter » — le geste est
+    // refusé EN LE DISANT, et rien n'est marqué payé), et l'action laisse sa
+    // trace comme les autres. Sans nom déclaré, on retombe sur le débit brut.
+    const veh = this.vehicleOf(key);
+    const terrain = veh ? "vehicule" : st.terrain;
+    const nomme = Chase.testActionKey(this.edition(), terrain);
+    if (nomme && Actions.find(pnj, nomme)) {
+      const ok = Encounter.useAction(pnj.id, nomme, true) !== false;
+      if (ok) st.paid[key] = true;
+      return;
+    }
     st.paid[key] = true;
     const over = Encounter._consumeAction(c, cost, pnj);
     // Texte brut : un toast n'est pas du HTML (l'échapper afficherait les
@@ -504,6 +521,62 @@ export const Pursuit = {
     }
     Chase.setTest(this.edition(), st, key, res.hits >= spec.threshold ? "ok" : "ko");
     this._persist();
+  },
+
+  /** LES MANŒUVRES DE COURSE-POURSUITE (lot C) — jouables, enfin.
+
+      Le livre SR5 ne fait pas de test par ronde : « ce sont des ACTIONS,
+      choisies », et ces quatre-là SONT la mécanique de poursuite. Le contrat
+      les portait entièrement — clé, libellé, PORTÉE, règles — et le rendu en
+      faisait `actions.map(a => a.label).join(" · ")` : une liste de noms en
+      gris, en bas du panneau, sans prix, sans règle, et surtout sans la
+      portée qui décide si la manœuvre est seulement possible.
+
+      Elles existaient une SECONDE fois, dans le catalogue d'actions, avec
+      leurs coûts réels et les mêmes clés. C'est cette copie-là qui fait foi
+      ici : le coût vient du catalogue (une seule source), la poursuite
+      n'ajoute que ce qu'elle seule sait — d'où on tire, et si c'est assez
+      près.
+
+      Le filtre INFORME, il n'interdit pas : une manœuvre hors de portée est
+      rendue ternie avec sa raison, jamais retirée. Le livre écrit une
+      condition, pas une interdiction, et c'est le MJ qui arbitre une
+      situation que l'app ne voit pas. */
+  chaseActions(key) {
+    const st = this.state();
+    const pnj = this._actorFor(key);
+    const decl = Chase.roundActions(this.edition());
+    if (!st || !pnj || !decl.length) return [];
+    // Pas encore posé sur une bande = pas encore dans la course : aucune
+    // manœuvre à proposer, et surtout aucune portée à comparer. (Trouvé en
+    // vérification : `Pursuit.open` rend la fiche avant que `fill` n'ait posé
+    // qui que ce soit, et la phrase de portée plantait sur une bande nulle —
+    // le panneau entier ne se rendait plus.)
+    const bande = Chase.laneOf(st, key);
+    if (!bande) return [];
+    const lanes = Chase.lanes(this.edition(), st.terrain);
+    const nomDeBande = (k) => (lanes.find((l) => l.key === k) || {}).label || k || "";
+    return decl
+      .map((a) => {
+        // Le catalogue fait foi pour le prix et les règles ; la déclaration de
+        // poursuite ajoute la portée. Sans entrée au catalogue, on n'invente
+        // pas de coût : la manœuvre reste un rappel, sans bouton.
+        const entry = Actions.find(pnj, a.key);
+        if (!entry) return null;
+        const ok = Chase.rangeAllows(a.range, bande);
+        return {
+          key: a.key,
+          name: entry.name || a.label,
+          cost: Actions.costLabel(pnj, entry, entry.cost),
+          lines: a.lines || entry.lines || [],
+          allowed: ok,
+          why: ok
+            ? ""
+            : `Portée ${nomDeBande(a.range).toLowerCase()} requise — ${pnj.name} est à ${nomDeBande(bande).toLowerCase() || "une autre portée"}`.trim(),
+          pnjId: pnj.id,
+        };
+      })
+      .filter(Boolean);
   },
 
   /** Ce que l'échec coûte ICI, prêt à lancer si c'est un jet (test
@@ -930,6 +1003,11 @@ export const Pursuit = {
           feuille montre son ÉQUIPAGE, et c'est en tapant un nom d'équipier
           qu'on ouvre les 14 actions, sur SA fiche à lui (lot P6). */
       sheet: this._sheetFor && !this.vehicleOf(this._sheetFor) ? this.edgeActionsFor(this._sheetFor) : null,
+      /** Les manœuvres du livre pour CE participant, avec leur portée évaluée
+          depuis sa bande (lot C). Vide là où le livre n'en donne pas — SR6 les
+          remplace par le test de la ronde et ses actions d'Atout, Anarchy n'a
+          pas de catalogue d'actions du tout. */
+      sheetActions: this._sheetFor ? this.chaseActions(this._sheetFor) : [],
       /** L'état du participant dont la fiche est ouverte : la fiche porte
           désormais les GESTES que le jeton ne montre plus sur écran étroit
           (ancrer, avantage, réserve, sortie, saisie). Sans elle, masquer ces

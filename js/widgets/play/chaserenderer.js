@@ -458,6 +458,26 @@ export const ChaseRenderer = {
         ? `<div class="chase-acts">${puces}</div>`
         : `<p class="chase-act-out">Aucune action de poursuite ouverte à ce participant.</p>`
       : "";
+    // ── LOT C : les manœuvres du livre, jouables ─────────────────────
+    // Elles vivent AVANT les actions d'Atout parce que ce sont elles qui font
+    // avancer la poursuite en SR5 (`round.test` y est nul : « ce sont des
+    // ACTIONS, choisies »), là où l'Atout la modifie. Hors de portée, la puce
+    // se ternit et dit pourquoi — le livre écrit une condition, pas une
+    // interdiction, et le MJ voit une situation que l'app ne voit pas.
+    const manoeuvres = (vm.sheetActions || []).length
+      ? `<div class="chase-manoeuvres">
+          ${(vm.sheetActions || [])
+            .map(
+              (a) =>
+                `<button class="chase-manoeuvre${a.allowed ? "" : " is-out"}" data-action="action-use" data-id="${a.pnjId}" data-key="${a.key}" title="${Utils.escHtml(
+                  [`${a.name} — ${a.cost}`, ...(a.lines || []), a.why].filter(Boolean).join("\n"),
+                )}"><b>${Utils.escHtml(a.cost)}</b> ${Utils.escHtml(a.name)}${
+                  a.allowed ? "" : ` <em>${Utils.escHtml(a.why)}</em>`
+                }</button>`,
+            )
+            .join("")}
+        </div>`
+      : "";
     return `<div class="chase-sheet">
       <p class="chase-sheet-head">${vm.sheetVehicle && vm.sheetVehicle.kind === "drone" ? "◇" : vm.sheetVehicle ? "▣" : vm.glyph} ${CardRenderer._esc(vm.sheetName)}
         ${ressource}
@@ -466,6 +486,7 @@ export const ChaseRenderer = {
       ${this._legs(vm)}
       ${this._board(vm)}
       ${gestes}
+      ${manoeuvres}
       ${actions}
       ${reste}
     </div>`;

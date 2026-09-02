@@ -1878,7 +1878,19 @@ export const EditionSR6 = {
           s'affiche, la paire se débite (lot 4). Même source, deux usages —
           plutôt qu'un parseur qui relirait « 1 majeure » à l'exécution et
           casserait au premier libellé traduit autrement. */
-      test: { required: true, cost: "1 majeure", costAction: { key: "major", n: 1 } },
+      /** `actionKey` : le test de la ronde N'EST PAS un débit anonyme, c'est une
+          action NOMMÉE du catalogue. À pied, le livre écrit « une action
+          majeure Sprinter est nécessaire à chaque round » — c'est Sprinter,
+          pas « une majeure ». Le dire au moteur change trois choses, toutes
+          déjà motorisées et jusqu'ici perdues : le prix vient du catalogue
+          (plus de coût recopié à deux endroits), les interdictions du livre
+          s'appliquent (Électrocuté « ne peut effectuer une action Sprinter »),
+          et l'action laisse sa trace comme les autres.
+
+          En véhicule, rien : le livre y demande « une action majeure Pilotage »
+          et le catalogue SR6 n'a pas d'entrée « Piloter » — la majeure y reste
+          générique. On ne fabrique pas l'entrée manquante pour faire symétrie. */
+      test: { required: true, cost: "1 majeure", costAction: { key: "major", n: 1 }, actionKey: { pied: "sprinter" } },
       onSuccess: "positional",
       onSkip: "lost",
       move: { onSuccess: 1, targetMoves: false },

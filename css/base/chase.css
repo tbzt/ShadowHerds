@@ -1201,3 +1201,42 @@ button.chase-tok-val.is-void {
   font-style: normal;
   opacity: 0.75;
 }
+
+/* ---- LOT C : les manœuvres du livre, sur la fiche de la piste ----
+   Registre des puces d'action d'Atout (`.chase-act`), dont elles sont les
+   voisines immédiates — même densité, même cible tactile. La différence est
+   sémantique : hors de portée, la puce se TERNIT et porte sa raison, elle ne
+   disparaît pas et ne se désactive pas. Le livre écrit une condition
+   (« portée courte »), pas une interdiction ; le MJ voit une situation que
+   l'app ne voit pas. Même arbitrage que `.chase-act.is-over` pour une action
+   trop chère. */
+.chase-manoeuvres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin-top: var(--sp-2);
+}
+.chase-manoeuvre {
+  font: inherit;
+  font-size: var(--fs-2xs);
+  text-align: left;
+  min-height: 32px;
+  padding: var(--sp-1) var(--sp-2);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  cursor: pointer;
+}
+.chase-manoeuvre b {
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  font-weight: 400;
+}
+.chase-manoeuvre em {
+  font-style: normal;
+  color: var(--text-dim);
+}
+.chase-manoeuvre.is-out {
+  opacity: 0.55;
+}
