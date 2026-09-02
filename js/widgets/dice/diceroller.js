@@ -30,10 +30,12 @@ export const DiceRoller = {
       ne stocke qu'une entrée formatée, pas le res exploitable. */
   _lastRoll: null,
 
-  /** Réserve de menace Anarchy 2.0 (p.138) : compteur MJ global de
-      scénario, ressource de relance des PNJ. Persistée édition-scopée via
-      Storage (jamais localStorage direct). SR5/SR6 n'y touchent pas (leur
-      ressource est la Chance / l'Atout portée par chaque PNJ). */
+  /** Réserve de menace — modèle d'Anarchy 1re (sran_01 p.154, « réserve du
+      meneur ») : compteur MJ global de scénario, ressource de relance des
+      PNJ. Persistée édition-scopée via Storage (jamais localStorage direct).
+      Anarchy 2.0 n'en a PAS par défaut (AUD-8, cf. anarchy2.js
+      usesThreatReserve) ; SR5/SR6 non plus (leur ressource est la Chance /
+      l'Atout portée par chaque PNJ). */
   _threat: 0,
   _THREAT_DEFAULT: 4,
 
@@ -53,7 +55,7 @@ export const DiceRoller = {
   },
 
   /* ========================================================
-     RÉSERVE DE MENACE (Anarchy 2.0, p.138)
+     RÉSERVE DE MENACE (Anarchy 1re, sran_01 p.154)
      ======================================================== */
 
   /** Recharge la réserve depuis Storage (appelée à chaque changement
@@ -2077,6 +2079,19 @@ export const DiceRoller = {
     if (mod.usesThreatReserve) {
       available = this._threat > 0;
       hint = `Menace ${this._threat}`;
+    } else if (action.from === "scene:anarchy") {
+      // Anarchy 2.0 (p.77) : même stock personnel que advantageCost, jamais
+      // la réserve du meneur (AUD-8). Un PNJ à 0 point (second rôle) voit le
+      // bouton indisponible, comme _renderAdvBuy pour « Obtenir un avantage ».
+      const pnjId = opts.pnjId || null;
+      const val = pnjId && this._hooks.sceneAnarchy ? this._hooks.sceneAnarchy(pnjId) : null;
+      if (val != null) {
+        available = val > 0;
+        hint = `${action.resourceLabel || "Points d'Anarchy"} ${val}`;
+      } else {
+        // Lancer libre, sans PNJ : relance gratuite, jamais bloquée.
+        hint = "gratuit";
+      }
     } else if (action.costAttr) {
       pnj = opts.pnjId ? this._hooks.resolve(opts.pnjId) : null;
       // Même registre que le pré-jet : la réserve de scène si le lanceur y est,
@@ -2115,6 +2130,11 @@ export const DiceRoller = {
 
     if (mod.usesThreatReserve) {
       this._setThreat(this._threat - 1);
+    } else if (st.action.from === "scene:anarchy") {
+      // adjustAnarchyPoints invalide déjà le cache de rendu et commit — pas
+      // d'onPnjChanged à rajouter (même patron que adjustEdge).
+      const pnjId = opts.pnjId || null;
+      if (pnjId && this._hooks.adjustSceneAnarchy) this._hooks.adjustSceneAnarchy(pnjId, -1);
     } else if (st.pnj && st.action.costAttr) {
       const scene = this._hooks.sceneEdge ? this._hooks.sceneEdge(st.pnj) : null;
       if (scene != null && this._hooks.adjustSceneEdge) this._hooks.adjustSceneEdge(st.pnj, -1);

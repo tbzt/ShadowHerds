@@ -52,19 +52,27 @@ export const EditionAnarchy2 = {
   /** Anarchy 2.0 : tout jet de dés passe par le panneau de prise de
       risque (dés de risque, RR) plutôt que le lanceur classique. */
   usesRiskPanel: true,
-  /** Anarchy 2.0 : la ressource de relance côté MJ est la Réserve de
-      menace (p.138), un compteur global de scénario (pas une valeur par
-      PNJ) — pilote l'affichage du badge topbar via DiceRoller. */
-  usesThreatReserve: true,
+  /** ⚠ AUD-8 (vérifié au livre) : Anarchy 2.0 n'a PAS de réserve de menace
+      globale par défaut. Les Points d'Anarchy sont une ressource PERSONNELLE
+      (p.77 : 4/humain, 3/autre métahumain, par scénario, PJ + PNJ premiers
+      rôles seulement). La « Réserve de menace » n'existe que p.126-133, dans
+      le chapitre optionnel *Narration partagée*, Niveau 2 (« MJ tournant ») —
+      pas la partie standard. C'est le modèle d'Anarchy 1re (sran_01 p.154,
+      « réserve du meneur »), pas celui-ci. */
+  usesThreatReserve: false,
   /** Action de relance « Relancer tous les dés » (p.77) : relance
       intégrale (mode "all"), jamais bloquée (la complication du 1er jet
-      reste figée, gérée par Dice.rerollAnarchyAll). Pas d'attribut de
-      coût par PNJ — la dépense vient de la Réserve de menace. */
+      reste figée, gérée par Dice.rerollAnarchyAll). Coût réel du livre
+      (p.77, « Relancer tous les dés : 1 point d'Anarchy ») — puisé dans le
+      même stock personnel que `advantageCost` (`from: "scene:anarchy"`),
+      jamais la réserve du meneur (propre à A1). */
   rerollAction: {
     label: "Relancer tous les dés",
     mode: "all",
     blockedBy: null,
     costAttr: null,
+    from: "scene:anarchy",
+    resourceLabel: "Points d'Anarchy",
   },
   /** Pas d'Edge PRÉ-jet par PNJ : en Anarchy 2.0 la décision pré-jet EST la
       prise de risque, déjà portée par le panneau de risque (usesRiskPanel).
@@ -355,14 +363,14 @@ export const EditionAnarchy2 = {
   /** Règles de round pour le tracker de combat. Anarchy 2.0 : pas d'initiative
       chiffrée, l'ordre est narratif (combativité, cf. p.180). narrative:true →
       le tracker passe en mode dépouillé (tap-to-grise), sans init/tri/réordre. */
-  /** threatReserve : miroir de la Réserve de menace (badge topbar) dans
-      l'en-tête du cockpit — même source de vérité (DiceRoller._threat), aucun
-      état doublé. Le tracker lit ce drapeau, jamais une branche d'édition.
-      anarchyPoints : Anarchy 2.0 dispose d'une économie de Points d'Anarchy
-      par scène (atouts p.77, drogues p.159) — le bandeau d'économie affiche
-      une rangée par participant (jumelle de l'Atout SR6 `edgeTracker`),
-      stockée dans l'entrée de scène. Drapeau de CAPACITÉ, lu à l'aveugle. */
-  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: true, anarchyPoints: true, hasSoak: false },
+  /** threatReserve : false (AUD-8) — pas de réserve de menace par défaut en
+      A2 (cf. usesThreatReserve ci-dessus), donc pas de badge Menace au
+      cockpit non plus. anarchyPoints : Anarchy 2.0 dispose d'une économie de
+      Points d'Anarchy par scène (stock personnel p.77 + atouts p.77, drogues
+      p.159) — le bandeau d'économie affiche une rangée par participant
+      (jumelle de l'Atout SR6 `edgeTracker`), stockée dans l'entrée de scène.
+      Drapeau de CAPACITÉ, lu à l'aveugle. */
+  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: false, anarchyPoints: true, hasSoak: false },
 
   /* ========================================================
      DÉPLACEMENT À PIED (lot P7) — Anarchy 2.0

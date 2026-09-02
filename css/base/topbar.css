@@ -1,7 +1,8 @@
 /* ============================================================
    TOPBAR — boutons-icônes d'action + réserve de menace
    Base = secondaire neutre ; le combat est mis en avant, les raccourcis
-   restent discrets (-quiet). #threat-reserve est propre à Anarchy 2.0.
+   restent discrets (-quiet). #threat-reserve est propre à Anarchy 1re
+   (AUD-8 : Anarchy 2.0 n'a pas de réserve de menace par défaut).
    ============================================================ */
 .topbar-action {
   position: relative;
@@ -47,8 +48,10 @@
   opacity: 1;
 }
 
-/* Réserve de menace (Anarchy 2.0) : badge topbar masqué par défaut,
-   révélé uniquement sous [data-edition^="anarchy"] (jamais via JS). */
+/* Réserve de menace (Anarchy 1re, sran_01 p.154) : badge topbar masqué par
+   défaut, révélé uniquement sous [data-edition="anarchy1"] (jamais via JS).
+   AUD-8 : Anarchy 2.0 (anarchy2) n'entre plus dans ce sélecteur — sa réserve
+   de menace n'est pas une mécanique de la partie standard (p.77 vs p.126-133). */
 #threat-reserve {
   display: none;
   align-items: center;
@@ -60,7 +63,7 @@
   color: var(--text-dim);
   flex-shrink: 0;
 }
-[data-edition^="anarchy"] #threat-reserve {
+[data-edition="anarchy1"] #threat-reserve {
   display: flex;
 }
 .threat-reserve-lbl {
