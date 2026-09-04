@@ -2382,9 +2382,34 @@ button.encounter-token-init:active {
   background: var(--bg);
   overflow: hidden;
   margin-top: 2px;
+  position: relative;
 }
 .encounter-nrow .encounter-life {
   flex-basis: 100%;
+}
+/* D6 (CODIR 2026-09-03) — dans la FILE du cockpit, la jauge est l'état de
+   santé le plus lu de la table : 4px et un trait continu disaient « à peu
+   près ». 6px et les crans du moniteur (`--segs`, posé par CardRenderer.lifeBar
+   depuis la forme de la jauge : cases d'une échelle, paliers d'un moniteur à
+   seuils) disent COMBIEN. Limité au cockpit : la ligne d'annuaire (60px) et la
+   projection de Jouer gardent le trait fin, un cran y ferait 6px. */
+.encounter-row .encounter-life,
+.encounter-nrow .encounter-life {
+  height: 6px;
+}
+.encounter-row .encounter-life::after,
+.encounter-nrow .encounter-life::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent calc(100% / var(--segs, 1) - 1px),
+    var(--bg) calc(100% / var(--segs, 1) - 1px),
+    var(--bg) calc(100% / var(--segs, 1))
+  );
 }
 .encounter-life-fill {
   display: block;

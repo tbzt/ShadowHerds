@@ -326,9 +326,11 @@ export const EncounterBinding = {
           Encounter.countDefense(id);
           break;
         case "react-damage-toggle":
-          // Déplie/replie les chips de dégâts d'une ligne de réaction
-          // (état de vue éphémère, comme react-expand ci-dessus).
-          EncounterRenderer.toggleReactDamage(id);
+          // Déplie/replie les chips de dégâts d'une ligne de réaction OU d'une
+          // ligne de la file (D6 : le ✸ vit aussi au menu ⋯ / barre de l'actif).
+          // Le bouton cliqué est passé : la feuille se cherche AUTOUR de lui
+          // (Sheets → Utils.nearest), jamais « la première du document ».
+          EncounterRenderer.toggleReactDamage(id, false, el);
           break;
         case "damage-type-toggle":
           // Bascule Physique/Étourdissant (SR5/SR6 séparé) avant d'appliquer

@@ -53,12 +53,15 @@ export const ContentModal = {
     overlay
       .querySelector(".content-modal-close")
       .addEventListener("click", () => this.hide());
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && overlay.classList.contains("visible"))
-        this.hide();
-    });
+    // Échap : une seule source, l'écouteur en couches d'app.js (il appelle
+    // `hide()` quand `isOpen()` — décision CODIR 2026-09-04, D5).
     this._el = overlay;
     return overlay;
+  },
+
+  /** Fait d'état mesuré sur le DOM (`.visible`), pour l'Échap en couches. */
+  isOpen() {
+    return !!(this._el && this._el.classList.contains("visible"));
   },
 
   show(nom, desc) {

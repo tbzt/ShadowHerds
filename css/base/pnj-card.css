@@ -1554,16 +1554,22 @@
    déjà utilisé dans dice-overlay.css) : pas de plomberie côté Hub
    pour cibler spécifiquement la section Ombres.
    ============================================================ */
-/* Densité 1 (tuile) = grille de TRI — carte modulaire L2. L'annuaire dense
-   sert le moment « prépa à froid » : comparer plusieurs PNJ EN PARALLÈLE,
-   garder/jeter. On abandonne le mono-colonne (`column-count:1`) pour une
-   grille responsive : plusieurs tuiles de front sur large, retombée propre
-   en une colonne sous le seuil (minmax → 1fr). Isolé à l'annuaire via
-   `:has(.roster-row)` : les cartes pleines gardent leur disposition. */
+/* L'INDEX d'abord, la comparaison ensuite (CODIR 2026-09-03, D1).
+   Deux intentions se battaient dans cette règle : « comparer plusieurs PNJ
+   en parallèle » (prépa à froid, grille de tuiles) et « retrouver quelqu'un »
+   (l'index est le DÉFAUT de la bibliothèque depuis 1.145.4). À 1440 px, la
+   grille `minmax(260px, 1fr)` donnait 4 tuiles de 283 px, et dans chacune les
+   pastilles Défense/Encaissement (`flex: 0 0 auto`) prenaient toute la place :
+   `.roster-row-name` était MESURÉ à 0 px — plus de nom, plus de cible. Arbitré :
+   une ligne d'index est pleine largeur ; sur grand écran on en met deux de
+   front au plus (≥ 520 px chacune), ce qui garde un peu de comparaison sans
+   jamais étrangler le nom. `min(100%, 520px)` évite le débordement sous 520 px
+   de colonne (téléphone). Isolé à l'annuaire via `:has(.roster-row)` : les
+   cartes pleines gardent leur disposition. */
 .cards-zone:has(.roster-row) {
   column-count: unset;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
   gap: var(--sp-2) var(--sp-3);
   align-content: start;
 }
@@ -1584,7 +1590,10 @@
   align-items: baseline;
   flex-wrap: nowrap;
   flex: 1 1 auto;
-  min-width: 0;
+  /* Garde : le nom est l'ancre de reconnaissance (doctrine « Chrome de
+     carte » § 1) — il ne peut plus tomber à 0 px, quelle que soit la largeur
+     des pastilles ; ce sont elles qui cèdent (`.roster-row-pools`). */
+  min-width: 12ch;
   background: none;
   border: none;
   padding: var(--sp-1) 0;
@@ -1612,7 +1621,10 @@
 .roster-row-pools {
   align-items: stretch;
   flex-wrap: nowrap;
-  flex: 0 0 auto;
+  /* Cède avant le nom si la place manque (cf. `.roster-row-name`). */
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
 }
 .roster-row-life {
   flex: 0 0 60px;

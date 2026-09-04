@@ -3,8 +3,11 @@
 /* ============================================================
    APP — Bootstrap, routing, sélecteur d'édition
    ============================================================ */
+import { CardPeek } from "./widgets/card/cardpeek.js";
 import { CardRenderer } from "./widgets/card/cardrenderer.js";
 import { ContextSelector } from "./widgets/journal/contextselector.js";
+import { ConvokePicker } from "./widgets/kit/convokepicker.js";
+import { Dialog } from "./widgets/kit/dialog.js";
 import { DossierBar } from "./widgets/journal/dossierbar.js";
 import { Dossiers } from "./widgets/journal/dossiers.js";
 import { Encounter } from "./controllers/encounter.js";
@@ -17,7 +20,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.149.0",
+  VERSION: "1.150.0",
 
   edition: "none",
   editionModule: null,
@@ -95,13 +98,23 @@ export const App = {
       // désigne pas le bouton de Paramètres, hors écran ici.
       if (next) {
         Nudge.enterScene();
-        Nudge.offer("open-spectator", {
-          anchor: "nav-combat",
-          title: "Un écran pour vos joueurs ?",
-          body: "Une scène tourne. Vous pouvez ouvrir un second écran en lecture seule, à poser côté table : initiative et moniteurs, rien de secret.",
-          cta: { label: "Ouvrir l'écran joueurs", run: () => Settings.openSpectator() },
-        });
+        this.offerSpectatorNudge();
       }
+    },
+
+    /** Le nudge « écran joueurs » ne s'offre que sur une scène qui a
+        quelqu'un à montrer : sur un tracker vide, il proposait de projeter
+        du vide (D2, CODIR 2026-09-03). Rappelé par `Encounter._commit` dès
+        que le premier combattant arrive ; `Nudge.offer` est idempotent
+        (vu une fois, un seul par scène), l'appel répété ne coûte rien. */
+    offerSpectatorNudge() {
+      if (!this.scene || !Encounter.state || !Encounter.state.combatants.length) return;
+      Nudge.offer("open-spectator", {
+        anchor: "nav-combat",
+        title: "Un écran pour vos joueurs ?",
+        body: "Une scène tourne. Vous pouvez ouvrir un second écran en lecture seule, à poser côté table : initiative et moniteurs, rien de secret.",
+        cta: { label: "Ouvrir l'écran joueurs", run: () => Settings.openSpectator() },
+      });
     },
 
     /** Fil d'Ariane : chaîne d'échelles de la racine au dossier en focus,
@@ -489,6 +502,9 @@ export const App = {
       .querySelectorAll(".nav-btn, .bnav-btn")
       .forEach((b) => b.classList.remove("active"));
     this.closeMore();
+    // Un popover ancré à un panneau ne lui survit pas (D4, CODIR 2026-09-04) —
+    // même réflexe que son `resize`.
+    ConvokePicker.close();
 
     const panel = document.getElementById(`panel-${name}`);
     if (panel) panel.classList.add("active");
@@ -900,12 +916,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
-      EditModal.close();
+      // Échap EN COUCHES — une touche ferme UNE couche, la plus haute (ordre du
+      // z-index : menu ⋯ > coup d'œil > modale légère / dialogue > éditeur >
+      // assistant > palette > feuilles > suivi de combat). Avant, tout se
+      // fermait d'un coup : ouvrir le menu ⋯ d'une ligne du tracker puis Échap
+      // fermait le menu ET le tracker, en plein round (CODIR 2026-09-03, D5).
+      // Chaque état est MESURÉ sur le DOM (pas un drapeau), et c'est la seule
+      // source d'Échap pour CardMenu et ContentModal ; Dialog garde la sienne
+      // (annuler = résoudre sa Promise), on s'efface tant qu'il est ouvert.
+      if (CardMenu.closeAll()) return;
+      if (CardPeek.isOpen()) return void CardPeek.hide();
+      if (ContentModal.isOpen()) return void ContentModal.hide();
+      if (Dialog.isOpen()) return;
+      if (document.getElementById("edit-modal")?.classList.contains("open")) return void EditModal.close();
+      if (document.getElementById("chargen-overlay")?.classList.contains("open")) return void CharGen.close();
+      if (document.getElementById("palette-overlay")?.classList.contains("open")) return void Palette.close();
+      if (document.getElementById("shortcuts-overlay")?.classList.contains("open")) return void App.toggleCheatsheet(false);
+      if (document.getElementById("more-sheet-overlay")?.classList.contains("open")) return void App.closeMore();
       Encounter.close();
-      CharGen.close();
-      Palette.close();
-      App.toggleCheatsheet(false);
-      App.closeMore();
       return;
     }
 

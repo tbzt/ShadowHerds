@@ -1738,7 +1738,11 @@ export const CardRenderer = {
     if (!gauge) return "";
     const tone = gauge.level ? ` is-${gauge.level}` : "";
     const cls = `encounter-life${extraClass ? ` ${extraClass}` : ""}`;
-    return `<div class="${cls}" title="Moniteur : ${gauge.label}" aria-hidden="true"><span class="encounter-life-fill${tone}" style="width:${Math.round(gauge.frac * 100)}%"></span></div>`;
+    // `--segs` = le nombre de crans de la forme (cases d'une échelle, paliers
+    // d'un moniteur à seuils) : le CSS du cockpit dessine les séparations
+    // (D6) — la jauge dit COMBIEN il reste, pas seulement « à peu près ».
+    const segs = gauge.form === "tiers" ? (gauge.tiers || []).length : gauge.total || 0;
+    return `<div class="${cls}" style="--segs:${segs || 1}" title="Moniteur : ${gauge.label}" aria-hidden="true"><span class="encounter-life-fill${tone}" style="width:${Math.round(gauge.frac * 100)}%"></span></div>`;
   },
 
   /** Cases de moniteur en LECTURE SEULE (aucune interaction — pas de

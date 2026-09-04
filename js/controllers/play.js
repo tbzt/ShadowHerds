@@ -14,11 +14,14 @@
    ============================================================ */
 import { CardPeek } from "../widgets/card/cardpeek.js";
 import { Debrief } from "./debrief.js";
+import { Dialog } from "../widgets/kit/dialog.js";
 import { DossierBar } from "../widgets/journal/dossierbar.js";
 import { EncounterStore } from "../core/encounterstore.js";
 import { Dossiers } from "../widgets/journal/dossiers.js";
 import { Encounter } from "./encounter.js";
+import { PnjLookup } from "./pnjlookup.js";
 import { RunGen } from "./rungen.js";
+import { Utils } from "../core/utils.js";
 
 export const Play = {
   _wired: false,
@@ -45,6 +48,10 @@ export const Play = {
           // l'offrir sur une scène VIVANTE (le stash n'est pas resynchronisé
           // par `save()`, cf. `_runCommandHtml`).
           DossierBar.openRencontre(id);
+          // D2 (CODIR 2026-09-03) : une scène qui s'ouvre VIDE avec un casting
+          // convoqué propose de l'embarquer — le bouton principal de Jouer
+          // rendait un « Aucun combattant » à côté de six personnages prêts.
+          this._embarkCasting(id).then(() => this.render());
           break;
         case "play-close":
           // La moitié manquante de la porte : Jouer savait ouvrir une scène,
@@ -300,6 +307,73 @@ export const Play = {
         // global `show-panel` (app.js) — rien à intercepter ici.
       }
     });
+  },
+
+  /** D2 — au lancement d'une scène VIDE, propose d'embarquer le casting
+      convoqué (direct + hérité de la campagne, factions dépliées). Mêmes
+      règles que les puces du Briefing : PNJ et PJ → en scène (`Encounter.add`),
+      serveur → en jeu (`Encounter.linkServer`) s'il est le seul, contact →
+      rien. Un seul choix (tout / rien) : le panneau « Ajouter » du tracker
+      reste là pour trier finement. Silence total si la scène a déjà du monde
+      ou si rien n'est convoqué — on n'interrompt que quand ça change quelque
+      chose. Le choix ajoute sans toast par entité (le dialogue a déjà dit ce
+      qu'il faisait). */
+  async _embarkCasting(runId) {
+    if (!runId || !Encounter.state || Encounter.state.combatants.length) return;
+    const ids = DossierBar.convenedIds(runId, { includeAncestors: true });
+    const fighters = [];
+    const servers = [];
+    for (const id of ids) {
+      const loc = PnjLookup.locate(id);
+      if (!loc) continue;
+      if (loc.type === "pnj" || loc.type === "pj") fighters.push({ id, name: loc.name });
+      else if (loc.type === "server") servers.push({ id, name: loc.name });
+    }
+    const server = servers.length === 1 && !Encounter.state.serverId ? servers[0] : null;
+    if (!fighters.length && !server) return;
+    const who = fighters.map((f) => Utils.parseName(f.name).alias || f.name).join(", ");
+    const parts = [];
+    if (fighters.length)
+      parts.push(`${fighters.length} convoqué${fighters.length > 1 ? "s" : ""} à envoyer en scène : ${who}.`);
+    if (server) parts.push(`Le serveur « ${server.name} » sera mis en jeu (Matrice).`);
+    const choice = await Dialog.choose({
+      title: "Embarquer le casting ?",
+      message: parts.join(" "),
+      options: [
+        { label: fighters.length ? "Tous en scène" : "Mettre en jeu", value: "all", primary: true },
+        { label: "Scène vide", value: "none" },
+      ],
+    });
+    if (choice !== "all") return;
+    if (fighters.length) Encounter.addMany(fighters.map((f) => f.id));
+    if (server) await Encounter.linkServer(server.id);
+  },
+
+  /** Re-rend LE CASTING d'un run — le bloc `.play-cast` et la cellule
+      « Casting » de la tête de cockpit — sans reconstruire tout Jouer. C'est le
+      chemin des coches du ConvokePicker : `render()` entier faisait clignoter
+      le panneau et déplaçait le bouton « ＋ convoquer » sous le popover ouvert
+      (D4, CODIR 2026-09-03). Repli sur `render()` si le bloc n'est pas à
+      l'écran (autre onglet du cockpit, autre run affiché). */
+  refreshCast(scopeId) {
+    const box = document.getElementById("play-content");
+    const esc = window.CSS && CSS.escape ? CSS.escape(String(scopeId)) : scopeId;
+    const btn = box && box.querySelector(`[data-action="play-cast-convoke"][data-dossier="${esc}"]`);
+    const block = btn && btn.closest(".play-cast");
+    if (!block) return void this.render();
+    block.outerHTML = this._castHtml(scopeId, { convokeCta: true });
+    // Cellule « Casting » de la tête de cockpit — seulement si la tête est
+    // celle de CE run (le libellé est la clé : `_cockpitCells` la nomme ainsi).
+    const head = box.querySelector(`.play-cockpit-head .pch-name[data-dossier="${esc}"]`);
+    const cell =
+      head &&
+      [...box.querySelectorAll(".play-cockpit-head .pch-cell")].find(
+        (c) => c.querySelector(".l") && c.querySelector(".l").textContent === "Casting",
+      );
+    if (cell) {
+      const n = typeof DossierBar !== "undefined" ? DossierBar.convenedIds(scopeId).length : 0;
+      cell.querySelector(".n").textContent = String(n);
+    }
   },
 
   render() {

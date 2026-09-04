@@ -753,6 +753,16 @@ export const TourSteps = {
       title: "Les créatures reprennent leur nom français",
       body: "Le catalogue de créatures SR6 avait été bâti sur l'édition anglaise, avec des noms traduits au jugé : ne cherchez plus « Jackalope » ni « Glouton majeur », votre livre les appelle Lièvre cornu et Carcajou géant. Quatre-vingt-seize créatures changent de nom — Ours chuteur devient Drop bear, Martichoras devient Manticore, Coloniste devient Blatte régente — et dix-neuf statblocs faux retrouvent les chiffres du livre : l'Ours cornu jouait avec un Seuil de défense de 6 au lieu de 23. Vos fiches déjà rangées gardent leur ancien nom, volontairement : ce sont vos fiches, et les renommer casserait les dossiers et les mentions de journal qui les citent.",
     },
+    {
+      id: "wn-lancer-embarque-casting", anchor: "nav-play", tours: ["whatsnew"], since: "1.150.0", fallback: "center",
+      title: "« Lancer la scène » embarque le casting",
+      body: "Un run avec six personnages convoqués ouvrait un suivi de combat vide : le casting était préparé, pas en scène, et il fallait envoyer chaque puce une par une. Quand la scène s'ouvre vide et qu'un casting est convoqué — sur le run ou hérité de la campagne, factions dépliées — l'app propose de l'embarquer : PNJ et PJ en scène, le serveur mis en jeu s'il est le seul, les contacts laissés à leur place. Tout ou rien ; le panneau « Ajouter » du suivi reste là pour trier finement, et rien n'est demandé si la scène a déjà du monde.",
+    },
+    {
+      id: "wn-degats-depuis-la-file", anchor: "nav-combat", tours: ["whatsnew"], since: "1.150.0", fallback: "center",
+      title: "Les dégâts se posent depuis n'importe quelle ligne",
+      body: "Le ✸ Dégâts ne vivait que dans la console Réagir, donc seulement quand un PJ agissait : une grenade au tour d'un PNJ, un incendie, un tir ami n'avaient aucun geste. Chaque ligne de l'effectif porte maintenant ✸ Dégâts — au menu ⋯ d'une ligne en attente, dans la barre d'actions du combattant actif, sur la ligne narrative d'Anarchy — avec les mêmes puces que Réagir. La jauge de vie passe à 6 px et montre ses crans : elle dit combien il reste, pas seulement « à peu près ». Et lancer l'initiative nomme les PJ dont il attend le score, le premier champ reçoit le focus.",
+    },
   ],
 };
 

@@ -10,6 +10,74 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.150.0] — 2026-09-04
+
+### Ajouté
+
+- **« Lancer la scène » embarque le casting.** Un run avec six personnages
+  convoqués ouvrait un suivi de combat vide : le casting était *préparé*, pas
+  *en scène*, et il fallait envoyer chaque puce une par une. Quand la scène
+  s'ouvre vide et qu'un casting est convoqué — sur le run ou hérité de la
+  campagne, factions dépliées — l'app propose de l'embarquer : PNJ et PJ en
+  scène, le serveur mis en jeu s'il est le seul, les contacts laissés à leur
+  place. Un choix, tout ou rien ; le panneau « Ajouter » reste là pour trier
+  finement. Rien n'est demandé si la scène a déjà du monde, et le rappel
+  « Un écran pour vos joueurs ? » attend désormais le premier combattant au
+  lieu de proposer de projeter du vide.
+- **Les dégâts se posent depuis n'importe quelle ligne du suivi de combat.**
+  Le ✸ Dégâts ne vivait que dans la console « Réagir », donc seulement quand
+  un PJ agissait : une grenade au tour d'un PNJ, un incendie, un tir ami
+  n'avaient aucun geste. Chaque ligne de l'effectif porte maintenant ✸ Dégâts
+  — au menu ⋯ d'une ligne en attente, dans la barre d'actions du combattant
+  actif, et sur la ligne narrative d'Anarchy — avec les mêmes puces que
+  Réagir (Physique/Étourdissant chiffré, ou crans de gravité en Anarchy 2).
+  Même feuille, même règle « une seule feuille ouverte à la fois ».
+- **La jauge de vie compte.** Dans l'effectif, le moniteur était un trait de
+  4 px qui disait « à peu près » ; il passe à 6 px et montre ses crans — les
+  cases d'une échelle, les paliers d'un moniteur à seuils — pour dire combien
+  il reste d'un coup d'œil.
+
+### Modifié
+
+- **Lancer l'initiative dit ce qu'il attend de vous.** « Rien à lancer :
+  initiatives déjà posées ou saisie manuelle requise » cumulait deux causes
+  sans en désigner aucune, et un PJ sans score restait à « — » sans qu'on lui
+  demande rien. Le message n'a plus qu'une cause ; quand des PJ n'ont pas de
+  score, il les nomme et le premier champ reçoit le focus — les joueurs
+  annoncent, vous tapez. En ordre narratif, il rappelle qu'il n'y a rien à
+  lancer et comment réordonner.
+
+## [1.149.1] — 2026-09-04
+
+### Corrigé
+
+- **L'index d'« Ombres portées » avait perdu ses noms.** Depuis qu'il est la
+  vue par défaut de la bibliothèque, l'annuaire dense se présentait en grille
+  de tuiles — quatre de front sur un écran de 1440 px — et dans chaque tuile
+  les pastilles Défense / Encaissement prenaient toute la place : le nom était
+  mesuré à 0 px de large, invisible et impossible à taper. Une ligne d'index
+  est désormais pleine largeur, deux de front au plus sur grand écran, et le
+  nom garde toujours une largeur minimale ; ce sont les pastilles qui cèdent.
+- **Échap ferme une couche à la fois dans le suivi de combat.** Menu ⋯ d'une
+  ligne ouvert, ou fiche en coup d'œil ouverte : Échap fermait tout, y compris
+  le suivi de combat, en plein round. Une touche ne ferme plus que ce qui est
+  au-dessus — le menu, puis le coup d'œil, puis le suivi lui-même quand il est
+  seul. Même règle pour l'éditeur de fiche, l'assistant de création, la
+  palette et les feuilles d'aide.
+- **Le nom du combattant actif ouvre sa fiche en coup d'œil**, avec prev/next
+  sur toute la file, au lieu de fermer le suivi de combat et de renvoyer à la
+  bibliothèque.
+- **Le panneau « Ajouter » du suivi de combat ne garde plus la liste d'une
+  autre édition.** Changer d'édition laissait son contenu en place : un serveur
+  SR6 restait proposé à la liaison dans une scène Anarchy 2, et le lier
+  aurait écrit une référence étrangère dans la scène. Le panneau repart vide à
+  chaque édition chargée.
+- **Convoquer un casting ne fait plus clignoter « Jouer ».** Chaque coche du
+  sélecteur reconstruisait tout le panneau, et le sélecteur restait à
+  l'ancienne place pendant que son bouton descendait avec la rangée de puces.
+  Seuls le casting et son compteur se rafraîchissent, et le sélecteur suit
+  son bouton ; il se ferme quand on change de panneau.
+
 ## [1.149.0] — 2026-09-02
 
 ### Ajouté

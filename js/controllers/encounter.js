@@ -66,6 +66,11 @@ export const Encounter = {
     // depuis la scène persistée (survit à un F5, et c'est aussi la valeur
     // que l'écran spectateur lit via Storage — cf. focus-active plus bas).
     EncounterRenderer._narrativeFocusId = this.state.focusId || null;
+    // Le panneau d'ajout est un nœud statique : sans ce nettoyage, sa liste
+    // de candidats (dont les serveurs) survivait au changement d'édition
+    // (D3, CODIR 2026-09-03). On repart neutre, quelle que soit l'édition.
+    this._pickerHadCandidates = false;
+    EncounterRenderer.clearPicker();
     this._render();
   },
 
@@ -1641,11 +1646,32 @@ export const Encounter = {
       if (c.init == null && this._rollInit(c.pnjId, true)) rolled++;
     }
     this._commit();
-    toast(
-      rolled
-        ? `Initiative lancée (${rolled} combattant${rolled > 1 ? "s" : ""}).`
-        : "Rien à lancer : initiatives déjà posées ou saisie manuelle requise.",
-    );
+    this._initFeedback(rolled, false);
+  },
+
+  /** Retour d'un lancer groupé — UNE cause par message, et le geste qui
+      suit (D7, CODIR 2026-09-03). L'ancien toast cumulait deux causes
+      (« déjà posées OU saisie manuelle requise ») sans dire laquelle, et le
+      PJ léger restait à « — » sans qu'on lui demande rien. Hors mode
+      narratif, les PJ sans score sont nommés et le premier champ reçoit le
+      focus (`focusNextPJInit`, déjà utilisé après « ＋ Équipe »). */
+  _initFeedback(rolled, sorted) {
+    const model = this._model();
+    const pending = model.narrative
+      ? []
+      : this._rows().filter((r) => r.isPJ && r.init == null && !r.down && r.kind !== "matrix");
+    const s = rolled > 1 ? "s" : "";
+    if (pending.length) {
+      const names = pending.map((r) => Utils.parseName(r.pnj.name).alias || r.pnj.name).join(", ");
+      toast(
+        `${rolled ? `Initiative lancée (${rolled} combattant${s}). ` : ""}À saisir pour ${names} — les joueurs annoncent.`,
+      );
+      EncounterRenderer.focusNextPJInit();
+      return;
+    }
+    if (rolled) toast(`Initiative lancée${sorted ? " et classée" : ""} (${rolled} combattant${s}).`);
+    else if (model.narrative) toast("Ordre narratif : pas d'initiative à lancer, glissez ⠿ pour réordonner.");
+    else toast(`${sorted ? "Classé — " : ""}toutes les initiatives sont déjà posées.`);
   },
 
   /** Tri automatique décroissant par initiative (confort quand la valeur
@@ -1674,11 +1700,7 @@ export const Encounter = {
     this._sortInPlace();
     this.state.turnIndex = this._firstEligibleIndex();
     this._commit();
-    toast(
-      rolled
-        ? `Initiative lancée et classée (${rolled} combattant${rolled > 1 ? "s" : ""}).`
-        : "Classé. Rien à lancer : initiatives déjà posées ou saisie manuelle requise.",
-    );
+    this._initFeedback(rolled, true);
   },
 
   /* ---- Tri manuel (nécessaire : Anarchy n'a pas d'initiative chiffrée) ---- */
@@ -2304,14 +2326,20 @@ export const Encounter = {
     }
     // PJ ad-hoc / entité disparue : pas de fiche à afficher.
     if (!PnjLookup.find(pnjId)) return;
-    this.close();
-    const panel = Shadows.data.all.some((p) => p.id === pnjId)
-      ? "shadows"
-      : Servers.findSpider(pnjId)
-        ? "matrix"
-        : "generator";
-    App.showPanel(panel);
-    UI.focusOwner(pnjId);
+    // « Voir la fiche » = coup d'œil, JAMAIS navigation : fermer le tracker
+    // pour aller à la bibliothèque en plein round renvoyait le MJ hors de la
+    // scène (CODIR 2026-09-03, D5). Même geste que le ⛶ de Réagir
+    // (react-expand) — frères = toute la file qui a une fiche, pour feuilleter.
+    CardPeek.open(pnjId, { siblings: this._peekSiblings(), view: "combat" });
+  },
+
+  /** Ids feuilletables depuis la FILE (coup d'œil sur le nom) : tout
+      combattant qui a une fiche — PJ et hors de combat compris, contrairement
+      à `_reactSiblings` (console Réagir : PNJ debout seulement). */
+  _peekSiblings() {
+    return this._rows()
+      .filter((r) => r.pnj && r.kind !== "matrix" && !r.pnj._adhoc && PnjLookup.find(r.pnjId))
+      .map((r) => r.pnjId);
   },
 
   /* ---- Moniteurs (réutiliser un PNJ « frais ») ---- */
@@ -3249,6 +3277,10 @@ export const Encounter = {
     this.save();
     this._render(turnAdvance);
     this._renderPicker();
+    // Le nudge « écran joueurs » attend le premier combattant (D2) — même
+    // point de passage que le nudge pré-jet, même idempotence.
+    if (this.activeDossierId && this.state.combatants.length && typeof App !== "undefined" && App.context)
+      App.context.offerSpectatorNudge();
     this._maybeNudgePreRollEdge();
     this._scheduleRefreshCards();
   },
@@ -3318,7 +3350,13 @@ export const Encounter = {
       tiroir déjà vide reste légitime : c'est le seul cas où le message informe. */
   _renderPicker() {
     const panel = document.getElementById("encounter-add-panel");
-    if (!panel || panel.hidden) return;
+    if (!panel) return;
+    if (panel.hidden) {
+      // Caché = rien à montrer : on vide plutôt que de laisser du HTML mort
+      // qu'un chemin futur pourrait afficher sans re-rendre (D3).
+      panel.innerHTML = "";
+      return;
+    }
     const candidates = this._candidates();
     const servers = this._serverCandidates();
     const vide = !candidates.length && !servers.length;

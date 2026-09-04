@@ -189,6 +189,13 @@ export const Dialog = {
       <button class="btn-primary" data-dialog-action="confirm" data-dialog="confirm-btn">Valider</button>`;
   },
 
+  /** Fait d'état mesuré (`.open` sur l'overlay). L'Échap en couches d'app.js
+      s'efface quand un dialogue est ouvert : c'est lui qui gère sa touche
+      (annulation = résolution de la Promise), pas app.js. */
+  isOpen() {
+    return !!(this._el && this._el.classList.contains("open"));
+  },
+
   _open(afterShow) {
     const overlay = this._el;
     // Une modale déjà ouverte est annulée avant d'en présenter une autre.

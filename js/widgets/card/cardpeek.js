@@ -49,6 +49,13 @@ export const CardPeek = {
     this._show(id, ent);
   },
 
+  /** Fait d'état MESURÉ (pas un drapeau) : l'overlay porte-t-il `.visible` ?
+      Sert à l'Échap en couches d'app.js — le coup d'œil se ferme seul, le
+      tracker sous lui reste. */
+  isOpen() {
+    return !!(this._el && this._el.classList.contains("visible"));
+  },
+
   hide() {
     if (!this._el) return;
     this._el.classList.remove("visible");

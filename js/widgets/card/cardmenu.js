@@ -21,7 +21,7 @@ export const CardMenu = {
       if (toggle) {
         const menu = toggle.parentElement.querySelector(".card-menu");
         const willOpen = menu && menu.hidden;
-        this._closeAll();
+        this.closeAll();
         if (willOpen) {
           menu.hidden = false;
           toggle.classList.add("open");
@@ -32,12 +32,12 @@ export const CardMenu = {
       }
       // Clic ailleurs — y compris sur un item : son action se déclenche
       // via sa propre délégation, puis le menu se referme.
-      this._closeAll();
+      this.closeAll();
     });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") this._closeAll();
-    });
+    // Échap : une seule source, l'écouteur en couches d'app.js — il appelle
+    // `closeAll()` en premier et s'arrête là si un menu était ouvert (D5,
+    // CODIR 2026-09-04). Un second écouteur ici fermerait le menu ET
+    // laisserait app.js fermer la couche du dessous dans la même touche.
   },
 
   // Par défaut le popover s'ouvre vers le HAUT (patron carte : pied de
@@ -70,8 +70,11 @@ export const CardMenu = {
     return null;
   },
 
-  _closeAll() {
-    document.querySelectorAll(".card-menu:not([hidden])").forEach((m) => {
+  /** Ferme tout menu ouvert. Renvoie `true` s'il y en avait un : c'est ce
+      que l'Échap en couches lit pour savoir si la touche est consommée. */
+  closeAll() {
+    const open = document.querySelectorAll(".card-menu:not([hidden])");
+    open.forEach((m) => {
       m.hidden = true;
       m.classList.remove("card-menu--down");
       const t = m.parentElement.querySelector("[data-card-menu-toggle]");
@@ -80,6 +83,7 @@ export const CardMenu = {
         t.setAttribute("aria-expanded", "false");
       }
     });
+    return open.length > 0;
   },
 };
 

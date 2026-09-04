@@ -626,6 +626,7 @@ export const EncounterRenderer = {
       canFocus
         ? { attrs: `data-action="focus-combatant" data-id="${pnjId}"`, label: "Voir la fiche" }
         : null,
+      this._damageMenuItem(r, false),
       pnj._adhoc || r.down
         ? null
         : { attrs: `data-action="knockout-combatant" data-id="${pnjId}"`, label: "Hors de combat" },
@@ -641,12 +642,35 @@ export const EncounterRenderer = {
       <div class="stack encounter-nrow-body">
         <span class="encounter-nrow-name">${colorDot}${name}</span>
         <span class="cluster"><span class="encounter-kind">${kind}</span>${comb}${this._engageBadge(pnjId, false)}${this._serviceBadge(r)}${this._rowStatuses(pnj)}</span>
+        ${this._rowDamageSheet(r, false)}
       </div>
       ${status}
       ${this._lifeGauge(r)}
       <span class="cluster encounter-controls">${this._rowMenu(menuItems)}</span>
       ${this._moraleBanner(r)}
     </div>`;
+  },
+
+  /** D6 (CODIR 2026-09-03) — le ✸ Dégâts depuis la FILE, pas seulement depuis
+      Réagir. Au tour d'un PNJ (grenade, incendie, tir ami), aucun geste
+      n'appliquait de dégâts à un autre PNJ : le ✸ ne vivait que dans la console
+      Réagir, donc quand un PJ agit. Même feuille (`_reactDamageChips`, famille
+      `damage` de `Sheets`), même délégation (`react-damage`/`react-wound`) —
+      un geste, deux entrées. Rien pour une CI (moniteur matriciel géré par le
+      tiroir), une ligne libre ou un combattant à terre. */
+  _damageMenuItem(r, isMatrix) {
+    if (!this._rowHasDamageSheet(r, isMatrix)) return null;
+    return { attrs: `data-action="react-damage-toggle" data-id="${r.pnjId}"`, label: "Dégâts", glyph: "✸" };
+  },
+  _rowHasDamageSheet(r, isMatrix) {
+    const cm = App.editionModule && App.editionModule.conditionMonitor;
+    return !!(r.pnj && !r.pnj._adhoc && !isMatrix && !r.down && cm && cm.damageUI);
+  },
+  /** La feuille de dégâts de la ligne — repliée, restituée par la mémoire de
+      `Sheets` (même (kind, id) que la console : ouvrir l'une ferme l'autre,
+      « une seule feuille ouverte dans tout le cockpit »). */
+  _rowDamageSheet(r, isMatrix) {
+    return this._rowHasDamageSheet(r, isMatrix) ? this._reactDamageChips(r.pnj) : "";
   },
 
   /** Menu de débordement ⋯ générique d'une ligne (ordonné + narratif) —
@@ -925,6 +949,7 @@ export const EncounterRenderer = {
     const menuItems = [
       { attrs: `data-action="move-up" data-id="${pnjId}"`, label: "Monter dans l'ordre", glyph: "↑" },
       { attrs: `data-action="move-down" data-id="${pnjId}"`, label: "Descendre dans l'ordre", glyph: "↓" },
+      this._damageMenuItem(r, isMatrix),
       hasNote ? null : { attrs: `data-action="note-toggle" data-id="${pnjId}"`, label: "Ajouter une note", glyph: "✎" },
       pnj._adhoc || r.down
         ? null
@@ -957,6 +982,7 @@ export const EncounterRenderer = {
         ${this._moraleBanner(r)}
         <input type="text" class="encounter-note${hasNote ? "" : " is-empty"}" placeholder="Note…" value="${Utils.escHtml(note || "")}"
           data-action="set-note" data-id="${pnjId}">
+        ${this._rowDamageSheet(r, isMatrix)}
       </div>
       <div class="cluster encounter-controls">
         ${actedChip}
@@ -1038,6 +1064,27 @@ export const EncounterRenderer = {
       chaque reconstruction du panneau pour survivre aux _commit (ajout/
       retrait d'un combattant). */
   _pickerQuery: "",
+
+  /** Remet le panneau d'ajout à l'état neutre : contenu vidé, panneau caché,
+      filtre oublié, bouton-bascule « ➕ Ajouter » / aria-expanded=false.
+      Appelé à chaque chargement d'édition (Encounter.load) : `#encounter-
+      add-panel` est un nœud STATIQUE d'index.html, et son HTML survivait au
+      changement d'édition — un serveur SR6 restait proposé à la liaison dans
+      une scène Anarchy 2 (CODIR 2026-09-03, D3). Le panneau caché n'a jamais
+      rien à montrer : l'ouverture re-rend de toute façon (toggleAddPicker). */
+  clearPicker() {
+    this._pickerQuery = "";
+    const panel = document.getElementById("encounter-add-panel");
+    if (panel) {
+      panel.innerHTML = "";
+      panel.hidden = true;
+    }
+    const btn = document.getElementById("encounter-add-toggle");
+    if (btn) {
+      btn.setAttribute("aria-expanded", "false");
+      btn.textContent = "➕ Ajouter";
+    }
+  },
 
   /** Panneau d'ajout : PJ manuel + champ de filtre + entités résolvables non
       encore en scène (générées, Ombres, spiders) + serveurs (porte 1 de
@@ -2663,8 +2710,8 @@ export const EncounterRenderer = {
       Dégâts est posée ici et retirée par `Sheets.closeAll` : c'est le seul
       retour visuel de la famille qui ne passe pas par `aria-expanded` (le
       bouton porte un libellé, pas un glyphe ＋/−). */
-  toggleReactDamage(pnjId, close) {
-    const btn = this._reactTrigger("react-damage-toggle", pnjId);
+  toggleReactDamage(pnjId, close, trigger) {
+    const btn = trigger || this._reactTrigger("react-damage-toggle", pnjId);
     if (Sheets.toggle("damage", pnjId, btn, { close }) && btn) btn.classList.add("is-open");
   },
 
@@ -2683,13 +2730,16 @@ export const EncounterRenderer = {
       pour ne pas perdre le fil du geste. */
   toggleDamageType(pnjId) {
     this._reactDamageTypes[pnjId] = this._reactDamageTypes[pnjId] === "stun" ? "phys" : "stun";
-    const react = document.querySelector(".encounter-react");
-    if (!react) return;
+    const modal = document.querySelector(".encounter-modal");
+    if (!modal) return;
     const esc = window.CSS && CSS.escape ? CSS.escape(pnjId) : pnjId;
-    const body = react.querySelector(`.react-damage-chips[data-damage-for="${esc}"]`);
-    const btn = body && body.querySelector('[data-action="damage-type-toggle"]');
-    if (btn)
-      btn.innerHTML = `${this._reactDamageTypes[pnjId] === "stun" ? "Étourd." : "Phys."} <svg class="icon icon-sm" aria-hidden="true"><use href="#ic-swap"></use></svg>`;
+    // Toutes les feuilles de ce PNJ (console Réagir ET ligne de la file, D6)
+    // reflètent le même type : un seul état de vue, autant de miroirs.
+    modal
+      .querySelectorAll(`.react-damage-chips[data-damage-for="${esc}"] [data-action="damage-type-toggle"]`)
+      .forEach((btn) => {
+        btn.innerHTML = `${this._reactDamageTypes[pnjId] === "stun" ? "Étourd." : "Phys."} <svg class="icon icon-sm" aria-hidden="true"><use href="#ic-swap"></use></svg>`;
+      });
   },
 
   /** Pastilles de combat d'une CI (fiche active ET console Réagir), pilotées par

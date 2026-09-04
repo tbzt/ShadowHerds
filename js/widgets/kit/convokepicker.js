@@ -41,14 +41,19 @@ export const ConvokePicker = {
     document.body.appendChild(panel);
 
     // Toggle d'une case → convoque/retire par RÉFÉRENCE, puis re-rend la liste
-    // (état des cases) et Jouer (les puces du casting). Le run reste la vérité.
+    // (état des cases) et LE CASTING de Jouer — pas tout le panneau : chaque
+    // coche re-rendait Jouer en entier, et le popover, positionné une fois en
+    // `fixed`, ne suivait pas son déclencheur recréé plus bas quand la rangée
+    // de puces grandissait (D4, CODIR 2026-09-03). Le run reste la vérité.
     panel.addEventListener("change", (e) => {
       const cb = e.target.closest('input[type="checkbox"][data-ref]');
       if (!cb || !this._runId) return;
       if (cb.checked) Dossiers.convoke(this._runId, cb.dataset.ref, cb.dataset.cid);
       else Dossiers.unconvoke(this._runId, cb.dataset.ref, cb.dataset.cid);
       this._renderList();
-      if (typeof Play !== "undefined") Play.render();
+      if (typeof Play !== "undefined") Play.refreshCast(this._runId);
+      // Le bouton « ＋ convoquer » vient d'être recréé : on se réancre dessus.
+      this._position(this._trigger());
     });
     // Recherche : ne re-rend QUE la liste (le champ garde le focus).
     panel.addEventListener("input", (e) => {
@@ -96,6 +101,14 @@ export const ConvokePicker = {
       this._releaseTrap();
       this._releaseTrap = null;
     }
+  },
+
+  /** Le déclencheur COURANT du run ouvert — retrouvé dans le DOM, jamais
+      mémorisé : Jouer le recrée à chaque rendu du casting. */
+  _trigger() {
+    if (!this._runId) return null;
+    const esc = window.CSS && CSS.escape ? CSS.escape(String(this._runId)) : this._runId;
+    return document.querySelector(`[data-action="play-cast-convoke"][data-dossier="${esc}"]`);
   },
 
   /** Ancre le panneau sous le déclencheur (desktop/iPad) ; feuille basse en CSS
