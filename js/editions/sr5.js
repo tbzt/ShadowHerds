@@ -1241,12 +1241,20 @@ export const EditionSR5 = {
       {
         key: "rapide", label: "Rapide", maniaMod: 0, footThreshold: null,
         examples: "autoroute, terrain dégagé, eaux calmes, ciel clair",
-        onFail: { all: "véhicule hors de contrôle (accident, ralentissement…)" },
+        // Cadré `vehicule` (lot G) : « le véhicule est immédiatement hors de
+        // contrôle » (p. 205) parle d'un engin. Sur `all`, la piste annonçait
+        // un accident de voiture à quelqu'un qui court. À pied, ce livre ne
+        // règle rien — et un vide assumé vaut mieux qu'une phrase fausse.
+        onFail: { vehicule: "véhicule hors de contrôle (accident, ralentissement…)" },
       },
       {
         key: "encombre", label: "Encombré", maniaMod: 0, footThreshold: null,
         examples: "rues résidentielles, gorges, port bondé, vol au niveau de la rue",
-        onFail: { all: "véhicule hors de contrôle (accident, ralentissement…)" },
+        // Cadré `vehicule` (lot G) : « le véhicule est immédiatement hors de
+        // contrôle » (p. 205) parle d'un engin. Sur `all`, la piste annonçait
+        // un accident de voiture à quelqu'un qui court. À pied, ce livre ne
+        // règle rien — et un vide assumé vaut mieux qu'une phrase fausse.
+        onFail: { vehicule: "véhicule hors de contrôle (accident, ralentissement…)" },
       },
     ],
     /** L'environnement choisit la LIMITE du test, pas un gain : « test de
@@ -1295,6 +1303,25 @@ export const EditionSR5 = {
     /** « Test de Compétence de véhicule + Réaction [Vitesse ou Maniabilité] ».
         La compétence dépend du milieu (terrestre, aquatique, aérien) : on
         prend la première que porte la fiche, et `null` si elle n'en a aucune. */
+    /** ⚠ LE FILTRE EST ANCRÉ EN DÉBUT DE NOM, et ce n'est pas de la coquetterie.
+        `/véhicule/i` attrapait **« Armes de véhicule »**, qui est une compétence
+        de COMBAT (Agilité au catalogue, rangée p. 92 avec Armes de jet, Armes
+        lourdes et Combat à mains nues) : l'app formait une réserve de
+        mitrailleur pour un test de PILOTAGE, silencieusement, et le chiffre
+        était assez plausible pour passer la relecture. Les compétences de
+        conduite, elles, sont celles du groupe Pilotage (`skillcatalog.js`,
+        toutes en Réaction) : Véhicules terrestres / aquatiques, Véhicule
+        exotique, Appareils volants / spatiaux, Marcheurs. Aucune ne commence
+        par « Armes ».
+
+        ── SE DÉFAUSSER (p. 132) ──
+        « Il est possible de se défausser en n'utilisant que l'attribut pour
+        former votre réserve de dés. […] Se défausser impose un modificateur de
+        -1 dé. » Et le livre nomme justement notre cas : « **Véhicules
+        terrestres** ou Combat à mains nues […] peuvent être tentées sans
+        entraînement formel et il est donc possible de se défausser. » Un PNJ
+        sans la compétence lance donc RÉA − 1, plutôt que rien — c'est la
+        différence entre un ⚄ mort et un round jouable. */
     testPool(pnj, { terrain } = {}) {
       const skills = (pnj && pnj.skills) || [];
       const rank = (re) => {
@@ -1302,12 +1329,21 @@ export const EditionSR5 = {
         return s ? Number(s.rank != null ? s.rank : s.val) || 0 : null;
       };
       const attr = (k) => (typeof Actor !== "undefined" ? Actor.attr(pnj, k) : 0) || 0;
+      // Se défausser retire un dé de l'attribut seul ; à 1 il ne reste rien à
+      // lancer, et une réserve de 0 n'est pas un jet (elle serait remontée à 1
+      // par le clamp du moteur de dés — un succès offert par erreur d'arrondi).
+      const defausse = (k, nom) => {
+        const v = attr(k) - 1;
+        return v >= 1 ? { pool: v, label: `${nom} − 1 (se défausser)`, defaulted: true } : null;
+      };
       if (terrain === "pied") {
-        const r = rank(/course/i);
-        return r == null ? null : { pool: r + attr("FOR"), label: "Course + FOR (Sprint)" };
+        const r = rank(/^course\b/i);
+        return r == null ? defausse("FOR", "FOR") : { pool: r + attr("FOR"), label: "Course + FOR (Sprint)" };
       }
-      const r = rank(/véhicule/i);
-      return r == null ? null : { pool: r + attr("REA"), label: "Compétence de véhicule + RÉA" };
+      const r = rank(/^(véhicules?|appareils|marcheurs)\b/i);
+      return r == null
+        ? defausse("REA", "RÉA")
+        : { pool: r + attr("REA"), label: "Compétence de véhicule + RÉA" };
     },
     round: {
       /** Pas de test par round : ce sont des ACTIONS, choisies. */
@@ -1325,9 +1361,25 @@ export const EditionSR5 = {
           « pour chaque succès excédentaire ». La fin de ronde n'y touche pas. */
       move: { onSuccess: null, freeDirection: true, targetMoves: true, via: "lane" },
       /** Les quatre actions de course-poursuite (actions complexes) —
-          « Conduite évasive » vit déjà dans `interruptActions`. */
+          « Conduite évasive » vit déjà dans `interruptActions`.
+
+          `terrain: "vehicule"` sur chacune (lot G) : le livre les introduit par
+          « un PILOTE peut effectuer n'importe laquelle de ces actions […] tant
+          que le VÉHICULE ciblé est à la portée d'engagement spécifiée »
+          (p. 204). Sans ce cadrage, la piste proposait Percuter et Cascade à
+          quelqu'un qui court. */
       actions: [
-        { key: "cascade", label: "Cascade", range: "toutes",
+        /** Ce que ce livre donne à un COUREUR — et il ne donne que ça : il n'a
+            pas de système de poursuite à pied (cf. `terrains.pied.unruled`),
+            mais il a Sprinter, déjà au catalogue avec son coût. C'est la seule
+            action que la piste peut honnêtement lui proposer, et elle
+            n'apparaissait nulle part parce que les manœuvres n'étaient pas
+            cadrées par terrain. Aucune règle neuve : une entrée existante,
+            rendue atteignable. */
+        { key: "sprinter", terrain: "pied", label: "Sprinter", range: "toutes",
+          lines: ["Augmenter sa vitesse de course, avec un test de Course + FOR",
+                  "Dépasser sa vitesse de marche met « En course » jusqu'à la fin du tour"] },
+        { key: "cascade", terrain: "vehicule", label: "Cascade", range: "toutes",
           lines: ["Manœuvre folle pour semer : seuil selon l'environnement et le terrain",
                   "Réussie ⇒ tous les poursuivants refont le même test · raté ⇒ hors de contrôle",
                   "Un poursuivant qui rate s'éloigne d'une catégorie ; déjà à extrême, il perd la cible"],
@@ -1339,13 +1391,13 @@ export const EditionSR5 = {
               dernière bande ce n'est plus un déplacement mais une ISSUE : « le
               véhicule poursuivi parvient à s'échapper », que le MJ déclare. */
           effect: { kind: "cascade", retest: "poursuivants", onFail: { move: 1, atLastLane: "lost" } } },
-        { key: "couperRoute", label: "Couper la route", range: "courte",
+        { key: "couperRoute", terrain: "vehicule", label: "Couper la route", range: "courte",
           lines: ["Test opposé de Compétence de véhicule + RÉA [Maniabilité]",
                   "Succès ⇒ la cible refait un test de pilotage pour éviter l'accident"] },
-        { key: "percuter", label: "Percuter", range: "courte",
+        { key: "percuter", terrain: "vehicule", label: "Percuter", range: "courte",
           lines: ["Test opposé [Vitesse ou Maniabilité selon l'environnement]",
                   "Succès ⇒ collision : la cible encaisse la Structure de l'attaquant + succès nets, l'attaquant la moitié de la sienne"] },
-        { key: "rattraper", label: "Rattraper / Prendre de l'avance", range: "toutes",
+        { key: "rattraper", terrain: "vehicule", label: "Rattraper / Prendre de l'avance", range: "toutes",
           lines: ["Change la portée d'un nombre de niveaux égal à l'Accélération",
                   "Test [Vitesse ou Maniabilité] au seuil de manœuvre · +1 niveau par succès excédentaire"],
           /** La seule action du corpus qui déplace SUR ANNONCE. Le livre donne

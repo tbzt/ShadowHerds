@@ -309,6 +309,15 @@ export const Chase = {
       poolMax: {},
       out: {},
       attrOverride: {},
+      /** Réserve du test ANNONCÉE par le meneur, par clé de piste (lot E).
+          Le pendant exact d'`attrOverride`, et pour la même raison : quand
+          l'app ne tient pas la valeur du livre, elle écrit « — » et propose la
+          saisie plutôt que de fabriquer un chiffre. Ici, c'est le cas d'un PNJ
+          sans la compétence dans une édition qui ne règle pas la défausse
+          (SR6, les deux Anarchy — SR5, lui, se défausse, p. 132). Retenue pour
+          toute la poursuite : on l'annonce une fois, on relance d'un tap.
+          Champ ADDITIF — d'où un `V` qui ne bouge pas. */
+      poolOverride: {},
       log: [],
     };
   },
@@ -481,6 +490,19 @@ export const Chase = {
       return { kind: "cascade", n };
     }
     return null;
+  },
+
+  /** La réserve du test annoncée par le meneur pour cette clé, ou `null`. */
+  poolOverride(state, key) {
+    const n = state && state.poolOverride && state.poolOverride[key];
+    return Number.isFinite(n) && n > 0 ? n : null;
+  },
+  setPoolOverride(state, key, value) {
+    if (!state || !key) return;
+    state.poolOverride = state.poolOverride || {};
+    const n = parseInt(value, 10);
+    if (Number.isFinite(n) && n > 0) state.poolOverride[key] = n;
+    else delete state.poolOverride[key];
   },
 
   /** Ce poursuivant doit-il refaire le test (Cascade) ? → true | "lost" | null */
@@ -739,9 +761,18 @@ export const Chase = {
   /** Les manœuvres de course-poursuite déclarées par le livre, avec leur
       PORTÉE — la condition que le rendu jetait. Seul SR5 en donne : son
       `round.test` est nul parce que « ce sont des ACTIONS, choisies ». */
-  roundActions(edition) {
+  roundActions(edition, terrain) {
     const m = this.use(edition);
-    return (m && m.round && m.round.actions) || [];
+    const list = (m && m.round && m.round.actions) || [];
+    // ── LOT G : une manœuvre appartient à un TERRAIN ──────────────────
+    // Les quatre actions de SR5 sont écrites pour des véhicules — « un PILOTE
+    // peut effectuer n'importe laquelle de ces actions » (p. 204). Sans ce
+    // filtre, un coureur se voyait proposer Percuter et Cascade, et le
+    // « Sprinter » que le catalogue porte pourtant n'apparaissait nulle part.
+    // Une entrée sans `terrain` reste universelle : on ne force pas les
+    // éditions à déclarer ce qu'elles ne distinguent pas.
+    if (!terrain) return list;
+    return list.filter((a) => !a.terrain || a.terrain === terrain);
   },
 
   /** Cette manœuvre est-elle possible depuis cette bande ? `"toutes"` passe

@@ -525,10 +525,17 @@ export const Pursuit = {
     if (!st || !m || !pnj || !m.testPool) return null;
     const veh = this.vehicleOf(key);
     const ctx = { terrain: veh ? "vehicule" : st.terrain, env: st.env, ride: veh };
-    const spec = m.testPool(pnj, ctx);
-    if (!spec || !spec.pool) return null;
     const seuil = m.threshold ? m.threshold(pnj, ctx) : null;
-    return { ...spec, threshold: Number.isFinite(seuil) ? seuil : null };
+    const avecSeuil = (s) => ({ ...s, threshold: Number.isFinite(seuil) ? seuil : null });
+    const spec = m.testPool(pnj, ctx);
+    if (spec && spec.pool) return avecSeuil(spec);
+    // ── Lot E : la réserve ANNONCÉE ──────────────────────────────────
+    // L'édition ne tient pas de réserve pour ce participant — pas de
+    // compétence, et pas de défausse au livre. Plutôt qu'un ⚄ mort, on garde
+    // ce que le meneur a annoncé une fois. Même patron qu'`attrOverride`, et
+    // pour la même raison : l'app ne fabrique pas le chiffre, elle le retient.
+    const annonce = Chase.poolOverride(st, key);
+    return annonce ? avecSeuil({ pool: annonce, label: "réserve annoncée", announced: true }) : null;
   },
 
   /* ========================================================
@@ -597,12 +604,24 @@ export const Pursuit = {
   /** Le geste du ⚄ : lancer si on peut, pointer sinon. Un test DÉJÀ posé se
       corrige d'un tap (cycle) — se tromper doit coûter un geste, pas un
       détour. */
-  testOrRoll(key) {
+  async testOrRoll(key) {
     const st = this.state();
     if (!st) return;
     if (st.tested[key]) return this.cycleTest(key);
-    const spec = this.testSpec(key);
-    if (!spec) return this.cycleTest(key);
+    let spec = this.testSpec(key);
+    if (!spec) {
+      const acteur = this._actorFor(key);
+      // Un PJ annonce, l'app n'invente ni sa réserve ni son résultat : le ⚄
+      // POINTE (doctrine B3.5). Inchangé.
+      if (!acteur || Encounter.isPlayerCharacter(acteur.id)) return this.cycleTest(key);
+      // Un PNJ, lui, l'app tient sa fiche — et pourtant elle ne trouvait rien à
+      // lancer : ni compétence de conduite, ni défausse déclarée par ce livre.
+      // Le ⚄ était mort, et le meneur n'avait plus qu'à poser un ✓ au jugé.
+      // On demande la réserve UNE fois, on la retient pour la poursuite.
+      if (!(await this.promptPool(key))) return;
+      spec = this.testSpec(key);
+      if (!spec) return;
+    }
     const pnj = this._actorFor(key);
     // On paie au LANCER, pas au résultat : le livre fait dépenser l'action
     // pour tenter le test, réussi ou non.
@@ -643,7 +662,10 @@ export const Pursuit = {
   chaseActions(key) {
     const st = this.state();
     const pnj = this._actorFor(key);
-    const decl = Chase.roundActions(this.edition());
+    // Le terrain de CETTE ligne, pas celui de la piste : sur une piste mixte,
+    // celui qui a sauté dans une bagnole a droit aux manœuvres de véhicule
+    // pendant que le coureur d'à côté n'a que les siennes (lot G).
+    const decl = Chase.roundActions(this.edition(), this.vehicleOf(key) ? "vehicule" : st.terrain);
     if (!st || !pnj || !decl.length) return [];
     // Pas encore posé sur une bande = pas encore dans la course : aucune
     // manœuvre à proposer, et surtout aucune portée à comparer. (Trouvé en
@@ -691,6 +713,32 @@ export const Pursuit = {
     const pnj = this._actorFor(key);
     const res = Dice.computeRoll(spec.pool);
     DiceRoller.show(res, { label: `${cost} — ${spec.label}`, who: (pnj && pnj.name) || "?" });
+  },
+
+  /** Demande la réserve du test au meneur, et la retient (lot E). Le pendant
+      exact de `promptAttr` : quand le livre ne donne rien à l'app, elle
+      propose la saisie au lieu de fabriquer un chiffre — ou de rester muette,
+      ce qui était pire. → true si une réserve est désormais connue. */
+  async promptPool(key) {
+    const st = this.state();
+    if (!st) return false;
+    const pnj = this._actorFor(key);
+    const nom = (pnj && pnj.name) || "Ce participant";
+    const terr = Chase.terrain(this.edition(), this.vehicleOf(key) ? "vehicule" : st.terrain) || {};
+    // ⚠ `Dialog.prompt` ne connaît PAS de `message` : il masque cet élément et
+    // n'affiche que `title` et `label`. Un texte passé en `message` disparaît
+    // sans un mot — vu en vérification, la modale ne montrait que son titre.
+    const raw = await Dialog.prompt({
+      title: "Réserve du test de la ronde",
+      label: `${nom} n'a pas la compétence sur sa fiche, et ce livre ne règle pas la défausse — annoncez la réserve.${
+        terr.testLabel ? ` Le test est « ${terr.testLabel} ».` : ""
+      } Elle est retenue pour toute la poursuite.`,
+      value: String(Chase.poolOverride(st, key) ?? ""),
+    });
+    if (raw === null) return false;
+    Chase.setPoolOverride(st, key, raw.trim());
+    this._persist();
+    return !!Chase.poolOverride(st, key);
   },
 
   setTest(pnjId, res) {
@@ -753,9 +801,12 @@ export const Pursuit = {
     // on demande l'Intervalle de vitesse à la bagnole et la Force au coureur.
     const spec = Chase.attrSpec(this.edition(), st.env, this.vehicleOf(key) ? "vehicule" : st.terrain);
     const nom = (PnjLookup.find(key) || {}).name || "Ce participant";
+    // `label`, pas `message` : `Dialog.prompt` masque l'élément de message et
+    // n'a jamais affiché cette phrase — la modale ne montrait que son titre.
+    // Défaut d'origine, corrigé en même temps que son jumeau `promptPool`.
     const raw = await Dialog.prompt({
       title: spec ? spec.label : "Attribut du round",
-      message: `${nom} — valeur à comparer ce round. L'app ne la trouve ni sur la fiche ni au catalogue : annoncez-la.`,
+      label: `${nom} — valeur à comparer ce round. L'app ne la trouve ni sur la fiche ni au catalogue : annoncez-la.`,
       value: String(st.attrOverride[key] ?? ""),
     });
     if (raw === null) return;
@@ -1083,6 +1134,20 @@ export const Pursuit = {
       crossing: Chase.crossing(st, key),
       /** Les manœuvres du livre, portée déjà évaluée (SR5 seul en déclare). */
       actions: this.chaseActions(key),
+      /** L'identité de la PERSONNE, distincte de la clé de piste : l'Atout et
+          l'embarquement appartiennent à quelqu'un, pas à une carrosserie. */
+      pnjId,
+      /** Les 14 actions d'Atout de course-poursuite (SR6). Elles n'avaient de
+          surface que dans la fiche de piste ; elles rejoignent la console au
+          lot F, avec les manœuvres — c'est là qu'on joue. */
+      edge: this.edgeActionsFor(pnjId),
+      resourceLabel: (() => {
+        const p = PnjLookup.find(pnjId);
+        return p && p.type !== "vehicle" ? EdgeActions.resourceLabel(p) : "";
+      })(),
+      /** L'embarquement — monter, prendre le volant, descendre : trois gestes
+          qui coûtent le tour de quelqu'un, donc trois gestes de console. */
+      ride: this.rideOf(pnjId),
       glyph: (this.model() || {}).glyph || "⇉",
       earnedLabel: (() => {
         const r = Chase.moveRule(ed);

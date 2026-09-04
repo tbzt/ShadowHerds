@@ -405,7 +405,7 @@ export const EditionAnarchy2 = {
     glyph: "⇉",
     defaultTerrain: "vehicule",
     terrains: {
-      pied: { label: "À pied", unruled: true, testLabel: "Athlétisme + AGI" },
+      pied: { label: "À pied", unruled: true, testLabel: "Athlétisme (course) + FOR" },
       vehicule: { label: "En véhicule", testLabel: "Pilotage + AGI (test opposé)" },
     },
     /** Les quatre portées d'Anarchy 2.0, avec le coût en Narrations pour
@@ -452,15 +452,23 @@ export const EditionAnarchy2 = {
       // `terrains.pied.testLabel` : l'attribut à pied est donc AGI.
       // `unruled` reste — Anarchy ne chiffre pas la poursuite à pied ; on
       // cesse seulement de réclamer au MJ un chiffre déjà sur la fiche.
+      // ⚠ FORCE, pas Agilité — rectifié le 2026-09-05, vérifié au livre.
+      // « Athlétisme — Attribut associé : Force ou Agilité », et la table des
+      // spécialisations tranche pour la nôtre : « Athlétisme : **course (+F)**,
+      // escalade (+F), natation (+F), parkour (+A), défense à distance (+A) »
+      // (p. 56). Courir se teste en Force. Le catalogue du projet le disait
+      // déjà (`skillcatalog.js`, anarchy2 : « Athlétisme » → FOR) : ce module
+      // le contredisait tout seul.
       if (terrain === "pied")
-        return { short: "AGI", label: "Agilité", meaning: "avantage au test opposé" };
+        return { short: "FOR", label: "Force", meaning: "avantage au test opposé" };
       return envKey === "maniabilite"
         ? { short: "MAN", label: "Maniabilité", meaning: "avantage au test opposé" }
         : { short: "VIT", label: "Vitesse", meaning: "avantage au test opposé" };
     },
     attrValue(pnj, { terrain, env, ride } = {}) {
       if (terrain === "pied") {
-        const v = typeof Actor !== "undefined" ? Actor.attr(pnj, "AGI") : null;
+        // FOR : « Athlétisme : course (+F) » (p. 56). Cf. `attr` ci-dessus.
+        const v = typeof Actor !== "undefined" ? Actor.attr(pnj, "FOR") : null;
         return Number.isFinite(v) && v > 0 ? v : undefined;
       }
       const liste = (typeof Vehicles !== "undefined" && pnj && Vehicles.linkedTo(pnj.id)) || [];
@@ -483,10 +491,18 @@ export const EditionAnarchy2 = {
         return s ? Number(s.rank != null ? s.rank : s.val) || 0 : null;
       };
       const attr = (k) => (typeof Actor !== "undefined" ? Actor.attr(pnj, k) : 0) || 0;
-      const r = rank(terrain === "pied" ? /athl/i : /pilotage|véhicule/i);
-      return r == null
-        ? null
-        : { pool: r + attr("AGI"), label: terrain === "pied" ? "Athlétisme + AGI" : "Pilotage + AGI" };
+      // ⚠ Ancré, par cohérence avec les trois autres modules : ce livre-ci n'a
+      // qu'une compétence de conduite (Pilotage) et pas de « Armes de
+      // véhicule » à confondre avec elle, mais un filtre non ancré n'attend
+      // que la première fiche importée qui en porte une.
+      const r = rank(terrain === "pied" ? /^athl/i : /^(pilotage|véhicules?)\b/i);
+      if (r == null) return null;
+      // La course se teste en FORCE (p. 56, « course (+F) »), le pilotage en
+      // Agilité (« Pilotage : motos (+A), voitures (+A)… »). Le module
+      // appariait les deux à l'Agilité et se contredisait avec le catalogue.
+      return terrain === "pied"
+        ? { pool: r + attr("FOR"), label: "Athlétisme (course) + FOR" }
+        : { pool: r + attr("AGI"), label: "Pilotage + AGI" };
     },
     round: {
       /** Requis, mais opposé : « le vainqueur parvient à progresser vers son

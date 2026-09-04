@@ -2180,11 +2180,55 @@ export const EncounterRenderer = {
           )}">${Utils.escHtml(a.name)}</button>`,
       )
       .join("");
+    // ── LOT F : ce qui a quitté la fiche de piste ────────────────────
+    // Les actions d'Atout de course-poursuite (SR6 en a 14) et l'embarquement
+    // vivaient dans la fiche du participant, sur la piste. Ce sont des gestes
+    // qui coûtent une action et se décident au TOUR de quelqu'un : ils
+    // appartiennent ici. La piste garde le plateau — ancrer, saisir, déclarer
+    // une issue —, la console garde la main.
+    const ed = (r.edge && r.edge.visibles) || [];
+    const dispo = (r.edge && r.edge.edge) || 0;
+    const atouts = ed.length
+      ? `<span class="ecr-acts">${ed
+          .map((e) => {
+            const cher = e.cost > dispo ? " is-over" : "";
+            const info = [`${e.name} — ${EdgeActions.costLabel(e)}`, ...(e.lines || [])].join("\n");
+            return `<button class="chase-act${cher}" data-action="chase-use" data-id="${r.pnjId}" data-key="${e.key}" title="${Utils.escHtml(info)}"><b>${Utils.escHtml(
+              EdgeActions.costLabel(e).replace(/ points?$/, ""),
+            )}</b> ${Utils.escHtml(e.name)}</button>`;
+          })
+          .join("")}</span>`
+      : "";
+    const ressource =
+      r.edge && r.resourceLabel
+        ? `<span class="ecr-res">${Utils.escHtml(r.resourceLabel)} ${dispo}</span>`
+        : "";
+    // Une monture n'a pas de siège à prendre : le geste ne s'affiche que pour
+    // une personne, et il dit où elle est déjà montée.
+    const monture = r.ancre && !r.ride ? "" : this._chaseBoarding(r);
     return `<div class="encounter-chase-row">
       <span class="ecr-lead">${r.glyph} ${Utils.escHtml(r.laneLabel)}</span>
-      ${test}${retest}${cross}${moves}
+      ${test}${retest}${cross}${moves}${ressource}
       ${actes ? `<span class="ecr-acts">${actes}</span>` : ""}
+      ${atouts}
+      ${monture}
     </div>`;
+  },
+
+  /** Monter, prendre le volant, descendre — les trois gestes d'équipage,
+      déménagés de la fiche de piste (lot F). Ils gardent leurs `data-action` :
+      même délégation, même contrôleur, aucun chemin parallèle. */
+  _chaseBoarding(r) {
+    const nom = r.ride && r.ride.vehicle ? r.ride.vehicle.name : "";
+    return `<span class="ecr-ride">
+      <button class="chase-manoeuvre" data-action="chase-board" data-id="${r.pnjId}">▣ ${r.ride ? "Changer de monture…" : "Monter dans…"}</button>
+      ${
+        r.ride
+          ? `<button class="chase-manoeuvre" data-action="chase-wheel" data-id="${r.pnjId}">Prendre le volant</button>
+             <button class="chase-manoeuvre" data-action="chase-leave" data-id="${r.pnjId}">Descendre — ${Utils.escHtml(nom)}</button>`
+          : ""
+      }
+    </span>`;
   },
 
   renderActiveCard(rows, state, model) {

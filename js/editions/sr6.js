@@ -1863,12 +1863,20 @@ export const EditionSR6 = {
         return s ? Number(s.rank != null ? s.rank : s.val) || 0 : null;
       };
       const attr = (k) => (typeof Actor !== "undefined" ? Actor.attr(pnj, k) : 0) || 0;
+      // ⚠ Ancré en début de nom : `/véhicule/i` attrapait « Ingénierie (Armes
+      // de véhicule) », qui sert à TIRER depuis un engin, pas à le conduire.
+      // Ce livre-ci n'a qu'une compétence de conduite, et elle s'appelle
+      // Pilotage (`skillcatalog.js`, Réaction).
       if (terrain === "pied") {
-        const r = rank(/athl|course|sprint/i);
+        const r = rank(/^(athl|course|sprint)/i);
         return r == null ? null : { pool: r + attr("AGI"), label: "Athlétisme + AGI (Sprinter)" };
       }
-      const r = rank(/pilotage|véhicule/i);
+      const r = rank(/^(pilotage|véhicules?)\b/i);
       return r == null ? null : { pool: r + attr("RÉA"), label: "Pilotage + RÉA" };
+      // Pas de défausse déclarée : contrairement à SR5 (p. 132, « Se
+      // défausser »), aucune règle équivalente n'a été trouvée dans ce livre.
+      // On n'importe pas celle du voisin — sans compétence, l'app ne tient pas
+      // de réserve et le meneur annonce la sienne (`Chase.poolOverride`).
     },
     round: {
       /** Le seul du corpus à l'imposer : « une action majeure Pilotage est

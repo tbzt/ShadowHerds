@@ -10,6 +10,69 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.152.0] — 2026-09-05
+
+### Ajouté
+
+- **Le ⚄ de la poursuite lance vraiment, pour tout le monde.** Sur une piste
+  Shadowrun 5, deux PNJ sur trois n'avaient rien à lancer : sans compétence de
+  conduite sur leur fiche, la pastille ne faisait que poser un ✓ au jugé. Le
+  livre a pourtant la réponse, et il nomme justement notre cas — « **Se
+  défausser** » (p. 132) : « il est possible de se défausser en n'utilisant que
+  l'attribut pour former votre réserve de dés […] un modificateur de -1 dé »,
+  et « Véhicules terrestres […] peu[t] être tenté[e] sans entraînement
+  formel ». Un PNJ sans la compétence lance donc RÉA − 1, en le disant.
+  Shadowrun 6 et les deux Anarchy ne règlent pas la défausse : là, l'app
+  demande la réserve une fois et la retient pour toute la poursuite — un tap
+  par round ensuite. Un personnage joueur garde son ✓/✗ : il annonce, l'app ne
+  lance pas pour lui.
+- **La poursuite à pied est jouable.** Shadowrun 6 la réglait déjà (Athlétisme
+  + Agilité, action majeure Sprinter, seuil selon l'environnement) ; les trois
+  autres traînaient des scories de véhicule. Shadowrun 5 propose désormais
+  **Sprinter** — l'action existait au catalogue et n'apparaissait nulle part —
+  au lieu des quatre manœuvres de pilote.
+
+### Modifié
+
+- **Les actions quittent la piste pour la console.** Les manœuvres du livre,
+  les quatorze actions d'Atout de course-poursuite et l'embarquement vivaient
+  dans la fiche d'un participant, sur la piste — et, depuis la version
+  précédente, en double avec la console. Ils se jouent maintenant au **tour de
+  l'intéressé**, là où se décide ce qui coûte une action. La piste garde ce qui
+  n'a pas de tour : ancrer la cible, saisir une valeur que l'app ne tient pas,
+  déclarer une issue (Semé, Accident), compter une réserve. Le plateau d'un
+  côté, la main de l'autre.
+- **Les manœuvres appartiennent à un terrain.** Un coureur se voyait proposer
+  Percuter et Cascade, que le livre réserve aux pilotes (« un pilote peut
+  effectuer n'importe laquelle de ces actions », p. 204).
+
+### Corrigé
+
+- **« Armes de véhicule » ne fait plus conduire.** Le filtre de compétence
+  attrapait cette compétence de **combat** et formait une réserve de
+  mitrailleur pour un test de pilotage : un PNJ lançait 7 dés au lieu de 3,
+  silencieusement, avec un chiffre assez plausible pour passer inaperçu. Les
+  quatre éditions filtrent désormais sur le début du nom ; les compétences de
+  conduite (Véhicules terrestres, aquatiques, exotique, Appareils volants et
+  spatiaux, Marcheurs, Pilotage) passent, les compétences de tir non.
+- **Courir se teste en Force dans les deux Anarchy.** Les deux modules
+  appariaient la course à l'Agilité. Anarchy 1re range Athlétisme sous
+  **Force** (p. 63) et Anarchy 2.0 l'écrit dans sa table de spécialisations
+  (« Athlétisme : **course (+F)** », p. 56) — ce que le catalogue de
+  compétences de l'application disait déjà. Le pilotage, lui, reste en
+  Agilité.
+- **L'échec d'un coureur n'est plus un accident de voiture.** En Shadowrun 5,
+  la barre annonçait « véhicule hors de contrôle » quel que soit le terrain.
+- **L'avertissement « terrain non réglé » s'affiche enfin là où il sert.** Il
+  ne se montrait que si l'édition ne nommait aucun attribut — donc jamais à
+  pied en Shadowrun 5, où l'attribut existe (la Force du Sprint) mais où le
+  livre ne règle aucune poursuite. Le meneur voyait une piste qui avait l'air
+  réglée.
+- **Les modales de saisie de la piste affichent enfin leur explication.**
+  « Saisir la valeur » ouvrait une boîte avec un titre et un champ nu : le
+  texte qui dit *pourquoi* on demande ce chiffre était passé dans un paramètre
+  que la modale ignore. Il s'affiche.
+
 ## [1.151.0] — 2026-09-04
 
 ### Ajouté

@@ -413,7 +413,7 @@ export const EditionAnarchy1 = {
     glyph: "⇉",
     defaultTerrain: "vehicule",
     terrains: {
-      pied: { label: "À pied", unruled: true, testLabel: "Athlétisme + AGI (narration)" },
+      pied: { label: "À pied", unruled: true, testLabel: "Athlétisme + FOR (narration)" },
       vehicule: { label: "En véhicule", testLabel: "Véhicules terrestres / divers + AGI" },
     },
     /** Les trois portées d'Anarchy 1re, telles que le livre les nomme.
@@ -451,13 +451,19 @@ export const EditionAnarchy1 = {
       // `terrains.pied.testLabel`. `unruled` reste : Anarchy ne chiffre pas
       // la poursuite à pied, on cesse seulement de réclamer au MJ un chiffre
       // déjà présent sur la fiche.
+      // ⚠ FORCE, pas Agilité — rectifié le 2026-09-05, vérifié au livre :
+      // p. 63, la rubrique « FORCE » est suivie de « Athlétisme : course,
+      // escalade, natation, saut ». Le catalogue du projet le disait déjà
+      // (`skillcatalog.js`, anarchy1 : « Athlétisme » → FOR) ; ce module le
+      // contredisait tout seul.
       if (terrain === "pied")
-        return { short: "AGI", label: "Agilité", meaning: "attribut du test" };
+        return { short: "FOR", label: "Force", meaning: "attribut du test" };
       return { short: "MOB", label: "Mobilité", meaning: "modificateur de pilotage", optional: true };
     },
     attrValue(pnj, { terrain, ride } = {}) {
       if (terrain === "pied") {
-        const v = typeof Actor !== "undefined" ? Actor.attr(pnj, "AGI") : null;
+        // FOR : Athlétisme est rangé sous Force (p. 63). Cf. `attr` ci-dessus.
+        const v = typeof Actor !== "undefined" ? Actor.attr(pnj, "FOR") : null;
         return Number.isFinite(v) && v > 0 ? v : undefined;
       }
       const liste = (typeof Vehicles !== "undefined" && pnj && Vehicles.linkedTo(pnj.id)) || [];
@@ -478,10 +484,17 @@ export const EditionAnarchy1 = {
         return s ? Number(s.rank != null ? s.rank : s.val) || 0 : null;
       };
       const attr = (k) => (typeof Actor !== "undefined" ? Actor.attr(pnj, k) : 0) || 0;
-      const r = rank(terrain === "pied" ? /athl/i : /véhicule/i);
-      return r == null
-        ? null
-        : { pool: r + attr("AGI"), label: terrain === "pied" ? "Athlétisme + AGI" : "Véhicules + AGI" };
+      // ⚠ Ancré : ce livre a « Armes de véhicules » (Agilité, compétence de
+      // COMBAT) à côté de « Véhicules terrestres » et « Véhicules divers »
+      // (conduite). Le filtre non ancré prenait la première et faisait
+      // conduire avec la réserve du mitrailleur.
+      const r = rank(terrain === "pied" ? /^athl/i : /^véhicules?\b/i);
+      if (r == null) return null;
+      // Athlétisme relève de la Force dans ce livre (p. 63) ; les compétences
+      // de véhicule, elles, restent appariées à l'Agilité.
+      return terrain === "pied"
+        ? { pool: r + attr("FOR"), label: "Athlétisme + FOR" }
+        : { pool: r + attr("AGI"), label: "Véhicules + AGI" };
     },
     round: {
       test: null,

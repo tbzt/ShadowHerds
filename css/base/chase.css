@@ -1367,3 +1367,18 @@ button.chase-tok-val.is-void {
   gap: var(--sp-1);
   min-width: 0;
 }
+
+/* Réserve et embarquement dans la rangée de console (lot F) — les actions
+   d'Atout et les gestes d'équipage ont quitté la fiche de piste pour ici. */
+.encounter-chase-row .ecr-res {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent);
+  flex: none;
+}
+.encounter-chase-row .ecr-ride {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  min-width: 0;
+}

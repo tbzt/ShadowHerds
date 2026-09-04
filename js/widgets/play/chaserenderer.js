@@ -34,7 +34,6 @@
    de Run).
    ============================================================ */
 import { CardRenderer } from "../card/cardrenderer.js";
-import { EdgeActions } from "../../rules/edgeactions.js";
 import { Utils } from "../../core/utils.js";
 
 export const ChaseRenderer = {
@@ -250,14 +249,19 @@ export const ChaseRenderer = {
     const mixte = vm.mixte
       ? `<span class="chase-attr-mixed">Piste mixte — chaque jeton porte son attribut ; le livre ne les compare pas, le point d'Atout du round est à votre main.</span>`
       : "";
-    if (!vm.attr) {
-      const note = vm.unruled
-        ? `<p class="chase-unruled">⚠ ${Utils.escHtml(vm.terrainNote || "Cette édition ne règle pas ce terrain — l'app tient les positions, vous tenez l'arbitrage.")}</p>`
-        : "";
-      return mixte ? `${note}<div class="cluster chase-attr-bar">${mixte}</div>` : note;
-    }
+    // ⚠ LOT G — l'avertissement ne dépend PAS de l'attribut.
+    // Il était imbriqué dans `if (!vm.attr)`, comme si « cette édition ne règle
+    // pas ce terrain » et « elle ne nomme aucun attribut » étaient le même
+    // fait. Ils ne le sont pas : SR5 à pied a un attribut (la Force du test de
+    // Sprint) ET aucun système de poursuite. Le bandeau ne s'affichait donc
+    // jamais là où il sert le plus — le meneur voyait une piste qui a l'air
+    // réglée, sans savoir que l'arbitrage lui revient entièrement.
+    const note = vm.unruled
+      ? `<p class="chase-unruled">⚠ ${Utils.escHtml(vm.terrainNote || "Cette édition ne règle pas ce terrain — l'app tient les positions, vous tenez l'arbitrage.")}</p>`
+      : "";
+    if (!vm.attr) return mixte ? `${note}<div class="cluster chase-attr-bar">${mixte}</div>` : note;
     const cause = vm.envLabel ? `${Utils.escHtml(vm.envLabel)} ⇒` : "Attribut du round ⇒";
-    return `<div class="cluster chase-attr-bar">
+    return `${note}<div class="cluster chase-attr-bar">
       <span class="chase-attr-cause">${cause}</span>
       <span class="chase-attr-what">${Utils.escHtml(vm.attr.label)}</span>
       <span class="chase-attr-means">${Utils.escHtml(vm.attr.meaning)}${vm.attr.optional ? " · règle optionnelle" : ""}</span>
@@ -298,8 +302,8 @@ export const ChaseRenderer = {
   _amorce(vm) {
     if (!vm.vierge) return "";
     return `<p class="chase-amorce">▲▼ rapproche ou éloigne de la cible ·
-      ⚄ joue le test du round · un tap sur un <b>nom</b> ouvre sa fiche
-      ${vm.hasEdgeActions ? "et ses actions d'Atout" : ""}.</p>`;
+      ⚄ joue le test du round · un tap sur un <b>nom</b> ouvre sa fiche.
+      Les actions se jouent au tour de l'intéressé, dans la console.</p>`;
   },
 
   /** Les deux bouts de la piste : une issue nommée, avec sa condition du
@@ -496,18 +500,14 @@ export const ChaseRenderer = {
           : `<button class="chase-tok-name" data-action="chase-sheet" data-id="${r.key}" title="${Utils.escHtml(
               r.crew
                 ? "Fiche de la monture — équipage, volant, position"
-                : [r.move ? vm.moveDetail(r.move) : "", "Fiche du participant — ancrer, avantage, réserve, sortie, actions d'Atout"]
+                : [r.move ? vm.moveDetail(r.move) : "", "Fiche du participant — ancrer, avantage, réserve, valeur, sortie de course"]
                     .filter(Boolean)
                     .join("\n\n"),
             )}">${CardRenderer._esc(r.name)}</button>`
       }
       ${crew}${cross}${trend}${grant}${pool}${marks.join("")}${moves}
       ${opts.anchor ? "" : `<button class="chase-mark is-anchor-set is-secondary" data-action="chase-target" data-id="${r.key}" title="Ancrer : faire de ce participant la cible de la poursuite">▣</button>`}
-      ${
-        vm.hasEdgeActions
-          ? `<button class="chase-mark is-sheet is-secondary${vm.sheetFor === r.key ? " is-on" : ""}" data-action="chase-sheet" data-id="${r.key}" title="Actions d'Atout de course-poursuite">${vm.glyph}</button>`
-          : ""
-      }
+      <button class="chase-mark is-sheet is-secondary${vm.sheetFor === r.key ? " is-on" : ""}" data-action="chase-sheet" data-id="${r.key}" title="Fiche de plateau — ancrer, avantage, réserve, valeur, sortie de course">${vm.glyph}</button>
     </span>`;
   },
 
@@ -573,21 +573,7 @@ export const ChaseRenderer = {
     // Atout ni actions : le garde n'est donc plus `vm.sheet` mais la présence
     // d'une cible de feuille.
     if (!vm.sheetFor) return "";
-    const { visibles = [], ecartees = [], edge = 0 } = vm.sheet || {};
-    const puces = visibles
-      .map((e) => {
-        const cher = e.cost > edge ? " is-over" : "";
-        const info = [`${e.name} — ${EdgeActions.costLabel(e)}`, ...(e.lines || [])].join("\n");
-        return `<button class="chase-act${cher}" data-action="chase-use" data-id="${vm.sheetFor}" data-key="${e.key}" title="${Utils.escHtml(info)}">
-          <b>${Utils.escHtml(EdgeActions.costLabel(e).replace(/ points?$/, ""))}</b> ${Utils.escHtml(e.name)}
-        </button>`;
-      })
-      .join("");
-    const reste = ecartees.length
-      ? `<p class="chase-act-out">${ecartees.length} écartée${ecartees.length > 1 ? "s" : ""} — ${Utils.escHtml(
-          [...new Set(ecartees.map((x) => x.raison))].join(" · "),
-        )}</p>`
-      : "";
+    const { edge = 0 } = vm.sheet || {};
     // Les gestes que le jeton ne montre plus sous 640px vivent ICI : ancrer,
     // avantage positionnel, réserve, sortie de course, saisie de la valeur.
     // C'est la contrepartie du dégraissage du jeton — un geste déplacé, pas
@@ -618,42 +604,31 @@ export const ChaseRenderer = {
       vm.sheet && vm.resourceLabel
         ? `<span class="chase-sheet-edge">${Utils.escHtml(vm.resourceLabel)} ${edge}</span>`
         : "";
-    const actions = vm.sheet
-      ? visibles.length
-        ? `<div class="chase-acts">${puces}</div>`
-        : `<p class="chase-act-out">Aucune action de poursuite ouverte à ce participant.</p>`
-      : "";
-    // ── LOT C : les manœuvres du livre, jouables ─────────────────────
-    // Elles vivent AVANT les actions d'Atout parce que ce sont elles qui font
-    // avancer la poursuite en SR5 (`round.test` y est nul : « ce sont des
-    // ACTIONS, choisies »), là où l'Atout la modifie. Hors de portée, la puce
-    // se ternit et dit pourquoi — le livre écrit une condition, pas une
-    // interdiction, et le MJ voit une situation que l'app ne voit pas.
-    const manoeuvres = (vm.sheetActions || []).length
-      ? `<div class="chase-manoeuvres">
-          ${(vm.sheetActions || [])
-            .map(
-              (a) =>
-                `<button class="chase-manoeuvre${a.allowed ? "" : " is-out"}" data-action="action-use" data-id="${a.pnjId}" data-key="${a.key}" title="${Utils.escHtml(
-                  [`${a.name} — ${a.cost}`, ...(a.lines || []), a.why].filter(Boolean).join("\n"),
-                )}"><b>${Utils.escHtml(a.cost)}</b> ${Utils.escHtml(a.name)}${
-                  a.allowed ? "" : ` <em>${Utils.escHtml(a.why)}</em>`
-                }</button>`,
-            )
-            .join("")}
-        </div>`
-      : "";
+    // ── LOT F : la fiche n'est plus un endroit où l'on AGIT ───────────
+    // Les actions d'Atout de poursuite, les manœuvres du livre et
+    // l'embarquement ont quitté cette fiche pour la console d'action : ce sont
+    // des gestes qui coûtent une action et se décident au TOUR de quelqu'un,
+    // pas de la tenue de plateau. Ils y étaient de surcroît en double depuis
+    // que la console porte sa rangée de poursuite, et deux surfaces pour le
+    // même verbe finissent toujours par diverger.
+    //
+    // Ce qui reste ici est ce qui n'a pas de tour : ancrer la cible, saisir
+    // une valeur que l'app ne tient pas, déclarer une issue (Semé, Accident),
+    // compter une réserve. Le plateau, pas la main.
+    //
+    // Et la phrase « Aucune action de poursuite ouverte à ce participant »
+    // disparaît avec elles : en SR5 et dans les deux Anarchy, aucun catalogue
+    // d'actions d'Atout de poursuite n'existe — elle ne pouvait jamais devenir
+    // vraie, elle n'annonçait donc rien.
+    const actions = "";
     return `<div class="chase-sheet">
       <p class="chase-sheet-head">${vm.sheetVehicle && vm.sheetVehicle.kind === "drone" ? "◇" : vm.sheetVehicle ? "▣" : vm.glyph} ${CardRenderer._esc(vm.sheetName)}
         ${ressource}
         <button data-action="chase-sheet" data-id="${vm.sheetFor}" aria-label="Fermer">✕</button></p>
       ${this._crew(vm)}
       ${this._legs(vm)}
-      ${this._board(vm)}
       ${gestes}
-      ${manoeuvres}
       ${actions}
-      ${reste}
     </div>`;
   },
 
@@ -669,7 +644,7 @@ export const ChaseRenderer = {
     const membres = ((vm.sheetRow && vm.sheetRow.crew) || [])
       .map(
         (c) =>
-          `<button class="chase-crew${c.driver ? " is-driver" : ""}" data-action="chase-sheet" data-id="${c.pnjId}" title="${c.driver ? "Au volant" : "Passager"} — ouvrir sa fiche et ses actions d'Atout">${CardRenderer._esc(c.name)}${c.driver ? " <em>volant</em>" : ""}</button>`,
+          `<button class="chase-crew${c.driver ? " is-driver" : ""}" data-action="chase-sheet" data-id="${c.pnjId}" title="${c.driver ? "Au volant" : "Passager"} — ouvrir sa fiche">${CardRenderer._esc(c.name)}${c.driver ? " <em>volant</em>" : ""}</button>`,
       )
       .join("");
     return `<div class="chase-sheet-ride">
@@ -715,23 +690,6 @@ export const ChaseRenderer = {
     </p>`;
   },
 
-  /** Monter, prendre le volant, descendre. C'est ici que se règle « ils
-      sautent tous dans le même taxi » : le geste vit sur la fiche du
-      PARTICIPANT, là où le MJ le cherche — pas dans un écran de plus. */
-  _board(vm) {
-    if (vm.sheetVehicle) return "";
-    const r = vm.sheetRide;
-    const nom = r && r.vehicle ? r.vehicle.name : "la monture";
-    return `<div class="chase-sheet-acts">
-      <button data-action="chase-board" data-id="${vm.sheetFor}">▣ ${r ? "Changer de monture…" : "Monter dans…"}</button>
-      ${
-        r
-          ? `<button data-action="chase-wheel" data-id="${vm.sheetFor}">Prendre le volant</button>
-             <button data-action="chase-leave" data-id="${vm.sheetFor}">Descendre — ${CardRenderer._esc(nom)}</button>`
-          : ""
-      }
-    </div>`;
-  },
 
   /** Le round qui vient de se terminer, en une ligne — et son annulation.
       Le toast s'efface au bout de quelques secondes ; le MJ, lui, s'aperçoit
