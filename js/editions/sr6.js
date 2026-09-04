@@ -2281,6 +2281,22 @@ export const EditionSR6 = {
       SR5, cf. generate()) — chaque fonction ci-dessous bascule sur la
       présence de `stunMon` plutôt que de relire le réglage courant, pour
       rester fidèle au modèle figé à la génération du PNJ. */
+  /** Présence en scène (CODIR D10, 2026-09-04) : `{ astral, vr }`, lu par
+      Jouer pour proposer la bascule RA → RV/astral d'un participant. « Un
+      module sim doit être relié à une interface neurale directe (IND), qu'il
+      s'agisse d'électrodes, d'un datajack ou d'un commlink implanté »
+      (SR6 p.277) — sans lui, pas de RV ; le cyberjack du decker EST une IND,
+      le technomancien s'y branche sans matériel. Astral = Éveillé. */
+  presenceModes(pnj) {
+    const gear = [...(pnj.equip || []), ...(pnj.augs || [])].map((i) => ItemResolver.itemStr(i)).join(" ");
+    const awakened =
+      (Actor.attr(pnj, "MAG") || 0) > 0 || !!(pnj.spells && pnj.spells.length) || !!(pnj.powers && pnj.powers.length);
+    const vr =
+      !!pnj.cyberdeck ||
+      (Actor.attr(pnj, "RES") || 0) > 0 ||
+      /cyberjack|cyberdeck|datajack|électrodes|electrodes|module sim|console de rigger|\bRCC\b|commlink implanté/i.test(gear);
+    return { astral: awakened, vr };
+  },
   conditionMonitor: {
     model:
       "moniteur d'état unique (8 + CON/2), ou séparé Phys/Étourd (8+CON/2 / 8+VOL/2) si separateMonitors",

@@ -565,11 +565,16 @@ export const Play = {
     const p = r.pnj;
     if (!p || p._adhoc || p.kind === "drone" || p.kind === "vehicule") return null;
     if (p.type === "spirit") return { mode: "astral", def: "astral" };
-    const awakened =
-      (p.attrs && p.attrs.MAG > 0) ||
-      (p.spells && p.spells.length) ||
-      (p.powers && p.powers.length);
-    return awakened ? { mode: "astral", def: "ar" } : { mode: "vr", def: "ar" };
+    // CODIR D10 (2026-09-04) : « RV » était offert à tout combattant de chair.
+    // Au livre, la RV exige une interface neurale directe ET un module sim
+    // (SR5 p.222 « Interface neurale directe » ; SR6 p.277 « Module sim ») —
+    // ou la Résonance. C'est l'ÉDITION qui sait lire ça sur la fiche
+    // (`presenceModes`, les quatre modules) : astral si éveillé, RV si la
+    // fiche porte de quoi s'y brancher, rien pour la chair (RA implicite).
+    const modes = App.getEditionModule(p.edition).presenceModes(p);
+    if (modes.astral) return { mode: "astral", def: "ar" };
+    if (modes.vr) return { mode: "vr", def: "ar" };
+    return null;
   },
 
   /** Rend la bascule de présence d'une ligne : un seul bouton, le mode

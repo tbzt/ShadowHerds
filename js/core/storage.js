@@ -195,7 +195,7 @@ export const Storage = {
       ajoutée à `_MIGRATIONS`. Publique (contrairement à `_MIGRATIONS`) : les
       paquets exportés (`Backup`) la tamponnent pour savoir, à l'import, s'ils
       ont besoin d'être migrés. Voir CONTRIBUTING.md § Versionner les schémas. */
-  SCHEMA_VERSION: 11,
+  SCHEMA_VERSION: 12,
 
   /** Chaîne de migrations de schéma, ordonnée par version croissante. Chaque
       `up()` mute le `localStorage` brut (pas de dépendance à `_edition`) et
@@ -712,6 +712,28 @@ export const Storage = {
           if (storeChanged) localStorage.setItem(rkey, JSON.stringify(edges));
         }
         if (migrated) Debug.warn("storage", "migration v11 (contactLinksToEdges)", { migrated });
+      },
+    },
+    {
+      v: 12,
+      /** CODIR D10 (2026-09-04) — le réglage global `dicePrefs.preRollEdge`
+          repasse de "pill" (défaut C-010) à "panel" : `setDicePrefs` écrit
+          toutes les clés à chaque modification, donc un profil qui a touché
+          n'importe quel réglage de dés porte "pill" en dur et le nouveau défaut
+          ne l'atteindrait jamais. Un seul utilisateur, décision explicite :
+          on bascule une fois. "off" est un choix (rien de proposé) : conservé.
+          Mute le JSON brut de la clé globale, idempotent (un second passage ne
+          trouve plus "pill"). */
+      up() {
+        const key = "sr_pnj_v2_global_dicePrefs";
+        const raw = localStorage.getItem(key);
+        if (raw === null) return;
+        let prefs;
+        try { prefs = JSON.parse(raw); } catch { return; }
+        if (!prefs || prefs.preRollEdge !== "pill") return;
+        prefs.preRollEdge = "panel";
+        localStorage.setItem(key, JSON.stringify(prefs));
+        Debug.warn("storage", "migration v12 (preRollEdge pill→panel)");
       },
     },
   ],

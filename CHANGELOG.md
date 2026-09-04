@@ -10,6 +10,27 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.150.2] — 2026-09-04
+
+### Modifié
+
+- **Le panneau avant le jet redevient le défaut.** La pastille « Atout »
+  posée à côté de chaque réserve d'une carte SR5/SR6 avait remplacé le
+  panneau pour épargner un tap en combat ; elle se répétait huit fois par
+  carte et la dépense s'oubliait quand même. Le panneau propose le choix au
+  moment du jet — repousser les limites, prendre un risque, ajouter son rang,
+  ou lancer sans rien dépenser, qui reste le bouton principal. Le profil
+  existant bascule une fois (migration de schéma) ; « Pastille » et
+  « Désactivé » restent au choix dans Paramètres.
+- **La bascule « RV » n'est plus offerte à tout le monde.** Dans Jouer, chaque
+  combattant de chair portait un bouton « RV » : un ork sans deck n'a pas de
+  réalité virtuelle à rejoindre. Le livre exige une interface neurale directe
+  et un module sim (Shadowrun 5, p. 222 ; Shadowrun 6, p. 277), ou la
+  Résonance. Chaque édition lit maintenant sur la fiche de quoi se brancher —
+  cyberdeck, cyberjack, datajack, électrodes, module sim, console de rigger,
+  Résonance ; rôle decker ou rigger en Anarchy — et ne propose la RV qu'à ceux
+  qui l'ont. Les Éveillés gardent l'astral, la chair reste en RA sans bouton.
+
 ## [1.150.1] — 2026-09-04
 
 ### Modifié

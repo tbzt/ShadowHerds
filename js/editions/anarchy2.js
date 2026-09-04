@@ -618,6 +618,22 @@ export const EditionAnarchy2 = {
       moniteur fonctionne par seuils de blessure — cf. statBlocks — pas par
       malus cumulatif). Neutre documenté : pas de champ "primary" unique
       non plus (physMonitor/mentMonitor/matrixMonitor séparés). */
+  /** Présence en scène (CODIR D10, 2026-09-04) : `{ astral, vr }`. Anarchy 2
+      n'a plus de technomanciens (cf. ci-dessus) et ne détaille pas l'interface
+      neurale : c'est l'Atout d'équipement (cyberdeck, console de rigger —
+      convention « Nom (cyberware) : effet » dans `pnj.equip`) ou le rôle
+      (decker, rigger) qui dit « joue en RV ». Astral = Éveillé. */
+  presenceModes(pnj) {
+    const gear = [...(pnj.equip || []), ...(pnj.augs || [])].map((i) => ItemResolver.itemStr(i)).join(" ");
+    const role = `${pnj.archetype || ""} ${pnj.role || ""}`;
+    const awakened =
+      (Actor.attr(pnj, "MAG") || 0) > 0 || !!(pnj.spells && pnj.spells.length) || !!(pnj.powers && pnj.powers.length);
+    const vr =
+      !!pnj.cyberdeck ||
+      /cyberdeck|datajack|électrodes|electrodes|module sim|console de rigger|\bRCC\b/i.test(gear) ||
+      /decker|rigger|hacker/i.test(role);
+    return { astral: awakened, vr };
+  },
   conditionMonitor: {
     model: "seuils de blessure (légère/grave/incapacitante), pas de malus cumulatif",
     fields: { primary: null },

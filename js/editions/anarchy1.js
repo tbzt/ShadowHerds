@@ -564,6 +564,22 @@ export const EditionAnarchy1 = {
   statusMalus(pnj) {
     return Statuses.globalDiceMalus(pnj);
   },
+  /** Présence en scène (CODIR D10, 2026-09-04) : `{ astral, vr }`. Anarchy
+      ne détaille pas l'interface neurale : c'est l'équipement (cyberdeck,
+      console de rigger) ou le rôle (decker, rigger, technomancien) qui dit
+      « joue en RV ». Astral = Éveillé (Magie, sorts ou pouvoirs). */
+  presenceModes(pnj) {
+    const gear = [...(pnj.equip || []), ...(pnj.augs || [])].map((i) => ItemResolver.itemStr(i)).join(" ");
+    const role = `${pnj.archetype || ""} ${pnj.role || ""}`;
+    const awakened =
+      (Actor.attr(pnj, "MAG") || 0) > 0 || !!(pnj.spells && pnj.spells.length) || !!(pnj.powers && pnj.powers.length);
+    const vr =
+      !!pnj.cyberdeck ||
+      (Actor.attr(pnj, "RES") || 0) > 0 ||
+      /cyberdeck|datajack|électrodes|electrodes|module sim|console de rigger|\bRCC\b/i.test(gear) ||
+      /decker|rigger|technomanc|hacker/i.test(role);
+    return { astral: awakened, vr };
+  },
   conditionMonitor: {
     model: "double physique+étourdissement, cases = 8 + FOR|VOL /2",
     fields: { primary: "physMon" },

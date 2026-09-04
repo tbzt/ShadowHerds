@@ -1564,6 +1564,25 @@ export const EditionSR5 = {
   statusInitMalus(pnj) {
     return Statuses.initMalus(pnj);
   },
+  /** Présence en scène (CODIR D10, 2026-09-04) : `{ astral, vr }`, lu par
+      Jouer pour proposer la bascule RA → RV/astral d'un participant.
+      « L'interface neurale directe (ainsi qu'un module sim) est requise pour
+      l'usage de la RV » ; on dispose d'une IND « lorsque vous portez des
+      électrodes, ou que vous avez un datajack, un commlink ou un cyberdeck
+      implanté » (LdB SR5 p.222). Un technomancien s'y branche sans matériel.
+      La fiche d'un PNJ ne détaille pas toujours l'IND : un cyberdeck ou une
+      console de rigger suffisent à dire « a de quoi jouer en RV ». Astral =
+      Éveillé (Magie, sorts ou pouvoirs). */
+  presenceModes(pnj) {
+    const gear = [...(pnj.equip || []), ...(pnj.augs || [])].map((i) => ItemResolver.itemStr(i)).join(" ");
+    const awakened =
+      (Actor.attr(pnj, "MAG") || 0) > 0 || !!(pnj.spells && pnj.spells.length) || !!(pnj.powers && pnj.powers.length);
+    const vr =
+      !!pnj.cyberdeck ||
+      (Actor.attr(pnj, "RES") || 0) > 0 ||
+      /cyberdeck|datajack|électrodes|electrodes|module sim|console de contrôle de rigger|\bRCC\b|commlink implanté/i.test(gear);
+    return { astral: awakened, vr };
+  },
   /** Malus de dés lié aux cases de moniteur remplies : −1D par tranche de
       `woundMod` cases (physique + étourdissement cumulés), réglable en
       Réglages (défaut 3, désactivable à 0). */

@@ -44,7 +44,16 @@ export const Settings = {
     // Ne change RIEN pour les profils existants (préférence déjà enregistrée
     // dans `Storage`, ce défaut ne s'applique qu'à un profil neuf). Le MJ
     // reste libre de revenir à "panel" ou "off" dans les Paramètres.
-    preRollEdge: "pill",
+    //
+    // Défaut "panel" à nouveau depuis 2026-09-04 (décision utilisateur, CODIR
+    // D10) : la pastille avait résolu le coût du panneau en créant un bruit
+    // mesuré — une affordance « Atout » par réserve, huit par carte SR6 — et
+    // la dépense s'oubliait quand même. Le panneau PROPOSE le choix au moment
+    // du jet, c'est ce qu'on lui demande ; « Lancer sans dépenser » y reste le
+    // bouton primaire pour que ce choix coûte un tap. La migration v12
+    // (storage.js) bascule le profil existant une fois ; C-010 reste documenté
+    // ci-dessus comme le coût assumé.
+    preRollEdge: "panel",
   },
   getDicePrefs() {
     return { ...this._diceDefaults, ...Storage.getGlobal(this._DICE_KEY, {}) };
