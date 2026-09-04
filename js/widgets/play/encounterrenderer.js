@@ -18,6 +18,7 @@ import { EdgeActions } from "../../rules/edgeactions.js";
 import { Encounter } from "../../controllers/encounter.js";
 import { Cyberdeck } from "../../rules/cyberdeck.js";
 import { DiceRoller } from "../dice/diceroller.js";
+import { Intrusion } from "../../controllers/intrusion.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
 import { Matrix } from "../../rules/matrix.js";
 import { Movement } from "../../rules/movement.js";
@@ -2231,6 +2232,59 @@ export const EncounterRenderer = {
     </span>`;
   },
 
+  /* ============================================================
+     LA RANGÉE MATRICE DANS LA CONSOLE (lot H)
+
+     Jumelle de `_chaseRow`, et pour la même raison : pendant une intrusion,
+     ce que le meneur doit avoir sous les yeux au tour de quelqu'un — le
+     serveur, l'accès tenu, le Score de Surveillance et sa distance à la
+     convergence — vivait dans l'autre colonne.
+
+     ⚠ Elle ne compte RIEN toute seule. Le seul personnage qui accumule du SS
+     est le decker joueur, qui ne touche pas l'app ; et le livre exempte
+     explicitement ceux qui, eux, cliquent ici : « les G-men, spiders de
+     sécurité, CI […] n'accumulent jamais de Score de Surveillance » (SR5
+     p.233). La rangée est donc un BORDEREAU : elle rappelle quelles actions
+     coûtent du SS — relevé vérifié aux deux livres — et ouvre la saisie des
+     succès de défense que le joueur annonce.
+     ============================================================ */
+  _matrixRow(active) {
+    const r = active && active.pnjId ? Intrusion.consoleRow(active.pnjId) : null;
+    if (!r) return "";
+    const ss =
+      r.convergenceAt == null
+        ? ""
+        : `<span class="emr-ss${r.ss >= r.convergenceAt ? " is-conv" : r.ss >= r.convergenceAt * 0.75 ? " is-hot" : ""}" title="Score de Surveillance — convergence à ${r.convergenceAt} (p.233)">SS ${r.ss}/${r.convergenceAt}</span>`;
+    // L'accès se dit dans l'échelle de l'édition : un niveau nommé en SR6, des
+    // marks en SR5. Jamais le mot de l'autre livre.
+    const acces = r.accessLabel
+      ? `<span class="emr-acc" title="Niveau d'accès du persona sur ce serveur">${Utils.escHtml(r.accessLabel)}</span>`
+      : r.hasMarks
+        ? `<span class="emr-acc" title="Marks de l'équipe sur le serveur (3 = propriétaire) · marks du serveur sur ce persona">◈ ${r.marksHeld}/3${r.marksOn ? ` · serveur ${r.marksOn}` : ""}</span>`
+        : "";
+    const alerte = r.alerted
+      ? `<span class="emr-alert" title="La Patrouilleuse a repéré l'intrus — le serveur déploie une CI par round">⚠ alerte</span>`
+      : "";
+    // Le bordereau : les actions que le livre déclare illégales. Un tap ouvre
+    // la saisie des succès de défense — c'est ce nombre qui monte au SS.
+    const bordereau =
+      r.accumulates && r.illegal.length
+        ? `<span class="emr-illegal" title="Actions illégales de cette édition — un tap inscrit les succès de la défense au Score de Surveillance">${r.illegal
+            .map(
+              (a) =>
+                `<button class="chase-manoeuvre" data-action="ss-illegal" data-id="${r.serverId}" data-key="${a.key}">${Utils.escHtml(a.name)}</button>`,
+            )
+            .join("")}</span>`
+        : r.illegal.length
+          ? `<span class="emr-note" title="SR5 p.233 : les spiders, CI et autres utilisateurs soutenus par le DIEU n'accumulent jamais de Score de Surveillance">soutenu par le DIEU — aucun SS</span>`
+          : "";
+    return `<div class="encounter-chase-row encounter-matrix-row">
+      <span class="ecr-lead">⚡︎ ${Utils.escHtml(r.serverName)}</span>
+      ${acces}${ss}${alerte}
+      ${bordereau}
+    </div>`;
+  },
+
   renderActiveCard(rows, state, model) {
     const box = document.getElementById("encounter-active-card");
     if (!box) return;
@@ -2389,7 +2443,8 @@ export const EncounterRenderer = {
       // dupliquer aucun rendu.
       box.innerHTML = `<div class="cluster encounter-mode-head is-agir${modeEnter ? " mode-enter" : ""}">Agir · ${this._compactName(pnj.name)}</div>
         <div class="encounter-active-top">${this._activeTop(active, state)}</div>
-        ${this._chaseRow(active)}`;
+        ${this._chaseRow(active)}
+        ${this._matrixRow(active)}`;
       const deps = CardRenderer.liveDeps();
       const offense = CardRenderer.offenseBlocks(pnj, deps);
       if (offense != null) {
@@ -2552,6 +2607,7 @@ export const EncounterRenderer = {
     box.innerHTML = `<div class="encounter-react${modeEnter ? " mode-enter" : ""}">
       <div class="cluster encounter-mode-head is-react">Réagir · ${pjName} agit — faites réagir les PNJ</div>
       ${this._chaseRow(active)}
+      ${this._matrixRow(active)}
       ${rowsHtml}
       ${devicesHtml}
     </div>`;

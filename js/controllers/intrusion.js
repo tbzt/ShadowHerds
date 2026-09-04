@@ -16,6 +16,7 @@
    dans Servers.
    ============================================================ */
 import { Debug } from "../core/debug.js";
+import { Dialog } from "../widgets/kit/dialog.js";
 import { Dice } from "../rules/dice.js";
 import { DiceRoller } from "../widgets/dice/diceroller.js";
 import { Encounter } from "./encounter.js";
@@ -361,6 +362,111 @@ export const Intrusion = {
   },
 
   /** SR6 : compteurs d'accès illégaux maintenus. */
+  /* ========================================================
+     L'INTRUSION VUE DEPUIS LA CONSOLE D'ACTION (lot H)
+
+     Jumeau de `Pursuit.consoleRow`, et pour la même raison : la console
+     répond à « que fait celui dont c'est le tour ? », et pendant une
+     intrusion une moitié de la réponse vivait dans l'autre colonne — dans
+     quel serveur il est, l'accès qu'il tient, où en est son Score de
+     Surveillance, et à quelle distance de la convergence.
+
+     ── Ce que cette rangée ne fait PAS, et pourquoi (arbitrage 2026-09-05) ──
+     Elle ne fait monter aucun compteur toute seule. La première version du
+     chantier voulait qu'une action illégale jouée incrémente le SS ; c'était
+     inutile et faux à la fois. Inutile parce que seuls les PNJ sont joués
+     depuis l'app, et faux parce que le livre les en exempte explicitement :
+     « les G-men, spiders de sécurité, CI et autres utilisateurs qui sont
+     officiellement soutenus par le DIEU **n'accumulent jamais** de Score de
+     Surveillance, même dans le cas d'actions théoriquement illégales »
+     (SR5 p.233). L'automatisme se serait donc déclenché exactement là où la
+     règle l'interdit.
+
+     Celui qui accumule du SS, c'est le decker JOUEUR — qui ne touche pas
+     l'app. La rangée lui sert donc de bordereau : elle rappelle quelles
+     actions coûtent du SS (le relevé de légalité, vérifié aux livres) et
+     ouvre la saisie des succès de défense qu'il annonce. Même doctrine que
+     partout ailleurs : l'app ne lance pas, ne choisit pas, ne compte pas à sa
+     place — elle enregistre ce qu'il annonce.
+
+     → `null` hors intrusion, ou si l'édition n'a pas de Score de Surveillance
+     (les deux Anarchy : elles ont DIEU, un autre mécanisme). */
+  consoleRow(pnjId) {
+    if (typeof Encounter === "undefined" || !Encounter.state) return null;
+    const srv = Encounter.state.serverId ? Servers.find(Encounter.state.serverId) : null;
+    if (!srv) return null;
+    const intr = this._state(srv.id);
+    if (!intr || !intr.open) return null;
+    const M = Matrix.use(srv.edition);
+    const seuil = M.convergenceAt();
+    const c = Encounter._find(pnjId);
+    return {
+      serverId: srv.id,
+      serverName: srv.name,
+      indice: srv.indice,
+      alerted: !!intr.alerted,
+      turn: intr.turn || 0,
+      ss: intr.ss || 0,
+      convergenceAt: seuil,
+      /** Le nom VF du niveau d'accès (SR6) ou les marks tenues (SR5) : deux
+          échelles pour la même question — « jusqu'où peut-il aller ? ». */
+      accessLabel: M.accessLevels().length
+        ? M.accessLevels()[intr.access || 0] || M.accessLevels()[0]
+        : null,
+      marksHeld: intr.marksHeld || 0,
+      marksOn: (intr.marksOn || {})[pnjId] || 0,
+      hasMarks: M.hasAttrs() && M.accessLevels().length === 0,
+      /** Les actions que le livre déclare ILLÉGALES dans cette édition — la
+          liste courte que le meneur consulte quand le joueur annonce. Vide
+          là où l'édition n'a pas de SS. */
+      illegal: seuil == null ? [] : this._illegalActions(srv.edition),
+      /** Une CI n'accumule jamais de SS (p.233) : on ne lui propose pas de
+          bordereau. Le rappel reste lisible, le geste disparaît. */
+      accumulates: !(c && c.kind === "matrix"),
+    };
+  },
+
+  /** LE BORDEREAU DU SCORE DE SURVEILLANCE (lot I′).
+
+      Le joueur annonce « je fais un Pic de données » ; la question qui suit
+      est toujours la même — « combien de succès à ta défense ? » —, et c'est
+      ce nombre-là qui monte au SS : « son SS augmente du nombre de succès que
+      la cible obtient à son test de défense » (SR5 p.233). L'app ne le
+      connaît pas : elle le demande, et l'inscrit au journal sous le nom de
+      l'action, pour que la ligne se relise deux heures plus tard.
+
+      Rien n'est calculé, rien n'est deviné. C'est de la saisie rendue rapide. */
+  async logIllegal(id, actionKey) {
+    const srv = this._get(id);
+    const intr = this._state(id);
+    if (!srv || !intr) return;
+    const nom =
+      (this._illegalActions(srv.edition).find((a) => a.key === actionKey) || {}).name ||
+      "Action illégale";
+    const raw = await Dialog.prompt({
+      title: nom,
+      // `label`, pas `message` : `Dialog.prompt` masque l'élément de message.
+      label: `Succès obtenus par la cible à son test de défense — c'est ce nombre qui s'ajoute au Score de Surveillance (p.233). Laissez vide pour ne rien inscrire.`,
+      value: "",
+    });
+    if (raw === null) return;
+    const n = parseInt(String(raw).trim(), 10);
+    if (!Number.isFinite(n) || n <= 0) return;
+    this.addSS(id, n, `${nom} — ${n} succès en défense`);
+  },
+
+  /** Les actions matricielles marquées illégales au catalogue de l'édition —
+      relevé vérifié aux livres (SR5 p.245 « par limites » ; SR6 colonne
+      LÉGALITÉ). Triées par nom : c'est une liste qu'on parcourt des yeux. */
+  _illegalActions(edition) {
+    const mod = typeof App !== "undefined" ? App.getEditionModule(edition) : null;
+    const cat = (mod && mod.actionModel && mod.actionModel.catalog) || [];
+    return cat
+      .filter((a) => a.domain === "matrice" && a.illegal)
+      .map((a) => ({ key: a.key, name: a.name }))
+      .sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  },
+
   setIllegal(id, kind, delta) {
     const intr = this._state(id);
     if (!intr) return;

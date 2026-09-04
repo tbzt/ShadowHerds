@@ -10,6 +10,47 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.153.0] — 2026-09-05
+
+### Ajouté
+
+- **L'intrusion apparaît dans la console d'action.** Au tour de quelqu'un, la
+  console dit désormais dans quel serveur il se trouve, l'accès qu'il tient
+  (les marks en Shadowrun 5, le niveau nommé en Shadowrun 6 — jamais le mot de
+  l'autre livre), son Score de Surveillance et sa distance à la convergence,
+  et si l'alerte est donnée. Ces chiffres vivaient dans l'autre colonne : il
+  fallait regarder deux endroits pour un seul tour. Même grammaire que la
+  rangée de course-poursuite, à la teinte près.
+- **Le bordereau du Score de Surveillance.** Les actions que le livre déclare
+  illégales sont listées sur cette rangée ; un tap sur celle que le joueur
+  annonce demande les succès obtenus par la cible à son test de défense — « son
+  SS augmente du nombre de succès que la cible obtient à son test de défense »
+  (Shadowrun 5, p. 233) — et l'inscrit au journal sous le nom de l'action.
+  Rien n'est calculé ni deviné : c'est de la saisie rendue rapide, pour un
+  compteur que le meneur tient au nom d'un joueur qui ne touche pas
+  l'application.
+- **La légalité des actions matricielles, relevée aux livres.** Shadowrun 5 en
+  déclare **14 illégales** sur 33 — ce sont celles dont la limite est Attaque
+  ou Corruption, que la table « Les actions matricielles par limites » (p. 245)
+  classe elle-même. Shadowrun 6 en déclare **16** sur 33, lues une à une dans
+  la colonne « Légalité » de chaque entrée et recoupées avec les italiques du
+  récapitulatif, sans un seul désaccord entre les deux sources. Les deux
+  Anarchy n'ont pas de Score de Surveillance : elles ont DIEU, rien à classer.
+
+### Modifié
+
+- **Les jets d'une CI se font au tour de la CI.** Dès qu'une contre-mesure
+  entre dans l'ordre d'initiative, elle a sa propre fiche de console, qui porte
+  déjà ses jets d'attaque, de défense et d'encaissement : les garder aussi sur
+  le panneau en faisait deux endroits pour le même geste. Une CI en veille, qui
+  n'a pas de tour et donc pas de console, garde les siens.
+
+### Corrigé
+
+- **Le seuil de convergence était écrit en dur à trois endroits.** Il est
+  désormais déclaré par l'édition, comme le reste des chiffres de règle — un
+  nombre recopié une quatrième fois est un nombre qui finit par diverger.
+
 ## [1.152.0] — 2026-09-05
 
 ### Ajouté

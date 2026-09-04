@@ -438,9 +438,21 @@ export const ServerRenderer = {
               ? `<span class="ic-status active">active${st.turn ? ` · t${st.turn}` : ""}</span>`
               : `<span class="ic-status idle">en réserve</span>`;
 
-        /* Jets (SR5/SR6) — les glaces Anarchy ont des succès fixes */
+        /* Jets (SR5/SR6) — les glaces Anarchy ont des succès fixes.
+
+           ── LOT J : une CI qui a un TOUR n'a pas ses jets ici ──────────
+           Même doctrine que la piste de poursuite : le plateau montre l'état,
+           on agit au tour de l'intéressé. Dès qu'une CI est entrée dans
+           l'ordre d'initiative, elle a sa propre fiche de console
+           (`EncounterRenderer._renderMatrixActiveCard`), qui porte déjà ses
+           jets — les garder ici en faisait deux endroits pour le même verbe.
+
+           Elles restent en revanche sur les CI qui ne sont PAS dans l'ordre :
+           celles-là n'ont pas de tour, donc pas de console, et les leur
+           retirer les rendrait injouables. La différence avec la poursuite est
+           réelle et assumée — là-bas tout participant a un tour, ici non. */
         let rolls = "";
-        if (M.hasAttrs() && (ic.watch || (st.active && !st.down))) {
+        if (M.hasAttrs() && !launched.has(k) && (ic.watch || (st.active && !st.down))) {
           const btn = (kind, txt, tip) =>
             `<button class="btn-secondary btn-small ic-roll" title="${esc(tip)}"
               data-action="roll-ic" data-id="${srv.id}" data-k="${k}" data-kind="${kind}">⚄ ${txt}</button>`;

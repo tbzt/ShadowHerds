@@ -160,6 +160,13 @@ export const EncounterBinding = {
           break;
         /* L'ancre n'a pas de bande : son déplacement recule tous les autres
            (lot A). Un geste distinct parce que ce n'est pas le même verbe. */
+        /* Lot I′ — bordereau du Score de Surveillance. Le bouton vit dans la
+           CONSOLE (#encounter-active-card), que la délégation de `Servers` ne
+           couvre pas : il se câble donc ici, où le tracker est déjà bindé,
+           plutôt qu'en posant un second écouteur sur l'overlay. */
+        case "ss-illegal":
+          Intrusion.logIllegal(el.dataset.id, el.dataset.key);
+          break;
         case "chase-move-anchor":
           Pursuit.moveAnchor(parseInt(el.dataset.delta, 10) || 0);
           break;

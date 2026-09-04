@@ -665,6 +665,22 @@ export const Matrix = {
     return this._model().convergenceText();
   },
 
+  /** Le seuil de convergence — 40 en SR5 (p.233) comme en SR6, `null` là où
+      l'édition n'a pas de Score de Surveillance (les deux Anarchy ont DIEU,
+      un mécanisme différent).
+
+      Le nombre était écrit en dur à trois endroits du rendu. Il en fallait un
+      quatrième pour la rangée de console : un chiffre de règle recopié une
+      fois de plus est un chiffre qui divergera. Déclaré par l'édition, comme
+      le reste. */
+  convergenceAt() {
+    // `hasAttrs` est une PROPRIÉTÉ du modèle (c'est `Matrix.hasAttrs()` qui
+    // est la fonction) : le distinguo sépare exactement les éditions à Score
+    // de Surveillance de celles à DIEU.
+    const m = this._model();
+    return m && m.hasAttrs ? m.convergenceAt || 40 : null;
+  },
+
   /** T6c — asymétrie SR5 (p.252) : les actions de Résonance d'un technomancien
       ne sont PAS comptabilisées au Score de Surveillance et ne nécessitent
       aucune mark (ses actions matricielles standard, elles, suivent les règles

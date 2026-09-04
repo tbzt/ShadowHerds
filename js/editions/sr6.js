@@ -818,6 +818,14 @@ export const EditionSR6 = {
          gestes existent des deux côtés (Pic de données, Forcer l'accès, Sonder
          l'accès, Planter un programme) : c'est voulu, ce sont deux facettes du
          même geste, et aucune des deux tables n'a vocation à porter l'autre. */
+      /* ── LÉGALITÉ DES ACTIONS MATRICIELLES (relevé 2026-09-05) ──
+         Ce livre-ci le dit deux fois plutôt qu'une : chaque entrée porte une
+         colonne LÉGALITÉ (p.181-186), et le récapitulatif p.186 met les
+         illégales en italique (« les actions en italique sont des actions
+         illégales »). Les 33 entrées ont été lues à la colonne ET recoupées à
+         l'italique — zéro désaccord. 16 illégales, 17 légales.
+         ⚠ L'italique ne survit pas à une extraction texte : le relevé est
+         passé par l'image. */
       { key: "mxChangerIcone", name: "Changer son icône", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "matrice", lines: ["Modifie l'apparence de son icône"] },
       { key: "mxChangerInterface", name: "Changer de mode d'interface", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "matrice", lines: ["Bascule entre RA et RV"] },
       { key: "mxEntrerServeur", name: "Entrer / sortir d'un serveur", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "matrice", lines: ["Franchit la frontière d'un serveur"] },
@@ -826,33 +834,33 @@ export const EditionSR6 = {
       { key: "mxReconfigurer", name: "Reconfigurer les attributs matriciels", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "matrice", lines: [
         "Échange les valeurs de deux attributs non nuls du persona (légale, aucun test, aucun accès nécessaire)",
       ] },
-      { key: "mxBrouiller", name: "Brouiller des signaux", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Brouille les communications d'une zone"] },
+      { key: "mxBrouiller", name: "Brouiller des signaux", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Brouille les communications d'une zone"] },
       { key: "mxControlerAppareil", name: "Contrôler un appareil", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Prend le contrôle d'un appareil accessible"] },
       { key: "mxCrypter", name: "Crypter un fichier", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Protège un fichier par cryptage"] },
-      { key: "mxDecrypter", name: "Décrypter un fichier", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Lève le cryptage d'un fichier"] },
+      { key: "mxDecrypter", name: "Décrypter un fichier", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Lève le cryptage d'un fichier"] },
       { key: "mxDefenseTotale", name: "Défense matricielle totale", cost: [{ key: "major", n: 1 }], timing: "L", domain: "matrice", lines: ["Se défend activement contre les actions matricielles jusqu'à la fin du round"] },
       { key: "mxDesamorcerBombe", name: "Désamorcer une bombe matricielle", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Neutralise une bombe matricielle repérée"] },
       { key: "mxEditerFichier", name: "Éditer un fichier", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Crée, modifie, copie ou supprime un fichier"] },
-      { key: "mxEffacerSignature", name: "Effacer une signature matricielle", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Efface la trace laissée par une action matricielle"] },
-      { key: "mxEmpetrer", name: "Empêtrer", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Entrave une icône adverse"] },
-      { key: "mxForcerAcces", name: "Forcer l'accès", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", via: "matrice", lines: ["Obtient un niveau d'accès par la force (dépend de l'Attaque)"] },
+      { key: "mxEffacerSignature", name: "Effacer une signature matricielle", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Efface la trace laissée par une action matricielle"] },
+      { key: "mxEmpetrer", name: "Empêtrer", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Entrave une icône adverse"] },
+      { key: "mxForcerAcces", name: "Forcer l'accès", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", via: "matrice", lines: ["Obtient un niveau d'accès par la force (dépend de l'Attaque)"] },
       { key: "mxFormaterAppareil", name: "Formater un appareil", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Reformate un appareil pour en changer le propriétaire"] },
-      { key: "mxFureter", name: "Fureter", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Fouille un serveur à la recherche de fichiers"] },
-      { key: "mxImiterOrdre", name: "Imiter un ordre", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Fait passer un ordre pour légitime auprès d'un appareil"] },
+      { key: "mxFureter", name: "Fureter", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Fouille un serveur à la recherche de fichiers"] },
+      { key: "mxImiterOrdre", name: "Imiter un ordre", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Fait passer un ordre pour légitime auprès d'un appareil"] },
       { key: "mxPercevoirMatrice", name: "Percevoir la Matrice", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Analyse un objet matriciel ou scanne les environs"] },
-      { key: "mxPicDonnees", name: "Pic de données", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", via: "matrice", lines: ["Attaque matricielle infligeant des dommages (VD = indice d'Attaque)"] },
-      { key: "mxPlanterProgramme", name: "Planter un programme", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", via: "matrice", lines: ["Met hors service un programme actif de la cible"] },
+      { key: "mxPicDonnees", name: "Pic de données", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", via: "matrice", lines: ["Attaque matricielle infligeant des dommages (VD = indice d'Attaque)"] },
+      { key: "mxPlanterProgramme", name: "Planter un programme", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", via: "matrice", lines: ["Met hors service un programme actif de la cible"] },
       { key: "mxPlongerAppareil", name: "Plonger dans un appareil riggé", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Prend le contrôle direct d'un appareil riggé"] },
-      { key: "mxPoserBombe", name: "Poser une bombe matricielle", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Piège un fichier ou un appareil"] },
+      { key: "mxPoserBombe", name: "Poser une bombe matricielle", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Piège un fichier ou un appareil"] },
       { key: "mxRebooter", name: "Rebooter un appareil", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Redémarre un appareil, ce qui purge son état matriciel"] },
       { key: "mxRechercheMatricielle", name: "Recherche matricielle", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Recherche une information dans la Matrice"] },
-      { key: "mxEmpreinteNumerique", name: "Rechercher une empreinte numérique", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Remonte la piste laissée par une icône"] },
-      { key: "mxSeCacher", name: "Se cacher", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Passe son icône en mode silencieux vis-à-vis d'une cible"] },
+      { key: "mxEmpreinteNumerique", name: "Rechercher une empreinte numérique", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Remonte la piste laissée par une icône"] },
+      { key: "mxSeCacher", name: "Se cacher", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Passe son icône en mode silencieux vis-à-vis d'une cible"] },
       { key: "mxSeDebrancher", name: "Se débrancher", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Quitte la Matrice"] },
-      { key: "mxSonderAcces", name: "Sonder l'accès", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", via: "matrice", lines: ["Prépare un accès en discrétion (dépend de la Corruption)"] },
-      { key: "mxTraquerIcone", name: "Traquer une icône", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Localise physiquement le porteur d'une icône"] },
-      { key: "mxBackdoor", name: "Utiliser une backdoor", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Réutilise un accès préparé par Sonder l'accès"] },
-      { key: "mxVerifierSurveillance", name: "Vérifier son Score de Surveillance", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Consulte son Score de Surveillance courant"] },
+      { key: "mxSonderAcces", name: "Sonder l'accès", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", via: "matrice", lines: ["Prépare un accès en discrétion (dépend de la Corruption)"] },
+      { key: "mxTraquerIcone", name: "Traquer une icône", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Localise physiquement le porteur d'une icône"] },
+      { key: "mxBackdoor", name: "Utiliser une backdoor", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Réutilise un accès préparé par Sonder l'accès"] },
+      { key: "mxVerifierSurveillance", name: "Vérifier son Score de Surveillance", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Consulte son Score de Surveillance courant"] },
     ],
   },
   /** ACTIONS D'ATOUT (lot F5) — le contrat, lu par `EdgeActions`.

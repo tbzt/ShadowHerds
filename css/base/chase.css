@@ -1382,3 +1382,56 @@ button.chase-tok-val.is-void {
   gap: var(--sp-1);
   min-width: 0;
 }
+
+/* ============================================================
+   LA RANGÉE MATRICE DANS LA CONSOLE (lot H)
+
+   Elle réutilise `.encounter-chase-row` : c'est la même grammaire — un
+   bandeau d'une ligne, sous le nom de l'actif, qui dit où il en est dans un
+   moteur de scène. Deux dialectes pour deux moteurs auraient coûté un
+   apprentissage pour rien. Seule la teinte du liseré change, pour que l'œil
+   distingue ⇉ de ⚡︎ sans lire.
+   ============================================================ */
+.encounter-matrix-row {
+  /* `--accent2` : la teinte que le tracker donne déjà à tout ce qui est
+     matriciel (pastille CI, fiche de CI). On la reprend plutôt que d'en
+     inventer une. */
+  border-left-color: var(--accent2);
+}
+.encounter-matrix-row .emr-acc,
+.encounter-matrix-row .emr-ss {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  padding: 0 var(--sp-1);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-sm);
+  flex: none;
+}
+/* Le SS chauffe en approchant de la convergence — trois crans, pas un
+   dégradé : le meneur lit un état, pas une température. */
+.encounter-matrix-row .emr-ss.is-hot {
+  color: var(--warning);
+  border-color: var(--warning);
+}
+.encounter-matrix-row .emr-ss.is-conv {
+  color: var(--danger);
+  border-color: var(--danger);
+  font-weight: 700;
+}
+.encounter-matrix-row .emr-alert {
+  font-size: var(--fs-2xs);
+  color: var(--warning);
+  flex: none;
+}
+.encounter-matrix-row .emr-illegal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+/* Le cas où le livre exempte : on l'écrit, on ne masque pas en silence. */
+.encounter-matrix-row .emr-note {
+  font-size: var(--fs-2xs);
+  font-style: italic;
+  color: var(--text-dim);
+}

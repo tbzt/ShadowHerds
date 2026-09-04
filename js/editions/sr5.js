@@ -862,6 +862,23 @@ export const EditionSR5 = {
          programme » est donné COMPLEXE dans la liste d'actions (p.165) et
          SIMPLE dans la table récapitulative par attribut (p.245). On retient la
          liste d'actions, qui est l'index de référence des types. */
+      /* ── LÉGALITÉ DES ACTIONS MATRICIELLES (relevé 2026-09-05, p.245) ──
+         `illegal: true` marque les actions dont la LIMITE est Attaque ou
+         Corruption. C'est la définition du livre, mot pour mot (p.233) : « au
+         moment où il effectue une action illégale (d'Attaque ou de
+         Corruption), il obtient un Score de Surveillance […] son SS augmente
+         du nombre de succès que la cible obtient à son test de défense ».
+         Le drapeau ne fait donc pas monter le SS tout seul : il dit QUAND le
+         proposer, et le nombre vient de la table (l'app ne connaît pas les
+         succès de la défense).
+
+         Deux coquilles du livre tranchées ici plutôt que recopiées :
+         · « Effacer une signature matricielle » figure DEUX FOIS dans la table
+           des limites, sous Attaque ET sous Firewall. Son entrée propre
+           (p.240) écrit « Informatique + Résonance [Attaque] » : c'est donc
+           Attaque, et SR6 la classe illégale aussi.
+         · « Imiter un ordre » (texte p.241) et « Falsifier un ordre »
+           (table p.245) sont la même action sous deux noms VF. */
       { key: "mxChargerProgramme", name: "Charger un programme", cost: [{ key: "free", n: 1 }], domain: "matrice", lines: ["Charge un programme dans le cyberdeck"] },
       { key: "mxEchangerAttributs", name: "Échanger deux attributs matriciels", cost: [{ key: "free", n: 1 }], domain: "matrice", lines: ["Permute deux attributs du persona"] },
       { key: "mxDesactiverProgramme", name: "Désactiver un programme", cost: [{ key: "free", n: 1 }], domain: "matrice", lines: ["Décharge un programme actif"] },
@@ -870,7 +887,7 @@ export const EditionSR5 = {
       { key: "mxAppelerSprite", name: "Appeler / renvoyer un sprite", cost: [{ key: "simple", n: 1 }], domain: "resonance", lines: ["Convoque ou congédie un sprite enregistré"] },
       { key: "mxChangerIcone", name: "Changer son icône", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Modifie l'apparence de son icône"] },
       { key: "mxEnvoyerMessage", name: "Envoyer un message", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Envoie un message matriciel"] },
-      { key: "mxVerifierSurveillance", name: "Vérifier son Score de Surveillance", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Consulte son Score de Surveillance courant"] },
+      { key: "mxVerifierSurveillance", name: "Vérifier son Score de Surveillance", illegal: true, cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Consulte son Score de Surveillance courant"] },
       { key: "mxChangerInterface", name: "Changer de mode d'interface", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Bascule entre RA et RV"] },
       { key: "mxOrdreSprite", name: "Donner un ordre à un sprite", cost: [{ key: "simple", n: 1 }], domain: "resonance", lines: ["Commande un sprite sous ses ordres"] },
       { key: "mxInviterMarkage", name: "Inviter au markage", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Autorise volontairement une mark sur son persona"] },
@@ -883,33 +900,33 @@ export const EditionSR5 = {
         "Type d'action VARIABLE : test étendu dont la durée dépend de l'obscurité de l'information",
       ] },
 
-      { key: "mxBrouiller", name: "Brouiller les signaux", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Brouille les communications d'une zone"] },
+      { key: "mxBrouiller", name: "Brouiller les signaux", illegal: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Brouille les communications d'une zone"] },
       { key: "mxCompilerSprite", name: "Compiler un sprite", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "resonance", via: "compilation", lines: ["Compile un sprite et négocie ses tâches"] },
       { key: "mxDecompilerSprite", name: "Décompiler un sprite", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "resonance", via: "decompilation", lines: ["Tente de dissoudre un sprite"] },
       { key: "mxDesamorcerBombe", name: "Désamorcer une bombe matricielle", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Neutralise une bombe matricielle repérée"] },
       { key: "mxEditerFichier", name: "Éditer un fichier", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Crée, modifie, copie ou supprime un fichier"] },
-      { key: "mxEffacerMark", name: "Effacer une mark", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", via: "matrice", lines: ["Retire une mark posée sur une icône"] },
-      { key: "mxEffacerSignature", name: "Effacer une signature matricielle", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Efface la trace laissée par une action matricielle"] },
+      { key: "mxEffacerMark", name: "Effacer une mark", illegal: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", via: "matrice", lines: ["Retire une mark posée sur une icône"] },
+      { key: "mxEffacerSignature", name: "Effacer une signature matricielle", illegal: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Efface la trace laissée par une action matricielle"] },
       { key: "mxEntrerServeur", name: "Entrer / sortir d'un serveur", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Franchit la frontière d'un serveur"] },
-      { key: "mxFormaterAppareil", name: "Formater un appareil", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Reformate un appareil pour en changer le propriétaire"] },
-      { key: "mxFureter", name: "Fureter", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Fouille un serveur à la recherche de fichiers"] },
-      { key: "mxHackerVolee", name: "Hacker à la volée", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", via: "matrice", lines: ["Pose une mark en discrétion, sans autorisation"] },
-      { key: "mxImiterOrdre", name: "Imiter un ordre", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Fait passer un ordre pour légitime auprès d'un appareil"] },
+      { key: "mxFormaterAppareil", name: "Formater un appareil", illegal: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Reformate un appareil pour en changer le propriétaire"] },
+      { key: "mxFureter", name: "Fureter", illegal: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Fouille un serveur à la recherche de fichiers"] },
+      { key: "mxHackerVolee", name: "Hacker à la volée", illegal: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", via: "matrice", lines: ["Pose une mark en discrétion, sans autorisation"] },
+      { key: "mxImiterOrdre", name: "Imiter un ordre", illegal: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Fait passer un ordre pour légitime auprès d'un appareil"] },
       { key: "mxInscrireSprite", name: "Inscrire un sprite", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "resonance", lines: ["Enregistre durablement un sprite compilé"] },
-      { key: "mxPasserForce", name: "Passer en force", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Pose une mark par la force, en privilégiant l'Attaque"] },
+      { key: "mxPasserForce", name: "Passer en force", illegal: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Pose une mark par la force, en privilégiant l'Attaque"] },
       { key: "mxPerceptionMatricielle", name: "Perception matricielle", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Analyse un objet matriciel ou scanne les environs"] },
-      { key: "mxPicDonnees", name: "Pic de données", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", via: "matrice", lines: ["Attaque matricielle infligeant des dommages"] },
-      { key: "mxPiraterFichier", name: "Pirater un fichier", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Lève la protection d'un fichier"] },
+      { key: "mxPicDonnees", name: "Pic de données", illegal: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", via: "matrice", lines: ["Attaque matricielle infligeant des dommages"] },
+      { key: "mxPiraterFichier", name: "Pirater un fichier", illegal: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Lève la protection d'un fichier"] },
       { key: "mxPisterIcone", name: "Pister une icône", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Localise physiquement le porteur d'une icône"] },
-      { key: "mxPlanterProgramme", name: "Planter un programme", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", via: "matrice", lines: [
+      { key: "mxPlanterProgramme", name: "Planter un programme", illegal: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", via: "matrice", lines: [
         "Met hors service un programme actif de la cible",
         "⚠ Le livre le donne complexe p.165 et simple p.245 — on retient la liste d'actions",
       ] },
       { key: "mxPlongerVehicule", name: "Plonger dans un véhicule interfacé", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Prend le contrôle direct d'un véhicule interfacé"] },
-      { key: "mxPoserBombe", name: "Poser une bombe matricielle", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Piège un fichier ou un appareil"] },
+      { key: "mxPoserBombe", name: "Poser une bombe matricielle", illegal: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Piège un fichier ou un appareil"] },
       { key: "mxRebooter", name: "Rebooter un appareil", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Redémarre un appareil, ce qui purge son état matriciel"] },
       { key: "mxSauterGrille", name: "Sauter vers une grille", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Change de grille matricielle"] },
-      { key: "mxSeCacher", name: "Se cacher", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Passe son icône en mode silencieux vis-à-vis d'une cible"] },
+      { key: "mxSeCacher", name: "Se cacher", illegal: true, cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "matrice", lines: ["Passe son icône en mode silencieux vis-à-vis d'une cible"] },
       { key: "mxTisserForme", name: "Tisser une forme complexe", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "resonance", via: "formes", lines: ["Tisse une forme complexe, avec sa Dissonance"] },
       { key: "mxTuerForme", name: "Tuer une forme complexe", cost: [{ key: "complex", n: 1 }, { key: "simple", n: 2 }], domain: "resonance", lines: ["Dissipe une forme complexe en cours"] },
     ],
