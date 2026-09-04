@@ -10,6 +10,47 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.150.1] — 2026-09-04
+
+### Modifié
+
+- **Une seule rangée de contexte sous la barre du haut.** Le fil d'Ariane
+  (« Contexte › Run › En cours ») et la rangée d'épingles occupaient deux
+  bandes qui disaient la même chose : le run en contexte, puis son épingle.
+  Elles partagent maintenant une rangée — où je suis à gauche, qui est à
+  portée à droite — et l'étiquette de dossier qui répétait le fil disparaît.
+  Sur téléphone, les épingles arrivent repliées (« 4 fiches », un tap) : le
+  contenu commence 60 px plus haut.
+- **Les quatre écrans « Créer » parlent la même langue.** PNJ, Contacts,
+  Serveurs et Topos avaient chacun improvisé leur barre d'outils ; ils
+  partagent désormais la barre du système de design — l'action reine à
+  gauche, les modes discrets à droite, collée au haut du défilement pour
+  rester à portée pendant qu'on fait défiler les fiches. Contacts et Serveurs
+  gagnent le sous-titre qui manquait, le générateur aussi.
+- **Chaque collection a un état vide qui enseigne.** Contacts et Serveurs
+  n'en avaient aucun (un formulaire nu au-dessus d'une grille nue) ;
+  celui de Personnages se coupait en deux colonnes ; le générateur affichait
+  une grille vide. Chacun dit maintenant ce qu'il contiendra, pourquoi c'est
+  utile, et porte le même bouton que la barre — un seul geste à apprendre.
+- **« Sauvegarder » ne désigne plus deux gestes.** Ranger une fiche (⊕) et
+  écrire le fichier de secours portaient le même mot. Le second s'appelle
+  « Exporter une sauvegarde » partout (barre du haut, bandeau, Paramètres),
+  et le bandeau n'apparaît plus dès la première fiche : il attend qu'il y ait
+  quelque chose à protéger.
+- **Deux émojis couleur quittent l'interface** : l'horloge de « Chronologie »
+  dans l'atelier de trame devient ◷ (le glyphe le mieux couvert par les
+  polices système parmi les candidats mesurés), et le repère de lieu d'un
+  contact devient l'étiquette « Lieu », comme les autres rubriques de la carte.
+
+### Note
+
+- Deux points de vocabulaire du CODIR restent **ouverts, volontairement** :
+  la bascule de présence « RV » offerte à tout combattant de chair (à
+  trancher au livre : quel équipement donne accès à la réalité virtuelle), et
+  la pastille « Atout » répétée sur chaque réserve d'une carte SR5/SR6 (un
+  réglage existe, « Chance / Atout avant le jet », dont le défaut mérite un
+  arbitrage plutôt qu'un changement silencieux).
+
 ## [1.150.0] — 2026-09-04
 
 ### Ajouté

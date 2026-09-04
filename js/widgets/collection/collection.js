@@ -266,14 +266,28 @@ export const Collection = {
                   ${labels.noMatch(CardRenderer._esc(this.filterText.trim()))}
                   <button type="button" class="btn-secondary btn-small empty-state-cta" data-action="clear-filter" data-collection="${this.key}">Effacer les filtres</button>
                 </div>`
-              : `<div class="empty-state">
-                  <span class="empty-state-title">${labels.emptyTitle}</span>
-                  ${labels.emptyBody}
-                </div>`;
+              : this.emptyHtml();
           return;
         }
 
         this._renderList(grid, list);
+      },
+
+      /** L'état « vide primo » de la collection (DESIGN-SYSTEM § 6.7) : titre,
+          phrase, et l'action reine de l'écran (`labels.emptyCta`, câblée par la
+          délégation du panneau — le même `data-action` que la barre). Partagé
+          entre la grille propre (`_renderGrid`) et les écrans de génération
+          (`ContactsBook`/`Servers._renderGenGrid`), qui n'avaient AUCUN état
+          vide : un formulaire nu au-dessus d'une grille nue (CODIR 2026-09-03, D9). */
+      emptyHtml() {
+        const cta = labels.emptyCta
+          ? `<button type="button" class="btn-primary btn-small empty-state-cta" data-action="${labels.emptyCta.action}">${labels.emptyCta.label}</button>`
+          : "";
+        return `<div class="empty-state">
+          <span class="empty-state-title">${labels.emptyTitle}</span>
+          ${labels.emptyBody}
+          ${cta}
+        </div>`;
       },
 
       /** Rend une liste d'entités (déjà filtrée/ordonnée) dans un conteneur,

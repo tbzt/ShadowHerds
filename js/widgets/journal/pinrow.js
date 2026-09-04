@@ -32,6 +32,10 @@ export const PinRow = {
     DossierBar.subscribe(() => this.render());
     const row = document.getElementById("pin-row");
     if (!row) return;
+    // D8 : sur un téléphone, la rangée partage sa ligne avec le fil d'Ariane —
+    // repliée par défaut (« 6 fiches », un tap pour déplier), dépliée sur
+    // grand écran. Mesuré une fois à l'init, comme le seuil des pickers.
+    this._collapsed = window.innerWidth <= 640;
     row.addEventListener("click", (e) => {
       const toggle = e.target.closest('[data-action="pinrow-toggle"]');
       if (toggle) {

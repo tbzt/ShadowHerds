@@ -1856,12 +1856,18 @@ body.reordering .reorder-handle {
 
 /* ---- Rangée d'épingles (F5) : dossier ouvert + fiches consultées ---- */
 #pin-row {
-  flex-shrink: 0;
+  /* D8 : vit dans `.context-row` (foundation.css), qui porte la matière et le
+     filet — ici seulement la géométrie : prend la largeur qui reste, défile. */
+  flex: 1 1 0;
+  min-width: 0;
   flex-wrap: nowrap;
-  padding: 0.3rem var(--sp-4);
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
+  padding: 0.3rem 0;
   overflow: hidden;
+}
+/* Quand le fil d'Ariane nomme déjà le dossier, l'étiquette de la rangée le
+   répétait mot pour mot : c'est le doublon mesuré par le CODIR. */
+.context-row:has(.topbar-locator:not(:empty)) .pin-row-label {
+  display: none;
 }
 .pin-row-toggle {
   flex-shrink: 0;

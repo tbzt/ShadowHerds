@@ -18,6 +18,12 @@
     column-count: 5;
   }
 }
+/* D9 (CODIR 2026-09-03) : l'état vide vivait DANS les colonnes CSS — son titre
+   tombait dans une colonne et sa phrase dans la suivante (Personnages, mesuré).
+   Un état vide n'est pas une carte : il traverse toutes les colonnes. */
+.cards-zone > .empty-state {
+  column-span: all;
+}
 @media (max-width: 1280px) {
   .cards-zone {
     column-count: 3;

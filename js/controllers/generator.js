@@ -95,7 +95,10 @@ export const Gen = {
     this.pool = [];
 
     const saved = Storage.get(this._POOL_KEY, []);
-    if (!saved.length) return;
+    if (!saved.length) {
+      this._renderEmptyHint(zone);
+      return;
+    }
 
     const ed = App.edition;
     const propres = saved.filter((p) => !p.edition || p.edition === ed);
@@ -559,6 +562,7 @@ export const Gen = {
 
     const zone = document.getElementById("gen-zone-single");
     const card = CardRenderer.render(pnj, ["save", "discard", "edit"]);
+    zone.querySelector(".gen-empty")?.remove();
     zone.prepend(card);
   },
 
@@ -612,6 +616,7 @@ export const Gen = {
     const zone = document.getElementById("gen-zone-single");
     const card = CardRenderer.render(spirit, ["save", "discard", "edit"]);
     card.classList.add("spirit-card");
+    zone.querySelector(".gen-empty")?.remove();
     zone.prepend(card);
   },
 
@@ -717,6 +722,19 @@ export const Gen = {
     this.pool = this.pool.filter((p) => !ids.includes(p.id));
     this._savePool();
     zone.innerHTML = "";
+    this._renderEmptyHint(zone);
+  },
+
+  /** État vide du générateur (DESIGN-SYSTEM § 6.7, CODIR 2026-09-03 D9) : la
+      grille nue ne disait rien. Pas de bouton en double — « Générer » est
+      juste au-dessus, dans la barre ; l'état vide dit à quoi il sert. Retiré
+      à la première carte (cf. `generate`). */
+  _renderEmptyHint(zone) {
+    if (!zone || zone.children.length) return;
+    zone.innerHTML = `<div class="empty-state gen-empty">
+      <span class="empty-state-title">Aucun PNJ généré</span>
+      Réglez les filtres si vous voulez un profil précis — ou laissez tout en « Aléatoire » et appuyez sur Générer. Les fiches restent ici jusqu'à ce que vous les rangiez ou les effaciez.
+    </div>`;
   },
 
   findInPool(id) {

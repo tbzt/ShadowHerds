@@ -147,7 +147,7 @@ export const Settings = {
       <p>Vos fiches sont enregistrées dans ce navigateur. Sauvegardez-les, ou synchronisez-les automatiquement entre vos appareils via un stockage qui vous appartient — rien ne transite par un serveur ShadowHerds.</p>
       <div class="sync-reminder" id="sync-reminder">${this._syncReminderHTML(st)}</div>
       <div class="stack stack--tight display-prefs" style="margin-top:0.6rem;">
-        <button class="btn-primary" data-action="backup-export">Sauvegarder mes fiches</button>
+        <button class="btn-primary" data-action="backup-export">Exporter une sauvegarde</button>
         <button class="btn-secondary" data-action="backup-import">Importer une sauvegarde…</button>
       </div>
       <div class="stack form-group" style="margin-top:1rem;">

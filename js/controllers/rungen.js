@@ -40,7 +40,7 @@ export const RunGen = {
     delete zone.dataset.init;
     zone.dataset.init = "1";
     zone.innerHTML = `
-      <div class="cluster gen-actions">
+      <div class="cluster gen-actions panel-toolbar">
         <button class="btn-primary"   data-action="add-one">Générer un topos</button>
         <button class="btn-secondary" data-action="add-blank">Topos vierge</button>
         <button class="btn-secondary" data-action="clear-all">Effacer tout</button>

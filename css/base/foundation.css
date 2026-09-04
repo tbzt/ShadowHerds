@@ -757,6 +757,31 @@ select optgroup {
 .topbar-locator:empty {
   display: none;
 }
+/* D8 (CODIR 2026-09-03) — UNE rangée de contexte : le fil d'Ariane (où je
+   suis) à gauche, les épingles (qui est à portée) à droite. Deux bandes
+   empilées disaient la même chose et coûtaient, à 375 px, un quart de
+   l'écran avant le premier contenu. La rangée porte la matière et le filet ;
+   ses deux enfants n'en ont plus. Masquée quand les deux sont vides. */
+.context-row {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  min-width: 0;
+}
+.context-row:not(:has(.topbar-locator:not(:empty))):not(:has(#pin-row:not([hidden]))) {
+  display: none;
+}
+.context-row .topbar-locator {
+  flex: 0 1 auto;
+  max-width: 60%;
+  padding-inline: 0;
+  background: none;
+  border-bottom: 0;
+}
 .tb-crumb {
   display: inline-flex;
   align-items: center;

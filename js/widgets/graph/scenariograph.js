@@ -1438,7 +1438,7 @@ export const ScenarioGraph = {
             <button class="graph-weave-toggle" data-scenario-action="toggle-weave" aria-pressed="false" title="Relier deux étapes : tirer de l'une à l'autre">◈ Relier</button>
             <button class="graph-weave-toggle" data-scenario-action="toggle-clues" aria-pressed="false" title="Superposer le calque d'indices : faits (◆/◇) et pistes qui y mènent">◇ Indices</button>
             <button class="graph-weave-toggle" data-scenario-action="toggle-pressure" aria-pressed="false" title="Horloges : des cadrans (menace/alerte/objectif) qui se remplissent et déclenchent leurs effets au seuil">⏱ Horloges</button>
-            <button class="graph-weave-toggle" data-scenario-action="toggle-timeline" aria-pressed="false" title="Chronologie : le passé reconstruit (faits par rang) vs le futur qui avance (horloges/fronts)">🕰 Chronologie</button>
+            <button class="graph-weave-toggle" data-scenario-action="toggle-timeline" aria-pressed="false" title="Chronologie : le passé reconstruit (faits par rang) vs le futur qui avance (horloges/fronts)">◷ Chronologie</button>
           </div>
           <!-- Zone 3 — ÉTAT : la robustesse (un badge de vérification), poussée à droite. -->
           <span class="scenario-hz-spacer"></span>

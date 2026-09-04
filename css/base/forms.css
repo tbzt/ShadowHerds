@@ -344,6 +344,36 @@
   gap: var(--sp-3);
   margin-bottom: var(--sp-5);
 }
+/* ============================================================
+   PANEL TOOLBAR (DESIGN-SYSTEM § 6.2) — la barre d'outils d'un écran « Créer »,
+   bâtie une fois pour les quatre (PNJ, Contacts, Serveurs, Topos) là où chacun
+   improvisait la sienne (CODIR 2026-09-03, D9 : quatre grammaires pour un même
+   verbe). Grammaire : [action reine] [secondaires…] ……… [modes discrets].
+   Elle COLLE au haut du défilement (#content) — le titre, non (§ 6.2) : ce
+   qu'on manipule en boucle reste à portée, ce qu'on connaît déjà défile.
+   `top` négatif = le padding de #content, pour coller au vrai bord.
+   Les boutons ne s'étirent plus (la règle « mur de briques » du hub reste
+   au hub, où la barre est hétérogène) : une action reine a la taille d'un
+   bouton, pas d'une rangée. ============================================ */
+.panel-toolbar {
+  align-items: center;
+  gap: var(--sp-3);
+  position: sticky;
+  top: calc(-1 * var(--sp-5));
+  z-index: var(--z-card);
+  background: var(--bg);
+  padding-block: var(--sp-2);
+  box-shadow: 0 8px 12px -8px var(--bg);
+}
+.panel-toolbar.panel-toolbar > button {
+  flex: 0 0 auto;
+}
+.panel-toolbar.panel-toolbar > .btn-quiet {
+  margin-left: auto;
+}
+.panel-toolbar.panel-toolbar > .btn-quiet ~ .btn-quiet {
+  margin-left: 0;
+}
 /* Le libellé « Nombre » garde sa largeur ; les boutons d'action étirent leur
    rangée (pas de bouton seul collé à gauche après un retour à la ligne, pas de
    vide à droite sur grand écran — cf. audit alignement). */
@@ -355,6 +385,7 @@
 @media (pointer: coarse) {
   .gen-actions {
     position: sticky;
+    top: auto; /* .panel-toolbar colle en haut ; au doigt, « Générer » colle en BAS (CH-C8) */
     bottom: 0;
     z-index: var(--z-card);
     margin-bottom: 0;

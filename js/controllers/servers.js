@@ -46,8 +46,9 @@ export const Servers = Object.assign(
     footerSelector: ".server-card-footer",
     labels: {
       allSummary: (n) => `Tous les serveurs (${n})`,
-      emptyTitle: "Aucun serveur ici",
-      emptyBody: "Créez un serveur avec le formulaire ci-dessus, ou lancez la génération aléatoire.",
+      emptyTitle: "Aucun serveur",
+      emptyBody: "Un serveur avec ses CI et son spider, prêt pour une intrusion — le formulaire le règle, le bouton le crée.",
+      emptyCta: { label: "Créer le serveur", action: "create-server" },
       noMatch: (q) => `Aucun serveur ne correspond à « ${q} ».`,
     },
     searchFields: (s) => [s.name, s.profile, `indice ${s.indice}`],
@@ -455,6 +456,10 @@ export const Servers = Object.assign(
       const grid = document.getElementById("servers-gen-grid");
       if (!grid) return;
       grid.innerHTML = "";
+      if (!this.data.all.length) {
+        grid.innerHTML = this.emptyHtml(); // § 6.7 : vide primo, avec « Créer le serveur »
+        return;
+      }
       this.renderMembers(grid, this.data.all.map((e) => e.id));
     },
 

@@ -34,6 +34,8 @@ export const Hub = {
   // le bandeau de reprise de brouillon de CharGen).
   _saveReminderDismissed: false,
   _SAVE_REMINDER_DAYS: 7,
+  _SAVE_REMINDER_MIN: 5, // fiches avant de rappeler une première sauvegarde
+
   // Puces de filtre auto : valeurs de facette sélectionnées, par axe.
   // État de SESSION (jamais persisté) ; réinitialisé à chaque render() (donc
   // au changement de dossier/type/mutation), conservé pendant la frappe et le
@@ -123,15 +125,23 @@ export const Hub = {
     if (!box) return;
     const days = Sync.daysSinceSave();
     const stale = days === null || days >= this._SAVE_REMINDER_DAYS;
-    if (this._saveReminderDismissed || !stale) {
+    // D10 (CODIR 2026-09-03) : « Sauvegarder » désignait deux gestes — ranger
+    // une carte (⊕) et EXPORTER le fichier de secours. Le bandeau restait
+    // affiché après sept fiches rangées en parlant de « sauvegarder », et il
+    // s'allumait dès la première fiche. Il parle désormais d'export, et il
+    // n'a rien à protéger avant quelques fiches (seuil bas, pas un réglage).
+    const enough = this._totalEntities() >= this._SAVE_REMINDER_MIN;
+    if (this._saveReminderDismissed || !stale || (days === null && !enough)) {
       box.innerHTML = "";
       return;
     }
     const txt =
-      days === null ? "Vous n'avez encore jamais sauvegardé vos fiches." : `Dernière sauvegarde : il y a ${days} jours.`;
+      days === null
+        ? "Vos fiches ne vivent que dans ce navigateur : aucune sauvegarde exportée pour l'instant."
+        : `Dernière sauvegarde exportée : il y a ${days} jours.`;
     box.innerHTML = `<div class="cluster hub-save-reminder">
       <span>${txt}</span>
-      <button class="btn-secondary btn-small" data-action="backup-export"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-export"></use></svg> Sauvegarder mes fiches</button>
+      <button class="btn-secondary btn-small" data-action="backup-export"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-export"></use></svg> Exporter une sauvegarde</button>
       <button class="btn-icon-tiny" data-hub data-action="dismiss-save-reminder" title="Masquer">✕</button>
     </div>`;
   },

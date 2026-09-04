@@ -23,8 +23,10 @@ const _contactsCollection = Collection.create(
     },
     labels: {
       allSummary: (n) => `Tous les contacts (${n})`,
-      emptyTitle: "Aucun contact ici",
-      emptyBody: "Générez des contacts avec le bouton ci-dessus.",
+      emptyTitle: "Aucun contact",
+      emptyBody: "Un fixer, un informateur, un relais — générés en un tap, à convoquer ensuite sur un run.",
+      // § 6.7 : l'action de l'état vide EST l'action reine de la barre.
+      emptyCta: { label: "Générer un contact", action: "contact-generate" },
       noMatch: (q) => `Aucun contact ne correspond à « ${q} ».`,
     },
     searchFields: (c) => [c.name, c.role, c.metatype, c.desc],
@@ -305,6 +307,10 @@ export const ContactsBook = Object.assign(_contactsCollection, {
       const grid = document.getElementById("contacts-gen-grid");
       if (!grid) return;
       grid.innerHTML = "";
+      if (!this.data.all.length) {
+        grid.innerHTML = this.emptyHtml(); // § 6.7 : vide primo, avec « Générer un contact »
+        return;
+      }
       this.renderMembers(grid, this.data.all.map((e) => e.id));
     },
 

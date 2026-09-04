@@ -275,7 +275,10 @@
 /* Rappel de sauvegarde (F3, Hub) : même registre discret que le bandeau de
    reprise de brouillon (.cg-resume-banner) — pas de nouveau vocabulaire visuel. */
 .hub-save-reminder {
-  flex-wrap: nowrap;
+  /* D10 : la phrase s'est allongée (elle dit « exporter », pas « sauvegarder »)
+     — en nowrap à 375px elle tombait en colonne d'un mot. Le bouton passe à
+     la ligne quand la place manque, la phrase garde une largeur de lecture. */
+  flex-wrap: wrap;
   padding: 6px 10px;
   margin: 0 0 var(--sp-3);
   border: 1px solid var(--accent2);
@@ -285,7 +288,7 @@
   color: var(--text-dim);
 }
 .hub-save-reminder span {
-  flex: 1;
+  flex: 1 1 22ch;
 }
 .cg-narrative-field {
   gap: var(--sp-1);
