@@ -861,6 +861,122 @@ export const EditionSR6 = {
       { key: "mxTraquerIcone", name: "Traquer une icône", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Localise physiquement le porteur d'une icône"] },
       { key: "mxBackdoor", name: "Utiliser une backdoor", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Réutilise un accès préparé par Sonder l'accès"] },
       { key: "mxVerifierSurveillance", name: "Vérifier son Score de Surveillance", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice", lines: ["Consulte son Score de Surveillance courant"] },
+
+      /* ══ HACKER VAILLANT — actions matricielles (relevé 2026-09-05) ══
+         Le supplément Matrice de SR6 ajoute 22 actions au livre de base, dont
+         7 rangées sous « La Matrice, comme au cinéma ! » : le livre les
+         présente lui-même comme OPTIONNELLES (« ces actions et règles
+         optionnelles sont mises à disposition du maître de jeu, s'il souhaite
+         insuffler une ambiance plus cinématographique »), d'où `optional`.
+
+         Chaque `illegal` vient de la colonne LÉGALITÉ de l'entrée, comme pour
+         le livre de base — 18 illégales, 4 légales. Le test et le test de
+         défense vivent dans `lines` : ce catalogue n'a pas de champ pour eux,
+         et un MJ qui lit la puce a besoin des deux réserves. */
+      { key: "mxAnalyseMenaces", name: "Analyse des menaces", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Électronique + Logique · défense aucune · accès Invité",
+          "Donne aux alliés en RA sur le PAN un bonus de défense (physique et matricielle) égal aux succès",
+          "Dure jusqu'au début du prochain tour du hacker · au plus (Traitement de données) bénéficiaires"] },
+      { key: "mxAttaqueInterception", name: "Attaque par interception", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Piratage (Guerre électronique) + Logique · défense Intuition ou Corruption + Traitement de données · accès Invité",
+          "« Metahuman in the Middle » : intercepte toute communication ou action matricielle de la cible",
+          "Réussie ⇒ tout transite par votre appareil pendant (succès nets) minutes"] },
+      { key: "mxCalibrage", name: "Calibrage", cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Électronique + Logique · défense aucune · accès Utilisateur",
+          "+1 d'Initiative physique par tranche de 2 succès, pour vous et l'équipe en RA sur le PAN",
+          "Gain total plafonné au Traitement de données · un seul Calibrage à la fois · retombe de 1 par tour"] },
+      { key: "mxCommandeRetardee", name: "Commande retardée", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Piratage (Guerre électronique) + Logique · défense Traitement de données ou Pilotage + Firewall · accès Invité",
+          "Programme une commande à exécution différée que la cible croit venir de son propriétaire",
+          "S'exécute même si le serveur coupe le sans-fil · perdue si l'appareil reboote avant l'échéance"] },
+      { key: "mxDeniService", name: "Déni de service", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Piratage (Hacking) + Logique · défense Volonté + Firewall ou Firewall × 2 · accès Invité",
+          "Malus de (succès nets × 2) dés à tous les tests faits avec cet appareil, jusqu'à la fin du prochain round"] },
+      { key: "mxDetournementInfra", name: "Détournement d'infrastructure", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Piratage (Hacking) + Logique · défense Intuition ou Corruption + Firewall · accès Administrateur",
+          "Contrôle un groupe d'appareils simples asservis au serveur, un par succès net",
+          "Ne peut pas servir à attaquer · se maintient au prix d'une action majeure par round"] },
+      { key: "mxEnDerangement", name: "En dérangement", illegal: true, cost: [{ key: "minor", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Piratage (Guerre électronique) + Logique · défense Intuition + Corruption ou Corruption × 2 · accès Invité",
+          "Empêche l'appareil d'envoyer ou de recevoir des messages pendant (succès nets) minutes"] },
+      { key: "mxBackdoorConnue", name: "Exploiter une backdoor connue", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Piratage (Hacking) + Logique · défense Volonté + Firewall ou Firewall × 2 · accès Invité",
+          "Liée à l'attribut Corruption · ne demande PAS d'avoir sondé l'accès au préalable",
+          "Aucun Atout dépensable, et la cible reçoit une remise d'Atout de 1",
+          "Réussie ⇒ accès Administrateur qui ne compte pas comme illégal (les actions, elles, montent toujours le SS)"] },
+      { key: "mxInversionES", name: "Inversion des entrées/sorties", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Piratage (Hacking) + Logique · défense Volonté + Firewall ou Firewall × 2 · accès Utilisateur",
+          "Échange les instructions d'un appareil : une commande en exécute une autre",
+          "Ne passe pas outre les fonctions de sécurité basiques — le meneur a le dernier mot"] },
+      { key: "mxMascarade", name: "Mascarade", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Piratage (Guerre électronique) + Logique · défense Intuition ou Corruption + Traitement de données · accès Invité",
+          "Par succès net, fait passer le hacker pour la cible pendant une minute auprès des systèmes et des non-avertis",
+          "Inopérante sur un changement de propriétaire ou une opération financière majeure · tombe si le persona imité se déconnecte"] },
+      { key: "mxModifierIcone", name: "Modifier une icône", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Piratage (Hacking) + Logique · défense Intuition ou Corruption + Traitement de données · accès Administrateur",
+          "Fait passer une icône matricielle pour une autre · test opposé à chaque fois qu'elle est scannée"] },
+      { key: "mxPopup", name: "Popup", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Piratage (Guerre électronique) + Logique · défense Intuition ou Corruption + Traitement de données · accès Invité",
+          "Noie l'affichage de la cible : elle ne peut plus dépenser d'Atout pendant (succès nets) rounds"] },
+      { key: "mxSentinelle", name: "Sentinelle", illegal: true, cost: [{ key: "minor", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Piratage (Hacking) + Logique · défense Volonté + Firewall ou Firewall × 2 · accès Utilisateur",
+          "Actif (succès nets) rounds : le hacker voit ce que la cible fait sur ses appareils et peut la contrer",
+          "Permet de jouer Analyse des menaces en action MINEURE si l'attaque vient de la cible"] },
+      { key: "mxVerrouillageAppareil", name: "Verrouillage d'appareil", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Piratage (Hacking) + Logique · défense Volonté + Firewall · accès Administrateur",
+          "Empêche l'appareil de se déconnecter et de rebooter pendant (succès nets) tours",
+          "Prolongeable d'un tour pour une action mineure — une seule fois"] },
+      { key: "mxViseeVirtuelle", name: "Visée virtuelle", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", lines: [
+          "Aucun test · aucune défense · accès Invité",
+          "+1 dé à la réserve · une seule fois par round · reporté au round suivant s'il n'est pas utilisé",
+          "Bonus cumulé plafonné à la Volonté · s'applique à toute action matricielle (Pic de données, Empêtrer, Pic de Résonance)"] },
+      { key: "mxAffiner", name: "Affiner", cost: [{ key: "minor", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", optional: true, lines: [
+          "Électronique + Logique · défense aucune · accès Utilisateur",
+          "Au même tour qu'un Observer attentivement fait au senseur, ou juste après : ses succès s'ajoutent à celui-ci"] },
+      { key: "mxTeteDeMort", name: "Attaque de la Tête de mort", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", optional: true, lines: [
+          "Piratage (Cybercombat) + Logique · défense Intuition ou Corruption + Firewall · accès Invité",
+          "Occulte la vue de la cible : elle ne peut plus rien faire tant qu'elle ne réussit pas",
+          "Électronique + Logique, seuil = succès nets de l'attaque"] },
+      { key: "mxDechiqueteurCI", name: "Déchiqueteur de CI", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", optional: true, lines: [
+          "Piratage (Cybercombat) + Logique · défense Traitement de données + Firewall · accès Utilisateur",
+          "Liée à l'attribut Attaque · VD de base = attribut d'Attaque, +1 case par succès net"] },
+      { key: "mxJsuisEntre", name: "J'suis entré !", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", optional: true, lines: [
+          "Piratage (Hacking) + CHARISME · défense Traitement de données + Corruption · accès Utilisateur",
+          "Piratage réussi annoncé à l'équipe : la réserve d'Atout revient à son indice de départ",
+          "Sans effet si le hacker a déjà plus de points d'Atout que cet indice"] },
+      { key: "mxSequenceurMdp", name: "Séquenceur de mot de passe", illegal: true, cost: [{ key: "minor", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", optional: true, lines: [
+          "Piratage (Hacking) + Logique · défense Corruption + Firewall · accès Invité",
+          "Un élément du mot de passe par test réussi · le nombre d'éléments égale l'indice du serveur"] },
+      { key: "mxVirtuoseClavier", name: "Virtuose du clavier", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", optional: true, lines: [
+          "Piratage (Hacking) + Logique · défense Firewall × 2 · accès Invité",
+          "Entrée et sortie en un seul tour · 1 succès net ⇒ accès Utilisateur, 4 de plus ⇒ Administrateur",
+          "Chaque succès supplémentaire manipule un appareil ou un fichier · on quitte le réseau aussitôt"] },
+      { key: "mxVirusInfo", name: "Virus informatique", illegal: true, cost: [{ key: "major", n: 1 }], timing: "I", domain: "matrice",
+        source: "Hacker vaillant", optional: true, lines: [
+          "Piratage (Hacking) + Logique · défense Traitement de données + Firewall ou Logique + Firewall · accès Invité",
+          "La cible ne peut entreprendre aucune action matricielle pendant (succès nets) minutes",
+          "Un hacker de sécurité peut l'éradiquer avec Planter un programme"] },
     ],
   },
   /** ACTIONS D'ATOUT (lot F5) — le contrat, lu par `EdgeActions`.
@@ -1042,6 +1158,25 @@ export const EditionSR6 = {
       { key: "sousLeRadar", name: "Sous le radar", cost: 3, source: "SR6", family: "bonus", where: "matrice", who: ["cyberjack", "resonance"], waivedBy: ["vieNumerique"], hostLabel: "bonus, avant le jet", when: "avantJet", lines: [
         "La prochaine action illégale de ce tour n'augmente pas le Score de Surveillance",
         "L'action ne devient pas légale pour autant",
+      ] },
+      /* ══ HACKER VAILLANT — bonus d'Atout matriciels (relevé 2026-09-05) ══
+         Le supplément en ajoute trois. Ils vivent ICI et non au catalogue
+         d'actions parce que le livre les range sous « Bonus d'Atout » : ils
+         se paient en Atout et se greffent sur un jet, ils ne consomment pas
+         d'action. Même distinction que les 14 bonus de course-poursuite. */
+      { key: "interventionMx", name: "Intervention", cost: 2, source: "Hacker vaillant", family: "bonus", where: "matrice", who: ["cyberjack", "resonance"], hostLabel: "bonus, défense d'un allié", when: "avantJet", lines: [
+        "Test d'Électronique + Logique : les succès deviennent des dés bonus à la défense d'un allié",
+        "L'appareil attaqué doit être relié au PAN du hacker, en sans-fil actif, et l'attaque connue de lui",
+        "Ne vaut que pour le test de défense en cours — ni reportable, ni réutilisable ailleurs",
+      ] },
+      { key: "marquageCible", name: "Marquage de cible", cost: 1, source: "Hacker vaillant", family: "bonus", where: "matrice", who: ["cyberjack", "resonance"], hostLabel: "bonus, avant le jet", when: "avantJet", lines: [
+        "Marque une cible dans la vision RA de l'équipe : elle reste localisable même en mouvement",
+        "L'équipe ignore les modificateurs de vision dus au Couvert et aux grenades fumigènes contre elle",
+        "Le hacker doit pouvoir la localiser — en la voyant, ou en la déduisant de son persona",
+      ] },
+      { key: "traitementParLot", name: "Traitement par lot", cost: 1, source: "Hacker vaillant", family: "bonus", where: "matrice", who: ["cyberjack", "resonance"], hostLabel: "bonus, avant le jet", when: "avantJet", lines: [
+        "Coupe d'un coup tous les programmes actifs du deck",
+        "Ralentit la montée du Score de Surveillance — ou prépare au pire",
       ] },
       { key: "adroitSinge", name: "Adroit comme un singe", cost: 2, source: "Feu Nourri", hostLabel: "Escalade", when: "avantJet", lines: [
         "Modifie la distance d'escalade de 1,2 m par succès (1,3 m avec Allonge)",

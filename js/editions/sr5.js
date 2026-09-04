@@ -888,6 +888,28 @@ export const EditionSR5 = {
       { key: "mxChangerIcone", name: "Changer son icône", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Modifie l'apparence de son icône"] },
       { key: "mxEnvoyerMessage", name: "Envoyer un message", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Envoie un message matriciel"] },
       { key: "mxVerifierSurveillance", name: "Vérifier son Score de Surveillance", illegal: true, cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Consulte son Score de Surveillance courant"] },
+
+      /* ══ DATA TRAILS — nouvelles actions matricielles (p. 185) ══
+         Le supplément Matrice de SR5 n'en ajoute que DEUX, et c'est la bonne
+         nouvelle : le reste de son chapitre est du programme et de la
+         configuration de deck, pas de l'action.
+
+         `illegal` se déduit de la LIMITE, comme partout en SR5 (p. 233,
+         « action illégale d'Attaque ou de Corruption ») : Inversion des
+         entrées/sorties teste [Corruption] ⇒ illégale ; Remonter un rétrolien
+         teste [Traitement de données] ⇒ légale. On ne lit pas une étiquette,
+         on lit le test — c'est ce que fait la table des limites du livre. */
+      { key: "mxInversionES", name: "Inversion des entrées/sorties", illegal: true, cost: [{ key: "complex", n: 1 }], domain: "matrice",
+        source: "Data Trails", lines: [
+          "Logiciels + Logique [Corruption] contre Logique + Firewall · 3 marks requises",
+          "Intervertit UNE commande d'entrée avec UNE commande de sortie sur un seul appareil",
+          "Jamais de reprogrammation complète — « une seule touche » · rebooter l'appareil restaure le code"] },
+      { key: "mxRemonterRetrolien", name: "Remonter un rétrolien", cost: [], variable: true, domain: "matrice",
+        source: "Data Trails", lines: [
+          "Test étendu d'Informatique + Intuition [Traitement de données], 30 minutes · mark de propriétaire",
+          "Sur une GRILLE seulement, jamais dans un serveur · la mark doit avoir été repérée (Perception matricielle)",
+          "Seuil = 10 + l'indice de Corruption du persona qui a marké — il évolue si cet indice change",
+          "Cible en mode silencieux : la piste s'arrête à proximité, et le pisteur le sait"] },
       { key: "mxChangerInterface", name: "Changer de mode d'interface", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Bascule entre RA et RV"] },
       { key: "mxOrdreSprite", name: "Donner un ordre à un sprite", cost: [{ key: "simple", n: 1 }], domain: "resonance", lines: ["Commande un sprite sous ses ordres"] },
       { key: "mxInviterMarkage", name: "Inviter au markage", cost: [{ key: "simple", n: 1 }], domain: "matrice", lines: ["Autorise volontairement une mark sur son persona"] },

@@ -1435,3 +1435,14 @@ button.chase-tok-val.is-void {
   font-style: italic;
   color: var(--text-dim);
 }
+
+/* Bordereau : une action de règle OPTIONNELLE se lit comme telle. Ternie,
+   pas retirée — le livre la propose, c'est au meneur d'en décider. */
+.encounter-matrix-row .chase-manoeuvre.is-optional {
+  opacity: 0.72;
+  border-style: dashed;
+}
+.encounter-matrix-row .chase-manoeuvre.is-optional em {
+  font-size: var(--fs-2xs);
+  opacity: 0.8;
+}

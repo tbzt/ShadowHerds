@@ -463,7 +463,12 @@ export const Intrusion = {
     const cat = (mod && mod.actionModel && mod.actionModel.catalog) || [];
     return cat
       .filter((a) => a.domain === "matrice" && a.illegal)
-      .map((a) => ({ key: a.key, name: a.name }))
+      /** `source` et `optional` remontent avec le nom : depuis le peuplement
+          des suppléments, le bordereau mêle le livre de base, Hacker vaillant
+          / Data Trails, et les règles « comme au cinéma » que le livre
+          présente lui-même comme optionnelles. Le meneur doit pouvoir les
+          distinguer d'un coup d'œil — on affiche tout, on étiquette. */
+      .map((a) => ({ key: a.key, name: a.name, source: a.source || null, optional: !!a.optional }))
       .sort((a, b) => a.name.localeCompare(b.name, "fr"));
   },
 

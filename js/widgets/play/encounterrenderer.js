@@ -2272,7 +2272,9 @@ export const EncounterRenderer = {
         ? `<span class="emr-illegal" title="Actions illégales de cette édition — un tap inscrit les succès de la défense au Score de Surveillance">${r.illegal
             .map(
               (a) =>
-                `<button class="chase-manoeuvre" data-action="ss-illegal" data-id="${r.serverId}" data-key="${a.key}">${Utils.escHtml(a.name)}</button>`,
+                `<button class="chase-manoeuvre${a.optional ? " is-optional" : ""}" data-action="ss-illegal" data-id="${r.serverId}" data-key="${a.key}" title="${Utils.escHtml(
+                  [a.name, a.source ? `— ${a.source}` : "", a.optional ? "· règle optionnelle du livre" : ""].filter(Boolean).join(" "),
+                )}">${Utils.escHtml(a.name)}${a.optional ? " <em>opt.</em>" : ""}</button>`,
             )
             .join("")}</span>`
         : r.illegal.length

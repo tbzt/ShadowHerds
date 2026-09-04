@@ -10,6 +10,39 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.154.0] — 2026-09-05
+
+### Ajouté
+
+- **Les actions matricielles de « Hacker vaillant » entrent au catalogue.**
+  Vingt-deux actions du supplément Matrice de Shadowrun 6, chacune avec son
+  test, son test de défense, son niveau d'accès et son effet : Analyse des
+  menaces, Attaque par interception, Calibrage, Commande retardée, Déni de
+  service, Détournement d'infrastructure, En dérangement, Exploiter une
+  backdoor connue, Inversion des entrées/sorties, Mascarade, Modifier une
+  icône, Popup, Sentinelle, Verrouillage d'appareil et Visée virtuelle — plus
+  les sept que le livre range sous « La Matrice, comme au cinéma ! ».
+- **Les sept actions « comme au cinéma » sont signalées comme optionnelles.**
+  Le livre les présente lui-même ainsi (« ces actions et règles optionnelles
+  sont mises à disposition du maître de jeu, s'il souhaite insuffler une
+  ambiance plus cinématographique ») : elles s'affichent ternies, en
+  pointillés, avec la mention « opt. ». Montrées, jamais retirées — c'est au
+  meneur d'en décider.
+- **Les trois bonus d'Atout matriciels de « Hacker vaillant ».** Intervention,
+  Marquage de cible et Traitement par lot rejoignent le catalogue d'actions
+  d'Atout, et non celui des actions : le livre les range sous « Bonus
+  d'Atout », ils se paient en Atout et se greffent sur un jet sans consommer
+  d'action. Même distinction que les quatorze bonus de course-poursuite.
+- **Les deux nouvelles actions de « Data Trails ».** Inversion des
+  entrées/sorties et Remonter un rétrolien, les seules que le supplément
+  Matrice de Shadowrun 5 ajoute — le reste de son chapitre est du programme et
+  de la configuration de deck. Ses quatre programmes (Acuité, Exploitation,
+  Décryptage, Maquillage) étaient déjà au catalogue.
+- **Le bordereau du Score de Surveillance dit d'où vient chaque action.**
+  Depuis le peuplement, il mêle le livre de base et les suppléments :
+  l'infobulle nomme la source, et les règles optionnelles se distinguent d'un
+  coup d'œil.
+
 ## [1.153.0] — 2026-09-05
 
 ### Ajouté
