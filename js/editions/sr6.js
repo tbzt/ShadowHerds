@@ -1893,7 +1893,16 @@ export const EditionSR6 = {
       test: { required: true, cost: "1 majeure", costAction: { key: "major", n: 1 }, actionKey: { pied: "sprinter" } },
       onSuccess: "positional",
       onSkip: "lost",
-      move: { onSuccess: 1, targetMoves: false },
+      /** « Quiconque réussit son test de Pilotage ou d'Athlétisme PEUT
+          CHOISIR d'ajuster sa position (par rapport à la cible) d'une
+          catégorie de distance, que ce soit en s'éloignant ou en se
+          rapprochant » (À Tombeau Ouvert p. 176) — d'où `freeDirection` : le
+          fuyard qui réussit a le droit de revenir, le camp ne décide pas du
+          sens. « La cible ne peut normalement pas adapter sa position,
+          hormis avec certaines actions d'Atout » → `targetMoves: false` :
+          elle est l'ancre, tout se mesure à elle. `via: "lane"` — ce livre
+          déplace d'un coup, il ne compte pas de Narrations. */
+      move: { onSuccess: 1, freeDirection: true, targetMoves: false, via: "lane" },
     },
     edge: {
       compare: true,

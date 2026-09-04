@@ -586,6 +586,77 @@ button.chase-tok-val.is-void {
   border-color: var(--accent);
 }
 
+/* ---- Le déplacement ACQUIS (lot A) ----
+   Le test du round a donné un déplacement que personne n'a encore pris. Les
+   chevrons ne changent pas de fonction — ils s'ALLUMENT. C'est une invite,
+   pas un état actif : l'accent plein est réservé au dominant (une seule chose
+   accentuée par piste), donc on éclaire la bordure et le texte, pas le fond.
+
+   Un PNJ ne reste allumé que jusqu'à la fin du round, qui prend le
+   déplacement pour lui. Ce qui brille durablement, ce sont les jetons dont
+   quelqu'un à la table doit décider — les PJ. */
+.chase-mv.is-earned {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+/* Le sens que le livre impose quand il n'offre pas le choix (Anarchy 2.0 :
+   « le vainqueur progresse vers son objectif »). L'autre chevron reste
+   cliquable : nos gestes informent, ils n'interdisent pas. */
+.chase-mv.is-earned.is-forward {
+  background: color-mix(in oklab, var(--accent) 18%, var(--bg-mid));
+  font-weight: 700;
+}
+/* La pulsation dit « il y a quelque chose à faire ici » sans ajouter un
+   glyphe (le §6.10 interdit un quatrième canal sur le jeton). Coupée dès que
+   le système demande moins de mouvement.
+
+   Les DEUX chevrons pulsent, y compris là où le livre impose un sens : c'est
+   le déplacement qui est offert, et il reste posable dans l'autre sens par
+   arbitrage. Le sens attendu se distingue par son fond, pas par le mouvement.
+   (Pas de `:has()` ici : il force le moteur à réévaluer la correspondance à
+   chaque mutation du sous-arbre, et le tracker en a déjà retiré un pour ça.) */
+@media (prefers-reduced-motion: no-preference) {
+  .chase-move.has-earned .chase-mv.is-earned {
+    animation: chase-earned-pulse 1.8s var(--ease-standard) infinite;
+  }
+}
+@keyframes chase-earned-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 35%, transparent);
+  }
+}
+
+/* ---- Cascade : le test imposé (lot B) ----
+   Une marque de LECTURE, pas un bouton : le MJ ne « valide » pas un test à
+   refaire, il le voit et il le lance depuis le ⚄ d'à côté. Le cran « perd la
+   cible » emprunte la teinte de danger, parce que ce n'est plus un test de
+   plus — c'est la cible qu'on s'apprête à perdre. */
+.chase-mark.is-retest {
+  color: var(--accent);
+  border-color: var(--accent);
+  cursor: default;
+}
+.chase-mark.is-retest.is-last {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* ---- Le glissement (FLIP, cf. ChaseRenderer._playMove) ----
+   Le transform et sa transition sont posés en JS (il est le seul à connaître
+   l'écart) ; ce qui vit ici, c'est ce que le jeton devient PENDANT qu'il
+   glisse : au-dessus de ses voisins, pour ne pas passer dessous en chemin.
+   Aucune `transition` déclarée sur `.chase-tok` — elle serait morte,
+   l'innerHTML recrée l'élément à chaque rendu. */
+.chase-tok.is-moving {
+  position: relative;
+  z-index: 2;
+  will-change: transform;
+}
+
 /* Le ⚄ qui porte sa réserve : plus large qu'une marque ronde, comme les
    pastilles de jet de l'app. */
 .chase-mark.chase-roll.has-pool {
@@ -1256,4 +1327,43 @@ button.chase-tok-val.is-void {
   color: var(--accent);
   cursor: pointer;
   flex: none;
+}
+
+/* ============================================================
+   LA RANGÉE DE POURSUITE DANS LA CONSOLE (lot C)
+
+   Elle vit dans `#encounter-active-card`, pas dans la piste — mais elle
+   emprunte le vocabulaire de la piste (`.chase-mark`, `.chase-mv`,
+   `.chase-manoeuvre`), parce que ce sont les mêmes gestes et qu'un second
+   dialecte pour les mêmes verbes serait une charge d'apprentissage gratuite.
+   Ce qui lui est propre : une seule ligne, qui défile si les manœuvres
+   débordent — le contenu défile, jamais les choix eux-mêmes (⛔ doctrine
+   d'alignement : pas de scroll mono-ligne pour des puces).
+   ============================================================ */
+.encounter-chase-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-1) var(--sp-2);
+  margin-bottom: var(--sp-1);
+  background: var(--bg-mid);
+  border: 1px solid var(--border-ui);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+}
+.encounter-chase-row .ecr-lead {
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  flex: none;
+}
+/* Les manœuvres passent à la ligne plutôt que de pousser la console hors de
+   sa colonne : elle a déjà 457px de contenu incompressible. */
+.encounter-chase-row .ecr-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  min-width: 0;
 }

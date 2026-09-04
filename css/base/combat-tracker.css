@@ -2778,10 +2778,30 @@ kbd {
 }
 /* La console pleine s'efface pendant la veille : c'est le bandeau qui la
    remplace, jamais les deux à la fois (même loi que les deux montages de la
-   piste). `renderActiveCard` pose déjà [hidden] ; cette règle tient le cas où
-   une autre passe de rendu le retirerait. */
-.encounter-modal.is-engine-led .encounter-active-card {
-  display: none;
+   piste). `renderActiveCard` pose déjà [hidden] ; ces règles tiennent le cas
+   où une autre passe de rendu le retirerait.
+
+   ── LOT C : la veille est une question de PLACE, plus de moteur ──────
+   La règle lisait `.is-engine-led`, c'est-à-dire « un autre moteur tourne » :
+   ouvrir une poursuite effaçait la console de combat à TOUTE largeur, y
+   compris sur un écran qui avait de la place pour les deux. C'était le dernier
+   reliquat de l'exclusivité des moteurs, celle que `Encounter.setMotor` a
+   supprimée en écrivant que les trois tournent ensemble.
+   Ce qui reste vrai, c'est la largeur : au-dessus de 1000px la piste vit dans
+   sa colonne, la Matrice dans la sienne à 1100px, et la colonne principale est
+   libre. En dessous, ils s'y installent et la console n'y tient plus (mesuré :
+   346px disponibles pour 457 demandés). Les deux seuils sont ceux des docks —
+   `EncounterRenderer.renderActiveCard` lit les MÊMES, et si l'un bouge ici,
+   il doit bouger là-bas. */
+@media (max-width: 999px) {
+  .encounter-modal.has-chase .encounter-active-card {
+    display: none;
+  }
+}
+@media (max-width: 1099px) {
+  .encounter-modal.has-matrix .encounter-active-card {
+    display: none;
+  }
 }
 
 /* ============================================================

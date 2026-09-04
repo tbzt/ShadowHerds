@@ -50,8 +50,8 @@ export const TourSteps = {
     },
     {
       id: "combat", anchor: "nav-combat", tours: ["full"], since: "1.0.0", fallback: "center",
-      title: "Suivi de combat",
-      body: "Initiative, moniteurs, fiche du combattant actif, Matrice liée à la scène. Le poste de pilotage pour garder les mains sur l'histoire, pas sur les calculs.",
+      title: "Suivi d'actions",
+      body: "Initiative, moniteurs, fiche du combattant actif, poursuite et Matrice liées à la scène. Trois moteurs qui tournent ensemble ou séparément selon la situation : le poste de pilotage pour garder les mains sur l'histoire, pas sur les calculs.",
     },
     {
       id: "settings", anchor: "nav-settings", tours: ["full"], since: "1.0.0", fallback: "center",
@@ -697,6 +697,26 @@ export const TourSteps = {
       id: "wn-moteurs-cumulables", anchor: "nav-combat", tours: ["whatsnew"], since: "1.147.0", fallback: "center",
       title: "Une scène peut tourner sur plusieurs moteurs",
       body: "Le suivi traitait « combat », « poursuite » et « Matrice » comme un choix unique : ouvrir la Matrice effaçait la poursuite en cours, et une poursuite en Anarchy éteignait le combat. Or c'est l'inverse qui se joue à une table — un combat devient une course-poursuite pour la moitié de l'équipe, reste un combat pour l'autre, pendant qu'un decker est dans un serveur. Les trois tournent maintenant ensemble, chacun avec sa surface, et l'effectif marque d'un ⇉ ceux qui sont sur la piste, pour qu'un coup d'œil suffise à savoir qui joue quoi. L'entrée du menu suit : « ⚡︎ Scène Matrice » devient « ⚡︎ Fermer la Matrice » une fois allumée, exactement comme la poursuite. Rien à réapprendre : c'est le même geste, il ne détruit simplement plus ce qui tournait à côté.",
+    },
+    {
+      id: "wn-poursuite-deplace", anchor: "nav-combat", tours: ["whatsnew"], since: "1.151.0", fallback: "center",
+      title: "Le test de la poursuite déplace enfin",
+      body: "Vous lanciez les dés, vous posiez un ✓, et la piste ne bougeait pas d'un pouce — il fallait ensuite déplacer chaque jeton à la main. La règle de déplacement était pourtant écrite dans les quatre modules depuis l'origine ; personne ne la lisait. Chaque livre garde la sienne : en Shadowrun 6, qui réussit peut ajuster sa position d'une catégorie, en s'éloignant OU en se rapprochant — la direction est un choix, et la cible ne bouge pas puisque tout se mesure à elle. En Anarchy 2.0, le test est opposé et le vainqueur progresse vers son objectif, en engageant un franchissement dont le prix en Narrations est celui du livre. Shadowrun 5 et Anarchy 1re n'imposent aucun test par ronde : leur fin de ronde ne déplace donc personne, et c'est dit plutôt que comblé avec la règle du voisin. Et le jeton GLISSE : ce qui a changé de distance se voit, le reste ne bouge pas.",
+    },
+    {
+      id: "wn-pnj-avancent-seuls", anchor: "nav-combat", tours: ["whatsnew"], since: "1.151.0", fallback: "center",
+      title: "Les PNJ avancent seuls, les joueurs choisissent",
+      body: "Vous n'avez plus à trancher pour dix figurants : les PNJ qui ont réussi leur test avancent vers leur objectif quand la ronde se termine — vers la cible s'ils poursuivent, à l'opposé s'ils fuient. Les personnages joueurs, jamais. Leurs chevrons s'allument et pulsent, et c'est le joueur qui dit ce qu'il fait. C'est la même règle que pour les dés, poussée d'un cran : l'application ne lance pas pour un joueur, elle ne choisit pas non plus à sa place. La cible de la poursuite, elle, n'a pas de bande — tout se mesure à elle : quand elle prend du terrain, ce sont les poursuivants qui reculent d'autant. Là où le livre l'immobilise (Shadowrun 6), le geste ne s'affiche même pas.",
+    },
+    {
+      id: "wn-manoeuvres-touchent-la-piste", anchor: "nav-combat", tours: ["whatsnew"], since: "1.151.0", fallback: "center",
+      title: "Les manœuvres de Shadowrun 5 touchent la piste",
+      body: "Elles étaient jouables depuis quelques versions — elles débitaient leur coût et ne changeaient rien à la course. « Rattraper » ouvre maintenant un changement de portée, plafonné par l'Accélération du véhicule ; quand l'application ne tient pas cette valeur, elle n'invente aucun plafond et vous laisse poser ce que le jet a donné, un niveau par succès excédentaire. Une « Cascade » réussie marque d'un ⟳ tous les poursuivants qui doivent refaire le test au même seuil : celui qui échoue s'éloigne d'une catégorie, et s'il était déjà à la dernière bande, ce n'est plus un déplacement — c'est la cible qu'il perd, et c'est vous qui le déclarez. Percuter et Couper la route ne déplacent rien, exactement comme au livre. Jouer la manœuvre depuis la feuille de combat ou depuis la piste fait la même chose : c'est la même action.",
+    },
+    {
+      id: "wn-suivi-d-actions", anchor: "nav-combat", tours: ["whatsnew"], since: "1.151.0", fallback: "center",
+      title: "« Suivi d'actions », et le combat continue pendant la fuite",
+      body: "L'écran fait tourner trois moteurs — combat, poursuite, Matrice — qui coexistent ou non selon la situation ; son nom n'en annonçait qu'un, il devient « Suivi d'actions ». Surtout, ouvrir une course-poursuite remplaçait la console de combat par un bandeau d'une ligne, à toutes les largeurs : il n'y avait aucun moyen de mener les deux à la fois, alors qu'une scène réelle fait exactement ça — une partie de l'équipe fuit, l'autre se bat. Le repli devient une question de place : au-dessus de 1000 px la piste a sa colonne et la console reste entière à côté d'elle, en dessous le bandeau reprend son rôle. Et la console porte désormais le contexte de la poursuite — la bande du combattant, son test de ronde, son déplacement acquis, ses manœuvres en portée — au tour de l'intéressé, là où ça se décide.",
     },
     {
       id: "wn-ronde-unique", anchor: "nav-combat", tours: ["whatsnew"], since: "1.147.0", fallback: "center",

@@ -21,6 +21,7 @@ import { DiceRoller } from "../dice/diceroller.js";
 import { ItemResolver } from "../../rules/itemresolver.js";
 import { Matrix } from "../../rules/matrix.js";
 import { Movement } from "../../rules/movement.js";
+import { Pursuit } from "../../controllers/pursuit.js";
 import { RovingGroup } from "../kit/rovinggroup.js";
 import { ServerRenderer } from "./serverrenderer.js";
 import { Servers } from "../../controllers/servers.js";
@@ -78,8 +79,8 @@ export const EncounterRenderer = {
     // combat 511, piste 300. La console qui décrit UN combattant faisait 1,70×
     // le moteur qui fait tourner la scène.
     //
-    // Deux classes, deux faits, aucune largeur d'écran ici (le CSS s'en
-    // charge) : ce qui MÈNE, et si le combat tourne encore. Les livres
+    // Des classes, des FAITS, aucune largeur d'écran ici (le CSS s'en charge) :
+    // quels moteurs tournent, et si le combat tourne encore. Les livres
     // tranchent le second : SR5 (p. 204-205) et SR6 (À tombeau ouvert) font
     // tourner l'initiative PENDANT la poursuite — le combat garde donc sa
     // colonne. Anarchy n'a pas d'initiative (`combatModel.narrative`), d'où
@@ -91,9 +92,13 @@ export const EncounterRenderer = {
     // piste ET la console, dans des colonnes calculées pour une seule des
     // deux. `Pursuit.open`/`close` tiennent les deux ensemble ; ce n'est pas
     // une raison pour leur demander de ne jamais se tromper.
-    const engineLed = !!state.chase || motors.includes("matrix");
+    // `is-engine-led` vivait ici : « un autre moteur mène », et son unique
+    // consommateur était la règle qui effaçait la console de combat. Le lot C
+    // ayant fait du pli de la console une question de LARGEUR (media queries de
+    // combat-tracker.css, sur `has-chase` et `has-matrix` — qui disent déjà les
+    // mêmes faits), la classe ne servait plus personne : retirée plutôt que
+    // laissée à poser sur un sélecteur que rien ne lit.
     if (modal) {
-      modal.classList.toggle("is-engine-led", engineLed);
       modal.classList.toggle("has-combat", motors.includes("combat"));
       // `has-matrix` dit que le MOTEUR tourne ; `is-matrix-only` disait qu'il
       // est SEUL. Les surfaces de la Matrice se gataient sur le second, si
@@ -2102,28 +2107,120 @@ export const EncounterRenderer = {
     </div>`;
   },
 
+  /** Le pli console ↔ bandeau dépend désormais de la LARGEUR (lot C), et pas
+      d'un état que le JS contrôle : il faut donc re-rendre au FRANCHISSEMENT
+      du seuil, ce que le CSS faisait tout seul jusqu'ici.
+
+      Deux `matchMedia`, posés une fois, plutôt qu'un écouteur `resize` : le
+      glissement d'une poignée de fenêtre tire des dizaines d'évènements pour
+      un seul franchissement utile, et le tracker est justement l'écran dont on
+      a mesuré que le rendu coûte cher. */
+  _watchWidth() {
+    if (this._widthWatched || !window.matchMedia) return;
+    this._widthWatched = true;
+    const surSeuil = () => {
+      if (!document.documentElement.classList.contains("is-cockpit-open")) return;
+      Encounter._render();
+    };
+    for (const px of [1000, 1100]) {
+      const mq = window.matchMedia(`(min-width: ${px}px)`);
+      if (mq.addEventListener) mq.addEventListener("change", surSeuil);
+      else if (mq.addListener) mq.addListener(surSeuil); // Safari ancien
+    }
+  },
+
+  /* ============================================================
+     LA RANGÉE DE POURSUITE DANS LA CONSOLE (lot C)
+
+     La console répond à « que fait celui dont c'est le tour ? ». Pendant une
+     poursuite, une moitié de la réponse vivait dans l'autre colonne : sa
+     bande, le test que le livre lui impose chaque ronde, les manœuvres que sa
+     portée lui ouvre. Le MJ regardait deux endroits pour un seul tour.
+
+     Ce n'est PAS un second panneau de poursuite. Seuls remontent les gestes
+     qui se décident au tour de quelqu'un ; l'ancrage, la réserve, l'équipage
+     et la sortie de course restent sur la piste, où ils se lisent à un mètre.
+     Les `data-action` sont ceux de la piste — même délégation, même contrôleur,
+     aucun chemin parallèle à maintenir.
+     ============================================================ */
+  _chaseRow(active) {
+    const r = active && active.pnjId ? Pursuit.consoleRow(active.pnjId) : null;
+    if (!r) return "";
+    const t = r.test;
+    const dés = r.roll && !t ? ` ${r.roll.pool}` : "";
+    const test = `<button class="chase-mark chase-roll ${t === "ok" ? "is-ok" : t === "ko" ? "is-ko" : "is-todo"}${dés ? " has-pool" : ""}" data-action="chase-roll" data-id="${r.key}" title="${Utils.escHtml(
+      t ? "Corriger le test du round" : r.roll ? `Lancer ${r.roll.label}` : "Le joueur annonce — taper pour poser ✓ ou ✗",
+    )}">${t === "ok" ? "✓" : t === "ko" ? "✗" : `⚄${dés}`}</button>`;
+    // Le déplacement acquis se prend ICI aussi : c'est au tour de l'intéressé
+    // qu'on décide s'il se rapproche, pas trois gestes plus loin.
+    const gain = r.earned;
+    const sens = !gain || gain.free ? 0 : gain.dir || r.forward;
+    const chev = (d, g, aria) =>
+      r.ancre
+        ? `<button class="chase-mv${gain ? " is-earned" : ""}${sens === d ? " is-forward" : ""}" data-action="chase-move-anchor" data-delta="${d}" aria-label="${aria}">${g}</button>`
+        : `<button class="chase-mv${gain ? " is-earned" : ""}${sens === d ? " is-forward" : ""}" data-action="chase-move" data-id="${r.key}" data-delta="${d}" aria-label="${aria}">${g}</button>`;
+    const moves =
+      r.ancre && !gain
+        ? "" // l'ancre immobile (SR6) n'a rien à proposer
+        : `<span class="chase-move${gain ? " has-earned" : ""}">${chev(-1, "▲", "Rapprocher de la cible")}${chev(1, "▼", "Éloigner de la cible")}</span>`;
+    const retest = r.mustRetest
+      ? `<span class="chase-mark is-retest${r.mustRetest === "lost" ? " is-last" : ""}" title="Cascade — doit refaire le test au même seuil">⟳</span>`
+      : "";
+    const cross = r.crossing
+      ? `<button class="chase-cross" data-action="chase-arrive" data-id="${r.key}" title="Franchissement en cours — taper pour arriver tout de suite">⇢${r.crossing.left}</button>`
+      : "";
+    // Les manœuvres du livre, avec leur prix et leur portée. Ternies hors de
+    // portée, jamais retirées : le livre écrit une condition, pas une
+    // interdiction, et le MJ voit une situation que l'app ne voit pas.
+    const actes = (r.actions || [])
+      .map(
+        (a) =>
+          `<button class="chase-manoeuvre${a.allowed ? "" : " is-out"}" data-action="action-use" data-id="${a.pnjId}" data-key="${a.key}" title="${Utils.escHtml(
+            [`${a.name} — ${a.cost}`, ...(a.lines || []), a.why].filter(Boolean).join("\n"),
+          )}">${Utils.escHtml(a.name)}</button>`,
+      )
+      .join("");
+    return `<div class="encounter-chase-row">
+      <span class="ecr-lead">${r.glyph} ${Utils.escHtml(r.laneLabel)}</span>
+      ${test}${retest}${cross}${moves}
+      ${actes ? `<span class="ecr-acts">${actes}</span>` : ""}
+    </div>`;
+  },
+
   renderActiveCard(rows, state, model) {
     const box = document.getElementById("encounter-active-card");
     if (!box) return;
+    this._watchWidth();
 
-    // ── Lot 3 : la console EN VEILLE ────────────────────────────────────
-    // Quand un autre moteur mène (⇉ poursuite, ⚡︎ Matrice), la console se
-    // replie en bandeau. Elle ne RÉTRÉCIT pas : le bloc mesuré de
-    // combat-tracker.css chiffre qu'à 346px elle tronquait déjà (« St… ») pour
-    // 457 demandés par le nom et la grappe de six gestes. On ne peut donc pas
-    // lui prendre sa largeur sans la casser — on la remplace.
+    // ── Lot 3, RÉVISÉ par le lot C : la console se replie par MANQUE DE
+    //    PLACE, plus parce qu'un autre moteur existe ────────────────────
     //
-    // Ce que le bandeau garde est exactement ce que le livre fait consommer à
-    // la poursuite : QUI agit, et A-T-IL PAYÉ. SR6 exige « une action majeure
-    // Pilotage à chaque round » (`chaseModel.round.test.cost`), SR5 quatre
-    // actions complexes — dans les deux cas la question est le budget
-    // d'actions, pas la VD d'un fusil. Les armes, la SO et l'encaissement
-    // n'ont aucun rôle dans un round de poursuite : ils reviennent d'un ⛶.
+    // La version d'origine lisait `!!state.chase || motors.includes("matrix")` :
+    // dès qu'une poursuite EXISTAIT, la console de combat était remplacée par
+    // un bandeau d'une ligne, à toutes les largeurs. C'était le dernier
+    // reliquat de l'exclusivité des moteurs — celle que `Encounter.setMotor`
+    // a explicitement supprimée au lot B, en écrivant que les trois moteurs
+    // tournent ENSEMBLE parce que la table fait l'inverse : un combat devient
+    // une poursuite pour une partie de l'équipe et reste un combat pour les
+    // autres. Le modèle l'autorisait, le rendu l'interdisait encore, et il n'y
+    // avait aucun moyen de se battre pendant qu'on fuyait.
+    //
+    // Ce qui reste vrai de l'argument d'origine, c'est la LARGEUR : le bloc
+    // mesuré de combat-tracker.css chiffre qu'à 346px la console tronquait
+    // déjà (« St… ») pour 457 demandés. On ne peut pas lui prendre sa largeur
+    // sans la casser — mais ce n'est pas le moteur qui la lui prend, c'est le
+    // montage étroit. Au-dessus de 1000px la piste vit dans SA colonne
+    // (`#encounter-chase-dock`), la Matrice dans la sienne à 1100px : la
+    // colonne principale est libre et la console y tient. En dessous, ils s'y
+    // installent, et le bandeau reprend son rôle.
+    //
+    // Les deux seuils sont ceux du CSS (chase.css §dock, combat-tracker.css
+    // §matrix-dock), pas des nombres choisis ici : si l'un bouge, l'autre doit
+    // bouger avec, et c'est le genre de couple qu'on écrit une fois.
     const motors = state.motors || [];
-    // Même lecture que `render` ci-dessus : la piste existe si `state.chase`
-    // existe. Les deux doivent dire la même chose, sinon le bandeau et la
-    // console se cachent ou s'affichent ensemble.
-    const enVeille = !!state.chase || motors.includes("matrix");
+    const large = (px) => !window.matchMedia || window.matchMedia(`(min-width: ${px}px)`).matches;
+    const enVeille =
+      (!!state.chase && !large(1000)) || (motors.includes("matrix") && !large(1100));
     const strip = document.getElementById("encounter-active-strip");
     if (strip) strip.hidden = !enVeille;
     if (enVeille) {
@@ -2247,7 +2344,8 @@ export const EncounterRenderer = {
       // donc l'inverser suffit à remonter la première pastille de jet sans
       // dupliquer aucun rendu.
       box.innerHTML = `<div class="cluster encounter-mode-head is-agir${modeEnter ? " mode-enter" : ""}">Agir · ${this._compactName(pnj.name)}</div>
-        <div class="encounter-active-top">${this._activeTop(active, state)}</div>`;
+        <div class="encounter-active-top">${this._activeTop(active, state)}</div>
+        ${this._chaseRow(active)}`;
       const deps = CardRenderer.liveDeps();
       const offense = CardRenderer.offenseBlocks(pnj, deps);
       if (offense != null) {
@@ -2401,8 +2499,15 @@ export const EncounterRenderer = {
       ? this._compactName((active.pnj && active.pnj.name) || active.name || "un PJ")
       : "un PJ";
     box.hidden = false;
+    // Lot C — la rangée de poursuite du PJ ACTIF, en tête du rack froid. C'est
+    // le seul endroit de la console où l'on parle de lui : le reste sert à
+    // faire réagir les PNJ. Or pendant une poursuite, ce qu'il a à faire à son
+    // tour — son test de ronde, son déplacement acquis, ses manœuvres — se
+    // décide justement là. Et l'app ne lance ni ne choisit pour lui (B3.5) :
+    // la rangée POSE ce qu'il annonce.
     box.innerHTML = `<div class="encounter-react${modeEnter ? " mode-enter" : ""}">
       <div class="cluster encounter-mode-head is-react">Réagir · ${pjName} agit — faites réagir les PNJ</div>
+      ${this._chaseRow(active)}
       ${rowsHtml}
       ${devicesHtml}
     </div>`;

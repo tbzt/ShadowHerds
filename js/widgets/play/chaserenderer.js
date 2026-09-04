@@ -62,9 +62,104 @@ export const ChaseRenderer = {
     for (const id of ["encounter-chase-dock", "encounter-chase-inline"]) {
       const host = document.getElementById(id);
       if (!host) continue;
+      // FLIP : on relève où sont les jetons AVANT de réécrire, et on rejoue
+      // l'écart après. Sans ça le déplacement n'existe pas à l'œil — une
+      // `transition` CSS sur `.chase-tok` serait du code mort, l'`innerHTML`
+      // ci-dessous recrée l'élément à chaque rendu (piège déjà payé sur les
+      // coches du tracker).
+      const avant = host.hidden || !vm ? null : this._capture(host);
       host.hidden = !vm;
       host.innerHTML = html;
+      if (avant) this._playMove(host, avant);
     }
+  },
+
+  /* ============================================================
+     LE GLISSEMENT DES JETONS (lot A) — même patron que la file du tracker
+
+     `EncounterRenderer._playFlip` fait exactement ça pour les lignes
+     d'initiative ; deux différences ici, et une seule est intéressante :
+
+     · **Les deux axes.** La file ne bouge qu'en Y. La piste, elle, empile ses
+       bandes verticalement mais range les jetons d'une bande côte à côte :
+       changer de bande déplace en Y, se ranger dans la nouvelle déplace en X.
+       N'animer que Y ferait sauter le jeton latéralement au milieu du
+       glissement.
+     · Deux montages (dock et inline) : on capture et on rejoue par hôte,
+       jamais entre les deux — leurs coordonnées n'ont rien à voir.
+
+     La discipline de `_playFlip` est reprise telle quelle, et ce n'est pas
+     du zèle : lire une géométrie après avoir écrit un style force une mise en
+     page synchrone, et c'est ce qui avait mis des pics à 2,4 s dans la file.
+     Toutes les LECTURES d'abord, toutes les ÉCRITURES ensuite.
+
+     ── Ce qui déclenche, et pourquoi ce n'est PAS l'écart en pixels ──
+     La file d'initiative peut se fier au pixel : ses lignes ne se déplacent
+     que quand l'ordre change. Ici non. Poser une coche remplace un « ⚄ 12 »
+     par un « ✓ », le bandeau d'état grandit d'une ligne, et TOUS les jetons
+     descendent de vingt pixels sans que personne n'ait changé de distance.
+     Mesuré : un simple ✗ animait les cinq jetons de la piste.
+
+     Un mouvement qui se joue pour rien cesse de vouloir dire « ça a bougé ».
+     Le déclencheur est donc le changement de BANDE — la seule définition du
+     mot « déplacement » que ce composant connaisse. L'écart en pixels, lui,
+     reste ce qu'on ANIME : il absorbe au passage la remise en page, et le
+     jeton part exactement d'où l'œil l'avait laissé.
+     ============================================================ */
+
+  /** La bande d'un jeton, ou `"__ancre"` — elle n'en a pas, et elle ne bouge
+      jamais : lui donner une clé stable évite un cas particulier plus bas. */
+  _laneOfEl(el) {
+    const band = el.closest(".chase-band");
+    return band ? band.dataset.lane || "" : "__ancre";
+  },
+
+  _capture(host) {
+    const map = new Map();
+    if (!host) return map;
+    for (const el of host.querySelectorAll(".chase-tok[data-id]")) {
+      const r = el.getBoundingClientRect();
+      map.set(el.dataset.id, { x: r.left, y: r.top, lane: this._laneOfEl(el) });
+    }
+    return map;
+  },
+
+  _playMove(host, prev) {
+    if (!host || !prev || !prev.size) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const lus = [];
+    for (const el of host.querySelectorAll(".chase-tok[data-id]")) {
+      const old = prev.get(el.dataset.id);
+      if (!old) continue; // un jeton qui vient d'entrer en piste n'a pas d'avant
+      if (old.lane === this._laneOfEl(el)) continue; // il n'a pas changé de distance
+      const r = el.getBoundingClientRect(); // LECTURES seules
+      lus.push([el, old.x - r.left, old.y - r.top]);
+    }
+    const bougés = [];
+    for (const [el, dx, dy] of lus) {
+      // Le montage que le CSS masque n'a pas de géométrie : ses rectangles sont
+      // tous nuls, l'écart aussi. Rien à jouer, et surtout rien à écrire.
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) continue;
+      el.style.transition = "none"; // ÉCRITURES seules
+      el.style.transform = `translate(${dx}px, ${dy}px)`;
+      bougés.push(el);
+    }
+    if (!bougés.length) return;
+    void host.offsetHeight; // ancre l'état inversé avant de le relâcher
+    requestAnimationFrame(() => {
+      for (const el of bougés) {
+        el.classList.add("is-moving");
+        el.style.transition = "transform var(--dur-base) var(--ease-emphasized)";
+        el.style.transform = "";
+        const fini = () => {
+          el.style.transition = "";
+          el.style.transform = "";
+          el.classList.remove("is-moving");
+          el.removeEventListener("transitionend", fini);
+        };
+        el.addEventListener("transitionend", fini);
+      }
+    });
   },
 
   _panel(vm) {
@@ -227,16 +322,34 @@ export const ChaseRenderer = {
         <span class="chase-anchor-lbl">Cible</span>
         <span class="chase-anchor-hint">tapez ▣ sur un combattant pour l'ancrer</span>
       </div>`;
+    // ── Le déplacement acquis de l'ANCRE (lot A) ─────────────────────
+    // Elle n'a pas de bande, donc pas de ▲▼ dans son jeton — mais elle teste
+    // comme les autres, et là où le livre l'autorise à bouger (SR5, Anarchy)
+    // sa réussite lui donne du terrain. Le geste vit donc ici, et il écrit sur
+    // les AUTRES : « toutes les autres positions sont définies selon la
+    // sienne ». En SR6 `anchorEarned` est toujours nul — le livre l'immobilise
+    // — et la paire ne s'imprime pas.
+    const gain = vm.anchorEarned;
+    const pris = gain
+      ? `<span class="chase-move has-earned" title="${Utils.escHtml(`${vm.earnedLabel} — les autres reculent d'autant`)}">
+          <button class="chase-mv is-earned" data-action="chase-move-anchor" data-delta="-1" aria-label="La cible laisse les poursuivants se rapprocher">▲</button>
+          <button class="chase-mv is-earned is-forward" data-action="chase-move-anchor" data-delta="1" aria-label="La cible prend du terrain">▼</button>
+        </span>`
+      : "";
     return `<div class="chase-anchor">
       <span class="chase-anchor-lbl">${Utils.escHtml(vm.modeSpec.anchorLabel || "Cible")}</span>
       ${this._token(t, vm, { anchor: true })}
+      ${pris}
       <button class="btn-icon-tiny" data-action="chase-target" data-id="${t.key}" title="Retirer l'ancre" aria-label="Retirer l'ancre">⏏</button>
     </div>`;
   },
 
   _band(lane, vm) {
     const empty = !lane.rows.length;
-    return `<div class="chase-band${empty ? " is-empty" : ""}">
+    // `data-lane` : le FLIP s'en sert pour savoir si un jeton a CHANGÉ DE
+    // BANDE, seule définition utile de « il a bougé » sur cette piste (cf.
+    // `_playMove`). C'est la clé du modèle, pas un libellé.
+    return `<div class="chase-band${empty ? " is-empty" : ""}" data-lane="${Utils.escHtml(lane.key)}">
       <span class="chase-band-key">
         <span class="chase-band-name">${Utils.escHtml(lane.label)}</span>
         ${lane.hint ? `<span class="chase-band-dist">${Utils.escHtml(lane.hint)}</span>` : ""}
@@ -283,6 +396,20 @@ export const ChaseRenderer = {
         marks.push(
           `<button class="chase-mark is-fail" data-action="chase-fail" data-id="${r.key}" title="${Utils.escHtml(vm.failCostLabel)} — proposé, jamais appliqué">!</button>`,
         );
+      // ── Cascade (SR5, lot B) : le test IMPOSÉ ────────────────────
+      // « Tous les véhicules poursuivants doivent immédiatement faire un test
+      // identique, avec le même seuil. » Le jeton le porte, sinon le MJ n'a
+      // aucun moyen de se souvenir de qui doit encore lancer — et à la
+      // dernière bande, ce n'est plus un test de plus, c'est la cible qu'on
+      // s'apprête à perdre.
+      if (r.mustRetest)
+        marks.push(
+          `<span class="chase-mark is-retest${r.mustRetest === "lost" ? " is-last" : ""}" title="${Utils.escHtml(
+            r.mustRetest === "lost"
+              ? "Cascade — doit refaire le test au même seuil. Déjà à la dernière bande : s'il échoue, il perd la cible (le MJ tranche)."
+              : "Cascade — doit refaire le test au même seuil ; un échec l'éloigne d'une catégorie.",
+          )}" aria-label="Doit refaire le test (Cascade)">⟳</span>`,
+        );
       // L'avantage positionnel se LIT toujours, mais il ne se règle plus
       // depuis le jeton sur écran étroit : le geste vit dans la fiche.
       marks.push(
@@ -316,11 +443,39 @@ export const ChaseRenderer = {
       dom && vm.edgeCompare
         ? `<button class="chase-grant" data-action="chase-grant" data-id="${r.key}" title="Attribuer le point d'Atout du round (attribut le plus élevé)">+1 Atout</button>`
         : "";
+    // ── LE DÉPLACEMENT ACQUIS (lot A) ────────────────────────────────
+    // Les ▲▼ existent toujours — le MJ pose un jeton où il veut, quand il
+    // veut. Ce qui est neuf, c'est qu'ils S'ALLUMENT quand le test du round a
+    // gagné un déplacement que personne n'a encore pris. Un PNJ ne reste pas
+    // allumé longtemps (la fin de round le lui fait prendre) : ce qui brille
+    // à l'écran, ce sont les jetons dont quelqu'un, à la table, doit décider.
+    //
+    // Quand le livre ne laisse pas le choix du sens (Anarchy 2.0 : « le
+    // vainqueur progresse vers son objectif »), un seul chevron s'accentue —
+    // l'autre reste cliquable, parce que le MJ voit une situation que l'app ne
+    // voit pas, et qu'aucun de nos gestes n'interdit, ils informent.
+    const gain = r.earned;
+    // Le sens IMPOSÉ, quand il y en a un : celui du rôle (Anarchy 2.0), ou
+    // celui que l'action a forcé (Cascade ratée : « s'éloigne »).
+    const sens = !gain || gain.free ? 0 : gain.dir || r.forward;
+    // Un déplacement octroyé par une ACTION dit d'où il vient : « Rattraper »
+    // et « Cascade ratée » ne se ressemblent pas, et le MJ doit savoir lequel
+    // des deux il est en train de poser. Sinon on retombe sur le libellé
+    // générique du gain de ronde.
+    const pourquoi = gain
+      ? `${gain.why || vm.earnedLabel}${
+          gain.max == null ? "" : ` — ${gain.max} cran${gain.max > 1 ? "s" : ""} restant${gain.max > 1 ? "s" : ""}`
+        } — ${gain.free ? "l'un ou l'autre sens" : "sens imposé"}`
+      : "";
+    const chevron = (delta, glyphe, aria) =>
+      `<button class="chase-mv${gain ? " is-earned" : ""}${sens === delta ? " is-forward" : ""}" data-action="chase-move" data-id="${r.key}" data-delta="${delta}" aria-label="${aria}"${
+        gain ? ` title="${Utils.escHtml(pourquoi)}"` : ""
+      }>${glyphe}</button>`;
     const moves = opts.anchor
       ? ""
-      : `<span class="chase-move">
-          <button data-action="chase-move" data-id="${r.key}" data-delta="-1" aria-label="Rapprocher de la cible">▲</button>
-          <button data-action="chase-move" data-id="${r.key}" data-delta="1" aria-label="Éloigner de la cible">▼</button>
+      : `<span class="chase-move${gain ? " has-earned" : ""}">
+          ${chevron(-1, "▲", "Rapprocher de la cible")}
+          ${chevron(1, "▼", "Éloigner de la cible")}
         </span>`;
     // ── L'ÉQUIPAGE (lot P6) ──────────────────────────────────────────
     // Une monture porte le nom de l'ENGIN — c'est lui qui a une position — et

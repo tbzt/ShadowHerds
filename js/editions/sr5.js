@@ -1314,14 +1314,31 @@ export const EditionSR5 = {
       test: null,
       onSuccess: null,
       onSkip: null,
-      move: { onSuccess: null, targetMoves: true },
+      /** `onSuccess: null` — VIDE ASSUMÉ, et le pendant exact de `test: null`
+          juste au-dessus : sans test de ronde, il n'y a aucune réussite à
+          convertir en déplacement. Ce livre déplace par des ACTIONS, et deux
+          d'entre elles le font vraiment (p. 204-205) : Cascade — le
+          poursuivant qui rate le test imposé « s'éloigne d'une catégorie de
+          portée », et « si le poursuivant était déjà à portée extrême, le
+          véhicule poursuivi parvient à s'échapper » — et Rattraper, qui
+          change la portée « d'un nombre de niveaux égal à son accélération »,
+          « pour chaque succès excédentaire ». La fin de ronde n'y touche pas. */
+      move: { onSuccess: null, freeDirection: true, targetMoves: true, via: "lane" },
       /** Les quatre actions de course-poursuite (actions complexes) —
           « Conduite évasive » vit déjà dans `interruptActions`. */
       actions: [
         { key: "cascade", label: "Cascade", range: "toutes",
           lines: ["Manœuvre folle pour semer : seuil selon l'environnement et le terrain",
                   "Réussie ⇒ tous les poursuivants refont le même test · raté ⇒ hors de contrôle",
-                  "Un poursuivant qui rate s'éloigne d'une catégorie ; déjà à extrême, il perd la cible"] },
+                  "Un poursuivant qui rate s'éloigne d'une catégorie ; déjà à extrême, il perd la cible"],
+          /** L'effet de PISTE (lot B). « Tous les véhicules poursuivants
+              doivent immédiatement faire un test identique, avec le même
+              seuil » : l'app les marque, elle ne lance pas pour eux. C'est le
+              ✗ posé ensuite qui éloigne — « il n'a pas pris de risques et
+              s'éloigne d'une catégorie de portée d'engagement » —, et à la
+              dernière bande ce n'est plus un déplacement mais une ISSUE : « le
+              véhicule poursuivi parvient à s'échapper », que le MJ déclare. */
+          effect: { kind: "cascade", retest: "poursuivants", onFail: { move: 1, atLastLane: "lost" } } },
         { key: "couperRoute", label: "Couper la route", range: "courte",
           lines: ["Test opposé de Compétence de véhicule + RÉA [Maniabilité]",
                   "Succès ⇒ la cible refait un test de pilotage pour éviter l'accident"] },
@@ -1330,7 +1347,16 @@ export const EditionSR5 = {
                   "Succès ⇒ collision : la cible encaisse la Structure de l'attaquant + succès nets, l'attaquant la moitié de la sienne"] },
         { key: "rattraper", label: "Rattraper / Prendre de l'avance", range: "toutes",
           lines: ["Change la portée d'un nombre de niveaux égal à l'Accélération",
-                  "Test [Vitesse ou Maniabilité] au seuil de manœuvre · +1 niveau par succès excédentaire"] },
+                  "Test [Vitesse ou Maniabilité] au seuil de manœuvre · +1 niveau par succès excédentaire"],
+          /** La seule action du corpus qui déplace SUR ANNONCE. Le livre donne
+              deux chiffres et l'app n'en tient qu'un : l'Accélération plafonne
+              (`cap`), les succès excédentaires font le compte — et les succès,
+              c'est la table qui les annonce. On OUVRE donc le déplacement
+              jusqu'au plafond, le MJ pose ce que le jet a donné. Écrire un
+              nombre de crans nous-mêmes reviendrait à lancer les dés à sa
+              place. `free` : « augmenter OU diminuer », les deux sens. */
+          effect: { kind: "grant", cap: "accel", free: true,
+                    why: "Rattraper — un niveau par succès excédentaire, dans la limite de l'Accélération" } },
       ],
     },
     edge: { compare: false, chasePool: false, roles: null },

@@ -500,7 +500,20 @@ export const EditionAnarchy2 = {
       test: { required: true, opposed: true, cost: "1 action", skipIfObvious: true, costAction: { key: "action", n: 1 } },
       onSuccess: "progress",
       onSkip: null,
-      move: { onSuccess: 1, targetMoves: true, narrationCost: [1, 2, 3], anarchyShortcut: true },
+      /** « Le vainqueur parvenant à PROGRESSER VERS SON OBJECTIF (s'enfuir,
+          rattraper l'autre, etc.) » (p. 230). La direction est donc celle du
+          RÔLE, pas un choix — d'où `freeDirection: false`, seul du corpus,
+          et c'est la conséquence du test OPPOSÉ : il n'y a qu'un vainqueur,
+          et son objectif dit où il va.
+
+          `via: "cross"` — progresser ne téléporte pas d'une bande : ça engage
+          un franchissement, dont le prix en Narrations vit sur `lanes[].cross`
+          (p. 66). Et « SE DÉPLACER N'EST PAS UNE ACTION » (p. 66) : ce pas ne
+          débite rien, à la différence du test qui l'a gagné. */
+      move: {
+        onSuccess: 1, freeDirection: false, targetMoves: true, via: "cross",
+        narrationCost: [1, 2, 3], anarchyShortcut: true,
+      },
     },
     edge: { compare: false, chasePool: false, roles: null, anarchyPoints: true },
     variants: [],

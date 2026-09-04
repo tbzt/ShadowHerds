@@ -382,25 +382,84 @@ export const Pursuit = {
       Le MJ garde la main de bout en bout : « arriver » (`arriveNow`) résout
       d'un tap — c'est là que se dépense le point d'Anarchy dont le livre dit
       qu'il accélère le franchissement, et c'est lui qui en décide, pas nous. */
+  /** Le ▲▼ du MJ — et, depuis le lot A, le geste par lequel un JOUEUR prend
+      le déplacement que sa réussite lui a donné. Les deux passent par le même
+      `Chase.step` : le régime de l'édition (déplacer d'un coup, ou engager un
+      franchissement qui dure) est une décision du moteur, pas du bouton. */
   move(pnjId, delta) {
     const st = this.state();
     if (!st) return;
-    const keys = Chase.laneKeys(this.edition(), st.terrain);
-    const cur = Chase.laneOf(st, pnjId);
-    const i = cur ? keys.indexOf(cur) : 0;
-    const cible = keys[Utils.clamp((i < 0 ? 0 : i) + delta, 0, keys.length - 1)];
-    // Repartir dans l'autre sens annule le franchissement en cours : on ne
-    // traverse pas un écart et son contraire à la fois.
-    const enCours = Chase.crossing(st, pnjId);
-    if (enCours && enCours.to !== cible) Chase.endCross(st, pnjId);
-    if (cible !== cur && Chase.startCross(this.edition(), st, pnjId, cible)) {
-      const n = Chase.crossing(st, pnjId).left;
+    const fait = Chase.step(this.edition(), st, pnjId, delta);
+    if (fait && fait.crossing) {
       const nom = (PnjLookup.find(pnjId) || {}).name || "Le participant";
-      toast(`${nom} franchit vers ${cible} — ${n} Narrations.`);
-      this._persist();
-      return;
+      toast(`${nom} franchit vers ${fait.to} — ${fait.crossing} Narrations.`);
     }
-    Chase.move(this.edition(), st, pnjId, delta);
+    this._persist();
+  },
+
+  /** L'Accélération de l'engin de ce participant, ou `null` si l'app ne la
+      tient pas du livre (catalogue partiel : lot P0 ne porte les stats que des
+      livres de base). Même ordre de recherche que les modules d'édition — la
+      monture DÉCLARÉE d'abord, le véhicule déployé de l'équipement ensuite. */
+  _accelFor(key) {
+    const veh = this.vehicleOf(key);
+    if (veh) return (veh.stats || {}).accel ?? null;
+    const pnj = this._actorFor(key);
+    const liste = (typeof Vehicles !== "undefined" && pnj && Vehicles.linkedTo(pnj.id)) || [];
+    const v = liste.find((x) => x.deployed) || liste[0];
+    return (v && v.stats && v.stats.accel) ?? null;
+  },
+
+  /** Ce qu'une manœuvre du livre fait à la PISTE (lot B) — appelée par
+      `Encounter.useAction`, après que l'action a été jouée et payée.
+
+      Rien n'est appliqué de force. Rattraper OUVRE un déplacement, plafonné
+      par l'Accélération quand l'app la tient (le livre dit « un niveau par
+      succès excédentaire », et les succès, c'est la table qui les annonce) ;
+      Cascade MARQUE les poursuivants qui doivent refaire le test. Le reste —
+      collisions, accidents, issues — n'a jamais été à nous. */
+  onActionPlayed(pnjId, actionKey) {
+    const st = this.state();
+    if (!st || !actionKey) return;
+    // La clé de PISTE, pas le pnjId : c'est l'engin qui a une position, et
+    // trois runners dans le même taxi ne déplacent pas trois jetons.
+    const key = Chase.trackKey(st, pnjId);
+    // Jouer Rattraper depuis la feuille de combat alors qu'on n'est pas sur la
+    // piste ne doit rien faire : l'action existe, la poursuite ne la concerne
+    // pas.
+    if (!key || (!st.lanes[key] && key !== st.targetId)) return;
+    const res = Chase.applyActionEffect(this.edition(), st, key, actionKey, {
+      accel: this._accelFor(key),
+    });
+    if (!res) return;
+    const nom = (PnjLookup.find(key) || PnjLookup.find(pnjId) || {}).name || "Le participant";
+    if (res.kind === "grant")
+      toast(
+        res.max == null
+          ? `${nom} peut changer de portée — un niveau par succès excédentaire (Accélération inconnue de l'app).`
+          : `${nom} peut changer de portée — jusqu'à ${res.max} niveau${res.max > 1 ? "x" : ""} (Accélération).`,
+      );
+    else if (res.kind === "cascade")
+      toast(
+        res.n
+          ? `Cascade — ${res.n} poursuivant${res.n > 1 ? "s doivent" : " doit"} refaire le même test, au même seuil.`
+          : "Cascade — aucun poursuivant à faire tester.",
+      );
+    this._persist();
+  },
+
+  /** L'ancre prend le déplacement que sa réussite lui a donné. Elle n'a pas de
+      bande : ce sont les autres qui reculent d'autant (`Chase.stepAnchor`).
+      `delta` garde le sens de la piste — négatif = les poursuivants se
+      rapprochent —, pour que le geste se lise comme les ▲▼ d'à côté. */
+  moveAnchor(delta) {
+    const st = this.state();
+    if (!st || !st.targetId || !delta) return;
+    const faits = Chase.stepAnchor(this.edition(), st, delta);
+    if (!faits.length) return;
+    const enCours = faits.filter((f) => f.crossing).length;
+    if (enCours)
+      toast(`${enCours} participant${enCours > 1 ? "s" : ""} en franchissement.`);
     this._persist();
   },
 
@@ -750,10 +809,38 @@ export const Pursuit = {
         le panneau, en permanence — plus utile qu'un toast de trois secondes.
       · pas de toast du tout : `Encounter.nextRound` parle déjà, et il n'y a
         qu'un `#toast` (le second écrase le premier). */
+  /** Le casting de la piste vu par le MOTEUR : pour chaque clé, est-ce
+      quelqu'un qu'un joueur pilote, et de quel camp. `Chase` ne connaît ni le
+      tracker ni la bibliothèque — c'est ici, couche 5, qu'on le lui dit.
+
+      Le PJ se lit sur la PERSONNE, jamais sur la clé : une clé de piste peut
+      être une carrosserie, et une carrosserie n'a pas de joueur. C'est le
+      conducteur qui décide — le même arbitrage que pour l'Atout et pour le
+      débit du test. */
+  _actors() {
+    const st = this.state();
+    if (!st) return {};
+    const map = {};
+    // L'ANCRE en fait partie, et il fallait y penser : ancrer un participant le
+    // retire des bandes (`lanes`), or c'est justement elle que SR6 empêche de
+    // bouger. Sans sa ligne ici, son rôle arrivait indéfini au moteur et le
+    // garde « la cible ne peut pas adapter sa position » ne se déclenchait
+    // jamais — le seul jeton que le livre immobilise aurait été le seul à
+    // bouger sans condition.
+    for (const key of [...Object.keys(st.lanes || {}), st.targetId].filter(Boolean)) {
+      const pnj = this._actorFor(key);
+      map[key] = {
+        isPJ: !!(pnj && Encounter.isPlayerCharacter(pnj.id)),
+        role: Encounter.chaseRoleFor(pnj ? pnj.id : key),
+      };
+    }
+    return map;
+  },
+
   endRound({ driven = false } = {}) {
     const st = this.state();
     if (!st) return null;
-    const recap = Chase.endRound(this.edition(), st);
+    const recap = Chase.endRound(this.edition(), st, this._actors());
     this._persist();
     if (driven) return recap;
     const nom = (id) => (PnjLookup.find(id) || {}).name || "?";
@@ -954,6 +1041,57 @@ export const Pursuit = {
     Encounter.useEdgeAction(pnjId, key);
   },
 
+  /** LA POURSUITE VUE DEPUIS LA CONSOLE DE COMBAT (lot C).
+
+      La console répond à « que fait celui dont c'est le tour ? ». Tant qu'une
+      poursuite tourne, la réponse comporte une moitié que la console ne
+      montrait pas : où il en est sur la piste, s'il a fait le test que le
+      livre lui impose, et quelles manœuvres sa portée lui ouvre. Le MJ devait
+      regarder deux endroits pour un seul tour.
+
+      Un paquet MINIMAL, volontairement : pas de second panneau de poursuite
+      dans la console. Ce qui remonte est ce qui se décide au tour de
+      quelqu'un — sa bande, son test, son déplacement acquis, ses manœuvres en
+      portée. Le reste (ancrage, réserve, équipage, sortie de course) reste sur
+      la piste, où il se lit à un mètre.
+
+      → `null` hors poursuite, ou si ce participant n'y est pas. */
+  consoleRow(pnjId) {
+    const st = this.state();
+    if (!st || !pnjId) return null;
+    const key = Chase.trackKey(st, pnjId);
+    const surLaPiste = !!st.lanes[key] || key === st.targetId;
+    if (!surLaPiste) return null;
+    const ed = this.edition();
+    const ancre = key === st.targetId;
+    const lanes = Chase.lanes(ed, st.terrain);
+    const bande = Chase.laneOf(st, key);
+    const role = Encounter.chaseRoleFor(pnjId);
+    return {
+      key,
+      ancre,
+      /** L'ancre n'a pas de bande : tout se mesure à elle, et le dire vaut
+          mieux qu'afficher un vide. */
+      laneLabel: ancre
+        ? "cible de la poursuite"
+        : (lanes.find((l) => l.key === bande) || {}).label || "hors piste",
+      test: st.tested[key] || null,
+      roll: this.testSpec(key),
+      earned: Chase.earnedMove(ed, st, key, role),
+      forward: Chase.forward(role),
+      mustRetest: Chase.mustRetest(st, key),
+      crossing: Chase.crossing(st, key),
+      /** Les manœuvres du livre, portée déjà évaluée (SR5 seul en déclare). */
+      actions: this.chaseActions(key),
+      glyph: (this.model() || {}).glyph || "⇉",
+      earnedLabel: (() => {
+        const r = Chase.moveRule(ed);
+        if (!r || !Number.isFinite(r.onSuccess)) return "Déplacement";
+        return r.via === "cross" ? "Bande à franchir" : "Catégorie de distance";
+      })(),
+    };
+  },
+
   /** Le paquet complet que le rendu consomme — assemblé ICI (couche 5, seule
       à pouvoir lire les fiches) pour que `ChaseRenderer` reste PUR : il reçoit
       des données déjà résolues et rend du HTML, comme `EncounterRenderer`.
@@ -969,7 +1107,25 @@ export const Pursuit = {
     const dominantId = this.dominant();
     // La réserve du test rejoint chaque ligne : le rendu affiche « ⚄ 12 »
     // quand l'app la tient, et un ⚄ nu quand c'est au joueur d'annoncer.
-    for (const r of rows) r.roll = this.testSpec(r.key);
+    // Et depuis le lot A, le DÉPLACEMENT ACQUIS : le jeton l'annonce (▲▼
+    // allumés) au lieu de le prendre. Un PNJ ne l'annonce pas longtemps — la
+    // fin de round le lui fait prendre ; le rendu montre donc surtout ceux
+    // dont quelqu'un, à la table, doit décider.
+    const acteurs = this._actors();
+    for (const r of [...rows, target].filter(Boolean)) {
+      r.roll = this.testSpec(r.key);
+      const a = acteurs[r.key] || {};
+      r.isPJ = !!a.isPJ;
+      r.earned = Chase.earnedMove(ed, st, r.key, a.role);
+      /** Cascade (SR5) : ce poursuivant doit refaire le test. `"lost"` quand
+          il est déjà à la dernière bande — rater lui ferait perdre la cible,
+          et ça, c'est une issue que le MJ déclare. */
+      r.mustRetest = Chase.mustRetest(st, r.key);
+      /** Le sens « vers l'avant » de CE participant, pour que le rendu sache
+          quel chevron mettre en avant quand le livre ne laisse pas le choix
+          (Anarchy 2.0 : « le vainqueur progresse vers son objectif »). */
+      r.forward = Chase.forward(a.role);
+    }
     const byLane = {};
     for (const r of rows) if (!r.out && r.lane) (byLane[r.lane] ||= []).push(r);
     const terr = m.terrains[st.terrain] || {};
@@ -1136,6 +1292,24 @@ export const Pursuit = {
       failCostLabel: Chase.failCost(ed, st),
       poolOn: !!(m.edge && m.edge.chasePool) && !(Chase.mode(ed, st.mode) || {}).noPool,
       poolLabel: (m.edge && m.edge.poolLabel) || "Réserve",
+      /** Ce que la réussite a gagné, dans la monnaie de CETTE piste : une
+          catégorie de distance là où le livre déplace d'un coup (SR6), un
+          franchissement là où il compte des Narrations (Anarchy). Le libellé
+          se dérive du contrat, jamais d'un littéral — « catégorie » est le mot
+          de SR6, il n'a rien à faire sur une piste Anarchy. */
+      earnedLabel: (() => {
+        const r = Chase.moveRule(ed);
+        if (!r || !Number.isFinite(r.onSuccess)) return "";
+        const n = r.onSuccess;
+        return r.via === "cross"
+          ? `Déplacement acquis — ${n} bande${n > 1 ? "s" : ""} à franchir`
+          : `Déplacement acquis — ${n} catégorie${n > 1 ? "s" : ""} de distance`;
+      })(),
+      /** L'ancre a-t-elle un déplacement acquis à prendre ? Elle n'a pas de
+          bande, donc pas de ▲▼ ordinaires : le rendu lui en pose une paire à
+          part, qui écrit sur les autres (`Chase.stepAnchor`). Vaut toujours
+          `null` en SR6, dont le livre l'immobilise. */
+      anchorEarned: target ? target.earned : null,
     };
   },
 };

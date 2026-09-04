@@ -974,6 +974,20 @@ export const Encounter = {
     this._trackAim(c, pnj, key);
     c.lastActionUndo = reprise; // B3.4 — le chemin de retour, désormais ouvert
 
+    // Lot B — CE QUE L'ACTION FAIT À LA PISTE. SR5 ne fait pas tester à chaque
+    // ronde : chez lui la course-poursuite EST le choix de quatre manœuvres, et
+    // deux d'entre elles déplacent (Rattraper, et l'éloignement forcé qu'une
+    // Cascade réussie impose aux poursuivants qui ratent). Elles étaient
+    // jouables depuis le lot C — elles débitaient leur coût et ne touchaient
+    // pas la piste, qui vivait à un mètre de là.
+    //
+    // Ici plutôt que dans la feuille de poursuite : `useAction` est le seul
+    // entonnoir des actions (le panneau d'attaque, la feuille de combat et la
+    // fiche de piste y arrivent tous), donc jouer « Rattraper » depuis la
+    // rubrique Pilotage de la feuille de combat a le même effet que depuis la
+    // piste. C'est la même action.
+    if (this.state.chase) Pursuit.onActionPlayed(pnjId, key);
+
     if (poses.length) {
       Shadows.save();
       CardRenderer.refresh(pnj); // la ligne d'états de la carte, tout de suite
@@ -1274,6 +1288,18 @@ export const Encounter = {
       utilise pour réserver neuf actions d'Atout (« cible de la
       course-poursuite uniquement », « poursuivants uniquement »).
       `null` hors poursuite : rien n'est alors filtré. */
+  /** Ce participant est-il piloté par un JOUEUR ? Même prédicat que `_isPJ`,
+      indexé par id — les moteurs qui ne tiennent pas de `rows` (la piste de
+      poursuite) en ont besoin pour savoir ce qu'ils n'ont PAS le droit de
+      décider à sa place (lot A : un PNJ prend son déplacement tout seul, un
+      PJ se le voit offrir). Un figurant que le tracker ne connaît pas retombe
+      sur la seule question qui reste vraie : est-il dans le pool des
+      jouables ? */
+  isPlayerCharacter(pnjId) {
+    const c = this._find(pnjId);
+    return this._isPJ({ kind: c && c.kind, pnj: PnjLookup.find(pnjId), pnjId });
+  },
+
   chaseRoleFor(pnjId) {
     const st = this.state && this.state.chase;
     if (!st) return null;

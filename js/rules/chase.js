@@ -127,19 +127,30 @@ export const Chase = {
   },
 
   /** Décompte d'une Narration tous les franchissements en cours et POSE ceux
-      qui arrivent. Appelé par la fin de ronde, seule horloge de la scène. */
+      qui arrivent. Appelé par la fin de ronde, seule horloge de la scène.
+
+      → `{ arrivés, ticked }`. `ticked` liste les clés décomptées et, pour
+      celles qui sont arrivées, la bande QUITTÉE : c'est le strict nécessaire
+      pour que `undoRound` remette la piste où elle était. Un ↩ qui ne
+      défaisait pas les arrivées laissait des jetons une bande trop loin —
+      silencieusement, ce qui est la pire des façons. */
   tickCrossings(state) {
     const arrivés = [];
+    const ticked = [];
     for (const key of Object.keys((state && state.crossing) || {})) {
       const c = state.crossing[key];
       c.left -= 1;
       if (c.left <= 0) {
+        const from = this.laneOf(state, key);
         this.place(state, key, c.to);
         delete state.crossing[key];
         arrivés.push({ key, lane: c.to });
+        ticked.push({ key, to: c.to, from, landed: true });
+      } else {
+        ticked.push({ key, to: c.to, landed: false });
       }
     }
-    return arrivés;
+    return { arrivés, ticked };
   },
 
   envs(edition) {
@@ -276,6 +287,23 @@ export const Chase = {
           ADDITIF de plus — une poursuite d'avant le lot n'en a pas et se
           comporte à l'identique, d'où un `V` qui ne bouge pas. */
       crossing: {},
+      /** Crans DÉJÀ posés depuis le test de ce round, par clé de piste (lot A).
+          Signé, remis à zéro par `setTest` et par la fin de ronde. Il sert à
+          une seule question : le déplacement que la réussite a fait gagner
+          a-t-il déjà été pris ? Sans lui, le MJ qui avance un jeton à la main
+          le verrait avancer une seconde fois tout seul à la fin du round.
+          Champ ADDITIF — une poursuite d'avant le lot n'en a pas et se
+          comporte à l'identique, d'où un `V` qui ne bouge pas. */
+      adjusted: {},
+      /** Déplacements OCTROYÉS par une action jouée (lot B), par clé de piste :
+          `{ max, dir, why }`. `max` nul = l'app ne plafonne pas (elle ne tient
+          pas l'Accélération de cet engin) ; `dir` nul = les deux sens.
+          Vidés à la fin de la ronde, comme le reste. Champ ADDITIF. */
+      granted: {},
+      /** Poursuivants sommés de refaire le test (SR5, Cascade réussie) :
+          `clé → true`, ou `"lost"` quand l'échec leur ferait perdre la cible
+          (déjà à la dernière bande). Champ ADDITIF. */
+      mustRetest: {},
       edgeUp: {},
       pool: {},
       poolMax: {},
@@ -302,20 +330,9 @@ export const Chase = {
     delete state.out[pnjId];
   },
 
-  /** Déplace de `delta` bandes (négatif = vers l'ancre, donc vers
-      « rattrapé »). Sature aux deux bouts : franchir un bout n'est pas un
-      déplacement mais une ISSUE, et une issue se déclare (`drop`), elle ne
-      se glisse pas par accident. → la nouvelle clé de bande, ou null. */
-  move(edition, state, pnjId, delta) {
-    const keys = this.laneKeys(edition, state && state.terrain);
-    if (!keys.length || !state) return null;
-    const cur = this.laneOf(state, pnjId);
-    const i = cur ? keys.indexOf(cur) : 0;
-    const next = keys[Utils.clamp((i < 0 ? 0 : i) + delta, 0, keys.length - 1)];
-    state.lanes[pnjId] = next;
-    delete state.out[pnjId];
-    return next;
-  },
+  /* `move()` vivait ici : un déplacement qui ignorait les franchissements, que
+     le contrôleur devait donc doubler d'un chemin parallèle. Le lot A a
+     fusionné les deux en `Chase.step` (plus bas), seul mouvoir de la piste. */
 
   /** Tendance depuis le round précédent : −1 s'est rapproché de la cible,
       +1 s'en est éloigné, 0 n'a pas bougé, null si on ne sait pas encore.
@@ -328,6 +345,225 @@ export const Chase = {
     if (!now || !before) return null;
     const d = keys.indexOf(now) - keys.indexOf(before);
     return Number.isFinite(d) ? d : null;
+  },
+
+  /* ========================================================
+     LE DÉPLACEMENT DU ROUND (lot A) — la clé que personne ne lisait
+
+     `chaseModel.round.move` était déclarée par les QUATRE modules et lue par
+     zéro consommateur. La piste enregistrait donc un ✓, calculait une
+     tendance… à partir de positions que seul le ▲▼ manuel avait bougées.
+     Motif exact que le CONTRIBUTING nomme : le contrat portait la règle,
+     personne ne la lisait. Même réparation que le lot 4 sur `test.cost`.
+
+     ── Ce que les livres disent, et pourquoi les quatre diffèrent ──
+     · SR6 (À Tombeau Ouvert p. 176) : « Quiconque réussit son test […] PEUT
+       CHOISIR d'ajuster sa position d'une catégorie de distance, que ce soit
+       en s'éloignant ou en se rapprochant. » C'est un CHOIX, et la direction
+       est LIBRE — le fuyard qui réussit peut décider de revenir. « La cible
+       ne peut normalement pas adapter sa position » → `targetMoves: false`.
+     · Anarchy 2.0 (p. 230) : test OPPOSÉ, « le vainqueur parvenant à
+       progresser vers son objectif (s'enfuir, rattraper l'autre) » — ici la
+       direction est celle du RÔLE, pas un choix. Et p. 66 : « se déplacer
+       n'est pas une action » ⇒ rien à débiter, on compte des Narrations.
+     · SR5 (p. 204) et Anarchy 1re (p. 166) : aucun test de ronde, donc
+       aucune réussite à convertir — `onSuccess: null`, un VIDE ASSUMÉ de
+       plus. Leur déplacement vient des ACTIONS (Cascade, Rattraper) et des
+       Déplacements ; il n'a rien à faire dans une fin de ronde.
+
+     ── Qui déplace qui (arbitrage de conception, 2026-09-04) ──
+     Un PNJ prend son déplacement TOUT SEUL, et toujours vers l'avant : vers
+     l'ancre s'il poursuit, à l'opposé s'il fuit. Un PJ, jamais : l'app pose
+     l'offre et le joueur tranche. C'est la doctrine B3.5 d'un cran plus
+     loin — l'app ne lance pas les dés d'un joueur, elle ne choisit pas non
+     plus à sa place. Le MJ n'a donc à s'occuper que des jetons dont
+     quelqu'un, à la table, a une opinion.
+     ======================================================== */
+
+  /** La règle de déplacement déclarée par l'édition, ou `null`. */
+  moveRule(edition) {
+    const m = this.use(edition);
+    return (m && m.round && m.round.move) || null;
+  },
+
+  /** Crans déjà posés depuis le test de ce round (signé). */
+  adjusted(state, key) {
+    return (state && state.adjusted && state.adjusted[key]) || 0;
+  },
+
+  /** Le déplacement ACQUIS et pas encore pris par ce participant, ou `null`.
+      → `{ max, free }` — combien de crans restent, et si la direction est un
+      choix (SR6) ou celle du rôle (Anarchy 2.0).
+
+      `role` est PASSÉ par le contrôleur : ce module ne connaît pas le
+      tracker, et il ne va pas commencer ici. */
+  earnedMove(edition, state, key, role) {
+    if (!state || state.out[key]) return null;
+    const pris = Math.abs(this.adjusted(state, key));
+    // ── (1) Ce qu'une ACTION a octroyé (lot B) ───────────────────────
+    // SR5 n'a pas de test de ronde : chez lui TOUT le déplacement vient d'ici
+    // (Rattraper, ou l'éloignement forcé d'une Cascade ratée). Il passe donc
+    // par le même canal que le gain de ronde — un seul mécanisme, deux
+    // sources, et le jeton ne connaît qu'une seule façon de dire « tu peux
+    // bouger ».
+    const g = (state.granted && state.granted[key]) || null;
+    if (g) {
+      if (g.max == null) return { max: null, free: g.dir == null, dir: g.dir || 0, why: g.why || "" };
+      const reste = g.max - pris;
+      if (reste > 0) return { max: reste, free: g.dir == null, dir: g.dir || 0, why: g.why || "" };
+      return null;
+    }
+    // ── (2) Ce que le TEST de la ronde a donné ───────────────────────
+    const r = this.moveRule(edition);
+    if (!r || !Number.isFinite(r.onSuccess)) return null;
+    if (state.tested[key] !== "ok") return null;
+    // « La cible ne peut normalement pas adapter sa position » (SR6).
+    if (role === "cible" && !r.targetMoves) return null;
+    const reste = r.onSuccess - pris;
+    return reste > 0 ? { max: reste, free: !!r.freeDirection, dir: 0, why: "" } : null;
+  },
+
+  /* ---- Les effets de piste d'une ACTION (lot B) ----
+     SR5 est le seul livre à ranger la course-poursuite dans des ACTIONS
+     plutôt que dans un test de ronde ; ses quatre manœuvres étaient jouables
+     depuis le lot C mais ne touchaient pas la piste. Deux d'entre elles la
+     touchent pourtant, et le livre les chiffre. */
+
+  /** L'effet de piste déclaré pour cette action, ou `null` (Percuter et
+      Couper la route n'en ont pas : elles font des dégâts, pas des mètres). */
+  actionEffect(edition, key) {
+    return (this.roundActions(edition).find((a) => a.key === key) || {}).effect || null;
+  },
+
+  /** Octroie un déplacement. `max` nul = non plafonné par l'app (elle ne tient
+      pas la valeur du livre pour cet engin) ; `dir` nul = les deux sens. */
+  grant(state, key, { max = null, dir = null, why = "" } = {}) {
+    if (!state || !key) return;
+    state.granted = state.granted || {};
+    state.granted[key] = { max, dir, why };
+    // L'octroi rouvre le compteur : c'est un déplacement NEUF, pas la suite de
+    // celui que le round avait donné.
+    if (state.adjusted) delete state.adjusted[key];
+  },
+
+  /** Applique l'effet d'une action jouée. `ctx` porte ce que seul le
+      contrôleur sait lire sur les fiches — aujourd'hui l'Accélération de
+      l'engin. Renvoie ce qui a été posé, pour que l'appelant puisse le DIRE.
+
+      Rien n'est appliqué de force : on ouvre des déplacements et on marque des
+      tests à refaire. Les dégâts, les accidents et les issues restent à la
+      table — l'app ne remplit aucun moniteur (règle R4). */
+  applyActionEffect(edition, state, key, actionKey, ctx = {}) {
+    const eff = this.actionEffect(edition, actionKey);
+    if (!eff || !state) return null;
+    if (eff.kind === "grant") {
+      const cap = eff.cap === "accel" ? ctx.accel : null;
+      const max = Number.isFinite(cap) ? cap : null;
+      this.grant(state, key, { max, dir: eff.free ? null : 1, why: eff.why || "" });
+      return { kind: "grant", max };
+    }
+    if (eff.kind === "cascade") {
+      // « Tous les véhicules poursuivants doivent immédiatement faire un test
+      // identique, avec le même seuil. » On les MARQUE ; c'est le ✗ posé
+      // ensuite qui déclenchera l'éloignement (cf. `setTest`).
+      const keys = this.laneKeys(edition, state.terrain);
+      const derniere = keys[keys.length - 1];
+      state.mustRetest = {};
+      let n = 0;
+      for (const k of Object.keys(state.lanes || {})) {
+        if (k === key || state.out[k]) continue;
+        // « Si le poursuivant était déjà à portée extrême, le véhicule
+        // poursuivi parvient à s'échapper » — ce n'est plus un déplacement,
+        // c'est une ISSUE, et une issue se déclare.
+        state.mustRetest[k] = this.laneOf(state, k) === derniere ? "lost" : true;
+        n++;
+      }
+      return { kind: "cascade", n };
+    }
+    return null;
+  },
+
+  /** Ce poursuivant doit-il refaire le test (Cascade) ? → true | "lost" | null */
+  mustRetest(state, key) {
+    return (state && state.mustRetest && state.mustRetest[key]) || null;
+  },
+
+  /** « Vers l'avant » pour ce rôle : l'axe de la piste met l'ancre à
+      l'index 0, donc se rapprocher est négatif. */
+  forward(role) {
+    return role === "cible" ? 1 : -1;
+  },
+
+  /** Un pas, DANS LE RÉGIME de l'édition : d'un coup là où le livre déplace
+      (SR5, SR6), en engageant un franchissement là où il compte des
+      Narrations (les deux Anarchy). `delta` négatif = vers l'ancre, donc vers
+      « rattrapé ». Renvoie ce qui s'est passé, ou `null` si rien n'a bougé.
+
+      Sature aux deux bouts : franchir un bout n'est pas un déplacement mais
+      une ISSUE, et une issue se déclare (`drop`), elle ne se glisse pas par
+      accident.
+
+      Un seul mouvoir pour le geste du MJ et pour l'automatisme : deux
+      implémentations divergeraient au premier cas tordu, et le cas tordu
+      ici — repartir dans l'autre sens en plein franchissement — existe déjà. */
+  step(edition, state, key, delta, { credit = key } = {}) {
+    if (!state || !delta) return null;
+    const keys = this.laneKeys(edition, state.terrain);
+    const from = this.laneOf(state, key);
+    const i = from ? keys.indexOf(from) : 0;
+    const to = keys[Utils.clamp((i < 0 ? 0 : i) + delta, 0, keys.length - 1)];
+    if (!to || to === from) return null;
+    // On ne traverse pas un écart et son contraire à la fois : faire demi-tour
+    // abandonne le franchissement engagé.
+    const enCours = this.crossing(state, key);
+    if (enCours && enCours.to !== to) this.endCross(state, key);
+    // `credit` : à QUI ce pas est décompté. Presque toujours celui qui bouge —
+    // sauf quand c'est l'ancre qui avance et que les autres reculent pour elle
+    // (`stepAnchor`) : leur propre déplacement acquis ne doit pas être mangé
+    // par le sien. `null` ⇒ on ne décompte à personne.
+    if (credit) {
+      state.adjusted = state.adjusted || {};
+      state.adjusted[credit] = this.adjusted(state, credit) + Math.sign(delta);
+    }
+    if (this.startCross(edition, state, key, to))
+      return { key, from, to, crossing: this.crossing(state, key).left };
+    this.place(state, key, to);
+    return { key, from, to, crossing: 0 };
+  },
+
+  /** L'ANCRE gagne du terrain. Elle n'a pas de bande — « toutes les autres
+      positions sont définies selon la sienne » —, donc son déplacement
+      s'écrit sur les AUTRES, en sens inverse. Ce n'est pas une astuce
+      d'implémentation : c'est la même phrase du livre lue depuis l'autre
+      bout, et c'est la seule façon d'honorer `targetMoves: true` (SR5,
+      Anarchy) sur une piste qui mesure tout à partir d'un point fixe.
+
+      → la liste des pas effectués, du même galbe que `step`, pour que la fin
+      de round les résume et que le ↩ les défasse sans rien savoir de plus. */
+  stepAnchor(edition, state, delta) {
+    if (!state || !delta || !state.targetId) return [];
+    const faits = [];
+    for (const key of Object.keys(state.lanes || {})) {
+      if (state.out[key]) continue;
+      // ⚠ MÊME signe, pas l'opposé. La bande d'un poursuivant MESURE sa
+      // distance à l'ancre : si l'ancre prend du terrain (delta positif, vers
+      // « semé »), cette distance CROÎT, donc l'indice du poursuivant croît
+      // aussi. Négocier ce signe à l'envers — ce que faisait la première
+      // version — faisait fuir la cible en rapprochant ses poursuivants.
+      //
+      // `credit: null` — reculer parce que la cible accélère ne consomme pas
+      // le déplacement qu'un poursuivant a gagné de son côté. Les deux se
+      // cumulent, et le livre les donne bien séparément : chaque participant
+      // qui réussit ajuste sa position d'une catégorie.
+      const f = this.step(edition, state, key, delta, { credit: null });
+      if (f) faits.push(f);
+    }
+    if (faits.length) {
+      state.adjusted = state.adjusted || {};
+      state.adjusted[state.targetId] =
+        this.adjusted(state, state.targetId) + Math.sign(delta);
+    }
+    return faits;
   },
 
   /* ========================================================
@@ -448,6 +684,27 @@ export const Chase = {
     if (!state || !pnjId) return;
     if (res == null) delete state.tested[pnjId];
     else state.tested[pnjId] = res === "ok" ? "ok" : "ko";
+    // Poser le résultat, c'est ouvrir le déplacement du round : le compteur de
+    // crans repart de zéro. Sans ça, un jeton avancé à la main AVANT le jet
+    // (pour une raison qui n'a rien à voir) mangeait en silence le
+    // déplacement que la réussite venait de donner.
+    if (state.adjusted) delete state.adjusted[pnjId];
+    // ── Cascade (SR5, lot B) : le test imposé se résout ICI ───────────
+    // « Si le véhicule poursuivant échoue, il n'a pas pris de risques et
+    // s'éloigne d'une catégorie de portée d'engagement » — un sens FORCÉ,
+    // contrairement au gain de ronde de SR6. Se reprendre (corriger le ✗)
+    // reprend aussi l'éloignement : rien ne reste posé sur une erreur.
+    const retest = this.mustRetest(state, pnjId);
+    if (retest) {
+      const dejaPose = state.granted && state.granted[pnjId];
+      if (res === "ko" && retest !== "lost")
+        this.grant(state, pnjId, {
+          max: 1, dir: 1,
+          why: "Cascade ratée — s'éloigne d'une catégorie de portée",
+        });
+      else if (dejaPose && dejaPose.why && /^Cascade/.test(dejaPose.why))
+        delete state.granted[pnjId];
+    }
     const m = this.use(edition);
     if (m && m.round && m.round.onSuccess === "positional") {
       if (res === "ok") state.edgeUp[pnjId] = true;
@@ -512,17 +769,60 @@ export const Chase = {
   },
 
   /* ---- Fin de round ----
-     N'applique aucun déplacement : le MJ a déjà posé les jetons pendant le
-     round (les livres font bouger les positions à la fin, mais c'est LUI
-     qui décide qui bouge, pas nous). Ce que la fin de round produit, c'est
-     un RÉSUMÉ — qui a gagné ou perdu une bande, qui n'a pas testé — parce
-     qu'un round qui passe sans rien dire est un round qu'on oublie. */
-  endRound(edition, state) {
+     C'est ICI que le livre fait bouger les positions : « généralement, les
+     déplacements ont lieu à la fin du round de combat, lorsque tous les
+     participants ont réalisé leurs actions » (SR6, À Tombeau Ouvert p. 176).
+
+     Ce qui bouge tout seul : les PNJ qui ont réussi, vers l'avant. Ce qui ne
+     bouge pas : les PJ — leur déplacement acquis reste OFFERT, et c'est le
+     joueur qui tranche (cf. `earnedMove`). Ce que la fin de round produit en
+     plus, c'est un RÉSUMÉ — qui a gagné ou perdu une bande, qui n'a pas
+     testé — parce qu'un round qui passe sans rien dire est un round qu'on
+     oublie.
+
+     `actors` : `clé de piste → { isPJ, role }`, fourni par le contrôleur.
+     Sans lui (appel d'avant le lot A), personne n'est PJ et personne n'a de
+     rôle — le déplacement automatique ne se déclenche simplement pas. */
+  endRound(edition, state, actors = {}) {
     if (!state) return null;
+    // ── Le déplacement acquis, pris par ceux qui n'ont personne pour le
+    // décider à leur place. AVANT le décompte des franchissements : un pas
+    // engagé ce round-ci doit commencer à courir maintenant, pas au suivant.
+    const auto = [];
+    // L'ancre d'abord : son gain s'écrit sur tous les autres, et il ne doit pas
+    // se mélanger aux leurs (cf. `stepAnchor`).
+    /** Le pas qu'un PNJ prend tout seul. « Vers l'avant » veut dire vers son
+        objectif — SAUF quand le livre a déjà imposé un sens : une Cascade
+        ratée « s'éloigne », et s'éloigner est le contraire de l'objectif d'un
+        poursuivant. `dir` l'emporte donc sur le rôle. (Trouvé au test : le
+        poursuivant qui ratait sa Cascade se rapprochait.)
+
+        Et un gain NON CHIFFRÉ (Rattraper sans Accélération connue) ne se prend
+        pas tout seul : personne ne sait de combien. Il reste offert. */
+    const pasAuto = (gain, role) => {
+      if (!Number.isFinite(gain.max)) return 0;
+      return (gain.dir || this.forward(role)) * gain.max;
+    };
+    const cible = state.targetId;
+    const aCible = (cible && actors[cible]) || null;
+    if (cible && aCible && !aCible.isPJ) {
+      const gain = this.earnedMove(edition, state, cible, aCible.role);
+      const d = gain ? pasAuto(gain, "cible") : 0;
+      if (d) auto.push(...this.stepAnchor(edition, state, d));
+    }
+    for (const key of Object.keys(state.lanes)) {
+      const a = actors[key] || {};
+      if (a.isPJ) continue;
+      const gain = this.earnedMove(edition, state, key, a.role);
+      if (!gain) continue;
+      const d = pasAuto(gain, a.role);
+      const fait = d && this.step(edition, state, key, d);
+      if (fait) auto.push(fait);
+    }
     // Les franchissements avancent AVANT le relevé des tendances : celui qui
     // arrive ce round-ci doit apparaître dans le récapitulatif comme un
     // déplacement, pas comme un immobile.
-    const arrivés = this.tickCrossings(state);
+    const { arrivés, ticked } = this.tickCrossings(state);
     const moves = [];
     for (const id of Object.keys(state.lanes)) {
       const d = this.trend(edition, state, id);
@@ -534,10 +834,30 @@ export const Chase = {
     const untested = Object.keys(state.lanes).filter(
       (id) => !state.out[id] && !state.tested[id]
     );
-    const recap = { round: state.round, moves, untested, dropped: Object.keys(state.out), arrivés };
+    const recap = {
+      round: state.round,
+      moves,
+      untested,
+      dropped: Object.keys(state.out),
+      arrivés,
+      /** Ce que CETTE fin de round a appliqué, et rien d'autre — de quoi la
+          défaire sans toucher aux gestes que le MJ a faits pendant le round.
+          C'est la différence entre « annuler la fin de round » (le libellé du
+          bouton) et « annuler le round », qu'on ne lui a jamais promis. */
+      auto,
+      ticked,
+      /** L'ancre des tendances d'AVANT cette fin de round : sans elle, un ↩
+          rendait les positions mais laissait les ▲▼ comparer à un repère
+          déjà avancé — des flèches qui mentent sur un écran qu'on lit à un
+          mètre. */
+      prevBefore: { ...state.prev },
+    };
     state.prev = { ...state.lanes };
     state.tested = {};
     state.paid = {};
+    state.adjusted = {};
+    state.granted = {};
+    state.mustRetest = {};
     state.edgeUp = {};
     state.round += 1;
     state.log.unshift(recap);
@@ -549,10 +869,33 @@ export const Chase = {
       un MJ tape « suivant » de travers dix fois par séance). */
   undoRound(state) {
     if (!state || !state.log.length || state.round <= 1) return false;
-    state.log.shift();
+    const recap = state.log.shift();
+    // ── Défaire, dans l'ordre inverse de l'application ──────────────────
+    // Le bouton dit « annuler la fin de round » : il défait ce que la fin de
+    // round a fait — les arrivées, les décomptes, les déplacements
+    // automatiques — et RIEN de ce que le MJ a posé pendant le round. Depuis
+    // que la fin de round déplace pour de bon (lot A), un ↩ qui ne rendait
+    // que le compteur laissait les jetons une bande trop loin.
+    for (const t of [...((recap && recap.ticked) || [])].reverse()) {
+      if (t.landed) {
+        this.place(state, t.key, t.from);
+        state.crossing = state.crossing || {};
+        state.crossing[t.key] = { to: t.to, left: 1 };
+      } else if (state.crossing && state.crossing[t.key]) {
+        state.crossing[t.key].left += 1;
+      }
+    }
+    for (const a of [...((recap && recap.auto) || [])].reverse()) {
+      if (a.crossing) this.endCross(state, a.key);
+      this.place(state, a.key, a.from);
+    }
+    if (recap && recap.prevBefore) state.prev = { ...recap.prevBefore };
     state.round -= 1;
     state.tested = {};
     state.paid = {};
+    state.adjusted = {};
+    state.granted = {};
+    state.mustRetest = {};
     state.edgeUp = {};
     return true;
   },

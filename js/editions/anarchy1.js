@@ -416,10 +416,22 @@ export const EditionAnarchy1 = {
       pied: { label: "À pied", unruled: true, testLabel: "Athlétisme + AGI (narration)" },
       vehicule: { label: "En véhicule", testLabel: "Véhicules terrestres / divers + AGI" },
     },
-    /** Les trois portées d'Anarchy 1re, telles que le livre les nomme. */
+    /** Les trois portées d'Anarchy 1re, telles que le livre les nomme.
+
+        `cross` : le nombre de DÉPLACEMENTS pour franchir l'écart avec la
+        bande suivante vers l'extérieur — « passer de portée courte à
+        intermédiaire, ou inversement, nécessite un Déplacement ; passer de
+        portée intermédiaire à longue, et inversement, nécessite TROIS
+        Déplacements » (p. 156). Un Déplacement par Narration, donc un écart
+        de 3 dure trois tours.
+
+        Le chiffre était dans le livre et nulle part dans le code : la piste
+        franchissait tout d'un tap. Même donnée, même mécanisme et même clé
+        qu'Anarchy 2.0 (`Chase.crossCost` porte l'écart sur la bande la plus
+        proche de l'ancre), au prix près — 1 / 3 ici, 1 / 2 / 3 là-bas. */
     lanes: [
-      { key: "courte", label: "Courte", hint: { all: "portée d'épée à quelques mètres" } },
-      { key: "intermediaire", label: "Intermédiaire", hint: { all: "au-delà, jusqu'à la portée d'une arme de poing" } },
+      { key: "courte", label: "Courte", cross: 1, hint: { all: "portée d'épée à quelques mètres · 1 Déplacement depuis Intermédiaire" } },
+      { key: "intermediaire", label: "Intermédiaire", cross: 3, hint: { all: "au-delà, jusqu'à la portée d'une arme de poing · 3 Déplacements depuis Longue" } },
       { key: "longue", label: "Longue", hint: { all: "hors de portée d'une arme de poing" } },
     ],
     /** Aucun environnement au livre : c'est le MJ qui fixe la difficulté
@@ -475,8 +487,27 @@ export const EditionAnarchy1 = {
       test: null,
       onSuccess: null,
       onSkip: null,
-      /** La seule règle de déplacement chiffrée du livre. */
-      move: { onSuccess: 1, targetMoves: true, note: "1 Narration : un véhicule gagne une catégorie sur un personnage à pied" },
+      /** `onSuccess: null` — RECTIFIÉ le 2026-09-04, vérifié au livre.
+          Cette clé portait `1`, en face d'un `test: null` : il n'y a aucun
+          test de ronde en Anarchy 1re, donc aucune réussite à convertir. Le
+          livre est même explicite dans l'autre sens (p. 166) : « la conduite
+          ou le pilotage normal, comme changer de vitesse ou de PORTÉE, ne
+          nécessite pas de lancer les dés, une simple narration suffit ».
+
+          Le déplacement s'y compte en DÉPLACEMENTS (p. 156) — un par
+          Narration, un cran entre courte et intermédiaire, TROIS entre
+          intermédiaire et longue —, ce que porte désormais `lanes[].cross`.
+          D'où `via: "cross"`, le même mécanisme qu'Anarchy 2.0 : deux livres
+          qui comptent en Narrations, une seule implémentation.
+
+          La `note` reste : c'est l'exception du livre, et elle ne vaut
+          qu'envers un PIÉTON — « entre véhicules, les règles de déplacement
+          normales s'appliquent ». Elle n'est pas motorisée : la piste ne
+          demande pas encore qui est à pied en face. */
+      move: {
+        onSuccess: null, freeDirection: true, targetMoves: true, via: "cross",
+        note: "Un véhicule gagne longue → intermédiaire ou courte sur un personnage À PIED en une seule Narration (p. 166) ; entre véhicules, le compte normal s'applique",
+      },
     },
     edge: { compare: false, chasePool: false, roles: null },
     variants: [],

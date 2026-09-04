@@ -256,9 +256,13 @@
       <span class="topbar-divider" aria-hidden="true"></span>
 
       <div class="cluster topbar-actions">
-        <!-- Suivi de combat : outil MJ mis en avant, .is-active quand une scène tourne. -->
+        <!-- Suivi d'actions : outil MJ mis en avant, .is-active quand une scène tourne.
+             « Combat » depuis toujours, renommé au lot D : l'écran fait tourner TROIS
+             moteurs (combat ⚔, poursuite ⇉, Matrice ⚡︎) qui coexistent, et le nom
+             n'en annonçait qu'un. Le libellé de nav, lui, reste « Combat » : c'est
+             la porte d'entrée, et « Suivi » seul n'y dirait plus rien. -->
         <button class="topbar-action topbar-action-combat" id="topbar-combat-btn"
-          data-action="encounter-open" title="Suivi de combat" aria-label="Suivi de combat">
+          data-action="encounter-open" title="Suivi d'actions" aria-label="Suivi d'actions">
           <svg class="icon" aria-hidden="true"><use href="#ic-combat"></use></svg>
         </button>
         <button class="topbar-action" id="dice-log-btn"
@@ -336,7 +340,7 @@
 
       <!-- SIDEBAR -->
       <nav id="sidebar" class="stack" aria-label="Navigation principale">
-        <!-- Suivi de combat actif : masqué tant qu'aucune scène n'est en cours (cf. EncounterRenderer.renderSidebar). -->
+        <!-- Suivi d'actions actif : masqué tant qu'aucune scène n'est en cours (cf. EncounterRenderer.renderSidebar). -->
         <div id="sidebar-encounter" class="stack stack--tight sidebar-encounter" hidden>
           <span class="nav-section-label" id="sidebar-encounter-round">Round 1</span>
           <button class="cluster sidebar-encounter-turn" data-action="encounter-open" title="Ouvrir le suivi de combat">
@@ -706,7 +710,7 @@
   <div class="modal-overlay" id="encounter-overlay" role="dialog" aria-modal="true" aria-labelledby="encounter-title">
     <div class="modal encounter-modal">
       <div class="cluster modal-header">
-        <span class="modal-title" id="encounter-title">Suivi de combat — Round <span id="encounter-round">1</span><span id="encounter-pass"></span></span>
+        <span class="modal-title" id="encounter-title">Suivi d'actions — Round <span id="encounter-round">1</span><span id="encounter-pass"></span></span>
         <!-- CE1 : ressources de scène groupées (portée = scène, pas combattant) —
              Menace (K5, Anarchy) + Bruit (M6, ex-fiche active/pied narratif). -->
         <span class="encounter-scene-resources" id="encounter-scene-resources">

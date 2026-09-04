@@ -158,6 +158,11 @@ export const EncounterBinding = {
         case "chase-move":
           Pursuit.move(el.dataset.id, parseInt(el.dataset.delta, 10) || 0);
           break;
+        /* L'ancre n'a pas de bande : son déplacement recule tous les autres
+           (lot A). Un geste distinct parce que ce n'est pas le même verbe. */
+        case "chase-move-anchor":
+          Pursuit.moveAnchor(parseInt(el.dataset.delta, 10) || 0);
+          break;
         case "chase-test":
           Pursuit.cycleTest(el.dataset.id);
           break;

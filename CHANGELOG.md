@@ -10,6 +10,80 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.151.0] — 2026-09-04
+
+### Ajouté
+
+- **Le test de la ronde déplace enfin sur la piste.** Lancer les dés ou poser
+  un ✓ ne faisait rien bouger : la règle de déplacement était écrite dans les
+  quatre modules d'édition depuis l'origine et aucun code ne la lisait. Elle
+  est motorisée, et chaque livre garde la sienne. Shadowrun 6 (*À Tombeau
+  Ouvert*, p. 176) : qui réussit **peut choisir** d'ajuster sa position d'une
+  catégorie, en s'éloignant ou en se rapprochant — la direction est libre, et
+  la cible ne bouge pas, tout se mesure à elle. Anarchy 2.0 (p. 230) : test
+  opposé, le vainqueur progresse **vers son objectif**, en engageant un
+  franchissement dont le prix en Narrations est celui du livre. Shadowrun 5 et
+  Anarchy 1re n'ont pas de test par ronde : leur fin de ronde ne déplace donc
+  personne, et c'est écrit plutôt que comblé avec la règle du voisin.
+- **Un PNJ prend son déplacement tout seul, un joueur se le voit offrir.**
+  Le meneur n'a plus à décider pour dix figurants : les PNJ qui ont réussi
+  avancent vers leur objectif à la fin de la ronde. Les personnages joueurs,
+  jamais — leurs chevrons s'allument et pulsent, et c'est le joueur qui
+  tranche. L'application ne lance pas les dés d'un joueur ; elle ne choisit
+  pas non plus à sa place.
+- **Le déplacement se voit.** Un jeton qui change de bande y glisse. Seul
+  celui qui a vraiment changé de distance bouge : poser une coche remet le
+  panneau en page et faisait glisser les cinq jetons de la piste, ce qui ôtait
+  tout sens au mouvement. Coupé si le système demande moins d'animation.
+- **La cible qui prend du terrain.** Elle n'a pas de bande — tout se mesure à
+  elle —, alors son déplacement s'écrit sur les autres : quand elle gagne,
+  les poursuivants reculent d'autant. Là où le livre l'immobilise
+  (Shadowrun 6), la paire de chevrons ne s'affiche pas.
+- **Les manœuvres de Shadowrun 5 touchent la piste.** *Rattraper* ouvre un
+  changement de portée plafonné par l'Accélération — sans plafond quand
+  l'application ne tient pas la valeur du véhicule, plutôt qu'un chiffre
+  inventé. *Cascade* réussie marque d'un ⟳ tous les poursuivants qui doivent
+  refaire le test : celui qui échoue s'éloigne d'une catégorie, et s'il était
+  déjà à la dernière bande, c'est la cible qu'il perd — une issue, que le
+  meneur déclare. Percuter et Couper la route ne déplacent rien, comme au
+  livre. Jouer la manœuvre depuis la feuille de combat ou depuis la piste
+  produit le même effet : c'est la même action.
+- **Anarchy 1re compte ses Déplacements.** Le livre (p. 156) chiffre un
+  Déplacement entre portée courte et intermédiaire, **trois** entre
+  intermédiaire et longue. La piste les franchissait d'un tap ; elle les
+  compte désormais, avec le même mécanisme qu'Anarchy 2.0.
+
+### Modifié
+
+- **« Suivi de combat » devient « Suivi d'actions ».** L'écran fait tourner
+  trois moteurs — combat, poursuite, Matrice — qui coexistent ou non selon la
+  situation, et son nom n'en annonçait qu'un.
+- **On peut se battre pendant qu'on fuit.** Ouvrir une course-poursuite
+  remplaçait la console de combat par un bandeau d'une ligne, à toutes les
+  largeurs : il n'y avait aucun moyen de mener les deux. Le repli devient une
+  question de place, pas de moteur — au-dessus de 1000 px la piste a sa propre
+  colonne et la console reste entière à côté d'elle ; en dessous, le bandeau
+  reprend son rôle. Même règle pour la Matrice, à 1100 px.
+- **La console dit où en est le combattant dans la poursuite.** Sa bande, le
+  test que le livre lui impose, son déplacement acquis et les manœuvres que sa
+  portée lui ouvre — au tour de l'intéressé, là où ça se décide, au lieu de
+  faire regarder deux endroits pour un seul tour.
+
+### Corrigé
+
+- **Le retour en arrière défait ce que la fin de ronde a fait.** Maintenant
+  qu'elle déplace pour de bon, un ↩ qui ne rendait que le compteur laissait
+  les jetons une bande trop loin — en silence. Les déplacements automatiques,
+  les franchissements décomptés et les arrivées sont rendus ; les gestes posés
+  à la main pendant la ronde, eux, sont conservés.
+- **Un déplacement n'est plus compté deux fois.** Avancer un jeton à la main
+  après un test réussi consommait le déplacement gagné, et la fin de ronde le
+  rejouait par-dessus.
+- **Anarchy 1re ne prétend plus déplacer sur une réussite.** Son contrat
+  annonçait un déplacement par test réussi alors que le livre n'y impose aucun
+  test et dit même l'inverse : « changer de vitesse ou de portée ne nécessite
+  pas de lancer les dés ».
+
 ## [1.150.2] — 2026-09-04
 
 ### Modifié
