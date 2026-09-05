@@ -1672,8 +1672,16 @@
   top: 0.5rem;
   left: 0.5rem;
   z-index: var(--z-card);
-  width: 20px;
-  height: 20px;
+  /* CIBLE TACTILE — 20px ne suffisait pas : c'est le label qui reçoit le tap
+     (l'`input` de 15px n'est que le dessin), et le projet tient 24px partout
+     ailleurs. La case vit dans le SOCLE `Collection.create`, donc le même
+     20px valait pour les quatre collections — Ombres portées, Contacts,
+     Personnages et Serveurs : un seul chiffre, quatre écrans.
+     La gouttière réservée en mode sélection fait 2,25rem (36px) pour une
+     empreinte de 0,5rem + 24 = 32px : elle ne recouvre toujours ni le nom ni
+     le portrait, et rien d'autre ne bouge. */
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1705,6 +1713,14 @@ body.selecting .bulk-select-check {
    CO-b (plus de `.contact-header-row` bespoke à couvrir séparément, CO-e). */
 body.selecting .bulk-selectable .pnj-card-header,
 body.selecting .bulk-selectable .server-card-header {
+  padding-left: 2.25rem;
+}
+/* La vue en RANGÉES (Ombres portées) n'a ni `.pnj-card-header` ni
+   `.server-card-header` : elle échappait donc à la gouttière, et la case
+   mordait sur le nom dès le mode sélection — déjà vrai à 20px, d'un cran de
+   plus à 24. Ici la rangée EST l'élément sélectionnable, la gouttière se pose
+   donc sur elle. */
+body.selecting .bulk-selectable.roster-row {
   padding-left: 2.25rem;
 }
 /* Bouton d'entrée du mode, état actif (« ✕ Terminer »). */

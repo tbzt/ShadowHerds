@@ -10,6 +10,21 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.154.4] — 2026-09-05
+
+### Corrigé
+
+- **La case de sélection multiple était trop petite pour le doigt.** Vingt
+  pixels au lieu des vingt-quatre que le projet tient partout ailleurs — et
+  comme elle vit dans le socle commun aux collections, le même chiffre valait
+  pour Ombres portées, Contacts, Personnages et Serveurs : un seul défaut,
+  quatre écrans. La gouttière réservée en mode sélection fait trente-six
+  pixels : la case agrandie ne recouvre toujours ni le nom ni le portrait.
+- **En vue « rangées », la case mordait sur le nom.** La gouttière ne visait
+  que les en-têtes de carte ; la liste compacte d'Ombres portées, qui n'en a
+  pas, y échappait — le défaut existait déjà avant l'agrandissement. Elle
+  réserve désormais la même gouttière.
+
 ## [1.154.3] — 2026-09-05
 
 ### Corrigé
