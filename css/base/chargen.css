@@ -13,6 +13,10 @@
   margin-bottom: var(--sp-3);
 }
 .cg-step-tab {
+  /* CIBLE TACTILE — 22px avec le seul padding : deux pixels sous les 24 que
+     le projet tient partout. Ce sont les huit onglets d'étape, la navigation
+     principale de l'assistant sur téléphone. */
+  min-height: 24px;
   padding: 4px 10px;
   font-size: var(--fs-2xs);
   background: transparent;
@@ -441,3 +445,34 @@
   border-color: var(--accent);
 }
 
+/* ============================================================
+   LES CHAMPS DE L'ASSISTANT (correctif 2026-09-05)
+
+   Deux `input` et cinq `select` n'avaient AUCUNE règle : ils héritaient des
+   défauts du navigateur — fond blanc ou gris système, bordure `inset`, 20px
+   de haut — au milieu d'une modale sombre. Même cause que `.filter-input`
+   (cf. forms.css), trouvée dans la même passe mobile : une commande de
+   formulaire posée sans classe ne reçoit rien.
+
+   Valeurs reprises de `.journal-input`, le champ déjà en service sur les
+   cartes, plutôt qu'une troisième apparence. `.cg-stepper input` garde sa
+   largeur propre : la règle ci-dessous ne fixe pas de largeur.
+   ============================================================ */
+.chargen-modal input:not([type="checkbox"]):not([type="radio"]),
+.chargen-modal select,
+.chargen-modal textarea {
+  min-height: 32px;
+  padding: 0.35rem var(--sp-2);
+  background: var(--bg-elev, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+}
+.chargen-modal input:focus-visible,
+.chargen-modal select:focus-visible,
+.chargen-modal textarea:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}

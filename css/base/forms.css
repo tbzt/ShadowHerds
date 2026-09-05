@@ -598,3 +598,43 @@
   display: block;
 }
 
+
+/* ============================================================
+   CHAMP DE RECHERCHE DES COLLECTIONS (`.filter-input`)
+
+   La classe existait dans index.html — deux champs, la recherche du hub
+   « Ombres portées » et le filtre de « Personnages » — et **aucune règle ne
+   la visait**. Ils héritaient donc des défauts du navigateur : fond blanc,
+   texte noir, bordure `inset` système et 20px de haut, dans une application
+   sombre. Trouvé en vérifiant les Personnages sur téléphone (2026-09-05).
+
+   Deux défauts d'un coup, donc : la thématisation, et la cible tactile —
+   20px pour les 24 que le projet tient partout ailleurs. On reprend les
+   valeurs de `.journal-input`, le champ de saisie déjà en service sur les
+   cartes, plutôt que d'inventer une troisième apparence.
+   ============================================================ */
+.filter-input {
+  flex: 1 1 12ch;
+  min-width: 0;
+  min-height: 32px;
+  padding: 0.35rem var(--sp-2);
+  background: var(--bg-elev, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+}
+.filter-input::placeholder {
+  color: var(--text-dim);
+}
+.filter-input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+/* La croix native de `type="search"` reste au thème clair sous WebKit : on la
+   teinte plutôt que de la masquer — c'est un geste utile sur un filtre. */
+.filter-input::-webkit-search-cancel-button {
+  filter: invert(1) opacity(0.6);
+  cursor: pointer;
+}

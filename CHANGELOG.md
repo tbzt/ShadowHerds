@@ -10,6 +10,22 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.154.5] — 2026-09-05
+
+### Corrigé
+
+- **Les champs de recherche n'avaient jamais été habillés.** Ceux d'Ombres
+  portées et de Personnages portaient une classe qu'aucune règle ne visait :
+  fond blanc, texte noir et bordure système, au milieu d'une application
+  sombre — et vingt pixels de haut là où le projet en tient vingt-quatre. Ils
+  reprennent l'apparence des autres champs de saisie et passent à trente-deux.
+- **Les champs de l'assistant de création non plus.** Deux zones de texte et
+  cinq listes déroulantes héritaient des mêmes défauts du navigateur, à
+  l'intérieur d'une modale sombre.
+- **Les onglets d'étape de l'assistant étaient trop courts pour le doigt.**
+  Vingt-deux pixels : ce sont les huit repères de navigation de la création
+  de personnage, et sur téléphone c'est par eux qu'on circule.
+
 ## [1.154.4] — 2026-09-05
 
 ### Corrigé
