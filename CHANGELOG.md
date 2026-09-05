@@ -10,6 +10,19 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.154.1] — 2026-09-05
+
+### Modifié
+
+- **Le bordereau du Score de Surveillance replie les suppléments.** Le
+  peuplement l'avait fait passer de 16 à 34 puces en Shadowrun 6 : une liste
+  qu'on parcourt des yeux cesse d'être consultable à cette longueur. Le livre
+  de base reste en clair, les actions de supplément passent derrière un pli
+  qui annonce leur nombre et leur provenance — 144 px rendus à la console, et
+  un seul geste pour les rouvrir. Replier n'est pas masquer : le compte est
+  écrit, et le pli est un `<details>` natif, donc accessible au clavier sans
+  une ligne de script.
+
 ## [1.154.0] — 2026-09-05
 
 ### Ajouté

@@ -2267,16 +2267,36 @@ export const EncounterRenderer = {
       : "";
     // Le bordereau : les actions que le livre déclare illégales. Un tap ouvre
     // la saisie des succès de défense — c'est ce nombre qui monte au SS.
+    const puce = (a) =>
+      `<button class="chase-manoeuvre${a.optional ? " is-optional" : ""}" data-action="ss-illegal" data-id="${r.serverId}" data-key="${a.key}" title="${Utils.escHtml(
+        [a.name, a.source ? `— ${a.source}` : "", a.optional ? "· règle optionnelle du livre" : ""].filter(Boolean).join(" "),
+      )}">${Utils.escHtml(a.name)}${a.optional ? " <em>opt.</em>" : ""}</button>`;
+    // ── Le pli des SUPPLÉMENTS ────────────────────────────────────────
+    // Le peuplement a fait passer le bordereau de 16 à 34 puces en SR6 : une
+    // liste qu'on parcourt des yeux cesse d'être consultable à cette
+    // longueur. Le livre de BASE reste en clair — c'est ce que toutes les
+    // tables jouent —, les suppléments passent derrière une disclosure
+    // native, le patron déjà en service dans la carte (cyberdeck) et dans
+    // « Quoi de neuf » : clavier gratuit, aucun handler, aucun état persisté.
+    //
+    // Replier n'est pas masquer : le compte est écrit sur le résumé, et un
+    // seul geste ouvre. Ce qui disparaîtrait en silence n'aurait rien à faire
+    // ici (même règle que les manœuvres hors de portée, ternies et non
+    // retirées).
+    const base = r.illegal.filter((a) => !a.source);
+    const suppl = r.illegal.filter((a) => a.source);
+    const sources = [...new Set(suppl.map((a) => a.source))].join(" · ");
+    const pli = suppl.length
+      ? `<details class="emr-more">
+          <summary class="emr-more-summary" title="${Utils.escHtml(`${sources} — actions hors livre de base`)}">+ ${suppl.length} de supplément</summary>
+          <span class="emr-illegal">${suppl.map(puce).join("")}</span>
+        </details>`
+      : "";
     const bordereau =
       r.accumulates && r.illegal.length
-        ? `<span class="emr-illegal" title="Actions illégales de cette édition — un tap inscrit les succès de la défense au Score de Surveillance">${r.illegal
-            .map(
-              (a) =>
-                `<button class="chase-manoeuvre${a.optional ? " is-optional" : ""}" data-action="ss-illegal" data-id="${r.serverId}" data-key="${a.key}" title="${Utils.escHtml(
-                  [a.name, a.source ? `— ${a.source}` : "", a.optional ? "· règle optionnelle du livre" : ""].filter(Boolean).join(" "),
-                )}">${Utils.escHtml(a.name)}${a.optional ? " <em>opt.</em>" : ""}</button>`,
-            )
-            .join("")}</span>`
+        ? `<span class="emr-illegal" title="Actions illégales de cette édition — un tap inscrit les succès de la défense au Score de Surveillance">${base
+            .map(puce)
+            .join("")}</span>${pli}`
         : r.illegal.length
           ? `<span class="emr-note" title="SR5 p.233 : les spiders, CI et autres utilisateurs soutenus par le DIEU n'accumulent jamais de Score de Surveillance">soutenu par le DIEU — aucun SS</span>`
           : "";
