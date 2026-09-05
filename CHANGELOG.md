@@ -10,6 +10,23 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.155.0] — 2026-09-06
+
+### Modifié
+
+- **Les champs de saisie ont enfin une apparence par défaut.** L'application
+  n'avait aucune règle de base sur les zones de texte, les listes déroulantes
+  et les champs de formulaire : chacun dépendait de sa classe ou d'une règle
+  de panneau, et celui qui n'avait ni l'une ni l'autre gardait les couleurs du
+  navigateur — fond blanc, bordure système, vingt pixels de haut — au milieu
+  d'une interface sombre. Trois écrans en avaient souffert cette semaine ; ce
+  n'était pas trois défauts mais un socle manquant. Il existe désormais, et
+  les trois correctifs ponctuels qu'il rend inutiles ont été retirés. Cases à
+  cocher, boutons radio, curseurs et sélecteurs de fichier gardent leur rendu
+  natif, comme il se doit.
+- **Un dernier champ non habillé, dans les Paramètres**, se met au thème du
+  même coup.
+
 ## [1.154.6] — 2026-09-06
 
 ### Corrigé

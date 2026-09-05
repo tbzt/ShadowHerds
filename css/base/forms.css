@@ -599,23 +599,48 @@
 }
 
 
-/* ============================================================
-   CHAMP DE RECHERCHE DES COLLECTIONS (`.filter-input`)
-
-   La classe existait dans index.html — deux champs, la recherche du hub
-   « Ombres portées » et le filtre de « Personnages » — et **aucune règle ne
-   la visait**. Ils héritaient donc des défauts du navigateur : fond blanc,
-   texte noir, bordure `inset` système et 20px de haut, dans une application
-   sombre. Trouvé en vérifiant les Personnages sur téléphone (2026-09-05).
-
-   Deux défauts d'un coup, donc : la thématisation, et la cible tactile —
-   20px pour les 24 que le projet tient partout ailleurs. On reprend les
-   valeurs de `.journal-input`, le champ de saisie déjà en service sur les
-   cartes, plutôt que d'inventer une troisième apparence.
-   ============================================================ */
+/* Champ de recherche des collections : la règle de fond ci-dessus l'habille
+   désormais (elle est née de ce cas). Ne reste ici que ce qui lui est propre —
+   sa souplesse dans une barre d'outils. */
 .filter-input {
   flex: 1 1 12ch;
   min-width: 0;
+}
+.filter-input::-webkit-search-cancel-button {
+  filter: invert(1) opacity(0.6);
+  cursor: pointer;
+}
+
+/* ============================================================
+   LES COMMANDES DE FORMULAIRE, PAR DÉFAUT
+
+   L'application n'avait AUCUNE règle d'élément sur `input` / `select` /
+   `textarea` : chaque champ dépendait de sa classe ou d'une règle de panneau.
+   Un champ posé sans l'une ni l'autre gardait donc les défauts du navigateur
+   — fond blanc ou gris système, bordure `inset`, ~20px de haut — au milieu
+   d'une interface sombre.
+
+   Trois occurrences en deux jours l'ont montré : `.filter-input` (recherche
+   d'Ombres portées et de Personnages), les champs de l'assistant de création,
+   puis ceux de l'inspecteur de scène des Trames. Chaque fois le même double
+   défaut : le thème ET la cible tactile. Ce n'était pas trois bugs, c'était un
+   socle manquant.
+
+   ── Pourquoi un sélecteur d'ÉLÉMENT, et pourquoi c'est sûr ──
+   Un sélecteur d'élément a la plus faible spécificité qui soit : la moindre
+   classe (`.journal-input`, `.settings-number-input`…) et la moindre règle de
+   panneau (`#panel-matrix select`…) le surchargent sans rien changer. Il ne
+   peint donc que ce que personne n'avait peint — exactement le trou constaté.
+
+   ── Ce qui est EXCLU, et pourquoi ──
+   Cases à cocher, boutons radio, curseurs, sélecteurs de couleur et champs de
+   fichier ont leur propre rendu natif : les habiller comme une zone de texte
+   les casserait. Pour eux, c'est le `<label>` qui porte la cible tactile
+   (cf. la sélection multiple des collections).
+   ============================================================ */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="submit"]):not([type="button"]),
+select,
+textarea {
   min-height: 32px;
   padding: 0.35rem var(--sp-2);
   background: var(--bg-elev, var(--bg));
@@ -625,16 +650,15 @@
   font-family: var(--font-body);
   font-size: var(--fs-sm);
 }
-.filter-input::placeholder {
-  color: var(--text-dim);
-}
-.filter-input:focus-visible {
+input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+select:focus-visible,
+textarea:focus-visible {
   border-color: var(--accent);
   outline: none;
 }
-/* La croix native de `type="search"` reste au thème clair sous WebKit : on la
-   teinte plutôt que de la masquer — c'est un geste utile sur un filtre. */
-.filter-input::-webkit-search-cancel-button {
-  filter: invert(1) opacity(0.6);
-  cursor: pointer;
+textarea {
+  resize: vertical;
+}
+::placeholder {
+  color: var(--text-dim);
 }

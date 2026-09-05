@@ -982,42 +982,6 @@
   font-size: var(--fs-xs);
 }
 
-/* ============================================================
-   LES CHAMPS DE L'INSPECTEUR DE NŒUD (correctif 2026-09-06)
-
-   Le titre de la scène, son enjeu, son moment clé et le sélecteur de type
-   étaient posés SANS CLASSE : ils héritaient donc des défauts du navigateur
-   — fond blanc ou gris système, bordure `inset`, 20px de haut — dans un
-   panneau sombre. Ce sont pourtant les quatre champs où le meneur écrit sa
-   trame.
-
-   ⚠ TROISIÈME occurrence du même défaut (après `.filter-input` et les champs
-   de l'assistant de création, corrigés la veille) : l'application n'a aucune
-   règle de base sur `input` / `select` / `textarea`, donc une commande posée
-   sans classe ne reçoit rien. Le remède de fond est une règle d'élément à
-   faible spécificité, que toutes les classes existantes surchargeraient — un
-   changement qui touche tous les écrans et mérite sa propre passe.
-
-   Valeurs reprises de `.journal-input`, comme pour les deux précédents.
-   ============================================================ */
-.scenario-inspector input:not([type="checkbox"]):not([type="radio"]),
-.scenario-inspector select,
-.scenario-inspector textarea {
-  min-height: 32px;
-  padding: 0.35rem var(--sp-2);
-  background: var(--bg-elev, var(--bg));
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: var(--fs-sm);
-}
-.scenario-inspector textarea {
-  resize: vertical;
-}
-.scenario-inspector input:focus-visible,
-.scenario-inspector select:focus-visible,
-.scenario-inspector textarea:focus-visible {
-  border-color: var(--accent);
-  outline: none;
-}
+/* Les 4 champs de l'inspecteur de scène (titre, enjeu, moment clé, type)
+   étaient posés sans classe : troisième des trois cas qui ont motivé la règle
+   de fond de forms.css. Elle les habille désormais — plus rien ici. */
