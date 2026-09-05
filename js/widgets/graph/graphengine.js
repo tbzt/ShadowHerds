@@ -171,8 +171,8 @@ export const GraphEngine = {
       tap net (clic sans glisser). Rappeler `mount` remonte proprement. */
   mount(container, { nodes = [], edges = [], accent = "#35e0e6", onNodeTap = null, onWeave = null, onBackgroundTap = null, onEdgeTap = null, static: staticLayout = false, onNodeMoved = null } = {}) {
     this.destroy();
-    const W = Math.max(320, container.clientWidth || 640);
-    const H = Math.max(240, container.clientHeight || 460);
+    let W = Math.max(320, container.clientWidth || 640);
+    let H = Math.max(240, container.clientHeight || 460);
     // Sous-titre/casting repliés sous petite largeur (mobile) : pas assez de
     // place pour lire ces lignes sans zoomer, le titre seul reste lisible.
     const showExtra = W >= 480;
@@ -192,6 +192,27 @@ export const GraphEngine = {
         vx: 0, vy: 0, pinned: false,
       };
     });
+    /* ── LE CADRE SUIT LE CONTENU QUAND LE LAYOUT EST IMPOSÉ ──────────
+       `_clampView` documente l'invariant « le layout borne déjà les nœuds au
+       cadre, donc 1× montre tout ». Vrai de la couronne, qui se calcule DANS
+       W×H — faux du mode auteur : une trame venue d'un modèle porte des x,y
+       fixes, dessinés pour un canevas large. Sur téléphone le cadre vaut la
+       largeur du conteneur (343×300 mesurés) et les coordonnées débordent :
+       4 nœuds sur 5 tombaient hors champ, dont deux entièrement.
+
+       On élargit donc le cadre à l'étendue réelle des nœuds, demi-carte
+       comprise. `preserveAspectRatio="xMidYMid meet"` fait le reste : le
+       graphe est mis à l'échelle pour tenir, au lieu d'être rogné. Rien ne
+       change pour la couronne (son étendue est déjà dans le cadre) ni sur
+       grand écran (le cadre y est déjà assez large). */
+    if (N.length) {
+      const marge = 8;
+      const maxX = Math.max(...N.map((n) => n.x)) + HW + marge;
+      const maxY = Math.max(...N.map((n) => n.y)) + HH + marge;
+      W = Math.max(W, Math.ceil(maxX));
+      H = Math.max(H, Math.ceil(maxY));
+    }
+
     const idx = new Map(N.map((n, i) => [n.id, i]));
     const E = edges
       .map((e) => ({ ...e, a: idx.get(e.from), b: idx.get(e.to) }))

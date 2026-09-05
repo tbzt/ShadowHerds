@@ -10,6 +10,27 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.154.6] — 2026-09-06
+
+### Corrigé
+
+- **Une trame créée depuis un modèle sortait de l'écran sur téléphone.**
+  Quatre scènes sur cinq étaient rognées, dont deux entièrement invisibles :
+  les modèles portent des positions fixes, dessinées pour un canevas large, et
+  le cadre du graphe valait la largeur du conteneur. Le cadre s'ajuste
+  désormais à l'étendue réelle des scènes, et le graphe est mis à l'échelle
+  pour tenir entier. Rien ne change sur grand écran ni pour les trames
+  disposées automatiquement.
+- **Le canevas du graphe était trop court sur téléphone.** Une fois la trame
+  mise à l'échelle pour tenir, ses scènes tombaient à vingt-deux pixels — sous
+  les vingt-quatre que le projet tient pour tout ce qui se tape. Le canevas
+  gagne la hauteur qu'il visait déjà.
+- **Les champs de l'inspecteur de scène n'étaient pas habillés.** Le titre,
+  l'enjeu, le moment clé et le type de scène héritaient des défauts du
+  navigateur — fond blanc, bordure système, vingt pixels — dans un panneau
+  sombre. Troisième occurrence de ce défaut cette semaine.
+- **Le bouton d'ajout au casting était trop court d'un pixel.**
+
 ## [1.154.5] — 2026-09-05
 
 ### Corrigé
