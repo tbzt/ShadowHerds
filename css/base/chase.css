@@ -1146,6 +1146,15 @@ button.chase-tok-val.is-void {
     flex: 1 1 3rem;
     min-width: 0;
     width: 0;
+    /* CIBLE TACTILE — le nom est le geste qui ouvre la fiche du participant,
+       et il ne mesurait que 15px de haut : sous les 24px que le projet a
+       mesurés et tient partout ailleurs (cf. les cases de moniteur). Le jeton
+       en fait 44 et l'aligne au centre : il y avait 29px de marge inutilisée,
+       la cible grandit donc sans déplacer quoi que ce soit.
+       `line-height` plutôt qu'un `display: flex` : l'ellipsis d'un nom trop
+       long a besoin d'une boîte de bloc pour fonctionner. */
+    min-height: 24px;
+    line-height: 24px;
   }
   /* La barre d'attribut tenait sur trois lignes (57px) : elle se resserre
      en une ligne — la cause, l'attribut, son sens. Le coût d'un échec est

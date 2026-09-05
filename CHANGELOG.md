@@ -10,6 +10,16 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.154.3] — 2026-09-05
+
+### Corrigé
+
+- **Le nom d'un participant de la piste était trop petit pour le doigt.** Il
+  ne mesurait que 15 px de haut alors que c'est lui qui ouvre la fiche du
+  participant — sous les 24 px que le projet tient partout ailleurs. Le jeton
+  en fait 44 et centre son contenu : la cible grandit sans rien déplacer, et
+  l'abrègement des noms longs reste intact.
+
 ## [1.154.2] — 2026-09-05
 
 ### Corrigé
