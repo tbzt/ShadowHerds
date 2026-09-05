@@ -10,6 +10,28 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.154.2] — 2026-09-05
+
+### Corrigé
+
+- **Sur téléphone, des gestes étaient devenus injouables.** Le déménagement
+  des actions vers la console (1.153.0 et 1.154.0) n'avait pas tenu compte
+  d'un fait : sous 1000 px, la console n'existe pas — c'est le bandeau de
+  veille qui la remplace. Mesuré à 375 px : plus aucune action d'Atout de
+  course-poursuite, plus d'embarquement, plus de bordereau du Score de
+  Surveillance, et rien ne le disait. Les deux rangées de moteur suivent
+  désormais le bandeau, en version compacte : ce qui se décide d'un coup d'œil
+  reste en clair, les listes passent derrière un pli qui annonce leur nombre.
+- **La modale de suivi débordait de l'écran sur téléphone.** Vingt-quatre
+  pixels, assez pour couper le chevron ▼ des jetons de la piste de poursuite —
+  un contrôle, pas une décoration. La cause était ailleurs que le symptôme :
+  la grappe de gestes de la ligne du combattant actif restait incompressible
+  (356 px pour 330 disponibles), ce qui bloquait cette ligne à 374 px de
+  largeur minimale ; le corps de la modale étant une colonne flexible qui
+  aligne tous ses enfants sur la ligne la plus large, la piste débordait sans
+  y être pour rien. Les six gestes du tour passent maintenant à la ligne sous
+  641 px, sans que leur cible tactile bouge.
+
 ## [1.154.1] — 2026-09-05
 
 ### Modifié

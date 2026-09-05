@@ -2144,7 +2144,7 @@ export const EncounterRenderer = {
      Les `data-action` sont ceux de la piste — même délégation, même contrôleur,
      aucun chemin parallèle à maintenir.
      ============================================================ */
-  _chaseRow(active) {
+  _chaseRow(active, { compact = false } = {}) {
     const r = active && active.pnjId ? Pursuit.consoleRow(active.pnjId) : null;
     if (!r) return "";
     const t = r.test;
@@ -2207,12 +2207,23 @@ export const EncounterRenderer = {
     // Une monture n'a pas de siège à prendre : le geste ne s'affiche que pour
     // une personne, et il dit où elle est déjà montée.
     const monture = r.ancre && !r.ride ? "" : this._chaseBoarding(r);
-    return `<div class="encounter-chase-row">
+    // ── MONTAGE COMPACT (bandeau mobile) ─────────────────────────────
+    // Sous 1000px les rangées vivent dans le bandeau, et tout déplier y
+    // faisait 709px de haut sur un écran de 812 — la « veille » avalait
+    // l'écran qu'elle était censée rendre. Ce qui se décide d'un coup d'œil
+    // reste en clair (bande, test, déplacement) ; les LISTES passent derrière
+    // le pli, avec leur compte. Même disclosure native que le bordereau.
+    const listes = `${actes ? `<span class="ecr-acts">${actes}</span>` : ""}${atouts}${monture}`;
+    const nActes =
+      (r.actions || []).length + ((r.edge && r.edge.visibles) || []).length + (monture ? 1 : 0);
+    const corps =
+      compact && nActes
+        ? `<details class="emr-more"><summary class="emr-more-summary">+ ${nActes} action${nActes > 1 ? "s" : ""}</summary><span class="ecr-acts">${listes}</span></details>`
+        : listes;
+    return `<div class="encounter-chase-row${compact ? " is-compact" : ""}">
       <span class="ecr-lead">${r.glyph} ${Utils.escHtml(r.laneLabel)}</span>
       ${test}${retest}${cross}${moves}${ressource}
-      ${actes ? `<span class="ecr-acts">${actes}</span>` : ""}
-      ${atouts}
-      ${monture}
+      ${corps}
     </div>`;
   },
 
@@ -2248,7 +2259,7 @@ export const EncounterRenderer = {
      coûtent du SS — relevé vérifié aux deux livres — et ouvre la saisie des
      succès de défense que le joueur annonce.
      ============================================================ */
-  _matrixRow(active) {
+  _matrixRow(active, { compact = false } = {}) {
     const r = active && active.pnjId ? Intrusion.consoleRow(active.pnjId) : null;
     if (!r) return "";
     const ss =
@@ -2294,13 +2305,17 @@ export const EncounterRenderer = {
       : "";
     const bordereau =
       r.accumulates && r.illegal.length
-        ? `<span class="emr-illegal" title="Actions illégales de cette édition — un tap inscrit les succès de la défense au Score de Surveillance">${base
-            .map(puce)
-            .join("")}</span>${pli}`
+        ? compact
+          ? // Bandeau mobile : un seul pli pour tout le bordereau — le
+            // livre de base y est déjà trop long pour rester ouvert.
+            `<details class="emr-more"><summary class="emr-more-summary">+ ${r.illegal.length} action${r.illegal.length > 1 ? "s" : ""} illégale${r.illegal.length > 1 ? "s" : ""}</summary><span class="emr-illegal">${r.illegal.map(puce).join("")}</span></details>`
+          : `<span class="emr-illegal" title="Actions illégales de cette édition — un tap inscrit les succès de la défense au Score de Surveillance">${base
+              .map(puce)
+              .join("")}</span>${pli}`
         : r.illegal.length
           ? `<span class="emr-note" title="SR5 p.233 : les spiders, CI et autres utilisateurs soutenus par le DIEU n'accumulent jamais de Score de Surveillance">soutenu par le DIEU — aucun SS</span>`
           : "";
-    return `<div class="encounter-chase-row encounter-matrix-row">
+    return `<div class="encounter-chase-row encounter-matrix-row${compact ? " is-compact" : ""}">
       <span class="ecr-lead">⚡︎ ${Utils.escHtml(r.serverName)}</span>
       ${acces}${ss}${alerte}
       ${bordereau}
@@ -2345,7 +2360,24 @@ export const EncounterRenderer = {
     if (strip) strip.hidden = !enVeille;
     if (enVeille) {
       const actif = model && model.narrative ? this._narrativeFocus(rows) : rows[state.turnIndex];
-      if (strip) strip.innerHTML = this._activeStrip(actif, model);
+      // ⚠ LES RANGÉES DE MOTEUR SUIVENT LE BANDEAU (correctif mobile).
+      //
+      // Les lots F et H ont déménagé des gestes vers la CONSOLE — les
+      // manœuvres de poursuite, les actions d'Atout, l'embarquement, le
+      // bordereau du Score de Surveillance. Or sous 1000px la console n'existe
+      // pas : c'est ce bandeau qui la remplace. Mesuré à 375px : zéro action
+      // d'Atout de poursuite, zéro embarquement, zéro bordereau — des gestes
+      // devenus INJOUABLES sur téléphone, sans le moindre message.
+      //
+      // Le bandeau reste ce qu'il est (une ligne : qui agit, a-t-il payé) et
+      // les rangées le SUIVENT, dans le même hôte. Elles savent déjà se replier
+      // sur plusieurs lignes, et le pli des suppléments du bordereau leur évite
+      // de s'étaler. Un seul rendu, deux montages — même patron que la piste.
+      if (strip)
+        strip.innerHTML =
+          this._activeStrip(actif, model) +
+          this._chaseRow(actif, { compact: true }) +
+          this._matrixRow(actif, { compact: true });
       // On repart d'un état propre : au retour en scène de combat, la console
       // doit rejouer son « mode entrant » et reconstruire sa fiche, sinon le
       // cache par id la croirait déjà à l'écran.

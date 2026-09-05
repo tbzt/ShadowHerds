@@ -1119,8 +1119,26 @@
     flex-basis: 100%;
     width: 100%;
   }
+  /* ── Correctif mobile : la grappe de gestes cesse d'être incompressible ──
+     `.encounter-row` passe déjà à la ligne ici (juste au-dessus) — mais son
+     contenu, lui, refusait : `.encounter-controls` hérite d'un
+     `flex-wrap: nowrap` de sa règle de base et d'un `min-width: auto`, soit
+     356px incompressibles pour ~330 disponibles à 375px.
+
+     La conséquence n'était pas locale, et c'est ce qui la rendait difficile à
+     voir : `#encounter-active-lead` s'en trouvait bloqué à 374px de
+     min-content, et comme `.encounter-body` est un flex EN COLONNE avec
+     `wrap`, tous ses enfants s'alignent sur la ligne la plus large. Toute la
+     modale débordait donc de 24px — assez pour couper le chevron ▼ des jetons
+     de la piste de poursuite, deux blocs plus bas, qui n'y était pour rien.
+
+     Les six gestes du tour passent à la ligne plutôt que de déborder : leur
+     cible tactile ne bouge pas (24px, mesurés et tenus), seule leur
+     disposition cède. */
   .encounter-controls {
     margin-left: auto;
+    flex-wrap: wrap;
+    min-width: 0;
   }
   /* V7 — file mobile FIDÈLE à la maquette : [barre d'outils][ACTIF][console]
      [file d'attente][hors-combat][Tour suivant]. La colonne effectif est
