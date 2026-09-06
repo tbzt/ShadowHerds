@@ -437,9 +437,6 @@
 .entity-fields {
   display: contents;
 }
-.entity-fields[hidden] {
-  display: none;
-}
 
 /* ============================================================
    ANARCHY — seuils de blessures en zone Combat + armures optionnelles

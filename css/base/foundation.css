@@ -9,6 +9,23 @@
   padding: 0;
 }
 
+/* L'attribut `hidden` doit gagner. La feuille du navigateur lui donne bien
+   `display: none`, mais c'est une regle UA : la moindre regle d'AUTEUR qui
+   pose un display la bat, et le projet en pose partout (`.cluster`, les
+   surfaces en `flex`...). Un element marque `hidden` restait donc affiche,
+   ou — plus sournois — invisible mais occupant sa place : `#pin-row` etait
+   dans ce cas et volait 125 px au fil d'Ariane sur un ecran de telephone.
+   Le piege etait deja connu, et paye SEPT fois en local (`.tour-root`,
+   `.whatsnew-root`, `.card-menu`, `.contact-pjlink-menu`, `.ms-dropdown`,
+   `.ss-dropdown`, `.status-sheet`) — le commentaire de interactive-content.css
+   le documente meme « apres le bug », deux fois. Ce n'etait pas sept defauts
+   mais un socle manquant. `!important` est ici a sa place : c'est le seul
+   moyen qu'un attribut de plateforme prime sur une regle de classe, et il n'y
+   a aucun cas legitime ou l'on veut afficher ce qu'on a marque cache. */
+[hidden] {
+  display: none !important;
+}
+
 /* Variables typographiques par défaut — surchargées par thème d'édition */
 :root {
   --font-display: "Rajdhani", sans-serif;
@@ -776,17 +793,39 @@ select optgroup {
   display: none;
 }
 .context-row .topbar-locator {
+  /* 75 % et non 60 % : les epingles en face sont en `flex: 1 1 0; min-width: 0`
+     avec leur propre rail a barre visible — elles cedent proprement, alors que
+     le fil, lui, se coupait. Priorite au « ou suis-je » : c'est le cadre de
+     tout le reste de l'ecran, et il ne pese que quelques puces courtes. A
+     375 px, ce quart supplementaire suffit a garder la pastille « En cours »
+     — le seul maillon qui declenche une action — dans le champ. */
   flex: 0 1 auto;
-  max-width: 60%;
+  max-width: 75%;
   padding-inline: 0;
   background: none;
   border-bottom: 0;
+}
+/* Le plafond a 60 % n'a de sens que s'il y a des epingles a droite pour
+   occuper le reste de la rangee. Sans elles, il amputait le fil d'Ariane au
+   profit de 40 % de vide — mesure a 375 px : 158 px de fil hors champ, dont
+   la pastille « En cours », alors que la moitie droite de la rangee etait
+   inoccupee. Le fil prend alors toute la largeur. */
+.context-row:not(:has(#pin-row:not([hidden]))) .topbar-locator {
+  max-width: none;
 }
 .tb-crumb {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  flex-shrink: 0; /* chaque échelle garde sa largeur ; le locator scrolle si besoin */
+  /* Loi 5 — le contenu defile, les choix non. Les maillons refusaient de se
+     comprimer (`flex-shrink: 0`) et le fil debordait en defilant : sur
+     telephone, le dernier maillon — celui qui dit ou l'on EST — partait hors
+     champ. On prefere rogner un NOM : un nom rogne reste un maillon present,
+     visible et cliquable, son icone d'echelle et son `title` disent le reste ;
+     un maillon pousse hors champ, lui, n'existe plus. Le plancher garde
+     l'icone et quelques lettres, jamais une puce nue. */
+  flex-shrink: 1;
+  min-width: 7ch;
   max-width: 15ch;
   padding: 3px var(--sp-2);
   border: 0;
@@ -822,6 +861,17 @@ select optgroup {
 }
 /* Chip de scène vivante : accentué + pastille pulsée. Affordance « reprendre ». */
 .tb-crumb-scene.is-live {
+  /* Seul maillon qui declenche une ACTION (reprendre la scene) au lieu d'une
+     navigation, et son libelle est deja court : il ne se comprime jamais.
+     Il COLLE au bord droit : quand le chemin est trop long pour la rangee, ce
+     sont les etapes qui defilent, jamais le geste. Sur un chemin profond a
+     375 px, c'etait precisement lui qui sortait du champ — le comble pour le
+     seul element actionnable de la barre. */
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background: var(--bg-card);
+  flex-shrink: 0;
   color: var(--accent);
   font-weight: 600;
 }
@@ -854,6 +904,13 @@ select optgroup {
 /* Déclencheur du sélecteur de contexte (R3-C) — en tête du fil d'Ariane et
    dans le bloc-note. Discret, s'accentue au survol/ouvert. */
 .ctx-trigger {
+  /* Ancre gauche du fil d'Ariane : le declencheur « aller ailleurs » colle au
+     bord, comme la pastille « En cours » colle a droite. Entre les deux, seul
+     le CHEMIN defile — les deux commandes restent atteignables quelle que
+     soit la profondeur. Loi 5 : le contenu defile, les choix non. */
+  position: sticky;
+  left: 0;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);

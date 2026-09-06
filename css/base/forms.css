@@ -257,10 +257,6 @@
   display: flex;
   flex-direction: column;
 }
-.ms-dropdown[hidden],
-.ss-dropdown[hidden] {
-  display: none;
-}
 .ms-dropdown-tools {
   align-items: stretch;
   flex-wrap: nowrap;
@@ -315,9 +311,6 @@
   accent-color: var(--accent);
   flex-shrink: 0;
   cursor: pointer;
-}
-.ss-opt[hidden] {
-  display: none;
 }
 .ss-opt.active {
   background: var(--glow);
@@ -597,7 +590,6 @@
 .tab-panel.active {
   display: block;
 }
-
 
 /* Champ de recherche des collections : la règle de fond ci-dessus l'habille
    désormais (elle est née de ce cas). Ne reste ici que ce qui lui est propre —

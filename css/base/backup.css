@@ -14,9 +14,6 @@
   transition: opacity var(--dur-base) ease;
   padding: var(--sp-4);
 }
-.backup-overlay[hidden] {
-  display: none;
-}
 .backup-overlay.show {
   opacity: 1;
 }

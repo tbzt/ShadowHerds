@@ -218,14 +218,6 @@
   border: 1px dashed var(--border);
   border-radius: var(--radius-sm);
 }
-/* [hidden] pose display:none via la feuille UA, mais le display:flex ci-dessus
-   est une règle d'AUTEUR et le battrait — même piège que .react-damage-chips,
-   documenté là-bas après le bug. */
-.status-sheet[hidden],
-.status-rest[hidden],
-.action-rest[hidden] {
-  display: none;
-}
 /* ── A3 : « tous… » ne se déplie plus EN PLACE ───────────────────────────────
    MESURÉ (SR6, Console 520px, fenêtre utile 614px) : la feuille d'actions
    dépliée faisait 1371px, soit 2,2 fenêtres. Le MJ perdait le haut de la
@@ -687,9 +679,6 @@
 .card-peek-nav:hover,
 .card-peek-close:hover {
   color: var(--accent);
-}
-.card-peek-nav[hidden] {
-  display: none;
 }
 .card-peek-body {
   overflow-y: auto;

@@ -10,6 +10,36 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.155.2] — 2026-09-06
+
+### Corrigé
+
+- **Le fil d'Ariane se coupait sur téléphone.** Il annonce où l'on est —
+  campagne, run, scène — et c'est sa seule fonction ; mesuré à trois cent
+  soixante-quinze pixels, il en cachait cent cinquante-huit, dont la pastille
+  « En cours », le seul élément de la barre qui déclenche une action au lieu
+  d'une navigation. Trois causes se superposaient. La rangée d'épingles, à
+  côté, était marquée masquée mais occupait quand même cent vingt-cinq
+  pixels. Le plafond de largeur du fil s'appliquait même lorsqu'il n'y avait
+  aucune épingle en face, lui prenant un quart de la rangée au profit de rien.
+  Et ses maillons refusaient de se comprimer, si bien qu'ils débordaient au
+  lieu de rogner un nom — alors qu'un nom rogné reste un maillon présent et
+  cliquable, là où un maillon poussé hors de l'écran n'existe plus. Les trois
+  sont corrigées, et surtout les deux commandes du fil deviennent des ancres :
+  le sélecteur de contexte tient le bord gauche, « En cours » le bord droit,
+  et seul le chemin défile entre elles. Quelle que soit la profondeur, les
+  deux gestes restent atteignables.
+- **L'attribut `hidden` ne masquait pas toujours.** Le navigateur lui donne
+  bien `display: none`, mais c'est une règle de sa propre feuille : la moindre
+  règle du projet qui pose un affichage la battait, et le projet en pose
+  partout. Un élément marqué masqué pouvait donc rester visible, ou — plus
+  sournois — devenir invisible tout en occupant sa place, ce qui était
+  exactement le cas de la rangée d'épingles. Le piège était connu et payé
+  vingt-trois fois, une garde à la fois, dans huit feuilles de style ; deux
+  commentaires le documentaient même « après le bug ». Ce n'était pas
+  vingt-trois défauts mais un socle manquant : il existe désormais, et les
+  vingt-trois gardes devenues inutiles ont été retirées.
+
 ## [1.155.1] — 2026-09-06
 
 ### Corrigé

@@ -2218,9 +2218,6 @@ body.reordering .reorder-handle {
   border-color: var(--accent);
   outline: none;
 }
-.contact-pjlink-menu[hidden] {
-  display: none;
-}
 .contact-pjlink-menu {
   gap: 2px;
   position: absolute;

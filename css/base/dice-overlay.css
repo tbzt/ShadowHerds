@@ -176,9 +176,6 @@
   opacity: 0;
   transition: opacity var(--dur-base) ease;
 }
-.dice-overlay[hidden] {
-  display: none;
-}
 .dice-overlay.show {
   opacity: 1;
 }
@@ -590,9 +587,6 @@
   transition: opacity var(--dur-base) ease;
   padding: var(--sp-4);
 }
-.risk-panel-overlay[hidden] {
-  display: none;
-}
 .risk-panel-overlay.show {
   opacity: 1;
 }
@@ -928,9 +922,6 @@ input[type="range"]#risk-dice-slider {
    d'Atout. Aucune primitive neuve — elle emprunte au gain d'Atout voisin
    (enveloppe), à la feuille d'actions (rangées, ternissure) et au témoin de
    recul (marqueurs chiffrés). Zéro token inventé, zéro cinquième teinte. */
-#preroll-attack[hidden] {
-  display: none; /* le `display:flex` auteur bat [hidden] de l'UA sans cette ligne */
-}
 #preroll-attack {
   padding: var(--sp-2) 0;
   border-top: 1px solid var(--border);
@@ -1052,9 +1043,6 @@ input[type="range"]#risk-dice-slider {
 
 /* Gain d'Atout SR6 (SO vs SD) — section conditionnelle au-dessus des options
    de dépense. Réutilise les tokens du panneau de risque. */
-#preroll-gain[hidden] {
-  display: none;
-}
 #preroll-gain {
   padding: var(--sp-2) 0;
   border-top: 1px solid var(--border);
@@ -1349,7 +1337,6 @@ input[type="range"]#risk-dice-slider {
 .init-clear:hover {
   opacity: 1;
 }
-
 
 /* ---- Pas −/+ de la cellule d'Essence (D2b) -------------------------------
    L'Essence est la seule valeur d'attribut qu'on change EN JEU (drain d'un

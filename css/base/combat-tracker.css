@@ -673,9 +673,6 @@
 .encounter-matrix-inline {
   display: none;
 }
-.encounter-matrix-inline[hidden] {
-  display: none;
-}
 /* Gaté sur le MOTEUR (`has-matrix`), pas sur « il est seul » : allumer la
    Matrice à côté d'un combat ne montrait rien, ni panneau ni invite. */
 .encounter-modal.has-matrix .encounter-matrix-inline:not([hidden]) {
@@ -1381,9 +1378,6 @@ button.encounter-token-init:active {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
 }
-.encounter-active-card[hidden] {
-  display: none;
-}
 /* Température par le TOUR (« Agir produit / Réagir subit », D2). Agir = lavis
    chaud --accent + halo ; Réagir = acier froid --cold plat. Rouvre assumé le
    « pas de 3ᵉ couleur » du polish K (--cold est sémantique hors accent
@@ -1602,9 +1596,6 @@ button.encounter-token-init:active {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-dim);
-}
-.encounter-noise[hidden] {
-  display: none;
 }
 .encounter-noise-lbl {
   font-family: var(--font-mono);
@@ -2183,12 +2174,6 @@ button.encounter-token-init:active {
   border: 1px dashed color-mix(in srgb, var(--danger) 45%, var(--border));
   border-radius: var(--radius-lg);
 }
-/* L'attribut [hidden] pose display:none via la feuille UA, mais display:flex
-   ci-dessus (règle d'auteur) le battrait — sans cette garde, les chips restent
-   affichées en permanence et « Dégâts » ne déplie rien (bug corrigé). */
-.react-damage-chips[hidden] {
-  display: none;
-}
 
 /* ---- G4 : les USAGES du Contresort, dépliés par le ✦ ----
    Même gabarit que les deux rangées voisines (dégâts, interruptions) : on ne
@@ -2206,9 +2191,6 @@ button.encounter-token-init:active {
   padding: 0.4rem;
   border: 1px dashed color-mix(in srgb, var(--accent) 40%, var(--border));
   border-radius: var(--radius-sm);
-}
-.react-cs-chips[hidden] {
-  display: none;
 }
 /* La RÉSERVE (SR5) : des dés qu'on alloue, jamais qu'on lance — d'où des ±
    et un compteur, pas une rollable. Vocabulaire repris tel quel de la rangée
@@ -2277,9 +2259,6 @@ button.encounter-token-init:active {
   padding: 0.4rem;
   border: 1px dashed var(--border);
   border-radius: var(--radius-sm);
-}
-.react-interrupt-chips[hidden] {
-  display: none;
 }
 /* Le coût, accolé au libellé : c'est lui qui décide si l'action est possible,
    il se lit donc sans ouvrir le title. Même traitement pour le malus de
@@ -2370,9 +2349,6 @@ button.encounter-token-init:active {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-dim);
-}
-.encounter-threat[hidden] {
-  display: none;
 }
 .encounter-threat-lbl {
   font-family: var(--font-mono);
@@ -2513,11 +2489,6 @@ button.encounter-token-init:active {
   padding-bottom: var(--sp-2);
   margin-bottom: var(--sp-2);
   border-bottom: 1px solid var(--border);
-}
-/* Sans ce sélecteur, le display:flex ci-dessus l'emporte sur l'attribut
-   [hidden] et le bloc reste affiché (« Tour suivant / — ») hors combat. */
-.sidebar-encounter[hidden] {
-  display: none;
 }
 .sidebar-encounter-turn {
   flex-wrap: nowrap;
@@ -2711,7 +2682,6 @@ kbd {
   width: 10px;
 }
 
-
 /* ============================================================
    LOT 3 — LA CONSOLE EN VEILLE (`.encounter-active-strip`)
 
@@ -2723,9 +2693,6 @@ kbd {
    largeur, c'est la casser ; on la remplace par une ligne qui dit ce que la
    poursuite consomme — qui agit, et a-t-il payé son action.
    ============================================================ */
-.encounter-active-strip[hidden] {
-  display: none;
-}
 .encounter-strip {
   gap: var(--sp-2);
   align-items: center;

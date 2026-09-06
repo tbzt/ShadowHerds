@@ -5,7 +5,6 @@
 /* Visibilité pilotée par l'attribut [hidden] uniquement (robuste : ne dépend
    d'aucune transition/rAF, qui gèlent en onglet masqué). */
 .tour-root { position: fixed; inset: 0; z-index: var(--z-command); pointer-events: none; }
-.tour-root[hidden] { display: none; }
 .tour-scrim { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); pointer-events: auto; }
 /* L'anneau SAUTE d'une cible à l'autre (pas de transition de position) : plus
    lisible qu'un glissement, et robuste (une transition gèle en onglet masqué,
@@ -39,7 +38,6 @@
 }
 
 .whatsnew-root { position: fixed; inset: 0; z-index: var(--z-command); }
-.whatsnew-root[hidden] { display: none; }
 .wn-scrim { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); }
 .wn-panel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(440px, calc(100vw - 24px)); max-height: min(80vh, 640px); display: flex; flex-direction: column; background: var(--bg-overlay); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--elev-2); }
 .wn-head {
