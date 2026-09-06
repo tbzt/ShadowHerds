@@ -2592,7 +2592,7 @@ export const EncounterRenderer = {
     const combatHtml = this._icCombatChips(M, host, ic, m.icKey, rollId, label, [
       ["atk", "⚔", "Attaque"],
       ["def", "⛉", "Défense"],
-      ["soak", "⛊", "Encaisser"],
+      ["soak", "✳", "Encaisser"],
       ["per", "◎", "Perception"],
     ]);
     const rollsHtml = combatHtml ? `<div class="cluster encounter-ic-rolls">${combatHtml}</div>` : "";
@@ -2626,7 +2626,7 @@ export const EncounterRenderer = {
       l'établit via _narrativeFocus), donc taper la ligne d'un PJ ouvre bien la
       console — c'est là qu'on lit les fiches, applique des blessures et retire
       des points. Chaque ligne (`_reactPnjRow`) porte les gestes que l'ÉDITION
-      expose (⛉ Défense, ⛨ Défense totale si `fullDefenseFor`, ⛊ Encaisser si
+      expose (⛉ Défense, ⛨ Défense totale si `fullDefenseFor`, ✳ Encaisser si
       `combatModel.hasSoak`, ✸ Dégâts), lus à l'aveugle — jamais branchés ici.
       Les réserves (`data-roll`) passent par le handler global de DiceRoller. */
   _renderReactionConsole(box, rows, active, modeEnter, state) {
@@ -2667,7 +2667,7 @@ export const EncounterRenderer = {
     </div>`;
   },
 
-  /** Ligne de réaction d'un PNJ chair : ⛉ Défense [· ⛨ Défense totale] [· ⛊
+  /** Ligne de réaction d'un PNJ chair : ⛉ Défense [· ⛨ Défense totale] [· ✳
       Encaisser] · ✸ Dégâts (réserves portées par la carte, via data-roll →
       DiceRoller) + ⛶ qui ouvre la fiche en coup d'œil (CardPeek, swipe). Les
       gestes présents sont lus sur le module (`combatModel.hasSoak`,
@@ -2733,7 +2733,7 @@ export const EncounterRenderer = {
     //
     // Le contrôle se TERNIT et dit pourquoi — il ne disparaît pas : le MJ doit
     // voir ce qu'il ne peut pas payer autant que le reste (« informer, jamais
-    // décider »), et c'est déjà le traitement du ⛉/⛊ sans réserve, deux
+    // décider »), et c'est déjà le traitement du ⛉/✳ sans réserve, deux
     // boutons plus loin. La porte lit `Encounter.interruptOptions`, qui est le
     // point unique — même prédicat que l'exécution, pas une copie.
     const interruptOpts = plusieurs ? Encounter.interruptOptions(pnj.id) : [];
@@ -2752,7 +2752,7 @@ export const EncounterRenderer = {
     // G4 — CONTRER UN SORT, la réaction du magicien. Elle vivait dans la
     // feuille d'actions du combattant ACTIF, où elle ne pouvait pas servir : le
     // livre la note `(L)`, on contre le sort de quelqu'un d'AUTRE. Sa place est
-    // ici, entre ⛨ Défense totale et ⛊ Encaissement — l'ordre de la séquence
+    // ici, entre ⛨ Défense totale et ✳ Encaissement — l'ordre de la séquence
     // que le MJ joue déjà (le PJ lance, le magicien contre, le PNJ défend,
     // encaisse). Absente pour qui n'a pas la compétence de l'édition, absente
     // dans les éditions qui n'en déclarent pas (SR5 : sa « Défense contre
@@ -2786,8 +2786,8 @@ export const EncounterRenderer = {
     const soakBtn = !(cm && cm.hasSoak)
       ? ""
       : soak >= 1
-        ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${name}" data-roll-pnj="${pnj.id}" title="Résistance aux dommages (${soak} dés)" aria-label="Encaissement — ${name} (${soak} dés)"><span class="react-glyph" aria-hidden="true">⛊</span> ${soak}</button>`
-        : `<span class="react-btn is-off" title="Pas de réserve d'encaissement"><span class="react-glyph" aria-hidden="true">⛊</span> —</span>`;
+        ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${name}" data-roll-pnj="${pnj.id}" title="Résistance aux dommages (${soak} dés)" aria-label="Encaissement — ${name} (${soak} dés)"><span class="react-glyph" aria-hidden="true">✳</span> ${soak}</button>`
+        : `<span class="react-btn is-off" title="Pas de réserve d'encaissement"><span class="react-glyph" aria-hidden="true">✳</span> —</span>`;
     // « Dégâts » : un résultat NET (déjà résisté), jamais un brut recalculé.
     // damageUI() lu sur le module (jamais une branche) : chips numériques P/S
     // (SR5/SR6) ou crans de gravité colorés (Anarchy, cf. _reactDamageChips).
@@ -3042,7 +3042,7 @@ export const EncounterRenderer = {
     const rawName = r.name || (r.pnj && r.pnj.name) || "CI";
     const chips = this._icCombatChips(M, host, ic, m.icKey, rollId, rawName, [
       ["def", "⛉", "Défense"],
-      ["soak", "⛊", "Encaisser"],
+      ["soak", "✳", "Encaisser"],
     ]);
     // Repli défensif si l'édition n'expose pas de régime de combat de CI.
     const buttons =
@@ -3233,7 +3233,7 @@ export const EncounterRenderer = {
   },
 
   /** Une ligne du bilan. Trois natures, trois verbes :
-      · dégât résisté   → ⛊ le jet d'encaissement, réserve du PNJ
+      · dégât résisté   → ✳ le jet d'encaissement, réserve du PNJ
       · dégât net       → ✸ l'application directe (le livre dit « non résisté »)
       · test de round   → ⚄ le jet, avec son seuil du moment
       · durée échue     → aucun bouton propre, la purge groupée s'en charge */
@@ -3244,7 +3244,7 @@ export const EncounterRenderer = {
       const type = l.type === "stun" ? "E" : l.type === "choice" ? "P ou E" : "P";
       const soak = l.pnj.damageResist || 0;
       const geste = l.resisted
-        ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${nom}" data-roll-pnj="${l.pnj.id}" title="Résister à ${l.vd}${type}"><span class="react-glyph" aria-hidden="true">⛊</span> ${soak}</button>`
+        ? `<button class="react-btn" data-roll="${soak}" data-roll-label="Encaissement — ${nom}" data-roll-pnj="${l.pnj.id}" title="Résister à ${l.vd}${type}"><span class="react-glyph" aria-hidden="true">✳</span> ${soak}</button>`
         : `<button class="react-btn react-btn-danger" data-action="round-apply" data-idx="${i}" title="Dégâts déjà nets — le livre dit « non résisté »"><span class="react-glyph react-glyph-danger" aria-hidden="true">✸</span> ${l.vd}${type}</button>`;
       return `<div class="cluster round-line" data-todo>
         <span class="round-line-who">${nom}</span>
@@ -3411,7 +3411,7 @@ export const EncounterRenderer = {
     return [
       { keys: "⛉", html: "<strong>Défense</strong> — le PNJ (ou la CI) esquive/pare un test." },
       { keys: "⛨", html: "<strong>Défense totale</strong> — +Volonté à la défense pour le round (SR5 : −10 init)." },
-      { keys: "⛊", html: "<strong>Encaisser</strong> — résistance aux dommages (SR5/SR6 ; Anarchy n'a pas de jet)." },
+      { keys: "✳", html: "<strong>Encaisser</strong> — résistance aux dommages (SR5/SR6 ; Anarchy n'a pas de jet)." },
       { keys: "✸", html: "<strong>Dégâts</strong> — applique un résultat déjà résisté (net) au moniteur." },
       { keys: "＋", html: "<strong>Poser un état</strong> — Enflammé, Aveuglé… le catalogue de l'édition ; le tap sur un état posé monte d'un cran, le ✕ le retire." },
       { keys: "⚔", html: "Envoyer au <strong>combat</strong> / rejoindre l'initiative." },

@@ -100,7 +100,7 @@ Object.assign(CardRenderer, {
     });
     combatBody += this._rollPill("Encaissement", pnj.damageResist, {
       title: "Résistance aux dommages : Constitution seule (l'armure est un Score Défensif séparé, non affectée par le malus de blessure)",
-      glyph: "⛊",
+      glyph: "✳",
       key: "damageResist",
       deps,
       pnj,

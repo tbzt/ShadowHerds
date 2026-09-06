@@ -121,7 +121,7 @@ Object.assign(CardRenderer, {
     });
     combatBody += this._rollPill("Encaissement", pnj.damageResist, {
       title: "Résistance aux dommages : Constitution + armure (non affectée par le malus de blessure)",
-      glyph: "⛊",
+      glyph: "✳",
       key: "damageResist",
       pnj,
       deps,

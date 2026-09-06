@@ -10,6 +10,19 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.155.5] — 2026-09-06
+
+### Modifié
+
+- **« Encaisser » n'est plus un troisième bouclier.** Trois boucliers se
+  suivaient dans le cockpit — défense, défense totale, encaissement — et le
+  troisième était indiscernable du premier à la taille où on le lit vraiment.
+  L'encaissement prend une étincelle : c'est un impact absorbé, pas une garde
+  de plus. Le trait est ouvert, ce qui le distingue aussi de l'éclat plein des
+  « Dégâts » juste à côté, avec lequel il partage une rangée. Le changement
+  vaut partout où le geste apparaît — la console de réaction, les pastilles
+  de jet des fiches SR5 et SR6, la bande de dégâts d'un round, la légende.
+
 ## [1.155.4] — 2026-09-06
 
 ### Corrigé

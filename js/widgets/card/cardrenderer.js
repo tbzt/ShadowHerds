@@ -1011,7 +1011,7 @@ export const CardRenderer = {
       key: "identites",
       label: "Identités",
       // ▤ : aucun glyphe « carte d'identité » n'existait dans le vocabulaire
-      // établi (⚔⛉⛊◎⚡✸✦❖◈ tous pris ou hors-sujet), et le seul vrai de
+      // établi (⚔⛉✳◎⚡✸✦❖◈ tous pris ou hors-sujet), et le seul vrai de
       // l'Unicode (l'emoji « carte d'identité ») est en couleur et jurerait dans le rail
       // en trait. ▤ (carré rempli de lignes) lit « carte + lignes de texte ».
       glyph: "▤",
@@ -2170,7 +2170,7 @@ export const CardRenderer = {
      angles morts (tour d'un PNJ, PJ, combattant à terre) n'ont d'issue que par
      la carte, qui garde donc l'ancrage. Mais le cas le plus fréquent de la
      table est précisément celui que la console couvre : le PJ lance un sort,
-     le PNJ défend (⛉), encaisse (⛊), prend ses cases (✸) — et ressort
+     le PNJ défend (⛉), encaisse (✳), prend ses cases (✸) — et ressort
      Enflammé. Envoyer le MJ ouvrir une fiche pour le dernier tiers d'une
      séquence qu'il vient de jouer en trois taps, c'est casser la séquence.
      `statusRow` sert donc la MÊME ligne à la console de réaction : un second

@@ -47,7 +47,7 @@
   opacity: 1;
 }
 
-/* Glyphe sémantique des pastilles combat (D9) — ⛉ dévier / ⛊ absorber, repris
+/* Glyphe sémantique des pastilles combat (D9) — ⛉ dévier / ✳ absorber, repris
    du patron .react-glyph (console de réaction), un seul glyphe par pastille. */
 .pill-glyph {
   color: var(--accent);
@@ -1257,7 +1257,7 @@ input[type="range"]#risk-dice-slider {
    nu de la pastille reste un lancer immédiat, loi 3). Sobre, typographique :
    le libellé est le nom VF de la ressource de l'édition (« Chance » SR5,
    « Atout » SR6, « Anarchy » A1 — cf. preRollEdge.resourceLabel/resourceShort),
-   jamais un glyphe : aucun symbole établi (⚔⛉⛊◎⚡✸) ne porte ce concept, cf.
+   jamais un glyphe : aucun symbole établi (⚔⛉✳◎⚡✸) ne porte ce concept, cf.
    vocabulaire de glyphes existant. La largeur suit le mot (padding, pas de
    largeur figée). Cible tactile ≥24px (doctrine V0-c). */
 .edge-preroll {
