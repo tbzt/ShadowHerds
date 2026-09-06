@@ -352,7 +352,7 @@ export const Collection = {
 
       /** Épingle rapide (A2b) dans le pied de carte : bascule le tag réservé
           `Tags.PINNED`, lu via `UI.isPinned` (l'épingle vit sur l'entité, plus de
-          nœud « Favoris »). A4-bis.2 a retiré le 🏷 « Groupes » (GroupPicker) qui
+          nœud « Favoris »). A4-bis.2 a retiré la puce « Groupes » (GroupPicker) qui
           l'accompagnait : le rangement du Monde se fait par TAGS/Factions, plus par
           appartenance de dossier. Réutilise la classe `group-picker-trigger`
           (géométrie du pied), aucun CSS neuf. */
@@ -374,7 +374,7 @@ export const Collection = {
       },
 
       /** Poignée de réorganisation (Vague B1), dans le pied-gauche à côté de
-          ★/🏷 — jamais de contrôle au repos (doctrine « Chrome de carte »),
+          ★ — jamais de contrôle au repos (doctrine « Chrome de carte »),
           révélée uniquement par la classe `reordering` sur <body> (posée
           par ReorderMode). Un vrai <button> focusable : les flèches ↑/↓ au
           clavier sont le canal d'accessibilité de base, le glisser au

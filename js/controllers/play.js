@@ -1373,7 +1373,7 @@ export const Play = {
       );
     if (t.planUtile) {
       btns.push(
-        `<button class="btn-secondary btn-small" data-action="play-map" data-id="${t.id}" title="Plan tactique du lieu (généré, gratuit)">🗺 Plan tactique</button>`,
+        `<button class="btn-secondary btn-small" data-action="play-map" data-id="${t.id}" title="Plan tactique du lieu (généré, gratuit)">▦ Plan tactique</button>`,
       );
       const iaOn = typeof Settings !== "undefined" && Settings.getPortraitSettings().enabled;
       if (iaOn)
@@ -1547,7 +1547,7 @@ export const Play = {
             <button class="btn-icon-tiny" data-action="play-notes" data-dossier="${s.id}" title="Carnet de « ${name} »">✎</button>
             <button class="btn-secondary btn-small" data-action="play-resume" data-dossier="${s.id}" title="${playTitle}">${playLabel}</button>
           </div>
-          ${cast || `<div class="play-scene-castempty">Personne de rangé — glissez une fiche ou utilisez 🏷 sur une carte.</div>`}
+          ${cast || `<div class="play-scene-castempty">Personne de rangé — glissez une fiche, ou utilisez « ＋ convoquer ».</div>`}
         </div>`;
       })
       .join("");

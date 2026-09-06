@@ -1012,7 +1012,7 @@ export const CardRenderer = {
       label: "Identités",
       // ▤ : aucun glyphe « carte d'identité » n'existait dans le vocabulaire
       // établi (⚔⛉⛊◎⚡✸✦❖◈ tous pris ou hors-sujet), et le seul vrai de
-      // l'Unicode — 🪪 — est un emoji en couleur qui jurerait dans le rail
+      // l'Unicode (l'emoji « carte d'identité ») est en couleur et jurerait dans le rail
       // en trait. ▤ (carré rempli de lignes) lit « carte + lignes de texte ».
       glyph: "▤",
       // Promue en haut, juste après Incarnation (cf. `_bodyFor`) : la SIN est
@@ -2680,7 +2680,7 @@ export const CardRenderer = {
   /* ---- Footer ---- */
   /* Grammaire de pied unifiée (voir CONTRIBUTING « Chrome de carte ») : on
      décrit les actions, CardFooter les dispose (secondaire + primaire + ⋯).
-     Seul le primaire porte un glyphe. Le socle préfixe ★/🏷 à gauche. */
+     Seul le primaire porte un glyphe. Le socle préfixe ★ à gauche. */
   _footer(pnj, actions, deps = CardRenderer.liveDeps()) {
     if (this.isContact(pnj)) return this._footerContact(pnj, deps);
     const id = pnj.id;

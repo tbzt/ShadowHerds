@@ -1236,7 +1236,7 @@ export const EncounterRenderer = {
       decker↔decker. */
   _activeTop(r, state) {
     // V7 Lot 4 — le BRICKAGE a quitté Agir : une arme brickée, le PNJ la SUBIT
-    // (le PJ decker l'attaque à SON tour) → le bloc 🔌 vit dans la console
+    // (le PJ decker l'attaque à SON tour) → le bloc ▥ vit dans la console
     // Réagir (_reactDevices). Le duel decker↔decker RESTE ici : c'est l'offense
     // d'un PNJ decker à son propre tour.
     return (
@@ -1276,7 +1276,7 @@ export const EncounterRenderer = {
     const srv = Servers.find(targetId);
     if (!srv) return "";
     return `<div class="stack encounter-active-badges">
-      <button class="btn-secondary btn-small" data-action="link-server" data-id="${srv.id}" title="Lier ${Utils.escHtml(srv.name)} à la scène">🔗 Lier ${Utils.escHtml(srv.name)} à la scène</button>
+      <button class="btn-secondary btn-small" data-action="link-server" data-id="${srv.id}" title="Lier ${Utils.escHtml(srv.name)} à la scène">⧉ Lier ${Utils.escHtml(srv.name)} à la scène</button>
     </div>`;
   },
 
@@ -1294,7 +1294,7 @@ export const EncounterRenderer = {
       `_rows`), scène-scopé — cf. Encounter.targetDevice. */
   /** V7 Lot 4 — appareils matriciels CIBLABLES dans la console Réagir : au tour
       d'un PJ (souvent le decker), les armes connectées des PNJ qui réagissent
-      deviennent des cibles de brickage (le PNJ les SUBIT). Un bloc 🔌 unique,
+      deviennent des cibles de brickage (le PNJ les SUBIT). Un bloc ▥ unique,
       groupé par propriétaire, après les lignes de réaction. Reprend le régime
       d'édition (Matrix.deviceBricking()==="monitor", jamais un `if App.edition`),
       le gate contexte Matrice (Silk), l'exclusion des mains nues (deviceConnected)
@@ -1317,7 +1317,7 @@ export const EncounterRenderer = {
     }
     if (!blocks.length) return "";
     return `<div class="stack encounter-devices encounter-react-devices">
-      <div class="encounter-devices-lbl">🔌 Appareils matriciels ciblables — le decker les brique</div>
+      <div class="encounter-devices-lbl">▥ Appareils matriciels ciblables — le decker les brique</div>
       ${blocks.join("")}
     </div>`;
   },
@@ -1474,13 +1474,13 @@ export const EncounterRenderer = {
       const options = protectors.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join("");
       return `<span class="encounter-device-protect">
         <select class="encounter-device-protector-select" aria-label="Decker protecteur">${options}</select>
-        <button class="react-btn" data-action="device-protect" ${idAttrs} title="Ce decker protège l'appareil de son Firewall">🛡️ Protéger</button>
+        <button class="react-btn" data-action="device-protect" ${idAttrs} title="Ce decker protège l'appareil de son Firewall">⎔ Protéger</button>
       </span>`;
     }
     const protector = PnjLookup.find(d.protectorId);
     const protectorName = protector ? esc(protector.name) : "?";
     return `<span class="encounter-device-protect">
-      <span class="encounter-device-protector-badge status is-accent">🛡️ ${protectorName}</span>
+      <span class="encounter-device-protector-badge status is-accent">⎔ ${protectorName}</span>
       <button class="react-btn" data-action="device-defense" ${idAttrs}>Défense</button>
       <button class="react-btn" data-action="device-unprotect" ${idAttrs} title="Retirer la protection" aria-label="Retirer la protection">✕</button>
     </span>`;
@@ -2512,7 +2512,7 @@ export const EncounterRenderer = {
         // piste d'initiative des yeux. Bannir depuis la ligne coûte 2 gestes ; les
         // deux verbes sont symétriques, leur coût allait de 1 à 4,5.
         //
-        // ⚠️ Le commentaire de `_spiritChipRow` affirmait que ces affordances
+        // ⚠ Le commentaire de `_spiritChipRow` affirmait que ces affordances
         // vivaient « aussi dans l'Agir du tracker (même renderer) ». C'était FAUX :
         // les éditions l'ajoutent à `combatBody`, or la console ne monte pas la
         // carte entière — elle compose `offenseBlocks`, qui ne la contient pas.
@@ -2642,7 +2642,7 @@ export const EncounterRenderer = {
     const rowsHtml = targets
       .map((r) => (r.kind === "matrix" ? this._reactMatrixRow(r) : this._reactPnjRow(r, st)))
       .join("");
-    // V7 Lot 4 — bloc 🔌 des appareils brickables (le decker attaque le matos
+    // V7 Lot 4 — bloc ▥ des appareils brickables (le decker attaque le matos
     // PNJ à son tour), après les lignes de réaction. Vide hors scène Matrice.
     const devicesHtml = this._reactDevices(targets, state || Encounter.state || {});
     // Polish DA : bandeau de mode FROID nommant le PJ actif (tue l'erreur de
@@ -3419,8 +3419,8 @@ export const EncounterRenderer = {
       { keys: "⚡︎", html: "Ouvrir le <strong>tiroir Matrice</strong> (jets, moniteur, surveillance)." },
       { keys: "⛶", html: "<strong>Voir la fiche</strong> d'un PNJ en réaction (coup d'œil, feuilletable)." },
       { keys: "CI", html: "<strong>Contre-mesure d'Intrusion</strong> engagée dans l'initiative." },
-      { keys: "🔗", html: "<strong>Lier</strong> un serveur (ou la cible d'un decker) à la scène." },
-      { keys: "🛡️", html: "<strong>Protéger</strong> un appareil ciblé avec le Firewall d'un decker allié." },
+      { keys: "⧉", html: "<strong>Lier</strong> un serveur (ou la cible d'un decker) à la scène." },
+      { keys: "⎔", html: "<strong>Protéger</strong> un appareil ciblé avec le Firewall d'un decker allié." },
     ];
   },
 

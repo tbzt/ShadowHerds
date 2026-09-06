@@ -4,7 +4,7 @@
    CARD FOOTER — mise en page UNIQUE du pied de toute carte
    (PNJ, contact, serveur, véhicule, esprit). Le domaine décrit
    SES actions ; ce module décide de la disposition : le socle
-   Collection préfixe ★/🏷 à gauche (footer.prepend), et l'amas
+   Collection préfixe ★ à gauche (footer.prepend), et l'amas
    droite porte les secondaires + un primaire + un menu de
    débordement « ⋯ ».
 

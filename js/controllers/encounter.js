@@ -2441,7 +2441,7 @@ export const Encounter = {
     toast("Mis hors de combat.");
   },
 
-  /** Ferme la boucle de réaction — 💥/✸ « Dégâts » applique un résultat
+  /** Ferme la boucle de réaction — ✸ « Dégâts » applique un résultat
       NET (déjà résisté, le cockpit n'a pas la valeur d'attaque) au moniteur
       d'un combattant, via l'accesseur neutre conditionMonitor.applyDamage
       (jamais de branche d'édition ici, comme knockOut ci-dessus). `opts` porte
@@ -2670,7 +2670,7 @@ export const Encounter = {
      Or le fait EXISTE, et depuis toujours : il vit sur la fiche du runner.
      `DeckRun.target(pnj)` lit `<cyberdeck|persona>.run.targetServerId`, et
      c'est déjà la source à laquelle le pont decker fait confiance pour
-     proposer « 🔗 Lier ce serveur à la scène ». Il n'a simplement jamais été
+     proposer « ⧉ Lier ce serveur à la scène ». Il n'a simplement jamais été
      JOINT à l'effectif. Rien à stocker, rien à migrer : une jointure.
 
      Ce qu'on ne fait PAS : compter les marks comme une présence. `marksOn`

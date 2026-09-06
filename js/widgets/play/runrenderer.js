@@ -80,9 +80,9 @@ export const RunRenderer = {
     return el;
   },
 
-  /** Pied unifié (CardFooter, D6). Promu en run (dossierId) : le badge 📁
+  /** Pied unifié (CardFooter, D6). Promu en run (dossierId) : le badge ▸
       remplace le bouton de promotion, préfixé au pied comme le fait le
-      socle Collection pour ★/🏷 (même geste, cf. doc de CardFooter). Pas de
+      socle Collection pour ★ (même geste, cf. doc de CardFooter). Pas de
       promotion : « ＋ Faire un run » devient le primaire. */
   _footerHtml(r) {
     const promoted = r.dossierId || r.dossierName;
@@ -99,7 +99,7 @@ export const RunRenderer = {
         ];
     const footer = CardFooter.render(actions);
     if (!promoted) return footer;
-    const badge = `<span class="pnj-rank-badge" title="Rangé dans ce dossier">📁 ${CardRenderer._esc(
+    const badge = `<span class="pnj-rank-badge" title="Rangé dans ce dossier">▸ ${CardRenderer._esc(
       (r.dossierId && Dossiers.nameOf(r.dossierId)) || r.dossierName,
     )}</span>`;
     return footer.replace('<div class="cluster pnj-card-footer">', `<div class="cluster pnj-card-footer">${badge}`);
@@ -121,7 +121,7 @@ export const RunRenderer = {
 
   /** Distingue au premier coup d'œil un topos encore libre d'un run canon
       (`dossierId` posé par `RunGen.toDossier`) — même carte, deux états, sinon
-      rien ne les sépare visuellement avant le footer (bouton vs badge 📁). */
+      rien ne les sépare visuellement avant le footer (bouton vs badge ▸). */
   _stateBadge(r) {
     return r.dossierId || r.dossierName
       ? `<span class="run-state-badge status is-accent" title="Promu en run canon">Run</span>`
@@ -168,7 +168,7 @@ export const RunRenderer = {
     if (r.planUtile) {
       out.push({
         kind: "menu",
-        label: "🗺 Plan tactique",
+        label: "▦ Plan tactique",
         attrs: `data-action="run-map" title="Plan tactique du lieu (généré, gratuit)"`,
       });
     }

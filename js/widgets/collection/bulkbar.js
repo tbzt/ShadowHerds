@@ -110,7 +110,7 @@ export const BulkBar = {
             .join("")
         : `<span class="bulk-move-empty">Aucun PJ — créez-en un dans Équipe.</span>`;
       linkBtn = `<span class="bulk-move-wrap bulk-link-wrap">
-          <button class="btn-secondary btn-small" data-action="bulk-link">🔗 Lier à un PJ ▾</button>
+          <button class="btn-secondary btn-small" data-action="bulk-link">⧉ Lier à un PJ ▾</button>
           <div class="stack bulk-move-menu" id="bulk-link-menu" hidden>${linkMenu}</div>
         </span>`;
     }

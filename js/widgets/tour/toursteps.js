@@ -416,7 +416,7 @@ export const TourSteps = {
     {
       id: "wn-topos-map", anchor: "nav-run", tours: ["whatsnew"], since: "1.73.0", fallback: "center",
       title: "Un plan de lieu, en image",
-      body: "Si les images IA sont activées (Réglages), un topos dont le lieu s'y prête porte un bouton « 🗺 Plan du lieu » qui génère un plan/blueprint du décor via Pollinations et le garde sur le topos — une vignette le réaffiche ensuite en grand. Portraits et plans partagent désormais le même réglage et la même file d'attente.",
+      body: "Si les images IA sont activées (Réglages), un topos dont le lieu s'y prête porte un bouton « ▦ Plan du lieu » qui génère un plan/blueprint du décor via Pollinations et le garde sur le topos — une vignette le réaffiche ensuite en grand. Portraits et plans partagent désormais le même réglage et la même file d'attente.",
     },
     {
       id: "wn-comj-nudges", anchor: "nav-settings", tours: ["whatsnew"], since: "1.76.0", fallback: "center",

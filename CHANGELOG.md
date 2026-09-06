@@ -10,6 +10,31 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.155.3] — 2026-09-06
+
+### Corrigé
+
+- **Trente émoji en couleur sont passés aux glyphes du jeu.** Un émoji
+  couleur ignore la couleur qu'on lui demande : il garde la sienne, quel que
+  soit le thème de l'édition. Il en restait trente dans l'interface — la
+  légende du tracker en portait deux, les filtres du journal des jets, les
+  badges de dossier, les blocs d'appareils matriciels, l'accueil. Ils cèdent
+  la place au vocabulaire monochrome déjà en service, qui suit le thème :
+  le plan d'un lieu reprend le glyphe que le bouton « Plan de lieu » utilisait
+  déjà, le badge « rangé dans » reprend celui du fil d'Ariane, et les trois
+  notions qui n'en avaient pas — lier, protéger, appareils — en reçoivent un,
+  choisi parmi les formes encore libres pour ne écraser aucun sens existant.
+  Les seuls émoji de l'application vivent désormais là où ils sont voulus :
+  dans le sélecteur du carnet.
+- **Deux puces du journal des jets s'alignent sur leurs voisines.**
+  « Épinglés » et « Cette rencontre » étaient les seules à porter un
+  pictogramme, là où « Tout » et « Alarmes » n'en ont jamais eu ; elles n'en
+  portent plus.
+- **Un état vide désignait un geste supprimé.** Le casting d'une scène
+  conseillait d'« utiliser 🏷 sur une carte » : ce contrôle « Groupes » a été
+  retiré il y a plusieurs versions, le rangement passant par les tags et les
+  factions. L'état vide nomme désormais le geste qui existe, « ＋ convoquer ».
+
 ## [1.155.2] — 2026-09-06
 
 ### Corrigé
