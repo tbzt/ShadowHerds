@@ -10,6 +10,36 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.155.1] — 2026-09-06
+
+### Corrigé
+
+- **La navigation des Paramètres cachait la moitié de ses choix sur
+  téléphone.** Les cinq entrées étaient posées sur une seule ligne qui
+  défilait horizontalement : mesurée sur un écran de trois cent
+  soixante-quinze pixels, elle en débordait de trois cent quatorze, si bien
+  qu'« À propos » et « Aide et raccourcis » se trouvaient hors de vue, sans
+  rien pour signaler qu'ils existaient. C'est exactement ce que la cinquième
+  loi de la grammaire d'interaction interdit — le contenu défile, les choix
+  non — et ce site figurait dans la liste des rangées à reprendre depuis
+  l'audit d'alignement de juillet. Les entrées passent sur une grille à deux
+  colonnes égales : toutes visibles d'un coup, et alignées. Le libellé de
+  l'édition se replie sur deux lignes au lieu d'être tronqué. Le rail vertical
+  des grands écrans ne bouge pas.
+- **Les cases à cocher sortaient au bleu du système.** La teinte des
+  commandes natives n'était posée qu'au cas par cas, sur les boutons radio
+  d'un widget et les cases d'un autre ; partout ailleurs — à commencer par les
+  Paramètres — elles gardaient le bleu du navigateur au milieu d'une interface
+  sombre. La teinte est désormais posée une fois pour les cases, les radios et
+  les curseurs. C'est le pendant de la règle de base livrée juste avant :
+  celle-ci laisse à ces commandes leur rendu natif, encore fallait-il les
+  mettre au thème. Les endroits qui veulent une autre couleur la gardent.
+- **Quatre cibles trop petites dans les Paramètres.** Trois libellés de
+  préférence d'affichage tenaient sur quinze pixels alors qu'ils basculent
+  bel et bien leur case — laquelle en faisait treize — et un dépliant de
+  section sur quinze également. Tous passent aux vingt-quatre que le projet
+  tient pour tout ce qui se tape.
+
 ## [1.155.0] — 2026-09-06
 
 ### Modifié

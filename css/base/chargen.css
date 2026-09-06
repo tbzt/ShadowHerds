@@ -361,8 +361,27 @@
   border-radius: var(--radius-sm);
   font-size: var(--fs-xs);
 }
+/* CIBLE TACTILE — le label porte un `for` : c'est LUI qu'on tape pour
+   basculer la préférence, et il ne mesurait que 15px de haut. Il prend
+   toute la largeur libre de la rangée (33px de haut, `align-items: center`,
+   donc rien ne bouge) : on bascule en visant la phrase, pas le carré. */
 .display-pref-row label {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  min-height: 24px;
   color: var(--text);
+  cursor: pointer;
+}
+/* La case elle-même reste la cible qu'on VISE d'instinct : 13px de rendu
+   natif, c'est trop peu au doigt. Agrandie ici et pas dans la règle de fond
+   de forms.css, qui exclut à dessein les cases à cocher — leur rendu natif
+   ne supporte pas d'être habillé comme une zone de texte, mais une taille,
+   si. */
+.display-pref-row input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  flex: none;
   cursor: pointer;
 }
 

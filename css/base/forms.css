@@ -662,3 +662,18 @@ textarea {
 ::placeholder {
   color: var(--text-dim);
 }
+
+/* Les commandes que la règle ci-dessus laisse à leur rendu NATIF — cases à
+   cocher, boutons radio, curseurs — se teintent malgré tout : `accent-color`
+   est le seul levier prévu pour ça, et il ne touche ni leur géométrie ni leur
+   comportement. Le motif existait déjà, mais appliqué au cas par cas
+   (`.radio-label input`, `.ms-opt input`) : partout ailleurs les cases
+   restaient au bleu du système, en plein thème sombre. Posé une fois, il
+   couvre le reste — et les rares endroits qui veulent une autre teinte
+   (`.bulk-select-check input`, en `--accent2`) gagnent par leur classe. */
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"],
+progress {
+  accent-color: var(--accent);
+}

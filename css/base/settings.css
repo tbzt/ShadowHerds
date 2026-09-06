@@ -20,6 +20,12 @@
 }
 .settings-detail summary {
   cursor: pointer;
+  /* CIBLE TACTILE — 15px : c'est un dépliant, donc un geste, et il doit se
+     taper. La ligne s'aère sans déplacer le texte (le résumé est seul sur sa
+     ligne). */
+  display: flex;
+  align-items: center;
+  min-height: 24px;
   font-size: var(--fs-xs);
   color: var(--text-dim);
   margin-top: 0.3rem;
@@ -186,20 +192,33 @@
   .settings-layout {
     flex-direction: column;
   }
+  /* La nav des reglages est une rangee de CHOIX, pas du contenu : elle ne
+     defile pas. Elle etait en `flex-direction: row` + `overflow-x: auto`,
+     et sous 640px les cinq entrees ne tenaient pas — mesure a 375px, elle
+     debordait de 314px : « A propos » et « Aide et raccourcis » etaient hors
+     de vue, donc inexistants. Elles passent sur une grille a deux colonnes
+     egales : tout se voit d'un coup, et les cellules s'alignent au lieu de
+     casser en rangees irregulieres. Cf. CONTRIBUTING § « Grammaire
+     d'interaction », 5e loi : le contenu defile, les choix non. */
   .settings-nav {
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     width: 100%;
     min-width: 0;
     flex: 1 1 auto;
-    overflow-x: auto;
     gap: var(--sp-2);
-    padding-bottom: var(--sp-1);
+  }
+  /* Le libelle de l'edition (« Cette edition — Shadowrun 5 ») est le seul
+     qui depasse la demi-largeur : il se replie au lieu d'etre tronque. La
+     grille egalise la hauteur des deux cellules d'une meme rangee. */
+  .settings-nav-item {
+    white-space: normal;
+    line-height: 1.25;
+    padding: var(--sp-1) var(--sp-2);
   }
   .settings-nav-sep {
-    border-top: none;
-    border-left: 1px solid var(--border);
-    margin: 0 var(--sp-1);
-    align-self: stretch;
+    grid-column: 1 / -1;
+    margin: 0;
   }
 }
 
