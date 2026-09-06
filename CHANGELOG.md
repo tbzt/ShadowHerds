@@ -10,6 +10,21 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.155.6] — 2026-09-06
+
+### Modifié
+
+- **Le sélecteur de contexte ne se déguise plus en étape du chemin.** La
+  barre de contexte affiche « aller ailleurs », puis la campagne, puis le run
+  — et les trois portaient un losange. Le fil d'Ariane se lisait donc comme
+  quatre losanges d'affilée dès qu'une campagne était en contexte, dans la
+  barre la plus permanente de l'application. Or la campagne, le run et le
+  dossier forment une échelle voulue : c'est le déclencheur qui n'avait rien
+  à y faire, puisqu'il ne désigne aucun échelon, il ouvre le sélecteur. Il
+  prend une flèche vers l'angle : « partir d'ici », ce qu'il fait
+  réellement. L'échelle du chemin ne bouge pas. Le déclencheur du carnet, qui
+  copiait le même symbole, suit.
+
 ## [1.155.5] — 2026-09-06
 
 ### Modifié

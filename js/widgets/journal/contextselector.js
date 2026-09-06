@@ -33,7 +33,7 @@ export const ContextSelector = {
       quand aucun contexte n'est en focus (sinon le fil d'Ariane porte le nom). */
   triggerHtml(label = "Contexte") {
     return `<button type="button" class="ctx-trigger" data-action="ctx-open" title="Changer de contexte (campagne / run / scène)" aria-haspopup="listbox">
-      <span class="ctx-trigger-icon" aria-hidden="true">◇</span><span class="ctx-trigger-label">${label}</span><span class="ctx-trigger-caret" aria-hidden="true">▾</span>
+      <span class="ctx-trigger-icon" aria-hidden="true">⇱</span><span class="ctx-trigger-label">${label}</span><span class="ctx-trigger-caret" aria-hidden="true">▾</span>
     </button>`;
   },
 

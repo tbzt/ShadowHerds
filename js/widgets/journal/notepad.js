@@ -37,7 +37,7 @@ export const Notepad = {
     panel.innerHTML = `
       <div class="cluster dice-log-head">
         <button class="ctx-trigger notepad-ctx" id="notepad-ctx" title="Changer de carnet (contexte)" aria-haspopup="listbox">
-          <span class="ctx-trigger-icon" aria-hidden="true">◇</span><span class="ctx-trigger-label" id="notepad-ctx-label">Bloc-notes de séance</span><span class="ctx-trigger-caret" aria-hidden="true">▾</span>
+          <span class="ctx-trigger-icon" aria-hidden="true">⇱</span><span class="ctx-trigger-label" id="notepad-ctx-label">Bloc-notes de séance</span><span class="ctx-trigger-caret" aria-hidden="true">▾</span>
         </button>
         <button class="btn-icon-tiny" data-action="toggle-mode" title="Lire / Éditer" aria-label="Lire / Éditer">✎</button>
         <button class="btn-icon-tiny" data-action="close" title="Fermer" aria-label="Fermer">✕</button>
