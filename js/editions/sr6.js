@@ -1777,7 +1777,7 @@ export const EditionSR6 = {
   /** edgeTracker : SR6 pilote l'Atout en combat (rangée de 7 jetons sur
       la fiche active, gain plafonné à +2/tour de personnage, p.50). Le tracker
       lit ce drapeau, jamais une branche d'édition. */
-  combatModel: { rerollEachRound: true, passDecrement: 0, edgeTracker: true, hasSoak: true },
+  combatModel: { rerollEachRound: true, passDecrement: 0, edgeTracker: true, hasSoak: true, hasFullDefense: true },
 
   /* ========================================================
      COURSE-POURSUITE (moteur ⇉) — « À tombeau ouvert », L'avantage du

@@ -1149,7 +1149,7 @@ export const EditionSR5 = {
       relancée à chaque tour de combat, et chaque tour se joue en passes
       d'initiative — −10 par passe, un combattant rapide rejoue tant que son
       score reste > 0 (SR5 p.159). `passDecrement > 0` active les passes. */
-  combatModel: { rerollEachRound: true, passDecrement: 10, hasSoak: true },
+  combatModel: { rerollEachRound: true, passDecrement: 10, hasSoak: true, hasFullDefense: true },
 
   /* ========================================================
      COURSE-POURSUITE (moteur ⇉) — Livre de Règles, p. 204-205.

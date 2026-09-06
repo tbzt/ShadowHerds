@@ -370,7 +370,7 @@ export const EditionAnarchy2 = {
       p.159) — le bandeau d'économie affiche une rangée par participant
       (jumelle de l'Atout SR6 `edgeTracker`), stockée dans l'entrée de scène.
       Drapeau de CAPACITÉ, lu à l'aveugle. */
-  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: false, anarchyPoints: true, hasSoak: false },
+  combatModel: { rerollEachRound: false, passDecrement: 0, narrative: true, threatReserve: false, anarchyPoints: true, hasSoak: false, hasFullDefense: false },
 
   /* ========================================================
      DÉPLACEMENT À PIED (lot P7) — Anarchy 2.0

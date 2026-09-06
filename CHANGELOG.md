@@ -10,6 +10,30 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.155.7] — 2026-09-06
+
+### Corrigé
+
+- **La légende du cockpit annonçait à Anarchy deux gestes qu'il n'a pas.**
+  L'aide servait la même liste de symboles aux quatre éditions. Un meneur
+  Anarchy y lisait « Défense totale » et « Encaisser » — deux boutons que son
+  cockpit ne lui montrera jamais, puisque son livre n'a ni l'une ni l'autre.
+  Le plus parlant : sous le symbole d'encaissement, la légende précisait
+  elle-même « Anarchy n'a pas de jet », tout en le présentant comme
+  disponible. Le contrat d'édition portait pourtant déjà la réponse, et la
+  console la respectait depuis toujours en masquant les deux boutons ; seule
+  la légende ne la lisait pas. Elle la lit désormais : douze symboles en
+  Shadowrun 5 et 6, dix en Anarchy. Et le texte de l'encaissement, réservé
+  aux éditions concernées, n'a plus à citer les autres.
+
+### Modifié
+
+- **Les quatre modules d'édition déclarent s'ils connaissent la défense
+  totale.** La règle existait déjà, mais seulement sous une forme qui exige un
+  personnage pour répondre — inutilisable pour une légende, qui pose une
+  question d'édition et non de PNJ. Les quatre modules l'énoncent maintenant
+  directement, ce qui évite d'avoir à deviner au point d'appel.
+
 ## [1.155.6] — 2026-09-06
 
 ### Modifié

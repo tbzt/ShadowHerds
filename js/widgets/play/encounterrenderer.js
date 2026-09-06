@@ -3403,15 +3403,31 @@ export const EncounterRenderer = {
     this._roundLignes = null;
   },
 
-  /** Légende commune (trans-édition) des glyphes du cockpit de combat, ajoutée
-      à l'Aide « ? » à la suite de la légende d'édition (App._renderHelpLegend).
-      Vit ici, avec le cockpit qui possède ces glyphes, plutôt que dupliquée
-      dans les 4 helpLegend d'édition. */
+  /** Légende des glyphes du cockpit de combat, ajoutée à l'Aide « ? » à la
+      suite de la légende d'édition (App._renderHelpLegend). Vit ici, avec le
+      cockpit qui possède ces glyphes, plutôt que dupliquée dans les 4
+      helpLegend d'édition.
+
+      Elle n'annonce que les gestes que l'édition courante propose VRAIMENT.
+      Le contrat le dit déjà et la console le respecte : elle masque ⛨ quand
+      `fullDefenseFor` renvoie null et ✳ quand `combatModel.hasSoak` est faux.
+      La légende, elle, servait la même liste aux quatre éditions — un meneur
+      Anarchy lisait donc deux gestes qu'il ne verrait jamais dans son
+      cockpit, dont un sous lequel on avait écrit « Anarchy n'a pas de jet »
+      tout en le présentant comme disponible. Elle lit le même contrat.
+      `hasFullDefense` a été ajouté aux quatre modules pour ça : `fullDefenseFor`
+      exige un PNJ et ne peut pas répondre à une question d'ÉDITION. Aucune
+      branche `App.edition === …` ici — la question est posée au module. */
   cockpitLegend() {
+    const cm = (App.editionModule && App.editionModule.combatModel) || {};
     return [
       { keys: "⛉", html: "<strong>Défense</strong> — le PNJ (ou la CI) esquive/pare un test." },
-      { keys: "⛨", html: "<strong>Défense totale</strong> — +Volonté à la défense pour le round (SR5 : −10 init)." },
-      { keys: "✳", html: "<strong>Encaisser</strong> — résistance aux dommages (SR5/SR6 ; Anarchy n'a pas de jet)." },
+      ...(cm.hasFullDefense
+        ? [{ keys: "⛨", html: "<strong>Défense totale</strong> — +Volonté à la défense pour le round (SR5 : −10 init)." }]
+        : []),
+      ...(cm.hasSoak
+        ? [{ keys: "✳", html: "<strong>Encaisser</strong> — résistance aux dommages." }]
+        : []),
       { keys: "✸", html: "<strong>Dégâts</strong> — applique un résultat déjà résisté (net) au moniteur." },
       { keys: "＋", html: "<strong>Poser un état</strong> — Enflammé, Aveuglé… le catalogue de l'édition ; le tap sur un état posé monte d'un cran, le ✕ le retire." },
       { keys: "⚔", html: "Envoyer au <strong>combat</strong> / rejoindre l'initiative." },

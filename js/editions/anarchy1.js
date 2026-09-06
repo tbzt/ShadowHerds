@@ -384,6 +384,7 @@ export const EditionAnarchy1 = {
     narrative: true,
     threatReserve: true,
     hasSoak: false,
+    hasFullDefense: false,
   },
 
   /* ========================================================
