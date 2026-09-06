@@ -649,7 +649,7 @@ export const DiceLog = {
     }
     const pinBtn = `<button class="dice-log-pin-btn${e.pinned ? " is-pinned" : ""}" data-action="log-pin" data-t="${e.t}"
       title="${e.pinned ? "Désépingler" : "Épingler — garder ce jet même après la purge"}"
-      aria-label="${e.pinned ? "Désépingler" : "Épingler"}">⍟</button>`;
+      aria-label="${e.pinned ? "Désépingler" : "Épingler"}">${e.pinned ? "★" : "☆"}</button>`;
     return `<div class="cluster dice-log-item ${e.cls}${isCard ? " is-card" : ""}${e.pinned ? " is-pinned" : ""}">
       <span class="dice-log-time">${fmt(e.t)}</span>
       ${icon}

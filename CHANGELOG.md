@@ -10,6 +10,32 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.155.4] — 2026-09-06
+
+### Corrigé
+
+- **Trois glyphes ne se lisaient pas ; ils ont été repris.** Ils avaient été
+  choisis parce qu'ils étaient libres, ce qui est le mauvais critère : un
+  symbole qui a besoin de sa légende a échoué. Rendus à leur taille réelle sur
+  téléphone, ils ne disaient rien. L'épingle d'un jet reprend l'étoile qui
+  sert déjà d'épingle ailleurs dans l'application — et comme le projet
+  emploie l'étoile pleine et l'étoile vide en paire, **l'état se lit
+  désormais sur le glyphe** : creuse tant que le jet n'est pas gardé, pleine
+  et à l'accent une fois épinglé. « Protéger » prend un hexagone, lisible là
+  où l'ancien ne l'était pas. Et le bloc des appareils matriciels n'a plus de
+  pictogramme du tout : son libellé disait déjà tout, le symbole n'ajoutait
+  que du bruit.
+- **L'épingle du journal des jets était invisible.** Un bouton n'hérite pas
+  de la couleur du texte : il prend le noir du navigateur. Tant que ce bouton
+  portait un émoji, cela ne se voyait pas — un émoji ignore la couleur qu'on
+  lui demande et affiche la sienne. Le glyphe monochrome, lui, obéit : il
+  sortait donc en noir sur fond sombre. Il reprend la couleur du texte, et
+  l'accent une fois épinglé.
+- **La zone tactile de cette même épingle passe à vingt-quatre pixels.** Elle
+  en faisait dix-huit sur seize, sous le seuil que le projet tient pour tout
+  ce qui se tape — pour un geste qui se fait en pleine partie. Le glyphe reste
+  aussi discret ; c'est sa zone qui grandit.
+
 ## [1.155.3] — 2026-09-06
 
 ### Corrigé
