@@ -1251,12 +1251,27 @@ Object.assign(EditionSR6, {
       }
 
       /* ---- Règles communes ---- */
+      /* ⚠ Une réserve non dépensée est PERDUE, et rien ne le disait : en
+         priorités comme en 10 points, on pouvait finir avec 20 des 24 points
+         d'attribut et 22 des 24 de compétence en réserve, validation propre.
+         La méthode par points le refusait déjà — « rien ne se conserve » —
+         et SR5 comme Anarchy 1 refusaient l'équivalent : même situation,
+         quatre comportements. La méthode à MODULES est la seule exempte, et
+         c'est normal : elle ne distribue aucune réserve, ce sont les modules
+         qui accordent tout. */
+      const reserves = method.family !== "modules";
       const aUsed = this.attrPointsUsed(build);
       const aTotal = this.attrPointsTotal(build);
       if (aUsed > aTotal) out.attrs.push(`Trop de points d'attributs (${aUsed}/${aTotal}).`);
+      if (reserves && aUsed < aTotal) {
+        out.attrs.push(`Tous les points d'attribut doivent être dépensés (${aUsed}/${aTotal}) — rien ne se conserve.`);
+      }
       const adjUsed = this.adjustPointsUsed(build);
       const adjTotal = this.adjustPointsTotal(build);
       if (adjUsed > adjTotal) out.attrs.push(`Trop de points d'ajustement (${adjUsed}/${adjTotal}).`);
+      if (reserves && adjUsed < adjTotal) {
+        out.attrs.push(`Tous les points d'ajustement doivent être dépensés (${adjUsed}/${adjTotal}) — rien ne se conserve.`);
+      }
 
       for (const k of this.ATTRS) {
         const [min, max] = this._range(build.meta, k);
@@ -1277,6 +1292,9 @@ Object.assign(EditionSR6, {
       const sUsed = this.skillPointsUsed(build);
       const sTotal = this.skillPointsTotal(build);
       if (sUsed > sTotal) out.skills.push(`Trop de points de compétences (${sUsed}/${sTotal}).`);
+      if (reserves && sUsed < sTotal) {
+        out.skills.push(`Tous les points de compétence doivent être dépensés (${sUsed}/${sTotal}) — rien ne se conserve.`);
+      }
       let atSkillCap = 0;
       for (const s of build.skills || []) {
         if ((s.val || 0) > this.SKILL_CAP) {

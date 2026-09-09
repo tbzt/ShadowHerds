@@ -1061,6 +1061,13 @@ Object.assign(EditionSR5, {
       } else if (method.family === "karma") {
         const used = this.karmaUsed(build);
         if (used > method.karma) out.concept.push(`Karma dépassé (${used}/${method.karma}).`);
+        /* Le karma qui reste ne suit PAS le personnage : « Notez bien que les
+           points de Karma restant à l'issue de la création du personnage ne
+           peuvent pas être conservés (ils sont utilisés ou perdus !) »
+           (Run Faster p.142). On pouvait finir à 297/800 sans un mot. */
+        if (used < method.karma) {
+          out.concept.push(`Tout le karma doit être dépensé (${used}/${method.karma}) — le reliquat est perdu, pas conservé (p.142).`);
+        }
         const cap = this.karmaNuyenCap(build);
         if (this.nuyenUsed(build) > cap) {
           out.gear.push(
