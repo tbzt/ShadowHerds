@@ -15,7 +15,7 @@ export const TourSteps = {
     {
       id: "lib", anchor: "nav-shadows", tours: ["full"], since: "1.0.0", fallback: "center",
       title: "Ombres portées",
-      body: "Votre bibliothèque de PNJ, contacts et serveurs sauvegardés — un clin d'œil aux bestiaires des scénarios. Tout ce que vous générez et rangez vit ici, par dossier.",
+      body: "Votre bibliothèque de PNJ, contacts et serveurs sauvegardés — un clin d'œil aux bestiaires des scénarios. Tout ce que vous générez et sauvegardez vit ici — retrouvez-le par recherche, tags et facettes.",
     },
     {
       id: "gen", anchor: "nav-generator", tours: ["full"], since: "1.0.0", fallback: "center",
@@ -68,7 +68,7 @@ export const TourSteps = {
     {
       id: "o-lib", anchor: "nav-shadows", panel: "shadows", tours: ["orientation"], since: "1.0.0", fallback: "center",
       title: "Bienvenue, chummer",
-      body: "« Ombres portées », votre bibliothèque : tout ce que vous créez et rangez vit ici, par dossier.",
+      body: "« Ombres portées », votre bibliothèque : tout ce que vous créez et sauvegardez vit ici.",
     },
     {
       id: "o-gen", anchor: "nav-generator", panel: "generator", tours: ["orientation"], since: "1.0.0", fallback: "center",

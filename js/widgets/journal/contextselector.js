@@ -96,7 +96,7 @@ export const ContextSelector = {
     for (const root of Dossiers.roots()) walk(root, 0);
 
     if (!Dossiers.list().some(isTimeline)) {
-      html += `<div class="ctx-empty">Aucun dossier. Créez une campagne ou une run dans la bibliothèque.</div>`;
+      html += `<div class="ctx-empty">Aucun run ni campagne. Créez-en un depuis « Jouer », ou par le « + » des dossiers dans Personnages et Topos.</div>`;
     }
     return html;
   },

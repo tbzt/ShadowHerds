@@ -269,11 +269,13 @@ export const DossierBar = {
     // R4 : geste « rencontre » (ouvrir/fermer), seul concept d'UI neuf de ce
     // chantier — un seul item, réutilise le même popover ⋯ que le typage
     // (aucun CSS/handler neuf). Visible seulement sur un dossier « run ».
+    // Prédicat unique `Encounter.sceneStatus` (partagé avec Jouer et la carte
+    // de topos) : un run dont une scène tourne propose « Fermer », pas « Ouvrir ».
     const rencontreItem =
       node.kind === "run"
-        ? Encounter.activeDossierId === node.id
+        ? Encounter.sceneStatus(node.id) === "live"
           ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="close-rencontre" data-dossier="${node.id}">⏹ Fermer la rencontre</button>`
-          : `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="open-rencontre" data-dossier="${node.id}">▶ ${EncounterStore.has(node.id) ? "Rouvrir" : "Ouvrir"} la rencontre</button>`
+          : `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="open-rencontre" data-dossier="${node.id}">▶ ${Encounter.sceneStatus(node.id) === "stashed" ? "Rouvrir" : "Ouvrir"} la rencontre</button>`
         : "";
     // VIS-16 étape 1 : créer une scène (cellule de jeu) sous un run. Réutilise
     // le popover ⋯ et la délégation existants — aucun CSS ni handler neuf.
@@ -555,12 +557,16 @@ export const DossierBar = {
       serveur lié, R1), pose le contexte (filtre journal des jets R3, dossier
       courant → carnet R2 qui s'ouvre dessus), ouvre le tracker. Aucune
       nouvelle entrée de nav : le tracker est l'overlay déjà existant. */
-  openRencontre(dossierId) {
-    if (!dossierId) return;
-    Encounter.restore(dossierId);
+  async openRencontre(dossierId) {
+    if (!dossierId) return false;
+    // `restore` est un passage idempotent et peut être refusé (scène sans
+    // run à écraser) : on n'ouvre et ne pose le contexte qu'après son accord.
+    const ok = await Encounter.restore(dossierId);
+    if (!ok) return false;
     this.select(dossierId); // dossier courant = carnet courant (R2)
     Encounter.open();
     toast(`Rencontre « ${Dossiers.nameOf(dossierId) || "?"} » ouverte.`);
+    return true;
   },
 
   /** Fermer la rencontre : snapshot (R1) + retrait du contexte actif. Sur un

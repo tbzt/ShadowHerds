@@ -44,14 +44,19 @@ export const Play = {
         case "play-resume":
           // Rouvre la scène de ce run (restaure + focus + tracker) — un seul
           // geste, réutilise la mécanique de la barre de dossiers (R4).
-          // ⚠ `openRencontre` → `Encounter.restore` RELIT le stash : ne jamais
-          // l'offrir sur une scène VIVANTE (le stash n'est pas resynchronisé
-          // par `save()`, cf. `_runCommandHtml`).
-          DossierBar.openRencontre(id);
+          // `Encounter.restore` est un passage idempotent (ne relit pas le
+          // stash d'une scène vivante, range l'autre rencontre en cours,
+          // demande avant d'écraser une scène sans run) : ce bouton n'est
+          // plus jamais destructeur. Async : l'embarquement du casting
+          // n'a de sens qu'APRÈS l'ouverture effective (et pas du tout si
+          // le MJ a renoncé).
           // D2 (CODIR 2026-09-03) : une scène qui s'ouvre VIDE avec un casting
           // convoqué propose de l'embarquer — le bouton principal de Jouer
           // rendait un « Aucun combattant » à côté de six personnages prêts.
-          this._embarkCasting(id).then(() => this.render());
+          DossierBar.openRencontre(id).then((ok) => {
+            if (!ok) return;
+            this._embarkCasting(id).then(() => this.render());
+          });
           break;
         case "play-close":
           // La moitié manquante de la porte : Jouer savait ouvrir une scène,
@@ -426,9 +431,12 @@ export const Play = {
   _currentRunId() {
     const ctx = typeof App !== "undefined" && App.context;
     if (!ctx) return null;
-    if (ctx.dossier && Dossiers.kindOf(ctx.dossier) === "run") return ctx.dossier;
-    if (ctx.scene && Dossiers.has(ctx.scene)) return ctx.scene;
-    return null;
+    // `runOf` : une SCÈNE en focus ou vivante (VIS-16) résout son run — sans
+    // ça, le poste de commandement disparaissait dès qu'on jouait au niveau
+    // scène (`hero.kind === "run"` échouait sur un id de scène).
+    const fromFocus = ctx.dossier ? Dossiers.runOf(ctx.dossier) : null;
+    if (fromFocus) return fromFocus;
+    return ctx.scene ? Dossiers.runOf(ctx.scene) : null;
   },
 
   _sectionHtml(title, count, inner) {
@@ -474,8 +482,12 @@ export const Play = {
       + pouls du roster) ; le run RANGÉ affiche un résumé statique du bundle.
       Projection LECTURE SEULE (garde-fou K8) : rien n'est muté ici. */
   _runRow(run) {
-    const live = App.context && App.context.scene === run.id;
-    const stashed = EncounterStore.has(run.id);
+    // Un seul prédicat pour « vivante / rangée » (Encounter.sceneStatus) —
+    // partagé avec le poste de commandement, la carte de topos et la barre
+    // de dossiers : un run dont une scène tourne est vivant ici aussi.
+    const status = Encounter.sceneStatus(run.id);
+    const live = status === "live";
+    const stashed = status === "stashed";
     const hasTopos = typeof RunGen !== "undefined" && RunGen.forDossier(run.id).length > 0;
 
     const closed = Dossiers.isClosed(run.id);
@@ -612,8 +624,9 @@ export const Play = {
       Encounter, Notebooks via Notepad) — Jouer n'est propriétaire d'aucune de
       ces données (garde-fous Kernel/Failsafe). */
   _runCommandHtml(run) {
-    const live = App.context && App.context.scene === run.id;
-    const stashed = EncounterStore.has(run.id);
+    const status = Encounter.sceneStatus(run.id);
+    const live = status === "live";
+    const stashed = status === "stashed";
     // 1a : toujours UN bouton, et c'est une BASCULE — la scène se FERME
     // (vivante), se ROUVRE (rangée) ou se LANCE (jamais jouée). Miroir exact du
     // couple déjà écrit en une ligne à `runrenderer.js:_rencontreAction` ; même
@@ -1163,7 +1176,7 @@ export const Play = {
       Matrice : quand le roster ET une intrusion tournent, la coquille reste
       chaude (le combat prend l'écran, maquette « Cockpit — Combat »). */
   _cockpitState(run) {
-    const live = App.context && App.context.scene === run.id;
+    const live = Encounter.sceneStatus(run.id) === "live";
     if (!live) return "cold";
     const motors = (Encounter.state && Encounter.state.motors) || ["combat"];
     if (motors.includes("combat")) return "combat";
@@ -1531,11 +1544,17 @@ export const Play = {
         // DossierBar.openRencontre (le stash est déjà générique par id de
         // dossier) : aucune migration, l'encounter run-level (rétro-compat)
         // et scène-level coexistent.
-        const live = App.context && App.context.scene === s.id;
-        const stashed = EncounterStore.has(s.id);
-        const playLabel = live ? "Reprendre" : stashed ? "Rouvrir" : "▶ Jouer";
+        // Même bascule que la ligne de run (1a) : ⏹ Fermer / ▶ Rouvrir /
+        // ▶ Jouer, un seul bouton, lu sur le prédicat unique. « Reprendre »
+        // sur une scène vivante déclenchait `play-resume` → `restore`, le
+        // chemin destructeur de 1.139.1 sur une troisième surface.
+        const status = Encounter.sceneStatus(s.id);
+        const live = status === "live";
+        const stashed = status === "stashed";
+        const playLabel = live ? "⏹ Fermer" : stashed ? "▶ Rouvrir" : "▶ Jouer";
+        const playAction = live ? "play-close" : "play-resume";
         const playTitle = live
-          ? `Reprendre la scène « ${name} »`
+          ? `Fermer (ranger) la scène « ${name} »`
           : stashed
             ? `Rouvrir la rencontre de « ${name} »`
             : `Lancer la scène « ${name} »`;
@@ -1545,7 +1564,7 @@ export const Play = {
             <span class="play-scene-name">${name}</span>
             <button class="btn-icon-tiny" data-action="play-scene-map" data-id="${s.id}" title="Plan de lieu de « ${name} »">▦</button>
             <button class="btn-icon-tiny" data-action="play-notes" data-dossier="${s.id}" title="Carnet de « ${name} »">✎</button>
-            <button class="btn-secondary btn-small" data-action="play-resume" data-dossier="${s.id}" title="${playTitle}">${playLabel}</button>
+            <button class="btn-secondary btn-small" data-action="${playAction}" data-dossier="${s.id}" title="${playTitle}">${playLabel}</button>
           </div>
           ${cast || `<div class="play-scene-castempty">Personne de rangé — glissez une fiche, ou utilisez « ＋ convoquer ».</div>`}
         </div>`;

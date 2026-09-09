@@ -316,27 +316,47 @@ export const Sync = {
      « Annuler » conserve la version locale et remplace le distant. Le mode
      à trois choix soigné est prévu pour un lot ultérieur. */
   async _resolveConflict(remotePkg, remoteRevision) {
-    const merge = await Dialog.confirm({
+    // Trois choix NOMMÉS, et aucune sortie implicite : l'ancien `confirm` faisait
+    // d'« Annuler », d'Échap et du clic hors dialogue un écrasement de la
+    // sauvegarde en ligne. Fermer le dialogue laisse maintenant le conflit en
+    // l'état (visible dans Paramètres › Sauvegarde) — rien n'est envoyé.
+    const choice = await Dialog.choose({
       title: "Synchronisation — versions divergentes",
       message:
         "Vos fiches ont changé sur cet appareil et dans votre sauvegarde en ligne depuis la dernière synchro. " +
-        "« Fusionner » réunit les deux sans rien perdre. « Annuler » garde la version de cet appareil et remplace celle en ligne.",
-      confirmLabel: "Fusionner",
+        "« Fusionner » réunit les deux sans rien perdre ; sinon, choisissez la version à garder.",
+      options: [
+        { value: "merge", label: "Fusionner", primary: true },
+        { value: "local", label: "Garder cet appareil", danger: true },
+        { value: "remote", label: "Garder la version en ligne", danger: true },
+      ],
     });
+    if (!choice) {
+      this._refreshSettings();
+      return;
+    }
     // Aligner la révision de base sur le distant pour que le push qui suit ne
     // rebute pas sur le même conflit.
     this._saveCfg({ lastRevision: remoteRevision });
-    if (merge) {
+    if (choice !== "local") {
       this._applying = true;
       try {
-        Backup.apply(remotePkg, "merge", { silent: true });
+        Backup.apply(remotePkg, choice === "remote" ? "replace" : "merge", { silent: true });
       } finally {
         this._applying = false;
       }
     }
+    if (choice === "remote") {
+      // Le local EST le distant désormais : rien à pousser.
+      this._saveCfg({ lastHash: this._hash(Backup.build()), lastAt: new Date().toISOString() });
+      this._setState("idle");
+      this._refreshSettings();
+      toast("Version en ligne récupérée.");
+      return;
+    }
     await this._doPush(true);
     if (this._state === "idle")
-      toast(merge ? "Versions fusionnées et synchronisées." : "Votre version a été envoyée en ligne.");
+      toast(choice === "merge" ? "Versions fusionnées et synchronisées." : "Votre version a été envoyée en ligne.");
   },
 
   /* ---------- Utilitaires ---------- */

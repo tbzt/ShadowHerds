@@ -716,13 +716,29 @@ export const Gen = {
 
   clear() {
     const zone = document.getElementById("gen-zone-single");
-    const ids = [...zone.querySelectorAll(".pnj-card")].map(
-      (c) => c.dataset.id,
-    );
-    this.pool = this.pool.filter((p) => !ids.includes(p.id));
+    const ids = new Set([...zone.querySelectorAll(".pnj-card")].map((c) => c.dataset.id));
+    // FILET — même patron que `discard` (instantané indexé + toastUndo) : la
+    // zone d'essai se vide d'un geste et se remplit d'un autre. C'était, avec
+    // « Effacer tout » des topos, la seule suppression sans annulation.
+    const snapshot = [];
+    this.pool.forEach((p, i) => {
+      if (ids.has(p.id)) snapshot.push({ entity: p, index: i });
+    });
+    this.pool = this.pool.filter((p) => !ids.has(p.id));
     this._savePool();
     zone.innerHTML = "";
     this._renderEmptyHint(zone);
+    if (!snapshot.length) return;
+    toastUndo(`${snapshot.length} fiche${snapshot.length > 1 ? "s" : ""} effacée${snapshot.length > 1 ? "s" : ""}.`, () => {
+      snapshot
+        .slice()
+        .sort((a, b) => a.index - b.index)
+        .forEach(({ entity, index }) => {
+          this.pool.splice(Math.min(index, this.pool.length), 0, entity);
+        });
+      this._savePool();
+      this.restorePool(); // re-rend la zone depuis le pool (entités liées comprises)
+    });
   },
 
   /** État vide du générateur (DESIGN-SYSTEM § 6.7, CODIR 2026-09-03 D9) : la

@@ -10,6 +10,53 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.155.8] — 2026-09-09
+
+### Corrigé
+
+- **Lancer une scène n'efface plus celle qui tourne.** Trois chemins menaient
+  à la même perte, sans un mot : ouvrir la scène d'un run depuis « Jouer »
+  alors qu'une scène ouverte par « Combat » tournait sans run ; « Lancer »
+  sur un second run pendant que le premier jouait ; « Reprendre » sur une
+  ligne de scène vivante. L'ouverture d'une rencontre est désormais un
+  passage qui ne détruit rien : la scène déjà vivante est rouverte telle
+  quelle, une autre rencontre en cours est rangée d'abord, et une scène sans
+  run demande avant d'être remplacée.
+- **Une scène jouée au niveau « scène » rend son run vivant.** Le poste de
+  commandement de « Jouer » disparaissait dès qu'on jouait dans une scène
+  d'un run, et la ligne du run proposait de « lancer » par-dessus. Le run,
+  la carte de topos et la barre de dossiers lisent maintenant un seul
+  prédicat d'état de scène, et « Fermer » depuis le run range bien la scène
+  qui tourne.
+- **Blessures faites depuis le cockpit à un PJ ou à un PNJ non sauvegardé.**
+  Dégâts, soins, mise hors de combat et états posés depuis le suivi de
+  combat n'étaient persistés que pour les fiches d'« Ombres portées » ; ils
+  passent par l'écrivain unique des fiches et survivent au rechargement pour
+  toutes les bibliothèques.
+- **Le conflit de synchronisation n'écrase plus la sauvegarde en ligne sur
+  Échap.** « Annuler », la croix et le clic hors dialogue envoyaient la
+  version locale à la place de la distante. Trois choix nommés : fusionner,
+  garder cet appareil, garder la version en ligne ; fermer ne fait rien.
+- **« Effacer » du générateur et « Effacer tout » des topos sont annulables**,
+  comme toutes les autres suppressions.
+- **L'aide, la visite et le sélecteur de contexte décrivaient un rangement
+  par dossier depuis « Ombres portées » qui n'existe plus** ; la bulle
+  d'accueil décrivait des glyphes remplacés par des icônes ; l'aide clavier
+  oubliait la touche 8 et nommait « Run » l'écran « Topos ». Recharger la
+  page sur « Trames » ramenait sur « Jouer ».
+
+### Modifié
+
+- **« Combat » lit le contexte.** Sans rencontre ouverte mais avec un run en
+  focus, le bouton, la touche c et la barre du bas ouvrent la scène de ce run
+  au lieu d'une scène sans maison. Ajouter une fiche au combat propose
+  d'ouvrir le suivi dans la foulée.
+- **« Faire un run » propose le run en cours de préparation** et rattache le
+  topos sans créer de doublon ; un run neuf naît sous la campagne en focus.
+- **Un seul mot par geste sur les cartes** : « Écarter » une fiche générée,
+  « Renvoyer » un véhicule ou un esprit. « Ranger » reste réservé à la
+  rencontre que l'on ferme.
+
 ## [1.155.7] — 2026-09-06
 
 ### Corrigé

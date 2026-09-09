@@ -2692,7 +2692,7 @@ export const CardRenderer = {
       return CardFooter.render(
         [
           { kind: "secondary", label: "Éditer", attrs: `data-action="edit-open" data-id="${id}"` },
-          { kind: "primary", danger: true, icon: "⏏", label: "Ranger", attrs: `data-action="dismiss-vehicle" data-id="${id}"` },
+          { kind: "primary", danger: true, icon: "⏏", label: "Renvoyer", attrs: `data-action="dismiss-vehicle" data-id="${id}"` },
         ],
         { savedActions: saved },
       );
@@ -2700,7 +2700,7 @@ export const CardRenderer = {
     if (pnj.type === "spirit" && pnj.ownerId) {
       const acts = [
         { kind: "secondary", label: "Éditer", attrs: `data-action="edit-open" data-id="${id}"` },
-        { kind: "primary", danger: true, icon: "⏏", label: "Ranger", attrs: `data-action="dismiss-spirit" data-id="${id}"` },
+        { kind: "primary", danger: true, icon: "⏏", label: "Renvoyer", attrs: `data-action="dismiss-spirit" data-id="${id}"` },
       ];
       // Lié / Non lié (SR5/SR6) : mirroir d'Inscrire (sprite) — un esprit lié
       // ajoute la Magie de l'invocateur à l'opposition au bannissement (SR5).
@@ -2758,7 +2758,10 @@ export const CardRenderer = {
     if (App.getEditionModule(pnj.edition)?.foundryExport)
       acts.push({ kind: "menu", label: "Foundry", attrs: `data-action="export-foundry" data-id="${id}"` });
     if (has("discard"))
-      acts.push({ kind: "menu", danger: true, label: "Ranger", attrs: `data-action="discard" data-id="${id}"` });
+      // « Écarter » (le mot du toast) — « Ranger » disait ici l'inverse de ce
+      // qu'il dit une carte plus haut (Sauvegarder → « rangé dans Ombres
+      // portées ») et de ce qu'il dit sur une rencontre (fermer et stocker).
+      acts.push({ kind: "menu", danger: true, label: "Écarter", attrs: `data-action="discard" data-id="${id}"` });
     if (has("remove"))
       acts.push({ kind: "menu", danger: true, label: "Supprimer", attrs: `data-action="remove-pnj" data-id="${id}"` });
     if (has("remove-pj"))

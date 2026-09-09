@@ -61,6 +61,21 @@ export const Dossiers = {
   scenesOf(runId) {
     return this.children(runId).filter((d) => d.kind === "scene");
   },
+  /** Le RUN qui porte un nœud : lui-même s'il est un run, sinon le premier
+      ancêtre `kind:"run"` — une scène de niveau scène joue DANS son run, un
+      sous-dossier de run range POUR son run. `null` hors de tout run. Source
+      unique pour Jouer (`_currentRunId`) et le tracker (`sceneStatus`) : une
+      scène vivante rend son run vivant, quel que soit le niveau où elle est
+      keyée. Borné (garde) comme `App.context.trail`. */
+  runOf(id) {
+    let node = this.get(id);
+    let guard = 0;
+    while (node && guard++ < 50) {
+      if (node.kind === "run") return node.id;
+      node = node.parentId != null ? this.get(node.parentId) : null;
+    }
+    return null;
+  },
 
   /* ---- Arêtes de succession → (VIS-16 étape 4 : « enchaîner »).
      La MÊME grammaire aux 3 échelles (scène→scène, run→run, campagne→campagne).

@@ -101,10 +101,11 @@ export const RunGen = {
         }
         // R4 : miroir du geste « rencontre » de dossierbar sur la carte de
         // run (même dossierId, mêmes méthodes — aucune logique dupliquée).
-        case "open-rencontre":
-          DossierBar.openRencontre(actionEl.dataset.dossier);
-          this._refreshCard(actionEl.closest(".run-card")?.dataset.id);
+        case "open-rencontre": {
+          const cardId = actionEl.closest(".run-card")?.dataset.id;
+          DossierBar.openRencontre(actionEl.dataset.dossier).then(() => this._refreshCard(cardId));
           break;
+        }
         case "close-rencontre":
           DossierBar.closeRencontre(actionEl.dataset.dossier);
           this._refreshCard(actionEl.closest(".run-card")?.dataset.id);
@@ -119,19 +120,38 @@ export const RunGen = {
       ensuite au lieu du bouton — le topos ne reste plus sans lien visible une
       fois promu). Le nom est proposé d'après le topos, éditable. */
   async toDossier(runId, suggested) {
+    // PASSAGE — un run naît DANS son contexte, plus par jointure de nom à
+    // l'aveugle : le run en focus (ou la scène / le sous-dossier d'un run) est
+    // PROPOSÉ comme nom ; le garder rattache le topos à ce run ; en taper un
+    // autre crée un run neuf SOUS la campagne en focus (ou celle du run en
+    // focus), à la racine à défaut. Avant, tout run né d'un topos était orphelin
+    // de campagne, et le message de Jouer « le rangera ici » mentait.
+    const focus = (typeof App !== "undefined" && App.context && App.context.dossier) || null;
+    const focusRun = focus ? Dossiers.runOf(focus) : null;
     const input = await Dialog.prompt({
       title: "Faire un run",
-      label: "Nom du run",
-      value: suggested || "Run",
+      label: focusRun ? "Nom du run (le run en cours de préparation est proposé)" : "Nom du run",
+      value: (focusRun && Dossiers.nameOf(focusRun)) || suggested || "Run",
       confirmLabel: "Faire le run",
     });
     if (input === null || !input.trim()) return;
     const name = input.trim();
     // Le dossier créé est typé « run » (mission canon de la colonne
-    // Campagne › Run › Scène) ; un dossier existant garde son type (on ne
-    // redéfinit pas la structure déjà posée par le MJ).
-    let dossier = Dossiers.list().find((d) => d.name === name);
-    if (!dossier) dossier = Dossiers.add(name, null, "run");
+    // Campagne › Run › Scène) ; un run existant du même nom est réutilisé
+    // (jamais de doublon silencieux), sans redéfinir sa structure.
+    let dossier =
+      focusRun && name === Dossiers.nameOf(focusRun)
+        ? Dossiers.get(focusRun)
+        : Dossiers.list().find((d) => d.name === name && d.kind === "run") || null;
+    if (!dossier) {
+      const parentId =
+        focus && Dossiers.kindOf(focus) === "campaign"
+          ? focus
+          : focusRun
+            ? (Dossiers.get(focusRun) || {}).parentId || null
+            : null;
+      dossier = Dossiers.add(name, parentId, "run");
+    }
     const run = this._runs.find((r) => r.id === runId);
     if (run && dossier) {
       // R0 : jointure par id (stable au renommage) ; dossierName gardé en
@@ -588,9 +608,22 @@ export const RunGen = {
     });
   },
   clearAll() {
+    if (!this._runs.length) return;
+    // FILET — la seule suppression de masse sans annulation de l'app, alors
+    // que « Virer » unitaire vit en rouge derrière ⋯ : même patron que
+    // `Collection.removeMany` (instantané + toastUndo).
+    const snapshot = this._runs;
     this._runs = [];
     this._save();
     document.getElementById("run-list").innerHTML = "";
+    toastUndo(`${snapshot.length} topos effacé${snapshot.length > 1 ? "s" : ""}.`, () => {
+      this._runs = snapshot;
+      this._save();
+      const list = document.getElementById("run-list");
+      if (!list) return;
+      list.innerHTML = "";
+      for (const run of this._runs) this._renderCard(run, false);
+    });
   },
 };
 

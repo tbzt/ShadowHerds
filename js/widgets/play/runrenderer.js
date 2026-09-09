@@ -5,7 +5,6 @@
    ============================================================ */
 import { CardRenderer } from "../card/cardrenderer.js";
 import { CardFooter } from "../card/cardfooter.js";
-import { EncounterStore } from "../../core/encounterstore.js";
 import { Dossiers } from "../journal/dossiers.js";
 
 export const RunRenderer = {
@@ -133,11 +132,14 @@ export const RunRenderer = {
       rangé dans un dossier réellement typé « run ». */
   _rencontreAction(r) {
     if (!r.dossierId || Dossiers.kindOf(r.dossierId) !== "run") return [];
-    const active = Encounter.activeDossierId === r.dossierId;
+    // Prédicat unique (Encounter.sceneStatus) — le même que Jouer et la barre
+    // de dossiers, pour qu'aucune surface ne dise « ouvrir » sur un run vivant.
+    const status = Encounter.sceneStatus(r.dossierId);
+    const active = status === "live";
     const action = active ? "close-rencontre" : "open-rencontre";
     const label = active
       ? "⏹ Fermer la rencontre"
-      : `▶ ${EncounterStore.has(r.dossierId) ? "Rouvrir" : "Ouvrir"} la rencontre`;
+      : `▶ ${status === "stashed" ? "Rouvrir" : "Ouvrir"} la rencontre`;
     return [{ kind: "secondary", label, attrs: `data-action="${action}" data-dossier="${r.dossierId}"` }];
   },
 

@@ -18,6 +18,7 @@ import { ChaseRenderer } from "../widgets/play/chaserenderer.js";
 import { Characters } from "./characters.js";
 import { Dialog } from "../widgets/kit/dialog.js";
 import { Dice } from "../rules/dice.js";
+import { Dossiers } from "../widgets/journal/dossiers.js";
 import { EdgeActions } from "../rules/edgeactions.js";
 import { EncounterStore } from "../core/encounterstore.js";
 import { DiceRoller } from "../widgets/dice/diceroller.js";
@@ -112,7 +113,9 @@ export const Encounter = {
     if (!pnjId || this._find(pnjId)) return false;
     this.state.combatants.push({ pnjId, init: this._initFor(pnjId), hasActed: false, note: "" });
     this._commit();
-    if (!silent) toast("Ajouté au suivi de combat.");
+    // PASSAGE — le geste mène là où l'on arrive : la perche « Ouvrir » évite
+    // le second clic sur Combat (ou la touche c) après chaque ⚔ de carte.
+    if (!silent) toastAction("Ajouté au suivi de combat.", "Ouvrir", () => this.open());
     return true;
   },
 
@@ -126,11 +129,13 @@ export const Encounter = {
       }
     }
     if (n) this._commit();
-    toast(
-      n
-        ? `${n} combattant${n > 1 ? "s" : ""} ajouté${n > 1 ? "s" : ""} au suivi de combat.`
-        : "Déjà dans le suivi de combat.",
-    );
+    if (n)
+      toastAction(
+        `${n} combattant${n > 1 ? "s" : ""} ajouté${n > 1 ? "s" : ""} au suivi de combat.`,
+        "Ouvrir",
+        () => this.open(),
+      );
+    else toast("Déjà dans le suivi de combat.");
     return n;
   },
 
@@ -395,14 +400,34 @@ export const Encounter = {
       un dossier (usage historique, pas de régression). */
   activeDossierId: null,
 
+  /** ÉTAT DE SCÈNE d'un dossier — la SEULE source pour « vivante / rangée /
+      aucune ». Jouer, la carte de topos et la barre de dossiers lisaient
+      jusqu'ici tantôt `App.context.scene`, tantôt `activeDossierId`, tantôt
+      le stash : trois prédicats pour un fait, et un run dont une SCÈNE
+      (VIS-16) tournait passait pour froid — son bouton proposait de « lancer »
+      par-dessus. `"live"` si la scène vivante est ce dossier OU joue sous lui
+      (`Dossiers.runOf`) ; `"stashed"` s'il a un bundle rangé ; `"none"` sinon.
+      Les trois valeurs sont exclusives : un dossier vivant ne se dit pas aussi
+      rangé, même si un vieux bundle traîne. */
+  sceneStatus(dossierId) {
+    if (!dossierId) return "none";
+    const live = this.activeDossierId;
+    if (live && (live === dossierId || Dossiers.runOf(live) === dossierId)) return "live";
+    return EncounterStore.has(dossierId) ? "stashed" : "none";
+  },
+
   /** Fermer la rencontre : snapshot de la scène active dans le slot du
       dossier, puis remise à vide (sans confirmation — c'est un rangement,
-      pas une suppression : le bundle reste récupérable via `restore`). */
+      pas une suppression : le bundle reste récupérable via `restore`).
+      Fermer depuis le RUN alors que c'est une de ses SCÈNES qui tourne range
+      sous l'id de la scène (là où `restore` la retrouvera), pas sous le run. */
   stash(dossierId) {
     if (!dossierId) return;
-    EncounterStore.writeBundle(dossierId, this.state);
+    const live = this.activeDossierId;
+    const target = live && live !== dossierId && Dossiers.runOf(live) === dossierId ? live : dossierId;
+    EncounterStore.writeBundle(target, this.state);
     this.state = this._empty();
-    if (this.activeDossierId === dossierId) this.activeDossierId = null;
+    if (this.activeDossierId === target) this.activeDossierId = null;
     // Miroir vers la scène vivante d'App.context (persistée).
     if (typeof App !== "undefined" && App.context) App.context.setScene(this.activeDossierId);
     this._commit();
@@ -410,15 +435,41 @@ export const Encounter = {
 
   /** Ouvrir la rencontre : restaure le bundle du dossier dans le tracker
       (round/pass/turnIndex/combatants/serverId à l'identique). Un dossier
-      sans bundle restaure une scène vide plutôt que d'échouer. */
-  restore(dossierId) {
-    if (!dossierId) return;
+      sans bundle restaure une scène vide plutôt que d'échouer.
+
+      PASSAGE IDEMPOTENT — « lancer » ne détruit jamais ce qui tourne. Trois
+      gardes, dans l'ordre, au seul endroit propriétaire de l'état :
+      1. c'est DÉJÀ la scène vivante → on ne relit pas le stash (jamais
+         resynchronisé pendant qu'on joue : il la vidait — mesuré 3 combattants
+         / round 4 → 0 / round 1 en un clic), on la garde telle quelle ;
+      2. une AUTRE rencontre tourne → on la range d'abord (son bundle reste
+         récupérable), puis on ouvre celle-ci — avant, elle était écrasée
+         sans un mot ;
+      3. une scène SANS run tourne (ouverte par la nav Combat) → elle n'a pas
+         de slot où être rangée : on demande avant de l'écraser.
+      Renvoie `false` si le MJ renonce (3), `true` sinon. */
+  async restore(dossierId) {
+    if (!dossierId) return false;
+    if (this.activeDossierId === dossierId) return true;
+    if (this.activeDossierId) {
+      EncounterStore.writeBundle(this.activeDossierId, this.state);
+    } else if (this.state.combatants.length) {
+      const n = this.state.combatants.length;
+      const ok = await Dialog.confirm({
+        title: "Une scène tourne déjà",
+        message: `${n} combattant${n > 1 ? "s" : ""} en scène, sans run. Ouvrir « ${Dossiers.nameOf(dossierId) || "?"} » les retire de la scène (les fiches restent dans la bibliothèque).`,
+        confirmLabel: "Ouvrir quand même",
+        danger: true,
+      });
+      if (!ok) return false;
+    }
     this.state = EncounterStore.readBundle(dossierId) || this._empty();
     this.activeDossierId = dossierId;
     // Miroir vers la scène vivante d'App.context (persistée) → survit au reload.
     if (typeof App !== "undefined" && App.context) App.context.setScene(dossierId);
     EncounterRenderer.resetActiveCard();
     this._commit();
+    return true;
   },
 
   /* ---- Initiative ---- */
@@ -553,7 +604,7 @@ export const Encounter = {
     const pnjs = ids.map((id) => PnjLookup.find(id)).filter(Boolean);
     const n = Statuses.setMany(pnjs, key, 1);
     if (!n) return;
-    Shadows.save();
+    for (const pnj of pnjs) UI.persistEntity(pnj.id);
     for (const pnj of pnjs) CardRenderer.refresh(pnj);
     EncounterRenderer._activeCardId = null;
     this._render();
@@ -989,7 +1040,7 @@ export const Encounter = {
     if (this.state.chase) Pursuit.onActionPlayed(pnjId, key);
 
     if (poses.length) {
-      Shadows.save();
+      UI.persistEntity(pnj.id);
       CardRenderer.refresh(pnj); // la ligne d'états de la carte, tout de suite
     }
 
@@ -1050,7 +1101,7 @@ export const Encounter = {
     else c.lastAction = u.lastAction;
     if (pnj && u.statuses.length) {
       for (const s of u.statuses) Statuses.set(pnj, s.status, s.avant);
-      Shadows.save();
+      UI.persistEntity(pnj.id);
       CardRenderer.refresh(pnj);
     }
     delete c.lastActionUndo; // une reprise, pas un cliquet
@@ -2184,7 +2235,7 @@ export const Encounter = {
       if (pnj && Statuses.set(pnj, it.key, 0) === 0) touches.set(pnj.id, pnj);
     }
     if (!touches.size) return;
-    Shadows.save();
+    for (const pnj of touches.values()) UI.persistEntity(pnj.id);
     // Même chemin de rafraîchissement que healCombatant : la carte de chaque
     // PNJ touché, puis le tracker (dont les badges de ligne sont calculés).
     for (const pnj of touches.values()) CardRenderer.refresh(pnj);
@@ -2412,7 +2463,7 @@ export const Encounter = {
     }
     if (!moniteurs && !etats && !munitions) return;
     EncounterRenderer._activeCardId = null;
-    Shadows.save();
+    UI.persistEntity(pnj.id);
     CardRenderer.refresh(pnj);
     // Le badge de malus de la ligne (calculé depuis le moniteur)
     // resterait sinon périmé jusqu'au prochain rendu du tracker.
@@ -2435,7 +2486,7 @@ export const Encounter = {
     const cm = App.editionModule && App.editionModule.conditionMonitor;
     if (!pnj || !cm || !cm.knockOut || cm.isDestroyed(pnj)) return;
     cm.knockOut(pnj);
-    Shadows.save();
+    UI.persistEntity(pnj.id);
     CardRenderer.refresh(pnj);
     this._render();
     toast("Mis hors de combat.");
@@ -2464,7 +2515,7 @@ export const Encounter = {
     // trois chemins de dégâts (chip Réagir, cran de gravité Anarchy, bilan de round).
     const c = this._find(pnjId);
     if (c && n > 0) c.hurtRound = this.state.round;
-    Shadows.save();
+    UI.persistEntity(pnj.id);
     CardRenderer.refresh(pnj);
     this._render();
     return res;
@@ -2622,13 +2673,13 @@ export const Encounter = {
       delete c.recoil;
       delete c.weaponMode; // F6 — le mode de tir aussi
       if (this._resetMonitors(pnj)) {
+        UI.persistEntity(pnj.id); // écrivain unique : pool, Ombres, PJ, spiders
         CardRenderer.refresh(pnj);
         n++;
       }
     }
     EncounterRenderer._activeCardId = null;
     if (n) {
-      Shadows.save();
       this._render(); // badges de malus de toutes les lignes à jour
     } else {
       this._commit();

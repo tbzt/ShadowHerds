@@ -20,7 +20,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.155.7",
+  VERSION: "1.155.8",
 
   edition: "none",
   editionModule: null,
@@ -580,6 +580,7 @@ export const App = {
       "matrix",
       "run",
       "play",
+      "trames",
       "settings",
       "spectateur",
     ];
@@ -596,6 +597,23 @@ export const App = {
     const editions = ["sr5", "sr6", "anarchy2", "anarchy1"];
     if (parts.length >= 1 && editions.includes(parts[0])) return parts[0];
     return null;
+  },
+
+  /* ---- Ouvrir le présent : la porte « Combat » lit le contexte ----
+     Sans rencontre ouverte mais avec un run en focus (ou une scène / un
+     sous-dossier d'un run), Combat ouvre LA scène de ce run — rangée ou
+     neuve — au lieu d'un état sans maison que « Lancer la scène » écraserait
+     ensuite. `restore` peut refuser (scène sans run à écraser, MJ qui
+     renonce) : on retombe alors sur l'état courant, jamais sur rien. Sans
+     contexte de run, comportement d'origine (scène libre). Une seule porte
+     pour la nav, la topbar, la sidebar, le hub, la bottom-nav et la touche c. */
+  openCombat() {
+    const focus = this.context.dossier;
+    const run = !Encounter.activeDossierId && focus ? Dossiers.runOf(focus) : null;
+    if (!run) return void Encounter.open();
+    DossierBar.openRencontre(run).then((ok) => {
+      if (!ok) Encounter.open();
+    });
   },
 
   /* ---- Retour à la maison « Jouer » (tap sur le logo, surtout mobile) ---- */
@@ -831,7 +849,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ContactsBook.generate();
         break;
       case "encounter-open":
-        Encounter.open();
+        App.openCombat();
         break;
       case "open-trames": // compat : atelier de trame — désormais un panneau
         this.showPanel("trames");
@@ -964,7 +982,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("dice-roll-btn")?.click();
         break;
       case "c":
-        Encounter.open();
+        App.openCombat();
         break;
       case "j":
         DiceLog.toggle();
