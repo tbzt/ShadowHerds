@@ -10,6 +10,24 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.156.1] — 2026-09-09
+
+### Corrigé
+
+- **La pastille de jet ⚄ est toujours au même endroit : à droite de la case.**
+  Elle se posait là où finissait le nom de l'arme — donc à une abscisse
+  différente à chaque ligne, selon la longueur du nom et de la ligne de
+  stats. Sur les lignes de sorts et de formes complexes, faute de mise en page
+  de rangée, elle tombait carrément **sous** le nom. Chaque lancer demandait de
+  relocaliser sa cible du regard, sur l'écran où le meneur clique le plus.
+  Lignes d'armes, de sorts, de formes complexes et d'actions Matrice sont
+  désormais des rangées à deux colonnes : l'identité à gauche, la pastille
+  collée au bord droit, à la même place d'une ligne à l'autre et d'une carte à
+  l'autre — la constance spatiale du § « Chrome de carte », appliquée à
+  l'intérieur de la carte. Les compagnons optionnels (pilule « Chance » avant
+  le jet, rappel du dernier jet ⟳) se rangent **avant** elle plutôt que de la
+  décaler vers l'intérieur sur les seules lignes qui en portent.
+
 ## [1.156.0] — 2026-09-09
 
 ### Ajouté

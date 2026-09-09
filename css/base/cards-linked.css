@@ -491,11 +491,30 @@
     box-shadow: none;
   }
 }
+/* Une ligne lançable est une rangée à DEUX colonnes : l'identité à gauche, la
+   pastille de jet à droite, collée au bord de la case. La pastille ne se pose
+   donc plus là où finit le nom (elle sautait d'une ligne à l'autre, et passait
+   carrément sous le nom sur les sorts) : même geste, même endroit, d'une arme
+   à l'autre comme d'un sort à l'autre — « une action reine, toujours au même
+   coin » (CONTRIBUTING § Chrome de carte) appliqué à l'intérieur de la carte.
+   Le `display` est posé ICI et pas laissé à `.cluster` : les lignes de sorts
+   et de formes complexes (`.spell-line`) ne portent pas cette classe. */
 .weapon-line {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--sp-2);
   background: var(--bg-mid);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 7px 10px;
+}
+/* L'identité (nom + stats, ou `.spell-main`) prend toute la place restante ;
+   `min-width: 0` l'autorise à passer sous sa largeur de contenu — sans quoi un
+   nom long repousserait la pastille hors de la case au lieu de se replier. */
+.weapon-line > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .weapon-line.weapon-rollable {
   border-color: color-mix(in srgb, var(--accent) 45%, transparent);
@@ -526,6 +545,13 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);
+  margin-left: auto;
+  flex-shrink: 0;
+  /* Dernière de la rangée quoi qu'il arrive : les compagnons optionnels
+     (pastille Chance pré-jet, rappel du dernier jet ⟳) se rangent AVANT elle
+     plutôt que de la décaler vers l'intérieur sur les seules lignes qui en
+     portent. Sans cet `order`, la constance ne tiendrait qu'à leur absence. */
+  order: 1;
   padding: 3px 8px;
   border-radius: var(--radius-sm);
   background: var(--glow);
@@ -624,10 +650,6 @@
 }
 .cyberdeck-more-body {
   margin-top: 6px;
-}
-.spell-line .spell-main {
-  min-width: 0;
-  flex: 1;
 }
 .spell-line .weapon-name {
   flex-wrap: nowrap;
