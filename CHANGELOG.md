@@ -10,6 +10,53 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.158.0] — 2026-09-09
+
+### Ajouté
+
+- **Le système à modules chronologiques de SR6 est jouable.** La quatrième
+  méthode du Compagnon du Sixième Monde ne se contente plus d'annoncer qu'elle
+  est indisponible : elle est là, avec ses **86 modules relevés au livre** —
+  75 modules de choix de vie et 11 modules d'événements. On y compose une
+  biographie plutôt qu'on ne dépense des points : trois modules imposés
+  (Naissance, Croissance, Majorité), puis **exactement huit** modules d'âge
+  adulte, dont un seul peut être pris deux fois.
+- **Les étapes Attributs et Compétences disparaissent dans cette méthode**, et
+  c'est voulu : on n'y dépense aucune réserve, ce sont les modules qui
+  accordent les rangs. Les afficher vides aurait été un écran qui ment sur ce
+  qu'il y a à y faire.
+- **Chaque option d'un module se tranche à l'écran.** Un parcours complet mais
+  sans choix serait resté « valide » tout en produisant un personnage vide —
+  le vert d'un validateur qui ne mesure qu'une absence d'erreur. La validation
+  exige donc que chaque puce à options soit résolue.
+- **Les rangs perdus au plafond sont annoncés.** Un parcours généreux peut
+  pousser un attribut au-delà du maximum du métatype ; l'excédent ne compte
+  pas, et l'écran le dit (« CON 13 → 8, maximum Ork ») au lieu de rogner en
+  silence.
+
+### Notes de règles
+
+- **L'économie de contacts de cette méthode n'est celle d'aucune autre** : le
+  Charisme n'apporte aucun point et ne plafonne plus les indices, ce sont les
+  modules qui donnent 2 ou 4 points, un nouveau contact en coûte 2, et le
+  plafond est 8 — sauf si on améliore au karma de personnalisation, où le
+  Charisme redevient la limite.
+- Les modules génériques (« un attribut physique de votre choix ») sont
+  développés en listes concrètes. Sans ça, le personnage gagnait un attribut
+  littéralement nommé « un attribut physique ».
+- **Deux natures de restriction**, distinguées par le seul pluriel du livre :
+  « Éveillé**s** uniquement » sous un titre ferme le module (9 modules) ;
+  « Éveillé uniquement » au singulier dans une puce ne ferme qu'une option.
+
+### Interne
+
+- Le catalogue vit dans son propre fichier, `js/editions/sr6.lifemodules.js` :
+  c'est une table, et le projet isole ses tables pour qu'une valeur reste
+  corrigeable sans toucher aux règles qui la lisent.
+- Un `<select>` peut désormais porter une **action** et non une simple liaison
+  de champ : il se déclenche au `change`, pas au `click`, où sa valeur n'a pas
+  encore changé.
+
 ## [1.157.0] — 2026-09-09
 
 ### Ajouté

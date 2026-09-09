@@ -769,6 +769,109 @@ export const CharGen = {
     </div>`;
   },
 
+  /* ---- Étape : parcours de vie (SR6, modules chronologiques) ----
+     Trois modules imposés, puis huit emplacements adultes. Chaque option d'un
+     module est un vrai choix à résoudre ICI : sans ça, `validate()` passerait
+     sur un parcours complet mais vide de décisions — le « faux vert » où le
+     critère de succès est une absence d'erreur et qu'un objet vide satisfait
+     aussi bien qu'un objet correct. */
+  _render_life_modules() {
+    const c = this._creation();
+    const b = this._build;
+    const LM = c.lifeModules;
+    const cat = c.lifeModuleCatalog(b);
+    const grants = c.lifeModuleGrants(b);
+    b.lifeModules = b.lifeModules || [];
+
+    b.lifeImposed = b.lifeImposed || { croissanceSkills: [], talent: "", bestAttr: "" };
+    const imp = b.lifeImposed;
+    const sel = (action, val, options, vide) =>
+      `<select data-cg-action="${action}">
+        <option value="">${this._esc(vide)}</option>
+        ${options.map((o) => `<option value="${this._esc(o)}" ${val === o ? "selected" : ""}>${this._esc(o)}</option>`).join("")}
+      </select>`;
+
+    const imposes = LM.imposed
+      .map((m) => {
+        const bits = [];
+        if (m.skillCount) {
+          for (let k = 0; k < m.skillCount; k++) {
+            bits.push({ html: `compétence ${k + 1} au rang ${m.skillRank} : ${sel(`lm-croissance-${k}`, imp.croissanceSkills[k], m.skillPool, "— à choisir —")}` });
+          }
+        }
+        if (m.talentRank) {
+          bits.push({ html: `talent principal (rang ${m.talentRank}, ${m.talentRankIfRepeated} s'il vient de la Croissance) : ${sel("lm-talent", imp.talent, c.SKILLS.map((x) => x.name), "— à choisir —")}` });
+        }
+        if (m.bestAttrBonus) {
+          bits.push({ html: `meilleur attribut, +${m.bestAttrBonus} : ${sel("lm-bestattr", imp.bestAttr, c.ATTRS, "— à choisir —")}` });
+        }
+        if (m.nuyen) bits.push(`+${m.nuyen.toLocaleString("fr-FR")} ¥`);
+        if (m.contact) bits.push(`un contact à ${m.contact.points} points (minimum ${m.contact.minEach} par indice)`);
+        if (m.knowledge) bits.push(`connaissance ${m.knowledge}`);
+        (m.effects || []).forEach((e) => bits.push(e));
+        const li = bits
+          .map((x) => (typeof x === "string" ? `<li>${this._esc(x)}</li>` : `<li>${x.html}</li>`))
+          .join("");
+        return `<div class="cg-lm-imposed"><strong>${this._esc(m.label)}</strong>
+          <span class="cg-section-note">${this._esc(m.hint)}</span>
+          <ul class="cg-lm-list">${li}</ul></div>`;
+      })
+      .join("");
+
+    const choixSelect = (slotIdx, kind, optIdx, parmi, valeur) =>
+      `<select class="cg-lm-choice" data-cg-action="lm-choice" data-idx="${slotIdx}" data-kind="${kind}" data-opt="${optIdx}">
+        ${parmi.map((o) => `<option value="${this._esc(o)}" ${valeur === o ? "selected" : ""}>${this._esc(o)}</option>`).join("")}
+      </select>`;
+
+    const slots = [];
+    for (let i = 0; i < LM.adultSlots; i++) {
+      const slot = b.lifeModules[i] || null;
+      const m = slot && slot.id ? c.lifeModuleById(slot.id) : null;
+      const opts = cat
+        .map((x) => `<option value="${this._esc(x.id)}" ${m && m.id === x.id ? "selected" : ""}>${this._esc(x.nom)}${x.type === "evenement" ? " (événement)" : ""}</option>`)
+        .join("");
+      let detail = "";
+      if (m) {
+        const lignes = [];
+        (m.attrs || []).forEach((a, k) => {
+          const parmi = c.expandParmi(a.parmi, "attrs");
+          lignes.push(`<li>+${a.n} à ${choixSelect(i, "attrs", k, parmi, slot.attrs && slot.attrs[k])}</li>`);
+        });
+        (m.skills || []).forEach((sk, k) => {
+          const n = sk.pour === 2 ? "deux compétences" : "une compétence";
+          const parmi = c.expandParmi(sk.parmi, "skills");
+          lignes.push(`<li>+${sk.n} rang à ${n} : ${choixSelect(i, "skills", k, parmi, slot.skills && slot.skills[k])}</li>`);
+        });
+        if (m.know) lignes.push(`<li>connaissance : ${choixSelect(i, "know", 0, m.know.parmi.concat(m.know.ouLangue ? ["— un rang de Langue —"] : []), slot.know)}</li>`);
+        if (m.nuyen) lignes.push(`<li>+${m.nuyen.toLocaleString("fr-FR")} ¥</li>`);
+        if (m.contactPts) lignes.push(`<li>${m.contactPts} points de contacts${m.contactCats ? ` (${this._esc(m.contactCats.join(", "))})` : ""}</li>`);
+        if (m.special) lignes.push(`<li class="cg-lm-special">⚑ ${this._esc(m.special)}</li>`);
+        detail = `<ul class="cg-lm-list">${lignes.join("")}</ul>`;
+      }
+      slots.push(`<div class="cg-lm-slot">
+        <div class="cluster cg-lm-head">
+          <span class="cg-lm-num">${i + 1}</span>
+          <select data-cg-action="lm-pick" data-idx="${i}">
+            <option value="">— emplacement libre —</option>${opts}
+          </select>
+          ${m ? `<button class="btn-icon-tiny danger" data-cg-action="lm-clear" data-idx="${i}" title="Vider">✕</button>` : ""}
+        </div>
+        ${detail}
+      </div>`);
+    }
+
+    return `<div class="stack">
+      ${this._stepErrorBox("modules")}
+      <p class="cg-hint">Trois modules imposés, puis <strong>exactement ${LM.adultSlots}</strong> modules d'âge adulte — ni plus, ni moins, et un seul peut être pris deux fois. L'ordre raconte votre vie. Les ressources s'additionnent et ne se dépensent qu'à la fin.</p>
+      <div class="cg-section-label">Les trois premiers, imposés</div>
+      ${imposes}
+      ${(grants.overflow || []).length ? `<div class="stack cg-step-errors"><div class="cg-hint">⚑ Rangs perdus au plafond : ${this._esc(grants.overflow.join(" · "))}. Le parcours donne plus que le métatype ne peut porter — c'est légal, mais l'excédent ne compte pas.</div></div>` : ""}
+      <div class="cg-section-label">Âge adulte <span class="cg-section-note">${grants.modules}/${LM.adultSlots} · ${grants.nuyen.toLocaleString("fr-FR")} ¥ · ${grants.contactPts} points de contacts</span></div>
+      ${slots.join("")}
+      <p class="cg-hint">Dans cette méthode, le Charisme n'apporte aucun point de contacts et ne plafonne plus les indices : ce sont les modules qui les donnent, et le plafond est ${LM.contacts.ratingCap}.</p>
+    </div>`;
+  },
+
   /* ---- Étape : Narratif (p.50-51) ---- */
   _render_narrative() {
     const b = this._build;
@@ -1031,6 +1134,51 @@ export const CharGen = {
         break;
       }
 
+      case "lm-talent":
+      case "lm-bestattr": {
+        b.lifeImposed = b.lifeImposed || { croissanceSkills: [], talent: "", bestAttr: "" };
+        b.lifeImposed[action === "lm-talent" ? "talent" : "bestAttr"] = el.value;
+        afterMutate();
+        break;
+      }
+
+      case "lm-pick": {
+        const i = Number(el.dataset.idx);
+        b.lifeModules = b.lifeModules || [];
+        b.lifeModules[i] = el.value ? { id: el.value, attrs: [], skills: [], know: null } : null;
+        afterMutate();
+        break;
+      }
+      case "lm-clear": {
+        b.lifeModules[Number(el.dataset.idx)] = null;
+        afterMutate();
+        break;
+      }
+      case "lm-croissance-0":
+      case "lm-croissance-1":
+      case "lm-croissance-2":
+      case "lm-croissance-3": {
+        b.lifeImposed = b.lifeImposed || { croissanceSkills: [], talent: "", bestAttr: "" };
+        b.lifeImposed.croissanceSkills[Number(action.slice(-1))] = el.value;
+        afterMutate();
+        break;
+      }
+
+      case "lm-choice": {
+        const i = Number(el.dataset.idx);
+        const slot = (b.lifeModules || [])[i];
+        if (!slot) break;
+        const k = el.dataset.kind;
+        if (k === "know") slot.know = el.value;
+        else {
+          slot[k] = slot[k] || [];
+          slot[k][Number(el.dataset.opt)] = el.value;
+        }
+        this._saveDraft();
+        this._renderBudget();
+        break;
+      }
+
       case "set-priority": {
         b.priorities[el.dataset.col] = el.dataset.letter;
         afterMutate();
@@ -1243,6 +1391,14 @@ export const CharGen = {
     const overlay = () => document.getElementById("chargen-overlay");
 
     document.addEventListener("change", (e) => {
+      // Un <select> peut porter une ACTION plutôt qu'une liaison de champ
+      // (choix d'un module de parcours) : il se déclenche au change, pas au
+      // click — au click, sa valeur n'a pas encore changé.
+      const act = e.target.closest("[data-cg-action]");
+      if (act && overlay()?.contains(act) && act.tagName === "SELECT") {
+        this._handleAction(act);
+        return;
+      }
       const el = e.target.closest("[data-cg]");
       if (!el || !overlay()?.contains(el)) return;
       this._applyField(el);

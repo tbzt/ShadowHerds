@@ -558,3 +558,64 @@
     font-size: 10px;
   }
 }
+
+/* ============================================================
+   PARCOURS DE VIE (SR6, modules chronologiques)
+   Huit emplacements numérotés qui se lisent comme une biographie :
+   l'ordre de choix raconte la vie du personnage, donc la colonne
+   garde son numéro visible plutôt que de se réordonner.
+   ============================================================ */
+.cg-lm-imposed {
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  background: var(--bg-raised);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+}
+.cg-lm-list {
+  margin: 4px 0 0;
+  padding-left: 1.1em;
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+}
+.cg-lm-list li {
+  margin-bottom: 2px;
+}
+/* Les irrégularités du livre sont montrées, pas masquées : le meneur doit
+   savoir que la puce sort du gabarit avant de trancher. */
+.cg-lm-special {
+  color: var(--text-dim);
+  font-style: italic;
+}
+.cg-lm-slot {
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cg-lm-head {
+  gap: 6px;
+  align-items: center;
+}
+.cg-lm-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-dim);
+  background: var(--bg-raised);
+  border-radius: 50%;
+}
+.cg-lm-choice {
+  max-width: 100%;
+}
+@media (max-width: 700px) {
+  .cg-lm-head {
+    flex-wrap: wrap;
+  }
+  .cg-lm-head select {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}

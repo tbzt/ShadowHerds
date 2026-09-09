@@ -58,7 +58,6 @@ Object.assign(EditionSR6, {
         label: "Système à modules chronologiques",
         source: "Compagnon du Sixième Monde p.29",
         family: "modules",
-        wip: true,
       },
     },
 
@@ -187,6 +186,118 @@ Object.assign(EditionSR6, {
     CASH_MAX: 5000,
     ILLEGAL_AVAILABILITY_CAP: 7,
 
+    /* ============================================================
+       SYSTÈME À MODULES CHRONOLOGIQUES (Compagnon p.29-47)
+       Règles du système : relevées et VÉRIFIÉES À L'IMAGE le 2026-09-09
+       (page imprimée 31). Le catalogue des 86 modules d'âge adulte vit dans
+       sr6.lifemodules.js — table isolée pour rester corrigeable. Relevé
+       détaillé et irrégularités du livre : REFERENCE/creation-modules-sr6/.
+       ============================================================ */
+    lifeModules: {
+      /** Trois modules imposés, dans l'ordre, puis huit modules adultes. */
+      adultSlots: 8,
+      /** « Vous devez choisir huit modules, ni plus, ni moins, et seul l'un
+          d'entre eux peut être sélectionné deux fois » (p.31). */
+      repeatableMax: 1,
+
+      /** ⚠ L'économie de contacts de CETTE méthode n'est pas celle des trois
+          autres : le Charisme n'apporte AUCUN point et ne plafonne plus les
+          indices — ce sont les modules qui donnent 2 ou 4 points (p.30). */
+      contacts: {
+        fromCharisma: false,
+        newContactCost: 2, // Réseau 1 + Loyauté 1
+        ratingCap: 8,
+        /** Améliorer un contact au karma de personnalisation : 1 karma = 1
+            point — mais LÀ, le plafond redevient le Charisme (p.30). */
+        karmaUpgradeCappedByCharisma: true,
+      },
+
+      /** Les points de contacts d'un ÉVÉNEMENT ne peuvent qu'améliorer des
+          contacts déjà choisis, toutes catégories confondues (p.31). */
+      eventContactsUpgradeOnly: true,
+
+      /** Un module qui octroierait un septième trait : y renoncer, ou en
+          remplacer un déjà pris (on en récupère le karma). Les voies de
+          traits ne comptent pas dans la limite (p.30). */
+      traitReplacementAllowed: true,
+
+      /** Les ressources s'ADDITIONNENT au fil des modules et ne se dépensent
+          qu'une fois la création achevée (p.30). */
+      resourcesDeferred: true,
+
+      /** Catégories de contacts citées par les modules (p.31). */
+      contactCategories: [
+        "universitaire", "corporatiste", "criminel", "ingénierie",
+        "gouvernemental", "magique", "matriciel", "médias", "médical", "de la rue",
+      ],
+
+      /** Les trois modules imposés. Leurs effets sont décrits en clair : ils
+          ne suivent pas le gabarit à puces des modules adultes. */
+      imposed: [
+        {
+          id: "naissance",
+          label: "Naissance",
+          hint: "Le corps dont vous avez hérité, et si vous êtes né ordinaire, Éveillé ou Émergé.",
+          /** Attribut dont le maximum du métatype dépasse 6 → démarre à 2
+              (ainsi que l'Atout pour les humains) ; tous les autres à 1. */
+          attrStartAboveSix: 2,
+          attrStartDefault: 1,
+          humanEdgeStartsAtTwo: true,
+          /** Indices de départ par catégorie — mêmes valeurs que la création
+              par points (`awakenedStart`), lues sur la même page. */
+          ordinaryEdgeBonus: 1,
+          effects: [
+            "Choisir métatype, voire métavariante, et traits métagénétiques — payés en Karma.",
+            "Choisir ordinaire, Éveillé ou Émergé.",
+            "Choisir sa nationalité et sa langue maternelle.",
+            "Un ou deux traits de naissance ; si deux, l'un positif et l'autre négatif.",
+          ],
+        },
+        {
+          id: "croissance",
+          label: "Croissance : de l'enfance à l'adolescence",
+          hint: "Les acquis de votre jeunesse.",
+          /** Quatre compétences au rang 2, prises dans cette liste fermée. */
+          skillCount: 4,
+          skillRank: 2,
+          skillPool: [
+            "Athlétisme", "Combat rapproché", "Escroquerie", "Électronique",
+            "Plein air", "Perception", "Furtivité",
+          ],
+          knowledge: "Géographie [région]",
+          effects: [
+            "Un ou deux traits liés à l'adolescence ; si deux, l'un positif et l'autre négatif.",
+          ],
+        },
+        {
+          id: "majorite",
+          label: "Majorité : du jeune adulte à la maturité",
+          hint: "Votre principal talent, et l'attribut qui vous définit.",
+          /** Une compétence au rang 4 — ou 6 si elle avait déjà été prise à
+              la Croissance. C'est la seule façon d'atteindre 6 ici. */
+          talentRank: 4,
+          talentRankIfRepeated: 6,
+          /** Meilleur attribut (hors Atout, Magie, Résonance) +5 rangs ; si
+              le métatype y plafonne à 5, le mettre au max et +1 ailleurs. */
+          bestAttrBonus: 5,
+          bestAttrExcludes: ["ATO", "MAG", "RES"],
+          nuyen: 25000,
+          /** Un contact de la catégorie de son choix, 4 points répartis entre
+              Réseau et Loyauté, minimum 1 chacun. */
+          contact: { points: 4, minEach: 1, anyCategory: true },
+          effects: [
+            "Un ou deux traits, positifs ou négatifs, qui vous définissent particulièrement.",
+          ],
+        },
+      ],
+
+      /** Catalogue des modules d'âge adulte — 75 modules de choix de vie et
+          11 modules d'événements, remplis par sr6.lifemodules.js. Reste vide
+          si ce fichier n'est pas chargé : `stepErrors` le dit alors au lieu
+          de laisser créer un personnage sans modules. */
+      adult: [],
+    },
+
     /* ---- Coûts de progression (core p.70) — lus à l'image ---- */
     karmaCosts: {
       attrMult: 5, // 5 × nouveau rang
@@ -234,9 +345,18 @@ Object.assign(EditionSR6, {
       const fam = this.methods[build.method]?.family;
       const out = [{ id: "concept", kind: "concept", label: "Concept" }];
       if (fam === "priority") out.push({ id: "priorites", kind: "priorities", label: "Priorités" });
+      if (fam === "modules") out.push({ id: "modules", kind: "life_modules", label: "Parcours" });
+      // En méthode à modules, on ne DÉPENSE pas de points d'attributs ni de
+      // compétences : ce sont les modules qui les accordent. Les deux étapes
+      // correspondantes n'auraient rien à faire — les afficher vides serait
+      // un écran qui ment sur ce qu'il y a à y faire.
+      if (fam !== "modules") {
+        out.push(
+          { id: "attrs", kind: "attrs", label: "Attributs" },
+          { id: "skills", kind: "skills_sr6", label: "Compétences" },
+        );
+      }
       out.push(
-        { id: "attrs", kind: "attrs", label: "Attributs" },
-        { id: "skills", kind: "skills_sr6", label: "Compétences" },
         { id: "gear", kind: "gear_nuyen", label: "Équipement" },
         { id: "contacts", kind: "contacts", label: "Contacts" },
         { id: "review", kind: "review", label: "Révision" },
@@ -260,6 +380,10 @@ Object.assign(EditionSR6, {
         gear: [],
         contacts: [],
         pcNuyen: 0, // PC investis en ressources (méthode par points)
+        // Méthode à modules : les 8 emplacements adultes, chacun {id, choix}.
+        lifeModules: [],
+        /** Choix des trois modules imposés (Croissance et Majorité en ont). */
+        lifeImposed: { croissanceSkills: [], talent: "", bestAttr: "" },
         notes: "",
       };
     },
@@ -448,6 +572,22 @@ Object.assign(EditionSR6, {
         { label: "Nuyens", used: this.nuyenUsed(build), total: this.nuyenTotal(build) },
       ];
 
+      if (method.family === "modules") {
+        const g = this.lifeModuleGrants(build);
+        const n = this.lifeModules.adultSlots;
+        return {
+          headline: {
+            label: `Parcours : ${g.modules} / ${n} modules · ${this.KARMA} karma de personnalisation`,
+            used: g.modules,
+            total: n,
+            over: g.modules > n,
+          },
+          cells: [
+            { label: "Nuyens", used: this.nuyenUsed(build), total: g.nuyen },
+            { label: "Points de contacts", used: this.contactPointsUsed(build), total: g.contactPts },
+          ],
+        };
+      }
       if (method.family === "pc") {
         const used = this.pcUsed(build);
         return {
@@ -570,6 +710,149 @@ Object.assign(EditionSR6, {
       return this._range(build.meta, key);
     },
 
+    /** Le catalogue filtré par ce que le personnage PEUT prendre : une
+        restriction de MODULE (au pluriel dans le livre) ferme le module ;
+        une restriction d'OPTION (au singulier, dans une puce) ne ferme rien
+        et reste dans les listes `parmi`. */
+    lifeModuleCatalog(build) {
+      const a = build.awakened || "";
+      const estEveille = ["magicien", "specialise", "adepte", "mystique"].includes(a);
+      const estEmerge = a === "technomancien";
+      const estAdepte = a === "adepte";
+      return (this.lifeModules.adult || []).filter((m) => {
+        if (!m.restriction) return true;
+        const r = m.restriction.toLowerCase();
+        if (r.includes("adepte")) return estAdepte;
+        if (r.includes("émergé")) return estEmerge;
+        if (r.includes("éveillé")) return estEveille;
+        return true;
+      });
+    },
+
+    /** Catégories d'attributs SR6 (p.42), nécessaires parce que certains
+        modules — Voyageur, la plupart des événements — n'offrent pas une
+        liste d'attributs mais une CATÉGORIE : « un attribut physique de votre
+        choix ». Sans ce développement, la phrase serait prise pour un nom
+        d'attribut et le personnage gagnerait un attribut nommé
+        « un attribut physique ». */
+    ATTR_GROUPS: {
+      physique: ["CON", "AGI", "RÉA", "FOR"],
+      mental: ["VOL", "LOG", "INT", "CHA"],
+      special: ["ATO", "MAG", "RES"],
+    },
+
+    /** Développe une option générique en la liste concrète qu'elle désigne.
+        Rend la liste telle quelle si elle ne contient aucun libellé générique. */
+    expandParmi(parmi, kind) {
+      const out = [];
+      for (const opt of parmi || []) {
+        const o = opt.toLowerCase();
+        const generique = o.includes("de votre choix") || o.includes("au choix") || o.startsWith("un attribut") || o.startsWith("une compétence");
+        if (!generique) {
+          out.push(opt);
+          continue;
+        }
+        if (kind === "skills") {
+          out.push(...this.SKILLS.map((x) => x.name));
+          continue;
+        }
+        const g = this.ATTR_GROUPS;
+        const parts = [];
+        if (o.includes("physique")) parts.push(...g.physique);
+        if (o.includes("mental")) parts.push(...g.mental);
+        if (o.includes("spécial") || o.includes("special")) parts.push(...g.special);
+        out.push(...(parts.length ? parts : [...g.physique, ...g.mental, ...g.special]));
+      }
+      return [...new Set(out)];
+    },
+
+    lifeModuleById(id) {
+      return (this.lifeModules.adult || []).find((m) => m.id === id) || null;
+    },
+
+    /** Le parcours complet, résolu : les trois modules imposés puis les huit
+        adultes, avec les choix tranchés. C'est CE calcul qui fait le
+        personnage — en méthode à modules, on ne dépense aucun point.
+        Les ressources s'additionnent et ne se dépensent qu'à la fin (p.30). */
+    lifeModuleGrants(build) {
+      const imp = build.lifeImposed || {};
+      const out = {
+        attrs: {}, skills: {}, know: [],
+        nuyen: 0, contactPts: 0, modules: 0, evenements: 0,
+      };
+      const addAttr = (k, n) => { if (k) out.attrs[k] = (out.attrs[k] || 0) + n; };
+      const addSkill = (k, n) => { if (k) out.skills[k] = Math.max(out.skills[k] || 0, 0) + n; };
+
+      /* --- Naissance : les valeurs de départ (p.31) --- */
+      for (const k of this.ATTRS) {
+        out.attrs[k] = this._range(build.meta, k)[1] > 6 ? 2 : 1;
+      }
+      out.attrs.ATO = build.meta === "Humain" ? 2 : 1;
+      if (!build.awakened) out.attrs.ATO += 1; // ordinaire : +1 Atout
+      const cat = this.awakenedStart[build.awakened];
+      if (cat) out.attrs[cat.attr] = cat.start;
+
+      /* --- Croissance : quatre compétences au rang 2 --- */
+      for (const sk of imp.croissanceSkills || []) if (sk) out.skills[sk] = 2;
+
+      /* --- Majorité : le talent, puis le meilleur attribut --- */
+      const maj = this.lifeModules.imposed.find((i) => i.id === "majorite");
+      if (imp.talent) {
+        const dejaPrise = (imp.croissanceSkills || []).includes(imp.talent);
+        out.skills[imp.talent] = dejaPrise ? maj.talentRankIfRepeated : maj.talentRank;
+      }
+      if (imp.bestAttr) {
+        const max = this._range(build.meta, imp.bestAttr)[1];
+        // « Si votre métatype a un maximum de 5 dans cet attribut, donnez-lui
+        // sa valeur maximum et augmentez de 1 un autre attribut. »
+        out.attrs[imp.bestAttr] = Math.min(max, (out.attrs[imp.bestAttr] || 1) + maj.bestAttrBonus);
+      }
+      out.nuyen += maj.nuyen || 0;
+      out.contactPts += maj.contact ? maj.contact.points : 0;
+
+      /* --- Les huit modules adultes --- */
+      for (const slot of build.lifeModules || []) {
+        const m = this.lifeModuleById(slot && slot.id);
+        if (!m) continue;
+        out.modules++;
+        if (m.type === "evenement") out.evenements++;
+        (m.attrs || []).forEach((a, k) => addAttr((slot.attrs || [])[k], a.n));
+        (m.skills || []).forEach((sk, k) => {
+          const choisi = (slot.skills || [])[k];
+          if (choisi) addSkill(choisi, sk.n);
+        });
+        if (m.know && slot.know) out.know.push(slot.know);
+        out.nuyen += m.nuyen || 0;
+        out.contactPts += m.contactPts || 0;
+      }
+
+      // Les rangs au-delà du maximum du métatype (ou du plafond de compétence)
+      // sont PERDUS, pas ignorés en silence : on les relève pour que l'écran
+      // puisse le dire, comme le livre le prévoit pour les modules trop
+      // généreux.
+      out.overflow = [];
+      for (const k of [...this.ATTRS, "ATO"]) {
+        const max = this._range(build.meta, k)[1];
+        if ((out.attrs[k] || 0) > max) {
+          out.overflow.push(`${k} ${out.attrs[k]} → ${max} (maximum ${build.meta})`);
+          out.attrs[k] = max;
+        }
+      }
+      for (const k of ["MAG", "RES"]) {
+        if ((out.attrs[k] || 0) > 6) {
+          out.overflow.push(`${k} ${out.attrs[k]} → 6`);
+          out.attrs[k] = 6;
+        }
+      }
+      for (const [n, v] of Object.entries(out.skills)) {
+        if (v > this.SKILL_CAP) {
+          out.overflow.push(`${n} ${v} → ${this.SKILL_CAP}`);
+          out.skills[n] = this.SKILL_CAP;
+        }
+      }
+      return out;
+    },
+
     skillCatalog() {
       return this.SKILLS.map((s) => ({ ...s }));
     },
@@ -616,7 +899,7 @@ Object.assign(EditionSR6, {
        VALIDATION (core p.66-69)
        ============================================================ */
     stepErrors(build) {
-      const out = { concept: [], priorites: [], attrs: [], skills: [], gear: [], contacts: [] };
+      const out = { concept: [], priorites: [], modules: [], attrs: [], skills: [], gear: [], contacts: [] };
       const method = this.methods[build.method];
       if (!method) {
         out.concept.push("Méthode de création inconnue.");
@@ -650,6 +933,70 @@ Object.assign(EditionSR6, {
           out.priorites.push(
             `${build.meta} n'est pas disponible en priorité ${build.priorities.meta} (Métatypes).`,
           );
+        }
+      } else if (method.family === "modules") {
+        const cat = this.lifeModules.adult || [];
+        if (!cat.length) {
+          out.concept.push(
+            "Catalogue des modules absent — sr6.lifemodules.js n'est pas chargé.",
+          );
+        }
+        const slots = (build.lifeModules || []).filter((x) => x && x.id);
+        const n = this.lifeModules.adultSlots;
+        if (slots.length !== n) {
+          out.modules.push(`Il faut exactement ${n} modules d'âge adulte (${slots.length} choisis) — ni plus, ni moins.`);
+        }
+        // « seul l'un d'entre eux peut être sélectionné deux fois » (p.31)
+        const compte = {};
+        for (const sl of slots) compte[sl.id] = (compte[sl.id] || 0) + 1;
+        const repetes = Object.entries(compte).filter(([, c]) => c > 1);
+        if (repetes.length > this.lifeModules.repeatableMax) {
+          out.modules.push(
+            `Un seul module peut être pris deux fois (${repetes.length} le sont : ${repetes.map(([id]) => this.lifeModuleById(id)?.nom || id).join(", ")}).`,
+          );
+        }
+        for (const [id, c] of repetes) {
+          if (c > 2) out.modules.push(`${this.lifeModuleById(id)?.nom || id} est pris ${c} fois — deux au maximum.`);
+        }
+        const imp = build.lifeImposed || {};
+        const nCroiss = (imp.croissanceSkills || []).filter(Boolean).length;
+        const croiss = this.lifeModules.imposed.find((i) => i.id === "croissance");
+        if (nCroiss !== croiss.skillCount) {
+          out.modules.push(`Croissance : ${croiss.skillCount} compétences à choisir (${nCroiss} choisies).`);
+        }
+        if (new Set((imp.croissanceSkills || []).filter(Boolean)).size !== nCroiss) {
+          out.modules.push("Croissance : les quatre compétences doivent être distinctes.");
+        }
+        if (!imp.talent) out.modules.push("Majorité : le talent principal n'est pas choisi.");
+        if (!imp.bestAttr) out.modules.push("Majorité : le meilleur attribut n'est pas choisi.");
+
+        // Chaque option d'un module doit être TRANCHÉE. Sans ce contrôle, un
+        // parcours complet mais sans choix passerait la validation et
+        // produirait un personnage vide — le critère de succès étant une
+        // absence d'erreur, un objet vide le satisfait aussi bien qu'un bon.
+        for (const sl of slots) {
+          const m = this.lifeModuleById(sl.id);
+          if (!m) continue;
+          const manque = [];
+          (m.attrs || []).forEach((a, k) => {
+            if (!(sl.attrs || [])[k]) manque.push(`attribut ${k + 1}`);
+          });
+          (m.skills || []).forEach((sk, k) => {
+            if (!(sl.skills || [])[k]) manque.push(`compétence ${k + 1}`);
+          });
+          if (m.know && !sl.know) manque.push("connaissance");
+          if (manque.length) {
+            out.modules.push(`${m.nom} : choix à trancher (${manque.join(", ")}).`);
+          }
+        }
+
+        // Une restriction de module doit être respectée par l'Éveil choisi.
+        const ouverts = new Set(this.lifeModuleCatalog(build).map((m) => m.id));
+        for (const sl of slots) {
+          const m = this.lifeModuleById(sl.id);
+          if (m && m.restriction && !ouverts.has(m.id)) {
+            out.modules.push(`${m.nom} est réservé aux « ${m.restriction} ».`);
+          }
         }
       } else if (method.family === "pc") {
         const used = this.pcUsed(build);
@@ -754,15 +1101,38 @@ Object.assign(EditionSR6, {
        CONSTRUCTION DU PERSONNAGE
        ============================================================ */
     buildCharacter(build) {
+      const parModules = this.methods[build.method]?.family === "modules";
+      const grants = parModules ? this.lifeModuleGrants(build) : null;
+
       const attrs = {};
-      for (const k of this.ATTRS) attrs[k] = (build.attrs || {})[k] ?? 1;
-      const sp = build.special || {};
-      attrs.ATO = sp.ATO ?? 1;
-      if (sp.MAG) attrs.MAG = sp.MAG;
-      if (sp.RES) attrs.RES = sp.RES;
+      if (parModules) {
+        // Le parcours EST le personnage : attributs et compétences viennent
+        // des modules, pas d'une réserve de points.
+        for (const k of this.ATTRS) {
+          attrs[k] = Math.min(grants.attrs[k] ?? 1, this._range(build.meta, k)[1]);
+        }
+        attrs.ATO = Math.min(grants.attrs.ATO ?? 1, this._range(build.meta, "ATO")[1]);
+        if (grants.attrs.MAG) attrs.MAG = Math.min(grants.attrs.MAG, 6);
+        if (grants.attrs.RES) attrs.RES = Math.min(grants.attrs.RES, 6);
+      } else {
+        for (const k of this.ATTRS) attrs[k] = (build.attrs || {})[k] ?? 1;
+        const sp = build.special || {};
+        attrs.ATO = sp.ATO ?? 1;
+        if (sp.MAG) attrs.MAG = sp.MAG;
+        if (sp.RES) attrs.RES = sp.RES;
+      }
       attrs.ESS = 6;
 
-      const skills = (build.skills || []).map((s) => {
+      const listeSkills = parModules
+        ? Object.entries(grants.skills).map(([name, val]) => ({
+            name,
+            val: Math.min(val, this.SKILL_CAP),
+            attr: (this.SKILLS.find((x) => x.name === name) || {}).attr || "LOG",
+            specs: [],
+          }))
+        : build.skills || [];
+
+      const skills = listeSkills.map((s) => {
         const specs = s.specs || [];
         const primary = specs[0];
         const attr = s.attr || "LOG";
@@ -800,7 +1170,9 @@ Object.assign(EditionSR6, {
         priorities: { ...build.priorities },
         attrs,
         skills,
-        knowledges: (build.knowledges || []).map((k) => k.name || k),
+        knowledges: parModules
+          ? [...grants.know]
+          : (build.knowledges || []).map((k) => k.name || k),
         spells: build.spells || [],
         equip: (build.gear || []).map((g) => g.name),
         awakened: build.awakened || null,
