@@ -144,10 +144,20 @@ export const ItemResolver = {
     Object.keys(labelMap).forEach((key) => {
       const flat = ItemResolver._flatPool(equipPools[key]);
       if (!flat.length) return;
-      const items = flat.map((str, idx) => ({
-        id: `${key}::${idx}`,
-        label: String(str).split(" [")[0].trim(),
-      }));
+      const items = flat.map((str, idx) => {
+        const brut = String(str);
+        const coupe = brut.indexOf(" [");
+        return {
+          id: `${key}::${idx}`,
+          label: (coupe >= 0 ? brut.slice(0, coupe) : brut).trim(),
+          /* La ligne de stats était STRIPPÉE et jetée : « Ares Predator V
+             [PRE 5, VD 8P, PA -1, SA, 15(c)] » ne laissait que le nom, si bien
+             qu'un sélecteur de 572 entrées ne disait rien de ce qu'on
+             choisissait. Elle est désormais rendue à part — le `label` reste
+             identique pour tous les appelants existants. */
+          detail: coupe >= 0 ? brut.slice(coupe + 2).replace(/\]\s*$/, "").trim() : "",
+        };
+      });
       items.sort((a, b) => a.label.localeCompare(b.label, "fr", { sensitivity: "base" }));
       out.push({ category: labelMap[key], items });
     });

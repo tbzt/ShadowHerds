@@ -500,7 +500,10 @@ Object.assign(EditionSR5, {
     gearCatalog() {
       return (EditionSR5.equipCatalog() || []).map((g) => ({
         category: g.category,
-        items: (g.items || []).map((it) => ({ label: it.label })).filter((it) => it.label),
+        // `detail` porte la ligne de stats du livre ; l'écran la montre.
+        items: (g.items || [])
+          .map((it) => ({ label: it.label, detail: it.detail || "" }))
+          .filter((it) => it.label),
       }));
     },
 

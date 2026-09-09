@@ -667,8 +667,13 @@ export const CharGen = {
       <div class="cg-section-label">Groupes de compétences <span class="cg-section-note">${c.groupPointsUsed(b)} / ${groupTotal}</span></div>
       ${groupRows}
       <div class="cluster cg-add-row">
-        <select id="cg-sr-group-pick">${groupOpts}</select>
+        <select id="cg-sr-group-pick" ${groupTotal ? "" : "disabled"}>${groupOpts}</select>
         <button class="btn-secondary btn-small" data-cg-action="add-group" ${groupTotal ? "" : "disabled"}>＋ Ajouter</button>
+        ${
+          groupTotal
+            ? ""
+            : `<span class="cg-section-note">La colonne Compétences « ${this._esc(b.priorities.skills)} » n'accorde <strong>aucun</strong> point de groupe (p.67) : prenez A, B ou C pour en acheter.</span>`
+        }
       </div>
       <div class="cg-section-label">Connaissances et langues <span class="cg-section-note">${c.knowledgePointsUsed(b)} / ${c.knowledgePointsTotal(b)} — (INT + LOG) × 2</span></div>
       ${knowRows}
@@ -775,24 +780,25 @@ export const CharGen = {
 
     const blocs = step.groups
       .map((g) => {
-        const chosen = new Set(g.chosen || []);
-        const groupes = (g.catalog || [])
-          .map((cat) => {
-            const cases = (cat.items || [])
-              .map(
-                (it) =>
-                  `<label class="cluster cg-check"><input type="checkbox" data-cg-action="toggle-magic" data-kind="${this._esc(g.key)}" data-name="${this._esc(it.label)}" ${chosen.has(it.label) ? "checked" : ""}> ${this._esc(it.label)}</label>`,
-              )
-              .join("");
-            return `<div class="stack cg-magic-cat"><div class="cg-section-note">${this._esc(cat.category)}</div>
-              <div class="cg-check-grid">${cases}</div></div>`;
-          })
-          .join("");
         const compteur = g.total == null ? `${g.used} choisi(s)` : this._kitMeter(g.used, g.total, "choisis");
+        const retenus = (g.chosen || []).length
+          ? `<div class="cg-pick-chosen">${(g.chosen || [])
+              .map(
+                (nom) =>
+                  `<button class="cg-pick-tag" data-cg-action="toggle-magic" data-kind="${this._esc(g.key)}" data-name="${this._esc(nom)}" title="Retirer">${this._esc(nom)} ✕</button>`,
+              )
+              .join("")}</div>`
+          : "";
         return `<div class="stack">
           <div class="cg-section-label">${this._esc(g.label)} <span class="cg-section-note">${compteur}</span></div>
           <p class="cg-hint">${this._esc(g.hint)}</p>
-          ${groupes}
+          ${retenus}
+          ${this._catalogPicker({
+            id: `magic-${g.key}`,
+            groups: g.catalog || [],
+            action: "toggle-magic",
+            selected: g.chosen || [],
+          })}
         </div>`;
       })
       .join("");
@@ -801,6 +807,55 @@ export const CharGen = {
       ${this._stepErrorBox("magie")}
       <p class="cg-hint">${this._esc(step.hint)}</p>
       ${blocs}
+    </div>`;
+  },
+
+  /** Sélecteur de catalogue : recherche, filtre par catégorie, et le DÉTAIL
+      du livre sous chaque nom.
+
+      Il remplace le `<select><optgroup>` qui servait jusqu'ici. Ce n'était pas
+      un détail d'esthétique : 572 objets d'équipement en SR5, 588 en SR6, 192
+      sorts, une centaine de compétences — tenus dans une liste déroulante
+      unique, sans recherche, et réduits à leur nom parce que
+      `flattenEquipPools` jetait la ligne de stats. On choisissait « Ares
+      Predator V » sans savoir que c'est un pistolet lourd VD 8P.
+
+      Le filtrage se fait sur les éléments déjà rendus (on masque), pas en
+      redessinant : le champ de recherche garde le focus et la position du
+      curseur, ce qu'un re-rendu à chaque frappe perdrait.
+
+      `action` reçoit `data-name` (et `data-cat`) ; à l'appelant de décider ce
+      qu'il en fait — ajouter à une liste, cocher, remplacer. */
+  _catalogPicker({ id, groups, action, selected, vide }) {
+    const sel = new Set(selected || []);
+    const cats = (groups || []).map((g) => g.category);
+    let n = 0;
+    const items = (groups || [])
+      .flatMap((g) =>
+        (g.items || []).map((it) => {
+          n++;
+          const dejaPris = sel.has(it.label);
+          return `<button class="cg-pick-item${dejaPris ? " pris" : ""}" data-cg-action="${this._esc(action)}"
+            data-name="${this._esc(it.label)}" data-cat="${this._esc(g.category)}"
+            data-hay="${this._esc(`${it.label} ${it.detail || ""} ${g.category}`.toLowerCase())}">
+            <span class="cg-pick-name">${dejaPris ? "✓ " : ""}${this._esc(it.label)}</span>
+            ${it.detail ? `<span class="cg-pick-detail">${this._esc(it.detail)}</span>` : ""}
+            <span class="cg-pick-cat">${this._esc(g.category)}</span>
+          </button>`;
+        }),
+      )
+      .join("");
+
+    return `<div class="cg-pick" data-pick="${this._esc(id)}">
+      <div class="cluster cg-pick-bar">
+        <input type="search" class="cg-pick-search" data-pick-search="${this._esc(id)}" placeholder="Chercher parmi ${n}…" autocomplete="off">
+        <select class="cg-pick-cat-filter" data-pick-cat="${this._esc(id)}">
+          <option value="">Toutes les catégories</option>
+          ${cats.map((cat) => `<option value="${this._esc(cat)}">${this._esc(cat)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="cg-pick-list">${items || `<p class="cg-hint">${this._esc(vide || "Catalogue vide.")}</p>`}</div>
+      <p class="cg-hint cg-pick-empty" hidden>Aucun résultat.</p>
     </div>`;
   },
 
@@ -828,25 +883,17 @@ export const CharGen = {
       )
       .join("");
 
-    // Le catalogue est groupé par catégorie : on rend des <optgroup> plutôt
-    // qu'une liste plate de plusieurs centaines d'entrées.
-    const catOpts = (c.gearCatalog() || [])
-      .map(
-        (g) =>
-          `<optgroup label="${this._esc(g.category)}">${(g.items || [])
-            .map((it) => `<option value="${this._esc(it.label)}">${this._esc(it.label)}</option>`)
-            .join("")}</optgroup>`,
-      )
-      .join("");
 
     return `<div class="stack">
       ${this._stepErrorBox("gear")}
-      <p class="cg-hint">Ressources : ${(nuyenCell?.used || 0).toLocaleString("fr-FR")} / ${(nuyenCell?.total || 0).toLocaleString("fr-FR")} ¥. ${this._esc(limits.hint)} Les prix se lisent au livre — le catalogue de l'app ne porte que les noms.</p>
+      <p class="cg-hint">Ressources : ${(nuyenCell?.used || 0).toLocaleString("fr-FR")} / ${(nuyenCell?.total || 0).toLocaleString("fr-FR")} ¥. ${this._esc(limits.hint)} La ligne de stats du livre s'affiche sous chaque entrée ; les PRIX, eux, n'y figurent pas et se lisent au livre.</p>
       ${rows || '<p class="cg-hint">Aucun équipement.</p>'}
-      <div class="cluster cg-add-row">
-        <select id="cg-sr-gear-pick">${catOpts}</select>
-        <button class="btn-secondary btn-small" data-cg-action="add-gear-sr">＋ Depuis le catalogue</button>
-      </div>
+      ${this._catalogPicker({
+        id: "gear",
+        groups: c.gearCatalog() || [],
+        action: "pick-gear",
+        selected: (b.gear || []).map((g) => g.name),
+      })}
       <div class="cluster cg-add-row">
         <input type="text" id="cg-sr-gear-free" placeholder="Équipement libre…">
         <button class="btn-secondary btn-small" data-cg-action="add-gear-free">＋ Ajouter</button>
@@ -1656,17 +1703,16 @@ export const CharGen = {
         }
         break;
       }
-      case "add-gear-sr":
+      // `add-gear-sr` a disparu avec le `<select>` du catalogue : le
+      // sélecteur cherchable ajoute directement (cf. `pick-gear`). Reste la
+      // saisie libre, qui garde sa raison d'être — tout n'est pas catalogué.
       case "add-gear-free": {
-        const src =
-          action === "add-gear-sr"
-            ? document.getElementById("cg-sr-gear-pick")
-            : document.getElementById("cg-sr-gear-free");
+        const src = document.getElementById("cg-sr-gear-free");
         const txt = (src?.value || "").trim();
         if (txt) {
           b.gear = b.gear || [];
           b.gear.push({ name: txt, cost: 0, availability: null });
-          if (action === "add-gear-free" && src) src.value = "";
+          if (src) src.value = "";
           afterMutate();
         }
         break;
@@ -1769,8 +1815,17 @@ export const CharGen = {
         afterMutate();
         break;
       }
+      case "pick-gear": {
+        const nom = el.dataset.name;
+        b.gear = b.gear || [];
+        if (!b.gear.some((g) => g.name === nom)) b.gear.push({ name: nom, cost: 0 });
+        afterMutate();
+        break;
+      }
       case "toggle-magic": {
-        const kind = el.dataset.kind;
+        // Depuis un bouton retenu (data-kind direct) ou depuis le sélecteur,
+        // dont l'identifiant porte la réserve : « magic-<kind> ».
+        const kind = el.dataset.kind || el.closest("[data-pick]")?.dataset.pick?.replace(/^magic-/, "");
         const name = el.dataset.name;
         const liste = b[kind] || [];
         b[kind] = liste.includes(name) ? liste.filter((x) => x !== name) : [...liste, name];
@@ -1867,6 +1922,33 @@ export const CharGen = {
       "cg-edge-custom-label": "add-edge-custom",
       "cg-edge-custom-level": "add-edge-custom",
     };
+    /* Filtrage des sélecteurs de catalogue. On masque les entrées déjà
+       rendues plutôt que de redessiner : redessiner à chaque frappe ferait
+       perdre le focus et la position du curseur. */
+    const filtrer = (id) => {
+      const root = overlay()?.querySelector(`[data-pick="${id}"]`);
+      if (!root) return;
+      const q = (root.querySelector("[data-pick-search]")?.value || "").trim().toLowerCase();
+      const cat = root.querySelector("[data-pick-cat]")?.value || "";
+      let vus = 0;
+      for (const el of root.querySelectorAll(".cg-pick-item")) {
+        const ok =
+          (!q || (el.dataset.hay || "").includes(q)) && (!cat || el.dataset.cat === cat);
+        el.hidden = !ok;
+        if (ok) vus++;
+      }
+      const vide = root.parentElement?.querySelector(".cg-pick-empty") || root.querySelector(".cg-pick-empty");
+      if (vide) vide.hidden = vus > 0;
+    };
+    document.addEventListener("input", (e) => {
+      const id = e.target?.dataset?.pickSearch;
+      if (id && overlay()?.contains(e.target)) filtrer(id);
+    });
+    document.addEventListener("change", (e) => {
+      const id = e.target?.dataset?.pickCat;
+      if (id && overlay()?.contains(e.target)) filtrer(id);
+    });
+
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Enter" || e.target.tagName !== "INPUT") return;
       const ov = overlay();
